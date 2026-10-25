@@ -43,6 +43,9 @@ import { ExperimentsViewModel } from './viewmodel/experiments.js';
 /** Tabs of the module, in tab-bar order. */
 const TABS = ['problem', 'facts', 'hypotheses', 'experiments'];
 
+/** Data keys of the sub-viewmodels, in attach order. */
+const SUB_VIEWMODELS = ['problem', 'causes', 'snapshots', 'experiments'];
+
 const mod = createModule({
   config: {
     id: 'ishikawa',
@@ -92,6 +95,8 @@ const mod = createModule({
     let events = null;
     return {
       ...agentReadMixin(module),
+      // `name: new X(deps)` literals: the agent generator reads the
+      // sub-viewmodels from exactly this shape. init() replaces them.
       problem: new ProblemViewModel(deps),
       causes: new CausesViewModel(deps),
       snapshots: new SnapshotsViewModel(deps),
@@ -123,9 +128,16 @@ const mod = createModule({
       /** @type {string} the open tab (transient, never persisted) */
       activeTab: 'problem',
 
-      /** @noagent lifecycle — Alpine hook: binds the sub-viewmodels to the component's model and a fresh bus. */
+      /** @noagent lifecycle — Alpine hook: builds fresh sub-viewmodels and binds them to the component's model and a fresh bus. */
       init() {
         this.dragRowsInit();
+        // createModule spreads this data object into every Alpine build of
+        // the component, and setState (example load) or a language change
+        // rebuilds it. The sub-viewmodels would then be shared across builds
+        // and carry filter, comparison or trend state into the new data, so
+        // each build gets fresh ones — assigned through the reactive proxy,
+        // so the template binds to the new objects.
+        for (const key of SUB_VIEWMODELS) this[key] = new this[key].constructor(deps);
         events = new EventBus();
         const binding = {
           model: this.model,
@@ -147,7 +159,7 @@ const mod = createModule({
       },
 
       /** @returns {object[]} the sub-viewmodels, in attach order */
-      _subViewModels() { return [this.problem, this.causes, this.snapshots, this.experiments]; },
+      _subViewModels() { return SUB_VIEWMODELS.map((key) => this[key]); },
 
       // ── Tabs ──────────────────────────────────────────────────
 

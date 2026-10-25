@@ -73,6 +73,15 @@ suite('ishikawa-vm snapshots — save, load, delete', () => {
     assertEqual(model.rows.length, 0);
   });
 
+  test('confirmLoadSnapshot is a no-op when the snapshot went while the dialog was open', async () => {
+    const { ctx, vm, model } = setup();
+    const id = vm.saveSnapshot('A');
+    model.addRow(null);
+    ctx.dialog.confirm = async () => { vm.deleteSnapshot(id); return true; };
+    await vm.confirmLoadSnapshot(id);
+    assertEqual(model.rows.length, 1);
+  });
+
   test('deleteSnapshot ends a comparison with it and tells the others', () => {
     const { vm, model, heard } = setup();
     const id = vm.saveSnapshot('A');
@@ -158,5 +167,17 @@ suite('ishikawa-vm snapshots — trend', () => {
     await settle();
     assertEqual(ctx.charts.created.length, 1);
     assertEqual(ctx.charts.destroyed.length, 1);
+  });
+
+  test('a trend chart still being created at detach is destroyed, not kept', async () => {
+    const { ctx, vm, model } = setup();
+    rated(model, 4);
+    vm.saveSnapshot('A');
+    const pending = vm.renderTrend();
+    vm.detach();
+    await pending;
+    assertEqual(ctx.charts.created.length, 1);
+    assertDeepEqual(ctx.charts.destroyed, ctx.charts.created);
+    assertEqual(vm._trendChart, null);
   });
 });

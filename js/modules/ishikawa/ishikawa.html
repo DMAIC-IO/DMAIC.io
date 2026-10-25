@@ -489,9 +489,8 @@
     <div class="ishikawa__hyp-pick" x-ref="expLinkForm">
       <p class="ishikawa__hyp-pick-hint" x-text="experiments.expLinkDraft.hint"></p>
       <div class="ishikawa__hyp-pick-list">
-        <template x-if="experiments.expLinkDraft.items.length === 0">
-          <div class="ishikawa__no-items" x-text="t('noExperimentsToLink')"></div>
-        </template>
+        <!-- x-show, not x-if: this node is lent to the dialog, where an x-if clone would never initialise -->
+        <div class="ishikawa__no-items" x-show="experiments.expLinkDraft.items.length === 0" x-text="t('noExperimentsToLink')"></div>
         <template x-for="x in experiments.expLinkDraft.items" :key="x.xId">
           <label class="ishikawa__hyp-pick-row">
             <input type="checkbox" :data-exp-id="x.xId" x-model="x.checked" />
@@ -510,9 +509,8 @@
     <div class="ishikawa__hyp-pick" x-ref="hypLinkForm">
       <p class="ishikawa__hyp-pick-hint" x-text="t('chooseHypothesesHint')"></p>
       <div class="ishikawa__hyp-pick-list">
-        <template x-if="experiments.hypLinkDraft.items.length === 0">
-          <div class="ishikawa__no-items" x-text="t('noCategoryHyp')"></div>
-        </template>
+        <!-- x-show, not x-if: this node is lent to the dialog, where an x-if clone would never initialise -->
+        <div class="ishikawa__no-items" x-show="experiments.hypLinkDraft.items.length === 0" x-text="t('noCategoryHyp')"></div>
         <template x-for="r in experiments.hypLinkDraft.items" :key="r.stableId">
           <label class="ishikawa__hyp-pick-row">
             <input type="checkbox" :data-stable-id="r.stableId" x-model="r.checked" />

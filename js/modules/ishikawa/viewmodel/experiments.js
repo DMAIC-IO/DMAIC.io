@@ -134,6 +134,10 @@ export class ExperimentsViewModel {
    * @noagent lifecycle
    */
   detach() {
+    // A create() still in flight sees a stale generation and destroys its chart.
+    ++this._ganttGen;
+    this._costGen.cumulative++;
+    this._costGen.rate++;
     this._destroyGantt();
     this._destroyCostCharts();
   }
@@ -206,7 +210,8 @@ export class ExperimentsViewModel {
       confirmLabel: this._context.i18n.t('common.delete'),
       danger: true,
     });
-    if (!ok) return;
+    // The experiment may have gone while the dialog was open (an agent call).
+    if (!ok || !this.model.experiments.some(y => y.id === id)) return;
     this.deleteExperiment(id);
   }
 
@@ -331,7 +336,8 @@ export class ExperimentsViewModel {
       confirmLabel: this._context.i18n.t('common.delete'),
       danger: true,
     });
-    if (!ok) return;
+    // The fact may have gone while the dialog was open (an agent call).
+    if (!ok || !this.model.facts.some(x => x.id === id)) return;
     this.deleteFact(id);
   }
 

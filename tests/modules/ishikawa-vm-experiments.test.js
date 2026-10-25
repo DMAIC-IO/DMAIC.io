@@ -75,6 +75,15 @@ suite('ishikawa-vm experiments — experiments', () => {
     assertThrows(() => vm.deleteExperiment(b));
   });
 
+  test('confirmDeleteExperiment is a no-op when the experiment went while the dialog was open', async () => {
+    const { ctx, vm, model } = setup();
+    const gone = vm.addExperiment();
+    vm.addExperiment();
+    ctx.dialog.confirm = async () => { vm.deleteExperiment(gone); return true; };
+    await vm.confirmDeleteExperiment(gone);
+    assertEqual(model.experiments.length, 1);
+  });
+
   test('moveExperimentBefore reorders', () => {
     const { vm, model } = setup();
     const a = vm.addExperiment();
@@ -139,6 +148,15 @@ suite('ishikawa-vm experiments — facts', () => {
     ctx.confirmAnswer = true;
     await vm.confirmDeleteFact(a);
     assertEqual(model.facts.length, 0);
+  });
+
+  test('confirmDeleteFact is a no-op when the fact went while the dialog was open', async () => {
+    const { ctx, vm, model } = setup();
+    const gone = vm.addFact();
+    vm.addFact();
+    ctx.dialog.confirm = async () => { vm.deleteFact(gone); return true; };
+    await vm.confirmDeleteFact(gone);
+    assertEqual(model.facts.length, 1);
   });
 
   test('ownerNames lists the experts', () => {
@@ -212,5 +230,21 @@ suite('ishikawa-vm experiments — charts', () => {
     await vm.renderCostChart('cumulative');
     vm.detach();
     assertEqual(ctx.charts.destroyed.length, 2);
+  });
+
+  test('charts still being created at detach are destroyed, not kept', async () => {
+    const { ctx, vm } = setup();
+    const id = vm.addExperiment();
+    vm.setExperimentField(id, 'startDate', '2026-10-01');
+    vm.setExperimentField(id, 'endDate', '2026-10-05');
+    vm.setExperimentField(id, 'costMoney', 100);
+    const pending = [vm.renderGantt(), vm.renderCostChart('cumulative'), vm.renderCostChart('rate')];
+    vm.detach();
+    await Promise.all(pending);
+    assertEqual(ctx.charts.created.length, 3);
+    assertDeepEqual(ctx.charts.destroyed, ctx.charts.created);
+    assertEqual(vm._ganttChart, null);
+    assertEqual(vm._costCumChart, null);
+    assertEqual(vm._costRateChart, null);
   });
 });

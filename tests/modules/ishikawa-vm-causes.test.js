@@ -122,6 +122,15 @@ suite('ishikawa-vm causes — rows', () => {
     assertEqual(vm.collapsed[c], undefined);
   });
 
+  test('confirmDeleteRow is a no-op when the row went while the dialog was open', async () => {
+    const { ctx, vm, model } = setup();
+    const gone = vm.addRow();
+    vm.addRow();
+    ctx.dialog.confirm = async () => { vm.deleteRow(gone); return true; };
+    await vm.confirmDeleteRow(gone);
+    assertEqual(model.rows.length, 1);
+  });
+
   test('duplicateRow copies the subtree with the copy suffix', () => {
     const { vm, model } = setup();
     const p = vm.addRow();
@@ -253,6 +262,19 @@ suite('ishikawa-vm causes — bus', () => {
     vm.collapsed[r] = true;
     rec.events.emit(EVENTS.snapshotLoaded, { id });
     assertDeepEqual(vm.collapsed, {});
+  });
+
+  test('a Pareto chart still being created at detach is destroyed, not kept', async () => {
+    const { ctx, vm, model } = setup();
+    const e = model.addExpert('A');
+    const r = model.addRow(null);
+    model.setRating(r.id, e.id, 5);
+    const pending = vm.renderPareto();
+    vm.detach();
+    await pending;
+    assertEqual(ctx.charts.created.length, 1);
+    assertDeepEqual(ctx.charts.destroyed, ctx.charts.created);
+    assertEqual(vm._paretoChart, null);
   });
 
   test('after detach the bus no longer reaches it', () => {

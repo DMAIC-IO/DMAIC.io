@@ -80,6 +80,8 @@ export class SnapshotsViewModel {
     this._offs.forEach((off) => off());
     this._offs = [];
     this._emit = () => {};
+    // A create() still in flight sees a stale generation and destroys its chart.
+    ++this._trendGen;
     this._destroyTrend();
   }
 
@@ -132,7 +134,8 @@ export class SnapshotsViewModel {
    */
   async confirmLoadSnapshot(id) {
     const confirmed = await this._context.dialog.confirm({ message: this._t('loadSnapConfirm') });
-    if (!confirmed) return;
+    // The snapshot may have gone while the dialog was open (an agent call).
+    if (!confirmed || !this.model.snapshots.some(s => s.id === id)) return;
     this.loadSnapshot(id);
   }
 

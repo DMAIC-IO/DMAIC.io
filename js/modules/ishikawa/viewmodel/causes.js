@@ -153,6 +153,8 @@ export class CausesViewModel {
     this._offs.forEach((off) => off());
     this._offs = [];
     this._emit = () => {};
+    // A create() still in flight sees a stale generation and destroys its chart.
+    ++this._paretoGen;
     this._destroyPareto();
   }
 
@@ -466,7 +468,8 @@ export class CausesViewModel {
       confirmLabel: this._context.i18n.t('common.delete'),
       danger: true,
     });
-    if (!confirmed) return;
+    // The row may have gone while the dialog was open (an agent call).
+    if (!confirmed || !this.model.rows.some(r => r.id === id)) return;
     this.deleteRow(id);
   }
 
