@@ -86,7 +86,9 @@ export function lessonViewData(t, i18n, dialog) {
     },
     lessonClass(l) {
       if (!l.available) return 'training-course__lesson training-course__lesson--soon';
-      return l.status === 'complete' ? 'training-course__lesson training-course__lesson--complete' : 'training-course__lesson';
+      if (l.status === 'complete') return 'training-course__lesson training-course__lesson--complete';
+      if (l.status === 'started') return 'training-course__lesson training-course__lesson--started';
+      return 'training-course__lesson';
     },
     hasPrerequisite(l) { return !!l.prerequisite; },
     openLesson(l) { if (l.available) this.enterLesson(l.id); },

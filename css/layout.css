@@ -3336,6 +3336,13 @@ body.training-area-open .dmaic-tiles {
 .training-course__lesson--complete .training-course__nr { background: var(--color-success); color: var(--color-text-inverse); }
 .training-course__lesson--complete .training-course__status { color: var(--color-success-text); font-weight: var(--font-weight-medium); }
 
+.training-course__lesson--started {
+  border-color: color-mix(in srgb, var(--color-accent) 45%, var(--color-border-primary));
+  background: color-mix(in srgb, var(--color-accent) 7%, var(--color-bg-primary));
+}
+.training-course__lesson--started .training-course__nr { background: var(--color-accent); color: var(--color-text-inverse); }
+.training-course__lesson--started .training-course__status { color: var(--color-accent); font-weight: var(--font-weight-medium); }
+
 .training-course__nr {
   width: 2em; height: 2em; border-radius: 50%;
   display: inline-flex; align-items: center; justify-content: center;
