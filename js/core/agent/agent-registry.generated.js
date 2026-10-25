@@ -4530,7 +4530,6 @@ export const AGENT_REGISTRY = {
       "unmarked_method:phaseDecIcon",
       "unmarked_method:canStartNewPhase",
       "unmarked_method:newPhase",
-      "unmarked_method:showPhaseDecision",
       "unmarked_method:startNewPhase",
       "unmarked_method:viewPhase",
       "unmarked_method:evopSummary",
