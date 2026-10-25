@@ -123,10 +123,10 @@
           <div class="msa-typ1__stats-panel">
             <table class="dmike-table msa-typ1__stats-table">
               <thead><tr>
-                <template x-for="col in statCols()"><th :key="col.label"><span :data-help-key="col.help" x-text="col.label"></span></th></template>
+                <template x-for="(col, i) in statCols()" :key="col.label + ':' + i"><th><span :data-help-key="col.help" x-text="col.label"></span></th></template>
               </tr></thead>
               <tbody><tr>
-                <template x-for="col in statCols()"><td :key="col.label" x-text="col.value"></td></template>
+                <template x-for="(col, i) in statCols()" :key="col.label + ':' + i"><td x-text="col.value"></td></template>
               </tr></tbody>
             </table>
           </div>
