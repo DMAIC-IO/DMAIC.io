@@ -3,7 +3,7 @@
  * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E2, E7)
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
-import { DESIGNS, DESIGN_KEYS, designOf, checkConfig } from '../../../js/modules/doe-planner/designs/index.js';
+import { DESIGNS, DESIGN_KEYS, designOf, checkConfig, plannedRuns } from '../../../js/modules/doe-planner/designs/index.js';
 import optimal from '../../../js/modules/doe-planner/designs/optimal.js';
 import { stateWith, NO_SOURCE } from './state.js';
 
@@ -37,5 +37,18 @@ suite('doe-planner designs — checkConfig', () => {
 
   test('then the type decides', () => {
     assertEqual(checkConfig(stateWith({ designType: 'frac' }), NO_SOURCE).reason, 'noResolution');
+  });
+});
+
+suite('doe-planner designs — plannedRuns', () => {
+  test('runs of the type times replicates; null without a number', () => {
+    const s = stateWith({ designType: 'full' });
+    assertEqual(plannedRuns(s), 4);
+    s.options.replicates = 3;
+    assertEqual(plannedRuns(s), 12);
+    s.designType = 'frac';
+    assertEqual(plannedRuns(s), null);
+    s.designType = '';
+    assertEqual(plannedRuns(s), null);
   });
 });

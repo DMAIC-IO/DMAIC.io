@@ -10,7 +10,6 @@
  *
  * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md
  */
-import { computeEVOPEffects } from '../doe-planner-analysis.js';
 import { PHASE_DECISIONS } from '../doe-planner-model.js';
 import { readResponses, staleness, boundComplete } from '../doe-planner-responses.js';
 import { requireEnum, requireIndex, requireText } from '../../../core/agent/agent-argcheck.js';
@@ -182,13 +181,7 @@ export class EvopViewModel {
   // ── EVOP effects ──────────────────────────────────────────
 
   /** @noagent view transform @returns {?object} cumulative effects of all closed phases */
-  evopSummary() {
-    const cycles = this.model.evopCycles();
-    if (cycles.length === 0) return null;
-    const evop = computeEVOPEffects(cycles);
-    if (evop.effects.length === 0) return null;
-    return evop;
-  }
+  evopSummary() { return this.model.evopSummary(); }
 
   /** @noagent view transform @returns {string} */
   evopMeanLabel() {

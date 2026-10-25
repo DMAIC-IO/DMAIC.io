@@ -10,7 +10,7 @@
  */
 import { powerDisplay } from '../doe-planner-analysis.js';
 import { sourceRowCount } from '../doe-planner-worksheet.js';
-import { designOf, checkConfig } from '../designs/index.js';
+import { designOf, checkConfig, plannedRuns } from '../designs/index.js';
 
 /** Algorithm Lab entry of the efficiency cards. */
 const ALGO_ID_DEFF = 'd-efficiency';
@@ -49,11 +49,8 @@ export class EvaluationViewModel {
    * @returns {number|'?'}
    */
   summaryRuns() {
-    const type = designOf(this.model);
-    let runs = type ? type.runs(this.model) : '?';
-    const reps = this.model.options.replicates || 1;
-    if (typeof runs === 'number' && reps > 1) runs = runs * reps;
-    return runs;
+    const runs = plannedRuns(this.model);
+    return runs === null ? '?' : runs;
   }
 
   /**

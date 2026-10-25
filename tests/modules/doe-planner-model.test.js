@@ -536,3 +536,24 @@ suite('DoE Planner Model — configSignature / scheduleSignature', () => {
     assertEqual(s.scheduleSignature(), schedule);
   });
 });
+
+suite('doe-planner model — evopSummary', () => {
+  test('null without closed phases', () => {
+    const s = new State();
+    s.addFactor('A', '', ['1', '2']);
+    s.addFactor('B', '', ['1', '2']);
+    s.addResponse();
+    s.setProjectMode(true);
+    assertEqual(s.evopSummary(), null);
+  });
+
+  test('a closed phase with y values gives a summary with effects', () => {
+    const s = evopState();
+    s.setProjectMode(true);
+    s.closeActivePhase('repeat', [10, 12, 11, 20]);
+    const sum = s.evopSummary();
+    assertTrue(sum !== null, 'summary exists');
+    assertTrue(sum.effects.length > 0, 'at least one effect');
+    assertEqual(sum.cycleCount, 1);
+  });
+});

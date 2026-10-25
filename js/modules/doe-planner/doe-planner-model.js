@@ -395,6 +395,17 @@ export class State {
   }
 
   /**
+   * Cumulative EVOP effects over the closed phases.
+   * @returns {?object} computeEVOPEffects() result, null without cycles or effects
+   */
+  evopSummary() {
+    const cycles = this.evopCycles();
+    if (cycles.length === 0) return null;
+    const evop = computeEVOPEffects(cycles);
+    return evop.effects.length === 0 ? null : evop;
+  }
+
+  /**
    * Opens the next phase: re-centered on the best run of all cycles so far,
    * or with the same levels.
    * @param {{recenter?: boolean}} [opts]

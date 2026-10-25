@@ -17,10 +17,21 @@
  * scheduleSignature() (regenerate) and keeps lifecycle, bus subscriptions,
  * the external revision counter, the auto-generation and read().
  *
+ * @agent  Vollständig über die Teil-Viewmodels steuerbar: Faktoren und
+ *   Zielgrößen, Plantyp mit typeigener Auswahl und Optionen, Termliste,
+ *   verbotene Ecken, Quell-Worksheet und Augment des optimalen Plans, Werte
+ *   der Vorschau, Datenblatt, Übergabe an die Regression und das
+ *   EVOP-Projekt. Der Oberfläche bleiben das Vorschau-Grid selbst, die
+ *   Rückfrage vor dem Phasenabschluss und die Navigation (Algorithm Lab,
+ *   Datenblatt öffnen). Werte in einem verknüpften Datenblatt schreibt der
+ *   Agent mit worksheet.setCells.
+ *
  * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md
  */
 
 import { createModule } from '../../core/template-module.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { agentSnapshot } from './doe-planner-read.js';
 import { State } from './doe-planner-model.js';
 import { FactorsViewModel } from './viewmodel/factors.js';
 import { DesignViewModel } from './viewmodel/design.js';
@@ -49,6 +60,98 @@ const AUTO_GEN_DELAY = 600; // ms debounce for auto-generation
 
 /** Data keys of the sub-viewmodels, in attach order. */
 const SUB_VIEWMODELS = ['factors', 'design', 'optimal', 'evaluation', 'analysis', 'evop', 'runs'];
+
+/**
+ * @typedef {object} DoeFactor
+ * @property {number} id  stable id, the factorId of the factors.* actions
+ * @property {string} name  the name, also the column name of the run table
+ * @property {string} unit  the unit, '' without
+ * @property {'continuous'|'categorical'} kind  numeric or named levels
+ * @property {string[]} levels  the levels as typed, lowest first
+ */
+
+/**
+ * @typedef {object} DoeResponse
+ * @property {string} name  the name, also the column name of the run table
+ * @property {string} unit  the unit, '' without
+ */
+
+/**
+ * @typedef {object} DoeTypeParams
+ * @property {object|null} selectedRes  the fractional factorial cell `{ k, runs, res, p }`, null without
+ * @property {number|null} selectedPBIdx  the Plackett-Burman design, index into the table, null without
+ */
+
+/**
+ * @typedef {object} DoeSummary
+ * @property {number|null} runs  planned runs including replicates, null while unknown
+ * @property {string} resolution  'III', 'IV', 'V', 'Full', 'CCD', … or ''
+ * @property {number} generatedRuns  runs of the generated design, 0 without
+ */
+
+/**
+ * @typedef {object} DoeRun
+ * @property {number} run  run number in run order, the run of setRunValue
+ * @property {number} std  standard order
+ * @property {number} block  block
+ * @property {number} replicate  replicate
+ * @property {object} factors  setting per factor name
+ * @property {object} responses  value per response name, null while empty
+ */
+
+/**
+ * @typedef {object} DoeWorksheet
+ * @property {string} instanceId  the worksheet instance; write its values with worksheet.setCells
+ * @property {string} sheetId  the sheet
+ * @property {boolean} stale  the plan changed since the datasheet was created
+ * @property {number} filled  filled response cells
+ * @property {number} total  response cells
+ */
+
+/**
+ * @typedef {object} DoeEvaluation
+ * @property {object|null} efficiency  `{ dEfficiency, aEfficiency, gEfficiency, conditionNumber, maxLeverage }`, efficiencies in percent
+ * @property {object[]} vif  `{ term, vif }` per model term
+ * @property {object|null} alias  `{ generators, aliases: [{ term, aliasedWith }] }`, null without aliasing
+ * @property {object[]} power  `{ effectSize, power, dfError }` per effect size, power null without error degrees of freedom
+ */
+
+/**
+ * @typedef {object} DoePhase
+ * @property {number} cycleNumber  phase number, from 1
+ * @property {string} doeName  the phase name
+ * @property {string|null} decision  'recenter', 'repeat', 'stop' or null while open
+ * @property {string|null} completedAt  ISO time of the decision, null while open
+ * @property {Array<number|null>|null} yValues  first response per run at closing, null without
+ */
+
+/**
+ * @typedef {object} DoeEvop
+ * @property {boolean} projectMode  always true; evop is null outside project mode
+ * @property {string} projectName  the project name
+ * @property {number} activePhaseIdx  the phase shown, 0 = phase 1
+ * @property {DoePhase[]} phases  all phases in order
+ * @property {object|null} summary  cumulative EVOP effects, null before the first closed phase with values
+ */
+
+/**
+ * @typedef {object} AgentRead
+ * @property {string} doeName  name of the plan, in project mode of the active phase
+ * @property {'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt'} designType  the design type
+ * @property {DoeFactor[]} factors  the factors in order
+ * @property {DoeResponse[]} responses  the responses in order, index = position
+ * @property {object} options  randomize, centerPoints, replicates, alphaType, ccdCenterPoints, bbCenterPoints, taguchiArray, optimalRuns, optimalActiveTerms, forbiddenVertices
+ * @property {DoeTypeParams} typeParams  the type's own selection
+ * @property {boolean} valid  the configuration yields a design
+ * @property {string|null} invalidReason  reason code while invalid ('tooFewFactors', 'duplicateFactorNames', 'incompleteFactor', 'noResponse', 'unnamedResponse', 'noDesignType', 'twoLevelOnly', 'noResolution', 'noPBDesign', 'bbUnavailable', 'noTaguchiArray', 'tooFewOptimalRuns'), null when valid
+ * @property {DoeSummary} summary  planned and generated runs, resolution
+ * @property {number} analysisResponseIdx  response of the dispersion analysis and the regression handover
+ * @property {object|null} sourceWorksheet  `{ instanceId, sheetId }` of the source worksheet of an optimal design, or null
+ * @property {DoeRun[]} runs  [bulk] the run table in run order; only with read({ fields: ['runs'] }); preview values come from runs.setRunValue
+ * @property {DoeWorksheet|null} worksheet  the linked datasheet, null without
+ * @property {DoeEvaluation|null} evaluation  evaluation of the generated design, null without
+ * @property {DoeEvop|null} evop  the EVOP project, null outside project mode
+ */
 
 const mod = createModule({
   config: {
@@ -99,9 +202,22 @@ const mod = createModule({
       _extRev: 0,
 
       // ── Formatting helpers ────────────────────────────────────
+      /** @noagent view formatter */
       fmt2: (v) => Number(v).toFixed(2),
+      /** @noagent view formatter */
       fmt4: (v) => Number(v).toFixed(4),
+      /** @noagent view formatter */
       fmt6: (v) => Number(v).toFixed(6),
+
+      /**
+       * Den Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[] }`; runs kommt nur mit fields: ['runs']
+       * @returns {AgentRead} Plan, Gültigkeit, Läufe, Datenblatt, Auswertung und EVOP-Projekt
+       */
+      read(options) {
+        return readAgentState('doe-planner', agentSnapshot(this.model, ctx()), options);
+      },
 
       /** @noagent persistence */
       save() { module._persist(this.model); },

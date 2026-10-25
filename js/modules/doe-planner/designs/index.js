@@ -65,3 +65,15 @@ export function checkConfig(model, env) {
   if (!type) return fail('noDesignType');
   return type.check(m, env);
 }
+
+/**
+ * Planned runs including replicates.
+ * @param {object} model a State
+ * @returns {?number} null while the type gives no number (no type, frac without a cell, bb without pairs)
+ */
+export function plannedRuns(model) {
+  const type = designOf(model);
+  const runs = type ? type.runs(model) : null;
+  if (typeof runs !== 'number') return null;
+  return runs * (model.options.replicates || 1);
+}

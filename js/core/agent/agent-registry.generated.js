@@ -4484,15 +4484,10 @@ export const AGENT_REGISTRY = {
     }
   },
   "doe-planner": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:fmt2",
-      "unmarked_method:fmt4",
-      "unmarked_method:fmt6",
-      "unreadable_state_key:version"
-    ],
+    "reported": [],
     "actions": {
       "factors.addFactor": {
         "params": [],
@@ -5010,6 +5005,18 @@ export const AGENT_REGISTRY = {
         "returns": "void",
         "help": "Set one value of the run table before a datasheet exists (or while it is outdated): a response result or an adjusted continuous factor setting. The preview grid follows; the value goes into the datasheet when it is created."
       },
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[] }`; runs kommt nur mit fields: ['runs']"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den Lesezustand dieser Instanz liefern."
+      },
       "setDoeName": {
         "params": [
           {
@@ -5025,99 +5032,270 @@ export const AGENT_REGISTRY = {
     },
     "fields": {
       "doeName": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "string",
+        "help": "name of the plan, in project mode of the active phase",
+        "bulk": false,
+        "derived": true
       },
       "designType": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt'",
+        "help": "the design type",
+        "bulk": false,
+        "derived": true
       },
       "factors": {
-        "type": "{ id:number, name:string, unit:string, kind:'continuous'|'categorical', levels:string[] }[]",
-        "help": "",
-        "bulk": false
+        "type": "DoeFactor[]",
+        "help": "the factors in order",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "DoeFactor",
+        "keys": {
+          "id": {
+            "type": "number",
+            "help": "stable id, the factorId of the factors.* actions"
+          },
+          "name": {
+            "type": "string",
+            "help": "the name, also the column name of the run table"
+          },
+          "unit": {
+            "type": "string",
+            "help": "the unit, '' without"
+          },
+          "kind": {
+            "type": "'continuous'|'categorical'",
+            "help": "numeric or named levels"
+          },
+          "levels": {
+            "type": "string[]",
+            "help": "the levels as typed, lowest first"
+          }
+        }
       },
       "responses": {
-        "type": "{ name:string, unit:string }[]",
-        "help": "",
-        "bulk": false
+        "type": "DoeResponse[]",
+        "help": "the responses in order, index = position",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "DoeResponse",
+        "keys": {
+          "name": {
+            "type": "string",
+            "help": "the name, also the column name of the run table"
+          },
+          "unit": {
+            "type": "string",
+            "help": "the unit, '' without"
+          }
+        }
       },
       "options": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object",
+        "help": "randomize, centerPoints, replicates, alphaType, ccdCenterPoints, bbCenterPoints, taguchiArray, optimalRuns, optimalActiveTerms, forbiddenVertices",
+        "bulk": false,
+        "derived": true
       },
-      "selectedRes": {
-        "type": "{ k:number, runs:number, res:string, p:number }|null",
-        "help": "",
-        "bulk": false
+      "typeParams": {
+        "type": "DoeTypeParams",
+        "help": "the type's own selection",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "DoeTypeParams",
+        "keys": {
+          "selectedRes": {
+            "type": "object|null",
+            "help": "the fractional factorial cell `{ k, runs, res, p }`, null without"
+          },
+          "selectedPBIdx": {
+            "type": "number|null",
+            "help": "the Plackett-Burman design, index into the table, null without"
+          }
+        }
       },
-      "selectedPBIdx": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "valid": {
+        "type": "boolean",
+        "help": "the configuration yields a design",
+        "bulk": false,
+        "derived": true
       },
-      "design": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "invalidReason": {
+        "type": "string|null",
+        "help": "reason code while invalid ('tooFewFactors', 'duplicateFactorNames', 'incompleteFactor', 'noResponse', 'unnamedResponse', 'noDesignType', 'twoLevelOnly', 'noResolution', 'noPBDesign', 'bbUnavailable', 'noTaguchiArray', 'tooFewOptimalRuns'), null when valid",
+        "bulk": false,
+        "derived": true
       },
-      "previewEdits": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "previewDirty": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "worksheetRef": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "sourceWorksheet": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "evaluation": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "summary": {
+        "type": "DoeSummary",
+        "help": "planned and generated runs, resolution",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "DoeSummary",
+        "keys": {
+          "runs": {
+            "type": "number|null",
+            "help": "planned runs including replicates, null while unknown"
+          },
+          "resolution": {
+            "type": "string",
+            "help": "'III', 'IV', 'V', 'Full', 'CCD', … or ''"
+          },
+          "generatedRuns": {
+            "type": "number",
+            "help": "runs of the generated design, 0 without"
+          }
+        }
       },
       "analysisResponseIdx": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "response of the dispersion analysis and the regression handover",
+        "bulk": false,
+        "derived": true
       },
-      "fid": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "sourceWorksheet": {
+        "type": "object|null",
+        "help": "`{ instanceId, sheetId }` of the source worksheet of an optimal design, or null",
+        "bulk": false,
+        "derived": true
       },
-      "projectMode": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "runs": {
+        "type": "DoeRun[]",
+        "help": "the run table in run order; only with read({ fields: ['runs'] }); preview values come from runs.setRunValue",
+        "bulk": true,
+        "bulkKind": "table",
+        "derived": true,
+        "keysOf": "DoeRun",
+        "keys": {
+          "run": {
+            "type": "number",
+            "help": "run number in run order, the run of setRunValue"
+          },
+          "std": {
+            "type": "number",
+            "help": "standard order"
+          },
+          "block": {
+            "type": "number",
+            "help": "block"
+          },
+          "replicate": {
+            "type": "number",
+            "help": "replicate"
+          },
+          "factors": {
+            "type": "object",
+            "help": "setting per factor name"
+          },
+          "responses": {
+            "type": "object",
+            "help": "value per response name, null while empty"
+          }
+        }
       },
-      "projectName": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "worksheet": {
+        "type": "DoeWorksheet|null",
+        "help": "the linked datasheet, null without",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "DoeWorksheet",
+        "keys": {
+          "instanceId": {
+            "type": "string",
+            "help": "the worksheet instance; write its values with worksheet.setCells"
+          },
+          "sheetId": {
+            "type": "string",
+            "help": "the sheet"
+          },
+          "stale": {
+            "type": "boolean",
+            "help": "the plan changed since the datasheet was created"
+          },
+          "filled": {
+            "type": "number",
+            "help": "filled response cells"
+          },
+          "total": {
+            "type": "number",
+            "help": "response cells"
+          }
+        }
       },
-      "projectPhases": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "evaluation": {
+        "type": "DoeEvaluation|null",
+        "help": "evaluation of the generated design, null without",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "DoeEvaluation",
+        "keys": {
+          "efficiency": {
+            "type": "object|null",
+            "help": "`{ dEfficiency, aEfficiency, gEfficiency, conditionNumber, maxLeverage }`, efficiencies in percent"
+          },
+          "vif": {
+            "type": "object[]",
+            "help": "`{ term, vif }` per model term"
+          },
+          "alias": {
+            "type": "object|null",
+            "help": "`{ generators, aliases: [{ term, aliasedWith }] }`, null without aliasing"
+          },
+          "power": {
+            "type": "object[]",
+            "help": "`{ effectSize, power, dfError }` per effect size, power null without error degrees of freedom"
+          }
+        }
       },
-      "activePhaseIdx": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "evop": {
+        "type": "DoeEvop|null",
+        "help": "the EVOP project, null outside project mode",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "DoeEvop",
+        "keys": {
+          "projectMode": {
+            "type": "boolean",
+            "help": "always true; evop is null outside project mode"
+          },
+          "projectName": {
+            "type": "string",
+            "help": "the project name"
+          },
+          "activePhaseIdx": {
+            "type": "number",
+            "help": "the phase shown, 0 = phase 1"
+          },
+          "phases": {
+            "type": "DoePhase[]",
+            "help": "all phases in order",
+            "keysOf": "DoePhase",
+            "keys": {
+              "cycleNumber": {
+                "type": "number",
+                "help": "phase number, from 1"
+              },
+              "doeName": {
+                "type": "string",
+                "help": "the phase name"
+              },
+              "decision": {
+                "type": "string|null",
+                "help": "'recenter', 'repeat', 'stop' or null while open"
+              },
+              "completedAt": {
+                "type": "string|null",
+                "help": "ISO time of the decision, null while open"
+              },
+              "yValues": {
+                "type": "Array<number|null>|null",
+                "help": "first response per run at closing, null without"
+              }
+            }
+          },
+          "summary": {
+            "type": "object|null",
+            "help": "cumulative EVOP effects, null before the first closed phase with values"
+          }
+        }
       }
     }
   },
@@ -22108,4 +22286,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":77,"available":76};
+export const AGENT_COVERAGE = {"total":77,"available":77};
