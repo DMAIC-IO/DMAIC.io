@@ -95,12 +95,12 @@ test('scanTree reports paths relative to the app dir', () => {
 
 const list = (hits) => hits.map((h) => `${h.file}:${h.line}`).join('\n');
 
-test('the app has no x-for keys on child elements', { todo: 'Task 3' }, () => {
+test('the app has no x-for keys on child elements', () => {
   const hits = scanTree(appDir).filter((e) => e.childKey);
   assert.deepEqual(hits, [], `x-for keys on child elements — move them onto the <template>:\n${list(hits)}`);
 });
 
-test('no x-for key is built from a field edited in the loop', { todo: 'Task 3' }, () => {
+test('no x-for key is built from a field edited in the loop', () => {
   const hits = scanTree(appDir).filter((e) => e.editableKey);
   assert.deepEqual(hits, [], `x-for keys edited via x-model inside the loop (key rule 3):\n${list(hits)}`);
 });
