@@ -9,6 +9,7 @@
 
 import { h } from '../../core/dom.js';
 import { parseInline } from '../../core/markdown-parser.js';
+import { renderInlineMath } from '../../core/katex-loader.js';
 import { COURSES, findLesson, quizIds } from './courses/index.js';
 import { emptyStepCounts, mergeCounts, isGateOpen, gateHint } from './gates.js';
 import { mergeSummary } from './populations.js';
@@ -173,6 +174,18 @@ export function lessonViewData(t, i18n, dialog) {
      */
     renderInline(el, text) {
       el.replaceChildren(...parseInline(text, { termRef }));
+      renderInlineMath(el);
+    },
+    /**
+     * Render a definition's LaTeX formula. Inline mode with \displaystyle keeps
+     * full-size fractions without display mode's centring; the raw LaTeX stays
+     * visible if KaTeX fails to load.
+     * @param {HTMLElement} el
+     * @param {string} latex
+     */
+    renderFormula(el, latex) {
+      el.replaceChildren(h('span', { 'data-katex-inline': `\\displaystyle ${latex}` }, latex));
+      renderInlineMath(el);
     },
     /** Definition term; with a glossary id the term becomes a glossary link. */
     renderTerm(el, b) {

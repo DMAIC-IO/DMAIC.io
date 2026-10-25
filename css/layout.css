@@ -3367,11 +3367,12 @@ body.training-area-open .dmaic-tiles {
 .training-lesson__step-title { font-size: var(--font-size-lg) !important; }
 
 .training-lesson__definition {
-  display: flex; gap: var(--spacing-sm); padding: var(--spacing-sm) var(--spacing-md);
+  display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-sm) var(--spacing-md);
   border-left: 3px solid var(--color-accent); background: var(--color-bg-secondary);
   margin-bottom: var(--spacing-sm);
 }
 .training-lesson__definition strong { min-width: 160px; }
+.training-lesson__formula { font-size: var(--font-size-lg); overflow-x: auto; }
 
 .training-lesson__note {
   padding: var(--spacing-sm) var(--spacing-md);

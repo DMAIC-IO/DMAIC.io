@@ -61,7 +61,7 @@ export default {
         title: 'Wie breit wird die Glocke? Der Standardfehler',
         blocks: [
           { type: 'paragraph', content: 'Die Streuung der Mittelwerte heißt Standardfehler. Sie hängt nur von der Streuung der Einzelwerte σ und vom Stichprobenumfang n ab:' },
-          { type: 'definition', term: 'Standardfehler', content: 'SE = σ / √n', glossary: 'standardfehler' },
+          { type: 'definition', term: 'Standardfehler', formula: '\\mathit{SE} = \\frac{\\sigma}{\\sqrt{n}}', glossary: 'standardfehler' },
           { type: 'paragraph', content: 'Die gestrichelte Kurve zeigt jetzt die Vorhersage der Theorie: eine {{term:normalverteilung|Normalverteilung}} mit dem Mittelwert μ der Grundgesamtheit und der Streuung σ/√n. Vergleiche sie mit deiner Simulation und mit den Kennzahlen darunter. Im unteren Diagramm erscheint σ/√n als Kurve – deine Punkte aus den vorigen Schritten sind schon da.' },
           { type: 'simulation', widget: 'sampling-distribution', params: { population: 'skewed', n: 10, lockPopulation: false, lockN: false, showTheory: true, trackN: true, nChoices: N_FROM_ONE } },
         ],
@@ -150,7 +150,7 @@ export default {
         title: 'How wide is the bell? The standard error',
         blocks: [
           { type: 'paragraph', content: 'The spread of the means is called the standard error. It depends only on the spread of the individual values σ and on the sample size n:' },
-          { type: 'definition', term: 'Standard error', content: 'SE = σ / √n', glossary: 'standardfehler' },
+          { type: 'definition', term: 'Standard error', formula: '\\mathit{SE} = \\frac{\\sigma}{\\sqrt{n}}', glossary: 'standardfehler' },
           { type: 'paragraph', content: 'The dashed curve now shows the theory’s prediction: a {{term:normalverteilung|normal distribution}} with the population mean μ and the spread σ/√n. Compare it with your simulation and with the figures below. In the lower chart σ/√n appears as a curve – your points from the previous steps are already there.' },
           { type: 'simulation', widget: 'sampling-distribution', params: { population: 'skewed', n: 10, lockPopulation: false, lockN: false, showTheory: true, trackN: true, nChoices: N_FROM_ONE } },
         ],

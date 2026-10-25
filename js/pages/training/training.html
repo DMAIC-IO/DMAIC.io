@@ -70,7 +70,7 @@
           <template x-if="isType(b, 'definition')">
             <div class="training-lesson__definition">
               <strong x-effect="renderTerm($el, b)"></strong>
-              <span x-effect="renderInline($el, b.content)"></span>
+              <span class="training-lesson__formula" x-effect="renderFormula($el, b.formula)"></span>
             </div>
           </template>
           <template x-if="isType(b, 'table')">

@@ -37,7 +37,7 @@ export default {
         title: 'Wo liegt die Mitte? Der Mittelwert',
         blocks: [
           { type: 'paragraph', content: 'Die erste Kennzahl beschreibt, wo die Werte liegen: der {{term:mittelwert|Mittelwert}}. Man zählt alle Gewichte zusammen und teilt durch ihre Anzahl:' },
-          { type: 'definition', term: 'Mittelwert', content: 'x̄ = Σxᵢ / n', glossary: 'mittelwert' },
+          { type: 'definition', term: 'Mittelwert', formula: '\\bar{x} = \\frac{\\sum x_i}{n}', glossary: 'mittelwert' },
           { type: 'paragraph', content: 'Dabei steht xᵢ für das Gewicht der i-ten Packung, n für die Zahl der gewogenen Packungen und Σ für „alle zusammengezählt“. Das Ergebnis x̄ (gesprochen „x quer“) erscheint jetzt als Linie im Histogramm. Wiege wieder einige Packungen und beobachte, wohin die Linie wandert.' },
           { type: 'simulation', widget: 'value-distribution', params: { processes: ['fill-a'], showMean: true, stats: ['count', 'min', 'max', 'mean'] } },
           { type: 'insight', id: 'mean-center', revealAfterValues: 100, paragraphs: [
@@ -51,9 +51,9 @@ export default {
         blocks: [
           { type: 'paragraph', content: 'Jetzt stehen zwei Anlagen nebeneinander, beide auf 500 g eingestellt. Wiege bei beiden viele Packungen und vergleiche die Bilder.' },
           { type: 'paragraph', content: 'Das einfachste Maß für die Breite ist die {{term:spannweite|Spannweite}}: der Abstand zwischen der leichtesten und der schwersten Packung.' },
-          { type: 'definition', term: 'Spannweite', content: 'R = xₘₐₓ − xₘᵢₙ', glossary: 'spannweite' },
+          { type: 'definition', term: 'Spannweite', formula: 'R = x_{\\max} - x_{\\min}', glossary: 'spannweite' },
           { type: 'paragraph', content: 'Die {{term:standardabweichung|Standardabweichung}} s nutzt dagegen alle Werte: Sie misst, wie weit die Gewichte typischerweise vom Mittelwert x̄ entfernt liegen. Dazu quadriert man jeden Abstand, mittelt die Quadrate und zieht am Ende die Wurzel:' },
-          { type: 'definition', term: 'Standardabweichung', content: 's = √( Σ(xᵢ − x̄)² / (n − 1) )', glossary: 'standardabweichung' },
+          { type: 'definition', term: 'Standardabweichung', formula: 's = \\sqrt{\\frac{\\sum (x_i - \\bar{x})^2}{n - 1}}', glossary: 'standardabweichung' },
           { type: 'paragraph', content: 'Warum hier durch n − 1 und nicht durch n geteilt wird, klärt die nächste Lektion.' },
           { type: 'simulation', widget: 'value-distribution', params: { processes: ['fill-a', 'fill-b'], showMean: true, stats: ['count', 'mean', 'min', 'max', 'range', 'sd'] } },
           { type: 'insight', id: 'spread-compare', revealAfterEach: 100, paragraphs: [
@@ -147,7 +147,7 @@ export default {
         title: 'Where is the middle? The mean',
         blocks: [
           { type: 'paragraph', content: 'The first figure describes where the values lie: the {{term:mittelwert|mean}}. Add up all weights and divide by how many there are:' },
-          { type: 'definition', term: 'Mean', content: 'x̄ = Σxᵢ / n', glossary: 'mittelwert' },
+          { type: 'definition', term: 'Mean', formula: '\\bar{x} = \\frac{\\sum x_i}{n}', glossary: 'mittelwert' },
           { type: 'paragraph', content: 'Here xᵢ stands for the weight of the i-th pack, n for the number of packs weighed and Σ for “all added up”. The result x̄ (read “x bar”) now appears as a line in the histogram. Weigh some packs again and watch where the line moves.' },
           { type: 'simulation', widget: 'value-distribution', params: { processes: ['fill-a'], showMean: true, stats: ['count', 'min', 'max', 'mean'] } },
           { type: 'insight', id: 'mean-center', revealAfterValues: 100, paragraphs: [
@@ -161,9 +161,9 @@ export default {
         blocks: [
           { type: 'paragraph', content: 'Now two machines stand side by side, both set to 500 g. Weigh many packs on both and compare the pictures.' },
           { type: 'paragraph', content: 'The simplest measure of width is the {{term:spannweite|range}}: the distance between the lightest and the heaviest pack.' },
-          { type: 'definition', term: 'Range', content: 'R = xₘₐₓ − xₘᵢₙ', glossary: 'spannweite' },
+          { type: 'definition', term: 'Range', formula: 'R = x_{\\max} - x_{\\min}', glossary: 'spannweite' },
           { type: 'paragraph', content: 'The {{term:standardabweichung|standard deviation}} s, in contrast, uses all values: it measures how far the weights typically lie from the mean x̄. To get it, square each distance, average the squares and finally take the square root:' },
-          { type: 'definition', term: 'Standard deviation', content: 's = √( Σ(xᵢ − x̄)² / (n − 1) )', glossary: 'standardabweichung' },
+          { type: 'definition', term: 'Standard deviation', formula: 's = \\sqrt{\\frac{\\sum (x_i - \\bar{x})^2}{n - 1}}', glossary: 'standardabweichung' },
           { type: 'paragraph', content: 'Why this divides by n − 1 and not by n is explained in the next lesson.' },
           { type: 'simulation', widget: 'value-distribution', params: { processes: ['fill-a', 'fill-b'], showMean: true, stats: ['count', 'mean', 'min', 'max', 'range', 'sd'] } },
           { type: 'insight', id: 'spread-compare', revealAfterEach: 100, paragraphs: [

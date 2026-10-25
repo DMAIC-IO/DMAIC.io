@@ -196,6 +196,28 @@ suite('course content', () => {
     }
   });
 
+  test('definitions carry a LaTeX formula, never Unicode math', () => {
+    for (const { lesson } of builtLessons()) {
+      for (const lang of LANGS) {
+        for (const b of blocksOf(lesson, lang).filter((x) => x.type === 'definition')) {
+          const where = `${lesson.id} ${lang} ${b.term}`;
+          assertTrue(typeof b.formula === 'string' && b.formula.length > 0, `${where}: formula`);
+          assertTrue(!('content' in b), `${where}: no plain-text content`);
+          assertTrue(!/[Σσμ√ᵢ²̄]/.test(b.formula), `${where}: formula is LaTeX`);
+        }
+      }
+    }
+  });
+
+  test('summation formulas in lesson text are written as $…$', () => {
+    for (const { lesson } of builtLessons()) {
+      for (const lang of LANGS) {
+        const unicode = strings(lesson[lang]).filter((x) => /Σ\s*\(|Σx/.test(x));
+        assertDeepEqual(unicode, [], `${lesson.id} ${lang}`);
+      }
+    }
+  });
+
   test('lesson 3 follows the approved structure', () => {
     const { lesson } = findLesson('sampling-distribution');
     for (const lang of LANGS) {
@@ -210,7 +232,7 @@ suite('course content', () => {
       assertEqual(clt.revealAfterN, 3);
       assertEqual(quizIds(lesson).length, 4);
       assertTrue(!strings(lesson[lang]).some((x) => /Prozessfähigkeit|process capability/i.test(x)), 'no capability mention');
-      assertTrue(!strings(steps.slice(0, 4)).some((x) => /σ\s*\/\s*√n/.test(x)), 'sigma/sqrt(n) only from the standard error step on');
+      assertTrue(!strings(steps.slice(0, 4)).some((x) => /σ\s*\/\s*√n|\\sigma\s*\/\s*\\sqrt|\\frac\{\\sigma\}\{\\sqrt/.test(x)), 'sigma/sqrt(n) only from the standard error step on');
     }
   });
 
@@ -222,7 +244,7 @@ suite('course content', () => {
       const steps = lesson[lang].steps;
       assertEqual(steps.length, 8, `${lang} step count`);
       // Symbols case-sensitive: /σ/i would also match the Σ of x̄ = Σxᵢ / n.
-      const banned = strings(lesson[lang]).filter((x) => /Grundgesamtheit|Stichprobe|population|\bsamples?\b/i.test(x) || /[μσ]/.test(x));
+      const banned = strings(lesson[lang]).filter((x) => /Grundgesamtheit|Stichprobe|population|\bsamples?\b/i.test(x) || /[μσ]|\\mu|\\sigma/.test(x));
       assertDeepEqual(banned, [], `${lang}: no population/sample words or symbols`);
       const glossaries = blocksOf(lesson, lang).filter((b) => b.type === 'definition').map((b) => b.glossary);
       for (const id of ['mittelwert', 'spannweite', 'standardabweichung']) {
@@ -248,7 +270,7 @@ suite('course content', () => {
       for (const id of ['grundgesamtheit', 'stichprobe', 'varianz']) {
         assertTrue(definitions.some((b) => b.glossary === id), `${lang}: definition ${id}`);
       }
-      assertTrue(definitions.some((b) => b.content.includes('μ = Σxᵢ / N')), `${lang}: μ formula`);
+      assertTrue(definitions.some((b) => b.formula.includes('\\mu = \\frac{\\sum x_i}{N}')), `${lang}: μ formula`);
       const check = steps[3].blocks.find((b) => b.type === 'simulation');
       assertEqual(check.widget, 'variance-check', `${lang}: step 4 widget`);
       assertEqual(check.params.n, 3, `${lang}: step 4 n`);

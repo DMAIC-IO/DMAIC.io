@@ -27,12 +27,12 @@ export default {
         title: 'Grundgesamtheit und Stichprobe',
         blocks: [
           { type: 'paragraph', content: 'Alle Packungen, die Anlage A jemals füllt, bilden die {{term:grundgesamtheit|Grundgesamtheit}}. Ihre Anzahl heißt N. Auch die Grundgesamtheit hat einen Mittelwert und eine Standardabweichung. Damit man sie nicht mit gemessenen Werten verwechselt, bekommen sie griechische Buchstaben: μ (gesprochen „mü“) für den Mittelwert, σ (gesprochen „sigma“) für die Standardabweichung.' },
-          { type: 'definition', term: 'Grundgesamtheit', content: 'μ = Σxᵢ / N  ·  σ = √( Σ(xᵢ − μ)² / N )', glossary: 'grundgesamtheit' },
+          { type: 'definition', term: 'Grundgesamtheit', formula: '\\mu = \\frac{\\sum x_i}{N} \\qquad \\sigma = \\sqrt{\\frac{\\sum (x_i - \\mu)^2}{N}}', glossary: 'grundgesamtheit' },
           { type: 'paragraph', content: 'Bei Anlage A kennen wir die Grundgesamtheit, weil die Übung sie vorgibt: μ = 500 g, σ = 2 g. Im echten Betrieb kennt sie niemand – dafür müsste man jede Packung wiegen, auch die, die noch gar nicht gefüllt sind.' },
           { type: 'paragraph', content: 'Gewogen werden deshalb nur einige zufällig herausgegriffene Packungen: eine {{term:stichprobe|Stichprobe}}. Ihre Anzahl ist n, ihr Mittelwert x̄ und ihre Standardabweichung s – genau die Kennzahlen aus der ersten Lektion.' },
-          { type: 'definition', term: 'Stichprobe', content: 'x̄ = Σxᵢ / n  ·  s = √( Σ(xᵢ − x̄)² / (n − 1) )', glossary: 'stichprobe' },
+          { type: 'definition', term: 'Stichprobe', formula: '\\bar{x} = \\frac{\\sum x_i}{n} \\qquad s = \\sqrt{\\frac{\\sum (x_i - \\bar{x})^2}{n - 1}}', glossary: 'stichprobe' },
           { type: 'paragraph', content: 'Die Größe unter der Wurzel heißt {{term:varianz|Varianz}}: das Quadrat der Standardabweichung, σ² für die Grundgesamtheit, s² für die Stichprobe. Sie spielt in dieser Lektion noch eine Rolle.' },
-          { type: 'definition', term: 'Varianz', content: 'σ² = Σ(xᵢ − μ)² / N  ·  s² = Σ(xᵢ − x̄)² / (n − 1)', glossary: 'varianz' },
+          { type: 'definition', term: 'Varianz', formula: '\\sigma^2 = \\frac{\\sum (x_i - \\mu)^2}{N} \\qquad s^2 = \\frac{\\sum (x_i - \\bar{x})^2}{n - 1}', glossary: 'varianz' },
           { type: 'table', headers: ['', 'Grundgesamtheit', 'Stichprobe'], rows: [
             ['Anzahl', 'N', 'n'],
             ['Mittelwert', 'μ', 'x̄'],
@@ -64,8 +64,8 @@ export default {
         blocks: [
           { type: 'paragraph', content: 'Die Standardabweichung s teilt durch n − 1, nicht durch n. Den Grund sieht man am besten an der Varianz. Für eine Stichprobe gibt es zwei Kandidaten:' },
           { type: 'list', items: [
-            'geteilt durch n: Σ(xᵢ − x̄)² / n',
-            'geteilt durch n − 1: Σ(xᵢ − x̄)² / (n − 1) = s²',
+            'geteilt durch n: $\\frac{\\sum (x_i - \\bar{x})^2}{n}$',
+            'geteilt durch n − 1: $\\frac{\\sum (x_i - \\bar{x})^2}{n - 1} = s^2$',
           ] },
           { type: 'paragraph', content: 'Welcher trifft im Durchschnitt die Varianz der Grundgesamtheit, σ² = 4 g²? Zieh Stichproben aus nur drei Packungen – erst einzeln, dann sehr viele auf einmal – und vergleiche beide Durchschnitte mit der Zeile σ².' },
           { type: 'paragraph', content: 'Die beiden Durchschnitte liegen immer um denselben Faktor auseinander, denn sie stammen aus denselben Stichproben. Entscheidend ist, welcher von ihnen bei σ² landet.' },
@@ -127,12 +127,12 @@ export default {
         title: 'Population and sample',
         blocks: [
           { type: 'paragraph', content: 'All packs machine A ever fills form the {{term:grundgesamtheit|population}}. Their number is called N. The population has a mean and a standard deviation too. So they are not confused with measured values, they get Greek letters: μ (read “mu”) for the mean, σ (read “sigma”) for the standard deviation.' },
-          { type: 'definition', term: 'Population', content: 'μ = Σxᵢ / N  ·  σ = √( Σ(xᵢ − μ)² / N )', glossary: 'grundgesamtheit' },
+          { type: 'definition', term: 'Population', formula: '\\mu = \\frac{\\sum x_i}{N} \\qquad \\sigma = \\sqrt{\\frac{\\sum (x_i - \\mu)^2}{N}}', glossary: 'grundgesamtheit' },
           { type: 'paragraph', content: 'For machine A we know the population because the exercise sets it: μ = 500 g, σ = 2 g. In a real plant nobody knows it – you would have to weigh every pack, including those not yet filled.' },
           { type: 'paragraph', content: 'So only a few packs picked at random are weighed: a {{term:stichprobe|sample}}. Their number is n, their mean x̄ and their standard deviation s – exactly the figures from the first lesson.' },
-          { type: 'definition', term: 'Sample', content: 'x̄ = Σxᵢ / n  ·  s = √( Σ(xᵢ − x̄)² / (n − 1) )', glossary: 'stichprobe' },
+          { type: 'definition', term: 'Sample', formula: '\\bar{x} = \\frac{\\sum x_i}{n} \\qquad s = \\sqrt{\\frac{\\sum (x_i - \\bar{x})^2}{n - 1}}', glossary: 'stichprobe' },
           { type: 'paragraph', content: 'The quantity under the square root is called the {{term:varianz|variance}}: the square of the standard deviation, σ² for the population, s² for the sample. It comes up again in this lesson.' },
-          { type: 'definition', term: 'Variance', content: 'σ² = Σ(xᵢ − μ)² / N  ·  s² = Σ(xᵢ − x̄)² / (n − 1)', glossary: 'varianz' },
+          { type: 'definition', term: 'Variance', formula: '\\sigma^2 = \\frac{\\sum (x_i - \\mu)^2}{N} \\qquad s^2 = \\frac{\\sum (x_i - \\bar{x})^2}{n - 1}', glossary: 'varianz' },
           { type: 'table', headers: ['', 'Population', 'Sample'], rows: [
             ['Number', 'N', 'n'],
             ['Mean', 'μ', 'x̄'],
@@ -164,8 +164,8 @@ export default {
         blocks: [
           { type: 'paragraph', content: 'The standard deviation s divides by n − 1, not by n. The reason is easiest to see in the variance. For a sample there are two candidates:' },
           { type: 'list', items: [
-            'divided by n: Σ(xᵢ − x̄)² / n',
-            'divided by n − 1: Σ(xᵢ − x̄)² / (n − 1) = s²',
+            'divided by n: $\\frac{\\sum (x_i - \\bar{x})^2}{n}$',
+            'divided by n − 1: $\\frac{\\sum (x_i - \\bar{x})^2}{n - 1} = s^2$',
           ] },
           { type: 'paragraph', content: 'Which one hits the population variance σ² = 4 g² on average? Draw samples of only three packs – first one at a time, then very many at once – and compare both averages with the σ² row.' },
           { type: 'paragraph', content: 'The two averages always differ by the same factor, because they come from the same samples. What matters is which of them lands at σ².' },
