@@ -13,8 +13,8 @@
     </div>
 
     <div class="sipoc__grid" data-ref="sipocGrid">
-      <template x-for="col in columns">
-        <div class="sipoc__column" :data-col="col.key" :class="dragOverClass(col.key)" :key="col.key">
+      <template x-for="col in columns" :key="col.key">
+        <div class="sipoc__column" :data-col="col.key" :class="dragOverClass(col.key)">
           <div class="sipoc__col-header">
             <div class="sipoc__col-title">
               <div class="sipoc__col-indicator"></div>
@@ -35,8 +35,8 @@
               <div class="sipoc__process-cap sipoc__process-cap--start" x-text="t('processStart')"></div>
             </template>
 
-            <template x-for="(item, i) in model.columns[col.key]">
-              <div class="sipoc__item" draggable="true" :data-col="col.key" :data-idx="i" :key="col.key + ':' + i"
+            <template x-for="(item, i) in model.columns[col.key]" :key="col.key + ':' + i">
+              <div class="sipoc__item" draggable="true" :data-col="col.key" :data-idx="i"
                 @dragstart="dragStart(col.key, i, $event)"
                 @dragend="dragEnd($event)">
                 <span class="sipoc__grip"><span class="icon icon--sm" data-icon="action.drag-handle" aria-hidden="true"></span></span>
