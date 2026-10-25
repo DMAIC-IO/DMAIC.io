@@ -23,13 +23,19 @@
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State } from './doe-planner-model.js';
+import { State, letter } from './doe-planner-model.js';
 import { DataGrid } from '../../core/datagrid/datagrid.js';
-import { FRAC, PB_DESIGNS, ALL_RUNS, K_RANGE, BOX_BEHNKEN, TAGUCHI } from './doe-planner-designs.js';
+import { PB_DESIGNS, ALL_RUNS, K_RANGE, BOX_BEHNKEN } from './doe-planner-designs.js';
 import {
-  generateDesign, taguchiCandidates, minRunsForTerms,
+  generateDesign, minRunsForTerms,
   augmentOptimalDesign, formatValue, codedToActual,
 } from '../../engines/doe-planner-engine.js';
+import { DESIGNS, designOf, checkConfig } from './designs/index.js';
+import { hasMultiLevel } from './designs/check.js';
+import frac from './designs/frac.js';
+import bb from './designs/bb.js';
+import taguchi from './designs/taguchi.js';
+import optimal from './designs/optimal.js';
 import {
   termDisplay, enumerateTerms, activateTerm, deactivateTerm, termSortKey, designModelTerms,
 } from '../../engines/doe-terms.js';
@@ -40,7 +46,7 @@ import {
 } from './doe-planner-worksheet.js';
 import {
   evaluateDesign, computeEVOPEffects, recenteredFactors,
-  computeAliasStructure, computeDispersionAnalysis, powerDisplay,
+  computeDispersionAnalysis, powerDisplay,
 } from './doe-planner-analysis.js';
 import { provisionWorksheet } from '../../core/examples-registry.js';
 import { uid } from '../../core/uid.js';
@@ -60,11 +66,8 @@ const DESIGN_TYPES = [
 ];
 
 const ALGO_ID_DEFF = 'd-efficiency';
-const OPTIMAL = ['dopt', 'aopt', 'gopt'];
 const AUTO_GEN_DELAY = 600; // ms debounce for auto-generation
 const PHASE_DECISIONS = ['recenter', 'repeat', 'stop'];
-
-const letter = (i) => String.fromCharCode(65 + i);
 
 const mod = createModule({
   config: {
@@ -130,31 +133,9 @@ const mod = createModule({
         return (sheet && sheet.state && sheet.state.rowCount) || 0;
       },
 
+      /** Type-independent rules, then the design type's own (designs/). */
       isConfigValid() {
-        const m = this.model;
-        if (m.factors.length < 2) return false;
-        if (m.hasDuplicateFactorNames()) return false;
-        if (!m.factors.every(f =>
-          f.name.trim() !== '' &&
-          f.levels.length >= 2 && f.levels[0] !== '' && f.levels[f.levels.length - 1] !== ''
-        )) return false;
-        if (m.responses.length < 1) return false;
-        if (!m.responses.every(r => r.name.trim() !== '')) return false;
-        if (!m.designType) return false;
-        const has3Plus = m.factors.some(f => f.levels.length > 2);
-        if (has3Plus && (m.designType === 'frac' || m.designType === 'pb')) return false;
-        if (m.designType === 'frac' && !m.selectedRes) return false;
-        if (m.designType === 'pb' && m.selectedPBIdx === null) return false;
-        if (m.designType === 'bb' && !BOX_BEHNKEN[m.factors.length]) return false;
-        if (m.designType === 'taguchi' && !m.options.taguchiArray) return false;
-        if (OPTIMAL.includes(m.designType)) {
-          const minRuns = minRunsForTerms(m.getActiveTerms());
-          const M = this.sourceRowCount();
-          const minNew = M > 0 ? Math.max(1, minRuns - M) : minRuns;
-          const nNew = m.options.optimalRuns || 0;
-          if (nNew < minNew) return false;
-        }
-        return true;
+        return checkConfig(this.model, { sourceRowCount: this.sourceRowCount() }).ok;
       },
 
       worksheetStaleness() {
@@ -270,7 +251,7 @@ const mod = createModule({
         }
 
         const total = M + addRuns;
-        const resLabel = m.designType === 'dopt' ? 'D-Opt' : m.designType === 'aopt' ? 'A-Opt' : 'G-Opt';
+        const resLabel = optimal.resolution(m);
 
         return {
           codedMatrix: [...source.codedMatrix, ...newCoded],
@@ -378,8 +359,7 @@ const mod = createModule({
       // ── Design-type selection ─────────────────────────────────
 
       designOptDisabled(dt) {
-        const has3Plus = this.model.factors.some(f => f.levels.length > 2);
-        return has3Plus && (dt.key === 'frac' || dt.key === 'pb');
+        return Boolean(DESIGNS[dt.key] && DESIGNS[dt.key].twoLevelOnly) && hasMultiLevel(this.model);
       },
       designOptClass(dt) {
         const active = this.model.designType === dt.key ? 'doe__design-opt--active' : '';
@@ -390,7 +370,7 @@ const mod = createModule({
         return this.designOptDisabled(dt) ? _t('tipTwoLevelOnly') : _t(`tip_${  dt.key}`);
       },
       fullIsProduct() {
-        return this.model.factors.some(f => f.levels.length > 2);
+        return hasMultiLevel(this.model);
       },
       fullProductFormula() {
         return this.model.factors.map(f => f.levels.length).join('×');
@@ -402,11 +382,8 @@ const mod = createModule({
         m.designType = type;
         m.selectedRes = null;
         m.selectedPBIdx = null;
-        if (OPTIMAL.includes(type) && !m.options.optimalRuns) {
-          const minR = minRunsForTerms(m.getActiveTerms());
-          const M = this.sourceRowCount();
-          const minNew = M > 0 ? Math.max(1, minR - M) : minR;
-          m.options.optimalRuns = minNew + 2;
+        if (m.isOptimalType() && !m.options.optimalRuns) {
+          m.options.optimalRuns = optimal.minNewRuns(m, { sourceRowCount: this.sourceRowCount() }) + 2;
         }
         this.invalidateAndSchedule();
         this.save();
@@ -441,36 +418,11 @@ const mod = createModule({
 
       // ── Resolution table ──────────────────────────────────────
 
-      _fracDef(k, runs) { return FRAC.find(x => x.k === k && x.runs === runs) || null; },
-      _resCellClass(res) {
-        const map = { Full: 'doe__res-full', VIII: 'doe__res-viii', VII: 'doe__res-vii',
-          VI: 'doe__res-vi', V: 'doe__res-v', IV: 'doe__res-iv', III: 'doe__res-iii' };
-        return map[res] || '';
-      },
-      resCellClass(k, runs) {
-        const d = this._fracDef(k, runs);
-        if (!d) return 'doe__res-cell--empty';
-        const isActiveCol = k === this.model.factors.length;
-        const sel = this.model.selectedRes && this.model.selectedRes.k === k && this.model.selectedRes.runs === runs;
-        const disabledCls = isActiveCol ? '' : 'doe__res-cell--disabled';
-        return [this._resCellClass(d.res), disabledCls, sel ? 'doe__res-cell--selected' : ''].filter(Boolean).join(' ');
-      },
-      resCellData(k, runs, which) {
-        const d = this._fracDef(k, runs);
-        if (!d || k !== this.model.factors.length) return null;
-        if (which === 'k') return k;
-        if (which === 'runs') return runs;
-        if (which === 'res') return d.res;
-        if (which === 'p') return d.p;
-        return null;
-      },
-      resCellLabel(k, runs) {
-        const d = this._fracDef(k, runs);
-        if (!d) return '';
-        return d.res === 'Full' ? _t('resFull') : d.res;
-      },
+      resCellClass(k, runs) { return frac.cellClass(k, runs, this.model); },
+      resCellData(k, runs, which) { return frac.cellData(k, runs, which, this.model); },
+      resCellLabel(k, runs) { return frac.cellLabel(k, runs, _t); },
       resCellClick(k, runs) {
-        const d = this._fracDef(k, runs);
+        const d = frac.def(k, runs);
         if (!d || k !== this.model.factors.length) return;
         this.model.selectedRes = { k, runs, res: d.res, p: d.p };
         this.invalidateAndSchedule();
@@ -481,31 +433,7 @@ const mod = createModule({
         if (!s) return _t('resSelectPrompt');
         return `${s.k} ${_t('factors')} · ${s.runs} Runs · ${_t('resolution')} ${s.res}`;
       },
-      resAliasDetail() {
-        const s = this.model.selectedRes;
-        if (!s || s.res === 'Full') return null;
-        const { k, p } = s;
-        const alias = computeAliasStructure(k, p, 'frac');
-        if (!alias || (alias.generatorStrings.length === 0 && alias.aliases.length === 0)) return null;
-        const nameMap = {};
-        for (let i = 0; i < k; i++) {
-          const name = this.model.factors[i] && this.model.factors[i].name ? this.model.factors[i].name.trim() : '';
-          nameMap[letter(i)] = name || letter(i);
-        }
-        const replaceLetters = (code) => code.split('').map(ch => nameMap[ch] || ch).join(' · ');
-        const formatGen = (gen) => {
-          const [left, right] = gen.split(' = ');
-          return `${nameMap[left] || left} = ${replaceLetters(right)}`;
-        };
-        return {
-          generators: alias.generatorStrings.map(formatGen),
-          defining: alias.definingRelation.map(w => `I = ${replaceLetters(w)}`),
-          aliases: alias.aliases.map(a => ({
-            term: replaceLetters(a.term),
-            aliasedWith: a.aliasedWith.map(w => replaceLetters(w)).join(', '),
-          })),
-        };
-      },
+      resAliasDetail() { return frac.aliasDetail(this.model); },
 
       // ── PB ────────────────────────────────────────────────────
 
@@ -522,13 +450,11 @@ const mod = createModule({
 
       // ── Box-Behnken ───────────────────────────────────────────
 
-      bbAvailable() { return Boolean(BOX_BEHNKEN[this.model.factors.length]); },
+      bbAvailable() { return bb.available(this.model); },
       bbDetailText() {
         const k = this.model.factors.length;
-        const available = BOX_BEHNKEN[k];
-        const nCenter = this.model.options.bbCenterPoints || 3;
-        const runs = available ? (available.length * 4 + nCenter) : '?';
-        return _t('bbDetail', { k, pairs: available.length, runs });
+        const pairs = BOX_BEHNKEN[k];
+        return _t('bbDetail', { k, pairs: pairs.length, runs: bb.runs(this.model) });
       },
       bbWarningText() {
         return _t('bbNotAvailable', { k: this.model.factors.length, min: 3, max: 7 });
@@ -536,19 +462,10 @@ const mod = createModule({
 
       // ── Taguchi ───────────────────────────────────────────────
 
-      _levelCounts() { return this.model.factors.map(f => f.levels.length); },
-      taguchiCandidatesList() { return taguchiCandidates(this._levelCounts()); },
-      taguchiFirstLevels() { const lc = this._levelCounts(); return lc.length ? lc[0] : 0; },
-      taguchiInfoText() {
-        const lc = this._levelCounts();
-        const sameLevels = lc.length > 0 && lc.every(n => n === lc[0]);
-        const labelKey = !sameLevels ? 'taguchiLevelsMixed' : (lc[0] === 3 ? 'taguchiLevels3' : 'taguchiLevels2');
-        return _t(labelKey);
-      },
-      taguchiSelected() {
-        const cands = this.taguchiCandidatesList();
-        return this.model.options.taguchiArray || (cands.length > 0 ? cands[0].name : '');
-      },
+      taguchiCandidatesList() { return taguchi.candidates(this.model); },
+      taguchiFirstLevels() { const lc = taguchi.levelCounts(this.model); return lc.length ? lc[0] : 0; },
+      taguchiInfoText() { return _t(taguchi.levelsKey(this.model)); },
+      taguchiSelected() { return taguchi.selected(this.model); },
       selectTaguchi(name) {
         this.model.options.taguchiArray = name;
         this.invalidateAndSchedule();
@@ -557,12 +474,8 @@ const mod = createModule({
 
       // ── Optimal options ───────────────────────────────────────
 
-      optimalMinRuns() { return minRunsForTerms(this.model.getActiveTerms()); },
-      optimalMinNew() {
-        const minRuns = this.optimalMinRuns();
-        const M = this.sourceRowCount();
-        return M > 0 ? Math.max(1, minRuns - M) : minRuns;
-      },
+      optimalMinRuns() { return optimal.minRuns(this.model); },
+      optimalMinNew() { return optimal.minNewRuns(this.model, { sourceRowCount: this.sourceRowCount() }); },
       optimalRunsValid() { return (this.model.options.optimalRuns || 0) >= this.optimalMinNew(); },
       optimalRunsLabel() {
         return this.sourceRowCount() > 0 ? _t('optimalRunsNew') : _t('optimalRuns');
@@ -620,10 +533,7 @@ const mod = createModule({
         if (event.target.checked) activateTerm(active, id);
         else deactivateTerm(active, id);
         m.options.optimalActiveTerms = [...active].sort((a, b) => termSortKey(a).localeCompare(termSortKey(b)));
-        const minR = minRunsForTerms(m.options.optimalActiveTerms);
-        const M = this.sourceRowCount();
-        const minNew = M > 0 ? Math.max(1, minR - M) : minR;
-        if ((m.options.optimalRuns || 0) < minNew) m.options.optimalRuns = minNew;
+        optimal.raiseRunsToMinimum(m, { sourceRowCount: this.sourceRowCount() });
         this.invalidateAndSchedule();
         this.save();
       },
@@ -741,12 +651,7 @@ const mod = createModule({
           const [instanceId, sheetId] = v.split('::');
           m.sourceWorksheet = { instanceId, sheetId };
         }
-        if (OPTIMAL.includes(m.designType)) {
-          const minR = minRunsForTerms(m.getActiveTerms());
-          const M = this.sourceRowCount();
-          const minNew = M > 0 ? Math.max(1, minR - M) : minR;
-          if ((m.options.optimalRuns || 0) < minNew) m.options.optimalRuns = minNew;
-        }
+        if (m.isOptimalType()) optimal.raiseRunsToMinimum(m, { sourceRowCount: this.sourceRowCount() });
         this.invalidateAndSchedule();
         this.save();
       },
@@ -754,7 +659,8 @@ const mod = createModule({
       // ── Design parameters ─────────────────────────────────────
 
       showCenterPointsOption() {
-        return !['ccd', 'bb', 'taguchi', 'dopt', 'aopt', 'gopt'].includes(this.model.designType);
+        const type = designOf(this.model);
+        return !type || type.centerPoints;
       },
       randomizeChanged() { this.invalidateAndSchedule(); this.save(); },
       centerPointsChanged() { this.invalidateAndSchedule(); this.save(); },
@@ -778,61 +684,15 @@ const mod = createModule({
       // ── Summary card ──────────────────────────────────────────
 
       summaryRuns() {
-        const m = this.model;
-        const k = m.factors.length;
-        let runs = '?';
-        switch (m.designType) {
-          case 'full': {
-            const allTwo = m.factors.every(f => f.levels.length === 2);
-            runs = (allTwo ? Math.pow(2, k) : m.factors.reduce((p, f) => p * f.levels.length, 1))
-              + (m.options.centerPoints ? 3 : 0);
-            break;
-          }
-          case 'frac':
-            if (m.selectedRes) runs = m.selectedRes.runs + (m.options.centerPoints ? 3 : 0);
-            break;
-          case 'pb': {
-            let n = Math.ceil((k + 1) / 4) * 4;
-            if (n <= k) n += 4;
-            runs = n + (m.options.centerPoints ? 3 : 0);
-            break;
-          }
-          case 'ccd':
-            runs = Math.pow(2, k) + 2 * k + (m.options.ccdCenterPoints || 3);
-            break;
-          case 'bb': {
-            const pairs = BOX_BEHNKEN[k];
-            if (pairs) runs = pairs.length * 4 + (m.options.bbCenterPoints || 3);
-            break;
-          }
-          case 'taguchi': {
-            const sel = m.options.taguchiArray;
-            const oa = sel ? Object.values(TAGUCHI).find(t => t.name === sel) : null;
-            if (oa) runs = oa.runs;
-            break;
-          }
-          case 'dopt': case 'aopt': case 'gopt':
-            runs = m.options.optimalRuns || minRunsForTerms(m.getActiveTerms());
-            break;
-        }
-        const reps = m.options.replicates || 1;
+        const type = designOf(this.model);
+        let runs = type ? type.runs(this.model) : '?';
+        const reps = this.model.options.replicates || 1;
         if (typeof runs === 'number' && reps > 1) runs = runs * reps;
         return runs;
       },
       summaryRes() {
-        const m = this.model;
-        switch (m.designType) {
-          case 'full': return 'Full';
-          case 'frac': return m.selectedRes ? m.selectedRes.res : '';
-          case 'pb': return 'III';
-          case 'ccd': return 'CCD';
-          case 'bb': return 'BB';
-          case 'taguchi': return m.options.taguchiArray || 'OA';
-          case 'dopt': return 'D-Opt';
-          case 'aopt': return 'A-Opt';
-          case 'gopt': return 'G-Opt';
-          default: return '';
-        }
+        const type = designOf(this.model);
+        return type ? type.resolution(this.model) : '';
       },
       summaryGeneratedRuns() {
         return this.model.design && this.model.design.runOrder ? this.model.design.runOrder.length : 0;
@@ -930,7 +790,8 @@ const mod = createModule({
         if (this.staleness() !== 'bound') return null;
         const resp = this._resp();
         if (!resp || !resp.complete) return null;
-        if (m.designType === 'taguchi' || m.designType === 'evop') return null;
+        const type = designOf(m);
+        if (type && !type.dispersion) return null;
         if (!m.design || !resp.values || !resp.values.length) return null;
 
         const idx = Math.min(m.analysisResponseIdx, resp.values.length - 1);
