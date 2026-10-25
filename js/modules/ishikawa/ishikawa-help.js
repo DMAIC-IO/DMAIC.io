@@ -75,6 +75,67 @@ export default {
       },
     },
 
+    workflow: {
+      de: {
+        title: 'Arbeiten mit dem Modul',
+        blocks: [
+          {
+            type: 'definition',
+            term: 'Problem',
+            content: 'Die Problemaussage hält fest, was wo in welchem Ausmaß abweicht. Zwei Bildergalerien grenzen ab, was zum Problem gehört und was nicht.',
+          },
+          {
+            type: 'definition',
+            term: 'Fakten',
+            content: 'Gesicherte Beobachtungen mit Datum und wer sie gemeldet hat. Sie stützen die Ursachensuche, bevor bewertet wird.',
+          },
+          {
+            type: 'definition',
+            term: 'Hypothesen',
+            content: 'Der Ursachenbaum: Hauptursachen tragen eine der sechs Kategorien, Unterursachen erben sie. Jedes Mitglied des Expertenteams bewertet jede Ursache von 0 (unwahrscheinlich) bis 9 (sehr wahrscheinlich); der Mittelwert ordnet das Pareto. Ein Snapshot hält den Stand fest, der Vergleich markiert neue und geänderte Ursachen, der Trend zeigt die Mittelwerte über mehrere Snapshots.',
+          },
+          {
+            type: 'definition',
+            term: 'Experimente',
+            content: 'Jedes Experiment prüft eine oder mehrere Ursachen, mit Verantwortlichem, Zeitraum und Kosten. Gantt-Diagramm und Kostenverlauf zeigen Plan und Aufwand.',
+          },
+          {
+            type: 'paragraph',
+            content: 'Mit gedrückter Alt-Taste erscheinen an Überschriften, Spaltenköpfen und Knöpfen Fragezeichen; ein Klick erklärt das Element.',
+          },
+        ],
+      },
+      en: {
+        title: 'Working with the module',
+        blocks: [
+          {
+            type: 'definition',
+            term: 'Problem',
+            content: 'The problem statement records what deviates, where, by how much. Two image galleries draw the line between what belongs to the problem and what does not.',
+          },
+          {
+            type: 'definition',
+            term: 'Facts',
+            content: 'Established observations with a date and who reported them. They support the search for causes before anything is rated.',
+          },
+          {
+            type: 'definition',
+            term: 'Hypotheses',
+            content: 'The cause tree: main causes carry one of the six categories, sub-causes inherit it. Every member of the expert team rates every cause from 0 (unlikely) to 9 (very likely); the mean orders the Pareto. A snapshot keeps the state, the comparison marks new and changed causes, the trend shows the means across several snapshots.',
+          },
+          {
+            type: 'definition',
+            term: 'Experiments',
+            content: 'Each experiment tests one or more causes, with a person responsible, a period and cost. The Gantt chart and the cost charts show plan and effort.',
+          },
+          {
+            type: 'paragraph',
+            content: 'Hold Alt to show question marks at headings, column heads and buttons; a click explains the element.',
+          },
+        ],
+      },
+    },
+
     methodology: {
       de: {
         title: 'Vorgehen',

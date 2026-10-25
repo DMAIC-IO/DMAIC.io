@@ -1,5 +1,12 @@
 # Nicht getestete Bereiche — modules/ishikawa/
 
+> Seit 2026-10-25 ist `ishikawa.js` nur noch die Hülle (Tabs, Lebenszyklus,
+> Drag, Verdrahtung). Die Logik der Reiter liegt in `viewmodel/problem.js`,
+> `causes.js`, `snapshots.js`, `experiments.js` und ist je Datei per Unit-Test
+> abgedeckt (`tests/modules/ishikawa-vm-*.test.js`); die reine
+> Chart-Konfiguration in `ishikawa-charts.js`. Die Zahlen unten stammen von vor
+> dem Umbau; die aktuellen stehen im Coverage-Bericht des Volllaufs.
+
 ## Modul (`ishikawa.js`)
 
 Lines: 86.1% (581/675) | Functions: 86.2% (212/246) | Branches: 69.9% (423/605)

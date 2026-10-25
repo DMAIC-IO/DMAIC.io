@@ -80,10 +80,10 @@
               <tr>
                 <th class="dmike-table__grip-col"></th>
                 <th class="ishikawa__col-nr">#</th>
-                <th data-help-key="modules.ishikawa.types.FactFields.name" class="ishikawa__col-fact-name" x-text="t('factName')"></th>
-                <th data-help-key="modules.ishikawa.types.FactFields.description" class="ishikawa__col-desc" x-text="t('factDescription')"></th>
-                <th data-help-key="modules.ishikawa.types.FactFields.date" class="ishikawa__col-date" x-text="t('factDate')"></th>
-                <th data-help-key="modules.ishikawa.types.FactFields.owner" class="ishikawa__col-resp" x-text="t('factOwner')"></th>
+                <th class="ishikawa__col-fact-name"><span data-help-key="modules.ishikawa.types.FactFields.name" x-text="t('factName')"></span></th>
+                <th class="ishikawa__col-desc"><span data-help-key="modules.ishikawa.types.FactFields.description" x-text="t('factDescription')"></span></th>
+                <th class="ishikawa__col-date"><span data-help-key="modules.ishikawa.types.FactFields.date" x-text="t('factDate')"></span></th>
+                <th class="ishikawa__col-resp"><span data-help-key="modules.ishikawa.types.FactFields.owner" x-text="t('factOwner')"></span></th>
                 <th class="ishikawa__col-actions"></th>
               </tr>
             </thead>
@@ -195,9 +195,9 @@
             <tr>
               <th class="dmike-table__grip-col"></th>
               <th class="ishikawa__col-nr">#</th>
-              <th data-help-key="modules.ishikawa.types.RowFields.category" class="ishikawa__col-cat" x-text="t('category')"></th>
-              <th data-help-key="modules.ishikawa.types.RowFields.name" class="ishikawa__col-name" x-text="t('colName')"></th>
-              <th data-help-key="modules.ishikawa.types.RowFields.description" x-text="t('colDescription')"></th>
+              <th class="ishikawa__col-cat"><span data-help-key="modules.ishikawa.types.RowFields.category" x-text="t('category')"></span></th>
+              <th class="ishikawa__col-name"><span data-help-key="modules.ishikawa.types.RowFields.name" x-text="t('colName')"></span></th>
+              <th><span data-help-key="modules.ishikawa.types.RowFields.description" x-text="t('colDescription')"></span></th>
               <template x-for="e in model.experts" :key="e.id">
                 <th class="ishikawa__col-expert">
                   <div class="ishikawa__exp-col-head">
@@ -206,8 +206,8 @@
                   </div>
                 </th>
               </template>
-              <th data-help-key="modules.ishikawa.columns.avgScore" class="ishikawa__col-score" x-text="t('avgScore')"></th>
-              <th data-help-key="modules.ishikawa.types.RowFields.status" class="ishikawa__col-status" x-text="t('statusHeader')"></th>
+              <th class="ishikawa__col-score"><span data-help-key="modules.ishikawa.columns.avgScore" x-text="t('avgScore')"></span></th>
+              <th class="ishikawa__col-status"><span data-help-key="modules.ishikawa.types.RowFields.status" x-text="t('statusHeader')"></span></th>
               <th class="ishikawa__col-actions"></th>
             </tr>
           </thead>
@@ -396,15 +396,15 @@
               <tr>
                 <th class="dmike-table__grip-col"></th>
                 <th class="ishikawa__col-nr">#</th>
-                <th data-help-key="modules.ishikawa.types.ExperimentFields.title" class="ishikawa__col-exp-title" x-text="t('experimentTitle')"></th>
-                <th data-help-key="modules.ishikawa.types.ExperimentFields.description" class="ishikawa__col-desc" x-text="t('experimentDescription')"></th>
-                <th data-help-key="modules.ishikawa.types.ExperimentFields.responsible" class="ishikawa__col-resp" x-text="t('responsible')"></th>
-                <th data-help-key="modules.ishikawa.types.ExperimentFields.status" class="ishikawa__col-exp-status" x-text="t('statusHeader')"></th>
-                <th data-help-key="modules.ishikawa.types.ExperimentFields.startDate" class="ishikawa__col-date" x-text="t('startDate')"></th>
-                <th data-help-key="modules.ishikawa.types.ExperimentFields.endDate" class="ishikawa__col-date" x-text="t('endDate')"></th>
-                <th data-help-key="modules.ishikawa.types.ExperimentFields.costMoney" class="ishikawa__col-money" x-text="t('costMoney')"></th>
-                <th data-help-key="modules.ishikawa.types.ExperimentFields.costHours" class="ishikawa__col-hours" x-text="t('costHours')"></th>
-                <th data-help-key="modules.ishikawa.actions.experiments.setExperimentHypotheses.help" class="ishikawa__col-hyp-link" x-text="t('linkedHypotheses')"></th>
+                <th class="ishikawa__col-exp-title"><span data-help-key="modules.ishikawa.types.ExperimentFields.title" x-text="t('experimentTitle')"></span></th>
+                <th class="ishikawa__col-desc"><span data-help-key="modules.ishikawa.types.ExperimentFields.description" x-text="t('experimentDescription')"></span></th>
+                <th class="ishikawa__col-resp"><span data-help-key="modules.ishikawa.types.ExperimentFields.responsible" x-text="t('responsible')"></span></th>
+                <th class="ishikawa__col-exp-status"><span data-help-key="modules.ishikawa.types.ExperimentFields.status" x-text="t('statusHeader')"></span></th>
+                <th class="ishikawa__col-date"><span data-help-key="modules.ishikawa.types.ExperimentFields.startDate" x-text="t('startDate')"></span></th>
+                <th class="ishikawa__col-date"><span data-help-key="modules.ishikawa.types.ExperimentFields.endDate" x-text="t('endDate')"></span></th>
+                <th class="ishikawa__col-money"><span class="context-help-anchor--overlay" data-help-key="modules.ishikawa.types.ExperimentFields.costMoney" x-text="t('costMoney')"></span></th>
+                <th class="ishikawa__col-hours"><span class="context-help-anchor--overlay" data-help-key="modules.ishikawa.types.ExperimentFields.costHours" x-text="t('costHours')"></span></th>
+                <th class="ishikawa__col-hyp-link"><span data-help-key="modules.ishikawa.actions.experiments.setExperimentHypotheses.help" x-text="t('linkedHypotheses')"></span></th>
                 <th class="ishikawa__col-actions"></th>
               </tr>
             </thead>
