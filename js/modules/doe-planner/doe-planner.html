@@ -511,14 +511,14 @@
     <!-- Design summary -->
     <div class="doe__summary-card">
       <div class="doe__summary-item"><span x-text="t('factors') + ': '"></span><strong x-text="model.factors.length"></strong></div>
-      <div class="doe__summary-item"><span x-text="t('runs') + ': '"></span><strong x-text="summaryRuns()"></strong></div>
-      <div class="doe__summary-item"><span x-text="t('resolution') + ': '"></span><strong x-text="summaryRes()"></strong></div>
+      <div class="doe__summary-item"><span x-text="t('runs') + ': '"></span><strong x-text="evaluation.summaryRuns()"></strong></div>
+      <div class="doe__summary-item"><span x-text="t('resolution') + ': '"></span><strong x-text="evaluation.summaryRes()"></strong></div>
       <div class="doe__summary-item"><span x-text="t('responses') + ': '"></span><strong x-text="model.responses.length"></strong></div>
       <template x-if="model.design">
-        <div class="doe__summary-item"><span class="doe__generated-badge" x-text="'✓ ' + t('generated', { runs: summaryGeneratedRuns() })"></span></div>
+        <div class="doe__summary-item"><span class="doe__generated-badge" x-text="'✓ ' + t('generated', { runs: evaluation.summaryGeneratedRuns() })"></span></div>
       </template>
       <template x-if="!model.design">
-        <div class="doe__summary-item doe__summary-item--pending" x-text="isConfigValid() ? t('configReady') : t('configIncomplete')"></div>
+        <div class="doe__summary-item doe__summary-item--pending" x-text="evaluation.configValid() ? t('configReady') : t('configIncomplete')"></div>
       </template>
     </div>
   </div>
@@ -527,7 +527,7 @@
   <div class="doe__output dmike-split__output">
 
     <!-- Placeholder when no design + invalid config -->
-    <template x-if="!model.design && !isConfigValid()">
+    <template x-if="!model.design && !evaluation.configValid()">
       <div class="doe__placeholder">
         <p x-text="t('configureLeft')"></p>
       </div>
@@ -634,11 +634,11 @@
                 <div class="doe__eval-section">
                   <h4 class="doe__eval-heading" x-text="t('efficiencyTitle')"></h4>
                   <div class="dmike-kpi-strip">
-                    <template x-for="(c, ci) in effCards()" :key="ci">
+                    <template x-for="(c, ci) in evaluation.effCards()" :key="ci">
                       <div class="dmike-kpi" :class="c.cls">
                         <div class="dmike-kpi-label">
                           <span :data-help-key="c.helpKey" x-text="c.label"></span>
-                          <button class="doe__algo-link" :data-algo-id="c.algoId" type="button" @click="algoNavigate(c.algoId, $event)">
+                          <button class="doe__algo-link" :data-algo-id="c.algoId" type="button" @click="evaluation.algoNavigate(c.algoId, $event)">
                             <span class="icon icon--sm icon--text" data-icon="nav.algorithm-lab" aria-hidden="true"></span>
                           </button>
                         </div>
@@ -648,41 +648,41 @@
                     </template>
                     <div class="dmike-kpi">
                       <div class="dmike-kpi-label" data-help-key="modules.doe-planner.tipCondNum" x-text="t('condNum')"></div>
-                      <div class="dmike-kpi-value" x-text="condNumValue()"></div>
+                      <div class="dmike-kpi-value" x-text="evaluation.condNumValue()"></div>
                     </div>
                     <div class="dmike-kpi">
                       <div class="dmike-kpi-label" data-help-key="modules.doe-planner.tipMaxLev" x-text="t('maxLeverage')"></div>
-                      <div class="dmike-kpi-value" x-text="maxLeverageValue()"></div>
+                      <div class="dmike-kpi-value" x-text="evaluation.maxLeverageValue()"></div>
                     </div>
                   </div>
                 </div>
 
                 <!-- VIF -->
-                <template x-if="hasVif()">
+                <template x-if="evaluation.hasVif()">
                   <div class="doe__eval-section">
                     <h4 class="doe__eval-heading">
                       <span data-help-key="modules.doe-planner.tipVIF" x-text="t('vifTitle')"></span>
-                      <button class="doe__algo-link" data-algo-id="vif" type="button" @click="algoNavigate('vif', $event)">
+                      <button class="doe__algo-link" data-algo-id="vif" type="button" @click="evaluation.algoNavigate('vif', $event)">
                         <span class="icon icon--sm icon--text" data-icon="nav.algorithm-lab" aria-hidden="true"></span>
                       </button>
                     </h4>
                     <div class="doe__vif-tables">
-                      <template x-if="vifMain().length">
+                      <template x-if="evaluation.vifMain().length">
                         <table class="doe__vif-table">
                           <thead><tr><th x-text="t('mainEffects')"></th><th>VIF</th></tr></thead>
                           <tbody>
-                            <template x-for="(v, vi) in vifMain()" :key="vi">
-                              <tr :class="vifRating(v.vif)"><td x-text="v.term"></td><td x-text="fmt2(v.vif)"></td></tr>
+                            <template x-for="(v, vi) in evaluation.vifMain()" :key="vi">
+                              <tr :class="evaluation.vifRating(v.vif)"><td x-text="v.term"></td><td x-text="fmt2(v.vif)"></td></tr>
                             </template>
                           </tbody>
                         </table>
                       </template>
-                      <template x-if="vifInter().length">
+                      <template x-if="evaluation.vifInter().length">
                         <table class="doe__vif-table">
                           <thead><tr><th x-text="t('interactions')"></th><th>VIF</th></tr></thead>
                           <tbody>
-                            <template x-for="(v, vi) in vifInter()" :key="vi">
-                              <tr :class="vifRating(v.vif)"><td x-text="v.term"></td><td x-text="fmt2(v.vif)"></td></tr>
+                            <template x-for="(v, vi) in evaluation.vifInter()" :key="vi">
+                              <tr :class="evaluation.vifRating(v.vif)"><td x-text="v.term"></td><td x-text="fmt2(v.vif)"></td></tr>
                             </template>
                           </tbody>
                         </table>
@@ -692,24 +692,24 @@
                 </template>
 
                 <!-- Alias structure -->
-                <template x-if="hasAlias()">
+                <template x-if="evaluation.hasAlias()">
                   <div class="doe__eval-section">
                     <h4 class="doe__eval-heading">
                       <span data-help-key="modules.doe-planner.tipAlias" x-text="t('aliasTitle')"></span>
                     </h4>
-                    <template x-if="aliasGenerators().length">
+                    <template x-if="evaluation.aliasGenerators().length">
                       <div class="doe__alias-gens">
                         <span class="doe__alias-gen-label" x-text="t('generators') + ':'"></span>
-                        <template x-for="(g, gi) in aliasGenerators()" :key="gi">
+                        <template x-for="(g, gi) in evaluation.aliasGenerators()" :key="gi">
                           <code class="doe__alias-gen" x-text="g"></code>
                         </template>
                       </div>
                     </template>
-                    <template x-if="aliasRows().length">
+                    <template x-if="evaluation.aliasRows().length">
                       <table class="doe__alias-table">
                         <thead><tr><th x-text="t('term')"></th><th x-text="t('aliasedWith')"></th></tr></thead>
                         <tbody>
-                          <template x-for="(a, ai) in aliasRows()" :key="ai">
+                          <template x-for="(a, ai) in evaluation.aliasRows()" :key="ai">
                             <tr>
                               <td><code x-text="a.term"></code></td>
                               <td x-text="a.aliasedWith"></td>
@@ -718,28 +718,28 @@
                         </tbody>
                       </table>
                     </template>
-                    <template x-if="!aliasRows().length">
+                    <template x-if="!evaluation.aliasRows().length">
                       <p class="doe__eval-note" x-text="t('noAliases')"></p>
                     </template>
                   </div>
                 </template>
 
                 <!-- Power -->
-                <template x-if="hasPower()">
+                <template x-if="evaluation.hasPower()">
                   <div class="doe__eval-section">
                     <h4 class="doe__eval-heading">
                       <span data-help-key="modules.doe-planner.tipPower" x-text="t('powerTitle')"></span>
                     </h4>
-                    <p class="doe__eval-note" x-text="powerDescText()"></p>
-                    <p class="doe__eval-note" x-show="powerSaturated()" x-text="t('powerSaturated')"></p>
+                    <p class="doe__eval-note" x-text="evaluation.powerDescText()"></p>
+                    <p class="doe__eval-note" x-show="evaluation.powerSaturated()" x-text="t('powerSaturated')"></p>
                     <table class="doe__power-table">
                       <thead><tr><th x-text="t('effectSize')"></th><th x-text="t('power')"></th><th></th></tr></thead>
                       <tbody>
-                        <template x-for="(row, pi) in powerRows()" :key="pi">
-                          <tr :class="powerRating(row.power)">
+                        <template x-for="(row, pi) in evaluation.powerRows()" :key="pi">
+                          <tr :class="evaluation.powerRating(row.power)">
                             <td x-text="row.effectSize"></td>
-                            <td x-text="powerPct(row.power)"></td>
-                            <td><div class="doe__power-bar"><div class="doe__power-bar-fill" :style="'width:' + powerBarWidth(row.power) + '%'"></div></div></td>
+                            <td x-text="evaluation.powerPct(row.power)"></td>
+                            <td><div class="doe__power-bar"><div class="doe__power-bar-fill" :style="'width:' + evaluation.powerBarWidth(row.power) + '%'"></div></div></td>
                           </tr>
                         </template>
                       </tbody>

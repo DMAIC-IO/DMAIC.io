@@ -27,6 +27,7 @@ import { State, letter, PHASE_DECISIONS } from './doe-planner-model.js';
 import { FactorsViewModel } from './viewmodel/factors.js';
 import { DesignViewModel } from './viewmodel/design.js';
 import { OptimalViewModel } from './viewmodel/optimal.js';
+import { EvaluationViewModel } from './viewmodel/evaluation.js';
 import { codedToActualRows, buildRunTable, captureEdits, applyEdits } from './doe-planner-runtable.js';
 import { DataGrid } from '../../core/datagrid/datagrid.js';
 import {
@@ -42,18 +43,17 @@ import {
 import { readResponses, staleness, boundPct, boundComplete } from './doe-planner-responses.js';
 import {
   evaluateDesign, computeEVOPEffects,
-  computeDispersionAnalysis, powerDisplay,
+  computeDispersionAnalysis,
 } from './doe-planner-analysis.js';
 import { provisionWorksheet } from '../../core/examples-registry.js';
 import { uid } from '../../core/uid.js';
 
 // ─── Constants ─────────────────────────────────────────────────────
 
-const ALGO_ID_DEFF = 'd-efficiency';
 const AUTO_GEN_DELAY = 600; // ms debounce for auto-generation
 
 /** Data keys of the sub-viewmodels, in attach order. */
-const SUB_VIEWMODELS = ['factors', 'design', 'optimal'];
+const SUB_VIEWMODELS = ['factors', 'design', 'optimal', 'evaluation'];
 
 const mod = createModule({
   config: {
@@ -89,6 +89,7 @@ const mod = createModule({
       factors: new FactorsViewModel(deps),
       design: new DesignViewModel(deps),
       optimal: new OptimalViewModel(deps),
+      evaluation: new EvaluationViewModel(deps),
 
       // ── Transient UI state (never persisted) ──────────────────
       _previewGrid: null,
@@ -260,23 +261,6 @@ const mod = createModule({
         this.save();
       },
 
-      // ── Summary card ──────────────────────────────────────────
-
-      summaryRuns() {
-        const type = designOf(this.model);
-        let runs = type ? type.runs(this.model) : '?';
-        const reps = this.model.options.replicates || 1;
-        if (typeof runs === 'number' && reps > 1) runs = runs * reps;
-        return runs;
-      },
-      summaryRes() {
-        const type = designOf(this.model);
-        return type ? type.resolution(this.model) : '';
-      },
-      summaryGeneratedRuns() {
-        return this.model.design && this.model.design.runOrder ? this.model.design.runOrder.length : 0;
-      },
-
       // ── Output: bound state ───────────────────────────────────
 
       _resp() { void this._extRev; return readResponses(ctx(), this.model); },
@@ -289,71 +273,6 @@ const mod = createModule({
       boundComplete() { void this._extRev; return boundComplete(ctx(), this.model); },
       showPreview() {
         return this.staleness() !== 'bound' && Boolean(this.model.design && this.model.design.actualMatrix && this.model.design.actualMatrix.length);
-      },
-
-      // ── Evaluation view-models ────────────────────────────────
-
-      _eff() { return this.model.evaluation ? this.model.evaluation.efficiency : null; },
-      effCards() {
-        const eff = this._eff();
-        if (!eff) return [];
-        const mk = (label, val, tipKey) => {
-          const cls = val >= 80 ? 'dmike-kpi--good' : val >= 50 ? 'dmike-kpi--warn' : 'dmike-kpi--bad';
-          const helpKey = `modules.doe-planner.${tipKey}`;
-          return { label, value: `${Math.round(val)  }%`, helpKey, algoId: ALGO_ID_DEFF, cls, barWidth: Math.min(100, val) };
-        };
-        return [
-          mk(_t('dEff'), eff.dEfficiency, 'tipDEff'),
-          mk(_t('aEff'), eff.aEfficiency, 'tipAEff'),
-          mk(_t('gEff'), eff.gEfficiency, 'tipGEff'),
-        ];
-      },
-      condNumValue() { const e = this._eff(); return e ? e.conditionNumber.toFixed(1) : ''; },
-      maxLeverageValue() { const e = this._eff(); return e ? e.maxLeverage.toFixed(3) : ''; },
-
-      _vifArr() {
-        const ev = this.model.evaluation;
-        return ev && Array.isArray(ev.vif) ? ev.vif : [];
-      },
-      vifMain() { return this._vifArr().filter(v => !v.term.includes('*')); },
-      vifInter() { return this._vifArr().filter(v => v.term.includes('*')); },
-      hasVif() { return this.vifMain().length > 0 || this.vifInter().length > 0; },
-      vifRating(v) {
-        return v <= 1.01 ? 'doe__vif-perfect' : v <= 5 ? 'doe__vif-ok' : v <= 10 ? 'doe__vif-warn' : 'doe__vif-bad';
-      },
-
-      _alias() {
-        const ev = this.model.evaluation;
-        return ev && ev.aliasStructure ? ev.aliasStructure : null;
-      },
-      hasAlias() {
-        const al = this._alias();
-        return Boolean(al && (al.aliases.length > 0 || (al.generatorStrings && al.generatorStrings.length > 0)));
-      },
-      aliasGenerators() { const al = this._alias(); return al && al.generatorStrings ? al.generatorStrings : []; },
-      aliasRows() {
-        const al = this._alias();
-        if (!al || !al.aliases) return [];
-        return al.aliases.map(a => ({ term: a.term, aliasedWith: a.aliasedWith.join(', ') }));
-      },
-
-      _power() {
-        const ev = this.model.evaluation;
-        return ev && Array.isArray(ev.power) ? ev.power : [];
-      },
-      hasPower() { return this._power().length > 0; },
-      powerRows() { return this._power(); },
-      powerRating(p) { return powerDisplay(p).rating; },
-      powerPct(p) { return powerDisplay(p).text; },
-      powerBarWidth(p) { return powerDisplay(p).width; },
-      powerSaturated() { const p = this._power(); return p.length > 0 && p[0].power === null; },
-      powerDescText() {
-        const p = this._power();
-        return _t('powerDesc', {
-          n: (this.model.design && this.model.design.runOrder ? this.model.design.runOrder.length : '?'),
-          dfError: (p[0] && p[0].dfError != null) ? p[0].dfError : '?',
-          alpha: '0.05',
-        });
       },
 
       // ── Dispersion analysis ───────────────────────────────────
@@ -538,10 +457,6 @@ const mod = createModule({
 
       // ── Transfer to Regression ────────────────────────────────
 
-      algoNavigate(algoId, event) {
-        if (event) event.stopPropagation();
-        if (algoId && ctx().eventBus) ctx().eventBus.emit('lab:navigate', { algoId, tab: 'docs' });
-      },
       transferToRegression() {
         const m = this.model;
         const ref = m.worksheetRef;
