@@ -21,7 +21,7 @@
       },
       {
         "type": "note",
-        "text": "Die Grundgesamtheit kann schief sein, etwa bei Wartezeiten. Die Verteilung ihrer Stichprobenmittelwerte ist davon weitgehend unabhängig, siehe {{term:zentraler-grenzwertsatz|zentraler Grenzwertsatz}}."
+        "text": "Die Grundgesamtheit kann schief sein, etwa bei Wartezeiten. Die Verteilung ihrer Stichprobenmittelwerte nähert sich mit wachsendem $n$ unabhängig davon der Glockenform, siehe {{term:zentraler-grenzwertsatz|zentraler Grenzwertsatz}}."
       }
     ],
     "en": [
@@ -35,7 +35,7 @@
       },
       {
         "type": "note",
-        "text": "The population may be skewed, as with waiting times. The distribution of its sample means is largely independent of that, see {{term:zentraler-grenzwertsatz|central limit theorem}}."
+        "text": "The population may be skewed, as with waiting times. With growing $n$ the distribution of its sample means approaches a bell shape regardless of that, see {{term:zentraler-grenzwertsatz|central limit theorem}}."
       }
     ]
   },

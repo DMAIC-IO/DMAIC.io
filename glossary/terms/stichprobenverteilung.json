@@ -21,7 +21,7 @@
       },
       {
         "type": "note",
-        "text": "Auch wenn die Einzelwerte schief sind, etwa Wartezeiten, werden die Mittelwerte annähernd {{term:normalverteilung|normalverteilt}}. Darauf bauen Konfidenzintervalle und Hypothesentests auf."
+        "text": "Auch wenn die Einzelwerte schief sind, etwa Wartezeiten, werden die Mittelwerte mit wachsendem $n$ annähernd {{term:normalverteilung|normalverteilt}}. Darauf bauen Konfidenzintervalle und Hypothesentests auf."
       }
     ],
     "en": [
@@ -35,7 +35,7 @@
       },
       {
         "type": "note",
-        "text": "Even if the individual values are skewed, such as waiting times, the means become approximately {{term:normalverteilung|normally distributed}}. Confidence intervals and hypothesis tests build on this."
+        "text": "Even if the individual values are skewed, such as waiting times, the means become approximately {{term:normalverteilung|normally distributed}} as $n$ grows. Confidence intervals and hypothesis tests build on this."
       }
     ]
   },

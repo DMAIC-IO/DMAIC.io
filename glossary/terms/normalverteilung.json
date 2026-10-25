@@ -25,7 +25,7 @@
       },
       {
         "type": "note",
-        "text": "Einzelwerte aus Prozessen sind oft schief, etwa Wartezeiten und Durchlaufzeiten. Stichprobenmittelwerte dagegen sind nach dem {{term:zentraler-grenzwertsatz|zentralen Grenzwertsatz}} annähernd normalverteilt. Ob Daten normalverteilt sind, prüft der {{term:normalitaetstest|Normalitätstest}}."
+        "text": "Einzelwerte aus Prozessen sind oft schief, etwa Wartezeiten und Durchlaufzeiten. Stichprobenmittelwerte dagegen sind nach dem {{term:zentraler-grenzwertsatz|zentralen Grenzwertsatz}} bei hinreichend großem $n$ annähernd normalverteilt. Ob Daten normalverteilt sind, prüft der {{term:normalitaetstest|Normalitätstest}}."
       }
     ],
     "en": [
@@ -43,7 +43,7 @@
       },
       {
         "type": "note",
-        "text": "Individual values from processes are often skewed, such as waiting times and lead times. Sample means, by contrast, are approximately normal according to the {{term:zentraler-grenzwertsatz|central limit theorem}}. Whether data are normal is checked by the {{term:normalitaetstest|normality test}}."
+        "text": "Individual values from processes are often skewed, such as waiting times and lead times. Sample means, by contrast, are approximately normal for sufficiently large $n$ according to the {{term:zentraler-grenzwertsatz|central limit theorem}}. Whether data are normal is checked by the {{term:normalitaetstest|normality test}}."
       }
     ]
   },
