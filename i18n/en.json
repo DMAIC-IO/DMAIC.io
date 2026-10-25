@@ -332,6 +332,28 @@
       "insightLockedEach": "Measure at least {k} values in every chart first – then this shows what you saw.",
       "quizCorrect": "Correct.",
       "quizWrong": "Not yet.",
+      "values": {
+        "measure": "Measure {k}",
+        "count": "Number of values",
+        "mean": "Mean x̄",
+        "sd": "Standard deviation s",
+        "min": "Smallest value",
+        "max": "Largest value",
+        "range": "Range R",
+        "within": "Share within x̄ ± {k} s",
+        "belowMean": "Share below x̄",
+        "frequency": "Frequency",
+        "process": {
+          "fill-a": "Machine A",
+          "fill-b": "Machine B",
+          "waiting": "Waiting times at the counter"
+        },
+        "axis": {
+          "g": "Filling weight in g",
+          "min": "Waiting time in minutes"
+        },
+        "processLabel": "Process"
+      },
       "sim": {
         "population": "Population",
         "sampleSize": "Sample size n",

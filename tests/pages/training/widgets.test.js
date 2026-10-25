@@ -76,3 +76,88 @@ suite('course widgets', () => {
     assertEqual(live.size, 0);
   });
 });
+
+suite('value-distribution widget', () => {
+  const make = (ctx = {}) => WIDGET_COMPONENTS['value-distribution'].factory({ i18n: { t: (k) => k }, ...ctx });
+  const mount = (params, ctx) => {
+    const sim = make(ctx);
+    const events = [];
+    sim.setup({ dispatchEvent: (e) => events.push(e) }, params, {});
+    return { sim, events };
+  };
+
+  test('value widget reports zero counts for every shown process on setup', () => {
+    const { events } = mount({ processes: ['fill-a', 'fill-b'] });
+    assertEqual(events[0].type, 'training-sim-progress');
+    assertEqual(events[0].bubbles, true);
+    assertDeepEqual(events[0].detail, { count: 0, perN: { 'fill-a': { 1: 0 }, 'fill-b': { 1: 0 } } });
+  });
+
+  test('value widget measures and reports per process', () => {
+    const { sim, events } = mount({ processes: ['fill-a', 'fill-b'], seed: 1 });
+    sim.measure('fill-a', 100);
+    sim.measure('fill-b', 10);
+    assertDeepEqual(events[events.length - 1].detail, { count: 10, perN: { 'fill-a': { 1: 100 }, 'fill-b': { 1: 10 } } });
+  });
+
+  test('selectable widget keeps values per process', () => {
+    const { sim } = mount({ processes: ['fill-a', 'fill-b'], selectable: true, stats: ['count', 'sd'], seed: 3 });
+    assertDeepEqual(sim.columns(), ['fill-a']);
+    sim.measure('fill-a', 1000);
+    sim.select('fill-b');
+    assertDeepEqual(sim.columns(), ['fill-b']);
+    sim.measure('fill-b', 1000);
+    sim.select('fill-a');
+    assertTrue(Math.abs(Number(sim.cell('fill-a', 'sd')) - 2) < 0.3, `sd A ${sim.cell('fill-a', 'sd')}`);
+    sim.select('fill-b');
+    assertTrue(Math.abs(Number(sim.cell('fill-b', 'sd')) - 5) < 0.5, `sd B ${sim.cell('fill-b', 'sd')}`);
+    assertEqual(sim.countOf('fill-a'), 1000);
+    assertEqual(sim.countOf('fill-b'), 1000);
+  });
+
+  test('value widget seeds per mount unless injected', () => {
+    const run = (params) => {
+      const { sim } = mount({ processes: ['fill-a'], stats: ['mean'], ...params });
+      sim.measure('fill-a', 1);
+      return sim.cell('fill-a', 'mean');
+    };
+    assertEqual(run({ seed: 42 }), run({ seed: 42 }), 'same injected seed, same values');
+    assertTrue(run({ seed: 42 }) !== run({ seed: 43 }), 'different seeds differ');
+    assertTrue(run({}) !== run({}), 'default seeds are random per mount');
+  });
+
+  test('value widget releases every chart it created', async () => {
+    const live = new Set();
+    const chartManager = {
+      create: async () => { const c = {}; live.add(c); return c; },
+      update: () => {},
+      destroy: (c) => live.delete(c),
+    };
+    const containers = {};
+    const root = {
+      querySelector: (sel) => (containers[sel] || (containers[sel] = {})),
+      dispatchEvent: () => {},
+    };
+    const sim = make({ chartManager });
+    await sim.setup(root, { processes: ['fill-a', 'fill-b'], showMean: true, bands: [1] }, {});
+    assertEqual(live.size, 2);
+    sim.measure('fill-a', 10);
+    sim.destroy();
+    assertEqual(live.size, 0);
+  });
+
+  test('value widget stats follow params', () => {
+    const { sim } = mount({ processes: ['waiting'], stats: ['count', 'min', 'max'], bands: [1] });
+    assertDeepEqual(sim.rows().map((r) => r.key), ['count', 'min', 'max', 'within1']);
+    const plain = mount({ processes: ['waiting'], stats: ['mean', 'belowMean'] }).sim;
+    assertDeepEqual(plain.rows().map((r) => r.key), ['mean', 'belowMean']);
+  });
+
+  test('value widget shows shares as whole percent', () => {
+    const { sim } = mount({ processes: ['fill-a'], stats: ['count'], bands: [1, 2], seed: 5 });
+    assertEqual(sim.cell('fill-a', 'within1'), '–');
+    sim.measure('fill-a', 1000);
+    assertTrue(/^\d{1,3} %$/.test(sim.cell('fill-a', 'within1')), sim.cell('fill-a', 'within1'));
+    assertEqual(sim.cell('fill-a', 'count'), '1000');
+  });
+});

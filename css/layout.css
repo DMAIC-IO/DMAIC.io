@@ -3436,3 +3436,18 @@ body.training-area-open .dmaic-tiles {
 .training-sim__stats td { padding-right: var(--spacing-sm); font-variant-numeric: tabular-nums; }
 .training-sim__sym { color: var(--color-text-secondary); }
 .training-sim__hint { grid-column: 1 / -1; margin: 0; color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.training-values {
+  display: flex; flex-direction: column; gap: var(--spacing-sm);
+  border: var(--border-width) solid var(--color-border-primary);
+  border-radius: var(--radius-md, 6px);
+  padding: var(--spacing-md); margin: var(--spacing-md) 0;
+  background: var(--color-bg-secondary);
+}
+.training-values__field { display: flex; align-items: center; gap: var(--spacing-xs); color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.training-values__grid { display: grid; grid-template-columns: 1fr; gap: var(--spacing-md); }
+.training-values__grid--two { grid-template-columns: 1fr 1fr; }
+.training-values__process { display: flex; flex-direction: column; gap: var(--spacing-sm); min-width: 0; }
+.training-values__chart { min-height: 240px; min-width: 0; }
+.training-values__stats { border-collapse: collapse; font-size: var(--font-size-sm); }
+.training-values__stats th { text-align: left; font-weight: normal; color: var(--color-text-secondary); padding-right: var(--spacing-md); }
+.training-values__stats td { font-variant-numeric: tabular-nums; }

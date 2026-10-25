@@ -332,6 +332,28 @@
       "insightLockedEach": "Miss erst in jedem Diagramm mindestens {k} Werte – dann steht hier, was du gesehen hast.",
       "quizCorrect": "Richtig.",
       "quizWrong": "Noch nicht.",
+      "values": {
+        "measure": "{k} messen",
+        "count": "Anzahl Werte",
+        "mean": "Mittelwert x̄",
+        "sd": "Standardabweichung s",
+        "min": "kleinster Wert",
+        "max": "größter Wert",
+        "range": "Spannweite R",
+        "within": "Anteil innerhalb x̄ ± {k} s",
+        "belowMean": "Anteil unter x̄",
+        "frequency": "Häufigkeit",
+        "process": {
+          "fill-a": "Anlage A",
+          "fill-b": "Anlage B",
+          "waiting": "Wartezeiten am Schalter"
+        },
+        "axis": {
+          "g": "Füllgewicht in g",
+          "min": "Wartezeit in Minuten"
+        },
+        "processLabel": "Prozess"
+      },
       "sim": {
         "population": "Grundgesamtheit",
         "sampleSize": "Stichprobenumfang n",

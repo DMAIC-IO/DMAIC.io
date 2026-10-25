@@ -6,6 +6,7 @@
  */
 
 import { samplingSimComponent } from './sampling-distribution.js';
+import { valueSimComponent } from './value-distribution.js';
 
 /**
  * Widget name -> Alpine component name and factory.
@@ -13,4 +14,5 @@ import { samplingSimComponent } from './sampling-distribution.js';
  */
 export const WIDGET_COMPONENTS = {
   'sampling-distribution': { component: 'trainingSamplingSim', factory: samplingSimComponent },
+  'value-distribution': { component: 'trainingValueSim', factory: valueSimComponent },
 };
