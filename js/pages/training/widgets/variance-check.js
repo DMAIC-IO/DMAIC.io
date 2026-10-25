@@ -71,7 +71,7 @@ export function varianceCheckComponent(ctx) {
     // ---------- template helpers ----------
 
     label(key, vars) { return t(key, vars); },
-    drawLabel(k) { return t('draw', { k }); },
+    drawLabel(k) { return t(k === 1 ? 'drawOne' : 'draw', { k }); },
 
     /** Running averages over all samples drawn (NaN before the first). */
     averages() {

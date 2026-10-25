@@ -3473,7 +3473,7 @@ body.training-area-open .dmaic-tiles {
 .training-estimate__history { display: flex; flex-direction: column; gap: var(--spacing-xs); }
 .training-estimate__history-title { color: var(--color-text-secondary); font-size: var(--font-size-sm); }
 .training-estimate__stats,
-.training-variance__stats { border-collapse: collapse; font-size: var(--font-size-sm); }
+.training-variance__stats { align-self: flex-start; border-collapse: collapse; font-size: var(--font-size-sm); }
 .training-estimate__stats th,
 .training-variance__stats th { text-align: left; font-weight: normal; color: var(--color-text-secondary); padding-right: var(--spacing-md); }
 .training-estimate__stats td,

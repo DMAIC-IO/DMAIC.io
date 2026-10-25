@@ -272,6 +272,12 @@ suite('variance-check widget', () => {
     return { sim, events };
   };
 
+  test('a single draw has its own button label', () => {
+    const { sim } = mount({ seed: 1 });
+    assertEqual(sim.drawLabel(1), 'training.course.variance.drawOne');
+    assertEqual(sim.drawLabel(10), 'training.course.variance.draw');
+  });
+
   test('variance widget averages share their samples', () => {
     const { sim, events } = mount({ n: 3, seed: 1 });
     assertEqual(sim.cell('avgByN'), '–');
