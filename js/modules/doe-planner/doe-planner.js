@@ -23,12 +23,13 @@
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State, PHASE_DECISIONS } from './doe-planner-model.js';
+import { State } from './doe-planner-model.js';
 import { FactorsViewModel } from './viewmodel/factors.js';
 import { DesignViewModel } from './viewmodel/design.js';
 import { OptimalViewModel } from './viewmodel/optimal.js';
 import { EvaluationViewModel } from './viewmodel/evaluation.js';
 import { AnalysisViewModel } from './viewmodel/analysis.js';
+import { EvopViewModel } from './viewmodel/evop.js';
 import { codedToActualRows, buildRunTable, captureEdits, applyEdits } from './doe-planner-runtable.js';
 import { DataGrid } from '../../core/datagrid/datagrid.js';
 import {
@@ -43,7 +44,7 @@ import {
 } from './doe-planner-worksheet.js';
 import { readResponses, staleness, boundPct, boundComplete } from './doe-planner-responses.js';
 import {
-  evaluateDesign, computeEVOPEffects,
+  evaluateDesign,
 } from './doe-planner-analysis.js';
 import { provisionWorksheet } from '../../core/examples-registry.js';
 import { uid } from '../../core/uid.js';
@@ -53,7 +54,7 @@ import { uid } from '../../core/uid.js';
 const AUTO_GEN_DELAY = 600; // ms debounce for auto-generation
 
 /** Data keys of the sub-viewmodels, in attach order. */
-const SUB_VIEWMODELS = ['factors', 'design', 'optimal', 'evaluation', 'analysis'];
+const SUB_VIEWMODELS = ['factors', 'design', 'optimal', 'evaluation', 'analysis', 'evop'];
 
 const mod = createModule({
   config: {
@@ -91,6 +92,7 @@ const mod = createModule({
       optimal: new OptimalViewModel(deps),
       evaluation: new EvaluationViewModel(deps),
       analysis: new AnalysisViewModel(deps),
+      evop: new EvopViewModel(deps),
 
       // ── Transient UI state (never persisted) ──────────────────
       _previewGrid: null,
@@ -274,82 +276,6 @@ const mod = createModule({
       boundComplete() { void this._extRev; return boundComplete(ctx(), this.model); },
       showPreview() {
         return this.staleness() !== 'bound' && Boolean(this.model.design && this.model.design.actualMatrix && this.model.design.actualMatrix.length);
-      },
-
-      // ── EVOP / project mode ───────────────────────────────────
-
-      projectModeChanged(event) {
-        this.model.setProjectMode(event.target.checked);
-        this.save();
-      },
-      timelineItemClass(idx) {
-        const m = this.model;
-        const ph = m.projectPhases[idx];
-        const isCurrent = idx === m.activePhaseIdx ? 'doe__timeline-item--active' : '';
-        const isDone = ph && ph.decision ? 'doe__timeline-item--done' : '';
-        return (`${isCurrent  } ${  isDone}`).trim();
-      },
-      phaseLabel(ph) { return ph.doeName || `Phase ${ph.cycleNumber}`; },
-      phaseDecIcon(ph) {
-        return ph.decision === 'recenter' ? 'action.loop'
-          : ph.decision === 'repeat' ? 'action.reset'
-          : ph.decision === 'stop' ? 'status.ok' : '';
-      },
-      canStartNewPhase() {
-        return this.model.canStartNewPhase();
-      },
-      newPhase() { this.model.startPhase({ recenter: false }); this.save(); },
-      /**
-       * The "next step" block shows once the active, undecided phase has all responses.
-       * @noagent
-       */
-      showPhaseDecision() {
-        const m = this.model;
-        const ph = m.projectPhases[m.activePhaseIdx];
-        return Boolean(m.projectMode && ph && !ph.decision && this.staleness() === 'bound' && this.boundComplete());
-      },
-      /**
-       * Close the active EVOP phase after a confirm dialog: store its design and
-       * response values, then re-center or repeat in a new phase, or stop.
-       * @agent
-       * @param {'recenter'|'repeat'|'stop'} decision
-       * @returns {Promise<boolean>} true when the phase was closed, false when cancelled
-       */
-      async completePhase(decision) {
-        if (!PHASE_DECISIONS.includes(decision)) throw new Error(`unknown decision: ${decision}`);
-        const m = this.model;
-        const ph = m.projectPhases[m.activePhaseIdx];
-        if (!ph || ph.decision) return false;
-        const ok = await ctx().dialog.confirm({ message: _t(`decisionConfirm_${decision}`) });
-        if (!ok) return false;
-
-        const resp = this._resp();
-        this.model.closeActivePhase(decision, resp && resp.values && resp.values[0] ? resp.values[0] : undefined);
-        if (decision !== 'stop') {
-          this.model.startPhase({ recenter: decision === 'recenter' });
-          this.scheduleAutoGenerate();
-        }
-        this.save();
-        return true;
-      },
-      viewPhase(idx) {
-        if (!this.model.viewPhase(idx)) return;
-        this.adoptSignatures();
-        this.save();
-      },
-      evopSummary() {
-        const cycles = this.model.evopCycles();
-        if (cycles.length === 0) return null;
-        const evop = computeEVOPEffects(cycles);
-        if (evop.effects.length === 0) return null;
-        return evop;
-      },
-      evopMeanLabel() {
-        const e = this.evopSummary();
-        return e ? `${_t('evopMean')}: ${e.cycleMean.toFixed(4)}` : '';
-      },
-      evopErrorLimit(e) {
-        return `±${  e.errorLimit === Infinity ? '∞' : e.errorLimit.toFixed(4)}`;
       },
 
       // ── Datasheet create / recreate ───────────────────────────

@@ -3,7 +3,7 @@
 
     <!-- Project (EVOP) toggle -->
     <label class="doe__project-toggle">
-      <input type="checkbox" class="doe__project-check" x-model="model.projectMode" @change="projectModeChanged($event)" />
+      <input type="checkbox" class="doe__project-check" x-model="model.projectMode" @change="evop.setProjectMode(model.projectMode)" />
       <span x-text="t('projectMode')"></span>
     </label>
 
@@ -13,7 +13,7 @@
         <div class="doe__project-name-row">
           <label class="doe__name-label" x-text="t('projectName')"></label>
           <input type="text" class="field doe__project-name-input"
-                 x-model="model.projectName" @change="save()"
+                 x-model="model.projectName" @change="evop.setProjectName(model.projectName)"
                  :placeholder="t('projectNamePlaceholder')" />
         </div>
 
@@ -23,16 +23,16 @@
             <h4 class="doe__timeline-title" x-text="t('phaseHistory')"></h4>
             <div class="doe__timeline-track">
               <template x-for="(ph, idx) in model.projectPhases" :key="idx">
-                <button class="doe__timeline-item" :class="timelineItemClass(idx)" :data-phase-idx="idx" type="button" @click="viewPhase(idx)">
+                <button class="doe__timeline-item" :class="evop.timelineItemClass(idx)" :data-phase-idx="idx" type="button" @click="evop.viewPhase(idx)">
                   <span class="doe__timeline-num" x-text="ph.cycleNumber"></span>
-                  <span class="doe__timeline-label" x-text="phaseLabel(ph)"></span>
-                  <template x-if="phaseDecIcon(ph)">
-                    <span class="doe__timeline-dec icon icon--sm" :data-icon="phaseDecIcon(ph)" aria-hidden="true"></span>
+                  <span class="doe__timeline-label" x-text="evop.phaseLabel(ph)"></span>
+                  <template x-if="evop.phaseDecIcon(ph)">
+                    <span class="doe__timeline-dec icon icon--sm" :data-icon="evop.phaseDecIcon(ph)" aria-hidden="true"></span>
                   </template>
                 </button>
               </template>
-              <template x-if="canStartNewPhase()">
-                <button class="doe__timeline-item doe__timeline-item--new doe__new-phase-btn" type="button" @click="newPhase()">
+              <template x-if="evop.canStartNewPhase()">
+                <button class="doe__timeline-item doe__timeline-item--new doe__new-phase-btn" type="button" @click="evop.newPhase()">
                   <span class="doe__timeline-num">+</span>
                   <span class="doe__timeline-label" x-text="t('newPhase')"></span>
                 </button>
@@ -42,13 +42,13 @@
         </template>
 
         <!-- EVOP summary -->
-        <template x-if="evopSummary()">
+        <template x-if="evop.evopSummary()">
           <div class="doe__evop-summary">
             <h4 class="doe__evop-title" x-text="t('evopEffectTable')"></h4>
             <div class="doe__evop-meta">
-              <span x-text="t('evopCycles', { n: evopSummary().cycleCount })"></span>
-              <span x-text="t('evopTotalRuns', { n: evopSummary().totalRuns })"></span>
-              <span x-text="evopMeanLabel()"></span>
+              <span x-text="t('evopCycles', { n: evop.evopSummary().cycleCount })"></span>
+              <span x-text="t('evopTotalRuns', { n: evop.evopSummary().totalRuns })"></span>
+              <span x-text="evop.evopMeanLabel()"></span>
             </div>
             <table class="doe__evop-table">
               <thead><tr>
@@ -58,24 +58,24 @@
                 <th x-text="t('evopSignificant')"></th>
               </tr></thead>
               <tbody>
-                <template x-for="(e, ei) in evopSummary().effects" :key="ei">
+                <template x-for="(e, ei) in evop.evopSummary().effects" :key="ei">
                   <tr :class="e.significant ? 'doe__evop-sig' : ''">
                     <td x-text="e.term"></td>
                     <td x-text="fmt4(e.cumulativeEffect)"></td>
-                    <td x-text="evopErrorLimit(e)"></td>
+                    <td x-text="evop.evopErrorLimit(e)"></td>
                     <td x-text="e.significant ? '★' : '—'"></td>
                   </tr>
                 </template>
               </tbody>
             </table>
-            <template x-if="evopSummary().bestPointDescription">
+            <template x-if="evop.evopSummary().bestPointDescription">
               <div class="doe__evop-best">
                 <span class="doe__evop-best-label" x-text="t('evopBestPoint') + ':'"></span>
-                <code x-text="evopSummary().bestPointDescription"></code>
+                <code x-text="evop.evopSummary().bestPointDescription"></code>
               </div>
             </template>
-            <div class="doe__evop-recommendation" :class="'doe__evop-rec--' + evopSummary().overallRecommendation"
-                 x-text="t('evopRec_' + evopSummary().overallRecommendation)"></div>
+            <div class="doe__evop-recommendation" :class="'doe__evop-rec--' + evop.evopSummary().overallRecommendation"
+                 x-text="t('evopRec_' + evop.evopSummary().overallRecommendation)"></div>
           </div>
         </template>
       </div>
@@ -573,17 +573,17 @@
                 </button>
               </div>
             </template>
-            <template x-if="showPhaseDecision()">
+            <template x-if="evop.showPhaseDecision()">
               <div class="doe__phase-decision">
                 <div class="doe__phase-decision-title" x-text="t('decisionTitle')"></div>
                 <div class="doe__phase-decision-hint" x-text="t('decisionDesc')"></div>
                 <div class="doe__phase-decision-actions">
                   <button class="btn btn--primary doe__phase-decision-btn" type="button" data-decision="recenter"
-                          @click="completePhase('recenter')" x-text="t('decisionRecenter')"></button>
+                          @click="evop.confirmCompletePhase('recenter')" x-text="t('decisionRecenter')"></button>
                   <button class="btn btn--secondary doe__phase-decision-btn" type="button" data-decision="repeat"
-                          @click="completePhase('repeat')" x-text="t('decisionRepeat')"></button>
+                          @click="evop.confirmCompletePhase('repeat')" x-text="t('decisionRepeat')"></button>
                   <button class="btn btn--secondary doe__phase-decision-btn" type="button" data-decision="stop"
-                          @click="completePhase('stop')" x-text="t('decisionStop')"></button>
+                          @click="evop.confirmCompletePhase('stop')" x-text="t('decisionStop')"></button>
                 </div>
               </div>
             </template>

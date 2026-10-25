@@ -4504,16 +4504,6 @@ export const AGENT_REGISTRY = {
       "unmarked_method:boundProgressText",
       "unmarked_method:boundComplete",
       "unmarked_method:showPreview",
-      "unmarked_method:projectModeChanged",
-      "unmarked_method:timelineItemClass",
-      "unmarked_method:phaseLabel",
-      "unmarked_method:phaseDecIcon",
-      "unmarked_method:canStartNewPhase",
-      "unmarked_method:newPhase",
-      "unmarked_method:viewPhase",
-      "unmarked_method:evopSummary",
-      "unmarked_method:evopMeanLabel",
-      "unmarked_method:evopErrorLimit",
       "unmarked_method:removeOldWorksheet",
       "unmarked_method:createOrRecreateDatasheet",
       "unmarked_method:openLinkedWorksheet",
@@ -4522,10 +4512,7 @@ export const AGENT_REGISTRY = {
       "unmarked_method:capturePreviewEdits",
       "unmarked_method:init",
       "unmarked_method:destroy",
-      "unreadable_state_key:version",
-      "unreachable_write:projectMode",
-      "unreachable_write:projectName",
-      "unreachable_write:doeName"
+      "unreadable_state_key:version"
     ],
     "actions": {
       "factors.addFactor": {
@@ -4962,7 +4949,36 @@ export const AGENT_REGISTRY = {
         "returns": "string",
         "help": "Hand the linked datasheet to a new regression in the planner's phase, with the design's model terms."
       },
-      "completePhase": {
+      "evop.setProjectMode": {
+        "params": [
+          {
+            "name": "on",
+            "type": "boolean",
+            "optional": false,
+            "help": ""
+          }
+        ],
+        "returns": "void",
+        "help": "Switch the EVOP project mode. The first switch-on opens phase 1 with the current plan."
+      },
+      "evop.setProjectName": {
+        "params": [
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "the name; \"\" clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set the project name; new phases are named after it."
+      },
+      "evop.newPhase": {
+        "params": [],
+        "returns": "number",
+        "help": "Start a new phase with the current factor levels. Only on a decided active phase, and never after the project was stopped."
+      },
+      "evop.completePhase": {
         "params": [
           {
             "name": "decision",
@@ -4971,8 +4987,20 @@ export const AGENT_REGISTRY = {
             "help": ""
           }
         ],
-        "returns": "Promise<boolean>",
-        "help": "Close the active EVOP phase after a confirm dialog: store its design and response values, then re-center or repeat in a new phase, or stop."
+        "returns": "boolean",
+        "help": "Close the active phase without asking: store its design and the first response's values, then re-center or repeat in a new phase, or stop."
+      },
+      "evop.viewPhase": {
+        "params": [
+          {
+            "name": "idx",
+            "type": "number",
+            "optional": false,
+            "help": "the phase, 0 = phase 1"
+          }
+        ],
+        "returns": "void",
+        "help": "Show a phase: its plan, design and datasheet come back; the design is not regenerated."
       }
     },
     "fields": {
