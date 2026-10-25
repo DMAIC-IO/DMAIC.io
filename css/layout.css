@@ -3314,6 +3314,7 @@ body.training-area-open .dmaic-tiles {
 }
 .training-course__summary { color: var(--color-text-secondary); }
 .training-course__lessons { list-style: none; padding: 0 !important; margin: var(--spacing-md) 0 0; display: flex; flex-direction: column; gap: var(--spacing-xs); }
+
 .training-course__lesson {
   appearance: none; width: 100%;
   display: flex; align-items: center; gap: var(--spacing-md);
@@ -3327,6 +3328,7 @@ body.training-area-open .dmaic-tiles {
 .training-course__lesson:hover { border-color: var(--color-accent); }
 .training-course__lesson--soon { opacity: 0.55; cursor: default; }
 .training-course__lesson--soon:hover { border-color: var(--color-border-primary); }
+
 .training-course__nr {
   width: 2em; height: 2em; border-radius: 50%;
   display: inline-flex; align-items: center; justify-content: center;
@@ -3340,6 +3342,7 @@ body.training-area-open .dmaic-tiles {
 .training-lesson__crumb { flex: 1; color: var(--color-text-secondary); font-size: var(--font-size-sm); }
 .training-lesson__title { margin-top: var(--spacing-sm) !important; }
 .training-lesson__progress { display: flex; align-items: center; gap: var(--spacing-xs); margin-bottom: var(--spacing-md); }
+
 .training-lesson__dot {
   appearance: none; width: 28px; height: 6px; border: none; border-radius: 3px;
   background: var(--color-border-primary); cursor: pointer; padding: 0;
@@ -3348,22 +3351,26 @@ body.training-area-open .dmaic-tiles {
 .training-lesson__dot--active { background: var(--color-accent); }
 .training-lesson__step-label { margin-left: var(--spacing-sm); color: var(--color-text-secondary); font-size: var(--font-size-sm); }
 .training-lesson__step-title { font-size: var(--font-size-lg) !important; }
+
 .training-lesson__definition {
   display: flex; gap: var(--spacing-sm); padding: var(--spacing-sm) var(--spacing-md);
   border-left: 3px solid var(--color-accent); background: var(--color-bg-secondary);
   margin-bottom: var(--spacing-sm);
 }
 .training-lesson__definition strong { min-width: 160px; }
+
 .training-lesson__note {
   padding: var(--spacing-sm) var(--spacing-md);
   border-left: 3px solid var(--color-border-primary); background: var(--color-bg-secondary);
   color: var(--color-text-secondary);
 }
 .training-lesson__table { margin-bottom: var(--spacing-sm); max-width: 640px; }
+
 .training-lesson__footer {
   display: flex; justify-content: space-between; margin-top: var(--spacing-lg);
   padding-top: var(--spacing-md); border-top: var(--border-width) solid var(--color-border-primary);
 }
+
 .training-insight {
   margin: var(--spacing-md) 0; padding: var(--spacing-sm) var(--spacing-md);
   border: var(--border-width) solid var(--color-warning);
@@ -3392,6 +3399,7 @@ body.training-area-open .dmaic-tiles {
   display: flex; flex-direction: column; gap: var(--spacing-xs);
 }
 .training-quiz__question { font-weight: var(--font-weight-semibold); }
+
 .training-quiz__option {
   appearance: none; text-align: left; font: inherit; cursor: pointer;
   padding: var(--spacing-sm) var(--spacing-md);
@@ -3407,7 +3415,7 @@ body.training-area-open .dmaic-tiles {
 .training-quiz__feedback--wrong { border-left: 3px solid var(--color-error); }
 
 .training-sim__legend { display: flex; flex-wrap: wrap; gap: var(--spacing-md); font-size: var(--font-size-sm); color: var(--color-text-secondary); }
-.training-sim__key::before { content: ''; display: inline-block; width: 1.5em; margin-right: var(--spacing-xs); vertical-align: middle; border-top: 2px solid currentColor; }
+.training-sim__key::before { content: ''; display: inline-block; width: 1.5em; margin-right: var(--spacing-xs); vertical-align: middle; border-top: 2px solid currentcolor; }
 .training-sim__key--mu::before { border-top-style: dotted; }
 .training-sim__key--xbar { color: var(--color-accent); }
 .training-sim__key--theory { color: var(--color-error); }
