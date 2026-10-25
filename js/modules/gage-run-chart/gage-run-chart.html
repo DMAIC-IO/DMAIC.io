@@ -120,8 +120,8 @@
         </div>
 
         <div class="gage-run-chart__warnings" data-ref="warnings" x-show="hasWarnings()">
-          <template x-for="code in result.warnings">
-            <div class="gage-run-chart__warning" :key="code" x-text="warningText(code)"></div>
+          <template x-for="(code, i) in result.warnings" :key="code + ':' + i">
+            <div class="gage-run-chart__warning" x-text="warningText(code)"></div>
           </template>
         </div>
 
@@ -130,8 +130,8 @@
         </div>
 
         <div class="gage-run-chart__strips" data-ref="strips">
-          <template x-for="row in result.rows">
-            <div class="gage-run-chart__strip" :key="row.idx" :data-strip="row.idx"></div>
+          <template x-for="row in result.rows" :key="row.idx">
+            <div class="gage-run-chart__strip" :data-strip="row.idx"></div>
           </template>
         </div>
 
