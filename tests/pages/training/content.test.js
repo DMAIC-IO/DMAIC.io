@@ -56,6 +56,12 @@ suite('course content', () => {
           assertEqual(b.id, e.id, `${lesson.id} step ${i} block ${j} id`);
           assertEqual(b.widget, e.widget, `${lesson.id} step ${i} block ${j} widget`);
           assertDeepEqual(b.params, e.params, `${lesson.id} step ${i} block ${j} params`);
+          for (const gate of ['revealAfter', 'revealAfterN', 'revealAfterShapes']) {
+            assertEqual(b[gate], e[gate], `${lesson.id} step ${i} block ${j} ${gate}`);
+          }
+          // Stored quiz answers are option indices, so the correct position must match.
+          assertDeepEqual((b.options || []).map((o) => !!o.correct), (e.options || []).map((o) => !!o.correct),
+            `${lesson.id} step ${i} block ${j} correct option position`);
         });
       });
     }
