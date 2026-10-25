@@ -1081,6 +1081,9 @@ const mod = createModule({
         // as seen.
         this.adoptSignatures();
         this.$watch(() => this.model.configSignature(), (sig) => {
+          // A remote apply (other tab) assigns in place and never re-runs
+          // init(): the received design stays, only the signatures move on.
+          if (module._applyingRemote) { this.adoptSignatures(); return; }
           if (sig === signatures.config) return;
           this.model.invalidateDesign();
           signatures.config = this.model.configSignature();
@@ -1088,6 +1091,7 @@ const mod = createModule({
           this.save();
         });
         this.$watch(() => this.model.scheduleSignature(), (sig) => {
+          if (module._applyingRemote) { this.adoptSignatures(); return; }
           if (sig === signatures.schedule) return;
           signatures.schedule = sig;
           this.scheduleAutoGenerate();
