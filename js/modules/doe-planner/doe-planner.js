@@ -24,6 +24,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import { State, letter, PHASE_DECISIONS } from './doe-planner-model.js';
+import { FactorsViewModel } from './viewmodel/factors.js';
 import { codedToActualRows, buildRunTable, captureEdits, applyEdits } from './doe-planner-runtable.js';
 import { DataGrid } from '../../core/datagrid/datagrid.js';
 import { PB_DESIGNS, ALL_RUNS, K_RANGE, BOX_BEHNKEN } from './doe-planner-designs.js';
@@ -70,6 +71,9 @@ const DESIGN_TYPES = [
 const ALGO_ID_DEFF = 'd-efficiency';
 const AUTO_GEN_DELAY = 600; // ms debounce for auto-generation
 
+/** Data keys of the sub-viewmodels, in attach order. */
+const SUB_VIEWMODELS = ['factors'];
+
 const mod = createModule({
   config: {
     id: 'doe-planner',
@@ -96,8 +100,13 @@ const mod = createModule({
     // closure, not a data field: Alpine never wraps it, and the watchers'
     // callbacks compare against it synchronously.
     const signatures = { config: '', schedule: '' };
+    const deps = { t: _t, context: module._context, container: () => module._container };
 
     return {
+      // `name: new X(deps)` literals: the agent generator reads the
+      // sub-viewmodels from exactly this shape. init() replaces them.
+      factors: new FactorsViewModel(deps),
+
       // ── Static view data ──────────────────────────────────────
       designTypes: DESIGN_TYPES,
       kRange: K_RANGE,
@@ -121,10 +130,6 @@ const mod = createModule({
       fmt4: (v) => Number(v).toFixed(4),
       fmt6: (v) => Number(v).toFixed(6),
 
-      factorLetter: (i) => letter(i),
-      responseLetter: (i) => `Y${  i + 1}`,
-      isCategorical: (f) => f.kind === 'categorical',
-      factorKind: (f) => (f.kind === 'categorical' ? 'categorical' : 'continuous'),
       factorDisplayName: (f, fi) => (f.name && f.name.trim()) || letter(fi),
 
       save() { module._persist(this.model); },
@@ -217,6 +222,22 @@ const mod = createModule({
         signatures.schedule = this.model.scheduleSignature();
       },
 
+      /** @returns {object[]} the sub-viewmodels, in attach order */
+      _subViewModels() { return SUB_VIEWMODELS.map((key) => this[key]); },
+
+      /** @returns {object} what every sub-viewmodel gets in attach() */
+      _binding() {
+        return {
+          model: this.model,
+          save: () => this.save(),
+          watch: (getter, callback) => this.$watch(getter, callback),
+          nextTick: (callback) => this.$nextTick(callback),
+          rev: () => this._extRev,
+          schedule: () => this.scheduleAutoGenerate(),
+          adoptSignatures: () => this.adoptSignatures(),
+        };
+      },
+
       buildDesignFromSource(source) {
         const m = this.model;
         const factors = m.factors;
@@ -257,65 +278,6 @@ const mod = createModule({
           sourceRowCount: M,
         };
       },
-
-      // ── Factor handlers ───────────────────────────────────────
-
-      factorNameClass(f) {
-        const n = f.name.trim().toLowerCase();
-        if (!n) return '';
-        const count = this.model.factors.filter(x => x.name.trim().toLowerCase() === n).length;
-        return count > 1 ? 'field--error' : '';
-      },
-      factorNameTitle(f) {
-        return this.factorNameClass(f) ? _t('duplicateFactorError') : '';
-      },
-      factorUnitTitle(f) {
-        return this.isCategorical(f) ? _t('factorUnitCategoricalDisabled') : '';
-      },
-      levelPlaceholder(f) {
-        return this.isCategorical(f) ? _t('factorLevelLabelPlaceholder') : '…';
-      },
-
-      factorNameChanged(_f) {
-        this.save();
-      },
-      factorUnitChanged(_f) {
-        this.save();
-      },
-      factorKindChanged(f) {
-        f.kind = f.kind === 'categorical' ? 'categorical' : 'continuous';
-        if (f.kind === 'categorical') f.unit = '';
-        this.save();
-      },
-      levelChanged(_f) {
-        this.save();
-      },
-      addFactor() {
-        this.model.addFactor('', '');
-        if (Array.isArray(this.model.options.forbiddenVertices) && this.model.options.forbiddenVertices.length) {
-          this.model.options.forbiddenVertices = [];
-        }
-        this.save();
-      },
-      removeFactor(id) {
-        this.model.removeFactor(id);
-        this.save();
-      },
-      insertLevel(fId, at) {
-        this.model.insertLevel(fId, at);
-        this.save();
-      },
-      removeLevel(fId, li) {
-        this.model.removeLevel(fId, li);
-        this.save();
-      },
-
-      // ── Response handlers ─────────────────────────────────────
-
-      responseNameChanged(_idx) { this.save(); },
-      responseUnitChanged(_idx) { this.save(); },
-      addResponse() { this.model.addResponse(); this.save(); },
-      removeResponse(idx) { this.model.removeResponse(idx); this.save(); },
 
       // ── Design-type selection ─────────────────────────────────
 
@@ -1033,6 +995,14 @@ const mod = createModule({
         this._termGroupExpanded = {};
         this._renderGen = 0;
 
+        // createModule spreads this data object into every Alpine build of the
+        // component, and setState (example load) or a language change rebuilds
+        // it. Fresh sub-viewmodels per build, assigned through the reactive
+        // proxy so the template binds to the new objects.
+        for (const key of SUB_VIEWMODELS) this[key] = new this[key].constructor(deps);
+        const binding = this._binding();
+        for (const vm of this._subViewModels()) vm.attach(binding);
+
         // Defaults — ensure ≥2 factors and ≥1 response on a fresh module.
         if (this.model.factors.length === 0) {
           this.model.addFactor('', '');
@@ -1104,6 +1074,7 @@ const mod = createModule({
       },
 
       destroy() {
+        for (const vm of this._subViewModels()) vm.detach();
         if (this._autoGenTimer) clearTimeout(this._autoGenTimer);
         this._autoGenTimer = null;
         this.destroyPreviewGrid();

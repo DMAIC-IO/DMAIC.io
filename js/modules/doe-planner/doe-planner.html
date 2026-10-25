@@ -93,54 +93,54 @@
     <div class="dmike-split__section-title" x-text="t('stepFactors')"></div>
     <div class="doe__factors-list">
       <template x-for="(f, fi) in model.factors" :key="f.id">
-        <div class="doe__factor-row" :data-factor-id="f.id" :data-factor-kind="factorKind(f)">
+        <div class="doe__factor-row" :data-factor-id="f.id" :data-factor-kind="factors.factorKind(f)">
           <div class="doe__factor-top">
-            <span class="doe__factor-letter" x-text="factorLetter(fi)"></span>
+            <span class="doe__factor-letter" x-text="factors.factorLetter(fi)"></span>
             <input type="text" class="field doe__factor-name" :data-factor-id="f.id"
-                   :class="factorNameClass(f)" :title="factorNameTitle(f)"
-                   x-model.lazy="f.name" @change="factorNameChanged(f)"
+                   :class="factors.factorNameClass(f)" :title="factors.factorNameTitle(f)"
+                   x-model.lazy="f.name" @change="factors.setFactorName(f.id, f.name)"
                    :placeholder="t('factorNamePlaceholder')" />
             <input type="text" class="field doe__factor-unit doe__factor-unit--narrow" :data-factor-id="f.id"
-                   x-model.lazy="f.unit" @change="factorUnitChanged(f)"
+                   x-model.lazy="f.unit" @change="factors.setFactorUnit(f.id, f.unit)"
                    :placeholder="t('factorUnitPlaceholder')"
-                   :disabled="isCategorical(f)" :title="factorUnitTitle(f)" />
+                   :disabled="factors.isCategorical(f)" :title="factors.factorUnitTitle(f)" />
             <select class="field doe__factor-kind" :data-factor-id="f.id"
                     :title="t('factorKindLabel')"
-                    x-model="f.kind" @change="factorKindChanged(f)">
+                    x-model="f.kind" @change="factors.setFactorKind(f.id, f.kind)">
               <option value="continuous" x-text="t('factorKindContinuous')"></option>
               <option value="categorical" x-text="t('factorKindCategorical')"></option>
             </select>
             <button class="doe__factor-remove-btn" type="button" :data-factor-id="f.id"
-                    :title="t('removeFactor')" @click="removeFactor(f.id)">&#10005;</button>
+                    :title="t('removeFactor')" @click="factors.removeFactor(f.id)">&#10005;</button>
           </div>
           <div class="doe__levels-row">
             <button class="doe__insert-level-btn" type="button"
                     :data-factor-id="f.id" data-insert-at="0"
-                    :title="t('insertLevel')" @click="insertLevel(f.id, 0)">+</button>
+                    :title="t('insertLevel')" @click="factors.insertLevel(f.id, 0)">+</button>
             <template x-for="(val, li) in f.levels" :key="li">
               <div class="doe__level-frag">
                 <div class="doe__level-chip">
                   <span class="doe__level-num" x-text="li + 1"></span>
                   <input type="text" class="field doe__factor-level-input"
                          :data-factor-id="f.id" :data-level-idx="li"
-                         x-model.lazy="f.levels[li]" @change="levelChanged(f)"
-                         :placeholder="levelPlaceholder(f)" />
+                         x-model.lazy="f.levels[li]" @change="factors.setLevel(f.id, li, f.levels[li])"
+                         :placeholder="factors.levelPlaceholder(f)" />
                   <template x-if="f.levels.length > 2">
                     <button class="doe__remove-level-btn" type="button"
                             :data-factor-id="f.id" :data-level-idx="li"
-                            :title="t('removeLevel')" @click="removeLevel(f.id, li)">&#10005;</button>
+                            :title="t('removeLevel')" @click="factors.removeLevel(f.id, li)">&#10005;</button>
                   </template>
                 </div>
                 <button class="doe__insert-level-btn" type="button"
                         :data-factor-id="f.id" :data-insert-at="li + 1"
-                        :title="t('insertLevel')" @click="insertLevel(f.id, li + 1)">+</button>
+                        :title="t('insertLevel')" @click="factors.insertLevel(f.id, li + 1)">+</button>
               </div>
             </template>
           </div>
         </div>
       </template>
     </div>
-    <button class="btn btn--sm doe__add-factor-btn" type="button" @click="addFactor()"><span x-text="'+ ' + t('addFactor')"></span></button>
+    <button class="btn btn--sm doe__add-factor-btn" type="button" @click="factors.addFactor()"><span x-text="'+ ' + t('addFactor')"></span></button>
 
     <!-- ── Responses section ──────────────────────────────────── -->
     <div class="dmike-split__section-title" x-text="t('stepResponses')"></div>
@@ -148,22 +148,22 @@
       <template x-for="(r, ri) in model.responses" :key="ri">
         <div class="doe__response-row" :data-response-idx="ri">
           <div class="doe__response-top">
-            <span class="doe__response-letter" x-text="responseLetter(ri)"></span>
+            <span class="doe__response-letter" x-text="factors.responseLetter(ri)"></span>
             <input type="text" class="field doe__response-name" :data-idx="ri"
-                   x-model.lazy="r.name" @change="responseNameChanged(ri)"
+                   x-model.lazy="r.name" @change="factors.setResponseName(ri, r.name)"
                    :placeholder="t('responseNamePlaceholder')" />
             <input type="text" class="field doe__response-unit doe__factor-unit--narrow" :data-idx="ri"
-                   x-model.lazy="r.unit" @change="responseUnitChanged(ri)"
+                   x-model.lazy="r.unit" @change="factors.setResponseUnit(ri, r.unit)"
                    :placeholder="t('responseUnitPlaceholder')" />
             <template x-if="model.responses.length > 1">
               <button class="doe__response-remove-btn" type="button" :data-idx="ri"
-                      :title="t('removeResponse')" @click="removeResponse(ri)">&#10005;</button>
+                      :title="t('removeResponse')" @click="factors.removeResponse(ri)">&#10005;</button>
             </template>
           </div>
         </div>
       </template>
     </div>
-    <button class="btn btn--sm doe__add-response-btn" type="button" @click="addResponse()"><span x-text="'+ ' + t('addResponse')"></span></button>
+    <button class="btn btn--sm doe__add-response-btn" type="button" @click="factors.addResponse()"><span x-text="'+ ' + t('addResponse')"></span></button>
 
     <!-- ── Design section ─────────────────────────────────────── -->
     <div class="dmike-split__section-title" x-text="t('stepDesignType')"></div>

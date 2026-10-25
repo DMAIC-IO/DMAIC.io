@@ -4491,10 +4491,6 @@ export const AGENT_REGISTRY = {
       "unmarked_method:fmt2",
       "unmarked_method:fmt4",
       "unmarked_method:fmt6",
-      "unmarked_method:factorLetter",
-      "unmarked_method:responseLetter",
-      "unmarked_method:isCategorical",
-      "unmarked_method:factorKind",
       "unmarked_method:factorDisplayName",
       "unmarked_method:save",
       "unmarked_method:sourceRowCount",
@@ -4504,22 +4500,6 @@ export const AGENT_REGISTRY = {
       "unmarked_method:scheduleAutoGenerate",
       "unmarked_method:tryAutoGenerate",
       "unmarked_method:buildDesignFromSource",
-      "unmarked_method:factorNameClass",
-      "unmarked_method:factorNameTitle",
-      "unmarked_method:factorUnitTitle",
-      "unmarked_method:levelPlaceholder",
-      "unmarked_method:factorNameChanged",
-      "unmarked_method:factorUnitChanged",
-      "unmarked_method:factorKindChanged",
-      "unmarked_method:levelChanged",
-      "unmarked_method:addFactor",
-      "unmarked_method:removeFactor",
-      "unmarked_method:insertLevel",
-      "unmarked_method:removeLevel",
-      "unmarked_method:responseNameChanged",
-      "unmarked_method:responseUnitChanged",
-      "unmarked_method:addResponse",
-      "unmarked_method:removeResponse",
       "unmarked_method:designOptDisabled",
       "unmarked_method:designOptClass",
       "unmarked_method:designOptTip",
@@ -4637,6 +4617,190 @@ export const AGENT_REGISTRY = {
       "unreachable_write:options.alphaType"
     ],
     "actions": {
+      "factors.addFactor": {
+        "params": [],
+        "returns": "number",
+        "help": "Add an empty continuous factor with two empty levels. Forbidden factor combinations of an optimal design are cleared: they list one value per factor."
+      },
+      "factors.removeFactor": {
+        "params": [
+          {
+            "name": "factorId",
+            "type": "number",
+            "optional": false,
+            "help": "the factor"
+          }
+        ],
+        "returns": "void",
+        "help": "Remove a factor. The model terms and forbidden combinations of an optimal design are reset."
+      },
+      "factors.setFactorName": {
+        "params": [
+          {
+            "name": "factorId",
+            "type": "number",
+            "optional": false,
+            "help": "the factor"
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "the name; \"\" clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set a factor's name; names must differ, regardless of case."
+      },
+      "factors.setFactorUnit": {
+        "params": [
+          {
+            "name": "factorId",
+            "type": "number",
+            "optional": false,
+            "help": "the factor"
+          },
+          {
+            "name": "unit",
+            "type": "string",
+            "optional": false,
+            "help": "the unit; \"\" clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set a continuous factor's unit."
+      },
+      "factors.setFactorKind": {
+        "params": [
+          {
+            "name": "factorId",
+            "type": "number",
+            "optional": false,
+            "help": "the factor"
+          },
+          {
+            "name": "kind",
+            "type": "'continuous'|'categorical'",
+            "optional": false,
+            "help": ""
+          }
+        ],
+        "returns": "void",
+        "help": "Make a factor continuous (numeric levels) or categorical (named levels, no unit)."
+      },
+      "factors.setLevel": {
+        "params": [
+          {
+            "name": "factorId",
+            "type": "number",
+            "optional": false,
+            "help": "the factor"
+          },
+          {
+            "name": "levelIdx",
+            "type": "number",
+            "optional": false,
+            "help": "0 = lowest level"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "the level"
+          }
+        ],
+        "returns": "void",
+        "help": "Set one level of a factor: a number for a continuous factor, a label for a categorical one."
+      },
+      "factors.insertLevel": {
+        "params": [
+          {
+            "name": "factorId",
+            "type": "number",
+            "optional": false,
+            "help": "the factor"
+          },
+          {
+            "name": "at",
+            "type": "number",
+            "optional": false,
+            "help": "position of the new level, 0 = before the first"
+          }
+        ],
+        "returns": "void",
+        "help": "Insert an empty level; more than two levels exclude the fractional and Plackett-Burman designs."
+      },
+      "factors.removeLevel": {
+        "params": [
+          {
+            "name": "factorId",
+            "type": "number",
+            "optional": false,
+            "help": "the factor"
+          },
+          {
+            "name": "levelIdx",
+            "type": "number",
+            "optional": false,
+            "help": "the level"
+          }
+        ],
+        "returns": "void",
+        "help": "Remove a level; a factor keeps at least two."
+      },
+      "factors.addResponse": {
+        "params": [],
+        "returns": "number",
+        "help": "Add an empty response."
+      },
+      "factors.removeResponse": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "the response, 0 = Y1"
+          }
+        ],
+        "returns": "void",
+        "help": "Remove a response; the plan keeps at least one."
+      },
+      "factors.setResponseName": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "the response, 0 = Y1"
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "the name; \"\" clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set a response's name."
+      },
+      "factors.setResponseUnit": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "the response, 0 = Y1"
+          },
+          {
+            "name": "unit",
+            "type": "string",
+            "optional": false,
+            "help": "the unit; \"\" clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set a response's unit."
+      },
       "completePhase": {
         "params": [
           {
