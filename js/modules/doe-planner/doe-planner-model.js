@@ -15,6 +15,9 @@ import { defaultActiveTerms, parseTermId, termsFromLegacyOptions } from '../../e
 
 const OPTIMAL_TYPES = ['dopt', 'aopt', 'gopt'];
 
+/** Factor letter by index: 0 → A, 1 → B, … */
+export const letter = (i) => String.fromCharCode(65 + i);
+
 /** Deep clone helper that strips any Alpine reactive Proxy down to plain data. */
 function plain(v) {
   return v == null ? v : JSON.parse(JSON.stringify(v));
