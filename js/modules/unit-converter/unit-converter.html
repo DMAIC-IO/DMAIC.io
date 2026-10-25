@@ -1,7 +1,7 @@
 <section class="module-unit-converter" x-data="unitConverter">
   <div class="module-unit-converter__categories" data-ref="categories">
-    <template x-for="(cat, catKey) in categories">
-      <button :key="catKey" type="button"
+    <template x-for="(cat, catKey) in categories" :key="catKey">
+      <button type="button"
         class="module-unit-converter__cat-btn"
         :class="catActiveClass(catKey)"
         :data-cat="catKey"
@@ -28,15 +28,15 @@
         <div>
           <label class="module-unit-converter__field-label" data-help-key="modules.unit-converter.fields.fromUnit.help" x-text="t('from')"></label>
           <select class="field" data-ref="fromUnit" x-model="model.fromUnit" @change="onFromChange()">
-            <template x-for="grp in fromGroups()">
-              <optgroup :key="grp.key" :label="grp.label">
-                <template x-for="uk in grp.members">
-                  <option :key="uk" :value="uk" :selected="model.fromUnit === uk" x-text="unitLabel(uk)"></option>
+            <template x-for="grp in fromGroups()" :key="grp.key">
+              <optgroup :label="grp.label">
+                <template x-for="uk in grp.members" :key="uk">
+                  <option :value="uk" :selected="model.fromUnit === uk" x-text="unitLabel(uk)"></option>
                 </template>
               </optgroup>
             </template>
-            <template x-for="uk in fromFlatUnits()">
-              <option :key="uk" :value="uk" :selected="model.fromUnit === uk" x-text="unitLabel(uk)"></option>
+            <template x-for="uk in fromFlatUnits()" :key="uk">
+              <option :value="uk" :selected="model.fromUnit === uk" x-text="unitLabel(uk)"></option>
             </template>
           </select>
           <input class="module-unit-converter__input" data-ref="inputVal" type="text"
@@ -49,8 +49,8 @@
         <div>
           <label class="module-unit-converter__field-label" data-help-key="modules.unit-converter.fields.toUnit.help" x-text="t('to')"></label>
           <select class="field" data-ref="toUnit" x-model="model.toUnit">
-            <template x-for="uk in toUnitKeys()">
-              <option :key="uk" :value="uk" :selected="model.toUnit === uk" x-text="unitLabel(uk)"></option>
+            <template x-for="uk in toUnitKeys()" :key="uk">
+              <option :value="uk" :selected="model.toUnit === uk" x-text="unitLabel(uk)"></option>
             </template>
           </select>
           <div class="module-unit-converter__result" data-ref="resultVal" data-help-key="modules.unit-converter.types.ConversionResult.text" x-text="resultText()"></div>
@@ -73,8 +73,8 @@
         <th x-text="t('refTo')"></th>
       </tr></thead>
       <tbody data-ref="refBody">
-        <template x-for="(row, idx) in refRows()">
-          <tr :key="idx">
+        <template x-for="(row, idx) in refRows()" :key="idx">
+          <tr>
             <td x-text="fmt(row.val)"></td>
             <td x-text="row.from"></td>
             <td class="module-unit-converter__ref-val" x-text="fmtResult(row.result)"></td>
@@ -102,8 +102,8 @@
           <div>
             <label class="module-unit-converter__field-label" data-help-key="modules.unit-converter.fields.tzFrom.help" x-text="t('fromTimezone')"></label>
             <select class="field" data-ref="tzFrom" x-model.number="model.tzFrom">
-              <template x-for="(z, i) in timezones">
-                <option :key="i" :value="i" :selected="model.tzFrom === i" x-text="tzLabel(z)"></option>
+              <template x-for="(z, i) in timezones" :key="i">
+                <option :value="i" :selected="model.tzFrom === i" x-text="tzLabel(z)"></option>
               </template>
             </select>
             <div class="module-unit-converter__tz-input-row">
@@ -117,8 +117,8 @@
           <div>
             <label class="module-unit-converter__field-label" data-help-key="modules.unit-converter.fields.tzTo.help" x-text="t('toTimezone')"></label>
             <select class="field" data-ref="tzTo" x-model.number="model.tzTo">
-              <template x-for="(z, i) in timezones">
-                <option :key="i" :value="i" :selected="model.tzTo === i" x-text="tzLabel(z)"></option>
+              <template x-for="(z, i) in timezones" :key="i">
+                <option :value="i" :selected="model.tzTo === i" x-text="tzLabel(z)"></option>
               </template>
             </select>
             <div class="module-unit-converter__tz-result" data-ref="tzResult" data-help-key="modules.unit-converter.types.TimezoneResult.text" x-text="tzResultText()"></div>
@@ -146,8 +146,8 @@
           <th x-text="t('tzTime')"></th>
         </tr></thead>
         <tbody data-ref="tzRefBody">
-          <template x-for="row in worldClock()">
-            <tr :key="row.idx">
+          <template x-for="row in worldClock()" :key="row.idx">
+            <tr>
               <td x-text="row.tz"></td>
               <td x-text="row.abbr"></td>
               <td x-text="row.date"></td>
