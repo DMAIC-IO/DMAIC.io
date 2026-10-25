@@ -970,12 +970,15 @@ export default class ChartBase {
     // (configured xMin/xMax resp. yMin/yMax, else the data bounds) instead of
     // the nice-rounded tick range, e.g. for fixed population ranges in
     // teaching simulations. Ticks outside the range are dropped.
-    if (this.config.xExact) {
+    // Non-finite or non-increasing bounds (empty series, xMin === xMax) keep
+    // the normal nice-tick range.
+    const validBounds = (lo, hi) => Number.isFinite(lo) && Number.isFinite(hi) && hi > lo;
+    if (this.config.xExact && validBounds(bounds.xMin, bounds.xMax)) {
       xTick.min = bounds.xMin;
       xTick.max = bounds.xMax;
       xTick.ticks = xTick.ticks.filter((t) => t >= bounds.xMin && t <= bounds.xMax);
     }
-    if (this.config.yExact) {
+    if (this.config.yExact && validBounds(bounds.yMin, bounds.yMax)) {
       yTick.min = bounds.yMin;
       yTick.max = bounds.yMax;
       yTick.ticks = yTick.ticks.filter((t) => t >= bounds.yMin && t <= bounds.yMax);

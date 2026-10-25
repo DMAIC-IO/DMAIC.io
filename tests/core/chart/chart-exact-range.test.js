@@ -53,4 +53,19 @@ suite('ChartBase exact range', () => {
     assertEqual(JSON.stringify(chart._xTick.ticks), JSON.stringify([10, 50]));
     chart.destroy(); host.remove();
   });
+
+  test('yExact on an empty series falls back to the nice range without NaN', () => {
+    const { host, chart } = mount({ series: [{ name: 'A', x: [], y: [] }], yExact: true, xExact: true });
+    for (const t of [chart._xTick, chart._yTick]) {
+      assertTrue(Number.isFinite(t.min) && Number.isFinite(t.max), `${t.min}..${t.max}`);
+      assertTrue(t.max > t.min, 'increasing range');
+    }
+    chart.destroy(); host.remove();
+  });
+
+  test('xExact with xMin === xMax falls back to the nice range', () => {
+    const { host, chart } = mount({ series: SERIES, xMin: 5, xMax: 5, xExact: true });
+    assertTrue(chart._xTick.max > chart._xTick.min, 'increasing range');
+    chart.destroy(); host.remove();
+  });
 });
