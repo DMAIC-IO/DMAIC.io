@@ -4503,7 +4503,6 @@ export const AGENT_REGISTRY = {
       "unmarked_method:staleness",
       "unmarked_method:scheduleAutoGenerate",
       "unmarked_method:tryAutoGenerate",
-      "unmarked_method:invalidateAndSchedule",
       "unmarked_method:buildDesignFromSource",
       "unmarked_method:factorNameClass",
       "unmarked_method:factorNameTitle",
