@@ -91,6 +91,15 @@ suite('course content', () => {
     }
   });
 
+  test('the correct option does not sit at the same position in every quiz of a lesson', () => {
+    for (const { lesson } of builtLessons()) {
+      const positions = blocksOf(lesson, 'de').filter((b) => b.type === 'quiz')
+        .map((b) => b.options.findIndex((o) => o.correct));
+      if (positions.length < 2) continue;
+      assertTrue(new Set(positions).size > 1, `${lesson.id} correct option always at index ${positions[0]}`);
+    }
+  });
+
   test('quizIds lists the quiz ids of a lesson', () => {
     const { lesson } = findLesson('sampling-distribution');
     const ids = quizIds(lesson);

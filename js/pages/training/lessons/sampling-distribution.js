@@ -70,18 +70,18 @@ export default {
         title: 'Kurz geprüft',
         blocks: [
           { type: 'quiz', id: 'q-se-quadruple', question: 'Statt 4 misst du jetzt 16 Kunden pro Stichprobe. Was passiert mit der Streuung der Mittelwerte?', options: [
-            { text: 'Sie halbiert sich.', correct: true, feedback: 'Genau: √16 / √4 = 2. Für halbe Streuung brauchst du vierfachen Aufwand.' },
             { text: 'Sie viertelt sich.', correct: false, feedback: 'Nicht ganz – n steht unter der Wurzel. Viermal so viele Werte machen den Standardfehler nur halb so groß.' },
+            { text: 'Sie halbiert sich.', correct: true, feedback: 'Genau: √16 / √4 = 2. Für halbe Streuung brauchst du vierfachen Aufwand.' },
             { text: 'Sie bleibt gleich, nur die Form ändert sich.', correct: false, feedback: 'Die Form nähert sich der Glocke an, aber auch die Breite schrumpft – mit σ/√n.' },
           ] },
           { type: 'quiz', id: 'q-mean-location', question: 'Die Wartezeiten sind schief, ihr Mittelwert μ liegt bei 35 Minuten. Du ziehst 1000 Stichproben mit n = 30. Wo liegt der Mittelwert der 1000 Stichprobenmittelwerte?', options: [
-            { text: 'Bei etwa 35 Minuten – genau dort, wo μ liegt.', correct: true, feedback: 'Genau: Die Stichprobenmittelwerte streuen um μ, egal wie groß n ist. Mit wachsendem n bleibt ihre Lage, ihre Streuung wird kleiner.' },
             { text: 'Deutlich darunter, weil die meisten Kunden kurz warten.', correct: false, feedback: 'Die vielen kurzen Wartezeiten sind in μ schon eingerechnet. Die Stichprobenmittelwerte treffen μ im Mittel genau – auch bei schiefen Daten.' },
             { text: 'Deutlich darüber, weil die langen Wartezeiten nach oben ziehen.', correct: false, feedback: 'Die langen Wartezeiten stecken bereits in μ. Im Mittel landen die Stichprobenmittelwerte genau bei μ.' },
+            { text: 'Bei etwa 35 Minuten – genau dort, wo μ liegt.', correct: true, feedback: 'Genau: Die Stichprobenmittelwerte streuen um μ, egal wie groß n ist. Mit wachsendem n bleibt ihre Lage, ihre Streuung wird kleiner.' },
           ] },
           { type: 'quiz', id: 'q-clt-forty', question: 'Die Wartezeiten sind deutlich schief. Du misst immer wieder je 40 Kunden und bildest den Mittelwert. Welche Form hat die Verteilung dieser Mittelwerte?', options: [
-            { text: 'Annähernd glockenförmig.', correct: true, feedback: 'Das ist der zentrale Grenzwertsatz. Bei sehr schiefen Wartezeiten oder Ausreißern braucht es mehr Werte, und für die einzelnen Wartezeiten gilt das nicht: die bleiben schief.' },
             { text: 'Genauso schief wie die einzelnen Wartezeiten.', correct: false, feedback: 'Die einzelnen Wartezeiten bleiben schief, ihre Mittelwerte aber werden mit wachsendem n glockenförmig – das hast du in der Simulation gesehen.' },
+            { text: 'Annähernd glockenförmig.', correct: true, feedback: 'Das ist der zentrale Grenzwertsatz. Bei sehr schiefen Wartezeiten oder Ausreißern braucht es mehr Werte, und für die einzelnen Wartezeiten gilt das nicht: die bleiben schief.' },
           ] },
           { type: 'quiz', id: 'q-clt-shapes', question: 'Drei Filialen: In der ersten sind die Wartezeiten gleichverteilt, in der zweiten schief, in der dritten zweigipflig. Du ziehst überall 1000 Stichproben mit n = 30. Welche Form haben die drei Verteilungen der Mittelwerte?', options: [
             { text: 'Alle drei annähernd glockenförmig.', correct: true, feedback: 'Genau: Der zentrale Grenzwertsatz verlangt keine bestimmte Form der Einzelwerte. Die Ausgangsform bestimmt nur, wie groß n sein muss – bei n = 30 reicht es für alle drei.' },
@@ -159,18 +159,18 @@ export default {
         title: 'Quick check',
         blocks: [
           { type: 'quiz', id: 'q-se-quadruple', question: 'Instead of 4 you now measure 16 customers per sample. What happens to the spread of the means?', options: [
-            { text: 'It halves.', correct: true, feedback: 'Exactly: √16 / √4 = 2. Half the spread costs four times the effort.' },
             { text: 'It drops to a quarter.', correct: false, feedback: 'Not quite – n sits under the square root. Four times the values make the standard error only half as large.' },
+            { text: 'It halves.', correct: true, feedback: 'Exactly: √16 / √4 = 2. Half the spread costs four times the effort.' },
             { text: 'It stays the same, only the shape changes.', correct: false, feedback: 'The shape approaches the bell, but the width shrinks too – with σ/√n.' },
           ] },
           { type: 'quiz', id: 'q-mean-location', question: 'The waiting times are skewed, their mean μ is 35 minutes. You draw 1000 samples with n = 30. Where does the mean of the 1000 sample means lie?', options: [
-            { text: 'At about 35 minutes – right where μ lies.', correct: true, feedback: 'Exactly: the sample means scatter around μ, whatever n is. With growing n their location stays, their spread shrinks.' },
             { text: 'Clearly below, because most customers wait briefly.', correct: false, feedback: 'The many short waiting times are already part of μ. On average the sample means hit μ exactly – even for skewed data.' },
             { text: 'Clearly above, because the long waiting times pull it up.', correct: false, feedback: 'The long waiting times are already part of μ. On average the sample means land exactly at μ.' },
+            { text: 'At about 35 minutes – right where μ lies.', correct: true, feedback: 'Exactly: the sample means scatter around μ, whatever n is. With growing n their location stays, their spread shrinks.' },
           ] },
           { type: 'quiz', id: 'q-clt-forty', question: 'The waiting times are clearly skewed. You repeatedly measure 40 customers and take the mean. What shape does the distribution of these means have?', options: [
-            { text: 'Approximately bell-shaped.', correct: true, feedback: 'That is the central limit theorem. Very skewed data or outliers need more values, and it does not hold for the individual waiting times: they stay skewed.' },
             { text: 'Just as skewed as the individual waiting times.', correct: false, feedback: 'The individual waiting times stay skewed, but their means become bell-shaped with growing n – you saw that in the simulation.' },
+            { text: 'Approximately bell-shaped.', correct: true, feedback: 'That is the central limit theorem. Very skewed data or outliers need more values, and it does not hold for the individual waiting times: they stay skewed.' },
           ] },
           { type: 'quiz', id: 'q-clt-shapes', question: 'Three branches: in the first the waiting times are uniform, in the second skewed, in the third bimodal. In each you draw 1000 samples with n = 30. What shape do the three distributions of the means have?', options: [
             { text: 'All three approximately bell-shaped.', correct: true, feedback: 'Exactly: the central limit theorem does not require any particular shape of the individual values. The starting shape only decides how large n must be – at n = 30 it is enough for all three.' },
