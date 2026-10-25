@@ -7351,7 +7351,7 @@
         },
         "factors": {
           "addFactor": {
-            "help": "Einen leeren stetigen Faktor mit zwei leeren Stufen anhängen. Liefert seine id, die factorId der übrigen Faktoraktionen. Bis Name und Stufen gesetzt sind, ist der Plan ungültig."
+            "help": "Einen leeren stetigen Faktor mit zwei leeren Stufen anhängen. Liefert seine id, die factorId der übrigen Faktoraktionen. Bis Name und Stufen gesetzt sind, ist der Plan ungültig. Verwirft die verbotenen Kombinationen des optimalen Plans."
           },
           "removeFactor": {
             "help": "Einen Faktor entfernen; Modellterme mit ihm entfallen.",
@@ -7367,14 +7367,14 @@
             }
           },
           "setFactorUnit": {
-            "help": "Die Einheit eines Faktors setzen.",
+            "help": "Die Einheit eines Faktors setzen. Bei einem kategorialen Faktor schlägt der Aufruf fehl, solange die Einheit nicht leer ist.",
             "params": {
               "factorId": "Der Faktor.",
               "unit": "Die Einheit, z. B. °C; leer ohne Einheit."
             }
           },
           "setFactorKind": {
-            "help": "Einen Faktor stetig (Zahlen als Stufen) oder kategorial (Namen als Stufen, ohne Einheit) machen. Welche Plantypen danach gültig sind, zeigen read().valid und invalidReason.",
+            "help": "Einen Faktor stetig (Zahlen als Stufen) oder kategorial (Namen als Stufen, ohne Einheit; der Wechsel auf kategorial löscht die Einheit) machen. Welche Plantypen danach gültig sind, zeigen read().valid und invalidReason.",
             "params": {
               "factorId": "Der Faktor.",
               "kind": "continuous oder categorical."
@@ -7389,7 +7389,7 @@
             }
           },
           "insertLevel": {
-            "help": "Eine leere Stufe einfügen. Mehr als zwei Stufen schließen die zweistufigen Plantypen aus (teilfaktoriell, Plackett-Burman, CCD).",
+            "help": "Eine leere Stufe einfügen. Mehr als zwei Stufen schließen die zweistufigen Plantypen aus (teilfaktoriell, Plackett-Burman).",
             "params": {
               "factorId": "Der Faktor.",
               "at": "Die Position, ab 0; die Stufen dahinter rücken nach."
@@ -7428,9 +7428,9 @@
         },
         "design": {
           "selectDesignType": {
-            "help": "Den Versuchsplantyp wählen; die typeigene Auswahl (Auflösung, Plackett-Burman-Plan, Taguchi-Array) beginnt neu. Teilfaktoriell, Plackett-Burman und Taguchi brauchen danach ihre Auswahl, bevor ein Plan entsteht.",
+            "help": "Den Versuchsplantyp wählen; die typeigene Auswahl (Auflösung, Plackett-Burman-Plan) beginnt neu. Teilfaktoriell, Plackett-Burman und Taguchi brauchen danach ihre Auswahl, bevor ein Plan entsteht.",
             "params": {
-              "type": "full (vollfaktoriell), frac (teilfaktoriell), pb (Plackett-Burman), ccd (Central Composite), bb (Box-Behnken), taguchi, dopt, aopt oder gopt (D-, A-, G-optimal). Zweistufige Typen verlangen genau zwei Stufen je Faktor."
+              "type": "full (vollfaktoriell), frac (teilfaktoriell), pb (Plackett-Burman), ccd (Central Composite), bb (Box-Behnken), taguchi, dopt, aopt oder gopt (D-, A-, G-optimal). frac und pb verlangen genau zwei Stufen je Faktor."
             }
           },
           "applyRecommendation": {

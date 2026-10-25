@@ -7347,7 +7347,7 @@
         },
         "factors": {
           "addFactor": {
-            "help": "Append an empty continuous factor with two empty levels. Returns its id, the factorId of the other factor actions. The plan is invalid until name and levels are set."
+            "help": "Append an empty continuous factor with two empty levels. Returns its id, the factorId of the other factor actions. The plan is invalid until name and levels are set. Clears the forbidden combinations of the optimal design."
           },
           "removeFactor": {
             "help": "Remove a factor; model terms with it go too.",
@@ -7363,14 +7363,14 @@
             }
           },
           "setFactorUnit": {
-            "help": "Set a factor's unit.",
+            "help": "Set a factor's unit. For a categorical factor the call fails unless the unit is empty.",
             "params": {
               "factorId": "The factor.",
               "unit": "The unit, e.g. °C; empty for none."
             }
           },
           "setFactorKind": {
-            "help": "Make a factor continuous (numbers as levels) or categorical (names as levels, no unit). Which design types are valid afterwards shows in read().valid and invalidReason.",
+            "help": "Make a factor continuous (numbers as levels) or categorical (names as levels, no unit; switching to categorical clears the unit). Which design types are valid afterwards shows in read().valid and invalidReason.",
             "params": {
               "factorId": "The factor.",
               "kind": "continuous or categorical."
@@ -7385,7 +7385,7 @@
             }
           },
           "insertLevel": {
-            "help": "Insert an empty level. More than two levels rule out the two-level design types (fractional factorial, Plackett-Burman, CCD).",
+            "help": "Insert an empty level. More than two levels rule out the two-level design types (fractional factorial, Plackett-Burman).",
             "params": {
               "factorId": "The factor.",
               "at": "The position, from 0; the levels behind move up."
@@ -7424,9 +7424,9 @@
         },
         "design": {
           "selectDesignType": {
-            "help": "Choose the design type; the type's own selection (resolution, Plackett-Burman design, Taguchi array) starts over. Fractional factorial, Plackett-Burman and Taguchi need their selection before a design is built.",
+            "help": "Choose the design type; the type's own selection (resolution, Plackett-Burman design) starts over. Fractional factorial, Plackett-Burman and Taguchi need their selection before a design is built.",
             "params": {
-              "type": "full (full factorial), frac (fractional factorial), pb (Plackett-Burman), ccd (central composite), bb (Box-Behnken), taguchi, dopt, aopt or gopt (D-, A-, G-optimal). Two-level types require exactly two levels per factor."
+              "type": "full (full factorial), frac (fractional factorial), pb (Plackett-Burman), ccd (central composite), bb (Box-Behnken), taguchi, dopt, aopt or gopt (D-, A-, G-optimal). frac and pb require exactly two levels per factor."
             }
           },
           "applyRecommendation": {
