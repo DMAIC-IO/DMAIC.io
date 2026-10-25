@@ -29,7 +29,7 @@ const MAX_COL = COLS - 1;
  * @property {string} systemTitle  das betrachtete System
  * @property {string[]} colLabels  die drei Spaltenbeschriftungen (Zeitachse: Vergangenheit, Gegenwart, Zukunft)
  * @property {string[]} rowLabels  die drei Zeilenbeschriftungen (Systemebene: Subsystem, System, Übersystem)
- * @property {Array<Array<{ text: string, image: string|null }>>} cells  [bulk] die 3×3-Felder, adressiert als cells[zeile][spalte]; `image` ist eine Daten-URL oder null und kann groß sein
+ * @property {Array<Array<{ text: string, image: string|null }>>} cells  [bulk] [omit:[][].image] die 3×3-Felder, adressiert als cells[zeile][spalte]; `image` ist null oder, statt der Daten-URL, nur deren Größe
  */
 export default createModule({
   config: {

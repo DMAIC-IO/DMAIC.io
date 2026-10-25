@@ -18770,9 +18770,12 @@ export const AGENT_REGISTRY = {
       },
       "cells": {
         "type": "Array<Array<{ text: string, image: string|null }>>",
-        "help": "die 3×3-Felder, adressiert als cells[zeile][spalte]; `image` ist eine Daten-URL oder null und kann groß sein",
+        "help": "die 3×3-Felder, adressiert als cells[zeile][spalte]; `image` ist null oder, statt der Daten-URL, nur deren Größe",
         "bulk": true,
         "bulkKind": "table",
+        "omit": [
+          "[][].image"
+        ],
         "derived": true
       }
     }

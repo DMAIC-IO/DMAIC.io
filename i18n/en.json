@@ -12803,7 +12803,7 @@
           "help": "The three row labels of the system levels, in the order subsystem, system, supersystem. An empty entry means the row shows its default label."
         },
         "cells": {
-          "help": "The nine cells, addressed as cells[row][col] with three rows and three columns each. Every cell carries text (the cell text) and image (an image data URL or null). A bulk field: read() without arguments reports only its extent, read({ fields: ['cells'] }) delivers the cells."
+          "help": "The nine cells, addressed as cells[row][col] with three rows and three columns each. Every cell carries text (the cell text) and image: null without an image, otherwise only { $omitted: true, bytes } with its size — read() never delivers the image data itself. A bulk field: read() without arguments reports only its extent, read({ fields: ['cells'] }) delivers the cells."
         }
       },
       "subtitle": "Describe the system from nine perspectives: past / present / future × subsystem / system / supersystem.",

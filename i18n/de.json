@@ -12807,7 +12807,7 @@
           "help": "Die drei Zeilenbeschriftungen der Systemebenen, in der Reihenfolge Subsystem, System, Übersystem. Ein leerer Eintrag heißt: die Zeile zeigt ihre Vorgabebeschriftung."
         },
         "cells": {
-          "help": "Die neun Felder, adressiert als cells[zeile][spalte] mit je drei Zeilen und Spalten. Jedes Feld trägt text (der Feldtext) und image (eine Bild-Daten-URL oder null). Ein Massenfeld: read() ohne Parameter nennt nur den Umfang, read({ fields: ['cells'] }) liefert die Felder."
+          "help": "Die neun Felder, adressiert als cells[zeile][spalte] mit je drei Zeilen und Spalten. Jedes Feld trägt text (der Feldtext) und image: null ohne Bild, sonst nur { $omitted: true, bytes } mit der Größe — die Bilddaten selbst liefert read() nicht. Ein Massenfeld: read() ohne Parameter nennt nur den Umfang, read({ fields: ['cells'] }) liefert die Felder."
         }
       },
       "subtitle": "Beschreibe das System aus neun Perspektiven: Vergangenheit / Gegenwart / Zukunft × Subsystem / System / Supersystem.",
