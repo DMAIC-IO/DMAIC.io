@@ -166,16 +166,21 @@ suite('course content', () => {
     }
   });
 
-  test('stub lesson keeps the shape the E2E task depends on', () => {
+  test('lesson 3 follows the approved structure', () => {
     const { lesson } = findLesson('sampling-distribution');
-    const sims = lesson.de.steps.map((s) => s.blocks.findIndex((b) => b.type === 'simulation'));
-    assertEqual(sims.length, 2);
-    assertTrue(sims[0] >= 0 && sims[0] === sims[1], 'simulation at the same block index');
-    const pops = lesson.de.steps.map((s) => s.blocks[sims[0]].params.population);
-    assertTrue(pops[0] !== pops[1], 'different populations');
-    const types = new Set(blocksOf(lesson, 'de').map((b) => b.type));
-    ['paragraph', 'heading', 'list', 'steps', 'note', 'definition', 'table', 'insight', 'simulation', 'quiz']
-      .forEach((t) => assertTrue(types.has(t), `block type ${t} used`));
-    assertTrue(blocksOf(lesson, 'de').some((b) => b.type === 'insight' && GATE_FIELDS.some((k) => b[k] != null)));
+    for (const lang of LANGS) {
+      const steps = lesson[lang].steps;
+      assertEqual(steps.length, 7, `${lang} step count`);
+      const withTheory = steps
+        .map((s, i) => (s.blocks.some((b) => b.type === 'simulation' && b.params.showTheory) ? i : -1))
+        .filter((i) => i >= 0);
+      assertDeepEqual(withTheory, [4], `${lang} theory overlay only in the standard error step`);
+      const clt = blocksOf(lesson, lang).find((b) => b.type === 'insight' && b.id === 'clt');
+      assertEqual(clt.revealAfterShapes, 2);
+      assertEqual(clt.revealAfterN, 3);
+      assertEqual(quizIds(lesson).length, 3);
+      assertTrue(!strings(lesson[lang]).some((x) => /Prozessfähigkeit|process capability/i.test(x)), 'no capability mention');
+      assertTrue(!strings(steps.slice(0, 4)).some((x) => /σ\s*\/\s*√n/.test(x)), 'sigma/sqrt(n) only from the standard error step on');
+    }
   });
 });
