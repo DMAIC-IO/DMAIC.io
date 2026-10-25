@@ -88,13 +88,18 @@
       <template x-for="(c, i) in model.concepts" :key="c.id">
         <div class="morphological-box__concept dmike-del-btn-host" :class="conceptCardClass(c)" :data-concept="c.id">
           <div class="morphological-box__concept-head">
-            <input type="radio" class="morphological-box__concept-active" :name="activeRadioName()"
-                   :checked="c.id === model.activeConceptId" data-help-key="modules.morphological-box.actions.setActiveConcept.help" :aria-label="t('activeConcept')"
-                   @change="setActiveConcept(c.id)">
+            <!-- Help keys sit on wrapping labels: an <input> cannot render the injected help button. -->
+            <label class="morphological-box__concept-active" data-help-anchor="box" data-help-key="modules.morphological-box.actions.setActiveConcept.help">
+              <input type="radio" :name="activeRadioName()"
+                     :checked="c.id === model.activeConceptId" :aria-label="t('activeConcept')"
+                     @change="setActiveConcept(c.id)">
+            </label>
             <span class="morphological-box__marker" :class="colorClass(i)" aria-hidden="true"></span>
-            <input type="text" class="field field--sm field--ghost morphological-box__concept-input"
-                   :data-concept-name="c.id" data-help-key="modules.morphological-box.actions.setConceptName.help" :aria-label="t('conceptName')" :placeholder="t('conceptPlaceholder')"
-                   :value="c.name" @input="setConceptName(c.id, $event.target.value)">
+            <label class="morphological-box__concept-input" data-help-anchor="box" data-help-key="modules.morphological-box.actions.setConceptName.help">
+              <input type="text" class="field field--sm field--ghost"
+                     :data-concept-name="c.id" :aria-label="t('conceptName')" :placeholder="t('conceptPlaceholder')"
+                     :value="c.name" @input="setConceptName(c.id, $event.target.value)">
+            </label>
             <button class="dmike-del-btn" type="button" data-action="remove-concept" data-help-key="modules.morphological-box.actions.removeConcept.help"
                     :title="t('removeConcept')" @click="removeConcept(c.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
           </div>
