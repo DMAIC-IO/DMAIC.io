@@ -375,21 +375,3 @@ export class DesignViewModel {
     this.setBbCenterPoints(Math.max(1, parseInt(event.target.value, 10) || 3));
   }
 }
-const NS = 'design';
-const SNIPPETS = [
-  [`x-for="runs in allRuns" :key="runs"`, `x-for="nRuns in design.allRuns" :key="nRuns"`, 1],
-  [`x-text="runs"></td>`, `x-text="nRuns"></td>`, 1],
-  [`(k, runs`, `(k, nRuns`, 7],
-  [`@change="randomizeChanged()"`, `@change="design.setRandomize(model.options.randomize)"`, 1],
-  [`@change="centerPointsChanged()"`, `@change="design.setCenterPoints(model.options.centerPoints)"`, 1],
-  [`@change="alphaTypeChanged()"`, `@change="design.setAlphaType(model.options.alphaType)"`, 1],
-];
-const TOKENS = {
-  recommendation: 3, recommendationText: 1, applyRecommendation: 1, designTypes: 1,
-  designOptClass: 1, designOptDisabled: 1, designOptTip: 1, selectDesignType: 1,
-  fullIsProduct: 2, fullProductFormula: 1, resInfoText: 1, kRange: 3,
-  resCellClass: 1, resCellData: 4, resCellClick: 1, resCellLabel: 1, resAliasDetail: 7,
-  pbInfoText: 1, pbDesigns: 1, selectPB: 1, bbAvailable: 2, bbDetailText: 1, bbWarningText: 1,
-  taguchiInfoText: 1, taguchiCandidatesList: 3, taguchiSelected: 1, selectTaguchi: 1,
-  taguchiFirstLevels: 1, showCenterPointsOption: 1, replicatesChanged: 1, bbCpChanged: 1, ccdCpChanged: 1,
-};
