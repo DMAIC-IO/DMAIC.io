@@ -76,6 +76,12 @@ suite('populations', () => {
     assertClose(bins[0].x1, 10, 1e-12);
   });
 
+  test('binValues skips non-finite values', () => {
+    const bins = binValues([NaN, Infinity, -Infinity, undefined, 50], [0, 100], 10);
+    assertEqual(bins.reduce((s, b) => s + b.count, 0), 1);
+    assertEqual(bins[5].count, 1);
+  });
+
   test('seeded runs are reproducible', () => {
     const run = () => {
       const rng = mulberry32(1);

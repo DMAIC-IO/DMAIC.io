@@ -102,7 +102,7 @@ export function standardError(population, n) {
 }
 
 /**
- * Histogram bins over [lo, hi]; values outside clamp to the edge bins.
+ * Histogram bins over [lo, hi]; values outside clamp to the edge bins, non-finite values are skipped.
  * @param {number[]} values
  * @param {[number, number]} range
  * @param {number} count number of bins
@@ -115,6 +115,7 @@ export function binValues(values, range, count) {
     x0: lo + i * width, x1: lo + (i + 1) * width, count: 0,
   }));
   for (const v of values) {
+    if (!Number.isFinite(v)) continue;
     const idx = Math.min(count - 1, Math.max(0, Math.floor((v - lo) / width)));
     bins[idx].count++;
   }
