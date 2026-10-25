@@ -17,15 +17,15 @@
         <div class="dmike-split__section-title" x-text="t('sectionSuggestions')"></div>
         <div class="chart-suggestion__selection-info" data-ref="selection-info">
           <div class="chart-suggestion__selection-label" x-text="selectionLabel()"></div>
-          <template x-for="c in selectionColumns()">
-            <span class="chart-suggestion__col-chip" :key="c.id" :class="'col-role-' + c.role">
+          <template x-for="c in selectionColumns()" :key="c.id">
+            <span class="chart-suggestion__col-chip" :class="'col-role-' + c.role">
               <span x-text="c.name || '?'"></span> <em x-text="roleName(c.role)"></em>
             </span>
           </template>
         </div>
         <ul class="chart-suggestion__cards" data-ref="cards">
-          <template x-for="s in model.suggestions">
-            <li :key="s.type">
+          <template x-for="(s, i) in model.suggestions" :key="s.type + ':' + i">
+            <li>
               <button type="button" class="chart-suggestion__card"
                       :class="cardClass(s)" :data-chart-type="s.type" @click="pickChart(s.type)">
                 <div class="chart-suggestion__card-thumb"
