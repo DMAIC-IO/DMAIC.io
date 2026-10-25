@@ -98,8 +98,8 @@
                 @change="_onTyp1Selected($event.target.value)">
           <option value="" :selected="!model.params.sourceTyp1InstanceId"
                   x-text="t('input.sourceTyp1Placeholder')"></option>
-          <template x-for="inst in _typ1Instances">
-            <option :key="inst.instanceId" :value="inst.instanceId"
+          <template x-for="inst in _typ1Instances" :key="inst.instanceId">
+            <option :value="inst.instanceId"
                     :selected="inst.instanceId === model.params.sourceTyp1InstanceId"
                     x-text="inst.name + ' (μ=' + _fmt(inst.mean, 3) + ', σ=' + _fmt(inst.stdDev, 3) + ')'"></option>
           </template>
