@@ -24,6 +24,7 @@ import { compressImageToBudget } from '../../core/image-upload.js';
 import { draggableRows } from '../../ui/draggable-list.js';
 import { State, MAX_DEPTH_CLASS } from './ishikawa-model.js';
 import { CATS, STATUS_CSS } from './ishikawa-constants.js';
+import * as labels from './ishikawa-labels.js';
 import { ratingBg, computeGanttConfig, computeCostConfig, computeTrendConfig } from './ishikawa-charts.js';
 
 const mod = createModule({
@@ -175,15 +176,8 @@ const mod = createModule({
 
       // ── Category / expert view helpers ────────────────────────
 
-      catColor(key) {
-        const c = CATS.find(cat => cat.key === key);
-        return c ? c.color : 'var(--color-border-secondary)';
-      },
-      catLabel(key) {
-        const custom = this.model.catLabels && this.model.catLabels[key];
-        if (custom && custom.trim()) return custom.trim();
-        return i18n().t(`modules.ishikawa.cat.${  key}`);
-      },
+      catColor(key) { return labels.catColor(key); },
+      catLabel(key) { return labels.catLabel(this.model, key, _t); },
       ini(name) {
         const p = (name || '').trim().split(/\s+/);
         return p.length >= 2 ? (p[0][0] + p[1][0]).toUpperCase() : (name || '').substring(0, 2).toUpperCase();
