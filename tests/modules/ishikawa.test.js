@@ -583,6 +583,22 @@ suite('Ishikawa Model — serialization', () => {
     assertEqual(s.rows[0].ratings[1], 5); // original untouched
   });
 
+  test('toJSON returns exactly the eight persisted keys as a plain deep copy', () => {
+    const s = new State();
+    s.problem = 'P';
+    s.addExpert('A');
+    s.addRow(null).name = 'R';
+    s.addImage('inScope', 'data:image/jpeg;base64,AAAA', 'cap');
+    const j = s.toJSON();
+    assertEqual(JSON.stringify(Object.keys(j)),
+      JSON.stringify(['problem', 'experts', 'catLabels', 'rows', 'snapshots', 'experiments', 'facts', 'images']));
+    assertEqual(JSON.stringify(j), JSON.stringify({
+      problem: s.problem, experts: s.experts, catLabels: s.catLabels, rows: s.rows,
+      snapshots: s.snapshots, experiments: s.experiments, facts: s.facts, images: s.images,
+    }));
+    assertEqual(j.images === s.images, false);
+  });
+
   test('fromJSON(null) yields a valid default state', () => {
     const s = State.fromJSON(null);
     assertEqual(s.problem, '');

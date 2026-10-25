@@ -23,7 +23,9 @@
  *     images:    { inScope: [ { id, dataUrl, caption } ], outScope: [ … ] } }
  *
  * 🔴 toJSON() deep-copies its WHOLE return (JSON round-trip) so the Alpine
- * reactive proxy never reaches the persist path's structuredClone.
+ * reactive proxy never reaches the persist path's structuredClone. It is
+ * written as `JSON.parse(JSON.stringify({ … }))` so the agent build can read
+ * its keys (tools/build/agent-data.mjs, persistedKeys).
  */
 
 import { EXP_COLS } from './ishikawa-constants.js';
@@ -510,7 +512,7 @@ export class State {
   // ── Serialization ─────────────────────────────────────────
 
   toJSON() {
-    return clone({
+    return JSON.parse(JSON.stringify({
       problem: this.problem,
       experts: this.experts,
       catLabels: this.catLabels,
@@ -519,7 +521,7 @@ export class State {
       experiments: this.experiments,
       facts: this.facts,
       images: this.images,
-    });
+    }));
   }
 
   /**
