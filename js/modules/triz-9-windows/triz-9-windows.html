@@ -21,8 +21,8 @@
         </div>
       </div>
 
-      <template x-for="(label, c) in model.colLabels">
-        <div class="triz-9w__col-head" :key="c">
+      <template x-for="(label, c) in model.colLabels" :key="c">
+        <div class="triz-9w__col-head">
           <input class="field field--ghost triz-9w__axis-input triz-9w__col-input" type="text"
             data-role="col-label"
             :aria-label="colAxisAria(c)"
@@ -33,8 +33,8 @@
         </div>
       </template>
 
-      <template x-for="(row, r) in model.rows">
-        <div class="triz-9w__row" :key="r">
+      <template x-for="(row, r) in model.rows" :key="r">
+        <div class="triz-9w__row">
           <div class="triz-9w__row-head">
             <input class="field field--ghost triz-9w__axis-input triz-9w__row-input" type="text"
               data-role="row-label"
@@ -45,8 +45,8 @@
               :placeholder="rowPlaceholder(r)">
           </div>
 
-          <template x-for="(cell, c) in row.cells">
-            <div class="triz-9w__cell" :data-r="r" :data-c="c" :key="c">
+          <template x-for="(cell, c) in row.cells" :key="c">
+            <div class="triz-9w__cell" :data-r="r" :data-c="c">
               <div class="triz-9w__cell-head">
                 <span class="triz-9w__cell-coord" x-text="coordText(r, c)"></span>
 
