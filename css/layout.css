@@ -3436,6 +3436,7 @@ body.training-area-open .dmaic-tiles {
 .training-sim__stats td { padding-right: var(--spacing-sm); font-variant-numeric: tabular-nums; }
 .training-sim__sym { color: var(--color-text-secondary); }
 .training-sim__hint { grid-column: 1 / -1; margin: 0; color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+
 .training-values {
   display: flex; flex-direction: column; gap: var(--spacing-sm);
   border: var(--border-width) solid var(--color-border-primary);
