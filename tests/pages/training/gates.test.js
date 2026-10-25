@@ -1,0 +1,66 @@
+/**
+ * Insight gates: when a gated insight block opens.
+ */
+import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
+import {
+  MIN_DRAWS_PER_N, emptyStepCounts, mergeCounts, isGateOpen, gateHint,
+} from '../../../js/pages/training/gates.js';
+
+const counts = (count, perN = {}) => ({ count, perN });
+
+suite('gates', () => {
+  test('minimum draws per n is 100', () => {
+    assertEqual(MIN_DRAWS_PER_N, 100);
+  });
+
+  test('block without gate is open', () => {
+    assertEqual(isGateOpen({ type: 'insight' }, emptyStepCounts()), true);
+  });
+
+  test('revealAfter counts draws', () => {
+    const block = { revealAfter: 50 };
+    assertEqual(isGateOpen(block, counts(49)), false);
+    assertEqual(isGateOpen(block, counts(50)), true);
+  });
+
+  test('revealAfterN needs 100 draws per n', () => {
+    const block = { revealAfterN: 3 };
+    assertEqual(isGateOpen(block, counts(0, { skewed: { 2: 100, 5: 100, 30: 99 } })), false);
+    assertEqual(isGateOpen(block, counts(0, { skewed: { 2: 100, 5: 100, 30: 100 } })), true);
+  });
+
+  test('revealAfterShapes needs several populations', () => {
+    const block = { revealAfterShapes: 2, revealAfterN: 3 };
+    const skewed = { 2: 100, 5: 100, 30: 100 };
+    assertEqual(isGateOpen(block, counts(0, { skewed })), false);
+    assertEqual(isGateOpen(block, counts(0, { skewed, uniform: { 2: 100, 5: 100, 30: 100 } })), true);
+    assertEqual(isGateOpen(block, counts(0, { skewed, uniform: { 2: 100, 5: 100 } })), false);
+  });
+
+  test('all present conditions must hold', () => {
+    const block = { revealAfter: 10, revealAfterN: 1 };
+    assertEqual(isGateOpen(block, counts(5, { a: { 2: 100 } })), false);
+    assertEqual(isGateOpen(block, counts(10, { a: { 2: 100 } })), true);
+  });
+
+  test('counts of another step do not open the gate', () => {
+    const block = { revealAfter: 50 };
+    const otherStep = counts(500);
+    assertEqual(isGateOpen(block, otherStep), true);
+    assertEqual(isGateOpen(block, emptyStepCounts()), false);
+  });
+
+  test('mergeCounts keeps maxima', () => {
+    const a = mergeCounts(emptyStepCounts(), { count: 80, perN: { skewed: { 2: 100, 5: 40 } } });
+    const b = mergeCounts(a, { count: 60, perN: { skewed: { 2: 30, 5: 90 }, uniform: { 2: 10 } } });
+    assertDeepEqual(b, { count: 80, perN: { skewed: { 2: 100, 5: 90 }, uniform: { 2: 10 } } });
+    assertDeepEqual(emptyStepCounts(), { count: 0, perN: {} });
+  });
+
+  test('gateHint returns key and params per gate kind', () => {
+    assertDeepEqual(gateHint({ revealAfter: 5 }), { key: 'course.insightLocked', params: {} });
+    assertDeepEqual(gateHint({ revealAfterN: 3 }), { key: 'course.insightLockedN', params: { n: 3 } });
+    assertDeepEqual(gateHint({ revealAfterShapes: 2, revealAfterN: 3 }),
+      { key: 'course.insightLockedShapes', params: { shapes: 2, n: 3 } });
+  });
+});
