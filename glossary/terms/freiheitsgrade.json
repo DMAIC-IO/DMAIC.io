@@ -1,0 +1,97 @@
+{
+  "id": "freiheitsgrade",
+  "category": "descriptive",
+  "title": {
+    "de": "Freiheitsgrade",
+    "en": "Degrees of Freedom"
+  },
+  "short": {
+    "de": "Anzahl der Werte, die nach dem Schätzen von Kenngrößen noch frei schwanken können — bei s gleich n − 1.",
+    "en": "Number of values still free to vary once parameters have been estimated — n − 1 for s."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **Freiheitsgrade** (Formelzeichen $\\nu$ oder df) geben an, wie viele Werte einer Rechnung unabhängig voneinander schwanken können. Jede Kenngröße, die aus denselben Daten geschätzt wird, legt eine Bedingung fest und kostet einen Freiheitsgrad."
+      },
+      {
+        "type": "paragraph",
+        "text": "Beispiel {{term:standardabweichung|Standardabweichung}}: $\\bar{x}$ wird aus denselben $n$ Werten berechnet, deshalb summieren sich die Abstände $x_i - \\bar{x}$ immer zu null. Sind $n - 1$ Abstände bekannt, liegt der letzte fest. Die Summe der Abstandsquadrate enthält im Schnitt genau $(n - 1)\\,\\sigma^2$, darum teilt die Stichproben-{{term:varianz|Varianz}} durch $n - 1$."
+      },
+      {
+        "type": "formula",
+        "latex": "E\\!\\left[\\sum_{i=1}^{n} (x_i - \\bar{x})^2\\right] = (n - 1)\\,\\sigma^2 \\quad\\Rightarrow\\quad s^2 = \\frac{1}{n-1} \\sum_{i=1}^{n} (x_i - \\bar{x})^2"
+      },
+      {
+        "type": "paragraph",
+        "text": "Freiheitsgrade bestimmen auch die Form der Prüfverteilungen: die t-Verteilung im t-Test, die χ²-Verteilung beim Varianztest und die F-Verteilung in ANOVA und Regression. Je weniger Freiheitsgrade, desto breiter die Verteilung und desto größer der kritische Wert."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **degrees of freedom** (symbol $\\nu$ or df) state how many values in a calculation can vary independently. Every parameter estimated from the same data imposes one constraint and costs one degree of freedom."
+      },
+      {
+        "type": "paragraph",
+        "text": "Example {{term:standardabweichung|standard deviation}}: $\\bar{x}$ is computed from the same $n$ values, so the deviations $x_i - \\bar{x}$ always sum to zero. Once $n - 1$ deviations are known, the last one is fixed. On average the sum of squared deviations holds exactly $(n - 1)\\,\\sigma^2$, which is why the sample {{term:varianz|variance}} divides by $n - 1$."
+      },
+      {
+        "type": "formula",
+        "latex": "E\\!\\left[\\sum_{i=1}^{n} (x_i - \\bar{x})^2\\right] = (n - 1)\\,\\sigma^2 \\quad\\Rightarrow\\quad s^2 = \\frac{1}{n-1} \\sum_{i=1}^{n} (x_i - \\bar{x})^2"
+      },
+      {
+        "type": "paragraph",
+        "text": "Degrees of freedom also set the shape of the test distributions: the t distribution in the t-test, the χ² distribution in the variance test and the F distribution in ANOVA and regression. The fewer degrees of freedom, the wider the distribution and the larger the critical value."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Freiheitsgrad",
+      "df",
+      "ν"
+    ],
+    "en": [
+      "degree of freedom",
+      "df",
+      "ν"
+    ]
+  },
+  "seeAlso": [
+    "varianz",
+    "standardabweichung",
+    "stichprobe"
+  ],
+  "modules": [
+    "hypothesis-test",
+    "regression",
+    "glm-regression",
+    "correlation",
+    "distribution-fit",
+    "process-capability",
+    "multi-vari",
+    "msa-typ1",
+    "msa-typ2",
+    "sample-size"
+  ],
+  "algoLab": [
+    "hypothesis/one-sample-t-test",
+    "hypothesis/two-sample-t-test",
+    "hypothesis/welch-t-test",
+    "hypothesis/chi-square-variance",
+    "hypothesis/f-test",
+    "hypothesis/one-way-anova"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D.C.: Introduction to Statistical Quality Control, 8th ed., Wiley, 2020 — Kap. 3",
+      "url": null
+    },
+    {
+      "label": "DIN ISO 3534-1: Statistik — Begriffe und Formelzeichen, Teil 1: Wahrscheinlichkeit und allgemeine statistische Begriffe",
+      "url": null
+    }
+  ]
+}

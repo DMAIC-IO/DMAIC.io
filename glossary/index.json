@@ -96,6 +96,11 @@
       "file": "terms/varianz.json"
     },
     {
+      "id": "freiheitsgrade",
+      "category": "descriptive",
+      "file": "terms/freiheitsgrade.json"
+    },
+    {
       "id": "median",
       "category": "descriptive",
       "file": "terms/median.json"
