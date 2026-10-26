@@ -1289,6 +1289,8 @@
       "statusDims": "{cols} columns × {rows} rows",
       "statusSelection": "{rows}×{cols} selected",
       "defaultSheetName": "Sheet",
+      "appendTargetUnknown": "The target column no longer exists in the worksheet.",
+      "openTimeout": "The new worksheet did not open in time.",
       "sheetCopy": "Copy",
       "addSheet": "Add new sheet",
       "renameSheet": "Rename",

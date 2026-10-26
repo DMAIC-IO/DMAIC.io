@@ -31,12 +31,25 @@ export function findOwnPhase(stateManager, instanceId) {
 }
 
 /**
+ * Obergrenze für das Warten auf `module:activated`. Wechselt der Nutzer
+ * während des Einhängens den Tab, meldet die Workspace die Aktivierung nie
+ * (`_activateTab` schweigt, wenn ein anderer Tab vorn ist) — ohne Frist hinge
+ * das Versprechen und mit ihm jede wartende `@agent`-Aktion. 20 s wie
+ * `MOUNT_TIMEOUT_MS` in `ui/workspace.js`: großzügig genug für einen
+ * Chunk-Load auf kaltem, langsamem Netz, kurz genug als Riegel gegen den
+ * Dauerhänger.
+ */
+const OPEN_TIMEOUT_MS = 20000;
+
+/**
  * Einen neuen Worksheet in der eigenen Phase anlegen und öffnen.
  * @param {object} context `module._context` (stateManager, eventBus, instanceId)
- * @param {{ sheetName: string }} opts gewünschter Blattname; wird eindeutig gemacht
+ * @param {{ sheetName: string, timeoutMs?: number }} opts gewünschter
+ *   Blattname (wird eindeutig gemacht) und Frist für die Aktivierung
  * @returns {Promise<string>} die id des neuen Worksheets, sobald er aktiv ist
+ * @throws {Error} (abgelehnt) wenn die Aktivierung innerhalb der Frist ausbleibt
  */
-export function openNewWorksheet(context, { sheetName }) {
+export function openNewWorksheet(context, { sheetName, timeoutMs = OPEN_TIMEOUT_MS }) {
   const sm = context.stateManager;
   const eb = context.eventBus;
   const phase = findOwnPhase(sm, context.instanceId);
@@ -49,13 +62,21 @@ export function openNewWorksheet(context, { sheetName }) {
   ]);
   sm.setModuleState(wsId, buildInitialWorksheetState(uniqueSheetName(sm, sheetName)));
 
-  const active = new Promise((resolve) => {
+  const active = new Promise((resolve, reject) => {
+    let timer = null;
     const onActivated = ({ instanceId }) => {
       if (instanceId !== wsId) return;
       eb.off('module:activated', onActivated);
+      clearTimeout(timer);
       resolve(wsId);
     };
     eb.on('module:activated', onActivated);
+    timer = setTimeout(() => {
+      eb.off('module:activated', onActivated);
+      reject(new Error(
+        context.i18n?.t?.('modules.worksheet.openTimeout') || 'The new worksheet did not open in time',
+      ));
+    }, timeoutMs);
   });
   eb.emit('module:added', { moduleId: 'worksheet', phase, instanceId: wsId });
   return active;

@@ -72,4 +72,14 @@ suite('worksheet-handoff', () => {
     assertEqual(resolved, true);
     assertEqual((ctx.handlers['module:activated'] ?? []).length, 0);
   });
+
+  test('openNewWorksheet bricht mit Fehler ab, wenn die Aktivierung ausbleibt', async () => {
+    const ctx = fakeContext({ data: [{ instanceId: 'tool-1', moduleId: 'x', order: 0, state: {} }] });
+    let err = null;
+    try {
+      await openNewWorksheet(ctx, { sheetName: 'Blatt A', timeoutMs: 10 });
+    } catch (e) { err = e; }
+    assert(err instanceof Error, 'Promise wurde nicht mit Fehler beendet');
+    assertEqual((ctx.handlers['module:activated'] ?? []).length, 0);
+  });
 });

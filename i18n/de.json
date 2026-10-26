@@ -1289,6 +1289,8 @@
       "statusDims": "{cols} Spalten × {rows} Zeilen",
       "statusSelection": "{rows}×{cols} ausgewählt",
       "defaultSheetName": "Tabelle",
+      "appendTargetUnknown": "Die Zielspalte gibt es im Worksheet nicht (mehr).",
+      "openTimeout": "Das neue Worksheet wurde nicht rechtzeitig geöffnet.",
       "sheetCopy": "Kopie",
       "addSheet": "Neues Blatt hinzufügen",
       "renameSheet": "Umbenennen",

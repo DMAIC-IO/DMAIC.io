@@ -37,6 +37,7 @@ import { h } from '../../core/dom.js';
 import { icon } from '../../core/icon.js';
 import { uid } from '../../core/uid.js';
 import { debounce } from '../../core/debounce.js';
+import { applyAppendColumn } from '../../core/worksheet-append.js';
 
 // ═══════════════════════════════════════════════════════════
 //  FORMULA EDITOR (imperative — bound to the live DataGrid)
@@ -1282,7 +1283,10 @@ const mod = createModule({
       },
 
       // ── appendColumn handler (FROZEN behaviour) ──────────────
-      _handleAppendColumn({ instanceId, sheetId, colId, slot, name, values, discrete, type }) {
+      // `reply` (optional) quittiert synchron, ob die Spalte geschrieben
+      // wurde — `core/worksheet-append.js` schreibt sonst in den Store.
+      _handleAppendColumn(payload) {
+        const { instanceId, sheetId, colId, slot, name, values, discrete, type, reply } = payload;
         const context = module._context;
         if (instanceId !== context.instanceId) return;
 
@@ -1290,37 +1294,19 @@ const mod = createModule({
         const isText = colType === 'text';
         const format = isText ? {} : { decimals: discrete ? 0 : 6 };
 
-        const isActiveSheet = sheetId === this.model.activeSheetId;
-        const isFirstSlot = colId === '__first__';
-        const isSlotIndex = colId === '__slot__' && Number.isInteger(slot) && slot >= 0;
-        let resolvedColId = colId;
-        if (isFirstSlot) {
-          if (isActiveSheet) {
-            resolvedColId = this._grid.columns[0]?.id;
-          } else {
-            const sh = this.model.sheets.find(s => s.id === sheetId);
-            resolvedColId = sh?.state?.columns?.[0]?.id;
-          }
-        } else if (isSlotIndex) {
-          if (isActiveSheet) {
-            resolvedColId = this._grid.columns[slot]?.id;
-          } else {
-            const sh = this.model.sheets.find(s => s.id === sheetId);
-            resolvedColId = sh?.state?.columns?.[slot]?.id;
-          }
-        }
-        const overwriteName = isFirstSlot || isSlotIndex;
-        const isNewCol = !resolvedColId || resolvedColId === '__new__';
-
-        if (isActiveSheet) {
-          if (isNewCol) {
+        if (sheetId === this.model.activeSheetId) {
+          let resolvedColId = colId;
+          if (colId === '__first__') resolvedColId = this._grid.columns[0]?.id;
+          else if (colId === '__slot__' && Number.isInteger(slot) && slot >= 0) resolvedColId = this._grid.columns[slot]?.id;
+          const overwriteName = colId === '__first__' || colId === '__slot__';
+          if (!resolvedColId || resolvedColId === '__new__') {
             const col = this._grid.addColumn({ name, type: colType, format });
             const needed = values.length - this._grid.rowCount;
             if (needed > 0) this._grid.addRows(needed);
             for (let i = 0; i < values.length; i++) col.values[i] = values[i];
           } else {
             const col = this._grid.columns.find(c => c.id === resolvedColId);
-            if (!col) return;
+            if (!col) { reply?.({ ok: false, reason: 'unknown_column' }); return; }
             if (overwriteName && name) col.name = name;
             if (isText && col.type !== 'text') { col.type = 'text'; col.format = {}; }
             const needed = values.length - this._grid.rowCount;
@@ -1331,35 +1317,15 @@ const mod = createModule({
           }
           this._grid.render();
         } else {
+          // Inaktives Blatt: dieselbe Regel wie für einen nicht eingehängten
+          // Worksheet (`applyAppendColumn`), hier auf dem Modell.
           this._syncActiveSheet();
+          const res = applyAppendColumn(this.model.toJSON(), payload);
+          if (!res.ok) { reply?.(res); return; }
           const sheet = this.model.sheets.find(s => s.id === sheetId);
-          if (!sheet) return;
-          if (!sheet.state) sheet.state = { columns: [], rowCount: 0, colWidths: {}, sortCol: null, sortDir: null, selection: null };
-          const cols = sheet.state.columns || [];
-
-          if (isNewCol) {
-            const nextIdx = cols.length + 1;
-            cols.push({
-              id: uid(),
-              name,
-              shortName: `C${  nextIdx}`,
-              type: colType,
-              unit: '',
-              values,
-              formulas: new Array(values.length).fill(null),
-              format,
-            });
-            sheet.state.columns = cols;
-          } else {
-            const col = cols.find(c => c.id === resolvedColId);
-            if (!col) return;
-            if (overwriteName && name) col.name = name;
-            if (isText) { col.type = 'text'; col.format = {}; }
-            col.values = values;
-            col.formulas = new Array(values.length).fill(null);
-          }
-          sheet.state.rowCount = Math.max(sheet.state.rowCount || 0, values.length);
+          sheet.state = res.state.sheets.find(s => s.id === sheetId).state;
         }
+        reply?.({ ok: true });
 
         try {
           this._syncActiveSheet();

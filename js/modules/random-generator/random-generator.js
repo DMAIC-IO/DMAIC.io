@@ -23,6 +23,7 @@
  */
 
 import { openNewWorksheet } from '../../core/worksheet-handoff.js';
+import { sendColumnToWorksheet } from '../../core/worksheet-append.js';
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import {
@@ -679,8 +680,9 @@ export default createModule({
         }
 
         const clean = keyToRef(refToKey(target));
-        module._context.eventBus.emit('worksheet:appendColumn', {
-          instanceId: clean.instanceId,
+        // Auch ein nicht eingehängter Worksheet bekommt die Spalte (Bug 13);
+        // ein unbekanntes Ziel wirft, und dann gibt es keine Erfolgsmeldung.
+        sendColumnToWorksheet(module._context, clean.instanceId, {
           sheetId: clean.sheetId,
           colId: clean.columnId,
           name, values, discrete, type,
@@ -708,8 +710,7 @@ export default createModule({
         const wsId = await openNewWorksheet(ctx, {
           sheetName: ctx.i18n.t('modules.worksheet.defaultSheetName'),
         });
-        ctx.eventBus.emit('worksheet:appendColumn', {
-          instanceId: wsId,
+        sendColumnToWorksheet(ctx, wsId, {
           sheetId: 'sheet_1',
           colId: '__first__',
           name, values, discrete, type,
