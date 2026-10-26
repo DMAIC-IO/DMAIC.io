@@ -26,6 +26,9 @@ import { svgEl, svgText, resolveColor, formatNum, getChartColors } from '../char
 import { edSection, edCheckboxRow, edRangeRow } from '../chart-editor.js';
 
 export default class MosaicChart extends ChartBase {
+  /** Base editor keys plus this type's own editor settings. */
+  static editorKeys = [...ChartBase.editorKeys, 'showCellLabels', 'columnGap', 'segmentGap'];
+
   /**
    * @param {HTMLElement} container
    * @param {Object} config
@@ -173,7 +176,7 @@ export default class MosaicChart extends ChartBase {
   }
 
   /** @override */
-  _buildTypeEditor(inner, t, onUpdate) {
+  _buildTypeEditor(inner, t, onUpdate, onChange) {
     const cfg = this.config;
     const tm = (key) => {
       if (this.context && this.context.i18n) {
@@ -191,13 +194,13 @@ export default class MosaicChart extends ChartBase {
     }));
     sec.appendChild(edRangeRow(tm('columnGap'), cfg.columnGap ?? 2, (v) => {
       cfg.columnGap = Math.max(0, Math.round(v));
-      // Use render() — not onUpdate() — so we don't rebuild the editor (and
-      // tear down the live slider element) on every drag step.
-      this.render();
+      // onChange (render + notify) — not onUpdate() — so we don't rebuild the
+      // editor (and tear down the live slider element) on every drag step.
+      onChange();
     }, 0, 12, 1));
     sec.appendChild(edRangeRow(tm('segmentGap'), cfg.segmentGap ?? 1, (v) => {
       cfg.segmentGap = Math.max(0, Math.round(v));
-      this.render();
+      onChange();
     }, 0, 8, 1));
     inner.appendChild(sec);
   }

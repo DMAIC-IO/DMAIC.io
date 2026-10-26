@@ -30,6 +30,9 @@ import { edSection, edCheckboxRow, edRangeRow, edInlineNum, edSelectRow } from '
 import { getColor, rgbLuminance } from '../color-schemes.js';
 
 export default class HeatmapChart extends ChartBase {
+  /** Base editor keys plus this type's own editor settings. */
+  static editorKeys = [...ChartBase.editorKeys, 'colorScheme', 'showCellLabels', 'cellGap', 'valueDecimals'];
+
   /**
    * @param {HTMLElement} container
    * @param {Object} config
@@ -217,7 +220,7 @@ export default class HeatmapChart extends ChartBase {
   }
 
   /** @override */
-  _buildTypeEditor(inner, t, onUpdate) {
+  _buildTypeEditor(inner, t, onUpdate, onChange) {
     const cfg = this.config;
     const th = (key) => {
       if (this.context && this.context.i18n) {
@@ -255,9 +258,9 @@ export default class HeatmapChart extends ChartBase {
     }));
     sec.appendChild(edRangeRow(th('cellGap'), cfg.cellGap ?? 1, (v) => {
       cfg.cellGap = Math.max(0, Math.round(v));
-      // Use render() — not onUpdate() — so we don't rebuild the editor (and
-      // tear down the live slider element) on every drag step.
-      this.render();
+      // onChange (render + notify) — not onUpdate() — so we don't rebuild the
+      // editor (and tear down the live slider element) on every drag step.
+      onChange();
     }, 0, 8, 1));
     sec.appendChild(edInlineNum(th('valueDecimals'), cfg.valueDecimals ?? 1, (v) => {
       cfg.valueDecimals = Math.max(0, Math.min(6, Math.round(v)));

@@ -68,6 +68,13 @@ function darken(rgbaString, amount) {
 // ── Chart Class ───────────────────────────────────────────────
 
 export default class PieChart extends ChartBase {
+  /** Settings of the pie's own editor (see `_buildEditor`); no axis keys. */
+  static editorKeys = [
+    'title', 'showTitle', 'showLegend', 'showLabels', 'labelMode', 'labelSize',
+    'innerRadius', 'padAngle', 'startAngle', 'explodeDistance', 'strokeWidth',
+    'sortSlices', 'centerLabel', 'centerSub', 'bgColor',
+  ];
+
   constructor(container, config, context) {
     const defaults = {
       slices: [],
@@ -392,11 +399,13 @@ export default class PieChart extends ChartBase {
       }
       return key;
     };
-    const onUpdate = () => { this.render(); this._buildEditor(); };
-    const onSlide = () => { this.render(); };
+    // Every edit reports via _notifyEditorChange so the instance chart
+    // manager can persist it (see ChartBase._notifyEditorChange).
+    const onUpdate = () => { this.render(); this._buildEditor(); this._notifyEditorChange(); };
+    const onSlide = () => { this.render(); this._notifyEditorChange(); };
 
     // Title
-    inner.appendChild(edTitleSection(cfg, () => this.render(), tBase,
+    inner.appendChild(edTitleSection(cfg, onSlide, tBase,
       (key, value) => this._onLabelEdit?.(key, value), this._autoLabels || {}));
 
     // Legend
@@ -439,15 +448,15 @@ export default class PieChart extends ChartBase {
     // Center (donut)
     if ((cfg.innerRadius || 0) > 0) {
       const secCenter = edSection(t('donutCenter'));
-      secCenter.appendChild(edInlineInput(t('centerLine1'), 'text', cfg.centerLabel || '', (v) => { cfg.centerLabel = v; this.render(); }));
-      secCenter.appendChild(edInlineInput(t('centerLine2'), 'text', cfg.centerSub || '', (v) => { cfg.centerSub = v; this.render(); }));
+      secCenter.appendChild(edInlineInput(t('centerLine1'), 'text', cfg.centerLabel || '', (v) => { cfg.centerLabel = v; onSlide(); }));
+      secCenter.appendChild(edInlineInput(t('centerLine2'), 'text', cfg.centerSub || '', (v) => { cfg.centerSub = v; onSlide(); }));
       inner.appendChild(secCenter);
     }
 
     // Background
     inner.appendChild(edBgColorSection(cfg, (changes) => {
       Object.assign(cfg, changes);
-      this.render();
+      onSlide();
     }, (ev, color, cb) => openColorPicker(ev, color, cb), tBase));
   }
 

@@ -61,6 +61,13 @@ const TICK_LABEL_GAP = 10;
 const Y_TITLE_INSET = 18;
 
 export default class ParetoChart extends ChartBase {
+  /** Base editor keys plus this type's own editor settings. */
+  static editorKeys = [
+    ...ChartBase.editorKeys, 'refLineValue', 'maxItems', 'otherBucket',
+    // the cumulative line is one fixed series: its markers are a display setting
+    'cumDotSymbol', 'cumDotSize', 'cumDotFill', 'cumDotStroke', 'cumDotStrokeWidth',
+  ];
+
   /**
    * @param {HTMLElement} container
    * @param {Object} config
@@ -473,7 +480,7 @@ export default class ParetoChart extends ChartBase {
   // ── Type-Specific Editor ────────────────────────────────────────
 
   /** @override */
-  _buildTypeEditor(inner, t, onUpdate) {
+  _buildTypeEditor(inner, t, onUpdate, onChange) {
     const cfg = this.config;
     const tp = (key) => {
       if (this.context && this.context.i18n) {
@@ -488,9 +495,9 @@ export default class ParetoChart extends ChartBase {
     const thrSec = edSection(tp('threshold'));
     thrSec.appendChild(edRangeRow(tp('thresholdValue'), cfg.refLineValue ?? 80, (v) => {
       cfg.refLineValue = Math.max(0, Math.min(100, Math.round(v)));
-      // Use render() — not onUpdate() — so we don't rebuild the editor (and
-      // tear down the live slider element) on every drag step.
-      this.render();
+      // onChange (render + notify) — not onUpdate() — so we don't rebuild the
+      // editor (and tear down the live slider element) on every drag step.
+      onChange();
     }, 0, 100, 1));
     inner.appendChild(thrSec);
 

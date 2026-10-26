@@ -70,6 +70,19 @@ export function thinTickLabels(labels, positions, { fontSize, minGap = 4 }) {
 
 export default class ChartBase {
   /**
+   * Config keys the chart editor may change and that are persisted per
+   * module instance (see instance-chart-manager.js). Chart types with their
+   * own editor settings extend this list:
+   * `static editorKeys = [...ChartBase.editorKeys, 'cellGap']`.
+   * @type {string[]}
+   */
+  static editorKeys = [
+    'title', 'showTitle', 'xLabel', 'yLabel', 'showXLabel', 'showYLabel',
+    'showLegend', 'titleSize', 'labelSize', 'tickSize', 'showXTicks', 'showYTicks',
+    'bgColor', 'refLines', 'refAreas',
+  ];
+
+  /**
    * @param {HTMLElement} container - DOM element to render into
    * @param {Object} config - Chart configuration
    * @param {Object} context - { i18n, theme, language }
@@ -307,9 +320,7 @@ export default class ChartBase {
       }
       return key;
     };
-    const notify = () => {
-      if (typeof cfg.onEditorChange === 'function') cfg.onEditorChange(this);
-    };
+    const notify = () => this._notifyEditorChange();
     // Re-render after an edit that keeps the editor's DOM as is.
     const onChange = () => {
       this.render();
@@ -479,6 +490,16 @@ export default class ChartBase {
     if (typeof this.config.onEditorBuild === 'function') {
       this.config.onEditorBuild(inner, t, onUpdate, this._seriesItemEls);
     }
+  }
+
+  /**
+   * Report an editor edit: to the edit binding of the instance chart manager
+   * (`_onEditorChange`, persists the changed editor keys) and to the
+   * consumer (`config.onEditorChange`). Call after the edit is applied.
+   */
+  _notifyEditorChange() {
+    this._onEditorChange?.(this);
+    if (typeof this.config.onEditorChange === 'function') this.config.onEditorChange(this);
   }
 
   /**
@@ -1297,7 +1318,8 @@ export default class ChartBase {
       svgText(item.label, {
         x: lx + 20, y: y + 11,
         'font-size': '11px', fill: textColor,
-        'font-family': FONT_MAIN
+        'font-family': FONT_MAIN,
+        'data-legend-item': ''
       }, svg);
     });
   }

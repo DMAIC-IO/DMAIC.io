@@ -215,11 +215,13 @@ export class StateManager {
   }
 
   /**
-   * Store one label edit. An empty value ('' / null / undefined) removes the
-   * key; empty chart and instance entries are pruned.
+   * Store one chart-editor edit. Arrays and objects are stored as given, so
+   * the caller passes a copy it no longer mutates (instance-chart-manager
+   * does). An empty value ('' / null / undefined) removes the key; empty
+   * chart and instance entries are pruned.
    * @param {string} instanceId
    * @param {string} chartKey
-   * @param {string} key - title | showTitle | xLabel | yLabel | showXLabel | showYLabel
+   * @param {string} key - an editor key of the chart type (see ChartBase.editorKeys)
    * @param {any} value
    */
   setChartEdit(instanceId, chartKey, key, value) {

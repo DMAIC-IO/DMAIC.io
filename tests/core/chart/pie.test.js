@@ -7,7 +7,7 @@
  * checkbox has to report like chart-base's does.
  */
 
-import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import PieChart from '../../../js/core/chart/types/pie.js';
 
 /** Mount a pie chart in a sized, attached container; force a render. */
@@ -40,3 +40,45 @@ suite('Pie type — editor', () => {
     host.remove();
   });
 });
+
+suite('Pie type — editor reports every setting', () => {
+  test('a label mode change calls _onEditorChange', () => {
+    const { host, chart } = mount();
+    let calls = 0;
+    chart._onEditorChange = (c) => { calls++; assertEqual(c, chart); };
+    chart._buildEditor();
+    const sel = [...chart._editorInner.querySelectorAll('select')]
+      .find((s) => [...s.options].some((o) => o.value === 'percent'));
+    sel.value = 'percent';
+    sel.dispatchEvent(new Event('change'));
+    assertEqual(chart.config.labelMode, 'percent');
+    assertEqual(calls, 1);
+    chart.destroy();
+    host.remove();
+  });
+  test('an inner radius slide calls _onEditorChange', () => {
+    const { host, chart } = mount();
+    let calls = 0;
+    chart._onEditorChange = () => { calls++; };
+    chart._buildEditor();
+    const row = [...chart._editorInner.querySelectorAll('.dmike-slider-row')]
+      .find((r) => r.querySelector('.dmike-slider-row__label')?.textContent === 'innerRadius');
+    const inp = row.querySelector('input[type="range"]');
+    inp.value = '40';
+    inp.dispatchEvent(new Event('input'));
+    assertEqual(chart.config.innerRadius, 0.4);
+    assertEqual(calls, 1);
+    chart.destroy();
+    host.remove();
+  });
+  test('editorKeys list the pie settings', () => {
+    const keys = PieChart.editorKeys;
+    for (const k of ['title', 'showTitle', 'showLegend', 'showLabels', 'labelMode', 'labelSize',
+      'innerRadius', 'padAngle', 'startAngle', 'explodeDistance', 'strokeWidth', 'sortSlices',
+      'centerLabel', 'centerSub', 'bgColor']) {
+      assertTrue(keys.includes(k), k);
+    }
+    assertTrue(!keys.includes('xLabel'), 'no axis keys');
+  });
+});
+

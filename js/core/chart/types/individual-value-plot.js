@@ -70,6 +70,9 @@ function groupStats(values) {
 /* ── Chart Type ─────────────────────────────────────────────── */
 
 export default class IndividualValuePlotChart extends ChartBase {
+  /** Base editor keys plus this type's own editor settings. */
+  static editorKeys = [...ChartBase.editorKeys, 'showMean', 'showMedian', 'connectMeans', 'showOverallMean', 'jitter'];
+
   /**
    * @param {HTMLElement} container
    * @param {Object} config
@@ -365,7 +368,7 @@ export default class IndividualValuePlotChart extends ChartBase {
   /* ── Type-Specific Editor ────────────────────────────────── */
 
   /** @override */
-  _buildTypeEditor(inner, _t, onUpdate) {
+  _buildTypeEditor(inner, _t, onUpdate, onChange) {
     const cfg = this.config;
     const th = (key) => {
       if (this.context && this.context.i18n) {
@@ -392,9 +395,9 @@ export default class IndividualValuePlotChart extends ChartBase {
     }));
     sec.appendChild(edRangeRow(th('jitter'), Math.round((cfg.jitter ?? 0.6) * 100), (v) => {
       cfg.jitter = Math.max(0, Math.min(1, v / 100));
-      // Use render() — not onUpdate() — so we don't rebuild the editor (and
-      // tear down the live slider element) on every drag step.
-      this.render();
+      // onChange (render + notify) — not onUpdate() — so we don't rebuild the
+      // editor (and tear down the live slider element) on every drag step.
+      onChange();
     }, 0, 100, 5));
 
     inner.appendChild(sec);

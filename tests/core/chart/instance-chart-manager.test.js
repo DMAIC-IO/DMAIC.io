@@ -17,9 +17,20 @@ function fakeChart(config) {
   };
 }
 
+/** ChartBase.editorKeys (kept literal: the node runner does not load chart classes). */
+const BASE_EDITOR_KEYS = [
+  'title', 'showTitle', 'xLabel', 'yLabel', 'showXLabel', 'showYLabel',
+  'showLegend', 'titleSize', 'labelSize', 'tickSize', 'showXTicks', 'showYTicks',
+  'bgColor', 'refLines', 'refAreas',
+];
+
 function fakeManager() {
   return {
     created: [],
+    async editorKeys(type) {
+      await Promise.resolve();
+      return type === 'pareto' ? [...BASE_EDITOR_KEYS, 'refLineValue', 'maxItems'] : BASE_EDITOR_KEYS;
+    },
     other() { return 'inherited'; },
     async create(_container, type, config) {
       await Promise.resolve();
@@ -189,6 +200,17 @@ suite('InstanceChartManager', () => {
     assertEqual(c._autoLabels.title, 'Auto2');
   });
 
+  test('update through a reactive proxy of the chart keeps stored edits', async () => {
+    // Alpine view models hold the chart in reactive data, so the module passes
+    // a proxy of the chart to update(), not the object create() returned.
+    const store = fakeStore({ i1: { pie: { showLegend: false } } });
+    const f = createInstanceChartManager(fakeManager(), store, 'i1');
+    const c = await f.create({}, 'pie', { showLegend: true, data: 1 });
+    f.update(new Proxy(c, {}), { showLegend: true, data: 2 });
+    assertEqual(c.config.showLegend, false);
+    assertEqual(c.config.data, 2);
+  });
+
   test('update of a chart not created by the facade passes through', () => {
     const f = createInstanceChartManager(fakeManager(), fakeStore(), 'i1');
     const c = fakeChart({ title: 'x' });
@@ -275,14 +297,137 @@ suite('EditBoundChartManager', () => {
   });
 });
 
-suite('InstanceChartManager — key filter', () => {
-  test('module charts never store tick or legend edits', async () => {
+suite('InstanceChartManager — editor keys', () => {
+  test('module charts store tick and legend edits', async () => {
     const store = fakeStore();
     const f = createInstanceChartManager(fakeManager(), store, 'i1');
     const c = await f.create({}, 'scatter', {});
     c._onLabelEdit('showLegend', false);
     c._onLabelEdit('showYTicks', false);
     c._onLabelEdit('xLabel', 'Mine');
-    assertDeepEqual(store.data, { i1: { scatter: { xLabel: 'Mine' } } });
+    assertDeepEqual(store.data, { i1: { scatter: { showLegend: false, showYTicks: false, xLabel: 'Mine' } } });
+  });
+
+  test('editor settings are stored on _onEditorChange and laid over on create and update', async () => {
+    const store = fakeStore();
+    const f = createInstanceChartManager(fakeManager(), store, 'i1');
+    const c = await f.create({}, 'scatter', { titleSize: 15, data: 1 });
+    c.config.titleSize = 22;
+    c.config.bgColor = 'rgba(1,2,3,1)';
+    c.config.refLines = [{ value: 5, label: 'LSL' }];
+    c._onEditorChange(c);
+    assertDeepEqual(store.data.i1.scatter, { titleSize: 22, bgColor: 'rgba(1,2,3,1)', refLines: [{ value: 5, label: 'LSL' }] });
+    const d = await f.create({}, 'scatter', { titleSize: 15, data: 2 });
+    c.destroy();
+    const e = await f.create({}, 'scatter', { titleSize: 15, data: 3 });
+    assertEqual(d.config.titleSize, 15);   // scatter#2: nothing stored
+    assertEqual(e.config.titleSize, 22);
+    assertEqual(e.config.bgColor, 'rgba(1,2,3,1)');
+    assertDeepEqual(e.config.refLines, [{ value: 5, label: 'LSL' }]);
+    f.update(e, { titleSize: 15, data: 4 });
+    assertEqual(e.config.titleSize, 22);
+    assertEqual(e.config.data, 4);
+    assertDeepEqual(e.config.refLines, [{ value: 5, label: 'LSL' }]);
+  });
+
+  test('only changed keys are written; unchanged ones stay out of the store', async () => {
+    const store = fakeStore();
+    const f = createInstanceChartManager(fakeManager(), store, 'i1');
+    const c = await f.create({}, 'scatter', { titleSize: 15, labelSize: 12 });
+    c.config.labelSize = 14;
+    c._onEditorChange(c);
+    c._onEditorChange(c);
+    assertDeepEqual(store.data.i1.scatter, { labelSize: 14 });
+  });
+
+  test('stored values are clones: mutating the chart config leaves the store intact', async () => {
+    const store = fakeStore({ i1: { scatter: { refLines: [{ value: 1 }] } } });
+    const f = createInstanceChartManager(fakeManager(), store, 'i1');
+    const c = await f.create({}, 'scatter', {});
+    c.config.refLines.push({ value: 2 });
+    c.config.refLines[0].value = 9;
+    assertDeepEqual(store.data.i1.scatter.refLines, [{ value: 1 }]);
+    c._onEditorChange(c);
+    assertDeepEqual(store.data.i1.scatter.refLines, [{ value: 9 }, { value: 2 }]);
+    c.config.refLines[1].value = 7;
+    assertDeepEqual(store.data.i1.scatter.refLines, [{ value: 9 }, { value: 2 }]);
+  });
+
+  test('refLines supplied by the module are neither stored nor laid over', async () => {
+    const store = fakeStore({ i1: { scatter: { refLines: [{ value: 1 }] } } });
+    const f = createInstanceChartManager(fakeManager(), store, 'i1');
+    const c = await f.create({}, 'scatter', { refLines: [{ value: 42 }] });
+    assertDeepEqual(c.config.refLines, [{ value: 42 }]);
+    c.config.refLines = [{ value: 43 }];
+    c._onEditorChange(c);
+    assertDeepEqual(store.data.i1.scatter.refLines, [{ value: 1 }]);
+  });
+
+  test('refAreas supplied in an update patch become module-owned', async () => {
+    const store = fakeStore({ i1: { scatter: { refAreas: [{ from: 1, to: 2 }] } } });
+    const f = createInstanceChartManager(fakeManager(), store, 'i1');
+    const c = await f.create({}, 'scatter', {});
+    assertDeepEqual(c.config.refAreas, [{ from: 1, to: 2 }]);
+    f.update(c, { refAreas: [{ from: 5, to: 6 }] });
+    assertDeepEqual(c.config.refAreas, [{ from: 5, to: 6 }]);
+    c.config.refAreas = [];
+    c._onEditorChange(c);
+    assertDeepEqual(store.data.i1.scatter.refAreas, [{ from: 1, to: 2 }]);
+  });
+
+  test('aggregation and stacked are never stored (no editor keys)', async () => {
+    const store = fakeStore({ i1: { bar: { aggregation: 'sum', stacked: true } } });
+    const f = createInstanceChartManager(fakeManager(), store, 'i1');
+    const c = await f.create({}, 'bar', { aggregation: 'mean', stacked: false });
+    assertEqual(c.config.aggregation, 'mean');
+    assertEqual(c.config.stacked, false);
+    c.config.aggregation = 'count';
+    c.config.stacked = true;
+    c._onEditorChange(c);
+    c._onLabelEdit('stacked', true);
+    assertDeepEqual(store.data.i1.bar, { aggregation: 'sum', stacked: true });
+  });
+
+  test('type-specific editor keys come from manager.editorKeys', async () => {
+    const store = fakeStore({ i1: { pareto: { maxItems: 5 }, scatter: { maxItems: 5 } } });
+    const f = createInstanceChartManager(fakeManager(), store, 'i1');
+    const p = await f.create({}, 'pareto', { maxItems: 10 });
+    const s = await f.create({}, 'scatter', { maxItems: 10 });
+    assertEqual(p.config.maxItems, 5);
+    assertEqual(s.config.maxItems, 10);
+  });
+
+  test('a label edit moves the baseline: no duplicate write on the following change', async () => {
+    const store = fakeStore();
+    const writes = [];
+    const set = store.setChartEdit.bind(store);
+    store.setChartEdit = (...a) => { writes.push(a.slice(2)); set(...a); };
+    const f = createInstanceChartManager(fakeManager(), store, 'i1');
+    const c = await f.create({}, 'scatter', { title: 'Auto' });
+    c.config.title = 'Mine';
+    c._onLabelEdit('title', 'Mine');
+    c._onEditorChange(c);
+    assertDeepEqual(writes, [['title', 'Mine']]);
+  });
+});
+
+suite('EditBoundChartManager — keys as a function', () => {
+  test('keys may be a (type) => Promise<keys> resolver', async () => {
+    const s = boundStore({ histogram: { bgColor: 'red' } });
+    const f = createEditBoundChartManager(fakeManager(), {
+      read: s.read, write: s.write, keys: async (type) => (type === 'histogram' ? ['bgColor'] : []),
+    });
+    const c = await f.create({}, 'histogram', { bgColor: 'white' });
+    assertEqual(c.config.bgColor, 'red');
+  });
+
+  test('tile charts (label and tile keys only) write nothing on _onEditorChange', async () => {
+    const s = boundStore();
+    const f = createEditBoundChartManager(fakeManager(), { read: s.read, write: s.write, keys: [...LABEL_EDIT_KEYS, ...TILE_EDIT_KEYS] });
+    const c = await f.create({}, 'histogram', { showLegend: true });
+    c.config.showLegend = false;
+    c.config.bgColor = 'red';
+    c._onEditorChange(c);
+    assertDeepEqual(s.writes, []);
   });
 });

@@ -1,7 +1,7 @@
 /**
  * D.Mike — ChartBase: config.onEditorChange fires after each editor edit.
  */
-import { suite, test, assertEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../test-utils.js';
 import ChartBase from '../../../js/core/chart/chart-base.js';
 
 class TwoSeries extends ChartBase {
@@ -100,5 +100,48 @@ suite('ChartBase — onEditorChange', () => {
     m.chart.refreshEditor();
     assertEqual(m.inner.firstChild, before);
     m.chart.destroy(); m.host.remove();
+  });
+});
+
+/** The range input of the slider row whose label reads `label`. */
+function slider(inner, label) {
+  const row = [...inner.querySelectorAll('.dmike-slider-row')]
+    .find((r) => r.querySelector('.dmike-slider-row__label')?.textContent === label);
+  return row.querySelector('input[type="range"]');
+}
+
+suite('ChartBase — editor changes reach _onEditorChange', () => {
+  test('a title font size edit reports via _onEditorChange', () => {
+    const m = mount({ s: { name: 'A', visible: true } });
+    let calls = 0;
+    m.chart._onEditorChange = (c) => { calls++; assertEqual(c, m.chart); };
+    const inp = slider(m.inner, 'titleFontSize');
+    inp.value = '22';
+    inp.dispatchEvent(new Event('input'));
+    assertEqual(m.chart.config.titleSize, 22);
+    assertEqual(calls, 1);
+    m.chart.destroy(); m.host.remove();
+  });
+  test('a background colour edit reports via _onEditorChange', () => {
+    const m = mount({ s: { name: 'A', visible: true } });
+    let calls = 0;
+    m.chart._onEditorChange = () => { calls++; };
+    const pairs = [...m.inner.querySelectorAll('.dmike-chart-ed-color-pair')]
+      .filter((r) => r.querySelector('label')?.textContent === 'bgColorLabel');
+    pairs[0].querySelector('.dmike-chart-ed-color-swatch').click();
+    const hex = document.querySelector('.dmike-chart-ed-cp-hex-input');
+    hex.value = '#112233';
+    hex.dispatchEvent(new Event('input'));
+    document.querySelector('.dmike-chart-ed-cp-overlay')?.click();
+    assertTrue(String(m.chart.config.bgColor).includes('17'), 'bgColor set');
+    assertTrue(calls >= 1, 'reported');
+    m.chart.destroy(); m.host.remove();
+  });
+  test('editorKeys of the base class hold the base list', () => {
+    assertDeepEqual(ChartBase.editorKeys, [
+      'title', 'showTitle', 'xLabel', 'yLabel', 'showXLabel', 'showYLabel',
+      'showLegend', 'titleSize', 'labelSize', 'tickSize', 'showXTicks', 'showYTicks',
+      'bgColor', 'refLines', 'refAreas',
+    ]);
   });
 });

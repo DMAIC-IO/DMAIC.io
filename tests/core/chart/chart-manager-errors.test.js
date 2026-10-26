@@ -7,7 +7,8 @@
  * create into the same container removes the placeholder.
  */
 
-import { suite, test, assertEqual, assertTrue } from '../../test-utils.js';
+import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../test-utils.js';
+import { LABEL_EDIT_KEYS } from '../../../js/core/chart/instance-chart-manager.js';
 import ChartManager from '../../../js/core/chart/chart-manager.js';
 import ChartBase from '../../../js/core/chart/chart-base.js';
 
@@ -128,3 +129,29 @@ suite('ChartBase — render errors', () => {
     } finally { console.error = original; div.remove(); }
   });
 });
+
+suite('ChartManager — editorKeys(type)', () => {
+  test('returns the chart class list for a known type', async () => {
+    const manager = new ChartManager(eventBus, i18n);
+    const keys = await manager.editorKeys('pie');
+    assertTrue(keys.includes('labelMode'), 'pie key');
+    assertTrue(keys.includes('innerRadius'), 'pie key');
+  });
+  test('pareto lists its cumulative-marker settings', async () => {
+    const manager = new ChartManager(eventBus, i18n);
+    const keys = await manager.editorKeys('pareto');
+    for (const k of ['cumDotSymbol', 'cumDotSize', 'cumDotFill', 'cumDotStroke', 'cumDotStrokeWidth']) {
+      assertTrue(keys.includes(k), k);
+    }
+  });
+  test('falls back to LABEL_EDIT_KEYS for an unknown type', async () => {
+    const manager = new ChartManager(eventBus, i18n);
+    const keys = await manager.editorKeys('no-such-type');
+    assertDeepEqual(keys, LABEL_EDIT_KEYS);
+  });
+  test('falls back to LABEL_EDIT_KEYS when the class has no list', async () => {
+    const manager = makeManager(async () => class {});
+    assertDeepEqual(await manager.editorKeys('x'), LABEL_EDIT_KEYS);
+  });
+});
+

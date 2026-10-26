@@ -241,6 +241,23 @@ export default class ChartManager {
   }
 
   /**
+   * Config keys the chart editor of `type` may change and that are persisted
+   * per module instance: the chart class's `static editorKeys`. Falls back to
+   * the label keys when the type is unknown, fails to load or has no list.
+   * @param {string} type
+   * @returns {Promise<string[]>}
+   */
+  async editorKeys(type) {
+    try {
+      const Ctor = await this._loadType(type);
+      if (Array.isArray(Ctor?.editorKeys)) return Ctor.editorKeys;
+    } catch {
+      // unknown or unloadable type — fall through to the label keys
+    }
+    return LABEL_EDIT_KEYS;
+  }
+
+  /**
    * Lazy-load a chart type constructor. Caches after first load.
    * @private
    * @param {string} type

@@ -68,6 +68,9 @@ function boxStats(values) {
 /* ── Chart Type ─────────────────────────────────────────────── */
 
 export default class BoxplotChart extends ChartBase {
+  /** Base editor keys plus this type's own editor settings. */
+  static editorKeys = [...ChartBase.editorKeys, 'showOutliers', 'showMean', 'boxHeight', 'outlierSymbol', 'outlierSize', 'outlierColor', 'outlierStroke', 'outlierStrokeWidth'];
+
   /**
    * @param {HTMLElement} container
    * @param {Object} config
@@ -448,7 +451,7 @@ export default class BoxplotChart extends ChartBase {
   /* ── Type-Specific Editor ────────────────────────────────── */
 
   /** @override */
-  _buildTypeEditor(inner, _t, onUpdate) {
+  _buildTypeEditor(inner, _t, onUpdate, onChange) {
     const cfg = this.config;
     const th = (key) => {
       if (this.context && this.context.i18n) {
@@ -489,7 +492,6 @@ export default class BoxplotChart extends ChartBase {
         }
         return key;
       };
-      const render = () => this.render();
       const transparent = 'rgba(0,0,0,0)';
 
       inner.appendChild(edMarkerSection(
@@ -505,7 +507,7 @@ export default class BoxplotChart extends ChartBase {
           setStroke:      (v) => { cfg.outlierStroke = v; },
           getStrokeWidth: () => cfg.outlierStrokeWidth ?? 1.5,
           setStrokeWidth: (v) => { cfg.outlierStrokeWidth = v; },
-          onChange:       render,
+          onChange,
         },
         tk,
       ));
