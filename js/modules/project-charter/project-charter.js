@@ -32,7 +32,6 @@ import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId, requireText, requireNumber } from '../../core/agent/agent-argcheck.js';
 import { icon } from '../../core/icon.js';
 import { resolveDateOffset } from '../../core/date-offset.js';
-import { uid } from '../../core/uid.js';
 import { draggableRows } from '../../ui/draggable-list.js';
 
 const NW = 220;   // node width (px)
