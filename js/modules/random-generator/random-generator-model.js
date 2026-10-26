@@ -45,6 +45,20 @@ export const ATTRIBUTIVE_KEY = 'attributive';
 /** Alle wählbaren Verteilungen, die attributive eingeschlossen (Seitenleiste und Prüfer lesen diese Liste). */
 export const DIST_KEYS = [...Object.keys(DISTRIBUTIONS), ATTRIBUTIVE_KEY];
 
+/** Vorgabe-Startwert für leere oder ungültige Eingaben. */
+export const DEFAULT_SEED = 42;
+
+/**
+ * Liest einen Startwert aus einer Eingabe. Jede ganze Zahl gilt, auch 0;
+ * nur leere oder nicht lesbare Eingaben werden zur Vorgabe 42.
+ * @param {number|string|null|undefined} input
+ * @returns {number}
+ */
+export function parseSeed(input) {
+  const n = parseInt(input, 10);
+  return Number.isFinite(n) ? n : DEFAULT_SEED;
+}
+
 // ═══════════════════════════════════════════════════════════════
 // Sampling helpers (module-specific)
 // ═══════════════════════════════════════════════════════════════

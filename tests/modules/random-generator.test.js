@@ -12,6 +12,7 @@ import {
   clampCount,
   frequency,
   csvEscape,
+  parseSeed,
 } from '../../js/modules/random-generator/random-generator-model.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -449,5 +450,45 @@ suite('Random Generator — State model', () => {
 
   test('hasContent false on fresh default state', () => {
     assertEqual(new State().hasContent(), false);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+// parseSeed — 0 ist ein gültiger Startwert, 42 nur für leer/ungültig
+// ═══════════════════════════════════════════════════════════════
+
+suite('Random Generator — parseSeed', () => {
+  test('keeps 0 as a valid seed', () => {
+    assertEqual(parseSeed('0'), 0);
+    assertEqual(parseSeed(0), 0);
+  });
+
+  test('keeps other whole numbers, negatives included', () => {
+    assertEqual(parseSeed('7'), 7);
+    assertEqual(parseSeed('-3'), -3);
+  });
+
+  test('falls back to 42 for empty or invalid input', () => {
+    assertEqual(parseSeed(''), 42);
+    assertEqual(parseSeed('abc'), 42);
+    assertEqual(parseSeed(undefined), 42);
+    assertEqual(parseSeed(null), 42);
+  });
+
+  test('seed 0 generates reproducibly', () => {
+    const p = resolveParams('normal', {});
+    const a = generateSamples('normal', p, 20, parseSeed('0'));
+    const b = generateSamples('normal', p, 20, 0);
+    const c = generateSamples('normal', p, 20, 42);
+    for (let i = 0; i < 20; i++) assertEqual(a[i], b[i]);
+    let same = true;
+    for (let i = 0; i < 20; i++) if (a[i] !== c[i]) same = false;
+    assertEqual(same, false);
+  });
+
+  test('State.fromJSON keeps a persisted seed 0', () => {
+    const s = State.fromJSON({ seed: 0, attrSeed: 0 });
+    assertEqual(s.seed, 0);
+    assertEqual(s.attrSeed, 0);
   });
 });

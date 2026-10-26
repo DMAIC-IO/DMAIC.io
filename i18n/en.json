@@ -10137,9 +10137,9 @@
       "types": {
         "Params": {
           "count": "Count (n): the sample size for a continuous or discrete distribution, a whole number from 1 to 100,000. A change generates the values again at once.",
-          "seed": "Seed: the starting value of the random generator for a continuous or discrete distribution. The same seed gives the same values, so the sample is reproducible. Any whole number except 0 is allowed, because 0 would silently count as 42. A change generates the values again at once.",
+          "seed": "Seed: the starting value of the random generator for a continuous or discrete distribution. The same seed gives the same values, so the sample is reproducible. Any whole number is allowed, 0 included; an empty field becomes 42. A change generates the values again at once.",
           "attrCount": "Count (n): the sample size for the attributive distribution, a whole number from 1 to 100,000. A change generates the values again at once.",
-          "attrSeed": "Seed: the starting value of the random generator for the attributive distribution. The same seed gives the same values, so the sample is reproducible. Any whole number except 0 is allowed, because 0 would silently count as 42. A change generates the values again at once."
+          "attrSeed": "Seed: the starting value of the random generator for the attributive distribution. The same seed gives the same values, so the sample is reproducible. Any whole number is allowed, 0 included; an empty field becomes 42. A change generates the values again at once."
         },
         "AttributeFields": {
           "name": "Attribute: the name of the category. It may be empty; categories without a name are skipped when generating.",

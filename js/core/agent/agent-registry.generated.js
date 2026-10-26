@@ -15835,7 +15835,7 @@ export const AGENT_REGISTRY = {
             "name": "value",
             "type": "number|string",
             "optional": false,
-            "help": "ganze Zahl; Umfang von 1 bis 100000, Startwert ungleich 0; Textzahlen werden angenommen"
+            "help": "ganze Zahl; Umfang von 1 bis 100000, Startwert beliebig (auch 0); Textzahlen werden angenommen"
           }
         ],
         "returns": "void",

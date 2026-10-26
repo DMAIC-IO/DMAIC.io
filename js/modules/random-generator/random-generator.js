@@ -43,6 +43,7 @@ import {
   clampCount,
   frequency,
   csvEscape,
+  parseSeed,
   genId,
 } from './random-generator-model.js';
 
@@ -67,14 +68,12 @@ const TARGET_FILTER = { maxCount: 0 };
 const PARAM_INPUTS = { count: 'countInput', seed: 'seedInput', attrCount: 'attrCountInput', attrSeed: 'attrSeedInput' };
 
 /**
- * Prüft einen Startwert: ganze Zahl ungleich 0 (0 würde still zu 42).
+ * Prüft einen Startwert: jede ganze Zahl, auch 0.
  * @param {number|string} value
  * @returns {number}
  */
 function requireSeed(value) {
-  const n = requireNumber('value', value, { integer: true });
-  if (n === 0) throw new Error(`invalid value ${JSON.stringify(value)}; allowed: a whole number other than 0`);
-  return n;
+  return requireNumber('value', value, { integer: true });
 }
 const PARAM_CHECKS = {
   count: (v) => requireNumber('value', v, { min: 1, max: 100000, integer: true }),
@@ -292,7 +291,7 @@ export default createModule({
        * Umfang oder Startwert setzen und sofort generieren.
        * @agent
        * @param {keyof Params} key welcher Wert; die zulässigen nennt `activeParams`
-       * @param {number|string} value ganze Zahl; Umfang von 1 bis 100000, Startwert ungleich 0; Textzahlen werden angenommen
+       * @param {number|string} value ganze Zahl; Umfang von 1 bis 100000, Startwert beliebig (auch 0); Textzahlen werden angenommen
        * @returns {void}
        * @throws {Error} wenn `key` zur gewählten Verteilung nicht passt oder `value` außerhalb des Bereichs liegt
        */
@@ -503,7 +502,7 @@ export default createModule({
       onParamInput(key, event) {
         let v = event.target.value;
         if (key === 'count' || key === 'attrCount') v = clampCount(v, key === 'count' ? 1000 : 50);
-        if ((key === 'seed' || key === 'attrSeed') && !(parseInt(v, 10))) v = 42;
+        if (key === 'seed' || key === 'attrSeed') v = parseSeed(v);
         event.target.value = String(v);
         try {
           this.setParam(key, v);
@@ -549,7 +548,7 @@ export default createModule({
       },
 
       _generateNumeric() {
-        const seed = parseInt(this.seedInput) || 42;
+        const seed = parseSeed(this.seedInput);
         const count = clampCount(this.countInput, 1000);
         const params = resolveParams(this.model.currentDist, this.paramInputs);
 
@@ -565,7 +564,7 @@ export default createModule({
       },
 
       _generateAttributive() {
-        const seed = parseInt(this.attrSeedInput) || 42;
+        const seed = parseSeed(this.attrSeedInput);
         const count = clampCount(this.attrCountInput, 50);
         this.model.attrSeed = seed;
         this.model.attrCount = count;

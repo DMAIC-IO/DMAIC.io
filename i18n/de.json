@@ -10141,9 +10141,9 @@
       "types": {
         "Params": {
           "count": "Anzahl (n): der Stichprobenumfang bei einer stetigen oder diskreten Verteilung, eine ganze Zahl von 1 bis 100 000. Eine Änderung erzeugt die Werte sofort neu.",
-          "seed": "Seed: der Startwert des Zufallsgenerators bei einer stetigen oder diskreten Verteilung. Derselbe Seed ergibt dieselben Werte, die Stichprobe ist also reproduzierbar. Erlaubt ist jede ganze Zahl außer 0, weil 0 sonst still als 42 gälte. Eine Änderung erzeugt die Werte sofort neu.",
+          "seed": "Seed: der Startwert des Zufallsgenerators bei einer stetigen oder diskreten Verteilung. Derselbe Seed ergibt dieselben Werte, die Stichprobe ist also reproduzierbar. Erlaubt ist jede ganze Zahl, auch 0; ein leeres Feld wird zu 42. Eine Änderung erzeugt die Werte sofort neu.",
           "attrCount": "Anzahl (n): der Stichprobenumfang bei der attributiven Verteilung, eine ganze Zahl von 1 bis 100 000. Eine Änderung erzeugt die Werte sofort neu.",
-          "attrSeed": "Seed: der Startwert des Zufallsgenerators bei der attributiven Verteilung. Derselbe Seed ergibt dieselben Werte, die Stichprobe ist also reproduzierbar. Erlaubt ist jede ganze Zahl außer 0, weil 0 sonst still als 42 gälte. Eine Änderung erzeugt die Werte sofort neu."
+          "attrSeed": "Seed: der Startwert des Zufallsgenerators bei der attributiven Verteilung. Derselbe Seed ergibt dieselben Werte, die Stichprobe ist also reproduzierbar. Erlaubt ist jede ganze Zahl, auch 0; ein leeres Feld wird zu 42. Eine Änderung erzeugt die Werte sofort neu."
         },
         "AttributeFields": {
           "name": "Attribut: der Name der Kategorie. Er darf leer sein; Kategorien ohne Namen werden beim Erzeugen übergangen.",
