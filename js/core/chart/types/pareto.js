@@ -384,7 +384,7 @@ export default class ParetoChart extends ChartBase {
         svgEl('line', refAttrs, plotGroup);
 
         // Label on right edge
-        svgText(`${refVal  }%`, {
+        svgText(formatPct(refVal / 100, Number.isInteger(refVal) ? 0 : 1, this.locale), {
           x: plotArea.x + plotArea.w + 8,
           y: yRef + 3,
           'text-anchor': 'start',
@@ -404,7 +404,7 @@ export default class ParetoChart extends ChartBase {
           x2: plotArea.x + plotArea.w + 5, y2: y,
           stroke: tickColor, 'stroke-width': 1,
         }, svg);
-        svgText(`${pct  }%`, {
+        svgText(formatPct(pct / 100, 0, this.locale), {
           x: plotArea.x + plotArea.w + TICK_LABEL_GAP,
           y: y + 4,
           'text-anchor': 'start',

@@ -5,7 +5,7 @@
  * Stateless; the chart type passes scales, plot area and its uid.
  */
 
-import { svgEl, svgText, resolveColor, dashArray, createPattern, formatNum } from './chart-core.js';
+import { svgEl, svgText, resolveColor, dashArray, createPattern, formatNum, formatPct } from './chart-core.js';
 import { h } from '../dom.js';
 import { seriesMoments } from './histogram-series.js';
 
@@ -126,12 +126,12 @@ export function binTooltip({ series, binData, bi, locale, t, cumPct = null }) {
     const bin = binData.bins[si][bi];
     if (s.visible === false || !bin) return;
     const total = binData.bins[si].reduce((a, b) => a + b.count, 0);
-    const pct = total > 0 ? (bin.count / total) * 100 : 0;
+    const share = total > 0 ? bin.count / total : 0;
     rows.push(h('div', null,
       h('b', { style: `color:${resolveColor(s.borderColor)}` }, s.name),
-      `: ${bin.count} (${formatNum(pct, 1, locale)} %)`));
+      `: ${bin.count} (${formatPct(share, 1, locale)})`));
   });
-  if (cumPct != null) rows.push(h('div', null, `${t('cumulative')}: ${formatNum(cumPct, 1, locale)} %`));
+  if (cumPct != null) rows.push(h('div', null, `${t('cumulative')}: ${formatPct(cumPct / 100, 1, locale)}`));
   return h('div', null, ...rows);
 }
 
@@ -144,7 +144,7 @@ export function binTooltip({ series, binData, bi, locale, t, cumPct = null }) {
  * @param {number[]} cum - cumulativePercent(bins)
  * @param {Function} xScale
  * @param {{x:number,y:number,w:number,h:number}} pa
- * @param {{ color: string, label: string, tickSize: number }} o
+ * @param {{ color: string, label: string, tickSize: number, locale: string }} o
  */
 export function drawPareto(svg, group, bins, cum, xScale, pa, o) {
   const yPct = (p) => pa.y + pa.h - (p / 100) * pa.h;
@@ -159,7 +159,7 @@ export function drawPareto(svg, group, bins, cum, xScale, pa, o) {
   [0, 25, 50, 75, 100].forEach((p) => {
     const y = yPct(p);
     svgEl('line', { x1: ax, y1: y, x2: ax + 5, y2: y, stroke: o.color, 'stroke-width': 1 }, svg);
-    svgText(`${p}%`, { x: ax + 8, y: y + 4, 'text-anchor': 'start', 'font-size': `${o.tickSize}px`, fill: o.color, 'data-pareto-tick': '' }, svg);
+    svgText(formatPct(p / 100, 0, o.locale), { x: ax + 8, y: y + 4, 'text-anchor': 'start', 'font-size': `${o.tickSize}px`, fill: o.color, 'data-pareto-tick': '' }, svg);
   });
   const lx = ax + PARETO_AXIS_W - 6;
   const ly = pa.y + pa.h / 2;

@@ -22,7 +22,7 @@
 import ChartBase from '../chart-base.js';
 import { h } from '../../dom.js';
 import {
-  svgEl, svgText, resolveColor, formatNum, getChartColors, drawMarker,
+  svgEl, svgText, resolveColor, formatNum, formatPct, getChartColors, drawMarker,
 } from '../chart-core.js';
 
 // ── Statistical helpers (self-contained) ────────────────────────
@@ -249,7 +249,7 @@ export default class ProbabilityPlot extends ChartBase {
       }, svg);
 
       // Label
-      svgText(`${pct}%`, {
+      svgText(formatPct(pct / 100, 0, this.locale), {
         x: plotArea.x - 10, y: py + 4,
         'text-anchor': 'end',
         'font-size': `${this.config.tickSize}px`,
@@ -418,7 +418,7 @@ export default class ProbabilityPlot extends ChartBase {
     if (bestIdx < 0 || bestDist > proximityPx * 2) return [];
 
     const s = all[bestSeries];
-    const pct = (s.positions[bestIdx] * 100).toFixed(1);
+    const pct = formatPct(s.positions[bestIdx], 1, this.locale);
     const val = s.sorted[bestIdx];
     const z = s.zScores[bestIdx];
     const px = this._xScale(val);
@@ -431,7 +431,7 @@ export default class ProbabilityPlot extends ChartBase {
         h('b', null, formatNum(val, 4, this.locale)),
         h('br'),
         `z = ${formatNum(z, 3, this.locale)}`, h('br'),
-        `P = ${pct}%`,
+        `P = ${pct}`,
       ),
       px, py,
     }];

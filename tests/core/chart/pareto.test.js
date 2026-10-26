@@ -83,7 +83,7 @@ suite('Pareto type — right axis mirrors the left axis', () => {
       leftTitle: texts.find(t => t.textContent === 'Σ Zeile'),
       rightTitle: texts.find(t => t.textContent === 'Kumulativ %'),
       leftTick: texts.find(t => t.classList.contains('tick-label') && t.getAttribute('text-anchor') === 'end'),
-      rightTick: texts.find(t => t.textContent === '100%'),
+      rightTick: texts.find(t => /^100\s?%$/.test(t.textContent)),
     };
   };
 
@@ -120,6 +120,30 @@ suite('Pareto type — tooltip cumulative % follows the locale (Bug 11)', () => 
     const m = mount({ items: items() }, { language: 'en' });
     const [hit] = m.chart._findNearby(0, 1, 5);
     assertEqual(hit.node.textContent.includes('Σ 75.0%'), true, hit.node.textContent);
+    unmount(m);
+  });
+});
+
+suite('Pareto type — right-axis ticks and threshold label follow the locale (Bug 11)', () => {
+  const items = () => [{ name: 'A', value: 3 }, { name: 'B', value: 1 }];
+  const texts = (m) => [...m.host.querySelectorAll('svg text')].map(t => t.textContent);
+  test('de: 0 % … 100 % with a no-break space, threshold 80 %', () => {
+    const m = mount({ items: items() }, { language: 'de' });
+    const all = texts(m);
+    for (const p of [0, 25, 50, 75, 100]) {
+      assertEqual(all.includes(`${p}\u00a0%`), true, `${p} % fehlt: ${all.join(' | ')}`);
+    }
+    assertEqual(all.filter(t => t === '80\u00a0%').length, 1, 'Schwellenlinie 80 %');
+    assertEqual(all.some(t => /\d%$/.test(t)), false, 'kein „80%“ ohne Leerzeichen');
+    unmount(m);
+  });
+  test('en: 0% … 100%, threshold 80%', () => {
+    const m = mount({ items: items() }, { language: 'en' });
+    const all = texts(m);
+    for (const p of [0, 25, 50, 75, 100]) {
+      assertEqual(all.includes(`${p}%`), true, `${p}% fehlt: ${all.join(' | ')}`);
+    }
+    assertEqual(all.filter(t => t === '80%').length, 1, 'threshold 80%');
     unmount(m);
   });
 });

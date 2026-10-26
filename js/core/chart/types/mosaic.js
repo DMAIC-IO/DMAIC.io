@@ -22,7 +22,7 @@
 
 import ChartBase, { X_TICKS_BOTTOM } from '../chart-base.js';
 import { h } from '../../dom.js';
-import { svgEl, svgText, resolveColor, formatNum, getChartColors } from '../chart-core.js';
+import { svgEl, svgText, resolveColor, formatNum, formatPct, getChartColors } from '../chart-core.js';
 import { edSection, edCheckboxRow, edRangeRow } from '../chart-editor.js';
 
 export default class MosaicChart extends ChartBase {
@@ -223,7 +223,7 @@ export default class MosaicChart extends ChartBase {
       node: h('div', null,
         h('b', null, `${aName} · ${bName}`),
         h('br'),
-        `${this.config.tooltipCountLabel || 'n'} = ${formatNum(hit.count, 0, this.locale)} (${formatNum(cond * 100, 1, this.locale)}%)`,
+        `${this.config.tooltipCountLabel || 'n'} = ${formatNum(hit.count, 0, this.locale)} (${formatPct(cond, 1, this.locale)})`,
       ),
       px: hit.x + hit.w / 2,
       py: hit.y + hit.h / 2,

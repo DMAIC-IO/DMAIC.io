@@ -337,7 +337,7 @@ export default class HistogramChart extends ChartBase {
       if (pi >= 0 && res.bins[pi].length) {
         drawPareto(svg, plotGroup, res.bins[pi], cumulativePercent(res.bins[pi]), xScale, _plotArea, {
           color: PARETO_COLOR, label: this._th('paretoCum'),
-          tickSize: this.config.tickSize || 11,
+          tickSize: this.config.tickSize || 11, locale: this.locale,
         });
       }
       const rows = this._stripRows();

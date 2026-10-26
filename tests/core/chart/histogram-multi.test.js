@@ -5,6 +5,7 @@
  */
 import { suite, test, assertEqual, assertAlmostEqual, assertTrue } from '../../test-utils.js';
 import HistogramChart from '../../../js/core/chart/types/histogram.js';
+import { binTooltip } from '../../../js/core/chart/histogram-series-draw.js';
 
 const A = [1, 2, 2, 3, 3, 3, 4, 4, 5];
 const B = [3, 4, 4, 5, 5, 5, 6, 6, 7];
@@ -17,12 +18,12 @@ function s(name, values, extra = {}) {
   };
 }
 
-function mount(cfg) {
+function mount(cfg, language = 'de') {
   const host = document.createElement('div');
   host.style.width = '900px';
   host.style.height = '480px';
   document.body.appendChild(host);
-  const chart = new HistogramChart(host, cfg, { language: 'de' });
+  const chart = new HistogramChart(host, cfg, { language });
   chart.render();
   return { host, chart, svg: chart._svg };
 }
@@ -364,5 +365,30 @@ suite('Histogram type — series path: editor', () => {
     assertEqual(m.chart.config.series[0].showNormalCurve, false);
     assertEqual(m.svg.querySelectorAll('path[data-normal]').length, 0);
     unmount(m);
+  });
+});
+
+suite('Histogram type — percentages follow the locale (Bug 11)', () => {
+  const binData = { bins: [[{ xMin: 0, xMax: 1, count: 1 }, { xMin: 1, xMax: 2, count: 3 }]] };
+  const tip = (locale) => binTooltip({
+    series: [{ name: 'A', borderColor: '#000' }], binData, bi: 1, locale, t: (k) => k, cumPct: 100,
+  }).textContent;
+  test('de tooltip: 75,0 % and 100,0 % with a no-break space', () => {
+    const txt = tip('de');
+    assertTrue(txt.includes('A: 3 (75,0\u00a0%)'), txt);
+    assertTrue(txt.includes('cumulative: 100,0\u00a0%'), txt);
+  });
+  test('en tooltip: 75.0% and 100.0% without a space', () => {
+    const txt = tip('en');
+    assertTrue(txt.includes('A: 3 (75.0%)'), txt);
+    assertTrue(txt.includes('cumulative: 100.0%'), txt);
+  });
+  test('Pareto axis ticks: de 50 %, en 50%', () => {
+    const de = mount({ series: [s('A', A)], binWidth: 1, pareto: true }, 'de');
+    const en = mount({ series: [s('A', A)], binWidth: 1, pareto: true }, 'en');
+    const ticks = (m) => [...m.svg.querySelectorAll('text[data-pareto-tick]')].map(t => t.textContent);
+    assertEqual(ticks(de).join('|'), ['0', '25', '50', '75', '100'].map(p => `${p}\u00a0%`).join('|'));
+    assertEqual(ticks(en).join('|'), '0%|25%|50%|75%|100%');
+    unmount(de); unmount(en);
   });
 });
