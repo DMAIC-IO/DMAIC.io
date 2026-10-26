@@ -26,12 +26,12 @@
         <ul class="chart-suggestion__cards" data-ref="cards">
           <template x-for="(s, i) in model.suggestions" :key="s.type + ':' + i">
             <li>
-              <button type="button" class="chart-suggestion__card context-help-anchor--overlay" data-help-key="modules.chart-suggestion.actions.pickChart.help"
+              <button type="button" class="chart-suggestion__card"
                       :class="cardClass(s)" :data-chart-type="s.type" @click="pickChart(s.type)">
                 <div class="chart-suggestion__card-thumb"
                      :class="'chart-suggestion__card-thumb--' + s.type"
                      aria-hidden="true" :data-thumb="s.type"></div>
-                <div class="chart-suggestion__card-body">
+                <div class="chart-suggestion__card-body context-help-anchor--overlay" data-help-key="modules.chart-suggestion.actions.pickChart.help">
                   <div class="chart-suggestion__card-title" x-text="chartTitle(s)"></div>
                   <template x-if="s.notesKey">
                     <div class="chart-suggestion__card-notes" x-text="chartNotes(s)"></div>
