@@ -225,3 +225,34 @@ export class State {
     return s;
   }
 }
+
+/**
+ * Format a time-zone difference in minutes as hours and minutes, e.g.
+ * `+5h 30min`, `+0h`, `-1h`, `-0h 30min`. The sign is taken from the
+ * difference itself, not from the whole-hour part, so that differences
+ * below one hour keep their minus sign. Uses the ASCII minus.
+ * @param {number} diffMinutes difference in minutes (target − source)
+ * @returns {string}
+ */
+export function formatTzDiff(diffMinutes) {
+  const sign = diffMinutes < 0 ? '-' : '+';
+  const abs = Math.abs(diffMinutes);
+  const hours = Math.floor(abs / 60);
+  const mins = abs % 60;
+  return `${sign}${hours}h${mins ? ` ${mins}min` : ''}`;
+}
+
+/**
+ * Parse a `shortOffset` time-zone name as produced by `Intl.DateTimeFormat`
+ * (`GMT`, `GMT+1`, `GMT+5:30`, `GMT-0:30`) into an offset in minutes. The
+ * sign is read from the text, not from the parsed hours, so `GMT-0:30`
+ * yields −30 rather than +30.
+ * @param {string} str the offset text
+ * @returns {number} offset from UTC in minutes; 0 if the text is unparseable
+ */
+export function parseGmtOffset(str) {
+  const m = String(str).match(/GMT(?:([+-]?)(\d+))?(?::(\d+))?/);
+  if (!m) return 0;
+  const total = parseInt(m[2] || '0', 10) * 60 + parseInt(m[3] || '0', 10);
+  return m[1] === '-' ? -total : total;
+}

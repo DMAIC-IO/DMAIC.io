@@ -16,7 +16,7 @@ import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireText } from '../../core/agent/agent-argcheck.js';
 import { CATEGORIES, TIMEZONES, TZ_WORLD_CLOCK_INDICES } from './unit-data.js';
-import { State, formatNumber } from './unit-converter-model.js';
+import { State, formatNumber, formatTzDiff, parseGmtOffset } from './unit-converter-model.js';
 
 /** Die Schlüssel der Größenarten — die Wertemenge von `selectCategory`. */
 const CATEGORY_KEYS = Object.keys(CATEGORIES);
@@ -63,12 +63,7 @@ function getTzOffset(tz, date) {
     timeZone: tz, timeZoneName: 'shortOffset',
   }).formatToParts(date);
   const p = parts.find(x => x.type === 'timeZoneName');
-  if (!p) return 0;
-  const m = p.value.match(/GMT([+-]?\d+)?(?::(\d+))?/);
-  if (!m) return 0;
-  const hours = parseInt(m[1] || '0', 10);
-  const mins = parseInt(m[2] || '0', 10);
-  return hours * 60 + (hours < 0 ? -mins : mins);
+  return p ? parseGmtOffset(p.value) : 0;
 }
 
 /**
@@ -351,14 +346,11 @@ export default createModule({
         }).format(ctx.utc);
         const toOffset = getTzOffset(toTz, ctx.utc);
         const diff = toOffset - ctx.fromOffset;
-        const sign = diff >= 0 ? '+' : '';
-        const diffH = Math.trunc(diff / 60);
-        const diffM = Math.abs(diff % 60);
         return {
           text: time + (isDe() ? ' Uhr' : ''),
           dateText,
           diffHours: diff / 60,
-          diffText: `${sign}${diffH}h${diffM ? ` ${diffM}min` : ''} (${getTzAbbr(ctx.fromTz, ctx.utc)} → ${getTzAbbr(toTz, ctx.utc)})`,
+          diffText: `${formatTzDiff(diff)} (${getTzAbbr(ctx.fromTz, ctx.utc)} → ${getTzAbbr(toTz, ctx.utc)})`,
         };
       },
       /** @noagent view transform: die umgerechnete Uhrzeit in Anzeigeform. */

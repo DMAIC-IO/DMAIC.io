@@ -1,5 +1,5 @@
 import { suite, test, assertEqual, assertAlmostEqual } from '../test-utils.js';
-import { State, formatNumber, groupMembers } from '../../js/modules/unit-converter/unit-converter-model.js';
+import { State, formatNumber, groupMembers, formatTzDiff, parseGmtOffset } from '../../js/modules/unit-converter/unit-converter-model.js';
 
 suite('Unit Converter Model — formatNumber', () => {
   test('zero renders as 0', () => {
@@ -213,5 +213,34 @@ suite('Unit Converter Model — toUnitKeys filtering', () => {
     const keys = s.toUnitKeys();
     assertEqual(keys.includes('mmoll_bz'), true);
     assertEqual(keys.includes('umoll_kr'), false);
+  });
+});
+
+suite('Unit Converter Model — formatTzDiff', () => {
+  test('negative half hour keeps its minus sign', () => {
+    assertEqual(formatTzDiff(-30), '-0h 30min');
+    assertEqual(formatTzDiff(-45), '-0h 45min');
+  });
+
+  test('positive and whole-hour differences', () => {
+    assertEqual(formatTzDiff(30), '+0h 30min');
+    assertEqual(formatTzDiff(-90), '-1h 30min');
+    assertEqual(formatTzDiff(0), '+0h');
+    assertEqual(formatTzDiff(-60), '-1h');
+    assertEqual(formatTzDiff(330), '+5h 30min');
+  });
+});
+
+suite('Unit Converter Model — parseGmtOffset', () => {
+  test('negative offset below one hour stays negative', () => {
+    assertEqual(parseGmtOffset('GMT-0:30'), -30);
+  });
+
+  test('offsets with and without minutes', () => {
+    assertEqual(parseGmtOffset('GMT+5:30'), 330);
+    assertEqual(parseGmtOffset('GMT-3:30'), -210);
+    assertEqual(parseGmtOffset('GMT'), 0);
+    assertEqual(parseGmtOffset('GMT+0'), 0);
+    assertEqual(parseGmtOffset('GMT+1'), 60);
   });
 });
