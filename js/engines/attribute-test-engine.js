@@ -8,7 +8,7 @@
  * Pure functions, no DOM, no i18n. Inputs are assumed valid — the module's
  * normalizer (attribute-test-input.js) rejects nonsense before calling in.
  *
- * Conventions (see docs/superpowers/specs/2026-10-10-attribute-tests-design.md):
+ * Conventions:
  *  - 1 proportion: exact binomial test consistent with Clopper-Pearson,
  *    two-sided p = min(1, 2·min(P(X ≤ x), P(X ≥ x))). Minitab's adjusted
  *    Blaker interval is not implemented.

@@ -11,8 +11,6 @@
  *
  * Datenrichtung ist eine Einbahnstraße — es wird nie in den Baum geschrieben.
  *
- * Spec: docs/superpowers/specs/2026-07-25-kano-modul-design.md
- *
  * @agent  Vollständig über das Viewmodel steuerbar: Quelle und Ebene der
  *   Merkmale, das Übernehmen der Merkmale aus dem Baum, die Merkmalliste
  *   selbst, Befragte anlegen, umbenennen, auswählen und entfernen, jede

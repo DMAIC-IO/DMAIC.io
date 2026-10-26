@@ -9,7 +9,6 @@
  *
  * The order of the factors passed in carries meaning: it determines layout
  * **and** nesting at once, so the picture and the model never drift apart.
- * See `docs/superpowers/specs/2026-08-31-multi-vari-design.md`.
  */
 
 import { MIN_FACTORS, MAX_FACTORS, KEY_SEP, expectedCellCount } from './variance-components-engine.js';

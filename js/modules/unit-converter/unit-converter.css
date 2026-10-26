@@ -3,7 +3,7 @@
    ============================================================ */
 
 /* Wurzel ohne .module-container / .dmike-split ("weder noch", Bauform 4 der
-   Scroll-Inventur, docs/superpowers/plans/2026-09-04-scroll-inventur.md).
+   Scroll-Inventur).
    Ohne eigene Höhenbegrenzung wächst der Inhalt (Kategorien + Panel) mit
    der Anzahl sichtbarer Umrechnungsfelder; der Überlauf entwich bisher nach
    `.workspace__module-area` (jetzt overflow:hidden, siehe css/layout.css).

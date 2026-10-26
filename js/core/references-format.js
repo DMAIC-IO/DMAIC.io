@@ -3,8 +3,6 @@
  * (CSL-JSON subset). Shared by the in-app references tab
  * (references-renderer.js) and the static handbook generator, so both
  * format citations identically.
- *
- * @see docs/superpowers/specs/2026-10-07-handbook-references-design.md
  */
 
 /** Fallback i18n lookup when no `t` is passed. Mirrors the German defaults

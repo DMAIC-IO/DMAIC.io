@@ -9,8 +9,6 @@
  *   Need { id, text, drivers: Driver[] }
  *   Driver { id, text, type, requirements: Req[] }
  *   Req { id, text, target, measure }
- *
- * Spec: docs/superpowers/specs/2026-07-25-kano-modul-design.md
  */
 
 /** Wählbare Item-Ebenen, Reihenfolge = Anzeigereihenfolge im Select. */

@@ -6,8 +6,6 @@
  * linked datasheet to a regression. The response values live in the
  * linked datasheet (another module's state); rev() makes the view
  * recompute when it changes (spec E5).
- *
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md
  */
 import { computeDispersionAnalysis } from '../doe-planner-analysis.js';
 import { isWorksheetValid } from '../doe-planner-worksheet.js';

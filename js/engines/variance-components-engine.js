@@ -930,7 +930,7 @@ function isBalanced(factorValues, allIndices, modelForm) {
  *
  * @param {{response: number[], factorValues: string[][], factorNames: string[],
  *          modelForm: 'nested'|'crossed', estimator: 'anova'|'reml'}} input
- * @returns {object} see docs/superpowers/specs/2026-08-31-multi-vari-design.md
+ * @returns {object}
  */
 export function computeVarianceComponents({
   response, factorValues, factorNames, modelForm, estimator,

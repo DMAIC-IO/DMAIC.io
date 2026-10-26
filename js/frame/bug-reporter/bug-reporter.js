@@ -3,7 +3,6 @@
  * Bug button on dev hosts → opt-in → optional capture → description (with
  * editor) → send, falling back to downloads. Every failure ends in a
  * notify; no project state is touched and nothing is kept on cancel.
- * Spec: docs/superpowers/specs/2026-10-08-bug-reporter-design.md (private repo).
  */
 import { h } from '../../core/dom.js';
 import { icon } from '../../core/icon.js';

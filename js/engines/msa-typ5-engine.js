@@ -3,8 +3,6 @@
  * Pure computation for Attribute Measurement System Analysis (Type 5):
  * kappa-based agreement between appraisers, binary/nominal/ordinal.
  * No DOM access — testable in isolation.
- *
- * Spec: docs/superpowers/specs/2026-07-15-msa-typ5-design.md
  */
 
 import { erfc } from './math-utils.js';

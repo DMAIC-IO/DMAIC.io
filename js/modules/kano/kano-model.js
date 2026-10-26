@@ -10,8 +10,6 @@
  *     respondents: [{ id, name }],
  *     answers: { [respondentId]: { [itemId]: { f, d, w } } },
  *     activeRespondentId }
- *
- * Spec: docs/superpowers/specs/2026-07-25-kano-modul-design.md
  */
 
 import { LEVELS } from './kano-link.js';

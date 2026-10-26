@@ -5,8 +5,6 @@
  * run count, the model terms, forbidden factor combinations, the source
  * worksheet and the augmentation of a linked datasheet. Writes the model
  * and saves; the shell's signature watcher regenerates (spec E3).
- *
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md
  */
 import {
   enumerateTerms, termDisplay, activateTerm, deactivateTerm, termSortKey,

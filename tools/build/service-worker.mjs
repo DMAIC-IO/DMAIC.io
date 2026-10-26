@@ -1,7 +1,6 @@
 /**
  * Service worker build step: the precache list, its version, and the bundled
  * sw.js. runBuild (build.mjs) calls these after the shell is rendered.
- * Spec: docs/superpowers/specs/2026-10-10-service-worker-offline-design.md
  */
 import { build as esbuild } from 'esbuild';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';

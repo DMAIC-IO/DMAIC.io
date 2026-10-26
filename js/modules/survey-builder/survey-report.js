@@ -5,8 +5,6 @@
  * plain HTML/CSS widths, not chart-framework SVG: the chart framework
  * resolves colours from the active app theme, and the report must print
  * the same in light and dark mode (plan deviation 1). Strings only; no DOM.
- *
- * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md §7.3
  */
 
 import { escAttr } from '../../core/html-utils.js';

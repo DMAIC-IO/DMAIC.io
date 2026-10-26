@@ -6,8 +6,6 @@
  * export. Knows the model, the pure ishikawa-*.js helpers and core modules —
  * never a sibling or the shell (spec E2). Tells the others when the causes
  * change; follows comparisons, deletions and loads of snapshots (spec E3).
- *
- * Spec: docs/superpowers/specs/2026-10-25-ishikawa-agent-release-design.md
  */
 
 import { h } from '../../../core/dom.js';

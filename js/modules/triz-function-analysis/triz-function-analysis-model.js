@@ -3,8 +3,7 @@
  *
  * Components (exactly one target), unordered interaction pairs, pairs
  * explicitly excluded from interacting, and directed functions. Derived values (rank, open pairs, disadvantages) are pure
- * functions and never stored. See
- * docs/superpowers/specs/2026-10-15-triz-function-analysis-design.md.
+ * functions and never stored.
  */
 
 import { uid } from '../../core/uid.js';

@@ -12,8 +12,6 @@
  *
  * Glossar-Marker {{term:slug|Anzeige}} werden zentral von
  * core/glossary-inline.js zu Hover-Chips promoted.
- *
- * Spec: docs/superpowers/specs/2026-07-16-msa-typ6-design.md
  */
 
 export default {

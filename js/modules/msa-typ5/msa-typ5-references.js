@@ -1,7 +1,6 @@
 /**
  * D.Mike — MSA Type 5 references (msa-typ5-references.js)
  * CSL-JSON subset; only `note` is localized.
- * @see docs/superpowers/specs/2026-09-27-module-references-tab-design.md
  */
 
 import { AIAG_MSA_4, BOSCH_HEFT_10, MELZER_2019 } from '../../core/references-books.js';

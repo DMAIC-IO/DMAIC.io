@@ -24,8 +24,6 @@
  *   verknüpfen (experiments.*). Der Oberfläche bleiben die Rückfragen vor
  *   dem Löschen und Laden, die Bilder samt Lightbox, Einklappen, Trend und
  *   die Chart-Editoren.
- *
- * Spec: docs/superpowers/specs/2026-10-25-ishikawa-agent-release-design.md
  */
 
 import { createModule } from '../../core/template-module.js';

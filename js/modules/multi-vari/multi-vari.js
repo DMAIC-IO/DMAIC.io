@@ -25,8 +25,7 @@
  *
  * `ChartBase` liefert genau einen Plot-Bereich, also entsteht das
  * Panel-Raster durch Stapeln einer Chart-Instanz je Streifen mit geteilter
- * Y-Domäne — wie beim `gage-run-chart`. Spec:
- * `docs/superpowers/specs/2026-08-31-multi-vari-design.md`.
+ * Y-Domäne — wie beim `gage-run-chart`.
  */
 
 import { createModule } from '../../core/template-module.js';

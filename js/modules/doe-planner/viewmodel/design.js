@@ -7,8 +7,6 @@
  * (randomisation, center points, replicates, CCD alpha and center points,
  * Box-Behnken center points). What a type is lives in designs/; this class
  * only writes the model and saves (spec E2, E3).
- *
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md
  */
 import { PB_DESIGNS, ALL_RUNS, K_RANGE, BOX_BEHNKEN } from '../doe-planner-designs.js';
 import { sourceRowCount } from '../doe-planner-worksheet.js';

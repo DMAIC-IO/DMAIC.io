@@ -4,8 +4,6 @@
  * The only file that knows the state shapes of other modules: worksheet
  * (DataGrid workbook), kano and voc-ctx-tree. Everything here is a pure
  * snapshot builder; the module writes the result via stateManager.
- *
- * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md §6.2, §8
  */
 
 import { uid } from '../../core/uid.js';

@@ -25,8 +25,6 @@
  *   Rückfrage vor dem Phasenabschluss und die Navigation (Algorithm Lab,
  *   Datenblatt öffnen). Werte in einem verknüpften Datenblatt schreibt der
  *   Agent mit worksheet.setCells.
- *
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md
  */
 
 import { createModule } from '../../core/template-module.js';

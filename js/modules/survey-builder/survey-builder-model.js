@@ -5,8 +5,6 @@
  * recipients, imported responses, hand-over bookkeeping, UI selection.
  * Every structural change sets `dirtyStructure`; the next export bumps the
  * version (§3.4). Condition clean-up after deletes/moves runs here (§3.2).
- *
- * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md
  */
 
 import { uid } from '../../core/uid.js';

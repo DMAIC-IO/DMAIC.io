@@ -1,7 +1,5 @@
 /**
  * D.Mike — DoE Planner: central composite design (designs/ccd.js)
- *
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E2)
  */
 import { OK } from './check.js';
 

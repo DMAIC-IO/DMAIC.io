@@ -1,7 +1,6 @@
 /**
  * D.Mike — bibliographic data shared by several module reference lists.
  * Each module spreads an entry and adds its own localized `note`.
- * @see docs/superpowers/specs/2026-09-27-module-references-tab-design.md
  */
 
 /** Melzer 2019 — basis of the book review in docs/book-reviews/melzer-2019/. */

@@ -5,8 +5,6 @@
  * validity rule, its run count, its resolution label and its own helpers.
  * Nothing outside designs/ branches on model.designType except assignments
  * and designOf(). The matrices still come from the engine.
- *
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E2)
  */
 import full from './full.js';
 import frac from './frac.js';

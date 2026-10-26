@@ -3,8 +3,6 @@
  *
  * Pure view helpers shared by the shell and the sub-viewmodels: display name
  * and colour of a 6M category. No DOM, no state.
- *
- * Spec: docs/superpowers/specs/2026-10-25-ishikawa-agent-release-design.md (E2)
  */
 
 import { CATS } from './ishikawa-constants.js';

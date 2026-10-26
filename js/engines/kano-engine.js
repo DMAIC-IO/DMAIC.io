@@ -9,8 +9,6 @@
  *
  * Kategorien: M (Basis), O (Leistung), A (Begeisterung), I (indifferent),
  *             R (reversed), Q (questionable)
- *
- * Spec: docs/superpowers/specs/2026-07-25-kano-modul-design.md
  */
 
 /** Kategorien in absteigender Stärke — zugleich die Tie-Break-Reihenfolge. */

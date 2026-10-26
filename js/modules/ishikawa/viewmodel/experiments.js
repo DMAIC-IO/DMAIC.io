@@ -6,8 +6,6 @@
  * charts. Knows the model, the pure ishikawa-*.js helpers and core modules —
  * never a sibling or the shell (spec E2). Needs no bus event: links to
  * causes are read from the model on every render (spec E3).
- *
- * Spec: docs/superpowers/specs/2026-10-25-ishikawa-agent-release-design.md
  */
 
 import { computeGanttConfig, computeCostConfig } from '../ishikawa-charts.js';

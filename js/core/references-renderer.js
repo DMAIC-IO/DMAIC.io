@@ -4,9 +4,6 @@
  * No HTML strings: everything is built with `h()`, so literal text is escaped
  * natively via text nodes. The text pieces come from references-format.js,
  * which the static handbook generator shares.
- *
- * @see docs/superpowers/specs/2026-09-27-module-references-tab-design.md
- * @see docs/superpowers/specs/2026-10-07-handbook-references-design.md
  */
 
 import { h } from './dom.js';

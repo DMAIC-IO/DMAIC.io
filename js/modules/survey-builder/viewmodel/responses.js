@@ -5,8 +5,6 @@
  * the list of responses. Knows the model, survey-labels.js and the pure
  * survey-*.js modules — never a sibling or the shell (spec E2). Deleting a
  * response leaves the VoC selection alone; the hand-over cleans it itself.
- *
- * Spec: docs/superpowers/specs/2026-10-24-survey-builder-teil-viewmodels-design.md
  */
 
 import { documentOrder, isVisible } from '../survey-conditions.js';

@@ -4,8 +4,6 @@
  * Validates one answer file against the current questionnaire definition
  * and sanitises its answers per question type. Unknown ids (from an older
  * version) are dropped and reported as orphans.
- *
- * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md §6.1
  */
 
 import { documentOrder } from './survey-conditions.js';

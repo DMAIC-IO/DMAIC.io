@@ -6,8 +6,6 @@
  * its charts when the results tab is shown and drops them when it is left.
  * Knows the model, survey-labels.js and the pure survey-*.js modules — never
  * a sibling or the shell (spec E2).
- *
- * Spec: docs/superpowers/specs/2026-10-24-survey-builder-teil-viewmodels-design.md
  */
 
 import { documentOrder, findQuestion } from '../survey-conditions.js';

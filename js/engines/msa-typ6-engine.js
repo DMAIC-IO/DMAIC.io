@@ -6,8 +6,6 @@
  * computeIMR, computeXbarR und evaluateNelsonRules; MSA-spezifisch sind
  * hier nur die Grenzen-Modus-Unterscheidung (from-study vs. given),
  * der Drift-Test (Linear-Regression + t-Test) und die MSA-Ampel.
- *
- * Spec: docs/superpowers/specs/2026-07-16-msa-typ6-design.md
  */
 
 import {

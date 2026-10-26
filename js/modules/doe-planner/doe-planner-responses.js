@@ -4,8 +4,6 @@
  * Pure functions over (context, model). The datasheet lives in another
  * module's state, which Alpine cannot track; callers touch the shell's
  * revision counter (rev()) before calling so their view recomputes.
- *
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E5)
  */
 import { readResponsesFromWorksheet, isWorksheetValid } from './doe-planner-worksheet.js';
 

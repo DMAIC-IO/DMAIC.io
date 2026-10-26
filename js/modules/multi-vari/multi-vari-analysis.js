@@ -20,8 +20,6 @@
  *    the decomposition can flag e.g. `notConverged`), so the module's
  *    warning list is the deduplicated UNION of both — never just one
  *    engine's list, or a non-converged REML fit goes unreported.
- *
- * See docs/superpowers/specs/2026-08-31-multi-vari-design.md.
  */
 
 import { computeVarianceComponents } from '../../engines/variance-components-engine.js';

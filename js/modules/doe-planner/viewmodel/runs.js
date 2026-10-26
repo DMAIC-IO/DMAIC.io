@@ -7,8 +7,6 @@
  * seeds meet in the pure doe-planner-runtable.js (spec E4); this class
  * holds only the grid object. Once a datasheet is bound, its values live
  * there: setRunValue refers to worksheet.setCells (spec E6).
- *
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md
  */
 import { DataGrid } from '../../../core/datagrid/datagrid.js';
 import { uid } from '../../../core/uid.js';

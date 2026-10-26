@@ -2,7 +2,6 @@
  * D.Mike service worker — install, activate and fetch handlers only; the
  * logic lives in strategy.js, caches.js, retry.js and handlers.js. The build bundles this
  * file into app/dev/sw.js and defines VERSION and PRECACHE.
- * Spec: docs/superpowers/specs/2026-10-10-service-worker-offline-design.md
  */
 /* global VERSION, PRECACHE */
 import { strategyFor } from './strategy.js';

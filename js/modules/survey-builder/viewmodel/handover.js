@@ -6,8 +6,6 @@
  * survey-builder design). Keeps its VoC selection clean against the existing
  * responses itself. Knows the model, survey-labels.js and the pure
  * survey-*.js modules — never a sibling or the shell (spec E2).
- *
- * Spec: docs/superpowers/specs/2026-10-24-survey-builder-teil-viewmodels-design.md
  */
 
 import { documentOrder, findQuestion, isVisible } from '../survey-conditions.js';

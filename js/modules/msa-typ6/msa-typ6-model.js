@@ -8,8 +8,6 @@
  * stability result is derived (transiently) in the view layer from these
  * inputs plus the live worksheet data via `js/engines/msa-typ6-engine.js`,
  * so it is intentionally NOT persisted here.
- *
- * Spec: docs/superpowers/specs/2026-07-16-msa-typ6-design.md § 6
  */
 
 /** Allowed chart-type options. */

@@ -6,8 +6,6 @@
  * overview, free-text count and group comparison. No DOM, no state access.
  * The base of every share is the set of responses in which the question was
  * visible; a hidden answer never counts.
- *
- * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md §6.2, §7
  */
 
 import { documentOrder, findQuestion, isVisible, answerHasOption } from './survey-conditions.js';

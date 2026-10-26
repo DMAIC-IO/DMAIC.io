@@ -1,7 +1,6 @@
 /**
  * D.Mike — Control chart references (control-chart-references.js)
  * CSL-JSON subset; only `note` is localized.
- * @see docs/superpowers/specs/2026-09-27-module-references-tab-design.md
  */
 
 import { MELZER_2019, MONTGOMERY_SQC_6 } from '../../core/references-books.js';

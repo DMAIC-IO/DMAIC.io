@@ -9,8 +9,6 @@
  * A condition list is OR-combined. A condition holds when its source
  * question is visible and its answer contains one of the option ids.
  * A question inside a hidden section is hidden.
- *
- * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md §3.2
  */
 
 /** All question types a survey may contain. @type {string[]} */

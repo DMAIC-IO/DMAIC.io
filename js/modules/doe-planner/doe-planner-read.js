@@ -7,8 +7,6 @@
  * table comes from the pure run table (E4), the fill state from the
  * response state (E5). factors, responses, options and sourceWorksheet are
  * the persisted form, so the read example compares them one to one.
- *
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md
  */
 import { checkConfig, designOf, plannedRuns } from './designs/index.js';
 import { sourceRowCount } from './doe-planner-worksheet.js';

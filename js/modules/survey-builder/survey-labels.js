@@ -5,8 +5,6 @@
  * sub-viewmodels of survey-builder. No state: everything a function needs
  * (a slice of the model, the translation function, the locale) comes in as
  * an argument.
- *
- * Spec: docs/superpowers/specs/2026-10-24-survey-builder-teil-viewmodels-design.md (E1)
  */
 
 import { documentOrder } from './survey-conditions.js';

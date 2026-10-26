@@ -6,8 +6,6 @@
  * the model and saves; the shell's signature watcher regenerates the
  * design (spec E3). Knows the model, the pure doe-planner-*.js helpers and
  * core modules — never a sibling or the shell (spec E1).
- *
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md
  */
 import { letter } from '../doe-planner-model.js';
 import { requireEnum, requireIndex, requireKnownId, requireText } from '../../../core/agent/agent-argcheck.js';

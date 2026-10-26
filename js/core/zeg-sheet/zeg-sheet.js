@@ -4,7 +4,6 @@
  * Keeps an editable worksheet in the `data` phase in two-way sync with
  * `phaseAchievementHistory`. The history stays the source of truth; the
  * sheet is found by its column metas (`managedBy: 'zeg'`), never by name.
- * Spec: docs/superpowers/specs/2026-10-12-zeg-worksheet-design.md
  */
 
 import { getPhaseIds } from '../cycles/cycles.js';

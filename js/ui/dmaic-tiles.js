@@ -6,7 +6,7 @@
  * for modules without a cycle-specific mapping). See `js/core/cycles/cycles.js`.
  *
  * Class name kept as `DmaicTiles` for backwards-compat across the codebase
- * (Plan §4.4 — file/class rename deferred).
+ * (file/class rename deferred).
  *
  * Each methodology tile is a split-button: phase letter + name (select),
  * a hover-revealed pencil to edit the goal-achievement percentage (ZEG,
@@ -743,8 +743,7 @@ export class DmaicTiles {
    * Recompute whether inactive tiles must collapse and toggle the container
    * class. Called at render, cycle switch, active-phase and language change,
    * and by the ResizeObserver from `_observeResize()` when the row's width
-   * changes. See
-   * docs/superpowers/specs/2026-09-06-kachelreihe-messen-statt-schaetzen-design.md.
+   * changes.
    *
    * Measures the REAL width instead of estimating it: drop
    * `dmaic-tiles--collapsed`, read `scrollWidth` against `clientWidth`, set

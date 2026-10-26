@@ -5,8 +5,6 @@
  * and resolution from the design type (designs/), D-/A-/G-efficiency,
  * condition number, leverage, VIF, alias structure and power. Read-only: it
  * writes nothing.
- *
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md
  */
 import { powerDisplay } from '../doe-planner-analysis.js';
 import { sourceRowCount } from '../doe-planner-worksheet.js';

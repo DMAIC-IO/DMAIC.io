@@ -1,8 +1,6 @@
 /**
  * D.Mike — DoE Planner: full factorial (designs/full.js)
  * Pure description of the design type; the matrix comes from the engine.
- *
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E2)
  */
 import { OK } from './check.js';
 

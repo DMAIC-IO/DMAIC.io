@@ -23,9 +23,6 @@
  *   Oberfläche bleiben die Rückfragen vor dem Löschen, der Bedingungseditor
  *   mit seinem Entwurf, der Dateiwähler und die drei Downloads (Fragebogen,
  *   Empfängerdatei, Bericht).
- *
- * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md,
- *       docs/superpowers/specs/2026-10-24-survey-builder-teil-viewmodels-design.md
  */
 
 import { createModule } from '../../core/template-module.js';

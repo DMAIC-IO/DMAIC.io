@@ -1,8 +1,6 @@
 /**
  * D.Mike — DoE Planner: D-/A-/G-optimal designs (designs/optimal.js)
  * One module for all three criteria; the criterion is model.designType.
- *
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E2)
  */
 import { minRunsForTerms } from '../../../engines/doe-planner-engine.js';
 import { OK, fail } from './check.js';

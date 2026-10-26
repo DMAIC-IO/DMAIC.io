@@ -1,8 +1,6 @@
 /**
  * D.Mike — DoE Planner: check results shared by the design-type modules (designs/check.js)
  * Pure. Lives apart from designs/index.js so the type modules never import the registry.
- *
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E2, E7)
  */
 
 /** A passed check. */

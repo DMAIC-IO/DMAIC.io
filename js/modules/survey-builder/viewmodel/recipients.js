@@ -4,8 +4,6 @@
  * Sub-viewmodel of the recipients tab: recipient list, send status and the
  * per-recipient export. Knows the model, survey-labels.js and the pure
  * survey-*.js modules — never a sibling or the shell (spec E2).
- *
- * Spec: docs/superpowers/specs/2026-10-24-survey-builder-teil-viewmodels-design.md
  */
 
 import { buildSurveyHtml, surveyFileName, runnerStrings } from '../survey-export.js';

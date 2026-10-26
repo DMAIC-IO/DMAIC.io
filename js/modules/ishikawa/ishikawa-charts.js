@@ -4,8 +4,6 @@
  * Pure config builders for the Gantt, cumulative-cost and trend chart types,
  * plus the rating-cell colour. No DOM, no state, no Date.now(): `now` and
  * `lang` are injected by the caller.
- *
- * Spec: docs/superpowers/specs/2026-10-25-ishikawa-agent-release-design.md (E2)
  */
 
 import { LINE_COLS } from './ishikawa-constants.js';

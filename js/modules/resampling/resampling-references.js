@@ -1,7 +1,6 @@
 /**
  * D.Mike — Resampling references (resampling-references.js)
  * CSL-JSON subset; only `note` is localized.
- * @see docs/superpowers/specs/2026-09-27-module-references-tab-design.md
  */
 
 export default [

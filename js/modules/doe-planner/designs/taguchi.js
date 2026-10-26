@@ -1,7 +1,5 @@
 /**
  * D.Mike — DoE Planner: Taguchi orthogonal arrays (designs/taguchi.js)
- *
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E2)
  */
 import { TAGUCHI } from '../doe-planner-designs.js';
 import { taguchiCandidates } from '../../../engines/doe-planner-engine.js';

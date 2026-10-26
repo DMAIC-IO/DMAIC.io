@@ -5,7 +5,6 @@
  * association tests on counts, entered as summarized counts or taken from
  * worksheet columns.
  * Pipeline: state → normalizer → engine (via report) → template.
- * @see docs/superpowers/specs/2026-10-10-attribute-tests-design.md
  *
  * @agent  Steuerbar über das Viewmodel: die Parameter (setParam), die vier
  *   Spaltenrollen (setColumn), die Kreuztabelle der Zusammenfassung

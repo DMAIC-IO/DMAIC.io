@@ -4,8 +4,6 @@
  *
  * The traffic-light thresholds (≥ 3 Nelson violations, p < α/10) are
  * D.Mike's own rule — no note may attribute them to a source.
- *
- * @see docs/superpowers/specs/2026-10-07-handbook-references-design.md
  */
 
 import { AIAG_MSA_4, MONTGOMERY_SQC_6 } from '../../core/references-books.js';

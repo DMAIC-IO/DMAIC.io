@@ -7,8 +7,6 @@
  * model (spec E8); this class confirms, fetches the response values (E5),
  * saves and shows. The confirm dialog stays with the interface:
  * confirmCompletePhase asks, completePhase acts (spec E6).
- *
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md
  */
 import { PHASE_DECISIONS } from '../doe-planner-model.js';
 import { readResponses, staleness, boundComplete } from '../doe-planner-responses.js';

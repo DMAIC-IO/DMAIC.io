@@ -11,7 +11,7 @@
  *
  * `ChartBase` provides a single plot area, so a wrapped panel *grid* is built
  * by the module stacking several instances of this type — each one strip —
- * with a shared y-domain. See `docs/superpowers/specs/2026-07-27-gage-run-chart-design.md`.
+ * with a shared y-domain.
  *
  * Panel geometry is derived from `plotArea` directly rather than from the x
  * scale: `generateTicks` widens the numeric x range to nice boundaries, which

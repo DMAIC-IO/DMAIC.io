@@ -6,8 +6,6 @@
  * preview timer and the condition draft with their lifecycle. Knows the
  * model, survey-labels.js and the pure survey-*.js modules — never a
  * sibling or the shell (spec E2).
- *
- * Spec: docs/superpowers/specs/2026-10-24-survey-builder-teil-viewmodels-design.md
  */
 
 import { QUESTION_TYPES, availableSources, documentOrder } from '../survey-conditions.js';

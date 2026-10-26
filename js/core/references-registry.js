@@ -3,8 +3,7 @@
  * (references-registry.generated.js, produced by tools/build/references-data.mjs).
  * All reference lists are eagerly bundled into app.min.js; no runtime import.
  *
- * A reference entry is a CSL-JSON subset — see
- * docs/superpowers/specs/2026-09-27-module-references-tab-design.md.
+ * A reference entry is a CSL-JSON subset.
  */
 import { REFS } from './references-registry.generated.js';
 

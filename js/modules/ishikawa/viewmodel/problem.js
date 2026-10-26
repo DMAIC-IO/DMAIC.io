@@ -6,8 +6,6 @@
  * pure ishikawa-*.js helpers and core modules — never a sibling or the shell
  * (spec E2). Images stay with the interface: the agent reads their size and
  * caption, it neither uploads nor deletes them (spec E5).
- *
- * Spec: docs/superpowers/specs/2026-10-25-ishikawa-agent-release-design.md
  */
 
 import { compressImageToBudget } from '../../../core/image-upload.js';

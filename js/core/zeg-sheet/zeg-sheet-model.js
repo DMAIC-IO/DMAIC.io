@@ -4,8 +4,7 @@
  * Pure conversions between the goal-achievement history
  * (`phaseAchievementHistory`: { <phase>: [{t, v}, …] }), sheet rows
  * ({ date: 'YYYY-MM-DD', values: { <phase>: number|null } }) and the
- * DataGrid sheet state of the ZEG worksheet. Spec:
- * docs/superpowers/specs/2026-10-12-zeg-worksheet-design.md
+ * DataGrid sheet state of the ZEG worksheet.
  */
 
 import { todayISO, isIsoDate } from '../local-date.js';

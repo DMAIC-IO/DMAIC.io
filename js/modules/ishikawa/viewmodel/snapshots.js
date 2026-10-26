@@ -7,8 +7,6 @@
  * core modules — never a sibling or the shell (spec E2). Tells the others
  * about comparisons, deletions and loads over the instance bus; redraws the
  * trend when the causes change (spec E3).
- *
- * Spec: docs/superpowers/specs/2026-10-25-ishikawa-agent-release-design.md
  */
 
 import { computeTrendConfig } from '../ishikawa-charts.js';

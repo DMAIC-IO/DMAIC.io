@@ -1,7 +1,5 @@
 /**
  * D.Mike — DoE Planner: Box-Behnken (designs/bb.js)
- *
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E2)
  */
 import { BOX_BEHNKEN } from '../doe-planner-designs.js';
 import { OK, fail } from './check.js';

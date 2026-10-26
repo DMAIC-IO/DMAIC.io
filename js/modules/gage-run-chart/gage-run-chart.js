@@ -18,8 +18,7 @@
  * lives in `js/engines/gage-run-chart-engine.js`.
  *
  * `ChartBase` renders a single plot area, so a wrapped panel grid is built by
- * stacking one chart instance per strip, all sharing a y-domain. See
- * `docs/superpowers/specs/2026-07-27-gage-run-chart-design.md`.
+ * stacking one chart instance per strip, all sharing a y-domain.
  *
  * @agent  Steuerbar über das Viewmodel: Teil-, Prüfer- und Messwertspalte
  *   (setColumn), Bezugswert, Anordnung, Darstellung, Kopfzeile (setParam),

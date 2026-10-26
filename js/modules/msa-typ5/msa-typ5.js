@@ -11,8 +11,6 @@
  * `js/engines/msa-typ5-engine.js` abgeleitet. ColumnPicker und Charts werden
  * imperativ gemountet (keine reinen Template-Belange).
  *
- * Spec: docs/superpowers/specs/2026-07-15-msa-typ5-design.md
- *
  * @agent  Steuerbar über das Viewmodel: die sechs Parameter (setParam), die
  *   fünf Einzel-Spalten (setColumn) und das Rechnen selbst. Gelesen wird über
  *   read() mit erklärter Lesefläche (AgentRead) — Konfiguration, wählbare

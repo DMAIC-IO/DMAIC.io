@@ -15,7 +15,8 @@
 //   - package.json, Workflows: `../…`-Pfade als Wörter
 //   - HTML: `src`/`href` relativ
 //   - Sperrmuster `../../(docs|tools|test|site-src|.claude|pipeline)/` im Code
-// Kommentare zählen nicht: Verweise auf Specs im privaten Repo sind bekannt.
+// Kommentare zählen hier nicht — Verweise auf private Dokumente, auch in
+// Kommentaren, findet `findPrivateReferences` (siehe unten).
 //
 // Grenzen: berechnete Pfade (Variablen-Segmente, String-Verkettung, Laufzeit-
 // `fetch`) sieht die Prüfung nicht. Die fängt die eigenständige Probe im
@@ -45,12 +46,12 @@ function kindOf(rel) {
 }
 
 /**
- * Alle zu prüfenden Code-Dateien, relativ zur Wurzel. Bevorzugt `git ls-files`
- * (nur Getracktes), sonst ein Dateisystem-Lauf ohne `node_modules`.
+ * Alle getrackten Dateien, relativ zur Wurzel. Bevorzugt `git ls-files`, sonst
+ * ein Dateisystem-Lauf ohne `node_modules`. Nur Dateien, die es noch gibt.
  * @param {string} root
  * @returns {string[]}
  */
-export function listCodeFiles(root) {
+function listFiles(root) {
   let files;
   try {
     if (!existsSync(join(root, '.git'))) throw new Error('kein git');
@@ -68,7 +69,31 @@ export function listCodeFiles(root) {
     };
     walk(root);
   }
-  return files.filter((f) => kindOf(f) !== null && existsSync(join(root, f)));
+  return files.filter((f) => existsSync(join(root, f)));
+}
+
+/**
+ * Alle zu prüfenden Code-Dateien, relativ zur Wurzel.
+ * @param {string} root
+ * @returns {string[]}
+ */
+export function listCodeFiles(root) {
+  return listFiles(root).filter((f) => kindOf(f) !== null);
+}
+
+/**
+ * Alle getrackten Textdateien, relativ zur Wurzel. Ohne Binärdateien (NUL-Byte
+ * am Anfang) und ohne erzeugte Dateien (`*.generated.*`, `*.min.*`) — die
+ * entstehen aus Quellen, die selbst geprüft werden.
+ * @param {string} root
+ * @returns {string[]}
+ */
+export function listTextFiles(root) {
+  return listFiles(root).filter((f) => {
+    if (/\.(generated|min)\./.test(f)) return false;
+    const head = readFileSync(join(root, f)).subarray(0, 8000);
+    return !head.includes(0);
+  });
 }
 
 /**
@@ -374,6 +399,69 @@ export function findBoundaryViolations(root, { files = listCodeFiles(root) } = {
     } else if (kind === 'pkg') {
       checkPathWords(code, ctx.dir, ctx, report, 'Pfad');
     } else { code = stripHtmlComments(src); checkHtml(code, ctx, report); }
+  }
+  return found;
+}
+
+// ── Verweise auf private Dokumente ─────────────────────────────────────────
+//
+// Dieses Repo ist öffentlich. Specs, Pläne, Roadmap, Bugliste, die E2E-Tests
+// und die Site-Quellen liegen im privaten Begleit-Repo; ein Verweis darauf ist
+// für Leser hier wertlos. Geprüft wird jede Zeile jeder Textdatei, Kommentare
+// und Markdown eingeschlossen. Diese Datei und ihr Test nennen die Muster
+// zwangsläufig selbst und werden vom Aufrufer ausgenommen.
+
+/** Feste Muster: Anzeigename → Regex. */
+const PRIVATE_PATTERNS = [
+  ['docs/superpowers', /docs\/superpowers/g],
+  ['.claude/', /(?<![\w-])\.claude\//g],
+  ['ROADMAP.md', /(?<![\w-])ROADMAP\.md/g],
+  ['ROADMAP_DONE.md', /(?<![\w-])ROADMAP_DONE\.md/g],
+  ['BUGS.md', /(?<![\w-])BUGS\.md/g],
+  ['BUGS_DONE.md', /(?<![\w-])BUGS_DONE\.md/g],
+  ['test/playwright', /(?<![\w.-])test\/playwright/g],
+  ['site-src', /(?<![\w-])site-src(?![\w-])/g],
+];
+
+/** `docs/<NAME>.md` — privat, sofern die Datei hier nicht existiert. */
+const DOCS_MD = /(?<![\w.-])docs\/([\w-]+)\.md/g;
+
+/** Erlaubte `.gitignore`-Zeilen, die ein privates Muster enthalten. */
+const GITIGNORE_OK = new Set(['/.claude/', '.claude/']);
+
+/**
+ * @typedef {object} PrivateReference
+ * @property {string} file     Pfad relativ zur Wurzel
+ * @property {number} line     1-basiert
+ * @property {string} pattern  gefundenes Muster, z. B. `docs/superpowers`
+ */
+
+/**
+ * Sucht in den Dateien unter `root` nach Verweisen auf private Dokumente.
+ * @param {string} root
+ * @param {{files?: string[]}} [opts]  Pfade relativ zu `root`; Vorgabe `listTextFiles(root)`
+ * @returns {PrivateReference[]}
+ */
+export function findPrivateReferences(root, { files = listTextFiles(root) } = {}) {
+  const absRoot = resolve(root);
+  /** @type {PrivateReference[]} */
+  const found = [];
+  for (const file of files) {
+    const isGitignore = file === '.gitignore' || file.endsWith('/.gitignore');
+    const lines = readFileSync(join(absRoot, file), 'utf8').split('\n');
+    lines.forEach((text, k) => {
+      if (isGitignore && GITIGNORE_OK.has(text.trim())) return;
+      const hits = [];
+      for (const [name, re] of PRIVATE_PATTERNS) {
+        re.lastIndex = 0;
+        if (re.test(text)) hits.push(name);
+      }
+      for (const m of text.matchAll(DOCS_MD)) {
+        const name = `docs/${m[1]}.md`;
+        if (!existsSync(join(absRoot, name)) && !hits.includes(name)) hits.push(name);
+      }
+      for (const pattern of hits) found.push({ file, line: k + 1, pattern });
+    });
   }
   return found;
 }

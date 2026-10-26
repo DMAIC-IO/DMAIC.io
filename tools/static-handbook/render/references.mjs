@@ -3,8 +3,6 @@
  * section and the `{{ref:…}}` link resolver. Text pieces come from the
  * app's DOM-free js/core/references-format.js, so handbook and app format
  * citations identically.
- *
- * @see docs/superpowers/specs/2026-10-07-handbook-references-design.md
  */
 import { escapeHtml, escapeAttr } from './escape.mjs';
 import {

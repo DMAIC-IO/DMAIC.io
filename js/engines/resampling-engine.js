@@ -7,8 +7,6 @@
  * only numbers, arrays and Float64Arrays, so a future web-worker runner can
  * drive the same generator unchanged. One mulberry32 PRNG per job, consumed in
  * a fixed order — chunk boundaries never change a result.
- *
- * @see docs/superpowers/specs/2026-10-09-resampling-module-design.md
  */
 
 import { mulberry32 } from './random-variates-engine.js';

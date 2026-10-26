@@ -1,7 +1,6 @@
 /**
  * Module references in the static handbook: the per-page section and the
  * loader that attaches `<id>-references.js` to each module.
- * @see docs/superpowers/specs/2026-10-07-handbook-references-design.md
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

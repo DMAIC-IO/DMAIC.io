@@ -6,7 +6,6 @@
  *   - tukeyHSD           — Tukey-Kramer all-pairs comparisons (pooled SD)
  *   - gamesHowell        — Games-Howell all-pairs comparisons (per-pair Welch df)
  *
- * Formulas: docs/superpowers/specs/2026-10-20-anova-welch-tukey-design.md.
  * Reference values: Python (tools/fixture-generator/generators/anova.py),
  * checked against SciPy and statsmodels. Sums are centered (two-pass) so that
  * data with a large offset and a tiny spread keep their precision.

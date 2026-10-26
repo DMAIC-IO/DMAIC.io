@@ -9,8 +9,6 @@
  * (transiently) in the view layer from these inputs plus the live worksheet
  * data via `js/engines/msa-typ5-engine.js`, so it is intentionally NOT
  * persisted here.
- *
- * Spec: docs/superpowers/specs/2026-07-15-msa-typ5-design.md § 6
  */
 
 /** Allowed feature-type options. */

@@ -1,8 +1,6 @@
 /**
  * D.Mike — DoE Planner: fractional factorial 2^(k−p) (designs/frac.js)
  * Pure description of the design type plus the resolution-table helpers.
- *
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E2)
  */
 import { FRAC } from '../doe-planner-designs.js';
 import { computeAliasStructure } from '../doe-planner-analysis.js';

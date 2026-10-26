@@ -6,8 +6,6 @@
  * (design.sourceResponseSeeds) meet: the embedded grid's columns, the
  * edits read back from it, the edits applied to the design before a
  * datasheet is created, and the runs as plain rows for the agent.
- *
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E4)
  */
 import { parseDecimalInput, decimalOr } from '../../core/parse-decimal.js';
 import { formatValue, codedToActual } from '../../engines/doe-planner-engine.js';

@@ -67,8 +67,6 @@
  * initialen `x-model`-Reflexion) — stattdessen `@change` + `:selected` je
  * Option, analog zu `doe-planner.html`s `sourceWorksheetChanged()`-Muster.
  *
- * Spec: docs/superpowers/specs/2026-07-16-msa-typ6-design.md § 6
- *
  * @agent  Steuerbar über das Viewmodel: die neun Parameter (setParam) und die
  *   drei Einzel-Spalten (setColumn); die Analyse läuft nach jeder Eingabe von
  *   selbst und lässt sich mit runAnalysis, scheduleAnalysis und clearResults

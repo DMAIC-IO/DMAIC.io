@@ -4,8 +4,6 @@
  * Builds the self-contained questionnaire page (one HTML file, no external
  * resources) and its file name. The definition and strings travel as JSON
  * script blocks; the runner travels as its own source text.
- *
- * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md §5.1
  */
 
 import { escAttr } from '../../core/html-utils.js';

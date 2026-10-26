@@ -3,8 +3,6 @@
  *
  * Better/Worse scatter config shared by the Kano module and its dashboard
  * tile. Pure: no DOM, no i18n (the size label is passed in as text).
- *
- * Spec: docs/superpowers/specs/2026-10-11-dashboard-status-tiles-wave3-design.md
  */
 
 /**
