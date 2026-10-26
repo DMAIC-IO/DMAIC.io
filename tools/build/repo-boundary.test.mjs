@@ -38,7 +38,8 @@ function scan(files) {
 const where = (found) => found.map((f) => `${f.file}:${f.line}`);
 
 test('der heutige Stand greift nicht über die Repo-Wurzel hinaus', () => {
-  const files = listCodeFiles(APP_ROOT);
+  // Diese Datei selbst ausnehmen: ihre Fixtures enthalten die verbotenen Pfade als Strings.
+  const files = listCodeFiles(APP_ROOT).filter((f) => f !== 'tools/build/repo-boundary.test.mjs');
   assert.ok(files.length > 500, `zu wenige Code-Dateien gefunden (${files.length})`);
   const found = findBoundaryViolations(APP_ROOT, { files });
   assert.deepEqual(found.map((f) => `${f.file}:${f.line} ${f.reason} → ${f.target}`), []);
