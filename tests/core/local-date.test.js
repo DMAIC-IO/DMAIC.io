@@ -24,4 +24,20 @@ suite('core/local-date', () => {
     assertEqual(isIsoDate(''), false);
     assertEqual(isIsoDate(undefined), false);
   });
+
+  test('isIsoDate rejects dates the calendar does not have', () => {
+    assertEqual(isIsoDate('2026-13-01'), false);
+    assertEqual(isIsoDate('2026-02-30'), false);
+    assertEqual(isIsoDate('2026-02-29'), false);
+    assertEqual(isIsoDate('2026-00-10'), false);
+    assertEqual(isIsoDate('2026-04-31'), false);
+    assertEqual(isIsoDate('2026-01-00'), false);
+  });
+
+  test('isIsoDate accepts real calendar dates incl. leap days', () => {
+    assertEqual(isIsoDate('2024-02-29'), true);
+    assertEqual(isIsoDate('2000-02-29'), true);
+    assertEqual(isIsoDate('2026-12-31'), true);
+    assertEqual(isIsoDate('0050-01-31'), true);
+  });
 });

@@ -32,6 +32,7 @@ import { requireEnum, requireKnownId, requireText, requireNumber } from '../../c
 import { icon } from '../../core/icon.js';
 import { resolveDateOffset } from '../../core/date-offset.js';
 import { draggableRows } from '../../ui/draggable-list.js';
+import { isIsoDate } from '../../core/local-date.js';
 
 const NW = 220;   // node width (px)
 const HG = 44;    // horizontal gap between sibling subtrees
@@ -65,14 +66,13 @@ export { prepareFragment };
 const PROBLEM_MAX = 10000;
 
 const GOAL_FIELDS = ['description', 'targetDate', 'metric', 'targetValue', 'achievementLevel'];
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Je Zielfeld der Prüfer; er gibt den Wert in der Form des Models zurück. */
 const GOAL_CHECKS = {
   description: (v) => requireText('value', v),
   targetDate: (v) => {
     requireText('value', v);
-    if (v !== '' && !ISO_DATE.test(v)) throw new Error(`invalid value ${JSON.stringify(v)}; allowed: "" or a date YYYY-MM-DD`);
+    if (v !== '' && !isIsoDate(v)) throw new Error(`invalid value ${JSON.stringify(v)}; allowed: "" or a date YYYY-MM-DD`);
     return v;
   },
   metric: (v) => requireText('value', v),

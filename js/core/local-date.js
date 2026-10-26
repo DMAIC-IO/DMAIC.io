@@ -30,10 +30,17 @@ export function addDaysISO(iso, days) {
 }
 
 /**
- * True for a `YYYY-MM-DD` string.
+ * True for a `YYYY-MM-DD` string naming a date the calendar really has —
+ * the pattern alone would let `2026-02-30` or `2026-13-01` through. Checked
+ * by a UTC round trip, so the result never depends on the time zone.
  * @param {unknown} s
  * @returns {boolean}
  */
 export function isIsoDate(s) {
-  return typeof s === 'string' && ISO_DATE.test(s);
+  if (typeof s !== 'string' || !ISO_DATE.test(s)) return false;
+  const [y, m, d] = s.split('-').map(Number);
+  const dt = new Date(0);
+  // setUTCFullYear, not Date.UTC: Date.UTC maps years 0–99 to 1900–1999.
+  dt.setUTCFullYear(y, m - 1, d);
+  return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
 }

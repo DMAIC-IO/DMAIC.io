@@ -11,6 +11,7 @@
  */
 
 import { isNumericType } from './datagrid-utils.js';
+import { isIsoDate } from '../local-date.js';
 
 /* ─── Cell reference shifting in formulas ─────────────────────
  *
@@ -123,7 +124,7 @@ export function detectPattern(cells, columnType) {
   }
 
   // ── Date arithmetic progression (ISO YYYY-MM-DD) ──────────
-  if (columnType === 'date' && cells.every(c => typeof c.value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(c.value))) {
+  if (columnType === 'date' && cells.every(c => isIsoDate(c.value))) {
     const days = cells.map(c => isoDateToDayNumber(c.value));
     const step = days[1] - days[0];
     const allEqual = days.every((d, i) => i === 0 || (d - days[i - 1]) === step);
@@ -195,7 +196,7 @@ export function withCtrlModifier(pattern, ctrl) {
     if (typeof v === 'number' && Number.isFinite(v)) {
       return { kind: 'linear', step: 1, base: v, source: pattern.source };
     }
-    if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) {
+    if (isIsoDate(v)) {
       return { kind: 'dateStep', step: 1, base: isoDateToDayNumber(v), source: pattern.source };
     }
     if (typeof v === 'string') {

@@ -13,9 +13,7 @@
 import { computeGanttConfig, computeCostConfig } from '../ishikawa-charts.js';
 import { catLabel, catColor } from '../ishikawa-labels.js';
 import { requireEnum, requireKnownId, requireNumber, requireText } from '../../../core/agent/agent-argcheck.js';
-
-/** A calendar date as the date inputs write it. */
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+import { isIsoDate } from '../../../core/local-date.js';
 
 /**
  * "" or a calendar date YYYY-MM-DD.
@@ -25,7 +23,7 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
  */
 function dateText(v) {
   const s = requireText('value', v);
-  if (s !== '' && !ISO_DATE.test(s)) {
+  if (s !== '' && !isIsoDate(s)) {
     throw new Error(`invalid value ${JSON.stringify(v)}; allowed: a date as YYYY-MM-DD, "" clears it`);
   }
   return s;

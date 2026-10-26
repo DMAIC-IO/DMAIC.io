@@ -69,17 +69,20 @@ const BORDER_WIDTHS = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4];
 // Vorgabefarben sind deckend. Eine engere Gruppe (`0|1|0?\.\d+`) lehnte genau
 // die Schreibweise ab, die die eigene Oberfläche erzeugt, und das Einfärben
 // der Knoten war damit kaputt. Werte über 1 bleiben ungültig.
-const COLOR_RE = /^rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*(?:,\s*(?:0(?:\.\d+)?|1(?:\.0+)?|\.\d+)\s*)?\)$/;
+// Die Kanäle fängt das Muster als Gruppen; 0..255 prüft `requireColor`
+// danach — `rgb(300,0,0)` passte sonst und ergäbe ein kaputtes Hex.
+const COLOR_RE = /^rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*(?:,\s*(?:0(?:\.\d+)?|1(?:\.0+)?|\.\d+)\s*)?\)$/;
 
 /**
  * Eine Farbe gegen ihre Schreibweise prüfen.
  * @param {string} name Name des Arguments (erscheint in der Meldung)
  * @param {any} value der übergebene Wert
- * @throws {Error} wenn `value` keine Farbe als `rgb()`/`rgba()` ist
+ * @throws {Error} wenn `value` keine Farbe als `rgb()`/`rgba()` mit Kanälen 0..255 ist
  * @returns {void}
  */
 function requireColor(name, value) {
-  if (typeof value !== 'string' || !COLOR_RE.test(value)) {
+  const m = typeof value === 'string' ? COLOR_RE.exec(value) : null;
+  if (!m || m.slice(1, 4).some((c) => Number(c) > 255)) {
     throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: rgb(r,g,b) or rgba(r,g,b,a)`);
   }
 }

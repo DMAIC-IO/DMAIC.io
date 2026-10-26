@@ -15,6 +15,7 @@
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireText } from '../../core/agent/agent-argcheck.js';
+import { isIsoDate } from '../../core/local-date.js';
 import { CATEGORIES, TIMEZONES, TZ_WORLD_CLOCK_INDICES } from './unit-data.js';
 import { State, formatNumber, formatTzDiff, parseGmtOffset } from './unit-converter-model.js';
 
@@ -28,23 +29,6 @@ const TZ_INDICES = TIMEZONES.map((_z, i) => i);
 
 /** "HH:MM" mit Stunde 0..23 und Minute 0..59 — die Form des Zeitfelds. */
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
-
-/** "YYYY-MM-DD" — die Form des Datumsfelds. */
-const ISO_DATE_RE = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
-
-/**
- * Ein Datum als YYYY-MM-DD, das es im Kalender WIRKLICH gibt. Das Muster
- * allein ließe den 30. Februar durch; das Datumsfeld der Oberfläche erzeugt
- * ihn nie, die Umrechnung schöbe ihn still auf den 2. März.
- * @param {string} s
- * @returns {boolean}
- */
-function isCalendarDate(s) {
-  if (!ISO_DATE_RE.test(s)) return false;
-  const [y, m, d] = s.split('-').map(Number);
-  const dt = new Date(Date.UTC(y, m - 1, d));
-  return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
-}
 
 // ── Pure view helpers (Intl, no state) ───────────────────────
 
@@ -417,7 +401,7 @@ export default createModule({
        */
       setTzDate(isoDate) {
         requireText('isoDate', isoDate);
-        if (isoDate !== '' && !isCalendarDate(isoDate)) {
+        if (isoDate !== '' && !isIsoDate(isoDate)) {
           throw new Error(`invalid isoDate ${JSON.stringify(isoDate)}; `
             + 'allowed: YYYY-MM-DD, or "" to clear it');
         }
