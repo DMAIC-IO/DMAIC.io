@@ -932,3 +932,35 @@
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
 }
+
+/* interval-stack: confidence intervals, reference line and axis */
+.chart-interval__segment,
+.chart-interval__swatch {
+  stroke: var(--color-accent);
+  stroke-linecap: round;
+}
+
+.chart-interval__segment--t,
+.chart-interval__swatch--t { stroke: var(--color-info); }
+
+.chart-interval__segment--miss { stroke: var(--color-error); }
+
+.chart-interval__reference {
+  stroke: var(--color-text-primary);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+
+.chart-interval__tick { stroke: var(--color-text-tertiary); }
+
+.chart-interval__tick-label {
+  fill: var(--color-text-tertiary);
+  font-family: var(--font-family-mono);
+  font-size: 11px;
+}
+
+.chart-interval__label {
+  fill: var(--color-text-secondary);
+  font-family: var(--font-family);
+  font-size: 11px;
+}
