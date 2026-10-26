@@ -1,10 +1,10 @@
 # Resampling coverage study
 
-Empirical coverage of nominal 95 % one-sample bootstrap intervals from `app/dev/js/engines/resampling-engine.js`.
+Empirical coverage of nominal 95 % one-sample bootstrap intervals from `js/engines/resampling-engine.js`.
 Parameters: reps = 1000, B = 2000, n = 20, seed = 20261010.
 Monte-Carlo standard error of a coverage near 0.95: ±0.0069.
 
-Regenerate (cwd `app/dev`): `node tools/resampling-coverage/coverage.mjs --reps 1000 --B 2000 --n 20 --seed 20261010 > reference/resampling-coverage.md`
+Regenerate (from the repository root): `node tools/resampling-coverage/coverage.mjs --reps 1000 --B 2000 --n 20 --seed 20261010 > reference/resampling-coverage.md`
 
 | Distribution | Statistic | Percentile | BCa | BCa fallbacks | No interval |
 |---|---|---|---|---|---|

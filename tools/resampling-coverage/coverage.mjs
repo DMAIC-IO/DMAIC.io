@@ -5,7 +5,7 @@
  * Simulates one-sample data sets from known distributions and reports how
  * often the nominal 95 % percentile and BCa intervals of
  * js/engines/resampling-engine.js contain the true parameter. Regenerate the
- * report whenever the engine changes (cwd app/dev; takes a few minutes):
+ * report whenever the engine changes (cwd: repository root; takes a few minutes):
  *
  *   node tools/resampling-coverage/coverage.mjs --reps 1000 --B 2000 --n 20 --seed 20261010 \
  *     > reference/resampling-coverage.md
@@ -122,11 +122,11 @@ export function toMarkdown(rows, opts) {
   return [
     '# Resampling coverage study',
     '',
-    'Empirical coverage of nominal 95 % one-sample bootstrap intervals from `app/dev/js/engines/resampling-engine.js`.',
+    'Empirical coverage of nominal 95 % one-sample bootstrap intervals from `js/engines/resampling-engine.js`.',
     `Parameters: reps = ${opts.reps}, B = ${opts.B}, n = ${opts.n}, seed = ${opts.seed}.`,
     `Monte-Carlo standard error of a coverage near 0.95: ±${se.toFixed(4)}.`,
     '',
-    `Regenerate (cwd \`app/dev\`): \`${cmd} > reference/resampling-coverage.md\``,
+    `Regenerate (from the repository root): \`${cmd} > reference/resampling-coverage.md\``,
     '',
     '| Distribution | Statistic | Percentile | BCa | BCa fallbacks | No interval |',
     '|---|---|---|---|---|---|',
