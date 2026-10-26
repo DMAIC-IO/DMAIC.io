@@ -383,7 +383,8 @@ const mod = createModule({
         const totalDecimals = isFreq ? 0 : cfg.valueDecimals;
 
         // Build structured data with RAW text — x-text escapes structurally.
-        // Number formatting matches the legacy string output (formatNum).
+        // Numbers follow the active language (Bug 11).
+        const lang = module._context.language;
         this.statsCorner = `${this._gColumnName() || _t('statG')} \\ ${this._xColumnName() || _t('statX')}`;
         this.statsHeaders = this._xCategories.slice();
         this.statsTotalHeader = _t('statTotal');
@@ -397,14 +398,14 @@ const mod = createModule({
             label: this._yCategories[yi],
             cells: this._xCategories.map((_, xi) => {
               const v = this._cells[yi][xi];
-              return Number.isFinite(v) ? formatNum(v, decimals) : '—';
+              return Number.isFinite(v) ? formatNum(v, decimals, lang) : '—';
             }),
-            total: sums ? formatNum(sums.rowTotals[yi], totalDecimals) : '',
+            total: sums ? formatNum(sums.rowTotals[yi], totalDecimals, lang) : '',
           });
         }
         this.statsRows = rows;
-        this.statsColTotals = sums ? sums.colTotals.map((c) => formatNum(c, totalDecimals)) : [];
-        this.statsGrandTotal = sums ? formatNum(sums.total, totalDecimals) : '';
+        this.statsColTotals = sums ? sums.colTotals.map((c) => formatNum(c, totalDecimals, lang)) : [];
+        this.statsGrandTotal = sums ? formatNum(sums.total, totalDecimals, lang) : '';
         this.statsShow = true;
       },
 

@@ -31,7 +31,7 @@
 import { createModule } from '../../core/template-module.js';
 import { State, AGGREGATIONS } from './pareto-model.js';
 
-import { formatNum } from '../../core/chart/chart-core.js';
+import { formatNum, formatPct } from '../../core/chart/chart-core.js';
 import {
   DatasetPicker,
   getColumnValues,
@@ -369,16 +369,16 @@ const mod = createModule({
         });
 
         // Build structured rows with RAW text — x-text escapes structurally.
-        // Number formatting is applied here so the rendered text is identical
-        // to the legacy string output (formatNum / toFixed(1) + '%').
+        // Numbers and percents follow the active language (Bug 11).
+        const lang = module._context.language;
         this.statsRows = rows.map((r) => ({
           name: r.name,
           color: r.color,
-          value: formatNum(r.value),
-          cumPct: `${r.cumPct.toFixed(1)  }%`,
+          value: formatNum(r.value, null, lang),
+          cumPct: formatPct(r.cumPct / 100, 1, lang),
         }));
-        this.statsTotal = formatNum(grandTotal);
-        this.statsTotalPct = `${(100).toFixed(1)}%`;
+        this.statsTotal = formatNum(grandTotal, null, lang);
+        this.statsTotalPct = formatPct(1, 1, lang);
         this.statsShow = true;
       },
 

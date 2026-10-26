@@ -20,7 +20,7 @@
 import ChartBase from '../chart-base.js';
 import { h } from '../../dom.js';
 import {
-  svgEl, svgText, resolveColor, formatNum, getChartColors, parseRGBA,
+  svgEl, svgText, resolveColor, formatNum, formatPct, getChartColors, parseRGBA,
 } from '../chart-core.js';
 import {
   edSection, edCheckboxRow, edRangeRow, edSelectRow,
@@ -246,7 +246,7 @@ export default class PieChart extends ChartBase {
         const lx = ecx + labelR * Math.cos(arc.mid);
         const ly = ecy + labelR * Math.sin(arc.mid);
 
-        const pct = `${(arc.frac * 100).toFixed(1)  } %`;
+        const pct = formatPct(arc.frac, 1, this.locale);
         let text;
         switch (cfg.labelMode) {
           case 'name': text = arc.name; break;
@@ -348,13 +348,13 @@ export default class PieChart extends ChartBase {
       if (arc) {
         let total = 0;
         for (const a of this._arcs) total += a.value;
-        const pct = total > 0 ? ((arc.value / total) * 100).toFixed(1) : '0.0';
+        const pct = formatPct(total > 0 ? arc.value / total : 0, 1, this.locale);
         this._tooltip.replaceChildren(
           h('b', { style: `color:${arc.color}` }, arc.name),
           h('br'),
           document.createTextNode(formatNum(arc.value, 2, this.locale)),
           h('br'),
-          document.createTextNode(`${pct  } %`),
+          document.createTextNode(pct),
         );
         this._tooltip.classList.add('visible');
         this._tooltip.style.left = `${mx + 14  }px`;

@@ -69,13 +69,27 @@ export function linearScale(domainMin, domainMax, rangeMin, rangeMax) {
 // ── Number Formatting ────────────────────────────────────────────────
 
 /**
- * Format a number with optional fixed decimals and locale support.
+ * Throw when a formatter is called without a locale. There is deliberately no
+ * default: a silent 'de' fallback made English tables show German numbers.
+ * @param {string} fn - Name of the calling formatter (for the message).
+ * @param {*} locale
+ */
+function requireLocale(fn, locale) {
+  if (typeof locale !== 'string' || !locale) {
+    throw new TypeError(`${fn}: locale is required ('de' | 'en'), got ${String(locale)}`);
+  }
+}
+
+/**
+ * Format a number with optional fixed decimals in the given locale.
  * @param {number} val
  * @param {number|null} [decimals=null] - null = auto precision
- * @param {string} [locale='de'] - 'de' or 'en'
+ * @param {string} locale - 'de' or 'en' (required — no default)
  * @returns {string}
+ * @throws {TypeError} When no locale is given.
  */
-export function formatNum(val, decimals = null, locale = 'de') {
+export function formatNum(val, decimals = null, locale) {
+  requireLocale('formatNum', locale);
   let str;
   if (decimals === null || decimals === undefined) {
     if (Math.abs(val) >= 1000) str = val.toFixed(0);
@@ -102,6 +116,37 @@ export function formatNum(val, decimals = null, locale = 'de') {
     }
   }
   return str;
+}
+
+/** Cache of Intl percent formatters, keyed by `${locale}|${decimals}`. */
+const _pctFormatters = new Map();
+
+/**
+ * Format a share as a percentage in the given locale.
+ *
+ * Input is a **share (0…1)**, not a percent value: `formatPct(0.691, 1, 'de')`
+ * → "69,1 %" (no-break space U+00A0, as `Intl.NumberFormat` yields),
+ * `formatPct(0.691, 1, 'en')` → "69.1%". Callers holding a percent value
+ * (0…100) divide by 100 first.
+ *
+ * @param {number} share - Share 0…1 (values above 1 are allowed: 12.3 → "1.230 %").
+ * @param {number} decimals - Fixed number of fraction digits.
+ * @param {string} locale - 'de' or 'en' (required — no default).
+ * @returns {string} Formatted percent, or '—' for a non-finite share.
+ * @throws {TypeError} When no locale is given.
+ */
+export function formatPct(share, decimals, locale) {
+  requireLocale('formatPct', locale);
+  if (!Number.isFinite(share)) return '—';
+  const key = `${locale}|${decimals}`;
+  let nf = _pctFormatters.get(key);
+  if (!nf) {
+    nf = new Intl.NumberFormat(locale, {
+      style: 'percent', minimumFractionDigits: decimals, maximumFractionDigits: decimals,
+    });
+    _pctFormatters.set(key, nf);
+  }
+  return nf.format(share);
 }
 
 // ── SVG Helpers ──────────────────────────────────────────────────────

@@ -30,7 +30,7 @@
 import { createModule } from '../../core/template-module.js';
 import { State } from './pie-chart-model.js';
 
-import { formatNum } from '../../core/chart/chart-core.js';
+import { formatNum, formatPct } from '../../core/chart/chart-core.js';
 import {
   DatasetPicker,
   getColumnValues,
@@ -253,16 +253,17 @@ const mod = createModule({
         const { slices, total } = State.sliceStats(this._slices);
 
         // Build structured rows with RAW text — x-text escapes structurally.
-        // Number formatting matches the legacy string output (formatNum /
-        // toFixed(1) + '%'). The color swatch is a structured 'color' field.
+        // Numbers and percents follow the active language (Bug 11).
+        // The color swatch is a structured 'color' field.
+        const lang = module._context.language;
         this.statsRows = this._slices.map((s, i) => ({
           color: s.color,
           name: s.name,
-          value: formatNum(s.value),
-          pct: `${(slices[i].share * 100).toFixed(1)}%`,
+          value: formatNum(s.value, null, lang),
+          pct: formatPct(slices[i].share, 1, lang),
         }));
-        this.statsTotal = formatNum(total);
-        this.statsTotalPct = `${(100).toFixed(1)}%`;
+        this.statsTotal = formatNum(total, null, lang);
+        this.statsTotalPct = formatPct(1, 1, lang);
         this.statsShow = true;
       },
 

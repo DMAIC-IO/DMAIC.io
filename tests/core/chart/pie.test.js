@@ -82,3 +82,40 @@ suite('Pie type — editor reports every setting', () => {
   });
 });
 
+
+suite('Pie type — percent follows the locale (Bug 11)', () => {
+  /** Mount with a given language; slices 2 / 3 → 40 % / 60 %. */
+  function mountLang(language) {
+    const host = document.createElement('div');
+    host.style.width = '600px';
+    host.style.height = '300px';
+    document.body.appendChild(host);
+    const chart = new PieChart(host, {
+      slices: [{ label: 'A', value: 2 }, { label: 'B', value: 3 }],
+      labelMode: 'percent',
+    }, { language });
+    chart.render();
+    return { host, chart };
+  }
+  const labels = (host) => [...host.querySelectorAll('svg text')].map((t) => t.textContent);
+
+  test('de slice labels: comma decimal with a no-break space', () => {
+    const { host, chart } = mountLang('de');
+    const l = labels(host);
+    assertTrue(l.includes('40,0 %'), `de labels: ${JSON.stringify(l)}`);
+    chart.destroy(); host.remove();
+  });
+  test('en slice labels: dot decimal, % attached', () => {
+    const { host, chart } = mountLang('en');
+    const l = labels(host);
+    assertTrue(l.includes('40.0%'), `en labels: ${JSON.stringify(l)}`);
+    chart.destroy(); host.remove();
+  });
+  test('en tooltip shows the share in English format', () => {
+    const { host, chart } = mountLang('en');
+    const path = host.querySelector('path[data-slice="1"]');
+    chart._onMouseMove({ clientX: 10, clientY: 10, target: path });
+    assertTrue(chart._tooltip.textContent.includes('60.0%'), `tooltip: ${chart._tooltip.textContent}`);
+    chart.destroy(); host.remove();
+  });
+});

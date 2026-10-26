@@ -294,7 +294,7 @@ const mod = createModule({
       _renderStats() {
         // Cross-tab table with row totals (per X-level) and grand total.
         // Build structured data with RAW text — x-text escapes structurally;
-        // number formatting matches the legacy string output (formatNum). The
+        // numbers follow the active language (Bug 11). The
         // group-color swatch is decomposed into a structured {name, color}.
         this.statsCorner = `${this._xColumnName() || _t('statX')} \\ ${this._gColumnName() || _t('statG')}`;
         this.statsHeaders = this._groups.map((g) => ({ name: g.name, color: g.color }));
@@ -302,13 +302,14 @@ const mod = createModule({
         this.statsTotalLabel = _t('statTotal');
 
         const sums = totalsOf(this._groups, this._categories.length);
+        const lang = module._context.language;
         this.statsRows = this._categories.map((label, ci) => ({
           label,
-          cells: this._groups.map((g) => formatNum(g.values[ci] || 0)),
-          total: formatNum(sums.rowTotals[ci]),
+          cells: this._groups.map((g) => formatNum(g.values[ci] || 0, null, lang)),
+          total: formatNum(sums.rowTotals[ci], null, lang),
         }));
-        this.statsColTotals = sums.colTotals.map((tv) => formatNum(tv));
-        this.statsGrandTotal = formatNum(sums.total);
+        this.statsColTotals = sums.colTotals.map((tv) => formatNum(tv, null, lang));
+        this.statsGrandTotal = formatNum(sums.total, null, lang);
         this.statsShow = true;
       },
 

@@ -34,7 +34,7 @@
 import ChartBase from '../chart-base.js';
 import { h } from '../../dom.js';
 import {
-  svgEl, svgText, resolveColor, formatNum, dashArray, drawMarker, createPattern, getChartColors,
+  svgEl, svgText, resolveColor, formatNum, formatPct, dashArray, drawMarker, createPattern, getChartColors,
 } from '../chart-core.js';
 import {
   edSection, edCheckboxRow, edInlineNum, edRangeRow,
@@ -551,7 +551,7 @@ export default class ParetoChart extends ChartBase {
     const d = items[idx];
     if (dataY < 0 || dataY > d.value * 1.15) return [];
 
-    const cumPct = this._cumulativePercents(items)[idx].toFixed(1);
+    const cumPct = formatPct(this._cumulativePercents(items)[idx] / 100, 1, this.locale);
 
     // Stacked: which segment is the cursor's data-y inside?
     let hitSegment = null;
@@ -584,7 +584,7 @@ export default class ParetoChart extends ChartBase {
         hitSegment ? `${hitSegment.name}: ${formatNum(hitSegment.value, 1, this.locale)}` : null,
         hitSegment ? h('br') : null,
         `${formatNum(d.value, 1, this.locale)}`, h('br'),
-        `Σ ${cumPct}%`,
+        `Σ ${cumPct}`,
       ),
       px, py,
       color: hitSegment?.color || d.color || 'var(--color-chart-1)',

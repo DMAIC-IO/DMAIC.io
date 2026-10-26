@@ -107,3 +107,19 @@ suite('Pareto type — right axis mirrors the left axis', () => {
     unmount(m);
   });
 });
+
+suite('Pareto type — tooltip cumulative % follows the locale (Bug 11)', () => {
+  const items = () => [{ name: 'A', value: 3 }, { name: 'B', value: 1 }];
+  test('de: Σ 75,0 % with a no-break space', () => {
+    const m = mount({ items: items() }, { language: 'de' });
+    const [hit] = m.chart._findNearby(0, 1, 5);
+    assertEqual(hit.node.textContent.includes('Σ 75,0 %'), true, hit.node.textContent);
+    unmount(m);
+  });
+  test('en: Σ 75.0%', () => {
+    const m = mount({ items: items() }, { language: 'en' });
+    const [hit] = m.chart._findNearby(0, 1, 5);
+    assertEqual(hit.node.textContent.includes('Σ 75.0%'), true, hit.node.textContent);
+    unmount(m);
+  });
+});

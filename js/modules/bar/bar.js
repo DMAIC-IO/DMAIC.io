@@ -388,8 +388,9 @@ const mod = createModule({
         this.statsGroupHeader = _t('statGroup');
 
         // Build structured rows with RAW text — x-text escapes structurally.
-        // Number formatting matches the legacy string output (formatNum). The
-        // per-row color swatch is decomposed into a structured 'color' field.
+        // Numbers follow the active language (Bug 11). The per-row color
+        // swatch is decomposed into a structured 'color' field.
+        const lang = module._context.language;
         const rows = [];
         const total = frequencyTotal(this._groups);
         for (const g of this._groups) {
@@ -399,13 +400,13 @@ const mod = createModule({
               color: g.color,
               name: this._categories[ci],
               group: g.name,
-              value: formatNum(v),
+              value: formatNum(v, null, lang),
             });
           }
         }
         this.statsRows = rows;
         this.statsTotalLabel = _t('statTotal');
-        this.statsTotal = formatNum(total);   // dieselbe Summe wie stats.total (E8)
+        this.statsTotal = formatNum(total, null, lang);   // dieselbe Summe wie stats.total (E8)
         this.statsShowTotal = isFreq;
         this.statsShow = true;
       },
