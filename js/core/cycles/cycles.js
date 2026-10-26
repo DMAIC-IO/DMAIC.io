@@ -12,7 +12,8 @@
  * renderer also supports multi-character letters (e.g. 'D0' … 'D8' for the
  * 8D cycle) — the renderer adds a CSS modifier when `letter.length > 1`.
  *
- * See `.claude/V0.3-MULTI-CYCLE.md` for the design rationale.
+ * Cycles are data, not code, so a new methodology needs no change to the
+ * phase renderer.
  */
 
 /**

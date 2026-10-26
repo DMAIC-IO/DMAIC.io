@@ -6,6 +6,10 @@
 # core.hooksPath is local git config and cannot be shipped — running this
 # script is the one manual step per clone.
 #
+# A setup that embeds this clone may point core.hooksPath at its own wrapper,
+# which calls tools/git-hooks/pre-push with APP_PREPUSH_EXTRA set. Running this
+# script replaces that wrapper with the plain hook.
+#
 #   bash tools/git-hooks/install.sh          # enable
 #   git config --unset core.hooksPath        # undo
 

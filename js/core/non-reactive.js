@@ -19,7 +19,7 @@
  * in Object.keys/JSON nicht auf) und nicht beschreibbar.
  *
  * Regel: jede Core-Fabrik, die ein Laufzeit-Handle an Module zurückgibt,
- * markiert ihre Rückgabe mit `nonReactive` (siehe .claude/alpine.md).
+ * markiert ihre Rückgabe mit `nonReactive` — aus den beiden Gründen oben.
  */
 
 /**

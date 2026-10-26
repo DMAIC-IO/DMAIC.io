@@ -6,8 +6,6 @@ Zentraler Katalog für Six-Sigma-/Statistik-Fachbegriffe. Wird konsumiert von:
 - **Inline-Verlinkung** im Hilfetext über das Markup `{{term:<id>}}`
 - **Static-Handbook** (`/glossar/<id>.html`) — SEO-Eingang ins öffentliche Handbuch
 
-Konzept und UX-Details: [`.claude/GLOSSAR-KONZEPT.md`](../../../.claude/GLOSSAR-KONZEPT.md)
-(im privaten Site-Repo).
 
 ## Struktur
 

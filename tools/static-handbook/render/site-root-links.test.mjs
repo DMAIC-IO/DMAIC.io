@@ -185,7 +185,7 @@ test('Leiste und Drawer tragen dieselbe EN|DE-Pille wie die Site', () => {
 /**
  * Kopf- und Fußzeile sind bewusst formgleich mit der Site — gleiche
  * Reihenfolge, gleicher Wortlaut. Wer hier etwas umstellt, stellt es auch
- * in site-src/templates/base.html des privaten Repos um.
+ * auf der Website um.
  */
 test('die Leiste führt Links, Aufruf und Sprachumschalter in der Reihenfolge der Site', () => {
   const html = render('/de/define/sipoc.html', 'de');

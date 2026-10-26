@@ -8,8 +8,6 @@
  *   - dataset:   tabular data shipped as CSV/JSON file
  *   - project:   pre-filled module-state snapshot (passes through to setState)
  *   - generator: synthetic data generated at runtime with reproducible seed
- *
- * Schema is documented in docs/EXAMPLES.md (private site repo).
  */
 
 import { uid } from './uid.js';

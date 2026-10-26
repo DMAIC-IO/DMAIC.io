@@ -202,7 +202,7 @@ export function chainViewMixin(module, _t, opts = {}) {
      * Transient classes for the connector at gap `g`: the enlarged hit area
      * while a card is in flight, plus the insert bar for the gap under the
      * cursor. Assembled here rather than in the template — Alpine CSP wants
-     * one plain method call per binding (.claude/alpine.md).
+     * one plain method call per binding; its parser evaluates no string building.
      * @param {number} g gap index
      * @returns {string}
      * @noagent
@@ -242,8 +242,8 @@ export function chainViewMixin(module, _t, opts = {}) {
     // The gap BEHIND step `idx` is gap idx + 1. It gets its own methods
     // instead of `gapDrop(idx + 1, $event)` in the template: Alpine CSP event
     // expressions are plain method calls, and arithmetic in an argument is
-    // not worth the risk (.claude/alpine.md, "Event-Expression: Nur
-    // Methodenaufrufe"). Used by every trailing arrow and every end rail.
+    // not worth the risk — the CSP parser accepts a call, not every
+    // expression inside it. Used by every trailing arrow and every end rail.
     /** @noagent */
     gapDragOverAfter(idx, event) { this.gapDragOver(idx + 1, event); },
     /** @noagent */

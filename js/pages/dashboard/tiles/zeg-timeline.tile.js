@@ -3,7 +3,7 @@
  *
  * Goal achievement per phase over time, from the project-level
  * phaseAchievementHistory. Belongs to no module; always loaded via
- * HOST_TILES. Contract: docs/DASHBOARD.md. Offers a link to the ZEG
+ * HOST_TILES. Tile contract: the lifecycle in js/pages/dashboard/tile-render.js. Offers a link to the ZEG
  * worksheet (router action verb `zeg-sheet`). The markup lives in
  * zeg-timeline.tile.html.
  */

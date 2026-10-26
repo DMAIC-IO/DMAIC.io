@@ -3,7 +3,7 @@
  *
  * Power/interest quadrant counts, support distribution and the critics who
  * must be managed closely. Imports only the pure model; the markup lives in
- * stakeholder-analysis.tile.html. Contract: docs/DASHBOARD.md.
+ * stakeholder-analysis.tile.html. Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
  */
 
 import { State, QUAD_ORDER, quadrantCounts, supportCounts, criticalCritics } from './stakeholder-analysis-model.js';

@@ -10,9 +10,8 @@
  * statement + goals table) are declarative in project-charter.html. The
  * org-chart canvas, modebar, editor panel, color picker and SVG/PNG export
  * are imperative widgets (pointer math + POM byte-parity) mounted in the
- * data-fn init() and disposed in destroy() — see .claude/MODULES.md.
- *
- * Spec: docs/modules/PROJECT-CHARTER.md
+ * data-fn init() and disposed in destroy(), so a re-render never leaks
+ * listeners or chart instances.
  *
  * @agent  Steuerbar über das Viewmodel: Problembeschreibung
  *   (setProblemStatement), Ziele (addGoal, setGoalField, deleteGoal,

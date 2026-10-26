@@ -77,8 +77,8 @@ const UI_STRINGS = {
     ctaButton: 'App öffnen',
     footerTagline: 'Open-Source Six-Sigma-Werkzeug. Läuft zu 100 % in deinem Browser.',
     footerDocs: 'Handbuch',
-    /* Fußzeile wortgleich mit der Site (site-src/content/common.json im
-       privaten Repo). Einziger Unterschied: wo die Site „Dokumentation"
+    /* Fußzeile wortgleich mit der Website, damit Handbuch und Site wie
+       ein Auftritt wirken. Einziger Unterschied: wo die Site „Dokumentation"
        führt, steht hier „Homepage" — das Handbuch verlinkt nicht sich
        selbst. */
     footerCopy: '© 2026 Qprovement · 100 % Open Source · 100 % Lokal',
@@ -559,8 +559,7 @@ function renderNav(lang, currentPath, altPath, logoAssetHref) {
   return `<!-- Der Drawer läuft ohne JavaScript: das versteckte Kontrollkästchen
      schaltet über :checked ~ … Scrim und Panel. Kontrollkästchen, Leiste,
      Scrim und Drawer MÜSSEN Geschwister in genau dieser Reihenfolge bleiben —
-     sonst greift der Geschwisterselektor nicht. Identisch zur Site-Navigation
-     (site-src/templates/base.html im privaten Repo). -->
+     sonst greift der Geschwisterselektor nicht. Identisch zur Navigation der Website. -->
 <input type="checkbox" id="navToggle" class="nav-toggle" aria-label="${escapeAttr(s.navMenu)}">
 <header class="handbook-nav">
   <div class="handbook-nav__inner">
@@ -616,7 +615,7 @@ function renderCta(lang, pathFromRoot) {
 
 /**
  * Die Fußzeile — Aufbau, Wortlaut und Reihenfolge identisch mit der Site
- * (site-src/templates/base.html im privaten Repo): Deko-Band, links die
+ * der Website: Deko-Band, links die
  * Urheberzeile, rechts die Linkzeile. Einziger Unterschied: der erste
  * Eintrag heißt hier „Homepage" und führt auf die Site — dort heißt er
  * „Dokumentation" und führt hierher.

@@ -3,7 +3,7 @@
  *
  * One tile per RACI instance (`raci:<instanceId>`). Loaded via the manifest's
  * `loadTile`. The markup lives in raci-matrix.tile.html.
- * Contract: docs/DASHBOARD.md.
+ * Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
  */
 
 const ROLES = ['R', 'A', 'C', 'I'];

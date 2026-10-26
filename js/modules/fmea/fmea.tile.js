@@ -3,7 +3,7 @@
  *
  * Loaded by the dashboard via the manifest's `loadTile`. Imports only the
  * pure FMEA model, never the module shell; the markup lives in
- * fmea.tile.html. Contract: docs/DASHBOARD.md.
+ * fmea.tile.html. Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
  */
 
 import { State, rpnCategory } from './fmea-model.js';

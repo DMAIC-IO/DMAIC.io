@@ -3,7 +3,7 @@
  *
  * Pure functions around a tile's declarative settings schema:
  * validation, value coercion, resolution against stored overrides and the
- * sparse storage format of `dashboard.tileSettings`. See docs/DASHBOARD.md.
+ * sparse storage format of `dashboard.tileSettings`.
  */
 
 const TYPES = new Set(['number', 'select', 'boolean']);

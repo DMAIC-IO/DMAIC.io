@@ -5,7 +5,7 @@
  * histogram through the tile-bound chartManager (editor edits persist per
  * tile). One tile per instance; source/copies via the host. Imports only the
  * pure analysis, model and format files. The markup lives in
- * process-capability.tile.html. Contract: docs/DASHBOARD.md.
+ * process-capability.tile.html. Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
  */
 
 import { getColumnValues } from '../../ui/column-picker.js';

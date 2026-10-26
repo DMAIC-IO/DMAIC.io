@@ -2,7 +2,7 @@
  * D.Mike — DMAIC calendar dashboard tile (dmaic-calendar.tile.js)
  *
  * Upcoming events within a selectable horizon. Imports only the pure
- * calendar model; the markup lives in dmaic-calendar.tile.html. Contract: docs/DASHBOARD.md.
+ * calendar model; the markup lives in dmaic-calendar.tile.html. Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
  */
 
 import { todayISO } from '../../core/local-date.js';

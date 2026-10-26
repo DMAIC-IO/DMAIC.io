@@ -12,8 +12,7 @@
  * Alpine-CSP-migrated modules follow the same model-only convention here
  * (see e.g. response-optimization.test.js, xy-plot.test.js,
  * probability-plot.test.js) and defer full init()/destroy() shell coverage
- * to the Playwright E2E suite (test/playwright/tests/modules/msa-typ6.spec.js,
- * a later task per docs/superpowers/specs/2026-07-16-msa-typ6-design.md § 9).
+ * to the Playwright E2E suite.
  *
  * So this file verifies the two things Task 7 actually ships that ARE
  * verifiable at this level without a live Alpine mount:
@@ -78,8 +77,7 @@ suite('msa-typ6 module — Skelett (Task 7)', () => {
  * instead of a live `mod.init()` mount: the markup that *would* drive that
  * runtime behaviour (the two-value radio groups + the `x-show`-gated
  * blocks) is asserted to exist and be wired to the right expressions.
- * Full live-toggle coverage belongs to the Playwright E2E suite
- * (test/playwright/tests/modules/msa-typ6.spec.js, a later task).
+ * Full live-toggle coverage belongs to the Playwright E2E suite.
  */
 suite('msa-typ6 module — Input-Panel Controls (Task 8)', () => {
   /** Fetch + parse the real shipped template once per test. */
@@ -245,8 +243,7 @@ suite('msa-typ6 module — Output-Panel Verdikt-Header + KPI-Strip (Task 9)', ()
  * present inside the `<template x-if="_lastResult">` branch, wired to the
  * `data-chart-host` selectors `_renderCharts()`/`_whenAnchor()` query for.
  * Live chart-render coverage (two `<svg>` per fixture) belongs to the
- * Playwright E2E suite (test/playwright/tests/modules/msa-typ6.spec.js,
- * Task 19 per docs/superpowers/specs/2026-07-16-msa-typ6-design.md § 9).
+ * Playwright E2E suite.
  */
 suite('msa-typ6 module — Regelkarten-Charts (Task 10)', () => {
   /** Fetch + parse the real shipped template once per test. */
@@ -292,8 +289,7 @@ suite('msa-typ6 module — Regelkarten-Charts (Task 10)', () => {
  * DOMParser-based runner used here cannot exercise. So this suite asserts
  * the table + x-for row + click handler Task 11 ships are structurally
  * present and wired to the right expressions. Live click behaviour belongs
- * to the Playwright E2E suite (test/playwright/tests/modules/msa-typ6.spec.js,
- * Task 19 per docs/superpowers/specs/2026-07-16-msa-typ6-design.md § 9).
+ * to the Playwright E2E suite.
  */
 suite('msa-typ6 module — Verletzungs-Tabelle + Chart-Verlinkung (Task 11)', () => {
   /** Fetch + parse the real shipped template once per test. */
@@ -357,9 +353,7 @@ suite('msa-typ6 module — Verletzungs-Tabelle + Chart-Verlinkung (Task 11)', ()
  * structurally present inside the `<template x-if="_lastResult">` branch,
  * gated the same way as the primary/secondary chart hosts and only visible
  * once an analysis has run (never in the Empty-State branch). Live
- * chart-render coverage belongs to the Playwright E2E suite
- * (test/playwright/tests/modules/msa-typ6.spec.js, a later task per
- * docs/superpowers/specs/2026-07-16-msa-typ6-design.md § 9).
+ * chart-render coverage belongs to the Playwright E2E suite.
  */
 suite('msa-typ6 module — Drift-Analyse-Chart (Task 12)', () => {
   /** Fetch + parse the real shipped template once per test. */
@@ -436,9 +430,7 @@ suite('msa-typ6 module — Drift-Analyse-Chart (Task 12)', () => {
  * suite asserts the templated interpretation paragraph is structurally
  * present inside the `<template x-if="_lastResult">` branch and correctly
  * wired to `_lastResult.interpretation`. Live-render (and language-switch)
- * coverage belongs to the Playwright E2E suite
- * (test/playwright/tests/modules/msa-typ6.spec.js, Task 19 per
- * docs/superpowers/specs/2026-07-16-msa-typ6-design.md § 9).
+ * coverage belongs to the Playwright E2E suite.
  */
 suite('msa-typ6 module — Interpretations-Text (Task 13)', () => {
   /** Fetch + parse the real shipped template once per test. */
@@ -505,8 +497,7 @@ suite('msa-typ6 module — Interpretations-Text (Task 13)', () => {
  *       touch this instance's state.
  * Live-mount coverage (both the dropdown's live selection behaviour and a
  * fired `msa-typ1:result-updated` event) belongs to the Playwright E2E
- * suite (test/playwright/tests/modules/msa-typ6.spec.js, Task 19 per
- * docs/superpowers/specs/2026-07-16-msa-typ6-design.md § 9) — see this
+ * suite — see this
  * task's report for the finding that msa-typ1 does not currently emit that
  * event, so the handler is presently dormant/forward-compatible.
  */

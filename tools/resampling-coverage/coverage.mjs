@@ -8,7 +8,7 @@
  * report whenever the engine changes (cwd app/dev; takes a few minutes):
  *
  *   node tools/resampling-coverage/coverage.mjs --reps 1000 --B 2000 --n 20 --seed 20261010 \
- *     > ../../docs/resampling-coverage.md
+ *     > reference/resampling-coverage.md
  */
 
 import { resolve } from 'node:path';
@@ -111,7 +111,7 @@ export function runCoverage({
 }
 
 /**
- * Markdown report for docs/resampling-coverage.md.
+ * Markdown report for reference/resampling-coverage.md.
  * @param {ReturnType<typeof runCoverage>} rows
  * @param {{ reps: number, B: number, n: number, seed: number }} opts
  * @returns {string}
@@ -126,7 +126,7 @@ export function toMarkdown(rows, opts) {
     `Parameters: reps = ${opts.reps}, B = ${opts.B}, n = ${opts.n}, seed = ${opts.seed}.`,
     `Monte-Carlo standard error of a coverage near 0.95: ±${se.toFixed(4)}.`,
     '',
-    `Regenerate (cwd \`app/dev\`): \`${cmd} > ../../docs/resampling-coverage.md\``,
+    `Regenerate (cwd \`app/dev\`): \`${cmd} > reference/resampling-coverage.md\``,
     '',
     '| Distribution | Statistic | Percentile | BCa | BCa fallbacks | No interval |',
     '|---|---|---|---|---|---|',

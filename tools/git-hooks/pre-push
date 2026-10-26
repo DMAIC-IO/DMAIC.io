@@ -24,17 +24,15 @@ if ! out="$(TZ=UTC npm run -s test:unit 2>&1)"; then
   fail "unit tests red — details above."
 fi
 
-# ── dlvr stage 1-commit (~40 s) ──────────────────────────────────
-# Lint, browser support, build — the CI gate of the development checkout this
-# repo is nested in (<checkout>/app/dev). That CI runs only on pushes to the
-# enclosing repo, so an app push is checked here or not at all. A standalone
-# clone has no such checkout and skips it.
-gate="$root/../../tools/git-hooks/dlvr-stage1.sh"
-if [ -f "$gate" ]; then
-  echo "▶ pre-push: dlvr stage 1-commit"
-  bash "$gate" || fail "dlvr stage 1-commit red — details above."
-else
-  echo "· pre-push: dlvr stage 1-commit skipped (no enclosing checkout)"
+# ── Optional extra check ─────────────────────────────────────────
+# A clone embedded in a larger setup can add its own gate without this repo
+# knowing about it: point APP_PREPUSH_EXTRA at a script, it runs here after
+# the unit tests. Unset (the default) means nothing else runs — this hook never
+# reaches outside the repo on its own.
+if [ -n "${APP_PREPUSH_EXTRA:-}" ]; then
+  [ -f "$APP_PREPUSH_EXTRA" ] || fail "APP_PREPUSH_EXTRA points to a missing file: $APP_PREPUSH_EXTRA"
+  echo "▶ pre-push: $APP_PREPUSH_EXTRA"
+  bash "$APP_PREPUSH_EXTRA" || fail "extra check red — details above."
 fi
 
 echo "✓ pre-push: all checks passed"

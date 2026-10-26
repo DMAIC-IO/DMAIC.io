@@ -11,7 +11,7 @@
  *
  * Suites that need a real DOM/SVG layout, IndexedDB, or Alpine (module shells,
  * charts, datagrid, pages, storage, …) are listed in SKIP below and stay in the
- * browser Playwright bridge (test/playwright/tests-unit). A pure unit test —
+ * browser runner (tests/runner.html). A pure unit test —
  * models, engines, parsers — has no such dependency and belongs here.
  *
  * Exit code is non-zero when any test fails.

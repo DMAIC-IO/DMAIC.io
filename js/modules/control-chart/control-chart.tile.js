@@ -5,7 +5,7 @@
  * violation / out-of-spec / Cpk metrics and a compact control chart through
  * the tile-bound chartManager. The chart follows the tile width, so the tile
  * re-renders on resize. Loaded via the manifest's `loadTile`. The markup
- * lives in control-chart.tile.html. Contract: docs/DASHBOARD.md.
+ * lives in control-chart.tile.html. Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
  */
 
 import { getChartType, evaluateNelsonRules, computeCapability, capabilitySigma, DEFAULT_ENABLED_RULES } from '../../engines/control-chart-engine.js';

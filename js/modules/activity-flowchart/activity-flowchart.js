@@ -486,7 +486,7 @@ export function activityFlowchartData(module, _t) {
     /**
      * Grid placement for a step: its band's row, its packed column.
      * Assembled here because Alpine CSP allows one plain method call per
-     * binding (.claude/alpine.md).
+     * binding — its expression parser evaluates no string building.
      * @param {object} step
      * @returns {string}
      * @noagent view transform
@@ -609,7 +609,7 @@ export function activityFlowchartData(module, _t) {
     /**
      * The swimlane grid's row count as an inline style. Alpine CSP allows only
      * one plain method call per binding, so the string is assembled here rather
-     * than in the template (.claude/alpine.md).
+     * than in the template.
      * @returns {string}
      * @noagent view transform
      */
@@ -714,7 +714,7 @@ export function activityFlowchartData(module, _t) {
     /**
      * Close whatever is open on the canvas — the insert menu, the re-entry
      * picker. One method because Alpine CSP allows a single plain call per
-     * binding (.claude/alpine.md), and the canvas click has to end both.
+     * binding, and the canvas click has to end both.
      * @returns {void}
      * @noagent UI-Menü, kein Zustand
      */
@@ -790,7 +790,7 @@ export function activityFlowchartData(module, _t) {
 
     /**
      * Marks the exit once a card is chosen. Assembled here because Alpine CSP
-     * allows one plain method call per binding (.claude/alpine.md).
+     * allows one plain method call per binding.
      * @param {object} band
      * @returns {string}
      * @noagent view transform

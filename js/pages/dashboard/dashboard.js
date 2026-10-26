@@ -3,7 +3,7 @@
  * Thin host: owns the DashboardGrid, the add-tile menu, layout/title
  * persistence, PNG/SVG export and refresh wiring. Every tile comes from a tile
  * file: a module's (manifest `loadTile`) or a host tile (tiles/index.js),
- * loaded and enumerated via enumerate-tiles.js. Contract: docs/DASHBOARD.md.
+ * loaded and enumerated via enumerate-tiles.js. Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
  */
 
 import { createPage } from '../../core/create-page.js';

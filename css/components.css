@@ -827,7 +827,7 @@ select.input {
    `<button type="button" role="tab" data-tab="…">` with `aria-selected`
    and roving `tabindex` (0 on the active tab, -1 on the others).
    x-tablist moves focus with ArrowLeft/ArrowRight/Home/End; Enter/Space
-   activate (manual activation). See docs/SPLIT-PANEL.md "Module Tabs". */
+   activate (manual activation), as the WAI-ARIA tabs pattern prescribes. */
 
 .dmike-tabs {
   display: flex;
@@ -1802,7 +1802,7 @@ body.hide-algo-lab-links .distfit__ndd-algo-link { display: none; }
 
 /* ============================================================
    Glossary inline links — global, theme-aware, single-source.
-   Never override in module CSS. See .claude/GLOSSAR-KONZEPT.md.
+   Never override in module CSS: a glossary term must look the same in every help text.
    ============================================================ */
 
 .glossary-term {

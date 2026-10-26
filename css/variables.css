@@ -278,7 +278,7 @@
   --color-rank-bronze: #cd8a5c;
 
   /* ===== Glossary inline-link tokens (used by .glossary-term) =====
-     Theme-aware; never overridden per module — see .claude/GLOSSAR-KONZEPT.md. */
+     Theme-aware; never overridden per module, so a term looks the same everywhere. */
   --glossary-term-bg-hover:        rgb(0 0 0 / 4%);
   --glossary-term-bg-focus:        rgb(0 0 0 / 6%);
   --glossary-term-outline-focus:   var(--color-accent);

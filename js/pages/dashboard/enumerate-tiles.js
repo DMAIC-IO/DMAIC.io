@@ -8,7 +8,7 @@
  *     defaultH, minW, minH, moduleId|null, tile, kind|null, isCopy }
  * `instanceId` is the effective instance (re-bound via `_source`), so the
  * host renders it unchanged. Copies have ids "<kind>~<uid>".
- * Contract: docs/DASHBOARD.md.
+ * Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
  */
 
 import { HOST_TILES } from './tiles/index.js';

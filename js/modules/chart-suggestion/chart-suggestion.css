@@ -51,8 +51,8 @@
 }
 
 /* Empty-state icon above the title/text — 40px reads better here than the
-   largest regular step (24px, .icon--lg). --icon-size exception per
-   docs/ICONS.md, scoped to this one layout. */
+   largest regular step (24px, .icon--lg). --icon-size exception,
+   scoped to this one layout. */
 .chart-suggestion__empty-icon .icon {
   --icon-size: 40px;
 }

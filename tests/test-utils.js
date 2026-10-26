@@ -1,7 +1,6 @@
 /**
  * D.Mike — Test Utilities & Assertion Library (test-utils.js)
  * Lightweight test framework for browser-based testing.
- * See docs/TESTING.md for the full specification.
  */
 
 // ─── Registry ──────────────────────────────────────────────────

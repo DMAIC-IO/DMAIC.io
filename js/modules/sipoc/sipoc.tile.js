@@ -4,7 +4,7 @@
  * "How is the process framed?" — compact five-column board with the count
  * and the first entries per column; empty columns are marked as gaps. One
  * tile per instance; source/copies via the host. Imports only the model;
- * the markup lives in sipoc.tile.html. Contract: docs/DASHBOARD.md.
+ * the markup lives in sipoc.tile.html. Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
  */
 
 import { State, columnSummary } from './sipoc-model.js';

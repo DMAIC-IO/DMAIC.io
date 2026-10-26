@@ -46,7 +46,6 @@
 
 /* Shared Input | Output split for modules with a data entry panel (left)
    and a visualization/results area (right).
-   See docs/SPLIT-PANEL.md for full specification.
 
    Usage:
      <div class="dmike-split">
@@ -189,7 +188,7 @@
    toggles `--collapsed` on whichever `.dmike-split__output-section(-header)`
    was clicked, hides the following siblings, AND swaps the icon's
    `data-icon` between `nav.expand-down` / `nav.expand-right` — state lives in
-   the icon name, not in a CSS transform (see docs/ICONS.md). Same convention
+   the icon name, not in a CSS transform, so every icon stays a sprite symbol. Same convention
    already used by five-why.js and distribution-fit.js for expand/collapse
    chevrons elsewhere in the app. icon--sm (16px) is the closest system step
    to the old 5px triangle's visual weight; color matches the old
@@ -284,8 +283,8 @@
 }
 
 /* Error-card icon sits above two lines of text — 32px reads better here
-   than the largest regular step (24px, .icon--lg). --icon-size exception
-   per docs/ICONS.md, scoped to this one layout. */
+   than the largest regular step (24px, .icon--lg). --icon-size exception,
+   scoped to this one layout. */
 .module-error__icon .icon {
   --icon-size: 32px;
 }

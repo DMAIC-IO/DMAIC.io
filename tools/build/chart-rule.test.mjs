@@ -1,5 +1,5 @@
 /**
- * Chart rule (docs/CHARTING.md): modules on this list draw every chart,
+ * Chart rule: modules on this list draw every chart,
  * plot and diagram through context.chartManager — no own <svg>, no
  * createElementNS, no direct modebar SVG export helpers.
  */

@@ -2,8 +2,7 @@
 
 Application-Chrome, aus `app.js` extrahiert (reines Refactoring, kein
 Verhaltenswechsel). Coverage gemessen über die globalen Specs
-(`test/playwright/tests/global/` + `tests/shell.spec.js`) mit dem
-Live-lcov aus `ddev playwright test`.
+(die Playwright-Suite für die App-Hülle) mit dem Live-lcov der E2E-Läufe.
 
 ### Legende
 

@@ -5,7 +5,7 @@
  * limits, and a compact control chart through the tile-bound chartManager.
  * One tile per instance; source/copies via the host. Imports only the pure
  * analysis and model files. The markup lives in
- * attribute-control-chart.tile.html. Contract: docs/DASHBOARD.md.
+ * attribute-control-chart.tile.html. Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
  */
 
 import { getColumnValues } from '../../ui/column-picker.js';

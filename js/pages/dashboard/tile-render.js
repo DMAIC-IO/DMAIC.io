@@ -7,7 +7,7 @@
  * parts (charts, hand-drawn SVG) into [data-tile-slot] elements. A failing
  * step shows a placeholder instead of breaking the dashboard; a render that
  * is superseded or disposed while its viewModel is pending is dropped.
- * Contract: docs/DASHBOARD.md.
+ * This file is the tile contract: what a tile file exports is what it consumes.
  */
 
 import Alpine from '@alpinejs/csp';

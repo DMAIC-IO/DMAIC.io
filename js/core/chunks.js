@@ -76,7 +76,7 @@ export async function loadChunk(importer) {
  * Cached lazy loader: the first call imports, later calls share the promise.
  * A failed import is not cached here, so the next call imports again. Note
  * that Chromium caches a failed module fetch itself; recovery from a network
- * failure then needs a page reload (see docs/ARCHITECTURE.md §7).
+ * failure then needs a page reload.
  * @template T
  * @param {() => Promise<T>} importer
  * @returns {() => Promise<T>}

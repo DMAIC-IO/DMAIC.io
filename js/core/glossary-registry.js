@@ -7,8 +7,7 @@
  * the `{{term:…}}` inline link renderer, and the static handbook's
  * `/glossar/` section.
  *
- * Schema is documented in app/dev/glossary/README.md
- * and in .claude/GLOSSAR-KONZEPT.md.
+ * Schema is documented in glossary/README.md.
  */
 
 import { GLOSSARY_CATALOG, GLOSSARY_TERMS } from './glossary-data.generated.js';

@@ -506,8 +506,8 @@ export class HelpPanel {
   /**
    * Die Videoliste: eine Zeile je Video — Titel als Link, Laufzeit dahinter.
    *
-   * Kein Player und keine Kapitelliste. Das Panel ist 360 px breit
-   * (`docs/HELP-SYSTEM.md`): ein Video darin wäre zu klein, um etwas zu
+   * Kein Player und keine Kapitelliste. Das Panel ist 360 px breit:
+   * ein Video darin wäre zu klein, um etwas zu
    * erkennen, und eine Kapitelliste erschlägt im selben Platz die übrigen
    * Einträge der Seitenleiste. Der Link öffnet einen neuen Tab, was am Link
    * selbst steht (`title`), statt in einem erklärenden Absatz darüber.

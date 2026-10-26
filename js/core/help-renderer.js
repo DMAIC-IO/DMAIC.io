@@ -15,8 +15,6 @@
  * Handbook term-refs emit a marker span:
  *   <span class="glossary-term" data-glossary-term="id">label||id</span>
  * The hover button is added at runtime by core/glossary-inline.js — NOT here.
- *
- * @see docs/HELP-SYSTEM.md
  */
 
 import { h } from './dom.js';

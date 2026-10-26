@@ -90,8 +90,8 @@
         <label x-text="t('input.sourceTyp1')"></label>
         <!-- Task 14: Liste aus _typ1Instances (msa-typ1-Instanzen im Projekt,
              siehe _loadTyp1Instances() in msa-typ6.js). Bewusst OHNE x-model
-             auf dem <select> selbst (Alpine-CSP-Stolperstein #3, siehe
-             .claude/alpine.md: x-for-generierte <option>s kollidieren mit der
+             auf dem <select> selbst (Alpine-CSP-Stolperstein: x-for-generierte
+             <option>s kollidieren mit der
              initialen x-model-Reflexion) — stattdessen @change + :selected je
              Option, analog zu doe-planner.html sourceWorksheetChanged(). -->
         <select class="field" data-ref="sel-source-typ1"

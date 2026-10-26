@@ -6,7 +6,7 @@
  * scatter through the tile-bound chartManager (editor edits persist per
  * tile). One tile per instance; source/copies via the host. Imports only the
  * model, the engine and the pure chart config. The markup lives in
- * kano.tile.html. Contract: docs/DASHBOARD.md.
+ * kano.tile.html. Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
  */
 
 import { State } from './kano-model.js';

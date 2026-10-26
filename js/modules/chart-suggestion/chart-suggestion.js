@@ -276,7 +276,7 @@ const mod = createModule({
        * INSIDE a nested Alpine `x-if`/`x-for` template (materialised over several
        * reactive flush cycles, so a single rAF can fire before it exists). Resolves
        * the element once present, aborts on a newer render (`gen`), gives up after
-       * `maxFrames`. See `.claude/alpine.md` §6 / correlation `_whenAnchor`.
+       * `maxFrames`. Same pattern as correlation `_whenAnchor`.
        */
       _whenAnchor(selector, gen, maxFrames = 30) {
         return new Promise((resolve) => {

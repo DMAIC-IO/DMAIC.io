@@ -3,7 +3,7 @@
  *
  * Cuts the control chart data of a tile to its last N points. Shared by the
  * SPC and the attribute SPC tile; key figures stay on all points, only the
- * picture is windowed. Contract: docs/DASHBOARD.md.
+ * picture is windowed. Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
  */
 
 /**

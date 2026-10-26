@@ -3,7 +3,7 @@
  *
  * Category counts, open actions and the high-impact lessons that still have
  * open actions. Imports only the pure model; the markup lives in
- * lessons-learned.tile.html. Contract: docs/DASHBOARD.md.
+ * lessons-learned.tile.html. Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
  */
 
 import { State, openHighImpact } from './lessons-learned-model.js';

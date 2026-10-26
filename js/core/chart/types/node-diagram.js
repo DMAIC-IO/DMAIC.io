@@ -3,7 +3,7 @@
  *
  * Used for the VoC → CTx tree export, the org chart (export + overlay) and the
  * TRIZ function model (export + arrow overlay). Layout is the module's job; this
- * type only draws. No axes, no zoom/pan/tooltip. See docs/CHARTING.md.
+ * type only draws. No axes, no zoom/pan/tooltip.
  */
 
 import ChartBase from '../chart-base.js';

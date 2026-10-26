@@ -3,7 +3,7 @@
  *
  * One tile for the first VoC instance (fixed id `voc-ctx-tree`). Loaded via
  * the manifest's `loadTile`. The markup lives in voc-ctx-tree.tile.html.
- * Contract: docs/DASHBOARD.md.
+ * Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
  */
 
 const DRIVERS = [

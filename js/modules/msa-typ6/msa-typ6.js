@@ -62,8 +62,8 @@
  * (`stateManager.get('phases')` + `getModuleState(instanceId)`) folgt dem
  * bereits etablierten Vorbild in `doe-planner-worksheet.js`
  * (`listProjectWorksheets()`). Das `<select>` bindet bewusst NICHT über
- * `x-model` an `_typ1Instances` (Alpine-CSP-Stolperstein #3, siehe
- * .claude/alpine.md: `x-for`-generierte `<option>`s kollidieren mit der
+ * `x-model` an `_typ1Instances` (Alpine-CSP-Stolperstein: `x-for`-generierte
+ * `<option>`s kollidieren mit der
  * initialen `x-model`-Reflexion) — stattdessen `@change` + `:selected` je
  * Option, analog zu `doe-planner.html`s `sourceWorksheetChanged()`-Muster.
  *
@@ -721,8 +721,8 @@ const mod = createModule({
 
       /**
        * Bounded rAF-Poll für einen templated Chart-Host innerhalb eines
-       * verschachtelten `x-if`-Anker (siehe .claude/alpine.md § 6 / Konvention
-       * aus control-chart.js `_whenAnchor`). Bricht ab, sobald ein neuerer
+       * verschachtelten `x-if`-Anker — der entsteht erst über mehrere Alpine-Flushes
+       * (Konvention aus control-chart.js `_whenAnchor`). Bricht ab, sobald ein neuerer
        * Render gestartet wurde (`gen !== this._renderGen`).
        * @param {string} selector
        * @param {number} gen
@@ -838,8 +838,8 @@ const mod = createModule({
 
       /**
        * Handler für die Auswahl im "aus Typ-1-Instanz übernehmen"-Dropdown.
-       * Bewusst kein `x-model` auf dem `<select>` (Alpine-CSP-Stolperstein #3,
-       * siehe .claude/alpine.md) — der Aufruf kommt über `@change` mit dem
+       * Bewusst kein `x-model` auf dem `<select>` (x-model spiegelt den Wert,
+       * bevor x-for die Optionen erzeugt hat) — der Aufruf kommt über `@change` mit dem
        * rohen `<option value>`-String; ein leerer String (Platzhalter-Option)
        * setzt `sourceTyp1InstanceId` zurück auf `null`, ohne `mu0`/`sigma0`
        * anzurühren.

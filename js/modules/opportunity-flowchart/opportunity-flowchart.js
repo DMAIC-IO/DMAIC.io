@@ -222,7 +222,7 @@ export default createModule({
       /**
        * Gap 0's rail belongs to the FIRST card and is drawn in that card's
        * band. Band and chain-end check are merged into one method because
-       * Alpine CSP wants a single call per x-if (.claude/alpine.md).
+       * Alpine CSP wants a single plain call per x-if.
        * @param {number} idx chain index of the column being rendered
        * @param {'va'|'nva'} side band of the slot being rendered
        * @returns {boolean}

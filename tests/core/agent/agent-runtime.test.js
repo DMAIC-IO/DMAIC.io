@@ -878,7 +878,8 @@ suite('agent runtime — interact() liefert das Briefing aus dem Handbuchkapitel
 // ── Task 1 ───────────────────────────────────────────────────────────
 // `ok: true` heißt „liegt auf Platte": ein Stapel, der geschrieben hat, muss
 // `stateManager.flushNow()` EINMAL rufen, bevor die Antwort rausgeht — ein
-// nur lesender Stapel zahlt den Preis nicht (.claude/ROADMAP.md:592-605).
+// nur lesender Stapel zahlt den Preis nicht — sonst kostete jedes read()
+// einen Schreibzugriff auf IndexedDB.
 suite('agent runtime — ok heißt „liegt auf Platte" (Task 1)', () => {
   // `five-why` muss hier agent-reif sein (anders als in der geteilten
   // REGISTRY oben), damit `instance.call` gegen `fw-1` die Validierung

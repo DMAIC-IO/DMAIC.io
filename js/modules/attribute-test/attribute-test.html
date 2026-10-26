@@ -193,7 +193,7 @@
     <template x-if="showEvent()">
       <div class="field-group">
         <label data-help-key="modules.attribute-test.types.Params.eventValue" x-text="t('eventValue')"></label>
-        <!-- data-driven options: not bound via x-model (see .claude/alpine.md §3) -->
+        <!-- data-driven options: not bound via x-model — x-model reflects its value before x-for has rendered the options, so the selection would be lost -->
         <select class="field" data-ref="event" @change="onEventChange($event)">
           <template x-for="v in eventOptions" :key="v">
             <option :value="v" :selected="isEvent(v)" x-text="v"></option>

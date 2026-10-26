@@ -24,8 +24,6 @@
  * Bold (`**`) is matched before italic (`*`). The inner content of bold/italic
  * is kept as a plain text node (matching legacy behavior — the old renderers
  * did not recurse term refs/math inside emphasis).
- *
- * @see docs/HELP-SYSTEM.md
  */
 
 import { h } from './dom.js';

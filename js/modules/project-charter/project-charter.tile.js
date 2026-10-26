@@ -5,7 +5,7 @@
  * three singleton tiles with fixed ids: `project-charter`, `project-goals`
  * and `org-chart`; each exists only while a charter instance exists.
  * The markup lives in project-charter{,.goals,.org}.tile.html; the org chart
- * SVG is drawn in mount(). Contract: docs/DASHBOARD.md.
+ * SVG is drawn in mount(). Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
  */
 
 import { svg, s } from '../../core/dom.js';

@@ -3,7 +3,7 @@
  *
  * Loaded by the dashboard via the manifest's `loadTile`. Imports only the
  * shared Ishikawa constants, never the module shell; the markup lives in
- * ishikawa.tile.html. Contract: docs/DASHBOARD.md.
+ * ishikawa.tile.html. Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
  */
 
 import { CATS } from './ishikawa-constants.js';

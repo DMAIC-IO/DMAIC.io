@@ -2,7 +2,7 @@
  * D.Mike — Todo dashboard tile (todo.tile.js)
  *
  * Status counts, a status bar and the next due open items. Imports only the
- * pure todo model; the markup lives in todo.tile.html. Contract: docs/DASHBOARD.md.
+ * pure todo model; the markup lives in todo.tile.html. Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
  */
 
 import { todayISO } from '../../core/local-date.js';
