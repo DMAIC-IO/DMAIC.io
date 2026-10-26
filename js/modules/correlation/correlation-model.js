@@ -17,6 +17,7 @@ import {
 } from '../../engines/correlation-engine.js';
 import { getColumnName } from '../../ui/column-picker.js';
 import { resolveColumnRef } from '../../core/worksheet-columns.js';
+import { parseDecimalInput } from '../../core/parse-decimal.js';
 
 /** Die Korrelationsmethoden der Matrix; einzige Quelle für Prüfer und Auswahl. */
 export const METHODS = ['pearson', 'spearman', 'kendall'];
@@ -37,10 +38,8 @@ function refKey(ref) {
  */
 export function parseConfPercent(raw) {
   if (raw == null) return null;
-  const cleaned = String(raw).replace('%', '').replace(',', '.').trim();
-  if (cleaned === '') return null;
-  const n = parseFloat(cleaned);
-  if (!Number.isFinite(n)) return null;
+  const n = parseDecimalInput(String(raw).replace('%', ''));
+  if (n === null || !Number.isFinite(n)) return null;
   const dec = n > 1 ? n / 100 : n;
   if (dec <= 0 || dec >= 1) return null;
   return dec;

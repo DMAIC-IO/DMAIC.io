@@ -35,6 +35,7 @@ import {
 import { computeSeriesStats, renderStatsTable } from '../../core/stats-panel.js';
 import { CHART_COLORS } from '../../core/chart/chart-colors.js';
 import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
+import { decimalOr } from '../../core/parse-decimal.js';
 
 /** Default confidence level when not resolved from settings. */
 const DEFAULT_CONF_LEVEL = 95;
@@ -266,7 +267,7 @@ const mod = createModule({
       /** @noagent DOM event handler; the agent uses setParam() */
       confChanged(event) {
         const input = event.target;
-        const v = parseFloat(input.value.replace(',', '.'));
+        const v = decimalOr(input.value, NaN);
         if (Number.isFinite(v) && v > 0 && v < 100) this.setParam('confLevel', v);
         else this._renderStats();
         input.value = this.model.confLevel;

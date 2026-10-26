@@ -40,6 +40,9 @@ suite('resampling-analysis — parseOptionalNumber', () => {
     assertEqual(parseOptionalNumber(4), 4);
     assertTrue(Number.isNaN(parseOptionalNumber('abc')));
     assertTrue(Number.isNaN(parseOptionalNumber(Infinity)));
+    assertEqual(parseOptionalNumber('1.234,5'), 1234.5);
+    assertTrue(Number.isNaN(parseOptionalNumber('9,7x')));
+    assertTrue(Number.isNaN(parseOptionalNumber('Infinity')));
   });
 });
 

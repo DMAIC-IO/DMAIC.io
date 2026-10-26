@@ -32,6 +32,8 @@ suite('attribute-test input — parsing', () => {
     assertEqual(parseProportion('0,25'), 0.25);
     assertEqual(parseProportion('0.25'), 0.25);
     assertEqual(parseProportion('x'), null);
+    assertEqual(parseProportion('0,25x'), null);
+    assertEqual(parsePositive('1.234,5'), 1234.5);
   });
   test('distinctValues sorts numerically and skips missing', () => {
     assertDeepEqual(distinctValues([1, 0, null, '', 1, 10, 2]), ['0', '1', '2', '10']);

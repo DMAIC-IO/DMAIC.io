@@ -32,6 +32,7 @@ import { ColumnPicker, getColumnValues, refToKey, keyToRef } from '../../ui/colu
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 import { panelsFromCells } from '../../engines/gage-run-chart-engine.js';
 import { renderGageRunStrips } from '../../core/chart/gage-run-strips.js';
+import { decimalOr } from '../../core/parse-decimal.js';
 
 /** @param {number} v @param {number} d @returns {string} */
 function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–'; }
@@ -418,12 +419,6 @@ const mod = createModule({
 
       // ── Analysis (controller — needs context + live worksheet data) ──
 
-      /** @noagent view transform */
-      parseNum(s) {
-        if (s == null || s === '') return NaN;
-        return parseFloat(String(s).replace(',', '.').trim());
-      },
-
       /**
        * Build the three data arrays from worksheet columns.
        * @returns {{ parts: string[], operators: string[], measurements: number[] }|null}
@@ -484,13 +479,13 @@ const mod = createModule({
 
         const p = this.model.params;
         const opts = {
-          alpha: this.parseNum(p.alpha) || 0.05,
+          alpha: decimalOr(p.alpha, NaN) || 0.05,
           studyVarMultiplier: parseFloat(p.k),
-          lsl: this.parseNum(p.lsl),
-          usl: this.parseNum(p.usl),
+          lsl: decimalOr(p.lsl, NaN),
+          usl: decimalOr(p.usl, NaN),
         };
         if (p.verdictBasis === 'tolerance' || p.verdictBasis === 'studyVar') opts.verdictBasis = p.verdictBasis;
-        if (String(p.sigmaHist ?? '').trim() !== '') opts.historicalSigma = this.parseNum(p.sigmaHist);
+        if (String(p.sigmaHist ?? '').trim() !== '') opts.historicalSigma = decimalOr(p.sigmaHist, NaN);
 
         const v = validate(data, opts);
         if (!v.valid) return this.clearResults(showErrors ? _t(v.errorKey, v.errorVars || undefined) : '');

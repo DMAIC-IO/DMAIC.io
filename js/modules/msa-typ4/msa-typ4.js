@@ -31,6 +31,7 @@ import { State, NORM_OPTIONS, PV_OPTIONS, ALPHA_OPTIONS } from './msa-typ4-model
 import { analyze } from '../../engines/msa-typ4-engine.js';
 import { ColumnPicker, getColumnValues, refToKey, keyToRef } from '../../ui/column-picker.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
+import { decimalOr } from '../../core/parse-decimal.js';
 
 /** @param {number} v @param {number} d @returns {string} */
 function fmt(v, d = 3) { return Number.isFinite(v) ? v.toFixed(d) : '–'; }
@@ -413,12 +414,6 @@ const mod = createModule({
 
       // ── Analysis (controller — needs context + live worksheet data) ──
 
-      /** @noagent view transform */
-      parseNum(s) {
-        if (s == null || s === '') return NaN;
-        return parseFloat(String(s).replace(',', '.').trim());
-      },
-
       /**
        * Build aligned {reference, measured} arrays from the two selected
        * worksheet columns, dropping rows where either value is missing/non-numeric.
@@ -462,10 +457,10 @@ const mod = createModule({
         const p = this.model.params;
         const flat = {
           pvMode: p.pvMode,
-          LSL: this.parseNum(p.tolerance.LSL),
-          USL: this.parseNum(p.tolerance.USL),
-          sigmaP: this.parseNum(p.sigmaP),
-          alpha: this.parseNum(p.alpha),
+          LSL: decimalOr(p.tolerance.LSL, NaN),
+          USL: decimalOr(p.tolerance.USL, NaN),
+          sigmaP: decimalOr(p.sigmaP, NaN),
+          alpha: decimalOr(p.alpha, NaN),
           norm: p.norm,
         };
         const res = analyze(data.reference, data.measured, flat);

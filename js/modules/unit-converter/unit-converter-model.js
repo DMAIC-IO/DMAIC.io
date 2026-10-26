@@ -4,6 +4,7 @@
  */
 
 import { CATEGORIES } from './unit-data.js';
+import { decimalOr } from '../../core/parse-decimal.js';
 
 // ── Pure helpers ─────────────────────────────────────────────
 
@@ -121,11 +122,13 @@ export class State {
 
   // ── Conversion (raw numbers, no formatting) ────────────────
 
-  /** Parse the input value (German comma allowed). Returns NaN when invalid. */
+  /**
+   * Parse the input value (decimal comma and German thousands grouping
+   * allowed, see {@link decimalOr}).
+   * @returns {number} NaN when empty or invalid
+   */
   parsedInput() {
-    const raw = (this.inputVal || '').replace(',', '.');
-    if (raw === '') return NaN;
-    return parseFloat(raw);
+    return decimalOr(this.inputVal, NaN);
   }
 
   /**

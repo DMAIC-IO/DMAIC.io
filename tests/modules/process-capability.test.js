@@ -1,7 +1,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import { State } from '../../js/modules/process-capability/process-capability-model.js';
 import { fmtZ, fmtFraction } from '../../js/modules/process-capability/process-capability-format.js';
-import { analyzeState, formatHint, specRefLines, parseNum, confidenceFraction } from '../../js/modules/process-capability/process-capability-analysis.js';
+import { analyzeState, formatHint, specRefLines, confidenceFraction } from '../../js/modules/process-capability/process-capability-analysis.js';
 
 suite('Process Capability Model — State defaults', () => {
   test('constructor sets default params (strings, mm, 95)', () => {
@@ -337,10 +337,9 @@ const stateOf = (json) => State.fromJSON(json);
 const noColumn = () => { throw new Error('readColumn must not be called'); };
 
 suite('Process Capability analysis — helpers', () => {
-  test('parseNum accepts a decimal comma and rejects empty input', () => {
-    assertEqual(parseNum('9,5'), 9.5);
-    assertTrue(Number.isNaN(parseNum('')));
-    assertTrue(Number.isNaN(parseNum(null)));
+  test('confidenceFraction reads a decimal comma and rejects trailing text', () => {
+    assertEqual(confidenceFraction(stateOf({ params: { confidence: '97,5' } })), 0.975);
+    assertEqual(confidenceFraction(stateOf({ params: { confidence: '97,5x' } })), 0.95);
   });
 
   test('confidenceFraction clamps the percent input', () => {
@@ -357,6 +356,15 @@ suite('Process Capability analysis — analyzeState', () => {
     assertEqual(a.result, null);
     assertTrue(a.methods.includes('averageMR'));
     assertEqual(a.method, 'averageMR');
+  });
+
+  test('spec limits: decimal comma, German thousands grouping, invalid text → no limit', () => {
+    const a = analyzeState(stateOf({ embeddedValues: VALS, params: { lsl: '9,5', usl: '1.010,5' } }), noColumn);
+    assertEqual(a.result.lsl, 9.5);
+    assertEqual(a.result.usl, 1010.5);
+    const b = analyzeState(stateOf({ embeddedValues: VALS, params: { lsl: '9,5x', usl: '10,5' } }), noColumn);
+    assertEqual(b.result.lsl, null);
+    assertEqual(b.result.usl, 10.5);
   });
 
   test('embedded values win over the column', () => {

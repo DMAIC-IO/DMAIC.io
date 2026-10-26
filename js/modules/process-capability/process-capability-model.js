@@ -15,6 +15,7 @@
  */
 
 import { WITHIN_METHODS } from '../../engines/sigma-within-engine.js';
+import { decimalOr } from '../../core/parse-decimal.js';
 
 /** The two ways subgroups are formed (the radio group and `setParam('subgroupMode', …)`). */
 export const SUBGROUP_MODES = ['size', 'column'];
@@ -40,7 +41,7 @@ function numStr(v) {
  */
 function confStr(v) {
   if (v == null || v === '') return '95';
-  const n = typeof v === 'number' ? v : parseFloat(String(v).replace(',', '.'));
+  const n = decimalOr(v, NaN);
   if (!isFinite(n) || n <= 0) return '95';
   // Fractional legacy value (0 < c <= 1) → percent
   const pct = n <= 1 ? n * 100 : n;

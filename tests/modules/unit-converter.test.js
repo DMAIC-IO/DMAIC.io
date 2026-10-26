@@ -90,6 +90,17 @@ suite('Unit Converter Model — conversion', () => {
     assertEqual(s.result(), null);
     s.inputVal = 'abc';
     assertEqual(s.result(), null);
+    s.inputVal = '1,5x';
+    assertEqual(s.result(), null);
+  });
+
+  test('German thousands grouping with decimal comma is parsed', () => {
+    const s = new State();
+    s.activeCat = 'laenge';
+    s.fromUnit = 'm';
+    s.toUnit = 'cm';
+    s.inputVal = '1.234,5';
+    assertAlmostEqual(s.result(), 123450, 1e-6);
   });
 
   test('formulaValue gives 1-unit conversion factor', () => {

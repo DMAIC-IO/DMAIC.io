@@ -43,6 +43,7 @@ import { ColumnPicker, isPickerFocused } from '../../ui/column-picker.js';
 import { provisionWorksheet as _provisionWorksheet, removeProvisionedWorksheet as _removeProvisionedWorksheet } from '../../core/examples-registry.js';
 import { saveModel, buildDataSnapshot, computeDataHash } from '../../core/models-store.js';
 import { getChartColors } from '../../core/chart/chart-core.js';
+import { decimalOr } from '../../core/parse-decimal.js';
 
 // ── Glyphs carried over from the legacy innerHTML (kept out of x-text literals
 // — Alpine CSP would emit \u-escapes verbatim). ───────────────────────
@@ -927,7 +928,7 @@ const mod = createModule({
        * immer den Model-Wert.
        */
       _percentParam(event, key) {
-        const v = parseFloat(String(event.target.value).replace(',', '.'));
+        const v = decimalOr(event.target.value, NaN);
         if (Number.isFinite(v) && v > 0 && v < 100) {
           try { this.setParam(key, v / 100); } catch { /* das Feld zeigt unten wieder den Model-Wert */ }
         }

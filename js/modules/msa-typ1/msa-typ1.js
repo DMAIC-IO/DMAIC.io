@@ -27,6 +27,7 @@ import { State } from './msa-typ1-model.js';
 import { validate, analyze } from '../../engines/msa-typ1-engine.js';
 import { ColumnPicker, getColumnValues, refToKey, keyToRef } from '../../ui/column-picker.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
+import { decimalOr } from '../../core/parse-decimal.js';
 
 /** @param {number} v @param {number} d @returns {string} */
 function fmt(v, d = 4) { return v.toFixed(d); }
@@ -326,12 +327,6 @@ const mod = createModule({
 
       // ── Analysis (controller — needs context + live worksheet data) ──
 
-      /** @noagent helper; Zahlenlesen der Rechnung */
-      parseNum(s) {
-        if (s == null || s === '') return NaN;
-        return parseFloat(String(s).replace(',', '.').trim());
-      },
-
       /** @noagent helper; liest die Spaltenwerte der Rechnung */
       getColumnValues() {
         if (!this.model.columnRef) return [];
@@ -351,9 +346,9 @@ const mod = createModule({
         if (values.length === 0) return this.clearResults();
 
         const p = this.model.params;
-        const ref = this.parseNum(p.ref);
-        const lsl = this.parseNum(p.lsl);
-        const usl = this.parseNum(p.usl);
+        const ref = decimalOr(p.ref, NaN);
+        const lsl = decimalOr(p.lsl, NaN);
+        const usl = decimalOr(p.usl, NaN);
 
         const validation = validate({ ref, lsl, usl }, values);
         if (!validation.valid) return this.clearResults();

@@ -7,6 +7,7 @@
  */
 
 import { resolveColumnRef } from '../../core/worksheet-columns.js';
+import { decimalOr } from '../../core/parse-decimal.js';
 
 /**
  * Read a column's raw values; null when no ref is set or it no longer
@@ -43,14 +44,14 @@ export function parseCount(raw) {
 }
 
 /**
- * Parse a proportion with `.` or `,` as decimal separator.
+ * Parse a proportion with `.` or `,` as decimal separator (also German
+ * thousands grouping, see {@link parseDecimalInput}).
  * @param {unknown} raw
- * @returns {number|null}
+ * @returns {number|null} null when blank or not a finite number
  */
 export function parseProportion(raw) {
   if (isBlank(raw)) return null;
-  const v = Number(String(raw).trim().replace(',', '.'));
-  return Number.isFinite(v) ? v : null;
+  return decimalOr(/** @type {string|number} */ (raw), null);
 }
 
 /**

@@ -10,6 +10,7 @@
 import { coerceNumeric } from '../../core/worksheet-columns.js';
 import { summarizeBins } from '../../engines/resampling-engine.js';
 import { STATS_BY_MODE, SEED_MAX } from './resampling-model.js';
+import { parseDecimalInput } from '../../core/parse-decimal.js';
 
 const B_MIN = 1000;
 const B_MAX = 100000;
@@ -18,17 +19,15 @@ const MIN_VALUES_PPK = 10;
 const BIN_COUNT = 30;
 
 /**
- * Parse an optional numeric text input.
+ * Parse an optional numeric text input via {@link parseDecimalInput}
+ * (decimal comma, German thousands grouping). Adds one rule on top: a
+ * non-finite number (±Infinity, also typed as text) counts as invalid.
  * @param {unknown} v
  * @returns {number|null} null when empty, NaN when not a finite number
  */
 export function parseOptionalNumber(v) {
-  if (v == null) return null;
-  if (typeof v === 'number') return Number.isFinite(v) ? v : NaN;
-  const s = String(v).trim().replace(',', '.');
-  if (s === '') return null;
-  const n = Number(s);
-  return Number.isFinite(n) ? n : NaN;
+  const n = parseDecimalInput(/** @type {string|number|null|undefined} */ (v));
+  return n === null || Number.isFinite(n) ? n : NaN;
 }
 
 /** Cell → finite number or null (empty, whitespace, text, ±Infinity). */

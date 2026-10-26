@@ -11,6 +11,7 @@ import {
   splitSubgroups, alignValuesAndIds, validMethods, defaultMethod, SigmaWithinError,
   SUBGROUP_METHODS,
 } from '../../engines/sigma-within-engine.js';
+import { decimalOr } from '../../core/parse-decimal.js';
 
 /** SigmaWithinError code → hint key. */
 const WITHIN_ERROR_HINT = {
@@ -19,23 +20,13 @@ const WITHIN_ERROR_HINT = {
 };
 
 /**
- * Parse a numeric input string (decimal comma allowed).
- * @param {string|null|undefined} s
- * @returns {number} NaN when empty or not a number
- */
-export function parseNum(s) {
-  if (s == null || s === '') return NaN;
-  return parseFloat(String(s).replace(',', '.').trim());
-}
-
-/**
  * Resolved confidence as a fraction (0 < c < 1), from the percent input.
  * @param {import('./process-capability-model.js').State} state
  * @param {number} [defaultConfidence=95] - percent, used when the input is unusable
  * @returns {number}
  */
 export function confidenceFraction(state, defaultConfidence = 95) {
-  const raw = parseNum(state.params.confidence);
+  const raw = decimalOr(state.params.confidence, NaN);
   if (!isNaN(raw) && raw > 0) return Math.max(50, Math.min(99.99, raw)) / 100;
   return defaultConfidence / 100;
 }
@@ -99,13 +90,10 @@ export function analyzeState(state, readColumn, { defaultConfidence = 95 } = {})
   }
 
   const p = state.params;
-  const lsl = parseNum(p.lsl);
-  const usl = parseNum(p.usl);
-  const target = parseNum(p.target);
   const params = {
-    lsl: isNaN(lsl) ? null : lsl,
-    usl: isNaN(usl) ? null : usl,
-    target: isNaN(target) ? null : target,
+    lsl: decimalOr(p.lsl, null),
+    usl: decimalOr(p.usl, null),
+    target: decimalOr(p.target, null),
     confidence: confidenceFraction(state, defaultConfidence),
     withinMethod: method,
     unbiased: p.unbiased !== false,

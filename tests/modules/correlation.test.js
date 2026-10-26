@@ -214,6 +214,11 @@ suite('Correlation Model — conf parse/format', () => {
     assertAlmostEqual(parseConfPercent('97,5 %'), 0.975, 1e-9);
   });
 
+  test('parseConfPercent rejects trailing text after a decimal comma', () => {
+    assertEqual(parseConfPercent('97,5x'), null);
+    assertEqual(parseConfPercent('9x'), null);
+  });
+
   test('parseConfPercent rejects out-of-range and garbage', () => {
     assertEqual(parseConfPercent('200'), null);
     assertEqual(parseConfPercent('0'), null);
