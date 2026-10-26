@@ -203,7 +203,7 @@ suite('course content', () => {
           const where = `${lesson.id} ${lang} ${b.term}`;
           assertTrue(typeof b.formula === 'string' && b.formula.length > 0, `${where}: formula`);
           assertTrue(!('content' in b), `${where}: no plain-text content`);
-          assertTrue(!/[Σσμ√ᵢ²̄]/.test(b.formula), `${where}: formula is LaTeX`);
+          assertTrue(!/[Σσμ√ᵢ²]|̄/.test(b.formula), `${where}: formula is LaTeX`);
         }
       }
     }
