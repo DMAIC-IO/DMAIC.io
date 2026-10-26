@@ -415,6 +415,8 @@ export class State {
    * Run the analysis appropriate for the current regType. Mutates `this.result`
    * / `this.perXResults` / `this.activeXKey` on success and returns either
    * `{ ok: true }` or `{ ok: false, errorKey, errorParams }` / `{ errors }`.
+   * A failed fit clears all derived results, so no stale fit from an earlier
+   * run survives under the new settings (nor in the persisted state).
    *
    * @param {object} sm — stateManager
    * @returns {{ok:boolean, errorKey?:string, errorParams?:object, errors?:string[]}}
@@ -424,7 +426,9 @@ export class State {
       return { ok: false, errorKey: 'errSelectBoth' };
     }
     const yRef = keyToRef(this.yKey);
-    return this.isPolynomial ? this.runPolynomial(sm, yRef) : this.runSingleXModels(sm, yRef);
+    const res = this.isPolynomial ? this.runPolynomial(sm, yRef) : this.runSingleXModels(sm, yRef);
+    if (!res.ok) this.clearResults();
+    return res;
   }
 
   /** Drop the design-preset notice (user changed the model). */

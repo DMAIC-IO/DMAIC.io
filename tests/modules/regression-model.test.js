@@ -654,3 +654,58 @@ suite('regression-model predictAt', () => {
     assertEqual(out.piHigh, null);
   });
 });
+
+// ── Fehlschlag verwirft alte Ergebnisse (Bug 9a) ────────────────────
+
+suite('Regression Model — ein gescheiterter Fit verwirft alte Ergebnisse', () => {
+  function singleXSetup() {
+    const xs = [1, 2, 3, 4, 5, 6, 7, 8];
+    const ys = xs.map(x => -1 - 0.5 * Math.log(x));   // y ≤ 0: log rechnet, exponential nicht
+    const { sm, wsInstanceId, sheetId } = makeSM({ columns: [
+      { id: 'cx', name: 'X', type: 'numeric', values: xs },
+      { id: 'cy', name: 'Y', type: 'numeric', values: ys },
+    ] });
+    const s = new State();
+    s.colRefs = [colRef(wsInstanceId, sheetId, 'cx')];
+    s.yKey = `${wsInstanceId}|${sheetId}|cy`;
+    s.confLevel = 0.95;
+    return { s, sm };
+  }
+
+  test('Totalausfall bei exponential leert perXResults und activeXKey', () => {
+    const { s, sm } = singleXSetup();
+    s.regType = 'logarithmic';
+    assertEqual(s.runAnalysis(sm).ok, true);
+    assertEqual(s.activeXKey !== null, true);
+    s.regType = 'exponential';
+    const res = s.runAnalysis(sm);
+    assertEqual(res.ok, false);
+    assertEqual(s.perXResults, null);
+    assertEqual(s.activeXKey, null);
+    assertEqual(s.activeResult, null);
+    const json = s.toJSON();
+    assertEqual(json.perXResults ?? null, null);
+    assertEqual(json.activeXKey, null);
+  });
+
+  test('gescheiterter Polynomfit leert das alte Ergebnis', () => {
+    const xs = [1, 2, 3, 4];
+    const ys = [2, 4.1, 5.9, 8.2];
+    const { sm, wsInstanceId, sheetId } = makeSM({ columns: [
+      { id: 'cx', name: 'X', type: 'numeric', values: xs },
+      { id: 'cy', name: 'Y', type: 'numeric', values: ys },
+    ] });
+    const s = new State();
+    s.colRefs = [colRef(wsInstanceId, sheetId, 'cx')];
+    s.yKey = `${wsInstanceId}|${sheetId}|cy`;
+    s.confLevel = 0.95;
+    s.polyDegree = 1;
+    assertEqual(s.runAnalysis(sm).ok, true);
+    assertEqual(s.result !== null, true);
+    s.polyDegree = 3;
+    const res = s.runAnalysis(sm);
+    assertEqual(res.ok, false);
+    assertEqual(s.result, null);
+    assertEqual(s.toJSON().result ?? null, null);
+  });
+});
