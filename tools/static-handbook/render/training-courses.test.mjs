@@ -29,11 +29,13 @@ test('de page lists the six lesson titles in order', () => {
   assert.match(page.html, /Statistik-Grundlagen/);
 });
 
-test('unbuilt lessons carry the "in Vorbereitung" label, the built one does not', () => {
+test('unbuilt lessons carry the "in Vorbereitung" label, the built ones do not', () => {
   const page = renderTrainingCoursesPage({ lang: 'de', courses: COURSES });
-  assert.equal((page.html.match(/in Vorbereitung/g) || []).length, 5);
-  const built = page.html.match(/<li class="handbook-course__lesson"[^>]*data-lesson-id="sampling-distribution"[\s\S]*?<\/li>/)[0];
-  assert.doesNotMatch(built, /in Vorbereitung/);
+  assert.equal((page.html.match(/in Vorbereitung/g) || []).length, 3);
+  for (const id of ['variation', 'sampling', 'sampling-distribution']) {
+    const built = page.html.match(new RegExp(`<li class="handbook-course__lesson"[^>]*data-lesson-id="${id}"[\\s\\S]*?<\\/li>`))[0];
+    assert.doesNotMatch(built, /in Vorbereitung/);
+  }
 });
 
 test('exactly one "open in app" link, pointing at the app root', () => {

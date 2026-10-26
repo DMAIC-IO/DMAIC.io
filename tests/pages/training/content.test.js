@@ -7,7 +7,7 @@ import { WIDGETS } from '../../../js/pages/training/widgets/index.js';
 import { GLOSSARY_TERMS } from '../../../js/core/glossary-data.generated.js';
 
 const LANGS = ['de', 'en'];
-const GATE_FIELDS = ['revealAfter', 'revealAfterN', 'revealAfterShapes'];
+const GATE_FIELDS = ['revealAfter', 'revealAfterN', 'revealAfterShapes', 'revealAfterValues', 'revealAfterEach', 'revealAfterSamples'];
 
 /** All built lessons as {course, ref, lesson}. */
 function builtLessons() {
@@ -56,7 +56,7 @@ suite('course content', () => {
           assertEqual(b.id, e.id, `${lesson.id} step ${i} block ${j} id`);
           assertEqual(b.widget, e.widget, `${lesson.id} step ${i} block ${j} widget`);
           assertDeepEqual(b.params, e.params, `${lesson.id} step ${i} block ${j} params`);
-          for (const gate of ['revealAfter', 'revealAfterN', 'revealAfterShapes']) {
+          for (const gate of GATE_FIELDS) {
             assertEqual(b[gate], e[gate], `${lesson.id} step ${i} block ${j} ${gate}`);
           }
           // Stored quiz answers are option indices, so the correct position must match.
@@ -88,6 +88,15 @@ suite('course content', () => {
           b.options.forEach((o) => assertTrue(!!o.feedback && !!o.text, `${b.id} option text/feedback`));
         }
       }
+    }
+  });
+
+  test('the correct option does not sit at the same position in every quiz of a lesson', () => {
+    for (const { lesson } of builtLessons()) {
+      const positions = blocksOf(lesson, 'de').filter((b) => b.type === 'quiz')
+        .map((b) => b.options.findIndex((o) => o.correct));
+      if (positions.length < 2) continue;
+      assertTrue(new Set(positions).size > 1, `${lesson.id} correct option always at index ${positions[0]}`);
     }
   });
 
@@ -187,6 +196,29 @@ suite('course content', () => {
     }
   });
 
+  test('definitions carry exactly one of formula/content; formulas are LaTeX, never Unicode math', () => {
+    for (const { lesson } of builtLessons()) {
+      for (const lang of LANGS) {
+        for (const b of blocksOf(lesson, lang).filter((x) => x.type === 'definition')) {
+          const where = `${lesson.id} ${lang} ${b.term}`;
+          const hasFormula = typeof b.formula === 'string' && b.formula.length > 0;
+          const hasContent = typeof b.content === 'string' && b.content.length > 0;
+          assertTrue(hasFormula !== hasContent, `${where}: exactly one of formula/content`);
+          if (hasFormula) assertTrue(!/[Σσμ√ᵢ²]|̄/.test(b.formula), `${where}: formula is LaTeX`);
+        }
+      }
+    }
+  });
+
+  test('summation formulas in lesson text are written as $…$', () => {
+    for (const { lesson } of builtLessons()) {
+      for (const lang of LANGS) {
+        const unicode = strings(lesson[lang]).filter((x) => /Σ\s*\(|Σx/.test(x));
+        assertDeepEqual(unicode, [], `${lesson.id} ${lang}`);
+      }
+    }
+  });
+
   test('lesson 3 follows the approved structure', () => {
     const { lesson } = findLesson('sampling-distribution');
     for (const lang of LANGS) {
@@ -201,7 +233,51 @@ suite('course content', () => {
       assertEqual(clt.revealAfterN, 3);
       assertEqual(quizIds(lesson).length, 4);
       assertTrue(!strings(lesson[lang]).some((x) => /Prozessfähigkeit|process capability/i.test(x)), 'no capability mention');
-      assertTrue(!strings(steps.slice(0, 4)).some((x) => /σ\s*\/\s*√n/.test(x)), 'sigma/sqrt(n) only from the standard error step on');
+      assertTrue(!strings(steps.slice(0, 4)).some((x) => /σ\s*\/\s*√n|\\sigma\s*\/\s*\\sqrt|\\frac\{\\sigma\}\{\\sqrt/.test(x)), 'sigma/sqrt(n) only from the standard error step on');
     }
+  });
+
+  test('lesson 1 follows the approved structure', () => {
+    const found = findLesson('variation');
+    const lesson = found && found.lesson;
+    assertTrue(!!lesson, 'lesson 1 is built');
+    for (const lang of LANGS) {
+      const steps = lesson[lang].steps;
+      assertEqual(steps.length, 8, `${lang} step count`);
+      // Symbols case-sensitive: /σ/i would also match the Σ of x̄ = Σxᵢ / n.
+      const banned = strings(lesson[lang]).filter((x) => /Grundgesamtheit|Stichprobe|population|\bsamples?\b/i.test(x) || /[μσ]|\\mu|\\sigma/.test(x));
+      assertDeepEqual(banned, [], `${lang}: no population/sample words or symbols`);
+      const glossaries = blocksOf(lesson, lang).filter((b) => b.type === 'definition').map((b) => b.glossary);
+      for (const id of ['mittelwert', 'spannweite', 'standardabweichung']) {
+        assertTrue(glossaries.includes(id), `${lang}: definition ${id}`);
+      }
+      const waiting = steps[5].blocks.find((b) => b.type === 'simulation');
+      assertDeepEqual(waiting.params.bands, [1], `${lang}: waiting times show only ± 1 s`);
+    }
+    assertDeepEqual(quizIds(lesson), ['q-reliable', 'q-sd-calc', 'q-two-thirds', 'q-wait-below']);
+  });
+
+  test('lesson 2 follows the approved structure', () => {
+    const found = findLesson('sampling');
+    const lesson = found && found.lesson;
+    assertTrue(!!lesson, 'lesson 2 is built');
+    for (const lang of LANGS) {
+      const steps = lesson[lang].steps;
+      assertEqual(steps.length, 6, `${lang} step count`);
+      const banned = strings(lesson[lang])
+        .filter((x) => /Stichprobenverteilung|Standardfehler|sampling distribution|standard error|√n/i.test(x));
+      assertDeepEqual(banned, [], `${lang}: no lesson-3 wording`);
+      const definitions = blocksOf(lesson, lang).filter((b) => b.type === 'definition');
+      for (const id of ['grundgesamtheit', 'stichprobe', 'varianz']) {
+        assertTrue(definitions.some((b) => b.glossary === id), `${lang}: definition ${id}`);
+      }
+      assertTrue(definitions.some((b) => b.formula?.includes('\\mu = \\frac{\\sum x_i}{N}')), `${lang}: μ formula`);
+      const check = steps[3].blocks.find((b) => b.type === 'simulation');
+      assertEqual(check.widget, 'variance-check', `${lang}: step 4 widget`);
+      assertEqual(check.params.n, 3, `${lang}: step 4 n`);
+      const insight = steps[3].blocks.find((b) => b.type === 'insight');
+      assertEqual(insight.revealAfterSamples, 1000, `${lang}: step 4 gate`);
+    }
+    assertDeepEqual(quizIds(lesson), ['q-fixed', 'q-estimate', 'q-symbol', 'q-n-minus-1']);
   });
 });

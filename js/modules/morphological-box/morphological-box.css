@@ -28,6 +28,10 @@
   grid-template-columns: max-content;
   gap: var(--spacing-xs);
   overflow-x: auto;
+
+  /* Room for the help buttons on the headings, which the scroller would clip; the margin compensates. */
+  padding-top: var(--spacing-sm);
+  margin-top: calc(-1 * var(--spacing-sm));
 }
 
 .morphological-box__head {
@@ -207,19 +211,17 @@
   gap: var(--spacing-xs);
 }
 
-/* Wrappers carry the help anchors (an input cannot hold the button); they
-   take over the flex role the input had, so the layout stays as it was. */
-.morphological-box__concept-name-wrap {
+.morphological-box__concept-active {
+  display: inline-flex;
+}
+
+.morphological-box__concept-input {
   flex: 1;
   min-width: 0;
   display: flex;
 }
 
-.morphological-box__concept-active-wrap {
-  display: flex;
-}
-
-.morphological-box__concept-input {
+.morphological-box__concept-input > input {
   flex: 1;
   min-width: 0;
 }

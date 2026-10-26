@@ -328,8 +328,55 @@
       "insightLocked": "Zieh erst ein paar Stichproben, am besten 100 auf einmal – dann steht hier, was du gerade gesehen hast.",
       "insightLockedN": "Probiere erst mindestens {n} verschiedene Werte für n aus und ziehe jeweils mindestens 100 Stichproben – dann steht hier, was du gesehen hast.",
       "insightLockedShapes": "Probiere erst mindestens {shapes} verschiedene Grundgesamtheiten aus, jeweils mit mindestens {n} Werten für n und mindestens 100 Stichproben – dann steht hier, was du gesehen hast.",
+      "insightLockedValues": "Miss erst mindestens {k} Werte, am besten 100 auf einmal – dann steht hier, was du gerade gesehen hast.",
+      "insightLockedSamples": "Zieh erst Stichproben (mindestens {k}) – dann steht hier, was du gesehen hast.",
+      "insightLockedEach": "Miss erst in jedem Diagramm mindestens {k} Werte – dann steht hier, was du gesehen hast.",
       "quizCorrect": "Richtig.",
       "quizWrong": "Noch nicht.",
+      "estimate": {
+        "drawOne": "Stichprobe ziehen",
+        "drawMany": "{k} Stichproben ziehen",
+        "population": "Grundgesamtheit",
+        "sample": "Stichprobe (n = {n})",
+        "mean": "Mittelwert",
+        "sd": "Standardabweichung",
+        "history": "Letzte Stichproben",
+        "truthNote": "Die Kurve der Grundgesamtheit sieht man in der Praxis nie.",
+        "axis": { "g": "Füllgewicht in g", "min": "Wartezeit in Minuten" },
+        "density": "Dichte"
+      },
+      "variance": {
+        "drawOne": "1 Stichprobe ziehen",
+        "draw": "{k} Stichproben ziehen",
+        "count": "Anzahl Stichproben",
+        "latest": "Letzte Stichprobe",
+        "byN": "Varianz geteilt durch n",
+        "byNMinus1": "Varianz geteilt durch n − 1",
+        "average": "Durchschnitt über alle Stichproben",
+        "sigma2": "Varianz der Grundgesamtheit σ²"
+      },
+      "values": {
+        "measure": "{k} messen",
+        "count": "Anzahl Werte",
+        "mean": "Mittelwert x̄",
+        "sd": "Standardabweichung s",
+        "min": "kleinster Wert",
+        "max": "größter Wert",
+        "range": "Spannweite R",
+        "within": "Anteil innerhalb x̄ ± {k} s",
+        "belowMean": "Anteil unter x̄",
+        "frequency": "Häufigkeit",
+        "process": {
+          "fill-a": "Anlage A",
+          "fill-b": "Anlage B",
+          "waiting": "Wartezeiten am Schalter"
+        },
+        "axis": {
+          "g": "Füllgewicht in g",
+          "min": "Wartezeit in Minuten"
+        },
+        "processLabel": "Prozess"
+      },
       "sim": {
         "population": "Grundgesamtheit",
         "sampleSize": "Stichprobenumfang n",

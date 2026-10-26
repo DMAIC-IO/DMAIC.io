@@ -328,8 +328,55 @@
       "insightLocked": "Draw a few samples first, ideally 100 at once – then this shows what you just saw.",
       "insightLockedN": "First try at least {n} different values of n and draw at least 100 samples for each – then this shows what you saw.",
       "insightLockedShapes": "First try at least {shapes} different populations, each with at least {n} values of n and at least 100 samples – then this shows what you saw.",
+      "insightLockedValues": "Measure at least {k} values first, ideally 100 at once – then this shows what you just saw.",
+      "insightLockedSamples": "Draw samples first (at least {k}) – then this shows what you saw.",
+      "insightLockedEach": "Measure at least {k} values in every chart first – then this shows what you saw.",
       "quizCorrect": "Correct.",
       "quizWrong": "Not yet.",
+      "estimate": {
+        "drawOne": "Draw a sample",
+        "drawMany": "Draw {k} samples",
+        "population": "Population",
+        "sample": "Sample (n = {n})",
+        "mean": "Mean",
+        "sd": "Standard deviation",
+        "history": "Recent samples",
+        "truthNote": "In practice nobody sees the population's curve.",
+        "axis": { "g": "Filling weight in g", "min": "Waiting time in minutes" },
+        "density": "Density"
+      },
+      "variance": {
+        "drawOne": "Draw 1 sample",
+        "draw": "Draw {k} samples",
+        "count": "Number of samples",
+        "latest": "Latest sample",
+        "byN": "Variance divided by n",
+        "byNMinus1": "Variance divided by n − 1",
+        "average": "Average over all samples",
+        "sigma2": "Population variance σ²"
+      },
+      "values": {
+        "measure": "Measure {k}",
+        "count": "Number of values",
+        "mean": "Mean x̄",
+        "sd": "Standard deviation s",
+        "min": "Smallest value",
+        "max": "Largest value",
+        "range": "Range R",
+        "within": "Share within x̄ ± {k} s",
+        "belowMean": "Share below x̄",
+        "frequency": "Frequency",
+        "process": {
+          "fill-a": "Machine A",
+          "fill-b": "Machine B",
+          "waiting": "Waiting times at the counter"
+        },
+        "axis": {
+          "g": "Filling weight in g",
+          "min": "Waiting time in minutes"
+        },
+        "processLabel": "Process"
+      },
       "sim": {
         "population": "Population",
         "sampleSize": "Sample size n",

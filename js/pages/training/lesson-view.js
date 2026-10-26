@@ -9,6 +9,7 @@
 
 import { h } from '../../core/dom.js';
 import { parseInline } from '../../core/markdown-parser.js';
+import { renderInlineMath } from '../../core/katex-loader.js';
 import { COURSES, findLesson, quizIds } from './courses/index.js';
 import { emptyStepCounts, mergeCounts, isGateOpen, gateHint } from './gates.js';
 import { mergeSummary } from './populations.js';
@@ -66,15 +67,18 @@ export function lessonViewData(t, i18n, dialog) {
           title: ref[lang].title,
           summary: ref[lang].summary,
           available: !!ref.content,
+          status: this.status(ref),
           statusLabel: this.statusLabel(ref),
           prerequisite: this.prerequisiteText(course, ref, lang),
         })),
       }));
     },
+    status(ref) {
+      if (!ref.content) return 'soon';
+      return lessonStatus(ref.id, quizIds(ref.content), ref.content.de.steps.length - 1);
+    },
     statusLabel(ref) {
-      if (!ref.content) return t('course.soon');
-      const status = lessonStatus(ref.id, quizIds(ref.content), ref.content.de.steps.length - 1);
-      return t({ new: 'course.new', started: 'course.started', complete: 'course.done' }[status]);
+      return t({ soon: 'course.soon', new: 'course.new', started: 'course.started', complete: 'course.done' }[this.status(ref)]);
     },
     prerequisiteText(course, ref, lang) {
       if (!ref.prerequisites.length) return '';
@@ -82,7 +86,10 @@ export function lessonViewData(t, i18n, dialog) {
       return t('course.prerequisite', { lessons: titles.join(', ') });
     },
     lessonClass(l) {
-      return l.available ? 'training-course__lesson' : 'training-course__lesson training-course__lesson--soon';
+      if (!l.available) return 'training-course__lesson training-course__lesson--soon';
+      if (l.status === 'complete') return 'training-course__lesson training-course__lesson--complete';
+      if (l.status === 'started') return 'training-course__lesson training-course__lesson--started';
+      return 'training-course__lesson';
     },
     hasPrerequisite(l) { return !!l.prerequisite; },
     openLesson(l) { if (l.available) this.enterLesson(l.id); },
@@ -167,6 +174,27 @@ export function lessonViewData(t, i18n, dialog) {
      */
     renderInline(el, text) {
       el.replaceChildren(...parseInline(text, { termRef }));
+      renderInlineMath(el);
+    },
+    /**
+     * Render a definition's LaTeX formula. Inline mode with \displaystyle keeps
+     * full-size fractions without display mode's centring; the raw LaTeX stays
+     * visible if KaTeX fails to load.
+     * @param {HTMLElement} el
+     * @param {string} latex
+     */
+    renderFormula(el, latex) {
+      el.replaceChildren(h('span', { 'data-katex-inline': `\\displaystyle ${latex}` }, latex));
+      renderInlineMath(el);
+    },
+    /**
+     * Definition body: the LaTeX `formula` when present, else the prose `content`.
+     * @param {HTMLElement} el
+     * @param {{formula?: string, content?: string}} b
+     */
+    renderDefinitionBody(el, b) {
+      if (b.formula) this.renderFormula(el, b.formula);
+      else this.renderInline(el, b.content);
     },
     /** Definition term; with a glossary id the term becomes a glossary link. */
     renderTerm(el, b) {

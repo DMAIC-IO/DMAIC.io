@@ -1,5 +1,6 @@
 import { suite, test, assertEqual } from '../test-utils.js';
 import { cycleBlocks, trizBlocks, toolBlocks, modulesBlocks } from '../../js/pages/training/training.js';
+import { lessonViewData } from '../../js/pages/training/lesson-view.js';
 
 const tEcho = (k) => 'T:' + k;                        // fake prefixed-t (training.<key>)
 const i18nEcho = { t: (k) => 'I:' + k, exists: () => true };
@@ -89,5 +90,22 @@ suite('training block producers', () => {
     const allText = table.rows.flat()
       .flatMap(c => c.segs).map(s => s.text).join('|');
     assertEqual(allText.includes('secret'), false);
+  });
+});
+
+suite('training lesson definition blocks', () => {
+  const view = lessonViewData(tEcho, { getLanguage: () => 'de' });
+
+  test('a prose definition renders its content as inline markdown', () => {
+    const el = document.createElement('span');
+    view.renderDefinitionBody(el, { type: 'definition', term: 'Stichprobe', content: 'Ein **Teil** der Grundgesamtheit' });
+    assertEqual(el.textContent, 'Ein Teil der Grundgesamtheit');
+    assertEqual(el.querySelector('strong')?.textContent, 'Teil');
+  });
+
+  test('a formula definition renders its LaTeX formula', () => {
+    const el = document.createElement('span');
+    view.renderDefinitionBody(el, { type: 'definition', term: 'Mittelwert', formula: '\\mu = \\frac{\\sum x_i}{N}' });
+    assertEqual(el.querySelector('[data-katex-inline]') !== null || el.querySelector('.katex') !== null, true);
   });
 });

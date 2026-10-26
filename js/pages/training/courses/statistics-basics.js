@@ -5,6 +5,8 @@
  * Browser-free: the static handbook imports this in Node.
  */
 
+import variation from '../lessons/variation.js';
+import sampling from '../lessons/sampling.js';
 import samplingDistribution from '../lessons/sampling-distribution.js';
 
 export default {
@@ -23,12 +25,14 @@ export default {
       de: { title: 'Streuung und Verteilungen', summary: 'Warum kein Wert dem anderen gleicht und wie sich das beschreiben lässt.' },
       en: { title: 'Variation and distributions', summary: 'Why no two values are alike and how to describe that.' },
       prerequisites: [],
+      content: variation,
     },
     {
       id: 'sampling',
       de: { title: 'Stichprobe und Grundgesamtheit', summary: 'Was wenige Messungen über alle möglichen Werte verraten.' },
       en: { title: 'Sample and population', summary: 'What a few measurements reveal about all possible values.' },
       prerequisites: ['variation'],
+      content: sampling,
     },
     {
       id: 'sampling-distribution',

@@ -70,7 +70,7 @@
           <template x-if="isType(b, 'definition')">
             <div class="training-lesson__definition">
               <strong x-effect="renderTerm($el, b)"></strong>
-              <span x-effect="renderInline($el, b.content)"></span>
+              <span class="training-lesson__formula" x-effect="renderDefinitionBody($el, b)"></span>
             </div>
           </template>
           <template x-if="isType(b, 'table')">
@@ -153,6 +153,92 @@
                 <div class="training-sim__chart training-sim__chart--se"></div>
                 <p class="training-sim__hint" x-text="label('seChartHint')"></p>
               </div>
+            </div>
+          </template>
+          <template x-if="isWidget(b, 'value-distribution')">
+            <div class="training-values" x-data="trainingValueSim" x-init="setup($el, b.params, lessonApi())">
+              <label class="training-values__field" x-show="selectable">
+                <span x-text="label('processLabel')"></span>
+                <select data-process-select @change="selectFrom($event)">
+                  <template x-for="pid in processes" :key="pid">
+                    <option :value="pid" :selected="isCurrent(pid)" x-text="processLabel(pid)"></option>
+                  </template>
+                </select>
+              </label>
+              <div class="training-values__grid" :class="gridClass()">
+                <div class="training-values__process" :data-process-id="columnId(0)" :data-count="countOf(columnId(0))">
+                  <div class="btn-group">
+                    <template x-for="k in measureSizes" :key="k">
+                      <button type="button" class="btn btn--sm btn--secondary" :data-measure="k" @click="measure(columnId(0), k)" x-text="measureLabel(k)"></button>
+                    </template>
+                  </div>
+                  <div class="training-values__chart training-values__chart--0"></div>
+                  <table class="training-values__stats">
+                    <template x-for="row in rows()" :key="row.key">
+                      <tr><th x-text="row.label"></th><td :data-stat="row.key" x-text="cell(columnId(0), row.key)"></td></tr>
+                    </template>
+                  </table>
+                </div>
+                <div class="training-values__process" x-show="hasColumn(1)" :data-process-id="columnId(1)" :data-count="countOf(columnId(1))">
+                  <div class="btn-group">
+                    <template x-for="k in measureSizes" :key="k">
+                      <button type="button" class="btn btn--sm btn--secondary" :data-measure="k" @click="measure(columnId(1), k)" x-text="measureLabel(k)"></button>
+                    </template>
+                  </div>
+                  <div class="training-values__chart training-values__chart--1"></div>
+                  <table class="training-values__stats">
+                    <template x-for="row in rows()" :key="row.key">
+                      <tr><th x-text="row.label"></th><td :data-stat="row.key" x-text="cell(columnId(1), row.key)"></td></tr>
+                    </template>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </template>
+          <template x-if="isWidget(b, 'sample-estimate')">
+            <div class="training-estimate" x-data="trainingSampleEstimate" x-init="setup($el, b.params, lessonApi())" :data-count="samplesDrawn">
+              <div class="btn-group">
+                <template x-for="k in drawSizes" :key="k">
+                  <button type="button" class="btn btn--sm btn--secondary" :data-draw="k" @click="draw(k)" x-text="drawLabel(k)"></button>
+                </template>
+              </div>
+              <div class="training-estimate__chart"></div>
+              <p class="training-estimate__note" x-show="showTruth" x-text="label('truthNote')"></p>
+              <table class="training-estimate__stats">
+                <tr><th></th><th x-text="label('population')"></th><th x-text="sampleLabel()"></th></tr>
+                <tr><th x-text="label('mean')"></th><td data-stat="mu" x-text="'μ = ' + cell('mu')"></td><td data-stat="mean" x-text="'x̄ = ' + cell('mean')"></td></tr>
+                <tr><th x-text="label('sd')"></th><td data-stat="sigma" x-text="'σ = ' + cell('sigma')"></td><td data-stat="sd" x-text="'s = ' + cell('sd')"></td></tr>
+              </table>
+              <div class="training-estimate__history" x-show="historySize > 0">
+                <span class="training-estimate__history-title" x-text="label('history')"></span>
+                <table class="training-estimate__stats">
+                  <template x-for="row in historyRows()" :key="row.key">
+                    <tr data-history-row><td x-text="'#' + row.key"></td><td x-text="'x̄ = ' + row.mean"></td><td x-text="'s = ' + row.sd"></td></tr>
+                  </template>
+                </table>
+              </div>
+            </div>
+          </template>
+          <template x-if="isWidget(b, 'variance-check')">
+            <div class="training-variance" x-data="trainingVarianceCheck" x-init="setup($el, b.params, lessonApi())" :data-count="samplesDrawn">
+              <div class="btn-group">
+                <template x-for="k in drawSizes" :key="k">
+                  <button type="button" class="btn btn--sm btn--secondary" :data-draw="k" @click="draw(k)" x-text="drawLabel(k)"></button>
+                </template>
+              </div>
+              <p class="training-variance__latest">
+                <span x-text="label('latest') + ': '"></span>
+                <template x-for="(v, i) in latest()" :key="i">
+                  <span class="training-variance__value" data-latest x-text="v + ' g'"></span>
+                </template>
+              </p>
+              <table class="training-variance__stats">
+                <tr><th></th><th x-text="label('latest')"></th><th x-text="label('average')"></th></tr>
+                <tr><th x-text="label('byN')"></th><td data-stat="latestByN" x-text="cell('latestByN') + ' g²'"></td><td data-stat="avgByN" x-text="cell('avgByN') + ' g²'"></td></tr>
+                <tr><th x-text="label('byNMinus1')"></th><td data-stat="latestByNMinus1" x-text="cell('latestByNMinus1') + ' g²'"></td><td data-stat="avgByNMinus1" x-text="cell('avgByNMinus1') + ' g²'"></td></tr>
+                <tr class="training-variance__reference"><th x-text="label('sigma2')"></th><td></td><td data-stat="sigma2" x-text="cell('sigma2') + ' g²'"></td></tr>
+                <tr><th x-text="label('count')"></th><td></td><td data-stat="count" x-text="cell('count')"></td></tr>
+              </table>
             </div>
           </template>
           <template x-if="isType(b, 'quiz')">
