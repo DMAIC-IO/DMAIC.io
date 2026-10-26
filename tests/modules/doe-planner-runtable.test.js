@@ -1,6 +1,5 @@
 /**
  * D.Mike — DoE Planner run table (doe-planner-runtable.js)
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E4)
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import {

@@ -1,7 +1,6 @@
 /**
  * D.Mike — Survey report tests (survey-report.test.js)
  * Sections present, names only when allowed, escaping, CSS bars.
- * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md §7.3
  */
 
 import { suite, test, assertEqual, assertTrue } from '../test-utils.js';

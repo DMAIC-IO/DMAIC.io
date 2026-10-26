@@ -1,6 +1,5 @@
 /**
  * D.Mike — doe-planner read surface (doe-planner-read.js)
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E7)
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { agentSnapshot } from '../../js/modules/doe-planner/doe-planner-read.js';

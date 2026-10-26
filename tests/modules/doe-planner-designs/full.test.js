@@ -1,6 +1,5 @@
 /**
  * D.Mike — design type "full" (designs/full.js)
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E2)
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import full from '../../../js/modules/doe-planner/designs/full.js';

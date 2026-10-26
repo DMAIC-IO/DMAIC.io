@@ -1,6 +1,5 @@
 /**
  * D.Mike — SnapshotsViewModel (viewmodel/snapshots.js)
- * Spec: docs/superpowers/specs/2026-10-25-ishikawa-agent-release-design.md (E2, E3, E5)
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertThrows } from '../test-utils.js';
 import { State } from '../../js/modules/ishikawa/ishikawa-model.js';

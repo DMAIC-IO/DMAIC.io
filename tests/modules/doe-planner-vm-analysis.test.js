@@ -1,6 +1,5 @@
 /**
  * D.Mike — AnalysisViewModel (viewmodel/analysis.js)
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E1, E5, E6)
  */
 import { suite, test, assertEqual, assertTrue, assertThrows } from '../test-utils.js';
 import { AnalysisViewModel } from '../../js/modules/doe-planner/viewmodel/analysis.js';

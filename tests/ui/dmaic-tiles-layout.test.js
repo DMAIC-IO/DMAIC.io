@@ -1,8 +1,7 @@
 /**
  * Tests for js/ui/dmaic-tiles-layout.js — resolveCollapsed() menuMode override.
  * The width heuristic (estimateTilesWidth) was replaced by a real
- * scrollWidth/clientWidth measurement in dmaic-tiles.js — see
- * docs/superpowers/specs/2026-09-06-kachelreihe-messen-statt-schaetzen-design.md.
+ * scrollWidth/clientWidth measurement in dmaic-tiles.js.
  */
 import { suite, test, assertEqual } from '../test-utils.js';
 import { resolveCollapsed, resolveTight, MIN_ACTIVE_NAME_PX } from '../../js/ui/dmaic-tiles-layout.js';

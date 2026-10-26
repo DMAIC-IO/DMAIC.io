@@ -1,6 +1,5 @@
 /**
  * D.Mike — Survey builder model tests (survey-builder-model.test.js)
- * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md §3, §4.2, §5.3
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import { State } from '../../js/modules/survey-builder/survey-builder-model.js';

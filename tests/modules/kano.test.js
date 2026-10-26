@@ -1,7 +1,6 @@
 /**
  * D.Mike — Kano Model Tests (kano.test.js)
  * Persistierter Zustand: CRUD, Antwortpflege, Serialisierung.
- * Spec: docs/superpowers/specs/2026-07-25-kano-modul-design.md
  */
 
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';

@@ -1,6 +1,5 @@
 /**
  * D.Mike — ResponsesViewModel (viewmodel/responses.js)
- * Spec: docs/superpowers/specs/2026-10-24-survey-builder-teil-viewmodels-design.md (E1)
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../test-utils.js';
 import { State } from '../../js/modules/survey-builder/survey-builder-model.js';

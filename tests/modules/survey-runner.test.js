@@ -2,7 +2,6 @@
  * D.Mike — Survey runner logic tests (survey-runner.test.js)
  * Runs the runner rebuilt from its own source text, exactly as the exported
  * page does, so a reference to an outer identifier fails here.
- * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md §3.2, §3.3, §5.2
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { runSurvey, RUNNER_CSS } from '../../js/modules/survey-builder/survey-runner.js';

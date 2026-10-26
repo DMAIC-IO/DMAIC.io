@@ -2,7 +2,6 @@
  * D.Mike — Survey builder example and help (survey-builder-example.test.js)
  * Pins the catalog entry, the hand-computed evaluation of the example
  * project and the help registration in the generated registry.
- * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md §7, §10
  */
 
 import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertClose } from '../test-utils.js';

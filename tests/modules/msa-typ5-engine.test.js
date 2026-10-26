@@ -1,7 +1,6 @@
 /**
  * D.Mike — MSA Typ 5 Engine Tests (msa-typ5-engine.test.js)
  * Unit tests for kappa-based attribute MSA engine.
- * See docs/superpowers/specs/2026-07-15-msa-typ5-design.md for the module spec.
  */
 
 import { suite, test, assert, assertClose } from '../test-utils.js';

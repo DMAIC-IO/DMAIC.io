@@ -149,12 +149,6 @@ test('package.json-Scripts, Workflows und HTML', () => {
 // wertlos und verraten nur Interna. Geprüft wird jede getrackte Textdatei,
 // Kommentare und Markdown eingeschlossen.
 
-/**
- * Noch offen (Teil B): `tests/` und `README.md` enthalten heute Verweise.
- * Bug 17 Teil B entfernt diese Ausnahme.
- */
-const OPEN_PART_B = ['tests/', 'README.md'];
-
 /** Ausgenommen: diese Testdatei (Fixtures) und die Prüfung selbst (Muster). */
 const SELF = new Set(['tools/build/repo-boundary.test.mjs', 'tools/build/repo-boundary.mjs']);
 
@@ -180,8 +174,7 @@ function scanRefs(files) {
 const refs = (found) => found.map((f) => `${f.file}:${f.line} ${f.pattern}`);
 
 test('der heutige Stand verweist nicht auf private Dokumente', () => {
-  const files = listTextFiles(APP_ROOT).filter((f) => !SELF.has(f)
-    && !OPEN_PART_B.some((p) => (p.endsWith('/') ? f.startsWith(p) : f === p)));
+  const files = listTextFiles(APP_ROOT).filter((f) => !SELF.has(f));
   assert.ok(files.length > 500, `zu wenige Textdateien gefunden (${files.length})`);
   assert.deepEqual(refs(findPrivateReferences(APP_ROOT, { files })), []);
 });

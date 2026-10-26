@@ -1,6 +1,5 @@
 /**
  * D.Mike — design type "pb" (designs/pb.js)
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E2)
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import pb from '../../../js/modules/doe-planner/designs/pb.js';

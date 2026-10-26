@@ -1,7 +1,6 @@
 /**
  * D.Mike — Survey hand-over tests (survey-link.test.js)
  * Worksheet state, Kano hand-over, VoC tree hand-over.
- * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md §6.2, §8
  */
 
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';

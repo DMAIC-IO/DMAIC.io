@@ -159,26 +159,14 @@ Every statistical algorithm is validated against **gold-standard fixtures** sour
 
 ## Documentation
 
-Detailed technical documentation lives under `docs/`:
-
-| Topic                          | File                                    |
-| ------------------------------ | --------------------------------------- |
-| Architecture & module system   | `docs/ARCHITECTURE.md`                  |
-| UI layout                      | `docs/LAYOUT.md`                        |
-| Internationalization           | `docs/INTERNATIONALIZATION.md`          |
-| Theming                        | `docs/THEMING.md`                       |
-| Chart framework                | `docs/CHARTING.md`                      |
-| DataGrid                       | `docs/DATAGRID.md`                      |
-| Data persistence               | `docs/DATA-PERSISTENCE.md`              |
-| Testing & validation           | `docs/TESTING.md`                       |
-| Algorithm Lab                  | `docs/ALGORITHM-LAB.md`                 |
-| Algorithm JSON schema          | `docs/ALGORITHM-JSON-SCHEMA.md`         |
-| Fixture schema & tiers         | `docs/FIXTURE-SCHEMA.md`                |
-| Fixture generator              | `docs/FIXTURE-GENERATOR.md`             |
-| Versioning & changelog         | `docs/VERSIONING.md`                    |
-| Help system & handbooks        | `docs/HELP-SYSTEM.md`                   |
-| Prototype integration          | `docs/PROTOTYPE-INTEGRATION.md`         |
-| Split-panel layout             | `docs/SPLIT-PANEL.md`                   |
+The in-app handbook is generated from the help sources (`js/help/` and the
+`-help.js` file of each module) with `npm run docs`, which writes the static
+HTML handbook to `docs/`. Reference documents live under `reference/`:
+`reference/agent-interface.md` describes the agent interface
+(`window.qprovement.interact`), `reference/resampling-coverage.md` the
+resampling coverage study. Beyond that, the code is the documentation: the
+core services are in `js/core/`, the chart framework in `js/core/chart/`, and
+`js/modules/sipoc/` is the reference example of a tool module.
 
 The public handbook is also available at **[docs.dmaic.io](https://docs.dmaic.io)**.
 
@@ -203,7 +191,7 @@ The public handbook is also available at **[docs.dmaic.io](https://docs.dmaic.io
 
 Contributions are welcome. Before opening a PR for a new tool module:
 
-1. Read `docs/ARCHITECTURE.md` and the **Module Interface** (see above).
+1. Read the **Module Interface** (see above) and use `js/modules/sipoc/` as the reference example.
 2. Place your module under `js/modules/<your-module>/` following the standard structure (`.js`, `.html`, `.css`, `-help.js`).
 3. Add translations in `i18n/de.json` and `i18n/en.json`.
 4. Write tests under `tests/modules/` — include fixture validation for anything with statistical logic.

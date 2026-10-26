@@ -2,7 +2,6 @@
  * D.Mike — Survey statistics tests (survey-stats.test.js)
  * Counts, means, medians, "n/a", filter, grouping, ranking and Kano against
  * hand-computed values.
- * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md §6.2, §7
  */
 
 import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertClose } from '../test-utils.js';

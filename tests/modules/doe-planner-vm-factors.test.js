@@ -1,6 +1,5 @@
 /**
  * D.Mike — FactorsViewModel (viewmodel/factors.js)
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E1, E6)
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertThrows } from '../test-utils.js';
 import { State } from '../../js/modules/doe-planner/doe-planner-model.js';

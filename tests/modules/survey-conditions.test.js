@@ -1,6 +1,5 @@
 /**
  * D.Mike — Survey conditions tests (survey-conditions.test.js)
- * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md §3.2
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import {

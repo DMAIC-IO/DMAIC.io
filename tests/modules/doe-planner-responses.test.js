@@ -1,6 +1,5 @@
 /**
  * D.Mike — DoE Planner response state (doe-planner-responses.js) and sourceRowCount
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E5)
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { readResponses, staleness, boundPct, boundComplete } from '../../js/modules/doe-planner/doe-planner-responses.js';

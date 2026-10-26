@@ -3,7 +3,6 @@
  * One case table for survey-conditions.js and the copy inside the exported
  * runner (survey-runner.js), so the two implementations cannot drift.
  * Not a test file: run-node.mjs only collects *.test.js.
- * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md §3.2
  */
 
 const CASE_SURVEY = {

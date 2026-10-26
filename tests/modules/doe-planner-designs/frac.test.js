@@ -1,6 +1,5 @@
 /**
  * D.Mike — design type "frac" (designs/frac.js)
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E2)
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import frac from '../../../js/modules/doe-planner/designs/frac.js';

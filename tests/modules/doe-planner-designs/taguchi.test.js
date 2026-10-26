@@ -1,6 +1,5 @@
 /**
  * D.Mike — design type "taguchi" (designs/taguchi.js)
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E2)
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import taguchi from '../../../js/modules/doe-planner/designs/taguchi.js';

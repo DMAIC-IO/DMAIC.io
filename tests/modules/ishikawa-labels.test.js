@@ -1,6 +1,5 @@
 /**
  * D.Mike — Ishikawa labels (ishikawa-labels.test.js)
- * Spec: docs/superpowers/specs/2026-10-25-ishikawa-agent-release-design.md (E2)
  */
 import { suite, test, assertEqual } from '../test-utils.js';
 import { State } from '../../js/modules/ishikawa/ishikawa-model.js';

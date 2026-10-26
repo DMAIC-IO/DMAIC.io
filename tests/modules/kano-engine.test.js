@@ -1,7 +1,6 @@
 /**
  * D.Mike — Kano Engine Tests (kano-engine.test.js)
  * Unit-Tests für classify, aggregate und evaluate.
- * Spec: docs/superpowers/specs/2026-07-25-kano-modul-design.md
  */
 
 import { suite, test, assert, assertEqual, assertAlmostEqual, assertDeepEqual } from '../test-utils.js';

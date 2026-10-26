@@ -2,7 +2,6 @@
  * D.Mike — Kano Link Tests (kano-link.test.js)
  * Anbindung an das voc-ctx-tree-Modul: Instanzen finden, Baum flach klopfen,
  * Diff bilden. Reine Funktionen, kein DOM.
- * Spec: docs/superpowers/specs/2026-07-25-kano-modul-design.md
  */
 
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';

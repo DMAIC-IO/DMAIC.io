@@ -1,6 +1,5 @@
 /**
  * D.Mike — design type "ccd" (designs/ccd.js)
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E2)
  */
 import { suite, test, assertEqual } from '../../test-utils.js';
 import ccd from '../../../js/modules/doe-planner/designs/ccd.js';

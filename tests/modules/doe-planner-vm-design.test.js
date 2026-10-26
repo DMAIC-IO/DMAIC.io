@@ -1,6 +1,5 @@
 /**
  * D.Mike — DesignViewModel (viewmodel/design.js)
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E1, E2, E6)
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../test-utils.js';
 import { DesignViewModel } from '../../js/modules/doe-planner/viewmodel/design.js';

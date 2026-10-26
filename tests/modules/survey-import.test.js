@@ -1,6 +1,5 @@
 /**
  * D.Mike — Survey import tests (survey-import.test.js)
- * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md §6.1
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { parseResponse } from '../../js/modules/survey-builder/survey-import.js';

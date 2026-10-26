@@ -1,6 +1,5 @@
 /**
  * D.Mike — EvopViewModel (viewmodel/evop.js)
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E1, E6, E8)
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../test-utils.js';
 import { EvopViewModel } from '../../js/modules/doe-planner/viewmodel/evop.js';

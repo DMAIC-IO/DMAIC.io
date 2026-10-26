@@ -1,6 +1,5 @@
 /**
  * D.Mike — design types "dopt"/"aopt"/"gopt" (designs/optimal.js)
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E2)
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import optimal from '../../../js/modules/doe-planner/designs/optimal.js';

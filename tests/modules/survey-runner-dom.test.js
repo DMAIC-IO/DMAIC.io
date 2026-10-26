@@ -1,7 +1,6 @@
 /**
  * D.Mike — Survey runner DOM tests (survey-runner-dom.test.js)
  * Browser only (listed in SKIP of tests/run-node.mjs).
- * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md §5.2, §5.3
  */
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
 import { runSurvey } from '../../js/modules/survey-builder/survey-runner.js';

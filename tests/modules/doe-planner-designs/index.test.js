@@ -1,6 +1,5 @@
 /**
  * D.Mike — design registry and type-independent checks (designs/index.js)
- * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E2, E7)
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import { DESIGNS, DESIGN_KEYS, designOf, checkConfig, plannedRuns } from '../../../js/modules/doe-planner/designs/index.js';

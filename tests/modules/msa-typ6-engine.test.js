@@ -2,7 +2,6 @@
  * DMAIC.io — MSA Typ 6 Engine Tests (msa-typ6-engine.test.js)
  * Unit tests for validate() — all error codes for the SPC-based Stability
  * MSA engine. analyze() itself is filled in incrementally by Tasks 3–6.
- * See docs/superpowers/specs/2026-07-16-msa-typ6-design.md for the module spec.
  */
 
 import { suite, test, assert, assertClose, assertDeepEqual, assertEqual } from '../test-utils.js';
