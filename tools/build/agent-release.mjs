@@ -30,9 +30,10 @@ export const RELEASED_MODULES = Object.freeze([
 
 /**
  * Abhilfe je Verstoßart (der Teil vor dem ersten `:`), Wortlaut für den
- * Modulautor: die Kurzform der Behebungsspalte in `docs/AGENT-INTERFACE.md`
- * (privates Repo, „Prüfliste: was der Build meldet“ und „Befundarten“).
- * Vollständig gegen die Codes in `agent-data.mjs` — das prüft
+ * Modulautor, je Code ein Satz. Die Codes entstehen in `agent-data.mjs`;
+ * was die Fläche einem Agenten zusagt, steht in
+ * `reference/agent-interface.md`. Vollständig gegen die Codes in
+ * `agent-data.mjs` — das prüft
  * `agent-release.test.mjs`.
  * @type {Readonly<Record<string, string>>}
  */
@@ -76,7 +77,7 @@ export const VIOLATION_REMEDIES = Object.freeze({
  * @returns {string}
  */
 export function explainViolation(moduleId, code) {
-  const remedy = VIOLATION_REMEDIES[code.split(':')[0]] ?? 'siehe docs/AGENT-INTERFACE.md';
+  const remedy = VIOLATION_REMEDIES[code.split(':')[0]] ?? 'Befundart in tools/build/agent-data.mjs nachschlagen';
   return `${moduleId}: ${code} → ${remedy}`;
 }
 

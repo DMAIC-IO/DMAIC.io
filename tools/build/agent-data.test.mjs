@@ -1473,7 +1473,7 @@ test('i18n-Tor: jeder zur Laufzeit gebundene Hilfeschlüssel löst in BEIDEN Spr
    modulspezifischen `actions.read.help` verlangen. Der geteilte Rückfall
    (`modules.shared.<suffix>`) ist genau dafür da, dass nicht 72 Module
    denselben Satz in beide Sprachbäume kopieren, und Spec §8 Regel 1
-   (docs/AGENT-INTERFACE.md) sagt ausdrücklich, dass fehlende Kontexthilfe
+   der Agentenfläche sagt ausdrücklich, dass fehlende Kontexthilfe
    nicht blockiert. Geprüft wird deshalb die dokumentierte KETTE:
    Modulschlüssel, sonst geteilter Schlüssel. Das Tor fängt weiterhin jede
    Veralterung, für die es gebaut ist — eine umbenannte Aktion, ein

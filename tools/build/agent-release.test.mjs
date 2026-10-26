@@ -42,6 +42,6 @@ test('releaseDiff: Verstoß wörtlich mit Abhilfe, fehlendes Tag, unbekanntes un
   ]);
 });
 
-test('explainViolation: unbekannte Verstoßart verweist auf die Doku', () => {
-  assert.equal(explainViolation('x', 'brand_new:y'), 'x: brand_new:y → siehe docs/AGENT-INTERFACE.md');
+test('explainViolation: unbekannte Verstoßart verweist auf den Generator', () => {
+  assert.equal(explainViolation('x', 'brand_new:y'), 'x: brand_new:y → Befundart in tools/build/agent-data.mjs nachschlagen');
 });

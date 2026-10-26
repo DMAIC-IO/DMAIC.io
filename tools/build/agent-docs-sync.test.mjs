@@ -1,39 +1,37 @@
 /**
- * Wächter: `docs/AGENT-INTERFACE.md` nennt die Zahl der Fehlercodes, und
- * diese Zahl war nach einer Codeänderung falsch.
+ * Wächter: `reference/agent-interface.md` nennt die Zahl der Fehlercodes,
+ * und diese Zahl war nach einer Codeänderung falsch.
  *
  * Der Test friert die Zahl NICHT ein — der Vertrag erlaubt neue Codes
- * ausdrücklich (`docs/AGENT-INTERFACE.md`, Abschnitt „Vertragsversion").
+ * ausdrücklich (`reference/agent-interface.md`, Abschnitt „Vertragsversion").
  * Er verlangt nur, dass Dokument und `ERRORS` dieselbe Zahl nennen. Ein
  * neuer Code bleibt also erlaubt und zwingt lediglich dazu, den Satz
  * mitzuziehen.
  *
- * Zwei Repos, ein Dateibaum: `docs/AGENT-INTERFACE.md` liegt im privaten
- * Repo (DMAIC-private), eine Ebene über `app/dev/`. In einem eigenständigen
- * Checkout des öffentlichen App-Repos (DMAIC.io.git) — z. B. im Nightly/
- * Release-Workflow — existiert dieser Pfad nicht, weil das private Repo dort
- * nicht als Elternverzeichnis vorhanden ist. Darum SKIP statt FAIL, wenn das
- * Dokument fehlt: `npm run test:build` darf im öffentlichen Checkout nicht
- * rot werden, nur weil eine private Doku nicht erreichbar ist.
+ * Das Dokument liegt im App-Repo, neben dem Code, den es beschreibt. Fehlt
+ * es, ist das ein Fehler und kein Skip: der Vertrag von
+ * `window.qprovement.interact` gehört zur App und muss in jedem Checkout
+ * prüfbar sein.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const APP_DIR = path.resolve(new URL('../..', import.meta.url).pathname);
-const DOC = path.resolve(APP_DIR, '../../docs/AGENT-INTERFACE.md');
-const docMissing = !existsSync(DOC);
-const skip = docMissing
-  ? 'docs/AGENT-INTERFACE.md nicht erreichbar — eigenständiges App-Repo-Checkout ohne das private Elternrepo'
-  : false;
+const DOC = path.join(APP_DIR, 'reference/agent-interface.md');
 
-test('AGENT-INTERFACE.md nennt genau so viele Fehlercodes, wie ERRORS führt', { skip }, async () => {
+/** @returns {string} der Inhalt des Vertragsdokuments; wirft, wenn es fehlt */
+function readDoc() {
+  return readFileSync(DOC, 'utf8');
+}
+
+test('agent-interface.md nennt genau so viele Fehlercodes, wie ERRORS führt', async () => {
   const { ERRORS } = await import(
     pathToFileURL(path.join(APP_DIR, 'js/core/agent/agent-contract.js')).href
   );
-  const doc = readFileSync(DOC, 'utf8');
+  const doc = readDoc();
 
   const match = doc.match(/kennt heute (\d+)\s*\n?\s*Fehlercodes/);
   assert.ok(match, 'der Satz „kennt heute N Fehlercodes" steht nicht mehr im Dokument — ' +
@@ -44,14 +42,23 @@ test('AGENT-INTERFACE.md nennt genau so viele Fehlercodes, wie ERRORS führt', {
   );
 });
 
-test('AGENT-INTERFACE.md erklärt die Nullable-Form der Shape-Grammatik', { skip }, () => {
-  const doc = readFileSync(DOC, 'utf8');
+test('agent-interface.md führt jeden Fehlercode aus ERRORS auf', async () => {
+  const { ERRORS } = await import(
+    pathToFileURL(path.join(APP_DIR, 'js/core/agent/agent-contract.js')).href
+  );
+  const doc = readDoc();
+  const missing = Object.values(ERRORS).filter(code => !doc.includes(`\`${code}\``));
+  assert.deepEqual(missing, [], `im Dokument fehlen die Codes: ${missing.join(', ')}`);
+});
+
+test('agent-interface.md erklärt die Nullable-Form der Shape-Grammatik', () => {
+  const doc = readDoc();
   assert.match(doc, /\$nullable/,
     'die Grammatik kennt { $nullable: … } seit der Vertragsrunde, das Dokument nennt sie nicht');
 });
 
-test('AGENT-INTERFACE.md nennt beide Arten des Umfangs-Deskriptors', { skip }, () => {
-  const doc = readFileSync(DOC, 'utf8');
+test('agent-interface.md nennt beide Arten des Umfangs-Deskriptors', () => {
+  const doc = readDoc();
   assert.match(doc, /kind: 'tree'|kind: "tree"/,
     'der Deskriptor hat seit der Feldrunde ein kind, und tree ist die zweite Art');
   assert.match(doc, /nodeCount/,
