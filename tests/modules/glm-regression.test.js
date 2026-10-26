@@ -342,6 +342,14 @@ suite('glm-regression predictFor', () => {
     assertAlmostEqual(a.response, b.response, 1e-12);
   });
 
+  test('predictFor liest das Dezimalkomma', () => {
+    const fit = poissonFit();
+    const a = predictFor(fit, { A: '3,5', B: '1.234,5' });
+    const b = predictFor(fit, { A: 3.5, B: 1234.5 });
+    assertAlmostEqual(a.response, b.response, 1e-12);
+    assertEqual(predictFor(fit, { A: '3,5x', B: 1 }), null);
+  });
+
   test('predictFor gibt null bei fehlendem oder nicht endlichem Wert', () => {
     const fit = poissonFit();
     assertEqual(predictFor(fit, {}), null);

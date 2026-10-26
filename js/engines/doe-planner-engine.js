@@ -16,6 +16,7 @@
  *   - G-Optimal (coordinate exchange, minimizes max leverage)
  */
 
+import { parseDecimalInput, decimalOr } from '../core/parse-decimal.js';
 import { GENERATORS, PB_SEEDS, BOX_BEHNKEN, TAGUCHI } from '../modules/doe-planner/doe-planner-designs.js';
 import {
   matTranspose, matMul, matInverse, matDeterminant,
@@ -1401,15 +1402,15 @@ export function generateDesign(factors, opts) {
       const f = factors[fi];
       const nLevels = f.levels.length;
       if (nLevels <= 2) {
-        const lo = parseFloat(f.levels[0]) || -1;
-        const hi = parseFloat(f.levels[nLevels - 1]) || 1;
+        const lo = decimalOr(f.levels[0], -1);
+        const hi = decimalOr(f.levels[nLevels - 1], 1);
         return formatValue(codedToActual(c, lo, hi));
       }
       // Multi-level: recover index from coded value, use user's actual level
       const idx = Math.round((c + 1) * (nLevels - 1) / 2);
       const clamped = Math.max(0, Math.min(nLevels - 1, idx));
-      const val = parseFloat(f.levels[clamped]);
-      return isFinite(val) ? formatValue(val) : formatValue(codedToActual(c, parseFloat(f.levels[0]) || -1, parseFloat(f.levels[nLevels - 1]) || 1));
+      const val = parseDecimalInput(f.levels[clamped]);
+      return Number.isFinite(val) ? formatValue(val) : formatValue(codedToActual(c, decimalOr(f.levels[0], -1), decimalOr(f.levels[nLevels - 1], 1)));
     })
   );
 

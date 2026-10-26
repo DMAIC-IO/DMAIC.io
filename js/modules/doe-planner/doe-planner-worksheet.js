@@ -9,6 +9,7 @@
 
 import { coerceNumeric } from '../../core/worksheet-columns.js';
 import { ROLE } from '../../core/datagrid/datagrid-roles.js';
+import { parseDecimalInput, decimalOr } from '../../core/parse-decimal.js';
 import { uid } from '../../core/uid.js';
 
 // ─── Create Worksheet ──────────────────────────────────────────────
@@ -383,8 +384,8 @@ export function createExperimentRecord(context, experimentId, design, factors, r
         levels: f.levels ? [...f.levels] : null,
       };
       if (kind === 'continuous') {
-        out.low  = Number.isFinite(parseFloat(f.levels?.[0])) ? parseFloat(f.levels[0]) : null;
-        out.high = Number.isFinite(parseFloat(f.levels?.[f.levels.length - 1])) ? parseFloat(f.levels[f.levels.length - 1]) : null;
+        out.low  = decimalOr(f.levels?.[0], null);
+        out.high = decimalOr(f.levels?.[f.levels.length - 1], null);
       } else {
         // For categorical factors the natural-units "range" is the set of labels;
         // low/high are not meaningful, but the optimizer still needs box bounds —
@@ -721,11 +722,11 @@ export function readSourceData(context, sourceRef, factors, responses) {
         coded = nLv === 1 ? 0 : -1 + (2 * idx) / (nLv - 1);
         actualRow.push(f.levels[idx]); // keep canonical casing from factor defn
       } else {
-        const num = parseFloat(raw);
-        if (!isFinite(num)) { rowValid = false; break; }
-        const lo = parseFloat(f.levels[0]);
-        const hi = parseFloat(f.levels[f.levels.length - 1]);
-        if (!isFinite(lo) || !isFinite(hi) || lo === hi) { rowValid = false; break; }
+        const num = parseDecimalInput(raw);
+        if (!Number.isFinite(num)) { rowValid = false; break; }
+        const lo = parseDecimalInput(f.levels[0]);
+        const hi = parseDecimalInput(f.levels[f.levels.length - 1]);
+        if (!Number.isFinite(lo) || !Number.isFinite(hi) || lo === hi) { rowValid = false; break; }
         coded = -1 + (2 * (num - lo)) / (hi - lo);
         coded = Math.max(-1, Math.min(1, coded));
         actualRow.push(num);

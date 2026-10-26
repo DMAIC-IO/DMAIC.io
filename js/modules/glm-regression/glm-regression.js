@@ -31,6 +31,7 @@ import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { State, keyToRef, predictFor, METHODS } from './glm-regression-model.js';
+import { parseDecimalInput } from '../../core/parse-decimal.js';
 import {
   fitGLM, buildGLMDesignMatrix,
   computeROC, classificationTable, hosmerLemeshow,
@@ -609,7 +610,7 @@ const mod = createModule({
        * immer den Model-Wert.
        */
       _percentParam(event, key) {
-        const v = parseFloat(String(event.target.value).replace(',', '.'));
+        const v = parseDecimalInput(event.target.value);
         if (Number.isFinite(v) && v > 0 && v < 100) {
           try { this.setParam(key, v / 100); } catch { /* das Feld zeigt unten wieder den Model-Wert */ }
         }

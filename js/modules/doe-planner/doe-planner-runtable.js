@@ -9,6 +9,7 @@
  *
  * Spec: docs/superpowers/specs/2026-10-25-doe-planner-teil-viewmodels-design.md (E4)
  */
+import { parseDecimalInput, decimalOr } from '../../core/parse-decimal.js';
 import { formatValue, codedToActual } from '../../engines/doe-planner-engine.js';
 import { letter } from './doe-planner-model.js';
 
@@ -32,16 +33,16 @@ export function codedToActualRows(codedRows, factors) {
       return f.levels[clamped] ?? '';
     }
     if (nLv <= 2) {
-      const lo = parseFloat(f.levels[0]) || -1;
-      const hi = parseFloat(f.levels[nLv - 1]) || 1;
+      const lo = decimalOr(f.levels[0], -1);
+      const hi = decimalOr(f.levels[nLv - 1], 1);
       return formatValue(codedToActual(c, lo, hi));
     }
     const idx = Math.round((c + 1) * (nLv - 1) / 2);
     const clamped = Math.max(0, Math.min(nLv - 1, idx));
-    const val = parseFloat(f.levels[clamped]);
-    return isFinite(val)
+    const val = parseDecimalInput(f.levels[clamped]);
+    return Number.isFinite(val)
       ? formatValue(val)
-      : formatValue(codedToActual(c, parseFloat(f.levels[0]) || -1, parseFloat(f.levels[nLv - 1]) || 1));
+      : formatValue(codedToActual(c, decimalOr(f.levels[0], -1), decimalOr(f.levels[nLv - 1], 1)));
   }));
 }
 

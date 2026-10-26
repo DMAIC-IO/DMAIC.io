@@ -15,6 +15,7 @@ import {
   createDesignWorksheet,
   createExperimentRecord,
   removeExperimentRecord,
+  readSourceData,
 } from '../../js/modules/doe-planner/doe-planner-worksheet.js';
 import { generateDesign } from '../../js/engines/doe-planner-engine.js';
 
@@ -404,5 +405,37 @@ suite('Replicate grouping — by factor-value, not by stdOrder', () => {
     const groups = state.experiments['exp-rep'].replicateGroups;
     assertEqual(groups.length, 4);                     // 4 unique design points
     for (const g of groups) assertEqual(g.length, 3);  // each replicated 3×
+  });
+});
+
+// ─── Dezimalkomma und Stufe 0 (Bug 4) ──────────────────────────────
+
+suite('DoE Worksheet — Faktorstufen mit Dezimalkomma', () => {
+  test('createExperimentRecord liest „2,5“/„7,5“ als 2.5/7.5 und Stufe 0 als 0', () => {
+    const { ctx, state } = makeContext();
+    const fx = [
+      { name: 'X1', unit: 'mm', levels: ['2,5', '7,5'] },
+      { name: 'X2', unit: 's',  levels: ['0', '10'] },
+    ];
+    const ref = createDesignWorksheet(ctx, designSingle, fx, responses, 'Komma', 'improve', 'exp-komma');
+    createExperimentRecord(ctx, 'exp-komma', designSingle, fx, responses, 'Komma', ref);
+    const rec = state.experiments['exp-komma'];
+    assertEqual(rec.factors[0].low, 2.5);
+    assertEqual(rec.factors[0].high, 7.5);
+    assertEqual(rec.factors[1].low, 0);
+    assertEqual(rec.factors[1].high, 10);
+  });
+
+  test('readSourceData liest Stufen und Zellwerte mit Dezimalkomma', () => {
+    const { ctx, moduleStates } = makeContext();
+    moduleStates.set('ws-src', { sheets: [{ id: 'sh1', state: { rowCount: 3, columns: [
+      { name: 'X1', values: ['2,5', '7,5', '5'] },
+      { name: 'Yield', values: [1, 2, 3] },
+    ] } }] });
+    const fx = [{ name: 'X1', kind: 'continuous', levels: ['2,5', '7,5'] }];
+    const out = readSourceData(ctx, { instanceId: 'ws-src', sheetId: 'sh1' }, fx, responses);
+    assertEqual(out.ok, true);
+    assertEqual(JSON.stringify(out.codedMatrix), JSON.stringify([[-1], [1], [0]]));
+    assertEqual(JSON.stringify(out.actualRows), JSON.stringify([[2.5], [7.5], [5]]));
   });
 });

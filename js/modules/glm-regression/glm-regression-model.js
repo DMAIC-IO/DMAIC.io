@@ -16,6 +16,7 @@
 
 import { autoDetect, predictGLM } from '../../engines/glm-engine.js';
 import { resolveColumnRef, getColumnRawValues, coerceNumeric } from '../../core/worksheet-columns.js';
+import { parseDecimalInput } from '../../core/parse-decimal.js';
 
 /**
  * Vorhersage für eine Zeile, Terme in der Reihenfolge des Fits.
@@ -28,7 +29,7 @@ export function predictFor(fit, values) {
   const row = [1];
   for (let j = 1; j < fit.terms.length; j++) {
     const raw = values?.[fit.terms[j]];
-    const v = typeof raw === 'number' ? raw : parseFloat(raw);
+    const v = parseDecimalInput(raw);
     if (!Number.isFinite(v)) return null;
     row.push(v);
   }

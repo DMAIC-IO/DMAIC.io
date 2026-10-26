@@ -135,6 +135,7 @@ export function computeAliasStructure(k, p, designType) {
 // Delegated to the shared engine (js/engines/vif-engine.js).
 // Re-exported here for backwards compatibility.
 
+import { decimalOr } from '../../core/parse-decimal.js';
 import { computeVIF } from '../../engines/vif-engine.js';
 export { computeVIF };
 
@@ -667,8 +668,8 @@ export function computeEVOPEffects(cycles) {
  */
 export function recenteredFactors(currentFactors, bestPointCoded) {
   return currentFactors.map((f, fi) => {
-    const lo = parseFloat(f.levels[0]) || -1;
-    const hi = parseFloat(f.levels[f.levels.length - 1]) || 1;
+    const lo = decimalOr(f.levels[0], -1);
+    const hi = decimalOr(f.levels[f.levels.length - 1], 1);
     const halfRange = (hi - lo) / 2;
     const oldCenter = (lo + hi) / 2;
     const coded = bestPointCoded[fi] ?? 0;

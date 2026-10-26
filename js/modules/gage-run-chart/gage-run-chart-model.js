@@ -11,6 +11,8 @@
  * persisted here.
  */
 
+import { parseDecimalInput } from '../../core/parse-decimal.js';
+
 /** Default number of part panels per rendered strip. */
 export const DEFAULT_PARTS_PER_ROW = 7;
 
@@ -76,7 +78,7 @@ export class State {
    * @returns {number}
    */
   resolveRefValue(grandMean) {
-    const v = parseFloat(this.refValue);
+    const v = parseDecimalInput(this.refValue);
     return Number.isFinite(v) ? v : grandMean;
   }
 

@@ -940,3 +940,33 @@ suite('DoE Analysis: evaluateDesign uses the model terms (C1-028)', () => {
     assertEqual(ev.power[0].dfError, 12 - 4);
   });
 });
+
+suite('DoE Engine: Stufen mit Dezimalkomma und Stufe 0 (Bug 4)', () => {
+  test('generateDesign: Stufen [0, 10] und [2,5; 7,5] bleiben erhalten', () => {
+    const factors = [
+      { id: 1, name: 'A', unit: '', levels: ['0', '10'] },
+      { id: 2, name: 'B', unit: '', levels: ['2,5', '7,5'] },
+    ];
+    const result = generateDesign(factors, { designType: 'full', randomize: false, centerPoints: false });
+    const a = result.actualMatrix.map(r => Number(r[0])).sort((x, y) => x - y);
+    const b = result.actualMatrix.map(r => Number(r[1])).sort((x, y) => x - y);
+    assertEqual(JSON.stringify(a), JSON.stringify([0, 0, 10, 10]));
+    assertEqual(JSON.stringify(b), JSON.stringify([2.5, 2.5, 7.5, 7.5]));
+  });
+
+  test('generateDesign mehrstufig: Mittelstufe „5,5“', () => {
+    const factors = [{ id: 1, name: 'A', unit: '', levels: ['0', '5,5', '10'] }];
+    const result = generateDesign(factors, { designType: 'full', randomize: false, centerPoints: false });
+    const a = result.actualMatrix.map(r => Number(r[0])).sort((x, y) => x - y);
+    assertEqual(JSON.stringify(a), JSON.stringify([0, 5.5, 10]));
+  });
+
+  test('recenteredFactors: Stufe 0 und Dezimalkomma', () => {
+    const zero = recenteredFactors([{ id: 1, name: 'A', unit: '', levels: ['0', '10'] }], [0]);
+    assertAlmostEqual(parseFloat(zero[0].levels[0]), 0, 0.01);
+    assertAlmostEqual(parseFloat(zero[0].levels[1]), 10, 0.01);
+    const comma = recenteredFactors([{ id: 1, name: 'A', unit: '', levels: ['2,5', '7,5'] }], [1]);
+    assertAlmostEqual(parseFloat(comma[0].levels[0]), 5, 0.01);
+    assertAlmostEqual(parseFloat(comma[0].levels[1]), 10, 0.01);
+  });
+});

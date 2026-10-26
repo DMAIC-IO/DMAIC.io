@@ -132,3 +132,20 @@ suite('doe-planner runtable — rows', () => {
     assertDeepEqual(runRows(stateWith()), []);
   });
 });
+
+suite('DoE run table: Stufen mit Dezimalkomma und Stufe 0 (Bug 4)', () => {
+  test('Stufe 0 bleibt 0, nicht −1', () => {
+    const fx = [{ kind: 'continuous', levels: ['0', '10'] }, { kind: 'continuous', levels: ['-5', '0'] }];
+    assertDeepEqual(codedToActualRows([[-1, -1], [1, 1]], fx), [[0, -5], [10, 0]]);
+  });
+
+  test('„2,5“/„7,5“ ergeben 2.5/7.5', () => {
+    const fx = [{ kind: 'continuous', levels: ['2,5', '7,5'] }];
+    assertDeepEqual(codedToActualRows([[-1], [1], [0]], fx), [[2.5], [7.5], [5]]);
+  });
+
+  test('mehrstufig: Mittelstufe „5,5“ ergibt 5.5, Stufe 0 bleibt 0', () => {
+    const fx = [{ kind: 'continuous', levels: ['0', '5,5', '10'] }];
+    assertDeepEqual(codedToActualRows([[-1], [0], [1]], fx), [[0], [5.5], [10]]);
+  });
+});
