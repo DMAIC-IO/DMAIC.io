@@ -53,6 +53,111 @@ export function formatNumber(val, decimals = null) {
   return s;
 }
 
+// ─── CSV Text: Records & Delimiter ─────────────────────────
+
+/** Candidate delimiters in precedence order (earlier wins a tie). */
+const CSV_DELIMITER_CANDIDATES = ['\t', ';', ',', '|'];
+
+/** Number of non-empty records `detectDelimiter` samples. */
+const CSV_DETECT_SAMPLE = 10;
+
+/**
+ * Split CSV/TSV text into records of fields, quote-aware: a field wrapped
+ * in `"…"` may contain the delimiter and line breaks, `""` inside quotes is
+ * an escaped quote. As in RFC 4180 a quote opens a quoted field only at the
+ * start of a field; elsewhere (`12" Rohr`) it is a literal character —
+ * otherwise a stray inch mark would swallow the rest of the file. Records end at LF, CRLF or CR outside quotes. A leading
+ * BOM is dropped; blank records (a single whitespace-only field) are skipped.
+ *
+ * @param {string} text   full CSV/TSV text
+ * @param {string} delim  single-character field delimiter
+ * @param {number} [maxRecords=Infinity]  stop after this many non-blank records
+ * @returns {string[][]} records, each an array of raw (untrimmed) fields
+ */
+export function parseCSVRecords(text, delim, maxRecords = Infinity) {
+  const s = String(text ?? '');
+  const records = [];
+  let record = [];
+  let field = '';
+  let inQuotes = false;
+  const endRecord = () => {
+    record.push(field);
+    field = '';
+    if (!(record.length === 1 && record[0].trim() === '')) records.push(record);
+    record = [];
+  };
+  let i = s.charCodeAt(0) === 0xfeff ? 1 : 0;
+  for (; i < s.length && records.length < maxRecords; i++) {
+    const ch = s[i];
+    if (inQuotes) {
+      if (ch === '"' && s[i + 1] === '"') { field += '"'; i++; }
+      else if (ch === '"') { inQuotes = false; }
+      else { field += ch; }
+    } else if (ch === '"' && field === '') { inQuotes = true; }
+    else if (ch === delim) { record.push(field); field = ''; }
+    else if (ch === '\r') { if (s[i + 1] === '\n') i++; endRecord(); }
+    else if (ch === '\n') { endRecord(); }
+    else { field += ch; }
+  }
+  if (records.length < maxRecords && (field !== '' || record.length > 0)) endRecord();
+  return records;
+}
+
+/**
+ * Detect the field delimiter of CSV/TSV text.
+ *
+ * The first {@link CSV_DETECT_SAMPLE} non-empty records are split
+ * quote-aware (see {@link parseCSVRecords}) once per candidate — tab,
+ * semicolon, comma, pipe, in that precedence. For each candidate:
+ *
+ * - the modal field count (most frequent; a tie goes to the larger count)
+ *   must be ≥ 2, otherwise the candidate does not split anything;
+ * - consistency = share of records that have the modal field count;
+ * - the candidate is dropped when consistency < 1 AND the first record
+ *   (the header) has FEWER fields than the mode. That is the signature of
+ *   a decimal separator, not a delimiter: `Wert\n1,5\n2,5` splits every
+ *   data value at `,` but never the header. A header with MORE fields than
+ *   the data mode is kept — that is a ragged file with trailing empties.
+ *   A fixed minimum consistency was rejected because it cannot tell
+ *   "one column of decimal-comma numbers" from "a slightly ragged file".
+ *
+ * Highest consistency wins; a tie goes to the earlier candidate, so `;`
+ * beats `,` when both split every record evenly (German CSV with
+ * decimal commas: `A;B\n1,5;2,5`).
+ *
+ * Genuinely ambiguous input stays ambiguous: `1,5\n2,5` without a header
+ * is read as two comma-separated columns — `,` is the only candidate that
+ * splits it, and there is no header to contradict it.
+ *
+ * No surviving candidate → a candidate that does not occur in the text
+ * (so the caller reads exactly one column), falling back to U+001F.
+ *
+ * @param {string} text  full CSV/TSV text (a BOM is ignored)
+ * @returns {string} single-character delimiter
+ */
+export function detectDelimiter(text) {
+  const s = String(text ?? '');
+  let best = null;
+  let bestConsistency = -1;
+  for (const cand of CSV_DELIMITER_CANDIDATES) {
+    const rows = parseCSVRecords(s, cand, CSV_DETECT_SAMPLE);
+    if (rows.length === 0) continue;
+    const freq = new Map();
+    for (const r of rows) freq.set(r.length, (freq.get(r.length) || 0) + 1);
+    let mode = 0;
+    let modeFreq = 0;
+    for (const [n, f] of freq) {
+      if (f > modeFreq || (f === modeFreq && n > mode)) { mode = n; modeFreq = f; }
+    }
+    if (mode < 2) continue;
+    const consistency = modeFreq / rows.length;
+    if (consistency < 1 && rows[0].length < mode) continue;
+    if (consistency > bestConsistency) { best = cand; bestConsistency = consistency; }
+  }
+  if (best !== null) return best;
+  return CSV_DELIMITER_CANDIDATES.find(c => !s.includes(c)) ?? '\u001F';
+}
+
 // ─── Column Type Definitions ───────────────────────────────
 
 /**

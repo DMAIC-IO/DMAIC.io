@@ -11,7 +11,7 @@ import {
   uid, clamp, parseNumeric, formatNumber,
   COLUMN_TYPES, isNumericType, formatCellValue, renderColTypeBadge,
   parseCellInput, detectInputType, analyzeColumn,
-  DATE_FORMATS, TIME_FORMATS,
+  DATE_FORMATS, TIME_FORMATS, detectDelimiter, parseCSVRecords,
 } from './datagrid-utils.js';
 import {
   ROLE, ALL_ROLES, inferRole, defaultRoleForType, isRoleValidForType, validRolesForType,
@@ -3405,9 +3405,7 @@ export class DataGrid {
    * @returns {{ columns: number, rows: number }} was importiert wurde
    */
   importCSVText(text, label = 'CSV') {
-    const delim = this._detectDelimiter(text);
-    const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(l => l.trim());
-    const rows = lines.map(l => this._parseCSVLine(l, delim));
+    const rows = parseCSVRecords(text, this._detectDelimiter(text));
     if (rows.length === 0) return { columns: 0, rows: 0 };
 
     const first = rows[0];
@@ -3458,33 +3456,13 @@ export class DataGrid {
     return { columns: columns.length, rows: data.length };
   }
 
+  /**
+   * Trennzeichen des CSV-Texts — delegiert an {@link detectDelimiter}.
+   * @param {string} text
+   * @returns {string}
+   */
   _detectDelimiter(text) {
-    const sample = text.split('\n').slice(0, 5).join('\n');
-    const counts = { ',': 0, ';': 0, '\t': 0 };
-    for (const ch of sample) {
-      if (ch in counts) counts[ch]++;
-    }
-    if (counts['\t'] > 0) return '\t';
-    if (counts[';'] >= counts[',']) return ';';
-    return ',';
-  }
-
-  _parseCSVLine(line, delim) {
-    const result = [];
-    let current = '';
-    let inQuotes = false;
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i];
-      if (inQuotes) {
-        if (ch === '"' && line[i + 1] === '"') { current += '"'; i++; }
-        else if (ch === '"') { inQuotes = false; }
-        else { current += ch; }
-      } else if (ch === '"') { inQuotes = true; }
-        else if (ch === delim) { result.push(current); current = ''; }
-        else { current += ch; }
-    }
-    result.push(current);
-    return result;
+    return detectDelimiter(text);
   }
 
   // ═══════════════════════════════════════════════════════════

@@ -10,6 +10,7 @@
  */
 
 import { Papa } from '../../core/vendor/papaparse.js';
+import { detectDelimiter, parseNumeric } from '../../core/datagrid/datagrid-utils.js';
 
 /**
  * Resolve with the bundled PapaParse. Kept async for existing
@@ -41,7 +42,9 @@ function basename(filename) {
   return stem || noPath;
 }
 
-const NUMERIC_RE = /^-?\d+(?:[.,]\d+)?(?:[eE][+-]?\d+)?$/;
+// Integer part: plain digits or German thousands groups (`1.234`), then an
+// optional `.`/`,` decimal part — so `1.234,5` counts as a number.
+const NUMERIC_RE = /^-?(?:\d+|\d{1,3}(?:\.\d{3})+)(?:[.,]\d+)?(?:[eE][+-]?\d+)?$/;
 
 /** ≥80% non-empty values parse as finite numbers → numeric column. */
 function detectColumnType(values) {
@@ -57,12 +60,14 @@ function detectColumnType(values) {
   return (numeric / nonEmpty) >= 0.8 ? 'numeric' : 'text';
 }
 
-/** Coerce strings to numbers; accepts both "." and "," as decimal separator. */
+/**
+ * Coerce strings to numbers via the grid's {@link parseNumeric}: "." or ","
+ * as decimal separator, German thousands dots (`1.234,5` → 1234.5).
+ */
 function coerceNumeric(values) {
   return values.map(v => {
     if (v === null || v === undefined || v === '') return null;
-    const s = String(v).trim().replace(',', '.');
-    const n = Number(s);
+    const n = parseNumeric(String(v).trim());
     return Number.isFinite(n) ? n : null;
   });
 }
@@ -74,7 +79,7 @@ const DELIMITER_MAP = {
   pipe: '|',
 };
 
-/** Resolve a user-facing delimiter key to a literal character (or '' for auto). */
+/** Resolve a user-facing delimiter key to a literal character (or '' for auto → {@link detectDelimiter}). */
 function resolveDelimiter(key) {
   if (!key || key === 'auto') return '';
   if (key in DELIMITER_MAP) return DELIMITER_MAP[key];
@@ -111,7 +116,7 @@ export async function parseCsv(buffer, opts = {}) {
   const result = Papa.parse(text, {
     skipEmptyLines: 'greedy',
     dynamicTyping: false,
-    delimiter: resolveDelimiter(opts.delimiter),
+    delimiter: resolveDelimiter(opts.delimiter) || detectDelimiter(text),
   });
 
   const rows = (result && result.data) || [];

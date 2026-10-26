@@ -43,4 +43,20 @@ suite('DataGrid.importCSVText', () => {
     assertEqual(out.rows, 0);
     assertEqual(grid.columns.length, before);
   });
+
+  test('deutsches CSV mit Dezimalkomma wird an ; getrennt, nicht am Komma', () => {
+    const out = grid.importCSVText('A;B\n1,5;2,5\n3,5;4,5\n', 'test.csv');
+    assertEqual(out.columns, 2);
+    assertEqual(grid.columns[0].name, 'A');
+    assertEqual(grid.columns[1].name, 'B');
+    assertDeepEqual(grid.columns[0].values.slice(0, 2), [1.5, 3.5]);
+    assertDeepEqual(grid.columns[1].values.slice(0, 2), [2.5, 4.5]);
+  });
+
+  test('ein Mehrzeilen-Feld in Anführungszeichen bleibt ein Feld', () => {
+    const out = grid.importCSVText('Name;Wert\n"Zeile 1\nZeile 2";2\n', 'test.csv');
+    assertEqual(out.rows, 1);
+    assertEqual(grid.columns[0].values[0], 'Zeile 1\nZeile 2');
+    assertEqual(grid.columns[1].values[0], 2);
+  });
 });
