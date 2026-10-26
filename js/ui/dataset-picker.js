@@ -57,6 +57,7 @@ import {
 export { discoverColumns, getColumnValues, getColumnName, refToKey, keyToRef, isPickerFocused };
 
 import { h } from '../core/dom.js';
+import { nonReactive } from '../core/non-reactive.js';
 
 /**
  * Der Spaltenfilter EINES Slots: `types`, `minCount`, `maxCount`. `group` und
@@ -89,6 +90,8 @@ export class DatasetPicker {
    * @param {string} [options.addHelpKey] — Kontexthilfe-Schlüssel für den Knopf „Datensatz hinzufügen“ (meist `modules.<id>.actions.setDatasets.help`)
    */
   constructor(container, context, options) {
+    // Runtime handle: kept raw in Alpine view-model data (see non-reactive.js).
+    nonReactive(this);
     this._container = container;
     this._ctx = context;
     this._slots = options.slots || [];

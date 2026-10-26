@@ -64,3 +64,15 @@ suite('ColumnPicker — filter option', () => {
     p.destroy();
   });
 });
+
+suite('ColumnPicker — nicht reaktiv (Bug 14)', () => {
+  afterEach(() => { if (host) { host.remove(); host = null; } });
+
+  test('eine neue Instanz ist als nicht reaktiv markiert', () => {
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    const p = new ColumnPicker(host, makeContext(), { mode: 'select' });
+    assertEqual(p.__v_skip, true);
+    p.destroy();
+  });
+});

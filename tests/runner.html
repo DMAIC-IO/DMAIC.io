@@ -86,7 +86,8 @@
     "@alpinejs/csp": "../vendor/alpinejs/csp.js",
     "xlsx": "../node_modules/xlsx/xlsx.mjs",
     "katex": "../node_modules/katex/dist/katex.mjs",
-    "opentype.js": "../node_modules/opentype.js/dist/opentype.module.js"
+    "opentype.js": "../node_modules/opentype.js/dist/opentype.module.js",
+    "@vue/reactivity": "../node_modules/@vue/reactivity/dist/reactivity.esm-browser.js"
   }
 }
 </script>
@@ -98,6 +99,7 @@
   const testFiles = [
     './core/chart-tick-thinning.test.js',
     './core/debounce.test.js',
+    './core/non-reactive.test.js',
     './core/parse-decimal.test.js',
     './core/uid-adoption.test.js',
     './core/event-bus.test.js',
@@ -358,6 +360,7 @@
     './core/chart/run-chart.test.js',
     './core/chart/gage-run-chart.test.js',
     './core/chart/chart-manager-errors.test.js',
+    './core/chart/chart-manager-destroy.test.js',
     './core/chart/chart-base-modebar.test.js',
     './core/chart/chart-base-editor-change.test.js',
     './core/chart/node-diagram.test.js',

@@ -197,6 +197,7 @@ export function isPickerFocused(container) {
 }
 
 import { h } from '../core/dom.js';
+import { nonReactive } from '../core/non-reactive.js';
 
 // ── ColumnPicker class ───────────────────────────────────────────────
 
@@ -217,6 +218,8 @@ export class ColumnPicker {
    *        evaluated on every discovery (so it may read live state). Omit for all.
    */
   constructor(container, context, options) {
+    // Runtime handle: kept raw in Alpine view-model data (see non-reactive.js).
+    nonReactive(this);
     this._container = container;
     this._ctx = context;
     this._mode = options.mode || 'single';

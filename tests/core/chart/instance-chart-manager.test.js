@@ -4,6 +4,7 @@
  * DOM-free: the base manager and charts are fakes.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { reactive } from '@vue/reactivity';
 import { createInstanceChartManager, createEditBoundChartManager, LABEL_EDIT_KEYS, TILE_EDIT_KEYS } from '../../../js/core/chart/instance-chart-manager.js';
 
 function fakeChart(config) {
@@ -201,14 +202,25 @@ suite('InstanceChartManager', () => {
   });
 
   test('update through a reactive proxy of the chart keeps stored edits', async () => {
-    // Alpine view models hold the chart in reactive data, so the module passes
-    // a proxy of the chart to update(), not the object create() returned.
+    // Alpine view models hold the chart in reactive data and pass what they
+    // read back to update(). create() marks the chart non-reactive (Bug 14),
+    // so that read is the chart itself, not a proxy.
     const store = fakeStore({ i1: { pie: { showLegend: false } } });
     const f = createInstanceChartManager(fakeManager(), store, 'i1');
-    const c = await f.create({}, 'pie', { showLegend: true, data: 1 });
-    f.update(new Proxy(c, {}), { showLegend: true, data: 2 });
+    const vm = reactive({ _chart: null });
+    vm._chart = await f.create({}, 'pie', { showLegend: true, data: 1 });
+    const c = vm._chart;
+    f.update(vm._chart, { showLegend: true, data: 2 });
     assertEqual(c.config.showLegend, false);
     assertEqual(c.config.data, 2);
+  });
+
+  test('create marks the chart non-reactive, also when the base manager does not', async () => {
+    const f = createInstanceChartManager(fakeManager(), fakeStore(), 'i1');
+    const c = await f.create({}, 'bar', { title: 'x' });
+    assertEqual(c.__v_skip, true);
+    const raw = await f.create({}, 'bar', { persistEdits: false });
+    assertEqual(raw.__v_skip, true);
   });
 
   test('update of a chart not created by the facade passes through', () => {

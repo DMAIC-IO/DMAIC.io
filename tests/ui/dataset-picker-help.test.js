@@ -56,3 +56,13 @@ suite('DatasetPicker — Kontexthilfe-Anker', () => {
     q.destroy?.();
   });
 });
+
+suite('DatasetPicker — nicht reaktiv (Bug 14)', () => {
+  afterEach(() => { if (host) { host.remove(); host = null; } });
+
+  test('eine neue Instanz ist als nicht reaktiv markiert', () => {
+    const p = mount({ slots: [{ key: 'x', label: 'X', types: ['numeric'] }] });
+    assertEqual(p.__v_skip, true);
+    p.destroy?.();
+  });
+});

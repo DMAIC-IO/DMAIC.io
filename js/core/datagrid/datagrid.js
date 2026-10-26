@@ -18,6 +18,7 @@ import {
 } from './datagrid-roles.js';
 import { shortcutRegistry } from '../shortcut-registry.js';
 import { h } from '../dom.js';
+import { nonReactive } from '../non-reactive.js';
 import { icon } from '../icon.js';
 import { isReadOnly } from '../readonly-lock.js';
 
@@ -34,6 +35,8 @@ export class DataGrid {
    *   needed for column scan and column stats — without it those menu items do nothing
    */
   constructor(container, options = {}) {
+    // Runtime handle: kept raw in Alpine view-model data (see non-reactive.js).
+    nonReactive(this);
     this.container = container;
     this.options = options;
     this._t = options.t || ((key) => key.split('.').pop());

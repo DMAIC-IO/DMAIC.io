@@ -117,3 +117,11 @@ suite('DataGrid read-only — viewing still works', () => {
     dispose();
   });
 });
+
+suite('DataGrid — nicht reaktiv (Bug 14)', () => {
+  test('eine neue Instanz ist als nicht reaktiv markiert', () => {
+    const { grid, dispose } = newGrid({ readOnly: false });
+    assertEqual(grid.__v_skip, true);
+    dispose();
+  });
+});

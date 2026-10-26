@@ -5,6 +5,7 @@
  */
 
 import { notify } from '../notify.js';
+import { nonReactive } from '../non-reactive.js';
 import { createInstanceChartManager, createEditBoundChartManager, LABEL_EDIT_KEYS, TILE_EDIT_KEYS } from './instance-chart-manager.js';
 
 /** @type {Object<string, function(): Promise>} */
@@ -85,7 +86,9 @@ export default class ChartManager {
       // Apply global font-size defaults from settings (user config overrides)
       const merged = Object.assign({}, this._getFontDefaults(), config);
       container.querySelector(':scope > .chart-render-error')?.remove();
-      const chart = new Ctor(container, merged, context);
+      // Not reactive: modules keep charts in Alpine view-model data and pass
+      // them back to destroy()/update(); a proxy would miss _charts (Bug 14).
+      const chart = nonReactive(new Ctor(container, merged, context));
       this._charts.add(chart);
       return chart;
     } catch (err) {

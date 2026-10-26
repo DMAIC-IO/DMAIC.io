@@ -75,6 +75,7 @@ const SKIP = new Set([
   'core/chart/chart-base-modebar.test.js',
   'core/chart/chart-exact-range.test.js',
   'core/chart/chart-export-xlsx.test.js',
+  'core/chart/chart-manager-destroy.test.js',
   'core/chart/chart-manager-errors.test.js',
   'core/chart/chart-manager-export.test.js',
   'core/chart/control-chart.test.js',

@@ -17,6 +17,8 @@
  * Every other method and property is inherited from the shared manager.
  */
 
+import { nonReactive } from '../non-reactive.js';
+
 /** Config keys whose chart-editor edits are persisted for module charts. */
 export const LABEL_EDIT_KEYS = ['title', 'showTitle', 'xLabel', 'yLabel', 'showXLabel', 'showYLabel'];
 
@@ -31,14 +33,6 @@ const REPORTED_KEYS = new Set([...LABEL_EDIT_KEYS, ...TILE_EDIT_KEYS]);
  * update patch carries one, it belongs to the module for that chart.
  */
 export const MODULE_OWNED_KEYS = ['refLines', 'refAreas'];
-
-/**
- * Chart property holding a getter for the chart's binding record. A getter,
- * not the record itself: Alpine view models keep the chart in reactive data
- * and hand a proxy of it to update(), which a Map lookup would miss; a
- * function read through that proxy comes back unwrapped.
- */
-const META = Symbol('editBinding');
 
 /** The entries of `obj` whose key is listed. */
 function pick(obj, keys) {
@@ -165,16 +159,17 @@ export function createEditBoundChartManager(manager, { read, write, keys, isInsi
    * @returns {Promise<object|null>} the chart, or null when creation failed
    */
   facade.create = async function create(container, type, config = {}) {
-    if (config.persistEdits === false) return manager.create(container, type, config);
+    if (config.persistEdits === false) return nonReactive(await manager.create(container, type, config));
     const key = allocateKey(config.editKey || type, container);
     const slot = { key, container };
     reserved.add(slot);
     try {
       const meta = { key, allowed: await keysFor(type), owned: new Set(ownedIn(config)), baseline: {} };
-      const chart = await manager.create(container, type, { ...config, ...overlay(meta) });
+      // Marked non-reactive (the shared manager does so too), so the chart an
+      // Alpine view model hands back to update() is this object, not a proxy.
+      const chart = nonReactive(await manager.create(container, type, { ...config, ...overlay(meta) }));
       if (!chart) return chart;
       metaOf.set(chart, meta);
-      chart[META] = () => meta;
       chart._autoLabels = pick(config, LABEL_EDIT_KEYS);
       snapshot(chart, meta);
       bind(chart, meta);
@@ -185,14 +180,13 @@ export function createEditBoundChartManager(manager, { read, write, keys, isInsi
   };
 
   /**
-   * Update a chart (or a reactive proxy of it); stored edits stay on top of the patch. Module-owned keys
+   * Update a chart; stored edits stay on top of the patch. Module-owned keys
    * in the patch become owned for this chart from now on.
    * @param {object|null} chart
    * @param {object} configPatch
    */
   facade.update = function update(chart, configPatch) {
-    const found = chart ? (metaOf.get(chart) ?? chart[META]?.()) : undefined;
-    const meta = found && [...metaOf.values()].includes(found) ? found : undefined;
+    const meta = chart ? metaOf.get(chart) : undefined;
     if (meta === undefined) { manager.update(chart, configPatch); return; }
     for (const k of ownedIn(configPatch)) meta.owned.add(k);
     Object.assign(chart._autoLabels, pick(configPatch, LABEL_EDIT_KEYS));
