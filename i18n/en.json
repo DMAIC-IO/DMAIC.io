@@ -352,7 +352,6 @@
         "latest": "Latest sample",
         "byN": "Variance divided by n",
         "byNMinus1": "Variance divided by n − 1",
-        "latestColumn": "latest sample",
         "average": "Average over all samples",
         "sigma2": "Population variance σ²"
       },

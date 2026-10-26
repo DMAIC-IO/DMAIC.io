@@ -352,7 +352,6 @@
         "latest": "Letzte Stichprobe",
         "byN": "Varianz geteilt durch n",
         "byNMinus1": "Varianz geteilt durch n − 1",
-        "latestColumn": "letzte Stichprobe",
         "average": "Durchschnitt über alle Stichproben",
         "sigma2": "Varianz der Grundgesamtheit σ²"
       },
