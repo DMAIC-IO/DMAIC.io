@@ -531,8 +531,8 @@
   }
 
   async function run() {
-    // Headless gates (tools/test-browser/run.mjs, and the Playwright bridge in
-    // the private repo) poll these two hooks instead of guessing from the
+    // Headless gates (tools/test-browser/run.mjs, and external test harnesses)
+    // poll these two hooks instead of guessing from the
     // counters: `data-test-run` flips to "done" only after every suite ran, so
     // a crashed or still-running load can never be read as a green result.
     delete window.__testRunResults;

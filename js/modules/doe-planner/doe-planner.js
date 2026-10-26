@@ -173,7 +173,7 @@ const mod = createModule({
   data(module, _t) {
     const ctx = () => module._context;
 
-    // Signatures the auto-generation last acted on (spec 2026-10-25 E3). A
+    // Signatures the auto-generation last acted on. A
     // closure, not a data field: Alpine never wraps it, and the watchers'
     // callbacks compare against it synchronously.
     const signatures = { config: '', schedule: '' };
@@ -422,7 +422,7 @@ const mod = createModule({
         eb.on('module:activated', onActivated);
         this._unsubs.push(() => eb.off('module:activated', onActivated));
 
-        // Auto-generation follows the model (spec 2026-10-25 E3): a change of
+        // Auto-generation follows the model: a change of
         // the config signature invalidates the design and schedules a new one,
         // a change of the responses only schedules. The restored state counts
         // as seen.

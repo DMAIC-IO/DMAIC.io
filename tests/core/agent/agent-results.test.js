@@ -1,6 +1,6 @@
 /**
  * Tests for core/agent/agent-results.js — rohe Zahlen und Punktzeilen für die
- * Lesefläche der Regelkarten (Plan Welle 3 B, E4).
+ * Lesefläche der Regelkarten.
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { finiteOrNull, zipPoints } from '../../../js/core/agent/agent-results.js';

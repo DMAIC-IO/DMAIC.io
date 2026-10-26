@@ -2,13 +2,13 @@
  * D.Mike — Laufzeit der Agentenfläche (agent-runtime.js)
  *
  * Drei Schritte, immer in dieser Reihenfolge:
- *   1. Einwilligungstor (Spec §3.2) — vor JEDEM Aufruf, auch dem
+ *   1. Einwilligungstor — vor JEDEM Aufruf, auch dem
  *      parameterlosen. Ohne Zustimmung fließt keine Information.
- *   2. Prüfung des GANZEN Stapels (Spec §5) — schlägt sie fehl, passiert
+ *   2. Prüfung des GANZEN Stapels — schlägt sie fehl, passiert
  *      kein Seiteneffekt, und die Rückgabe enthält keine Teilergebnisse.
  *   3. Ausführung, der Reihe nach, mit Referenzauflösung gegen die bereits
  *      erzielten Ergebnisse. Beim ersten Laufzeitfehler Abbruch mit
- *      Teilergebnissen (Spec §4.3).
+ *      Teilergebnissen.
  *
  * Aufrufe werden SERIALISIERT (eine Promise-Kette, unten): die Prüfung gilt
  * gegen den Zustand zum Beginn der Ausführung, und zwei nebenläufige
@@ -59,7 +59,7 @@ export function createAgentRuntime(deps) {
     return flattenBriefing(await getHelp(AI_ASSISTANT_CHAPTER_ID), i18n.getLanguage());
   }
 
-  /** Die Antwort auf `interact()` ohne Parameter (Spec §3.1). */
+  /** Die Antwort auf `interact()` ohne Parameter. */
   async function describeSurface() {
     return {
       ok: true,
@@ -107,8 +107,7 @@ export function createAgentRuntime(deps) {
           // etwas anderes als ein Pfad, der im vorhandenen Ergebnis
           // abbricht — und `available` bedeutet in beiden Fällen etwas
           // anderes. Die Meldung sagt, welche Liste gemeint ist, und nennt
-          // bei einem Pfadfehler Pfad UND schuldiges Segment (Spec §6,
-          // wie `badShape` in Stufe 4). Review-Befunde M2 + Ledger-Minor.
+          // bei einem Pfadfehler Pfad UND schuldiges Segment (wie `badShape` in Stufe 4). Review-Befunde M2 + Ledger-Minor.
           message: resolved.reason === 'bad_path'
             ? i18n.t('agent.errors.unresolvedRefPath',
               { id: resolved.from, path: resolved.path, segment: resolved.segment })
@@ -146,7 +145,7 @@ export function createAgentRuntime(deps) {
       if (outcome && outcome.ok === false) {
         results.push({ ...outcome, id: action.id ?? null });
         allOk = false;
-        break;                               // Spec §4.3: Abbruch, Teilergebnisse bleiben
+        break;                               // Abbruch, Teilergebnisse bleiben
       }
       results.push({ ok: true, id: action.id ?? null, result: outcome });
       if (action.id !== undefined) byId.set(action.id, outcome);
@@ -155,7 +154,7 @@ export function createAgentRuntime(deps) {
     // `ok: true` heißt „liegt auf Platte". Der `stateManager` schreibt hinter
     // einer Debounce (2 s localStorage, 500 ms IndexedDB); ohne dieses Flush
     // verliert ein Agent, der schreibt und danach neu lädt oder exportiert,
-    // seinen bestätigten Schreibzugriff. Auch im Fehlerfall: Spec §4.3 gibt
+    // seinen bestätigten Schreibzugriff. Auch im Fehlerfall gibt der Stapel
     // Teilergebnisse zurück, und was passiert ist, muss auch auf Platte sein.
     //
     // Review-Befund (Important, Fixrunde 1): ein ungeschütztes `await
@@ -208,7 +207,7 @@ export function createAgentRuntime(deps) {
    * `world`-Momentaufnahme, die die laufenden, noch nicht abgeschlossenen
    * Effekte von Stapel A nicht enthält — ein TOCTOU zwischen Prüfung und
    * Ausführung, und damit ein Bruch der Zusage „kein Seiteneffekt vor
-   * vollständiger Prüfung" (Spec §5, Review-Befund I7). Das Einwilligungstor
+   * vollständiger Prüfung" (Review-Befund I7). Das Einwilligungstor
    * dedupliziert nur den Dialog, nicht die Ausführung.
    * @type {Promise<any>}
    */

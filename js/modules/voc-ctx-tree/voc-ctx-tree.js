@@ -192,14 +192,14 @@ export default createModule({
       },
       /**
        * @noagent öffnet den Formulardialog für eine neue Kundenstimme; ein
-       * Agent darf keinen Dialog öffnen — er blockierte den Stapel (E3).
+       * Agent darf keinen Dialog öffnen — er blockierte den Stapel.
        */
       openVocModal() {
         this._openModal('voc', {}, { text: '', source: '' });
       },
       /**
        * @noagent öffnet den Formulardialog einer vorhandenen Kundenstimme und
-       * füllt seinen Entwurf; ein Agent darf keinen Dialog öffnen (E3).
+       * füllt seinen Entwurf; ein Agent darf keinen Dialog öffnen.
        */
       editVoc(voc, event) {
         event?.stopPropagation?.();
@@ -207,7 +207,7 @@ export default createModule({
       },
       /**
        * @noagent fragt vor dem Löschen zurück; ein Agent darf keine Rückfrage
-       * auslösen — er blockierte den Stapel (E3). Delegiert an `removeVoc`.
+       * auslösen — er blockierte den Stapel. Delegiert an `removeVoc`.
        */
       async deleteVoc(voc, event) {
         event?.stopPropagation?.();
@@ -292,11 +292,11 @@ export default createModule({
       },
 
       // ── Need handlers ─────────────────────────────────────────
-      /** @noagent öffnet den Formulardialog für ein neues Bedürfnis (E3). */
+      /** @noagent öffnet den Formulardialog für ein neues Bedürfnis. */
       openNeedModal(vocId) {
         this._openModal('need', { vocId }, { text: '' });
       },
-      /** @noagent öffnet den Formulardialog eines Bedürfnisses (E3). */
+      /** @noagent öffnet den Formulardialog eines Bedürfnisses. */
       editNeed(vocId, need) {
         this._openModal('need', { vocId, editId: need.id }, { text: need.text });
       },
@@ -360,12 +360,12 @@ export default createModule({
       },
 
       // ── Driver handlers ───────────────────────────────────────
-      /** @noagent öffnet den Formulardialog für einen neuen Treiber (E3). */
+      /** @noagent öffnet den Formulardialog für einen neuen Treiber. */
       openDriverModal(vocId, needId) {
         this._openModal('driver', { vocId, needId }, { text: '', type: 'ctq' });
       },
       /**
-       * @noagent öffnet den Formulardialog eines Treibers (E3). Die Art wird
+       * @noagent öffnet den Formulardialog eines Treibers. Die Art wird
        * auf die Auswahl des Formulars normalisiert: `fromJSON` lässt sie als
        * freien Text durch, ein importierter Baum darf also eine unbekannte
        * Art tragen, und `updateDriver` lehnte sie beim Speichern ab.
@@ -446,11 +446,11 @@ export default createModule({
       },
 
       // ── Requirement handlers ──────────────────────────────────
-      /** @noagent öffnet den Formulardialog für eine neue Anforderung (E3). */
+      /** @noagent öffnet den Formulardialog für eine neue Anforderung. */
       openReqModal(vocId, needId, drvId) {
         this._openModal('req', { vocId, needId, drvId }, { text: '', target: '', measure: '' });
       },
-      /** @noagent öffnet den Formulardialog einer Anforderung (E3). */
+      /** @noagent öffnet den Formulardialog einer Anforderung. */
       editReq(vocId, needId, drvId, req) {
         this._openModal('req', { vocId, needId, drvId, editId: req.id },
           { text: req.text, target: req.target || '', measure: req.measure || '' });
@@ -587,7 +587,7 @@ export default createModule({
       },
       /**
        * @noagent schließt den Formulardialog ab; ein Agent darf keinen Dialog
-       * bedienen (E3). Geschrieben wird über `addVoc`/`updateVoc` und ihre
+       * bedienen. Geschrieben wird über `addVoc`/`updateVoc` und ihre
        * Geschwister — dieselben Senken wie die der Agentenfläche.
        * @returns {boolean} false hält den Dialog offen (leerer Text)
        */

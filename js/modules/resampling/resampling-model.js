@@ -16,7 +16,7 @@ export const DIRECTIONS = ['two-sided', 'greater', 'less'];
 export const CI_METHODS = ['bca', 'percentile'];
 export const SEED_MAX = 2147483647;
 
-/** Statistics offered per mode (spec: paired location only, no Ppk for k). */
+/** Statistics offered per mode (paired location only, no Ppk for k). */
 export const STATS_BY_MODE = {
   one: STATISTIC_IDS.slice(),
   two: STATISTIC_IDS.slice(),

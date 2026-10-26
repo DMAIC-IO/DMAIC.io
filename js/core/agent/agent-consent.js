@@ -1,7 +1,7 @@
 /**
  * D.Mike — Einwilligungstor der Agentenfläche (agent-consent.js)
  *
- * Spec §3.2: Einwilligung ist KEINE Aktion. Der erste `interact()`-Aufruf
+ * Einwilligung ist KEINE Aktion. Der erste `interact()`-Aufruf
  * einer Sitzung — auch der parameterlose — öffnet den Dialog, und das
  * Promise löst erst nach der Entscheidung des Nutzers auf. Der Agent bekommt
  * keine Information, solange nicht zugestimmt wurde; es gibt deshalb auch
@@ -11,7 +11,7 @@
  * gewählte Absicherung: Undo existiert heute nur im DataGrid
  * (`core/datagrid/datagrid-history.js`), Schreibzugriffe des Agenten auf
  * andere Felder sind nicht rückgängig zu machen. Ein eigener
- * Schnappschuss-Mechanismus wird nicht gebaut (Spec §12).
+ * Schnappschuss-Mechanismus wird nicht gebaut.
  *
  * Eine ABLEHNUNG wird nicht persistiert: der nächste Aufruf fragt erneut.
  * Nur das Erteilen hinterlässt eine Spur — pro Browser-Profil, in den

@@ -2,10 +2,9 @@
  * D.Mike — Survey builder hand-over (viewmodel/handover.js)
  *
  * Sub-viewmodel of the results tab's hand-over: free texts to the VoC tree,
- * Kano questions to kano, all responses to a worksheet (spec §6.2, §8 of the
- * survey-builder design). Keeps its VoC selection clean against the existing
+ * Kano questions to kano, all responses to a worksheet. Keeps its VoC selection clean against the existing
  * responses itself. Knows the model, survey-labels.js and the pure
- * survey-*.js modules — never a sibling or the shell (spec E2).
+ * survey-*.js modules — never a sibling or the shell.
  */
 
 import { documentOrder, findQuestion, isVisible } from '../survey-conditions.js';
@@ -82,7 +81,7 @@ export class HandoverViewModel {
     return 'define';
   }
 
-  // Free texts → VoC tree (spec §8.2)
+  // Free texts → VoC tree
 
   /**
    * @noagent view transform
@@ -213,7 +212,7 @@ export class HandoverViewModel {
     if (this.takeToVocTree(keys) > 0) this.vocSelected = [];
   }
 
-  // Kano hand-over (spec §8.1)
+  // Kano hand-over
 
   /**
    * @returns {Array<{value: string, label: string}>} kano instances of the project
@@ -313,7 +312,7 @@ export class HandoverViewModel {
     return instanceId;
   }
 
-  // Worksheet (spec §6.2)
+  // Worksheet
 
   /**
    * Put all responses into a new worksheet in this module's phase, one row

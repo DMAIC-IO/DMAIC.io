@@ -3,7 +3,7 @@
  *
  * Sub-viewmodel of the results tab's upper part: importing answer files and
  * the list of responses. Knows the model, survey-labels.js and the pure
- * survey-*.js modules — never a sibling or the shell (spec E2). Deleting a
+ * survey-*.js modules — never a sibling or the shell. Deleting a
  * response leaves the VoC selection alone; the hand-over cleans it itself.
  */
 
@@ -39,7 +39,7 @@ export class ResponsesViewModel {
   }
 
   /**
-   * Binds the component's model (spec E2).
+   * Binds the component's model.
    * @noagent lifecycle
    * @param {{model: object, watch: function, nextTick: function}} binding
    */

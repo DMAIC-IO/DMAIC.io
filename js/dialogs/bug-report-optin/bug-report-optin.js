@@ -1,7 +1,7 @@
 /**
  * D.Mike — Bug report opt-in dialog (dialogs/bug-report-optin)
  * Step 1 of the bug reporter: screenshot and project data are opt-in, both
- * boxes start unchecked (spec decision 2). No side effects of its own.
+ * boxes start unchecked. No side effects of its own.
  */
 import { createDialog } from '../../core/create-dialog.js';
 import { Model } from './bug-report-optin-model.js';

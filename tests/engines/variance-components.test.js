@@ -518,7 +518,7 @@ suite('Variance components — public API', () => {
 
 // ── Gold-standard fixtures ────────────────────────────────────────────────
 //
-// Reference values from `tools/fixture-generator` in the site repo:
+// Reference values from an external fixture generator:
 // sequential SS/df from cumulative statsmodels OLS fits, REML components from
 // statsmodels MixedLM. Regenerate with
 // `python3 generate_fixtures.py --algorithm variance-components`.

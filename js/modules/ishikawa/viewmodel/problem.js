@@ -3,9 +3,9 @@
  *
  * Sub-viewmodel of the problem tab: problem statement, the in-scope and
  * out-of-scope image galleries and the image lightbox. Knows the model, the
- * pure ishikawa-*.js helpers and core modules — never a sibling or the shell
- * (spec E2). Images stay with the interface: the agent reads their size and
- * caption, it neither uploads nor deletes them (spec E5).
+ * pure ishikawa-*.js helpers and core modules — never a sibling or the shell.
+ * Images stay with the interface: the agent reads their size and
+ * caption, it neither uploads nor deletes them.
  */
 
 import { compressImageToBudget } from '../../../core/image-upload.js';
@@ -31,7 +31,7 @@ export class ProblemViewModel {
   }
 
   /**
-   * Binds the component's model and the template refs (spec E3).
+   * Binds the component's model and the template refs.
    * @noagent lifecycle
    * @param {{model: object, events: object, watch: function, nextTick: function, ref: function(string): ?Element}} binding
    */
@@ -78,7 +78,7 @@ export class ProblemViewModel {
   }
 
   /**
-   * @noagent file picker — the agent does not upload images (spec E5)
+   * @noagent file picker — the agent does not upload images
    * @param {'inScope'|'outScope'} kind gallery
    * @param {Event} $event change event of the file input
    * @returns {Promise<void>}
@@ -118,7 +118,7 @@ export class ProblemViewModel {
   }
 
   /**
-   * @noagent asks first — the agent does not delete images (spec E5)
+   * @noagent asks first — the agent does not delete images
    * @param {'inScope'|'outScope'} kind gallery
    * @param {number} id image id
    * @returns {Promise<void>}

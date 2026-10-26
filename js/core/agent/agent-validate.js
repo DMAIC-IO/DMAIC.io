@@ -1,8 +1,8 @@
 /**
  * D.Mike — Prüfer der Agentenschicht (agent-validate.js)
  *
- * Der GESAMTE Stapel wird geprüft, bevor irgendein Seiteneffekt passiert
- * (Spec §5). Steht im letzten Eintrag ein nicht existierendes `op`, dürfen
+ * Der GESAMTE Stapel wird geprüft, bevor irgendein Seiteneffekt passiert.
+ * Steht im letzten Eintrag ein nicht existierendes `op`, dürfen
  * die neun davor nicht ausgeführt werden — deshalb ist das hier eine reine
  * Funktion über den ganzen Stapel und keine Prüfung je Eintrag im Vollzug.
  *
@@ -73,7 +73,7 @@ export const CONDITIONAL_WRITE_OPS = new Set(['instance.call']);
  * Die eine Stelle, an der diese Regel steht. Zuvor stand sie als Ausdruck
  * mitten in Prüfstufe 6; die Laufzeit brauchte sie ein zweites Mal für das
  * Flush nach einem schreibenden Stapel, und zwei Fassungen derselben Regel
- * laufen auseinander (Spec §1, Leitsatz 2).
+ * laufen auseinander.
  *
  * @param {{ op: string, method?: string }} action
  * @returns {boolean}
@@ -197,7 +197,7 @@ export function validateBatch(input, world) {
       if (!check.ok) {
         // Eine Nullable-Form braucht eine andere Meldung als ein unbekanntes
         // Segment: das Segment ist hier richtig, nur der Abstieg ist es nicht
-        // (Spec §6 — sage, was das Problem ist und welcher Weg gilt).
+        // (Sage, was das Problem ist und welcher Weg gilt).
         // Jede Meldung bekommt NUR die Platzhalter, die ihr Text nennt.
         // `{segment}` ist bei einer Nullable-Form der Schlüssel INNERHALB der
         // Hülle (`instanceId`), nicht das Feld, das null sein kann (`view`) —
@@ -239,7 +239,7 @@ export function validateBatch(input, world) {
 
     // Ein `singleton`-Modul darf nur EINE Instanz haben. Die Regel steht in
     // der UI (`ui/dmaic-tiles.js:_canAdd`) und darf nicht nur dort stehen,
-    // sonst kann der Agent etwas, was die UI verbietet (Spec §2). Hier im
+    // sonst kann der Agent etwas, was die UI verbietet. Hier im
     // Prüfer, weil dabei kein Seiteneffekt entsteht; `agent-ops.js` hat
     // dieselbe Prüfung nochmals als Verteidigung (zwei `module.add` im
     // SELBEN Stapel sieht diese Momentaufnahme nicht).

@@ -1,6 +1,6 @@
 /**
  * Tests für dialogs/agent-consent — das Dialog-Model und die Übersetzung
- * „Abbruch heißt Ablehnung" in die openDialog-Port-Signatur aus Spec §3.2.
+ * „Abbruch heißt Ablehnung" in die openDialog-Port-Signatur.
  */
 import { suite, test, assertEqual } from '../test-utils.js';
 import { Model } from '../../js/dialogs/agent-consent/agent-consent-model.js';

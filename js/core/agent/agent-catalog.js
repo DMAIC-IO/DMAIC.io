@@ -7,7 +7,7 @@
  *   • `buildInstanceList` — die flache Instanzliste
  *   • `buildWorld`        — die Momentaufnahme, gegen die der Prüfer prüft
  *
- * Spec §9: alle Module werden gelistet, auch nicht freigegebene — damit der
+ * Alle Module werden gelistet, auch nicht freigegebene — damit der
  * Agent sagen kann „dieses Werkzeug wäre jetzt richtig, ich kann es nicht
  * bedienen — mach du."
  *
@@ -55,7 +55,7 @@ export function isSingleton(def) {
 
 /**
  * `whenToUse` eines Moduls: der eigene Schlüssel, sonst die vorhandene
- * Beschreibung (Spec §8 — 72 Module, zweisprachig, existiert schon).
+ * Beschreibung (72 Module, zweisprachig, existiert schon).
  * @param {object} i18n
  * @param {string} id
  * @returns {string}
@@ -67,7 +67,7 @@ function whenToUse(i18n, id) {
 }
 
 /**
- * Der vollständige Modulkatalog — nicht phasenbeschränkt (Spec §3.1).
+ * Der vollständige Modulkatalog — nicht phasenbeschränkt.
  * @param {{ moduleRegistry: object, i18n: object, registry: Record<string, object> }} deps
  * @returns {Array<{ id: string, name: string, whenToUse: string, available: boolean, phase: string }>}
  */
@@ -156,19 +156,18 @@ export function buildWorld({ moduleRegistry, stateManager, i18n, registry, compl
     // Der schreibgeschützte Projektzustand gehört in die Momentaufnahme, gegen
     // die geprüft wird — nicht erst in die Laufzeit. Sonst meldet ein Stapel
     // den Fehler an der dritten Aktion, nachdem die ersten zwei schon
-    // gelaufen sind; Spec §5 verlangt aber „nichts ausgeführt".
+    // gelaufen sind; verlangt ist aber „nichts ausgeführt".
     completed: completed === true,
   };
 }
 
 /**
- * Die Werkzeugbeschreibung eines Moduls (Spec §7: ein `op`, zwei Tiefen).
+ * Die Werkzeugbeschreibung eines Moduls (ein `op`, zwei Tiefen).
  * Ohne `sections` kommen Aktionen, Felder und die LISTE der
  * Handbuchabschnitte; mit `sections: ['overview']` zusätzlich die Prosa.
  *
  * Das Handbuch ist lang — es als Ganzes in jedes `module.describe` zu legen
- * wäre Verschwendung. Das `{{term:…}}`-Markup der Blöcke bleibt unangetastet
- * (Spec §12).
+ * wäre Verschwendung. Das `{{term:…}}`-Markup der Blöcke bleibt unangetastet.
  *
  * @param {{ moduleRegistry: object, i18n: object, registry: Record<string, object>,
  *           getHelp: (id: string) => Promise<object|null> }} deps
@@ -190,7 +189,7 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
   }
   // Der Rückfall hier BLEIBT: ein Modul, das die Modulregistry kennt, die
   // Agentenregistry aber nicht führt, ist beschrieben und nicht steuerbar —
-  // das ist kein Fehler (Spec §9).
+  // das ist kein Fehler.
   const entry = registry[moduleId] ?? { available: false, actions: {}, fields: {} };
   const help = await getHelp(moduleId);
   const lang = i18n.getLanguage();
@@ -223,7 +222,7 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
     phase: allowedPhasesFor(def, moduleRegistry.getActiveCycle())[0],
     actions: Object.entries(entry.actions).map(([name, action]) => ({
       name,
-      // i18n hat Vorrang; die JSDoc-Prosa ist nur der Rückfall (Spec §8).
+      // i18n hat Vorrang; die JSDoc-Prosa ist nur der Rückfall.
       // Die Schlüssel sind `…actions.<name>.help` und
       // `…actions.<name>.params.<param>` — NICHT `…actions.<name>` plus
       // `…actions.<name>.<param>`: in verschachteltem JSON kann ein String
@@ -245,7 +244,7 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
       type: field.type,
       bulk: field.bulk === true,
       // `derived` sagt dem Agenten, woher die Lesefläche kommt: false heißt
-      // „das ist die persistierte Model-Form" (Spec §8), true heißt „das Modul
+      // „das ist die persistierte Model-Form", true heißt „das Modul
       // hat sie erklärt, weil seine persistierte Form als Lesefläche nutzlos
       // oder zu groß wäre" (AgentRead-Typedef, z. B. worksheet). Ohne dieses
       // Durchreichen erzeugt der Extraktor die Marke und niemand sieht sie.
@@ -292,7 +291,7 @@ function describeKeys(i18n, moduleId, node) {
 
 /**
  * Kontexthilfe: derselbe i18n-Schlüssel speist die Agentenbeschreibung und
- * die Detailhilfe in der UI (Spec §8, „Single Source of Truth in beide
+ * die Detailhilfe in der UI („Single Source of Truth in beide
  * Richtungen").
  *
  * Reihenfolge: Modulschlüssel → geteilter Schlüssel → JSDoc-Prosa.
@@ -308,7 +307,7 @@ function describeKeys(i18n, moduleId, node) {
  * `actions.read.help` und `actions.read.params.options` in beide
  * Sprachdateien kopieren. Modulspezifische Schlüssel gewinnen weiterhin, wo
  * es sie gibt; fehlt beides, greift die JSDoc-Prosa — fehlende Kontexthilfe
- * ist erlaubt und blockiert nicht (Spec §8 Regel 1).
+ * ist erlaubt und blockiert nicht.
  *
  * @param {object} i18n
  * @param {string} moduleId

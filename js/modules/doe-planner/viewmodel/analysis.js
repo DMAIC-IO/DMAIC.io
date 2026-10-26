@@ -5,7 +5,7 @@
  * replicated runs, the response it analyses, and the handover of the
  * linked datasheet to a regression. The response values live in the
  * linked datasheet (another module's state); rev() makes the view
- * recompute when it changes (spec E5).
+ * recompute when it changes.
  */
 import { computeDispersionAnalysis } from '../doe-planner-analysis.js';
 import { isWorksheetValid } from '../doe-planner-worksheet.js';

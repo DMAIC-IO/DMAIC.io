@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * agent-report — Abdeckung der Agentenfläche als Zahl (Spec §9).
+ * agent-report — Abdeckung der Agentenfläche als Zahl.
  *
  * „n von 72 Modulen agentenfähig, pro Release messbar" — dazu die Kontexthilfen
  * die Beschriftungen mit Anker (`anchor-coverage.mjs`) und die Hilfetexte mit Anker
@@ -123,7 +123,7 @@ export function typedefHelpSuffixes(entry) {
 /**
  * Abdeckung der Kontexthilfen über die FREIGEGEBENEN Module.
  *
- * Spec §8, Regel 2: eine fehlende Kontexthilfe ist eine ausgewiesene Lücke
+ * Eine fehlende Kontexthilfe ist eine ausgewiesene Lücke
  * mit Abdeckungszahl, kein Fehler — fällige Arbeit, die niemanden aufhält.
  * Gezählt werden nur freigegebene Module: bei den anderen wäre die Lücke
  * trivial und die Zahl nichtssagend.

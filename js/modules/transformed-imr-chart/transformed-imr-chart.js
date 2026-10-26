@@ -103,7 +103,7 @@ const LAMBDA_MODE_LABELS = { auto: 'lambdaAuto', manual: 'lambdaManual' };
  * Die Agenten-Lesefläche der transformierten I-MR-Karte.
  *
  * Eingaben (Spalte, λ-Art, λ), die Mengen der Setter, das Ergebnis als
- * Zahlen (Plan Welle 3 B, E4) und der Text, den die Oberfläche bei
+ * Zahlen und der Text, den die Oberfläche bei
  * unbrauchbaren Daten zeigt. Nicht darin: Kennzahlenleiste und
  * Grenzentabelle als Text, `exampleWorksheetId`.
  *
@@ -158,7 +158,7 @@ const mod = createModule({
        * into the templated host via _whenAnchor). See _renderCharts. */
       /** @type {Array<{id:string, title:string, badgeText:string, badgeClass:string}>} */
       chartViews: [],
-      /** Das Engine-Ergebnis der letzten Rechnung samt Punktzahl, synchron vor dem Zeichnen gesetzt (E3). */
+      /** Das Engine-Ergebnis der letzten Rechnung samt Punktzahl, synchron vor dem Zeichnen gesetzt. */
       _lastRun: null,
 
       // ── Agent surface ─────────────────────────────────────────
@@ -266,7 +266,7 @@ const mod = createModule({
         await this._runAnalysis();
       },
 
-      /** Ergebnis und Punkte für read(), aus `_lastRun` (E4). */
+      /** Ergebnis und Punkte für read(), aus `_lastRun`. */
       _agentResult() {
         if (!this._lastRun) return { result: null, points: [], pointsColumns: [] };
         const { r, n } = this._lastRun;

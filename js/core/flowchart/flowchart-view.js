@@ -6,7 +6,6 @@
  * module's data() to inherit consistent chain interaction behavior. Modules
  * that need to do more on an action (Process Map redraws its loop brackets)
  * override the method after the spread — plain object-literal precedence.
- * See spec §1 "Architektur".
  */
 
 import { requireKnownId, requireText } from '../agent/agent-argcheck.js';
@@ -48,8 +47,8 @@ function fitToContent(el) {
  *
  * Die optionale Verkettung war hier keine Absicherung, sondern eine Lüge:
  * fehlt dem Model die Methode, tat die Aktion nichts und meldete nichts —
- * und ein Agent bekam `ok: true` für einen Nicht-Vorgang (Spec §6 verlangt
- * eine Begründung bei Misserfolg). Ein fehlendes Model-Mitglied ist ein
+ * und ein Agent bekam `ok: true` für einen Nicht-Vorgang (ein Misserfolg
+ * braucht eine Begründung). Ein fehlendes Model-Mitglied ist ein
  * Programmierfehler in einem Flowchart-Modul, und der muss laut werden. Für
  * die Oberfläche ändert sich nichts: alle vier Flowchart-Module haben die
  * drei Methoden.
@@ -356,8 +355,8 @@ export function chainViewMixin(module, _t, opts = {}) {
     // only throws when the METHOD itself is missing, not when it quietly
     // declines. Without a check here the id promise in every module's i18n
     // ("Eine unbekannte id ist ein Fehler") was untrue: the agent got
-    // `ok: true` and nothing happened (Spec-Review 2026-10-13, Task 3 fix
-    // round 1 — closed once here for all four flowchart modules).
+    // `ok: true` and nothing happened (closed once here for all four
+    // flowchart modules).
     // Persisted on the step itself (`expanded`), not transient UI state —
     // that is why the disclosure survives a reload instead of resetting
     // every time the project opens (Task 3 fix round 2 carry-along: first
@@ -427,7 +426,7 @@ export function chainViewMixin(module, _t, opts = {}) {
     // it an agent could create and delete a substep but never name it, and
     // no completeness gate would have caught that — `unreachable_write`
     // only inspects ROOT `x-model="model.*"` bindings, not a field inside a
-    // nested collection (Spec-Review 2026-10-12, Task 2 fix round 1).
+    // nested collection.
     /**
      * Set a substep's title.
      * @agent

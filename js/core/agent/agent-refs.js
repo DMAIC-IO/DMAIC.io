@@ -2,7 +2,7 @@
  * D.Mike — Referenzen der Agentenschicht (agent-refs.js)
  *
  * Eine Aktion darf sich auf das Ergebnis jeder VORHERIGEN Aktion desselben
- * Stapels beziehen, auch auf Leseergebnisse (Spec §4). Die Form ist
+ * Stapels beziehen, auch auf Leseergebnisse. Die Form ist
  * ausdrücklich ein Objekt `{ $from, path }` und kein Platzhalterstring:
  * `"$a1.x"` wäre von echten Nutzerdaten, die mit `$` beginnen, nicht zu
  * unterscheiden.

@@ -143,7 +143,7 @@ export function questionStats(survey, question, responses) {
 
 /**
  * Sent / answered / rate, per recipient group, plus responses that came
- * without a known recipient (counted separately, spec §7.1).
+ * without a known recipient (counted separately).
  * @param {{recipients: object[], responses: object[], answeredRecipientIds: string[]}} data
  * @returns {{sent: number, answered: number, rate: number|null, withoutRecipient: number,
  *            groups: Array<{group: string, sent: number, answered: number, rate: number|null}>}}
@@ -240,7 +240,7 @@ export function freeTextSummary(survey, responses, responseKeys) {
 }
 
 /**
- * Group comparison by one `single` question (spec §7.2). Apply the filter
+ * Group comparison by one `single` question. Apply the filter
  * first (`filterResponses`), then pass the result here.
  * @param {object} survey
  * @param {object[]} responses
@@ -289,7 +289,7 @@ export function groupComparison(survey, responses, groupByQuestionId) {
 }
 
 /**
- * Columns for "Als Worksheet" (spec §6.2): one row per response.
+ * Columns for "Als Worksheet": one row per response.
  * @param {object} survey
  * @param {object[]} responses
  * @param {Array<{id: string, name: string}>} recipients
@@ -342,7 +342,7 @@ export function worksheetColumns(survey, responses, recipients, strings) {
 }
 
 /**
- * One stored answer as display text (response details, spec §6.1).
+ * One stored answer as display text (response details).
  * @param {object} question
  * @param {*} answer stored answer, shape per type (see parseResponse)
  * @param {{other: string, noAnswer: string, cat: Object<string, string>}} strings

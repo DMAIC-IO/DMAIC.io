@@ -790,7 +790,7 @@ export default createModule({
       },
       /**
        * @noagent öffnet den Termindialog der Oberfläche; ein Agent darf keinen
-       * Dialog öffnen — er blockierte den Stapel (E3). Termine legt er über
+       * Dialog öffnen — er blockierte den Stapel. Termine legt er über
        * `addEvent`, `updateEvent` und `removeEvent` an und ändert sie dort.
        */
       openModal() {
@@ -809,7 +809,7 @@ export default createModule({
           .finally(() => { this.editingId = null; });
       },
       /**
-       * @noagent füllt den Terminvordruck und öffnet den Dialog (E3).
+       * @noagent füllt den Terminvordruck und öffnet den Dialog.
        * `addEvent` ist der Weg der Agentenfläche.
        */
       openNew(ds, t, endT) {
@@ -828,7 +828,7 @@ export default createModule({
       },
       /**
        * @noagent füllt den Terminvordruck aus einem Termin und öffnet den
-       * Dialog (E3). `updateEvent` ist der Weg der Agentenfläche.
+       * Dialog. `updateEvent` ist der Weg der Agentenfläche.
        */
       openEdit(id) {
         const ev = this.model.events.find(e => e.id === id);
@@ -872,7 +872,7 @@ export default createModule({
       },
       /**
        * @noagent Dialogweg: liest den Terminvordruck aus und hält den Dialog
-       * bei einer unvollständigen Eingabe offen, statt zu scheitern (E3).
+       * bei einer unvollständigen Eingabe offen, statt zu scheitern.
        * Geschrieben wird über `addEvent`/`updateEvent`, dieselben Senken wie
        * die der Agentenfläche.
        */

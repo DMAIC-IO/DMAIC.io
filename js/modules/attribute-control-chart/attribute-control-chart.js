@@ -129,8 +129,8 @@ const PARAM_CHECKS = {
  * Die Agenten-Lesefläche der Attributkarte (p, np, c, u).
  *
  * Eingaben (Kartentyp, Fehler- und Stichprobenspalte, konstantes n, Phase I,
- * Regeln), die Mengen der Setter und das Ergebnis als Zahlen (Plan Welle 3 B,
- * E4). Nicht darin: Kennzahlenleiste, Verletzungsliste als Text,
+ * Regeln), die Mengen der Setter und das Ergebnis als Zahlen.
+ * Nicht darin: Kennzahlenleiste, Verletzungsliste als Text,
  * Klappzustand der Regeln, `exampleWorksheetId`.
  *
  * @typedef {object} AgentRead
@@ -275,7 +275,7 @@ const mod = createModule({
         return unique.sort((a, b) => a.index - b.index);
       },
 
-      /** Ergebnis und Punkte für read(), aus `_lastResult` (E4). */
+      /** Ergebnis und Punkte für read(), aus `_lastResult`. */
       _agentResult() {
         const a = this._lastResult;
         if (!a) return { result: null, points: [], pointsColumns: [] };
@@ -418,7 +418,7 @@ const mod = createModule({
        */
       async constantNChanged(event) {
         const v = parseInt(event.target.value, 10);
-        // Wie bisher: ein ungültiger Wert fällt auf 50 zurück — vor der Senke (E6).
+        // Wie bisher: ein ungültiger Wert fällt auf 50 zurück — vor der Senke.
         await this.setParam('constantN', (Number.isFinite(v) && v > 0) ? v : 50);
         event.target.value = String(this.model.constantN);
       },
@@ -429,9 +429,9 @@ const mod = createModule({
        */
       async baselineCountChanged(event) {
         const v = parseInt(event.target.value, 10);
-        // Leer, unlesbar oder < 1 heißt „alle Punkte" (E6).
+        // Leer, unlesbar oder < 1 heißt „alle Punkte".
         await this.setParam('baselineCount', Number.isInteger(v) && v >= 1 ? v : null);
-        // Das Feld zeigt danach den Wert des Models (Projektform zu E6).
+        // Das Feld zeigt danach den Wert des Models.
         event.target.value = this.model.baselineCount == null ? '' : String(this.model.baselineCount);
       },
 
@@ -541,7 +541,7 @@ const mod = createModule({
           this._pickerSize = new ColumnPicker(sizeWrap, module._context, {
             mode: 'single',
             ...SLOT_FILTERS.size,
-            // Der Wähler ist nur bei p/u sichtbar; leeren darf er immer (E2).
+            // Der Wähler ist nur bei p/u sichtbar; leeren darf er immer.
             onChange: (ref) => this.setColumn('size', ref),
           });
           if (this.model.sizeRef) this._pickerSize.value = this.model.sizeRef;

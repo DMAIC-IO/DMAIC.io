@@ -1,6 +1,6 @@
 /**
  * D.Mike — Cycle page (cycle.js)
- * Event-driven view (spec §4): renders the cycle picker + switch-confirm
+ * Event-driven view: renders the cycle picker + switch-confirm
  * dialogs in response to bus requests and emits typed replies. Not a toggle
  * page — no header button, no fixed mount point (the dialogs live inside the
  * shared modal overlay). The project switcher (app.js / later frame/) only

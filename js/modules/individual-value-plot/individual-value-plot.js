@@ -107,7 +107,7 @@ const PARAM_CHECKS = { confLevel: requireConfLevel };
  * gleich lange Listen wie im Model; eine Reihe ohne Wertespalte verwirft das
  * Model (wie bei der Oberfläche). Nicht darin: Darstellung (Mittelwert,
  * Median, Jitter, Punkte, Farben — nur über den Diagramm-Editor),
- * das Diagrammbild, `exampleWorksheetId`. Die Kennzahlen stehen in `stats` (E8).
+ * das Diagrammbild, `exampleWorksheetId`. Die Kennzahlen stehen in `stats`.
  *
  * @typedef {object} AgentRead
  * @property {object[]} seriesRefs  per data row its value column (slot `value`)
@@ -215,7 +215,7 @@ const mod = createModule({
         });
       },
 
-      /** Die Kennzahlen für read() — dieselben Gruppen und dieselbe Rechnung wie die Tabelle (E8). */
+      /** Die Kennzahlen für read() — dieselben Gruppen und dieselbe Rechnung wie die Tabelle. */
       _agentStats() {
         let groups;
         try {
@@ -225,7 +225,7 @@ const mod = createModule({
             this._errMsgs()
           );
         } catch { return null; }
-        // E8: nicht endliche Zahlen (Einzelwertgruppe: Varianz, Streuung, seMean) → null
+        // Nicht endliche Zahlen (Einzelwertgruppe: Varianz, Streuung, seMean) → null
         const finiteOrNull = (v) => {
           if (typeof v === 'number') return Number.isFinite(v) ? v : null;
           if (Array.isArray(v)) return v.map(finiteOrNull);

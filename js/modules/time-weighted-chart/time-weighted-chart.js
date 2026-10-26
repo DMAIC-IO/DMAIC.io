@@ -125,8 +125,8 @@ const PARAM_CHECKS = {
  * Die Agenten-Lesefläche der zeitgewichteten Karten (EWMA, CUSUM).
  *
  * Eingaben (Spalte, Kartentyp, Phase I, Ziel- und σ-Vorgabe, die Parameter
- * des gewählten Typs), die Mengen der Setter und das Ergebnis als Zahlen
- * (Plan Welle 3 B, E4). Die Parameter des jeweils anderen Typs bleiben im
+ * des gewählten Typs), die Mengen der Setter und das Ergebnis als Zahlen.
+ * Die Parameter des jeweils anderen Typs bleiben im
  * Model und in der Lesefläche, `activeParams` nennt nur die gerade
  * wirksamen. Nicht darin: Kennzahlenleiste als Text, `exampleWorksheetId`.
  *
@@ -183,7 +183,7 @@ const mod = createModule({
        * (EWMA → 1 entry; CUSUM → 2 entries). See _renderChart*. */
       /** @type {Array<{id:string, title:string, badgeText:string, badgeClass:string}>} */
       chartViews: [],
-      /** Typ, Engine-Ergebnis, Ziel, σ und Punktzahl der letzten Rechnung, synchron vor dem Zeichnen gesetzt (E3). */
+      /** Typ, Engine-Ergebnis, Ziel, σ und Punktzahl der letzten Rechnung, synchron vor dem Zeichnen gesetzt. */
       _lastRun: null,
 
       // ── Agent surface ─────────────────────────────────────────
@@ -259,7 +259,7 @@ const mod = createModule({
         await this.runAnalysis();
       },
 
-      /** Ergebnis und Punkte für read(), aus `_lastRun` (E4). */
+      /** Ergebnis und Punkte für read(), aus `_lastRun`. */
       _agentResult() {
         const run = this._lastRun;
         if (!run) return { result: null, points: [], pointsColumns: [] };
@@ -357,7 +357,7 @@ const mod = createModule({
        */
       async onBaselineCountChange(ev) {
         const v = intOrNull(ev.target.value);
-        // Leer, unlesbar oder < 1 heißt „alle Punkte" (E6).
+        // Leer, unlesbar oder < 1 heißt „alle Punkte".
         await this.setParam('baselineCount', v != null && v >= 1 ? v : null);
         // Das Feld zeigt den Model-Wert, auch wenn er sich nicht geändert hat (0 bei leerem Feld).
         ev.target.value = this.baselineCountValue();

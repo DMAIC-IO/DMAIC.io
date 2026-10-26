@@ -48,7 +48,7 @@ const RATE_DEFAULTS = {
 /** Keys that have no i18n entry — only the hardcoded rate defaults above. */
 const RATE_KEYS = new Set(Object.keys(RATE_DEFAULTS));
 
-// ── Die Wertemengen der feldbenannten Setzer (E9) ──────────────────────────
+// ── Die Wertemengen der feldbenannten Setzer ──────────────────────────
 // Ein Risiko trägt 14 Schlüssel in `toJSON()`, davon 12 setzbar; eine
 // Maßnahme 7, alle setzbar. Elf Risikofelder und alle sieben
 // Maßnahmenfelder sind in der Vorlage gebunden. Über der Grenze von zehn
@@ -575,7 +575,7 @@ const mod = createModule({
 
       /**
        * @noagent öffnet das Burndown-Fenster der Oberfläche; ein Agent darf
-       * keinen Dialog öffnen — er blockierte den Stapel (E3). Die Zahlen
+       * keinen Dialog öffnen — er blockierte den Stapel. Die Zahlen
        * dahinter stehen über `read()` zur Verfügung. Öffnet den Burndown in
        * einem breiten Dialog und hängt das Diagramm in den geliehenen Halter
        * (x-ref="burndown"); Schließen des Dialogs zerstört es.

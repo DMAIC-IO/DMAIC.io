@@ -2,7 +2,7 @@
  * D.Mike — Bug report composition (frame/bug-reporter/report.js)
  * Pure functions: folder name, app context, report.md and the file list the
  * transport sends. No DOM, no network — the PHP receiver only writes what
- * this module produced (spec decision 4).
+ * this module produced.
  */
 
 const TRANSLIT = { ä: 'ae', ö: 'oe', ü: 'ue', ß: 'ss' };
@@ -52,8 +52,7 @@ export function folderName(date, description) {
 const FRAME = /^\s+at\s|^\S*@\S+:\d+:\d+$/;
 
 /**
- * Strip everything a user could have put into error entries (spec addendum
- * 2026-10-21): the message goes, of the stack only frame lines stay.
+ * Strip everything a user could have put into error entries: the message goes, of the stack only frame lines stay.
  * @param {object[]} entries error-log entries
  * @returns {Array<{at: string, kind: string, name: string|null, stack: string|null}>}
  */
@@ -161,7 +160,7 @@ function describeItem(item) {
 }
 
 /**
- * Human-readable report (spec §report.md).
+ * Human-readable report.
  * @param {{folder: string, description: string, context: object, errors: object[],
  *          notes: string[], annotations: object|null, attachments?: string[]}} report
  * @returns {string}

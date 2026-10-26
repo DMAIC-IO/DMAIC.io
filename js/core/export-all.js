@@ -4,7 +4,7 @@
  * Herausgezogen aus `frame/header/action-buttons.js` (Strg+S-Pfad), weil es
  * einen zweiten Verbraucher bekommen hat: das Einwilligungstor der
  * Agentenfläche fordert beim Erteilen einen Export an — das ist die
- * vereinbarte Sicherung anstelle eines Undo-Mechanismus (Spec §3.2).
+ * vereinbarte Sicherung anstelle eines Undo-Mechanismus.
  *
  * Verhalten unverändert: alle Projekte, Dateiname mit Zeitstempel, danach
  * `project:exported` (daran hängt der ExportReminder, der

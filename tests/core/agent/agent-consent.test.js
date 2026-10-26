@@ -1,5 +1,5 @@
 /**
- * Tests for core/agent/agent-consent.js — the consent gate from Spec §3.2.
+ * Tests for core/agent/agent-consent.js — the consent gate.
  * The contract under test: no information reaches the agent before the user
  * has decided, and granting prompts the export that replaces undo. Ruling K2
  * adds `agent:consent-changed` so the settings section can stay current even

@@ -304,7 +304,7 @@ suite('DoE Planner Model — hasContent', () => {
   });
 });
 
-// ─── EVOP phases (spec 2026-10-25 E8) ──────────────────────────────
+// ─── EVOP phases ──────────────────────────────
 
 /** Unrandomised 2² in standard order: Temp 20/40, Druck 1/5. */
 function evopState() {
@@ -448,7 +448,7 @@ suite('DoE Planner Model — forbidden vertices and model terms', () => {
   });
 });
 
-// ─── Auto-generation signatures (spec 2026-10-25 E3) ───────────────
+// ─── Auto-generation signatures ───────────────
 
 suite('DoE Planner Model — configSignature / scheduleSignature', () => {
   function planned() {

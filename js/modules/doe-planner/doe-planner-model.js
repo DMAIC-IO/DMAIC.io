@@ -312,7 +312,7 @@ export class State {
     return true;
   }
 
-  // ─── EVOP project phases (spec 2026-10-25 E8) ───────────────────
+  // ─── EVOP project phases ───────────────────
 
   /**
    * A new, undecided phase from the current plan.
@@ -476,7 +476,7 @@ export class State {
   /**
    * Identity of everything the design matrix depends on: factors, design
    * type, type parameters, options and the source worksheet. A change
-   * invalidates the design and schedules a new one (spec 2026-10-25 E3).
+   * invalidates the design and schedules a new one.
    * A freshly added, still blank factor does not count — adding one never
    * invalidated the design. Not designSignature(): that one describes the
    * generated design for the worksheet staleness.
@@ -499,7 +499,7 @@ export class State {
 
   /**
    * Identity of the responses. They never change the matrix, so a change
-   * only schedules a regeneration (spec 2026-10-25 E3). Blank responses
+   * only schedules a regeneration. Blank responses
    * do not count.
    * @returns {string}
    */

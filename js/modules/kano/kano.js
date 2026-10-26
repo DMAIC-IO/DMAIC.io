@@ -368,7 +368,7 @@ export default createModule({
       /**
        * @noagent DOM event handler: packt die Ebenenwahl aus dem Select aus
        * und fragt vor dem Verwerfen erfasster Antworten zurück; ein Agent
-       * darf keine Rückfrage auslösen — er blockierte den Stapel (E3).
+       * darf keine Rückfrage auslösen — er blockierte den Stapel.
        * Geschrieben wird über `setSourceLevel`.
        * @param {Event} ev
        */
@@ -580,7 +580,7 @@ export default createModule({
 
       /**
        * @noagent fragt vor dem Löschen zurück; ein Agent darf keine Rückfrage
-       * auslösen — er blockierte den Stapel (E3). Delegiert an
+       * auslösen — er blockierte den Stapel. Delegiert an
        * `deleteRespondent`.
        * @param {string} id
        */

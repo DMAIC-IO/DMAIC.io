@@ -1,6 +1,6 @@
 /**
  * D.Mike — Annotation model (frame/bug-reporter/annotations.js)
- * Screenshot markings as data in IMAGE pixels (spec decision 3). The editor
+ * Screenshot markings as data in IMAGE pixels. The editor
  * feeds display-pixel gestures; this model converts, clamps, normalises and
  * keeps the undo order. It also holds the crop: markings stay in pixels of
  * the whole image, toJSON() shifts them into the crop. No DOM.

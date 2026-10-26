@@ -116,7 +116,7 @@ export default createModule({
         this.setPrincipleNote(key, event.target.value);
       },
 
-      // ── Zustands-Sinks: ein Setter je Feld (Plan E2, E7) ───────────
+      // ── Zustands-Sinks: ein Setter je Feld ───────────
       // Bewusst benannte Setter statt eines generischen `setField(name,
       // text)`: nur so trägt jeder Parameter in `module.describe` seinen
       // eigenen Hilfesatz.

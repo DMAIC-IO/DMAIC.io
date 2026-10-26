@@ -2,7 +2,7 @@
  * Tests für core/context-help.js — die UI-Seite der Agenten-Kontexthilfen.
  *
  * Derselbe i18n-Schlüssel, den `module.describe` an den Agenten gibt, steht
- * hier als Kontexthilfe am Label (Spec §8). Die Fläche braucht ein Dokument
+ * hier als Kontexthilfe am Label. Die Fläche braucht ein Dokument
  * und läuft deshalb nur im Browser-Runner.
  */
 import { suite, test, beforeEach, assertEqual, assertTrue } from '../test-utils.js';

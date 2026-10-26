@@ -107,7 +107,7 @@ const COLUMN_SLOTS = ['x', 'y', 'group', 'size'];
  * bleiben stehen (wie bei der Oberfläche). Nicht darin: Darstellung
  * (`showLines`, `showMarkers`, `seriesOverrides`, Referenzlinien,
  * Hintergrund — nur über den Diagramm-Editor), `showStats`/`confLevel`,
- * das Diagrammbild, `exampleWorksheetId`. Die Kennzahlen stehen in `stats` (E8).
+ * das Diagrammbild, `exampleWorksheetId`. Die Kennzahlen stehen in `stats`.
  *
  * @typedef {object} AgentRead
  * @property {Dataset[]} datasets  per data row its columns, each described under keys
@@ -200,7 +200,7 @@ const mod = createModule({
         return this.model.datasets.map(ds => ({ x: ds.xRef, y: ds.yRef, group: ds.groupRef, size: ds.sizeRef }));
       },
 
-      /** Die Kennzahlen für read() — dieselben Reihen und dieselbe Rechnung wie die Tabelle (E8). */
+      /** Die Kennzahlen für read() — dieselben Reihen und dieselbe Rechnung wie die Tabelle. */
       _agentStats() {
         let series;
         try { series = this._buildSeries(); } catch { return null; }

@@ -73,7 +73,7 @@ const COLUMN_SLOTS = ['value', 'label'];
  * Die zwei Spaltenbezüge sind der Zustand, den ein Agent setzen kann; dazu
  * die zwei Mengen, gegen die `setColumn` prüft. Nicht darin: `chartConfig`
  * (Darstellung, nur über den Diagramm-Editor), das Diagrammbild und
- * `exampleWorksheetId`. Die Segmenttabelle steht als Zahlen in `stats` (E8).
+ * `exampleWorksheetId`. Die Segmenttabelle steht als Zahlen in `stats`.
  *
  * @typedef {object} AgentRead
  * @property {object|null} valueRef  the value column (slot `value`), `{ instanceId, sheetId, columnId }`, or null
@@ -187,7 +187,7 @@ const mod = createModule({
         return [{ value: this.model.valueRef, label: this.model.labelRef }];
       },
 
-      /** Die Kennzahlen für read() — beim Lesen gerechnet, dieselbe Quelle wie die Tabelle (E8). */
+      /** Die Kennzahlen für read() — beim Lesen gerechnet, dieselbe Quelle wie die Tabelle. */
       _agentStats() {
         const slices = this.model.buildSlices((ref) => this._getColumnValues(ref));
         return slices.length ? State.sliceStats(slices) : null;

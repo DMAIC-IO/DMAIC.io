@@ -83,8 +83,8 @@
         "en": "Baseline subgroups < 20 yield unstable control limits (warning `W_BASELINE_LT_20`); Nelson violations within the baseline may contaminate the limits (`W_LIMITS_FROM_UNSTABLE_BASELINE`)"
       },
       {
-        "de": "Cp/Cpk aus einem stabilen Fenster, EWMA/CUSUM und mehrere Referenzteile pro Studie sind bewusst außerhalb des Scopes (siehe Modul-Spec § 12)",
-        "en": "Cp/Cpk from a stable window, EWMA/CUSUM, and multiple reference parts per study are deliberately out of scope (see module spec § 12)"
+        "de": "Cp/Cpk aus einem stabilen Fenster, EWMA/CUSUM und mehrere Referenzteile pro Studie sind bewusst außerhalb des Scopes",
+        "en": "Cp/Cpk from a stable window, EWMA/CUSUM, and multiple reference parts per study are deliberately out of scope"
       },
       {
         "de": "Nelson-Regeln 7 & 8 sind standardmäßig deaktiviert (siehe `control-chart`-Eintrag) — Aktivierung erhöht die False-Alarm-Rate",

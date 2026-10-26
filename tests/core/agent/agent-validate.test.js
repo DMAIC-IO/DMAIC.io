@@ -1,7 +1,7 @@
 /**
- * Tests for core/agent/agent-validate.js — the five validation stages from
- * Spec §5. The contract under test: a failing stage executes NOTHING, and the
- * error names the offending entry plus the valid alternatives (Spec §6).
+ * Tests for core/agent/agent-validate.js — the five validation stages.
+ * The contract under test: a failing stage executes NOTHING, and the
+ * error names the offending entry plus the valid alternatives.
  *
  * Ruling K6: a `phase` is checked twice — first against the active cycle's
  * known phase ids (`world.phases`), then (only if the cycle knows it) against
@@ -189,8 +189,8 @@ suite('agent validate — Stufe 4: Referenzgraph', () => {
     assertEqual(r.ok, false);
     assertEqual(r.cause.error, 'bad_shape');
     // Die Meldung MUSS eine andere sein als bei einem unbekannten Segment:
-    // das Segment ist hier richtig, nur der Abstieg ist es nicht (Spec §6 —
-    // sage das Problem und den gültigen Weg).
+    // das Segment ist hier richtig, nur der Abstieg ist es nicht (sage das
+    // Problem und den gültigen Weg).
     // Nur die Platzhalter, die der Text auch nennt: `{segment}` wäre hier
     // `instanceId` — der Schlüssel INNERHALB der Nullable-Hülle, nicht das
     // Feld, das null sein kann. Ihn mitzugeben fror einen ungenutzten
@@ -292,7 +292,7 @@ suite('agent validate — Stufe 5: literale Bezeichner', () => {
     assertTrue(validateBatch([{ op: 'module.add', module: 'sipoc' }], makeWorld()).ok);
   });
 
-  test('the full Spec §4 example batch validates', () => {
+  test('the full example batch validates', () => {
     const r = validateBatch([
       { id: 'a1', op: 'module.add', module: 'worksheet', phase: 'data' },
       { id: 'a2', op: 'instance.call', instance: { $from: 'a1', path: 'instanceId' },

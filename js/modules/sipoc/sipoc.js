@@ -124,7 +124,7 @@ export default createModule({
         this.removeItem(colKey, idx);
       },
 
-      // ── Zustands-Sinks: ein benannter Setter je Gestalt (E2, E7) ──
+      // ── Zustands-Sinks: ein benannter Setter je Gestalt ──
       // Die Spaltenschlüssel sind eine feste Fünfer-Menge; `COL_KEYS` im
       // Model ist deren einzige Quelle, damit Prüfmeldung und
       // Persistenzform nicht auseinanderlaufen.

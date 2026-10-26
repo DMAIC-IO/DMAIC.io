@@ -175,7 +175,7 @@ suite('Process Capability — σ within edge cases', () => {
   });
 });
 
-// Reference values: spec 2026-09-27 (Python statistics.NormalDist / SciPy).
+// Reference values: (Python statistics.NormalDist / SciPy).
 const ZIGZAG = Array.from({ length: 31 }, (_, i) => 55 + ((7 * i) % 31));
 const ASCENDING = Array.from({ length: 31 }, (_, i) => 55 + i);
 
@@ -288,7 +288,7 @@ suite('Process Capability — Cp/Pp CI from the exact χ² quantile', () => {
   });
 });
 
-// ── Selectable σ within estimators and ν in the Cp/Cpk CI (spec 2026-10-04) ──
+// ── Selectable σ within estimators and ν in the Cp/Cpk CI ──
 
 suite('Process Capability — estimator choice and ν (gold standard)', () => {
   const { lsl, usl, values } = pistonData;

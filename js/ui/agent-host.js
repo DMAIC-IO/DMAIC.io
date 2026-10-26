@@ -6,7 +6,7 @@
  * Anzeigen, Öffnen, Anlegen, Entfernen, und der Griff auf das lebende
  * Viewmodel.
  *
- * Spec §2: derselbe Weg wie die UI. `addInstance` ruft dieselbe
+ * Derselbe Weg wie die UI. `addInstance` ruft dieselbe
  * `createInstance`-Funktion wie der Router, `removeInstance` denselben
  * Workspace-Pfad wie das Tab-Menü (nur ohne Rückfrage), und `getViewmodel`
  * liefert `getActionData()` — genau das Objekt, auf dem die Aktionsleiste

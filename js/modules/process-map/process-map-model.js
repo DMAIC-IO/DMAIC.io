@@ -327,7 +327,7 @@ export class State extends FlowchartState {
 /**
  * Rail cell modifiers for one loop band — one entry per step column. The view
  * turns each entry into a `pmap__loop-rail-cell--<modifier>` class; CSS draws
- * the return path from them (spec 2026-10-01-process-map-horizontal-loops).
+ * the return path from them.
  * A target that is unset, missing or not before the source leaves the rail
  * open at the source.
  * @param {number} stepCount number of step columns

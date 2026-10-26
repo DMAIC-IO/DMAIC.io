@@ -67,7 +67,7 @@ export function runVarianceDecomposition(g, { factorNames, modelForm, estimator 
     panelCount: g.panelCount,
     // Size limits travel with the result: `limits` carries the offending
     // column per exceeded limit so the warning can name it, `renderable`
-    // gates the chart itself (spec: past a limit nothing is drawn).
+    // gates the chart itself (past a limit nothing is drawn).
     limits: g.limits || [],
     renderable: g.renderable !== false,
     vc,
@@ -95,7 +95,7 @@ export function vcTermRows(result) {
 }
 
 /**
- * Honesty-rule gate (spec): an unbalanced design makes the variance
+ * Honesty-rule gate: an unbalanced design makes the variance
  * components estimator-dependent, and that must show under the table.
  * @param {{balanced?: boolean}|null} result
  * @returns {boolean}

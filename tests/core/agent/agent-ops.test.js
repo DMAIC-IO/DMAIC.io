@@ -81,7 +81,7 @@ suite('agent ops — runtime defence for a completed project (Ruling R7a)', () =
   });
 });
 
-suite('agent ops — Teil-Viewmodels (Spec 2026-10-24 E3)', () => {
+suite('agent ops — Teil-Viewmodels', () => {
   class Draft {
     constructor() { this.calls = []; this.inner = { go() {} }; }
     addQuestion(text) { this.calls.push(text); return this; }

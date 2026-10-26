@@ -6,7 +6,7 @@
  * eigentlichen Rechenkernen in `js/engines/msa-typ5-engine.js`.
  *
  * Für die drei κ-Wrapper (Cohen, Fleiss, Weighted) rufen wir die Engine
- * direkt auf — keine Duplizierung der Rechenlogik (Design-Spec §5). Für
+ * direkt auf — keine Duplizierung der Rechenlogik. Für
  * Wilson-Score-KI und SDT wird die Rechnung inline geführt, weil die
  * Fixtures gegen SciPy mit Toleranz 1e-9 verglichen werden und die im
  * Engine verbaute Acklam-Näherung des Φ⁻¹ genau an dieser Grenze liegt.

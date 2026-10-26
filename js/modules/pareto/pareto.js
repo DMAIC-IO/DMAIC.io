@@ -94,7 +94,7 @@ const PARAM_CHECKS = {
  * hält das Model in `chartConfig`, die Lesefläche oben unter ihrem
  * `setParam`-Schlüssel. Nicht darin: der Rest von `chartConfig`
  * (Darstellung), Balken, Summenlinie und Tabelle (Ausgabe), `exampleWorksheetId`.
- * Die Tabelle steht als Zahlen in `stats` (E8).
+ * Die Tabelle steht als Zahlen in `stats`.
  *
  * @typedef {object} AgentRead
  * @property {object|null} xRef  the category column (slot `x`), or null
@@ -257,7 +257,7 @@ const mod = createModule({
         return (data.items.length > 0) || (data.categories.length > 0 && data.groups.length > 0);
       },
 
-      /** Die Kennzahlen für read() — die sortierten Zeilen aus derselben Quelle wie die Tabelle (E8). */
+      /** Die Kennzahlen für read() — die sortierten Zeilen aus derselben Quelle wie die Tabelle. */
       _agentStats() {
         const d = this._chartData();
         if (!this._hasData(d)) return null;

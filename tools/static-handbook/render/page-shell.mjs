@@ -536,7 +536,7 @@ function renderNav(lang, currentPath, altPath, logoAssetHref) {
     { href: trainingHref, label: s.navTraining },
   ];
   // Sprachumschalter: dieselbe zweiteilige EN|DE-Pille wie auf der Site
-  // (langSwitchHtml in tools/site-build/build.mjs des privaten Repos) — die
+  // (Sprachumschalter der Website) — die
   // aktive Sprache ist markiert, die andere verweist auf ihr Gegenstück.
   // rel="alternate" bleibt am fremdsprachigen Segment: die Site setzt es
   // nicht, hier stand es bisher und kostet nichts.

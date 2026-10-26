@@ -4,7 +4,6 @@
  * departments) and a `laneId` per step. The chain order lives in `steps[]`
  * as everywhere else; the lane only decides which horizontal band a step is
  * rendered in, which is what makes hand-offs visible.
- * See spec §2 "Datenmodell" and §3.3 "Deployment Flowchart".
  */
 
 import { uid } from '../../core/uid.js';

@@ -231,7 +231,7 @@ export default createModule({
         this.setWeight(c, parseInt(event.target.value, 10));
       },
 
-      // ── Zustands-Sinks: ein benannter Setter je Feld (E2, E7) ──
+      // ── Zustands-Sinks: ein benannter Setter je Feld ──
       // Indexgrenzen: Zeile und Spalte bezeichnen eine Größe, die es GIBT,
       // der gültige Bereich endet also bei `length - 1`. Die
       // Kundenwichtigkeit und die Skala sind Wertemengen (das Auswahlfeld

@@ -123,7 +123,7 @@ function balanceOf(cells, factorValues, modelForm) {
  *        2 to 4 factors, every value list the same length as `measurements`.
  *        `modelForm` only steers the balance verdict (see `balanceOf`); it
  *        defaults to `'crossed'`, the stricter of the two.
- * @returns {object} see spec section "Grouping engine"
+ * @returns {object} the grouping result
  */
 export function computeMultiVari({ measurements, factors, modelForm = 'crossed' }) {
   const list = Array.isArray(factors) ? factors : [];

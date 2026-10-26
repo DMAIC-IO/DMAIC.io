@@ -5,7 +5,7 @@
  * comparison, report export and the charts that draw these blocks. Mounts
  * its charts when the results tab is shown and drops them when it is left.
  * Knows the model, survey-labels.js and the pure survey-*.js modules — never
- * a sibling or the shell (spec E2).
+ * a sibling or the shell.
  */
 
 import { documentOrder, findQuestion } from '../survey-conditions.js';
@@ -282,7 +282,7 @@ export class ResultsViewModel {
    */
   distLabel(row) { return row.dist.join(' · '); }
 
-  // Summary (spec §7.1)
+  // Summary
 
   /**
    * Response rate over all recipients and responses; the filter does not apply.
@@ -411,7 +411,7 @@ export class ResultsViewModel {
     return this._t('report.freeText', freeTextSummary(this.model.survey, this.filtered(), keys));
   }
 
-  // Group comparison (spec §7.2)
+  // Group comparison
 
   /**
    * @returns {Array<{value: string, label: string}>} the `single` questions
@@ -461,7 +461,7 @@ export class ResultsViewModel {
   setGroupByFromEvent(ev) { this.setGroupBy(ev.target.value || null); }
 
   /**
-   * Filter first, then group (spec §7.2).
+   * Filter first, then group.
    * @returns {object|null} result of groupComparison(), null without grouping
    */
   _comparison() {
@@ -554,7 +554,7 @@ export class ResultsViewModel {
    */
   rowClass(row) { return { 'survey-builder__row--differs': row.differs }; }
 
-  // Report (spec §7.3)
+  // Report
 
   /**
    * Names in the report only exist when the survey is not anonymous. @returns {boolean}
@@ -691,7 +691,7 @@ export class ResultsViewModel {
   }
 
   /**
-   * One Better/Worse scatter over all Kano rows of all Kano questions (spec §7.1).
+   * One Better/Worse scatter over all Kano rows of all Kano questions.
    * @noagent chart rendering
    * @returns {Array<{key: string, type: string, config: object}>}
    */

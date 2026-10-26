@@ -410,7 +410,7 @@ const mod = createModule({
       // Typ-1-Instanzen für den "aus Typ-1-Instanz übernehmen"-Dropdown im
       // `given`-Grenzen-Modus. Befüllt von `_loadTyp1Instances()` (Task 14) —
       // bei init() und jedem `module:activated` der eigenen Instanz neu
-      // geladen (siehe Spec § 6 Events-Tabelle).
+      // geladen.
       _typ1Instances: [],
 
       // ── Nelson-Regel-Kurztexte (View-Helfer) ──────────────────
@@ -906,7 +906,7 @@ const mod = createModule({
         // v1.0: kein `eventBus.emit('msa-typ1:result-updated', …)` in
         // msa-typ1.js) — vorbereitet für die künftige Live-Sync einer
         // bereits per Dropdown übernommenen Instanz (siehe Modul-Kopf-
-        // Kommentar Task 14 + Spec § 6 Events-Tabelle).
+        // Kommentar).
         const onTyp1ResultUpdated = (evt = {}) => {
           if (evt.instanceId && evt.instanceId === this.model.params.sourceTyp1InstanceId) {
             // mu0/sigma0 sind nur bei limitsMode given aktiv (setParam wirft sonst).

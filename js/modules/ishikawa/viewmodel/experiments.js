@@ -4,8 +4,8 @@
  * Sub-viewmodel of the facts and experiments tabs: facts, experiments, the
  * two link forms between causes and experiments, and the Gantt and cost
  * charts. Knows the model, the pure ishikawa-*.js helpers and core modules —
- * never a sibling or the shell (spec E2). Needs no bus event: links to
- * causes are read from the model on every render (spec E3).
+ * never a sibling or the shell. Needs no bus event: links to
+ * causes are read from the model on every render.
  */
 
 import { computeGanttConfig, computeCostConfig } from '../ishikawa-charts.js';
@@ -115,7 +115,7 @@ export class ExperimentsViewModel {
   }
 
   /**
-   * Binds the component's model, nextTick and the template refs (spec E3).
+   * Binds the component's model, nextTick and the template refs.
    * @noagent lifecycle
    * @param {{model: object, events: object, watch: function, nextTick: function, ref: function(string): ?Element}} binding
    */
@@ -355,7 +355,7 @@ export class ExperimentsViewModel {
   /** @noagent view transform @returns {string[]} expert names for the owner/responsible suggestions */
   ownerNames() { return this.model.experts.map(e => e.name).filter(Boolean); }
 
-  // ── Link forms (borrowed from the template, spec E4) ──────
+  // ── Link forms (borrowed from the template) ──────
 
   /**
    * Opens the form that links experiments to one cause.

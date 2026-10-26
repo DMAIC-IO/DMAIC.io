@@ -159,7 +159,7 @@ export default createModule({
       /** @noagent normalisiert die Schlüssel aus `x-for`; der Aufruf geht durch `clearImage`. */
       clearImageClicked(row, col) { this.clearImage(Number(row), Number(col)); },
 
-      // ── Zustands-Sinks: ein Setter je Feld (Plan E2, E7) ───────────
+      // ── Zustands-Sinks: ein Setter je Feld ───────────
 
       /**
        * Setzt den Titel des betrachteten Systems.

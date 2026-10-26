@@ -60,7 +60,7 @@ const COLUMN_SLOTS = ['x', 'y', 'g'];
 /** Die Optionen, die `setParam` annimmt (Reihenfolge der Oberfläche). */
 const PARAM_KEYS = ['aggregation', 'stacked'];
 
-/** Die zwei Werte eines Schalters — kein Umwandeln (Welle 2 E5). */
+/** Die zwei Werte eines Schalters — kein Umwandeln. */
 const BOOL_VALUES = [true, false];
 
 /** Je Option ihr Prüfer; gibt den Wert zurück, den das Model hält. */
@@ -112,7 +112,7 @@ function frequencyTotal(groups) {
  * Optionen hält das Model in `chartConfig`; die Lesefläche oben unter ihren
  * `setParam`-Schlüsseln. Nicht darin: der Rest von `chartConfig`
  * (Darstellung), Balken und Tabelle (Ausgabe), `exampleWorksheetId`. Die
- * Balkenwerte stehen als Zahlen in `stats` (E8).
+ * Balkenwerte stehen als Zahlen in `stats`.
  *
  * @typedef {object} AgentRead
  * @property {object|null} xRef  the category column (slot `x`), or null
@@ -317,7 +317,7 @@ const mod = createModule({
         );
       },
 
-      /** Die Kennzahlen für read() — die Balkenwerte aus derselben Quelle wie die Tabelle (E8). */
+      /** Die Kennzahlen für read() — die Balkenwerte aus derselben Quelle wie die Tabelle. */
       _agentStats() {
         const d = this._chartData();
         if (!d.categories.length || !d.groups.length) return null;
@@ -406,7 +406,7 @@ const mod = createModule({
         }
         this.statsRows = rows;
         this.statsTotalLabel = _t('statTotal');
-        this.statsTotal = formatNum(total, null, lang);   // dieselbe Summe wie stats.total (E8)
+        this.statsTotal = formatNum(total, null, lang);   // dieselbe Summe wie stats.total
         this.statsShowTotal = isFreq;
         this.statsShow = true;
       },

@@ -6,7 +6,7 @@
  * (App als eigener Harness) bindet dieselbe Datei an einen HTTP-Client.
  *
  * Shape-Grammatik der Ergebnisformen (geschlossen, absichtlich armselig —
- * sie existiert nur, damit Prüfstufe 4 aus Spec §5 statisch sein kann):
+ * sie existiert nur, damit Prüfstufe 4 der Stapelprüfung statisch sein kann):
  *   'string' | 'number' | 'boolean' | 'any'
  *   { key: <shape>, … }      Objekt mit genau diesen Schlüsseln
  *   [ <shape> ]              Array; Pfadsegmente müssen Ziffernfolgen sein
@@ -185,7 +185,7 @@ export const OPS = deepFreeze({
  *                             bulkKind?: 'table'|'tree', omit?: string[], derived?: boolean,
  *                             keysOf?: string, keys?: Record<string, AgentTypedefKey> }>} fields
  *   Die Lesefläche. Ohne `derived` aus den Model-Feldern abgeleitet (die
- *   persistierte Form IST die Lesefläche, Spec §8); mit `derived: true` vom
+ *   persistierte Form IST die Lesefläche); mit `derived: true` vom
  *   Modul über einen `@typedef {object} AgentRead` deklariert, weil seine
  *   Lesefläche nicht die persistierte Form ist.
  *   `bulkKind` steht NUR an einem Massenfeld und sagt, welchen

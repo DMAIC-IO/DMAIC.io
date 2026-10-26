@@ -4,9 +4,9 @@
  * Sub-viewmodel of the EVOP project mode: project name, the phase
  * timeline, the decision that closes a phase (re-center, repeat, stop)
  * and the cumulative EVOP effects. The phase logic itself lives in the
- * model (spec E8); this class confirms, fetches the response values (E5),
+ * model; this class confirms, fetches the response values,
  * saves and shows. The confirm dialog stays with the interface:
- * confirmCompletePhase asks, completePhase acts (spec E6).
+ * confirmCompletePhase asks, completePhase acts.
  */
 import { PHASE_DECISIONS } from '../doe-planner-model.js';
 import { readResponses, staleness, boundComplete } from '../doe-planner-responses.js';

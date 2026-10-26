@@ -4,8 +4,8 @@
  * Sub-viewmodel of the factor and response lists: names, units, kinds and
  * levels of the factors; names and units of the responses. It writes to
  * the model and saves; the shell's signature watcher regenerates the
- * design (spec E3). Knows the model, the pure doe-planner-*.js helpers and
- * core modules — never a sibling or the shell (spec E1).
+ * design. Knows the model, the pure doe-planner-*.js helpers and
+ * core modules — never a sibling or the shell.
  */
 import { letter } from '../doe-planner-model.js';
 import { requireEnum, requireIndex, requireKnownId, requireText } from '../../../core/agent/agent-argcheck.js';

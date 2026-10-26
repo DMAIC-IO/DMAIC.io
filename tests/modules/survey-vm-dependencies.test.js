@@ -1,6 +1,6 @@
 /**
- * D.Mike — survey-builder sub-viewmodels know neither each other nor the shell
- * (spec 2026-10-24 E2). Reads the sources and checks their imports.
+ * D.Mike — survey-builder sub-viewmodels know neither each other nor the shell.
+ * Reads the sources and checks their imports.
  */
 import { suite, test, assertDeepEqual } from '../test-utils.js';
 

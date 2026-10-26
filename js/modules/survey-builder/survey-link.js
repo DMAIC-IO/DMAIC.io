@@ -72,7 +72,7 @@ function onScale(v, max) {
 }
 
 /**
- * Kano state after handing one kano question over (spec §8.1). Snapshot,
+ * Kano state after handing one kano question over. Snapshot,
  * not a live link. Entries carry `origin`; a repeat hand-over replaces only
  * entries with the same origin and keeps manual ones with their answers.
  * @param {object|null} target existing kano state, null for a new instance
@@ -137,7 +137,7 @@ export function kanoStateFromSurvey(target, input) {
 }
 
 /**
- * VoC entries for the tree from selected free-text answers (spec §8.2).
+ * VoC entries for the tree from selected free-text answers.
  * @param {Array<{text: string, name: string}>} entries
  * @param {string} sourceLabel e.g. 'Fragebogen „Kundenbefragung“'
  * @param {boolean} anonymous

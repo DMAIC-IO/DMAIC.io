@@ -461,7 +461,7 @@ class FormulaEditor {
  * Nicht die persistierte Form: die ist `sheets: [{ id, name, state }]` mit
  * dem OPAKEN DataGrid-Blob in `state` — für einen Agenten entweder nutzlos
  * (ein Blob) oder riesig (5000 Zeilen in jeder Antwort). Darum erklärt dieses
- * Modul seine Lesefläche (Plan-Entscheidung E1): Blattverzeichnis, aktives
+ * Modul seine Lesefläche: Blattverzeichnis, aktives
  * Blatt, Spaltenköpfe des aktiven Blatts — und die Zeilen als Massendaten,
  * die nur auf ausdrückliche Nachfrage mitkommen.
  *

@@ -4,9 +4,9 @@
  * Sub-viewmodel of the snapshot bar on the hypotheses tab: save, load and
  * delete snapshots, compare one with the current tree, and the trend chart
  * over all snapshots. Knows the model, the pure ishikawa-*.js helpers and
- * core modules — never a sibling or the shell (spec E2). Tells the others
+ * core modules — never a sibling or the shell. Tells the others
  * about comparisons, deletions and loads over the instance bus; redraws the
- * trend when the causes change (spec E3).
+ * trend when the causes change.
  */
 
 import { computeTrendConfig } from '../ishikawa-charts.js';
@@ -56,7 +56,7 @@ export class SnapshotsViewModel {
   }
 
   /**
-   * Binds the model and subscribes to causes:changed (spec E3). Called
+   * Binds the model and subscribes to causes:changed. Called
    * through the Alpine proxy, so the listener writes reactive state.
    * @noagent lifecycle
    * @param {{model: object, events: object, watch: function, nextTick: function, ref: function(string): ?Element}} binding

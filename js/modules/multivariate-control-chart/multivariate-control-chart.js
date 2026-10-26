@@ -88,7 +88,7 @@ const PARAM_CHECKS = {
  * Die Agenten-Lesefläche der multivariaten Regelkarte (Hotelling T²).
  *
  * Eingaben (Variablen, α, Phase-I-Länge), die Mengen der Setter, das
- * Ergebnis als Zahlen (Plan Welle 3 B, E4) und der Text, den die Oberfläche
+ * Ergebnis als Zahlen und der Text, den die Oberfläche
  * bei zu wenigen Zeilen zeigt. Nicht darin: Kennzahlenleiste als Text,
  * `exampleWorksheetId`.
  *
@@ -141,7 +141,7 @@ const mod = createModule({
        * into the templated host via _whenAnchor). See _renderChart. */
       /** @type {Array<{id:string, title:string, badgeText:string, badgeClass:string}>} */
       chartViews: [],
-      /** Das Engine-Ergebnis der letzten Rechnung samt Zeilenzahl, synchron vor dem Zeichnen gesetzt (E3). */
+      /** Das Engine-Ergebnis der letzten Rechnung samt Zeilenzahl, synchron vor dem Zeichnen gesetzt. */
       _lastRun: null,
 
       // ── Agent surface ─────────────────────────────────────────
@@ -230,7 +230,7 @@ const mod = createModule({
         await this._runAnalysis();
       },
 
-      /** Ergebnis und Punkte für read(), aus `_lastRun` (E4). */
+      /** Ergebnis und Punkte für read(), aus `_lastRun`. */
       _agentResult() {
         if (!this._lastRun) return { result: null, points: [], pointsColumns: [] };
         const { r, n } = this._lastRun;
@@ -270,7 +270,7 @@ const mod = createModule({
        */
       async baselineCountChanged(event) {
         const v = parseInt(event.target.value, 10);
-        // Leer, unlesbar oder < 1 heißt „alle Zeilen" (E6).
+        // Leer, unlesbar oder < 1 heißt „alle Zeilen".
         await this.setParam('baselineCount', Number.isInteger(v) && v >= 1 ? v : null);
         event.target.value = this.baselineCountValue();
       },
@@ -281,7 +281,7 @@ const mod = createModule({
        */
       async alphaChanged(event) {
         const v = parseFloat(event.target.value);
-        // Wie bisher: ein ungültiger Wert fällt auf die Vorgabe zurück — vor der Senke (E6).
+        // Wie bisher: ein ungültiger Wert fällt auf die Vorgabe zurück — vor der Senke.
         await this.setParam('alpha', (Number.isFinite(v) && v > 0 && v < 1) ? v : ALPHA_DEFAULT);
         event.target.value = String(this.model.alpha);
       },

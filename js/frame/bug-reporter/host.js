@@ -6,7 +6,7 @@
 /**
  * Whether the bug reporter is offered on this host. A hostname check, not an
  * endpoint probe at boot — a network request at startup would break
- * offline-first (spec "Sichtbarkeit").
+ * offline-first.
  * @param {string} hostname
  * @returns {boolean}
  */

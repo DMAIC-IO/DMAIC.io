@@ -2,7 +2,7 @@
  * D.Mike — Kernel (kernel.js)
  * UI-independent composition root. Builds and returns the service container.
  * No DOM access. The single place services are constructed → the seam for a
- * future replaceable storage engine (see spec §6).
+ * future replaceable storage engine.
  */
 
 import { EventBus }       from './event-bus.js';

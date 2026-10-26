@@ -308,7 +308,7 @@ export function effectiveness(ratings, references, opts) {
 
 /**
  * Miss-Rate, False-Alarm-Rate und Bias je Prüfer — nur binär mit Referenz.
- * Konvention (Spec §4): positiv = levels[0].
+ * Konvention: positiv = levels[0].
  *   miss = P(rating = pos | ref = neg)   — n.i.O. als i.O. eingestuft.
  *   fa   = P(rating = neg | ref = pos)   — i.O. als n.i.O. eingestuft.
  *   bias = miss − fa                     — > 0: zu tolerant.
@@ -588,12 +588,12 @@ function _mode(values) {
 }
 
 /**
- * Vollständige Analyse-Orchestrierung gemäß Spec §4.
+ * Vollständige Analyse-Orchestrierung.
  * Kombiniert Validierung → Referenz-Ableitung → Wiederholbarkeit, Effektivität,
  * Miss/FA, paarweise Cohen κ, Fleiss κ, Signal Detection und AIAG-Ampel.
  *
  * @param {object} input {type, levels, ratings, references?, params?}
- * @returns {object} Analyse-Objekt (Return-Shape siehe Spec §4).
+ * @returns {object} Analyse-Objekt.
  */
 export function analyze(input) {
   const val = validate(input);

@@ -1,7 +1,7 @@
 /**
  * D.Mike — Einwilligungsdialog der Agentenfläche (agent-consent.js)
  *
- * Spec §3.2: der erste `interact()`-Aufruf öffnet diesen Dialog, und das
+ * Der erste `interact()`-Aufruf öffnet diesen Dialog, und das
  * Promise des Agenten löst erst nach der Entscheidung des Nutzers auf.
  * Der Text sagt ausdrücklich, dass es kein Rückgängig gibt und dass beim
  * Erlauben ein Export heruntergeladen wird.

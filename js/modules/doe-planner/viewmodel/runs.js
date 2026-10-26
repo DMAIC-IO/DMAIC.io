@@ -4,9 +4,9 @@
  * Sub-viewmodel of the run table: the embedded preview grid (the module's
  * only imperative widget), the linked datasheet and its fill state, and
  * the agent's way into the preview. Matrix, preview edits and source
- * seeds meet in the pure doe-planner-runtable.js (spec E4); this class
+ * seeds meet in the pure doe-planner-runtable.js; this class
  * holds only the grid object. Once a datasheet is bound, its values live
- * there: setRunValue refers to worksheet.setCells (spec E6).
+ * there: setRunValue refers to worksheet.setCells.
  */
 import { DataGrid } from '../../../core/datagrid/datagrid.js';
 import { uid } from '../../../core/uid.js';

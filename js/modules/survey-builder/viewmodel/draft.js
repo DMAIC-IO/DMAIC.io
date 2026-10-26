@@ -5,7 +5,7 @@
  * conditions, warnings, live preview and the general export. Owns the
  * preview timer and the condition draft with their lifecycle. Knows the
  * model, survey-labels.js and the pure survey-*.js modules — never a
- * sibling or the shell (spec E2).
+ * sibling or the shell.
  */
 
 import { QUESTION_TYPES, availableSources, documentOrder } from '../survey-conditions.js';

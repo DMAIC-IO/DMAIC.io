@@ -23,7 +23,7 @@ export const JOB_KINDS = [
 
 const LOCATION_STATISTICS = ['mean', 'median', 'trimmedMean'];
 
-/** Statistics allowed per job kind (spec: paired location only, no Ppk for k). */
+/** Statistics allowed per job kind (paired location only, no Ppk for k). */
 export const STATISTICS_BY_KIND = {
   bootstrapOne: STATISTIC_IDS,
   bootstrapTwo: STATISTIC_IDS,

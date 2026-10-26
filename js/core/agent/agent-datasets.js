@@ -2,7 +2,7 @@
  * D.Mike — Datenreihen eines DatasetPicker für die Agentenfläche (agent-datasets.js)
  *
  * Gegenstück zu `pickableColumnList` für Module, die ihre Spalten über
- * `DatasetPicker` wählen (Spec Abschnitt 3, §6.3 Nachtrag): die Lesemenge je
+ * `DatasetPicker` wählen: die Lesemenge je
  * Slot mit DEMSELBEN Filter wie der Picker (`slotFilter`) und die Prüfung
  * der Zeilen, die `setDatasets(rows)` annimmt.
  *

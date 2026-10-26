@@ -421,6 +421,24 @@ const PRIVATE_PATTERNS = [
   ['BUGS_DONE.md', /(?<![\w-])BUGS_DONE\.md/g],
   ['test/playwright', /(?<![\w.-])test\/playwright/g],
   ['site-src', /(?<![\w-])site-src(?![\w-])/g],
+  // Abschnittsmarken auf Specs ohne Pfad: `spec §7.2`, `(spec E3)`,
+  // `spec decision 2`, `spec 2026-10-25 E3`, `spec "Naht"`, `(spec)`,
+  // `(spec:`, `siehe Modul-Spec`, `Spec-Review`. Code mit einer Variablen
+  // `spec` (`fn(spec)`, `if (spec)`, `(spec) =>`) bleibt außen vor.
+  ['Spec-Marke', new RegExp([
+    /\b[Ss]pec\b(?:[\s-]*(?:§|E\d|\d{4}-\d{2}-\d{2})|\s+(?:(?:[Dd]ecision|[Aa]ddendum|[Ss]ection|[Aa]bschnitt)\b|["„“]))/.source,
+    /(?<![\w$.(]|(?:if|while|switch|for|return) )\([Ss]pec\)(?!\s*=>)(?=[:.,]?\s|[:.,]?$)/.source,
+    /\([Ss]pec:\s/.source,
+    /\([Ss]pec\s*$/.source,
+    /\b(?:[Ss]ee|[Ss]iehe)\s+(?:the\s+|die\s+|der\s+)?(?:[Mm]odule\s+|[Mm]odul-|[Dd]esign-)?[Ss]pec\b/.source,
+    /\b[Ss]pec-[Rr]eview\b/.source,
+  ].join('|'), 'g')],
+  // Entscheidungsmarken aus Specs und Plänen: `(E3)`, `(Plan E2, E7)`,
+  // `Welle-2-E5`. Im Bestand hat `E<Zahl>` als ganzes Wort keine andere
+  // Bedeutung; `1E5`, `#E1E1E1`, `\u00E4` und `E12a` sind keine Wörter.
+  ['Entscheidungsmarke', /\bE\d{1,2}\b/g],
+  // Das private Begleit-Repo, auch als Site-Repo.
+  ['privates Repo', /\b[Pp]rivat(?:e[nmrs]?)?[\s-]+(?:Site-)?[Rr]epos?\b|\b[Ss]ite[- ][Rr]epos?\b/g],
 ];
 
 /** `docs/<NAME>.md` — privat, sofern die Datei hier nicht existiert. */

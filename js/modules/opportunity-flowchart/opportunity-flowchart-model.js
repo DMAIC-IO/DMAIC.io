@@ -3,7 +3,6 @@
  * Extends FlowchartState with a `side` field ('va' | 'nva'), which decides
  * the column a step is rendered in. The sequence order lives in `steps[]`
  * and is independent of the column — switching sides never reorders.
- * See spec §2 "Datenmodell" and §3.2 "Opportunity Flowchart".
  */
 
 import { FlowchartState } from '../../core/flowchart/flowchart-model.js';

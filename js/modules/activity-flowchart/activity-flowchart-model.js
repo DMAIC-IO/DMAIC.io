@@ -1,7 +1,7 @@
 /**
  * D.Mike — Activity Flowchart Model (activity-flowchart-model.js)
  * Extends FlowchartState with `kind` (activity|decision) and `decision`
- * target fields. See spec §2 "Datenmodell" and §3.1 "Activity Flowchart".
+ * target fields.
  */
 
 import { FlowchartState } from '../../core/flowchart/flowchart-model.js';

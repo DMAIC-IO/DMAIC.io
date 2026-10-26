@@ -26,8 +26,7 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC;
 }
 
-/* Qprovement-Palette — gespiegelt aus css/site.css :root (Site-Repo,
-   Task 4/6). --max ist handbuchspezifisch und bleibt bestehen. */
+/* Qprovement-Palette — gespiegelt aus dem Stylesheet der Website. --max ist handbuchspezifisch und bleibt bestehen. */
 :root {
   --bg:      #E7F1F7;
   --bg-c:    #F3F7F9;
@@ -130,7 +129,7 @@ a:hover { color: var(--t1); }
 }
 
 /* Sprachumschalter: zweiteilige EN|DE-Pille, formgleich mit der Site
-   (.lang-switch/.lang-btn in css/site.css im privaten Repo). Die aktive
+   (.lang-switch/.lang-btn im Stylesheet der Website). Die aktive
    Sprache trägt das gefüllte Segment. */
 .lang-switch {
   display: flex; align-items: center;
@@ -165,7 +164,7 @@ a:hover { color: var(--t1); }
 .handbook-nav__cta:hover { transform: translateY(-1px); box-shadow: var(--shadow-h); color: var(--bg-card); }
 
 /* ─── Off-Canvas-Drawer ───────────────────────────────────────
-   Formgleich mit der Site (css/site.css im privaten Repo). Reines CSS:
+   Formgleich mit der Site (Stylesheet der Website). Reines CSS:
    #navToggle schaltet über den Geschwisterselektor Scrim und Panel.
    Versteckt wird das Kontrollkästchen per Clip statt display:none — sonst
    wäre es nicht fokussierbar und die Tastaturbedienung entfiele. */
@@ -224,7 +223,7 @@ a:hover { color: var(--t1); }
    (70) liegen über ihr (50), der Drawer ist also eine geschlossene Fläche.
    Geschlossen wird über den eigenen Schließer des Panels, den Scrim oder
    Escape — der Burger der Leiste ist derweil verdeckt. Formgleich mit der
-   Site (css/site.css im privaten Repo, dort 130/140/150). */
+   Site (Stylesheet der Website, dort 130/140/150). */
 
 /* ═══ Ende der selbstverfassten Ergänzung — ab hier wieder Brieftext ═══ */
 
@@ -330,8 +329,8 @@ a:hover { color: var(--t1); }
 
 /* ─── Headline ────────────────────────────────────────────────── */
 
-/* Instrument Serif entfällt (Task 6, Site-Repo) — Display-Typografie ist
-   DM Sans 700 uppercase, gespiegelt aus .title in css/site.css. */
+/* Instrument Serif entfällt (wie auf der Website) — Display-Typografie ist
+   DM Sans 700 uppercase, gespiegelt aus .title im Stylesheet der Website. */
 .handbook-article > h1 {
   font-family: 'DM Sans', sans-serif;
   font-weight: 700;
@@ -561,7 +560,7 @@ a:hover { color: var(--t1); }
 }
 
 /* ─── Fußzeile ────────────────────────────────────────────────
-   Aufbau und Maße der Site-Fußzeile (css/site.css im privaten Repo):
+   Aufbau und Maße der Site-Fußzeile (Stylesheet der Website):
    Deko-Band, Urheberzeile links, Linkzeile rechts. `overflow: clip` statt
    `hidden`, damit die Fußzeile kein Scroll-Container wird. */
 footer {

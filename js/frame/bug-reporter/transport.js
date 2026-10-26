@@ -1,8 +1,7 @@
 /**
  * D.Mike — Bug report transport (frame/bug-reporter/transport.js)
- * The replaceable seam of the bug reporter (spec "Naht"): send(report) →
- * { path } | throw. The HTTP transport posts to the private repo's PHP
- * receiver; downloadFiles() is the fallback when it is missing or fails.
+ * The replaceable seam of the bug reporter: send(report) →
+ * { path } | throw. The HTTP transport posts to the server endpoint; downloadFiles() is the fallback when it is missing or fails.
  */
 
 export const RECEIVER_URL = '/tools/bug-inbox/receive.php';

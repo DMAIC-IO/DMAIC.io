@@ -51,7 +51,7 @@ export function buildFrame(kernel, ui) {
   startGlossaryAugmenter();
   // Kontexthilfe am Label: Alt halten zeigt an jedem [data-help-key] mit
   // vorhandenem i18n-Schlüssel ein Fragezeichen — dieselben Schlüssel, die
-  // module.describe an den Agenten gibt (Spec §8).
+  // module.describe an den Agenten gibt.
   setContextHelpConfig({ i18n: kernel.i18n });
   startContextHelp();
 

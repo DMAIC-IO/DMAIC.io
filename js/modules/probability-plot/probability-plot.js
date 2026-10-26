@@ -109,7 +109,7 @@ const COLUMN_SLOTS = ['value', 'group'];
  * (wie bei der Oberfläche). Nicht darin: Darstellung (`seriesOverrides`,
  * Referenzlinien, Hintergrund), `showStats`/`confLevel` (ohne Bedienelement),
  * Anpassungstest und Diagrammbild, `exampleWorksheetId`. Die Kennzahlen
- * stehen in `stats` (E8).
+ * stehen in `stats`.
  *
  * @typedef {object} AgentRead
  * @property {string} distribution  die Verteilung, gegen die geprüft wird; immer 'normal'
@@ -199,7 +199,7 @@ const mod = createModule({
         return this.model.datasets.map(ds => ({ value: ds.valueRef, group: ds.groupRef }));
       },
 
-      /** Die Kennzahlen für read() — dieselben Reihen und dieselbe Rechnung wie die Tabelle (E8). */
+      /** Die Kennzahlen für read() — dieselben Reihen und dieselbe Rechnung wie die Tabelle. */
       _agentStats() {
         let series;
         try { series = this._buildSeries(); } catch { return null; }

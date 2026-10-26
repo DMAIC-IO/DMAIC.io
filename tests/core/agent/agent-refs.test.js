@@ -1,6 +1,6 @@
 /**
  * Tests for core/agent/agent-refs.js — the { $from, path } reference form
- * from Spec §4 and its runtime resolution.
+ * and its runtime resolution.
  */
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../test-utils.js';
 import { isRef, collectRefs, resolveRefs } from '../../../js/core/agent/agent-refs.js';

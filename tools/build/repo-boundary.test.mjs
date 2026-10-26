@@ -183,7 +183,7 @@ test('private Pfade in Code, Kommentaren, CSS und Markdown', () => {
   const found = scanRefs({
     'js/a.js': [
       '/**',
-      ' * Spec: docs/superpowers/specs/x-design.md (E2)',
+      ' * Spec: docs/superpowers/specs/x-design.md',
       ' */',
       "const ok = 'docs/de/modules/sipoc.html';",
       '// siehe .claude/CLAUDE.md',
@@ -220,6 +220,89 @@ test('docs/<NAME>.md nur, wenn die Datei im Repo fehlt', () => {
     ].join('\n'),
   });
   assert.deepEqual(refs(found), ['js/b.js:1 docs/CHARTING.md']);
+});
+
+test('Abschnittsmarken auf Specs ohne Pfad', () => {
+  const found = scanRefs({
+    'js/c.js': [
+      '// tabs stay apart (spec E3).',
+      ' * Group comparison (spec §7.2).',
+      ' * given mode formulas (Spec § 4) are computed directly',
+      ' * every open starts unchecked (spec decision 2).',
+      '// EVOP project phases (spec 2026-10-25 E8)',
+      ' * recompute when it changes (Spec E5).',
+      ' * Spec Abschnitt 3 und spec section "Grouping engine"',
+      ' * offline-first (spec "Sichtbarkeit").',
+      ' * Honesty-rule gate (spec): an unbalanced design',
+      ' * (spec: paired location only)',
+      ' * One pure scene builder, two thin renderers (spec',
+      ' * See spec §1 "Architektur". Siehe Modul-Spec.',
+      '// (Spec-Review 2026-10-13)',
+      ' * Strip error entries (spec addendum).',
+    ].join('\n'),
+  });
+  assert.deepEqual(refs(found), [
+    'js/c.js:1 Spec-Marke',
+    'js/c.js:1 Entscheidungsmarke',
+    'js/c.js:2 Spec-Marke',
+    'js/c.js:3 Spec-Marke',
+    'js/c.js:4 Spec-Marke',
+    'js/c.js:5 Spec-Marke',
+    'js/c.js:5 Entscheidungsmarke',
+    'js/c.js:6 Spec-Marke',
+    'js/c.js:6 Entscheidungsmarke',
+    'js/c.js:7 Spec-Marke',
+    'js/c.js:8 Spec-Marke',
+    'js/c.js:9 Spec-Marke',
+    'js/c.js:10 Spec-Marke',
+    'js/c.js:11 Spec-Marke',
+    'js/c.js:12 Spec-Marke',
+    'js/c.js:13 Spec-Marke',
+    'js/c.js:14 Spec-Marke',
+  ]);
+});
+
+test('Entscheidungsmarken (E3) und Erwähnungen des privaten Repos', () => {
+  const found = scanRefs({
+    'js/d.js': [
+      '// er blockierte den Stapel (E3).',
+      '// ein Setter je Feld (Plan E2, E7)',
+      '// ohne Umwandeln (Welle-2-E5).',
+      ' * posts to the private repo\'s PHP endpoint',
+      ' * (css/site.css im privaten Repo)',
+      ' * in tools/site-build/build.mjs des privaten Repos',
+      '# das private Site-Repo liefert die Datei',
+      '// Reference values from the site repo:',
+    ].join('\n'),
+  });
+  assert.deepEqual(refs(found), [
+    'js/d.js:1 Entscheidungsmarke',
+    'js/d.js:2 Entscheidungsmarke',
+    'js/d.js:3 Entscheidungsmarke',
+    'js/d.js:4 privates Repo',
+    'js/d.js:5 privates Repo',
+    'js/d.js:6 privates Repo',
+    'js/d.js:7 privates Repo',
+    'js/d.js:8 privates Repo',
+  ]);
+});
+
+test('Code mit `spec`, Zahlen und Farben ist keine Marke', () => {
+  const found = scanRefs({
+    'js/e.js': [
+      'const fit = fitFromSpec(spec, data);',
+      'for (const [role, expected] of Object.entries(spec)) {}',
+      "const ok = list.filter((spec) => spec.startsWith('./'));",
+      'const parse = (spec) => parseSpec(spec);',
+      'if (spec == null) return spec?.kind;',
+      'const big = 1E5 + 2e10; const c = "#E1E1E1"; const u = "\\u00E4";',
+      '// Fehlerquote E[X] und das Element E12a',
+      '// specs liegen beim Build; inspect E-Mail',
+      '// a private repository of samples',
+      '"spec": { "lsl": 1 }, "spcOutOfSpec": "Out of Spec",',
+    ].join('\n'),
+  });
+  assert.deepEqual(refs(found), []);
 });
 
 test('.gitignore darf /.claude/ ausschließen', () => {

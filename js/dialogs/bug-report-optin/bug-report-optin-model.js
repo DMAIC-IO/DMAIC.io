@@ -5,7 +5,7 @@ export class Model {
   errors = false;
 
   /**
-   * Reset all boxes — every open starts unchecked (spec decision 2).
+   * Reset all boxes — every open starts unchecked.
    * @returns {Model}
    */
   apply() {

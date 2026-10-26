@@ -74,7 +74,7 @@ const COLUMN_SLOTS = ['x', 'g'];
  * Die Agenten-Lesefläche des Mosaikdiagramms.
  *
  * Die zwei Kategorienspalten sind der Zustand; dazu die Mengen, gegen die
- * `setColumn` prüft; die Kreuztabelle als Zahlen in `stats` (E8). Nicht
+ * `setColumn` prüft; die Kreuztabelle als Zahlen in `stats`. Nicht
  * darin: `chartConfig` (Darstellung), das Diagrammbild, `exampleWorksheetId`.
  *
  * @typedef {object} AgentRead
@@ -87,7 +87,7 @@ const COLUMN_SLOTS = ['x', 'g'];
 
 /**
  * Summe je Kategorie, je Gruppe und insgesamt. Eine Quelle für die Tabelle
- * und für `read().stats` (E8).
+ * und für `read().stats`.
  *
  * @param {Array<{values: number[]}>} groups  je Gruppe die Häufigkeit je Kategorie
  * @param {number} categoryCount  Zahl der Kategorien
@@ -211,7 +211,7 @@ const mod = createModule({
         return [{ x: this.model.xRef, g: this.model.gRef }];
       },
 
-      /** Die Kennzahlen für read() — die Kreuztabelle aus derselben Quelle wie die Tabelle (E8). */
+      /** Die Kennzahlen für read() — die Kreuztabelle aus derselben Quelle wie die Tabelle. */
       _agentStats() {
         const d = this.model.buildChartData((ref) => this._getColumnValues(ref));
         if (!d.categories.length || !d.groups.length) return null;

@@ -34,7 +34,7 @@ export default createModule({
         module._context.notify?.(_t('openResourcesHint'), 'info');
       },
 
-      // ── Zustands-Sinks: ein Setter je Textfeld (Plan E7) ──────────────
+      // ── Zustands-Sinks: ein Setter je Textfeld ──────────────
       // Bewusst sieben benannte Setter statt eines generischen
       // `setField(name, text)`: nur so trägt jeder Parameter in
       // `module.describe` seinen eigenen Hilfesatz, statt die Bedeutung in

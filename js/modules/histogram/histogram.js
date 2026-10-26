@@ -195,7 +195,7 @@ export function histogramData(module, _t) {
       return this.model.datasets.map(ds => ({ value: ds.valueRef, group: ds.groupRef }));
     },
 
-    /** Die Kennzahlen für read() — dieselben Reihen und dieselbe Rechnung wie die Tabelle (E8). */
+    /** Die Kennzahlen für read() — dieselben Reihen und dieselbe Rechnung wie die Tabelle. */
     _agentStats() {
       let series;
       try { series = this._buildSeries(); } catch { return null; }
@@ -569,7 +569,7 @@ export function histogramData(module, _t) {
  * (Titel, Achsen, Schriftgrößen, Hintergrund), `seriesOverrides`,
  * `showPareto`/`showBoxplot`/`showStats`, Referenzlinien und `barGap` — nur
  * über den Diagramm-Editor —, das Diagrammbild. Die Kennzahlen stehen in
- * `stats` (E8).
+ * `stats`.
  *
  * @typedef {object} AgentRead
  * @property {Dataset[]} datasets  per data row its columns, each described under keys

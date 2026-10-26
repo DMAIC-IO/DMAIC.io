@@ -85,7 +85,7 @@ const PARAM_CHECKS = {
  * Die Agenten-Lesefläche der Karte seltener Ereignisse.
  *
  * Eingaben (Kartentyp, Spalte), die Mengen der Setter und das gerechnete
- * Ergebnis als Zahlen (Plan Welle 3 B, E4). Nicht darin: Kennzahlenleiste
+ * Ergebnis als Zahlen. Nicht darin: Kennzahlenleiste
  * und Badge als Text, `exampleWorksheetId`.
  *
  * @typedef {object} AgentRead
@@ -230,7 +230,7 @@ const mod = createModule({
         return out;
       },
 
-      /** Ergebnis und Punkte für read(), aus dem Vorlagenfeld `result` (E4). */
+      /** Ergebnis und Punkte für read(), aus dem Vorlagenfeld `result`. */
       _agentResult() {
         const r = this.result;
         if (!r) return { result: null, points: [], pointsColumns: [] };

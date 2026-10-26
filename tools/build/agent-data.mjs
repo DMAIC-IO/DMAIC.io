@@ -1,7 +1,7 @@
 /**
  * agent-data — generate js/core/agent/agent-registry.generated.js.
  *
- * Spec §8: die Werkzeugbeschreibungen werden zur Build-Zeit ABGELEITET, nicht
+ * Die Werkzeugbeschreibungen werden zur Build-Zeit ABGELEITET, nicht
  * handgeschrieben — so gibt es keine Parallelquelle, die driften könnte.
  * Zwei Quellen, klar getrennt:
  *   • Struktur (Feldnamen, Typen, Parameter, Ergebnisformen) ← JSDoc im Code
@@ -9,7 +9,7 @@
  * Diese Datei liefert ausschließlich die STRUKTUR plus die JSDoc-Prosa als
  * Rückfall; den i18n-Vorrang entscheidet `agent-catalog.js` zur Laufzeit.
  *
- * Zwei Marken, keine dritte Möglichkeit (Spec §9): jede öffentliche METHODE
+ * Zwei Marken, keine dritte Möglichkeit: jede öffentliche METHODE
  * der Datenfunktion trägt `@agent` oder `@noagent`. Eine unmarkierte Methode
  * ist ein Verstoß — aber nur dann, wenn das Modul das Modul-Tag `@agent`
  * trägt. Fehlt das Modul-Tag, ist das Modul `available: false` und KEIN
@@ -40,7 +40,7 @@
  * `self_inheriting_class:<name>` und `unresolved_base_class:<name>`. Die
  * Liste wächst mit jeder neuen Blindstelle; verbindlich ist nicht ihre Länge,
  * sondern die Regel: JEDER Blindstellen-Code bleibt BERICHTEND — wie die
- * DOM-Umweg-Prüfung zählt er erst, wenn das Modul das Modul-Tag trägt (Spec §8: „Lücken blockieren nicht"). So kann
+ * DOM-Umweg-Prüfung zählt er erst, wenn das Modul das Modul-Tag trägt („Lücken blockieren nicht"). So kann
  * aber kein Modul freigegeben werden, bevor jemand hingesehen hat.
  *
  * Extraktion über die TypeScript-Compiler-API: sie liest JSDoc aus reinem
@@ -111,7 +111,7 @@ function buildEntry(resolver, appDir, viewmodelFile) {
 
   // Deklarierte Lesefläche hat Vorrang und ERSETZT die Model-Ableitung —
   // nicht ergänzt sie: zwei Quellen für dieselbe Fläche wäre genau die
-  // Parallelquelle, die Spec §8 vermeidet. Ohne Deklaration bleibt alles
+  // Parallelquelle, die das Design vermeidet. Ohne Deklaration bleibt alles
   // wie bisher (Model-Felder, driftfrei per Konstruktion).
   const declared = readAgentReadTypedef(sf);
   // Ausgaben: ein erklärtes Feld vom Typ einer Typedef der Datei
@@ -133,7 +133,7 @@ function buildEntry(resolver, appDir, viewmodelFile) {
   //   • Null Aktionen: „vollständig über das Viewmodel steuerbar" ist dann
   //     wahr-aber-leer. Befundfrei heißt nicht freigabereif (mosaic,
   //     pie-chart).
-  //   • Kein `read()`: Spec §9 Migrationsschritt 3. Ohne Lesefläche ist ein
+  //   • Kein `read()`. Ohne Lesefläche ist ein
   //     Modul für einen Agenten blind bedienbar — er sieht nicht, was er
   //     angerichtet hat.
   // Nur wenn `violations` (Extraktion) bereits leer ist: eine nicht auflösbare
@@ -182,7 +182,7 @@ function buildEntry(resolver, appDir, viewmodelFile) {
     ...unreachable, ...templateCalls,
     ...subViewModelModelBindings(dirname(viewmodelFile), subViewModels),
     ...undeclaredOptions];
-  // Verstöße zählen nur, wenn das Modul etwas behauptet (Spec §9).
+  // Verstöße zählen nur, wenn das Modul etwas behauptet.
   const effective = tagged ? reported : [];
   return {
     tagged,
@@ -329,7 +329,7 @@ function isPrimitiveType(node) {
 }
 
 /**
- * Eigenschaften, deren Beschreiben Zustand ins DOM legt (Spec §10.2).
+ * Eigenschaften, deren Beschreiben Zustand ins DOM legt.
  *
  * Absichtlich SEHR eng. Die naheliegende, weite Regel (`value`,
  * `textContent`, `checked`) trifft 52 von 72 Modulen und ist dabei fast
@@ -352,7 +352,7 @@ const ASSIGN_KINDS = new Set([
 
 /**
  * Finde zustandsändernde DOM-Zugriffe. Berichtend, nicht beweisend — der
- * eigentliche Beweis ist die dynamische Paritätsprüfung (Spec §10.4).
+ * eigentliche Beweis ist die dynamische Paritätsprüfung.
  * @param {ts.SourceFile} sf
  * @returns {string[]} Codes der Form `dom_detour:<prop>@<zeile>`
  */
@@ -416,7 +416,7 @@ function isDatasetAccess(node) {
 
 /**
  * Name des Typedef, mit dem ein Modul seine Agenten-Lesefläche DEKLARIERT,
- * statt sie aus dem Model ableiten zu lassen (Entscheidung E1 des Plans).
+ * statt sie aus dem Model ableiten zu lassen.
  *
  * Gebraucht wird das, wo die persistierte Form nicht die Lesefläche ist:
  * `worksheet` persistiert opake DataGrid-Blobs, und `hypothesis-test` hält
@@ -770,7 +770,7 @@ function readViewmodel(sf, resolver, appDir) {
   // Was der Generator NICHT sehen kann, muss er melden — sonst ginge ein
   // solches Modul mit gesetztem Modul-Tag und NULL Verstößen durch den Build
   // und würde `available: true`, obwohl keine einzige seiner Methoden
-  // begutachtet wurde (Review-Befund I6/P1). Die Zusage aus Spec §9 („das
+  // begutachtet wurde (Review-Befund I6/P1). Die Zusage („das
   // Modul-Tag ist maschinell nachgeprüft") wäre sonst eine leere Operation.
   if (!literal) { out.violations.push('unresolvable_data_literal'); return out; }
 
@@ -792,7 +792,7 @@ function readViewmodel(sf, resolver, appDir) {
     if (name.startsWith('_')) continue;
     const member = entry.member;
     // `name: new X(…)` mit importierter Klasse ist ein Teil-Viewmodel
-    // (Spec 2026-10-24 E3); `new Map()` und Fabrikaufrufe bleiben Daten.
+    //; `new Map()` und Fabrikaufrufe bleiben Daten.
     const sub = ts.isPropertyAssignment(member) ? classOfNew(member.initializer, entry.sf, resolver) : null;
     if (sub) {
       if (!sub.decl) { out.violations.push(`unresolved_sub_viewmodel:${name}`); continue; }
@@ -908,7 +908,7 @@ function classOfNew(expr, sf, resolver) {
 }
 
 /**
- * Die Methoden eines Teil-Viewmodels (Spec 2026-10-24 E3): dieselben
+ * Die Methoden eines Teil-Viewmodels: dieselben
  * Prüfungen wie an der Wurzel, Aktionsname `<teil>.<methode>`, Herkunft
  * immer die Datei der Klasse. Genau eine Ebene: ein Teil-Viewmodel im
  * Teil-Viewmodel ist ein Befund. Die Datei der Klasse wird zusätzlich auf
@@ -965,7 +965,7 @@ function fieldNews(member) {
 }
 
 /**
- * Bindungen der Vorlage an `<teil>.model.…` (Spec 2026-10-24 E3). Ins Model
+ * Bindungen der Vorlage an `<teil>.model.…`. Ins Model
  * schreibt die Vorlage über `model.…` oder über eine Methode eines
  * Teil-Viewmodels — sonst sähen `unreachable_write` und
  * `template_model_call` den Schreibweg nicht.
@@ -999,7 +999,7 @@ function subViewModelModelBindings(moduleDir, subNames) {
  * (parameterlos, `apply(t) { this.title = t; }`) als Abdeckung gezählt —
  * genau die Form, die R2 an jedem Alpine-`@change`-Handler erzeugt
  * (`control-chart.chartTypeChanged`, `histogram.binModeChanged`), und genau
- * das Gegenteil von E2 („jedes `x-model`-gebundene Feld bekommt einen
+ * das Gegenteil der Regel („jedes `x-model`-gebundene Feld bekommt einen
  * `@agent`-SETTER" — ein parameterloses `clear()` ist kein Setter):
  *   1. `this.model.<feld> = <ausdruck>` / `+= <ausdruck>` direkt im
  *      `@agent`-Methodenkörper, wenn `<ausdruck>` einen Bezeichner eines
@@ -1307,7 +1307,7 @@ function expandDerivedNames(body, names) {
  * Zustandsabhängige Wertemengen einer `@agent`-Methode: Aufrufe von
  * `requireEnum`/`requireKnownId`, deren drittes Argument an `this` hängt.
  * Dann muss die Lesefläche die Menge nennen — sonst erfährt ein Agent sie
- * nur aus einem Fehlschlag (Plan E1).
+ * nur aus einem Fehlschlag.
  *
  * Erkennung ist FORMGEBUNDEN, nicht fail closed. Das dritte Argument zählt,
  * wenn es auf einen Zugriff an `this` zurückführt: direkt, über einen lokalen
@@ -1786,7 +1786,7 @@ const MAX_EXTENDS_DEPTH = 12;
 
 /**
  * Model-Felder → Lesestruktur. Deckt sich mit „Models sind für die
- * Persistenz": die Lesefläche IST die persistierte Form (Spec §8).
+ * Persistenz": die Lesefläche IST die persistierte Form.
  * `_`-präfigierte Felder sind privat und erscheinen nicht.
  *
  * Die Wurzel ist GENAU die Klasse, die `createModule({ … Model: State … })`
@@ -2096,8 +2096,8 @@ function ownFields(node) {
   for (const member of node.members) {
     // Ein `static`-Mitglied gehört der Klasse, nicht der Instanz: `static
     // VERSION = '3'` ist Schema-Metadatum, steht in keinem `toJSON()` und
-    // wäre in der Lesefläche ein Feld, das das Model nicht hält (Spec §8:
-    // „die Lesefläche IST die persistierte Form").
+    // wäre in der Lesefläche ein Feld, das das Model nicht hält („die
+    // Lesefläche IST die persistierte Form").
     if (ts.getCombinedModifierFlags(member) & ts.ModifierFlags.Static) continue;
     if (ts.isPropertyDeclaration(member)) {
       const name = member.name.getText();
@@ -2215,12 +2215,12 @@ export function renderAgentRegistryModule(data) {
   const sorted = {};
   for (const id of Object.keys(data.modules).sort()) sorted[id] = data.modules[id];
   return `// AUTO-GENERATED by tools/build/agent-data.mjs — do not edit.
-// Struktur aus JSDoc abgeleitet (Spec §8). Text kommt zur Laufzeit aus i18n.
+// Struktur aus JSDoc abgeleitet. Text kommt zur Laufzeit aus i18n.
 
 /** @type {Record<string, import('./agent-contract.js').AgentModuleEntry>} */
 export const AGENT_REGISTRY = ${JSON.stringify(sorted, null, 2)};
 
-/** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
+/** Abdeckung als Zahl: n von m Modulen agentenfähig. */
 export const AGENT_COVERAGE = ${JSON.stringify(data.coverage)};
 `;
 }

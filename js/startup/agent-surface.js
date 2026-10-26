@@ -4,7 +4,7 @@
  * Setzt `window.qprovement = { interact }`. Mehr nicht: kein Objektbaum aus
  * Modulfunktionen — der wäre nicht stapelbar, nicht entdeckbar und ein
  * zweiter Routingweg. Die Moduldetails stehen im Aktionskatalog, nicht im
- * Objektgraph (Spec §3).
+ * Objektgraph.
  *
  * Dies ist die dokumentierte Ausnahme zur Konvention „keine globalen
  * Variablen": EIN Namensraum-Objekt, eingefroren, ohne DOM-Zugriff, jeder
@@ -20,8 +20,7 @@
  *
  * Stufe 2 (App als eigener Harness) ersetzt diese Datei durch einen
  * HTTP-Client am DEMSELBEN Runtime — Aktionskatalog, Prüfer,
- * Referenzauflösung, Fehlerformen und Registry werden unverändert geerbt
- * (Spec §11).
+ * Referenzauflösung, Fehlerformen und Registry werden unverändert geerbt.
  */
 import { createStartup } from '../core/create-startup.js';
 import { createAgentRuntime, createConsentGate, AGENT_REGISTRY } from '../core/agent/index.js';
@@ -46,7 +45,7 @@ export default createStartup({
       openDialog: () => openAgentConsent(dialog, i18n, consentDialog, {
         projectName: stateManager.get('projectMeta.name') ?? '',
       }),
-      // Spec §3.2: beim Erteilen wird der Nutzer zum Projekt-Export
+      // Beim Erteilen wird der Nutzer zum Projekt-Export
       // aufgefordert. Das ist die vereinbarte Sicherung — ein eigener
       // Schnappschuss- oder Undo-Mechanismus wird nicht gebaut.
       promptExport: () => exportAllProjects({ stateManager, eventBus, i18n, notify }),

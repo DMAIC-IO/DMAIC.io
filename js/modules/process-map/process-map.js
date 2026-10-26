@@ -282,7 +282,7 @@ export default createModule({
         this.model.cycleValueType(stepId);
       },
 
-      // ── New sinks (E2) ─────────────────────────────────────────
+      // ── New sinks ─────────────────────────────────────────
       /**
        * Setzt den Titel eines Schritts.
        * @agent

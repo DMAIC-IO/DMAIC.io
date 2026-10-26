@@ -1,5 +1,5 @@
 /**
- * Abdeckungszahl „Beschriftungen mit Anker“ (Spec 2026-10-17 §4 0c).
+ * Abdeckungszahl „Beschriftungen mit Anker“.
  *
  * Zählt in den Vorlagen der freigegebenen Module jede sichtbare Beschriftung
  * — `<label>`, `.dmike-kpi-label`, `<th>` — und prüft, ob sie ein

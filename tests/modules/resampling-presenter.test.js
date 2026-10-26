@@ -95,7 +95,7 @@ suite('resampling-presenter — resultView', () => {
     const exact = resultView(two({ perm: { observed: 1, pValue: 0.5, exact: true, permutations: 252, bins: BINS } }), { ciMethod: 'bca', target: '' });
     assertEqual(exact.test.methodKey, 'exact');
   });
-  test('the target only decides in mode one (spec: one-sample decision)', () => {
+  test('the target only decides in mode one (one-sample decision)', () => {
     assertEqual(resultView(two(), { ciMethod: 'bca', target: '3' }).decisionKey, null);
   });
   test('k samples: groups and Holm-adjusted pairs, no bootstrap block', () => {

@@ -3,7 +3,7 @@
  * Each module spreads an entry and adds its own localized `note`.
  */
 
-/** Melzer 2019 — basis of the book review in docs/book-reviews/melzer-2019/. */
+/** Melzer 2019 — basis of a book review. */
 export const MELZER_2019 = {
   id: 'melzer-2019',
   type: 'book',

@@ -1,5 +1,5 @@
 /**
- * Tests for core/agent/agent-read.js — the read() projection from Spec §7
+ * Tests for core/agent/agent-read.js — the read() projection
  * ("der Agent bekommt Umfang statt Masse, bis er gezielt nachfragt").
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';

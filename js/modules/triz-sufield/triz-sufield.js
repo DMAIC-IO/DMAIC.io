@@ -285,10 +285,10 @@ const base = createModule({
         this.setS2(event.target.value);
       },
 
-      // ── Zustands-Sinks: ein Setter je Feld (Plan E2, E7) ───────────
+      // ── Zustands-Sinks: ein Setter je Feld ───────────
       // `setFieldType` heißt nicht `setField`: das Feld des Models heißt
-      // `field`, und ein generisches `setField(name, wert)` wäre nach E7
-      // genau der Name, der die Bedeutung aus der Werkzeugbeschreibung in
+      // `field`, und ein generisches `setField(name, wert)` wäre nach der
+      // Namensregel für Setter genau der Name, der die Bedeutung aus der Werkzeugbeschreibung in
       // eine Fehlermeldung verschiebt.
 
       /**

@@ -440,8 +440,7 @@
 }
 
 /* ===== Loop band =====
-   One <tbody class="pmap__loop"> per loop below the outputs row (spec
-   2026-10-01-process-map-horizontal-loops-design.md). The rail row draws
+   One <tbody class="pmap__loop"> per loop below the outputs row. The rail row draws
    the return path from per-column modifiers; horizontal segments reach
    left across the column gap (border-spacing = --fc-chain-gap). The body
    row holds the controls at the source column and the rework chips, which

@@ -20,7 +20,7 @@
  *   Richtung, α, Power-Ziel, Zielwert, Varianzannahme, Spaltenwahl und das
  *   Rechnen selbst. Gelesen wird über read() mit erklärter Lesefläche
  *   (AgentRead) — Konfiguration plus gerechnetes Ergebnis. Der Agent bekommt
- *   Zahlen, keine Diagramme (Spec §11).
+ *   Zahlen, keine Diagramme.
  */
 
 import { createModule } from '../../core/template-module.js';
@@ -231,10 +231,10 @@ function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–';
  * Die Agenten-Lesefläche des Hypothesentests.
  *
  * Nicht die persistierte Form: das Model hält NUR die Konfiguration, das
- * Ergebnis entsteht transient am Viewmodel (`result`). Spec §7 verlangt
+ * Ergebnis entsteht transient am Viewmodel (`result`). Verlangt ist
  * aber ausdrücklich, dass der Lesezustand die gerechneten Größen mitliefert —
  * „erklär mir diese Ausreißer" braucht keine eigene Aktion. Darum erklärt
- * dieses Modul seine Lesefläche (Plan-Entscheidung E1): Konfiguration plus
+ * dieses Modul seine Lesefläche: Konfiguration plus
  * Ergebnis, ohne die interne Beispiel-Buchführung (`exampleWorksheetId`).
  *
  * @typedef {object} AgentRead

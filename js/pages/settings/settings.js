@@ -3,7 +3,7 @@
  * Fully-Alpine conversion of the former _initSettings + _initShortcutsTab.
  * Rendered in a dialog of the dialog service via the createPage() factory
  * (`dialog` option). The data-fn owns all control state; two imperative
- * exceptions (per spec §Conventions) are wrapped by Alpine state:
+ * exceptions are wrapped by Alpine state:
  *   - the color picker (openColorPicker — imperative widget),
  *   - the shortcuts capture keydown listener (document-level, capture phase).
  */
@@ -225,7 +225,7 @@ export default createPage({
         stateManager.set('settings.exportReminderMinutes', v);
       },
 
-      // ── KI-Agenten (Spec §3.2: Einwilligung sichtbar und widerrufbar) ──
+      // ── KI-Agenten (Einwilligung sichtbar und widerrufbar) ──
       ...agentSettingsData({
         stateManager, i18n, eventBus,
         notify: (msg, kind) => context.notify?.(msg, kind),

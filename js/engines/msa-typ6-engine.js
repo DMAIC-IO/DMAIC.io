@@ -112,7 +112,7 @@ function _groupInOrder(values, subgroups) {
  * Compute control limits for the primary/secondary chart pair, for both
  * chart types (I-MR, X̄-R) and both limits modes (from-study, given).
  *
- * `given` mode formulas (Spec § 4) are computed directly from µ₀/σ₀ — no
+ * `given` mode formulas are computed directly from µ₀/σ₀ — no
  * delegation. `from-study` mode delegates the baseline aggregation to
  * {@link computeIMR}/{@link computeXbarR} in control-chart-engine.js.
  *
@@ -236,8 +236,8 @@ function _toNumericTimeAxis(axis) {
 
 /**
  * Drift-Test: einfache lineare Regression des Primär-Kennwerts über die
- * Zeitachse `t`, gefolgt von einem zweiseitigen t-Test auf β₁ = 0
- * (Spec § 4). Formeln decken sich mit `scipy.stats.linregress` — Referenz
+ * Zeitachse `t`, gefolgt von einem zweiseitigen t-Test auf β₁ = 0.
+ * Formeln decken sich mit `scipy.stats.linregress` — Referenz
  * für den Fixture-Generator.
  * @param {number[]} y — Primär-Serie (i-Werte bzw. x̄-Werte)
  * @param {number[]} t — Zeitachse, siehe {@link _timeAxis}
@@ -276,8 +276,7 @@ function _driftTest(y, t, alpha, tScale) {
 }
 
 /**
- * Ampel-Bewertung (Verdikt) aus Nelson-Verletzungen und Drift-Test (Spec § 4
- * „Verdikt-Ampel"). `stable` nur bei 0 Verletzungen und ohne signifikanten
+ * Ampel-Bewertung (Verdikt) aus Nelson-Verletzungen und Drift-Test. `stable` nur bei 0 Verletzungen und ohne signifikanten
  * Drift; `unstable` bei ≥ 3 Verletzungen oder starkem Trend (p < α/10);
  * alles dazwischen ist `marginal`. `driver` benennt den Ausschlag-Grund für
  * UI-Text (Interpretation-Textbaustein).
@@ -309,7 +308,7 @@ function _verdict(ruleViolations, drift, alpha) {
 }
 
 /**
- * Aggregate `meta.warnings` (Spec § 4 „Warnungen"): Basis zu klein
+ * Aggregate `meta.warnings`: Basis zu klein
  * (`W_BASELINE_LT_20`), nicht-monotone Zeitstempel
  * (`W_TIMESTAMPS_NON_MONOTONIC`), oder Nelson-Verletzung innerhalb der
  * Basis-Untergruppen (`W_LIMITS_FROM_UNSTABLE_BASELINE`, Grenzen ggf.

@@ -1,5 +1,5 @@
 /**
- * Tests for core/agent/agent-argcheck.js — requireNumber (E6).
+ * Tests for core/agent/agent-argcheck.js — requireNumber.
  *
  * Die übrigen Prüfer sind über die Paritätsspecs der Module belegt; requireNumber
  * hat eine Zwischenform (Zahl oder Zahlentext), die hier direkt gesichert wird.

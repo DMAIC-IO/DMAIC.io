@@ -21,7 +21,7 @@ dataset (StdDev 0.009887547, Cp 1.686, Cpk 1.646), which is kept under
 
 ## Estimators (`estimators` block)
 
-`tools/gold-standards/capability_within_gold.py` (private repo) recomputes
+An external SciPy reference script recomputes
 every σ within estimator of Minitab's Normal Capability Analysis with
 numpy/scipy and Minitab's printed constants, plus ν and the 95 % CIs of Cp
 (χ²(ν)) and Cpk (Bissell: √(1/(9N) + Cpk²/(2ν))).

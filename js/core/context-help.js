@@ -1,7 +1,7 @@
 /**
  * D.Mike — Kontexthilfe am Label (context-help.js)
  *
- * Die UI-Seite der Agenten-Kontexthilfen. Spec §8 verlangt, dass derselbe
+ * Die UI-Seite der Agenten-Kontexthilfen. Verlangt ist, dass derselbe
  * i18n-Schlüssel die Agentenbeschreibung UND die Kontexthilfe in der UI
  * speist — „die Kontexthilfe flächendeckend zu haben ist ohnehin eine
  * Verbesserung für Menschen; der Agent ist der Anlass, nicht der einzige
@@ -23,8 +23,7 @@
  *
  * Alles Visuelle — Icon, Knopf, Fenster, Hintergrund, aria — liegt in dieser
  * einen Datei plus dem CSS in components.css. Fehlt der i18n-Schlüssel,
- * entsteht KEIN Knopf: eine Lücke bleibt sichtbar und blockiert nichts
- * (Spec §8, Regel 1).
+ * entsteht KEIN Knopf: eine Lücke bleibt sichtbar und blockiert nichts.
  *
  * Muster und Idempotenz-Vertrag sind von `core/glossary-inline.js` übernommen;
  * wer dort etwas ändert, sollte hier hinsehen.

@@ -85,7 +85,7 @@ const COLUMN_SLOTS = ['value', 'group'];
  * Reihe ohne Wertespalte verwirft das Model (wie bei der Oberfläche). Nicht
  * darin: Darstellung (`showMean`, `showOutliers`, Farben, Referenzlinien),
  * `showStats`/`confLevel` (ohne Bedienelement), das Diagrammbild,
- * `exampleWorksheetId`. Die Kennzahlen stehen in `stats` (E8).
+ * `exampleWorksheetId`. Die Kennzahlen stehen in `stats`.
  *
  * @typedef {object} AgentRead
  * @property {object[]} seriesRefs  per data row its value column (slot `value`), `{ instanceId, sheetId, columnId }`
@@ -174,7 +174,7 @@ const mod = createModule({
         return this.model.seriesRefs.map((ref, i) => ({ value: ref, group: this.model.groupRefs[i] || null }));
       },
 
-      /** Die Kennzahlen für read() — dieselben Gruppen und dieselbe Rechnung wie die Tabelle (E8). */
+      /** Die Kennzahlen für read() — dieselben Gruppen und dieselbe Rechnung wie die Tabelle. */
       _agentStats() {
         let groups;
         try { groups = this._buildGroups(_t); } catch { return null; }

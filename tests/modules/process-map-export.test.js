@@ -1,7 +1,6 @@
 /**
  * D.Mike — Process Map export scene unit tests
  * Specifies buildPmapScene (pure layout → primitives) and renderSceneToSVG
- * (spec 2026-10-06-process-map-export-horizontal-design).
  */
 
 import { suite, test, assert, assertEqual, assertDeepEqual } from '../test-utils.js';

@@ -4,8 +4,8 @@
  * Sub-viewmodel of the hypotheses tab: expert team, cause tree, ratings,
  * filter, category names, the Pareto chart with its editor and the CSV
  * export. Knows the model, the pure ishikawa-*.js helpers and core modules —
- * never a sibling or the shell (spec E2). Tells the others when the causes
- * change; follows comparisons, deletions and loads of snapshots (spec E3).
+ * never a sibling or the shell. Tells the others when the causes
+ * change; follows comparisons, deletions and loads of snapshots.
  */
 
 import { h } from '../../../core/dom.js';
@@ -114,7 +114,7 @@ export class CausesViewModel {
   }
 
   /**
-   * Binds the model and subscribes to the snapshot events (spec E3). Called
+   * Binds the model and subscribes to the snapshot events. Called
    * through the Alpine proxy, so the listeners write reactive state.
    * @noagent lifecycle
    * @param {{model: object, events: object, watch: function, nextTick: function, ref: function(string): ?Element}} binding
@@ -162,7 +162,7 @@ export class CausesViewModel {
    */
   render() { this.renderPareto(); }
 
-  /** Tells the others that causes, experts or ratings changed (spec E3). */
+  /** Tells the others that causes, experts or ratings changed. */
   _changed() { this._emit(EVENTS.causesChanged); }
 
   // ── Glyphs (Unicode via data-Fn, never \u in template) ────

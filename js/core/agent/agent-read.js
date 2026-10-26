@@ -1,7 +1,7 @@
 /**
  * D.Mike — read()-Projektion der Agentenschicht (agent-read.js)
  *
- * Spec §7: `read()` ohne Parameter liefert den Zustand OHNE Massendaten plus
+ * `read()` ohne Parameter liefert den Zustand OHNE Massendaten plus
  * deren Umfang („3 Spalten, 5000 Zeilen"), damit der Agent gezielt
  * nachfragen kann, statt ein Arbeitsblatt mit 5000 Zeilen durch sein
  * Kontextfenster zu schieben.

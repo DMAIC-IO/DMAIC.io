@@ -1,6 +1,6 @@
 /**
  * Tests for core/agent/agent-catalog.js — the catalog, the validator's world
- * snapshot, and module.describe. Spec §3.1, §7, §8, §9.
+ * snapshot, and module.describe.
  */
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../test-utils.js';
 import {

@@ -1,8 +1,7 @@
 /**
  * D.Mike — Process Map image export (process-map-export.js)
  *
- * One pure scene builder, two thin renderers (spec
- * 2026-10-06-process-map-export-horizontal-design). `buildPmapScene` lays the
+ * One pure scene builder, two thin renderers. `buildPmapScene` lays the
  * steps out like the screen — one column per step, rows for inputs, cards and
  * outputs, one loop band per loop below — and returns a flat list of drawing
  * primitives. `renderSceneToCanvas` / `renderSceneToSVG` only paint them.

@@ -389,7 +389,7 @@ export default createModule({
 
       /**
        * @noagent fragt vor dem Löschen zurück; ein Agent darf keine Rückfrage
-       * auslösen — er blockierte den Stapel (E3). Delegiert an `removeStep`.
+       * auslösen — er blockierte den Stapel. Delegiert an `removeStep`.
        */
       async deleteStep(stepId) {
         const idx = this.model.steps.findIndex(s => s.id === stepId);
@@ -407,7 +407,7 @@ export default createModule({
 
       /**
        * @noagent fragt vor dem Löschen zurück; ein Agent darf keine Rückfrage
-       * auslösen — er blockierte den Stapel (E3). Delegiert an `removeRole`.
+       * auslösen — er blockierte den Stapel. Delegiert an `removeRole`.
        */
       async deleteRole(roleId) {
         const role = this.model.roles.find(r => r.id === roleId);
@@ -578,7 +578,7 @@ export default createModule({
       },
       /**
        * @noagent fragt vor dem Zurücksetzen zurück; ein Agent darf keine
-       * Rückfrage auslösen — er blockierte den Stapel (E3). Delegiert an
+       * Rückfrage auslösen — er blockierte den Stapel. Delegiert an
        * `resetSettingsToDefaults`.
        */
       async resetSettings() {

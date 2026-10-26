@@ -91,7 +91,7 @@ export default createModule({
           nextTick: (callback) => this.$nextTick(callback),
         };
         for (const vm of this._subViewModels()) vm.attach(binding);
-        // The only wiring between the parts (spec E2): kano instances may have changed.
+        // The only wiring between the parts: kano instances may have changed.
         const eb = module._context.eventBus;
         const onInstances = () => this.handover.onInstancesChanged();
         for (const evt of ['module:added', 'module:removed']) {

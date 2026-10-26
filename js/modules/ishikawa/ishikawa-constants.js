@@ -18,8 +18,8 @@ export const EXP_COLS = ['#6366f1','#0891b2','#059669','#d97706','#dc2626','#7c3
 export const LINE_COLS = ['#2563eb','#dc2626','#059669','#d97706','#7c3aed','#0891b2','#db2777','#84cc16','#f97316','#6366f1','#14b8a6','#f43f5e','#a855f7','#eab308','#22d3ee','#fb7185'];
 
 /**
- * Events on the instance-local bus between the ishikawa sub-viewmodels
- * (spec 2026-10-25 E3). Payloads: causesChanged none; snapshotCompared
+ * Events on the instance-local bus between the ishikawa sub-viewmodels.
+ * Payloads: causesChanged none; snapshotCompared
  * `{ id: number|null }`; snapshotRemoved and snapshotLoaded `{ id: number }`.
  */
 export const EVENTS = Object.freeze({

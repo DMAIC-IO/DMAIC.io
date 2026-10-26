@@ -140,9 +140,9 @@ test('countHelpCoverage survives an absent subtree and a string intermediate seg
 });
 
 /* ── Der echte Baum ─────────────────────────────────────────────────────────
-   Hier wird NICHT „alles muss 100 % sein" zugesichert — Spec §8 Regel 2 sagt
-   ausdrücklich, dass eine fehlende Kontexthilfe eine ausgewiesene Lücke ist
-   und nicht blockiert; das harte i18n-Tor der freigegebenen Module steht in
+   Hier wird NICHT „alles muss 100 % sein" zugesichert — eine
+   fehlende Kontexthilfe ist ausdrücklich eine ausgewiesene Lücke und
+   blockiert nicht; das harte i18n-Tor der freigegebenen Module steht in
    `agent-data.test.mjs`. Zugesichert wird, dass die Zahl die echte
    Auflösungskette benutzt: `five-why` hat über das geteilte `read()` den
    Parameter `options`, aber keinen modulspezifischen Schlüssel dafür. Ohne

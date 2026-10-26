@@ -1,9 +1,9 @@
 /**
  * D.Mike — Das geteilte read() der Agentenfläche (agent-read-mixin.js)
  *
- * Spec §9 Migrationsschritt 3 verlangt an jedem freigegebenen Viewmodel eine
+ * Freigabe verlangt an jedem freigegebenen Viewmodel eine
  * `read()`-Aktion, die den vollständigen Lesezustand liefert. Für jedes Modul,
- * dessen Lesefläche die persistierte Model-Form IST (Spec §8), ist dieses
+ * dessen Lesefläche die persistierte Model-Form IST, ist dieses
  * `read()` wortgleich — es steht deshalb genau hier und wird per Spread in die
  * `data()`-Funktion geholt:
  *

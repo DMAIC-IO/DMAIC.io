@@ -1,7 +1,7 @@
 /**
  * D.Mike — Nutzungsvertrag der Agentenfläche (agent-usage.js)
  *
- * Spec §3.1: `interact()` ohne Parameter liefert alles, was ein Agent zum
+ * `interact()` ohne Parameter liefert alles, was ein Agent zum
  * Start braucht. Der maschinenlesbare Teil (Aufrufform, Aktionsformen,
  * Fehlerformen) wird aus `OPS`/`ERRORS` ABGELEITET und nicht nebenher
  * aufgeschrieben — sonst gäbe es eine zweite Quelle, die driftet. Die Prosa

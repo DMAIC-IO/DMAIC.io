@@ -4,7 +4,7 @@
  * Sub-viewmodel of the optimal-design workspace (D-, A-, G-optimal): the
  * run count, the model terms, forbidden factor combinations, the source
  * worksheet and the augmentation of a linked datasheet. Writes the model
- * and saves; the shell's signature watcher regenerates (spec E3).
+ * and saves; the shell's signature watcher regenerates.
  */
 import {
   enumerateTerms, termDisplay, activateTerm, deactivateTerm, termSortKey,

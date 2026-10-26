@@ -764,7 +764,7 @@ test('readModelFields: an unresolvable base class is reported, and hard only wit
 // Konstruktor-Zuweisungen wurde daraus ein echter Fehler: `rest-api` behauptete
 // die Felder der Hilfsklasse `Endpoint` (`headers`, `mappings`), die auf dem
 // Model-Objekt nicht existieren. Eine Registry, die Felder behauptet, die es
-// nicht gibt, widerspricht Spec §8 direkt.
+// nicht gibt, widerspricht dem Grundsatz „die Lesefläche IST die persistierte Form“.
 
 test('readModelFields: a helper class in the model file contributes NOTHING', () => {
   const model = `export class Endpoint {
@@ -901,7 +901,7 @@ export class State extends C12 {
 test('readModelFields: a static class member is not a read field', () => {
   // `static VERSION` ist Schema-Metadatum der Klasse, kein Instanzzustand: es
   // steht in keinem `toJSON()` und würde der Registry ein Feld andichten, das
-  // das Model nicht hält — genau der Widerspruch zu Spec §8, den die
+  // das Model nicht hält — genau der Widerspruch zur persistierten Form, den die
   // Model-Wurzel-Korrektur sonst behoben hat.
   const model = `export class State {
   /** @type {string} the schema version */
@@ -1472,7 +1472,7 @@ test('i18n-Tor: jeder zur Laufzeit gebundene Hilfeschlüssel löst in BEIDEN Spr
 /* Controller-Entscheid zu Review-Befund 2: das Tor darf NICHT den
    modulspezifischen `actions.read.help` verlangen. Der geteilte Rückfall
    (`modules.shared.<suffix>`) ist genau dafür da, dass nicht 72 Module
-   denselben Satz in beide Sprachbäume kopieren, und Spec §8 Regel 1
+   denselben Satz in beide Sprachbäume kopieren, und Regel 1
    der Agentenfläche sagt ausdrücklich, dass fehlende Kontexthilfe
    nicht blockiert. Geprüft wird deshalb die dokumentierte KETTE:
    Modulschlüssel, sonst geteilter Schlüssel. Das Tor fängt weiterhin jede
@@ -1949,7 +1949,7 @@ test('unreachable_write: eine parameterlose @agent-Methode deckt NICHT ab, auch 
   // Form, die ein Alpine-`@change`-Handler erzeugt
   // (`control-chart.chartTypeChanged`, `histogram.binModeChanged`), und
   // R2 verlangt eine Marke an jeder öffentlichen Methode. Ein
-  // parameterloses `clear()`/`changed()` ist kein Setter im Sinn von E2.
+  // parameterloses `clear()`/`changed()` ist kein Setter im Sinn der Setter-Regel.
   const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
        * @agent
        * @returns {void}
@@ -2477,7 +2477,7 @@ test('undeclared_option_source: eine eingewickelte Menge wird am inneren Zugriff
 });
 
 test('undeclared_option_source: auch requireKnownId zählt', () => {
-  // E1: die Spaltenmenge aus E3 wird mit requireKnownId geprüft. Ein Gate,
+  // Die Spaltenmenge wird mit requireKnownId geprüft. Ein Gate,
   // das nur requireEnum ansieht, ließe den Vorzeigefall dieses Plans durch.
   const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
        * @agent
@@ -3303,7 +3303,7 @@ test('Ausgaben: ein Model-Feld ohne passende Typedef bleibt ohne keys', () => {
   assert.deepEqual(modules.foo.fields.entries.help, 'die Zeilen');
 });
 
-// ── Teil-Viewmodels (Spec 2026-10-24 E3) ─────────────────────────────
+// ── Teil-Viewmodels ─────────────────────────────
 
 /**
  * Modul `foo` mit dem Teil-Viewmodel `draft` aus `viewmodel/draft.js`.

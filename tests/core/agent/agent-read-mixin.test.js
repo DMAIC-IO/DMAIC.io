@@ -1,6 +1,6 @@
 /**
- * Tests für core/agent/agent-read-mixin.js — das EINE read(), das Spec §9
- * Migrationsschritt 3 an jedem Viewmodel verlangt. Einmal geschrieben statt
+ * Tests für core/agent/agent-read-mixin.js — das EINE read(), die Freigabe
+ * an jedem Viewmodel verlangt. Einmal geschrieben statt
  * 72-mal: der Generator löst den Spread auf und sieht Marke und Schema des
  * Mixin-Mitglieds.
  */

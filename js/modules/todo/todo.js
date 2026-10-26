@@ -372,7 +372,7 @@ export default createModule({
       /**
        * @noagent meldet die vorgemerkten Aufgaben an eine andere
        * Modulinstanz; die Fläche hat für modulübergreifende Schreibzugriffe
-       * keinen Weg (Spec §12).
+       * keinen Weg.
        */
       syncCalendar() {
         if (!this.hasCalendar) return;

@@ -3,7 +3,7 @@
  *
  * Sub-viewmodel of the recipients tab: recipient list, send status and the
  * per-recipient export. Knows the model, survey-labels.js and the pure
- * survey-*.js modules — never a sibling or the shell (spec E2).
+ * survey-*.js modules — never a sibling or the shell.
  */
 
 import { buildSurveyHtml, surveyFileName, runnerStrings } from '../survey-export.js';
@@ -48,7 +48,7 @@ export class RecipientsViewModel {
   }
 
   /**
-   * Binds the component's model (spec E2: two-stage binding).
+   * Binds the component's model (two-stage binding).
    * @noagent lifecycle
    * @param {{model: object, watch: function, nextTick: function}} binding
    */

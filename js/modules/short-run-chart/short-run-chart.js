@@ -89,7 +89,7 @@ const COLUMN_SINKS = {
  * Die Agenten-Lesefläche der Kurzserien-Karte (Z-MR).
  *
  * Eingaben (Messwert- und Gruppenspalte), die Mengen von `setColumn`, das
- * Ergebnis als Zahlen (Plan Welle 3 B, E4) und der Hinweis, den die
+ * Ergebnis als Zahlen und der Hinweis, den die
  * Oberfläche bei übersprungenen Gruppen zeigt. Nicht darin: Kennzahlenleiste
  * und Gruppentabelle als Text, `exampleWorksheetId`.
  *
@@ -139,7 +139,7 @@ const mod = createModule({
        * into the templated host via whenAnchor). See _renderCharts. */
       /** @type {Array<{id:string, title:string, badgeText:string, badgeClass:string}>} */
       chartViews: [],
-      /** Das Engine-Ergebnis der letzten Rechnung samt Zahl der Paare, synchron vor dem Zeichnen gesetzt (E3). */
+      /** Das Engine-Ergebnis der letzten Rechnung samt Zahl der Paare, synchron vor dem Zeichnen gesetzt. */
       _lastRun: null,
 
       // ── Agent surface ─────────────────────────────────────────
@@ -211,7 +211,7 @@ const mod = createModule({
       /** Der Wähler eines Slots. */
       _pickerOf(slot) { return slot === 'values' ? this._pickerVal : this._pickerGrp; },
 
-      /** Ergebnis und Punkte für read(), aus `_lastRun` (E4). */
+      /** Ergebnis und Punkte für read(), aus `_lastRun`. */
       _agentResult() {
         if (!this._lastRun) return { result: null, points: [], pointsColumns: [] };
         const { r, n } = this._lastRun;

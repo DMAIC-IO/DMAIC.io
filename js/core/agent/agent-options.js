@@ -2,7 +2,7 @@
  * D.Mike — Wählbare Mengen für die Agentenfläche (agent-options.js)
  *
  * Eine bedingte Wertemenge, gegen die eine `@agent`-Aktion prüft, muss in der
- * Lesefläche stehen (Plan E1). Für Spaltenbezüge ist diese Menge in jedem
+ * Lesefläche stehen. Für Spaltenbezüge ist diese Menge in jedem
  * Analysemodul dieselbe Rechnung — sie steht deshalb hier, einmal, und nicht
  * 20-mal im Modul.
  *

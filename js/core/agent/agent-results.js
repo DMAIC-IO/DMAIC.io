@@ -2,7 +2,7 @@
  * D.Mike — Gerechnete Zahlen für die Lesefläche (agent-results.js)
  *
  * Die Regelkarten geben ihr Ergebnis als rohe Zahlen in `read().result` und
- * je gezeichnetem Punkt eine Zeile in `read().points` (Plan Welle 3 B, E4).
+ * je gezeichnetem Punkt eine Zeile in `read().points`.
  * JSON kennt weder NaN noch Infinity — beides wird hier `null`, an EINER
  * Stelle, statt in jedem Modul anders.
  *

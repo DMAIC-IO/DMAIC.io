@@ -2,8 +2,8 @@
 #
 # Regeneriert $DEPLOY_ROOT/versions.json auf dem Produktionsserver, indem es
 # die release.json jedes /app/v*.*.*/-Ordners aggregiert. Einzige Quelle der
-# Wahrheit für die Versionsliste — das private Site-Repo liefert die Datei
-# bewusst NICHT mit aus (siehe dort .github/workflows/deploy-site.yml).
+# Wahrheit für die Versionsliste — die Website liefert die Datei bewusst
+# NICHT mit aus.
 #
 # Wird von release-app.yml nach remote-deploy.sh als eigener Schritt
 # aufgerufen und kann davon unabhängig jederzeit erneut laufen — es braucht

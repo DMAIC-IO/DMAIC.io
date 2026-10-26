@@ -1,6 +1,5 @@
 /**
- * Bewusst unverankerte Hilfetexte freigegebener Module (Spec
- * 2026-10-22-help-anchor-coverage §3). Je Modul-Id — oder `'*'` für jedes
+ * Bewusst unverankerte Hilfetexte freigegebener Module. Je Modul-Id — oder `'*'` für jedes
  * freigegebene Modul — eine Liste `{ name, reason }`. `name` ist exakt
  * `actions.<aktion>` oder `fields.<feld>`, so wie `agent:report -- --verbose`
  * ihn hinter `ohne Hilfe-Anker — <id>:` ausgibt. `reason` sagt, warum es in

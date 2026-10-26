@@ -3,9 +3,9 @@
  *
  * The agent's view of a DoE planner instance, the shape of `@typedef
  * AgentRead` in doe-planner.js. Not the persisted form: the coded and real
- * matrices and the design copies in the phases stay out (spec E7); the run
- * table comes from the pure run table (E4), the fill state from the
- * response state (E5). factors, responses, options and sourceWorksheet are
+ * matrices and the design copies in the phases stay out; the run
+ * table comes from the pure run table, the fill state from the
+ * response state. factors, responses, options and sourceWorksheet are
  * the persisted form, so the read example compares them one to one.
  */
 import { checkConfig, designOf, plannedRuns } from './designs/index.js';

@@ -168,7 +168,7 @@ export default createModule({
         });
       },
 
-      // ── Zustands-Sinks: ein benannter Setter je Gestalt (E2, E7) ──
+      // ── Zustands-Sinks: ein benannter Setter je Gestalt ──
       // Zeilen- und Spaltennummer bezeichnen eine Aktivität bzw. einen
       // Beteiligten, die es GIBT: der gültige Bereich endet bei
       // `length - 1`, deshalb wird das übergeben und nicht die Länge. Die

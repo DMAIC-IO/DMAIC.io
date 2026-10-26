@@ -2,10 +2,10 @@
  * D.Mike — Shape- und Pfadzugriff der Agentenschicht (agent-shape.js)
  *
  * Zwei Walker über denselben Punktpfad: `pathExistsInShape` läuft gegen eine
- * DEKLARIERTE Ergebnisform (Prüfzeit, Spec §5 Stufe 4), `getAtPath` gegen
+ * DEKLARIERTE Ergebnisform (Prüfzeit, Prüfstufe 4), `getAtPath` gegen
  * einen ECHTEN Wert (Laufzeit, Referenzauflösung). Beide melden im Fehlerfall
  * das schuldige Segment und die vorhandenen Schlüssel der Ebene — das ist die
- * AXI-Zusage aus Spec §6 für unbekannte Pfadsegmente.
+ * AXI-Zusage für unbekannte Pfadsegmente.
  *
  * Rein: keine Abhängigkeiten, kein DOM.
  */

@@ -72,7 +72,7 @@ const base = createModule({
         this.setWorsening(v ? Number(v) : null);
       },
 
-      // ── Zustands-Sinks: ein Setter je Feld (Plan E2) ──────────────
+      // ── Zustands-Sinks: ein Setter je Feld ──────────────
       // Die Merkmalsnummer ist die `id` eines Eintrags der geladenen
       // Merkmalstabelle (`parameters.json`), kein Einfügeindex — darum
       // `requireKnownId` gegen die tatsächlich geladenen ids. Die Meldung

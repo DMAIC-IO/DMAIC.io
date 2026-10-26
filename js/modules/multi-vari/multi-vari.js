@@ -657,7 +657,7 @@ const mod = createModule({
        */
       async _renderStrips(res, gen) {
         this._destroyCharts();
-        // Über einer Größengrenze wird nichts gezeichnet (Spec). Der Abbruch
+        // Über einer Größengrenze wird nichts gezeichnet. Der Abbruch
         // gehört hierher und nicht nur ins Template: sonst liefe der
         // Render-Lauf für ein ausgeblendetes Raster trotzdem durch.
         if (!res || res.renderable === false) return;

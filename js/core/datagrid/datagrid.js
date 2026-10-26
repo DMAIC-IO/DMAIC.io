@@ -3401,7 +3401,7 @@ export class DataGrid {
    * CSV-Text importieren — derselbe Parse-, Undo- und Toast-Pfad wie der
    * Dateiimport. Öffentlich, weil die Agentenaktion `worksheet.importCsv`
    * ihn braucht: ein zweiter Parser wäre die Parallelimplementierung, die
-   * Spec §2 der Agenten-Spec verbietet.
+   * die Agentenschnittstelle verbietet.
    *
    * @param {string} text  vollständiger CSV-/TSV-Text
    * @param {string} [label]  Name für die Rückmeldung (Dateiname o. Ä.)

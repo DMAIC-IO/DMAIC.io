@@ -237,7 +237,7 @@ export default createModule({
       },
       /**
        * @noagent öffnet den Formulardialog und füllt seinen Entwurf; ein
-       * Agent darf keinen Dialog öffnen — er blockierte den Stapel (E3).
+       * Agent darf keinen Dialog öffnen — er blockierte den Stapel.
        * Das Formular liegt verborgen in der Vorlage (x-ref="stakeholderForm")
        * und wird vom Dialog geliehen.
        *
@@ -309,7 +309,7 @@ export default createModule({
 
       /**
        * @noagent fragt vor dem Löschen zurück; ein Agent darf keine Rückfrage
-       * auslösen — er blockierte den Stapel (E3). Delegiert an
+       * auslösen — er blockierte den Stapel. Delegiert an
        * `removeStakeholder`.
        */
       async deleteStakeholder(sh) {

@@ -1,6 +1,6 @@
 /**
  * Tests für ui/agent-host.js — der Port, über den die DOM-freie
- * Agentenschicht an Router und Workspace kommt. Spec §2: derselbe Weg wie
+ * Agentenschicht an Router und Workspace kommt. Derselbe Weg wie
  * die UI, kein zweiter Routingpfad.
  */
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';

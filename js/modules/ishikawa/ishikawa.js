@@ -88,7 +88,7 @@ const mod = createModule({
   data(module, _t) {
     const deps = { t: _t, context: module._context, container: () => module._container };
     // One bus per mount, never the global context.eventBus: two ishikawa
-    // tabs stay apart (spec E3). A closure, not a data field, so Alpine
+    // tabs stay apart. A closure, not a data field, so Alpine
     // never wraps it in a reactive proxy.
     let events = null;
     return {

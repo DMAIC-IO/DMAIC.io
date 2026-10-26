@@ -83,7 +83,7 @@ const PARAM_CHECKS = {
  * Die Agenten-Lesefläche der Verlaufskarte.
  *
  * Eingaben (Spalte, α), die Mengen, gegen die die Setter prüfen, und das
- * gerechnete Ergebnis als Zahlen (Plan Welle 3 B, E4). Nicht darin: die
+ * gerechnete Ergebnis als Zahlen. Nicht darin: die
  * Kennzahlenleiste und die Testtabelle als Text, `exampleWorksheetId`.
  *
  * @typedef {object} AgentRead
@@ -226,7 +226,7 @@ const mod = createModule({
         await this._runAnalysis();
       },
 
-      /** Ergebnis und Punkte für read(), aus dem Vorlagenfeld `result` (E4). */
+      /** Ergebnis und Punkte für read(), aus dem Vorlagenfeld `result`. */
       _agentResult() {
         const r = this.result;
         if (!r) return { result: null, points: [], pointsColumns: [] };
@@ -309,7 +309,7 @@ const mod = createModule({
        */
       async alphaChanged(event) {
         const v = parseFloat(event.target.value);
-        // Wie bisher: ein ungültiger Wert fällt auf die Vorgabe zurück — vor der Senke (E6).
+        // Wie bisher: ein ungültiger Wert fällt auf die Vorgabe zurück — vor der Senke.
         await this.setParam('alpha', (Number.isFinite(v) && v > 0 && v < 1) ? v : DEFAULT_ALPHA);
         event.target.value = String(this.model.alpha);
       },

@@ -1,6 +1,6 @@
 /**
- * D.Mike — doe-planner sub-viewmodels know neither each other nor the shell
- * (spec 2026-10-25 E1). Reads the sources and checks their imports.
+ * D.Mike — doe-planner sub-viewmodels know neither each other nor the shell.
+ * Reads the sources and checks their imports.
  */
 import { suite, test, assertDeepEqual } from '../test-utils.js';
 

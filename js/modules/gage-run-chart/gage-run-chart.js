@@ -61,7 +61,7 @@ const SLOT_FILTERS = {
 const PARAM_KEYS = ['refValue', 'partsPerRow', 'connectWithin', 'showOperatorMean',
   'gageInfo.name', 'gageInfo.date', 'gageInfo.reporter', 'gageInfo.tolerance', 'gageInfo.misc'];
 
-/** Die zwei Werte eines Schalters — ohne Umwandeln (Welle-2-E5). */
+/** Die zwei Werte eines Schalters — ohne Umwandeln. */
 const BOOL_VALUES = [true, false];
 
 /** Je Option ihr Prüfer; er gibt den Wert in der Form des Models zurück. */
@@ -124,8 +124,8 @@ const PARAM_CHECKS = {
  * Die Agenten-Lesefläche des Messverlaufsdiagramms (Gage Run Chart).
  *
  * Eingaben (drei Spalten, Bezugswert, Anordnung, zwei Schalter, die
- * Kopfzeile), die Mengen der Setter, das Ergebnis als Zahlen (Plan Welle 3 B,
- * E4) und der Text, den die Oberfläche bei unbrauchbaren Daten zeigt. Nicht
+ * Kopfzeile), die Mengen der Setter, das Ergebnis als Zahlen und
+ * der Text, den die Oberfläche bei unbrauchbaren Daten zeigt. Nicht
  * darin: Kennzahlenleiste und Warnhinweise als Text, `exampleWorksheetId`.
  *
  * @typedef {object} AgentRead
@@ -247,7 +247,7 @@ const mod = createModule({
         requireEnum('key', key, PARAM_KEYS);
         requireEnum('key', key, this.activeParams());
         setAtPath(this.model, key, PARAM_CHECKS[key](value));
-        // Die Kopfzeile ist keine Eingabe der Rechnung und hängt an jedem Tastendruck (E3).
+        // Die Kopfzeile ist keine Eingabe der Rechnung und hängt an jedem Tastendruck.
         if (!key.startsWith('gageInfo.')) await this.runAnalysis();
       },
 
@@ -261,7 +261,7 @@ const mod = createModule({
         await this._runAnalysis();
       },
 
-      /** Ergebnis und Messwerte für read(), aus dem Vorlagenfeld `result` (E4). */
+      /** Ergebnis und Messwerte für read(), aus dem Vorlagenfeld `result`. */
       _agentResult() {
         const r = this.result;
         if (!r) return { result: null, points: [], pointsColumns: [] };
@@ -368,7 +368,7 @@ const mod = createModule({
        */
       async partsPerRowChanged(event) {
         const v = parseInt(event.target.value, 10);
-        // Wie bisher: über 20 wird 20, Ungültiges wird 7 — vor der Senke (E6).
+        // Wie bisher: über 20 wird 20, Ungültiges wird 7 — vor der Senke.
         await this.setParam('partsPerRow', (Number.isFinite(v) && v >= 1)
           ? Math.min(v, MAX_PARTS_PER_ROW)
           : DEFAULT_PARTS_PER_ROW);

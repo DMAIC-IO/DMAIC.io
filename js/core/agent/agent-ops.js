@@ -1,7 +1,7 @@
 /**
  * D.Mike — Die sieben Kernaktionen (agent-ops.js)
  *
- * Spec §7: Alles Fachliche ist eine Modulaktion; die Kernschicht kennt nur
+ * Alles Fachliche ist eine Modulaktion; die Kernschicht kennt nur
  * Projekt, Katalog und Instanzen. Darum sind es sieben und nicht fünfzehn —
  * kein `help.read`, kein `instance.read`, kein `worksheet.import`, kein
  * `connect`. Die Begründung steht in der Spec, die Konsequenz hier: diese
@@ -11,7 +11,7 @@
  * AXI-Fehlerobjekt (`{ ok: false, error, message, available? }`); die
  * Laufzeit erkennt den Fehlschlag am `ok === false` und bricht den Stapel ab.
  *
- * Ergebnisse bleiben schlank (Spec §4.4): keine mitgelieferte
+ * Ergebnisse bleiben schlank: keine mitgelieferte
  * Entdeckungsinformation. Ein Agent, der ein Modul anlegt, hat dessen
  * Beschreibung vorher gelesen.
  */
@@ -143,7 +143,7 @@ export function createOps(deps) {
         return unknownInstanceError(t, instances, action.instance);
       }
       // Die Freigabe wird hier ERNEUT geprüft: der Prüfer kommt an sie nur
-      // heran, wenn die Modulidentität statisch bekannt war (Spec §5).
+      // heran, wenn die Modulidentität statisch bekannt war.
       const entry = registry[found.module];
       if (entry?.available !== true) {
         return axiError(ERRORS.MODULE_NOT_AGENT_READY,
@@ -155,7 +155,7 @@ export function createOps(deps) {
       // überspringt die Methodenprüfung (agent-validate.js) — ohne diese
       // Zeilen blieb nur die Prüfung gegen das LEBENDE Viewmodel, und damit
       // war jedes öffentliche `@noagent`-Mitglied aufrufbar: ein Dialog zum
-      // Öffnen (E3), eine bewusst nicht freigegebene Umschaltung, ein
+      // Öffnen, eine bewusst nicht freigegebene Umschaltung, ein
       // Zurücksetzen von Einstellungen. Geprüft wird VOR `getViewmodel`:
       // ein abgewiesener Aufruf soll die Ansicht nicht erst öffnen.
       // Nur eigene Schlüssel: geerbte Namen wie `constructor` oder `valueOf`
@@ -266,7 +266,7 @@ function methodNames(obj, withPrototype) {
 /**
  * Das Objekt, an dem eine Aktion läuft: die Wurzel, oder bei
  * `<teil>.<methode>` das Teil-Viewmodel `<teil>` — damit `this` in der
- * Methode das Teil-Viewmodel ist (Spec 2026-10-24 E3). Genau eine Ebene:
+ * Methode das Teil-Viewmodel ist. Genau eine Ebene:
  * ein weiterer Punkt bleibt Teil des Methodennamens und trifft nichts.
  * @param {object} viewmodel
  * @param {string} method

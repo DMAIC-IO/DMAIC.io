@@ -1,5 +1,5 @@
 /**
- * Kennzahl „Hilfetexte mit Anker“ (Spec 2026-10-22-help-anchor-coverage).
+ * Kennzahl „Hilfetexte mit Anker“.
  *
  * Gegenrichtung zu `anchor-coverage.mjs`: dort braucht jede Beschriftung ein
  * Fragezeichen, hier braucht jeder Aktions- und Feldtext eines freigegebenen

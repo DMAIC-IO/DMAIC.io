@@ -52,7 +52,7 @@ const m = createModule({
       ] },
       { icon: 'action.upload', title: 'importJSON', onClick: (d) => d.openImport() },
       // Kein `agentAction`: der Knopf öffnet einen Dialog, und ein Agent
-      // darf keinen öffnen (E3). Seine Agentenentsprechung ist `addLesson`,
+      // darf keinen öffnen. Seine Agentenentsprechung ist `addLesson`,
       // die den Dialog nicht braucht.
       { icon: 'action.add', title: 'addLesson', variant: 'primary', onClick: (d) => d.openAddModal() },
     ],
@@ -200,7 +200,7 @@ const m = createModule({
 
       /**
        * @noagent fragt vor dem Löschen zurück; ein Agent darf keine Rückfrage
-       * auslösen — er blockierte den Stapel (E3). Delegiert an `removeLesson`.
+       * auslösen — er blockierte den Stapel. Delegiert an `removeLesson`.
        */
       deleteLesson(lesson) {
         const self = this;
@@ -443,7 +443,7 @@ const m = createModule({
 
       /**
        * @noagent öffnet den Formulardialog; ein Agent darf keinen Dialog
-       * öffnen — er blockierte den Stapel (E3). Der Abschluss schreibt über
+       * öffnen — er blockierte den Stapel. Der Abschluss schreibt über
        * `addLesson`, denselben Sink wie die Agentenfläche.
        */
       async openAddModal() {
@@ -484,7 +484,7 @@ const m = createModule({
 
       /**
        * @noagent öffnet den Formulardialog; ein Agent darf keinen Dialog
-       * öffnen — er blockierte den Stapel (E3). Der Abschluss schreibt über
+       * öffnen — er blockierte den Stapel. Der Abschluss schreibt über
        * `updateLesson`, denselben Sink wie die Agentenfläche.
        */
       async openEditModal(lesson) {

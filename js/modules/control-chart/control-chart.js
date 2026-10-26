@@ -62,7 +62,7 @@ const RULE_IDS = NELSON_RULES.map(r => r.id);
 /** Die Optionen, die `setParam` annimmt (`subgroupSize` nur bei X̄-Karten). */
 const PARAM_KEYS = ['chartTypeId', 'subgroupSize', 'baselineCount', 'stagesText', 'usl', 'lsl', 'enabledRules'];
 
-/** Die zwei Werte eines Schalters — ohne Umwandeln (Welle-2-E5). */
+/** Die zwei Werte eines Schalters — ohne Umwandeln. */
 const BOOL_VALUES = [true, false];
 
 /** Die Leerform eines Zahlenfelds („alle Punkte" bzw. „keine Grenze"): `null` oder `''`. */
@@ -191,8 +191,8 @@ function frozenLimitsOf(fl) {
  *
  * Alle persistierten Eingaben außer `exampleWorksheetId` (Spalte, Kartentyp,
  * Untergruppe, Phase I, Stufen, Spezifikationsgrenzen, Regeln, Anmerkungen,
- * eingefrorene Grenzen), die Mengen der Setter und das Ergebnis als Zahlen
- * (Plan Welle 3 B, E4). Nicht darin: Kennzahlenleiste, Verletzungsliste und
+ * eingefrorene Grenzen), die Mengen der Setter und das Ergebnis als Zahlen.
+ * Nicht darin: Kennzahlenleiste, Verletzungsliste und
  * Badges als Text, der Anmerkungsdialog, der Klappzustand der Regeln.
  *
  * @typedef {object} AgentRead
@@ -397,7 +397,7 @@ const mod = createModule({
         return unique.sort((a, b) => a.index - b.index);
       },
 
-      /** Ergebnis und Punkte für read(), aus `_lastResult` (E4). */
+      /** Ergebnis und Punkte für read(), aus `_lastResult`. */
       _agentResult() {
         const L = this._lastResult;
         if (!L) return { result: null, points: [], pointsColumns: [] };
@@ -466,7 +466,7 @@ const mod = createModule({
        */
       async subgroupSizeChanged(e) {
         const v = parseInt(e.target.value, 10) || 2;
-        // In den Bereich des Kartentyps klemmen — vor der Senke (E6, Abweichung 2).
+        // In den Bereich des Kartentyps klemmen — vor der Senke.
         await this.setParam('subgroupSize', Math.min(this.subgroupMax(), Math.max(this.subgroupMin(), v)));
         e.target.value = String(this.model.subgroupSize);
       },
@@ -480,7 +480,7 @@ const mod = createModule({
        */
       async baselineChanged(e) {
         const v = parseInt(e.target.value, 10);
-        // Leer, unlesbar oder < 1 heißt „alle Punkte" (E6, Abweichung 1).
+        // Leer, unlesbar oder < 1 heißt „alle Punkte".
         await this.setParam('baselineCount', Number.isInteger(v) && v >= 1 ? v : null);
         e.target.value = this.baselineValue();
       },

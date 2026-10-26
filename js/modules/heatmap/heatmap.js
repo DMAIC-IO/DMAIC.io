@@ -90,7 +90,7 @@ const PARAM_CHECKS = {
  * hält das Model in `chartConfig`; die Lesefläche hebt sie auf die oberste
  * Ebene, unter ihren `setParam`-Schlüssel. Nicht darin: der Rest von
  * `chartConfig` (Darstellung), das Diagrammbild, `exampleWorksheetId`. Das
- * Raster steht als Zahlen in `stats` (E8).
+ * Raster steht als Zahlen in `stats`.
  *
  * @typedef {object} AgentRead
  * @property {object|null} xRef  the column whose categories become the columns of the grid (slot `x`), or null
@@ -105,7 +105,7 @@ const PARAM_CHECKS = {
 
 /**
  * Zeilen-, Spalten- und Gesamtsumme eines Rasters; leere Zellen zählen nicht.
- * Eine Quelle für die Tabelle und für `read().stats` (E8).
+ * Eine Quelle für die Tabelle und für `read().stats`.
  *
  * @param {Array<Array<number|null>>} cells  Wert je Zeile und Spalte
  * @returns {{rowTotals: number[], colTotals: number[], total: number}}
@@ -262,7 +262,7 @@ const mod = createModule({
         return [{ x: this.model.xRef, g: this.model.gRef, v: this.model.vRef }];
       },
 
-      /** Die Kennzahlen für read() — das Raster aus derselben Quelle wie die Tabelle (E8). */
+      /** Die Kennzahlen für read() — das Raster aus derselben Quelle wie die Tabelle. */
       _agentStats() {
         const d = this.model.buildChartData((ref) => this._getColumnValues(ref), this.model.chartConfig.aggregation);
         if (!d.xCategories.length || !d.yCategories.length) return null;

@@ -1,7 +1,7 @@
 /**
  * D.Mike — Einstellungsabschnitt „KI-Agenten" (settings-agent.js)
  *
- * Spec §3.2: die Einwilligung ist in den Einstellungen sichtbar und
+ * Die Einwilligung ist in den Einstellungen sichtbar und
  * widerrufbar. Der Abschnitt lebt in einer eigenen, DOM-freien Datei, damit
  * sein Verhalten — insbesondere die Reaktivität — ohne Alpine testbar bleibt.
  *

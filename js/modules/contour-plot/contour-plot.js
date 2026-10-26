@@ -131,7 +131,7 @@ const COEFFICIENT_COUNT = 6;
  * die Absage, die die Oberfläche unter der Formel zeigt. Nicht darin:
  * Darstellung (Farbschema, Stufen, Raster, Linien, Datenpunkte, Marker,
  * `chartConfig`, Referenzlinien — nur über den Diagramm-Editor), Raster und
- * Legende. Minimum, Maximum und Optimum der Fläche stehen in `surface` (E8).
+ * Legende. Minimum, Maximum und Optimum der Fläche stehen in `surface`.
  *
  * @typedef {object} AgentRead
  * @property {string} modelType  `quadratic`, `interaction` or `custom`
@@ -309,7 +309,7 @@ const mod = createModule({
         if (this._picker) this._picker.value = [row];
       },
 
-      /** Die Kennzahlen der Fläche für read() — dieselbe Abtastung wie das Zeichnen (E8). */
+      /** Die Kennzahlen der Fläche für read() — dieselbe Abtastung wie das Zeichnen. */
       _agentSurface() {
         if (this.isCustomModel() && this.formulaError) return null;
         const { zMin, zMax, optimum } = scanSurface((x, y) => this._evalModel(x, y), {

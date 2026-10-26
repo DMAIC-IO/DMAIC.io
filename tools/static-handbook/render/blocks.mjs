@@ -20,7 +20,7 @@ import { normalizeSvg } from '../../build/icons.mjs';
  * entfernt den Lizenzkommentar aus dem Asset, deshalb wird der Hinweis hier
  * einmal pro Seite im <head> ausgegeben (siehe page-shell.mjs) — so reist die
  * Attribution mit jedem ausgelieferten Artefakt mit. Muster übernommen aus dem
- * Sprite des Site-Repos.
+ * Sprite der Website.
  */
 export const LUCIDE_ATTRIBUTION =
   '@license lucide-static v1.32.0 - ISC — Copyright (c) Lucide Icons and '

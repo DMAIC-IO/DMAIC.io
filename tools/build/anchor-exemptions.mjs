@@ -1,6 +1,5 @@
 /**
- * Bewusst unverankerte Beschriftungen freigegebener Module (Spec
- * 2026-10-17 §4 0c). Je Modul eine Liste `{ match, reason, count? }`:
+ * Bewusst unverankerte Beschriftungen freigegebener Module. Je Modul eine Liste `{ match, reason, count? }`:
  * `match` ist ein Teilstring des ganzen Elements samt Inhalt, so wie
  * `agent:report -- --verbose` es hinter `<datei>:<zeile>:` ausgibt (z. B.
  * `<th>n</th>` oder `t('ofTolerance')`). Ein bloßes `<th>` träfe jede

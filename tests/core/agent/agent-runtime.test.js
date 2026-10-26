@@ -1,7 +1,7 @@
 /**
  * Tests for core/agent/agent-runtime.js — the consent gate, the batch
- * semantics from Spec §4 (abort on first runtime error, return partials) and
- * the seven ops from Spec §7.
+ * semantics (abort on first runtime error, return partials) and the seven
+ * ops.
  */
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../test-utils.js';
 import { createAgentRuntime } from '../../../js/core/agent/agent-runtime.js';
@@ -566,7 +566,7 @@ suite('agent runtime — a resolved reference is type-checked (C1)', () => {
 // ── Review-Befund I1 ───────────────────────────────────────────────
 // Die Singleton-Regel stand ausschließlich in `ui/dmaic-tiles.js:_canAdd`;
 // der Agentenpfad ging über `createInstance` daran vorbei und konnte eine
-// zweite Instanz anlegen — etwas, was die UI verbietet (Spec §2).
+// zweite Instanz anlegen — etwas, was die UI verbietet.
 suite('agent runtime — the singleton rule applies to the agent path (I1)', () => {
   const SINGLETON_DEFS = [
     ...DEFS,
@@ -726,7 +726,7 @@ suite('agent runtime — the completed project is an honest error (I2 / I3c)', (
 // ── Review-Befund I7 ───────────────────────────────────────────────
 // Das Tor dedupliziert den Dialog, die Laufzeit nichts: Stapel B prüfte gegen
 // eine `world`-Momentaufnahme ohne die laufenden Effekte von Stapel A — ein
-// TOCTOU zwischen Prüfung und Ausführung (Spec §5).
+// TOCTOU zwischen Prüfung und Ausführung.
 suite('agent runtime — concurrent calls are serialized (I7)', () => {
   test('two overlapping batches do not interleave their side effects', async () => {
     const { runtime, log } = makeRuntime({ slowAdd: true });
@@ -936,12 +936,12 @@ suite('agent runtime — ok heißt „liegt auf Platte" (Task 1)', () => {
   });
 
   test('ein Stapel, der mitten drin scheitert, flusht trotzdem', async () => {
-    // Spec §4.3 gibt Teilergebnisse zurück. Was passiert IST, muss auch auf
+    // Der Stapel gibt Teilergebnisse zurück. Was passiert IST, muss auch auf
     // Platte sein; sonst verliert der Agent genau die Hälfte, die ihm die
     // Antwort als erfolgreich meldet.
     //
     // `nicht-existent` als literaler Bezeichner würde Stufe 5 der Validierung
-    // VOR jedem Seiteneffekt abweisen (Spec §5) — der ganze Stapel liefe nie
+    // VOR jedem Seiteneffekt abweisen — der ganze Stapel liefe nie
     // an, und der Fall testete nichts über das Flushen. Deshalb hier ein
     // Scheitern, das erst im Vollzug passiert: `setProblem` ist der
     // Registry nach eine gültige Methode, die Viewmodel-Implementierung
