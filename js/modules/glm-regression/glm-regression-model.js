@@ -93,6 +93,11 @@ export class State {
     return this.colRefs.length > 0 && Boolean(this.yKey);
   }
 
+  /** Drop the persisted fit — the inputs no longer describe a model. */
+  clearResults() {
+    this.result = null;
+  }
+
   // ── Persistence ───────────────────────────────────────────────
 
   toJSON() {

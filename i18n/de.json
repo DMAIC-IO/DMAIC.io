@@ -12489,10 +12489,10 @@
       "whenToUse": "Wenn eine Zielgröße attributiv ist — gut/schlecht, ja/nein, Anteile — oder eine Anzahl (Fehler, Reklamationen), und ihr Zusammenhang mit Einflussgrößen modelliert werden soll: binär-logistisch, Poisson oder negativ-binomial, auf Wunsch automatisch erkannt.",
       "actions": {
         "read": {
-          "help": "Liefert die Eingaben (X, Y, Versuchszahl, Verfahren, Konfidenz, α, Schwelle), die Mengen, die die Aktionen jetzt annehmen, und den Fit als Zahlen in result (null ohne gezeigten Fit oder nach einem Fehlschlag; errorMsg nennt dann den Grund). Wird Y oder X geleert, bleibt das letzte Ergebnis in result stehen."
+          "help": "Liefert die Eingaben (X, Y, Versuchszahl, Verfahren, Konfidenz, α, Schwelle), die Mengen, die die Aktionen jetzt annehmen, und den Fit als Zahlen in result (null ohne gezeigten Fit oder nach einem Fehlschlag; errorMsg nennt dann den Grund). Wird Y oder X geleert, wird das Ergebnis verworfen: result ist dann null."
         },
         "setColumns": {
-          "help": "Die Spalten einer Datensammlung, die diese Rolle liefern; nach einer Änderung wird neu gerechnet. Die Reihenfolge bleibt erhalten, doppelt gewählte Spalten zählen einmal, Textspalten werden kategoriale Prädiktoren; ist die Zielgröße unter den neuen Einflussgrößen, wird sie geleert.",
+          "help": "Die Spalten einer Datensammlung, die diese Rolle liefern; nach einer Änderung wird neu gerechnet. Die Reihenfolge bleibt erhalten, doppelt gewählte Spalten zählen einmal, Textspalten werden kategoriale Prädiktoren; ist die Zielgröße oder die Versuchszahl unter den neuen Einflussgrößen, wird sie geleert.",
           "params": {
             "slot": "Einer der Slots aus activeMultiSlots; dieses Modul führt nur 'x'.",
             "refs": "Liste von Spaltenbezügen { instanceId, sheetId, columnId } aus pickableColumns.x, in Reihenfolge; [] leert X."
@@ -12516,7 +12516,7 @@
           "help": "Tauscht bei binärer Zielgröße, welche Stufe als Erfolg zählt, und rechnet neu; die Koeffizienten wechseln dabei das Vorzeichen, die Odds Ratios werden zu ihren Kehrwerten. Ohne binäres Ergebnis geschieht nichts."
         },
         "autoRun": {
-          "help": "Rechnet, wenn X und Y gewählt sind; sonst geschieht nichts, und ein früheres Ergebnis bleibt stehen."
+          "help": "Rechnet, wenn X und Y gewählt sind; sonst wird ein früheres Ergebnis verworfen."
         },
         "runAnalysis": {
           "help": "Rechnet jetzt. Ohne X, ohne Y oder mit weniger als drei Zeilen wird das Ergebnis verworfen, und errorMsg nennt den Grund."

@@ -248,8 +248,8 @@ function overdispersionOf(od) {
  *
  * Ergebnis im Viewmodel (`_fit`) und verschlankt im Model; die Lesefläche
  * zeigt die Zahlen des Fits, wenn die Oberfläche ein Ergebnis zeigt. Ein
- * unvollständig gewordener Eingabestand lässt — wie in der Oberfläche — das
- * letzte Ergebnis stehen.
+ * unvollständig gewordener Eingabestand (X oder Y leer) verwirft das
+ * Ergebnis — in der Oberfläche, in der Lesefläche und im gespeicherten Stand.
  *
  * @typedef {object} AgentRead
  * @property {Array<{ instanceId: string, sheetId: string, columnId: string }>} colRefs  the predictor columns X
@@ -416,8 +416,9 @@ const mod = createModule({
       /**
        * Die Einflussgrößen X ersetzen; die Reihenfolge bleibt, Doppelte zählen
        * einmal, Textspalten werden kategoriale Prädiktoren. Steht die
-       * Zielgröße Y unter den neuen X, wird Y geleert. Danach wird gerechnet,
-       * wenn X und Y gewählt sind.
+       * Zielgröße Y unter den neuen X, wird Y geleert; steht die Spalte der
+       * Versuchszahl darunter, wird sie geleert. Danach wird gerechnet, wenn
+       * X und Y gewählt sind, sonst wird das Ergebnis verworfen.
        * @agent
        * @param {'x'} slot der Slot; dieses Modul führt nur `x`
        * @param {Array<{ instanceId: string, sheetId: string, columnId: string }>} refs
@@ -435,7 +436,9 @@ const mod = createModule({
         for (const ref of refs) requireKnownId('ref', refToKey(ref), keys);
         const clean = [...new Set(refs.map(refToKey))].map(keyToRef);
         this.model.colRefs = clean;
-        if (this.model.yKey && clean.some(r => refToKey(r) === this.model.yKey)) this.model.yKey = null;
+        const xKeys = new Set(clean.map(refToKey));
+        if (this.model.yKey && xKeys.has(this.model.yKey)) this.model.yKey = null;
+        if (this.model.trialsKey && xKeys.has(this.model.trialsKey)) this.model.trialsKey = null;
         this._picker?.syncValue(clean);
         this.autoRun();
       },
@@ -443,7 +446,8 @@ const mod = createModule({
       /**
        * Die Zielgröße (`y`) oder die Versuchszahl (`trials`) setzen oder mit
        * null leeren. Y auf die Spalte der Versuchszahl leert diese. Danach
-       * wird gerechnet, wenn X und Y gewählt sind.
+       * wird gerechnet, wenn X und Y gewählt sind, sonst wird das Ergebnis
+       * verworfen.
        * @agent
        * @param {'y'|'trials'} slot der Slot; `activeColumnSlots` nennt sie
        * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
@@ -662,13 +666,28 @@ const mod = createModule({
 
       // ── Auto-run gate ────────────────────────────────────────
       /**
-       * Rechnet, wenn X und Y gewählt sind; sonst geschieht nichts — ein
-       * früheres Ergebnis bleibt stehen, wie in der Oberfläche.
+       * Rechnet, wenn X und Y gewählt sind, sonst verwirft es das Ergebnis.
        * @agent
        * @returns {void}
        */
       autoRun() {
-        if (this.model.canRun()) this.runAnalysis();
+        if (this.model.canRun()) { this.runAnalysis(); return; }
+        if (!this.model.result && !this.result && !this._fit) return;
+        this.model.clearResults();
+        this.result = null;
+        this._fit = null;
+        this._classCache = null;
+        this._successInfo = null;
+        this._detectKey = null;
+        this._detectVisible = false;
+        this._errorKey = null;
+        this._errorText = '';
+        this.predictResult = null;
+        this.predictError = null;
+        this.predictInputs = {};
+        this._prediction = null;
+        this._renderGen++;
+        this.destroyCharts();
       },
 
       /**

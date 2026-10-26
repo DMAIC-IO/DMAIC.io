@@ -12485,10 +12485,10 @@
       "whenToUse": "When a response is attributive — good/bad, yes/no, proportions — or a count (defects, complaints), and its relationship with predictors is to be modelled: binary logistic, Poisson or negative binomial, detected automatically on request.",
       "actions": {
         "read": {
-          "help": "Returns the inputs (X, Y, trials column, method, confidence, α, cutoff), the sets the actions accept now, and the fit as numbers in result (null without a shown fit or after a failed fit; errorMsg then names the reason). If Y or X is cleared, the last result stays in result."
+          "help": "Returns the inputs (X, Y, trials column, method, confidence, α, cutoff), the sets the actions accept now, and the fit as numbers in result (null without a shown fit or after a failed fit; errorMsg then names the reason). If Y or X is cleared, the result is discarded: result is then null."
         },
         "setColumns": {
-          "help": "The data collection columns that supply this role; after a change the analysis is recomputed. The order is kept, columns chosen twice count once and text columns become categorical predictors; if the response is among the new predictors, it is cleared.",
+          "help": "The data collection columns that supply this role; after a change the analysis is recomputed. The order is kept, columns chosen twice count once and text columns become categorical predictors; if the response or the trials column is among the new predictors, it is cleared.",
           "params": {
             "slot": "One of activeMultiSlots; this module only has 'x'.",
             "refs": "List of column references { instanceId, sheetId, columnId } from pickableColumns.x, in order; [] clears X."
@@ -12512,7 +12512,7 @@
           "help": "For a binary response swaps which level counts as success and fits again; the coefficients change sign and the odds ratios become their reciprocals. Without a binary result nothing happens."
         },
         "autoRun": {
-          "help": "Fits when X and Y are set; otherwise nothing happens and an earlier result stays."
+          "help": "Fits when X and Y are set; otherwise an earlier result is discarded."
         },
         "runAnalysis": {
           "help": "Fits now. Without X, without Y or with fewer than three rows the result is discarded and errorMsg names the reason."

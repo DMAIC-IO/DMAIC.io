@@ -5980,7 +5980,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Die Einflussgrößen X ersetzen; die Reihenfolge bleibt, Doppelte zählen einmal, Textspalten werden kategoriale Prädiktoren. Steht die Zielgröße Y unter den neuen X, wird Y geleert. Danach wird gerechnet, wenn X und Y gewählt sind."
+        "help": "Die Einflussgrößen X ersetzen; die Reihenfolge bleibt, Doppelte zählen einmal, Textspalten werden kategoriale Prädiktoren. Steht die Zielgröße Y unter den neuen X, wird Y geleert; steht die Spalte der Versuchszahl darunter, wird sie geleert. Danach wird gerechnet, wenn X und Y gewählt sind, sonst wird das Ergebnis verworfen."
       },
       "setColumn": {
         "params": [
@@ -5998,7 +5998,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Die Zielgröße (`y`) oder die Versuchszahl (`trials`) setzen oder mit null leeren. Y auf die Spalte der Versuchszahl leert diese. Danach wird gerechnet, wenn X und Y gewählt sind."
+        "help": "Die Zielgröße (`y`) oder die Versuchszahl (`trials`) setzen oder mit null leeren. Y auf die Spalte der Versuchszahl leert diese. Danach wird gerechnet, wenn X und Y gewählt sind, sonst wird das Ergebnis verworfen."
       },
       "setParam": {
         "params": [
@@ -6046,7 +6046,7 @@ export const AGENT_REGISTRY = {
       "autoRun": {
         "params": [],
         "returns": "void",
-        "help": "Rechnet, wenn X und Y gewählt sind; sonst geschieht nichts — ein früheres Ergebnis bleibt stehen, wie in der Oberfläche."
+        "help": "Rechnet, wenn X und Y gewählt sind, sonst verwirft es das Ergebnis."
       },
       "runAnalysis": {
         "params": [],
