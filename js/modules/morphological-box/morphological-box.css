@@ -207,6 +207,18 @@
   gap: var(--spacing-xs);
 }
 
+/* Wrappers carry the help anchors (an input cannot hold the button); they
+   take over the flex role the input had, so the layout stays as it was. */
+.morphological-box__concept-name-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+}
+
+.morphological-box__concept-active-wrap {
+  display: flex;
+}
+
 .morphological-box__concept-input {
   flex: 1;
   min-width: 0;

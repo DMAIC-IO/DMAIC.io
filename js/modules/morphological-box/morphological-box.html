@@ -32,8 +32,8 @@
   <div class="morphological-box__layout" x-show="model.view === 'box'">
     <div class="morphological-box__grid">
       <div class="morphological-box__head" x-show="model.parameters.length > 0">
-        <div class="morphological-box__head-param" data-heading data-help-key="modules.morphological-box.fields.parameters.help" x-text="t('headingParameter')"></div>
-        <div class="morphological-box__head-options" data-heading data-help-key="modules.morphological-box.actions.setOptionLabel.help" x-text="t('headingOptions')"></div>
+        <div class="morphological-box__head-param" data-heading><span class="context-help-anchor--overlay" data-help-key="modules.morphological-box.fields.parameters.help" x-text="t('headingParameter')"></span></div>
+        <div class="morphological-box__head-options" data-heading><span class="context-help-anchor--overlay" data-help-key="modules.morphological-box.actions.setOptionLabel.help" x-text="t('headingOptions')"></span></div>
       </div>
       <template x-for="p in model.parameters" :key="p.id">
         <div class="morphological-box__row dmike-del-btn-host" :data-parameter="p.id">
@@ -88,13 +88,18 @@
       <template x-for="(c, i) in model.concepts" :key="c.id">
         <div class="morphological-box__concept dmike-del-btn-host" :class="conceptCardClass(c)" :data-concept="c.id">
           <div class="morphological-box__concept-head">
-            <input type="radio" class="morphological-box__concept-active" :name="activeRadioName()"
-                   :checked="c.id === model.activeConceptId" data-help-key="modules.morphological-box.actions.setActiveConcept.help" :aria-label="t('activeConcept')"
-                   @change="setActiveConcept(c.id)">
+            <!-- Inputs cannot hold the help button, so the anchors sit on wrappers. -->
+            <span class="morphological-box__concept-active-wrap context-help-anchor--overlay" data-help-key="modules.morphological-box.actions.setActiveConcept.help">
+              <input type="radio" class="morphological-box__concept-active" :name="activeRadioName()"
+                     :checked="c.id === model.activeConceptId" :aria-label="t('activeConcept')"
+                     @change="setActiveConcept(c.id)">
+            </span>
             <span class="morphological-box__marker" :class="colorClass(i)" aria-hidden="true"></span>
-            <input type="text" class="field field--sm field--ghost morphological-box__concept-input"
-                   :data-concept-name="c.id" data-help-key="modules.morphological-box.actions.setConceptName.help" :aria-label="t('conceptName')" :placeholder="t('conceptPlaceholder')"
-                   :value="c.name" @input="setConceptName(c.id, $event.target.value)">
+            <span class="morphological-box__concept-name-wrap context-help-anchor--overlay" data-help-key="modules.morphological-box.actions.setConceptName.help">
+              <input type="text" class="field field--sm field--ghost morphological-box__concept-input"
+                     :data-concept-name="c.id" :aria-label="t('conceptName')" :placeholder="t('conceptPlaceholder')"
+                     :value="c.name" @input="setConceptName(c.id, $event.target.value)">
+            </span>
             <button class="dmike-del-btn" type="button" data-action="remove-concept" data-help-key="modules.morphological-box.actions.removeConcept.help"
                     :title="t('removeConcept')" @click="removeConcept(c.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
           </div>
