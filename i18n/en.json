@@ -346,6 +346,20 @@
         "axis": { "g": "Filling weight in g", "min": "Waiting time in minutes" },
         "density": "Density"
       },
+      "interval": {
+        "drawOne": "Draw a sample",
+        "draw": "Draw {k} samples",
+        "n": "Sample size n",
+        "level": "Confidence level",
+        "drawn": "Number of samples",
+        "hits": "Intervals containing μ",
+        "rate": "Hit rate",
+        "half": "Half-width (latest interval)",
+        "kindZ": "s with factor 1.96",
+        "kindT": "s with t factor",
+        "axis": "Filling weight in g",
+        "miss": "misses μ"
+      },
       "variance": {
         "drawOne": "Draw 1 sample",
         "draw": "Draw {k} samples",

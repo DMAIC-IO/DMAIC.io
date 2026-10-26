@@ -6,4 +6,4 @@
  */
 
 /** Registered simulation widget names. */
-export const WIDGETS = ['sampling-distribution', 'value-distribution', 'sample-estimate', 'variance-check'];
+export const WIDGETS = ['sampling-distribution', 'value-distribution', 'sample-estimate', 'variance-check', 'interval-coverage'];

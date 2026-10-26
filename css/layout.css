@@ -3462,7 +3462,8 @@ body.training-area-open .dmaic-tiles {
 .training-values__stats td { font-variant-numeric: tabular-nums; }
 
 .training-estimate,
-.training-variance {
+.training-variance,
+.training-interval {
   display: flex; flex-direction: column; gap: var(--spacing-sm);
   border: var(--border-width) solid var(--color-border-primary);
   border-radius: var(--radius-md, 6px);
@@ -3470,18 +3471,24 @@ body.training-area-open .dmaic-tiles {
   background: var(--color-bg-secondary);
 }
 .training-estimate__chart { min-height: 240px; min-width: 0; }
+.training-interval__controls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-md); }
+.training-interval__field { display: flex; align-items: center; gap: var(--spacing-xs); color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.training-interval__chart { height: 320px; min-width: 0; }
 .training-estimate__note { margin: 0; color: var(--color-text-secondary); font-size: var(--font-size-sm); }
 .training-estimate__history { display: flex; flex-direction: column; gap: var(--spacing-xs); }
 .training-estimate__history-title { color: var(--color-text-secondary); font-size: var(--font-size-sm); }
 
 .training-estimate__stats,
-.training-variance__stats { align-self: flex-start; border-collapse: collapse; font-size: var(--font-size-sm); }
+.training-variance__stats,
+.training-interval__stats { align-self: flex-start; border-collapse: collapse; font-size: var(--font-size-sm); }
 
 .training-estimate__stats th,
-.training-variance__stats th { text-align: left; font-weight: normal; color: var(--color-text-secondary); padding-right: var(--spacing-md); }
+.training-variance__stats th,
+.training-interval__stats th { text-align: left; font-weight: normal; color: var(--color-text-secondary); padding-right: var(--spacing-md); }
 
 .training-estimate__stats td,
-.training-variance__stats td { padding-right: var(--spacing-md); font-variant-numeric: tabular-nums; }
+.training-variance__stats td,
+.training-interval__stats td { padding-right: var(--spacing-md); font-variant-numeric: tabular-nums; }
 .training-variance__latest { display: flex; flex-wrap: wrap; gap: var(--spacing-sm); margin: 0; font-variant-numeric: tabular-nums; }
 
 .training-variance__reference th,

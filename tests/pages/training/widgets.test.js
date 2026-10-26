@@ -313,3 +313,97 @@ suite('variance-check widget', () => {
     assertEqual(chartManager.live.size, 0);
   });
 });
+
+suite('interval-coverage widget', () => {
+  const make = (ctx = {}) => WIDGET_COMPONENTS['interval-coverage'].factory({ i18n: { t: (k) => k }, ...ctx });
+  const mount = (params, ctx) => {
+    const sim = make(ctx);
+    const events = [];
+    sim.setup({ dispatchEvent: (e) => events.push(e) }, params, {});
+    return { sim, events };
+  };
+  const rate = (sim, key = 'rate') => parseFloat(sim.cell(key));
+
+  test('shows dashes before the first sample', () => {
+    const { sim, events } = mount({ seed: 1 });
+    assertEqual(sim.cell('rate'), '–');
+    assertEqual(sim.cell('half'), '–');
+    assertEqual(sim.cell('hits'), '0');
+    assertEqual(sim.cell('drawn'), '0');
+    assertEqual(events[0].type, 'training-sim-progress');
+    assertDeepEqual(events[0].detail, { count: 0, perN: { 0.95: { 10: 0 } } });
+  });
+
+  test('draws and counts hits', () => {
+    const { sim } = mount({ seed: 1 });
+    sim.draw(1000);
+    assertEqual(sim.cell('drawn'), '1000');
+    assertTrue(/^\d+\.\d %$/.test(sim.cell('rate')), `rate format ${sim.cell('rate')}`);
+    assertTrue(Math.abs(rate(sim) - 95) <= 2, `rate ${sim.cell('rate')}`);
+    assertEqual(sim.cell('half'), '1.24 g');
+    const cfg = sim.chartConfig();
+    assertEqual(cfg.rows.length, 50);
+    assertDeepEqual(cfg.xDomain, [494, 506]);
+    assertEqual(cfg.reference.value, 500);
+  });
+
+  test('settings keep their own counts', () => {
+    const { sim, events } = mount({ seed: 2, nChoices: [5, 10, 40] });
+    sim.draw(100);
+    sim.setN(40);
+    assertEqual(sim.cell('drawn'), '0', 'a new setting starts empty');
+    sim.draw(10);
+    sim.setN(10);
+    assertEqual(sim.cell('drawn'), '100');
+    assertDeepEqual(events[events.length - 1].detail, { count: 110, perN: { 0.95: { 10: 100, 40: 10 } } });
+  });
+
+  test('higher level, wider interval', () => {
+    const { sim } = mount({ seed: 3, levelChoices: [0.9, 0.95, 0.99] });
+    const half = (level) => { sim.setLevel(level); sim.draw(1); return sim.halfWidth(); };
+    const [h90, h95, h99] = [half(0.9), half(0.95), half(0.99)];
+    assertTrue(h90 < h95 && h95 < h99, `${h90} < ${h95} < ${h99}`);
+  });
+
+  test('compare mode feeds both rows from the same samples', () => {
+    const { sim } = mount({ seed: 1, sigma: 'unknown', compare: true, nChoices: [5] });
+    sim.draw(1000);
+    assertEqual(sim.cell('drawn'), '1000');
+    assertTrue(Math.abs(rate(sim, 'rate-z') - 87.8) <= 3, `rate-z ${sim.cell('rate-z')}`);
+    assertTrue(Math.abs(rate(sim, 'rate-t') - 95) <= 2, `rate-t ${sim.cell('rate-t')}`);
+    const rows = sim.chartConfig().rows;
+    assertTrue(rows.every((r) => r.segments.length === 2), 'two segments per row');
+    assertDeepEqual(rows[0].segments.map((s) => s.kind), ['z', 't']);
+    assertTrue(Math.abs(sim.halfWidth('t') / sim.halfWidth('z') - 2.776 / 1.960) < 1e-3, 'same s, factor ratio');
+    assertDeepEqual(sim.chartConfig().legend.map((l) => l.kind), ['z', 't', 'miss']);
+  });
+
+  test('a single choice is the only option', () => {
+    const { sim } = mount({ seed: 1 });
+    assertDeepEqual(sim.nOptions(), [10]);
+    assertDeepEqual(sim.levelOptions(), [0.95]);
+    assertEqual(sim.drawLabel(1), 'training.course.interval.drawOne');
+    assertEqual(sim.drawLabel(10), 'training.course.interval.draw');
+  });
+
+  test('interval widget seeds per mount unless injected', () => {
+    const run = (params) => {
+      const { sim } = mount(params);
+      sim.draw(1);
+      return sim.chartConfig().rows[0].segments[0].lo;
+    };
+    assertEqual(run({ seed: 42 }), run({ seed: 42 }), 'same injected seed, same values');
+    assertTrue(run({ seed: 42 }) !== run({ seed: 43 }), 'different seeds differ');
+    assertTrue(run({}) !== run({}), 'default seeds are random per mount');
+  });
+
+  test('interval widget releases every chart it created', async () => {
+    const chartManager = trackingChartManager();
+    const sim = make({ chartManager });
+    await sim.setup(fakeRoot(), { seed: 1 }, {});
+    assertEqual(chartManager.live.size, 1);
+    sim.draw(1);
+    sim.destroy();
+    assertEqual(chartManager.live.size, 0);
+  });
+});

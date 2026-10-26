@@ -346,6 +346,20 @@
         "axis": { "g": "Füllgewicht in g", "min": "Wartezeit in Minuten" },
         "density": "Dichte"
       },
+      "interval": {
+        "drawOne": "Stichprobe ziehen",
+        "draw": "{k} Stichproben ziehen",
+        "n": "Stichprobenumfang n",
+        "level": "Konfidenzniveau",
+        "drawn": "Anzahl Stichproben",
+        "hits": "Intervalle mit μ",
+        "rate": "Trefferquote",
+        "half": "Halbe Breite (letztes Intervall)",
+        "kindZ": "s mit Faktor 1,96",
+        "kindT": "s mit t-Faktor",
+        "axis": "Füllgewicht in g",
+        "miss": "verfehlt μ"
+      },
       "variance": {
         "drawOne": "1 Stichprobe ziehen",
         "draw": "{k} Stichproben ziehen",

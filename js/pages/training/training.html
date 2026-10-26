@@ -241,6 +241,41 @@
               </table>
             </div>
           </template>
+          <template x-if="isWidget(b, 'interval-coverage')">
+            <div class="training-interval" x-data="trainingIntervalCoverage" x-init="setup($el, b.params, lessonApi())" :data-count="samplesDrawn">
+              <div class="training-interval__controls">
+                <label class="training-interval__field">
+                  <span x-text="label('n')"></span>
+                  <select data-setting="n" :disabled="nOptions().length < 2" @change="setN($event)">
+                    <template x-for="v in nOptions()" :key="v">
+                      <option :value="v" :selected="v === n" x-text="v"></option>
+                    </template>
+                  </select>
+                </label>
+                <label class="training-interval__field">
+                  <span x-text="label('level')"></span>
+                  <select data-setting="level" :disabled="levelOptions().length < 2" @change="setLevel($event)">
+                    <template x-for="v in levelOptions()" :key="v">
+                      <option :value="v" :selected="v === level" x-text="levelText(v)"></option>
+                    </template>
+                  </select>
+                </label>
+                <div class="btn-group">
+                  <template x-for="k in drawSizes" :key="k">
+                    <button type="button" class="btn btn--sm btn--secondary" :data-draw="k" @click="draw(k)" x-text="drawLabel(k)"></button>
+                  </template>
+                </div>
+              </div>
+              <div class="training-interval__chart"></div>
+              <table class="training-interval__stats">
+                <tr><th x-text="label('drawn')"></th><td data-stat="drawn" x-text="cell('drawn')"></td><td x-show="compare"></td></tr>
+                <tr x-show="compare"><th></th><th x-text="label('kindZ')"></th><th x-text="label('kindT')"></th></tr>
+                <tr><th x-text="label('hits')"></th><td :data-stat="compare ? 'hits-z' : 'hits'" x-text="cell(compare ? 'hits-z' : 'hits')"></td><td x-show="compare" data-stat="hits-t" x-text="cell('hits-t')"></td></tr>
+                <tr><th x-text="label('rate')"></th><td :data-stat="compare ? 'rate-z' : 'rate'" x-text="cell(compare ? 'rate-z' : 'rate')"></td><td x-show="compare" data-stat="rate-t" x-text="cell('rate-t')"></td></tr>
+                <tr><th x-text="label('half')"></th><td :data-stat="compare ? 'half-z' : 'half'" x-text="cell(compare ? 'half-z' : 'half')"></td><td x-show="compare" data-stat="half-t" x-text="cell('half-t')"></td></tr>
+              </table>
+            </div>
+          </template>
           <template x-if="isType(b, 'quiz')">
             <div class="training-quiz" :data-quiz-id="b.id" x-data="trainingQuiz" x-init="setup(b, lessonApi())">
               <p class="training-quiz__question" x-effect="renderInline($el, b.question)"></p>
