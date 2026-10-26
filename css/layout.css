@@ -2137,7 +2137,7 @@ body.dashboard-area-open #app-workspace {
 }
 
 .training-area__inner {
-  flex: 1;
+  flex: 1 0 auto;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
@@ -2145,7 +2145,6 @@ body.dashboard-area-open #app-workspace {
   max-width: 1100px;
   width: 100%;
   margin: 0 auto;
-  min-height: 0;
 }
 
 .training-area__header {
@@ -3372,7 +3371,7 @@ body.training-area-open .dmaic-tiles {
   margin-bottom: var(--spacing-sm);
 }
 .training-lesson__definition strong { min-width: 160px; }
-.training-lesson__formula { font-size: var(--font-size-lg); overflow-x: auto; }
+.training-lesson__formula { font-size: var(--font-size-lg); }
 .training-lesson__block li + li { margin-top: var(--spacing-sm); }
 
 .training-lesson__note {

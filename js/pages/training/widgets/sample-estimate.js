@@ -17,7 +17,10 @@ import { mulberry32 } from '../../../engines/random-variates-engine.js';
 import { binValues } from '../populations.js';
 import { PROCESSES, drawSample, summarizeValues } from '../processes.js';
 
-/** Batch sizes of the draw buttons. */
+/**
+ * Batch sizes of the draw buttons. The chart shows only the last sample, so a
+ * batch draw is offered only where the history list makes the batch visible.
+ */
 export const DRAW_SIZES = [1, 5];
 const BINS = 20;
 const MU_COLOR = 'var(--color-text-secondary)';
@@ -67,6 +70,7 @@ export function sampleEstimateComponent(ctx) {
       if (Number.isInteger(p.n) && p.n > 1) this.n = p.n;
       this.showTruth = p.showTruth === true;
       this.historySize = Number.isInteger(p.history) && p.history > 0 ? p.history : 0;
+      this.drawSizes = this.historySize ? DRAW_SIZES : DRAW_SIZES.slice(0, 1);
       current = [];
       history = [];
       this.samplesDrawn = 0;
