@@ -331,6 +331,7 @@
       "insightLockedValues": "Measure at least {k} values first, ideally 100 at once – then this shows what you just saw.",
       "insightLockedSamples": "Draw samples first (at least {k}) – then this shows what you saw.",
       "insightLockedEach": "Measure at least {k} values in every chart first – then this shows what you saw.",
+      "insightLockedSettings": "First try at least {k} values of n and {k} confidence levels, each with at least 100 samples – then this shows what you saw.",
       "quizCorrect": "Correct.",
       "quizWrong": "Not yet.",
       "estimate": {

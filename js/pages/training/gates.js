@@ -42,6 +42,23 @@ function enoughNs(byN) {
 }
 
 /**
+ * Distinct levels and distinct n among the settings with enough draws.
+ * Lesson 4 reports perN as {[level]: {[n]: samples}}.
+ * @param {Object<string, Object<string, number>>} perN
+ * @returns {{levels: number, ns: number}}
+ */
+function settingsTried(perN) {
+  const levels = new Set();
+  const ns = new Set();
+  for (const [level, byN] of Object.entries(perN || {})) {
+    for (const [n, draws] of Object.entries(byN || {})) {
+      if (draws >= MIN_DRAWS_PER_N) { levels.add(level); ns.add(n); }
+    }
+  }
+  return { levels: levels.size, ns: ns.size };
+}
+
+/**
  * Is the block's gate open for the given step counts?
  * @param {object} block
  * @param {StepCounts} counts
@@ -50,6 +67,10 @@ function enoughNs(byN) {
 export function isGateOpen(block, counts) {
   if (block.revealAfterSamples != null && !(counts.count >= block.revealAfterSamples)) return false;
   if (block.revealAfterValues != null && !(counts.count >= block.revealAfterValues)) return false;
+  if (block.revealAfterSettings != null) {
+    const tried = settingsTried(counts.perN);
+    if (tried.levels < block.revealAfterSettings || tried.ns < block.revealAfterSettings) return false;
+  }
   if (block.revealAfterEach != null) {
     const perProcess = Object.values(counts.perN || {});
     if (!perProcess.length || perProcess.some((byN) => !((byN[1] || 0) >= block.revealAfterEach))) return false;
@@ -72,6 +93,10 @@ export function gateHint(block) {
   // Lesson 2 counts whole samples; its buttons draw one or a few at a time.
   if (block.revealAfterSamples != null) {
     return { key: 'course.insightLockedSamples', params: { k: block.revealAfterSamples } };
+  }
+  // Lesson 4 asks for several n and several confidence levels.
+  if (block.revealAfterSettings != null) {
+    return { key: 'course.insightLockedSettings', params: { k: block.revealAfterSettings } };
   }
   // Value gates (lesson 1) speak of measured values, not samples.
   if (block.revealAfterEach != null) {

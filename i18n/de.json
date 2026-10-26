@@ -331,6 +331,7 @@
       "insightLockedValues": "Miss erst mindestens {k} Werte, am besten 100 auf einmal – dann steht hier, was du gerade gesehen hast.",
       "insightLockedSamples": "Zieh erst Stichproben (mindestens {k}) – dann steht hier, was du gesehen hast.",
       "insightLockedEach": "Miss erst in jedem Diagramm mindestens {k} Werte – dann steht hier, was du gesehen hast.",
+      "insightLockedSettings": "Probiere erst mindestens {k} Werte für n und {k} Konfidenzniveaus aus, jeweils mit mindestens 100 Stichproben – dann steht hier, was du gesehen hast.",
       "quizCorrect": "Richtig.",
       "quizWrong": "Noch nicht.",
       "estimate": {

@@ -91,4 +91,15 @@ suite('gates', () => {
     assertDeepEqual(gateHint({ revealAfterShapes: 2, revealAfterN: 3 }),
       { key: 'course.insightLockedShapes', params: { shapes: 2, n: 3 } });
   });
+  test('revealAfterSettings counts n and level independently', () => {
+    const block = { revealAfterSettings: 2 };
+    assertEqual(isGateOpen(block, counts(0, { 0.95: { 5: 100, 40: 100 }, 0.99: { 40: 100 } })), true);
+    assertEqual(isGateOpen(block, counts(0, { 0.95: { 5: 100, 40: 100 } })), false);
+    assertEqual(isGateOpen(block, counts(0, { 0.95: { 5: 100 }, 0.99: { 40: 99 } })), false);
+    assertEqual(isGateOpen(block, emptyStepCounts()), false);
+  });
+
+  test('hint for the settings gate', () => {
+    assertDeepEqual(gateHint({ revealAfterSettings: 2 }), { key: 'course.insightLockedSettings', params: { k: 2 } });
+  });
 });
