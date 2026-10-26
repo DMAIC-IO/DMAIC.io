@@ -24,6 +24,13 @@
   min-width: min-content;
 }
 
+/* Empty state: the SIPOC import offer (only shown while no step exists). */
+.pmap__empty {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-xl) 0;
+}
+
 .pmap__table {
   border-collapse: separate;
 

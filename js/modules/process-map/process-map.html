@@ -4,7 +4,20 @@
       <div class="pmap__flow" data-ref="flow">
 
         <!-- Empty state has no in-canvas add button; the toolbar "Add Step"
-             action bar on the top right covers it. -->
+             action bar on the top right covers it. When the project holds a
+             SIPOC, the empty state offers its import instead of opening the
+             picker on its own (that would also trap agents adding an
+             instance). -->
+        <template x-if="sipocOfferVisible()">
+          <div class="pmap__empty">
+            <button type="button" class="btn btn--secondary pmap__sipoc-offer"
+                    data-action="import-from-sipoc"
+                    @click="_openSipocImport()">
+              <span class="icon icon--sm" data-icon="action.upload" aria-hidden="true"></span>
+              <span x-text="t('importFromSipoc')"></span>
+            </button>
+          </div>
+        </template>
 
         <template x-if="model.steps.length > 0">
           <table class="pmap__table">

@@ -809,6 +809,16 @@ export default createModule({
         this._sipocSelectedId = opt.instanceId;
       },
 
+      /**
+       * Whether the empty state offers the SIPOC import: no step yet and at
+       * least one SIPOC in the project. The picker never opens on its own.
+       * @noagent view transform — Agenten legen Schritte über `addStep` an.
+       */
+      sipocOfferVisible() {
+        if (this.model.steps.length > 0) return false;
+        return listSipocInstances(module._context.stateManager).length > 0;
+      },
+
       _openSipocImport() {
         const sm = module._context.stateManager;
         this._sipocOptions = listSipocInstances(sm);
@@ -887,54 +897,11 @@ export default createModule({
         return true;
       },
 
-      /** Mark this Process Map instance as "seen" so the auto-picker never fires again. */
-      _seedEmptyIfFresh() {
-        const sm = module._context.stateManager;
-        if (sm.getModuleState(module._context.instanceId) === null) {
-          sm.setModuleState(module._context.instanceId, this.model.toJSON());
-        }
-      },
-
       // ── Lifecycle (per Alpine instance) ───────────────────────
       /** @noagent lifecycle, kein Zustandsweg */
       init() {
         this.$nextTick(() => {
           this._autoSizeAll();
-        });
-
-        // Auto-open the SIPOC picker on the very first init of a fresh Process
-        // Map instance (never persisted) when ≥ 1 SIPOC exists in the project.
-        // After the user picks or dismisses, persist a {steps:[]} stub so the
-        // picker does not reappear on later tab switches.
-        this.$nextTick(() => {
-          const sm = module._context.stateManager;
-          // A headless/detached mount (dev-tools seeding, scenario loading)
-          // must not open UI of its own — the modal would outlive the seed and
-          // block the page. See workspace.instantiateDetached.
-          if (module._context.detached) return;
-          const isFresh = sm.getModuleState(module._context.instanceId) === null
-                        && this.model.steps.length === 0;
-          if (!isFresh) return;
-          const sipocs = listSipocInstances(sm);
-          if (sipocs.length === 0) return;
-          this._sipocOptions = sipocs;
-          const firstUsable = sipocs.find(o => o.processCount > 0);
-          this._sipocSelectedId = firstUsable ? firstUsable.instanceId : null;
-          // Second $nextTick so the x-for renders the option rows before the
-          // modal borrows the sipocForm subtree (empty form → onMount sees
-          // no radios and the initial check never lands).
-          this.$nextTick(() => {
-            module._context.dialog.form({
-              title: _t('importFromSipocTitle'),
-              content: this.$refs.sipocForm,
-              confirmLabel: _t('importFromSipocConfirm'),
-              onMount: (body) => this._sipocFormMount(body),
-              onConfirm: (body) => {
-                const ok = this._runSipocImport(body);
-                if (!ok) this._seedEmptyIfFresh();
-              },
-            }).then((confirmed) => { if (!confirmed) this._seedEmptyIfFresh(); });
-          });
         });
 
         // Release any armed draggable rows/items after the mouse is released.
