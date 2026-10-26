@@ -196,14 +196,15 @@ suite('course content', () => {
     }
   });
 
-  test('definitions carry a LaTeX formula, never Unicode math', () => {
+  test('definitions carry exactly one of formula/content; formulas are LaTeX, never Unicode math', () => {
     for (const { lesson } of builtLessons()) {
       for (const lang of LANGS) {
         for (const b of blocksOf(lesson, lang).filter((x) => x.type === 'definition')) {
           const where = `${lesson.id} ${lang} ${b.term}`;
-          assertTrue(typeof b.formula === 'string' && b.formula.length > 0, `${where}: formula`);
-          assertTrue(!('content' in b), `${where}: no plain-text content`);
-          assertTrue(!/[Σσμ√ᵢ²]|̄/.test(b.formula), `${where}: formula is LaTeX`);
+          const hasFormula = typeof b.formula === 'string' && b.formula.length > 0;
+          const hasContent = typeof b.content === 'string' && b.content.length > 0;
+          assertTrue(hasFormula !== hasContent, `${where}: exactly one of formula/content`);
+          if (hasFormula) assertTrue(!/[Σσμ√ᵢ²]|̄/.test(b.formula), `${where}: formula is LaTeX`);
         }
       }
     }
@@ -270,7 +271,7 @@ suite('course content', () => {
       for (const id of ['grundgesamtheit', 'stichprobe', 'varianz']) {
         assertTrue(definitions.some((b) => b.glossary === id), `${lang}: definition ${id}`);
       }
-      assertTrue(definitions.some((b) => b.formula.includes('\\mu = \\frac{\\sum x_i}{N}')), `${lang}: μ formula`);
+      assertTrue(definitions.some((b) => b.formula?.includes('\\mu = \\frac{\\sum x_i}{N}')), `${lang}: μ formula`);
       const check = steps[3].blocks.find((b) => b.type === 'simulation');
       assertEqual(check.widget, 'variance-check', `${lang}: step 4 widget`);
       assertEqual(check.params.n, 3, `${lang}: step 4 n`);

@@ -187,6 +187,15 @@ export function lessonViewData(t, i18n, dialog) {
       el.replaceChildren(h('span', { 'data-katex-inline': `\\displaystyle ${latex}` }, latex));
       renderInlineMath(el);
     },
+    /**
+     * Definition body: the LaTeX `formula` when present, else the prose `content`.
+     * @param {HTMLElement} el
+     * @param {{formula?: string, content?: string}} b
+     */
+    renderDefinitionBody(el, b) {
+      if (b.formula) this.renderFormula(el, b.formula);
+      else this.renderInline(el, b.content);
+    },
     /** Definition term; with a glossary id the term becomes a glossary link. */
     renderTerm(el, b) {
       const text = b.glossary ? `{{term:${b.glossary}|${b.term}}}` : b.term;
