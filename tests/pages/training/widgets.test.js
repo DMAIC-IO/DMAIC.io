@@ -451,6 +451,12 @@ suite('null-distribution widget', () => {
     assertDeepEqual(cfg.refLines.map((r) => r.value), [501.6, 498.4]);
   });
 
+  test('hides the chart legend like the sibling widgets', () => {
+    // The histogram's legend names are fixed English ("Histogram", "X=…").
+    const { sim } = mount({ seed: 1 });
+    assertEqual(sim.chartConfig().showLegend, false);
+  });
+
   test('tail bins start exactly at the observed mean', () => {
     const { sim } = mount({ seed: 1, observedChoices: THREE });
     assertEqual(lit(sim).length, 24);

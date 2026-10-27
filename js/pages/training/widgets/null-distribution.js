@@ -227,6 +227,7 @@ export function nullDistributionComponent(ctx) {
         xMin: AXIS_MIN,
         xMax: AXIS_MAX,
         xExact: true,
+        showLegend: false,
         refLines: [
           { dir: 'v', value: this.observed, label: 'x̄', showLabel: true, color: OBSERVED_COLOR, width: 2 },
           { dir: 'v', value: mirror, label: '', color: OBSERVED_COLOR, width: 2, dash: 'dot' },
