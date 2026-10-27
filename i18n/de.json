@@ -360,7 +360,7 @@
         "keep": "H₀ beibehalten",
         "reject": "H₀ verwerfen",
         "axis": "Mittelwert x̄ in g",
-        "assumption": "Simulation einer Maschine, die genau auf 500 g steht"
+        "assumption": "Simulation der Anlage A, die genau auf 500 g steht"
       },
       "interval": {
         "drawOne": "Stichprobe ziehen",

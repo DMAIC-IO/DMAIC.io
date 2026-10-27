@@ -360,7 +360,7 @@
         "keep": "keep H₀",
         "reject": "reject H₀",
         "axis": "Mean x̄ in g",
-        "assumption": "Simulation of a machine set exactly to 500 g"
+        "assumption": "Simulation of machine A set exactly to 500 g"
       },
       "interval": {
         "drawOne": "Draw a sample",
