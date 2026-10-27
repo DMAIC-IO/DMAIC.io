@@ -8,6 +8,7 @@
 import variation from '../lessons/variation.js';
 import sampling from '../lessons/sampling.js';
 import samplingDistribution from '../lessons/sampling-distribution.js';
+import confidenceInterval from '../lessons/confidence-interval.js';
 
 export default {
   id: 'statistics-basics',
@@ -46,6 +47,7 @@ export default {
       de: { title: 'Konfidenzintervall', summary: 'Wie genau ein Mittelwert aus einer Stichprobe ist.' },
       en: { title: 'Confidence interval', summary: 'How precise a mean from a sample is.' },
       prerequisites: ['sampling-distribution'],
+      content: confidenceInterval,
     },
     {
       id: 'hypothesis-test',
