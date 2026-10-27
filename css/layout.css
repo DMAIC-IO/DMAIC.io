@@ -3472,12 +3472,16 @@ body.training-area-open .dmaic-tiles {
   background: var(--color-bg-secondary);
 }
 .training-estimate__chart { min-height: 240px; min-width: 0; }
+
 .training-interval__controls,
 .training-null__controls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-md); }
+
 .training-interval__field,
 .training-null__field { display: flex; align-items: center; gap: var(--spacing-xs); color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+
 .training-interval__chart,
 .training-null__chart { height: 320px; min-width: 0; }
+
 .training-null__assumption { margin: 0; color: var(--color-text-secondary); font-size: var(--font-size-sm); }
 .training-estimate__note { margin: 0; color: var(--color-text-secondary); font-size: var(--font-size-sm); }
 .training-estimate__history { display: flex; flex-direction: column; gap: var(--spacing-xs); }
