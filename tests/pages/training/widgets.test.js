@@ -412,3 +412,106 @@ suite('interval-coverage widget', () => {
     assertEqual(chartManager.live.size, 0);
   });
 });
+
+suite('null-distribution widget', () => {
+  const make = (ctx = {}) => WIDGET_COMPONENTS['null-distribution'].factory({ i18n: { t: (k) => k }, ...ctx });
+  const mount = (params, ctx) => {
+    const sim = make(ctx);
+    const events = [];
+    sim.setup({ dispatchEvent: (e) => events.push(e) }, params, {});
+    return { sim, events };
+  };
+  const share = (sim) => parseFloat(sim.cell('share'));
+  const lit = (sim) => sim.chartConfig().bins.filter((b) => b.highlight);
+  const THREE = [500.8, 501.2, 501.6];
+
+  test('shows dashes before the first sample', () => {
+    const { sim, events } = mount({ seed: 1, showP: true });
+    assertEqual(sim.cell('drawn'), '0');
+    assertEqual(sim.cell('far'), '0');
+    assertEqual(sim.cell('share'), '–');
+    assertEqual(sim.cell('p'), '0.011');
+    assertEqual(sim.cell('decision'), 'training.course.nullDist.reject');
+    assertEqual(events[0].type, 'training-sim-progress');
+    assertDeepEqual(events[0].detail, { count: 0, choices: 1 });
+  });
+
+  test('draws and counts the far-out means', () => {
+    const { sim } = mount({ seed: 1 });
+    sim.draw(1000);
+    assertEqual(sim.cell('drawn'), '1000');
+    assertTrue(/^\d+\.\d %$/.test(sim.cell('share')), `share format ${sim.cell('share')}`);
+    assertTrue(Math.abs(share(sim) - 1.14) <= 1.0, `share ${sim.cell('share')}`);
+    const cfg = sim.chartConfig();
+    assertEqual(cfg.bins.length, 40);
+    const inRange = sim._means().filter((m) => m >= 496 && m < 504).length;
+    assertEqual(cfg.bins.reduce((s, b) => s + b.count, 0), inRange);
+    assertEqual(cfg.xMin, 496);
+    assertEqual(cfg.xMax, 504);
+    assertDeepEqual(cfg.refLines.map((r) => r.value), [501.6, 498.4]);
+  });
+
+  test('tail bins start exactly at the observed mean', () => {
+    const { sim } = mount({ seed: 1, observedChoices: THREE });
+    assertEqual(lit(sim).length, 24);
+    assertTrue(lit(sim).every((b) => b.x0 >= 501.6 - 1e-9 || b.x1 <= 498.4 + 1e-9), 'tails of 501.6');
+    sim.setObserved(500.8);
+    assertEqual(lit(sim).length, 32);
+    assertTrue(lit(sim).every((b) => b.x0 >= 500.8 - 1e-9 || b.x1 <= 499.2 + 1e-9), 'tails of 500.8');
+  });
+
+  test('switching the observed mean keeps the samples', () => {
+    const { sim, events } = mount({ seed: 1, observedChoices: THREE, showP: true });
+    sim.draw(1000);
+    sim.setObserved(500.8);
+    assertEqual(sim.cell('drawn'), '1000');
+    assertTrue(Math.abs(share(sim) - 20.6) <= 4, `share ${sim.cell('share')}`);
+    assertEqual(sim.cell('p'), '0.206');
+    assertEqual(sim.cell('decision'), 'training.course.nullDist.keep');
+    assertDeepEqual(events[events.length - 1].detail, { count: 1000, choices: 2 });
+    sim.setObserved(501.6);
+    assertDeepEqual(events[events.length - 1].detail, { count: 1000, choices: 2 });
+  });
+
+  test('an observed mean outside the choices is ignored', () => {
+    const { sim } = mount({ seed: 1 });
+    sim.setObserved(500.8);
+    assertEqual(sim.observed, 501.6);
+    assertDeepEqual(sim.observedOptions(), [501.6]);
+  });
+
+  test('values beyond the axis still count', () => {
+    const { sim } = mount({ seed: 1 });
+    sim._pushMeans([505, 495]);
+    assertEqual(sim.cell('drawn'), '2');
+    assertEqual(sim.cell('far'), '2');
+    assertEqual(sim.chartConfig().bins.reduce((s, b) => s + b.count, 0), 0);
+  });
+
+  test('the share is labelled as an estimate of p only with showP', () => {
+    assertEqual(mount({ seed: 1 }).sim.showP, false);
+    assertEqual(mount({ seed: 1 }).sim.shareLabel(), 'training.course.nullDist.share');
+    assertEqual(mount({ seed: 1, showP: true }).sim.shareLabel(), 'training.course.nullDist.shareApprox');
+  });
+
+  test('null widget seeds per mount unless injected', () => {
+    const run = (params) => {
+      const { sim } = mount(params);
+      sim.draw(1);
+      return sim._means()[0];
+    };
+    assertEqual(run({ seed: 42 }), run({ seed: 42 }), 'same injected seed, same values');
+    assertTrue(run({ seed: 42 }) !== run({ seed: 43 }), 'different seeds differ');
+    assertTrue(run({}) !== run({}), 'default seeds are random per mount');
+  });
+
+  test('null widget releases every chart it created', async () => {
+    const chartManager = trackingChartManager();
+    const sim = make({ chartManager });
+    await sim.setup(fakeRoot(), { seed: 1 }, {});
+    assertEqual(chartManager.live.size, 1);
+    sim.draw(1);
+    sim.destroy();
+    assertEqual(chartManager.live.size, 0);
+  });
+});

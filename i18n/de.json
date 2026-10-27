@@ -347,6 +347,21 @@
         "axis": { "g": "Füllgewicht in g", "min": "Wartezeit in Minuten" },
         "density": "Dichte"
       },
+      "nullDist": {
+        "drawOne": "Stichprobe ziehen",
+        "draw": "{k} Stichproben ziehen",
+        "observed": "Beobachteter Mittelwert",
+        "drawn": "Anzahl Stichproben",
+        "far": "So weit von 500 g entfernt wie der beobachtete Wert",
+        "share": "Anteil",
+        "shareApprox": "Simulation (≈ p)",
+        "p": "p-Wert (exakt)",
+        "decision": "Entscheidung bei α = 5 %",
+        "keep": "H₀ beibehalten",
+        "reject": "H₀ verwerfen",
+        "axis": "Mittelwert x̄ in g",
+        "assumption": "Simulation einer Maschine, die genau auf 500 g steht"
+      },
       "interval": {
         "drawOne": "Stichprobe ziehen",
         "draw": "{k} Stichproben ziehen",

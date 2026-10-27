@@ -347,6 +347,21 @@
         "axis": { "g": "Filling weight in g", "min": "Waiting time in minutes" },
         "density": "Density"
       },
+      "nullDist": {
+        "drawOne": "Draw a sample",
+        "draw": "Draw {k} samples",
+        "observed": "Observed mean",
+        "drawn": "Number of samples",
+        "far": "As far from 500 g as the observed value",
+        "share": "Share",
+        "shareApprox": "Simulation (≈ p)",
+        "p": "p-value (exact)",
+        "decision": "Decision at α = 5 %",
+        "keep": "keep H₀",
+        "reject": "reject H₀",
+        "axis": "Mean x̄ in g",
+        "assumption": "Simulation of a machine set exactly to 500 g"
+      },
       "interval": {
         "drawOne": "Draw a sample",
         "draw": "Draw {k} samples",

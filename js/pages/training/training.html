@@ -276,6 +276,38 @@
               </table>
             </div>
           </template>
+          <template x-if="isWidget(b, 'null-distribution')">
+            <div class="training-null" x-data="trainingNullDistribution" x-init="setup($el, b.params, lessonApi())" :data-count="samplesDrawn">
+              <p class="training-null__assumption" x-text="label('assumption')"></p>
+              <div class="training-null__controls">
+                <label class="training-null__field">
+                  <span x-text="label('observed')"></span>
+                  <select data-setting="observed" :disabled="observedOptions().length < 2" @change="setObserved($event)">
+                    <template x-for="v in observedOptions()" :key="v">
+                      <option :value="v" :selected="v === observed" x-text="observedText(v)"></option>
+                    </template>
+                  </select>
+                </label>
+                <div class="btn-group">
+                  <template x-for="k in drawSizes" :key="k">
+                    <button type="button" class="btn btn--sm btn--secondary" :data-draw="k" @click="draw(k)" x-text="drawLabel(k)"></button>
+                  </template>
+                </div>
+              </div>
+              <div class="training-null__chart"></div>
+              <table class="training-null__stats">
+                <tr><th x-text="label('drawn')"></th><td data-stat="drawn" x-text="cell('drawn')"></td></tr>
+                <tr><th x-text="label('far')"></th><td data-stat="far" x-text="cell('far')"></td></tr>
+                <tr><th x-text="shareLabel()"></th><td data-stat="share" x-text="cell('share')"></td></tr>
+                <template x-if="showP">
+                  <tr class="training-null__exact"><th x-text="label('p')"></th><td data-stat="p" x-text="cell('p')"></td></tr>
+                </template>
+                <template x-if="showP">
+                  <tr class="training-null__exact"><th x-text="label('decision')"></th><td data-stat="decision" x-text="cell('decision')"></td></tr>
+                </template>
+              </table>
+            </div>
+          </template>
           <template x-if="isType(b, 'quiz')">
             <div class="training-quiz" :data-quiz-id="b.id" x-data="trainingQuiz" x-init="setup(b, lessonApi())">
               <p class="training-quiz__question" x-effect="renderInline($el, b.question)"></p>
