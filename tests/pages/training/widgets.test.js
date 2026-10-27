@@ -626,6 +626,11 @@ suite('test-errors widget', () => {
     assertDeepEqual(sim.legends(), ['alpha']);
   });
 
+  test('the chart hides its series legend, the widget legend explains the areas', () => {
+    const { sim } = mount({ seed: 1, showTheory: true, driftChoices: [1] });
+    assertEqual(sim.chartConfig().showLegend, false);
+  });
+
   test('a setting outside the choices is ignored and single choices lock', () => {
     const { sim } = mount({ seed: 1 });
     sim.setDrift(1);

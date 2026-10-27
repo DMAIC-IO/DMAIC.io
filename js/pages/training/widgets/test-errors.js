@@ -329,6 +329,8 @@ export function testErrorsComponent(ctx) {
         xMin: AXIS_MIN,
         xMax: AXIS_MAX,
         xExact: true,
+        // The widget's own legend explains the shaded areas below the chart.
+        showLegend: false,
         refLines: [
           { dir: 'v', value: L, label: '', color: LIMIT_COLOR, width: 2 },
           { dir: 'v', value: U, label: '', color: LIMIT_COLOR, width: 2 },
