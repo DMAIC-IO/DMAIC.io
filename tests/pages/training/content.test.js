@@ -131,9 +131,16 @@ suite('course content', () => {
           if (b.revealAfterShapes != null) {
             assertTrue(b.revealAfterN != null, `${b.id}: revealAfterShapes needs revealAfterN`);
           }
-          GATE_FIELDS.forEach((k) => {
+          GATE_FIELDS.filter((k) => k !== 'revealAfterEachValue').forEach((k) => {
             if (b[k] != null) assertTrue(Number.isInteger(b[k]) && b[k] > 0, `${b.id}: ${k} positive integer`);
           });
+          if (b.revealAfterEachValue != null) {
+            const { of, k, min, ...rest } = b.revealAfterEachValue;
+            assertTrue(['drift', 'n', 'alpha'].includes(of), `${b.id}: revealAfterEachValue.of is a widget setting`);
+            assertTrue(Number.isInteger(k) && k > 0 && Number.isInteger(min) && min > 0,
+              `${b.id}: revealAfterEachValue k and min positive integers`);
+            assertDeepEqual(Object.keys(rest), [], `${b.id}: revealAfterEachValue has only of, k, min`);
+          }
         }
       }
     }
@@ -384,5 +391,81 @@ suite('course content', () => {
     const correctAt = lesson.de.steps[6].blocks.filter((b) => b.type === 'quiz')
       .map((q) => q.options.findIndex((o) => o.correct));
     assertDeepEqual(correctAt, [1, 2, 0, 1], 'correct option positions');
+  });
+
+  test('lesson 6 follows the approved structure', () => {
+    const found = findLesson('errors-power');
+    const lesson = found && found.lesson;
+    assertTrue(!!lesson, 'lesson 6 is built');
+    const typeOne = /Fehler\s*1\.\s*Art|type\s*I\b/i;
+    const typeTwo = /Fehler\s*2\.\s*Art|type\s*II|β|\\beta|power/i;
+    const misreading = /beweist|bewiesen|proves|proven|1\s*[−-]\s*α\s*=\s*β|β\s*=\s*1\s*[−-]\s*α/i;
+    const drifts = [0.5, 1, 1.5, 2];
+    const expectedParams = [
+      null,
+      { driftChoices: [0] },
+      { driftChoices: [1], showTheory: 'afterInsight' },
+      { driftChoices: drifts, showTheory: true, showExact: true },
+      { driftChoices: drifts, nChoices: [10, 20, 40], showTheory: true, showExact: true },
+      { driftChoices: [1], alphaChoices: [0.01, 0.05, 0.1], showTheory: true, showExact: true },
+      { driftChoices: [1], nChoices: [43], showTheory: true, showExact: true },
+      null,
+      null,
+    ];
+    const expectedInsights = [
+      null,
+      { id: 'false-alarms', gate: { revealAfterChecks: 1000 } },
+      { id: 'missed', gate: { revealAfterChecks: 1000 } },
+      { id: 'drift-size', gate: { revealAfterEachValue: { of: 'drift', k: 3, min: 100 } } },
+      { id: 'more-packs', gate: { revealAfterEachValue: { of: 'n', k: 3, min: 100 } } },
+      { id: 'alpha-beta', gate: { revealAfterEachValue: { of: 'alpha', k: 3, min: 100 } } },
+      { id: 'plan-n', gate: { revealAfterChecks: 1000 } },
+      null,
+      null,
+    ];
+    // Blocks that may name a term: the step's insight and the blocks it reveals.
+    const afterInsight = (step) => step.blocks.filter((b) => b.type !== 'insight' && b.afterInsight == null);
+    for (const lang of LANGS) {
+      const steps = lesson[lang].steps;
+      assertEqual(steps.length, 9, `${lang} step count`);
+      const sims = steps.map((st) => st.blocks.find((b) => b.type === 'simulation') || null);
+      assertDeepEqual(sims.map((b) => b && b.widget),
+        [null, 'test-errors', 'test-errors', 'test-errors', 'test-errors', 'test-errors', 'test-errors', null, null],
+        `${lang}: widgets`);
+      sims.forEach((b, i) => { if (b) assertDeepEqual(b.params, expectedParams[i], `${lang}: step ${i} params`); });
+      const insights = steps.map((st) => st.blocks.find((b) => b.type === 'insight') || null);
+      insights.forEach((b, i) => {
+        const want = expectedInsights[i];
+        if (!want) { assertEqual(b, null, `${lang}: step ${i} has no insight`); return; }
+        assertEqual(b.id, want.id, `${lang}: step ${i} insight id`);
+        const gate = Object.fromEntries(Object.entries(b).filter(([k]) => k.startsWith('revealAfter')));
+        assertDeepEqual(gate, want.gate, `${lang}: step ${i} gate`);
+      });
+      const definitions = (i) => steps[i].blocks.filter((b) => b.type === 'definition');
+      assertTrue(definitions(1).some((b) => b.glossary === 'fehler-erster-art'), `${lang}: step 1 fehler-erster-art`);
+      assertTrue(definitions(2).some((b) => b.glossary === 'fehler-zweiter-art'), `${lang}: step 2 fehler-zweiter-art`);
+      assertTrue(definitions(2).some((b) => b.glossary === 'power'), `${lang}: step 2 power`);
+      assertTrue(definitions(6).some((b) => (b.formula || '').includes('z_{1-\\beta}')), `${lang}: step 6 sample-size formula`);
+      assertDeepEqual(strings(steps[0]).filter((x) => typeOne.test(x)), [], `${lang}: step 0 names no type I error`);
+      for (const i of [0, 1]) {
+        assertDeepEqual(strings(steps[i]).filter((x) => typeTwo.test(x)), [], `${lang}: step ${i} names no type II error`);
+      }
+      assertDeepEqual(strings(afterInsight(steps[1])).filter((x) => typeOne.test(x)), [],
+        `${lang}: step 1 names the type I error only after its insight`);
+      assertDeepEqual(strings(afterInsight(steps[2])).filter((x) => typeTwo.test(x)), [],
+        `${lang}: step 2 names the type II error only after its insight`);
+      const all = strings(lesson[lang]);
+      assertDeepEqual(all.filter((x) => /Ablehnungsbereich|rejection region/i.test(x)), [], `${lang}: no rejection region`);
+      // Distractors may state the misreading; everything else must not.
+      const wrongOptions = blocksOf(lesson, lang).filter((b) => b.type === 'quiz')
+        .flatMap((q) => q.options.filter((o) => !o.correct));
+      const wrongTexts = new Set(strings(wrongOptions));
+      assertDeepEqual(all.filter((x) => misreading.test(x) && !wrongTexts.has(x)), [],
+        `${lang}: no proof claim and no β = 1 − α outside wrong options`);
+    }
+    assertDeepEqual(quizIds(lesson), ['q-count', 'q-miss', 'q-power', 'q-help']);
+    const correctAt = lesson.de.steps[7].blocks.filter((b) => b.type === 'quiz')
+      .map((q) => q.options.findIndex((o) => o.correct));
+    assertDeepEqual(correctAt, [2, 0, 1, 2], 'correct option positions');
   });
 });

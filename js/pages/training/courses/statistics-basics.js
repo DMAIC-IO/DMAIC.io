@@ -10,6 +10,7 @@ import sampling from '../lessons/sampling.js';
 import samplingDistribution from '../lessons/sampling-distribution.js';
 import confidenceInterval from '../lessons/confidence-interval.js';
 import hypothesisTest from '../lessons/hypothesis-test.js';
+import errorsPower from '../lessons/errors-power.js';
 
 export default {
   id: 'statistics-basics',
@@ -62,6 +63,7 @@ export default {
       de: { title: 'α, β und Power', summary: 'Welche Fehler ein Test machen kann und wie sich ihr Risiko steuern lässt.' },
       en: { title: 'α, β and power', summary: 'Which mistakes a test can make and how to control their risk.' },
       prerequisites: ['hypothesis-test'],
+      content: errorsPower,
     },
   ],
 };

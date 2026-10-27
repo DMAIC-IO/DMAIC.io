@@ -29,10 +29,10 @@ test('de page lists the six lesson titles in order', () => {
   assert.match(page.html, /Statistik-Grundlagen/);
 });
 
-test('unbuilt lessons carry the "in Vorbereitung" label, the built ones do not', () => {
+test('no lesson carries the "in Vorbereitung" label', () => {
   const page = renderTrainingCoursesPage({ lang: 'de', courses: COURSES });
-  assert.equal((page.html.match(/in Vorbereitung/g) || []).length, 1);
-  for (const id of ['variation', 'sampling', 'sampling-distribution', 'confidence-interval', 'hypothesis-test']) {
+  assert.equal((page.html.match(/in Vorbereitung/g) || []).length, 0);
+  for (const id of ['variation', 'sampling', 'sampling-distribution', 'confidence-interval', 'hypothesis-test', 'errors-power']) {
     const built = page.html.match(new RegExp(`<li class="handbook-course__lesson"[^>]*data-lesson-id="${id}"[\\s\\S]*?<\\/li>`))[0];
     assert.doesNotMatch(built, /in Vorbereitung/);
   }
@@ -57,7 +57,7 @@ test('en page uses English titles and link label', () => {
   assert.deepEqual(itemTitles(page.html), COURSES[0].lessons.map((l) => l.en.title));
   assert.match(page.html, /Statistics basics/);
   assert.match(page.html, />Open in app/);
-  assert.match(page.html, /in preparation/);
+  assert.doesNotMatch(page.html, /in preparation/);
   assert.equal(page.altPathFromRoot, '/de/training/courses.html');
 });
 
