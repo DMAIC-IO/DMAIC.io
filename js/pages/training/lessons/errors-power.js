@@ -54,7 +54,7 @@ export default {
           ] },
           { type: 'definition', term: 'Fehler 2. Art', content: 'H₀ ist falsch – die Maschine hat sich verschoben –, und der Test behält H₀ trotzdem bei: Die Verschiebung bleibt unentdeckt. Seine Wahrscheinlichkeit heißt β („beta“), hier etwa 65 %.', glossary: 'fehler-zweiter-art', afterInsight: 'missed' },
           { type: 'definition', term: 'Power (Teststärke)', formula: '\\text{Power} = 1 - \\beta', glossary: 'power', afterInsight: 'missed' },
-          { type: 'paragraph', content: 'Die {{term:power|Power}} ist die Wahrscheinlichkeit, dass der Test eine echte Verschiebung erkennt – hier etwa 35 %. Anders als α wählt man sie nicht direkt: Sie hängt davon ab, wie groß die Verschiebung ist.', afterInsight: 'missed' },
+          { type: 'paragraph', content: 'Die {{term:power|Power}} ist die Wahrscheinlichkeit, dass der Test eine echte Verschiebung erkennt – hier etwa 35 %. Anders als α wählt man sie nicht direkt: Sie hängt davon ab, wie groß die Verschiebung ist und wie viele Packungen pro Prüfung wir wiegen.', afterInsight: 'missed' },
           { type: 'paragraph', content: 'Zusammen ergeben sich vier mögliche Ausgänge einer Prüfung:', afterInsight: 'missed' },
           { type: 'table', headers: ['Maschine', 'H₀ beibehalten', 'H₀ verwerfen'], rows: [
             ['unverändert', 'richtig (1 − α)', 'Fehler 1. Art (α)'],
@@ -187,7 +187,7 @@ export default {
           ] },
           { type: 'definition', term: 'Type II error', content: 'H₀ is false – the machine has drifted – and the test keeps H₀ anyway: the drift goes undetected. Its probability is called β (“beta”), here about 65 %.', glossary: 'fehler-zweiter-art', afterInsight: 'missed' },
           { type: 'definition', term: 'Power', formula: '\\text{Power} = 1 - \\beta', glossary: 'power', afterInsight: 'missed' },
-          { type: 'paragraph', content: '{{term:power|Power}} is the probability that the test detects a real drift – here about 35 %. Unlike α, it is not chosen directly: it depends on how large the drift is.', afterInsight: 'missed' },
+          { type: 'paragraph', content: '{{term:power|Power}} is the probability that the test detects a real drift – here about 35 %. Unlike α, it is not chosen directly: it depends on how large the drift is and how many packs per check we weigh.', afterInsight: 'missed' },
           { type: 'paragraph', content: 'Together there are four possible outcomes of a check:', afterInsight: 'missed' },
           { type: 'table', headers: ['Machine', 'Keep H₀', 'Reject H₀'], rows: [
             ['unchanged', 'right (1 − α)', 'Type I error (α)'],

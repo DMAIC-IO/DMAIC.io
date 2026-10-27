@@ -396,6 +396,16 @@ suite('course content', () => {
     assertDeepEqual(correctAt, [1, 2, 0, 1], 'correct option positions');
   });
 
+  test('lesson 6 says power depends on the drift and the packs per check', () => {
+    const { lesson } = findLesson('errors-power');
+    const wanted = { de: [/Verschiebung/, /Packungen pro Prüfung/], en: [/drift/, /packs per check/] };
+    for (const lang of LANGS) {
+      const text = strings(lesson[lang]).find((s) => s.includes('{{term:power|Power}}') && /35 %/.test(s));
+      assertTrue(!!text, `${lang}: power paragraph found`);
+      wanted[lang].forEach((re) => assertTrue(re.test(text), `${lang}: power paragraph names ${re}`));
+    }
+  });
+
   test('lesson 6 worked example adds up with the printed z values', () => {
     const { lesson } = findLesson('errors-power');
     const example = /\((\d+[.,]\d+) \+ (\d+[.,]\d+)\)² · (\d+)² \/ (\d+)² ≈ (\d+[.,]\d+)/;
