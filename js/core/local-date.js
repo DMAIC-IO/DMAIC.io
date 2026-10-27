@@ -30,6 +30,17 @@ export function addDaysISO(iso, days) {
 }
 
 /**
+ * True for any string in `YYYY-MM-DD` form, whether or not the calendar has
+ * that day (`2026-02-30` counts). Use it to keep such values away from
+ * text-style counting; use `isIsoDate` to know the date is real.
+ * @param {unknown} s
+ * @returns {boolean}
+ */
+export function looksLikeIsoDate(s) {
+  return typeof s === 'string' && ISO_DATE.test(s);
+}
+
+/**
  * True for a `YYYY-MM-DD` string naming a date the calendar really has —
  * the pattern alone would let `2026-02-30` or `2026-13-01` through. Checked
  * by a UTC round trip, so the result never depends on the time zone.

@@ -11,7 +11,7 @@
  */
 
 import { isNumericType } from './datagrid-utils.js';
-import { isIsoDate } from '../local-date.js';
+import { isIsoDate, looksLikeIsoDate } from '../local-date.js';
 
 /* ─── Cell reference shifting in formulas ─────────────────────
  *
@@ -79,7 +79,9 @@ function clampCol(n, max) {
  * Pattern kinds:
  *   copy        — single cell or non-extrapolable: repeat the source as-is.
  *   linear      — numeric arithmetic progression (constant step within ε).
- *   dateStep    — ISO date arithmetic progression (day-stepped).
+ *   dateStep    — ISO date arithmetic progression (day-stepped). Values in
+ *                 ISO form that are not real dates are skipped, never counted
+ *                 as text; without a real step the source repeats.
  *   textSuffix  — strings sharing a prefix with a trailing integer suffix
  *                 forming an arithmetic progression: "Run 1", "Run 2", …
  *   repeat      — fallback: cycle the source.
@@ -124,17 +126,15 @@ export function detectPattern(cells, columnType) {
   }
 
   // ── Date arithmetic progression (ISO YYYY-MM-DD) ──────────
-  if (columnType === 'date' && cells.every(c => isIsoDate(c.value))) {
-    const days = cells.map(c => isoDateToDayNumber(c.value));
-    const step = days[1] - days[0];
-    const allEqual = days.every((d, i) => i === 0 || (d - days[i - 1]) === step);
-    if (allEqual && step !== 0) {
-      return { kind: 'dateStep', step, base: days[days.length - 1], source: cells };
-    }
+  // Any column: a value in ISO form is a date or nothing — never text to count.
+  const isoShaped = cells.some(c => looksLikeIsoDate(c.value));
+  if (cells.every(c => looksLikeIsoDate(c.value))) {
+    const series = dateSeries(cells);
+    if (series) return series;
   }
 
   // ── Text suffix arithmetic progression: "Run 1", "Run 2", … ─
-  if (cells.every(c => typeof c.value === 'string')) {
+  if (!isoShaped && cells.every(c => typeof c.value === 'string')) {
     const parsed = cells.map(c => {
       const m = String(c.value).match(/^(.*?)(\d+)$/);
       return m ? { prefix: m[1], num: parseInt(m[2], 10), padLen: m[2].length } : null;
@@ -197,9 +197,10 @@ export function withCtrlModifier(pattern, ctrl) {
       return { kind: 'linear', step: 1, base: v, source: pattern.source };
     }
     if (isIsoDate(v)) {
-      return { kind: 'dateStep', step: 1, base: isoDateToDayNumber(v), source: pattern.source };
+      const day = isoDateToDayNumber(v);
+      return { kind: 'dateStep', step: 1, base: day, first: day, source: pattern.source };
     }
-    if (typeof v === 'string') {
+    if (typeof v === 'string' && !looksLikeIsoDate(v)) {
       const m = v.match(/^(.*?)(\d+)$/);
       if (m) {
         return {
@@ -247,7 +248,8 @@ export function generateFill(pattern, count, dir) {
 
     case 'dateStep': {
       const step = pattern.step * stepDir;
-      const base = stepDir === 1 ? pattern.base : isoDateToDayNumber(src[0].value);
+      const first = pattern.first ?? isoDateToDayNumber(src[0].value);
+      const base = stepDir === 1 ? pattern.base : first;
       for (let i = 0; i < count; i++) {
         out.push({ value: dayNumberToIsoDate(base + step * (i + 1)), formula: null });
       }
@@ -282,6 +284,33 @@ export function generateFill(pattern, count, dir) {
 /* ─── Date helpers ────────────────────────────────────────────
  * Day-number arithmetic uses UTC noon to sidestep DST jumps.
  */
+
+/**
+ * Day-stepped series through the real dates of an ISO-shaped source.
+ * Impossible dates (`2026-02-30`) are skipped; the step comes from the real
+ * ones and their positions, so the series keeps its rhythm across the gap.
+ * `base` / `first` are the days the last / first source slot would hold.
+ * Needs two real dates on one constant, non-zero, whole-day step — otherwise
+ * null, and the caller repeats the source instead of inventing dates.
+ * @param {Array<{value:string}>} cells
+ * @returns {?{kind:'dateStep', step:number, base:number, first:number, source:Array}}
+ */
+function dateSeries(cells) {
+  const real = [];
+  cells.forEach((c, i) => { if (isIsoDate(c.value)) real.push({ i, day: isoDateToDayNumber(c.value) }); });
+  if (real.length < 2) return null;
+  const step = (real[1].day - real[0].day) / (real[1].i - real[0].i);
+  if (!Number.isInteger(step) || step === 0) return null;
+  if (!real.every(r => r.day - real[0].day === step * (r.i - real[0].i))) return null;
+  const last = real[real.length - 1];
+  return {
+    kind: 'dateStep',
+    step,
+    base: last.day + step * (cells.length - 1 - last.i),
+    first: real[0].day - step * real[0].i,
+    source: cells,
+  };
+}
 
 function isoDateToDayNumber(iso) {
   const [y, m, d] = iso.split('-').map(Number);

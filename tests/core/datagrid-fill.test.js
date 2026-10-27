@@ -1,5 +1,6 @@
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { detectPattern, withCtrlModifier, generateFill } from '../../js/core/datagrid/datagrid-fill.js';
+import { isIsoDate } from '../../js/core/local-date.js';
 
 /** Wrap raw values as source cells. */
 const cells = (...values) => values.map(value => ({ value, formula: null }));
@@ -41,16 +42,64 @@ suite('core/datagrid fill', () => {
     assertDeepEqual(r.values, ['2026-02-27', '2026-02-25']);
   });
 
-  test('an impossible date is not a date series but a text with trailing number', () => {
-    const r = fill(['2026-02-29', '2026-02-30'], 'date', 2);
-    assertEqual(r.kind, 'textSuffix');
-    assertDeepEqual(r.values, ['2026-02-31', '2026-02-32']);
+  test('a daily date series skips the 29th in a common year', () => {
+    const r = fill(['2026-02-27', '2026-02-28'], 'date', 2);
+    assertEqual(r.kind, 'dateStep');
+    assertDeepEqual(r.values, ['2026-03-01', '2026-03-02']);
   });
 
-  test('an impossible single date with Ctrl counts its trailing number', () => {
+  test('a daily date series reaches the 29th in a leap year', () => {
+    const r = fill(['2028-02-27', '2028-02-28'], 'date', 2);
+    assertEqual(r.kind, 'dateStep');
+    assertDeepEqual(r.values, ['2028-02-29', '2028-03-01']);
+  });
+
+  test('an impossible date never counts on as text', () => {
+    const r = fill(['2026-02-29', '2026-02-30'], 'date', 2);
+    assertEqual(r.kind, 'repeat');
+    assertDeepEqual(r.values, ['2026-02-29', '2026-02-30']);
+  });
+
+  test('an impossible single date with Ctrl is copied, not counted', () => {
     const r = fill(['2026-02-30'], 'date', 2, 1, true);
-    assertEqual(r.kind, 'textSuffix');
-    assertDeepEqual(r.values, ['2026-02-31', '2026-02-32']);
+    assertEqual(r.kind, 'copy');
+    assertDeepEqual(r.values, ['2026-02-30', '2026-02-30']);
+  });
+
+  test('an impossible date inside a series is skipped, the calendar goes on', () => {
+    const r = fill(['2026-02-27', '2026-02-28', '2026-02-29'], 'date', 2);
+    assertEqual(r.kind, 'dateStep');
+    assertDeepEqual(r.values, ['2026-03-02', '2026-03-03']);
+    // backwards: the impossible first slot stands for 03-02, so 03-01 comes next
+    const b = fill(['2026-02-30', '2026-03-03', '2026-03-04'], 'date', 2, -1);
+    assertEqual(b.kind, 'dateStep');
+    assertDeepEqual(b.values, ['2026-03-01', '2026-02-28']);
+  });
+
+  test('ISO-shaped values in a text column follow the calendar too', () => {
+    const r = fill(['2026-02-27', '2026-02-28'], 'text', 2);
+    assertEqual(r.kind, 'dateStep');
+    assertDeepEqual(r.values, ['2026-03-01', '2026-03-02']);
+  });
+
+  test('impossible ISO inputs never yield an impossible date', () => {
+    const inputs = [
+      ['2026-02-29', '2026-02-30'], ['2026-02-30'], ['2026-02-28', '2026-02-29'],
+      ['2026-02-27', '2026-02-28', '2026-02-29'], ['2026-02-30', '2026-03-03', '2026-03-04'],
+      ['2026-13-01', '2026-13-02'], ['2026-01-31', '2026-01-32'], ['2026-04-30', '2026-04-31'],
+    ];
+    for (const values of inputs) {
+      for (const type of ['date', 'text']) {
+        for (const dir of [1, -1]) {
+          for (const ctrl of [false, true]) {
+            const out = fill(values, type, 5, dir, ctrl).values;
+            for (const v of out) {
+              if (!values.includes(v)) assertEqual(isIsoDate(v), true, `${values} → ${v}`);
+            }
+          }
+        }
+      }
+    }
   });
 
   test('a number series extrapolates both ways', () => {
