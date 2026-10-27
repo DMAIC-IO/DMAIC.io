@@ -24,6 +24,7 @@ const TYPE_MAP = {
   gantt:              () => import('./types/gantt.js'),
   'cumulative-cost':  () => import('./types/cumulative-cost.js'),
   trend:              () => import('./types/trend.js'),
+  'interval-stack':   () => import('./types/interval-stack.js'),
   pie:                () => import('./types/pie.js'),
   mosaic:             () => import('./types/mosaic.js'),
   heatmap:            () => import('./types/heatmap.js'),

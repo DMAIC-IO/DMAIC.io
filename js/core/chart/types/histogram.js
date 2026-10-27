@@ -206,6 +206,7 @@ export default class HistogramChart extends ChartBase {
         return {
           x0: b.x0, x1: b.x1, count: b.count,
           density: total > 0 && w > 0 ? b.count / (total * w) : 0,
+          highlight: b.highlight === true,
         };
       });
       return { bins, binWidth: bins[0].x1 - bins[0].x0 };
@@ -390,10 +391,15 @@ export default class HistogramChart extends ChartBase {
         rectH = densSpan;
       }
 
+      // Highlighted precomputed bins take their colour from the CSS class,
+      // so both themes apply.
+      const colours = bins[i].highlight
+        ? { class: 'chart-histogram__bar chart-histogram__bar--highlight' }
+        : { class: 'chart-histogram__bar', fill: barFill, stroke: barStroke };
       svgEl('rect', {
         x, y, width: w, height: rectH,
-        fill: barFill, 'fill-opacity': 0.6,
-        stroke: barStroke, 'stroke-width': 1,
+        'fill-opacity': 0.6, 'stroke-width': 1,
+        ...colours,
       }, plotGroup);
     }
 

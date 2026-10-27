@@ -1,0 +1,71 @@
+{
+  "id": "konfidenzniveau",
+  "category": "hypothesis",
+  "title": {
+    "de": "Konfidenzniveau",
+    "en": "Confidence level"
+  },
+  "short": {
+    "de": "Anteil der Intervalle, die über viele Wiederholungen den wahren Mittelwert enthalten, zum Beispiel 95 %.",
+    "en": "Share of intervals that contain the true mean over many repetitions, for example 95 %."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Das **Konfidenzniveau** gibt an, wie oft ein {{term:konfidenzintervall|Konfidenzintervall}} den wahren Mittelwert $\\mu$ einschließt, wenn man das Verfahren sehr oft wiederholt. Bei 95 % treffen also etwa 95 von 100 so berechneten Intervallen."
+      },
+      {
+        "type": "paragraph",
+        "text": "Das Niveau bestimmt den Faktor $z$ vor dem {{term:standardfehler|Standardfehler}}: 1,645 für 90 %, 1,96 für 95 % und 2,576 für 99 %. Mehr Sicherheit heißt also ein breiteres Intervall."
+      },
+      {
+        "type": "note",
+        "text": "Das Niveau ist eine Eigenschaft des Verfahrens. Über ein einzelnes, schon berechnetes Intervall sagt es nur, dass es mit einem Verfahren entstand, das in 95 % der Fälle trifft."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **confidence level** states how often a {{term:konfidenzintervall|confidence interval}} captures the true mean $\\mu$ when the procedure is repeated very often. At 95 %, about 95 out of 100 intervals computed this way hit."
+      },
+      {
+        "type": "paragraph",
+        "text": "The level sets the factor $z$ in front of the {{term:standardfehler|standard error}}: 1.645 for 90 %, 1.96 for 95 % and 2.576 for 99 %. More confidence therefore means a wider interval."
+      },
+      {
+        "type": "note",
+        "text": "The level is a property of the procedure. About a single interval, once computed, it only says that it came from a procedure that hits in 95 % of cases."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Vertrauensniveau",
+      "Überdeckungswahrscheinlichkeit"
+    ],
+    "en": [
+      "coverage probability",
+      "confidence coefficient"
+    ]
+  },
+  "seeAlso": [
+    "konfidenzintervall",
+    "standardfehler",
+    "normalverteilung"
+  ],
+  "modules": [
+    "hypothesis-test",
+    "sample-size"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D.C.: Introduction to Statistical Quality Control, 8th ed., Wiley, 2020 — Kap. 4",
+      "url": null
+    },
+    {
+      "label": "DIN ISO 3534-1: Statistik — Begriffe und Formelzeichen, Teil 1",
+      "url": null
+    }
+  ]
+}

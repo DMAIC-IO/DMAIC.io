@@ -7,7 +7,7 @@ import { WIDGETS } from '../../../js/pages/training/widgets/index.js';
 import { GLOSSARY_TERMS } from '../../../js/core/glossary-data.generated.js';
 
 const LANGS = ['de', 'en'];
-const GATE_FIELDS = ['revealAfter', 'revealAfterN', 'revealAfterShapes', 'revealAfterValues', 'revealAfterEach', 'revealAfterSamples'];
+const GATE_FIELDS = ['revealAfter', 'revealAfterN', 'revealAfterShapes', 'revealAfterValues', 'revealAfterEach', 'revealAfterSamples', 'revealAfterSettings', 'revealAfterChoices'];
 
 /** All built lessons as {course, ref, lesson}. */
 function builtLessons() {
@@ -279,5 +279,95 @@ suite('course content', () => {
       assertEqual(insight.revealAfterSamples, 1000, `${lang}: step 4 gate`);
     }
     assertDeepEqual(quizIds(lesson), ['q-fixed', 'q-estimate', 'q-symbol', 'q-n-minus-1']);
+  });
+
+  test('lesson 4 follows the approved structure', () => {
+    const found = findLesson('confidence-interval');
+    const lesson = found && found.lesson;
+    assertTrue(!!lesson, 'lesson 4 is built');
+    const misreading = /mit\s*95\s*%\s*Wahrscheinlichkeit|95\s*%\s*(probability|chance)/i;
+    for (const lang of LANGS) {
+      const steps = lesson[lang].steps;
+      assertEqual(steps.length, 7, `${lang} step count`);
+      const all = strings(lesson[lang]);
+      assertDeepEqual(all.filter((x) => /Signifikanz|p-Wert|significan|p-value|α|\\alpha/i.test(x)), [],
+        `${lang}: no significance, p-value or α`);
+      // Distractors may state the misreading; everything else must not.
+      const wrongOptions = blocksOf(lesson, lang).filter((b) => b.type === 'quiz')
+        .flatMap((q) => q.options.filter((o) => !o.correct));
+      const wrongTexts = new Set(strings(wrongOptions));
+      assertDeepEqual(all.filter((x) => misreading.test(x) && !wrongTexts.has(x)), [],
+        `${lang}: no probability misreading outside wrong options`);
+      const glossaries = blocksOf(lesson, lang).filter((b) => b.type === 'definition').map((b) => b.glossary);
+      for (const id of ['konfidenzintervall', 'konfidenzniveau', 't-verteilung']) {
+        assertTrue(glossaries.includes(id), `${lang}: definition ${id}`);
+      }
+      const sims = steps.map((s) => s.blocks.find((b) => b.type === 'simulation') || null);
+      assertDeepEqual(sims.map((b) => b && b.widget),
+        [null, null, 'interval-coverage', 'interval-coverage', 'interval-coverage', null, null], `${lang}: widgets`);
+      assertDeepEqual(sims[2].params, { nChoices: [10], levelChoices: [0.95] }, `${lang}: step 3 params`);
+      assertDeepEqual(sims[3].params, { nChoices: [5, 10, 40], levelChoices: [0.9, 0.95, 0.99] }, `${lang}: step 4 params`);
+      assertDeepEqual(sims[4].params, { nChoices: [5], levelChoices: [0.95], sigma: 'unknown', compare: true },
+        `${lang}: step 5 params`);
+      const insights = steps.map((s) => s.blocks.find((b) => b.type === 'insight') || null);
+      assertEqual(insights[2].id, 'hit-rate');
+      assertEqual(insights[2].revealAfterSamples, 1000, `${lang}: step 3 gate`);
+      assertEqual(insights[3].id, 'width');
+      assertEqual(insights[3].revealAfterSettings, 2, `${lang}: step 4 gate`);
+      assertEqual(insights[4].id, 't-factor');
+      assertEqual(insights[4].revealAfterSamples, 1000, `${lang}: step 5 gate`);
+    }
+    assertDeepEqual(quizIds(lesson), ['q-meaning', 'q-n', 'q-level', 'q-t']);
+    const correctAt = lesson.de.steps[5].blocks.filter((b) => b.type === 'quiz')
+      .map((q) => q.options.findIndex((o) => o.correct));
+    assertDeepEqual(correctAt, [2, 1, 0, 2], 'correct option positions');
+  });
+
+  test('lesson 5 follows the approved structure', () => {
+    const found = findLesson('hypothesis-test');
+    const lesson = found && found.lesson;
+    assertTrue(!!lesson, 'lesson 5 is built');
+    const early = /H₀|H_0|H₁|Nullhypothese|p-Wert|null hypothesis|p-value|Signifikan|significan|α|\\alpha/i;
+    const noLevel = /Signifikan|significan|α|\\alpha/i;
+    const lesson6 = /Fehler\s*(1\.|2\.|erster|zweiter)\s*Art|type\s*(I|II|1|2)\b|β|\\beta|Teststärke/;
+    const misreading = /Wahrscheinlichkeit,?\s*dass\s*(H₀|H_0|die Nullhypothese|die Maschine)|probability\s*that\s*(H₀|H_0|the null|the machine)|(ist|is)\s*(damit\s*)?(bewiesen|proven)|beweist|proves/i;
+    for (const lang of LANGS) {
+      const steps = lesson[lang].steps;
+      assertEqual(steps.length, 8, `${lang} step count`);
+      const sims = steps.map((st) => st.blocks.find((b) => b.type === 'simulation') || null);
+      assertDeepEqual(sims.map((b) => b && b.widget),
+        [null, 'null-distribution', null, 'null-distribution', null, null, null, null], `${lang}: widgets`);
+      assertDeepEqual(sims[1].params, { n: 10, observedChoices: [501.6] }, `${lang}: step 2 params`);
+      assertDeepEqual(sims[3].params, { n: 10, observedChoices: [500.8, 501.2, 501.6], showP: true },
+        `${lang}: step 4 params`);
+      const insights = steps.map((st) => st.blocks.find((b) => b.type === 'insight') || null);
+      assertEqual(insights[1].id, 'rare');
+      assertEqual(insights[1].revealAfterSamples, 1000, `${lang}: step 2 gate`);
+      assertEqual(insights[3].id, 'decision');
+      assertEqual(insights[3].revealAfterSamples, 1000, `${lang}: step 4 samples gate`);
+      assertEqual(insights[3].revealAfterChoices, 3, `${lang}: step 4 choices gate`);
+      const glossaries = blocksOf(lesson, lang).filter((b) => b.type === 'definition').map((b) => b.glossary);
+      for (const id of ['nullhypothese', 'alternativhypothese', 'teststatistik', 'p-wert', 'signifikanzniveau']) {
+        assertTrue(glossaries.includes(id), `${lang}: definition ${id}`);
+      }
+      for (const i of [0, 1]) {
+        assertDeepEqual(strings(steps[i]).filter((x) => early.test(x)), [], `${lang}: step ${i + 1} names nothing yet`);
+      }
+      assertDeepEqual(strings(steps[2]).filter((x) => noLevel.test(x)), [], `${lang}: step 3 has no α yet`);
+      const all = strings(lesson[lang]);
+      assertDeepEqual(all.filter((x) => lesson6.test(x)), [], `${lang}: error types belong to lesson 6`);
+      assertDeepEqual(strings(steps.slice(0, -1)).filter((x) => /power/i.test(x)), [],
+        `${lang}: power only in the bridge`);
+      // Distractors may state the misreading; everything else must not.
+      const wrongOptions = blocksOf(lesson, lang).filter((b) => b.type === 'quiz')
+        .flatMap((q) => q.options.filter((o) => !o.correct));
+      const wrongTexts = new Set(strings(wrongOptions));
+      assertDeepEqual(all.filter((x) => misreading.test(x) && !wrongTexts.has(x)), [],
+        `${lang}: no misreading of p outside wrong options`);
+    }
+    assertDeepEqual(quizIds(lesson), ['q-h0', 'q-p', 'q-keep', 'q-interval']);
+    const correctAt = lesson.de.steps[6].blocks.filter((b) => b.type === 'quiz')
+      .map((q) => q.options.findIndex((o) => o.correct));
+    assertDeepEqual(correctAt, [1, 2, 0, 1], 'correct option positions');
   });
 });

@@ -86,6 +86,7 @@ const SKIP = new Set([
   'core/chart/gantt.test.js',
   'core/chart/histogram-bins.test.js',
   'core/chart/histogram-multi.test.js',
+  'core/chart/interval-stack.test.js',
   'core/chart/mosaic.test.js',
   'core/chart/multi-vari.test.js',
   'core/chart/node-diagram.test.js',

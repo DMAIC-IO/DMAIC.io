@@ -331,6 +331,8 @@
       "insightLockedValues": "Measure at least {k} values first, ideally 100 at once – then this shows what you just saw.",
       "insightLockedSamples": "Draw samples first (at least {k}) – then this shows what you saw.",
       "insightLockedEach": "Measure at least {k} values in every chart first – then this shows what you saw.",
+      "insightLockedSettings": "First try at least {k} values of n and {k} confidence levels, each with at least 100 samples – then this shows what you saw.",
+      "insightLockedChoices": "Draw at least {n} samples and try all {k} observed means – then this shows what you saw.",
       "quizCorrect": "Correct.",
       "quizWrong": "Not yet.",
       "estimate": {
@@ -344,6 +346,35 @@
         "truthNote": "In practice nobody sees the population's curve.",
         "axis": { "g": "Filling weight in g", "min": "Waiting time in minutes" },
         "density": "Density"
+      },
+      "nullDist": {
+        "drawOne": "Draw a sample",
+        "draw": "Draw {k} samples",
+        "observed": "Observed mean",
+        "drawn": "Number of samples",
+        "far": "As far from 500 g as the observed value",
+        "share": "Share",
+        "shareApprox": "Simulation (≈ p)",
+        "p": "p-value (exact)",
+        "decision": "Decision at α = 5 %",
+        "keep": "keep H₀",
+        "reject": "reject H₀",
+        "axis": "Mean x̄ in g",
+        "assumption": "Simulation of machine A set exactly to 500 g"
+      },
+      "interval": {
+        "drawOne": "Draw a sample",
+        "draw": "Draw {k} samples",
+        "n": "Sample size n",
+        "level": "Confidence level",
+        "drawn": "Number of samples",
+        "hits": "Intervals containing μ",
+        "rate": "Hit rate",
+        "half": "Half-width (latest interval)",
+        "kindZ": "s with factor 1.96",
+        "kindT": "s with t factor",
+        "axis": "Filling weight in g",
+        "miss": "misses μ"
       },
       "variance": {
         "drawOne": "Draw 1 sample",

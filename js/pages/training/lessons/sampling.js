@@ -62,7 +62,7 @@ export default {
       {
         title: 'Warum n − 1?',
         blocks: [
-          { type: 'paragraph', content: 'Die Standardabweichung s teilt durch n − 1, nicht durch n. Den Grund sieht man am besten an der Varianz. Für eine Stichprobe gibt es zwei Kandidaten:' },
+          { type: 'paragraph', content: 'Die Standardabweichung der **Stichprobe** s teilt durch n − 1, nicht durch n. Den Grund sieht man am besten an der Varianz. Für eine Stichprobe gibt es zwei Kandidaten:' },
           { type: 'list', items: [
             'geteilt durch n: $\\dfrac{\\sum (x_i - \\bar{x})^2}{n}$',
             'geteilt durch n − 1: $\\dfrac{\\sum (x_i - \\bar{x})^2}{n - 1} = s^2$',
@@ -72,7 +72,7 @@ export default {
           { type: 'simulation', widget: 'variance-check', params: { n: 3 } },
           { type: 'insight', id: 'n-minus-1', revealAfterSamples: 1000, paragraphs: [
             'Der Durchschnitt mit „geteilt durch n − 1“ kommt nahe an σ² = 4 g² heran; nach der Theorie sind es genau 4 g². Der Durchschnitt mit „geteilt durch n“ bleibt deutlich darunter – die Theorie sagt 8/3 ≈ 2,7 g².',
-            'Der Grund: x̄ liegt immer mitten in der eigenen Stichprobe. Um ihren eigenen Mittelwert streuen die Werte deshalb weniger als um das unbekannte μ, und „geteilt durch n“ fällt im Schnitt zu klein aus. Das Teilen durch n − 1 gleicht genau das für die Varianz aus.',
+            'Der Grund hat einen Namen: {{term:freiheitsgrade|Freiheitsgrade}}. x̄ wird aus genau diesen Werten berechnet, deshalb summieren sich die Abstände $x_i - \\bar{x}$ immer zu null. Bei drei Packungen mit x̄ = 500 g und den Abständen +1 g und −2 g muss der dritte Abstand +1 g sein. Frei sind also nur n − 1 Abstände. Die Summe der Abstandsquadrate liefert deshalb im Schnitt genau (n − 1)-mal σ², nicht n-mal. Nur das Teilen durch n − 1 trifft σ² im Durchschnitt genau, nicht n − 2 und nicht n − 1,5.',
             'Je größer die Stichprobe, desto kleiner der Unterschied: „Geteilt durch n“ liefert im Schnitt das (n − 1)/n-Fache von σ², bei n = 10 also 3,6 g². Eine Feinheit bleibt: s, die Wurzel aus s², fällt im Schnitt trotzdem etwas zu klein aus. Das nimmt man in Kauf.',
           ] },
         ],
@@ -105,8 +105,8 @@ export default {
       {
         title: 'Was du mitnimmst',
         blocks: [
-          { type: 'paragraph', content: 'Die Grundgesamtheit – alle Packungen, mit N, μ und σ – ist das, was wir wissen wollen. Die Stichprobe – die gewogenen Packungen, mit n, x̄ und s – ist das, was wir messen. x̄ und s sind Schätzwerte für μ und σ und ändern sich von Stichprobe zu Stichprobe.' },
-          { type: 'paragraph', content: 's teilt durch n − 1, weil die Varianz mit n im Schnitt zu klein ausfiele.' },
+          { type: 'paragraph', content: 'Die Grundgesamtheit – alle Packungen, mit N, μ und σ – ist das, auf das wir schließen wollen. Die Stichprobe – die gewogenen Packungen, mit n, x̄ und s – ist das, was wir messen. x̄ und s sind Schätzwerte für μ und σ und ändern sich von Stichprobe zu Stichprobe.' },
+          { type: 'paragraph', content: 's teilt durch n − 1, weil nach dem Berechnen von x̄ nur noch n − 1 Abstände frei sind, die Freiheitsgrade. Mit n fiele die Varianz im Schnitt zu klein aus.' },
           { type: 'paragraph', content: 'Wenn x̄ mit jeder Stichprobe anders ausfällt: Wie stark schwankt x̄ eigentlich – und wird es mit größeren Stichproben ruhiger? Das zeigt die nächste Lektion.' },
         ],
       },
@@ -162,7 +162,7 @@ export default {
       {
         title: 'Why n − 1?',
         blocks: [
-          { type: 'paragraph', content: 'The standard deviation s divides by n − 1, not by n. The reason is easiest to see in the variance. For a sample there are two candidates:' },
+          { type: 'paragraph', content: 'The standard deviation of the **sample** s divides by n − 1, not by n. The reason is easiest to see in the variance. For a sample there are two candidates:' },
           { type: 'list', items: [
             'divided by n: $\\dfrac{\\sum (x_i - \\bar{x})^2}{n}$',
             'divided by n − 1: $\\dfrac{\\sum (x_i - \\bar{x})^2}{n - 1} = s^2$',
@@ -172,7 +172,7 @@ export default {
           { type: 'simulation', widget: 'variance-check', params: { n: 3 } },
           { type: 'insight', id: 'n-minus-1', revealAfterSamples: 1000, paragraphs: [
             'The average with “divided by n − 1” comes close to σ² = 4 g²; in theory it is exactly 4 g². The average with “divided by n” stays clearly below – theory says 8/3 ≈ 2.7 g².',
-            'The reason: x̄ always lies right in the middle of its own sample. Around their own mean the values therefore scatter less than around the unknown μ, and “divided by n” comes out too small on average. Dividing by n − 1 corrects exactly that for the variance.',
+            'The reason has a name: {{term:freiheitsgrade|degrees of freedom}}. x̄ is computed from exactly these values, so the deviations $x_i - \\bar{x}$ always sum to zero. With three packs, x̄ = 500 g and deviations of +1 g and −2 g, the third deviation has to be +1 g. So only n − 1 deviations are free. The sum of squared deviations therefore yields exactly (n − 1) times σ² on average, not n times. Only dividing by n − 1 hits σ² exactly on average – not n − 2 and not n − 1.5.',
             'The larger the sample, the smaller the gap: “divided by n” gives (n − 1)/n times σ² on average, so 3.6 g² at n = 10. One subtlety remains: s, the square root of s², still comes out slightly too small on average. That is accepted.',
           ] },
         ],
@@ -205,8 +205,8 @@ export default {
       {
         title: 'What you take away',
         blocks: [
-          { type: 'paragraph', content: 'The population – all packs, with N, μ and σ – is what we want to know. The sample – the packs weighed, with n, x̄ and s – is what we measure. x̄ and s are estimates of μ and σ and change from sample to sample.' },
-          { type: 'paragraph', content: 's divides by n − 1 because with n the variance would come out too small on average.' },
+          { type: 'paragraph', content: 'The population – all packs, with N, μ and σ – is what we want to draw conclusions about. The sample – the packs weighed, with n, x̄ and s – is what we measure. x̄ and s are estimates of μ and σ and change from sample to sample.' },
+          { type: 'paragraph', content: 's divides by n − 1 because once x̄ has been computed only n − 1 deviations are still free, the degrees of freedom. With n the variance would come out too small on average.' },
           { type: 'paragraph', content: 'If x̄ comes out differently with every sample: how much does x̄ actually vary – and does it settle with larger samples? The next lesson shows that.' },
         ],
       },

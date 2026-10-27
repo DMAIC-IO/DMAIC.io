@@ -71,4 +71,20 @@ suite('Histogram type — precomputed bins', () => {
     assertEqual(m.chart._bins[0].density, 0);
     unmount(m);
   });
+  test('highlighted bins carry the highlight class', () => {
+    const bins = BINS.map((b, i) => (i === 0 || i === 3 ? { ...b, highlight: true } : b));
+    const m = mount({ bins });
+    const lit = m.host.querySelectorAll('rect.chart-histogram__bar--highlight');
+    assertEqual(lit.length, 2);
+    assertTrue([...lit].every((r) => !r.hasAttribute('fill') && !r.hasAttribute('stroke')));
+    unmount(m);
+  });
+  test('bins without highlight draw as before', () => {
+    const m = mount({ bins: BINS });
+    const bars = m.host.querySelectorAll('rect.chart-histogram__bar');
+    assertEqual(bars.length, 4);
+    assertEqual(m.host.querySelectorAll('rect.chart-histogram__bar--highlight').length, 0);
+    assertTrue([...bars].every((r) => r.hasAttribute('fill')));
+    unmount(m);
+  });
 });

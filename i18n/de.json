@@ -331,6 +331,8 @@
       "insightLockedValues": "Miss erst mindestens {k} Werte, am besten 100 auf einmal – dann steht hier, was du gerade gesehen hast.",
       "insightLockedSamples": "Zieh erst Stichproben (mindestens {k}) – dann steht hier, was du gesehen hast.",
       "insightLockedEach": "Miss erst in jedem Diagramm mindestens {k} Werte – dann steht hier, was du gesehen hast.",
+      "insightLockedSettings": "Probiere erst mindestens {k} Werte für n und {k} Konfidenzniveaus aus, jeweils mit mindestens 100 Stichproben – dann steht hier, was du gesehen hast.",
+      "insightLockedChoices": "Zieh mindestens {n} Stichproben und probiere alle {k} beobachteten Mittelwerte aus – dann steht hier, was du gesehen hast.",
       "quizCorrect": "Richtig.",
       "quizWrong": "Noch nicht.",
       "estimate": {
@@ -344,6 +346,35 @@
         "truthNote": "Die Kurve der Grundgesamtheit sieht man in der Praxis nie.",
         "axis": { "g": "Füllgewicht in g", "min": "Wartezeit in Minuten" },
         "density": "Dichte"
+      },
+      "nullDist": {
+        "drawOne": "Stichprobe ziehen",
+        "draw": "{k} Stichproben ziehen",
+        "observed": "Beobachteter Mittelwert",
+        "drawn": "Anzahl Stichproben",
+        "far": "So weit von 500 g entfernt wie der beobachtete Wert",
+        "share": "Anteil",
+        "shareApprox": "Simulation (≈ p)",
+        "p": "p-Wert (exakt)",
+        "decision": "Entscheidung bei α = 5 %",
+        "keep": "H₀ beibehalten",
+        "reject": "H₀ verwerfen",
+        "axis": "Mittelwert x̄ in g",
+        "assumption": "Simulation der Anlage A, die genau auf 500 g steht"
+      },
+      "interval": {
+        "drawOne": "Stichprobe ziehen",
+        "draw": "{k} Stichproben ziehen",
+        "n": "Stichprobenumfang n",
+        "level": "Konfidenzniveau",
+        "drawn": "Anzahl Stichproben",
+        "hits": "Intervalle mit μ",
+        "rate": "Trefferquote",
+        "half": "Halbe Breite (letztes Intervall)",
+        "kindZ": "s mit Faktor 1,96",
+        "kindT": "s mit t-Faktor",
+        "axis": "Füllgewicht in g",
+        "miss": "verfehlt μ"
       },
       "variance": {
         "drawOne": "1 Stichprobe ziehen",
