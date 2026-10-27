@@ -81,8 +81,8 @@ suite('gates', () => {
   test('mergeCounts keeps maxima', () => {
     const a = mergeCounts(emptyStepCounts(), { count: 80, perN: { skewed: { 2: 100, 5: 40 } } });
     const b = mergeCounts(a, { count: 60, perN: { skewed: { 2: 30, 5: 90 }, uniform: { 2: 10 } } });
-    assertDeepEqual(b, { count: 80, perN: { skewed: { 2: 100, 5: 90 }, uniform: { 2: 10 } }, choices: 0 });
-    assertDeepEqual(emptyStepCounts(), { count: 0, perN: {}, choices: 0 });
+    assertDeepEqual(b, { count: 80, perN: { skewed: { 2: 100, 5: 90 }, uniform: { 2: 10 } }, choices: 0, values: {} });
+    assertDeepEqual(emptyStepCounts(), { count: 0, perN: {}, choices: 0, values: {} });
   });
 
   test('gateHint returns key and params per gate kind', () => {
@@ -120,5 +120,35 @@ suite('gates', () => {
   test('choices hint wins over the samples hint', () => {
     assertDeepEqual(gateHint({ revealAfterSamples: 1000, revealAfterChoices: 3 }),
       { key: 'course.insightLockedChoices', params: { k: 3, n: 1000 } });
+  });
+
+  test('revealAfterChecks counts checks', () => {
+    const block = { revealAfterChecks: 1000 };
+    assertEqual(isGateOpen(block, { ...emptyStepCounts(), count: 999 }), false);
+    assertEqual(isGateOpen(block, { ...emptyStepCounts(), count: 1000 }), true);
+  });
+
+  test('revealAfterEachValue needs min checks per value', () => {
+    const block = { revealAfterEachValue: { of: 'n', k: 3, min: 100 } };
+    const withValues = (values) => ({ ...emptyStepCounts(), count: 1000, values });
+    assertEqual(isGateOpen(block, withValues({ n: { 10: 500, 20: 100, 40: 99 } })), false);
+    assertEqual(isGateOpen(block, withValues({ n: { 10: 500, 20: 100, 40: 100 } })), true);
+    assertEqual(isGateOpen(block, withValues({ drift: { 0.5: 100, 1: 100, 2: 100 } })), false);
+  });
+
+  test('mergeCounts keeps the highest checks per value', () => {
+    const prev = { ...emptyStepCounts(), values: { n: { 10: 120, 20: 5 } } };
+    const merged = mergeCounts(prev, { values: { n: { 10: 50 } } });
+    assertDeepEqual(merged.values, { n: { 10: 120, 20: 5 } });
+  });
+
+  test('each-value hint names the setting', () => {
+    assertDeepEqual(gateHint({ revealAfterEachValue: { of: 'drift', k: 3, min: 100 } }),
+      { key: 'course.insightLockedEachValue.drift', params: { k: 3, min: 100 } });
+  });
+
+  test('checks hint', () => {
+    assertDeepEqual(gateHint({ revealAfterChecks: 1000 }),
+      { key: 'course.insightLockedChecks', params: { k: 1000 } });
   });
 });

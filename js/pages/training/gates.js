@@ -4,7 +4,9 @@
  * Decides when a gated `insight` block opens. Counts are kept per step by the
  * caller and cover only the current visit of that step.
  *
- * @typedef {{ count: number, perN: Object<string, Object<string, number>>, choices: number }} StepCounts
+ * `values` maps a setting name (lesson 6: drift, n, alpha) to {value: checks}.
+ *
+ * @typedef {{ count: number, perN: Object<string, Object<string, number>>, choices: number, values: Object<string, Object<string, number>> }} StepCounts
  */
 
 /** Draws needed for one sample size n to count towards a gate. */
@@ -15,29 +17,33 @@ export const MIN_DRAWS_PER_N = 100;
  * @returns {StepCounts}
  */
 export function emptyStepCounts() {
-  return { count: 0, perN: {}, choices: 0 };
+  return { count: 0, perN: {}, choices: 0, values: {} };
 }
 
 /**
  * Merge a cumulative progress event into the counts, keeping maxima.
  * @param {StepCounts} prev
- * @param {{count?: number, perN?: Object<string, Object<string, number>>, choices?: number}} detail
+ * @param {{count?: number, perN?: Object<string, Object<string, number>>, choices?: number, values?: Object<string, Object<string, number>>}} detail
  * @returns {StepCounts}
  */
 export function mergeCounts(prev, detail) {
-  const perN = {};
-  for (const [pop, byN] of Object.entries(prev.perN || {})) perN[pop] = { ...byN };
-  for (const [pop, byN] of Object.entries((detail && detail.perN) || {})) {
-    const target = perN[pop] || (perN[pop] = {});
-    for (const [n, draws] of Object.entries(byN)) {
-      target[n] = Math.max(target[n] || 0, draws);
-    }
-  }
   return {
     count: Math.max(prev.count || 0, (detail && detail.count) || 0),
-    perN,
+    perN: mergeNested(prev.perN, detail && detail.perN),
     choices: Math.max(prev.choices || 0, (detail && detail.choices) || 0),
+    values: mergeNested(prev.values, detail && detail.values),
   };
+}
+
+/** Merge two {outer: {inner: number}} maps, keeping the maximum per entry. */
+function mergeNested(prev, next) {
+  const out = {};
+  for (const [key, inner] of Object.entries(prev || {})) out[key] = { ...inner };
+  for (const [key, inner] of Object.entries(next || {})) {
+    const target = out[key] || (out[key] = {});
+    for (const [k, v] of Object.entries(inner)) target[k] = Math.max(target[k] || 0, v);
+  }
+  return out;
 }
 
 /** Number of n values with enough draws in one population. */
@@ -70,6 +76,12 @@ function settingsTried(perN) {
  */
 export function isGateOpen(block, counts) {
   if (block.revealAfterSamples != null && !(counts.count >= block.revealAfterSamples)) return false;
+  if (block.revealAfterChecks != null && !(counts.count >= block.revealAfterChecks)) return false;
+  if (block.revealAfterEachValue != null) {
+    const { of, k, min } = block.revealAfterEachValue;
+    const enough = Object.values((counts.values || {})[of] || {}).filter((checks) => checks >= min).length;
+    if (enough < k) return false;
+  }
   if (block.revealAfterValues != null && !(counts.count >= block.revealAfterValues)) return false;
   if (block.revealAfterChoices != null && !((counts.choices || 0) >= block.revealAfterChoices)) return false;
   if (block.revealAfterSettings != null) {
@@ -95,6 +107,15 @@ export function isGateOpen(block, counts) {
  * @returns {{key: string, params: object}}
  */
 export function gateHint(block) {
+  // Lesson 6 asks for several values of the setting its step frees.
+  if (block.revealAfterEachValue != null) {
+    const { of, k, min } = block.revealAfterEachValue;
+    return { key: `course.insightLockedEachValue.${of}`, params: { k, min } };
+  }
+  // Lesson 6 counts whole checks, not samples.
+  if (block.revealAfterChecks != null) {
+    return { key: 'course.insightLockedChecks', params: { k: block.revealAfterChecks } };
+  }
   // Lesson 5 asks for every offered choice on top of the samples.
   if (block.revealAfterChoices != null) {
     return {

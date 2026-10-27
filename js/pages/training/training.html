@@ -53,7 +53,7 @@
       </div>
       <h4 class="training-lesson__step-title" x-text="step().title"></h4>
       <template x-for="(b, i) in step().blocks" :key="blockKey(i)">
-        <div class="training-lesson__block">
+        <div class="training-lesson__block" x-show="blockShown(b)">
           <template x-if="isType(b, 'heading')"><h5 class="training-lesson__heading" x-effect="renderInline($el, b.content)"></h5></template>
           <template x-if="isType(b, 'paragraph')"><p x-effect="renderInline($el, b.content)"></p></template>
           <template x-if="isType(b, 'note')"><p class="training-lesson__note" x-effect="renderInline($el, b.content)"></p></template>

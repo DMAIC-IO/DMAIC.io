@@ -7,7 +7,7 @@ import { WIDGETS } from '../../../js/pages/training/widgets/index.js';
 import { GLOSSARY_TERMS } from '../../../js/core/glossary-data.generated.js';
 
 const LANGS = ['de', 'en'];
-const GATE_FIELDS = ['revealAfter', 'revealAfterN', 'revealAfterShapes', 'revealAfterValues', 'revealAfterEach', 'revealAfterSamples', 'revealAfterSettings', 'revealAfterChoices'];
+const GATE_FIELDS = ['revealAfter', 'revealAfterN', 'revealAfterShapes', 'revealAfterValues', 'revealAfterEach', 'revealAfterSamples', 'revealAfterSettings', 'revealAfterChoices', 'revealAfterChecks', 'revealAfterEachValue'];
 
 /** All built lessons as {course, ref, lesson}. */
 function builtLessons() {
@@ -44,6 +44,20 @@ suite('course content', () => {
     assertEqual(findLesson('nope'), null);
   });
 
+  test('afterInsight names an insight that precedes the block in its step', () => {
+    for (const { lesson } of builtLessons()) {
+      for (const lang of ['de', 'en']) {
+        lesson[lang].steps.forEach((step, i) => {
+          step.blocks.forEach((b, j) => {
+            if (b.afterInsight == null) return;
+            const at = step.blocks.findIndex((x) => x.type === 'insight' && x.id === b.afterInsight);
+            assertTrue(at >= 0 && at < j, `${lesson.id} ${lang} step ${i} block ${j} afterInsight ${b.afterInsight}`);
+          });
+        });
+      }
+    }
+  });
+
   test('de and en have the same steps and block types', () => {
     for (const { lesson } of builtLessons()) {
       assertEqual(lesson.de.steps.length, lesson.en.steps.length, `${lesson.id} step count`);
@@ -57,8 +71,9 @@ suite('course content', () => {
           assertEqual(b.widget, e.widget, `${lesson.id} step ${i} block ${j} widget`);
           assertDeepEqual(b.params, e.params, `${lesson.id} step ${i} block ${j} params`);
           for (const gate of GATE_FIELDS) {
-            assertEqual(b[gate], e[gate], `${lesson.id} step ${i} block ${j} ${gate}`);
+            assertDeepEqual(b[gate], e[gate], `${lesson.id} step ${i} block ${j} ${gate}`);
           }
+          assertEqual(b.afterInsight, e.afterInsight, `${lesson.id} step ${i} block ${j} afterInsight`);
           // Stored quiz answers are option indices, so the correct position must match.
           assertDeepEqual((b.options || []).map((o) => !!o.correct), (e.options || []).map((o) => !!o.correct),
             `${lesson.id} step ${i} block ${j} correct option position`);

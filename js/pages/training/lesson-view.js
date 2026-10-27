@@ -209,6 +209,12 @@ export function lessonViewData(t, i18n, dialog) {
         || isGateOpen(b, this.stepCounts[this.stepKey()] || emptyStepCounts());
     },
     insightLocked(b) { return !this.insightOpen(b); },
+    /** Blocks with `afterInsight` stay hidden until that insight of the step is open. */
+    blockShown(b) {
+      if (!b.afterInsight) return true;
+      const insight = this.step().blocks.find((x) => x.type === 'insight' && x.id === b.afterInsight);
+      return !insight || this.insightOpen(insight);
+    },
     insightHint(b) {
       const hint = gateHint(b);
       return t(hint.key, hint.params);
@@ -248,6 +254,8 @@ export function lessonViewData(t, i18n, dialog) {
           page.save();
         },
         results: () => page.progress.results,
+        /** Whether an insight of the current step is open; widgets ask after each progress event. */
+        insightOpen: () => page.step().blocks.some((x) => x.type === 'insight' && page.insightOpen(x)),
       };
     },
   };

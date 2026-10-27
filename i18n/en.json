@@ -333,6 +333,12 @@
       "insightLockedEach": "Measure at least {k} values in every chart first – then this shows what you saw.",
       "insightLockedSettings": "First try at least {k} values of n and {k} confidence levels, each with at least 100 samples – then this shows what you saw.",
       "insightLockedChoices": "Draw at least {n} samples and try all {k} observed means – then this shows what you saw.",
+      "insightLockedChecks": "Run checks first (at least {k}) – then this shows what you saw.",
+      "insightLockedEachValue": {
+        "drift": "Try at least {k} drifts with at least {min} checks each – then this shows what you saw.",
+        "n": "Try at least {k} pack counts with at least {min} checks each – then this shows what you saw.",
+        "alpha": "Try at least {k} values of α with at least {min} checks each – then this shows what you saw."
+      },
       "quizCorrect": "Correct.",
       "quizWrong": "Not yet.",
       "estimate": {
