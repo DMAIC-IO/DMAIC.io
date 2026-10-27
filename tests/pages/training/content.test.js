@@ -393,6 +393,19 @@ suite('course content', () => {
     assertDeepEqual(correctAt, [1, 2, 0, 1], 'correct option positions');
   });
 
+  test('lesson 6 worked example adds up with the printed z values', () => {
+    const { lesson } = findLesson('errors-power');
+    const example = /\((\d+[.,]\d+) \+ (\d+[.,]\d+)\)² · (\d+)² \/ (\d+)² ≈ (\d+[.,]\d+)/;
+    const num = (s) => Number(s.replace(',', '.'));
+    for (const lang of LANGS) {
+      const text = strings(lesson[lang]).find((s) => example.test(s));
+      assertTrue(!!text, `${lang}: worked example found`);
+      const [, za, zb, sd, delta, shown] = text.match(example).map((v, i) => (i ? num(v) : v));
+      const value = ((za + zb) * sd / delta) ** 2;
+      assertEqual(value.toFixed(2), shown.toFixed(2), `${lang}: printed result`);
+    }
+  });
+
   test('lesson 6 follows the approved structure', () => {
     const found = findLesson('errors-power');
     const lesson = found && found.lesson;

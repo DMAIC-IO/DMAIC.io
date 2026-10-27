@@ -105,7 +105,7 @@ export default {
           { type: 'paragraph', content: 'Jetzt drehen wir die Frage um. Eine Verschiebung um 1 g soll in 90 % der Prüfungen auffallen, bei α = 5 %. Wie viele Packungen muss eine Prüfung dafür wiegen?' },
           { type: 'paragraph', content: 'Dafür gibt es eine Formel. δ („delta“) ist die Verschiebung, die die Prüfung erkennen soll, hier 1 g. z₁₋α/₂ = 1,960 kennen wir schon von den Alarmgrenzen. z₁₋β ist der entsprechende Wert für die gewünschte Power: Unterhalb von z₁₋β liegen 90 % der Standardnormalverteilung, also z₁₋β = 1,282.' },
           { type: 'definition', term: 'Packungen pro Prüfung für eine gewünschte Power', formula: 'n = \\left(\\frac{(z_{1-\\alpha/2} + z_{1-\\beta})\\,\\sigma}{\\delta}\\right)^2' },
-          { type: 'paragraph', content: 'Für unsere Prüfung: (1,960 + 1,282)² · 2² / 1² ≈ 42,03. 42 Packungen wären knapp zu wenig, deshalb wird aufgerundet: 43 Packungen.' },
+          { type: 'paragraph', content: 'Für unsere Prüfung: (1,960 + 1,282)² · 2² / 1² ≈ 42,04. 42 Packungen wären knapp zu wenig, deshalb wird aufgerundet: 43 Packungen.' },
           { type: 'paragraph', content: 'Prüfe das in der Simulation nach: Die Prüfung wiegt jetzt 43 Packungen, die Maschine ist um 1 g verschoben. Führe viele Prüfungen durch.' },
           { type: 'simulation', widget: 'test-errors', params: { driftChoices: [1], nChoices: [43], showTheory: true, showExact: true } },
           { type: 'insight', id: 'plan-n', revealAfterChecks: 1000, paragraphs: [
@@ -238,7 +238,7 @@ export default {
           { type: 'paragraph', content: 'Now we turn the question around. A drift of 1 g should show up in 90 % of the checks, at α = 5 %. How many packs does a check need to weigh for that?' },
           { type: 'paragraph', content: 'There is a formula for this. δ (“delta”) is the drift the check should detect, here 1 g. z₁₋α/₂ = 1.960 we already know from the alarm limits. z₁₋β is the matching value for the desired power: 90 % of the standard normal distribution lies below z₁₋β, so z₁₋β = 1.282.' },
           { type: 'definition', term: 'Packs per check for a desired power', formula: 'n = \\left(\\frac{(z_{1-\\alpha/2} + z_{1-\\beta})\\,\\sigma}{\\delta}\\right)^2' },
-          { type: 'paragraph', content: 'For our check: (1.960 + 1.282)² · 2² / 1² ≈ 42.03. 42 packs would be just too few, so we round up: 43 packs.' },
+          { type: 'paragraph', content: 'For our check: (1.960 + 1.282)² · 2² / 1² ≈ 42.04. 42 packs would be just too few, so we round up: 43 packs.' },
           { type: 'paragraph', content: 'Check this in the simulation: the check now weighs 43 packs, the machine has drifted by 1 g. Run many checks.' },
           { type: 'simulation', widget: 'test-errors', params: { driftChoices: [1], nChoices: [43], showTheory: true, showExact: true } },
           { type: 'insight', id: 'plan-n', revealAfterChecks: 1000, paragraphs: [
