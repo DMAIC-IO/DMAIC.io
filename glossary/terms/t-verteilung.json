@@ -1,0 +1,80 @@
+{
+  "id": "t-verteilung",
+  "category": "descriptive",
+  "title": {
+    "de": "t-Verteilung",
+    "en": "t-distribution"
+  },
+  "short": {
+    "de": "Glockenförmige Verteilung mit breiteren Rändern als die Normalverteilung; sie nähert sich ihr mit wachsenden Freiheitsgraden an.",
+    "en": "Bell-shaped distribution with heavier tails than the normal distribution; it approaches it as the degrees of freedom grow."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Die **t-Verteilung** (Student, 1908) beschreibt, wie der standardisierte Mittelwert streut, wenn man $\\sigma$ durch die geschätzte {{term:standardabweichung|Standardabweichung}} $s$ ersetzt:"
+      },
+      {
+        "type": "formula",
+        "latex": "t = \\frac{\\bar{x} - \\mu}{s / \\sqrt{n}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Weil auch $s$ von Stichprobe zu Stichprobe schwankt, ist sie breiter als die {{term:normalverteilung|Normalverteilung}}. Ihre Form hängt von den {{term:freiheitsgrade|Freiheitsgraden}} ab: Bei wenigen ist sie deutlich breiter, mit wachsender Zahl nähert sie sich der Normalverteilung an."
+      },
+      {
+        "type": "note",
+        "text": "Für ein 95-%-{{term:konfidenzintervall|Konfidenzintervall}} bei $n = 5$ (4 Freiheitsgrade) ist der Faktor 2,776 statt 1,96, bei $n = 30$ nur noch 2,045."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "The **t-distribution** (Student, 1908) describes how the standardised mean spreads when $\\sigma$ is replaced by the estimated {{term:standardabweichung|standard deviation}} $s$:"
+      },
+      {
+        "type": "formula",
+        "latex": "t = \\frac{\\bar{x} - \\mu}{s / \\sqrt{n}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Because $s$ also varies from sample to sample, it is wider than the {{term:normalverteilung|normal distribution}}. Its shape depends on the {{term:freiheitsgrade|degrees of freedom}}: with few it is clearly wider, as they grow it approaches the normal distribution."
+      },
+      {
+        "type": "note",
+        "text": "For a 95 % {{term:konfidenzintervall|confidence interval}} at $n = 5$ (4 degrees of freedom) the factor is 2.776 instead of 1.96, at $n = 30$ only 2.045."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "Student-t-Verteilung",
+      "Studentsche t-Verteilung"
+    ],
+    "en": [
+      "Student's t-distribution",
+      "Student t"
+    ]
+  },
+  "seeAlso": [
+    "normalverteilung",
+    "freiheitsgrade",
+    "konfidenzintervall",
+    "t-test"
+  ],
+  "modules": [
+    "hypothesis-test",
+    "sample-size"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D.C.: Introduction to Statistical Quality Control, 8th ed., Wiley, 2020 — Kap. 4",
+      "url": null
+    },
+    {
+      "label": "DIN ISO 3534-1: Statistik — Begriffe und Formelzeichen, Teil 1",
+      "url": null
+    }
+  ]
+}

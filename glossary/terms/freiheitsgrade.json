@@ -25,7 +25,7 @@
       },
       {
         "type": "paragraph",
-        "text": "Freiheitsgrade bestimmen auch die Form der Prüfverteilungen: die t-Verteilung im t-Test, die χ²-Verteilung beim Varianztest und die F-Verteilung in ANOVA und Regression. Je weniger Freiheitsgrade, desto breiter die Verteilung und desto größer der kritische Wert."
+        "text": "Freiheitsgrade bestimmen auch die Form der Prüfverteilungen: die {{term:t-verteilung|t-Verteilung}} im t-Test, die χ²-Verteilung beim Varianztest und die F-Verteilung in ANOVA und Regression. Je weniger Freiheitsgrade, desto breiter die Verteilung und desto größer der kritische Wert. Im {{term:konfidenzintervall|Konfidenzintervall}} heißt das: Je mehr Freiheitsgrade, desto verlässlicher ist $s$ und desto näher liegt der t-Faktor bei 1,96."
       }
     ],
     "en": [
@@ -43,7 +43,7 @@
       },
       {
         "type": "paragraph",
-        "text": "Degrees of freedom also set the shape of the test distributions: the t distribution in the t-test, the χ² distribution in the variance test and the F distribution in ANOVA and regression. The fewer degrees of freedom, the wider the distribution and the larger the critical value."
+        "text": "Degrees of freedom also set the shape of the test distributions: the {{term:t-verteilung|t distribution}} in the t-test, the χ² distribution in the variance test and the F distribution in ANOVA and regression. The fewer degrees of freedom, the wider the distribution and the larger the critical value. For the {{term:konfidenzintervall|confidence interval}} this means: the more degrees of freedom, the more reliable $s$ and the closer the t factor is to 1.96."
       }
     ]
   },
@@ -62,7 +62,9 @@
   "seeAlso": [
     "varianz",
     "standardabweichung",
-    "stichprobe"
+    "stichprobe",
+    "t-verteilung",
+    "konfidenzintervall"
   ],
   "modules": [
     "hypothesis-test",

@@ -1089,6 +1089,21 @@
       "id": "normalverteilung",
       "category": "descriptive",
       "file": "terms/normalverteilung.json"
+    },
+    {
+      "id": "konfidenzintervall",
+      "category": "hypothesis",
+      "file": "terms/konfidenzintervall.json"
+    },
+    {
+      "id": "konfidenzniveau",
+      "category": "hypothesis",
+      "file": "terms/konfidenzniveau.json"
+    },
+    {
+      "id": "t-verteilung",
+      "category": "descriptive",
+      "file": "terms/t-verteilung.json"
     }
   ]
 }

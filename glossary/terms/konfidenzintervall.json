@@ -1,0 +1,89 @@
+{
+  "id": "konfidenzintervall",
+  "category": "hypothesis",
+  "title": {
+    "de": "Konfidenzintervall",
+    "en": "Confidence interval"
+  },
+  "short": {
+    "de": "Bereich um den Stichprobenmittelwert, berechnet nach einem Verfahren, das den wahren Mittelwert in einem festen Anteil der Fälle einschließt.",
+    "en": "Range around the sample mean, computed by a procedure that captures the true mean in a fixed share of cases."
+  },
+  "definition": {
+    "de": [
+      {
+        "type": "paragraph",
+        "text": "Ein **Konfidenzintervall** für den Mittelwert $\\mu$ legt um den Stichprobenmittelwert $\\bar{x}$ einen Bereich von einigen {{term:standardfehler|Standardfehlern}}. Ist $\\sigma$ bekannt, gilt:"
+      },
+      {
+        "type": "formula",
+        "latex": "\\bar{x} \\pm z \\cdot \\frac{\\sigma}{\\sqrt{n}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Für ein {{term:konfidenzniveau|Konfidenzniveau}} von 95 % ist $z = 1{,}96$. Ist $\\sigma$ unbekannt, ersetzt man es durch die Stichproben-{{term:standardabweichung|Standardabweichung}} $s$ und $z$ durch einen Faktor der {{term:t-verteilung|t-Verteilung}}:"
+      },
+      {
+        "type": "formula",
+        "latex": "\\bar{x} \\pm t \\cdot \\frac{s}{\\sqrt{n}}"
+      },
+      {
+        "type": "note",
+        "text": "Die 95 % beschreiben das Verfahren, nicht ein einzelnes Intervall: Zieht man sehr viele Stichproben und berechnet jedes Mal so ein Intervall, enthalten etwa 95 % davon $\\mu$. Ein einzelnes, schon berechnetes Intervall enthält $\\mu$ oder nicht."
+      }
+    ],
+    "en": [
+      {
+        "type": "paragraph",
+        "text": "A **confidence interval** for the mean $\\mu$ puts a range of a few {{term:standardfehler|standard errors}} around the sample mean $\\bar{x}$. If $\\sigma$ is known:"
+      },
+      {
+        "type": "formula",
+        "latex": "\\bar{x} \\pm z \\cdot \\frac{\\sigma}{\\sqrt{n}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "For a {{term:konfidenzniveau|confidence level}} of 95 %, $z = 1.96$. If $\\sigma$ is unknown, it is replaced by the sample {{term:standardabweichung|standard deviation}} $s$ and $z$ by a factor from the {{term:t-verteilung|t-distribution}}:"
+      },
+      {
+        "type": "formula",
+        "latex": "\\bar{x} \\pm t \\cdot \\frac{s}{\\sqrt{n}}"
+      },
+      {
+        "type": "note",
+        "text": "The 95 % describe the procedure, not a single interval: draw very many samples and compute such an interval each time, and about 95 % of them contain $\\mu$. A single interval, once computed, either contains $\\mu$ or it does not."
+      }
+    ]
+  },
+  "aliases": {
+    "de": [
+      "KI",
+      "Vertrauensintervall",
+      "Vertrauensbereich"
+    ],
+    "en": [
+      "CI"
+    ]
+  },
+  "seeAlso": [
+    "konfidenzniveau",
+    "standardfehler",
+    "t-verteilung",
+    "stichprobenverteilung",
+    "wilson-konfidenzintervall"
+  ],
+  "modules": [
+    "hypothesis-test",
+    "sample-size"
+  ],
+  "sources": [
+    {
+      "label": "Montgomery, D.C.: Introduction to Statistical Quality Control, 8th ed., Wiley, 2020 — Kap. 4",
+      "url": null
+    },
+    {
+      "label": "DIN ISO 3534-1: Statistik — Begriffe und Formelzeichen, Teil 1",
+      "url": null
+    }
+  ]
+}
