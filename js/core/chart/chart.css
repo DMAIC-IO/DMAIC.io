@@ -933,6 +933,12 @@
   font-size: var(--font-size-sm);
 }
 
+/* histogram: precomputed bins marked by the caller (e.g. as far out as observed) */
+.chart-histogram__bar--highlight {
+  fill: var(--color-error);
+  stroke: var(--color-error);
+}
+
 /* interval-stack: confidence intervals, reference line and axis */
 .chart-interval__segment,
 .chart-interval__swatch {
