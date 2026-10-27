@@ -37,7 +37,7 @@ suite('Probability plot — percentages follow the locale (Bug 11)', () => {
     const all = texts(m);
     assertTrue(all.includes('50 %'), all.join(' | '));
     assertEqual(all.some(t => /\d%$/.test(t)), false, 'kein „50%“ ohne Leerzeichen');
-    assertTrue(/P = \d+,\d %/.test(tip(m)), tip(m));
+    assertTrue(/P = \d+,\d\u00a0%/.test(tip(m)), tip(m));
     unmount(m);
   });
   test('en: axis 50%, tooltip P = d.d%', () => {
