@@ -941,7 +941,7 @@
 }
 
 .chart-interval__segment--t,
-.chart-interval__swatch--t { stroke: var(--color-info); }
+.chart-interval__swatch--t { stroke: var(--color-success); }
 
 .chart-interval__segment--miss,
 .chart-interval__swatch--miss { stroke: var(--color-error); }
