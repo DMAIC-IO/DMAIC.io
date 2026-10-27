@@ -247,6 +247,9 @@ export function intervalCoverageComponent(ctx) {
         rows: this.current().rows.map((r) => ({ segments: r.segments.map((seg) => ({ ...seg })) })),
         capacity: ROWS,
         legend,
+        // Segments get their stroke from chart.css only; an exported SVG
+        // carries no stylesheet and would show an empty plot.
+        showModebar: false,
       };
     },
   };

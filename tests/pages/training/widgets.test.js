@@ -324,6 +324,11 @@ suite('interval-coverage widget', () => {
   };
   const rate = (sim, key = 'rate') => parseFloat(sim.cell(key));
 
+  test('offers no chart export (segments are coloured by CSS only)', () => {
+    const { sim } = mount({ seed: 1 });
+    assertEqual(sim.chartConfig().showModebar, false);
+  });
+
   test('shows dashes before the first sample', () => {
     const { sim, events } = mount({ seed: 1 });
     assertEqual(sim.cell('rate'), '–');
