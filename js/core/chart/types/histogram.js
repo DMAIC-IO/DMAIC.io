@@ -185,6 +185,7 @@ export default class HistogramChart extends ChartBase {
         label: c.label || `Normal ${out.length + 1}`,
         lineStyle: c.lineStyle,
         strokeWidth: c.strokeWidth,
+        shade: Array.isArray(c.shade) ? c.shade : [],
       });
     }
 
@@ -410,6 +411,29 @@ export default class HistogramChart extends ChartBase {
       const steps = 100;
       const cvMin = curve.mean - 4 * curve.stdDev;
       const cvMax = curve.mean + 4 * curve.stdDev;
+      const toPoint = (v, d) => (isHorizontal
+        ? `${densityScale(d)},${valueScale(v)}`
+        : `${valueScale(v)},${densityScale(d)}`);
+
+      // Shaded ranges under the curve, clipped to its ±4σ span.
+      for (const range of curve.shade || []) {
+        const lo = Math.max(range.from, cvMin);
+        const hi = Math.min(range.to, cvMax);
+        if (!(lo < hi)) continue;
+        const area = [toPoint(lo, 0)];
+        for (let i = 0; i <= steps; i++) {
+          const v = lo + (hi - lo) * i / steps;
+          area.push(toPoint(v, normalPdf(v, curve.mean, curve.stdDev)));
+        }
+        area.push(toPoint(hi, 0));
+        const attrs = {
+          points: area.join(' '),
+          class: 'chart-histogram__curve-area',
+          fill: resolveColor(range.color || curve.color),
+        };
+        if (range.key) attrs['data-area'] = range.key;
+        svgEl('polygon', attrs, plotGroup);
+      }
 
       for (let i = 0; i <= steps; i++) {
         const v = cvMin + (cvMax - cvMin) * i / steps;

@@ -88,3 +88,35 @@ suite('Histogram type — precomputed bins', () => {
     unmount(m);
   });
 });
+
+suite('Histogram type — shaded curve areas', () => {
+  const curve = (shade) => ({ mean: 500, stdDev: 0.632, ...(shade ? { shade } : {}) });
+  const cfg = (shade) => ({
+    bins: [{ x0: 498, x1: 500, count: 5 }, { x0: 500, x1: 502, count: 5 }],
+    xMin: 496, xMax: 504, xExact: true, normalCurves: [curve(shade)],
+  });
+
+  test('shaded ranges draw one area each', () => {
+    const m = mount(cfg([
+      { from: -Infinity, to: 498.76, key: 'alpha' },
+      { from: 501.24, to: Infinity, key: 'alpha' },
+    ]));
+    assertEqual(m.host.querySelectorAll('.chart-histogram__curve-area[data-area="alpha"]').length, 2);
+    unmount(m);
+  });
+
+  test('empty ranges draw nothing', () => {
+    const m = mount(cfg([{ from: 502, to: 501 }]));
+    assertEqual(m.host.querySelectorAll('.chart-histogram__curve-area').length, 0);
+    unmount(m);
+  });
+
+  test('curves without shade draw as before', () => {
+    const plain = mount(cfg(null));
+    const shaded = mount(cfg([{ from: 501.24, to: Infinity, key: 'alpha' }]));
+    assertEqual(plain.host.querySelectorAll('polyline').length, shaded.host.querySelectorAll('polyline').length);
+    assertEqual(plain.host.querySelectorAll('.chart-histogram__curve-area').length, 0);
+    unmount(plain);
+    unmount(shaded);
+  });
+});

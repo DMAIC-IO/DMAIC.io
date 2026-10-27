@@ -939,6 +939,12 @@
   stroke: var(--color-error);
 }
 
+/* histogram: shaded ranges under a normal curve (normalCurves[].shade) */
+.chart-histogram__curve-area {
+  fill-opacity: 0.25;
+  stroke: none;
+}
+
 /* interval-stack: confidence intervals, reference line and axis */
 .chart-interval__segment,
 .chart-interval__swatch {
