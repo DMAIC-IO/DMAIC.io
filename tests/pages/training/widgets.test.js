@@ -701,6 +701,19 @@ suite('course widgets: number format', () => {
     assertEqual(nullDist.observedText(501.6), '501,6 g');
   });
 
+  test('German shows a decimal comma in the test-errors widget', () => {
+    const sim = WIDGET_COMPONENTS['test-errors'].factory(ctxIn('de'));
+    sim.setup({ dispatchEvent: () => {}, setAttribute: () => {} },
+      { seed: 1, showExact: true, driftChoices: [1] }, { insightOpen: () => false });
+    assertEqual(sim.cell('limits'), '498,76 – 501,24 g');
+    assertEqual(sim.cell('exact'), '35,3 %');
+    sim.draw(100);
+    assertTrue(/^\d+,\d %$/.test(sim.cell('share')), `share ${sim.cell('share')}`);
+    assertEqual(sim.optionText('drift', 0.5), '+0,5 g');
+    assertEqual(sim.optionText('alpha', 0.01), '1 %');
+    assertEqual(sim.optionText('alpha', 0.005), '0,5 %');
+  });
+
   test('English keeps the decimal point', () => {
     assertEqual(mount('sample-estimate', 'en', { seed: 1 }).cell('mu'), '500.00');
     assertEqual(mount('null-distribution', 'en', { seed: 1 }).observedText(501.6), '501.6 g');

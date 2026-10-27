@@ -20,6 +20,7 @@
 import { mulberry32 } from '../../../engines/random-variates-engine.js';
 import { PROCESSES, drawSample } from '../processes.js';
 import { alarmLimits, isAlarm, exactPower } from '../power.js';
+import { numberFormatter } from './number-format.js';
 
 /** Batch sizes of the draw buttons. */
 export const DRAW_SIZES = [1, 10, 100, 1000];
@@ -52,11 +53,12 @@ const settingKey = (drift, n, alpha) => `${drift}|${n}|${alpha}`;
 
 /**
  * Alpine component factory (registered as `trainingTestErrors`).
- * @param {{i18n: {t: Function}, chartManager?: object}} ctx page context
+ * @param {{i18n: {t: Function, getLanguage?: Function}, chartManager?: object}} ctx page context
  * @returns {object} Alpine data object
  */
 export function testErrorsComponent(ctx) {
   const t = (key, vars) => ctx.i18n.t(`training.course.testErrors.${key}`, vars);
+  const fmt = numberFormatter(ctx);
   const process = PROCESSES[PROCESS];
   // Generator, means per setting and chart handle stay outside Alpine's proxy.
   let rng = mulberry32(randomSeed());
@@ -141,8 +143,8 @@ export function testErrorsComponent(ctx) {
      * @param {number} value
      */
     optionText(name, value) {
-      if (name === 'drift') return `+${value} g`;
-      if (name === 'alpha') return `${Math.round(value * 1000) / 10} %`;
+      if (name === 'drift') return `+${fmt(value, null)} g`;
+      if (name === 'alpha') return `${fmt(Math.round(value * 1000) / 10, null)} %`;
       return String(value);
     },
     /** Legend keys under the chart: alpha, plus beta when the machine drifted. */
@@ -163,13 +165,13 @@ export function testErrorsComponent(ctx) {
       // Read the reactive counters so Alpine re-evaluates after each change.
       if (this.checks < 0 || this.revision < 0) return '';
       const limits = this.limits();
-      if (key === 'limits') return `${limits.lower.toFixed(2)} – ${limits.upper.toFixed(2)} g`;
-      if (key === 'exact') return `${(100 * exactPower(this.drift, process.sd, this.n, this.alpha)).toFixed(1)} %`;
+      if (key === 'limits') return `${fmt(limits.lower)} – ${fmt(limits.upper)} g`;
+      if (key === 'exact') return `${fmt(100 * exactPower(this.drift, process.sd, this.n, this.alpha), 1)} %`;
       const means = this.current();
       const alarms = means.filter((m) => isAlarm(m, limits)).length;
       if (key === 'checks') return String(means.length);
       if (key === 'alarms') return String(alarms);
-      if (key === 'share') return means.length ? `${((100 * alarms) / means.length).toFixed(1)} %` : '–';
+      if (key === 'share') return means.length ? `${fmt((100 * alarms) / means.length, 1)} %` : '–';
       return '–';
     },
 
