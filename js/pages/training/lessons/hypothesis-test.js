@@ -86,7 +86,8 @@ export default {
             ['501,6 g', '500,4 bis 502,8 g', '0,011', 'verwerfen'],
           ] },
           { type: 'paragraph', content: 'Das ist kein Zufall: Ein zweiseitiger Test mit α = 5 % verwirft H₀ genau dann, wenn μ₀ außerhalb des 95-%-Intervalls liegt. Bei 501,2 g liegt die untere Grenze mit 499,96 g nur knapp unter 500 g – passend zu p knapp über 5 %.' },
-          { type: 'paragraph', content: 'Wir haben mit bekanntem σ gerechnet. Ist σ unbekannt, nimmt man wie in der letzten Lektion die Standardabweichung s der Stichprobe und die t-Verteilung. Genau diesen p-Wert gibt Minitab beim t-Test für eine Stichprobe aus.' },
+          { type: 'paragraph', content: 'Noch ein Wort dazu, welchen Test wir gemacht haben. Die Teststatistik z aus Schritt 3 teilt durch σ/√n, also durch das bekannte σ = 2 g der Anlage. Ein Test, der so rechnet, heißt z-Test. Er setzt voraus, dass man σ kennt – etwa aus langer Erfahrung mit der Anlage.' },
+          { type: 'paragraph', content: 'Im Betrieb kennt man σ meist nicht. Dann geht man vor wie in der letzten Lektion beim Konfidenzintervall: σ wird durch die Standardabweichung s der Stichprobe ersetzt, und p kommt aus der t-Verteilung statt aus der Glockenkurve. Das ist der t-Test für eine Stichprobe, und genau diesen p-Wert gibt Minitab aus. Die Idee bleibt dieselbe wie beim z-Test.' },
         ],
       },
       {
@@ -196,7 +197,8 @@ export default {
             ['501.6 g', '500.4 to 502.8 g', '0.011', 'reject'],
           ] },
           { type: 'paragraph', content: 'This is no coincidence: a two-sided test with α = 5 % rejects H₀ exactly when μ₀ lies outside the 95 % interval. At 501.2 g the lower limit of 499.96 g lies just below 500 g – matching p just above 5 %.' },
-          { type: 'paragraph', content: 'We calculated with a known σ. If σ is unknown, you use the sample’s standard deviation s and the t distribution, as in the last lesson. This is the p-value Minitab prints for the 1-sample t test.' },
+          { type: 'paragraph', content: 'One more word on which test we ran. The test statistic z from step 3 divides by σ/√n, that is, by the known σ = 2 g of the machine. A test that calculates this way is called a z test. It requires that σ is known – for example from long experience with the machine.' },
+          { type: 'paragraph', content: 'In practice, σ is usually unknown. Then you proceed as with the confidence interval in the last lesson: σ is replaced by the sample’s standard deviation s, and p comes from the t distribution instead of the bell curve. This is the 1-sample t test, and this is the p-value Minitab prints. The idea stays the same as in the z test.' },
         ],
       },
       {
