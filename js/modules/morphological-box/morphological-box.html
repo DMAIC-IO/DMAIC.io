@@ -32,8 +32,8 @@
   <div class="morphological-box__layout" x-show="model.view === 'box'">
     <div class="morphological-box__grid">
       <div class="morphological-box__head" x-show="model.parameters.length > 0">
-        <div class="morphological-box__head-param" data-heading data-help-key="modules.morphological-box.fields.parameters.help" x-text="t('headingParameter')"></div>
-        <div class="morphological-box__head-options" data-heading data-help-key="modules.morphological-box.actions.setOptionLabel.help" x-text="t('headingOptions')"></div>
+        <div class="morphological-box__head-param" data-heading><span class="context-help-anchor--overlay" data-help-key="modules.morphological-box.fields.parameters.help" x-text="t('headingParameter')"></span></div>
+        <div class="morphological-box__head-options" data-heading><span class="context-help-anchor--overlay" data-help-key="modules.morphological-box.actions.setOptionLabel.help" x-text="t('headingOptions')"></span></div>
       </div>
       <template x-for="p in model.parameters" :key="p.id">
         <div class="morphological-box__row dmike-del-btn-host" :data-parameter="p.id">
@@ -83,7 +83,7 @@
     </div>
 
     <aside class="morphological-box__concepts">
-      <h3 class="morphological-box__concepts-title" data-help-key="modules.morphological-box.fields.concepts.help" x-text="t('conceptsTitle')"></h3>
+      <h3 class="morphological-box__concepts-title"><span class="context-help-anchor--overlay" data-help-key="modules.morphological-box.fields.concepts.help" x-text="t('conceptsTitle')"></span></h3>
       <div class="morphological-box__concepts-empty" x-show="model.concepts.length === 0" x-text="t('conceptsEmpty')"></div>
       <template x-for="(c, i) in model.concepts" :key="c.id">
         <div class="morphological-box__concept dmike-del-btn-host" :class="conceptCardClass(c)" :data-concept="c.id">
@@ -103,7 +103,7 @@
             <button class="dmike-del-btn" type="button" data-action="remove-concept" data-help-key="modules.morphological-box.actions.removeConcept.help"
                     :title="t('removeConcept')" @click="removeConcept(c.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
           </div>
-          <div class="morphological-box__concept-status" :class="conceptStatusClass(c)" data-help-key="modules.morphological-box.fields.conceptChecks.help" data-concept-status x-text="conceptStatus(c)"></div>
+          <div class="morphological-box__concept-status" :class="conceptStatusClass(c)" data-concept-status><span class="context-help-anchor--overlay" data-help-key="modules.morphological-box.fields.conceptChecks.help" x-text="conceptStatus(c)"></span></div>
           <template x-for="text in conflictTexts(c)" :key="text">
             <div class="morphological-box__concept-conflict" data-concept-conflict x-text="text"></div>
           </template>
@@ -121,7 +121,7 @@
 
   <!-- Consistency view: lower-triangular option × option matrix. -->
   <div class="morphological-box__matrix-wrap" x-show="model.view === 'consistency' && model.parameters.length > 0">
-    <p class="morphological-box__matrix-hint" data-help-key="modules.morphological-box.fields.conflicts.help" x-text="t('matrixHint')"></p>
+    <p class="morphological-box__matrix-hint"><span class="context-help-anchor--overlay" data-help-key="modules.morphological-box.fields.conflicts.help" x-text="t('matrixHint')"></span></p>
     <!-- Only the table scrolls: the hint's help button sits outside its box and must not widen a scroller. -->
     <div class="morphological-box__matrix-scroll">
       <table class="dmike-table morphological-box__matrix">

@@ -1887,48 +1887,132 @@ export const AGENT_REGISTRY = {
     }
   },
   "chart-suggestion": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:emptyText",
-      "unmarked_method:selectionColumns",
-      "unmarked_method:selectionLabel",
-      "unmarked_method:roleName",
-      "unmarked_method:chartTitle",
-      "unmarked_method:chartNotes",
-      "unmarked_method:cardClass",
-      "unmarked_method:openBtnVisible",
-      "unmarked_method:pickChart",
-      "unmarked_method:openInModule",
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "dom_detour:dataset.matrixSize@238",
-      "dom_detour:dataset.matrixSize@308",
-      "dom_detour:dataset.matrixSize@424",
-      "dom_detour:dataset.matrixSize@533"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[] }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setColumns": {
+        "params": [
+          {
+            "name": "refs",
+            "type": "Array<{ instanceId: string, sheetId: string, columnId: string }>",
+            "optional": false,
+            "help": "nicht leere Liste wählbarer Spalten (`read().pickableColumns`), alle aus demselben Blatt, jede einmal"
+          }
+        ],
+        "returns": "string[]",
+        "help": "Spalten eines Blatts als Auswahl übernehmen; die Vorschläge werden neu geordnet und der Spitzenreiter gewählt. Die Rollen kommen aus dem Worksheet."
+      },
+      "pickChart": {
+        "params": [
+          {
+            "name": "type",
+            "type": "string",
+            "optional": false,
+            "help": "ein Wert aus `read().suggestions[].type`"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen der Vorschläge als Diagramm wählen und die Vorschau zeichnen. Ist der Typ schon gewählt, geschieht nichts."
+      },
+      "openInModule": {
+        "params": [],
+        "returns": "{ instanceId: string, moduleId: string }|null",
+        "help": "Das gewählte Diagramm als eigenes Modul mit denselben Spalten anlegen, in der Phase dieser Instanz."
+      }
+    },
     "fields": {
       "selection": {
-        "type": "{sourceInstanceId,sourceSheetId,ts,columns:Array}|null",
-        "help": "",
-        "bulk": false
+        "type": "Selection|null",
+        "help": "the selected columns and their source sheet, or null without a selection",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "Selection",
+        "keys": {
+          "sourceInstanceId": {
+            "type": "string",
+            "help": "worksheet instance the columns come from"
+          },
+          "sourceSheetId": {
+            "type": "string",
+            "help": "sheet of that worksheet"
+          },
+          "columns": {
+            "type": "SelectedColumn[]",
+            "help": "the selected columns in selection order",
+            "keysOf": "SelectedColumn",
+            "keys": {
+              "id": {
+                "type": "string",
+                "help": "column id in the sheet"
+              },
+              "name": {
+                "type": "string",
+                "help": "display name of the column"
+              },
+              "role": {
+                "type": "string",
+                "help": "role that drives the ranking: continuous, categorical, ordinal or date"
+              },
+              "roleConfirmed": {
+                "type": "boolean",
+                "help": "true when the role was set or confirmed by hand in the worksheet"
+              }
+            }
+          }
+        }
+      },
+      "suggestions": {
+        "type": "Suggestion[]",
+        "help": "the matching charts in rank order",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "Suggestion",
+        "keys": {
+          "type": {
+            "type": "string",
+            "help": "chart type, the value pickChart accepts"
+          },
+          "title": {
+            "type": "string",
+            "help": "translated title"
+          },
+          "notes": {
+            "type": "string",
+            "help": "translated note, or '' without one"
+          }
+        }
       },
       "selectedChartType": {
         "type": "string|null",
-        "help": "currently-picked chart type",
-        "bulk": false
+        "help": "the picked chart type, or null without suggestions",
+        "bulk": false,
+        "derived": true
       },
-      "exampleWorksheetId": {
+      "openTarget": {
         "type": "string|null",
-        "help": "provisioned example worksheet instanceId",
-        "bulk": false
+        "help": "module id openInModule would create, or null for a preview-only type",
+        "bulk": false,
+        "derived": true
       },
-      "suggestions": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "pickableColumns": {
+        "type": "object[]",
+        "help": "the columns setColumns accepts, each `{ key, name }`",
+        "bulk": false,
+        "derived": true
       }
     }
   },
@@ -4400,165 +4484,475 @@ export const AGENT_REGISTRY = {
     }
   },
   "doe-planner": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:fmt2",
-      "unmarked_method:fmt4",
-      "unmarked_method:fmt6",
-      "unmarked_method:factorLetter",
-      "unmarked_method:responseLetter",
-      "unmarked_method:isCategorical",
-      "unmarked_method:factorKind",
-      "unmarked_method:factorDisplayName",
-      "unmarked_method:save",
-      "unmarked_method:sourceRowCount",
-      "unmarked_method:isConfigValid",
-      "unmarked_method:worksheetStaleness",
-      "unmarked_method:staleness",
-      "unmarked_method:scheduleAutoGenerate",
-      "unmarked_method:tryAutoGenerate",
-      "unmarked_method:invalidateAndSchedule",
-      "unmarked_method:buildDesignFromSource",
-      "unmarked_method:codedToWorksheetRows",
-      "unmarked_method:factorNameClass",
-      "unmarked_method:factorNameTitle",
-      "unmarked_method:factorUnitTitle",
-      "unmarked_method:levelPlaceholder",
-      "unmarked_method:factorNameChanged",
-      "unmarked_method:factorUnitChanged",
-      "unmarked_method:factorKindChanged",
-      "unmarked_method:levelChanged",
-      "unmarked_method:addFactor",
-      "unmarked_method:removeFactor",
-      "unmarked_method:insertLevel",
-      "unmarked_method:removeLevel",
-      "unmarked_method:responseNameChanged",
-      "unmarked_method:responseUnitChanged",
-      "unmarked_method:addResponse",
-      "unmarked_method:removeResponse",
-      "unmarked_method:designOptDisabled",
-      "unmarked_method:designOptClass",
-      "unmarked_method:designOptTip",
-      "unmarked_method:fullIsProduct",
-      "unmarked_method:fullProductFormula",
-      "unmarked_method:selectDesignType",
-      "unmarked_method:recommendation",
-      "unmarked_method:recommendationText",
-      "unmarked_method:applyRecommendation",
-      "unmarked_method:resCellClass",
-      "unmarked_method:resCellData",
-      "unmarked_method:resCellLabel",
-      "unmarked_method:resCellClick",
-      "unmarked_method:resInfoText",
-      "unmarked_method:resAliasDetail",
-      "unmarked_method:pbInfoText",
-      "unmarked_method:selectPB",
-      "unmarked_method:bbAvailable",
-      "unmarked_method:bbDetailText",
-      "unmarked_method:bbWarningText",
-      "unmarked_method:taguchiCandidatesList",
-      "unmarked_method:taguchiFirstLevels",
-      "unmarked_method:taguchiInfoText",
-      "unmarked_method:taguchiSelected",
-      "unmarked_method:selectTaguchi",
-      "unmarked_method:optimalMinRuns",
-      "unmarked_method:optimalMinNew",
-      "unmarked_method:optimalRunsValid",
-      "unmarked_method:optimalRunsLabel",
-      "unmarked_method:optimalRunsHint",
-      "unmarked_method:optimalTooFewText",
-      "unmarked_method:optimalRunsChanged",
-      "unmarked_method:termGroups",
-      "unmarked_method:termActive",
-      "unmarked_method:termLabel",
-      "unmarked_method:termGroupExpanded",
-      "unmarked_method:termGroupTitle",
-      "unmarked_method:termGroupCount",
-      "unmarked_method:termChipClass",
-      "unmarked_method:toggleTerm",
-      "unmarked_method:toggleTermGroup",
-      "unmarked_method:forbiddenList",
-      "unmarked_method:forbiddenCoded",
-      "unmarked_method:forbiddenRuleText",
-      "unmarked_method:addForbiddenVertex",
-      "unmarked_method:removeForbiddenRule",
-      "unmarked_method:forbidPreviewRow",
-      "unmarked_method:sourceWorksheetKey",
-      "unmarked_method:sourceWorksheetOptions",
-      "unmarked_method:sourceMappingStatus",
-      "unmarked_method:sourceWorksheetChanged",
-      "unmarked_method:showCenterPointsOption",
-      "unmarked_method:randomizeChanged",
-      "unmarked_method:centerPointsChanged",
-      "unmarked_method:replicatesChanged",
-      "unmarked_method:alphaTypeChanged",
-      "unmarked_method:ccdCpChanged",
-      "unmarked_method:bbCpChanged",
-      "unmarked_method:summaryRuns",
-      "unmarked_method:summaryRes",
-      "unmarked_method:summaryGeneratedRuns",
-      "unmarked_method:boundPct",
-      "unmarked_method:boundProgressText",
-      "unmarked_method:boundComplete",
-      "unmarked_method:showPreview",
-      "unmarked_method:effCards",
-      "unmarked_method:condNumValue",
-      "unmarked_method:maxLeverageValue",
-      "unmarked_method:vifMain",
-      "unmarked_method:vifInter",
-      "unmarked_method:hasVif",
-      "unmarked_method:vifRating",
-      "unmarked_method:hasAlias",
-      "unmarked_method:aliasGenerators",
-      "unmarked_method:aliasRows",
-      "unmarked_method:hasPower",
-      "unmarked_method:powerRows",
-      "unmarked_method:powerRating",
-      "unmarked_method:powerPct",
-      "unmarked_method:powerBarWidth",
-      "unmarked_method:powerSaturated",
-      "unmarked_method:powerDescText",
-      "unmarked_method:dispersion",
-      "unmarked_method:dispersionLeadText",
-      "unmarked_method:dispersionModels",
-      "unmarked_method:dispersionConclusion",
-      "unmarked_method:projectModeChanged",
-      "unmarked_method:timelineItemClass",
-      "unmarked_method:phaseLabel",
-      "unmarked_method:phaseDecIcon",
-      "unmarked_method:canStartNewPhase",
-      "unmarked_method:newPhase",
-      "unmarked_method:startNewPhase",
-      "unmarked_method:viewPhase",
-      "unmarked_method:evopSummary",
-      "unmarked_method:evopMeanLabel",
-      "unmarked_method:evopErrorLimit",
-      "unmarked_method:removeOldWorksheet",
-      "unmarked_method:applyPreviewEditsToDesign",
-      "unmarked_method:createOrRecreateDatasheet",
-      "unmarked_method:openLinkedWorksheet",
-      "unmarked_method:clickAugment",
-      "unmarked_method:augmentDesign",
-      "unmarked_method:algoNavigate",
-      "unmarked_method:modelTerms",
-      "unmarked_method:transferToRegression",
-      "unmarked_method:mountPreviewGrid",
-      "unmarked_method:destroyPreviewGrid",
-      "unmarked_method:capturePreviewEdits",
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unreadable_state_key:version",
-      "unreachable_write:projectMode",
-      "unreachable_write:projectName",
-      "unreachable_write:doeName",
-      "unreachable_write:options.randomize",
-      "unreachable_write:options.centerPoints",
-      "unreachable_write:options.alphaType"
-    ],
+    "reported": [],
     "actions": {
-      "completePhase": {
+      "factors.addFactor": {
+        "params": [],
+        "returns": "number",
+        "help": "Add an empty continuous factor with two empty levels. Forbidden factor combinations of an optimal design are cleared: they list one value per factor."
+      },
+      "factors.removeFactor": {
+        "params": [
+          {
+            "name": "factorId",
+            "type": "number",
+            "optional": false,
+            "help": "the factor"
+          }
+        ],
+        "returns": "void",
+        "help": "Remove a factor. The model terms and forbidden combinations of an optimal design are reset."
+      },
+      "factors.setFactorName": {
+        "params": [
+          {
+            "name": "factorId",
+            "type": "number",
+            "optional": false,
+            "help": "the factor"
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "the name; \"\" clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set a factor's name; names must differ, regardless of case."
+      },
+      "factors.setFactorUnit": {
+        "params": [
+          {
+            "name": "factorId",
+            "type": "number",
+            "optional": false,
+            "help": "the factor"
+          },
+          {
+            "name": "unit",
+            "type": "string",
+            "optional": false,
+            "help": "the unit; \"\" clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set a continuous factor's unit."
+      },
+      "factors.setFactorKind": {
+        "params": [
+          {
+            "name": "factorId",
+            "type": "number",
+            "optional": false,
+            "help": "the factor"
+          },
+          {
+            "name": "kind",
+            "type": "'continuous'|'categorical'",
+            "optional": false,
+            "help": ""
+          }
+        ],
+        "returns": "void",
+        "help": "Make a factor continuous (numeric levels) or categorical (named levels, no unit)."
+      },
+      "factors.setLevel": {
+        "params": [
+          {
+            "name": "factorId",
+            "type": "number",
+            "optional": false,
+            "help": "the factor"
+          },
+          {
+            "name": "levelIdx",
+            "type": "number",
+            "optional": false,
+            "help": "0 = lowest level"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "the level"
+          }
+        ],
+        "returns": "void",
+        "help": "Set one level of a factor: a number for a continuous factor, a label for a categorical one."
+      },
+      "factors.insertLevel": {
+        "params": [
+          {
+            "name": "factorId",
+            "type": "number",
+            "optional": false,
+            "help": "the factor"
+          },
+          {
+            "name": "at",
+            "type": "number",
+            "optional": false,
+            "help": "position of the new level, 0 = before the first"
+          }
+        ],
+        "returns": "void",
+        "help": "Insert an empty level; more than two levels exclude the fractional and Plackett-Burman designs."
+      },
+      "factors.removeLevel": {
+        "params": [
+          {
+            "name": "factorId",
+            "type": "number",
+            "optional": false,
+            "help": "the factor"
+          },
+          {
+            "name": "levelIdx",
+            "type": "number",
+            "optional": false,
+            "help": "the level"
+          }
+        ],
+        "returns": "void",
+        "help": "Remove a level; a factor keeps at least two."
+      },
+      "factors.addResponse": {
+        "params": [],
+        "returns": "number",
+        "help": "Add an empty response."
+      },
+      "factors.removeResponse": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "the response, 0 = Y1"
+          }
+        ],
+        "returns": "void",
+        "help": "Remove a response; the plan keeps at least one."
+      },
+      "factors.setResponseName": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "the response, 0 = Y1"
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "the name; \"\" clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set a response's name."
+      },
+      "factors.setResponseUnit": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "the response, 0 = Y1"
+          },
+          {
+            "name": "unit",
+            "type": "string",
+            "optional": false,
+            "help": "the unit; \"\" clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set a response's unit."
+      },
+      "design.selectDesignType": {
+        "params": [
+          {
+            "name": "type",
+            "type": "'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt'",
+            "optional": false,
+            "help": ""
+          }
+        ],
+        "returns": "void",
+        "help": "Choose the design type. Fractional factorial and Plackett-Burman need two levels per factor; an optimal type gets a default run count."
+      },
+      "design.applyRecommendation": {
+        "params": [],
+        "returns": "?string",
+        "help": "Take the recommended design type for the current factors."
+      },
+      "design.selectResolution": {
+        "params": [
+          {
+            "name": "k",
+            "type": "number",
+            "optional": false,
+            "help": "the factor count; must equal the number of factors"
+          },
+          {
+            "name": "runs",
+            "type": "number",
+            "optional": false,
+            "help": "the run count of the fraction"
+          }
+        ],
+        "returns": "void",
+        "help": "Choose the fractional factorial by run count; the factor count is the current one."
+      },
+      "design.selectPB": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "row of the table, 0 = 2–7 factors"
+          }
+        ],
+        "returns": "void",
+        "help": "Choose a Plackett-Burman row by factor range."
+      },
+      "design.selectTaguchi": {
+        "params": [
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "array name such as L4, L8 or L9"
+          }
+        ],
+        "returns": "void",
+        "help": "Choose the Taguchi orthogonal array; only arrays that fit the factors are offered."
+      },
+      "design.setRandomize": {
+        "params": [
+          {
+            "name": "on",
+            "type": "boolean",
+            "optional": false,
+            "help": "true randomises"
+          }
+        ],
+        "returns": "void",
+        "help": "Randomise the run order or keep the standard order."
+      },
+      "design.setCenterPoints": {
+        "params": [
+          {
+            "name": "on",
+            "type": "boolean",
+            "optional": false,
+            "help": ""
+          }
+        ],
+        "returns": "void",
+        "help": "Add three center points (full, fractional and Plackett-Burman designs)."
+      },
+      "design.setReplicates": {
+        "params": [
+          {
+            "name": "n",
+            "type": "number",
+            "optional": false,
+            "help": "replicates, a whole number from 1 to 10"
+          }
+        ],
+        "returns": "void",
+        "help": "Repeat every run."
+      },
+      "design.setAlphaType": {
+        "params": [
+          {
+            "name": "type",
+            "type": "'rotatable'|'face-centered'|'spherical'",
+            "optional": false,
+            "help": ""
+          }
+        ],
+        "returns": "void",
+        "help": "Choose the axial distance of the central composite design."
+      },
+      "design.setCcdCenterPoints": {
+        "params": [
+          {
+            "name": "n",
+            "type": "number",
+            "optional": false,
+            "help": "a whole number, at least 1"
+          }
+        ],
+        "returns": "void",
+        "help": "Center points of the central composite design."
+      },
+      "design.setBbCenterPoints": {
+        "params": [
+          {
+            "name": "n",
+            "type": "number",
+            "optional": false,
+            "help": "a whole number, at least 1"
+          }
+        ],
+        "returns": "void",
+        "help": "Center points of the Box-Behnken design."
+      },
+      "optimal.setOptimalRuns": {
+        "params": [
+          {
+            "name": "n",
+            "type": "number",
+            "optional": false,
+            "help": "a whole number, at least what the active model terms need"
+          }
+        ],
+        "returns": "void",
+        "help": "Set the number of new runs of the optimal design."
+      },
+      "optimal.setTerm": {
+        "params": [
+          {
+            "name": "termId",
+            "type": "string",
+            "optional": false,
+            "help": "M0 (main effect of factor A), Q0 (its square), I0_1 (interaction A·B), …"
+          },
+          {
+            "name": "on",
+            "type": "boolean",
+            "optional": false,
+            "help": ""
+          }
+        ],
+        "returns": "void",
+        "help": "Switch one model term. On takes its lower terms along, off its higher ones; main effects stay. Raises the runs to the new minimum."
+      },
+      "optimal.setTermGroup": {
+        "params": [
+          {
+            "name": "groupIdx",
+            "type": "number",
+            "optional": false,
+            "help": "the group; 0 holds the main effects"
+          },
+          {
+            "name": "on",
+            "type": "boolean",
+            "optional": false,
+            "help": ""
+          }
+        ],
+        "returns": "void",
+        "help": "Switch every term of a group: 1 = squares, 2 = two-factor interactions, … The main effects stay."
+      },
+      "optimal.addForbiddenVertex": {
+        "params": [
+          {
+            "name": "pattern",
+            "type": "Array<?number>",
+            "optional": false,
+            "help": "one coded level per factor (-1 = lowest, 1 = highest, in between for more levels), null for any level"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Forbid a combination of factor levels in the optimal design."
+      },
+      "optimal.removeForbiddenVertex": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "position in the list of forbidden combinations"
+          }
+        ],
+        "returns": "void",
+        "help": "Allow a forbidden combination again."
+      },
+      "optimal.setSourceWorksheet": {
+        "params": [
+          {
+            "name": "instanceId",
+            "type": "?string",
+            "optional": false,
+            "help": "the worksheet; null removes the source"
+          },
+          {
+            "name": "sheetId",
+            "type": "?string",
+            "optional": true,
+            "help": "the sheet of that worksheet"
+          }
+        ],
+        "returns": "void",
+        "help": "Build the optimal design on top of measured data from a project worksheet; columns are matched to factors and responses by name."
+      },
+      "optimal.augment": {
+        "params": [
+          {
+            "name": "n",
+            "type": "number",
+            "optional": false,
+            "help": "new runs, a whole number of at least 1"
+          }
+        ],
+        "returns": "number",
+        "help": "Add optimal runs to the linked datasheet; the existing runs and their values stay, the new rows are appended."
+      },
+      "analysis.setAnalysisResponse": {
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": false,
+            "help": "the response, 0 = Y1"
+          }
+        ],
+        "returns": "void",
+        "help": "Choose the response the dispersion analysis and the regression handover use."
+      },
+      "analysis.transferToRegression": {
+        "params": [],
+        "returns": "string",
+        "help": "Hand the linked datasheet to a new regression in the planner's phase, with the design's model terms."
+      },
+      "evop.setProjectMode": {
+        "params": [
+          {
+            "name": "on",
+            "type": "boolean",
+            "optional": false,
+            "help": ""
+          }
+        ],
+        "returns": "void",
+        "help": "Switch the EVOP project mode. The first switch-on opens phase 1 with the current plan."
+      },
+      "evop.setProjectName": {
+        "params": [
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "the name; \"\" clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set the project name; new phases are named after it."
+      },
+      "evop.newPhase": {
+        "params": [],
+        "returns": "number",
+        "help": "Start a new phase with the current factor levels. Only on a decided active phase, and never after the project was stopped."
+      },
+      "evop.completePhase": {
         "params": [
           {
             "name": "decision",
@@ -4567,105 +4961,341 @@ export const AGENT_REGISTRY = {
             "help": ""
           }
         ],
-        "returns": "Promise<boolean>",
-        "help": "Close the active EVOP phase after a confirm dialog: store its design and response values, then re-center or repeat in a new phase, or stop."
+        "returns": "boolean",
+        "help": "Close the active phase without asking: store its design and the first response's values, then re-center or repeat in a new phase, or stop."
+      },
+      "evop.viewPhase": {
+        "params": [
+          {
+            "name": "idx",
+            "type": "number",
+            "optional": false,
+            "help": "the phase, 0 = phase 1"
+          }
+        ],
+        "returns": "void",
+        "help": "Show a phase: its plan, design and datasheet come back; the design is not regenerated."
+      },
+      "runs.createDatasheet": {
+        "params": [],
+        "returns": "string",
+        "help": "Create the datasheet of the design, with the preview's values; a datasheet created before is replaced. The planner opens it."
+      },
+      "runs.setRunValue": {
+        "params": [
+          {
+            "name": "run",
+            "type": "number",
+            "optional": false,
+            "help": "the run number (run order) from read().runs"
+          },
+          {
+            "name": "column",
+            "type": "string",
+            "optional": false,
+            "help": "a factor or response name as in read().runs"
+          },
+          {
+            "name": "value",
+            "type": "?number",
+            "optional": false,
+            "help": "the value; null reverts the cell"
+          }
+        ],
+        "returns": "void",
+        "help": "Set one value of the run table before a datasheet exists (or while it is outdated): a response result or an adjusted continuous factor setting. The preview grid follows; the value goes into the datasheet when it is created."
+      },
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[] }`; runs kommt nur mit fields: ['runs']"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den Lesezustand dieser Instanz liefern."
+      },
+      "setDoeName": {
+        "params": [
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "the name; \"\" clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Name the plan (in project mode: the active phase)."
       }
     },
     "fields": {
       "doeName": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "string",
+        "help": "name of the plan, in project mode of the active phase",
+        "bulk": false,
+        "derived": true
       },
       "designType": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "''|'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt'",
+        "help": "the design type",
+        "bulk": false,
+        "derived": true
       },
       "factors": {
-        "type": "{ id:number, name:string, unit:string, kind:'continuous'|'categorical', levels:string[] }[]",
-        "help": "",
-        "bulk": false
+        "type": "DoeFactor[]",
+        "help": "the factors in order",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "DoeFactor",
+        "keys": {
+          "id": {
+            "type": "number",
+            "help": "stable id, the factorId of the factors.* actions"
+          },
+          "name": {
+            "type": "string",
+            "help": "the name, also the column name of the run table"
+          },
+          "unit": {
+            "type": "string",
+            "help": "the unit, '' without"
+          },
+          "kind": {
+            "type": "'continuous'|'categorical'",
+            "help": "numeric or named levels"
+          },
+          "levels": {
+            "type": "string[]",
+            "help": "the levels as typed, lowest first"
+          }
+        }
       },
       "responses": {
-        "type": "{ name:string, unit:string }[]",
-        "help": "",
-        "bulk": false
+        "type": "DoeResponse[]",
+        "help": "the responses in order, index = position",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "DoeResponse",
+        "keys": {
+          "name": {
+            "type": "string",
+            "help": "the name, also the column name of the run table"
+          },
+          "unit": {
+            "type": "string",
+            "help": "the unit, '' without"
+          }
+        }
       },
       "options": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "object",
+        "help": "randomize, centerPoints, replicates, alphaType, ccdCenterPoints, bbCenterPoints, taguchiArray, optimalRuns, optimalActiveTerms, forbiddenVertices",
+        "bulk": false,
+        "derived": true
       },
-      "selectedRes": {
-        "type": "{ k:number, runs:number, res:string, p:number }|null",
-        "help": "",
-        "bulk": false
+      "typeParams": {
+        "type": "DoeTypeParams",
+        "help": "the type's own selection",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "DoeTypeParams",
+        "keys": {
+          "selectedRes": {
+            "type": "object|null",
+            "help": "the fractional factorial cell `{ k, runs, res, p }`, null without"
+          },
+          "selectedPBIdx": {
+            "type": "number|null",
+            "help": "the Plackett-Burman design, index into the table, null without"
+          }
+        }
       },
-      "selectedPBIdx": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "valid": {
+        "type": "boolean",
+        "help": "the configuration yields a design",
+        "bulk": false,
+        "derived": true
       },
-      "design": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "invalidReason": {
+        "type": "string|null",
+        "help": "reason code while invalid ('tooFewFactors', 'duplicateFactorNames', 'incompleteFactor', 'noResponse', 'unnamedResponse', 'noDesignType', 'twoLevelOnly', 'noResolution', 'noPBDesign', 'bbUnavailable', 'noTaguchiArray', 'tooFewOptimalRuns'), null when valid",
+        "bulk": false,
+        "derived": true
       },
-      "previewEdits": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "previewDirty": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "worksheetRef": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "sourceWorksheet": {
-        "type": "any",
-        "help": "",
-        "bulk": false
-      },
-      "evaluation": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "summary": {
+        "type": "DoeSummary",
+        "help": "planned and generated runs, resolution",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "DoeSummary",
+        "keys": {
+          "runs": {
+            "type": "number|null",
+            "help": "planned runs including replicates, null while unknown"
+          },
+          "resolution": {
+            "type": "string",
+            "help": "'III', 'IV', 'V', 'Full', 'CCD', … or ''"
+          },
+          "generatedRuns": {
+            "type": "number",
+            "help": "runs of the generated design, 0 without"
+          }
+        }
       },
       "analysisResponseIdx": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "number",
+        "help": "response of the dispersion analysis and the regression handover",
+        "bulk": false,
+        "derived": true
       },
-      "fid": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "sourceWorksheet": {
+        "type": "object|null",
+        "help": "`{ instanceId, sheetId }` of the source worksheet of an optimal design, or null",
+        "bulk": false,
+        "derived": true
       },
-      "projectMode": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "runs": {
+        "type": "DoeRun[]",
+        "help": "the run table in run order; only with read({ fields: ['runs'] }); preview values come from runs.setRunValue",
+        "bulk": true,
+        "bulkKind": "table",
+        "derived": true,
+        "keysOf": "DoeRun",
+        "keys": {
+          "run": {
+            "type": "number",
+            "help": "run number in run order, the run of setRunValue"
+          },
+          "std": {
+            "type": "number",
+            "help": "standard order"
+          },
+          "block": {
+            "type": "number",
+            "help": "block"
+          },
+          "replicate": {
+            "type": "number",
+            "help": "replicate"
+          },
+          "factors": {
+            "type": "object",
+            "help": "setting per factor name"
+          },
+          "responses": {
+            "type": "object",
+            "help": "value per response name, null while empty"
+          }
+        }
       },
-      "projectName": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "worksheet": {
+        "type": "DoeWorksheet|null",
+        "help": "the linked datasheet, null without",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "DoeWorksheet",
+        "keys": {
+          "instanceId": {
+            "type": "string",
+            "help": "the worksheet instance; write its values with worksheet.setCells"
+          },
+          "sheetId": {
+            "type": "string",
+            "help": "the sheet"
+          },
+          "stale": {
+            "type": "boolean",
+            "help": "the plan changed since the datasheet was created"
+          },
+          "filled": {
+            "type": "number",
+            "help": "filled response cells"
+          },
+          "total": {
+            "type": "number",
+            "help": "response cells"
+          }
+        }
       },
-      "projectPhases": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "evaluation": {
+        "type": "DoeEvaluation|null",
+        "help": "evaluation of the generated design, null without",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "DoeEvaluation",
+        "keys": {
+          "efficiency": {
+            "type": "object|null",
+            "help": "`{ dEfficiency, aEfficiency, gEfficiency, conditionNumber, maxLeverage }`, efficiencies in percent"
+          },
+          "vif": {
+            "type": "object[]",
+            "help": "`{ term, vif }` per model term"
+          },
+          "alias": {
+            "type": "object|null",
+            "help": "`{ generators, aliases: [{ term, aliasedWith }] }`, null without aliasing"
+          },
+          "power": {
+            "type": "object[]",
+            "help": "`{ effectSize, power, dfError }` per effect size, power null without error degrees of freedom"
+          }
+        }
       },
-      "activePhaseIdx": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+      "evop": {
+        "type": "DoeEvop|null",
+        "help": "the EVOP project, null outside project mode",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "DoeEvop",
+        "keys": {
+          "projectMode": {
+            "type": "boolean",
+            "help": "always true; evop is null outside project mode"
+          },
+          "projectName": {
+            "type": "string",
+            "help": "the project name"
+          },
+          "activePhaseIdx": {
+            "type": "number",
+            "help": "the phase shown, 0 = phase 1"
+          },
+          "phases": {
+            "type": "DoePhase[]",
+            "help": "all phases in order",
+            "keysOf": "DoePhase",
+            "keys": {
+              "cycleNumber": {
+                "type": "number",
+                "help": "phase number, from 1"
+              },
+              "doeName": {
+                "type": "string",
+                "help": "the phase name"
+              },
+              "decision": {
+                "type": "string|null",
+                "help": "'recenter', 'repeat', 'stop' or null while open"
+              },
+              "completedAt": {
+                "type": "string|null",
+                "help": "ISO time of the decision, null while open"
+              },
+              "yValues": {
+                "type": "Array<number|null>|null",
+                "help": "first response per run at closing, null without"
+              }
+            }
+          },
+          "summary": {
+            "type": "object|null",
+            "help": "cumulative EVOP effects, null before the first closed phase with values; the errorLimit of an effect is Infinity (not null) without a variance estimate"
+          }
+        }
       }
     }
   },
@@ -7112,138 +7742,549 @@ export const AGENT_REGISTRY = {
     }
   },
   "ishikawa": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unmarked_method:tabClass",
-      "unmarked_method:setTab",
-      "unmarked_method:onRouteChanged",
-      "unmarked_method:renderTabCharts",
-      "unmarked_method:glyphNdash",
-      "unmarked_method:glyphMinus",
-      "unmarked_method:glyphChanged",
-      "unmarked_method:toggleRowTitle",
-      "unmarked_method:glyphDupe",
-      "unmarked_method:catColor",
-      "unmarked_method:catLabel",
-      "unmarked_method:ini",
-      "unmarked_method:catCount",
-      "unmarked_method:catBarPct",
-      "unmarked_method:galleryModifier",
-      "unmarked_method:galleryLabel",
-      "unmarked_method:galleryHint",
-      "unmarked_method:formatImgSize",
-      "unmarked_method:uploadImages",
-      "unmarked_method:openImage",
-      "unmarked_method:deleteImage",
-      "unmarked_method:addExpert",
-      "unmarked_method:removeExpert",
-      "unmarked_method:expertEditKey",
-      "unmarked_method:commitExpertRename",
-      "unmarked_method:isCollapsed",
-      "unmarked_method:isHidden",
-      "unmarked_method:diff",
-      "unmarked_method:visibleRows",
-      "unmarked_method:rowClass",
-      "unmarked_method:emptyColspan",
-      "unmarked_method:emptyMessage",
-      "unmarked_method:isNameDup",
-      "unmarked_method:addRow",
-      "unmarked_method:addSub",
-      "unmarked_method:dupeRow",
-      "unmarked_method:deleteRow",
-      "unmarked_method:toggleRow",
-      "unmarked_method:expandAll",
-      "unmarked_method:collapseAll",
-      "unmarked_method:setFilter",
-      "unmarked_method:ratingVal",
-      "unmarked_method:ratingStyle",
-      "unmarked_method:ratingKeydown",
-      "unmarked_method:ratingChanged",
-      "unmarked_method:scoreCls",
-      "unmarked_method:scoreBarStyle",
-      "unmarked_method:deltaCls",
-      "unmarked_method:deltaText",
-      "unmarked_method:statusCss",
-      "unmarked_method:linkedExpCount",
-      "unmarked_method:linkExpTitle",
-      "unmarked_method:summaryBreakdown",
-      "unmarked_method:topScore",
-      "unmarked_method:confirmedCount",
-      "unmarked_method:snapDate",
-      "unmarked_method:snapBadge",
-      "unmarked_method:compareLabel",
-      "unmarked_method:saveSnapshot",
-      "unmarked_method:deleteSnapshot",
-      "unmarked_method:snapClick",
-      "unmarked_method:loadSnapshot",
-      "unmarked_method:closeDiff",
-      "unmarked_method:toggleTrend",
-      "unmarked_method:closeTrend",
-      "unmarked_method:openCatRename",
-      "unmarked_method:addExperiment",
-      "unmarked_method:deleteExperiment",
-      "unmarked_method:expLinkText",
-      "unmarked_method:expDatesChanged",
-      "unmarked_method:expStatusChanged",
-      "unmarked_method:expCostChanged",
-      "unmarked_method:addFact",
-      "unmarked_method:deleteFact",
-      "unmarked_method:ownerNames",
-      "unmarked_method:openExpLink",
-      "unmarked_method:openHypLink",
-      "unmarked_method:exportCSV",
-      "unmarked_method:renderPareto",
-      "unmarked_method:renderTrend",
-      "unmarked_method:renderGantt",
-      "unmarked_method:renderCostChart",
-      "unresolvable_tojson",
-      "unreachable_write:problem"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "problem.setProblem": {
+        "params": [
+          {
+            "name": "text",
+            "type": "string",
+            "optional": false,
+            "help": "the statement; \"\" clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set the problem statement every cause refers to."
+      },
+      "causes.addExpert": {
+        "params": [
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "the name; must differ from the others, case-insensitive"
+          }
+        ],
+        "returns": "number",
+        "help": "Add a member to the expert team. Every member rates every cause 0..9."
+      },
+      "causes.renameExpert": {
+        "params": [
+          {
+            "name": "expertId",
+            "type": "number",
+            "optional": false,
+            "help": "the expert"
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "the new name; must differ from the others"
+          }
+        ],
+        "returns": "void",
+        "help": "Rename a member of the expert team; their ratings stay."
+      },
+      "causes.removeExpert": {
+        "params": [
+          {
+            "name": "expertId",
+            "type": "number",
+            "optional": false,
+            "help": "the expert"
+          }
+        ],
+        "returns": "void",
+        "help": "Remove a member from the expert team, with their ratings."
+      },
+      "causes.addRow": {
+        "params": [],
+        "returns": "number",
+        "help": "Add a main cause at the end of the tree."
+      },
+      "causes.addSubRow": {
+        "params": [
+          {
+            "name": "parentId",
+            "type": "number",
+            "optional": false,
+            "help": "the cause above it"
+          }
+        ],
+        "returns": "number",
+        "help": "Add a sub-cause under a cause; it inherits the category."
+      },
+      "causes.setRowField": {
+        "params": [
+          {
+            "name": "rowId",
+            "type": "number",
+            "optional": false,
+            "help": "the cause"
+          },
+          {
+            "name": "key",
+            "type": "'name'|'category'|'description'|'status'",
+            "optional": false,
+            "help": "which field"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "the new value"
+          }
+        ],
+        "returns": "void",
+        "help": "Set one field of a cause. Only main causes carry a category.",
+        "keysOf": "RowFields",
+        "keys": {
+          "name": {
+            "type": "string",
+            "help": "short name of the cause"
+          },
+          "category": {
+            "type": "''|'man'|'machine'|'environment'|'material'|'measurement'|'method'",
+            "help": "6M category of a main cause, \"\" for none; sub-causes inherit it"
+          },
+          "description": {
+            "type": "string",
+            "help": "what the cause is and why it is suspected"
+          },
+          "status": {
+            "type": "'open'|'testing'|'confirmed'|'rejected'",
+            "help": "how far the check of the cause has got"
+          }
+        }
+      },
+      "causes.deleteRow": {
+        "params": [
+          {
+            "name": "rowId",
+            "type": "number",
+            "optional": false,
+            "help": "the cause"
+          }
+        ],
+        "returns": "void",
+        "help": "Delete a cause and its sub-causes, without asking. Links from experiments go."
+      },
+      "causes.duplicateRow": {
+        "params": [
+          {
+            "name": "rowId",
+            "type": "number",
+            "optional": false,
+            "help": "the cause"
+          }
+        ],
+        "returns": "void",
+        "help": "Copy a cause with its sub-causes and ratings, right after it."
+      },
+      "causes.moveRowBefore": {
+        "params": [
+          {
+            "name": "rowId",
+            "type": "number",
+            "optional": false,
+            "help": "the cause to move"
+          },
+          {
+            "name": "targetRowId",
+            "type": "number",
+            "optional": false,
+            "help": "the cause it goes before"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Move a cause with its sub-causes before another; it takes that cause's parent."
+      },
+      "causes.setFilter": {
+        "params": [
+          {
+            "name": "category",
+            "type": "'all'|'man'|'machine'|'environment'|'material'|'measurement'|'method'",
+            "optional": false,
+            "help": "the filter"
+          }
+        ],
+        "returns": "void",
+        "help": "Show only the causes of one category, or all."
+      },
+      "causes.setRating": {
+        "params": [
+          {
+            "name": "rowId",
+            "type": "number",
+            "optional": false,
+            "help": "the cause"
+          },
+          {
+            "name": "expertId",
+            "type": "number",
+            "optional": false,
+            "help": "the expert"
+          },
+          {
+            "name": "value",
+            "type": "number|null",
+            "optional": false,
+            "help": "a whole number 0..9; null clears the rating"
+          }
+        ],
+        "returns": "void",
+        "help": "Rate a cause by one expert, 0 (unlikely) to 9 (very likely)."
+      },
+      "causes.setCategoryLabels": {
+        "params": [
+          {
+            "name": "labels",
+            "type": "Object<string, string>",
+            "optional": false,
+            "help": "new name per category key (man, machine, environment, material, measurement, method); \"\" restores the default name"
+          }
+        ],
+        "returns": "void",
+        "help": "Give the six categories own names. Categories not named keep theirs."
+      },
+      "causes.exportCSV": {
+        "params": [],
+        "returns": "string",
+        "help": "Download problem statement, cause tree with ratings and facts as CSV."
+      },
+      "causes.setParetoSource": {
+        "params": [
+          {
+            "name": "snapshotId",
+            "type": "?number",
+            "optional": false,
+            "help": "a snapshot; null shows the current state"
+          }
+        ],
+        "returns": "void",
+        "help": "Show the current ratings or those of a snapshot in the Pareto chart."
+      },
+      "snapshots.saveSnapshot": {
+        "params": [
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "the name; \"\" gives \"Snapshot <today>\""
+          }
+        ],
+        "returns": "number",
+        "help": "Save problem statement, experts and cause tree as a snapshot (newest first)."
+      },
+      "snapshots.loadSnapshot": {
+        "params": [
+          {
+            "name": "snapshotId",
+            "type": "number",
+            "optional": false,
+            "help": "the snapshot"
+          }
+        ],
+        "returns": "void",
+        "help": "Replace problem statement, experts and cause tree by a snapshot, without asking."
+      },
+      "snapshots.deleteSnapshot": {
+        "params": [
+          {
+            "name": "snapshotId",
+            "type": "number",
+            "optional": false,
+            "help": "the snapshot"
+          }
+        ],
+        "returns": "void",
+        "help": "Delete a snapshot, without asking. A comparison with it ends."
+      },
+      "snapshots.compareSnapshot": {
+        "params": [
+          {
+            "name": "snapshotId",
+            "type": "number",
+            "optional": false,
+            "help": "the snapshot"
+          }
+        ],
+        "returns": "{added: string[], removed: string[], changed: Array<{stableId: string, oldScore: number, newScore: number, delta: number}>}",
+        "help": "Compare the cause tree with a snapshot; the tree marks the differences until the comparison ends."
+      },
+      "snapshots.closeCompare": {
+        "params": [],
+        "returns": "void",
+        "help": "End the comparison with a snapshot."
+      },
+      "experiments.addExperiment": {
+        "params": [],
+        "returns": "number",
+        "help": "Add an empty experiment (status planned) at the end."
+      },
+      "experiments.setExperimentField": {
+        "params": [
+          {
+            "name": "experimentId",
+            "type": "number",
+            "optional": false,
+            "help": "the experiment"
+          },
+          {
+            "name": "key",
+            "type": "'title'|'description'|'responsible'|'status'|'startDate'|'endDate'|'costMoney'|'costHours'",
+            "optional": false,
+            "help": "which field"
+          },
+          {
+            "name": "value",
+            "type": "string|number|null",
+            "optional": false,
+            "help": "the new value, as described per field"
+          }
+        ],
+        "returns": "void",
+        "help": "Set one field of an experiment.",
+        "keysOf": "ExperimentFields",
+        "keys": {
+          "title": {
+            "type": "string",
+            "help": "short title of the experiment"
+          },
+          "description": {
+            "type": "string",
+            "help": "what is tried and how the result is measured"
+          },
+          "responsible": {
+            "type": "string",
+            "help": "who runs the experiment"
+          },
+          "status": {
+            "type": "'planned'|'running'|'done'|'cancelled'",
+            "help": "where the experiment stands"
+          },
+          "startDate": {
+            "type": "string",
+            "help": "first day as YYYY-MM-DD, \"\" for none"
+          },
+          "endDate": {
+            "type": "string",
+            "help": "last day as YYYY-MM-DD, \"\" for none"
+          },
+          "costMoney": {
+            "type": "number|null",
+            "help": "money spent in euros, null for none"
+          },
+          "costHours": {
+            "type": "number|null",
+            "help": "effort in hours, null for none"
+          }
+        }
+      },
+      "experiments.deleteExperiment": {
+        "params": [
+          {
+            "name": "experimentId",
+            "type": "number",
+            "optional": false,
+            "help": "the experiment"
+          }
+        ],
+        "returns": "void",
+        "help": "Delete an experiment, without asking."
+      },
+      "experiments.moveExperimentBefore": {
+        "params": [
+          {
+            "name": "experimentId",
+            "type": "number",
+            "optional": false,
+            "help": "the experiment to move"
+          },
+          {
+            "name": "targetExperimentId",
+            "type": "number",
+            "optional": false,
+            "help": "the experiment it goes before"
+          }
+        ],
+        "returns": "void",
+        "help": "Move an experiment directly before another one."
+      },
+      "experiments.setExperimentHypotheses": {
+        "params": [
+          {
+            "name": "experimentId",
+            "type": "number",
+            "optional": false,
+            "help": "the experiment"
+          },
+          {
+            "name": "hypothesisIds",
+            "type": "string[]",
+            "optional": false,
+            "help": "stableId of each cause (rows[].stableId, e.g. H-001); [] unlinks all"
+          }
+        ],
+        "returns": "void",
+        "help": "Set which causes an experiment checks."
+      },
+      "experiments.addFact": {
+        "params": [],
+        "returns": "number",
+        "help": "Add an empty fact dated today, at the end."
+      },
+      "experiments.setFactField": {
+        "params": [
+          {
+            "name": "factId",
+            "type": "number",
+            "optional": false,
+            "help": "the fact"
+          },
+          {
+            "name": "key",
+            "type": "'name'|'description'|'date'|'owner'",
+            "optional": false,
+            "help": "which field"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "the new text; for date YYYY-MM-DD or \"\""
+          }
+        ],
+        "returns": "void",
+        "help": "Set one field of a fact.",
+        "keysOf": "FactFields",
+        "keys": {
+          "name": {
+            "type": "string",
+            "help": "what was observed"
+          },
+          "description": {
+            "type": "string",
+            "help": "details and source of the observation"
+          },
+          "date": {
+            "type": "string",
+            "help": "when it was observed, YYYY-MM-DD, \"\" for none"
+          },
+          "owner": {
+            "type": "string",
+            "help": "who reported it"
+          }
+        }
+      },
+      "experiments.deleteFact": {
+        "params": [
+          {
+            "name": "factId",
+            "type": "number",
+            "optional": false,
+            "help": "the fact"
+          }
+        ],
+        "returns": "void",
+        "help": "Delete a fact, without asking."
+      },
+      "experiments.moveFactBefore": {
+        "params": [
+          {
+            "name": "factId",
+            "type": "number",
+            "optional": false,
+            "help": "the fact to move"
+          },
+          {
+            "name": "targetFactId",
+            "type": "number",
+            "optional": false,
+            "help": "the fact it goes before"
+          }
+        ],
+        "returns": "void",
+        "help": "Move a fact directly before another one."
+      },
+      "setTab": {
+        "params": [
+          {
+            "name": "tab",
+            "type": "'problem'|'facts'|'hypotheses'|'experiments'",
+            "optional": false,
+            "help": "the tab to open"
+          }
+        ],
+        "returns": "void",
+        "help": "Open a tab; the hypotheses and experiments tabs draw their charts."
+      }
+    },
     "fields": {
       "problem": {
-        "type": "any",
-        "help": "",
+        "type": "string",
+        "help": "the problem statement: what deviates, where, by how much",
         "bulk": false
       },
       "experts": {
         "type": "Array<{id:number,name:string,color:string}>",
-        "help": "",
+        "help": "the expert team; every member rates every cause 0..9",
         "bulk": false
       },
       "catLabels": {
         "type": "Object<string,string>",
-        "help": "",
+        "help": "own names of the six categories by key; a missing key shows the default name",
         "bulk": false
       },
       "rows": {
         "type": "Array<object>",
-        "help": "flat cause tree (rows carry parentId)",
-        "bulk": false
+        "help": "flat cause tree: each row has id, stableId (H-001 …), parentId (null for a main cause), name, category, description, status and ratings by expert id",
+        "bulk": true,
+        "bulkKind": "tree"
       },
       "snapshots": {
-        "type": "Array<object>",
-        "help": "",
-        "bulk": false
+        "type": "Array<{id:number,name:string,date:string,data:object}>",
+        "help": "saved states; data holds problem, experts and rows as they were and is omitted on read — snapshots.compareSnapshot gives the difference",
+        "bulk": true,
+        "bulkKind": "table",
+        "omit": [
+          "[].data"
+        ]
       },
       "experiments": {
         "type": "Array<object>",
-        "help": "",
+        "help": "experiments: id, title, description, responsible, status, startDate, endDate, costMoney, costHours, hypothesisIds",
         "bulk": false
       },
       "facts": {
         "type": "Array<object>",
-        "help": "",
+        "help": "facts: id, name, description, date, owner",
         "bulk": false
       },
       "images": {
         "type": "{inScope:Array<object>, outScope:Array<object>}",
-        "help": "",
-        "bulk": false
+        "help": "images per scope, each with id, caption and dataUrl; dataUrl is omitted on read",
+        "bulk": false,
+        "omit": [
+          "inScope[].dataUrl",
+          "outScope[].dataUrl"
+        ]
       }
     }
   },
@@ -14136,56 +15177,420 @@ export const AGENT_REGISTRY = {
     }
   },
   "project-charter": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unmarked_method:problemFocus",
-      "unmarked_method:problemInput",
-      "unmarked_method:problemPaste",
-      "unmarked_method:fmtMouseDown",
-      "unmarked_method:charCountText",
-      "unmarked_method:zegClamped",
-      "unmarked_method:zegColor",
-      "unmarked_method:zegBarStyle",
-      "unmarked_method:isDateInPast",
-      "unmarked_method:autoGrow",
-      "unmarked_method:addGoal",
-      "unmarked_method:goalFieldFocus",
-      "unmarked_method:goalChanged",
-      "unmarked_method:isConfirmingDelete",
-      "unmarked_method:goalDeleteClick",
-      "unmarked_method:orgAddRoot",
-      "unmarked_method:orgLayoutBtn",
-      "unmarked_method:canUndo",
-      "unmarked_method:orgUndo",
-      "unmarked_method:nodeStylePickColor",
-      "unreadable_state_key:orgChart",
-      "dom_detour:dataset.orgId@334"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[] }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Zustand lesen: Problembeschreibung, Ziele, Organigramm, Stil."
+      },
+      "setProblemStatement": {
+        "params": [
+          {
+            "name": "markdown",
+            "type": "string",
+            "optional": false,
+            "help": "die Beschreibung als Markdown (fett, kursiv, Listen), höchstens 10000 Zeichen Klartext"
+          }
+        ],
+        "returns": "void",
+        "help": "Die Problembeschreibung ersetzen."
+      },
+      "addOrgNode": {
+        "params": [
+          {
+            "name": "title",
+            "type": "string",
+            "optional": false,
+            "help": "Bezeichnung der Position, 1 bis 100 Zeichen"
+          },
+          {
+            "name": "desc",
+            "type": "string",
+            "optional": false,
+            "help": "Untertitel, z. B. die Person, höchstens 300 Zeichen; \"\" für keinen"
+          },
+          {
+            "name": "parentId",
+            "type": "string|null",
+            "optional": false,
+            "help": "die id des übergeordneten Knotens aus read().orgChart, oder null für eine Wurzel"
+          }
+        ],
+        "returns": "string",
+        "help": "Eine Position anlegen, als Wurzel oder unter einer bestehenden."
+      },
+      "updateOrgNode": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "die id des Knotens aus read().orgChart"
+          },
+          {
+            "name": "title",
+            "type": "string",
+            "optional": false,
+            "help": "Bezeichnung, 1 bis 100 Zeichen"
+          },
+          {
+            "name": "desc",
+            "type": "string",
+            "optional": false,
+            "help": "Untertitel, höchstens 300 Zeichen; \"\" für keinen"
+          }
+        ],
+        "returns": "void",
+        "help": "Titel und Untertitel einer Position ändern."
+      },
+      "setOrgNodeStyle": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "die id des Knotens aus read().orgChart"
+          },
+          {
+            "name": "key",
+            "type": "'bg'|'borderColor'|'borderStyle'|'borderWidth'",
+            "optional": false,
+            "help": "welcher Stilwert"
+          },
+          {
+            "name": "value",
+            "type": "string|number",
+            "optional": false,
+            "help": "der Wert; Form je Schlüssel siehe `OrgNodeStyle`"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Stilwert einer einzelnen Position setzen.",
+        "keysOf": "OrgNodeStyle",
+        "keys": {
+          "bg": {
+            "type": "string",
+            "help": "background colour, \"\" inherits"
+          },
+          "borderColor": {
+            "type": "string",
+            "help": "border colour, \"\" inherits"
+          },
+          "borderStyle": {
+            "type": "''|'dashed'|'dotted'",
+            "help": "border style, \"\" inherits (drawn solid by default)"
+          },
+          "borderWidth": {
+            "type": "number",
+            "help": "border width 2..8, 0 or 1 inherits"
+          }
+        }
+      },
+      "deleteOrgNode": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "die id des Knotens aus read().orgChart"
+          }
+        ],
+        "returns": "number",
+        "help": "Eine Position samt allen untergeordneten löschen."
+      },
+      "moveOrgNode": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "die id des Knotens aus read().orgChart"
+          },
+          {
+            "name": "parentId",
+            "type": "string|null",
+            "optional": false,
+            "help": "der neue übergeordnete Knoten, oder null für eine Wurzel; nicht der Knoten selbst und keiner seiner untergeordneten"
+          },
+          {
+            "name": "index",
+            "type": "number|null",
+            "optional": false,
+            "help": "Position unter den neuen Geschwistern (0 = zuerst), oder null für das Ende"
+          }
+        ],
+        "returns": "void",
+        "help": "Eine Position umhängen und unter ihren neuen Geschwistern einordnen."
+      },
+      "setOrgStyle": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'nodeBg'|'nodeBorderColor'|'nodeBorderStyle'|'nodeBorderWidth'|'lineColor'|'lineStyle'|'lineWidth'",
+            "optional": false,
+            "help": "welcher Stilwert"
+          },
+          {
+            "name": "value",
+            "type": "string|number",
+            "optional": false,
+            "help": "der Wert; Form je Schlüssel siehe `OrgStyle`"
+          }
+        ],
+        "returns": "void",
+        "help": "Einen Wert des globalen Organigrammstils setzen.",
+        "keysOf": "OrgStyle",
+        "keys": {
+          "nodeBg": {
+            "type": "string",
+            "help": "node background, \"\" = theme"
+          },
+          "nodeBorderColor": {
+            "type": "string",
+            "help": "node border colour, \"\" = theme"
+          },
+          "nodeBorderStyle": {
+            "type": "'solid'|'dashed'|'dotted'",
+            "help": "node border style"
+          },
+          "nodeBorderWidth": {
+            "type": "number",
+            "help": "node border width 1..8"
+          },
+          "lineColor": {
+            "type": "string",
+            "help": "connector colour, \"\" = theme"
+          },
+          "lineStyle": {
+            "type": "'solid'|'dashed'|'dotted'",
+            "help": "connector style"
+          },
+          "lineWidth": {
+            "type": "number",
+            "help": "connector width 1..8"
+          }
+        }
+      },
+      "undo": {
+        "params": [],
+        "returns": "boolean",
+        "help": "Den letzten Schritt zurücknehmen (Problembeschreibung, Ziele, Organigramm). Leere Historie ist eine fachliche Absage, kein Fehler."
+      },
+      "addGoal": {
+        "params": [],
+        "returns": "string",
+        "help": "Ein leeres Ziel ans Ende anhängen."
+      },
+      "setGoalField": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "die id des Ziels aus read().goals"
+          },
+          {
+            "name": "key",
+            "type": "'description'|'targetDate'|'metric'|'targetValue'|'achievementLevel'",
+            "optional": false,
+            "help": "welches Feld"
+          },
+          {
+            "name": "value",
+            "type": "string|number",
+            "optional": false,
+            "help": "der Wert; Form je Schlüssel siehe `GoalFields`"
+          }
+        ],
+        "returns": "void",
+        "help": "Ein Feld eines Ziels setzen.",
+        "keysOf": "GoalFields",
+        "keys": {
+          "description": {
+            "type": "string",
+            "help": "what the goal is"
+          },
+          "targetDate": {
+            "type": "string",
+            "help": "\"\" or YYYY-MM-DD"
+          },
+          "metric": {
+            "type": "string",
+            "help": "how the goal is measured"
+          },
+          "targetValue": {
+            "type": "string",
+            "help": "the value to reach"
+          },
+          "achievementLevel": {
+            "type": "number",
+            "help": "goal achievement 0..100"
+          }
+        }
+      },
+      "deleteGoal": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "die id des Ziels aus read().goals"
+          }
+        ],
+        "returns": "void",
+        "help": "Ein Ziel löschen."
+      },
+      "moveGoal": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "die id des zu verschiebenden Ziels"
+          },
+          {
+            "name": "beforeId",
+            "type": "string|null",
+            "optional": false,
+            "help": "die id des Ziels, vor das es kommt, oder null für das Ende"
+          }
+        ],
+        "returns": "void",
+        "help": "Ein Ziel vor ein anderes schieben oder ans Ende."
+      }
+    },
     "fields": {
       "problemStatement": {
-        "type": "any",
-        "help": "",
-        "bulk": false
+        "type": "string",
+        "help": "the problem statement as Markdown",
+        "bulk": false,
+        "derived": true
       },
       "goals": {
-        "type": "Array<object>",
-        "help": "",
-        "bulk": false
+        "type": "Goal[]",
+        "help": "the goals in display order",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "Goal",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": "goal id"
+          },
+          "description": {
+            "type": "string",
+            "help": "what the goal is"
+          },
+          "targetDate": {
+            "type": "string",
+            "help": "\"\" or YYYY-MM-DD"
+          },
+          "metric": {
+            "type": "string",
+            "help": "how the goal is measured"
+          },
+          "targetValue": {
+            "type": "string",
+            "help": "the value to reach"
+          },
+          "achievementLevel": {
+            "type": "number",
+            "help": "goal achievement 0..100"
+          }
+        }
       },
-      "orgNodes": {
-        "type": "Array<object>",
-        "help": "flat org nodes",
-        "bulk": false
+      "orgChart": {
+        "type": "OrgNode[]",
+        "help": "the org chart, flat; sibling order = array order",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "OrgNode",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": "node id"
+          },
+          "title": {
+            "type": "string",
+            "help": "position or unit"
+          },
+          "desc": {
+            "type": "string",
+            "help": "subtitle, e.g. the person"
+          },
+          "pid": {
+            "type": "string|null",
+            "help": "parent id, null for a root"
+          },
+          "bg": {
+            "type": "string",
+            "help": "own background colour",
+            "optional": true
+          },
+          "borderColor": {
+            "type": "string",
+            "help": "own border colour",
+            "optional": true
+          },
+          "borderStyle": {
+            "type": "string",
+            "help": "own border style",
+            "optional": true
+          },
+          "borderWidth": {
+            "type": "number",
+            "help": "own border width",
+            "optional": true
+          }
+        }
       },
       "orgStyle": {
-        "type": "object",
-        "help": "global org chart style overrides",
-        "bulk": false
+        "type": "OrgStyle",
+        "help": "the global org chart style",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "OrgStyle",
+        "keys": {
+          "nodeBg": {
+            "type": "string",
+            "help": "node background, \"\" = theme"
+          },
+          "nodeBorderColor": {
+            "type": "string",
+            "help": "node border colour, \"\" = theme"
+          },
+          "nodeBorderStyle": {
+            "type": "'solid'|'dashed'|'dotted'",
+            "help": "node border style"
+          },
+          "nodeBorderWidth": {
+            "type": "number",
+            "help": "node border width 1..8"
+          },
+          "lineColor": {
+            "type": "string",
+            "help": "connector colour, \"\" = theme"
+          },
+          "lineStyle": {
+            "type": "'solid'|'dashed'|'dotted'",
+            "help": "connector style"
+          },
+          "lineWidth": {
+            "type": "number",
+            "help": "connector width 1..8"
+          }
+        }
       }
     }
   },
@@ -17167,175 +18572,564 @@ export const AGENT_REGISTRY = {
     }
   },
   "survey-builder": {
-    "tagged": false,
-    "available": false,
+    "tagged": true,
+    "available": true,
     "violations": [],
-    "reported": [
-      "unmarked_method:setHeaderFromEvent@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:addSection@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:updateSectionFromEvent@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:moveSectionUp@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:moveSectionDown@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:deleteSection@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:addQuestionFromEvent@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:moveQuestionUp@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:moveQuestionDown@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:deleteQuestion@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:selectQuestion@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:selectSection@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:selectedQuestion@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:selectedSection@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:hasSelectedQuestion@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:hasSelectedSection@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:hasNoSelection@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:questionClass@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:sectionClass@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:sectionField@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:updateSelectedSectionFromEvent@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:questionField@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:updateQuestionFromEvent@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:isSelectedType@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:changeTypeFromEvent@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:canBeRequired@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:flags@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:flagLabel@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:hasFlag@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:toggleFlag@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:itemKind@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:hasItems@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:items@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:itemsTitle@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:isMulti@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:itemGroup@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:addItem@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:updateItemFromEvent@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:moveItemUp@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:moveItemDown@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:deleteItem@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:condNodeId@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:hasCondNode@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:condSources@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:hasCondSources@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:addCondition@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:setCondSource@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:condOptions@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:condOptionChecked@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:toggleCondOption@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:removeCondition@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:sourceLabel@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:optionText@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:warnings@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:hasWarnings@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:schedulePreview@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:renderPreview@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:versionLine@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:exportGeneral@js/modules/survey-builder/survey-draft-controller.js",
-      "unmarked_method:hasRecipients@js/modules/survey-builder/survey-recipients-controller.js",
-      "unmarked_method:addRecipient@js/modules/survey-builder/survey-recipients-controller.js",
-      "unmarked_method:updateRecipientFromEvent@js/modules/survey-builder/survey-recipients-controller.js",
-      "unmarked_method:recipientName@js/modules/survey-builder/survey-recipients-controller.js",
-      "unmarked_method:deleteRecipient@js/modules/survey-builder/survey-recipients-controller.js",
-      "unmarked_method:recipientStatusLabel@js/modules/survey-builder/survey-recipients-controller.js",
-      "unmarked_method:isOutdated@js/modules/survey-builder/survey-recipients-controller.js",
-      "unmarked_method:outdatedHint@js/modules/survey-builder/survey-recipients-controller.js",
-      "unmarked_method:sentLabel@js/modules/survey-builder/survey-recipients-controller.js",
-      "unmarked_method:countsLine@js/modules/survey-builder/survey-recipients-controller.js",
-      "unmarked_method:exportForRecipient@js/modules/survey-builder/survey-recipients-controller.js",
-      "unmarked_method:openImport@js/modules/survey-builder/survey-import-controller.js",
-      "unmarked_method:importFromEvent@js/modules/survey-builder/survey-import-controller.js",
-      "unmarked_method:onDragOver@js/modules/survey-builder/survey-import-controller.js",
-      "unmarked_method:onDrop@js/modules/survey-builder/survey-import-controller.js",
-      "unmarked_method:importFiles@js/modules/survey-builder/survey-import-controller.js",
-      "unmarked_method:hasImportLog@js/modules/survey-builder/survey-import-controller.js",
-      "unmarked_method:importStatusLabel@js/modules/survey-builder/survey-import-controller.js",
-      "unmarked_method:importStatusClass@js/modules/survey-builder/survey-import-controller.js",
-      "unmarked_method:noteLine@js/modules/survey-builder/survey-import-controller.js",
-      "unmarked_method:hasResponses@js/modules/survey-builder/survey-import-controller.js",
-      "unmarked_method:responseRows@js/modules/survey-builder/survey-import-controller.js",
-      "unmarked_method:toggleResponse@js/modules/survey-builder/survey-import-controller.js",
-      "unmarked_method:isResponseOpen@js/modules/survey-builder/survey-import-controller.js",
-      "unmarked_method:responseDetails@js/modules/survey-builder/survey-import-controller.js",
-      "unmarked_method:catLabel@js/modules/survey-builder/survey-import-controller.js",
-      "unmarked_method:deleteResponse@js/modules/survey-builder/survey-import-controller.js",
-      "unmarked_method:filterOptions@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:filterValue@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:isFilterValue@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:setFilterFromEvent@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:filtered@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:nLine@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:blocks@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:isType@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:isChoice@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:chartKey@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:blockN@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:hasImportance@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:hasOther@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:otherShare@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:hasOtherTexts@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:distLabel@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:rateLine@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:hasWithoutRecipient@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:withoutRecipientLine@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:hasRateGroups@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:rateGroups@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:hasRanking@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:rankingRows@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:hasMoreRanking@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:toggleRanking@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:rankingToggleLabel@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:hasKanoOverview@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:kanoOverviewRows@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:freeTextLine@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:groupByOptions@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:isGroupBy@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:setGroupByFromEvent@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:hasComparison@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:groupsTitle@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:groupHeads@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:comparisonParts@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:cellClass@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:rowClass@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:canShowNames@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:isReportWithNames@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:setReportWithNamesFromEvent@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:exportReport@js/modules/survey-builder/survey-results-controller.js",
-      "unmarked_method:textAnswers@js/modules/survey-builder/survey-handover-controller.js",
-      "unmarked_method:otherAnswers@js/modules/survey-builder/survey-handover-controller.js",
-      "unmarked_method:hasTextAnswers@js/modules/survey-builder/survey-handover-controller.js",
-      "unmarked_method:hasName@js/modules/survey-builder/survey-handover-controller.js",
-      "unmarked_method:isVocSelected@js/modules/survey-builder/survey-handover-controller.js",
-      "unmarked_method:isVocTaken@js/modules/survey-builder/survey-handover-controller.js",
-      "unmarked_method:toggleVoc@js/modules/survey-builder/survey-handover-controller.js",
-      "unmarked_method:hasVocSelection@js/modules/survey-builder/survey-handover-controller.js",
-      "unmarked_method:takeToVocTree@js/modules/survey-builder/survey-handover-controller.js",
-      "unmarked_method:kanoTargetOptions@js/modules/survey-builder/survey-handover-controller.js",
-      "unmarked_method:kanoTargetValue@js/modules/survey-builder/survey-handover-controller.js",
-      "unmarked_method:isKanoTarget@js/modules/survey-builder/survey-handover-controller.js",
-      "unmarked_method:setKanoTargetFromEvent@js/modules/survey-builder/survey-handover-controller.js",
-      "unmarked_method:handOverToKano@js/modules/survey-builder/survey-handover-controller.js",
-      "unmarked_method:toWorksheet@js/modules/survey-builder/survey-handover-controller.js",
-      "unmarked_method:destroyCharts@js/modules/survey-builder/survey-charts-controller.js",
-      "unmarked_method:scheduleCharts@js/modules/survey-builder/survey-charts-controller.js",
-      "unmarked_method:questionChartJobs@js/modules/survey-builder/survey-charts-controller.js",
-      "unmarked_method:chartJobs@js/modules/survey-builder/survey-charts-controller.js",
-      "unmarked_method:summaryChartJobs@js/modules/survey-builder/survey-charts-controller.js",
-      "unmarked_method:groupChartJobs@js/modules/survey-builder/survey-charts-controller.js",
-      "unmarked_method:mountCharts@js/modules/survey-builder/survey-charts-controller.js",
-      "unmarked_method:init",
-      "unmarked_method:destroy",
-      "unmarked_method:isTab",
-      "unmarked_method:tabClass",
-      "unmarked_method:setTab",
-      "unmarked_method:typeLabel",
-      "unmarked_method:questionLabel",
-      "unmarked_method:sectionPlaceholder",
-      "unmarked_method:hasCondition",
-      "unmarked_method:reportRemoved",
-      "unmarked_method:formatDateTime",
-      "unmarked_method:fmtPct",
-      "unmarked_method:fmtNum"
-    ],
-    "actions": {},
+    "reported": [],
+    "actions": {
+      "draft.setHeader": {
+        "params": [
+          {
+            "name": "key",
+            "type": "'title'|'intro'|'contact'|'lang'|'anonymous'",
+            "optional": false,
+            "help": "which header field"
+          },
+          {
+            "name": "value",
+            "type": "string|boolean",
+            "optional": false,
+            "help": "the new value; range per key see `SurveyHeader`"
+          }
+        ],
+        "returns": "void",
+        "help": "Set one header field of the questionnaire.",
+        "keysOf": "SurveyHeader",
+        "keys": {
+          "title": {
+            "type": "string",
+            "help": "title above the questionnaire"
+          },
+          "intro": {
+            "type": "string",
+            "help": "introduction below the title"
+          },
+          "contact": {
+            "type": "string",
+            "help": "whom respondents ask"
+          },
+          "lang": {
+            "type": "'de'|'en'",
+            "help": "language of the exported file"
+          },
+          "anonymous": {
+            "type": "boolean",
+            "help": "answers carry no recipient"
+          }
+        }
+      },
+      "draft.addSection": {
+        "params": [],
+        "returns": "string",
+        "help": "Append an empty section and select it."
+      },
+      "draft.setSectionField": {
+        "params": [
+          {
+            "name": "sectionId",
+            "type": "string",
+            "optional": false,
+            "help": "the section"
+          },
+          {
+            "name": "key",
+            "type": "'title'|'hint'",
+            "optional": false,
+            "help": "which text"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "the new text, \"\" clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set the title or the hint of a section.",
+        "keysOf": "SectionFields",
+        "keys": {
+          "title": {
+            "type": "string",
+            "help": "heading of the section"
+          },
+          "hint": {
+            "type": "string",
+            "help": "explanation below the heading"
+          }
+        }
+      },
+      "draft.moveSection": {
+        "params": [
+          {
+            "name": "sectionId",
+            "type": "string",
+            "optional": false,
+            "help": "the section"
+          },
+          {
+            "name": "direction",
+            "type": "'up'|'down'",
+            "optional": false,
+            "help": "where to"
+          }
+        ],
+        "returns": "number",
+        "help": "Move a section one place up or down. Conditions that would then point at a later question are removed."
+      },
+      "draft.deleteSection": {
+        "params": [
+          {
+            "name": "sectionId",
+            "type": "string",
+            "optional": false,
+            "help": "the section"
+          }
+        ],
+        "returns": "number",
+        "help": "Delete a section with its questions, without asking. Conditions on its questions are removed."
+      },
+      "draft.addQuestion": {
+        "params": [
+          {
+            "name": "sectionId",
+            "type": "string",
+            "optional": false,
+            "help": "the section"
+          },
+          {
+            "name": "type",
+            "type": "'single'|'multi'|'rating'|'kano'|'text'|'info'",
+            "optional": false,
+            "help": "the question type"
+          }
+        ],
+        "returns": "string",
+        "help": "Append a question of a type to a section and select it."
+      },
+      "draft.moveQuestion": {
+        "params": [
+          {
+            "name": "questionId",
+            "type": "string",
+            "optional": false,
+            "help": "the question"
+          },
+          {
+            "name": "direction",
+            "type": "'up'|'down'",
+            "optional": false,
+            "help": "where to"
+          }
+        ],
+        "returns": "number",
+        "help": "Move a question one place up or down; at a section boundary it moves into the neighbouring section. Conditions that would then point at a later question are removed."
+      },
+      "draft.deleteQuestion": {
+        "params": [
+          {
+            "name": "questionId",
+            "type": "string",
+            "optional": false,
+            "help": "the question"
+          }
+        ],
+        "returns": "number",
+        "help": "Delete a question, without asking — also when imported responses answered it. Conditions that pointed at it are removed."
+      },
+      "draft.setQuestionField": {
+        "params": [
+          {
+            "name": "questionId",
+            "type": "string",
+            "optional": false,
+            "help": "the question"
+          },
+          {
+            "name": "key",
+            "type": "'text'|'hint'|'required'|'other'|'noAnswer'|'importance'|'multiline'",
+            "optional": false,
+            "help": "which field"
+          },
+          {
+            "name": "value",
+            "type": "string|boolean",
+            "optional": false,
+            "help": "text for text and hint, true or false for the flags"
+          }
+        ],
+        "returns": "void",
+        "help": "Set a text or a flag of a question. Which flags a question has depends on its type, see `QuestionFields`.",
+        "keysOf": "QuestionFields",
+        "keys": {
+          "text": {
+            "type": "string",
+            "help": "the question"
+          },
+          "hint": {
+            "type": "string",
+            "help": "explanation below the question"
+          },
+          "required": {
+            "type": "boolean",
+            "help": "must be answered (not for info)"
+          },
+          "other": {
+            "type": "boolean",
+            "help": "offers a free \"other\" answer (single, multi)"
+          },
+          "noAnswer": {
+            "type": "boolean",
+            "help": "offers \"no answer\" per row (rating)"
+          },
+          "importance": {
+            "type": "boolean",
+            "help": "asks for an importance 1–9 per row (kano)"
+          },
+          "multiline": {
+            "type": "boolean",
+            "help": "multi-line answer field (text)"
+          }
+        }
+      },
+      "draft.changeQuestionType": {
+        "params": [
+          {
+            "name": "questionId",
+            "type": "string",
+            "optional": false,
+            "help": "the question"
+          },
+          {
+            "name": "type",
+            "type": "'single'|'multi'|'rating'|'kano'|'text'|'info'",
+            "optional": false,
+            "help": "the new type"
+          }
+        ],
+        "returns": "number",
+        "help": "Change the type of a question, keeping text, hint, required and its conditions; options, rows and flags start empty. Conditions on its options are removed."
+      },
+      "draft.addItem": {
+        "params": [
+          {
+            "name": "questionId",
+            "type": "string",
+            "optional": false,
+            "help": "the question"
+          }
+        ],
+        "returns": "string",
+        "help": "Append an empty option (single, multi) or row (rating, kano) to a question."
+      },
+      "draft.setItemField": {
+        "params": [
+          {
+            "name": "questionId",
+            "type": "string",
+            "optional": false,
+            "help": "the question"
+          },
+          {
+            "name": "itemId",
+            "type": "string",
+            "optional": false,
+            "help": "the option or row"
+          },
+          {
+            "name": "key",
+            "type": "'text'|'group'",
+            "optional": false,
+            "help": "which field"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "the new text, \"\" clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set the text of an option or row, or the display group of an option of a multiple choice question.",
+        "keysOf": "ItemFields",
+        "keys": {
+          "text": {
+            "type": "string",
+            "help": "the text of the option or row"
+          },
+          "group": {
+            "type": "string",
+            "help": "display group of an option (multi only)"
+          }
+        }
+      },
+      "draft.moveItem": {
+        "params": [
+          {
+            "name": "questionId",
+            "type": "string",
+            "optional": false,
+            "help": "the question"
+          },
+          {
+            "name": "itemId",
+            "type": "string",
+            "optional": false,
+            "help": "the option or row"
+          },
+          {
+            "name": "direction",
+            "type": "'up'|'down'",
+            "optional": false,
+            "help": "where to"
+          }
+        ],
+        "returns": "void",
+        "help": "Move an option or row one place up or down within its question."
+      },
+      "draft.deleteItem": {
+        "params": [
+          {
+            "name": "questionId",
+            "type": "string",
+            "optional": false,
+            "help": "the question"
+          },
+          {
+            "name": "itemId",
+            "type": "string",
+            "optional": false,
+            "help": "the option or row"
+          }
+        ],
+        "returns": "number",
+        "help": "Delete an option or row, without asking — also when imported responses chose it. Conditions on a deleted option are removed."
+      },
+      "draft.setConditions": {
+        "params": [
+          {
+            "name": "nodeId",
+            "type": "string",
+            "optional": false,
+            "help": "the section or question"
+          },
+          {
+            "name": "conditions",
+            "type": "Array<{questionId: string, optionIds: string[]}>",
+            "optional": false,
+            "help": "per condition an earlier single or multiple choice question and at least one of its options"
+          }
+        ],
+        "returns": "number",
+        "help": "Replace the conditions of a section or question. It is shown when at least one condition holds; a condition holds when one of its options was chosen. An empty list removes all conditions."
+      },
+      "recipients.addRecipient": {
+        "params": [],
+        "returns": "string",
+        "help": "Append an empty recipient."
+      },
+      "recipients.setRecipientField": {
+        "params": [
+          {
+            "name": "recipientId",
+            "type": "string",
+            "optional": false,
+            "help": "the recipient"
+          },
+          {
+            "name": "key",
+            "type": "'name'|'organisation'|'group'|'email'|'note'",
+            "optional": false,
+            "help": "which field"
+          },
+          {
+            "name": "value",
+            "type": "string",
+            "optional": false,
+            "help": "the new text, \"\" clears it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set one field of a recipient.",
+        "keysOf": "RecipientFields",
+        "keys": {
+          "name": {
+            "type": "string",
+            "help": "name of the person or company"
+          },
+          "organisation": {
+            "type": "string",
+            "help": "organisation or department"
+          },
+          "group": {
+            "type": "string",
+            "help": "group for the response rate per group"
+          },
+          "email": {
+            "type": "string",
+            "help": "e-mail address, for sending the file yourself"
+          },
+          "note": {
+            "type": "string",
+            "help": "free note"
+          }
+        }
+      },
+      "recipients.deleteRecipient": {
+        "params": [
+          {
+            "name": "recipientId",
+            "type": "string",
+            "optional": false,
+            "help": "the recipient"
+          }
+        ],
+        "returns": "void",
+        "help": "Delete a recipient, without asking. Their responses stay, without recipient."
+      },
+      "responses.importResponse": {
+        "params": [
+          {
+            "name": "json",
+            "type": "string",
+            "optional": false,
+            "help": "the content of the answer file"
+          },
+          {
+            "name": "fileName",
+            "type": "string",
+            "optional": false,
+            "help": "the name shown in the import log"
+          }
+        ],
+        "returns": "'ok'|'older'|'duplicate'|'foreign'|'invalid'",
+        "help": "Read one answer file as the questionnaire saved it. Files of this questionnaire are taken in, also those of an older version; a file read before, one of another questionnaire, or a broken one is only logged."
+      },
+      "responses.deleteResponse": {
+        "params": [
+          {
+            "name": "responseId",
+            "type": "string",
+            "optional": false,
+            "help": "the response"
+          }
+        ],
+        "returns": "void",
+        "help": "Delete an imported response, without asking."
+      },
+      "results.setFilter": {
+        "params": [
+          {
+            "name": "questionId",
+            "type": "string|null",
+            "optional": false,
+            "help": "the choice question, null for no filter"
+          },
+          {
+            "name": "optionId",
+            "type": "string|null",
+            "optional": false,
+            "help": "one of its options, null for no filter"
+          }
+        ],
+        "returns": "void",
+        "help": "Narrow the evaluation to the responses that chose one option of a single or multiple choice question; null for both shows all responses."
+      },
+      "results.setGroupBy": {
+        "params": [
+          {
+            "name": "questionId",
+            "type": "string|null",
+            "optional": false,
+            "help": "the single choice question, null for no grouping"
+          }
+        ],
+        "returns": "void",
+        "help": "Compare the evaluation across the options of a single choice question; null switches the comparison off."
+      },
+      "results.setReportWithNames": {
+        "params": [
+          {
+            "name": "on",
+            "type": "boolean",
+            "optional": false,
+            "help": "true names them"
+          }
+        ],
+        "returns": "void",
+        "help": "Whether the exported report names the respondents of free texts. Has no effect for an anonymous questionnaire."
+      },
+      "handover.takeToVocTree": {
+        "params": [
+          {
+            "name": "keys",
+            "type": "string[]",
+            "optional": false,
+            "help": "answer keys `<responseId>:<questionId>`, for an \"other\" text `<responseId>:<questionId>:other`"
+          }
+        ],
+        "returns": "number",
+        "help": "Add free-text and \"other\" answers as VoCs to the project's VoC tree; without a tree, one is created in the cycle's tree phase. An answer taken over before is added again."
+      },
+      "handover.setKanoTarget": {
+        "params": [
+          {
+            "name": "questionId",
+            "type": "string",
+            "optional": false,
+            "help": "the Kano question"
+          },
+          {
+            "name": "instanceId",
+            "type": "string|null",
+            "optional": false,
+            "help": "a kano instance of the project, null for a new one"
+          }
+        ],
+        "returns": "void",
+        "help": "Choose the kano instance a Kano question is handed to; null means a new instance at the next hand-over."
+      },
+      "handover.handOverToKano": {
+        "params": [
+          {
+            "name": "questionId",
+            "type": "string",
+            "optional": false,
+            "help": "the Kano question"
+          }
+        ],
+        "returns": "string|null",
+        "help": "Hand a Kano question with all responses (ignoring the filter) to its chosen kano instance, or to a new one in this module's phase. A repeat hand-over replaces only what came from this question."
+      },
+      "handover.toWorksheet": {
+        "params": [],
+        "returns": "string|null",
+        "help": "Put all responses into a new worksheet in this module's phase, one row per response."
+      },
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+          }
+        ],
+        "returns": "object",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+      },
+      "setTab": {
+        "params": [
+          {
+            "name": "tab",
+            "type": "'draft'|'recipients'|'results'",
+            "optional": false,
+            "help": "the tab to open"
+          }
+        ],
+        "returns": "void",
+        "help": "Open a tab. The results tab draws its charts when it opens."
+      }
+    },
     "fields": {
       "survey": {
         "type": "any",
@@ -18212,9 +20006,12 @@ export const AGENT_REGISTRY = {
       },
       "cells": {
         "type": "Array<Array<{ text: string, image: string|null }>>",
-        "help": "die 3×3-Felder, adressiert als cells[zeile][spalte]; `image` ist eine Daten-URL oder null und kann groß sein",
+        "help": "die 3×3-Felder, adressiert als cells[zeile][spalte]; `image` ist null oder, statt der Daten-URL, nur deren Größe",
         "bulk": true,
         "bulkKind": "table",
+        "omit": [
+          "[][].image"
+        ],
         "derived": true
       }
     }
@@ -20489,4 +22286,4 @@ export const AGENT_REGISTRY = {
 };
 
 /** Abdeckung als Zahl: n von m Modulen agentenfähig (Spec §9). */
-export const AGENT_COVERAGE = {"total":77,"available":72};
+export const AGENT_COVERAGE = {"total":77,"available":77};

@@ -1449,6 +1449,146 @@
         "solid": "Solid",
         "dashed": "Dashed",
         "dotted": "Dotted"
+      },
+      "whenToUse": "At the start of a project, to record the problem, measurable goals and the project organisation — the basis every later phase refers to.",
+      "actions": {
+        "read": {
+          "help": "Read the problem statement, goals, org chart and its style."
+        },
+        "setProblemStatement": {
+          "help": "Replace the problem statement: what the problem is, since when, what its impact is, and what is out of scope.",
+          "params": {
+            "markdown": "The statement as Markdown; bold (**…**), italic (*…*) and lists are rendered. At most 10000 characters of plain text."
+          }
+        },
+        "addGoal": {
+          "help": "Add a new, empty project goal at the end of the list."
+        },
+        "setGoalField": {
+          "help": "Set one field of a project goal: description, target date, metric, target value or goal achievement. Returns nothing.",
+          "params": {
+            "id": "The goal id from read().goals.",
+            "key": "Which field: description, targetDate, metric, targetValue or achievementLevel.",
+            "value": "The value: text for description, metric and targetValue; \"\" or YYYY-MM-DD for targetDate; a whole number 0 to 100 for achievementLevel."
+          }
+        },
+        "deleteGoal": {
+          "help": "Delete a project goal without asking; can be undone.",
+          "params": {
+            "id": "The goal id from read().goals."
+          }
+        },
+        "moveGoal": {
+          "help": "Move a project goal in the list, before another one or to the end.",
+          "params": {
+            "id": "The id of the goal to move.",
+            "beforeId": "The id of the goal it goes before, or null for the end."
+          }
+        },
+        "addOrgNode": {
+          "help": "Add a new position to the org chart, at the top level or below an existing position.",
+          "params": {
+            "title": "Name of the position, 1 to 100 characters.",
+            "desc": "Subtitle, for example the person; at most 300 characters, \"\" for none.",
+            "parentId": "The id of the parent position from read().orgChart, or null for the top level."
+          }
+        },
+        "updateOrgNode": {
+          "help": "Change the name and subtitle of a position.",
+          "params": {
+            "id": "The position id from read().orgChart.",
+            "title": "The name of the position, for example project lead or quality assurance.",
+            "desc": "The subtitle below the name, for example the name of the person."
+          }
+        },
+        "setOrgNodeStyle": {
+          "help": "Set one style value of a single position; empty takes over the style of the whole org chart, for the border width also 0 or 1.",
+          "params": {
+            "id": "The position id from read().orgChart.",
+            "key": "Which style value: bg, borderColor, borderStyle or borderWidth.",
+            "value": "The value, form per key see types.OrgNodeStyle."
+          }
+        },
+        "deleteOrgNode": {
+          "help": "Delete a position with all positions below it, without asking; can be undone. Returns the number of deleted positions.",
+          "params": {
+            "id": "The position id from read().orgChart."
+          }
+        },
+        "moveOrgNode": {
+          "help": "Place a position below another one and order it among its new siblings. The positions below it move along.",
+          "params": {
+            "id": "The position id from read().orgChart.",
+            "parentId": "The new parent position, or null for the top level; not the position itself and none below it.",
+            "index": "Place among the new siblings, 0 for first, or null for the end."
+          }
+        },
+        "setOrgStyle": {
+          "help": "Set one style value for the whole org chart: how positions or connector lines look.",
+          "params": {
+            "key": "Which style value, see types.OrgStyle.",
+            "value": "The value, form per key see types.OrgStyle."
+          }
+        },
+        "undo": {
+          "help": "Undo the last step on the problem statement, goals or org chart."
+        }
+      },
+      "fields": {
+        "problemStatement": {
+          "help": "What the problem is, since when, what its impact is, and what is out of scope."
+        },
+        "goals": {
+          "help": "The measurable project goals with target date, metric, target value and goal achievement."
+        },
+        "orgChart": {
+          "help": "The project organisation as a tree of positions; dragging reorders or re-parents."
+        },
+        "orgStyle": {
+          "help": "The style of the whole org chart: background, border and connector lines. Empty colours follow the colour theme."
+        }
+      },
+      "types": {
+        "Goal": {
+          "id": "The goal id.",
+          "description": "What the goal is.",
+          "targetDate": "When it should be reached, \"\" or YYYY-MM-DD.",
+          "metric": "How it is measured.",
+          "targetValue": "The value to reach.",
+          "achievementLevel": "Goal achievement from 0 to 100."
+        },
+        "GoalFields": {
+          "description": "What the goal is, in one sentence.",
+          "targetDate": "When the goal should be reached.",
+          "metric": "The metric the goal is measured by.",
+          "targetValue": "The value of the metric to reach.",
+          "achievementLevel": "Goal achievement: 0 means not started, 100 fully reached."
+        },
+        "OrgNode": {
+          "id": "The position id.",
+          "title": "The name of the position.",
+          "desc": "The subtitle, for example the person.",
+          "pid": "The id of the parent position, null for the top level.",
+          "bg": "Own background colour; absent when the org chart style applies.",
+          "borderColor": "Own border colour; absent when the org chart style applies.",
+          "borderStyle": "Own border style; absent when the org chart style applies.",
+          "borderWidth": "Own border width; absent when the org chart style applies."
+        },
+        "OrgNodeStyle": {
+          "bg": "Background colour of this position; empty takes over the org chart style.",
+          "borderColor": "Border colour of this position; empty takes over the org chart style.",
+          "borderStyle": "Border style of this position: dashed or dotted; empty, shown as solid in the list, takes over the org chart style.",
+          "borderWidth": "Border width of this position from 2 to 8; 0 or 1 takes over the org chart style."
+        },
+        "OrgStyle": {
+          "nodeBg": "Background colour of all positions; \"\" follows the colour theme.",
+          "nodeBorderColor": "Border colour of all positions; \"\" follows the colour theme.",
+          "nodeBorderStyle": "Border style of all positions: solid, dashed or dotted.",
+          "nodeBorderWidth": "Border width of all positions, whole number 1 to 8.",
+          "lineColor": "Colour of the connector lines; \"\" follows the colour theme.",
+          "lineStyle": "Style of the connector lines: solid, dashed or dotted.",
+          "lineWidth": "Width of the connector lines, whole number 1 to 8."
+        }
       }
     },
     "stakeholder-analysis": {
@@ -1990,6 +2130,114 @@
       }
     },
     "survey-builder": {
+      "whenToUse": "When customers or stakeholders are to be surveyed in writing: design the questionnaire, send it as an HTML file per recipient, read in the answer files and evaluate them — without a server, the data stays in the project.",
+      "actions": {
+        "read": { "help": "Read the questionnaire, recipients, imported responses, hand-overs and the state of the interface." },
+        "setTab": { "help": "Open a tab: draft, recipients or results.", "params": { "tab": "draft, recipients or results." } },
+        "draft": {
+          "setHeader": { "help": "Set a field in the header of the questionnaire: title, introduction, contact, language of the file or anonymous.", "params": { "key": "Which header field.", "value": "Text for title, introduction and contact; de or en for the language; true or false for anonymous." } },
+          "addSection": { "help": "Append an empty section to the end of the questionnaire. Questions always sit in a section." },
+          "setSectionField": { "help": "Set the title or the hint of a section.", "params": { "sectionId": "The section.", "key": "Title or hint.", "value": "The new text; empty clears it." } },
+          "moveSection": { "help": "Move a section one place up or down. Conditions that would then point at a later question are removed; the return value counts them.", "params": { "sectionId": "The section.", "direction": "up or down." } },
+          "deleteSection": { "help": "Delete a section with its questions, without asking. Conditions on these questions are removed; the return value counts them.", "params": { "sectionId": "The section." } },
+          "addQuestion": { "help": "Append a question of a type to a section and select it.", "params": { "sectionId": "The section.", "type": "single (single choice), multi (multiple choice), rating (rating 1–5), kano (Kano pair), text (free text) or info (text only)." } },
+          "setQuestionField": { "help": "Set the text, the hint or a switch of a question; which switches exist depends on the type.", "params": { "questionId": "The question.", "key": "Which field.", "value": "Text for text and hint; true or false for the switches." } },
+          "changeQuestionType": { "help": "Change the type of a question. Text, hint, required and conditions stay, options, rows and switches start empty; conditions on its previous options are removed.", "params": { "questionId": "The question.", "type": "The new type, values as for addQuestion." } },
+          "moveQuestion": { "help": "Move a question one place up or down; at a section boundary it moves into the neighbouring section. Conditions that would then point at a later question are removed; the return value counts them.", "params": { "questionId": "The question.", "direction": "up or down." } },
+          "deleteQuestion": { "help": "Delete a question, without asking — also when imported responses answered it. Conditions on it are removed; the return value counts them.", "params": { "questionId": "The question." } },
+          "addItem": { "help": "Append an empty option (single and multiple choice) or row (rating, Kano) to a question.", "params": { "questionId": "The question." } },
+          "setItemField": { "help": "Set the text of an option or row, for multiple choice also the display group of an option.", "params": { "questionId": "The question.", "itemId": "The option or row.", "key": "Text or group.", "value": "The new text; empty clears it." } },
+          "moveItem": { "help": "Move an option or row one place up or down within its question.", "params": { "questionId": "The question.", "itemId": "The option or row.", "direction": "up or down." } },
+          "deleteItem": { "help": "Delete an option or row, without asking. Conditions on a deleted option are removed; the return value counts them.", "params": { "questionId": "The question.", "itemId": "The option or row." } },
+          "setConditions": { "help": "Decides when a section or question appears: as soon as one of the named options was chosen in an earlier single or multiple choice question. Each condition suffices on its own; without a condition it always appears.", "params": { "nodeId": "The section or question.", "conditions": "Per condition { questionId, optionIds }: an earlier single or multiple choice question and at least one of its options; [] removes all conditions." } }
+        },
+        "recipients": {
+          "addRecipient": { "help": "Add an empty recipient. Each recipient gets their own questionnaire file, whose answers identify the recipient." },
+          "setRecipientField": { "help": "Set a field of a recipient: name, organisation, group, e-mail or note.", "params": { "recipientId": "The recipient.", "key": "Which field.", "value": "The new text; empty clears it." } },
+          "deleteRecipient": { "help": "Delete a recipient, without asking. Their responses are kept, without a recipient.", "params": { "recipientId": "The recipient." } }
+        },
+        "responses": {
+          "importResponse": { "help": "Read in an answer file the questionnaire saved on the recipient's side. Files of this questionnaire are taken in, also those of an older version; a file read before, one of another questionnaire or a broken one only shows in the log.", "params": { "json": "The content of the answer file as text.", "fileName": "The name shown in the log." } },
+          "deleteResponse": { "help": "Delete an imported response, without asking; its VoC take-over marks go with it.", "params": { "responseId": "The response." } }
+        },
+        "results": {
+          "setFilter": { "help": "Narrow the evaluation to the responses that chose a given option in a single or multiple choice question. Without a filter all responses count.", "params": { "questionId": "The choice question; null together with optionId null lifts the filter.", "optionId": "One of its options; null lifts the filter." } },
+          "setGroupBy": { "help": "Compare the evaluation across the options of a single choice question, for example by customer group. Groups with few responses are marked.", "params": { "questionId": "The single choice question; null switches the comparison off." } },
+          "setReportWithNames": { "help": "Whether the exported report names who wrote the free texts. No effect for an anonymous questionnaire.", "params": { "on": "true names them, false does not." } }
+        },
+        "handover": {
+          "takeToVocTree": { "help": "Take the ticked free texts and other-answers as voices of the customer into the project's VoC tree; if there is none, one is created. Answers taken over before can be taken over again.", "params": { "keys": "Answer keys <responseId>:<questionId>, for an other-answer with the suffix :other; the ids are in read().responses." } },
+          "setKanoTarget": { "help": "Choose which Kano instance of the project a Kano question is handed to, or a new one.", "params": { "questionId": "The Kano question.", "instanceId": "A Kano instance of the project; null creates a new one at the next hand-over." } },
+          "handOverToKano": { "help": "Hand a Kano question with all responses, without filter, to the chosen Kano instance or to a new one in this phase. A repeat hand-over replaces only what came from this question.", "params": { "questionId": "The Kano question." } },
+          "toWorksheet": { "help": "Create a new worksheet in this phase with all responses, one row per response." }
+        }
+      },
+      "fields": {
+        "survey": { "help": "The questionnaire: header, version, sections with their questions, options, rows and conditions." },
+        "recipients": { "help": "The recipients with name, organisation, group, e-mail and note, plus when and with which version they got their file." },
+        "responses": { "help": "The imported responses: per answer file the version, the recipient if known and not anonymous, the time and the answers per question." },
+        "answeredRecipientIds": { "help": "Which recipients have answered; this gives the status not sent, sent or answered." },
+        "transfers": { "help": "What was handed over: the answers taken into the VoC tree and per Kano question the Kano instance it goes to." },
+        "ui": { "help": "State of the interface: open tab, selected question, filter, grouping and whether the report names respondents." },
+        "dirtyStructure": { "help": "Whether the structure changed since the last export; once the questionnaire was sent, the next export then raises the version." },
+        "exportedOnce": { "help": "Whether the questionnaire was exported at least once." }
+      },
+      "types": {
+        "SurveyHeader": {
+          "title": "The title above the questionnaire.",
+          "intro": "The introduction below the title.",
+          "contact": "Whom respondents ask with questions.",
+          "lang": "The language of the exported file: German or English.",
+          "anonymous": "Anonymous: answers carry no recipient, even when the file was made for a recipient."
+        },
+        "SectionFields": {
+          "title": "The heading of the section.",
+          "hint": "An explanation below the heading."
+        },
+        "QuestionFields": {
+          "text": "The question as respondents read it.",
+          "hint": "An explanation below the question.",
+          "required": "Required: without an answer the questionnaire cannot be completed.",
+          "other": "Also offers a free-text \"Other\" answer.",
+          "noAnswer": "Offers a \"No answer\" choice per row.",
+          "importance": "Also asks for the importance from 1 to 9 per row.",
+          "multiline": "Multi-line answer field instead of a single line."
+        },
+        "ItemFields": {
+          "text": "The text of the option or row.",
+          "group": "The display group of an option in multiple choice; options of the same group stand together."
+        },
+        "RecipientFields": {
+          "name": "Name of the person or company.",
+          "organisation": "Organisation or department.",
+          "group": "The group the response rate is split by.",
+          "email": "E-mail address, to send the file with your own mail program.",
+          "note": "A free note."
+        }
+      },
+      "columns": {
+        "date": "When the response was sent.",
+        "respondent": "Who answered: the recipient, anonymous or without recipient.",
+        "sentAt": "When the file for the recipient was made and with which version of the questionnaire.",
+        "group": "The recipient group.",
+        "sent": "How many recipients got their file.",
+        "answered": "How many of them answered.",
+        "rate": "Response rate: answered divided by sent.",
+        "item": "The rated row.",
+        "n": "How many responses count for the row.",
+        "mean": "The mean rating from 1 to 5.",
+        "top": "Share of responses with 4 or 5.",
+        "median": "The median rating.",
+        "dist": "How often each level from 1 to 5 was chosen.",
+        "na": "How often no answer was chosen.",
+        "category": "The Kano category of the row, determined from the answer pairs.",
+        "better": "Satisfaction coefficient: how much the feature delights when present, from 0 to 1.",
+        "worse": "Dissatisfaction coefficient: how much its absence annoys; the larger the magnitude, the stronger.",
+        "importance": "The mean importance from 1 to 9.",
+        "option": "The answer option.",
+        "count": "How often it was chosen.",
+        "share": "Its share of the responses to the question."
+      },
       "name": "Survey builder",
       "description": "Create VoC questionnaires, send them as HTML, import and evaluate the answers",
       "tabDraft": "Draft",
@@ -4539,6 +4787,256 @@
       "interpPoor": "Cpk < {low}"
     },
     "ishikawa": {
+      "whenToUse": "When possible causes of a problem are to be collected, ordered by 6M and rated by the team, so that the most likely ones get tested with experiments; states can be kept as snapshots and compared. For a single chain of causes by asking why, use 5-Why.",
+      "actions": {
+        "read": {
+          "help": "Read the problem statement, images, expert team, cause tree with ratings, snapshots, experiments and facts. Image data and snapshot contents appear only as their size."
+        },
+        "setTab": {
+          "help": "Open a tab: problem, facts, hypotheses or experiments.",
+          "params": {
+            "tab": "problem, facts, hypotheses or experiments."
+          }
+        },
+        "problem": {
+          "setProblem": {
+            "help": "Set the problem statement: what deviates, where, by how much.",
+            "params": {
+              "text": "The statement; empty clears it."
+            }
+          }
+        },
+        "causes": {
+          "addExpert": {
+            "help": "Add a member to the expert team. Every member rates every cause from 0 to 9.",
+            "params": {
+              "name": "The name; must differ from the others, regardless of case."
+            }
+          },
+          "renameExpert": {
+            "help": "Rename a member of the expert team; their ratings stay.",
+            "params": {
+              "expertId": "The member.",
+              "name": "The new name; must differ from the others."
+            }
+          },
+          "removeExpert": {
+            "help": "Remove a member from the expert team, with their ratings.",
+            "params": {
+              "expertId": "The member."
+            }
+          },
+          "addRow": {
+            "help": "Append a main cause to the end of the cause tree."
+          },
+          "addSubRow": {
+            "help": "Add a sub-cause under a cause; it inherits that cause’s category.",
+            "params": {
+              "parentId": "The cause above it."
+            }
+          },
+          "setRowField": {
+            "help": "Set one field of a cause: name, category, description or status. Only main causes carry a category.",
+            "params": {
+              "rowId": "The cause.",
+              "key": "Which field.",
+              "value": "The new value, as described per field."
+            }
+          },
+          "deleteRow": {
+            "help": "Delete a cause with its sub-causes, without asking. Links from experiments go.",
+            "params": {
+              "rowId": "The cause."
+            }
+          },
+          "duplicateRow": {
+            "help": "Copy a cause with its sub-causes and ratings; the copy follows right after it.",
+            "params": {
+              "rowId": "The cause."
+            }
+          },
+          "moveRowBefore": {
+            "help": "Move a cause with its sub-causes before another; it takes that cause’s parent. If the target lies inside the moved subtree, nothing moves and the result is false.",
+            "params": {
+              "rowId": "The cause to move.",
+              "targetRowId": "The cause it goes before."
+            }
+          },
+          "setRating": {
+            "help": "Set one member’s rating of a cause, from 0 (unlikely) to 9 (very likely). The mean and the Pareto follow.",
+            "params": {
+              "rowId": "The cause.",
+              "expertId": "The member.",
+              "value": "A whole number from 0 to 9; null clears the rating."
+            }
+          },
+          "setCategoryLabels": {
+            "help": "Give the six categories own names, for example 6P instead of 6M. Categories not named keep theirs.",
+            "params": {
+              "labels": "New name per category: man, machine, environment, material, measurement, method. Empty restores the default name; two categories must not share a name."
+            }
+          },
+          "setFilter": {
+            "help": "Show only the causes of one category, or all.",
+            "params": {
+              "category": "all or a category: man, machine, environment, material, measurement, method."
+            }
+          },
+          "setParetoSource": {
+            "help": "Show the current ratings or those of a snapshot in the Pareto.",
+            "params": {
+              "snapshotId": "A snapshot; null shows the current state."
+            }
+          },
+          "exportCSV": {
+            "help": "Download the problem statement, cause tree with ratings and facts as CSV; the result is the same text."
+          }
+        },
+        "snapshots": {
+          "saveSnapshot": {
+            "help": "Keep the current problem statement, expert team and cause tree as a snapshot.",
+            "params": {
+              "name": "The name; empty gives Snapshot with today’s date."
+            }
+          },
+          "loadSnapshot": {
+            "help": "Restore a snapshot, without asking: problem statement, expert team and cause tree are replaced.",
+            "params": {
+              "snapshotId": "The snapshot."
+            }
+          },
+          "deleteSnapshot": {
+            "help": "Delete a snapshot, without asking.",
+            "params": {
+              "snapshotId": "The snapshot."
+            }
+          },
+          "compareSnapshot": {
+            "help": "Compare the current state with a snapshot. The table marks new and changed causes; the result lists new, removed and changed causes with old and new mean.",
+            "params": {
+              "snapshotId": "The snapshot."
+            }
+          },
+          "closeCompare": {
+            "help": "End the comparison with a snapshot."
+          }
+        },
+        "experiments": {
+          "addExperiment": {
+            "help": "Add an experiment that tests causes."
+          },
+          "setExperimentField": {
+            "help": "Set one field of an experiment: title, description, responsible, status, start, end, cost in euros or effort in hours.",
+            "params": {
+              "experimentId": "The experiment.",
+              "key": "Which field.",
+              "value": "The new value, as described per field."
+            }
+          },
+          "deleteExperiment": {
+            "help": "Delete an experiment, without asking.",
+            "params": {
+              "experimentId": "The experiment."
+            }
+          },
+          "moveExperimentBefore": {
+            "help": "Move an experiment before another.",
+            "params": {
+              "experimentId": "The experiment to move.",
+              "targetExperimentId": "The experiment it goes before."
+            }
+          },
+          "setExperimentHypotheses": {
+            "help": "Set which causes an experiment tests.",
+            "params": {
+              "experimentId": "The experiment.",
+              "hypothesisIds": "The identifier of each cause, such as H-001; an empty list unlinks all."
+            }
+          },
+          "addFact": {
+            "help": "Add a fact: an established observation that supports the search for causes."
+          },
+          "setFactField": {
+            "help": "Set one field of a fact: name, description, date or owner.",
+            "params": {
+              "factId": "The fact.",
+              "key": "Which field.",
+              "value": "The new text; the date as YYYY-MM-DD or empty."
+            }
+          },
+          "deleteFact": {
+            "help": "Delete a fact, without asking.",
+            "params": {
+              "factId": "The fact."
+            }
+          },
+          "moveFactBefore": {
+            "help": "Move a fact before another.",
+            "params": {
+              "factId": "The fact to move.",
+              "targetFactId": "The fact it goes before."
+            }
+          }
+        }
+      },
+      "fields": {
+        "problem": {
+          "help": "The problem statement: what deviates, where, by how much."
+        },
+        "images": {
+          "help": "Images that draw the line: what belongs to the problem and what does not, each with a caption. Image data appears only as its size."
+        },
+        "experts": {
+          "help": "The expert team: every member rates every cause from 0 to 9."
+        },
+        "catLabels": {
+          "help": "Own names of the six categories; where one is missing, the default name applies."
+        },
+        "rows": {
+          "help": "The cause tree: main and sub-causes with identifier, category, name, description, status and the ratings by each member of the expert team."
+        },
+        "snapshots": {
+          "help": "Kept states with name and time. Their contents appear only as their size; the comparison shows what changed."
+        },
+        "experiments": {
+          "help": "The experiments with title, description, responsible, status, period, cost and the causes they test."
+        },
+        "facts": {
+          "help": "The facts: observations with name, description, date and who reported them."
+        }
+      },
+      "types": {
+        "RowFields": {
+          "name": "Short name of the cause.",
+          "category": "The 6M category of a main cause; sub-causes inherit it.",
+          "description": "What the cause is and why it is suspected.",
+          "status": "How far the check has got: open, testing, confirmed or rejected."
+        },
+        "ExperimentFields": {
+          "title": "Short title of the experiment.",
+          "description": "What is tried and how the result is measured.",
+          "responsible": "Who runs the experiment.",
+          "status": "Where the experiment stands: planned, running, done or cancelled.",
+          "startDate": "First day of the experiment.",
+          "endDate": "Last day of the experiment.",
+          "costMoney": "Money spent, in euros.",
+          "costHours": "Effort, in hours."
+        },
+        "FactFields": {
+          "name": "What was observed.",
+          "description": "Details and source of the observation.",
+          "date": "When it was observed.",
+          "owner": "Who reported the observation."
+        }
+      },
+      "columns": {
+        "avgScore": "Mean of the ratings by all members of the expert team, from 0 to 9; when compared with a snapshot, the change stands next to it."
+      },
+      "charts": {
+        "gantt": "Schedule of the experiments from start to end; the line marks today.",
+        "cost": "Cost in euros and effort in hours of all experiments, summed up over time.",
+        "costRate": "Cost in euros and effort in hours per day, spread over the run time of the experiments."
+      },
       "name": "Ishikawa 6M",
       "description": "Root cause analysis with 6M categories and expert scoring",
       "problemStatement": "Problem Statement / Effect",
@@ -6037,6 +6535,44 @@
       "selectionLabel": "Selection ({n} column(s))",
       "previewUnavailable": "Preview for \"{type}\" is not available yet.",
       "openInModule": "Open in module",
+      "whenToUse": "You have columns of a worksheet and need to know which chart fits their roles — a ranked list with a preview, from which the chosen chart opens as a module of its own.",
+      "actions": {
+        "read": { "help": "Read the selected columns with their roles, the ranked suggestions, the chosen chart and the target module." },
+        "setColumns": {
+          "help": "Take columns of a worksheet as the selection; the suggestions are re-ranked and the top one is chosen. Roles come from the worksheet. Returns the suggestion types in rank order.",
+          "params": { "refs": "A non-empty list of column references { instanceId, sheetId, columnId } from read().pickableColumns, all from the same sheet, each at most once." }
+        },
+        "pickChart": {
+          "help": "Choose one of the suggestions; the preview on the right shows the chart with the selected columns.",
+          "params": { "type": "The chart type, one of the values in read().suggestions[].type. Any other value is an error." }
+        },
+        "openInModule": { "help": "Create the chosen chart as a module of its own with the same columns. If the type exists only as a preview, nothing is created." }
+      },
+      "fields": {
+        "selection": { "help": "The selected columns with their roles and the sheet they come from. The values stay in the worksheet." },
+        "suggestions": { "help": "The charts that fit the roles, in rank order, each with title and note." },
+        "selectedChartType": { "help": "The chosen chart, shown in the preview on the right." },
+        "openTarget": { "help": "The module openInModule creates, or null when the chosen type exists only as a preview." },
+        "pickableColumns": { "help": "The columns setColumns accepts, each { key, name }; the key is instanceId|sheetId|columnId." }
+      },
+      "types": {
+        "Selection": {
+          "sourceInstanceId": "The worksheet instance the columns come from.",
+          "sourceSheetId": "The sheet of that worksheet.",
+          "columns": "The selected columns in selection order, each with id, name, role and confirmation."
+        },
+        "SelectedColumn": {
+          "id": "The column id in the sheet.",
+          "name": "The display name of the column.",
+          "role": "The role that drives the ranking: continuous, categorical, ordinal or date.",
+          "roleConfirmed": "true when the role was set or confirmed by hand in the worksheet; false for an automatically detected role."
+        },
+        "Suggestion": {
+          "type": "The chart type; the same value goes to pickChart.",
+          "title": "The title of the suggestion in the active language.",
+          "notes": "The note on the suggestion in the active language, or '' without one."
+        }
+      },
       "role": {
         "continuous": "continuous",
         "categorical": "categorical",
@@ -6876,13 +7412,381 @@
       "decisionConfirm_repeat": "Repeat this phase? A new cycle with the same factor settings will be created.",
       "decisionConfirm_recenter": "Re-center? The best point becomes the new center. Factor levels will be adjusted automatically.",
       "decisionConfirm_stop": "Complete the project? No further phases will be created.",
+      "whenToUse": "When the effect of several factors on one or more responses is to be studied in a planned experiment: full or fractional factorial, Plackett-Burman, response surface (CCD, Box-Behnken), Taguchi or optimal (D, A, G), also as an EVOP project over several phases. Which design type fits is settled beforehand in the DoE advisor (doe-advisor).",
       "actions": {
-        "completePhase": {
-          "help": "Closes the active EVOP phase after a confirmation: the design and the response values are stored in the phase, then a new phase starts or the project ends, depending on the decision. Returns false when the confirmation is cancelled or the phase is already decided.",
+        "read": {
+          "help": "Read plan, factors, responses, validity, summary, evaluation, linked datasheet and EVOP project. The run table comes on request only: read({ fields: ['runs'] })."
+        },
+        "setDoeName": {
+          "help": "Name the plan, in EVOP project mode the active phase. The name becomes the datasheet title.",
           "params": {
-            "decision": "recenter (new phase around the best run, step sizes kept), repeat (new phase with the same factor levels) or stop (complete the project, no further phase). Any other value is an error."
+            "name": "The name; empty clears it."
+          }
+        },
+        "factors": {
+          "addFactor": {
+            "help": "Append an empty continuous factor with two empty levels. Returns its id, the factorId of the other factor actions. The plan is invalid until name and levels are set. Clears the forbidden combinations of the optimal design."
+          },
+          "removeFactor": {
+            "help": "Remove a factor; model terms with it go too.",
+            "params": {
+              "factorId": "The factor, id from read().factors."
+            }
+          },
+          "setFactorName": {
+            "help": "Name a factor. Names must differ; the name becomes a column of the run table and the datasheet.",
+            "params": {
+              "factorId": "The factor.",
+              "name": "The name; empty makes the plan invalid."
+            }
+          },
+          "setFactorUnit": {
+            "help": "Set a factor's unit. For a categorical factor the call fails unless the unit is empty.",
+            "params": {
+              "factorId": "The factor.",
+              "unit": "The unit, e.g. °C; empty for none."
+            }
+          },
+          "setFactorKind": {
+            "help": "Make a factor continuous (numbers as levels) or categorical (names as levels, no unit; switching to categorical clears the unit). Which design types are valid afterwards shows in read().valid and invalidReason.",
+            "params": {
+              "factorId": "The factor.",
+              "kind": "continuous or categorical."
+            }
+          },
+          "setLevel": {
+            "help": "Set one level of a factor. The first is the lowest, the last the highest level; for continuous factors a number as text.",
+            "params": {
+              "factorId": "The factor.",
+              "levelIdx": "The level, from 0.",
+              "value": "The value as text, e.g. \"20\" or \"Supplier A\"."
+            }
+          },
+          "insertLevel": {
+            "help": "Insert an empty level. More than two levels rule out the two-level design types (fractional factorial, Plackett-Burman).",
+            "params": {
+              "factorId": "The factor.",
+              "at": "The position, from 0; the levels behind move up."
+            }
+          },
+          "removeLevel": {
+            "help": "Remove a level; at least two stay.",
+            "params": {
+              "factorId": "The factor.",
+              "levelIdx": "The level, from 0."
+            }
+          },
+          "addResponse": {
+            "help": "Append an empty response. Returns its index (0 = Y1). The plan is invalid until it is named."
+          },
+          "removeResponse": {
+            "help": "Remove a response; at least one stays.",
+            "params": {
+              "index": "The response, 0 = Y1."
+            }
+          },
+          "setResponseName": {
+            "help": "Name a response; the name becomes a column of the run table and the datasheet.",
+            "params": {
+              "index": "The response, 0 = Y1.",
+              "name": "The name; empty makes the plan invalid."
+            }
+          },
+          "setResponseUnit": {
+            "help": "Set a response's unit. A linked datasheet becomes outdated.",
+            "params": {
+              "index": "The response, 0 = Y1.",
+              "unit": "The unit; empty for none."
+            }
+          }
+        },
+        "design": {
+          "selectDesignType": {
+            "help": "Choose the design type; the type's own selection (resolution, Plackett-Burman design) starts over. Fractional factorial, Plackett-Burman and Taguchi need their selection before a design is built.",
+            "params": {
+              "type": "full (full factorial), frac (fractional factorial), pb (Plackett-Burman), ccd (central composite), bb (Box-Behnken), taguchi, dopt, aopt or gopt (D-, A-, G-optimal). frac and pb require exactly two levels per factor."
+            }
+          },
+          "applyRecommendation": {
+            "help": "Adopt the recommended design type: up to 4 two-level factors full factorial, up to 6 fractional factorial, from 7 Plackett-Burman; with multi-level factors Box-Behnken (3 to 7 factors), otherwise Taguchi. Returns the chosen type; without a recommendation the design type stays as it is."
+          },
+          "selectResolution": {
+            "help": "Choose the fractional factorial by factor count and run count; the resolution (III, IV, V …) follows from the table. Design type frac only.",
+            "params": {
+              "k": "The factor count; must equal the number of factors.",
+              "runs": "The run count: 4, 8, 16, 32, 64 or 128; not every combination exists."
+            }
+          },
+          "selectPB": {
+            "help": "Choose a Plackett-Burman design. Design type pb only.",
+            "params": {
+              "index": "The design, from 0, in table order."
+            }
+          },
+          "selectTaguchi": {
+            "help": "Choose an orthogonal Taguchi array. Design type taguchi only; the arrays that fit the factor count and levels are available.",
+            "params": {
+              "name": "The name, e.g. L4, L8 or L9."
+            }
+          },
+          "setRandomize": {
+            "help": "Shuffle the run order or keep the standard order.",
+            "params": {
+              "on": "true shuffles, false does not."
+            }
+          },
+          "setCenterPoints": {
+            "help": "Append three center points in the middle of the continuous factors; they reveal curvature. Only where the design type provides for them.",
+            "params": {
+              "on": "true appends them, false does not."
+            }
+          },
+          "setReplicates": {
+            "help": "How often each run is repeated. Replicates estimate the experimental error and enable the dispersion analysis.",
+            "params": {
+              "n": "Whole number from 1 to 10."
+            }
+          },
+          "setAlphaType": {
+            "help": "Choose the star point distance α of the central composite design.",
+            "params": {
+              "type": "rotatable (equal prediction quality in all directions), face-centered (α = 1, star points on the cube faces, three levels per factor) or spherical (α = √k)."
+            }
+          },
+          "setCcdCenterPoints": {
+            "help": "The number of center points in the central composite design.",
+            "params": {
+              "n": "Whole number from 1."
+            }
+          },
+          "setBbCenterPoints": {
+            "help": "The number of center points in the Box-Behnken design.",
+            "params": {
+              "n": "Whole number from 1."
+            }
+          }
+        },
+        "optimal": {
+          "setOptimalRuns": {
+            "help": "The run count of the optimal design; at least the number of model terms plus one. With a source worksheet only the new runs count.",
+            "params": {
+              "n": "Whole number from the minimum."
+            }
+          },
+          "setTerm": {
+            "help": "Switch a model term of the optimal design on or off. Switching on takes the contained main effects along, switching off the terms that contain it; main effects stay on.",
+            "params": {
+              "termId": "The term id: M0, M1 … main effects, Q0 … quadratic, I0_1 … interactions; the numbers are factor indices from 0.",
+              "on": "true switches on, false off."
+            }
+          },
+          "setTermGroup": {
+            "help": "Switch a whole term group on or off: 1 = quadratic terms, from 2 the interactions per order. The main effects (group 0) stay on.",
+            "params": {
+              "groupIdx": "The group, from 1.",
+              "on": "true switches on, false off."
+            }
+          },
+          "addForbiddenVertex": {
+            "help": "Forbid a factor combination in the optimal design, such as a corner the plant cannot run. Returns false when it is already forbidden.",
+            "params": {
+              "pattern": "One coded level per factor (-1 lowest, 1 highest, intermediate levels in between) or null for any level; at least one level is set."
+            }
+          },
+          "removeForbiddenVertex": {
+            "help": "Allow a forbidden combination again.",
+            "params": {
+              "index": "The rule, from 0, as in read().options.forbiddenVertices."
+            }
+          },
+          "setSourceWorksheet": {
+            "help": "Choose a project worksheet with runs already measured as the starting point; the optimal design adds new runs only. Columns are matched by factor and response names; the planner's own datasheet is no source.",
+            "params": {
+              "instanceId": "The worksheet instance; null removes the link.",
+              "sheetId": "The sheet of the instance; ignored with null."
+            }
+          },
+          "augment": {
+            "help": "Extend an optimal design with a linked datasheet by new runs; existing runs and values stay, the new rows are appended. Returns the run count afterwards.",
+            "params": {
+              "n": "How many runs to add, whole number from 1."
+            }
+          }
+        },
+        "analysis": {
+          "setAnalysisResponse": {
+            "help": "Choose the response the dispersion analysis evaluates and the regression handover passes on.",
+            "params": {
+              "index": "The response, 0 = Y1."
+            }
+          },
+          "transferToRegression": {
+            "help": "Hand the linked datasheet to a new regression in the planner's phase, with the plan's model terms and the chosen response. Returns the regression's instance id."
+          }
+        },
+        "evop": {
+          "setProjectMode": {
+            "help": "Switch the EVOP project mode on or off. The first switch-on starts phase 1 with the current plan.",
+            "params": {
+              "on": "true switches on, false off."
+            }
+          },
+          "setProjectName": {
+            "help": "Set the project name; new phases are then called “<project> - Phase n”.",
+            "params": {
+              "name": "The name; empty clears it."
+            }
+          },
+          "completePhase": {
+            "help": "Close the active phase without confirmation: the plan and the values of the first response are stored in the phase, then a new phase starts or the project ends, depending on the decision. Returns false when the active phase is already decided.",
+            "params": {
+              "decision": "recenter (new phase around the best run, step sizes kept), repeat (new phase with the same factor levels) or stop (complete the project, no further phase)."
+            }
+          },
+          "newPhase": {
+            "help": "Start a new phase with the current factor levels; only when the active phase is decided and the project not stopped. Returns the index of the new phase."
+          },
+          "viewPhase": {
+            "help": "Show a phase: its plan, design and datasheet come back without regenerating the design.",
+            "params": {
+              "idx": "The phase, 0 = phase 1."
+            }
+          }
+        },
+        "runs": {
+          "setRunValue": {
+            "help": "Set one value of the run table while no current datasheet is linked: a response result or an adjusted setting of a continuous factor. The value goes into the datasheet when it is created. With a current linked datasheet the values are entered there, in the datasheet's worksheet.",
+            "params": {
+              "run": "The run number from read().runs.",
+              "column": "A factor or response name as in read().runs; not a categorical factor.",
+              "value": "The number; null reverts the change."
+            }
+          },
+          "createDatasheet": {
+            "help": "Create the plan's datasheet with the preview's values; a datasheet created before is replaced, and the planner opens the new one. Returns the datasheet's instance id (a worksheet)."
           }
         }
+      },
+      "fields": {
+        "doeName": {
+          "help": "Name of the plan, in project mode of the active phase."
+        },
+        "designType": {
+          "help": "The chosen design type: full, frac, pb, ccd, bb, taguchi, dopt, aopt or gopt."
+        },
+        "factors": {
+          "help": "The factors in order, each with id, name, unit, kind and levels."
+        },
+        "responses": {
+          "help": "The responses in order, each with name and unit; the index is the position."
+        },
+        "options": {
+          "help": "The design options: random run order, center points, replicates, for the central composite design the star point distance and center points, for Box-Behnken the center points, for Taguchi the array, for the optimal design the run count, model terms and forbidden factor combinations."
+        },
+        "typeParams": {
+          "help": "The type's own selection: the resolution table cell for the fractional factorial, the design for Plackett-Burman."
+        },
+        "valid": {
+          "help": "Whether the configuration yields a design. A valid design is built by itself after about a second."
+        },
+        "invalidReason": {
+          "help": "Why no design is built yet: too few factors, duplicate factor names, an incomplete factor, no or an unnamed response, no design type, multi-level factors with a two-level design type, a missing selection of the design type or too few runs in the optimal design. A valid plan has no reason."
+        },
+        "summary": {
+          "help": "Planned runs including replicates, resolution and runs of the generated design."
+        },
+        "analysisResponseIdx": {
+          "help": "The response of the dispersion analysis and the regression handover, 0 = Y1."
+        },
+        "sourceWorksheet": {
+          "help": "The source worksheet of an optimal design with runs already measured, { instanceId, sheetId }, or null."
+        },
+        "runs": {
+          "help": "The run table in run order. Without a current datasheet the preview including the values entered there, with a linked datasheet the responses from it. Because of its size it comes on explicit request only."
+        },
+        "worksheet": {
+          "help": "The linked datasheet with its fill state, or null."
+        },
+        "evaluation": {
+          "help": "The evaluation of the generated design: efficiency, VIF, alias structure and power; null without a design."
+        },
+        "evop": {
+          "help": "The EVOP project with its phases; null outside project mode."
+        }
+      },
+      "types": {
+        "DoeFactor": {
+          "id": "Stable id of the factor, the factorId of the factor actions.",
+          "name": "The name, also a column of the run table.",
+          "unit": "The unit, empty for none.",
+          "kind": "continuous (numbers as levels) or categorical (names as levels).",
+          "levels": "The levels as typed, lowest first."
+        },
+        "DoeResponse": {
+          "name": "The name, also a column of the run table.",
+          "unit": "The unit, empty for none."
+        },
+        "DoeTypeParams": {
+          "selectedRes": "The chosen resolution table cell { k, runs, res, p } for the fractional factorial, otherwise null.",
+          "selectedPBIdx": "The chosen Plackett-Burman design as a table index, otherwise null."
+        },
+        "DoeSummary": {
+          "runs": "Planned runs including replicates; the number is missing while the design type gives none.",
+          "resolution": "The resolution: III, IV, V, Full, CCD and so on; empty without.",
+          "generatedRuns": "Runs of the generated design, 0 without a design."
+        },
+        "DoeRun": {
+          "run": "Run number in run order; the run of setRunValue.",
+          "std": "Standard order.",
+          "block": "Block.",
+          "replicate": "Replicate.",
+          "factors": "Setting per factor name.",
+          "responses": "Value per response name, null while empty."
+        },
+        "DoeWorksheet": {
+          "instanceId": "The linked datasheet, a worksheet of its own; the results are entered there, not in the planner.",
+          "sheetId": "The sheet.",
+          "stale": "The plan changed since the datasheet was created; the interface then offers “recreate”.",
+          "filled": "Filled response cells.",
+          "total": "All response cells."
+        },
+        "DoeEvaluation": {
+          "efficiency": "D-, A- and G-efficiency in percent, condition number and largest leverage.",
+          "vif": "Variance inflation factor per model term; 1 means independent, above 10 strongly confounded.",
+          "alias": "Generators and, per term, the terms it is confounded with; null without confounding.",
+          "power": "Power per effect size; null without error degrees of freedom."
+        },
+        "DoePhase": {
+          "cycleNumber": "Phase number from 1.",
+          "doeName": "Name of the phase.",
+          "decision": "recenter, repeat, stop or null while open.",
+          "completedAt": "Time of the decision (ISO), null while open.",
+          "yValues": "Values of the first response per run at closing, null without."
+        },
+        "DoeEvop": {
+          "projectMode": "Always true; outside project mode evop is null.",
+          "projectName": "The project name.",
+          "activePhaseIdx": "The phase shown, 0 = phase 1.",
+          "phases": "All phases in order.",
+          "summary": "Cumulative EVOP effects; they are missing until a phase with values is closed."
+        }
+      },
+      "columns": {
+        "term": "The model term: main effect, interaction (A*B) or quadratic term.",
+        "effect": "The effect: change of the response from the low to the high level.",
+        "aliasedWith": "The terms whose effect cannot be separated from this term.",
+        "evopErrorLimit": "Error limit from the spread across the phases; an effect beyond it counts as real.",
+        "evopSignificant": "Whether the effect exceeds the error limit.",
+        "effectSize": "The effect size in multiples of the standard deviation.",
+        "power": "The probability of detecting an effect of this size at α = 0.05.",
+        "dispersionPoint": "The design point: one factor combination with its replicates.",
+        "dispersionN": "Number of replicates at the design point.",
+        "dispersionMean": "Mean of the response at the design point.",
+        "dispersionS": "Standard deviation at the design point.",
+        "dispersionVar": "Variance at the design point.",
+        "dispersionLnVar": "Log variance, the response of the dispersion model.",
+        "coefficient": "The estimated coefficient in the coded model.",
+        "pValue": "The p-value; below 0.05 the term counts as significant."
       },
       "evopEffectTable": "EVOP Effect Table (cumulative)",
       "evopCycles": "{n} cycles",
@@ -12830,7 +13734,7 @@
           "help": "The three row labels of the system levels, in the order subsystem, system, supersystem. An empty entry means the row shows its default label."
         },
         "cells": {
-          "help": "The nine cells, addressed as cells[row][col] with three rows and three columns each. Every cell carries text (the cell text) and image (an image data URL or null). A bulk field: read() without arguments reports only its extent, read({ fields: ['cells'] }) delivers the cells."
+          "help": "The nine cells, addressed as cells[row][col] with three rows and three columns each. Every cell carries text (the cell text) and image: null without an image, otherwise only { $omitted: true, bytes } with its size — read() never delivers the image data itself. A bulk field: read() without arguments reports only its extent, read({ fields: ['cells'] }) delivers the cells."
         }
       },
       "subtitle": "Describe the system from nine perspectives: past / present / future × subsystem / system / supersystem.",

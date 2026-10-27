@@ -14,6 +14,9 @@
  * @type {Record<string, Array<{ match: string, reason: string, count?: number }>>}
  */
 export const ANCHOR_EXEMPTIONS = {
+  'project-charter': [
+    { match: 'aria-label="Reihenfolge">#</th>', reason: 'Spaltenkopf der laufenden Nummer, nur das Zeichen #; kein eigenes Feld', count: 1 },
+  ],
   'unit-converter': [
     { match: "<th x-text=\"t('refValue')\"", reason: 'Nachschlagetabelle mit festen Beispielwerten; nicht Teil der Lesefläche', count: 1 },
     { match: "<th x-text=\"t('refFrom')\"", reason: 'Nachschlagetabelle mit festen Beispielwerten; nicht Teil der Lesefläche', count: 1 },
@@ -131,6 +134,16 @@ export const ANCHOR_EXEMPTIONS = {
   'opportunity-flowchart': [
     { match: 'class="of__import-option"', reason: 'Auswahlzeile je Quelle im Importdialog; keine Agentenaktion', count: 1 },
   ],
+  'survey-builder': [
+    { match: ':value="opt.id"', reason: 'Option einer Bedingungszeile; ihr Text ist die Option selbst, die Bedingungen sind am Titel der Bedingungen verankert', count: 1 },
+    { match: '<th x-text="g.label">', reason: 'Spaltenkopf je Vergleichsgruppe, Text aus den Daten; die Gruppierung ist an ihrer Auswahl verankert', count: 1 },
+  ],
+  ishikawa: [
+    { match: 'ishikawa__img-upload-btn', reason: 'Dateiwahl für Bilder ohne Agentenweg; die Galerie ist an ihrer Überschrift verankert', count: 1 },
+    { match: 'class="ishikawa__hyp-pick-row"', reason: 'Auswahlzeile je Experiment bzw. Ursache in den Verknüpfungsformularen; die Verknüpfung ist an der Spalte Verknüpfte Hypothesen verankert', count: 2 },
+    { match: 'class="ishikawa__col-nr">#</th>', reason: 'Spaltenkopf der laufenden Nummer, nur das Zeichen #; kein eigenes Feld', count: 3 },
+    { match: 'ishikawa__exp-col-head', reason: 'Spaltenkopf je Mitglied des Expertenteams, Name aus den Daten; das Team ist an seiner Überschrift verankert', count: 1 },
+  ],
   'triz-9-windows': [
     { match: 'triz-9w__upload-btn', reason: 'Bild-Upload je Fenster (9×); Dateiwahl ohne Agentenweg', count: 1 },
   ],
@@ -178,5 +191,19 @@ export const ANCHOR_EXEMPTIONS = {
   ],
   'voc-ctx-tree': [
     { match: 'textLabel()', reason: 'Beschriftung wechselt mit der Knotenart (Stimme, Bedürfnis, Treiber, Anforderung); der Text ist je Aktion beschrieben', count: 1 },
+  ],
+  'doe-planner': [
+    { match: 'doe__term-chip', reason: 'Schalter je Modellterm; die Termliste ist an optimal.setTerm verankert', count: 1 },
+    { match: 'doe__forbidden-factor', reason: 'Auswahl je Faktor in der Eingabezeile; die verbotenen Ecken sind an optimal.addForbiddenVertex verankert', count: 1 },
+    { match: "doe__res-corner\" x-text=\"t('runs')\"", reason: 'Kopf der festen Auflösungstabelle; die Tabelle ist an design.selectResolution verankert', count: 1 },
+    { match: "t('factorsHeader')", reason: 'Kopf der festen Auflösungstabelle; die Tabelle ist an design.selectResolution verankert', count: 1 },
+    { match: 'doe__res-col--active', reason: 'Kopf je Faktorzahl der festen Auflösungstabelle (nur die Zahl)', count: 1 },
+    { match: "<th x-text=\"t('factors')\"", reason: 'Kopf der festen Plackett-Burman-Tabelle; die Tabelle ist an design.selectPB verankert', count: 1 },
+    { match: "<th x-text=\"t('runs')\"", reason: 'Kopf der festen Plackett-Burman- und Taguchi-Tabellen; beide sind an ihren Aktionen verankert', count: 2 },
+    { match: "t('taguchiArray')", reason: 'Kopf der festen Taguchi-Tabelle; die Tabelle ist an design.selectTaguchi verankert', count: 1 },
+    { match: "'max. ' + t('factors')", reason: 'Kopf der festen Taguchi-Tabelle; die Tabelle ist an design.selectTaguchi verankert', count: 1 },
+    { match: "t('mainEffects')", reason: 'Kopf der VIF-Tabelle, deren Überschrift an tipVIF verankert ist', count: 1 },
+    { match: "t('interactions')", reason: 'Kopf der VIF-Tabelle, deren Überschrift an tipVIF verankert ist', count: 1 },
+    { match: '<th>VIF</th>', reason: 'Wertspalte der VIF-Tabelle, deren Überschrift an tipVIF verankert ist', count: 2 },
   ],
 };

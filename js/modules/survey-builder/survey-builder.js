@@ -6,28 +6,42 @@
  *
  * The model (survey-builder-model.js) owns the persisted state; the pure
  * modules next to it own conditions, export, import, statistics, report and
- * the hand-over to kano / voc-ctx-tree. The UI lives in one tab controller
- * per concern (survey-*-controller.js), spread into the data function below;
- * this file keeps config, lifecycle, tabs, labels and formatting.
+ * the hand-over to kano / voc-ctx-tree. The UI lives in five encapsulated
+ * sub-viewmodels under viewmodel/ (draft, recipients, responses, results,
+ * handover) that know neither each other nor this shell; the template
+ * addresses them by namespace (`draft.addSection()`). This file keeps
+ * config, tabs, lifecycle and the wiring: it creates the sub-viewmodels,
+ * binds them to the component's model in init() and forwards the instance
+ * events to the hand-over.
  *
- * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md
+ * @agent  Über die Teil-Viewmodels steuerbar: Kopf, Abschnitte, Fragen,
+ *   Optionen und Zeilen samt Bedingungen anlegen, ändern, verschieben und
+ *   löschen (draft.*); Empfänger pflegen (recipients.*); Antwortdateien
+ *   einlesen und löschen (responses.*); Filter, Gruppierung und Namen im
+ *   Bericht setzen (results.*); Freitexte an den VoC-Baum, Kano-Fragen an
+ *   Kano und alle Antworten an ein Worksheet übergeben (handover.*). Der
+ *   Oberfläche bleiben die Rückfragen vor dem Löschen, der Bedingungseditor
+ *   mit seinem Entwurf, der Dateiwähler und die drei Downloads (Fragebogen,
+ *   Empfängerdatei, Bericht).
+ *
+ * Spec: docs/superpowers/specs/2026-10-10-survey-builder-design.md,
+ *       docs/superpowers/specs/2026-10-24-survey-builder-teil-viewmodels-design.md
  */
 
 import { createModule } from '../../core/template-module.js';
 import { State } from './survey-builder-model.js';
-import { documentOrder } from './survey-conditions.js';
-import { draftController } from './survey-draft-controller.js';
-import { recipientsController } from './survey-recipients-controller.js';
-import { importController } from './survey-import-controller.js';
-import { resultsController } from './survey-results-controller.js';
-import { handoverController } from './survey-handover-controller.js';
-import { chartsController } from './survey-charts-controller.js';
+import * as labels from './survey-labels.js';
+import { DraftViewModel } from './viewmodel/draft.js';
+import { RecipientsViewModel } from './viewmodel/recipients.js';
+import { ResponsesViewModel } from './viewmodel/responses.js';
+import { ResultsViewModel } from './viewmodel/results.js';
+import { HandoverViewModel } from './viewmodel/handover.js';
 import { uid } from '../../core/uid.js';
+import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum } from '../../core/agent/agent-argcheck.js';
 
-const TYPE_LABELS = {
-  single: 'typeSingle', multi: 'typeMulti', rating: 'typeRating',
-  kano: 'typeKano', text: 'typeText', info: 'typeInfo',
-};
+/** Tabs of the module (State.ui.tab). */
+const TABS = ['draft', 'recipients', 'results'];
 
 export default createModule({
   config: {
@@ -60,157 +74,98 @@ export default createModule({
    * @returns {object} Alpine component state and methods
    */
   data(module, _t) {
+    const deps = { t: _t, context: module._context, container: () => module._container };
     return {
-      ...draftController(module, _t),
-      ...recipientsController(module, _t),
-      ...importController(module, _t),
-      ...resultsController(module, _t),
-      ...handoverController(module, _t),
-      ...chartsController(module, _t),
+      draft: new DraftViewModel(deps),
+      recipients: new RecipientsViewModel(deps),
+      responses: new ResponsesViewModel(deps),
+      results: new ResultsViewModel(deps),
+      handover: new HandoverViewModel(deps),
       _t,
       _unsubs: [],
-      /** true once destroy() ran — blocks mounts that come back later. */
-      _destroyed: false,
+      ...agentReadMixin(module),
 
-      /** Alpine lifecycle hook. */
+      /** @noagent lifecycle — Alpine hook: binds the sub-viewmodels to the component's model. */
       init() {
         this._unsubs = [];
-        this.$watch(() => JSON.stringify(this.model.survey), () => this.schedulePreview());
-        this.$watch(() => this._resultsSignature(), () => this.scheduleCharts());
-        this._loadCondDraft();
-        this.$nextTick(() => this.renderPreview());
+        const binding = {
+          model: this.model,
+          watch: (getter, callback) => this.$watch(getter, callback),
+          nextTick: (callback) => this.$nextTick(callback),
+        };
+        for (const vm of this._subViewModels()) vm.attach(binding);
+        // The only wiring between the parts (spec E2): kano instances may have changed.
         const eb = module._context.eventBus;
-        const onTheme = () => this.scheduleCharts();
-        eb.on('theme:changed', onTheme);
-        this._unsubs.push(() => eb.off('theme:changed', onTheme));
-        const onInstances = () => { this.kanoRev++; };
+        const onInstances = () => this.handover.onInstancesChanged();
         for (const evt of ['module:added', 'module:removed']) {
           eb.on(evt, onInstances);
           this._unsubs.push(() => eb.off(evt, onInstances));
         }
-        if (this.isTab('results')) this.scheduleCharts();
       },
 
-      /** Alpine lifecycle hook: timers, subscriptions, charts. */
+      /** @noagent lifecycle — Alpine hook: subscriptions, then every sub-viewmodel. */
       destroy() {
-        this._destroyed = true;
-        clearTimeout(this._previewTimer);
         (this._unsubs || []).forEach((off) => off());
         this._unsubs = [];
-        this.destroyCharts();
+        for (const vm of this._subViewModels()) vm.detach();
       },
+
+      /** @returns {object[]} the sub-viewmodels, in attach order */
+      _subViewModels() { return [this.draft, this.recipients, this.responses, this.results, this.handover]; },
 
       // ── Tabs ──────────────────────────────────────────────────
 
       /**
+       * @noagent view transform
        * @param {'draft'|'recipients'|'results'} tab
        * @returns {boolean} whether the tab is the active one
        */
       isTab(tab) { return this.model.ui.tab === tab; },
 
       /**
+       * @noagent view transform
        * @param {'draft'|'recipients'|'results'} tab
        * @returns {object} class map for the tab button
        */
       tabClass(tab) { return { 'dmike-tab--active': this.isTab(tab) }; },
 
       /**
-       * Charts only live on the results tab: entering it mounts them,
-       * leaving it drops them (a hidden host has no size to draw into).
-       * @param {'draft'|'recipients'|'results'} tab
+       * Open a tab. The results tab draws its charts when it opens.
+       * @agent
+       * @param {'draft'|'recipients'|'results'} tab the tab to open
+       * @returns {void}
+       * @throws {Error} if `tab` is not one of the three tabs
        */
       setTab(tab) {
+        requireEnum('tab', tab, TABS);
         this.model.ui.tab = tab;
-        if (tab === 'results') {
-          this.scheduleCharts();
-          return;
-        }
-        this._renderGen++;
-        this.destroyCharts();
       },
 
-      // ── Labels ────────────────────────────────────────────────
+      // ── Template-wide labels (pure functions in survey-labels.js) ──
 
-      /** @param {string} type @returns {string} translated question type */
-      typeLabel(type) { return _t(TYPE_LABELS[type] || 'typeText'); },
+      /** @noagent view transform @param {string} type @returns {string} translated question type */
+      typeLabel(type) { return labels.typeLabel(type, _t); },
 
-      /**
-       * Question text, or "Frage <n>" (position in document order) when empty.
-       * @param {object} q
-       * @returns {string}
-       */
-      questionLabel(q) {
-        if (q.text && q.text.trim()) return q.text.trim();
-        const n = documentOrder(this.model.survey).findIndex((e) => e.question.id === q.id) + 1;
-        return _t('questionNumber', { n });
-      },
+      /** @noagent view transform @param {object} q @returns {string} question text or "Frage <n>" */
+      questionLabel(q) { return labels.questionLabel(this.model.survey, q, _t); },
 
-      /** @param {number} index 0-based @returns {string} placeholder of an untitled section */
-      sectionPlaceholder(index) { return _t('sectionUntitled', { n: index + 1 }); },
+      /** @noagent view transform @param {number} index 0-based @returns {string} placeholder of an untitled section */
+      sectionPlaceholder(index) { return labels.sectionPlaceholder(index, _t); },
 
-      /** @param {{when: Array|null}} node @returns {boolean} whether the node has conditions */
+      /** @noagent view transform @param {object} opt option @returns {string} its text or a placeholder */
+      optionText(opt) { return labels.optionText(opt, _t); },
+
+      /** @noagent view transform @param {{when: Array|null}} node @returns {boolean} whether the node has conditions */
       hasCondition(node) { return Array.isArray(node.when) && node.when.length > 0; },
 
-      /**
-       * Notify about conditions a structural change removed and re-read the
-       * condition draft (its node may have lost conditions).
-       * @param {{removedConditions: number}|undefined} result
-       */
-      reportRemoved(result) {
-        const count = result ? result.removedConditions : 0;
-        if (count > 0) module._context.notify(_t('conditionsRemoved', { count }), 'info');
-        this._loadCondDraft();
-      },
+      /** @noagent view transform @param {string|null} code @returns {string} Kano category label */
+      catLabel(code) { return labels.catLabel(code, module._context.i18n); },
 
-      // ── Formatting ────────────────────────────────────────────
+      /** @noagent view transform @param {number|null} share 0..1 @returns {string} "42 %", '—' without a base */
+      fmtPct(share) { return labels.fmtPct(share); },
 
-      /** @returns {'de-DE'|'en-US'} locale of the app language */
-      _locale() { return module._context.i18n.getLanguage() === 'en' ? 'en-US' : 'de-DE'; },
-
-      /**
-       * @param {string|null} iso
-       * @returns {string} local date and time, '–' when empty
-       */
-      formatDateTime(iso) {
-        if (!iso) return '–';
-        const d = new Date(iso);
-        if (Number.isNaN(d.getTime())) return '–';
-        return d.toLocaleString(this._locale(), { dateStyle: 'short', timeStyle: 'short' });
-      },
-
-      /**
-       * @param {number|null} share 0..1
-       * @returns {string} "42 %", '—' without a base
-       */
-      fmtPct(share) {
-        return share === null || share === undefined ? '—' : `${Math.round(share * 100)} %`;
-      },
-
-      /**
-       * @param {number|null} value
-       * @param {number} decimals
-       * @returns {string} localised number, '—' when empty
-       */
-      fmtNum(value, decimals) {
-        if (value === null || value === undefined) return '—';
-        return Number(value).toLocaleString(this._locale(), {
-          minimumFractionDigits: decimals, maximumFractionDigits: decimals,
-        });
-      },
-
-      /**
-       * Phase this instance lives in — new kano / worksheet instances are
-       * created next to it (spec §6.2, §8.1).
-       * @returns {string}
-       */
-      _ownPhase() {
-        const phases = module._context.stateManager.get('phases') || {};
-        for (const phase of Object.keys(phases)) {
-          const list = phases[phase];
-          if (Array.isArray(list) && list.some((i) => i.instanceId === module._context.instanceId)) return phase;
-        }
-        return 'define';
-      },
+      /** @noagent view transform @param {number|null} value @param {number} decimals @returns {string} localised number */
+      fmtNum(value, decimals) { return labels.fmtNum(value, decimals, labels.localeOf(module._context.i18n)); },
     };
   },
 });

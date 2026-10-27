@@ -23,6 +23,10 @@
  *
  * Selection state + the prefill adapters live in chart-suggestion-model.js; the
  * ranking rule-engine is the shared core util core/chart-suggestions/.
+ *
+ * @agent  Steuerbar über das Viewmodel: Spalten wählen (setColumns),
+ *   Diagramm wählen (pickChart), im Zielmodul öffnen (openInModule).
+ *   Gelesen wird über read() mit erklärter Lesefläche (AgentRead).
  */
 
 import { createModule } from '../../core/template-module.js';
@@ -37,6 +41,49 @@ import { groupedMeans, cellMeans } from '../../engines/grouped-aggregations.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 import { resolveColumnRef } from '../../core/worksheet-columns.js';
 import { uid } from '../../core/uid.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { pickableColumnList } from '../../core/agent/agent-options.js';
+import { refToKey } from '../../ui/column-picker.js';
+
+/**
+ * Die Lesefläche dieses Moduls, wie `read()` sie liefert.
+ *
+ * @typedef {object} AgentRead
+ * @property {Selection|null} selection  the selected columns and their source sheet, or null without a selection
+ * @property {Suggestion[]} suggestions  the matching charts in rank order
+ * @property {string|null} selectedChartType  the picked chart type, or null without suggestions
+ * @property {string|null} openTarget  module id openInModule would create, or null for a preview-only type
+ * @property {object[]} pickableColumns  the columns setColumns accepts, each `{ key, name }`
+ */
+
+/**
+ * Die Auswahl, wie `read().selection` sie liefert — ohne Werte, die stehen im Worksheet.
+ *
+ * @typedef {object} Selection
+ * @property {string} sourceInstanceId  worksheet instance the columns come from
+ * @property {string} sourceSheetId  sheet of that worksheet
+ * @property {SelectedColumn[]} columns  the selected columns in selection order
+ */
+
+/**
+ * Eine gewählte Spalte.
+ *
+ * @typedef {object} SelectedColumn
+ * @property {string} id  column id in the sheet
+ * @property {string} name  display name of the column
+ * @property {string} role  role that drives the ranking: continuous, categorical, ordinal or date
+ * @property {boolean} roleConfirmed  true when the role was set or confirmed by hand in the worksheet
+ */
+
+/**
+ * Ein Diagrammvorschlag.
+ *
+ * @typedef {object} Suggestion
+ * @property {string} type  chart type, the value pickChart accepts
+ * @property {string} title  translated title
+ * @property {string} notes  translated note, or '' without one
+ */
 
 const mod = createModule({
   config: {
@@ -61,34 +108,128 @@ const mod = createModule({
       previewPlaceholder: '', // empty-state message for the preview plot (sibling anchor)
 
       // ── View transforms (i18n / CSS) ──────────────────────────
+      /** @noagent view transform; der Agent liest den Inhalt über read() */
       emptyText() {
         return this.model.selection ? t('emptyStateNoMatch') : t('emptyStateNoSelection');
       },
+      /** @noagent view transform; der Agent liest den Inhalt über read() */
       selectionColumns() {
         return (this.model.selection && this.model.selection.columns) || [];
       },
+      /** @noagent view transform; der Agent liest den Inhalt über read() */
       selectionLabel() {
         return t('selectionLabel', { n: this.selectionColumns().length });
       },
+      /** @noagent view transform; der Agent liest den Inhalt über read() */
       roleName(role) { return t(`role.${  role}`); },
+      /** @noagent view transform; der Agent liest den Inhalt über read() */
       chartTitle(s) { return t(`charts.${  s.i18nKey}`); },
+      /** @noagent view transform; der Agent liest den Inhalt über read() */
       chartNotes(s) { return s.notesKey ? t(`notes.${  s.notesKey}`) : ''; },
+      /** @noagent view transform; der Agent liest den Inhalt über read() */
       cardClass(s) {
         return s.type === this.model.selectedChartType ? 'chart-suggestion__card--active' : '';
       },
+      /** @noagent view transform; der Agent liest den Inhalt über read() */
       openBtnVisible() { return Boolean(this.model.buildPrefill()); },
 
-      // ── Event handlers ────────────────────────────────────────
+      // ── Agent surface ─────────────────────────────────────────
+      /**
+       * Den vollständigen Lesezustand dieser Instanz liefern.
+       * @agent
+       * @param {object} [options] `{ fields?: string[] }`
+       * @returns {AgentRead} Auswahl, Rangliste, gewähltes Diagramm, Zielmodul, wählbare Spalten
+       */
+      read(options) {
+        const sm = module._context.stateManager;
+        const sel = this.model.selection;
+        return readAgentState('chart-suggestion', {
+          selection: sel ? {
+            sourceInstanceId: sel.sourceInstanceId,
+            sourceSheetId: sel.sourceSheetId,
+            columns: (sel.columns || []).map(c => ({
+              id: c.id,
+              name: c.name,
+              role: c.role,
+              roleConfirmed: resolveColumnRef(sm, {
+                instanceId: sel.sourceInstanceId, sheetId: sel.sourceSheetId, columnId: c.id,
+              })?.roleManual === true,
+            })),
+          } : null,
+          suggestions: this.model.suggestions.map(s => ({
+            type: s.type, title: this.chartTitle(s), notes: this.chartNotes(s),
+          })),
+          selectedChartType: this.model.selectedChartType,
+          openTarget: this.model.buildPrefill()?.target ?? null,
+          pickableColumns: pickableColumnList(sm),
+        }, options);
+      },
+
+      /**
+       * Spalten eines Blatts als Auswahl übernehmen; die Vorschläge werden neu
+       * geordnet und der Spitzenreiter gewählt. Die Rollen kommen aus dem Worksheet.
+       * @agent
+       * @param {Array<{ instanceId: string, sheetId: string, columnId: string }>} refs
+       *   nicht leere Liste wählbarer Spalten (`read().pickableColumns`), alle aus demselben Blatt, jede einmal
+       * @returns {string[]} die Typen der Vorschläge in Rangfolge
+       * @throws {Error} wenn `refs` leer ist, eine Spalte nicht wählbar ist, doppelt vorkommt
+       *   oder die Spalten aus verschiedenen Blättern stammen
+       */
+      setColumns(refs) {
+        if (!Array.isArray(refs) || refs.length === 0) {
+          throw new Error(`invalid refs ${JSON.stringify(refs)}; allowed: a non-empty list of column references`);
+        }
+        const sm = module._context.stateManager;
+        const keys = pickableColumnList(sm).map(c => c.key);
+        for (const ref of refs) requireKnownId('ref', refToKey(ref), keys);
+        if (new Set(refs.map(refToKey)).size !== refs.length) {
+          throw new Error(`invalid refs ${JSON.stringify(refs)}; allowed: each column once`);
+        }
+        const { instanceId, sheetId } = refs[0];
+        if (refs.some(r => r.instanceId !== instanceId || r.sheetId !== sheetId)) {
+          throw new Error(`invalid refs ${JSON.stringify(refs)}; allowed: columns of one sheet`);
+        }
+        // Dieselbe Form wie worksheet._snapshotSelectedColumns().
+        const columns = refs.map((ref) => {
+          const col = resolveColumnRef(sm, ref);
+          return {
+            id: col.id,
+            name: col.name || col.shortName,
+            role: col.role,
+            type: col.type,
+            values: Array.isArray(col.values) ? col.values.slice() : [],
+          };
+        });
+        this._applySelection({ sourceInstanceId: instanceId, sourceSheetId: sheetId, ts: Date.now(), columns });
+        return this.model.suggestions.map(s => s.type);
+      },
+
+      /**
+       * Einen der Vorschläge als Diagramm wählen und die Vorschau zeichnen.
+       * Ist der Typ schon gewählt, geschieht nichts.
+       * @agent
+       * @param {string} type ein Wert aus `read().suggestions[].type`
+       * @returns {void}
+       * @throws {Error} wenn `type` nicht unter den Vorschlägen steht
+       */
       pickChart(type) {
+        requireEnum('type', type, this.model.suggestions.map(s => s.type));
         if (type === this.model.selectedChartType) return;
         this.model.selectedChartType = type;
         // Card --active + open-btn visibility update reactively via Alpine.
         this._renderPreview();
       },
 
+      /**
+       * Das gewählte Diagramm als eigenes Modul mit denselben Spalten anlegen,
+       * in der Phase dieser Instanz.
+       * @agent
+       * @returns {{ instanceId: string, moduleId: string }|null} die neue Instanz,
+       *   oder null, wenn der Typ kein eigenes Modul hat (`read().openTarget` ist null)
+       */
       openInModule() {
         const prefill = this.model.buildPrefill();
-        if (!prefill) return;
+        if (!prefill) return null;
         const sm = module._context.stateManager;
         const phase = this._findOwnPhase();
         const instances = sm.get(`phases.${phase}`) || [];
@@ -100,6 +241,21 @@ const mod = createModule({
         module._context.eventBus.emit('module:added', {
           moduleId: prefill.target, phase, instanceId,
         });
+        return { instanceId, moduleId: prefill.target };
+      },
+
+      /**
+       * Eine neue Auswahl übernehmen: Wahl zurücksetzen, Rangliste neu, neu zeichnen.
+       * Geteilt vom Ereignis `chart-suggestion:load` und von `setColumns`.
+       * @param {{ sourceInstanceId: string, sourceSheetId: string, ts: number, columns: object[] }} selection
+       */
+      _applySelection(selection) {
+        this.model.selection = selection;
+        this.model.selectedChartType = null;
+        this.model.recomputeSuggestions();
+        // Declarative shell (chips/cards/empty-state) re-renders reactively;
+        // re-inject thumbs + render preview imperatively next frame.
+        requestAnimationFrame(() => this._afterRender());
       },
 
       _findOwnPhase() {
@@ -235,7 +391,6 @@ const mod = createModule({
         const grid = document.createElement('div');
         grid.className = 'chart-suggestion__matrix';
         grid.style.setProperty('--matrix-n', String(n));
-        grid.dataset.matrixSize = String(n);
         plotEl.appendChild(grid);
 
         if (truncated) {
@@ -305,7 +460,6 @@ const mod = createModule({
         grid.style.setProperty('--matrix-n', String(n));
         grid.style.gridTemplateRows = '1fr';
         grid.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
-        grid.dataset.matrixSize = String(n);
         plotEl.appendChild(grid);
 
         for (const { factor, gm } of panels) {
@@ -421,7 +575,6 @@ const mod = createModule({
         grid.style.setProperty('--matrix-n', String(n));
         grid.style.gridTemplateRows = '1fr';
         grid.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
-        grid.dataset.matrixSize = String(n);
         plotEl.appendChild(grid);
 
         for (const bLevel of bLevels) {
@@ -530,7 +683,6 @@ const mod = createModule({
         grid.style.setProperty('--matrix-n', '1');
         grid.style.gridTemplateRows = '1fr 1fr';
         grid.style.gridTemplateColumns = '1fr';
-        grid.dataset.matrixSize = '2';
         plotEl.appendChild(grid);
 
         const panels = [
@@ -552,6 +704,7 @@ const mod = createModule({
       },
 
       // ── Lifecycle ─────────────────────────────────────────────
+      /** @noagent Lebenszyklus */
       init() {
         const eb = module._context.eventBus;
 
@@ -559,12 +712,7 @@ const mod = createModule({
         // Same handler behavior as legacy _subscribeEvents.
         const onLoad = ({ instanceId, selection }) => {
           if (instanceId !== module._context.instanceId) return;
-          this.model.selection = selection;
-          this.model.selectedChartType = null;
-          this.model.recomputeSuggestions();
-          // Declarative shell (chips/cards/empty-state) re-renders reactively;
-          // re-inject thumbs + render preview imperatively next frame.
-          requestAnimationFrame(() => this._afterRender());
+          this._applySelection(selection);
         };
         eb.on('chart-suggestion:load', onLoad);
         this._unsubs.push(() => eb.off('chart-suggestion:load', onLoad));
@@ -591,6 +739,7 @@ const mod = createModule({
         requestAnimationFrame(() => this._afterRender());
       },
 
+      /** @noagent Lebenszyklus */
       destroy() {
         for (const unsub of this._unsubs) unsub();
         this._unsubs = [];

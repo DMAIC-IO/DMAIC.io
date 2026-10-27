@@ -1,4 +1,4 @@
-import { suite, test, assertEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
 import { State } from '../../js/modules/project-charter/project-charter-model.js';
 import { prepareFragment } from '../../js/modules/project-charter/project-charter.js';
 
@@ -248,5 +248,128 @@ suite('project-charter: prepareFragment', () => {
     host.appendChild(prepareFragment('line1\nline2'));
     assertEqual(host.querySelectorAll('br').length, 1);
     assertEqual(host.textContent, 'line1line2');
+  });
+});
+
+function orgFixture() {
+  const s = new State();
+  const root = s.addOrgNode({ title: 'GF' });
+  const a = s.addOrgNode({ title: 'A', pid: root.id });
+  const b = s.addOrgNode({ title: 'B', pid: root.id });
+  const a1 = s.addOrgNode({ title: 'A1', pid: a.id });
+  return { s, root, a, b, a1 };
+}
+
+suite('Project Charter Model — org add/update', () => {
+  test('addOrgNode legt Knoten mit id, Titel und Eltern an', () => {
+    const { s, root, a } = orgFixture();
+    assertEqual(s.orgNodes.length, 4);
+    assertEqual(a.pid, root.id);
+    assertEqual(a.desc, '');
+    assertTrue(typeof a.id === 'string' && a.id.length > 0);
+  });
+  test('addOrgNode klappt einen eingeklappten Elternknoten auf', () => {
+    const { s, a } = orgFixture();
+    a._col = true;
+    s.addOrgNode({ title: 'A2', pid: a.id });
+    assertEqual(a._col, false);
+  });
+  test('updateOrgNode ändert Titel und Beschreibung, unbekannte id → false', () => {
+    const { s, a } = orgFixture();
+    assertEqual(s.updateOrgNode(a.id, { title: 'A neu', desc: 'd' }), true);
+    assertEqual(a.title, 'A neu');
+    assertEqual(a.desc, 'd');
+    assertEqual(s.updateOrgNode('nope', { title: 'x', desc: '' }), false);
+  });
+});
+
+suite('Project Charter Model — org style', () => {
+  test('setOrgNodeStyle normalisiert die Rahmenbreite', () => {
+    const { s, a } = orgFixture();
+    s.setOrgNodeStyle(a.id, 'borderWidth', 1);
+    assertEqual(a.borderWidth, 0);
+    s.setOrgNodeStyle(a.id, 'borderWidth', 12);
+    assertEqual(a.borderWidth, 8);
+    s.setOrgNodeStyle(a.id, 'borderWidth', 3);
+    assertEqual(a.borderWidth, 3);
+    s.setOrgNodeStyle(a.id, 'bg', '#ff0000');
+    assertEqual(a.bg, '#ff0000');
+    assertEqual(s.setOrgNodeStyle('nope', 'bg', '#000'), false);
+  });
+  test('setOrgNodeStyle: durchgezogen erbt wie leer und bleibt nach dem Neuladen gleich', () => {
+    const { s, a } = orgFixture();
+    s.setOrgNodeStyle(a.id, 'borderStyle', 'dashed');
+    assertEqual(a.borderStyle, 'dashed');
+    s.setOrgNodeStyle(a.id, 'borderStyle', 'solid');
+    assertEqual(a.borderStyle, '');
+    const reloaded = State.fromJSON(s.toJSON()).orgNodes.find(n => n.id === a.id);
+    assertEqual(reloaded.borderStyle, a.borderStyle);
+    const imported = State.fromJSON({ orgChart: [{ id: 'x', title: 'X', pid: null, borderStyle: 'solid' }] });
+    assertEqual(imported.orgNodes[0].borderStyle, '');
+  });
+  test('setOrgStyle setzt globale Werte und begrenzt Breiten auf 1..8', () => {
+    const s = new State();
+    s.setOrgStyle('lineStyle', 'dashed');
+    assertEqual(s.orgStyle.lineStyle, 'dashed');
+    s.setOrgStyle('lineWidth', 0);
+    assertEqual(s.orgStyle.lineWidth, 1);
+    s.setOrgStyle('nodeBorderWidth', 20);
+    assertEqual(s.orgStyle.nodeBorderWidth, 8);
+    assertEqual(s.setOrgStyle('unknown', 1), false);
+  });
+  test('setOrgStyle ersetzt das Objekt (reaktive Persistenz)', () => {
+    const s = new State();
+    const before = s.orgStyle;
+    s.setOrgStyle('lineColor', '#123456');
+    assertTrue(s.orgStyle !== before);
+  });
+});
+
+suite('Project Charter Model — org delete/move', () => {
+  test('deleteOrgNode löscht den Unterbaum und zählt', () => {
+    const { s, a } = orgFixture();
+    assertEqual(s.deleteOrgNode(a.id), 2);
+    assertDeepEqual(s.orgNodes.map(n => n.title), ['GF', 'B']);
+    assertEqual(s.deleteOrgNode('nope'), 0);
+  });
+  test('moveOrgNode hängt um und setzt die Geschwisterposition', () => {
+    const { s, root, b, a1 } = orgFixture();
+    assertEqual(s.moveOrgNode(a1.id, root.id, 0), true);
+    assertEqual(a1.pid, root.id);
+    assertDeepEqual(s.orgSiblings(root.id).map(n => n.title), ['A1', 'A', 'B']);
+    assertEqual(s.moveOrgNode(b.id, root.id, null), true);
+    assertDeepEqual(s.orgSiblings(root.id).map(n => n.title), ['A1', 'A', 'B']);
+    assertEqual(s.moveOrgNode(b.id, root.id, 1), true);
+    assertDeepEqual(s.orgSiblings(root.id).map(n => n.title), ['A1', 'B', 'A']);
+  });
+  test('moveOrgNode an den Rand: index = Geschwisterzahl hängt ans Ende', () => {
+    const { s, root, a } = orgFixture();
+    assertEqual(s.moveOrgNode(a.id, root.id, 1), true);
+    assertDeepEqual(s.orgSiblings(root.id).map(n => n.title), ['B', 'A']);
+  });
+  test('moveOrgNode macht einen Knoten zur Wurzel', () => {
+    const { s, a } = orgFixture();
+    assertEqual(s.moveOrgNode(a.id, null, null), true);
+    assertEqual(a.pid, null);
+    assertDeepEqual(s.orgSiblings(null).map(n => n.title), ['GF', 'A']);
+  });
+  test('moveOrgNode weist Zyklus, sich selbst und unbekannte ids ab', () => {
+    const { s, root, a, a1 } = orgFixture();
+    assertEqual(s.moveOrgNode(a.id, a1.id, null), false);
+    assertEqual(s.moveOrgNode(a.id, a.id, null), false);
+    assertEqual(s.moveOrgNode(root.id, 'nope', null), false);
+    assertEqual(s.moveOrgNode('nope', root.id, null), false);
+    assertEqual(a.pid, root.id);
+  });
+  test('isOrgDescendant', () => {
+    const { s, root, a, a1, b } = orgFixture();
+    assertEqual(s.isOrgDescendant(a1.id, root.id), true);
+    assertEqual(s.isOrgDescendant(b.id, a.id), false);
+  });
+  test('toJSON enthält nach den Operationen keine transienten Felder', () => {
+    const { s } = orgFixture();
+    for (const n of s.toJSON().orgChart) {
+      assertEqual(['_col', '_h', '_x', '_y'].some(k => k in n), false);
+    }
   });
 });

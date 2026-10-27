@@ -115,6 +115,77 @@ export default {
       },
     },
 
+    workflow: {
+      de: {
+        title: 'Arbeiten mit dem Modul',
+        blocks: [
+          {
+            type: 'definition',
+            term: 'Faktoren und Zielgrößen',
+            content: 'Links stehen die Faktoren mit Einheit, Art und Stufen und darunter die Zielgrößen. Stetige Faktoren haben Zahlen als Stufen, kategoriale Namen. Sobald Faktoren, Zielgrößen und Plantyp vollständig sind, entsteht der Plan nach etwa einer Sekunde von selbst.',
+          },
+          {
+            type: 'definition',
+            term: 'Plantyp',
+            content: 'Die Empfehlung schlägt einen Typ nach Faktorzahl und Stufen vor. Teilfaktorielle Pläne wählen eine Zelle der Auflösungstabelle, Plackett-Burman einen Plan, Taguchi ein Array; optimale Pläne (D, A, G) wählen Modellterme und Laufzahl und können Faktorkombinationen verbieten oder auf schon gemessenen Läufen eines Worksheets aufbauen.',
+          },
+          {
+            type: 'definition',
+            term: 'Lauftabelle und Datenblatt',
+            content: 'Rechts steht die Vorschau des Plans; Werte darin gehen beim Erstellen ins Datenblatt. Danach werden die Ergebnisse im Datenblatt eingetragen, der Planer zeigt den Füllstand. Ändert sich der Plan, ist das Datenblatt veraltet und lässt sich neu erstellen. Nur echte Konfigurationsänderungen verwerfen den Plan; erneutes Anklicken des aktiven Plantyps oder dieselbe Laufzahl ändert nichts.',
+          },
+          {
+            type: 'definition',
+            term: 'Auswertung',
+            content: 'Effizienz, VIF, Aliasstruktur und Trennschärfe bewerten den Plan vor dem Versuch. Mit Wiederholungen zeigt die Dispersionsanalyse, welche Faktoren die Streuung beeinflussen; sind alle Ergebnisse da, übergibt ein Knopf das Datenblatt an eine Regression.',
+          },
+          {
+            type: 'definition',
+            term: 'EVOP-Projekt',
+            content: 'Im Projektmodus wird der Plan zur ersten Phase. Sind ihre Ergebnisse da, entscheidet man: neu zentrieren (um den besten Versuchspunkt), wiederholen oder beenden. Die Zeitleiste zeigt alle Phasen; ein Klick holt eine Phase mit Plan und Datenblatt zurück.',
+          },
+          {
+            type: 'paragraph',
+            content: 'Mit gedrückter Alt-Taste erscheinen an Überschriften, Spaltenköpfen und Knöpfen Fragezeichen; ein Klick erklärt das Element.',
+          },
+        ],
+      },
+      en: {
+        title: 'Working with the module',
+        blocks: [
+          {
+            type: 'definition',
+            term: 'Factors and responses',
+            content: 'The left side lists the factors with unit, kind and levels, and the responses below. Continuous factors have numbers as levels, categorical ones names. Once factors, responses and design type are complete, the design is built by itself after about a second.',
+          },
+          {
+            type: 'definition',
+            term: 'Design type',
+            content: 'The recommendation suggests a type by factor count and levels. Fractional factorials choose a cell of the resolution table, Plackett-Burman a design, Taguchi an array; optimal designs (D, A, G) choose model terms and run count and can forbid factor combinations or build on runs already measured in a worksheet.',
+          },
+          {
+            type: 'definition',
+            term: 'Run table and datasheet',
+            content: 'The right side shows the preview of the design; values entered there go into the datasheet when it is created. Afterwards the results are entered in the datasheet, and the planner shows how far it is filled. When the design changes, the datasheet is outdated and can be recreated. Only actual configuration changes discard the design; clicking the active design type again or entering the same run count changes nothing.',
+          },
+          {
+            type: 'definition',
+            term: 'Evaluation',
+            content: 'Efficiency, VIF, alias structure and power rate the design before the experiment. With replicates the dispersion analysis shows which factors affect the spread; once all results are in, a button hands the datasheet to a regression.',
+          },
+          {
+            type: 'definition',
+            term: 'EVOP project',
+            content: 'In project mode the design becomes the first phase. Once its results are in, you decide: recenter (around the best run), repeat or stop. The timeline shows all phases; a click brings a phase back with its design and datasheet.',
+          },
+          {
+            type: 'paragraph',
+            content: 'Hold Alt to show question marks at headings, column heads and buttons; a click explains the element.',
+          },
+        ],
+      },
+    },
+
     methodology: {
       de: {
         title: 'Vorgehen',

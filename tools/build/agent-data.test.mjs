@@ -1068,6 +1068,97 @@ test('collectAgentData: table und tree sind erlaubt und melden nichts — die Pr
   assert.equal(modules.bar.available, true);
 });
 
+const OMIT_MODEL = `export class State {
+  /** @type {string} the observed problem statement */
+  problem = '';
+  /**
+   * @type {{inScope:Array<object>, outScope:Array<object>}} image galleries
+   * @agentOmit inScope[].dataUrl outScope[].dataUrl
+   */
+  images = { inScope: [], outScope: [] };
+  toJSON() { return { problem: this.problem, images: this.images }; }
+}`;
+
+/** OMIT_MODEL mit anderem @agentOmit-Tag (oder anderem Typ). */
+function omitModel(tag, type = '{inScope:Array<object>, outScope:Array<object>}') {
+  return OMIT_MODEL
+    .replace('@agentOmit inScope[].dataUrl outScope[].dataUrl', tag)
+    .replace('{inScope:Array<object>, outScope:Array<object>}', type);
+}
+
+/** AGENT_READ_VM mit einem zusätzlichen Typedef-Feld `cells`. */
+function cellsVm(sentinels, type = 'Array<Array<{ text: string, image: string|null }>>') {
+  return AGENT_READ_VM.replace(
+    ' * @property {any[][]} rows  [bulk] every data row of the active sheet\n',
+    ' * @property {any[][]} rows  [bulk] every data row of the active sheet\n'
+    + ` * @property {${type}} cells  ${sentinels} the 3x3 cells\n`,
+  );
+}
+
+test('collectAgentData: @agentOmit am Model-Feld landet als omit im Feldschema', () => {
+  const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': OMIT_MODEL } });
+  const { modules } = collectAgentData(root);
+
+  assert.deepEqual(modules.foo.fields.images.omit, ['inScope[].dataUrl', 'outScope[].dataUrl']);
+  assert.equal(modules.foo.fields.images.help, 'image galleries');
+  assert.equal('omit' in modules.foo.fields.problem, false, 'ohne Marke steht kein omit');
+  assert.deepEqual(modules.foo.reported.filter(v => v.includes('omit')), []);
+});
+
+test('collectAgentData: [omit:…] im Typedef, vor oder nach [bulk], hält die Hilfe sauber', () => {
+  for (const sentinels of ['[bulk] [omit:[][].image]', '[omit:[][].image] [bulk]']) {
+    const root = fixture({ bar: { 'bar.js': cellsVm(sentinels), 'bar-model.js': BAR_MODEL } });
+    const { modules } = collectAgentData(root);
+    const cells = modules.bar.fields.cells;
+
+    assert.equal(cells.bulk, true, sentinels);
+    assert.equal(cells.bulkKind, 'table', sentinels);
+    assert.deepEqual(cells.omit, ['[][].image'], sentinels);
+    assert.equal(cells.help, 'the 3x3 cells', sentinels);
+    assert.deepEqual(modules.bar.reported.filter(v => v.includes('omit')), [], sentinels);
+  }
+  const root = fixture({ bar: { 'bar.js': AGENT_READ_VM, 'bar-model.js': BAR_MODEL } });
+  assert.equal('omit' in collectAgentData(root).modules.bar.fields.rows, false);
+});
+
+test('collectAgentData: ein Auslassungspfad gegen die Grammatik ist invalid_omit_path', () => {
+  const cases = [
+    ['@agentOmit', 'invalid_omit_path:images:'],
+    ['@agentOmit inScope[]', 'invalid_omit_path:images:inScope[]'],
+    ['@agentOmit inScope..dataUrl', 'invalid_omit_path:images:inScope..dataUrl'],
+    ['@agentOmit []', 'invalid_omit_path:images:[]'],
+  ];
+  for (const [tag, code] of cases) {
+    const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': omitModel(tag) } });
+    const { modules } = collectAgentData(root);
+    assert.ok(modules.foo.violations.includes(code), `${tag}: erwartet ${code}, bekam ${JSON.stringify(modules.foo.violations)}`);
+    assert.equal(modules.foo.available, false, tag);
+  }
+});
+
+test('collectAgentData: ein Pfad, der nicht zum Typ passt, ist omit_path_mismatch', () => {
+  const cases = [
+    [omitModel('@agentOmit inScope.dataUrl'), 'omit_path_mismatch:images:inScope.dataUrl'],
+    [omitModel('@agentOmit gallery[].dataUrl'), 'omit_path_mismatch:images:gallery[].dataUrl'],
+    [omitModel('@agentOmit inScope[].dataUrl', '{inScope:string, outScope:string}'), 'omit_path_mismatch:images:inScope[].dataUrl'],
+  ];
+  for (const [model, code] of cases) {
+    const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': model } });
+    const { modules } = collectAgentData(root);
+    assert.ok(modules.foo.violations.includes(code), `erwartet ${code}, bekam ${JSON.stringify(modules.foo.violations)}`);
+  }
+  const root = fixture({ bar: { 'bar.js': cellsVm('[bulk] [omit:[].image]'), 'bar-model.js': BAR_MODEL } });
+  assert.ok(collectAgentData(root).modules.bar.violations.includes('omit_path_mismatch:cells:[].image'));
+});
+
+test('collectAgentData: ein nicht auflösbarer Typ widerlegt keinen Pfad', () => {
+  for (const type of ['object', 'any', 'Gallery', '{a: string}|{b: string}', '{x: object}']) {
+    const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': omitModel('@agentOmit x.y', type) } });
+    const { modules } = collectAgentData(root);
+    assert.deepEqual(modules.foo.reported.filter(v => v.includes('omit')), [], type);
+  }
+});
+
 test('collectAgentData: a module with an AgentRead typedef is available without a model class', () => {
   // Kein `Model:`-Mitglied → readModelFields würde `unresolvable_model_class`
   // melden. Mit deklarierter Lesefläche ist das Model irrelevant.
@@ -3210,4 +3301,166 @@ test('Ausgaben: ein Model-Feld ohne passende Typedef bleibt ohne keys', () => {
   const { modules } = collectAgentData(fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': RECORD_MODEL } }));
   assert.equal('keys' in modules.foo.fields.others, false);
   assert.deepEqual(modules.foo.fields.entries.help, 'die Zeilen');
+});
+
+// ── Teil-Viewmodels (Spec 2026-10-24 E3) ─────────────────────────────
+
+/**
+ * Modul `foo` mit dem Teil-Viewmodel `draft` aus `viewmodel/draft.js`.
+ * @param {string} draftBody  Quelltext von viewmodel/draft.js
+ * @param {{ imports?: string, members?: string, html?: string|null, extra?: Record<string, string> }} [opts]
+ */
+function subVmFixture(draftBody, { imports = '', members = '', html = null, extra = {} } = {}) {
+  const vm = `/**
+ * Foo module.
+ * @agent
+ */
+import { createModule } from '../../core/template-module.js';
+import { State } from './foo-model.js';
+import { DraftViewModel } from './viewmodel/draft.js';
+${imports}
+export default createModule({
+  config: { id: 'foo' },
+  Model: State,
+  data(module, _t) {
+    return {
+      draft: new DraftViewModel({ t: _t }),
+      cache: new Map(),
+      collator: new Intl.Collator('de'),
+      buffer: makeBuffer(),
+      ${members}
+      /**
+       * Read the full state.
+       * @agent
+       * @returns {object} the state
+       */
+      read() { return {}; },
+    };
+  },
+});`;
+  const files = { 'foo.js': vm, 'foo-model.js': MODEL };
+  if (html !== null) files['foo.html'] = html;
+  return fixture({ foo: files }, { 'js/modules/foo/viewmodel/draft.js': draftBody, ...extra });
+}
+
+const DRAFT_VM = `export class DraftViewModel {
+  constructor({ t }) {
+    this._t = t;
+    this.model = null;
+  }
+  /** @noagent lifecycle */
+  attach({ model }) { this.model = model; }
+  /**
+   * Set the problem statement.
+   * @agent
+   * @param {string} text the problem statement
+   * @returns {void}
+   */
+  setProblem(text) { this.model.problem = text; }
+  /** @noagent presentation */
+  problemClass() { return {}; }
+  _helper() {}
+  static create() { return new DraftViewModel({}); }
+}`;
+
+const FROM_DRAFT = '@js/modules/foo/viewmodel/draft.js';
+
+test('Teil-Viewmodel: Methoden werden zu Aktionen <teil>.<methode>; eingebaute Klassen und Fabriken bleiben Daten', () => {
+  const { modules } = collectAgentData(subVmFixture(DRAFT_VM));
+  assert.deepEqual(modules.foo.violations, []);
+  assert.equal(modules.foo.available, true);
+  assert.deepEqual(Object.keys(modules.foo.actions).sort(), ['draft.setProblem', 'read']);
+  assert.deepEqual(modules.foo.actions['draft.setProblem'].params,
+    [{ name: 'text', type: 'string', optional: false, help: 'the problem statement' }]);
+});
+
+test('Teil-Viewmodel: Befunde tragen das Präfix und die Datei der Klasse', () => {
+  const body = DRAFT_VM
+    .replace('/** @noagent presentation */\n  problemClass', 'problemClass')
+    .replace('   * @param {string} text the problem statement\n', '');
+  const { modules } = collectAgentData(subVmFixture(body));
+  assert.deepEqual([...modules.foo.violations].sort(), [
+    `missing_param:draft.setProblem.text${FROM_DRAFT}`,
+    `unmarked_method:draft.problemClass${FROM_DRAFT}`,
+  ]);
+});
+
+test('Teil-Viewmodel: eine Wurzelbindung x-model="model.…" zählt als abgedeckt, wenn eine @agent-Methode des Teils sie schreibt', () => {
+  const { modules } = collectAgentData(subVmFixture(DRAFT_VM, { html: '<input x-model="model.problem">' }));
+  assert.ok(!modules.foo.reported.includes('unreachable_write:problem'), modules.foo.reported.join(', '));
+});
+
+test('Teil-Viewmodel: importiert, aber keine auflösbare Klasse → unresolved_sub_viewmodel', () => {
+  const { modules } = collectAgentData(subVmFixture(DRAFT_VM, {
+    imports: "import { GhostViewModel } from './viewmodel/ghost.js';",
+    members: 'ghost: new GhostViewModel(),',
+  }));
+  assert.ok(modules.foo.reported.includes('unresolved_sub_viewmodel:ghost'), modules.foo.reported.join(', '));
+  assert.equal(modules.foo.available, false);
+});
+
+test('Teil-Viewmodel: eine Klasse mit extends → unresolved_sub_viewmodel', () => {
+  const { modules } = collectAgentData(subVmFixture(DRAFT_VM, {
+    imports: "import { ChildViewModel } from './viewmodel/child.js';",
+    members: 'child: new ChildViewModel(),',
+    extra: { 'js/modules/foo/viewmodel/child.js': 'export class BaseViewModel {}\nexport class ChildViewModel extends BaseViewModel {}' },
+  }));
+  assert.ok(modules.foo.reported.includes('unresolved_sub_viewmodel:child'), modules.foo.reported.join(', '));
+});
+
+test('Teil-Viewmodel: ein Teil-Viewmodel im Teil-Viewmodel → nested_sub_viewmodel; eingebaute Klassen und _-Felder nicht', () => {
+  const body = DRAFT_VM
+    .replace('export class DraftViewModel', "import { InnerViewModel } from './inner.js';\nexport class DraftViewModel")
+    .replace('    this.model = null;\n', '    this.model = null;\n    this.inner = new InnerViewModel();\n    this.seen = new Set();\n    this._cache = new InnerViewModel();\n');
+  const { modules } = collectAgentData(subVmFixture(body, {
+    extra: { 'js/modules/foo/viewmodel/inner.js': 'export class InnerViewModel {}' },
+  }));
+  assert.deepEqual(modules.foo.reported.filter(c => c.startsWith('nested_sub_viewmodel:')), ['nested_sub_viewmodel:draft.inner']);
+});
+
+test('Teil-Viewmodel: eine Vorlagenbindung an <teil>.model.… ist ein Befund', () => {
+  const { modules } = collectAgentData(subVmFixture(DRAFT_VM, {
+    html: '<input :value="draft.model.problem" @input="draft.setProblem($event.target.value)">',
+  }));
+  assert.ok(modules.foo.reported.includes('sub_viewmodel_model_binding:draft.model.problem'), modules.foo.reported.join(', '));
+});
+
+test('Teil-Viewmodel: eine Methode help oder params kollidiert mit dem Hilfeschlüssel', () => {
+  const body = DRAFT_VM.replace('/** @noagent presentation */\n  problemClass() { return {}; }', '/** @noagent */\n  help() { return {}; }');
+  const { modules } = collectAgentData(subVmFixture(body));
+  assert.ok(modules.foo.reported.includes(`sub_viewmodel_key_collision:draft.help${FROM_DRAFT}`), modules.foo.reported.join(', '));
+  assert.ok(!('draft.help' in modules.foo.actions));
+});
+
+test('Teil-Viewmodel: keyof-Typedef und Prüfmenge stehen in der Datei der Klasse', () => {
+  const body = `/**
+ * @typedef {object} Fields
+ * @property {string} title  the title
+ * @property {string} hint  the hint
+ */
+const FIELD_KEYS = ['title', 'hint'];
+function requireEnum() {}
+export class DraftViewModel {
+  /**
+   * Set a field.
+   * @agent
+   * @param {keyof Fields} key which field
+   * @param {string} value the text
+   * @returns {void}
+   */
+  setField(key, value) { requireEnum('key', key, FIELD_KEYS); this.model[key] = value; }
+}`;
+  const { modules } = collectAgentData(subVmFixture(body));
+  assert.deepEqual(modules.foo.violations, []);
+  const action = modules.foo.actions['draft.setField'];
+  assert.equal(action.keysOf, 'Fields');
+  assert.deepEqual(Object.keys(action.keys), ['title', 'hint']);
+  assert.equal(action.params[0].type, "'title'|'hint'");
+});
+
+test('Teil-Viewmodel: ein DOM-Umweg in der Datei der Klasse trägt Pfad und Zeile', () => {
+  const body = DRAFT_VM.replace('_helper() {}', '_helper(el) { el.innerHTML = this._t("x"); }');
+  const { modules } = collectAgentData(subVmFixture(body));
+  assert.ok(modules.foo.reported.some(c => /^dom_detour:innerHTML@js\/modules\/foo\/viewmodel\/draft\.js:\d+$/.test(c)),
+    modules.foo.reported.join(', '));
 });

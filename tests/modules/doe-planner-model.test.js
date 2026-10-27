@@ -6,8 +6,8 @@
  * invalidation, active-term filtering, design-signature staleness, hasContent).
  */
 
-import { suite, test, assertEqual } from '../test-utils.js';
-import { State } from '../../js/modules/doe-planner/doe-planner-model.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
+import { State, PHASE_DECISIONS } from '../../js/modules/doe-planner/doe-planner-model.js';
 
 function json(v) { return JSON.stringify(v); }
 
@@ -301,5 +301,259 @@ suite('DoE Planner Model — hasContent', () => {
     s.addFactor('');
     s.design = { codedMatrix: [], designType: 'full' };
     assertEqual(s.hasContent(), true);
+  });
+});
+
+// ─── EVOP phases (spec 2026-10-25 E8) ──────────────────────────────
+
+/** Unrandomised 2² in standard order: Temp 20/40, Druck 1/5. */
+function evopState() {
+  const s = new State();
+  s.addFactor('Temp', 'C', ['20', '40']);
+  s.addFactor('Druck', 'bar', ['1', '5']);
+  s.addResponse();
+  s.responses[0].name = 'Yield';
+  s.projectName = 'Ofen';
+  s.design = {
+    designType: 'full',
+    codedMatrix: [[-1, -1], [1, -1], [-1, 1], [1, 1]],
+    actualMatrix: [[20, 1], [40, 1], [20, 5], [40, 5]],
+    runOrder: [1, 2, 3, 4], stdOrder: [1, 2, 3, 4], replicateIds: [1, 1, 1, 1],
+  };
+  return s;
+}
+
+suite('DoE Planner Model — EVOP phases', () => {
+  test('decisions are fixed', () => {
+    assertDeepEqual([...PHASE_DECISIONS], ['recenter', 'repeat', 'stop']);
+  });
+
+  test('setProjectMode(true) opens phase 1 once, with a fallback name', () => {
+    const s = evopState();
+    s.setProjectMode(true);
+    assertEqual(s.projectMode, true);
+    assertEqual(s.projectPhases.length, 1);
+    assertEqual(s.activePhaseIdx, 0);
+    assertEqual(s.projectPhases[0].doeName, 'Ofen - Phase 1');
+    assertEqual(s.projectPhases[0].design, null);
+    s.setProjectMode(false);
+    s.setProjectMode(true);
+    assertEqual(s.projectPhases.length, 1);
+  });
+
+  test('snapshotPhase copies, never shares', () => {
+    const s = evopState();
+    const ph = s.snapshotPhase(3);
+    assertEqual(ph.cycleNumber, 3);
+    assertDeepEqual(Object.keys(ph), ['cycleNumber', 'doeName', 'factors', 'responses', 'designType', 'options', 'design', 'worksheetRef', 'evaluation', 'decision', 'completedAt']);
+    ph.factors[0].name = 'X';
+    assertEqual(s.factors[0].name, 'Temp');
+  });
+
+  test('closeActivePhase stores design and y values; a decided phase stays closed', () => {
+    const s = evopState();
+    s.setProjectMode(true);
+    assertEqual(s.closeActivePhase('repeat', [10, 12, 11, 20], '2026-10-25T10:00:00.000Z'), true);
+    const ph = s.projectPhases[0];
+    assertEqual(ph.decision, 'repeat');
+    assertEqual(ph.completedAt, '2026-10-25T10:00:00.000Z');
+    assertDeepEqual(ph.yValues, [10, 12, 11, 20]);
+    assertEqual(ph.design.codedMatrix.length, 4);
+    assertEqual(s.closeActivePhase('stop'), false);
+  });
+
+  test('startPhase without re-centering keeps the factor levels', () => {
+    const s = evopState();
+    s.setProjectMode(true);
+    s.closeActivePhase('repeat', [10, 12, 11, 20]);
+    s.startPhase({ recenter: false });
+    assertEqual(s.projectPhases.length, 2);
+    assertEqual(s.activePhaseIdx, 1);
+    assertEqual(s.doeName, 'Ofen - Phase 2');
+    assertDeepEqual(s.factors[0].levels, ['20', '40']);
+    assertEqual(s.design, null);
+    assertEqual(s.worksheetRef, null);
+  });
+
+  test('startPhase with re-centering moves the center to the best run', () => {
+    const s = evopState();
+    s.setProjectMode(true);
+    s.closeActivePhase('recenter', [10, 12, 11, 20]);
+    s.startPhase({ recenter: true });
+    assertDeepEqual(s.factors[0].levels.map(String), ['30', '50']);
+    assertDeepEqual(s.factors[1].levels.map(String), ['3', '7']);
+  });
+
+  test('evopCycles lists phases with design and y values', () => {
+    const s = evopState();
+    s.setProjectMode(true);
+    assertDeepEqual(s.evopCycles(), []);
+    s.closeActivePhase('repeat', [10, 12, 11, 20]);
+    const cycles = s.evopCycles();
+    assertEqual(cycles.length, 1);
+    assertDeepEqual(cycles[0].factorNames, ['Temp', 'Druck']);
+    assertDeepEqual(cycles[0].y, [10, 12, 11, 20]);
+  });
+
+  test('viewPhase restores a phase; out of range is refused', () => {
+    const s = evopState();
+    s.setProjectMode(true);
+    s.closeActivePhase('repeat', [10, 12, 11, 20]);
+    s.startPhase({ recenter: false });
+    assertEqual(s.viewPhase(0), true);
+    assertEqual(s.activePhaseIdx, 0);
+    assertEqual(s.doeName, 'Ofen - Phase 1');
+    assertEqual(s.design.codedMatrix.length, 4);
+    assertEqual(s.viewPhase(5), false);
+    assertEqual(s.viewPhase(-1), false);
+    assertEqual(s.activePhaseIdx, 0);
+  });
+
+  test('canStartNewPhase: only on a decided phase, never after stop', () => {
+    const s = evopState();
+    assertEqual(s.canStartNewPhase(), true);
+    s.setProjectMode(true);
+    assertEqual(s.canStartNewPhase(), false);
+    s.closeActivePhase('repeat', [1, 2, 3, 4]);
+    assertEqual(s.canStartNewPhase(), true);
+    s.startPhase({ recenter: false });
+    s.closeActivePhase('stop', [1, 2, 3, 4]);
+    assertEqual(s.canStartNewPhase(), false);
+  });
+
+  test('syncActivePhase copies the generated design into the active phase', () => {
+    const s = evopState();
+    s.setProjectMode(true);
+    s.syncActivePhase();
+    assertEqual(s.projectPhases[0].design.codedMatrix.length, 4);
+    assertEqual(s.projectPhases[0].doeName, s.doeName);
+  });
+});
+
+suite('DoE Planner Model — forbidden vertices and model terms', () => {
+  test('addForbiddenVertex refuses duplicates; removeForbiddenVertex checks the index', () => {
+    const s = evopState();
+    assertEqual(s.addForbiddenVertex([1, null]), true);
+    assertEqual(s.addForbiddenVertex([1, null]), false);
+    assertEqual(s.addForbiddenVertex([-1, 1]), true);
+    assertDeepEqual(s.options.forbiddenVertices, [[1, null], [-1, 1]]);
+    assertEqual(s.removeForbiddenVertex(5), false);
+    assertEqual(s.removeForbiddenVertex(0), true);
+    assertDeepEqual(s.options.forbiddenVertices, [[-1, 1]]);
+  });
+
+  test('modelTerms of a 2² design include the interaction', () => {
+    const terms = evopState().modelTerms();
+    assertTrue(terms.length >= 3);
+  });
+});
+
+// ─── Auto-generation signatures (spec 2026-10-25 E3) ───────────────
+
+suite('DoE Planner Model — configSignature / scheduleSignature', () => {
+  function planned() {
+    const s = new State();
+    s.addFactor('Temp', 'C', ['20', '40']);
+    s.addFactor('Druck', 'bar', ['1', '5']);
+    s.addResponse();
+    s.responses[0].name = 'Yield';
+    return s;
+  }
+
+  test('a blank factor or response changes nothing', () => {
+    const s = planned();
+    const config = s.configSignature();
+    const schedule = s.scheduleSignature();
+    s.addFactor('', '');
+    s.addResponse();
+    assertEqual(s.configSignature(), config);
+    assertEqual(s.scheduleSignature(), schedule);
+  });
+
+  test('factor edits change the config signature', () => {
+    for (const edit of [
+      (s) => { s.factors[0].name = 'T'; },
+      (s) => { s.factors[0].unit = 'K'; },
+      (s) => { s.factors[0].kind = 'categorical'; },
+      (s) => { s.factors[0].levels[1] = '50'; },
+      (s) => { s.insertLevel(s.factors[0].id, 1); },
+      (s) => { s.removeFactor(s.factors[1].id); },
+    ]) {
+      const s = planned();
+      const before = s.configSignature();
+      edit(s);
+      assertTrue(s.configSignature() !== before);
+    }
+  });
+
+  test('type, type parameters, options and source change the config signature', () => {
+    for (const edit of [
+      (s) => { s.designType = 'ccd'; },
+      (s) => { s.selectedRes = { k: 2, runs: 4, res: 'Full', p: 0 }; },
+      (s) => { s.selectedPBIdx = 0; },
+      (s) => { s.options.randomize = false; },
+      (s) => { s.options.centerPoints = true; },
+      (s) => { s.options.replicates = 2; },
+      (s) => { s.options.alphaType = 'spherical'; },
+      (s) => { s.options.ccdCenterPoints = 5; },
+      (s) => { s.options.bbCenterPoints = 5; },
+      (s) => { s.options.taguchiArray = 'L4'; },
+      (s) => { s.options.optimalRuns = 9; },
+      (s) => { s.options.optimalActiveTerms = ['M0', 'M1']; },
+      (s) => { s.addForbiddenVertex([1, null]); },
+      (s) => { s.sourceWorksheet = { instanceId: 'ws', sheetId: 's' }; },
+    ]) {
+      const s = planned();
+      const before = s.configSignature();
+      edit(s);
+      assertTrue(s.configSignature() !== before);
+    }
+  });
+
+  test('responses change only the schedule signature', () => {
+    const s = planned();
+    const config = s.configSignature();
+    const schedule = s.scheduleSignature();
+    s.responses[0].name = 'Ausbeute';
+    assertTrue(s.scheduleSignature() !== schedule);
+    const named = s.scheduleSignature();
+    s.responses[0].unit = '%';
+    assertTrue(s.scheduleSignature() !== named);
+    assertEqual(s.configSignature(), config);
+  });
+
+  test('names, project fields, design and preview edits are in neither signature', () => {
+    const s = planned();
+    const config = s.configSignature();
+    const schedule = s.scheduleSignature();
+    s.doeName = 'Ofen';
+    s.projectName = 'Linie 3';
+    s.setProjectMode(true);
+    s.design = { designType: 'full', codedMatrix: [[-1, -1]] };
+    s.previewEdits = { factors: [], responses: [] };
+    s.analysisResponseIdx = 0;
+    assertEqual(s.configSignature(), config);
+    assertEqual(s.scheduleSignature(), schedule);
+  });
+});
+
+suite('doe-planner model — evopSummary', () => {
+  test('null without closed phases', () => {
+    const s = new State();
+    s.addFactor('A', '', ['1', '2']);
+    s.addFactor('B', '', ['1', '2']);
+    s.addResponse();
+    s.setProjectMode(true);
+    assertEqual(s.evopSummary(), null);
+  });
+
+  test('a closed phase with y values gives a summary with effects', () => {
+    const s = evopState();
+    s.setProjectMode(true);
+    s.closeActivePhase('repeat', [10, 12, 11, 20]);
+    const sum = s.evopSummary();
+    assertTrue(sum !== null, 'summary exists');
+    assertTrue(sum.effects.length > 0, 'at least one effect');
+    assertEqual(sum.cycleCount, 1);
   });
 });

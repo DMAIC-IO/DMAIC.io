@@ -11,9 +11,16 @@
  * belong to the data-Fn (view) in `doe-planner.js`. Pure logic only.
  */
 
-import { defaultActiveTerms, parseTermId, termsFromLegacyOptions } from '../../engines/doe-terms.js';
+import { defaultActiveTerms, parseTermId, termsFromLegacyOptions, designModelTerms } from '../../engines/doe-terms.js';
+import { computeEVOPEffects, recenteredFactors } from './doe-planner-analysis.js';
 
 const OPTIMAL_TYPES = ['dopt', 'aopt', 'gopt'];
+
+/** Factor letter by index: 0 → A, 1 → B, … */
+export const letter = (i) => String.fromCharCode(65 + i);
+
+/** The three ways to close an EVOP phase. */
+export const PHASE_DECISIONS = Object.freeze(['recenter', 'repeat', 'stop']);
 
 /** Deep clone helper that strips any Alpine reactive Proxy down to plain data. */
 function plain(v) {
@@ -267,6 +274,189 @@ export class State {
   }
 
   /**
+   * Canonical model terms of the current design (see designModelTerms).
+   * @returns {string[]}
+   */
+  modelTerms() {
+    return designModelTerms(this.design.codedMatrix, {
+      activeTerms: this.isOptimalType() ? this.getActiveTerms() : undefined,
+      categoricalFlags: this.factors.map(f => f.kind === 'categorical'),
+    });
+  }
+
+  // ─── Forbidden vertices (optimal designs) ───────────────────────
+
+  /**
+   * Adds a forbidden factor combination (coded value or null = any, per factor).
+   * @param {Array<?number>} pattern length k
+   * @returns {boolean} false when the same pattern is already forbidden
+   */
+  addForbiddenVertex(pattern) {
+    const list = Array.isArray(this.options.forbiddenVertices) ? [...this.options.forbiddenVertices] : [];
+    const eq = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
+    if (list.some(p => eq(p, pattern))) return false;
+    list.push([...pattern]);
+    this.options.forbiddenVertices = list;
+    return true;
+  }
+
+  /**
+   * @param {number} idx position in options.forbiddenVertices
+   * @returns {boolean} false when idx is out of range
+   */
+  removeForbiddenVertex(idx) {
+    const list = Array.isArray(this.options.forbiddenVertices) ? [...this.options.forbiddenVertices] : [];
+    if (!Number.isInteger(idx) || idx < 0 || idx >= list.length) return false;
+    list.splice(idx, 1);
+    this.options.forbiddenVertices = list;
+    return true;
+  }
+
+  // ─── EVOP project phases (spec 2026-10-25 E8) ───────────────────
+
+  /**
+   * A new, undecided phase from the current plan.
+   * @param {number} cycleNumber 1-based
+   * @returns {object} phase
+   */
+  snapshotPhase(cycleNumber) {
+    return {
+      cycleNumber,
+      doeName: this.doeName,
+      factors: plain(this.factors),
+      responses: plain(this.responses),
+      designType: this.designType,
+      options: { ...plain(this.options) },
+      design: null, worksheetRef: null, evaluation: null,
+      decision: null, completedAt: null,
+    };
+  }
+
+  /**
+   * Switches the EVOP project mode; the first switch-on opens phase 1.
+   * @param {boolean} on
+   */
+  setProjectMode(on) {
+    this.projectMode = on;
+    if (on && this.projectPhases.length === 0) {
+      this.projectPhases.push({
+        ...this.snapshotPhase(1),
+        doeName: this.doeName || `${this.projectName || 'Projekt'} - Phase 1`,
+      });
+      this.activePhaseIdx = 0;
+    }
+  }
+
+  /** Copies the generated design and the plan into the active phase. */
+  syncActivePhase() {
+    if (!this.projectMode || this.activePhaseIdx < 0 || this.activePhaseIdx >= this.projectPhases.length) return;
+    const ph = this.projectPhases[this.activePhaseIdx];
+    ph.design = plain(this.design);
+    ph.worksheetRef = this.worksheetRef ? { ...plain(this.worksheetRef) } : null;
+    ph.evaluation = this.evaluation ? plain(this.evaluation) : null;
+    ph.factors = plain(this.factors);
+    ph.responses = plain(this.responses);
+    ph.doeName = this.doeName;
+  }
+
+  /**
+   * Closes the active phase with a decision, its design and its response values.
+   * @param {'recenter'|'repeat'|'stop'} decision
+   * @param {number[]} [yValues] first response column of the linked datasheet
+   * @param {string} [completedAt] ISO time
+   * @returns {boolean} false when there is no undecided active phase
+   */
+  closeActivePhase(decision, yValues, completedAt = new Date().toISOString()) {
+    const ph = this.projectPhases[this.activePhaseIdx];
+    if (!ph || ph.decision) return false;
+    ph.decision = decision;
+    ph.completedAt = completedAt;
+    ph.design = this.design ? plain(this.design) : null;
+    ph.worksheetRef = this.worksheetRef ? { ...plain(this.worksheetRef) } : null;
+    ph.evaluation = this.evaluation ? plain(this.evaluation) : null;
+    if (Array.isArray(yValues)) ph.yValues = [...yValues];
+    return true;
+  }
+
+  /**
+   * Phases with design and response values, as cycles for computeEVOPEffects.
+   * @returns {Array<{cycleNumber: number, codedMatrix: number[][], y: number[], factorNames: string[]}>}
+   */
+  evopCycles() {
+    return this.projectPhases
+      .filter(ph => ph.yValues && ph.design)
+      .map(ph => ({
+        cycleNumber: ph.cycleNumber,
+        codedMatrix: ph.design.codedMatrix,
+        y: ph.yValues || [],
+        factorNames: (ph.factors || []).map((f, i) => f.name || letter(i)),
+      }))
+      .filter(c => c.y.length > 0);
+  }
+
+  /**
+   * Cumulative EVOP effects over the closed phases.
+   * @returns {?object} computeEVOPEffects() result, null without cycles or effects
+   */
+  evopSummary() {
+    const cycles = this.evopCycles();
+    if (cycles.length === 0) return null;
+    const evop = computeEVOPEffects(cycles);
+    return evop.effects.length === 0 ? null : evop;
+  }
+
+  /**
+   * Opens the next phase: re-centered on the best run of all cycles so far,
+   * or with the same levels.
+   * @param {{recenter?: boolean}} [opts]
+   */
+  startPhase({ recenter = false } = {}) {
+    const prev = this.projectPhases[this.activePhaseIdx];
+    const n = this.projectPhases.length + 1;
+    let factors;
+    if (recenter && prev && prev.yValues && this.design) {
+      const evop = computeEVOPEffects(this.evopCycles());
+      factors = recenteredFactors(this.factors, evop.bestPointCoded);
+    } else {
+      factors = plain(this.factors);
+    }
+    this.doeName = `${this.projectName} - Phase ${n}`;
+    this.factors = factors;
+    this.design = null;
+    this.worksheetRef = null;
+    this.evaluation = null;
+    this.projectPhases.push(this.snapshotPhase(n));
+    this.activePhaseIdx = this.projectPhases.length - 1;
+  }
+
+  /**
+   * Restores a phase's plan, design and datasheet link.
+   * @param {number} idx
+   * @returns {boolean} false when idx is out of range
+   */
+  viewPhase(idx) {
+    if (!Number.isInteger(idx) || idx < 0 || idx >= this.projectPhases.length) return false;
+    const ph = this.projectPhases[idx];
+    this.activePhaseIdx = idx;
+    this.doeName = ph.doeName || '';
+    this.factors = plain(ph.factors || []);
+    this.responses = plain(ph.responses || []);
+    this.designType = ph.designType || 'full';
+    this.options = { ...this.options, ...(ph.options || {}) };
+    this.design = ph.design ? plain(ph.design) : null;
+    this.worksheetRef = ph.worksheetRef ? { ...ph.worksheetRef } : null;
+    this.evaluation = ph.evaluation ? plain(ph.evaluation) : null;
+    return true;
+  }
+
+  /** @returns {boolean} a new phase may start: no phase stopped the project, and the active one is decided */
+  canStartNewPhase() {
+    if (this.projectPhases.some(ph => ph.decision === 'stop')) return false;
+    const active = this.projectPhases[this.activePhaseIdx];
+    return this.activePhaseIdx === -1 || Boolean(active && active.decision);
+  }
+
+  /**
    * Stable identity for the currently generated design. Because the engine's
    * deterministicSeed makes the coded matrix reproducible for identical input,
    * stringifying it is a sufficient signature to detect design drift.
@@ -281,6 +471,42 @@ export class State {
       this.responses.map(r => `${r.name}|${r.unit}`).join('||'),
       this.design.codedMatrix.map(r => r.join(',')).join(';'),
     ].join('#');
+  }
+
+  /**
+   * Identity of everything the design matrix depends on: factors, design
+   * type, type parameters, options and the source worksheet. A change
+   * invalidates the design and schedules a new one (spec 2026-10-25 E3).
+   * A freshly added, still blank factor does not count — adding one never
+   * invalidated the design. Not designSignature(): that one describes the
+   * generated design for the worksheet staleness.
+   * @returns {string}
+   */
+  configSignature() {
+    const blank = f => f.name.trim() === '' && f.unit === '' && f.kind === 'continuous'
+      && f.levels.length === 2 && f.levels.every(l => l === '');
+    const o = this.options;
+    return JSON.stringify({
+      factors: this.factors.filter(f => !blank(f)).map(f => [f.name, f.unit, f.kind, f.levels]),
+      designType: this.designType,
+      selectedRes: this.selectedRes ? [this.selectedRes.k, this.selectedRes.runs] : null,
+      selectedPBIdx: this.selectedPBIdx,
+      options: [o.randomize, o.centerPoints, o.replicates, o.alphaType, o.ccdCenterPoints, o.bbCenterPoints,
+        o.taguchiArray, o.optimalRuns, o.optimalActiveTerms, o.forbiddenVertices],
+      source: this.sourceWorksheet ? `${this.sourceWorksheet.instanceId}::${this.sourceWorksheet.sheetId}` : null,
+    });
+  }
+
+  /**
+   * Identity of the responses. They never change the matrix, so a change
+   * only schedules a regeneration (spec 2026-10-25 E3). Blank responses
+   * do not count.
+   * @returns {string}
+   */
+  scheduleSignature() {
+    return JSON.stringify(this.responses
+      .map((r, i) => (r.name || r.unit ? [i, r.name, r.unit] : null))
+      .filter(Boolean));
   }
 
   isOptimalType() {
