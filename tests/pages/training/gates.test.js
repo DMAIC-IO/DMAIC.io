@@ -81,8 +81,8 @@ suite('gates', () => {
   test('mergeCounts keeps maxima', () => {
     const a = mergeCounts(emptyStepCounts(), { count: 80, perN: { skewed: { 2: 100, 5: 40 } } });
     const b = mergeCounts(a, { count: 60, perN: { skewed: { 2: 30, 5: 90 }, uniform: { 2: 10 } } });
-    assertDeepEqual(b, { count: 80, perN: { skewed: { 2: 100, 5: 90 }, uniform: { 2: 10 } } });
-    assertDeepEqual(emptyStepCounts(), { count: 0, perN: {} });
+    assertDeepEqual(b, { count: 80, perN: { skewed: { 2: 100, 5: 90 }, uniform: { 2: 10 } }, choices: 0 });
+    assertDeepEqual(emptyStepCounts(), { count: 0, perN: {}, choices: 0 });
   });
 
   test('gateHint returns key and params per gate kind', () => {
@@ -101,5 +101,24 @@ suite('gates', () => {
 
   test('hint for the settings gate', () => {
     assertDeepEqual(gateHint({ revealAfterSettings: 2 }), { key: 'course.insightLockedSettings', params: { k: 2 } });
+  });
+
+  test('revealAfterChoices needs k distinct choices', () => {
+    const block = { revealAfterSamples: 1000, revealAfterChoices: 3 };
+    assertEqual(isGateOpen(block, { count: 1000, perN: {}, choices: 2 }), false);
+    assertEqual(isGateOpen(block, { count: 1000, perN: {}, choices: 3 }), true);
+    assertEqual(isGateOpen(block, { count: 999, perN: {}, choices: 3 }), false);
+  });
+
+  test('mergeCounts keeps the highest choices', () => {
+    const a = mergeCounts(emptyStepCounts(), { count: 10, choices: 2 });
+    const b = mergeCounts(a, { count: 20, choices: 1 });
+    assertEqual(b.choices, 2);
+    assertEqual(mergeCounts(b, { count: 30, choices: 3 }).choices, 3);
+  });
+
+  test('choices hint wins over the samples hint', () => {
+    assertDeepEqual(gateHint({ revealAfterSamples: 1000, revealAfterChoices: 3 }),
+      { key: 'course.insightLockedChoices', params: { k: 3, n: 1000 } });
   });
 });

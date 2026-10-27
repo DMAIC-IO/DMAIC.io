@@ -4,7 +4,7 @@
  * Decides when a gated `insight` block opens. Counts are kept per step by the
  * caller and cover only the current visit of that step.
  *
- * @typedef {{ count: number, perN: Object<string, Object<string, number>> }} StepCounts
+ * @typedef {{ count: number, perN: Object<string, Object<string, number>>, choices: number }} StepCounts
  */
 
 /** Draws needed for one sample size n to count towards a gate. */
@@ -15,13 +15,13 @@ export const MIN_DRAWS_PER_N = 100;
  * @returns {StepCounts}
  */
 export function emptyStepCounts() {
-  return { count: 0, perN: {} };
+  return { count: 0, perN: {}, choices: 0 };
 }
 
 /**
  * Merge a cumulative progress event into the counts, keeping maxima.
  * @param {StepCounts} prev
- * @param {{count?: number, perN?: Object<string, Object<string, number>>}} detail
+ * @param {{count?: number, perN?: Object<string, Object<string, number>>, choices?: number}} detail
  * @returns {StepCounts}
  */
 export function mergeCounts(prev, detail) {
@@ -33,7 +33,11 @@ export function mergeCounts(prev, detail) {
       target[n] = Math.max(target[n] || 0, draws);
     }
   }
-  return { count: Math.max(prev.count || 0, (detail && detail.count) || 0), perN };
+  return {
+    count: Math.max(prev.count || 0, (detail && detail.count) || 0),
+    perN,
+    choices: Math.max(prev.choices || 0, (detail && detail.choices) || 0),
+  };
 }
 
 /** Number of n values with enough draws in one population. */
@@ -67,6 +71,7 @@ function settingsTried(perN) {
 export function isGateOpen(block, counts) {
   if (block.revealAfterSamples != null && !(counts.count >= block.revealAfterSamples)) return false;
   if (block.revealAfterValues != null && !(counts.count >= block.revealAfterValues)) return false;
+  if (block.revealAfterChoices != null && !((counts.choices || 0) >= block.revealAfterChoices)) return false;
   if (block.revealAfterSettings != null) {
     const tried = settingsTried(counts.perN);
     if (tried.levels < block.revealAfterSettings || tried.ns < block.revealAfterSettings) return false;
@@ -90,6 +95,13 @@ export function isGateOpen(block, counts) {
  * @returns {{key: string, params: object}}
  */
 export function gateHint(block) {
+  // Lesson 5 asks for every offered choice on top of the samples.
+  if (block.revealAfterChoices != null) {
+    return {
+      key: 'course.insightLockedChoices',
+      params: { k: block.revealAfterChoices, n: block.revealAfterSamples || 0 },
+    };
+  }
   // Lesson 2 counts whole samples; its buttons draw one or a few at a time.
   if (block.revealAfterSamples != null) {
     return { key: 'course.insightLockedSamples', params: { k: block.revealAfterSamples } };
