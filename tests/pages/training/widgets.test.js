@@ -486,6 +486,14 @@ suite('null-distribution widget', () => {
     assertDeepEqual(sim.observedOptions(), [501.6]);
   });
 
+  test('means exactly on the observed edges land in highlighted bins', () => {
+    const { sim } = mount({ seed: 1 });
+    sim._pushMeans([501.6, 498.4]);
+    assertEqual(sim.cell('far'), '2');
+    assertEqual(lit(sim).reduce((s, b) => s + b.count, 0), 2, 'both edge means are highlighted');
+    assertEqual(sim.chartConfig().bins.reduce((s, b) => s + b.count, 0), 2);
+  });
+
   test('values beyond the axis still count', () => {
     const { sim } = mount({ seed: 1 });
     sim._pushMeans([505, 495]);
@@ -664,5 +672,38 @@ suite('test-errors widget', () => {
     sim.draw(1);
     sim.destroy();
     assertEqual(chartManager.live.size, 0);
+  });
+});
+
+suite('course widgets: number format', () => {
+  const ctxIn = (lang) => ({ i18n: { t: (k) => k, getLanguage: () => lang } });
+  const mount = (name, lang, params) => {
+    const sim = WIDGET_COMPONENTS[name].factory(ctxIn(lang));
+    sim.setup({ dispatchEvent: () => {} }, params, { addResult: () => {} });
+    return sim;
+  };
+
+  test('German shows a decimal comma in every widget', () => {
+    assertEqual(mount('sample-estimate', 'de', { seed: 1 }).cell('mu'), '500,00');
+    assertEqual(mount('variance-check', 'de', { seed: 1 }).cell('sigma2'), '4,00');
+    assertEqual(mount('sampling-distribution', 'de', { seed: 1, population: 'skewed' }).sigmaText().includes(','), true);
+    const values = mount('value-distribution', 'de', { seed: 1, processes: ['fill-a'], stats: ['sd'] });
+    values.measure('fill-a', 100);
+    assertTrue(/^\d+,\d\d$/.test(values.cell('fill-a', 'sd')), `sd ${values.cell('fill-a', 'sd')}`);
+    const interval = mount('interval-coverage', 'de', { seed: 1 });
+    interval.draw(10);
+    assertTrue(/^\d+,\d %$/.test(interval.cell('rate')), `rate ${interval.cell('rate')}`);
+    assertEqual(interval.cell('half'), '1,24 g');
+    const nullDist = mount('null-distribution', 'de', { seed: 1, showP: true });
+    nullDist.draw(10);
+    assertEqual(nullDist.cell('p'), '0,011');
+    assertTrue(/^\d+,\d %$/.test(nullDist.cell('share')), `share ${nullDist.cell('share')}`);
+    assertEqual(nullDist.observedText(501.6), '501,6 g');
+  });
+
+  test('English keeps the decimal point', () => {
+    assertEqual(mount('sample-estimate', 'en', { seed: 1 }).cell('mu'), '500.00');
+    assertEqual(mount('null-distribution', 'en', { seed: 1 }).observedText(501.6), '501.6 g');
+    assertEqual(mount('interval-coverage', 'en', { seed: 1, levelChoices: [0.9, 0.95, 0.99] }).levelText(0.95), '95 %');
   });
 });

@@ -118,9 +118,12 @@ export function gateHint(block) {
   }
   // Lesson 5 asks for every offered choice on top of the samples.
   if (block.revealAfterChoices != null) {
+    if (block.revealAfterSamples == null) {
+      return { key: 'course.insightLockedChoicesOnly', params: { k: block.revealAfterChoices } };
+    }
     return {
       key: 'course.insightLockedChoices',
-      params: { k: block.revealAfterChoices, n: block.revealAfterSamples || 0 },
+      params: { k: block.revealAfterChoices, n: block.revealAfterSamples },
     };
   }
   // Lesson 2 counts whole samples; its buttons draw one or a few at a time.

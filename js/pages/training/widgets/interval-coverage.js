@@ -18,6 +18,7 @@
 import { mulberry32 } from '../../../engines/random-variates-engine.js';
 import { PROCESSES, drawSample } from '../processes.js';
 import { meanInterval, covers } from '../intervals.js';
+import { numberFormatter } from './number-format.js';
 
 /** Batch sizes of the draw buttons. */
 export const DRAW_SIZES = [1, 10, 100, 1000];
@@ -42,6 +43,7 @@ const isN = (v) => Number.isInteger(v) && v > 1;
  */
 export function intervalCoverageComponent(ctx) {
   const t = (key, vars) => ctx.i18n.t(`training.course.interval.${key}`, vars);
+  const fmt = numberFormatter(ctx);
   // Generator, per-setting state and chart handle stay outside Alpine's proxy.
   let rng = mulberry32(randomSeed());
   /** @type {Object<string, {drawn: number, hits: Object<string, number>, half: Object<string, number>, rows: object[]}>} */
@@ -141,7 +143,7 @@ export function intervalCoverageComponent(ctx) {
     nOptions() { return [...this.nChoices]; },
     levelOptions() { return [...this.levelChoices]; },
     /** @param {number} level */
-    levelText(level) { return `${Math.round(level * 1000) / 10} %`; },
+    levelText(level) { return `${fmt(Math.round(level * 1000) / 10, null)} %`; },
 
     /**
      * Latest half-width of the current setting (NaN before the first sample).
@@ -168,9 +170,9 @@ export function intervalCoverageComponent(ctx) {
       if (!this.kinds().includes(kind)) return '–';
       if (stat === 'hits') return String(s.hits[kind] || 0);
       if (!s.drawn) return '–';
-      if (stat === 'rate') return `${((100 * s.hits[kind]) / s.drawn).toFixed(1)} %`;
+      if (stat === 'rate') return `${fmt((100 * s.hits[kind]) / s.drawn, 1)} %`;
       const half = this.halfWidth(kind);
-      return Number.isFinite(half) ? `${half.toFixed(2)} g` : '–';
+      return Number.isFinite(half) ? `${fmt(half)} g` : '–';
     },
 
     // ---------- interaction ----------

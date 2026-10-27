@@ -16,6 +16,7 @@
 import { mulberry32 } from '../../../engines/random-variates-engine.js';
 import { binValues } from '../populations.js';
 import { PROCESSES, drawSample, summarizeValues } from '../processes.js';
+import { numberFormatter } from './number-format.js';
 
 /**
  * Batch sizes of the draw buttons. The chart shows only the last sample, so a
@@ -31,7 +32,6 @@ function randomSeed() {
   return crypto.getRandomValues(new Uint32Array(1))[0];
 }
 
-const fmt = (v, digits = 2) => (Number.isFinite(v) ? v.toFixed(digits) : '–');
 
 /**
  * Alpine component factory (registered as `trainingSampleEstimate`).
@@ -40,6 +40,7 @@ const fmt = (v, digits = 2) => (Number.isFinite(v) ? v.toFixed(digits) : '–');
  */
 export function sampleEstimateComponent(ctx) {
   const t = (key, vars) => ctx.i18n.t(`training.course.estimate.${key}`, vars);
+  const fmt = numberFormatter(ctx);
   // Generator, samples and chart handle stay outside Alpine's reactive proxy.
   let rng = mulberry32(randomSeed());
   let current = [];

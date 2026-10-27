@@ -48,16 +48,17 @@ export default {
           { type: 'paragraph', content: 'Wie weit draußen unser x̄ liegt, misst man in Standardfehlern (Lektion „Stichprobenverteilung und Grenzwertsatz“). μ₀ („mü null“) ist der Wert aus H₀, hier 500 g. Das Ergebnis heißt {{term:teststatistik|Teststatistik}} z.' },
           { type: 'definition', term: 'Teststatistik', formula: 'z = \\frac{\\bar{x} - \\mu_0}{\\sigma / \\sqrt{n}}', glossary: 'teststatistik' },
           { type: 'paragraph', content: 'Für unsere Kontrolle: Der Standardfehler ist 2 g / √10 ≈ 0,632 g, also z = 1,6 g / 0,632 g ≈ 2,53. Unser x̄ liegt gut zweieinhalb Standardfehler über 500 g.' },
+          { type: 'paragraph', content: 'Bleibt die Frage aus der Simulation: Wie oft liegt x̄ unter H₀ so weit draußen? Diesen Anteil kann man auch ohne Simulation berechnen. Er heißt {{term:p-wert|p-Wert}}, kurz p.' },
           { type: 'definition', term: 'p-Wert', content: 'Die Wahrscheinlichkeit, unter der Annahme H₀ einen Mittelwert zu erhalten, der mindestens so weit von μ₀ entfernt liegt wie der beobachtete – auf beiden Seiten zusammen.', glossary: 'p-wert' },
-          { type: 'paragraph', content: 'Für z ≈ 2,53 ergibt die Glockenkurve exakt p ≈ 0,011. Genau diesen Wert hat der Anteil in der Simulation des vorigen Schritts angenähert: etwa ein Prozent.' },
+          { type: 'paragraph', content: 'Für z ≈ 2,53 liest man ihn an der Glockenkurve ab: Jenseits von −2,53 und +2,53 liegen zusammen etwa 1,1 % der Fläche, also p ≈ 0,011. Diesen Wert hat der Anteil in der Simulation des vorigen Schritts angenähert.' },
         ],
       },
       {
         title: 'Die Entscheidung',
         blocks: [
-          { type: 'paragraph', content: 'Wie selten ist selten genug? Diese Grenze legt man fest, bevor man die Daten ansieht: das {{term:signifikanzniveau|Signifikanzniveau}} α („alpha“), üblich sind 5 %.' },
+          { type: 'paragraph', content: 'Wie selten ist selten genug? Diese Grenze legt man fest, bevor man die Daten ansieht: das {{term:signifikanzniveau|Signifikanzniveau}} α („alpha“), üblich sind 5 %. Damit legt man fest, wie viel Sicherheit man verlangt: Steht die Anlage wirklich noch auf 500 g, bleiben 95 % der Kontrollen ruhig, und nur jede zwanzigste schlägt grundlos Alarm. Es sind dieselben 95 % wie beim 95-%-Konfidenzintervall der letzten Lektion.' },
           { type: 'definition', term: 'Signifikanzniveau', content: 'Die Grenze α für den p-Wert, die vor der Auswertung festgelegt wird – hier α = 5 %. Liegt p darunter, verwirft man H₀.', glossary: 'signifikanzniveau' },
-          { type: 'paragraph', content: 'Die Regel: Ist p kleiner als α, verwirft man H₀. Das Ergebnis heißt dann signifikant. Sonst behält man H₀ bei. Die Simulation nähert p nur an; entschieden wird mit dem exakt berechneten p-Wert, den die Tabelle jetzt zusätzlich zeigt.' },
+          { type: 'paragraph', content: 'Die Regel: Ist p kleiner als α, verwirft man H₀. Das Ergebnis heißt dann signifikant. Sonst behält man H₀ bei. Als Merksatz: „If p is low, H₀ must go“ – ist p klein, muss H₀ gehen. Die Simulation nähert p nur an; entschieden wird mit dem exakt berechneten p-Wert. Die Tabelle unter dem Diagramm unten zeigt ihn ab jetzt in der Zeile „p-Wert (exakt)“, direkt unter dem simulierten Anteil.' },
           { type: 'paragraph', content: 'Neu: Du kannst den beobachteten Mittelwert wählen. Ziehe viele Stichproben und probiere jeden der drei Werte aus. Die simulierten Mittelwerte bleiben beim Wechsel erhalten.' },
           { type: 'simulation', widget: 'null-distribution', params: { n: 10, observedChoices: [500.8, 501.2, 501.6], showP: true } },
           { type: 'insight', id: 'decision', revealAfterSamples: 1000, revealAfterChoices: 3, paragraphs: [
@@ -72,6 +73,7 @@ export default {
           { type: 'paragraph', content: 'Zwei Fehldeutungen liegen nahe – beide am Beispiel der Anlage A.' },
           { type: 'paragraph', content: 'Erstens: p = 0,011 heißt nicht „Die Anlage steht nur mit 1,1 % Wahrscheinlichkeit noch auf 500 g“. Der p-Wert wird unter der Annahme berechnet, dass H₀ gilt. Er sagt, wie selten solche Daten wären, falls H₀ stimmt – nicht, wie wahrscheinlich H₀ selbst ist.' },
           { type: 'paragraph', content: 'Zweitens: p = 0,21 heißt nicht, dass die Anlage auf 500 g steht. Eine Verstellung um 0,8 g lässt sich mit 10 Packungen schlicht nicht sicher erkennen. „H₀ beibehalten“ bedeutet: Die Daten sprechen nicht deutlich genug dagegen. Es bedeutet nicht: H₀ ist richtig.' },
+          { type: 'paragraph', content: 'Ein Hypothesentest sammelt also nur Indizien gegen H₀ – einen Beweis liefert er nicht, weder für H₀ noch für H₁. Ein kleiner p-Wert ist ein deutliches Indiz gegen H₀. Ist p hoch, hat man (noch) kein Indiz gefunden – mehr Daten können es später liefern.' },
         ],
       },
       {
@@ -156,16 +158,17 @@ export default {
           { type: 'paragraph', content: 'How far out our x̄ lies is measured in standard errors (lesson “Sampling distribution and the central limit theorem”). μ₀ (“mu nought”) is the value from H₀, here 500 g. The result is called the {{term:teststatistik|test statistic}} z.' },
           { type: 'definition', term: 'Test statistic', formula: 'z = \\frac{\\bar{x} - \\mu_0}{\\sigma / \\sqrt{n}}', glossary: 'teststatistik' },
           { type: 'paragraph', content: 'For our check: the standard error is 2 g / √10 ≈ 0.632 g, so z = 1.6 g / 0.632 g ≈ 2.53. Our x̄ lies a good two and a half standard errors above 500 g.' },
+          { type: 'paragraph', content: 'That leaves the question from the simulation: how often does x̄ land this far out under H₀? This share can also be computed without a simulation. It is called the {{term:p-wert|p-value}}, p for short.' },
           { type: 'definition', term: 'p-value', content: 'The probability, assuming H₀, of getting a mean at least as far from μ₀ as the observed one – both sides together.', glossary: 'p-wert' },
-          { type: 'paragraph', content: 'For z ≈ 2.53 the bell curve gives exactly p ≈ 0.011. This is the value the share in the previous step’s simulation approximated: about one percent.' },
+          { type: 'paragraph', content: 'For z ≈ 2.53 it can be read off the bell curve: beyond −2.53 and +2.53 lie about 1.1 % of the area together, so p ≈ 0.011. This is the value the share in the previous step’s simulation approximated.' },
         ],
       },
       {
         title: 'The decision',
         blocks: [
-          { type: 'paragraph', content: 'How rare is rare enough? This threshold is fixed before looking at the data: the {{term:signifikanzniveau|significance level}} α (“alpha”), usually 5 %.' },
+          { type: 'paragraph', content: 'How rare is rare enough? This threshold is fixed before looking at the data: the {{term:signifikanzniveau|significance level}} α (“alpha”), usually 5 %. This sets how much certainty you demand: if the machine really is still at 500 g, 95 % of the checks stay quiet, and only one in twenty raises a false alarm. These are the same 95 % as in the 95 % confidence interval of the last lesson.' },
           { type: 'definition', term: 'Significance level', content: 'The threshold α for the p-value, fixed before the analysis – here α = 5 %. If p falls below it, H₀ is rejected.', glossary: 'signifikanzniveau' },
-          { type: 'paragraph', content: 'The rule: if p is smaller than α, H₀ is rejected. The result is then called significant. Otherwise H₀ is kept. The simulation only approximates p; the decision uses the exactly computed p-value, which the table now shows as well.' },
+          { type: 'paragraph', content: 'The rule: if p is smaller than α, H₀ is rejected. The result is then called significant. Otherwise H₀ is kept. As a mnemonic: “If p is low, H₀ must go.” The simulation only approximates p; the decision uses the exactly computed p-value. From now on the table under the chart below shows it in the row “p-value (exact)”, right under the simulated share.' },
           { type: 'paragraph', content: 'New: you can choose the observed mean. Draw many samples and try each of the three values. The simulated means stay when you switch.' },
           { type: 'simulation', widget: 'null-distribution', params: { n: 10, observedChoices: [500.8, 501.2, 501.6], showP: true } },
           { type: 'insight', id: 'decision', revealAfterSamples: 1000, revealAfterChoices: 3, paragraphs: [
@@ -180,6 +183,7 @@ export default {
           { type: 'paragraph', content: 'Two misreadings are tempting – both on the example of machine A.' },
           { type: 'paragraph', content: 'First: p = 0.011 does not mean “the machine is still at 500 g with only 1.1 % probability”. The p-value is computed assuming that H₀ holds. It says how rare such data would be if H₀ were true – not how likely H₀ itself is.' },
           { type: 'paragraph', content: 'Second: p = 0.21 does not mean that the machine is at 500 g. A drift of 0.8 g simply cannot be detected reliably with 10 packs. “Keep H₀” means: the data do not speak clearly enough against it. It does not mean: H₀ is right.' },
+          { type: 'paragraph', content: 'So a hypothesis test only collects evidence against H₀ – it delivers no proof, neither for H₀ nor for H₁. A small p-value is clear evidence against H₀. If p is high, you have found no evidence (yet) – more data may provide it later.' },
         ],
       },
       {

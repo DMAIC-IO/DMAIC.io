@@ -955,8 +955,12 @@
 .chart-interval__segment--t,
 .chart-interval__swatch--t { stroke: var(--color-success); }
 
+/* Misses are dashed as well, so they do not rely on colour alone. */
 .chart-interval__segment--miss,
-.chart-interval__swatch--miss { stroke: var(--color-error); }
+.chart-interval__swatch--miss {
+  stroke: var(--color-error);
+  stroke-dasharray: 6 3;
+}
 
 .chart-interval__reference {
   stroke: var(--color-text-primary);

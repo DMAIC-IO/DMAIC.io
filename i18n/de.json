@@ -339,6 +339,7 @@
         "n": "Probiere mindestens {k} Packungszahlen mit je mindestens {min} Prüfungen aus – dann steht hier, was du gesehen hast.",
         "alpha": "Probiere mindestens {k} Werte für α mit je mindestens {min} Prüfungen aus – dann steht hier, was du gesehen hast."
       },
+      "insightLockedChoicesOnly": "Probiere alle {k} beobachteten Mittelwerte aus – dann steht hier, was du gesehen hast.",
       "quizCorrect": "Richtig.",
       "quizWrong": "Noch nicht.",
       "estimate": {

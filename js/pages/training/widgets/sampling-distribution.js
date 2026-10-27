@@ -15,6 +15,7 @@ import { mulberry32 } from '../../../engines/random-variates-engine.js';
 import {
   POPULATIONS, drawSampleMean, meanSd, standardError, binValues,
 } from '../populations.js';
+import { numberFormatter } from './number-format.js';
 
 /** Sample sizes offered when n is not locked and the block gives no `nChoices`. */
 export const N_CHOICES = [2, 5, 10, 30, 50];
@@ -39,7 +40,6 @@ function meansBinCount(population, n) {
   return Math.min(MAX_MEANS_BINS, Math.max(POP_BINS, perSe));
 }
 
-const fmt = (v, digits = 2) => (Number.isFinite(v) ? v.toFixed(digits) : '–');
 
 /**
  * Alpine component factory (registered as `trainingSamplingSim`).
@@ -48,6 +48,7 @@ const fmt = (v, digits = 2) => (Number.isFinite(v) ? v.toFixed(digits) : '–');
  */
 export function samplingSimComponent(ctx) {
   const t = (key, vars) => ctx.i18n.t(`training.course.sim.${key}`, vars);
+  const fmt = numberFormatter(ctx);
   // Generator, drawn means, chart handles and the page API stay outside Alpine's reactive proxy.
   let rng = mulberry32(randomSeed());
   let means = [];

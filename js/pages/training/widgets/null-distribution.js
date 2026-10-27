@@ -17,6 +17,7 @@
 import { mulberry32 } from '../../../engines/random-variates-engine.js';
 import { PROCESSES, drawSample } from '../processes.js';
 import { zStatistic, twoSidedP, isAsFarOut, decide } from '../hypothesis.js';
+import { numberFormatter } from './number-format.js';
 
 /** Batch sizes of the draw buttons. */
 export const DRAW_SIZES = [1, 10, 100, 1000];
@@ -46,6 +47,7 @@ const isN = (v) => Number.isInteger(v) && v > 1;
  */
 export function nullDistributionComponent(ctx) {
   const t = (key, vars) => ctx.i18n.t(`training.course.nullDist.${key}`, vars);
+  const fmt = numberFormatter(ctx);
   const process = PROCESSES[PROCESS];
   // Generator, means and chart handle stay outside Alpine's proxy.
   let rng = mulberry32(randomSeed());
@@ -116,7 +118,7 @@ export function nullDistributionComponent(ctx) {
     shareLabel() { return t(this.showP ? 'shareApprox' : 'share'); },
     observedOptions() { return [...this.observedChoices]; },
     /** @param {number} value */
-    observedText(value) { return `${value.toFixed(1)} g`; },
+    observedText(value) { return `${fmt(value, 1)} g`; },
 
     /** Exact two-sided p of the observed mean. */
     pValue() {
@@ -131,12 +133,12 @@ export function nullDistributionComponent(ctx) {
     cell(key) {
       // Read the reactive counters so Alpine re-evaluates after each change.
       if (this.samplesDrawn < 0 || this.revision < 0) return '';
-      if (key === 'p') return this.pValue().toFixed(3);
+      if (key === 'p') return fmt(this.pValue(), 3);
       if (key === 'decision') return t(decide(this.pValue()));
       const far = this.farCount();
       if (key === 'drawn') return String(means.length);
       if (key === 'far') return String(far);
-      if (key === 'share') return means.length ? `${((100 * far) / means.length).toFixed(1)} %` : '–';
+      if (key === 'share') return means.length ? `${fmt((100 * far) / means.length, 1)} %` : '–';
       return '–';
     },
 
@@ -199,7 +201,10 @@ export function nullDistributionComponent(ctx) {
 
     // ---------- chart ----------
 
-    /** Fixed 0.2 g bins; those as far out as the observed mean are highlighted. */
+    /**
+     * Fixed 0.2 g bins, [x0, x1) above μ₀ and (x0, x1] below it; those as far
+     * out as the observed mean are highlighted.
+     */
     bins() {
       const counts = new Array(BIN_COUNT).fill(0);
       for (const m of means) {
@@ -208,6 +213,10 @@ export function nullDistributionComponent(ctx) {
         // Floating point may put a mean just below an edge into the next bin.
         if (k > 0 && m < EDGES[k]) k--;
         if (k < BIN_COUNT - 1 && m >= EDGES[k + 1]) k++;
+        // Below μ₀ the bins close on the right, mirroring the upper side: a
+        // mean exactly on the mirrored edge (498.4 for 501.6) is as far out
+        // as the observed one and belongs to the highlighted tail bin.
+        if (m < process.mean && k > 0 && Math.abs(m - EDGES[k]) < EPS) k--;
         counts[k]++;
       }
       const d = Math.abs(this.observed - process.mean);

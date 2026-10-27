@@ -120,6 +120,8 @@ suite('gates', () => {
   test('choices hint wins over the samples hint', () => {
     assertDeepEqual(gateHint({ revealAfterSamples: 1000, revealAfterChoices: 3 }),
       { key: 'course.insightLockedChoices', params: { k: 3, n: 1000 } });
+    assertDeepEqual(gateHint({ revealAfterChoices: 3 }),
+      { key: 'course.insightLockedChoicesOnly', params: { k: 3 } }, 'no sample count without a sample gate');
   });
 
   test('revealAfterChecks counts checks', () => {

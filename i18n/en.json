@@ -339,6 +339,7 @@
         "n": "Try at least {k} pack counts with at least {min} checks each – then this shows what you saw.",
         "alpha": "Try at least {k} values of α with at least {min} checks each – then this shows what you saw."
       },
+      "insightLockedChoicesOnly": "Try all {k} observed means – then this shows what you saw.",
       "quizCorrect": "Correct.",
       "quizWrong": "Not yet.",
       "estimate": {

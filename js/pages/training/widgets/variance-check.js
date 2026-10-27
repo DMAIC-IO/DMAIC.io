@@ -13,6 +13,7 @@
 
 import { mulberry32 } from '../../../engines/random-variates-engine.js';
 import { PROCESSES, drawSample, sampleVariances } from '../processes.js';
+import { numberFormatter } from './number-format.js';
 
 /** Batch sizes of the draw buttons. */
 export const DRAW_SIZES = [1, 10, 100, 1000];
@@ -22,7 +23,6 @@ function randomSeed() {
   return crypto.getRandomValues(new Uint32Array(1))[0];
 }
 
-const fmt = (v, digits = 2) => (Number.isFinite(v) ? v.toFixed(digits) : '–');
 
 /**
  * Alpine component factory (registered as `trainingVarianceCheck`).
@@ -31,6 +31,7 @@ const fmt = (v, digits = 2) => (Number.isFinite(v) ? v.toFixed(digits) : '–');
  */
 export function varianceCheckComponent(ctx) {
   const t = (key, vars) => ctx.i18n.t(`training.course.variance.${key}`, vars);
+  const fmt = numberFormatter(ctx);
   // Generator, sums and the latest sample stay outside Alpine's reactive proxy.
   let rng = mulberry32(randomSeed());
   let latest = [];

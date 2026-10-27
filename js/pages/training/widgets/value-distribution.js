@@ -14,6 +14,7 @@
 import { mulberry32 } from '../../../engines/random-variates-engine.js';
 import { binValues } from '../populations.js';
 import { PROCESSES, summarizeValues } from '../processes.js';
+import { numberFormatter } from './number-format.js';
 
 /** Batch sizes of the measure buttons. */
 export const MEASURE_SIZES = [1, 10, 100, 1000];
@@ -29,7 +30,6 @@ function randomSeed() {
   return crypto.getRandomValues(new Uint32Array(1))[0];
 }
 
-const fmt = (v, digits = 2) => (Number.isFinite(v) ? v.toFixed(digits) : '–');
 const pct = (v) => (Number.isFinite(v) ? `${Math.round(v * 100)} %` : '–');
 
 /**
@@ -39,6 +39,7 @@ const pct = (v) => (Number.isFinite(v) ? `${Math.round(v * 100)} %` : '–');
  */
 export function valueSimComponent(ctx) {
   const t = (key, vars) => ctx.i18n.t(`training.course.values.${key}`, vars);
+  const fmt = numberFormatter(ctx);
   // Generator, measured values and chart handles stay outside Alpine's reactive proxy.
   let rng = mulberry32(randomSeed());
   let values = {};
