@@ -9,6 +9,7 @@ import variation from '../lessons/variation.js';
 import sampling from '../lessons/sampling.js';
 import samplingDistribution from '../lessons/sampling-distribution.js';
 import confidenceInterval from '../lessons/confidence-interval.js';
+import hypothesisTest from '../lessons/hypothesis-test.js';
 
 export default {
   id: 'statistics-basics',
@@ -54,6 +55,7 @@ export default {
       de: { title: 'Die Idee des Hypothesentests', summary: 'Wann ein Unterschied mehr ist als Zufall.' },
       en: { title: 'The idea of a hypothesis test', summary: 'When a difference is more than chance.' },
       prerequisites: ['confidence-interval'],
+      content: hypothesisTest,
     },
     {
       id: 'errors-power',
