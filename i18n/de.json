@@ -369,6 +369,10 @@
         "axis": "Mittelwert x̄ in g",
         "assumption": "Simulation der Anlage A, die genau auf 500 g steht"
       },
+      "tails": {
+        "axis": "z: Abstand von μ₀ in Standardfehlern",
+        "legend": "Eingefärbt: jenseits von −{z} und +{z}, zusammen {share} der Fläche"
+      },
       "testErrors": {
         "drawOne": "1 Prüfung",
         "draw": "{k} Prüfungen",

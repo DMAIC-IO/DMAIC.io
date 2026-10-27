@@ -77,7 +77,7 @@ export default {
             'Mit dem Faktor 1,96 treffen deutlich weniger als 95 % der Intervalle, theoretisch nur etwa 88 %. Der Grund: s schwankt selbst von Stichprobe zu Stichprobe und ist oft zu klein. Dann wird das Intervall zu kurz und verfehlt μ.',
             'Der t-Faktor gleicht das aus. Bei n = 5 ist er 2,776 statt 1,96, das Intervall wird breiter, und es treffen wieder etwa 95 %. Je größer n, desto verlässlicher wird s und desto näher rückt t an 1,96 – bei n = 10 ist t schon 2,262.',
           ] },
-          { type: 'paragraph', content: 'Genau dieses t-Intervall gibt Minitab beim t-Test für eine Stichprobe als Konfidenzintervall aus.' },
+          { type: 'paragraph', content: 'Genau dieses t-Intervall gibt das Modul „Hypothesentest“ beim t-Test für eine Stichprobe als Konfidenzintervall aus.' },
         ],
       },
       {
@@ -179,7 +179,7 @@ export default {
             'With the factor 1.96 clearly fewer than 95 % of the intervals hit, in theory only about 88 %. The reason: s itself varies from sample to sample and is often too small. Then the interval is too short and misses μ.',
             'The t factor makes up for this. At n = 5 it is 2.776 instead of 1.96, the interval becomes wider, and about 95 % hit again. The larger n, the more reliable s and the closer t gets to 1.96 – at n = 10 t is already 2.262.',
           ] },
-          { type: 'paragraph', content: 'This very t interval is the confidence interval Minitab reports for a one-sample t-test.' },
+          { type: 'paragraph', content: 'This very t interval is the confidence interval the module “Hypothesis Test” reports for a one-sample t-test.' },
         ],
       },
       {

@@ -51,6 +51,7 @@ export default {
           { type: 'paragraph', content: 'Bleibt die Frage aus der Simulation: Wie oft liegt x̄ unter H₀ so weit draußen? Diesen Anteil kann man auch ohne Simulation berechnen. Er heißt {{term:p-wert|p-Wert}}, kurz p.' },
           { type: 'definition', term: 'p-Wert', content: 'Die Wahrscheinlichkeit, unter der Annahme H₀ einen Mittelwert zu erhalten, der mindestens so weit von μ₀ entfernt liegt wie der beobachtete – auf beiden Seiten zusammen.', glossary: 'p-wert' },
           { type: 'paragraph', content: 'Für z ≈ 2,53 liest man ihn an der Glockenkurve ab: Jenseits von −2,53 und +2,53 liegen zusammen etwa 1,1 % der Fläche, also p ≈ 0,011. Diesen Wert hat der Anteil in der Simulation des vorigen Schritts angenähert.' },
+          { type: 'simulation', widget: 'normal-tails', params: { z: 2.53 } },
         ],
       },
       {
@@ -87,7 +88,8 @@ export default {
           ] },
           { type: 'paragraph', content: 'Das ist kein Zufall: Ein zweiseitiger Test mit α = 5 % verwirft H₀ genau dann, wenn μ₀ außerhalb des 95-%-Intervalls liegt. Bei 501,2 g liegt die untere Grenze mit 499,96 g nur knapp unter 500 g – passend zu p knapp über 5 %.' },
           { type: 'paragraph', content: 'Noch ein Wort dazu, welchen Test wir gemacht haben. Die Teststatistik z aus Schritt 3 teilt durch σ/√n, also durch das bekannte σ = 2 g der Anlage. Ein Test, der so rechnet, heißt z-Test. Er setzt voraus, dass man σ kennt – etwa aus langer Erfahrung mit der Anlage.' },
-          { type: 'paragraph', content: 'Im Betrieb kennt man σ meist nicht. Dann geht man vor wie in der letzten Lektion beim Konfidenzintervall: σ wird durch die Standardabweichung s der Stichprobe ersetzt, und p kommt aus der t-Verteilung statt aus der Glockenkurve. Das ist der t-Test für eine Stichprobe, und genau diesen p-Wert gibt Minitab aus. Die Idee bleibt dieselbe wie beim z-Test.' },
+          { type: 'paragraph', content: 'Im Betrieb kennt man σ meist nicht. Dann geht man vor wie in der letzten Lektion beim Konfidenzintervall: σ wird durch die Standardabweichung s der Stichprobe ersetzt, und p kommt aus der t-Verteilung statt aus der Glockenkurve. Das ist der t-Test für eine Stichprobe. Das Modul „Hypothesentest“ rechnet ihn, wenn du einen Mittelwert gegen einen Zielwert prüfst, und gibt genau diesen p-Wert aus. Die Idee bleibt dieselbe wie beim z-Test.' },
+          { type: 'definition', term: 'Teststatistik beim t-Test', formula: 't = \\frac{\\bar{x} - \\mu_0}{s / \\sqrt{n}}' },
         ],
       },
       {
@@ -95,7 +97,7 @@ export default {
         blocks: [
           { type: 'quiz', id: 'q-h0', question: 'Was besagt H₀ bei der Kontrolle von Anlage A?', options: [
             { text: 'Der Mittelwert der Stichprobe ist 500 g.', correct: false, feedback: 'Den Mittelwert der Stichprobe kennen wir schon – er ist 501,6 g. H₀ ist eine Aussage über die Anlage, also über μ.' },
-            { text: 'Die Anlage füllt im Mittel noch 500 g ein (μ = 500 g).', correct: true, feedback: 'Genau: H₀ nimmt an, dass sich nichts geändert hat. Unter dieser Annahme wird p berechnet.' },
+            { text: 'Wir nehmen an, dass die Anlage im Mittel noch 500 g einfüllt (μ = 500 g), solange die Daten nicht deutlich dagegen sprechen.', correct: true, feedback: 'Genau: H₀ nimmt an, dass sich nichts geändert hat. Unter dieser Annahme wird p berechnet.' },
             { text: 'Die Anlage hat sich verstellt.', correct: false, feedback: 'Das ist die Alternativhypothese H₁. H₀ ist die Annahme, dass sich nichts geändert hat.' },
           ] },
           { type: 'quiz', id: 'q-p', question: 'Die Kontrolle ergibt p = 0,011. Was bedeutet das?', options: [
@@ -104,7 +106,7 @@ export default {
             { text: 'Stünde die Anlage noch auf 500 g, käme ein so weit entferntes x̄ nur in etwa 1 % der Kontrollen vor.', correct: true, feedback: 'Genau: p beschreibt, wie selten solche Daten unter H₀ wären – so wie der Anteil in der Simulation.' },
           ] },
           { type: 'quiz', id: 'q-keep', question: 'Eine andere Kontrolle ergibt p = 0,21 bei α = 5 %. Was folgt daraus?', options: [
-            { text: 'H₀ wird beibehalten; eine Verstellung ist nicht gezeigt, aber auch nicht ausgeschlossen.', correct: true, feedback: 'Genau: Die Daten sprechen nicht deutlich genug gegen H₀. Eine kleine Verstellung kann trotzdem vorliegen.' },
+            { text: 'H₀ wird beibehalten: Wir haben kein Indiz gefunden, dass die Anlage von 500 g abweicht. Ausgeschlossen ist eine Verstellung damit nicht.', correct: true, feedback: 'Genau: Die Daten sprechen nicht deutlich genug gegen H₀. Eine kleine Verstellung kann trotzdem vorliegen.' },
             { text: 'Damit ist bewiesen, dass die Anlage auf 500 g steht.', correct: false, feedback: 'Beibehalten heißt nicht bewiesen. Eine Verstellung um 0,8 g etwa lässt sich mit 10 Packungen nicht sicher erkennen.' },
             { text: 'H₀ wird verworfen.', correct: false, feedback: 'Verworfen wird nur, wenn p kleiner als α ist. 0,21 liegt deutlich über 0,05.' },
           ] },
@@ -162,6 +164,7 @@ export default {
           { type: 'paragraph', content: 'That leaves the question from the simulation: how often does x̄ land this far out under H₀? This share can also be computed without a simulation. It is called the {{term:p-wert|p-value}}, p for short.' },
           { type: 'definition', term: 'p-value', content: 'The probability, assuming H₀, of getting a mean at least as far from μ₀ as the observed one – both sides together.', glossary: 'p-wert' },
           { type: 'paragraph', content: 'For z ≈ 2.53 it can be read off the bell curve: beyond −2.53 and +2.53 lie about 1.1 % of the area together, so p ≈ 0.011. This is the value the share in the previous step’s simulation approximated.' },
+          { type: 'simulation', widget: 'normal-tails', params: { z: 2.53 } },
         ],
       },
       {
@@ -198,7 +201,8 @@ export default {
           ] },
           { type: 'paragraph', content: 'This is no coincidence: a two-sided test with α = 5 % rejects H₀ exactly when μ₀ lies outside the 95 % interval. At 501.2 g the lower limit of 499.96 g lies just below 500 g – matching p just above 5 %.' },
           { type: 'paragraph', content: 'One more word on which test we ran. The test statistic z from step 3 divides by σ/√n, that is, by the known σ = 2 g of the machine. A test that calculates this way is called a z test. It requires that σ is known – for example from long experience with the machine.' },
-          { type: 'paragraph', content: 'In practice, σ is usually unknown. Then you proceed as with the confidence interval in the last lesson: σ is replaced by the sample’s standard deviation s, and p comes from the t distribution instead of the bell curve. This is the 1-sample t test, and this is the p-value Minitab prints. The idea stays the same as in the z test.' },
+          { type: 'paragraph', content: 'In practice, σ is usually unknown. Then you proceed as with the confidence interval in the last lesson: σ is replaced by the sample’s standard deviation s, and p comes from the t distribution instead of the bell curve. This is the 1-sample t test. The module “Hypothesis Test” runs it when you check a mean against a target and reports exactly this p-value. The idea stays the same as in the z test.' },
+          { type: 'definition', term: 'Test statistic of the t test', formula: 't = \\frac{\\bar{x} - \\mu_0}{s / \\sqrt{n}}' },
         ],
       },
       {
@@ -206,7 +210,7 @@ export default {
         blocks: [
           { type: 'quiz', id: 'q-h0', question: 'What does H₀ say in the check of machine A?', options: [
             { text: 'The sample mean is 500 g.', correct: false, feedback: 'We already know the sample mean – it is 501.6 g. H₀ is a statement about the machine, that is about μ.' },
-            { text: 'The machine still fills 500 g on average (μ = 500 g).', correct: true, feedback: 'Right: H₀ assumes that nothing has changed. p is computed under this assumption.' },
+            { text: 'We assume the machine still fills 500 g on average (μ = 500 g) as long as the data do not clearly speak against it.', correct: true, feedback: 'Right: H₀ assumes that nothing has changed. p is computed under this assumption.' },
             { text: 'The machine has drifted.', correct: false, feedback: 'That is the alternative hypothesis H₁. H₀ is the assumption that nothing has changed.' },
           ] },
           { type: 'quiz', id: 'q-p', question: 'The check gives p = 0.011. What does that mean?', options: [
@@ -215,7 +219,7 @@ export default {
             { text: 'If the machine were still at 500 g, an x̄ this far out would appear in only about 1 % of the checks.', correct: true, feedback: 'Right: p describes how rare such data would be under H₀ – just like the share in the simulation.' },
           ] },
           { type: 'quiz', id: 'q-keep', question: 'Another check gives p = 0.21 at α = 5 %. What follows?', options: [
-            { text: 'H₀ is kept; a drift is not shown, but not ruled out either.', correct: true, feedback: 'Right: the data do not speak clearly enough against H₀. A small drift may still be there.' },
+            { text: 'H₀ is kept: we found no evidence that the machine deviates from 500 g. A drift is not ruled out by this.', correct: true, feedback: 'Right: the data do not speak clearly enough against H₀. A small drift may still be there.' },
             { text: 'This proves that the machine is at 500 g.', correct: false, feedback: 'Kept does not mean proven. A drift of 0.8 g, for example, cannot be detected reliably with 10 packs.' },
             { text: 'H₀ is rejected.', correct: false, feedback: 'H₀ is rejected only when p is smaller than α. 0.21 is well above 0.05.' },
           ] },

@@ -12,6 +12,7 @@ import { varianceCheckComponent } from './variance-check.js';
 import { intervalCoverageComponent } from './interval-coverage.js';
 import { nullDistributionComponent } from './null-distribution.js';
 import { testErrorsComponent } from './test-errors.js';
+import { normalTailsComponent } from './normal-tails.js';
 
 /**
  * Widget name -> Alpine component name and factory.
@@ -25,4 +26,5 @@ export const WIDGET_COMPONENTS = {
   'interval-coverage': { component: 'trainingIntervalCoverage', factory: intervalCoverageComponent },
   'null-distribution': { component: 'trainingNullDistribution', factory: nullDistributionComponent },
   'test-errors': { component: 'trainingTestErrors', factory: testErrorsComponent },
+  'normal-tails': { component: 'trainingNormalTails', factory: normalTailsComponent },
 };

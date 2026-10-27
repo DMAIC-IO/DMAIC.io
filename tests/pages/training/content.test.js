@@ -358,8 +358,11 @@ suite('course content', () => {
       assertEqual(steps.length, 8, `${lang} step count`);
       const sims = steps.map((st) => st.blocks.find((b) => b.type === 'simulation') || null);
       assertDeepEqual(sims.map((b) => b && b.widget),
-        [null, 'null-distribution', null, 'null-distribution', null, null, null, null], `${lang}: widgets`);
+        [null, 'null-distribution', 'normal-tails', 'null-distribution', null, null, null, null], `${lang}: widgets`);
       assertDeepEqual(sims[1].params, { n: 10, observedChoices: [501.6] }, `${lang}: step 2 params`);
+      assertDeepEqual(sims[2].params, { z: 2.53 }, `${lang}: step 3 params`);
+      const tFormula = steps[5].blocks.find((b) => b.type === 'definition' && /s \/ \\sqrt\{n\}/.test(b.formula || ''));
+      assertTrue(tFormula && tFormula.formula.startsWith('t = '), `${lang}: step 6 shows the t statistic`);
       assertDeepEqual(sims[3].params, { n: 10, observedChoices: [500.8, 501.2, 501.6], showP: true },
         `${lang}: step 4 params`);
       const insights = steps.map((st) => st.blocks.find((b) => b.type === 'insight') || null);

@@ -362,6 +362,15 @@
               </table>
             </div>
           </template>
+          <template x-if="isWidget(b, 'normal-tails')">
+            <div class="training-tails" x-data="trainingNormalTails" x-init="setup($el, b.params)">
+              <div class="training-tails__chart"></div>
+              <p class="training-tails__legend">
+                <span class="training-errors__swatch training-errors__swatch--alpha"></span>
+                <span x-text="legend()"></span>
+              </p>
+            </div>
+          </template>
           <template x-if="isType(b, 'quiz')">
             <div class="training-quiz" :data-quiz-id="b.id" x-data="trainingQuiz" x-init="setup(b, lessonApi())">
               <p class="training-quiz__question" x-effect="renderInline($el, b.question)"></p>

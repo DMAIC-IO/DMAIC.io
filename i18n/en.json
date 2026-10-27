@@ -369,6 +369,10 @@
         "axis": "Mean x̄ in g",
         "assumption": "Simulation of machine A set exactly to 500 g"
       },
+      "tails": {
+        "axis": "z: distance from μ₀ in standard errors",
+        "legend": "Shaded: beyond −{z} and +{z}, together {share} of the area"
+      },
       "testErrors": {
         "drawOne": "1 check",
         "draw": "{k} checks",

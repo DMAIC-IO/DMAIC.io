@@ -530,6 +530,50 @@ suite('null-distribution widget', () => {
   });
 });
 
+suite('normal-tails widget', () => {
+  const make = (ctx = {}) => WIDGET_COMPONENTS['normal-tails'].factory({ i18n: { t: (k) => k }, ...ctx });
+  const mount = (params, ctx) => {
+    const sim = make(ctx);
+    sim.setup({}, params);
+    return sim;
+  };
+
+  test('shades both tails beyond plus and minus z under the standard normal curve', () => {
+    const config = mount({ z: 2.53 }).chartConfig();
+    assertEqual(config.normalCurves.length, 1);
+    const [curve] = config.normalCurves;
+    assertEqual(curve.mean, 0);
+    assertEqual(curve.stdDev, 1);
+    assertDeepEqual(curve.shade.map((r) => [r.from, r.to, r.key]), [[-Infinity, -2.53, 'tail'], [2.53, Infinity, 'tail']]);
+    assertDeepEqual(config.refLines.map((r) => r.value), [-2.53, 2.53]);
+    assertEqual(config.xMin, -4);
+    assertEqual(config.xMax, 4);
+    assertTrue(config.bins.every((b) => b.count === 0), 'no bars, only the curve');
+  });
+
+  test('legend states the shaded share in the active language', () => {
+    const t = (k, v) => `${k} ${JSON.stringify(v)}`;
+    const de = mount({ z: 2.53 }, { i18n: { t, getLanguage: () => 'de' } });
+    assertEqual(de.legend(), 'training.course.tails.legend {"z":"2,53","share":"1,1 %"}');
+    const en = mount({ z: 2.53 }, { i18n: { t, getLanguage: () => 'en' } });
+    assertEqual(en.legend(), 'training.course.tails.legend {"z":"2.53","share":"1.1 %"}');
+  });
+
+  test('falls back to z = 1.96 for a missing or invalid z', () => {
+    assertDeepEqual(mount({}).chartConfig().refLines.map((r) => r.value), [-1.96, 1.96]);
+    assertDeepEqual(mount({ z: -1 }).chartConfig().refLines.map((r) => r.value), [-1.96, 1.96]);
+  });
+
+  test('tails widget releases every chart it created', async () => {
+    const chartManager = trackingChartManager();
+    const sim = make({ chartManager });
+    await sim.setup(fakeRoot(), { z: 2.53 });
+    assertEqual(chartManager.live.size, 1);
+    sim.destroy();
+    assertEqual(chartManager.live.size, 0);
+  });
+});
+
 suite('test-errors widget', () => {
   const make = (ctx = {}) => WIDGET_COMPONENTS['test-errors'].factory({ i18n: { t: (k) => k }, ...ctx });
   const mount = (params, api = { insightOpen: () => false }, ctx) => {

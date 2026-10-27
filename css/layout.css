@@ -3464,7 +3464,8 @@ body.training-area-open .dmaic-tiles {
 .training-variance,
 .training-interval,
 .training-null,
-.training-errors {
+.training-errors,
+.training-tails {
   display: flex; flex-direction: column; gap: var(--spacing-sm);
   border: var(--border-width) solid var(--color-border-primary);
   border-radius: var(--radius-md, 6px);
@@ -3484,6 +3485,8 @@ body.training-area-open .dmaic-tiles {
 .training-interval__chart,
 .training-null__chart,
 .training-errors__chart { height: 320px; min-width: 0; }
+.training-tails__chart { height: 240px; min-width: 0; }
+.training-tails__legend { display: flex; align-items: center; gap: var(--spacing-xs); margin: 0; color: var(--color-text-secondary); font-size: var(--font-size-sm); }
 
 .training-null__assumption,
 .training-errors__assumption { margin: 0; color: var(--color-text-secondary); font-size: var(--font-size-sm); }
