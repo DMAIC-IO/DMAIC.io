@@ -368,6 +368,23 @@
         "axis": "Mittelwert x̄ in g",
         "assumption": "Simulation der Anlage A, die genau auf 500 g steht"
       },
+      "testErrors": {
+        "drawOne": "1 Prüfung",
+        "draw": "{k} Prüfungen",
+        "drift": "Verschiebung der Maschine",
+        "n": "Packungen pro Prüfung",
+        "alpha": "α",
+        "limits": "Alarmgrenzen",
+        "checks": "Prüfungen",
+        "alarms": "Alarme",
+        "share": "Anteil Alarme",
+        "exactAlpha": "berechnet: α",
+        "exactPower": "berechnet: Power",
+        "axis": "Mittelwert x̄ einer Prüfung in g",
+        "legendAlpha": "α: Alarm, obwohl die Maschine auf 500 g steht",
+        "legendBeta": "β: kein Alarm, obwohl die Maschine verschoben ist",
+        "assumption": "Simulation: Die Maschine füllt im Mittel {mu} g, geprüft wird gegen 500 g"
+      },
       "interval": {
         "drawOne": "Stichprobe ziehen",
         "draw": "{k} Stichproben ziehen",

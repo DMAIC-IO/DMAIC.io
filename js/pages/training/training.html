@@ -308,6 +308,60 @@
               </table>
             </div>
           </template>
+          <template x-if="isWidget(b, 'test-errors')">
+            <div class="training-errors" x-data="trainingTestErrors" x-init="setup($el, b.params, lessonApi())" :data-count="checks" :data-theory="theory ? 'true' : 'false'">
+              <p class="training-errors__assumption" x-text="assumption()"></p>
+              <div class="training-errors__controls">
+                <label class="training-errors__field">
+                  <span x-text="label('drift')"></span>
+                  <select data-setting="drift" :disabled="options('drift').length < 2" @change="setDrift($event)">
+                    <template x-for="v in options('drift')" :key="v">
+                      <option :value="v" :selected="v === drift" x-text="optionText('drift', v)"></option>
+                    </template>
+                  </select>
+                </label>
+                <label class="training-errors__field">
+                  <span x-text="label('n')"></span>
+                  <select data-setting="n" :disabled="options('n').length < 2" @change="setN($event)">
+                    <template x-for="v in options('n')" :key="v">
+                      <option :value="v" :selected="v === n" x-text="optionText('n', v)"></option>
+                    </template>
+                  </select>
+                </label>
+                <label class="training-errors__field">
+                  <span x-text="label('alpha')"></span>
+                  <select data-setting="alpha" :disabled="options('alpha').length < 2" @change="setAlpha($event)">
+                    <template x-for="v in options('alpha')" :key="v">
+                      <option :value="v" :selected="v === alpha" x-text="optionText('alpha', v)"></option>
+                    </template>
+                  </select>
+                </label>
+                <div class="btn-group">
+                  <template x-for="k in drawSizes" :key="k">
+                    <button type="button" class="btn btn--sm btn--secondary" :data-draw="k" @click="draw(k)" x-text="drawLabel(k)"></button>
+                  </template>
+                </div>
+              </div>
+              <div class="training-errors__chart"></div>
+              <ul class="training-errors__legend" x-show="legends().length">
+                <template x-for="key in legends()" :key="key">
+                  <li class="training-errors__legend-item" :data-legend="key">
+                    <span class="training-errors__swatch" :class="'training-errors__swatch--' + key"></span>
+                    <span x-text="label(key === 'alpha' ? 'legendAlpha' : 'legendBeta')"></span>
+                  </li>
+                </template>
+              </ul>
+              <table class="training-errors__stats">
+                <tr><th x-text="label('limits')"></th><td data-stat="limits" x-text="cell('limits')"></td></tr>
+                <tr><th x-text="label('checks')"></th><td data-stat="checks" x-text="cell('checks')"></td></tr>
+                <tr><th x-text="label('alarms')"></th><td data-stat="alarms" x-text="cell('alarms')"></td></tr>
+                <tr><th x-text="label('share')"></th><td data-stat="share" x-text="cell('share')"></td></tr>
+                <template x-if="showExact">
+                  <tr class="training-errors__exact"><th data-stat-label="exact" x-text="exactLabel()"></th><td data-stat="exact" x-text="cell('exact')"></td></tr>
+                </template>
+              </table>
+            </div>
+          </template>
           <template x-if="isType(b, 'quiz')">
             <div class="training-quiz" :data-quiz-id="b.id" x-data="trainingQuiz" x-init="setup(b, lessonApi())">
               <p class="training-quiz__question" x-effect="renderInline($el, b.question)"></p>

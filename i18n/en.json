@@ -368,6 +368,23 @@
         "axis": "Mean x̄ in g",
         "assumption": "Simulation of machine A set exactly to 500 g"
       },
+      "testErrors": {
+        "drawOne": "1 check",
+        "draw": "{k} checks",
+        "drift": "Machine drift",
+        "n": "Packs per check",
+        "alpha": "α",
+        "limits": "Alarm limits",
+        "checks": "Checks",
+        "alarms": "Alarms",
+        "share": "Alarm share",
+        "exactAlpha": "computed: α",
+        "exactPower": "computed: power",
+        "axis": "Mean x̄ of a check in g",
+        "legendAlpha": "α: alarm although the machine is at 500 g",
+        "legendBeta": "β: no alarm although the machine has drifted",
+        "assumption": "Simulation: the machine fills {mu} g on average, the check tests against 500 g"
+      },
       "interval": {
         "drawOne": "Draw a sample",
         "draw": "Draw {k} samples",

@@ -3463,7 +3463,8 @@ body.training-area-open .dmaic-tiles {
 .training-estimate,
 .training-variance,
 .training-interval,
-.training-null {
+.training-null,
+.training-errors {
   display: flex; flex-direction: column; gap: var(--spacing-sm);
   border: var(--border-width) solid var(--color-border-primary);
   border-radius: var(--radius-md, 6px);
@@ -3473,15 +3474,19 @@ body.training-area-open .dmaic-tiles {
 .training-estimate__chart { min-height: 240px; min-width: 0; }
 
 .training-interval__controls,
-.training-null__controls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-md); }
+.training-null__controls,
+.training-errors__controls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-md); }
 
 .training-interval__field,
-.training-null__field { display: flex; align-items: center; gap: var(--spacing-xs); color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.training-null__field,
+.training-errors__field { display: flex; align-items: center; gap: var(--spacing-xs); color: var(--color-text-secondary); font-size: var(--font-size-sm); }
 
 .training-interval__chart,
-.training-null__chart { height: 320px; min-width: 0; }
+.training-null__chart,
+.training-errors__chart { height: 320px; min-width: 0; }
 
-.training-null__assumption { margin: 0; color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.training-null__assumption,
+.training-errors__assumption { margin: 0; color: var(--color-text-secondary); font-size: var(--font-size-sm); }
 .training-estimate__note { margin: 0; color: var(--color-text-secondary); font-size: var(--font-size-sm); }
 .training-estimate__history { display: flex; flex-direction: column; gap: var(--spacing-xs); }
 .training-estimate__history-title { color: var(--color-text-secondary); font-size: var(--font-size-sm); }
@@ -3489,21 +3494,33 @@ body.training-area-open .dmaic-tiles {
 .training-estimate__stats,
 .training-variance__stats,
 .training-interval__stats,
-.training-null__stats { align-self: flex-start; border-collapse: collapse; font-size: var(--font-size-sm); }
+.training-null__stats,
+.training-errors__stats { align-self: flex-start; border-collapse: collapse; font-size: var(--font-size-sm); }
 
 .training-estimate__stats th,
 .training-variance__stats th,
 .training-interval__stats th,
-.training-null__stats th { text-align: left; font-weight: normal; color: var(--color-text-secondary); padding-right: var(--spacing-md); }
+.training-null__stats th,
+.training-errors__stats th { text-align: left; font-weight: normal; color: var(--color-text-secondary); padding-right: var(--spacing-md); }
 
 .training-estimate__stats td,
 .training-variance__stats td,
 .training-interval__stats td,
-.training-null__stats td { padding-right: var(--spacing-md); font-variant-numeric: tabular-nums; }
+.training-null__stats td,
+.training-errors__stats td { padding-right: var(--spacing-md); font-variant-numeric: tabular-nums; }
 .training-variance__latest { display: flex; flex-wrap: wrap; gap: var(--spacing-sm); margin: 0; font-variant-numeric: tabular-nums; }
 
 .training-null__exact th,
-.training-null__exact td { font-weight: 600; color: var(--color-text-primary); }
+.training-null__exact td,
+.training-errors__exact th,
+.training-errors__exact td { font-weight: 600; color: var(--color-text-primary); }
+
+.training-errors__legend { display: flex; flex-wrap: wrap; gap: var(--spacing-md); margin: 0; padding: 0; list-style: none; color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+.training-errors__legend-item { display: flex; align-items: center; gap: var(--spacing-xs); }
+/* Swatches match the shaded areas: same colour, same opacity as .chart-histogram__curve-area. */
+.training-errors__swatch { width: 12px; height: 12px; border-radius: var(--border-radius-sm); opacity: 0.5; }
+.training-errors__swatch--alpha { background: var(--color-error); }
+.training-errors__swatch--beta { background: var(--color-warning); }
 
 .training-variance__reference th,
 .training-variance__reference td { font-weight: 600; color: var(--color-text-primary); border-top: var(--border-width) solid var(--color-border-primary); }

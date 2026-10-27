@@ -521,3 +521,143 @@ suite('null-distribution widget', () => {
     assertEqual(chartManager.live.size, 0);
   });
 });
+
+suite('test-errors widget', () => {
+  const make = (ctx = {}) => WIDGET_COMPONENTS['test-errors'].factory({ i18n: { t: (k) => k }, ...ctx });
+  const mount = (params, api = { insightOpen: () => false }, ctx) => {
+    const sim = make(ctx);
+    const events = [];
+    sim.setup({ dispatchEvent: (e) => events.push(e), setAttribute: () => {} }, params, api);
+    return { sim, events };
+  };
+  const share = (sim) => parseFloat(sim.cell('share'));
+  const curves = (sim) => sim.chartConfig().normalCurves || [];
+  const shadeKeys = (sim) => [...new Set(curves(sim).flatMap((c) => (c.shade || []).map((r) => r.key)))].sort();
+  const PREFIX = 'training.course.testErrors.';
+
+  test('shows limits and dashes before the first check', () => {
+    const { sim, events } = mount({ seed: 1 });
+    assertEqual(sim.cell('limits'), '498.76 – 501.24 g');
+    assertEqual(sim.cell('checks'), '0');
+    assertEqual(sim.cell('alarms'), '0');
+    assertEqual(sim.cell('share'), '–');
+    assertEqual(sim.showExact, false);
+    assertEqual(events[0].type, 'training-sim-progress');
+    assertDeepEqual(events[0].detail, { count: 0, values: { drift: { 0: 0 }, n: { 10: 0 }, alpha: { 0.05: 0 } } });
+  });
+
+  test('seeded shares match theory', () => {
+    const run = (params, expected, tol) => {
+      const { sim } = mount({ seed: 1, ...params });
+      for (let i = 0; i < 10; i++) sim.draw(1000);
+      assertEqual(sim.cell('checks'), '10000');
+      assertTrue(/^\d+\.\d %$/.test(sim.cell('share')), `share format ${sim.cell('share')}`);
+      assertTrue(Math.abs(share(sim) - expected) <= tol, `share ${sim.cell('share')} vs ${expected}`);
+    };
+    run({ driftChoices: [1] }, 35.3, 1.5);
+    run({ driftChoices: [1], nChoices: [43] }, 90.6, 1);
+  });
+
+  test('alarm limits are bin edges for every offered setting', () => {
+    const { sim } = mount({ seed: 1, nChoices: [10, 20, 40, 43], alphaChoices: [0.01, 0.05, 0.1] });
+    sim._pushMeans([500]);
+    for (const n of [10, 20, 40, 43]) {
+      for (const alpha of [0.01, 0.05, 0.1]) {
+        sim.setN(n);
+        sim.setAlpha(alpha);
+        const { lower: L, upper: U } = sim.limits();
+        const bins = sim.chartConfig().bins;
+        const edges = bins.flatMap((b) => [b.x0, b.x1]);
+        const tag = `n ${n}, α ${alpha}`;
+        assertTrue(edges.some((e) => Math.abs(e - L) < 1e-9), `${tag}: L is an edge`);
+        assertTrue(edges.some((e) => Math.abs(e - U) < 1e-9), `${tag}: U is an edge`);
+        for (const b of bins) {
+          const outside = b.x0 >= U - 1e-9 || b.x1 <= L + 1e-9;
+          assertEqual(b.highlight === true, outside, `${tag}: bin ${b.x0}–${b.x1}`);
+        }
+      }
+    }
+  });
+
+  test('switching back continues the setting', () => {
+    const { sim, events } = mount({ seed: 1, driftChoices: [0.5, 1] });
+    sim.draw(100);
+    sim.setDrift(1);
+    assertEqual(sim.cell('checks'), '0');
+    assertEqual(sim.cell('share'), '–');
+    sim.setDrift(0.5);
+    assertEqual(sim.cell('checks'), '100');
+    assertDeepEqual(events[events.length - 1].detail.values.drift, { 0.5: 100, 1: 0 });
+    assertEqual(events[events.length - 1].detail.count, 100);
+  });
+
+  test('exact value is labelled by meaning and shown before checks', () => {
+    const zero = mount({ seed: 1, showExact: true, driftChoices: [0] }).sim;
+    assertEqual(zero.exactLabel(), `${PREFIX}exactAlpha`);
+    assertEqual(zero.cell('exact'), '5.0 %');
+    const one = mount({ seed: 1, showExact: true, driftChoices: [1] }).sim;
+    assertEqual(one.exactLabel(), `${PREFIX}exactPower`);
+    assertEqual(one.cell('exact'), '35.3 %');
+    const strict = mount({ seed: 1, showExact: true, driftChoices: [1], alphaChoices: [0.01] }).sim;
+    assertEqual(strict.cell('exact'), '16.0 %');
+  });
+
+  test('afterInsight theory follows the lesson api', () => {
+    let open = false;
+    const api = { insightOpen: () => open };
+    const { sim } = mount({ seed: 1, showTheory: 'afterInsight', driftChoices: [1] }, api);
+    assertEqual(sim.theory, false);
+    assertEqual(curves(sim).length, 0);
+    assertDeepEqual(sim.legends(), []);
+    open = true;
+    sim.draw(1);
+    assertEqual(sim.theory, true);
+    assertEqual(curves(sim).length, 2);
+    assertDeepEqual(shadeKeys(sim), ['alpha', 'beta']);
+    assertDeepEqual(sim.legends(), ['alpha', 'beta']);
+    const again = mount({ seed: 1, showTheory: 'afterInsight', driftChoices: [1] }, api).sim;
+    assertEqual(again.theory, true);
+  });
+
+  test('theory true at zero drift shows only the alpha area', () => {
+    const { sim } = mount({ seed: 1, showTheory: true, driftChoices: [0] });
+    assertEqual(curves(sim).length, 1);
+    assertDeepEqual(shadeKeys(sim), ['alpha']);
+    assertDeepEqual(sim.legends(), ['alpha']);
+  });
+
+  test('a setting outside the choices is ignored and single choices lock', () => {
+    const { sim } = mount({ seed: 1 });
+    sim.setDrift(1);
+    sim.setN(43);
+    sim.setAlpha(0.01);
+    assertEqual(sim.drift, 0);
+    assertEqual(sim.n, 10);
+    assertEqual(sim.alpha, 0.05);
+    assertDeepEqual(sim.options('drift'), [0]);
+    assertEqual(sim.optionText('drift', 0.5), '+0.5 g');
+    assertEqual(sim.optionText('alpha', 0.05), '5 %');
+    assertEqual(sim.optionText('n', 10), '10');
+  });
+
+  test('errors widget seeds per mount unless injected', () => {
+    const run = (params) => {
+      const { sim } = mount(params);
+      sim.draw(1);
+      return sim._means()[0];
+    };
+    assertEqual(run({ seed: 42 }), run({ seed: 42 }), 'same injected seed, same values');
+    assertTrue(run({ seed: 42 }) !== run({ seed: 43 }), 'different seeds differ');
+    assertTrue(run({}) !== run({}), 'default seeds are random per mount');
+  });
+
+  test('errors widget releases every chart it created', async () => {
+    const chartManager = trackingChartManager();
+    const sim = make({ chartManager });
+    await sim.setup(fakeRoot(), { seed: 1 }, { insightOpen: () => false });
+    assertEqual(chartManager.live.size, 1);
+    sim.draw(1);
+    sim.destroy();
+    assertEqual(chartManager.live.size, 0);
+  });
+});
