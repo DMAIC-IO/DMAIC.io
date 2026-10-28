@@ -9,6 +9,7 @@ import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../tes
 import {
   CONSENT_PATH, readConsent, grantConsent, revokeConsent, createConsentGate,
 } from '../../../js/core/agent/agent-consent.js';
+import { CONTRACT_VERSION } from '../../../js/core/agent/agent-contract.js';
 
 /** Minimal stateManager: only get/set over a dot path. */
 function makeStateManager(initial = {}) {
@@ -54,7 +55,7 @@ suite('agent consent — storage', () => {
     grantConsent(sm);
     const stored = readConsent(sm);
     assertEqual(stored.granted, true);
-    assertEqual(stored.contract, 1);
+    assertEqual(stored.contract, CONTRACT_VERSION);
     assertTrue(typeof stored.at === 'string' && stored.at.length > 0);
   });
 

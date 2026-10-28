@@ -19,8 +19,12 @@
  * gültiges Referenzziel (`agent-shape.js`).
  */
 
-/** Version der Fläche. Bump nur bei Bruch der Hülle. Siehe Plan §Constraints. */
-export const CONTRACT_VERSION = 1;
+/**
+ * Version der Fläche. Bump nur bei Bruch der Hülle. 2 seit 2026-10-28:
+ * `usage` fiel aus der Beschreibungsantwort (`ops` und `errors` stehen jetzt
+ * oben), und `ok: true` heißt „angewandt und gespeichert".
+ */
+export const CONTRACT_VERSION = 2;
 
 /**
  * Alle Fehlercodes der Fläche. Werte sind Teil des Vertrags.

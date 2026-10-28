@@ -5,7 +5,7 @@
  */
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../test-utils.js';
 import { createAgentRuntime } from '../../../js/core/agent/agent-runtime.js';
-import { OPS } from '../../../js/core/agent/agent-contract.js';
+import { CONTRACT_VERSION, ERRORS, OPS } from '../../../js/core/agent/agent-contract.js';
 import aiAssistantHelp from '../../../js/help/ai-assistant-help.js';
 import { AI_ASSISTANT_CHAPTER_ID } from '../../../js/help/help-keys.js';
 import { createRevisionTracker } from '../../../js/core/agent/agent-revisions.js';
@@ -153,15 +153,33 @@ suite('agent runtime — consent gate', () => {
 });
 
 suite('agent runtime — the surface description', () => {
-  test('carries usage, full catalog, instances and the current view', async () => {
+  test('carries ops, errors, full catalog, instances and the current view — no usage', async () => {
     const out = await makeRuntime().runtime.interact();
-    assertEqual(out.contract, 1);
+    assertEqual(out.contract, CONTRACT_VERSION);
+    assertEqual(CONTRACT_VERSION, 2);
+    assertDeepEqual(Object.keys(out).sort(), [
+      'appVersion', 'briefing', 'catalog', 'contract', 'errors', 'instances',
+      'language', 'ok', 'ops', 'view',
+    ]);
     assertEqual(out.appVersion, '1.2.3');
     assertEqual(out.language, 'de');
-    assertEqual(out.usage.contract, 1);
     assertDeepEqual(out.catalog.map(m => m.id), ['worksheet', 'five-why', 'sipoc']);
     assertDeepEqual(out.instances.map(i => i.id), ['fw-1']);
     assertDeepEqual(out.view, { instanceId: 'fw-1', module: 'five-why', phase: 'define' });
+  });
+
+  test('ops kommt aus OPS, nicht nebenher aufgeschrieben', async () => {
+    const out = await makeRuntime().runtime.interact();
+    assertDeepEqual(Object.keys(out.ops).sort(), Object.keys(OPS).sort());
+    assertDeepEqual(out.ops['module.add'].params.module, { type: 'string', required: true });
+    // Die Nullable-Hülle geht wörtlich hinaus — erklärt wird sie im Briefing.
+    assertTrue(Object.hasOwn(out.ops['project.read'].result.view, '$nullable'));
+  });
+
+  test('errors nennt jeden Fehlercode, auch stale_revision', async () => {
+    const out = await makeRuntime().runtime.interact();
+    assertDeepEqual(out.errors, Object.values(ERRORS));
+    assertTrue(out.errors.includes('stale_revision'));
   });
 
   test('the catalog lists unreleased modules too', async () => {
@@ -289,6 +307,7 @@ suite('agent runtime — the seven ops', () => {
       getActiveProjectId: () => 'p-1',
       get: (path) => (path === 'phases' ? phases : path.startsWith('phases.') ? phases[path.slice(7)] : undefined),
       set: () => {},
+      saveNow: () => {},
       flushNow: async () => {},
     };
     const runtime = createAgentRuntime({
@@ -760,6 +779,7 @@ suite('agent runtime — the singleton rule applies to the agent path (I1)', () 
       getActiveProjectId: () => 'p-1',
       get: (path) => (path === 'phases' ? phases : path.startsWith('phases.') ? phases[path.slice(7)] : undefined),
       set: (path, value) => { phases[path.slice(7)] = value; },
+      saveNow: () => {},
       flushNow: async () => {},
     };
     const runtime = createAgentRuntime({
@@ -868,7 +888,7 @@ suite('agent runtime — the completed project is an honest error (I2 / I3c)', (
   test('every completed-project error still carries the contract version', async () => {
     const { runtime } = makeRuntime({ completed: true });
     const out = await runtime.interact({ op: 'module.add', module: 'worksheet', phase: 'data' });
-    assertEqual(out.contract, 1);
+    assertEqual(out.contract, CONTRACT_VERSION);
   });
 
   test('a host that cannot find the new instance reports op_failed, not an invented id', async () => {
@@ -877,7 +897,7 @@ suite('agent runtime — the completed project is an honest error (I2 / I3c)', (
     assertEqual(out.ok, true, 'control: the normal path still works');
     // Now the same action against a host whose write silently vanished.
     const broken = createAgentRuntime({
-      stateManager: { getActiveProjectId: () => 'p-1', get: () => ({}), set: () => {}, flushNow: async () => {} },
+      stateManager: { getActiveProjectId: () => 'p-1', get: () => ({}), set: () => {}, saveNow: () => {}, flushNow: async () => {} },
       revisions: alreadyReadEverything(),
       moduleRegistry: { getAll: () => DEFS, get: (id) => DEFS.find(d => d.id === id), getActiveCycle: () => 'dmaic' },
       i18n: I18N,
@@ -940,7 +960,7 @@ suite('agent runtime — no raw exception ever leaves interact() (I8)', () => {
   function makeThrowing(where) {
     const throwing = () => { throw new Error(`boom in ${where}`); };
     return createAgentRuntime({
-      stateManager: { getActiveProjectId: () => 'p-1', get: () => (where === 'world' ? throwing() : ({})), set: () => {}, flushNow: async () => {} },
+      stateManager: { getActiveProjectId: () => 'p-1', get: () => (where === 'world' ? throwing() : ({})), set: () => {}, saveNow: () => {}, flushNow: async () => {} },
       moduleRegistry: {
         getAll: () => (where === 'world' ? throwing() : DEFS),
         get: (id) => DEFS.find(d => d.id === id),
@@ -966,7 +986,7 @@ suite('agent runtime — no raw exception ever leaves interact() (I8)', () => {
     const out = await makeThrowing('consent').interact();
     assertEqual(out.ok, false);
     assertEqual(out.error, 'surface_failed');
-    assertEqual(out.contract, 1);
+    assertEqual(out.contract, CONTRACT_VERSION);
     assertTrue(out.message.includes('boom in consent'), out.message);
   });
 
@@ -974,14 +994,14 @@ suite('agent runtime — no raw exception ever leaves interact() (I8)', () => {
     const out = await makeThrowing('view').interact();
     assertEqual(out.ok, false);
     assertEqual(out.error, 'surface_failed');
-    assertEqual(out.contract, 1);
+    assertEqual(out.contract, CONTRACT_VERSION);
   });
 
   test('a throwing buildWorld becomes surface_failed', async () => {
     const out = await makeThrowing('world').interact({ op: 'catalog.read' });
     assertEqual(out.ok, false);
     assertEqual(out.error, 'surface_failed');
-    assertEqual(out.contract, 1);
+    assertEqual(out.contract, CONTRACT_VERSION);
   });
 });
 
@@ -1050,7 +1070,7 @@ suite('agent runtime — interact() liefert das Briefing aus dem Handbuchkapitel
     const out = await runtime.interact();
     assertEqual(out.ok, false);
     assertEqual(out.error, 'surface_failed');
-    assertEqual(out.contract, 1);
+    assertEqual(out.contract, CONTRACT_VERSION);
   });
 });
 
@@ -1081,6 +1101,27 @@ suite('agent runtime — ok heißt „liegt auf Platte" (Task 1)', () => {
     });
     return { runtime, flushesRef: () => flushes };
   }
+
+  test('ein schreibender Stapel speichert beide Hälften: erst saveNow, dann flushNow', async () => {
+    const calls = [];
+    const { runtime } = makeRuntime({ stateManager: {
+      saveNow: () => calls.push('saveNow'),
+      flushNow: async () => { calls.push('flushNow'); },
+    } });
+    const out = await runtime.interact([{ op: 'module.add', module: 'worksheet' }]);
+    assertEqual(out.ok, true, JSON.stringify(out));
+    assertDeepEqual(calls, ['saveNow', 'flushNow']);
+  });
+
+  test('ein nur lesender Stapel speichert nichts', async () => {
+    const calls = [];
+    const { runtime } = makeRuntime({ stateManager: {
+      saveNow: () => calls.push('saveNow'),
+      flushNow: async () => { calls.push('flushNow'); },
+    } });
+    await runtime.interact([{ op: 'project.read' }]);
+    assertDeepEqual(calls, []);
+  });
 
   test('ein schreibender Stapel flusht den Zustand, bevor er antwortet', async () => {
     const { runtime, flushesRef } = makeFlushRuntime();
@@ -1154,7 +1195,7 @@ suite('agent runtime — ok heißt „liegt auf Platte" (Task 1)', () => {
 
     assertEqual(res.ok, false, JSON.stringify(res));
     assertEqual(res.error, 'flush_failed');
-    assertEqual(res.contract, 1);
+    assertEqual(res.contract, CONTRACT_VERSION);
     assertTrue(res.message.includes('IndexedDB-Quota überschritten'), res.message);
     // Der Schreibvorgang IST gelandet (sonst gäbe es gar kein flushNow) —
     // die results dürfen nicht verloren gehen, sonst hält der Agent ihn für

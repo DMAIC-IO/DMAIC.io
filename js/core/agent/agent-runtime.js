@@ -21,16 +21,26 @@
  * (`startup/agent-surface.js`), Stufe 2 bindet denselben Runtime an einen
  * HTTP-Client.
  */
-import { CONTRACT_VERSION, ERRORS } from './agent-contract.js';
+import { CONTRACT_VERSION, ERRORS, OPS } from './agent-contract.js';
 import { axiError } from './agent-errors.js';
 import { validateBatch, checkResolvedParamTypes, isWritingAction } from './agent-validate.js';
 import { resolveRefs } from './agent-refs.js';
 import { buildWorld, buildCatalog, buildInstanceList } from './agent-catalog.js';
-import { buildUsage } from './agent-usage.js';
 import { flattenBriefing } from './agent-briefing.js';
 import { AI_ASSISTANT_CHAPTER_ID } from '../../help/help-keys.js';
 import { createOps } from './agent-ops.js';
 import { createRevisionTracker } from './agent-revisions.js';
+
+/**
+ * Die Aktionsformen, wie der Agent sie liest: je op `params` und `result`,
+ * abgeleitet aus `OPS` und nicht nebenher aufgeschrieben.
+ * @returns {Record<string, { params: object, result: object }>}
+ */
+function opShapes() {
+  const out = {};
+  for (const [name, spec] of Object.entries(OPS)) out[name] = { params: spec.params, result: spec.result };
+  return out;
+}
 
 /**
  * @param {object} deps
@@ -133,7 +143,9 @@ export function createAgentRuntime(deps) {
       // Eine Quelle, drei Verwendungen: hier der Kontextfenster-Text, im
       // Hilfefenster das Kapitel, im statischen Handbuch eine zitierbare URL.
       briefing: await briefingText(),
-      usage: buildUsage(i18n),
+      // Die Daten des früheren `usage`; die Prosa dazu steht nur im Briefing.
+      ops: opShapes(),
+      errors: Object.values(ERRORS),
       catalog: buildCatalog({ moduleRegistry, i18n, registry }),
       instances: buildInstanceList({ stateManager, i18n }),
       view: host.getCurrentView(),
@@ -228,11 +240,12 @@ export function createAgentRuntime(deps) {
       await noteSeen(action.op, resolved.value, outcome);
     }
 
-    // `ok: true` heißt „liegt auf Platte". Der `stateManager` schreibt hinter
-    // einer Debounce (2 s localStorage, 500 ms IndexedDB); ohne dieses Flush
-    // verliert ein Agent, der schreibt und danach neu lädt oder exportiert,
-    // seinen bestätigten Schreibzugriff. Auch im Fehlerfall gibt der Stapel
-    // Teilergebnisse zurück, und was passiert ist, muss auch auf Platte sein.
+    // `ok: true` heißt angewandt und gespeichert — der `stateManager` schreibt
+    // hinter zwei Debounces (2 s localStorage, 500 ms IndexedDB); beide werden
+    // hier vorgezogen. Ohne sie verliert ein Agent, der schreibt und danach
+    // neu lädt oder exportiert, seinen bestätigten Schreibzugriff. Auch im
+    // Fehlerfall gibt der Stapel Teilergebnisse zurück, und was passiert ist,
+    // muss auch auf Platte sein.
     //
     // Review-Befund (Important, Fixrunde 1): ein ungeschütztes `await
     // flushNow()` hier liegt in der Serialisierungskette unter
@@ -246,6 +259,10 @@ export function createAgentRuntime(deps) {
     // Misserfolg des Stapels, nur kein unspezifischer.
     if (wrote) {
       try {
+        // Beide Hälften: der `save()`-Debounce (localStorage: phases,
+        // models, chartEdits, …) und die IndexedDB-Warteschlange. Erst dann
+        // heißt `ok: true` „angewandt und gespeichert".
+        stateManager.saveNow();
         await stateManager.flushNow();
       } catch (err) {
         const detail = err?.message ?? String(err);

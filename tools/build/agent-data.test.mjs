@@ -1512,45 +1512,6 @@ test('i18n-Tor: das deutsche read-Hilfetext von five-why bleibt der modulspezifi
   assert.ok(lookup(de, 'modules.shared.actions.read.params.options'));
 });
 
-/* Lücke, die bis hierher offen war: der Nutzungsvertrag (`agent-usage.js`)
-   liest seine Sätze mit festen Schlüsseln aus dem i18n-Baum, und KEIN Tor
-   hat je nachgesehen, ob es sie dort gibt. Der Unit-Test prüft gegen eine
-   Fixture-Tabelle, dieses Modul hatte keine `usage`-Zusicherung, und
-   `agent-surface.spec.js` prüft nur `typeof result.usage.intro === 'string'`
-   — ein fehlender Schlüssel käme als Schlüsselname selbst durch (`i18n.t`
-   gibt den Schlüssel zurück), in GENAU EINER Sprache, unbemerkt. Die
-   Schlüsselliste wird aus dem Quelltext gelesen, nicht abgeschrieben: eine
-   neu ergänzte Zeile in `agent-usage.js` ist damit automatisch mitgeprüft. */
-test('i18n-Tor: jeder Schlüssel, den agent-usage.js liest, steht in BEIDEN Sprachdateien', async () => {
-  const appDir = join(import.meta.dirname, '..', '..');
-  // Die Schlüsselliste kommt aus dem AUSGEFÜHRTEN `buildUsage`, nicht aus
-  // einer Abschrift und nicht aus einem Regex über den Quelltext: eine
-  // Sonde-i18n markiert jeden Wert, den der Vertrag wirklich nachschlägt.
-  // Ein Regex hinge an der Zitierweise — vier Zeilen auf Backticks
-  // umgeschrieben, und das Tor deckte still die Hälfte des Vertrags ab.
-  const { buildUsage } = await import('../../js/core/agent/agent-usage.js');
-  const usage = buildUsage({ t: (key) => `@@${key}` });
-  const keys = Object.values(usage)
-    .filter(v => typeof v === 'string' && v.startsWith('@@'))
-    .map(v => v.slice(2));
-  assert.equal(keys.length, 11,
-    `agent-usage.js liest ${keys.length} i18n-Schlüssel, erwartet 11 — kam einer `
-    + 'dazu oder weg, gehört die Zahl hier angepasst (und der Schlüssel in beide Sprachbäume)');
-  assert.deepEqual([...new Set(keys)].sort(), [...keys].sort(), 'doppelter usage-Schlüssel');
-
-  const trees = {
-    de: JSON.parse(readFileSync(join(appDir, 'i18n', 'de.json'), 'utf8')),
-    en: JSON.parse(readFileSync(join(appDir, 'i18n', 'en.json'), 'utf8')),
-  };
-  const missing = [];
-  for (const key of keys) {
-    for (const [lang, tree] of Object.entries(trees)) {
-      if (lookup(tree, key) === undefined) missing.push(`${lang}: ${key}`);
-    }
-  }
-  assert.deepEqual(missing, [], `fehlende Nutzungsvertrags-Schlüssel:\n${missing.join('\n')}`);
-});
-
 /* ── Domänen-Tor ────────────────────────────────────────────────────────
    Die vier Aufzähl-Setter des Hypothesentests prüfen ihr Argument gegen die
    aus dem Model exportierten Wertemengen (`CATEGORIES`, `TEST_TYPES`,

@@ -122,8 +122,8 @@ suite('agent runtime path access', () => {
 });
 
 suite('agent contract', () => {
-  test('contract version is 1', () => {
-    assertEqual(CONTRACT_VERSION, 1);
+  test('contract version is 2', () => {
+    assertEqual(CONTRACT_VERSION, 2);
   });
 
   test('exactly the seven core ops are declared', () => {
@@ -146,8 +146,8 @@ suite('agent contract', () => {
 
   test('die Fläche kündigt keinen Code an, den sie nicht produziert', () => {
     // `not_connected` und `unknown_field` wurden von keiner Codezeile erzeugt,
-    // standen aber über `buildUsage().errors` als mögliche Codes in der
-    // Zusage. Jetzt kostenlos weg, später die Rücknahme einer Zusage.
+    // standen aber in der Fehlerliste der Beschreibungsantwort als mögliche
+    // Codes in der Zusage. Jetzt kostenlos weg, später die Rücknahme einer Zusage.
     assertEqual('NOT_CONNECTED' in ERRORS, false);
     assertEqual('UNKNOWN_FIELD' in ERRORS, false);
   });

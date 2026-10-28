@@ -6,7 +6,6 @@ import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../tes
 import {
   buildCatalog, buildInstanceList, buildWorld, allowedPhasesFor, describeModule, isSingleton,
 } from '../../../js/core/agent/agent-catalog.js';
-import { buildUsage } from '../../../js/core/agent/agent-usage.js';
 import { OPS } from '../../../js/core/agent/agent-contract.js';
 import { pathExistsInShape } from '../../../js/core/agent/agent-shape.js';
 import { getAllPhaseIds } from '../../../js/core/cycles/cycles.js';
@@ -33,17 +32,6 @@ const I18N_TABLE = {
   'modules.kano.description': 'Kundenanforderungen klassifizieren',
   'agent.errors.unknownSection': 'Modul "{module}" hat keinen Handbuchabschnitt "{section}".',
   'agent.errors.unknownModule': 'Modul "{module}" gibt es nicht.',
-  'agent.usage.intro': 'Qprovement ist ein Six-Sigma-Werkzeugkasten im Browser.',
-  'agent.usage.call': 'window.qprovement.interact() liefert diese Beschreibung.',
-  'agent.usage.actionForm': 'Eine Aktion ist { op, … } mit den Feldern aus dem Aktionskatalog.',
-  'agent.usage.refForm': 'Eine Referenz ist { $from, path }.',
-  'agent.usage.nullableForm': '{ $nullable: … } heißt: diese Form oder null.',
-  'agent.usage.batchForm': 'Der ganze Stapel wird geprüft, bevor irgendetwas ausgeführt wird.',
-  'agent.usage.errorForm': 'Jeder Eintrag liefert { ok, result } oder { ok: false, error, message }.',
-  'agent.usage.availability': 'Module ohne Freigabe erscheinen mit available: false.',
-  'agent.usage.limits': 'Du bekommst Zahlen, keine Bilder.',
-  'agent.usage.viewSwitch': 'instance.call wechselt die Ansicht.',
-  'agent.usage.keysForm': 'keys beschreibt jeden Schlüssel einer Aktion oder eines Felds.',
   'modules.worksheet.actions.importCsv.help': 'Ersetzt den Inhalt des aktiven Blatts durch die übergebenen CSV-Daten.',
   'modules.worksheet.actions.importCsv.params.csv': 'Der vollständige CSV-Text, inklusive Kopfzeile, falls vorhanden.',
   'modules.worksheet.fields.rows.help': 'Die Datenzeilen des aktiven Blatts, in Spaltenreihenfolge.',
@@ -413,44 +401,6 @@ suite('agent catalog — module.describe', () => {
     const out = await describeModule({ ...deps, getHelp: async () => null }, 'worksheet');
     assertDeepEqual(out.sections, []);
     assertEqual(out.prose, null);
-  });
-});
-
-suite('agent usage contract', () => {
-  test('derives the op list from the contract rather than repeating it', () => {
-    const usage = buildUsage(I18N);
-    assertEqual(usage.contract, 1);
-    assertDeepEqual(Object.keys(usage.ops).sort(), [
-      'catalog.read', 'instance.call', 'instance.open',
-      'module.add', 'module.describe', 'module.remove', 'project.read',
-    ]);
-    assertDeepEqual(usage.ops['module.add'].params.module, { type: 'string', required: true });
-  });
-
-  test('names every error code the surface can return', () => {
-    const usage = buildUsage(I18N);
-    assertTrue(usage.errors.includes('consent_denied'));
-    assertTrue(usage.errors.includes('module_not_agent_ready'));
-    assertTrue(usage.errors.includes('validation_failed'));
-  });
-
-  test('carries the prose fields the agent needs, all non-empty', () => {
-    const usage = buildUsage(I18N);
-    for (const key of ['intro', 'call', 'actionForm', 'refForm', 'nullableForm', 'batchForm', 'errorForm', 'availability', 'limits', 'viewSwitch', 'keysForm']) {
-      assertTrue(typeof usage[key] === 'string' && usage[key].length > 0, `usage.${key} missing`);
-    }
-  });
-
-  test('die Nullable-Hülle, die der Vertrag wörtlich ausliefert, ist auch erklärt', () => {
-    const usage = buildUsage(I18N);
-    // `ops` gibt die Ergebnisform unverändert an den Agenten weiter — er
-    // liest dort `view: { $nullable: … }`. Die Zusage muss deshalb BEIM
-    // AGENTEN ankommen; ein Fall, der nur die Sprachdatei prüft, hätte den
-    // Widerspruch zwischen `ops` und der Prosa nicht gefunden.
-    assertTrue(Object.prototype.hasOwnProperty.call(usage.ops['project.read'].result.view, '$nullable'),
-      'die Fläche liefert die Nullable-Hülle wörtlich aus');
-    assertTrue(usage.nullableForm.includes('$nullable'),
-      `nullableForm nennt die Hülle nicht: ${usage.nullableForm}`);
   });
 });
 
