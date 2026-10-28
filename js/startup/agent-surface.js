@@ -22,6 +22,7 @@
  * HTTP-Client am DEMSELBEN Runtime — Aktionskatalog, Prüfer,
  * Referenzauflösung, Fehlerformen und Registry werden unverändert geerbt.
  */
+import Alpine from '@alpinejs/csp';
 import { createStartup } from '../core/create-startup.js';
 import { createAgentRuntime, createConsentGate, AGENT_REGISTRY } from '../core/agent/index.js';
 import { createAgentHost } from '../ui/agent-host.js';
@@ -51,7 +52,10 @@ export default createStartup({
       promptExport: () => exportAllProjects({ stateManager, eventBus, i18n, notify }),
     });
 
-    const host = createAgentHost({ stateManager, moduleRegistry, eventBus, router, workspace });
+    const host = createAgentHost({
+      stateManager, moduleRegistry, eventBus, router, workspace,
+      nextTick: (cb) => Alpine.nextTick(cb),
+    });
 
     const runtime = createAgentRuntime({
       stateManager,

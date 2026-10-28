@@ -30,6 +30,7 @@ import { buildUsage } from './agent-usage.js';
 import { flattenBriefing } from './agent-briefing.js';
 import { AI_ASSISTANT_CHAPTER_ID } from '../../help/help-keys.js';
 import { createOps } from './agent-ops.js';
+import { createRevisionTracker } from './agent-revisions.js';
 
 /**
  * @param {object} deps
@@ -41,11 +42,74 @@ import { createOps } from './agent-ops.js';
  * @param {{ ensure: () => Promise<object> }} deps.consent
  * @param {object} deps.host  siehe ui/agent-host.js
  * @param {string} deps.appVersion
+ * @param {object} [deps.revisions]  Merker aus agent-revisions.js; ohne Angabe
+ *   ein frischer (Naht für Unit-Tests)
  * @returns {{ interact: (input?: object|object[]) => Promise<object> }}
  */
 export function createAgentRuntime(deps) {
   const { stateManager, moduleRegistry, i18n, registry, consent, host, appVersion, getHelp } = deps;
   const ops = createOps(deps);
+
+  // Lesen vor Schreiben (Spec 2026-10-28 §4): was der Agent gesehen hat.
+  // Nur im Speicher — nach einem Neuladen ist nichts gelesen.
+  const revisions = deps.revisions ?? createRevisionTracker(stateManager);
+
+  /**
+   * Prüft eine schreibende Aktion gegen den Merker — zur Ausführungszeit und
+   * je Aktion, nicht im Validator: zwischen zwei `await` kann der Nutzer
+   * gearbeitet haben.
+   * @param {string} op
+   * @param {object} params  die Aktion mit aufgelösten Referenzen
+   * @returns {object|null} ein AXI-Fehler `stale_revision` — ohne Token und
+   *   ohne `available` — oder null
+   */
+  function staleRevision(op, params) {
+    if (!isWritingAction({ op, method: params.method })) return null;
+    if (op === 'instance.call') {
+      // Eine Instanz, die es nicht gibt, meldet die Op selbst als
+      // `unknown_instance` mit den gültigen Ids — die nützlichere Antwort.
+      const exists = buildInstanceList({ stateManager, i18n }).some(i => i.id === params.instance);
+      if (!exists || revisions.isInstanceCurrent(params.instance)) return null;
+      return axiError(ERRORS.STALE_REVISION,
+        i18n.t('agent.errors.staleRevision', { instance: params.instance }));
+    }
+    if (revisions.isStructureCurrent()) return null;
+    return axiError(ERRORS.STALE_REVISION, i18n.t('agent.errors.staleStructure'));
+  }
+
+  /**
+   * Vermerkt nach einer gelungenen Aktion, was der Agent jetzt kennt. Vorher
+   * wartet `host.settle()` die Persistenz ab: der persist-`$watch` läuft erst
+   * im nächsten Alpine-Tick, und eine eigene Änderung, die danach landet,
+   * sähe beim nächsten Schreiben wie eine fremde aus. Auch nach `read`: das
+   * Einhängen einer Instanz kann ihr Model im `init()` normalisieren. Mit der
+   * Instanz-Id legt der Host zudem einen noch fehlenden Zustand ab — sonst
+   * schriebe ihn erst der nächste Ansichtswechsel, und die Revision drehte
+   * sich ohne Änderung. `catalog.read`, `module.describe` und
+   * `instance.open` zeigen keinen Inhalt und vermerken nichts.
+   * @param {string} op
+   * @param {object} params
+   * @param {any} outcome  das Ergebnis der Op
+   * @returns {Promise<void>}
+   */
+  async function noteSeen(op, params, outcome) {
+    if (op === 'project.read') {
+      revisions.markStructure();
+    } else if (op === 'instance.call') {
+      await host.settle(params.instance);
+      revisions.markInstance(params.instance);
+    } else if (op === 'module.add') {
+      // `host.addInstance` hat das Einhängen schon abgewartet; erst danach
+      // steht der Ausgangszustand, dessen Revision hier vermerkt wird.
+      await host.settle(outcome.instanceId);
+      revisions.markStructure();
+      revisions.markInstance(outcome.instanceId);
+    } else if (op === 'module.remove') {
+      await host.settle();
+      revisions.markStructure();
+      revisions.forgetInstance(params.instance);
+    }
+  }
 
   /**
    * Das Rollen-Briefing als Klartext. Quelle ist das Handbuchkapitel
@@ -81,7 +145,12 @@ export function createAgentRuntime(deps) {
     const gate = await consent.ensure();
     if (!gate.ok) return { ...gate, contract: CONTRACT_VERSION };
 
-    if (input === undefined || input === null) return await describeSurface();
+    if (input === undefined || input === null) {
+      const surface = await describeSurface();
+      // Die Beschreibung zeigt die Instanzliste — ein Lesen der Struktur.
+      revisions.markStructure();
+      return surface;
+    }
 
     // Eine Momentaufnahme für den ganzen Prüflauf: der Prüfer darf nicht
     // gegen einen Zustand prüfen, der sich zwischen den Stufen verschiebt.
@@ -128,6 +197,13 @@ export function createAgentRuntime(deps) {
         break;
       }
 
+      const stale = staleRevision(action.op, resolved.value);
+      if (stale) {
+        results.push({ ...stale, id: action.id ?? null });
+        allOk = false;
+        break;
+      }
+
       if (isWritingAction(action)) wrote = true;
 
       // Eine Op wirft im Regelfall nicht (siehe agent-ops.js), aber ein
@@ -149,6 +225,7 @@ export function createAgentRuntime(deps) {
       }
       results.push({ ok: true, id: action.id ?? null, result: outcome });
       if (action.id !== undefined) byId.set(action.id, outcome);
+      await noteSeen(action.op, resolved.value, outcome);
     }
 
     // `ok: true` heißt „liegt auf Platte". Der `stateManager` schreibt hinter

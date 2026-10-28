@@ -5,19 +5,21 @@
  */
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
 import { createAgentHost } from '../../js/ui/agent-host.js';
+import { createRevisionTracker } from '../../js/core/agent/agent-revisions.js';
 
 const DEFS = {
   'five-why': { id: 'five-why', phase: 'define', cycles: { dmaic: { phase: 'define', allowedPhases: ['measure'] } } },
   'worksheet': { id: 'worksheet', phase: 'data' },
 };
 
-function makeHost({ phases, activeInstance = null, completed = false } = {}) {
+function makeHost({ phases, activeInstance = null, completed = false, ready = null } = {}) {
   const state = structuredClone(phases ?? {
     data: [],
     define: [{ instanceId: 'fw-1', moduleId: 'five-why', order: 0 }],
     measure: [],
   });
   const calls = [];
+  const moduleStates = new Map();
   const stateManager = {
     getActiveProjectId: () => 'p-1',
     isCompleted: () => completed,
@@ -26,6 +28,11 @@ function makeHost({ phases, activeInstance = null, completed = false } = {}) {
     // jeder Nicht-`settings.`-Schreibzugriff STILL (core/state-manager.js).
     set: (path, value) => { if (!completed) state[path.slice(7)] = value; },
     removeModuleState: () => {},
+    // Der Modulzustand wie im Cache des echten stateManager; die Revision
+    // hängt am Inhalt (core/state-manager.js:getModuleRevision).
+    setModuleState: (id, s) => { calls.push(['persist', id, s]); moduleStates.set(id, structuredClone(s)); },
+    getModuleRevision: (id) => (moduleStates.has(id) ? JSON.stringify(moduleStates.get(id)) : undefined),
+    getStructureRevision: () => JSON.stringify(state),
   };
   const moduleRegistry = { get: (id) => DEFS[id], getActiveCycle: () => 'dmaic' };
   const eventBus = { emit: (name, payload) => calls.push(['emit', name, payload]) };
@@ -35,15 +42,18 @@ function makeHost({ phases, activeInstance = null, completed = false } = {}) {
     getInstance: (id) => mounted.get(id) ?? null,
     // Wie der echte Workspace: der Griff auf das Viewmodel wartet das
     // Einhängen ab (ui/workspace.js:whenInstanceReady).
-    whenInstanceReady: async (id) => mounted.get(id) ?? null,
+    whenInstanceReady: async (id) => mounted.get(id) ?? ready?.(id) ?? null,
     removeInstance: async (id) => { calls.push(['removeInstance', id]); return !completed; },
   };
   const router = {
     navigate: async (route) => { calls.push(['navigate', route]); },
   };
   return {
-    host: createAgentHost({ stateManager, moduleRegistry, eventBus, router, workspace }),
-    calls, state, mounted,
+    host: createAgentHost({
+      stateManager, moduleRegistry, eventBus, router, workspace,
+      nextTick: (cb) => { calls.push(['tick']); cb(); },
+    }),
+    calls, state, mounted, stateManager, moduleStates,
   };
 }
 
@@ -147,5 +157,67 @@ suite('agent host — der abgeschlossene Projektzustand', () => {
     const { host, calls } = makeHost({ completed: true });
     assertEqual(await host.removeInstance('fw-1'), false);
     assertDeepEqual(calls, []);
+  });
+});
+
+suite('agent host — Persistenz abwarten (Lesen vor Schreiben)', () => {
+  test('addInstance legt den Ausgangszustand der neuen Instanz einmal ab', async () => {
+    const { host, calls } = makeHost({ ready: () => ({ getState: () => ({ problem: '' }) }) });
+    const r = await host.addInstance('five-why');
+    assertDeepEqual(calls.filter(c => c[0] === 'persist'), [['persist', r.instanceId, { problem: '' }]]);
+  });
+
+  test('addInstance ohne lebendes Modul legt nichts ab', async () => {
+    const { host, calls } = makeHost();
+    await host.addInstance('five-why');
+    assertEqual(calls.some(c => c[0] === 'persist'), false);
+  });
+
+  test('addInstance legt den Zustand erst nach dem Einhängen ab, nicht davor', async () => {
+    // Das `init()` des Moduls normalisiert sein Model während des Einhängens
+    // (Controller-Ruling R1): abgelegt werden muss der Stand DANACH.
+    let model = { raw: true };
+    const { host, calls } = makeHost({
+      ready: async () => {
+        await Promise.resolve();
+        model = { normalized: true };
+        return { getState: () => model };
+      },
+    });
+    const r = await host.addInstance('five-why');
+    assertDeepEqual(calls.filter(c => c[0] === 'persist'), [['persist', r.instanceId, { normalized: true }]]);
+  });
+
+  test('settle wartet einen Alpine-Tick ab', async () => {
+    const { host, calls } = makeHost();
+    await host.settle();
+    assertDeepEqual(calls.filter(c => c[0] === 'tick'), [['tick']]);
+  });
+
+  test('settle(id) legt den Zustand einer Instanz ohne gespeicherten Zustand ab', async () => {
+    const { host, calls, mounted } = makeHost();
+    mounted.set('fw-1', { getState: () => ({ problem: 'x' }) });
+    await host.settle('fw-1');
+    assertDeepEqual(calls.filter(c => c[0] === 'persist'), [['persist', 'fw-1', { problem: 'x' }]]);
+  });
+
+  test('settle(id) schreibt nichts, wenn die Instanz schon einen Zustand hat', async () => {
+    const { host, calls, mounted, stateManager } = makeHost();
+    stateManager.setModuleState('fw-1', { problem: 'x' });
+    mounted.set('fw-1', { getState: () => ({ problem: 'anders' }) });
+    await host.settle('fw-1');
+    assertEqual(calls.filter(c => c[0] === 'persist').length, 1, 'nur der Aufbau oben');
+  });
+
+  test('gelesen ohne gespeicherten Zustand, dann ein Ansichtswechsel: die Instanz bleibt aktuell (R2)', async () => {
+    const { host, mounted, stateManager } = makeHost();
+    mounted.set('fw-1', { getState: () => ({ problem: 'x' }) });
+    const revisions = createRevisionTracker(stateManager);
+    // Was die Laufzeit nach einem `read` tut: settle(id), dann vermerken.
+    await host.settle('fw-1');
+    revisions.markInstance('fw-1');
+    // Der Ansichtswechsel (`_persistAllModuleStates`) schreibt denselben Inhalt.
+    stateManager.setModuleState('fw-1', { problem: 'x' });
+    assertTrue(revisions.isInstanceCurrent('fw-1'), 'ein unveränderter Inhalt ist keine fremde Änderung');
   });
 });

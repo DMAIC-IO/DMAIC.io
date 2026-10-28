@@ -24,6 +24,9 @@ import { createInstance, findInstancePhase } from '../core/router/instance-ops.j
  * @param {object} deps.eventBus
  * @param {object} deps.router
  * @param {object} deps.workspace
+ * @param {(callback: () => void) => void} deps.nextTick  `Alpine.nextTick` — von
+ *   außen, weil der Host in der Node-Spur getestet wird und Alpine dort nicht
+ *   geladen werden kann
  * @returns {{
  *   isCompleted: () => boolean,
  *   getCurrentView: () => ({ instanceId: string, module: string, phase: string }|null),
@@ -31,9 +34,10 @@ import { createInstance, findInstancePhase } from '../core/router/instance-ops.j
  *   getViewmodel: (instanceId: string) => Promise<object|null>,
  *   addInstance: (moduleId: string, phase?: string) => Promise<{ instanceId: string, module: string, phase: string }|null>,
  *   removeInstance: (instanceId: string) => Promise<boolean>,
+ *   settle: (instanceId?: string) => Promise<void>,
  * }}
  */
-export function createAgentHost({ stateManager, moduleRegistry, eventBus, router, workspace }) {
+export function createAgentHost({ stateManager, moduleRegistry, eventBus, router, workspace, nextTick }) {
   /** Der Datensatz einer Instanz samt Phase, oder null. */
   function locate(instanceId) {
     const phase = findInstancePhase(stateManager, instanceId);
@@ -95,12 +99,46 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
       // KEIN Rückfall auf ein zusammengesetztes Ergebnis: findet `locate()`
       // die Instanz nicht, existiert sie nicht, und eine erfundene Id wäre
       // die schlechteste mögliche Antwort (Review-Befund I2).
-      return locate(instanceId);
+      const found = locate(instanceId);
+      if (!found) return null;
+      // Den Ausgangszustand einmal ablegen — nach dem Einhängen, denn erst
+      // `init()` des Moduls bringt sein Model in Form. Ohne ihn hätte die
+      // Instanz bis zum ersten Ansichtswechsel keinen gespeicherten Zustand;
+      // das spätere Neuschreiben durch `_persistAllModuleStates` wäre eine
+      // Revisionsänderung, und der erste Schreibzugriff des Agenten nach
+      // `module.add` scheiterte mit `stale_revision`.
+      const instance = await workspace.whenInstanceReady(instanceId);
+      const state = instance?.getState?.();
+      if (state) stateManager.setModuleState(instanceId, state);
+      return found;
     },
 
     removeInstance(instanceId) {
       if (this.isCompleted()) return Promise.resolve(false);
       return workspace.removeInstance(instanceId);
+    },
+
+    /**
+     * Wartet, bis Alpine die Effekte der letzten Änderung abgearbeitet hat —
+     * darin läuft der persist-`$watch` (`core/template-module.js`). Erst
+     * danach steht eine eigene Änderung des Agenten im `stateManager`.
+     *
+     * Mit `instanceId` sorgt es zusätzlich dafür, dass die Instanz einen
+     * gespeicherten Zustand HAT, bevor die Laufzeit ihre Revision vermerkt:
+     * eine frisch angezeigte Instanz kann ohne Zustand im Cache sein (der
+     * persist-`$watch` feuert nicht beim Einhängen, und `_activateTab`
+     * persistiert VOR dem Einhängen). Der nächste Ansichtswechsel schriebe
+     * sie dann zum ersten Mal — eine Revisionsänderung ohne Änderung, und
+     * der nächste Schreibzugriff des Agenten scheiterte mit `stale_revision`.
+     * @param {string} [instanceId]  die Instanz, deren Revision gleich vermerkt wird
+     * @returns {Promise<void>}
+     */
+    async settle(instanceId) {
+      await new Promise((resolve) => nextTick(resolve));
+      if (instanceId === undefined || stateManager.getModuleRevision(instanceId) !== undefined) return;
+      const instance = await workspace.whenInstanceReady(instanceId);
+      const state = instance?.getState?.();
+      if (state) stateManager.setModuleState(instanceId, state);
     },
   };
 }

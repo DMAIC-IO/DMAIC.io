@@ -8,6 +8,8 @@ import { createAgentRuntime } from '../../../js/core/agent/agent-runtime.js';
 import { OPS } from '../../../js/core/agent/agent-contract.js';
 import aiAssistantHelp from '../../../js/help/ai-assistant-help.js';
 import { AI_ASSISTANT_CHAPTER_ID } from '../../../js/help/help-keys.js';
+import { createRevisionTracker } from '../../../js/core/agent/agent-revisions.js';
+import { buildInstanceList } from '../../../js/core/agent/agent-catalog.js';
 
 const DEFS = [
   { id: 'worksheet', phase: 'data' },
@@ -31,6 +33,18 @@ const I18N = {
   t: (key, params) => (params ? `${key}|${Object.values(params).join(',')}` : key),
 };
 
+/**
+ * Ein Merker, für den der Agent schon alles gelesen hat — für Runtimes mit
+ * eigenem Fake-`stateManager` ohne Revisionen, die anderes prüfen als Lesen
+ * vor Schreiben.
+ */
+function alreadyReadEverything() {
+  return {
+    markInstance() {}, markStructure() {}, forgetInstance() {},
+    isInstanceCurrent: () => true, isStructureCurrent: () => true,
+  };
+}
+
 /** Yield the event loop a few times — enough for an unserialized interleave. */
 async function tick(times = 3) {
   for (let i = 0; i < times; i++) await Promise.resolve();
@@ -39,24 +53,42 @@ async function tick(times = 3) {
 /** A runtime with every port faked; `log` records the side effects in order. */
 function makeRuntime({ denied = false, viewmodel = null, completed = false, slowAdd = false,
                       getHelp = async () => null, stateManager: stateManagerOverrides,
-                      registry: registryOverrides } = {}) {
+                      registry: registryOverrides, primed = true, instances = [],
+                      onSettle = () => {} } = {}) {
   const log = [];
-  const phases = { data: [], define: [{ instanceId: 'fw-1', moduleId: 'five-why', order: 0 }], extras: [] };
+  const settles = [];
+  const phases = { data: [...instances], define: [{ instanceId: 'fw-1', moduleId: 'five-why', order: 0 }], extras: [] };
+  // Revisionen wie im echten stateManager, nur von Hand gedreht: ein Test
+  // simuliert eine fremde Änderung mit `revs.set(id, …)`; eigene Schreib-
+  // zugriffe drehen die Revision in der Viewmodel-Methode selbst.
+  const revs = new Map();
+  let structureRev = 1;
   const stateManager = {
     getActiveProjectId: () => 'p-1',
     get: (path) => (path === 'phases' ? phases : path.startsWith('phases.') ? phases[path.slice(7)] : undefined),
     set: (path, value) => { phases[path.slice(7)] = value; },
+    getModuleRevision: (id) => revs.get(id),
+    getStructureRevision: () => structureRev,
+    saveNow: () => {},
     flushNow: async () => {},
     // Tests that need to observe the flush (Task 1: `ok: true` heißt
     // „liegt auf Platte") override just `flushNow` here instead of
     // rebuilding the whole fake host/registry wiring.
     ...stateManagerOverrides,
   };
+  const revisions = createRevisionTracker(stateManager);
+  if (primed) {
+    // Die Bestandsfälle prüfen anderes als Lesen vor Schreiben: sie starten
+    // mit einem Agenten, der Struktur und jede Instanz schon gelesen hat.
+    revisions.markStructure();
+    for (const { id } of buildInstanceList({ stateManager, i18n: I18N })) revisions.markInstance(id);
+  }
   const runtime = createAgentRuntime({
     stateManager,
     moduleRegistry: { getAll: () => DEFS, get: (id) => DEFS.find(d => d.id === id), getActiveCycle: () => 'dmaic' },
     i18n: I18N,
     registry: { ...REGISTRY, ...registryOverrides },
+    revisions,
     getHelp,
     appVersion: '1.2.3',
     consent: {
@@ -69,7 +101,10 @@ function makeRuntime({ denied = false, viewmodel = null, completed = false, slow
       isCompleted: () => completed,
       getCurrentView: () => ({ instanceId: 'fw-1', module: 'five-why', phase: 'define' }),
       openInstance: async (id) => { log.push(`open:${id}`); return { instanceId: id, module: 'five-why', phase: 'define' }; },
-      getViewmodel: async (id) => { log.push(`vm:${id}`); return viewmodel; },
+      getViewmodel: async (id) => {
+        log.push(`vm:${id}`);
+        return typeof viewmodel === 'function' ? viewmodel(id) : viewmodel;
+      },
       addInstance: async (moduleId, phase) => {
         log.push(`add-start:${moduleId}:${phase ?? '-'}`);
         // Ein echter Host ist nicht atomar (router.navigate, IndexedDB).
@@ -80,12 +115,15 @@ function makeRuntime({ denied = false, viewmodel = null, completed = false, slow
         const instanceId = `${moduleId}-new`;
         phases[target] = [...(phases[target] ?? []), { instanceId, moduleId, order: 0 }];
         log.push(`add-end:${moduleId}`);
+        structureRev += 1;
         return { instanceId, module: moduleId, phase: target };
       },
-      removeInstance: async (id) => { log.push(`remove:${id}`); return true; },
+      removeInstance: async (id) => { log.push(`remove:${id}`); structureRev += 1; return true; },
+      // Eigenes Protokoll: `log` bleibt das der Seiteneffekte.
+      settle: async (id) => { settles.push(id ?? null); onSettle(id); },
     },
   });
-  return { runtime, log, phases };
+  return { runtime, log, settles, phases, revs, bumpStructure: () => { structureRev += 1; } };
 }
 
 suite('agent runtime — consent gate', () => {
@@ -459,6 +497,143 @@ suite('agent runtime — the seven ops', () => {
   });
 });
 
+suite('agent runtime — Lesen vor Schreiben (stale_revision)', () => {
+  const WS1 = { instanceId: 'ws-1', moduleId: 'worksheet', order: 0 };
+  const WS2 = { instanceId: 'ws-2', moduleId: 'worksheet', order: 1 };
+  const write = (instance) => ({ op: 'instance.call', instance, method: 'importCsv', args: ['a;b'] });
+  const read = (instance) => ({ op: 'instance.call', instance, method: 'read' });
+
+  /**
+   * Ein Agent, der noch nichts gelesen hat, und zwei Datensammlungen. Die
+   * Schreibmethode dreht die Revision ihrer Instanz — wie der persist-$watch;
+   * `sideEffectOn` dreht zusätzlich die einer anderen.
+   */
+  function setup({ sideEffectOn = null } = {}) {
+    let made;
+    const viewmodelFor = (id) => ({
+      read: () => ({}),
+      importCsv: () => {
+        made.log.push(`importCsv:${id}`);
+        made.revs.set(id, (made.revs.get(id) ?? 0) + 1);
+        if (sideEffectOn) made.revs.set(sideEffectOn, (made.revs.get(sideEffectOn) ?? 0) + 1);
+        return true;
+      },
+    });
+    made = makeRuntime({ primed: false, viewmodel: viewmodelFor, instances: [WS1, WS2] });
+    return made;
+  }
+
+  test('schreiben ohne vorheriges Lesen scheitert — ohne Token, ohne available, ohne Seiteneffekt', async () => {
+    const { runtime, log } = setup();
+    const out = await runtime.interact([write('ws-1')]);
+    assertEqual(out.ok, false);
+    const r = out.results[0];
+    assertEqual(r.error, 'stale_revision');
+    assertEqual(r.message, 'agent.errors.staleRevision|ws-1');
+    assertDeepEqual(Object.keys(r).sort(), ['error', 'id', 'message', 'ok']);
+    assertEqual(log.some(e => e.startsWith('vm:')), false, 'die Op lief nicht');
+  });
+
+  test('lesen, dann zwei Schreibzugriffe in getrennten Stapeln: eigene Änderungen sind keine fremden', async () => {
+    const { runtime } = setup();
+    await runtime.interact([read('ws-1')]);
+    assertEqual((await runtime.interact([write('ws-1')])).ok, true);
+    assertEqual((await runtime.interact([write('ws-1')])).ok, true);
+  });
+
+  test('lesen und schreiben im selben Stapel, mehrere Schreibzugriffe hintereinander', async () => {
+    const { runtime } = setup();
+    const out = await runtime.interact([read('ws-1'), write('ws-1'), write('ws-1'), write('ws-1')]);
+    assertEqual(out.ok, true, JSON.stringify(out));
+    assertEqual(out.results.length, 4);
+  });
+
+  test('eine fremde Änderung dazwischen macht veraltet; nach erneutem read gelingt es', async () => {
+    const { runtime, revs } = setup();
+    await runtime.interact([read('ws-1')]);
+    revs.set('ws-1', 42);                                    // der Nutzer tippt
+    assertEqual((await runtime.interact([write('ws-1')])).results[0].error, 'stale_revision');
+    await runtime.interact([read('ws-1')]);
+    assertEqual((await runtime.interact([write('ws-1')])).ok, true);
+  });
+
+  test('eine Änderung, die erst im Settle landet (persist-$watch), zählt als eigene', async () => {
+    let made;
+    let deferred = null;
+    const viewmodel = (id) => ({
+      read: () => ({}),
+      importCsv: () => { deferred = () => made.revs.set(id, 7); return true; },
+    });
+    made = makeRuntime({
+      primed: false, viewmodel, instances: [WS1],
+      onSettle: () => { deferred?.(); deferred = null; },
+    });
+    await made.runtime.interact([read('ws-1')]);
+    assertEqual((await made.runtime.interact([write('ws-1')])).ok, true);
+    assertEqual((await made.runtime.interact([write('ws-1')])).ok, true);
+  });
+
+  test('eine Nebenwirkung auf eine andere Instanz macht diese veraltet', async () => {
+    const { runtime } = setup({ sideEffectOn: 'ws-2' });
+    await runtime.interact([read('ws-1'), read('ws-2')]);
+    assertEqual((await runtime.interact([write('ws-1')])).ok, true);
+    assertEqual((await runtime.interact([write('ws-2')])).results[0].error, 'stale_revision');
+  });
+
+  test('module.add ohne vorheriges Lesen der Struktur scheitert ohne Seiteneffekt', async () => {
+    const { runtime, log } = setup();
+    const out = await runtime.interact([{ op: 'module.add', module: 'worksheet' }]);
+    assertEqual(out.results[0].error, 'stale_revision');
+    assertEqual(out.results[0].message, 'agent.errors.staleStructure');
+    assertEqual(log.some(e => e.startsWith('add-start')), false);
+  });
+
+  test('project.read zählt als Lesen der Struktur; die neue Instanz ist sofort beschreibbar', async () => {
+    const { runtime } = setup();
+    await runtime.interact([{ op: 'project.read' }]);
+    const out = await runtime.interact([
+      { id: 'a', op: 'module.add', module: 'worksheet' },
+      { op: 'instance.call', instance: { $from: 'a', path: 'instanceId' }, method: 'importCsv', args: ['x'] },
+      { op: 'module.remove', instance: 'ws-2' },
+    ]);
+    assertEqual(out.ok, true, JSON.stringify(out));
+  });
+
+  test('interact() ohne Parameter zählt als Lesen der Struktur', async () => {
+    const { runtime } = setup();
+    await runtime.interact();
+    assertEqual((await runtime.interact([{ op: 'module.remove', instance: 'ws-2' }])).ok, true);
+  });
+
+  test('eine fremde Strukturänderung macht module.remove veraltet', async () => {
+    const { runtime, bumpStructure } = setup();
+    await runtime.interact([{ op: 'project.read' }]);
+    bumpStructure();                              // der Nutzer legt ein Modul an
+    assertEqual((await runtime.interact([{ op: 'module.remove', instance: 'ws-2' }])).results[0].error,
+      'stale_revision');
+  });
+
+  test('vor jedem Vermerk einer Instanz wartet die Laufzeit settle(id) ab — auch nach read und module.add', async () => {
+    const { runtime, settles } = setup();
+    await runtime.interact([{ op: 'project.read' }]);
+    await runtime.interact([
+      read('ws-1'),
+      { id: 'a', op: 'module.add', module: 'worksheet' },
+      { op: 'module.remove', instance: 'ws-2' },
+    ]);
+    assertDeepEqual(settles, ['ws-1', 'worksheet-new', null]);
+  });
+
+  test('nach module.remove ist die Instanz vergessen', async () => {
+    const { runtime } = setup();
+    await runtime.interact([{ op: 'project.read' }, read('ws-2')]);
+    await runtime.interact([{ op: 'module.remove', instance: 'ws-2' }]);
+    // Der Fake-Host entfernt die Instanz nicht aus `phases`; sie existiert
+    // also weiter, ist für den Agenten aber nicht mehr gelesen.
+    assertEqual((await runtime.interact([write('ws-2')])).results[0].error, 'stale_revision');
+  });
+});
+
 suite('agent runtime — result shapes match the contract (Ruling K5)', () => {
   test('every op\'s actual result carries exactly the keys OPS declares', async () => {
     const { runtime } = makeRuntime({ viewmodel: { read: () => 'ok' } });
@@ -596,6 +771,7 @@ suite('agent runtime — the singleton rule applies to the agent path (I1)', () 
       },
       i18n: I18N,
       registry: { ...REGISTRY, 'project-charter': { tagged: false, available: false, violations: [], actions: {}, fields: {} } },
+      revisions: alreadyReadEverything(),
       getHelp: async () => null,
       appVersion: '1.2.3',
       consent: { ensure: async () => ({ ok: true }) },
@@ -612,6 +788,7 @@ suite('agent runtime — the singleton rule applies to the agent path (I1)', () 
           return { instanceId, module: moduleId, phase: target };
         },
         removeInstance: async () => true,
+        settle: async () => {},
       },
     });
     return { runtime, log };
@@ -701,6 +878,7 @@ suite('agent runtime — the completed project is an honest error (I2 / I3c)', (
     // Now the same action against a host whose write silently vanished.
     const broken = createAgentRuntime({
       stateManager: { getActiveProjectId: () => 'p-1', get: () => ({}), set: () => {}, flushNow: async () => {} },
+      revisions: alreadyReadEverything(),
       moduleRegistry: { getAll: () => DEFS, get: (id) => DEFS.find(d => d.id === id), getActiveCycle: () => 'dmaic' },
       i18n: I18N,
       registry: REGISTRY,
@@ -714,6 +892,7 @@ suite('agent runtime — the completed project is an honest error (I2 / I3c)', (
         getViewmodel: async () => null,
         addInstance: async () => null,          // locate() found nothing
         removeInstance: async () => true,
+        settle: async () => {},
       },
     });
     const out2 = await broken.interact({ op: 'module.add', module: 'worksheet', phase: 'data' });
