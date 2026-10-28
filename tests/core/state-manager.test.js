@@ -640,3 +640,73 @@ suite('StateManager exportAllJSON', () => {
     assertDeepEqual(exported.projects[0].phases.measure, [{ instanceId: 'i2', moduleId: 'worksheet' }]);
   });
 });
+
+// ─── Revisionen (Agentenfläche contract 2, Lesen vor Schreiben) ─────────────
+
+suite('StateManager revisions', () => {
+  test('Modul-Revision hängt am Inhalt: gleich bleibt gleich, anders wird anders, zurück wird wieder gleich', async () => {
+    const sm = new StateManager(new EventBus(), makeFakeAdapter(baseDoc()));
+    await sm.load();
+    const loaded = sm.getModuleRevision('i1');
+    assertEqual(typeof loaded, 'number', 'nach load() hat die Instanz eine Revision');
+    sm.setModuleState('i1', { columns: [['a']] });          // derselbe Inhalt wie baseDoc
+    assertEqual(sm.getModuleRevision('i1'), loaded);
+    sm.setModuleState('i1', { columns: [['b']] });
+    assertTrue(sm.getModuleRevision('i1') !== loaded, 'anderer Inhalt, andere Revision');
+    sm.setModuleState('i1', { columns: [['a']] });
+    assertEqual(sm.getModuleRevision('i1'), loaded, 'zurückgenommen ergibt die alte Revision');
+  });
+
+  test('ohne gespeicherten Zustand keine Revision; removeModuleState nimmt sie weg', async () => {
+    const sm = new StateManager(new EventBus(), makeFakeAdapter(baseDoc()));
+    await sm.load();
+    assertEqual(sm.getModuleRevision('nie-da'), undefined);
+    sm.removeModuleState('i1');
+    assertEqual(sm.getModuleRevision('i1'), undefined);
+  });
+
+  test('eine Fremdänderung (remote) ändert die Revision', async () => {
+    const adapter = makeFakeAdapter(baseDoc());
+    const sm = new StateManager(new EventBus(), adapter);
+    await sm.load();
+    const before = sm.getModuleRevision('i1');
+    const next = baseDoc();
+    next.moduleStates.i1 = { columns: [['REMOTE']] };
+    adapter._setDoc(next);
+    adapter._fireRemote();
+    await Promise.resolve(); await Promise.resolve();
+    assertTrue(sm.getModuleRevision('i1') !== before);
+  });
+
+  test('Struktur-Revision folgt phases — gleicher Inhalt, gleiche Revision', () => {
+    const sm = new StateManager(new EventBus());
+    const empty = sm.getStructureRevision();
+    assertEqual(typeof empty, 'number');
+    sm.set('phases.define', [{ instanceId: 'a', moduleId: 'sipoc', order: 0 }]);
+    const one = sm.getStructureRevision();
+    assertTrue(one !== empty);
+    sm.set('phases.define', [{ instanceId: 'a', moduleId: 'sipoc', order: 0 }]);
+    assertEqual(sm.getStructureRevision(), one);
+  });
+
+  test('Struktur-Revision folgt switchCycle', () => {
+    const sm = new StateManager(new EventBus());
+    const before = sm.getStructureRevision();
+    assertEqual(sm.switchCycle('dmadv'), true);
+    assertTrue(sm.getStructureRevision() !== before);
+  });
+
+  test('saveNow schreibt einen laufenden save()-Debounce sofort, sonst nichts', () => {
+    const sm = new StateManager(new EventBus());
+    const calls = [];
+    sm.save = (opts) => calls.push(!!opts?.quiet);
+    sm.saveNow();
+    assertDeepEqual(calls, [], 'ohne anstehenden Debounce kein Speichern');
+    sm.set('projectMeta.name', 'X');
+    sm.saveNow();
+    assertDeepEqual(calls, [false], 'laut — eine Nicht-Diagramm-Änderung stand an');
+    assertEqual(sm._saveTimer, null);
+    sm.saveNow();
+    assertDeepEqual(calls, [false], 'zweimal hintereinander speichert nicht zweimal');
+  });
+});

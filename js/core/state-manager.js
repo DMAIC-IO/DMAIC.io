@@ -25,6 +25,7 @@
  */
 
 import { uid } from './uid.js';
+import { cyrb53 } from './hash.js';
 import { VERSION } from './version.js';
 import { parseVersion, stripPatch } from './version-utils.js';
 import { migrateToLatest } from './migrations.js';
@@ -273,6 +274,33 @@ export class StateManager {
    */
   getModuleState(instanceId) {
     return this._moduleCache.get(instanceId) ?? null;
+  }
+
+  /**
+   * Revision einer Modulinstanz: ein Hash über ihren gespeicherten Inhalt.
+   *
+   * Gleicher Inhalt ergibt dieselbe Revision. Deshalb macht das Neuschreiben
+   * aller Instanzen beim Ansichtswechsel (`workspace._persistAllModuleStates`)
+   * nichts „veraltet", und eine zurückgenommene Änderung ergibt wieder die alte
+   * Revision. Berechnet bei Bedarf, nicht beim Schreiben: jeder Weg in den
+   * Cache (`load`, Fremdänderung, Import, Projektwechsel) ist so abgedeckt,
+   * und der Schreibpfad bleibt ohne Zusatzkosten. Leser ist die Agentenfläche
+   * (`core/agent/agent-revisions.js`, Lesen vor Schreiben).
+   * @param {string} instanceId
+   * @returns {number|undefined} undefined, solange kein Zustand vorliegt
+   */
+  getModuleRevision(instanceId) {
+    if (!this._moduleCache.has(instanceId)) return undefined;
+    return cyrb53(JSON.stringify(this._moduleCache.get(instanceId)) ?? '');
+  }
+
+  /**
+   * Revision der Projektstruktur (Instanzliste, Phasenzuordnung): ein Hash
+   * über `phases`. Dieselbe Regel wie `getModuleRevision`.
+   * @returns {number}
+   */
+  getStructureRevision() {
+    return cyrb53(JSON.stringify(this._state.phases ?? {}));
   }
 
   /**
@@ -698,10 +726,7 @@ export class StateManager {
     await this.flushNow();
     // The export reads the top-level state back from the adapter, not from
     // memory — a change still waiting in the save debounce would be missing.
-    if (this._saveTimer) {
-      clearTimeout(this._saveTimer);
-      this._runScheduledSave();
-    }
+    this.saveNow();
 
     const projects = this.getProjects();
     const allData = {
@@ -965,6 +990,18 @@ export class StateManager {
       this._flushTimer = null;
     }
     return this._adapter.flush();
+  }
+
+  /**
+   * Speichert einen noch laufenden `save()`-Debounce sofort; läuft keiner,
+   * passiert nichts. Laut oder leise entscheidet `_runScheduledSave()` wie
+   * beim normalen Ablauf — eine anstehende laute Änderung meldet weiter
+   * `state:saved`.
+   */
+  saveNow() {
+    if (!this._saveTimer) return;
+    clearTimeout(this._saveTimer);
+    this._runScheduledSave();
   }
 
   /**
