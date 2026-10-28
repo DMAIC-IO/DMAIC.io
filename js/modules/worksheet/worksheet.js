@@ -503,6 +503,8 @@ const mod = createModule({
       _onAppendColumn: null,
       _autoSave: null,
       _persistAndNotify: null,
+      /** Ein Grid-Ereignis wartet im Entpreller `_persistAndNotify`. */
+      _persistPending: false,
       canUndo: false,
       canRedo: false,
       canSuggest: false,
@@ -563,6 +565,7 @@ const mod = createModule({
       undo() {
         if (!this.canUndo) return false;
         this._grid.undo();
+        this._persistNow();
         return true;
       },
       /**
@@ -579,6 +582,7 @@ const mod = createModule({
       redo() {
         if (!this.canRedo) return false;
         this._grid.redo();
+        this._persistNow();
         return true;
       },
       /**
@@ -586,7 +590,7 @@ const mod = createModule({
        * @agent
        * @returns {void}
        */
-      addColumn() { this._grid?.addColumn(); },
+      addColumn() { this._grid?.addColumn(); this._persistNow(); },
       /**
        * Append empty rows to the active sheet.
        *
@@ -603,6 +607,7 @@ const mod = createModule({
       addRows(count) {
         const n = Math.trunc(Number(count));
         this._grid?.addRows(Number.isFinite(n) ? Math.max(0, n) : 10);
+        this._persistNow();
       },
       /** @noagent selection-bound: clears the current UI selection */
       deleteSelection() { this._grid?._clearSelection(); },
@@ -815,6 +820,10 @@ const mod = createModule({
        * @returns {AgentRead} the read state of the active sheet
        */
       read(options) {
+        // Eine Oberflächenänderung, die noch im Entpreller wartet, vorher
+        // ablegen: sonst landete sie nach dem Vermerk der Revision, die
+        // dieses Lesen setzt, und der nächste Schreibzugriff wäre veraltet.
+        if (this._persistPending) this._persistNow();
         return readAgentState('worksheet', this._agentSnapshot(), options);
       },
 
@@ -961,6 +970,20 @@ const mod = createModule({
             ctx.eventBus?.emit('worksheet:dataChanged', { instanceId: ctx.instanceId });
           }
         } catch { /* ignore */ }
+      },
+
+      /**
+       * Sofort ablegen statt über den 150-ms-Entpreller `_persistAndNotify`.
+       * Die Agentenfläche vermerkt nach jeder Aktion die Revision dieser
+       * Instanz (Lesen vor Schreiben, `core/agent/agent-revisions.js`);
+       * landete die eigene Änderung erst danach, hielte die Laufzeit den
+       * nächsten Schreibzugriff des Agenten für veraltet. Der noch laufende
+       * Entpreller meldete dasselbe ein zweites Mal — er wird verworfen.
+       */
+      _persistNow() {
+        this._persistAndNotify?.cancel?.();
+        this._persistPending = false;
+        this._flushAndNotify();
       },
 
       /**
@@ -1171,6 +1194,7 @@ const mod = createModule({
 
         // ── Fast persist + notify (data-mutation-driven, 150ms) ──
         this._persistAndNotify = debounce(() => {
+          this._persistPending = false;
           try {
             if (context?.stateManager && context?.instanceId) {
               this._syncActiveSheet();
@@ -1187,7 +1211,11 @@ const mod = createModule({
           'rows:added', 'rows:removed', 'rows:moved',
           'undo', 'redo',
         ];
-        for (const evt of dataMutationEvents) this._grid.on(evt, this._persistAndNotify);
+        const schedulePersist = () => {
+          this._persistPending = true;
+          this._persistAndNotify();
+        };
+        for (const evt of dataMutationEvents) this._grid.on(evt, schedulePersist);
 
         // ── Suggest-chart enable state ──
         const updateSuggest = () => { this.canSuggest = this._canSuggestChart(); };
