@@ -641,6 +641,48 @@ suite('agent runtime — Lesen vor Schreiben (stale_revision)', () => {
     assertDeepEqual(settles, ['ws-1', 'worksheet-new', null]);
   });
 
+  test('ein werfendes settle behält die Ergebnisse, speichert trotzdem und lässt die Instanz unvermerkt', async () => {
+    const calls = [];
+    let made;
+    let throwOnSettle = false;
+    const viewmodel = (id) => ({
+      read: () => ({}),
+      importCsv: () => { made.revs.set(id, (made.revs.get(id) ?? 0) + 1); return true; },
+    });
+    made = makeRuntime({
+      primed: false, viewmodel, instances: [WS1],
+      stateManager: {
+        saveNow: () => calls.push('saveNow'),
+        flushNow: async () => { calls.push('flushNow'); },
+      },
+      onSettle: () => { if (throwOnSettle) throw new Error('getState kaputt'); },
+    });
+    await made.runtime.interact([read('ws-1')]);
+    throwOnSettle = true;
+    const out = await made.runtime.interact([write('ws-1')]);
+    assertEqual(out.ok, true, JSON.stringify(out));
+    assertEqual(out.results.length, 1);
+    assertEqual(out.results[0].ok, true);
+    assertDeepEqual(calls, ['saveNow', 'flushNow']);
+    // Unvermerkt ist sicher: der nächste Schreibzugriff verlangt ein neues Lesen.
+    throwOnSettle = false;
+    assertEqual((await made.runtime.interact([write('ws-1')])).results[0].error, 'stale_revision');
+  });
+
+  test('eine werfende Revisionsprüfung wird op_failed dieser Aktion, kein surface_failed', async () => {
+    let broken = false;
+    const { runtime } = makeRuntime({
+      instances: [WS1],
+      stateManager: { getModuleRevision: () => { if (broken) throw new Error('zirkulär'); return 1; } },
+    });
+    broken = true;
+    const out = await runtime.interact([{ id: 'w', ...write('ws-1') }]);
+    assertEqual(out.ok, false, JSON.stringify(out));
+    assertEqual(out.results.length, 1);
+    assertEqual(out.results[0].id, 'w');
+    assertEqual(out.results[0].error, 'op_failed');
+  });
+
   test('nach module.remove ist die Instanz vergessen', async () => {
     const { runtime } = setup();
     await runtime.interact([{ op: 'project.read' }, read('ws-2')]);

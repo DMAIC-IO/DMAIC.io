@@ -102,21 +102,30 @@ export function createAgentRuntime(deps) {
    * @returns {Promise<void>}
    */
   async function noteSeen(op, params, outcome) {
-    if (op === 'project.read') {
-      revisions.markStructure();
-    } else if (op === 'instance.call') {
-      await host.settle(params.instance);
-      revisions.markInstance(params.instance);
-    } else if (op === 'module.add') {
-      // `host.addInstance` hat das Einhängen schon abgewartet; erst danach
-      // steht der Ausgangszustand, dessen Revision hier vermerkt wird.
-      await host.settle(outcome.instanceId);
-      revisions.markStructure();
-      revisions.markInstance(outcome.instanceId);
-    } else if (op === 'module.remove') {
-      await host.settle();
-      revisions.markStructure();
-      revisions.forgetInstance(params.instance);
+    try {
+      if (op === 'project.read') {
+        revisions.markStructure();
+      } else if (op === 'instance.call') {
+        await host.settle(params.instance);
+        revisions.markInstance(params.instance);
+      } else if (op === 'module.add') {
+        // `host.addInstance` hat das Einhängen schon abgewartet; erst danach
+        // steht der Ausgangszustand, dessen Revision hier vermerkt wird.
+        await host.settle(outcome.instanceId);
+        revisions.markStructure();
+        revisions.markInstance(outcome.instanceId);
+      } else if (op === 'module.remove') {
+        await host.settle();
+        revisions.markStructure();
+        revisions.forgetInstance(params.instance);
+      }
+    } catch {
+      // `settle` und die Revision berühren Modulcode und dürfen werfen. Die
+      // Aktion ist dann trotzdem gelungen; ihr Ergebnis und das Speichern
+      // am Stapelende dürfen nicht verloren gehen. Unvermerkt ist sicher:
+      // der nächste Schreibzugriff verlangt ein neues Lesen.
+      const id = op === 'module.add' ? outcome?.instanceId : params.instance;
+      if (typeof id === 'string') revisions.forgetInstance(id);
     }
   }
 
@@ -206,23 +215,21 @@ export function createAgentRuntime(deps) {
         break;
       }
 
-      const stale = staleRevision(action.op, resolved.value);
-      if (stale) {
-        results.push({ ...stale, id: action.id ?? null });
-        allOk = false;
-        break;
-      }
-
-      if (isWritingAction(action)) wrote = true;
-
       // Eine Op wirft im Regelfall nicht (siehe agent-ops.js), aber ein
-      // Host-Port (`router.navigate`, IndexedDB, …) kann es trotzdem tun.
-      // Dieser Fang-Punkt übersetzt jeden solchen Wurf in einen AXI-Fehler
-      // mit der FEINEN Zuordnung (`op_failed` nennt die Op); der äußere
-      // Fang-Punkt in `interact` ist das Netz für alles davor und danach.
+      // Host-Port (`router.navigate`, IndexedDB, …) kann es trotzdem tun —
+      // und die Revisionsprüfung hasht Modulzustand. Dieser Fang-Punkt
+      // übersetzt jeden solchen Wurf in einen AXI-Fehler mit der FEINEN
+      // Zuordnung (`op_failed` nennt die Op); der äußere Fang-Punkt in
+      // `interact` ist das Netz für alles davor und danach.
       let outcome;
       try {
-        outcome = await ops[action.op](resolved.value);
+        const stale = staleRevision(action.op, resolved.value);
+        if (stale) {
+          outcome = stale;
+        } else {
+          if (isWritingAction(action)) wrote = true;
+          outcome = await ops[action.op](resolved.value);
+        }
       } catch (err) {
         outcome = axiError(ERRORS.OP_FAILED,
           i18n.t('agent.errors.opFailed', { op: action.op, detail: err?.message ?? String(err) }));
