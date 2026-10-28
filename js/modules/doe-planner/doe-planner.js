@@ -214,6 +214,7 @@ const mod = createModule({
        * @returns {AgentRead} Plan, Gültigkeit, Läufe, Datenblatt, Auswertung und EVOP-Projekt
        */
       read(options) {
+        this.flushPendingWork();
         return readAgentState('doe-planner', agentSnapshot(this.model, ctx()), options);
       },
 
@@ -251,6 +252,22 @@ const mod = createModule({
           this._autoGenTimer = null;
           this.tryAutoGenerate();
         }, AUTO_GEN_DELAY);
+      },
+
+      /**
+       * Eine aufgeschobene Auto-Generierung sofort ausführen. Die
+       * Agentenfläche ruft das nach jeder Aktion (`ui/agent-host.js`,
+       * settle): `m.design` und `m.evaluation` landen sonst erst 600 ms
+       * später im Zustand, nachdem die Revision vermerkt ist, und der
+       * nächste Schreibzugriff des Agenten hielte die eigene Änderung für
+       * eine fremde.
+       * @noagent agent-host settle hook
+       */
+      flushPendingWork() {
+        if (!this._autoGenTimer) return;
+        clearTimeout(this._autoGenTimer);
+        this._autoGenTimer = null;
+        this.tryAutoGenerate();
       },
 
       /** @noagent auto-generation */

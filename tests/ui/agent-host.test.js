@@ -31,6 +31,7 @@ function makeHost({ phases, activeInstance = null, completed = false, ready = nu
     // Der Modulzustand wie im Cache des echten stateManager; die Revision
     // hängt am Inhalt (core/state-manager.js:getModuleRevision).
     setModuleState: (id, s) => { calls.push(['persist', id, s]); moduleStates.set(id, structuredClone(s)); },
+    getModuleState: (id) => moduleStates.get(id) ?? null,
     getModuleRevision: (id) => (moduleStates.has(id) ? JSON.stringify(moduleStates.get(id)) : undefined),
     getStructureRevision: () => JSON.stringify(state),
   };
@@ -201,12 +202,45 @@ suite('agent host — Persistenz abwarten (Lesen vor Schreiben)', () => {
     assertDeepEqual(calls.filter(c => c[0] === 'persist'), [['persist', 'fw-1', { problem: 'x' }]]);
   });
 
-  test('settle(id) schreibt nichts, wenn die Instanz schon einen Zustand hat', async () => {
+  test('settle(id) schreibt nichts, wenn der gespeicherte Zustand dem lebenden gleicht', async () => {
     const { host, calls, mounted, stateManager } = makeHost();
     stateManager.setModuleState('fw-1', { problem: 'x' });
-    mounted.set('fw-1', { getState: () => ({ problem: 'anders' }) });
+    mounted.set('fw-1', { getState: () => ({ problem: 'x' }) });
     await host.settle('fw-1');
     assertEqual(calls.filter(c => c[0] === 'persist').length, 1, 'nur der Aufbau oben');
+  });
+
+  test('settle(id) legt den lebenden Zustand ab, wenn er vom gespeicherten abweicht', async () => {
+    // Ein `init()` normalisiert einen gespeicherten Zustand, oder das Modul
+    // schreibt erst später (Entpreller): beides ist eine eigene Änderung.
+    const { host, calls, mounted, stateManager } = makeHost();
+    stateManager.setModuleState('fw-1', { problem: 'x' });
+    mounted.set('fw-1', { getState: () => ({ problem: 'x', format: {} }) });
+    await host.settle('fw-1');
+    assertDeepEqual(calls.filter(c => c[0] === 'persist').at(-1), ['persist', 'fw-1', { problem: 'x', format: {} }]);
+  });
+
+  test('settle(id) zieht die aufgeschobene Arbeit des Moduls vor, bevor es den Zustand vergleicht', async () => {
+    let model = { design: null };
+    const { host, calls, mounted, stateManager } = makeHost();
+    stateManager.setModuleState('fw-1', { design: null });
+    mounted.set('fw-1', {
+      getState: () => model,
+      getActionData: () => ({ flushPendingWork: () => { model = { design: 'erzeugt' }; } }),
+    });
+    await host.settle('fw-1');
+    assertDeepEqual(calls.filter(c => c[0] === 'persist').at(-1), ['persist', 'fw-1', { design: 'erzeugt' }]);
+  });
+
+  test('gespeichert, gelesen, dann normalisiert ein Ansichtswechsel: die Instanz bleibt aktuell', async () => {
+    const { host, mounted, stateManager } = makeHost();
+    stateManager.setModuleState('fw-1', { problem: 'x' });
+    mounted.set('fw-1', { getState: () => ({ problem: 'x', roleManual: false }) });
+    const revisions = createRevisionTracker(stateManager);
+    await host.settle('fw-1');
+    revisions.markInstance('fw-1');
+    stateManager.setModuleState('fw-1', { problem: 'x', roleManual: false });
+    assertTrue(revisions.isInstanceCurrent('fw-1'));
   });
 
   test('gelesen ohne gespeicherten Zustand, dann ein Ansichtswechsel: die Instanz bleibt aktuell (R2)', async () => {

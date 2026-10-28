@@ -505,6 +505,8 @@ const mod = createModule({
       _persistAndNotify: null,
       /** Ein Grid-Ereignis wartet im Entpreller `_persistAndNotify`. */
       _persistPending: false,
+      /** Ein Render wartet im Entpreller `_autoSave`. */
+      _autoSavePending: false,
       canUndo: false,
       canRedo: false,
       canSuggest: false,
@@ -820,11 +822,31 @@ const mod = createModule({
        * @returns {AgentRead} the read state of the active sheet
        */
       read(options) {
-        // Eine Oberflächenänderung, die noch im Entpreller wartet, vorher
-        // ablegen: sonst landete sie nach dem Vermerk der Revision, die
+        // Eine Oberflächenänderung, die noch in einem Entpreller wartet,
+        // vorher ablegen: sonst landete sie nach dem Vermerk der Revision, die
         // dieses Lesen setzt, und der nächste Schreibzugriff wäre veraltet.
-        if (this._persistPending) this._persistNow();
+        this.flushPendingWork();
         return readAgentState('worksheet', this._agentSnapshot(), options);
+      },
+
+      /**
+       * Beide Entpreller sofort ablegen: den 150-ms-`_persistAndNotify` einer
+       * Datenänderung und den 2-s-`_autoSave` eines Renders (darin z. B. die
+       * Auswahl). Die Agentenfläche ruft das nach jeder Aktion
+       * (`ui/agent-host.js`, settle), damit nichts nach dem Vermerk der
+       * Revision landet.
+       * @noagent agent-host settle hook
+       */
+      flushPendingWork() {
+        if (this._persistPending) {
+          this._autoSave?.cancel?.();
+          this._autoSavePending = false;
+          this._persistNow();
+        } else if (this._autoSavePending) {
+          this._autoSave?.cancel?.();
+          this._autoSavePending = false;
+          this._persistStructural();
+        }
       },
 
       /** Die Momentaufnahme, die `read()` projiziert. Kein Agentenaufruf. */
@@ -1184,6 +1206,7 @@ const mod = createModule({
 
         // ── Debounced auto-save (render-driven) ──
         this._autoSave = debounce(() => {
+          this._autoSavePending = false;
           try {
             if (context?.stateManager && context?.instanceId) {
               this._syncActiveSheet();
@@ -1229,6 +1252,7 @@ const mod = createModule({
 
         // ── Toolbar undo/redo state + status bar refresh on render ──
         const onRender = () => {
+          this._autoSavePending = true;
           this._autoSave();
           this.canUndo = this._grid.history.canUndo();
           this.canRedo = this._grid.history.canRedo();

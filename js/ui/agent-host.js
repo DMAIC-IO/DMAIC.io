@@ -48,6 +48,22 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
     return { instanceId, module: record.moduleId, phase };
   }
 
+  /**
+   * Legt den lebenden Zustand einer eingehängten Instanz ab, wenn er vom
+   * gespeicherten abweicht — oder noch keiner gespeichert ist. Gleicher
+   * Inhalt wird nicht neu geschrieben: die Revision hängt am Inhalt, und ein
+   * überflüssiges `setModuleState` meldete nur `data:changed`.
+   * @param {string} instanceId
+   * @param {object|null} instance  das eingehängte Modul
+   */
+  function persistLive(instanceId, instance) {
+    const state = instance?.getState?.();
+    if (!state) return;
+    const stored = stateManager.getModuleState(instanceId);
+    if (stored && JSON.stringify(stored) === JSON.stringify(state)) return;
+    stateManager.setModuleState(instanceId, state);
+  }
+
   return {
     // Der schreibgeschützte Projektzustand. Die Kernschicht darf
     // `stateManager` nicht selbst nach UI-Vorbedingungen fragen — sie kennt
@@ -107,9 +123,7 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
       // das spätere Neuschreiben durch `_persistAllModuleStates` wäre eine
       // Revisionsänderung, und der erste Schreibzugriff des Agenten nach
       // `module.add` scheiterte mit `stale_revision`.
-      const instance = await workspace.whenInstanceReady(instanceId);
-      const state = instance?.getState?.();
-      if (state) stateManager.setModuleState(instanceId, state);
+      persistLive(instanceId, await workspace.whenInstanceReady(instanceId));
       return found;
     },
 
@@ -123,22 +137,34 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
      * darin läuft der persist-`$watch` (`core/template-module.js`). Erst
      * danach steht eine eigene Änderung des Agenten im `stateManager`.
      *
-     * Mit `instanceId` sorgt es zusätzlich dafür, dass die Instanz einen
-     * gespeicherten Zustand HAT, bevor die Laufzeit ihre Revision vermerkt:
-     * eine frisch angezeigte Instanz kann ohne Zustand im Cache sein (der
-     * persist-`$watch` feuert nicht beim Einhängen, und `_activateTab`
-     * persistiert VOR dem Einhängen). Der nächste Ansichtswechsel schriebe
-     * sie dann zum ersten Mal — eine Revisionsänderung ohne Änderung, und
-     * der nächste Schreibzugriff des Agenten scheiterte mit `stale_revision`.
+     * Mit `instanceId` sorgt es zusätzlich dafür, dass der gespeicherte
+     * Zustand der Instanz ihrem lebenden gleicht, bevor die Laufzeit die
+     * Revision vermerkt. Sonst schriebe ihn ein Späterer — der nächste
+     * Ansichtswechsel (`_persistAllModuleStates`) einen nie gespeicherten
+     * oder beim `init()` normalisierten Zustand, ein Entpreller im Modul
+     * seine aufgeschobene Arbeit —, die Revision drehte sich ohne fremde
+     * Änderung, und der nächste Schreibzugriff des Agenten scheiterte mit
+     * `stale_revision`.
+     *
+     * Aufgeschobene Arbeit zieht das Modul selbst vor: bietet sein Viewmodel
+     * `flushPendingWork()`, ruft settle es synchron auf und wartet danach
+     * einen weiteren Tick ab. In Kauf genommen: eine noch nicht gespeicherte
+     * Nutzereingabe, die zum Settle-Zeitpunkt im Modul steht, gilt damit als
+     * gesehen.
      * @param {string} [instanceId]  die Instanz, deren Revision gleich vermerkt wird
      * @returns {Promise<void>}
      */
     async settle(instanceId) {
-      await new Promise((resolve) => nextTick(resolve));
-      if (instanceId === undefined || stateManager.getModuleRevision(instanceId) !== undefined) return;
+      const tick = () => new Promise((resolve) => nextTick(resolve));
+      await tick();
+      if (instanceId === undefined) return;
       const instance = await workspace.whenInstanceReady(instanceId);
-      const state = instance?.getState?.();
-      if (state) stateManager.setModuleState(instanceId, state);
+      const viewmodel = instance?.getActionData?.();
+      if (typeof viewmodel?.flushPendingWork === 'function') {
+        viewmodel.flushPendingWork();
+        await tick();
+      }
+      persistLive(instanceId, instance);
     },
   };
 }
