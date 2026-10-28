@@ -27,7 +27,6 @@ import { validateBatch, checkResolvedParamTypes, isWritingAction } from './agent
 import { resolveRefs } from './agent-refs.js';
 import { buildWorld, buildCatalog, buildInstanceList } from './agent-catalog.js';
 import { flattenBriefing } from './agent-briefing.js';
-import { AI_ASSISTANT_CHAPTER_ID } from '../../help/help-keys.js';
 import { createOps } from './agent-ops.js';
 import { createRevisionTracker } from './agent-revisions.js';
 
@@ -48,7 +47,7 @@ function opShapes() {
  * @param {object} deps.moduleRegistry
  * @param {object} deps.i18n
  * @param {Record<string, object>} deps.registry  AGENT_REGISTRY
- * @param {(id: string) => Promise<object|null>} deps.getHelp
+ * @param {(id: string) => Promise<object|null>} deps.getHelp  für `module.describe`
  * @param {{ ensure: () => Promise<object> }} deps.consent
  * @param {object} deps.host  siehe ui/agent-host.js
  * @param {string} deps.appVersion
@@ -122,15 +121,14 @@ export function createAgentRuntime(deps) {
   }
 
   /**
-   * Das Rollen-Briefing als Klartext. Quelle ist das Handbuchkapitel
-   * `js/help/ai-assistant-help.js` — dasselbe, das das Hilfesystem als
-   * Kapitel zeigt und das der statische Generator nach `/app/<tag>/docs/`
-   * mitnimmt. Über `getHelp` und damit über den stabilen Mantel
-   * `help-registry.js`, nicht über die erzeugte Datei.
-   * @returns {Promise<string>} das Briefing in der aktiven Sprache, sonst leer
+   * Der Agententext als Klartext in der aktiven Sprache. Dynamisch geladen:
+   * er gehört nicht ins Start-Bundle, und gebraucht wird er nur beim
+   * parameterlosen Aufruf.
+   * @returns {Promise<string>}
    */
   async function briefingText() {
-    return flattenBriefing(await getHelp(AI_ASSISTANT_CHAPTER_ID), i18n.getLanguage());
+    const { default: text } = await import('./agent-briefing-text.js');
+    return flattenBriefing(text, i18n.getLanguage());
   }
 
   /** Die Antwort auf `interact()` ohne Parameter. */
@@ -140,8 +138,7 @@ export function createAgentRuntime(deps) {
       contract: CONTRACT_VERSION,
       appVersion,
       language: i18n.getLanguage(),
-      // Eine Quelle, drei Verwendungen: hier der Kontextfenster-Text, im
-      // Hilfefenster das Kapitel, im statischen Handbuch eine zitierbare URL.
+      // Der eine Agententext (agent-briefing-text.js), nur hier ausgeliefert.
       briefing: await briefingText(),
       // Die Daten des früheren `usage`; die Prosa dazu steht nur im Briefing.
       ops: opShapes(),

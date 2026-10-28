@@ -1,9 +1,6 @@
 import { suite, test, assertEqual } from '../../test-utils.js';
 import { flattenBriefing } from '../../../js/core/agent/agent-briefing.js';
-import * as chapterModule from '../../../js/help/ai-assistant-help.js';
-import { AI_ASSISTANT_CHAPTER_ID, AI_ASSISTANT_CHAPTER_KEY } from '../../../js/help/help-keys.js';
-
-const aiAssistantHelp = chapterModule.default;
+import agentText from '../../../js/core/agent/agent-briefing-text.js';
 
 const helpDef = {
   sections: {
@@ -115,17 +112,17 @@ suite('agent-briefing — eine Quelle, Klartext für den Agenten', () => {
   });
 });
 
-suite('agent-briefing — das echte Kapitel „KI-Assistent"', () => {
+suite('agent-briefing — der echte Agententext', () => {
   /** Die sechs Abschnitte, in der Reihenfolge, die die Quelle meint. */
   const SECTIONS = ['rolle', 'arbeitsweise', 'ausschliesslich', 'vertrag', 'fehlgriffe', 'grenzen'];
 
   test('das Kapitel hat genau diese sechs Abschnitte in dieser Reihenfolge', () => {
-    assertEqual(Object.keys(aiAssistantHelp.sections).join(','), SECTIONS.join(','));
+    assertEqual(Object.keys(agentText.sections).join(','), SECTIONS.join(','));
   });
 
   test('jeder Abschnitt ist in BEIDEN Sprachen vollständig', () => {
     for (const name of SECTIONS) {
-      const section = aiAssistantHelp.sections[name];
+      const section = agentText.sections[name];
       for (const lang of ['de', 'en']) {
         assertEqual(typeof section?.[lang]?.title, 'string', `${name}.${lang}.title`);
         assertEqual(section[lang].title.length > 0, true, `${name}.${lang}.title leer`);
@@ -137,7 +134,7 @@ suite('agent-briefing — das echte Kapitel „KI-Assistent"', () => {
 
   test('beide Sprachen flachen zu Klartext ohne Renderer-Anweisungen ab', () => {
     for (const lang of ['de', 'en']) {
-      const text = flattenBriefing(aiAssistantHelp, lang);
+      const text = flattenBriefing(agentText, lang);
       assertEqual(text.length > 500, true, `${lang}: nur ${text.length} Zeichen`);
       assertEqual(text.includes('{{term:'), false, lang);
       assertEqual(text.includes('**'), false, lang);
@@ -145,75 +142,58 @@ suite('agent-briefing — das echte Kapitel „KI-Assistent"', () => {
   });
 
   test('die Rolle steht vor den Grenzen — die Reihenfolge ist die Aussage', () => {
-    const de = flattenBriefing(aiAssistantHelp, 'de');
+    const de = flattenBriefing(agentText, 'de');
     // Existenz vor Reihenfolge, sonst läuft der Fall bei fehlendem Anker
     // leer durch (-1 < n ist wahr).
     assertEqual(de.includes('Six-Sigma-Black-Belt'), true, 'de: Rolle fehlt');
-    assertEqual(de.includes('angewandt, nicht gesichert'), true, 'de: Grenzen fehlen');
-    assertEqual(de.indexOf('Six-Sigma-Black-Belt') < de.indexOf('angewandt, nicht gesichert'), true);
-    const en = flattenBriefing(aiAssistantHelp, 'en');
+    assertEqual(de.includes('angewandt und gespeichert'), true, 'de: Grenzen fehlen');
+    assertEqual(de.indexOf('Six-Sigma-Black-Belt') < de.indexOf('angewandt und gespeichert'), true);
+    const en = flattenBriefing(agentText, 'en');
     assertEqual(en.includes('Six Sigma Black Belt'), true, 'en: Rolle fehlt');
-    assertEqual(en.includes('applied, not saved'), true, 'en: Grenzen fehlen');
-    assertEqual(en.indexOf('Six Sigma Black Belt') < en.indexOf('applied, not saved'), true);
+    assertEqual(en.includes('applied and saved'), true, 'en: Grenzen fehlen');
+    assertEqual(en.indexOf('Six Sigma Black Belt') < en.indexOf('applied and saved'), true);
   });
 
   test('die Nullable-Form wird im Vertragsabschnitt erklärt, in beiden Sprachen', () => {
-    // Das Kapitel spiegelt den Vertragsteil von `agent.usage.*` — driften die
-    // zwei Quellen, sagt eine dem Agenten etwas, das die andere nicht hält.
-    // Der Satz zur Nullable-Hülle gehört deshalb in BEIDE.
-    const de = flattenBriefing(aiAssistantHelp, 'de');
-    const en = flattenBriefing(aiAssistantHelp, 'en');
+    // Die Beschreibungsantwort liefert `ops` mit der Nullable-Hülle wörtlich — erklärt wird sie nur hier.
+    const de = flattenBriefing(agentText, 'de');
+    const en = flattenBriefing(agentText, 'en');
     assertEqual(de.includes('{ $nullable: … }'), true, de);
     assertEqual(de.includes('kein Schlüssel'), true, de);
     assertEqual(en.includes('{ $nullable: … }'), true, en);
     assertEqual(en.includes('not a key'), true, en);
   });
 
-  test('die Haltbarkeit wird nicht stärker zugesichert, als sie ist', () => {
-    const de = flattenBriefing(aiAssistantHelp, 'de');
-    const en = flattenBriefing(aiAssistantHelp, 'en');
-    // Negativ zuerst, und das ist hier der eigentliche Beweis: der
-    // Agentenpfad spült den Zustand NICHT. Ohne diese Zeilen wäre der Fall
-    // auch grün, wenn die alte, erfundene Zusicherung daneben stehen bliebe.
-    assertEqual(de.includes('ohne etwas zu verlieren'), false, de);
-    assertEqual(de.includes('spült den Zustand'), false, de);
-    assertEqual(de.includes('liegt auf Platte'), false, de);
-    assertEqual(en.includes('without losing anything'), false, en);
-    assertEqual(en.includes('flushes the state'), false, en);
-    assertEqual(en.includes('it is on disk'), false, en);
-    // Und keine Obergrenze in Sekunden: `_scheduleSave()` ist eine
-    // ZURÜCKSETZENDE Debounce (`js/core/state-manager.js:907-909`) — jede
-    // weitere Änderung verschiebt die Frist erneut, der oberste Zustand
-    // bleibt beliebig lange unpersistiert. Eine Zahl im Briefing wäre
-    // dieselbe Klasse Fehler wie die ursprüngliche Zusicherung.
-    assertEqual(de.includes('zwei Sekunden'), false, de);
-    assertEqual(en.includes('two seconds'), false, en);
-    // Und positiv: das Zusicherbare steht da — angewandt und sichtbar,
-    // geschrieben nach der letzten Änderung.
-    assertEqual(de.includes('angewandt, nicht gesichert'), true, de);
-    assertEqual(de.includes('kurz nach der letzten Änderung'), true, de);
-    assertEqual(en.includes('applied, not saved'), true, en);
-    assertEqual(en.includes('once the changes have settled'), true, en);
-  });
-});
-
-suite('agent-briefing — der Fundort der Kapitelkennungen', () => {
-  test('die Kennungen liegen in js/help/help-keys.js', () => {
-    assertEqual(AI_ASSISTANT_CHAPTER_ID, 'ai-assistant');
-    assertEqual(AI_ASSISTANT_CHAPTER_KEY, 'aiAssistant');
+  test('ok: true heißt angewandt und gespeichert — die schwächere Zusage ist weg', () => {
+    const de = flattenBriefing(agentText, 'de');
+    const en = flattenBriefing(agentText, 'en');
+    // Seit contract 2 speichert die Laufzeit nach jedem schreibenden Stapel
+    // beide Hälften (`saveNow()` + `flushNow()`, agent-runtime.js).
+    assertEqual(de.includes('angewandt und gespeichert'), true, de);
+    assertEqual(en.includes('applied and saved'), true, en);
+    assertEqual(de.includes('angewandt, nicht gesichert'), false, de);
+    assertEqual(de.includes('kurz nach der letzten Änderung'), false, de);
+    assertEqual(en.includes('applied, not saved'), false, en);
+    assertEqual(en.includes('once the changes have settled'), false, en);
   });
 
-  test('das Inhaltskapitel reicht sie NICHT weiter', () => {
-    // Ein Re-Export würde den Umzug wirkungslos machen: die Kernschicht
-    // könnte die Kennung weiter aus dem Inhaltskapitel holen und das Kapitel
-    // bliebe ein statischer Abhängigkeitsknoten von `js/core/`.
-    assertEqual('AI_ASSISTANT_CHAPTER_ID' in chapterModule, false,
-      Object.keys(chapterModule).join(','));
-    assertEqual('AI_ASSISTANT_CHAPTER_KEY' in chapterModule, false,
-      Object.keys(chapterModule).join(','));
+  test('Lesen vor Schreiben steht unter den Fehlgriffen, in beiden Sprachen', () => {
+    const de = flattenBriefing(agentText, 'de');
+    const en = flattenBriefing(agentText, 'en');
+    for (const text of [de, en]) {
+      assertEqual(text.includes('stale_revision'), true, text);
+      assertEqual(text.includes("method: 'read'"), true, text);
+      assertEqual(text.includes('project.read'), true, text);
+    }
+    assertEqual(de.includes('Neuladen'), true, de);
+    assertEqual(en.includes('reload'), true, en);
   });
 
-  test('das Kapitel benutzt die Kennung aus dem Fundort als moduleId', () => {
-    assertEqual(aiAssistantHelp.moduleId, AI_ASSISTANT_CHAPTER_ID);
+  test('der Vertrag nennt ops und errors als Felder der Beschreibung, usage nicht mehr', () => {
+    for (const lang of ['de', 'en']) {
+      const text = flattenBriefing(agentText, lang);
+      assertEqual(text.includes('briefing, ops, errors, catalog'), true, text);
+      assertEqual(/\busage\b/.test(text), false, text);
+    }
   });
 });

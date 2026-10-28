@@ -1,7 +1,7 @@
 /**
  * D.Mike — Das Briefing als Klartext (agent-briefing.js)
  *
- * Flacht das Handbuchkapitel `js/help/ai-assistant-help.js` für EINE Sprache
+ * Flacht den Agententext `agent-briefing-text.js` für EINE Sprache
  * zu Klartext ab, damit `interact()` es als `briefing` mitgeben kann.
  *
  * Klartext und nicht Markdown: ein Agent liest den Text, er rendert ihn
