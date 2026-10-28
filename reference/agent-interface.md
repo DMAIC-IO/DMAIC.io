@@ -211,6 +211,7 @@ Sonderformen ohne `results`-Liste: `consent_denied` und `surface_failed`
 | `op_failed` | eine Aktion ist unerwartet gescheitert; die Meldung nennt die `op` |
 | `surface_failed` | äußerer Fang-Punkt von `interact()` |
 | `flush_failed` | der Stapel hat geschrieben, der Zustand konnte aber nicht gespeichert werden |
+| `stale_revision` | der Agent schreibt in eine Instanz (oder ändert die Projektstruktur), deren aktuellen Stand er nicht gelesen hat — erst `read` bzw. `project.read`, dann erneut |
 
 `op_failed` bleibt dem Wurf *aus einer Aktion* vorbehalten, `call_failed`
 dem Methodenwurf in `instance.call`, `surface_failed` allem davor und danach
@@ -377,7 +378,7 @@ Jede Antwort trägt `contract` (derzeit `1`), die Beschreibungsantwort
 zusätzlich `appVersion`. `contract` wird nur bei einem Bruch der Hülle
 erhöht — Aktionsform, Referenzsyntax, Fehler*form*, Ergebnis-Hülle. Neue
 `op`s, neue Fehler*codes*, neue Antwortfelder oder neu freigegebene Module
-sind **kein** Bruch: die Fläche kennt heute 23
+sind **kein** Bruch: die Fläche kennt heute 24
 Fehlercodes (`ERRORS` in `agent-contract.js`). Diese Regel entscheidet
 künftige Änderungen: ein neuer Code löst keinen Bump aus, eine neue Form
 schon. Invariante, von einem Test gehalten: `ERRORS[k] === k.toLowerCase()`.

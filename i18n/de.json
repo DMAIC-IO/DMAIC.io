@@ -14873,7 +14873,9 @@
       "validationFailedNoId": "Eintrag {index} ist ungültig.",
       "callFailed": "Aufruf von \"{method}\" ist fehlgeschlagen: {detail}",
       "opFailed": "Aktion \"{op}\" ist unerwartet fehlgeschlagen: {detail}",
-      "flushFailed": "Der Stapel hat geschrieben, aber der Zustand konnte nicht gespeichert werden: {detail}"
+      "flushFailed": "Der Stapel hat geschrieben, aber der Zustand konnte nicht gespeichert werden: {detail}",
+      "staleRevision": "Instanz {instance} hat sich seit deinem letzten Lesen geändert oder wurde nie gelesen. Lies sie mit instance.call, method: 'read', und schreibe dann erneut.",
+      "staleStructure": "Die Projektstruktur hat sich seit deinem letzten Lesen geändert oder wurde nie gelesen. Lies sie mit project.read (oder interact() ohne Parameter) und versuche es erneut."
     },
     "usage": {
       "intro": "Qprovement ist ein Six-Sigma-Werkzeugkasten im Browser. Diese Fläche liest den Projektzustand, legt Werkzeuge an und ruft deren Aktionen auf — über dieselben Aufrufe, die die Bedienoberfläche nutzt.",

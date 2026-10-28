@@ -54,6 +54,7 @@ export const ERRORS = Object.freeze({
   OP_FAILED:              'op_failed',
   SURFACE_FAILED:         'surface_failed',
   FLUSH_FAILED:           'flush_failed',
+  STALE_REVISION:         'stale_revision',
 });
 
 /** Ein Katalogeintrag des Modulkatalogs (catalog.read, project.read). */

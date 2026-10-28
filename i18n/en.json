@@ -14869,7 +14869,9 @@
       "validationFailedNoId": "Entry {index} is invalid.",
       "callFailed": "Call to \"{method}\" failed: {detail}",
       "opFailed": "Action \"{op}\" failed unexpectedly: {detail}",
-      "flushFailed": "The batch wrote successfully, but the state could not be saved: {detail}"
+      "flushFailed": "The batch wrote successfully, but the state could not be saved: {detail}",
+      "staleRevision": "Instance {instance} has changed since you last read it, or was never read. Read it with instance.call, method: 'read', then write again.",
+      "staleStructure": "The project structure has changed since you last read it, or was never read. Read it with project.read (or a parameterless interact()), then try again."
     },
     "usage": {
       "intro": "Qprovement is a browser-based Six Sigma toolkit. This surface reads the project state, adds tools and calls their actions — through the same calls the user interface uses.",
