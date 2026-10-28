@@ -8,7 +8,6 @@
 
 import { h } from '../../core/dom.js';
 import { renderModuleHelp } from '../../core/help-renderer.js';
-import { getModuleHelp } from '../../core/help-registry.js';
 import { loadScenario, describeScenario, countScenarioWorksheets } from '../../core/scenario-loader.js';
 import { buildScenarioConfirmDialog } from '../../dialogs/scenario-confirm/scenario-confirm.js';
 import { scenarioDoneState } from '../../ui/dialog/progress.js';

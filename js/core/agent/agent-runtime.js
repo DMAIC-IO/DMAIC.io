@@ -56,7 +56,7 @@ function opShapes() {
  * @returns {{ interact: (input?: object|object[]) => Promise<object> }}
  */
 export function createAgentRuntime(deps) {
-  const { stateManager, moduleRegistry, i18n, registry, consent, host, appVersion, getHelp } = deps;
+  const { stateManager, moduleRegistry, i18n, registry, consent, host, appVersion } = deps;
   const ops = createOps(deps);
 
   // Lesen vor Schreiben: was der Agent gesehen hat.
