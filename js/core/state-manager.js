@@ -696,6 +696,12 @@ export class StateManager {
     // the adapter's loadProjectDoc returns them for every project uniformly.
     this._eventBus.emit('project:before-export');
     await this.flushNow();
+    // The export reads the top-level state back from the adapter, not from
+    // memory — a change still waiting in the save debounce would be missing.
+    if (this._saveTimer) {
+      clearTimeout(this._saveTimer);
+      this._runScheduledSave();
+    }
 
     const projects = this.getProjects();
     const allData = {

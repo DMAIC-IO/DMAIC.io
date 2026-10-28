@@ -620,3 +620,23 @@ suite('StateManager tile chart edits', () => {
     assertEqual(sm.getTileChartEdits('t', 'histogram'), null);
   });
 });
+
+// ─── Export reads what the debounce has not written yet ─────────────────────
+
+suite('StateManager exportAllJSON', () => {
+  test('a top-level change inside the save debounce is in the export', async () => {
+    // Adapter, das wie LocalAdapter exportiert: aus dem, was saveProjectMeta
+    // tatsächlich geschrieben hat — nicht aus dem Speicher des Managers.
+    const adapter = makeFakeAdapter(baseDoc());
+    let stored = baseDoc();
+    adapter.saveProjectMeta = (_id, d) => { stored = { ...stored, ...d }; };
+    adapter.exportProjectDocs = async () => [{ id: 'wb', ...stored }];
+    const sm = new StateManager(new EventBus(), adapter);
+    await sm.load();
+
+    sm.set('phases.measure', [{ instanceId: 'i2', moduleId: 'worksheet' }]); // 2-s-Debounce läuft
+    const exported = JSON.parse(await sm.exportAllJSON());
+
+    assertDeepEqual(exported.projects[0].phases.measure, [{ instanceId: 'i2', moduleId: 'worksheet' }]);
+  });
+});
