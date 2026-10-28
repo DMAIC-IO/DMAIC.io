@@ -15,7 +15,9 @@ Die maschinenlesbare Wahrheit steht im Code, nicht hier:
 | `js/core/agent/agent-refs.js` | Referenzform `{ $from, path }` |
 | `js/core/agent/agent-validate.js` | die sechs Prüfstufen vor jeder Ausführung |
 | `js/core/agent/agent-read.js` | die `read()`-Projektion (Umfang statt Masse) |
-| `js/help/ai-assistant-help.js` | das Rollen-Briefing für Agenten |
+| `js/core/agent/agent-revisions.js` | der Merker „Lesen vor Schreiben" |
+| `js/core/hash.js` | `cyrb53`, der Inhaltshash hinter den Revisionen |
+| `js/core/agent/agent-briefing-text.js` | der Agententext (nur über `interact()`) |
 
 Dass die Zahl der Fehlercodes hier und in `ERRORS` übereinstimmt, hält
 `tools/build/agent-docs-sync.test.mjs` (`npm run test:build`).
@@ -38,34 +40,24 @@ Jeder Aufruf durchläuft zuerst das Einwilligungstor. Ohne Zustimmung fließt
 **Die Beschreibungsantwort.** Der parameterlose Aufruf liefert
 
 ```js
-{ ok: true, contract, appVersion, language, briefing, usage, catalog, instances, view }
+{ ok: true, contract, appVersion, language, briefing, ops, errors, catalog, instances, view }
 ```
 
-`usage` ist der Nutzungsvertrag: Prosa zu Aufruf-, Aktions-, Referenz-,
-Stapel- und Fehlerform in der aktiven Sprache, dazu `ops` (Parameter und
-Ergebnisform jeder Aktion, wörtlich aus `OPS`) und `errors` (alle
-Fehlercodes). Der maschinenlesbare Teil ist aus `OPS`/`ERRORS` abgeleitet,
-nicht nebenher aufgeschrieben.
+`ops` nennt je Aktion `{ params, result }`, wörtlich aus `OPS`; `errors`
+nennt alle Codes aus `ERRORS`. Beide sind aus dem Code abgeleitet, nicht
+nebenher aufgeschrieben. Die Prosa steht nur im Briefing.
 
 **`briefing`** ist das Rollen-Briefing der Fläche als **Klartext** in der
 aktiven Sprache. Klartext und nicht Markdown, weil ein Agent den Text liest
 und nicht rendert — `agent-briefing.js` nimmt `**fett**` und
 `{{term:id|Beschriftung}}` heraus, bevor der Text ins Kontextfenster geht.
 
-Die Quelle ist **eine**, die Verwendungen sind **drei**:
-
-| Verwendung | Weg |
-|---|---|
-| `interact()` → `briefing` | `agent-runtime.js` → `flattenBriefing(getHelp('ai-assistant'), lang)` |
-| Kapitel im Hilfe-Panel | `help-renderer.js`, ohne eigenen Renderer |
-| statische Seite im Tag-Deployment | `/app/<tag>/docs/<lang>/guide/ai-assistant.html` |
-
-Die Quelle ist `js/help/ai-assistant-help.js` — ein modulfreies
-Handbuchkapitel mit sechs Abschnitten (`rolle`, `arbeitsweise`,
-`ausschliesslich`, `vertrag`, `fehlgriffe`, `grenzen`), in dieser Reihenfolge,
-weil wer nur den Anfang liest das Wichtigste gelesen haben soll. Der dritte
-Weg macht das Briefing zu einer **zitierbaren URL**, die ein Agent oder ein
-Mensch lesen kann, ohne die App zu öffnen.
+Die Quelle ist `js/core/agent/agent-briefing-text.js`, per dynamischem
+`import()` geladen (so bleibt sie außerhalb des Start-Bundles). Es gibt genau
+**eine** Verwendung: `interact()` → `briefing`. Der Text ist kein Hilfekapitel
+und keine statische Seite; er hat sechs Abschnitte (`rolle`, `arbeitsweise`,
+`ausschliesslich`, `vertrag`, `fehlgriffe`, `grenzen`), in dieser
+Reihenfolge, weil wer nur den Anfang liest das Wichtigste gelesen haben soll.
 
 ## Aktionen
 
@@ -316,9 +308,10 @@ Zustand zum Beginn der Ausführung**, und zwei nebenläufige Aufrufe können
 ihre Effekte nicht verschränken. Ein Stapel B wird erst geprüft, wenn
 Stapel A fertig ist — kein Seiteneffekt vor vollständiger Prüfung.
 
-**`ok: true` heißt „liegt auf Platte", nicht „ist angestoßen".** Nach einem
-Stapel, der geschrieben hat, wartet die Fläche einmal auf das Speichern des
-Zustands — einmal am Ende, nicht je Aktion. Ein nur lesender Stapel spült
+**`ok: true` heißt „angewandt und gespeichert".** Nach einem Stapel, der
+geschrieben hat, speichert die Fläche einmal beide Persistenzhälften
+(`saveNow()` für die oberste Zustandsebene, `flushNow()` für die
+Modulzustände) und antwortet erst danach — einmal am Ende, nicht je Aktion. Ein nur lesender Stapel spült
 nicht. Was ein Schreibzugriff ist, entscheidet eine Stelle
 (`isWritingAction` in `agent-validate.js`), siehe die Spalte „schreibt"
 unter „Aktionen".
@@ -329,13 +322,42 @@ Scheitert das Speichern, wirft `interact()` nicht: es antwortet
 passiert ist und **dass** es nicht gesichert ist, und bereits gelandete
 Schreibvorgänge nicht für nicht passiert halten und wiederholen.
 
-**Die Grenze, ausdrücklich:** gespült werden die Modulzustände (IndexedDB).
-Die Speicherverzögerung der obersten Zustandsebene (etwa die Phasenzuordnung
-nach `module.add`, `localStorage`, 2 Sekunden) läuft weiter. Wer unmittelbar
-nach `module.add` neu lädt, kann diese Zuordnung verlieren.
-
 `interact()` gibt **nie** eine rohe Ausnahme nach außen. Ein Wurf aus einer
 Aktion wird `op_failed`, jeder andere `surface_failed`.
+
+### Lesen vor Schreiben
+
+Die Fläche führt, nur im Speicher, je Instanz und für die Projektstruktur
+(Phasen, Instanzliste) einen Merker: die Revision, die der Agent zuletzt
+gesehen hat. Eine Revision ist der `cyrb53`-Hash über den Inhalt — gleicher
+Inhalt, gleiche Revision, ein Ansichtswechsel macht also nichts veraltet.
+Die Revisionen rechnet der `stateManager`, für Oberfläche und Agent gleich.
+
+| Aktion | setzt den Merker |
+|---|---|
+| `instance.call` mit `method: 'read'` | der Instanz, auf die aktuelle Revision |
+| `project.read`, `interact()` ohne Parameter | der Projektstruktur |
+| eigenes `instance.call` (nicht `read`), erfolgreich | der Instanz, auf die Revision nach der Aktion |
+| eigenes `module.add`, erfolgreich | der Projektstruktur und der neuen Instanz |
+| eigenes `module.remove`, erfolgreich | der Projektstruktur; der Merker der Instanz entfällt |
+
+Vor dem Merken wartet die Fläche, bis die Persistenz der Aktion gelaufen ist
+(auch nach `read`), damit eigene Änderungen nicht als fremde zählen.
+`catalog.read`, `module.describe` und `instance.open` setzen nichts.
+
+Geprüft wird zur Ausführungszeit, Aktion für Aktion: `instance.call` mit
+`method !== 'read'` verlangt, dass der Merker der Instanz vorhanden und gleich
+ihrer aktuellen Revision ist; `module.add` und `module.remove` verlangen das
+für die Projektstruktur. Sonst antwortet die Aktion mit `stale_revision` —
+ohne Token und ohne `available`; die Meldung nennt den Aufruf, der es
+behebt (`read` bzw. `project.read`). Der Stapel bricht ab wie bei jedem
+Laufzeitfehler.
+
+- **Nie gelesen heißt veraltet**, auch nach einem Neuladen der Seite.
+- **Eine Nebenwirkung auf eine andere Instanz** macht diese veraltet: der
+  Agent hat ihren neuen Inhalt nicht gesehen.
+- **Eine unbekannte Instanz** meldet weiter `unknown_instance`, vor jeder
+  Revisionsprüfung.
 
 ### Im abgeschlossenen Projekt antwortet die Fläche ehrlich
 
@@ -368,13 +390,13 @@ Anlegen nicht, meldet es `op_failed`, statt eine Id zu erfinden.
 - `instance.call` **wechselt die Ansicht**: es zeigt die Zielinstanz an,
   bevor es ihre Methode aufruft, weil das Viewmodel nur in der aktiven
   Ansicht lebt. Ein Stapel über mehrere Instanzen wechselt entsprechend oft.
-  Das ist beabsichtigt und steht im Nutzungsvertrag
-  (`agent.usage.viewSwitch`) — ein Agent darf sich nicht darauf verlassen,
+  Das ist beabsichtigt und steht im Briefing, Abschnitt „Der Vertrag" →
+  Ansichtswechsel — ein Agent darf sich nicht darauf verlassen,
   dass die sichtbare Ansicht nach einem Aufruf dieselbe ist wie davor.
 
 ## Vertragsversion
 
-Jede Antwort trägt `contract` (derzeit `1`), die Beschreibungsantwort
+Jede Antwort trägt `contract` (derzeit `2`), die Beschreibungsantwort
 zusätzlich `appVersion`. `contract` wird nur bei einem Bruch der Hülle
 erhöht — Aktionsform, Referenzsyntax, Fehler*form*, Ergebnis-Hülle. Neue
 `op`s, neue Fehler*codes*, neue Antwortfelder oder neu freigegebene Module
@@ -382,6 +404,10 @@ sind **kein** Bruch: die Fläche kennt heute 24
 Fehlercodes (`ERRORS` in `agent-contract.js`). Diese Regel entscheidet
 künftige Änderungen: ein neuer Code löst keinen Bump aus, eine neue Form
 schon. Invariante, von einem Test gehalten: `ERRORS[k] === k.toLowerCase()`.
+
+Geschichte: `contract: 2` gilt seit 2026-10-28 (Hülle ohne `usage`, stärkere
+Haltbarkeitszusage). `stale_revision` allein wäre nach dieser Regel kein Bump
+gewesen.
 
 Aktionsnamen mit Punkt (`draft.addQuestion`) sind ebenfalls kein Bruch: die
 Aktionsform `{ op: 'instance.call', instance, method, args }` bleibt,
