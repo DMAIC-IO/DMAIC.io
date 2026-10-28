@@ -250,7 +250,6 @@
   },
   "moduleHelp": {
     "title": "Modul-Hilfe",
-    "aiAssistant": "KI-Assistent",
     "noActiveModule": "Kein Modul aktiv. Öffne ein Modul, um modulspezifische Informationen zu sehen.",
     "notAvailable": "Für dieses Modul ist noch keine Hilfe hinterlegt.",
     "loading": "Lade Hilfe …",
@@ -14890,7 +14889,6 @@
       "statusGranted": "Zugriff erlaubt",
       "statusDenied": "Kein Zugriff erteilt",
       "revoke": "Zugriff widerrufen",
-      "briefing": "Briefing für Agenten lesen",
       "revoked": "Zugriff widerrufen",
       "coverage": "{available} von {total} Modulen agentenfähig"
     }

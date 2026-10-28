@@ -76,7 +76,6 @@ import h73 from '../modules/unit-converter/unit-converter-help.js';
 import h74 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
 import h75 from '../modules/worksheet/worksheet-help.js';
 import h76 from '../modules/xy-plot/xy-plot-help.js';
-import g0 from '../help/ai-assistant-help.js';
 
 export const HELP = {
   "activity-flowchart": h0,
@@ -156,5 +155,4 @@ export const HELP = {
   "voc-ctx-tree": h74,
   "worksheet": h75,
   "xy-plot": h76,
-  "ai-assistant": g0,
 };

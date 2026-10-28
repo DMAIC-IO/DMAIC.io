@@ -29,34 +29,10 @@ function escAndLinkHeading(text, opts) {
     },
   );
 }
-import { getModuleName, getExamplesForModule, GUIDE_PHASE } from '../loaders/load-sources.mjs';
+import { getModuleName, getExamplesForModule } from '../loaders/load-sources.mjs';
 import { renderLatex } from './katex.mjs';
 import { renderInline } from './inline.mjs';
 import { CYCLES, getPhaseIds } from '../../../js/core/cycles/cycles.js';
-// Die Zuordnung Kennung → i18n-Schlüssel kommt aus `js/help/help-keys.js`:
-// keine Umrechnung von `ai-assistant` nach `aiAssistant` an dieser oder einer
-// anderen Stelle — eine Umrechnung an drei Orten wäre dreimal dieselbe
-// Annahme.
-import { GUIDE_I18N_KEYS } from '../../../js/help/help-keys.js';
-
-/**
- * Die Überschrift eines Leitfaden-Kapitels: sein `moduleHelp.<key>`-Eintrag,
- * sonst der großgeschriebene Bezeichner (`getModuleName`-Rückfall).
- *
- * Exportiert, damit `build.mjs` denselben Namen in den Seiten-Überschreiber
- * gibt, den der Sprachindex auf die Karte schreibt — zwei Aufrufer, eine
- * Zuordnung.
- *
- * @param {string} id
- * @param {object} i18n
- * @param {'de'|'en'} lang
- * @returns {string}
- */
-export function guideName(id, i18n, lang) {
-  const key = GUIDE_I18N_KEYS[id];
-  return (key && i18n?.[lang]?.moduleHelp?.[key]) || getModuleName(id, i18n, lang);
-}
-
 const SECTION_ORDER = [
   'overview',
   'methodology',
@@ -71,15 +47,11 @@ const SECTION_ORDER = [
 
 // ─── Module page ─────────────────────────────────────────────────
 
-export async function renderModulePage({ module, lang, i18n, examples, glossary, videos, name: nameOverride }) {
+export async function renderModulePage({ module, lang, i18n, examples, glossary, videos }) {
   const s = getStrings(lang);
   const { id, phase, help, cycles: moduleCycles } = module;
 
-  // Ein modulfreies Kapitel hat keinen `modules.<id>.name`-Eintrag;
-  // `getModuleName` würde den Bezeichner großschreiben („Ai Assistant").
-  // Der Überschreiber greift genau hier — `getModuleName` selbst bleibt
-  // unangetastet, sie hat neun weitere Aufrufer.
-  const name = nameOverride || getModuleName(id, i18n, lang);
+  const name = getModuleName(id, i18n, lang);
   const i18nEntry = i18n?.[lang]?.modules?.[id];
   const tagline = i18nEntry?.description || '';
 
@@ -152,11 +124,9 @@ export async function renderModulePage({ module, lang, i18n, examples, glossary,
 
   // ─── Per-cycle assignments (DMAIC, DMADV, …) ──────────────
   // Show every cycle this module is part of so cross-cycle users see where
-  // it lands. Data modules are cycle-independent — skip the section. So are
-  // the module-free chapters (`phase: 'guide'`): they are not a tile in any
-  // cycle, so the „ohne feste Phase“ line would state something untrue.
+  // it lands. Data modules are cycle-independent — skip the section.
   let cyclesSectionHtml = '';
-  if (phase !== 'data' && phase !== 'guide') {
+  if (phase !== 'data') {
     const cycleRows = [];
     for (const c of Object.values(CYCLES)) {
       const mapping = moduleCycles?.[c.id];
@@ -433,7 +403,7 @@ export function renderCycleIndex({ cycleId, modules, lang, i18n }) {
 
 // ─── Language index (DMAIC overview) ─────────────────────────────
 
-export function renderLangIndex({ modules, guides = [], lang, i18n, examples }) {
+export function renderLangIndex({ modules, lang, i18n, examples }) {
   const s = getStrings(lang);
   const pathFromRoot = `/${lang}/index.html`;
   const altLang = lang === 'de' ? 'en' : 'de';
@@ -476,32 +446,6 @@ export function renderLangIndex({ modules, guides = [], lang, i18n, examples }) 
     );
   }
 
-  // Leitfaden-Kapitel — ein EIGENER Abschnitt, bewusst nicht über die
-  // Phasenschleife oben. Die rendert ausschließlich `CONSTANTS.PHASES`, und
-  // `guide` ist keine DMAIC-Phase: eine Gruppe mit `phase: 'guide'` würde bei
-  // `:417` angelegt und nie gerendert — ohne Fehlermeldung, die Seite wird
-  // gebaut, nur der Verweis fehlt. `CONSTANTS.PHASES` dafür zu erweitern hätte
-  // `renderExamplesIndex` einen Pseudo-Eimer eingetragen, den dort nichts
-  // füllt, und die Modulkartenschleife eine Phase, die kein Modul trägt.
-  let guidesSectionHtml = '';
-  if (guides.length > 0) {
-    const guideCards = guides.map((guide) => {
-      const name = guideName(guide.id, i18n, lang);
-      let desc = '';
-      const sections = guide.help?.sections || {};
-      const firstKey = Object.keys(sections)[0];
-      const localized = firstKey ? (sections[firstKey][lang] || sections[firstKey].en) : null;
-      if (localized) desc = firstParagraphText(localized.blocks);
-      const href = `./guide/${guide.id}.html`;
-      return `<a class="handbook-card" href="${escapeAttr(href)}"><div class="handbook-card__title">${escapeHtml(stripRefTokens(stripTermTokens(name)))}</div>${desc ? `<div class="handbook-card__desc">${escapeHtml(stripRefTokens(stripTermTokens(desc)))}</div>` : ''}</a>`;
-    }).join('');
-    guidesSectionHtml = `<section class="handbook-phase-group" id="${escapeAttr(GUIDE_PHASE)}">
-        <h2>${escapeHtml(s.phase.guide)}</h2>
-        <p>${escapeHtml(s.phaseIntro.guide)}</p>
-        <div class="handbook-grid">${guideCards}</div>
-      </section>`;
-  }
-
   // Cycle picker — links to the per-cycle overview pages.
   const cycleCards = Object.values(CYCLES).map(c => {
     const cycleI18n = i18n?.[lang]?.cycles?.[c.id] || {};
@@ -537,7 +481,6 @@ export function renderLangIndex({ modules, guides = [], lang, i18n, examples }) 
   <p class="handbook-article__lead">${escapeHtml(s.handbookSub)}</p>
   ${cyclesCard}
   ${groupHtmlParts.join('\n')}
-  ${guidesSectionHtml}
   ${labCard}
 </article>`;
 

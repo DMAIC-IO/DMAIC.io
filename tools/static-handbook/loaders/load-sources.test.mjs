@@ -1,84 +1,19 @@
 /**
- * Guards the modul-freie Handbuchkapitel in `js/help/<id>-help.js`.
+ * Guards the shape of `loadAllSources()`: the static handbook is built from
+ * module handbooks, algorithms, i18n, examples, glossary and videos — there
+ * are no module-free chapters any more.
  *
- * Diese Kapitel gehören zu keinem der 72 Module — das Rollen-Briefing der
- * Agentenfläche heute, ein „Arbeiten mit Qprovement" morgen. Sie tragen
- * `phase: 'guide'`, und genau das setzt ihre Seite auf
- * `/<lang>/guide/<id>.html`: `renderModulePage` baut den Pfad aus `phase`.
- *
- * Der Lauf liest die echten Quellen (keine Temp-Attrappe), weil der Fund,
- * den dieser Test absichert, genau dort liegt: ein Kapitel, das existiert,
- * aber nicht geladen wird, bleibt sonst unbemerkt.
+ * Der Lauf liest die echten Quellen (keine Temp-Attrappe).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
-import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { loadGuides, loadAllSources, GUIDE_PHASE } from './load-sources.mjs';
-import { AI_ASSISTANT_CHAPTER_ID } from '../../../js/help/help-keys.js';
+import { loadAllSources } from './load-sources.mjs';
 
 /** Wurzel von `app/dev` — gleiche Herleitung wie `build.mjs:50`. */
 const REPO = path.resolve(new URL('../../..', import.meta.url).pathname);
 
-test('loadGuides lädt modulfreie Handbücher aus js/help mit phase: guide', async () => {
-  const guides = await loadGuides(REPO);
-  const briefing = guides.find(g => g.id === AI_ASSISTANT_CHAPTER_ID);
-  assert.ok(briefing, 'das Briefing-Kapitel wurde nicht gefunden');
-  assert.equal(briefing.phase, 'guide');
-  assert.deepEqual(briefing.references, []);
-  // Die sechs Abschnitte der Spec, in Deklarationsreihenfolge.
-  assert.deepEqual(Object.keys(briefing.help.sections),
-    ['rolle', 'arbeitsweise', 'ausschliesslich', 'vertrag', 'fehlgriffe', 'grenzen']);
-  // Zweisprachig, beide Seiten gefüllt.
-  for (const key of Object.keys(briefing.help.sections)) {
-    for (const lang of ['de', 'en']) {
-      const localized = briefing.help.sections[key][lang];
-      assert.ok(localized?.title, `${key}/${lang}: keine Überschrift`);
-      assert.ok((localized.blocks ?? []).length > 0, `${key}/${lang}: keine Blöcke`);
-    }
-  }
-});
-
-test('loadGuides übergeht help-keys.js — nur `<id>-help.js` ist ein Kapitel', async () => {
-  const guides = await loadGuides(REPO);
-  assert.ok(!guides.some(g => g.id === 'help-keys'),
-    'help-keys.js ist eine Kennungsdatei, kein Kapitel');
-});
-
-test('loadGuides trägt die Phasenkennung aus einer Quelle', async () => {
-  const guides = await loadGuides(REPO);
-  const briefing = guides.find(g => g.id === AI_ASSISTANT_CHAPTER_ID);
-  assert.equal(briefing.phase, GUIDE_PHASE);
-});
-
-test('ein defektes Leitfaden-Kapitel bricht den Lauf ab, statt zu verschwinden', async () => {
-  // Leitfäden sind namentlich bekannt: jede `<id>-help.js` in `js/help` IST
-  // ein Kapitel. Ein Importfehler ist darum kein „Kapitel gibt es nicht",
-  // sondern ein Defekt — still übersprungen fehlte das Kapitel im Handbuch
-  // und im Sprachindex, und die einzige Spur wäre eine Warnzeile im Buildlog.
-  const root = await mkdtemp(path.join(tmpdir(), 'handbook-guides-'));
-  try {
-    await mkdir(path.join(root, 'js/help'), { recursive: true });
-    await writeFile(
-      path.join(root, 'js/help/kaputt-help.js'),
-      'export default { sections: {} };\nthis is no javascript\n',
-      'utf8',
-    );
-    await assert.rejects(
-      () => loadGuides(root),
-      (err) => {
-        assert.match(err.message, /kaputt-help\.js/);
-        return true;
-      },
-    );
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
-});
-
-test('loadAllSources gibt guides mit zurück', async () => {
+test('loadAllSources liefert keine modulfreien Kapitel', async () => {
   const sources = await loadAllSources(REPO);
-  assert.ok(Array.isArray(sources.guides));
-  assert.ok(sources.guides.some(g => g.id === AI_ASSISTANT_CHAPTER_ID));
+  assert.equal('guides' in sources, false, 'modulfreie Kapitel gibt es nicht mehr');
 });

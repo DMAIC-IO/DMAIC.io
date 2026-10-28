@@ -13,11 +13,9 @@ test('getModuleHelp / hasModuleHelp report false for a module without help', asy
   assert.equal(hasModuleHelp('__nonexistent__'), false);
 });
 
-test('getModuleHelp resolves the module-free chapter from js/help', async () => {
-  // `ai-assistant` belongs to no module; it lives in `js/help/` and reaches
-  // the same map through `collectGuideIds` in tools/build/help-data.mjs.
-  const def = await getModuleHelp('ai-assistant');
-  assert.equal(def.moduleId, 'ai-assistant');
-  assert.ok(def.sections.rolle, 'the briefing chapter must carry its sections');
-  assert.equal(hasModuleHelp('ai-assistant'), true);
+test('the help map holds no module-free chapter any more', async () => {
+  // The former `ai-assistant` chapter is gone: the agent text lives only in
+  // interact(), not in the handbook.
+  assert.equal(await getModuleHelp('ai-assistant'), null);
+  assert.equal(hasModuleHelp('ai-assistant'), false);
 });

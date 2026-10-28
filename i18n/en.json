@@ -250,7 +250,6 @@
   },
   "moduleHelp": {
     "title": "Module Help",
-    "aiAssistant": "AI assistant",
     "noActiveModule": "No module is active. Open a module to see module-specific information.",
     "notAvailable": "No help available for this module yet.",
     "loading": "Loading help …",
@@ -14886,7 +14885,6 @@
       "statusGranted": "Access granted",
       "statusDenied": "No access granted",
       "revoke": "Revoke access",
-      "briefing": "Read the agent briefing",
       "revoked": "Access revoked",
       "coverage": "{available} of {total} modules agent-capable"
     }

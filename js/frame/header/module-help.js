@@ -9,7 +9,6 @@
 import { h } from '../../core/dom.js';
 import { renderModuleHelp } from '../../core/help-renderer.js';
 import { getModuleHelp } from '../../core/help-registry.js';
-import { GUIDE_I18N_KEYS } from '../../help/help-keys.js';
 import { loadScenario, describeScenario, countScenarioWorksheets } from '../../core/scenario-loader.js';
 import { buildScenarioConfirmDialog } from '../../dialogs/scenario-confirm/scenario-confirm.js';
 import { scenarioDoneState } from '../../ui/dialog/progress.js';
@@ -308,33 +307,6 @@ export function initModuleHelp(
     eventBus.emit('overlay:opened', 'help-panel');
     btn.classList.add('btn--active');
     await populatePanel();
-  });
-
-  // Ein modulfreies Kapitel, auf Zuruf — der Einstellungsabschnitt
-  // „KI-Agenten“ schickt es (`help:show-guide`). Es hängt an keinem aktiven
-  // Modul, deshalb geht es NICHT über `populatePanel`: das nimmt immer
-  // `_activeContext()` und würde das Kapitel gegen das Handbuch des gerade
-  // offenen Werkzeugs austauschen.
-  eventBus.on('help:show-guide', async ({ id } = {}) => {
-    if (!id) return;
-    const helpDef = await getModuleHelp(id);
-    if (!helpDef) {
-      console.warn('[ModuleHelp] no chapter under id', id);
-      return;
-    }
-    // Der i18n-Schlüssel kommt aus der Zuordnung in `js/help/help-keys.js` —
-    // hier wird `ai-assistant` nicht nach `aiAssistant` umgerechnet.
-    const key = GUIDE_I18N_KEYS[id];
-    const title = key ? i18n.t(`moduleHelp.${key}`) : i18n.t('moduleHelp.title');
-    eventBus.emit('overlay:opened', 'help-panel');
-    helpPanel.showWithTabs(title, {
-      helpNode: renderModuleHelp(helpDef, i18n.getLanguage(), [], (k) => i18n.t(k)),
-      glossary: [],
-      glossaryGet,
-      videos: [],
-      preferredTab: 'help',
-    });
-    btn.classList.add('btn--active');
   });
 
   // When the active module changes while our panel is open on one of its own

@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { renderIndexHtml } from '../build-templates/build.mjs';
 import { collectLabData, renderLabDataModule } from './lab-data.mjs';
-import { collectHelpIds, collectGuideIds, renderHelpRegistryModule } from './help-data.mjs';
+import { collectHelpIds, renderHelpRegistryModule } from './help-data.mjs';
 import { collectReferenceIds, renderReferencesRegistryModule } from './references-data.mjs';
 import { collectAgentData, renderAgentRegistryModule } from './agent-data.mjs';
 import { collectGlossaryData, renderGlossaryDataModule } from './glossary-data.mjs';
@@ -297,10 +297,9 @@ export async function runBuild(appDir = APP_DIR, { check = false } = {}) {
   const labData = renderLabDataModule(await collectLabData(appDir));
   emit(join(appDir, 'js', 'algorithm-lab', 'lab-data.generated.js'), labData, check, changed);
 
-  // 1b. help registry (eager static imports of every handbook — the module
-  //     handbooks under js/modules/<id>/ and the module-free chapters under
-  //     js/help/, both in ONE map)
-  const helpRegistry = renderHelpRegistryModule(collectHelpIds(appDir), collectGuideIds(appDir));
+  // 1b. help registry (eager static imports of every module handbook under
+  //     js/modules/<id>/)
+  const helpRegistry = renderHelpRegistryModule(collectHelpIds(appDir));
   emit(join(appDir, 'js', 'core', 'help-registry.generated.js'), helpRegistry, check, changed);
 
   // 1b2. references registry (eager static imports of every module's references)
