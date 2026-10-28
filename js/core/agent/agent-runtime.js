@@ -50,7 +50,7 @@ export function createAgentRuntime(deps) {
   const { stateManager, moduleRegistry, i18n, registry, consent, host, appVersion, getHelp } = deps;
   const ops = createOps(deps);
 
-  // Lesen vor Schreiben (Spec 2026-10-28 §4): was der Agent gesehen hat.
+  // Lesen vor Schreiben: was der Agent gesehen hat.
   // Nur im Speicher — nach einem Neuladen ist nichts gelesen.
   const revisions = deps.revisions ?? createRevisionTracker(stateManager);
 
