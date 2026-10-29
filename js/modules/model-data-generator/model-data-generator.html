@@ -44,7 +44,7 @@
         <div class="dmike-split__section-title" x-text="t('generateTitle')"></div>
         <div class="mdg-control-group">
           <label class="mdg-label" data-help-key="modules.model-data-generator.actions.setSamplingMethod.help" x-text="t('samplingMethod')"></label>
-          <select class="field mdg-inp mdg-select" id="mdg-sampling" x-model="model.samplingMethod">
+          <select class="field mdg-inp mdg-select" id="mdg-sampling" :value="model.samplingMethod" @change="setSamplingMethod($event.target.value)">
             <option value="random" x-text="t('methodRandom')"></option>
             <option value="lhs" x-text="t('methodLHS')"></option>
             <option value="fullfactorial" x-text="t('methodFullFactorial')"></option>
@@ -54,17 +54,19 @@
           <div class="mdg-control-group">
             <label class="mdg-label" data-help-key="modules.model-data-generator.actions.setSampleSize.help" x-text="t('sampleSize')"></label>
             <input class="field mdg-inp mdg-inp--center" type="number" id="mdg-sample-size"
-              x-model.number="model.sampleSize" min="10" max="100000">
+                            :value="paramValue('sampleSize')" @change="onParamInput('sampleSize', $event)"
+              :min="paramMin('sampleSize')" :max="paramMax('sampleSize')" :step="paramStep('sampleSize')">
           </div>
           <div class="mdg-control-group">
             <label class="mdg-label" data-help-key="modules.model-data-generator.actions.setNoiseStd.help" x-text="t('noise') + ' (σε)'"></label>
             <input class="field mdg-inp mdg-inp--center" type="number" id="mdg-noise"
-              x-model.number="model.noiseStd" min="0">
+                            :value="paramValue('noiseStd')" @change="onParamInput('noiseStd', $event)"
+              :min="paramMin('noiseStd')" :step="paramStep('noiseStd')">
           </div>
           <div class="mdg-control-group">
             <label class="mdg-label" data-help-key="modules.model-data-generator.actions.setSeed.help" x-text="t('seed')"></label>
             <input class="field mdg-inp mdg-inp--center" type="number" id="mdg-seed"
-              x-model.number="model.seed">
+                            :value="paramValue('seed')" @change="onParamInput('seed', $event)" :step="paramStep('seed')">
           </div>
         </div>
 
@@ -96,7 +98,7 @@
             <span class="mdg-beta-name" x-text="t('intercept')"></span>
             <span class="mdg-beta-eq">β₀=</span>
             <input class="field mdg-inp mdg-beta-inp" type="number" id="mdg-intercept"
-              x-model.number="model.intercept">
+                            :value="paramValue('intercept')" @change="onParamInput('intercept', $event)" :step="paramStep('intercept')">
           </div>
         </div>
 

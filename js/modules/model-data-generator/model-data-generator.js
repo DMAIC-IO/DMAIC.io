@@ -25,13 +25,27 @@ import { DataGrid } from '../../core/datagrid/datagrid.js';
 import { openGridInWorksheet } from '../../core/datagrid/datagrid-to-worksheet.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireNumber, requireText } from '../../core/agent/agent-argcheck.js';
+import { paramInputMixin, numberCheck } from '../../core/param-input.js';
 import { descriptiveStats } from '../../engines/normality-test-engine.js';
 import {
   State, Factor, termLabel, SAMPLING_METHODS,
 } from './model-data-generator-model.js';
 
 const FACTOR_KEYS = ['name', 'min', 'max'];
-const SAMPLE_SIZE_BOUNDS = { min: 10, max: 100000, integer: true };
+
+/** Zahlenfelder der Oberfläche; die Grenzen sind die des Agent-Setters. */
+const PARAM_SPEC = {
+  sampleSize: { min: 10, max: 100000, integer: true },
+  noiseStd: { min: 0 },
+  seed: { integer: true },
+  intercept: {},
+};
+
+/** Je Feld derselbe Prüfer wie beim Agent-Setter. */
+const PARAM_CHECKS = Object.fromEntries(Object.entries(PARAM_SPEC).map(([k, v]) => [k, numberCheck(v)]));
+
+/** Je Feld der Setter, über den die Oberfläche schreibt. */
+const PARAM_SETTERS = { sampleSize: 'setSampleSize', noiseStd: 'setNoiseStd', seed: 'setSeed', intercept: 'setIntercept' };
 
 /**
  * Die Schlüsselfläche von `setFactor`. Sätze je Schlüssel unter
@@ -90,6 +104,12 @@ export default createModule({
 
   data(module, _t) {
     return {
+      ...paramInputMixin({
+        specs: PARAM_SPEC,
+        checks: PARAM_CHECKS,
+        t: _t,
+        lang: () => module._context?.i18n?.getLanguage?.() ?? 'de',
+      }),
       // ── Transient UI state (not persisted) ────────────────────
       generatedData: null,
       resultsVisible: false,
@@ -276,7 +296,7 @@ export default createModule({
        * @throws {Error} wenn `value` keine ganze Zahl im Bereich ist
        */
       setSampleSize(value) {
-        this.model.sampleSize = requireNumber('value', value, SAMPLE_SIZE_BOUNDS);
+        this.model.sampleSize = numberCheck(PARAM_SPEC.sampleSize)(value);
       },
 
       /**
@@ -287,7 +307,7 @@ export default createModule({
        * @throws {Error} wenn `value` keine Zahl ab 0 ist
        */
       setNoiseStd(value) {
-        this.model.noiseStd = requireNumber('value', value, { min: 0 });
+        this.model.noiseStd = numberCheck(PARAM_SPEC.noiseStd)(value);
       },
 
       /**
@@ -298,7 +318,14 @@ export default createModule({
        * @throws {Error} wenn `value` keine ganze Zahl ist
        */
       setSeed(value) {
-        this.model.seed = requireNumber('value', value, { integer: true });
+        this.model.seed = numberCheck(PARAM_SPEC.seed)(value);
+      },
+
+      /** @noagent DOM event handler target; routes a checked numeric field to its agent setter */
+      setParam(key, value) {
+        const setter = PARAM_SETTERS[key];
+        if (!setter) throw new Error(`unknown numeric field ${JSON.stringify(key)}`);
+        this[setter](value);
       },
 
       /**
