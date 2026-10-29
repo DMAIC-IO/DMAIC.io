@@ -1342,6 +1342,13 @@
             "name": "The new name; empty or whitespace only is an invalid argument and therefore an error."
           }
         },
+        "setColumnRole": {
+          "help": "Sets the role of a column on the active sheet, or confirms the detected one, like the role dialog before a chart suggestion; afterwards read().columns[].roleConfirmed is true. Which roles are allowed depends on the column type: numeric, currency, percent → continuous, categorical, ordinal, identifier; text → categorical, ordinal, identifier, freeText; binary → categorical; date, time → date. Locked columns cannot be changed. Undo does not record role changes.",
+          "params": {
+            "columnId": "The id of the column, as read().columns[].id names it.",
+            "role": "The role: continuous, categorical, ordinal, date, identifier or freeText. The same role as read().columns[].role confirms the detected one."
+          }
+        },
         "duplicateSheet": {
           "help": "Copies a sheet with its cells, formulas and column settings. The copy is appended at the end, named \"<name> (Copy)\" and becomes active; the agent receives its id.",
           "params": { "id": "The id of the sheet to copy, as read().sheets[].id names it." }
@@ -1358,7 +1365,7 @@
       "fields": {
         "sheets": { "help": "All sheets of the workbook in tab order, each with id and name." },
         "activeSheetId": { "help": "The id of the sheet that columns and rows refer to." },
-        "columns": { "help": "The column headers of the active sheet. id is the columnId of a column reference, shortName the short form used in formulas (C1, C2 …), role the detected role of the column." },
+        "columns": { "help": "The column headers of the active sheet. id is the columnId of a column reference, shortName the short form used in formulas (C1, C2 …), role the role of the column, roleConfirmed true when it was set or confirmed by hand (role dialog or setColumnRole), false for an automatically detected role. A type change the role no longer fits resets the confirmation." },
         "rows": { "help": "The data rows of the active sheet, each row in column order. Bulk data: without options.fields = ['rows'] only the extent is returned." },
         "formulas": { "help": "Which cells of the active sheet are computed, each with columnId, zero-based row and formula text. Bulk data: without options.fields = ['formulas'] only the extent is returned." }
       },
@@ -6732,7 +6739,7 @@
           "id": "The column id in the sheet.",
           "name": "The display name of the column.",
           "role": "The role that drives the ranking: continuous, categorical, ordinal or date.",
-          "roleConfirmed": "true when the role was set or confirmed by hand in the worksheet; false for an automatically detected role."
+          "roleConfirmed": "true when the role was set or confirmed in the worksheet, by hand or through its setColumnRole; false for an automatically detected role."
         },
         "Suggestion": {
           "type": "The chart type; the same value goes to pickChart.",

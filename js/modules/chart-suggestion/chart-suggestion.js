@@ -167,7 +167,8 @@ const mod = createModule({
 
       /**
        * Spalten eines Blatts als Auswahl übernehmen; die Vorschläge werden neu
-       * geordnet und der Spitzenreiter gewählt. Die Rollen kommen aus dem Worksheet.
+       * geordnet und der Spitzenreiter gewählt. Die Rollen kommen aus dem Worksheet;
+       * setzen oder bestätigen lassen sie sich dort mit `setColumnRole`.
        * @agent
        * @param {Array<{ instanceId: string, sheetId: string, columnId: string }>} refs
        *   nicht leere Liste wählbarer Spalten (`read().pickableColumns`), alle aus demselben Blatt, jede einmal

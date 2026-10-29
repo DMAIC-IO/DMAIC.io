@@ -17,10 +17,10 @@
  *    `worksheet:appendColumn`. Same payload shapes as the legacy module.
  *
  * @agent  Vollständig über das Viewmodel steuerbar: CSV-Import, Zellblöcke
- *   und Formeln schreiben, Spalten anlegen, umbenennen und entfernen, Zeilen anlegen,
- *   Zeilen nach einer Spalte sortieren,
- *   Rückgängig, Blätter anlegen, wechseln, umbenennen, duplizieren, davor einfügen und entfernen.
- *   Dateidialoge, Popout-Widgets und die Auswahl-abhängigen Knöpfe bleiben
+ *   und Formeln schreiben, Spalten anlegen, umbenennen und entfernen,
+ *   Zeilen anlegen, Zeilen nach einer Spalte sortieren, Rückgängig, Blätter
+ *   anlegen, wechseln, umbenennen, duplizieren, davor einfügen und entfernen;
+ *   Spaltenrollen setzen und bestätigen. Dateidialoge, Popout-Widgets und die Auswahl-abhängigen Knöpfe bleiben
  *   der UI vorbehalten; gelesen wird über read() mit erklärter Lesefläche
  *   (AgentRead).
  */
@@ -31,7 +31,7 @@ import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireKnownId, requireText, requireIndex, requireEnum } from '../../core/agent/agent-argcheck.js';
 import { State } from './worksheet-model.js';
 import { DataGrid, isFormula, evaluateFormula } from '../../core/datagrid/datagrid.js';
-import { validRolesForType } from '../../core/datagrid/datagrid-roles.js';
+import { ALL_ROLES, validRolesForType, isRoleValidForType } from '../../core/datagrid/datagrid-roles.js';
 import { bridgeEmitter } from '../../core/tips/tip-engine.js';
 import { shortcutRegistry } from '../../core/shortcut-registry.js';
 import { h } from '../../core/dom.js';
@@ -456,7 +456,7 @@ class FormulaEditor {
  * @typedef {object} AgentRead
  * @property {Array<{ id: string, name: string }>} sheets  all sheets of the workbook, in tab order
  * @property {string|null} activeSheetId  id of the sheet the following columns and rows belong to
- * @property {Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null }>} columns  the column headers of the active sheet; `id` is the columnId of a column reference
+ * @property {Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null, roleConfirmed: boolean }>} columns  the column headers of the active sheet; `roleConfirmed` is true once the role was set or confirmed by hand or via setColumnRole; `id` is the columnId of a column reference
  * @property {any[][]} rows  [bulk] the data rows of the active sheet, each row in column order
  * @property {Array<{ columnId: string, row: number, formula: string }>} formulas  [bulk] which cells of the active sheet are COMPUTED, not typed; a plain value written over one of them deletes the formula
  */
@@ -1001,6 +1001,9 @@ const mod = createModule({
           type: c.type ?? 'numeric',
           unit: c.unit ?? null,
           role: c.role ?? null,
+          // Dieselbe Quelle wie chart-suggestion `selection.columns[].roleConfirmed`:
+          // das Handflag der Live-Spalte (Rollen-Dialog oder setColumnRole).
+          roleConfirmed: c.roleManual === true,
         }));
         const rows = [];
         for (let r = 0; r < (state.rowCount ?? 0); r++) {
@@ -1152,6 +1155,49 @@ const mod = createModule({
         // hielte die Laufzeit den nächsten Schreibzugriff für veraltet.
         this._persistNow();
         return result;
+      },
+
+      /**
+       * Set the analytical role of a column on the active sheet, or confirm
+       * the detected one by passing the same role — like the role dialog
+       * before a chart suggestion. Afterwards read().columns[].roleConfirmed
+       * is true, and chart suggestion reads the role as confirmed.
+       *
+       * Allowed roles depend on the column type: numeric/currency/percent →
+       * continuous, categorical, ordinal, identifier; text → categorical,
+       * ordinal, identifier, freeText; binary → categorical; date/time → date.
+       * Role changes are not recorded in the undo history (as in the dialog).
+       *
+       * @agent
+       * @param {string} columnId id of the column (see read().columns[].id)
+       * @param {string} role one of continuous, categorical, ordinal, date,
+       *   identifier, freeText — and valid for the column type
+       * @returns {void}
+       * @throws {Error} if no column has this id, if role is unknown or not
+       *   valid for the column type, or if the column is locked
+       */
+      setColumnRole(columnId, role) {
+        // `DataGrid.setColumnRole` kehrt bei unbekannter id, unbekannter
+        // Rolle, unpassendem Typ und JEDER Sperre still zurück — der Agent
+        // bekäme Erfolg gemeldet. Zweistufig geprüft: erst die volle
+        // Rollenliste (Konstante), dann die für den Typ zulässige.
+        requireKnownId('columnId', columnId, (this._grid?.columns ?? []).map(c => c.id));
+        requireEnum('role', role, ALL_ROLES);
+        const col = this._grid.getColumn(columnId);
+        if (!isRoleValidForType(role, col.type)) {
+          throw new Error(
+            `invalid role ${JSON.stringify(role)} for column type ${JSON.stringify(col.type)}; `
+            + `allowed: ${validRolesForType(col.type).join(', ')}`,
+          );
+        }
+        if (col.meta?.lock) {
+          throw new Error(`column "${columnId}" is locked (${col.meta.lock})`);
+        }
+        this._grid.setColumnRole(columnId, role);
+        // `column:role-changed` steht nicht in `dataMutationEvents`: ohne
+        // dieses Ablegen sähe chart-suggestion (liest `roleManual` aus dem
+        // StateManager) die Bestätigung nie.
+        this._persistNow();
       },
 
       // ── Toast ────────────────────────────────────────────────

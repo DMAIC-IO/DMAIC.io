@@ -1342,6 +1342,13 @@
             "name": "Der neue Name; leer oder nur aus Leerzeichen ist ein ungültiges Argument und damit ein Fehler."
           }
         },
+        "setColumnRole": {
+          "help": "Setzt die Rolle einer Spalte des aktiven Blatts oder bestätigt die erkannte, wie der Rollen-Dialog vor einem Diagrammvorschlag; danach ist read().columns[].roleConfirmed true. Welche Rollen erlaubt sind, hängt vom Spaltentyp ab: numeric, currency, percent → continuous, categorical, ordinal, identifier; text → categorical, ordinal, identifier, freeText; binary → categorical; date, time → date. Gesperrte Spalten lassen sich nicht ändern. Rückgängig erfasst Rollenänderungen nicht.",
+          "params": {
+            "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
+            "role": "Die Rolle: continuous (stetig), categorical (kategorial), ordinal, date (Datum), identifier (Kennung) oder freeText (Freitext). Dieselbe Rolle wie in read().columns[].role bestätigt die erkannte."
+          }
+        },
         "duplicateSheet": {
           "help": "Kopiert ein Blatt mit Zellen, Formeln und Spalteneinstellungen. Die Kopie kommt ans Ende, heißt „<Name> (Kopie)“ und wird aktiv; der Agent erhält ihre id.",
           "params": { "id": "Die id des zu kopierenden Blatts, wie read().sheets[].id sie nennt." }
@@ -1358,7 +1365,7 @@
       "fields": {
         "sheets": { "help": "Alle Blätter der Arbeitsmappe in Reiterfolge, je mit id und Name." },
         "activeSheetId": { "help": "Die id des Blatts, auf das sich columns und rows beziehen." },
-        "columns": { "help": "Die Spaltenköpfe des aktiven Blatts. id ist die columnId eines Spaltenbezugs, shortName die Kurzform in Formeln (C1, C2 …), role die erkannte Rolle der Spalte." },
+        "columns": { "help": "Die Spaltenköpfe des aktiven Blatts. id ist die columnId eines Spaltenbezugs, shortName die Kurzform in Formeln (C1, C2 …), role die Rolle der Spalte, roleConfirmed true, wenn sie von Hand gesetzt oder bestätigt ist (Rollen-Dialog oder setColumnRole), false bei einer automatisch erkannten Rolle. Ein Typwechsel, zu dem die Rolle nicht mehr passt, setzt die Bestätigung zurück." },
         "rows": { "help": "Die Datenzeilen des aktiven Blatts, jede Zeile in Spaltenreihenfolge. Massendaten: ohne options.fields = ['rows'] kommt nur der Umfang." },
         "formulas": { "help": "Welche Zellen des aktiven Blatts gerechnet sind, je mit columnId, nullbasierter Zeile und Formeltext. Massendaten: ohne options.fields = ['formulas'] kommt nur der Umfang." }
       },
@@ -6736,7 +6743,7 @@
           "id": "Die id der Spalte im Blatt.",
           "name": "Der Anzeigename der Spalte.",
           "role": "Die Rolle, die die Rangliste steuert: continuous (stetig), categorical (kategorial), ordinal oder date (Datum).",
-          "roleConfirmed": "true, wenn die Rolle in der Datensammlung von Hand gesetzt oder bestätigt ist; false bei einer automatisch erkannten Rolle."
+          "roleConfirmed": "true, wenn die Rolle in der Datensammlung von Hand oder über deren setColumnRole gesetzt oder bestätigt ist; false bei einer automatisch erkannten Rolle."
         },
         "Suggestion": {
           "type": "Der Diagrammtyp; derselbe Wert geht an pickChart.",

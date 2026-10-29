@@ -1914,7 +1914,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "string[]",
-        "help": "Spalten eines Blatts als Auswahl übernehmen; die Vorschläge werden neu geordnet und der Spitzenreiter gewählt. Die Rollen kommen aus dem Worksheet."
+        "help": "Spalten eines Blatts als Auswahl übernehmen; die Vorschläge werden neu geordnet und der Spitzenreiter gewählt. Die Rollen kommen aus dem Worksheet; setzen oder bestätigen lassen sie sich dort mit `setColumnRole`."
       },
       "pickChart": {
         "params": [
@@ -22496,6 +22496,24 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "{ value: any, error: string|null }",
         "help": "Write a formula into one cell of the active sheet, like the formula editor: stored as text, evaluated at once, recorded for undo with the formula that was there before. A row equal to the row count extends the sheet by one row, like typing below the last row. An evaluation error (`#DIV/0`, `#REF!`, …) is not a rejected call: the formula is stored, the cell value is `null`, and the error code comes back — the UI shows the same cell with the same error."
+      },
+      "setColumnRole": {
+        "params": [
+          {
+            "name": "columnId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the column (see read().columns[].id)"
+          },
+          {
+            "name": "role",
+            "type": "string",
+            "optional": false,
+            "help": "one of continuous, categorical, ordinal, date, identifier, freeText — and valid for the column type"
+          }
+        ],
+        "returns": "void",
+        "help": "Set the analytical role of a column on the active sheet, or confirm the detected one by passing the same role — like the role dialog before a chart suggestion. Afterwards read().columns[].roleConfirmed is true, and chart suggestion reads the role as confirmed. Allowed roles depend on the column type: numeric/currency/percent → continuous, categorical, ordinal, identifier; text → categorical, ordinal, identifier, freeText; binary → categorical; date/time → date. Role changes are not recorded in the undo history (as in the dialog)."
       }
     },
     "fields": {
@@ -22512,8 +22530,8 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "columns": {
-        "type": "Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null }>",
-        "help": "the column headers of the active sheet; `id` is the columnId of a column reference",
+        "type": "Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null, roleConfirmed: boolean }>",
+        "help": "the column headers of the active sheet; `roleConfirmed` is true once the role was set or confirmed by hand or via setColumnRole; `id` is the columnId of a column reference",
         "bulk": false,
         "derived": true
       },
