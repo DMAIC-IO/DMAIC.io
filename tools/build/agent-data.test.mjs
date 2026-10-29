@@ -3085,6 +3085,34 @@ test('Schlüsselfläche: eine eigene Prüffunktion ist ein blinder Fleck, kein V
   assert.deepEqual(foo.reported, []);
 });
 
+test('Schlüsselfläche: requireBoolean passt zu boolean und nicht zu string', () => {
+  const td = t => ` * @typedef {object} Params
+ * @property {string} name der Name
+ * @property {'0.2'|'0.15'} k1 der Anteil
+ * @property {${t}} n der Schalter`;
+  const checks = `{
+  name: (v) => requireText('value', v),
+  k1: (v) => requireEnum('value', v, K1_OPTIONS),
+  n: (v) => requireBoolean('value', v),
+}`;
+  assert.deepEqual(keyedModules({ typedef: td('boolean'), checks }).foo.reported, []);
+  assert.deepEqual(keyedModules({ typedef: td('string'), checks }).foo.reported, ['key_value_mismatch:setParam:n']);
+});
+
+test('Schlüsselfläche: requireNumericText passt zu string und nicht zu number', () => {
+  const td = t => ` * @typedef {object} Params
+ * @property {string} name der Name
+ * @property {'0.2'|'0.15'} k1 der Anteil
+ * @property {${t}} n die Eingabe`;
+  const checks = `{
+  name: (v) => requireText('value', v),
+  k1: (v) => requireEnum('value', v, K1_OPTIONS),
+  n: (v) => requireNumericText('value', v),
+}`;
+  assert.deepEqual(keyedModules({ typedef: td('string'), checks }).foo.reported, []);
+  assert.deepEqual(keyedModules({ typedef: td('number'), checks }).foo.reported, ['key_value_mismatch:setParam:n']);
+});
+
 test('Schlüsselfläche: die Typedef wird auch gefunden, wenn vor derselben Anweisung noch ein JSDoc-Block folgt', () => {
   const vm = keyedVm().replace('const PARAM_KEYS =', `/**
  * @typedef {object} Params2

@@ -13,13 +13,16 @@
  * finden, und die Paritätstests sichern sie mit `toContain` zu. Darum steht
  * sie hier wörtlich so, wie sie vorher an fünf Aufrufstellen stand.
  *
- * Sechs Prüfer, drei Listenwörter — das ist der vollständige Vertrag:
+ * Acht Prüfer, drei Listenwörter — das ist der vollständige Vertrag:
  *
  * | Prüfer | Listenwort | Beispielmeldung |
  * |---|---|---|
- * | `requireEnum`    | `allowed:`  | `invalid mode "x"; allowed: DEG, RAD` |
+ * | `requireEnum`    | `allowed:`  | `invalid mode "x"; allowed: DEG, RAD` (mit `numeric` dieselbe Meldung) |
+ * | `requireBoolean` | `allowed:`  | `invalid on "ja"; allowed: true, false` |
+ * | `requireNumericText` | `allowed:` | `invalid value null; allowed: any string or finite number, "" clears it` |
  * | `requireKnownId` | `available:`| `unknown stepId "x"; available: s-1, s-2` |
  * | `requireIndex`   | `allowed:`  | `invalid idx 9; allowed: 0..3` |
+ * | `requireIndex` mit `existing` | `allowed:` | `invalid idx 3; allowed: 0..2`, leer `invalid index 0; allowed: none, the collection is empty` |
  * | `requireArity`   | `expected:` | `missing argument "values" of setCells; expected: columnId, startRow, values` — ein optionaler Parameter steht darin in Klammerform (`[name]`) |
  * | `requireText`    | `allowed:`  | `invalid text 7; allowed: any string, "" clears it` |
  * | `requireNumber`  | `allowed:`  | `invalid mu0 "zehn"; allowed: any finite number`, mit Bereich `invalid value 0.3; allowed: a number from 0.5 to 0.99`, offen `invalid value 0; allowed: a number greater than 0 and less than 1` |
@@ -42,6 +45,9 @@
  * AXI-Fehlerobjekte (`agent-errors.js`).
  */
 
+/** Dezimalschreibweise eines Zahlentexts; `Number()` nähme sonst auch '0x10' und '0b101'. */
+const DECIMAL_NUMBER = /^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/;
+
 /**
  * Ein Aufzähl-Argument gegen seine ERKLÄRTE Wertemenge prüfen.
  *
@@ -53,14 +59,23 @@
  *
  * @param {string} name Name des Arguments (erscheint in der Meldung)
  * @param {any} value der übergebene Wert
- * @param {readonly string[]} allowed die erklärte Wertemenge
+ * @param {readonly (string|number)[]} allowed die erklärte Wertemenge
+ * @param {{numeric?: boolean}} [opts] `numeric`: eine Zahl oder ein Zahlentext
+ *   wird dem zahlenwertgleichen Mitglied zugeordnet (`0.1` → `'0.10'`)
  * @throws {Error} wenn `value` nicht in `allowed` steht
- * @returns {void}
+ * @returns {string|number} das Mitglied von `allowed`, dem `value` entspricht
  */
-export function requireEnum(name, value, allowed) {
-  if (!allowed.includes(value)) {
-    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: ${allowed.join(', ')}`);
+export function requireEnum(name, value, allowed, { numeric = false } = {}) {
+  if (allowed.includes(value)) return value;
+  if (numeric) {
+    const n = typeof value === 'number' ? value
+      : (typeof value === 'string' && DECIMAL_NUMBER.test(value.trim()) ? Number(value) : NaN);
+    if (Number.isFinite(n)) {
+      const hit = allowed.find(a => (typeof a === 'number' || typeof a === 'string') && a !== '' && Number(a) === n);
+      if (hit !== undefined) return hit;
+    }
   }
+  throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: ${allowed.join(', ')}`);
 }
 
 /**
@@ -102,13 +117,48 @@ export function requireKnownId(kind, id, availableIds) {
  * @param {any} value der übergebene Wert
  * @param {number} length aktuelle Länge der Sammlung — `value === length`
  *   heißt „ans Ende einfügen" und ist gültig
- * @throws {Error} wenn `value` keine ganze Zahl in `[0, length]` ist
+ * @param {{existing?: boolean}} [opts] `existing`: nur vorhandene Elemente
+ *   (`0..length-1`), „ans Ende" ist dann ungültig; leere Sammlung wird benannt
+ * @throws {Error} wenn `value` keine ganze Zahl im erlaubten Bereich ist
  * @returns {void}
  */
-export function requireIndex(name, value, length) {
-  if (!Number.isInteger(value) || value < 0 || value > length) {
-    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: 0..${length}`);
+export function requireIndex(name, value, length, { existing = false } = {}) {
+  const max = existing ? length - 1 : length;
+  if (!Number.isInteger(value) || value < 0 || value > max) {
+    const range = max < 0 ? 'none, the collection is empty' : `0..${max}`;
+    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: ${range}`);
   }
+}
+
+/**
+ * Einen Wahrheitswert prüfen: genau `true` oder `false`, nichts Ähnliches
+ * (`'true'`, `1`, `null` würden sonst als Schalterstellung durchgehen).
+ *
+ * @param {string} name Name des Arguments (erscheint in der Meldung)
+ * @param {any} value der übergebene Wert
+ * @throws {Error} wenn `value` kein Boolean ist
+ * @returns {boolean} der geprüfte Wert
+ */
+export function requireBoolean(name, value) {
+  if (value !== true && value !== false) {
+    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: true, false`);
+  }
+  return value;
+}
+
+/**
+ * Ein Eingabefeld für Zahlentext prüfen: Text bleibt unverändert (auch
+ * Zwischenstände wie `''`, `'-'`, `'1.'`), eine endliche Zahl wird Text.
+ *
+ * @param {string} name Name des Arguments (erscheint in der Meldung)
+ * @param {any} value der übergebene Wert
+ * @throws {Error} wenn `value` weder Text noch endliche Zahl ist
+ * @returns {string} der Text
+ */
+export function requireNumericText(name, value) {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: any string or finite number, "" clears it`);
 }
 
 /**
@@ -172,8 +222,6 @@ export function requireText(name, value) {
   return value;
 }
 
-/** Dezimalschreibweise eines Zahlentexts; `Number()` nähme sonst auch '0x10' und '0b101'. */
-const DECIMAL_NUMBER = /^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/;
 
 /**
  * Ein Zahlenargument prüfen, das die Oberfläche über `x-model.number` bindet.

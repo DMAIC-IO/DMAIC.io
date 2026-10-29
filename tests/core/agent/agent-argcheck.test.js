@@ -5,7 +5,8 @@
  * hat eine Zwischenform (Zahl oder Zahlentext), die hier direkt gesichert wird.
  */
 import { suite, test, assertEqual, assertThrows } from '../../test-utils.js';
-import { requireNumber, requireConfLevel } from '../../../js/core/agent/agent-argcheck.js';
+import { requireNumber, requireConfLevel, requireBoolean, requireNumericText, requireIndex, requireEnum }
+  from '../../../js/core/agent/agent-argcheck.js';
 
 suite('agent-argcheck requireNumber', () => {
   test('nimmt eine endliche Zahl und gibt sie zurück', () => {
@@ -84,5 +85,67 @@ suite('agent-argcheck requireConfLevel', () => {
         new RegExp(`invalid value ${bad}; allowed: a number greater than 0 and less than 100`));
     }
     assertThrows(() => requireConfLevel('x'), /allowed: any finite number/);
+  });
+});
+
+suite('agent-argcheck requireBoolean', () => {
+  test('nimmt true und false und gibt sie zurück', () => {
+    assertEqual(requireBoolean('on', true), true);
+    assertEqual(requireBoolean('on', false), false);
+  });
+  test('weist alles andere mit "allowed: true, false" ab', () => {
+    for (const bad of ['ja', 'true', 1, 0, null, undefined, {}]) {
+      assertThrows(() => requireBoolean('on', bad), /^invalid on .*; allowed: true, false$/);
+    }
+  });
+});
+
+suite('agent-argcheck requireNumericText', () => {
+  test('Text bleibt unverändert, auch Zwischenstände', () => {
+    for (const s of ['', '-', '1.', '10', 'abc']) assertEqual(requireNumericText('value', s), s);
+  });
+  test('endliche Zahl wird Text', () => {
+    assertEqual(requireNumericText('value', 10), '10');
+    assertEqual(requireNumericText('value', -2.5), '-2.5');
+  });
+  test('weist NaN, Infinity und Nicht-Text ab', () => {
+    for (const bad of [NaN, Infinity, null, undefined, true, {}, []]) {
+      assertThrows(() => requireNumericText('value', bad),
+        /allowed: any string or finite number, "" clears it$/);
+    }
+  });
+});
+
+suite('agent-argcheck requireIndex existing', () => {
+  test('ohne Option bleibt 0..length erlaubt', () => {
+    requireIndex('idx', 3, 3);
+    assertThrows(() => requireIndex('idx', 4, 3), /allowed: 0\.\.3$/);
+  });
+  test('existing erlaubt nur vorhandene Elemente', () => {
+    requireIndex('idx', 2, 3, { existing: true });
+    assertThrows(() => requireIndex('idx', 3, 3, { existing: true }), /invalid idx 3; allowed: 0\.\.2$/);
+    assertThrows(() => requireIndex('idx', -1, 3, { existing: true }), /allowed: 0\.\.2$/);
+    assertThrows(() => requireIndex('idx', '1', 3, { existing: true }), /allowed: 0\.\.2$/);
+  });
+  test('leere Sammlung nennt das', () => {
+    assertThrows(() => requireIndex('index', 0, 0, { existing: true }),
+      /invalid index 0; allowed: none, the collection is empty$/);
+  });
+});
+
+suite('agent-argcheck requireEnum numeric', () => {
+  test('gibt das Mitglied zurück', () => {
+    assertEqual(requireEnum('mode', 'a', ['a', 'b']), 'a');
+  });
+  test('ohne numeric bleibt Zahl gegen Zahlentext-Menge abgewiesen', () => {
+    assertThrows(() => requireEnum('value', 6, ['6', '5.15']), /allowed: 6, 5\.15$/);
+  });
+  test('numeric ordnet Zahl und Zahlentext dem Mitglied zu', () => {
+    assertEqual(requireEnum('value', 6, ['6', '5.15'], { numeric: true }), '6');
+    assertEqual(requireEnum('value', 0.1, ['0.01', '0.05', '0.10'], { numeric: true }), '0.10');
+    assertEqual(requireEnum('value', '2', [1, 2], { numeric: true }), 2);
+    assertThrows(() => requireEnum('value', 5, ['6', '5.15'], { numeric: true }), /allowed: 6, 5\.15$/);
+    assertThrows(() => requireEnum('value', true, [1, 2], { numeric: true }), /allowed: 1, 2$/);
+    assertThrows(() => requireEnum('value', '0x2', [1, 2], { numeric: true }), /allowed: 1, 2$/);
   });
 });

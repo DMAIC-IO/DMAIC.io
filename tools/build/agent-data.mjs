@@ -731,6 +731,8 @@ function checkMatchesType(check, type, sf) {
     const name = call.expression.text;
     if (name === 'requireText') { seen = true; verdict = type === 'string'; }
     else if (name === 'requireNumber') { seen = true; verdict = type === 'number'; }
+    else if (name === 'requireBoolean') { seen = true; verdict = type === 'boolean'; }
+    else if (name === 'requireNumericText') { seen = true; verdict = type === 'string'; }
     else if (name === 'requireEnum') {
       const subject = call.arguments[1];
       if (param && !(subject && ts.isIdentifier(subject) && subject.text === param)) return;

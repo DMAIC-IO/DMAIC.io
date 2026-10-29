@@ -220,6 +220,9 @@ Fehler selbst findet (`js/core/agent/agent-argcheck.js`).
 | `requireEnum` | `allowed:` | `invalid mode "x"; allowed: DEG, RAD` |
 | `requireKnownId` | `available:` | `unknown stepId "x"; available: s-1, s-2` |
 | `requireIndex` | `allowed:` | `invalid idx 9; allowed: 0..3` |
+| `requireIndex` mit `existing` | `allowed:` | `invalid idx 3; allowed: 0..2`, leer `invalid index 0; allowed: none, the collection is empty` |
+| `requireBoolean` | `allowed:` | `invalid on "ja"; allowed: true, false` |
+| `requireNumericText` | `allowed:` | `invalid value null; allowed: any string or finite number, "" clears it` |
 | `requireArity` | `expected:` | `missing argument "values" of setCells; expected: columnId, startRow, values` |
 | `requireText` | `allowed:` | `invalid text 7; allowed: any string, "" clears it` |
 | `requireNumber` | `allowed:` | `invalid mu0 "zehn"; allowed: any finite number` |
