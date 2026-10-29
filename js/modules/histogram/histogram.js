@@ -57,11 +57,7 @@ const PARAM_KEYS = ['binMode', 'binWidth', 'confLevel'];
  */
 function requireBinWidth(value) {
   if (value === null || value === '') return null;
-  const n = requireNumber('value', value);
-  if (!(n > 0)) {
-    throw new Error(`invalid value ${JSON.stringify(value)}; allowed: a number greater than 0, or null for an automatic width`);
-  }
-  return n;
+  return requireNumber('value', value, { exclusiveMin: 0 });
 }
 
 /** Je Option ihr Prüfer; gibt den Wert zurück, den das Model hält. */

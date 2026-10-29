@@ -32,7 +32,7 @@ import {
 import { escAttr } from '../../core/html-utils.js';
 import { parseDuration, formatDuration, canonicalize } from './makigami-duration.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireBoolean, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireKnownId, requireNumber, requireText } from '../../core/agent/agent-argcheck.js';
 import { State } from './makigami-model.js';
 
 // Die Felder, die die beiden Objektsenken entgegennehmen. Die Listen tragen
@@ -504,11 +504,7 @@ export default createModule({
         const unit = this.model.timeUnits.find(u => u.id === unitId);
         if (data.label !== undefined) { requireText('label', data.label); unit.label = data.label; }
         if (data.factorSeconds !== undefined) {
-          const n = Number(data.factorSeconds);
-          if (!Number.isFinite(n) || n <= 0) {
-            throw new Error(`invalid factorSeconds ${JSON.stringify(data.factorSeconds)}; allowed: a number greater than 0`);
-          }
-          unit.factorSeconds = n;
+          unit.factorSeconds = requireNumber('factorSeconds', data.factorSeconds, { exclusiveMin: 0 });
         }
       },
       /**
@@ -524,7 +520,7 @@ export default createModule({
        * Prüft, dass ein Änderungsobjekt überhaupt eines ist. Ein fehlendes
        * Argument (`undefined`) ist ein Fehler und kein leeres Objekt — sonst
        * änderte ein Aufruf ohne Argument stillschweigend nichts und meldete
-       * Erfolg (Ruling 55).
+       * Erfolg.
        */
       _requireData(data, fields) {
         const expected = `at least one of ${fields.join(', ')}`;

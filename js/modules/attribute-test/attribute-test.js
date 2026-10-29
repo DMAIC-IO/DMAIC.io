@@ -56,14 +56,8 @@ const EQUIV_SAMPLES = [1, 2];
 const PARAM_CHECKS = {
   testKind: (v) => { requireEnum('value', v, TEST_KINDS); return v; },
   inputMode: (v) => { requireEnum('value', v, INPUT_MODES); return v; },
-  // Offener Bereich 0 < α < 1 (wie das Eingabefeld); `requireNumber` kennt nur geschlossene Grenzen.
-  alpha: (v) => {
-    const n = requireNumber('value', v);
-    if (n <= 0 || n >= 1) {
-      throw new Error(`invalid value ${JSON.stringify(v)}; allowed: a number between 0 and 1, exclusive`);
-    }
-    return n;
-  },
+  // Offener Bereich 0 < α < 1, wie das Eingabefeld.
+  alpha: (v) => requireNumber('value', v, { exclusiveMin: 0, exclusiveMax: 1 }),
   direction: (v) => { requireEnum('value', v, DIRECTIONS); return v; },
   p0: (v) => requireText('value', v),
   pooled: (v) => requireBoolean('value', v),

@@ -29,20 +29,6 @@ import { uid } from '../../core/uid.js';
 
 const SPEC_KEYS = ['selected', 'kind', 'lower', 'upper', 'target', 'weight'];
 
-/**
- * Prüfung des Gewichts: eine endliche Zahl größer 0 (wie `SpecEntry.fromJSON`).
- * Eigene Prüfung, weil `requireNumber` keine offene untere Grenze kennt.
- * @param {*} v der Kandidat
- * @returns {number} das geprüfte Gewicht
- * @throws {Error} wenn v keine endliche Zahl größer 0 ist
- */
-function requireWeight(v) {
-  if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) {
-    throw new Error(`invalid value ${JSON.stringify(v)}; allowed: a number greater than 0`);
-  }
-  return v;
-}
-
 /** Eine Prüfung je Zielvorgabe-Schlüssel; Agent und Oberfläche teilen sie. */
 const SPEC_CHECKS = {
   selected: (v) => requireBoolean('value', v),
@@ -50,7 +36,7 @@ const SPEC_CHECKS = {
   lower: (v) => requireNumber('value', v),
   upper: (v) => requireNumber('value', v),
   target: (v) => requireNumber('value', v),
-  weight: requireWeight,
+  weight: (v) => requireNumber('value', v, { exclusiveMin: 0 }),
 };
 
 /** Tick formatter for SVG axis labels. */

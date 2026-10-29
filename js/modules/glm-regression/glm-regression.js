@@ -107,19 +107,8 @@ const SLOT_FILTERS = {
   trials: { minCount: 1 },
 };
 
-/**
- * Ein Anteil strikt zwischen 0 und 1 (Konfidenz, α).
- * @param {any} value der übergebene Wert
- * @returns {number} der geprüfte Anteil
- * @throws {Error} wenn `value` keine Zahl in (0, 1) ist
- */
-function requireFraction(value) {
-  const n = requireNumber('value', value);
-  if (n <= 0 || n >= 1) {
-    throw new Error(`invalid value ${JSON.stringify(value)}; allowed: a number greater than 0 and less than 1`);
-  }
-  return n;
-}
+/** Ein Anteil strikt zwischen 0 und 1 (Konfidenz, α) — Grenzen für `requireNumber`. */
+const FRACTION = { exclusiveMin: 0, exclusiveMax: 1 };
 
 /** Welcher Model-Schlüssel ein Slot ist; Y auf die Versuchszahl leert diese. */
 const COLUMN_SINKS = {
@@ -484,10 +473,10 @@ const mod = createModule({
           requireEnum('value', value, METHODS);
           this.model.method = value;
         } else if (key === 'confLevel') {
-          this.model.confLevel = requireFraction(value);
+          this.model.confLevel = requireNumber('value', value, FRACTION);
           this.model.alpha = 1 - this.model.confLevel;
         } else if (key === 'alpha') {
-          this.model.alpha = requireFraction(value);
+          this.model.alpha = requireNumber('value', value, FRACTION);
           this.model.confLevel = 1 - this.model.alpha;
         } else {
           this.model.cutoff = requireNumber('value', value, { min: 0, max: 1 });

@@ -102,19 +102,8 @@ const COLUMN_TYPES = { types: ['numeric', 'currency', 'percent', 'date', 'time']
 /** Je Slot der Filter seines Wählers. */
 const SLOT_FILTERS = { x: COLUMN_TYPES, y: COLUMN_TYPES };
 
-/**
- * Ein Anteil strikt zwischen 0 und 1 (Konfidenz, α).
- * @param {any} value der übergebene Wert
- * @returns {number} der geprüfte Anteil
- * @throws {Error} wenn `value` keine Zahl in (0, 1) ist
- */
-function requireFraction(value) {
-  const n = requireNumber('value', value);
-  if (n <= 0 || n >= 1) {
-    throw new Error(`invalid value ${JSON.stringify(value)}; allowed: a number greater than 0 and less than 1`);
-  }
-  return n;
-}
+/** Ein Anteil strikt zwischen 0 und 1 (Konfidenz, α) — Grenzen für `requireNumber`. */
+const FRACTION = { exclusiveMin: 0, exclusiveMax: 1 };
 
 /**
  * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
@@ -421,7 +410,7 @@ const mod = createModule({
           this.model.clearDesignPreset();
           this.model.polyDegree = value;
         } else {
-          this.model[key] = requireFraction(value);
+          this.model[key] = requireNumber('value', value, FRACTION);
         }
         this.autoRun();
       },

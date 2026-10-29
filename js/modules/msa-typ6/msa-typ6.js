@@ -103,13 +103,7 @@ const PARAM_CHECKS = {
   unit: (v) => requireText('value', v),
   chartType: (v) => { requireEnum('value', v, CHART_TYPES); return v; },
   limitsMode: (v) => { requireEnum('value', v, LIMITS_MODES); return v; },
-  baselineK: (v) => {
-    const n = requireNumber('value', v);
-    if (!Number.isInteger(n) || n < 1) {
-      throw new Error(`invalid value ${JSON.stringify(v)}; allowed: a positive whole number`);
-    }
-    return n;
-  },
+  baselineK: (v) => requireNumber('value', v, { min: 1, integer: true }),
   mu0: (v) => (isEmptyForm(v) ? NaN : requireNumber('value', v)),
   sigma0: (v) => (isEmptyForm(v) ? NaN : requireNumber('value', v)),
   enabledRules: (v) => {
