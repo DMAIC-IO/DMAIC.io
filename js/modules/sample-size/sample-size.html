@@ -102,9 +102,9 @@
     </div>
     <div class="field-group">
       <label data-help-key="modules.sample-size.types.Params.power" x-text="targetPowerLabel()"></label>
-      <input type="number" data-ref="power" class="field field--num" min="0.5" max="0.9999"
-             :value="model.power"
-             @input="powerChanged($event)">
+      <input type="number" data-ref="power" class="field field--num"
+             :value="paramValue('power')" @change="onParamInput('power', $event)"
+             :min="paramMin('power')" :max="paramMax('power')" :step="paramStep('power')">
     </div>
 
     <div class="field-error" data-ref="error-box"></div>

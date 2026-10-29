@@ -23,6 +23,7 @@ import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import {
   requireEnum, requireNumber, requireNumericText,
 } from '../../core/agent/agent-argcheck.js';
+import { paramInputMixin, numberCheck } from '../../core/param-input.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import {
   State, VALID_CATEGORIES, VALID_TEST_TYPES, VALID_DIRECTIONS,
@@ -48,6 +49,11 @@ function resolveAlgoId(category, testType) {
 const ALPHA_RANGE = { min: 0.0001, max: 0.5 };
 const POWER_RANGE = { min: 0.5, max: 0.9999 };
 
+/** Zahlenoption Power (einzige Quelle: POWER_RANGE). */
+const PARAM_SPEC = {
+  power: { ...POWER_RANGE },
+};
+
 /** Die Parameter, die `setParam` annimmt. */
 const PARAM_KEYS = ['category', 'testType', 'direction', 'alpha', 'power',
   'sigma0', 'sigmaAlt', 'ratio', 'delta', 'sigma'];
@@ -58,7 +64,7 @@ const PARAM_CHECKS = {
   testType: (v) => { requireEnum('value', v, VALID_TEST_TYPES); return v; },
   direction: (v) => { requireEnum('value', v, VALID_DIRECTIONS); return v; },
   alpha: (v) => requireNumber('value', v, ALPHA_RANGE),
-  power: (v) => requireNumber('value', v, POWER_RANGE),
+  power: numberCheck(PARAM_SPEC.power),
   sigma0: (v) => requireNumericText('value', v),
   sigmaAlt: (v) => requireNumericText('value', v),
   ratio: (v) => requireNumericText('value', v),
@@ -140,6 +146,12 @@ export default createModule({
 
   data(module, _t) {
     return {
+      ...paramInputMixin({
+        specs: PARAM_SPEC,
+        checks: PARAM_CHECKS,
+        t: _t,
+        lang: () => module._context?.i18n?.getLanguage?.() ?? 'de',
+      }),
       // ── Transient view state (not persisted) ──────────────────
       /** @type {object|null} — current chart instance */
       _chart: null,
@@ -267,19 +279,6 @@ export default createModule({
        */
       setTestType(type) {
         this.setParam('testType', type);
-      },
-
-      /**
-       * Power input: clamp to the allowed range, then recalculate.
-       * @noagent DOM event handler; the agent uses setParam()
-       */
-      powerChanged(event) {
-        const val = parseFloat(event.target.value);
-        if (!isNaN(val)) {
-          this.setParam('power', Math.min(POWER_RANGE.max, Math.max(POWER_RANGE.min, val)));
-        } else {
-          this.runAnalysis();
-        }
       },
 
       /**
