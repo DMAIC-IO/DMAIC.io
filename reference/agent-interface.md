@@ -25,7 +25,7 @@ Dass die Zahl der Fehlercodes hier und in `ERRORS` übereinstimmt, hält
 ## Die Fläche
 
 ```js
-await window.qprovement.interact();          // Nutzungsvertrag + Katalog + Instanzen + Ansicht
+await window.qprovement.interact();          // Briefing + ops/errors + Katalog + Instanzen + Ansicht
 await window.qprovement.interact(aktion);    // eine Aktion
 await window.qprovement.interact([a1, a2]);  // ein Stapel
 ```
@@ -311,8 +311,8 @@ Stapel A fertig ist — kein Seiteneffekt vor vollständiger Prüfung.
 **`ok: true` heißt „angewandt und gespeichert".** Nach einem Stapel, der
 geschrieben hat, speichert die Fläche einmal beide Persistenzhälften
 (`saveNow()` für die oberste Zustandsebene, `flushNow()` für die
-Modulzustände) und antwortet erst danach — einmal am Ende, nicht je Aktion. Ein nur lesender Stapel spült
-nicht. Was ein Schreibzugriff ist, entscheidet eine Stelle
+Modulzustände) und antwortet erst danach — einmal am Ende, nicht je
+Aktion. Ein nur lesender Stapel spült nicht. Was ein Schreibzugriff ist, entscheidet eine Stelle
 (`isWritingAction` in `agent-validate.js`), siehe die Spalte „schreibt"
 unter „Aktionen".
 

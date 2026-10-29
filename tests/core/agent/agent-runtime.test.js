@@ -69,8 +69,8 @@ function makeRuntime({ denied = false, viewmodel = null, completed = false, slow
     getStructureRevision: () => structureRev,
     saveNow: () => {},
     flushNow: async () => {},
-    // Tests that need to observe the flush (Task 1: `ok: true` heißt
-    // „liegt auf Platte") override just `flushNow` here instead of
+    // Tests that need to observe the flush (`ok: true` heißt
+    // „angewandt und gespeichert") override just `flushNow` here instead of
     // rebuilding the whole fake host/registry wiring.
     ...stateManagerOverrides,
   };
@@ -1089,12 +1089,12 @@ suite('agent runtime — interact() liefert den Agententext', () => {
   });
 });
 
-// ── Task 1 ───────────────────────────────────────────────────────────
-// `ok: true` heißt „liegt auf Platte": ein Stapel, der geschrieben hat, muss
+// ── ok heißt „angewandt und gespeichert" ────────────────────────────
+// `ok: true` heißt „angewandt und gespeichert": ein Stapel, der geschrieben hat, muss
 // `stateManager.flushNow()` EINMAL rufen, bevor die Antwort rausgeht — ein
 // nur lesender Stapel zahlt den Preis nicht — sonst kostete jedes read()
 // einen Schreibzugriff auf IndexedDB.
-suite('agent runtime — ok heißt „liegt auf Platte" (Task 1)', () => {
+suite('agent runtime — ok heißt „angewandt und gespeichert"', () => {
   // `five-why` muss hier agent-reif sein (anders als in der geteilten
   // REGISTRY oben), damit `instance.call` gegen `fw-1` die Validierung
   // passiert und der Unterschied lesend/schreibend überhaupt sichtbar wird.
@@ -1218,5 +1218,19 @@ suite('agent runtime — ok heißt „liegt auf Platte" (Task 1)', () => {
     assertEqual(res.results?.length, 1);
     assertEqual(res.results[0].ok, true);
     assertEqual(res.results[0].result.module, 'worksheet');
+  });
+
+  test('ein werfendes saveNow meldet flush_failed MIT den bereits gebauten results', async () => {
+    const { runtime } = makeFlushRuntime({
+      stateManager: { saveNow: () => { throw new Error('Speichern fehlgeschlagen'); } },
+    });
+
+    const res = await runtime.interact([{ op: 'module.add', module: 'worksheet' }]);
+
+    assertEqual(res.ok, false, JSON.stringify(res));
+    assertEqual(res.error, 'flush_failed');
+    assertTrue(res.message.includes('Speichern fehlgeschlagen'), res.message);
+    assertEqual(res.results?.length, 1);
+    assertEqual(res.results[0].ok, true);
   });
 });
