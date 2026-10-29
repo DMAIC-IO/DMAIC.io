@@ -101,7 +101,7 @@
         <div class="module-unit-converter__fields">
           <div>
             <label class="module-unit-converter__field-label" data-help-key="modules.unit-converter.fields.tzFrom.help" x-text="t('fromTimezone')"></label>
-            <select class="field" data-ref="tzFrom" @change="setTzFrom(selectedIndex($event))">
+            <select class="field" data-ref="tzFrom" @change="setTzFrom(selectValueAsNumber($event))">
               <template x-for="(z, i) in timezones" :key="i">
                 <option :value="i" :selected="model.tzFrom === i" x-text="tzLabel(z)"></option>
               </template>
@@ -116,7 +116,7 @@
           </div>
           <div>
             <label class="module-unit-converter__field-label" data-help-key="modules.unit-converter.fields.tzTo.help" x-text="t('toTimezone')"></label>
-            <select class="field" data-ref="tzTo" @change="setTzTo(selectedIndex($event))">
+            <select class="field" data-ref="tzTo" @change="setTzTo(selectValueAsNumber($event))">
               <template x-for="(z, i) in timezones" :key="i">
                 <option :value="i" :selected="model.tzTo === i" x-text="tzLabel(z)"></option>
               </template>

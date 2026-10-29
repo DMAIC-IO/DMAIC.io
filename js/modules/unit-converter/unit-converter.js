@@ -177,7 +177,7 @@ export default createModule({
       },
 
       /** @noagent view transform: der Wert einer Auswahl als Zahl (Position in der Zeitzonenliste). */
-      selectedIndex: (event) => Number(event.target.value),
+      selectValueAsNumber: (event) => Number(event.target.value),
 
       // ── Conversion display ────────────────────────────────
       /** @noagent view transform: eine Zahl in Anzeigeform. */
