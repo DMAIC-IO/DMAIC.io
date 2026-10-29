@@ -39,7 +39,7 @@ export const RELEASED_MODULES = Object.freeze([
  */
 export const VIOLATION_REMEDIES = Object.freeze({
   setter_bypass_binding: 'x-model durch :value/:checked plus @change auf den @agent-Setter ersetzen — sonst umgeht die Oberfläche dessen Prüfung',
-  hardcoded_param_bounds: 'min/max über :min="paramMin(key)" / :max="paramMax(key)" aus PARAM_SPEC binden',
+  hardcoded_param_bounds: 'Zahlenfeld mit onParamInput (gemeinsame Spec): min/max über :min="paramMin(key)" / :max="paramMax(key)" aus PARAM_SPEC binden',
   unmarked_method: '@agent oder @noagent setzen',
   missing_param: '@param mit Typ ergänzen',
   missing_returns: '@returns mit Typ ergänzen',

@@ -3686,3 +3686,17 @@ test('hardcoded_param_bounds: festes min/max neben onParamInput ist ein Befund',
   assert.deepEqual(root('<input type="number" :min="paramMin(\'k\')" :max="paramMax(\'k\')" @change="onParamInput(\'k\', $event)">'), []);
   assert.deepEqual(root('<input type="number" x-show="a > b" min="0" @change="onParamInput(\'k\', $event)">'), ['hardcoded_param_bounds:k']);
 });
+
+test('hardcoded_param_bounds: dokumentierte Grenze — eigener Handler mit festem min/max wird NICHT gemeldet', () => {
+  const reported = collectAgentData(fixture({ foo: {
+    'foo.js': TAGGED_VM,
+    'foo-model.js': PROBLEM_MODEL,
+    'foo.html': '<input type="number" min="1" max="10" @change="fooChanged($event)"><input type="number" :min="0" max="3" @change="setX(1)">',
+  } })).modules.foo.reported;
+  assert.deepEqual(reported, []);
+});
+
+test('setter_bypass_binding: type= wird ohne Beachtung der Schreibweise gelesen, gebundenes :type zählt als Text', () => {
+  assert.deepEqual(reportedFor('<input type="CHECKBOX" x-model="model.problem">'), ['setter_bypass_binding:problem']);
+  assert.deepEqual(reportedFor('<input :type="kind" x-model="model.problem">'), []);
+});

@@ -217,6 +217,12 @@ function buildEntry(resolver, appDir, viewmodelFile) {
   const bypass = [...new Set(bindings.modelElements
     .filter(e => written.has(e.path) && !isTextElement(e))
     .map(e => `setter_bypass_binding:${e.path}`))];
+  // Reichweite von `hardcoded_param_bounds` (bewusst eng): nur Zahlenfelder
+  // mit `onParamInput('<schlüssel>'` und dem Literal-Attribut `min="…"` /
+  // `max="…"` in doppelten Anführungszeichen. Bekannte Fehlnegative:
+  // eigene Handler (`…Changed($event)`), direktes `@change="setX(…)"`,
+  // `x-model.number`, `:min="<literal>"` und einfache Anführungszeichen.
+  // Ein gebundenes `:type` zählt als Text (das Attribut `type=` fehlt).
   const fixedBounds = [...new Set(bindings.paramCalls
     .filter(p => p.hasFixedBounds)
     .map(p => `hardcoded_param_bounds:${p.key}`))];
@@ -1876,7 +1882,7 @@ function templateBindings(moduleDir) {
       modelElements.push({
         path: m[1],
         tag: el?.tag ?? '',
-        type: /\stype="([a-z]+)"/.exec(attrs)?.[1] ?? '',
+        type: /\stype="([a-z]+)"/i.exec(attrs)?.[1].toLowerCase() ?? '',
       });
     }
     for (const m of html.matchAll(/onParamInput\('([\w.]+)'/g)) {
