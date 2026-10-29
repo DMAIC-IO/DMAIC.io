@@ -86,7 +86,7 @@
                     type="button"
                     :title="t('common.delete')"
                     :aria-label="t('common.delete')"
-                    @click="deleteMudaCategory(cat.id)">
+                    @click="removeMudaCategory(cat.id)">
                     <span class="icon fc-remove-icon" data-icon="action.delete" aria-hidden="true"></span>
                   </button>
                 </td>
@@ -145,7 +145,7 @@
                     type="button"
                     :title="t('common.delete')"
                     :aria-label="t('common.delete')"
-                    @click="deleteTimeUnit(unit.id)">
+                    @click="removeTimeUnit(unit.id)">
                     <span class="icon fc-remove-icon" data-icon="action.delete" aria-hidden="true"></span>
                   </button>
                 </td>

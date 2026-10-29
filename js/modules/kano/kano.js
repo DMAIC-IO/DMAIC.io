@@ -573,7 +573,7 @@ export default createModule({
        * @returns {void}
        * @throws {Error} wenn keine Befragte diese id trägt
        */
-      deleteRespondent(id) {
+      removeRespondent(id) {
         requireKnownId('id', id, this.model.respondents.map((r) => r.id));
         this.model.deleteRespondent(id);
         this.$nextTick(() => this.mountChart());
@@ -582,12 +582,12 @@ export default createModule({
       /**
        * @noagent fragt vor dem Löschen zurück; ein Agent darf keine Rückfrage
        * auslösen — er blockierte den Stapel. Delegiert an
-       * `deleteRespondent`.
+       * `removeRespondent`.
        * @param {string} id
        */
-      async removeRespondent(id) {
+      async confirmRemoveRespondent(id) {
         const ok = await module._context.dialog.confirm({ message: _t('respondentDeleteConfirm'), danger: true });
-        if (ok && this.model.respondents.some((r) => r.id === id)) this.deleteRespondent(id);
+        if (ok && this.model.respondents.some((r) => r.id === id)) this.removeRespondent(id);
       },
 
       /**

@@ -449,7 +449,7 @@ export default createModule({
        * @returns {void}
        * @throws {Error} wenn keine Verschwendungsart diese id trägt
        */
-      deleteMudaCategory(mudaId) {
+      removeMudaCategory(mudaId) {
         requireKnownId('mudaId', mudaId, this.model.mudaCategories.map(m => m.id));
         this.model.deleteMudaCategory(mudaId);
       },
@@ -461,7 +461,7 @@ export default createModule({
        * @returns {void}
        * @throws {Error} wenn keine Zeiteinheit diese id trägt
        */
-      deleteTimeUnit(unitId) {
+      removeTimeUnit(unitId) {
         requireKnownId('unitId', unitId, this.model.timeUnits.map(u => u.id));
         this.model.deleteTimeUnit(unitId);
       },

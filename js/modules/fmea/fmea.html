@@ -198,7 +198,7 @@
               <span class="fmea__rpn-arrow-sep icon icon--sm" data-icon="nav.arrow-right" aria-hidden="true"></span>
               <span class="fmea__rpn-badge fmea__rpn-badge--sm" :class="projBadgeClass(risk)" data-proj-rpn-badge x-text="projBadgeText(risk)"></span>
             </div>
-            <button class="fmea__risk-delete" data-action="del-risk" :data-risk-id="risk.id" :title="t('common.delete')" :aria-label="t('common.delete')" @click="deleteRisk(risk.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+            <button class="fmea__risk-delete" data-action="del-risk" :data-risk-id="risk.id" :title="t('common.delete')" :aria-label="t('common.delete')" @click="removeRisk(risk.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
           </div>
           <div class="fmea__risk-body">
             <div class="field-grid field-grid--3">

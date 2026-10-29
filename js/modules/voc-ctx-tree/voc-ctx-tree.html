@@ -104,7 +104,7 @@
                     :title="t('common.edit')" @click="editNeed(model.activeVoc.id, need)"><span class="icon icon--sm" data-icon="action.edit" aria-hidden="true"></span></button>
             <button class="btn btn--icon-sm btn--danger vct__node-btn vct__del-need-btn"
                     :data-voc-id="model.activeVoc.id" :data-need-id="need.id"
-                    :title="t('common.delete')" @click="deleteNeed(model.activeVoc.id, need.id)">×</button>
+                    :title="t('common.delete')" @click="removeNeed(model.activeVoc.id, need.id)">×</button>
            </div>
           </div>
 
@@ -129,7 +129,7 @@
                         :title="t('common.edit')" @click="editDriver(model.activeVoc.id, need.id, drv)"><span class="icon icon--sm" data-icon="action.edit" aria-hidden="true"></span></button>
                 <button class="btn btn--icon-sm btn--danger vct__node-btn vct__del-ctx-btn"
                         :data-voc-id="model.activeVoc.id" :data-need-id="need.id" :data-drv-id="drv.id"
-                        :title="t('common.delete')" @click="deleteDriver(model.activeVoc.id, need.id, drv.id)">×</button>
+                        :title="t('common.delete')" @click="removeDriver(model.activeVoc.id, need.id, drv.id)">×</button>
                </div>
               </div>
 
@@ -159,7 +159,7 @@
                    <button class="btn btn--icon-sm btn--danger vct__node-btn vct__del-req-btn"
                            :data-voc-id="model.activeVoc.id" :data-need-id="need.id"
                            :data-drv-id="drv.id" :data-req-id="req.id"
-                           :title="t('common.delete')" @click="deleteReq(model.activeVoc.id, need.id, drv.id, req.id)">×</button>
+                           :title="t('common.delete')" @click="removeReq(model.activeVoc.id, need.id, drv.id, req.id)">×</button>
                   </div>
                  </div>
                 </template>

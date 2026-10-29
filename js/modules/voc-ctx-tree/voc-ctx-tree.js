@@ -352,7 +352,7 @@ export default createModule({
        * @throws {Error} wenn keine Kundenstimme oder kein Bedürfnis diese id
        *   trägt
        */
-      deleteNeed(vocId, needId) {
+      removeNeed(vocId, needId) {
         requireKnownId('vocId', vocId, this.model.vocs.map((v) => v.id));
         requireKnownId('needId', needId, this._needIds(vocId));
         this.model.deleteNeed(vocId, needId);
@@ -437,7 +437,7 @@ export default createModule({
        * @returns {void}
        * @throws {Error} wenn eine der drei ids unbekannt ist
        */
-      deleteDriver(vocId, needId, drvId) {
+      removeDriver(vocId, needId, drvId) {
         requireKnownId('vocId', vocId, this.model.vocs.map((v) => v.id));
         requireKnownId('needId', needId, this._needIds(vocId));
         requireKnownId('drvId', drvId, this._driverIds(vocId, needId));
@@ -524,7 +524,7 @@ export default createModule({
        * @returns {void}
        * @throws {Error} wenn eine der vier ids unbekannt ist
        */
-      deleteReq(vocId, needId, drvId, reqId) {
+      removeReq(vocId, needId, drvId, reqId) {
         requireKnownId('vocId', vocId, this.model.vocs.map((v) => v.id));
         requireKnownId('needId', needId, this._needIds(vocId));
         requireKnownId('drvId', drvId, this._driverIds(vocId, needId));

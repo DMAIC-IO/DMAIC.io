@@ -5627,7 +5627,7 @@ export const AGENT_REGISTRY = {
         "returns": "string",
         "help": "Legt ein leeres Risiko an."
       },
-      "deleteRisk": {
+      "removeRisk": {
         "params": [
           {
             "name": "id",
@@ -8646,7 +8646,7 @@ export const AGENT_REGISTRY = {
         "returns": "boolean",
         "help": "Benennt eine Befragte um."
       },
-      "deleteRespondent": {
+      "removeRespondent": {
         "params": [
           {
             "name": "id",
@@ -9380,7 +9380,7 @@ export const AGENT_REGISTRY = {
         "returns": "string",
         "help": "Legt eine Zeiteinheit ohne Kürzel mit der Länge einer Sekunde an."
       },
-      "deleteMudaCategory": {
+      "removeMudaCategory": {
         "params": [
           {
             "name": "mudaId",
@@ -9392,7 +9392,7 @@ export const AGENT_REGISTRY = {
         "returns": "void",
         "help": "Entfernt eine Verschwendungsart und ihre Kennzeichnungen an den Schritten."
       },
-      "deleteTimeUnit": {
+      "removeTimeUnit": {
         "params": [
           {
             "name": "unitId",
@@ -15814,7 +15814,7 @@ export const AGENT_REGISTRY = {
           }
         }
       },
-      "deleteOrgNode": {
+      "removeOrgNode": {
         "params": [
           {
             "name": "id",
@@ -15956,7 +15956,7 @@ export const AGENT_REGISTRY = {
           }
         }
       },
-      "deleteGoal": {
+      "removeGoal": {
         "params": [
           {
             "name": "id",
@@ -18215,7 +18215,7 @@ export const AGENT_REGISTRY = {
         "returns": "void",
         "help": "Name und Wert einer Kopfzeile des aktiven Endpunkts setzen."
       },
-      "deleteHeader": {
+      "removeHeader": {
         "params": [
           {
             "name": "index",
@@ -18256,7 +18256,7 @@ export const AGENT_REGISTRY = {
         "returns": "void",
         "help": "Pfad und Zielspalte eines Mappings des aktiven Endpunkts setzen."
       },
-      "deleteMapping": {
+      "removeMapping": {
         "params": [
           {
             "name": "index",
@@ -22478,7 +22478,7 @@ export const AGENT_REGISTRY = {
         "returns": "boolean",
         "help": "Ändert den Wortlaut eines Bedürfnisses."
       },
-      "deleteNeed": {
+      "removeNeed": {
         "params": [
           {
             "name": "vocId",
@@ -22562,7 +22562,7 @@ export const AGENT_REGISTRY = {
         "returns": "boolean",
         "help": "Ändert Wortlaut und Art eines Treibers."
       },
-      "deleteDriver": {
+      "removeDriver": {
         "params": [
           {
             "name": "vocId",
@@ -22676,7 +22676,7 @@ export const AGENT_REGISTRY = {
         "returns": "boolean",
         "help": "Ändert Wortlaut, Zielwert und Messgröße einer Anforderung."
       },
-      "deleteReq": {
+      "removeReq": {
         "params": [
           {
             "name": "vocId",

@@ -269,7 +269,7 @@ export default createModule({
        * @returns {void}
        * @throws {Error} wenn es keinen aktiven Endpunkt gibt oder `index` keine Kopfzeile ist
        */
-      deleteHeader(index) {
+      removeHeader(index) {
         const ep = this._requireActive();
         requireIndex('index', index, ep.headers.length, { existing: true });
         ep.headers.splice(index, 1);
@@ -318,7 +318,7 @@ export default createModule({
        * @returns {void}
        * @throws {Error} wenn es keinen aktiven Endpunkt gibt oder `index` kein Mapping ist
        */
-      deleteMapping(index) {
+      removeMapping(index) {
         const ep = this._requireActive();
         requireIndex('index', index, ep.mappings.length, { existing: true });
         ep.mappings.splice(index, 1);

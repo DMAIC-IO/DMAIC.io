@@ -61,7 +61,7 @@
                 <div class="rest-api__header-row" :data-idx="i">
                   <input class="field rest-api__header-key" :value="h.key" @input="setHeader(i, $event.target.value, h.value)" :placeholder="t('headerKeyPlaceholder')" :aria-label="t('headerKeyPlaceholder')">
                   <input class="field rest-api__header-val" :value="h.value" @input="setHeader(i, h.key, $event.target.value)" :placeholder="t('headerValuePlaceholder')" :aria-label="t('headerValuePlaceholder')">
-                  <button class="rest-api__header-del" :data-hdr-del="i" :title="t('delete')" :aria-label="t('delete')" @click="deleteHeader(i)">&times;</button>
+                  <button class="rest-api__header-del" :data-hdr-del="i" :title="t('delete')" :aria-label="t('delete')" @click="removeHeader(i)">&times;</button>
                 </div>
               </template>
             </div>
@@ -93,7 +93,7 @@
                     :placeholder="t('jsonPathPlaceholder')" :aria-label="t('jsonPathPlaceholder')">
                   <span class="rest-api__mapping-arrow">&rarr;</span>
                   <div class="rest-api__mapping-picker" :data-picker-idx="i"></div>
-                  <button class="rest-api__mapping-del" :data-map-del="i" :title="t('delete')" :aria-label="t('delete')" @click="deleteMapping(i)">&times;</button>
+                  <button class="rest-api__mapping-del" :data-map-del="i" :title="t('delete')" :aria-label="t('delete')" @click="removeMapping(i)">&times;</button>
                 </div>
               </template>
             </div>

@@ -63,7 +63,7 @@
                      @blur="commitRename()">
             </template>
             <button class="dmike-del-btn kano__tab-del-btn" type="button"
-                    :title="t('respondentDelete')" @click="removeRespondent(r.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                    :title="t('respondentDelete')" @click="confirmRemoveRespondent(r.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
           </span>
         </template>
       </div>

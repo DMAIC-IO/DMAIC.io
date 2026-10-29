@@ -1592,7 +1592,7 @@
             "value": "Der Wert: Text für description, metric und targetValue; \"\" oder YYYY-MM-DD für targetDate; eine ganze Zahl 0 bis 100 für achievementLevel."
           }
         },
-        "deleteGoal": {
+        "removeGoal": {
           "help": "Ein Projektziel ohne Rückfrage löschen; rückgängig machbar.",
           "params": {
             "id": "Die id des Ziels aus read().goals."
@@ -1629,7 +1629,7 @@
             "value": "Der Wert, Form je Schlüssel siehe types.OrgNodeStyle."
           }
         },
-        "deleteOrgNode": {
+        "removeOrgNode": {
           "help": "Eine Position samt allen untergeordneten Positionen ohne Rückfrage löschen; rückgängig machbar. Liefert die Zahl der gelöschten Positionen.",
           "params": {
             "id": "Die id der Position aus read().orgChart."
@@ -1914,7 +1914,7 @@
             "text": "Der neue Wortlaut. Ein leerer Wortlaut ändert nichts und liefert false zurück; ein fehlendes Argument ist ein Fehler."
           }
         },
-        "deleteNeed": {
+        "removeNeed": {
           "help": "Entfernt ein Bedürfnis samt seinen Treibern und Anforderungen.",
           "params": {
             "vocId": "Die id der Kundenstimme. Eine unbekannte id ist ein Fehler.",
@@ -1940,7 +1940,7 @@
             "type": "Der Typ des Treibers: ctq für Qualität, ctd für Lieferung, ctc für Kosten — also das, was dem Kunden an Qualität, Lieferung oder Kosten entscheidend ist (Critical to Quality, Delivery, Cost). Jeder andere Wert ist ein Fehler."
           }
         },
-        "deleteDriver": {
+        "removeDriver": {
           "help": "Entfernt einen Treiber samt seinen Anforderungen.",
           "params": {
             "vocId": "Die id der Kundenstimme. Eine unbekannte id ist ein Fehler.",
@@ -1971,7 +1971,7 @@
             "measure": "Die neue Messgröße. Eine leere Zeichenkette löscht sie; ein fehlendes Argument ist ein Fehler."
           }
         },
-        "deleteReq": {
+        "removeReq": {
           "help": "Entfernt eine Anforderung.",
           "params": {
             "vocId": "Die id der Kundenstimme. Eine unbekannte id ist ein Fehler.",
@@ -2154,7 +2154,7 @@
             "name": "Der neue Name. Ein leerer Name lässt den alten stehen und liefert false zurück; ein fehlendes Argument ist ein Fehler."
           }
         },
-        "deleteRespondent": {
+        "removeRespondent": {
           "help": "Entfernt eine Befragte samt allen ihren Antworten. War sie ausgewählt, rückt die erste verbleibende nach.",
           "params": {
             "id": "Die id der Befragten. Eine unbekannte id ist ein Fehler."
@@ -5666,7 +5666,7 @@
             "data": "Ein Objekt mit genau den Feldern, die sich ändern sollen — code (das Kürzel in der Matrix), label (der Name) oder color (ein Hexwert wie #4a90e2). Was nicht darin steht, bleibt unverändert; ein fehlendes Objekt, ein Objekt ohne jedes dieser Felder und ein Wert, der keine Zeichenkette ist, sind Fehler."
           }
         },
-        "deleteMudaCategory": {
+        "removeMudaCategory": {
           "help": "Entfernt eine Verschwendungsart und ihre Kennzeichnungen an allen Schritten.",
           "params": {
             "mudaId": "Die id der Verschwendungsart, wie read() sie unter mudaCategories führt. Eine unbekannte id ist ein Fehler."
@@ -5683,7 +5683,7 @@
             "data": "Ein Objekt mit genau den Feldern, die sich ändern sollen — label (das Kürzel, das in einem Dauertext erkannt wird) oder factorSeconds (die Länge der Einheit in Sekunden, eine Zahl größer als 0). Was nicht darin steht, bleibt unverändert; ein fehlendes Objekt, ein Objekt ohne jedes dieser Felder, ein label, das keine Zeichenkette ist, und ein factorSeconds von 0 oder weniger sind Fehler."
           }
         },
-        "deleteTimeUnit": {
+        "removeTimeUnit": {
           "help": "Entfernt eine Zeiteinheit. Dauertexte, die nur diese Einheit benutzen, sind danach nicht mehr lesbar und gehen nicht in die Kennzahlen ein.",
           "params": {
             "unitId": "Die id der Zeiteinheit, wie read() sie unter timeUnits führt. Eine unbekannte id ist ein Fehler."
@@ -9032,7 +9032,7 @@
         "addRisk": {
           "help": "Legt ein leeres Risiko an und gibt dessen id zurück."
         },
-        "deleteRisk": {
+        "removeRisk": {
           "help": "Entfernt ein Risiko samt seinen Maßnahmen.",
           "params": {
             "id": "Die id des Risikos, wie read() sie unter risks führt. Eine unbekannte id ist ein Fehler."
@@ -12386,7 +12386,7 @@
             "value": "Der Wert des Headers; der leere Text löscht ihn."
           }
         },
-        "deleteHeader": {
+        "removeHeader": {
           "help": "Löscht einen Request-Header des aktiven Endpunkts.",
           "params": {
             "index": "Der Index eines Headers in endpoints[].headers."
@@ -12403,7 +12403,7 @@
             "ref": "Spaltenverweis { instanceId, sheetId, columnId } einer Spalte aus pickableColumns, oder null zum Lösen."
           }
         },
-        "deleteMapping": {
+        "removeMapping": {
           "help": "Löscht ein Mapping des aktiven Endpunkts.",
           "params": {
             "index": "Der Index eines Mappings in endpoints[].mappings."

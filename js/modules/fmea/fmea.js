@@ -360,7 +360,7 @@ const mod = createModule({
        * @returns {void}
        * @throws {Error} wenn kein Risiko diese id trägt
        */
-      deleteRisk(id) {
+      removeRisk(id) {
         requireKnownId('id', id, this.model.risks.map((r) => r.id));
         this.model.removeRisk(id);
       },

@@ -14,9 +14,9 @@
  * listeners or chart instances.
  *
  * @agent  Steuerbar über das Viewmodel: Problembeschreibung
- *   (setProblemStatement), Ziele (addGoal, setGoalField, deleteGoal,
+ *   (setProblemStatement), Ziele (addGoal, setGoalField, removeGoal,
  *   moveGoal), Organigramm (addOrgNode, updateOrgNode, setOrgNodeStyle,
- *   deleteOrgNode, moveOrgNode, setOrgStyle), Rückgängig (undo). Gelesen
+ *   removeOrgNode, moveOrgNode, setOrgStyle), Rückgängig (undo). Gelesen
  *   wird über read() mit erklärter Lesefläche (AgentRead).
  */
 
@@ -383,7 +383,7 @@ export default createModule({
        * @returns {number} Anzahl der gelöschten Knoten
        * @throws {Error} bei unbekannter id
        */
-      deleteOrgNode(id) {
+      removeOrgNode(id) {
         requireKnownId('node', id, this.orgChart().map(n => n.id));
         this._pushUndo();
         const removed = this.model.deleteOrgNode(id);
@@ -489,7 +489,7 @@ export default createModule({
        * @returns {void}
        * @throws {Error} bei unbekannter id
        */
-      deleteGoal(id) {
+      removeGoal(id) {
         requireKnownId('goal', id, this.model.goals.map(g => g.id));
         this._pushUndo();
         this.model.deleteGoal(id);
@@ -611,10 +611,10 @@ export default createModule({
         return Boolean(this._confirmingDelete[id]);
       },
 
-      /** @noagent two-click confirmation; the agent uses deleteGoal */
+      /** @noagent two-click confirmation; the agent uses removeGoal */
       goalDeleteClick(id, event) {
         if (this._confirmingDelete[id]) {
-          this.deleteGoal(id);
+          this.removeGoal(id);
         } else {
           this._confirmingDelete[id] = true;
           this._confirmTick++;
@@ -1222,7 +1222,7 @@ export default createModule({
           danger: true,
         });
         if (!confirmed) return;
-        this.deleteOrgNode(id);
+        this.removeOrgNode(id);
       },
 
       _orgToggleCollapse(id) {

@@ -1592,7 +1592,7 @@
             "value": "The value: text for description, metric and targetValue; \"\" or YYYY-MM-DD for targetDate; a whole number 0 to 100 for achievementLevel."
           }
         },
-        "deleteGoal": {
+        "removeGoal": {
           "help": "Delete a project goal without asking; can be undone.",
           "params": {
             "id": "The goal id from read().goals."
@@ -1629,7 +1629,7 @@
             "value": "The value, form per key see types.OrgNodeStyle."
           }
         },
-        "deleteOrgNode": {
+        "removeOrgNode": {
           "help": "Delete a position with all positions below it, without asking; can be undone. Returns the number of deleted positions.",
           "params": {
             "id": "The position id from read().orgChart."
@@ -1914,7 +1914,7 @@
             "text": "The new wording. Empty wording changes nothing and returns false; a missing argument is an error."
           }
         },
-        "deleteNeed": {
+        "removeNeed": {
           "help": "Removes a need with its drivers and requirements.",
           "params": {
             "vocId": "The id of the statement. An unknown id is an error.",
@@ -1940,7 +1940,7 @@
             "type": "The driver's type: ctq for quality, ctd for delivery, ctc for cost — what is decisive to the customer about quality, delivery or cost (Critical to Quality, Delivery, Cost). Any other value is an error."
           }
         },
-        "deleteDriver": {
+        "removeDriver": {
           "help": "Removes a driver with its requirements.",
           "params": {
             "vocId": "The id of the statement. An unknown id is an error.",
@@ -1971,7 +1971,7 @@
             "measure": "The new measure. An empty string clears it; a missing argument is an error."
           }
         },
-        "deleteReq": {
+        "removeReq": {
           "help": "Removes a requirement.",
           "params": {
             "vocId": "The id of the statement. An unknown id is an error.",
@@ -2154,7 +2154,7 @@
             "name": "The new name. An empty name leaves the old one in place and returns false; a missing argument is an error."
           }
         },
-        "deleteRespondent": {
+        "removeRespondent": {
           "help": "Removes a respondent with all of their answers. If they were selected, the first remaining one takes over.",
           "params": {
             "id": "The id of the respondent. An unknown id is an error."
@@ -5662,7 +5662,7 @@
             "data": "An object holding exactly the fields that should change — code (the short code in the matrix), label (the name) or color (a hex value such as #4a90e2). Whatever is not in it stays unchanged; a missing object, an object without any of these fields and a value that is not a string are errors."
           }
         },
-        "deleteMudaCategory": {
+        "removeMudaCategory": {
           "help": "Removes a waste category and its markings on every step.",
           "params": {
             "mudaId": "The id of the waste category as read() lists it under mudaCategories. An unknown id is an error."
@@ -5679,7 +5679,7 @@
             "data": "An object holding exactly the fields that should change — label (the code recognised inside a duration text) or factorSeconds (the length of the unit in seconds, a number greater than 0). Whatever is not in it stays unchanged; a missing object, an object without any of these fields, a label that is not a string and a factorSeconds of 0 or less are errors."
           }
         },
-        "deleteTimeUnit": {
+        "removeTimeUnit": {
           "help": "Removes a time unit. Duration texts that use only this unit are unreadable afterwards and no longer count towards the key figures.",
           "params": {
             "unitId": "The id of the time unit as read() lists it under timeUnits. An unknown id is an error."
@@ -9028,7 +9028,7 @@
         "addRisk": {
           "help": "Adds an empty risk and returns its id."
         },
-        "deleteRisk": {
+        "removeRisk": {
           "help": "Removes a risk with its actions.",
           "params": {
             "id": "The id of the risk as read() lists it under risks. An unknown id is an error."
@@ -12382,7 +12382,7 @@
             "value": "The header value; the empty string clears it."
           }
         },
-        "deleteHeader": {
+        "removeHeader": {
           "help": "Deletes a request header of the active endpoint.",
           "params": {
             "index": "The index of a header in endpoints[].headers."
@@ -12399,7 +12399,7 @@
             "ref": "Column reference { instanceId, sheetId, columnId } of a column from pickableColumns, or null to clear."
           }
         },
-        "deleteMapping": {
+        "removeMapping": {
           "help": "Deletes a mapping of the active endpoint.",
           "params": {
             "index": "The index of a mapping in endpoints[].mappings."
