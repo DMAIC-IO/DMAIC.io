@@ -23,7 +23,7 @@ import { createModule } from '../../core/template-module.js';
 import { resolveDateOffset } from '../../core/date-offset.js';
 import { isIsoDate } from '../../core/local-date.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireBoolean, requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireEnum, requireIndex, requireKnownId, requireNumber, requireText } from '../../core/agent/agent-argcheck.js';
 import { State, METHODS, FMEA_TYPES, SPECIAL_CHARS, fmeaCreateDefault } from './fmea-model.js';
 import { S_BANDS, O_BANDS, D_BANDS, AP_TABLE, AP_CATEGORY, bandLabel } from './fmea-ap.js';
 
@@ -59,12 +59,11 @@ const RISK_FIELDS = ['step', 'failureMode', 'effect', 'cause', 'prevention',
   'control', 'specialChar', 'justification', 'sev', 'occ', 'det'];
 const ACTION_FIELDS = ['text', 'resp', 'date', 'done', 'deltaS', 'deltaO', 'deltaD'];
 
-// S, O und D laufen als ZEICHENKETTE von '1' bis '10', die leere Zeichenkette
-// heißt unbewertet. `requireIndex` passt darauf nicht — es verlangt eine ganze
-// ZAHL und meldete „allowed: 0..10", ließe also die 0 durch und die
-// Zeichenketten der Oberfläche gar nicht. Dasselbe für die Deltas '0'..'9'.
-const SOD_VALUES = ['', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
-const DELTA_VALUES = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+// S, O und D liegen als TEXT von '1' bis '10' im Model, '' heißt unbewertet;
+// die Deltas als Text von '0' bis '9'. Der Agent darf Zahl oder Zahlentext
+// geben — `requireNumber` prüft den Bereich, abgelegt wird `String(n)`.
+const SOD_RANGE = { min: 1, max: 10, integer: true };
+const DELTA_RANGE = { min: 0, max: 9, integer: true };
 
 /**
  * Die Schlüsselfläche von `setRiskValue`: die Felder einer Risikozeile.
@@ -449,7 +448,7 @@ const mod = createModule({
        * @agent
        * @param {string} riskId id des Risikos
        * @param {keyof RiskField} field welches Feld der Risikozeile
-       * @param {string} value der Wert; Bereich je Feld siehe `RiskField`
+       * @param {string|number} value der Wert; S/O/D als Zahl oder Text (abgelegt als Text), Bereich je Feld siehe `RiskField`
        * @returns {void}
        * @throws {Error} wenn kein Risiko diese id trägt, `field` keines der
        *   elf Felder ist oder `value` nicht in die Wertemenge dieses Feldes
@@ -458,11 +457,12 @@ const mod = createModule({
       setRiskValue(riskId, field, value) {
         requireKnownId('riskId', riskId, this.model.risks.map((r) => r.id));
         requireEnum('field', field, RISK_FIELDS);
+        let clean = value;
         if (field === 'specialChar') requireEnum('value', value, SPECIAL_CHARS);
         else if (field === 'sev' || field === 'occ' || field === 'det') {
-          requireEnum('value', value, SOD_VALUES);
+          clean = value === '' ? '' : String(requireNumber('value', value, SOD_RANGE));
         } else requireText('value', value);
-        this.model.risks.find((r) => r.id === riskId)[field] = value;
+        this.model.risks.find((r) => r.id === riskId)[field] = clean;
       },
 
       /**
@@ -514,7 +514,7 @@ const mod = createModule({
        * @param {string} riskId id des Risikos
        * @param {number} actionIndex die Position der Maßnahme, bei 0 beginnend
        * @param {keyof ActionField} field welches Feld der Maßnahme
-       * @param {string|boolean} value der Wert; Bereich je Feld siehe `ActionField`
+       * @param {string|number|boolean} value der Wert; Bereich je Feld siehe `ActionField`
        * @returns {void}
        * @throws {Error} wenn kein Risiko diese id trägt, das Risiko an dieser
        *   Position keine Maßnahme hat, `field` keines der sieben Felder ist
@@ -524,6 +524,7 @@ const mod = createModule({
         requireKnownId('riskId', riskId, this.model.risks.map((r) => r.id));
         this._requireActionIndex(riskId, actionIndex);
         requireEnum('field', field, ACTION_FIELDS);
+        let clean = value;
         if (field === 'done') requireBoolean('value', value);
         else if (field === 'date') {
           requireText('value', value);
@@ -531,17 +532,15 @@ const mod = createModule({
             throw new Error(`invalid value ${JSON.stringify(value)}; allowed: YYYY-MM-DD or ""`);
           }
         } else if (field === 'deltaS' || field === 'deltaO' || field === 'deltaD') {
-          requireEnum('value', value, DELTA_VALUES);
+          clean = String(requireNumber('value', value, DELTA_RANGE));
         } else requireText('value', value);
-        this.model.risks.find((r) => r.id === riskId).actions[actionIndex][field] = value;
+        this.model.risks.find((r) => r.id === riskId).actions[actionIndex][field] = clean;
       },
 
-      // `requireIndex` passt hier nicht: es erlaubt `0..length` INKLUSIVE,
-      // also auch die Position hinter der letzten Maßnahme — die gibt es
-      // nicht. Die tatsächlichen Positionen sind die ehrliche Wertemenge.
+      /** Prüft, dass das Risiko an `actionIndex` eine Maßnahme hat. */
       _requireActionIndex(riskId, actionIndex) {
         const actions = this.model.risks.find((r) => r.id === riskId).actions;
-        requireEnum('actionIndex', actionIndex, actions.map((_, i) => i));
+        requireIndex('actionIndex', actionIndex, actions.length, { existing: true });
       },
 
       // ── CSV export (file download — not UI markup) ────────────

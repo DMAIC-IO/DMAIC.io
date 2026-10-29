@@ -17,7 +17,7 @@ import { createModule } from '../../core/template-module.js';
 import { getPhaseIds, DEFAULT_CYCLE } from '../../core/cycles/cycles.js';
 import { isIsoDate } from '../../core/local-date.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireKnownId, requireNumber, requireText } from '../../core/agent/agent-argcheck.js';
 import {
   State, MIN_DUR,
   fmt2, dkd, isoDow, getMonday, snp, mtt, ttm, fmtEnd, fmtDur,
@@ -33,8 +33,8 @@ const MONTHS_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July
 /** Die Felder, die `addEvent` und `updateEvent` entgegennehmen. */
 const EVENT_FIELDS = ['title', 'date', 'time', 'duration', 'desc', 'phase'];
 
-/** Die Wochentage als Wertemenge: 0 für Montag bis 6 für Sonntag. */
-const DAY_INDICES = [0, 1, 2, 3, 4, 5, 6];
+/** Die Wochentage: 0 für Montag bis 6 für Sonntag. */
+const DAY_RANGE = { min: 0, max: 6, integer: true };
 
 // Die Stunden der Tagesachse. `requireIndex` passt nicht: `axisTo` reicht bis
 // 24 (Tagesende) und `axisFrom` nur bis 23, die Bereiche sind also nicht
@@ -323,9 +323,9 @@ export default createModule({
        * @throws {Error} wenn `dayIndex` kein Wochentag von 0 bis 6 ist
        */
       setDayFrom(dayIndex) {
-        requireEnum('dayIndex', dayIndex, DAY_INDICES);
-        if (dayIndex > this.model.dayTo) return false;
-        this.model.dayFrom = dayIndex;
+        const d = requireNumber('dayIndex', dayIndex, DAY_RANGE);
+        if (d > this.model.dayTo) return false;
+        this.model.dayFrom = d;
         return true;
       },
 
@@ -338,9 +338,9 @@ export default createModule({
        * @throws {Error} wenn `dayIndex` kein Wochentag von 0 bis 6 ist
        */
       setDayTo(dayIndex) {
-        requireEnum('dayIndex', dayIndex, DAY_INDICES);
-        if (dayIndex < this.model.dayFrom) return false;
-        this.model.dayTo = dayIndex;
+        const d = requireNumber('dayIndex', dayIndex, DAY_RANGE);
+        if (d < this.model.dayFrom) return false;
+        this.model.dayTo = d;
         return true;
       },
 

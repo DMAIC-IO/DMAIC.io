@@ -8,7 +8,7 @@
  */
 import { createModule } from '../../core/template-module.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireBoolean, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
 import { State, loadData, getCached } from './triz-contradiction-matrix-model.js';
 
 function el(tag, className, text) {
@@ -89,8 +89,9 @@ const base = createModule({
        */
       setImproving(param) {
         if (param === null || param === undefined) { this.model.improving = null; return; }
-        requireKnownId('improving', Number(param), cache.parameters.map(p => p.id));
-        this.model.improving = Number(param);
+        const n = requireNumber('improving', param, { integer: true });
+        requireKnownId('improving', n, cache.parameters.map(p => p.id));
+        this.model.improving = n;
       },
 
       /**
@@ -103,8 +104,9 @@ const base = createModule({
        */
       setWorsening(param) {
         if (param === null || param === undefined) { this.model.worsening = null; return; }
-        requireKnownId('worsening', Number(param), cache.parameters.map(p => p.id));
-        this.model.worsening = Number(param);
+        const n = requireNumber('worsening', param, { integer: true });
+        requireKnownId('worsening', n, cache.parameters.map(p => p.id));
+        this.model.worsening = n;
       },
 
       /**

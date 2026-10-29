@@ -24,9 +24,9 @@ import {
   exportTableAsPNG, exportTableAsSVG,
 } from '../../core/export-utils.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireIndex } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireIndex, requireNumber } from '../../core/agent/agent-argcheck.js';
 import {
-  State, RATING_SCALES, SCALE_IDS, WEIGHTS,
+  State, RATING_SCALES, SCALE_IDS,
 } from './ce-matrix-model.js';
 
 // ─── Color scale (green → yellow → red) — view only ───────────
@@ -366,15 +366,14 @@ export default createModule({
        * ihre Bewertungen in die Zeilensummen eingehen.
        * @agent
        * @param {number} c die Spaltennummer, von 0 an gezählt
-       * @param {number} value die Kundenwichtigkeit, eine ganze Zahl von 1 bis 10
+       * @param {number} value die Kundenwichtigkeit, eine ganze Zahl von 1 bis 10 (auch als Zahlentext)
        * @returns {void}
        * @throws {Error} wenn `c` keine Ergebnisgröße bezeichnet oder `value`
        *   nicht zwischen 1 und 10 liegt
        */
       setWeight(c, value) {
         requireIndex('c', c, this.model.outputs.length - 1);
-        requireEnum('value', value, WEIGHTS);
-        this.model.weights[c] = value;
+        this.model.weights[c] = requireNumber('value', value, { min: 1, max: 10, integer: true });
       },
 
       // ── Export ────────────────────────────────────────────────

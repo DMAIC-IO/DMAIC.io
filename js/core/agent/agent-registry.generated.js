@@ -1834,7 +1834,7 @@ export const AGENT_REGISTRY = {
             "name": "value",
             "type": "number",
             "optional": false,
-            "help": "die Kundenwichtigkeit, eine ganze Zahl von 1 bis 10"
+            "help": "die Kundenwichtigkeit, eine ganze Zahl von 1 bis 10 (auch als Zahlentext)"
           }
         ],
         "returns": "void",
@@ -5516,9 +5516,9 @@ export const AGENT_REGISTRY = {
           },
           {
             "name": "value",
-            "type": "string",
+            "type": "string|number",
             "optional": false,
-            "help": "der Wert; Bereich je Feld siehe `RiskField`"
+            "help": "der Wert; S/O/D als Zahl oder Text (abgelegt als Text), Bereich je Feld siehe `RiskField`"
           }
         ],
         "returns": "void",
@@ -5641,7 +5641,7 @@ export const AGENT_REGISTRY = {
           },
           {
             "name": "value",
-            "type": "string|boolean",
+            "type": "string|number|boolean",
             "optional": false,
             "help": "der Wert; Bereich je Feld siehe `ActionField`"
           }
@@ -8437,7 +8437,7 @@ export const AGENT_REGISTRY = {
             "name": "value",
             "type": "number|null",
             "optional": false,
-            "help": "der Wert; Bereich je Frage siehe `AnswerField`"
+            "help": "der Wert, eine ganze Zahl (auch als Zahlentext); Bereich je Frage siehe `AnswerField`"
           }
         ],
         "returns": "void",

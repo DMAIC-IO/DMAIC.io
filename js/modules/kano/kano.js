@@ -22,7 +22,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireBoolean, requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireEnum, requireKnownId, requireNumber, requireText } from '../../core/agent/agent-argcheck.js';
 import { State } from './kano-model.js';
 import { listTrees, flatten, diff, applyDiff, LEVELS } from './kano-link.js';
 import { evaluate, Q_WARN } from '../../engines/kano-engine.js';
@@ -34,18 +34,12 @@ import { treePhaseForCycle } from '../voc-ctx-tree/voc-ctx-tree-phase.js';
 import { DEFAULT_CYCLE } from '../../core/cycles/cycles.js';
 import { uid } from '../../core/uid.js';
 
-// Die Antwortfelder und ihre Wertemengen. Beide Skalen sind 1-BASIERT;
-// `requireIndex` passt darauf nicht (es ließe die 0 durch und meldete
-// „allowed: 0..5"), deshalb die tatsächliche Wertemenge — `null` ist der
-// dokumentierte Leerwert „unbeantwortet" (Ruling 52).
-// Der Leerwert wird VOR dem Prüfer abgefangen, nicht in seine Wertemenge
-// aufgenommen: `[null, 1, …].join(', ')` meldete „allowed: , 1, 2, …" mit
-// einem leeren Posten, den kein Agent deuten kann. So bleibt die Meldung
-// sauber, und ein FEHLENDES Argument (`undefined`) läuft weiter in den
-// Prüfer und wirft (Ruling 55).
+// Die Antwortfelder. Beide Skalen sind 1-BASIERT: f und d laufen von 1 bis 5,
+// w von 1 bis 9; `setAnswer` prüft mit `requireNumber({ min: 1, max, integer })`.
+// `null` ist der dokumentierte Leerwert „unbeantwortet" und wird VOR dem
+// Prüfer abgefangen; ein FEHLENDES Argument (`undefined`) läuft in den
+// Prüfer und wirft.
 const ANSWER_FIELDS = ['f', 'd', 'w'];
-const SCALE_5 = [1, 2, 3, 4, 5];
-const SCALE_9 = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 /** Die Felder, die ein Merkmal trägt — die Prüfliste von `setItems`. */
 const ITEM_FIELDS = ['id', 'nodeId', 'label', 'path', 'missing'];
@@ -690,7 +684,7 @@ export default createModule({
        * @param {string} respondentId id der Befragten
        * @param {string} itemId id des Merkmals
        * @param {keyof AnswerField} field welche Frage
-       * @param {number|null} value der Wert; Bereich je Frage siehe `AnswerField`
+       * @param {number|null} value der Wert, eine ganze Zahl (auch als Zahlentext); Bereich je Frage siehe `AnswerField`
        * @returns {void}
        * @throws {Error} wenn keine Befragte oder kein Merkmal diese id trägt,
        *   `field` keines der drei Antwortfelder ist oder `value` nicht auf der
@@ -700,8 +694,10 @@ export default createModule({
         requireKnownId('respondentId', respondentId, this.model.respondents.map((r) => r.id));
         requireKnownId('itemId', itemId, this.model.items.map((i) => i.id));
         requireEnum('field', field, ANSWER_FIELDS);
-        if (value !== null) requireEnum('value', value, field === 'w' ? SCALE_9 : SCALE_5);
-        this.model.setAnswer(respondentId, itemId, field, value);
+        const clean = value === null
+          ? null
+          : requireNumber('value', value, { min: 1, max: field === 'w' ? 9 : 5, integer: true });
+        this.model.setAnswer(respondentId, itemId, field, clean);
         this.$nextTick(() => this.mountChart());
       },
 

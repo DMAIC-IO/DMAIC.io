@@ -14,16 +14,10 @@
 
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
 import {
   Stakeholder, State, QUAD_ORDER, SUPPORT_VALUES, CATEGORY_VALUES, criticalCritics, isKeyCritic,
 } from './stakeholder-analysis-model.js';
-
-// Macht und Interesse laufen von 1 bis 5. `requireIndex` passt darauf nicht:
-// es ist 0-basiert, meldete „allowed: 0..5" und ließe die 0 durch, die das
-// Model still auf 1 klemmte (Ruling 51). Die erklärte Wertemenge ist der
-// richtige Prüfer.
-const LEVELS = [1, 2, 3, 4, 5];
 
 // Die Felder, die `addStakeholder` und `updateStakeholder` entgegennehmen.
 // Die Liste trägt die Prüfung „das Objekt nennt überhaupt ein Feld" — ohne
@@ -333,19 +327,19 @@ export default createModule({
        *   einen Wert außerhalb ihrer Wertemenge tragen
        */
       addStakeholder(data) {
-        this._requireStakeholderData(data, 'name');
-        const name = String(data.name ?? '').trim();
+        const clean = this._requireStakeholderData(data, 'name');
+        const name = String(clean.name ?? '').trim();
         // Ein leerer Name ist eine fachliche Absage, kein ungültiges Argument:
         // das Formular verwirft ihn genauso und legt nichts an.
         if (!name) return null;
         const sh = Stakeholder.fromJSON({
           name,
-          role: String(data.role ?? '').trim(),
-          power: data.power ?? 3,
-          interest: data.interest ?? 3,
-          support: data.support ?? 'neutral',
-          category: data.category ?? 'intern',
-          notes: String(data.notes ?? '').trim(),
+          role: String(clean.role ?? '').trim(),
+          power: clean.power ?? 3,
+          interest: clean.interest ?? 3,
+          support: clean.support ?? 'neutral',
+          category: clean.category ?? 'intern',
+          notes: String(clean.notes ?? '').trim(),
         });
         this.model.stakeholders.push(sh);
         return sh.id;
@@ -367,20 +361,20 @@ export default createModule({
        */
       updateStakeholder(id, data) {
         requireKnownId('id', id, this.model.stakeholders.map((s) => s.id));
-        this._requireStakeholderData(data, 'any');
+        const clean = this._requireStakeholderData(data, 'any');
         const sh = this.model.stakeholders.find((s) => s.id === id);
-        if (data.name !== undefined) {
-          const name = String(data.name).trim();
+        if (clean.name !== undefined) {
+          const name = String(clean.name).trim();
           // Siehe `addStakeholder`: ein leerer Name ist eine Absage.
           if (!name) return false;
           sh.name = name;
         }
-        if (data.role !== undefined) sh.role = String(data.role).trim();
-        if (data.power !== undefined) sh.power = data.power;
-        if (data.interest !== undefined) sh.interest = data.interest;
-        if (data.support !== undefined) sh.support = data.support;
-        if (data.category !== undefined) sh.category = data.category;
-        if (data.notes !== undefined) sh.notes = String(data.notes).trim();
+        if (clean.role !== undefined) sh.role = String(clean.role).trim();
+        if (clean.power !== undefined) sh.power = clean.power;
+        if (clean.interest !== undefined) sh.interest = clean.interest;
+        if (clean.support !== undefined) sh.support = clean.support;
+        if (clean.category !== undefined) sh.category = clean.category;
+        if (clean.notes !== undefined) sh.notes = String(clean.notes).trim();
         return true;
       },
 
@@ -401,7 +395,8 @@ export default createModule({
        * Prüft die Wertemengen eines Beteiligten-Objekts. Ein fehlendes
        * Argument (`undefined`) ist ein Fehler und kein leeres Objekt — sonst
        * legte ein Aufruf ohne Argument stillschweigend nichts an und meldete
-       * Erfolg (Ruling 55).
+       * Erfolg. Gibt eine Kopie zurück, in der `power` und `interest` als Zahl
+       * stehen.
        */
       _requireStakeholderData(data, required) {
         const expected = required === 'name'
@@ -418,10 +413,13 @@ export default createModule({
         if (required !== 'name' && !STAKEHOLDER_FIELDS.some((f) => data[f] !== undefined)) {
           throw new Error(`invalid data ${JSON.stringify(data)}; allowed: an object with ${expected}`);
         }
-        if (data.power !== undefined) requireEnum('power', data.power, LEVELS);
-        if (data.interest !== undefined) requireEnum('interest', data.interest, LEVELS);
-        if (data.support !== undefined) requireEnum('support', data.support, SUPPORT_VALUES);
-        if (data.category !== undefined) requireEnum('category', data.category, CATEGORY_VALUES);
+        const clean = { ...data };
+        const LEVEL = { min: 1, max: 5, integer: true };
+        if (clean.power !== undefined) clean.power = requireNumber('power', clean.power, LEVEL);
+        if (clean.interest !== undefined) clean.interest = requireNumber('interest', clean.interest, LEVEL);
+        if (clean.support !== undefined) requireEnum('support', clean.support, SUPPORT_VALUES);
+        if (clean.category !== undefined) requireEnum('category', clean.category, CATEGORY_VALUES);
+        return clean;
       },
       /** @noagent lifecycle */
       destroy() {
