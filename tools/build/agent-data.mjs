@@ -253,7 +253,7 @@ function buildEntry(resolver, appDir, viewmodelFile) {
 
   const reported = [...violations, ...surface, ...model.violations,
     ...persistence.violations, ...unreadable, ...readReturn,
-    ...invalidBulkKinds(model.fields), ...invalidOmitPaths(model.fields), ...collectDomDetours(sf),
+    ...invalidBulkKinds(model.fields), ...invalidOmitPaths(model.fields), ...invalidViaSentinels(sf), ...collectDomDetours(sf),
     ...unreachable, ...bypass, ...fixedBounds, ...templateCalls,
     ...subViewModelModelBindings(dirname(viewmodelFile), subViewModels),
     ...undeclaredOptions, ...moduleStateOptions, ...unknownVia];
@@ -543,6 +543,24 @@ function readSentinels(raw) {
     if (v) { via = v[1].split(',').map(x => x.trim()); rest = rest.slice(v[0].length).trimStart(); continue; }
     return { bulk, omit, via, help: rest.trim() };
   }
+}
+
+/**
+ * Properties, deren Hilfe mit `[via` beginnt, ohne dass das Sentinel liest —
+ * sonst wäre ein Tippfehler (`[via:]`, `[via: a b]`) still Prosa und das
+ * Feld ohne Senken.
+ * @param {ts.SourceFile} sf
+ * @returns {string[]} Codes der Form `invalid_via:<feld>`
+ */
+function invalidViaSentinels(sf) {
+  const literal = findTypedefLiteral(sf, AGENT_READ_TYPEDEF);
+  const out = [];
+  for (const property of literal?.jsDocPropertyTags ?? []) {
+    const name = property.name?.getText(sf);
+    if (!name || name.startsWith('_')) continue;
+    if (readSentinels(cleanComment(property.comment)).help.startsWith('[via')) out.push(`invalid_via:${name}`);
+  }
+  return out;
 }
 
 /**

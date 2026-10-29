@@ -294,14 +294,6 @@ async function main() {
   console.log(`  Parameter: ${help.params.covered}/${help.params.total} (${pct(help.params)})`);
   console.log(`  Schlüssel: ${help.keys.covered}/${help.keys.total} (${pct(help.keys)})`);
   console.log(`  Felder:    ${help.fields.covered}/${help.fields.total} (${pct(help.fields)})`);
-  const viaGaps = viaHelpGaps(APP_DIR, modules);
-  if (viaGaps.length) {
-    console.log(`\n[via]-Senken fehlen in der Feldhilfe: ${viaGaps.length}`);
-    if (verbose) for (const g of viaGaps) console.log(`  ${g}`);
-  }
-  const noWrite = fieldsWithoutWritePath(modules, writtenFields);
-  console.log(`\nFelder ohne Schreibweg (weder @agent-Zuweisung noch [via]): ${noWrite.model.length} Model-Felder, ${noWrite.derived.length} erklärte Felder`);
-  if (verbose) for (const f of [...noWrite.model, ...noWrite.derived]) console.log(`  ${f}`);
   const anchors = countAnchorCoverage(APP_DIR, modules);
   const exemptNote = anchors.exempt > 0 ? `, davon ${anchors.exempt} begründet ausgenommen` : '';
   console.log(`  Beschriftungen mit Anker: ${anchors.covered}/${anchors.total} (${pct(anchors)})${exemptNote}`);
@@ -317,6 +309,14 @@ async function main() {
       + `(${help.missing.length} Sprachfälle) — mit --verbose einzeln benannt.`);
   }
   if (verbose) for (const row of [...help.missing].sort()) console.log(`    fehlt — ${row}`);
+  const viaGaps = viaHelpGaps(APP_DIR, modules);
+  if (viaGaps.length) {
+    console.log(`\n[via]-Senken fehlen in der Feldhilfe: ${viaGaps.length}`);
+    if (verbose) for (const g of viaGaps) console.log(`  ${g}`);
+  }
+  const noWrite = fieldsWithoutWritePath(modules, writtenFields);
+  console.log(`\nFelder ohne Schreibweg (weder @agent-Zuweisung noch [via]): ${noWrite.model.length} Model-Felder, ${noWrite.derived.length} erklärte Felder`);
+  if (verbose) for (const f of [...noWrite.model, ...noWrite.derived]) console.log(`  ${f}`);
   if (verbose) {
     for (const row of anchors.missing) console.log(`    ohne Anker — ${row}`);
     for (const row of anchors.staleExemptions) console.log(`    Ausnahme ohne Treffer — ${row}`);

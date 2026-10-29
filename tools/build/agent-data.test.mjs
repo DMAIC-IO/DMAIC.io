@@ -1296,6 +1296,21 @@ test('collectAgentData: eine @noagent-Methode in [via:] ist eine unbekannte Akti
   assert.ok(modules.foo.violations.includes('unknown_via_action:problem:cardClass'));
 });
 
+test('collectAgentData: ein missratenes [via …] meldet invalid_via statt still Prosa zu sein', () => {
+  for (const bad of ['', ' a b', ' : x']) {
+    const vm = TAGGED_VM.replace('export default createModule', `/**
+ * @typedef {object} AgentRead
+ * @property {string} problem  [via${bad}] die Problemstellung
+ */
+export default createModule`);
+    const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
+    assert.ok(collectAgentData(root).modules.foo.violations.includes('invalid_via:problem'), `[via${bad}]`);
+  }
+  const bad2 = VIA_VM('a b');
+  const root = fixture({ foo: { 'foo.js': bad2, 'foo-model.js': MODEL } });
+  assert.ok(collectAgentData(root).modules.foo.violations.includes('invalid_via:problem'));
+});
+
 test('collectAgentData: die beschriebenen Schreibwege stehen neben den Einträgen, nicht darin', () => {
   const root = fixture({ foo: { 'foo.js': VIA_VM('setProblem'), 'foo-model.js': MODEL } });
   const data = collectAgentData(root);
