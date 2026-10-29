@@ -1318,8 +1318,18 @@
           "params": { "columnId": "The id of the column to remove." }
         },
         "addRows": {
-          "help": "Appends empty rows to the active sheet.",
-          "params": { "count": "Number of rows; ten without an argument, like the toolbar button." }
+          "help": "Adds empty rows to the active sheet — at the end without a position, ten without a count.",
+          "params": {
+            "count": "Number of rows, a whole number of at least 1; ten without a value, like the toolbar button.",
+            "position": "Zero-based row where the first new row goes: 0 puts them on top, the row count or no value appends them."
+          }
+        },
+        "removeRows": {
+          "help": "Removes a contiguous block of rows with their values and formulas and returns how many rows were removed. Undo brings the rows back.",
+          "params": {
+            "startRow": "Zero-based index of the first row to remove; it must exist.",
+            "count": "Number of rows, a whole number of at least 1 and at most up to the last row."
+          }
         },
         "sortRows": {
           "help": "Sorts all rows of the active sheet by one column, like “Sort ascending/descending” in the column header menu. The direction is absolute — a second identical call changes nothing and returns false. Empty cells go last. Undo restores the previous order.",

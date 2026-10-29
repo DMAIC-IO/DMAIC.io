@@ -18,7 +18,7 @@
  *
  * @agent  Vollständig über das Viewmodel steuerbar: CSV-Import, Zellblöcke
  *   und Formeln schreiben, Spalten anlegen, umbenennen und entfernen,
- *   Zeilen anlegen, Zeilen nach einer Spalte sortieren, Rückgängig, Blätter
+ *   Zeilen einfügen und entfernen, Zeilen nach einer Spalte sortieren, Rückgängig, Blätter
  *   anlegen, wechseln, umbenennen, duplizieren, davor einfügen und entfernen;
  *   Spaltenrollen setzen und bestätigen. Dateidialoge, Popout-Widgets und die Auswahl-abhängigen Knöpfe bleiben
  *   der UI vorbehalten; gelesen wird über read() mit erklärter Lesefläche
@@ -28,7 +28,7 @@
 import { createModule } from '../../core/template-module.js';
 import Alpine from '@alpinejs/csp';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireKnownId, requireText, requireIndex, requireEnum } from '../../core/agent/agent-argcheck.js';
+import { requireKnownId, requireText, requireIndex, requireEnum, requireNumber } from '../../core/agent/agent-argcheck.js';
 import { State } from './worksheet-model.js';
 import { DataGrid, isFormula, evaluateFormula } from '../../core/datagrid/datagrid.js';
 import { ALL_ROLES, validRolesForType, isRoleValidForType } from '../../core/datagrid/datagrid-roles.js';
@@ -646,22 +646,59 @@ const mod = createModule({
         this._persistNow();
       },
       /**
-       * Append empty rows to the active sheet.
+       * Insert empty rows into the active sheet — appended, or at a position
+       * like "insert row above/below" in the row menu.
        *
        * The toolbar button calls `addRows()` without an argument (Alpine CSP
        * allows no argument expressions in `@click`) and lands on the 10 it
        * always added.
        *
        * @agent
-       * @param {number} [count] how many rows; the toolbar button adds 10.
-       *   Negatives are clamped to 0 — `DataGrid.addRows` would throw on a
-       *   negative array length, and the UI can never produce one.
+       * @param {number} [count] how many rows, a whole number of at least 1;
+       *   omitted → 10, like the toolbar button
+       * @param {number} [position] zero-based row index the first new row
+       *   takes; 0 puts them first, the row count (or omitted) appends
        * @returns {void}
+       * @throws {Error} if count is not a whole number ≥ 1, or position is not
+       *   an integer in 0..row count
        */
-      addRows(count) {
-        const n = Math.trunc(Number(count));
-        this._grid?.addRows(Number.isFinite(n) ? Math.max(0, n) : 10);
+      addRows(count, position) {
+        // Früher klemmte diese Methode still: negativ → 0 Zeilen, Unsinn → 10,
+        // und der Aufruf meldete Erfolg. `DataGrid.addRows` prüft nichts —
+        // ein negatives count wirft dort erst in `new Array`, eine Position
+        // 99 hängt still an.
+        const n = count === undefined ? 10 : requireNumber('count', count, { min: 1, integer: true });
+        if (position !== undefined) {
+          requireIndex('position', position, this._grid.rowCount);
+        }
+        this._grid.addRows(n, position);
         this._persistNow();
+      },
+
+      /**
+       * Remove a contiguous block of rows from the active sheet, values and
+       * formulas included — like "delete row" / "delete selected rows" in
+       * the row menu. Undo restores them.
+       *
+       * @agent
+       * @param {number} startRow zero-based index of the first row to remove
+       * @param {number} count how many rows, from 1 up to the rows left from
+       *   startRow to the end
+       * @returns {number} how many rows were removed
+       * @throws {Error} if startRow is not an existing row index, or count is
+       *   not a whole number in 1..(row count − startRow)
+       */
+      removeRows(startRow, count) {
+        // `DataGrid.removeRows` prüft keinen Bereich: ein Index hinter dem
+        // Ende spliced ins Leere, `rowCount` sinkt trotzdem. Eine Sperre
+        // prüft das Zeilenmenü nicht — hier also auch nicht.
+        const rowCount = this._grid.rowCount;
+        requireIndex('startRow', startRow, rowCount, { existing: true });
+        const n = requireNumber('count', count, { min: 1, max: rowCount - startRow, integer: true });
+        const indices = Array.from({ length: n }, (_, i) => startRow + i);
+        this._grid.removeRows(indices);
+        this._persistNow();
+        return indices.length;
       },
       /**
        * Sort all rows of the active sheet by one column — "Sort ascending /

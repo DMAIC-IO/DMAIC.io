@@ -1318,8 +1318,18 @@
           "params": { "columnId": "Die id der zu entfernenden Spalte." }
         },
         "addRows": {
-          "help": "Hängt dem aktiven Blatt leere Zeilen an.",
-          "params": { "count": "Zahl der Zeilen; ohne Angabe zehn, wie der Knopf in der Werkzeugleiste." }
+          "help": "Fügt dem aktiven Blatt leere Zeilen hinzu — ohne Position am Ende, ohne Anzahl zehn.",
+          "params": {
+            "count": "Zahl der Zeilen, ganzzahlig ab 1; ohne Angabe zehn, wie der Knopf in der Werkzeugleiste.",
+            "position": "Zeile, ab 0 gezählt, an der die erste neue Zeile steht: 0 setzt sie nach oben, die Zeilenzahl oder keine Angabe hängt sie an."
+          }
+        },
+        "removeRows": {
+          "help": "Entfernt einen zusammenhängenden Zeilenbereich samt Werten und Formeln und liefert die Zahl entfernter Zeilen. Rückgängig holt die Zeilen zurück.",
+          "params": {
+            "startRow": "Erste zu entfernende Zeile, ab 0 gezählt; sie muss existieren.",
+            "count": "Zahl der Zeilen, ganzzahlig ab 1 und höchstens bis zur letzten Zeile."
+          }
         },
         "sortRows": {
           "help": "Sortiert alle Zeilen des aktiven Blatts nach einer Spalte, wie „Aufsteigend/Absteigend sortieren“ im Spaltenkopf-Menü. Die Richtung gilt absolut — ein zweiter gleicher Aufruf ändert nichts und liefert false. Leere Zellen kommen ans Ende. Rückgängig stellt die alte Reihenfolge wieder her.",
