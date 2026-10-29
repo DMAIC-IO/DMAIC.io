@@ -9563,7 +9563,7 @@
           "help": "Setzt einen Parameter. Konfidenz, Trimmanteil und Quantil p außerhalb ihres Bereichs werden abgewiesen; für B und seed wird ein Wert außerhalb angenommen, validationMsg nennt dann den Grund, und compute rechnet nicht. Ein Moduswechsel setzt eine Statistik, die der neue Modus nicht anbietet, auf 'mean' zurück.",
           "params": {
             "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
-            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys. Bereiche prüft nicht der Aufruf; ein Verstoß steht sofort in validationMsg, und compute rechnet dann nicht."
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys. Konfidenz, statParams.trim und statParams.p außerhalb ihres Bereichs werden abgewiesen; für B und seed prüft der Aufruf den Bereich nicht, ein Verstoß steht sofort in validationMsg, und compute rechnet dann nicht."
           }
         },
         "setColumn": {

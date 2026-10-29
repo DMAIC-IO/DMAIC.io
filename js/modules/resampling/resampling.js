@@ -357,14 +357,15 @@ const mod = createModule({
       },
 
       /**
-       * Einen Parameter setzen; Gültigkeit und Bereiche prüft die Validierung,
-       * deren Grund `validationMsg` nennt. Ein Moduswechsel setzt eine Statistik,
+       * Einen Parameter setzen. Konfidenz, Trimmanteil und Quantil p außerhalb ihres
+       * Bereichs werden abgewiesen; nur die Bereiche von B und seed prüft die
+       * Validierung, deren Grund `validationMsg` nennt. Ein Moduswechsel setzt eine Statistik,
        * die der neue Modus nicht anbietet, auf den Mittelwert zurück.
        * @agent
        * @param {keyof Params} key welcher Parameter; die im aktuellen Zustand zulässigen nennt activeParams
        * @param {string|number} value der Wert; Typ je Schlüssel siehe `Params`, Zahlen als Zahl oder Zahlentext, Grenzen und Zielwert als Text
        * @returns {void}
-       * @throws {Error} wenn `key` im aktuellen Zustand nicht gilt oder `value` nicht zur Art des Parameters passt
+       * @throws {Error} wenn `key` im aktuellen Zustand nicht gilt, `value` nicht zur Art des Parameters passt oder `confidence`, `statParams.trim`, `statParams.p` außerhalb ihres Bereichs liegen
        */
       setParam(key, value) {
         requireEnum('key', key, PARAM_KEYS);

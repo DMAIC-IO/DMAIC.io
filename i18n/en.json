@@ -9559,7 +9559,7 @@
           "help": "Sets one parameter. Confidence, trim fraction and quantile p outside their range are rejected; for B and seed a value outside the range is accepted, validationMsg then names the reason and compute does not run. Changing mode resets a statistic the new mode does not offer to 'mean'.",
           "params": {
             "key": "Which option; each is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
-            "value": "The value; type and allowed range per key are given under keys. The call does not check ranges; a violation appears in validationMsg right away, and compute then does not run."
+            "value": "The value; type and allowed range per key are given under keys. confidence, statParams.trim and statParams.p outside their range are rejected; for B and seed the call does not check the range, a violation appears in validationMsg right away, and compute then does not run."
           }
         },
         "setColumn": {
