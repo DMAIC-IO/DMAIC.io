@@ -49,6 +49,7 @@
  *
  * Mirrors help-data.mjs: collect + render, kein Schreibzugriff hier.
  */
+import { readReturnKeys } from './agent-read-return.mjs';
 import ts from 'typescript';
 import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
 import { join, relative, sep, dirname } from 'node:path';
@@ -129,6 +130,21 @@ function buildEntry(resolver, appDir, viewmodelFile) {
     .filter(k => !k.startsWith('_') && !Object.prototype.hasOwnProperty.call(model.fields, k))
     .map(k => `unreadable_state_key:${k}`);
 
+  // Gegenprobe der ERKLÄRTEN Lesefläche (Roadmap 553): jeder erklärte
+  // Schlüssel muss im Rückgabewert von read() stehen — sonst fehlt er still
+  // im read(), weil `projectReadState` nur Vorhandenes ausgibt. Geliefert,
+  // aber nicht erklärt, bleibt erlaubt (worksheet: Schwesterfelder).
+  const readReturn = [];
+  if (declared && Object.prototype.hasOwnProperty.call(actions, 'read')) {
+    const returned = readReturnKeys(resolver, sf, () => persistedKeys(resolver, sf).keys);
+    if (!returned) readReturn.push('unresolved_read_return');
+    else {
+      for (const k of Object.keys(declared)) {
+        if (!returned.includes(k)) readReturn.push(`declared_not_returned:${k}`);
+      }
+    }
+  }
+
   // Zwei Hürden, ohne die das Modul-Tag eine unbelegte Behauptung bliebe:
   //   • Null Aktionen: „vollständig über das Viewmodel steuerbar" ist dann
   //     wahr-aber-leer. Befundfrei heißt nicht freigabereif (mosaic,
@@ -177,7 +193,7 @@ function buildEntry(resolver, appDir, viewmodelFile) {
     .map(o => `undeclared_option_source:${o.action}:${o.arg}`))];
 
   const reported = [...violations, ...surface, ...model.violations,
-    ...persistence.violations, ...unreadable,
+    ...persistence.violations, ...unreadable, ...readReturn,
     ...invalidBulkKinds(model.fields), ...invalidOmitPaths(model.fields), ...collectDomDetours(sf),
     ...unreachable, ...templateCalls,
     ...subViewModelModelBindings(dirname(viewmodelFile), subViewModels),

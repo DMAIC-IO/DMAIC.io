@@ -56,6 +56,8 @@ export const VIOLATION_REMEDIES = Object.freeze({
   self_inheriting_class: 'Vererbungskreis der Model-Klasse auflösen',
   unresolvable_tojson: 'toJSON() muss ein Objektliteral ohne Spread zurückgeben, oder @typedef AgentRead erklären',
   unreadable_state_key: 'Feldnamen zwischen toJSON() und Model-Deklaration angleichen oder das Feld annotieren',
+  declared_not_returned: 'den Schlüssel in read() an readAgentState übergeben oder aus @typedef AgentRead streichen',
+  unresolved_read_return: 'read() auf readAgentState(id, {…}) mit Literal, Spread von toJSON(), lokaler const, this.<hilfe>() oder importierter Funktion mit genau einem return umstellen',
   invalid_bulk_kind: 'Massendaten-Art auf table oder tree setzen',
   invalid_omit_path: 'Auslassungspfad aus Schlüsseln und [] bilden, mit einem Schlüssel am Ende (inScope[].dataUrl, [][].image)',
   omit_path_mismatch: 'Auslassungspfad an den erklärten Typ des Feldes angleichen',

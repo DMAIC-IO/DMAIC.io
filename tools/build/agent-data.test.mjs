@@ -922,6 +922,7 @@ const AGENT_READ_VM = `/**
  * @agent
  */
 import { createModule } from '../../core/template-module.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { State } from './bar-model.js';
 
 /**
@@ -940,7 +941,7 @@ export default createModule({
        * @param {object} [options] field/row selection
        * @returns {AgentRead} the agent-facing read surface
        */
-      read(options) { return {}; },
+      read(options) { return readAgentState('bar', { activeSheetId: '', rows: [] }, options); },
       /**
        * Ein Schreibweg — ohne ihn greift module_tag_without_actions, und die
        * Fälle unten prüften die Lesefläche an einem gar nicht freigebbaren Modul.
@@ -1060,7 +1061,7 @@ test('collectAgentData: table und tree sind erlaubt und melden nichts — die Pr
     ' * @property {any[][]} rows  [bulk] every data row of the active sheet\n',
     ' * @property {any[][]} rows  [bulk] every data row of the active sheet\n'
     + ' * @property {object[]} nodes  [bulk:tree] the question tree\n',
-  );
+  ).replace('rows: [] }', 'rows: [], nodes: [] }');
   const root = fixture({ bar: { 'bar.js': vm, 'bar-model.js': BAR_MODEL } });
   const { modules } = collectAgentData(root);
 
@@ -2501,7 +2502,7 @@ test('undeclared_option_source: ein deklariertes Lesefeld desselben Namens genü
  * @property {string} chosen  die Wahl
  * @property {string[]} currentOptions  die Möglichkeiten der offenen Frage
  */
-export default createModule`),
+export default createModule`).replace('read() { return {}; }', "read() { return readAgentState('foo', {chosen: '', currentOptions: []}); }"),
     'foo-model.js': `export class State {
       /** @type {string} die Wahl */
       chosen = '';
@@ -2644,7 +2645,7 @@ test('undeclared_option_source: ein Elementzugriff mit Lesefeld ist kein Befund 
  * @property {string} chosen  die Wahl
  * @property {object} pickableColumns  die wählbaren Spalten je Platz
  */
-export default createModule`),
+export default createModule`).replace('read() { return {}; }', "read() { return readAgentState('foo', {chosen: '', pickableColumns: {}}); }"),
     'foo-model.js': CHOSEN_MODEL,
   } });
   const { modules } = collectAgentData(root);
@@ -3112,6 +3113,7 @@ const RESULT_VM = `/**
  * @agent
  */
 import { createModule } from '../../core/template-module.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 
 /**
  * @typedef {object} BiasTest
@@ -3146,7 +3148,7 @@ export default createModule({
        * @agent
        * @returns {AgentRead} alles
        */
-      read() { return {}; },
+      read() { return readAgentState('foo', { result: null, things: [], name: '' }); },
       /**
        * @agent
        * @param {string} text der Text
@@ -3424,4 +3426,64 @@ test('Teil-Viewmodel: ein DOM-Umweg in der Datei der Klasse trägt Pfad und Zeil
   const { modules } = collectAgentData(subVmFixture(body));
   assert.ok(modules.foo.reported.some(c => /^dom_detour:innerHTML@js\/modules\/foo\/viewmodel\/draft\.js:\d+$/.test(c)),
     modules.foo.reported.join(', '));
+});
+
+const DECLARED_VM = (readBody) => `/**
+ * Foo module.
+ * @agent
+ */
+import { createModule } from '../../core/template-module.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { State } from './foo-model.js';
+
+/**
+ * Die Lesefläche.
+ * @typedef {object} AgentRead
+ * @property {string} title  der Titel
+ * @property {number} count  die Anzahl
+ */
+export default createModule({
+  config: { id: 'foo' },
+  Model: State,
+  data(module, _t) {
+    return {
+      /**
+       * Read.
+       * @agent
+       * @param {object} [options] Auswahl
+       * @returns {AgentRead} der Zustand
+       */
+      read(options) { ${readBody} },
+      /**
+       * @agent
+       * @param {string} v - der Titel
+       * @returns {void}
+       */
+      setTitle(v) { this.model.title = v; },
+    };
+  },
+});`;
+const DECL_MODEL = `export class State {
+  /** @type {string} der Titel */
+  title = '';
+  toJSON() { return { title: this.title }; }
+}`;
+
+test('declared_not_returned: erklärter Schlüssel fehlt im read()-Rückgabewert', () => {
+  const root = fixture({ foo: { 'foo.js': DECLARED_VM(`return readAgentState('foo', { ...this.model.toJSON() }, options);`), 'foo-model.js': DECL_MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['declared_not_returned:count']);
+  assert.equal(modules.foo.available, false);
+});
+
+test('declared_not_returned: vollständig gelieferte Lesefläche ist befundfrei', () => {
+  const root = fixture({ foo: { 'foo.js': DECLARED_VM(`return readAgentState('foo', { ...this.model.toJSON(), count: 1 }, options);`), 'foo-model.js': DECL_MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, []);
+});
+
+test('unresolved_read_return: nicht auflösbarer read()-Rückgabewert ist eine gemeldete Blindstelle', () => {
+  const root = fixture({ foo: { 'foo.js': DECLARED_VM(`return readAgentState('foo', build(), options);`), 'foo-model.js': DECL_MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unresolved_read_return']);
 });
