@@ -2186,7 +2186,7 @@
           "setRecipientField": { "help": "Set a field of a recipient: name, organisation, group, e-mail or note.", "params": { "recipientId": "The recipient.", "key": "Which field.", "value": "The new text; empty clears it." } },
           "deleteRecipient": { "help": "Delete a recipient, without asking. Their responses are kept, without a recipient.", "params": { "recipientId": "The recipient." } },
           "buildRecipientFile": { "help": "Builds a recipient's personal questionnaire file and returns file name, type and content. Like the export it settles the version and marks the recipient as sent.", "params": { "recipientId": "The recipient." } },
-          "markSent": { "help": "Marks a recipient as sent without building a file — when the file arrived another way.", "params": { "recipientId": "The recipient." } }
+          "markSent": { "help": "Marks a recipient as sent without building a file — when the file arrived another way. This records the current questionnaire version: if the structure changes later and the next export raises the version, this recipient's file counts as outdated.", "params": { "recipientId": "The recipient." } }
         },
         "responses": {
           "importResponse": { "help": "Read in an answer file the questionnaire saved on the recipient's side. Files of this questionnaire are taken in, also those of an older version; a file read before, one of another questionnaire or a broken one only shows in the log.", "params": { "json": "The content of the answer file as text.", "fileName": "The name shown in the log." } },

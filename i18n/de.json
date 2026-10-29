@@ -2186,7 +2186,7 @@
           "setRecipientField": { "help": "Ein Feld eines Empfängers setzen: Name, Organisation, Gruppe, E-Mail oder Notiz.", "params": { "recipientId": "Der Empfänger.", "key": "Welches Feld.", "value": "Der neue Text; leer löscht ihn." } },
           "deleteRecipient": { "help": "Einen Empfänger löschen, ohne Rückfrage. Seine Antworten bleiben, ohne Empfänger.", "params": { "recipientId": "Der Empfänger." } },
           "buildRecipientFile": { "help": "Baut die persönliche Fragebogen-Datei eines Empfängers und liefert Dateiname, Typ und Inhalt. Wie der Export setzt sie die Version und markiert den Empfänger als verschickt.", "params": { "recipientId": "Der Empfänger." } },
-          "markSent": { "help": "Markiert einen Empfänger als verschickt, ohne eine Datei zu bauen — wenn die Datei auf anderem Weg ankam.", "params": { "recipientId": "Der Empfänger." } }
+          "markSent": { "help": "Markiert einen Empfänger als verschickt, ohne eine Datei zu bauen — wenn die Datei auf anderem Weg ankam. Dabei wird die aktuelle Fragebogen-Version festgehalten: Ändert sich der Aufbau später und beim nächsten Export steigt die Version, gilt die Datei dieses Empfängers als veraltet.", "params": { "recipientId": "Der Empfänger." } }
         },
         "responses": {
           "importResponse": { "help": "Eine Antwortdatei einlesen, die der Fragebogen beim Empfänger gespeichert hat. Dateien dieses Fragebogens werden übernommen, auch die einer älteren Version; eine schon eingelesene, eine fremde oder eine kaputte Datei erscheint nur im Protokoll.", "params": { "json": "Der Inhalt der Antwortdatei als Text.", "fileName": "Der Name, der im Protokoll steht." } },

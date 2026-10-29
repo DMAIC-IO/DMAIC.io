@@ -296,7 +296,7 @@ export class ResultsViewModel {
     const questions = [];
     for (const { question } of documentOrder(survey)) {
       const stats = questionStats(survey, question, responses);
-      if (stats) questions.push(plainCopy(stats));
+      if (stats) questions.push(plainCopy(stats.type === 'kano' ? { ...stats, rows: stats.rows.map(kanoAgentRow) } : stats));
     }
     return {
       filter: filter ? { questionId: filter.questionId, optionId: filter.optionId } : null,
@@ -824,3 +824,14 @@ export class ResultsViewModel {
       this._charts.push(chart);
     }
   }}
+
+/**
+ * Cuts a Kano row down to the keys the agent read declares (the engine row
+ * carries extra bookkeeping fields the screen uses).
+ * @param {object} row Kano row of questionStats()
+ * @returns {object} row with exactly the declared keys
+ */
+function kanoAgentRow(row) {
+  const { id, text, counts, n, unanswered, category, tie, cs, ds, importanceMean, importanceN } = row;
+  return { id, text, counts, n, unanswered, category, tie, cs, ds, importanceMean, importanceN };
+}
