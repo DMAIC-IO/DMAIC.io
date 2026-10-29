@@ -884,6 +884,9 @@
     }
   },
   "common": {
+    "inputRejected": "Value not applied. Allowed: {range}",
+    "inputRejectedPlain": "Value not applied.",
+    "rangeInteger": "whole number",
     "reorder": "Reorder row",
     "rowMoved": "Row moved, position {pos} of {total}",
     "confirm": "Confirm",

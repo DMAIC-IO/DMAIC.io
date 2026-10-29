@@ -884,6 +884,9 @@
     }
   },
   "common": {
+    "inputRejected": "Wert nicht übernommen. Zulässig: {range}",
+    "inputRejectedPlain": "Wert nicht übernommen.",
+    "rangeInteger": "ganzzahlig",
     "reorder": "Zeile verschieben",
     "rowMoved": "Zeile verschoben, Position {pos} von {total}",
     "confirm": "Bestätigen",
