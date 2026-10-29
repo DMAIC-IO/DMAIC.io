@@ -4599,6 +4599,11 @@ export const AGENT_REGISTRY = {
         "type": "string",
         "help": "id of the open question, or `result:<key>` once a recommendation stands",
         "bulk": false,
+        "via": [
+          "answer",
+          "back",
+          "restart"
+        ],
         "derived": true
       },
       "answers": {
@@ -14208,12 +14213,20 @@ export const AGENT_REGISTRY = {
         "type": "[number, number][]",
         "help": "die gemischte Folge der zu entscheidenden Paare, je Eintrag die zwei Kriteriennummern. Leer, solange kein Vergleich läuft",
         "bulk": false,
+        "via": [
+          "startComparison"
+        ],
         "derived": true
       },
       "currentPair": {
         "type": "number",
         "help": "wie viele Paare schon entschieden sind — und damit der Index des nächsten in `pairs`; gleich der Länge von `pairs` heißt fertig",
         "bulk": false,
+        "via": [
+          "chooseLeft",
+          "chooseRight",
+          "tieCurrent"
+        ],
         "derived": true
       },
       "viewPhase": {

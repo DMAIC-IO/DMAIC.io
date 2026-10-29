@@ -40,7 +40,7 @@ const TABS = ['overview', 'wizard', 'ccd'];
 /**
  * @typedef {object} AgentRead
  * @property {'overview'|'wizard'|'ccd'} tab  the shown section
- * @property {string} currentStep  id of the open question, or `result:<key>` once a recommendation stands
+ * @property {string} currentStep  [via: answer, back, restart] id of the open question, or `result:<key>` once a recommendation stands
  * @property {object} answers  the given answers, one per question
  * @property {string[]} history  ids of the answered questions, in answering order
  * @property {string[]} currentOptions  the answer options the open question accepts; empty on a recommendation

@@ -5768,10 +5768,10 @@
           "help": "The comparison matrix: matrix[i][j] says how criterion i fared against criterion j — 1 won, 0.5 tied, 0 lost. Empty while no comparison is running; the diagonal has no meaning."
         },
         "pairs": {
-          "help": "The shuffled order of the pairs to decide, each entry the two criterion numbers. Empty while no comparison is running; with n criteria there are n·(n−1)/2 pairs."
+          "help": "The shuffled order of the pairs to decide, each entry the two criterion numbers. Empty while no comparison is running; with n criteria there are n·(n−1)/2 pairs. startComparison() shuffles a new order."
         },
         "currentPair": {
-          "help": "How many pairs are already decided — and therefore the index of the next one in pairs. Equal to the length of pairs means finished."
+          "help": "How many pairs are already decided — and therefore the index of the next one in pairs. Equal to the length of pairs means finished. chooseLeft(), chooseRight() and tieCurrent() decide the pending pair and count on."
         },
         "viewPhase": {
           "help": "The displayed work phase: input (record criteria), compare (decide pairs) or results (ranking and matrix). A persisted display state — it belongs to the saved project."
@@ -8224,7 +8224,7 @@
           "help": "The displayed area: overview the Overview tab with all designs, wizard the guided advisor, ccd the comparison of the central composite designs."
         },
         "currentStep": {
-          "help": "The id of the open question — phase, goal, screening-curvature, factor-count, factor-levels, robustness-type, limits or corners — or result:<key> once a recommendation stands; result:none means no design of experiments is due in this phase yet. The question itself is a translated text and lives in no field; the recommendation is under recommendation."
+          "help": "The id of the open question — phase, goal, screening-curvature, factor-count, factor-levels, robustness-type, limits or corners — or result:<key> once a recommendation stands; result:none means no design of experiments is due in this phase yet. The question itself is a translated text and lives in no field; the recommendation is under recommendation. Move on with answer(…), go back with back(), start over with restart()."
         },
         "answers": {
           "help": "The answers given, one per question. The key is phase, goal, screeningCurvature, factorCount, factorLevels, robustnessType, limits or corners, the value the chosen option."

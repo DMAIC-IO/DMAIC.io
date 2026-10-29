@@ -72,6 +72,7 @@ export const VIOLATION_REMEDIES = Object.freeze({
   nested_sub_viewmodel: 'eine Ebene: das innere Objekt als eigenes Teil-Viewmodel an die Wurzel heben',
   sub_viewmodel_model_binding: 'die Vorlage über model.… oder über eine Methode des Teil-Viewmodels schreiben lassen',
   void_creating_action: 'die id des Angelegten zurückgeben (@returns {string}) — nur positions- oder anzahlbasierte Aktionen in CREATING_VOID_EXEMPT (agent-data.mjs) mit Begründung',
+  unknown_via_action: 'im [via: …]-Sentinel nur Namen von @agent-Aktionen desselben Moduls nennen',
   delete_verb_action: 'Aktion remove… nennen — das Löschverb der Agentenfläche ist remove (clear… leert Inhalt, reset… stellt Vorgaben her)',
   sub_viewmodel_key_collision: 'Methode umbenennen: help und params sind Abschnitte des Hilfeschlüssels',
 });

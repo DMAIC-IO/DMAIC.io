@@ -1217,6 +1217,63 @@ test('collectAgentData: a trailing, unattached AgentRead typedef falls back to t
   assert.equal('derived' in modules.bar.fields.sheets, false);
 });
 
+const VIA_VM = (via) => TAGGED_VM.replace('export default createModule', `/**
+ * @typedef {object} AgentRead
+ * @property {string} problem  [via: ${via}] die Problemstellung
+ */
+export default createModule`);
+
+test('readAgentReadTypedef: [via: a, b] wird gelesen und aus der Hilfe entfernt', () => {
+  const sf = sourceOf(`
+/**
+ * @typedef {object} AgentRead
+ * @property {string} step  [via: answer, back] die offene Frage
+ */
+export default 1;
+`);
+  const fields = readAgentReadTypedef(sf);
+  assert.deepEqual(fields.step.via, ['answer', 'back']);
+  assert.equal(fields.step.help, 'die offene Frage');
+});
+
+test('readAgentReadTypedef: [via:] steht mit [bulk] in beliebiger Reihenfolge', () => {
+  const sf = sourceOf(`
+/**
+ * @typedef {object} AgentRead
+ * @property {string[]} rows  [bulk] [via: addRow] die Zeilen
+ */
+export default 1;
+`);
+  const f = readAgentReadTypedef(sf).rows;
+  assert.equal(f.bulk, true);
+  assert.deepEqual(f.via, ['addRow']);
+});
+
+test('collectAgentData: [via:] mit unbekannter Aktion meldet unknown_via_action', () => {
+  const root = fixture({ foo: { 'foo.js': VIA_VM('nope'), 'foo-model.js': MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.ok(modules.foo.violations.includes('unknown_via_action:problem:nope'));
+});
+
+test('collectAgentData: [via:] mit echter Aktion meldet nichts', () => {
+  const root = fixture({ foo: { 'foo.js': VIA_VM('setProblem'), 'foo-model.js': MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.equal(modules.foo.violations.includes('unknown_via_action:problem:setProblem'), false);
+  assert.deepEqual(modules.foo.fields.problem.via, ['setProblem']);
+});
+
+test('collectAgentData: die beschriebenen Schreibwege stehen neben den Einträgen, nicht darin', () => {
+  const root = fixture({ foo: { 'foo.js': VIA_VM('setProblem'), 'foo-model.js': MODEL } });
+  const data = collectAgentData(root);
+  assert.equal('writtenFields' in data.modules.foo, false);
+  assert.ok(Array.isArray(data.writtenFields.foo));
+});
+
+test('die erzeugte Registry trägt keine Berichtsfelder', () => {
+  const root = fixture({ foo: { 'foo.js': VIA_VM('setProblem'), 'foo-model.js': MODEL } });
+  assert.equal(renderAgentRegistryModule(collectAgentData(root)).includes('writtenFields'), false);
+});
+
 const TAGGED_NO_ACTIONS = `/**
  * Empty module.
  * @agent

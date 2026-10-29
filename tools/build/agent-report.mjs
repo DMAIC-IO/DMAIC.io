@@ -210,10 +210,54 @@ export function countHelpCoverage(appDir, modules) {
   return out;
 }
 
+/**
+ * Felder mit `[via: …]` müssen ihre Senken in der Feldhilfe nennen — sonst
+ * sieht der Agent im Hilfetext nicht, womit er das Feld bewegt.
+ * @param {string} appDir
+ * @param {Record<string, object>} modules  Ergebnis von collectAgentData
+ * @returns {string[]} je Lücke `<lang>: modules.<id>.fields.<f>.help nennt <aktion> nicht`
+ */
+export function viaHelpGaps(appDir, modules) {
+  const tables = Object.fromEntries(LANGS.map(lang => [lang, JSON.parse(readFileSync(join(appDir, 'i18n', `${lang}.json`), 'utf8'))]));
+  const out = [];
+  for (const [id, entry] of Object.entries(modules)) {
+    if (entry.available !== true) continue;
+    for (const [field, spec] of Object.entries(entry.fields ?? {})) {
+      for (const action of spec.via ?? []) {
+        for (const lang of LANGS) {
+          const key = `modules.${id}.fields.${field}.help`;
+          const help = lookup(tables[lang], key);
+          if (typeof help !== 'string' || !new RegExp(`\\b${action}\\b`).test(help)) out.push(`${lang}: ${key} nennt ${action} nicht`);
+        }
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * Felder der Lesefläche ohne Schreibweg: weder weist eine `@agent`-Aktion sie
+ * zu, noch nennt `[via: …]` die Aktionen, die sie bewegen.
+ * @param {Record<string, object>} modules  Ergebnis von collectAgentData
+ * @param {Record<string, string[]>} writtenFields  `writtenFields` von collectAgentData
+ * @returns {string[]} `<modul>.<feld>`
+ */
+export function fieldsWithoutWritePath(modules, writtenFields) {
+  const out = [];
+  for (const [id, entry] of Object.entries(modules)) {
+    if (entry.available !== true) continue;
+    const written = new Set(writtenFields[id] ?? []);
+    for (const [field, spec] of Object.entries(entry.fields ?? {})) {
+      if (!written.has(field) && !(spec.via ?? []).length) out.push(`${id}.${field}`);
+    }
+  }
+  return out;
+}
+
 /** Der CLI-Teil. Berichtend: Exit immer 0. */
 async function main() {
   const verbose = process.argv.includes('--verbose');
-  const { modules, coverage } = collectAgentData(APP_DIR);
+  const { modules, coverage, writtenFields } = collectAgentData(APP_DIR);
 
   console.log(`Agentenfläche: ${coverage.available} von ${coverage.total} Modulen freigegeben`);
 
@@ -246,6 +290,14 @@ async function main() {
   console.log(`  Parameter: ${help.params.covered}/${help.params.total} (${pct(help.params)})`);
   console.log(`  Schlüssel: ${help.keys.covered}/${help.keys.total} (${pct(help.keys)})`);
   console.log(`  Felder:    ${help.fields.covered}/${help.fields.total} (${pct(help.fields)})`);
+  const viaGaps = viaHelpGaps(APP_DIR, modules);
+  if (viaGaps.length) {
+    console.log(`\n[via]-Senken fehlen in der Feldhilfe: ${viaGaps.length}`);
+    if (verbose) for (const g of viaGaps) console.log(`  ${g}`);
+  }
+  const noWrite = fieldsWithoutWritePath(modules, writtenFields);
+  console.log(`\nFelder ohne Schreibweg (weder @agent-Zuweisung noch [via]): ${noWrite.length}`);
+  if (verbose) for (const f of noWrite) console.log(`  ${f}`);
   const anchors = countAnchorCoverage(APP_DIR, modules);
   const exemptNote = anchors.exempt > 0 ? `, davon ${anchors.exempt} begründet ausgenommen` : '';
   console.log(`  Beschriftungen mit Anker: ${anchors.covered}/${anchors.total} (${pct(anchors)})${exemptNote}`);

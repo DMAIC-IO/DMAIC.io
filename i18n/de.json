@@ -5772,10 +5772,10 @@
           "help": "Die Vergleichsmatrix: matrix[i][j] sagt, wie Kriterium i gegen Kriterium j abgeschnitten hat — 1 gewonnen, 0.5 unentschieden, 0 verloren. Leer, solange kein Vergleich läuft; die Diagonale ist ohne Bedeutung."
         },
         "pairs": {
-          "help": "Die gemischte Folge der zu entscheidenden Paare, je Eintrag die zwei Kriteriennummern. Leer, solange kein Vergleich läuft; bei n Kriterien sind es n·(n−1)/2 Paare."
+          "help": "Die gemischte Folge der zu entscheidenden Paare, je Eintrag die zwei Kriteriennummern. Leer, solange kein Vergleich läuft; bei n Kriterien sind es n·(n−1)/2 Paare. startComparison() mischt die Folge neu."
         },
         "currentPair": {
-          "help": "Wie viele Paare schon entschieden sind — und damit der Index des nächsten in pairs. Gleich der Länge von pairs heißt fertig."
+          "help": "Wie viele Paare schon entschieden sind — und damit der Index des nächsten in pairs. Gleich der Länge von pairs heißt fertig. chooseLeft(), chooseRight() und tieCurrent() entscheiden das anstehende Paar und zählen weiter."
         },
         "viewPhase": {
           "help": "Die angezeigte Arbeitsphase: input (Kriterien erfassen), compare (Paare entscheiden) oder results (Rangfolge und Matrix). Ein persistierter Anzeigezustand — er gehört zum gespeicherten Projekt."
@@ -8228,7 +8228,7 @@
           "help": "Der angezeigte Bereich: overview die Übersicht der Versuchspläne, wizard der geführte Berater, ccd der Vergleich der zentral zusammengesetzten Pläne."
         },
         "currentStep": {
-          "help": "Die id der offenen Frage — phase, goal, screening-curvature, factor-count, factor-levels, robustness-type, limits oder corners —, oder result:<schlüssel>, sobald eine Empfehlung steht; result:none heißt, dass in dieser Phase noch kein Versuchsplan ansteht. Die Frage selbst ist ein übersetzter Text und steht in keinem Feld; die Empfehlung steht unter recommendation."
+          "help": "Die id der offenen Frage — phase, goal, screening-curvature, factor-count, factor-levels, robustness-type, limits oder corners —, oder result:<schlüssel>, sobald eine Empfehlung steht; result:none heißt, dass in dieser Phase noch kein Versuchsplan ansteht. Die Frage selbst ist ein übersetzter Text und steht in keinem Feld; die Empfehlung steht unter recommendation. Weiter geht es mit answer(…), zurück mit back(), von vorn mit restart()."
         },
         "answers": {
           "help": "Die gegebenen Antworten, je Frage eine. Der Schlüssel ist phase, goal, screeningCurvature, factorCount, factorLevels, robustnessType, limits oder corners, der Wert die gewählte Antwortmöglichkeit."

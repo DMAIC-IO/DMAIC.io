@@ -61,10 +61,10 @@ function downloadFile(content, filename, type) {
  *   Kriterium i gegen Kriterium j abgeschnitten hat: 1 gewonnen, 0.5
  *   unentschieden, 0 verloren. Leer, solange kein Vergleich läuft; die
  *   Diagonale ist ohne Bedeutung
- * @property {[number, number][]} pairs  die gemischte Folge der zu
+ * @property {[number, number][]} pairs  [via: startComparison] die gemischte Folge der zu
  *   entscheidenden Paare, je Eintrag die zwei Kriteriennummern. Leer, solange
  *   kein Vergleich läuft
- * @property {number} currentPair  wie viele Paare schon entschieden sind — und
+ * @property {number} currentPair  [via: chooseLeft, chooseRight, tieCurrent] wie viele Paare schon entschieden sind — und
  *   damit der Index des nächsten in `pairs`; gleich der Länge von `pairs`
  *   heißt fertig
  * @property {'input'|'compare'|'results'} viewPhase  der angezeigte Reiter:

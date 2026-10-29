@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { countHelpCoverage, lookup, helpExists, helpKeys, STRUCTURE_JARGON, typedefHelpSuffixes } from './agent-report.mjs';
+import { collectAgentData } from './agent-data.mjs';
+import { APP_DIR } from './build.mjs';
+import { viaHelpGaps, fieldsWithoutWritePath, countHelpCoverage, lookup, helpExists, helpKeys, STRUCTURE_JARGON, typedefHelpSuffixes } from './agent-report.mjs';
 
 /** Ein Minimal-App-Verzeichnis mit nur den i18n-Dateien. */
 function i18nFixture(de, en = de) {
@@ -310,4 +312,24 @@ test('countHelpCoverage: eine Aktion eines Teil-Viewmodels liest ihren Satz aus 
   assert.deepEqual(out.actions, { total: 1, covered: 1 });
   assert.deepEqual(out.params, { total: 1, covered: 1 });
   assert.deepEqual(out.missing, []);
+});
+
+test('viaHelpGaps: jede [via]-Aktion steht in der Feldhilfe beider Sprachen', () => {
+  const modules = { m: { available: true, fields: { f: { via: ['go', 'stop'] } } } };
+  const dir = mkdtempSync(join(tmpdir(), 'via-'));
+  mkdirSync(join(dir, 'i18n'));
+  writeFileSync(join(dir, 'i18n', 'de.json'), JSON.stringify({ modules: { m: { fields: { f: { help: 'mit go() und stop()' } } } } }));
+  writeFileSync(join(dir, 'i18n', 'en.json'), JSON.stringify({ modules: { m: { fields: { f: { help: 'via go()' } } } } }));
+  assert.deepEqual(viaHelpGaps(dir, modules), ['en: modules.m.fields.f.help nennt stop nicht']);
+});
+
+test('viaHelpGaps: der echte Baum hat keine Lücken', () => {
+  const { modules } = collectAgentData(APP_DIR);
+  assert.deepEqual(viaHelpGaps(APP_DIR, modules), []);
+});
+
+test('fieldsWithoutWritePath: weder zugewiesen noch [via] heißt ohne Schreibweg', () => {
+  const modules = { m: { available: true, fields: { a: {}, b: { via: ['go'] }, c: {} } },
+                    n: { available: false, fields: { z: {} } } };
+  assert.deepEqual(fieldsWithoutWritePath(modules, { m: ['c'], n: [] }), ['m.a']);
 });

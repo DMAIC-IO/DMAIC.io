@@ -81,9 +81,9 @@ const BULK_KINDS = ['table', 'tree'];
 
 /** Anlegende Aktionen liefern die id des Angelegten — ein Agent soll nicht nachlesen müssen. */
 const CREATING_ACTION_RE = /^(add|append|insert|create|duplicate)(?=[A-Z]|$)/;
-/** Rückgabetexte, die nichts liefern. */
 /** Das Löschverb der Fläche ist `remove…`; `clear…` leert Inhalt, `reset…` stellt Vorgaben her. */
 const DELETE_VERB_RE = /^delete(?=[A-Z]|$)/;
+/** Rückgabetexte, die nichts liefern. */
 const VOID_RETURNS = new Set(['void', 'undefined', 'Promise<void>', 'Promise<undefined>']);
 /**
  * Index- oder anzahlbasierte Anlegeaktionen ohne eigene id — begründete Ausnahmen
@@ -99,7 +99,9 @@ export const CREATING_VOID_EXEMPT = new Set(['doe-planner.factors.insertLevel', 
 /**
  * Sammle die Agenten-Registry über alle Module.
  * @param {string} appDir  Wurzel von app/dev
- * @returns {{ modules: Record<string, object>, coverage: { total: number, available: number } }}
+ * @returns {{ modules: Record<string, object>, coverage: { total: number, available: number }, writtenFields: Record<string, string[]> }}
+ *   `writtenFields` nennt je Modul die Felder, die eine `@agent`-Aktion
+ *   zuweist — nur für den Bericht, nicht Teil der Registry
  */
 export function collectAgentData(appDir) {
   const root = join(appDir, MODULES_DIR);
@@ -107,6 +109,8 @@ export function collectAgentData(appDir) {
   // über Modulgrenzen (`chart-module-base.js` hängt an elf Modulen).
   const resolver = createResolver(appDir);
   const modules = {};
+  // Neben den Einträgen, nicht darin: die Registry serialisiert den ganzen Eintrag.
+  const writtenFields = {};
   for (const id of readdirSync(root).sort()) {
     const dir = join(root, id);
     if (!statSync(dir).isDirectory()) continue;
@@ -114,11 +118,13 @@ export function collectAgentData(appDir) {
     if (!existsSync(viewmodelFile)) continue;
     // Die Model-DATEI wird hier nicht mehr gesucht: welche Klasse den Zustand
     // hält, sagt `Model:` im `createModule({…})`-Literal — und nur die zählt.
-    modules[id] = buildEntry(resolver, appDir, viewmodelFile);
+    const { writtenFields: written, ...entry } = buildEntry(resolver, appDir, viewmodelFile);
+    modules[id] = entry;
+    writtenFields[id] = written;
   }
   const total = Object.keys(modules).length;
   const available = Object.values(modules).filter(m => m.available).length;
-  return { modules, coverage: { total, available } };
+  return { modules, coverage: { total, available }, writtenFields };
 }
 
 /** Ein Registry-Eintrag für genau ein Modul. */
@@ -147,6 +153,12 @@ function buildEntry(resolver, appDir, viewmodelFile) {
     for (const field of Object.values(declared)) Object.assign(field, nestedKeys(sf, field.type, new Set()));
   }
   const model = declared ? { fields: declared, violations: [] } : readModelFields(resolver, sf);
+  const unknownVia = [];
+  for (const [field, spec] of Object.entries(model.fields)) {
+    for (const action of spec.via ?? []) {
+      if (!Object.prototype.hasOwnProperty.call(actions, action)) unknownVia.push(`unknown_via_action:${field}:${action}`);
+    }
+  }
 
   // Die Gegenprobe gilt nur für die ABGELEITETE Lesefläche. Eine erklärte
   // `@typedef AgentRead` lässt absichtlich etwas draußen (worksheet: opake
@@ -244,7 +256,7 @@ function buildEntry(resolver, appDir, viewmodelFile) {
     ...invalidBulkKinds(model.fields), ...invalidOmitPaths(model.fields), ...collectDomDetours(sf),
     ...unreachable, ...bypass, ...fixedBounds, ...templateCalls,
     ...subViewModelModelBindings(dirname(viewmodelFile), subViewModels),
-    ...undeclaredOptions, ...moduleStateOptions];
+    ...undeclaredOptions, ...moduleStateOptions, ...unknownVia];
   // Verstöße zählen nur, wenn das Modul etwas behauptet.
   const effective = tagged ? reported : [];
   return {
@@ -254,6 +266,7 @@ function buildEntry(resolver, appDir, viewmodelFile) {
     reported,
     actions,
     fields: model.fields,
+    writtenFields: [...written].sort(),
   };
 }
 
@@ -508,21 +521,27 @@ const BULK_RE = /^\[bulk(?::([a-z]+))?\]/;
  */
 const OMIT_RE = /^\[omit:((?:[^[\]]|\[\])*)\]/;
 
+/** Das Senken-Sentinel: `[via: answer, back]` — die Aktionen, die ein abgeleitetes Feld verändern. */
+const VIA_RE = /^\[via:\s*([A-Za-z_$][\w$]*(?:\s*,\s*[A-Za-z_$][\w$]*)*)\s*\]/;
+
 /**
  * Die Sentinels am Anfang eines Property-Kommentars, und der Rest als Hilfe.
  * @param {string} raw
- * @returns {{ bulk: RegExpExecArray|null, omit: string[]|null, help: string }}
+ * @returns {{ bulk: RegExpExecArray|null, omit: string[]|null, via: string[]|null, help: string }}
  */
 function readSentinels(raw) {
   let rest = raw;
   let bulk = null;
   let omit = null;
+  let via = null;
   for (;;) {
     const b = bulk === null ? BULK_RE.exec(rest) : null;
     if (b) { bulk = b; rest = rest.slice(b[0].length).trimStart(); continue; }
     const o = omit === null ? OMIT_RE.exec(rest) : null;
     if (o) { omit = o[1].split(/\s+/).filter(Boolean); rest = rest.slice(o[0].length).trimStart(); continue; }
-    return { bulk, omit, help: rest.trim() };
+    const v = via === null ? VIA_RE.exec(rest) : null;
+    if (v) { via = v[1].split(',').map(x => x.trim()); rest = rest.slice(v[0].length).trimStart(); continue; }
+    return { bulk, omit, via, help: rest.trim() };
   }
 }
 
@@ -555,6 +574,7 @@ export function readAgentReadTypedef(sf) {
       // ist — und die `deepEqual`-Fälle über die Feldform bleiben wahr.
       ...(s.bulk ? { bulkKind: s.bulk[1] ?? 'table' } : {}),
       ...(s.omit ? { omit: s.omit } : {}),
+      ...(s.via ? { via: s.via } : {}),
       derived: true,
     };
   }
