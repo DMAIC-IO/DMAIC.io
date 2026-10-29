@@ -3541,6 +3541,24 @@ test('Teil-Viewmodel: eine anlegende Aktion mit @returns {void} ist ein Befund m
   assert.ok(modules.foo.violations.includes('void_creating_action:draft.addProblem'), modules.foo.violations.join(', '));
 });
 
+test('collectAgentData: eine @agent-Aktion delete… ist ein Befund — das Verb heißt remove…', () => {
+  const vm = TAGGED_VM.replace('setProblem(text)', 'deleteProblem(text)');
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
+  assert.ok(collectAgentData(root).modules.foo.violations.includes('delete_verb_action:deleteProblem'));
+});
+
+test('Teil-Viewmodel: eine Aktion delete… ist ein Befund mit Teil-Präfix', () => {
+  const body = DRAFT_VM.replace('setProblem(text)', 'deleteProblem(text)');
+  const { modules } = collectAgentData(subVmFixture(body));
+  assert.ok(modules.foo.violations.includes('delete_verb_action:draft.deleteProblem'), modules.foo.violations.join(', '));
+});
+
+test('collectAgentData: deletedCount ist kein Löschverb', () => {
+  const vm = TAGGED_VM.replace('setProblem(text)', 'deletedCount(text)');
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
+  assert.ok(!collectAgentData(root).modules.foo.violations.some((v) => v.startsWith('delete_verb_action')));
+});
+
 test('void_creating_action: Promise<void>, undefined und Promise<undefined> zählen als nichts geliefert', () => {
   for (const ret of ['Promise<void>', 'undefined', 'Promise<undefined>']) {
     const vm = TAGGED_VM

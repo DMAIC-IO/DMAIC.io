@@ -82,6 +82,8 @@ const BULK_KINDS = ['table', 'tree'];
 /** Anlegende Aktionen liefern die id des Angelegten — ein Agent soll nicht nachlesen müssen. */
 const CREATING_ACTION_RE = /^(add|append|insert|create|duplicate)(?=[A-Z]|$)/;
 /** Rückgabetexte, die nichts liefern. */
+/** Das Löschverb der Fläche ist `remove…`; `clear…` leert Inhalt, `reset…` stellt Vorgaben her. */
+const DELETE_VERB_RE = /^delete(?=[A-Z]|$)/;
 const VOID_RETURNS = new Set(['void', 'undefined', 'Promise<void>', 'Promise<undefined>']);
 /**
  * Index- oder anzahlbasierte Anlegeaktionen ohne eigene id — begründete Ausnahmen
@@ -126,6 +128,7 @@ function buildEntry(resolver, appDir, viewmodelFile) {
   const { actions, violations, written, optionSources, subViewModels } = readViewmodel(sf, resolver, appDir);
   const moduleId = basename(viewmodelFile, '.js');
   for (const [name, action] of Object.entries(actions)) {
+    if (DELETE_VERB_RE.test(name.slice(name.lastIndexOf('.') + 1))) violations.push(`delete_verb_action:${name}`);
     if (action.returns != null && CREATING_ACTION_RE.test(name.slice(name.lastIndexOf('.') + 1))
         && VOID_RETURNS.has(String(action.returns).trim())
         && !CREATING_VOID_EXEMPT.has(`${moduleId}.${name}`)) {
