@@ -209,6 +209,17 @@ function buildEntry(resolver, appDir, viewmodelFile) {
   const unreachable = [...new Set(bindings.models)]
     .filter(f => !written.has(f))
     .map(f => `unreachable_write:${f}`);
+  // Nicht-Text-Elemente (Auswahl, Schalter, Datum …) schreiben über
+  // `x-model` am @agent-Setter und dessen Prüfung vorbei. Textfelder sind
+  // ausgenommen: sie haben keine Wertemenge, die ein Setter prüfen müsste.
+  const isTextElement = (e) => e.tag === 'textarea'
+    || (e.tag === 'input' && ['', 'text', 'search'].includes(e.type));
+  const bypass = [...new Set(bindings.modelElements
+    .filter(e => written.has(e.path) && !isTextElement(e))
+    .map(e => `setter_bypass_binding:${e.path}`))];
+  const fixedBounds = [...new Set(bindings.paramCalls
+    .filter(p => p.hasFixedBounds)
+    .map(p => `hardcoded_param_bounds:${p.key}`))];
   const templateCalls = bindings.calls.map(m => `template_model_call:${m}`);
   // Zustandsabhängige Wertemengen (Task 2a): siehe `stateOptionSources`.
   const undeclaredOptions = [...new Set(optionSources
@@ -222,7 +233,7 @@ function buildEntry(resolver, appDir, viewmodelFile) {
   const reported = [...violations, ...surface, ...model.violations,
     ...persistence.violations, ...unreadable, ...readReturn,
     ...invalidBulkKinds(model.fields), ...invalidOmitPaths(model.fields), ...collectDomDetours(sf),
-    ...unreachable, ...templateCalls,
+    ...unreachable, ...bypass, ...fixedBounds, ...templateCalls,
     ...subViewModelModelBindings(dirname(viewmodelFile), subViewModels),
     ...undeclaredOptions, ...moduleStateOptions];
   // Verstöße zählen nur, wenn das Modul etwas behauptet.
@@ -1838,17 +1849,20 @@ function fieldsCoveredByDelegation(resolver, modelDecl, methodName, callArgs, ag
  * (`template_model_call:<methode>`).
  *
  * @param {string} moduleDir
- * @returns {{ models: string[], calls: string[] }}
+ * @returns {{ models: string[], calls: string[], modelElements: Array<{ path: string, tag: string, type: string }>, paramCalls: Array<{ key: string, hasFixedBounds: boolean }> }}
  */
 function templateBindings(moduleDir) {
   const models = [];
   const calls = [];
+  const modelElements = [];
+  const paramCalls = [];
   // Kein `existsSync`-Schutz: `moduleDir` ist `dirname(viewmodelFile)`, und
   // `viewmodelFile` wurde unmittelbar davor erfolgreich geparst — das
   // Verzeichnis existiert damit zwangsläufig.
   for (const file of readdirSync(moduleDir)) {
     if (!file.endsWith('.html')) continue;
     const html = readFileSync(join(moduleDir, file), 'utf8');
+    const tags = htmlTags(html);
     // Der VOLLE Pfad hinter `model.` zählt, nicht nur das erste Segment:
     // `model.params.alpha` bindet `params.alpha`, und nur ein Setter für
     // genau diesen Pfad (oder für `params` als Ganzes über einen
@@ -1857,10 +1871,37 @@ function templateBindings(moduleDir) {
     // Feldname, und `writtenModelFields` könnte ihn nicht gegenrechnen.
     for (const m of html.matchAll(/x-model(?:\.[a-z]+)*="model\.([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*)"/g)) {
       models.push(m[1]);
+      const el = tags.find(t => t.start <= m.index && m.index < t.end);
+      const attrs = el?.text ?? '';
+      modelElements.push({
+        path: m[1],
+        tag: el?.tag ?? '',
+        type: /\stype="([a-z]+)"/.exec(attrs)?.[1] ?? '',
+      });
+    }
+    for (const m of html.matchAll(/onParamInput\('([\w.]+)'/g)) {
+      const el = tags.find(t => t.start <= m.index && m.index < t.end);
+      paramCalls.push({ key: m[1], hasFixedBounds: /\s(?:min|max)="[-\d.]+"/.test(el?.text ?? '') });
     }
     for (const m of html.matchAll(/(?:@|x-on:)[a-z]+(?:\.[a-z]+)*="model\.([A-Za-z_$][\w$]*)\(/g)) calls.push(m[1]);
   }
-  return { models, calls };
+  return { models, calls, modelElements, paramCalls };
+}
+
+/**
+ * Alle Start-Tags einer Vorlage mit Spanne und Text. Anführungszeichen
+ * werden respektiert: Alpine-Ausdrücke enthalten `>` (`a > b`, `=>`), das
+ * ein Tag nicht beendet.
+ *
+ * @param {string} html
+ * @returns {Array<{ tag: string, start: number, end: number, text: string }>}
+ */
+function htmlTags(html) {
+  const out = [];
+  for (const m of html.matchAll(/<([a-zA-Z][\w-]*)((?:"[^"]*"|'[^']*'|[^>"'])*)>/g)) {
+    out.push({ tag: m[1].toLowerCase(), start: m.index, end: m.index + m[0].length, text: m[0] });
+  }
+  return out;
 }
 
 /**

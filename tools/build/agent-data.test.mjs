@@ -3632,3 +3632,57 @@ test('module_state_option_source: statische Wrapper Object.keys/Array.from/Objec
     assert.ok(collectAgentData(root).modules.foo.violations.includes('module_state_option_source:setProblem:text'), source);
   }
 });
+
+// --- setter_bypass_binding / hardcoded_param_bounds -------------------------
+
+/** Viewmodel mit Setter für `problem`, damit nur die Element-Art entscheidet. */
+function setterVm() {
+  return TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+       * @agent
+       * @param {string} t
+       * @returns {void}
+       */
+      setProblem(t) { this.model.problem = String(t ?? ''); },
+      /** @noagent */
+      cardClass(node) { return ''; },`);
+}
+const PROBLEM_MODEL = `export class State {
+      /** @type {string} das Problem */
+      problem = '';
+      toJSON() { return { problem: this.problem }; }
+    }`;
+
+function reportedFor(html, vm = setterVm(), model = PROBLEM_MODEL) {
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': model, 'foo.html': html } });
+  return collectAgentData(root).modules.foo.reported;
+}
+
+test('setter_bypass_binding: x-model auf einem select umgeht den Setter', () => {
+  assert.deepEqual(reportedFor('<select x-model="model.problem"></select>'), ['setter_bypass_binding:problem']);
+});
+
+test('setter_bypass_binding: Textfelder sind ausgenommen', () => {
+  assert.deepEqual(reportedFor('<input type="text" x-model="model.problem">'), []);
+  assert.deepEqual(reportedFor('<input x-model="model.problem">'), []);
+  assert.deepEqual(reportedFor('<textarea x-model="model.problem"></textarea>'), []);
+});
+
+test('setter_bypass_binding: > in Alpine-Ausdrücken und Pfeilfunktionen verfehlt das Element nicht', () => {
+  const html = '<input type="checkbox" x-show="a > b" @click="items.forEach(i => i.on = true)" x-model="model.problem">';
+  assert.deepEqual(reportedFor(html), ['setter_bypass_binding:problem']);
+  // Ein vorangehendes Element mit > im Ausdruck darf den Typ nicht verschleppen.
+  const html2 = '<input type="checkbox" x-show="a > b"><input x-model="model.problem">';
+  assert.deepEqual(reportedFor(html2), []);
+});
+
+const NUMBER_VM = TAGGED_VM;
+test('hardcoded_param_bounds: festes min/max neben onParamInput ist ein Befund', () => {
+  const root = (html) => collectAgentData(fixture({ foo: {
+    'foo.js': NUMBER_VM,
+    'foo-model.js': PROBLEM_MODEL,
+    'foo.html': html,
+  } })).modules.foo.reported;
+  assert.deepEqual(root('<input type="number" min="0" max="5" @change="onParamInput(\'k\', $event)">'), ['hardcoded_param_bounds:k']);
+  assert.deepEqual(root('<input type="number" :min="paramMin(\'k\')" :max="paramMax(\'k\')" @change="onParamInput(\'k\', $event)">'), []);
+  assert.deepEqual(root('<input type="number" x-show="a > b" min="0" @change="onParamInput(\'k\', $event)">'), ['hardcoded_param_bounds:k']);
+});
