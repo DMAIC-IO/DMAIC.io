@@ -222,7 +222,6 @@ export function requireText(name, value) {
   return value;
 }
 
-
 /**
  * Ein Zahlenargument prüfen, das die Oberfläche über `x-model.number` bindet.
  *

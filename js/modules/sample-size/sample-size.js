@@ -21,7 +21,7 @@
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import {
-  requireEnum, requireNumber, requireNumericText, requireText,
+  requireEnum, requireNumber, requireNumericText,
 } from '../../core/agent/agent-argcheck.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import {

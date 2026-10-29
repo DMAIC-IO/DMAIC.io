@@ -218,6 +218,7 @@ Fehler selbst findet (`js/core/agent/agent-argcheck.js`).
 | Prüfer | Listenwort | Beispielmeldung |
 |---|---|---|
 | `requireEnum` | `allowed:` | `invalid mode "x"; allowed: DEG, RAD` |
+| `requireEnum` mit `numeric` | `allowed:` | nimmt für numerische Listenglieder auch eine Zahl oder einen Dezimalzahl-Text an und gibt das Listenglied zurück |
 | `requireKnownId` | `available:` | `unknown stepId "x"; available: s-1, s-2` |
 | `requireIndex` | `allowed:` | `invalid idx 9; allowed: 0..3` |
 | `requireIndex` mit `existing` | `allowed:` | `invalid idx 3; allowed: 0..2`, leer `invalid index 0; allowed: none, the collection is empty` |
