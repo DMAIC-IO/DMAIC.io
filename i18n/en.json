@@ -2905,7 +2905,7 @@
         "PmIO": {
           "id": "The id of the entry.",
           "name": "The name.",
-          "inputType": "Inputs only: param (process parameter), noise (noise factor) or null."
+          "inputType": "Inputs only: param (process parameter), noise (noise factor) or null. Absent on outputs."
         },
         "PmLoop": {
           "targetStepId": "The id of the step the loop returns to, or null.",

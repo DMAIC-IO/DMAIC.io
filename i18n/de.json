@@ -2905,7 +2905,7 @@
         "PmIO": {
           "id": "Die Kennung des Eintrags.",
           "name": "Die Bezeichnung.",
-          "inputType": "Nur bei Inputs: param (Prozessparameter), noise (Störgröße) oder null."
+          "inputType": "Nur bei Inputs: param (Prozessparameter), noise (Störgröße) oder null. Bei Outputs fehlt der Schlüssel."
         },
         "PmLoop": {
           "targetStepId": "Die id des Schritts, zu dem die Schleife zurückführt, oder null.",
