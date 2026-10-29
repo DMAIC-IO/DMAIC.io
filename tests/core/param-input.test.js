@@ -144,4 +144,46 @@ suite('paramInputMixin', () => {
     assertEqual(describeRange({ exclusiveMin: 0, exclusiveMax: 1 }, 'en', t), '> 0 und < 1');
     assertEqual(describeRange({ min: 1, integer: true }, 'de', t), '≥ 1, ganzzahlig');
   });
+
+  test('live: gültige Eingabe wird übernommen, ungültige bleibt still ohne Marke, Reset und Schreiben', () => {
+    const v = vm();
+    const ok = input('5');
+    v.onParamLive('k', { target: ok });
+    assertEqual(JSON.stringify(v.written), JSON.stringify([['k', '5']]));
+    const bad = input('25');
+    v.onParamLive('k', { target: bad });
+    assertEqual(v.written.length, 1);
+    assertEqual(bad.value, '25');
+    assertEqual(bad.classList.contains('field--error'), false);
+    assertEqual(bad.getAttribute('aria-invalid'), null);
+    const empty = input('');
+    v.onParamLive('k', { target: empty });
+    assertEqual(v.written.length, 1);
+    assertEqual(empty.getAttribute('aria-invalid'), null);
+    v.onParamInput('k', { target: bad });
+    assertEqual(bad.getAttribute('aria-invalid'), 'true');
+  });
+
+  test('live: Programmierfehler werden weiter geworfen', () => {
+    const bad = paramInputMixin({ specs: {}, checks: { a: () => { null.x; } }, t });
+    assertThrows(() => bad.onParamLive.call(Object.assign({ paramValue: () => 1 }, bad), 'a', { target: input('1') }), /null|undefined|Cannot/);
+  });
+
+  test('lehnt setParam ab, was der Vorabcheck durchließ: Feld markiert und zurückgesetzt, fremde Marken bleiben', () => {
+    const v = vm(); const other = input('3');
+    other.classList.add('field--error'); other.setAttribute('aria-invalid', 'true');
+    const root = { querySelectorAll: () => [other] };
+    v.setParam = () => { throw new Error('nicht jetzt'); };
+    const el = input('5'); el.closest = () => root;
+    v.onParamInput('k', { target: el });
+    assertEqual(el.value, '1');
+    assertEqual(el.getAttribute('aria-invalid'), 'true');
+    assertEqual(other.getAttribute('aria-invalid'), 'true');
+  });
+
+  test('ein Programmfehler aus setParam wird nicht als Ablehnung verschluckt', () => {
+    const v = vm();
+    v.setParam = () => { null.x; };
+    assertThrows(() => v.onParamInput('k', { target: input('5') }), /null|undefined|Cannot/);
+  });
 });

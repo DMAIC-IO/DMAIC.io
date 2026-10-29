@@ -105,28 +105,55 @@ export function paramInputMixin({ specs, checks, root = (vm) => vm.model, t, lan
      * @noagent DOM event handler; der Agent nutzt setParam()
      * @param {string} key
      * @param {Event} event
+     * @param {{ live?: boolean }} [opts]  `live`: stille Prüfung beim Tippen. Eine
+     *   gültige Eingabe wird übernommen, eine ungültige oder halbfertige bleibt
+     *   ohne Marke, ohne Rücksetzen und ohne Schreiben.
      */
-    onParamInput(key, event) {
+    onParamInput(key, event, { live = false } = {}) {
       const el = event.target;
       const raw = el.value;
       const check = checks[key];
       if (typeof check !== 'function') throw new Error(`paramInputMixin: no check for key ${JSON.stringify(key)}`);
-      try {
-        check(raw, this);
-      } catch (err) {
-        if (err instanceof TypeError || err instanceof ReferenceError || err instanceof SyntaxError) throw err;
+      const reject = () => {
         el.value = String(this.paramValue(key) ?? '');
         const range = describeRange(specOf(this, key), lang(), t);
         markRejection(el, range ? t('common.inputRejected', { range }) : t('common.inputRejectedPlain'));
+      };
+      const fail = (err) => {
+        if (err instanceof TypeError || err instanceof ReferenceError || err instanceof SyntaxError) throw err;
+        if (!live) reject();
         return undefined;
+      };
+      const accepted = (result) => {
+        // Der Wert ist gültig und übernommen: die Marken aller Parameterfelder
+        // der Komponente fallen weg, denn die anderen Felder zeigen Modellwerte.
+        clearRejection(el);
+        const root = el.closest?.('[x-data]');
+        if (root) for (const other of root.querySelectorAll('.field--error[aria-invalid="true"]')) clearRejection(other);
+        return result;
+      };
+      try {
+        check(raw, this);
+      } catch (err) {
+        return fail(err);
       }
-      // Der Wert ist gültig: die Marken aller Parameterfelder der Komponente
-      // fallen weg, denn die anderen Felder zeigen Modellwerte.
-      clearRejection(el);
-      const root = el.closest?.('[x-data]');
-      if (root) for (const other of root.querySelectorAll('.field--error[aria-invalid="true"]')) clearRejection(other);
       const value = specOf(this, key).nullable && raw === '' ? null : raw;
-      return this.setParam(key, value);
+      let result;
+      try {
+        result = this.setParam(key, value);
+      } catch (err) {
+        return fail(err);
+      }
+      if (result && typeof result.then === 'function') return result.then(accepted, fail);
+      return accepted(result);
+    },
+    /**
+     * @noagent DOM event handler; stille Prüfung beim Tippen, rechnet bei gültiger Eingabe sofort
+     * @param {string} key
+     * @param {Event} event
+     */
+    onParamLive(key, event) {
+      return this.onParamInput(key, event, { live: true });
     },
     /** @noagent view transform; Stand eines Parameters für das Eingabefeld */
     paramValue(key) {
