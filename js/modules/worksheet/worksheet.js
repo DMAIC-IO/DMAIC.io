@@ -31,7 +31,6 @@ import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireKnownId, requireText, requireIndex, requireEnum } from '../../core/agent/agent-argcheck.js';
 import { State } from './worksheet-model.js';
 import { DataGrid, isFormula, evaluateFormula } from '../../core/datagrid/datagrid.js';
-import { parseCellInput } from '../../core/datagrid/datagrid-utils.js';
 import { validRolesForType } from '../../core/datagrid/datagrid-roles.js';
 import { bridgeEmitter } from '../../core/tips/tip-engine.js';
 import { shortcutRegistry } from '../../core/shortcut-registry.js';
@@ -270,33 +269,20 @@ class FormulaEditor {
     const raw = this.textarea.value.trim();
     const col = this.grid.columns[colIdx];
     if (!col) return true;
+    let written;
     try {
-      const oldFormula = col.formulas?.[rowIdx] || null;
-      const oldValue = col.values[rowIdx];
-
-      if (isFormula(raw)) {
-        if (!col.formulas) col.formulas = new Array(this.grid.rowCount).fill(null);
-        col.formulas[rowIdx] = raw;
-        const { result, error } = evaluateFormula(raw, this.grid);
-        col.values[rowIdx] = error ? null : result;
-      } else if (raw !== '') {
-        if (col.formulas) col.formulas[rowIdx] = null;
-        col.values[rowIdx] = parseCellInput(col, raw);
-      } else {
-        if (col.formulas) col.formulas[rowIdx] = null;
-        col.values[rowIdx] = null;
-      }
-
-      this.grid.history.push({
-        type: 'cell-edit', columnId: col.id, rowIndex: rowIdx,
-        oldValue, newValue: col.values[rowIdx],
-        oldFormula, newFormula: col.formulas?.[rowIdx] || null,
-      });
+      // Same sink as the cell editor and the agent facade: lock, history
+      // (old/new formula) and `cell:changed` in one place. A value without
+      // "=" also gets the cell editor's type detection.
+      written = this.grid.setCellFormula(col.id, rowIdx, raw);
     } catch (err) {
       this._toast(err.message, 'error');
       return false;
     }
     this.grid.render();
+    // Locked column: nothing written, `cell:edit-blocked` was emitted — no
+    // success toast, the editor closes.
+    if (!written) return true;
     this.grid.setSelection({
       startCol: colIdx, startRow: rowIdx, endCol: colIdx, endRow: rowIdx,
       activeCol: colIdx, activeRow: rowIdx,

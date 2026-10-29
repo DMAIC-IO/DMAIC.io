@@ -543,6 +543,68 @@ export class DataGrid {
     this.emit('cell:changed', { columnId, rowIndex, oldValue, newValue });
   }
 
+  /**
+   * Write a formula — or, if `formula` is not one, a plain value — into one
+   * cell. The common sink of the cell editor (`_commitEdit`), the worksheet's
+   * formula editor and the worksheet's agent facade, so all three check the
+   * lock, record undo and announce the change the same way.
+   *
+   * A formula is stored trimmed and evaluated at once; an evaluation error
+   * leaves the cell value `null` and is returned. Anything that is not a
+   * formula (including `''`) goes to `setCellValue` with `clearFormula`, so
+   * it replaces a formula in that cell and undo brings the formula back.
+   * A row past the end extends the sheet, as `setCellValue` does.
+   *
+   * @param {string} columnId
+   * @param {number} rowIndex 0-based
+   * @param {string} formula text starting with "=" (else treated as a value)
+   * @param {object} [options]
+   * @param {boolean} [options.bypassLock] write into a locked column
+   * @returns {{ value: any, error: string|null }|null} the new cell value and
+   *   the evaluation error (null if none); null if nothing was written —
+   *   unknown column, negative row, or a locked column (then
+   *   `cell:edit-blocked` is emitted)
+   */
+  setCellFormula(columnId, rowIndex, formula, options = {}) {
+    const col = this.getColumn(columnId);
+    if (!col || rowIndex < 0) return null;
+    // The lock is checked here, not only in `setCellValue`: the formula
+    // branch used to write past it (the formula editor opens on a locked
+    // column too).
+    if (col.meta?.lock && !options.bypassLock) {
+      this.emit('cell:edit-blocked', {
+        columnId, rowIndex, lock: col.meta.lock, reason: col.meta.reason,
+      });
+      return null;
+    }
+
+    if (!isFormula(formula)) {
+      this.setCellValue(columnId, rowIndex, formula, { ...options, clearFormula: true });
+      return { value: col.values[rowIndex] ?? null, error: null };
+    }
+
+    while (rowIndex >= this.rowCount) this.addRows(1);
+    if (!col.formulas) col.formulas = new Array(this.rowCount).fill(null);
+    const text = formula.trim();
+    const oldFormula = col.formulas[rowIndex] ?? null;
+    const oldValue = col.values[rowIndex];
+    col.formulas[rowIndex] = text;
+    const { result, error } = evaluateFormula(text, this);
+    col.values[rowIndex] = error ? null : result;
+    const newValue = col.values[rowIndex];
+
+    this.history.push({
+      type: 'cell-edit', columnId, rowIndex,
+      oldValue, newValue, oldFormula, newFormula: text,
+    });
+    this.metadata.modified = new Date().toISOString();
+    // Like `setCellValue`: without this event the worksheet saved a formula
+    // only via the delayed auto-save, and embeddings listening to
+    // `cell:changed` (doe-planner preview) never saw it.
+    this.emit('cell:changed', { columnId, rowIndex, oldValue, newValue });
+    return { value: newValue, error: error ?? null };
+  }
+
   _switchColumnType(col, columnId, rowIndex, detected) {
     const oldType = col.type;
     col.type = detected.type;
@@ -2439,25 +2501,11 @@ export class DataGrid {
     const rawVal = this.editorEl.value;
     this._typeChanged = false;
 
-    if (isFormula(rawVal)) {
-      if (!col.formulas) col.formulas = new Array(this.rowCount).fill(null);
-      const oldFormula = col.formulas[rowIdx];
-      const oldValue = col.values[rowIdx];
-      col.formulas[rowIdx] = rawVal.trim();
-      const { result, error } = evaluateFormula(rawVal, this);
-      col.values[rowIdx] = error ? null : result;
-      this.history.push({
-        type: 'cell-edit', columnId: col.id, rowIndex: rowIdx,
-        oldValue, newValue: col.values[rowIdx],
-        oldFormula, newFormula: col.formulas[rowIdx],
-      });
-    } else {
-      // Derselbe öffentliche Weg, den `worksheet.setCells` nimmt. Zuvor
-      // stand hier ein Griff in `history._stack`/`_index`, um den
-      // Historieneintrag nachträglich um die gelöschte Formel zu ergänzen —
-      // und der Agentenpfad hatte diesen Griff nicht und verlor die Formel.
-      this.setCellValue(col.id, rowIdx, rawVal, { clearFormula: true });
-    }
+    // One sink for formula and value, shared with the worksheet's formula
+    // editor and agent facade: lock check, undo (with the replaced formula)
+    // and `cell:changed`. Locked cells never get here — `_startEdit` opens
+    // no editor on them.
+    this.setCellFormula(col.id, rowIdx, rawVal);
 
     this.editingCell = null;
     this.editorEl = null;
