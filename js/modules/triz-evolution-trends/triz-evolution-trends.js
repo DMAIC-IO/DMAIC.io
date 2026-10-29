@@ -94,7 +94,7 @@ export default createModule({
         // die id ist gültig und bekannt, nur die Skala fehlt.
         if (!entry.hasStages) return false;
         if (stage === -1) { entry.stage = -1; return true; }
-        requireIndex('stage', stage, entry.availableStages.length - 1);
+        requireIndex('stage', stage, entry.availableStages.length, { existing: true });
         entry.stage = stage;
         return true;
       },

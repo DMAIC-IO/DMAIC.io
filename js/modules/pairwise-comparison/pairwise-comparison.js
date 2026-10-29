@@ -208,7 +208,7 @@ export default createModule({
        * @throws {Error} wenn `i` kein Kriterium bezeichnet
        */
       removeCriterion(i) {
-        requireIndex('i', i, this.model.criteria.length - 1);
+        requireIndex('i', i, this.model.criteria.length, { existing: true });
         this.model.removeCriterion(i);
       },
 
@@ -378,9 +378,9 @@ export default createModule({
        * @throws {Error} wenn `i` oder `j` kein Kriterium bezeichnet
        */
       cycleCell(i, j) {
-        const last = this.model.criteria.length - 1;
-        requireIndex('i', i, last);
-        requireIndex('j', j, last);
+        const n = this.model.criteria.length;
+        requireIndex('i', i, n, { existing: true });
+        requireIndex('j', j, n, { existing: true });
         if (i === j) return false;
         if (this.model.matrix.length === 0) return false;
         this.model.cycleCell(i, j);

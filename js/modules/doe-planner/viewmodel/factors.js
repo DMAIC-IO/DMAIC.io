@@ -165,7 +165,7 @@ export class FactorsViewModel {
   setLevel(factorId, levelIdx, value) {
     requireKnownId('factorId', factorId, this.model.factors.map((f) => f.id));
     const f = this.model.factors.find((x) => x.id === factorId);
-    requireIndex('levelIdx', levelIdx, f.levels.length - 1);
+    requireIndex('levelIdx', levelIdx, f.levels.length, { existing: true });
     f.levels[levelIdx] = requireNumericText('value', value);
     this._save();
   }
@@ -197,7 +197,7 @@ export class FactorsViewModel {
   removeLevel(factorId, levelIdx) {
     requireKnownId('factorId', factorId, this.model.factors.map((f) => f.id));
     const f = this.model.factors.find((x) => x.id === factorId);
-    requireIndex('levelIdx', levelIdx, f.levels.length - 1);
+    requireIndex('levelIdx', levelIdx, f.levels.length, { existing: true });
     if (f.levels.length <= 2) throw new Error(`factor ${factorId} keeps at least two levels`);
     this.model.removeLevel(factorId, levelIdx);
     this._save();
@@ -224,7 +224,7 @@ export class FactorsViewModel {
    * @throws {Error} if the index is unknown or it is the last response
    */
   removeResponse(index) {
-    requireIndex('index', index, this.model.responses.length - 1);
+    requireIndex('index', index, this.model.responses.length, { existing: true });
     if (this.model.responses.length <= 1) throw new Error('the plan keeps at least one response');
     this.model.removeResponse(index);
     this._save();
@@ -239,7 +239,7 @@ export class FactorsViewModel {
    * @throws {Error} if the index is unknown or the name not a string
    */
   setResponseName(index, name) {
-    requireIndex('index', index, this.model.responses.length - 1);
+    requireIndex('index', index, this.model.responses.length, { existing: true });
     this.model.responses[index].name = requireText('name', name);
     this._save();
   }
@@ -253,7 +253,7 @@ export class FactorsViewModel {
    * @throws {Error} if the index is unknown or the unit not a string
    */
   setResponseUnit(index, unit) {
-    requireIndex('index', index, this.model.responses.length - 1);
+    requireIndex('index', index, this.model.responses.length, { existing: true });
     this.model.responses[index].unit = requireText('unit', unit);
     this._save();
   }

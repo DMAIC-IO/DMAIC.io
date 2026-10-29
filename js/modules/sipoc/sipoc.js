@@ -162,7 +162,7 @@ export default createModule({
        */
       setItem(colKey, idx, text) {
         requireEnum('colKey', colKey, COL_KEYS);
-        requireIndex('idx', idx, this.model.columns[colKey].length - 1);
+        requireIndex('idx', idx, this.model.columns[colKey].length, { existing: true });
         return this.model.setItem(colKey, idx, text);
       },
 
@@ -177,7 +177,7 @@ export default createModule({
        */
       removeItem(colKey, idx) {
         requireEnum('colKey', colKey, COL_KEYS);
-        requireIndex('idx', idx, this.model.columns[colKey].length - 1);
+        requireIndex('idx', idx, this.model.columns[colKey].length, { existing: true });
         return this.model.deleteItem(colKey, idx);
       },
 
@@ -197,7 +197,7 @@ export default createModule({
       moveItem(sourceCol, sourceIdx, targetCol, dropIdx) {
         requireEnum('sourceCol', sourceCol, COL_KEYS);
         requireEnum('targetCol', targetCol, COL_KEYS);
-        requireIndex('sourceIdx', sourceIdx, this.model.columns[sourceCol].length - 1);
+        requireIndex('sourceIdx', sourceIdx, this.model.columns[sourceCol].length, { existing: true });
         requireIndex('dropIdx', dropIdx, this.model.columns[targetCol].length);
         return this.model.moveItem(sourceCol, sourceIdx, targetCol, dropIdx);
       },

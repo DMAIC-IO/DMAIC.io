@@ -191,8 +191,8 @@ export default createModule({
        *   Beteiligten bezeichnet
        */
       cycleRole(aIdx, sIdx) {
-        requireIndex('aIdx', aIdx, this.model.activities.length - 1);
-        requireIndex('sIdx', sIdx, this.model.stakeholders.length - 1);
+        requireIndex('aIdx', aIdx, this.model.activities.length, { existing: true });
+        requireIndex('sIdx', sIdx, this.model.stakeholders.length, { existing: true });
         this.model.cycleRole(aIdx, sIdx);
       },
 
@@ -208,8 +208,8 @@ export default createModule({
        *   Beteiligten bezeichnet, oder `role` keine der Rollen ist
        */
       setRole(aIdx, sIdx, role) {
-        requireIndex('aIdx', aIdx, this.model.activities.length - 1);
-        requireIndex('sIdx', sIdx, this.model.stakeholders.length - 1);
+        requireIndex('aIdx', aIdx, this.model.activities.length, { existing: true });
+        requireIndex('sIdx', sIdx, this.model.stakeholders.length, { existing: true });
         // Der leere Text steht als Rücknahme in der ausgelieferten
         // Feldhilfe von `assignments` und muss die Senke erreichen
         // (Ruling 52); jeder andere unbekannte Wert wirft weiter.
@@ -253,7 +253,7 @@ export default createModule({
        * @throws {Error} wenn `idx` keine Aktivität bezeichnet
        */
       renameActivity(idx, value) {
-        requireIndex('idx', idx, this.model.activities.length - 1);
+        requireIndex('idx', idx, this.model.activities.length, { existing: true });
         // Ein leerer Name ist eine fachliche Absage, kein ungültiges
         // Argument: die Oberfläche verwirft ihn genauso und behält den alten.
         if (String(value ?? '').trim() === '') return false;
@@ -271,7 +271,7 @@ export default createModule({
        * @throws {Error} wenn `idx` keinen Beteiligten bezeichnet
        */
       renameStakeholder(idx, value) {
-        requireIndex('idx', idx, this.model.stakeholders.length - 1);
+        requireIndex('idx', idx, this.model.stakeholders.length, { existing: true });
         // Siehe `renameActivity`: leerer Name ist eine Absage.
         if (String(value ?? '').trim() === '') return false;
         this.model.renameStakeholder(idx, value);
@@ -287,7 +287,7 @@ export default createModule({
        * @throws {Error} wenn `idx` keine Aktivität bezeichnet
        */
       removeActivity(idx) {
-        requireIndex('idx', idx, this.model.activities.length - 1);
+        requireIndex('idx', idx, this.model.activities.length, { existing: true });
         this.model.removeActivity(idx);
       },
 
@@ -300,7 +300,7 @@ export default createModule({
        * @throws {Error} wenn `idx` keinen Beteiligten bezeichnet
        */
       removeStakeholder(idx) {
-        requireIndex('idx', idx, this.model.stakeholders.length - 1);
+        requireIndex('idx', idx, this.model.stakeholders.length, { existing: true });
         this.model.removeStakeholder(idx);
       },
 
@@ -316,9 +316,9 @@ export default createModule({
        *   bezeichnet
        */
       moveActivity(from, to) {
-        const last = this.model.activities.length - 1;
-        requireIndex('from', from, last);
-        requireIndex('to', to, last);
+        const n = this.model.activities.length;
+        requireIndex('from', from, n, { existing: true });
+        requireIndex('to', to, n, { existing: true });
         if (from === to) return false;
         this.model.moveActivity(from, to);
         return true;

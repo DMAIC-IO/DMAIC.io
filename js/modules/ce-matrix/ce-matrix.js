@@ -269,7 +269,7 @@ export default createModule({
        * @throws {Error} wenn `r` keine Eingangsgröße bezeichnet
        */
       removeInput(r) {
-        requireIndex('r', r, this.model.inputs.length - 1);
+        requireIndex('r', r, this.model.inputs.length, { existing: true });
         const before = this.model.inputs.length;
         this.model.removeInput(r);
         return this.model.inputs.length < before;
@@ -285,7 +285,7 @@ export default createModule({
        * @throws {Error} wenn `c` keine Ergebnisgröße bezeichnet
        */
       removeOutput(c) {
-        requireIndex('c', c, this.model.outputs.length - 1);
+        requireIndex('c', c, this.model.outputs.length, { existing: true });
         const before = this.model.outputs.length;
         this.model.removeOutput(c);
         return this.model.outputs.length < before;
@@ -303,8 +303,8 @@ export default createModule({
        *   Skala `value` nicht zulässt oder `value` ganz fehlt
        */
       setScore(r, c, value) {
-        requireIndex('r', r, this.model.inputs.length - 1);
-        requireIndex('c', c, this.model.outputs.length - 1);
+        requireIndex('r', r, this.model.inputs.length, { existing: true });
+        requireIndex('c', c, this.model.outputs.length, { existing: true });
         // `null` ist der dokumentierte Leerwert der Feldhilfe von `scores`
         // und muss die Senke erreichen (Ruling 52); jede andere Bewertung
         // ausserhalb der Skala wirft weiter. `undefined` zählt NICHT als
@@ -344,7 +344,7 @@ export default createModule({
        * @throws {Error} wenn `r` keine Eingangsgröße bezeichnet
        */
       setInputName(r, text) {
-        requireIndex('r', r, this.model.inputs.length - 1);
+        requireIndex('r', r, this.model.inputs.length, { existing: true });
         this.model.inputs[r] = String(text ?? '');
       },
 
@@ -357,7 +357,7 @@ export default createModule({
        * @throws {Error} wenn `c` keine Ergebnisgröße bezeichnet
        */
       setOutputName(c, text) {
-        requireIndex('c', c, this.model.outputs.length - 1);
+        requireIndex('c', c, this.model.outputs.length, { existing: true });
         this.model.outputs[c] = String(text ?? '');
       },
 
@@ -372,7 +372,7 @@ export default createModule({
        *   nicht zwischen 1 und 10 liegt
        */
       setWeight(c, value) {
-        requireIndex('c', c, this.model.outputs.length - 1);
+        requireIndex('c', c, this.model.outputs.length, { existing: true });
         this.model.weights[c] = requireNumber('value', value, { min: 1, max: 10, integer: true });
       },
 

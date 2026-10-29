@@ -353,7 +353,7 @@ const mod = createModule({
        */
       async setAnnotation(index, comment, excluded) {
         const n = this._lastResult ? this._lastResult.result.subcharts[this._lastResult.ct.subcharts[0].id].values.length : 0;
-        requireIndex('index', index, n - 1);
+        requireIndex('index', index, n, { existing: true });
         requireText('comment', comment);
         requireBoolean('excluded', excluded);
         if (!comment && !excluded) delete this.model.annotations[index];

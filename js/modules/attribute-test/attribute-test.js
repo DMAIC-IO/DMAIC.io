@@ -521,8 +521,8 @@ const mod = createModule({
        */
       setTableCell(row, col, value) {
         const t = this.model.summary.table;
-        requireIndex('row', row, t.rows.length - 1);
-        requireIndex('col', col, t.cols.length - 1);
+        requireIndex('row', row, t.rows.length, { existing: true });
+        requireIndex('col', col, t.cols.length, { existing: true });
         this.model.summary.table.counts[row][col] = requireNumericText('value', value);
         this.runAnalysis();
       },
@@ -537,7 +537,7 @@ const mod = createModule({
        */
       setTableRowName(row, name) {
         const t = this.model.summary.table;
-        requireIndex('row', row, t.rows.length - 1);
+        requireIndex('row', row, t.rows.length, { existing: true });
         this.model.summary.table.rows[row] = requireText('name', name);
         this.runAnalysis();
       },
@@ -552,7 +552,7 @@ const mod = createModule({
        */
       setTableColName(col, name) {
         const t = this.model.summary.table;
-        requireIndex('col', col, t.cols.length - 1);
+        requireIndex('col', col, t.cols.length, { existing: true });
         this.model.summary.table.cols[col] = requireText('name', name);
         this.runAnalysis();
       },
@@ -580,7 +580,7 @@ const mod = createModule({
        */
       removeRow(row) {
         const t = this.model.summary.table;
-        requireIndex('row', row, t.rows.length - 1);
+        requireIndex('row', row, t.rows.length, { existing: true });
         if (!this.canRemoveRow()) {
           throw new Error(`invalid row ${row}; allowed: removing only while more than ${MIN_DIM} rows remain`);
         }
@@ -597,7 +597,7 @@ const mod = createModule({
        */
       removeCol(col) {
         const t = this.model.summary.table;
-        requireIndex('col', col, t.cols.length - 1);
+        requireIndex('col', col, t.cols.length, { existing: true });
         if (!this.canRemoveCol()) {
           throw new Error(`invalid col ${col}; allowed: removing only while more than ${MIN_DIM} columns remain`);
         }
@@ -617,8 +617,8 @@ const mod = createModule({
        * @throws {Error} wenn ein Index nicht 0 oder 1 ist oder `value` weder Text noch endliche Zahl ist
        */
       setPairCell(row, col, value) {
-        requireIndex('row', row, 1);
-        requireIndex('col', col, 1);
+        requireIndex('row', row, 2, { existing: true });
+        requireIndex('col', col, 2, { existing: true });
         this.model.summary.pairs.counts[row][col] = requireNumericText('value', value);
         this.runAnalysis();
       },

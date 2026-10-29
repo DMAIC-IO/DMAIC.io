@@ -142,7 +142,7 @@ export class AnalysisViewModel {
    * @throws {Error} if the index is unknown
    */
   setAnalysisResponse(index) {
-    requireIndex('index', index, this.model.responses.length - 1);
+    requireIndex('index', index, this.model.responses.length, { existing: true });
     this.model.analysisResponseIdx = index;
     this._save();
   }

@@ -259,7 +259,7 @@ export default createModule({
        */
       setHeader(index, key, value) {
         const ep = this._requireActive();
-        requireIndex('index', index, ep.headers.length - 1);
+        requireIndex('index', index, ep.headers.length, { existing: true });
         ep.headers[index] = { key: requireText('key', key), value: requireText('value', value) };
       },
       /**
@@ -271,7 +271,7 @@ export default createModule({
        */
       deleteHeader(index) {
         const ep = this._requireActive();
-        requireIndex('index', index, ep.headers.length - 1);
+        requireIndex('index', index, ep.headers.length, { existing: true });
         ep.headers.splice(index, 1);
       },
       /**
@@ -298,7 +298,7 @@ export default createModule({
        */
       setMapping(index, jsonPath, ref) {
         const ep = this._requireActive();
-        requireIndex('index', index, ep.mappings.length - 1);
+        requireIndex('index', index, ep.mappings.length, { existing: true });
         requireText('jsonPath', jsonPath);
         let clean = null;
         if (ref != null) {
@@ -320,7 +320,7 @@ export default createModule({
        */
       deleteMapping(index) {
         const ep = this._requireActive();
-        requireIndex('index', index, ep.mappings.length - 1);
+        requireIndex('index', index, ep.mappings.length, { existing: true });
         ep.mappings.splice(index, 1);
         this.$nextTick(() => this._mountPickers());
       },

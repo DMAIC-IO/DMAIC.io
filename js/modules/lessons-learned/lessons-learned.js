@@ -337,7 +337,7 @@ const m = createModule({
       removeAction(lessonId, actionIndex) {
         requireKnownId('lessonId', lessonId, this._lessonIds());
         const lesson = this._lessonById(lessonId);
-        requireIndex('actionIndex', actionIndex, lesson.actions.length - 1);
+        requireIndex('actionIndex', actionIndex, lesson.actions.length, { existing: true });
         lesson.actions.splice(actionIndex, 1);
         lesson.updatedAt = Date.now();
       },
@@ -355,7 +355,7 @@ const m = createModule({
       setActionDone(lessonId, actionIndex, done) {
         requireKnownId('lessonId', lessonId, this._lessonIds());
         const lesson = this._lessonById(lessonId);
-        requireIndex('actionIndex', actionIndex, lesson.actions.length - 1);
+        requireIndex('actionIndex', actionIndex, lesson.actions.length, { existing: true });
         // `requireBoolean` statt eines `=== true`:
         // ein fehlendes Argument (`undefined`) wäre sonst stillschweigend
         // „Haken zurücknehmen" statt ein Fehler.

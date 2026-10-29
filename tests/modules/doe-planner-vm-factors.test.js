@@ -101,6 +101,13 @@ suite('doe-planner-vm factors — responses', () => {
     vm.removeResponse(0);
     assertEqual(model.responses.length, 1);
   });
+
+  // Ein Index auf eine leere Sammlung nennt das, statt "0..-1".
+  test('an empty response list says so', () => {
+    const { vm, model } = setup();
+    model.responses = [];
+    assertThrows(() => vm.setResponseName(0, 'x'), /^invalid index 0; allowed: none, the collection is empty$/);
+  });
 });
 
 suite('doe-planner-vm factors — view helpers', () => {

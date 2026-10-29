@@ -477,7 +477,7 @@ export default createModule({
        * @throws {Error} wenn index außerhalb von sheets liegt
        */
       selectSheet(index) {
-        requireIndex('index', index, (this.parsed?.sheets.length ?? 0) - 1);
+        requireIndex('index', index, this.parsed?.sheets.length ?? 0, { existing: true });
         this.activeSheetIdx = index;
         this.rebuildView();
       },

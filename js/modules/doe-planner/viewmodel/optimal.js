@@ -192,7 +192,7 @@ export class OptimalViewModel {
    */
   setTermGroup(groupIdx, on) {
     const groups = enumerateTerms(this.model.factors.length);
-    requireIndex('groupIdx', groupIdx, groups.length - 1);
+    requireIndex('groupIdx', groupIdx, groups.length, { existing: true });
     requireBoolean('on', on);
     const g = groups[groupIdx];
     if (g.kind === 'main') throw new Error('group 0 holds the main effects; they stay in the model');
@@ -302,7 +302,7 @@ export class OptimalViewModel {
    * @throws {Error} if the index is unknown
    */
   removeForbiddenVertex(index) {
-    requireIndex('index', index, this.forbiddenList().length - 1);
+    requireIndex('index', index, this.forbiddenList().length, { existing: true });
     this.model.removeForbiddenVertex(index);
     this._save();
   }

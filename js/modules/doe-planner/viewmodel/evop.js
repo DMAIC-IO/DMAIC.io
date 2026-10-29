@@ -169,7 +169,7 @@ export class EvopViewModel {
    * @throws {Error} if the phase is unknown
    */
   viewPhase(idx) {
-    requireIndex('idx', idx, this.model.projectPhases.length - 1);
+    requireIndex('idx', idx, this.model.projectPhases.length, { existing: true });
     this.model.viewPhase(idx);
     this._adoptSignatures();
     this._save();

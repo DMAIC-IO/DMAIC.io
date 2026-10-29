@@ -12,13 +12,6 @@ import { requireIndex, requireText } from '../../core/agent/agent-argcheck.js';
 import { State, ROWS, COLS } from './triz-9-windows-model.js';
 import { readImageFile, IMAGE_UPLOAD_ERRORS } from '../../core/image-upload.js';
 
-// Die Prüfung zählt auf `requireIndex(name, value, length)`, das `0..length`
-// EINSCHLIESSLICH erlaubt (Einfügepositions-Semantik) — übergeben wird darum
-// `ROWS - 1` bzw. `COLS - 1`, damit genau 0..2 durchkommt und die Meldung
-// `allowed: 0..2` lautet.
-const MAX_ROW = ROWS - 1;
-const MAX_COL = COLS - 1;
-
 /**
  * Die Lesefläche IST die persistierte Form — sie heißt nur anders als die
  * Klassenfelder: `rows` hält zur Laufzeit Beschriftung UND Zellen, `toJSON()`
@@ -134,8 +127,8 @@ export default createModule({
        * @throws {Error} wenn row oder col außerhalb von 0 bis 2 liegt
        */
       clearImage(row, col) {
-        requireIndex('row', row, MAX_ROW);
-        requireIndex('col', col, MAX_COL);
+        requireIndex('row', row, ROWS, { existing: true });
+        requireIndex('col', col, COLS, { existing: true });
         this.model.clearCellImage(row, col);
       },
 
@@ -181,8 +174,8 @@ export default createModule({
        *   `text` keine Zeichenkette ist
        */
       setCellText(row, col, text) {
-        requireIndex('row', row, MAX_ROW);
-        requireIndex('col', col, MAX_COL);
+        requireIndex('row', row, ROWS, { existing: true });
+        requireIndex('col', col, COLS, { existing: true });
         this.model.rows[row].cells[col].text = requireText('text', text);
       },
 
@@ -196,7 +189,7 @@ export default createModule({
        *   keine Zeichenkette ist
        */
       setColLabel(col, text) {
-        requireIndex('col', col, MAX_COL);
+        requireIndex('col', col, COLS, { existing: true });
         this.model.colLabels[col].val = requireText('text', text);
       },
 
@@ -210,7 +203,7 @@ export default createModule({
        *   keine Zeichenkette ist
        */
       setRowLabel(row, text) {
-        requireIndex('row', row, MAX_ROW);
+        requireIndex('row', row, ROWS, { existing: true });
         this.model.rows[row].rowLabel.val = requireText('text', text);
       },
 

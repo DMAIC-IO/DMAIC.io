@@ -223,7 +223,7 @@ export class DesignViewModel {
    * @throws {Error} if the type is not pb or the row is unknown
    */
   selectPB(index) {
-    requireIndex('index', index, PB_DESIGNS.length - 1);
+    requireIndex('index', index, PB_DESIGNS.length, { existing: true });
     if (this.model.designType !== 'pb') throw new Error('a Plackett-Burman row belongs to design type pb: select it first');
     this.model.selectedPBIdx = index;
     this._save();
