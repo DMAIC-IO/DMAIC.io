@@ -1367,7 +1367,7 @@
           }
         },
         "moveColumn": {
-          "help": "Moves a column of the active sheet, like dragging its header; the short names (C1, C2 …) follow the new order. Returns false if the column already is there. Undo moves it back.",
+          "help": "Moves a column of the active sheet, like dragging its header; the short names (C1, C2 …) follow the new order. Formulas that refer to short names are not rewritten when columns move. Returns false if the column already is there. Undo moves it back.",
           "params": {
             "columnId": "The id of the column, as read().columns[].id names it.",
             "toIndex": "The position the column has afterwards, counted from 0."

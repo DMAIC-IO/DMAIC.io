@@ -1367,7 +1367,7 @@
           }
         },
         "moveColumn": {
-          "help": "Verschiebt eine Spalte des aktiven Blatts, wie das Ziehen am Spaltenkopf; die Kurznamen (C1, C2 …) folgen der neuen Reihenfolge. Liefert false, wenn die Spalte schon dort steht. Rückgängig schiebt sie zurück.",
+          "help": "Verschiebt eine Spalte des aktiven Blatts, wie das Ziehen am Spaltenkopf; die Kurznamen (C1, C2 …) folgen der neuen Reihenfolge. Formeln, die sich auf Kurznamen beziehen, werden dabei nicht umgeschrieben. Liefert false, wenn die Spalte schon dort steht. Rückgängig schiebt sie zurück.",
           "params": {
             "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
             "toIndex": "Die Stelle, die die Spalte danach hat, ab 0 gezählt."

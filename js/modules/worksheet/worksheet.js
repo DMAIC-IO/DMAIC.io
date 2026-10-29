@@ -706,7 +706,7 @@ const mod = createModule({
         // `DataGrid.removeRows` prüft keinen Bereich: ein Index hinter dem
         // Ende spliced ins Leere, `rowCount` sinkt trotzdem. Eine Sperre
         // prüft das Zeilenmenü nicht — hier also auch nicht.
-        const rowCount = this._grid.rowCount;
+        const rowCount = this._grid?.rowCount ?? 0;
         requireIndex('startRow', startRow, rowCount, { existing: true });
         const n = requireNumber('count', count, { min: 1, max: rowCount - startRow, integer: true });
         const indices = Array.from({ length: n }, (_, i) => startRow + i);
@@ -1269,7 +1269,7 @@ const mod = createModule({
       moveRow(fromRow, toRow) {
         // `DataGrid.moveRow` kehrt bei einem Index außerhalb STILL zurück.
         // Eine Sperre prüft das Ziehen nicht — hier also auch nicht.
-        const rowCount = this._grid.rowCount;
+        const rowCount = this._grid?.rowCount ?? 0;
         requireIndex('fromRow', fromRow, rowCount, { existing: true });
         requireIndex('toRow', toRow, rowCount, { existing: true });
         if (fromRow === toRow) return false;
