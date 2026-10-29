@@ -665,7 +665,7 @@ const definition = {
           metrics.push({ label: _t('common.sym.df'), value: (typeof r.df === 'number' && r.df % 1) ? fmt(r.df, 1) : String(r.df), valueClass: '', title: this._tip('df') });
         }
         const level = Math.round((1 - alpha) * 100);
-        const isMeanDiff = !isVariance && isTwo && r.ci != null;
+        const { isMeanDiff } = this._ciKind(r);
         const fmtCi = (ci) => `[${fmt(ci[0])}, ${fmt(ci[1])}]`;
         if (isVariance && isTwo && r.ratio != null) {
           metrics.push({ label: _t('varianceRatio'), value: fmt(r.ratio), valueClass: '', title: this._tip(_t('varianceRatio')) });
@@ -736,14 +736,25 @@ const definition = {
       },
 
       /**
+       * Welches Intervall ein Ergebnis trägt: Differenz gepaarter Werte oder
+       * Mittelwertdifferenz zweier Stichproben.
+       * @noagent Ableitung aus dem Testergebnis
+       */
+      _ciKind(r) {
+        return {
+          isPaired: this.model.testType === 'paired',
+          isMeanDiff: this.model.category !== 'variance' && this.model.testType === 'two' && r.ci != null,
+        };
+      },
+
+      /**
        * Die Hinweise zum Intervall als Codes mit ungerundeten Zahlen — Quelle
        * für den Hinweistext und für `numeric.notes`. `level` und `achieved`
        * sind Anteile (0,95), nicht Prozent.
        * @noagent Ableitung aus dem Testergebnis
        */
       _ciNoteCodes(r, alpha, target) {
-        const isPaired = this.model.testType === 'paired';
-        const isMeanDiff = this.model.category !== 'variance' && this.model.testType === 'two' && r.ci != null;
+        const { isPaired, isMeanDiff } = this._ciKind(r);
         // A non-rejected one-sided test can leave the target outside the CI
         const ciHoldsTarget = ciContains(r.ci, target ?? 0);
         const out = [];

@@ -9637,9 +9637,9 @@
         "Numeric": {
           "statistic": "Die Prüfgröße des Haupttests (t, z, F, χ², H oder U, je nach Verfahren), Zeile Statistik.",
           "df": "Die Freiheitsgrade des Haupttests; bei zwei Zählerfreiheitsgraden (ANOVA) der erste. Null, wenn das Verfahren keine hat.",
-          "p": "Der p-Wert des Haupttests als Zahl zwischen 0 und 1, Zeile p.",
-          "ci": "Das Konfidenzintervall des Haupttests als [untere, obere Grenze]; beim Hodges-Lehmann-Verfahren das Intervall der Verschiebung. Null ohne Intervall, eine nicht endliche Grenze (einseitiger Test) ist null.",
-          "decision": "reject, wenn die Nullhypothese verworfen wird, sonst keep.",
+          "p": "Der p-Wert des Haupttests als Zahl zwischen 0 und 1, Zeile p. Bei den Rangverfahren (Wilcoxon, Mann-Whitney, Kruskal-Wallis) ist es der p-Wert des Rangtests.",
+          "ci": "Das Konfidenzintervall des Haupttests als [untere, obere Grenze]; beim Mann-Whitney-Test das Hodges-Lehmann-Intervall der Verschiebung. Null ohne Intervall, eine nicht endliche Grenze (einseitiger Test) ist null.",
+          "decision": "reject, wenn die Nullhypothese verworfen wird, sonst keep. Bei den Rangverfahren (Wilcoxon, Mann-Whitney, Kruskal-Wallis) gilt die Entscheidung dem Rangtest.",
           "power": "Die Teststärke bei den vorhandenen Daten als Anteil zwischen 0 und 1. Null bei k Stichproben, dort wird sie nicht berechnet.",
           "notes": "Die Hinweise zum Intervall als Code mit den eingesetzten Zahlen, zum Beispiel ciDiffNote mit lo und hi; bei ciShiftTooSmall sind level und achieved Anteile, keine Prozent."
         },

@@ -9633,9 +9633,9 @@
         "Numeric": {
           "statistic": "The test statistic of the main test (t, z, F, chi-square, H or U, depending on the procedure), row Statistic.",
           "df": "The degrees of freedom of the main test; with two numerator-style degrees of freedom (ANOVA) the first. Null when the procedure has none.",
-          "p": "The p-value of the main test as a number between 0 and 1, row p.",
-          "ci": "The confidence interval of the main test as [lower, upper]; for Hodges-Lehmann the interval of the shift. Null without an interval, a non-finite bound (one-sided test) is null.",
-          "decision": "reject if the null hypothesis is rejected, otherwise keep.",
+          "p": "The p-value of the main test as a number between 0 and 1, row p. On the rank routes (Wilcoxon, Mann-Whitney, Kruskal-Wallis) it is the p-value of the rank test.",
+          "ci": "The confidence interval of the main test as [lower, upper]; for Mann-Whitney the Hodges-Lehmann shift interval. Null without an interval, a non-finite bound (one-sided test) is null.",
+          "decision": "reject if the null hypothesis is rejected, otherwise keep. On the rank routes (Wilcoxon, Mann-Whitney, Kruskal-Wallis) the decision belongs to the rank test.",
           "power": "The power for the given data as a fraction between 0 and 1. Null for k samples, where it is not computed.",
           "notes": "The notes on the interval as a code with the inserted numbers, for example ciDiffNote with lo and hi; for ciShiftTooSmall level and achieved are fractions, not percent."
         },
