@@ -44,7 +44,7 @@ const PARAM_KEYS = ['mode', 'statisticId', 'statParams.trim', 'statParams.p',
 /**
  * Je Parameter sein Prüfer; gibt den normalisierten Wert zurück.
  * Konfidenz, Trimmanteil und Quantil p sind mathematisch begrenzt und werden
- * außerhalb ihres Bereichs abgewiesen (D1, Spec §3). B und seed nehmen jede
+ * außerhalb ihres Bereichs abgewiesen. B und seed nehmen jede
  * ganze Zahl an — die Absage für Werte außerhalb ihres Bereichs steht in
  * `validationMsg`. `statisticId` prüft `setParam` gegen die Statistiken des Modus.
  */

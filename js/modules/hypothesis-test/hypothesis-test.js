@@ -463,11 +463,11 @@ const definition = {
         this._pickerK?.syncValue(this.model.colRefsK);
         this.runAnalysis();
       },
-      /** @noagent DOM event handler; the agent uses setAlpha(). Rejected input shows the model value again (D1). */
+      /** @noagent DOM event handler; the agent uses setAlpha(). Rejected input shows the model value again. */
       onAlphaInput(event) {
         try { this.setAlpha(event.target.value); } catch { event.target.value = this.model.alpha ?? ''; }
       },
-      /** @noagent DOM event handler; the agent uses setPowerGoal(). Rejected input shows the model value again (D1). */
+      /** @noagent DOM event handler; the agent uses setPowerGoal(). Rejected input shows the model value again. */
       onPowerGoalInput(event) {
         try { this.setPowerGoal(event.target.value); } catch { event.target.value = this.model.powerGoal ?? ''; }
       },

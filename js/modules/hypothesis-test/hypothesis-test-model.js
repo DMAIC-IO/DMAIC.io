@@ -29,9 +29,9 @@ export const TEST_TYPES = Object.freeze(['one', 'two', 'paired', 'k']);
 /** @type {readonly ('two-sided'|'greater'|'less')[]} */
 export const DIRECTIONS = Object.freeze(['two-sided', 'greater', 'less']);
 
-/** Gültiger Bereich von α: mathematisch (0, 1) — Spec §3, Ausnahme ungeprüfter Grenzen. */
+/** Gültiger Bereich von α: mathematisch (0, 1); ungeprüfte, mathematisch begrenzte Werte bekommen ihre mathematische Grenze. */
 export const ALPHA_BOUNDS = Object.freeze({ exclusiveMin: 0, exclusiveMax: 1 });
-/** Gültiger Bereich des Power-Ziels: der bisherige Klemmbereich, jetzt Prüfbereich (D1). */
+/** Gültiger Bereich des Power-Ziels: der bisherige Klemmbereich, jetzt Prüfbereich. */
 export const POWER_GOAL_BOUNDS = Object.freeze({ min: 0.5, max: 0.99 });
 
 /**
