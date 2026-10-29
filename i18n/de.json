@@ -2259,29 +2259,29 @@
           "addSection": { "help": "Einen leeren Abschnitt ans Ende des Fragebogens anhängen. Fragen stehen immer in einem Abschnitt." },
           "setSectionField": { "help": "Titel oder Hinweis eines Abschnitts setzen.", "params": { "sectionId": "Der Abschnitt.", "key": "Titel oder Hinweis.", "value": "Der neue Text; leer löscht ihn." } },
           "moveSection": { "help": "Einen Abschnitt eine Stelle nach oben oder unten schieben. Bedingungen, die danach auf eine spätere Frage zeigten, entfallen; die Rückgabe zählt sie.", "params": { "sectionId": "Der Abschnitt.", "direction": "up oder down." } },
-          "deleteSection": { "help": "Einen Abschnitt samt seinen Fragen löschen, ohne Rückfrage. Bedingungen auf diese Fragen entfallen; die Rückgabe zählt sie.", "params": { "sectionId": "Der Abschnitt." } },
+          "removeSection": { "help": "Einen Abschnitt samt seinen Fragen löschen, ohne Rückfrage. Bedingungen auf diese Fragen entfallen; die Rückgabe zählt sie.", "params": { "sectionId": "Der Abschnitt." } },
           "addQuestion": { "help": "Eine Frage eines Typs an einen Abschnitt anhängen und auswählen.", "params": { "sectionId": "Der Abschnitt.", "type": "single (Einfachauswahl), multi (Mehrfachauswahl), rating (Bewertung 1–5), kano (Kano-Paar), text (Freitext) oder info (nur Text)." } },
           "setQuestionField": { "help": "Text, Hinweis oder einen Schalter einer Frage setzen; welche Schalter es gibt, hängt vom Typ ab.", "params": { "questionId": "Die Frage.", "key": "Welches Feld.", "value": "Text für text und hint; true oder false für die Schalter." } },
           "changeQuestionType": { "help": "Den Typ einer Frage ändern. Text, Hinweis, Pflicht und Bedingungen bleiben, Optionen, Zeilen und Schalter beginnen leer; Bedingungen auf ihre bisherigen Optionen entfallen.", "params": { "questionId": "Die Frage.", "type": "Der neue Typ, Werte wie bei addQuestion." } },
           "moveQuestion": { "help": "Eine Frage eine Stelle nach oben oder unten schieben; an einer Abschnittsgrenze wechselt sie in den Nachbarabschnitt. Bedingungen, die danach auf eine spätere Frage zeigten, entfallen; die Rückgabe zählt sie.", "params": { "questionId": "Die Frage.", "direction": "up oder down." } },
-          "deleteQuestion": { "help": "Eine Frage löschen, ohne Rückfrage — auch wenn eingelesene Antworten sie beantwortet haben. Bedingungen auf sie entfallen; die Rückgabe zählt sie.", "params": { "questionId": "Die Frage." } },
+          "removeQuestion": { "help": "Eine Frage löschen, ohne Rückfrage — auch wenn eingelesene Antworten sie beantwortet haben. Bedingungen auf sie entfallen; die Rückgabe zählt sie.", "params": { "questionId": "Die Frage." } },
           "addItem": { "help": "Eine leere Option (Einfach- und Mehrfachauswahl) oder Zeile (Bewertung, Kano) an eine Frage anhängen.", "params": { "questionId": "Die Frage." } },
           "setItemField": { "help": "Den Text einer Option oder Zeile setzen, bei Mehrfachauswahl auch die Anzeigegruppe einer Option.", "params": { "questionId": "Die Frage.", "itemId": "Die Option oder Zeile.", "key": "Text oder Gruppe.", "value": "Der neue Text; leer löscht ihn." } },
           "moveItem": { "help": "Eine Option oder Zeile innerhalb ihrer Frage eine Stelle nach oben oder unten schieben.", "params": { "questionId": "Die Frage.", "itemId": "Die Option oder Zeile.", "direction": "up oder down." } },
-          "deleteItem": { "help": "Eine Option oder Zeile löschen, ohne Rückfrage. Bedingungen auf eine gelöschte Option entfallen; die Rückgabe zählt sie.", "params": { "questionId": "Die Frage.", "itemId": "Die Option oder Zeile." } },
+          "removeItem": { "help": "Eine Option oder Zeile löschen, ohne Rückfrage. Bedingungen auf eine gelöschte Option entfallen; die Rückgabe zählt sie.", "params": { "questionId": "Die Frage.", "itemId": "Die Option oder Zeile." } },
           "setConditions": { "help": "Bestimmt, wann ein Abschnitt oder eine Frage erscheint: sobald bei einer früheren Einfach- oder Mehrfachauswahl eine der genannten Optionen gewählt wurde. Jede Bedingung genügt für sich; ohne Bedingung erscheint er immer.", "params": { "nodeId": "Der Abschnitt oder die Frage.", "conditions": "Je Bedingung { questionId, optionIds }: eine frühere Einfach- oder Mehrfachauswahl und mindestens eine ihrer Optionen; [] entfernt alle Bedingungen." } },
           "buildSurveyFile": { "help": "Baut den allgemeinen Fragebogen (ohne Empfänger) als HTML-Datei und liefert Dateiname, Typ und Inhalt. Wie der Export setzt sie die Version." }
         },
         "recipients": {
           "addRecipient": { "help": "Einen leeren Empfänger anlegen. Je Empfänger entsteht eine eigene Fragebogendatei, an deren Antwort sich der Empfänger erkennen lässt." },
           "setRecipientField": { "help": "Ein Feld eines Empfängers setzen: Name, Organisation, Gruppe, E-Mail oder Notiz.", "params": { "recipientId": "Der Empfänger.", "key": "Welches Feld.", "value": "Der neue Text; leer löscht ihn." } },
-          "deleteRecipient": { "help": "Einen Empfänger löschen, ohne Rückfrage. Seine Antworten bleiben, ohne Empfänger.", "params": { "recipientId": "Der Empfänger." } },
+          "removeRecipient": { "help": "Einen Empfänger löschen, ohne Rückfrage. Seine Antworten bleiben, ohne Empfänger.", "params": { "recipientId": "Der Empfänger." } },
           "buildRecipientFile": { "help": "Baut die persönliche Fragebogen-Datei eines Empfängers und liefert Dateiname, Typ und Inhalt. Wie der Export setzt sie die Version und markiert den Empfänger als verschickt.", "params": { "recipientId": "Der Empfänger." } },
           "markSent": { "help": "Markiert einen Empfänger als verschickt, ohne eine Datei zu bauen — wenn die Datei auf anderem Weg ankam. Dabei wird die aktuelle Fragebogen-Version festgehalten: Ändert sich der Aufbau später und beim nächsten Export steigt die Version, gilt die Datei dieses Empfängers als veraltet.", "params": { "recipientId": "Der Empfänger." } }
         },
         "responses": {
           "importResponse": { "help": "Eine Antwortdatei einlesen, die der Fragebogen beim Empfänger gespeichert hat. Dateien dieses Fragebogens werden übernommen, auch die einer älteren Version; eine schon eingelesene, eine fremde oder eine kaputte Datei erscheint nur im Protokoll.", "params": { "json": "Der Inhalt der Antwortdatei als Text.", "fileName": "Der Name, der im Protokoll steht." } },
-          "deleteResponse": { "help": "Eine eingelesene Antwort löschen, ohne Rückfrage; ihre Markierungen der VoC-Übernahme entfallen mit.", "params": { "responseId": "Die Antwort." } }
+          "removeResponse": { "help": "Eine eingelesene Antwort löschen, ohne Rückfrage; ihre Markierungen der VoC-Übernahme entfallen mit.", "params": { "responseId": "Die Antwort." } }
         },
         "results": {
           "setFilter": { "help": "Die Auswertung auf die Antworten beschränken, die bei einer Einfach- oder Mehrfachauswahl eine bestimmte Option gewählt haben. Ohne Filter zählen alle Antworten.", "params": { "questionId": "Die Auswahlfrage; null zusammen mit optionId null hebt den Filter auf.", "optionId": "Eine ihrer Optionen; null hebt den Filter auf." } },
@@ -5115,7 +5115,7 @@
               "value": "Der neue Wert, je Feld wie beschrieben."
             }
           },
-          "deleteRow": {
+          "removeRow": {
             "help": "Eine Ursache samt Unterursachen löschen, ohne Rückfrage. Verknüpfungen aus Experimenten entfallen.",
             "params": {
               "rowId": "Die Ursache."
@@ -5177,7 +5177,7 @@
               "snapshotId": "Der Snapshot."
             }
           },
-          "deleteSnapshot": {
+          "removeSnapshot": {
             "help": "Einen Snapshot löschen, ohne Rückfrage.",
             "params": {
               "snapshotId": "Der Snapshot."
@@ -5205,7 +5205,7 @@
               "value": "Der neue Wert, je Feld wie beschrieben."
             }
           },
-          "deleteExperiment": {
+          "removeExperiment": {
             "help": "Ein Experiment löschen, ohne Rückfrage.",
             "params": {
               "experimentId": "Das Experiment."
@@ -5236,7 +5236,7 @@
               "value": "Der neue Text; das Datum als JJJJ-MM-TT oder leer."
             }
           },
-          "deleteFact": {
+          "removeFact": {
             "help": "Einen Fakt löschen, ohne Rückfrage.",
             "params": {
               "factId": "Der Fakt."

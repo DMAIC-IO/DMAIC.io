@@ -8130,7 +8130,7 @@ export const AGENT_REGISTRY = {
           }
         }
       },
-      "causes.deleteRow": {
+      "causes.removeRow": {
         "params": [
           {
             "name": "rowId",
@@ -8261,7 +8261,7 @@ export const AGENT_REGISTRY = {
         "returns": "void",
         "help": "Replace problem statement, experts and cause tree by a snapshot, without asking."
       },
-      "snapshots.deleteSnapshot": {
+      "snapshots.removeSnapshot": {
         "params": [
           {
             "name": "snapshotId",
@@ -8354,7 +8354,7 @@ export const AGENT_REGISTRY = {
           }
         }
       },
-      "experiments.deleteExperiment": {
+      "experiments.removeExperiment": {
         "params": [
           {
             "name": "experimentId",
@@ -8450,7 +8450,7 @@ export const AGENT_REGISTRY = {
           }
         }
       },
-      "experiments.deleteFact": {
+      "experiments.removeFact": {
         "params": [
           {
             "name": "factId",
@@ -19193,7 +19193,7 @@ export const AGENT_REGISTRY = {
         "returns": "number",
         "help": "Move a section one place up or down. Conditions that would then point at a later question are removed."
       },
-      "draft.deleteSection": {
+      "draft.removeSection": {
         "params": [
           {
             "name": "sectionId",
@@ -19241,7 +19241,7 @@ export const AGENT_REGISTRY = {
         "returns": "number",
         "help": "Move a question one place up or down; at a section boundary it moves into the neighbouring section. Conditions that would then point at a later question are removed."
       },
-      "draft.deleteQuestion": {
+      "draft.removeQuestion": {
         "params": [
           {
             "name": "questionId",
@@ -19403,7 +19403,7 @@ export const AGENT_REGISTRY = {
         "returns": "void",
         "help": "Move an option or row one place up or down within its question."
       },
-      "draft.deleteItem": {
+      "draft.removeItem": {
         "params": [
           {
             "name": "questionId",
@@ -19496,7 +19496,7 @@ export const AGENT_REGISTRY = {
           }
         }
       },
-      "recipients.deleteRecipient": {
+      "recipients.removeRecipient": {
         "params": [
           {
             "name": "recipientId",
@@ -19550,7 +19550,7 @@ export const AGENT_REGISTRY = {
         "returns": "'ok'|'older'|'duplicate'|'foreign'|'invalid'",
         "help": "Read one answer file as the questionnaire saved it. Files of this questionnaire are taken in, also those of an older version; a file read before, one of another questionnaire, or a broken one is only logged."
       },
-      "responses.deleteResponse": {
+      "responses.removeResponse": {
         "params": [
           {
             "name": "responseId",

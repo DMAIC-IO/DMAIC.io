@@ -2259,29 +2259,29 @@
           "addSection": { "help": "Append an empty section to the end of the questionnaire. Questions always sit in a section." },
           "setSectionField": { "help": "Set the title or the hint of a section.", "params": { "sectionId": "The section.", "key": "Title or hint.", "value": "The new text; empty clears it." } },
           "moveSection": { "help": "Move a section one place up or down. Conditions that would then point at a later question are removed; the return value counts them.", "params": { "sectionId": "The section.", "direction": "up or down." } },
-          "deleteSection": { "help": "Delete a section with its questions, without asking. Conditions on these questions are removed; the return value counts them.", "params": { "sectionId": "The section." } },
+          "removeSection": { "help": "Delete a section with its questions, without asking. Conditions on these questions are removed; the return value counts them.", "params": { "sectionId": "The section." } },
           "addQuestion": { "help": "Append a question of a type to a section and select it.", "params": { "sectionId": "The section.", "type": "single (single choice), multi (multiple choice), rating (rating 1–5), kano (Kano pair), text (free text) or info (text only)." } },
           "setQuestionField": { "help": "Set the text, the hint or a switch of a question; which switches exist depends on the type.", "params": { "questionId": "The question.", "key": "Which field.", "value": "Text for text and hint; true or false for the switches." } },
           "changeQuestionType": { "help": "Change the type of a question. Text, hint, required and conditions stay, options, rows and switches start empty; conditions on its previous options are removed.", "params": { "questionId": "The question.", "type": "The new type, values as for addQuestion." } },
           "moveQuestion": { "help": "Move a question one place up or down; at a section boundary it moves into the neighbouring section. Conditions that would then point at a later question are removed; the return value counts them.", "params": { "questionId": "The question.", "direction": "up or down." } },
-          "deleteQuestion": { "help": "Delete a question, without asking — also when imported responses answered it. Conditions on it are removed; the return value counts them.", "params": { "questionId": "The question." } },
+          "removeQuestion": { "help": "Delete a question, without asking — also when imported responses answered it. Conditions on it are removed; the return value counts them.", "params": { "questionId": "The question." } },
           "addItem": { "help": "Append an empty option (single and multiple choice) or row (rating, Kano) to a question.", "params": { "questionId": "The question." } },
           "setItemField": { "help": "Set the text of an option or row, for multiple choice also the display group of an option.", "params": { "questionId": "The question.", "itemId": "The option or row.", "key": "Text or group.", "value": "The new text; empty clears it." } },
           "moveItem": { "help": "Move an option or row one place up or down within its question.", "params": { "questionId": "The question.", "itemId": "The option or row.", "direction": "up or down." } },
-          "deleteItem": { "help": "Delete an option or row, without asking. Conditions on a deleted option are removed; the return value counts them.", "params": { "questionId": "The question.", "itemId": "The option or row." } },
+          "removeItem": { "help": "Delete an option or row, without asking. Conditions on a deleted option are removed; the return value counts them.", "params": { "questionId": "The question.", "itemId": "The option or row." } },
           "setConditions": { "help": "Decides when a section or question appears: as soon as one of the named options was chosen in an earlier single or multiple choice question. Each condition suffices on its own; without a condition it always appears.", "params": { "nodeId": "The section or question.", "conditions": "Per condition { questionId, optionIds }: an earlier single or multiple choice question and at least one of its options; [] removes all conditions." } },
           "buildSurveyFile": { "help": "Builds the general questionnaire (without recipient) as an HTML file and returns file name, type and content. Like the export it settles the version." }
         },
         "recipients": {
           "addRecipient": { "help": "Add an empty recipient. Each recipient gets their own questionnaire file, whose answers identify the recipient." },
           "setRecipientField": { "help": "Set a field of a recipient: name, organisation, group, e-mail or note.", "params": { "recipientId": "The recipient.", "key": "Which field.", "value": "The new text; empty clears it." } },
-          "deleteRecipient": { "help": "Delete a recipient, without asking. Their responses are kept, without a recipient.", "params": { "recipientId": "The recipient." } },
+          "removeRecipient": { "help": "Delete a recipient, without asking. Their responses are kept, without a recipient.", "params": { "recipientId": "The recipient." } },
           "buildRecipientFile": { "help": "Builds a recipient's personal questionnaire file and returns file name, type and content. Like the export it settles the version and marks the recipient as sent.", "params": { "recipientId": "The recipient." } },
           "markSent": { "help": "Marks a recipient as sent without building a file — when the file arrived another way. This records the current questionnaire version: if the structure changes later and the next export raises the version, this recipient's file counts as outdated.", "params": { "recipientId": "The recipient." } }
         },
         "responses": {
           "importResponse": { "help": "Read in an answer file the questionnaire saved on the recipient's side. Files of this questionnaire are taken in, also those of an older version; a file read before, one of another questionnaire or a broken one only shows in the log.", "params": { "json": "The content of the answer file as text.", "fileName": "The name shown in the log." } },
-          "deleteResponse": { "help": "Delete an imported response, without asking; its VoC take-over marks go with it.", "params": { "responseId": "The response." } }
+          "removeResponse": { "help": "Delete an imported response, without asking; its VoC take-over marks go with it.", "params": { "responseId": "The response." } }
         },
         "results": {
           "setFilter": { "help": "Narrow the evaluation to the responses that chose a given option in a single or multiple choice question. Without a filter all responses count.", "params": { "questionId": "The choice question; null together with optionId null lifts the filter.", "optionId": "One of its options; null lifts the filter." } },
@@ -5111,7 +5111,7 @@
               "value": "The new value, as described per field."
             }
           },
-          "deleteRow": {
+          "removeRow": {
             "help": "Delete a cause with its sub-causes, without asking. Links from experiments go.",
             "params": {
               "rowId": "The cause."
@@ -5173,7 +5173,7 @@
               "snapshotId": "The snapshot."
             }
           },
-          "deleteSnapshot": {
+          "removeSnapshot": {
             "help": "Delete a snapshot, without asking.",
             "params": {
               "snapshotId": "The snapshot."
@@ -5201,7 +5201,7 @@
               "value": "The new value, as described per field."
             }
           },
-          "deleteExperiment": {
+          "removeExperiment": {
             "help": "Delete an experiment, without asking.",
             "params": {
               "experimentId": "The experiment."
@@ -5232,7 +5232,7 @@
               "value": "The new text; the date as YYYY-MM-DD or empty."
             }
           },
-          "deleteFact": {
+          "removeFact": {
             "help": "Delete a fact, without asking.",
             "params": {
               "factId": "The fact."

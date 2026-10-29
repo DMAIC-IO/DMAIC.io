@@ -103,13 +103,13 @@ export class RecipientsViewModel {
    * @returns {void}
    * @throws {Error} if the recipient is unknown
    */
-  deleteRecipient(recipientId) {
+  removeRecipient(recipientId) {
     requireKnownId('recipientId', recipientId, this.model.recipients.map((r) => r.id));
     this.model.deleteRecipient(recipientId);
   }
 
   /**
-   * @noagent asks first; agents call deleteRecipient
+   * @noagent asks first; agents call removeRecipient
    * @param {string} id recipient id
    * @returns {Promise<void>}
    */
@@ -119,7 +119,7 @@ export class RecipientsViewModel {
       const ok = await this._context.dialog.confirm({ message: this._t('confirmRecipientDelete', { name }), danger: true });
       if (!ok) return;
     }
-    this.deleteRecipient(id);
+    this.removeRecipient(id);
   }
 
   /**

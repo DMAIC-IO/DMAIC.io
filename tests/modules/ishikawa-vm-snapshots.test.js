@@ -76,16 +76,16 @@ suite('ishikawa-vm snapshots — save, load, delete', () => {
     const { ctx, vm, model } = setup();
     const id = vm.saveSnapshot('A');
     model.addRow(null);
-    ctx.dialog.confirm = async () => { vm.deleteSnapshot(id); return true; };
+    ctx.dialog.confirm = async () => { vm.removeSnapshot(id); return true; };
     await vm.confirmLoadSnapshot(id);
     assertEqual(model.rows.length, 1);
   });
 
-  test('deleteSnapshot ends a comparison with it and tells the others', () => {
+  test('removeSnapshot ends a comparison with it and tells the others', () => {
     const { vm, model, heard } = setup();
     const id = vm.saveSnapshot('A');
     vm.compareSnapshot(id);
-    vm.deleteSnapshot(id);
+    vm.removeSnapshot(id);
     assertEqual(model.snapshots.length, 0);
     assertEqual(vm.compareSnapId, null);
     assertDeepEqual(heard.slice(-2), [

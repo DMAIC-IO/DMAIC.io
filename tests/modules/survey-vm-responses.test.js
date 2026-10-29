@@ -83,14 +83,14 @@ suite('survey-vm responses — agent surface', () => {
     assertThrows(() => vm.importResponse('{}'), /invalid fileName undefined; allowed: any string/);
   });
 
-  test('deleteResponse checks the id and never asks', () => {
+  test('removeResponse checks the id and never asks', () => {
     const { ctx, vm, model } = setup();
     vm.importResponse(answerJson(model, 'r1'), 'a.json');
     vm.toggleResponse('r1');
-    vm.deleteResponse('r1');
+    vm.removeResponse('r1');
     assertEqual(model.responses.length, 0);
     assertEqual(vm.openResponseId, null);
     assertEqual(ctx.confirms.length, 0);
-    assertThrows(() => vm.deleteResponse('r1'), /unknown responseId "r1"; available: $/);
+    assertThrows(() => vm.removeResponse('r1'), /unknown responseId "r1"; available: $/);
   });
 });

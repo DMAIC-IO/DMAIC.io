@@ -185,14 +185,14 @@ export class ExperimentsViewModel {
    * @returns {void}
    * @throws {Error} if the experiment is unknown
    */
-  deleteExperiment(experimentId) {
+  removeExperiment(experimentId) {
     requireKnownId('experimentId', experimentId, this.model.experiments.map((x) => x.id));
     this.model.removeExperiment(experimentId);
     this._nextTick(() => this.render());
   }
 
   /**
-   * @noagent asks first; agents call deleteExperiment
+   * @noagent asks first; agents call removeExperiment
    * @param {number} id experiment id
    * @returns {Promise<void>}
    */
@@ -208,7 +208,7 @@ export class ExperimentsViewModel {
     });
     // The experiment may have gone while the dialog was open (an agent call).
     if (!ok || !this.model.experiments.some(y => y.id === id)) return;
-    this.deleteExperiment(id);
+    this.removeExperiment(id);
   }
 
   /**
@@ -312,13 +312,13 @@ export class ExperimentsViewModel {
    * @returns {void}
    * @throws {Error} if the fact is unknown
    */
-  deleteFact(factId) {
+  removeFact(factId) {
     requireKnownId('factId', factId, this.model.facts.map((f) => f.id));
     this.model.removeFact(factId);
   }
 
   /**
-   * @noagent asks first; agents call deleteFact
+   * @noagent asks first; agents call removeFact
    * @param {number} id fact id
    * @returns {Promise<void>}
    */
@@ -334,7 +334,7 @@ export class ExperimentsViewModel {
     });
     // The fact may have gone while the dialog was open (an agent call).
     if (!ok || !this.model.facts.some(x => x.id === id)) return;
-    this.deleteFact(id);
+    this.removeFact(id);
   }
 
   /**

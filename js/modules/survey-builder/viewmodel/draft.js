@@ -303,14 +303,14 @@ export class DraftViewModel {
    * @returns {number} how many conditions were removed
    * @throws {Error} if the section is unknown
    */
-  deleteSection(sectionId) {
+  removeSection(sectionId) {
     requireKnownId('sectionId', sectionId, this._sectionIds());
     if (this.selectedSectionId === sectionId) this.selectedSectionId = null;
     return this.reportRemoved(this.model.deleteSection(sectionId));
   }
 
   /**
-   * @noagent asks first; agents call deleteSection
+   * @noagent asks first; agents call removeSection
    * @param {string} id section id
    * @returns {Promise<void>}
    */
@@ -322,7 +322,7 @@ export class DraftViewModel {
       const ok = await this._context.dialog.confirm({ message: this._t('confirmSectionDelete', { count }), danger: true });
       if (!ok) return;
     }
-    this.deleteSection(id);
+    this.removeSection(id);
   }
 
   /**
@@ -382,13 +382,13 @@ export class DraftViewModel {
    * @returns {number} how many conditions were removed
    * @throws {Error} if the question is unknown
    */
-  deleteQuestion(questionId) {
+  removeQuestion(questionId) {
     requireKnownId('questionId', questionId, this._questionIds());
     return this.reportRemoved(this.model.deleteQuestion(questionId));
   }
 
   /**
-   * @noagent asks first; agents call deleteQuestion
+   * @noagent asks first; agents call removeQuestion
    * @param {string} id question id
    * @returns {Promise<void>}
    */
@@ -398,7 +398,7 @@ export class DraftViewModel {
       const ok = await this._context.dialog.confirm({ message: this._t('confirmDeleteAffected', { count }), danger: true });
       if (!ok) return;
     }
-    this.deleteQuestion(id);
+    this.removeQuestion(id);
   }
 
   // ── Selection ─────────────────────────────────────────────
@@ -682,13 +682,13 @@ export class DraftViewModel {
    * @returns {number} how many conditions were removed
    * @throws {Error} if question or item are unknown
    */
-  deleteItem(questionId, itemId) {
+  removeItem(questionId, itemId) {
     const { kind } = this._itemTarget(questionId, itemId);
     return this.reportRemoved(this.model.deleteItem(questionId, kind, itemId));
   }
 
   /**
-   * @noagent asks first; agents call deleteItem
+   * @noagent asks first; agents call removeItem
    * @param {string} itemId
    * @returns {Promise<void>}
    */
@@ -700,7 +700,7 @@ export class DraftViewModel {
       const ok = await this._context.dialog.confirm({ message: this._t('confirmDeleteAffected', { count }), danger: true });
       if (!ok) return;
     }
-    this.deleteItem(q.id, itemId);
+    this.removeItem(q.id, itemId);
   }
 
   // ── Conditions ────────────────────────────────────────────

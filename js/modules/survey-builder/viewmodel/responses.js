@@ -231,19 +231,19 @@ export class ResponsesViewModel {
    * @returns {void}
    * @throws {Error} if the response is unknown
    */
-  deleteResponse(responseId) {
+  removeResponse(responseId) {
     requireKnownId('responseId', responseId, this.model.responses.map((r) => r.id));
     if (this.openResponseId === responseId) this.openResponseId = null;
     this.model.deleteResponse(responseId);
   }
 
   /**
-   * @noagent asks first; agents call deleteResponse
+   * @noagent asks first; agents call removeResponse
    * @param {string} id response id
    * @returns {Promise<void>}
    */
   async confirmDeleteResponse(id) {
     const ok = await this._context.dialog.confirm({ message: this._t('confirmResponseDelete'), danger: true });
-    if (ok) this.deleteResponse(id);
+    if (ok) this.removeResponse(id);
   }
 }

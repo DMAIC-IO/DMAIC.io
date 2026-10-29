@@ -144,7 +144,7 @@ export class SnapshotsViewModel {
    * @returns {void}
    * @throws {Error} if the snapshot is unknown
    */
-  deleteSnapshot(snapshotId) {
+  removeSnapshot(snapshotId) {
     requireKnownId('snapshotId', snapshotId, this.model.snapshots.map((s) => s.id));
     this.model.removeSnapshot(snapshotId);
     if (this.compareSnapId === snapshotId) this.closeCompare();
@@ -159,7 +159,7 @@ export class SnapshotsViewModel {
    */
   removeFromList(id, $event) {
     $event.stopPropagation();
-    this.deleteSnapshot(id);
+    this.removeSnapshot(id);
   }
 
   /**

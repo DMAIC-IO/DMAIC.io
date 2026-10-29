@@ -107,7 +107,7 @@ suite('ishikawa-vm causes — rows', () => {
     assertThrows(() => vm.setRowField(99, 'name', 'x'));
   });
 
-  test('deleteRow removes the subtree without asking; confirmDeleteRow asks', async () => {
+  test('removeRow removes the subtree without asking; confirmDeleteRow asks', async () => {
     const { ctx, vm, model } = setup();
     const p = vm.addRow();
     const c = vm.addSubRow(p);
@@ -116,7 +116,7 @@ suite('ishikawa-vm causes — rows', () => {
     await vm.confirmDeleteRow(p);
     assertEqual(model.rows.length, 2);
     assertEqual(ctx.confirms[0].message.startsWith('delRowConfirmWithSubs|'), true);
-    vm.deleteRow(p);
+    vm.removeRow(p);
     assertEqual(model.rows.length, 0);
     assertEqual(vm.collapsed[c], undefined);
   });
@@ -125,7 +125,7 @@ suite('ishikawa-vm causes — rows', () => {
     const { ctx, vm, model } = setup();
     const gone = vm.addRow();
     vm.addRow();
-    ctx.dialog.confirm = async () => { vm.deleteRow(gone); return true; };
+    ctx.dialog.confirm = async () => { vm.removeRow(gone); return true; };
     await vm.confirmDeleteRow(gone);
     assertEqual(model.rows.length, 1);
   });

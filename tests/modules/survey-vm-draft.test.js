@@ -129,7 +129,7 @@ suite('survey-vm draft — agent surface', () => {
     assertDeepEqual(model.survey.sections.map((s) => s.id), [b, a]);
     assertThrows(() => vm.moveSection(b, 'left'), /invalid direction "left"; allowed: up, down/);
     vm.addQuestion(a, 'text');
-    assertEqual(vm.deleteSection(a), 0);
+    assertEqual(vm.removeSection(a), 0);
     assertEqual(ctx.confirms.length, 0);
     assertEqual(model.survey.sections.length, 1);
   });
@@ -157,7 +157,7 @@ suite('survey-vm draft — agent surface', () => {
     assertEqual(vm.changeQuestionType(questionId, 'multi'), 0);
     assertEqual(model.question(questionId).type, 'multi');
     assertEqual(vm.moveQuestion(info, 'up'), 0);
-    assertEqual(vm.deleteQuestion(info), 0);
+    assertEqual(vm.removeQuestion(info), 0);
     assertEqual(model.question(info), null);
   });
 
@@ -171,7 +171,7 @@ suite('survey-vm draft — agent surface', () => {
     assertThrows(() => vm.setItemField(questionId, 'x', 'text', 'G'), /unknown itemId "x"; available: /);
     vm.moveItem(questionId, b, 'up');
     assertDeepEqual(model.question(questionId).options.map((o) => o.id), [b, a]);
-    assertEqual(vm.deleteItem(questionId, b), 0);
+    assertEqual(vm.removeItem(questionId, b), 0);
     const text = vm.addQuestion(sectionId, 'text');
     assertThrows(() => vm.addItem(text), /a text question has no options or rows/);
     const multi = vm.addQuestion(sectionId, 'multi');

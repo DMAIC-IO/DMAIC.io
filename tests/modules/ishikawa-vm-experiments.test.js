@@ -58,11 +58,11 @@ suite('ishikawa-vm experiments — experiments', () => {
     assertThrows(() => vm.setExperimentField(id, 'title', 7));
   });
 
-  test('deleteExperiment removes without asking, confirmDeleteExperiment asks', async () => {
+  test('removeExperiment removes without asking, confirmDeleteExperiment asks', async () => {
     const { ctx, vm, model } = setup();
     const a = vm.addExperiment();
     const b = vm.addExperiment();
-    vm.deleteExperiment(a);
+    vm.removeExperiment(a);
     assertDeepEqual(model.experiments.map((x) => x.id), [b]);
     ctx.confirmAnswer = false;
     await vm.confirmDeleteExperiment(b);
@@ -71,14 +71,14 @@ suite('ishikawa-vm experiments — experiments', () => {
     ctx.confirmAnswer = true;
     await vm.confirmDeleteExperiment(b);
     assertEqual(model.experiments.length, 0);
-    assertThrows(() => vm.deleteExperiment(b));
+    assertThrows(() => vm.removeExperiment(b));
   });
 
   test('confirmDeleteExperiment is a no-op when the experiment went while the dialog was open', async () => {
     const { ctx, vm, model } = setup();
     const gone = vm.addExperiment();
     vm.addExperiment();
-    ctx.dialog.confirm = async () => { vm.deleteExperiment(gone); return true; };
+    ctx.dialog.confirm = async () => { vm.removeExperiment(gone); return true; };
     await vm.confirmDeleteExperiment(gone);
     assertEqual(model.experiments.length, 1);
   });
@@ -134,13 +134,13 @@ suite('ishikawa-vm experiments — facts', () => {
     assertThrows(() => vm.setFactField(id, 'id', 1));
   });
 
-  test('deleteFact, confirmDeleteFact and moveFactBefore', async () => {
+  test('removeFact, confirmDeleteFact and moveFactBefore', async () => {
     const { ctx, vm, model } = setup();
     const a = vm.addFact();
     const b = vm.addFact();
     vm.moveFactBefore(b, a);
     assertDeepEqual(model.facts.map((f) => f.id), [b, a]);
-    vm.deleteFact(b);
+    vm.removeFact(b);
     ctx.confirmAnswer = false;
     await vm.confirmDeleteFact(a);
     assertEqual(model.facts.length, 1);
@@ -153,7 +153,7 @@ suite('ishikawa-vm experiments — facts', () => {
     const { ctx, vm, model } = setup();
     const gone = vm.addFact();
     vm.addFact();
-    ctx.dialog.confirm = async () => { vm.deleteFact(gone); return true; };
+    ctx.dialog.confirm = async () => { vm.removeFact(gone); return true; };
     await vm.confirmDeleteFact(gone);
     assertEqual(model.facts.length, 1);
   });

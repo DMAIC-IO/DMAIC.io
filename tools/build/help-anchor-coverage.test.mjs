@@ -107,6 +107,6 @@ test('echter Baum: läuft durch und liefert eine plausible Zahl (berichtend, kei
 test('eine Aktion eines Teil-Viewmodels ist über ihren Punkt-Schlüssel verankert', async () => {
   const root = fixture({ foo: anchor('modules.foo.actions.draft.addQuestion.help') });
   const out = await run(root, { foo: { available: true,
-    actions: { 'draft.addQuestion': {}, 'draft.deleteQuestion': {} }, fields: {} } });
-  assert.deepEqual(out.missing, ['foo: actions.draft.deleteQuestion']);
+    actions: { 'draft.addQuestion': {}, 'draft.removeQuestion': {} }, fields: {} } });
+  assert.deepEqual(out.missing, ['foo: actions.draft.removeQuestion']);
 });

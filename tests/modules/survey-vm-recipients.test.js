@@ -99,14 +99,14 @@ suite('survey-vm recipients — agent surface', () => {
     assertThrows(() => vm.setRecipientField(id, 'name', 3), /invalid value 3; allowed: any string/);
   });
 
-  test('deleteRecipient never asks, also not for a recipient who answered', () => {
+  test('removeRecipient never asks, also not for a recipient who answered', () => {
     const { ctx, vm, model } = setup();
     const id = vm.addRecipient();
     answer(model, id);
-    vm.deleteRecipient(id);
+    vm.removeRecipient(id);
     assertEqual(model.recipients.length, 0);
     assertEqual(ctx.confirms.length, 0);
     assertEqual(model.responses[0].recipientId, null);
-    assertThrows(() => vm.deleteRecipient(id), /unknown recipientId/);
+    assertThrows(() => vm.removeRecipient(id), /unknown recipientId/);
   });
 });

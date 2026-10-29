@@ -440,7 +440,7 @@ export class CausesViewModel {
    * @returns {void}
    * @throws {Error} if the cause is unknown
    */
-  deleteRow(rowId) {
+  removeRow(rowId) {
     requireKnownId('rowId', rowId, this.model.rows.map((r) => r.id));
     this.model.descIds(rowId).concat(rowId).forEach(x => delete this.collapsed[x]);
     this.model.delRow(rowId);
@@ -448,7 +448,7 @@ export class CausesViewModel {
   }
 
   /**
-   * @noagent asks first; agents call deleteRow
+   * @noagent asks first; agents call removeRow
    * @param {number} id row id
    * @returns {Promise<void>}
    */
@@ -468,7 +468,7 @@ export class CausesViewModel {
     });
     // The row may have gone while the dialog was open (an agent call).
     if (!confirmed || !this.model.rows.some(r => r.id === id)) return;
-    this.deleteRow(id);
+    this.removeRow(id);
   }
 
   /**
