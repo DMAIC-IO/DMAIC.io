@@ -84,7 +84,7 @@ suite('chainViewMixin — gap drops', () => {
 
   test('gapDrop hands the gap index to the model and resets the drag state', () => {
     const moves = [];
-    const c = ctx({ steps: [], moveStepToGap: (f, g) => { moves.push([f, g]); return true; } });
+    const c = ctx({ steps: [{ id: 's1' }, { id: 's2' }, { id: 's3' }], moveStepToGap: (f, g) => { moves.push([f, g]); return true; } });
     c.stepDragStart('s1', dragEvt());
     c.gapDragOver(3, overEvt());
     c.gapDrop(3, overEvt());
@@ -103,7 +103,7 @@ suite('chainViewMixin — gap drops', () => {
 
   test('the …After variants address the gap behind the step', () => {
     const moves = [];
-    const c = ctx({ steps: [], moveStepToGap: (f, g) => { moves.push([f, g]); return true; } });
+    const c = ctx({ steps: [{ id: 's1' }, { id: 's2' }, { id: 's3' }], moveStepToGap: (f, g) => { moves.push([f, g]); return true; } });
     c.stepDragStart('s1', dragEvt());
     c.gapDragOverAfter(2, overEvt());
     assertEqual(c._activeGap, 3);
@@ -248,7 +248,10 @@ suite('chainViewMixin — substeps', () => {
 
   test('subDrop reorders within one parent and ignores cross-parent drops', () => {
     const moves = [];
-    const c = ctx({ moveSubstep: (p, f, t) => { moves.push([p, f, t]); return true; } });
+    const c = ctx({
+      steps: [{ id: 'p1', substeps: [{ id: 's1' }, { id: 's2' }] }, { id: 'p2', substeps: [{ id: 's9' }] }],
+      moveSubstep: (p, f, t) => { moves.push([p, f, t]); return true; },
+    });
     const evt = () => ({ preventDefault() {}, stopPropagation() {}, currentTarget: { classList: { remove() {} } } });
 
     c.subDragStart('p1', 's1', { stopPropagation() {}, target: {} });
@@ -264,7 +267,7 @@ suite('chainViewMixin — substeps', () => {
 
   test('subDrop on the dragged substep itself is a no-op', () => {
     let called = 0;
-    const c = ctx({ moveSubstep: () => { called++; return true; } });
+    const c = ctx({ steps: [{ id: 'p1', substeps: [{ id: 's1' }] }], moveSubstep: () => { called++; return true; } });
     const evt = () => ({ preventDefault() {}, stopPropagation() {}, currentTarget: { classList: { remove() {} } } });
     c.subDragStart('p1', 's1', { stopPropagation() {}, target: {} });
     c.subDrop('p1', 's1', evt());
@@ -310,6 +313,63 @@ suite('chainViewMixin — substeps', () => {
   test('setSubstepsExpanded wirft bei unbekannter stepId', () => {
     const c = ctx({ steps: [{ id: 's1' }], setSubstepsExpanded: () => {} });
     assertThrows(() => c.setSubstepsExpanded('unbekannt', true), /unknown stepId/);
+  });
+
+  test('moveStep reicht stepId und Lücke an moveStepToGap und liefert dessen Ergebnis', () => {
+    const calls = [];
+    const c = ctx({
+      steps: [{ id: 'a' }, { id: 'b' }, { id: 'c' }],
+      moveStepToGap: (id, g) => { calls.push([id, g]); return true; },
+    });
+    assertEqual(c.moveStep('a', 3), true);
+    assertEqual(JSON.stringify(calls), JSON.stringify([['a', 3]]));
+  });
+
+  test('moveStep liefert false, wenn das Model nichts verschiebt', () => {
+    const c = ctx({ steps: [{ id: 'a' }, { id: 'b' }], moveStepToGap: () => false });
+    assertEqual(c.moveStep('a', 0), false);
+  });
+
+  test('moveStep wirft bei unbekannter id und bei Lücke außerhalb 0…n', () => {
+    const c = ctx({ steps: [{ id: 'a' }, { id: 'b' }], moveStepToGap: () => true });
+    assertThrows(() => c.moveStep('x', 0), /unknown stepId/);
+    assertThrows(() => c.moveStep('a', 3), /gapIndex/);
+    assertThrows(() => c.moveStep('a', 1.5), /gapIndex/);
+    assertThrows(() => c.moveStep('a', -1), /gapIndex/);
+  });
+
+  test('moveSubstep reicht die ids an das Model und liefert dessen Ergebnis', () => {
+    const calls = [];
+    const c = ctx({
+      steps: [{ id: 'p', substeps: [{ id: 's1' }, { id: 's2' }] }],
+      moveSubstep: (p, f, t) => { calls.push([p, f, t]); return true; },
+    });
+    assertEqual(c.moveSubstep('p', 's2', 's1'), true);
+    assertEqual(JSON.stringify(calls), JSON.stringify([['p', 's2', 's1']]));
+  });
+
+  test('moveSubstep wirft bei unbekannten ids und bei Ziel gleich Quelle', () => {
+    const c = ctx({ steps: [{ id: 'p', substeps: [{ id: 's1' }, { id: 's2' }] }], moveSubstep: () => true });
+    assertThrows(() => c.moveSubstep('x', 's1', 's2'), /unknown parentId/);
+    assertThrows(() => c.moveSubstep('p', 'sx', 's2'), /unknown substepId/);
+    assertThrows(() => c.moveSubstep('p', 's1', 'sx'), /unknown targetSubstepId/);
+    assertThrows(() => c.moveSubstep('p', 's1', 's1'), /targetSubstepId/);
+  });
+
+  test('gapDrop und subDrop gehen über moveStep/moveSubstep', () => {
+    const seen = [];
+    const c = ctx({
+      steps: [{ id: 'a' }, { id: 'b' }, { id: 'p', substeps: [{ id: 's1' }, { id: 's2' }] }],
+      moveStepToGap: () => true,
+      moveSubstep: () => true,
+    });
+    c.moveStep = (id, g) => { seen.push(['step', id, g]); return true; };
+    c.moveSubstep = (p, f, t) => { seen.push(['sub', p, f, t]); return true; };
+    c._draggedStepId = 'a';
+    c.gapDrop(2, { preventDefault() {} });
+    c._draggedSubId = 's2'; c._draggedParentId = 'p';
+    c.subDrop('p', 's1', { preventDefault() {}, stopPropagation() {}, currentTarget: null });
+    assertEqual(JSON.stringify(seen), JSON.stringify([['step', 'a', 2], ['sub', 'p', 's2', 's1']]));
   });
 
   test('ein Model OHNE addSubstep wirft und nennt die Methode', () => {

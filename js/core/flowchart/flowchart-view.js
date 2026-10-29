@@ -8,7 +8,7 @@
  * override the method after the spread — plain object-literal precedence.
  */
 
-import { requireBoolean, requireKnownId, requireText } from '../agent/agent-argcheck.js';
+import { requireBoolean, requireIndex, requireKnownId, requireText } from '../agent/agent-argcheck.js';
 
 /**
  * @param {object|null} module   the createModule instance (reserved for future hooks)
@@ -235,7 +235,7 @@ export function chainViewMixin(module, _t, opts = {}) {
       this._draggedStepId = null;
       this._activeGap = null;
       if (!from) return;
-      this.model?.moveStepToGap?.(from, g);
+      this.moveStep(from, g);
     },
 
     // The gap BEHIND step `idx` is gap idx + 1. It gets its own methods
@@ -392,6 +392,41 @@ export function chainViewMixin(module, _t, opts = {}) {
       callModel(this.model, 'setSubstepsExpanded', [stepId, expanded]);
     },
     /**
+     * Verschiebt einen Schritt an eine Lücke der Kette. Eine Kette aus n
+     * Schritten hat n+1 Lücken, 0 = ganz vorn, n = ganz hinten — gezählt in
+     * der Kette VOR dem Verschieben.
+     * @agent
+     * @param {string} stepId    id des zu verschiebenden Schritts
+     * @param {number} gapIndex  Ziel-Lücke, ganze Zahl von 0 bis zur Schrittzahl
+     * @returns {boolean} true, wenn sich die Reihenfolge geändert hat; false,
+     *   wenn der Schritt schon an dieser Stelle steht
+     * @throws {Error} wenn stepId unbekannt ist oder gapIndex außerhalb liegt
+     */
+    moveStep(stepId, gapIndex) {
+      const steps = Array.isArray(this.model?.steps) ? this.model.steps : [];
+      requireKnownId('stepId', stepId, steps.map((s) => s.id));
+      requireIndex('gapIndex', gapIndex, steps.length);
+      return callModel(this.model, 'moveStepToGap', [stepId, gapIndex]) === true;
+    },
+    /**
+     * Verschiebt einen Unter-Schritt innerhalb seines Schritts an den Platz
+     * eines anderen Unter-Schritts.
+     * @agent
+     * @param {string} parentId         id des Schritts
+     * @param {string} substepId        id des zu verschiebenden Unter-Schritts
+     * @param {string} targetSubstepId  id des Unter-Schritts, dessen Platz er einnimmt
+     * @returns {boolean} true, wenn sich die Reihenfolge geändert hat
+     * @throws {Error} wenn eine id unbekannt ist oder Quelle und Ziel gleich sind
+     */
+    moveSubstep(parentId, substepId, targetSubstepId) {
+      const steps = Array.isArray(this.model?.steps) ? this.model.steps : [];
+      requireKnownId('parentId', parentId, steps.map((s) => s.id));
+      const ids = (steps.find((s) => s.id === parentId).substeps || []).map((s) => s.id);
+      requireKnownId('substepId', substepId, ids);
+      requireKnownId('targetSubstepId', targetSubstepId, ids.filter((id) => id !== substepId));
+      return callModel(this.model, 'moveSubstep', [parentId, substepId, targetSubstepId]) === true;
+    },
+    /**
      * Append an empty substep to a step.
      * @agent
      * @param {string} stepId  id of the step that gets the new substep
@@ -494,7 +529,7 @@ export function chainViewMixin(module, _t, opts = {}) {
       this._draggedParentId = null;
       event?.currentTarget?.classList?.remove('is-drop-target');
       if (!from || from === subId || parentId !== fromParent) return;
-      this.model?.moveSubstep?.(parentId, from, subId);
+      this.moveSubstep(parentId, from, subId);
     },
 
     /** @noagent */

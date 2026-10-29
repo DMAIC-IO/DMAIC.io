@@ -2780,6 +2780,21 @@
             "text": "Der neue Titel."
           }
         },
+        "moveStep": {
+          "help": "Verschiebt einen Schritt an eine andere Stelle der Kette. Die Lücken werden in der Kette vor dem Verschieben gezählt: 0 ist ganz vorn, die Schrittzahl ganz hinten. Liefert false, wenn der Schritt schon dort steht.",
+          "params": {
+            "stepId": "Die id des Schritts, der verschoben wird. Eine unbekannte id ist ein Fehler.",
+            "gapIndex": "Die Ziel-Lücke als ganze Zahl von 0 bis zur Zahl der Schritte."
+          }
+        },
+        "moveSubstep": {
+          "help": "Verschiebt einen Unter-Schritt innerhalb seines Schritts an den Platz eines anderen Unter-Schritts.",
+          "params": {
+            "parentId": "Die id des Schritts, zu dem beide Unter-Schritte gehören.",
+            "substepId": "Die id des Unter-Schritts, der verschoben wird.",
+            "targetSubstepId": "Die id des Unter-Schritts, dessen Platz er einnimmt; muss ein anderer sein."
+          }
+        },
         "setSubstepsExpanded": {
           "help": "Zeigt die Unter-Schritte eines Schritts oder verbirgt sie; rein darstellend, der Inhalt bleibt.",
           "params": {
@@ -5969,6 +5984,21 @@
             "bandId": "Die id eines Bands außer dem Hauptpfad. Eine unbekannte Band-id, oder das Hauptpfad-Band selbst, ist ein Fehler."
           }
         },
+        "moveStep": {
+          "help": "Verschiebt einen Schritt an eine andere Stelle der Kette. Die Lücken werden in der Kette vor dem Verschieben gezählt: 0 ist ganz vorn, die Schrittzahl ganz hinten. Liefert false, wenn der Schritt schon dort steht. Eine Entscheidung wandert mit ihrem ganzen Zweig; eine Lücke innerhalb dieses Zweigs ändert nichts.",
+          "params": {
+            "stepId": "Die id des Schritts, der verschoben wird. Eine unbekannte id ist ein Fehler.",
+            "gapIndex": "Die Ziel-Lücke als ganze Zahl von 0 bis zur Zahl der Schritte."
+          }
+        },
+        "moveSubstep": {
+          "help": "Verschiebt einen Unter-Schritt innerhalb seines Schritts an den Platz eines anderen Unter-Schritts.",
+          "params": {
+            "parentId": "Die id des Schritts, zu dem beide Unter-Schritte gehören.",
+            "substepId": "Die id des Unter-Schritts, der verschoben wird.",
+            "targetSubstepId": "Die id des Unter-Schritts, dessen Platz er einnimmt; muss ein anderer sein."
+          }
+        },
         "setSubstepsExpanded": {
           "help": "Zeigt die Unter-Schritte eines Schritts oder verbirgt sie; rein darstellend, der Inhalt bleibt.",
           "params": {
@@ -6080,6 +6110,21 @@
           "help": "Entfernt einen Schritt aus der Kette.",
           "params": {
             "stepId": "Die id des zu entfernenden Schritts. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "moveStep": {
+          "help": "Verschiebt einen Schritt an eine andere Stelle der Kette. Die Lücken werden in der Kette vor dem Verschieben gezählt: 0 ist ganz vorn, die Schrittzahl ganz hinten. Liefert false, wenn der Schritt schon dort steht.",
+          "params": {
+            "stepId": "Die id des Schritts, der verschoben wird. Eine unbekannte id ist ein Fehler.",
+            "gapIndex": "Die Ziel-Lücke als ganze Zahl von 0 bis zur Zahl der Schritte."
+          }
+        },
+        "moveSubstep": {
+          "help": "Verschiebt einen Unter-Schritt innerhalb seines Schritts an den Platz eines anderen Unter-Schritts.",
+          "params": {
+            "parentId": "Die id des Schritts, zu dem beide Unter-Schritte gehören.",
+            "substepId": "Die id des Unter-Schritts, der verschoben wird.",
+            "targetSubstepId": "Die id des Unter-Schritts, dessen Platz er einnimmt; muss ein anderer sein."
           }
         },
         "setSubstepsExpanded": {
@@ -6196,6 +6241,21 @@
           "params": {
             "idx": "Die Lücke, an der eingefügt wird (0 = vor dem ersten Schritt, bis zur Kettenlänge = ans Ende). Ein Wert außerhalb dieses Bereichs oder keine ganze Zahl ist ein Fehler.",
             "laneId": "Die id einer vorhandenen Bahn, in der der neue Schritt landet. Eine unbekannte id ist ein Fehler."
+          }
+        },
+        "moveStep": {
+          "help": "Verschiebt einen Schritt an eine andere Stelle der Kette. Die Lücken werden in der Kette vor dem Verschieben gezählt: 0 ist ganz vorn, die Schrittzahl ganz hinten. Liefert false, wenn der Schritt schon dort steht.",
+          "params": {
+            "stepId": "Die id des Schritts, der verschoben wird. Eine unbekannte id ist ein Fehler.",
+            "gapIndex": "Die Ziel-Lücke als ganze Zahl von 0 bis zur Zahl der Schritte."
+          }
+        },
+        "moveSubstep": {
+          "help": "Verschiebt einen Unter-Schritt innerhalb seines Schritts an den Platz eines anderen Unter-Schritts.",
+          "params": {
+            "parentId": "Die id des Schritts, zu dem beide Unter-Schritte gehören.",
+            "substepId": "Die id des Unter-Schritts, der verschoben wird.",
+            "targetSubstepId": "Die id des Unter-Schritts, dessen Platz er einnimmt; muss ein anderer sein."
           }
         },
         "setSubstepsExpanded": {

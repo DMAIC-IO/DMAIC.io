@@ -39,6 +39,48 @@ export const AGENT_REGISTRY = {
         "returns": "void",
         "help": "Set a step's substep disclosure absolutely."
       },
+      "moveStep": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des zu verschiebenden Schritts"
+          },
+          {
+            "name": "gapIndex",
+            "type": "number",
+            "optional": false,
+            "help": "Ziel-Lücke, ganze Zahl von 0 bis zur Schrittzahl"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Verschiebt einen Schritt an eine Lücke der Kette. Eine Kette aus n Schritten hat n+1 Lücken, 0 = ganz vorn, n = ganz hinten — gezählt in der Kette VOR dem Verschieben."
+      },
+      "moveSubstep": {
+        "params": [
+          {
+            "name": "parentId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "substepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des zu verschiebenden Unter-Schritts"
+          },
+          {
+            "name": "targetSubstepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Unter-Schritts, dessen Platz er einnimmt"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Verschiebt einen Unter-Schritt innerhalb seines Schritts an den Platz eines anderen Unter-Schritts."
+      },
       "addSubstep": {
         "params": [
           {
@@ -3707,6 +3749,48 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Set a step's substep disclosure absolutely."
+      },
+      "moveStep": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des zu verschiebenden Schritts"
+          },
+          {
+            "name": "gapIndex",
+            "type": "number",
+            "optional": false,
+            "help": "Ziel-Lücke, ganze Zahl von 0 bis zur Schrittzahl"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Verschiebt einen Schritt an eine Lücke der Kette. Eine Kette aus n Schritten hat n+1 Lücken, 0 = ganz vorn, n = ganz hinten — gezählt in der Kette VOR dem Verschieben."
+      },
+      "moveSubstep": {
+        "params": [
+          {
+            "name": "parentId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "substepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des zu verschiebenden Unter-Schritts"
+          },
+          {
+            "name": "targetSubstepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Unter-Schritts, dessen Platz er einnimmt"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Verschiebt einen Unter-Schritt innerhalb seines Schritts an den Platz eines anderen Unter-Schritts."
       },
       "addSubstep": {
         "params": [
@@ -13251,6 +13335,48 @@ export const AGENT_REGISTRY = {
         "returns": "void",
         "help": "Set a step's substep disclosure absolutely."
       },
+      "moveStep": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des zu verschiebenden Schritts"
+          },
+          {
+            "name": "gapIndex",
+            "type": "number",
+            "optional": false,
+            "help": "Ziel-Lücke, ganze Zahl von 0 bis zur Schrittzahl"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Verschiebt einen Schritt an eine Lücke der Kette. Eine Kette aus n Schritten hat n+1 Lücken, 0 = ganz vorn, n = ganz hinten — gezählt in der Kette VOR dem Verschieben."
+      },
+      "moveSubstep": {
+        "params": [
+          {
+            "name": "parentId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "substepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des zu verschiebenden Unter-Schritts"
+          },
+          {
+            "name": "targetSubstepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Unter-Schritts, dessen Platz er einnimmt"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Verschiebt einen Unter-Schritt innerhalb seines Schritts an den Platz eines anderen Unter-Schritts."
+      },
       "addSubstep": {
         "params": [
           {
@@ -14818,6 +14944,48 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Set a step's substep disclosure absolutely."
+      },
+      "moveStep": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des zu verschiebenden Schritts"
+          },
+          {
+            "name": "gapIndex",
+            "type": "number",
+            "optional": false,
+            "help": "Ziel-Lücke, ganze Zahl von 0 bis zur Schrittzahl"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Verschiebt einen Schritt an eine Lücke der Kette. Eine Kette aus n Schritten hat n+1 Lücken, 0 = ganz vorn, n = ganz hinten — gezählt in der Kette VOR dem Verschieben."
+      },
+      "moveSubstep": {
+        "params": [
+          {
+            "name": "parentId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "substepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des zu verschiebenden Unter-Schritts"
+          },
+          {
+            "name": "targetSubstepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Unter-Schritts, dessen Platz er einnimmt"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Verschiebt einen Unter-Schritt innerhalb seines Schritts an den Platz eines anderen Unter-Schritts."
       },
       "addSubstep": {
         "params": [

@@ -2780,6 +2780,21 @@
             "text": "The new title."
           }
         },
+        "moveStep": {
+          "help": "Moves a step to another position in the chain. Gaps are counted in the chain before the move: 0 is the very front, the step count the very end. Returns false if the step is already there.",
+          "params": {
+            "stepId": "Id of the step to move. An unknown id is an error.",
+            "gapIndex": "Target gap as a whole number from 0 to the number of steps."
+          }
+        },
+        "moveSubstep": {
+          "help": "Moves a substep within its step to the position of another substep.",
+          "params": {
+            "parentId": "Id of the step both substeps belong to.",
+            "substepId": "Id of the substep to move.",
+            "targetSubstepId": "Id of the substep whose position it takes; must be a different one."
+          }
+        },
         "setSubstepsExpanded": {
           "help": "Shows or hides a step's sub-steps; display only, the content stays.",
           "params": {
@@ -5965,6 +5980,21 @@
             "bandId": "The id of a band other than the main path. An unknown band id, or the main path itself, is an error."
           }
         },
+        "moveStep": {
+          "help": "Moves a step to another position in the chain. Gaps are counted in the chain before the move: 0 is the very front, the step count the very end. Returns false if the step is already there. A decision moves together with its whole branch; a gap inside that branch changes nothing.",
+          "params": {
+            "stepId": "Id of the step to move. An unknown id is an error.",
+            "gapIndex": "Target gap as a whole number from 0 to the number of steps."
+          }
+        },
+        "moveSubstep": {
+          "help": "Moves a substep within its step to the position of another substep.",
+          "params": {
+            "parentId": "Id of the step both substeps belong to.",
+            "substepId": "Id of the substep to move.",
+            "targetSubstepId": "Id of the substep whose position it takes; must be a different one."
+          }
+        },
         "setSubstepsExpanded": {
           "help": "Shows or hides a step's sub-steps; display only, the content stays.",
           "params": {
@@ -6076,6 +6106,21 @@
           "help": "Removes a step from the chain.",
           "params": {
             "stepId": "The id of the step to remove. An unknown id is an error."
+          }
+        },
+        "moveStep": {
+          "help": "Moves a step to another position in the chain. Gaps are counted in the chain before the move: 0 is the very front, the step count the very end. Returns false if the step is already there.",
+          "params": {
+            "stepId": "Id of the step to move. An unknown id is an error.",
+            "gapIndex": "Target gap as a whole number from 0 to the number of steps."
+          }
+        },
+        "moveSubstep": {
+          "help": "Moves a substep within its step to the position of another substep.",
+          "params": {
+            "parentId": "Id of the step both substeps belong to.",
+            "substepId": "Id of the substep to move.",
+            "targetSubstepId": "Id of the substep whose position it takes; must be a different one."
           }
         },
         "setSubstepsExpanded": {
@@ -6192,6 +6237,21 @@
           "params": {
             "idx": "The gap to insert at (0 = before the first step, up to the chain length = at the end). A value outside that range or a non-integer is an error.",
             "laneId": "The id of an existing lane the new step lands in. An unknown id is an error."
+          }
+        },
+        "moveStep": {
+          "help": "Moves a step to another position in the chain. Gaps are counted in the chain before the move: 0 is the very front, the step count the very end. Returns false if the step is already there.",
+          "params": {
+            "stepId": "Id of the step to move. An unknown id is an error.",
+            "gapIndex": "Target gap as a whole number from 0 to the number of steps."
+          }
+        },
+        "moveSubstep": {
+          "help": "Moves a substep within its step to the position of another substep.",
+          "params": {
+            "parentId": "Id of the step both substeps belong to.",
+            "substepId": "Id of the substep to move.",
+            "targetSubstepId": "Id of the substep whose position it takes; must be a different one."
           }
         },
         "setSubstepsExpanded": {
