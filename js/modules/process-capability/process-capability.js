@@ -27,7 +27,8 @@
 
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireBoolean, requireEnum, requireKnownId, requireNumber, requireNumericText, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireEnum, requireKnownId, requireNumericText, requireText } from '../../core/agent/agent-argcheck.js';
+import { paramInputMixin, numberCheck } from '../../core/param-input.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { State, SUBGROUP_MODES } from './process-capability-model.js';
 import { SUBGROUP_METHODS } from '../../engines/sigma-within-engine.js';
@@ -51,9 +52,15 @@ const PARAM_KEYS = ['name', 'lsl', 'target', 'usl', 'unit', 'confidence',
   'subgroupMode', 'subgroupSize', 'withinMethod', 'mrSpan', 'unbiased'];
 
 /** Zulässige Bereiche der Ganzzahlfelder: eine Quelle für Prüfer und Eingabe. */
-const PARAM_RANGES = {
+const PARAM_SPEC = {
   subgroupSize: { min: 1, integer: true },
   mrSpan: { min: 2, max: 100, integer: true },
+};
+
+/** Zahlenprüfer eines Ganzzahlfelds; das Model hält den Wert als Text. */
+const textNumberCheck = (key) => {
+  const check = numberCheck(PARAM_SPEC[key]);
+  return (v, vm) => String(check(v, vm));
 };
 
 /**
@@ -69,9 +76,9 @@ const PARAM_CHECKS = {
   unit: (v) => requireText('value', v),
   confidence: (v) => requireNumericText('value', v),
   subgroupMode: (v) => { requireEnum('value', v, SUBGROUP_MODES); return v; },
-  subgroupSize: (v) => String(requireNumber('value', v, PARAM_RANGES.subgroupSize)),
+  subgroupSize: textNumberCheck('subgroupSize'),
   withinMethod: (v) => v, // gegen withinMethodOptions() in setParam geprüft: die Menge hängt von den Daten ab
-  mrSpan: (v) => String(requireNumber('value', v, PARAM_RANGES.mrSpan)),
+  mrSpan: textNumberCheck('mrSpan'),
   unbiased: (v) => requireBoolean('value', v),
 };
 
@@ -210,6 +217,13 @@ const mod = createModule({
     /** Capability limit as locale-formatted text (decimal comma in German). */
     const limitText = (v) => v.toLocaleString(module._context.i18n.getLanguage(), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     return {
+      ...paramInputMixin({
+        specs: PARAM_SPEC,
+        checks: PARAM_CHECKS,
+        root: (vm) => vm.model.params,
+        t: _t,
+        lang: () => module._context?.i18n?.getLanguage?.() ?? 'de',
+      }),
       // ── Transient view state (not persisted) ──────────────────
       result: null,
       _charts: [],
@@ -535,21 +549,6 @@ const mod = createModule({
           value,
           label: _t(value === 'size' ? 'subgroupModeSize' : 'subgroupModeColumn'),
         }));
-      },
-
-      /**
-       * DOM handler for the whole-number inputs: a value the sink refuses is
-       * reset to the model value instead of throwing into the event loop.
-       * @noagent DOM event handler; the agent uses setParam()
-       */
-      onWholeNumberInput(key, event) {
-        try {
-          PARAM_CHECKS[key](event.target.value);
-        } catch {
-          event.target.value = this.model.params[key];
-          return;
-        }
-        this.setParam(key, event.target.value);
       },
 
       /** @noagent view transform; horizontal stats table columns (label/value pairs) */

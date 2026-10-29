@@ -68,7 +68,7 @@
       <label data-help-key="modules.process-capability.types.Params.subgroupSize" x-text="t('subgroupSizeLabel')"></label>
       <input type="text" class="field field--num" data-ref="inp-subgroup-size"
              placeholder="1" inputmode="numeric"
-             :value="model.params.subgroupSize" @change="onWholeNumberInput('subgroupSize', $event)">
+             :value="paramValue('subgroupSize')" @change="onParamInput('subgroupSize', $event)">
       <div class="field-hint" x-text="model.embeddedValues ? t('subgroupEmbeddedHint') : t('subgroupHint')"></div>
     </div>
 
@@ -91,7 +91,7 @@
         <label data-help-key="modules.process-capability.types.Params.mrSpan" x-text="t('mrSpanLabel')"></label>
         <input type="text" class="field field--num" data-ref="inp-mr-span"
                placeholder="2" inputmode="numeric"
-               :value="model.params.mrSpan" @change="onWholeNumberInput('mrSpan', $event)">
+               :value="paramValue('mrSpan')" @change="onParamInput('mrSpan', $event)">
       </div>
     </div>
 
