@@ -175,18 +175,9 @@ export default createModule({
       toUnitKeys() {
         return this.model.toUnitKeys();
       },
-      /**
-       * @noagent Reaktion der Oberfläche auf die Einheitenauswahl. Das
-       * Auswahlfeld hat `fromUnit` selbst schon geschrieben; der Aufruf
-       * geht trotzdem durch die Senke, damit `toUnit` genau eine
-       * Zuweisungsstelle hat und die in einer `@agent`-Methode liegt
-       * (Ruling 56). Die Zuweisung an `fromUnit` ist dabei folgenlos, und
-       * werfen kann es nicht: das Feld bietet nur Einheiten der aktiven
-       * Größenart an.
-       */
-      onFromChange() {
-        this.setFromUnit(this.model.fromUnit);
-      },
+
+      /** @noagent view transform: der Wert einer Auswahl als Zahl (Position in der Zeitzonenliste). */
+      selectedIndex: (event) => Number(event.target.value),
 
       // ── Conversion display ────────────────────────────────
       /** @noagent view transform: eine Zahl in Anzeigeform. */

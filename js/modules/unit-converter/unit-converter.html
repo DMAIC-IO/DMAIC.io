@@ -27,7 +27,7 @@
       <div class="module-unit-converter__fields">
         <div>
           <label class="module-unit-converter__field-label" data-help-key="modules.unit-converter.fields.fromUnit.help" x-text="t('from')"></label>
-          <select class="field" data-ref="fromUnit" x-model="model.fromUnit" @change="onFromChange()">
+          <select class="field" data-ref="fromUnit" @change="setFromUnit($event.target.value)">
             <template x-for="grp in fromGroups()" :key="grp.key">
               <optgroup :label="grp.label">
                 <template x-for="uk in grp.members" :key="uk">
@@ -48,7 +48,7 @@
         </div>
         <div>
           <label class="module-unit-converter__field-label" data-help-key="modules.unit-converter.fields.toUnit.help" x-text="t('to')"></label>
-          <select class="field" data-ref="toUnit" x-model="model.toUnit">
+          <select class="field" data-ref="toUnit" @change="setToUnit($event.target.value)">
             <template x-for="uk in toUnitKeys()" :key="uk">
               <option :value="uk" :selected="model.toUnit === uk" x-text="unitLabel(uk)"></option>
             </template>
@@ -101,14 +101,14 @@
         <div class="module-unit-converter__fields">
           <div>
             <label class="module-unit-converter__field-label" data-help-key="modules.unit-converter.fields.tzFrom.help" x-text="t('fromTimezone')"></label>
-            <select class="field" data-ref="tzFrom" x-model.number="model.tzFrom">
+            <select class="field" data-ref="tzFrom" @change="setTzFrom(selectedIndex($event))">
               <template x-for="(z, i) in timezones" :key="i">
                 <option :value="i" :selected="model.tzFrom === i" x-text="tzLabel(z)"></option>
               </template>
             </select>
             <div class="module-unit-converter__tz-input-row">
-              <input class="module-unit-converter__tz-time" data-ref="tzTime" type="time" step="60" x-model="model.tzTime">
-              <input class="module-unit-converter__tz-date" data-ref="tzDate" type="date" x-model="model.tzDate">
+              <input class="module-unit-converter__tz-time" data-ref="tzTime" type="time" step="60" :value="model.tzTime" @change="setTzTime($event.target.value)">
+              <input class="module-unit-converter__tz-date" data-ref="tzDate" type="date" :value="model.tzDate" @change="setTzDate($event.target.value)">
             </div>
           </div>
           <div class="module-unit-converter__arrow">
@@ -116,7 +116,7 @@
           </div>
           <div>
             <label class="module-unit-converter__field-label" data-help-key="modules.unit-converter.fields.tzTo.help" x-text="t('toTimezone')"></label>
-            <select class="field" data-ref="tzTo" x-model.number="model.tzTo">
+            <select class="field" data-ref="tzTo" @change="setTzTo(selectedIndex($event))">
               <template x-for="(z, i) in timezones" :key="i">
                 <option :value="i" :selected="model.tzTo === i" x-text="tzLabel(z)"></option>
               </template>
