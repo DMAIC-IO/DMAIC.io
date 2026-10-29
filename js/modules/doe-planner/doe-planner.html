@@ -3,7 +3,7 @@
 
     <!-- Project (EVOP) toggle -->
     <label class="doe__project-toggle" data-help-key="modules.doe-planner.actions.evop.setProjectMode.help">
-      <input type="checkbox" class="doe__project-check" x-model="model.projectMode" @change="evop.setProjectMode(model.projectMode)" />
+      <input type="checkbox" class="doe__project-check" :checked="model.projectMode" @change="evop.setProjectMode($event.target.checked)" />
       <span x-text="t('projectMode')"></span>
     </label>
 
@@ -465,12 +465,12 @@
     <div class="doe__param-group">
       <div class="field-checks">
         <label class="field-check">
-          <input type="checkbox" class="doe__randomize-check" x-model="model.options.randomize" @change="design.setRandomize(model.options.randomize)" />
+          <input type="checkbox" class="doe__randomize-check" :checked="model.options.randomize" @change="design.setRandomize($event.target.checked)" />
           <span data-help-key="modules.doe-planner.tipRandomize" x-text="t('optRandomize')"></span>
         </label>
         <template x-if="design.showCenterPointsOption()">
           <label class="field-check">
-            <input type="checkbox" class="doe__center-check" x-model="model.options.centerPoints" @change="design.setCenterPoints(model.options.centerPoints)" />
+            <input type="checkbox" class="doe__center-check" :checked="model.options.centerPoints" @change="design.setCenterPoints($event.target.checked)" />
             <span data-help-key="modules.doe-planner.tipCenterPoints" x-text="t('optCenterPoints')"></span>
           </label>
         </template>
@@ -494,7 +494,7 @@
       <div class="doe__ccd-params">
         <div class="field-group">
           <label class="doe__input-label" data-help-key="modules.doe-planner.actions.design.setAlphaType.help" x-text="t('alphaType')"></label>
-          <select class="field doe__alpha-type-select" x-model="model.options.alphaType" @change="design.setAlphaType(model.options.alphaType)">
+          <select class="field doe__alpha-type-select" :value="model.options.alphaType" @change="design.setAlphaType($event.target.value)">
             <option value="rotatable" x-text="t('alphaRotatable')"></option>
             <option value="face-centered" x-text="t('alphaFaceCentered')"></option>
             <option value="spherical" x-text="t('alphaSpherical')"></option>
