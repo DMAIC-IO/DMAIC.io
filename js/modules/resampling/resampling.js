@@ -42,16 +42,17 @@ const PARAM_KEYS = ['mode', 'statisticId', 'statParams.trim', 'statParams.p',
   'B', 'seed', 'confidence', 'ciMethod'];
 
 /**
- * Je Parameter sein Prüfer; gibt den normalisierten Wert zurück. Wie die
- * Oberfläche nimmt er jede endliche Zahl an — die Absage für Werte außerhalb
- * der Bereiche (B, Konfidenz, Trimmanteil …) steht in `validationMsg`.
- * `statisticId` prüft `setParam` gegen die Statistiken des Modus.
+ * Je Parameter sein Prüfer; gibt den normalisierten Wert zurück.
+ * Konfidenz, Trimmanteil und Quantil p sind mathematisch begrenzt und werden
+ * außerhalb ihres Bereichs abgewiesen (D1, Spec §3). B und seed nehmen jede
+ * ganze Zahl an — die Absage für Werte außerhalb ihres Bereichs steht in
+ * `validationMsg`. `statisticId` prüft `setParam` gegen die Statistiken des Modus.
  */
 const PARAM_CHECKS = {
   mode: (v) => { requireEnum('value', v, MODES); return v; },
   statisticId: (v) => requireText('value', v),
-  'statParams.trim': (v) => requireNumber('value', v),
-  'statParams.p': (v) => requireNumber('value', v),
+  'statParams.trim': (v) => requireNumber('value', v, { min: 0, exclusiveMax: 0.5 }),
+  'statParams.p': (v) => requireNumber('value', v, { exclusiveMin: 0, exclusiveMax: 1 }),
   'statParams.lsl': (v) => requireText('value', v),
   'statParams.usl': (v) => requireText('value', v),
   contrast: (v) => { requireEnum('value', v, CONTRASTS); return v; },
@@ -59,7 +60,7 @@ const PARAM_CHECKS = {
   target: (v) => requireText('value', v),
   B: (v) => requireNumber('value', v, { integer: true }),
   seed: (v) => requireNumber('value', v, { integer: true }),
-  confidence: (v) => requireNumber('value', v),
+  confidence: (v) => requireNumber('value', v, { exclusiveMin: 0, exclusiveMax: 1 }),
   ciMethod: (v) => { requireEnum('value', v, CI_METHODS); return v; },
 };
 
