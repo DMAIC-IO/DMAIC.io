@@ -965,18 +965,29 @@ export class DraftViewModel {
   }
 
   /**
-   * "Fragebogen exportieren": general HTML without recipient.
-   * @returns {Promise<void>}
-   * @noagent file download
+   * Builds the general questionnaire file (no recipient); like the export it
+   * settles the version.
+   * @agent
+   * @returns {Promise<{fileName: string, mimeType: string, content: string}>} the file
    */
-  async exportGeneral() {
+  async buildSurveyFile() {
     const survey = JSON.parse(JSON.stringify(this.model.survey));
     const strings = await runnerStrings(this._context.i18n, survey.lang);
     // The file carries the version the export settles on, but the model is
     // only marked once the file was built: a failure must not bump it.
     survey.version = this.model.nextExportVersion();
-    const html = buildSurveyHtml(survey, strings, { recipientId: null });
+    const content = buildSurveyHtml(survey, strings, { recipientId: null });
     this.model.markExported();
-    downloadBlob(new Blob([html], { type: 'text/html;charset=utf-8' }), surveyFileName(survey, strings, null));
+    return { fileName: surveyFileName(survey, strings, null), mimeType: 'text/html;charset=utf-8', content };
+  }
+
+  /**
+   * "Fragebogen exportieren": general HTML without recipient.
+   * @noagent file download; the agent uses buildSurveyFile()
+   * @returns {Promise<void>}
+   */
+  async exportGeneral() {
+    const f = await this.buildSurveyFile();
+    downloadBlob(new Blob([f.content], { type: f.mimeType }), f.fileName);
   }
 }

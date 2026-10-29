@@ -163,24 +163,50 @@ export class RecipientsViewModel {
   }
 
   /**
-   * "HTML erzeugen": the recipient's own file. Exporting first settles the
-   * version (a pending structural change bumps it now), then the recipient
-   * is stamped with that version, so the outdated hint clears.
-   * @noagent file download
-   * @param {string} id recipient id
-   * @returns {Promise<void>}
+   * Builds the recipient's own file. Exporting first settles the version (a
+   * pending structural change bumps it now), then the recipient is stamped
+   * with that version and marked as sent, so the outdated hint clears.
+   * @agent
+   * @param {string} recipientId id of the recipient
+   * @returns {Promise<{fileName: string, mimeType: string, content: string}>} the file
+   * @throws {Error} if no recipient carries this id
    */
-  async exportForRecipient(id) {
-    const r = this.model.recipients.find((x) => x.id === id);
-    if (!r) return;
+  async buildRecipientFile(recipientId) {
+    requireKnownId('recipientId', recipientId, this.model.recipients.map((x) => x.id));
+    const r = this.model.recipients.find((x) => x.id === recipientId);
     const survey = JSON.parse(JSON.stringify(this.model.survey));
     const strings = await runnerStrings(this._context.i18n, survey.lang);
     // The file carries the version the export settles on, but the model is
     // only marked once the file was built: a failure must change nothing.
     survey.version = this.model.nextExportVersion();
-    const html = buildSurveyHtml(survey, strings, { recipientId: id });
+    const content = buildSurveyHtml(survey, strings, { recipientId });
     this.model.markExported();
-    this.model.markSent(id, new Date().toISOString());
-    downloadBlob(new Blob([html], { type: 'text/html;charset=utf-8' }), surveyFileName(survey, strings, r));
+    this.model.markSent(recipientId, new Date().toISOString());
+    return { fileName: surveyFileName(survey, strings, r), mimeType: 'text/html;charset=utf-8', content };
+  }
+
+  /**
+   * "HTML erzeugen": downloads the recipient's own file.
+   * @noagent file download; the agent uses buildRecipientFile()
+   * @param {string} id recipient id
+   * @returns {Promise<void>}
+   */
+  async exportForRecipient(id) {
+    if (!this.model.recipients.some((x) => x.id === id)) return;
+    const f = await this.buildRecipientFile(id);
+    downloadBlob(new Blob([f.content], { type: f.mimeType }), f.fileName);
+  }
+
+  /**
+   * Marks a recipient as sent without building a file, for when the file
+   * arrived another way.
+   * @agent
+   * @param {string} recipientId id of the recipient
+   * @returns {void}
+   * @throws {Error} if no recipient carries this id
+   */
+  markSent(recipientId) {
+    requireKnownId('recipientId', recipientId, this.model.recipients.map((x) => x.id));
+    this.model.markSent(recipientId, new Date().toISOString());
   }
 }

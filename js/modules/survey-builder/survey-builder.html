@@ -193,7 +193,7 @@
           </ul>
         </div>
         <div class="survey-builder__export">
-          <button class="btn btn--primary btn--sm" type="button" data-ref="exportGeneral" @click="draft.exportGeneral()">
+          <button class="btn btn--primary btn--sm" type="button" data-ref="exportGeneral" data-help-key="modules.survey-builder.actions.draft.buildSurveyFile.help" @click="draft.exportGeneral()">
             <span class="icon icon--sm" data-icon="action.download" aria-hidden="true"></span><span x-text="t('exportGeneral')"></span>
           </button>
           <span class="survey-builder__version" data-ref="versionLine" x-text="draft.versionLine()"></span>
@@ -426,7 +426,7 @@
                    @change="results.setReportWithNamesFromEvent($event)">
             <span data-help-key="modules.survey-builder.actions.results.setReportWithNames.help" x-text="t('reportWithNames')"></span>
           </label>
-          <button class="btn btn--sm" type="button" data-ref="exportReport" @click="results.exportReport()">
+          <button class="btn btn--sm" type="button" data-ref="exportReport" data-help-key="modules.survey-builder.actions.results.buildReport.help" @click="results.exportReport()">
             <span class="icon icon--sm" data-icon="action.download" aria-hidden="true"></span><span x-text="t('exportReport')"></span>
           </button>
         </div>

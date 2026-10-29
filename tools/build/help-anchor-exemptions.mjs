@@ -38,6 +38,8 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'actions.draft.moveItem', reason: 'Pfeilknopf je Option oder Zeile; ein Fragezeichen je Zeile wäre Rauschen' },
     { name: 'actions.draft.deleteItem', reason: 'Löschknopf je Option oder Zeile; ein Fragezeichen je Zeile wäre Rauschen' },
     { name: 'actions.recipients.deleteRecipient', reason: 'Löschknopf je Empfängerzeile; ein Fragezeichen je Zeile wäre Rauschen' },
+    { name: 'actions.recipients.buildRecipientFile', reason: 'Knopf je Empfängerzeile; ein Fragezeichen je Zeile wäre Rauschen' },
+    { name: 'actions.recipients.markSent', reason: 'die Oberfläche markiert beim Erzeugen der Datei; ein eigener Knopf fehlt' },
     { name: 'actions.responses.deleteResponse', reason: 'Löschknopf je Antwortzeile; ein Fragezeichen je Zeile wäre Rauschen' },
     { name: 'fields.transfers', reason: 'Übergabebuch; sichtbar nur als Häkchen und Auswahl, deren Anker an den Übergabeaktionen hängen' },
     { name: 'fields.ui', reason: 'Stand der Oberfläche; Reiter, Filter, Gruppierung und Namensschalter sind einzeln verankert' },

@@ -615,24 +615,11 @@ export class ResultsViewModel {
   setReportWithNamesFromEvent(ev) { this.setReportWithNames(ev.target.checked); }
 
   /**
-   * "Bericht exportieren": self-contained HTML with filter and grouping as shown.
-   * @noagent file download
-   * @returns {Promise<void>}
+   * Builds the report file under the active filter and grouping; no side effect.
+   * @agent
+   * @returns {Promise<{fileName: string, mimeType: string, content: string}>} the file
    */
-  async exportReport() {
-    try {
-      await this._exportReport();
-    } catch (err) {
-      console.error('survey-builder: report export failed', err);
-      if (!this._destroyed) this._context.notify(this._t('reportExportFailed'), 'error');
-    }
-  }
-
-  /**
-   * Builds and downloads the report; throws on failure.
-   * @returns {Promise<void>}
-   */
-  async _exportReport() {
+  async buildReport() {
     const data = {
       survey: plainCopy(this.model.survey),
       recipients: plainCopy(this.model.recipients),
@@ -650,11 +637,28 @@ export class ResultsViewModel {
       generatedAt: new Date().toISOString(),
     });
     const title = data.survey.title.trim() || this._t('report.untitled');
-    downloadBlob(
-      new Blob([html], { type: 'text/html;charset=utf-8' }),
-      `${sanitizeFileNamePart(this._t('fileReport'))}_${sanitizeFileNamePart(title)}.html`,
-    );
+    return {
+      fileName: `${sanitizeFileNamePart(this._t('fileReport'))}_${sanitizeFileNamePart(title)}.html`,
+      mimeType: 'text/html;charset=utf-8',
+      content: html,
+    };
   }
+
+  /**
+   * "Bericht exportieren": self-contained HTML with filter and grouping as shown.
+   * @noagent file download; the agent uses buildReport()
+   * @returns {Promise<void>}
+   */
+  async exportReport() {
+    try {
+      const f = await this.buildReport();
+      downloadBlob(new Blob([f.content], { type: f.mimeType }), f.fileName);
+    } catch (err) {
+      console.error('survey-builder: report export failed', err);
+      if (!this._destroyed) this._context.notify(this._t('reportExportFailed'), 'error');
+    }
+  }
+
   /**
    * Unmounts every chart of the results tab.
    * @noagent chart rendering

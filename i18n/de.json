@@ -2178,12 +2178,15 @@
           "setItemField": { "help": "Den Text einer Option oder Zeile setzen, bei Mehrfachauswahl auch die Anzeigegruppe einer Option.", "params": { "questionId": "Die Frage.", "itemId": "Die Option oder Zeile.", "key": "Text oder Gruppe.", "value": "Der neue Text; leer löscht ihn." } },
           "moveItem": { "help": "Eine Option oder Zeile innerhalb ihrer Frage eine Stelle nach oben oder unten schieben.", "params": { "questionId": "Die Frage.", "itemId": "Die Option oder Zeile.", "direction": "up oder down." } },
           "deleteItem": { "help": "Eine Option oder Zeile löschen, ohne Rückfrage. Bedingungen auf eine gelöschte Option entfallen; die Rückgabe zählt sie.", "params": { "questionId": "Die Frage.", "itemId": "Die Option oder Zeile." } },
-          "setConditions": { "help": "Bestimmt, wann ein Abschnitt oder eine Frage erscheint: sobald bei einer früheren Einfach- oder Mehrfachauswahl eine der genannten Optionen gewählt wurde. Jede Bedingung genügt für sich; ohne Bedingung erscheint er immer.", "params": { "nodeId": "Der Abschnitt oder die Frage.", "conditions": "Je Bedingung { questionId, optionIds }: eine frühere Einfach- oder Mehrfachauswahl und mindestens eine ihrer Optionen; [] entfernt alle Bedingungen." } }
+          "setConditions": { "help": "Bestimmt, wann ein Abschnitt oder eine Frage erscheint: sobald bei einer früheren Einfach- oder Mehrfachauswahl eine der genannten Optionen gewählt wurde. Jede Bedingung genügt für sich; ohne Bedingung erscheint er immer.", "params": { "nodeId": "Der Abschnitt oder die Frage.", "conditions": "Je Bedingung { questionId, optionIds }: eine frühere Einfach- oder Mehrfachauswahl und mindestens eine ihrer Optionen; [] entfernt alle Bedingungen." } },
+          "buildSurveyFile": { "help": "Baut den allgemeinen Fragebogen (ohne Empfänger) als HTML-Datei und liefert Dateiname, Typ und Inhalt. Wie der Export setzt sie die Version." }
         },
         "recipients": {
           "addRecipient": { "help": "Einen leeren Empfänger anlegen. Je Empfänger entsteht eine eigene Fragebogendatei, an deren Antwort sich der Empfänger erkennen lässt." },
           "setRecipientField": { "help": "Ein Feld eines Empfängers setzen: Name, Organisation, Gruppe, E-Mail oder Notiz.", "params": { "recipientId": "Der Empfänger.", "key": "Welches Feld.", "value": "Der neue Text; leer löscht ihn." } },
-          "deleteRecipient": { "help": "Einen Empfänger löschen, ohne Rückfrage. Seine Antworten bleiben, ohne Empfänger.", "params": { "recipientId": "Der Empfänger." } }
+          "deleteRecipient": { "help": "Einen Empfänger löschen, ohne Rückfrage. Seine Antworten bleiben, ohne Empfänger.", "params": { "recipientId": "Der Empfänger." } },
+          "buildRecipientFile": { "help": "Baut die persönliche Fragebogen-Datei eines Empfängers und liefert Dateiname, Typ und Inhalt. Wie der Export setzt sie die Version und markiert den Empfänger als verschickt.", "params": { "recipientId": "Der Empfänger." } },
+          "markSent": { "help": "Markiert einen Empfänger als verschickt, ohne eine Datei zu bauen — wenn die Datei auf anderem Weg ankam.", "params": { "recipientId": "Der Empfänger." } }
         },
         "responses": {
           "importResponse": { "help": "Eine Antwortdatei einlesen, die der Fragebogen beim Empfänger gespeichert hat. Dateien dieses Fragebogens werden übernommen, auch die einer älteren Version; eine schon eingelesene, eine fremde oder eine kaputte Datei erscheint nur im Protokoll.", "params": { "json": "Der Inhalt der Antwortdatei als Text.", "fileName": "Der Name, der im Protokoll steht." } },
@@ -2192,7 +2195,8 @@
         "results": {
           "setFilter": { "help": "Die Auswertung auf die Antworten beschränken, die bei einer Einfach- oder Mehrfachauswahl eine bestimmte Option gewählt haben. Ohne Filter zählen alle Antworten.", "params": { "questionId": "Die Auswahlfrage; null zusammen mit optionId null hebt den Filter auf.", "optionId": "Eine ihrer Optionen; null hebt den Filter auf." } },
           "setGroupBy": { "help": "Die Auswertung nach den Optionen einer Einfachauswahl-Frage nebeneinanderstellen, etwa nach Kundengruppe. Gruppen mit wenigen Antworten werden markiert.", "params": { "questionId": "Die Einfachauswahl-Frage; null schaltet den Vergleich ab." } },
-          "setReportWithNames": { "help": "Ob der exportierte Bericht bei Freitexten nennt, wer sie geschrieben hat. Bei einem anonymen Fragebogen ohne Wirkung.", "params": { "on": "true nennt die Namen, false nicht." } }
+          "setReportWithNames": { "help": "Ob der exportierte Bericht bei Freitexten nennt, wer sie geschrieben hat. Bei einem anonymen Fragebogen ohne Wirkung.", "params": { "on": "true nennt die Namen, false nicht." } },
+          "buildReport": { "help": "Baut den Bericht der Auswertung unter dem aktiven Filter und der aktiven Gruppierung als HTML-Datei und liefert Dateiname, Typ und Inhalt." }
         },
         "handover": {
           "takeToVocTree": { "help": "Die angehakten Freitexte und Sonstige-Antworten als Kundenstimmen in den VoC-Baum des Projekts übernehmen; gibt es keinen, wird einer angelegt. Schon übernommene Antworten lassen sich erneut übernehmen.", "params": { "keys": "Antwortschlüssel <responseId>:<questionId>, bei einer Sonstige-Antwort mit dem Zusatz :other; die ids stehen in read().responses." } },

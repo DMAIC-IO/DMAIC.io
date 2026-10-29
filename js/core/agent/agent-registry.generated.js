@@ -18922,6 +18922,11 @@ export const AGENT_REGISTRY = {
         "returns": "number",
         "help": "Replace the conditions of a section or question. It is shown when at least one condition holds; a condition holds when one of its options was chosen. An empty list removes all conditions."
       },
+      "draft.buildSurveyFile": {
+        "params": [],
+        "returns": "Promise<{fileName: string, mimeType: string, content: string}>",
+        "help": "Builds the general questionnaire file (no recipient); like the export it settles the version."
+      },
       "recipients.addRecipient": {
         "params": [],
         "returns": "string",
@@ -18985,6 +18990,30 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Delete a recipient, without asking. Their responses stay, without recipient."
+      },
+      "recipients.buildRecipientFile": {
+        "params": [
+          {
+            "name": "recipientId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the recipient"
+          }
+        ],
+        "returns": "Promise<{fileName: string, mimeType: string, content: string}>",
+        "help": "Builds the recipient's own file. Exporting first settles the version (a pending structural change bumps it now), then the recipient is stamped with that version and marked as sent, so the outdated hint clears."
+      },
+      "recipients.markSent": {
+        "params": [
+          {
+            "name": "recipientId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the recipient"
+          }
+        ],
+        "returns": "void",
+        "help": "Marks a recipient as sent without building a file, for when the file arrived another way."
       },
       "responses.importResponse": {
         "params": [
@@ -19057,6 +19086,11 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Whether the exported report names the respondents of free texts. Has no effect for an anonymous questionnaire."
+      },
+      "results.buildReport": {
+        "params": [],
+        "returns": "Promise<{fileName: string, mimeType: string, content: string}>",
+        "help": "Builds the report file under the active filter and grouping; no side effect."
       },
       "handover.takeToVocTree": {
         "params": [
