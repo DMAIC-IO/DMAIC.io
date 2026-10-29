@@ -27,7 +27,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireBoolean, requireEnum, requireKnownId, requireNumber, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireEnum, requireKnownId, requireNumber, requireNumericText, requireText } from '../../core/agent/agent-argcheck.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { State, SUBGROUP_MODES } from './process-capability-model.js';
 import { SUBGROUP_METHODS } from '../../engines/sigma-within-engine.js';
@@ -63,11 +63,11 @@ const PARAM_RANGES = {
  */
 const PARAM_CHECKS = {
   name: (v) => requireText('value', v),
-  lsl: (v) => requireText('value', v),
-  target: (v) => requireText('value', v),
-  usl: (v) => requireText('value', v),
+  lsl: (v) => requireNumericText('value', v),
+  target: (v) => requireNumericText('value', v),
+  usl: (v) => requireNumericText('value', v),
   unit: (v) => requireText('value', v),
-  confidence: (v) => requireText('value', v),
+  confidence: (v) => requireNumericText('value', v),
   subgroupMode: (v) => { requireEnum('value', v, SUBGROUP_MODES); return v; },
   subgroupSize: (v) => String(requireNumber('value', v, PARAM_RANGES.subgroupSize)),
   withinMethod: (v) => v, // gegen withinMethodOptions() in setParam geprüft: die Menge hängt von den Daten ab

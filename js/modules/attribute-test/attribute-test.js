@@ -18,7 +18,7 @@
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import {
-  requireBoolean, requireEnum, requireKnownId, requireIndex, requireNumber, requireText,
+  requireBoolean, requireEnum, requireKnownId, requireIndex, requireNumber, requireNumericText, requireText,
 } from '../../core/agent/agent-argcheck.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
@@ -59,28 +59,28 @@ const PARAM_CHECKS = {
   // Offener Bereich 0 < α < 1, wie das Eingabefeld.
   alpha: (v) => requireNumber('value', v, { exclusiveMin: 0, exclusiveMax: 1 }),
   direction: (v) => { requireEnum('value', v, DIRECTIONS); return v; },
-  p0: (v) => requireText('value', v),
+  p0: (v) => requireNumericText('value', v),
   pooled: (v) => requireBoolean('value', v),
-  'summary.x': (v) => requireText('value', v),
-  'summary.n': (v) => requireText('value', v),
-  'summary.x1': (v) => requireText('value', v),
-  'summary.n1': (v) => requireText('value', v),
-  'summary.x2': (v) => requireText('value', v),
-  'summary.n2': (v) => requireText('value', v),
+  'summary.x': (v) => requireNumericText('value', v),
+  'summary.n': (v) => requireNumericText('value', v),
+  'summary.x1': (v) => requireNumericText('value', v),
+  'summary.n1': (v) => requireNumericText('value', v),
+  'summary.x2': (v) => requireNumericText('value', v),
+  'summary.n2': (v) => requireNumericText('value', v),
   ratePooled: (v) => requireBoolean('value', v),
-  'summary.t': (v) => requireText('value', v),
-  'summary.t1': (v) => requireText('value', v),
-  'summary.t2': (v) => requireText('value', v),
-  'summary.lambda0': (v) => requireText('value', v),
-  'summary.diff0': (v) => requireText('value', v),
+  'summary.t': (v) => requireNumericText('value', v),
+  'summary.t1': (v) => requireNumericText('value', v),
+  'summary.t2': (v) => requireNumericText('value', v),
+  'summary.lambda0': (v) => requireNumericText('value', v),
+  'summary.diff0': (v) => requireNumericText('value', v),
   'summary.pairs.labels.before': (v) => requireText('value', v),
   'summary.pairs.labels.after': (v) => requireText('value', v),
-  'equiv.samples': (v) => { requireEnum('value', v, EQUIV_SAMPLES); return v; },
+  'equiv.samples': (v) => requireEnum('value', v, EQUIV_SAMPLES, { numeric: true }),
   'equiv.symmetric': (v) => requireBoolean('value', v),
-  'equiv.delta': (v) => requireText('value', v),
-  'equiv.lower': (v) => requireText('value', v),
-  'equiv.upper': (v) => requireText('value', v),
-  exposurePerRow: (v) => requireText('value', v),
+  'equiv.delta': (v) => requireNumericText('value', v),
+  'equiv.lower': (v) => requireNumericText('value', v),
+  'equiv.upper': (v) => requireNumericText('value', v),
+  exposurePerRow: (v) => requireNumericText('value', v),
   eventValue: (v) => v, // gegen eventValueOptions() geprüft, siehe setParam
 };
 
@@ -515,15 +515,15 @@ const mod = createModule({
        * @agent
        * @param {number} row Zeilenindex, 0 ist die erste Zeile
        * @param {number} col Spaltenindex, 0 ist die erste Spalte
-       * @param {string} value die Anzahl als Text, '' leert die Zelle
+       * @param {string|number} value die Anzahl als Text oder Zahl (abgelegt als Text), '' leert die Zelle
        * @returns {void}
-       * @throws {Error} wenn ein Index außerhalb der Tabelle liegt oder `value` kein Text ist
+       * @throws {Error} wenn ein Index außerhalb der Tabelle liegt oder `value` weder Text noch endliche Zahl ist
        */
       setTableCell(row, col, value) {
         const t = this.model.summary.table;
         requireIndex('row', row, t.rows.length - 1);
         requireIndex('col', col, t.cols.length - 1);
-        this.model.summary.table.counts[row][col] = requireText('value', value);
+        this.model.summary.table.counts[row][col] = requireNumericText('value', value);
         this.runAnalysis();
       },
 
@@ -612,14 +612,14 @@ const mod = createModule({
        * @agent
        * @param {number} row Zeile, 0 = Ereignis vorher, 1 = kein Ereignis vorher
        * @param {number} col Spalte, 0 = Ereignis nachher, 1 = kein Ereignis nachher
-       * @param {string} value die Anzahl als Text, '' leert die Zelle
+       * @param {string|number} value die Anzahl als Text oder Zahl (abgelegt als Text), '' leert die Zelle
        * @returns {void}
-       * @throws {Error} wenn ein Index nicht 0 oder 1 ist oder `value` kein Text ist
+       * @throws {Error} wenn ein Index nicht 0 oder 1 ist oder `value` weder Text noch endliche Zahl ist
        */
       setPairCell(row, col, value) {
         requireIndex('row', row, 1);
         requireIndex('col', col, 1);
-        this.model.summary.pairs.counts[row][col] = requireText('value', value);
+        this.model.summary.pairs.counts[row][col] = requireNumericText('value', value);
         this.runAnalysis();
       },
 

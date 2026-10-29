@@ -23,7 +23,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireNumber, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireKnownId, requireNumber, requireNumericText, requireText } from '../../core/agent/agent-argcheck.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { State, MODES, CONTRASTS, DIRECTIONS, CI_METHODS, STATS_BY_MODE } from './resampling-model.js';
@@ -53,11 +53,11 @@ const PARAM_CHECKS = {
   statisticId: (v) => requireText('value', v),
   'statParams.trim': (v) => requireNumber('value', v, { min: 0, exclusiveMax: 0.5 }),
   'statParams.p': (v) => requireNumber('value', v, { exclusiveMin: 0, exclusiveMax: 1 }),
-  'statParams.lsl': (v) => requireText('value', v),
-  'statParams.usl': (v) => requireText('value', v),
+  'statParams.lsl': (v) => requireNumericText('value', v),
+  'statParams.usl': (v) => requireNumericText('value', v),
   contrast: (v) => { requireEnum('value', v, CONTRASTS); return v; },
   direction: (v) => { requireEnum('value', v, DIRECTIONS); return v; },
-  target: (v) => requireText('value', v),
+  target: (v) => requireNumericText('value', v),
   B: (v) => requireNumber('value', v, { integer: true }),
   seed: (v) => requireNumber('value', v, { integer: true }),
   confidence: (v) => requireNumber('value', v, { exclusiveMin: 0, exclusiveMax: 1 }),
@@ -363,7 +363,7 @@ const mod = createModule({
        * die der neue Modus nicht anbietet, auf den Mittelwert zurück.
        * @agent
        * @param {keyof Params} key welcher Parameter; die im aktuellen Zustand zulässigen nennt activeParams
-       * @param {string|number} value der Wert; Typ je Schlüssel siehe `Params`, Zahlen als Zahl oder Zahlentext, Grenzen und Zielwert als Text
+       * @param {string|number} value der Wert; Typ je Schlüssel siehe `Params`, Zahlen als Zahl oder Zahlentext, Grenzen und Zielwert als Text oder Zahl (abgelegt als Text)
        * @returns {void}
        * @throws {Error} wenn `key` im aktuellen Zustand nicht gilt, `value` nicht zur Art des Parameters passt oder `confidence`, `statParams.trim`, `statParams.p` außerhalb ihres Bereichs liegen
        */

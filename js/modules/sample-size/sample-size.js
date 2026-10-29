@@ -21,7 +21,7 @@
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import {
-  requireEnum, requireNumber, requireText,
+  requireEnum, requireNumber, requireNumericText, requireText,
 } from '../../core/agent/agent-argcheck.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import {
@@ -59,11 +59,11 @@ const PARAM_CHECKS = {
   direction: (v) => { requireEnum('value', v, VALID_DIRECTIONS); return v; },
   alpha: (v) => requireNumber('value', v, ALPHA_RANGE),
   power: (v) => requireNumber('value', v, POWER_RANGE),
-  sigma0: (v) => requireText('value', v),
-  sigmaAlt: (v) => requireText('value', v),
-  ratio: (v) => requireText('value', v),
-  delta: (v) => requireText('value', v),
-  sigma: (v) => requireText('value', v),
+  sigma0: (v) => requireNumericText('value', v),
+  sigmaAlt: (v) => requireNumericText('value', v),
+  ratio: (v) => requireNumericText('value', v),
+  delta: (v) => requireNumericText('value', v),
+  sigma: (v) => requireNumericText('value', v),
 };
 
 /** Beschriftungsschlüssel der Richtungsauswahl. */
@@ -332,7 +332,7 @@ export default createModule({
        * Einen Eingabewert setzen; die Berechnung läuft danach neu.
        * @agent
        * @param {keyof Params} key welcher Parameter; die im aktuellen Zustand zulässigen nennt activeParams
-       * @param {string|number} value der neue Wert; Auswahlfelder nehmen einen Eintrag der Liste, alpha und power eine Zahl im Bereich, die übrigen einen Text
+       * @param {string|number} value der neue Wert; Auswahlfelder nehmen einen Eintrag der Liste, alpha und power eine Zahl im Bereich, die Zahlenfelder eine Zahl oder einen Zahlentext (abgelegt als Text)
        * @returns {void}
        * @throws {Error} wenn `key` im aktuellen Zustand nicht gilt oder `value` nicht zulässig ist
        */

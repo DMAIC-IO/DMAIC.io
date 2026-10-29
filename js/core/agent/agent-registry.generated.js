@@ -686,9 +686,9 @@ export const AGENT_REGISTRY = {
           },
           {
             "name": "value",
-            "type": "string",
+            "type": "string|number",
             "optional": false,
-            "help": "die Anzahl als Text, '' leert die Zelle"
+            "help": "die Anzahl als Text oder Zahl (abgelegt als Text), '' leert die Zelle"
           }
         ],
         "returns": "void",
@@ -780,9 +780,9 @@ export const AGENT_REGISTRY = {
           },
           {
             "name": "value",
-            "type": "string",
+            "type": "string|number",
             "optional": false,
-            "help": "die Anzahl als Text, '' leert die Zelle"
+            "help": "die Anzahl als Text oder Zahl (abgelegt als Text), '' leert die Zelle"
           }
         ],
         "returns": "void",
@@ -16848,7 +16848,7 @@ export const AGENT_REGISTRY = {
             "name": "value",
             "type": "string|number",
             "optional": false,
-            "help": "der Wert; Typ je Schlüssel siehe `Params`, Zahlen als Zahl oder Zahlentext, Grenzen und Zielwert als Text"
+            "help": "der Wert; Typ je Schlüssel siehe `Params`, Zahlen als Zahl oder Zahlentext, Grenzen und Zielwert als Text oder Zahl (abgelegt als Text)"
           }
         ],
         "returns": "void",
@@ -18003,7 +18003,7 @@ export const AGENT_REGISTRY = {
             "name": "value",
             "type": "string|number",
             "optional": false,
-            "help": "der neue Wert; Auswahlfelder nehmen einen Eintrag der Liste, alpha und power eine Zahl im Bereich, die übrigen einen Text"
+            "help": "der neue Wert; Auswahlfelder nehmen einen Eintrag der Liste, alpha und power eine Zahl im Bereich, die Zahlenfelder eine Zahl oder einen Zahlentext (abgelegt als Text)"
           }
         ],
         "returns": "void",
