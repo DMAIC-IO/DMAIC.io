@@ -5987,12 +5987,6 @@
             "bandId": "Die id eines vorhandenen Bands ('main' oder 'no:<id>'). Eine unbekannte Band-id ist ein Fehler."
           }
         },
-        "clearExit": {
-          "help": "Hebt die Wiedereinstiegsstelle eines Bands auf; sein Umweg endet dann dort, wo seine Schritte enden.",
-          "params": {
-            "bandId": "Die id eines Bands außer dem Hauptpfad. Eine unbekannte Band-id, oder das Hauptpfad-Band selbst, ist ein Fehler."
-          }
-        },
         "moveStep": {
           "help": "Verschiebt einen Schritt an eine andere Stelle der Kette. Die Lücken werden in der Kette vor dem Verschieben gezählt: 0 ist ganz vorn, die Schrittzahl ganz hinten. Liefert false, wenn der Schritt schon dort steht. Eine Entscheidung wandert mit ihrem ganzen Zweig; eine Lücke innerhalb dieses Zweigs ändert nichts.",
           "params": {

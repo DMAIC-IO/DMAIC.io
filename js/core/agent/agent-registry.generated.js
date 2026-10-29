@@ -90,7 +90,7 @@ export const AGENT_REGISTRY = {
             "help": "id of the step that gets the new substep"
           }
         ],
-        "returns": "void",
+        "returns": "string",
         "help": "Append an empty substep to a step."
       },
       "removeSubstep": {
@@ -290,18 +290,6 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "string",
         "help": "Hängt eine Entscheidung ans Ende eines Bands und liefert ihre id; die Entscheidung öffnet ein eigenes Band darunter."
-      },
-      "clearExit": {
-        "params": [
-          {
-            "name": "bandId",
-            "type": "string",
-            "optional": false,
-            "help": "id eines Bands, dessen Entscheidung eine gewählte Wiedereinstiegsstelle hat"
-          }
-        ],
-        "returns": "void",
-        "help": "Hebt die Wiedereinstiegsstelle eines Bands auf. Der Umweg endet dann dort, wo seine Schritte enden — der Zustand, in dem ein Band beginnt."
       }
     },
     "fields": {
@@ -3801,7 +3789,7 @@ export const AGENT_REGISTRY = {
             "help": "id of the step that gets the new substep"
           }
         ],
-        "returns": "void",
+        "returns": "string",
         "help": "Append an empty substep to a step."
       },
       "removeSubstep": {
@@ -13386,7 +13374,7 @@ export const AGENT_REGISTRY = {
             "help": "id of the step that gets the new substep"
           }
         ],
-        "returns": "void",
+        "returns": "string",
         "help": "Append an empty substep to a step."
       },
       "removeSubstep": {
@@ -14996,7 +14984,7 @@ export const AGENT_REGISTRY = {
             "help": "id des Schritts"
           }
         ],
-        "returns": "void",
+        "returns": "string",
         "help": "Legt unter einem Schritt einen Teilschritt an."
       },
       "removeSubstep": {

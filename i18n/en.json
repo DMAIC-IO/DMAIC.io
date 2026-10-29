@@ -5983,12 +5983,6 @@
             "bandId": "The id of an existing band ('main' or 'no:<id>'). An unknown band id is an error."
           }
         },
-        "clearExit": {
-          "help": "Clears a band's re-entry point; its detour then ends where its own steps end.",
-          "params": {
-            "bandId": "The id of a band other than the main path. An unknown band id, or the main path itself, is an error."
-          }
-        },
         "moveStep": {
           "help": "Moves a step to another position in the chain. Gaps are counted in the chain before the move: 0 is the very front, the step count the very end. Returns false if the step is already there. A decision moves together with its whole branch; a gap inside that branch changes nothing.",
           "params": {

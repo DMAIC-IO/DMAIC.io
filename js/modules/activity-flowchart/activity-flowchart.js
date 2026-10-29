@@ -803,24 +803,16 @@ export function activityFlowchartData(module, _t) {
      * @noagent view transform */
     hasRejoin(band) { return this.exitKind(band) === 'step'; },
 
-    // Nimmt die Band-id statt des View-Objekts aus `bands()` — das Objekt
-    // selbst ist nur über die @noagent-Methode `bands()` erreichbar und wäre
-    // für einen Agenten nicht konstruierbar (Review-Ruling 2026-10-13, Task
-    // 3 fix round 1).
     /**
-     * Hebt die Wiedereinstiegsstelle eines Bands auf. Der Umweg endet dann
-     * dort, wo seine Schritte enden — der Zustand, in dem ein Band beginnt.
-     * @agent
-     * @param {string} bandId id eines Bands, dessen Entscheidung eine
-     *   gewählte Wiedereinstiegsstelle hat
-     * @returns {void}
-     * @throws {Error} wenn bandId kein vorhandenes, nicht-main Band benennt
+     * Hebt die Wiedereinstiegsstelle eines Bands auf (✕ an der Markierung).
+     * @noagent UI-Kurzweg — der Agent setzt das Ziel über
+     *   `setDecisionTarget(<ownerId aus read().bands>, 'end')`; zwei
+     *   Katalogwege auf dasselbe Feld wären einer zu viel.
+     * @param {string} bandId id eines nicht-main Bands
      */
     clearExit(bandId) {
-      requireKnownId('bandId', bandId,
-        this.bands().filter((b) => b.id !== MAIN_BRANCH).map((b) => b.id));
       this._pickBandId = null;
-      this.model.setDecisionTarget(branchOwnerId(bandId), 'end');
+      this.setDecisionTarget(branchOwnerId(bandId), 'end');
     },
     /**
      * Arm the entry-point picker for a band — or disarm it if it was already
