@@ -37,7 +37,7 @@ import { openNewWorksheet } from '../../core/worksheet-handoff.js';
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import {
-  requireEnum, requireIndex, requireNumber, requireText,
+  requireBoolean, requireEnum, requireIndex, requireNumber, requireText,
 } from '../../core/agent/agent-argcheck.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import {
@@ -83,14 +83,13 @@ function fmtBytes(n) {
 
 const PARAM_KEYS = ['csvOptions.preset', 'csvOptions.delimiter', 'csvOptions.encoding',
   'csvOptions.hasHeader', 'csvOptions.skipRows', 'xlsxOptions.hasHeader', 'aqdefOptions.encoding'];
-const BOOL_VALUES = [true, false];
 const PARAM_CHECKS = {
   'csvOptions.preset': (v) => { requireEnum('value', v, CSV_PRESET_IDS); return v; },
   'csvOptions.delimiter': (v) => { requireEnum('value', v, CSV_DELIMITERS); return v; },
   'csvOptions.encoding': (v) => { requireEnum('value', v, CSV_ENCODINGS); return v; },
-  'csvOptions.hasHeader': (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
+  'csvOptions.hasHeader': (v) => requireBoolean('value', v),
   'csvOptions.skipRows': (v) => requireNumber('value', v, { min: 0, integer: true }),
-  'xlsxOptions.hasHeader': (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
+  'xlsxOptions.hasHeader': (v) => requireBoolean('value', v),
   'aqdefOptions.encoding': (v) => { requireEnum('value', v, AQDEF_ENCODINGS); return v; },
 };
 

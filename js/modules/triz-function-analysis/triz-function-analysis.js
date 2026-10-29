@@ -15,7 +15,7 @@
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import {
-  requireEnum, requireKnownId, requireNumber, requireText,
+  requireBoolean, requireEnum, requireKnownId, requireNumber, requireText,
 } from '../../core/agent/agent-argcheck.js';
 import {
   State, KINDS, GROUPS, TYPES, LEVELS, TABS, orderedComponents, openPairs, functionRanks, disadvantages, functionPairs, valueCostRows,
@@ -448,7 +448,7 @@ export default createModule({
        * @throws {Error} if `show` is not true or false
        */
       setShowRanks(show) {
-        requireEnum('show', show, [true, false]);
+        requireBoolean('show', show);
         this.model.showRanks = show;
       },
       /**

@@ -16,7 +16,7 @@ import frac from '../designs/frac.js';
 import bb from '../designs/bb.js';
 import taguchi from '../designs/taguchi.js';
 import optimal from '../designs/optimal.js';
-import { requireEnum, requireIndex, requireNumber } from '../../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireEnum, requireIndex, requireNumber } from '../../../core/agent/agent-argcheck.js';
 
 /** Type picker entries with their formula. */
 const DESIGN_TYPES = [
@@ -33,7 +33,6 @@ const DESIGN_TYPES = [
 
 /** Axial distances of the CCD. */
 const ALPHA_TYPES = ['rotatable', 'face-centered', 'spherical'];
-const BOOLEANS = [true, false];
 const REC_KEYS = { full: 'recFull', frac: 'recFrac', pb: 'recPB', bb: 'recBB', taguchi: 'recTaguchi' };
 
 export class DesignViewModel {
@@ -291,7 +290,7 @@ export class DesignViewModel {
    * @throws {Error} if on is not a boolean
    */
   setRandomize(on) {
-    requireEnum('on', on, BOOLEANS);
+    requireBoolean('on', on);
     this.model.options.randomize = on;
     this._save();
   }
@@ -304,7 +303,7 @@ export class DesignViewModel {
    * @throws {Error} if on is not a boolean
    */
   setCenterPoints(on) {
-    requireEnum('on', on, BOOLEANS);
+    requireBoolean('on', on);
     this.model.options.centerPoints = on;
     this._save();
   }

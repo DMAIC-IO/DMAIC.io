@@ -30,7 +30,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { State, MODEL_FORMS, ESTIMATORS } from './multi-vari-model.js';
@@ -50,9 +50,6 @@ import { downloadFile } from '../../core/export-utils.js';
 /** Debounce für den Neulauf nach einer Eingabeänderung. */
 const RERUN_DELAY = 120;
 
-/** Die Werte der vier Anzeigeschalter. */
-const BOOL_VALUES = [true, false];
-
 /** Die Parameter, die `setParam` setzt (flaches Model). */
 const PARAM_KEYS = ['modelForm', 'estimator', 'showPoints', 'connectMeans', 'showGroupMean', 'showRefLine'];
 
@@ -60,10 +57,10 @@ const PARAM_KEYS = ['modelForm', 'estimator', 'showPoints', 'connectMeans', 'sho
 const PARAM_CHECKS = {
   modelForm: (v) => { requireEnum('value', v, MODEL_FORMS); return v; },
   estimator: (v) => { requireEnum('value', v, ESTIMATORS); return v; },
-  showPoints: (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
-  connectMeans: (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
-  showGroupMean: (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
-  showRefLine: (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
+  showPoints: (v) => requireBoolean('value', v),
+  connectMeans: (v) => requireBoolean('value', v),
+  showGroupMean: (v) => requireBoolean('value', v),
+  showRefLine: (v) => requireBoolean('value', v),
 };
 
 /** Die Spalten-Slots dieses Moduls: genau einer, die Messwertspalte. */

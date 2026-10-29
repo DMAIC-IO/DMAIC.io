@@ -27,7 +27,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireNumber, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireEnum, requireKnownId, requireNumber, requireText } from '../../core/agent/agent-argcheck.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { State, SUBGROUP_MODES } from './process-capability-model.js';
 import { SUBGROUP_METHODS } from '../../engines/sigma-within-engine.js';
@@ -45,9 +45,6 @@ const HELP = 'modules.process-capability.types.';
 function fmtNBar(v) {
   return Number.isInteger(v) ? String(v) : v.toFixed(2);
 }
-
-/** Die zwei Wahrheitswerte, die `unbiased` annimmt (kein Umwandeln: `'nein'` wäre sonst wahr). */
-const BOOL_VALUES = [true, false];
 
 /** Die elf Parameter, die `setParam` annimmt (Reihenfolge der Oberfläche). */
 const PARAM_KEYS = ['name', 'lsl', 'target', 'usl', 'unit', 'confidence',
@@ -75,7 +72,7 @@ const PARAM_CHECKS = {
   subgroupSize: (v) => String(requireNumber('value', v, PARAM_RANGES.subgroupSize)),
   withinMethod: (v) => v, // gegen withinMethodOptions() in setParam geprüft: die Menge hängt von den Daten ab
   mrSpan: (v) => String(requireNumber('value', v, PARAM_RANGES.mrSpan)),
-  unbiased: (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
+  unbiased: (v) => requireBoolean('value', v),
 };
 
 /** Parameter, die ändern, welche Schätzer und Felder gelten: sie rechnen sofort statt nach der Pause. */

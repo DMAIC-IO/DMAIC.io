@@ -41,7 +41,7 @@ import {
   keyToRef,
 } from '../../ui/dataset-picker.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import { datasetSlotColumns } from '../../core/agent/agent-datasets.js';
 import { loadWorksheetExample, rewriteRefFields } from '../../core/examples-registry.js';
@@ -60,13 +60,10 @@ const COLUMN_SLOTS = ['x', 'y', 'g'];
 /** Die Optionen, die `setParam` annimmt (Reihenfolge der Oberfläche). */
 const PARAM_KEYS = ['aggregation', 'stacked'];
 
-/** Die zwei Werte eines Schalters — kein Umwandeln. */
-const BOOL_VALUES = [true, false];
-
 /** Je Option ihr Prüfer; gibt den Wert zurück, den das Model hält. */
 const PARAM_CHECKS = {
   aggregation: (v) => { requireEnum('value', v, AGGREGATIONS); return v; },
-  stacked: (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
+  stacked: (v) => requireBoolean('value', v),
 };
 
 /**

@@ -19,7 +19,7 @@
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import {
-  requireEnum, requireIndex, requireKnownId, requireNumber, requireText,
+  requireBoolean, requireEnum, requireIndex, requireKnownId, requireNumber, requireText,
 } from '../../core/agent/agent-argcheck.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
@@ -27,7 +27,6 @@ import { State, Endpoint, SCHEDULE_UNITS, WRITE_MODES } from './rest-api-model.j
 import { ColumnPicker, refToKey, keyToRef } from '../../ui/column-picker.js';
 
 const PARAM_KEYS = ['url', 'writeMode', 'schedule.intervalValue', 'schedule.intervalUnit'];
-const BOOL_VALUES = [true, false];
 const PARAM_CHECKS = {
   url: (v) => requireText('value', v),
   writeMode: (v) => { requireEnum('value', v, WRITE_MODES); return v; },
@@ -333,7 +332,7 @@ export default createModule({
        * @throws {Error} wenn es keinen aktiven Endpunkt gibt oder `enabled` kein Wahrheitswert ist
        */
       setSchedule(enabled) {
-        requireEnum('enabled', enabled, BOOL_VALUES);
+        requireBoolean('enabled', enabled);
         const ep = this._requireActive();
         ep.schedule.enabled = enabled;
         if (ep.schedule.enabled) {

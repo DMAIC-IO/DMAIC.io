@@ -10,9 +10,8 @@
  */
 import { PHASE_DECISIONS } from '../doe-planner-model.js';
 import { readResponses, staleness, boundComplete } from '../doe-planner-responses.js';
-import { requireEnum, requireIndex, requireText } from '../../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireEnum, requireIndex, requireText } from '../../../core/agent/agent-argcheck.js';
 
-const BOOLEANS = [true, false];
 const DECISION_ICONS = { recenter: 'action.loop', repeat: 'action.reset', stop: 'status.ok' };
 
 export class EvopViewModel {
@@ -65,7 +64,7 @@ export class EvopViewModel {
    * @throws {Error} if on is not a boolean
    */
   setProjectMode(on) {
-    requireEnum('on', on, BOOLEANS);
+    requireBoolean('on', on);
     this.model.setProjectMode(on);
     this._save();
   }

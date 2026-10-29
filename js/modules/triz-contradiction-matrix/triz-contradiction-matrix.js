@@ -8,7 +8,7 @@
  */
 import { createModule } from '../../core/template-module.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireKnownId } from '../../core/agent/agent-argcheck.js';
 import { State, loadData, getCached } from './triz-contradiction-matrix-model.js';
 
 function el(tag, className, text) {
@@ -120,8 +120,9 @@ const base = createModule({
        * @agent
        * @param {boolean} visible `true` zeigt die Matrix, `false` verbirgt sie
        * @returns {void}
+       * @throws {Error} wenn visible weder true noch false ist
        */
-      setShowMatrix(visible) { this.model.showMatrix = Boolean(visible); },
+      setShowMatrix(visible) { this.model.showMatrix = requireBoolean('visible', visible); },
 
       /**
        * Tauscht verbesserndes und verschlechterndes Merkmal gegeneinander.

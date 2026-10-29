@@ -23,11 +23,10 @@ import {
   optimizeResponses, buildResponseSurface,
 } from '../../engines/response-optimization-engine.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
 import { State, VALID_KINDS } from './response-optimization-model.js';
 import { uid } from '../../core/uid.js';
 
-const BOOL_VALUES = [true, false];
 const SPEC_KEYS = ['selected', 'kind', 'lower', 'upper', 'target', 'weight'];
 
 /**
@@ -46,7 +45,7 @@ function requireWeight(v) {
 
 /** Eine Prüfung je Zielvorgabe-Schlüssel; Agent und Oberfläche teilen sie. */
 const SPEC_CHECKS = {
-  selected: (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
+  selected: (v) => requireBoolean('value', v),
   kind: (v) => { requireEnum('value', v, VALID_KINDS); return v; },
   lower: (v) => requireNumber('value', v),
   upper: (v) => requireNumber('value', v),

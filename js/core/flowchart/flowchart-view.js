@@ -8,7 +8,7 @@
  * override the method after the spread — plain object-literal precedence.
  */
 
-import { requireKnownId, requireText } from '../agent/agent-argcheck.js';
+import { requireBoolean, requireKnownId, requireText } from '../agent/agent-argcheck.js';
 
 /**
  * @param {object|null} module   the createModule instance (reserved for future hooks)
@@ -381,14 +381,15 @@ export function chainViewMixin(module, _t, opts = {}) {
      * @param {string} stepId    id of the step whose substeps are shown or hidden
      * @param {boolean} expanded whether the substep list should be shown
      * @returns {void}
-     * @throws {Error} wenn stepId unbekannt ist, oder das Model die Methode
-     *   `setSubstepsExpanded` nicht führt
+     * @throws {Error} wenn stepId unbekannt ist, expanded weder true noch false
+     *   ist, oder das Model die Methode `setSubstepsExpanded` nicht führt
      */
     setSubstepsExpanded(stepId, expanded) {
       if (Array.isArray(this.model?.steps)) {
         requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
       }
-      callModel(this.model, 'setSubstepsExpanded', [stepId, Boolean(expanded)]);
+      requireBoolean('expanded', expanded);
+      callModel(this.model, 'setSubstepsExpanded', [stepId, expanded]);
     },
     /**
      * Append an empty substep to a step.

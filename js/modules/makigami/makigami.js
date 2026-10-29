@@ -32,7 +32,7 @@ import {
 import { escAttr } from '../../core/html-utils.js';
 import { parseDuration, formatDuration, canonicalize } from './makigami-duration.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
 import { State } from './makigami-model.js';
 
 // Die Felder, die die beiden Objektsenken entgegennehmen. Die Listen tragen
@@ -97,7 +97,7 @@ export default createModule({
         // `requireEnum` über die zwei Wahrheitswerte statt eines `=== true`:
         // ein fehlendes Argument (`undefined`) wäre sonst stillschweigend
         // „schließen" statt ein Fehler (Ruling 55).
-        requireEnum('open', open, [true, false]);
+        requireBoolean('open', open);
         this.model.settingsOpen = open;
         if (open) {
           this.$nextTick(() => {
@@ -155,7 +155,7 @@ export default createModule({
       setParticipation(stepId, roleId, participates) {
         requireKnownId('stepId', stepId, this.model.steps.map(s => s.id));
         requireKnownId('roleId', roleId, this.model.roles.map(r => r.id));
-        requireEnum('participates', participates, [true, false]);
+        requireBoolean('participates', participates);
         this.model.setParticipation(stepId, roleId, participates);
       },
       /**
@@ -172,7 +172,7 @@ export default createModule({
       setMuda(stepId, mudaId, marked) {
         requireKnownId('stepId', stepId, this.model.steps.map(s => s.id));
         requireKnownId('mudaId', mudaId, this.model.mudaCategories.map(m => m.id));
-        requireEnum('marked', marked, [true, false]);
+        requireBoolean('marked', marked);
         this.model.setMuda(stepId, mudaId, marked);
       },
       /**
@@ -186,7 +186,7 @@ export default createModule({
        */
       setStepExpanded(stepId, expanded) {
         requireKnownId('stepId', stepId, this.model.steps.map(s => s.id));
-        requireEnum('expanded', expanded, [true, false]);
+        requireBoolean('expanded', expanded);
         this.model.setStepExpanded(stepId, expanded);
       },
       /**

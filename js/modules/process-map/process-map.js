@@ -30,7 +30,7 @@ import { State, loopRailCells, loopPassColumns, loopArrowColumns } from './proce
 import { listSipocInstances, appendSipocProcess } from './process-map-sipoc-import.js';
 import { chainViewMixin } from '../../core/flowchart/flowchart-view.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireKnownId, requireEnum, requireIndex, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireKnownId, requireEnum, requireIndex, requireText } from '../../core/agent/agent-argcheck.js';
 
 export default createModule({
   config: {
@@ -393,11 +393,12 @@ export default createModule({
        * @param {string} stepId id des Schritts
        * @param {boolean} on true legt den Loop an, false entfernt ihn
        * @returns {void}
-       * @throws {Error} wenn stepId unbekannt ist
+       * @throws {Error} wenn stepId unbekannt ist oder on weder true noch false ist
        */
       setLoop(stepId, on) {
         requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
-        this.model.setLoop(stepId, Boolean(on));
+        requireBoolean('on', on);
+        this.model.setLoop(stepId, on);
       },
 
       // ── Drag markers ──────────────────────────────────────────

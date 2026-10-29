@@ -30,7 +30,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { finiteOrNull } from '../../core/agent/agent-results.js';
 import {
@@ -93,8 +93,6 @@ function anovaOf(r) {
 
 /** Die vier Parameter, die `setParam` annimmt (flach am Model). */
 const PARAM_KEYS = ['regType', 'polyDegree', 'confLevel', 'alpha'];
-/** Die Werte von `included` in `setTerm`. */
-const BOOL_VALUES = [true, false];
 /** Die Einzelspalten-Slots: die Zielgröße Y. */
 const COLUMN_SLOTS = ['y'];
 /** Die Mehrfachspalten-Slots: die Einflussgrößen X, geordnet. */
@@ -438,7 +436,7 @@ const mod = createModule({
        */
       setTerm(term, included) {
         requireKnownId('term', term, this.terms());
-        requireEnum('included', included, BOOL_VALUES);
+        requireBoolean('included', included);
         this.model.clearDesignPreset();
         const rest = this.model.excludedTerms.filter(t => t !== term);
         this.model.excludedTerms = included ? rest : [...rest, term];

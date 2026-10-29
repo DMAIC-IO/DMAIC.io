@@ -23,7 +23,7 @@ import { createModule } from '../../core/template-module.js';
 import { resolveDateOffset } from '../../core/date-offset.js';
 import { isIsoDate } from '../../core/local-date.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
 import { State, METHODS, FMEA_TYPES, SPECIAL_CHARS, fmeaCreateDefault } from './fmea-model.js';
 import { S_BANDS, O_BANDS, D_BANDS, AP_TABLE, AP_CATEGORY, bandLabel } from './fmea-ap.js';
 
@@ -476,7 +476,7 @@ const mod = createModule({
        */
       setRiskCollapsed(riskId, collapsed) {
         requireKnownId('riskId', riskId, this.model.risks.map((r) => r.id));
-        requireEnum('collapsed', collapsed, [true, false]);
+        requireBoolean('collapsed', collapsed);
         this.model.risks.find((r) => r.id === riskId).collapsed = collapsed;
       },
 
@@ -524,7 +524,7 @@ const mod = createModule({
         requireKnownId('riskId', riskId, this.model.risks.map((r) => r.id));
         this._requireActionIndex(riskId, actionIndex);
         requireEnum('field', field, ACTION_FIELDS);
-        if (field === 'done') requireEnum('value', value, [true, false]);
+        if (field === 'done') requireBoolean('value', value);
         else if (field === 'date') {
           requireText('value', value);
           if (value !== '' && !isIsoDate(value)) {

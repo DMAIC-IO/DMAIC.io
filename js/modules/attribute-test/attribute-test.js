@@ -18,7 +18,7 @@
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import {
-  requireEnum, requireKnownId, requireIndex, requireNumber, requireText,
+  requireBoolean, requireEnum, requireKnownId, requireIndex, requireNumber, requireText,
 } from '../../core/agent/agent-argcheck.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
@@ -40,9 +40,6 @@ const PICKERS = [
   { role: 'before', wrap: 'picker-before-wrap' },
   { role: 'after', wrap: 'picker-after-wrap' },
 ];
-
-/** Die zwei Werte eines Schalters; der Prüfer wandelt nie um (`Boolean('nein')` wäre `true`). */
-const BOOL_VALUES = [true, false];
 
 /** Die Parameter, die `setParam` annimmt (`summary.*` als Punkt-Schlüssel). */
 const PARAM_KEYS = ['testKind', 'inputMode', 'alpha', 'direction', 'p0', 'pooled', 'ratePooled',
@@ -69,14 +66,14 @@ const PARAM_CHECKS = {
   },
   direction: (v) => { requireEnum('value', v, DIRECTIONS); return v; },
   p0: (v) => requireText('value', v),
-  pooled: (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
+  pooled: (v) => requireBoolean('value', v),
   'summary.x': (v) => requireText('value', v),
   'summary.n': (v) => requireText('value', v),
   'summary.x1': (v) => requireText('value', v),
   'summary.n1': (v) => requireText('value', v),
   'summary.x2': (v) => requireText('value', v),
   'summary.n2': (v) => requireText('value', v),
-  ratePooled: (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
+  ratePooled: (v) => requireBoolean('value', v),
   'summary.t': (v) => requireText('value', v),
   'summary.t1': (v) => requireText('value', v),
   'summary.t2': (v) => requireText('value', v),
@@ -85,7 +82,7 @@ const PARAM_CHECKS = {
   'summary.pairs.labels.before': (v) => requireText('value', v),
   'summary.pairs.labels.after': (v) => requireText('value', v),
   'equiv.samples': (v) => { requireEnum('value', v, EQUIV_SAMPLES); return v; },
-  'equiv.symmetric': (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
+  'equiv.symmetric': (v) => requireBoolean('value', v),
   'equiv.delta': (v) => requireText('value', v),
   'equiv.lower': (v) => requireText('value', v),
   'equiv.upper': (v) => requireText('value', v),

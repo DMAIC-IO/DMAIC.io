@@ -288,10 +288,23 @@ suite('chainViewMixin — substeps', () => {
       steps: [{ id: 's1' }],
       setSubstepsExpanded: (id, expanded) => calls.push([id, expanded]),
     });
-    c.setSubstepsExpanded('s1', 'yes');
-    assertEqual(calls.length, 1);
+    c.setSubstepsExpanded('s1', true);
+    c.setSubstepsExpanded('s1', false);
+    assertEqual(calls.length, 2);
     assertEqual(calls[0][0], 's1');
     assertEqual(calls[0][1], true);
+    assertEqual(calls[1][1], false);
+  });
+
+  test('setSubstepsExpanded wirft bei einem Nicht-Boolean und ruft das Model nicht', () => {
+    const calls = [];
+    const c = ctx({
+      steps: [{ id: 's1' }],
+      setSubstepsExpanded: (id, expanded) => calls.push([id, expanded]),
+    });
+    assertThrows(() => c.setSubstepsExpanded('s1', 'yes'), /invalid expanded "yes"; allowed: true, false/);
+    assertThrows(() => c.setSubstepsExpanded('s1', 1), /allowed: true, false/);
+    assertEqual(calls.length, 0);
   });
 
   test('setSubstepsExpanded wirft bei unbekannter stepId', () => {

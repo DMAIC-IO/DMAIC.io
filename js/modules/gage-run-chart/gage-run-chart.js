@@ -35,7 +35,7 @@ import { computeGageRunChart, splitPanelRows } from '../../engines/gage-run-char
 import { loadWorksheetExample } from '../../core/examples-registry.js';
 import { whenAnchor } from '../../core/chart/chart-module-base.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireNumber, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireEnum, requireKnownId, requireNumber, requireText } from '../../core/agent/agent-argcheck.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { finiteOrNull } from '../../core/agent/agent-results.js';
@@ -61,15 +61,12 @@ const SLOT_FILTERS = {
 const PARAM_KEYS = ['refValue', 'partsPerRow', 'connectWithin', 'showOperatorMean',
   'gageInfo.name', 'gageInfo.date', 'gageInfo.reporter', 'gageInfo.tolerance', 'gageInfo.misc'];
 
-/** Die zwei Werte eines Schalters — ohne Umwandeln. */
-const BOOL_VALUES = [true, false];
-
 /** Je Option ihr Prüfer; er gibt den Wert in der Form des Models zurück. */
 const PARAM_CHECKS = {
   refValue: (v) => requireText('value', v),
   partsPerRow: (v) => requireNumber('value', v, { min: 1, max: MAX_PARTS_PER_ROW, integer: true }),
-  connectWithin: (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
-  showOperatorMean: (v) => { requireEnum('value', v, BOOL_VALUES); return v; },
+  connectWithin: (v) => requireBoolean('value', v),
+  showOperatorMean: (v) => requireBoolean('value', v),
   'gageInfo.name': (v) => requireText('value', v),
   'gageInfo.date': (v) => requireText('value', v),
   'gageInfo.reporter': (v) => requireText('value', v),

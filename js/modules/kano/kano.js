@@ -22,7 +22,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
 import { State } from './kano-model.js';
 import { listTrees, flatten, diff, applyDiff, LEVELS } from './kano-link.js';
 import { evaluate, Q_WARN } from '../../engines/kano-engine.js';
@@ -427,7 +427,7 @@ export default createModule({
        * @throws {Error} wenn `enabled` kein Wahrheitswert ist
        */
       setImportance(enabled) {
-        requireEnum('enabled', enabled, [true, false]);
+        requireBoolean('enabled', enabled);
         this.model.options.importance = enabled;
         this.$nextTick(() => this.mountChart());
       },
@@ -515,7 +515,7 @@ export default createModule({
               throw new Error(`invalid ${key} ${JSON.stringify(raw[key])}; allowed: any string, "" clears it`);
             }
           }
-          if (raw.missing !== undefined) requireEnum('missing', raw.missing, [true, false]);
+          if (raw.missing !== undefined) requireBoolean('missing', raw.missing);
           return {
             id: raw.id,
             nodeId: raw.nodeId ?? null,

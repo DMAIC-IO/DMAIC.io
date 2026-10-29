@@ -22,7 +22,7 @@ import { State, Item, STATUSES, SORT_COLUMNS } from './todo-model.js';
 import { resolveDateOffset } from '../../core/date-offset.js';
 import { todayISO, isIsoDate } from '../../core/local-date.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
 import { draggableRows } from '../../ui/draggable-list.js';
 
 export default createModule({
@@ -238,7 +238,7 @@ export default createModule({
         // `requireEnum` über die zwei Wahrheitswerte statt eines `=== true`:
         // ein fehlendes Argument (`undefined`) wäre sonst stillschweigend
         // „nicht melden" statt ein Fehler (Ruling 55).
-        requireEnum('inCalendar', inCalendar, [true, false]);
+        requireBoolean('inCalendar', inCalendar);
         this._itemById(itemId).cal = inCalendar;
       },
 
@@ -326,7 +326,7 @@ export default createModule({
        */
       setSort(column, ascending) {
         requireEnum('column', column, SORT_COLUMNS);
-        requireEnum('ascending', ascending, [true, false]);
+        requireBoolean('ascending', ascending);
         this.model.sortCol = column;
         this.model.sortAsc = ascending;
       },

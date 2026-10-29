@@ -17,7 +17,7 @@
 import { createModule } from '../../core/template-module.js';
 import { State, VIEWS } from './morphological-box-model.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
 
 /** Concept marker colours cycle through the chart palette (`--color-chart-1 … 8`). */
 const PALETTE_SIZE = 8;
@@ -358,7 +358,7 @@ export default createModule({
         const ids = this.model.optionIds();
         requireKnownId('optionA', optionA, ids);
         requireKnownId('optionB', optionB, ids);
-        requireEnum('incompatible', incompatible, [true, false]);
+        requireBoolean('incompatible', incompatible);
         this.model.setConflict(optionA, optionB, incompatible);
       },
 

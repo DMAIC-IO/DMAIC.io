@@ -22,7 +22,7 @@ import { State, Lesson, Action, CATEGORIES, IMPACTS } from './lessons-learned-mo
 import { resolveEpochOffset } from '../../core/date-offset.js';
 import { getPhaseIds, DEFAULT_CYCLE } from '../../core/cycles/cycles.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireIndex, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireEnum, requireKnownId, requireIndex, requireText } from '../../core/agent/agent-argcheck.js';
 
 // Dieselben Wertemengen wie im Model; die Auswahllisten der Vorlage lesen
 // sie, die Senken prüfen gegen sie.
@@ -359,7 +359,7 @@ const m = createModule({
         // `requireEnum` über die zwei Wahrheitswerte statt eines `=== true`:
         // ein fehlendes Argument (`undefined`) wäre sonst stillschweigend
         // „Haken zurücknehmen" statt ein Fehler (Ruling 55).
-        requireEnum('done', done, [true, false]);
+        requireBoolean('done', done);
         lesson.actions[actionIndex].done = done;
         lesson.updatedAt = Date.now();
       },

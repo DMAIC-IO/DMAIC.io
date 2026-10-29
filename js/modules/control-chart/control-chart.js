@@ -39,7 +39,7 @@ import {
   csvPayloadToWorksheetState, loadExampleViaWorksheet,
 } from '../../core/examples-registry.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireIndex, requireKnownId, requireNumber, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireEnum, requireIndex, requireKnownId, requireNumber, requireText } from '../../core/agent/agent-argcheck.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { finiteOrNull, zipPoints } from '../../core/agent/agent-results.js';
@@ -61,9 +61,6 @@ const RULE_IDS = NELSON_RULES.map(r => r.id);
 
 /** Die Optionen, die `setParam` annimmt (`subgroupSize` nur bei X̄-Karten). */
 const PARAM_KEYS = ['chartTypeId', 'subgroupSize', 'baselineCount', 'stagesText', 'usl', 'lsl', 'enabledRules'];
-
-/** Die zwei Werte eines Schalters — ohne Umwandeln. */
-const BOOL_VALUES = [true, false];
 
 /** Die Leerform eines Zahlenfelds („alle Punkte" bzw. „keine Grenze"): `null` oder `''`. */
 const isEmptyForm = (v) => v === null || v === '';
@@ -358,7 +355,7 @@ const mod = createModule({
         const n = this._lastResult ? this._lastResult.result.subcharts[this._lastResult.ct.subcharts[0].id].values.length : 0;
         requireIndex('index', index, n - 1);
         requireText('comment', comment);
-        requireEnum('excluded', excluded, BOOL_VALUES);
+        requireBoolean('excluded', excluded);
         if (!comment && !excluded) delete this.model.annotations[index];
         else this.model.annotations[index] = { comment, excluded };
         await this.runAnalysis();
@@ -373,7 +370,7 @@ const mod = createModule({
        * @throws {Error} wenn `enabled` kein Wahrheitswert ist
        */
       async setPhase2(enabled) {
-        requireEnum('enabled', enabled, BOOL_VALUES);
+        requireBoolean('enabled', enabled);
         if (!enabled) {
           this.model.frozenLimits = null;
           await this.runAnalysis();

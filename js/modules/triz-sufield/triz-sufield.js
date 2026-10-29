@@ -9,7 +9,7 @@
  */
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
 import { State, diagnose, FIELDS, LINKS, FILTER_MODES } from './triz-sufield-model.js';
 
 const DATA_PATH = 'js/modules/triz-sufield/data/standards.json';
@@ -242,10 +242,11 @@ const base = createModule({
        * @param {number} cls Nummer der Standardklasse, 1 bis 5
        * @param {boolean} expanded `true` klappt auf, `false` klappt zu
        * @returns {void}
-       * @throws {Error} wenn keine Standardklasse diese Nummer trägt
+       * @throws {Error} wenn keine Standardklasse diese Nummer trägt oder expanded weder true noch false ist
        */
       setClassExpanded(cls, expanded) {
         requireKnownId('cls', Number(cls), _classNumbers);
+        requireBoolean('expanded', expanded);
         const arr = this.model.expandedClasses;
         const numKey = Number(cls);
         const idx = arr.indexOf(numKey);
@@ -375,10 +376,11 @@ const base = createModule({
        * @param {string} stdId id der Standardlösung, zum Beispiel 2.2.5
        * @param {boolean} selected `true` merkt vor, `false` nimmt zurück
        * @returns {void}
-       * @throws {Error} wenn keine Standardlösung diese id trägt
+       * @throws {Error} wenn keine Standardlösung diese id trägt oder selected weder true noch false ist
        */
       setStandardSelected(stdId, selected) {
         requireKnownId('stdId', String(stdId), _standardIds);
+        requireBoolean('selected', selected);
         if (selected) this.model.selected[stdId] = true;
         else delete this.model.selected[stdId];
       },

@@ -25,7 +25,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireEnum, requireNumber } from '../../core/agent/agent-argcheck.js';
 import {
   State, CATEGORIES, TEST_TYPES, DIRECTIONS, TARGET_TYPES, ALPHA_BOUNDS, POWER_GOAL_BOUNDS,
 } from './hypothesis-test-model.js';
@@ -419,9 +419,10 @@ const definition = {
        * @agent
        * @param {boolean} flag true to assume equal variances
        * @returns {void}
+       * @throws {Error} wenn flag weder true noch false ist
        */
       setEqualVariances(flag) {
-        this.model.equalVariances = flag === true;
+        this.model.equalVariances = requireBoolean('flag', flag);
         this.runAnalysis();
       },
       /**

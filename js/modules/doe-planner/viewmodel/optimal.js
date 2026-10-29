@@ -18,9 +18,7 @@ import {
 import { codedToActualRows } from '../doe-planner-runtable.js';
 import { letter } from '../doe-planner-model.js';
 import optimal from '../designs/optimal.js';
-import { requireEnum, requireIndex, requireNumber } from '../../../core/agent/agent-argcheck.js';
-
-const BOOLEANS = [true, false];
+import { requireBoolean, requireEnum, requireIndex, requireNumber } from '../../../core/agent/agent-argcheck.js';
 
 export class OptimalViewModel {
   /**
@@ -170,7 +168,7 @@ export class OptimalViewModel {
     const groups = enumerateTerms(this.model.factors.length);
     const ids = groups.flatMap((g) => g.ids);
     requireEnum('termId', termId, ids);
-    requireEnum('on', on, BOOLEANS);
+    requireBoolean('on', on);
     if (!on && groups[0].ids.includes(termId)) throw new Error(`${termId} is a main effect; main effects stay in the model`);
     const active = this._activeSet();
     if (on) activateTerm(active, termId);
@@ -195,7 +193,7 @@ export class OptimalViewModel {
   setTermGroup(groupIdx, on) {
     const groups = enumerateTerms(this.model.factors.length);
     requireIndex('groupIdx', groupIdx, groups.length - 1);
-    requireEnum('on', on, BOOLEANS);
+    requireBoolean('on', on);
     const g = groups[groupIdx];
     if (g.kind === 'main') throw new Error('group 0 holds the main effects; they stay in the model');
     const active = this._activeSet();
