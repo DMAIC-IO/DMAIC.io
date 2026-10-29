@@ -29,6 +29,7 @@
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId, requireText, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { paramInputMixin } from '../../core/param-input.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import { datasetSlotColumns } from '../../core/agent/agent-datasets.js';
 import { State, MODEL_TYPES } from './contour-plot-model.js';
@@ -64,6 +65,39 @@ const COLUMN_SLOTS = ['x', 'y', 'z'];
 /** Die Optionen, die `setParam` annimmt (Reihenfolge der Oberfläche). */
 const PARAM_KEYS = ['modelType', 'customFormula', 'xLabel', 'yLabel', 'zLabel', 'xMin', 'xMax', 'yMin', 'yMax'];
 
+/**
+ * Die Achsengrenzen: je Grenze die Partnergrenze, mit der sie einen Bereich
+ * bilden muss (ein Bereich mit min ≥ max ist keiner).
+ */
+const AXIS_PARTNER = { xMin: 'xMax', xMax: 'xMin', yMin: 'yMax', yMax: 'yMin' };
+
+/** Die Zahlenparameter als Spec, für Hinweis und Grenzen am Eingabefeld (der Partner begrenzt). */
+const PARAM_SPEC = {
+  xMin: (vm) => ({ exclusiveMax: vm.model.xMax }),
+  xMax: (vm) => ({ exclusiveMin: vm.model.xMin }),
+  yMin: (vm) => ({ exclusiveMax: vm.model.yMax }),
+  yMax: (vm) => ({ exclusiveMin: vm.model.yMin }),
+};
+
+/**
+ * Eine Achsengrenze prüfen: eine endliche Zahl, die mit der aktuellen
+ * Partnergrenze einen Bereich bildet.
+ * @param {string} key  xMin, xMax, yMin oder yMax
+ * @returns {(raw: any, vm?: object) => number}
+ */
+function axisCheck(key) {
+  const partner = AXIS_PARTNER[key];
+  const isMin = key.endsWith('Min');
+  return (raw, vm) => {
+    const n = requireNumber('value', raw);
+    const other = vm?.model?.[partner];
+    if (Number.isFinite(other) && (isMin ? n >= other : n <= other)) {
+      throw new Error(`invalid value ${JSON.stringify(raw)}; allowed: a number ${isMin ? 'below' : 'above'} ${partner} (${other})`);
+    }
+    return n;
+  };
+}
+
 /** Je Option ihr Prüfer; gibt den Wert zurück, den das Model hält. */
 const PARAM_CHECKS = {
   modelType: (v) => { requireEnum('value', v, MODEL_TYPES); return v; },
@@ -71,10 +105,10 @@ const PARAM_CHECKS = {
   xLabel: (v) => requireText('value', v),
   yLabel: (v) => requireText('value', v),
   zLabel: (v) => requireText('value', v),
-  xMin: (v) => requireNumber('value', v),
-  xMax: (v) => requireNumber('value', v),
-  yMin: (v) => requireNumber('value', v),
-  yMax: (v) => requireNumber('value', v),
+  xMin: axisCheck('xMin'),
+  xMax: axisCheck('xMax'),
+  yMin: axisCheck('yMin'),
+  yMax: axisCheck('yMax'),
 };
 
 /** Zahl der Polynomkoeffizienten b0…b5. */
@@ -166,6 +200,12 @@ const mod = createModule({
 
   data(module, _t) {
     return {
+      ...paramInputMixin({
+        specs: PARAM_SPEC,
+        checks: PARAM_CHECKS,
+        t: _t,
+        lang: () => module._context?.i18n?.getLanguage?.() ?? 'de',
+      }),
       // The imperative render + editor mixins (kept verbatim) become methods on
       // the Alpine component, sharing `this` with the data-fn below. They resolve
       // `this._drawContour()` / `this._buildEditor()` against the component proxy.
@@ -261,7 +301,7 @@ const mod = createModule({
       setParam(key, value) {
         requireEnum('key', key, PARAM_KEYS);
         requireEnum('key', key, this.activeParams());
-        setAtPath(this.model, key, PARAM_CHECKS[key](value));
+        setAtPath(this.model, key, PARAM_CHECKS[key](value, this));
         this.revalidateFormula();
         this._syncLabels();
         this.autoPlot();
@@ -353,13 +393,6 @@ const mod = createModule({
         const raw = event.target.value.trim();
         if (raw !== '' && Number.isFinite(Number(raw))) this.setCoefficient(index, Number(raw));
         else event.target.value = this.model.b[index];
-      },
-
-      /** @noagent DOM event handler; the agent uses setParam() */
-      onAxisInput(key, event) {
-        const raw = event.target.value.trim();
-        if (raw !== '' && Number.isFinite(Number(raw))) this.setParam(key, Number(raw));
-        else event.target.value = this.model[key];
       },
 
       // ── Legacy-compatible helpers (bridge mixins → Model) ──────

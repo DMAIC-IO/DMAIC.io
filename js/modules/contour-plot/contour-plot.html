@@ -36,12 +36,12 @@
     <input type="hidden" data-ref="yLabel" :value="model.yLabel" @change="setParam('yLabel', $event.target.value)">
     <div class="dmike-split__section-title" x-text="t('sectionAxes')"></div>
     <div class="field-grid field-grid--2">
-      <div class="field-group contour__field-sm"><label data-help-key="modules.contour-plot.types.Params.xMin" x-text="t('axisXMin')"></label><input type="number" class="field field--num" data-ref="xMin" :value="model.xMin" @change="onAxisInput('xMin', $event)"></div>
-      <div class="field-group contour__field-sm"><label data-help-key="modules.contour-plot.types.Params.xMax" x-text="t('axisXMax')"></label><input type="number" class="field field--num" data-ref="xMax" :value="model.xMax" @change="onAxisInput('xMax', $event)"></div>
+      <div class="field-group contour__field-sm"><label data-help-key="modules.contour-plot.types.Params.xMin" x-text="t('axisXMin')"></label><input type="number" class="field field--num" data-ref="xMin" :value="paramValue('xMin')" @change="onParamInput('xMin', $event)" :min="paramMin('xMin')" :max="paramMax('xMin')" step="any"></div>
+      <div class="field-group contour__field-sm"><label data-help-key="modules.contour-plot.types.Params.xMax" x-text="t('axisXMax')"></label><input type="number" class="field field--num" data-ref="xMax" :value="paramValue('xMax')" @change="onParamInput('xMax', $event)" :min="paramMin('xMax')" :max="paramMax('xMax')" step="any"></div>
     </div>
     <div class="field-grid field-grid--2">
-      <div class="field-group contour__field-sm"><label data-help-key="modules.contour-plot.types.Params.yMin" x-text="t('axisYMin')"></label><input type="number" class="field field--num" data-ref="yMin" :value="model.yMin" @change="onAxisInput('yMin', $event)"></div>
-      <div class="field-group contour__field-sm"><label data-help-key="modules.contour-plot.types.Params.yMax" x-text="t('axisYMax')"></label><input type="number" class="field field--num" data-ref="yMax" :value="model.yMax" @change="onAxisInput('yMax', $event)"></div>
+      <div class="field-group contour__field-sm"><label data-help-key="modules.contour-plot.types.Params.yMin" x-text="t('axisYMin')"></label><input type="number" class="field field--num" data-ref="yMin" :value="paramValue('yMin')" @change="onParamInput('yMin', $event)" :min="paramMin('yMin')" :max="paramMax('yMin')" step="any"></div>
+      <div class="field-group contour__field-sm"><label data-help-key="modules.contour-plot.types.Params.yMax" x-text="t('axisYMax')"></label><input type="number" class="field field--num" data-ref="yMax" :value="paramValue('yMax')" @change="onParamInput('yMax', $event)" :min="paramMin('yMax')" :max="paramMax('yMax')" step="any"></div>
     </div>
     <div class="field-group"><label data-help-key="modules.contour-plot.types.Params.zLabel" x-text="t('zName')"></label><input type="text" class="field" data-ref="zLabel" :value="model.zLabel" @change="setParam('zLabel', $event.target.value)"></div>
 
