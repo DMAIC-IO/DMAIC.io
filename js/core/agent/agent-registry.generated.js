@@ -22283,9 +22283,46 @@ export const AGENT_REGISTRY = {
         "help": "Redo the last undone grid edit. Dieselbe Absage wie bei `undo()`: ohne zurückgenommenen Schritt gibt es nichts wiederherzustellen, und der Knopf der Oberfläche ist `disabled`."
       },
       "addColumn": {
-        "params": [],
+        "params": [
+          {
+            "name": "position",
+            "type": "number",
+            "optional": true,
+            "help": "zero-based index the new column takes; 0 puts it first, read().columns.length (or omitted) appends"
+          }
+        ],
+        "returns": "string",
+        "help": "Add an empty column to the active sheet — appended, or inserted at a position like \"insert column left/right\" in the header menu. The toolbar button calls `addColumn()` without an argument (Alpine CSP) and appends, as before."
+      },
+      "renameColumn": {
+        "params": [
+          {
+            "name": "columnId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the column (see read().columns[].id)"
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "optional": false,
+            "help": "the new name"
+          }
+        ],
+        "returns": "string",
+        "help": "Rename a column. Formulas that refer to the old name are rewritten; a name another column already has gets a suffix (\" (2)\"); \"\" clears the name so the short name (C1, …) is shown. Undo restores it."
+      },
+      "removeColumn": {
+        "params": [
+          {
+            "name": "columnId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the column (see read().columns[].id)"
+          }
+        ],
         "returns": "void",
-        "help": "Append an empty column to the active sheet."
+        "help": "Remove a column with its values and formulas. Undo restores it."
       },
       "addRows": {
         "params": [

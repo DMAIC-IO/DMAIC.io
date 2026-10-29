@@ -1294,7 +1294,21 @@
             "values": "Die Werte, einer je Zeile; Formeltext wird nicht ausgewertet."
           }
         },
-        "addColumn": { "help": "Hängt dem aktiven Blatt eine leere Spalte an." },
+        "addColumn": {
+          "help": "Fügt dem aktiven Blatt eine leere Spalte hinzu — ohne Position am Ende. Der Agent erhält die id der neuen Spalte.",
+          "params": { "position": "Stelle der neuen Spalte, ab 0 gezählt: 0 setzt sie nach vorn, die Spaltenzahl oder keine Angabe hängt sie an." }
+        },
+        "renameColumn": {
+          "help": "Benennt eine Spalte um; Formeln, die den alten Namen nennen, werden angepasst. Trägt schon eine andere Spalte den Namen, wird „ (2)“ angehängt — der Agent erhält den tatsächlichen Namen. Gesperrte Spalten lassen sich nicht umbenennen. Rückgängig stellt den alten Namen wieder her.",
+          "params": {
+            "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
+            "name": "Der neue Name; \"\" entfernt ihn, dann zeigt die Spalte ihren Kurznamen (C1, …)."
+          }
+        },
+        "removeColumn": {
+          "help": "Entfernt eine Spalte samt Werten und Formeln. Hart gesperrte Spalten (etwa vom Versuchsplaner verwaltet) lassen sich nicht entfernen. Rückgängig holt die Spalte zurück.",
+          "params": { "columnId": "Die id der zu entfernenden Spalte." }
+        },
         "addRows": {
           "help": "Hängt dem aktiven Blatt leere Zeilen an.",
           "params": { "count": "Zahl der Zeilen; ohne Angabe zehn, wie der Knopf in der Werkzeugleiste." }

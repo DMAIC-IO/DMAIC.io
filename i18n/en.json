@@ -1294,7 +1294,21 @@
             "values": "The values, one per row; formula text is not evaluated."
           }
         },
-        "addColumn": { "help": "Appends an empty column to the active sheet." },
+        "addColumn": {
+          "help": "Adds an empty column to the active sheet — at the end without a position. The agent receives the new column's id.",
+          "params": { "position": "Zero-based place of the new column: 0 puts it first, the column count or no value appends it." }
+        },
+        "renameColumn": {
+          "help": "Renames a column; formulas that mention the old name are updated. If another column already has the name, \" (2)\" is appended — the agent receives the actual name. Locked columns cannot be renamed. Undo restores the old name.",
+          "params": {
+            "columnId": "The id of the column, as read().columns[].id names it.",
+            "name": "The new name; \"\" clears it, and the column shows its short name (C1, …)."
+          }
+        },
+        "removeColumn": {
+          "help": "Removes a column with its values and formulas. Hard-locked columns (managed by the DoE planner, for example) cannot be removed. Undo brings the column back.",
+          "params": { "columnId": "The id of the column to remove." }
+        },
         "addRows": {
           "help": "Appends empty rows to the active sheet.",
           "params": { "count": "Number of rows; ten without an argument, like the toolbar button." }

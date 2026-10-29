@@ -17,8 +17,8 @@
  *    `worksheet:appendColumn`. Same payload shapes as the legacy module.
  *
  * @agent  Vollständig über das Viewmodel steuerbar: CSV-Import, Zellblöcke
- *   schreiben, Spalten und Zeilen anlegen, Rückgängig, Blätter anlegen,
- *   wechseln, umbenennen, duplizieren, davor einfügen und entfernen.
+ *   schreiben, Spalten anlegen, umbenennen und entfernen, Zeilen anlegen,
+ *   Rückgängig, Blätter anlegen, wechseln, umbenennen, duplizieren, davor einfügen und entfernen.
  *   Dateidialoge, Popout-Widgets und die Auswahl-abhängigen Knöpfe bleiben
  *   der UI vorbehalten; gelesen wird über read() mit erklärter Lesefläche
  *   (AgentRead).
@@ -27,7 +27,7 @@
 import { createModule } from '../../core/template-module.js';
 import Alpine from '@alpinejs/csp';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { requireKnownId, requireText, requireIndex } from '../../core/agent/agent-argcheck.js';
 import { State } from './worksheet-model.js';
 import { DataGrid, isFormula, evaluateFormula } from '../../core/datagrid/datagrid.js';
 import { parseCellInput } from '../../core/datagrid/datagrid-utils.js';
@@ -589,11 +589,75 @@ const mod = createModule({
         return true;
       },
       /**
-       * Append an empty column to the active sheet.
+       * Add an empty column to the active sheet — appended, or inserted at a
+       * position like "insert column left/right" in the header menu.
+       *
+       * The toolbar button calls `addColumn()` without an argument (Alpine
+       * CSP) and appends, as before.
+       *
        * @agent
-       * @returns {void}
+       * @param {number} [position] zero-based index the new column takes;
+       *   0 puts it first, read().columns.length (or omitted) appends
+       * @returns {string} id of the new column (see read().columns[].id)
+       * @throws {Error} if position is not an integer in 0..column count
        */
-      addColumn() { this._grid?.addColumn(); this._persistNow(); },
+      addColumn(position) {
+        // `DataGrid.addColumn` splict ungeprüft: 99 hängte still hinten an,
+        // -1 fügte VOR der letzten Spalte ein, 'x' ebenfalls irgendwo.
+        if (position !== undefined) {
+          requireIndex('position', position, this._grid.columns.length);
+        }
+        const col = this._grid.addColumn(position === undefined ? {} : { position });
+        this._persistNow();
+        return col.id;
+      },
+      /**
+       * Rename a column. Formulas that refer to the old name are rewritten;
+       * a name another column already has gets a suffix (" (2)"); "" clears
+       * the name so the short name (C1, …) is shown. Undo restores it.
+       *
+       * @agent
+       * @param {string} columnId id of the column (see read().columns[].id)
+       * @param {string} name the new name
+       * @returns {string} the name the column actually has now
+       * @throws {Error} if no column has this id, if name is not a string, or
+       *   if the column is locked
+       */
+      renameColumn(columnId, name) {
+        // `DataGrid.renameColumn` kehrt bei unbekannter id und bei JEDER
+        // Sperre still zurück — der Agent bekäme Erfolg gemeldet. Das
+        // Kopfmenü bietet Umbenennen bei einer Sperre gar nicht erst an.
+        requireKnownId('columnId', columnId, (this._grid?.columns ?? []).map(c => c.id));
+        requireText('name', name);
+        const col = this._grid.getColumn(columnId);
+        if (col.meta?.lock) {
+          throw new Error(`column "${columnId}" is locked (${col.meta.lock})`);
+        }
+        this._grid.renameColumn(columnId, name);
+        this._persistNow();
+        return col.name;
+      },
+      /**
+       * Remove a column with its values and formulas. Undo restores it.
+       *
+       * @agent
+       * @param {string} columnId id of the column (see read().columns[].id)
+       * @returns {void}
+       * @throws {Error} if no column has this id, or if the column is
+       *   hard-locked (a soft lock allows removal, as in the header menu)
+       */
+      removeColumn(columnId) {
+        // `DataGrid.removeColumn` kehrt bei unbekannter id und bei harter
+        // Sperre still zurück. Eine weiche Sperre blockt hier bewusst nicht:
+        // das Kopfmenü bietet „Spalte löschen“ dann ebenfalls an.
+        requireKnownId('columnId', columnId, (this._grid?.columns ?? []).map(c => c.id));
+        const col = this._grid.getColumn(columnId);
+        if (col.meta?.lock === 'hard') {
+          throw new Error(`column "${columnId}" is locked (hard)`);
+        }
+        this._grid.removeColumn(columnId);
+        this._persistNow();
+      },
       /**
        * Append empty rows to the active sheet.
        *
