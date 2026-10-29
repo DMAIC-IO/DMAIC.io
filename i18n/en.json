@@ -1312,6 +1312,18 @@
             "id": "The id of the sheet.",
             "name": "The new name; empty or whitespace only is an invalid argument and therefore an error."
           }
+        },
+        "duplicateSheet": {
+          "help": "Copies a sheet with its cells, formulas and column settings. The copy is appended at the end, named \"<name> (Copy)\" and becomes active; the agent receives its id.",
+          "params": { "id": "The id of the sheet to copy, as read().sheets[].id names it." }
+        },
+        "insertSheetBefore": {
+          "help": "Creates an empty sheet directly before another one and makes it active; the agent receives its id.",
+          "params": { "id": "The id of the sheet the new sheet is placed before." }
+        },
+        "removeSheet": {
+          "help": "Removes a sheet with its contents. If it was active, the neighbouring sheet becomes active. The last sheet cannot be removed — that is an error. Undo does not restore it.",
+          "params": { "id": "The id of the sheet to remove." }
         }
       },
       "fields": {

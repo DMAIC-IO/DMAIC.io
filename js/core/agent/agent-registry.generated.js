@@ -22334,6 +22334,42 @@ export const AGENT_REGISTRY = {
         "returns": "void",
         "help": "Rename a sheet. The ONE sink for a sheet name — the inline rename in the tab bar lands here too, so the agent cannot reach a state the UI cannot (and vice versa)."
       },
+      "duplicateSheet": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "id of the sheet to copy"
+          }
+        ],
+        "returns": "string",
+        "help": "Duplicate a sheet (cells, formulas, column settings) and make the copy active. The copy is appended at the end and named \"<name> (Copy)\"."
+      },
+      "insertSheetBefore": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "id of the sheet the new one is placed before"
+          }
+        ],
+        "returns": "string",
+        "help": "Insert an empty sheet directly before another sheet and make it active."
+      },
+      "removeSheet": {
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "optional": false,
+            "help": "id of the sheet to remove"
+          }
+        ],
+        "returns": "void",
+        "help": "Remove a sheet. If it was active, the neighbouring sheet becomes active. A workbook keeps at least one sheet."
+      },
       "read": {
         "params": [
           {

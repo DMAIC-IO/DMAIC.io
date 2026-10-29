@@ -18,9 +18,10 @@
  *
  * @agent  Vollständig über das Viewmodel steuerbar: CSV-Import, Zellblöcke
  *   schreiben, Spalten und Zeilen anlegen, Rückgängig, Blätter anlegen,
- *   wechseln und umbenennen. Dateidialoge, Popout-Widgets und die
- *   Auswahl-abhängigen Knöpfe bleiben der UI vorbehalten; gelesen wird über
- *   read() mit erklärter Lesefläche (AgentRead).
+ *   wechseln, umbenennen, duplizieren, davor einfügen und entfernen.
+ *   Dateidialoge, Popout-Widgets und die Auswahl-abhängigen Knöpfe bleiben
+ *   der UI vorbehalten; gelesen wird über read() mit erklärter Lesefläche
+ *   (AgentRead).
  */
 
 import { createModule } from '../../core/template-module.js';
@@ -765,31 +766,89 @@ const mod = createModule({
         const sheetId = tab.dataset.sheetId;
         this._grid._showContextMenu(event.clientX, event.clientY, [
           { label: _t('renameSheet'), action: () => this._startRename(sheetId) },
-          { label: _t('duplicateSheet'), action: () => this._duplicateSheet(sheetId) },
+          { label: _t('duplicateSheet'), action: () => this.duplicateSheet(sheetId) },
           { type: 'sep' },
-          { label: _t('insertSheetBefore'), action: () => this._insertSheetBefore(sheetId) },
+          { label: _t('insertSheetBefore'), action: () => this.insertSheetBefore(sheetId) },
           { type: 'sep' },
-          { label: _t('deleteSheet'), danger: true, action: () => this._deleteSheet(sheetId) },
+          { label: _t('deleteSheet'), danger: true, action: () => this._removeSheetFromMenu(sheetId) },
         ]);
       },
 
-      _duplicateSheet(id) {
+      /**
+       * Duplicate a sheet (cells, formulas, column settings) and make the
+       * copy active. The copy is appended at the end and named
+       * "<name> (Copy)".
+       *
+       * @agent
+       * @param {string} id id of the sheet to copy
+       * @returns {string} id of the copy, now the active sheet
+       * @throws {Error} if no sheet has this id
+       */
+      duplicateSheet(id) {
+        // `State.duplicateSheet` liefert bei unbekannter id still `null`; der
+        // Ablauf liefe weiter bis `_applyActiveSheetToGrid()` und meldete
+        // Erfolg, ohne etwas kopiert zu haben.
+        requireKnownId('sheet id', id, this.model.sheets.map(s => s.id));
         this._syncActiveSheet();
         this.model.duplicateSheet(id, _t('sheetCopy'));
         this._applyActiveSheetToGrid();
         this._flushAndNotify();
+        return this.model.activeSheetId;
       },
-      _insertSheetBefore(id) {
+
+      /**
+       * Insert an empty sheet directly before another sheet and make it
+       * active.
+       *
+       * @agent
+       * @param {string} id id of the sheet the new one is placed before
+       * @returns {string} id of the new sheet, now the active sheet
+       * @throws {Error} if no sheet has this id
+       */
+      insertSheetBefore(id) {
+        // `State.insertSheetBefore` liefert bei unbekannter id still `null`.
+        requireKnownId('sheet id', id, this.model.sheets.map(s => s.id));
         this._syncActiveSheet();
-        this.model.insertSheetBefore(id, `${_t('defaultSheetName')  } ${  this.model.sheetCounter + 1}`);
+        this.model.insertSheetBefore(id, `${_t('defaultSheetName')} ${this.model.sheetCounter + 1}`);
+        this._applyActiveSheetToGrid();
+        this._flushAndNotify();
+        return this.model.activeSheetId;
+      },
+
+      /**
+       * Remove a sheet. If it was active, the neighbouring sheet becomes
+       * active. A workbook keeps at least one sheet.
+       *
+       * @agent
+       * @param {string} id id of the sheet to remove
+       * @returns {void}
+       * @throws {Error} if no sheet has this id, or if it is the last sheet
+       */
+      removeSheet(id) {
+        // `State.removeSheet` antwortet in beiden Fällen nur mit `false` —
+        // ohne eigene Prüfung meldete der Aufruf Erfolg.
+        requireKnownId('sheet id', id, this.model.sheets.map(s => s.id));
+        if (this.model.sheets.length <= 1) {
+          throw new Error(`last sheet "${id}" cannot be removed; a workbook keeps at least one sheet`);
+        }
+        // Erst das lebende Grid in das aktive Blatt spiegeln: bleibt es aktiv
+        // (ein ANDERES Blatt wird entfernt), lädt `_applyActiveSheetToGrid()`
+        // sonst den zuletzt abgelegten Stand neu und verwirft, was noch nicht
+        // gespiegelt war — etwa eine Sortierung, die nur `render` auslöst und
+        // erst nach dem 2-s-`_autoSave` abgelegt würde.
+        this._syncActiveSheet();
+        this.model.removeSheet(id);
         this._applyActiveSheetToGrid();
         this._flushAndNotify();
       },
-      _deleteSheet(id) {
-        const ok = this.model.removeSheet(id);
-        if (!ok) { this._toast(_t('lastSheetError'), 'error'); return; }
-        this._applyActiveSheetToGrid();
-        this._flushAndNotify();
+
+      /**
+       * @noagent context-menu wrapper around removeSheet(): the last sheet is
+       *   a toast for the user, not an error.
+       */
+      _removeSheetFromMenu(id) {
+        if (this.model.sheets.length <= 1) { this._toast(_t('lastSheetError'), 'error'); return; }
+        this.removeSheet(id);
       },
 
       // ── Grid ↔ Model sync ────────────────────────────────────

@@ -1312,6 +1312,18 @@
             "id": "Die id des Blatts.",
             "name": "Der neue Name; leer oder nur aus Leerzeichen ist ein ungültiges Argument und damit ein Fehler."
           }
+        },
+        "duplicateSheet": {
+          "help": "Kopiert ein Blatt mit Zellen, Formeln und Spalteneinstellungen. Die Kopie kommt ans Ende, heißt „<Name> (Kopie)“ und wird aktiv; der Agent erhält ihre id.",
+          "params": { "id": "Die id des zu kopierenden Blatts, wie read().sheets[].id sie nennt." }
+        },
+        "insertSheetBefore": {
+          "help": "Legt ein leeres Blatt direkt vor einem anderen an und macht es aktiv; der Agent erhält dessen id.",
+          "params": { "id": "Die id des Blatts, vor das das neue Blatt kommt." }
+        },
+        "removeSheet": {
+          "help": "Entfernt ein Blatt samt Inhalt. War es aktiv, wird das benachbarte Blatt aktiv. Das letzte Blatt lässt sich nicht entfernen — das ist ein Fehler. Über Rückgängig nicht umkehrbar.",
+          "params": { "id": "Die id des zu entfernenden Blatts." }
         }
       },
       "fields": {
