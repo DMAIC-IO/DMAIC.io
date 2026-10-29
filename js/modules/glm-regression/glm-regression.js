@@ -1318,9 +1318,13 @@ const mod = createModule({
             (!payload.sheetId || r.sheetId === payload.sheetId) &&
             (!payload.columnId || r.columnId === payload.columnId));
         };
+        // A data change only refits. Discarding the result is the setters'
+        // job (they call autoRun() themselves): an event leaves the inputs
+        // unchanged, so without X and Y it must not drop a restored slim fit —
+        // any save (`state:saved`) would erase it otherwise.
         const onDataChange = (payload) => {
           if (isPickerFocused(module._container)) return;
-          if (isOurColumn(payload)) this.autoRun();
+          if (this.model.canRun() && isOurColumn(payload)) this.runAnalysis();
         };
         eb.on('state:saved', onDataChange);
         eb.on('worksheet:dataChanged', onDataChange);
