@@ -21,7 +21,7 @@
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import {
-  requireEnum, requireNumber, requireNumericText,
+  requireEnum, requireNumericText,
 } from '../../core/agent/agent-argcheck.js';
 import { paramInputMixin, numberCheck } from '../../core/param-input.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
@@ -49,8 +49,9 @@ function resolveAlgoId(category, testType) {
 const ALPHA_RANGE = { min: 0.0001, max: 0.5 };
 const POWER_RANGE = { min: 0.5, max: 0.9999 };
 
-/** Zahlenoption Power (einzige Quelle: POWER_RANGE). */
+/** Zahlenoptionen alpha und power (Quellen: ALPHA_RANGE, POWER_RANGE). */
 const PARAM_SPEC = {
+  alpha: { ...ALPHA_RANGE },
   power: { ...POWER_RANGE },
 };
 
@@ -63,7 +64,7 @@ const PARAM_CHECKS = {
   category: (v) => { requireEnum('value', v, VALID_CATEGORIES); return v; },
   testType: (v) => { requireEnum('value', v, VALID_TEST_TYPES); return v; },
   direction: (v) => { requireEnum('value', v, VALID_DIRECTIONS); return v; },
-  alpha: (v) => requireNumber('value', v, ALPHA_RANGE),
+  alpha: numberCheck(PARAM_SPEC.alpha),
   power: numberCheck(PARAM_SPEC.power),
   sigma0: (v) => requireNumericText('value', v),
   sigmaAlt: (v) => requireNumericText('value', v),
@@ -279,22 +280,6 @@ export default createModule({
        */
       setTestType(type) {
         this.setParam('testType', type);
-      },
-
-      /**
-       * Alpha input: goes through setParam. While typing (input) a refused
-       * value is skipped so half-typed text is not disturbed; on commit
-       * (change) a refusal resets the field to the model value.
-       * @noagent DOM event handler; the agent uses setParam()
-       */
-      alphaChanged(event) {
-        try {
-          PARAM_CHECKS.alpha(event.target.value);
-        } catch {
-          if (event.type === 'change') event.target.value = this.model.alpha;
-          return;
-        }
-        this.setParam('alpha', event.target.value);
       },
 
       // ── Agent surface ─────────────────────────────────────────

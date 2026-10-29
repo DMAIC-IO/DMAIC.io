@@ -95,9 +95,9 @@
       </div>
       <div class="field-group field-group--minor">
         <label data-help-key="modules.sample-size.types.Params.alpha">&#945;</label>
-        <input type="number" data-ref="alpha" class="field field--num" min="0.0001" max="0.5"
-               :value="model.alpha"
-               @input="alphaChanged($event)" @change="alphaChanged($event)">
+        <input type="number" data-ref="alpha" class="field field--num"
+               :value="paramValue('alpha')" @change="onParamInput('alpha', $event)"
+               :min="paramMin('alpha')" :max="paramMax('alpha')" :step="paramStep('alpha')">
       </div>
     </div>
     <div class="field-group">
