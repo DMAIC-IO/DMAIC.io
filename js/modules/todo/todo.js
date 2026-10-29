@@ -202,7 +202,7 @@ export default createModule({
         requireKnownId('itemId', itemId, this.model.items.map(i => i.id));
         // Ein leeres Zieldatum ist die dokumentierte Leerform (so steht eine
         // Aufgabe ohne Termin da); jeder andere nicht lesbare Wert — auch ein
-        // FEHLENDES Argument (`undefined`) — wirft (Ruling 52 und 55).
+        // FEHLENDES Argument (`undefined`) — wirft.
         if (isoDate !== '' && !isIsoDate(isoDate)) {
           throw new Error(`invalid isoDate ${JSON.stringify(isoDate)}; allowed: YYYY-MM-DD or ""`);
         }
@@ -235,9 +235,9 @@ export default createModule({
        */
       setTodoCalendar(itemId, inCalendar) {
         requireKnownId('itemId', itemId, this.model.items.map(i => i.id));
-        // `requireEnum` über die zwei Wahrheitswerte statt eines `=== true`:
+        // `requireBoolean` statt eines `=== true`:
         // ein fehlendes Argument (`undefined`) wäre sonst stillschweigend
-        // „nicht melden" statt ein Fehler (Ruling 55).
+        // „nicht melden" statt ein Fehler.
         requireBoolean('inCalendar', inCalendar);
         this._itemById(itemId).cal = inCalendar;
       },

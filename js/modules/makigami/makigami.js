@@ -94,9 +94,9 @@ export default createModule({
        * @throws {Error} wenn `open` nicht true oder false ist
        */
       setSettingsOpen(open) {
-        // `requireEnum` über die zwei Wahrheitswerte statt eines `=== true`:
+        // `requireBoolean` statt eines `=== true`:
         // ein fehlendes Argument (`undefined`) wäre sonst stillschweigend
-        // „schließen" statt ein Fehler (Ruling 55).
+        // „schließen" statt ein Fehler.
         requireBoolean('open', open);
         this.model.settingsOpen = open;
         if (open) {

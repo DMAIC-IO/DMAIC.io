@@ -312,7 +312,7 @@ const m = createModule({
       addAction(lessonId, text) {
         requireKnownId('lessonId', lessonId, this._lessonIds());
         // Ein fehlendes Argument ist ein Fehler, nicht der dokumentierte
-        // Leerwert (Ruling 55) — sonst liefe ein vergessenes Argument als
+        // Leerwert — sonst liefe ein vergessenes Argument als
         // Absage durch und der Agent sähe keinen Unterschied zum Tippfehler.
         requireText('text', text);
         const value = text.trim();
@@ -356,9 +356,9 @@ const m = createModule({
         requireKnownId('lessonId', lessonId, this._lessonIds());
         const lesson = this._lessonById(lessonId);
         requireIndex('actionIndex', actionIndex, lesson.actions.length - 1);
-        // `requireEnum` über die zwei Wahrheitswerte statt eines `=== true`:
+        // `requireBoolean` statt eines `=== true`:
         // ein fehlendes Argument (`undefined`) wäre sonst stillschweigend
-        // „Haken zurücknehmen" statt ein Fehler (Ruling 55).
+        // „Haken zurücknehmen" statt ein Fehler.
         requireBoolean('done', done);
         lesson.actions[actionIndex].done = done;
         lesson.updatedAt = Date.now();
@@ -384,7 +384,7 @@ const m = createModule({
        * Prüft die Wertemengen eines Erfahrungs-Objekts. Ein fehlendes
        * Argument (`undefined`) ist ein Fehler und kein leeres Objekt — sonst
        * legte ein Aufruf ohne Argument stillschweigend nichts an und meldete
-       * Erfolg (Ruling 55).
+       * Erfolg.
        */
       _requireLessonData(data, required) {
         if (!data || typeof data !== 'object' || Array.isArray(data)) {
