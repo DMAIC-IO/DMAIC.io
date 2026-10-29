@@ -29,7 +29,7 @@
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId, requireText, requireNumber } from '../../core/agent/agent-argcheck.js';
-import { paramInputMixin } from '../../core/param-input.js';
+import { paramInputMixin, markRejection, clearRejection } from '../../core/param-input.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import { datasetSlotColumns } from '../../core/agent/agent-datasets.js';
 import { State, MODEL_TYPES } from './contour-plot-model.js';
@@ -81,7 +81,8 @@ const PARAM_SPEC = {
 
 /**
  * Eine Achsengrenze prüfen: eine endliche Zahl, die mit der aktuellen
- * Partnergrenze einen Bereich bildet.
+ * Partnergrenze einen Bereich bildet. Die Partnergrenze liest der Prüfer aus
+ * der Spec des Feldes (`PARAM_SPEC`), es gibt keine zweite Regel.
  * @param {string} key  xMin, xMax, yMin oder yMax
  * @returns {(raw: any, vm?: object) => number}
  */
@@ -90,7 +91,8 @@ function axisCheck(key) {
   const isMin = key.endsWith('Min');
   return (raw, vm) => {
     const n = requireNumber('value', raw);
-    const other = vm?.model?.[partner];
+    const spec = vm?.model ? PARAM_SPEC[key](vm) : {};
+    const other = isMin ? spec.exclusiveMax : spec.exclusiveMin;
     if (Number.isFinite(other) && (isMin ? n >= other : n <= other)) {
       throw new Error(`invalid value ${JSON.stringify(raw)}; allowed: a number ${isMin ? 'below' : 'above'} ${partner} (${other})`);
     }
@@ -390,9 +392,15 @@ const mod = createModule({
 
       /** @noagent DOM event handler; the agent uses setCoefficient() */
       onCoefficientInput(index, event) {
-        const raw = event.target.value.trim();
-        if (raw !== '' && Number.isFinite(Number(raw))) this.setCoefficient(index, Number(raw));
-        else event.target.value = this.model.b[index];
+        const el = event.target;
+        const raw = el.value.trim();
+        if (raw !== '' && Number.isFinite(Number(raw))) {
+          clearRejection(el);
+          this.setCoefficient(index, Number(raw));
+        } else {
+          el.value = this.model.b[index];
+          markRejection(el, _t('common.inputRejectedPlain'));
+        }
       },
 
       // ── Legacy-compatible helpers (bridge mixins → Model) ──────
