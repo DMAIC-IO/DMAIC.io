@@ -76,9 +76,14 @@ const PARAM_INPUTS = { count: 'countInput', seed: 'seedInput', attrCount: 'attrC
 function requireSeed(value) {
   return requireNumber('value', value, { integer: true });
 }
+/** Grenzen der Umfang-Felder: eine Regel für Oberfläche und Setter. */
+const PARAM_BOUNDS = {
+  count: { min: 1, max: 100000, integer: true },
+  attrCount: { min: 1, max: 100000, integer: true },
+};
 const PARAM_CHECKS = {
-  count: (v) => requireNumber('value', v, { min: 1, max: 100000, integer: true }),
-  attrCount: (v) => requireNumber('value', v, { min: 1, max: 100000, integer: true }),
+  count: (v) => requireNumber('value', v, PARAM_BOUNDS.count),
+  attrCount: (v) => requireNumber('value', v, PARAM_BOUNDS.attrCount),
   seed: requireSeed,
   attrSeed: requireSeed,
 };
@@ -498,6 +503,12 @@ export default createModule({
           event.target.value = this.paramInputs[id] ?? '';
         }
       },
+
+      /** @noagent view transform; Untergrenze eines Umfang-Feldes @param {string} key */
+      paramMin(key) { return PARAM_BOUNDS[key]?.min ?? null; },
+
+      /** @noagent view transform; Obergrenze eines Umfang-Feldes @param {string} key */
+      paramMax(key) { return PARAM_BOUNDS[key]?.max ?? null; },
 
       /** @noagent DOM event handler; the agent uses setParam() */
       onParamInput(key, event) {
