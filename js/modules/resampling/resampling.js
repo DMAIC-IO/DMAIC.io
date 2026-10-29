@@ -23,7 +23,8 @@
 
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireNumber, requireNumericText, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireKnownId, requireNumericText, requireText } from '../../core/agent/agent-argcheck.js';
+import { paramInputMixin, numberCheck } from '../../core/param-input.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { State, MODES, CONTRASTS, DIRECTIONS, CI_METHODS, STATS_BY_MODE } from './resampling-model.js';
@@ -42,25 +43,36 @@ const PARAM_KEYS = ['mode', 'statisticId', 'statParams.trim', 'statParams.p',
   'B', 'seed', 'confidence', 'ciMethod'];
 
 /**
+ * Die Zahlenparameter mit ihren Grenzen (einzige Quelle für Prüfer und
+ * Eingabefeld). Konfidenz, Trimmanteil und Quantil p sind mathematisch
+ * begrenzt. B und seed nehmen jede ganze Zahl an — die Absage für Werte
+ * außerhalb ihres Bereichs steht in `validationMsg`.
+ */
+const PARAM_SPEC = {
+  'statParams.trim': { min: 0, exclusiveMax: 0.5, step: 0.01 },
+  'statParams.p': { exclusiveMin: 0, exclusiveMax: 1, step: 0.01 },
+  B: { integer: true, step: 1000 },
+  seed: { integer: true },
+  confidence: { exclusiveMin: 0, exclusiveMax: 1, step: 0.01 },
+};
+
+/**
  * Je Parameter sein Prüfer; gibt den normalisierten Wert zurück.
- * Konfidenz, Trimmanteil und Quantil p sind mathematisch begrenzt und werden
- * außerhalb ihres Bereichs abgewiesen. B und seed nehmen jede
- * ganze Zahl an — die Absage für Werte außerhalb ihres Bereichs steht in
- * `validationMsg`. `statisticId` prüft `setParam` gegen die Statistiken des Modus.
+ * `statisticId` prüft `setParam` gegen die Statistiken des Modus.
  */
 const PARAM_CHECKS = {
   mode: (v) => { requireEnum('value', v, MODES); return v; },
   statisticId: (v) => requireText('value', v),
-  'statParams.trim': (v) => requireNumber('value', v, { min: 0, exclusiveMax: 0.5 }),
-  'statParams.p': (v) => requireNumber('value', v, { exclusiveMin: 0, exclusiveMax: 1 }),
+  'statParams.trim': numberCheck(PARAM_SPEC['statParams.trim']),
+  'statParams.p': numberCheck(PARAM_SPEC['statParams.p']),
   'statParams.lsl': (v) => requireNumericText('value', v),
   'statParams.usl': (v) => requireNumericText('value', v),
   contrast: (v) => { requireEnum('value', v, CONTRASTS); return v; },
   direction: (v) => { requireEnum('value', v, DIRECTIONS); return v; },
   target: (v) => requireNumericText('value', v),
-  B: (v) => requireNumber('value', v, { integer: true }),
-  seed: (v) => requireNumber('value', v, { integer: true }),
-  confidence: (v) => requireNumber('value', v, { exclusiveMin: 0, exclusiveMax: 1 }),
+  B: numberCheck(PARAM_SPEC.B),
+  seed: numberCheck(PARAM_SPEC.seed),
+  confidence: numberCheck(PARAM_SPEC.confidence),
   ciMethod: (v) => { requireEnum('value', v, CI_METHODS); return v; },
 };
 
@@ -280,6 +292,12 @@ const mod = createModule({
     const valuesOf = (ref) => (ref ? getColumnValues(module._context.stateManager, ref) : null);
 
     return {
+      ...paramInputMixin({
+        specs: PARAM_SPEC,
+        checks: PARAM_CHECKS,
+        t: _t,
+        lang: () => module._context?.i18n?.getLanguage?.() ?? 'de',
+      }),
       // ── Transient view state (not persisted) ────────────────────
       running: false,
       progress: 0,
@@ -427,27 +445,6 @@ const mod = createModule({
         MULTI_SINKS[slot](this.model, clean);
         pickerBySlot[slot]?.syncValue(clean);
         this.refresh();
-      },
-
-      /**
-       * Eingabefeld → Senke: ein Wert, den der Prüfer abweist, setzt das Feld auf
-       * den Stand des Models zurück.
-       * @noagent DOM event handler; the agent uses setParam()
-       */
-      onParamInput(key, event) {
-        const raw = event.target.value;
-        try {
-          PARAM_CHECKS[key](raw);
-        } catch {
-          event.target.value = this.paramValue(key);
-          return;
-        }
-        this.setParam(key, raw);
-      },
-
-      /** @noagent view transform; der Stand eines Parameters für das Eingabefeld */
-      paramValue(key) {
-        return key.split('.').reduce((o, k) => o[k], this.model);
       },
 
       /** @noagent view transform; die Statistiken des Modus (eine Quelle: STATS_BY_MODE) */
