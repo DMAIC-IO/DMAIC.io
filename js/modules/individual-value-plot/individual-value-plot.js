@@ -23,7 +23,8 @@
 
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireConfLevel } from '../../core/agent/agent-argcheck.js';
+import { requireEnum } from '../../core/agent/agent-argcheck.js';
+import { paramInputMixin, numberCheck } from '../../core/param-input.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import { datasetSlotColumns, requireDatasetRows } from '../../core/agent/agent-datasets.js';
 import { State } from './individual-value-plot-model.js';
@@ -35,7 +36,7 @@ import {
 import { computeSeriesStats, renderStatsTable } from '../../core/stats-panel.js';
 import { CHART_COLORS } from '../../core/chart/chart-colors.js';
 import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
-import { decimalOr } from '../../core/parse-decimal.js';
+import { parseDecimalInput } from '../../core/parse-decimal.js';
 
 /** Default confidence level when not resolved from settings. */
 const DEFAULT_CONF_LEVEL = 95;
@@ -54,8 +55,23 @@ const COLUMN_SLOTS = ['value', 'group', 'group2', 'group3'];
 /** Die Optionen, die `setParam` annimmt. */
 const PARAM_KEYS = ['confLevel'];
 
-/** Je Option ihr Prüfer; gibt den Wert zurück, den das Model hält. */
-const PARAM_CHECKS = { confLevel: requireConfLevel };
+/** Zahlenoption Konfidenzniveau (einzige Quelle für Prüfer und Eingabefeld). */
+const PARAM_SPEC = {
+  confLevel: { exclusiveMin: 0, exclusiveMax: 100, step: 0.1 },
+};
+
+const checkConfLevel = numberCheck(PARAM_SPEC.confLevel);
+
+/**
+ * Je Option ihr Prüfer; gibt den Wert zurück, den das Model hält. Das
+ * Konfidenzfeld ist ein Textfeld und liest auch das Dezimalkomma ("97,5").
+ */
+const PARAM_CHECKS = {
+  confLevel: (raw, vm) => {
+    const n = typeof raw === 'string' ? parseDecimalInput(raw) : raw;
+    return checkConfLevel(n === null || Number.isNaN(n) ? raw : n, vm);
+  },
+};
 
 /**
  * Die Schlüsselfläche von `setParam`. Der Satz steht unter
@@ -132,6 +148,12 @@ const mod = createModule({
 
   data(module, _t) {
     return {
+      ...paramInputMixin({
+        specs: PARAM_SPEC,
+        checks: PARAM_CHECKS,
+        t: _t,
+        lang: () => module._context?.i18n?.getLanguage?.() ?? 'de',
+      }),
       // ── Transient view state (not persisted) ──────────────────
       _picker: null,
       _chart: null,
@@ -260,17 +282,6 @@ const mod = createModule({
           errNoData: _t('errNoData'),
           errTooFew: (col) => _t('errTooFew', { col }),
         };
-      },
-
-      // ── Event handlers ─────────────────────────────────────────
-
-      /** @noagent DOM event handler; the agent uses setParam() */
-      confChanged(event) {
-        const input = event.target;
-        const v = decimalOr(input.value, NaN);
-        if (Number.isFinite(v) && v > 0 && v < 100) this.setParam('confLevel', v);
-        else this._renderStats();
-        input.value = this.model.confLevel;
       },
 
       // ── Column helpers ────────────────────────────────────────

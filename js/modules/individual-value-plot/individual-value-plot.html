@@ -9,7 +9,7 @@
     <div class="field-group">
       <label data-help-key="modules.individual-value-plot.types.Params.confLevel" x-text="t('confLevel')"></label>
       <input type="text" class="field field--num" data-ref="conf-level" inputmode="decimal"
-             :value="confLevelDisplay()" placeholder="95" @change="confChanged($event)">
+             :value="confLevelDisplay()" placeholder="95" @change="onParamInput('confLevel', $event)">
     </div>
 
     <div class="field-error" data-ref="error-box"></div>
