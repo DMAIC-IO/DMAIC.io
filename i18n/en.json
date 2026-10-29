@@ -1313,6 +1313,13 @@
           "help": "Appends empty rows to the active sheet.",
           "params": { "count": "Number of rows; ten without an argument, like the toolbar button." }
         },
+        "sortRows": {
+          "help": "Sorts all rows of the active sheet by one column, like “Sort ascending/descending” in the column header menu. The direction is absolute — a second identical call changes nothing and returns false. Empty cells go last. Undo restores the previous order.",
+          "params": {
+            "columnId": "The id of the column to sort by, as read().columns[].id names it.",
+            "direction": "\"asc\" sorts ascending, \"desc\" descending."
+          }
+        },
         "undo": { "help": "Reverts the last change to the sheet." },
         "redo": { "help": "Restores a reverted change." },
         "addSheet": { "help": "Creates a new sheet and makes it active. The agent receives its id." },

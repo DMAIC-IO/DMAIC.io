@@ -722,13 +722,30 @@ export class DataGrid {
   //  SORT
   // ═══════════════════════════════════════════════════════════
 
-  sortByColumn(colIdx) {
-    if (colIdx < 0 || colIdx >= this.columns.length) return;
+  /**
+   * Sort all rows by one column.
+   *
+   * With `dir` the direction is absolute — the header menu and the
+   * worksheet's agent facade use it. Without `dir` it toggles asc → desc →
+   * off, as Shift+click on the header does; "off" only clears the header
+   * indicator, the rows keep their current order.
+   *
+   * @param {number} colIdx 0-based column index
+   * @param {'asc'|'desc'} [dir] absolute direction; omitted = toggle
+   * @returns {boolean} true if the row order changed (one undo entry);
+   *   false for an invalid index, for "off", and when the rows already
+   *   were in that order (no undo entry)
+   */
+  sortByColumn(colIdx, dir) {
+    if (colIdx < 0 || colIdx >= this.columns.length) return false;
     const col = this.columns[colIdx];
 
-    if (this.sortCol === colIdx) {
+    if (dir === 'asc' || dir === 'desc') {
+      this.sortCol = colIdx;
+      this.sortDir = dir;
+    } else if (this.sortCol === colIdx) {
       if (this.sortDir === 'asc') this.sortDir = 'desc';
-      else { this.sortCol = null; this.sortDir = null; this.render(); return; }
+      else { this.sortCol = null; this.sortDir = null; this.render(); return false; }
     } else {
       this.sortCol = colIdx;
       this.sortDir = 'asc';
@@ -736,16 +753,21 @@ export class DataGrid {
 
     const indices = Array.from({ length: this.rowCount }, (_, i) => i);
     const vals = col.values;
-    const dir = this.sortDir === 'asc' ? 1 : -1;
+    const sign = this.sortDir === 'asc' ? 1 : -1;
 
     indices.sort((a, b) => {
       const va = vals[a], vb = vals[b];
       if (va == null && vb == null) return 0;
       if (va == null) return 1;
       if (vb == null) return -1;
-      if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * dir;
-      return String(va).localeCompare(String(vb)) * dir;
+      if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * sign;
+      return String(va).localeCompare(String(vb)) * sign;
     });
+
+    // `Array.prototype.sort` ist stabil: stehen die Zeilen schon so, ist das
+    // Ergebnis die Identität. Dann kein Historieneintrag — Rückgängig nähme
+    // sonst einen Schritt zurück, der nichts geändert hat.
+    if (indices.every((v, i) => v === i)) { this.render(); return false; }
 
     const oldData = this.columns.map(c => [...c.values]);
     const oldFormulas = this.columns.map(c => c.formulas ? [...c.formulas] : null);
@@ -757,6 +779,7 @@ export class DataGrid {
 
     this.history.push({ type: 'sort', columnId: col.id, direction: this.sortDir, oldData, oldFormulas });
     this.render();
+    return true;
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -2586,8 +2609,8 @@ export class DataGrid {
       items.push({ label: t('renameColumn'), action: () => this._promptRenameColumn(colIdx) });
       items.push({ type: 'sep' });
     }
-    items.push({ label: t('sortAsc'), action: () => { this.sortCol = null; this.sortDir = null; this.sortByColumn(colIdx); } });
-    items.push({ label: t('sortDesc'), action: () => { this.sortCol = colIdx; this.sortDir = 'asc'; this.sortByColumn(colIdx); } });
+    items.push({ label: t('sortAsc'), action: () => this.sortByColumn(colIdx, 'asc') });
+    items.push({ label: t('sortDesc'), action: () => this.sortByColumn(colIdx, 'desc') });
     items.push({ type: 'sep' });
     items.push({ label: t('insertColLeft'), action: () => this.addColumn({ position: colIdx }) });
     items.push({ label: t('insertColRight'), action: () => this.addColumn({ position: colIdx + 1 }) });

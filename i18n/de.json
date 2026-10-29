@@ -1313,6 +1313,13 @@
           "help": "Hängt dem aktiven Blatt leere Zeilen an.",
           "params": { "count": "Zahl der Zeilen; ohne Angabe zehn, wie der Knopf in der Werkzeugleiste." }
         },
+        "sortRows": {
+          "help": "Sortiert alle Zeilen des aktiven Blatts nach einer Spalte, wie „Aufsteigend/Absteigend sortieren“ im Spaltenkopf-Menü. Die Richtung gilt absolut — ein zweiter gleicher Aufruf ändert nichts und liefert false. Leere Zellen kommen ans Ende. Rückgängig stellt die alte Reihenfolge wieder her.",
+          "params": {
+            "columnId": "Die id der Spalte, nach der sortiert wird, wie read().columns[].id sie nennt.",
+            "direction": "\"asc\" sortiert aufsteigend, \"desc\" absteigend."
+          }
+        },
         "undo": { "help": "Nimmt die letzte Änderung am Blatt zurück." },
         "redo": { "help": "Stellt eine zurückgenommene Änderung wieder her." },
         "addSheet": { "help": "Legt ein neues Blatt an und macht es aktiv. Der Agent erhält dessen id." },

@@ -22336,6 +22336,24 @@ export const AGENT_REGISTRY = {
         "returns": "void",
         "help": "Append empty rows to the active sheet. The toolbar button calls `addRows()` without an argument (Alpine CSP allows no argument expressions in `@click`) and lands on the 10 it always added."
       },
+      "sortRows": {
+        "params": [
+          {
+            "name": "columnId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the column to sort by (see read().columns[].id)"
+          },
+          {
+            "name": "direction",
+            "type": "'asc'|'desc'",
+            "optional": false,
+            "help": "ascending or descending"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Sort all rows of the active sheet by one column — \"Sort ascending / descending\" in the column header menu. The direction is absolute (a second identical call changes nothing); empty cells go last. Undo restores the previous order."
+      },
       "addSheet": {
         "params": [],
         "returns": "string",

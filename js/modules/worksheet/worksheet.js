@@ -18,6 +18,7 @@
  *
  * @agent  Vollständig über das Viewmodel steuerbar: CSV-Import, Zellblöcke
  *   schreiben, Spalten anlegen, umbenennen und entfernen, Zeilen anlegen,
+ *   Zeilen nach einer Spalte sortieren,
  *   Rückgängig, Blätter anlegen, wechseln, umbenennen, duplizieren, davor einfügen und entfernen.
  *   Dateidialoge, Popout-Widgets und die Auswahl-abhängigen Knöpfe bleiben
  *   der UI vorbehalten; gelesen wird über read() mit erklärter Lesefläche
@@ -27,7 +28,7 @@
 import { createModule } from '../../core/template-module.js';
 import Alpine from '@alpinejs/csp';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireKnownId, requireText, requireIndex } from '../../core/agent/agent-argcheck.js';
+import { requireKnownId, requireText, requireIndex, requireEnum } from '../../core/agent/agent-argcheck.js';
 import { State } from './worksheet-model.js';
 import { DataGrid, isFormula, evaluateFormula } from '../../core/datagrid/datagrid.js';
 import { parseCellInput } from '../../core/datagrid/datagrid-utils.js';
@@ -675,6 +676,33 @@ const mod = createModule({
         const n = Math.trunc(Number(count));
         this._grid?.addRows(Number.isFinite(n) ? Math.max(0, n) : 10);
         this._persistNow();
+      },
+      /**
+       * Sort all rows of the active sheet by one column — "Sort ascending /
+       * descending" in the column header menu. The direction is absolute
+       * (a second identical call changes nothing); empty cells go last.
+       * Undo restores the previous order.
+       *
+       * @agent
+       * @param {string} columnId id of the column to sort by (see read().columns[].id)
+       * @param {'asc'|'desc'} direction ascending or descending
+       * @returns {boolean} false if the rows already were in that order
+       * @throws {Error} if no column has this id or direction is neither
+       *   'asc' nor 'desc'
+       */
+      sortRows(columnId, direction) {
+        // `DataGrid.sortByColumn` kehrt bei ungültigem Index still zurück und
+        // schaltet ohne Richtung um — der Agent wählt sie darum absolut.
+        const ids = (this._grid?.columns ?? []).map(c => c.id);
+        requireKnownId('columnId', columnId, ids);
+        requireEnum('direction', direction, ['asc', 'desc']);
+        const changed = this._grid.sortByColumn(ids.indexOf(columnId), direction);
+        // Sortieren sendet kein Datenereignis (nur `render`): ohne sofortiges
+        // Ablegen spiegelte erst der 2-s-`_autoSave` das Blatt, und die
+        // Laufzeit hielte den nächsten Schreibzugriff des Agenten für
+        // veraltet. Auch bei `false` — die Kopfkennzeichnung hat sich geändert.
+        this._persistNow();
+        return changed;
       },
       /** @noagent selection-bound: clears the current UI selection */
       deleteSelection() { this._grid?._clearSelection(); },
