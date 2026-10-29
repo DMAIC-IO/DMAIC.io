@@ -22330,11 +22330,35 @@ export const AGENT_REGISTRY = {
             "name": "count",
             "type": "number",
             "optional": true,
-            "help": "how many rows; the toolbar button adds 10. Negatives are clamped to 0 — `DataGrid.addRows` would throw on a negative array length, and the UI can never produce one."
+            "help": "how many rows, a whole number of at least 1; omitted → 10, like the toolbar button"
+          },
+          {
+            "name": "position",
+            "type": "number",
+            "optional": true,
+            "help": "zero-based row index the first new row takes; 0 puts them first, the row count (or omitted) appends"
           }
         ],
         "returns": "void",
-        "help": "Append empty rows to the active sheet. The toolbar button calls `addRows()` without an argument (Alpine CSP allows no argument expressions in `@click`) and lands on the 10 it always added."
+        "help": "Insert empty rows into the active sheet — appended, or at a position like \"insert row above/below\" in the row menu. The toolbar button calls `addRows()` without an argument (Alpine CSP allows no argument expressions in `@click`) and lands on the 10 it always added."
+      },
+      "removeRows": {
+        "params": [
+          {
+            "name": "startRow",
+            "type": "number",
+            "optional": false,
+            "help": "zero-based index of the first row to remove"
+          },
+          {
+            "name": "count",
+            "type": "number",
+            "optional": false,
+            "help": "how many rows, from 1 up to the rows left from startRow to the end"
+          }
+        ],
+        "returns": "number",
+        "help": "Remove a contiguous block of rows from the active sheet, values and formulas included — like \"delete row\" / \"delete selected rows\" in the row menu. Undo restores them."
       },
       "sortRows": {
         "params": [
