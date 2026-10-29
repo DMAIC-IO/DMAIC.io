@@ -331,5 +331,27 @@ test('viaHelpGaps: der echte Baum hat keine Lücken', () => {
 test('fieldsWithoutWritePath: weder zugewiesen noch [via] heißt ohne Schreibweg', () => {
   const modules = { m: { available: true, fields: { a: {}, b: { via: ['go'] }, c: {} } },
                     n: { available: false, fields: { z: {} } } };
-  assert.deepEqual(fieldsWithoutWritePath(modules, { m: ['c'], n: [] }), ['m.a']);
+  assert.deepEqual(fieldsWithoutWritePath(modules, { m: ['c'], n: [] }), { model: ['m.a'], derived: [] });
+});
+
+test('fieldsWithoutWritePath: erklärte (derived) Felder zählen getrennt von Model-Feldern', () => {
+  const modules = { m: { available: true, fields: { a: {}, d: { derived: true }, e: { derived: true, via: ['go'] } } } };
+  assert.deepEqual(fieldsWithoutWritePath(modules, { m: [] }), { model: ['m.a'], derived: ['m.d'] });
+});
+
+test('viaHelpGaps: ein gewöhnliches Wort ist keine Nennung der Aktion', () => {
+  const modules = { m: { available: true, fields: { f: { via: ['back'] } } } };
+  const dir = mkdtempSync(join(tmpdir(), 'via-'));
+  mkdirSync(join(dir, 'i18n'));
+  writeFileSync(join(dir, 'i18n', 'de.json'), JSON.stringify({ modules: { m: { fields: { f: { help: 'zurück mit back() möglich' } } } } }));
+  writeFileSync(join(dir, 'i18n', 'en.json'), JSON.stringify({ modules: { m: { fields: { f: { help: 'go back one step' } } } } }));
+  assert.deepEqual(viaHelpGaps(dir, modules), ['en: modules.m.fields.f.help nennt back nicht']);
+});
+
+test('viaHelpGaps: Aktionsnamen mit $ oder Punkt brechen den Abgleich nicht', () => {
+  const modules = { m: { available: true, fields: { f: { via: ['part.add$x'] } } } };
+  const dir = mkdtempSync(join(tmpdir(), 'via-'));
+  mkdirSync(join(dir, 'i18n'));
+  for (const l of ['de', 'en']) writeFileSync(join(dir, 'i18n', `${l}.json`), JSON.stringify({ modules: { m: { fields: { f: { help: 'mit part.add$x() geht es' } } } } }));
+  assert.deepEqual(viaHelpGaps(dir, modules), []);
 });

@@ -210,6 +210,9 @@ export function countHelpCoverage(appDir, modules) {
   return out;
 }
 
+/** @param {string} s @returns {string} */
+function escapeRegExp(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
 /**
  * Felder mit `[via: …]` müssen ihre Senken in der Feldhilfe nennen — sonst
  * sieht der Agent im Hilfetext nicht, womit er das Feld bewegt.
@@ -227,7 +230,7 @@ export function viaHelpGaps(appDir, modules) {
         for (const lang of LANGS) {
           const key = `modules.${id}.fields.${field}.help`;
           const help = lookup(tables[lang], key);
-          if (typeof help !== 'string' || !new RegExp(`\\b${action}\\b`).test(help)) out.push(`${lang}: ${key} nennt ${action} nicht`);
+          if (typeof help !== 'string' || !new RegExp(`(?<![\\w$.])${escapeRegExp(action)}\\s*\\(`).test(help)) out.push(`${lang}: ${key} nennt ${action} nicht`);
         }
       }
     }
@@ -240,15 +243,16 @@ export function viaHelpGaps(appDir, modules) {
  * zu, noch nennt `[via: …]` die Aktionen, die sie bewegen.
  * @param {Record<string, object>} modules  Ergebnis von collectAgentData
  * @param {Record<string, string[]>} writtenFields  `writtenFields` von collectAgentData
- * @returns {string[]} `<modul>.<feld>`
+ * @returns {{ model: string[], derived: string[] }} `<modul>.<feld>`; `derived` sind
+ *   die über `@typedef AgentRead` erklärten Felder, `model` die aus dem Model abgeleiteten
  */
 export function fieldsWithoutWritePath(modules, writtenFields) {
-  const out = [];
+  const out = { model: [], derived: [] };
   for (const [id, entry] of Object.entries(modules)) {
     if (entry.available !== true) continue;
     const written = new Set(writtenFields[id] ?? []);
     for (const [field, spec] of Object.entries(entry.fields ?? {})) {
-      if (!written.has(field) && !(spec.via ?? []).length) out.push(`${id}.${field}`);
+      if (!written.has(field) && !(spec.via ?? []).length) out[spec.derived ? 'derived' : 'model'].push(`${id}.${field}`);
     }
   }
   return out;
@@ -296,8 +300,8 @@ async function main() {
     if (verbose) for (const g of viaGaps) console.log(`  ${g}`);
   }
   const noWrite = fieldsWithoutWritePath(modules, writtenFields);
-  console.log(`\nFelder ohne Schreibweg (weder @agent-Zuweisung noch [via]): ${noWrite.length}`);
-  if (verbose) for (const f of noWrite) console.log(`  ${f}`);
+  console.log(`\nFelder ohne Schreibweg (weder @agent-Zuweisung noch [via]): ${noWrite.model.length} Model-Felder, ${noWrite.derived.length} erklärte Felder`);
+  if (verbose) for (const f of [...noWrite.model, ...noWrite.derived]) console.log(`  ${f}`);
   const anchors = countAnchorCoverage(APP_DIR, modules);
   const exemptNote = anchors.exempt > 0 ? `, davon ${anchors.exempt} begründet ausgenommen` : '';
   console.log(`  Beschriftungen mit Anker: ${anchors.covered}/${anchors.total} (${pct(anchors)})${exemptNote}`);

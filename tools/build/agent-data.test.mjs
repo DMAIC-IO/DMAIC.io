@@ -1262,6 +1262,40 @@ test('collectAgentData: [via:] mit echter Aktion meldet nichts', () => {
   assert.deepEqual(modules.foo.fields.problem.via, ['setProblem']);
 });
 
+test('readAgentReadTypedef: [omit:…] und [via:…] stehen in beliebiger Reihenfolge', () => {
+  const sf = sourceOf(`
+/**
+ * @typedef {object} AgentRead
+ * @property {object[]} cells  [omit:[].image] [via: setCell] die Zellen
+ * @property {object[]} other  [via: setCell] [omit:[].image] die anderen
+ */
+export default 1;
+`);
+  const f = readAgentReadTypedef(sf);
+  for (const k of ['cells', 'other']) {
+    assert.deepEqual(f[k].via, ['setCell']);
+    assert.deepEqual(f[k].omit, ['[].image']);
+  }
+  assert.equal(f.cells.help, 'die Zellen');
+});
+
+test('readAgentReadTypedef: [via:] erlaubt Teil-Viewmodel-Namen mit Punkt', () => {
+  const sf = sourceOf(`
+/**
+ * @typedef {object} AgentRead
+ * @property {object[]} f  [via: part.add, other] x
+ */
+export default 1;
+`);
+  assert.deepEqual(readAgentReadTypedef(sf).f.via, ['part.add', 'other']);
+});
+
+test('collectAgentData: eine @noagent-Methode in [via:] ist eine unbekannte Aktion', () => {
+  const root = fixture({ foo: { 'foo.js': VIA_VM('cardClass'), 'foo-model.js': MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.ok(modules.foo.violations.includes('unknown_via_action:problem:cardClass'));
+});
+
 test('collectAgentData: die beschriebenen Schreibwege stehen neben den Einträgen, nicht darin', () => {
   const root = fixture({ foo: { 'foo.js': VIA_VM('setProblem'), 'foo-model.js': MODEL } });
   const data = collectAgentData(root);

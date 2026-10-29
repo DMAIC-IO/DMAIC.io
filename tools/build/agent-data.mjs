@@ -522,7 +522,7 @@ const BULK_RE = /^\[bulk(?::([a-z]+))?\]/;
 const OMIT_RE = /^\[omit:((?:[^[\]]|\[\])*)\]/;
 
 /** Das Senken-Sentinel: `[via: answer, back]` — die Aktionen, die ein abgeleitetes Feld verändern. */
-const VIA_RE = /^\[via:\s*([A-Za-z_$][\w$]*(?:\s*,\s*[A-Za-z_$][\w$]*)*)\s*\]/;
+const VIA_RE = /^\[via:\s*([A-Za-z_$][\w$.]*(?:\s*,\s*[A-Za-z_$][\w$.]*)*)\s*\]/;
 
 /**
  * Die Sentinels am Anfang eines Property-Kommentars, und der Rest als Hilfe.
