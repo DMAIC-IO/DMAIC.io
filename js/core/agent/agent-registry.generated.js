@@ -6824,11 +6824,11 @@ export const AGENT_REGISTRY = {
             "name": "alpha",
             "type": "number|string",
             "optional": false,
-            "help": "significance level, e.g. 0.05"
+            "help": "significance level, 0 < α < 1, e.g. 0.05"
           }
         ],
         "returns": "void",
-        "help": "Set the significance level. Non-numeric input keeps the previous α and still recomputes."
+        "help": "Set the significance level α."
       },
       "setPowerGoal": {
         "params": [
@@ -6836,11 +6836,11 @@ export const AGENT_REGISTRY = {
             "name": "powerGoal",
             "type": "number|string",
             "optional": false,
-            "help": "desired power, e.g. 0.8"
+            "help": "desired power, 0.5 to 0.99, e.g. 0.8"
           }
         ],
         "returns": "void",
-        "help": "Set the desired power. The Model clamps it to [0.5, 0.99] and ignores non-numeric input."
+        "help": "Set the desired power for the sample-size assessment."
       },
       "setTargetValue": {
         "params": [

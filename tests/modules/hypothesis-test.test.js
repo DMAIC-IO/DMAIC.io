@@ -1,4 +1,4 @@
-import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue, assertThrows } from '../test-utils.js';
 import { State } from '../../js/modules/hypothesis-test/hypothesis-test-model.js';
 import { viewData } from '../../js/modules/hypothesis-test/hypothesis-test.js';
 import { I18n } from '../../js/core/i18n.js';
@@ -567,5 +567,47 @@ suite('Hypothesis Test View — residual plots (C1-020)', () => {
     assertEqual(view.result.residualPlot, null);
     assertEqual(stub.destroyed.length, 4);
     assertEqual(stub.calls.length, 4);
+  });
+});
+
+suite('Hypothesis Test VM — setAlpha/setPowerGoal weisen ab (D1)', () => {
+  async function vm() {
+    const t = await loadT();
+    const view = viewData({ _context: {} }, t);
+    const model = new State();
+    model.alpha = 0.05;
+    model.powerGoal = 0.8;
+    Object.assign(view, { model, t, $nextTick: fn => fn() });
+    view.runAnalysis = () => {};
+    return view;
+  }
+  test('setAlpha übernimmt gültige Zahl und Zahlentext', async () => {
+    const v = await vm();
+    v.setAlpha('0.01');
+    assertEqual(v.model.alpha, 0.01);
+  });
+  test('setAlpha weist leer, 0, 1 und Text ab und lässt α stehen', async () => {
+    const v = await vm();
+    for (const bad of ['', 'abc']) {
+      assertThrows(() => v.setAlpha(bad), /allowed: any finite number/);
+    }
+    for (const bad of [0, 1]) {
+      assertThrows(() => v.setAlpha(bad), /allowed: a number greater than 0 and less than 1/);
+    }
+    assertEqual(v.model.alpha, 0.05);
+  });
+  test('setPowerGoal weist außerhalb [0.5, 0.99] ab statt zu klemmen', async () => {
+    const v = await vm();
+    assertThrows(() => v.setPowerGoal(1.5), /allowed: a number from 0.5 to 0.99/);
+    assertEqual(v.model.powerGoal, 0.8);
+    v.setPowerGoal(0.9);
+    assertEqual(v.model.powerGoal, 0.9);
+  });
+  test('onAlphaInput setzt das Feld bei Abweisung auf den Modellwert zurück', async () => {
+    const v = await vm();
+    const event = { target: { value: '' } };
+    v.onAlphaInput(event);
+    assertEqual(event.target.value, 0.05);
+    assertEqual(v.model.alpha, 0.05);
   });
 });

@@ -9210,12 +9210,12 @@
           "params": { "direction": "'two-sided', 'greater' or 'less'. Any other value is an error — it would be computed as 'less'." }
         },
         "setAlpha": {
-          "help": "Sets the significance level.",
-          "params": { "alpha": "For example 0.05. Seeded from the settings." }
+          "help": "Sets the significance level α. A value outside 0 < α < 1 is rejected; α then stays unchanged.",
+          "params": { "alpha": "A number with 0 < α < 1, for example 0.05. Seeded from the settings." }
         },
         "setPowerGoal": {
-          "help": "Sets the desired power goal for the sample-size assessment.",
-          "params": { "powerGoal": "For example 0.8." }
+          "help": "Sets the desired power goal for the sample-size assessment. A value outside 0.5 to 0.99 is rejected, not clamped.",
+          "params": { "powerGoal": "A number from 0.5 to 0.99, for example 0.8." }
         },
         "setTargetValue": {
           "help": "Sets the target value of the one-sample test (σ²₀, σ₀ or μ₀).",

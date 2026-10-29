@@ -25,9 +25,9 @@
 
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireNumber } from '../../core/agent/agent-argcheck.js';
 import {
-  State, CATEGORIES, TEST_TYPES, DIRECTIONS, TARGET_TYPES,
+  State, CATEGORIES, TEST_TYPES, DIRECTIONS, TARGET_TYPES, ALPHA_BOUNDS, POWER_GOAL_BOUNDS,
 } from './hypothesis-test-model.js';
 import {
   chiSquareVarianceTest, fTest, leveneTest,
@@ -367,30 +367,27 @@ const definition = {
         this.runAnalysis();
       },
       /**
-       * Set the significance level. Non-numeric input keeps the previous α
-       * and still recomputes.
+       * Set the significance level α.
        * @agent
-       * @param {number|string} alpha significance level, e.g. 0.05
+       * @param {number|string} alpha significance level, 0 < α < 1, e.g. 0.05
        * @returns {void}
+       * @throws {Error} if `alpha` is not a number greater than 0 and less
+       *   than 1 — the previous α stays
        */
       setAlpha(alpha) {
-        // `parseFloat` und das unbedingte Rechnen sind Byte für Byte das,
-        // was das `@input` der Vorlage vor dieser Methode tat: `Number('')`
-        // wäre 0 (ein geleertes Feld setzte α = 0), und ohne den Aufruf am
-        // Ende bliebe beim Leeren das alte Ergebnis stehen.
-        const v = parseFloat(alpha);
-        if (!isNaN(v)) this.model.alpha = v;
+        this.model.alpha = requireNumber('alpha', alpha, ALPHA_BOUNDS);
         this.runAnalysis();
       },
       /**
-       * Set the desired power. The Model clamps it to [0.5, 0.99] and ignores
-       * non-numeric input.
+       * Set the desired power for the sample-size assessment.
        * @agent
-       * @param {number|string} powerGoal desired power, e.g. 0.8
+       * @param {number|string} powerGoal desired power, 0.5 to 0.99, e.g. 0.8
        * @returns {void}
+       * @throws {Error} if `powerGoal` is not a number from 0.5 to 0.99 —
+       *   the previous value stays (no clamping)
        */
       setPowerGoal(powerGoal) {
-        this.model.setPowerGoal(powerGoal);
+        this.model.powerGoal = requireNumber('powerGoal', powerGoal, POWER_GOAL_BOUNDS);
         this.runAnalysis();
       },
       /**
@@ -466,13 +463,13 @@ const definition = {
         this._pickerK?.syncValue(this.model.colRefsK);
         this.runAnalysis();
       },
-      /** @noagent DOM event handler; the agent uses setAlpha() */
+      /** @noagent DOM event handler; the agent uses setAlpha(). Rejected input shows the model value again (D1). */
       onAlphaInput(event) {
-        this.setAlpha(event.target.value);
+        try { this.setAlpha(event.target.value); } catch { event.target.value = this.model.alpha ?? ''; }
       },
-      /** @noagent DOM event handler; the agent uses setPowerGoal() */
+      /** @noagent DOM event handler; the agent uses setPowerGoal(). Rejected input shows the model value again (D1). */
       onPowerGoalInput(event) {
-        this.setPowerGoal(event.target.value);
+        try { this.setPowerGoal(event.target.value); } catch { event.target.value = this.model.powerGoal ?? ''; }
       },
 
       // ── Algorithm Lab link ─────────────────────────────────────

@@ -9214,12 +9214,12 @@
           "params": { "direction": "'two-sided', 'greater' oder 'less'. Jeder andere Wert ist ein Fehler — er würde als 'less' gerechnet." }
         },
         "setAlpha": {
-          "help": "Setzt das Signifikanzniveau.",
-          "params": { "alpha": "Zum Beispiel 0.05. Vorbelegt aus den Einstellungen." }
+          "help": "Setzt das Signifikanzniveau α. Ein Wert außerhalb von 0 < α < 1 wird abgewiesen; α bleibt dann unverändert.",
+          "params": { "alpha": "Zahl mit 0 < α < 1, zum Beispiel 0.05. Vorbelegt aus den Einstellungen." }
         },
         "setPowerGoal": {
-          "help": "Setzt das angestrebte Power-Ziel für die Stichprobenumfangsbetrachtung.",
-          "params": { "powerGoal": "Zum Beispiel 0.8." }
+          "help": "Setzt das angestrebte Power-Ziel für die Stichprobenumfangsbetrachtung. Ein Wert außerhalb von 0,5 bis 0,99 wird abgewiesen, nicht geklemmt.",
+          "params": { "powerGoal": "Zahl von 0.5 bis 0.99, zum Beispiel 0.8." }
         },
         "setTargetValue": {
           "help": "Setzt den Zielwert der Einstichproben-Prüfung (σ²₀, σ₀ oder μ₀).",
