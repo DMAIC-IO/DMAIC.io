@@ -22471,7 +22471,31 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "number",
-        "help": "Write a block of values into one column, starting at a row index. Goes through the same `setCellValue` path as the cell editor and the paste handler — type detection, locks and undo included. Values only, no formulas: the cell editor's commit path branches on `isFormula()` BEFORE it reaches `setCellValue`; this path does not, so `\"=C1*2\"` lands here as plain text. Formulas stay with the formula editor in the UI. A plain value written into a formula cell OVERWRITES the formula — `read().formulas` says which cells are computed; undo restores value and formula."
+        "help": "Write a block of values into one column, starting at a row index. Goes through the same `setCellValue` path as the cell editor and the paste handler — type detection, locks and undo included. Values only, no formulas: this path goes straight to `setCellValue`, so `\"=C1*2\"` lands here as plain text. Formulas are written with `setFormula`. A plain value written into a formula cell OVERWRITES the formula — `read().formulas` says which cells are computed; undo restores value and formula."
+      },
+      "setFormula": {
+        "params": [
+          {
+            "name": "columnId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the target column (see read().columns[].id)"
+          },
+          {
+            "name": "row",
+            "type": "number",
+            "optional": false,
+            "help": "zero-based row index; the row count appends a row"
+          },
+          {
+            "name": "formula",
+            "type": "string",
+            "optional": false,
+            "help": "formula text starting with \"=\", e.g. \"=C1[2]*2\" (column 1, row 2, both 1-based)"
+          }
+        ],
+        "returns": "{ value: any, error: string|null }",
+        "help": "Write a formula into one cell of the active sheet, like the formula editor: stored as text, evaluated at once, recorded for undo with the formula that was there before. A row equal to the row count extends the sheet by one row, like typing below the last row. An evaluation error (`#DIV/0`, `#REF!`, …) is not a rejected call: the formula is stored, the cell value is `null`, and the error code comes back — the UI shows the same cell with the same error."
       }
     },
     "fields": {
