@@ -603,10 +603,10 @@ const mod = createModule({
        * @throws {Error} if position is not an integer in 0..column count
        */
       addColumn(position) {
-        // `DataGrid.addColumn` splict ungeprüft: 99 hängte still hinten an,
+        // `DataGrid.addColumn` spleißt ungeprüft: 99 hängte still hinten an,
         // -1 fügte VOR der letzten Spalte ein, 'x' ebenfalls irgendwo.
         if (position !== undefined) {
-          requireIndex('position', position, this._grid.columns.length);
+          requireIndex('position', position, (this._grid?.columns ?? []).length);
         }
         const col = this._grid.addColumn(position === undefined ? {} : { position });
         this._persistNow();
@@ -683,7 +683,7 @@ const mod = createModule({
         // 99 hängt still an.
         const n = count === undefined ? 10 : requireNumber('count', count, { min: 1, integer: true });
         if (position !== undefined) {
-          requireIndex('position', position, this._grid.rowCount);
+          requireIndex('position', position, this._grid?.rowCount ?? 0);
         }
         this._grid.addRows(n, position);
         this._persistNow();
@@ -1198,7 +1198,7 @@ const mod = createModule({
         if (col.meta?.lock) {
           throw new Error(`column "${columnId}" is locked (${col.meta.lock})`);
         }
-        requireIndex('row', row, this._grid.rowCount);
+        requireIndex('row', row, this._grid?.rowCount ?? 0);
         // Nicht `requireText`: dessen Meldung verspricht `"" clears it`. Ein
         // Text ohne "=" ginge in `setCellFormula` still auf den Wertweg —
         // eine zweite Form von `setCells`, die der Agent nicht bestellt hat.
