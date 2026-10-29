@@ -2696,6 +2696,15 @@
             "ioId": "The entry's id. An unknown id is an error."
           }
         },
+        "moveIO": {
+          "help": "Moves an input or output within its list to the position of another entry of the same list.",
+          "params": {
+            "stepId": "Id of the step.",
+            "type": "The list: inputs or outputs.",
+            "ioId": "Id of the entry to move.",
+            "targetIoId": "Id of the entry whose position it takes; must be a different entry of the same list."
+          }
+        },
         "cycleInputType": {
           "help": "Cycles an input's type: none → process parameter (x) → noise factor (n) → none.",
           "params": {

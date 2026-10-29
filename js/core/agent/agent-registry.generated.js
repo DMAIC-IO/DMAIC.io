@@ -15119,6 +15119,36 @@ export const AGENT_REGISTRY = {
         "returns": "void",
         "help": "Entfernt einen Input oder Output von einem Schritt."
       },
+      "moveIO": {
+        "params": [
+          {
+            "name": "stepId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Schritts"
+          },
+          {
+            "name": "type",
+            "type": "'inputs'|'outputs'",
+            "optional": false,
+            "help": "die Liste, in der verschoben wird"
+          },
+          {
+            "name": "ioId",
+            "type": "string",
+            "optional": false,
+            "help": "id des zu verschiebenden Eintrags"
+          },
+          {
+            "name": "targetIoId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Eintrags, dessen Platz er einnimmt"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Verschiebt einen Input oder Output innerhalb seiner Liste an den Platz eines anderen Eintrags derselben Liste."
+      },
       "cycleInputType": {
         "params": [
           {

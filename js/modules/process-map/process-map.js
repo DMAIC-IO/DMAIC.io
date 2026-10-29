@@ -252,6 +252,27 @@ export default createModule({
         this.model.removeIO(stepId, type, ioId);
       },
       /**
+       * Verschiebt einen Input oder Output innerhalb seiner Liste an den
+       * Platz eines anderen Eintrags derselben Liste.
+       * @agent
+       * @param {string} stepId id des Schritts
+       * @param {'inputs'|'outputs'} type die Liste, in der verschoben wird
+       * @param {string} ioId id des zu verschiebenden Eintrags
+       * @param {string} targetIoId id des Eintrags, dessen Platz er einnimmt
+       * @returns {boolean} immer true — ein No-op ist durch die Prüfungen ausgeschlossen
+       * @throws {Error} wenn stepId, ioId oder targetIoId unbekannt ist,
+       *   type weder 'inputs' noch 'outputs' ist, oder beide ids gleich sind
+       */
+      moveIO(stepId, type, ioId, targetIoId) {
+        requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
+        requireEnum('type', type, ['inputs', 'outputs']);
+        const ids = (this.model.findStep(stepId)[type] || []).map((io) => io.id);
+        requireKnownId('ioId', ioId, ids);
+        requireKnownId('targetIoId', targetIoId, ids.filter((x) => x !== ioId));
+        this.model.moveIO(stepId, type, ioId, targetIoId);
+        return true;
+      },
+      /**
        * Schaltet den Input-Typ eines Inputs weiter: kein Typ → Prozessparameter
        * (x) → Störgröße (n) → kein Typ.
        * @agent
@@ -480,7 +501,7 @@ export default createModule({
         event.stopPropagation();
         if (!this._draggedIOId || this._draggedIOId === ioId) return;
         if (stepId !== this._draggedIOStepId || type !== this._draggedIOType) return;
-        this.model.moveIO(stepId, type, this._draggedIOId, ioId);
+        this.moveIO(stepId, type, this._draggedIOId, ioId);
         this._draggedIOId = null;
         this._draggedIOStepId = null;
         this._draggedIOType = null;

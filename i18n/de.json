@@ -2696,6 +2696,15 @@
             "ioId": "Die id des Eintrags. Eine unbekannte id ist ein Fehler."
           }
         },
+        "moveIO": {
+          "help": "Verschiebt einen Input oder Output innerhalb seiner Liste an den Platz eines anderen Eintrags derselben Liste.",
+          "params": {
+            "stepId": "Die id des Schritts.",
+            "type": "Die Liste: inputs oder outputs.",
+            "ioId": "Die id des Eintrags, der verschoben wird.",
+            "targetIoId": "Die id des Eintrags, dessen Platz er einnimmt; muss ein anderer derselben Liste sein."
+          }
+        },
         "cycleInputType": {
           "help": "Schaltet den Input-Typ eines Inputs weiter: kein Typ → Prozessparameter (x) → Störgröße (n) → kein Typ.",
           "params": {

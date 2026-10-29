@@ -49,4 +49,4 @@ js/modules/ishikawa/viewmodel/causes.js:804:◆
 js/modules/ishikawa/viewmodel/causes.js:805:▼
 js/modules/ishikawa/viewmodel/causes.js:806:★
 js/modules/kano/kano-link.js:18:▸
-js/modules/process-map/process-map.js:733:→
+js/modules/process-map/process-map.js:754:→
