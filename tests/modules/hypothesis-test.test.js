@@ -603,11 +603,30 @@ suite('Hypothesis Test VM — setAlpha/setPowerGoal weisen ab', () => {
     v.setPowerGoal(0.9);
     assertEqual(v.model.powerGoal, 0.9);
   });
-  test('onAlphaInput setzt das Feld bei Abweisung auf den Modellwert zurück', async () => {
+  test('onParamInput setzt das Feld bei Abweisung auf den Modellwert zurück und markiert es', async () => {
     const v = await vm();
-    const event = { target: { value: '' } };
-    v.onAlphaInput(event);
-    assertEqual(event.target.value, 0.05);
+    const field = document.createElement('input');
+    field.value = '';
+    v.onParamInput('alpha', { target: field });
+    assertEqual(field.value, '0.05');
+    assertEqual(field.getAttribute('aria-invalid'), 'true');
     assertEqual(v.model.alpha, 0.05);
+  });
+  test('onParamInput schreibt eine gültige Eingabe über den Setter', async () => {
+    const v = await vm();
+    const field = document.createElement('input');
+    field.value = '0.01';
+    v.onParamInput('alpha', { target: field });
+    assertEqual(v.model.alpha, 0.01);
+    field.value = '0.9';
+    v.onParamInput('powerGoal', { target: field });
+    assertEqual(v.model.powerGoal, 0.9);
+  });
+  test('onParamInput verschluckt keinen Programmfehler aus dem Setter', async () => {
+    const v = await vm();
+    v.runAnalysis = () => { throw new TypeError('kaputt'); };
+    const field = document.createElement('input');
+    field.value = '0.01';
+    assertThrows(() => v.onParamInput('alpha', { target: field }), /kaputt/);
   });
 });

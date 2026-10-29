@@ -73,7 +73,7 @@
             <div class="hyptest__field field-group field-group--major">
               <label data-help-key="modules.hypothesis-test.fields.targetType.help"
                      x-text="t('inputAs')"></label>
-              <select data-ref="target-type" class="field" x-model="model.targetType" @change="runAnalysis()">
+              <select data-ref="target-type" class="field" :value="model.targetType" @change="setTargetType($event.target.value)">
                 <option value="variance" x-text="t('asVariance')"></option>
                 <option value="stddev" x-text="t('asStddev')"></option>
               </select>
@@ -81,7 +81,7 @@
             <div class="hyptest__field field-group field-group--minor">
               <label data-help-key="modules.hypothesis-test.fields.targetValue.help">σ²₀</label>
               <input type="number" data-ref="target" class="field field--num"
-                x-model="model.targetValue" :placeholder="t('targetVarPh')" @input="runAnalysis()">
+                :value="paramValue('targetValue')" :placeholder="t('targetVarPh')" @input="onParamInput('targetValue', $event)">
             </div>
           </div>
         </template>
@@ -91,7 +91,7 @@
             <div class="field-group">
               <label data-help-key="modules.hypothesis-test.fields.targetValue.help">μ₀</label>
               <input type="number" data-ref="target" class="field field--num"
-                x-model="model.targetValue" :placeholder="t('targetMeanPh')" @input="runAnalysis()">
+                :value="paramValue('targetValue')" :placeholder="t('targetMeanPh')" @input="onParamInput('targetValue', $event)">
             </div>
           </div>
         </template>
@@ -106,7 +106,7 @@
           <div class="field-group">
             <label data-help-key="modules.hypothesis-test.fields.targetValue.help">μ_d₀</label>
             <input type="number" data-ref="target" class="field field--num"
-              x-model="model.targetValue" :placeholder="t('targetDiffPh')" @input="runAnalysis()">
+              :value="paramValue('targetValue')" :placeholder="t('targetDiffPh')" @input="onParamInput('targetValue', $event)">
           </div>
         </div>
       </div>
@@ -118,7 +118,7 @@
         <div class="hyptest__field field-group field-group--major">
           <label data-help-key="modules.hypothesis-test.fields.direction.help"
                  x-text="t('direction')"></label>
-          <select data-ref="direction" class="field" x-model="model.direction" @change="runAnalysis()">
+          <select data-ref="direction" class="field" :value="model.direction" @change="setDirection($event.target.value)">
             <option value="two-sided">≠ <span x-text="t('twoSided')"></span></option>
             <option value="greater">&gt; <span x-text="t('greater')"></span></option>
             <option value="less">&lt; <span x-text="t('less')"></span></option>
@@ -128,14 +128,14 @@
       <div class="hyptest__field field-group field-group--minor">
         <label data-help-key="modules.hypothesis-test.fields.alpha.help">α</label>
         <input type="number" data-ref="alpha" class="field field--num" min="0.001" max="0.5"
-          :value="model.alpha" @change="onAlphaInput($event)">
+          :value="model.alpha" @change="onParamInput('alpha', $event)">
       </div>
       <template x-if="model.testType !== 'k'">
         <div class="hyptest__field field-group field-group--minor">
           <label data-help-key="modules.hypothesis-test.fields.powerGoal.help"
                  x-text="t('powerGoal')"></label>
           <input type="number" data-ref="power-goal" class="field field--num" min="0.5" max="0.99"
-            :value="model.powerGoal" @change="onPowerGoalInput($event)">
+            :value="model.powerGoal" @change="onParamInput('powerGoal', $event)">
         </div>
       </template>
     </div>
@@ -143,7 +143,7 @@
       <label class="field-check" data-help-anchor="box"
              data-help-key="modules.hypothesis-test.fields.equalVariances.help">
         <input type="checkbox" data-ref="equal-variances"
-          x-model="model.equalVariances" @change="runAnalysis()">
+          :checked="model.equalVariances" @change="setEqualVariances($event.target.checked)">
         <span x-text="model.testType === 'k' ? t('assumeEqualVariancesK') : t('assumeEqualVariances')"></span>
       </label>
     </template>

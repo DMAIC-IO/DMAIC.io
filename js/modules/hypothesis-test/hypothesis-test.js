@@ -26,6 +26,7 @@
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireBoolean, requireEnum, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { paramInputMixin, numberCheck } from '../../core/param-input.js';
 import {
   State, CATEGORIES, TEST_TYPES, DIRECTIONS, TARGET_TYPES, ALPHA_BOUNDS, POWER_GOAL_BOUNDS,
 } from './hypothesis-test-model.js';
@@ -45,6 +46,26 @@ import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 
 /** Mapping: test name → Algorithm Lab ID. */
 import { isNormalByAD, meanRoute, kMeanRoute, varianceRoute, isConstant, ciContains } from './hypothesis-test-routing.js';
+
+/**
+ * Zahlenfelder der Oberfläche; die Grenzen von α und Power sind dieselben wie
+ * im Agent-Setter. Das Hypothesenziel hat keine Grenzen (leer = nicht gesetzt).
+ */
+const PARAM_SPEC = {
+  alpha: { ...ALPHA_BOUNDS },
+  powerGoal: { ...POWER_GOAL_BOUNDS },
+  targetValue: { nullable: true },
+};
+
+/** Je Feld sein Prüfer; der Setter bleibt die einzige Schreibstelle. */
+const PARAM_CHECKS = {
+  alpha: numberCheck(PARAM_SPEC.alpha),
+  powerGoal: numberCheck(PARAM_SPEC.powerGoal),
+  targetValue: (v) => v,
+};
+
+/** Je Feld der Setter, über den die Oberfläche schreibt. */
+const PARAM_SETTERS = { alpha: 'setAlpha', powerGoal: 'setPowerGoal', targetValue: 'setTargetValue' };
 
 const ALGO_LAB_IDS = {
   'Shapiro-Wilk': 'shapiro-wilk',
@@ -264,6 +285,12 @@ const definition = {
 
   data(module, _t) {
     return {
+      ...paramInputMixin({
+        specs: PARAM_SPEC,
+        checks: PARAM_CHECKS,
+        t: _t,
+        lang: () => module._context?.i18n?.getLanguage?.() ?? 'de',
+      }),
       // ── Transient view state (not persisted) ────────────────────
       result: null,
       errorText: '',
@@ -464,13 +491,11 @@ const definition = {
         this._pickerK?.syncValue(this.model.colRefsK);
         this.runAnalysis();
       },
-      /** @noagent DOM event handler; the agent uses setAlpha(). Rejected input shows the model value again. */
-      onAlphaInput(event) {
-        try { this.setAlpha(event.target.value); } catch { event.target.value = this.model.alpha ?? ''; }
-      },
-      /** @noagent DOM event handler; the agent uses setPowerGoal(). Rejected input shows the model value again. */
-      onPowerGoalInput(event) {
-        try { this.setPowerGoal(event.target.value); } catch { event.target.value = this.model.powerGoal ?? ''; }
+      /** @noagent DOM event handler target; routes a checked numeric field to its agent setter */
+      setParam(key, value) {
+        const setter = PARAM_SETTERS[key];
+        if (!setter) throw new Error(`unknown numeric field ${JSON.stringify(key)}`);
+        this[setter](value);
       },
 
       // ── Algorithm Lab link ─────────────────────────────────────
