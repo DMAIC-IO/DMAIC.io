@@ -66,13 +66,26 @@ export function describeRange(spec, lang, t) {
  * Die Ablehnungsmarken eines Feldes entfernen und seinen Vorlagen-Hinweis wiederherstellen.
  * @param {HTMLElement} el
  */
-function clearRejection(el) {
+export function clearRejection(el) {
   el.classList.remove('field--error');
   el.removeAttribute('aria-invalid');
   if (el.dataset && el.dataset.paramTitle !== undefined) {
     el.title = el.dataset.paramTitle;
     delete el.dataset.paramTitle;
   }
+}
+
+/**
+ * Ein Feld als abgewiesen markieren: Markierung, aria-invalid und ein Hinweis
+ * im Titel (der Vorlagen-Titel kommt mit `clearRejection` zurück).
+ * @param {HTMLElement} el
+ * @param {string} title  Hinweistext
+ */
+export function markRejection(el, title) {
+  el.classList.add('field--error');
+  el.setAttribute('aria-invalid', 'true');
+  if (el.dataset && el.dataset.paramTitle === undefined) el.dataset.paramTitle = el.title ?? '';
+  el.title = title;
 }
 
 /**
@@ -103,11 +116,8 @@ export function paramInputMixin({ specs, checks, root = (vm) => vm.model, t, lan
       } catch (err) {
         if (err instanceof TypeError || err instanceof ReferenceError || err instanceof SyntaxError) throw err;
         el.value = String(this.paramValue(key) ?? '');
-        el.classList.add('field--error');
-        el.setAttribute('aria-invalid', 'true');
         const range = describeRange(specOf(this, key), lang(), t);
-        if (el.dataset && el.dataset.paramTitle === undefined) el.dataset.paramTitle = el.title ?? '';
-        el.title = range ? t('common.inputRejected', { range }) : t('common.inputRejectedPlain');
+        markRejection(el, range ? t('common.inputRejected', { range }) : t('common.inputRejectedPlain'));
         return undefined;
       }
       // Der Wert ist gültig: die Marken aller Parameterfelder der Komponente
