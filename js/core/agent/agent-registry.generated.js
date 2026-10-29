@@ -16852,7 +16852,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Einen Parameter setzen; Gültigkeit und Bereiche prüft die Validierung, deren Grund `validationMsg` nennt. Ein Moduswechsel setzt eine Statistik, die der neue Modus nicht anbietet, auf den Mittelwert zurück.",
+        "help": "Einen Parameter setzen. Konfidenz, Trimmanteil und Quantil p außerhalb ihres Bereichs werden abgewiesen; nur die Bereiche von B und seed prüft die Validierung, deren Grund `validationMsg` nennt. Ein Moduswechsel setzt eine Statistik, die der neue Modus nicht anbietet, auf den Mittelwert zurück.",
         "keysOf": "Params",
         "keys": {
           "mode": {
