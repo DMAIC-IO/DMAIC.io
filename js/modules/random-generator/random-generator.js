@@ -45,8 +45,10 @@ import {
   frequency,
   csvEscape,
   parseSeed,
+  DEFAULT_SEED,
   genId,
 } from './random-generator-model.js';
+import { paramInputMixin, numberCheck } from '../../core/param-input.js';
 
 const AUTORUN_DELAY = 80;
 const DISPLAY_MAX = 2000;
@@ -68,25 +70,15 @@ const TARGET_FILTER = { maxCount: 0 };
 /** Welche Eingabe ein fester Schlüssel beschreibt. */
 const PARAM_INPUTS = { count: 'countInput', seed: 'seedInput', attrCount: 'attrCountInput', attrSeed: 'attrSeedInput' };
 
-/**
- * Prüft einen Startwert: jede ganze Zahl, auch 0.
- * @param {number|string} value
- * @returns {number}
- */
-function requireSeed(value) {
-  return requireNumber('value', value, { integer: true });
-}
-/** Grenzen der Umfang-Felder: eine Regel für Oberfläche und Setter. */
-const PARAM_BOUNDS = {
+/** Zahlenfelder der Oberfläche; die Grenzen sind die der Agent-Setter (setParam). */
+const PARAM_SPEC = {
   count: { min: 1, max: 100000, integer: true },
   attrCount: { min: 1, max: 100000, integer: true },
+  seed: { integer: true },
+  attrSeed: { integer: true },
 };
-const PARAM_CHECKS = {
-  count: (v) => requireNumber('value', v, PARAM_BOUNDS.count),
-  attrCount: (v) => requireNumber('value', v, PARAM_BOUNDS.attrCount),
-  seed: requireSeed,
-  attrSeed: requireSeed,
-};
+const PARAM_CHECKS = Object.fromEntries(
+  Object.entries(PARAM_SPEC).map(([key, spec]) => [key, numberCheck(spec)]));
 
 /** @param {number} v @returns {string} */
 function fmtStatNum(v) {
@@ -173,7 +165,18 @@ export default createModule({
   Model: State,
 
   data(module, _t) {
+    const paramMixin = paramInputMixin({
+      specs: PARAM_SPEC,
+      checks: PARAM_CHECKS,
+      root: (vm) => ({
+        count: vm.countInput, seed: vm.seedInput,
+        attrCount: vm.attrCountInput, attrSeed: vm.attrSeedInput,
+      }),
+      t: _t,
+      lang: () => module._context?.i18n?.getLanguage?.() ?? 'de',
+    });
     return {
+      ...paramMixin,
       // ── Constants exposed to the template ─────────────────────
       attrKey: ATTRIBUTIVE_KEY,
 
@@ -346,9 +349,9 @@ export default createModule({
         return text === key ? '' : text;
       },
       /** @noagent view transform */
-      paramMin(p) { return p.min !== undefined ? p.min : false; },
+      distParamMin(p) { return p.min !== undefined ? p.min : false; },
       /** @noagent view transform */
-      paramMax(p) { return p.max !== undefined ? p.max : false; },
+      distParamMax(p) { return p.max !== undefined ? p.max : false; },
 
       /** @noagent view transform */
       attrColor(i) { return `var(--color-chart-${  (i % 10) + 1  })`; },
@@ -492,8 +495,9 @@ export default createModule({
       },
 
       // ── DOM input handlers ────────────────────────────────────
-      // Die Oberfläche klemmt wie bisher, bevor sie die Senke ruft; eine
-      // abgewiesene Eingabe wird auf den gehaltenen Wert zurückgesetzt.
+      // Zahlenfelder (Umfang, Startwert) prüft `onParamInput` aus dem
+      // Parameter-Mixin mit derselben Regel wie `setParam`: eine ungültige
+      // Eingabe wird sichtbar abgewiesen, der Modellwert bleibt.
 
       /** @noagent DOM event handler; the agent uses setDistParam() */
       onDistParamInput(id, event) {
@@ -504,23 +508,12 @@ export default createModule({
         }
       },
 
-      /** @noagent view transform; Untergrenze eines Umfang-Feldes @param {string} key */
-      paramMin(key) { return PARAM_BOUNDS[key]?.min ?? null; },
-
-      /** @noagent view transform; Obergrenze eines Umfang-Feldes @param {string} key */
-      paramMax(key) { return PARAM_BOUNDS[key]?.max ?? null; },
-
-      /** @noagent DOM event handler; the agent uses setParam() */
+      /** @noagent DOM event handler; ein leerer Startwert wird zur Vorgabe, Umfang und Zahl werden geprüft @param {string} key @param {Event} event */
       onParamInput(key, event) {
-        let v = event.target.value;
-        if (key === 'count' || key === 'attrCount') v = clampCount(v, key === 'count' ? 1000 : 50);
-        if (key === 'seed' || key === 'attrSeed') v = parseSeed(v);
-        event.target.value = String(v);
-        try {
-          this.setParam(key, v);
-        } catch {
-          event.target.value = this[PARAM_INPUTS[key]];
+        if ((key === 'seed' || key === 'attrSeed') && event.target.value.trim() === '') {
+          event.target.value = String(DEFAULT_SEED);
         }
+        return paramMixin.onParamInput.call(this, key, event);
       },
 
       /** @noagent DOM event handler; the agent uses setAttribute() */
