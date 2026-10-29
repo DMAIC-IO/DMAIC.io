@@ -22,6 +22,10 @@ export function opportunityNormalize(step) {
 }
 
 /**
+ * Je Datei einzeln erklärt: der Abgleich der Hilfetexte liest die Typedefs
+ * je Moduldatei, ein gemeinsamer Typedef wäre dort nicht auffindbar. Die
+ * Schlüssel beschreiben neue Daten; FlowchartState reicht importiertes
+ * Alt-JSON unverändert durch.
  * @typedef {object} FlowSubstep
  * @property {string} id  Kennung
  * @property {string} title  Titel

@@ -2910,7 +2910,7 @@
         "PmLoop": {
           "targetStepId": "Die id des Schritts, zu dem die Schleife zurückführt, oder null.",
           "condition": "Die Bedingung, unter der die Schleife durchlaufen wird.",
-          "steps": "Die Schritte innerhalb der Schleife, je id und title."
+          "steps": "Die Nacharbeitsschritte innerhalb der Schleife, je id und title."
         },
         "FlowSubstep": {
           "id": "Die Kennung des Unter-Schritts.",

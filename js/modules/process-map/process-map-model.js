@@ -70,6 +70,10 @@ function pmNormalize(step) {
 }
 
 /**
+ * Je Datei einzeln erklärt: der Abgleich der Hilfetexte liest die Typedefs
+ * je Moduldatei, ein gemeinsamer Typedef wäre dort nicht auffindbar. Die
+ * Schlüssel beschreiben neue Daten; FlowchartState reicht importiertes
+ * Alt-JSON unverändert durch.
  * @typedef {object} FlowSubstep
  * @property {string} id  Kennung
  * @property {string} title  Titel
@@ -79,7 +83,7 @@ function pmNormalize(step) {
  * @typedef {object} PmIO
  * @property {string} id  Kennung
  * @property {string} name  Bezeichnung
- * @property {'param'|'noise'|null} [inputType]  Art eines Inputs; nur bei Inputs
+ * @property {'param'|'noise'} [inputType]  Art eines Inputs; nur bei Inputs
  */
 
 /**

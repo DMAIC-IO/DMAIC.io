@@ -273,7 +273,11 @@ const base = createModule({
        */
       setClassExpanded(cls, expanded) {
         const numKey = requireNumber('cls', cls, { integer: true });
-        requireKnownId('cls', numKey, [...new Set(this.standards().map((x) => x.class))]);
+        // Kette bis `this.standards()` (Lesefeld `standards`), damit das Gate sie sieht;
+        // der filter-Schritt macht die Klassen eindeutig.
+        requireKnownId('cls', numKey, this.standards()
+          .filter((x, i, all) => all.findIndex((y) => y.class === x.class) === i)
+          .map((x) => x.class));
         requireBoolean('expanded', expanded);
         const arr = this.model.expandedClasses;
         const idx = arr.indexOf(numKey);

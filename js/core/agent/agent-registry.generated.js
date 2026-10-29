@@ -15614,7 +15614,7 @@ export const AGENT_REGISTRY = {
                 "help": "Bezeichnung"
               },
               "inputType": {
-                "type": "'param'|'noise'|null",
+                "type": "'param'|'noise'",
                 "help": "Art eines Inputs; nur bei Inputs",
                 "optional": true
               }
@@ -15634,7 +15634,7 @@ export const AGENT_REGISTRY = {
                 "help": "Bezeichnung"
               },
               "inputType": {
-                "type": "'param'|'noise'|null",
+                "type": "'param'|'noise'",
                 "help": "Art eines Inputs; nur bei Inputs",
                 "optional": true
               }

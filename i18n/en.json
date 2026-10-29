@@ -2910,7 +2910,7 @@
         "PmLoop": {
           "targetStepId": "The id of the step the loop returns to, or null.",
           "condition": "The condition under which the loop runs.",
-          "steps": "The steps inside the loop, each with id and title."
+          "steps": "The rework steps inside the loop, each with id and title."
         },
         "FlowSubstep": {
           "id": "The id of the substep.",

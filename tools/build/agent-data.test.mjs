@@ -3609,3 +3609,26 @@ test('module_state_option_source: ein lokales let gleichen Namens wie ein Modul-
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
   assert.ok(!collectAgentData(root).modules.foo.violations.some((v) => v.startsWith('module_state_option_source')));
 });
+
+test('module_state_option_source: das let einer Mixin-Datei wird dem Mixin-Mitglied zugerechnet', () => {
+  const mixin = `let _ids = [];\n` + MIXIN.replace('renameStep(name) { return true; }', "renameStep(name) { requireKnownId('name', name, _ids); return true; }");
+  const root = fixture(
+    { foo: { 'foo.js': vmWith('...mixConst,'), 'foo-model.js': MODEL } },
+    { 'js/ui/mix.js': mixin },
+  );
+  assert.ok(collectAgentData(root).modules.foo.violations.some((v) => v.startsWith('module_state_option_source:renameStep:name')));
+});
+
+test('module_state_option_source: ein gleichnamiges let der Moduldatei wird dem Mixin nicht zugerechnet', () => {
+  const mixin = MIXIN.replace('renameStep(name) { return true; }', "renameStep(name) { requireKnownId('name', name, _ids); return true; }");
+  const vm = vmWith('...mixConst,').replace('export default', 'let _ids = [];\nexport default');
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } }, { 'js/ui/mix.js': mixin });
+  assert.ok(!collectAgentData(root).modules.foo.violations.some((v) => v.startsWith('module_state_option_source')));
+});
+
+test('module_state_option_source: statische Wrapper Object.keys/Array.from/Object.values werden aufgelöst', () => {
+  for (const source of ['Object.keys(_ids)', 'Array.from(_ids)', 'Object.values(_ids)']) {
+    const root = fixture({ foo: { 'foo.js': vmWithKnownIdCheck('let _ids = [];', source), 'foo-model.js': MODEL } });
+    assert.ok(collectAgentData(root).modules.foo.violations.includes('module_state_option_source:setProblem:text'), source);
+  }
+});

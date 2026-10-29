@@ -443,6 +443,9 @@ export const apRating = {
  * `types.RiskEntry.<name>`. RiskEntry/RiskActionEntry sind die Leseansicht;
  * die Schreibfläche sind `RiskField`/`ActionField` in fmea.js.
  *
+ * Die Wertetypen von sev/occ/det/delta* sind enger als `fromJSON`: ein
+ * Import nimmt jeden String an, die Typen beschreiben die Eingabe über die Fläche.
+ *
  * @typedef {object} RiskEntry
  * @property {string} id  Kennung
  * @property {string} step  Prozessschritt bzw. Bauteil

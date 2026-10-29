@@ -919,7 +919,7 @@ function inspectMethod(name, member, sf, from, ctx) {
     // Vorlagenbindung NICHT ab — genau das ist der Unterschied zwischen
     // „ein Agent kann das Feld schreiben" und „irgendeine Methode tut es".
     for (const field of writtenModelFields(fn, ctx.resolver, ctx.modelDecl)) out.written.add(field);
-    for (const source of stateOptionSources(fn.body, moduleLetNames(sf), fn)) out.optionSources.push({ action: name, ...source });
+    for (const source of stateOptionSources(fn.body, moduleLetNames(fn.getSourceFile()), fn)) out.optionSources.push({ action: name, ...source });
 }
 
 /** Abschnitte unter `actions.<name>` — als Methode eines Teil-Viewmodels kollidierten sie mit dem Hilfeschlüssel. */
@@ -1378,8 +1378,10 @@ function expandDerivedNames(body, names) {
  * @param {ts.FunctionLikeDeclaration} [fn]  die Methode; ihre Parameter und lokalen Deklarationen verdecken gleichnamige Modul-lets
  *
  * Blinde Flecken von `module_state_option_source` (falsch negativ, kein Befund):
- * Array-Literal/Spread, `Object.keys(x)`-Wrapper über mehrere Ebenen und
- * Aufrufe mit zwei oder mehr Argumenten werden nicht aufgelöst.
+ * Array-Literal/Spread, Aufrufe mit zwei oder mehr Argumenten und ein
+ * `const`-Halter (`TABLE.entries.map(…)`, die Wurzel ist eine Konstante)
+ * werden nicht gemeldet. Statische Wrapper mit einem Argument
+ * (`Object.keys(x)`, `Array.from(x)`) werden aufgelöst.
  * `localBindingNames` läuft auch durch verschachtelte Funktionen, eine innere
  * Bindung kann daher eine äußere Verwendung verdecken (falsch negativ).
  * @returns {Array<{ arg: string, field?: string, moduleState?: string }>}
@@ -1452,7 +1454,10 @@ function rootIdentifier(expr, aliases, seen) {
   if (ts.isElementAccessExpression(expr) || ts.isPropertyAccessExpression(expr)) return rootIdentifier(expr.expression, aliases, seen);
   if (ts.isCallExpression(expr)) {
     const callee = expr.expression;
-    if (ts.isPropertyAccessExpression(callee)) return rootIdentifier(callee.expression, aliases, seen);
+    if (ts.isPropertyAccessExpression(callee) && (callee.name.text === 'map' || callee.name.text === 'filter' || expr.arguments.length === 0)) {
+      return rootIdentifier(callee.expression, aliases, seen);
+    }
+    // Statischer Wrapper (`Object.keys(x)`, `Array.from(x)`): genau EIN Argument.
     return expr.arguments.length === 1 ? rootIdentifier(expr.arguments[0], aliases, seen) : null;
   }
   return null;
