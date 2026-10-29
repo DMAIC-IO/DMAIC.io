@@ -63,6 +63,19 @@ export function describeRange(spec, lang, t) {
 }
 
 /**
+ * Die Ablehnungsmarken eines Feldes entfernen und seinen Vorlagen-Hinweis wiederherstellen.
+ * @param {HTMLElement} el
+ */
+function clearRejection(el) {
+  el.classList.remove('field--error');
+  el.removeAttribute('aria-invalid');
+  if (el.dataset && el.dataset.paramTitle !== undefined) {
+    el.title = el.dataset.paramTitle;
+    delete el.dataset.paramTitle;
+  }
+}
+
+/**
  * Mixin für Viewmodels mit Zahlenparametern.
  * @param {{ specs: Record<string, ParamSpec|((vm: object) => ParamSpec)>,
  *   checks: Record<string, Function>, root?: (vm: object) => object,
@@ -97,12 +110,11 @@ export function paramInputMixin({ specs, checks, root = (vm) => vm.model, t, lan
         el.title = range ? t('common.inputRejected', { range }) : t('common.inputRejectedPlain');
         return undefined;
       }
-      el.classList.remove('field--error');
-      el.removeAttribute('aria-invalid');
-      if (el.dataset && el.dataset.paramTitle !== undefined) {
-        el.title = el.dataset.paramTitle;
-        delete el.dataset.paramTitle;
-      }
+      // Der Wert ist gültig: die Marken aller Parameterfelder der Komponente
+      // fallen weg, denn die anderen Felder zeigen Modellwerte.
+      clearRejection(el);
+      const root = el.closest?.('[x-data]');
+      if (root) for (const other of root.querySelectorAll('.field--error[aria-invalid="true"]')) clearRejection(other);
       const value = specOf(this, key).nullable && raw === '' ? null : raw;
       return this.setParam(key, value);
     },

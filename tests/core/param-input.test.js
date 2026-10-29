@@ -28,6 +28,28 @@ suite('paramInputMixin', () => {
     assertEqual(el.getAttribute('aria-invalid'), null);
   });
 
+  test('eine gültige Eingabe hebt die Ablehnungsmarken aller Parameterfelder der Komponente auf', () => {
+    const v = vm(); const other = input('3'); const plain = input('4');
+    other.classList.add('field--error'); other.setAttribute('aria-invalid', 'true');
+    other.dataset.paramTitle = 'Vorlage'; other.title = 'nein: x';
+    const root = { querySelectorAll: (sel) => (sel === '.field--error[aria-invalid="true"]' ? [other] : []) };
+    const el = input('5'); el.closest = () => root;
+    v.onParamInput('k', { target: el });
+    assertEqual(other.classList.contains('field--error'), false);
+    assertEqual(other.getAttribute('aria-invalid'), null);
+    assertEqual(other.title, 'Vorlage');
+    assertEqual(plain.getAttribute('aria-invalid'), null);
+  });
+
+  test('eine abgewiesene Eingabe lässt die Marken anderer Felder stehen', () => {
+    const v = vm(); const other = input('3');
+    other.classList.add('field--error'); other.setAttribute('aria-invalid', 'true');
+    const root = { querySelectorAll: () => [other] };
+    const el = input('25'); el.closest = () => root;
+    v.onParamInput('k', { target: el });
+    assertEqual(other.getAttribute('aria-invalid'), 'true');
+  });
+
   test('ungültige Eingabe wird abgewiesen: Feld zurück auf den Modellwert, markiert, kein Schreiben', () => {
     const v = vm(); const el = input('25');
     v.onParamInput('k', { target: el });
