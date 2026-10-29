@@ -1359,6 +1359,35 @@
             "role": "Die Rolle: continuous (stetig), categorical (kategorial), ordinal, date (Datum), identifier (Kennung) oder freeText (Freitext). Dieselbe Rolle wie in read().columns[].role bestätigt die erkannte."
           }
         },
+        "moveRow": {
+          "help": "Verschiebt eine Zeile des aktiven Blatts, wie das Ziehen am Zeilenkopf. Liefert false, wenn Start und Ziel gleich sind. Rückgängig schiebt sie zurück.",
+          "params": {
+            "fromRow": "Die Zeile, die wandert, ab 0 gezählt.",
+            "toRow": "Die Stelle, die die Zeile danach hat, ab 0 gezählt."
+          }
+        },
+        "moveColumn": {
+          "help": "Verschiebt eine Spalte des aktiven Blatts, wie das Ziehen am Spaltenkopf; die Kurznamen (C1, C2 …) folgen der neuen Reihenfolge. Liefert false, wenn die Spalte schon dort steht. Rückgängig schiebt sie zurück.",
+          "params": {
+            "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
+            "toIndex": "Die Stelle, die die Spalte danach hat, ab 0 gezählt."
+          }
+        },
+        "setColumnType": {
+          "help": "Ändert den Typ einer Spalte des aktiven Blatts, wie die Typauswahl im Spaltenkopf; die Werte werden umgewandelt. Passt die Rolle nicht zum neuen Typ, wird sie neu erkannt und ist nicht mehr bestätigt. Währung bringt zwei, Prozent eine Nachkommastelle mit. Liefert false, wenn die Spalte den Typ schon hat. Gesperrte Spalten lassen sich nicht ändern. Rückgängig erfasst Typänderungen nicht.",
+          "params": {
+            "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
+            "type": "Der Typ: numeric (Zahl), text, date (Datum), time (Uhrzeit), currency (Währung), percent (Prozent) oder binary (0/1)."
+          }
+        },
+        "setColumnFormat": {
+          "help": "Setzt einen Schlüssel des Anzeigeformats einer Spalte des aktiven Blatts, wie die Formatauswahl im Spaltenkopf. Die Werte bleiben, nur die Anzeige ändert sich. numeric, currency, percent → decimals; date → dateFormat; time → timeFormat; text und binary haben kein Format. Gesperrte Spalten lassen sich nicht ändern. Rückgängig erfasst Formatänderungen nicht.",
+          "params": {
+            "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
+            "key": "Der Format-Schlüssel: decimals, dateFormat oder timeFormat — passend zum Spaltentyp.",
+            "value": "decimals: ganze Zahl von 0 bis 6; dateFormat: dd.MM.yyyy, yyyy-MM-dd, dd/MM/yyyy, MM/dd/yyyy oder d. MMMM yyyy; timeFormat: HH:mm oder HH:mm:ss. null stellt die Vorgabe des Typs her."
+          }
+        },
         "duplicateSheet": {
           "help": "Kopiert ein Blatt mit Zellen, Formeln und Spalteneinstellungen. Die Kopie kommt ans Ende, heißt „<Name> (Kopie)“ und wird aktiv; der Agent erhält ihre id.",
           "params": { "id": "Die id des zu kopierenden Blatts, wie read().sheets[].id sie nennt." }
@@ -1375,7 +1404,7 @@
       "fields": {
         "sheets": { "help": "Alle Blätter der Arbeitsmappe in Reiterfolge, je mit id und Name." },
         "activeSheetId": { "help": "Die id des Blatts, auf das sich columns und rows beziehen." },
-        "columns": { "help": "Die Spaltenköpfe des aktiven Blatts. id ist die columnId eines Spaltenbezugs, shortName die Kurzform in Formeln (C1, C2 …), role die Rolle der Spalte, roleConfirmed true, wenn sie von Hand gesetzt oder bestätigt ist (Rollen-Dialog oder setColumnRole), false bei einer automatisch erkannten Rolle. Ein Typwechsel, zu dem die Rolle nicht mehr passt, setzt die Bestätigung zurück." },
+        "columns": { "help": "Die Spaltenköpfe des aktiven Blatts. id ist die columnId eines Spaltenbezugs, shortName die Kurzform in Formeln (C1, C2 …), role die Rolle der Spalte, roleConfirmed true, wenn sie von Hand gesetzt oder bestätigt ist (Rollen-Dialog oder setColumnRole), false bei einer automatisch erkannten Rolle. Ein Typwechsel, zu dem die Rolle nicht mehr passt, setzt die Bestätigung zurück. format nennt die gesetzten Schlüssel des Anzeigeformats (decimals, dateFormat, timeFormat); ein fehlender Schlüssel heißt Vorgabe des Typs." },
         "rows": { "help": "Die Datenzeilen des aktiven Blatts, jede Zeile in Spaltenreihenfolge. Massendaten: ohne options.fields = ['rows'] kommt nur der Umfang." },
         "formulas": { "help": "Welche Zellen des aktiven Blatts gerechnet sind, je mit columnId, nullbasierter Zeile und Formeltext. Massendaten: ohne options.fields = ['formulas'] kommt nur der Umfang." }
       },

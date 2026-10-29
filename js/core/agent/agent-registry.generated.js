@@ -22538,6 +22538,84 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Set the analytical role of a column on the active sheet, or confirm the detected one by passing the same role — like the role dialog before a chart suggestion. Afterwards read().columns[].roleConfirmed is true, and chart suggestion reads the role as confirmed. Allowed roles depend on the column type: numeric/currency/percent → continuous, categorical, ordinal, identifier; text → categorical, ordinal, identifier, freeText; binary → categorical; date/time → date. Role changes are not recorded in the undo history (as in the dialog)."
+      },
+      "moveRow": {
+        "params": [
+          {
+            "name": "fromRow",
+            "type": "number",
+            "optional": false,
+            "help": "zero-based index of the row to move"
+          },
+          {
+            "name": "toRow",
+            "type": "number",
+            "optional": false,
+            "help": "zero-based index the row has afterwards"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Move a row of the active sheet, like dragging its row header. Undo moves it back."
+      },
+      "moveColumn": {
+        "params": [
+          {
+            "name": "columnId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the column (see read().columns[].id)"
+          },
+          {
+            "name": "toIndex",
+            "type": "number",
+            "optional": false,
+            "help": "zero-based position the column has afterwards"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Move a column of the active sheet, like dragging its header. Short names (C1, C2 …) follow the new order. Undo moves it back."
+      },
+      "setColumnType": {
+        "params": [
+          {
+            "name": "columnId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the column (see read().columns[].id)"
+          },
+          {
+            "name": "type",
+            "type": "string",
+            "optional": false,
+            "help": "one of numeric, text, date, time, currency, percent, binary"
+          }
+        ],
+        "returns": "boolean",
+        "help": "Change the type of a column on the active sheet, like the type picker in the column header; the values are converted. A role the new type does not allow is re-detected and loses its confirmation (read().columns[].roleConfirmed becomes false). Currency and percent bring 2 and 1 decimals. Not recorded in the undo history (as in the picker)."
+      },
+      "setColumnFormat": {
+        "params": [
+          {
+            "name": "columnId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the column (see read().columns[].id)"
+          },
+          {
+            "name": "key",
+            "type": "'decimals'|'dateFormat'|'timeFormat'",
+            "optional": false,
+            "help": "the format key; must fit the column type"
+          },
+          {
+            "name": "value",
+            "type": "number|string|null",
+            "optional": false,
+            "help": "decimals: whole number 0..6; dateFormat: dd.MM.yyyy, yyyy-MM-dd, dd/MM/yyyy, MM/dd/yyyy or d. MMMM yyyy; timeFormat: HH:mm or HH:mm:ss; null = default"
+          }
+        ],
+        "returns": "void",
+        "help": "Set one display format key of a column on the active sheet, like the format column of the type picker. numeric, currency, percent → decimals (0..6); date → dateFormat; time → timeFormat; text and binary have no format. null restores the type's default. Values are unchanged — only the display. Not recorded in the undo history."
       }
     },
     "fields": {
@@ -22554,8 +22632,8 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "columns": {
-        "type": "Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null, roleConfirmed: boolean }>",
-        "help": "the column headers of the active sheet; `roleConfirmed` is true once the role was set or confirmed by hand or via setColumnRole; `id` is the columnId of a column reference",
+        "type": "Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null, roleConfirmed: boolean, format: { decimals?: number, dateFormat?: string, timeFormat?: string } }>",
+        "help": "the column headers of the active sheet; `id` is the columnId of a column reference; `roleConfirmed` is true once the role was set or confirmed by hand or via setColumnRole; `format` holds the display format keys set for the column (absent key = the type's default)",
         "bulk": false,
         "derived": true
       },

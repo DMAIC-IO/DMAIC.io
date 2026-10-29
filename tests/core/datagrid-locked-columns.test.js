@@ -129,10 +129,10 @@ suite('DataGrid locks — column structural ops', () => {
     dispose();
   });
 
-  test('_setColumnType rejected on any lock', () => {
+  test('setColumnType rejected on any lock', () => {
     const { grid, dispose } = newGrid();
     grid.setColumnLock('col_a', { lock: 'soft' });
-    grid._setColumnType(0, 'text');
+    assertEqual(grid.setColumnType('col_a', 'text'), false);
     assertEqual(grid.getColumn('col_a').type, 'numeric'); // unchanged
     dispose();
   });
@@ -165,6 +165,45 @@ suite('DataGrid locks — paste & clear', () => {
     assertEqual(grid.getColumn('col_b').values[0], null);
     assertEqual(grid.getColumn('col_b').values[1], null);
     assertEqual(blocked, true);
+    dispose();
+  });
+});
+
+suite('DataGrid setColumnType — by column id', () => {
+  test('converts the values and reports the change', () => {
+    const { grid, dispose } = newGrid();
+    assertEqual(grid.setColumnType('col_b', 'text'), true);
+    const col = grid.getColumn('col_b');
+    assertEqual(col.type, 'text');
+    assertEqual(col.values.join('|'), '1|1|2');
+    assertEqual(typeof col.values[0], 'string');
+    dispose();
+  });
+
+  test('same type and unknown id change nothing', () => {
+    const { grid, dispose } = newGrid();
+    assertEqual(grid.setColumnType('col_a', 'numeric'), false);
+    assertEqual(grid.setColumnType('nope', 'text'), false);
+    dispose();
+  });
+
+  test('a manual role the new type does not allow is re-inferred', () => {
+    // continuous does not exist for text: the manual mark falls, the role is
+    // inferred anew.
+    const { grid, dispose } = newGrid();
+    grid.setColumnRole('col_a', 'continuous');
+    assertEqual(grid.getColumn('col_a').roleManual, true);
+    grid.setColumnType('col_a', 'text');
+    const col = grid.getColumn('col_a');
+    assertEqual(col.roleManual, false);
+    assertEqual(col.role, 'freeText'); // 3 of 3 values distinct
+    dispose();
+  });
+
+  test('currency gets two decimals by default', () => {
+    const { grid, dispose } = newGrid();
+    grid.setColumnType('col_a', 'currency');
+    assertEqual(grid.getColumn('col_a').format.decimals, 2);
     dispose();
   });
 });

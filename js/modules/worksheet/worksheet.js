@@ -18,10 +18,12 @@
  *
  * @agent  Vollständig über das Viewmodel steuerbar: CSV-Import, Zellblöcke
  *   und Formeln schreiben, Spalten anlegen, umbenennen und entfernen,
- *   Zeilen einfügen und entfernen, Zeilen nach einer Spalte sortieren, Rückgängig, Blätter
- *   anlegen, wechseln, umbenennen, duplizieren, davor einfügen und entfernen;
- *   Spaltenrollen setzen und bestätigen. Dateidialoge, Popout-Widgets und die Auswahl-abhängigen Knöpfe bleiben
- *   der UI vorbehalten; gelesen wird über read() mit erklärter Lesefläche
+ *   Zeilen einfügen und entfernen, Zeilen nach einer Spalte sortieren,
+ *   Rückgängig, Blätter anlegen, wechseln, umbenennen, duplizieren, davor
+ *   einfügen und entfernen; Spaltenrollen setzen und bestätigen; Zeilen und
+ *   Spalten verschieben, Spaltentyp und Anzeigeformat setzen. Dateidialoge,
+ *   Popout-Widgets und die Auswahl-abhängigen Knöpfe bleiben der UI
+ *   vorbehalten; gelesen wird über read() mit erklärter Lesefläche
  *   (AgentRead).
  */
 
@@ -29,6 +31,7 @@ import { createModule } from '../../core/template-module.js';
 import Alpine from '@alpinejs/csp';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireKnownId, requireText, requireIndex, requireEnum, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { COLUMN_TYPES, DATE_FORMATS, TIME_FORMATS } from '../../core/datagrid/datagrid-utils.js';
 import { State } from './worksheet-model.js';
 import { DataGrid, isFormula, evaluateFormula } from '../../core/datagrid/datagrid.js';
 import { ALL_ROLES, validRolesForType, isRoleValidForType } from '../../core/datagrid/datagrid-roles.js';
@@ -39,6 +42,17 @@ import { icon } from '../../core/icon.js';
 import { uid } from '../../core/uid.js';
 import { debounce } from '../../core/debounce.js';
 import { applyAppendColumn } from '../../core/worksheet-append.js';
+
+/**
+ * Format-Schlüssel, die die Oberfläche setzt — genau die Auswahl des
+ * Format-Pickers (`datagrid.js` `_renderAttrPickerFormatColumn`), je
+ * Spaltentyp. `currencySymbol` bietet die Oberfläche nicht an.
+ */
+const FORMAT_KEYS = ['decimals', 'dateFormat', 'timeFormat'];
+const FORMAT_KEYS_BY_TYPE = Object.freeze({
+  numeric: ['decimals'], currency: ['decimals'], percent: ['decimals'],
+  date: ['dateFormat'], time: ['timeFormat'],
+});
 
 // ═══════════════════════════════════════════════════════════
 //  FORMULA EDITOR (imperative — bound to the live DataGrid)
@@ -456,7 +470,7 @@ class FormulaEditor {
  * @typedef {object} AgentRead
  * @property {Array<{ id: string, name: string }>} sheets  all sheets of the workbook, in tab order
  * @property {string|null} activeSheetId  id of the sheet the following columns and rows belong to
- * @property {Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null, roleConfirmed: boolean }>} columns  the column headers of the active sheet; `roleConfirmed` is true once the role was set or confirmed by hand or via setColumnRole; `id` is the columnId of a column reference
+ * @property {Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null, roleConfirmed: boolean, format: { decimals?: number, dateFormat?: string, timeFormat?: string } }>} columns  the column headers of the active sheet; `id` is the columnId of a column reference; `roleConfirmed` is true once the role was set or confirmed by hand or via setColumnRole; `format` holds the display format keys set for the column (absent key = the type's default)
  * @property {any[][]} rows  [bulk] the data rows of the active sheet, each row in column order
  * @property {Array<{ columnId: string, row: number, formula: string }>} formulas  [bulk] which cells of the active sheet are COMPUTED, not typed; a plain value written over one of them deletes the formula
  */
@@ -1041,6 +1055,11 @@ const mod = createModule({
           // Dieselbe Quelle wie chart-suggestion `selection.columns[].roleConfirmed`:
           // das Handflag der Live-Spalte (Rollen-Dialog oder setColumnRole).
           roleConfirmed: c.roleManual === true,
+          // Nur die Schlüssel, die die Oberfläche setzt; `getState()` spreizt
+          // flach — ohne Kopie hielte der Agent das lebende Format-Objekt.
+          format: Object.fromEntries(FORMAT_KEYS
+            .filter(k => c.format?.[k] != null)
+            .map(k => [k, c.format[k]])),
         }));
         const rows = [];
         for (let r = 0; r < (state.rowCount ?? 0); r++) {
@@ -1234,6 +1253,131 @@ const mod = createModule({
         // `column:role-changed` steht nicht in `dataMutationEvents`: ohne
         // dieses Ablegen sähe chart-suggestion (liest `roleManual` aus dem
         // StateManager) die Bestätigung nie.
+        this._persistNow();
+      },
+
+      /**
+       * Move a row of the active sheet, like dragging its row header.
+       * Undo moves it back.
+       *
+       * @agent
+       * @param {number} fromRow zero-based index of the row to move
+       * @param {number} toRow zero-based index the row has afterwards
+       * @returns {boolean} false if fromRow equals toRow (nothing moved)
+       * @throws {Error} if fromRow or toRow is not an existing row index
+       */
+      moveRow(fromRow, toRow) {
+        // `DataGrid.moveRow` kehrt bei einem Index außerhalb STILL zurück.
+        // Eine Sperre prüft das Ziehen nicht — hier also auch nicht.
+        const rowCount = this._grid.rowCount;
+        requireIndex('fromRow', fromRow, rowCount, { existing: true });
+        requireIndex('toRow', toRow, rowCount, { existing: true });
+        if (fromRow === toRow) return false;
+        this._grid.moveRow(fromRow, toRow);
+        this._persistNow();
+        return true;
+      },
+
+      /**
+       * Move a column of the active sheet, like dragging its header. Short
+       * names (C1, C2 …) follow the new order. Undo moves it back.
+       *
+       * @agent
+       * @param {string} columnId id of the column (see read().columns[].id)
+       * @param {number} toIndex zero-based position the column has afterwards
+       * @returns {boolean} false if the column already is at toIndex
+       * @throws {Error} if no column has this id, or toIndex is not an
+       *   existing column position
+       */
+      moveColumn(columnId, toIndex) {
+        // `DataGrid.moveColumn` kehrt bei einem Index außerhalb STILL zurück.
+        const ids = (this._grid?.columns ?? []).map(c => c.id);
+        requireKnownId('columnId', columnId, ids);
+        requireIndex('toIndex', toIndex, ids.length, { existing: true });
+        const fromIndex = ids.indexOf(columnId);
+        if (fromIndex === toIndex) return false;
+        this._grid.moveColumn(fromIndex, toIndex);
+        this._persistNow();
+        return true;
+      },
+
+      /**
+       * Change the type of a column on the active sheet, like the type picker
+       * in the column header; the values are converted. A role the new type
+       * does not allow is re-detected and loses its confirmation
+       * (read().columns[].roleConfirmed becomes false). Currency and percent
+       * bring 2 and 1 decimals. Not recorded in the undo history (as in the
+       * picker).
+       *
+       * @agent
+       * @param {string} columnId id of the column (see read().columns[].id)
+       * @param {string} type one of numeric, text, date, time, currency,
+       *   percent, binary
+       * @returns {boolean} false if the column already has this type
+       * @throws {Error} if no column has this id, type is unknown, or the
+       *   column is locked
+       */
+      setColumnType(columnId, type) {
+        // `DataGrid.setColumnType` kehrt bei unbekannter id, gleichem Typ und
+        // JEDER Sperre still zurück; einen unbekannten Typ nähme es an.
+        requireKnownId('columnId', columnId, (this._grid?.columns ?? []).map(c => c.id));
+        requireEnum('type', type, Object.keys(COLUMN_TYPES));
+        const col = this._grid.getColumn(columnId);
+        if (col.meta?.lock) {
+          throw new Error(`column "${columnId}" is locked (${col.meta.lock})`);
+        }
+        if (col.type === type) return false;
+        this._grid.setColumnType(columnId, type);
+        this._persistNow();
+        return true;
+      },
+
+      /**
+       * Set one display format key of a column on the active sheet, like the
+       * format column of the type picker. numeric, currency, percent →
+       * decimals (0..6); date → dateFormat; time → timeFormat; text and
+       * binary have no format. null restores the type's default. Values are
+       * unchanged — only the display. Not recorded in the undo history.
+       *
+       * @agent
+       * @param {string} columnId id of the column (see read().columns[].id)
+       * @param {'decimals'|'dateFormat'|'timeFormat'} key the format key; must
+       *   fit the column type
+       * @param {number|string|null} value decimals: whole number 0..6;
+       *   dateFormat: dd.MM.yyyy, yyyy-MM-dd, dd/MM/yyyy, MM/dd/yyyy or
+       *   d. MMMM yyyy; timeFormat: HH:mm or HH:mm:ss; null = default
+       * @returns {void}
+       * @throws {Error} if no column has this id, key is unknown or does not
+       *   fit the column type, value is not allowed, or the column is locked
+       */
+      setColumnFormat(columnId, key, value) {
+        // `DataGrid.setColumnFormat` übernimmt jeden Schlüssel und Wert
+        // ungeprüft und kehrt bei Sperre still zurück. Zweistufig wie
+        // `setColumnRole`: erst alle Schlüssel, dann die des Typs.
+        requireKnownId('columnId', columnId, (this._grid?.columns ?? []).map(c => c.id));
+        requireEnum('key', key, FORMAT_KEYS);
+        const col = this._grid.getColumn(columnId);
+        const keysForType = FORMAT_KEYS_BY_TYPE[col.type] ?? [];
+        if (!keysForType.includes(key)) {
+          const allowed = keysForType.length ? keysForType.join(', ') : 'none, this column type has no format';
+          throw new Error(
+            `invalid key ${JSON.stringify(key)} for column type ${JSON.stringify(col.type)}; allowed: ${allowed}`,
+          );
+        }
+        let checked = null;
+        if (value !== null) {
+          if (key === 'decimals') checked = requireNumber('value', value, { min: 0, max: 6, integer: true });
+          else {
+            requireEnum('value', value, Object.keys(key === 'dateFormat' ? DATE_FORMATS : TIME_FORMATS));
+            checked = value;
+          }
+        }
+        if (col.meta?.lock) {
+          throw new Error(`column "${columnId}" is locked (${col.meta.lock})`);
+        }
+        this._grid.setColumnFormat(columnId, { [key]: checked });
+        // `column:format-changed` steht nicht in `dataMutationEvents`: ohne
+        // dieses Ablegen ginge das Format beim nächsten Blattwechsel verloren.
         this._persistNow();
       },
 

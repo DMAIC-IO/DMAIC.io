@@ -2787,14 +2787,25 @@ export class DataGrid {
     if (name !== null) this.renameColumn(col.id, name);
   }
 
-  _setColumnType(colIdx, type, options = {}) {
-    const col = this.columns[colIdx];
-    if (!col || col.type === type) return;
+  /**
+   * Change the storage type of a column and convert its values. A manual
+   * role the new type does not allow is reset and re-inferred
+   * (`_reinferRoleAfterTypeChange`). Not recorded in the undo history.
+   *
+   * @param {string} columnId
+   * @param {string} type one of `COLUMN_TYPES`
+   * @param {{ bypassLock?: boolean }} [options]
+   * @returns {boolean} true if the type changed; false for an unknown
+   *   column, the same type, or a lock (emits `column:edit-blocked`)
+   */
+  setColumnType(columnId, type, options = {}) {
+    const col = this.getColumn(columnId);
+    if (!col || col.type === type) return false;
     if (col.meta?.lock && !options.bypassLock) {
       this.emit('column:edit-blocked', {
         columnId: col.id, action: 'type-change', lock: col.meta.lock, reason: col.meta.reason,
       });
-      return;
+      return false;
     }
     const oldType = col.type;
     col.type = type;
@@ -2827,6 +2838,7 @@ export class DataGrid {
     this._reinferRoleAfterTypeChange(col);
     this.render();
     this.emit('column:type-changed', { columnId: col.id, oldType, newType: type });
+    return true;
   }
 
   /**
@@ -3002,7 +3014,7 @@ export class DataGrid {
           ev.stopPropagation();
           const typeKey = item.dataset.type;
           if (!typeKey || this.columns[colIdx].type === typeKey) return;
-          this._setColumnType(colIdx, typeKey);
+          this.setColumnType(this.columns[colIdx].id, typeKey);
           onTypeClick();
         });
       }

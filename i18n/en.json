@@ -1359,6 +1359,35 @@
             "role": "The role: continuous, categorical, ordinal, date, identifier or freeText. The same role as read().columns[].role confirms the detected one."
           }
         },
+        "moveRow": {
+          "help": "Moves a row of the active sheet, like dragging its row header. Returns false if start and target are the same. Undo moves it back.",
+          "params": {
+            "fromRow": "The row that moves, counted from 0.",
+            "toRow": "The position the row has afterwards, counted from 0."
+          }
+        },
+        "moveColumn": {
+          "help": "Moves a column of the active sheet, like dragging its header; the short names (C1, C2 …) follow the new order. Returns false if the column already is there. Undo moves it back.",
+          "params": {
+            "columnId": "The id of the column, as read().columns[].id names it.",
+            "toIndex": "The position the column has afterwards, counted from 0."
+          }
+        },
+        "setColumnType": {
+          "help": "Changes the type of a column on the active sheet, like the type picker in the column header; the values are converted. If the role does not fit the new type, it is detected anew and no longer confirmed. Currency brings two decimals, percent one. Returns false if the column already has the type. Locked columns cannot be changed. Undo does not record type changes.",
+          "params": {
+            "columnId": "The id of the column, as read().columns[].id names it.",
+            "type": "The type: numeric, text, date, time, currency, percent or binary (0/1)."
+          }
+        },
+        "setColumnFormat": {
+          "help": "Sets one display format key of a column on the active sheet, like the format choice in the column header. The values stay, only the display changes. numeric, currency, percent → decimals; date → dateFormat; time → timeFormat; text and binary have no format. Locked columns cannot be changed. Undo does not record format changes.",
+          "params": {
+            "columnId": "The id of the column, as read().columns[].id names it.",
+            "key": "The format key: decimals, dateFormat or timeFormat — fitting the column type.",
+            "value": "decimals: whole number from 0 to 6; dateFormat: dd.MM.yyyy, yyyy-MM-dd, dd/MM/yyyy, MM/dd/yyyy or d. MMMM yyyy; timeFormat: HH:mm or HH:mm:ss. null restores the type's default."
+          }
+        },
         "duplicateSheet": {
           "help": "Copies a sheet with its cells, formulas and column settings. The copy is appended at the end, named \"<name> (Copy)\" and becomes active; the agent receives its id.",
           "params": { "id": "The id of the sheet to copy, as read().sheets[].id names it." }
@@ -1375,7 +1404,7 @@
       "fields": {
         "sheets": { "help": "All sheets of the workbook in tab order, each with id and name." },
         "activeSheetId": { "help": "The id of the sheet that columns and rows refer to." },
-        "columns": { "help": "The column headers of the active sheet. id is the columnId of a column reference, shortName the short form used in formulas (C1, C2 …), role the role of the column, roleConfirmed true when it was set or confirmed by hand (role dialog or setColumnRole), false for an automatically detected role. A type change the role no longer fits resets the confirmation." },
+        "columns": { "help": "The column headers of the active sheet. id is the columnId of a column reference, shortName the short form used in formulas (C1, C2 …), role the role of the column, roleConfirmed true when it was set or confirmed by hand (role dialog or setColumnRole), false for an automatically detected role. A type change the role no longer fits resets the confirmation. format lists the display format keys set (decimals, dateFormat, timeFormat); a missing key means the type's default." },
         "rows": { "help": "The data rows of the active sheet, each row in column order. Bulk data: without options.fields = ['rows'] only the extent is returned." },
         "formulas": { "help": "Which cells of the active sheet are computed, each with columnId, zero-based row and formula text. Bulk data: without options.fields = ['formulas'] only the extent is returned." }
       },
