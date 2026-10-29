@@ -48,7 +48,7 @@ import {
   DEFAULT_SEED,
   genId,
 } from './random-generator-model.js';
-import { paramInputMixin, numberCheck } from '../../core/param-input.js';
+import { paramInputMixin, numberCheck, describeRange, markRejection, clearRejection } from '../../core/param-input.js';
 
 const AUTORUN_DELAY = 80;
 const DISPLAY_MAX = 2000;
@@ -501,11 +501,18 @@ export default createModule({
 
       /** @noagent DOM event handler; the agent uses setDistParam() */
       onDistParamInput(id, event) {
+        const el = event.target;
         try {
-          this.setDistParam(id, event.target.value);
-        } catch {
-          event.target.value = this.paramInputs[id] ?? '';
+          this.setDistParam(id, el.value);
+        } catch (err) {
+          if (err instanceof TypeError || err instanceof ReferenceError || err instanceof SyntaxError) throw err;
+          el.value = this.paramInputs[id] ?? '';
+          const def = this.activeDistParams().find(d => d.id === id);
+          const range = describeRange({ min: def?.min ?? undefined, max: def?.max ?? undefined }, module._context?.i18n?.getLanguage?.() ?? 'de', _t);
+          markRejection(el, range ? _t('common.inputRejected', { range }) : _t('common.inputRejectedPlain'));
+          return;
         }
+        clearRejection(el);
       },
 
       /** @noagent DOM event handler; ein leerer Startwert wird zur Vorgabe, Umfang und Zahl werden geprüft @param {string} key @param {Event} event */
