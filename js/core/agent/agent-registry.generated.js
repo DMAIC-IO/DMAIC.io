@@ -883,7 +883,7 @@ export const AGENT_REGISTRY = {
       "runAnalysis": {
         "params": [],
         "returns": "void",
-        "help": "Das Ergebnis aus den aktuellen Eingaben neu rechnen. Fehlen Eingaben oder sind sie ungültig, bleibt `result` ohne Bericht und `errorMsg` nennt den Grund; das ist keine Absage der Aktion."
+        "help": "Das Ergebnis aus den aktuellen Eingaben neu rechnen. Fehlen Eingaben oder sind sie ungültig, bleibt `result` ohne Bericht und `errorMsg` nennt den Grund; das ist keine Absage der Aktion. Sie rechnet immer, auch wenn nur die Tabellendaten sich geändert haben."
       }
     },
     "fields": {

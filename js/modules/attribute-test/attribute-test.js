@@ -244,6 +244,7 @@ const mod = createModule({
       // ── Transient view state (not persisted) ────────────────────
       result: null,
       eventOptions: [],
+      _analyzedSnapshot: null,
       _pickers: {},
       _unsubs: [],
 
@@ -477,9 +478,9 @@ const mod = createModule({
         setAtPath(this.model, key, clean);
         if (key === 'testKind' || key === 'inputMode' || key === 'equiv.samples') {
           // Die Wähler hängen an Elementen, die der Wechsel neu aufbaut.
-          this.$nextTick(() => { this._remountPickers(); this.runAnalysis(); });
+          this.$nextTick(() => this._remountPickers());
         }
-        this.runAnalysis();
+        this._runIfChanged();
       },
 
       /**
@@ -496,7 +497,7 @@ const mod = createModule({
         if (ref == null) {
           COLUMN_SINKS[slot](this.model, null);
           this._pickers[slot]?.syncValue(null);
-          this.runAnalysis();
+          this._runIfChanged();
           return;
         }
         requireEnum('slot', slot, this.activeColumnSlots());
@@ -506,7 +507,7 @@ const mod = createModule({
         const clean = keyToRef(refToKey(ref));
         COLUMN_SINKS[slot](this.model, clean);
         this._pickers[slot]?.syncValue(clean);
-        this.runAnalysis();
+        this._runIfChanged();
       },
 
       /**
@@ -524,7 +525,7 @@ const mod = createModule({
         requireIndex('row', row, t.rows.length, { existing: true });
         requireIndex('col', col, t.cols.length, { existing: true });
         this.model.summary.table.counts[row][col] = requireNumericText('value', value);
-        this.runAnalysis();
+        this._runIfChanged();
       },
 
       /**
@@ -539,7 +540,7 @@ const mod = createModule({
         const t = this.model.summary.table;
         requireIndex('row', row, t.rows.length, { existing: true });
         this.model.summary.table.rows[row] = requireText('name', name);
-        this.runAnalysis();
+        this._runIfChanged();
       },
 
       /**
@@ -554,7 +555,7 @@ const mod = createModule({
         const t = this.model.summary.table;
         requireIndex('col', col, t.cols.length, { existing: true });
         this.model.summary.table.cols[col] = requireText('name', name);
-        this.runAnalysis();
+        this._runIfChanged();
       },
 
       /**
@@ -562,14 +563,14 @@ const mod = createModule({
        * @agent
        * @returns {void}
        */
-      addRow() { this.model.addRow(); this.runAnalysis(); },
+      addRow() { this.model.addRow(); this._runIfChanged(); },
 
       /**
        * Eine Spalte ans Ende der Kreuztabelle hängen; die Zählwerte sind leer.
        * @agent
        * @returns {void}
        */
-      addCol() { this.model.addCol(); this.runAnalysis(); },
+      addCol() { this.model.addCol(); this._runIfChanged(); },
 
       /**
        * Eine Zeile der Kreuztabelle entfernen.
@@ -585,7 +586,7 @@ const mod = createModule({
           throw new Error(`invalid row ${row}; allowed: removing only while more than ${MIN_DIM} rows remain`);
         }
         this.model.removeRow(row);
-        this.runAnalysis();
+        this._runIfChanged();
       },
 
       /**
@@ -602,7 +603,7 @@ const mod = createModule({
           throw new Error(`invalid col ${col}; allowed: removing only while more than ${MIN_DIM} columns remain`);
         }
         this.model.removeCol(col);
-        this.runAnalysis();
+        this._runIfChanged();
       },
 
       /**
@@ -620,7 +621,7 @@ const mod = createModule({
         requireIndex('row', row, 2, { existing: true });
         requireIndex('col', col, 2, { existing: true });
         this.model.summary.pairs.counts[row][col] = requireNumericText('value', value);
-        this.runAnalysis();
+        this._runIfChanged();
       },
 
       /**
@@ -632,8 +633,8 @@ const mod = createModule({
        */
       checkEquivalence() {
         this.model.switchToEquivalence();
-        this.$nextTick(() => { this._remountPickers(); this.runAnalysis(); });
-        this.runAnalysis();
+        this.$nextTick(() => this._remountPickers());
+        this._runIfChanged();
       },
 
       // ── Input handlers (DOM) ───────────────────────────────────
@@ -704,13 +705,26 @@ const mod = createModule({
       /**
        * Das Ergebnis aus den aktuellen Eingaben neu rechnen. Fehlen Eingaben
        * oder sind sie ungültig, bleibt `result` ohne Bericht und `errorMsg`
-       * nennt den Grund; das ist keine Absage der Aktion.
+       * nennt den Grund; das ist keine Absage der Aktion. Sie rechnet
+       * immer, auch wenn nur die Tabellendaten sich geändert haben.
        * @agent
        * @returns {void}
        */
       runAnalysis() {
+        this._analyzedSnapshot = null;
+        this._runIfChanged();
+      },
+
+      /**
+       * Rechnet nur, wenn sich das Model seit der letzten Rechnung geändert hat.
+       * @noagent interner Takt der Setter und des Beobachters; der Agent nutzt runAnalysis()
+       */
+      _runIfChanged() {
         const m = this.model;
         if (m.alpha == null) this._seedAlpha();
+        // `result` ist nach jeder Rechnung ein Objekt (auch bei Fehlern), die
+        // Prüfung rechnet also nur beim allerersten Lauf ohne Ergebnis.
+        if (this._analyzedSnapshot === JSON.stringify(m.toJSON()) && this.result) return;
         if (m.inputMode === 'columns') {
           const cols = {
             response: this._values(m.colRefs.response),
@@ -733,6 +747,9 @@ const mod = createModule({
         } else {
           this.result = buildReport(m, normalizeSummary(m));
         }
+        // Nach einem eigenen Schreiben von `eventValue` neu merken, damit der
+        // Beobachter des Models nicht noch einmal rechnet.
+        this._analyzedSnapshot = JSON.stringify(m.toJSON());
       },
 
       // ── ColumnPickers (imperative widgets) ─────────────────────
@@ -768,22 +785,24 @@ const mod = createModule({
         this._unsubs = [];
         if (this.model.alpha == null) this._seedAlpha();
 
-        // Every change of the persisted state re-runs the analysis. runAnalysis
-        // only writes `eventValue` when it changes, so this settles in one pass.
-        this.$watch(() => this.model.toJSON(), () => this.runAnalysis());
+        // Every change of the persisted state re-runs the analysis. Setters
+        // that already ran it leave a matching snapshot, so this is a no-op then.
+        this.$watch(() => this.model.toJSON(), () => this._runIfChanged());
 
-        this.$nextTick(() => { this._remountPickers(); this.runAnalysis(); });
+        this.$nextTick(() => this._remountPickers());
 
         const eb = module._context.eventBus;
         const onActivated = ({ instanceId }) => {
           if (instanceId !== module._context.instanceId) return;
           for (const p of Object.values(this._pickers)) p.refresh();
+          // Die Tabellendaten können sich geändert haben, das Model nicht:
+          // runAnalysis rechnet immer.
           this.runAnalysis();
         };
         eb.on('module:activated', onActivated);
         this._unsubs.push(() => eb.off('module:activated', onActivated));
 
-        this.runAnalysis();
+        this._runIfChanged();
       },
       /** @noagent lifecycle */
       destroy() {
