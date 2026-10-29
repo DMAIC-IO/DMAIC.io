@@ -148,8 +148,8 @@
         <div class="module-calculator__data-count" data-ref="ss-data-count" x-text="'n = ' + model.ssDataset.length"></div>
       </div>
       <div class="module-calculator__cpk-inputs">
-        <input type="number" class="field field--num" data-ref="lsl" x-model="model.lsl" :placeholder="t('lslPlaceholder')" :aria-label="t('lslPlaceholder')">
-        <input type="number" class="field field--num" data-ref="usl" x-model="model.usl" :placeholder="t('uslPlaceholder')" :aria-label="t('uslPlaceholder')">
+        <input type="number" class="field field--num" data-ref="lsl" :value="paramValue('lsl')" @change="onParamInput('lsl', $event)" :step="paramStep('lsl')" :placeholder="t('lslPlaceholder')" :aria-label="t('lslPlaceholder')">
+        <input type="number" class="field field--num" data-ref="usl" :value="paramValue('usl')" @change="onParamInput('usl', $event)" :step="paramStep('usl')" :placeholder="t('uslPlaceholder')" :aria-label="t('uslPlaceholder')">
       </div>
       <div class="module-calculator__grid module-calculator__grid--4col">
         <button class="module-calculator__key module-calculator__key--num" data-text="7" @click="inputText('7')">7</button>

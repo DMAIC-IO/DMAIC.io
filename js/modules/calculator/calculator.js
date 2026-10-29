@@ -19,6 +19,7 @@
 import { createModule } from '../../core/template-module.js';
 import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum } from '../../core/agent/agent-argcheck.js';
+import { paramInputMixin } from '../../core/param-input.js';
 import { State, evalExpression } from './calculator-model.js';
 
 /** Die Rechenbereiche — dieselbe Menge wie `MODES` im Model. */
@@ -152,6 +153,15 @@ function requireLimit(name, value) {
   return t;
 }
 
+/** Die Spezifikationsgrenzen als Zahlenfelder der Oberfläche (leer löscht die Grenze). */
+const PARAM_SPEC = { lsl: { step: 'any' }, usl: { step: 'any' } };
+
+/** Je Feld derselbe Prüfer wie beim Agent-Setter. */
+const PARAM_CHECKS = {
+  lsl: (v) => requireLimit('value', v),
+  usl: (v) => requireLimit('value', v),
+};
+
 /** Format a stat/Six-Sigma numeric result for display. */
 function fmt(v) {
   if (typeof v === 'string') return v;
@@ -183,6 +193,12 @@ export default createModule({
   data(module, _t) {
     return {
       ...agentReadMixin(module),
+      ...paramInputMixin({
+        specs: PARAM_SPEC,
+        checks: PARAM_CHECKS,
+        t: _t,
+        lang: () => module._context?.i18n?.getLanguage?.() ?? 'de',
+      }),
 
       // ── Transient display state (not persisted) ───────────────
       exprText: '',
@@ -558,6 +574,13 @@ export default createModule({
        */
       setUsl(value) {
         this.model.usl = requireLimit('value', value);
+      },
+
+      /** @noagent DOM event handler target; routes a checked limit field to its agent setter */
+      setParam(key, value) {
+        if (key === 'lsl') this.setLsl(value);
+        else if (key === 'usl') this.setUsl(value);
+        else throw new Error(`unknown numeric field ${JSON.stringify(key)}`);
       },
 
       // ── Keyboard ──────────────────────────────────────────────
