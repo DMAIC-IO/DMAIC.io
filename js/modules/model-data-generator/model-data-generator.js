@@ -25,7 +25,7 @@ import { DataGrid } from '../../core/datagrid/datagrid.js';
 import { openGridInWorksheet } from '../../core/datagrid/datagrid-to-worksheet.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireNumber, requireText } from '../../core/agent/agent-argcheck.js';
-import { paramInputMixin, numberCheck } from '../../core/param-input.js';
+import { paramInputMixin, numberCheck, markRejection, clearRejection } from '../../core/param-input.js';
 import { descriptiveStats } from '../../engines/normality-test-engine.js';
 import {
   State, Factor, termLabel, SAMPLING_METHODS,
@@ -319,6 +319,26 @@ export default createModule({
        */
       setSeed(value) {
         this.model.seed = numberCheck(PARAM_SPEC.seed)(value);
+      },
+
+      /**
+       * @noagent DOM event handler; schreibt ein Faktorfeld (min, max) oder einen
+       * Koeffizienten über den Agent-Setter. Eine Abweisung zeigt den Modellwert
+       * wieder und markiert das Feld, bis eine gültige Eingabe kommt.
+       */
+      onItemInput(kind, index, key, event) {
+        const el = event.target;
+        try {
+          if (kind === 'factor') this.setFactor(index, key, el.value);
+          else this.setBeta(index, el.value);
+        } catch (err) {
+          if (err instanceof TypeError || err instanceof ReferenceError || err instanceof SyntaxError) throw err;
+          const current = kind === 'factor' ? this.model.factors[index]?.[key] : this.model.terms[index]?.beta;
+          el.value = String(current ?? '');
+          markRejection(el, _t('common.inputRejectedPlain'));
+          return;
+        }
+        clearRejection(el);
       },
 
       /** @noagent DOM event handler target; routes a checked numeric field to its agent setter */
