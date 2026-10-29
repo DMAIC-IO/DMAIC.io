@@ -32,7 +32,7 @@ import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { agentSnapshot } from './doe-planner-read.js';
 import { State } from './doe-planner-model.js';
 import { FactorsViewModel } from './viewmodel/factors.js';
-import { DesignViewModel } from './viewmodel/design.js';
+import { DesignViewModel, CENTER_POINTS_SPEC } from './viewmodel/design.js';
 import { OptimalViewModel } from './viewmodel/optimal.js';
 import { EvaluationViewModel } from './viewmodel/evaluation.js';
 import { AnalysisViewModel } from './viewmodel/analysis.js';
@@ -60,8 +60,8 @@ const AUTO_GEN_DELAY = 600; // ms debounce for auto-generation
 /** Zahlenfelder der Oberfläche; die Grenzen sind die der Agent-Setter. */
 const PARAM_SPEC = {
   replicates: { min: 1, max: 10, integer: true },
-  bbCenterPoints: { min: 1, integer: true },
-  ccdCenterPoints: { min: 1, integer: true },
+  bbCenterPoints: CENTER_POINTS_SPEC,
+  ccdCenterPoints: CENTER_POINTS_SPEC,
 };
 
 /** Data keys of the sub-viewmodels, in attach order. */

@@ -32,6 +32,9 @@ const DESIGN_TYPES = [
 ];
 
 /** Axial distances of the CCD. */
+/** Zentralpunkte: dieselbe Regel für Oberfläche und Agent-Setter. */
+export const CENTER_POINTS_SPEC = { integer: true, min: 1, max: 100 };
+
 const ALPHA_TYPES = ['rotatable', 'face-centered', 'spherical'];
 const REC_KEYS = { full: 'recFull', frac: 'recFrac', pb: 'recPB', bb: 'recBB', taguchi: 'recTaguchi' };
 
@@ -336,24 +339,24 @@ export class DesignViewModel {
   /**
    * Center points of the central composite design.
    * @agent
-   * @param {number} n a whole number, at least 1
+   * @param {number} n a whole number from 1 to 100
    * @returns {void}
-   * @throws {Error} if n is not a whole number of at least 1
+   * @throws {Error} if n is not a whole number from 1 to 100
    */
   setCcdCenterPoints(n) {
-    this.model.options.ccdCenterPoints = requireNumber('n', n, { integer: true, min: 1 });
+    this.model.options.ccdCenterPoints = requireNumber('n', n, CENTER_POINTS_SPEC);
     this._save();
   }
 
   /**
    * Center points of the Box-Behnken design.
    * @agent
-   * @param {number} n a whole number, at least 1
+   * @param {number} n a whole number from 1 to 100
    * @returns {void}
-   * @throws {Error} if n is not a whole number of at least 1
+   * @throws {Error} if n is not a whole number from 1 to 100
    */
   setBbCenterPoints(n) {
-    this.model.options.bbCenterPoints = requireNumber('n', n, { integer: true, min: 1 });
+    this.model.options.bbCenterPoints = requireNumber('n', n, CENTER_POINTS_SPEC);
     this._save();
   }
 }

@@ -114,6 +114,8 @@ suite('doe-planner-vm design — options', () => {
     assertThrows(() => vm.setBbCenterPoints(-2), /^invalid n\b/);
     assertEqual(model.options.bbCenterPoints, before);
     assertThrows(() => vm.setCcdCenterPoints(''), /^invalid n\b/);
+    assertThrows(() => vm.setBbCenterPoints(101), /^invalid n\b/);
+    assertThrows(() => vm.setCcdCenterPoints(101), /^invalid n\b/);
   });
 
   test('center points option only for full, frac and pb', () => {
