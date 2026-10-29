@@ -886,6 +886,7 @@
   "common": {
     "inputRejected": "Value not applied. Allowed: {range}",
     "inputRejectedPlain": "Value not applied.",
+    "rangeAnd": "and",
     "rangeInteger": "whole number",
     "reorder": "Reorder row",
     "rowMoved": "Row moved, position {pos} of {total}",

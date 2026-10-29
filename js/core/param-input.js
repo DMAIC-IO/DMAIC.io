@@ -30,21 +30,23 @@ function bounds(spec) {
 }
 
 /**
- * Der Prüfer eines Zahlenparameters.
- * @param {ParamSpec} spec
- * @returns {(raw: any) => number|null}
+ * Der Prüfer eines Zahlenparameters. Ist die Spec eine Funktion, wird sie mit
+ * dem Viewmodel (zweites Argument) ausgewertet.
+ * @param {ParamSpec|((vm: object) => ParamSpec)} spec
+ * @returns {(raw: any, vm?: object) => number|null}
  */
 export function numberCheck(spec) {
-  return (raw) => {
-    if (spec.nullable && (raw === '' || raw === null || raw === undefined)) return null;
-    return requireNumber('value', raw, bounds(spec));
+  return (raw, vm) => {
+    const s = typeof spec === 'function' ? spec(vm) : spec;
+    if (s.nullable && (raw === '' || raw === null || raw === undefined)) return null;
+    return requireNumber('value', raw, bounds(s));
   };
 }
 
 /**
  * Der zulässige Bereich als kurzer Text (für den Hinweis an der Oberfläche).
  * @param {ParamSpec} spec
- * @param {string} lang
+ * @param {string} lang  steuert nur die Zahlenformatierung
  * @param {(key: string, vars?: object) => string} t
  * @returns {string}
  */
@@ -55,8 +57,7 @@ export function describeRange(spec, lang, t) {
   else if (spec.min !== undefined) parts.push(`≥ ${nf.format(spec.min)}`);
   if (spec.exclusiveMax !== undefined) parts.push(`< ${nf.format(spec.exclusiveMax)}`);
   else if (spec.max !== undefined) parts.push(`≤ ${nf.format(spec.max)}`);
-  const and = lang === 'de' ? ' und ' : ' and ';
-  let text = parts.join(and);
+  let text = parts.join(` ${t('common.rangeAnd')} `);
   if (spec.integer) text = text ? `${text}, ${t('common.rangeInteger')}` : t('common.rangeInteger');
   return text;
 }
@@ -82,19 +83,26 @@ export function paramInputMixin({ specs, checks, root = (vm) => vm.model, t, lan
     onParamInput(key, event) {
       const el = event.target;
       const raw = el.value;
+      const check = checks[key];
+      if (typeof check !== 'function') throw new Error(`paramInputMixin: no check for key ${JSON.stringify(key)}`);
       try {
-        checks[key](raw, this);
-      } catch {
+        check(raw, this);
+      } catch (err) {
+        if (err instanceof TypeError || err instanceof ReferenceError || err instanceof SyntaxError) throw err;
         el.value = String(this.paramValue(key) ?? '');
         el.classList.add('field--error');
         el.setAttribute('aria-invalid', 'true');
         const range = describeRange(specOf(this, key), lang(), t);
+        if (el.dataset && el.dataset.paramTitle === undefined) el.dataset.paramTitle = el.title ?? '';
         el.title = range ? t('common.inputRejected', { range }) : t('common.inputRejectedPlain');
         return undefined;
       }
       el.classList.remove('field--error');
       el.removeAttribute('aria-invalid');
-      el.title = '';
+      if (el.dataset && el.dataset.paramTitle !== undefined) {
+        el.title = el.dataset.paramTitle;
+        delete el.dataset.paramTitle;
+      }
       const value = specOf(this, key).nullable && raw === '' ? null : raw;
       return this.setParam(key, value);
     },
@@ -102,12 +110,19 @@ export function paramInputMixin({ specs, checks, root = (vm) => vm.model, t, lan
     paramValue(key) {
       return key.split('.').reduce((o, k) => (o == null ? o : o[k]), root(this));
     },
-    /** @noagent view transform */
+    /**
+     * Untergrenze für das HTML-Attribut `min`. Eine offene Grenze
+     * (`exclusiveMin`) erscheint nur als Hinweis; die Prüfung bleibt beim Check.
+     * @noagent view transform
+     */
     paramMin(key) {
       const s = specOf(this, key);
       return s.min ?? s.exclusiveMin ?? null;
     },
-    /** @noagent view transform */
+    /**
+     * Obergrenze für das HTML-Attribut `max` (offene Grenze nur als Hinweis).
+     * @noagent view transform
+     */
     paramMax(key) {
       const s = specOf(this, key);
       return s.max ?? s.exclusiveMax ?? null;

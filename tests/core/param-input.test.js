@@ -2,18 +2,18 @@ import { suite, test, assertEqual, assertThrows } from '../test-utils.js';
 import { paramInputMixin, numberCheck, describeRange } from '../../js/core/param-input.js';
 
 const SPECS = { k: { min: 0.1, max: 10, step: 0.1 }, n: { min: 1, integer: true, nullable: true } };
-const t = (key, vars) => (key === 'common.inputRejected' ? `nein: ${vars.range}` : key === 'common.rangeInteger' ? 'ganzzahlig' : key);
+const t = (key, vars) => (key === 'common.rangeAnd' ? 'und' : key === 'common.inputRejected' ? `nein: ${vars.range}` : key === 'common.rangeInteger' ? 'ganzzahlig' : key);
 
 function vm(specs = SPECS, extra = {}) {
   const checks = {};
-  for (const k of Object.keys(specs)) checks[k] = typeof specs[k] === 'function' ? (raw, v) => numberCheck(specs[k](v))(raw) : numberCheck(specs[k]);
+  for (const k of Object.keys(specs)) checks[k] = numberCheck(specs[k]);
   const o = { model: { k: 1, n: null }, written: [], setParam(key, v) { this.written.push([key, v]); this.model[key] = checks[key](v); } };
   return Object.assign(o, paramInputMixin({ specs, checks, t, ...extra }));
 }
 function input(value) {
   const attrs = {};
   return {
-    value, title: '', classList: { s: new Set(), add(c) { this.s.add(c); }, remove(c) { this.s.delete(c); }, contains(c) { return this.s.has(c); } },
+    value, title: '', dataset: {}, classList: { s: new Set(), add(c) { this.s.add(c); }, remove(c) { this.s.delete(c); }, contains(c) { return this.s.has(c); } },
     setAttribute(n, v) { attrs[n] = v; }, removeAttribute(n) { delete attrs[n]; }, getAttribute(n) { return attrs[n] ?? null; },
   };
 }
@@ -89,6 +89,29 @@ suite('paramInputMixin', () => {
     assertEqual(el.value, '');
   });
 
+  test('numberCheck wertet eine Funktions-Spec mit dem Viewmodel aus', () => {
+    const check = numberCheck((m) => ({ min: 1, max: m.max }));
+    assertThrows(() => check('9', { max: 5 }), /allowed/);
+    assertEqual(check('4', { max: 5 }), 4);
+  });
+
+  test('fehlender Prüfer und Programmierfehler werden nicht als Ablehnung verschluckt', () => {
+    const v = vm();
+    assertThrows(() => v.onParamInput('zz', { target: input('1') }), /zz/);
+    v.setParam = () => {};
+    const bad = paramInputMixin({ specs: {}, checks: { a: () => { null.x; } }, t });
+    assertThrows(() => bad.onParamInput.call({ paramValue: () => 1 }, 'a', { target: input('1') }), /null|undefined|Cannot/);
+  });
+
+  test('ein von der Vorlage gesetzter title wird gemerkt und wiederhergestellt', () => {
+    const v = vm(); const el = input('25'); el.title = 'Vorlage';
+    v.onParamInput('k', { target: el });
+    assertEqual(el.title.startsWith('nein'), true);
+    el.value = '3';
+    v.onParamInput('k', { target: el });
+    assertEqual(el.title, 'Vorlage');
+  });
+
   test('numberCheck klemmt nicht', () => {
     assertThrows(() => numberCheck(SPECS.k)('25'), /allowed/);
     assertEqual(numberCheck(SPECS.k)('2.5'), 2.5);
@@ -96,7 +119,7 @@ suite('paramInputMixin', () => {
 
   test('describeRange beschreibt offene und geschlossene Grenzen', () => {
     assertEqual(describeRange({ min: 0.1, max: 10 }, 'de', t), '≥ 0,1 und ≤ 10');
-    assertEqual(describeRange({ exclusiveMin: 0, exclusiveMax: 1 }, 'en', t), '> 0 and < 1');
+    assertEqual(describeRange({ exclusiveMin: 0, exclusiveMax: 1 }, 'en', t), '> 0 und < 1');
     assertEqual(describeRange({ min: 1, integer: true }, 'de', t), '≥ 1, ganzzahlig');
   });
 });
