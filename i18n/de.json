@@ -2812,7 +2812,7 @@
           }
         },
         "addSubstep": {
-          "help": "Fügt einem Schritt einen leeren Unter-Schritt hinzu.",
+          "help": "Fügt einem Schritt einen leeren Unter-Schritt hinzu. Liefert die id des neuen Unter-Schritts.",
           "params": {
             "stepId": "Die id des Schritts, der den neuen Unter-Schritt bekommt. Eine unbekannte id ist ein Fehler."
           }
@@ -6016,7 +6016,7 @@
           }
         },
         "addSubstep": {
-          "help": "Fügt einem Schritt einen leeren Unter-Schritt hinzu.",
+          "help": "Fügt einem Schritt einen leeren Unter-Schritt hinzu. Liefert die id des neuen Unter-Schritts.",
           "params": {
             "stepId": "Die id des Schritts, der den neuen Unter-Schritt bekommt. Eine unbekannte id ist ein Fehler."
           }
@@ -6144,7 +6144,7 @@
           }
         },
         "addSubstep": {
-          "help": "Fügt einem Schritt einen leeren Unter-Schritt hinzu.",
+          "help": "Fügt einem Schritt einen leeren Unter-Schritt hinzu. Liefert die id des neuen Unter-Schritts.",
           "params": {
             "stepId": "Die id des Schritts, der den neuen Unter-Schritt bekommt. Eine unbekannte id ist ein Fehler."
           }
@@ -6275,7 +6275,7 @@
           }
         },
         "addSubstep": {
-          "help": "Fügt einem Schritt einen leeren Unter-Schritt hinzu.",
+          "help": "Fügt einem Schritt einen leeren Unter-Schritt hinzu. Liefert die id des neuen Unter-Schritts.",
           "params": {
             "stepId": "Die id des Schritts, der den neuen Unter-Schritt bekommt. Eine unbekannte id ist ein Fehler."
           }

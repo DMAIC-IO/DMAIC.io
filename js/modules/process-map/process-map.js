@@ -367,11 +367,12 @@ export default createModule({
        * Legt unter einem Schritt einen Teilschritt an.
        * @agent
        * @param {string} stepId id des Schritts
-       * @returns {void}
+       * @returns {string} id des neuen Teilschritts
        */
       addSubstep(stepId) {
-        _core.addSubstep.call(this, stepId);
+        const id = _core.addSubstep.call(this, stepId);
         this._focusLastSubstep(stepId);
+        return id;
       },
       /**
        * Entfernt einen Teilschritt.

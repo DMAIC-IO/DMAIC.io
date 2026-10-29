@@ -285,6 +285,13 @@ suite('chainViewMixin — substeps', () => {
     assertEqual(calls.map((x) => x[0]).join(','), 'toggle,add,remove');
   });
 
+  test('addSubstep liefert die id des neuen Unter-Schritts — Objekt- wie id-Rückgabe des Models', () => {
+    const withObject = ctx({ steps: [{ id: 'a' }], addSubstep: () => ({ id: 'ss1', title: '' }) });
+    assertEqual(withObject.addSubstep('a'), 'ss1');
+    const withId = ctx({ steps: [{ id: 'a' }], addSubstep: () => 'ss2' });
+    assertEqual(withId.addSubstep('a'), 'ss2');
+  });
+
   test('setSubstepsExpanded delegates to the model with a boolean (W1-3)', () => {
     const calls = [];
     const c = ctx({

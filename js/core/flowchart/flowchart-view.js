@@ -430,7 +430,7 @@ export function chainViewMixin(module, _t, opts = {}) {
      * Append an empty substep to a step.
      * @agent
      * @param {string} stepId  id of the step that gets the new substep
-     * @returns {void}
+     * @returns {string} id des neuen Unter-Schritts
      * @throws {Error} wenn stepId unbekannt ist, oder das Model die Methode
      *   `addSubstep` nicht führt
      */
@@ -438,7 +438,8 @@ export function chainViewMixin(module, _t, opts = {}) {
       if (Array.isArray(this.model?.steps)) {
         requireKnownId('stepId', stepId, this.model.steps.map((s) => s.id));
       }
-      callModel(this.model, 'addSubstep', [stepId]);
+      const created = callModel(this.model, 'addSubstep', [stepId]);
+      return typeof created === 'string' ? created : created?.id;
     },
     /**
      * Remove one substep from its parent step.
