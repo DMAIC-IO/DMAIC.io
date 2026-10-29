@@ -39,22 +39,11 @@ import {
 import { loadWorksheetExample, rewriteRefFields } from '../../core/examples-registry.js';
 import { chartModuleLifecycle } from '../../core/chart/chart-module-base.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
 import { paramInputMixin, numberCheck } from '../../core/param-input.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { finiteOrNull, zipPoints } from '../../core/agent/agent-results.js';
-
-/** parseFloat → finite number or null. */
-function numOrNull(v) {
-  const f = parseFloat(v);
-  return Number.isFinite(f) ? f : null;
-}
-/** parseInt → finite int or null. */
-function intOrNull(v) {
-  const i = parseInt(v, 10);
-  return Number.isFinite(i) ? i : null;
-}
 
 /** Präfix der i18n-Schlüssel der Typ-Sätze (Kachel-Anker). */
 const HELP = 'modules.time-weighted-chart.types.';
@@ -71,11 +60,11 @@ const PARAM_KEYS = ['chartTypeId', 'sigmaMethod', 'baselineCount', 'targetOverri
 /** Die Optionen, die für beide Kartentypen gelten. */
 const BASE_PARAMS = ['chartTypeId', 'sigmaMethod', 'baselineCount', 'targetOverride', 'sigmaOverride'];
 
-/** Die Leerform eines Zahlenfelds („aus den Daten" bzw. „alle Punkte"): `null` oder `''`. */
-const isEmptyForm = (v) => v === null || v === '';
-
-/** Zahlenoptionen λ/L/k/h: zulässiger Bereich (einzige Quelle für Prüfer und Eingabefeld). */
+/** Zahlenoptionen: zulässiger Bereich (einzige Quelle für Prüfer und Eingabefeld). */
 const PARAM_SPEC = {
+  baselineCount: { min: 1, integer: true, step: 1, nullable: true },
+  targetOverride: { step: 'any', nullable: true },
+  sigmaOverride: { min: 0, step: 'any', nullable: true },
   lambda: { exclusiveMin: 0, max: 1, step: 0.05 },
   L: { exclusiveMin: 0, step: 0.1 },
   kSigma: { exclusiveMin: 0, step: 0.1 },
@@ -86,9 +75,9 @@ const PARAM_SPEC = {
 const PARAM_CHECKS = {
   chartTypeId: (v) => { requireEnum('value', v, CHART_TYPE_IDS); return v; },
   sigmaMethod: (v) => { requireEnum('value', v, SIGMA_METHODS); return v; },
-  baselineCount: (v) => (isEmptyForm(v) ? null : requireNumber('value', v, { min: 1, integer: true })),
-  targetOverride: (v) => (isEmptyForm(v) ? null : requireNumber('value', v)),
-  sigmaOverride: (v) => (isEmptyForm(v) ? null : requireNumber('value', v, { min: 0 })),
+  baselineCount: numberCheck(PARAM_SPEC.baselineCount),
+  targetOverride: numberCheck(PARAM_SPEC.targetOverride),
+  sigmaOverride: numberCheck(PARAM_SPEC.sigmaOverride),
   lambda: numberCheck(PARAM_SPEC.lambda),
   L: numberCheck(PARAM_SPEC.L),
   kSigma: numberCheck(PARAM_SPEC.kSigma),
@@ -351,51 +340,11 @@ const mod = createModule({
       // ── Nullable input display values ─────────────────────────
       // Legacy stored null for empty; the input shows '' for null.
 
-      /** @noagent view transform */
-      baselineCountValue() {
-        return this.model.baselineCount == null ? '' : String(this.model.baselineCount);
-      },
-      /** @noagent view transform */
-      targetOverrideValue() {
-        return this.model.targetOverride == null ? '' : String(this.model.targetOverride);
-      },
-      /** @noagent view transform */
-      sigmaOverrideValue() {
-        return this.model.sigmaOverride == null ? '' : String(this.model.sigmaOverride);
-      },
 
       // ── Change handlers ───────────────────────────────────────
 
-      /**
-       * @noagent DOM event handler; the agent uses setParam()
-       * @param {Event} ev die Änderung des Phase-I-Feldes
-       */
-      async onBaselineCountChange(ev) {
-        const v = intOrNull(ev.target.value);
-        // Leer, unlesbar oder < 1 heißt „alle Punkte".
-        await this.setParam('baselineCount', v != null && v >= 1 ? v : null);
-        // Das Feld zeigt den Model-Wert, auch wenn er sich nicht geändert hat (0 bei leerem Feld).
-        ev.target.value = this.baselineCountValue();
-      },
 
-      /**
-       * @noagent DOM event handler; the agent uses setParam()
-       * @param {Event} ev die Änderung der Zielvorgabe
-       */
-      async onTargetOverrideChange(ev) {
-        await this.setParam('targetOverride', numOrNull(ev.target.value));
-        ev.target.value = this.targetOverrideValue();
-      },
 
-      /**
-       * @noagent DOM event handler; the agent uses setParam()
-       * @param {Event} ev die Änderung der σ-Vorgabe
-       */
-      async onSigmaOverrideChange(ev) {
-        const v = numOrNull(ev.target.value);
-        await this.setParam('sigmaOverride', (v != null && v >= 0) ? v : null);
-        ev.target.value = this.sigmaOverrideValue();
-      },
 
 
 

@@ -21,8 +21,8 @@
     <div class="field-group">
       <label data-help-key="modules.time-weighted-chart.types.Params.baselineCount" x-text="t('baselineCount')"></label>
       <input type="number" class="field field--num" data-ref="baseline-count"
-        min="2" :placeholder="t('baselineAll')"
-        :value="baselineCountValue()" @change="onBaselineCountChange($event)">
+        :min="paramMin('baselineCount')" :step="paramStep('baselineCount')" :placeholder="t('baselineAll')"
+        :value="paramValue('baselineCount')" @change="onParamInput('baselineCount', $event)">
       <span class="field-hint" x-text="t('baselineHint')"></span>
     </div>
 
@@ -31,14 +31,14 @@
       <div class="field-group">
         <label data-help-key="modules.time-weighted-chart.types.Params.targetOverride" x-text="t('targetOverride')"></label>
         <input type="number" class="field field--num" data-ref="target-override"
-          step="any" :placeholder="t('targetAuto')"
-          :value="targetOverrideValue()" @change="onTargetOverrideChange($event)">
+          :step="paramStep('targetOverride')" :placeholder="t('targetAuto')"
+          :value="paramValue('targetOverride')" @change="onParamInput('targetOverride', $event)">
       </div>
       <div class="field-group">
         <label data-help-key="modules.time-weighted-chart.types.Params.sigmaOverride" x-text="t('sigmaOverride')"></label>
         <input type="number" class="field field--num" data-ref="sigma-override"
-          step="any" min="0" :placeholder="t('sigmaAuto')"
-          :value="sigmaOverrideValue()" @change="onSigmaOverrideChange($event)">
+          :min="paramMin('sigmaOverride')" :step="paramStep('sigmaOverride')" :placeholder="t('sigmaAuto')"
+          :value="paramValue('sigmaOverride')" @change="onParamInput('sigmaOverride', $event)">
       </div>
     </div>
     <div class="field-group">
