@@ -52,8 +52,8 @@ import { isNormalByAD, meanRoute, kMeanRoute, varianceRoute, isConstant, ciConta
  * im Agent-Setter. Das Hypothesenziel hat keine Grenzen (leer = nicht gesetzt).
  */
 const PARAM_SPEC = {
-  alpha: { ...ALPHA_BOUNDS },
-  powerGoal: { ...POWER_GOAL_BOUNDS },
+  alpha: { ...ALPHA_BOUNDS, step: 0.01 },
+  powerGoal: { ...POWER_GOAL_BOUNDS, step: 0.05 },
   targetValue: { nullable: true },
 };
 
