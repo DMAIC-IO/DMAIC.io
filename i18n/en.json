@@ -13024,7 +13024,12 @@
           "vif": "Variance inflation factors of the predictors, table VIF, same order as vifTerms; the first value belongs to the first predictor after the intercept, i.e. the second row of the coefficient table. Above 5 the cell is marked, above 10 a warning is shown. Only with two or more predictor columns, otherwise empty; a single value is empty when it cannot be computed.",
           "vifTerms": "The terms belonging to the values in vif, same order, column “Term” of the VIF table: the predictors after the intercept, i.e. the coefficient terms from the second row on. Empty when no VIF table appears.",
           "warnings": "The warnings above the output, for example on separation, few events, slow convergence, overdispersion or quasi-Poisson. The texts are in the language of the interface.",
+          "warningDetails": "The warnings as a code with the inserted numbers, in the same order as warnings; the code is the text key, for example warnFewEvents with epv.",
           "equation": "The model equation as text, as shown under Model Equation: logit(p) for binomial, log(μ) for Poisson and negative binomial, equal to the intercept plus coefficient times term, rounded to four decimals."
+        },
+        "Warning": {
+          "code": "The id of the warning, equal to the text key.",
+          "values": "The numbers the text inserts, by name; not computable is null."
         },
         "Family": {
           "name": "The distribution family: binomial, poisson or negbin; the row Family shows the translated name.",

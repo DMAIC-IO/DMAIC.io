@@ -30,6 +30,7 @@ import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
+import { warning } from '../../core/agent/agent-results.js';
 import { State, keyToRef, predictFor, METHODS } from './glm-regression-model.js';
 import { parseDecimalInput } from '../../core/parse-decimal.js';
 import {
@@ -153,7 +154,14 @@ function num(v) { return typeof v === 'number' && Number.isFinite(v) ? v : null;
  * @property {Array<number|null>|null} vif  Varianzinflationsfaktoren je Prädiktor, Reihenfolge wie in vifTerms
  * @property {string[]|null} vifTerms  Terme zu den Werten in vif, gleiche Reihenfolge
  * @property {string[]} warnings  Warnungen
+ * @property {Warning[]} warningDetails  die Warnungen als Codes mit Zahlen, gleiche Reihenfolge wie warnings
  * @property {string|null} equation  Modellgleichung
+ */
+
+/**
+ * @typedef {object} Warning
+ * @property {string} code  Kennung der Warnung, gleich dem Textschlüssel
+ * @property {Record<string, number|null>} values  eingesetzte Zahlen
  */
 
 /**
@@ -217,6 +225,28 @@ function num(v) { return typeof v === 'number' && Number.isFinite(v) ? v : null;
  * @property {number|null} accuracy  Trefferquote
  * @property {number|null} precision  Präzision
  */
+
+/**
+ * Die Warnungen eines Fits als Codes mit Zahlen — Quelle für Text und Lesefläche.
+ * @param {object} r Fit-Ergebnis der Engine
+ * @returns {Warning[]}
+ */
+function glmWarnings(r) {
+  const isBinomial = r.family.name === 'binomial';
+  const out = [];
+  if (r.separationStrong) out.push(warning('warnSeparationStrong'));
+  else if (r.separationDetected) out.push(warning('warnSeparation'));
+  if (isBinomial) {
+    if (r._epv < 10) out.push(warning('warnFewEvents', { epv: r._epv }));
+  } else if (r.n / r.p < 10) {
+    out.push(warning('warnSmallN', { n: r.n, p: r.p }));
+  }
+  if (r.iterations >= 40) out.push(warning('warnSlowConverge', { iterations: r.iterations }));
+  if (r._overdispersion?.overdispersed) out.push(warning('warnOverdispersion', { ratio: r._overdispersion.ratio }));
+  if (r._quasiActivated) out.push(warning('warnQuasiActivated', { phi: r.dispersion }));
+  if (r.thetaEstimated && r.thetaConverged === false) out.push(warning('warnThetaUnstable', { theta: r.family?.theta }));
+  return out;
+}
 
 /**
  * Die Überdispersionsprüfung als Zahlen — dieselbe Quelle für die Lesefläche
@@ -374,6 +404,7 @@ const mod = createModule({
           vif: Array.isArray(r._vifs) ? r._vifs.map(num) : null,
           vifTerms: Array.isArray(r._vifs) ? r._vifs.map((_, j) => r.terms[j + 1]) : null,
           warnings: [...(this.result?.warnings ?? [])],
+          warningDetails: glmWarnings(r),
           equation: this.buildEquation(r) ?? null,
         };
       },
@@ -833,20 +864,12 @@ const mod = createModule({
         const isCount = r.family.name === 'poisson' || r.family.name === 'negbin';
 
         // Warnings
-        const warnings = [];
-        if (r.separationStrong) warnings.push(_t('warnSeparationStrong'));
-        else if (r.separationDetected) warnings.push(_t('warnSeparation'));
-        if (isBinomial) {
-          if (r._epv < 10) warnings.push(_t('warnFewEvents', { epv: fmt(r._epv, 1) }));
-        } else if (r.n / r.p < 10) {
-          warnings.push(_t('warnSmallN'));
-        }
-        if (r.iterations >= 40) warnings.push(_t('warnSlowConverge'));
-        if (r._overdispersion?.overdispersed) warnings.push(_t('warnOverdispersion'));
-        if (r._quasiActivated) warnings.push(_t('warnQuasiActivated', { phi: r.dispersion.toFixed(2) }));
-        if (r.thetaEstimated && r.thetaConverged === false) {
-          warnings.push(_t('warnThetaUnstable', { theta: r.family?.theta?.toFixed?.(2) ?? EN_DASH }));
-        }
+        const warnings = glmWarnings(r).map((w) => {
+          if (w.code === 'warnFewEvents') return _t(w.code, { epv: fmt(w.values.epv, 1) });
+          if (w.code === 'warnQuasiActivated') return _t(w.code, { phi: w.values.phi?.toFixed(2) ?? EN_DASH });
+          if (w.code === 'warnThetaUnstable') return _t(w.code, { theta: w.values.theta?.toFixed?.(2) ?? EN_DASH });
+          return _t(w.code);
+        });
 
         // Summary items (family / link / n / iters / theta / success-class)
         const summaryItems = [

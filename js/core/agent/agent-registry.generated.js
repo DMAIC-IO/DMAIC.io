@@ -6605,6 +6605,21 @@ export const AGENT_REGISTRY = {
             "type": "string[]",
             "help": "Warnungen"
           },
+          "warningDetails": {
+            "type": "Warning[]",
+            "help": "die Warnungen als Codes mit Zahlen, gleiche Reihenfolge wie warnings",
+            "keysOf": "Warning",
+            "keys": {
+              "code": {
+                "type": "string",
+                "help": "Kennung der Warnung, gleich dem Textschlüssel"
+              },
+              "values": {
+                "type": "Record<string, number|null>",
+                "help": "eingesetzte Zahlen"
+              }
+            }
+          },
           "equation": {
             "type": "string|null",
             "help": "Modellgleichung"

@@ -3,7 +3,7 @@
  * Lesefläche der Regelkarten.
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
-import { finiteOrNull, zipPoints } from '../../../js/core/agent/agent-results.js';
+import { finiteOrNull, zipPoints, warning } from '../../../js/core/agent/agent-results.js';
 
 suite('agent-results finiteOrNull', () => {
   test('endliche Zahlen bleiben, alles andere wird null', () => {
@@ -40,5 +40,13 @@ suite('agent-results zipPoints', () => {
   test('mehrere Merkmale unabhängig voneinander', () => {
     const { rows } = zipPoints({ c: [0, 0] }, { high: [0], low: [1] });
     assertDeepEqual(rows, [{ c: 0, high: true, low: false }, { c: 0, high: false, low: true }]);
+  });
+});
+
+suite('agent-results warning', () => {
+  test('Code und endliche Werte, Nicht-Zahlen werden null', () => {
+    assertEqual(JSON.stringify(warning('warnFewEvents', { epv: 4.25 })), '{"code":"warnFewEvents","values":{"epv":4.25}}');
+    assertEqual(JSON.stringify(warning('warnSmallN')), '{"code":"warnSmallN","values":{}}');
+    assertEqual(JSON.stringify(warning('x', { a: NaN, b: '3' })), '{"code":"x","values":{"a":null,"b":null}}');
   });
 });

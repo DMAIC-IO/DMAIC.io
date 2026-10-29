@@ -13028,7 +13028,12 @@
           "vif": "Varianzinflationsfaktoren der Prädiktoren, Tabelle VIF, Reihenfolge wie in vifTerms; der erste Wert gehört zum ersten Prädiktor nach dem Achsenabschnitt, also zur zweiten Zeile der Koeffiziententabelle. Über 5 wird die Zelle markiert, über 10 gewarnt. Nur ab zwei Prädiktorspalten, sonst leer; ein einzelner Wert ist leer, wenn er sich nicht rechnen lässt.",
           "vifTerms": "Die Terme zu den Werten in vif, gleiche Reihenfolge, Spalte „Term“ der Tabelle VIF: die Prädiktoren nach dem Achsenabschnitt, also die Koeffiziententerme ab der zweiten Zeile. Leer, wenn keine VIF-Tabelle erscheint.",
           "warnings": "Die Warnungen über der Ausgabe, etwa zu Trennung, wenigen Ereignissen, langsamer Konvergenz, Überdispersion oder Quasi-Poisson. Die Texte stehen in der Sprache der Oberfläche.",
+          "warningDetails": "Die Warnungen als Code mit den eingesetzten Zahlen, in derselben Reihenfolge wie warnings; der Code ist der Textschlüssel, zum Beispiel warnFewEvents mit epv.",
           "equation": "Die Modellgleichung als Text, wie sie unter Modellgleichung steht: logit(p) bei binomial, log(μ) bei Poisson und Negativ-Binomial, gleich der Summe aus Achsenabschnitt und Koeffizient mal Term, auf vier Nachkommastellen gerundet."
+        },
+        "Warning": {
+          "code": "Die Kennung der Warnung, gleich dem Textschlüssel.",
+          "values": "Die Zahlen, die der Text einsetzt, je Name; nicht berechenbar ist null."
         },
         "Family": {
           "name": "Die Verteilungsfamilie: binomial, poisson oder negbin; die Zeile Verteilungsfamilie zeigt den übersetzten Namen.",

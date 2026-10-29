@@ -19,6 +19,28 @@ export function finiteOrNull(v) {
 }
 
 /**
+ * Ein Hinweis oder eine Warnung für die Lesefläche: der Code ist der
+ * i18n-Schlüssel ohne Modulpräfix, die Werte sind die Zahlen, die der Text
+ * einsetzt — sprachunabhängig. Module deklarieren eine eigene gleichnamige
+ * Typedef, weil die Schlüsselliste nur aus Typedefs der Moduldatei entsteht.
+ * @typedef {object} Warning
+ * @property {string} code  Kennung, gleich dem Textschlüssel
+ * @property {Record<string, number|null>} values  eingesetzte Zahlen
+ */
+
+/**
+ * Eine Warnung mit Code und endlichen Zahlen; Nicht-Zahlen werden `null`.
+ * @param {string} code
+ * @param {Record<string, any>} [values]
+ * @returns {Warning}
+ */
+export function warning(code, values = {}) {
+  const out = {};
+  for (const [k, v] of Object.entries(values)) out[k] = finiteOrNull(v);
+  return { code, values: out };
+}
+
+/**
  * Spaltenweise Reihen zu einer Zeile je Punkt zusammenlegen.
  *
  * Eine Spalte ist eine Liste (ein Wert je Punkt) oder ein Einzelwert, der für
