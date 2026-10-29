@@ -25,7 +25,7 @@ import { requireNumber } from './agent/agent-argcheck.js';
  */
 
 function bounds(spec) {
-  const { step, nullable, ...rest } = spec;
+  const { step: _step, nullable: _nullable, ...rest } = spec;
   return rest;
 }
 
