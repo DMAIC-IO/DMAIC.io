@@ -7966,7 +7966,7 @@ export const AGENT_REGISTRY = {
             "help": "the cause"
           }
         ],
-        "returns": "void",
+        "returns": "number",
         "help": "Copy a cause with its sub-causes and ratings, right after it."
       },
       "causes.moveRowBefore": {
