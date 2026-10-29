@@ -29,7 +29,8 @@
 
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { paramInputMixin, numberCheck } from '../../core/param-input.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { State, ALL_METHODS, VALID_SIDES, METRIC_KEYS } from './outlier-test-model.js';
@@ -88,29 +89,16 @@ function _errText(t, code) {
 
 function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–'; }
 
-/** Zulässige Bereiche der Zahlenparameter (einzige Quelle für Setter und Oberfläche). */
-const PARAM_RANGES = {
+/** Zahlenparameter: zulässiger Bereich und Schrittweite (einzige Quelle für Setter und Oberfläche). */
+const PARAM_SPEC = {
   // Nicht enger als die Einstellungen säen können (settings.js clampConfPower: bis 99,99 % → alpha 0.0001).
-  alpha: { min: 0.0001, max: 0.5 },
-  tukeyFactor: { min: 0.1, max: 10 },
-  hampelK: { min: 0.1, max: 20 },
-  zThreshold: { min: 0.1, max: 10 },
-  modZThreshold: { min: 0.1, max: 10 },
-  esdMaxOutliers: { min: 1, max: 50, integer: true },
+  alpha: { min: 0.0001, max: 0.5, step: 0.01 },
+  tukeyFactor: { min: 0.1, max: 10, step: 0.1 },
+  hampelK: { min: 0.1, max: 20, step: 0.1 },
+  zThreshold: { min: 0.1, max: 10, step: 0.1 },
+  modZThreshold: { min: 0.1, max: 10, step: 0.1 },
+  esdMaxOutliers: { min: 1, max: 50, integer: true, step: 1, nullable: true },
 };
-
-/** Zuordnung der Eingabefelder der Oberfläche (`data-ref`) zum Parameterschlüssel. */
-const PARAM_OF_REF = {
-  'alpha': 'alpha',
-  'tukey-factor': 'tukeyFactor',
-  'hampel-k': 'hampelK',
-  'z-threshold': 'zThreshold',
-  'modz-threshold': 'modZThreshold',
-  'esd-max': 'esdMaxOutliers',
-};
-
-/** Leerform eines Feldes: das Feld ist leer oder `null`. */
-const isEmptyForm = (v) => v === null || v === '';
 
 /** Die Parameter, die `setParam` annimmt (kein Modus schaltet einen ab). */
 const PARAM_KEYS = ['alpha', 'side', 'tukeyFactor', 'hampelK', 'zThreshold',
@@ -118,14 +106,13 @@ const PARAM_KEYS = ['alpha', 'side', 'tukeyFactor', 'hampelK', 'zThreshold',
 
 /** Je Parameter sein Prüfer; gibt den normalisierten Wert zurück. */
 const PARAM_CHECKS = {
-  alpha: (v) => requireNumber('value', v, PARAM_RANGES.alpha),
+  alpha: numberCheck(PARAM_SPEC.alpha),
   side: (v) => { requireEnum('value', v, VALID_SIDES); return v; },
-  tukeyFactor: (v) => requireNumber('value', v, PARAM_RANGES.tukeyFactor),
-  hampelK: (v) => requireNumber('value', v, PARAM_RANGES.hampelK),
-  zThreshold: (v) => requireNumber('value', v, PARAM_RANGES.zThreshold),
-  modZThreshold: (v) => requireNumber('value', v, PARAM_RANGES.modZThreshold),
-  esdMaxOutliers: (v) => (isEmptyForm(v) ? null
-    : requireNumber('value', v, PARAM_RANGES.esdMaxOutliers)),
+  tukeyFactor: numberCheck(PARAM_SPEC.tukeyFactor),
+  hampelK: numberCheck(PARAM_SPEC.hampelK),
+  zThreshold: numberCheck(PARAM_SPEC.zThreshold),
+  modZThreshold: numberCheck(PARAM_SPEC.modZThreshold),
+  esdMaxOutliers: numberCheck(PARAM_SPEC.esdMaxOutliers),
   enabled: (v) => {
     if (!Array.isArray(v)) {
       throw new Error(`invalid value ${JSON.stringify(v)}; allowed: a list of method ids from ${ALL_METHODS.join(', ')}`);
@@ -288,6 +275,12 @@ const mod = createModule({
 
   data(module, _t) {
     return {
+      ...paramInputMixin({
+        specs: PARAM_SPEC,
+        checks: PARAM_CHECKS,
+        t: _t,
+        lang: () => module._context?.i18n?.getLanguage?.() ?? 'de',
+      }),
       // ── Transient view state (not persisted) ──────────────────
       _picker: null,
       _chart: null,
@@ -353,26 +346,6 @@ const mod = createModule({
           ? this.model.enabled.filter(m => m !== mid)
           : [...this.model.enabled, mid];
         this.setParam('enabled', next);
-      },
-
-      /**
-       * Handle numeric parameter input changes: clamp to the range, then set.
-       * @param {'alpha'|'tukey-factor'|'hampel-k'|'z-threshold'|'modz-threshold'|'esd-max'} ref
-       * @param {Event} event
-       * @noagent DOM event handler; the agent uses setParam()
-       */
-      paramChanged(ref, event) {
-        const key = PARAM_OF_REF[ref];
-        const raw = event.target.value;
-        if (raw === '') {
-          // Only the ESD limit has an empty form (automatic).
-          if (key === 'esdMaxOutliers') this.setParam(key, null);
-          return;
-        }
-        const { min, max, integer } = PARAM_RANGES[key];
-        const parsed = integer ? parseInt(raw, 10) : parseFloat(raw);
-        if (parsed == null || !isFinite(parsed)) return;
-        this.setParam(key, Math.min(max, Math.max(min, parsed)));
       },
 
       // ── ColumnPicker (imperative widget) ──────────────────────

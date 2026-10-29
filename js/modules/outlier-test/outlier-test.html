@@ -40,9 +40,9 @@
         <input type="number"
                data-ref="alpha"
                class="field field--num"
-               min="0.0001" max="0.5" step="0.01"
-               :value="model.alpha"
-               @input="paramChanged('alpha', $event)">
+               :min="paramMin('alpha')" :max="paramMax('alpha')" :step="paramStep('alpha')"
+               :value="paramValue('alpha')"
+               @change="onParamInput('alpha', $event)">
       </div>
     </div>
 
@@ -52,18 +52,18 @@
         <input type="number"
                data-ref="tukey-factor"
                class="field field--num"
-               min="0.5" max="5" step="0.1"
-               :value="model.tukeyFactor"
-               @input="paramChanged('tukey-factor', $event)">
+               :min="paramMin('tukeyFactor')" :max="paramMax('tukeyFactor')" :step="paramStep('tukeyFactor')"
+               :value="paramValue('tukeyFactor')"
+               @change="onParamInput('tukeyFactor', $event)">
       </div>
       <div class="field-group">
         <label data-help-key="modules.outlier-test.types.Params.hampelK" :title="t('tipHampelK')" x-text="t('hampelK')"></label>
         <input type="number"
                data-ref="hampel-k"
                class="field field--num"
-               min="1" max="10" step="0.1"
-               :value="model.hampelK"
-               @input="paramChanged('hampel-k', $event)">
+               :min="paramMin('hampelK')" :max="paramMax('hampelK')" :step="paramStep('hampelK')"
+               :value="paramValue('hampelK')"
+               @change="onParamInput('hampelK', $event)">
       </div>
     </div>
 
@@ -73,18 +73,18 @@
         <input type="number"
                data-ref="z-threshold"
                class="field field--num"
-               min="1" max="6" step="0.1"
-               :value="model.zThreshold"
-               @input="paramChanged('z-threshold', $event)">
+               :min="paramMin('zThreshold')" :max="paramMax('zThreshold')" :step="paramStep('zThreshold')"
+               :value="paramValue('zThreshold')"
+               @change="onParamInput('zThreshold', $event)">
       </div>
       <div class="field-group">
         <label data-help-key="modules.outlier-test.types.Params.modZThreshold" :title="t('tipModZThreshold')" x-text="t('modZThreshold')"></label>
         <input type="number"
                data-ref="modz-threshold"
                class="field field--num"
-               min="1" max="6" step="0.1"
-               :value="model.modZThreshold"
-               @input="paramChanged('modz-threshold', $event)">
+               :min="paramMin('modZThreshold')" :max="paramMax('modZThreshold')" :step="paramStep('modZThreshold')"
+               :value="paramValue('modZThreshold')"
+               @change="onParamInput('modZThreshold', $event)">
       </div>
     </div>
 
@@ -93,10 +93,10 @@
       <input type="number"
              data-ref="esd-max"
              class="field field--num"
-             min="1" max="50" step="1"
-             :value="model.esdMaxOutliers != null ? model.esdMaxOutliers : ''"
+             :min="paramMin('esdMaxOutliers')" :max="paramMax('esdMaxOutliers')" :step="paramStep('esdMaxOutliers')"
+             :value="paramValue('esdMaxOutliers')"
              :placeholder="t('esdMaxAuto')"
-             @input="paramChanged('esd-max', $event)">
+             @change="onParamInput('esdMaxOutliers', $event)">
     </div>
 
     <div class="field-error" data-ref="error-box" x-show="errorMsg" x-text="errorMsg"></div>
