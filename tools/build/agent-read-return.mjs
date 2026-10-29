@@ -1,6 +1,6 @@
 /**
  * Die Schlüssel, die `read()` eines Moduls an `readAgentState` übergibt —
- * die Gegenseite der erklärten `@typedef AgentRead` (Roadmap 553). Statisch,
+ * die Gegenseite der erklärten `@typedef AgentRead`. Statisch,
  * fail closed: was nicht sicher lesbar ist, ergibt `null` (Blindstelle wird
  * gemeldet, nicht geraten).
  */

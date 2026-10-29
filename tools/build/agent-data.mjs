@@ -130,7 +130,7 @@ function buildEntry(resolver, appDir, viewmodelFile) {
     .filter(k => !k.startsWith('_') && !Object.prototype.hasOwnProperty.call(model.fields, k))
     .map(k => `unreadable_state_key:${k}`);
 
-  // Gegenprobe der ERKLÄRTEN Lesefläche (Roadmap 553): jeder erklärte
+  // Gegenprobe der ERKLÄRTEN Lesefläche: jeder erklärte
   // Schlüssel muss im Rückgabewert von read() stehen — sonst fehlt er still
   // im read(), weil `projectReadState` nur Vorhandenes ausgibt. Geliefert,
   // aber nicht erklärt, bleibt erlaubt (worksheet: Schwesterfelder).

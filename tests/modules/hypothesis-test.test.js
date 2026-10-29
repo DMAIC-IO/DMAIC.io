@@ -570,7 +570,7 @@ suite('Hypothesis Test View — residual plots (C1-020)', () => {
   });
 });
 
-suite('Hypothesis Test VM — setAlpha/setPowerGoal weisen ab (D1)', () => {
+suite('Hypothesis Test VM — setAlpha/setPowerGoal weisen ab', () => {
   async function vm() {
     const t = await loadT();
     const view = viewData({ _context: {} }, t);
