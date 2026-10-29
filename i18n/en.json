@@ -2697,12 +2697,12 @@
           }
         },
         "moveIO": {
-          "help": "Moves an input or output within its list to the position of another entry of the same list.",
+          "help": "Moves an input or output within its list to the position of another entry of the same list. Always returns true.",
           "params": {
-            "stepId": "Id of the step.",
+            "stepId": "Id of the step. An unknown id is an error.",
             "type": "The list: inputs or outputs.",
-            "ioId": "Id of the entry to move.",
-            "targetIoId": "Id of the entry whose position it takes; must be a different entry of the same list."
+            "ioId": "Id of the entry to move. An unknown id is an error.",
+            "targetIoId": "Id of the entry whose position it takes; must be a different entry of the same list. An unknown id is an error."
           }
         },
         "cycleInputType": {
@@ -2797,11 +2797,11 @@
           }
         },
         "moveSubstep": {
-          "help": "Moves a substep within its step to the position of another substep.",
+          "help": "Moves a sub-step within its step to the position of another sub-step. Returns true if the order changed.",
           "params": {
-            "parentId": "Id of the step both substeps belong to.",
-            "substepId": "Id of the substep to move.",
-            "targetSubstepId": "Id of the substep whose position it takes; must be a different one."
+            "parentId": "Id of the step both sub-steps belong to. An unknown id is an error.",
+            "substepId": "Id of the sub-step to move. An unknown id is an error.",
+            "targetSubstepId": "Id of the sub-step whose position it takes; must be a different one. An unknown id is an error."
           }
         },
         "setSubstepsExpanded": {
@@ -5087,7 +5087,7 @@
             }
           },
           "duplicateRow": {
-            "help": "Copy a cause with its sub-causes and ratings; the copy follows right after it.",
+            "help": "Copy a cause with its sub-causes and ratings; the copy follows right after it. Returns the id of the copy.",
             "params": {
               "rowId": "The cause."
             }
@@ -5948,7 +5948,7 @@
           "help": "Sets the target of a decision's no branch. The yes branch has no target — it is the value stream, which flows on to the next step anyway.",
           "params": {
             "stepId": "The decision's id. An unknown id, or a step that is not a decision, is an error.",
-            "target": "The new target: 'end' for process end, or another step's id from the same band the decision itself sits in — a jump back is shown as a rework loop. An unknown id, the step's own id, or a step from a different band, is an error."
+            "target": "The new target: 'end' for process end (the detour then ends where its own steps end), or another step's id from the same band the decision itself sits in — a jump back is shown as a rework loop. An unknown id, the step's own id, or a step from a different band, is an error."
           }
         },
         "setStepBand": {
@@ -5984,18 +5984,18 @@
           }
         },
         "moveStep": {
-          "help": "Moves a step to another position in the chain. Gaps are counted in the chain before the move: 0 is the very front, the step count the very end. Returns false if the step is already there. A decision moves together with its whole branch; a gap inside that branch changes nothing.",
+          "help": "Moves a step to another position in the chain. Gaps are counted in the chain before the move: 0 is the very front, the step count the very end. Returns false if the step is already there. A decision moves together with its whole branch; for a contiguous branch, a gap inside it changes nothing.",
           "params": {
             "stepId": "Id of the step to move. An unknown id is an error.",
             "gapIndex": "Target gap as a whole number from 0 to the number of steps."
           }
         },
         "moveSubstep": {
-          "help": "Moves a substep within its step to the position of another substep.",
+          "help": "Moves a sub-step within its step to the position of another sub-step. Returns true if the order changed.",
           "params": {
-            "parentId": "Id of the step both substeps belong to.",
-            "substepId": "Id of the substep to move.",
-            "targetSubstepId": "Id of the substep whose position it takes; must be a different one."
+            "parentId": "Id of the step both sub-steps belong to. An unknown id is an error.",
+            "substepId": "Id of the sub-step to move. An unknown id is an error.",
+            "targetSubstepId": "Id of the sub-step whose position it takes; must be a different one. An unknown id is an error."
           }
         },
         "setSubstepsExpanded": {
@@ -6119,11 +6119,11 @@
           }
         },
         "moveSubstep": {
-          "help": "Moves a substep within its step to the position of another substep.",
+          "help": "Moves a sub-step within its step to the position of another sub-step. Returns true if the order changed.",
           "params": {
-            "parentId": "Id of the step both substeps belong to.",
-            "substepId": "Id of the substep to move.",
-            "targetSubstepId": "Id of the substep whose position it takes; must be a different one."
+            "parentId": "Id of the step both sub-steps belong to. An unknown id is an error.",
+            "substepId": "Id of the sub-step to move. An unknown id is an error.",
+            "targetSubstepId": "Id of the sub-step whose position it takes; must be a different one. An unknown id is an error."
           }
         },
         "setSubstepsExpanded": {
@@ -6250,11 +6250,11 @@
           }
         },
         "moveSubstep": {
-          "help": "Moves a substep within its step to the position of another substep.",
+          "help": "Moves a sub-step within its step to the position of another sub-step. Returns true if the order changed.",
           "params": {
-            "parentId": "Id of the step both substeps belong to.",
-            "substepId": "Id of the substep to move.",
-            "targetSubstepId": "Id of the substep whose position it takes; must be a different one."
+            "parentId": "Id of the step both sub-steps belong to. An unknown id is an error.",
+            "substepId": "Id of the sub-step to move. An unknown id is an error.",
+            "targetSubstepId": "Id of the sub-step whose position it takes; must be a different one. An unknown id is an error."
           }
         },
         "setSubstepsExpanded": {

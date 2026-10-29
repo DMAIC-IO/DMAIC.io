@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { collectAgentData, renderAgentRegistryModule, collectDomDetours,
+import { collectAgentData, renderAgentRegistryModule, collectDomDetours, CREATING_VOID_EXEMPT,
          readAgentReadTypedef } from './agent-data.mjs';
 import { lookup, helpExists, STRUCTURE_JARGON, typedefHelpSuffixes } from './agent-report.mjs';
 import { helpKeysInTemplates, helpKeysInScripts, helpKeysInSharedSources,
@@ -3548,5 +3548,27 @@ test('void_creating_action: Promise<void>, undefined und Promise<undefined> zäh
       .replace('setProblem(text)', 'createProblem(text)');
     const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
     assert.ok(collectAgentData(root).modules.foo.violations.includes('void_creating_action:createProblem'), ret);
+  }
+});
+
+test('void_creating_action: eine Ausnahme aus CREATING_VOID_EXEMPT bleibt befundfrei', () => {
+  const vm = TAGGED_VM
+    .replace('       * @returns {boolean} whether it was accepted\n', '       * @returns {void}\n')
+    .replace("config: { id: 'foo' }", "config: { id: 'attribute-test' }")
+    .replace('setProblem(text)', 'addRow(text)');
+  const root = fixture({ 'attribute-test': { 'attribute-test.js': vm, 'foo-model.js': MODEL } });
+  const entry = collectAgentData(root).modules['attribute-test'];
+  assert.ok(!entry.violations.some((v) => v.startsWith('void_creating_action')), entry.violations.join(', '));
+});
+
+test('void_creating_action: jede Ausnahme trifft im echten Baum noch eine void-Anlegeaktion', () => {
+  const appDir = join(import.meta.dirname, '..', '..');
+  const { modules } = collectAgentData(appDir);
+  for (const key of CREATING_VOID_EXEMPT) {
+    const dot = key.indexOf('.');
+    const action = modules[key.slice(0, dot)]?.actions?.[key.slice(dot + 1)];
+    assert.ok(action, `Ausnahme ${key}: Aktion gibt es nicht mehr`);
+    assert.ok(['void', 'undefined', 'Promise<void>', 'Promise<undefined>'].includes(String(action.returns).trim()),
+      `Ausnahme ${key}: Aktion liefert jetzt ${action.returns} — Ausnahme streichen`);
   }
 });

@@ -92,7 +92,7 @@ const VOID_RETURNS = new Set(['void', 'undefined', 'Promise<void>', 'Promise<und
  * `attribute-test.addRow/addCol`: Tabellenzeile/-spalte ist eine Position, keine Entität.
  * `worksheet.addRows`: legt `count` Zeilen an, Zeilen haben keine id.
  */
-const CREATING_VOID_EXEMPT = new Set(['doe-planner.factors.insertLevel', 'attribute-test.addRow', 'attribute-test.addCol', 'worksheet.addRows']);
+export const CREATING_VOID_EXEMPT = new Set(['doe-planner.factors.insertLevel', 'attribute-test.addRow', 'attribute-test.addCol', 'worksheet.addRows']);
 
 /**
  * Sammle die Agenten-Registry über alle Module.
@@ -126,7 +126,7 @@ function buildEntry(resolver, appDir, viewmodelFile) {
   const { actions, violations, written, optionSources, subViewModels } = readViewmodel(sf, resolver, appDir);
   const moduleId = basename(viewmodelFile, '.js');
   for (const [name, action] of Object.entries(actions)) {
-    if (CREATING_ACTION_RE.test(name.slice(name.lastIndexOf('.') + 1))
+    if (action.returns != null && CREATING_ACTION_RE.test(name.slice(name.lastIndexOf('.') + 1))
         && VOID_RETURNS.has(String(action.returns).trim())
         && !CREATING_VOID_EXEMPT.has(`${moduleId}.${name}`)) {
       violations.push(`void_creating_action:${name}`);

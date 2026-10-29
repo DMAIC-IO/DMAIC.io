@@ -2697,12 +2697,12 @@
           }
         },
         "moveIO": {
-          "help": "Verschiebt einen Input oder Output innerhalb seiner Liste an den Platz eines anderen Eintrags derselben Liste.",
+          "help": "Verschiebt einen Input oder Output innerhalb seiner Liste an den Platz eines anderen Eintrags derselben Liste. Liefert immer true.",
           "params": {
-            "stepId": "Die id des Schritts.",
+            "stepId": "Die id des Schritts. Eine unbekannte id ist ein Fehler.",
             "type": "Die Liste: inputs oder outputs.",
-            "ioId": "Die id des Eintrags, der verschoben wird.",
-            "targetIoId": "Die id des Eintrags, dessen Platz er einnimmt; muss ein anderer derselben Liste sein."
+            "ioId": "Die id des Eintrags, der verschoben wird. Eine unbekannte id ist ein Fehler.",
+            "targetIoId": "Die id des Eintrags, dessen Platz er einnimmt; muss ein anderer derselben Liste sein. Eine unbekannte id ist ein Fehler."
           }
         },
         "cycleInputType": {
@@ -2797,11 +2797,11 @@
           }
         },
         "moveSubstep": {
-          "help": "Verschiebt einen Unter-Schritt innerhalb seines Schritts an den Platz eines anderen Unter-Schritts.",
+          "help": "Verschiebt einen Unter-Schritt innerhalb seines Schritts an den Platz eines anderen Unter-Schritts. Liefert true, wenn sich die Reihenfolge geändert hat.",
           "params": {
-            "parentId": "Die id des Schritts, zu dem beide Unter-Schritte gehören.",
-            "substepId": "Die id des Unter-Schritts, der verschoben wird.",
-            "targetSubstepId": "Die id des Unter-Schritts, dessen Platz er einnimmt; muss ein anderer sein."
+            "parentId": "Die id des Schritts, zu dem beide Unter-Schritte gehören. Eine unbekannte id ist ein Fehler.",
+            "substepId": "Die id des Unter-Schritts, der verschoben wird. Eine unbekannte id ist ein Fehler.",
+            "targetSubstepId": "Die id des Unter-Schritts, dessen Platz er einnimmt; muss ein anderer sein. Eine unbekannte id ist ein Fehler."
           }
         },
         "setSubstepsExpanded": {
@@ -5091,7 +5091,7 @@
             }
           },
           "duplicateRow": {
-            "help": "Eine Ursache samt Unterursachen und Bewertungen kopieren; die Kopie steht direkt dahinter.",
+            "help": "Eine Ursache samt Unterursachen und Bewertungen kopieren; die Kopie steht direkt dahinter. Liefert die id der Kopie.",
             "params": {
               "rowId": "Die Ursache."
             }
@@ -5952,7 +5952,7 @@
           "help": "Setzt das Ziel des Nein-Zweigs einer Entscheidung. Der Ja-Zweig hat kein Ziel — er ist der Wertstrom, der ohnehin zum nächsten Schritt weiterfließt.",
           "params": {
             "stepId": "Die id der Entscheidung. Eine unbekannte id, oder ein Schritt, der keine Entscheidung ist, ist ein Fehler.",
-            "target": "Das neue Ziel: 'end' für Prozessende, oder die id eines anderen Schritts aus demselben Band, in dem die Entscheidung selbst steht — ein Rücksprung wird als Umarbeitungsschleife angezeigt. Eine unbekannte id, die eigene id, oder die id eines Schritts aus einem anderen Band ist ein Fehler."
+            "target": "Das neue Ziel: 'end' für Prozessende (der Umweg endet dort, wo seine eigenen Schritte enden), oder die id eines anderen Schritts aus demselben Band, in dem die Entscheidung selbst steht — ein Rücksprung wird als Umarbeitungsschleife angezeigt. Eine unbekannte id, die eigene id, oder die id eines Schritts aus einem anderen Band ist ein Fehler."
           }
         },
         "setStepBand": {
@@ -5988,18 +5988,18 @@
           }
         },
         "moveStep": {
-          "help": "Verschiebt einen Schritt an eine andere Stelle der Kette. Die Lücken werden in der Kette vor dem Verschieben gezählt: 0 ist ganz vorn, die Schrittzahl ganz hinten. Liefert false, wenn der Schritt schon dort steht. Eine Entscheidung wandert mit ihrem ganzen Zweig; eine Lücke innerhalb dieses Zweigs ändert nichts.",
+          "help": "Verschiebt einen Schritt an eine andere Stelle der Kette. Die Lücken werden in der Kette vor dem Verschieben gezählt: 0 ist ganz vorn, die Schrittzahl ganz hinten. Liefert false, wenn der Schritt schon dort steht. Eine Entscheidung wandert mit ihrem ganzen Zweig; bei zusammenhängendem Zweig ändert eine Lücke innerhalb davon nichts.",
           "params": {
             "stepId": "Die id des Schritts, der verschoben wird. Eine unbekannte id ist ein Fehler.",
             "gapIndex": "Die Ziel-Lücke als ganze Zahl von 0 bis zur Zahl der Schritte."
           }
         },
         "moveSubstep": {
-          "help": "Verschiebt einen Unter-Schritt innerhalb seines Schritts an den Platz eines anderen Unter-Schritts.",
+          "help": "Verschiebt einen Unter-Schritt innerhalb seines Schritts an den Platz eines anderen Unter-Schritts. Liefert true, wenn sich die Reihenfolge geändert hat.",
           "params": {
-            "parentId": "Die id des Schritts, zu dem beide Unter-Schritte gehören.",
-            "substepId": "Die id des Unter-Schritts, der verschoben wird.",
-            "targetSubstepId": "Die id des Unter-Schritts, dessen Platz er einnimmt; muss ein anderer sein."
+            "parentId": "Die id des Schritts, zu dem beide Unter-Schritte gehören. Eine unbekannte id ist ein Fehler.",
+            "substepId": "Die id des Unter-Schritts, der verschoben wird. Eine unbekannte id ist ein Fehler.",
+            "targetSubstepId": "Die id des Unter-Schritts, dessen Platz er einnimmt; muss ein anderer sein. Eine unbekannte id ist ein Fehler."
           }
         },
         "setSubstepsExpanded": {
@@ -6123,11 +6123,11 @@
           }
         },
         "moveSubstep": {
-          "help": "Verschiebt einen Unter-Schritt innerhalb seines Schritts an den Platz eines anderen Unter-Schritts.",
+          "help": "Verschiebt einen Unter-Schritt innerhalb seines Schritts an den Platz eines anderen Unter-Schritts. Liefert true, wenn sich die Reihenfolge geändert hat.",
           "params": {
-            "parentId": "Die id des Schritts, zu dem beide Unter-Schritte gehören.",
-            "substepId": "Die id des Unter-Schritts, der verschoben wird.",
-            "targetSubstepId": "Die id des Unter-Schritts, dessen Platz er einnimmt; muss ein anderer sein."
+            "parentId": "Die id des Schritts, zu dem beide Unter-Schritte gehören. Eine unbekannte id ist ein Fehler.",
+            "substepId": "Die id des Unter-Schritts, der verschoben wird. Eine unbekannte id ist ein Fehler.",
+            "targetSubstepId": "Die id des Unter-Schritts, dessen Platz er einnimmt; muss ein anderer sein. Eine unbekannte id ist ein Fehler."
           }
         },
         "setSubstepsExpanded": {
@@ -6254,11 +6254,11 @@
           }
         },
         "moveSubstep": {
-          "help": "Verschiebt einen Unter-Schritt innerhalb seines Schritts an den Platz eines anderen Unter-Schritts.",
+          "help": "Verschiebt einen Unter-Schritt innerhalb seines Schritts an den Platz eines anderen Unter-Schritts. Liefert true, wenn sich die Reihenfolge geändert hat.",
           "params": {
-            "parentId": "Die id des Schritts, zu dem beide Unter-Schritte gehören.",
-            "substepId": "Die id des Unter-Schritts, der verschoben wird.",
-            "targetSubstepId": "Die id des Unter-Schritts, dessen Platz er einnimmt; muss ein anderer sein."
+            "parentId": "Die id des Schritts, zu dem beide Unter-Schritte gehören. Eine unbekannte id ist ein Fehler.",
+            "substepId": "Die id des Unter-Schritts, der verschoben wird. Eine unbekannte id ist ein Fehler.",
+            "targetSubstepId": "Die id des Unter-Schritts, dessen Platz er einnimmt; muss ein anderer sein. Eine unbekannte id ist ein Fehler."
           }
         },
         "setSubstepsExpanded": {

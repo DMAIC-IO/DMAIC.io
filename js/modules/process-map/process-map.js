@@ -502,11 +502,14 @@ export default createModule({
         event.stopPropagation();
         if (!this._draggedIOId || this._draggedIOId === ioId) return;
         if (stepId !== this._draggedIOStepId || type !== this._draggedIOType) return;
-        this.moveIO(stepId, type, this._draggedIOId, ioId);
-        this._draggedIOId = null;
-        this._draggedIOStepId = null;
-        this._draggedIOType = null;
-        this._clearDragMarkers();
+        try {
+          this.moveIO(stepId, type, this._draggedIOId, ioId);
+        } finally {
+          this._draggedIOId = null;
+          this._draggedIOStepId = null;
+          this._draggedIOType = null;
+          this._clearDragMarkers();
+        }
       },
 
 

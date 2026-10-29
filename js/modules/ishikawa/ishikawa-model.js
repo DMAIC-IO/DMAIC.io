@@ -274,6 +274,7 @@ export class State {
    * Duplicate a row and its subtree, inserting after the source subtree.
    * @param {number} id
    * @param {string} [copySuffix] appended to the root copy's name (e.g. ' (Copy)')
+   * @returns {number|undefined} id of the root copy, or undefined if the source row is unknown
    */
   dupeRow(id, copySuffix = '') {
     const src = this.rows.find(r => r.id === id);
