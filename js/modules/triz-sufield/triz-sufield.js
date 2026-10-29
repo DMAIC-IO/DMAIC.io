@@ -24,13 +24,22 @@ let _dataPromise = null;
  */
 const STANDARD_TABLE = { entries: Object.freeze([]) };
 
+/** Friert ein Objekt samt aller verschachtelten Objekte und Felder ein. */
+function deepFreeze(value) {
+  if (value && typeof value === 'object' && !Object.isFrozen(value)) {
+    Object.values(value).forEach(deepFreeze);
+    Object.freeze(value);
+  }
+  return value;
+}
+
 function loadData() {
   if (_dataPromise) return _dataPromise;
   _dataPromise = fetch(DATA_PATH, { cache: 'no-cache' })
     .then(r => r.json())
     .then(d => {
-      STANDARD_TABLE.entries = Object.freeze(d.standards.map(x => Object.freeze({ ...x })));
-      return d.standards;
+      STANDARD_TABLE.entries = deepFreeze(d.standards);
+      return STANDARD_TABLE.entries;
     });
   return _dataPromise;
 }
@@ -462,9 +471,9 @@ const base = createModule({
       // ── Init: load standards, auto-expand classes ──
       /** @noagent lifecycle, kein Zustandsweg */
       init() {
-        loadData().then(data => {
+        loadData().then(() => {
           const mapped = {};
-          for (const s of data) {
+          for (const s of STANDARD_TABLE.entries) {
             const key = String(s.class);
             if (!mapped[key]) mapped[key] = [];
             mapped[key].push(s);

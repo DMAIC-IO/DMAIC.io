@@ -440,7 +440,8 @@ export const apRating = {
 
 /**
  * Ein Risiko, wie `read().risks` es zeigt. Sätze je Eigenschaft unter
- * `types.RiskEntry.<name>`.
+ * `types.RiskEntry.<name>`. RiskEntry/RiskActionEntry sind die Leseansicht;
+ * die Schreibfläche sind `RiskField`/`ActionField` in fmea.js.
  *
  * @typedef {object} RiskEntry
  * @property {string} id  Kennung
