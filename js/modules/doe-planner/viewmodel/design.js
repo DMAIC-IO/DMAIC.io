@@ -31,6 +31,9 @@ const DESIGN_TYPES = [
   { key: 'gopt',    formula: 'G-Opt' },
 ];
 
+/** Wiederholungen: dieselbe Regel für Oberfläche und Agent-Setter. */
+export const REPLICATES_SPEC = { integer: true, min: 1, max: 10 };
+
 /** Zentralpunkte: dieselbe Regel für Oberfläche und Agent-Setter. */
 export const CENTER_POINTS_SPEC = { integer: true, min: 1, max: 100 };
 
@@ -319,7 +322,7 @@ export class DesignViewModel {
    * @throws {Error} if n is out of range
    */
   setReplicates(n) {
-    this.model.options.replicates = requireNumber('n', n, { integer: true, min: 1, max: 10 });
+    this.model.options.replicates = requireNumber('n', n, REPLICATES_SPEC);
     this._save();
   }
 
