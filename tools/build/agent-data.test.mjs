@@ -3597,3 +3597,15 @@ test('module_state_option_source: eine Modul-const bleibt befundfrei', () => {
   const root = fixture({ foo: { 'foo.js': vmWithKnownIdCheck("const IDS = ['a', 'b'];", 'IDS'), 'foo-model.js': MODEL } });
   assert.ok(!collectAgentData(root).modules.foo.violations.some((v) => v.startsWith('module_state_option_source')));
 });
+
+test('module_state_option_source: Parameter gleichen Namens wie ein Modul-let wird nicht gemeldet', () => {
+  const vm = vmWithKnownIdCheck('let ids = [];', 'ids').replace('setProblem(text)', 'setProblem(text, ids)');
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
+  assert.ok(!collectAgentData(root).modules.foo.violations.some((v) => v.startsWith('module_state_option_source')));
+});
+
+test('module_state_option_source: ein lokales let gleichen Namens wie ein Modul-let wird nicht gemeldet', () => {
+  const vm = vmWithKnownIdCheck('let ids = [];', 'ids').replace("requireKnownId('text'", "{ const { ids } = this.model; }\n let ids2 = 1; if (text) { var ids = ['a']; }\n requireKnownId('text'");
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
+  assert.ok(!collectAgentData(root).modules.foo.violations.some((v) => v.startsWith('module_state_option_source')));
+});

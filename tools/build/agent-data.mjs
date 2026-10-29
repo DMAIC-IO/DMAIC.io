@@ -218,6 +218,7 @@ function buildEntry(resolver, appDir, viewmodelFile) {
   const moduleStateOptions = [...new Set(optionSources
     .filter(o => o.moduleState)
     .map(o => `module_state_option_source:${o.action}:${o.arg}`))];
+
   const reported = [...violations, ...surface, ...model.violations,
     ...persistence.violations, ...unreadable, ...readReturn,
     ...invalidBulkKinds(model.fields), ...invalidOmitPaths(model.fields), ...collectDomDetours(sf),
@@ -918,7 +919,7 @@ function inspectMethod(name, member, sf, from, ctx) {
     // Vorlagenbindung NICHT ab — genau das ist der Unterschied zwischen
     // „ein Agent kann das Feld schreiben" und „irgendeine Methode tut es".
     for (const field of writtenModelFields(fn, ctx.resolver, ctx.modelDecl)) out.written.add(field);
-    for (const source of stateOptionSources(fn.body, moduleLetNames(sf))) out.optionSources.push({ action: name, ...source });
+    for (const source of stateOptionSources(fn.body, moduleLetNames(sf), fn)) out.optionSources.push({ action: name, ...source });
 }
 
 /** Abschnitte unter `actions.<name>` — als Methode eines Teil-Viewmodels kollidierten sie mit dem Hilfeschlüssel. */
@@ -1374,9 +1375,14 @@ function expandDerivedNames(body, names) {
  *
  * @param {ts.Block|undefined} body
  * @param {Set<string>} [moduleLets]  auf Modulebene mit `let`/`var` deklarierte Namen
+ * @param {ts.FunctionLikeDeclaration} [fn]  die Methode; ihre Parameter und lokalen Deklarationen verdecken gleichnamige Modul-lets
+ *
+ * Blinde Flecken von `module_state_option_source` (falsch negativ, kein Befund):
+ * Array-Literal/Spread, `Object.keys(x)`-Wrapper über mehrere Ebenen und
+ * Aufrufe mit zwei oder mehr Argumenten werden nicht aufgelöst.
  * @returns {Array<{ arg: string, field?: string, moduleState?: string }>}
  */
-function stateOptionSources(body, moduleLets = new Set()) {
+function stateOptionSources(body, moduleLets = new Set(), fn = undefined) {
   if (!body || !ts.isBlock(body)) return [];
   const aliases = new Map();
   for (const statement of body.statements) {
@@ -1386,6 +1392,7 @@ function stateOptionSources(body, moduleLets = new Set()) {
       if (ts.isIdentifier(decl.name) && decl.initializer) aliases.set(decl.name.text, decl.initializer);
     }
   }
+  const shadowed = localBindingNames(fn, body);
   const out = [];
   forEachCall(body, call => {
     if (!ts.isIdentifier(call.expression)) return;
@@ -1396,8 +1403,24 @@ function stateOptionSources(body, moduleLets = new Set()) {
     const field = optionFieldOf(allowed, aliases, new Set());
     if (field) { out.push({ arg, field }); return; }
     const root = rootIdentifier(allowed, aliases, new Set());
-    if (root && moduleLets.has(root)) out.push({ arg, moduleState: root });
+    if (root && moduleLets.has(root) && !shadowed.has(root)) out.push({ arg, moduleState: root });
   });
+  return out;
+}
+
+/** Parameter- und lokale Deklarationsnamen (auch destrukturiert, auch in verschachtelten Blöcken) einer Methode. */
+function localBindingNames(fn, body) {
+  const out = new Set();
+  const addName = (name) => {
+    if (ts.isIdentifier(name)) { out.add(name.text); return; }
+    for (const el of name.elements) if (ts.isBindingElement(el)) addName(el.name);
+  };
+  for (const p of fn?.parameters ?? []) addName(p.name);
+  const walk = (n) => {
+    if ((ts.isVariableDeclaration(n) || ts.isParameter(n)) && n !== body) addName(n.name);
+    ts.forEachChild(n, walk);
+  };
+  walk(body);
   return out;
 }
 
