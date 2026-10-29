@@ -120,11 +120,13 @@ function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–';
  *
  * @typedef {object} Numeric
  * @property {number|null} statistic  Prüfgröße
- * @property {number|null} df  Freiheitsgrade, bei zwei Zählern der erste
+ * @property {number|null} df  Freiheitsgrade, bei F-Test und ANOVA der Zählerfreiheitsgrad
+ * @property {number|null} df2  Nennerfreiheitsgrad, null bei nur einem Freiheitsgrad
  * @property {number|null} p  p-Wert
  * @property {Array<number|null>|null} ci  Konfidenzintervall [unten, oben], null ohne Intervall
  * @property {'reject'|'keep'} decision  Entscheidung gegen α
  * @property {number|null} power  Teststärke als Anteil, nicht bei k
+ * @property {boolean} powerApprox  Teststärke ist eine Normalapproximation (Bonett)
  * @property {Warning[]} notes  Hinweise zum Intervall als Codes mit Zahlen
  */
 
@@ -777,7 +779,7 @@ const definition = {
        * Das Testergebnis als Zahlen.
        * @noagent Ableitung aus dem Testergebnis
        */
-      _numeric(r, alpha, target, power) {
+      _numeric(r, alpha, target, power, powerApprox = false) {
         const p = finiteOrNull(r.pValue);
         let ci = null;
         if (Array.isArray(r.ci)) ci = r.ci.map(finiteOrNull);
@@ -785,10 +787,12 @@ const definition = {
         return {
           statistic: finiteOrNull(r.statistic),
           df: finiteOrNull(r.df ?? r.df1),
+          df2: finiteOrNull(r.df2 ?? null),
           p,
           ci,
           decision: (r.reject ?? (p != null && p < alpha)) ? 'reject' : 'keep',
           power: finiteOrNull(power),
+          powerApprox,
           notes: this._ciNoteCodes(r, alpha, target),
         };
       },
@@ -1186,7 +1190,8 @@ const definition = {
 
         const powerCalc = this._powerCalc(d1, d2, target, alpha);
         const power = this._powerInfo(d1, d2, target, alpha, powerCalc);
-        power.note = (algo.id === 'bonett1' || algo.id === 'bonett2') ? _t('powerNormalApprox') : '';
+        const powerApprox = algo.id === 'bonett1' || algo.id === 'bonett2';
+        power.note = powerApprox ? _t('powerNormalApprox') : '';
 
         this.result = {
           isK: false,
@@ -1195,7 +1200,7 @@ const definition = {
           route: { name: algo.name, algoId: ALGO_LAB_IDS[algo.name] || '' },
           varEquality,
           main: this._mainResult(r, alpha, target),
-          numeric: this._numeric(r, alpha, target, powerCalc.curPow),
+          numeric: this._numeric(r, alpha, target, powerCalc.curPow, powerApprox),
           secondary,
           power,
           pairwise: null,

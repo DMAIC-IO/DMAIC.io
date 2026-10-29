@@ -7677,7 +7677,11 @@ export const AGENT_REGISTRY = {
               },
               "df": {
                 "type": "number|null",
-                "help": "Freiheitsgrade, bei zwei Zählern der erste"
+                "help": "Freiheitsgrade, bei F-Test und ANOVA der Zählerfreiheitsgrad"
+              },
+              "df2": {
+                "type": "number|null",
+                "help": "Nennerfreiheitsgrad, null bei nur einem Freiheitsgrad"
               },
               "p": {
                 "type": "number|null",
@@ -7694,6 +7698,10 @@ export const AGENT_REGISTRY = {
               "power": {
                 "type": "number|null",
                 "help": "Teststärke als Anteil, nicht bei k"
+              },
+              "powerApprox": {
+                "type": "boolean",
+                "help": "Teststärke ist eine Normalapproximation (Bonett)"
               },
               "notes": {
                 "type": "Warning[]",

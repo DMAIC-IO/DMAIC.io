@@ -9480,14 +9480,14 @@
           "table": "The cross table of the association test with observed and expected counts and each cell's contribution to χ²; empty for one and two proportions.",
           "noteDetails": "The notes as a code with the inserted numbers, in the same order as notes; the numbers are unrounded, for example the share for warnShareBelow5 as a value between 0 and 1.",
           "pValue": "The p-value the decision rests on, as a number: exact for one proportion, McNemar and the Poisson rate, z-test for two proportions and two rates, TOST for equivalence, Pearson chi-square for the association test. Null when it cannot be computed.",
-          "ci": "The confidence interval as [lower, upper] in the unit of the statistic, unrounded; a non-finite bound is null. Null for the association test, which has no interval. The number is always a fraction or rate, never percent."
+          "ci": "The confidence interval as [lower, upper] in the unit of the statistic, unrounded; a non-finite bound is null. Null for the association test, which has no interval. For equivalence it is the (1 − 2α) TOST interval. The number is always a fraction or rate, never percent."
         },
         "Stat": {
           "key": "Identifier of the figure row, unique within one test type; the same identifier can mean different things in different test types.",
           "labelKey": "Identifier of the row's label text; for Fisher's exact test of a 2 × 2 table in the association test there is one per direction (two-sided, one-sided greater, one-sided less); when comparing two proportions the Fisher row always carries the same label without a direction, even for a one-sided alternative.",
           "params": "Placeholders of the label: the confidence level in percent, the group name or the degrees of freedom; missing for rows without placeholders.",
           "value": "The value as formatted text, as in the table: four decimals, χ², G² and Yates with three, p-values below 0.0001 as “< 0.0001”, counts as “x / n”, confidence intervals as lower and upper bound; decimal point in both languages, “–” for a value that cannot be computed.",
-          "num": "The statistic as a number; null for counts and intervals — the interval is under ci. The number is always a fraction or rate, never percent."
+          "num": "The statistic as a number; null for counts and intervals — the interval is under ci. Shares and rates are given as fractions, never percent."
         },
         "Note": {
           "key": "Identifier of the note text shown below the decision.",
@@ -9495,7 +9495,7 @@
         },
         "Warning": {
           "code": "The id of the note, equal to the text key.",
-          "values": "The numbers the text inserts, by name; not computable is null."
+          "values": "The numbers behind the notice, by name, unrounded; shares as a value between 0 and 1; not computable is null."
         },
         "CrossTable": {
           "cols": "The column levels of the cross table; columns without observations are removed.",
@@ -9631,17 +9631,19 @@
           "pairwise": "The pairwise comparisons, only for at least three groups; empty for two groups and outside “k Samples”."
         },
         "Numeric": {
-          "statistic": "The test statistic of the main test (t, z, F, chi-square, H or U, depending on the procedure), row Statistic.",
-          "df": "The degrees of freedom of the main test; with two numerator-style degrees of freedom (ANOVA) the first. Null when the procedure has none.",
+          "statistic": "The test statistic of the main test (t, z, F, chi-square, H, U or W, depending on the procedure; W for Wilcoxon and Levene, plus the Bartlett statistic), row Statistic. Null when the procedure has none, for example the Bonett test.",
+          "df": "The degrees of freedom of the main test; for the F-test and ANOVA the numerator degrees of freedom, with the denominator in df2. Null when the procedure has none.",
+          "df2": "The denominator degrees of freedom of the main test for the F-test, Levene, ANOVA and Welch ANOVA; fractional for Welch. Null for procedures with a single degree of freedom.",
           "p": "The p-value of the main test as a number between 0 and 1, row p. On the rank routes (Wilcoxon, Mann-Whitney, Kruskal-Wallis) it is the p-value of the rank test.",
           "ci": "The confidence interval of the main test as [lower, upper]; for Mann-Whitney the Hodges-Lehmann shift interval. Null without an interval, a non-finite bound (one-sided test) is null.",
           "decision": "reject if the null hypothesis is rejected, otherwise keep. On the rank routes (Wilcoxon, Mann-Whitney, Kruskal-Wallis) the decision belongs to the rank test.",
           "power": "The power for the given data as a fraction between 0 and 1. Null for k samples, where it is not computed.",
+          "powerApprox": "True when the power is a normal approximation (Bonett tests), otherwise false; the interface then shows the approximation note.",
           "notes": "The notes on the interval as a code with the inserted numbers, for example ciDiffNote with lo and hi; for ciShiftTooSmall level and achieved are fractions, not percent."
         },
         "Warning": {
           "code": "The id of the note, equal to the text key.",
-          "values": "The numbers the text inserts, by name; not computable is null."
+          "values": "The numbers behind the notice, by name, unrounded; shares as a value between 0 and 1; not computable is null."
         },
         "Route": {
           "name": "Name of the chosen procedure as formatted text, always the English procedure name, such as “One-Way ANOVA” or “Welch t-Test”.",
@@ -13051,7 +13053,7 @@
         },
         "Warning": {
           "code": "The id of the warning, equal to the text key.",
-          "values": "The numbers the text inserts, by name; not computable is null."
+          "values": "The numbers behind the notice, by name, unrounded; shares as a value between 0 and 1; not computable is null."
         },
         "Family": {
           "name": "The distribution family: binomial, poisson or negbin; the row Family shows the translated name.",

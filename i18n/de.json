@@ -9484,14 +9484,14 @@
           "table": "Die Kreuztabelle des Zusammenhangstests mit beobachteten und erwarteten Anzahlen und dem Beitrag je Zelle zu χ²; bei einem und zwei Anteilen leer.",
           "noteDetails": "Die Hinweise als Code mit den eingesetzten Zahlen, in derselben Reihenfolge wie notes; die Zahlen sind ungerundet, zum Beispiel der Anteil bei warnShareBelow5 als Wert zwischen 0 und 1.",
           "pValue": "Der p-Wert, auf dem die Entscheidung beruht, als Zahl: exakt beim Ein-Stichproben-Anteil, bei McNemar und bei der Poisson-Rate, z-Test bei zwei Anteilen und zwei Raten, TOST bei Äquivalenz, Pearson-χ² beim Zusammenhangstest. Null, wenn er nicht berechenbar ist.",
-          "ci": "Das Konfidenzintervall als [untere, obere Grenze] in der Einheit der Kennzahl, ungerundet; eine nicht endliche Grenze ist null. Null beim Zusammenhangstest, der kein Intervall hat. Die Zahl ist immer ein Anteil oder eine Rate, nie Prozent."
+          "ci": "Das Konfidenzintervall als [untere, obere Grenze] in der Einheit der Kennzahl, ungerundet; eine nicht endliche Grenze ist null. Null beim Zusammenhangstest, der kein Intervall hat. Bei der Äquivalenz ist es das (1 − 2α)-TOST-Intervall. Die Zahl ist immer ein Anteil oder eine Rate, nie Prozent."
         },
         "Stat": {
           "key": "Kennung der Kennzahlzeile, innerhalb einer Testart eindeutig; dieselbe Kennung kann je Testart Verschiedenes bedeuten.",
           "labelKey": "Kennung des Beschriftungstextes der Zeile; beim Fisher-exakten Test einer 2 × 2-Tafel im Zusammenhangstest je Richtung eine eigene (beidseitig, einseitig größer, einseitig kleiner); beim Vergleich zweier Anteile trägt die Fisher-Zeile immer dieselbe Beschriftung ohne Richtung, auch bei einseitiger Alternative.",
           "params": "Platzhalter der Beschriftung: das Konfidenzniveau in Prozent, der Gruppenname oder die Freiheitsgrade; fehlt bei Zeilen ohne Platzhalter.",
           "value": "Der Wert als formatierter Text, wie in der Tabelle: vier Nachkommastellen, χ², G² und Yates mit drei, p-Werte unter 0,0001 als „< 0.0001“, Anzahlen als „x / n“, Konfidenzintervalle als Unter- und Obergrenze; Dezimalpunkt in beiden Sprachen, „–“ für einen nicht berechenbaren Wert.",
-          "num": "Die Kennzahl als Zahl; bei Zählern und Intervallen null — das Intervall steht unter ci. Die Zahl ist immer ein Anteil oder eine Rate, nie Prozent."
+          "num": "Die Kennzahl als Zahl; bei Zählern und Intervallen null — das Intervall steht unter ci. Anteile und Raten stehen als Bruch, nie in Prozent."
         },
         "Note": {
           "key": "Kennung des Hinweistextes, der unter der Entscheidung steht.",
@@ -9499,7 +9499,7 @@
         },
         "Warning": {
           "code": "Die Kennung des Hinweises, gleich dem Textschlüssel.",
-          "values": "Die Zahlen, die der Text einsetzt, je Name; nicht berechenbar ist null."
+          "values": "Die Zahlen hinter dem Hinweis, je Name, ungerundet; Anteile als Wert zwischen 0 und 1; nicht berechenbar ist null."
         },
         "CrossTable": {
           "cols": "Die Spaltenstufen der Kreuztabelle; Spalten ohne Beobachtungen sind entfernt.",
@@ -9635,17 +9635,19 @@
           "pairwise": "Die paarweisen Vergleiche, nur bei mindestens drei Gruppen; bei zwei Gruppen und außerhalb von „k Stichproben“ leer."
         },
         "Numeric": {
-          "statistic": "Die Prüfgröße des Haupttests (t, z, F, χ², H oder U, je nach Verfahren), Zeile Statistik.",
-          "df": "Die Freiheitsgrade des Haupttests; bei zwei Zählerfreiheitsgraden (ANOVA) der erste. Null, wenn das Verfahren keine hat.",
+          "statistic": "Die Prüfgröße des Haupttests (t, z, F, χ², H, U oder W, je nach Verfahren; W beim Wilcoxon-Test und bei Levene, dazu die Prüfgröße von Bartlett), Zeile Statistik. Null, wenn das Verfahren keine hat, etwa beim Bonett-Test.",
+          "df": "Die Freiheitsgrade des Haupttests; beim F-Test und bei der ANOVA der Zählerfreiheitsgrad, der Nennerfreiheitsgrad steht in df2. Null, wenn das Verfahren keine hat.",
+          "df2": "Der Nennerfreiheitsgrad des Haupttests beim F-Test, bei Levene, ANOVA und Welch-ANOVA, bei Welch fraktional. Null bei Verfahren mit nur einem Freiheitsgrad.",
           "p": "Der p-Wert des Haupttests als Zahl zwischen 0 und 1, Zeile p. Bei den Rangverfahren (Wilcoxon, Mann-Whitney, Kruskal-Wallis) ist es der p-Wert des Rangtests.",
           "ci": "Das Konfidenzintervall des Haupttests als [untere, obere Grenze]; beim Mann-Whitney-Test das Hodges-Lehmann-Intervall der Verschiebung. Null ohne Intervall, eine nicht endliche Grenze (einseitiger Test) ist null.",
           "decision": "reject, wenn die Nullhypothese verworfen wird, sonst keep. Bei den Rangverfahren (Wilcoxon, Mann-Whitney, Kruskal-Wallis) gilt die Entscheidung dem Rangtest.",
           "power": "Die Teststärke bei den vorhandenen Daten als Anteil zwischen 0 und 1. Null bei k Stichproben, dort wird sie nicht berechnet.",
+          "powerApprox": "Wahr, wenn die Teststärke eine Normalapproximation ist (Bonett-Tests), sonst falsch; die Oberfläche zeigt dann den Hinweis zur Näherung.",
           "notes": "Die Hinweise zum Intervall als Code mit den eingesetzten Zahlen, zum Beispiel ciDiffNote mit lo und hi; bei ciShiftTooSmall sind level und achieved Anteile, keine Prozent."
         },
         "Warning": {
           "code": "Die Kennung des Hinweises, gleich dem Textschlüssel.",
-          "values": "Die Zahlen, die der Text einsetzt, je Name; nicht berechenbar ist null."
+          "values": "Die Zahlen hinter dem Hinweis, je Name, ungerundet; Anteile als Wert zwischen 0 und 1; nicht berechenbar ist null."
         },
         "Route": {
           "name": "Name des gewählten Verfahrens als formatierter Text, immer der englische Verfahrensname, etwa „One-Way ANOVA“ oder „Welch t-Test“, auch in der deutschen Oberfläche.",
@@ -13055,7 +13057,7 @@
         },
         "Warning": {
           "code": "Die Kennung der Warnung, gleich dem Textschlüssel.",
-          "values": "Die Zahlen, die der Text einsetzt, je Name; nicht berechenbar ist null."
+          "values": "Die Zahlen hinter dem Hinweis, je Name, ungerundet; Anteile als Wert zwischen 0 und 1; nicht berechenbar ist null."
         },
         "Family": {
           "name": "Die Verteilungsfamilie: binomial, poisson oder negbin; die Zeile Verteilungsfamilie zeigt den übersetzten Namen.",
