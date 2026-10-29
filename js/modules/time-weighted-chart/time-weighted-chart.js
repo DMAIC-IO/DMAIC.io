@@ -337,19 +337,6 @@ const mod = createModule({
         return _t(`sectionParams_${  this.model.chartTypeId}`);
       },
 
-      // ── Nullable input display values ─────────────────────────
-      // Legacy stored null for empty; the input shows '' for null.
-
-
-      // ── Change handlers ───────────────────────────────────────
-
-
-
-
-
-
-
-
       // ── Analysis ─────────────────────────────────────────────
 
       async _runAnalysis() {
