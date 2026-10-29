@@ -28,6 +28,28 @@ export const CATEGORIES = Object.freeze(['variance', 'mean']);
 export const TEST_TYPES = Object.freeze(['one', 'two', 'paired', 'k']);
 /** @type {readonly ('two-sided'|'greater'|'less')[]} */
 export const DIRECTIONS = Object.freeze(['two-sided', 'greater', 'less']);
+
+/** Gültiger Bereich von α: mathematisch (0, 1) — Spec §3, Ausnahme ungeprüfter Grenzen. */
+export const ALPHA_BOUNDS = Object.freeze({ exclusiveMin: 0, exclusiveMax: 1 });
+/** Gültiger Bereich des Power-Ziels: der bisherige Klemmbereich, jetzt Prüfbereich (D1). */
+export const POWER_GOAL_BOUNDS = Object.freeze({ min: 0.5, max: 0.99 });
+
+/**
+ * Eine gespeicherte Zahl (oder ein alter Zahlentext) im Bereich, sonst null.
+ * @param {any} v
+ * @param {{ min?: number, max?: number, exclusiveMin?: number, exclusiveMax?: number }} b
+ * @returns {number|null}
+ */
+function numberIn(v, b) {
+  const n = typeof v === 'number' ? v
+    : (typeof v === 'string' && v.trim() !== '' ? Number(v) : NaN);
+  if (!Number.isFinite(n)) return null;
+  if (b.min !== undefined && n < b.min) return null;
+  if (b.max !== undefined && n > b.max) return null;
+  if (b.exclusiveMin !== undefined && n <= b.exclusiveMin) return null;
+  if (b.exclusiveMax !== undefined && n >= b.exclusiveMax) return null;
+  return n;
+}
 /** @type {readonly ('variance'|'stddev')[]} */
 export const TARGET_TYPES = Object.freeze(['variance', 'stddev']);
 
@@ -89,17 +111,6 @@ export class State {
   }
 
   /**
-   * Set the power goal, clamped to [0.5, 0.99]. Non-numeric input is ignored
-   * (keeps the previous value), mirroring the legacy input handler.
-   * @param {number} v
-   */
-  setPowerGoal(v) {
-    const n = parseFloat(v);
-    if (isNaN(n)) return;
-    this.powerGoal = Math.min(0.99, Math.max(0.5, n));
-  }
-
-  /**
    * Set the category. There is no paired variance test, so a paired
    * configuration falls back to two samples when switching to variance.
    * @param {'variance'|'mean'} cat
@@ -154,8 +165,8 @@ export class State {
     if (CATEGORIES.includes(d.category)) s.category = d.category;
     if (TEST_TYPES.includes(d.testType)) s.testType = d.testType;
     if (DIRECTIONS.includes(d.direction)) s.direction = d.direction;
-    if (d.alpha != null && isFinite(d.alpha)) s.alpha = d.alpha;
-    if (d.powerGoal != null && isFinite(d.powerGoal)) s.powerGoal = d.powerGoal;
+    s.alpha = numberIn(d.alpha, ALPHA_BOUNDS) ?? s.alpha;
+    s.powerGoal = numberIn(d.powerGoal, POWER_GOAL_BOUNDS) ?? s.powerGoal;
     if (typeof d.targetValue === 'string') s.targetValue = d.targetValue;
     else if (typeof d.targetValue === 'number') s.targetValue = String(d.targetValue);
     if (TARGET_TYPES.includes(d.targetType)) s.targetType = d.targetType;

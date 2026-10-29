@@ -220,27 +220,29 @@ suite('Hypothesis Test Model — resolveTarget', () => {
   });
 });
 
-suite('Hypothesis Test Model — setPowerGoal clamp', () => {
-  test('clamps below 0.5 to 0.5', () => {
-    const s = new State();
-    s.setPowerGoal(0.1);
-    assertEqual(s.powerGoal, 0.5);
+suite('Hypothesis Test Model — fromJSON alpha/powerGoal', () => {
+  test('leerer String bleibt null (wird später aus den Einstellungen geseedet)', () => {
+    const s = State.fromJSON({ alpha: '', powerGoal: '' });
+    assertEqual(s.alpha, null);
+    assertEqual(s.powerGoal, null);
   });
-  test('clamps above 0.99 to 0.99', () => {
-    const s = new State();
-    s.setPowerGoal(1.5);
-    assertEqual(s.powerGoal, 0.99);
+  test('Zahl im Bereich wird übernommen', () => {
+    const s = State.fromJSON({ alpha: 0.01, powerGoal: 0.9 });
+    assertEqual(s.alpha, 0.01);
+    assertEqual(s.powerGoal, 0.9);
   });
-  test('keeps a valid value', () => {
-    const s = new State();
-    s.setPowerGoal(0.8);
+  test('alter Zahlentext im Bereich wird als Zahl übernommen', () => {
+    const s = State.fromJSON({ alpha: '0.05', powerGoal: '0.8' });
+    assertEqual(s.alpha, 0.05);
     assertEqual(s.powerGoal, 0.8);
   });
-  test('ignores non-numeric, keeps previous', () => {
-    const s = new State();
-    s.powerGoal = 0.8;
-    s.setPowerGoal(NaN);
-    assertEqual(s.powerGoal, 0.8);
+  test('Werte außerhalb des Bereichs bleiben null', () => {
+    const s = State.fromJSON({ alpha: 1.5, powerGoal: 0.2 });
+    assertEqual(s.alpha, null);
+    assertEqual(s.powerGoal, null);
+  });
+  test('setPowerGoal-Klemmung gibt es nicht mehr', () => {
+    assertEqual(typeof new State().setPowerGoal, 'undefined');
   });
 });
 
