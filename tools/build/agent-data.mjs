@@ -1380,6 +1380,8 @@ function expandDerivedNames(body, names) {
  * Blinde Flecken von `module_state_option_source` (falsch negativ, kein Befund):
  * Array-Literal/Spread, `Object.keys(x)`-Wrapper über mehrere Ebenen und
  * Aufrufe mit zwei oder mehr Argumenten werden nicht aufgelöst.
+ * `localBindingNames` läuft auch durch verschachtelte Funktionen, eine innere
+ * Bindung kann daher eine äußere Verwendung verdecken (falsch negativ).
  * @returns {Array<{ arg: string, field?: string, moduleState?: string }>}
  */
 function stateOptionSources(body, moduleLets = new Set(), fn = undefined) {
