@@ -85,9 +85,10 @@ function keysOf(raw, body, sf, ctx, depth) {
 
   if (ts.isCallExpression(e)) {
     const callee = strip(e.expression);
-    // x.toJSON() / x?.toJSON?.()
+    // this.model.toJSON() / module.model.toJSON() (auch über einen lokalen Alias);
+    // jeder andere Empfänger liefert nicht die persistierten Schlüssel.
     if (ts.isPropertyAccessExpression(callee) && callee.name.text === 'toJSON' && e.arguments.length === 0) {
-      return ctx.toJSONKeys();
+      return isModelReceiver(callee.expression, body) ? ctx.toJSONKeys() : null;
     }
     // JSON.parse(JSON.stringify(x))
     if (ts.isPropertyAccessExpression(callee) && callee.getText(sf) === 'JSON.parse' && e.arguments.length === 1) {
@@ -121,6 +122,27 @@ function keysOf(raw, body, sf, ctx, depth) {
 
   if (ts.isIdentifier(e) && ts.isBlock(body)) return localKeys(e.text, body, sf, ctx, depth);
   return null;
+}
+
+/** `this.model`, `module.model` oder ein lokaler `const`-Alias darauf. */
+function isModelReceiver(raw, body) {
+  const e = strip(raw);
+  if (ts.isPropertyAccessExpression(e) && e.name.text === 'model') {
+    const base = strip(e.expression);
+    return base.kind === ts.SyntaxKind.ThisKeyword || (ts.isIdentifier(base) && base.text === 'module');
+  }
+  if (ts.isIdentifier(e) && body && ts.isBlock(body)) {
+    for (const st of body.statements) {
+      if (!ts.isVariableStatement(st) || !(st.declarationList.flags & ts.NodeFlags.Const)) continue;
+      for (const d of st.declarationList.declarations) {
+        if (ts.isIdentifier(d.name) && d.name.text === e.text && d.initializer) {
+          const init = strip(d.initializer);
+          return ts.isPropertyAccessExpression(init) && isModelReceiver(init, null);
+        }
+      }
+    }
+  }
+  return false;
 }
 
 /** Eine lokale `const` im selben Körper: Variable oder Rest einer Destrukturierung. */

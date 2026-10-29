@@ -57,6 +57,22 @@ test('Mixin-Form this.model?.toJSON?.() ?? {} nimmt die persistierten Schlüssel
   const { resolver, sf } = setup({ 'js/modules/foo/foo.js': vm(`return readAgentState(module.id, this.model?.toJSON?.() ?? {}, options);`) });
   assert.deepEqual(readReturnKeys(resolver, sf, TOJSON), ['title', 'items', 'exampleWorksheetId']);
 });
+test('Spread von einem fremden Empfänger zählt nicht', () => {
+  const { resolver, sf } = setup({ 'js/modules/foo/foo.js': vm(`return readAgentState('foo', { ...other.toJSON(), extra: 1 }, options);`) });
+  assert.equal(readReturnKeys(resolver, sf, TOJSON), null);
+});
+test('Spread über einen lokalen Alias auf this.model zählt weiter', () => {
+  const { resolver, sf } = setup({ 'js/modules/foo/foo.js': vm(`const m = this.model; return readAgentState('foo', { ...m.toJSON(), extra: 1 }, options);`) });
+  assert.deepEqual(readReturnKeys(resolver, sf, TOJSON), ['title', 'items', 'exampleWorksheetId', 'extra']);
+});
+test('module.model.toJSON() zählt', () => {
+  const { resolver, sf } = setup({ 'js/modules/foo/foo.js': vm(`return readAgentState('foo', { ...module.model.toJSON() }, options);`) });
+  assert.deepEqual(readReturnKeys(resolver, sf, TOJSON), ['title', 'items', 'exampleWorksheetId']);
+});
+test('zurückgegebener, nicht erklärter Schlüssel bleibt erlaubt', () => {
+  const { resolver, sf } = setup({ 'js/modules/foo/foo.js': vm(`return readAgentState('foo', { ...this.model.toJSON(), undeclaredExtra: 1 }, options);`) });
+  assert.ok(readReturnKeys(resolver, sf, TOJSON).includes('undeclaredExtra'));
+});
 test('nicht auflösbar → null', () => {
   const { resolver, sf } = setup({ 'js/modules/foo/foo.js': vm(`return readAgentState('foo', build(), options);`) });
   assert.equal(readReturnKeys(resolver, sf, TOJSON), null);
