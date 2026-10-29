@@ -21753,6 +21753,36 @@ export const AGENT_REGISTRY = {
             "help": "empfohlene Standardklassen, 1 bis 5"
           }
         }
+      },
+      "standards": {
+        "type": "StandardEntry[]",
+        "help": "alle 78 Standardlösungen, Titel und Auslöser in der aktiven Sprache",
+        "bulk": true,
+        "bulkKind": "table",
+        "derived": true,
+        "keysOf": "StandardEntry",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": "Nummer der Standardlösung, Klasse.Gruppe.Lösung"
+          },
+          "class": {
+            "type": "number",
+            "help": "Standardklasse, 1 bis 5"
+          },
+          "group": {
+            "type": "string",
+            "help": "Gruppe, Klasse.Gruppe"
+          },
+          "title": {
+            "type": "string",
+            "help": "Titel in der aktiven Sprache"
+          },
+          "trigger": {
+            "type": "string",
+            "help": "wann die Lösung greift, in der aktiven Sprache"
+          }
+        }
       }
     }
   },

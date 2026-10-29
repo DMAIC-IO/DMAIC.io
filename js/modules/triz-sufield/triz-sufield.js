@@ -16,27 +16,20 @@ const DATA_PATH = 'js/modules/triz-sufield/data/standards.json';
 let _dataPromise = null;
 
 /**
- * Die ids und Klassennummern der geladenen Standardtabelle — feste
- * Tabellendaten, kein Zustand, darum auf Modulebene und nicht je Instanz.
- *
- * Sie sind gefüllt, bevor ein Aufruf sie sehen kann: der `init`-Überbau am
- * Ende dieser Datei wartet `loadData()` ab, BEVOR das Viewmodel entsteht.
- * Ohne dieses Warten bot die Agentenfläche `setClassExpanded`,
- * `setStandardNote` und `setStandardSelected` in dem Fenster zwischen dem
- * Einhängen und dem Eintreffen der Datei mit einer LEEREN Wertemenge an —
- * die Meldung `unknown cls 4; available:` behauptete dem Aufrufer gegenüber,
- * es gebe keine einzige Standardklasse.
+ * Die Tabelle der 78 Standardlösungen: Tabellendaten, kein Zustand, darum
+ * auf Modulebene. Einmal geladen und eingefroren; `base.init` wartet das
+ * Laden ab, BEVOR das Viewmodel entsteht — jeder Agentenaufruf sieht die
+ * volle Tabelle. Gelesen wird sie nur über die `@noagent`-Methode
+ * `standards()`, damit Prüfung und Lesefeld dieselbe Quelle haben.
  */
-let _standardIds = [];
-let _classNumbers = [];
+const STANDARD_TABLE = { entries: Object.freeze([]) };
 
 function loadData() {
   if (_dataPromise) return _dataPromise;
   _dataPromise = fetch(DATA_PATH, { cache: 'no-cache' })
     .then(r => r.json())
     .then(d => {
-      _standardIds = d.standards.map(s => String(s.id));
-      _classNumbers = [...new Set(d.standards.map(s => Number(s.class)))];
+      STANDARD_TABLE.entries = Object.freeze(d.standards.map(x => Object.freeze({ ...x })));
       return d.standards;
     });
   return _dataPromise;
@@ -64,6 +57,18 @@ function el(tag, className, text) {
  */
 
 /**
+ * Eine Standardlösung, wie `read().standards` sie zeigt. Sätze je
+ * Eigenschaft unter `types.StandardEntry.<name>`.
+ *
+ * @typedef {object} StandardEntry
+ * @property {string} id  Nummer der Standardlösung, Klasse.Gruppe.Lösung
+ * @property {number} class  Standardklasse, 1 bis 5
+ * @property {string} group  Gruppe, Klasse.Gruppe
+ * @property {string} title  Titel in der aktiven Sprache
+ * @property {string} trigger  wann die Lösung greift, in der aktiven Sprache
+ */
+
+/**
  * @typedef {object} AgentRead
  * @property {string} s1  der Stoff S1
  * @property {string} s2  der Stoff S2
@@ -75,6 +80,7 @@ function el(tag, className, text) {
  * @property {string} filterMode  Listenfilter, auto oder all
  * @property {number[]} expandedClasses  Nummern der aufgeklappten Standardklassen
  * @property {Diagnosis} diagnosis  die aus den vier Werten abgeleitete Diagnose
+ * @property {StandardEntry[]} standards  [bulk] alle 78 Standardlösungen, Titel und Auslöser in der aktiven Sprache
  */
 const base = createModule({
   config: {
@@ -97,15 +103,27 @@ const base = createModule({
        */
       read(options) {
         const m = this.model;
+        const lang = module._context.language;
         return readAgentState('triz-sufield', {
           ...m.toJSON(),
           diagnosis: diagnose(m.s1, m.s2, m.field, m.link),
+          standards: this.standards().map((x) => {
+            const loc = x[lang] || x.en;
+            return { id: x.id, class: x.class, group: x.group, title: loc.title, trigger: loc.trigger };
+          }),
         }, options);
       },
 
+      /**
+       * @noagent Rohdaten der Standardtabelle; Quelle für die Prüfungen und
+       *   für das Lesefeld `standards`.
+       * @returns {ReadonlyArray<object>}
+       */
+      standards() { return STANDARD_TABLE.entries; },
+
       FIELDS: [...FIELDS],
       LINKS: [...LINKS],
-      standards: null,
+      standardsByClass: null,
       classList: [],
 
       // ── Diagnosis ──
@@ -209,7 +227,7 @@ const base = createModule({
 
       // ── Recompute classList from model state ──
       _recompute() {
-        if (!this.standards || this.classList.length === 0) return;
+        if (!this.standardsByClass || this.classList.length === 0) return;
         const s = this.model;
         const diag = diagnose(s.s1, s.s2, s.field, s.link);
         const suggested = diag.suggestedClasses;
@@ -246,7 +264,7 @@ const base = createModule({
        */
       setClassExpanded(cls, expanded) {
         const numKey = requireNumber('cls', cls, { integer: true });
-        requireKnownId('cls', numKey, _classNumbers);
+        requireKnownId('cls', numKey, [...new Set(this.standards().map((x) => x.class))]);
         requireBoolean('expanded', expanded);
         const arr = this.model.expandedClasses;
         const idx = arr.indexOf(numKey);
@@ -363,7 +381,7 @@ const base = createModule({
        *   `text` keine Zeichenkette ist
        */
       setStandardNote(stdId, text) {
-        requireKnownId('stdId', requireText('stdId', stdId), _standardIds);
+        requireKnownId('stdId', requireText('stdId', stdId), this.standards().map((x) => x.id));
         const value = requireText('text', text);
         if (value) this.model.notes[stdId] = value;
         else delete this.model.notes[stdId];
@@ -379,7 +397,7 @@ const base = createModule({
        * @throws {Error} wenn keine Standardlösung diese id trägt oder selected weder true noch false ist
        */
       setStandardSelected(stdId, selected) {
-        requireKnownId('stdId', requireText('stdId', stdId), _standardIds);
+        requireKnownId('stdId', requireText('stdId', stdId), this.standards().map((x) => x.id));
         requireBoolean('selected', selected);
         if (selected) this.model.selected[stdId] = true;
         else delete this.model.selected[stdId];
@@ -451,7 +469,7 @@ const base = createModule({
             if (!mapped[key]) mapped[key] = [];
             mapped[key].push(s);
           }
-          this.standards = mapped;
+          this.standardsByClass = mapped;
           if (this.model.expandedClasses.length === 0) {
             const model = this.model;
             const diag = diagnose(model.s1, model.s2, model.field, model.link);

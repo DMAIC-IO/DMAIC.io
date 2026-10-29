@@ -14979,10 +14979,10 @@
           "help": "Die Problemnotiz zum Stoff-Feld-Modell."
         },
         "notes": {
-          "help": "Je vermerkter Standardlösung eine Notiz, adressiert als notes[id] mit der id in der Form klasse.gruppe.nummer (zum Beispiel 2.2.5). Nur Standardlösungen mit Notiz stehen darin."
+          "help": "Je vermerkter Standardlösung eine Notiz, adressiert als notes[id] mit der id in der Form klasse.gruppe.nummer (zum Beispiel 2.2.5). Nur Standardlösungen mit Notiz stehen darin. Die gültigen ids stehen unter standards."
         },
         "selected": {
-          "help": "Die vorgemerkten Standardlösungen, adressiert als selected[id] mit dem Wert true. Nur vorgemerkte stehen darin."
+          "help": "Die vorgemerkten Standardlösungen, adressiert als selected[id] mit dem Wert true. Nur vorgemerkte stehen darin. Die gültigen ids stehen unter standards."
         },
         "filterMode": {
           "help": "Der Listenfilter: auto zeigt nur die zur Diagnose passenden Klassen, all alle fünf."
@@ -14992,12 +14992,22 @@
         },
         "diagnosis": {
           "help": "Die aus S1, S2, Feldart und Verknüpfung abgeleitete Diagnose mit situation und suggestedClasses. Sie wird nicht gespeichert."
+        },
+        "standards": {
+          "help": "Alle 78 Standardlösungen der Stoff-Feld-Analyse, unabhängig vom Listenfilter, mit Titel und Auslöser in der eingestellten Sprache. Ihre id ist der Wert, den setStandardNote und setStandardSelected erwarten; class ist der Wert für setClassExpanded. Ein Massenfeld: Zeilen über rows abrufen."
         }
       },
       "types": {
         "Diagnosis": {
           "situation": "Die Lage des Modells, aus Stoffen, Feldart und Verknüpfung abgeleitet und nicht gespeichert: partial (S1 oder S2 fehlt), incomplete (kein Feld oder Verknüpfung fehlend), complete-useful (vollständig, Wirkung nützlich), complete-insufficient (vollständig, Wirkung unzureichend), complete-excessive (vollständig, Wirkung exzessiv), complete-harmful (vollständig, Wirkung schädlich). Die Zeile „Diagnose“ zeigt sie als Satz.",
           "suggestedClasses": "Die Nummern der empfohlenen Standardklassen, 1 bis 5: 1 bei partial, incomplete und complete-harmful, 2 bei complete-insufficient, complete-excessive und complete-useful, dazu 3 bei nützlicher, 5 bei exzessiver und schädlicher Wirkung. Die Zeile „Diagnose“ zeigt sie unter „Empfohlene Klassen“."
+        },
+        "StandardEntry": {
+          "id": "Die Nummer der Standardlösung in der Form Klasse.Gruppe.Lösung, zum Beispiel 2.2.5.",
+          "class": "Die Standardklasse von 1 bis 5.",
+          "group": "Die Gruppe in der Form Klasse.Gruppe, zum Beispiel 2.2.",
+          "title": "Der Titel der Standardlösung in der eingestellten Sprache.",
+          "trigger": "Wann die Standardlösung greift, in der eingestellten Sprache."
         }
       },
       "subtitle": "Modelliere die Wechselwirkung als Substanz-Substanz-Feld-Dreieck und nutze die Diagnose, um die passenden Standardlösungen zu finden.",

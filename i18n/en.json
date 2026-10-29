@@ -14975,10 +14975,10 @@
           "help": "The problem note for the substance-field model."
         },
         "notes": {
-          "help": "One note per annotated standard solution, addressed as notes[id] with the id in the form class.group.number (for example 2.2.5). Only standard solutions carrying a note appear."
+          "help": "One note per annotated standard solution, addressed as notes[id] with the id in the form class.group.number (for example 2.2.5). Only standard solutions carrying a note appear. Valid ids are listed under standards."
         },
         "selected": {
-          "help": "The standard solutions marked as under consideration, addressed as selected[id] with the value true. Only marked ones appear."
+          "help": "The standard solutions marked as under consideration, addressed as selected[id] with the value true. Only marked ones appear. Valid ids are listed under standards."
         },
         "filterMode": {
           "help": "The list filter: auto shows only the classes matching the diagnosis, all shows all five."
@@ -14988,12 +14988,22 @@
         },
         "diagnosis": {
           "help": "The diagnosis derived from S1, S2, field type and link, with situation and suggestedClasses. It is not stored."
+        },
+        "standards": {
+          "help": "All 78 standard solutions of the substance-field analysis, regardless of the list filter, with title and trigger in the current language. Their id is the value setStandardNote and setStandardSelected expect; class is the value for setClassExpanded. A bulk field: fetch rows via rows."
         }
       },
       "types": {
         "Diagnosis": {
           "situation": "The state of the model, derived from the substances, field type and link and not stored: partial (S1 or S2 missing), incomplete (no field or link missing), complete-useful (complete, useful action), complete-insufficient (complete, insufficient action), complete-excessive (complete, excessive action), complete-harmful (complete, harmful action). The “Diagnosis” line shows it as a sentence.",
           "suggestedClasses": "The numbers of the suggested standard classes, 1 to 5: 1 for partial, incomplete and complete-harmful, 2 for complete-insufficient, complete-excessive and complete-useful, plus 3 for a useful action and 5 for an excessive or harmful one. The “Diagnosis” line shows them under “Suggested classes”."
+        },
+        "StandardEntry": {
+          "id": "The number of the standard solution in the form class.group.solution, for example 2.2.5.",
+          "class": "The standard class from 1 to 5.",
+          "group": "The group in the form class.group, for example 2.2.",
+          "title": "The title of the standard solution in the current language.",
+          "trigger": "When the standard solution applies, in the current language."
         }
       },
       "subtitle": "Model the interaction as a substance-substance-field triangle and use the diagnosis to find the matching standard solutions.",

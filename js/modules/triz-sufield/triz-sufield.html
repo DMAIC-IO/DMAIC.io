@@ -117,8 +117,8 @@
     </section>
 
     <!-- ── Standards ── -->
-    <p class="triz-sf__loading" x-show="!standards" x-text="t('loading')"></p>
-    <section class="triz-sf__standards" x-show="standards">
+    <p class="triz-sf__loading" x-show="!standardsByClass" x-text="t('loading')"></p>
+    <section class="triz-sf__standards" x-show="standardsByClass">
       <template x-for="cls in classList" :key="cls.key">
         <details class="triz-sf__class"
           x-show="cls.visible"
