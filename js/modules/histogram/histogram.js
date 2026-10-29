@@ -21,7 +21,8 @@
 
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireNumber, requireConfLevel } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { paramInputMixin, numberCheck } from '../../core/param-input.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import { datasetSlotColumns, requireDatasetRows } from '../../core/agent/agent-datasets.js';
 import { State, BIN_MODES } from './histogram-model.js';
@@ -60,11 +61,16 @@ function requireBinWidth(value) {
   return requireNumber('value', value, { exclusiveMin: 0 });
 }
 
+/** Zahlenoption Konfidenzniveau (einzige Quelle für Prüfer und Eingabefeld). */
+const PARAM_SPEC = {
+  confLevel: { exclusiveMin: 0, exclusiveMax: 100, step: 0.1 },
+};
+
 /** Je Option ihr Prüfer; gibt den Wert zurück, den das Model hält. */
 const PARAM_CHECKS = {
   binMode: (v) => { requireEnum('value', v, BIN_MODES); return v; },
   binWidth: requireBinWidth,
-  confLevel: requireConfLevel,
+  confLevel: numberCheck(PARAM_SPEC.confLevel),
 };
 
 /**
@@ -83,9 +89,15 @@ export function histogramData(module, _t) {
   let auto = { title: '', xLabel: '', yLabel: '' };
 
   return {
+    ...paramInputMixin({
+      specs: PARAM_SPEC,
+      checks: PARAM_CHECKS,
+      t: _t,
+      lang: () => module._context?.i18n?.getLanguage?.() ?? 'de',
+    }),
+
     // ── Input mirror values (kept in sync with model in init) ──
     binWidthInput: '',
-    confLevelInput: '95',
 
     // ── Transient render state (never persisted) ──────────────
     _picker: null,
@@ -171,7 +183,6 @@ export function histogramData(module, _t) {
       setAtPath(this.model, key, PARAM_CHECKS[key](value));
       if (key === 'binMode' && !this.isManualBins()) this.model.binWidth = null;
       this.binWidthInput = this.model.binWidth != null ? String(this.model.binWidth) : '';
-      this.confLevelInput = String(this.model.confLevel);
       if (key === 'confLevel') this._renderStats();
       else this._autoPlot();
     },
@@ -205,17 +216,11 @@ export function histogramData(module, _t) {
     _getColumnValues(ref) { return getColumnValues(module._context?.stateManager, ref); },
     _getColumnName(ref) { return getColumnName(module._context?.stateManager, ref); },
 
-    // ── Input handlers (bin width / conf level) ───────────────
+    // ── Input handlers (bin width) ────────────────────────────
     /** @noagent DOM event handler; the agent uses setParam() */
     binWidthChanged(event) {
       const v = parseFloat(event.target.value);
       this.setParam('binWidth', v > 0 ? v : null);
-    },
-    /** @noagent DOM event handler; the agent uses setParam() */
-    confLevelChanged(event) {
-      const v = parseFloat(event.target.value);
-      if (v > 0 && v < 100) this.setParam('confLevel', v);
-      else { this.confLevelInput = String(this.model.confLevel); this._renderStats(); }
     },
 
     // ── Picker ────────────────────────────────────────────────
@@ -467,7 +472,6 @@ export function histogramData(module, _t) {
     init() {
       // Sync the input mirrors from the (possibly restored) model.
       this.binWidthInput = this.model.binWidth != null ? String(this.model.binWidth) : '';
-      this.confLevelInput = String(this.model.confLevel);
 
       this._createPicker();
 

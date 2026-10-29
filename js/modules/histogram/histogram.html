@@ -25,8 +25,9 @@
     <div class="histogram__options">
       <div class="field-group">
         <label data-help-key="modules.histogram.types.Params.confLevel" x-text="t('confLevel')"></label>
-        <input type="number" class="field field--num" data-ref="conf-level" min="50" max="99.9"
-               x-model="confLevelInput" @change="confLevelChanged($event)">
+        <input type="number" class="field field--num" data-ref="conf-level"
+               :value="paramValue('confLevel')" @change="onParamInput('confLevel', $event)"
+               :min="paramMin('confLevel')" :max="paramMax('confLevel')" :step="paramStep('confLevel')">
       </div>
     </div>
 

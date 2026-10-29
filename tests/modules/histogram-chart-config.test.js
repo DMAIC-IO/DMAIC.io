@@ -144,7 +144,9 @@ suite('histogram module — error state', () => {
     assertEqual(q(container, 'stats-panel').children.length, 0);
     assertEqual(q(container, 'chart-area').style.display, 'none');
     assertEqual(q(container, 'placeholder').style.display, '');
-    c.confLevelChanged({ target: { value: '90' } });
+    const field = document.createElement('input');
+    field.value = '90';
+    c.onParamInput('confLevel', { target: field });
     assertEqual(q(container, 'stats-panel').children.length, 0);
     c.model.showStats = true;
     c._renderStats();
