@@ -24,7 +24,7 @@
 import { toNum } from '../../core/chart/chart-data-prep.js';
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireKnownId, requireNumericText } from '../../core/agent/agent-argcheck.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { State, K_OPTIONS, VERDICT_BASES } from './msa-typ2-model.js';
 import { validate, analyze } from '../../engines/msa-typ2-engine.js';
@@ -40,14 +40,14 @@ function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–';
 /** Die sechs Parameter, die `setParam` annimmt (Reihenfolge wie im Model). */
 const PARAM_KEYS = ['lsl', 'usl', 'alpha', 'k', 'verdictBasis', 'sigmaHist'];
 
-/** Je Parameter sein Prüfer; freie Texte nehmen nur eine Zeichenkette an. */
+/** Je Parameter sein Prüfer; er gibt den Wert in der Form des Models zurück (Zahlen als Text). */
 const PARAM_CHECKS = {
-  lsl: (v) => requireText('value', v),
-  usl: (v) => requireText('value', v),
-  alpha: (v) => requireText('value', v),
-  k: (v) => requireEnum('value', v, K_OPTIONS),
+  lsl: (v) => requireNumericText('value', v),
+  usl: (v) => requireNumericText('value', v),
+  alpha: (v) => requireNumericText('value', v),
+  k: (v) => requireEnum('value', v, K_OPTIONS, { numeric: true }),
   verdictBasis: (v) => requireEnum('value', v, VERDICT_BASES),
-  sigmaHist: (v) => requireText('value', v),
+  sigmaHist: (v) => requireNumericText('value', v),
 };
 
 /** Die Spalten-Slots dieses Moduls: Prüfeinheit, Prüfer, Messwert. */
@@ -262,14 +262,13 @@ const mod = createModule({
        * Einen Parameter setzen.
        * @agent
        * @param {keyof Params} key welcher Parameter
-       * @param {string} value der Wert als Text, wie er eingegeben würde; Wertebereich je Schlüssel siehe `Params`
+       * @param {string|number} value der Wert als Text oder Zahl (abgelegt als Text); Wertebereich je Schlüssel siehe `Params`
        * @returns {void}
        * @throws {Error} wenn `key` kein Parameter dieses Moduls ist
        */
       setParam(key, value) {
         requireEnum('key', key, PARAM_KEYS);
-        PARAM_CHECKS[key](value);
-        this.model.params[key] = value;
+        this.model.params[key] = PARAM_CHECKS[key](value);
         this.scheduleAnalysis();
       },
 

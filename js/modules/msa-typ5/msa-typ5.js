@@ -19,7 +19,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireKnownId, requireNumericText } from '../../core/agent/agent-argcheck.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { State, TYPE_OPTIONS, WEIGHTS_OPTIONS, RULESET_OPTIONS, LAYOUT_OPTIONS, ALPHA_OPTIONS, formatP, formatNum, formatPct } from './msa-typ5-model.js';
 import { analyze, kappaLevel, ratedShare, stackWide } from '../../engines/msa-typ5-engine.js';
@@ -85,14 +85,14 @@ function kappaClass(k, ruleSet) {
 /** Die sieben Parameter, die `setParam` kennt. */
 const PARAM_KEYS = ['type', 'weights', 'layout', 'trials', 'ruleSet', 'alpha', 'positiveLevel'];
 
-/** Je Parameter sein Prüfer; `trials` ist freier Text. */
+/** Je Parameter sein Prüfer; er gibt den Wert in der Form des Models zurück (`trials` als Text). */
 const PARAM_CHECKS = {
   type: (v) => requireEnum('value', v, TYPE_OPTIONS),
   weights: (v) => requireEnum('value', v, WEIGHTS_OPTIONS),
   layout: (v) => requireEnum('value', v, LAYOUT_OPTIONS),
-  trials: (v) => requireText('value', v),
+  trials: (v) => requireNumericText('value', v),
   ruleSet: (v) => requireEnum('value', v, RULESET_OPTIONS),
-  alpha: (v) => requireEnum('value', v, ALPHA_OPTIONS),
+  alpha: (v) => requireEnum('value', v, ALPHA_OPTIONS, { numeric: true }),
   positiveLevel: null, // Wertemenge ist zustandsabhängig: setParam prüft gegen detectedLevels()
 };
 
@@ -418,18 +418,19 @@ const mod = createModule({
        * Einen Parameter setzen. Ein neuer Merkmalstyp setzt die positive Stufe zurück.
        * @agent
        * @param {keyof Params} key welcher Parameter; die im Zustand zulässigen nennt `activeParams`
-       * @param {string} value der Wert als Text; Wertebereich je Schlüssel siehe `Params`, positiveLevel eine der Stufen aus `detectedLevels`
+       * @param {string|number} value der Wert als Text oder Zahl (abgelegt als Text); Wertebereich je Schlüssel siehe `Params`, positiveLevel eine der Stufen aus `detectedLevels`
        * @returns {void}
        * @throws {Error} wenn `key` im aktuellen Zustand kein Parameter ist oder `value` nicht zulässig
        */
       setParam(key, value) {
         requireEnum('key', key, PARAM_KEYS);
         requireEnum('key', key, this.activeParams());
-        if (key === 'positiveLevel') requireEnum('value', value, this.detectedLevels());
-        else PARAM_CHECKS[key](value);
+        const clean = key === 'positiveLevel'
+          ? requireEnum('value', value, this.detectedLevels())
+          : PARAM_CHECKS[key](value);
         const old = this.model.params[key];
-        this.model.params[key] = value;
-        if (key === 'type' && value !== old) this.model.params.positiveLevel = null;
+        this.model.params[key] = clean;
+        if (key === 'type' && clean !== old) this.model.params.positiveLevel = null;
         this.scheduleAnalysis();
       },
 

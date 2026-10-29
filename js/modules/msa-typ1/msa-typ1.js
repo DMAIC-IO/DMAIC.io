@@ -21,7 +21,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireKnownId, requireNumericText, requireText } from '../../core/agent/agent-argcheck.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { State } from './msa-typ1-model.js';
 import { validate, analyze } from '../../engines/msa-typ1-engine.js';
@@ -68,15 +68,15 @@ const HELP = 'modules.msa-typ1.types.';
 const K1_OPTIONS = ['0.2', '0.15', '0.1'];
 const K2_OPTIONS = ['3', '4', '6'];
 
-/** Je Parameter sein Prüfer; freie Texte nehmen nur eine Zeichenkette an. */
+/** Je Parameter sein Prüfer; er gibt den Wert in der Form des Models zurück (Zahlen als Text). */
 const PARAM_CHECKS = {
   name: (v) => requireText('value', v),
-  ref: (v) => requireText('value', v),
+  ref: (v) => requireNumericText('value', v),
   unit: (v) => requireText('value', v),
-  lsl: (v) => requireText('value', v),
-  usl: (v) => requireText('value', v),
-  k1: (v) => requireEnum('value', v, K1_OPTIONS),
-  k2: (v) => requireEnum('value', v, K2_OPTIONS),
+  lsl: (v) => requireNumericText('value', v),
+  usl: (v) => requireNumericText('value', v),
+  k1: (v) => requireEnum('value', v, K1_OPTIONS, { numeric: true }),
+  k2: (v) => requireEnum('value', v, K2_OPTIONS, { numeric: true }),
 };
 
 /** Die Spalten-Slots dieses Moduls: genau einer, die Messwertspalte. */
@@ -232,14 +232,13 @@ const mod = createModule({
        * Einen Parameter setzen.
        * @agent
        * @param {keyof Params} key welcher Parameter
-       * @param {string} value der Wert als Text, wie er eingegeben würde; Wertebereich je Schlüssel siehe `Params`
+       * @param {string|number} value der Wert als Text oder Zahl (abgelegt als Text); Wertebereich je Schlüssel siehe `Params`
        * @returns {void}
        * @throws {Error} wenn `key` kein Parameter dieses Moduls ist
        */
       setParam(key, value) {
         requireEnum('key', key, PARAM_KEYS);
-        PARAM_CHECKS[key](value);
-        this.model.params[key] = value;
+        this.model.params[key] = PARAM_CHECKS[key](value);
         this.scheduleAnalysis();
       },
 

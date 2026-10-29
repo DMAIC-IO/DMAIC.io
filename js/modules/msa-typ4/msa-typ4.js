@@ -24,7 +24,7 @@
 import { toNum } from '../../core/chart/chart-data-prep.js';
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireKnownId, requireNumericText, requireText } from '../../core/agent/agent-argcheck.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { State, NORM_OPTIONS, PV_OPTIONS, ALPHA_OPTIONS } from './msa-typ4-model.js';
@@ -46,16 +46,16 @@ function fmtP(p) {
 /** Die acht Parameter, die `setParam` kennt; die Toleranz als Punkt-Schlüssel. */
 const PARAM_KEYS = ['name', 'unit', 'norm', 'pvMode', 'tolerance.LSL', 'tolerance.USL', 'sigmaP', 'alpha'];
 
-/** Je Parameter sein Prüfer; freie Texte nehmen nur eine Zeichenkette an. */
+/** Je Parameter sein Prüfer; er gibt den Wert in der Form des Models zurück (Zahlen als Text). */
 const PARAM_CHECKS = {
   name: (v) => requireText('value', v),
   unit: (v) => requireText('value', v),
   norm: (v) => requireEnum('value', v, NORM_OPTIONS),
   pvMode: (v) => requireEnum('value', v, PV_OPTIONS),
-  'tolerance.LSL': (v) => requireText('value', v),
-  'tolerance.USL': (v) => requireText('value', v),
-  sigmaP: (v) => requireText('value', v),
-  alpha: (v) => requireEnum('value', v, ALPHA_OPTIONS),
+  'tolerance.LSL': (v) => requireNumericText('value', v),
+  'tolerance.USL': (v) => requireNumericText('value', v),
+  sigmaP: (v) => requireNumericText('value', v),
+  alpha: (v) => requireEnum('value', v, ALPHA_OPTIONS, { numeric: true }),
 };
 
 /** Die Spalten-Slots dieses Moduls: Referenz- und Messwertspalte. */
@@ -260,15 +260,14 @@ const mod = createModule({
        * Einen Parameter setzen.
        * @agent
        * @param {keyof Params} key welcher Parameter; die im Zustand zulässigen nennt `activeParams`
-       * @param {string} value der Wert als Text, wie er eingegeben würde; Wertebereich je Schlüssel siehe `Params`
+       * @param {string|number} value der Wert als Text oder Zahl (abgelegt als Text); Wertebereich je Schlüssel siehe `Params`
        * @returns {void}
        * @throws {Error} wenn `key` im aktuellen Zustand kein Parameter ist oder `value` nicht zulässig
        */
       setParam(key, value) {
         requireEnum('key', key, PARAM_KEYS);
         requireEnum('key', key, this.activeParams());
-        PARAM_CHECKS[key](value);
-        setAtPath(this.model.params, key, value);
+        setAtPath(this.model.params, key, PARAM_CHECKS[key](value));
         this.scheduleAnalysis();
       },
 

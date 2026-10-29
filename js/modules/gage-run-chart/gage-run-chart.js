@@ -35,7 +35,7 @@ import { computeGageRunChart, splitPanelRows } from '../../engines/gage-run-char
 import { loadWorksheetExample } from '../../core/examples-registry.js';
 import { whenAnchor } from '../../core/chart/chart-module-base.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireBoolean, requireEnum, requireKnownId, requireNumber, requireText } from '../../core/agent/agent-argcheck.js';
+import { requireBoolean, requireEnum, requireKnownId, requireNumber, requireNumericText, requireText } from '../../core/agent/agent-argcheck.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { finiteOrNull } from '../../core/agent/agent-results.js';
@@ -63,7 +63,7 @@ const PARAM_KEYS = ['refValue', 'partsPerRow', 'connectWithin', 'showOperatorMea
 
 /** Je Option ihr Prüfer; er gibt den Wert in der Form des Models zurück. */
 const PARAM_CHECKS = {
-  refValue: (v) => requireText('value', v),
+  refValue: (v) => requireNumericText('value', v),
   partsPerRow: (v) => requireNumber('value', v, { min: 1, max: MAX_PARTS_PER_ROW, integer: true }),
   connectWithin: (v) => requireBoolean('value', v),
   showOperatorMean: (v) => requireBoolean('value', v),

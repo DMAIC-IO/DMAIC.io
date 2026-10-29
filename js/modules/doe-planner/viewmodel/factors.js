@@ -8,7 +8,7 @@
  * core modules — never a sibling or the shell.
  */
 import { letter } from '../doe-planner-model.js';
-import { requireEnum, requireIndex, requireKnownId, requireText } from '../../../core/agent/agent-argcheck.js';
+import { requireEnum, requireIndex, requireKnownId, requireNumericText, requireText } from '../../../core/agent/agent-argcheck.js';
 
 /** Factor kinds. */
 const FACTOR_KINDS = ['continuous', 'categorical'];
@@ -158,15 +158,15 @@ export class FactorsViewModel {
    * @agent
    * @param {number} factorId the factor
    * @param {number} levelIdx 0 = lowest level
-   * @param {string} value the level
+   * @param {string|number} value the level as text or number (stored as text)
    * @returns {void}
-   * @throws {Error} if the factor or the level index is unknown
+   * @throws {Error} if the factor or the level index is unknown, or value is neither text nor a finite number
    */
   setLevel(factorId, levelIdx, value) {
     requireKnownId('factorId', factorId, this.model.factors.map((f) => f.id));
     const f = this.model.factors.find((x) => x.id === factorId);
     requireIndex('levelIdx', levelIdx, f.levels.length - 1);
-    f.levels[levelIdx] = requireText('value', value);
+    f.levels[levelIdx] = requireNumericText('value', value);
     this._save();
   }
 

@@ -70,6 +70,17 @@ suite('doe-planner-vm factors — factors', () => {
     assertDeepEqual(model.factors[0].levels, ['20', '45']);
     assertThrows(() => vm.removeLevel(ids[0], 0), /two levels/);
   });
+
+  test('levels: a number becomes text, a non-number non-text is refused', () => {
+    const { vm, model, ids } = setup();
+    vm.setLevel(ids[0], 1, 45);
+    assertDeepEqual(model.factors[0].levels, ['20', '45']);
+    vm.setLevel(ids[0], 1, -2.5);
+    assertEqual(model.factors[0].levels[1], '-2.5');
+    assertThrows(() => vm.setLevel(ids[0], 1, true), /allowed: any string or finite number, "" clears it$/);
+    assertThrows(() => vm.setLevel(ids[0], 1, NaN), /any string or finite number/);
+    assertEqual(model.factors[0].levels[1], '-2.5');
+  });
 });
 
 suite('doe-planner-vm factors — responses', () => {

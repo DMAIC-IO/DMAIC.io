@@ -4576,9 +4576,9 @@ export const AGENT_REGISTRY = {
           },
           {
             "name": "value",
-            "type": "string",
+            "type": "string|number",
             "optional": false,
-            "help": "the level"
+            "help": "the level as text or number (stored as text)"
           }
         ],
         "returns": "void",
@@ -9888,9 +9888,9 @@ export const AGENT_REGISTRY = {
           },
           {
             "name": "value",
-            "type": "string",
+            "type": "string|number",
             "optional": false,
-            "help": "der Wert als Text, wie er eingegeben würde; Wertebereich je Schlüssel siehe `Params`"
+            "help": "der Wert als Text oder Zahl (abgelegt als Text); Wertebereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "void",
@@ -10235,9 +10235,9 @@ export const AGENT_REGISTRY = {
           },
           {
             "name": "value",
-            "type": "string",
+            "type": "string|number",
             "optional": false,
-            "help": "der Wert als Text, wie er eingegeben würde; Wertebereich je Schlüssel siehe `Params`"
+            "help": "der Wert als Text oder Zahl (abgelegt als Text); Wertebereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "void",
@@ -11001,9 +11001,9 @@ export const AGENT_REGISTRY = {
           },
           {
             "name": "value",
-            "type": "string",
+            "type": "string|number",
             "optional": false,
-            "help": "der Wert als Text, wie er eingegeben würde; Wertebereich je Schlüssel siehe `Params`"
+            "help": "der Wert als Text oder Zahl (abgelegt als Text); Wertebereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "void",
@@ -11392,9 +11392,9 @@ export const AGENT_REGISTRY = {
           },
           {
             "name": "value",
-            "type": "string",
+            "type": "string|number",
             "optional": false,
-            "help": "der Wert als Text; Wertebereich je Schlüssel siehe `Params`, positiveLevel eine der Stufen aus `detectedLevels`"
+            "help": "der Wert als Text oder Zahl (abgelegt als Text); Wertebereich je Schlüssel siehe `Params`, positiveLevel eine der Stufen aus `detectedLevels`"
           }
         ],
         "returns": "void",

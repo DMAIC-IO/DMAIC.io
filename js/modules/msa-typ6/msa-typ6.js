@@ -113,7 +113,7 @@ const PARAM_CHECKS = {
     for (const r of v) requireEnum('rule', r, RULE_IDS);
     return enabledRulesOf(v);
   },
-  alpha: (v) => { requireEnum('value', v, ALPHA_OPTIONS); return v; },
+  alpha: (v) => requireEnum('value', v, ALPHA_OPTIONS, { numeric: true }),
 };
 
 /** Je Slot der Filter für den Wähler (dieselben Typen wie in `_mountPickers`). */
