@@ -21,10 +21,10 @@
       <div class="field-group">
         <label data-help-key="modules.transformed-imr-chart.types.Params.lambdaManual">λ</label>
         <input type="number" class="field field--num" data-ref="lambda-manual"
-          :value="model.lambdaManual"
-          step="0.05" min="-3" max="3"
+          :value="paramValue('lambdaManual')"
+          :step="paramStep('lambdaManual')"
           :disabled="!isManualLambda()"
-          @change="lambdaManualChanged($event)">
+          @change="onParamInput('lambdaManual', $event)">
       </div>
     </div>
     <span class="field-hint" x-text="t('lambdaHint')"></span>

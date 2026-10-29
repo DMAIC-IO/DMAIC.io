@@ -27,7 +27,7 @@
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State, ALPHA_DEFAULT } from './multivariate-control-chart-model.js';
+import { State } from './multivariate-control-chart-model.js';
 import {
   ColumnPicker, getColumnValues, getColumnName, refToKey, keyToRef,
 } from '../../ui/column-picker.js';
@@ -35,7 +35,8 @@ import { computeHotellingT2 } from '../../engines/multivariate-chart-engine.js';
 import { loadWorksheetExample, rewriteRefArray } from '../../core/examples-registry.js';
 import { chartModuleLifecycle } from '../../core/chart/chart-module-base.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { paramInputMixin, numberCheck } from '../../core/param-input.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { finiteOrNull, zipPoints } from '../../core/agent/agent-results.js';
@@ -52,13 +53,16 @@ const SLOT_FILTERS = { variables: { types: ['numeric'], minCount: 3 } };
 /** Die Optionen, die `setParam` annimmt. */
 const PARAM_KEYS = ['alpha', 'baselineCount'];
 
-/** Die Leerform eines Zahlenfelds („alle Zeilen"): `null` oder `''`. */
-const isEmptyForm = (v) => v === null || v === '';
+/** Zahlenoptionen: zulässiger Bereich (einzige Quelle für Prüfer und Eingabefeld). */
+const PARAM_SPEC = {
+  alpha: { exclusiveMin: 0, exclusiveMax: 1, step: 0.001 },
+  baselineCount: { min: 1, integer: true, step: 1, nullable: true },
+};
 
 /** Je Option ihr Prüfer; er gibt den Wert in der Form des Models zurück. */
 const PARAM_CHECKS = {
-  alpha: (v) => requireNumber('value', v, { exclusiveMin: 0, exclusiveMax: 1 }),
-  baselineCount: (v) => (isEmptyForm(v) ? null : requireNumber('value', v, { min: 1, integer: true })),
+  alpha: numberCheck(PARAM_SPEC.alpha),
+  baselineCount: numberCheck(PARAM_SPEC.baselineCount),
 };
 
 /**
@@ -117,6 +121,12 @@ const mod = createModule({
 
   data(module, _t) {
     return {
+      ...paramInputMixin({
+        specs: PARAM_SPEC,
+        checks: PARAM_CHECKS,
+        t: _t,
+        lang: () => module._context?.i18n?.getLanguage?.() ?? 'de',
+      }),
       ...chartModuleLifecycle(module, {
         mountPicker() {
           const wrap = module._container.querySelector('[data-ref="col-picker-wrap"]');
@@ -253,38 +263,9 @@ const mod = createModule({
 
       // ── View helpers ──────────────────────────────────────────
 
-      /**
-       * Return the value for the baseline-count input (empty string for null).
-       * Avoids Alpine CSP optional-chaining in template.
-       * @noagent view transform
-       */
-      baselineCountValue() {
-        return this.model.baselineCount != null ? this.model.baselineCount : '';
-      },
-
       // ── Event handlers ────────────────────────────────────────
 
-      /**
-       * @noagent DOM event handler; the agent uses setParam()
-       * @param {Event} event die Änderung des Phase-I-Feldes
-       */
-      async baselineCountChanged(event) {
-        const v = parseInt(event.target.value, 10);
-        // Leer, unlesbar oder < 1 heißt „alle Zeilen".
-        await this.setParam('baselineCount', Number.isInteger(v) && v >= 1 ? v : null);
-        event.target.value = this.baselineCountValue();
-      },
 
-      /**
-       * @noagent DOM event handler; the agent uses setParam()
-       * @param {Event} event die Änderung des α-Feldes
-       */
-      async alphaChanged(event) {
-        const v = parseFloat(event.target.value);
-        // Wie bisher: ein ungültiger Wert fällt auf die Vorgabe zurück — vor der Senke.
-        await this.setParam('alpha', (Number.isFinite(v) && v > 0 && v < 1) ? v : ALPHA_DEFAULT);
-        event.target.value = String(this.model.alpha);
-      },
 
       // ── Analysis ─────────────────────────────────────────────
 

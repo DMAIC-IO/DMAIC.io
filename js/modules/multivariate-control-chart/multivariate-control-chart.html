@@ -12,10 +12,10 @@
     <div class="field-group">
       <label data-help-key="modules.multivariate-control-chart.types.Params.baselineCount" x-text="t('baselineCount')"></label>
       <input type="number" class="field field--num" data-ref="baseline-count"
-        :value="baselineCountValue()"
-        min="2"
+        :value="paramValue('baselineCount')"
+        :min="paramMin('baselineCount')" :step="paramStep('baselineCount')"
         :placeholder="t('baselineAll')"
-        @change="baselineCountChanged($event)">
+        @change="onParamInput('baselineCount', $event)">
       <span class="field-hint" x-text="t('baselineHint')"></span>
     </div>
 
@@ -24,9 +24,9 @@
     <div class="field-group">
       <label data-help-key="modules.multivariate-control-chart.types.Params.alpha" x-text="t('alpha')"></label>
       <input type="number" class="field field--num" data-ref="alpha"
-        :value="model.alpha"
-        step="0.001" min="0.0001" max="0.5"
-        @change="alphaChanged($event)">
+        :value="paramValue('alpha')"
+        :min="paramMin('alpha')" :max="paramMax('alpha')" :step="paramStep('alpha')"
+        @change="onParamInput('alpha', $event)">
       <span class="field-hint" x-text="t('alphaHint')"></span>
     </div>
 

@@ -35,7 +35,8 @@ import { computeTransformedIMR } from '../../engines/transformed-chart-engine.js
 import { loadWorksheetExample, rewriteRefFields } from '../../core/examples-registry.js';
 import { chartModuleLifecycle } from '../../core/chart/chart-module-base.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { paramInputMixin, numberCheck } from '../../core/param-input.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { finiteOrNull, zipPoints } from '../../core/agent/agent-results.js';
@@ -52,10 +53,15 @@ const SLOT_FILTERS = { value: { types: ['numeric'], minCount: 5 } };
 /** Die Optionen, die `setParam` annimmt. */
 const PARAM_KEYS = ['lambdaMode', 'lambdaManual'];
 
+/** Zahlenoption λ: jede endliche Zahl (einzige Quelle für Prüfer und Eingabefeld). */
+const PARAM_SPEC = {
+  lambdaManual: { step: 0.1 },
+};
+
 /** Je Option ihr Prüfer; er gibt den Wert in der Form des Models zurück. */
 const PARAM_CHECKS = {
   lambdaMode: (v) => { requireEnum('value', v, LAMBDA_MODES); return v; },
-  lambdaManual: (v) => requireNumber('value', v),
+  lambdaManual: numberCheck(PARAM_SPEC.lambdaManual),
 };
 
 /** Die i18n-Schlüssel der λ-Arten, wie die Vorlage sie bisher nannte. */
@@ -132,6 +138,12 @@ const mod = createModule({
 
   data(module, _t) {
     return {
+      ...paramInputMixin({
+        specs: PARAM_SPEC,
+        checks: PARAM_CHECKS,
+        t: _t,
+        lang: () => module._context?.i18n?.getLanguage?.() ?? 'de',
+      }),
       ...chartModuleLifecycle(module, {
         mountPicker() {
           const wrap = module._container.querySelector('[data-ref="col-picker"]');
@@ -245,16 +257,6 @@ const mod = createModule({
         await this.runAnalysis();
       },
 
-      /**
-       * @noagent DOM event handler; the agent uses setParam()
-       * @param {Event} event die Änderung des λ-Feldes
-       */
-      async lambdaManualChanged(event) {
-        const v = parseFloat(event.target.value);
-        // Ein leeres oder unlesbares Feld setzt nichts; das Feld zeigt wieder den Model-Wert.
-        if (!Number.isFinite(v)) { event.target.value = String(this.model.lambdaManual); return; }
-        await this.setParam('lambdaManual', v);
-      },
 
       /**
        * Mit der aktuellen Spalte und λ-Einstellung neu rechnen.

@@ -26,16 +26,14 @@ import { State } from './run-chart-model.js';
 
 import { ColumnPicker, getColumnValues, getColumnName, refToKey, keyToRef } from '../../ui/column-picker.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { requireEnum, requireKnownId } from '../../core/agent/agent-argcheck.js';
+import { paramInputMixin, numberCheck } from '../../core/param-input.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { finiteOrNull, zipPoints } from '../../core/agent/agent-results.js';
 import { computeRunChart } from '../../engines/run-chart-engine.js';
 import { loadWorksheetExample, rewriteRefFields } from '../../core/examples-registry.js';
 import { chartModuleLifecycle } from '../../core/chart/chart-module-base.js';
-
-/** Default significance level (mirrors the legacy module). */
-const DEFAULT_ALPHA = 0.05;
 
 /** Die Spalten-Slots: genau einer, die Messreihe. */
 const COLUMN_SLOTS = ['value'];
@@ -46,9 +44,14 @@ const SLOT_FILTERS = { value: { types: ['numeric'], minCount: 2 } };
 /** Die Optionen, die `setParam` annimmt. */
 const PARAM_KEYS = ['alpha'];
 
+/** Zahlenoption α: zulässiger Bereich (einzige Quelle für Prüfer und Eingabefeld). */
+const PARAM_SPEC = {
+  alpha: { exclusiveMin: 0, exclusiveMax: 1, step: 0.01 },
+};
+
 /** Je Option ihr Prüfer; er gibt den Wert in der Form des Models zurück. */
 const PARAM_CHECKS = {
-  alpha: (v) => requireNumber('value', v, { exclusiveMin: 0, exclusiveMax: 1 }),
+  alpha: numberCheck(PARAM_SPEC.alpha),
 };
 
 /**
@@ -109,6 +112,12 @@ const mod = createModule({
 
   data(module, _t) {
     return {
+      ...paramInputMixin({
+        specs: PARAM_SPEC,
+        checks: PARAM_CHECKS,
+        t: _t,
+        lang: () => module._context?.i18n?.getLanguage?.() ?? 'de',
+      }),
       ...chartModuleLifecycle(module, {
         mountPicker() {
           const wrap = module._container.querySelector('[data-ref="col-picker-wrap"]');
@@ -303,16 +312,6 @@ const mod = createModule({
 
       // ── Event handlers ─────────────────────────────────────────
 
-      /**
-       * @noagent DOM event handler; the agent uses setParam()
-       * @param {Event} event die Änderung des α-Feldes
-       */
-      async alphaChanged(event) {
-        const v = parseFloat(event.target.value);
-        // Wie bisher: ein ungültiger Wert fällt auf die Vorgabe zurück — vor der Senke.
-        await this.setParam('alpha', (Number.isFinite(v) && v > 0 && v < 1) ? v : DEFAULT_ALPHA);
-        event.target.value = String(this.model.alpha);
-      },
 
       // ── Analysis (controller — needs context + live worksheet data) ──
 

@@ -29,7 +29,7 @@
  */
 
 import { createModule } from '../../core/template-module.js';
-import { State, DEFAULTS, CHART_TYPE_IDS, SIGMA_METHODS } from './time-weighted-chart-model.js';
+import { State, CHART_TYPE_IDS, SIGMA_METHODS } from './time-weighted-chart-model.js';
 import {
   ColumnPicker, getColumnValues, getColumnName, refToKey, keyToRef,
 } from '../../ui/column-picker.js';
@@ -40,6 +40,7 @@ import { loadWorksheetExample, rewriteRefFields } from '../../core/examples-regi
 import { chartModuleLifecycle } from '../../core/chart/chart-module-base.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { paramInputMixin, numberCheck } from '../../core/param-input.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { finiteOrNull, zipPoints } from '../../core/agent/agent-results.js';
@@ -73,6 +74,14 @@ const BASE_PARAMS = ['chartTypeId', 'sigmaMethod', 'baselineCount', 'targetOverr
 /** Die Leerform eines Zahlenfelds („aus den Daten" bzw. „alle Punkte"): `null` oder `''`. */
 const isEmptyForm = (v) => v === null || v === '';
 
+/** Zahlenoptionen λ/L/k/h: zulässiger Bereich (einzige Quelle für Prüfer und Eingabefeld). */
+const PARAM_SPEC = {
+  lambda: { exclusiveMin: 0, max: 1, step: 0.05 },
+  L: { exclusiveMin: 0, step: 0.1 },
+  kSigma: { exclusiveMin: 0, step: 0.1 },
+  hSigma: { exclusiveMin: 0, step: 0.5 },
+};
+
 /** Je Option ihr Prüfer; er gibt den Wert in der Form des Models zurück. */
 const PARAM_CHECKS = {
   chartTypeId: (v) => { requireEnum('value', v, CHART_TYPE_IDS); return v; },
@@ -80,10 +89,10 @@ const PARAM_CHECKS = {
   baselineCount: (v) => (isEmptyForm(v) ? null : requireNumber('value', v, { min: 1, integer: true })),
   targetOverride: (v) => (isEmptyForm(v) ? null : requireNumber('value', v)),
   sigmaOverride: (v) => (isEmptyForm(v) ? null : requireNumber('value', v, { min: 0 })),
-  lambda: (v) => requireNumber('value', v, { exclusiveMin: 0, max: 1 }),
-  L: (v) => requireNumber('value', v, { exclusiveMin: 0 }),
-  kSigma: (v) => requireNumber('value', v, { exclusiveMin: 0 }),
-  hSigma: (v) => requireNumber('value', v, { exclusiveMin: 0 }),
+  lambda: numberCheck(PARAM_SPEC.lambda),
+  L: numberCheck(PARAM_SPEC.L),
+  kSigma: numberCheck(PARAM_SPEC.kSigma),
+  hSigma: numberCheck(PARAM_SPEC.hSigma),
 };
 /**
  * Die Schlüsselfläche von `setParam`. Sätze je Schlüssel unter
@@ -160,6 +169,12 @@ const mod = createModule({
 
   data(module, _t) {
     return {
+      ...paramInputMixin({
+        specs: PARAM_SPEC,
+        checks: PARAM_CHECKS,
+        t: _t,
+        lang: () => module._context?.i18n?.getLanguage?.() ?? 'de',
+      }),
       ...chartModuleLifecycle(module, {
         mountPicker() {
           const wrap = module._container.querySelector('[data-ref="col-picker-wrap"]');
@@ -382,45 +397,9 @@ const mod = createModule({
         ev.target.value = this.sigmaOverrideValue();
       },
 
-      /**
-       * @noagent DOM event handler; the agent uses setParam()
-       * @param {Event} ev die Änderung von λ
-       */
-      async onLambdaChange(ev) {
-        const v = numOrNull(ev.target.value);
-        await this.setParam('lambda', (v != null && v > 0 && v <= 1) ? v : DEFAULTS.lambda);
-        ev.target.value = String(this.model.lambda);
-      },
 
-      /**
-       * @noagent DOM event handler; the agent uses setParam()
-       * @param {Event} ev die Änderung von L
-       */
-      async onLChange(ev) {
-        const v = numOrNull(ev.target.value);
-        await this.setParam('L', (v != null && v > 0) ? v : DEFAULTS.L);
-        ev.target.value = String(this.model.L);
-      },
 
-      /**
-       * @noagent DOM event handler; the agent uses setParam()
-       * @param {Event} ev die Änderung von k
-       */
-      async onKSigmaChange(ev) {
-        const v = numOrNull(ev.target.value);
-        await this.setParam('kSigma', (v != null && v > 0) ? v : DEFAULTS.kSigma);
-        ev.target.value = String(this.model.kSigma);
-      },
 
-      /**
-       * @noagent DOM event handler; the agent uses setParam()
-       * @param {Event} ev die Änderung von h
-       */
-      async onHSigmaChange(ev) {
-        const v = numOrNull(ev.target.value);
-        await this.setParam('hSigma', (v != null && v > 0) ? v : DEFAULTS.hSigma);
-        ev.target.value = String(this.model.hSigma);
-      },
 
       // ── Analysis ─────────────────────────────────────────────
 

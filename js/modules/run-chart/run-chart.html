@@ -11,8 +11,8 @@
     <div class="field-group">
       <label data-help-key="modules.run-chart.types.Params.alpha" x-text="t('alpha')"></label>
       <input type="number" class="field field--num" data-ref="alpha"
-        :value="model.alpha" @change="alphaChanged($event)"
-        step="0.01" min="0.001" max="0.5">
+        :value="paramValue('alpha')" @change="onParamInput('alpha', $event)"
+        :min="paramMin('alpha')" :max="paramMax('alpha')" :step="paramStep('alpha')">
       <span class="field-hint" x-text="t('alphaHint')"></span>
     </div>
 

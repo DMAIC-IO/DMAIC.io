@@ -60,14 +60,14 @@
           <div class="field-group">
             <label data-help-key="modules.time-weighted-chart.types.Params.lambda" x-text="t('lambda')"></label>
             <input type="number" class="field field--num" data-ref="lambda"
-              :value="model.lambda" @change="onLambdaChange($event)"
-              step="0.05" min="0.05" max="1">
+              :value="paramValue('lambda')" @change="onParamInput('lambda', $event)"
+              :min="paramMin('lambda')" :max="paramMax('lambda')" :step="paramStep('lambda')">
           </div>
           <div class="field-group">
             <label data-help-key="modules.time-weighted-chart.types.Params.L" x-text="t('L')"></label>
             <input type="number" class="field field--num" data-ref="L"
-              :value="model.L" @change="onLChange($event)"
-              step="0.1" min="1" max="5">
+              :value="paramValue('L')" @change="onParamInput('L', $event)"
+              :min="paramMin('L')" :max="paramMax('L')" :step="paramStep('L')">
           </div>
         </div>
       </div>
@@ -80,14 +80,14 @@
           <div class="field-group">
             <label data-help-key="modules.time-weighted-chart.types.Params.kSigma" x-text="t('kSigma')"></label>
             <input type="number" class="field field--num" data-ref="kSigma"
-              :value="model.kSigma" @change="onKSigmaChange($event)"
-              step="0.1" min="0.1" max="2">
+              :value="paramValue('kSigma')" @change="onParamInput('kSigma', $event)"
+              :min="paramMin('kSigma')" :max="paramMax('kSigma')" :step="paramStep('kSigma')">
           </div>
           <div class="field-group">
             <label data-help-key="modules.time-weighted-chart.types.Params.hSigma" x-text="t('hSigma')"></label>
             <input type="number" class="field field--num" data-ref="hSigma"
-              :value="model.hSigma" @change="onHSigmaChange($event)"
-              step="0.5" min="2" max="10">
+              :value="paramValue('hSigma')" @change="onParamInput('hSigma', $event)"
+              :min="paramMin('hSigma')" :max="paramMax('hSigma')" :step="paramStep('hSigma')">
           </div>
         </div>
       </div>
