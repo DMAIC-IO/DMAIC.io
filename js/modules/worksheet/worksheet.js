@@ -17,7 +17,7 @@
  *    `worksheet:appendColumn`. Same payload shapes as the legacy module.
  *
  * @agent  Vollständig über das Viewmodel steuerbar: CSV-Import, Zellblöcke
- *   schreiben, Spalten anlegen, umbenennen und entfernen, Zeilen anlegen,
+ *   und Formeln schreiben, Spalten anlegen, umbenennen und entfernen, Zeilen anlegen,
  *   Zeilen nach einer Spalte sortieren,
  *   Rückgängig, Blätter anlegen, wechseln, umbenennen, duplizieren, davor einfügen und entfernen.
  *   Dateidialoge, Popout-Widgets und die Auswahl-abhängigen Knöpfe bleiben
@@ -1050,10 +1050,9 @@ const mod = createModule({
        * Goes through the same `setCellValue` path as the cell editor and the
        * paste handler — type detection, locks and undo included.
        *
-       * Values only, no formulas: the cell editor's commit path branches on
-       * `isFormula()` BEFORE it reaches `setCellValue`; this path does not,
-       * so `"=C1*2"` lands here as plain text. Formulas stay with the
-       * formula editor in the UI.
+       * Values only, no formulas: this path goes straight to `setCellValue`,
+       * so `"=C1*2"` lands here as plain text. Formulas are written with
+       * `setFormula`.
        *
        * A plain value written into a formula cell OVERWRITES the formula —
        * `read().formulas` says which cells are computed; undo restores value
@@ -1109,6 +1108,50 @@ const mod = createModule({
         this._grid.render();
         this._flushAndNotify();
         return written;
+      },
+
+      /**
+       * Write a formula into one cell of the active sheet, like the formula
+       * editor: stored as text, evaluated at once, recorded for undo with
+       * the formula that was there before. A row equal to the row count
+       * extends the sheet by one row, like typing below the last row.
+       *
+       * An evaluation error (`#DIV/0`, `#REF!`, …) is not a rejected call:
+       * the formula is stored, the cell value is `null`, and the error code
+       * comes back — the UI shows the same cell with the same error.
+       *
+       * @agent
+       * @param {string} columnId id of the target column (see read().columns[].id)
+       * @param {number} row zero-based row index; the row count appends a row
+       * @param {string} formula formula text starting with "=", e.g.
+       *   "=C1[2]*2" (column 1, row 2, both 1-based)
+       * @returns {{ value: any, error: string|null }} the computed cell value
+       *   and the evaluation error code, `null` if none
+       * @throws {Error} if no column has this id, the column is locked, row is
+       *   not an integer in 0..row count, or formula does not start with "="
+       */
+      setFormula(columnId, row, formula) {
+        // `setCellFormula` kehrt bei unbekannter Spalte und bei Sperre mit
+        // `null` zurück — still für den Aufrufer. Dieselbe Vorabprüfung wie
+        // `setCells`, damit beide Schreibwege dieselbe Sperre gleich melden.
+        requireKnownId('columnId', columnId, (this._grid?.columns ?? []).map(c => c.id));
+        const col = this._grid.getColumn(columnId);
+        if (col.meta?.lock) {
+          throw new Error(`column "${columnId}" is locked (${col.meta.lock})`);
+        }
+        requireIndex('row', row, this._grid.rowCount);
+        // Nicht `requireText`: dessen Meldung verspricht `"" clears it`. Ein
+        // Text ohne "=" ginge in `setCellFormula` still auf den Wertweg —
+        // eine zweite Form von `setCells`, die der Agent nicht bestellt hat.
+        if (!isFormula(formula)) {
+          throw new Error(`invalid formula ${JSON.stringify(formula)}; allowed: a text starting with "="`);
+        }
+        const result = this._grid.setCellFormula(columnId, row, formula);
+        this._grid.render();
+        // `cell:changed` hat den Entpreller angestoßen; sofort ablegen, sonst
+        // hielte die Laufzeit den nächsten Schreibzugriff für veraltet.
+        this._persistNow();
+        return result;
       },
 
       // ── Toast ────────────────────────────────────────────────

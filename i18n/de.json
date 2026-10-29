@@ -1287,11 +1287,19 @@
           "params": { "csvText": "Der vollständige CSV- oder TSV-Text, Kopfzeile eingeschlossen, falls vorhanden." }
         },
         "setCells": {
-          "help": "Schreibt einen Block von Werten in eine Spalte, von einer Zeile an abwärts. Typerkennung, Sperren und Rückgängig wie bei der Zelleingabe. Nur Werte: eine Formel wie =C1*2 wird als Text geschrieben, nicht berechnet — Formeln bleiben dem Formeleditor der Oberfläche vorbehalten. Ein einfacher Wert in eine Formelzelle ÜBERSCHREIBT die Formel — read().formulas sagt, welche Zellen gerechnet sind; Rückgängig stellt Wert und Formel wieder her.",
+          "help": "Schreibt einen Block von Werten in eine Spalte, von einer Zeile an abwärts. Typerkennung, Sperren und Rückgängig wie bei der Zelleingabe. Nur Werte: eine Formel wie =C1*2 wird als Text geschrieben, nicht berechnet — Formeln schreibt setFormula. Ein einfacher Wert in eine Formelzelle ÜBERSCHREIBT die Formel — read().formulas sagt, welche Zellen gerechnet sind; Rückgängig stellt Wert und Formel wieder her.",
           "params": {
             "columnId": "Die id der Zielspalte, wie read().columns[].id sie nennt.",
             "startRow": "Nullbasierter Index der ersten Zeile.",
             "values": "Die Werte, einer je Zeile; Formeltext wird nicht ausgewertet."
+          }
+        },
+        "setFormula": {
+          "help": "Schreibt eine Formel in eine Zelle des aktiven Blatts, wie der Formeleditor: als Text abgelegt, sofort berechnet, mit Rückgängig. Liefert den berechneten Wert und einen Fehlercode wie #DIV/0 (sonst null); bei einem Rechenfehler bleibt die Formel stehen und die Zelle leer. Gesperrte Spalten lehnen ab.",
+          "params": {
+            "columnId": "Die id der Zielspalte, wie read().columns[].id sie nennt.",
+            "row": "Nullbasierter Zeilenindex; die Zeilenzahl hängt eine Zeile an.",
+            "formula": "Formeltext mit führendem =, etwa =C1[2]*2 (Spalte 1, Zeile 2, beide ab 1 gezählt). Werte ohne = schreibt setCells."
           }
         },
         "addColumn": {

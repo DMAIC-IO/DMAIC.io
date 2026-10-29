@@ -1287,11 +1287,19 @@
           "params": { "csvText": "The full CSV or TSV text, header row included if present." }
         },
         "setCells": {
-          "help": "Writes a block of values into one column, downwards from a row. Type detection, locks and undo as with cell entry. Values only: a formula such as =C1*2 is written as text, not evaluated — formulas stay with the formula editor in the UI. A plain value written into a formula cell OVERWRITES the formula — read().formulas says which cells are computed; undo restores value and formula.",
+          "help": "Writes a block of values into one column, downwards from a row. Type detection, locks and undo as with cell entry. Values only: a formula such as =C1*2 is written as text, not evaluated — formulas are written with setFormula. A plain value written into a formula cell OVERWRITES the formula — read().formulas says which cells are computed; undo restores value and formula.",
           "params": {
             "columnId": "The id of the target column, as read().columns[].id names it.",
             "startRow": "Zero-based index of the first row.",
             "values": "The values, one per row; formula text is not evaluated."
+          }
+        },
+        "setFormula": {
+          "help": "Writes a formula into one cell of the active sheet, like the formula editor: stored as text, evaluated at once, with undo. Returns the computed value and an error code such as #DIV/0 (otherwise null); on an evaluation error the formula stays and the cell is empty. Locked columns refuse.",
+          "params": {
+            "columnId": "The id of the target column, as read().columns[].id names it.",
+            "row": "Zero-based row index; the row count appends a row.",
+            "formula": "Formula text starting with =, e.g. =C1[2]*2 (column 1, row 2, both counted from 1). Values without = are written with setCells."
           }
         },
         "addColumn": {
