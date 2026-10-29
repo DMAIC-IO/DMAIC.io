@@ -9480,14 +9480,14 @@
           "table": "The cross table of the association test with observed and expected counts and each cell's contribution to χ²; empty for one and two proportions.",
           "noteDetails": "The notes as a code with the inserted numbers, in the same order as notes; the numbers are unrounded, for example the share for warnShareBelow5 as a value between 0 and 1.",
           "pValue": "The p-value the decision rests on, as a number: exact for one proportion, McNemar and the Poisson rate, z-test for two proportions and two rates, TOST for equivalence, Pearson chi-square for the association test. Null when it cannot be computed.",
-          "ci": "The confidence interval as [lower, upper] in the unit of the statistic, unrounded; a non-finite bound is null. Null for the association test, which has no interval."
+          "ci": "The confidence interval as [lower, upper] in the unit of the statistic, unrounded; a non-finite bound is null. Null for the association test, which has no interval. The number is always a fraction or rate, never percent."
         },
         "Stat": {
           "key": "Identifier of the figure row, unique within one test type; the same identifier can mean different things in different test types.",
           "labelKey": "Identifier of the row's label text; for Fisher's exact test of a 2 × 2 table in the association test there is one per direction (two-sided, one-sided greater, one-sided less); when comparing two proportions the Fisher row always carries the same label without a direction, even for a one-sided alternative.",
           "params": "Placeholders of the label: the confidence level in percent, the group name or the degrees of freedom; missing for rows without placeholders.",
           "value": "The value as formatted text, as in the table: four decimals, χ², G² and Yates with three, p-values below 0.0001 as “< 0.0001”, counts as “x / n”, confidence intervals as lower and upper bound; decimal point in both languages, “–” for a value that cannot be computed.",
-          "num": "The statistic as a number; null for counts and intervals — the interval is under ci."
+          "num": "The statistic as a number; null for counts and intervals — the interval is under ci. The number is always a fraction or rate, never percent."
         },
         "Note": {
           "key": "Identifier of the note text shown below the decision.",
@@ -9625,9 +9625,23 @@
           "route": "The chosen main procedure, as the route under “Algorithm Routing” shows it. Normality is decided by the Anderson-Darling test alone, with p ≥ α. For variances: one sample always uses the χ² variance test, two samples the F-test when all are normal, otherwise Levene (Brown-Forsythe), k samples Bartlett or Levene. For means: when all samples are normal, the parametric test; otherwise it stays when every sample has n ≥ 20 (the rank test is added as a cross-check); otherwise the rank route. Parametric means the one-sample t-test, the Welch t-test (pooled t-test only when equal variances are assumed) or one-way ANOVA; the rank route means Wilcoxon signed-rank, Mann-Whitney U or Kruskal-Wallis.",
           "varEquality": "The variance equality. For two samples, means and the parametric route it is only the assumption from the checkbox “Assume equal variances”, without figures; for k samples and means it is the Levene test (Brown-Forsythe) with figures in the section “Variance Equality”. Empty for variance tests, for one sample and on the rank route of two samples.",
           "main": "The main test in the section “Test Result”: hypotheses and figures of the chosen procedure.",
+          "numeric": "The main test result as numbers, unrounded and language-independent: test statistic, degrees of freedom, p-value, confidence interval, decision, power and the notes on the interval. These are the same values as in main, just not as text.",
           "secondary": "The rank test next to the parametric result in the section “Rank-based comparison test”: Wilcoxon, Mann-Whitney U or Kruskal-Wallis. Only on the route “not normally distributed, but every sample has n ≥ 20”, otherwise empty.",
           "power": "The power analysis, only for one- and two-sample tests; empty for the test type “k Samples”.",
           "pairwise": "The pairwise comparisons, only for at least three groups; empty for two groups and outside “k Samples”."
+        },
+        "Numeric": {
+          "statistic": "The test statistic of the main test (t, z, F, chi-square, H or U, depending on the procedure), row Statistic.",
+          "df": "The degrees of freedom of the main test; with two numerator-style degrees of freedom (ANOVA) the first. Null when the procedure has none.",
+          "p": "The p-value of the main test as a number between 0 and 1, row p.",
+          "ci": "The confidence interval of the main test as [lower, upper]; for Hodges-Lehmann the interval of the shift. Null without an interval, a non-finite bound (one-sided test) is null.",
+          "decision": "reject if the null hypothesis is rejected, otherwise keep.",
+          "power": "The power for the given data as a fraction between 0 and 1. Null for k samples, where it is not computed.",
+          "notes": "The notes on the interval as a code with the inserted numbers, for example ciDiffNote with lo and hi; for ciShiftTooSmall level and achieved are fractions, not percent."
+        },
+        "Warning": {
+          "code": "The id of the note, equal to the text key.",
+          "values": "The numbers the text inserts, by name; not computable is null."
         },
         "Route": {
           "name": "Name of the chosen procedure as formatted text, always the English procedure name, such as “One-Way ANOVA” or “Welch t-Test”.",

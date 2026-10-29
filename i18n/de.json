@@ -9484,14 +9484,14 @@
           "table": "Die Kreuztabelle des Zusammenhangstests mit beobachteten und erwarteten Anzahlen und dem Beitrag je Zelle zu χ²; bei einem und zwei Anteilen leer.",
           "noteDetails": "Die Hinweise als Code mit den eingesetzten Zahlen, in derselben Reihenfolge wie notes; die Zahlen sind ungerundet, zum Beispiel der Anteil bei warnShareBelow5 als Wert zwischen 0 und 1.",
           "pValue": "Der p-Wert, auf dem die Entscheidung beruht, als Zahl: exakt beim Ein-Stichproben-Anteil, bei McNemar und bei der Poisson-Rate, z-Test bei zwei Anteilen und zwei Raten, TOST bei Äquivalenz, Pearson-χ² beim Zusammenhangstest. Null, wenn er nicht berechenbar ist.",
-          "ci": "Das Konfidenzintervall als [untere, obere Grenze] in der Einheit der Kennzahl, ungerundet; eine nicht endliche Grenze ist null. Null beim Zusammenhangstest, der kein Intervall hat."
+          "ci": "Das Konfidenzintervall als [untere, obere Grenze] in der Einheit der Kennzahl, ungerundet; eine nicht endliche Grenze ist null. Null beim Zusammenhangstest, der kein Intervall hat. Die Zahl ist immer ein Anteil oder eine Rate, nie Prozent."
         },
         "Stat": {
           "key": "Kennung der Kennzahlzeile, innerhalb einer Testart eindeutig; dieselbe Kennung kann je Testart Verschiedenes bedeuten.",
           "labelKey": "Kennung des Beschriftungstextes der Zeile; beim Fisher-exakten Test einer 2 × 2-Tafel im Zusammenhangstest je Richtung eine eigene (beidseitig, einseitig größer, einseitig kleiner); beim Vergleich zweier Anteile trägt die Fisher-Zeile immer dieselbe Beschriftung ohne Richtung, auch bei einseitiger Alternative.",
           "params": "Platzhalter der Beschriftung: das Konfidenzniveau in Prozent, der Gruppenname oder die Freiheitsgrade; fehlt bei Zeilen ohne Platzhalter.",
           "value": "Der Wert als formatierter Text, wie in der Tabelle: vier Nachkommastellen, χ², G² und Yates mit drei, p-Werte unter 0,0001 als „< 0.0001“, Anzahlen als „x / n“, Konfidenzintervalle als Unter- und Obergrenze; Dezimalpunkt in beiden Sprachen, „–“ für einen nicht berechenbaren Wert.",
-          "num": "Die Kennzahl als Zahl; bei Zählern und Intervallen null — das Intervall steht unter ci."
+          "num": "Die Kennzahl als Zahl; bei Zählern und Intervallen null — das Intervall steht unter ci. Die Zahl ist immer ein Anteil oder eine Rate, nie Prozent."
         },
         "Note": {
           "key": "Kennung des Hinweistextes, der unter der Entscheidung steht.",
@@ -9629,9 +9629,23 @@
           "route": "Das gewählte Hauptverfahren, wie der Weg unter „Algorithmus-Routing“ es zeigt. Normalität entscheidet allein der Anderson-Darling-Test mit p ≥ α. Bei Varianzen: eine Stichprobe immer der χ²-Varianztest, zwei Stichproben der F-Test, wenn alle normal sind, sonst Levene (Brown-Forsythe), k Stichproben Bartlett bzw. Levene. Bei Mittelwerten: sind alle Stichproben normal, der parametrische Test; sonst bleibt er, wenn jede Stichprobe n ≥ 20 hat (der Rangtest kommt als Vergleich hinzu); sonst der Rangweg. Parametrisch heißt das Ein-Stichproben-t-Test, Welch-t-Test (gepoolter t-Test nur, wenn gleiche Varianzen angenommen sind) oder einfaktorielle ANOVA; der Rangweg Wilcoxon-Vorzeichen-Rang, Mann-Whitney-U oder Kruskal-Wallis.",
           "varEquality": "Die Varianzgleichheit. Bei zwei Stichproben, Mittelwerten und parametrischem Weg ist es nur die Annahme aus dem Kästchen „Gleiche Varianzen annehmen“, ohne Kennzahlen; bei k Stichproben und Mittelwerten der Levene-Test (Brown-Forsythe) mit Kennzahlen im Abschnitt „Varianzgleichheit“. Leer bei Varianztests, bei einer Stichprobe und auf dem Rangweg zweier Stichproben.",
           "main": "Der Haupttest im Abschnitt „Testergebnis“: Hypothesen und Kennzahlen des gewählten Verfahrens.",
+          "numeric": "Das Ergebnis des Haupttests als Zahlen, ungerundet und sprachunabhängig: Prüfgröße, Freiheitsgrade, p-Wert, Konfidenzintervall, Entscheidung, Teststärke und die Hinweise zum Intervall. Es sind dieselben Werte wie in main, nur nicht als Text.",
           "secondary": "Der Rangtest neben dem parametrischen Ergebnis im Abschnitt „Rangbasierter Vergleichstest“: Wilcoxon, Mann-Whitney-U oder Kruskal-Wallis. Nur auf dem Weg „nicht normalverteilt, aber jede Stichprobe n ≥ 20“, sonst leer.",
           "power": "Die Power-Analyse, nur bei Ein- und Zwei-Stichproben; beim Testtyp „k Stichproben“ leer.",
           "pairwise": "Die paarweisen Vergleiche, nur bei mindestens drei Gruppen; bei zwei Gruppen und außerhalb von „k Stichproben“ leer."
+        },
+        "Numeric": {
+          "statistic": "Die Prüfgröße des Haupttests (t, z, F, χ², H oder U, je nach Verfahren), Zeile Statistik.",
+          "df": "Die Freiheitsgrade des Haupttests; bei zwei Zählerfreiheitsgraden (ANOVA) der erste. Null, wenn das Verfahren keine hat.",
+          "p": "Der p-Wert des Haupttests als Zahl zwischen 0 und 1, Zeile p.",
+          "ci": "Das Konfidenzintervall des Haupttests als [untere, obere Grenze]; beim Hodges-Lehmann-Verfahren das Intervall der Verschiebung. Null ohne Intervall, eine nicht endliche Grenze (einseitiger Test) ist null.",
+          "decision": "reject, wenn die Nullhypothese verworfen wird, sonst keep.",
+          "power": "Die Teststärke bei den vorhandenen Daten als Anteil zwischen 0 und 1. Null bei k Stichproben, dort wird sie nicht berechnet.",
+          "notes": "Die Hinweise zum Intervall als Code mit den eingesetzten Zahlen, zum Beispiel ciDiffNote mit lo und hi; bei ciShiftTooSmall sind level und achieved Anteile, keine Prozent."
+        },
+        "Warning": {
+          "code": "Die Kennung des Hinweises, gleich dem Textschlüssel.",
+          "values": "Die Zahlen, die der Text einsetzt, je Name; nicht berechenbar ist null."
         },
         "Route": {
           "name": "Name des gewählten Verfahrens als formatierter Text, immer der englische Verfahrensname, etwa „One-Way ANOVA“ oder „Welch t-Test“, auch in der deutschen Oberfläche.",

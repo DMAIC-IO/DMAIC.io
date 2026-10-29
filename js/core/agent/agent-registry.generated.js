@@ -7666,6 +7666,52 @@ export const AGENT_REGISTRY = {
               }
             }
           },
+          "numeric": {
+            "type": "Numeric",
+            "help": "das Ergebnis des Haupttests als Zahlen",
+            "keysOf": "Numeric",
+            "keys": {
+              "statistic": {
+                "type": "number|null",
+                "help": "Prüfgröße"
+              },
+              "df": {
+                "type": "number|null",
+                "help": "Freiheitsgrade, bei zwei Zählern der erste"
+              },
+              "p": {
+                "type": "number|null",
+                "help": "p-Wert"
+              },
+              "ci": {
+                "type": "Array<number|null>|null",
+                "help": "Konfidenzintervall [unten, oben], null ohne Intervall"
+              },
+              "decision": {
+                "type": "'reject'|'keep'",
+                "help": "Entscheidung gegen α"
+              },
+              "power": {
+                "type": "number|null",
+                "help": "Teststärke als Anteil, nicht bei k"
+              },
+              "notes": {
+                "type": "Warning[]",
+                "help": "Hinweise zum Intervall als Codes mit Zahlen",
+                "keysOf": "Warning",
+                "keys": {
+                  "code": {
+                    "type": "string",
+                    "help": "Kennung des Hinweises, gleich dem Textschlüssel"
+                  },
+                  "values": {
+                    "type": "Record<string, number|null>",
+                    "help": "eingesetzte Zahlen"
+                  }
+                }
+              }
+            }
+          },
           "secondary": {
             "type": "SecondaryResult|null",
             "help": "Vergleichstest, nur großer Stichprobenweg und Bonett bei zwei Varianzen",

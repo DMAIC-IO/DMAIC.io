@@ -25,6 +25,7 @@
 
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { finiteOrNull, warning } from '../../core/agent/agent-results.js';
 import { requireBoolean, requireEnum, requireNumber } from '../../core/agent/agent-argcheck.js';
 import { paramInputMixin, numberCheck } from '../../core/param-input.js';
 import {
@@ -107,10 +108,30 @@ function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–';
  * @property {Route} route  gewähltes Verfahren
  * @property {VarEquality|null} varEquality  Varianzgleichheit
  * @property {MainResult} main  Haupttest
+ * @property {Numeric} numeric  das Ergebnis des Haupttests als Zahlen
  * @property {SecondaryResult|null} secondary  Vergleichstest, nur großer Stichprobenweg und Bonett bei zwei Varianzen
  * @property {PowerInfo|null} power  Teststärke, nicht bei k
  * @property {PairwiseSection|null} pairwise  Paarvergleiche, nur bei k ≥ 3
  * @property {ResidualPlot|null} residualPlot  Residuen der einfaktoriellen ANOVA, nur Fisher- und Welch-Weg
+ */
+
+/**
+ * Der Haupttest als Zahlen, sprachunabhängig und ungerundet.
+ *
+ * @typedef {object} Numeric
+ * @property {number|null} statistic  Prüfgröße
+ * @property {number|null} df  Freiheitsgrade, bei zwei Zählern der erste
+ * @property {number|null} p  p-Wert
+ * @property {Array<number|null>|null} ci  Konfidenzintervall [unten, oben], null ohne Intervall
+ * @property {'reject'|'keep'} decision  Entscheidung gegen α
+ * @property {number|null} power  Teststärke als Anteil, nicht bei k
+ * @property {Warning[]} notes  Hinweise zum Intervall als Codes mit Zahlen
+ */
+
+/**
+ * @typedef {object} Warning
+ * @property {string} code  Kennung des Hinweises, gleich dem Textschlüssel
+ * @property {Record<string, number|null>} values  eingesetzte Zahlen
  */
 
 /**
@@ -697,23 +718,13 @@ const definition = {
           ? `${_t('significant')}: ${_t('h0Rejected')}`
           : `${_t('notSignificant')}: ${_t('h0NotRejected')}`;
 
-        let ciNote = '';
-        // A non-rejected one-sided test can leave the target outside the CI
-        const ciHoldsTarget = ciContains(r.ci, target ?? 0);
-        if (r.ciUndefined) {
-          ciNote = _t('ciRatioUndefinedNote');
-        } else if (isPaired && r.ci && !r.reject) {
-          if (ciHoldsTarget) ciNote = _t('ciPairedDiffNote', { lo: fmt(r.ci[0]), hi: fmt(r.ci[1]) });
-        } else if (isMeanDiff && !r.reject) {
-          if (ciHoldsTarget) ciNote = _t('ciDiffNote', { lo: fmt(r.ci[0]), hi: fmt(r.ci[1]) });
-        } else if (r.hl) {
-          const parts = [];
-          if (!r.reject) parts.push(_t('ciShiftNote', { lo: fmt(r.hl.lower), hi: fmt(r.hl.upper) }));
-          if (r.hl.K === 1 && r.hl.achievedConfidence > 0 && r.hl.achievedConfidence < 1 - alpha - 1e-9) {
-            parts.push(_t('ciShiftTooSmall', { level, achieved: fmt(r.hl.achievedConfidence * 100, 1) }));
+        const ciNote = this._ciNoteCodes(r, alpha, target).map((w) => {
+          if (w.code === 'ciRatioUndefinedNote') return _t(w.code);
+          if (w.code === 'ciShiftTooSmall') {
+            return _t(w.code, { level, achieved: fmt(w.values.achieved * 100, 1) });
           }
-          ciNote = parts.join(' ');
-        }
+          return _t(w.code, { lo: fmt(w.values.lo), hi: fmt(w.values.hi) });
+        }).join(' ');
 
         return {
           h0, h1, ciNote,
@@ -721,6 +732,53 @@ const definition = {
           h1Class: r.reject ? 'hyptest__h-box--accepted' : 'hyptest__h-box--rejected',
           h0Tip, h1Tip,
           metrics,
+        };
+      },
+
+      /**
+       * Die Hinweise zum Intervall als Codes mit ungerundeten Zahlen — Quelle
+       * für den Hinweistext und für `numeric.notes`. `level` und `achieved`
+       * sind Anteile (0,95), nicht Prozent.
+       * @noagent Ableitung aus dem Testergebnis
+       */
+      _ciNoteCodes(r, alpha, target) {
+        const isPaired = this.model.testType === 'paired';
+        const isMeanDiff = this.model.category !== 'variance' && this.model.testType === 'two' && r.ci != null;
+        // A non-rejected one-sided test can leave the target outside the CI
+        const ciHoldsTarget = ciContains(r.ci, target ?? 0);
+        const out = [];
+        if (r.ciUndefined) {
+          out.push(warning('ciRatioUndefinedNote'));
+        } else if (isPaired && r.ci && !r.reject) {
+          if (ciHoldsTarget) out.push(warning('ciPairedDiffNote', { lo: r.ci[0], hi: r.ci[1] }));
+        } else if (isMeanDiff && !r.reject) {
+          if (ciHoldsTarget) out.push(warning('ciDiffNote', { lo: r.ci[0], hi: r.ci[1] }));
+        } else if (r.hl) {
+          if (!r.reject) out.push(warning('ciShiftNote', { lo: r.hl.lower, hi: r.hl.upper }));
+          if (r.hl.K === 1 && r.hl.achievedConfidence > 0 && r.hl.achievedConfidence < 1 - alpha - 1e-9) {
+            out.push(warning('ciShiftTooSmall', { level: 1 - alpha, achieved: r.hl.achievedConfidence }));
+          }
+        }
+        return out;
+      },
+
+      /**
+       * Das Testergebnis als Zahlen.
+       * @noagent Ableitung aus dem Testergebnis
+       */
+      _numeric(r, alpha, target, power) {
+        const p = finiteOrNull(r.pValue);
+        let ci = null;
+        if (Array.isArray(r.ci)) ci = r.ci.map(finiteOrNull);
+        else if (r.hl) ci = [finiteOrNull(r.hl.lower), finiteOrNull(r.hl.upper)];
+        return {
+          statistic: finiteOrNull(r.statistic),
+          df: finiteOrNull(r.df ?? r.df1),
+          p,
+          ci,
+          decision: (r.reject ?? (p != null && p < alpha)) ? 'reject' : 'keep',
+          power: finiteOrNull(power),
+          notes: this._ciNoteCodes(r, alpha, target),
         };
       },
 
@@ -761,7 +819,11 @@ const definition = {
 
       // ── Power analysis (non-k; mirrors legacy _renderPower) ────
 
-      _powerInfo(d1, d2, target, alpha) {
+      /**
+       * Teststärke, Effektstärke und nötiger Umfang als Zahlen.
+       * @noagent Ableitung aus den Daten
+       */
+      _powerCalc(d1, d2, target, alpha) {
         const dir = this.model.direction;
         const n1 = d1.length;
         const goal = this.model.powerGoal;
@@ -800,6 +862,13 @@ const definition = {
           }
         }
 
+        return { curPow, curEff, effLabel, nForGoal };
+      },
+
+      _powerInfo(d1, d2, target, alpha, calc = this._powerCalc(d1, d2, target, alpha)) {
+        const n1 = d1.length;
+        const goal = this.model.powerGoal;
+        const { curPow, curEff, effLabel, nForGoal } = calc;
         const goalPct = (goal * 100).toFixed(0);
         const goalReached = curPow >= goal;
         const nDisplay = nForGoal >= 5000 ? '> 5000' : String(nForGoal);
@@ -973,6 +1042,7 @@ const definition = {
           secondary = this._secondaryResult(wilcoxonSignedRank(d, target, dir, alpha), alpha);
         }
 
+        const powerCalc = this._powerCalc(d, null, target, alpha);
         this.result = {
           isK: false,
           allNormal: dNormal,
@@ -980,8 +1050,9 @@ const definition = {
           route: { name: algoName, algoId: ALGO_LAB_IDS[algoName] || '' },
           varEquality: null,
           main: this._mainResult(r, alpha, target),
+          numeric: this._numeric(r, alpha, target, powerCalc.curPow),
           secondary,
-          power: this._powerInfo(d, null, target, alpha),
+          power: this._powerInfo(d, null, target, alpha, powerCalc),
           pairwise: null,
           residualPlot: null,
           pairInfo: { n: d.length, dropped },
@@ -1102,7 +1173,8 @@ const definition = {
         const normCards = [this._normCard('S1', d1, sw1, ad1, n1Normal, alpha)];
         if (d2) normCards.push(this._normCard('S2', d2, sw2, ad2, n2Normal, alpha));
 
-        const power = this._powerInfo(d1, d2, target, alpha);
+        const powerCalc = this._powerCalc(d1, d2, target, alpha);
+        const power = this._powerInfo(d1, d2, target, alpha, powerCalc);
         power.note = (algo.id === 'bonett1' || algo.id === 'bonett2') ? _t('powerNormalApprox') : '';
 
         this.result = {
@@ -1112,6 +1184,7 @@ const definition = {
           route: { name: algo.name, algoId: ALGO_LAB_IDS[algo.name] || '' },
           varEquality,
           main: this._mainResult(r, alpha, target),
+          numeric: this._numeric(r, alpha, target, powerCalc.curPow),
           secondary,
           power,
           pairwise: null,
@@ -1195,6 +1268,7 @@ const definition = {
           route: { name: algo.name, algoId: ALGO_LAB_IDS[algo.name] || '' },
           varEquality,
           main: this._kMainResult(r, refs, groups, alpha, pairwise),
+          numeric: this._numeric(r, alpha, null, null),
           secondary,
           power: null,
           pairwise: pairwise ? this._pairwiseSection(pairwise, refs, groups, alpha) : null,
