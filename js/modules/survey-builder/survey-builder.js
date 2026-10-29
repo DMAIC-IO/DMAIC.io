@@ -34,12 +34,161 @@ import { ResponsesViewModel } from './viewmodel/responses.js';
 import { ResultsViewModel } from './viewmodel/results.js';
 import { HandoverViewModel } from './viewmodel/handover.js';
 import { uid } from '../../core/uid.js';
-import { agentReadMixin } from '../../core/agent/agent-read-mixin.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum } from '../../core/agent/agent-argcheck.js';
 
 /** Tabs of the module (State.ui.tab). */
 const TABS = ['draft', 'recipients', 'results'];
 
+/**
+ * Rücklaufquote. Sätze je Eigenschaft unter `types.ResponseRate.<name>`.
+ *
+ * @typedef {object} ResponseRate
+ * @property {number} sent  Empfänger, die ihre Datei bekommen haben
+ * @property {number} answered  davon beantwortet
+ * @property {number|null} rate  beantwortet geteilt durch verschickt, null ohne Versand
+ * @property {number} withoutRecipient  Antworten ohne bekannten Empfänger
+ * @property {Array<{group: string, sent: number, answered: number, rate: number|null}>} groups  dasselbe je Empfängergruppe
+ */
+
+/**
+ * Eine Antwortoption mit ihrer Häufigkeit. Sätze unter `types.OptionStat.<name>`.
+ *
+ * @typedef {object} OptionStat
+ * @property {string} id  Id der Option
+ * @property {string} text  Text der Option
+ * @property {number} count  wie oft gewählt
+ * @property {number|null} share  Anteil an den Antworten auf die Frage
+ */
+
+/**
+ * Eine Bewertungszeile. Sätze unter `types.RatingStatRow.<name>`.
+ *
+ * @typedef {object} RatingStatRow
+ * @property {string} id  Id der Zeile
+ * @property {string} text  Text der Zeile
+ * @property {number} n  Antworten mit einer Bewertung von 1 bis 5
+ * @property {number|null} mean  Mittelwert
+ * @property {number|null} median  Median
+ * @property {number[]} dist  Häufigkeit der Stufen 1 bis 5
+ * @property {number} na  Antworten mit keine Angabe
+ * @property {number|null} topShare  Anteil der Bewertungen 4 und 5
+ */
+
+/**
+ * Eine Kano-Zeile. Sätze unter `types.KanoStatRow.<name>`.
+ *
+ * @typedef {object} KanoStatRow
+ * @property {string} id  Id der Zeile
+ * @property {string} text  Text der Zeile
+ * @property {Record<string, number>} counts  Antworten je Kano-Kategorie M, O, A, I, R, Q
+ * @property {number} n  eingeordnete Antworten
+ * @property {number} unanswered  Antworten ohne Einordnung
+ * @property {string|null} category  häufigste Kategorie
+ * @property {boolean} tie  ob mehrere Kategorien gleich häufig sind
+ * @property {number|null} cs  Zufriedenheitskoeffizient von 0 bis 1
+ * @property {number|null} ds  Unzufriedenheitskoeffizient von -1 bis 0
+ * @property {number|null} importanceMean  mittlere Wichtigkeit von 1 bis 9
+ * @property {number} importanceN  Antworten mit Wichtigkeit
+ */
+
+/**
+ * Ein Freitext. Sätze unter `types.TextEntry.<name>`.
+ *
+ * @typedef {object} TextEntry
+ * @property {string} responseId  Id der Antwort
+ * @property {string|null} recipientId  Empfänger, falls bekannt
+ * @property {string} text  der Text
+ */
+
+/**
+ * Kennzahlen einer Frage unter dem aktiven Filter. Welche Teile vorkommen,
+ * hängt vom Typ ab. Sätze unter `types.QuestionStat.<name>`.
+ *
+ * @typedef {object} QuestionStat
+ * @property {'single'|'multi'|'rating'|'kano'|'text'} type  Fragetyp
+ * @property {string} questionId  Id der Frage
+ * @property {number} n  Antworten, in denen die Frage sichtbar war
+ * @property {number} [answered]  davon beantwortet (single, multi)
+ * @property {OptionStat[]} [options]  Optionen mit Häufigkeit (single, multi)
+ * @property {number} [otherCount]  Antworten mit Sonstige-Text (single, multi)
+ * @property {TextEntry[]} [otherTexts]  die Sonstige-Texte (single, multi)
+ * @property {Array<RatingStatRow|KanoStatRow>} [rows]  Zeilen (rating, kano)
+ * @property {TextEntry[]} [answers]  die Freitexte (text)
+ */
+
+/**
+ * Eine Zeile der Rangfolge aller Bewertungsfragen. Sätze unter `types.RankingRow.<name>`.
+ *
+ * @typedef {object} RankingRow
+ * @property {string} questionId  Id der Frage
+ * @property {string} questionText  Text der Frage
+ * @property {string} rowId  Id der Zeile
+ * @property {string} text  Text der Zeile
+ * @property {number} n  Bewertungen
+ * @property {number|null} mean  Mittelwert
+ * @property {number|null} topShare  Anteil der Bewertungen 4 und 5
+ */
+
+/**
+ * Eine Zeile der Kano-Übersicht. Sätze unter `types.KanoRow.<name>`.
+ *
+ * @typedef {object} KanoRow
+ * @property {string} questionId  Id der Frage
+ * @property {string} questionText  Text der Frage
+ * @property {string} rowId  Id der Zeile
+ * @property {string} text  Text der Zeile
+ * @property {string|null} category  häufigste Kano-Kategorie
+ * @property {number|null} cs  Zufriedenheitskoeffizient
+ * @property {number|null} ds  Unzufriedenheitskoeffizient
+ * @property {number|null} importanceMean  mittlere Wichtigkeit
+ * @property {number} n  eingeordnete Antworten
+ */
+
+/**
+ * Freitexte insgesamt und davon in den VoC-Baum übernommen. Sätze unter `types.FreeTextSummary.<name>`.
+ *
+ * @typedef {object} FreeTextSummary
+ * @property {number} total  alle Freitexte und Sonstige-Texte
+ * @property {number} taken  davon übernommen
+ */
+
+/**
+ * Gruppenvergleich nach einer Einfachauswahl-Frage. Sätze unter `types.GroupComparison.<name>`.
+ *
+ * @typedef {object} GroupComparison
+ * @property {string} questionId  die Gruppierungsfrage
+ * @property {Array<{id: string, text: string, n: number, few: boolean}>} groups  die Gruppen, few bei wenig Antworten
+ * @property {object[]} questions  je verglichener Frage die Anteile, Mittelwerte oder Kategorien je Gruppe
+ */
+
+/**
+ * Die Auswertung, wie der Reiter sie zeigt. Sätze unter `types.SurveyResults.<name>`.
+ *
+ * @typedef {object} SurveyResults
+ * @property {{questionId: string, optionId: string}|null} filter  der aktive Filter
+ * @property {string|null} groupBy  die aktive Gruppierungsfrage
+ * @property {number} n  Antworten nach dem Filter
+ * @property {ResponseRate} responseRate  Rücklaufquote, vom Filter unberührt
+ * @property {QuestionStat[]} questions  Kennzahlen je Frage in Reihenfolge des Fragebogens
+ * @property {RankingRow[]} ratingRanking  alle Bewertungszeilen nach Mittelwert
+ * @property {KanoRow[]} kanoOverview  alle Kano-Zeilen
+ * @property {FreeTextSummary} freeText  Freitexte und Übernahme
+ * @property {GroupComparison|null} groupComparison  Vergleich je Gruppe, null ohne Gruppierung
+ */
+
+/**
+ * @typedef {object} AgentRead
+ * @property {any} survey  der Fragebogen
+ * @property {Array<{id, name, organisation, group, email, note, sentAt: string|null, sentVersion: number|null}>} recipients  die Empfänger
+ * @property {Array<{id, surveyVersion, recipientId: string|null, viaRecipient: boolean, submittedAt, answers: object}>} responses  die eingelesenen Antworten
+ * @property {string[]} answeredRecipientIds  Empfänger, die geantwortet haben
+ * @property {any} transfers  was schon übergeben wurde
+ * @property {any} ui  Stand der Oberfläche
+ * @property {any} dirtyStructure  Aufbau seit dem letzten Export geändert
+ * @property {any} exportedOnce  schon einmal exportiert
+ * @property {SurveyResults} results  die Auswertung unter dem aktiven Filter und der aktiven Gruppierung
+ */
 export default createModule({
   config: {
     id: 'survey-builder',
@@ -80,7 +229,19 @@ export default createModule({
       handover: new HandoverViewModel(deps),
       _t,
       _unsubs: [],
-      ...agentReadMixin(module),
+
+      /**
+       * Den vollständigen Lesezustand liefern, dazu die Auswertung als Zahlen.
+       * @agent
+       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} Fragebogen, Empfänger, Antworten und die Auswertung
+       */
+      read(options) {
+        return readAgentState('survey-builder', {
+          ...this.model.toJSON(),
+          results: this.results.agentSnapshot(),
+        }, options);
+      },
 
       /** @noagent lifecycle — Alpine hook: binds the sub-viewmodels to the component's model. */
       init() {

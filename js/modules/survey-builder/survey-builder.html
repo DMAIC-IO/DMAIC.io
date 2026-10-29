@@ -329,7 +329,7 @@
       </div>
 
       <div data-ref="evaluation" x-show="responses.hasResponses()">
-        <div class="dmike-split__section-title" x-text="t('evaluationTitle')"></div>
+        <div class="dmike-split__section-title"><span data-help-key="modules.survey-builder.fields.results.help" x-text="t('evaluationTitle')"></span></div>
         <div class="survey-builder__toolbar">
           <label class="survey-builder__counts" data-help-key="modules.survey-builder.actions.results.setFilter.help" x-text="t('filterLabel')"></label>
           <select class="field" data-ref="filter" @change="results.setFilterFromEvent($event)">

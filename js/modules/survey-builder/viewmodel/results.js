@@ -285,6 +285,33 @@ export class ResultsViewModel {
   // Summary
 
   /**
+   * @noagent Lesefläche: die Auswertung, wie der Reiter sie zeigt, als Zahlen.
+   * @returns {object} SurveyResults (Typedef in survey-builder.js)
+   */
+  agentSnapshot() {
+    const survey = this.model.survey;
+    const filter = this._activeFilter();
+    const groupBy = this._activeGroupBy();
+    const responses = this.filtered();
+    const questions = [];
+    for (const { question } of documentOrder(survey)) {
+      const stats = questionStats(survey, question, responses);
+      if (stats) questions.push(plainCopy(stats));
+    }
+    return {
+      filter: filter ? { questionId: filter.questionId, optionId: filter.optionId } : null,
+      groupBy,
+      n: responses.length,
+      responseRate: plainCopy(this._rate()),
+      questions,
+      ratingRanking: plainCopy(ratingRanking(survey, responses)),
+      kanoOverview: plainCopy(kanoOverview(survey, responses)),
+      freeText: plainCopy(freeTextSummary(survey, responses, this.model.transfers.vocTree.responseKeys)),
+      groupComparison: groupBy ? plainCopy(groupComparison(survey, responses, groupBy)) : null,
+    };
+  }
+
+  /**
    * Response rate over all recipients and responses; the filter does not apply.
    * @returns {object} result of responseRate()
    */

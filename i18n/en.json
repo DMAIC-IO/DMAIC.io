@@ -2209,7 +2209,8 @@
         "transfers": { "help": "What was handed over: the answers taken into the VoC tree and per Kano question the Kano instance it goes to." },
         "ui": { "help": "State of the interface: open tab, selected question, filter, grouping and whether the report names respondents." },
         "dirtyStructure": { "help": "Whether the structure changed since the last export; once the questionnaire was sent, the next export then raises the version." },
-        "exportedOnce": { "help": "Whether the questionnaire was exported at least once." }
+        "exportedOnce": { "help": "Whether the questionnaire was exported at least once." },
+        "results": { "help": "The evaluation as the results tab shows it: under the active filter (filter) and grouping (groupBy). n is the number of responses after the filter; the response rate always covers all recipients. Per question the figures, plus the ranking of rating questions, the Kano overview, the free-text summary and — with a grouping set — the group comparison." }
       },
       "types": {
         "SurveyHeader": {
@@ -2242,6 +2243,98 @@
           "group": "The group the response rate is split by.",
           "email": "E-mail address, to send the file with your own mail program.",
           "note": "A free note."
+        },
+        "ResponseRate": {
+          "sent": "How many recipients received their file.",
+          "answered": "How many of them have answered.",
+          "rate": "Answered divided by sent; empty when nothing was sent.",
+          "withoutRecipient": "Responses imported without a known recipient.",
+          "groups": "The same per recipient group."
+        },
+        "OptionStat": {
+          "id": "The id of the option.",
+          "text": "The text of the option.",
+          "count": "How often the option was chosen.",
+          "share": "Its share of the answers to the question."
+        },
+        "RatingStatRow": {
+          "id": "The id of the row.",
+          "text": "The text of the row.",
+          "n": "How many answers carry a rating from 1 to 5.",
+          "mean": "The mean rating.",
+          "median": "The median rating.",
+          "dist": "How often each step from 1 to 5 was chosen.",
+          "na": "How often no answer was chosen.",
+          "topShare": "Share of ratings 4 and 5."
+        },
+        "KanoStatRow": {
+          "id": "The id of the row.",
+          "text": "The text of the row.",
+          "counts": "How many answers fall into each Kano category M, O, A, I, R and Q.",
+          "n": "How many answers could be classified.",
+          "unanswered": "How many answers could not be classified.",
+          "category": "The most frequent category.",
+          "tie": "Whether several categories are equally frequent.",
+          "cs": "Satisfaction coefficient from 0 to 1.",
+          "ds": "Dissatisfaction coefficient from -1 to 0.",
+          "importanceMean": "The mean importance from 1 to 9.",
+          "importanceN": "How many answers carry an importance."
+        },
+        "TextEntry": {
+          "responseId": "The response the text comes from.",
+          "recipientId": "The recipient, if known.",
+          "text": "The text itself."
+        },
+        "QuestionStat": {
+          "type": "The question type; it decides which of the following parts appear.",
+          "questionId": "The question.",
+          "n": "How many responses saw the question, that is under the filter and with its condition met.",
+          "answered": "How many of them answered (single and multiple choice).",
+          "options": "The options with count and share (single and multiple choice).",
+          "otherCount": "How many answers carry an Other text.",
+          "otherTexts": "The Other texts.",
+          "rows": "The rows with their figures (rating and Kano).",
+          "answers": "The free texts (free-text question)."
+        },
+        "RankingRow": {
+          "questionId": "The rating question.",
+          "questionText": "The text of the question.",
+          "rowId": "The row.",
+          "text": "The text of the row.",
+          "n": "How many ratings go in.",
+          "mean": "The mean rating.",
+          "topShare": "Share of ratings 4 and 5."
+        },
+        "KanoRow": {
+          "questionId": "The Kano question.",
+          "questionText": "The text of the question.",
+          "rowId": "The row.",
+          "text": "The text of the row.",
+          "category": "The most frequent Kano category.",
+          "cs": "Satisfaction coefficient from 0 to 1.",
+          "ds": "Dissatisfaction coefficient from -1 to 0.",
+          "importanceMean": "The mean importance from 1 to 9.",
+          "n": "How many answers could be classified."
+        },
+        "FreeTextSummary": {
+          "total": "How many free texts and Other texts there are.",
+          "taken": "How many of them are already in the VoC tree."
+        },
+        "GroupComparison": {
+          "questionId": "The single-choice question used for grouping.",
+          "groups": "The groups with their response count; few marks few responses.",
+          "questions": "Per compared question the shares, means or categories per group."
+        },
+        "SurveyResults": {
+          "filter": "The active filter of question and option, otherwise empty.",
+          "groupBy": "The active grouping question, otherwise empty.",
+          "n": "How many responses remain after the filter.",
+          "responseRate": "The response rate; the filter does not change it.",
+          "questions": "The figures per question in questionnaire order.",
+          "ratingRanking": "All rating rows, by mean descending.",
+          "kanoOverview": "All Kano rows.",
+          "freeText": "How many free texts there are and how many are taken over.",
+          "groupComparison": "The comparison per group; empty without a grouping."
         }
       },
       "columns": {

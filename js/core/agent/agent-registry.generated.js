@@ -19111,11 +19111,11 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
-        "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand liefern, dazu die Auswertung als Zahlen."
       },
       "setTab": {
         "params": [
@@ -19133,43 +19133,309 @@ export const AGENT_REGISTRY = {
     "fields": {
       "survey": {
         "type": "any",
-        "help": "",
-        "bulk": false
+        "help": "der Fragebogen",
+        "bulk": false,
+        "derived": true
       },
       "recipients": {
         "type": "Array<{id, name, organisation, group, email, note, sentAt: string|null, sentVersion: number|null}>",
-        "help": "",
-        "bulk": false
+        "help": "die Empfänger",
+        "bulk": false,
+        "derived": true
       },
       "responses": {
         "type": "Array<{id, surveyVersion, recipientId: string|null, viaRecipient: boolean, submittedAt, answers: object}>",
-        "help": "",
-        "bulk": false
+        "help": "die eingelesenen Antworten",
+        "bulk": false,
+        "derived": true
       },
       "answeredRecipientIds": {
         "type": "string[]",
-        "help": "",
-        "bulk": false
+        "help": "Empfänger, die geantwortet haben",
+        "bulk": false,
+        "derived": true
       },
       "transfers": {
         "type": "any",
-        "help": "",
-        "bulk": false
+        "help": "was schon übergeben wurde",
+        "bulk": false,
+        "derived": true
       },
       "ui": {
         "type": "any",
-        "help": "",
-        "bulk": false
+        "help": "Stand der Oberfläche",
+        "bulk": false,
+        "derived": true
       },
       "dirtyStructure": {
         "type": "any",
-        "help": "",
-        "bulk": false
+        "help": "Aufbau seit dem letzten Export geändert",
+        "bulk": false,
+        "derived": true
       },
       "exportedOnce": {
         "type": "any",
-        "help": "",
-        "bulk": false
+        "help": "schon einmal exportiert",
+        "bulk": false,
+        "derived": true
+      },
+      "results": {
+        "type": "SurveyResults",
+        "help": "die Auswertung unter dem aktiven Filter und der aktiven Gruppierung",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "SurveyResults",
+        "keys": {
+          "filter": {
+            "type": "{questionId: string, optionId: string}|null",
+            "help": "der aktive Filter"
+          },
+          "groupBy": {
+            "type": "string|null",
+            "help": "die aktive Gruppierungsfrage"
+          },
+          "n": {
+            "type": "number",
+            "help": "Antworten nach dem Filter"
+          },
+          "responseRate": {
+            "type": "ResponseRate",
+            "help": "Rücklaufquote, vom Filter unberührt",
+            "keysOf": "ResponseRate",
+            "keys": {
+              "sent": {
+                "type": "number",
+                "help": "Empfänger, die ihre Datei bekommen haben"
+              },
+              "answered": {
+                "type": "number",
+                "help": "davon beantwortet"
+              },
+              "rate": {
+                "type": "number|null",
+                "help": "beantwortet geteilt durch verschickt, null ohne Versand"
+              },
+              "withoutRecipient": {
+                "type": "number",
+                "help": "Antworten ohne bekannten Empfänger"
+              },
+              "groups": {
+                "type": "Array<{group: string, sent: number, answered: number, rate: number|null}>",
+                "help": "dasselbe je Empfängergruppe"
+              }
+            }
+          },
+          "questions": {
+            "type": "QuestionStat[]",
+            "help": "Kennzahlen je Frage in Reihenfolge des Fragebogens",
+            "keysOf": "QuestionStat",
+            "keys": {
+              "type": {
+                "type": "'single'|'multi'|'rating'|'kano'|'text'",
+                "help": "Fragetyp"
+              },
+              "questionId": {
+                "type": "string",
+                "help": "Id der Frage"
+              },
+              "n": {
+                "type": "number",
+                "help": "Antworten, in denen die Frage sichtbar war"
+              },
+              "answered": {
+                "type": "number",
+                "help": "davon beantwortet (single, multi)",
+                "optional": true
+              },
+              "options": {
+                "type": "OptionStat[]",
+                "help": "Optionen mit Häufigkeit (single, multi)",
+                "optional": true,
+                "keysOf": "OptionStat",
+                "keys": {
+                  "id": {
+                    "type": "string",
+                    "help": "Id der Option"
+                  },
+                  "text": {
+                    "type": "string",
+                    "help": "Text der Option"
+                  },
+                  "count": {
+                    "type": "number",
+                    "help": "wie oft gewählt"
+                  },
+                  "share": {
+                    "type": "number|null",
+                    "help": "Anteil an den Antworten auf die Frage"
+                  }
+                }
+              },
+              "otherCount": {
+                "type": "number",
+                "help": "Antworten mit Sonstige-Text (single, multi)",
+                "optional": true
+              },
+              "otherTexts": {
+                "type": "TextEntry[]",
+                "help": "die Sonstige-Texte (single, multi)",
+                "optional": true,
+                "keysOf": "TextEntry",
+                "keys": {
+                  "responseId": {
+                    "type": "string",
+                    "help": "Id der Antwort"
+                  },
+                  "recipientId": {
+                    "type": "string|null",
+                    "help": "Empfänger, falls bekannt"
+                  },
+                  "text": {
+                    "type": "string",
+                    "help": "der Text"
+                  }
+                }
+              },
+              "rows": {
+                "type": "Array<RatingStatRow|KanoStatRow>",
+                "help": "Zeilen (rating, kano)",
+                "optional": true
+              },
+              "answers": {
+                "type": "TextEntry[]",
+                "help": "die Freitexte (text)",
+                "optional": true,
+                "keysOf": "TextEntry",
+                "keys": {
+                  "responseId": {
+                    "type": "string",
+                    "help": "Id der Antwort"
+                  },
+                  "recipientId": {
+                    "type": "string|null",
+                    "help": "Empfänger, falls bekannt"
+                  },
+                  "text": {
+                    "type": "string",
+                    "help": "der Text"
+                  }
+                }
+              }
+            }
+          },
+          "ratingRanking": {
+            "type": "RankingRow[]",
+            "help": "alle Bewertungszeilen nach Mittelwert",
+            "keysOf": "RankingRow",
+            "keys": {
+              "questionId": {
+                "type": "string",
+                "help": "Id der Frage"
+              },
+              "questionText": {
+                "type": "string",
+                "help": "Text der Frage"
+              },
+              "rowId": {
+                "type": "string",
+                "help": "Id der Zeile"
+              },
+              "text": {
+                "type": "string",
+                "help": "Text der Zeile"
+              },
+              "n": {
+                "type": "number",
+                "help": "Bewertungen"
+              },
+              "mean": {
+                "type": "number|null",
+                "help": "Mittelwert"
+              },
+              "topShare": {
+                "type": "number|null",
+                "help": "Anteil der Bewertungen 4 und 5"
+              }
+            }
+          },
+          "kanoOverview": {
+            "type": "KanoRow[]",
+            "help": "alle Kano-Zeilen",
+            "keysOf": "KanoRow",
+            "keys": {
+              "questionId": {
+                "type": "string",
+                "help": "Id der Frage"
+              },
+              "questionText": {
+                "type": "string",
+                "help": "Text der Frage"
+              },
+              "rowId": {
+                "type": "string",
+                "help": "Id der Zeile"
+              },
+              "text": {
+                "type": "string",
+                "help": "Text der Zeile"
+              },
+              "category": {
+                "type": "string|null",
+                "help": "häufigste Kano-Kategorie"
+              },
+              "cs": {
+                "type": "number|null",
+                "help": "Zufriedenheitskoeffizient"
+              },
+              "ds": {
+                "type": "number|null",
+                "help": "Unzufriedenheitskoeffizient"
+              },
+              "importanceMean": {
+                "type": "number|null",
+                "help": "mittlere Wichtigkeit"
+              },
+              "n": {
+                "type": "number",
+                "help": "eingeordnete Antworten"
+              }
+            }
+          },
+          "freeText": {
+            "type": "FreeTextSummary",
+            "help": "Freitexte und Übernahme",
+            "keysOf": "FreeTextSummary",
+            "keys": {
+              "total": {
+                "type": "number",
+                "help": "alle Freitexte und Sonstige-Texte"
+              },
+              "taken": {
+                "type": "number",
+                "help": "davon übernommen"
+              }
+            }
+          },
+          "groupComparison": {
+            "type": "GroupComparison|null",
+            "help": "Vergleich je Gruppe, null ohne Gruppierung",
+            "keysOf": "GroupComparison",
+            "keys": {
+              "questionId": {
+                "type": "string",
+                "help": "die Gruppierungsfrage"
+              },
+              "groups": {
+                "type": "Array<{id: string, text: string, n: number, few: boolean}>",
+                "help": "die Gruppen, few bei wenig Antworten"
+              },
+              "questions": {
+                "type": "object[]",
+                "help": "je verglichener Frage die Anteile, Mittelwerte oder Kategorien je Gruppe"
+              }
+            }
+          }
+        }
       }
     }
   },

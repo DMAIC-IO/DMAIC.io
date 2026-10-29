@@ -2209,7 +2209,8 @@
         "transfers": { "help": "Was schon übergeben wurde: die in den VoC-Baum übernommenen Antworten und je Kano-Frage die Kano-Instanz, an die sie geht." },
         "ui": { "help": "Stand der Oberfläche: offener Reiter, ausgewählte Frage, Filter, Gruppierung und ob der Bericht Namen nennt." },
         "dirtyStructure": { "help": "Ob sich der Aufbau seit dem letzten Export geändert hat; ist der Fragebogen schon verschickt, erhöht der nächste Export dann die Version." },
-        "exportedOnce": { "help": "Ob der Fragebogen schon einmal exportiert wurde." }
+        "exportedOnce": { "help": "Ob der Fragebogen schon einmal exportiert wurde." },
+        "results": { "help": "Die Auswertung, wie der Reiter Auswertung sie zeigt: unter dem aktiven Filter (filter) und der aktiven Gruppierung (groupBy). n ist die Zahl der Antworten nach dem Filter; die Rücklaufquote gilt immer für alle Empfänger. Je Frage die Kennzahlen, dazu Rangfolge der Bewertungsfragen, Kano-Übersicht, Freitext-Zusammenfassung und — bei gesetzter Gruppierung — der Gruppenvergleich." }
       },
       "types": {
         "SurveyHeader": {
@@ -2242,6 +2243,98 @@
           "group": "Die Gruppe, nach der die Rücklaufquote aufgeteilt wird.",
           "email": "E-Mail-Adresse, um die Datei mit dem eigenen Mailprogramm zu verschicken.",
           "note": "Eine freie Notiz."
+        },
+        "ResponseRate": {
+          "sent": "Wie viele Empfänger ihre Datei bekommen haben.",
+          "answered": "Wie viele davon geantwortet haben.",
+          "rate": "Beantwortet geteilt durch verschickt; ohne Versand leer.",
+          "withoutRecipient": "Antworten, die ohne bekannten Empfänger eingelesen wurden.",
+          "groups": "Dasselbe je Empfängergruppe."
+        },
+        "OptionStat": {
+          "id": "Die Id der Option.",
+          "text": "Der Text der Option.",
+          "count": "Wie oft die Option gewählt wurde.",
+          "share": "Anteil an den Antworten auf die Frage."
+        },
+        "RatingStatRow": {
+          "id": "Die Id der Zeile.",
+          "text": "Der Text der Zeile.",
+          "n": "Wie viele Antworten eine Bewertung von 1 bis 5 tragen.",
+          "mean": "Der Mittelwert der Bewertung.",
+          "median": "Der Median der Bewertung.",
+          "dist": "Wie oft jede Stufe von 1 bis 5 gewählt wurde.",
+          "na": "Wie oft keine Angabe gewählt wurde.",
+          "topShare": "Anteil der Bewertungen 4 und 5."
+        },
+        "KanoStatRow": {
+          "id": "Die Id der Zeile.",
+          "text": "Der Text der Zeile.",
+          "counts": "Wie viele Antworten in jede Kano-Kategorie M, O, A, I, R und Q fallen.",
+          "n": "Wie viele Antworten sich einordnen ließen.",
+          "unanswered": "Wie viele Antworten sich nicht einordnen ließen.",
+          "category": "Die häufigste Kategorie.",
+          "tie": "Ob mehrere Kategorien gleich häufig sind.",
+          "cs": "Zufriedenheitskoeffizient von 0 bis 1.",
+          "ds": "Unzufriedenheitskoeffizient von -1 bis 0.",
+          "importanceMean": "Die mittlere Wichtigkeit von 1 bis 9.",
+          "importanceN": "Wie viele Antworten eine Wichtigkeit tragen."
+        },
+        "TextEntry": {
+          "responseId": "Die Antwort, aus der der Text stammt.",
+          "recipientId": "Der Empfänger, falls bekannt.",
+          "text": "Der Text selbst."
+        },
+        "QuestionStat": {
+          "type": "Der Fragetyp; er bestimmt, welche der folgenden Teile vorkommen.",
+          "questionId": "Die Frage.",
+          "n": "Wie viele Antworten die Frage sahen, also unter dem Filter und mit erfüllter Bedingung.",
+          "answered": "Wie viele davon geantwortet haben (Einfach- und Mehrfachauswahl).",
+          "options": "Die Optionen mit Häufigkeit und Anteil (Einfach- und Mehrfachauswahl).",
+          "otherCount": "Wie viele Antworten einen Sonstige-Text tragen.",
+          "otherTexts": "Die Sonstige-Texte.",
+          "rows": "Die Zeilen mit ihren Kennzahlen (Bewertung und Kano).",
+          "answers": "Die Freitexte (Freitextfrage)."
+        },
+        "RankingRow": {
+          "questionId": "Die Bewertungsfrage.",
+          "questionText": "Der Text der Frage.",
+          "rowId": "Die Zeile.",
+          "text": "Der Text der Zeile.",
+          "n": "Wie viele Bewertungen eingehen.",
+          "mean": "Der Mittelwert der Bewertung.",
+          "topShare": "Anteil der Bewertungen 4 und 5."
+        },
+        "KanoRow": {
+          "questionId": "Die Kano-Frage.",
+          "questionText": "Der Text der Frage.",
+          "rowId": "Die Zeile.",
+          "text": "Der Text der Zeile.",
+          "category": "Die häufigste Kano-Kategorie.",
+          "cs": "Zufriedenheitskoeffizient von 0 bis 1.",
+          "ds": "Unzufriedenheitskoeffizient von -1 bis 0.",
+          "importanceMean": "Die mittlere Wichtigkeit von 1 bis 9.",
+          "n": "Wie viele Antworten sich einordnen ließen."
+        },
+        "FreeTextSummary": {
+          "total": "Wie viele Freitexte und Sonstige-Texte es gibt.",
+          "taken": "Wie viele davon schon in den VoC-Baum übernommen wurden."
+        },
+        "GroupComparison": {
+          "questionId": "Die Einfachauswahl-Frage, nach der gruppiert wird.",
+          "groups": "Die Gruppen mit Antwortzahl; few markiert wenig Antworten.",
+          "questions": "Je verglichener Frage die Anteile, Mittelwerte oder Kategorien je Gruppe."
+        },
+        "SurveyResults": {
+          "filter": "Der aktive Filter aus Frage und Option, sonst leer.",
+          "groupBy": "Die aktive Gruppierungsfrage, sonst leer.",
+          "n": "Wie viele Antworten nach dem Filter bleiben.",
+          "responseRate": "Die Rücklaufquote; der Filter ändert sie nicht.",
+          "questions": "Die Kennzahlen je Frage in der Reihenfolge des Fragebogens.",
+          "ratingRanking": "Alle Bewertungszeilen, nach Mittelwert absteigend.",
+          "kanoOverview": "Alle Kano-Zeilen.",
+          "freeText": "Wie viele Freitexte es gibt und wie viele übernommen sind.",
+          "groupComparison": "Der Vergleich je Gruppe; leer ohne Gruppierung."
         }
       },
       "columns": {
