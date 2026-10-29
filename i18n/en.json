@@ -9008,7 +9008,7 @@
       },
       "fields": {
         "risks": {
-          "help": "The risks in editing order. Per risk: id (that is how the actions address it), step (the process step under review), failureMode, effect, cause, prevention (the prevention control), control (the detection control), specialChar (the special characteristic: CC, SC or empty), justification (why a risk with high action priority has no action), sev (severity), occ (occurrence) and det (detection), collapsed (whether the card is collapsed) and actions. Per action: text (the action), resp (the person responsible), date (the due date), done (whether it is finished), deltaS, deltaO and deltaD (by how many levels it lowers severity, occurrence and detection). Severity, occurrence and detection are strings from 1 to 10 or empty, the deltas strings from 0 to 9. The risk priority number, the action priority and the projected values are computed and are in no field. Bulk data: without options.fields = ['risks'] only the extent is returned."
+          "help": "The risks in working order, each item described under keys. A bulk field: fetch rows via rows."
         },
         "scales": {
           "help": "The custom scale texts, one text per scale-cell key; null means the shipped ones apply."
@@ -9021,6 +9021,31 @@
         }
       },
       "types": {
+        "RiskEntry": {
+          "id": "The id of the risk; use it to address the risk when changing or removing it.",
+          "step": "The process step or component under review.",
+          "failureMode": "The potential failure mode.",
+          "effect": "The effect of the failure.",
+          "cause": "The cause of the failure.",
+          "prevention": "The measure that prevents the failure.",
+          "control": "The measure that detects the failure.",
+          "specialChar": "Special characteristic: CC, SC or empty.",
+          "justification": "Why a risk with high action priority stays without a measure.",
+          "sev": "Severity as a string 1 to 10, empty while not rated.",
+          "occ": "Occurrence as a string 1 to 10, empty while not rated.",
+          "det": "Detection as a string 1 to 10, empty while not rated.",
+          "collapsed": "Whether the risk card is collapsed; display only.",
+          "actions": "The measures for this risk, each item described under keys."
+        },
+        "RiskActionEntry": {
+          "text": "The measure.",
+          "resp": "Who is responsible for the measure.",
+          "date": "The due date as YYYY-MM-DD, or empty.",
+          "done": "Whether the measure is implemented.",
+          "deltaS": "How much the measure lowers severity, string 0 to 9.",
+          "deltaO": "How much the measure lowers occurrence, string 0 to 9.",
+          "deltaD": "How much the measure lowers detection, string 0 to 9."
+        },
         "RiskField": {
           "step": "The process step or component this risk card examines; free text.",
           "failureMode": "The potential failure mode: the way in which the step or component can fail at its task. Free text.",

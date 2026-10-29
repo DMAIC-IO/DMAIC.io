@@ -424,19 +424,45 @@ export const apRating = {
   },
 };
 
+/**
+ * Eine Maßnahme, wie `read().risks[].actions` sie zeigt. Sätze je
+ * Eigenschaft unter `types.RiskActionEntry.<name>`.
+ *
+ * @typedef {object} RiskActionEntry
+ * @property {string} text  die Maßnahme
+ * @property {string} resp  verantwortlich
+ * @property {string} date  Zieldatum JJJJ-MM-TT oder leer
+ * @property {boolean} done  umgesetzt
+ * @property {'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'} deltaS  erwartete Senkung der Bedeutung
+ * @property {'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'} deltaO  erwartete Senkung des Auftretens
+ * @property {'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'} deltaD  erwartete Senkung der Entdeckung
+ */
+
+/**
+ * Ein Risiko, wie `read().risks` es zeigt. Sätze je Eigenschaft unter
+ * `types.RiskEntry.<name>`.
+ *
+ * @typedef {object} RiskEntry
+ * @property {string} id  Kennung
+ * @property {string} step  Prozessschritt bzw. Bauteil
+ * @property {string} failureMode  Fehlerart
+ * @property {string} effect  Fehlerfolge
+ * @property {string} cause  Fehlerursache
+ * @property {string} prevention  Vermeidungsmaßnahme
+ * @property {string} control  Entdeckungsmaßnahme
+ * @property {''|'CC'|'SC'} specialChar  besonderes Merkmal
+ * @property {string} justification  Begründung ohne Maßnahme
+ * @property {''|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'} sev  Bedeutung
+ * @property {''|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'} occ  Auftreten
+ * @property {''|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'} det  Entdeckung
+ * @property {boolean} collapsed  Karte zugeklappt
+ * @property {RiskActionEntry[]} actions  Maßnahmen
+ */
+
 export class State {
   /**
-   * @type {Risk[]} die Risiken in Bearbeitungsreihenfolge; je Risiko `id`
-   *   (zum Ansprechen), `step` (der betrachtete Prozessschritt),
-   *   `failureMode` (die Fehlerart), `effect` (die Folge), `cause` (die
-   *   Ursache), `prevention` (die Vermeidungsmaßnahme), `control` (die
-   *   Entdeckungsmaßnahme), `specialChar` (`CC`, `SC` oder leer),
-   *   `justification` (warum ein Risiko mit hoher Aufgabenpriorität ohne
-   *   Maßnahme bleibt), `sev`, `occ` und `det` als Zeichenkette `1` bis `10`
-   *   oder leer, `collapsed` (ob die Karte zugeklappt ist) und `actions` —
-   *   je Maßnahme `text`, `resp` (die Zuständige), `date` (das Fälligkeitsdatum
-   *   als `JJJJ-MM-TT`), `done` sowie `deltaS`, `deltaO` und `deltaD` als
-   *   Zeichenkette `0` bis `9`, um die die Maßnahme die Bewertung senkt
+   * @type {RiskEntry[]} die Risiken in Bearbeitungsreihenfolge, jede Angabe
+   *   unter keys einzeln beschrieben
    * @agentBulk
    */
   risks = [];

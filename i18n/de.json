@@ -9012,7 +9012,7 @@
       },
       "fields": {
         "risks": {
-          "help": "Die Risiken in Bearbeitungsreihenfolge. Je Risiko: id (damit sprechen die Aktionen es an), step (der betrachtete Prozessschritt), failureMode (die Fehlerart), effect (die Folge), cause (die Ursache), prevention (die Vermeidungsmaßnahme), control (die Entdeckungsmaßnahme), specialChar (das besondere Merkmal: CC, SC oder leer), justification (warum ein Risiko mit hoher Aufgabenpriorität ohne Maßnahme bleibt), sev (die Bedeutung), occ (das Auftreten) und det (die Entdeckung), collapsed (ob die Karte zugeklappt ist) und actions. Je Maßnahme: text (die Maßnahme), resp (die Zuständige), date (das Fälligkeitsdatum), done (ob sie erledigt ist), deltaS, deltaO und deltaD (um wie viele Stufen sie Bedeutung, Auftreten und Entdeckung senkt). Bedeutung, Auftreten und Entdeckung stehen als Zeichenkette 1 bis 10 oder leer, die Deltas als Zeichenkette 0 bis 9. Die Risikoprioritätszahl, die Aufgabenpriorität und die projizierten Werte sind gerechnet und stehen in keinem Feld. Massendaten: ohne options.fields = ['risks'] kommt nur der Umfang."
+          "help": "Die Risiken in Bearbeitungsreihenfolge, jede Angabe unter keys einzeln beschrieben. Ein Massenfeld: Zeilen über rows abrufen."
         },
         "scales": {
           "help": "Die eigenen Skalentexte, je Schlüssel einer Skalenzelle ein Text; null heißt, es gelten die mitgelieferten."
@@ -9025,6 +9025,31 @@
         }
       },
       "types": {
+        "RiskEntry": {
+          "id": "Die Kennung des Risikos; mit ihr sprechen Sie es beim Ändern und Entfernen an.",
+          "step": "Der betrachtete Prozessschritt oder das Bauteil.",
+          "failureMode": "Die mögliche Fehlerart.",
+          "effect": "Die Folge des Fehlers.",
+          "cause": "Die Ursache des Fehlers.",
+          "prevention": "Die Maßnahme, die den Fehler vermeidet.",
+          "control": "Die Maßnahme, die den Fehler entdeckt.",
+          "specialChar": "Besonderes Merkmal: CC, SC oder leer.",
+          "justification": "Warum ein Risiko mit hoher Aufgabenpriorität ohne Maßnahme bleibt.",
+          "sev": "Die Bedeutung als Zeichenkette 1 bis 10, leer solange nicht bewertet.",
+          "occ": "Das Auftreten als Zeichenkette 1 bis 10, leer solange nicht bewertet.",
+          "det": "Die Entdeckung als Zeichenkette 1 bis 10, leer solange nicht bewertet.",
+          "collapsed": "Ob die Karte des Risikos zugeklappt ist; rein darstellend.",
+          "actions": "Die Maßnahmen zu diesem Risiko, jede Angabe unter keys einzeln beschrieben."
+        },
+        "RiskActionEntry": {
+          "text": "Die Maßnahme.",
+          "resp": "Wer für die Maßnahme zuständig ist.",
+          "date": "Das Fälligkeitsdatum als JJJJ-MM-TT, oder leer.",
+          "done": "Ob die Maßnahme umgesetzt ist.",
+          "deltaS": "Um wie viel die Maßnahme die Bedeutung senkt, Zeichenkette 0 bis 9.",
+          "deltaO": "Um wie viel die Maßnahme das Auftreten senkt, Zeichenkette 0 bis 9.",
+          "deltaD": "Um wie viel die Maßnahme die Entdeckung senkt, Zeichenkette 0 bis 9."
+        },
         "RiskField": {
           "step": "Der Prozessschritt oder das Bauteil, das diese Risikokarte betrachtet; freier Text.",
           "failureMode": "Der potenzielle Fehlermodus: auf welche Weise der Schritt oder das Bauteil seine Aufgabe verfehlen kann. Freier Text.",

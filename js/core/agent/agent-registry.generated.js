@@ -5755,10 +5755,100 @@ export const AGENT_REGISTRY = {
     },
     "fields": {
       "risks": {
-        "type": "Risk[]",
-        "help": "die Risiken in Bearbeitungsreihenfolge; je Risiko `id` (zum Ansprechen), `step` (der betrachtete Prozessschritt), `failureMode` (die Fehlerart), `effect` (die Folge), `cause` (die Ursache), `prevention` (die Vermeidungsmaßnahme), `control` (die Entdeckungsmaßnahme), `specialChar` (`CC`, `SC` oder leer), `justification` (warum ein Risiko mit hoher Aufgabenpriorität ohne Maßnahme bleibt), `sev`, `occ` und `det` als Zeichenkette `1` bis `10` oder leer, `collapsed` (ob die Karte zugeklappt ist) und `actions` — je Maßnahme `text`, `resp` (die Zuständige), `date` (das Fälligkeitsdatum als `JJJJ-MM-TT`), `done` sowie `deltaS`, `deltaO` und `deltaD` als Zeichenkette `0` bis `9`, um die die Maßnahme die Bewertung senkt",
+        "type": "RiskEntry[]",
+        "help": "die Risiken in Bearbeitungsreihenfolge, jede Angabe unter keys einzeln beschrieben",
         "bulk": true,
-        "bulkKind": "table"
+        "bulkKind": "table",
+        "keysOf": "RiskEntry",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": "Kennung"
+          },
+          "step": {
+            "type": "string",
+            "help": "Prozessschritt bzw. Bauteil"
+          },
+          "failureMode": {
+            "type": "string",
+            "help": "Fehlerart"
+          },
+          "effect": {
+            "type": "string",
+            "help": "Fehlerfolge"
+          },
+          "cause": {
+            "type": "string",
+            "help": "Fehlerursache"
+          },
+          "prevention": {
+            "type": "string",
+            "help": "Vermeidungsmaßnahme"
+          },
+          "control": {
+            "type": "string",
+            "help": "Entdeckungsmaßnahme"
+          },
+          "specialChar": {
+            "type": "''|'CC'|'SC'",
+            "help": "besonderes Merkmal"
+          },
+          "justification": {
+            "type": "string",
+            "help": "Begründung ohne Maßnahme"
+          },
+          "sev": {
+            "type": "''|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'",
+            "help": "Bedeutung"
+          },
+          "occ": {
+            "type": "''|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'",
+            "help": "Auftreten"
+          },
+          "det": {
+            "type": "''|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'",
+            "help": "Entdeckung"
+          },
+          "collapsed": {
+            "type": "boolean",
+            "help": "Karte zugeklappt"
+          },
+          "actions": {
+            "type": "RiskActionEntry[]",
+            "help": "Maßnahmen",
+            "keysOf": "RiskActionEntry",
+            "keys": {
+              "text": {
+                "type": "string",
+                "help": "die Maßnahme"
+              },
+              "resp": {
+                "type": "string",
+                "help": "verantwortlich"
+              },
+              "date": {
+                "type": "string",
+                "help": "Zieldatum JJJJ-MM-TT oder leer"
+              },
+              "done": {
+                "type": "boolean",
+                "help": "umgesetzt"
+              },
+              "deltaS": {
+                "type": "'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'",
+                "help": "erwartete Senkung der Bedeutung"
+              },
+              "deltaO": {
+                "type": "'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'",
+                "help": "erwartete Senkung des Auftretens"
+              },
+              "deltaD": {
+                "type": "'0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'",
+                "help": "erwartete Senkung der Entdeckung"
+              }
+            }
+          }
+        }
       },
       "scales": {
         "type": "object|null",
