@@ -301,6 +301,28 @@ suite('attribute-test report', () => {
     });
     assertTrue(r.notes.some(n => n.key === 'warnShareBelow5'));
   });
+  test('Zahlenebene: num, pValue, ci und noteDetails neben dem Text', () => {
+    const two = buildReport(st({ pooled: true }),
+      { ok: true, kind: 'two', x1: 30, n1: 400, x2: 18, n2: 380, groups: null, missing: 2 });
+    const pRow = two.stats.find(s => s.key === 'pValue');
+    assertEqual(pRow.value, '0.1085');
+    assertTrue(pRow.num > 0.1084 && pRow.num < 0.1086 && pRow.num !== 0.1085);
+    assertEqual(two.pValue, pRow.num);
+    assertEqual(two.ci.length, 2);
+    assertTrue(two.ci[0] < two.ci[1]);
+    assertEqual(two.stats.find(s => s.key === 'counts1').num, null);
+    assertEqual(two.stats.find(s => s.key === 'ci').num, null);
+    assertDeepEqual(two.noteDetails.map(n => n.code), two.notes.map(n => n.key));
+    assertDeepEqual(two.noteDetails.find(n => n.code === 'noteMissing').values, { count: 2 });
+    const assoc = buildReport(st(), {
+      ok: true, kind: 'assoc', rows: ['A', 'B'], cols: ['X', 'Y', 'Z'], counts: [[1, 2, 8], [3, 1, 9]], missing: 0,
+    });
+    assertEqual(assoc.ci, null);
+    assertEqual(assoc.pValue, assoc.stats.find(s => s.key === 'pPearson').num);
+    const share = assoc.noteDetails.find(n => n.code === 'warnShareBelow5').values.share;
+    assertTrue(share > 0 && share <= 1, String(share));
+    assertTrue(share !== Math.round(share * 100));
+  });
   test('x = 0 with a one-sided alternative gives exact bounds', () => {
     const r = buildReport(st({ direction: 'less' }), { ok: true, kind: 'one', x: 0, n: 30, p0: 0.1, missing: 0 });
     const c = r.stats.find(s => s.key === 'ci').value;
@@ -398,13 +420,13 @@ suite('attribute-test report', () => {
     assertTrue(r.notes.some(n => n.key === 'noteEquivCiOutside'));
     assertEqual(r.decisionParams.unit, '%');
     assertEqual(r.stats.find(s => s.key === 'estimate').value, '8.00');
-    assertDeepEqual(r.stats.find(s => s.key === 'counts'), { key: 'counts', labelKey: 'statCounts', value: '8 / 100' });
+    assertDeepEqual(r.stats.find(s => s.key === 'counts'), { key: 'counts', labelKey: 'statCounts', value: '8 / 100', num: null });
   });
   test('equiv 2 samples: group names and counts, unit pp', () => {
     const r = buildReport(st(), { ok: true, kind: 'equiv', samples: 2, x1: 470, n1: 10000, x2: 455, n2: 10000, lower: -0.01, upper: 0.01, groups: ['Lieferant A', 'Lieferant B'] });
     assertDeepEqual(r.stats.slice(0, 2), [
-      { key: 'counts1', labelKey: 'statCountsGroup', params: { group: 'Lieferant A' }, value: '470 / 10000' },
-      { key: 'counts2', labelKey: 'statCountsGroup', params: { group: 'Lieferant B' }, value: '455 / 10000' },
+      { key: 'counts1', labelKey: 'statCountsGroup', params: { group: 'Lieferant A' }, value: '470 / 10000', num: null },
+      { key: 'counts2', labelKey: 'statCountsGroup', params: { group: 'Lieferant B' }, value: '455 / 10000', num: null },
     ]);
     assertEqual(r.decisionParams.unit, 'pp');
     assertEqual(r.stats.find(s => s.key === 'bounds').params.unit, 'pp');

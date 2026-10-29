@@ -1015,6 +1015,10 @@ export const AGENT_REGISTRY = {
               "value": {
                 "type": "string",
                 "help": "Wert"
+              },
+              "num": {
+                "type": "number|null",
+                "help": "die Kennzahl als Zahl, null bei Zählern und Intervallen"
               }
             }
           },
@@ -1033,6 +1037,29 @@ export const AGENT_REGISTRY = {
                 "optional": true
               }
             }
+          },
+          "noteDetails": {
+            "type": "Warning[]",
+            "help": "die Hinweise als Codes mit ungerundeten Zahlen",
+            "keysOf": "Warning",
+            "keys": {
+              "code": {
+                "type": "string",
+                "help": "Kennung des Hinweises, gleich dem Textschlüssel"
+              },
+              "values": {
+                "type": "Record<string, number|null>",
+                "help": "eingesetzte Zahlen"
+              }
+            }
+          },
+          "pValue": {
+            "type": "number|null",
+            "help": "p-Wert der Entscheidung als Zahl"
+          },
+          "ci": {
+            "type": "number[]|null",
+            "help": "Konfidenzintervall [unten, oben], null ohne Intervall"
           },
           "decision": {
             "type": "'reject'|'keep'|'equivalent'|'notEquivalent'",

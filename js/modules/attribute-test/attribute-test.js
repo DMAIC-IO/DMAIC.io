@@ -155,6 +155,9 @@ const DIRECTION_LABEL_KEYS = { 'two-sided': 'dirTwoSided', greater: 'dirGreater'
  * @property {'one'|'two'|'equiv'|'mcnemar'|'rate1'|'rate2'|'assoc'} kind  Testart
  * @property {Stat[]} stats  Kennzahlen
  * @property {Note[]} notes  Hinweise
+ * @property {Warning[]} noteDetails  die Hinweise als Codes mit ungerundeten Zahlen
+ * @property {number|null} pValue  p-Wert der Entscheidung als Zahl
+ * @property {number[]|null} ci  Konfidenzintervall [unten, oben], null ohne Intervall
  * @property {'reject'|'keep'|'equivalent'|'notEquivalent'} decision  Entscheidung gegen α
  * @property {object} [decisionParams]  Platzhalter der Entscheidung, nur Äquivalenz
  * @property {string} basisKey  Grundlage der Entscheidung
@@ -173,12 +176,19 @@ const DIRECTION_LABEL_KEYS = { 'two-sided': 'dirTwoSided', greater: 'dirGreater'
  * @property {string} labelKey  Beschriftung
  * @property {object} [params]  Platzhalter der Beschriftung
  * @property {string} value  Wert
+ * @property {number|null} num  die Kennzahl als Zahl, null bei Zählern und Intervallen
  */
 
 /**
  * @typedef {object} Note
  * @property {string} key  Kennung des Hinweises
  * @property {object} [params]  Platzhalter
+ */
+
+/**
+ * @typedef {object} Warning
+ * @property {string} code  Kennung des Hinweises, gleich dem Textschlüssel
+ * @property {Record<string, number|null>} values  eingesetzte Zahlen
  */
 
 /**

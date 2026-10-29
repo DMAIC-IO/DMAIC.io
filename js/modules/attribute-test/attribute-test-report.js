@@ -11,6 +11,7 @@ import {
   onePoissonRateTest, twoPoissonRateTest, mcNemarTest,
   equivalenceOneProportion, equivalenceTwoProportions,
 } from '../../engines/attribute-test-engine.js';
+import { finiteOrNull, warning } from '../../core/agent/agent-results.js';
 
 /** @param {number|null} v @param {number} [d] @returns {string} */
 export function fmt(v, d = 4) {
@@ -70,11 +71,31 @@ export const STAT_ROWS = Object.freeze({
  * @param {string} labelKey
  * @param {string} value
  * @param {object} [params]
- * @returns {{ key: string, labelKey: string, params?: object, value: string }}
+ * @param {number|null} [num]  die Kennzahl ungerundet; null bei Zählern und Intervallen
+ * @returns {{ key: string, labelKey: string, params?: object, value: string, num: number|null }}
  */
-function statRow(kind, key, labelKey, value, params) {
+function statRow(kind, key, labelKey, value, params, num = null) {
   if (!STAT_ROWS[kind].includes(key)) throw new Error(`STAT_ROWS.${kind} kennt „${key}“ nicht`);
-  return params ? { key, labelKey, params, value } : { key, labelKey, value };
+  const row = params ? { key, labelKey, params, value } : { key, labelKey, value };
+  row.num = finiteOrNull(num);
+  return row;
+}
+
+/** Das Konfidenzintervall `[unten, oben]` eines Engine-Ergebnisses als Zahlen. */
+const ciOf = (r, lo = 'ciLower', hi = 'ciUpper') => [finiteOrNull(r[lo]), finiteOrNull(r[hi])];
+
+/**
+ * Die Hinweise als Codes mit Zahlen: die Zahlenparameter der Hinweise,
+ * `raw` überschreibt sie mit ungerundeten Werten (`{ [code]: values }`).
+ * @param {Array<{ key: string, params?: object }>} notes
+ * @param {Record<string, object>} [raw]
+ */
+function noteDetailsOf(notes, raw = {}) {
+  return notes.map((n) => {
+    const nums = {};
+    for (const [k, v] of Object.entries(n.params ?? {})) if (typeof v === 'number') nums[k] = v;
+    return warning(n.key, { ...nums, ...(raw[n.key] ?? {}) });
+  });
 }
 
 function missingNote(norm, notes) {
@@ -90,13 +111,15 @@ function reportOne(state, norm) {
     kind: 'one',
     stats: [
       statRow('one', 'counts', 'statCounts', `${norm.x} / ${norm.n}`),
-      statRow('one', 'pHat', 'statPHat', fmt(r.pHat)),
+      statRow('one', 'pHat', 'statPHat', fmt(r.pHat), undefined, r.pHat),
       statRow('one', 'ci', 'statCi', ci(r.ciLower, r.ciUpper), { level: pct(state.alpha) }),
-      statRow('one', 'pExact', 'statPExact', fmtP(r.pExact)),
-      statRow('one', 'z', 'statZ', fmt(r.z)),
-      statRow('one', 'pNormal', 'statPNormal', fmtP(r.pNormal)),
+      statRow('one', 'pExact', 'statPExact', fmtP(r.pExact), undefined, r.pExact),
+      statRow('one', 'z', 'statZ', fmt(r.z), undefined, r.z),
+      statRow('one', 'pNormal', 'statPNormal', fmtP(r.pNormal), undefined, r.pNormal),
     ],
     notes,
+    pValue: finiteOrNull(r.pExact),
+    ci: ciOf(r),
     decision: r.reject ? 'reject' : 'keep',
     basisKey: 'basisExact',
     table: null,
@@ -118,15 +141,17 @@ function reportTwo(state, norm) {
     stats: [
       statRow('two', 'counts1', 'statCountsGroup', `${norm.x1} / ${norm.n1}`, { group: g[0] }),
       statRow('two', 'counts2', 'statCountsGroup', `${norm.x2} / ${norm.n2}`, { group: g[1] }),
-      statRow('two', 'p1', 'statPGroup', fmt(r.p1), { group: g[0] }),
-      statRow('two', 'p2', 'statPGroup', fmt(r.p2), { group: g[1] }),
-      statRow('two', 'diff', 'statDiff', fmt(r.diff)),
+      statRow('two', 'p1', 'statPGroup', fmt(r.p1), { group: g[0] }, r.p1),
+      statRow('two', 'p2', 'statPGroup', fmt(r.p2), { group: g[1] }, r.p2),
+      statRow('two', 'diff', 'statDiff', fmt(r.diff), undefined, r.diff),
       statRow('two', 'ci', 'statCiDiff', ci(r.ciLower, r.ciUpper), { level: pct(state.alpha) }),
-      statRow('two', 'z', 'statZ', fmt(r.z)),
-      statRow('two', 'pValue', 'statPValue', fmtP(r.pValue)),
-      statRow('two', 'pFisher', 'statPFisher', fmtP(r.pFisher)),
+      statRow('two', 'z', 'statZ', fmt(r.z), undefined, r.z),
+      statRow('two', 'pValue', 'statPValue', fmtP(r.pValue), undefined, r.pValue),
+      statRow('two', 'pFisher', 'statPFisher', fmtP(r.pFisher), undefined, r.pFisher),
     ],
     notes,
+    pValue: finiteOrNull(r.pValue),
+    ci: ciOf(r),
     decision: r.reject ? 'reject' : 'keep',
     basisKey: 'basisZ',
     table: null,
@@ -144,13 +169,15 @@ function reportRate1(state, norm) {
     kind: 'rate1',
     stats: [
       { key: 'counts', labelKey: 'statRateCounts', value: `${norm.x} / ${fmtNum(norm.t)}` },
-      { key: 'rate', labelKey: 'statRate', value: fmtRate(r.rate) },
+      { key: 'rate', labelKey: 'statRate', value: fmtRate(r.rate), num: finiteOrNull(r.rate) },
       { key: 'ci', labelKey: 'statCiRate', params: { level: pct(state.alpha) }, value: ci(r.ciLower, r.ciUpper, fmtRate) },
-      { key: 'pExact', labelKey: 'statPExactPoisson', value: fmtP(r.pExact) },
-      { key: 'z', labelKey: 'statZ', value: fmt(r.z) },
-      { key: 'pNormal', labelKey: 'statPNormal', value: fmtP(r.pNormal) },
+      { key: 'pExact', labelKey: 'statPExactPoisson', value: fmtP(r.pExact), num: finiteOrNull(r.pExact) },
+      { key: 'z', labelKey: 'statZ', value: fmt(r.z), num: finiteOrNull(r.z) },
+      { key: 'pNormal', labelKey: 'statPNormal', value: fmtP(r.pNormal), num: finiteOrNull(r.pNormal) },
     ],
     notes,
+    pValue: finiteOrNull(r.pExact),
+    ci: ciOf(r),
     decision: r.reject ? 'reject' : 'keep',
     basisKey: 'basisExactPoisson',
     table: null,
@@ -169,17 +196,17 @@ function reportRate2(state, norm) {
   const g = norm.groups || ['1', '2'];
   const level = pct(state.alpha);
   const stats = [
-    { key: 'rate1', labelKey: 'statRateGroup', params: { group: g[0] }, value: fmtRate(r.rate1) },
-    { key: 'rate2', labelKey: 'statRateGroup', params: { group: g[1] }, value: fmtRate(r.rate2) },
-    { key: 'diff', labelKey: 'statRateDiff', value: fmtRate(r.diff) },
+    { key: 'rate1', labelKey: 'statRateGroup', params: { group: g[0] }, value: fmtRate(r.rate1), num: finiteOrNull(r.rate1) },
+    { key: 'rate2', labelKey: 'statRateGroup', params: { group: g[1] }, value: fmtRate(r.rate2), num: finiteOrNull(r.rate2) },
+    { key: 'diff', labelKey: 'statRateDiff', value: fmtRate(r.diff), num: finiteOrNull(r.diff) },
     { key: 'ci', labelKey: 'statCiRateDiff', params: { level }, value: ci(r.ciLower, r.ciUpper, fmtRate) },
-    { key: 'z', labelKey: 'statZ', value: fmt(r.z) },
-    { key: 'pValue', labelKey: 'statPValue', value: fmtP(r.pValue) },
+    { key: 'z', labelKey: 'statZ', value: fmt(r.z), num: finiteOrNull(r.z) },
+    { key: 'pValue', labelKey: 'statPValue', value: fmtP(r.pValue), num: finiteOrNull(r.pValue) },
   ];
-  if (r.pExactCond != null) stats.push({ key: 'pExactCond', labelKey: 'statPExactCond', value: fmtP(r.pExactCond) });
+  if (r.pExactCond != null) stats.push({ key: 'pExactCond', labelKey: 'statPExactCond', value: fmtP(r.pExactCond), num: finiteOrNull(r.pExactCond) });
   if (r.ratio != null) {
     stats.push(
-      { key: 'ratio', labelKey: 'statRateRatio', value: fmt(r.ratio) },
+      { key: 'ratio', labelKey: 'statRateRatio', value: fmt(r.ratio), num: finiteOrNull(r.ratio) },
       { key: 'ratioCi', labelKey: 'statCiRatio', params: { level }, value: ci(r.ratioLower, r.ratioUpper) },
     );
   }
@@ -187,6 +214,8 @@ function reportRate2(state, norm) {
     kind: 'rate2',
     stats,
     notes,
+    pValue: finiteOrNull(r.pValue),
+    ci: ciOf(r),
     decision: r.reject ? 'reject' : 'keep',
     basisKey: 'basisZRate',
     table: null,
@@ -203,26 +232,28 @@ function reportMcNemar(state, norm) {
   const la = String((norm.labels && norm.labels.after) || '').trim();
   const stats = [
     { key: 'discordant', labelKey: 'statDiscordant', value: `${r.b} / ${r.c}` },
-    lb ? { key: 'pBefore', labelKey: 'statPBeforeLabeled', params: { label: lb }, value: fmt(r.pBefore) }
-      : { key: 'pBefore', labelKey: 'statPBefore', value: fmt(r.pBefore) },
-    la ? { key: 'pAfter', labelKey: 'statPAfterLabeled', params: { label: la }, value: fmt(r.pAfter) }
-      : { key: 'pAfter', labelKey: 'statPAfter', value: fmt(r.pAfter) },
-    { key: 'diff', labelKey: 'statPairedDiff', value: fmt(r.diff) },
+    lb ? { key: 'pBefore', labelKey: 'statPBeforeLabeled', params: { label: lb }, value: fmt(r.pBefore), num: finiteOrNull(r.pBefore) }
+      : { key: 'pBefore', labelKey: 'statPBefore', value: fmt(r.pBefore), num: finiteOrNull(r.pBefore) },
+    la ? { key: 'pAfter', labelKey: 'statPAfterLabeled', params: { label: la }, value: fmt(r.pAfter), num: finiteOrNull(r.pAfter) }
+      : { key: 'pAfter', labelKey: 'statPAfter', value: fmt(r.pAfter), num: finiteOrNull(r.pAfter) },
+    { key: 'diff', labelKey: 'statPairedDiff', value: fmt(r.diff), num: finiteOrNull(r.diff) },
     { key: 'ci', labelKey: 'statCiPairedDiff', params: { level: pct(state.alpha) }, value: ci(r.ciLower, r.ciUpper) },
-    { key: 'pExact', labelKey: 'statPExactMcNemar', value: fmtP(r.pExact) },
+    { key: 'pExact', labelKey: 'statPExactMcNemar', value: fmtP(r.pExact), num: finiteOrNull(r.pExact) },
   ];
   if (r.pChi2 != null) {
     stats.push(
-      { key: 'chi2', labelKey: 'statChi2McNemar', value: fmt(r.chi2, 3) },
-      { key: 'pChi2', labelKey: 'statPChi2', value: fmtP(r.pChi2) },
-      { key: 'chi2Cc', labelKey: 'statChi2McNemarCc', value: fmt(r.chi2Cc, 3) },
-      { key: 'pChi2Cc', labelKey: 'statPChi2Cc', value: fmtP(r.pChi2Cc) },
+      { key: 'chi2', labelKey: 'statChi2McNemar', value: fmt(r.chi2, 3), num: finiteOrNull(r.chi2) },
+      { key: 'pChi2', labelKey: 'statPChi2', value: fmtP(r.pChi2), num: finiteOrNull(r.pChi2) },
+      { key: 'chi2Cc', labelKey: 'statChi2McNemarCc', value: fmt(r.chi2Cc, 3), num: finiteOrNull(r.chi2Cc) },
+      { key: 'pChi2Cc', labelKey: 'statPChi2Cc', value: fmtP(r.pChi2Cc), num: finiteOrNull(r.pChi2Cc) },
     );
   }
   return {
     kind: 'mcnemar',
     stats,
     notes,
+    pValue: finiteOrNull(r.pExact),
+    ci: ciOf(r),
     decision: r.reject ? 'reject' : 'keep',
     basisKey: 'basisExactMcNemar',
     table: null,
@@ -259,14 +290,16 @@ function reportEquiv(state, norm) {
     kind: 'equiv',
     stats: [
       ...counts,
-      { key: 'estimate', labelKey: one ? 'statEquivEstimate1' : 'statEquivEstimate2', value: fmtPp(one ? r.pHat : r.diff) },
+      { key: 'estimate', labelKey: one ? 'statEquivEstimate1' : 'statEquivEstimate2', value: fmtPp(one ? r.pHat : r.diff), num: finiteOrNull(one ? r.pHat : r.diff) },
       { key: 'ci', labelKey: 'statEquivCi', params: { level: pct(2 * state.alpha), unit }, value: `[${fmtPp(r.ciLower)}; ${fmtPp(r.ciUpper)}]` },
       { key: 'bounds', labelKey: 'statEquivBounds', params: { unit }, value: bounds },
-      { key: 'pLower', labelKey: 'statPLower', value: fmtP(r.pLower) },
-      { key: 'pUpper', labelKey: 'statPUpper', value: fmtP(r.pUpper) },
-      { key: 'pValue', labelKey: 'statPTost', value: fmtP(r.pValue) },
+      { key: 'pLower', labelKey: 'statPLower', value: fmtP(r.pLower), num: finiteOrNull(r.pLower) },
+      { key: 'pUpper', labelKey: 'statPUpper', value: fmtP(r.pUpper), num: finiteOrNull(r.pUpper) },
+      { key: 'pValue', labelKey: 'statPTost', value: fmtP(r.pValue), num: finiteOrNull(r.pValue) },
     ],
     notes,
+    pValue: finiteOrNull(r.pValue),
+    ci: ciOf(r),
     decision: r.equivalent ? 'equivalent' : 'notEquivalent',
     decisionParams: { lower: fmtPp(lo), upper: fmtPp(up), unit, alpha: state.alpha },
     basisKey: 'basisTost',
@@ -303,22 +336,25 @@ function reportAssoc(state, norm) {
   if (r.warnShareBelow5) notes.push({ key: 'warnShareBelow5', params: { share: Math.round(r.shareBelow5 * 100) } });
   missingNote(norm, notes);
   const stats = [
-    statRow('assoc', 'pearson', 'statPearson', fmt(r.pearson, 3), { df: r.df }),
-    statRow('assoc', 'pPearson', 'statPValue', fmtP(r.pPearson)),
-    statRow('assoc', 'lr', 'statLr', fmt(r.lr, 3), { df: r.df }),
-    statRow('assoc', 'pLR', 'statPLr', fmtP(r.pLR)),
+    statRow('assoc', 'pearson', 'statPearson', fmt(r.pearson, 3), { df: r.df }, r.pearson),
+    statRow('assoc', 'pPearson', 'statPValue', fmtP(r.pPearson), undefined, r.pPearson),
+    statRow('assoc', 'lr', 'statLr', fmt(r.lr, 3), { df: r.df }, r.lr),
+    statRow('assoc', 'pLR', 'statPLr', fmtP(r.pLR), undefined, r.pLR),
   ];
   if (r.yates != null) {
     stats.push(
-      statRow('assoc', 'yates', 'statYates', fmt(r.yates, 3)),
-      statRow('assoc', 'pYates', 'statPYates', fmtP(r.pYates)),
-      statRow('assoc', 'pFisher', fisherLabel(state.direction), fmtP(fisherP(state.direction, r))),
+      statRow('assoc', 'yates', 'statYates', fmt(r.yates, 3), undefined, r.yates),
+      statRow('assoc', 'pYates', 'statPYates', fmtP(r.pYates), undefined, r.pYates),
+      statRow('assoc', 'pFisher', fisherLabel(state.direction), fmtP(fisherP(state.direction, r)), undefined, fisherP(state.direction, r)),
     );
   }
   return {
     kind: 'assoc',
     stats,
     notes,
+    pValue: finiteOrNull(r.pPearson),
+    ci: null,
+    noteDetails: noteDetailsOf(notes, { warnShareBelow5: { share: r.shareBelow5 } }),
     decision: r.reject ? 'reject' : 'keep',
     basisKey: 'basisPearson',
     table: {
@@ -343,6 +379,18 @@ function reportAssoc(state, norm) {
  */
 export function buildReport(state, norm) {
   if (!norm.ok) return norm.hint ? { error: norm.error, hint: true } : { error: norm.error };
+  return finalize(dispatch(state, norm));
+}
+
+/** Jede Kennzahl trägt `num` (sonst null), die Hinweise gibt es auch als Codes mit Zahlen. */
+function finalize(report) {
+  if (report.error) return report;
+  report.stats = report.stats.map((s) => ({ num: null, ...s }));
+  report.noteDetails ??= noteDetailsOf(report.notes);
+  return report;
+}
+
+function dispatch(state, norm) {
   if (norm.kind === 'one') return reportOne(state, norm);
   if (norm.kind === 'two') return reportTwo(state, norm);
   if (norm.kind === 'rate1') return reportRate1(state, norm);

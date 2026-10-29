@@ -9477,17 +9477,25 @@
           "notes": "Notes below the decision: skipped rows with missing values, the unsuitable normal approximation (one proportion), the pooled z-test (two proportions), removed empty rows or columns and the warnings about small expected counts (association test).",
           "decision": "The decision against α: “Reject H₀” (reject) when the deciding p-value is below α, otherwise “Do not reject H₀” (keep); for the equivalence test “equivalent” or “not shown” (notEquivalent). The deciding test is the exact binomial test for one proportion, the z-test for two proportions, the exact Poisson test for one rate, the z-test of the difference for two rates, the exact test for McNemar, the TOST for equivalence and Pearson χ² (always two-sided) for the association test. The basis is shown next to the decision.",
           "basisKey": "Identifier of the sentence naming the basis of the decision: exact binomial test, z-test, exact Poisson test, z-test of the rate difference, exact McNemar test, TOST or Pearson χ².",
-          "table": "The cross table of the association test with observed and expected counts and each cell's contribution to χ²; empty for one and two proportions."
+          "table": "The cross table of the association test with observed and expected counts and each cell's contribution to χ²; empty for one and two proportions.",
+          "noteDetails": "The notes as a code with the inserted numbers, in the same order as notes; the numbers are unrounded, for example the share for warnShareBelow5 as a value between 0 and 1.",
+          "pValue": "The p-value the decision rests on, as a number: exact for one proportion, McNemar and the Poisson rate, z-test for two proportions and two rates, TOST for equivalence, Pearson chi-square for the association test. Null when it cannot be computed.",
+          "ci": "The confidence interval as [lower, upper] in the unit of the statistic, unrounded; a non-finite bound is null. Null for the association test, which has no interval."
         },
         "Stat": {
           "key": "Identifier of the figure row, unique within one test type; the same identifier can mean different things in different test types.",
           "labelKey": "Identifier of the row's label text; for Fisher's exact test of a 2 × 2 table in the association test there is one per direction (two-sided, one-sided greater, one-sided less); when comparing two proportions the Fisher row always carries the same label without a direction, even for a one-sided alternative.",
           "params": "Placeholders of the label: the confidence level in percent, the group name or the degrees of freedom; missing for rows without placeholders.",
-          "value": "The value as formatted text, as in the table: four decimals, χ², G² and Yates with three, p-values below 0.0001 as “< 0.0001”, counts as “x / n”, confidence intervals as lower and upper bound; decimal point in both languages, “–” for a value that cannot be computed."
+          "value": "The value as formatted text, as in the table: four decimals, χ², G² and Yates with three, p-values below 0.0001 as “< 0.0001”, counts as “x / n”, confidence intervals as lower and upper bound; decimal point in both languages, “–” for a value that cannot be computed.",
+          "num": "The statistic as a number; null for counts and intervals — the interval is under ci."
         },
         "Note": {
           "key": "Identifier of the note text shown below the decision.",
           "params": "Placeholders of the note: the number of skipped rows, the names of removed rows or columns, or the rounded percentage of cells with an expected count below 5; missing for notes without placeholders."
+        },
+        "Warning": {
+          "code": "The id of the note, equal to the text key.",
+          "values": "The numbers the text inserts, by name; not computable is null."
         },
         "CrossTable": {
           "cols": "The column levels of the cross table; columns without observations are removed.",

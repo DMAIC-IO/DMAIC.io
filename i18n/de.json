@@ -9481,17 +9481,25 @@
           "notes": "Hinweise unter der Entscheidung: übersprungene Zeilen mit fehlenden Werten, die ungeeignete Normalapproximation (ein Anteil), der gepoolte z-Test (zwei Anteile), entfernte leere Zeilen oder Spalten und die Warnungen zu kleinen erwarteten Häufigkeiten (Zusammenhangstest).",
           "decision": "Die Entscheidung gegen α: „H₀ verwerfen“ (reject), wenn der maßgebliche p-Wert kleiner als α ist, sonst „H₀ nicht verwerfen“ (keep); beim Äquivalenztest „gleichwertig“ (equivalent) oder „nicht nachgewiesen“ (notEquivalent). Maßgeblich ist beim Test eines Anteils der exakte Binomialtest, bei zwei Anteilen der z-Test, bei einer Rate der exakte Poisson-Test, bei zwei Raten der z-Test der Differenz, bei McNemar der exakte Test, bei der Äquivalenz der TOST und beim Zusammenhangstest Pearson χ² (immer zweiseitig). Die Grundlage steht neben der Entscheidung.",
           "basisKey": "Kennung des Satzes, der die Grundlage der Entscheidung nennt: exakter Binomialtest, z-Test, exakter Poisson-Test, z-Test der Ratendifferenz, exakter McNemar-Test, TOST oder Pearson χ².",
-          "table": "Die Kreuztabelle des Zusammenhangstests mit beobachteten und erwarteten Anzahlen und dem Beitrag je Zelle zu χ²; bei einem und zwei Anteilen leer."
+          "table": "Die Kreuztabelle des Zusammenhangstests mit beobachteten und erwarteten Anzahlen und dem Beitrag je Zelle zu χ²; bei einem und zwei Anteilen leer.",
+          "noteDetails": "Die Hinweise als Code mit den eingesetzten Zahlen, in derselben Reihenfolge wie notes; die Zahlen sind ungerundet, zum Beispiel der Anteil bei warnShareBelow5 als Wert zwischen 0 und 1.",
+          "pValue": "Der p-Wert, auf dem die Entscheidung beruht, als Zahl: exakt beim Ein-Stichproben-Anteil, bei McNemar und bei der Poisson-Rate, z-Test bei zwei Anteilen und zwei Raten, TOST bei Äquivalenz, Pearson-χ² beim Zusammenhangstest. Null, wenn er nicht berechenbar ist.",
+          "ci": "Das Konfidenzintervall als [untere, obere Grenze] in der Einheit der Kennzahl, ungerundet; eine nicht endliche Grenze ist null. Null beim Zusammenhangstest, der kein Intervall hat."
         },
         "Stat": {
           "key": "Kennung der Kennzahlzeile, innerhalb einer Testart eindeutig; dieselbe Kennung kann je Testart Verschiedenes bedeuten.",
           "labelKey": "Kennung des Beschriftungstextes der Zeile; beim Fisher-exakten Test einer 2 × 2-Tafel im Zusammenhangstest je Richtung eine eigene (beidseitig, einseitig größer, einseitig kleiner); beim Vergleich zweier Anteile trägt die Fisher-Zeile immer dieselbe Beschriftung ohne Richtung, auch bei einseitiger Alternative.",
           "params": "Platzhalter der Beschriftung: das Konfidenzniveau in Prozent, der Gruppenname oder die Freiheitsgrade; fehlt bei Zeilen ohne Platzhalter.",
-          "value": "Der Wert als formatierter Text, wie in der Tabelle: vier Nachkommastellen, χ², G² und Yates mit drei, p-Werte unter 0,0001 als „< 0.0001“, Anzahlen als „x / n“, Konfidenzintervalle als Unter- und Obergrenze; Dezimalpunkt in beiden Sprachen, „–“ für einen nicht berechenbaren Wert."
+          "value": "Der Wert als formatierter Text, wie in der Tabelle: vier Nachkommastellen, χ², G² und Yates mit drei, p-Werte unter 0,0001 als „< 0.0001“, Anzahlen als „x / n“, Konfidenzintervalle als Unter- und Obergrenze; Dezimalpunkt in beiden Sprachen, „–“ für einen nicht berechenbaren Wert.",
+          "num": "Die Kennzahl als Zahl; bei Zählern und Intervallen null — das Intervall steht unter ci."
         },
         "Note": {
           "key": "Kennung des Hinweistextes, der unter der Entscheidung steht.",
           "params": "Platzhalter des Hinweises: die Zahl übersprungener Zeilen, die Namen entfernter Zeilen oder Spalten oder der gerundete Prozentanteil der Zellen mit erwarteter Häufigkeit unter 5; fehlt bei Hinweisen ohne Platzhalter."
+        },
+        "Warning": {
+          "code": "Die Kennung des Hinweises, gleich dem Textschlüssel.",
+          "values": "Die Zahlen, die der Text einsetzt, je Name; nicht berechenbar ist null."
         },
         "CrossTable": {
           "cols": "Die Spaltenstufen der Kreuztabelle; Spalten ohne Beobachtungen sind entfernt.",
