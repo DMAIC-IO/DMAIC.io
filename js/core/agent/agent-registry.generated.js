@@ -294,14 +294,71 @@ export const AGENT_REGISTRY = {
     },
     "fields": {
       "steps": {
-        "type": "object[]",
-        "help": "the chain in order; each step carries id, title, description, kind, branchId, expanded and substeps",
+        "type": "ActivityStep[]",
+        "help": "die Kette in Reihenfolge, jede Angabe unter keys beschrieben",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "ActivityStep",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": "Kennung"
+          },
+          "title": {
+            "type": "string",
+            "help": "Titel"
+          },
+          "description": {
+            "type": "string",
+            "help": "Beschreibung"
+          },
+          "kind": {
+            "type": "'activity'|'decision'",
+            "help": "Tätigkeit oder Entscheidung"
+          },
+          "branchId": {
+            "type": "string",
+            "help": "Band, in dem der Schritt steht: `main` oder `no:<id der Entscheidung>`"
+          },
+          "expanded": {
+            "type": "boolean",
+            "help": "Unter-Schritte aufgeklappt"
+          },
+          "substeps": {
+            "type": "FlowSubstep[]",
+            "help": "Unter-Schritte",
+            "keysOf": "FlowSubstep",
+            "keys": {
+              "id": {
+                "type": "string",
+                "help": "Kennung"
+              },
+              "title": {
+                "type": "string",
+                "help": "Titel"
+              }
+            }
+          },
+          "decision": {
+            "type": "ActivityDecision|null",
+            "help": "die Verzweigung, nur bei einer Entscheidung, sonst null",
+            "keysOf": "ActivityDecision",
+            "keys": {
+              "label": {
+                "type": "string",
+                "help": "Frage der Entscheidung"
+              },
+              "noTarget": {
+                "type": "string",
+                "help": "Ziel des Nein-Zweigs: `end` oder die id eines Schritts"
+              }
+            }
+          }
+        }
       },
       "bands": {
         "type": "Array<{id: string, ownerId: string|null, label: string, depth: number}>",
-        "help": "the bands `bandId` accepts, main path first",
+        "help": "die Bänder, die `bandId` annimmt, Hauptpfad zuerst",
         "bulk": false,
         "derived": true
       }
@@ -3961,9 +4018,47 @@ export const AGENT_REGISTRY = {
     },
     "fields": {
       "steps": {
-        "type": "Array<object>",
-        "help": "die Kette in Reihenfolge; jeder Schritt trägt id, title, description, expanded und substeps (je id und title), dazu die modulspezifischen Felder (decision, side, laneId, …)",
-        "bulk": false
+        "type": "DeploymentStep[]",
+        "help": "die Kette in Reihenfolge, jede Angabe unter keys beschrieben",
+        "bulk": false,
+        "keysOf": "DeploymentStep",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": "Kennung"
+          },
+          "title": {
+            "type": "string",
+            "help": "Titel"
+          },
+          "description": {
+            "type": "string",
+            "help": "Beschreibung"
+          },
+          "laneId": {
+            "type": "string",
+            "help": "Bahn des Schritts: die id einer Bahn aus lanes oder `unassigned`"
+          },
+          "expanded": {
+            "type": "boolean",
+            "help": "Unter-Schritte aufgeklappt"
+          },
+          "substeps": {
+            "type": "FlowSubstep[]",
+            "help": "Unter-Schritte",
+            "keysOf": "FlowSubstep",
+            "keys": {
+              "id": {
+                "type": "string",
+                "help": "Kennung"
+              },
+              "title": {
+                "type": "string",
+                "help": "Titel"
+              }
+            }
+          }
+        }
       },
       "lanes": {
         "type": "Array<{id:string, name:string, order:number}>",
@@ -13608,9 +13703,47 @@ export const AGENT_REGISTRY = {
     },
     "fields": {
       "steps": {
-        "type": "Array<object>",
-        "help": "die Kette in Reihenfolge; jeder Schritt trägt id, title, description, expanded und substeps (je id und title), dazu die modulspezifischen Felder (decision, side, laneId, …)",
-        "bulk": false
+        "type": "OpportunityStep[]",
+        "help": "die Kette in Reihenfolge, jede Angabe unter keys beschrieben",
+        "bulk": false,
+        "keysOf": "OpportunityStep",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": "Kennung"
+          },
+          "title": {
+            "type": "string",
+            "help": "Titel"
+          },
+          "description": {
+            "type": "string",
+            "help": "Beschreibung"
+          },
+          "side": {
+            "type": "'va'|'nva'",
+            "help": "wertschöpfend (va) oder nicht wertschöpfend (nva)"
+          },
+          "expanded": {
+            "type": "boolean",
+            "help": "Unter-Schritte aufgeklappt"
+          },
+          "substeps": {
+            "type": "FlowSubstep[]",
+            "help": "Unter-Schritte",
+            "keysOf": "FlowSubstep",
+            "keys": {
+              "id": {
+                "type": "string",
+                "help": "Kennung"
+              },
+              "title": {
+                "type": "string",
+                "help": "Titel"
+              }
+            }
+          }
+        }
       }
     }
   },
@@ -15446,9 +15579,117 @@ export const AGENT_REGISTRY = {
     },
     "fields": {
       "steps": {
-        "type": "Array<object>",
-        "help": "die Kette in Reihenfolge; jeder Schritt trägt id, title, description, expanded und substeps (je id und title), dazu die modulspezifischen Felder (decision, side, laneId, …)",
-        "bulk": false
+        "type": "PmStep[]",
+        "help": "die Kette in Reihenfolge, jede Angabe unter keys beschrieben",
+        "bulk": false,
+        "keysOf": "PmStep",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": "Kennung"
+          },
+          "title": {
+            "type": "string",
+            "help": "Titel"
+          },
+          "description": {
+            "type": "string",
+            "help": "Beschreibung"
+          },
+          "valueType": {
+            "type": "'va'|'bnva'|'nva'|null",
+            "help": "Wertart, null solange keine gewählt ist"
+          },
+          "inputs": {
+            "type": "PmIO[]",
+            "help": "Inputs",
+            "keysOf": "PmIO",
+            "keys": {
+              "id": {
+                "type": "string",
+                "help": "Kennung"
+              },
+              "name": {
+                "type": "string",
+                "help": "Bezeichnung"
+              },
+              "inputType": {
+                "type": "'param'|'noise'|null",
+                "help": "Art eines Inputs; nur bei Inputs",
+                "optional": true
+              }
+            }
+          },
+          "outputs": {
+            "type": "PmIO[]",
+            "help": "Outputs",
+            "keysOf": "PmIO",
+            "keys": {
+              "id": {
+                "type": "string",
+                "help": "Kennung"
+              },
+              "name": {
+                "type": "string",
+                "help": "Bezeichnung"
+              },
+              "inputType": {
+                "type": "'param'|'noise'|null",
+                "help": "Art eines Inputs; nur bei Inputs",
+                "optional": true
+              }
+            }
+          },
+          "expanded": {
+            "type": "boolean",
+            "help": "Unter-Schritte aufgeklappt"
+          },
+          "substeps": {
+            "type": "FlowSubstep[]",
+            "help": "Unter-Schritte",
+            "keysOf": "FlowSubstep",
+            "keys": {
+              "id": {
+                "type": "string",
+                "help": "Kennung"
+              },
+              "title": {
+                "type": "string",
+                "help": "Titel"
+              }
+            }
+          },
+          "loop": {
+            "type": "PmLoop|null",
+            "help": "die Schleife des Schritts, oder null",
+            "keysOf": "PmLoop",
+            "keys": {
+              "targetStepId": {
+                "type": "string|null",
+                "help": "Schritt, zu dem die Schleife zurückführt"
+              },
+              "condition": {
+                "type": "string",
+                "help": "Bedingung der Schleife"
+              },
+              "steps": {
+                "type": "FlowSubstep[]",
+                "help": "Schritte innerhalb der Schleife",
+                "keysOf": "FlowSubstep",
+                "keys": {
+                  "id": {
+                    "type": "string",
+                    "help": "Kennung"
+                  },
+                  "title": {
+                    "type": "string",
+                    "help": "Titel"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   },

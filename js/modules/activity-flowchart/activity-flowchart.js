@@ -38,9 +38,36 @@ import {
 const IMPORT_SOURCES = ['process-map', 'sipoc'];
 
 /**
+ * Ein Unter-Schritt.
+ * @typedef {object} FlowSubstep
+ * @property {string} id  Kennung
+ * @property {string} title  Titel
+ */
+
+/**
+ * Die Verzweigung einer Entscheidung.
+ * @typedef {object} ActivityDecision
+ * @property {string} label  Frage der Entscheidung
+ * @property {string} noTarget  Ziel des Nein-Zweigs: `end` oder die id eines Schritts
+ */
+
+/**
+ * Ein Schritt der Kette, wie `read().steps` ihn zeigt.
+ * @typedef {object} ActivityStep
+ * @property {string} id  Kennung
+ * @property {string} title  Titel
+ * @property {string} description  Beschreibung
+ * @property {'activity'|'decision'} kind  Tätigkeit oder Entscheidung
+ * @property {string} branchId  Band, in dem der Schritt steht: `main` oder `no:<id der Entscheidung>`
+ * @property {boolean} expanded  Unter-Schritte aufgeklappt
+ * @property {FlowSubstep[]} substeps  Unter-Schritte
+ * @property {ActivityDecision|null} decision  die Verzweigung, nur bei einer Entscheidung, sonst null
+ */
+
+/**
  * @typedef {object} AgentRead
- * @property {object[]} steps  the chain in order; each step carries id, title, description, kind, branchId, expanded and substeps
- * @property {Array<{id: string, ownerId: string|null, label: string, depth: number}>} bands  the bands `bandId` accepts, main path first
+ * @property {ActivityStep[]} steps  die Kette in Reihenfolge, jede Angabe unter keys beschrieben
+ * @property {Array<{id: string, ownerId: string|null, label: string, depth: number}>} bands  die Bänder, die `bandId` annimmt, Hauptpfad zuerst
  */
 export default createModule({
   config: {

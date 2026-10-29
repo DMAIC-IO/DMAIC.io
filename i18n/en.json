@@ -2890,9 +2890,36 @@
       "importFromSipocSteps": "{n} process step(s)",
       "importFromSipocConfirm": "Import",
       "importFromSipocDone": "Imported {n} step(s) from SIPOC",
+      "types": {
+        "PmStep": {
+          "id": "The id of the step.",
+          "title": "The title of the step.",
+          "description": "The description of the step.",
+          "valueType": "The value type: va (value-adding), bnva (business non-value-adding), nva (non-value-adding) or null.",
+          "inputs": "The inputs of the step, each item described under keys.",
+          "outputs": "The outputs of the step, each item described under keys.",
+          "expanded": "Whether the substeps are expanded; display only.",
+          "substeps": "The substeps, each item described under keys.",
+          "loop": "The loop of the step, or null."
+        },
+        "PmIO": {
+          "id": "The id of the entry.",
+          "name": "The name.",
+          "inputType": "Inputs only: param (process parameter), noise (noise factor) or null."
+        },
+        "PmLoop": {
+          "targetStepId": "The id of the step the loop returns to, or null.",
+          "condition": "The condition under which the loop runs.",
+          "steps": "The steps inside the loop, each with id and title."
+        },
+        "FlowSubstep": {
+          "id": "The id of the substep.",
+          "title": "The title of the substep."
+        }
+      },
       "fields": {
         "steps": {
-          "help": "The chain in order. Each step carries id, title, description, valueType (null|'va'|'bnva'|'nva'), inputs and outputs (each with id, name, optionally inputType 'param'|'noise' on inputs), substeps (each with id, title), expanded and loop (null, or { condition, targetStepId, steps: [{id,title}] })."
+          "help": "The chain in order, each item described under keys."
         }
       }
     },
@@ -6027,12 +6054,32 @@
           }
         }
       },
+      "types": {
+        "ActivityStep": {
+          "id": "The id of the step.",
+          "title": "The title of the step.",
+          "description": "The description of the step.",
+          "kind": "activity for a task, decision for a decision.",
+          "branchId": "The band the step sits in: main for the main path, no:<id> for the no-branch of the decision with that id.",
+          "expanded": "Whether the substeps are expanded; display only.",
+          "substeps": "The substeps, each item described under keys.",
+          "decision": "The branching of a decision, null for a task."
+        },
+        "ActivityDecision": {
+          "label": "The question of the decision.",
+          "noTarget": "Where the no-branch leads: end or the id of a step in the same band."
+        },
+        "FlowSubstep": {
+          "id": "The id of the substep.",
+          "title": "The title of the substep."
+        }
+      },
       "fields": {
         "bands": {
           "help": "The bands from top to bottom, main path first — exactly the bandId values that setStepBand, insertInBand, addActivityToBand and addDecisionToBand accept. Per band: id ('main' or 'no:<id>'), ownerId (the id of the decision that opens it, null for the main path), label and depth."
         },
         "steps": {
-          "help": "The chain in order. Each step carries id, title, description, kind ('activity' or 'decision'), branchId (the band it sits in), expanded and substeps (each with id and title); a decision additionally carries decision ({label, noTarget})."
+          "help": "The chain in order, each item described under keys."
         }
       },
       "titlePlaceholder": "Activity …",
@@ -6155,9 +6202,23 @@
           }
         }
       },
+      "types": {
+        "OpportunityStep": {
+          "id": "The id of the step.",
+          "title": "The title of the step.",
+          "description": "The description of the step.",
+          "side": "va for value-adding, nva for non-value-adding.",
+          "expanded": "Whether the substeps are expanded; display only.",
+          "substeps": "The substeps, each item described under keys."
+        },
+        "FlowSubstep": {
+          "id": "The id of the substep.",
+          "title": "The title of the substep."
+        }
+      },
       "fields": {
         "steps": {
-          "help": "The chain in order. Each step carries id, title, description, side ('va' value-added or 'nva' rework), expanded and substeps (each with id and title)."
+          "help": "The chain in order, each item described under keys."
         }
       },
       "titlePlaceholder": "Step …",
@@ -6286,9 +6347,23 @@
           }
         }
       },
+      "types": {
+        "DeploymentStep": {
+          "id": "The id of the step.",
+          "title": "The title of the step.",
+          "description": "The description of the step.",
+          "laneId": "The lane of the step: the id of a lane from lanes, or unassigned for none.",
+          "expanded": "Whether the substeps are expanded; display only.",
+          "substeps": "The substeps, each item described under keys."
+        },
+        "FlowSubstep": {
+          "id": "The id of the substep.",
+          "title": "The title of the substep."
+        }
+      },
       "fields": {
         "steps": {
-          "help": "The chain in order. Each step carries id, title, description, laneId (the lane it is assigned to), expanded and substeps (each with id and title)."
+          "help": "The chain in order, each item described under keys."
         },
         "lanes": {
           "help": "The lanes (roles/departments) in display order. Each lane carries id, name and order; the reserved \"unassigned\" lane carries an empty name — its label comes from the UI."

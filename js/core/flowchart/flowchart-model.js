@@ -48,7 +48,7 @@ export class FlowchartState {
     /**
      * @type {Array<object>} die Kette in Reihenfolge; jeder Schritt trägt
      *   id, title, description, expanded und substeps (je id und title),
-     *   dazu die modulspezifischen Felder (decision, side, laneId, …)
+     *   dazu die Felder des Moduls
      */
     this.steps = [];
   }

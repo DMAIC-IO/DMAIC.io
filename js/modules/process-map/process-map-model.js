@@ -69,10 +69,45 @@ function pmNormalize(step) {
   };
 }
 
+/**
+ * @typedef {object} FlowSubstep
+ * @property {string} id  Kennung
+ * @property {string} title  Titel
+ */
+
+/**
+ * @typedef {object} PmIO
+ * @property {string} id  Kennung
+ * @property {string} name  Bezeichnung
+ * @property {'param'|'noise'|null} [inputType]  Art eines Inputs; nur bei Inputs
+ */
+
+/**
+ * @typedef {object} PmLoop
+ * @property {string|null} targetStepId  Schritt, zu dem die Schleife zurückführt
+ * @property {string} condition  Bedingung der Schleife
+ * @property {FlowSubstep[]} steps  Schritte innerhalb der Schleife
+ */
+
+/**
+ * Ein Schritt, wie `read().steps` ihn zeigt.
+ * @typedef {object} PmStep
+ * @property {string} id  Kennung
+ * @property {string} title  Titel
+ * @property {string} description  Beschreibung
+ * @property {'va'|'bnva'|'nva'|null} valueType  Wertart, null solange keine gewählt ist
+ * @property {PmIO[]} inputs  Inputs
+ * @property {PmIO[]} outputs  Outputs
+ * @property {boolean} expanded  Unter-Schritte aufgeklappt
+ * @property {FlowSubstep[]} substeps  Unter-Schritte
+ * @property {PmLoop|null} loop  die Schleife des Schritts, oder null
+ */
+
 export class State extends FlowchartState {
   constructor() {
     super();
-    // PM has no extra state fields beyond FlowchartState#steps.
+    /** @type {PmStep[]} die Kette in Reihenfolge, jede Angabe unter keys beschrieben */
+    this.steps = [];
   }
 
   // ─── Lookup ─────────────────────────────────────────────────

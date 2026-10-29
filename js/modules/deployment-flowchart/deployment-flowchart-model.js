@@ -53,12 +53,31 @@ function normalizeLane(raw, i) {
 }
 
 /**
+ * @typedef {object} FlowSubstep
+ * @property {string} id  Kennung
+ * @property {string} title  Titel
+ */
+
+/**
+ * Ein Schritt, wie `read().steps` ihn zeigt.
+ * @typedef {object} DeploymentStep
+ * @property {string} id  Kennung
+ * @property {string} title  Titel
+ * @property {string} description  Beschreibung
+ * @property {string} laneId  Bahn des Schritts: die id einer Bahn aus lanes oder `unassigned`
+ * @property {boolean} expanded  Unter-Schritte aufgeklappt
+ * @property {FlowSubstep[]} substeps  Unter-Schritte
+ */
+
+/**
  * Deployment Flowchart state model — the Core chain plus lanes and a
  * per-step lane assignment.
  */
 export class DeploymentModel extends FlowchartState {
   constructor() {
     super();
+    /** @type {DeploymentStep[]} die Kette in Reihenfolge, jede Angabe unter keys beschrieben */
+    this.steps = [];
     /**
      * @type {Array<{id:string, name:string, order:number}>} die Bahnen
      *   (Rollen/Abteilungen) in Anzeigereihenfolge; die reservierte Bahn

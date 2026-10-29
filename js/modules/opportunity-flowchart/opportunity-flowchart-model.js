@@ -22,11 +22,32 @@ export function opportunityNormalize(step) {
 }
 
 /**
+ * @typedef {object} FlowSubstep
+ * @property {string} id  Kennung
+ * @property {string} title  Titel
+ */
+
+/**
+ * Ein Schritt, wie `read().steps` ihn zeigt.
+ * @typedef {object} OpportunityStep
+ * @property {string} id  Kennung
+ * @property {string} title  Titel
+ * @property {string} description  Beschreibung
+ * @property {'va'|'nva'} side  wertschöpfend (va) oder nicht wertschöpfend (nva)
+ * @property {boolean} expanded  Unter-Schritte aufgeklappt
+ * @property {FlowSubstep[]} substeps  Unter-Schritte
+ */
+
+/**
  * Opportunity Flowchart state model — the Core chain plus a per-step
  * value-added / non-value-added column assignment.
  */
 export class OpportunityModel extends FlowchartState {
-  constructor() { super(); }
+  constructor() {
+    super();
+    /** @type {OpportunityStep[]} die Kette in Reihenfolge, jede Angabe unter keys beschrieben */
+    this.steps = [];
+  }
 
   /**
    * Adds a step at the given index, defaulting to the value-added column.

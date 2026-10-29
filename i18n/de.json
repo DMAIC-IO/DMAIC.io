@@ -2890,9 +2890,36 @@
       "importFromSipocSteps": "{n} Prozessschritt(e)",
       "importFromSipocConfirm": "Übernehmen",
       "importFromSipocDone": "{n} Schritt(e) aus SIPOC übernommen",
+      "types": {
+        "PmStep": {
+          "id": "Die Kennung des Schritts.",
+          "title": "Der Titel des Schritts.",
+          "description": "Die Beschreibung des Schritts.",
+          "valueType": "Die Wertart: va (wertschöpfend), bnva (notwendig, nicht wertschöpfend), nva (nicht wertschöpfend) oder null.",
+          "inputs": "Die Inputs des Schritts, jede Angabe unter keys beschrieben.",
+          "outputs": "Die Outputs des Schritts, jede Angabe unter keys beschrieben.",
+          "expanded": "Ob die Unter-Schritte aufgeklappt sind; rein darstellend.",
+          "substeps": "Die Unter-Schritte, jede Angabe unter keys beschrieben.",
+          "loop": "Die Schleife des Schritts, oder null."
+        },
+        "PmIO": {
+          "id": "Die Kennung des Eintrags.",
+          "name": "Die Bezeichnung.",
+          "inputType": "Nur bei Inputs: param (Prozessparameter), noise (Störgröße) oder null."
+        },
+        "PmLoop": {
+          "targetStepId": "Die id des Schritts, zu dem die Schleife zurückführt, oder null.",
+          "condition": "Die Bedingung, unter der die Schleife durchlaufen wird.",
+          "steps": "Die Schritte innerhalb der Schleife, je id und title."
+        },
+        "FlowSubstep": {
+          "id": "Die Kennung des Unter-Schritts.",
+          "title": "Der Titel des Unter-Schritts."
+        }
+      },
       "fields": {
         "steps": {
-          "help": "Die Kette in Reihenfolge. Jeder Schritt trägt id, title, description, valueType (null|'va'|'bnva'|'nva'), inputs und outputs (je id, name, bei inputs optional inputType 'param'|'noise'), substeps (je id, title), expanded und loop (null, oder { condition, targetStepId, steps: [{id,title}] })."
+          "help": "Die Kette in Reihenfolge, jede Angabe unter keys einzeln beschrieben."
         }
       }
     },
@@ -6031,12 +6058,32 @@
           }
         }
       },
+      "types": {
+        "ActivityStep": {
+          "id": "Die Kennung des Schritts.",
+          "title": "Der Titel des Schritts.",
+          "description": "Die Beschreibung des Schritts.",
+          "kind": "activity für eine Tätigkeit, decision für eine Entscheidung.",
+          "branchId": "Das Band, in dem der Schritt steht: main für den Hauptpfad, no:<id> für den Nein-Zweig der Entscheidung mit dieser id.",
+          "expanded": "Ob die Unter-Schritte aufgeklappt sind; rein darstellend.",
+          "substeps": "Die Unter-Schritte, jede Angabe unter keys beschrieben.",
+          "decision": "Die Verzweigung einer Entscheidung, bei einer Tätigkeit null."
+        },
+        "ActivityDecision": {
+          "label": "Die Frage der Entscheidung.",
+          "noTarget": "Wohin der Nein-Zweig führt: end oder die id eines Schritts im selben Band."
+        },
+        "FlowSubstep": {
+          "id": "Die Kennung des Unter-Schritts.",
+          "title": "Der Titel des Unter-Schritts."
+        }
+      },
       "fields": {
         "bands": {
           "help": "Die Bänder von oben nach unten, der Hauptpfad zuerst — genau die bandId-Werte, die setStepBand, insertInBand, addActivityToBand und addDecisionToBand annehmen. Je Band: id ('main' oder 'no:<id>'), ownerId (die id der Entscheidung, die es öffnet, beim Hauptpfad null), label und depth."
         },
         "steps": {
-          "help": "Die Kette in Reihenfolge. Jeder Schritt trägt id, title, description, kind ('activity' oder 'decision'), branchId (das Band, in dem er steht), expanded und substeps (je id und title); eine Entscheidung trägt zusätzlich decision ({label, noTarget})."
+          "help": "Die Kette in Reihenfolge, jede Angabe unter keys einzeln beschrieben."
         }
       },
       "titlePlaceholder": "Aktivität …",
@@ -6159,9 +6206,23 @@
           }
         }
       },
+      "types": {
+        "OpportunityStep": {
+          "id": "Die Kennung des Schritts.",
+          "title": "Der Titel des Schritts.",
+          "description": "Die Beschreibung des Schritts.",
+          "side": "va für wertschöpfend, nva für nicht wertschöpfend.",
+          "expanded": "Ob die Unter-Schritte aufgeklappt sind; rein darstellend.",
+          "substeps": "Die Unter-Schritte, jede Angabe unter keys beschrieben."
+        },
+        "FlowSubstep": {
+          "id": "Die Kennung des Unter-Schritts.",
+          "title": "Der Titel des Unter-Schritts."
+        }
+      },
       "fields": {
         "steps": {
-          "help": "Die Kette in Reihenfolge. Jeder Schritt trägt id, title, description, side ('va' wertschöpfend oder 'nva' Nacharbeit), expanded und substeps (je id und title)."
+          "help": "Die Kette in Reihenfolge, jede Angabe unter keys einzeln beschrieben."
         }
       },
       "titlePlaceholder": "Schritt …",
@@ -6290,9 +6351,23 @@
           }
         }
       },
+      "types": {
+        "DeploymentStep": {
+          "id": "Die Kennung des Schritts.",
+          "title": "Der Titel des Schritts.",
+          "description": "Die Beschreibung des Schritts.",
+          "laneId": "Die Bahn des Schritts: die id einer Bahn aus lanes, oder unassigned für keine.",
+          "expanded": "Ob die Unter-Schritte aufgeklappt sind; rein darstellend.",
+          "substeps": "Die Unter-Schritte, jede Angabe unter keys beschrieben."
+        },
+        "FlowSubstep": {
+          "id": "Die Kennung des Unter-Schritts.",
+          "title": "Der Titel des Unter-Schritts."
+        }
+      },
       "fields": {
         "steps": {
-          "help": "Die Kette in Reihenfolge. Jeder Schritt trägt id, title, description, laneId (die Bahn, der er zugewiesen ist), expanded und substeps (je id und title)."
+          "help": "Die Kette in Reihenfolge, jede Angabe unter keys einzeln beschrieben."
         },
         "lanes": {
           "help": "Die Bahnen (Rollen/Abteilungen) in Anzeigereihenfolge. Jede Bahn trägt id, name und order; die reservierte Bahn „unassigned“ trägt einen leeren Namen, ihr Label kommt aus der Oberfläche."
