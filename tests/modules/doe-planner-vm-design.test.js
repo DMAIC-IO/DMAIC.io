@@ -110,8 +110,6 @@ suite('doe-planner-vm design — options', () => {
 
   test('UI handlers clamp like before', () => {
     const { vm, model } = setup();
-    vm.replicatesChanged({ target: { value: '25' } });
-    assertEqual(model.options.replicates, 10);
     vm.ccdCpChanged({ target: { value: '' } });
     assertEqual(model.options.ccdCenterPoints, 3);
     vm.bbCpChanged({ target: { value: '-2' } });

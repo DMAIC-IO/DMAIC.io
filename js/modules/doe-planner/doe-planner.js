@@ -51,12 +51,16 @@ import {
 } from './doe-planner-analysis.js';
 import { provisionWorksheet } from '../../core/examples-registry.js';
 import { requireText } from '../../core/agent/agent-argcheck.js';
+import { paramInputMixin, numberCheck } from '../../core/param-input.js';
 
 // ─── Constants ─────────────────────────────────────────────────────
 
 const AUTO_GEN_DELAY = 600; // ms debounce for auto-generation
 
 /** Data keys of the sub-viewmodels, in attach order. */
+/** Zahlenfelder der Oberfläche; die Grenzen sind die des Agent-Setters setReplicates. */
+const PARAM_SPEC = { replicates: { min: 1, max: 10, integer: true } };
+
 const SUB_VIEWMODELS = ['factors', 'design', 'optimal', 'evaluation', 'analysis', 'evop', 'runs'];
 
 /**
@@ -180,6 +184,18 @@ const mod = createModule({
     const deps = { t: _t, context: module._context, container: () => module._container };
 
     return {
+      ...paramInputMixin({
+        specs: PARAM_SPEC,
+        checks: { replicates: numberCheck(PARAM_SPEC.replicates) },
+        root: (vm) => vm.model.options,
+        t: _t,
+        lang: () => module._context?.i18n?.getLanguage?.() ?? 'de',
+      }),
+      /** @noagent DOM event handler target; routes a checked numeric field to its agent setter */
+      setParam(key, value) {
+        if (key !== 'replicates') throw new Error(`unknown numeric field ${JSON.stringify(key)}`);
+        this.design.setReplicates(value);
+      },
       // `name: new X(deps)` literals: the agent generator reads the
       // sub-viewmodels from exactly this shape. init() replaces them.
       factors: new FactorsViewModel(deps),

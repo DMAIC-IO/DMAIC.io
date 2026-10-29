@@ -106,7 +106,7 @@
                    :disabled="factors.isCategorical(f)" :title="factors.factorUnitTitle(f)" />
             <select class="field doe__factor-kind" :data-factor-id="f.id"
                     :title="t('factorKindLabel')"
-                    x-model="f.kind" @change="factors.setFactorKind(f.id, f.kind)">
+                    :value="f.kind" @change="factors.setFactorKind(f.id, $event.target.value)">
               <option value="continuous" x-text="t('factorKindContinuous')"></option>
               <option value="categorical" x-text="t('factorKindCategorical')"></option>
             </select>
@@ -477,8 +477,8 @@
       </div>
       <div class="doe__replicates-row">
         <label class="doe__input-label" data-help-key="modules.doe-planner.tipReplicates" x-text="t('optReplicates')"></label>
-        <input type="number" class="field doe__replicates-input" min="1" max="10"
-               :value="model.options.replicates || 1" @change="design.replicatesChanged($event)" />
+        <input type="number" class="field doe__replicates-input" :min="paramMin('replicates')" :max="paramMax('replicates')" :step="paramStep('replicates')"
+               :value="paramValue('replicates')" @change="onParamInput('replicates', $event)" />
       </div>
     </div>
 

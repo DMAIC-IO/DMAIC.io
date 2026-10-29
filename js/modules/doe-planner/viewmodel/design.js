@@ -320,11 +320,6 @@ export class DesignViewModel {
     this._save();
   }
 
-  /** @noagent UI input — clamps to 1..10 like before @param {Event} event */
-  replicatesChanged(event) {
-    this.setReplicates(Math.max(1, Math.min(10, parseInt(event.target.value, 10) || 1)));
-  }
-
   /**
    * Choose the axial distance of the central composite design.
    * @agent
