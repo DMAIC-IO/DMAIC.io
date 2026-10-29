@@ -3572,3 +3572,28 @@ test('void_creating_action: jede Ausnahme trifft im echten Baum noch eine void-A
       `Ausnahme ${key}: Aktion liefert jetzt ${action.returns} — Ausnahme streichen`);
   }
 });
+
+/** TAGGED_VM, dessen `setProblem` `text` mit `requireKnownId` gegen `source` prüft; `decl` steht auf Modulebene. */
+function vmWithKnownIdCheck(decl, source) {
+  return TAGGED_VM
+    .replace("import { State } from './foo-model.js';",
+      `import { State } from './foo-model.js';\nimport { requireKnownId } from '../../core/agent/agent-argcheck.js';\n${decl}`)
+    .replace('setProblem(text) { return true; }',
+      `setProblem(text) { requireKnownId('text', text, ${source}); return true; }`);
+}
+
+test('module_state_option_source: eine Wertemenge aus einem veränderlichen Modul-let ist ein Befund', () => {
+  const root = fixture({ foo: { 'foo.js': vmWithKnownIdCheck('let _ids = [];', '_ids'), 'foo-model.js': MODEL } });
+  assert.ok(collectAgentData(root).modules.foo.violations.includes('module_state_option_source:setProblem:text'));
+});
+
+test('module_state_option_source: auch über Methodenkette und lokalen Alias auf das let', () => {
+  const vm = vmWithKnownIdCheck('let _ids = [];', 'ids').replace('requireKnownId(\'text\'', "const ids = _ids.map(x => x.id);\n requireKnownId('text'");
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
+  assert.ok(collectAgentData(root).modules.foo.violations.includes('module_state_option_source:setProblem:text'));
+});
+
+test('module_state_option_source: eine Modul-const bleibt befundfrei', () => {
+  const root = fixture({ foo: { 'foo.js': vmWithKnownIdCheck("const IDS = ['a', 'b'];", 'IDS'), 'foo-model.js': MODEL } });
+  assert.ok(!collectAgentData(root).modules.foo.violations.some((v) => v.startsWith('module_state_option_source')));
+});

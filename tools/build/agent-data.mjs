@@ -212,15 +212,18 @@ function buildEntry(resolver, appDir, viewmodelFile) {
   const templateCalls = bindings.calls.map(m => `template_model_call:${m}`);
   // Zustandsabhängige Wertemengen (Task 2a): siehe `stateOptionSources`.
   const undeclaredOptions = [...new Set(optionSources
-    .filter(o => !Object.prototype.hasOwnProperty.call(model.fields, o.field))
+    .filter(o => o.field && !Object.prototype.hasOwnProperty.call(model.fields, o.field))
     .map(o => `undeclared_option_source:${o.action}:${o.arg}`))];
 
+  const moduleStateOptions = [...new Set(optionSources
+    .filter(o => o.moduleState)
+    .map(o => `module_state_option_source:${o.action}:${o.arg}`))];
   const reported = [...violations, ...surface, ...model.violations,
     ...persistence.violations, ...unreadable, ...readReturn,
     ...invalidBulkKinds(model.fields), ...invalidOmitPaths(model.fields), ...collectDomDetours(sf),
     ...unreachable, ...templateCalls,
     ...subViewModelModelBindings(dirname(viewmodelFile), subViewModels),
-    ...undeclaredOptions];
+    ...undeclaredOptions, ...moduleStateOptions];
   // Verstöße zählen nur, wenn das Modul etwas behauptet.
   const effective = tagged ? reported : [];
   return {
@@ -915,7 +918,7 @@ function inspectMethod(name, member, sf, from, ctx) {
     // Vorlagenbindung NICHT ab — genau das ist der Unterschied zwischen
     // „ein Agent kann das Feld schreiben" und „irgendeine Methode tut es".
     for (const field of writtenModelFields(fn, ctx.resolver, ctx.modelDecl)) out.written.add(field);
-    for (const source of stateOptionSources(fn.body)) out.optionSources.push({ action: name, ...source });
+    for (const source of stateOptionSources(fn.body, moduleLetNames(sf))) out.optionSources.push({ action: name, ...source });
 }
 
 /** Abschnitte unter `actions.<name>` — als Methode eines Teil-Viewmodels kollidierten sie mit dem Hilfeschlüssel. */
@@ -1370,9 +1373,10 @@ function expandDerivedNames(body, names) {
  * Ob der Name als Lesefeld deklariert ist, entscheidet `buildEntry`.
  *
  * @param {ts.Block|undefined} body
- * @returns {Array<{ arg: string, field: string }>}
+ * @param {Set<string>} [moduleLets]  auf Modulebene mit `let`/`var` deklarierte Namen
+ * @returns {Array<{ arg: string, field?: string, moduleState?: string }>}
  */
-function stateOptionSources(body) {
+function stateOptionSources(body, moduleLets = new Set()) {
   if (!body || !ts.isBlock(body)) return [];
   const aliases = new Map();
   for (const statement of body.statements) {
@@ -1388,11 +1392,45 @@ function stateOptionSources(body) {
     if (call.expression.text !== 'requireEnum' && call.expression.text !== 'requireKnownId') return;
     const [first, , allowed] = call.arguments;
     if (!first || !allowed) return;
+    const arg = ts.isStringLiteralLike(first) ? first.text : first.getText();
     const field = optionFieldOf(allowed, aliases, new Set());
-    if (!field) return;
-    out.push({ arg: ts.isStringLiteralLike(first) ? first.text : first.getText(), field });
+    if (field) { out.push({ arg, field }); return; }
+    const root = rootIdentifier(allowed, aliases, new Set());
+    if (root && moduleLets.has(root)) out.push({ arg, moduleState: root });
   });
   return out;
+}
+
+/** Namen der auf Modulebene mit `let`/`var` deklarierten Bindungen — veränderlicher Modulzustand. */
+function moduleLetNames(sf) {
+  const out = new Set();
+  for (const statement of sf.statements) {
+    if (!ts.isVariableStatement(statement)) continue;
+    if (statement.declarationList.flags & ts.NodeFlags.Const) continue;
+    for (const decl of statement.declarationList.declarations) {
+      if (ts.isIdentifier(decl.name)) out.add(decl.name.text);
+    }
+  }
+  return out;
+}
+
+/** Der Wurzel-Bezeichner einer Mengen-Ausdruckskette (`_ids`, `_ids.map(…)`, Alias darauf), sonst null. */
+function rootIdentifier(expr, aliases, seen) {
+  while (ts.isParenthesizedExpression(expr) || ts.isNonNullExpression(expr) || ts.isAsExpression(expr)) expr = expr.expression;
+  if (ts.isIdentifier(expr)) {
+    const init = aliases.get(expr.text);
+    if (!init) return expr.text;
+    if (seen.has(expr.text)) return null;
+    seen.add(expr.text);
+    return rootIdentifier(init, aliases, seen);
+  }
+  if (ts.isElementAccessExpression(expr) || ts.isPropertyAccessExpression(expr)) return rootIdentifier(expr.expression, aliases, seen);
+  if (ts.isCallExpression(expr)) {
+    const callee = expr.expression;
+    if (ts.isPropertyAccessExpression(callee)) return rootIdentifier(callee.expression, aliases, seen);
+    return expr.arguments.length === 1 ? rootIdentifier(expr.arguments[0], aliases, seen) : null;
+  }
+  return null;
 }
 
 /**

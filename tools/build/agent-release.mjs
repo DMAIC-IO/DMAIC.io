@@ -65,6 +65,7 @@ export const VIOLATION_REMEDIES = Object.freeze({
   unreachable_write: '@agent-Setter mit Parameter anlegen, der das Feld aus diesem Parameter zuweist',
   template_model_call: 'die Vorlage auf den Viewmodel-Sink umlegen',
   undeclared_option_source: 'die Menge als Lesefeld in @typedef AgentRead und einem eigenen read() ergänzen',
+  module_state_option_source: 'Wertemenge über eine this.…-Kette prüfen, deren erstes Segment ein Lesefeld ist (z. B. eine @noagent-Methode gleichen Namens wie das Feld) — eine Modul-let-Menge ist für den Agenten unsichtbar',
   unresolved_sub_viewmodel: 'das Teil-Viewmodel als importierte Klasse ohne extends anlegen (name: new Klasse(…))',
   nested_sub_viewmodel: 'eine Ebene: das innere Objekt als eigenes Teil-Viewmodel an die Wurzel heben',
   sub_viewmodel_model_binding: 'die Vorlage über model.… oder über eine Methode des Teil-Viewmodels schreiben lassen',
