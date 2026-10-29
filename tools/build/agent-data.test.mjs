@@ -314,12 +314,12 @@ export function mixFactory(module, cfg) {
   const { mountPicker } = cfg;
   return {
     /**
-     * Append a step.
+     * Push a step.
      * @agent
      * @param {string} title - the step title
-     * @returns {string} the new step id
+     * @returns {void} nothing
      */
-    addStep(title) { return 'x'; },
+    pushStep(title) {},
     /** @noagent */
     init() { mountPicker.call(this); },
     _hidden() {},
@@ -355,8 +355,8 @@ test('collectAgentData: a spread of an imported factory call resolves its method
   );
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.violations, []);
-  assert.deepEqual(Object.keys(modules.foo.actions).sort(), ['addStep', 'read', 'setProblem']);
-  assert.deepEqual(modules.foo.actions.addStep.params, [
+  assert.deepEqual(Object.keys(modules.foo.actions).sort(), ['pushStep', 'read', 'setProblem']);
+  assert.deepEqual(modules.foo.actions.pushStep.params, [
     { name: 'title', type: 'string', optional: false, help: 'the step title' },
   ]);
   assert.equal(modules.foo.available, true);
@@ -410,7 +410,7 @@ test('collectAgentData: a spread of a local constant holding a factory call reso
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } }, { 'js/ui/mix.js': MIXIN });
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.violations, []);
-  assert.ok('addStep' in modules.foo.actions);
+  assert.ok('pushStep' in modules.foo.actions);
 });
 
 test('collectAgentData: a member of the module overrides the mixin member of the same name', () => {
@@ -420,12 +420,12 @@ test('collectAgentData: a member of the module overrides the mixin member of the
        * @param {string} title - the local title
        * @returns {string} the id
        */
-      addStep(title) { return 'x'; },`);
+      pushStep(title) { return 'x'; },`);
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } }, { 'js/ui/mix.js': MIXIN });
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.violations, []);
-  assert.equal(modules.foo.actions.addStep.returns, 'string');
-  assert.equal(modules.foo.actions.addStep.params[0].help, 'the local title');
+  assert.equal(modules.foo.actions.pushStep.returns, 'string');
+  assert.equal(modules.foo.actions.pushStep.params[0].help, 'the local title');
 });
 
 test('collectAgentData: a data() that names a local function resolves its return literal', () => {
@@ -3533,4 +3533,20 @@ test('collectAgentData: address/adder zählen nicht als anlegend', () => {
   ).replace('setProblem(text)', 'address(text)');
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
   assert.ok(!collectAgentData(root).modules.foo.violations.some((v) => v.startsWith('void_creating_action')));
+});
+
+test('Teil-Viewmodel: eine anlegende Aktion mit @returns {void} ist ein Befund mit Teil-Präfix', () => {
+  const body = DRAFT_VM.replace('setProblem(text)', 'addProblem(text)');
+  const { modules } = collectAgentData(subVmFixture(body));
+  assert.ok(modules.foo.violations.includes('void_creating_action:draft.addProblem'), modules.foo.violations.join(', '));
+});
+
+test('void_creating_action: Promise<void>, undefined und Promise<undefined> zählen als nichts geliefert', () => {
+  for (const ret of ['Promise<void>', 'undefined', 'Promise<undefined>']) {
+    const vm = TAGGED_VM
+      .replace('       * @returns {boolean} whether it was accepted\n', `       * @returns {${ret}}\n`)
+      .replace('setProblem(text)', 'createProblem(text)');
+    const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
+    assert.ok(collectAgentData(root).modules.foo.violations.includes('void_creating_action:createProblem'), ret);
+  }
 });

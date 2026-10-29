@@ -81,13 +81,18 @@ const BULK_KINDS = ['table', 'tree'];
 
 /** Anlegende Aktionen liefern die id des Angelegten — ein Agent soll nicht nachlesen müssen. */
 const CREATING_ACTION_RE = /^(add|append|insert|create|duplicate)(?=[A-Z]|$)/;
+/** Rückgabetexte, die nichts liefern. */
+const VOID_RETURNS = new Set(['void', 'undefined', 'Promise<void>', 'Promise<undefined>']);
 /**
  * Index- oder anzahlbasierte Anlegeaktionen ohne eigene id — begründete Ausnahmen
- * als `"<modul>.<aktion>"`.
+ * als `"<modul>.<aktion>"`; bei Teil-Viewmodels trägt die Aktion den
+ * Teil-Präfix (`"<modul>.<teil>.<aktion>"`, z. B. `doe-planner.factors.insertLevel`).
+ * Geprüft wird das letzte Namenssegment.
+ * `doe-planner.factors.insertLevel`: Stufen sind Zeichenketten ohne id, nur eine Position.
  * `attribute-test.addRow/addCol`: Tabellenzeile/-spalte ist eine Position, keine Entität.
  * `worksheet.addRows`: legt `count` Zeilen an, Zeilen haben keine id.
  */
-const CREATING_VOID_EXEMPT = new Set(['attribute-test.addRow', 'attribute-test.addCol', 'worksheet.addRows']);
+const CREATING_VOID_EXEMPT = new Set(['doe-planner.factors.insertLevel', 'attribute-test.addRow', 'attribute-test.addCol', 'worksheet.addRows']);
 
 /**
  * Sammle die Agenten-Registry über alle Module.
@@ -121,7 +126,8 @@ function buildEntry(resolver, appDir, viewmodelFile) {
   const { actions, violations, written, optionSources, subViewModels } = readViewmodel(sf, resolver, appDir);
   const moduleId = basename(viewmodelFile, '.js');
   for (const [name, action] of Object.entries(actions)) {
-    if (CREATING_ACTION_RE.test(name) && action.returns === 'void'
+    if (CREATING_ACTION_RE.test(name.slice(name.lastIndexOf('.') + 1))
+        && VOID_RETURNS.has(String(action.returns).trim())
         && !CREATING_VOID_EXEMPT.has(`${moduleId}.${name}`)) {
       violations.push(`void_creating_action:${name}`);
     }

@@ -298,8 +298,9 @@ export class State {
       if (di.length) ins = Math.max(...di.map(d => self.rows.findIndex(r => r.id === d))) + 1;
       self.rows.splice(ins, 0, c);
       self.rows.filter(r => r.parentId === sid && r.id !== nid).forEach(ch => cp(ch.id, nid));
+      return nid;
     };
-    cp(id, src.parentId);
+    return cp(id, src.parentId);
   }
 
   /**

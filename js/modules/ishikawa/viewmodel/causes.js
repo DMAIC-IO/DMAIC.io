@@ -475,13 +475,14 @@ export class CausesViewModel {
    * Copy a cause with its sub-causes and ratings, right after it.
    * @agent
    * @param {number} rowId the cause
-   * @returns {void}
+   * @returns {number} id of the copy
    * @throws {Error} if the cause is unknown
    */
   duplicateRow(rowId) {
     requireKnownId('rowId', rowId, this.model.rows.map((r) => r.id));
-    this.model.dupeRow(rowId, ` (${this._t('copy')})`);
+    const copyId = this.model.dupeRow(rowId, ` (${this._t('copy')})`);
     this._changed();
+    return copyId;
   }
 
   /**
