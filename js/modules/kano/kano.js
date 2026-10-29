@@ -223,6 +223,8 @@ export default createModule({
       _renderGen: 0,
       /** true, sobald destroy() lief — sperrt Mounts, die danach zurückkommen. */
       _destroyed: false,
+      /** true, nachdem die Verknüpfung bewusst gelöst wurde — sperrt die Auto-Verknüpfung. */
+      _unlinked: false,
 
       /** @noagent lifecycle, kein Zustandsweg: lädt die Baumliste und abonniert Änderungen am Projekt-State. */
       init() {
@@ -302,7 +304,11 @@ export default createModule({
         // damit still (sichtbar erst bei Reload/Sprachwechsel). `module`
         // (== `this` in `loadExample`) bleibt über den Alpine-Rebuild hinweg
         // dieselbe Objektreferenz, das Flag ist also zuverlässig sichtbar.
-        if (!module._loadingExample && !this.model.source.instanceId
+        //
+        // `!this._unlinked`: wer die Verknüpfung eben selbst gelöst hat (leere
+        // Baumwahl oder `setSourceTree(null)`), bekommt sie nicht beim nächsten
+        // `state:saved` still zurück.
+        if (!module._loadingExample && !this._unlinked && !this.model.source.instanceId
             && this.treeList.length === 1 && this.model.items.length === 0) {
           // Geschrieben wird über `setSourceTree` — dieselbe Senke wie die der
           // Agentenfläche, damit `source.instanceId` genau eine
@@ -360,6 +366,7 @@ export default createModule({
           requireKnownId('instanceId', instanceId, this.treeList.map((t) => t.instanceId));
         }
         this.model.source.instanceId = instanceId;
+        this._unlinked = instanceId === null;
         this.refreshPending();
       },
 
