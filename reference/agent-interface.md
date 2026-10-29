@@ -380,6 +380,17 @@ Feldwerten, und ein abgeschlossenes Projekt ist genau der Zustand, in dem
 man es auswerten will. Findet `module.add` die neue Instanz nach dem
 Anlegen nicht, meldet es `op_failed`, statt eine Id zu erfinden.
 
+## Dateien als Inhalt
+
+Wo die Oberfläche eine Datei zum Download anbietet, bietet ein Modul dem
+Agenten eine Aktion `build…`, die die Datei als Inhalt zurückgibt:
+`{ fileName, mimeType, content }`. Der Download in der Oberfläche ruft
+dieselbe Aktion; die Nebenwirkungen (zum Beispiel Exportmerker oder
+„verschickt am“) sind identisch. Ob und wohin der Agent den Inhalt weitergibt,
+entscheidet der Nutzer. Erstes Modul mit dieser Form ist der
+Fragebogen-Baukasten (`draft.buildSurveyFile`, `recipients.buildRecipientFile`,
+`results.buildReport`).
+
 ## Grenzen
 
 - Der Agent bekommt **Zahlen, keine Bilder**: ein Diagramm sieht er nicht.
