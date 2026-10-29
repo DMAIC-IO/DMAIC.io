@@ -4953,7 +4953,7 @@ export const AGENT_REGISTRY = {
             "name": "n",
             "type": "number",
             "optional": false,
-            "help": "a whole number, at least 1"
+            "help": "a whole number from 1 to 100"
           }
         ],
         "returns": "void",
@@ -4965,7 +4965,7 @@ export const AGENT_REGISTRY = {
             "name": "n",
             "type": "number",
             "optional": false,
-            "help": "a whole number, at least 1"
+            "help": "a whole number from 1 to 100"
           }
         ],
         "returns": "void",

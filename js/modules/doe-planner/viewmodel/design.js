@@ -31,10 +31,10 @@ const DESIGN_TYPES = [
   { key: 'gopt',    formula: 'G-Opt' },
 ];
 
-/** Axial distances of the CCD. */
 /** Zentralpunkte: dieselbe Regel für Oberfläche und Agent-Setter. */
 export const CENTER_POINTS_SPEC = { integer: true, min: 1, max: 100 };
 
+/** Axial distances of the CCD. */
 const ALPHA_TYPES = ['rotatable', 'face-centered', 'spherical'];
 const REC_KEYS = { full: 'recFull', frac: 'recFrac', pb: 'recPB', bb: 'recBB', taguchi: 'recTaguchi' };
 
