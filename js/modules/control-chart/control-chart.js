@@ -40,6 +40,7 @@ import {
 } from '../../core/examples-registry.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireBoolean, requireEnum, requireIndex, requireKnownId, requireNumber, requireText } from '../../core/agent/agent-argcheck.js';
+import { paramInputMixin, numberCheck } from '../../core/param-input.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { finiteOrNull, zipPoints } from '../../core/agent/agent-results.js';
@@ -69,13 +70,22 @@ const isEmptyForm = (v) => v === null || v === '';
 const HELP = 'modules.control-chart.types.';
 
 /**
+ * Zahlenoptionen: zulässiger Bereich (einzige Quelle für Prüfer und Eingabefeld).
+ * Die Untergruppengröße hängt am Kartentyp, ihre Spec ist darum eine Funktion.
+ */
+const PARAM_SPEC = {
+  subgroupSize: (vm) => ({ min: vm.subgroupMin(), max: vm.subgroupMax(), integer: true, step: 1 }),
+  baselineCount: { min: 1, integer: true, step: 1, nullable: true },
+};
+
+/**
  * Je Option ihr Prüfer; er gibt den Wert in der Form des Models zurück.
  * `vm` ist das Viewmodel — die Grenzen der Untergruppengröße hängen am Kartentyp.
  */
 const PARAM_CHECKS = {
   chartTypeId: (v) => { requireEnum('value', v, CHART_TYPE_IDS); return v; },
-  subgroupSize: (v, vm) => requireNumber('value', v, { min: vm.subgroupMin(), max: vm.subgroupMax(), integer: true }),
-  baselineCount: (v) => (isEmptyForm(v) ? null : requireNumber('value', v, { min: 1, integer: true })),
+  subgroupSize: numberCheck(PARAM_SPEC.subgroupSize),
+  baselineCount: numberCheck(PARAM_SPEC.baselineCount),
   stagesText: (v) => requireText('value', v),
   usl: (v) => (isEmptyForm(v) ? null : requireNumber('value', v)),
   lsl: (v) => (isEmptyForm(v) ? null : requireNumber('value', v)),
@@ -222,6 +232,12 @@ const mod = createModule({
 
   data(module, _t) {
     return {
+      ...paramInputMixin({
+        specs: PARAM_SPEC,
+        checks: PARAM_CHECKS,
+        t: _t,
+        lang: () => module._context?.i18n?.getLanguage?.() ?? 'de',
+      }),
       // ── Transient view state (not persisted) ──────────────────
       _charts: [],
       _unsubs: [],
@@ -457,30 +473,6 @@ const mod = createModule({
 
       // ── Input -> setParam (POM dispatches `change`) ────────────
 
-      /**
-       * @noagent DOM event handler; the agent uses setParam()
-       * @param {Event} e die Änderung der Untergruppengröße
-       */
-      async subgroupSizeChanged(e) {
-        const v = parseInt(e.target.value, 10) || 2;
-        // In den Bereich des Kartentyps klemmen — vor der Senke.
-        await this.setParam('subgroupSize', Math.min(this.subgroupMax(), Math.max(this.subgroupMin(), v)));
-        e.target.value = String(this.model.subgroupSize);
-      },
-      /** @noagent view transform */
-      baselineValue() {
-        return this.model.baselineCount ?? '';
-      },
-      /**
-       * @noagent DOM event handler; the agent uses setParam()
-       * @param {Event} e die Änderung der Phase I
-       */
-      async baselineChanged(e) {
-        const v = parseInt(e.target.value, 10);
-        // Leer, unlesbar oder < 1 heißt „alle Punkte".
-        await this.setParam('baselineCount', Number.isInteger(v) && v >= 1 ? v : null);
-        e.target.value = this.baselineValue();
-      },
       /**
        * @noagent DOM event handler; the agent uses setParam()
        * @param {Event} e die Änderung der Stufen

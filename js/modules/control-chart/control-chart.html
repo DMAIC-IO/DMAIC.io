@@ -14,8 +14,9 @@
     <div class="field-group" data-ref="subgroup-row" x-show="showSubgroup()">
       <label data-help-key="modules.control-chart.types.Params.subgroupSize" x-text="t('subgroupSize')"></label>
       <input type="number" class="field field--num" data-ref="subgroup-size"
-        :value="model.subgroupSize" :min="subgroupMin()" :max="subgroupMax()"
-        @change="subgroupSizeChanged($event)">
+        :value="paramValue('subgroupSize')"
+        :min="paramMin('subgroupSize')" :max="paramMax('subgroupSize')" :step="paramStep('subgroupSize')"
+        @change="onParamInput('subgroupSize', $event)">
     </div>
 
     <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
@@ -27,8 +28,9 @@
     <div class="field-group">
       <label data-help-key="modules.control-chart.types.Params.baselineCount" x-text="t('baselineCount')"></label>
       <input type="number" class="field field--num" data-ref="baseline-count"
-        :value="baselineValue()" min="2" :placeholder="t('baselineAll')"
-        @change="baselineChanged($event)">
+        :value="paramValue('baselineCount')" :placeholder="t('baselineAll')"
+        :min="paramMin('baselineCount')" :step="paramStep('baselineCount')"
+        @change="onParamInput('baselineCount', $event)">
       <span class="field-hint" x-text="t('baselineHint')"></span>
     </div>
 

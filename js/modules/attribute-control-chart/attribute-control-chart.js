@@ -43,6 +43,7 @@ import { analyzeState } from './attribute-control-chart-analysis.js';
 import { loadWorksheetExample, rewriteRefFields } from '../../core/examples-registry.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/agent-argcheck.js';
+import { paramInputMixin, numberCheck } from '../../core/param-input.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
 import { finiteOrNull, zipPoints } from '../../core/agent/agent-results.js';
@@ -74,14 +75,16 @@ const RULE_IDS = ATTRIBUTE_NELSON_RULES.map(r => r.id);
 /** Die Optionen, die `setParam` annimmt (`constantN` nur bei np). */
 const PARAM_KEYS = ['chartTypeId', 'constantN', 'baselineCount', 'enabledRules'];
 
-/** Die Leerform eines Zahlenfelds („alle Punkte"): `null` oder `''`. */
-const isEmptyForm = (v) => v === null || v === '';
+/** Zahlenoption Phase I: zulässiger Bereich (einzige Quelle für Prüfer und Eingabefeld). */
+const PARAM_SPEC = {
+  baselineCount: { min: 1, integer: true, step: 1, nullable: true },
+};
 
 /** Je Option ihr Prüfer; er gibt den Wert in der Form des Models zurück. */
 const PARAM_CHECKS = {
   chartTypeId: (v) => { requireEnum('value', v, CHART_TYPE_IDS); return v; },
   constantN: (v) => requireNumber('value', v, { min: 1, integer: true }),
-  baselineCount: (v) => (isEmptyForm(v) ? null : requireNumber('value', v, { min: 1, integer: true })),
+  baselineCount: numberCheck(PARAM_SPEC.baselineCount),
   enabledRules: (v) => {
     if (!Array.isArray(v)) {
       throw new Error(`invalid value ${JSON.stringify(v)}; allowed: a list of rule ids from ${RULE_IDS.join(', ')}`);
@@ -160,6 +163,12 @@ const mod = createModule({
 
   data(module, _t) {
     return {
+      ...paramInputMixin({
+        specs: PARAM_SPEC,
+        checks: PARAM_CHECKS,
+        t: _t,
+        lang: () => module._context?.i18n?.getLanguage?.() ?? 'de',
+      }),
       // ── Transient view state (not persisted) ──────────────────
       result: null,
       _lastResult: null,
@@ -421,18 +430,6 @@ const mod = createModule({
         // Wie bisher: ein ungültiger Wert fällt auf 50 zurück — vor der Senke.
         await this.setParam('constantN', (Number.isFinite(v) && v > 0) ? v : 50);
         event.target.value = String(this.model.constantN);
-      },
-
-      /**
-       * @noagent DOM event handler; the agent uses setParam()
-       * @param {Event} event die Änderung des Phase-I-Feldes
-       */
-      async baselineCountChanged(event) {
-        const v = parseInt(event.target.value, 10);
-        // Leer, unlesbar oder < 1 heißt „alle Punkte".
-        await this.setParam('baselineCount', Number.isInteger(v) && v >= 1 ? v : null);
-        // Das Feld zeigt danach den Wert des Models.
-        event.target.value = this.model.baselineCount == null ? '' : String(this.model.baselineCount);
       },
 
       /** @noagent view transform; klappt die Regelliste, kein Zustand der Rechnung */

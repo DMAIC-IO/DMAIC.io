@@ -36,9 +36,9 @@
     <div class="field-group">
       <label data-help-key="modules.attribute-control-chart.types.Params.baselineCount" x-text="t('baselineCount')"></label>
       <input type="number" class="field field--num" data-ref="baseline-count"
-        min="2" :placeholder="t('baselineAll')"
-        :value="model.baselineCount == null ? '' : model.baselineCount"
-        @change="baselineCountChanged($event)">
+        :min="paramMin('baselineCount')" :step="paramStep('baselineCount')" :placeholder="t('baselineAll')"
+        :value="paramValue('baselineCount')"
+        @change="onParamInput('baselineCount', $event)">
       <span class="field-hint" x-text="t('baselineHint')"></span>
     </div>
 
