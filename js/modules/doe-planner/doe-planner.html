@@ -485,8 +485,8 @@
     <template x-if="model.designType === 'bb'">
       <div class="field-group">
         <label class="doe__input-label" data-help-key="modules.doe-planner.actions.design.setBbCenterPoints.help" x-text="t('bbCenterPoints')"></label>
-        <input type="number" class="field doe__bb-cp-input" min="1" max="10"
-               :value="model.options.bbCenterPoints" @change="design.bbCpChanged($event)" />
+        <input type="number" class="field doe__bb-cp-input" :min="paramMin('bbCenterPoints')" :step="paramStep('bbCenterPoints')"
+               :value="paramValue('bbCenterPoints')" @change="onParamInput('bbCenterPoints', $event)" />
       </div>
     </template>
 
@@ -502,8 +502,8 @@
         </div>
         <div class="field-group">
           <label class="doe__input-label" data-help-key="modules.doe-planner.actions.design.setCcdCenterPoints.help" x-text="t('ccdCenterPoints')"></label>
-          <input type="number" class="field doe__ccd-cp-input" min="1" max="10"
-                 :value="model.options.ccdCenterPoints" @change="design.ccdCpChanged($event)" />
+          <input type="number" class="field doe__ccd-cp-input" :min="paramMin('ccdCenterPoints')" :step="paramStep('ccdCenterPoints')"
+                 :value="paramValue('ccdCenterPoints')" @change="onParamInput('ccdCenterPoints', $event)" />
         </div>
       </div>
     </template>

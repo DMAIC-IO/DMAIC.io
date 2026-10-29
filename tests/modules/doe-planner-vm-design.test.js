@@ -108,12 +108,12 @@ suite('doe-planner-vm design — options', () => {
     assertThrows(() => vm.setCcdCenterPoints(0), /^invalid n\b/);
   });
 
-  test('UI handlers clamp like before', () => {
+  test('center point setters reject instead of clamping', () => {
     const { vm, model } = setup();
-    vm.ccdCpChanged({ target: { value: '' } });
-    assertEqual(model.options.ccdCenterPoints, 3);
-    vm.bbCpChanged({ target: { value: '-2' } });
-    assertEqual(model.options.bbCenterPoints, 1);
+    const before = model.options.bbCenterPoints;
+    assertThrows(() => vm.setBbCenterPoints(-2), /^invalid n\b/);
+    assertEqual(model.options.bbCenterPoints, before);
+    assertThrows(() => vm.setCcdCenterPoints(''), /^invalid n\b/);
   });
 
   test('center points option only for full, frac and pb', () => {

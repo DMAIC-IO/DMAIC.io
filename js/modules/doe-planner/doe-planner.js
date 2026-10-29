@@ -57,10 +57,14 @@ import { paramInputMixin, numberCheck } from '../../core/param-input.js';
 
 const AUTO_GEN_DELAY = 600; // ms debounce for auto-generation
 
-/** Data keys of the sub-viewmodels, in attach order. */
-/** Zahlenfelder der Oberfläche; die Grenzen sind die des Agent-Setters setReplicates. */
-const PARAM_SPEC = { replicates: { min: 1, max: 10, integer: true } };
+/** Zahlenfelder der Oberfläche; die Grenzen sind die der Agent-Setter. */
+const PARAM_SPEC = {
+  replicates: { min: 1, max: 10, integer: true },
+  bbCenterPoints: { min: 1, integer: true },
+  ccdCenterPoints: { min: 1, integer: true },
+};
 
+/** Data keys of the sub-viewmodels, in attach order. */
 const SUB_VIEWMODELS = ['factors', 'design', 'optimal', 'evaluation', 'analysis', 'evop', 'runs'];
 
 /**
@@ -186,15 +190,20 @@ const mod = createModule({
     return {
       ...paramInputMixin({
         specs: PARAM_SPEC,
-        checks: { replicates: numberCheck(PARAM_SPEC.replicates) },
+        checks: {
+          replicates: numberCheck(PARAM_SPEC.replicates),
+          bbCenterPoints: numberCheck(PARAM_SPEC.bbCenterPoints),
+          ccdCenterPoints: numberCheck(PARAM_SPEC.ccdCenterPoints),
+        },
         root: (vm) => vm.model.options,
         t: _t,
         lang: () => module._context?.i18n?.getLanguage?.() ?? 'de',
       }),
       /** @noagent DOM event handler target; routes a checked numeric field to its agent setter */
       setParam(key, value) {
-        if (key !== 'replicates') throw new Error(`unknown numeric field ${JSON.stringify(key)}`);
-        this.design.setReplicates(value);
+        const setters = { replicates: 'setReplicates', bbCenterPoints: 'setBbCenterPoints', ccdCenterPoints: 'setCcdCenterPoints' };
+        if (!Object.hasOwn(setters, key)) throw new Error(`unknown numeric field ${JSON.stringify(key)}`);
+        this.design[setters[key]](value);
       },
       // `name: new X(deps)` literals: the agent generator reads the
       // sub-viewmodels from exactly this shape. init() replaces them.

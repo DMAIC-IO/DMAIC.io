@@ -345,11 +345,6 @@ export class DesignViewModel {
     this._save();
   }
 
-  /** @noagent UI input — at least 1, empty gives 3 @param {Event} event */
-  ccdCpChanged(event) {
-    this.setCcdCenterPoints(Math.max(1, parseInt(event.target.value, 10) || 3));
-  }
-
   /**
    * Center points of the Box-Behnken design.
    * @agent
@@ -360,10 +355,5 @@ export class DesignViewModel {
   setBbCenterPoints(n) {
     this.model.options.bbCenterPoints = requireNumber('n', n, { integer: true, min: 1 });
     this._save();
-  }
-
-  /** @noagent UI input — at least 1, empty gives 3 @param {Event} event */
-  bbCpChanged(event) {
-    this.setBbCenterPoints(Math.max(1, parseInt(event.target.value, 10) || 3));
   }
 }
