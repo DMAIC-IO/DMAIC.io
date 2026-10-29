@@ -317,9 +317,9 @@ export function mixFactory(module, cfg) {
      * Append a step.
      * @agent
      * @param {string} title - the step title
-     * @returns {void} nothing
+     * @returns {string} the new step id
      */
-    addStep(title) {},
+    addStep(title) { return 'x'; },
     /** @noagent */
     init() { mountPicker.call(this); },
     _hidden() {},
@@ -3514,4 +3514,23 @@ test('unresolved_read_return: nicht auflösbarer read()-Rückgabewert ist eine g
   const root = fixture({ foo: { 'foo.js': DECLARED_VM(`return readAgentState('foo', build(), options);`), 'foo-model.js': DECL_MODEL } });
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unresolved_read_return']);
+});
+
+test('collectAgentData: eine anlegende @agent-Aktion mit @returns {void} ist ein Befund', () => {
+  const vm = TAGGED_VM.replace(
+    '       * @returns {boolean} whether it was accepted\n',
+    '       * @returns {void}\n',
+  ).replace('setProblem(text)', 'addProblem(text)');
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.ok(modules.foo.violations.includes('void_creating_action:addProblem'));
+});
+
+test('collectAgentData: address/adder zählen nicht als anlegend', () => {
+  const vm = TAGGED_VM.replace(
+    '       * @returns {boolean} whether it was accepted\n',
+    '       * @returns {void}\n',
+  ).replace('setProblem(text)', 'address(text)');
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
+  assert.ok(!collectAgentData(root).modules.foo.violations.some((v) => v.startsWith('void_creating_action')));
 });

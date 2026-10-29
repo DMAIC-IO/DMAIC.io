@@ -52,7 +52,7 @@
 import { readReturnKeys } from './agent-read-return.mjs';
 import ts from 'typescript';
 import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
-import { join, relative, sep, dirname } from 'node:path';
+import { join, relative, sep, dirname, basename } from 'node:path';
 import { createResolver, functionFromMember, isFunctionMember, isFunctionLike, findCreateModuleMember, memberName, findLocalDeclaration, findImportSource, resolveSpecifier } from './agent-resolve.mjs';
 
 const MODULES_DIR = 'js/modules';
@@ -78,6 +78,16 @@ const MARK_OMIT = 'agentOmit';
  * Agent zur Laufzeit an stillen Spalten.
  */
 const BULK_KINDS = ['table', 'tree'];
+
+/** Anlegende Aktionen liefern die id des Angelegten — ein Agent soll nicht nachlesen müssen. */
+const CREATING_ACTION_RE = /^(add|append|insert|create|duplicate)(?=[A-Z]|$)/;
+/**
+ * Index- oder anzahlbasierte Anlegeaktionen ohne eigene id — begründete Ausnahmen
+ * als `"<modul>.<aktion>"`.
+ * `attribute-test.addRow/addCol`: Tabellenzeile/-spalte ist eine Position, keine Entität.
+ * `worksheet.addRows`: legt `count` Zeilen an, Zeilen haben keine id.
+ */
+const CREATING_VOID_EXEMPT = new Set(['attribute-test.addRow', 'attribute-test.addCol', 'worksheet.addRows']);
 
 /**
  * Sammle die Agenten-Registry über alle Module.
@@ -109,6 +119,13 @@ function buildEntry(resolver, appDir, viewmodelFile) {
   const sf = resolver.parse(viewmodelFile);
   const tagged = hasModuleTag(sf);
   const { actions, violations, written, optionSources, subViewModels } = readViewmodel(sf, resolver, appDir);
+  const moduleId = basename(viewmodelFile, '.js');
+  for (const [name, action] of Object.entries(actions)) {
+    if (CREATING_ACTION_RE.test(name) && action.returns === 'void'
+        && !CREATING_VOID_EXEMPT.has(`${moduleId}.${name}`)) {
+      violations.push(`void_creating_action:${name}`);
+    }
+  }
 
   // Deklarierte Lesefläche hat Vorrang und ERSETZT die Model-Ableitung —
   // nicht ergänzt sie: zwei Quellen für dieselbe Fläche wäre genau die
