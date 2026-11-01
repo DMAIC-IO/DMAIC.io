@@ -2829,7 +2829,7 @@ export const AGENT_REGISTRY = {
         "params": [
           {
             "name": "key",
-            "type": "'confidenceLevel'|'matrixMethod'|'filterMinR'|'filterMaxP'",
+            "type": "'confidenceLevel'|'matrixMethod'",
             "optional": false,
             "help": "welcher Parameter; die Matrixschlüssel gelten erst ab drei Spalten, die im Zustand zulässigen nennt `activeParams`"
           },
@@ -2837,7 +2837,7 @@ export const AGENT_REGISTRY = {
             "name": "value",
             "type": "number|string|null",
             "optional": false,
-            "help": "der Wert; Bereich je Schlüssel siehe `Params`; `filterMinR`/`filterMaxP` nehmen `null` für keinen Filter"
+            "help": "der Wert; Bereich je Schlüssel siehe `Params`"
           }
         ],
         "returns": "void",
@@ -2851,16 +2851,6 @@ export const AGENT_REGISTRY = {
           "matrixMethod": {
             "type": "'pearson'|'spearman'|'kendall'",
             "help": "Koeffizient der Matrix, nur ab drei Spalten",
-            "optional": true
-          },
-          "filterMinR": {
-            "type": "number",
-            "help": "Mindestbetrag des Koeffizienten, nur Matrix",
-            "optional": true
-          },
-          "filterMaxP": {
-            "type": "number",
-            "help": "Höchst-p-Wert, nur Matrix",
             "optional": true
           }
         }
@@ -2900,18 +2890,6 @@ export const AGENT_REGISTRY = {
       "matrixMethod": {
         "type": "'pearson'|'spearman'|'kendall'",
         "help": "the method the correlation matrix shows",
-        "bulk": false,
-        "derived": true
-      },
-      "filterMinR": {
-        "type": "number|null",
-        "help": "the matrix hides pairs with |r| below this value; null means no filter",
-        "bulk": false,
-        "derived": true
-      },
-      "filterMaxP": {
-        "type": "number|null",
-        "help": "the matrix hides pairs with a p-value above this value; null means no filter",
         "bulk": false,
         "derived": true
       },
@@ -3280,7 +3258,11 @@ export const AGENT_REGISTRY = {
         "bulk": false,
         "derived": true
       }
-    }
+    },
+    "viewFields": [
+      "filterMinR",
+      "filterMaxP"
+    ]
   },
   "data-import": {
     "tagged": true,

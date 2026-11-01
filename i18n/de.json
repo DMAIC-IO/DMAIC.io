@@ -6396,7 +6396,7 @@
           "help": "Setzt einen Parameter; die Analyse läuft neu (confidenceLevel) oder die Matrix wird neu aufgebaut (die übrigen Schlüssel).",
           "params": {
             "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
-            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys. Bei filterMinR und filterMaxP heißt null kein Filter."
+            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys."
           }
         },
         "setColumns": {
@@ -6423,14 +6423,8 @@
         "matrixMethod": {
           "help": "Das Verfahren, das die Korrelationsmatrix zeigt: 'pearson', 'spearman' oder 'kendall'. Nur bei drei und mehr Spalten von Belang."
         },
-        "filterMinR": {
-          "help": "Die Matrix blendet Paare mit |r| unter diesem Wert aus; null heißt kein Filter."
-        },
-        "filterMaxP": {
-          "help": "Die Matrix blendet Paare mit einem p-Wert über diesem Wert aus; null heißt kein Filter."
-        },
         "activeParams": {
-          "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt: confidenceLevel, dazu matrixMethod, filterMinR und filterMaxP, solange mode 'matrix' ist."
+          "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt: confidenceLevel, dazu matrixMethod, solange mode 'matrix' ist."
         },
         "activeMultiSlots": {
           "help": "Die Slots, die setColumns im aktuellen Zustand annimmt."

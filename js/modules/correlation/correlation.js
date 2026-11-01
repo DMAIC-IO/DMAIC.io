@@ -71,15 +71,19 @@ const PARAM_RANGES = {
 const isEmptyForm = (v) => v === null || v === '';
 
 /** Die Parameter, die `setParam` kennt; welche gelten, sagt `activeParams()`. */
-const PARAM_KEYS = ['confidenceLevel', 'matrixMethod', 'filterMinR', 'filterMaxP'];
+const PARAM_KEYS = ['confidenceLevel', 'matrixMethod'];
 
-/** Die drei Schlüssel der Matrixansicht; sie gelten erst ab drei Spalten. */
-const MATRIX_KEYS = ['matrixMethod', 'filterMinR', 'filterMaxP'];
+/** Der Schlüssel der Matrixansicht; er gilt erst ab drei Spalten. */
+const MATRIX_KEYS = ['matrixMethod'];
 
 /** Je Parameter sein Prüfer; gibt den normalisierten Wert zurück. */
 const PARAM_CHECKS = {
   confidenceLevel: (v) => requireNumber('value', v, PARAM_RANGES.confidenceLevel),
   matrixMethod: (v) => { requireEnum('value', v, METHODS); return v; },
+};
+
+/** Die Filter der Matrix: Ansicht der Oberfläche, kein Parameter des Agenten. */
+const FILTER_CHECKS = {
   filterMinR: (v) => (isEmptyForm(v) ? null : requireNumber('value', v, PARAM_RANGES.filterMinR)),
   filterMaxP: (v) => (isEmptyForm(v) ? null : requireNumber('value', v, PARAM_RANGES.filterMaxP)),
 };
@@ -100,8 +104,6 @@ const HELP = 'modules.correlation.types.';
  * @typedef {object} Params
  * @property {number} confidenceLevel  Konfidenzniveau als Anteil
  * @property {'pearson'|'spearman'|'kendall'} [matrixMethod]  Koeffizient der Matrix, nur ab drei Spalten
- * @property {number} [filterMinR]  Mindestbetrag des Koeffizienten, nur Matrix
- * @property {number} [filterMaxP]  Höchst-p-Wert, nur Matrix
  */
 
 /**
@@ -229,8 +231,6 @@ const HELP = 'modules.correlation.types.';
  * @property {object[]} colRefs  the chosen columns in order, each `{ instanceId, sheetId, columnId }`; the first is X, the second Y
  * @property {number} confidenceLevel  confidence level as a fraction, for example 0.95
  * @property {'pearson'|'spearman'|'kendall'} matrixMethod  the method the correlation matrix shows
- * @property {number|null} filterMinR  the matrix hides pairs with |r| below this value; null means no filter
- * @property {number|null} filterMaxP  the matrix hides pairs with a p-value above this value; null means no filter
  * @property {string[]} activeParams  the keys `setParam` accepts in the current state
  * @property {string[]} activeMultiSlots  the slots `setColumns` accepts in the current state
  * @property {object} pickableColumns  per slot the columns `setColumns` accepts, each `{ key, name }`
@@ -654,27 +654,30 @@ const mod = createModule({
       filterMinRDisplay() { return this.model.filterMinR != null ? String(this.model.filterMinR) : ''; },
       /** @noagent view transform */
       filterMaxPDisplay() { return this.model.filterMaxP != null ? String(this.model.filterMaxP) : ''; },
-      /** @noagent DOM event handler; the agent uses setParam() */
+      /** @noagent DOM event handler: Filter der Oberfläche */
       applyFilterMinR(event) {
         this._applyFilter('filterMinR', event.target);
       },
-      /** @noagent DOM event handler; the agent uses setParam() */
+      /** @noagent DOM event handler: Filter der Oberfläche */
       applyFilterMaxP(event) {
         this._applyFilter('filterMaxP', event.target);
       },
       /**
-       * Einen Filterwert der Eingabe über setParam übernehmen; bei Absage zeigt
-       * das Feld wieder den Modellwert.
+       * @noagent Filter der Oberfläche: Einen Filterwert der Eingabe übernehmen;
+       * bei Absage zeigt das Feld wieder den Modellwert.
        * @param {'filterMinR'|'filterMaxP'} key welcher Filter
        * @param {HTMLInputElement} input das Eingabefeld
        */
       _applyFilter(key, input) {
         const v = input.value.trim();
         const value = v === '' ? null : parseFloat(v);
-        let ok = true;
-        try { PARAM_CHECKS[key](value); } catch { ok = false; }
-        if (ok) this.setParam(key, value);
-        else input.value = this.model[key] != null ? String(this.model[key]) : '';
+        let checked;
+        try { checked = FILTER_CHECKS[key](value); } catch {
+          input.value = this.model[key] != null ? String(this.model[key]) : '';
+          return;
+        }
+        this.model[key] = checked;
+        this.rerenderMatrix();
       },
       /** @noagent helper */
       rerenderMatrix() {
@@ -888,7 +891,7 @@ const mod = createModule({
        * wird neu aufgebaut.
        * @agent
        * @param {keyof Params} key welcher Parameter; die Matrixschlüssel gelten erst ab drei Spalten, die im Zustand zulässigen nennt `activeParams`
-       * @param {number|string|null} value der Wert; Bereich je Schlüssel siehe `Params`; `filterMinR`/`filterMaxP` nehmen `null` für keinen Filter
+       * @param {number|string|null} value der Wert; Bereich je Schlüssel siehe `Params`
        * @returns {void}
        * @throws {Error} wenn `key` im aktuellen Zustand nicht gilt oder `value` nicht zulässig ist
        */
@@ -899,10 +902,8 @@ const mod = createModule({
         if (key === 'confidenceLevel') {
           this._lastFingerprint = null;
           this.autoRun();
-        } else if (key === 'matrixMethod') {
-          this._applyMethod();
         } else {
-          this.rerenderMatrix();
+          this._applyMethod();
         }
       },
 

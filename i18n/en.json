@@ -6392,7 +6392,7 @@
           "help": "Sets one parameter; the analysis reruns (confidenceLevel) or the matrix is rebuilt (the other keys).",
           "params": {
             "key": "Which option; each is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
-            "value": "The value; type and allowed range per key are given under keys. For filterMinR and filterMaxP null means no filter."
+            "value": "The value; type and allowed range per key are given under keys."
           }
         },
         "setColumns": {
@@ -6419,14 +6419,8 @@
         "matrixMethod": {
           "help": "The method the correlation matrix shows: 'pearson', 'spearman' or 'kendall'. Only relevant with three or more columns."
         },
-        "filterMinR": {
-          "help": "The matrix hides pairs with |r| below this value; null means no filter."
-        },
-        "filterMaxP": {
-          "help": "The matrix hides pairs with a p-value above this value; null means no filter."
-        },
         "activeParams": {
-          "help": "The keys setParam accepts in the current state: confidenceLevel, plus matrixMethod, filterMinR and filterMaxP while mode is 'matrix'."
+          "help": "The keys setParam accepts in the current state: confidenceLevel, plus matrixMethod while mode is 'matrix'."
         },
         "activeMultiSlots": {
           "help": "The slots setColumns accepts in the current state."
