@@ -104,7 +104,6 @@ const ITEM_FIELDS = ['id', 'nodeId', 'label', 'path', 'missing'];
  * @property {object[]} items  [bulk] the items to rate, in capture order
  * @property {object[]} respondents  the respondents in creation order
  * @property {object} answers  the answers by respondent and item
- * @property {string|null} activeRespondentId  id of the respondent shown in the capture grid
  * @property {Array<{instanceId: string, name: string}>} treeList  the VoC-CTx trees `setSourceTree` accepts
  * @property {KanoEvaluation} evaluation  the evaluation per item and in total, each item described under keys
  */
@@ -593,7 +592,7 @@ export default createModule({
       /**
        * Wählt die Befragte aus, deren Antworten das Erfassungsraster zeigt.
        * Antwortdaten bleiben unberührt.
-       * @agent
+       * @noagent Auswahl der Oberfläche
        * @param {string|null} id id der Befragten, oder `null` für keine Auswahl
        * @returns {void}
        * @throws {Error} wenn keine Befragte diese id trägt

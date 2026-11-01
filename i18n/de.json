@@ -2201,9 +2201,6 @@
         "answers": {
           "help": "Die Antworten, nach Befragter und darin nach Merkmal: { respondentId: { itemId: { f, d, w } } }. f ist die funktionale, d die dysfunktionale Antwort auf der Skala 1 bis 5, w die Wichtigkeit auf der Skala 1 bis 9; null heißt unbeantwortet."
         },
-        "activeRespondentId": {
-          "help": "Die id der Befragten, deren Antworten das Erfassungsraster zeigt; null heißt, keine ist ausgewählt."
-        },
         "evaluation": {
           "help": "Die Auswertung je Merkmal und insgesamt, jede Angabe unter keys einzeln beschrieben."
         }

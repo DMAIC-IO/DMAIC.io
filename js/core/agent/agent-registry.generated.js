@@ -8733,18 +8733,6 @@ export const AGENT_REGISTRY = {
         "returns": "void",
         "help": "Entfernt eine Befragte samt allen ihren Antworten. War sie ausgewählt, rückt die erste verbleibende nach."
       },
-      "selectRespondent": {
-        "params": [
-          {
-            "name": "id",
-            "type": "string|null",
-            "optional": false,
-            "help": "id der Befragten, oder `null` für keine Auswahl"
-          }
-        ],
-        "returns": "void",
-        "help": "Wählt die Befragte aus, deren Antworten das Erfassungsraster zeigt. Antwortdaten bleiben unberührt."
-      },
       "setAnswer": {
         "params": [
           {
@@ -8832,12 +8820,6 @@ export const AGENT_REGISTRY = {
       "answers": {
         "type": "object",
         "help": "the answers by respondent and item",
-        "bulk": false,
-        "derived": true
-      },
-      "activeRespondentId": {
-        "type": "string|null",
-        "help": "id of the respondent shown in the capture grid",
         "bulk": false,
         "derived": true
       },
@@ -8965,7 +8947,10 @@ export const AGENT_REGISTRY = {
           }
         }
       }
-    }
+    },
+    "viewFields": [
+      "activeRespondentId"
+    ]
   },
   "lessons-learned": {
     "tagged": true,

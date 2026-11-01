@@ -43,6 +43,9 @@ const withOrigin = (o) => {
 };
 
 export class State {
+  /** Gespeichert, aber keine Aussage über den Inhalt: zählt nicht zur Revision, erscheint nicht in `read()`. */
+  static VIEW_FIELDS = ['activeRespondentId'];
+
   /**
    * @type {{ instanceId: string|null, level: 'need'|'driver'|'req' }} woher
    *   die Merkmale stammen: `instanceId` ist die Instanz des
@@ -100,11 +103,18 @@ export class State {
 
   // ─── Befragte ───────────────────────────────────────────────
 
+  /**
+   * Setzt die gezeigte Befragte (Ansichtsfeld, nur als Folge der Aktionen).
+   * @param {string|null} id
+   * @returns {void}
+   */
+  _selectRespondent(id) { this.activeRespondentId = id; }
+
   /** @returns {string} id der neuen Befragten; die erste wird aktiv */
   addRespondent(name) {
     const r = { id: uid(), name: name || '' };
     this.respondents.push(r);
-    if (!this.activeRespondentId) this.activeRespondentId = r.id;
+    if (!this.activeRespondentId) this._selectRespondent(r.id);
     return r.id;
   }
 
@@ -118,7 +128,7 @@ export class State {
     this.respondents = this.respondents.filter((r) => r.id !== id);
     delete this.answers[id];
     if (this.activeRespondentId === id) {
-      this.activeRespondentId = this.respondents.length ? this.respondents[0].id : null;
+      this._selectRespondent(this.respondents.length ? this.respondents[0].id : null);
     }
   }
 

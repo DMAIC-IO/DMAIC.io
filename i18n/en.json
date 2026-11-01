@@ -2201,9 +2201,6 @@
         "answers": {
           "help": "The answers, by respondent and within that by feature: { respondentId: { itemId: { f, d, w } } }. f is the functional, d the dysfunctional answer on the 1 to 5 scale, w the importance on the 1 to 9 scale; null means unanswered."
         },
-        "activeRespondentId": {
-          "help": "The id of the respondent whose answers the capture grid shows; null means none is selected."
-        },
         "evaluation": {
           "help": "The evaluation per feature and overall, each entry described individually under keys."
         }
