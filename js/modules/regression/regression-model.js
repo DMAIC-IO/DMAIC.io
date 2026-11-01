@@ -113,6 +113,9 @@ export function predictAt(r, values) {
 }
 
 export class State {
+  /** Gespeichert, aber keine Aussage über den Inhalt: zählt nicht zur Revision, erscheint nicht in `read()`. */
+  static VIEW_FIELDS = ['activeTab', 'coefSortByP', 'showCI', 'showPI'];
+
   /** @type {Array<{instanceId:string, sheetId:string, columnId:string}>} */
   colRefs = [];
   /** @type {string|null} Y column key (from separate dropdown). */

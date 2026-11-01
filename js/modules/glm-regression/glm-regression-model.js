@@ -54,6 +54,9 @@ function keyToRef(key) {
 }
 
 export class State {
+  /** Gespeichert, aber keine Aussage über den Inhalt: zählt nicht zur Revision, erscheint nicht in `read()`. */
+  static VIEW_FIELDS = ['activeTab'];
+
   /** @type {Array<{instanceId:string, sheetId:string, columnId:string}>} */
   colRefs = [];
   /** @type {string|null} */

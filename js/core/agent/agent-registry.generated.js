@@ -6722,7 +6722,10 @@ export const AGENT_REGISTRY = {
         "bulk": false,
         "derived": true
       }
-    }
+    },
+    "viewFields": [
+      "activeTab"
+    ]
   },
   "heatmap": {
     "tagged": true,
@@ -17442,7 +17445,13 @@ export const AGENT_REGISTRY = {
         "bulk": false,
         "derived": true
       }
-    }
+    },
+    "viewFields": [
+      "activeTab",
+      "coefSortByP",
+      "showCI",
+      "showPI"
+    ]
   },
   "resampling": {
     "tagged": true,
