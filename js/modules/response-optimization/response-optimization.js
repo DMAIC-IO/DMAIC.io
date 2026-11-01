@@ -452,6 +452,9 @@ export default createModule({
 
       _reconcileAndRefresh() {
         const models = listModels(module._context.stateManager);
+        // Nur eine inhaltlich geänderte Modellliste macht eine frühere Ablehnung
+        // hinfällig; ein bloßes state:saved lässt sie stehen.
+        if (JSON.stringify(models) !== JSON.stringify(this.modelList)) this.errorMsg = '';
         this.model.reconcileSpecs(models);
         this.modelList = models;
         this._refreshDiagnostic();
