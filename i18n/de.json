@@ -5701,9 +5701,6 @@
         },
         "timeUnits": {
           "help": "Die Zeiteinheiten, die in einem Dauertext erkannt werden. Je Einheit: id (damit sprechen die Aktionen sie an), label (das Kürzel im Text, etwa min) und factorSeconds (ihre Länge in Sekunden; ein Arbeitstag zählt 28800)."
-        },
-        "settingsOpen": {
-          "help": "Ob der Einstellungsbereich für Verschwendungsarten und Zeiteinheiten offen steht."
         }
       }
     },

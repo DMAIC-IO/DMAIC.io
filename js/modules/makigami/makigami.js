@@ -50,10 +50,8 @@ export default createModule({
     icon: 'module.makigami',
     version: '1.0.0',
     meta: import.meta,
-    // Der Einstellungsknopf UMSCHALTET; die Agentenentsprechung ist der
-    // absolute `setSettingsOpen`, also trägt die Leistenaktion kein
-    // `agentAction` (das nennt eine Agentenmethode, und `toggleSettings` ist
-    // keine). Die Exportaktionen tragen keines: ihre Methoden sind
+    // Der Einstellungsknopf UMSCHALTET und ist reine Ansicht (`setSettingsOpen`
+    // ist @noagent), die Leistenaktion trägt daher kein `agentAction`. Die Exportaktionen tragen keines: ihre Methoden sind
     // `_`-präfigiert und stehen in keiner Registry.
     actions: [
       { icon: 'action.settings', title: 'settings', onClick: (d) => d.toggleSettings(),
@@ -88,7 +86,7 @@ export default createModule({
       // ── Settings toggle ───────────────────────────────────────
       /**
        * Öffnet oder schließt den Einstellungsbereich.
-       * @agent
+       * @noagent Bereich der Oberfläche
        * @param {boolean} open true öffnet ihn, false schließt ihn
        * @returns {void}
        * @throws {Error} wenn `open` nicht true oder false ist

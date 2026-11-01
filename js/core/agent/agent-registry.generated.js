@@ -9124,18 +9124,6 @@ export const AGENT_REGISTRY = {
         "returns": "object",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
       },
-      "setSettingsOpen": {
-        "params": [
-          {
-            "name": "open",
-            "type": "boolean",
-            "optional": false,
-            "help": "true öffnet ihn, false schließt ihn"
-          }
-        ],
-        "returns": "void",
-        "help": "Öffnet oder schließt den Einstellungsbereich."
-      },
       "addRole": {
         "params": [],
         "returns": "string",
@@ -9494,13 +9482,11 @@ export const AGENT_REGISTRY = {
         "type": "Array<{id:string,label:string,factorSeconds:number}>",
         "help": "die Zeiteinheiten, die in einem Dauertext erkannt werden — je Einheit `id` (zum Ansprechen), `label` (das Kürzel im Text, etwa `min`) und `factorSeconds` (ihre Länge in Sekunden; ein Arbeitstag zählt 28800)",
         "bulk": false
-      },
-      "settingsOpen": {
-        "type": "boolean",
-        "help": "ob der Einstellungsbereich für Verschwendungsarten und Zeiteinheiten offen steht; gespeichert, damit er eine Sitzung übersteht",
-        "bulk": false
       }
-    }
+    },
+    "viewFields": [
+      "settingsOpen"
+    ]
   },
   "model-data-generator": {
     "tagged": true,

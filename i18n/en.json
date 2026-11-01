@@ -5697,9 +5697,6 @@
         },
         "timeUnits": {
           "help": "The time units recognised inside a duration text. Per unit: id (this is how the actions address it), label (the code used in the text, e.g. min) and factorSeconds (its length in seconds; a working day counts 28800)."
-        },
-        "settingsOpen": {
-          "help": "Whether the settings area for waste categories and time units is open."
         }
       }
     },
