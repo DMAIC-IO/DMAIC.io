@@ -459,8 +459,6 @@ export default createModule({
       },
 
       _refreshDiagnostic() {
-        // Eine frühere Ablehnung gilt nicht mehr, sobald sich Auswahl oder Vorgaben ändern.
-        this.errorMsg = '';
         const selectedIds = this.model.selectedIds;
         const rawReasons = this.model.diagnose(
           selectedIds,
@@ -727,6 +725,8 @@ export default createModule({
         requireKnownId('modelId', modelId, this.selectableModels().map(m => m.id));
         requireEnum('key', key, SPEC_KEYS);
         this.model.specs[modelId][key] = SPEC_CHECKS[key](value);
+        // Eine frühere Ablehnung gilt nicht mehr, sobald sich Auswahl oder Vorgaben ändern.
+        this.errorMsg = '';
         this._refreshDiagnostic();
       },
 

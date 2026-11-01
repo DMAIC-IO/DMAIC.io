@@ -1506,10 +1506,22 @@ const mod = createModule({
         eb.on('module:activated', onAct);
         this._unsubs.push(() => eb.off('module:activated', onAct));
 
-        const onDataChange = () => {
+        // Nur rechnen, wenn die Änderung unsere Spalten trifft. Das Verwerfen
+        // bleibt den Settern überlassen: ein Ereignis ändert die Eingaben nicht,
+        // und ohne X und Y darf es ein wiederhergestelltes Ergebnis nicht löschen.
+        const isOurColumn = (payload) => {
+          if (!payload) return true;
+          const refs = [...this.model.colRefs];
+          if (this.model.yKey) refs.push(keyToRef(this.model.yKey));
+          return refs.some(r =>
+            r && r.instanceId === payload.instanceId &&
+            (!payload.sheetId || r.sheetId === payload.sheetId) &&
+            (!payload.columnId || r.columnId === payload.columnId));
+        };
+        const onDataChange = (payload) => {
           if (isPickerFocused(module._container)) return;
           this.refreshDegree();
-          this.autoRun();
+          if (this.model.canRun() && isOurColumn(payload)) this.autoRun();
         };
         eb.on('state:saved', onDataChange);
         eb.on('worksheet:dataChanged', onDataChange);
