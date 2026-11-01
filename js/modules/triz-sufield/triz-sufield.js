@@ -86,8 +86,6 @@ function el(tag, className, text) {
  * @property {string} problemNote  Problemnotiz
  * @property {Record<string, string>} notes  Notiz je vermerkter Standardlösung, adressiert über ihre id
  * @property {Record<string, boolean>} selected  vorgemerkte Standardlösungen, adressiert über ihre id
- * @property {string} filterMode  Listenfilter, auto oder all
- * @property {number[]} expandedClasses  Nummern der aufgeklappten Standardklassen
  * @property {Diagnosis} diagnosis  die aus den vier Werten abgeleitete Diagnose
  * @property {StandardEntry[]} standards  [bulk] alle 78 Standardlösungen, Titel und Auslöser in der aktiven Sprache
  */
@@ -265,7 +263,7 @@ const base = createModule({
 
       /**
        * Klappt eine Klasse der Standardlösungen auf oder zu.
-       * @agent
+       * @noagent Ansicht der Liste
        * @param {number} cls Nummer der Standardklasse, 1 bis 5
        * @param {boolean} expanded `true` klappt auf, `false` klappt zu
        * @returns {void}
@@ -418,7 +416,7 @@ const base = createModule({
 
       /**
        * Setzt den Listenfilter der Standardlösungen.
-       * @agent
+       * @noagent Ansicht der Liste
        * @param {string} mode `auto` zeigt nur die zur Diagnose passenden
        *   Klassen, `all` alle fünf
        * @returns {void}

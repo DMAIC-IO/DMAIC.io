@@ -21890,24 +21890,6 @@ export const AGENT_REGISTRY = {
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
-      "setClassExpanded": {
-        "params": [
-          {
-            "name": "cls",
-            "type": "number",
-            "optional": false,
-            "help": "Nummer der Standardklasse, 1 bis 5"
-          },
-          {
-            "name": "expanded",
-            "type": "boolean",
-            "optional": false,
-            "help": "`true` klappt auf, `false` klappt zu"
-          }
-        ],
-        "returns": "void",
-        "help": "Klappt eine Klasse der Standardlösungen auf oder zu."
-      },
       "setS1": {
         "params": [
           {
@@ -22003,18 +21985,6 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Merkt eine Standardlösung als in Betracht gezogen vor oder nimmt die Vormerkung zurück."
-      },
-      "setFilterMode": {
-        "params": [
-          {
-            "name": "mode",
-            "type": "string",
-            "optional": false,
-            "help": "`auto` zeigt nur die zur Diagnose passenden Klassen, `all` alle fünf"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt den Listenfilter der Standardlösungen."
       }
     },
     "fields": {
@@ -22057,18 +22027,6 @@ export const AGENT_REGISTRY = {
       "selected": {
         "type": "Record<string, boolean>",
         "help": "vorgemerkte Standardlösungen, adressiert über ihre id",
-        "bulk": false,
-        "derived": true
-      },
-      "filterMode": {
-        "type": "string",
-        "help": "Listenfilter, auto oder all",
-        "bulk": false,
-        "derived": true
-      },
-      "expandedClasses": {
-        "type": "number[]",
-        "help": "Nummern der aufgeklappten Standardklassen",
         "bulk": false,
         "derived": true
       },
@@ -22119,7 +22077,11 @@ export const AGENT_REGISTRY = {
           }
         }
       }
-    }
+    },
+    "viewFields": [
+      "filterMode",
+      "expandedClasses"
+    ]
   },
   "unit-converter": {
     "tagged": true,

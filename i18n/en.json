@@ -15055,13 +15055,6 @@
           "params": {
             "mode": "auto shows only the classes matching the diagnosis, all shows all five. Any other value is an error."
           }
-        },
-        "setClassExpanded": {
-          "help": "Expands or collapses a class of standard solutions.",
-          "params": {
-            "cls": "The number of the standard class, 1 to 5. Any other number is an error.",
-            "expanded": "true expands, false collapses."
-          }
         }
       },
       "fields": {
@@ -15085,12 +15078,6 @@
         },
         "selected": {
           "help": "The standard solutions marked as under consideration, addressed as selected[id] with the value true. Only marked ones appear. Valid ids are listed under standards."
-        },
-        "filterMode": {
-          "help": "The list filter: auto shows only the classes matching the diagnosis, all shows all five."
-        },
-        "expandedClasses": {
-          "help": "The numbers of the expanded standard classes, 1 to 5. A persisted display state — it belongs to the saved project, not to the analysis."
         },
         "diagnosis": {
           "help": "The diagnosis derived from S1, S2, field type and link, with situation and suggestedClasses. It is not stored."

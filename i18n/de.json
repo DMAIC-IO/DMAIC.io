@@ -15059,13 +15059,6 @@
           "params": {
             "mode": "auto zeigt nur die zur Diagnose passenden Klassen, all alle fünf. Ein Wert daneben ist ein Fehler."
           }
-        },
-        "setClassExpanded": {
-          "help": "Klappt eine Klasse der Standardlösungen auf oder zu.",
-          "params": {
-            "cls": "Die Nummer der Standardklasse, 1 bis 5. Eine Nummer daneben ist ein Fehler.",
-            "expanded": "true klappt auf, false klappt zu."
-          }
         }
       },
       "fields": {
@@ -15089,12 +15082,6 @@
         },
         "selected": {
           "help": "Die vorgemerkten Standardlösungen, adressiert als selected[id] mit dem Wert true. Nur vorgemerkte stehen darin. Die gültigen ids stehen unter standards."
-        },
-        "filterMode": {
-          "help": "Der Listenfilter: auto zeigt nur die zur Diagnose passenden Klassen, all alle fünf."
-        },
-        "expandedClasses": {
-          "help": "Die Nummern der aufgeklappten Standardklassen, 1 bis 5. Ein persistierter Anzeigezustand — er gehört zum gespeicherten Projekt, nicht zur Analyse."
         },
         "diagnosis": {
           "help": "Die aus S1, S2, Feldart und Verknüpfung abgeleitete Diagnose mit situation und suggestedClasses. Sie wird nicht gespeichert."
