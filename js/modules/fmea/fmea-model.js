@@ -459,11 +459,13 @@ export const apRating = {
  * @property {''|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'} sev  Bedeutung
  * @property {''|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'} occ  Auftreten
  * @property {''|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'} det  Entdeckung
- * @property {boolean} collapsed  Karte zugeklappt
  * @property {RiskActionEntry[]} actions  Maßnahmen
  */
 
 export class State {
+  /** Gespeichert, aber keine Aussage über den Inhalt: zählt nicht zur Revision, erscheint nicht in `read()`. */
+  static VIEW_FIELDS = ['risks[].collapsed'];
+
   /**
    * @type {RiskEntry[]} die Risiken in Bearbeitungsreihenfolge, jede Angabe
    *   unter keys einzeln beschrieben

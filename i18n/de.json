@@ -9035,13 +9035,6 @@
             "value": "Der Wert; Typ und zulässiger Bereich stehen je Feld unter keys."
           }
         },
-        "setRiskCollapsed": {
-          "help": "Klappt eine Risikokarte auf oder zu.",
-          "params": {
-            "riskId": "Die id des Risikos. Eine unbekannte id ist ein Fehler.",
-            "collapsed": "true klappt die Karte zu, false auf. Jeder andere Wert ist ein Fehler."
-          }
-        },
         "addRiskAction": {
           "help": "Hängt dem Risiko eine leere Maßnahme an; sie steht danach als letzte Zeile in der Maßnahmentabelle. Die Position der neuen Maßnahme, bei 0 beginnend, ist der Rückgabewert.",
           "params": {
@@ -9093,7 +9086,6 @@
           "sev": "Die Bedeutung als Zeichenkette 1 bis 10, leer solange nicht bewertet.",
           "occ": "Das Auftreten als Zeichenkette 1 bis 10, leer solange nicht bewertet.",
           "det": "Die Entdeckung als Zeichenkette 1 bis 10, leer solange nicht bewertet.",
-          "collapsed": "Ob die Karte des Risikos zugeklappt ist; rein darstellend.",
           "actions": "Die Maßnahmen zu diesem Risiko, jede Angabe unter keys einzeln beschrieben."
         },
         "RiskActionEntry": {

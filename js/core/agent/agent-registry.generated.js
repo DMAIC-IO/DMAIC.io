@@ -5741,24 +5741,6 @@ export const AGENT_REGISTRY = {
           }
         }
       },
-      "setRiskCollapsed": {
-        "params": [
-          {
-            "name": "riskId",
-            "type": "string",
-            "optional": false,
-            "help": "id des Risikos"
-          },
-          {
-            "name": "collapsed",
-            "type": "boolean",
-            "optional": false,
-            "help": "true klappt die Karte zu, false auf"
-          }
-        ],
-        "returns": "void",
-        "help": "Klappt eine Risikokarte auf oder zu."
-      },
       "addRiskAction": {
         "params": [
           {
@@ -5907,10 +5889,6 @@ export const AGENT_REGISTRY = {
             "type": "''|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'",
             "help": "Entdeckung"
           },
-          "collapsed": {
-            "type": "boolean",
-            "help": "Karte zugeklappt"
-          },
           "actions": {
             "type": "RiskActionEntry[]",
             "help": "Maßnahmen",
@@ -5963,7 +5941,10 @@ export const AGENT_REGISTRY = {
         "help": "die Art der FMEA; sie wählt die Skalentexte der Aufgabenpriorität aus",
         "bulk": false
       }
-    }
+    },
+    "viewFields": [
+      "risks[].collapsed"
+    ]
   },
   "gage-run-chart": {
     "tagged": true,

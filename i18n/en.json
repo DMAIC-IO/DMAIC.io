@@ -9031,13 +9031,6 @@
             "value": "The value; type and allowed range per field are given under keys."
           }
         },
-        "setRiskCollapsed": {
-          "help": "Collapses or expands a risk card.",
-          "params": {
-            "riskId": "The id of the risk. An unknown id is an error.",
-            "collapsed": "true collapses the card, false expands it. Any other value is an error."
-          }
-        },
         "addRiskAction": {
           "help": "Appends an empty action to the risk; it then sits as the last row of the actions table. The position of the new action, starting at 0, is the return value.",
           "params": {
@@ -9089,7 +9082,6 @@
           "sev": "Severity as a string 1 to 10, empty while not rated.",
           "occ": "Occurrence as a string 1 to 10, empty while not rated.",
           "det": "Detection as a string 1 to 10, empty while not rated.",
-          "collapsed": "Whether the risk card is collapsed; display only.",
           "actions": "The measures for this risk, each item described under keys."
         },
         "RiskActionEntry": {

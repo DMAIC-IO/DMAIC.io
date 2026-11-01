@@ -53,8 +53,8 @@ const RATE_KEYS = new Set(Object.keys(RATE_DEFAULTS));
 // Maßnahme 7, alle setzbar. Elf Risikofelder und alle sieben
 // Maßnahmenfelder sind in der Vorlage gebunden. Über der Grenze von zehn
 // steht deshalb EIN feldbenannter Setzer je Satz statt 18 einzelner.
-// `collapsed` hat seinen eigenen Setzer: es ist der einzige Wahrheitswert
-// des Risikos und kein Inhaltsfeld.
+// `collapsed` hat seinen eigenen Setzer (`setRiskCollapsed`, nur Oberfläche):
+// es ist ein Ansichtsfeld und kein Inhaltsfeld.
 const RISK_FIELDS = ['step', 'failureMode', 'effect', 'cause', 'prevention',
   'control', 'specialChar', 'justification', 'sev', 'occ', 'det'];
 const ACTION_FIELDS = ['text', 'resp', 'date', 'done', 'deltaS', 'deltaO', 'deltaD'];
@@ -467,7 +467,7 @@ const mod = createModule({
 
       /**
        * Klappt eine Risikokarte auf oder zu.
-       * @agent
+       * @noagent Karte der Oberfläche
        * @param {string} riskId id des Risikos
        * @param {boolean} collapsed true klappt die Karte zu, false auf
        * @returns {void}
