@@ -1707,14 +1707,7 @@ const mod = createModule({
           this.statusTick++;
         };
         this._grid.on('render', onRender);
-        this._grid.on('selection:changed', () => {
-          this.statusTick++;
-          // Die Auswahl ist ein gespeichertes Ansichtsfeld, ihr Wechsel malt
-          // aber nur die Markierung (kein `render`): ohne diesen Anstoß bliebe
-          // sie bis zur nächsten Änderung ungespeichert.
-          this._autoSavePending = true;
-          this._autoSave();
-        });
+        this._grid.on('selection:changed', () => { this.statusTick++; });
 
         // Initialize enable/disable + status text.
         this.canSuggest = this._canSuggestChart();
