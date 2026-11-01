@@ -12283,19 +12283,13 @@
       "whenToUse": "Wenn Daten regelmäßig von einem Webdienst abgerufen werden sollen — Endpunkte mit Headern und Zeitplan verwalten und die Antwort prüfen.",
       "actions": {
         "read": {
-          "help": "Liefert die Endpunkte, den aktiven Endpunkt, die wählbaren Mengen und die letzte Antwort.",
+          "help": "Liefert die Endpunkte, je mit letzter Antwort und Zeitgeber, und die wählbaren Mengen.",
           "params": {
             "options": "Optional; dieses Modul hält keine Massendaten."
           }
         },
         "addEndpoint": {
           "help": "Legt einen neuen Endpunkt an und macht ihn zum aktiven; danach lassen sich seine URL, seine Headers und sein Zeitplan bearbeiten. Der Agent erhält die id des neuen Endpunkts."
-        },
-        "selectEndpoint": {
-          "help": "Macht einen Endpunkt zum aktiven; die Aktionen für Header, Mappings, Zeitplan und Parameter bearbeiten ihn. Leert lastResponse.",
-          "params": {
-            "endpointId": "Die id eines Endpunkts aus endpoints."
-          }
         },
         "renameEndpoint": {
           "help": "Benennt einen Endpunkt um; er muss nicht der aktive sein.",
@@ -12311,68 +12305,77 @@
           }
         },
         "setParam": {
-          "help": "Setzt einen Parameter des aktiven Endpunkts. Ein geändertes Zeitplan-Intervall startet einen laufenden Zeitplan neu.",
+          "help": "Setzt einen Parameter des Endpunkts. Ein geändertes Zeitplan-Intervall startet einen laufenden Zeitplan neu.",
           "params": {
+            "endpointId": "id des Endpunkts; die Liste steht im Lesezustand unter endpoints.",
             "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
             "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys."
           }
         },
         "addHeader": {
-          "help": "Header hinzufügen hängt dem aktiven Endpunkt eine leere Kopfzeile an, die anschließend mit Name und Wert gefüllt wird. Der Agent erhält ihre Nummer in der Liste der Kopfzeilen."
+          "help": "Header hinzufügen hängt dem Endpunkt eine leere Kopfzeile an, die anschließend mit Name und Wert gefüllt wird. Der Agent erhält ihre Nummer in der Liste der Kopfzeilen.",
+          "params": {
+            "endpointId": "id des Endpunkts; die Liste steht im Lesezustand unter endpoints."
+          }
         },
         "setHeader": {
-          "help": "Headers sind zusätzliche Kopfzeilen, die mit der Anfrage mitgeschickt werden, etwa ein Zugangsschlüssel; jede besteht aus einem Namen und einem Wert. Setzt Name und Wert einer Kopfzeile des aktiven Endpunkts.",
+          "help": "Headers sind zusätzliche Kopfzeilen, die mit der Anfrage mitgeschickt werden, etwa ein Zugangsschlüssel; jede besteht aus einem Namen und einem Wert. Setzt Name und Wert einer Kopfzeile des Endpunkts.",
           "params": {
+            "endpointId": "id des Endpunkts; die Liste steht im Lesezustand unter endpoints.",
             "index": "Der Index eines Headers in endpoints[].headers.",
             "key": "Der Name des Headers; der leere Text löscht ihn.",
             "value": "Der Wert des Headers; der leere Text löscht ihn."
           }
         },
         "removeHeader": {
-          "help": "Löscht einen Request-Header des aktiven Endpunkts.",
+          "help": "Löscht einen Request-Header des Endpunkts.",
           "params": {
+            "endpointId": "id des Endpunkts; die Liste steht im Lesezustand unter endpoints.",
             "index": "Der Index eines Headers in endpoints[].headers."
           }
         },
         "addMapping": {
-          "help": "Zuordnung hinzufügen hängt dem aktiven Endpunkt eine leere Zuordnung zwischen einem Pfad der Antwort und einer Spalte an. Zuordnungen werden gespeichert, aber noch nicht angewendet. Der Agent erhält ihre Nummer in der Liste der Zuordnungen."
+          "help": "Zuordnung hinzufügen hängt dem Endpunkt eine leere Zuordnung zwischen einem Pfad der Antwort und einer Spalte an. Zuordnungen werden gespeichert, aber noch nicht angewendet. Der Agent erhält ihre Nummer in der Liste der Zuordnungen.",
+          "params": {
+            "endpointId": "id des Endpunkts; die Liste steht im Lesezustand unter endpoints."
+          }
         },
         "setMapping": {
-          "help": "Setzt Pfad und Zielspalte eines Mappings des aktiven Endpunkts. Eine Spalte kann je Endpunkt nur zu einem Mapping gehören.",
+          "help": "Setzt Pfad und Zielspalte eines Mappings des Endpunkts. Eine Spalte kann je Endpunkt nur zu einem Mapping gehören.",
           "params": {
+            "endpointId": "id des Endpunkts; die Liste steht im Lesezustand unter endpoints.",
             "index": "Der Index eines Mappings in endpoints[].mappings.",
             "jsonPath": "Der Pfad in der JSON-Antwort; der leere Text löscht ihn.",
             "ref": "Spaltenverweis { instanceId, sheetId, columnId } einer Spalte aus pickableColumns, oder null zum Lösen."
           }
         },
         "removeMapping": {
-          "help": "Löscht ein Mapping des aktiven Endpunkts.",
+          "help": "Löscht ein Mapping des Endpunkts.",
           "params": {
+            "endpointId": "id des Endpunkts; die Liste steht im Lesezustand unter endpoints.",
             "index": "Der Index eines Mappings in endpoints[].mappings."
           }
         },
         "setSchedule": {
-          "help": "Automatische Abfrage schaltet den Zeitplan des aktiven Endpunkts ein oder aus: Ist sie an, ruft das Modul die URL im eingestellten Intervall selbst ab. Der Zeitplan läuft nur, solange eine URL gesetzt ist.",
+          "help": "Automatische Abfrage schaltet den Zeitplan des Endpunkts ein oder aus: Ist sie an, ruft das Modul die URL im eingestellten Intervall selbst ab. Der Zeitplan läuft nur, solange eine URL gesetzt ist.",
           "params": {
+            "endpointId": "id des Endpunkts; die Liste steht im Lesezustand unter endpoints.",
             "enabled": "true startet die regelmäßigen Abrufe, false stoppt sie."
           }
         },
         "sendRequest": {
-          "help": "Senden schickt eine GET-Anfrage an die URL des aktiven Endpunkts und wartet auf die Antwort, die danach unter Antwort steht. Die Anfrage geht tatsächlich über das Netz und verlässt das Gerät. Ein Netzfehler erscheint als Status 0. Ohne aktiven Endpunkt oder ohne URL passiert nichts (ohne URL erscheint die Meldung „Bitte eine URL eingeben.“)."
+          "help": "Senden schickt eine GET-Anfrage an die URL des Endpunkts und wartet auf die Antwort, die danach unter Antwort steht. Die Anfrage geht tatsächlich über das Netz und verlässt das Gerät. Ein Netzfehler erscheint als Status 0. Ohne URL passiert nichts (ohne URL erscheint die Meldung „Bitte eine URL eingeben.“).",
+          "params": {
+            "endpointId": "id des Endpunkts; die Liste steht im Lesezustand unter endpoints."
+          }
         }
       },
       "fields": {
         "endpoints": {
           "help": "Alle Endpunkte mit id, name, url, headers, mappings, writeMode und schedule. Mappings werden gespeichert, aber noch nicht angewendet."
         },
-        "activeId": {
-          "help": "Die id des Endpunkts, den die Aktionen für Header, Mappings, Zeitplan und Parameter bearbeiten, oder null."
-        },
         "activeParams": {
-          "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt; leer ohne aktiven Endpunkt."
-        },
-        "scheduleRunning": {
-          "help": "Ob für den aktiven Endpunkt ein Zeitgeber läuft."
+          "help": "Die Schlüssel, die setParam im aktuellen Zustand annimmt; leer ohne Endpunkte."
         },
         "pickableColumns": {
           "help": "Die Spalten, die setMapping annimmt, je { key, name }; key ist 'instanceId|sheetId|columnId'."
@@ -12381,7 +12384,7 @@
           "help": "Ob gerade eine Anfrage läuft."
         },
         "lastResponse": {
-          "help": "Die letzte Antwort des aktiven Endpunkts: Status, Statustext und Inhalt; leer, solange noch keine Anfrage gesendet wurde. Der Agent erhält den Status, den Statustext, die Angabe, ob die Anfrage erfolgreich war, und den Inhalt."
+          "help": "Die letzte Antwort des Endpunkts: Status, Statustext und Inhalt; leer, solange noch keine Anfrage gesendet wurde. Der Agent erhält den Status, den Statustext, die Angabe, ob die Anfrage erfolgreich war, und den Inhalt."
         }
       },
       "types": {

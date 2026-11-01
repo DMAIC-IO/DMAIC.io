@@ -18052,18 +18052,6 @@ export const AGENT_REGISTRY = {
         "returns": "string",
         "help": "Einen neuen Endpunkt anlegen und aktiv setzen."
       },
-      "selectEndpoint": {
-        "params": [
-          {
-            "name": "endpointId",
-            "type": "string",
-            "optional": false,
-            "help": "eine id aus `endpoints`"
-          }
-        ],
-        "returns": "void",
-        "help": "Einen Endpunkt aktiv setzen; die Detailaktionen bearbeiten ihn."
-      },
       "renameEndpoint": {
         "params": [
           {
@@ -18097,6 +18085,12 @@ export const AGENT_REGISTRY = {
       "setParam": {
         "params": [
           {
+            "name": "endpointId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Endpunkts"
+          },
+          {
             "name": "key",
             "type": "'url'|'writeMode'|'schedule.intervalValue'|'schedule.intervalUnit'",
             "optional": false,
@@ -18110,7 +18104,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "URL, Schreibmodus oder Zeitplan des aktiven Endpunkts setzen.",
+        "help": "URL, Schreibmodus oder Zeitplan eines Endpunkts setzen.",
         "keysOf": "Params",
         "keys": {
           "url": {
@@ -18132,12 +18126,25 @@ export const AGENT_REGISTRY = {
         }
       },
       "addHeader": {
-        "params": [],
+        "params": [
+          {
+            "name": "endpointId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Endpunkts"
+          }
+        ],
         "returns": "number",
-        "help": "Eine leere Kopfzeile an den aktiven Endpunkt hängen."
+        "help": "Eine leere Kopfzeile an einen Endpunkt hängen."
       },
       "setHeader": {
         "params": [
+          {
+            "name": "endpointId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Endpunkts"
+          },
           {
             "name": "index",
             "type": "number",
@@ -18158,10 +18165,16 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Name und Wert einer Kopfzeile des aktiven Endpunkts setzen."
+        "help": "Name und Wert einer Kopfzeile eines Endpunkts setzen."
       },
       "removeHeader": {
         "params": [
+          {
+            "name": "endpointId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Endpunkts"
+          },
           {
             "name": "index",
             "type": "number",
@@ -18170,15 +18183,28 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Eine Kopfzeile des aktiven Endpunkts löschen."
+        "help": "Eine Kopfzeile eines Endpunkts löschen."
       },
       "addMapping": {
-        "params": [],
+        "params": [
+          {
+            "name": "endpointId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Endpunkts"
+          }
+        ],
         "returns": "number",
-        "help": "Ein leeres Mapping an den aktiven Endpunkt hängen. Mappings werden gespeichert, aber noch nicht angewendet."
+        "help": "Ein leeres Mapping an einen Endpunkt hängen. Mappings werden gespeichert, aber noch nicht angewendet."
       },
       "setMapping": {
         "params": [
+          {
+            "name": "endpointId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Endpunkts"
+          },
           {
             "name": "index",
             "type": "number",
@@ -18199,10 +18225,16 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Pfad und Zielspalte eines Mappings des aktiven Endpunkts setzen."
+        "help": "Pfad und Zielspalte eines Mappings eines Endpunkts setzen."
       },
       "removeMapping": {
         "params": [
+          {
+            "name": "endpointId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Endpunkts"
+          },
           {
             "name": "index",
             "type": "number",
@@ -18211,10 +18243,16 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Ein Mapping des aktiven Endpunkts löschen."
+        "help": "Ein Mapping eines Endpunkts löschen."
       },
       "setSchedule": {
         "params": [
+          {
+            "name": "endpointId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Endpunkts"
+          },
           {
             "name": "enabled",
             "type": "boolean",
@@ -18223,36 +18261,31 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Den Zeitplan des aktiven Endpunkts ein- oder ausschalten."
+        "help": "Den Zeitplan eines Endpunkts ein- oder ausschalten."
       },
       "sendRequest": {
-        "params": [],
+        "params": [
+          {
+            "name": "endpointId",
+            "type": "string",
+            "optional": false,
+            "help": "id des Endpunkts"
+          }
+        ],
         "returns": "Promise<{ status: number, statusText: string, ok: boolean, body: string }|null>",
-        "help": "Führt eine GET-Anfrage an die URL des aktiven Endpunkts aus und wartet auf die Antwort. Ein Netzfehler wird zur Antwort mit Status 0."
+        "help": "Führt eine GET-Anfrage an die URL eines Endpunkts aus und wartet auf die Antwort. Ein Netzfehler wird zur Antwort mit Status 0."
       }
     },
     "fields": {
       "endpoints": {
-        "type": "Array<{ id: string, name: string, url: string, headers: Array<{ key: string, value: string }>, mappings: Array<{ jsonPath: string, columnRef: object|null }>, writeMode: string, schedule: { enabled: boolean, intervalValue: number, intervalUnit: string } }>",
-        "help": "all endpoints",
-        "bulk": false,
-        "derived": true
-      },
-      "activeId": {
-        "type": "string|null",
-        "help": "the endpoint the detail actions edit",
+        "type": "Array<{ id: string, name: string, url: string, headers: Array<{ key: string, value: string }>, mappings: Array<{ jsonPath: string, columnRef: object|null }>, writeMode: string, schedule: { enabled: boolean, intervalValue: number, intervalUnit: string }, lastResponse: { status: number, statusText: string, ok: boolean, body: string }|null, scheduleRunning: boolean }>",
+        "help": "all endpoints; `lastResponse` is the last response of this endpoint, `scheduleRunning` says whether a timer runs for it",
         "bulk": false,
         "derived": true
       },
       "activeParams": {
         "type": "string[]",
-        "help": "the keys `setParam` accepts; [] without active endpoint",
-        "bulk": false,
-        "derived": true
-      },
-      "scheduleRunning": {
-        "type": "boolean",
-        "help": "a timer runs for the active endpoint",
+        "help": "the keys `setParam` accepts; [] without endpoints",
         "bulk": false,
         "derived": true
       },
@@ -18267,14 +18300,11 @@ export const AGENT_REGISTRY = {
         "help": "a request is running",
         "bulk": false,
         "derived": true
-      },
-      "lastResponse": {
-        "type": "{ status: number, statusText: string, ok: boolean, body: string }|null",
-        "help": "the last response of the active endpoint",
-        "bulk": false,
-        "derived": true
       }
-    }
+    },
+    "viewFields": [
+      "activeId"
+    ]
   },
   "run-chart": {
     "tagged": true,

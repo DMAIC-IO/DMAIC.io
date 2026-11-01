@@ -12279,19 +12279,13 @@
       "whenToUse": "When data should be fetched regularly from a web service — manage endpoints with headers and a schedule, and check the response.",
       "actions": {
         "read": {
-          "help": "Returns the endpoints, the active endpoint, the selectable sets and the last response.",
+          "help": "Returns the endpoints, each with its last response and timer, and the selectable sets.",
           "params": {
             "options": "Optional; this module holds no bulk data."
           }
         },
         "addEndpoint": {
           "help": "Creates a new endpoint and makes it the active one; its URL, headers and schedule can then be edited. The agent receives the id of the new endpoint."
-        },
-        "selectEndpoint": {
-          "help": "Makes an endpoint the active one; the header, mapping, schedule and parameter actions edit it. Clears lastResponse.",
-          "params": {
-            "endpointId": "The id of an endpoint in endpoints."
-          }
         },
         "renameEndpoint": {
           "help": "Renames an endpoint; it does not have to be the active one.",
@@ -12307,68 +12301,77 @@
           }
         },
         "setParam": {
-          "help": "Sets one parameter of the active endpoint. A changed schedule interval restarts a running schedule.",
+          "help": "Sets one parameter of the endpoint. A changed schedule interval restarts a running schedule.",
           "params": {
+            "endpointId": "id of the endpoint, listed under endpoints in the read state.",
             "key": "Which option; each is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
             "value": "The value; type and allowed range per key are given under keys."
           }
         },
         "addHeader": {
-          "help": "Add header appends an empty header line to the active endpoint, to be filled with a name and a value afterwards. The agent receives its position in the list of header lines."
+          "help": "Add header appends an empty header line to the endpoint, to be filled with a name and a value afterwards. The agent receives its position in the list of header lines.",
+          "params": {
+            "endpointId": "id of the endpoint, listed under endpoints in the read state."
+          }
         },
         "setHeader": {
-          "help": "Headers are extra header lines sent along with the request, for example an access key; each consists of a name and a value. Sets name and value of a header line of the active endpoint.",
+          "help": "Headers are extra header lines sent along with the request, for example an access key; each consists of a name and a value. Sets name and value of a header line of the endpoint.",
           "params": {
+            "endpointId": "id of the endpoint, listed under endpoints in the read state.",
             "index": "The index of a header in endpoints[].headers.",
             "key": "The header name; the empty string clears it.",
             "value": "The header value; the empty string clears it."
           }
         },
         "removeHeader": {
-          "help": "Deletes a request header of the active endpoint.",
+          "help": "Deletes a request header of the endpoint.",
           "params": {
+            "endpointId": "id of the endpoint, listed under endpoints in the read state.",
             "index": "The index of a header in endpoints[].headers."
           }
         },
         "addMapping": {
-          "help": "Add mapping appends an empty mapping between a path in the response and a column to the active endpoint. Mappings are stored but not applied yet. The agent receives its position in the list of mappings."
+          "help": "Add mapping appends an empty mapping between a path in the response and a column to the endpoint. Mappings are stored but not applied yet. The agent receives its position in the list of mappings.",
+          "params": {
+            "endpointId": "id of the endpoint, listed under endpoints in the read state."
+          }
         },
         "setMapping": {
-          "help": "Sets path and target column of a mapping of the active endpoint. A column can belong to only one mapping per endpoint.",
+          "help": "Sets path and target column of a mapping of the endpoint. A column can belong to only one mapping per endpoint.",
           "params": {
+            "endpointId": "id of the endpoint, listed under endpoints in the read state.",
             "index": "The index of a mapping in endpoints[].mappings.",
             "jsonPath": "The path in the JSON response; the empty string clears it.",
             "ref": "Column reference { instanceId, sheetId, columnId } of a column from pickableColumns, or null to clear."
           }
         },
         "removeMapping": {
-          "help": "Deletes a mapping of the active endpoint.",
+          "help": "Deletes a mapping of the endpoint.",
           "params": {
+            "endpointId": "id of the endpoint, listed under endpoints in the read state.",
             "index": "The index of a mapping in endpoints[].mappings."
           }
         },
         "setSchedule": {
-          "help": "Automatic polling switches the schedule of the active endpoint on or off: when on, the module fetches the URL itself at the set interval. The schedule runs only while a URL is set.",
+          "help": "Automatic polling switches the schedule of the endpoint on or off: when on, the module fetches the URL itself at the set interval. The schedule runs only while a URL is set.",
           "params": {
+            "endpointId": "id of the endpoint, listed under endpoints in the read state.",
             "enabled": "true starts the regular requests, false stops them."
           }
         },
         "sendRequest": {
-          "help": "Send performs a GET request to the URL of the active endpoint and waits for the response, which then appears under Response. This sends a real request over the network and leaves the device. A network error shows as status 0. Without an active endpoint or without a URL nothing happens (without a URL the message \"Please enter a URL.\" appears)."
+          "help": "Send performs a GET request to the URL of the endpoint and waits for the response, which then appears under Response. This sends a real request over the network and leaves the device. A network error shows as status 0. Without a URL nothing happens (without a URL the message \"Please enter a URL.\" appears).",
+          "params": {
+            "endpointId": "id of the endpoint, listed under endpoints in the read state."
+          }
         }
       },
       "fields": {
         "endpoints": {
           "help": "All endpoints with id, name, url, headers, mappings, writeMode and schedule. Mappings are stored but not applied yet."
         },
-        "activeId": {
-          "help": "The id of the endpoint that the header, mapping, schedule and parameter actions edit, or null."
-        },
         "activeParams": {
-          "help": "The keys setParam accepts in the current state; empty without an active endpoint."
-        },
-        "scheduleRunning": {
-          "help": "Whether a timer runs for the active endpoint."
+          "help": "The keys setParam accepts in the current state; empty without endpoints."
         },
         "pickableColumns": {
           "help": "The columns setMapping accepts, each { key, name }; key is 'instanceId|sheetId|columnId'."
@@ -12377,7 +12380,7 @@
           "help": "Whether a request is running."
         },
         "lastResponse": {
-          "help": "The last response of the active endpoint: status, status text and content; empty until a request has been sent. The agent receives the status, the status text, whether the request succeeded, and the content."
+          "help": "The last response of the endpoint: status, status text and content; empty until a request has been sent. The agent receives the status, the status text, whether the request succeeded, and the content."
         }
       },
       "types": {

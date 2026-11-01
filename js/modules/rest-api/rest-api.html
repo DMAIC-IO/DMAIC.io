@@ -39,9 +39,9 @@
           <div class="rest-api__url-bar">
             <span class="rest-api__method-label" x-text="t('methodGet')"></span>
             <input class="field rest-api__url-input" data-field="url" :aria-label="t('urlPlaceholder')"
-              @input="setParam('url', $event.target.value)"
+              @input="setParam(model.activeId, 'url', $event.target.value)"
               :value="model.activeEndpoint().url" :placeholder="t('urlPlaceholder')">
-            <button data-help-key="modules.rest-api.actions.sendRequest.help" class="rest-api__send-btn dmike-btn-run" data-action="send" @click="sendRequest()">
+            <button data-help-key="modules.rest-api.actions.sendRequest.help" class="rest-api__send-btn dmike-btn-run" data-action="send" @click="sendRequest(model.activeId)">
               <span class="icon icon--sm" data-icon="action.run" aria-hidden="true"></span>
               <span x-text="t('send')"></span>
             </button>
@@ -51,7 +51,7 @@
           <div class="rest-api__section">
             <div class="rest-api__section-header">
               <span data-help-key="modules.rest-api.actions.setHeader.help" class="rest-api__section-label" x-text="t('headers')"></span>
-              <button data-help-key="modules.rest-api.actions.addHeader.help" class="rest-api__add-header-btn" type="button" @click="addHeader()">
+              <button data-help-key="modules.rest-api.actions.addHeader.help" class="rest-api__add-header-btn" type="button" @click="addHeader(model.activeId)">
                 <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
                 <span x-text="t('addHeader')"></span>
               </button>
@@ -59,9 +59,9 @@
             <div class="rest-api__headers-list" data-ref="headers">
               <template x-for="(h, i) in model.activeEndpoint().headers" :key="i">
                 <div class="rest-api__header-row" :data-idx="i">
-                  <input class="field rest-api__header-key" :value="h.key" @input="setHeader(i, $event.target.value, h.value)" :placeholder="t('headerKeyPlaceholder')" :aria-label="t('headerKeyPlaceholder')">
-                  <input class="field rest-api__header-val" :value="h.value" @input="setHeader(i, h.key, $event.target.value)" :placeholder="t('headerValuePlaceholder')" :aria-label="t('headerValuePlaceholder')">
-                  <button class="rest-api__header-del" :data-hdr-del="i" :title="t('delete')" :aria-label="t('delete')" @click="removeHeader(i)">&times;</button>
+                  <input class="field rest-api__header-key" :value="h.key" @input="setHeader(model.activeId, i, $event.target.value, h.value)" :placeholder="t('headerKeyPlaceholder')" :aria-label="t('headerKeyPlaceholder')">
+                  <input class="field rest-api__header-val" :value="h.value" @input="setHeader(model.activeId, i, h.key, $event.target.value)" :placeholder="t('headerValuePlaceholder')" :aria-label="t('headerValuePlaceholder')">
+                  <button class="rest-api__header-del" :data-hdr-del="i" :title="t('delete')" :aria-label="t('delete')" @click="removeHeader(model.activeId, i)">&times;</button>
                 </div>
               </template>
             </div>
@@ -71,7 +71,7 @@
           <div class="rest-api__section">
             <div class="rest-api__section-header">
               <span class="rest-api__section-label" x-text="t('columnMappings')"></span>
-              <button data-help-key="modules.rest-api.actions.addMapping.help" class="rest-api__add-mapping-btn" type="button" @click="addMapping()">
+              <button data-help-key="modules.rest-api.actions.addMapping.help" class="rest-api__add-mapping-btn" type="button" @click="addMapping(model.activeId)">
                 <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
                 <span x-text="t('addMapping')"></span>
               </button>
@@ -81,7 +81,7 @@
                 <label data-help-anchor="box" data-help-key="modules.rest-api.types.Params.writeMode" class="rest-api__write-mode-option">
                   <input type="radio" :name="'writeMode-' + model.activeEndpoint().id" :value="wm"
                     :checked="model.activeEndpoint().writeMode === wm"
-                    @change="setParam('writeMode', wm)">
+                    @change="setParam(model.activeId, 'writeMode', wm)">
                   <span x-text="writeModeLabel(wm)"></span>
                 </label>
               </template>
@@ -93,7 +93,7 @@
                     :placeholder="t('jsonPathPlaceholder')" :aria-label="t('jsonPathPlaceholder')">
                   <span class="rest-api__mapping-arrow">&rarr;</span>
                   <div class="rest-api__mapping-picker" :data-picker-idx="i"></div>
-                  <button class="rest-api__mapping-del" :data-map-del="i" :title="t('delete')" :aria-label="t('delete')" @click="removeMapping(i)">&times;</button>
+                  <button class="rest-api__mapping-del" :data-map-del="i" :title="t('delete')" :aria-label="t('delete')" @click="removeMapping(model.activeId, i)">&times;</button>
                 </div>
               </template>
             </div>

@@ -110,6 +110,9 @@ export class State {
   static VERSION = '1.0';
   static ID = 'rest-api';
 
+  /** Gespeichert, aber keine Aussage über den Inhalt: zählt nicht zur Revision, erscheint nicht in `read()`. */
+  static VIEW_FIELDS = ['activeId'];
+
   constructor() {
     /** @type {Endpoint[]} */
     this.endpoints = [];

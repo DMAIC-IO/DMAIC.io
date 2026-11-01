@@ -48,18 +48,15 @@ const PARAM_CHECKS = {
  */
 
 /**
- * Gelesen wird die persistierte Endpunktliste und die letzte Antwort des
- * aktiven Endpunkts. Die Mappings werden gespeichert, aber heute nirgends
+ * Gelesen wird die persistierte Endpunktliste, je Endpunkt mit seiner letzten
+ * Antwort und dem Zeitgeber. Die Mappings werden gespeichert, aber heute nirgends
  * angewendet (Roadmap) — die Lesefläche zeigt sie, wie die Oberfläche.
  *
  * @typedef {object} AgentRead
- * @property {Array<{ id: string, name: string, url: string, headers: Array<{ key: string, value: string }>, mappings: Array<{ jsonPath: string, columnRef: object|null }>, writeMode: string, schedule: { enabled: boolean, intervalValue: number, intervalUnit: string } }>} endpoints  all endpoints
- * @property {string|null} activeId  the endpoint the detail actions edit
- * @property {string[]} activeParams  the keys `setParam` accepts; [] without active endpoint
- * @property {boolean} scheduleRunning  a timer runs for the active endpoint
+ * @property {Array<{ id: string, name: string, url: string, headers: Array<{ key: string, value: string }>, mappings: Array<{ jsonPath: string, columnRef: object|null }>, writeMode: string, schedule: { enabled: boolean, intervalValue: number, intervalUnit: string }, lastResponse: { status: number, statusText: string, ok: boolean, body: string }|null, scheduleRunning: boolean }>} endpoints  all endpoints; `lastResponse` is the last response of this endpoint, `scheduleRunning` says whether a timer runs for it
+ * @property {string[]} activeParams  the keys `setParam` accepts; [] without endpoints
  * @property {Array<{ key: string, name: string }>} pickableColumns  the columns `setMapping` accepts
  * @property {boolean} loading  a request is running
- * @property {{ status: number, statusText: string, ok: boolean, body: string }|null} lastResponse  the last response of the active endpoint
  */
 
 export default createModule({
@@ -80,6 +77,8 @@ export default createModule({
       scheduleUnits: SCHEDULE_UNITS,
       /** @type {{status:number,statusText:string,ok:boolean,body:string}|null} */
       lastResponse: null,
+      /** Letzte Antwort je Endpunkt, für read(). @type {Map<string, object|null>} */
+      _responses: new Map(),
       /** Reactive counter bumped whenever schedule timers change → forces
        *  Alpine to re-evaluate isScheduleRunning() / badge / dot / status. */
       _scheduleTick: 0,
@@ -137,33 +136,38 @@ export default createModule({
        * Den vollständigen Lesezustand dieser Instanz liefern.
        * @agent
        * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
-       * @returns {AgentRead} Endpunkte, aktiver Endpunkt, wählbare Mengen und letzte Antwort
+       * @returns {AgentRead} Endpunkte mit letzter Antwort und Zeitgeber, wählbare Mengen
        */
       read(options) {
         return readAgentState('rest-api', {
-          endpoints: this.model.endpoints.map(ep => ep.toJSON()),
-          activeId: this.model.activeId,
+          endpoints: this.model.endpoints.map(ep => ({
+            ...ep.toJSON(),
+            lastResponse: this._responses.get(ep.id) ?? null,
+            scheduleRunning: this.isScheduleRunning(ep),
+          })),
           activeParams: this.activeParams(),
-          scheduleRunning: this.isScheduleRunning(this.model.activeEndpoint()),
           pickableColumns: this.pickableColumns(),
           loading: this.loading,
-          lastResponse: this.lastResponse,
         }, options);
       },
       /** @noagent derived set; der Agent liest sie über read().activeParams */
       activeParams() {
-        return this.model.activeEndpoint() ? PARAM_KEYS : [];
+        return this.model.endpoints.length > 0 ? PARAM_KEYS : [];
       },
       /** @noagent derived set; der Agent liest sie über read().pickableColumns */
       pickableColumns() {
         // Der Mapping-Wähler hat keine Typbeschränkung.
         return pickableColumnList(module._context.stateManager, {});
       },
-      /** Der aktive Endpunkt, oder ein Wurf mit dem Weg dorthin. */
-      _requireActive() {
-        const ep = this.model.activeEndpoint();
-        if (!ep) throw new Error('no active endpoint; allowed: call addEndpoint() or selectEndpoint() first');
-        return ep;
+      /** Der Endpunkt mit dieser id, oder ein Wurf mit den gültigen ids. */
+      _requireEndpoint(endpointId) {
+        requireKnownId('endpointId', endpointId, this.model.endpoints.map(e => e.id));
+        return this.model.endpoints.find(e => e.id === endpointId);
+      },
+      /** Die letzte Antwort eines Endpunkts; die Anzeige zeigt nur die des aktiven. */
+      _setResponse(ep, response) {
+        this._responses.set(ep.id, response);
+        if (ep.id === this.model.activeId) this.lastResponse = response;
       },
 
       /**
@@ -180,8 +184,8 @@ export default createModule({
         return ep.id;
       },
       /**
-       * Einen Endpunkt aktiv setzen; die Detailaktionen bearbeiten ihn.
-       * @agent
+       * Einen Endpunkt aktiv setzen; die Oberfläche zeigt ihn im Detail.
+       * @noagent Auswahl der Oberfläche
        * @param {string} endpointId eine id aus `endpoints`
        * @returns {void}
        * @throws {Error} wenn es keinen Endpunkt mit dieser id gibt
@@ -215,6 +219,7 @@ export default createModule({
       removeEndpoint(endpointId) {
         requireKnownId('endpointId', endpointId, this.model.endpoints.map(e => e.id));
         this._stopSchedule(endpointId);
+        this._responses.delete(endpointId);
         this.model.endpoints = this.model.endpoints.filter(e => e.id !== endpointId);
         if (this.model.activeId === endpointId) {
           this.model.activeId = this.model.endpoints[0]?.id || null;
@@ -223,81 +228,86 @@ export default createModule({
         this.$nextTick(() => this._mountPickers());
       },
       /**
-       * URL, Schreibmodus oder Zeitplan des aktiven Endpunkts setzen.
+       * URL, Schreibmodus oder Zeitplan eines Endpunkts setzen.
        * @agent
+       * @param {string} endpointId id des Endpunkts
        * @param {keyof Params} key welcher Wert; `activeParams` nennt die gültigen
        * @param {string|number} value der Wert; Bereich je Schlüssel siehe `Params`
        * @returns {void}
-       * @throws {Error} wenn es keinen aktiven Endpunkt gibt, `key` unbekannt ist oder `value` nicht passt
+       * @throws {Error} wenn kein Endpunkt diese id trägt, `key` unbekannt ist oder `value` nicht passt
        */
-      setParam(key, value) {
+      setParam(endpointId, key, value) {
+        const ep = this._requireEndpoint(endpointId);
         requireEnum('key', key, PARAM_KEYS);
-        requireEnum('key', key, this.activeParams());
-        const ep = this.model.activeEndpoint();
         setAtPath(ep, key, PARAM_CHECKS[key](value));
         if (key.startsWith('schedule.')) this._restartScheduleIfRunning(ep);
       },
       /**
-       * Eine leere Kopfzeile an den aktiven Endpunkt hängen.
+       * Eine leere Kopfzeile an einen Endpunkt hängen.
        * @agent
+       * @param {string} endpointId id des Endpunkts
        * @returns {number} der Index der neuen Kopfzeile
-       * @throws {Error} wenn es keinen aktiven Endpunkt gibt
+       * @throws {Error} wenn kein Endpunkt diese id trägt
        */
-      addHeader() {
-        const ep = this._requireActive();
+      addHeader(endpointId) {
+        const ep = this._requireEndpoint(endpointId);
         ep.headers.push({ key: '', value: '' });
         return ep.headers.length - 1;
       },
       /**
-       * Name und Wert einer Kopfzeile des aktiven Endpunkts setzen.
+       * Name und Wert einer Kopfzeile eines Endpunkts setzen.
        * @agent
+       * @param {string} endpointId id des Endpunkts
        * @param {number} index Index in `endpoints[].headers`
        * @param {string} key der Name der Kopfzeile
        * @param {string} value der Wert der Kopfzeile
        * @returns {void}
-       * @throws {Error} wenn es keinen aktiven Endpunkt gibt oder `index` keine Kopfzeile ist
+       * @throws {Error} wenn kein Endpunkt diese id trägt oder `index` keine Kopfzeile ist
        */
-      setHeader(index, key, value) {
-        const ep = this._requireActive();
+      setHeader(endpointId, index, key, value) {
+        const ep = this._requireEndpoint(endpointId);
         requireIndex('index', index, ep.headers.length, { existing: true });
         ep.headers[index] = { key: requireText('key', key), value: requireText('value', value) };
       },
       /**
-       * Eine Kopfzeile des aktiven Endpunkts löschen.
+       * Eine Kopfzeile eines Endpunkts löschen.
        * @agent
+       * @param {string} endpointId id des Endpunkts
        * @param {number} index Index in `endpoints[].headers`
        * @returns {void}
-       * @throws {Error} wenn es keinen aktiven Endpunkt gibt oder `index` keine Kopfzeile ist
+       * @throws {Error} wenn kein Endpunkt diese id trägt oder `index` keine Kopfzeile ist
        */
-      removeHeader(index) {
-        const ep = this._requireActive();
+      removeHeader(endpointId, index) {
+        const ep = this._requireEndpoint(endpointId);
         requireIndex('index', index, ep.headers.length, { existing: true });
         ep.headers.splice(index, 1);
       },
       /**
-       * Ein leeres Mapping an den aktiven Endpunkt hängen. Mappings werden
+       * Ein leeres Mapping an einen Endpunkt hängen. Mappings werden
        * gespeichert, aber noch nicht angewendet.
        * @agent
+       * @param {string} endpointId id des Endpunkts
        * @returns {number} der Index des neuen Mappings
-       * @throws {Error} wenn es keinen aktiven Endpunkt gibt
+       * @throws {Error} wenn kein Endpunkt diese id trägt
        */
-      addMapping() {
-        const ep = this._requireActive();
+      addMapping(endpointId) {
+        const ep = this._requireEndpoint(endpointId);
         ep.mappings.push({ jsonPath: '', columnRef: null });
         this.$nextTick(() => this._mountPickers());
         return ep.mappings.length - 1;
       },
       /**
-       * Pfad und Zielspalte eines Mappings des aktiven Endpunkts setzen.
+       * Pfad und Zielspalte eines Mappings eines Endpunkts setzen.
        * @agent
+       * @param {string} endpointId id des Endpunkts
        * @param {number} index Index in `endpoints[].mappings`
        * @param {string} jsonPath der Pfad in der JSON-Antwort; "" löscht ihn
        * @param {object|null} ref eine Spalte aus `pickableColumns` als `{ instanceId, sheetId, columnId }`; null löst die Zuordnung
        * @returns {void}
-       * @throws {Error} wenn es keinen aktiven Endpunkt gibt, `index` kein Mapping ist, die Spalte unbekannt ist oder schon von einem anderen Mapping dieses Endpunkts belegt wird
+       * @throws {Error} wenn kein Endpunkt diese id trägt, `index` kein Mapping ist, die Spalte unbekannt ist oder schon von einem anderen Mapping dieses Endpunkts belegt wird
        */
-      setMapping(index, jsonPath, ref) {
-        const ep = this._requireActive();
+      setMapping(endpointId, index, jsonPath, ref) {
+        const ep = this._requireEndpoint(endpointId);
         requireIndex('index', index, ep.mappings.length, { existing: true });
         requireText('jsonPath', jsonPath);
         let clean = null;
@@ -312,28 +322,30 @@ export default createModule({
         this.$nextTick(() => this._mountPickers());
       },
       /**
-       * Ein Mapping des aktiven Endpunkts löschen.
+       * Ein Mapping eines Endpunkts löschen.
        * @agent
+       * @param {string} endpointId id des Endpunkts
        * @param {number} index Index in `endpoints[].mappings`
        * @returns {void}
-       * @throws {Error} wenn es keinen aktiven Endpunkt gibt oder `index` kein Mapping ist
+       * @throws {Error} wenn kein Endpunkt diese id trägt oder `index` kein Mapping ist
        */
-      removeMapping(index) {
-        const ep = this._requireActive();
+      removeMapping(endpointId, index) {
+        const ep = this._requireEndpoint(endpointId);
         requireIndex('index', index, ep.mappings.length, { existing: true });
         ep.mappings.splice(index, 1);
         this.$nextTick(() => this._mountPickers());
       },
       /**
-       * Den Zeitplan des aktiven Endpunkts ein- oder ausschalten.
+       * Den Zeitplan eines Endpunkts ein- oder ausschalten.
        * @agent
+       * @param {string} endpointId id des Endpunkts
        * @param {boolean} enabled true startet die regelmäßigen Abrufe (nur mit gesetzter URL), false stoppt sie
        * @returns {void}
-       * @throws {Error} wenn es keinen aktiven Endpunkt gibt oder `enabled` kein Wahrheitswert ist
+       * @throws {Error} wenn kein Endpunkt diese id trägt oder `enabled` kein Wahrheitswert ist
        */
-      setSchedule(enabled) {
+      setSchedule(endpointId, enabled) {
+        const ep = this._requireEndpoint(endpointId);
         requireBoolean('enabled', enabled);
-        const ep = this._requireActive();
         ep.schedule.enabled = enabled;
         if (ep.schedule.enabled) {
           this._startSchedule(ep);
@@ -395,42 +407,45 @@ export default createModule({
 
       /** @noagent DOM event handler (change); the agent uses setSchedule() */
       toggleSchedule(event) {
-        this.setSchedule(Boolean(event.target.checked));
+        this.setSchedule(this.model.activeId, Boolean(event.target.checked));
       },
       /** @noagent DOM event handler (change); the agent uses setParam('schedule.intervalValue', …) */
       changeScheduleValue(event) {
         const val = Math.max(1, Math.min(999, parseInt(event.target.value, 10) || 1));
         event.target.value = val;
-        this.setParam('schedule.intervalValue', val);
+        this.setParam(this.model.activeId, 'schedule.intervalValue', val);
       },
       /** @noagent DOM event handler (change); the agent uses setParam('schedule.intervalUnit', …) */
       changeScheduleUnit(event) {
-        this.setParam('schedule.intervalUnit', event.target.value);
+        this.setParam(this.model.activeId, 'schedule.intervalUnit', event.target.value);
       },
 
       // ── Request / Response ────────────────────────────────────
       /**
-       * Führt eine GET-Anfrage an die URL des aktiven Endpunkts aus und wartet
+       * Führt eine GET-Anfrage an die URL eines Endpunkts aus und wartet
        * auf die Antwort. Ein Netzfehler wird zur Antwort mit Status 0.
        * @agent
-       * @returns {Promise<{ status: number, statusText: string, ok: boolean, body: string }|null>} die Antwort (auch `lastResponse` in read()), oder null ohne aktiven Endpunkt oder ohne URL
+       * @param {string} endpointId id des Endpunkts
+       * @returns {Promise<{ status: number, statusText: string, ok: boolean, body: string }|null>} die Antwort (auch `endpoints[].lastResponse` in read()), oder null ohne URL
+       * @throws {Error} wenn kein Endpunkt diese id trägt
        */
-      async sendRequest() {
-        const ep = this.model.activeEndpoint();
-        if (!ep) return null;
+      async sendRequest(endpointId) {
+        const ep = this._requireEndpoint(endpointId);
         if (!ep.url) {
           module._context.notify(this.t('errorNoUrl'), 'error');
           return null;
         }
         this.loading = true;
-        this.lastResponse = null;
+        this._setResponse(ep, null);
+        let response;
         try {
-          this.lastResponse = await this._fetch(ep);
+          response = await this._fetch(ep);
         } catch (err) {
-          this.lastResponse = { status: 0, statusText: 'Error', ok: false, body: err.message };
+          response = { status: 0, statusText: 'Error', ok: false, body: err.message };
         }
+        this._setResponse(ep, response);
         this.loading = false;
-        return this.lastResponse;
+        return response;
       },
 
       /** @noagent clipboard */
@@ -499,12 +514,10 @@ export default createModule({
         try {
           const result = await this._fetch(ep);
           this._lastRunTimes.set(ep.id, Date.now());
-          if (ep.id === this.model.activeId) this.lastResponse = result;
+          this._setResponse(ep, result);
         } catch (err) {
           this._lastRunTimes.set(ep.id, Date.now());
-          if (ep.id === this.model.activeId) {
-            this.lastResponse = { status: 0, statusText: 'Error', ok: false, body: err.message };
-          }
+          this._setResponse(ep, { status: 0, statusText: 'Error', ok: false, body: err.message });
         }
         this._scheduleTick++;
       },
@@ -540,7 +553,7 @@ export default createModule({
               mode: 'single',
               onChange: (ref) => {
                 try {
-                  this.setMapping(i, ep.mappings[i].jsonPath, ref);
+                  this.setMapping(ep.id, i, ep.mappings[i].jsonPath, ref);
                 } catch {
                   module._context.notify(this.t('columnAlreadyUsed'), 'warning');
                   picker.value = ep.mappings[i].columnRef;
