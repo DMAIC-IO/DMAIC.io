@@ -2253,7 +2253,6 @@
       "whenToUse": "When customers or stakeholders are to be surveyed in writing: design the questionnaire, send it as an HTML file per recipient, read in the answer files and evaluate them — without a server, the data stays in the project.",
       "actions": {
         "read": { "help": "Read the questionnaire, recipients, imported responses, hand-overs and the state of the interface." },
-        "setTab": { "help": "Open a tab: draft, recipients or results.", "params": { "tab": "draft, recipients or results." } },
         "draft": {
           "setHeader": { "help": "Set a field in the header of the questionnaire: title, introduction, contact, language of the file or anonymous.", "params": { "key": "Which header field.", "value": "Text for title, introduction and contact; de or en for the language; true or false for anonymous." } },
           "addSection": { "help": "Append an empty section to the end of the questionnaire. Questions always sit in a section." },

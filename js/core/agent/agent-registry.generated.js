@@ -19770,18 +19770,6 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand liefern, dazu die Auswertung als Zahlen."
-      },
-      "setTab": {
-        "params": [
-          {
-            "name": "tab",
-            "type": "'draft'|'recipients'|'results'",
-            "optional": false,
-            "help": "the tab to open"
-          }
-        ],
-        "returns": "void",
-        "help": "Open a tab. The results tab draws its charts when it opens."
       }
     },
     "fields": {
@@ -20091,7 +20079,11 @@ export const AGENT_REGISTRY = {
           }
         }
       }
-    }
+    },
+    "viewFields": [
+      "ui.tab",
+      "ui.selectedQuestionId"
+    ]
   },
   "time-weighted-chart": {
     "tagged": true,

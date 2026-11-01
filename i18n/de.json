@@ -2253,7 +2253,6 @@
       "whenToUse": "Wenn Kunden oder Stakeholder schriftlich befragt werden sollen: Fragebogen entwerfen, je Empfänger als HTML-Datei verschicken, die Antwortdateien einlesen und auswerten — ohne Server, die Daten bleiben im Projekt.",
       "actions": {
         "read": { "help": "Fragebogen, Empfänger, eingelesene Antworten, Übergaben und den Stand der Oberfläche lesen." },
-        "setTab": { "help": "Einen Reiter öffnen: Entwurf, Empfänger oder Auswertung.", "params": { "tab": "draft, recipients oder results." } },
         "draft": {
           "setHeader": { "help": "Ein Feld im Kopf des Fragebogens setzen: Titel, Einleitung, Kontakt, Sprache der Datei oder anonym.", "params": { "key": "Welches Kopffeld.", "value": "Text für Titel, Einleitung und Kontakt; de oder en für die Sprache; true oder false für anonym." } },
           "addSection": { "help": "Einen leeren Abschnitt ans Ende des Fragebogens anhängen. Fragen stehen immer in einem Abschnitt." },

@@ -289,7 +289,7 @@ export default createModule({
 
       /**
        * Open a tab. The results tab draws its charts when it opens.
-       * @agent
+       * @noagent Reiter der Oberfläche
        * @param {'draft'|'recipients'|'results'} tab the tab to open
        * @returns {void}
        * @throws {Error} if `tab` is not one of the three tabs

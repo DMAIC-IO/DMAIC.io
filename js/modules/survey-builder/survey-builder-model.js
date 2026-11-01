@@ -64,6 +64,9 @@ export function isRecipientSent(recipient, answered) {
  * Mutating methods keep conditions valid and flag structural changes.
  */
 export class State {
+  /** Gespeichert, aber keine Aussage über den Inhalt: zählt nicht zur Revision, erscheint nicht in `read()`. */
+  static VIEW_FIELDS = ['ui.tab', 'ui.selectedQuestionId'];
+
   survey = emptySurvey();
   /** @type {Array<{id, name, organisation, group, email, note, sentAt: string|null, sentVersion: number|null}>} */
   recipients = [];
@@ -163,6 +166,15 @@ export class State {
   // ─── Questions ──────────────────────────────────────────────
 
   /**
+   * Folge von addQuestion: die neue Frage ist in der Oberfläche gewählt.
+   * Eigene Methode, weil die Auswahl ein Ansichtsfeld ist (VIEW_FIELDS) und keine
+   * parametergetriebene Schreibung einer @agent-Aktion sein soll.
+   * @param {string} id
+   * @returns {void}
+   */
+  _selectQuestion(id) { this.ui.selectedQuestionId = id; }
+
+  /**
    * @param {string} sectionId
    * @param {string} type one of QUESTION_TYPES
    * @returns {string|null} new question id, null for an unknown section or type
@@ -172,7 +184,7 @@ export class State {
     if (!s || !QUESTION_TYPES.includes(type)) return null;
     const q = emptyQuestion(type);
     s.questions.push(q);
-    this.ui.selectedQuestionId = q.id;
+    this._selectQuestion(q.id);
     this.dirtyStructure = true;
     return q.id;
   }
