@@ -20,6 +20,7 @@ import { axiError } from './agent-errors.js';
 import { buildCatalog, buildInstanceList, describeModule, allowedPhasesFor, isSingleton } from './agent-catalog.js';
 import { getAllPhaseIds } from '../cycles/cycles.js';
 import { requireArity } from './agent-argcheck.js';
+import { stripPaths } from '../view-fields.js';
 
 /**
  * @param {object} deps  { stateManager, moduleRegistry, i18n, registry, getHelp, host, appVersion }
@@ -207,7 +208,10 @@ export function createOps(deps) {
         // Prüfung läuft also nie mehr fail open.
         requireArity(action.method, args, spec.params ?? []);
         const value = await target.object[target.name](...args);
-        return { instanceId: action.instance, method: action.method, value: value ?? null };
+        // Die eine Stelle, an der Ansichtsfelder aus jedem `read()` fallen — auch
+        // aus einem handgeschriebenen, das nicht durch `projectReadState` läuft.
+        const shown = action.method === 'read' ? stripPaths(value, entry.viewFields) : value;
+        return { instanceId: action.instance, method: action.method, value: shown ?? null };
       } catch (err) {
         return axiError(ERRORS.CALL_FAILED,
           t('agent.errors.callFailed', { method: action.method, detail: err?.message ?? String(err) }));

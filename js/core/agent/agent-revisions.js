@@ -14,8 +14,9 @@
 
 /**
  * Legt den Merker an.
- * @param {{ getModuleRevision: (id: string) => (number|undefined),
+ * @param {{ getModuleRevision: (id: string, ignorePaths?: string[]) => (number|undefined),
  *           getStructureRevision: () => number }} stateManager
+ * @param {(instanceId: string) => string[]} [ignorePathsOf] die Pfade einer Instanz, die nicht zur Revision zählen
  * @returns {{
  *   markInstance: (instanceId: string) => void,
  *   markStructure: () => void,
@@ -24,7 +25,7 @@
  *   isStructureCurrent: () => boolean,
  * }}
  */
-export function createRevisionTracker(stateManager) {
+export function createRevisionTracker(stateManager, ignorePathsOf = () => []) {
   /**
    * Instanz → zuletzt gesehene Revision. `undefined` ist ein gültiger Wert:
    * die Instanz hatte beim Lesen noch keinen gespeicherten Zustand.
@@ -36,7 +37,7 @@ export function createRevisionTracker(stateManager) {
 
   return {
     markInstance(instanceId) {
-      seen.set(instanceId, stateManager.getModuleRevision(instanceId));
+      seen.set(instanceId, stateManager.getModuleRevision(instanceId, ignorePathsOf(instanceId)));
     },
     markStructure() {
       seenStructure = stateManager.getStructureRevision();
@@ -46,7 +47,7 @@ export function createRevisionTracker(stateManager) {
     },
     isInstanceCurrent(instanceId) {
       return seen.has(instanceId)
-        && seen.get(instanceId) === stateManager.getModuleRevision(instanceId);
+        && seen.get(instanceId) === stateManager.getModuleRevision(instanceId, ignorePathsOf(instanceId));
     },
     isStructureCurrent() {
       return seenStructure !== null && seenStructure === stateManager.getStructureRevision();

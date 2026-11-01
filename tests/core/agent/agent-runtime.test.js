@@ -25,6 +25,13 @@ const REGISTRY = {
   sipoc:      { tagged: false, available: false, violations: [], actions: {}, fields: {} },
 };
 
+/** five-why als freigegebenes Modul mit Ansichtsfeldern. */
+const releasedFiveWhy = (viewFields) => ({
+  tagged: true, available: true, violations: [],
+  actions: { read: { params: [], returns: 'object', help: 'liest' } },
+  fields: {}, viewFields,
+});
+
 const I18N = {
   getLanguage: () => 'de',
   exists: () => false,
@@ -51,7 +58,7 @@ async function tick(times = 3) {
 /** A runtime with every port faked; `log` records the side effects in order. */
 function makeRuntime({ denied = false, viewmodel = null, completed = false, slowAdd = false,
                       getHelp = async () => null, stateManager: stateManagerOverrides,
-                      registry: registryOverrides, primed = true, instances = [],
+                      registry: registryOverrides, primed = true, instances = [], defaultRevisions = false,
                       onSettle = () => {} } = {}) {
   const log = [];
   const settles = [];
@@ -86,7 +93,7 @@ function makeRuntime({ denied = false, viewmodel = null, completed = false, slow
     moduleRegistry: { getAll: () => DEFS, get: (id) => DEFS.find(d => d.id === id), getActiveCycle: () => 'dmaic' },
     i18n: I18N,
     registry: { ...REGISTRY, ...registryOverrides },
-    revisions,
+    revisions: defaultRevisions ? undefined : revisions,
     getHelp,
     appVersion: '1.2.3',
     consent: {
@@ -511,6 +518,37 @@ suite('agent runtime — the seven ops', () => {
     assertEqual(last.error, 'unknown_method');
     assertTrue(last.message.startsWith('agent.errors.unknownMethod|'),
       `der Stale-Detektor muss unknownMethod melden, nicht: ${last.message}`);
+  });
+});
+
+suite('agent runtime — Ansichtsfelder', () => {
+  test('read liefert keine Ansichtspfade, auch bei handgeschriebener Rückgabe', async () => {
+    const { runtime } = makeRuntime({
+      registry: { 'five-why': releasedFiveWhy(['activeTab', 'nodes[]**.collapsed']) },
+      viewmodel: {
+        read: () => ({
+          title: 't', activeTab: 'a',
+          nodes: [{ id: 1, collapsed: true, children: [{ id: 2, collapsed: false, children: [] }] }],
+        }),
+      },
+    });
+    const out = await runtime.interact({ op: 'instance.call', instance: 'fw-1', method: 'read' });
+    assertEqual(out.ok, true);
+    assertDeepEqual(out.results[0].result.value, {
+      title: 't', nodes: [{ id: 1, children: [{ id: 2, children: [] }] }],
+    });
+  });
+
+  test('der Merker bekommt die viewFields des Moduls der Instanz', async () => {
+    const asked = [];
+    const { runtime } = makeRuntime({
+      defaultRevisions: true,
+      registry: { 'five-why': releasedFiveWhy(['activeTab']) },
+      stateManager: { getModuleRevision: (id, paths) => { asked.push([id, paths]); return 1; } },
+      viewmodel: { read: () => ({}) },
+    });
+    await runtime.interact({ op: 'instance.call', instance: 'fw-1', method: 'read' });
+    assertDeepEqual(asked.at(-1), ['fw-1', ['activeTab']]);
   });
 });
 

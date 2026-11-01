@@ -186,6 +186,8 @@ export const OPS = deepFreeze({
  *   `keysOf`/`keys` stehen NUR an einem generischen Setter, dessen
  *   Schlüsselparameter `keyof <Typedef>` trägt: je Schlüssel der Wertetyp und
  *   die JSDoc-Prosa (`tools/build/agent-data.mjs:readKeySurface`).
+ * @property {string[]} [viewFields]  gespeicherte Ansichtspfade (`static VIEW_FIELDS` am Model):
+ *   zählen nicht zur Revision, erscheinen nicht in `read()`. Fehlt, wenn das Modul keine führt.
  * @property {Record<string, { type: string, help: string, bulk: boolean,
  *                             bulkKind?: 'table'|'tree', omit?: string[], via?: string[], derived?: boolean,
  *                             keysOf?: string, keys?: Record<string, AgentTypedefKey> }>} fields

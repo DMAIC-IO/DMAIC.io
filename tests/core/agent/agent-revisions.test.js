@@ -2,7 +2,7 @@
  * Tests for core/agent/agent-revisions.js — der Merker „was hat der Agent
  * gesehen" für Lesen vor Schreiben (contract 2).
  */
-import { suite, test, assertEqual } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { createRevisionTracker } from '../../../js/core/agent/agent-revisions.js';
 import { ERRORS } from '../../../js/core/agent/agent-contract.js';
 
@@ -19,6 +19,23 @@ function fakeState() {
 }
 
 suite('agent-revisions — Lesen vor Schreiben', () => {
+
+  test('der Resolver liefert die Pfade, die beim Merken und Vergleichen nicht zählen', () => {
+    const asked = [];
+    const sm = { getModuleRevision: (id, paths) => { asked.push([id, paths]); return 1; }, getStructureRevision: () => 1 };
+    const tracker = createRevisionTracker(sm, (id) => (id === 'a' ? ['activeTab'] : []));
+    tracker.markInstance('a');
+    tracker.isInstanceCurrent('a');
+    tracker.markInstance('b');
+    assertDeepEqual(asked, [['a', ['activeTab']], ['a', ['activeTab']], ['b', []]]);
+  });
+
+  test('ohne Resolver zählt alles', () => {
+    const asked = [];
+    const sm = { getModuleRevision: (id, paths) => { asked.push(paths); return 1; }, getStructureRevision: () => 1 };
+    createRevisionTracker(sm).markInstance('a');
+    assertDeepEqual(asked, [[]]);
+  });
   test('nie gelesen heißt veraltet — Instanz und Struktur', () => {
     const tracker = createRevisionTracker(fakeState());
     assertEqual(tracker.isInstanceCurrent('ws-1'), false);

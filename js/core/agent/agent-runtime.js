@@ -59,9 +59,17 @@ export function createAgentRuntime(deps) {
   const { stateManager, moduleRegistry, i18n, registry, consent, host, appVersion } = deps;
   const ops = createOps(deps);
 
+  // Ansichtsfelder zählen nicht zur Revision: ein Klick des Nutzers macht
+  // nichts veraltet. Der Kern kennt nur Pfade, die Zuordnung Instanz → Modul
+  // → `viewFields` steht hier.
+  const ignorePathsOf = (instanceId) => {
+    const instance = buildInstanceList({ stateManager, i18n }).find(i => i.id === instanceId);
+    return registry[instance?.module]?.viewFields ?? [];
+  };
+
   // Lesen vor Schreiben: was der Agent gesehen hat.
   // Nur im Speicher — nach einem Neuladen ist nichts gelesen.
-  const revisions = deps.revisions ?? createRevisionTracker(stateManager);
+  const revisions = deps.revisions ?? createRevisionTracker(stateManager, ignorePathsOf);
 
   /**
    * Prüft eine schreibende Aktion gegen den Merker — zur Ausführungszeit und
