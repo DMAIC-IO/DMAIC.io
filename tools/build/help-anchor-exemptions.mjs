@@ -29,7 +29,6 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'fields.orgStyle', reason: 'Stil-Panel wird imperativ aus chart-editor.js gebaut, außerhalb der Vorlage' },
   ],
   'survey-builder': [
-    { name: 'actions.setTab', reason: 'Reiterleiste; ein Fragezeichen je Reiter wäre Rauschen' },
     { name: 'actions.draft.addQuestion', reason: 'Typauswahl je Abschnitt; ein Fragezeichen je Abschnitt wäre Rauschen, verankert ist die Gliederung' },
     { name: 'actions.draft.moveSection', reason: 'Pfeilknopf je Abschnitt; ein Fragezeichen je Zeile wäre Rauschen' },
     { name: 'actions.draft.removeSection', reason: 'Löschknopf je Abschnitt; ein Fragezeichen je Zeile wäre Rauschen' },
@@ -47,7 +46,6 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'fields.exportedOnce', reason: 'interner Merker für die nächste Exportversion; sichtbar nur in der Versionszeile' },
   ],
   ishikawa: [
-    { name: 'actions.setTab', reason: 'Reiterleiste; ein Fragezeichen je Reiter wäre Rauschen' },
     { name: 'actions.problem.setProblem', reason: 'die Oberfläche tippt direkt ins Textfeld, dessen Überschrift an fields.problem verankert ist' },
     { name: 'actions.causes.renameExpert', reason: 'Namensfeld je Mitglied des Expertenteams; das Team ist an seiner Überschrift verankert' },
     { name: 'actions.causes.removeExpert', reason: 'Entfernen-Knopf je Mitglied; ein Fragezeichen je Mitglied wäre Rauschen' },
@@ -85,7 +83,6 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'fields.components', reason: 'die Komponentenzeilen selbst; die Spalten sind an der Kopfzeile verankert' },
     { name: 'fields.ranks', reason: 'abgeleitet; eingeblendet über setShowRanks, dessen Anker die Kennzeichen erklärt' },
     { name: 'fields.showRanks', reason: 'Zustand des Kontrollkästchens setShowRanks, das selbst verankert ist' },
-    { name: 'fields.activeTab', reason: 'Zustand der Reiterleiste; setTab ist dort verankert' },
   ],
   'chart-suggestion': [
     { name: 'actions.setColumns', reason: 'die Auswahl kommt in der Oberfläche aus dem Worksheet („Diagramm vorschlagen“); das Modul hat kein eigenes Bedienelement dafür' },

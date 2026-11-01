@@ -335,7 +335,13 @@ Die Fläche führt, nur im Speicher, je Instanz und für die Projektstruktur
 (Phasen, Instanzliste) einen Merker: die Revision, die der Agent zuletzt
 gesehen hat. Eine Revision ist der `cyrb53`-Hash über den Inhalt — gleicher
 Inhalt, gleiche Revision, ein Ansichtswechsel macht also nichts veraltet.
-Die Revisionen rechnet der `stateManager`, für Oberfläche und Agent gleich.
+Die Revisionen rechnet der `stateManager`. Für den Agenten zählen die
+Ansichtsfelder eines Moduls nicht dazu: aktiver Reiter, aktives Element,
+Auf- und Zuklappen, Filter und Sortierung der Anzeige, Zellauswahl. Ein Klick
+des Nutzers führt also nicht zu `stale_revision`. Diese Felder bleiben
+gespeichert, stehen aber nicht in `read()`, und keine Aktion setzt sie gezielt.
+Eine Inhaltsaktion darf sie als Folge ändern: `addEndpoint` zeigt den neuen
+Endpunkt, ein Schreiben auf ein Blatt macht es sichtbar.
 
 | Aktion | setzt den Merker |
 |---|---|
@@ -423,6 +429,14 @@ schon. Invariante, von einem Test gehalten: `ERRORS[k] === k.toLowerCase()`.
 Geschichte: `contract: 2` gilt seit 2026-10-28 (Hülle ohne `usage`, stärkere
 Haltbarkeitszusage). `stale_revision` allein wäre nach dieser Regel kein Bump
 gewesen.
+
+Ansichtsfelder (2026-11-01, `contract` bleibt `2`, die Hülle ist unverändert): Die
+Setter der Ansichtsfelder sind keine Aktionen mehr, ein Aufruf antwortet
+`unknown_method`. `worksheet` nennt sein Blatt: die Spaltenaktionen tragen
+`sheetId` als ersten Parameter, `read({ sheetId })` liest ein Blatt, ohne Angabe
+das erste, und die Antwort führt `sheetId` statt `activeSheetId`. `rest-api` nennt
+seinen Endpunkt: die Detailaktionen tragen `endpointId` als ersten Parameter,
+`lastResponse` und `scheduleRunning` stehen je Endpunkt in `endpoints[]`.
 
 Aktionsnamen mit Punkt (`draft.addQuestion`) sind ebenfalls kein Bruch: die
 Aktionsform `{ op: 'instance.call', instance, method, args }` bleibt,
