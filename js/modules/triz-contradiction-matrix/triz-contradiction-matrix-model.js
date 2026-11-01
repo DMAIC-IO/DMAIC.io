@@ -31,6 +31,9 @@ function _lookupCached(model) {
 }
 
 export class State {
+  /** Gespeichert, aber keine Aussage über den Inhalt: zählt nicht zur Revision, erscheint nicht in `read()`. */
+  static VIEW_FIELDS = ['showMatrix'];
+
   /** @type {number|null} Nummer des Merkmals, das verbessert werden soll (1 bis 39), oder null */
   improving = null;
 

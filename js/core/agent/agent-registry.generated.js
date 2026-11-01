@@ -20836,18 +20836,6 @@ export const AGENT_REGISTRY = {
         "returns": "void",
         "help": "Setzt die Problemnotiz zum Widerspruch."
       },
-      "setShowMatrix": {
-        "params": [
-          {
-            "name": "visible",
-            "type": "boolean",
-            "optional": false,
-            "help": "`true` zeigt die Matrix, `false` verbirgt sie"
-          }
-        ],
-        "returns": "void",
-        "help": "Legt fest, ob die vollständige 39×39-Matrix angezeigt wird."
-      },
       "swapParams": {
         "params": [],
         "returns": "void",
@@ -20869,13 +20857,11 @@ export const AGENT_REGISTRY = {
         "type": "string",
         "help": "die Problemnotiz zum Widerspruch",
         "bulk": false
-      },
-      "showMatrix": {
-        "type": "boolean",
-        "help": "ob die vollständige 39×39-Matrix angezeigt wird — persistierter Anzeigezustand",
-        "bulk": false
       }
-    }
+    },
+    "viewFields": [
+      "showMatrix"
+    ]
   },
   "triz-evolution-trends": {
     "tagged": true,

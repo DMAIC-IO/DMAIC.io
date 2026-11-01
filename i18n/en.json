@@ -14023,9 +14023,6 @@
         },
         "problemNote": {
           "help": "The problem note for the contradiction."
-        },
-        "showMatrix": {
-          "help": "Whether the full 39×39 matrix is shown. A persisted display state — it belongs to the saved project, not to the analysis."
         }
       },
       "subtitle": "Pick a parameter to improve and a parameter that worsens — the matrix recommends inventive principles.",

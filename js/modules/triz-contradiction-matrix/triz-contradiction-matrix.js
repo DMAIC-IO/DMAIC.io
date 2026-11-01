@@ -119,7 +119,7 @@ const base = createModule({
 
       /**
        * Legt fest, ob die vollständige 39×39-Matrix angezeigt wird.
-       * @agent
+       * @noagent Ansicht der Oberfläche
        * @param {boolean} visible `true` zeigt die Matrix, `false` verbirgt sie
        * @returns {void}
        * @throws {Error} wenn visible weder true noch false ist

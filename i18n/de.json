@@ -14027,9 +14027,6 @@
         },
         "problemNote": {
           "help": "Die Problemnotiz zum Widerspruch."
-        },
-        "showMatrix": {
-          "help": "Ob die vollständige 39×39-Matrix angezeigt wird. Ein persistierter Anzeigezustand — er gehört zum gespeicherten Projekt, nicht zur Analyse."
         }
       },
       "subtitle": "Wähle einen zu verbessernden und einen sich dabei verschlechternden Parameter — die Matrix empfiehlt erfinderische Prinzipien.",
