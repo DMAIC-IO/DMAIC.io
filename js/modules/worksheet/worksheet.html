@@ -15,13 +15,13 @@
     <div class="toolbar__sep"></div>
     <button class="toolbar__btn" data-action="add-col"
             data-help-key="modules.worksheet.actions.addColumn.help"
-            :title="t('addColumn')" @click="addColumn()">
+            :title="t('addColumn')" @click="addColumn(model.activeSheetId)">
       <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
       <span x-text="t('column')"></span>
     </button>
     <button class="toolbar__btn" data-action="add-rows"
             data-help-key="modules.worksheet.actions.addRows.help"
-            :title="t('addRows')" @click="addRows()">
+            :title="t('addRows')" @click="addRows(model.activeSheetId)">
       <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
       <span x-text="t('rows')"></span>
     </button>

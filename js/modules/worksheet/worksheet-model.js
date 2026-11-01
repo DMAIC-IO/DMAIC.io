@@ -18,6 +18,9 @@ import { uid } from '../../core/uid.js';
 /** @typedef {{ id: string, name: string, state: object|null }} Sheet */
 
 export class State {
+  /** Gespeichert, aber keine Aussage über den Inhalt: zählt nicht zur Revision, erscheint nicht in `read()`. */
+  static VIEW_FIELDS = ['activeSheetId', 'sheets[].state.selection', 'sheets[].state.colWidths'];
+
   /** @type {Sheet[]} */
   sheets = [];
   /** @type {string|null} */

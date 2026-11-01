@@ -22662,6 +22662,12 @@ export const AGENT_REGISTRY = {
       "addColumn": {
         "params": [
           {
+            "name": "sheetId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the sheet (see read().sheets[].id)"
+          },
+          {
             "name": "position",
             "type": "number",
             "optional": true,
@@ -22669,10 +22675,16 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "string",
-        "help": "Add an empty column to the active sheet — appended, or inserted at a position like \"insert column left/right\" in the header menu. The toolbar button calls `addColumn()` without an argument (Alpine CSP) and appends, as before."
+        "help": "Add an empty column to the sheet — appended, or inserted at a position like \"insert column left/right\" in the header menu. The toolbar button calls `addColumn(sheetId)` without a position (Alpine CSP) and appends, as before."
       },
       "renameColumn": {
         "params": [
+          {
+            "name": "sheetId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the sheet (see read().sheets[].id)"
+          },
           {
             "name": "columnId",
             "type": "string",
@@ -22692,6 +22704,12 @@ export const AGENT_REGISTRY = {
       "removeColumn": {
         "params": [
           {
+            "name": "sheetId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the sheet (see read().sheets[].id)"
+          },
+          {
             "name": "columnId",
             "type": "string",
             "optional": false,
@@ -22703,6 +22721,12 @@ export const AGENT_REGISTRY = {
       },
       "addRows": {
         "params": [
+          {
+            "name": "sheetId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the sheet (see read().sheets[].id)"
+          },
           {
             "name": "count",
             "type": "number",
@@ -22717,10 +22741,16 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Insert empty rows into the active sheet — appended, or at a position like \"insert row above/below\" in the row menu. The toolbar button calls `addRows()` without an argument (Alpine CSP allows no argument expressions in `@click`) and lands on the 10 it always added."
+        "help": "Insert empty rows into the sheet — appended, or at a position like \"insert row above/below\" in the row menu. The toolbar button calls `addRows(sheetId)` without count (Alpine CSP allows no argument expressions in `@click`) and lands on the 10 it always added."
       },
       "removeRows": {
         "params": [
+          {
+            "name": "sheetId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the sheet (see read().sheets[].id)"
+          },
           {
             "name": "startRow",
             "type": "number",
@@ -22735,10 +22765,16 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "number",
-        "help": "Remove a contiguous block of rows from the active sheet, values and formulas included — like \"delete row\" / \"delete selected rows\" in the row menu. Undo restores them."
+        "help": "Remove a contiguous block of rows from the sheet, values and formulas included — like \"delete row\" / \"delete selected rows\" in the row menu. Undo restores them."
       },
       "sortRows": {
         "params": [
+          {
+            "name": "sheetId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the sheet (see read().sheets[].id)"
+          },
           {
             "name": "columnId",
             "type": "string",
@@ -22753,24 +22789,12 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "boolean",
-        "help": "Sort all rows of the active sheet by one column — \"Sort ascending / descending\" in the column header menu. The direction is absolute (a second identical call changes nothing); empty cells go last. Undo restores the previous order."
+        "help": "Sort all rows of the sheet by one column — \"Sort ascending / descending\" in the column header menu. The direction is absolute (a second identical call changes nothing); empty cells go last. Undo restores the previous order."
       },
       "addSheet": {
         "params": [],
         "returns": "string",
         "help": "Add a new sheet and make it active."
-      },
-      "switchSheet": {
-        "params": [
-          {
-            "name": "id",
-            "type": "string",
-            "optional": false,
-            "help": "id of the sheet to show"
-          }
-        ],
-        "returns": "void",
-        "help": "Switch to another sheet. The following read() calls refer to it."
       },
       "renameSheet": {
         "params": [
@@ -22832,7 +22856,7 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+            "help": "`{ sheetId?: string, fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
         "returns": "AgentRead",
@@ -22841,6 +22865,12 @@ export const AGENT_REGISTRY = {
       "importCsv": {
         "params": [
           {
+            "name": "sheetId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the sheet (see read().sheets[].id)"
+          },
+          {
             "name": "csvText",
             "type": "string",
             "optional": false,
@@ -22848,10 +22878,16 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "{ columns: number, rows: number }",
-        "help": "Replace the active sheet's content with the given CSV data. Same parse, undo and toast path as the file import."
+        "help": "Replace the sheet's content with the given CSV data. Same parse, undo and toast path as the file import."
       },
       "setCells": {
         "params": [
+          {
+            "name": "sheetId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the sheet (see read().sheets[].id)"
+          },
           {
             "name": "columnId",
             "type": "string",
@@ -22877,6 +22913,12 @@ export const AGENT_REGISTRY = {
       "setFormula": {
         "params": [
           {
+            "name": "sheetId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the sheet (see read().sheets[].id)"
+          },
+          {
             "name": "columnId",
             "type": "string",
             "optional": false,
@@ -22896,10 +22938,16 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "{ value: any, error: string|null }",
-        "help": "Write a formula into one cell of the active sheet, like the formula editor: stored as text, evaluated at once, recorded for undo with the formula that was there before. A row equal to the row count extends the sheet by one row, like typing below the last row. An evaluation error (`#DIV/0`, `#REF!`, …) is not a rejected call: the formula is stored, the cell value is `null`, and the error code comes back — the UI shows the same cell with the same error."
+        "help": "Write a formula into one cell of the sheet, like the formula editor: stored as text, evaluated at once, recorded for undo with the formula that was there before. A row equal to the row count extends the sheet by one row, like typing below the last row. An evaluation error (`#DIV/0`, `#REF!`, …) is not a rejected call: the formula is stored, the cell value is `null`, and the error code comes back — the UI shows the same cell with the same error."
       },
       "setColumnRole": {
         "params": [
+          {
+            "name": "sheetId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the sheet (see read().sheets[].id)"
+          },
           {
             "name": "columnId",
             "type": "string",
@@ -22914,10 +22962,16 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Set the analytical role of a column on the active sheet, or confirm the detected one by passing the same role — like the role dialog before a chart suggestion. Afterwards read().columns[].roleConfirmed is true, and chart suggestion reads the role as confirmed. Allowed roles depend on the column type: numeric/currency/percent → continuous, categorical, ordinal, identifier; text → categorical, ordinal, identifier, freeText; binary → categorical; date/time → date. Role changes are not recorded in the undo history (as in the dialog)."
+        "help": "Set the analytical role of a column on the sheet, or confirm the detected one by passing the same role — like the role dialog before a chart suggestion. Afterwards read().columns[].roleConfirmed is true, and chart suggestion reads the role as confirmed. Allowed roles depend on the column type: numeric/currency/percent → continuous, categorical, ordinal, identifier; text → categorical, ordinal, identifier, freeText; binary → categorical; date/time → date. Role changes are not recorded in the undo history (as in the dialog)."
       },
       "moveRow": {
         "params": [
+          {
+            "name": "sheetId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the sheet (see read().sheets[].id)"
+          },
           {
             "name": "fromRow",
             "type": "number",
@@ -22932,10 +22986,16 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "boolean",
-        "help": "Move a row of the active sheet, like dragging its row header. Undo moves it back."
+        "help": "Move a row of the sheet, like dragging its row header. Undo moves it back."
       },
       "moveColumn": {
         "params": [
+          {
+            "name": "sheetId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the sheet (see read().sheets[].id)"
+          },
           {
             "name": "columnId",
             "type": "string",
@@ -22950,10 +23010,16 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "boolean",
-        "help": "Move a column of the active sheet, like dragging its header. Short names (C1, C2 …) follow the new order. Undo moves it back."
+        "help": "Move a column of the sheet, like dragging its header. Short names (C1, C2 …) follow the new order. Undo moves it back."
       },
       "setColumnType": {
         "params": [
+          {
+            "name": "sheetId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the sheet (see read().sheets[].id)"
+          },
           {
             "name": "columnId",
             "type": "string",
@@ -22968,10 +23034,16 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "boolean",
-        "help": "Change the type of a column on the active sheet, like the type picker in the column header; the values are converted. A role the new type does not allow is re-detected and loses its confirmation (read().columns[].roleConfirmed becomes false). Currency and percent bring 2 and 1 decimals. Not recorded in the undo history (as in the picker)."
+        "help": "Change the type of a column on the sheet, like the type picker in the column header; the values are converted. A role the new type does not allow is re-detected and loses its confirmation (read().columns[].roleConfirmed becomes false). Currency and percent bring 2 and 1 decimals. Not recorded in the undo history (as in the picker)."
       },
       "setColumnFormat": {
         "params": [
+          {
+            "name": "sheetId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the sheet (see read().sheets[].id)"
+          },
           {
             "name": "columnId",
             "type": "string",
@@ -22992,7 +23064,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Set one display format key of a column on the active sheet, like the format column of the type picker. numeric, currency, percent → decimals (0..6); date → dateFormat; time → timeFormat; text and binary have no format. null restores the type's default. Values are unchanged — only the display. Not recorded in the undo history."
+        "help": "Set one display format key of a column on the sheet, like the format column of the type picker. numeric, currency, percent → decimals (0..6); date → dateFormat; time → timeFormat; text and binary have no format. null restores the type's default. Values are unchanged — only the display. Not recorded in the undo history."
       }
     },
     "fields": {
@@ -23002,33 +23074,38 @@ export const AGENT_REGISTRY = {
         "bulk": false,
         "derived": true
       },
-      "activeSheetId": {
+      "sheetId": {
         "type": "string|null",
-        "help": "id of the sheet the following columns and rows belong to",
+        "help": "id of the sheet the following columns and rows belong to; the read option sheetId chooses it, otherwise the first sheet",
         "bulk": false,
         "derived": true
       },
       "columns": {
         "type": "Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null, roleConfirmed: boolean, format: { decimals?: number, dateFormat?: string, timeFormat?: string } }>",
-        "help": "the column headers of the active sheet; `id` is the columnId of a column reference; `roleConfirmed` is true once the role was set or confirmed by hand or via setColumnRole; `format` holds the display format keys set for the column (absent key = the type's default)",
+        "help": "the column headers of this sheet; `id` is the columnId of a column reference; `roleConfirmed` is true once the role was set or confirmed by hand or via setColumnRole; `format` holds the display format keys set for the column (absent key = the type's default)",
         "bulk": false,
         "derived": true
       },
       "rows": {
         "type": "any[][]",
-        "help": "the data rows of the active sheet, each row in column order",
+        "help": "the data rows of this sheet, each row in column order",
         "bulk": true,
         "bulkKind": "table",
         "derived": true
       },
       "formulas": {
         "type": "Array<{ columnId: string, row: number, formula: string }>",
-        "help": "which cells of the active sheet are COMPUTED, not typed; a plain value written over one of them deletes the formula",
+        "help": "which cells of this sheet are COMPUTED, not typed; a plain value written over one of them deletes the formula",
         "bulk": true,
         "bulkKind": "table",
         "derived": true
       }
-    }
+    },
+    "viewFields": [
+      "activeSheetId",
+      "sheets[].state.selection",
+      "sheets[].state.colWidths"
+    ]
   },
   "xy-plot": {
     "tagged": true,

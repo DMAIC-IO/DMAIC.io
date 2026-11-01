@@ -1283,47 +1283,60 @@
       "whenToUse": "The shared data substrate: measurements land here before an analysing tool reads them through a column reference. Almost every analysis starts with a data collection.",
       "actions": {
         "read": {
-          "help": "Returns the sheet list, the active sheet and the column headers; the rows come only on request via options.fields = ['rows'].",
-          "params": { "options": "Optional: fields: ['rows'] returns the rows, rows: { from, to } trims them." }
+          "help": "Returns the sheet list, the sheet id and the column headers; the rows come only on request via options.fields = ['rows'].",
+          "params": { "options": "Optional: sheetId chooses the sheet (the first if omitted; reading does not switch), fields: ['rows'] returns the rows, rows: { from, to } trims them." }
         },
         "importCsv": {
-          "help": "Replaces the active sheet's content with CSV data. Delimiter and header row are detected; the step can be reverted with undo.",
-          "params": { "csvText": "The full CSV or TSV text, header row included if present." }
+          "help": "Replaces the sheet's content with CSV data. Delimiter and header row are detected; the step can be reverted with undo.",
+          "params": {
+            "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view.",
+            "csvText": "The full CSV or TSV text, header row included if present."
+          }
         },
         "setCells": {
           "help": "Writes a block of values into one column, downwards from a row. Type detection, locks and undo as with cell entry. Values only: a formula such as =C1*2 is written as text, not evaluated — formulas are written with setFormula. A plain value written into a formula cell OVERWRITES the formula — read().formulas says which cells are computed; undo restores value and formula.",
           "params": {
+            "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view.",
             "columnId": "The id of the target column, as read().columns[].id names it.",
             "startRow": "Zero-based index of the first row.",
             "values": "The values, one per row; formula text is not evaluated."
           }
         },
         "setFormula": {
-          "help": "Writes a formula into one cell of the active sheet, like the formula editor: stored as text, evaluated at once, with undo. Returns the computed value and an error code such as #DIV/0 (otherwise null); on an evaluation error the formula stays and the cell is empty. Locked columns refuse.",
+          "help": "Writes a formula into one cell of the sheet, like the formula editor: stored as text, evaluated at once, with undo. Returns the computed value and an error code such as #DIV/0 (otherwise null); on an evaluation error the formula stays and the cell is empty. Locked columns refuse.",
           "params": {
+            "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view.",
             "columnId": "The id of the target column, as read().columns[].id names it.",
             "row": "Zero-based row index; the row count appends a row.",
             "formula": "Formula text starting with =, e.g. =C1[2]*2 (column 1, row 2, both counted from 1). Values without = are written with setCells."
           }
         },
         "addColumn": {
-          "help": "Adds an empty column to the active sheet — at the end without a position. The agent receives the new column's id.",
-          "params": { "position": "Zero-based place of the new column: 0 puts it first, the column count or no value appends it." }
+          "help": "Adds an empty column to the sheet — at the end without a position. The agent receives the new column's id.",
+          "params": {
+            "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view.",
+            "position": "Zero-based place of the new column: 0 puts it first, the column count or no value appends it."
+          }
         },
         "renameColumn": {
           "help": "Renames a column; formulas that mention the old name are updated. If another column already has the name, \" (2)\" is appended — the agent receives the actual name. Locked columns cannot be renamed. Undo restores the old name.",
           "params": {
+            "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view.",
             "columnId": "The id of the column, as read().columns[].id names it.",
             "name": "The new name; \"\" clears it, and the column shows its short name (C1, …)."
           }
         },
         "removeColumn": {
           "help": "Removes a column with its values and formulas. Hard-locked columns (managed by the DoE planner, for example) cannot be removed. Undo brings the column back.",
-          "params": { "columnId": "The id of the column to remove." }
+          "params": {
+            "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view.",
+            "columnId": "The id of the column to remove."
+          }
         },
         "addRows": {
-          "help": "Adds empty rows to the active sheet — at the end without a position, ten without a count.",
+          "help": "Adds empty rows to the sheet — at the end without a position, ten without a count.",
           "params": {
+            "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view.",
             "count": "Number of rows, a whole number of at least 1; ten without a value, like the toolbar button.",
             "position": "Zero-based row where the first new row goes: 0 puts them on top, the row count or no value appends them."
           }
@@ -1331,19 +1344,21 @@
         "removeRows": {
           "help": "Removes a contiguous block of rows with their values and formulas and returns how many rows were removed. Undo brings the rows back.",
           "params": {
+            "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view.",
             "startRow": "Zero-based index of the first row to remove; it must exist.",
             "count": "Number of rows, a whole number of at least 1 and at most up to the last row."
           }
         },
         "sortRows": {
-          "help": "Sorts all rows of the active sheet by one column, like “Sort ascending/descending” in the column header menu. The direction is absolute — a second identical call changes nothing and returns false. Empty cells go last. Undo restores the previous order.",
+          "help": "Sorts all rows of the sheet by one column, like “Sort ascending/descending” in the column header menu. The direction is absolute — a second identical call changes nothing and returns false. Empty cells go last. Undo restores the previous order.",
           "params": {
+            "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view.",
             "columnId": "The id of the column to sort by, as read().columns[].id names it.",
             "direction": "\"asc\" sorts ascending, \"desc\" descending."
           }
         },
-        "undo": { "help": "Reverts the last change to the sheet." },
-        "redo": { "help": "Restores a reverted change." },
+        "undo": { "help": "Reverts the last change to the sheet. Acts on the visible sheet; after the user switched sheets nothing happens." },
+        "redo": { "help": "Restores a reverted change. Acts on the visible sheet; after the user switched sheets nothing happens." },
         "addSheet": { "help": "Creates a new sheet and makes it active. The agent receives its id." },
         "switchSheet": {
           "help": "Switches to this sheet; the table and everything an agent reads afterwards refer to it. Double-click renames it.",
@@ -1357,36 +1372,41 @@
           }
         },
         "setColumnRole": {
-          "help": "Sets the role of a column on the active sheet, or confirms the detected one, like the role dialog before a chart suggestion; afterwards read().columns[].roleConfirmed is true. Which roles are allowed depends on the column type: numeric, currency, percent → continuous, categorical, ordinal, identifier; text → categorical, ordinal, identifier, freeText; binary → categorical; date, time → date. Locked columns cannot be changed. Undo does not record role changes.",
+          "help": "Sets the role of a column on the sheet, or confirms the detected one, like the role dialog before a chart suggestion; afterwards read().columns[].roleConfirmed is true. Which roles are allowed depends on the column type: numeric, currency, percent → continuous, categorical, ordinal, identifier; text → categorical, ordinal, identifier, freeText; binary → categorical; date, time → date. Locked columns cannot be changed. Undo does not record role changes.",
           "params": {
+            "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view.",
             "columnId": "The id of the column, as read().columns[].id names it.",
             "role": "The role: continuous, categorical, ordinal, date, identifier or freeText. The same role as read().columns[].role confirms the detected one."
           }
         },
         "moveRow": {
-          "help": "Moves a row of the active sheet, like dragging its row header. Returns false if start and target are the same. Undo moves it back.",
+          "help": "Moves a row of the sheet, like dragging its row header. Returns false if start and target are the same. Undo moves it back.",
           "params": {
+            "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view.",
             "fromRow": "The row that moves, counted from 0.",
             "toRow": "The position the row has afterwards, counted from 0."
           }
         },
         "moveColumn": {
-          "help": "Moves a column of the active sheet, like dragging its header; the short names (C1, C2 …) follow the new order. Formulas that refer to short names are not rewritten when columns move. Returns false if the column already is there. Undo moves it back.",
+          "help": "Moves a column of the sheet, like dragging its header; the short names (C1, C2 …) follow the new order. Formulas that refer to short names are not rewritten when columns move. Returns false if the column already is there. Undo moves it back.",
           "params": {
+            "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view.",
             "columnId": "The id of the column, as read().columns[].id names it.",
             "toIndex": "The position the column has afterwards, counted from 0."
           }
         },
         "setColumnType": {
-          "help": "Changes the type of a column on the active sheet, like the type picker in the column header; the values are converted. If the role does not fit the new type, it is detected anew and no longer confirmed. Currency brings two decimals, percent one. Returns false if the column already has the type. Locked columns cannot be changed. Undo does not record type changes.",
+          "help": "Changes the type of a column on the sheet, like the type picker in the column header; the values are converted. If the role does not fit the new type, it is detected anew and no longer confirmed. Currency brings two decimals, percent one. Returns false if the column already has the type. Locked columns cannot be changed. Undo does not record type changes.",
           "params": {
+            "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view.",
             "columnId": "The id of the column, as read().columns[].id names it.",
             "type": "The type: numeric, text, date, time, currency, percent or binary (0/1)."
           }
         },
         "setColumnFormat": {
-          "help": "Sets one display format key of a column on the active sheet, like the format choice in the column header. The values stay, only the display changes. numeric, currency, percent → decimals; date → dateFormat; time → timeFormat; text and binary have no format. Locked columns cannot be changed. Undo does not record format changes.",
+          "help": "Sets one display format key of a column on the sheet, like the format choice in the column header. The values stay, only the display changes. numeric, currency, percent → decimals; date → dateFormat; time → timeFormat; text and binary have no format. Locked columns cannot be changed. Undo does not record format changes.",
           "params": {
+            "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view.",
             "columnId": "The id of the column, as read().columns[].id names it.",
             "key": "The format key: decimals, dateFormat or timeFormat — fitting the column type.",
             "value": "decimals: whole number from 0 to 6; dateFormat: dd.MM.yyyy, yyyy-MM-dd, dd/MM/yyyy, MM/dd/yyyy or d. MMMM yyyy; timeFormat: HH:mm or HH:mm:ss. null restores the type's default."
@@ -1407,10 +1427,10 @@
       },
       "fields": {
         "sheets": { "help": "All sheets of the workbook in tab order, each with id and name." },
-        "activeSheetId": { "help": "The id of the sheet that columns and rows refer to." },
-        "columns": { "help": "The column headers of the active sheet. id is the columnId of a column reference, shortName the short form used in formulas (C1, C2 …), role the role of the column, roleConfirmed true when it was set or confirmed by hand (role dialog or setColumnRole), false for an automatically detected role. A type change the role no longer fits resets the confirmation. format lists the display format keys set (decimals, dateFormat, timeFormat); a missing key means the type's default." },
-        "rows": { "help": "The data rows of the active sheet, each row in column order. Bulk data: without options.fields = ['rows'] only the extent is returned." },
-        "formulas": { "help": "Which cells of the active sheet are computed, each with columnId, zero-based row and formula text. Bulk data: without options.fields = ['formulas'] only the extent is returned." }
+        "sheetId": { "help": "The id of the sheet the columns and rows of this answer belong to." },
+        "columns": { "help": "The column headers of the sheet. id is the columnId of a column reference, shortName the short form used in formulas (C1, C2 …), role the role of the column, roleConfirmed true when it was set or confirmed by hand (role dialog or setColumnRole), false for an automatically detected role. A type change the role no longer fits resets the confirmation. format lists the display format keys set (decimals, dateFormat, timeFormat); a missing key means the type's default." },
+        "rows": { "help": "The data rows of the sheet, each row in column order. Bulk data: without options.fields = ['rows'] only the extent is returned." },
+        "formulas": { "help": "Which cells of the sheet are computed, each with columnId, zero-based row and formula text. Bulk data: without options.fields = ['formulas'] only the extent is returned." }
       },
       "undo": "Undo (Ctrl+Z)",
       "redo": "Redo (Ctrl+Y)",

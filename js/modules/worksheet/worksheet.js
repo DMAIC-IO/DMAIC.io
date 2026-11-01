@@ -463,16 +463,16 @@ class FormulaEditor {
  * Nicht die persistierte Form: die ist `sheets: [{ id, name, state }]` mit
  * dem OPAKEN DataGrid-Blob in `state` — für einen Agenten entweder nutzlos
  * (ein Blob) oder riesig (5000 Zeilen in jeder Antwort). Darum erklärt dieses
- * Modul seine Lesefläche: Blattverzeichnis, aktives
- * Blatt, Spaltenköpfe des aktiven Blatts — und die Zeilen als Massendaten,
+ * Modul seine Lesefläche: Blattverzeichnis, die
+ * Blatt-id, Spaltenköpfe dieses Blatts — und die Zeilen als Massendaten,
  * die nur auf ausdrückliche Nachfrage mitkommen.
  *
  * @typedef {object} AgentRead
  * @property {Array<{ id: string, name: string }>} sheets  all sheets of the workbook, in tab order
- * @property {string|null} activeSheetId  id of the sheet the following columns and rows belong to
- * @property {Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null, roleConfirmed: boolean, format: { decimals?: number, dateFormat?: string, timeFormat?: string } }>} columns  the column headers of the active sheet; `id` is the columnId of a column reference; `roleConfirmed` is true once the role was set or confirmed by hand or via setColumnRole; `format` holds the display format keys set for the column (absent key = the type's default)
- * @property {any[][]} rows  [bulk] the data rows of the active sheet, each row in column order
- * @property {Array<{ columnId: string, row: number, formula: string }>} formulas  [bulk] which cells of the active sheet are COMPUTED, not typed; a plain value written over one of them deletes the formula
+ * @property {string|null} sheetId  id of the sheet the following columns and rows belong to; the read option sheetId chooses it, otherwise the first sheet
+ * @property {Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null, roleConfirmed: boolean, format: { decimals?: number, dateFormat?: string, timeFormat?: string } }>} columns  the column headers of this sheet; `id` is the columnId of a column reference; `roleConfirmed` is true once the role was set or confirmed by hand or via setColumnRole; `format` holds the display format keys set for the column (absent key = the type's default)
+ * @property {any[][]} rows  [bulk] the data rows of this sheet, each row in column order
+ * @property {Array<{ columnId: string, row: number, formula: string }>} formulas  [bulk] which cells of this sheet are COMPUTED, not typed; a plain value written over one of them deletes the formula
  */
 const mod = createModule({
   config: {
@@ -590,19 +590,21 @@ const mod = createModule({
         return true;
       },
       /**
-       * Add an empty column to the active sheet — appended, or inserted at a
+       * Add an empty column to the sheet — appended, or inserted at a
        * position like "insert column left/right" in the header menu.
        *
-       * The toolbar button calls `addColumn()` without an argument (Alpine
+       * The toolbar button calls `addColumn(sheetId)` without a position (Alpine
        * CSP) and appends, as before.
        *
        * @agent
+       * @param {string} sheetId id of the sheet (see read().sheets[].id)
        * @param {number} [position] zero-based index the new column takes;
        *   0 puts it first, read().columns.length (or omitted) appends
        * @returns {string} id of the new column (see read().columns[].id)
        * @throws {Error} if position is not an integer in 0..column count
        */
-      addColumn(position) {
+      addColumn(sheetId, position) {
+        this._ensureSheet(sheetId);
         // `DataGrid.addColumn` spleißt ungeprüft: 99 hängte still hinten an,
         // -1 fügte VOR der letzten Spalte ein, 'x' ebenfalls irgendwo.
         if (position !== undefined) {
@@ -618,13 +620,15 @@ const mod = createModule({
        * the name so the short name (C1, …) is shown. Undo restores it.
        *
        * @agent
+       * @param {string} sheetId id of the sheet (see read().sheets[].id)
        * @param {string} columnId id of the column (see read().columns[].id)
        * @param {string} name the new name
        * @returns {string} the name the column actually has now
        * @throws {Error} if no column has this id, if name is not a string, or
        *   if the column is locked
        */
-      renameColumn(columnId, name) {
+      renameColumn(sheetId, columnId, name) {
+        this._ensureSheet(sheetId);
         // `DataGrid.renameColumn` kehrt bei unbekannter id und bei JEDER
         // Sperre still zurück — der Agent bekäme Erfolg gemeldet. Das
         // Kopfmenü bietet Umbenennen bei einer Sperre gar nicht erst an.
@@ -642,12 +646,14 @@ const mod = createModule({
        * Remove a column with its values and formulas. Undo restores it.
        *
        * @agent
+       * @param {string} sheetId id of the sheet (see read().sheets[].id)
        * @param {string} columnId id of the column (see read().columns[].id)
        * @returns {void}
        * @throws {Error} if no column has this id, or if the column is
        *   hard-locked (a soft lock allows removal, as in the header menu)
        */
-      removeColumn(columnId) {
+      removeColumn(sheetId, columnId) {
+        this._ensureSheet(sheetId);
         // `DataGrid.removeColumn` kehrt bei unbekannter id und bei harter
         // Sperre still zurück. Eine weiche Sperre blockt hier bewusst nicht:
         // das Kopfmenü bietet „Spalte löschen“ dann ebenfalls an.
@@ -660,14 +666,15 @@ const mod = createModule({
         this._persistNow();
       },
       /**
-       * Insert empty rows into the active sheet — appended, or at a position
+       * Insert empty rows into the sheet — appended, or at a position
        * like "insert row above/below" in the row menu.
        *
-       * The toolbar button calls `addRows()` without an argument (Alpine CSP
+       * The toolbar button calls `addRows(sheetId)` without count (Alpine CSP
        * allows no argument expressions in `@click`) and lands on the 10 it
        * always added.
        *
        * @agent
+       * @param {string} sheetId id of the sheet (see read().sheets[].id)
        * @param {number} [count] how many rows, a whole number of at least 1;
        *   omitted → 10, like the toolbar button
        * @param {number} [position] zero-based row index the first new row
@@ -676,7 +683,8 @@ const mod = createModule({
        * @throws {Error} if count is not a whole number ≥ 1, or position is not
        *   an integer in 0..row count
        */
-      addRows(count, position) {
+      addRows(sheetId, count, position) {
+        this._ensureSheet(sheetId);
         // Früher klemmte diese Methode still: negativ → 0 Zeilen, Unsinn → 10,
         // und der Aufruf meldete Erfolg. `DataGrid.addRows` prüft nichts —
         // ein negatives count wirft dort erst in `new Array`, eine Position
@@ -690,11 +698,12 @@ const mod = createModule({
       },
 
       /**
-       * Remove a contiguous block of rows from the active sheet, values and
+       * Remove a contiguous block of rows from the sheet, values and
        * formulas included — like "delete row" / "delete selected rows" in
        * the row menu. Undo restores them.
        *
        * @agent
+       * @param {string} sheetId id of the sheet (see read().sheets[].id)
        * @param {number} startRow zero-based index of the first row to remove
        * @param {number} count how many rows, from 1 up to the rows left from
        *   startRow to the end
@@ -702,7 +711,8 @@ const mod = createModule({
        * @throws {Error} if startRow is not an existing row index, or count is
        *   not a whole number in 1..(row count − startRow)
        */
-      removeRows(startRow, count) {
+      removeRows(sheetId, startRow, count) {
+        this._ensureSheet(sheetId);
         // `DataGrid.removeRows` prüft keinen Bereich: ein Index hinter dem
         // Ende spliced ins Leere, `rowCount` sinkt trotzdem. Eine Sperre
         // prüft das Zeilenmenü nicht — hier also auch nicht.
@@ -715,19 +725,21 @@ const mod = createModule({
         return indices.length;
       },
       /**
-       * Sort all rows of the active sheet by one column — "Sort ascending /
+       * Sort all rows of the sheet by one column — "Sort ascending /
        * descending" in the column header menu. The direction is absolute
        * (a second identical call changes nothing); empty cells go last.
        * Undo restores the previous order.
        *
        * @agent
+       * @param {string} sheetId id of the sheet (see read().sheets[].id)
        * @param {string} columnId id of the column to sort by (see read().columns[].id)
        * @param {'asc'|'desc'} direction ascending or descending
        * @returns {boolean} false if the rows already were in that order
        * @throws {Error} if no column has this id or direction is neither
        *   'asc' nor 'desc'
        */
-      sortRows(columnId, direction) {
+      sortRows(sheetId, columnId, direction) {
+        this._ensureSheet(sheetId);
         // `DataGrid.sortByColumn` kehrt bei ungültigem Index still zurück und
         // schaltet ohne Richtung um — der Agent wählt sie darum absolut.
         const ids = (this._grid?.columns ?? []).map(c => c.id);
@@ -791,28 +803,34 @@ const mod = createModule({
         return this.model.activeSheetId;
       },
       /**
-       * Switch to another sheet. The following read() calls refer to it.
-       * @agent
-       * @param {string} id id of the sheet to show
-       * @returns {void}
+       * Prüft die Blatt-id und holt das Blatt ins Grid. Ein Schreiben ohne Grid
+       * wäre ein Umbau des Datenwegs; das Umschalten dreht die Revision nicht
+       * (`activeSheetId` ist ein Ansichtsfeld).
+       * @param {string} sheetId id des Blatts
        * @throws {Error} if no sheet has this id
        */
-      switchSheet(id) {
+      _ensureSheet(sheetId) {
         // Vor jeder Wirkung prüfen: `State.setActive` ignoriert eine
         // unbekannte id still, der Ablauf liefe aber weiter bis
         // `_applyActiveSheetToGrid()` — und das lädt den unveränderten
         // Zustand neu und LÖSCHT dabei die Rückgängig-Historie des Grids,
         // während der Aufruf Erfolg meldet.
-        requireKnownId('sheet id', id, this.model.sheets.map(s => s.id));
-        if (id === this.model.activeSheetId) return;
+        requireKnownId('sheetId', sheetId, this.model.sheets.map(s => s.id));
+        if (sheetId === this.model.activeSheetId) return;
         this._syncActiveSheet();
-        this.model.setActive(id);
+        this.model.setActive(sheetId);
         this._applyActiveSheetToGrid();
-        // The activeSheetId change must be persisted explicitly now that the generic
-        // persist-$watch is opted out (config.manualPersist). Persist-only: the legacy
-        // auto-watch persisted without emitting dataChanged for a sheet switch, and
-        // switching does not change any sheet's cell data — preserve that event surface.
+        // Persist-only, siehe config.manualPersist: das Umschalten ändert keine
+        // Zellen, es gibt also kein dataChanged.
         this._persistStructural();
+      },
+      /**
+       * @noagent Reiter der Oberfläche; Aktionen des Agenten nennen ihr Blatt
+       * selbst.
+       * @param {string} id id of the sheet to show
+       */
+      switchSheet(id) {
+        this._ensureSheet(id);
       },
 
       /** @noagent DOM event handler (tab double click) */
@@ -1006,15 +1024,17 @@ const mod = createModule({
        * Ausschnitt.
        *
        * @agent
-       * @param {object} [options] `{ fields?: string[], rows?: { from: number, to: number } }`
-       * @returns {AgentRead} the read state of the active sheet
+       * Lesen schaltet nicht um. Ohne `sheetId` gilt das erste Blatt.
+       *
+       * @param {object} [options] `{ sheetId?: string, fields?: string[], rows?: { from: number, to: number } }`
+       * @returns {AgentRead} the read state of the sheet
        */
       read(options) {
         // Eine Oberflächenänderung, die noch in einem Entpreller wartet,
         // vorher ablegen: sonst landete sie nach dem Vermerk der Revision, die
         // dieses Lesen setzt, und der nächste Schreibzugriff wäre veraltet.
         this.flushPendingWork();
-        return readAgentState('worksheet', this._agentSnapshot(), options);
+        return readAgentState('worksheet', this._agentSnapshot(options?.sheetId), options);
       },
 
       /**
@@ -1038,13 +1058,17 @@ const mod = createModule({
       },
 
       /** Die Momentaufnahme, die `read()` projiziert. Kein Agentenaufruf. */
-      _agentSnapshot() {
+      _agentSnapshot(sheetId) {
         // Erst das lebende Grid in das aktive Blatt spiegeln: die Zellen, die
         // der Nutzer gerade getippt hat, sind sonst noch nicht im Model, und
         // der Agent läse einen veralteten Stand. Genau derselbe Aufruf, den
         // jede strukturelle Operation des Moduls voranstellt.
         this._syncActiveSheet();
-        const state = this._grid?.getState() ?? { columns: [], rowCount: 0 };
+        const sheets = this.model.sheets ?? [];
+        if (sheetId !== undefined) requireKnownId('sheetId', sheetId, sheets.map(s => s.id));
+        const shown = sheetId === undefined ? sheets[0] : sheets.find(s => s.id === sheetId);
+        const live = shown?.id === this.model.activeSheetId ? this._grid?.getState() : shown?.state;
+        const state = live ?? { columns: [], rowCount: 0 };
         const columns = (state.columns ?? []).map(c => ({
           id: c.id,
           name: c.name ?? '',
@@ -1075,8 +1099,8 @@ const mod = createModule({
           });
         }
         return {
-          sheets: (this.model.sheets ?? []).map(s => ({ id: s.id, name: s.name })),
-          activeSheetId: this.model.activeSheetId ?? null,
+          sheets: sheets.map(s => ({ id: s.id, name: s.name })),
+          sheetId: shown?.id ?? null,
           columns,
           rows,
           formulas,
@@ -1091,14 +1115,16 @@ const mod = createModule({
       },
 
       /**
-       * Replace the active sheet's content with the given CSV data.
+       * Replace the sheet's content with the given CSV data.
        * Same parse, undo and toast path as the file import.
        *
        * @agent
+       * @param {string} sheetId id of the sheet (see read().sheets[].id)
        * @param {string} csvText the full CSV/TSV text, header row included if present
        * @returns {{ columns: number, rows: number }} what was imported
        */
-      importCsv(csvText) {
+      importCsv(sheetId, csvText) {
+        this._ensureSheet(sheetId);
         const out = this._grid.importCSVText(String(csvText ?? ''), 'CSV');
         this._flushAndNotify();
         return out;
@@ -1118,6 +1144,7 @@ const mod = createModule({
        * and formula.
        *
        * @agent
+       * @param {string} sheetId id of the sheet (see read().sheets[].id)
        * @param {string} columnId id of the target column (see read().columns[].id)
        * @param {number} startRow zero-based row index of the first value
        * @param {any[]} values the values to write, one per row; formulas are
@@ -1125,7 +1152,8 @@ const mod = createModule({
        * @returns {number} how many cells were actually written
        * @throws {Error} if no column has this id, or if the column is locked
        */
-      setCells(columnId, startRow, values) {
+      setCells(sheetId, columnId, startRow, values) {
+        this._ensureSheet(sheetId);
         // `setCellValue` kehrt bei unbekannter Spalte und bei gesperrter
         // Spalte STILL zurück. Ohne diese Prüfung bekäme ein Agent, der sich
         // in der columnId vertippt, die Zahl seiner Eingabewerte als Erfolg
@@ -1170,7 +1198,7 @@ const mod = createModule({
       },
 
       /**
-       * Write a formula into one cell of the active sheet, like the formula
+       * Write a formula into one cell of the sheet, like the formula
        * editor: stored as text, evaluated at once, recorded for undo with
        * the formula that was there before. A row equal to the row count
        * extends the sheet by one row, like typing below the last row.
@@ -1180,6 +1208,7 @@ const mod = createModule({
        * comes back — the UI shows the same cell with the same error.
        *
        * @agent
+       * @param {string} sheetId id of the sheet (see read().sheets[].id)
        * @param {string} columnId id of the target column (see read().columns[].id)
        * @param {number} row zero-based row index; the row count appends a row
        * @param {string} formula formula text starting with "=", e.g.
@@ -1189,7 +1218,8 @@ const mod = createModule({
        * @throws {Error} if no column has this id, the column is locked, row is
        *   not an integer in 0..row count, or formula does not start with "="
        */
-      setFormula(columnId, row, formula) {
+      setFormula(sheetId, columnId, row, formula) {
+        this._ensureSheet(sheetId);
         // `setCellFormula` kehrt bei unbekannter Spalte und bei Sperre mit
         // `null` zurück — still für den Aufrufer. Dieselbe Vorabprüfung wie
         // `setCells`, damit beide Schreibwege dieselbe Sperre gleich melden.
@@ -1214,7 +1244,7 @@ const mod = createModule({
       },
 
       /**
-       * Set the analytical role of a column on the active sheet, or confirm
+       * Set the analytical role of a column on the sheet, or confirm
        * the detected one by passing the same role — like the role dialog
        * before a chart suggestion. Afterwards read().columns[].roleConfirmed
        * is true, and chart suggestion reads the role as confirmed.
@@ -1225,6 +1255,7 @@ const mod = createModule({
        * Role changes are not recorded in the undo history (as in the dialog).
        *
        * @agent
+       * @param {string} sheetId id of the sheet (see read().sheets[].id)
        * @param {string} columnId id of the column (see read().columns[].id)
        * @param {string} role one of continuous, categorical, ordinal, date,
        *   identifier, freeText — and valid for the column type
@@ -1232,7 +1263,8 @@ const mod = createModule({
        * @throws {Error} if no column has this id, if role is unknown or not
        *   valid for the column type, or if the column is locked
        */
-      setColumnRole(columnId, role) {
+      setColumnRole(sheetId, columnId, role) {
+        this._ensureSheet(sheetId);
         // `DataGrid.setColumnRole` kehrt bei unbekannter id, unbekannter
         // Rolle, unpassendem Typ und JEDER Sperre still zurück — der Agent
         // bekäme Erfolg gemeldet. Zweistufig geprüft: erst die volle
@@ -1257,16 +1289,18 @@ const mod = createModule({
       },
 
       /**
-       * Move a row of the active sheet, like dragging its row header.
+       * Move a row of the sheet, like dragging its row header.
        * Undo moves it back.
        *
        * @agent
+       * @param {string} sheetId id of the sheet (see read().sheets[].id)
        * @param {number} fromRow zero-based index of the row to move
        * @param {number} toRow zero-based index the row has afterwards
        * @returns {boolean} false if fromRow equals toRow (nothing moved)
        * @throws {Error} if fromRow or toRow is not an existing row index
        */
-      moveRow(fromRow, toRow) {
+      moveRow(sheetId, fromRow, toRow) {
+        this._ensureSheet(sheetId);
         // `DataGrid.moveRow` kehrt bei einem Index außerhalb STILL zurück.
         // Eine Sperre prüft das Ziehen nicht — hier also auch nicht.
         const rowCount = this._grid?.rowCount ?? 0;
@@ -1279,17 +1313,19 @@ const mod = createModule({
       },
 
       /**
-       * Move a column of the active sheet, like dragging its header. Short
+       * Move a column of the sheet, like dragging its header. Short
        * names (C1, C2 …) follow the new order. Undo moves it back.
        *
        * @agent
+       * @param {string} sheetId id of the sheet (see read().sheets[].id)
        * @param {string} columnId id of the column (see read().columns[].id)
        * @param {number} toIndex zero-based position the column has afterwards
        * @returns {boolean} false if the column already is at toIndex
        * @throws {Error} if no column has this id, or toIndex is not an
        *   existing column position
        */
-      moveColumn(columnId, toIndex) {
+      moveColumn(sheetId, columnId, toIndex) {
+        this._ensureSheet(sheetId);
         // `DataGrid.moveColumn` kehrt bei einem Index außerhalb STILL zurück.
         const ids = (this._grid?.columns ?? []).map(c => c.id);
         requireKnownId('columnId', columnId, ids);
@@ -1302,7 +1338,7 @@ const mod = createModule({
       },
 
       /**
-       * Change the type of a column on the active sheet, like the type picker
+       * Change the type of a column on the sheet, like the type picker
        * in the column header; the values are converted. A role the new type
        * does not allow is re-detected and loses its confirmation
        * (read().columns[].roleConfirmed becomes false). Currency and percent
@@ -1310,6 +1346,7 @@ const mod = createModule({
        * picker).
        *
        * @agent
+       * @param {string} sheetId id of the sheet (see read().sheets[].id)
        * @param {string} columnId id of the column (see read().columns[].id)
        * @param {string} type one of numeric, text, date, time, currency,
        *   percent, binary
@@ -1317,7 +1354,8 @@ const mod = createModule({
        * @throws {Error} if no column has this id, type is unknown, or the
        *   column is locked
        */
-      setColumnType(columnId, type) {
+      setColumnType(sheetId, columnId, type) {
+        this._ensureSheet(sheetId);
         // `DataGrid.setColumnType` kehrt bei unbekannter id, gleichem Typ und
         // JEDER Sperre still zurück; einen unbekannten Typ nähme es an.
         requireKnownId('columnId', columnId, (this._grid?.columns ?? []).map(c => c.id));
@@ -1333,13 +1371,14 @@ const mod = createModule({
       },
 
       /**
-       * Set one display format key of a column on the active sheet, like the
+       * Set one display format key of a column on the sheet, like the
        * format column of the type picker. numeric, currency, percent →
        * decimals (0..6); date → dateFormat; time → timeFormat; text and
        * binary have no format. null restores the type's default. Values are
        * unchanged — only the display. Not recorded in the undo history.
        *
        * @agent
+       * @param {string} sheetId id of the sheet (see read().sheets[].id)
        * @param {string} columnId id of the column (see read().columns[].id)
        * @param {'decimals'|'dateFormat'|'timeFormat'} key the format key; must
        *   fit the column type
@@ -1350,7 +1389,8 @@ const mod = createModule({
        * @throws {Error} if no column has this id, key is unknown or does not
        *   fit the column type, value is not allowed, or the column is locked
        */
-      setColumnFormat(columnId, key, value) {
+      setColumnFormat(sheetId, columnId, key, value) {
+        this._ensureSheet(sheetId);
         // `DataGrid.setColumnFormat` übernimmt jeden Schlüssel und Wert
         // ungeprüft und kehrt bei Sperre still zurück. Zweistufig wie
         // `setColumnRole`: erst alle Schlüssel, dann die des Typs.
@@ -1667,7 +1707,14 @@ const mod = createModule({
           this.statusTick++;
         };
         this._grid.on('render', onRender);
-        this._grid.on('selection:changed', () => { this.statusTick++; });
+        this._grid.on('selection:changed', () => {
+          this.statusTick++;
+          // Die Auswahl ist ein gespeichertes Ansichtsfeld, ihr Wechsel malt
+          // aber nur die Markierung (kein `render`): ohne diesen Anstoß bliebe
+          // sie bis zur nächsten Änderung ungespeichert.
+          this._autoSavePending = true;
+          this._autoSave();
+        });
 
         // Initialize enable/disable + status text.
         this.canSuggest = this._canSuggestChart();
