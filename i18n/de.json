@@ -3127,10 +3127,6 @@
           "help": "Entfernt eine Frage samt allen darunter liegenden Fragen.",
           "params": { "nodeId": "Die id der zu entfernenden Frage. Eine unbekannte id ist ein Fehler." }
         },
-        "toggleCollapse": {
-          "help": "Klappt den Teilbaum einer Frage zusammen oder auf; rein darstellend, der Inhalt bleibt.",
-          "params": { "id": "Die id der Frage, deren Teilbaum umgeschaltet wird. Eine unbekannte id ist ein Fehler." }
-        },
         "collapseAll": { "help": "Klappt alle Fragen mit Unterfragen zusammen." },
         "expandAll": { "help": "Klappt alle Fragen auf." }
       },

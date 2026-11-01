@@ -46,10 +46,8 @@ export default createModule({
     icon: 'module.five-why',
     version: '1.0.0',
     meta: import.meta,
-    // `agentAction` nennt die Agentenmethode hinter der Aktion AUSDRÜCKLICH.
-    // `title` ist ein Beschriftungsschlüssel und hier nur zufällig gleich dem
-    // Methodennamen. `exportJSON` trägt keines: die Methode steht nicht in
-    // `core/agent/agent-registry.generated.js` und hat damit keinen Hilfesatz.
+    // `agentAction` nennt den Hilfeschlüssel `actions.<aktion>.help`. Die beiden
+    // Ansichtsaktionen sind @noagent, ihr Hilfesatz bleibt für den Knopf bestehen.
     actions: [
       { icon: 'nav.collapse-up', title: 'collapseAll', agentAction: 'collapseAll', onClick: (d) => d.collapseAll() },
       { icon: 'nav.expand-down', title: 'expandAll',   agentAction: 'expandAll',   onClick: (d) => d.expandAll() },
@@ -182,7 +180,7 @@ export default createModule({
       },
       /**
        * Collapse or expand a node.
-       * @agent
+       * @noagent Ansicht des Baums
        * @param {number} id id of the node to toggle
        * @returns {void}
        * @throws {Error} if no node has this id
@@ -222,7 +220,7 @@ export default createModule({
       },
       /**
        * Collapse every node that has children.
-       * @agent
+       * @noagent Ansicht des Baums
        * @returns {void}
        */
       collapseAll() {
@@ -230,7 +228,7 @@ export default createModule({
       },
       /**
        * Expand every node.
-       * @agent
+       * @noagent Ansicht des Baums
        * @returns {void}
        */
       expandAll() {

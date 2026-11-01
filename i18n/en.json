@@ -3123,10 +3123,6 @@
           "help": "Removes a question together with every question below it.",
           "params": { "nodeId": "Id of the question to remove. An unknown id is an error." }
         },
-        "toggleCollapse": {
-          "help": "Collapses or expands a question's subtree; purely visual, the content stays.",
-          "params": { "id": "Id of the question whose subtree is toggled. An unknown id is an error." }
-        },
         "collapseAll": { "help": "Collapses every question that has sub-questions." },
         "expandAll": { "help": "Expands every question." }
       },

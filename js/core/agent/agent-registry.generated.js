@@ -5534,18 +5534,6 @@ export const AGENT_REGISTRY = {
         "returns": "number|null",
         "help": "Append a child Why below a node."
       },
-      "toggleCollapse": {
-        "params": [
-          {
-            "name": "id",
-            "type": "number",
-            "optional": false,
-            "help": "id of the node to toggle"
-          }
-        ],
-        "returns": "void",
-        "help": "Collapse or expand a node."
-      },
       "removeNode": {
         "params": [
           {
@@ -5557,16 +5545,6 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Remove a node and its subtree. The UI handler `deleteNode()` asks the user first and then calls this — one sink, two callers."
-      },
-      "collapseAll": {
-        "params": [],
-        "returns": "void",
-        "help": "Collapse every node that has children."
-      },
-      "expandAll": {
-        "params": [],
-        "returns": "void",
-        "help": "Expand every node."
       }
     },
     "fields": {
@@ -5581,7 +5559,10 @@ export const AGENT_REGISTRY = {
         "bulk": true,
         "bulkKind": "tree"
       }
-    }
+    },
+    "viewFields": [
+      "nodes[]**.collapsed"
+    ]
   },
   "fmea": {
     "tagged": true,

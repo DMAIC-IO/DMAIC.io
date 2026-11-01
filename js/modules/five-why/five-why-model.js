@@ -17,6 +17,9 @@
 export const MAX_LEVEL = 5;
 
 export class State {
+  /** Gespeichert, aber keine Aussage über den Inhalt: zählt nicht zur Revision, erscheint nicht in `read()`. */
+  static VIEW_FIELDS = ['nodes[]**.collapsed'];
+
   /** @type {string} the observed problem statement */
   problem = '';
   /**
