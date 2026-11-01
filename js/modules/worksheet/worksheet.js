@@ -817,6 +817,13 @@ const mod = createModule({
         // während der Aufruf Erfolg meldet.
         requireKnownId('sheetId', sheetId, this.model.sheets.map(s => s.id));
         if (sheetId === this.model.activeSheetId) return;
+        // Was gerade getippt wird, steht erst nach dem Commit im Grid: ohne ihn
+        // verwirft `setState` den offenen Zell-Editor samt Eingabe. Der
+        // Formel-Dialog zielt auf eine Position des alten Blatts und würde sie
+        // auf dem neuen schreiben; er wird darum ohne Anwenden geschlossen
+        // (Variante „schließen“: kleiner als sein Zielblatt festzuhalten).
+        this._grid?._commitEdit();
+        this._formulaEditor?.close();
         this._syncActiveSheet();
         this.model.setActive(sheetId);
         this._applyActiveSheetToGrid();
