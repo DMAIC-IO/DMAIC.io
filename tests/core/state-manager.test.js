@@ -665,6 +665,20 @@ suite('StateManager revisions', () => {
     assertEqual(sm.getModuleRevision('i1'), undefined);
   });
 
+  test('Pfade aus der Revision: Ansichtsfeld gleich, Inhalt nicht', async () => {
+    const sm = new StateManager(new EventBus(), makeFakeAdapter(baseDoc()));
+    await sm.load();
+    const paths = ['activeTab', 'risks[].collapsed'];
+    sm.setModuleState('i1', { activeTab: 'a', title: 't', risks: [{ id: 1, collapsed: false }] });
+    const seen = sm.getModuleRevision('i1', paths);
+    sm.setModuleState('i1', { activeTab: 'b', title: 't', risks: [{ id: 1, collapsed: true }] });
+    assertEqual(sm.getModuleRevision('i1', paths), seen, 'nur Ansichtsfelder geändert');
+    assertTrue(sm.getModuleRevision('i1') !== sm.getModuleRevision('i1', paths), 'ohne Pfade zählt alles');
+    sm.setModuleState('i1', { activeTab: 'b', title: 'neu', risks: [{ id: 1, collapsed: true }] });
+    assertTrue(sm.getModuleRevision('i1', paths) !== seen, 'Inhalt geändert');
+    assertEqual(sm.getModuleRevision('nie-da', paths), undefined);
+  });
+
   test('eine Fremdänderung (remote) ändert die Revision', async () => {
     const adapter = makeFakeAdapter(baseDoc());
     const sm = new StateManager(new EventBus(), adapter);

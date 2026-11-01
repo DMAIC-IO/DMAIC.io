@@ -26,6 +26,7 @@
 
 import { uid } from './uid.js';
 import { cyrb53 } from './hash.js';
+import { stripPaths } from './view-fields.js';
 import { VERSION } from './version.js';
 import { parseVersion, stripPatch } from './version-utils.js';
 import { migrateToLatest } from './migrations.js';
@@ -287,11 +288,12 @@ export class StateManager {
    * und der Schreibpfad bleibt ohne Zusatzkosten. Leser ist die Agentenfläche
    * (`core/agent/agent-revisions.js`, Lesen vor Schreiben).
    * @param {string} instanceId
+   * @param {string[]} [ignorePaths] Pfade, die nicht zählen (Ansichtsfelder), siehe core/view-fields.js
    * @returns {number|undefined} undefined, solange kein Zustand vorliegt
    */
-  getModuleRevision(instanceId) {
+  getModuleRevision(instanceId, ignorePaths = []) {
     if (!this._moduleCache.has(instanceId)) return undefined;
-    return cyrb53(JSON.stringify(this._moduleCache.get(instanceId)) ?? '');
+    return cyrb53(JSON.stringify(stripPaths(this._moduleCache.get(instanceId), ignorePaths)) ?? '');
   }
 
   /**
