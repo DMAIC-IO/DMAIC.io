@@ -28,8 +28,6 @@ const PALETTE_SIZE = 8;
  * @property {string[]} optionIds the ids of all options, in box order
  * @property {string[][]} conflicts the incompatible option pairs
  * @property {object[]} concepts the concepts with their picks
- * @property {string} activeConceptId the concept a click in the box edits
- * @property {string} view the visible view
  * @property {number} combinationCount all combinations of one option per parameter
  * @property {number} consistentCount combinations without an incompatible pair
  * @property {boolean} consistentExact false when consistentCount is only a lower bound
@@ -423,7 +421,7 @@ export default createModule({
 
       /**
        * Choose the concept a click in the box edits.
-       * @agent
+       * @noagent Auswahl der Oberfläche
        * @param {string} conceptId id of the concept
        * @returns {void}
        * @throws {Error} when no concept has this id
@@ -435,7 +433,7 @@ export default createModule({
 
       /**
        * Switch between the box and the consistency matrix.
-       * @agent
+       * @noagent Auswahl der Oberfläche
        * @param {'box'|'consistency'} view the view to show
        * @returns {void}
        * @throws {Error} when `view` is neither value

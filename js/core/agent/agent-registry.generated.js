@@ -10013,30 +10013,6 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Pick the option of a parameter for a concept, or clear the pick."
-      },
-      "setActiveConcept": {
-        "params": [
-          {
-            "name": "conceptId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the concept"
-          }
-        ],
-        "returns": "void",
-        "help": "Choose the concept a click in the box edits."
-      },
-      "setView": {
-        "params": [
-          {
-            "name": "view",
-            "type": "'box'|'consistency'",
-            "optional": false,
-            "help": "the view to show"
-          }
-        ],
-        "returns": "void",
-        "help": "Switch between the box and the consistency matrix."
       }
     },
     "fields": {
@@ -10064,18 +10040,6 @@ export const AGENT_REGISTRY = {
         "bulk": false,
         "derived": true
       },
-      "activeConceptId": {
-        "type": "string",
-        "help": "the concept a click in the box edits",
-        "bulk": false,
-        "derived": true
-      },
-      "view": {
-        "type": "string",
-        "help": "the visible view",
-        "bulk": false,
-        "derived": true
-      },
       "combinationCount": {
         "type": "number",
         "help": "all combinations of one option per parameter",
@@ -10100,7 +10064,11 @@ export const AGENT_REGISTRY = {
         "bulk": false,
         "derived": true
       }
-    }
+    },
+    "viewFields": [
+      "view",
+      "activeConceptId"
+    ]
   },
   "mosaic": {
     "tagged": true,

@@ -7413,12 +7413,6 @@
         "concepts": {
           "help": "The concepts, each with id, name and picks (parameter id → option id)."
         },
-        "activeConceptId": {
-          "help": "The id of the concept a click in the box edits; empty when there is none."
-        },
-        "view": {
-          "help": "The visible view: box or consistency."
-        },
         "combinationCount": {
           "help": "All combinations of one option per parameter — the product of the option counts."
         },
@@ -7438,8 +7432,6 @@
           "optionIds": "The ids of all options, in box order.",
           "conflicts": "The incompatible option pairs.",
           "concepts": "The concepts with their picks.",
-          "activeConceptId": "The concept a click in the box edits.",
-          "view": "The visible view.",
           "combinationCount": "All combinations of one option per parameter.",
           "consistentCount": "Combinations without an incompatible pair.",
           "consistentExact": "false when consistentCount is only a lower bound.",

@@ -7417,12 +7417,6 @@
         "concepts": {
           "help": "Die Konzepte, jedes mit id, name und picks (Parameter-id → Ausprägungs-id)."
         },
-        "activeConceptId": {
-          "help": "Die id des Konzepts, das ein Klick im Kasten bearbeitet; leer, wenn es keines gibt."
-        },
-        "view": {
-          "help": "Die sichtbare Ansicht: box oder consistency."
-        },
         "combinationCount": {
           "help": "Alle Kombinationen aus je einer Ausprägung pro Parameter — das Produkt der Ausprägungszahlen."
         },
@@ -7442,8 +7436,6 @@
           "optionIds": "Die ids aller Ausprägungen in Kastenreihenfolge.",
           "conflicts": "Die unverträglichen Paare von Ausprägungen.",
           "concepts": "Die Konzepte mit ihren Wahlen.",
-          "activeConceptId": "Das Konzept, das ein Klick im Kasten bearbeitet.",
-          "view": "Die sichtbare Ansicht.",
           "combinationCount": "Alle Kombinationen aus je einer Ausprägung pro Parameter.",
           "consistentCount": "Die Kombinationen ohne unverträgliches Paar.",
           "consistentExact": "false, wenn consistentCount nur eine Untergrenze ist.",
