@@ -43,6 +43,9 @@ export class State {
   static VERSION = '1.0';
   static ID = 'todo';
 
+  /** Gespeichert, aber keine Aussage über den Inhalt: zählt nicht zur Revision, erscheint nicht in `read()`. */
+  static VIEW_FIELDS = ['filterStatus', 'filterOwner', 'sortCol', 'sortAsc'];
+
   _schema = { name: State.ID, version: State.VERSION }
   /**
    * @type {Item[]} die Aufgaben in Eingabereihenfolge; je Aufgabe `id`

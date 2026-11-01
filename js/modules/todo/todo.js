@@ -58,7 +58,7 @@ export default createModule({
       ...draggableRows({
         onMove({ group, sourceId, targetId }) {
           if (group !== 'todos') return;
-          this.moveTodo(sourceId, targetId);
+          this.moveTodoInView(sourceId, targetId);
         },
         rowIds(group) {
           return group === 'todos' ? this.filteredItems().map(i => i.id) : [];
@@ -255,10 +255,8 @@ export default createModule({
       },
 
       /**
-       * Verschiebt eine Aufgabe vor eine andere und stellt die Liste auf
-       * manuelle Reihenfolge. Ist die Liste sortiert, wird zuerst die
-       * sichtbare Reihenfolge zur gespeicherten; ausgefilterte Aufgaben
-       * folgen dahinter in ihrer bisherigen Reihenfolge.
+       * Verschiebt eine Aufgabe vor eine andere in der gespeicherten
+       * Reihenfolge, unabhängig von Filter und Sortierung der Anzeige.
        * @agent
        * @param {string} itemId id der Aufgabe, die verschoben wird
        * @param {string} beforeId id der Aufgabe, vor die sie kommt
@@ -269,12 +267,20 @@ export default createModule({
         const ids = this.model.items.map(i => i.id);
         requireKnownId('itemId', itemId, ids);
         requireKnownId('beforeId', beforeId, ids);
+        this.model.moveItem(itemId, beforeId);
+      },
+
+      /**
+       * @noagent Zeile ziehen: die sichtbare Reihenfolge wird zur gespeicherten,
+       * eine sortierte Liste bleibt stehen.
+       */
+      moveTodoInView(itemId, beforeId) {
         this.model.moveItem(itemId, beforeId, this.filteredItems().map(i => i.id));
       },
 
       /**
        * Setzt den Statusfilter der Liste.
-       * @agent
+       * @noagent Ansicht der Liste
        * @param {'all'|'open'|'in-progress'|'done'|'blocked'} value `all` zeigt
        *   alle Aufgaben, jeder andere Wert nur die mit diesem Status
        * @returns {void}
@@ -287,7 +293,7 @@ export default createModule({
 
       /**
        * Setzt den Filter auf einen Verantwortlichen.
-       * @agent
+       * @noagent Ansicht der Liste
        * @param {string} value `all` zeigt alle Aufgaben, sonst der Name eines
        *   Verantwortlichen, der in der Liste vorkommt
        * @returns {void}
@@ -316,7 +322,7 @@ export default createModule({
 
       /**
        * Setzt Sortierspalte und Richtung der Liste.
-       * @agent
+       * @noagent Ansicht der Liste
        * @param {'text'|'owner'|'due'|'status'} column die Spalte, nach der
        *   sortiert wird
        * @param {boolean} ascending true sortiert aufsteigend, false absteigend

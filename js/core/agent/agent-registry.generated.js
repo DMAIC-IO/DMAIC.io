@@ -20329,31 +20329,7 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "void",
-        "help": "Verschiebt eine Aufgabe vor eine andere und stellt die Liste auf manuelle Reihenfolge. Ist die Liste sortiert, wird zuerst die sichtbare Reihenfolge zur gespeicherten; ausgefilterte Aufgaben folgen dahinter in ihrer bisherigen Reihenfolge."
-      },
-      "setFilterStatus": {
-        "params": [
-          {
-            "name": "value",
-            "type": "'all'|'open'|'in-progress'|'done'|'blocked'",
-            "optional": false,
-            "help": "`all` zeigt alle Aufgaben, jeder andere Wert nur die mit diesem Status"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt den Statusfilter der Liste."
-      },
-      "setFilterOwner": {
-        "params": [
-          {
-            "name": "value",
-            "type": "string",
-            "optional": false,
-            "help": "`all` zeigt alle Aufgaben, sonst der Name eines Verantwortlichen, der in der Liste vorkommt"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt den Filter auf einen Verantwortlichen."
+        "help": "Verschiebt eine Aufgabe vor eine andere in der gespeicherten Reihenfolge, unabhängig von Filter und Sortierung der Anzeige."
       },
       "setSearch": {
         "params": [
@@ -20366,24 +20342,6 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Setzt den Suchtext, der Text und Verantwortlichen durchsucht."
-      },
-      "setSort": {
-        "params": [
-          {
-            "name": "column",
-            "type": "'text'|'owner'|'due'|'status'",
-            "optional": false,
-            "help": "die Spalte, nach der sortiert wird"
-          },
-          {
-            "name": "ascending",
-            "type": "boolean",
-            "optional": false,
-            "help": "true sortiert aufsteigend, false absteigend"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt Sortierspalte und Richtung der Liste."
       }
     },
     "fields": {
@@ -20393,32 +20351,18 @@ export const AGENT_REGISTRY = {
         "bulk": true,
         "bulkKind": "table"
       },
-      "filterStatus": {
-        "type": "string",
-        "help": "der Statusfilter: `all` oder einer der vier Statuswerte",
-        "bulk": false
-      },
-      "filterOwner": {
-        "type": "string",
-        "help": "der Filter auf einen Verantwortlichen: `all` oder sein Name",
-        "bulk": false
-      },
       "search": {
         "type": "string",
         "help": "der Suchtext über Aufgabentext und Verantwortlichen; leer heißt keine Suche",
         "bulk": false
-      },
-      "sortCol": {
-        "type": "string",
-        "help": "die Sortierspalte: `text`, `owner`, `due` oder `status`",
-        "bulk": false
-      },
-      "sortAsc": {
-        "type": "boolean",
-        "help": "true sortiert aufsteigend, false absteigend",
-        "bulk": false
       }
-    }
+    },
+    "viewFields": [
+      "filterStatus",
+      "filterOwner",
+      "sortCol",
+      "sortAsc"
+    ]
   },
   "transformed-imr-chart": {
     "tagged": true,
