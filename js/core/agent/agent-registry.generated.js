@@ -22428,18 +22428,6 @@ export const AGENT_REGISTRY = {
         "returns": "void",
         "help": "Entfernt eine Kundenstimme samt ihrem Baum. War sie ausgewählt, rückt die erste verbleibende nach."
       },
-      "setActiveVoc": {
-        "params": [
-          {
-            "name": "vocId",
-            "type": "string|null",
-            "optional": false,
-            "help": "id der Kundenstimme; `null` wählt keine aus"
-          }
-        ],
-        "returns": "void",
-        "help": "Wählt die Kundenstimme aus, deren Baum angezeigt wird."
-      },
       "addNeed": {
         "params": [
           {
@@ -22805,17 +22793,15 @@ export const AGENT_REGISTRY = {
         "bulk": true,
         "bulkKind": "tree"
       },
-      "activeVocId": {
-        "type": "string|null",
-        "help": "die id der ausgewählten Kundenstimme, deren Baum angezeigt wird; `null` heißt, keine ist ausgewählt",
-        "bulk": false
-      },
       "styles": {
         "type": "{ borderWidth: number, colors: object }",
         "help": "die Darstellung des Baums: `borderWidth` als Randstärke der Knoten in Pixeln von 0 bis 4 in Schritten von 0,5 und `colors` mit je einer Farbe als `rgba(r,g,b,a)` unter `voc`, `need`, `ctq`, `ctd`, `ctc` und `req`",
         "bulk": false
       }
-    }
+    },
+    "viewFields": [
+      "activeVocId"
+    ]
   },
   "worksheet": {
     "tagged": true,

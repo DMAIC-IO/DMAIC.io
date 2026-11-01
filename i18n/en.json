@@ -2007,9 +2007,6 @@
         "vocs": {
           "help": "The voice-of-customer statements in insertion order. Per statement: id (that is how the actions address it), text, source (where it came from) and needs. Per need: id, text and drivers. Per driver: id, text, type (ctq, ctd or ctc) and requirements. Per requirement: id, text, target (the target value) and measure."
         },
-        "activeVocId": {
-          "help": "The id of the statement whose tree is shown; null means none is selected."
-        },
         "styles": {
           "help": "The appearance of the tree: borderWidth as the node border width in pixels from 0 to 4 in steps of 0.5, and colors with one colour as rgba(r,g,b,a) under each of voc, need, ctq, ctd, ctc and req."
         }

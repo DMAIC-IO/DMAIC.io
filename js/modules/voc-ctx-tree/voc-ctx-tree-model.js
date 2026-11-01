@@ -45,6 +45,9 @@ function defaultStyles() {
 export const VALID_TYPES = ['ctq', 'ctd', 'ctc'];
 
 export class State {
+  /** Gespeichert, aber keine Aussage über den Inhalt: zählt nicht zur Revision, erscheint nicht in `read()`. */
+  static VIEW_FIELDS = ['activeVocId'];
+
   /**
    * @type {Array<{id:string,text:string,source:string,needs:Array<{id:string,text:string,drivers:Array<{id:string,text:string,type:'ctq'|'ctd'|'ctc',requirements:Array<{id:string,text:string,target:string,measure:string}>}>}>}>}
    *   die Kundenstimmen in Anlegereihenfolge; je Stimme `id` (zum
@@ -91,7 +94,7 @@ export class State {
   addVoc(text, source = '') {
     const voc = { id: uid(), text, source, needs: [] };
     this.vocs.push(voc);
-    this.activeVocId = voc.id;
+    this._selectVoc(voc.id);
     return voc.id;
   }
 
@@ -110,14 +113,21 @@ export class State {
   deleteVoc(id) {
     this.vocs = this.vocs.filter((v) => v.id !== id);
     if (this.activeVocId === id) {
-      this.activeVocId = this.vocs.length ? this.vocs[0].id : null;
+      this._selectVoc(this.vocs.length ? this.vocs[0].id : null);
     }
   }
 
   /** Select a VoC by id. */
   setActiveVoc(id) {
-    this.activeVocId = id;
+    this._selectVoc(id);
   }
+
+  /**
+   * Setzt die gezeigte Kundenstimme (Ansichtsfeld, nur als Folge der Aktionen).
+   * @param {string|null} id
+   * @returns {void}
+   */
+  _selectVoc(id) { this.activeVocId = id; }
 
   // ─── Need CRUD ──────────────────────────────────────────────
 

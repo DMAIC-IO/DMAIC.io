@@ -278,7 +278,7 @@ export default createModule({
 
       /**
        * Wählt die Kundenstimme aus, deren Baum angezeigt wird.
-       * @agent
+       * @noagent Auswahl der Oberfläche
        * @param {string|null} vocId id der Kundenstimme; `null` wählt keine aus
        * @returns {void}
        * @throws {Error} wenn keine Kundenstimme diese id trägt

@@ -2007,9 +2007,6 @@
         "vocs": {
           "help": "Die Kundenstimmen in Anlegereihenfolge. Je Stimme: id (damit sprechen die Aktionen sie an), text, source (woher sie stammt) und needs. Je Bedürfnis: id, text und drivers. Je Treiber: id, text, type (ctq, ctd oder ctc) und requirements. Je Anforderung: id, text, target (der Zielwert) und measure (die Messgröße)."
         },
-        "activeVocId": {
-          "help": "Die id der Kundenstimme, deren Baum angezeigt wird; null heißt, keine ist ausgewählt."
-        },
         "styles": {
           "help": "Die Darstellung des Baums: borderWidth als Randstärke der Knoten in Pixeln von 0 bis 4 in Schritten von 0,5 und colors mit je einer Farbe als rgba(r,g,b,a) unter voc, need, ctq, ctd, ctc und req."
         }
