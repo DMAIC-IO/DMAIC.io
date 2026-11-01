@@ -16,6 +16,7 @@
  * Rein bzw. DOM-frei: kein DOM, kein `window`.
  */
 import { uid } from './uid.js';
+import { inferRole } from './datagrid/datagrid-roles.js';
 
 /** Leerer Blattzustand, wie ihn der Worksheet für ein neues Blatt anlegt. */
 function emptySheetState() {
@@ -60,7 +61,9 @@ export function applyAppendColumn(wsState, { sheetId, colId, slot, name, values,
 
   if (!resolved || resolved === '__new__') {
     resolved = uid();
-    cols.push({
+    // `role` und `roleManual` wie `DataGrid.setState` sie beim Einhängen setzt,
+    // damit ein späterer Tab-Klick die Revision nicht dreht.
+    const fresh = {
       id: resolved,
       name,
       shortName: `C${cols.length + 1}`,
@@ -69,7 +72,10 @@ export function applyAppendColumn(wsState, { sheetId, colId, slot, name, values,
       values: vals,
       formulas: new Array(vals.length).fill(null),
       format,
-    });
+      roleManual: false,
+    };
+    fresh.role = inferRole(fresh);
+    cols.push(fresh);
   } else {
     const idx = cols.findIndex(c => c?.id === resolved);
     if (idx < 0) return { ok: false, reason: 'unknown_column' };

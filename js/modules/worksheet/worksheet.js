@@ -34,7 +34,7 @@ import { requireKnownId, requireText, requireIndex, requireEnum, requireNumber }
 import { COLUMN_TYPES, DATE_FORMATS, TIME_FORMATS } from '../../core/datagrid/datagrid-utils.js';
 import { State } from './worksheet-model.js';
 import { DataGrid, isFormula, evaluateFormula } from '../../core/datagrid/datagrid.js';
-import { ALL_ROLES, validRolesForType, isRoleValidForType } from '../../core/datagrid/datagrid-roles.js';
+import { ALL_ROLES, validRolesForType, isRoleValidForType, inferRole } from '../../core/datagrid/datagrid-roles.js';
 import { bridgeEmitter } from '../../core/tips/tip-engine.js';
 import { shortcutRegistry } from '../../core/shortcut-registry.js';
 import { h } from '../../core/dom.js';
@@ -823,7 +823,12 @@ const mod = createModule({
         // auf dem neuen schreiben; er wird darum ohne Anwenden geschlossen
         // (Variante „schließen“: kleiner als sein Zielblatt festzuhalten).
         this._grid?._commitEdit();
+        const dialogOpen = this._formulaEditor?.isOpen === true || this._roleConfirmApi != null;
         this._formulaEditor?.close();
+        this._roleConfirmApi?.cancel();
+        if (dialogOpen) {
+          module._context.notify?.(_t('dialogClosedByAgent'), 'warning');
+        }
         this._syncActiveSheet();
         this.model.setActive(sheetId);
         this._applyActiveSheetToGrid();
@@ -1082,7 +1087,9 @@ const mod = createModule({
           shortName: c.shortName ?? '',
           type: c.type ?? 'numeric',
           unit: c.unit ?? null,
-          role: c.role ?? null,
+          // Wie `DataGrid.setState`: eine Spalte ohne Rolle (frisch angehängt auf
+          // einem inaktiven Blatt) bekommt die abgeleitete.
+          role: c.role ?? inferRole(c),
           // Dieselbe Quelle wie chart-suggestion `selection.columns[].roleConfirmed`:
           // das Handflag der Live-Spalte (Rollen-Dialog oder setColumnRole).
           roleConfirmed: c.roleManual === true,

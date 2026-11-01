@@ -1289,14 +1289,14 @@
         "importCsv": {
           "help": "Ersetzt den Inhalt des Blatts durch CSV-Daten. Trennzeichen und Kopfzeile werden erkannt; der Schritt ist über Rückgängig umkehrbar.",
           "params": {
-            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar.",
+            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "csvText": "Der vollständige CSV- oder TSV-Text, Kopfzeile eingeschlossen, falls vorhanden."
           }
         },
         "setCells": {
           "help": "Schreibt einen Block von Werten in eine Spalte, von einer Zeile an abwärts. Typerkennung, Sperren und Rückgängig wie bei der Zelleingabe. Nur Werte: eine Formel wie =C1*2 wird als Text geschrieben, nicht berechnet — Formeln schreibt setFormula. Ein einfacher Wert in eine Formelzelle ÜBERSCHREIBT die Formel — read().formulas sagt, welche Zellen gerechnet sind; Rückgängig stellt Wert und Formel wieder her.",
           "params": {
-            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar.",
+            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "columnId": "Die id der Zielspalte, wie read().columns[].id sie nennt.",
             "startRow": "Nullbasierter Index der ersten Zeile.",
             "values": "Die Werte, einer je Zeile; Formeltext wird nicht ausgewertet."
@@ -1305,7 +1305,7 @@
         "setFormula": {
           "help": "Schreibt eine Formel in eine Zelle des Blatts, wie der Formeleditor: als Text abgelegt, sofort berechnet, mit Rückgängig. Liefert den berechneten Wert und einen Fehlercode wie #DIV/0 (sonst null); bei einem Rechenfehler bleibt die Formel stehen und die Zelle leer. Gesperrte Spalten lehnen ab.",
           "params": {
-            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar.",
+            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "columnId": "Die id der Zielspalte, wie read().columns[].id sie nennt.",
             "row": "Nullbasierter Zeilenindex; die Zeilenzahl hängt eine Zeile an.",
             "formula": "Formeltext mit führendem =, etwa =C1[2]*2 (Spalte 1, Zeile 2, beide ab 1 gezählt). Werte ohne = schreibt setCells."
@@ -1314,14 +1314,14 @@
         "addColumn": {
           "help": "Fügt dem Blatt eine leere Spalte hinzu — ohne Position am Ende. Der Agent erhält die id der neuen Spalte.",
           "params": {
-            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar.",
+            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "position": "Stelle der neuen Spalte, ab 0 gezählt: 0 setzt sie nach vorn, die Spaltenzahl oder keine Angabe hängt sie an."
           }
         },
         "renameColumn": {
           "help": "Benennt eine Spalte um; Formeln, die den alten Namen nennen, werden angepasst. Trägt schon eine andere Spalte den Namen, wird „ (2)“ angehängt — der Agent erhält den tatsächlichen Namen. Gesperrte Spalten lassen sich nicht umbenennen. Rückgängig stellt den alten Namen wieder her.",
           "params": {
-            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar.",
+            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
             "name": "Der neue Name; \"\" entfernt ihn, dann zeigt die Spalte ihren Kurznamen (C1, …)."
           }
@@ -1329,14 +1329,14 @@
         "removeColumn": {
           "help": "Entfernt eine Spalte samt Werten und Formeln. Hart gesperrte Spalten (etwa vom Versuchsplaner verwaltet) lassen sich nicht entfernen. Rückgängig holt die Spalte zurück.",
           "params": {
-            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar.",
+            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "columnId": "Die id der zu entfernenden Spalte."
           }
         },
         "addRows": {
           "help": "Fügt dem Blatt leere Zeilen hinzu — ohne Position am Ende, ohne Anzahl zehn.",
           "params": {
-            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar.",
+            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "count": "Zahl der Zeilen, ganzzahlig ab 1; ohne Angabe zehn, wie der Knopf in der Werkzeugleiste.",
             "position": "Zeile, ab 0 gezählt, an der die erste neue Zeile steht: 0 setzt sie nach oben, die Zeilenzahl oder keine Angabe hängt sie an."
           }
@@ -1344,7 +1344,7 @@
         "removeRows": {
           "help": "Entfernt einen zusammenhängenden Zeilenbereich samt Werten und Formeln und liefert die Zahl entfernter Zeilen. Rückgängig holt die Zeilen zurück.",
           "params": {
-            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar.",
+            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "startRow": "Erste zu entfernende Zeile, ab 0 gezählt; sie muss existieren.",
             "count": "Zahl der Zeilen, ganzzahlig ab 1 und höchstens bis zur letzten Zeile."
           }
@@ -1352,7 +1352,7 @@
         "sortRows": {
           "help": "Sortiert alle Zeilen des Blatts nach einer Spalte, wie „Aufsteigend/Absteigend sortieren“ im Spaltenkopf-Menü. Die Richtung gilt absolut — ein zweiter gleicher Aufruf ändert nichts und liefert false. Leere Zellen kommen ans Ende. Rückgängig stellt die alte Reihenfolge wieder her.",
           "params": {
-            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar.",
+            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "columnId": "Die id der Spalte, nach der sortiert wird, wie read().columns[].id sie nennt.",
             "direction": "\"asc\" sortiert aufsteigend, \"desc\" absteigend."
           }
@@ -1361,7 +1361,7 @@
         "redo": { "help": "Stellt eine zurückgenommene Änderung wieder her. Wirkt auf das sichtbare Blatt; nach einem Blattwechsel durch den Nutzer passiert nichts." },
         "addSheet": { "help": "Legt ein neues Blatt an und macht es aktiv. Der Agent erhält dessen id." },
         "switchSheet": {
-          "help": "Wechselt zu diesem Blatt; die Tabelle und alles, was ein Agent danach liest, beziehen sich auf es. Doppelklick benennt es um.",
+          "help": "Wechselt zu diesem Blatt und zeigt dessen Tabelle. Doppelklick benennt es um.",
           "params": { "id": "Die id des Blatts, wie read().sheets[].id sie nennt." }
         },
         "renameSheet": {
@@ -1374,7 +1374,7 @@
         "setColumnRole": {
           "help": "Setzt die Rolle einer Spalte des Blatts oder bestätigt die erkannte, wie der Rollen-Dialog vor einem Diagrammvorschlag; danach ist read().columns[].roleConfirmed true. Welche Rollen erlaubt sind, hängt vom Spaltentyp ab: numeric, currency, percent → continuous, categorical, ordinal, identifier; text → categorical, ordinal, identifier, freeText; binary → categorical; date, time → date. Gesperrte Spalten lassen sich nicht ändern. Rückgängig erfasst Rollenänderungen nicht.",
           "params": {
-            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar.",
+            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
             "role": "Die Rolle: continuous (stetig), categorical (kategorial), ordinal, date (Datum), identifier (Kennung) oder freeText (Freitext). Dieselbe Rolle wie in read().columns[].role bestätigt die erkannte."
           }
@@ -1382,7 +1382,7 @@
         "moveRow": {
           "help": "Verschiebt eine Zeile des Blatts, wie das Ziehen am Zeilenkopf. Liefert false, wenn Start und Ziel gleich sind. Rückgängig schiebt sie zurück.",
           "params": {
-            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar.",
+            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "fromRow": "Die Zeile, die wandert, ab 0 gezählt.",
             "toRow": "Die Stelle, die die Zeile danach hat, ab 0 gezählt."
           }
@@ -1390,7 +1390,7 @@
         "moveColumn": {
           "help": "Verschiebt eine Spalte des Blatts, wie das Ziehen am Spaltenkopf; die Kurznamen (C1, C2 …) folgen der neuen Reihenfolge. Formeln, die sich auf Kurznamen beziehen, werden dabei nicht umgeschrieben. Liefert false, wenn die Spalte schon dort steht. Rückgängig schiebt sie zurück.",
           "params": {
-            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar.",
+            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
             "toIndex": "Die Stelle, die die Spalte danach hat, ab 0 gezählt."
           }
@@ -1398,7 +1398,7 @@
         "setColumnType": {
           "help": "Ändert den Typ einer Spalte des Blatts, wie die Typauswahl im Spaltenkopf; die Werte werden umgewandelt. Passt die Rolle nicht zum neuen Typ, wird sie neu erkannt und ist nicht mehr bestätigt. Währung bringt zwei, Prozent eine Nachkommastelle mit. Liefert false, wenn die Spalte den Typ schon hat. Gesperrte Spalten lassen sich nicht ändern. Rückgängig erfasst Typänderungen nicht.",
           "params": {
-            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar.",
+            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
             "type": "Der Typ: numeric (Zahl), text, date (Datum), time (Uhrzeit), currency (Währung), percent (Prozent) oder binary (0/1)."
           }
@@ -1406,7 +1406,7 @@
         "setColumnFormat": {
           "help": "Setzt einen Schlüssel des Anzeigeformats einer Spalte des Blatts, wie die Formatauswahl im Spaltenkopf. Die Werte bleiben, nur die Anzeige ändert sich. numeric, currency, percent → decimals; date → dateFormat; time → timeFormat; text und binary haben kein Format. Gesperrte Spalten lassen sich nicht ändern. Rückgängig erfasst Formatänderungen nicht.",
           "params": {
-            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar.",
+            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
             "key": "Der Format-Schlüssel: decimals, dateFormat oder timeFormat — passend zum Spaltentyp.",
             "value": "decimals: ganze Zahl von 0 bis 6; dateFormat: dd.MM.yyyy, yyyy-MM-dd, dd/MM/yyyy, MM/dd/yyyy oder d. MMMM yyyy; timeFormat: HH:mm oder HH:mm:ss. null stellt die Vorgabe des Typs her."
@@ -1450,6 +1450,7 @@
       "suggestChart": "Diagramm vorschlagen",
       "suggestChartTitle": "Vorschläge für die ausgewählte Spalte(n)",
       "suggestChartNoSelection": "Erst Spalte(n) auswählen, dann Vorschlag anfordern",
+      "dialogClosedByAgent": "Ein offener Dialog wurde geschlossen, weil der Agent auf ein anderes Blatt schreibt. Die Eingabe wurde nicht übernommen.",
       "confirmRolesTitle": "Spaltenrollen bestätigen",
       "confirmRolesIntro": "Die Rolle der folgenden Spalten wurde automatisch erkannt. Bitte bestätige oder korrigiere sie — sie steuert, welche Diagramme vorgeschlagen werden.",
       "confirmRolesConfirm": "Übernehmen & Vorschlagen",
