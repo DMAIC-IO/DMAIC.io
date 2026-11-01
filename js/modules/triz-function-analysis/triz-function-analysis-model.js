@@ -169,6 +169,9 @@ const str = (v) => (typeof v === 'string' ? v : '');
 const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
 
 export class State {
+  /** Gespeichert, aber keine Aussage über den Inhalt: zählt nicht zur Revision, erscheint nicht in `read()`. */
+  static VIEW_FIELDS = ['activeTab'];
+
   static VERSION = '1.0';
   static ID = 'triz-function-analysis';
 

@@ -52,7 +52,6 @@ const PAIR_STATES = ['none', 'ticked', 'excluded'];
  * @property {Array<{ id: string, carrier: string, verb: string, object: string, parameter: string, type: 'useful'|'harmful', level: 'adequate'|'insufficient'|'excessive'|null, note: string }>} functions  the directed functions carrier → object
  * @property {Object<string, { x: number, y: number }>} positions  dragged box positions by component id
  * @property {Object<string, { x: number, y: number }>} labels  dragged verb-label positions by function id
- * @property {'components'|'interactions'|'model'|'valueCost'} activeTab  the open tab
  * @property {boolean} showRanks  whether the diagram shows rank codes
  * @property {Array<{ a: string, b: string }>} openPairs  ticked pairs no function uses yet
  * @property {Array<{ functionId: string, rank: 'basic'|'additional'|'auxiliary', level: number|null }>} ranks  derived rank of every useful complete function
@@ -119,7 +118,7 @@ export default createModule({
       // ── Tabs ──
       /**
        * Open a tab.
-       * @agent
+       * @noagent Reiter der Oberfläche
        * @param {'components'|'interactions'|'model'|'valueCost'} tab the tab to open
        * @returns {void}
        * @throws {Error} if `tab` is not one of the four tabs

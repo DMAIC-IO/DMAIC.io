@@ -14998,9 +14998,6 @@
         "labels": {
           "help": "Manually moved arrow labels x, y per function id; the arrow bends there."
         },
-        "activeTab": {
-          "help": "The open tab: components, interactions, model or valueCost."
-        },
         "showRanks": {
           "help": "Whether the function model shows the rank codes next to the verbs."
         },

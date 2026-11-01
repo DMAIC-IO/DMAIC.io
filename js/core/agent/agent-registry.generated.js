@@ -21144,18 +21144,6 @@ export const AGENT_REGISTRY = {
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
-      "setTab": {
-        "params": [
-          {
-            "name": "tab",
-            "type": "'components'|'interactions'|'model'|'valueCost'",
-            "optional": false,
-            "help": "the tab to open"
-          }
-        ],
-        "returns": "void",
-        "help": "Open a tab."
-      },
       "addComponent": {
         "params": [
           {
@@ -21499,12 +21487,6 @@ export const AGENT_REGISTRY = {
         "bulk": false,
         "derived": true
       },
-      "activeTab": {
-        "type": "'components'|'interactions'|'model'|'valueCost'",
-        "help": "the open tab",
-        "bulk": false,
-        "derived": true
-      },
       "showRanks": {
         "type": "boolean",
         "help": "whether the diagram shows rank codes",
@@ -21562,7 +21544,10 @@ export const AGENT_REGISTRY = {
           }
         }
       }
-    }
+    },
+    "viewFields": [
+      "activeTab"
+    ]
   },
   "triz-ifr": {
     "tagged": true,

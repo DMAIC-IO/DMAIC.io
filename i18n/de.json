@@ -15002,9 +15002,6 @@
         "labels": {
           "help": "Von Hand verschobene Pfeilbeschriftungen x, y je Funktions-id; der Pfeil knickt dort."
         },
-        "activeTab": {
-          "help": "Der offene Reiter: components, interactions, model oder valueCost."
-        },
         "showRanks": {
           "help": "Ob das Funktionsmodell die Rangkennzeichen an den Verben zeigt."
         },
