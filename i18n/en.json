@@ -5046,12 +5046,6 @@
         "read": {
           "help": "Read the problem statement, images, expert team, cause tree with ratings, snapshots, experiments and facts. Image data and snapshot contents appear only as their size."
         },
-        "setTab": {
-          "help": "Open a tab: problem, facts, hypotheses or experiments.",
-          "params": {
-            "tab": "problem, facts, hypotheses or experiments."
-          }
-        },
         "problem": {
           "setProblem": {
             "help": "Set the problem statement: what deviates, where, by how much.",

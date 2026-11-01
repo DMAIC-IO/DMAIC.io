@@ -5050,12 +5050,6 @@
         "read": {
           "help": "Problemaussage, Bilder, Expertenteam, Ursachenbaum mit Bewertungen, Snapshots, Experimente und Fakten lesen. Bilddaten und Snapshot-Inhalte stehen nur als Größe da."
         },
-        "setTab": {
-          "help": "Einen Reiter öffnen: Problem, Fakten, Hypothesen oder Experimente.",
-          "params": {
-            "tab": "problem, facts, hypotheses oder experiments."
-          }
-        },
         "problem": {
           "setProblem": {
             "help": "Die Problemaussage setzen: was wo in welchem Ausmaß abweicht.",

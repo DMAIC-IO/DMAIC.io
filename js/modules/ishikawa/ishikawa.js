@@ -170,7 +170,7 @@ const mod = createModule({
 
       /**
        * Open a tab; the hypotheses and experiments tabs draw their charts.
-       * @agent
+       * @noagent Reiter der Oberfläche
        * @param {'problem'|'facts'|'hypotheses'|'experiments'} tab the tab to open
        * @returns {void}
        * @throws {Error} if `tab` is not one of the four tabs

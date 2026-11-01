@@ -8498,18 +8498,6 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Move a fact directly before another one."
-      },
-      "setTab": {
-        "params": [
-          {
-            "name": "tab",
-            "type": "'problem'|'facts'|'hypotheses'|'experiments'",
-            "optional": false,
-            "help": "the tab to open"
-          }
-        ],
-        "returns": "void",
-        "help": "Open a tab; the hypotheses and experiments tabs draw their charts."
       }
     },
     "fields": {
