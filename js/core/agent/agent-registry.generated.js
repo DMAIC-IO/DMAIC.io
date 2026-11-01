@@ -4580,18 +4580,6 @@ export const AGENT_REGISTRY = {
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
-      "switchTab": {
-        "params": [
-          {
-            "name": "tab",
-            "type": "'overview'|'wizard'|'ccd'",
-            "optional": false,
-            "help": "overview zeigt den Katalog, wizard den geführten Berater, ccd den Planvergleich. Jeder andere Wert ist ein Fehler."
-          }
-        ],
-        "returns": "void",
-        "help": "Wechselt den angezeigten Bereich."
-      },
       "answer": {
         "params": [
           {
@@ -4616,12 +4604,6 @@ export const AGENT_REGISTRY = {
       }
     },
     "fields": {
-      "tab": {
-        "type": "'overview'|'wizard'|'ccd'",
-        "help": "the shown section",
-        "bulk": false,
-        "derived": true
-      },
       "currentStep": {
         "type": "string",
         "help": "id of the open question, or `result:<key>` once a recommendation stands",
@@ -4680,7 +4662,10 @@ export const AGENT_REGISTRY = {
           }
         }
       }
-    }
+    },
+    "viewFields": [
+      "tab"
+    ]
   },
   "doe-planner": {
     "tagged": true,

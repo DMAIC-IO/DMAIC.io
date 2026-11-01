@@ -157,6 +157,9 @@ const RESULT_PREFIX = 'result:';
  * DoE Advisor state: active tab plus the wizard state machine.
  */
 export class State {
+  /** Gespeichert, aber keine Aussage über den Inhalt: zählt nicht zur Revision, erscheint nicht in `read()`. */
+  static VIEW_FIELDS = ['tab'];
+
   static VERSION = '1.0';
   static ID = 'doe-advisor';
 

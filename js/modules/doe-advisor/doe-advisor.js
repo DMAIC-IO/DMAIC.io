@@ -39,7 +39,6 @@ const TABS = ['overview', 'wizard', 'ccd'];
 
 /**
  * @typedef {object} AgentRead
- * @property {'overview'|'wizard'|'ccd'} tab  the shown section
  * @property {string} currentStep  [via: answer, back, restart] id of the open question, or `result:<key>` once a recommendation stands
  * @property {object} answers  the given answers, one per question
  * @property {string[]} history  ids of the answered questions, in answering order
@@ -189,7 +188,7 @@ export default createModule({
       // ─── Event handlers ─────────────────────────────────────
       /**
        * Wechselt den angezeigten Bereich.
-       * @agent
+       * @noagent Reiter der Oberfläche
        * @param {'overview'|'wizard'|'ccd'} tab overview zeigt den Katalog,
        *   wizard den geführten Berater, ccd den Planvergleich. Jeder andere
        *   Wert ist ein Fehler.

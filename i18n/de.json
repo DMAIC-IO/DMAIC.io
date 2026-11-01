@@ -8224,9 +8224,6 @@
         "currentOptions": {
           "help": "Die Antwortmöglichkeiten der offenen Frage — genau die Werte, die answer(opt) annimmt. Leer, sobald der Berater auf seiner Empfehlung steht."
         },
-        "tab": {
-          "help": "Der angezeigte Bereich: overview die Übersicht der Versuchspläne, wizard der geführte Berater, ccd der Vergleich der zentral zusammengesetzten Pläne."
-        },
         "currentStep": {
           "help": "Die id der offenen Frage — phase, goal, screening-curvature, factor-count, factor-levels, robustness-type, limits oder corners —, oder result:<schlüssel>, sobald eine Empfehlung steht; result:none heißt, dass in dieser Phase noch kein Versuchsplan ansteht. Die Frage selbst ist ein übersetzter Text und steht in keinem Feld; die Empfehlung steht unter recommendation. Weiter geht es mit answer(…), zurück mit back(), von vorn mit restart()."
         },

@@ -8220,9 +8220,6 @@
         "currentOptions": {
           "help": "The answer options of the open question — exactly the values answer(opt) accepts. Empty once the advisor stands on its recommendation."
         },
-        "tab": {
-          "help": "The displayed area: overview the Overview tab with all designs, wizard the guided advisor, ccd the comparison of the central composite designs."
-        },
         "currentStep": {
           "help": "The id of the open question — phase, goal, screening-curvature, factor-count, factor-levels, robustness-type, limits or corners — or result:<key> once a recommendation stands; result:none means no design of experiments is due in this phase yet. The question itself is a translated text and lives in no field; the recommendation is under recommendation. Move on with answer(…), go back with back(), start over with restart()."
         },
