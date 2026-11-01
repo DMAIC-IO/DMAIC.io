@@ -414,7 +414,7 @@ export default createModule({
       viewBtnClass(v) { return this.model.viewMode === v ? 'active' : ''; },
       /**
        * Setzt die Kalenderansicht.
-       * @agent
+       * @noagent Ansicht der Oberfläche
        * @param {'month'|'week'} v `month` zeigt den Monat, `week` die Woche
        * @returns {void}
        * @throws {Error} wenn `v` keine der beiden Ansichten ist

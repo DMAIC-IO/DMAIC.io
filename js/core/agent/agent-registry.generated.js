@@ -4478,18 +4478,6 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "void",
         "help": "Entfernt einen Termin."
-      },
-      "setView": {
-        "params": [
-          {
-            "name": "v",
-            "type": "'month'|'week'",
-            "optional": false,
-            "help": "`month` zeigt den Monat, `week` die Woche"
-          }
-        ],
-        "returns": "void",
-        "help": "Setzt die Kalenderansicht."
       }
     },
     "fields": {
@@ -4554,13 +4542,11 @@ export const AGENT_REGISTRY = {
         "type": "number",
         "help": "der letzte angezeigte Wochentag, 0 für Montag bis 6 für Sonntag",
         "bulk": false
-      },
-      "viewMode": {
-        "type": "'month'|'week'",
-        "help": "die Kalenderansicht; gespeichert, damit die Wahl einen Neustart übersteht",
-        "bulk": false
       }
-    }
+    },
+    "viewFields": [
+      "viewMode"
+    ]
   },
   "doe-advisor": {
     "tagged": true,

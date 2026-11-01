@@ -3269,9 +3269,6 @@
         },
         "dayTo": {
           "help": "Der letzte angezeigte Wochentag, 0 für Montag bis 6 für Sonntag."
-        },
-        "viewMode": {
-          "help": "Die Kalenderansicht: month zeigt den Monat, week die Woche. Die Wahl wird gespeichert und übersteht einen Neustart."
         }
       },
       "types": {

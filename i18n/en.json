@@ -3265,9 +3265,6 @@
         },
         "dayTo": {
           "help": "The last weekday shown, 0 for Monday through 6 for Sunday."
-        },
-        "viewMode": {
-          "help": "The calendar view: month shows the month, week the week. The choice is persisted and survives a restart."
         }
       },
       "types": {
