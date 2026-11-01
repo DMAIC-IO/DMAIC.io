@@ -1850,6 +1850,117 @@ test('unreachable_write: eine x-model-Bindung ohne @agent-Setter ist ein Befund'
   assert.equal(modules.foo.available, false);
 });
 
+const viewVm = ({ extra = '', typedef = '', readBody = 'return options;' } = {}) => `/**
+ * Foo module.
+ * @agent
+ */
+import { createModule } from '../../core/template-module.js';
+import { State } from './foo-model.js';
+${typedef}
+export default createModule({
+  config: { id: 'foo' },
+  Model: State,
+  data(module, _t) {
+    return {
+      /**
+       * Liest.
+       * @agent
+       * @param {object} [options] die Optionen
+       * @returns {object} der Zustand
+       */
+      read(options) { ${readBody} },
+      /**
+       * Schreibt.
+       * @agent
+       * @param {string} title der Titel
+       * @returns {void}
+       */
+      setTitle(title) { this.model.title = title; },
+      ${extra}
+    };
+  },
+});`;
+
+const viewModel = (fields, body = 'activeTab: this.activeTab, title: this.title') => `export class State {
+  ${fields}
+  /** @type {string} der Titel */
+  title = '';
+  /** @type {string} der Reiter */
+  activeTab = 'a';
+  toJSON() { return { ${body} }; }
+}`;
+
+test('viewFields: Liste kommt in die Registry, das Feld fällt aus der Lesefläche', () => {
+  const root = fixture({ foo: { 'foo.js': viewVm(), 'foo-model.js': viewModel("static VIEW_FIELDS = ['activeTab'];") } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.viewFields, ['activeTab']);
+  assert.ok(!Object.hasOwn(modules.foo.fields, 'activeTab'));
+  assert.ok(Object.hasOwn(modules.foo.fields, 'title'));
+  assert.deepEqual(modules.foo.reported, [], 'auch kein unreadable_state_key');
+});
+
+test('viewFields: ohne Deklaration kein Schlüssel', () => {
+  const root = fixture({ foo: { 'foo.js': viewVm(), 'foo-model.js': viewModel('') } });
+  assert.equal(collectAgentData(root).modules.foo.viewFields, undefined);
+});
+
+test('unresolved_view_fields: kein Literal, oder Pfad gegen die Grammatik', () => {
+  for (const decl of ['static VIEW_FIELDS = makeList();', "static VIEW_FIELDS = ['a[]'];", "static VIEW_FIELDS = ['a..b'];"]) {
+    const root = fixture({ foo: { 'foo.js': viewVm(), 'foo-model.js': `const makeList = () => [];\n${viewModel(decl)}` } });
+    assert.ok(collectAgentData(root).modules.foo.reported.includes('unresolved_view_fields'), decl);
+  }
+});
+
+test('view_field_not_persisted: erstes Segment fehlt in toJSON()', () => {
+  const root = fixture({ foo: { 'foo.js': viewVm(), 'foo-model.js': viewModel("static VIEW_FIELDS = ['activeTab', 'gibtEsNicht[].x'];") } });
+  assert.deepEqual(collectAgentData(root).modules.foo.reported, ['view_field_not_persisted:gibtEsNicht[].x']);
+});
+
+test('view_field_declared: Feld steht im AgentRead-Typedef, auch verschachtelt', () => {
+  const typedef = `/**
+ * @typedef {object} AgentRead
+ * @property {string} activeTab  der Reiter
+ * @property {Array<{ id: string, collapsed: boolean }>} risks  die Risiken
+ */
+`;
+  const vm = viewVm({ typedef, readBody: "return readAgentState('foo', { activeTab: 'a', risks: [] }, options);" });
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js':
+    viewModel("static VIEW_FIELDS = ['activeTab', 'risks[].collapsed'];\n  risks = [];", 'activeTab: this.activeTab, title: this.title, risks: this.risks') } });
+  const { reported } = collectAgentData(root).modules.foo;
+  assert.ok(reported.includes('view_field_declared:activeTab'));
+  assert.ok(reported.includes('view_field_declared:risks[].collapsed'));
+});
+
+test('view_field_agent_write: parametergetrieben ist ein Befund, die Folgeschreibung nicht', () => {
+  const setter = `/**
+       * Setzt den Reiter.
+       * @agent
+       * @param {string} tab der Reiter
+       * @returns {void}
+       */
+      setTab(tab) { this.model.activeTab = tab; },`;
+  const consequence = `/**
+       * Legt etwas an und aktiviert es.
+       * @agent
+       * @returns {void}
+       */
+      openThing() { this.model.title = 'neu'; this.model.activeTab = 'neu'; },`;
+  const modelText = viewModel("static VIEW_FIELDS = ['activeTab'];");
+  const hit = fixture({ foo: { 'foo.js': viewVm({ extra: setter }), 'foo-model.js': modelText } });
+  assert.deepEqual(collectAgentData(hit).modules.foo.reported, ['view_field_agent_write:activeTab']);
+  const clean = fixture({ foo: { 'foo.js': viewVm({ extra: consequence }), 'foo-model.js': modelText } });
+  assert.deepEqual(collectAgentData(clean).modules.foo.reported, []);
+});
+
+test('Ansichtsfelder: keine Ausnahme bleibt offen bei einer Vorlagenbindung', () => {
+  const root = fixture({ foo: {
+    'foo.js': viewVm(),
+    'foo-model.js': viewModel("static VIEW_FIELDS = ['activeTab'];"),
+    'foo.html': '<select x-model="model.activeTab"></select>',
+  } });
+  assert.deepEqual(collectAgentData(root).modules.foo.reported, []);
+});
+
 test('unreachable_write: eine direkte Zuweisung in einer @agent-Methode deckt ab', () => {
   const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
        * @agent

@@ -153,6 +153,11 @@ function buildEntry(resolver, appDir, viewmodelFile) {
     for (const field of Object.values(declared)) Object.assign(field, nestedKeys(sf, field.type, new Set()));
   }
   const model = declared ? { fields: declared, violations: [] } : readModelFields(resolver, sf);
+  // Ansichtsfelder: gespeichert, aber keine Lesefläche. Bei der abgeleiteten
+  // Fläche fallen sie hier heraus, eine erklärte darf sie gar nicht nennen.
+  const view = readViewFields(resolver, sf);
+  const viewPlain = new Set(view.paths.map(plainViewPath));
+  if (!declared) for (const path of view.paths) delete model.fields[path];
   const unknownVia = [];
   for (const [field, spec] of Object.entries(model.fields)) {
     for (const action of spec.via ?? []) {
@@ -165,7 +170,7 @@ function buildEntry(resolver, appDir, viewmodelFile) {
   // Blobs) — das ist ein geschriebener Akt und braucht keinen Wächter.
   const persistence = declared ? { keys: null, violations: [] } : persistedKeys(resolver, sf);
   const unreadable = (persistence.keys ?? [])
-    .filter(k => !k.startsWith('_') && !Object.prototype.hasOwnProperty.call(model.fields, k))
+    .filter(k => !k.startsWith('_') && !viewPlain.has(k) && !Object.prototype.hasOwnProperty.call(model.fields, k))
     .map(k => `unreadable_state_key:${k}`);
 
   // Gegenprobe der ERKLÄRTEN Lesefläche: jeder erklärte
@@ -222,7 +227,7 @@ function buildEntry(resolver, appDir, viewmodelFile) {
   // Felder (Review-Fund). `Set` erhält die Erstsichtungsreihenfolge, die
   // Ausgabereihenfolge bleibt also dieselbe.
   const unreachable = [...new Set(bindings.models)]
-    .filter(f => !written.has(f))
+    .filter(f => !written.has(f) && !viewPlain.has(f))
     .map(f => `unreachable_write:${f}`);
   // Nicht-Text-Elemente (Auswahl, Schalter, Datum …) schreiben über
   // `x-model` am @agent-Setter und dessen Prüfung vorbei. Textfelder sind
@@ -230,7 +235,7 @@ function buildEntry(resolver, appDir, viewmodelFile) {
   const isTextElement = (e) => e.tag === 'textarea'
     || (e.tag === 'input' && ['', 'text', 'search'].includes(e.type));
   const bypass = [...new Set(bindings.modelElements
-    .filter(e => written.has(e.path) && !isTextElement(e))
+    .filter(e => written.has(e.path) && !isTextElement(e) && !viewPlain.has(e.path))
     .map(e => `setter_bypass_binding:${e.path}`))];
   // Reichweite von `hardcoded_param_bounds` (bewusst eng): nur Zahlenfelder
   // mit `onParamInput('<schlüssel>'` und dem Literal-Attribut `min="…"` /
@@ -256,7 +261,8 @@ function buildEntry(resolver, appDir, viewmodelFile) {
     ...invalidBulkKinds(model.fields), ...invalidOmitPaths(model.fields), ...invalidViaSentinels(sf), ...collectDomDetours(sf),
     ...unreachable, ...bypass, ...fixedBounds, ...templateCalls,
     ...subViewModelModelBindings(dirname(viewmodelFile), subViewModels),
-    ...undeclaredOptions, ...moduleStateOptions, ...unknownVia];
+    ...undeclaredOptions, ...moduleStateOptions, ...unknownVia,
+    ...view.violations, ...viewFieldFindings(view.paths, persistedKeys(resolver, sf).keys, declared, written)];
   // Verstöße zählen nur, wenn das Modul etwas behauptet.
   const effective = tagged ? reported : [];
   return {
@@ -266,6 +272,7 @@ function buildEntry(resolver, appDir, viewmodelFile) {
     reported,
     actions,
     fields: model.fields,
+    ...(view.paths.length > 0 ? { viewFields: view.paths } : {}),
     writtenFields: [...written].sort(),
   };
 }
@@ -1980,6 +1987,57 @@ function originSuffix(entry, moduleSf, appDir) {
  * Treffer der Grenze ist ein BEFUND, kein stilles Verwerfen.
  */
 const MAX_EXTENDS_DEPTH = 12;
+
+/**
+ * Die Grammatik eines Ansichtspfades. Dieselbe gilt in `js/core/view-fields.js`
+ * — zwei Deklarationen, weil der Build nicht aus `js/` importiert.
+ */
+const VIEW_PATH = /^[A-Za-z_$][\w$]*(?:(?:\[\](?:\*\*)?)?\.[A-Za-z_$][\w$]*)*$/;
+
+/**
+ * `static VIEW_FIELDS` der Model-Klasse: gespeicherte Felder, die nicht zur
+ * Revision zählen und nicht in `read()` erscheinen.
+ * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
+ * @param {ts.SourceFile} sf
+ * @returns {{ paths: string[], violations: string[] }}
+ */
+function readViewFields(resolver, sf) {
+  const decl = resolveModelClass(resolver, sf);
+  const member = decl?.node.members.find(m => ts.isPropertyDeclaration(m)
+    && m.name.getText() === 'VIEW_FIELDS'
+    && m.modifiers?.some(mod => mod.kind === ts.SyntaxKind.StaticKeyword));
+  if (!member) return { paths: [], violations: [] };
+  const paths = member.initializer ? resolveStringArray(member.initializer, decl.sf) : null;
+  if (!paths || paths.some(p => !VIEW_PATH.test(p))) return { paths: [], violations: ['unresolved_view_fields'] };
+  return { paths, violations: [] };
+}
+
+/** Der Pfad ohne Elementmarken, wie ihn `written` und die Vorlagenbindungen führen. */
+const plainViewPath = (path) => path.replace(/\[\](?:\*\*)?/g, '');
+
+/**
+ * Die Befunde zu einer gelesenen Liste.
+ * @param {string[]} paths
+ * @param {string[]|null} persisted  Schlüssel aus `toJSON()`; `null` heißt nicht
+ *   bestimmbar, dann gibt es keinen Befund (fail open: `unresolvable_tojson` meldet das)
+ * @param {Record<string, { type: string }>|null} declared  die `AgentRead`-Felder
+ * @param {Set<string>} written  parametergetrieben geschriebene Felder
+ * @returns {string[]}
+ */
+function viewFieldFindings(paths, persisted, declared, written) {
+  const out = [];
+  for (const path of paths) {
+    const root = /^[^.[]+/.exec(path)[0];
+    const last = path.slice(path.lastIndexOf('.') + 1);
+    if (persisted && !persisted.includes(root)) out.push(`view_field_not_persisted:${path}`);
+    if (declared && Object.hasOwn(declared, root)
+        && (path === root || new RegExp(`\\b${last}\\??\\s*:`).test(declared[root].type))) {
+      out.push(`view_field_declared:${path}`);
+    }
+    if (written.has(plainViewPath(path))) out.push(`view_field_agent_write:${path}`);
+  }
+  return out;
+}
 
 /**
  * Model-Felder → Lesestruktur. Deckt sich mit „Models sind für die
