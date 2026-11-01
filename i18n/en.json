@@ -5772,9 +5772,6 @@
         "currentPair": {
           "help": "How many pairs are already decided — and therefore the index of the next one in pairs. Equal to the length of pairs means finished. chooseLeft(), chooseRight() and tieCurrent() decide the pending pair and count on."
         },
-        "viewPhase": {
-          "help": "The displayed work phase: input (record criteria), compare (decide pairs) or results (ranking and matrix). A persisted display state — it belongs to the saved project."
-        },
         "result": { "help": "The evaluation: points per criterion and ranking, each figure described individually under keys; null until all pairs are decided." }
       },
       "types": {

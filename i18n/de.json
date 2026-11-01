@@ -5776,9 +5776,6 @@
         "currentPair": {
           "help": "Wie viele Paare schon entschieden sind — und damit der Index des nächsten in pairs. Gleich der Länge von pairs heißt fertig. chooseLeft(), chooseRight() und tieCurrent() entscheiden das anstehende Paar und zählen weiter."
         },
-        "viewPhase": {
-          "help": "Die angezeigte Arbeitsphase: input (Kriterien erfassen), compare (Paare entscheiden) oder results (Rangfolge und Matrix). Ein persistierter Anzeigezustand — er gehört zum gespeicherten Projekt."
-        },
         "result": { "help": "Die Auswertung: Punkte je Kriterium und Rangfolge, jede Kennzahl unter keys einzeln beschrieben; null, solange nicht alle Paare entschieden sind." }
       },
       "types": {

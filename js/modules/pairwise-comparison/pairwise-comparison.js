@@ -67,9 +67,6 @@ function downloadFile(content, filename, type) {
  * @property {number} currentPair  [via: chooseLeft, chooseRight, tieCurrent] wie viele Paare schon entschieden sind — und
  *   damit der Index des nächsten in `pairs`; gleich der Länge von `pairs`
  *   heißt fertig
- * @property {'input'|'compare'|'results'} viewPhase  der angezeigte Reiter:
- *   input (Kriterien erfassen), compare (Paare entscheiden) oder results
- *   (Rangfolge und Matrix). Persistiert, gehört also zum gespeicherten Projekt
  * @property {Result|null} result  Auswertung, leer bis alle Paare entschieden sind
  */
 
@@ -226,7 +223,7 @@ export default createModule({
 
       /**
        * Setzt den angezeigten Reiter.
-       * @agent
+       * @noagent Reiter der Oberfläche
        * @param {string} phase der Reiter
        * @returns {boolean} true wenn gewechselt wurde, false wenn der Reiter
        *   im aktuellen Lauf nicht erreichbar ist (die Oberfläche sperrt ihn

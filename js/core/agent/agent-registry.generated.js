@@ -14202,18 +14202,6 @@ export const AGENT_REGISTRY = {
         "returns": "boolean",
         "help": "Startet den Vergleich: baut die Matrix und die gemischte Paarfolge und wechselt in die Phase `compare`."
       },
-      "setViewPhase": {
-        "params": [
-          {
-            "name": "phase",
-            "type": "string",
-            "optional": false,
-            "help": "der Reiter"
-          }
-        ],
-        "returns": "boolean",
-        "help": "Setzt den angezeigten Reiter."
-      },
       "chooseLeft": {
         "params": [],
         "returns": "boolean",
@@ -14281,12 +14269,6 @@ export const AGENT_REGISTRY = {
         ],
         "derived": true
       },
-      "viewPhase": {
-        "type": "'input'|'compare'|'results'",
-        "help": "der angezeigte Reiter: input (Kriterien erfassen), compare (Paare entscheiden) oder results (Rangfolge und Matrix). Persistiert, gehört also zum gespeicherten Projekt",
-        "bulk": false,
-        "derived": true
-      },
       "result": {
         "type": "Result|null",
         "help": "Auswertung, leer bis alle Paare entschieden sind",
@@ -14323,7 +14305,10 @@ export const AGENT_REGISTRY = {
           }
         }
       }
-    }
+    },
+    "viewFields": [
+      "viewPhase"
+    ]
   },
   "pareto": {
     "tagged": true,

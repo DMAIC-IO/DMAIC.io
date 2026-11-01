@@ -44,6 +44,9 @@ function computeScores(matrix) {
 export const VIEW_PHASES = ['input', 'compare', 'results'];
 
 export class State {
+  /** Gespeichert, aber keine Aussage über den Inhalt: zählt nicht zur Revision, erscheint nicht in `read()`. */
+  static VIEW_FIELDS = ['viewPhase'];
+
   /**
    * @type {string[]} die Kriterien in Eingabereihenfolge, adressiert über
    *   ihre Nummer ab 0; höchstens 15, mindestens 3 für einen Vergleich
