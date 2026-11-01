@@ -10,9 +10,9 @@
  *
  * @agent  Vollständig über das Viewmodel steuerbar: Aufgaben anlegen, ihren
  *   Text, Verantwortlichen, Zieldatum, Status und die Kalendermarke setzen,
- *   Aufgaben entfernen und umsortieren, die drei Filter und die Sortierung
- *   setzen. Der
- *   Oberfläche bleiben die Maus- und Tastaturgestik der Tabelle; der Abgleich
+ *   Aufgaben entfernen und umsortieren. Der Oberfläche bleiben die Ansicht
+ *   der Liste (drei Filter, Suche und Sortierung) sowie die Maus- und
+ *   Tastaturgestik der Tabelle; der Abgleich
  *   mit einem Kalendermodul läuft über den Ereignisbus und ist kein
  *   Schreibweg der Fläche.
  */

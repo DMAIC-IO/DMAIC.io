@@ -2019,7 +2019,7 @@ const plainViewPath = (path) => path.replace(/\[\](?:\*\*)?/g, '');
  * Die Befunde zu einer gelesenen Liste.
  * @param {string[]} paths
  * @param {string[]|null} persisted  Schlüssel aus `toJSON()`; `null` heißt nicht
- *   bestimmbar, dann gibt es keinen Befund (fail open: `unresolvable_tojson` meldet das)
+ *   bestimmbar, dann gibt es keinen Befund (fail open; bei Modulen mit `AgentRead` meldet das niemand)
  * @param {Record<string, { type: string }>|null} declared  die `AgentRead`-Felder
  * @param {Set<string>} written  parametergetrieben geschriebene Felder
  * @returns {string[]}

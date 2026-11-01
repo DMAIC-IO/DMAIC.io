@@ -184,7 +184,8 @@ export default createModule({
       /**
        * @noagent DOM event handler: packt den Klick aus, um einen Treffer auf
        * den Karten-Knöpfen auszuschließen. Geschrieben wird über
-       * `setActiveVoc`, dieselbe Senke wie die der Agentenfläche.
+       * `setActiveVoc`; die Auswahl ist Sache der Oberfläche, nicht der
+       * Agentenfläche.
        */
       selectVoc(id, event) {
         if (event && event.target.closest('.vct__card-action-btn')) return;

@@ -362,14 +362,14 @@ export default createModule({
 
       // ── DOM handlers (UI only) ────────────────────────────────
 
-      /** @noagent DOM event handler (click); the agent uses selectEndpoint() */
+      /** @noagent DOM event handler (click): Auswahl der Oberfläche, kein Agentenweg */
       onEndpointClick(ep, event) {
         if (event?.target?.closest?.('.rest-api__item-del') ||
             event?.target?.closest?.('.rest-api__ep-name-input')) return;
         this.selectEndpoint(ep.id);
       },
 
-      /** @noagent DOM event handler (focus); the agent uses selectEndpoint() */
+      /** @noagent DOM event handler (focus): Auswahl der Oberfläche, kein Agentenweg */
       focusEndpoint(ep) {
         const wasActive = ep.id === this.model.activeId;
         this.selectEndpoint(ep.id);
