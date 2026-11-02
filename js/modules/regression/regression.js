@@ -959,10 +959,12 @@ const mod = createModule({
             this.model.clearResults();
             this.result = null;
             this._clearPrediction();
-            this._errorText = '';
             this._renderGen++;
             this.destroyCharts();
           }
+          // Auch ohne Ergebnis: ein gescheiterter Fit hat keines, seine Meldung bleibt sonst stehen.
+          this._errorText = '';
+          this._aliased = [];
           return;
         }
         this.runAnalysis();
