@@ -74,16 +74,14 @@ export function createOps(deps) {
 
       // Phasenzugehörigkeit, Singleton-Regel der UI (Review-Befund I1) und
       // das abgeschlossene Projekt (Befund I2) an einem Ort: `canAddInstance`.
-      // Im abgeschlossenen Projekt verwirft `stateManager.set` jeden
-      // Nicht-`settings.`-Schreibzugriff STILL; ohne diese Absage meldete
-      // `module.add` Erfolg mit einer Phantom-Instanz-Id. Der Prüfer hat
-      // gegen seine Momentaufnahme schon geprüft; zwei `module.add` im
-      // SELBEN Stapel sieht nur diese Stelle.
       const cycle = moduleRegistry.getActiveCycle();
       const verdict = canAddInstance(def, action.phase ?? defaultPhaseFor(def, cycle),
         instanceWorld(stateManager, cycle, host.isCompleted()));
       if (!verdict.ok) {
         if (verdict.reason === 'completed') {
+          // Im abgeschlossenen Projekt verwirft `stateManager.set` jeden
+          // Nicht-`settings.`-Schreibzugriff STILL; ohne diese Absage meldete
+          // `module.add` Erfolg mit einer Phantom-Instanz-Id.
           // Derselbe Satz wie die Lesebalken-Meldung der Oberfläche
           // (`frame/helpers.js:28`). Zweimal zu pflegen heißt: zweimal
           // auseinanderzulaufen.
@@ -94,6 +92,8 @@ export function createOps(deps) {
             t('agent.errors.unknownPhase', { phase: action.phase, module: action.module }),
             { available: verdict.allowedPhases });
         }
+        // Singleton: der Prüfer hat gegen seine Momentaufnahme schon geprüft;
+        // zwei `module.add` im SELBEN Stapel sieht nur diese Stelle.
         const existing = buildInstanceList({ stateManager, i18n }).find(it => it.module === action.module);
         return axiError(ERRORS.MODULE_SINGLETON,
           t('agent.errors.moduleSingleton', { module: action.module, instance: existing?.id }));

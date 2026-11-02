@@ -201,6 +201,30 @@ suite('router/Router', () => {
     assertEqual(h.fakeWin._last, 'replace');
   });
 
+  test('navigate(module-new): vorhandenes Singleton → project landing, keine zweite Instanz', async () => {
+    const h = harness();
+    h.deps.moduleRegistry.get = (id) => (id === 'sipoc'
+      ? { id: 'sipoc', singleton: true, phase: 'define', cycles: { dmaic: { phase: 'define' } } } : undefined);
+    const r = new Router(h.deps);
+    await r.navigate({ kind: 'module-new', projectId: 'ab12', moduleType: 'sipoc' });
+    assertEqual(h.deps.stateManager._phases.define.length, 1);
+    assertEqual(h.fakeWin.location.hash, '#/project/ab12');
+    assertEqual(h.fakeWin._last, 'replace');
+  });
+
+  test('navigate(module-new): abgeschlossenes Projekt → project landing, nichts angelegt', async () => {
+    const h = harness();
+    h.deps.stateManager.isCompleted = () => true;
+    h.deps.moduleRegistry.get = (id) => (id === 'ce-matrix'
+      ? { id: 'ce-matrix', phase: 'analyze', cycles: { dmaic: { phase: 'analyze' } } } : undefined);
+    h.deps.stateManager._phases.analyze = [];
+    const r = new Router(h.deps);
+    await r.navigate({ kind: 'module-new', projectId: 'ab12', moduleType: 'ce-matrix' });
+    assertEqual(h.deps.stateManager._phases.analyze.length, 0);
+    assertEqual(h.fakeWin.location.hash, '#/project/ab12');
+    assertEqual(h.fakeWin._last, 'replace');
+  });
+
   test('_hideAllPages: navigate(phase) hides open page overlays', async () => {
     const h = harness();
     // Open the settings page first

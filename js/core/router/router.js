@@ -271,7 +271,17 @@ export class Router {
             await this.navigate({ kind: 'project', projectId: route.projectId }, { replace: true });
             return;
           }
-          const newId = createInstance(this._sm, this._reg, this._bus, route.moduleType, def);
+          let newId;
+          try {
+            newId = createInstance(this._sm, this._reg, this._bus, route.moduleType, def);
+          } catch {
+            // `canAddInstance` lehnt ab (abgeschlossenes Projekt, vorhandenes
+            // Singleton, Vorgabephase nicht angeboten): zurück zum Projekt,
+            // wie beim unbekannten Modultyp.
+            this._applying = false;                  // allow the nested navigate to run
+            await this.navigate({ kind: 'project', projectId: route.projectId }, { replace: true });
+            return;
+          }
           this._applying = false;                    // allow the nested navigate to run
           await this.navigate(
             { kind: 'module', projectId: route.projectId, instanceId: newId, sub: [] },
