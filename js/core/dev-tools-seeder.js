@@ -38,7 +38,16 @@ export async function seedAllModules({
       continue;
     }
 
-    const instanceId = createInstance(stateManager, moduleRegistry, eventBus, def.id, def, { silent: true });
+    // `createInstance` wirft bei einer Absage (abgeschlossenes Projekt): das
+    // Modul bleibt unangelegt und zählt als übersprungen, der Lauf geht weiter.
+    let instanceId;
+    try {
+      instanceId = createInstance(stateManager, moduleRegistry, eventBus, def.id, def, { silent: true });
+    } catch (err) {
+      console.warn(`[DevTools] Skipped ${def.id}: ${err.reason ?? err.message}`);
+      skipped.push(def.id);
+      continue;
+    }
     added.push(def.id);
 
     const ex = examplesRegistry.getForModule(def.id)[0];

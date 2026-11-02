@@ -67,6 +67,35 @@ suite('agent ops — runtime defence for a completed project (Ruling R7a)', () =
     assertEqual(out.error, 'project_completed');
   });
 
+  test('falsche Phase im abgeschlossenen Projekt meldet project_completed', async () => {
+    const ops = createOps(makeDeps({ completed: true }));
+    const out = await ops['module.add']({ module: 'five-why', phase: 'measure' });
+    assertEqual(out.error, 'project_completed');
+  });
+
+  test('module_singleton nennt weiter die vorhandene Instanz', async () => {
+    const deps = makeDeps({ completed: false });
+    deps.moduleRegistry.get = (id) => ({ ...DEFS.find(d => d.id === id), singleton: true });
+    const ops = createOps(deps);
+    const out = await ops['module.add']({ module: 'five-why' });
+    assertEqual(out.error, 'module_singleton');
+    assertTrue(out.message.includes('fw-1'), out.message);
+  });
+
+  test('eine Phase außerhalb des Zyklus meldet unknown_phase mit getAllPhaseIds', async () => {
+    const ops = createOps(makeDeps({ completed: false }));
+    const out = await ops['module.add']({ module: 'five-why', phase: 'nirgendwo' });
+    assertEqual(out.error, 'unknown_phase');
+    assertTrue(out.available.includes('define') && out.available.includes('control'));
+  });
+
+  test('eine Phase des Zyklus, die das Modul nicht bietet, nennt allowedPhases', async () => {
+    const ops = createOps(makeDeps({ completed: false }));
+    const out = await ops['module.add']({ module: 'five-why', phase: 'measure' });
+    assertEqual(out.error, 'unknown_phase');
+    assertDeepEqual(out.available, ['define']);
+  });
+
   // Control: the same op succeeds when the project is NOT completed —
   // otherwise the two tests above could pass against an `isCompleted` that
   // is never even read.

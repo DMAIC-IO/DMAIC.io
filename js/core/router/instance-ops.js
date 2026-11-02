@@ -37,6 +37,23 @@ export function findExistingInstance(stateManager, moduleId) {
 }
 
 /**
+ * Das Lese-Abbild für `canAddInstance` aus dem Projektzustand.
+ * @param {object} stateManager
+ * @param {string} activeCycle
+ * @param {boolean} completed
+ * @returns {{ activeCycle: string, instances: Map<string, { module: string, phase: string }>, completed: boolean }}
+ */
+export function instanceWorld(stateManager, activeCycle, completed) {
+  const instances = new Map();
+  for (const phase of Object.keys(stateManager.get('phases') || {})) {
+    for (const item of stateManager.get(`phases.${phase}`) ?? []) {
+      instances.set(item.instanceId, { module: item.moduleId, phase });
+    }
+  }
+  return { activeCycle, instances, completed: completed === true };
+}
+
+/**
  * Create a new instance of moduleId in its default phase for the active cycle
  * (`defaultPhaseFor` — dieselbe Regel, die das Anlegemenü füllt), persist it,
  * and emit `module:added`. Returns the new instanceId.
@@ -54,12 +71,23 @@ export function findExistingInstance(stateManager, moduleId) {
  *   Genutzt von der Agentenfläche: dort hat der Prüfer die Phase bereits
  *   gegen `allowedPhases` geprüft, bevor irgendein Seiteneffekt passiert.
  * @returns {string}
+ * @throws {Error} wenn `canAddInstance` ablehnt; der Fehler trägt `reason`
+ *   (`'completed'|'wrongPhase'|'singleton'`) und ggf. `allowedPhases`.
  */
 export function createInstance(stateManager, moduleRegistry, eventBus, moduleId, def, { silent = false, phase } = {}) {
   // Keine eigene Ableitung mehr: die Vorgabephase ist die, die auch das
   // Anlegemenü anbietet. Der ausdrückliche `phase`-Überschreiber bleibt —
   // ihn braucht die Agentenfläche für die 26 mehrdeutigen Paare.
-  const targetPhase = phase || defaultPhaseFor(def, moduleRegistry.getActiveCycle());
+  const cycle = moduleRegistry.getActiveCycle();
+  const targetPhase = phase || defaultPhaseFor(def, cycle);
+
+  // Dieselbe Regel wie Kachel und Agentenfläche. Eine Absage wirft, statt
+  // still nichts zu tun: ein Aufrufer, der eine Instanz-Id erwartet, bekäme
+  // sonst eine Phantom-Id. `reason` (und `allowedPhases`) hängen am Fehler.
+  const verdict = canAddInstance(def, targetPhase, instanceWorld(stateManager, cycle, stateManager.isCompleted?.()));
+  if (!verdict.ok) {
+    throw Object.assign(new Error(`createInstance: ${moduleId} abgelehnt (${verdict.reason})`), verdict);
+  }
 
   const instanceId = uid();
   const phases = stateManager.get(`phases.${targetPhase}`) ?? [];
@@ -143,7 +171,9 @@ export function canAddInstance(def, phase, world) {
     return { ok: false, reason: 'wrongPhase', allowedPhases: allowed };
   }
 
-  if (def.singleton) {
+  // Dieselbe Bedeutung wie `isSingleton` in agent-catalog.js (das hier nicht
+  // importiert werden kann: es importiert diese Datei).
+  if (def.singleton === true) {
     for (const inst of world.instances.values()) {
       if (inst.module === def.id) return { ok: false, reason: 'singleton' };
     }

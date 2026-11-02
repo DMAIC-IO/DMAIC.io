@@ -17,7 +17,8 @@
  */
 import { CONTRACT_VERSION, ERRORS } from './agent-contract.js';
 import { axiError } from './agent-errors.js';
-import { buildCatalog, buildInstanceList, describeModule, allowedPhasesFor, isSingleton } from './agent-catalog.js';
+import { buildCatalog, buildInstanceList, describeModule } from './agent-catalog.js';
+import { canAddInstance, defaultPhaseFor, instanceWorld } from '../router/instance-ops.js';
 import { getAllPhaseIds } from '../cycles/cycles.js';
 import { requireArity } from './agent-argcheck.js';
 import { stripPaths } from '../view-fields.js';
@@ -69,34 +70,33 @@ export function createOps(deps) {
           return axiError(ERRORS.UNKNOWN_PHASE,
             t('agent.errors.unknownPhaseInCycle', { phase: action.phase }), { available: cyclePhases });
         }
-        const allowed = allowedPhasesFor(def, cycle);
-        if (!allowed.includes(action.phase)) {
-          return axiError(ERRORS.UNKNOWN_PHASE,
-            t('agent.errors.unknownPhase', { phase: action.phase, module: action.module }),
-            { available: allowed });
-        }
       }
 
-      // Die Singleton-Regel der UI (Review-Befund I1). Der Prüfer hat sie
+      // Phasenzugehörigkeit, Singleton-Regel der UI (Review-Befund I1) und
+      // das abgeschlossene Projekt (Befund I2) an einem Ort: `canAddInstance`.
+      // Im abgeschlossenen Projekt verwirft `stateManager.set` jeden
+      // Nicht-`settings.`-Schreibzugriff STILL; ohne diese Absage meldete
+      // `module.add` Erfolg mit einer Phantom-Instanz-Id. Der Prüfer hat
       // gegen seine Momentaufnahme schon geprüft; zwei `module.add` im
       // SELBEN Stapel sieht nur diese Stelle.
-      if (isSingleton(def)) {
-        const existing = buildInstanceList({ stateManager, i18n }).find(it => it.module === action.module);
-        if (existing) {
-          return axiError(ERRORS.MODULE_SINGLETON,
-            t('agent.errors.moduleSingleton', { module: action.module, instance: existing.id }));
+      const cycle = moduleRegistry.getActiveCycle();
+      const verdict = canAddInstance(def, action.phase ?? defaultPhaseFor(def, cycle),
+        instanceWorld(stateManager, cycle, host.isCompleted()));
+      if (!verdict.ok) {
+        if (verdict.reason === 'completed') {
+          // Derselbe Satz wie die Lesebalken-Meldung der Oberfläche
+          // (`frame/helpers.js:28`). Zweimal zu pflegen heißt: zweimal
+          // auseinanderzulaufen.
+          return axiError(ERRORS.PROJECT_COMPLETED, t('app.projectReadOnly'));
         }
-      }
-
-      // Im abgeschlossenen Projekt verwirft `stateManager.set` jeden
-      // Nicht-`settings.`-Schreibzugriff STILL. Ohne diesen Zweig meldete
-      // `module.add` Erfolg und lieferte eine Phantom-Instanz-Id
-      // (Review-Befund I2).
-      if (host.isCompleted()) {
-        // Derselbe Satz wie die Lesebalken-Meldung der Oberfläche
-        // (`frame/helpers.js:28`). Zweimal zu pflegen heißt: zweimal
-        // auseinanderzulaufen.
-        return axiError(ERRORS.PROJECT_COMPLETED, t('app.projectReadOnly'));
+        if (verdict.reason === 'wrongPhase') {
+          return axiError(ERRORS.UNKNOWN_PHASE,
+            t('agent.errors.unknownPhase', { phase: action.phase, module: action.module }),
+            { available: verdict.allowedPhases });
+        }
+        const existing = buildInstanceList({ stateManager, i18n }).find(it => it.module === action.module);
+        return axiError(ERRORS.MODULE_SINGLETON,
+          t('agent.errors.moduleSingleton', { module: action.module, instance: existing?.id }));
       }
 
       const added = await host.addInstance(action.module, action.phase);

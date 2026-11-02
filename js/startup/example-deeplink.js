@@ -79,7 +79,14 @@ export default createStartup({
 
     // Run async work without blocking init.
     (async () => {
-      const instanceId = _ensureInstance(stateManager, moduleRegistry, eventBus, moduleId, def);
+      let instanceId;
+      try {
+        instanceId = _ensureInstance(stateManager, moduleRegistry, eventBus, moduleId, def);
+      } catch (err) {
+        // `createInstance` lehnt z. B. im abgeschlossenen Projekt ab.
+        console.warn(`[Deeplink] Cannot add module ${moduleId}: ${err.reason ?? err.message}`);
+        return;
+      }
       if (!instanceId) return;
 
       if (!exampleId) return;

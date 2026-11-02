@@ -1,6 +1,6 @@
 // app/dev/tests/core/router/instance-ops.test.js
 import { suite, test, assertEqual, assertTrue } from '../../test-utils.js';
-import { findExistingInstance, findInstancePhase, createInstance } from '../../../js/core/router/instance-ops.js';
+import { findExistingInstance, findInstancePhase, createInstance, instanceWorld } from '../../../js/core/router/instance-ops.js';
 
 function fakeState(phases = {}) {
   return {
@@ -41,6 +41,47 @@ suite('router/instance-ops', () => {
   test('findExistingInstance: returns null when not found', () => {
     const sm = fakeState({ define: [] });
     assertEqual(findExistingInstance(sm, 'nonexistent'), null);
+  });
+
+  test('createInstance wirft bei einer Absage und legt nichts an', () => {
+    const def = { id: 'solo', singleton: true, phase: 'define', cycles: { dmaic: { phase: 'define' } } };
+    const sm = fakeState({ define: [{ instanceId: 'x', moduleId: 'solo', order: 0, state: {} }] });
+    const before = sm.get('phases.define').length;
+    const emitted = [];
+    let err = null;
+    try {
+      createInstance(sm, { getActiveCycle: () => 'dmaic' }, { emit: (...a) => emitted.push(a) }, 'solo', def);
+    } catch (e) { err = e; }
+    assertEqual(err?.reason, 'singleton');
+    assertEqual(sm.get('phases.define').length, before);
+    assertEqual(emitted.length, 0);
+  });
+
+  test('createInstance wirft im abgeschlossenen Projekt mit reason completed', () => {
+    const def = { id: 'a', phase: 'define', cycles: { dmaic: { phase: 'define' } } };
+    const sm = Object.assign(fakeState({ define: [] }), { isCompleted: () => true });
+    let err = null;
+    try { createInstance(sm, { getActiveCycle: () => 'dmaic' }, { emit() {} }, 'a', def); } catch (e) { err = e; }
+    assertEqual(err?.reason, 'completed');
+    assertEqual(sm.get('phases.define').length, 0);
+  });
+
+  test('createInstance wirft bei einer Phase außerhalb von allowedPhases', () => {
+    const def = { id: 'a', phase: 'define', cycles: { dmaic: { phase: 'define' } } };
+    const sm = fakeState({ define: [], measure: [] });
+    let err = null;
+    try { createInstance(sm, { getActiveCycle: () => 'dmaic' }, { emit() {} }, 'a', def, { phase: 'measure' }); } catch (e) { err = e; }
+    assertEqual(err?.reason, 'wrongPhase');
+    assertEqual(sm.get('phases.measure').length, 0);
+  });
+
+  test('instanceWorld bildet die Instanzen aller Phasen ab', () => {
+    const sm = fakeState({ define: [{ instanceId: 'x', moduleId: 'a' }], measure: [{ instanceId: 'y', moduleId: 'b' }] });
+    const w = instanceWorld(sm, 'dmaic', false);
+    assertEqual(w.instances.get('y').phase, 'measure');
+    assertEqual(w.instances.get('x').module, 'a');
+    assertEqual(w.activeCycle, 'dmaic');
+    assertEqual(w.completed, false);
   });
 
   test('createInstance: adds instance and emits module:added', () => {

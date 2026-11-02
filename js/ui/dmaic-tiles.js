@@ -21,7 +21,7 @@ import {
   getAllPhaseIds,
   getPhaseDef,
 } from '../core/cycles/cycles.js';
-import { canAddInstance } from '../core/router/instance-ops.js';
+import { canAddInstance, instanceWorld } from '../core/router/instance-ops.js';
 import { h } from '../core/dom.js';
 import { icon } from '../core/icon.js';
 import { resolveCollapsed, resolveTight } from './dmaic-tiles-layout.js';
@@ -449,18 +449,9 @@ export class DmaicTiles {
    */
   _world() {
     const cycleId = this._getCycleId();
-    const phases = getAllPhaseIds(cycleId);
-    const instances = new Map();
-    for (const p of phases) {
-      for (const item of this._stateManager.get(`phases.${p}`) ?? []) {
-        instances.set(item.instanceId, { module: item.moduleId, phase: p });
-      }
-    }
     return {
-      activeCycle: cycleId,
-      phases,
-      instances,
-      completed: this._stateManager.isCompleted(),
+      ...instanceWorld(this._stateManager, cycleId, this._stateManager.isCompleted()),
+      phases: getAllPhaseIds(cycleId),
     };
   }
 
