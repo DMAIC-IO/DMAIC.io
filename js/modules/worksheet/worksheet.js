@@ -1222,8 +1222,7 @@ const mod = createModule({
             // weg. Der Agent bekam eine Zahl geschriebener Zellen für eine
             // Wirkung, die es nicht gab. Eine Absage wäre hier falsch: die
             // Oberfläche lässt den Nutzer eine Formel genauso überschreiben.
-            // Genau der Schritt, den der Zell-Editor vor dem Schreiben tut —
-            // jetzt über denselben öffentlichen Weg, der auch den
+            // Der Aufruf geht über denselben öffentlichen Weg, der auch den
             // Historieneintrag um die gelöschte Formel ergänzt, sodass
             // `undo` beides zurückholt.
             this._grid.setCellValue(columnId, row, list[i], { clearFormula: true });
