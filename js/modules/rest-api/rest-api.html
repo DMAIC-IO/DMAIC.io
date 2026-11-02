@@ -160,10 +160,10 @@
               </template>
             </div>
             <div class="rest-api__response" data-ref="response">
-              <template x-if="loading">
+              <template x-if="activeLoading()">
                 <div class="rest-api__loading" x-text="t('loading')"></div>
               </template>
-              <template x-if="lastResponse && !loading">
+              <template x-if="showResponse()">
                 <pre class="rest-api__response-body" x-text="lastResponse.body"></pre>
               </template>
             </div>

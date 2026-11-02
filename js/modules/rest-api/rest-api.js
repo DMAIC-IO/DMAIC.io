@@ -4,7 +4,7 @@
  * Each endpoint maps response fields to worksheet columns via column pickers.
  *
  * Migrated to createModule + Alpine CSP. The Model (rest-api-model.js) holds the
- * persisted endpoints + active id; transient UI state (loading flag, last
+ * persisted endpoints + active id; transient UI state (pending request ids, last
  * response, schedule timers, clock updater, column pickers) lives in the data-fn.
  * ColumnPickers are imperative widgets mounted per mapping row (analog msa-typ1).
  *
@@ -73,7 +73,8 @@ export default createModule({
   data(module, _t) {
     return {
       // ── Transient view state (not persisted) ──────────────────
-      loading: false,
+      /** ids der Endpunkte mit laufender Anfrage. @type {string[]} */
+      _pendingIds: [],
       scheduleUnits: SCHEDULE_UNITS,
       /** @type {{status:number,statusText:string,ok:boolean,body:string}|null} */
       lastResponse: null,
@@ -147,9 +148,13 @@ export default createModule({
           })),
           activeParams: this.activeParams(),
           pickableColumns: this.pickableColumns(),
-          loading: this.loading,
+          loading: this._pendingIds.length > 0,
         }, options);
       },
+      /** @noagent view: läuft für den gezeigten Endpunkt eine Anfrage? */
+      activeLoading() { return this._pendingIds.includes(this.model.activeId); },
+      /** @noagent view: Antwort zeigen, wenn der gezeigte Endpunkt eine hat und nicht lädt */
+      showResponse() { return Boolean(this.lastResponse) && !this.activeLoading(); },
       /** @noagent derived set; der Agent liest sie über read().activeParams */
       activeParams() {
         return this.model.endpoints.length > 0 ? PARAM_KEYS : [];
@@ -194,7 +199,7 @@ export default createModule({
         requireKnownId('endpointId', endpointId, this.model.endpoints.map(e => e.id));
         if (endpointId === this.model.activeId) return;
         this.model.activeId = endpointId;
-        this.lastResponse = null;
+        this.lastResponse = this._responses.get(endpointId) ?? null;
         this.$nextTick(() => this._mountPickers());
       },
       /**
@@ -435,7 +440,7 @@ export default createModule({
           module._context.notify(this.t('errorNoUrl'), 'error');
           return null;
         }
-        this.loading = true;
+        this._pendingIds = [...this._pendingIds, ep.id];
         this._setResponse(ep, null);
         let response;
         try {
@@ -444,7 +449,7 @@ export default createModule({
           response = { status: 0, statusText: 'Error', ok: false, body: err.message };
         }
         this._setResponse(ep, response);
-        this.loading = false;
+        this._pendingIds = this._pendingIds.filter(id => id !== ep.id);
         return response;
       },
 
