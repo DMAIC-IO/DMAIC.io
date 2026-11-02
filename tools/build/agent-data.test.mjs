@@ -4377,3 +4377,130 @@ test('Schreibweg: Eine Neubindung in der Hilfe nimmt dem Namen die Spur', () => 
   });
   assert.deepEqual(reported, ['unreachable_write:nodes']);
 });
+
+// ── Fix-Runde 1: Element-Zeiger sind kein Parameterwert, Vorlagenmethoden in Ausdrücken ──
+
+/** Ein Lauf über ein Feld `steps` mit Element-Hilfen im Viewmodel und im Model. */
+const pointerRun = (signature, body, modelMethods = '') => writeGateRun({
+  vm: writeGateVm(`/** @noagent */
+      pick(id) { return this.model.steps.find(x => x.id === id); },
+      ${agentMethod(signature, body)}`),
+  fields: [writeGateField('steps', 'Array<object>')],
+  methods: `findStep(id) { return this.steps.find(x => x.id === id); }
+  ${modelMethods}`,
+}).written;
+
+test('Element-Zeiger: Umschalten aus dem Element selbst wählt keinen Wert, in jeder Lieferform', () => {
+  assert.deepEqual(pointerRun('flip(i)', 'const s = this.model.steps[i]; s.done = !s.done;'), []);
+  assert.deepEqual(pointerRun('flip(i)', 'const list = this.model.steps; const s = list[i]; s.done = !s.done;'), []);
+  assert.deepEqual(pointerRun('flip(id)', 'const s = this.pick(id); s.done = !s.done;'), []);
+  assert.deepEqual(pointerRun('flip(id)', 'const s = this.model.findStep(id); s.done = !s.done;'), []);
+  // Dieselbe Form über `.find` war schon vorher leer; beide Wege stimmen jetzt überein.
+  assert.deepEqual(pointerRun('flip(id)', 'const s = this.model.steps.find(x => x.id === id); s.done = !s.done;'), []);
+});
+
+test('Element-Zeiger: Entfernen und Selbstkopie sind kein Parameterwert', () => {
+  assert.deepEqual(pointerRun('drop(i, k)', 'const s = this.model.steps[i]; s.kids = s.kids.filter(x => x !== k);'), []);
+  assert.deepEqual(pointerRun('copy(i)', 'const s = this.model.steps[i]; s.copy = s.title;'), []);
+  assert.deepEqual(pointerRun('copy(i)', 'const s = this.model.steps[i]; const t = s.title; s.copy = t;'), []);
+  assert.deepEqual(pointerRun('copy(i)', 'this.model.steps[i].copy = this.model.steps[i].title;'), []);
+  assert.deepEqual(pointerRun('trim(i)', 'const s = this.model.steps[0]; s.kids = s.kids.slice(i);'), []);
+  assert.deepEqual(pointerRun('dup(i)', 'const c = { ...this.model.steps[i] }; this.model.steps.push(c);'), []);
+});
+
+test('Element-Zeiger: das Durchreichen an eine Model-Methode bleibt ohne Parameterwert', () => {
+  const put = 'put(x) { this.steps.push(x); }';
+  assert.deepEqual(pointerRun('dup(i)', 'const s = this.model.steps[i]; this.model.put(s);', put), []);
+  assert.deepEqual(pointerRun('dup(i)', 'this.model.put(this.model.steps[i]);', put), []);
+  assert.deepEqual(pointerRun('dup(i)', 'const l = this.model.steps; this.model.put(l[i]);', put), []);
+});
+
+test('Element-Zeiger: Tausch und Verschieben ordnen nur um', () => {
+  assert.deepEqual(pointerRun('swap(i, j)',
+    'const a = this.model.steps[i]; this.model.steps[i] = this.model.steps[j]; this.model.steps[j] = a;'), []);
+  assert.deepEqual(pointerRun('swap(i, j)',
+    'const l = this.model.steps; const a = l[i]; l[i] = l[j]; l[j] = a;'), []);
+  assert.deepEqual(pointerRun('move(i, j)',
+    'const it = this.model.steps.splice(i, 1)[0]; this.model.steps.splice(j, 0, it);'), []);
+});
+
+test('Element-Zeiger: in der delegierten Model-Methode gilt dasselbe', () => {
+  const via = (name, code) => pointerRun(`${name}(i, j)`, `this.model.${name}(i, j);`, `${name}(i, j) { ${code} }`);
+  assert.deepEqual(via('flip', 'const s = this.steps[i]; s.done = !s.done;'), []);
+  assert.deepEqual(via('flip', 'const s = this.findStep(i); s.done = !s.done;'), []);
+  assert.deepEqual(via('cycle', "const C = ['a', 'b', 'c']; const s = this.findStep(i); const k = C.indexOf(s.v); s.v = C[(k + 1) % 3];"), []);
+  assert.deepEqual(via('drop', 'const s = this.findStep(i); s.kids = s.kids.filter(x => x !== j);'), []);
+  assert.deepEqual(via('swap', 'const a = this.steps[i]; this.steps[i] = this.steps[j]; this.steps[j] = a;'), []);
+  assert.deepEqual(via('move', 'const it = this.steps.splice(i, 1)[0]; this.steps.splice(j, 0, it);'), []);
+});
+
+test('Element-Zeiger: ein echter Parameterwert über den Zeiger deckt weiter ab', () => {
+  const both = ['steps', 'steps.title'];
+  assert.deepEqual(pointerRun('setTitle(id, title)', 'const s = this.model.steps.find(x => x.id === id); s.title = title;'), both);
+  assert.deepEqual(pointerRun('setTitle(id, data)', 'const s = this.model.steps.find(x => x.id === id); s.title = data.code;'), both);
+  assert.deepEqual(pointerRun('setTitle(i, title)', 'const s = this.model.steps[i]; s.title = title;'), both);
+  assert.deepEqual(pointerRun('setTitle(i, title)', 'const s = this.model.steps[i]; const t = title.trim(); s.title = t;'), both);
+  assert.deepEqual(pointerRun('setTitle(id, title)', 'const s = this.pick(id); s.title = title;'), both);
+  assert.deepEqual(pointerRun('setTitle(id, title)', 'const s = this.model.findStep(id); s.title = title;'), both);
+  // Mischformen: Das Element liefert nur den Rest, der Wert kommt vom Parameter.
+  assert.deepEqual(pointerRun('setTitle(i, title)', 'const s = this.model.steps[i]; s.title = `${s.title} ${title}`;'), both);
+  assert.deepEqual(pointerRun('add(i, v)', 'const s = this.model.steps[i]; s.kids = [...s.kids, v];'), ['steps', 'steps.kids']);
+  assert.deepEqual(pointerRun('add(i, v)', 'const c = { ...this.model.steps[i], title: v }; this.model.steps[i] = c;'), ['steps']);
+  // Eine Tabelle außerhalb des Models, gewählt per Parameter, bleibt ein Parameterwert.
+  assert.deepEqual(pointerRun('setKind(i, k)', "const C = ['a', 'b']; const s = this.model.steps[i]; s.kind = C[k];"), ['steps', 'steps.kind']);
+  // Delegation mit Wert: Zeiger und Parameter nebeneinander.
+  assert.deepEqual(pointerRun('setTitle(id, title)', 'this.model.setTitle(id, title);',
+    'setTitle(id, title) { const s = this.findStep(id); s.title = title; }'), both);
+  assert.deepEqual(pointerRun('setTitle(i, title)', 'const s = this.model.steps[i]; this.model.rename(s, title);',
+    'rename(s, title) { s.title = title; this.steps.push(title); }'), ['steps']);
+});
+
+test('Vorlagenmethode: jede Ausdrucksform hinter dem Ereignis zählt', () => {
+  const toggle = '/** @noagent */\n      toggle() { this.model.flag = !this.model.flag; },';
+  const fields = [writeGateField('flag', 'boolean'), writeGateField('other')];
+  const run = (html) => writeGateRun({ vm: declaredVm(toggle), fields, html }).reported
+    .filter(c => c.startsWith('unreachable_write:'));
+  const hit = ['unreachable_write:flag'];
+  assert.deepEqual(run('<button @click="$event.stopPropagation(); toggle()"></button>'), hit);
+  assert.deepEqual(run('<button @click="open && toggle()"></button>'), hit);
+  assert.deepEqual(run('<button @click="foo(); toggle()"></button>'), hit);
+  assert.deepEqual(run('<button @click="open ? toggle() : 0"></button>'), hit);
+  assert.deepEqual(run('<button x-on:click.stop="!open || toggle()"></button>'), hit);
+  assert.deepEqual(run('<button @click="\n  foo();\n  toggle();\n"></button>'), hit);
+  assert.deepEqual(run("<button @click='foo(); toggle()'></button>"), hit);
+  // Die Grenze: ein längerer Name oder ein fremder Empfänger ist nicht die Methode.
+  for (const expr of ['toggleAll()', 'untoggle()', '$toggle()', 'toggle$()', 'obj.toggle()', 'foo(); obj.toggle()']) {
+    assert.deepEqual(run(`<button @click="${expr}"></button>`), [], expr);
+  }
+  // Eine Bindung oder ein Text ist kein Ereignis.
+  assert.deepEqual(run('<button :class="toggle()">toggle()</button>'), []);
+});
+
+test('Vorlagenmethode: eine @noagent-Methode eines Teil-Viewmodels zählt unter ihrem Pfadnamen', () => {
+  const body = DRAFT_VM.replace('problemClass() { return {}; }', 'problemClass() { this.model.extra = 1; return {}; }');
+  const reported = (html) => collectAgentData(subVmFixture(body, { html })).modules.foo.reported;
+  assert.ok(reported('<button @click="draft.problemClass()"></button>').includes('unreachable_write:extra'));
+  assert.ok(reported('<button @click="foo(); draft.problemClass()"></button>').includes('unreachable_write:extra'));
+  // Der nackte Name ohne Empfänger ist eine andere Methode.
+  assert.ok(!reported('<button @click="problemClass()"></button>').includes('unreachable_write:extra'));
+  assert.ok(!reported('<button @click="other.draft.problemClass()"></button>').includes('unreachable_write:extra'));
+});
+
+test('Element-Zeiger: eine Pfad-Hilfe, die nur einen Model-Wert umkopiert, deckt NICHTS ab', () => {
+  const root = fixture({ foo: {
+    'foo.js': SET_AT_PATH + vmWithAgent(`${SET_WHOLE_PARAMS}
+      /**
+       * @agent
+       * @param {string} key der Schlüssel
+       * @returns {void}
+       */
+      reset(key) {
+        requireEnum('key', key, KEYS);
+        setAtPath(this.model.params, key, this.model.params[key]);
+      },`),
+    'foo-model.js': PARAMS_MODEL,
+    'foo.html': PARAMS_HTML,
+  } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['unreachable_write:params.alpha', 'unreachable_write:params.beta']);
+});

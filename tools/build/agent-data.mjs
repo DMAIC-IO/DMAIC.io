@@ -258,7 +258,9 @@ function buildEntry(resolver, appDir, viewmodelFile, baseline) {
   const modelFields = declared ? [] : Object.entries(model.fields)
     .filter(([k, spec]) => !k.startsWith('_') && !(spec.via ?? []).length && !hasWriteBelow(k))
     .map(([k]) => k);
-  const uiWrites = bindings.templateMethods.flatMap(name => noAgentWrites.get(name) ?? []);
+  const uiWrites = [...noAgentWrites]
+    .filter(([name]) => bindings.eventExpressions.some(expr => namedInExpression(expr, name)))
+    .flatMap(([, paths]) => paths);
   const unreachable = [...new Set([...bindings.models, ...modelFields, ...uiWrites])]
     .filter(f => !written.has(f) && !viewPlain.has(f))
     .map(f => `unreachable_write:${f}`);
@@ -472,6 +474,8 @@ const COLLECTION_MUTATORS = new Set(['push', 'unshift', 'splice']);
 
 /** Aufrufe, die ein Element der Sammlung selbst liefern, keine Kopie. */
 const ELEMENT_PICKERS = new Set(['find', 'findLast', 'at']);
+/** Sammelmethoden, deren Argumente nur wählen, welche vorhandenen Elemente sie liefern. */
+const ELEMENT_SELECTORS = new Set(['slice', 'splice']);
 
 const ASSIGN_KINDS = new Set([
   ts.SyntaxKind.EqualsToken,
@@ -1200,6 +1204,8 @@ function subViewModelModelBindings(moduleDir, subNames) {
  *      (`const s = this.model.<a>.find(…); s.<b> = <ausdruck>`) für `<a>` und
  *      `<a>.<b>`; siehe `collectionWriteFields` und `resolveModelPath`. Dasselbe
  *      über eine Hilfsmethode, die ein Element liefert (`returnedElement`).
+ *      Der Wert selbst darf nicht aus dem Model stammen (`readsModel`): Ein
+ *      Parameter, der nur die Stelle wählt, macht ihn nicht zum Parameterwert.
  *
  * @param {ts.SignatureDeclaration} fn
  * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
@@ -1213,7 +1219,9 @@ function writtenModelFields(fn, resolver, modelDecl) {
   // sie bei der ersten Hilfsvariablen, und genau das tut `hypothesis-test`
   // (`setPowerGoal(v) { const n = parseFloat(v); … this.powerGoal = …(n); }`).
   const ownParams = new Set(parameterNames(fn).filter(Boolean));
-  const agentParams = expandDerivedNames(fn.body, ownParams);
+  const helperOf = viewmodelHelperLookup(fn, resolver, modelDecl);
+  const isModelValue = modelValueTest(fn.body, 'model', helperOf);
+  const agentParams = expandDerivedNames(fn.body, ownParams, isModelValue);
   // Die Datei der METHODE, nicht die des Moduls: ein Mitglied aus einem Mixin
   // löst seine Konstanten und Hilfsfunktionen in seiner eigenen Datei auf.
   const sf = fn.getSourceFile();
@@ -1223,12 +1231,12 @@ function writtenModelFields(fn, resolver, modelDecl) {
   // (`xs.forEach(key => setAtPath(this.model.params, key, value))` bindet
   // `key` neu — Abschluss-Review A-M2).
   const fields = collectCoveredFields(fn.body, 'model', agentParams, keySets,
-    (node, active) => fieldsCoveredByPathHelper(node, sf, keySets, active),
-    viewmodelHelperLookup(fn, resolver, modelDecl));
+    (node, active) => fieldsCoveredByPathHelper(node, sf, keySets, active, isModelValue),
+    helperOf);
   forEachCall(fn.body, node => {
     const methodName = modelMethodCallOf(node);
     if (!methodName || !modelDecl) return;
-    for (const field of fieldsCoveredByDelegation(resolver, modelDecl, methodName, node.arguments, agentParams)) {
+    for (const field of fieldsCoveredByDelegation(resolver, modelDecl, methodName, node.arguments, agentParams, isModelValue)) {
       fields.add(field);
     }
   });
@@ -1346,9 +1354,10 @@ function findDeclarationViaImport(name, sf) {
  * @param {Map<string, string[]>} keySets
  * @param {Set<string>} active  die an der Aufrufstelle gültigen, aus den
  *   Parametern der `@agent`-Methode abgeleiteten Namen
+ * @param {(node: ts.Node) => boolean} isModelValue  siehe `derivesFromParams`
  * @returns {string[]}
  */
-function fieldsCoveredByPathHelper(call, sf, keySets, active) {
+function fieldsCoveredByPathHelper(call, sf, keySets, active, isModelValue) {
   if (keySets.size === 0) return [];
   if (!ts.isIdentifier(call.expression)) return [];
   const decl = findDeclarationViaImport(call.expression.text, sf);
@@ -1365,7 +1374,7 @@ function fieldsCoveredByPathHelper(call, sf, keySets, active) {
   const keyArg = rest.find(argument => ts.isIdentifier(argument)
     && keySets.has(argument.text) && active.has(argument.text));
   if (!keyArg) return [];
-  if (!rest.some(argument => argument !== keyArg && derivesFromParams(argument, active))) return [];
+  if (!rest.some(argument => argument !== keyArg && derivesFromParams(argument, active, isModelValue))) return [];
   return keySets.get(keyArg.text).map(key => (target.path ? `${target.path}.${key}` : key));
 }
 
@@ -1458,11 +1467,14 @@ function pathHelperAssigns(fn) {
  * NICHT verfolgt, lieber ein übersehener Treffer als ein erfundener).
  * Iteriert bis zum Fixpunkt, weil die Deklarationsreihenfolge im
  * Normalfall, aber nicht zwingend, die Ableitungsreihenfolge ist.
+ * Ein Name, dessen Wert aus dem Model selbst stammt (`const s = this.model.a[i]`),
+ * wird nicht abgeleitet, auch wenn ein Parameter ihn auswählt: siehe `readsModel`.
  * @param {ts.Block|undefined} body
  * @param {Set<string>} names
+ * @param {(node: ts.Node) => boolean} [isModelValue]  siehe `derivesFromParams`
  * @returns {Set<string>}
  */
-function expandDerivedNames(body, names) {
+function expandDerivedNames(body, names, isModelValue = undefined) {
   if (!body || !ts.isBlock(body)) return names;
   const derived = new Set(names);
   let changed = true;
@@ -1472,7 +1484,7 @@ function expandDerivedNames(body, names) {
       if (!ts.isVariableStatement(statement)) continue;
       for (const decl of statement.declarationList.declarations) {
         if (!ts.isIdentifier(decl.name) || !decl.initializer || derived.has(decl.name.text)) continue;
-        if (derivesFromParams(decl.initializer, derived)) {
+        if (derivesFromParams(decl.initializer, derived, isModelValue)) {
           derived.add(decl.name.text);
           changed = true;
         }
@@ -1677,13 +1689,15 @@ function parameterNames(fn) {
  * und wird nicht ausgenommen.
  * @param {ts.Node} expr
  * @param {Set<string>} names
+ * @param {(node: ts.Node) => boolean} [isModelValue]  Teilausdrücke, die aus dem
+ *   Model lesen: Ein Parameter darin wählt nur aus, er liefert keinen Wert
  * @returns {boolean}
  */
-function derivesFromParams(expr, names) {
+function derivesFromParams(expr, names, isModelValue = undefined) {
   if (names.size === 0) return false;
   let found = false;
   const walk = (node) => {
-    if (found || isFunctionLike(node)) return;
+    if (found || isFunctionLike(node) || isModelValue?.(node)) return;
     if (ts.isPropertyAccessExpression(node)) { walk(node.expression); return; }
     if (ts.isPropertyAssignment(node)) { walk(node.initializer); return; }
     if (ts.isIdentifier(node)) { if (names.has(node.text)) found = true; return; }
@@ -1778,7 +1792,7 @@ function collectCoveredFields(body, through, names, keySets = new Map(), onCall 
       if (resolved) aliases.set(node.name.text, resolved.path);
     }
     if (ts.isBinaryExpression(node) && ASSIGN_KINDS.has(node.operatorToken.kind)
-        && derivesFromParams(node.right, active)) {
+        && derivesFromParams(node.right, active, n => readsModel(n, through, aliases, helperOf))) {
       const target = assignTargetAfterThis(node.left, through);
       if (target) for (const field of fieldsOfTarget(target, keySets, active)) fields.add(field);
     }
@@ -1843,6 +1857,52 @@ function resolveModelPath(node, through, aliases, helperOf = null) {
   const base = resolveModelPath(collection, through, aliases, helperOf);
   // Ein Element der Wurzel selbst (`this.model[key]`) nennt keine Sammlung.
   return base?.path ? { path: base.path, anchor: base.anchor ?? base.path } : null;
+}
+
+/**
+ * Ob ein Ausdruck einen vorhandenen Wert aus dem Model holt. Dann ist er kein
+ * Parameterwert, auch wenn ein Parameter die Stelle wählt: `this.model.a[i]`,
+ * `this.findStep(id)`, `a[i].title`, `this.model[key]` und `a.splice(i, 1)`.
+ * Umschalten, Selbstkopie, Tausch und Verschieben schreiben so nichts, was der
+ * Aufrufer vorgibt. Ein Hilfsaufruf, der nicht als Elementlieferant belegt ist
+ * (`this.model.compute(v)`), zählt nicht als Lesen: Sein Ergebnis kann vom
+ * Argument abhängen.
+ *
+ * @param {ts.Node} node
+ * @param {string|null} through
+ * @param {Map<string, string>} aliases
+ * @param {((call: ts.CallExpression) => ElementHelper|null)|null} [helperOf]
+ * @returns {boolean}
+ */
+function readsModel(node, through, aliases, helperOf = null) {
+  if (resolveModelPath(node, through, aliases, helperOf)) return true;
+  const isSelector = ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)
+    && ELEMENT_SELECTORS.has(node.expression.name.text);
+  const source = isSelector ? node.expression.expression
+    : ts.isElementAccessExpression(node) ? node.expression : null;
+  return !!source && !!resolveModelPath(source, through, aliases, helperOf);
+}
+
+/**
+ * `readsModel` für die Prüfungen außerhalb des Walks von `collectCoveredFields`,
+ * mit den `const`-Namen der obersten Ebene von `body`.
+ *
+ * @param {ts.Block|undefined} body
+ * @param {string|null} through
+ * @param {((call: ts.CallExpression) => ElementHelper|null)|null} helperOf
+ * @returns {(node: ts.Node) => boolean}
+ */
+function modelValueTest(body, through, helperOf) {
+  const aliases = new Map();
+  for (const statement of body?.statements ?? []) {
+    if (!ts.isVariableStatement(statement) || !(statement.declarationList.flags & ts.NodeFlags.Const)) continue;
+    for (const decl of statement.declarationList.declarations) {
+      if (!ts.isIdentifier(decl.name) || !decl.initializer) continue;
+      const resolved = resolveModelPath(decl.initializer, through, aliases, helperOf);
+      if (resolved) aliases.set(decl.name.text, resolved.path);
+    }
+  }
+  return (node) => readsModel(node, through, aliases, helperOf);
 }
 
 /**
@@ -1987,16 +2047,17 @@ function joinPath(base, name) {
  * @returns {string[]}
  */
 function collectionWriteFields(node, through, aliases, active, helperOf = null) {
+  const isValue = (expr) => derivesFromParams(expr, active, n => readsModel(n, through, aliases, helperOf));
   if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
     const method = node.expression.name.text;
     if (!COLLECTION_MUTATORS.has(method)) return [];
     const inserted = method === 'splice' ? node.arguments.slice(2) : node.arguments;
-    if (!inserted.some(arg => derivesFromParams(arg, active))) return [];
+    if (!inserted.some(isValue)) return [];
     const collection = resolveModelPath(node.expression.expression, through, aliases, helperOf);
     return collection?.path ? pathsOf(collection, collection.path) : [];
   }
   if (!ts.isBinaryExpression(node) || !ASSIGN_KINDS.has(node.operatorToken.kind)
-      || !derivesFromParams(node.right, active)) return [];
+      || !isValue(node.right)) return [];
   const { left } = node;
   if (ts.isPropertyAccessExpression(left)) {
     const base = resolveModelPath(left.expression, through, aliases, helperOf);
@@ -2227,23 +2288,26 @@ function resolveModelClass(resolver, sf) {
  * @param {string} methodName
  * @param {ts.NodeArray<ts.Expression>} callArgs  die Argumente am Aufruf `this.model.<methodName>(…)`
  * @param {Set<string>} agentParams  die Parameternamen der `@agent`-Methode
+ * @param {(node: ts.Node) => boolean} isModelValue  siehe `derivesFromParams`
  * @returns {Set<string>}
  */
-function fieldsCoveredByDelegation(resolver, modelDecl, methodName, callArgs, agentParams) {
+function fieldsCoveredByDelegation(resolver, modelDecl, methodName, callArgs, agentParams, isModelValue) {
   const found = findClassMethod(resolver, modelDecl.node, modelDecl.sf, methodName, new Set(), 0);
   if (!found) return new Set();
 
   const coveredParamNames = new Set();
   parameterNames(found.method).forEach((name, i) => {
-    if (name && callArgs[i] && derivesFromParams(callArgs[i], agentParams)) coveredParamNames.add(name);
+    if (name && callArgs[i] && derivesFromParams(callArgs[i], agentParams, isModelValue)) coveredParamNames.add(name);
   });
   if (coveredParamNames.size === 0) return new Set();
 
-  const derivedInMethod = expandDerivedNames(found.method.body, coveredParamNames);
-  return collectCoveredFields(found.method.body, null, derivedInMethod, new Map(), null, (call) => {
+  const helperOf = (call) => {
     const name = ownCallName(call);
     return name ? modelHelper(resolver, modelDecl, name) : null;
-  });
+  };
+  const derivedInMethod = expandDerivedNames(found.method.body, coveredParamNames,
+    modelValueTest(found.method.body, null, helperOf));
+  return collectCoveredFields(found.method.body, null, derivedInMethod, new Map(), null, helperOf);
 }
 
 /**
@@ -2260,17 +2324,18 @@ function fieldsCoveredByDelegation(resolver, modelDecl, methodName, callArgs, ag
  * am Viewmodel vorbeigeht und den zweiten Code bekommt
  * (`template_model_call:<methode>`).
  *
- * `templateMethods` nennt die nackten Viewmodel-Methoden hinter einem Ereignis
- * (`@click="toggle()"`, `@change="toggle"`). Was davon `@noagent` ist und das
- * Model zuweist, ist ein Schreibweg ohne Gegenstück auf der Fläche.
+ * `eventExpressions` sind die vollständigen Ausdrücke hinter den Ereignissen
+ * (`@click="foo(); toggle()"`). Welche `@noagent`-Methode darin vorkommt und das
+ * Model zuweist, ist ein Schreibweg ohne Gegenstück auf der Fläche; das
+ * entscheidet `namedInExpression`.
  *
  * @param {string} moduleDir
- * @returns {{ models: string[], calls: string[], templateMethods: string[], modelElements: Array<{ path: string, tag: string, type: string }>, paramCalls: Array<{ key: string, hasFixedBounds: boolean }> }}
+ * @returns {{ models: string[], calls: string[], eventExpressions: string[], modelElements: Array<{ path: string, tag: string, type: string }>, paramCalls: Array<{ key: string, hasFixedBounds: boolean }> }}
  */
 function templateBindings(moduleDir) {
   const models = [];
   const calls = [];
-  const templateMethods = new Set();
+  const eventExpressions = [];
   const modelElements = [];
   const paramCalls = [];
   // Kein `existsSync`-Schutz: `moduleDir` ist `dirname(viewmodelFile)`, und
@@ -2301,9 +2366,22 @@ function templateBindings(moduleDir) {
       paramCalls.push({ key: m[1], hasFixedBounds: /\s(?:min|max)="[-\d.]+"/.test(el?.text ?? '') });
     }
     for (const m of html.matchAll(/(?:@|x-on:)[a-z]+(?:\.[a-z]+)*="model\.([A-Za-z_$][\w$]*)\(/g)) calls.push(m[1]);
-    for (const m of html.matchAll(/(?:@|x-on:)[\w:-]+(?:\.[\w-]+)*="\s*([A-Za-z_$][\w$]*)\s*(?:\(|")/g)) templateMethods.add(m[1]);
+    for (const m of html.matchAll(/(?:@|x-on:)[\w:-]+(?:\.[\w-]+)*=(?:"([^"]*)"|'([^']*)')/g)) eventExpressions.push(m[1] ?? m[2]);
   }
-  return { models, calls, templateMethods: [...templateMethods], modelElements, paramCalls };
+  return { models, calls, eventExpressions, modelElements, paramCalls };
+}
+
+/**
+ * Ob ein Vorlagenausdruck die Methode `name` nennt: der ganze Bezeichner ohne
+ * fremden Empfänger. `name` darf ein Pfad sein (`draft.selectQuestion`).
+ *
+ * @param {string} expr
+ * @param {string} name
+ * @returns {boolean}
+ */
+function namedInExpression(expr, name) {
+  const escaped = name.replace(/[.$]/g, '\\$&');
+  return new RegExp(`(?:^|[^\\w.$])${escaped}(?![\\w$])`).test(expr);
 }
 
 /**
