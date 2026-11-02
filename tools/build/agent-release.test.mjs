@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { collectAgentData } from './agent-data.mjs';
+import { collectAgentData, loadWriteBaseline } from './agent-data.mjs';
 import { RELEASED_MODULES, VIOLATION_REMEDIES, explainViolation, releaseDiff } from './agent-release.mjs';
 import { APP_DIR } from './build.mjs';
 
@@ -44,4 +44,19 @@ test('releaseDiff: Verstoß wörtlich mit Abhilfe, fehlendes Tag, unbekanntes un
 
 test('explainViolation: unbekannte Verstoßart verweist auf den Generator', () => {
   assert.equal(explainViolation('x', 'brand_new:y'), 'x: brand_new:y → Befundart in tools/build/agent-data.mjs nachschlagen');
+});
+
+test('jede Baseline-Zeile entspricht einem echten Befund', () => {
+  const { frozen } = collectAgentData(APP_DIR);
+  const live = new Set(Object.entries(frozen).flatMap(([id, codes]) => codes.map(c => `${id} ${c}`)));
+  const stale = [...loadWriteBaseline()].filter(l => !live.has(l));
+  assert.deepEqual(stale, [], 'erledigte Zeilen aus agent-write-baseline.txt streichen');
+});
+
+test('kein freigegebenes Modul meldet unreachable_write außerhalb der Baseline', () => {
+  const { modules } = collectAgentData(APP_DIR);
+  const open = Object.entries(modules)
+    .filter(([id]) => RELEASED_MODULES.includes(id))
+    .flatMap(([id, entry]) => entry.reported.filter(c => c.startsWith('unreachable_write:')).map(c => `${id} ${c}`));
+  assert.deepEqual(open, [], 'Schreibweg bauen oder [via: …] setzen; die Baseline wächst nicht');
 });

@@ -69,7 +69,7 @@ export const VIOLATION_REMEDIES = Object.freeze({
   invalid_omit_path: 'Auslassungspfad aus Schlüsseln und [] bilden, mit einem Schlüssel am Ende (inScope[].dataUrl, [][].image)',
   omit_path_mismatch: 'Auslassungspfad an den erklärten Typ des Feldes angleichen',
   dom_detour: 'über das Model gehen, nicht am DOM vorbei (innerHTML/outerHTML/dataset)',
-  unreachable_write: '@agent-Setter mit Parameter anlegen, der das Feld aus diesem Parameter zuweist',
+  unreachable_write: 'ein Model-Feld, das die Fläche liest, hat keinen @agent-Weg, der es aus einem Parameter schreibt: Setter mit Parameter anlegen (direkt, über Model-Methode, Sammlung oder Element), oder [via: aktion] am Feld, oder VIEW_FIELDS; eingefrorene Altlasten stehen in agent-write-baseline.txt und wachsen nicht',
   template_model_call: 'die Vorlage auf den Viewmodel-Sink umlegen',
   undeclared_option_source: 'die Menge als Lesefeld in @typedef AgentRead und einem eigenen read() ergänzen',
   module_state_option_source: 'Wertemenge über eine this.…-Kette prüfen, deren erstes Segment ein Lesefeld ist (z. B. eine @noagent-Methode gleichen Namens wie das Feld) — eine Modul-let-Menge ist für den Agenten unsichtbar',

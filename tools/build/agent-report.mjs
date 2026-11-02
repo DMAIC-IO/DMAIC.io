@@ -261,7 +261,7 @@ export function fieldsWithoutWritePath(modules, writtenFields) {
 /** Der CLI-Teil. Berichtend: Exit immer 0. */
 async function main() {
   const verbose = process.argv.includes('--verbose');
-  const { modules, coverage, writtenFields } = collectAgentData(APP_DIR);
+  const { modules, coverage, writtenFields, frozen } = collectAgentData(APP_DIR);
 
   console.log(`Agentenfläche: ${coverage.available} von ${coverage.total} Modulen freigegeben`);
 
@@ -285,6 +285,10 @@ async function main() {
       if (verbose) for (const row of rows.sort()) console.log(`    ${row}`);
     }
   }
+
+  const frozenCount = Object.values(frozen).reduce((n, codes) => n + codes.length, 0);
+  console.log(`\nEingefroren (agent-write-baseline.txt): ${frozenCount}`);
+  if (verbose) for (const [id, codes] of Object.entries(frozen)) for (const c of codes) console.log(`    ${id} ${c}`);
 
   const help = countHelpCoverage(APP_DIR, modules);
   const pct = (c) => (c.total === 0 ? '—' : `${Math.round((c.covered / c.total) * 100)} %`);

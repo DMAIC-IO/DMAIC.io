@@ -1,7 +1,7 @@
 # agent-write-baseline.txt — eingefrorener Bestand von `unreachable_write`.
 #
 # Erzeugt beim Schärfen des Gates (`tools/build/agent-data.mjs`), 2026-11-02.
-# Jede Zeile ist ein Befund von damals: `<modul> unreachable_write:<pfad>`,
+# Jede Zeile ist ein Befund von damals (siehe Einzelvermerke): `<modul> unreachable_write:<pfad>`,
 # sortiert. Ein Model-Feld ohne Schreibweg über eine `@agent`-Methode mit
 # Parameterwert, ohne `[via: …]` und ohne Eintrag in `VIEW_FIELDS`.
 #
@@ -20,5 +20,7 @@
 #   nicht dazu: Ein neuer Befund wird behoben, nicht eingefroren.
 
 calculator unreachable_write:lastResult
+# Gate-Lücke, kein fehlender Setter: Der Schreibweg existiert (setCategoryLabels),
+# das Gate erkennt den Sammelwert (next[key] = …; model.catLabels = next) noch nicht.
 ishikawa unreachable_write:catLabels
 ishikawa unreachable_write:images
