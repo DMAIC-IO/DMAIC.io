@@ -96,6 +96,19 @@ suite('workspace instance ready', () => {
     assertEqual(ws._instances.has('i1'), false, 'eine gescheiterte Einhängung darf nichts eintragen');
   });
 
+  test('scheitert das Modul, bleibt der Container ohne data-module-ready', async () => {
+    // Eine Fehlerkarte ist sichtbar, aber nicht lebendig: das Merkmal gehört
+    // nur an den Erfolgspfad.
+    const { ws, release } = makeWorkspace({ reject: true });
+    const mounting = ws._ensureInstantiated('i1');
+    release();
+    await mounting;
+    const container = ws._containers.get('i1');
+    assertTrue(Boolean(container), 'der Container bleibt für die Fehlerkarte');
+    assertEqual(container.dataset.moduleReady, undefined, 'data-module-ready darf nach einem Fehler nicht stehen');
+    assertEqual(ws._instances.has('i1'), false);
+  });
+
   test('nach einem gescheiterten Einhängen wird NICHT erneut eingehängt', async () => {
     // Der Zweig „Hülle da, nichts im Flug, keine Instanz". Ein neuer Versuch
     // gehört nicht hierher: `_instantiateModule` legt die Hülle an, ein
