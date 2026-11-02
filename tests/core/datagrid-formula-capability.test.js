@@ -100,7 +100,7 @@ suite('DataGrid setCellValue — clearFormula', () => {
 
     assertEqual(col.formulas[1], null);
     assertEqual(col.values[1], 99);
-    const entry = grid.history._stack[grid.history._index];
+    const entry = grid.history.peek();
     assertEqual(entry.oldFormula, FORMULA);
     assertEqual(entry.newFormula, null);
   });
@@ -128,14 +128,23 @@ suite('DataGrid setCellValue — clearFormula', () => {
     grid.setCellValue(col.id, 1, 99);
 
     assertEqual(col.formulas[1], FORMULA);
-    assertEqual(grid.history._stack[grid.history._index].oldFormula, undefined);
+    assertEqual(grid.history.peek().oldFormula, undefined);
+  });
+
+  test('History.peek liefert den nächsten undo-Eintrag, ohne die Historie zu bewegen', () => {
+    const grid = newGrid();
+    assertEqual(grid.history.peek(), null);
+    grid.setCellValue(grid.getColumn('col_a').id, 0, 7);
+    const first = grid.history.peek();
+    assertEqual(grid.history.peek(), first);
+    assertEqual(grid.history.canUndo(), true);
   });
 
   test('clearFormula an einer Zelle ohne Formel ändert die Historie nicht', () => {
     const grid = newGrid();
     const col = grid.getColumn('col_a');
     grid.setCellValue(col.id, 0, 7, { clearFormula: true });
-    assertEqual(grid.history._stack[grid.history._index].oldFormula, undefined);
+    assertEqual(grid.history.peek().oldFormula, undefined);
     grid.undo();
     assertEqual(col.values[0], 10);
   });

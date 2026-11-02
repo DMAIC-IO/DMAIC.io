@@ -31,6 +31,9 @@ export class History {
     return this._stack[++this._index];
   }
 
+  /** @returns {object|null} der nächste `undo`-Eintrag, ohne die Historie zu bewegen */
+  peek() { return this._index >= 0 ? this._stack[this._index] : null; }
+
   canUndo() { return this._index >= 0; }
   canRedo() { return this._index < this._stack.length - 1; }
   clear() { this._stack = []; this._index = -1; }
