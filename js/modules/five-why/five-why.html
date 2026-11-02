@@ -43,7 +43,7 @@
               <template x-if="n1.level < maxLevel">
                 <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--add" type="button"
                         data-action="add-child" :data-id="n1.id" :title="t('addSubQuestion')"
-                        @click.stop="addChild(n1.id)">＋</button>
+                        @click.stop="addChild(n1.id)"><span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span></button>
               </template>
               <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--delete" type="button"
                       data-action="delete" :data-id="n1.id" :title="deleteTitle()"
@@ -73,7 +73,7 @@
                       <template x-if="n2.level < maxLevel">
                         <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--add" type="button"
                                 data-action="add-child" :data-id="n2.id" :title="t('addSubQuestion')"
-                                @click.stop="addChild(n2.id)">＋</button>
+                                @click.stop="addChild(n2.id)"><span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span></button>
                       </template>
                       <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--delete" type="button"
                               data-action="delete" :data-id="n2.id" :title="deleteTitle()"
@@ -103,7 +103,7 @@
                               <template x-if="n3.level < maxLevel">
                                 <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--add" type="button"
                                         data-action="add-child" :data-id="n3.id" :title="t('addSubQuestion')"
-                                        @click.stop="addChild(n3.id)">＋</button>
+                                        @click.stop="addChild(n3.id)"><span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span></button>
                               </template>
                               <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--delete" type="button"
                                       data-action="delete" :data-id="n3.id" :title="deleteTitle()"
@@ -133,7 +133,7 @@
                                       <template x-if="n4.level < maxLevel">
                                         <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--add" type="button"
                                                 data-action="add-child" :data-id="n4.id" :title="t('addSubQuestion')"
-                                                @click.stop="addChild(n4.id)">＋</button>
+                                                @click.stop="addChild(n4.id)"><span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span></button>
                                       </template>
                                       <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--delete" type="button"
                                               data-action="delete" :data-id="n4.id" :title="deleteTitle()"
@@ -171,7 +171,7 @@
                                       </template>
                                       <template x-if="n4.level < maxLevel">
                                         <button class="five-why__add-child-btn" type="button" :data-parent="n4.id"
-                                                @click="addChild(n4.id)" x-text="addChildLabel(n4)"></button>
+                                                @click="addChild(n4.id)"><span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span><span x-text="addChildLabel(n4)"></span></button>
                                       </template>
                                     </div>
                                   </template>
@@ -179,7 +179,7 @@
                               </template>
                               <template x-if="n3.level < maxLevel">
                                 <button class="five-why__add-child-btn" type="button" :data-parent="n3.id"
-                                        @click="addChild(n3.id)" x-text="addChildLabel(n3)"></button>
+                                        @click="addChild(n3.id)"><span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span><span x-text="addChildLabel(n3)"></span></button>
                               </template>
                             </div>
                           </template>
@@ -187,7 +187,7 @@
                       </template>
                       <template x-if="n2.level < maxLevel">
                         <button class="five-why__add-child-btn" type="button" :data-parent="n2.id"
-                                @click="addChild(n2.id)" x-text="addChildLabel(n2)"></button>
+                                @click="addChild(n2.id)"><span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span><span x-text="addChildLabel(n2)"></span></button>
                       </template>
                     </div>
                   </template>
@@ -195,7 +195,7 @@
               </template>
               <template x-if="n1.level < maxLevel">
                 <button class="five-why__add-child-btn" type="button" :data-parent="n1.id"
-                        @click="addChild(n1.id)" x-text="addChildLabel(n1)"></button>
+                        @click="addChild(n1.id)"><span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span><span x-text="addChildLabel(n1)"></span></button>
               </template>
             </div>
           </template>
@@ -207,6 +207,7 @@
     <button class="five-why__add-root-btn" type="button"
             data-help-key="modules.five-why.actions.addRoot.help"
             data-ref="addRoot" @click="addRoot()">
+      <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
       <span x-text="addRootLabel()"></span>
     </button>
 

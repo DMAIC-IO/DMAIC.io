@@ -106,14 +106,14 @@ export default createModule({
       toggleIcon(node) { return node.collapsed ? 'nav.expand-right' : 'nav.expand-down'; },
       /** @noagent view transform — delete button tooltip (shared "common.delete" key). */
       deleteTitle() { return _t('common.delete'); },
-      /** @noagent view transform — inline add-child label: "＋ Add Why {nextLevel}". */
+      /** @noagent view transform — inline add-child label: "Add Why {nextLevel}". */
       addChildLabel(node) {
         const next = Math.min(node.level + 1, MAX_LEVEL);
-        return `＋ ${  _t('modules.five-why.addWhyN', { n: next })}`;
+        return _t('modules.five-why.addWhyN', { n: next });
       },
-      /** @noagent view transform — add-root button label: "＋ Add Why". */
+      /** @noagent view transform — add-root button label: "Add Why". */
       addRootLabel() {
-        return `＋ ${  _t('modules.five-why.addWhy')}`;
+        return _t('modules.five-why.addWhy');
       },
       /** @noagent view transform — stats text: "{n} {label}" (single text node). */
       statText(n, key) {

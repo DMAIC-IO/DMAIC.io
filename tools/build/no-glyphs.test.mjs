@@ -113,3 +113,9 @@ test('findGlyphs trimmt vor dem Randtest (Loch 5)', () => {
 test('findGlyphs lässt einen echten Fließtext-Pfeil weiter durch (kein Loch-5-Rückfall)', () => {
   assert.deepEqual(findGlyphs('"a": "Stat → Quality Tools"'), []);
 });
+
+test('findGlyphsInHtml meldet das Plus-Zeichen ＋ im Knopf', () => {
+  const hits = findGlyphsInHtml('<button>＋</button>');
+  assert.equal(hits.length, 1);
+  assert.equal(hits[0].glyph, '＋');
+});
