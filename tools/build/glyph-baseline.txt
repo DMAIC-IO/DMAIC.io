@@ -5,6 +5,10 @@
 # damals: `datei:glyphe:zeileninhalt` (Inhalt getrimmt, wie ihn der Fund trägt),
 # sortiert. Der Schlüssel hängt am Inhalt, nicht an der Zeilennummer: eine
 # Zeile darüber einzufügen oder zu löschen macht die Baseline nicht rot.
+# Der Inhalt ist auf 90 Zeichen gekürzt (bei `<svg>` auf 60). Gezählt wird je
+# Schlüssel: Kommt dieselbe Zeile n-mal vor, steht sie n-mal hier; ein
+# weiteres Vorkommen (kopierte Zeile) ist ein neuer Fund und lässt den Build
+# rot laufen.
 #
 # WIE DAS GATE DIESE DATEI BENUTZT (`npm run icons:check`):
 #   - Ein Fund, dessen Zeile HIER steht, wird gemeldet, aber der Build

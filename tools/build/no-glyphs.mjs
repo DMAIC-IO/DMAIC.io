@@ -250,3 +250,24 @@ export function findPseudoGlyphs(text) {
   });
   return out;
 }
+
+/**
+ * Teilt Funde gegen die Baseline: Je Schlüssel deckt die Baseline so viele
+ * Funde, wie sie Zeilen dafür führt; jeder weitere Fund mit demselben
+ * Schlüssel (eine kopierte Zeile) ist neu.
+ *
+ * @param {{key: string}[]} findings
+ * @param {Map<string, number>} baseline  Schlüssel -> Anzahl Baseline-Zeilen
+ * @returns {{known: object[], unknown: object[]}}
+ */
+export function splitByBaseline(findings, baseline) {
+  const seen = new Map();
+  const known = [];
+  const unknown = [];
+  for (const f of findings) {
+    const n = (seen.get(f.key) ?? 0) + 1;
+    seen.set(f.key, n);
+    (n <= (baseline.get(f.key) ?? 0) ? known : unknown).push(f);
+  }
+  return { known, unknown };
+}

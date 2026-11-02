@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { findInlineSvg, findGlyphs, findGlyphsInJs, findGlyphsInHtml, findPseudoGlyphs } from './no-glyphs.mjs';
+import { findInlineSvg, findGlyphs, findGlyphsInJs, findGlyphsInHtml, findPseudoGlyphs, splitByBaseline } from './no-glyphs.mjs';
 
 test('findInlineSvg meldet ein gezeichnetes Icon', () => {
   const hits = findInlineSvg('<button><svg viewBox="0 0 24 24"><path d="M1 1"/></svg></button>');
@@ -118,4 +118,20 @@ test('findGlyphsInHtml meldet das Plus-Zeichen ＋ im Knopf', () => {
   const hits = findGlyphsInHtml('<button>＋</button>');
   assert.equal(hits.length, 1);
   assert.equal(hits[0].glyph, '＋');
+});
+
+test('splitByBaseline: eine Dublette einer Baseline-Zeile ist ein neuer Fund', () => {
+  const f = (n) => ({ key: 'a.js:●:x', message: `m${n}` });
+  const base = new Map([['a.js:●:x', 1]]);
+  const { known, unknown } = splitByBaseline([f(1), f(2)], base);
+  assert.equal(known.length, 1);
+  assert.deepEqual(unknown.map((u) => u.message), ['m2']);
+});
+
+test('splitByBaseline: zwei Baseline-Zeilen decken zwei Funde, unbekannte Schlüssel sind neu', () => {
+  const a = { key: 'a.js:●:x', message: 'a' };
+  const b = { key: 'b.js:●:y', message: 'b' };
+  const { known, unknown } = splitByBaseline([a, a, b], new Map([['a.js:●:x', 2]]));
+  assert.equal(known.length, 2);
+  assert.deepEqual(unknown, [b]);
 });

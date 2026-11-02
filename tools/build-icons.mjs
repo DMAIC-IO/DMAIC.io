@@ -14,7 +14,7 @@ import { loadIconMap } from './build/icon-map.mjs';
 import { buildIconsCss } from './build/icons.mjs';
 import { readdirSync, statSync } from 'node:fs';
 import { collectIconRefs, findUnmappedRefs } from './build/icon-refs.mjs';
-import { findInlineSvg, findGlyphs, findGlyphsInJs, findGlyphsInHtml, findPseudoGlyphs } from './build/no-glyphs.mjs';
+import { findInlineSvg, findGlyphs, findGlyphsInJs, findGlyphsInHtml, findPseudoGlyphs, splitByBaseline } from './build/no-glyphs.mjs';
 
 const APP = join(import.meta.dirname, '..');
 const MAP = join(APP, 'assets/icons/icon-map.json');
@@ -112,7 +112,7 @@ const read = (path) => readFileSync(path, 'utf8');
 
 /**
  * Baseline des Glyphen-Bestands (`tools/build/glyph-baseline.txt`): eine
- * sortierte `datei:glyphe:zeileninhalt`-Liste des Rückstands, den das
+ * sortierte `datei:glyphe:zeileninhalt`-Liste (je Vorkommen eine Zeile) des Rückstands, den das
  * gehärtete Gate am 2026-08-22 vorfand. Der Schlüssel hängt am getrimmten
  * Zeileninhalt, nicht an der Zeilennummer: Wer darüber eine Zeile einfügt
  * oder löscht, verschiebt den Fund, ohne dass die Baseline rot wird. Das
@@ -126,9 +126,13 @@ const read = (path) => readFileSync(path, 'utf8');
 const BASELINE_FILE = join(import.meta.dirname, 'build/glyph-baseline.txt');
 
 function loadBaseline() {
-  if (!existsSync(BASELINE_FILE)) return new Set();
-  const lines = readFileSync(BASELINE_FILE, 'utf8').split('\n');
-  return new Set(lines.map((l) => l.trim()).filter((l) => l && !l.startsWith('#')));
+  const counts = new Map();
+  if (!existsSync(BASELINE_FILE)) return counts;
+  for (const raw of readFileSync(BASELINE_FILE, 'utf8').split('\n')) {
+    const l = raw.trim();
+    if (l && !l.startsWith('#')) counts.set(l, (counts.get(l) ?? 0) + 1);
+  }
+  return counts;
 }
 
 /**
@@ -173,8 +177,7 @@ function collectFindings() {
 function checkNoGlyphs() {
   const findings = collectFindings();
   const baseline = loadBaseline();
-  const known = findings.filter((f) => baseline.has(f.key));
-  const unknown = findings.filter((f) => !baseline.has(f.key));
+  const { known, unknown } = splitByBaseline(findings, baseline);
 
   if (unknown.length) {
     const list = unknown.map((f) => `  ${f.message}`).join('\n');
