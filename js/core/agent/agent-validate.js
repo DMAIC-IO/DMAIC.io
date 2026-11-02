@@ -228,7 +228,9 @@ export function validateBatch(input, world) {
           world.t('agent.errors.unknownPhaseInCycle', { phase: a.phase }), { available: [...world.phases] }));
       }
       // Dann: darf das Zielmodul in diese (dem Zyklus bekannte) Phase?
-      if (typeof a.module === 'string') {
+      // Ein `module.add` im abgeschlossenen Projekt überspringt das: dort
+      // meldet Stufe 6 zuerst `project_completed` (Spec §5 C1, wie agent-ops.js).
+      if (typeof a.module === 'string' && !(world.completed && a.op === 'module.add')) {
         const allowed = world.modules.get(a.module).allowedPhases;
         if (!allowed.includes(a.phase)) {
           return fail(i, axiError(ERRORS.UNKNOWN_PHASE,
@@ -242,8 +244,9 @@ export function validateBatch(input, world) {
     // sonst kann der Agent etwas, was die UI verbietet. Hier im
     // Prüfer, weil dabei kein Seiteneffekt entsteht; `agent-ops.js` hat
     // dieselbe Prüfung nochmals als Verteidigung (zwei `module.add` im
-    // SELBEN Stapel sieht diese Momentaufnahme nicht).
-    if (a.op === 'module.add' && typeof a.module === 'string' && world.modules.get(a.module)?.singleton) {
+    // SELBEN Stapel sieht diese Momentaufnahme nicht). Im abgeschlossenen
+    // Projekt entfällt sie: Stufe 6 meldet dort zuerst `project_completed`.
+    if (a.op === 'module.add' && !world.completed && typeof a.module === 'string' && world.modules.get(a.module)?.singleton) {
       const existing = [...world.instances.entries()].find(([, inst]) => inst.module === a.module);
       if (existing) {
         return fail(i, axiError(ERRORS.MODULE_SINGLETON,

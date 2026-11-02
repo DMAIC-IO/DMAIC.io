@@ -346,6 +346,33 @@ suite('agent validate — Stufe 5: die Singleton-Regel', () => {
 });
 
 suite('agent validate — Stufe 6: abgeschlossenes Projekt', () => {
+  // Spec §5 C1: im abgeschlossenen Projekt gewinnt `project_completed` vor
+  // Phasen- und Singleton-Prüfung; nur eine dem Zyklus unbekannte Phase
+  // meldet weiter zuerst `unknown_phase`.
+  test('a wrong phase for the module in a completed project reports project_completed', () => {
+    const r = validateBatch([{ op: 'module.add', module: 'five-why', phase: 'measure' }],
+      makeWorld({ completed: true }));
+    assertEqual(r.ok, false);
+    assertEqual(r.cause.error, 'project_completed');
+  });
+
+  test('an existing singleton in a completed project reports project_completed', () => {
+    const world = makeWorld({ completed: true });
+    world.modules.set('project-charter',
+      { available: false, methods: null, allowedPhases: ['define'], singleton: true });
+    world.instances.set('pc-1', { module: 'project-charter', phase: 'define' });
+    const r = validateBatch([{ op: 'module.add', module: 'project-charter' }], world);
+    assertEqual(r.ok, false);
+    assertEqual(r.cause.error, 'project_completed');
+  });
+
+  test('a phase outside the cycle in a completed project still reports unknown_phase', () => {
+    const r = validateBatch([{ op: 'module.add', module: 'five-why', phase: 'bogus' }],
+      makeWorld({ completed: true }));
+    assertEqual(r.ok, false);
+    assertEqual(r.cause.error, 'unknown_phase');
+  });
+
   test('a write op is rejected before anything runs', () => {
     const r = validateBatch(
       [{ op: 'module.add', module: 'five-why', phase: 'define' }],
