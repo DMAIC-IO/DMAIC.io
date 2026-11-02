@@ -75,6 +75,16 @@ suite('core/worksheet-append — applyAppendColumn', () => {
     assertDeepEqual(applyAppendColumn(wsState(), { sheetId: 'sheet_1', colId: 'nope', name: 'N', values: [] }), { ok: false, reason: 'unknown_column' });
     assertDeepEqual(applyAppendColumn(null, { sheetId: 'sheet_1', colId: '__new__', name: 'N', values: [] }), { ok: false, reason: 'unknown_sheet' });
   });
+
+  test('eine Formel auf dem Zielblatt rechnet nach dem Schreiben neu', () => {
+    const dep = { id: 'b', name: 'B', shortName: 'C2', type: 'numeric', values: [99], formulas: ['=C1[1]*2'] };
+    const src = { id: 'a', name: 'A', shortName: 'C1', type: 'numeric', values: [1], formulas: [null] };
+    const ws = { sheets: [{ id: 's', name: 'S', state: { columns: [src, dep], rowCount: 1 } }] };
+    const res = applyAppendColumn(ws, { sheetId: 's', colId: 'a', name: 'A', values: [21] });
+    assertEqual(res.state.sheets[0].state.columns[1].values[0], 42);
+    // Die Eingabe bleibt unberührt.
+    assertEqual(dep.values[0], 99);
+  });
 });
 
 /** Context-Attrappe: Store mit einem Worksheet, EventBus synchron. */

@@ -17,10 +17,27 @@
  */
 import { uid } from './uid.js';
 import { inferRole } from './datagrid/datagrid-roles.js';
+import { recalcAllFormulas } from './datagrid/datagrid-formula.js';
 
 /** Leerer Blattzustand, wie ihn der Worksheet für ein neues Blatt anlegt. */
 function emptySheetState() {
   return { columns: [], rowCount: 0, colWidths: {}, sortCol: null, sortDir: null, selection: null };
+}
+
+/**
+ * Formelspalten kopieren und neu rechnen, wie es das Grid beim Rendern täte —
+ * ein inaktives Blatt zeigte sonst bis zum Öffnen veraltete Werte. Kopiert,
+ * weil `recalcAllFormulas` in `col.values` schreibt.
+ * @param {{ columns: object[], rowCount: number }} state
+ * @returns {void}
+ */
+function recalcSheetState(state) {
+  state.columns = state.columns.map(c => (c?.formulas?.some(Boolean) ? { ...c, values: [...(c.values ?? [])] } : c));
+  recalcAllFormulas({
+    columns: state.columns,
+    rowCount: state.rowCount,
+    getColumnByIndex: (i) => state.columns[i],
+  });
 }
 
 /**
@@ -89,6 +106,7 @@ export function applyAppendColumn(wsState, { sheetId, colId, slot, name, values,
 
   state.columns = cols;
   state.rowCount = Math.max(state.rowCount || 0, vals.length);
+  recalcSheetState(state);
   const nextSheets = [...sheets];
   nextSheets[sheetIdx] = { ...sheet, state };
   return { ok: true, state: { ...wsState, sheets: nextSheets }, colId: resolved };
