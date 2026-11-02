@@ -305,8 +305,11 @@ function buildEntry(resolver, appDir, viewmodelFile, baseline) {
     ...undeclaredOptions, ...moduleStateOptions, ...unknownVia,
     ...view.violations, ...viewFieldFindings(view.paths, persisted.keys, declared, directWritten)];
   // Der eingefrorene Bestand bleibt sichtbar, blockiert aber nicht.
-  const frozen = reported.filter(code => baseline.has(`${moduleId} ${code}`));
-  const open = reported.filter(code => !baseline.has(`${moduleId} ${code}`));
+  // Die Baseline gilt nur für `unreachable_write` (Spec D2.4); jede andere
+  // Zeile bleibt wirkungslos und wird vom Stale-Test gemeldet.
+  const isFrozen = (code) => code.startsWith('unreachable_write:') && baseline.has(`${moduleId} ${code}`);
+  const frozen = reported.filter(isFrozen);
+  const open = reported.filter(code => !isFrozen(code));
   // Verstöße zählen nur, wenn das Modul etwas behauptet.
   const effective = tagged ? open : [];
   return {

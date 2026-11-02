@@ -4445,6 +4445,19 @@ test('Baseline: ein Treffer landet in frozen statt reported, das Modul bleibt ve
   assert.deepEqual(other.frozen, []);
 });
 
+test('Baseline: nur unreachable_write wird eingefroren, fremde Codes bleiben offen', () => {
+  const vm = writeGateVm('unmarkiert() {},');
+  const probe = writeGateRun({ vm, fields: [writeGateField('note')] });
+  const foreign = probe.reported.find(c => c.startsWith('unmarked_method:'));
+  assert.ok(foreign, `Fixture soll unmarked_method melden: ${probe.reported}`);
+  const { reported, frozen } = writeGateRun({
+    vm, fields: [writeGateField('note')],
+    baseline: new Set([`foo ${foreign}`, 'foo unreachable_write:note']),
+  });
+  assert.ok(reported.includes(foreign), 'der fremde Code bleibt offen');
+  assert.deepEqual(frozen, ['unreachable_write:note']);
+});
+
 test('Baseline: frozen gelangt nicht in die erzeugte Registry', () => {
   const root = fixture({ foo: { 'foo.js': writeGateVm(''), 'foo-model.js': `export class State {
   ${writeGateField('note')}
