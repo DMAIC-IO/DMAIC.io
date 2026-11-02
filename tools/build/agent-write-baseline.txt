@@ -1,0 +1,24 @@
+# agent-write-baseline.txt — eingefrorener Bestand von `unreachable_write`.
+#
+# Erzeugt beim Schärfen des Gates (`tools/build/agent-data.mjs`), 2026-11-02.
+# Jede Zeile ist ein Befund von damals: `<modul> unreachable_write:<pfad>`,
+# sortiert. Ein Model-Feld ohne Schreibweg über eine `@agent`-Methode mit
+# Parameterwert, ohne `[via: …]` und ohne Eintrag in `VIEW_FIELDS`.
+#
+# WIE DAS GATE DIESE DATEI BENUTZT (`collectAgentData`):
+#   - Ein Befund, dessen Zeile HIER steht, landet in `frozen` statt in
+#     `reported`. Das Modul bleibt verfügbar: bekannter Rückstand, keine neue
+#     Regression.
+#   - Ein Befund, dessen Zeile HIER NICHT steht, blockiert das getaggte Modul.
+#     Das ist der Zweck des Gates: Kein neues Feld bleibt für die Agentenfläche
+#     stumm, ohne dass es auffällt.
+#
+# WIE MAN EINE ZEILE LOSWIRD:
+#   Den Schreibweg bauen (`@agent`-Setter mit Parameter) oder das Feld als
+#   abgeleitet erklären (`[via: <aktion>]` am Feldkommentar, Aufnahme in
+#   `VIEW_FIELDS`). Danach die Zeile hier von Hand löschen. Neue Zeilen kommen
+#   nicht dazu: Ein neuer Befund wird behoben, nicht eingefroren.
+
+calculator unreachable_write:lastResult
+ishikawa unreachable_write:catLabels
+ishikawa unreachable_write:images

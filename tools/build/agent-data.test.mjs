@@ -53,7 +53,7 @@ export default createModule({
        * @param {string} text - the problem statement
        * @returns {boolean} whether it was accepted
        */
-      setProblem(text) { return true; },
+      setProblem(text) { this.model.problem = text; this.model.nodes = text; this.model.rows = text; return true; },
       /** @noagent */
       cardClass(node) { return ''; },
       maxLevel: 5,
@@ -286,7 +286,7 @@ export default createModule({
     return buildViewmodel(module);
   },
 });`;
-  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': 'export class State { toJSON() { return {}; } }' } });
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.violations, ['unresolvable_data_literal']);
   assert.equal(modules.foo.available, false);
@@ -456,7 +456,7 @@ export function fooData(module, _t) {
      * @param {string} text - the problem statement
      * @returns {void}
      */
-    setProblem(text) {},
+    setProblem(text) { this.model.problem = text; this.model.nodes = text; this.model.rows = text; },
   };
 }`;
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
@@ -540,10 +540,22 @@ export default createModule({
        * @param {string} text - the problem statement
        * @returns {void}
        */
-      setProblem(text) {},
+      setProblem(text) { this.model.problem = text; this.model.nodes = text; this.model.rows = text; },
     };
   },
 });`;
+
+/** Dasselbe Viewmodel für ein Model mit dem Feld `count`. */
+const COUNT_VM = CLEAN_VM.replace('this.model.problem = text; this.model.nodes = text; this.model.rows = text;', 'this.model.count = text;');
+
+/** Das getaggte Viewmodel für ein Model mit dem Feld `title`. */
+const TITLE_VM = TAGGED_VM.replace('this.model.problem = text; this.model.nodes = text; this.model.rows = text;', 'this.model.title = text;');
+
+/**
+ * Das getaggte Viewmodel für ein Model mit dem Feld `params`: Der Setter schreibt
+ * das Feld als Ganzes, eine Bindung auf `params.alpha` deckt er nicht ab.
+ */
+const WHOLE_PARAMS_VM = TAGGED_VM.replace('this.model.problem = text; this.model.nodes = text; this.model.rows = text;', 'this.model.params = text;');
 
 /** Dasselbe Viewmodel ohne Modul-Tag — Befunde bleiben berichtend. */
 const UNTAGGED_VM = CLEAN_VM.replace(' * @agent\n', '');
@@ -846,7 +858,7 @@ test('readModelFields: a non-identifier extends clause is reported, not resolved
   count = 0;
   toJSON() { return { count: this.count }; }
 }`;
-  const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
+  const root = fixture({ foo: { 'foo.js': COUNT_VM, 'foo-model.js': model } });
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.violations, ['unresolved_base_class:ns.Base']);
   assert.equal(modules.foo.fields.count.type, 'number');
@@ -858,7 +870,7 @@ test('readModelFields: a mixin factory as base class is reported, not resolved',
   count = 0;
   toJSON() { return { count: this.count }; }
 }`;
-  const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
+  const root = fixture({ foo: { 'foo.js': COUNT_VM, 'foo-model.js': model } });
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.violations, ['unresolved_base_class:withSteps(Base)']);
 });
@@ -872,7 +884,7 @@ test('readModelFields: a class that extends ITSELF terminates AND is reported', 
   count = 0;
   toJSON() { return { count: this.count }; }
 }`;
-  const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
+  const root = fixture({ foo: { 'foo.js': COUNT_VM, 'foo-model.js': model } });
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.fields, {
     count: { type: 'number', help: 'the own counter', bulk: false },
@@ -891,7 +903,7 @@ export class State extends C12 {
   count = 0;
   toJSON() { return { count: this.count }; }
 }`;
-  const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
+  const root = fixture({ foo: { 'foo.js': COUNT_VM, 'foo-model.js': model } });
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.violations, ['unresolved_base_class:C0']);
   assert.equal('deepest' in modules.foo.fields, false);
@@ -1737,7 +1749,7 @@ test('calculator führt alle neun Modellfelder', () => {
 });
 
 test('unreadable_state_key: ein persistierter Schlüssel ohne Lesefeld ist ein Befund', () => {
-  const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': `export class State {
+  const root = fixture({ foo: { 'foo.js': TITLE_VM, 'foo-model.js': `export class State {
     /** @type {string} der Titel */
     title = '';
     toJSON() { return { title: this.title, hidden: 'weg' }; }
@@ -1750,7 +1762,7 @@ test('unreadable_state_key: ein persistierter Schlüssel ohne Lesefeld ist ein B
 });
 
 test('unreadable_state_key: ein _-präfigierter persistierter Schlüssel wird NICHT gemeldet', () => {
-  const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': `export class State {
+  const root = fixture({ foo: { 'foo.js': TITLE_VM, 'foo-model.js': `export class State {
     /** @type {string} der Titel */
     title = '';
     toJSON() { return { title: this.title, _schema: 3 }; }
@@ -1760,7 +1772,7 @@ test('unreadable_state_key: ein _-präfigierter persistierter Schlüssel wird NI
 });
 
 test('unreadable_state_key: JSON.parse(JSON.stringify({…})) wird entpackt', () => {
-  const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': `export class State {
+  const root = fixture({ foo: { 'foo.js': TITLE_VM, 'foo-model.js': `export class State {
     /** @type {string} der Titel */
     title = '';
     toJSON() { return JSON.parse(JSON.stringify({ title: this.title, hidden: 1 })); }
@@ -1770,7 +1782,7 @@ test('unreadable_state_key: JSON.parse(JSON.stringify({…})) wird entpackt', ()
 });
 
 test('unreadable_state_key: eine lokale Variable wird verfolgt', () => {
-  const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': `export class State {
+  const root = fixture({ foo: { 'foo.js': TITLE_VM, 'foo-model.js': `export class State {
     /** @type {string} der Titel */
     title = '';
     toJSON() { const out = { title: this.title, hidden: 1 }; return out; }
@@ -1780,7 +1792,7 @@ test('unreadable_state_key: eine lokale Variable wird verfolgt', () => {
 });
 
 test('unresolvable_tojson: ein Spread im Rückgabeobjekt ist eine Blindstelle', () => {
-  const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': `export class State {
+  const root = fixture({ foo: { 'foo.js': TITLE_VM, 'foo-model.js': `export class State {
     /** @type {string} der Titel */
     title = '';
     toJSON() { return { ...this.base(), title: this.title }; }
@@ -1796,7 +1808,7 @@ test('ein erklärtes AgentRead-Typedef setzt das Gate aus', () => {
 });
 
 test('geerbtes toJSON wird gefunden', () => {
-  const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': `export class Base {
+  const root = fixture({ foo: { 'foo.js': TITLE_VM, 'foo-model.js': `export class Base {
     toJSON() { return { title: this.title, hidden: 1 }; }
   }
   export class State extends Base {
@@ -1812,7 +1824,7 @@ test('unresolvable_tojson: eine nicht-const lokale Variable (let, neu zugewiesen
   // einer mit `let` neu zugewiesenen. `out` zeigte hier zuerst auf
   // { title } — die zweite, per `if` zugewiesene Fassung mit `hidden` wäre
   // lautlos verschwunden, ohne jeden Befund.
-  const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': `export class State {
+  const root = fixture({ foo: { 'foo.js': TITLE_VM, 'foo-model.js': `export class State {
     /** @type {string} der Titel */
     title = '';
     toJSON() {
@@ -1832,7 +1844,7 @@ test('unresolvable_tojson: mehr als eine return-Anweisung ist eine Blindstelle',
   // `return`-Anweisung ist für sich genommen vollständig „sauber" (nur
   // `title`, ein bekanntes Feld), also kam kein `unreadable_state_key`
   // zustande, obwohl ein Schlüssel verschwiegen wurde.
-  const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': `export class State {
+  const root = fixture({ foo: { 'foo.js': TITLE_VM, 'foo-model.js': `export class State {
     /** @type {string} der Titel */
     title = '';
     toJSON() {
@@ -2014,7 +2026,7 @@ test('unreachable_write: eine Zuweisung in einer @noagent-Methode deckt NICHT ab
 
 test('unreachable_write: Elementbindungen und Puffer lösen nichts aus', () => {
   const root = fixture({ foo: {
-    'foo.js': TAGGED_VM,
+    'foo.js': TITLE_VM,
     'foo-model.js': `export class State {
       /** @type {string} der Titel */
       title = '';
@@ -2028,7 +2040,7 @@ test('unreachable_write: Elementbindungen und Puffer lösen nichts aus', () => {
 
 test('template_model_call: ein direkter model.*-Aufruf aus der Vorlage ist ein Befund', () => {
   const root = fixture({ foo: {
-    'foo.js': TAGGED_VM,
+    'foo.js': TITLE_VM,
     'foo-model.js': `export class State {
       /** @type {string} der Titel */
       title = '';
@@ -2045,7 +2057,7 @@ test('template_model_call: ein direkter model.*-Aufruf aus der Vorlage ist ein B
 
 test('template_model_call: ein Ereignismodifikator verdeckt den model.*-Aufruf nicht (W1-4)', () => {
   const root = fixture({ foo: {
-    'foo.js': TAGGED_VM,
+    'foo.js': TITLE_VM,
     'foo-model.js': `export class State {
       /** @type {string} der Titel */
       title = '';
@@ -2359,6 +2371,12 @@ test('unreachable_write: eine blockweit neu gebundene lokale Variable überschat
   // vom Agenten gewählten Wert, auch wenn der Name identisch ist.
   const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
        * @agent
+       * @param {string} v
+       * @returns {void}
+       */
+      setOther(v) { this.model.other = v; },
+      /**
+       * @agent
        * @param {string} t
        * @returns {void}
        */
@@ -2387,7 +2405,7 @@ test('unreachable_write: eine blockweit neu gebundene lokale Variable überschat
 
 test('unreachable_write: eine verschachtelte Bindung ohne Setter ist ein Befund', () => {
   const root = fixture({ foo: {
-    'foo.js': TAGGED_VM,
+    'foo.js': WHOLE_PARAMS_VM,
     'foo-model.js': `export class State {
       /** @type {object} die Parameter */
       params = { alpha: '' };
@@ -2506,7 +2524,7 @@ test('unreachable_write: eine Pfad-Hilfe, die nur LIEST, deckt NICHTS ab (Review
   // Pfad-Hilfe (lokal auflösbar, erstes Argument `this.model.params`, ein
   // Argument mit geprüfter Schlüsselmenge) — und weist doch nichts zu. Zählte
   // sie als Abdeckung, gäbe das Gate ein Feld frei, das kein Agent setzen kann.
-  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+  const vm = WHOLE_PARAMS_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
        * @agent
        * @param {string} key der Schlüssel
        * @param {string} value der Wert
@@ -2540,7 +2558,7 @@ test('unreachable_write: eine Pfeilfunktions-Pfad-Hilfe deckt ab, eine gleichnam
   // Aliaskette (`let cur = obj`) wie die Funktionsdeklaration und deckt
   // deshalb ab; die Klasse hat keinen Funktionskörper, den die Prüfung lesen
   // könnte, und deckt deshalb nichts ab (fail closed).
-  const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
+  const vm = WHOLE_PARAMS_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
        * @agent
        * @param {string} key der Schlüssel
        * @param {string} value der Wert
@@ -2585,7 +2603,7 @@ test('unreachable_write: ein zweimal gebundener Pfad ist EIN Befund, nicht zwei'
   // stünde derselbe Code mehrfach in `reported` — und die Vertragsfläche,
   // die Gate und Agent lesen, zählte Bindungen statt Felder.
   const root = fixture({ foo: {
-    'foo.js': TAGGED_VM,
+    'foo.js': WHOLE_PARAMS_VM,
     'foo-model.js': `export class State {
       /** @type {object} die Parameter */
       params = { alpha: '' };
@@ -2603,7 +2621,7 @@ test('unresolvable_tojson: eine Pfeilfunktions-toJSON als Klassenfeld wird nicht
   // als Klassenfeld fiel durch das Raster, und der Abstieg kletterte zur
   // Basisklasse — und beschrieb die Unterklasse fälschlich mit DEREN
   // Schlüsseln (`title: 'base'`, ohne `hidden`, ohne jeden Befund).
-  const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': `export class Base {
+  const root = fixture({ foo: { 'foo.js': TITLE_VM.replace('this.model.title = text;', 'this.model.title = text; this.model.toJSON = text;'), 'foo-model.js': `export class Base {
     toJSON() { return { title: 'base' }; }
   }
   export class State extends Base {
@@ -2795,7 +2813,13 @@ test('undeclared_option_source: die Projektion eines deklarierten Feldes ist kei
       pick(v) {
         requireEnum('v', v, this.model.items.map(i => i.id));
         this.model.chosen = v;
-      },`);
+      },
+      /**
+       * @agent
+       * @param {string[]} list die Einträge
+       * @returns {void}
+       */
+      setItems(list) { this.model.items = list; },`);
   const root = fixture({ foo: {
     'foo.js': `${vm}`,
     'foo-model.js': `export class State {
@@ -2961,9 +2985,18 @@ const SET_AT_PATH = `const KEYS = ['alpha', 'beta'];
 function setAtPath(obj, path, value) { obj[path] = value; }
 `;
 
+/** Schreibt `params` als Ganzes; eine Bindung auf `params.alpha` deckt das nicht ab. */
+const SET_WHOLE_PARAMS = `/**
+       * @agent
+       * @param {object} params die Parameter
+       * @returns {void}
+       */
+      setParams(params) { this.model.params = params; },`;
+
 test('unreachable_write: eine Pfad-Hilfe mit konstantem Wert deckt NICHTS ab (A-I3)', () => {
   const root = fixture({ foo: {
-    'foo.js': SET_AT_PATH + vmWithAgent(`/**
+    'foo.js': SET_AT_PATH + vmWithAgent(`${SET_WHOLE_PARAMS}
+      /**
        * @agent
        * @param {string} key der Schlüssel
        * @returns {void}
@@ -3000,7 +3033,8 @@ test('unreachable_write: ein überschatteter Schlüssel deckt NICHTS ab (A-M2)',
 
 test('unreachable_write: ein überschatteter Schlüssel an einer Pfad-Hilfe deckt NICHTS ab (A-M2)', () => {
   const root = fixture({ foo: {
-    'foo.js': SET_AT_PATH + vmWithAgent(`/**
+    'foo.js': SET_AT_PATH + vmWithAgent(`${SET_WHOLE_PARAMS}
+      /**
        * @agent
        * @param {string} key der Schlüssel
        * @param {number} value der Wert
@@ -3575,7 +3609,7 @@ const DRAFT_VM = `export class DraftViewModel {
    * @param {string} text the problem statement
    * @returns {void}
    */
-  setProblem(text) { this.model.problem = text; }
+  setProblem(text) { this.model.problem = text; this.model.nodes = text; this.model.rows = text; }
   /** @noagent presentation */
   problemClass() { return {}; }
   _helper() {}
@@ -3668,6 +3702,13 @@ export class DraftViewModel {
    * @returns {void}
    */
   setField(key, value) { requireEnum('key', key, FIELD_KEYS); this.model[key] = value; }
+  /**
+   * Set the remaining fields.
+   * @agent
+   * @param {string} text the text
+   * @returns {void}
+   */
+  setRest(text) { this.model.problem = text; this.model.nodes = text; this.model.rows = text; }
 }`;
   const { modules } = collectAgentData(subVmFixture(body));
   assert.deepEqual(modules.foo.violations, []);
@@ -3848,7 +3889,7 @@ function vmWithKnownIdCheck(decl, source) {
   return TAGGED_VM
     .replace("import { State } from './foo-model.js';",
       `import { State } from './foo-model.js';\nimport { requireKnownId } from '../../core/agent/agent-argcheck.js';\n${decl}`)
-    .replace('setProblem(text) { return true; }',
+    .replace('setProblem(text) { this.model.problem = text; this.model.nodes = text; this.model.rows = text; return true; }',
       `setProblem(text) { requireKnownId('text', text, ${source}); return true; }`);
 }
 
@@ -3969,4 +4010,370 @@ test('hardcoded_param_bounds: dokumentierte Grenze — eigener Handler mit feste
 test('setter_bypass_binding: type= wird ohne Beachtung der Schreibweise gelesen, gebundenes :type zählt als Text', () => {
   assert.deepEqual(reportedFor('<input type="CHECKBOX" x-model="model.problem">'), ['setter_bypass_binding:problem']);
   assert.deepEqual(reportedFor('<input :type="kind" x-model="model.problem">'), []);
+});
+
+// ── unreachable_write geschärft: Sammlungen, Aliasse, Auswahl, Vorlagenmethoden, Baseline ──
+
+/** Ein Viewmodel mit `read()` und den gegebenen Mitgliedern. */
+const writeGateVm = (members, head = '') => `/**
+ * Foo module.
+ * @agent
+ */
+import { createModule } from '../../core/template-module.js';
+import { State } from './foo-model.js';
+${head}
+export default createModule({
+  config: { id: 'foo' },
+  Model: State,
+  data(module, _t) {
+    return {
+      /**
+       * @agent
+       * @returns {object} der Zustand
+       */
+      read() { return {}; },
+      /**
+       * @agent
+       * @returns {void}
+       */
+      ping() {},
+      ${members}
+    };
+  },
+});
+`;
+
+/** Ein Model-Feld mit Typ und optionalem Hilfekommentar. */
+const writeGateField = (name, type = 'string', comment = 'das Feld') => `/** @type {${type}} ${comment} */
+  ${name} = null;`;
+
+/** @returns {{ reported: string[], written: string[], entry: object, frozen: string[] }} */
+function writeGateRun({ vm, fields, methods = '', html, baseline }) {
+  const files = {
+    'foo.js': vm,
+    'foo-model.js': `export class State {
+  ${fields.join('\n  ')}
+  ${methods}
+  toJSON() { return { ${fields.map(f => /^\S+ (\S+) =|\n\s*([\w$]+) =/.exec(f)[2]).map(n => `${n}: this.${n}`).join(', ')} }; }
+}`,
+  };
+  if (html) files['foo.html'] = html;
+  const result = collectAgentData(fixture({ foo: files }), baseline ? { baseline } : undefined);
+  return {
+    reported: result.modules.foo.reported,
+    written: result.writtenFields.foo,
+    entry: result.modules.foo,
+    frozen: result.frozen?.foo ?? [],
+  };
+}
+
+/** Eine `@agent`-Methode mit Parameter(n), JSDoc passend zur Signatur. */
+const agentMethod = (signature, body) => {
+  const params = /\(([^)]*)\)/.exec(signature)[1].split(',').map(p => p.trim()).filter(Boolean);
+  return `/**
+       * @agent
+${params.map(p => `       * @param {any} ${p} - Wert`).join('\n')}
+       * @returns {void}
+       */
+      ${signature} { ${body} },`;
+};
+
+test('Schreibweg: push aus einem Parameter deckt die Sammlung ab', () => {
+  const { written, reported } = writeGateRun({
+    vm: writeGateVm(agentMethod('pushItem(text)', 'this.model.items.push({ text });')),
+    fields: [writeGateField('items', 'Array<object>')],
+  });
+  assert.deepEqual(written, ['items']);
+  assert.deepEqual(reported, []);
+});
+
+test('Schreibweg: unshift und splice mit eingefügtem Wert decken ab, reines Entfernen nicht', () => {
+  const run = (body) => writeGateRun({
+    vm: writeGateVm(agentMethod('change(v)', body)),
+    fields: [writeGateField('items', 'Array<object>')],
+  }).written;
+  assert.deepEqual(run('this.model.items.unshift(v);'), ['items']);
+  assert.deepEqual(run('this.model.items.splice(0, 0, v);'), ['items']);
+  assert.deepEqual(run('this.model.items.splice(v, 1);'), []);
+});
+
+test('Schreibweg: ein konstanter push-Wert oder eine unbekannte Sammelmethode deckt NICHT ab', () => {
+  const run = (signature, body) => writeGateRun({
+    vm: writeGateVm(agentMethod(signature, body)),
+    fields: [writeGateField('items', 'Array<object>')],
+  });
+  const constant = run('pushItem()', 'this.model.items.push({ text: "" });');
+  assert.deepEqual(constant.reported, ['unreachable_write:items']);
+  assert.deepEqual(run('touch(v)', 'this.model.items.includes(v);').reported, ['unreachable_write:items']);
+});
+
+test('Schreibweg: Elementzuweisung aus einem Parameter deckt die Sammlung ab', () => {
+  const run = (body) => writeGateRun({
+    vm: writeGateVm(agentMethod('setAt(i, v)', body)),
+    fields: [writeGateField('items', 'Array<object>')],
+  }).written;
+  assert.deepEqual(run('this.model.items[i] = v;'), ['items']);
+  assert.deepEqual(run('this.model.items[i + 1] = v;'), ['items']);
+  assert.deepEqual(run('this.model.items[i] = 1;'), []);
+});
+
+test('Schreibweg: ein Alias aus find deckt Sammlung und Elementfeld ab', () => {
+  const { written, reported } = writeGateRun({
+    vm: writeGateVm(agentMethod('setTitle(id, title)', 'const s = this.model.steps.find(x => x.id === id); s.title = title;')),
+    fields: [writeGateField('steps', 'Array<object>')],
+  });
+  assert.deepEqual(written, ['steps', 'steps.title']);
+  assert.deepEqual(reported, []);
+});
+
+test('Schreibweg: die weiteren Aliasformen filter()[0], [i] und die Sammlung selbst', () => {
+  const run = (body) => writeGateRun({
+    vm: writeGateVm(agentMethod('setTitle(i, title)', body)),
+    fields: [writeGateField('steps', 'Array<object>')],
+  }).written;
+  assert.deepEqual(run('const s = this.model.steps.filter(x => x.ok)[0]; s.title = title;'), ['steps', 'steps.title']);
+  assert.deepEqual(run('const s = this.model.steps[i]; s.title = title;'), ['steps', 'steps.title']);
+  assert.deepEqual(run('const all = this.model.steps; all.push(title);'), ['steps']);
+  assert.deepEqual(run('const all = this.model.steps; all[i] = title;'), ['steps']);
+});
+
+test('Schreibweg: ein Alias deckt NICHT ab bei Konstante, Überschattung oder unbekannter Herkunft', () => {
+  const run = (body) => writeGateRun({
+    vm: writeGateVm(agentMethod('setTitle(id, title)', body)),
+    fields: [writeGateField('steps', 'Array<object>')],
+  }).written;
+  assert.deepEqual(run('const s = this.model.steps.find(x => x.id === id); s.title = "fest";'), []);
+  assert.deepEqual(run('const s = lookup(id); s.title = title;'), []);
+  assert.deepEqual(run('const s = this.model.steps.map(x => x.a); s.title = title;'), []);
+  // Der Closure-Parameter `s` ist nicht der Alias …
+  assert.deepEqual(run('const s = this.model.steps.find(x => x.id === id); others.forEach(s => { s.title = title; });'), []);
+  // … die Blockbindung auch nicht …
+  assert.deepEqual(run('const s = this.model.steps[0]; if (id) { const s = other(); s.title = title; }'), []);
+  // … und auch nicht die Schleifenvariable.
+  assert.deepEqual(run('const s = this.model.steps[0]; for (const s of others) { s.title = title; }'), []);
+  // Innerhalb einer Closure bleibt der äußere Alias sichtbar.
+  assert.deepEqual(run('const s = this.model.steps[0]; later(() => { s.title = title; });'), ['steps', 'steps.title']);
+  // Ein Alias gilt erst in seinem Block, nicht danach.
+  assert.deepEqual(run('if (id) { const s = this.model.steps[0]; } s.title = title;'), []);
+});
+
+test('Schreibweg: Sammlung und Alias eine Ebene tief in einer Model-Methode', () => {
+  const push = writeGateRun({
+    vm: writeGateVm(agentMethod('pushItem(text)', 'this.model.add(text);')),
+    fields: [writeGateField('items', 'Array<object>')],
+    methods: 'add(text) { this.items.push(text); }',
+  });
+  assert.deepEqual(push.written, ['items']);
+  assert.deepEqual(push.reported, []);
+  const alias = writeGateRun({
+    vm: writeGateVm(agentMethod('setTitle(id, title)', 'this.model.rename(id, title);')),
+    fields: [writeGateField('steps', 'Array<object>')],
+    methods: 'rename(id, title) { const s = this.steps.find(x => x.id === id); s.title = title; }',
+  });
+  assert.deepEqual(alias.written, ['steps', 'steps.title']);
+  // Zwei Ebenen bleiben außen vor, ebenso ein konstantes Argument.
+  const deep = writeGateRun({
+    vm: writeGateVm(agentMethod('pushItem(text)', 'this.model.add(text);')),
+    fields: [writeGateField('items', 'Array<object>')],
+    methods: 'add(text) { this._put(text); } _put(t) { this.items.push(t); }',
+  });
+  assert.deepEqual(deep.written, []);
+  const constant = writeGateRun({
+    vm: writeGateVm(agentMethod('pushItem(text)', 'this.model.add("fest");')),
+    fields: [writeGateField('items', 'Array<object>')],
+    methods: 'add(text) { this.items.push(text); }',
+  });
+  assert.deepEqual(constant.written, []);
+});
+
+test('Auswahl: ein Lesefeld ohne Schreibweg ist ein Befund, auch ohne x-model', () => {
+  const { reported, entry } = writeGateRun({ vm: writeGateVm(''), fields: [writeGateField('note')] });
+  assert.ok(reported.includes('unreachable_write:note'), reported.join(', '));
+  assert.equal(entry.available, false);
+});
+
+test('Auswahl: [via: …] am Model-Feld und VIEW_FIELDS nehmen das Feld aus', () => {
+  const via = writeGateRun({
+    vm: writeGateVm(agentMethod('foo(v)', 'this.model.other = v;')),
+    fields: [writeGateField('note', 'string', '[via: foo] die Notiz'), writeGateField('other')],
+  });
+  assert.deepEqual(via.reported, []);
+  assert.deepEqual(via.entry.fields.note.via, ['foo']);
+  assert.equal(via.entry.fields.note.help, 'die Notiz');
+  const view = writeGateRun({
+    vm: writeGateVm(''),
+    fields: [writeGateField('note')],
+    methods: "static VIEW_FIELDS = ['note'];",
+  });
+  assert.ok(!view.reported.includes('unreachable_write:note'), view.reported.join(', '));
+});
+
+test('Auswahl: ein Feld, von dem nur Unterpfade geschrieben werden, hat einen Schreibweg; eine x-model-Bindung auf das Ganze bleibt ein Befund', () => {
+  const run = (html) => writeGateRun({
+    vm: writeGateVm(agentMethod('setAlpha(v)', 'this.model.params.alpha = v;')),
+    fields: [writeGateField('params', 'object')],
+    html,
+  }).reported;
+  assert.deepEqual(run(undefined), []);
+  assert.deepEqual(run('<input x-model="model.params">'), ['unreachable_write:params']);
+});
+
+test('Auswahl: `_`-Felder bleiben außen vor', () => {
+  const { reported } = writeGateRun({
+    vm: writeGateVm('/** @noagent */\n      go() { this.model._cache = 1; },'),
+    fields: [],
+    html: '<button @click="go()"></button>',
+  });
+  assert.deepEqual(reported, []);
+});
+
+/** Ein Viewmodel mit erklärter Lesefläche: Die Model-Auswahl fällt dort weg. */
+const declaredVm = (members, property = '@property {string} other das Feld') => writeGateVm(members).replace(
+  'export default createModule',
+  `/**
+ * @typedef {object} AgentRead
+ * ${property}
+ */
+export default createModule`,
+).replace('read() { return {}; }', 'read() { return { other: 1 }; }');
+
+test('Auswahl: erklärte AgentRead-Felder ohne Setter sind kein Befund', () => {
+  const { reported } = writeGateRun({ vm: declaredVm(''), fields: [writeGateField('other')] });
+  assert.ok(!reported.some(c => c.startsWith('unreachable_write:')), reported.join(', '));
+});
+
+test('Vorlagenmethode: @noagent hinter @click, die ein Feld zuweist, ist ein Befund', () => {
+  const toggle = '/** @noagent */\n      toggle() { this.model.flag = !this.model.flag; },';
+  const fields = [writeGateField('flag', 'boolean'), writeGateField('other')];
+  const run = (members, html) => writeGateRun({ vm: declaredVm(members), fields, html }).reported
+    .filter(c => c.startsWith('unreachable_write:'));
+  assert.deepEqual(run(toggle, '<button @click="toggle()"></button>'), ['unreachable_write:flag']);
+  // Ohne Klammer und über die lange Schreibweise genauso.
+  assert.deepEqual(run(toggle, '<button x-on:click.prevent="toggle"></button>'), ['unreachable_write:flag']);
+  assert.deepEqual(run(toggle, '<select @change="toggle($event)"></select>'), ['unreachable_write:flag']);
+  // Elementzuweisung zählt für die Sammlung.
+  assert.deepEqual(run('/** @noagent */\n      toggle(i) { this.model.flag[i] = true; },', '<button @click="toggle(1)"></button>'), ['unreachable_write:flag']);
+  // Nicht in der Vorlage: kein Befund.
+  assert.deepEqual(run(toggle, '<button @click="other()"></button>'), []);
+  // Nur gelesen statt geschrieben: kein Befund.
+  assert.deepEqual(run('/** @noagent */\n      toggle() { return this.model.flag; },', '<button @click="toggle()"></button>'), []);
+  // Eine @agent-Methode schreibt das Feld: kein Befund.
+  assert.deepEqual(run(`${toggle}\n      ${agentMethod('setFlag(v)', 'this.model.flag = v;')}`, '<button @click="toggle()"></button>'), []);
+  // Eine @agent-Methode hinter der Vorlage ist selbst der Schreibweg, keine Lücke.
+  assert.deepEqual(run(agentMethod('setFlag(v)', 'this.model.flag = v;'), '<button @click="setFlag(1)"></button>'), []);
+});
+
+test('Baseline: ein Treffer landet in frozen statt reported, das Modul bleibt verfügbar', () => {
+  const baseline = new Set(['foo unreachable_write:note']);
+  const { reported, frozen, entry } = writeGateRun({ vm: writeGateVm(''), fields: [writeGateField('note')], baseline });
+  assert.deepEqual(reported, []);
+  assert.deepEqual(frozen, ['unreachable_write:note']);
+  assert.equal(entry.available, true);
+  assert.equal(entry.frozen, undefined, 'frozen gehört nicht in den Registry-Eintrag');
+  // Eine Zeile eines anderen Moduls friert nichts ein.
+  const other = writeGateRun({ vm: writeGateVm(''), fields: [writeGateField('note')], baseline: new Set(['bar unreachable_write:note']) });
+  assert.deepEqual(other.reported, ['unreachable_write:note']);
+  assert.deepEqual(other.frozen, []);
+});
+
+test('Baseline: frozen gelangt nicht in die erzeugte Registry', () => {
+  const root = fixture({ foo: { 'foo.js': writeGateVm(''), 'foo-model.js': `export class State {
+  ${writeGateField('note')}
+  toJSON() { return { note: this.note }; }
+}` } });
+  const data = collectAgentData(root, { baseline: new Set(['foo unreachable_write:note']) });
+  assert.deepEqual(data.frozen, { foo: ['unreachable_write:note'] });
+  assert.ok(!renderAgentRegistryModule(data).includes('unreachable_write:note'));
+});
+
+// ── unreachable_write: Hilfsmethoden, die ein Sammlungselement liefern ──
+
+const ITEM_BY_ID = `/** Das Element zur id. */
+      _itemById(id) { return this.model.items.find(i => i.id === id); },`;
+
+const FIND_NODE = `findNode(id, nodes = this.nodes) {
+    for (const n of nodes) {
+      if (n.id === id) return n;
+      const found = this.findNode(id, n.children);
+      if (found) return found;
+    }
+    return null;
+  }`;
+
+test('Schreibweg: eine private Hilfe, die ein Element liefert, trägt die Spur eine Ebene weit', () => {
+  const { written, reported } = writeGateRun({
+    vm: writeGateVm(`${agentMethod('setText(id, text)', 'this._itemById(id).text = text;')}\n      ${ITEM_BY_ID}`),
+    fields: [writeGateField('items', 'Array<object>')],
+  });
+  assert.deepEqual(written, ['items', 'items.text']);
+  assert.deepEqual(reported, []);
+});
+
+test('Schreibweg: eine rekursive Model-Methode, die ein Element liefert, bindet den Alias', () => {
+  const { written, reported } = writeGateRun({
+    vm: writeGateVm(agentMethod('setAnswer(id, text)', 'const node = this.model.findNode(id); node.answer = String(text);')),
+    fields: [writeGateField('nodes', 'Array<object>')],
+    methods: FIND_NODE,
+  });
+  assert.deepEqual(written, ['nodes', 'nodes.answer']);
+  assert.deepEqual(reported, []);
+});
+
+test('Schreibweg: dieselbe Form gilt in der delegierten Model-Methode', () => {
+  const { written } = writeGateRun({
+    vm: writeGateVm(agentMethod('setAnswer(id, text)', 'this.model.answer(id, text);')),
+    fields: [writeGateField('nodes', 'Array<object>')],
+    methods: `${FIND_NODE}
+  answer(id, text) { const node = this.findNode(id); node.answer = text; }`,
+  });
+  assert.deepEqual(written, ['nodes', 'nodes.answer']);
+});
+
+test('Schreibweg: Hilfen ohne Element oder ohne Parameterwert decken NICHT ab', () => {
+  const run = (setBody, helper) => writeGateRun({
+    vm: writeGateVm(`${agentMethod('setText(id, text)', setBody)}\n      /** Hilfe. */\n      ${helper}`),
+    fields: [writeGateField('items', 'Array<object>')],
+  }).reported;
+  const finding = ['unreachable_write:items'];
+  const set = 'this._pick(id).text = text;';
+  // Konstanter Wert: Das Element ist bekannt, der Wert nicht vom Agenten.
+  assert.deepEqual(run('this._pick(id).text = "";', '_pick(id) { return this.model.items.find(i => i.id === id); },'), finding);
+  // Eine Kopie ist kein Element.
+  assert.deepEqual(run(set, '_pick(id) { return { ...this.model.items.find(i => i.id === id) }; },'), finding);
+  assert.deepEqual(run(set, '_pick(id) { return this.model.items.map(i => i)[id]; },'), finding);
+  // Die Sammlung als Ganzes ist kein Element.
+  assert.deepEqual(run(set, '_pick(id) { return this.model.items; },'), finding);
+  // Zwei Ebenen: Die Spur reicht genau eine weit.
+  assert.deepEqual(run(set, `_pick(id) { return this._pick2(id); },
+      /** Hilfe. */
+      _pick2(id) { return this.model.items.find(i => i.id === id); },`), finding);
+  // Ein unbekannter Rückgabezweig schließt die ganze Hilfe.
+  assert.deepEqual(run(set, '_pick(id) { if (id) return this.fallback; return this.model.items.find(i => i.id === id); },'), finding);
+  // Eine Hilfe ohne Element: nur `null`.
+  assert.deepEqual(run(set, '_pick(id) { return null; },'), finding);
+  // Eine Hilfe außerhalb dieses Viewmodels.
+  assert.deepEqual(run('this.other._pick(id).text = text;', '_pick(id) { return this.model.items.find(i => i.id === id); },'), finding);
+});
+
+test('Schreibweg: zwei Sammlungen in einer Hilfe ergeben keine Spur', () => {
+  const { reported } = writeGateRun({
+    vm: writeGateVm(`${agentMethod('setText(id, text)', 'this._pick(id).text = text;')}
+      /** Hilfe. */
+      _pick(id) { if (id) return this.model.a.find(i => i.id === id); return this.model.b.find(i => i.id === id); },`),
+    fields: [writeGateField('a', 'Array<object>'), writeGateField('b', 'Array<object>')],
+  });
+  assert.deepEqual(reported, ['unreachable_write:a', 'unreachable_write:b']);
+});
+
+test('Schreibweg: Eine Neubindung in der Hilfe nimmt dem Namen die Spur', () => {
+  const { reported } = writeGateRun({
+    vm: writeGateVm(agentMethod('setText(id, text)', 'const node = this.model.findNode(id); node.answer = text;')),
+    fields: [writeGateField('nodes', 'Array<object>')],
+    methods: `findNode(id) {
+    const n = this.nodes.find(x => x.id === id);
+    if (id) { const n = makeOther(id); return n; }
+    return n;
+  }`,
+  });
+  assert.deepEqual(reported, ['unreachable_write:nodes']);
 });

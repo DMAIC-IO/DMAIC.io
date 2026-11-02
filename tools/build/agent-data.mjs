@@ -99,11 +99,14 @@ export const CREATING_VOID_EXEMPT = new Set(['doe-planner.factors.insertLevel', 
 /**
  * Sammle die Agenten-Registry über alle Module.
  * @param {string} appDir  Wurzel von app/dev
- * @returns {{ modules: Record<string, object>, coverage: { total: number, available: number }, writtenFields: Record<string, string[]> }}
+ * @param {{ baseline?: Set<string> }} [options]  `baseline`: eingefrorene Zeilen
+ *   `<modul> <code>`, Vorgabe ist `agent-write-baseline.txt`
+ * @returns {{ modules: Record<string, object>, coverage: { total: number, available: number }, writtenFields: Record<string, string[]>, frozen: Record<string, string[]> }}
  *   `writtenFields` nennt je Modul die Felder, die eine `@agent`-Aktion
- *   zuweist — nur für den Bericht, nicht Teil der Registry
+ *   zuweist, `frozen` die Befunde aus der Baseline — beides nur für Bericht und
+ *   Test, nicht Teil der Registry
  */
-export function collectAgentData(appDir) {
+export function collectAgentData(appDir, { baseline = loadWriteBaseline() } = {}) {
   const root = join(appDir, MODULES_DIR);
   // EIN Auflöser für den ganzen Lauf: nur so trägt sein Parse-Zwischenspeicher
   // über Modulgrenzen (`chart-module-base.js` hängt an elf Modulen).
@@ -111,6 +114,7 @@ export function collectAgentData(appDir) {
   const modules = {};
   // Neben den Einträgen, nicht darin: die Registry serialisiert den ganzen Eintrag.
   const writtenFields = {};
+  const frozen = {};
   for (const id of readdirSync(root).sort()) {
     const dir = join(root, id);
     if (!statSync(dir).isDirectory()) continue;
@@ -118,20 +122,33 @@ export function collectAgentData(appDir) {
     if (!existsSync(viewmodelFile)) continue;
     // Die Model-DATEI wird hier nicht mehr gesucht: welche Klasse den Zustand
     // hält, sagt `Model:` im `createModule({…})`-Literal — und nur die zählt.
-    const { writtenFields: written, ...entry } = buildEntry(resolver, appDir, viewmodelFile);
+    const { writtenFields: written, frozen: frozenCodes, ...entry } = buildEntry(resolver, appDir, viewmodelFile, baseline);
     modules[id] = entry;
     writtenFields[id] = written;
+    if (frozenCodes.length > 0) frozen[id] = frozenCodes;
   }
   const total = Object.keys(modules).length;
   const available = Object.values(modules).filter(m => m.available).length;
-  return { modules, coverage: { total, available }, writtenFields };
+  return { modules, coverage: { total, available }, writtenFields, frozen };
+}
+
+/** Der eingefrorene Bestand von `unreachable_write`. */
+const WRITE_BASELINE = join(import.meta.dirname, 'agent-write-baseline.txt');
+
+/**
+ * Liest den eingefrorenen Bestand.
+ * @returns {Set<string>} Zeilen `<modul> <code>` des eingefrorenen Bestands
+ */
+export function loadWriteBaseline() {
+  if (!existsSync(WRITE_BASELINE)) return new Set();
+  return new Set(readFileSync(WRITE_BASELINE, 'utf8').split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#')));
 }
 
 /** Ein Registry-Eintrag für genau ein Modul. */
-function buildEntry(resolver, appDir, viewmodelFile) {
+function buildEntry(resolver, appDir, viewmodelFile, baseline) {
   const sf = resolver.parse(viewmodelFile);
   const tagged = hasModuleTag(sf);
-  const { actions, violations, written, optionSources, subViewModels } = readViewmodel(sf, resolver, appDir);
+  const { actions, violations, written, optionSources, subViewModels, noAgentWrites } = readViewmodel(sf, resolver, appDir);
   const moduleId = basename(viewmodelFile, '.js');
   for (const [name, action] of Object.entries(actions)) {
     if (DELETE_VERB_RE.test(name.slice(name.lastIndexOf('.') + 1))) violations.push(`delete_verb_action:${name}`);
@@ -218,12 +235,12 @@ function buildEntry(resolver, appDir, viewmodelFile) {
     if (!Object.prototype.hasOwnProperty.call(actions, 'read')) surface.push('no_read_action');
   }
 
-  // Schreibvollständigkeit (Task 1b): die Vorlage macht über
-  // `x-model="model.<feld>"` und einen direkten `model.<methode>()`-Aufruf
-  // zwei Schreibwege auf, die am Viewmodel vorbeigehen können. Beide
-  // Befunde prüfen gegen das, was die `@agent`-Methoden wirklich zuweisen
-  // (`written`) — nicht gegen die Modellfelder, denn ein Feld kann lesbar
-  // und trotzdem für die Fläche unerreichbar sein.
+  // Schreibvollständigkeit: Drei Quellen nennen Felder, die einen Schreibweg
+  // brauchen, und alle prüfen gegen das, was die `@agent`-Methoden wirklich
+  // zuweisen (`written`): die Bindungen `x-model="model.<feld>"`, die aus dem
+  // Model abgeleiteten Lesefelder und die Ziele der `@noagent`-Methoden hinter
+  // einem Vorlagenereignis. Ein Feld kann lesbar und trotzdem für die Fläche
+  // unerreichbar sein.
   const bindings = templateBindings(dirname(viewmodelFile));
   // Entdoppelt: `bindings.models` trägt einen Eintrag JE Bindung, und eine
   // Vorlage bindet denselben Pfad gern mehrfach (Eingabefeld und Auswahlfeld
@@ -232,7 +249,17 @@ function buildEntry(resolver, appDir, viewmodelFile) {
   // die Gate und Agent lesen, zählte dann Bindungen statt unerreichbarer
   // Felder (Review-Fund). `Set` erhält die Erstsichtungsreihenfolge, die
   // Ausgabereihenfolge bleibt also dieselbe.
-  const unreachable = [...new Set(bindings.models)]
+  //
+  // Erklärte Lesefelder bleiben außen vor: Sie sind überwiegend abgeleitete
+  // Ausgaben. Beim Lesefeld genügt ein Schreibweg auf einen Unterpfad
+  // (`params.alpha` für `params`), denn das Feld als Ganzes ist dann nicht
+  // stumm; eine Bindung auf das Ganze verlangt dagegen weiter den Pfad selbst.
+  const hasWriteBelow = (f) => [...written].some(w => w.startsWith(`${f}.`));
+  const modelFields = declared ? [] : Object.entries(model.fields)
+    .filter(([k, spec]) => !k.startsWith('_') && !(spec.via ?? []).length && !hasWriteBelow(k))
+    .map(([k]) => k);
+  const uiWrites = bindings.templateMethods.flatMap(name => noAgentWrites.get(name) ?? []);
+  const unreachable = [...new Set([...bindings.models, ...modelFields, ...uiWrites])]
     .filter(f => !written.has(f) && !viewPlain.has(f))
     .map(f => `unreachable_write:${f}`);
   // Nicht-Text-Elemente (Auswahl, Schalter, Datum …) schreiben über
@@ -269,17 +296,21 @@ function buildEntry(resolver, appDir, viewmodelFile) {
     ...subViewModelModelBindings(dirname(viewmodelFile), subViewModels),
     ...undeclaredOptions, ...moduleStateOptions, ...unknownVia,
     ...view.violations, ...viewFieldFindings(view.paths, persistedKeys(resolver, sf).keys, declared, written)];
+  // Der eingefrorene Bestand bleibt sichtbar, blockiert aber nicht.
+  const frozen = reported.filter(code => baseline.has(`${moduleId} ${code}`));
+  const open = reported.filter(code => !baseline.has(`${moduleId} ${code}`));
   // Verstöße zählen nur, wenn das Modul etwas behauptet.
-  const effective = tagged ? reported : [];
+  const effective = tagged ? open : [];
   return {
     tagged,
     available: tagged && effective.length === 0,
     violations: effective,
-    reported,
+    reported: open,
     actions,
     fields: model.fields,
     ...(view.paths.length > 0 ? { viewFields: view.paths } : {}),
     writtenFields: [...written].sort(),
+    frozen,
   };
 }
 
@@ -436,6 +467,12 @@ const DOM_STATE_PROPS = new Set(['innerHTML', 'outerHTML']);
  *  `+=` und `-=` schreiben additiv, `??=`, `||=` und `&&=` bedingt — in den
  *  Zustand schreiben sie genauso. Genutzt für DOM-Umwege und für die
  *  Schreibweg-Erkennung (`collectCoveredFields`). */
+/** Sammelmethoden, die einen Wert in die Sammlung aufnehmen. */
+const COLLECTION_MUTATORS = new Set(['push', 'unshift', 'splice']);
+
+/** Aufrufe, die ein Element der Sammlung selbst liefern, keine Kopie. */
+const ELEMENT_PICKERS = new Set(['find', 'findLast', 'at']);
+
 const ASSIGN_KINDS = new Set([
   ts.SyntaxKind.EqualsToken,
   ts.SyntaxKind.PlusEqualsToken,
@@ -540,6 +577,17 @@ const OMIT_RE = /^\[omit:((?:[^[\]]|\[\])*)\]/;
 
 /** Das Senken-Sentinel: `[via: answer, back]` — die Aktionen, die ein abgeleitetes Feld verändern. */
 const VIA_RE = /^\[via:\s*([A-Za-z_$][\w$.]*(?:\s*,\s*[A-Za-z_$][\w$.]*)*)\s*\]/;
+
+/**
+ * Das Senken-Sentinel am Anfang eines Model-Feld-Kommentars, und der Rest als Hilfe.
+ * @param {string} raw
+ * @returns {{ via: string[]|null, help: string }}
+ */
+function readViaSentinel(raw) {
+  const match = VIA_RE.exec(raw);
+  if (!match) return { via: null, help: raw };
+  return { via: match[1].split(',').map(x => x.trim()), help: raw.slice(match[0].length).trim() };
+}
 
 /**
  * Die Sentinels am Anfang eines Property-Kommentars, und der Rest als Hilfe.
@@ -882,10 +930,10 @@ function hasModuleTag(sf) {
  * @param {ts.SourceFile} sf  die Moduldatei
  * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
  * @param {string} appDir  Wurzel von app/dev, Bezugspunkt der Herkunftsangaben
- * @returns {{ actions: Record<string, object>, violations: string[], written: Set<string>, optionSources: Array<{ action: string, arg: string, field: string }>, subViewModels: string[] }}
+ * @returns {{ actions: Record<string, object>, violations: string[], written: Set<string>, optionSources: Array<{ action: string, arg: string, field: string }>, subViewModels: string[], noAgentWrites: Map<string, string[]> }}
  */
 function readViewmodel(sf, resolver, appDir) {
-  const out = { actions: {}, violations: [], written: new Set(), optionSources: [], subViewModels: [] };
+  const out = { actions: {}, violations: [], written: new Set(), optionSources: [], subViewModels: [], noAgentWrites: new Map() };
   const literal = resolver.findDataReturnLiteral(sf);
   // Was der Generator NICHT sehen kann, muss er melden — sonst ginge ein
   // solches Modul mit gesetztem Modul-Tag und NULL Verstößen durch den Build
@@ -948,7 +996,11 @@ function inspectMethod(name, member, sf, from, ctx) {
     const isNoAgent = tags.includes(MARK_NOAGENT);
 
     if (!isAgent && !isNoAgent) { out.violations.push(`unmarked_method:${name}${from}`); return; }
-    if (isNoAgent) return;
+    if (isNoAgent) {
+      // Ob die Zuweisung zählt, entscheidet die Vorlage (`buildEntry`).
+      out.noAgentWrites.set(name, modelAssignmentPaths(functionFromMember(member).body));
+      return;
+    }
 
     const fn = functionFromMember(member);
     const params = [];
@@ -1142,6 +1194,12 @@ function subViewModelModelBindings(moduleDir, subNames) {
  *      Parameter der `@agent`-Methode stammen. Ruft die Model-Methode
  *      ihrerseits eine weitere Methode auf, zählt das NICHT — unaufgelöst
  *      bleibt ein Befund, keine Vermutung.
+ *   3. Sammlungen und Aliasse, direkt und in der Model-Methode aus 2.:
+ *      `this.model.<a>.push|unshift|splice(<ausdruck>)` und
+ *      `this.model.<a>[i] = <ausdruck>` zählen für `<a>`, ein Alias
+ *      (`const s = this.model.<a>.find(…); s.<b> = <ausdruck>`) für `<a>` und
+ *      `<a>.<b>`; siehe `collectionWriteFields` und `resolveModelPath`. Dasselbe
+ *      über eine Hilfsmethode, die ein Element liefert (`returnedElement`).
  *
  * @param {ts.SignatureDeclaration} fn
  * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
@@ -1165,7 +1223,8 @@ function writtenModelFields(fn, resolver, modelDecl) {
   // (`xs.forEach(key => setAtPath(this.model.params, key, value))` bindet
   // `key` neu — Abschluss-Review A-M2).
   const fields = collectCoveredFields(fn.body, 'model', agentParams, keySets,
-    (node, active) => fieldsCoveredByPathHelper(node, sf, keySets, active));
+    (node, active) => fieldsCoveredByPathHelper(node, sf, keySets, active),
+    viewmodelHelperLookup(fn, resolver, modelDecl));
   forEachCall(fn.body, node => {
     const methodName = modelMethodCallOf(node);
     if (!methodName || !modelDecl) return;
@@ -1651,7 +1710,8 @@ function forEachCall(node, visit) {
 
 /**
  * Die Felder, die `this.<durch>.<feld> = …` zuweist, deren rechte Seite aus
- * `names` ableitet (`derivesFromParams`) — der gemeinsame Walk hinter
+ * `names` ableitet (`derivesFromParams`), samt Sammlungsaufrufen und Aliassen
+ * (`collectionWriteFields`) — der gemeinsame Walk hinter
  * `writtenModelFields` (direkte Form, `durch = 'model'`) UND
  * `fieldsCoveredByDelegation` (Model-Methodenkörper, `durch = null`).
  *
@@ -1670,6 +1730,10 @@ function forEachCall(node, visit) {
  * auf dem Pfad vor der Neuzuweisung ist das Feld wirklich parametererreichbar
  * gewesen; eine pfadsensitive Analyse ist hier ausdrücklich nicht das Ziel.
  *
+ * Aliasse folgen denselben Geltungsbereichen: Eine `const`-Deklaration, die
+ * `resolveModelPath` auflöst, gilt bis zum Ende ihres Blocks, eine Neubindung
+ * des Namens verdeckt sie. `let` bleibt draußen, weil die Bindung wechseln kann.
+ *
  * @param {ts.Block|undefined} body
  * @param {string|null} through
  * @param {Set<string>} names
@@ -1680,31 +1744,49 @@ function forEachCall(node, visit) {
  * @param {(call: ts.CallExpression, active: Set<string>) => string[]} [onCall]
  *   weitere Abdeckung je Aufruf, mit der an dieser Stelle aktiven Namensmenge
  *   (die Pfad-Hilfe)
+ * @param {((call: ts.CallExpression) => ElementHelper|null)|null} [helperOf]
+ *   ordnet einen Aufruf der Hilfsmethode zu, die ein Sammlungselement liefern kann
  * @returns {Set<string>}
  */
-function collectCoveredFields(body, through, names, keySets = new Map(), onCall = null) {
+function collectCoveredFields(body, through, names, keySets = new Map(), onCall = null, helperOf = null) {
   const fields = new Set();
-  const walk = (node, active) => {
+  const walk = (node, active, aliases) => {
     if (isFunctionLike(node)) {
-      const next = withoutNames(active, parameterNames(node));
-      ts.forEachChild(node, child => walk(child, next));
+      const bound = parameterNames(node);
+      const next = withoutNames(active, bound);
+      const nextAliases = withoutAliases(aliases, bound);
+      ts.forEachChild(node, child => walk(child, next, nextAliases));
       return;
     }
     if (ts.isBlock(node)) {
-      const next = withoutNames(active, topLevelDeclaredNames(node));
-      for (const statement of node.statements) walk(statement, next);
+      const bound = topLevelDeclaredNames(node);
+      const next = withoutNames(active, bound);
+      const nextAliases = withoutAliases(aliases, bound);
+      for (const statement of node.statements) walk(statement, next, nextAliases);
       return;
     }
-    if (ts.isBinaryExpression(node) && ASSIGN_KINDS.has(node.operatorToken.kind)) {
-      const target = assignTargetAfterThis(node.left, through);
-      if (target && derivesFromParams(node.right, active)) {
-        for (const field of fieldsOfTarget(target, keySets, active)) fields.add(field);
-      }
+    if (ts.isForOfStatement(node) || ts.isForInStatement(node) || ts.isForStatement(node)) {
+      const bound = loopDeclaredNames(node);
+      const next = withoutNames(active, bound);
+      const nextAliases = withoutAliases(aliases, bound);
+      ts.forEachChild(node, child => walk(child, next, nextAliases));
+      return;
     }
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer
+        && (node.parent.flags & ts.NodeFlags.Const)) {
+      const resolved = resolveModelPath(node.initializer, through, aliases, helperOf);
+      if (resolved) aliases.set(node.name.text, resolved.path);
+    }
+    if (ts.isBinaryExpression(node) && ASSIGN_KINDS.has(node.operatorToken.kind)
+        && derivesFromParams(node.right, active)) {
+      const target = assignTargetAfterThis(node.left, through);
+      if (target) for (const field of fieldsOfTarget(target, keySets, active)) fields.add(field);
+    }
+    for (const field of collectionWriteFields(node, through, aliases, active, helperOf)) fields.add(field);
     if (onCall && ts.isCallExpression(node)) {
       for (const field of onCall(node, active)) fields.add(field);
     }
-    ts.forEachChild(node, child => walk(child, active));
+    ts.forEachChild(node, child => walk(child, active, aliases));
   };
   if (body) {
     // Die TOP-Ebene von `body` selbst bekommt die Block-Schattierungsprüfung
@@ -1715,9 +1797,272 @@ function collectCoveredFields(body, through, names, keySets = new Map(), onCall 
     // bestätigt hat. Erst ein tiefer verschachtelter Block (eine
     // Verzweigung, eine Closure) bekommt die Schattierungsprüfung — über
     // den normalen Abstieg der `walk`-Funktion selbst.
-    for (const statement of body.statements) walk(statement, names);
+    const aliases = new Map();
+    for (const statement of body.statements) walk(statement, names, aliases);
   }
   return fields;
+}
+
+/**
+ * Wo ein Ausdruck im Model hinzeigt, oder `null`, wenn er nicht an
+ * `this.<durch>` oder einem bekannten Alias hängt. Die Spur hinter den
+ * Sammlungs- und Aliasformen von `collectCoveredFields`.
+ *
+ * Element einer Sammlung sind `x[i]`, `x.find(…)`, `x.findLast(…)`, `x.at(i)`
+ * und `x.filter(…)[i]`; alles andere (`x.map(…)`, `x.filter(…)` ohne Index, ein
+ * fremder Aufruf) liefert eine Kopie oder etwas Unbekanntes und bleibt `null`.
+ * Ein Aufruf, den `helperOf` einer Hilfsmethode zuordnet, liefert, was
+ * `returnedElement` über deren Rückgabe sagt.
+ *
+ * @param {ts.Node} node
+ * @param {string|null} through  das Zwischenglied (`'model'`), oder `null` im Model selbst
+ * @param {Map<string, string>} aliases  lokale Namen und ihr Pfad
+ * @param {((call: ts.CallExpression) => ElementHelper|null)|null} [helperOf]
+ * @returns {{ path: string, anchor: string|null }|null} `path` ist der Pfad ohne
+ *   Indizes (`''` ist die Wurzel), `anchor` der Pfad des Alias oder der Sammlung,
+ *   durch die er führt; `null` bei einer durchgehend statischen Kette
+ */
+function resolveModelPath(node, through, aliases, helperOf = null) {
+  if (ts.isParenthesizedExpression(node)) return resolveModelPath(node.expression, through, aliases, helperOf);
+  const helper = helperOf && ts.isCallExpression(node) ? helperOf(node) : null;
+  if (helper) return returnedElement(helper);
+  if (ts.isIdentifier(node)) {
+    const path = aliases.get(node.text);
+    return path === undefined ? null : { path, anchor: path };
+  }
+  if (node.kind === ts.SyntaxKind.ThisKeyword) return through ? null : { path: '', anchor: null };
+  if (ts.isPropertyAccessExpression(node)) {
+    if (through && node.expression.kind === ts.SyntaxKind.ThisKeyword) {
+      return node.name.text === through ? { path: '', anchor: null } : null;
+    }
+    const base = resolveModelPath(node.expression, through, aliases, helperOf);
+    return base && { path: joinPath(base.path, node.name.text), anchor: base.anchor };
+  }
+  const collection = collectionOfElement(node);
+  if (!collection) return null;
+  const base = resolveModelPath(collection, through, aliases, helperOf);
+  // Ein Element der Wurzel selbst (`this.model[key]`) nennt keine Sammlung.
+  return base?.path ? { path: base.path, anchor: base.anchor ?? base.path } : null;
+}
+
+/**
+ * @typedef {{ method: ts.MethodDeclaration, through: string|null }} ElementHelper
+ *   eine Methode, die ein Sammlungselement liefern kann, und wie sie das Model erreicht
+ */
+
+/**
+ * Das Sammlungselement, das eine Hilfsmethode zurückgibt, oder `null`. Die Spur
+ * reicht genau eine Ebene: Aufrufe im Körper werden nicht weiterverfolgt.
+ *
+ * Jeder Rückgabezweig muss belegt sein: `null`, ein Selbstaufruf (`findNode`
+ * über einen Teilbaum) oder ein Element aus `resolveModelPath`, auch über einen
+ * `const`-Namen, einen Schleifenkopf `for (const n of …)` oder einen
+ * Parameter-Vorgabewert. Ein unbekannter Zweig oder zwei verschiedene Sammlungen
+ * ergeben `null` (fail closed). Die Sammlung als Ganzes ist kein Element.
+ *
+ * @param {ElementHelper} helper
+ * @returns {{ path: string, anchor: string }|null}
+ */
+function returnedElement({ method, through }) {
+  const aliases = new Map();
+  const bind = (name, expr) => {
+    const resolved = resolveModelPath(expr, through, aliases);
+    if (resolved?.path) aliases.set(name, resolved.path);
+    else aliases.delete(name);
+  };
+  for (const p of method.parameters) {
+    if (ts.isIdentifier(p.name) && p.initializer) bind(p.name.text, p.initializer);
+  }
+  const isSelfCall = (expr) => ts.isCallExpression(expr) && ownCallName(expr) === method.name.getText();
+  const selfResults = new Set();
+  const elements = new Map();
+  let open = false;
+  const walk = (node) => {
+    if (isFunctionLike(node)) return;
+    if (ts.isForOfStatement(node) && (node.initializer.flags & ts.NodeFlags.Const)) {
+      for (const n of loopDeclaredNames(node)) bind(n, node.expression);
+    }
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer) {
+      if (isSelfCall(node.initializer)) selfResults.add(node.name.text);
+      else if (node.parent.flags & ts.NodeFlags.Const) bind(node.name.text, node.initializer);
+      else aliases.delete(node.name.text);
+    }
+    if (ts.isReturnStatement(node)) {
+      const expr = node.expression;
+      const empty = !expr || expr.kind === ts.SyntaxKind.NullKeyword;
+      const self = expr && (isSelfCall(expr) || (ts.isIdentifier(expr) && selfResults.has(expr.text)));
+      if (!empty && !self) {
+        const element = resolveModelPath(expr, through, aliases);
+        if (element?.anchor) elements.set(element.path, element);
+        else open = true;
+      }
+    }
+    ts.forEachChild(node, walk);
+  };
+  if (method.body) walk(method.body);
+  return !open && elements.size === 1 ? [...elements.values()][0] : null;
+}
+
+/**
+ * Der Methodenname eines Aufrufs `this.<name>(…)`, sonst `null`.
+ * @param {ts.CallExpression} call
+ * @returns {string|null}
+ */
+function ownCallName(call) {
+  const callee = call.expression;
+  return ts.isPropertyAccessExpression(callee) && callee.expression.kind === ts.SyntaxKind.ThisKeyword
+    ? callee.name.text : null;
+}
+
+/**
+ * Die Model-Methode `name` als Hilfe, oder `null`.
+ * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
+ * @param {{ node: ts.ClassDeclaration, sf: ts.SourceFile }|null} modelDecl
+ * @param {string} name
+ * @returns {ElementHelper|null}
+ */
+function modelHelper(resolver, modelDecl, name) {
+  const found = modelDecl && findClassMethod(resolver, modelDecl.node, modelDecl.sf, name, new Set(), 0);
+  return found ? { method: found.method, through: null } : null;
+}
+
+/**
+ * Löst die Aufrufe im Körper einer Viewmodel-Methode auf: `this.model.<name>(…)`
+ * zur Model-Methode, `this.<name>(…)` zur Nachbarmethode im selben Literal oder
+ * derselben Klasse. Hilfen aus einem Mixin bleiben unaufgelöst (fail closed).
+ *
+ * @param {ts.SignatureDeclaration} fn
+ * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
+ * @param {{ node: ts.ClassDeclaration, sf: ts.SourceFile }|null} modelDecl
+ * @returns {(call: ts.CallExpression) => ElementHelper|null}
+ */
+function viewmodelHelperLookup(fn, resolver, modelDecl) {
+  const siblings = fn.parent.properties ?? fn.parent.members ?? [];
+  return (call) => {
+    const modelMethod = modelMethodCallOf(call);
+    if (modelMethod) return modelHelper(resolver, modelDecl, modelMethod);
+    const name = ownCallName(call);
+    const method = name && siblings.find(m => ts.isMethodDeclaration(m) && m.body && m.name.getText() === name);
+    return method ? { method, through: 'model' } : null;
+  };
+}
+
+/**
+ * Der Sammlungsausdruck hinter einem Elementzugriff, oder `null`.
+ * @param {ts.Node} node
+ * @returns {ts.Expression|null}
+ */
+function collectionOfElement(node) {
+  if (ts.isElementAccessExpression(node)) {
+    const inner = node.expression;
+    const isFilter = ts.isCallExpression(inner) && ts.isPropertyAccessExpression(inner.expression)
+      && inner.expression.name.text === 'filter';
+    return isFilter ? inner.expression.expression : inner;
+  }
+  if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)
+      && ELEMENT_PICKERS.has(node.expression.name.text)) {
+    return node.expression.expression;
+  }
+  return null;
+}
+
+/** @param {string} base @param {string} name @returns {string} */
+function joinPath(base, name) {
+  return base ? `${base}.${name}` : name;
+}
+
+/**
+ * Die Felder, die dieser Knoten über eine Sammlung oder einen Alias schreibt:
+ * `x.push(<wert>)`, `x[i] = <wert>` und `s.b = <wert>`. Der Wert muss aus
+ * `active` ableiten. Eine statische Kette `this.<durch>.a.b = …` gehört
+ * `assignTargetAfterThis` und kommt hier nicht vor. Unbekannte Formen decken
+ * nichts ab; `splice` nur mit eingefügtem Wert, denn reines Entfernen wählt
+ * keinen Wert.
+ *
+ * @param {ts.Node} node
+ * @param {string|null} through
+ * @param {Map<string, string>} aliases
+ * @param {Set<string>} active
+ * @param {((call: ts.CallExpression) => ElementHelper|null)|null} [helperOf]
+ * @returns {string[]}
+ */
+function collectionWriteFields(node, through, aliases, active, helperOf = null) {
+  if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
+    const method = node.expression.name.text;
+    if (!COLLECTION_MUTATORS.has(method)) return [];
+    const inserted = method === 'splice' ? node.arguments.slice(2) : node.arguments;
+    if (!inserted.some(arg => derivesFromParams(arg, active))) return [];
+    const collection = resolveModelPath(node.expression.expression, through, aliases, helperOf);
+    return collection?.path ? pathsOf(collection, collection.path) : [];
+  }
+  if (!ts.isBinaryExpression(node) || !ASSIGN_KINDS.has(node.operatorToken.kind)
+      || !derivesFromParams(node.right, active)) return [];
+  const { left } = node;
+  if (ts.isPropertyAccessExpression(left)) {
+    const base = resolveModelPath(left.expression, through, aliases, helperOf);
+    if (base?.anchor === null || !base) return [];
+    return pathsOf(base, joinPath(base.path, left.name.text));
+  }
+  if (ts.isElementAccessExpression(left)) {
+    const element = resolveModelPath(left, through, aliases, helperOf);
+    return element ? pathsOf(element, element.path) : [];
+  }
+  return [];
+}
+
+/**
+ * Der geschriebene Pfad und, falls vorhanden, sein Anker.
+ * @param {{ anchor: string|null }} resolved
+ * @param {string} path
+ * @returns {string[]}
+ */
+function pathsOf(resolved, path) {
+  return resolved.anchor ? [resolved.anchor, path] : [path];
+}
+
+/**
+ * Die Model-Pfade, die ein Methodenkörper zuweist, unabhängig vom Wert. Ein
+ * Zugriff `this.model.<a>[…]` zählt für `<a>`. `_`-Felder bleiben draußen.
+ * @param {ts.Block|undefined} body
+ * @returns {string[]}
+ */
+function modelAssignmentPaths(body) {
+  const paths = new Set();
+  const noAliases = new Map();
+  const walk = (node) => {
+    if (ts.isBinaryExpression(node) && ASSIGN_KINDS.has(node.operatorToken.kind)) {
+      const resolved = resolveModelPath(node.left, 'model', noAliases);
+      const path = resolved && (resolved.anchor ?? resolved.path);
+      if (path && !path.startsWith('_')) paths.add(path);
+    }
+    ts.forEachChild(node, walk);
+  };
+  if (body) walk(body);
+  return [...paths];
+}
+
+/**
+ * `aliases` ohne die Einträge aus `toRemove`, stets als eigene Kopie: Der Block
+ * trägt seine Aliasse darin ein, und die dürfen ihn nicht überleben.
+ * @param {Map<string, string>} aliases
+ * @param {Array<string|null>} toRemove
+ * @returns {Map<string, string>}
+ */
+function withoutAliases(aliases, toRemove) {
+  const next = new Map(aliases);
+  for (const n of toRemove) if (n) next.delete(n);
+  return next;
+}
+
+/**
+ * Die Namen, die der Kopf einer Schleife bindet.
+ * @param {ts.ForOfStatement|ts.ForInStatement|ts.ForStatement} loop
+ * @returns {string[]}
+ */
+function loopDeclaredNames(loop) {
+  const init = loop.initializer;
+  if (!init || !ts.isVariableDeclarationList(init)) return [];
+  return init.declarations.filter(d => ts.isIdentifier(d.name)).map(d => d.name.text);
 }
 
 /**
@@ -1895,7 +2240,10 @@ function fieldsCoveredByDelegation(resolver, modelDecl, methodName, callArgs, ag
   if (coveredParamNames.size === 0) return new Set();
 
   const derivedInMethod = expandDerivedNames(found.method.body, coveredParamNames);
-  return collectCoveredFields(found.method.body, null, derivedInMethod);
+  return collectCoveredFields(found.method.body, null, derivedInMethod, new Map(), null, (call) => {
+    const name = ownCallName(call);
+    return name ? modelHelper(resolver, modelDecl, name) : null;
+  });
 }
 
 /**
@@ -1912,12 +2260,17 @@ function fieldsCoveredByDelegation(resolver, modelDecl, methodName, callArgs, ag
  * am Viewmodel vorbeigeht und den zweiten Code bekommt
  * (`template_model_call:<methode>`).
  *
+ * `templateMethods` nennt die nackten Viewmodel-Methoden hinter einem Ereignis
+ * (`@click="toggle()"`, `@change="toggle"`). Was davon `@noagent` ist und das
+ * Model zuweist, ist ein Schreibweg ohne Gegenstück auf der Fläche.
+ *
  * @param {string} moduleDir
- * @returns {{ models: string[], calls: string[], modelElements: Array<{ path: string, tag: string, type: string }>, paramCalls: Array<{ key: string, hasFixedBounds: boolean }> }}
+ * @returns {{ models: string[], calls: string[], templateMethods: string[], modelElements: Array<{ path: string, tag: string, type: string }>, paramCalls: Array<{ key: string, hasFixedBounds: boolean }> }}
  */
 function templateBindings(moduleDir) {
   const models = [];
   const calls = [];
+  const templateMethods = new Set();
   const modelElements = [];
   const paramCalls = [];
   // Kein `existsSync`-Schutz: `moduleDir` ist `dirname(viewmodelFile)`, und
@@ -1948,8 +2301,9 @@ function templateBindings(moduleDir) {
       paramCalls.push({ key: m[1], hasFixedBounds: /\s(?:min|max)="[-\d.]+"/.test(el?.text ?? '') });
     }
     for (const m of html.matchAll(/(?:@|x-on:)[a-z]+(?:\.[a-z]+)*="model\.([A-Za-z_$][\w$]*)\(/g)) calls.push(m[1]);
+    for (const m of html.matchAll(/(?:@|x-on:)[\w:-]+(?:\.[\w-]+)*="\s*([A-Za-z_$][\w$]*)\s*(?:\(|")/g)) templateMethods.add(m[1]);
   }
-  return { models, calls, modelElements, paramCalls };
+  return { models, calls, templateMethods: [...templateMethods], modelElements, paramCalls };
 }
 
 /**
@@ -2429,10 +2783,13 @@ function fieldFrom(tags, knownTypeTag) {
   const typeTag = knownTypeTag ?? tags.find(t => t.tagName.text === 'type');
   const bulkTag = tags.find(t => t.tagName.text === MARK_BULK);
   const omitTag = tags.find(t => t.tagName.text === MARK_OMIT);
+  // `[via: …]` wie an der erklärten Lesefläche, nur als Schlüssel, wenn es dasteht.
+  const { via, help } = readViaSentinel(cleanComment(typeTag?.comment));
   return {
     type: typeTag?.typeExpression?.type?.getText() ?? 'any',
-    help: cleanComment(typeTag?.comment),
+    help,
     bulk: bulkTag !== undefined,
+    ...(via ? { via } : {}),
     // `@agentBulk tree` nennt die Art; `@agentBulk` ohne Zusatz heisst
     // `table`. An einem Nicht-Massenfeld steht der Schlüssel gar nicht.
     ...(bulkTag ? { bulkKind: cleanComment(bulkTag.comment) || 'table' } : {}),
