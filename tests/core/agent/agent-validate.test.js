@@ -346,7 +346,7 @@ suite('agent validate — Stufe 5: die Singleton-Regel', () => {
 });
 
 suite('agent validate — Stufe 6: abgeschlossenes Projekt', () => {
-  // Spec §5 C1: im abgeschlossenen Projekt gewinnt `project_completed` vor
+  // Im abgeschlossenen Projekt gewinnt `project_completed` vor
   // Phasen- und Singleton-Prüfung; nur eine dem Zyklus unbekannte Phase
   // meldet weiter zuerst `unknown_phase`.
   test('a wrong phase for the module in a completed project reports project_completed', () => {

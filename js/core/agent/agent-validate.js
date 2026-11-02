@@ -229,7 +229,7 @@ export function validateBatch(input, world) {
       }
       // Dann: darf das Zielmodul in diese (dem Zyklus bekannte) Phase?
       // Ein `module.add` im abgeschlossenen Projekt überspringt das: dort
-      // meldet Stufe 6 zuerst `project_completed` (Spec §5 C1, wie agent-ops.js).
+      // meldet Stufe 6 zuerst `project_completed` (wie in agent-ops.js).
       if (typeof a.module === 'string' && !(world.completed && a.op === 'module.add')) {
         const allowed = world.modules.get(a.module).allowedPhases;
         if (!allowed.includes(a.phase)) {
