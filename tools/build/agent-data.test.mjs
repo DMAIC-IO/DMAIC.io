@@ -3967,7 +3967,7 @@ test('missing_bulk_columns: zwei Tabellenfelder, nur eines mit Schwesterfeld', (
 });
 
 test('missing_bulk_columns: ein einziges Tabellenfeld braucht kein Schwesterfeld', () => {
-  const root = fixture({ foo: { 'foo.js': TWO_TABLES_VM(`return readAgentState('foo', { a: [], b: [] }, options);`).replace(/ \* @property \{Array<\{y: number\}>\} b .*\n/, ''), 'foo-model.js': TWO_TABLES_MODEL.replace(/  \/\*\* @type \{Array<\{y: number\}>\}.*\n  b = \[\];\n/, '').replace(', b: this.b', '') } });
+  const root = fixture({ foo: { 'foo.js': TWO_TABLES_VM(`return readAgentState('foo', { a: [], b: [] }, options);`).replace(/ \* @property \{Array<\{y: number\}>\} b .*\n/, ''), 'foo-model.js': TWO_TABLES_MODEL.replace(/ {2}\/\*\* @type \{Array<\{y: number\}>\}.*\n {2}b = \[\];\n/, '').replace(', b: this.b', '') } });
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.reported, []);
 });
