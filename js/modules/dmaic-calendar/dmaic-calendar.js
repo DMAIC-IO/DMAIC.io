@@ -48,9 +48,9 @@ const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
 /**
  * Den Feldsatz eines Termins prüfen und auf die gespeicherte Form bringen.
  *
- * Ein fehlendes oder leeres Objekt wirft: `agent-ops.js` übergibt
- * `action.args ?? []` ohne Arity-Prüfung, ein fehlendes Argument kommt also
- * als `undefined` an (Ruling 55). Beim Ändern verspricht die Hilfe „mindestens
+ * Ein fehlendes oder leeres Objekt wirft. Ein fehlendes Argument weist
+ * `requireArity` in `agent-ops.js` schon vor dem Aufruf ab; die Prüfung hier
+ * bleibt für ein leeres `{}`: Beim Ändern verspricht die Hilfe „mindestens
  * ein Feld" — ein durchgelassenes `{}` wäre ein stiller Nicht-Aufruf.
  *
  * @param {any} fields der übergebene Feldsatz
@@ -712,7 +712,7 @@ export default createModule({
           block.classList.remove('module-calendar__week-ev--dragging');
           if (!this._didDrag) return;
           // Über dieselbe Senke wie die Agentenfläche, damit `time` und `date`
-          // je genau eine Zuweisungsstelle haben (Ruling 56).
+          // je genau eine Zuweisungsstelle haben.
           if (this.model.events.some(x => x.id === ev.id)) {
             this.updateEvent(ev.id, {
               time: mtt(snp(this.model.pxToMin(curTop))),
@@ -763,7 +763,7 @@ export default createModule({
           document.removeEventListener('mousemove', onMove);
           document.removeEventListener('mouseup', onUp);
           this.resizeEvId = null;
-          // Dieselbe Senke wie die Agentenfläche (Ruling 56).
+          // Dieselbe Senke wie die Agentenfläche.
           if (this.model.events.some(x => x.id === ev.id)) {
             this.updateEvent(ev.id, {
               time: mtt(snp(this.model.pxToMin(curStartPx))),

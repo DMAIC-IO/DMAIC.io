@@ -306,7 +306,7 @@ export default createModule({
         requireIndex('r', r, this.model.inputs.length, { existing: true });
         requireIndex('c', c, this.model.outputs.length, { existing: true });
         // `null` ist der dokumentierte Leerwert der Feldhilfe von `scores`
-        // und muss die Senke erreichen (Ruling 52); jede andere Bewertung
+        // und muss die Senke erreichen; jede andere Bewertung
         // ausserhalb der Skala wirft weiter. `undefined` zählt NICHT als
         // Leerwert: die Fläche prüft die Argumentzahl nicht, ein vergessenes
         // drittes Argument käme hier als `undefined` an und würde sonst

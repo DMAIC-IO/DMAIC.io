@@ -212,7 +212,7 @@ export default createModule({
         requireIndex('sIdx', sIdx, this.model.stakeholders.length, { existing: true });
         // Der leere Text steht als Rücknahme in der ausgelieferten
         // Feldhilfe von `assignments` und muss die Senke erreichen
-        // (Ruling 52); jeder andere unbekannte Wert wirft weiter.
+        // jeder andere unbekannte Wert wirft weiter.
         requireEnum('role', role, ROLE_VALUES);
         this.model.setRole(aIdx, sIdx, role);
       },

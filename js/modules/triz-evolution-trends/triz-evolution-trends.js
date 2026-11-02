@@ -72,7 +72,7 @@ export default createModule({
 
       // `-1` nimmt die Einordnung zurück und wirft nicht: die Feldhilfe von
       // `trends` liefert `-1` als Leerwert aus („-1 heißt: keine gewählt"),
-      // also muss diese Senke ihn erreichen können (Ruling 52). `fromJSON`
+      // also muss diese Senke ihn erreichen können. `fromJSON`
       // kennt `-1` ohnehin als gültigen persistierten Wert. Jede ANDERE
       // Stufe außerhalb der Skala wirft weiter.
       /**

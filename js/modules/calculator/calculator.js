@@ -114,8 +114,8 @@ function requireInput(value) {
 /**
  * Eine endliche Zahl prüfen. Eine Zeichenkette in Dezimalschreibweise wird
  * übernommen, weil die Oberfläche ihre Werte als Text aus der Eingabezeile
- * liest. Ein FEHLENDES Argument kommt als `undefined` an und wirft
- * (Ruling 55).
+ * liest. Ein fehlendes Argument weist schon die Agentenfläche ab; ein
+ * ausdrücklich übergebenes `undefined` wirft hier.
  * @param {string} name
  * @param {any} value
  * @returns {number} die geprüfte Zahl
@@ -133,7 +133,7 @@ function requireFiniteNumber(name, value) {
 
 /**
  * Eine Spezifikationsgrenze prüfen. Der leere Text ist der dokumentierte
- * Leerwert und löscht die Grenze (Ruling 52); ein fehlendes Argument wirft.
+ * Leerwert und löscht die Grenze; ein fehlendes Argument wirft.
  * @param {string} name
  * @param {any} value
  * @returns {string} die Grenze in der gespeicherten Textform

@@ -92,7 +92,7 @@ export default createModule({
 
       // `null` nimmt die Wahl zurück und wirft nicht: die Feldhilfe von
       // `selectedPrinciple` liefert `null` als Leerwert aus, also muss diese
-      // Senke ihn erreichen können (Ruling 52). Jeder ANDERE unbekannte Wert
+      // Senke ihn erreichen können. Jeder ANDERE unbekannte Wert
       // wirft weiter.
       /**
        * Wählt das Trennungsprinzip, mit dem der Widerspruch aufgelöst wird.

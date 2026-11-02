@@ -721,9 +721,9 @@ export function activityFlowchartData(module, _t) {
     // Wirkungslos ohne UI-Vorbedingung, die ein Agent nicht herstellen kann:
     // `_insertMenu` wird nur von der @noagent-Methode `toggleInsertMenu`
     // gesetzt, ein Agent kann das Menü also nie öffnen — `insertInBand` ist
-    // der Weg (Review-Ruling 2026-10-13, Task 3 fix round 1: eine Aktion,
-    // deren Wirkung von einem Zustand abhängt, den nur eine @noagent-Methode
-    // herstellt, ist ein falscher Katalogeintrag, auch mit ehrlicher Hilfe).
+    // der Weg. Eine Aktion, deren Wirkung von einem Zustand abhängt, den nur
+    // eine @noagent-Methode herstellt, wäre ein falscher Katalogeintrag, auch
+    // mit ehrlicher Hilfe.
     /**
      * Insert a step of `kind` at the open menu's gap, then close the menu.
      * @param {'activity'|'decision'} kind

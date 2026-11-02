@@ -203,7 +203,7 @@ export function createOps(deps) {
         // Quelle, aus der der Agent die Signatur liest. Ohne sie kam ein
         // FEHLENDES Argument als `undefined` bei der Senke an und wurde dort
         // wie der dokumentierte Leerwert behandelt: der Aufruf löschte einen
-        // Wert und meldete Erfolg (Ruling 55). Der Parametersatz ist immer da
+        // Wert und meldete Erfolg. Der Parametersatz ist immer da
         // — ein Aufruf ohne Katalogeintrag ist oben schon abgewiesen, die
         // Prüfung läuft also nie mehr fail open.
         requireArity(action.method, args, spec.params ?? []);

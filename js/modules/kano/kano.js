@@ -305,7 +305,7 @@ export default createModule({
             && this.treeList.length === 1 && this.model.items.length === 0) {
           // Geschrieben wird über `setSourceTree` — dieselbe Senke wie die der
           // Agentenfläche, damit `source.instanceId` genau eine
-          // Zuweisungsstelle hat (Ruling 56).
+          // Zuweisungsstelle hat.
           this.setSourceTree(this.treeList[0].instanceId);
           return;
         }
@@ -598,7 +598,7 @@ export default createModule({
        * @throws {Error} wenn keine Befragte diese id trägt
        */
       selectRespondent(id) {
-        // `null` ist der dokumentierte Leerwert des Feldes (Ruling 52): das
+        // `null` ist der dokumentierte Leerwert des Feldes: das
         // Model setzt ihn selbst, wenn die letzte Befragte entfernt wird.
         if (id !== null) {
           requireKnownId('id', id, this.model.respondents.map((r) => r.id));

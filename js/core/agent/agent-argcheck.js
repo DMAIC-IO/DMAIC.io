@@ -179,7 +179,7 @@ export function requireNumericText(name, value) {
  * dieselbe Quelle, aus der der Agent die Signatur liest.
  *
  * Ein ausdrücklich übergebenes `null` bleibt ein Argument: der
- * dokumentierte Leerwert ist weiter erreichbar (Ruling 52).
+ * dokumentierte Leerwert ist weiter erreichbar.
  *
  * @param {string} method Name der Methode (erscheint in der Meldung)
  * @param {readonly any[]} args die übergebenen Argumente
@@ -205,7 +205,7 @@ export function requireArity(method, args, params) {
  * Das Eingabefeld der Oberfläche kann nur eine Zeichenkette liefern, ein
  * Agent jeden Typ. Ohne diese Prüfung landete eine Zahl oder ein Objekt im
  * Zustand und tauchte als `[object Object]` in der Anzeige auf. `''` bleibt
- * ausdrücklich zulässig — er ist der dokumentierte Leerwert (Ruling 52).
+ * ausdrücklich zulässig — er ist der dokumentierte Leerwert.
  *
  * Die Rückgabe erlaubt die Kurzform `this.model.feld = requireText(…)`;
  * Aufrufer, die nur prüfen wollen, ignorieren sie.

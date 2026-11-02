@@ -57,7 +57,7 @@ const COLOR_PROP = Object.fromEntries(COLOR_KEYS.map((key) => [key, `--color-vct
 // Die Randstärke läuft von 0 bis 4 in Schritten von 0,5 — genau die Stufen des
 // Schiebereglers. `requireIndex` passt darauf nicht: es verlangt eine GANZE
 // Zahl und meldete „allowed: 0..4", ließe also 2,5 fallen und 3,7 durch. Die
-// erklärte Wertemenge ist hier der richtige Prüfer (Ruling 51).
+// erklärte Wertemenge ist hier der richtige Prüfer.
 const BORDER_WIDTHS = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4];
 
 // `parseRGBA` (chart-core.js:151) gibt bei einer unlesbaren Farbe STILL ein
@@ -285,7 +285,7 @@ export default createModule({
        * @throws {Error} wenn keine Kundenstimme diese id trägt
        */
       setActiveVoc(vocId) {
-        // `null` ist der dokumentierte Leerwert des Feldes (Ruling 52): das
+        // `null` ist der dokumentierte Leerwert des Feldes: das
         // Model setzt ihn selbst, wenn die letzte Stimme entfernt wird.
         requireKnownId('vocId', vocId, [null, ...this.model.vocs.map((v) => v.id)]);
         this.model.setActiveVoc(vocId);

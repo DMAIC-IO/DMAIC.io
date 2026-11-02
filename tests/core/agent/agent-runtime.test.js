@@ -415,7 +415,7 @@ suite('agent runtime — the seven ops', () => {
   });
 
   test('ein fehlendes Pflichtargument wird abgewiesen, bevor die Senke läuft', async () => {
-    // Ruling 55: `agent-ops.js` spreadet `action.args ?? []`, ein
+    // `agent-ops.js` spreadet `action.args ?? []`, ein
     // weggelassenes Argument kam als `undefined` bei der Senke an und wurde
     // dort wie der dokumentierte Leerwert behandelt — der Aufruf löschte
     // einen Wert und meldete Erfolg. Geprüft wird gegen den Parametersatz der
