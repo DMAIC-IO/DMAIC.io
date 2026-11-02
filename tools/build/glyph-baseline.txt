@@ -2,7 +2,9 @@
 #
 # Erzeugt beim Härten des Gates (`tools/build-icons.mjs` /
 # `tools/build/no-glyphs.mjs`), 2026-08-22. Jede Zeile ist ein Fund von
-# damals: `datei:zeile:glyphe`, sortiert nach Datei, dann Zeile.
+# damals: `datei:glyphe:zeileninhalt` (Inhalt getrimmt, wie ihn der Fund trägt),
+# sortiert. Der Schlüssel hängt am Inhalt, nicht an der Zeilennummer: eine
+# Zeile darüber einzufügen oder zu löschen macht die Baseline nicht rot.
 #
 # WIE DAS GATE DIESE DATEI BENUTZT (`npm run icons:check`):
 #   - Ein Fund, dessen Zeile HIER steht, wird gemeldet, aber der Build
@@ -12,7 +14,7 @@
 #     Icon-System vorbei ins Repo kommen, ohne dass es hier auffällt.
 #
 # WIE MAN EINE ZEILE LOSWIRD:
-#   Migrieren heißt LÖSCHEN. Wird `js/modules/sipoc/sipoc.js:81` auf
+#   Migrieren heißt LÖSCHEN. Wird die Zeile in `js/modules/sipoc/sipoc.js` auf
 #   `icon('action.delete')` umgestellt, verschwindet die Glyphe aus dem
 #   Quelltext — der nächste `icons:check`-Lauf findet sie ohnehin nicht
 #   mehr, aber die verwaiste Baseline-Zeile sollte man trotzdem von Hand
@@ -26,27 +28,25 @@
 # ersetzen (siehe `collectFindings()`/`checkNoGlyphs()` in
 # `tools/build-icons.mjs` für das exakte Key-Format).
 #
-# Bestand bei Erzeugung: 141 Funde — 105 in js/**/*.js, 34 in js/**/*.html,
-# 2 in css/**/*.css (Escape-Notation). 0 in i18n/*.json (die i18n-Dateien
-# waren schon vor dieser Härtung sauber). Das ist der Arbeitsvorrat für die
-# Migrationsfolge-Aufgabe — diese Aufgabe migriert nichts.
+# Bestand bei Erzeugung: 141 Funde. Nach den Migrationen und dem Wechsel auf
+# den Inhaltsanker (2026-11-02) stehen hier noch 19 Funde.
 
-js/core/chart/chart-editor.js:500:●
-js/core/chart/chart-editor.js:502:◆
-js/core/chart/chart-editor.js:503:▲
-js/core/chart/chart-editor.js:504:▼
-js/core/chart/chart-editor.js:506:★
-js/core/cycles/cycles.js:80:⊞
-js/core/migrations.js:58:→
-js/modules/contour-plot/contour-plot-editor.js:81:●
-js/modules/contour-plot/contour-plot-editor.js:82:◆
-js/modules/contour-plot/contour-plot-editor.js:83:▼
-js/modules/contour-plot/contour-plot-editor.js:84:★
-js/modules/control-chart/control-chart-help.js:148:✕
-js/modules/control-chart/control-chart-help.js:171:✕
-js/modules/ishikawa/viewmodel/causes.js:804:●
-js/modules/ishikawa/viewmodel/causes.js:805:◆
-js/modules/ishikawa/viewmodel/causes.js:806:▼
-js/modules/ishikawa/viewmodel/causes.js:807:★
-js/modules/kano/kano-link.js:18:▸
-js/modules/process-map/process-map.js:758:→
+js/core/chart/chart-editor.js:▲:{ value: 'triangle',      label: '▲ Triangle' },
+js/core/chart/chart-editor.js:▼:{ value: 'triangle-down', label: '▼ Tri-down' },
+js/core/chart/chart-editor.js:◆:{ value: 'diamond',       label: '◆ Diamond' },
+js/core/chart/chart-editor.js:●:{ value: 'circle',        label: '● Circle' },
+js/core/chart/chart-editor.js:★:{ value: 'star',          label: '★ Star' },
+js/core/cycles/cycles.js:⊞:data:   { id: 'data',   letter: '⊞', i18nKey: 'phases.data',   virtual: true, position: 'l
+js/core/migrations.js:→:const [from, to] = step.split('→');
+js/modules/contour-plot/contour-plot-editor.js:▼:{ value: 'triangle-down', label: '▼ Tri-down' }, { value: 'cross', label: '✚ Cross' },
+js/modules/contour-plot/contour-plot-editor.js:◆:{ value: 'diamond', label: '◆ Diamond' }, { value: 'triangle', label: '▲ Triangle' },
+js/modules/contour-plot/contour-plot-editor.js:●:{ value: 'circle', label: '● Circle' }, { value: 'square', label: '■ Square' },
+js/modules/contour-plot/contour-plot-editor.js:★:{ value: 'star', label: '★ Star' },
+js/modules/control-chart/control-chart-help.js:✕:content: 'Click a violation row to open a dialog: record the cause as free text and option
+js/modules/control-chart/control-chart-help.js:✕:content: 'Klick auf eine Regelverletzung in der Tabelle öffnet einen Dialog: Ursache als F
+js/modules/ishikawa/viewmodel/causes.js:▼:{ value: 'triangle-down', label: '▼ Triangle ▼' }, { value: 'cross', label: '✚ Cross' },
+js/modules/ishikawa/viewmodel/causes.js:◆:{ value: 'diamond', label: '◆ Diamond' }, { value: 'triangle', label: '▲ Triangle' },
+js/modules/ishikawa/viewmodel/causes.js:●:{ value: 'circle', label: '● Circle' }, { value: 'square', label: '■ Square' },
+js/modules/ishikawa/viewmodel/causes.js:★:{ value: 'star', label: '★ Star' },
+js/modules/kano/kano-link.js:▸:const SEP = ' ▸ ';
+js/modules/process-map/process-map.js:→:if (ti !== -1) parts.push(`→ ${_t('csvStep')} ${String(ti + 1).padStart(2, '0')}`);

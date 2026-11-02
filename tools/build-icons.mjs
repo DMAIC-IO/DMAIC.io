@@ -112,13 +112,16 @@ const read = (path) => readFileSync(path, 'utf8');
 
 /**
  * Baseline des Glyphen-Bestands (`tools/build/glyph-baseline.txt`): eine
- * sortierte `datei:zeile:glyphe`-Liste des Rückstands, den das gehärtete
- * Gate am 2026-08-22 vorfand. Das Gate meldet Baseline-Funde, lässt den
- * Build aber grün — sonst würde diese Härtung selbst den Build für jeden
- * blockieren, der als Nächstes zieht, für einen Bestand, den diese Aufgabe
- * ausdrücklich nicht migriert. Ein NEUER Fund (nicht in der Baseline) ist
- * dagegen ein Build-Fehler: das ist der eigentliche Zweck des Gates.
- * Migrieren heißt: die Zeile aus der Baseline-Datei streichen.
+ * sortierte `datei:glyphe:zeileninhalt`-Liste des Rückstands, den das
+ * gehärtete Gate am 2026-08-22 vorfand. Der Schlüssel hängt am getrimmten
+ * Zeileninhalt, nicht an der Zeilennummer: Wer darüber eine Zeile einfügt
+ * oder löscht, verschiebt den Fund, ohne dass die Baseline rot wird. Das
+ * Gate meldet Baseline-Funde, lässt den Build aber grün — sonst würde diese
+ * Härtung selbst den Build für jeden blockieren, der als Nächstes zieht,
+ * für einen Bestand, den diese Aufgabe ausdrücklich nicht migriert. Ein
+ * NEUER Fund (nicht in der Baseline) ist dagegen ein Build-Fehler: das ist
+ * der eigentliche Zweck des Gates. Migrieren heißt: die Zeile aus der
+ * Baseline-Datei streichen.
  */
 const BASELINE_FILE = join(import.meta.dirname, 'build/glyph-baseline.txt');
 
@@ -130,37 +133,38 @@ function loadBaseline() {
 
 /**
  * Sammelt alle Funde als `{key, message}`. `key` ist die Baseline-Zeile
- * (`datei:zeile:glyphe`), `message` die für Menschen lesbare Fehlerzeile.
+ * (`datei:glyphe:zeileninhalt`), `message` die für Menschen lesbare Fehlerzeile.
  */
 function collectFindings() {
   const findings = [];
+  const keyOf = (rel, glyph, hit) => `${rel}:${glyph}:${hit.text.trim()}`;
   for (const path of walk(JS_DIR, /\.html$/)) {
     const rel = relative(APP, path);
     if (GLYPH_EXEMPT.includes(rel)) continue;
     for (const hit of findInlineSvg(read(path))) {
-      findings.push({ key: `${rel}:${hit.line}:<svg>`, message: `${rel}:${hit.line}: inline <svg> — ${hit.text}` });
+      findings.push({ key: keyOf(rel, '<svg>', hit), message: `${rel}:${hit.line}: inline <svg> — ${hit.text}` });
     }
     for (const hit of findGlyphsInHtml(read(path))) {
-      findings.push({ key: `${rel}:${hit.line}:${hit.glyph}`, message: `${rel}:${hit.line}: Icon-Glyphe — ${hit.text}` });
+      findings.push({ key: keyOf(rel, hit.glyph, hit), message: `${rel}:${hit.line}: Icon-Glyphe — ${hit.text}` });
     }
   }
   for (const path of walk(JS_DIR, /\.js$/)) {
     const rel = relative(APP, path);
     if (GLYPH_EXEMPT.includes(rel)) continue;
     for (const hit of findGlyphsInJs(read(path))) {
-      findings.push({ key: `${rel}:${hit.line}:${hit.glyph}`, message: `${rel}:${hit.line}: Icon-Glyphe — ${hit.text}` });
+      findings.push({ key: keyOf(rel, hit.glyph, hit), message: `${rel}:${hit.line}: Icon-Glyphe — ${hit.text}` });
     }
   }
   for (const rel of ['i18n/de.json', 'i18n/en.json']) {
     for (const hit of findGlyphs(read(join(APP, rel)))) {
-      findings.push({ key: `${rel}:${hit.line}:${hit.glyph}`, message: `${rel}:${hit.line}: Icon-Glyphe — ${hit.text}` });
+      findings.push({ key: keyOf(rel, hit.glyph, hit), message: `${rel}:${hit.line}: Icon-Glyphe — ${hit.text}` });
     }
   }
   const cssFiles = [...walk(join(APP, 'css'), /\.css$/), ...walk(JS_DIR, /\.css$/)];
   for (const path of cssFiles) {
     const rel = relative(APP, path);
     for (const hit of findPseudoGlyphs(read(path))) {
-      findings.push({ key: `${rel}:${hit.line}:${hit.glyph}`, message: `${rel}:${hit.line}: content mit Glyphe — ${hit.text}` });
+      findings.push({ key: keyOf(rel, hit.glyph, hit), message: `${rel}:${hit.line}: content mit Glyphe — ${hit.text}` });
     }
   }
   return findings;
