@@ -2783,7 +2783,7 @@ export class DataGrid {
 
   _promptRenameColumn(colIdx) {
     const col = this.columns[colIdx];
-    const name = prompt('Column name:', col.name || '');
+    const name = prompt(this._t('ui.datagrid.promptColumnName'), col.name || '');
     if (name !== null) this.renameColumn(col.id, name);
   }
 

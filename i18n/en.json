@@ -1174,6 +1174,7 @@
     },
     "datagrid": {
       "renameColumn": "Rename column",
+      "promptColumnName": "Column name:",
       "sortAsc": "Sort ascending",
       "sortDesc": "Sort descending",
       "deleteColumn": "Delete column",
