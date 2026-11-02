@@ -40,7 +40,7 @@ export function readConsent(stateManager) {
 
 /**
  * Einwilligung erteilen und — wenn ein eventBus übergeben wurde —
- * `agent:consent-changed` mit `{ granted: true }` feuern (Ruling K2). Der
+ * `agent:consent-changed` mit `{ granted: true }` feuern. Der
  * Einstellungsabschnitt (Task 11) hält damit seine Anzeige aktuell, auch
  * ohne dass `settings.`-Schreibzugriffe ein `data:changed` auslösen.
  * @param {object} stateManager
@@ -57,7 +57,7 @@ export function grantConsent(stateManager, eventBus) {
 
 /**
  * Einwilligung widerrufen und — wenn ein eventBus übergeben wurde —
- * `agent:consent-changed` mit `{ granted: false }` feuern (Ruling K2).
+ * `agent:consent-changed` mit `{ granted: false }` feuern.
  * @param {object} stateManager
  * @param {object} [eventBus]
  */
@@ -74,7 +74,7 @@ export function revokeConsent(stateManager, eventBus) {
  * @param {(key: string, params?: object) => string} deps.t  gebundenes i18n.t
  * @param {() => Promise<boolean>} deps.openDialog  öffnet den Einwilligungsdialog
  * @param {() => Promise<void>} deps.promptExport   fordert den Projekt-Export an
- * @param {object} [deps.eventBus]  optional, siehe Ruling K2
+ * @param {object} [deps.eventBus]  optional; hält die Anzeige der Einstellungen aktuell
  * @returns {{ ensure: () => Promise<{ ok: true } | { ok: false, error: string, message: string }> }}
  */
 export function createConsentGate({ stateManager, t, openDialog, promptExport, eventBus }) {

@@ -1,6 +1,6 @@
 /**
  * Tests for core/agent/agent-ops.js — direct coverage of the runtime
- * defences that Ruling R7a keeps even though Stufe 6 of the validator
+ * defences that are kept even though Stufe 6 of the validator
  * (agent-validate.js) now intercepts the same cases first on the normal
  * `interact()` path. Without a test calling `createOps` directly, these two
  * branches (`module.add`, `module.remove` against `host.isCompleted()`)
@@ -52,7 +52,7 @@ function makeDeps({ completed }) {
   };
 }
 
-suite('agent ops — runtime defence for a completed project (Ruling R7a)', () => {
+suite('agent ops — runtime defence for a completed project', () => {
   test('module.add reports project_completed and never calls host.addInstance', async () => {
     const ops = createOps(makeDeps({ completed: true }));
     const out = await ops['module.add']({ module: 'five-why' });

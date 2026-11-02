@@ -308,10 +308,8 @@ export default createModule({
         // `null` ist der dokumentierte Leerwert der Feldhilfe von `scores`
         // und muss die Senke erreichen; jede andere Bewertung
         // ausserhalb der Skala wirft weiter. `undefined` zählt NICHT als
-        // Leerwert: die Fläche prüft die Argumentzahl nicht, ein vergessenes
-        // drittes Argument käme hier als `undefined` an und würde sonst
-        // still löschen und Erfolg melden. Es fällt darum in `requireEnum`
-        // und wirft (`invalid value undefined; allowed: …`).
+        // Leerwert: ein ausdrücklich übergebenes `undefined` fällt in
+        // `requireEnum` und wirft (`invalid value undefined; allowed: …`).
         if (value !== null) {
           requireEnum('value', value, this.model.allowedScores());
         }

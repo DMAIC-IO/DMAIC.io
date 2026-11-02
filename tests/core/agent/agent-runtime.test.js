@@ -339,7 +339,7 @@ suite('agent runtime — the seven ops', () => {
     assertEqual(out.results[0].error, 'op_failed');
   });
 
-  // Ruling K1: with a LITERAL `instance`, the target module is statically
+  // With a LITERAL `instance`, the target module is statically
   // known, so stage 5 of the validator rejects the whole batch before any
   // op runs. The return shape is the validator's, not the ops' — there is
   // no `results` array to index into.
@@ -731,7 +731,7 @@ suite('agent runtime — Lesen vor Schreiben (stale_revision)', () => {
   });
 });
 
-suite('agent runtime — result shapes match the contract (Ruling K5)', () => {
+suite('agent runtime — result shapes match the contract', () => {
   test('every op\'s actual result carries exactly the keys OPS declares', async () => {
     const { runtime } = makeRuntime({ viewmodel: { read: () => 'ok' } });
     const out = await runtime.interact([

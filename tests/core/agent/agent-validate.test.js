@@ -3,12 +3,12 @@
  * The contract under test: a failing stage executes NOTHING, and the
  * error names the offending entry plus the valid alternatives.
  *
- * Ruling K6: a `phase` is checked twice — first against the active cycle's
+ * A `phase` is checked twice — first against the active cycle's
  * known phase ids (`world.phases`), then (only if the cycle knows it) against
  * the target module's `allowedPhases`. Both failures report
  * `ERRORS.UNKNOWN_PHASE` (the contract has only one phase-related code), but
  * with different messages and a different `available` list — see the two
- * tests tagged "Ruling K6" below.
+ * phase tests below.
  */
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../test-utils.js';
 import { validateBatch, isWritingAction, WRITE_OPS, CONDITIONAL_WRITE_OPS, READ_OPS } from '../../../js/core/agent/agent-validate.js';
@@ -217,16 +217,16 @@ suite('agent validate — Stufe 5: literale Bezeichner', () => {
     assertDeepEqual(r.cause.available, ['define']);
   });
 
-  // Ruling K6 — Stufe 5 prüft `phase` zusätzlich gegen `world.phases` (die
+  // Stufe 5 prüft `phase` zusätzlich gegen `world.phases` (die
   // Phasen des aktiven Zyklus), bevor überhaupt gegen das Modul geprüft wird.
-  test('[K6] a phase unknown to the active cycle is rejected, listing the cycle’s phases', () => {
+  test('a phase unknown to the active cycle is rejected, listing the cycle’s phases', () => {
     const r = validateBatch([{ op: 'module.add', module: 'five-why', phase: 'phantom' }], makeWorld());
     assertEqual(r.ok, false);
     assertEqual(r.cause.error, 'unknown_phase');
     assertDeepEqual(r.cause.available, ['data', 'define', 'measure', 'analyze', 'improve', 'control', 'extras', 'nowhere']);
   });
 
-  test('[K6] a phase known to the cycle but not allowed for the module is rejected, listing the module’s phases', () => {
+  test('a phase known to the cycle but not allowed for the module is rejected, listing the module’s phases', () => {
     const r = validateBatch([{ op: 'module.add', module: 'worksheet', phase: 'nowhere' }], makeWorld());
     assertEqual(r.ok, false);
     assertEqual(r.cause.error, 'unknown_phase');

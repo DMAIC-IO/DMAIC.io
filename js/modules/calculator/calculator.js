@@ -133,7 +133,8 @@ function requireFiniteNumber(name, value) {
 
 /**
  * Eine Spezifikationsgrenze prüfen. Der leere Text ist der dokumentierte
- * Leerwert und löscht die Grenze; ein fehlendes Argument wirft.
+ * Leerwert und löscht die Grenze; ein fehlendes Argument weist schon die Agentenfläche
+ * ab, hier wirft ein ausdrücklich übergebenes `undefined`.
  * @param {string} name
  * @param {any} value
  * @returns {string} die Grenze in der gespeicherten Textform

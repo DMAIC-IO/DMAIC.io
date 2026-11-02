@@ -19,7 +19,7 @@ const DEFS = [
 
 // Das Test-`t` liefert für unbekannte Schlüssel `undefined`, nie den
 // Schlüssel selbst — ein fehlender i18n-Schlüssel in der Implementierung
-// muss den Test rot machen (Ruling R5), nicht lautlos "bestehen".
+// muss den Test rot machen, nicht lautlos "bestehen".
 const I18N_TABLE = {
   'modules.worksheet.name': 'Datensammlung',
   'modules.worksheet.description': 'Tabellarische Datenerfassung',
@@ -173,7 +173,7 @@ suite('agent catalog — validator world', () => {
     assertEqual(world.modules.get('worksheet').singleton, false);
   });
 
-  // Ruling K6 (Koordinator): world.phases muss die Phasen-IDs des AKTIVEN
+  // world.phases muss die Phasen-IDs des AKTIVEN
   // ZYKLUS tragen, nicht die bislang im Projektzustand befüllten Schlüssel —
   // sonst lehnt validateBatch jede Aktion mit `phase` fälschlich ab, sobald
   // eine Phase noch keine Instanz hat (z. B. ein frisches Projekt).

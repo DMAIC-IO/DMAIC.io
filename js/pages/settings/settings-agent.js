@@ -5,7 +5,7 @@
  * widerrufbar. Der Abschnitt lebt in einer eigenen, DOM-freien Datei, damit
  * sein Verhalten — insbesondere die Reaktivität — ohne Alpine testbar bleibt.
  *
- * Reaktivität (Ruling K2): `stateManager.set()` emittiert für Pfade unter
+ * Reaktivität: `stateManager.set()` emittiert für Pfade unter
  * `settings.` KEIN `data:changed` (core/state-manager.js), und createPage ruft
  * die Alpine-data()-Fabrik nur beim ersten Mount. Ein Schnappschuss beim Mount
  * würde eine spätere Erteilung also nie sehen. Deshalb hört der Abschnitt auf

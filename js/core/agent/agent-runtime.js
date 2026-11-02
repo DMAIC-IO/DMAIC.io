@@ -267,7 +267,7 @@ export function createAgentRuntime(deps) {
     // bereits gelandete Schreibvorgänge für nicht passiert halten und
     // wiederholen. Deshalb: eigener Fang-Punkt, eigener Fehlercode
     // (`FLUSH_FAILED`), `results` bleiben erhalten. `ok` bleibt `false` —
-    // das Ruling aus Task 1 gilt weiter: ein fehlgeschlagener Flush IST ein
+    // es bleibt dabei: ein fehlgeschlagener Flush IST ein
     // Misserfolg des Stapels, nur kein unspezifischer.
     if (wrote) {
       try {

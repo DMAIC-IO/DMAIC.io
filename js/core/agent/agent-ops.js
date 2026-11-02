@@ -51,7 +51,7 @@ export function createOps(deps) {
     'module.add': async (action) => {
       // Stufe 5 des Prüfers fängt ein unbekanntes Modul schon vorher ab —
       // dieser Zweig bleibt als Verteidigung, weil die Laufzeit prinzipiell
-      // auch ohne Prüfer aufrufbar ist (Ruling R7a).
+      // auch ohne Prüfer aufrufbar ist.
       const def = moduleRegistry.get(action.module);
       if (!def) {
         return axiError(ERRORS.UNKNOWN_MODULE,
@@ -178,8 +178,8 @@ export function createOps(deps) {
       }
       const viewmodel = await host.getViewmodel(action.instance);
       if (!viewmodel) {
-        // Derselbe Vertragscode wie „Instanz unbekannt" (ERRORS.UNKNOWN_INSTANCE,
-        // Ruling R7b) — die echte Ursache ist hier eine andere: die Instanz
+        // Derselbe Vertragscode wie „Instanz unbekannt" (ERRORS.UNKNOWN_INSTANCE) —
+        // die echte Ursache ist hier eine andere: die Instanz
         // EXISTIERT, ihr Viewmodel ist nur nicht lebendig (nicht gemountet,
         // Ansicht nicht aktiv). Ein eigener Fehlercode wäre eine
         // Vertragsänderung (CONTRACT_VERSION-Bump) — daher bleibt der Code,

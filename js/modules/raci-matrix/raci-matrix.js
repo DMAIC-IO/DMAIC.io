@@ -211,7 +211,7 @@ export default createModule({
         requireIndex('aIdx', aIdx, this.model.activities.length, { existing: true });
         requireIndex('sIdx', sIdx, this.model.stakeholders.length, { existing: true });
         // Der leere Text steht als Rücknahme in der ausgelieferten
-        // Feldhilfe von `assignments` und muss die Senke erreichen
+        // Feldhilfe von `assignments` und muss die Senke erreichen;
         // jeder andere unbekannte Wert wirft weiter.
         requireEnum('role', role, ROLE_VALUES);
         this.model.setRole(aIdx, sIdx, role);

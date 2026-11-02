@@ -1,7 +1,7 @@
 /**
  * Tests für den Einstellungsabschnitt „KI-Agenten" (pages/settings/settings-agent.js).
  *
- * Kern ist die Reaktivität (Ruling K2): Schreibzugriffe unter `settings.`
+ * Kern ist die Reaktivität: Schreibzugriffe unter `settings.`
  * emittieren kein `data:changed`, und die Alpine-data()-Fabrik läuft nur beim
  * ersten Mount. Der Abschnitt muss deshalb auf `agent:consent-changed` hören.
  */
@@ -83,8 +83,8 @@ suite('settings agent section', () => {
     assertDeepEqual(notified, [['agent.settings.revoked', 'success']]);
   });
 
-  // ── Ruling K2: Reaktivität ───────────────────────────────────────────
-  test('eine Erteilung nach dem Mount aktualisiert den Abschnitt (Ruling K2)', () => {
+  // ── Reaktivität ───────────────────────────────────────────
+  test('eine Erteilung nach dem Mount aktualisiert den Abschnitt', () => {
     const { data, stateManager, eventBus } = build();
     data.agentInit();
     assertEqual(data.agentGranted, false);

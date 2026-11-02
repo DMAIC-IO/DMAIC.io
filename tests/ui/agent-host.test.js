@@ -175,8 +175,8 @@ suite('agent host — Persistenz abwarten (Lesen vor Schreiben)', () => {
   });
 
   test('addInstance legt den Zustand erst nach dem Einhängen ab, nicht davor', async () => {
-    // Das `init()` des Moduls normalisiert sein Model während des Einhängens
-    // (Controller-Ruling R1): abgelegt werden muss der Stand DANACH.
+    // Das `init()` des Moduls normalisiert sein Model während des Einhängens:
+    // abgelegt werden muss der Stand DANACH.
     let model = { raw: true };
     const { host, calls } = makeHost({
       ready: async () => {
