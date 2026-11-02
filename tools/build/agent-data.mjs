@@ -432,30 +432,37 @@ function isPrimitiveType(node) {
  */
 const DOM_STATE_PROPS = new Set(['innerHTML', 'outerHTML']);
 
-/** Zuweisungsoperatoren, die einen DOM-Umweg bedeuten. `+=` zählt mit: es
- *  schreibt genauso in den Zustand, nur additiv. */
+/** Zuweisungsoperatoren, die einen Schreibweg bedeuten. Alle Formen zählen:
+ *  `+=` und `-=` schreiben additiv, `??=`, `||=` und `&&=` bedingt — in den
+ *  Zustand schreiben sie genauso. Genutzt für DOM-Umwege und für die
+ *  Schreibweg-Erkennung (`collectCoveredFields`). */
 const ASSIGN_KINDS = new Set([
   ts.SyntaxKind.EqualsToken,
   ts.SyntaxKind.PlusEqualsToken,
+  ts.SyntaxKind.MinusEqualsToken,
+  ts.SyntaxKind.QuestionQuestionEqualsToken,
+  ts.SyntaxKind.BarBarEqualsToken,
+  ts.SyntaxKind.AmpersandAmpersandEqualsToken,
 ]);
 
 /**
  * Finde zustandsändernde DOM-Zugriffe. Berichtend, nicht beweisend — der
  * eigentliche Beweis ist die dynamische Paritätsprüfung.
  * @param {ts.SourceFile} sf
- * @returns {string[]} Codes der Form `dom_detour:<prop>@<zeile>`
+ * @returns {string[]} Codes der Form `dom_detour:<prop>`, zeilenfrei und je
+ *   Eigenschaft einmal
  */
 export function collectDomDetours(sf) {
   const hits = [];
   const walk = (node) => {
     if (ts.isBinaryExpression(node) && ASSIGN_KINDS.has(node.operatorToken.kind)) {
-      const target = describeTarget(node.left, sf);
+      const target = describeTarget(node.left);
       if (target) hits.push(target);
     }
     ts.forEachChild(node, walk);
   };
   walk(sf);
-  return hits;
+  return [...new Set(hits)];
 }
 
 /**
@@ -468,16 +475,13 @@ export function collectDomDetours(sf) {
  * schlimmer als kein Wächter, weil niemand ihn mehr prüft.
  *
  * @param {ts.Node} left  die linke Seite der Zuweisung
- * @param {ts.SourceFile} sf
  * @returns {string|null} der Verstoßcode, oder null
  */
-function describeTarget(left, sf) {
-  const line = () => sf.getLineAndCharacterOfPosition(left.getStart(sf)).line + 1;
-
+function describeTarget(left) {
   if (ts.isPropertyAccessExpression(left)) {
     const prop = left.name.text;
-    if (DOM_STATE_PROPS.has(prop)) return `dom_detour:${prop}@${line()}`;
-    if (isDatasetAccess(left.expression)) return `dom_detour:dataset.${prop}@${line()}`;
+    if (DOM_STATE_PROPS.has(prop)) return `dom_detour:${prop}`;
+    if (isDatasetAccess(left.expression)) return `dom_detour:dataset.${prop}`;
     return null;
   }
 
@@ -485,8 +489,8 @@ function describeTarget(left, sf) {
     const literal = left.argumentExpression;
     if (!literal || !ts.isStringLiteralLike(literal)) return null;
     const prop = literal.text;
-    if (DOM_STATE_PROPS.has(prop)) return `dom_detour:${prop}@${line()}`;
-    if (isDatasetAccess(left.expression)) return `dom_detour:dataset.${prop}@${line()}`;
+    if (DOM_STATE_PROPS.has(prop)) return `dom_detour:${prop}`;
+    if (isDatasetAccess(left.expression)) return `dom_detour:dataset.${prop}`;
     return null;
   }
 
@@ -1038,7 +1042,7 @@ function readSubViewModel(subName, decl, appDir, ctx) {
   const { node, sf } = decl;
   const file = relative(appDir, sf.fileName).split(sep).join('/');
   const from = `@${file}`;
-  for (const code of collectDomDetours(sf)) ctx.out.violations.push(code.replace(/@(\d+)$/, `@${file}:$1`));
+  for (const code of collectDomDetours(sf)) ctx.out.violations.push(`${code}@${file}`);
   for (const member of node.members) {
     if (ts.getCombinedModifierFlags(member) & ts.ModifierFlags.Static) continue;
     for (const inner of fieldNews(member)) {

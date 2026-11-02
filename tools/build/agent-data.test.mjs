@@ -169,7 +169,7 @@ function sourceOf(code) {
 test('collectDomDetours: innerHTML write is a detour', () => {
   const hits = collectDomDetours(sourceOf('function f(el) { el.innerHTML = "<b>x</b>"; }'));
   assert.equal(hits.length, 1);
-  assert.match(hits[0], /^dom_detour:innerHTML@1$/);
+  assert.match(hits[0], /^dom_detour:innerHTML$/);
 });
 
 test('collectDomDetours: outerHTML write is a detour', () => {
@@ -179,7 +179,7 @@ test('collectDomDetours: outerHTML write is a detour', () => {
 test('collectDomDetours: dataset write is a detour and names the key', () => {
   const hits = collectDomDetours(sourceOf('function f(el) { el.dataset.orgId = "7"; }'));
   assert.equal(hits.length, 1);
-  assert.match(hits[0], /^dom_detour:dataset\.orgId@1$/);
+  assert.match(hits[0], /^dom_detour:dataset\.orgId$/);
 });
 
 test('collectDomDetours: a dataset READ is not a detour', () => {
@@ -1665,13 +1665,24 @@ test('Domänen-Tor: die erklärten Wertemengen des Hypothesentests sind GENAU di
 test('collectDomDetours erkennt += auf innerHTML', () => {
   const hits = collectDomDetours(sourceOf(`function render(el) { el.innerHTML += '<b>x</b>'; }`));
   assert.equal(hits.length, 1);
-  assert.match(hits[0], /^dom_detour:innerHTML@/);
+  assert.match(hits[0], /^dom_detour:innerHTML$/);
+});
+
+test('collectDomDetours sieht ??=, ||=, &&= und -=', () => {
+  for (const op of ['??=', '||=', '&&=', '-=']) {
+    const hits = collectDomDetours(sourceOf(`el.dataset.k ${op} 'x';`));
+    assert.deepEqual(hits, ['dom_detour:dataset.k'], op);
+  }
+});
+
+test('collectDomDetours meldet dieselbe Eigenschaft einmal', () => {
+  assert.deepEqual(collectDomDetours(sourceOf(`el.innerHTML = 'a';\nel.innerHTML = 'b';`)), ['dom_detour:innerHTML']);
 });
 
 test('collectDomDetours erkennt dataset mit Klammerzugriff', () => {
   const hits = collectDomDetours(sourceOf(`function mark(el) { el.dataset['state'] = 'on'; }`));
   assert.equal(hits.length, 1);
-  assert.match(hits[0], /^dom_detour:dataset\.state@/);
+  assert.match(hits[0], /^dom_detour:dataset\.state$/);
 });
 
 test('eine Hilfsklasse in der Model-Datei mischt ihre Felder nicht unter', () => {
@@ -3669,7 +3680,7 @@ export class DraftViewModel {
 test('Teil-Viewmodel: ein DOM-Umweg in der Datei der Klasse trägt Pfad und Zeile', () => {
   const body = DRAFT_VM.replace('_helper() {}', '_helper(el) { el.innerHTML = this._t("x"); }');
   const { modules } = collectAgentData(subVmFixture(body));
-  assert.ok(modules.foo.reported.some(c => /^dom_detour:innerHTML@js\/modules\/foo\/viewmodel\/draft\.js:\d+$/.test(c)),
+  assert.ok(modules.foo.reported.some(c => /^dom_detour:innerHTML@js\/modules\/foo\/viewmodel\/draft\.js$/.test(c)),
     modules.foo.reported.join(', '));
 });
 

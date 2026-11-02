@@ -28,14 +28,14 @@ test('jede Verstoßart aus agent-data.mjs hat eine Abhilfe', () => {
 
 test('releaseDiff: Verstoß wörtlich mit Abhilfe, fehlendes Tag, unbekanntes und neues Modul', () => {
   const modules = {
-    a: { tagged: true, available: false, reported: ['unmarked_method:onX', 'dom_detour:innerHTML@12'] },
+    a: { tagged: true, available: false, reported: ['unmarked_method:onX', 'dom_detour:innerHTML'] },
     b: { tagged: false, available: false, reported: [] },
     c: { tagged: true, available: true, reported: [] },
     d: { tagged: true, available: true, reported: [] },
   };
   assert.deepEqual(releaseDiff(modules, ['a', 'b', 'c', 'gone']), [
     'a: unmarked_method:onX → @agent oder @noagent setzen',
-    `a: dom_detour:innerHTML@12 → ${VIOLATION_REMEDIES.dom_detour}`,
+    `a: dom_detour:innerHTML → ${VIOLATION_REMEDIES.dom_detour}`,
     'b: Modul-Tag fehlt → @agent in den Dateikopf setzen',
     'gone: Modul nicht gefunden → aus RELEASED_MODULES streichen',
     'd: neu freigegeben → in RELEASED_MODULES aufnehmen',
