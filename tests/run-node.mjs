@@ -107,6 +107,8 @@ const SKIP = new Set([
   'core/datagrid-locked-columns.test.js',
   'core/datagrid-readonly.test.js',
   'core/datagrid-roles-grid.test.js',
+  'core/datagrid-set-formula.test.js',
+  'core/datagrid-sort.test.js',
   'core/datagrid-dialogs.test.js',
   'core/context-language.test.js',
   'core/dom.test.js',
