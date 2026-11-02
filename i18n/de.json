@@ -8130,7 +8130,7 @@
       "dispersionSection": "Streuungsanalyse",
       "dispersionTitle": "Streuungs-DoE (Mittelwert & log s²)",
       "tipDispersion": "Modelliert Mittelwert und ln(s²) als zwei getrennte Antworten — identifiziert Faktoreinstellungen, die die Prozessstreuung unabhängig vom Mittelwert reduzieren (Dual-Response-Ansatz nach Vining & Myers). Erfordert mindestens 2 Replikate pro Versuchspunkt.",
-      "dispersionLead": "Antwortgrösse: <strong>{response}</strong>. {points} Versuchspunkte mit {min}–{max} Replikaten.",
+      "dispersionLead": "Antwortgröße: <strong>{response}</strong>. {points} Versuchspunkte mit {min}–{max} Replikaten.",
       "dispersionPoint": "Punkt #",
       "dispersionMean": "ȳ",
       "dispersionNoReplicates": "Streuungsanalyse benötigt mindestens 2 Replikate pro Versuchspunkt. Erhöhe die Replikate-Option im linken Bereich oder ergänze Wiederholungsläufe im Worksheet.",
