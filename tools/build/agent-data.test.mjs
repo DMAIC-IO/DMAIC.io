@@ -2036,11 +2036,61 @@ test('view_field_agent_write: weitere Formen, die aus dem Parameter stammen', ()
 test('view_field_agent_write: was die Herkunft trennt, ist kein Befund', () => {
   assert.deepEqual(viewWriteFindings('pick(id)', 'const q = new Thing(id); this.model.selected = q.id;'), [], 'new');
   assert.deepEqual(viewWriteFindings('pick(id)', 'const q = { id }; this.model.selected = q.id;'), [], 'Objektliteral');
-  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.selected = String(id);'), [], 'Aufruf rechts');
+  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.selected = make(id);'), [], 'Aufruf rechts');
+  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.selected = id ? id : null;'), [], 'Bedingung');
+  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.selected = id || null;'), [], 'Operator');
+  assert.deepEqual(viewWriteFindings('pick(id)', "this.model.selected = requireText('id', make(id));"), [], 'Prüfer um einen fremden Aufruf');
+  assert.deepEqual(viewWriteFindings('pick(id)', "this.model.selected = this.requireText('id', id);"), [], 'Prüfer als Methode');
+  assert.deepEqual(viewWriteFindings('pick(id)', "this.model.selected = requirements(id);"), [], 'nur der Name beginnt gleich');
+  assert.deepEqual(viewWriteFindings('pick(id)', "const q = requireThing(make(id)); this.model.selected = q;"), [], 'Alias eines Prüfers ohne direkten Wert');
   assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.set(make(id));', { modelMembers: 'set(a) { this.selected = a; }' }), [], 'Aufruf als Argument');
   assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.set(id);', { modelMembers: 'set(a) { const q = make(a); this.selected = q.id; }' }), [], 'Aufruf im Model');
   assert.deepEqual(viewWriteFindings('pick(id)', 'const s = this.model.items.find(i => i.id === id); this.model.selected = s.id;'), [], 'Wert aus der Sammlung');
   assert.deepEqual(viewWriteFindings('pick(id)', '[1].forEach(id => { this.model.selected = id; });'), [], 'verdeckter Name');
+});
+
+test('view_field_agent_write: Prüfer und Typwandlung geben den Parameter zurück', () => {
+  const hit = ['view_field_agent_write:selected'];
+  assert.deepEqual(viewWriteFindings('pick(id)', "this.model.selected = requireText('id', id);"), hit, 'Prüfer rechts');
+  assert.deepEqual(viewWriteFindings('pick(id)', "const x = requireId('id', id); this.model.selected = x;"), hit, 'Prüfer als Alias');
+  assert.deepEqual(viewWriteFindings('pick(id)', "this.model.selected = requireEnum('id', id, IDS);"), hit, 'Prüfer mit Menge');
+  for (const wrap of ['String', 'Number', 'Boolean']) {
+    assert.deepEqual(viewWriteFindings('pick(id)', `this.model.selected = ${wrap}(id);`), hit, wrap);
+  }
+  assert.deepEqual(viewWriteFindings('pick(id)', "this.model.set(requireText('id', id));", { modelMembers: 'set(a) { this.selected = a; }' }), hit, 'als Argument');
+  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.set(id);', { modelMembers: 'set(a) { const c = String(a); this.selected = c; }' }), hit, 'im Model');
+});
+
+test('view_field_agent_write: ein Alias im Block zählt nur dort', () => {
+  const hit = ['view_field_agent_write:selected'];
+  assert.deepEqual(viewWriteFindings('pick(id)', 'if (id) { const x = id; this.model.selected = x; }'), hit, 'Block');
+  assert.deepEqual(viewWriteFindings('pick(id)', 'const a = id; if (id) { const b = a.v; if (b) { const c = b; this.model.selected = c; } }'), hit, 'verschachtelt');
+  assert.deepEqual(viewWriteFindings('pick(id)', '[1].forEach(() => { const x = id; this.model.selected = x; });'), hit, 'Closure');
+  assert.deepEqual(viewWriteFindings('pick(id)', 'if (id) { const x = id; this.model.set(x); }', { modelMembers: 'set(a) { this.selected = a; }' }), hit, 'Delegation');
+  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.set(id);', { modelMembers: 'set(a) { if (a) { const c = a; this.selected = c; } }' }), hit, 'im Model');
+  assert.deepEqual(viewWriteFindings('pick(id)', 'if (id) { const x = make(id); this.model.selected = x; }'), [], 'Aufruf im Block');
+  assert.deepEqual(viewWriteFindings('pick(id)', 'const x = id; if (id) { const x = make(id); this.model.selected = x; }'), [], 'Neubindung im Block');
+  assert.deepEqual(viewWriteFindings('pick(id)', 'if (id) { const x = id; } if (!id) { this.model.selected = x; }'), [], 'außerhalb des Blocks');
+});
+
+test('view_field_agent_write: ein Mutator mit dem Parameter ist eine Schreibung', () => {
+  const hit = ['view_field_agent_write:selected'];
+  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.selected.push(id);'), hit, 'direkt');
+  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.add(id);', { modelMembers: 'add(a) { this.selected.push(a); }' }), hit, 'über das Model');
+});
+
+test('writtenFields: ein Block-Alias bleibt in der weiten Menge ungesehen', () => {
+  const action = `/**
+       * Die Probe.
+       * @agent
+       * @param {string} id die id
+       * @returns {void}
+       */
+      pick(id) { if (id) { const x = id; this.model.selected = x; } },`;
+  const root = fixture({ foo: { 'foo.js': viewVm({ extra: action }), 'foo-model.js': viewModel(
+    "static VIEW_FIELDS = ['activeTab', 'selected'];\n  selected = '';",
+    'activeTab: this.activeTab, title: this.title, selected: this.selected') } });
+  assert.ok(!collectAgentData(root).writtenFields.foo.includes('selected'));
 });
 
 test('view_field_agent_write: die dritte Model-Ebene bleibt ungesehen', () => {

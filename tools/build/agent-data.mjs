@@ -1253,16 +1253,19 @@ function writtenModelFields(fn, resolver, modelDecl) {
 /** So tief folgt `directWrittenFields` den Model-Methoden: `set` → `_put`. */
 const MAX_DIRECT_DELEGATION = 2;
 
+/** Aufrufe, die ihr Argument zurückgeben und die Herkunft darum nicht trennen. */
+const PASS_THROUGH_CALL_RE = /^(?:require[A-Z]\w*|String|Number|Boolean)$/;
+
 /**
  * Die Model-Felder, die der Parameter einer `@agent`-Methode SELBST steuert: die
  * strenge Schwester von `writtenModelFields`. Dort lautet die Frage „kann der
  * Agent das Feld erreichen“, hier „steuert sein Parameter die Ansicht“. Darum
- * trennt jeder Aufruf die Herkunft: `const q = make(type); … = q.id` zählt dort,
- * hier nicht.
+ * trennt ein Aufruf die Herkunft: `const q = make(type); … = q.id` zählt dort,
+ * hier nicht. Prüfer und Typwandlungen geben den Wert zurück und trennen nicht.
  *
  * Ein Wert zählt nur als Parameter, einfacher Alias (`const y = <name>`,
- * `const y = <name>.z` auf der obersten Ebene des Körpers) oder
- * Eigenschaftszugriff darauf (`isDirectValue`). Als Ziel gelten dieselben Formen wie in
+ * `const y = <name>.z`, auch in einem Block) oder Eigenschaftszugriff darauf
+ * (`isDirectValue`, `DIRECT_FLOW`). Als Ziel gelten dieselben Formen wie in
  * `collectCoveredFields`, auch Aliaspfade (`s.open = v` zählt für `items` und
  * `items.open`) und die Pfad-Hilfe. Model-Methoden sieht die Prüfung bis
  * `MAX_DIRECT_DELEGATION` Ebenen tief, je Aufruf mit den Argumenten, die selbst
@@ -1284,7 +1287,7 @@ function directWrittenFields(fn, resolver, modelDecl) {
       ...fieldsCoveredByPathHelper(call, sf, keySets, active, isModelValue, isDirectValue),
       ...directFieldsOfDelegation(resolver, modelDecl, modelMethodCallOf(call), call.arguments, active, 1),
     ],
-    helperOf, isDirectValue);
+    helperOf, DIRECT_FLOW);
 }
 
 /**
@@ -1307,12 +1310,14 @@ function directFieldsOfDelegation(resolver, modelDecl, methodName, callArgs, act
   if (params.size === 0) return [];
   return collectCoveredFields(found.method.body, null, directNames(found.method.body, params), new Map(),
     (call, inner) => directFieldsOfDelegation(resolver, modelDecl, ownCallName(call), call.arguments, inner, depth + 1),
-    modelHelperLookup(resolver, modelDecl), isDirectValue);
+    modelHelperLookup(resolver, modelDecl), DIRECT_FLOW);
 }
 
 /**
  * Ob ein Ausdruck ein Name aus `names` oder ein Eigenschaftszugriff darauf ist.
- * Aufrufe, `new`, Literale und Operatoren trennen die Herkunft.
+ * Ein Prüfer (`requireText('id', id)`) oder eine Typwandlung (`String(id)`) mit
+ * einem solchen Argument zählt mit (`PASS_THROUGH_CALL_RE`). Alle anderen Aufrufe,
+ * `new`, Literale und Operatoren trennen die Herkunft.
  *
  * @param {ts.Expression} expr
  * @param {Set<string>} names
@@ -1321,12 +1326,17 @@ function directFieldsOfDelegation(resolver, modelDecl, methodName, callArgs, act
 function isDirectValue(expr, names) {
   let current = expr;
   while (ts.isParenthesizedExpression(current) || ts.isPropertyAccessExpression(current)) current = current.expression;
+  if (ts.isCallExpression(current)) {
+    return ts.isIdentifier(current.expression) && PASS_THROUGH_CALL_RE.test(current.expression.text)
+      && current.arguments.some(argument => isDirectValue(argument, names));
+  }
   return ts.isIdentifier(current) && names.has(current.text);
 }
 
 /**
- * `names` samt den `const`-Namen auf der obersten Ebene von `body`, die direkt
- * von ihnen stammen (`isDirectValue`). Das strenge Gegenstück zu `expandDerivedNames`.
+ * `names` samt den `const`-Namen unmittelbar in `body`, die direkt von ihnen
+ * stammen (`isDirectValue`). Das strenge Gegenstück zu `expandDerivedNames`;
+ * verschachtelte Blöcke übernimmt `DIRECT_FLOW` im Walk.
  *
  * @param {ts.Block|undefined} body
  * @param {Set<string>} names
@@ -1349,6 +1359,18 @@ function directNames(body, names) {
   }
   return direct;
 }
+
+/**
+ * @typedef {{ isValue: typeof derivesFromParams, inBlock: (block: ts.Block, names: Set<string>) => Set<string> }} ValueFlow
+ *   was `collectCoveredFields` als Wert aus den Namen zählt, und welche Namen beim
+ *   Eintritt in einen verschachtelten Block dazukommen
+ */
+
+/** Die weite Menge `written`: ein Alias zählt nur auf der obersten Körperebene. */
+const DERIVED_FLOW = { isValue: derivesFromParams, inBlock: (_block, names) => names };
+
+/** Die strenge Menge `directWritten`: Aliasse gelten bis zum Ende ihres Blocks. */
+const DIRECT_FLOW = { isValue: isDirectValue, inBlock: directNames };
 
 /**
  * Die geprüften Schlüsselmengen einer Methode: je Parametername die Liste
@@ -1462,6 +1484,8 @@ function findDeclarationViaImport(name, sf) {
  * @param {Set<string>} active  die an der Aufrufstelle gültigen, aus den
  *   Parametern der `@agent`-Methode abgeleiteten Namen
  * @param {(node: ts.Node) => boolean} isModelValue  siehe `derivesFromParams`
+ * @param {typeof derivesFromParams} [isValue]  was als Wert zählt;
+ *   `isDirectValue` für die strenge Menge von `directWrittenFields`
  * @returns {string[]}
  */
 function fieldsCoveredByPathHelper(call, sf, keySets, active, isModelValue, isValue = derivesFromParams) {
@@ -1867,11 +1891,10 @@ function forEachCall(node, visit) {
  *   (die Pfad-Hilfe)
  * @param {((call: ts.CallExpression) => ElementHelper|null)|null} [helperOf]
  *   ordnet einen Aufruf der Hilfsmethode zu, die ein Sammlungselement liefern kann
- * @param {typeof derivesFromParams} [isValue]  was als Wert aus `names` zählt;
- *   `isDirectValue` für die strenge Menge von `directWrittenFields`
+ * @param {ValueFlow} [flow]  `DIRECT_FLOW` für die strenge Menge von `directWrittenFields`
  * @returns {Set<string>}
  */
-function collectCoveredFields(body, through, names, keySets = new Map(), onCall = null, helperOf = null, isValue = derivesFromParams) {
+function collectCoveredFields(body, through, names, keySets = new Map(), onCall = null, helperOf = null, flow = DERIVED_FLOW) {
   const fields = new Set();
   const walk = (node, active, aliases) => {
     if (isFunctionLike(node)) {
@@ -1883,7 +1906,7 @@ function collectCoveredFields(body, through, names, keySets = new Map(), onCall 
     }
     if (ts.isBlock(node)) {
       const bound = topLevelDeclaredNames(node);
-      const next = withoutNames(active, bound);
+      const next = flow.inBlock(node, withoutNames(active, bound));
       const nextAliases = withoutAliases(aliases, bound);
       for (const statement of node.statements) walk(statement, next, nextAliases);
       return;
@@ -1901,11 +1924,11 @@ function collectCoveredFields(body, through, names, keySets = new Map(), onCall 
       if (resolved) aliases.set(node.name.text, resolved.path);
     }
     if (ts.isBinaryExpression(node) && ASSIGN_KINDS.has(node.operatorToken.kind)
-        && isValue(node.right, active, n => readsModel(n, through, aliases, helperOf))) {
+        && flow.isValue(node.right, active, n => readsModel(n, through, aliases, helperOf))) {
       const target = assignTargetAfterThis(node.left, through);
       if (target) for (const field of fieldsOfTarget(target, keySets, active)) fields.add(field);
     }
-    for (const field of collectionWriteFields(node, through, aliases, active, helperOf, isValue)) fields.add(field);
+    for (const field of collectionWriteFields(node, through, aliases, active, helperOf, flow.isValue)) fields.add(field);
     if (onCall && ts.isCallExpression(node)) {
       for (const field of onCall(node, active)) fields.add(field);
     }
