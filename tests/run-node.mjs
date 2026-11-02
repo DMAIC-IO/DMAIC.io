@@ -21,6 +21,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join, relative } from 'node:path';
 import { checkSkipList, parseRunnerFiles } from './skip-list-check.mjs';
+import { formatSummary } from './run-summary.mjs';
 
 const TESTS_DIR = dirname(fileURLToPath(import.meta.url));
 
@@ -232,7 +233,6 @@ const results = await runAll();
 // ─── Report ──────────────────────────────────────────────────────────────────
 const RED = '\x1b[31m';
 const GREEN = '\x1b[32m';
-const YELLOW = '\x1b[33m';
 const DIM = '\x1b[2m';
 const RESET = '\x1b[0m';
 
@@ -251,13 +251,10 @@ for (const { file, error } of importErrors) {
   console.log(`  ${DIM}${error.message}${RESET}`);
 }
 
-console.log(
-  `\n${GREEN}${results.passed} passed${RESET}, ` +
-  `${results.failed ? RED : DIM}${results.failed} failed${RESET}, ` +
-  `${YELLOW}${results.skipped} skipped${RESET}, ` +
-  `${DIM}${results.todo} todo${RESET} ` +
-  `${DIM}(${results.suites.length} suites, ${files.length} files; ` +
-  `${skipped} DOM files run in the browser bridge)${RESET}`
-);
+const failedAny = results.failed > 0 || importErrors.length > 0;
+console.log(`\n${failedAny ? RED : GREEN}${formatSummary({
+  passed: results.passed, failed: results.failed, skipped: results.skipped, todo: results.todo,
+  suites: results.suites.length, files: files.length, domFiles: skipped, importFailures: importErrors.length,
+})}${RESET}`);
 
-process.exit(results.failed > 0 || importErrors.length > 0 ? 1 : 0);
+process.exit(failedAny ? 1 : 0);
