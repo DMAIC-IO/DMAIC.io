@@ -148,7 +148,7 @@ export function loadWriteBaseline() {
 function buildEntry(resolver, appDir, viewmodelFile, baseline) {
   const sf = resolver.parse(viewmodelFile);
   const tagged = hasModuleTag(sf);
-  const { actions, violations, written, optionSources, subViewModels, noAgentWrites } = readViewmodel(sf, resolver, appDir);
+  const { actions, violations, written, directWritten, optionSources, subViewModels, noAgentWrites } = readViewmodel(sf, resolver, appDir);
   const moduleId = basename(viewmodelFile, '.js');
   for (const [name, action] of Object.entries(actions)) {
     if (DELETE_VERB_RE.test(name.slice(name.lastIndexOf('.') + 1))) violations.push(`delete_verb_action:${name}`);
@@ -291,13 +291,19 @@ function buildEntry(resolver, appDir, viewmodelFile, baseline) {
     .filter(o => o.moduleState)
     .map(o => `module_state_option_source:${o.action}:${o.arg}`))];
 
+  // Die Liste `VIEW_FIELDS` verlangt ein lesbares `toJSON()`, auch bei einer
+  // erklärten Lesefläche; dort hat `persistence` die Prüfung übersprungen.
+  const persisted = persistedKeys(resolver, sf);
+  const viewPersistence = view.paths.length > 0
+    ? persisted.violations.filter(v => !persistence.violations.includes(v)) : [];
+
   const reported = [...violations, ...surface, ...model.violations,
-    ...persistence.violations, ...unreadable, ...readReturn,
+    ...persistence.violations, ...viewPersistence, ...unreadable, ...readReturn,
     ...invalidBulkKinds(model.fields), ...invalidOmitPaths(model.fields), ...invalidViaSentinels(sf), ...collectDomDetours(sf),
     ...unreachable, ...bypass, ...fixedBounds, ...templateCalls,
     ...subViewModelModelBindings(dirname(viewmodelFile), subViewModels),
     ...undeclaredOptions, ...moduleStateOptions, ...unknownVia,
-    ...view.violations, ...viewFieldFindings(view.paths, persistedKeys(resolver, sf).keys, declared, written)];
+    ...view.violations, ...viewFieldFindings(view.paths, persisted.keys, declared, directWritten)];
   // Der eingefrorene Bestand bleibt sichtbar, blockiert aber nicht.
   const frozen = reported.filter(code => baseline.has(`${moduleId} ${code}`));
   const open = reported.filter(code => !baseline.has(`${moduleId} ${code}`));
@@ -934,10 +940,10 @@ function hasModuleTag(sf) {
  * @param {ts.SourceFile} sf  die Moduldatei
  * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
  * @param {string} appDir  Wurzel von app/dev, Bezugspunkt der Herkunftsangaben
- * @returns {{ actions: Record<string, object>, violations: string[], written: Set<string>, optionSources: Array<{ action: string, arg: string, field: string }>, subViewModels: string[], noAgentWrites: Map<string, string[]> }}
+ * @returns {{ actions: Record<string, object>, violations: string[], written: Set<string>, directWritten: Set<string>, optionSources: Array<{ action: string, arg: string, field: string }>, subViewModels: string[], noAgentWrites: Map<string, string[]> }}
  */
 function readViewmodel(sf, resolver, appDir) {
-  const out = { actions: {}, violations: [], written: new Set(), optionSources: [], subViewModels: [], noAgentWrites: new Map() };
+  const out = { actions: {}, violations: [], written: new Set(), directWritten: new Set(), optionSources: [], subViewModels: [], noAgentWrites: new Map() };
   const literal = resolver.findDataReturnLiteral(sf);
   // Was der Generator NICHT sehen kann, muss er melden — sonst ginge ein
   // solches Modul mit gesetztem Modul-Tag und NULL Verstößen durch den Build
@@ -1050,6 +1056,7 @@ function inspectMethod(name, member, sf, from, ctx) {
     // Vorlagenbindung NICHT ab — genau das ist der Unterschied zwischen
     // „ein Agent kann das Feld schreiben" und „irgendeine Methode tut es".
     for (const field of writtenModelFields(fn, ctx.resolver, ctx.modelDecl)) out.written.add(field);
+    for (const field of directWrittenFields(fn, ctx.resolver, ctx.modelDecl)) out.directWritten.add(field);
     for (const source of stateOptionSources(fn.body, moduleLetNames(fn.getSourceFile()), fn)) out.optionSources.push({ action: name, ...source });
 }
 
@@ -1243,6 +1250,106 @@ function writtenModelFields(fn, resolver, modelDecl) {
   return fields;
 }
 
+/** So tief folgt `directWrittenFields` den Model-Methoden: `set` → `_put`. */
+const MAX_DIRECT_DELEGATION = 2;
+
+/**
+ * Die Model-Felder, die der Parameter einer `@agent`-Methode SELBST steuert: die
+ * strenge Schwester von `writtenModelFields`. Dort lautet die Frage „kann der
+ * Agent das Feld erreichen“, hier „steuert sein Parameter die Ansicht“. Darum
+ * trennt jeder Aufruf die Herkunft: `const q = make(type); … = q.id` zählt dort,
+ * hier nicht.
+ *
+ * Ein Wert zählt nur als Parameter, einfacher Alias (`const y = <name>`,
+ * `const y = <name>.z` auf der obersten Ebene des Körpers) oder
+ * Eigenschaftszugriff darauf (`isDirectValue`). Als Ziel gelten dieselben Formen wie in
+ * `collectCoveredFields`, auch Aliaspfade (`s.open = v` zählt für `items` und
+ * `items.open`) und die Pfad-Hilfe. Model-Methoden sieht die Prüfung bis
+ * `MAX_DIRECT_DELEGATION` Ebenen tief, je Aufruf mit den Argumenten, die selbst
+ * direkt sind.
+ *
+ * @param {ts.SignatureDeclaration} fn
+ * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
+ * @param {{ node: ts.ClassDeclaration, sf: ts.SourceFile }|null} modelDecl
+ * @returns {Set<string>}
+ */
+function directWrittenFields(fn, resolver, modelDecl) {
+  const params = new Set(parameterNames(fn).filter(Boolean));
+  const helperOf = viewmodelHelperLookup(fn, resolver, modelDecl);
+  const isModelValue = modelValueTest(fn.body, 'model', helperOf);
+  const sf = fn.getSourceFile();
+  const keySets = requireEnumKeySets(fn.body, params, sf);
+  return collectCoveredFields(fn.body, 'model', directNames(fn.body, params), keySets,
+    (call, active) => [
+      ...fieldsCoveredByPathHelper(call, sf, keySets, active, isModelValue, isDirectValue),
+      ...directFieldsOfDelegation(resolver, modelDecl, modelMethodCallOf(call), call.arguments, active, 1),
+    ],
+    helperOf, isDirectValue);
+}
+
+/**
+ * Der Schritt von `directWrittenFields` in eine Model-Methode.
+ *
+ * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
+ * @param {{ node: ts.ClassDeclaration, sf: ts.SourceFile }|null} modelDecl
+ * @param {string|null} methodName
+ * @param {ts.NodeArray<ts.Expression>} callArgs
+ * @param {Set<string>} active  die direkten Namen an der Aufrufstelle
+ * @param {number} depth  die Ebene dieser Methode, ab 1
+ * @returns {Set<string>|string[]}
+ */
+function directFieldsOfDelegation(resolver, modelDecl, methodName, callArgs, active, depth) {
+  if (!methodName || !modelDecl || depth > MAX_DIRECT_DELEGATION) return [];
+  const found = findClassMethod(resolver, modelDecl.node, modelDecl.sf, methodName, new Set(), 0);
+  if (!found) return [];
+  const params = new Set(parameterNames(found.method)
+    .filter((name, i) => name && callArgs[i] && isDirectValue(callArgs[i], active)));
+  if (params.size === 0) return [];
+  return collectCoveredFields(found.method.body, null, directNames(found.method.body, params), new Map(),
+    (call, inner) => directFieldsOfDelegation(resolver, modelDecl, ownCallName(call), call.arguments, inner, depth + 1),
+    modelHelperLookup(resolver, modelDecl), isDirectValue);
+}
+
+/**
+ * Ob ein Ausdruck ein Name aus `names` oder ein Eigenschaftszugriff darauf ist.
+ * Aufrufe, `new`, Literale und Operatoren trennen die Herkunft.
+ *
+ * @param {ts.Expression} expr
+ * @param {Set<string>} names
+ * @returns {boolean}
+ */
+function isDirectValue(expr, names) {
+  let current = expr;
+  while (ts.isParenthesizedExpression(current) || ts.isPropertyAccessExpression(current)) current = current.expression;
+  return ts.isIdentifier(current) && names.has(current.text);
+}
+
+/**
+ * `names` samt den `const`-Namen auf der obersten Ebene von `body`, die direkt
+ * von ihnen stammen (`isDirectValue`). Das strenge Gegenstück zu `expandDerivedNames`.
+ *
+ * @param {ts.Block|undefined} body
+ * @param {Set<string>} names
+ * @returns {Set<string>}
+ */
+function directNames(body, names) {
+  const direct = new Set(names);
+  const decls = (body?.statements ?? [])
+    .filter(s => ts.isVariableStatement(s) && (s.declarationList.flags & ts.NodeFlags.Const))
+    .flatMap(s => [...s.declarationList.declarations])
+    .filter(d => ts.isIdentifier(d.name) && d.initializer);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const d of decls) {
+      if (direct.has(d.name.text) || !isDirectValue(d.initializer, direct)) continue;
+      direct.add(d.name.text);
+      changed = true;
+    }
+  }
+  return direct;
+}
+
 /**
  * Die geprüften Schlüsselmengen einer Methode: je Parametername die Liste
  * der Schlüssel, die ein `requireEnum('<name>', <param>, <MENGE>)` im
@@ -1357,7 +1464,7 @@ function findDeclarationViaImport(name, sf) {
  * @param {(node: ts.Node) => boolean} isModelValue  siehe `derivesFromParams`
  * @returns {string[]}
  */
-function fieldsCoveredByPathHelper(call, sf, keySets, active, isModelValue) {
+function fieldsCoveredByPathHelper(call, sf, keySets, active, isModelValue, isValue = derivesFromParams) {
   if (keySets.size === 0) return [];
   if (!ts.isIdentifier(call.expression)) return [];
   const decl = findDeclarationViaImport(call.expression.text, sf);
@@ -1374,7 +1481,7 @@ function fieldsCoveredByPathHelper(call, sf, keySets, active, isModelValue) {
   const keyArg = rest.find(argument => ts.isIdentifier(argument)
     && keySets.has(argument.text) && active.has(argument.text));
   if (!keyArg) return [];
-  if (!rest.some(argument => argument !== keyArg && derivesFromParams(argument, active, isModelValue))) return [];
+  if (!rest.some(argument => argument !== keyArg && isValue(argument, active, isModelValue))) return [];
   return keySets.get(keyArg.text).map(key => (target.path ? `${target.path}.${key}` : key));
 }
 
@@ -1760,9 +1867,11 @@ function forEachCall(node, visit) {
  *   (die Pfad-Hilfe)
  * @param {((call: ts.CallExpression) => ElementHelper|null)|null} [helperOf]
  *   ordnet einen Aufruf der Hilfsmethode zu, die ein Sammlungselement liefern kann
+ * @param {typeof derivesFromParams} [isValue]  was als Wert aus `names` zählt;
+ *   `isDirectValue` für die strenge Menge von `directWrittenFields`
  * @returns {Set<string>}
  */
-function collectCoveredFields(body, through, names, keySets = new Map(), onCall = null, helperOf = null) {
+function collectCoveredFields(body, through, names, keySets = new Map(), onCall = null, helperOf = null, isValue = derivesFromParams) {
   const fields = new Set();
   const walk = (node, active, aliases) => {
     if (isFunctionLike(node)) {
@@ -1792,11 +1901,11 @@ function collectCoveredFields(body, through, names, keySets = new Map(), onCall 
       if (resolved) aliases.set(node.name.text, resolved.path);
     }
     if (ts.isBinaryExpression(node) && ASSIGN_KINDS.has(node.operatorToken.kind)
-        && derivesFromParams(node.right, active, n => readsModel(n, through, aliases, helperOf))) {
+        && isValue(node.right, active, n => readsModel(n, through, aliases, helperOf))) {
       const target = assignTargetAfterThis(node.left, through);
       if (target) for (const field of fieldsOfTarget(target, keySets, active)) fields.add(field);
     }
-    for (const field of collectionWriteFields(node, through, aliases, active, helperOf)) fields.add(field);
+    for (const field of collectionWriteFields(node, through, aliases, active, helperOf, isValue)) fields.add(field);
     if (onCall && ts.isCallExpression(node)) {
       for (const field of onCall(node, active)) fields.add(field);
     }
@@ -1987,6 +2096,19 @@ function modelHelper(resolver, modelDecl, name) {
 }
 
 /**
+ * Löst die Aufrufe `this.<name>(…)` im Körper einer Model-Methode auf.
+ * @param {ReturnType<import('./agent-resolve.mjs').createResolver>} resolver
+ * @param {{ node: ts.ClassDeclaration, sf: ts.SourceFile }|null} modelDecl
+ * @returns {(call: ts.CallExpression) => ElementHelper|null}
+ */
+function modelHelperLookup(resolver, modelDecl) {
+  return (call) => {
+    const name = ownCallName(call);
+    return name ? modelHelper(resolver, modelDecl, name) : null;
+  };
+}
+
+/**
  * Löst die Aufrufe im Körper einer Viewmodel-Methode auf: `this.model.<name>(…)`
  * zur Model-Methode, `this.<name>(…)` zur Nachbarmethode im selben Literal oder
  * derselben Klasse. Hilfen aus einem Mixin bleiben unaufgelöst (fail closed).
@@ -2044,10 +2166,11 @@ function joinPath(base, name) {
  * @param {Map<string, string>} aliases
  * @param {Set<string>} active
  * @param {((call: ts.CallExpression) => ElementHelper|null)|null} [helperOf]
+ * @param {typeof derivesFromParams} [valueTest]  siehe `collectCoveredFields`
  * @returns {string[]}
  */
-function collectionWriteFields(node, through, aliases, active, helperOf = null) {
-  const isValue = (expr) => derivesFromParams(expr, active, n => readsModel(n, through, aliases, helperOf));
+function collectionWriteFields(node, through, aliases, active, helperOf = null, valueTest = derivesFromParams) {
+  const isValue = (expr) => valueTest(expr, active, n => readsModel(n, through, aliases, helperOf));
   if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
     const method = node.expression.name.text;
     if (!COLLECTION_MUTATORS.has(method)) return [];
@@ -2301,10 +2424,7 @@ function fieldsCoveredByDelegation(resolver, modelDecl, methodName, callArgs, ag
   });
   if (coveredParamNames.size === 0) return new Set();
 
-  const helperOf = (call) => {
-    const name = ownCallName(call);
-    return name ? modelHelper(resolver, modelDecl, name) : null;
-  };
+  const helperOf = modelHelperLookup(resolver, modelDecl);
   const derivedInMethod = expandDerivedNames(found.method.body, coveredParamNames,
     modelValueTest(found.method.body, null, helperOf));
   return collectCoveredFields(found.method.body, null, derivedInMethod, new Map(), null, helperOf);
@@ -2454,7 +2574,7 @@ function readViewFields(resolver, sf) {
   return { paths, violations: [] };
 }
 
-/** Der Pfad ohne Elementmarken, wie ihn `written` und die Vorlagenbindungen führen. */
+/** Der Pfad ohne Elementmarken, wie ihn `written`, `directWritten` und die Vorlagenbindungen führen. */
 const plainViewPath = (path) => path.replace(/\[\](?:\*\*)?/g, '');
 
 /**
@@ -2462,21 +2582,22 @@ const plainViewPath = (path) => path.replace(/\[\](?:\*\*)?/g, '');
  * @param {string[]} paths
  * @param {string[]|null} persisted  Schlüssel aus `toJSON()`; `null` heißt nicht
  *   bestimmbar, dann gibt es keinen Befund (fail open; bei Modulen mit `AgentRead` meldet das niemand)
- * @param {Record<string, { type: string }>|null} declared  die `AgentRead`-Felder
- * @param {Set<string>} written  parametergetrieben geschriebene Felder
+ * @param {Record<string, { type: string, keys?: object }>|null} declared  die `AgentRead`-Felder
+ * @param {Set<string>} directWritten  Felder, die ein Parameter selbst steuert (`directWrittenFields`)
  * @returns {string[]}
  */
-function viewFieldFindings(paths, persisted, declared, written) {
+function viewFieldFindings(paths, persisted, declared, directWritten) {
   const out = [];
   for (const path of paths) {
     const root = /^[^.[]+/.exec(path)[0];
     const last = path.slice(path.lastIndexOf('.') + 1);
     if (persisted && !persisted.includes(root)) out.push(`view_field_not_persisted:${path}`);
     if (declared && Object.hasOwn(declared, root)
-        && (path === root || new RegExp(`\\b${last}\\??\\s*:`).test(declared[root].type))) {
+        && (path === root || Object.hasOwn(declared[root].keys ?? {}, last)
+          || new RegExp(`\\b${last}\\??\\s*:`).test(declared[root].type))) {
       out.push(`view_field_declared:${path}`);
     }
-    if (written.has(plainViewPath(path))) out.push(`view_field_agent_write:${path}`);
+    if (directWritten.has(plainViewPath(path))) out.push(`view_field_agent_write:${path}`);
   }
   return out;
 }

@@ -1975,6 +1975,125 @@ test('view_field_agent_write: parametergetrieben ist ein Befund, die Folgeschrei
   assert.deepEqual(collectAgentData(clean).modules.foo.reported, []);
 });
 
+/**
+ * Ein Modul mit den Ansichtsfeldern `activeTab` und `selected`,
+ * das nur die übergebene @agent-Methode zusätzlich trägt.
+ * @param {string} signature  z. B. `pick(id)`
+ * @param {string} body  der Methodenkörper
+ * @param {{ modelMembers?: string, views?: string[] }} [options]
+ * @returns {string[]} die Befunde zu den Ansichtsfeldern
+ */
+const viewWriteFindings = (signature, body, { modelMembers = '', views = ['selected'] } = {}) => {
+  const params = signature.slice(signature.indexOf('(') + 1, -1).split(',').map(p => p.trim()).filter(Boolean);
+  const action = `/**
+       * Die Probe.
+       * @agent
+${params.map(p => `       * @param {string} ${p} der Wert`).join('\n')}
+       * @returns {string} die id
+       */
+      ${signature} { ${body} return ''; },`;
+  const list = ['activeTab', ...views].map(v => `'${v}'`).join(', ');
+  const root = fixture({ foo: { 'foo.js': viewVm({ extra: action }), 'foo-model.js': viewModel(
+    `static VIEW_FIELDS = [${list}];\n  selected = '';\n  items = [];\n  ${modelMembers}`,
+    'activeTab: this.activeTab, title: this.title, selected: this.selected, items: this.items') } });
+  return collectAgentData(root).modules.foo.reported.filter(code => code.startsWith('view_field_'));
+};
+
+test('view_field_agent_write: ein Aufruf trennt die Herkunft vom Parameter', () => {
+  assert.deepEqual(viewWriteFindings('add(type)', 'const q = make(type); this.model.selected = q.id;'), []);
+});
+
+test('view_field_agent_write: der Parameter selbst ist ein Befund', () => {
+  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.selected = id;'), ['view_field_agent_write:selected']);
+});
+
+test('view_field_agent_write: ein reiner Alias des Parameters ist ein Befund', () => {
+  assert.deepEqual(viewWriteFindings('pick(id)', 'const x = id; this.model.selected = x;'), ['view_field_agent_write:selected']);
+});
+
+test('view_field_agent_write: die Prüfung sieht zwei Model-Ebenen tief', () => {
+  const modelMembers = 'set(a) { this._put(a); }\n  _put(b) { this.selected = b; }';
+  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.set(id);', { modelMembers }), ['view_field_agent_write:selected']);
+});
+
+test('view_field_agent_write: ein Aliaspfad trifft das Element-Ansichtsfeld', () => {
+  assert.deepEqual(
+    viewWriteFindings('pick(id, v)', 'const s = this.model.items.find(i => i.id === id); s.open = v;', { views: ['items[].open'] }),
+    ['view_field_agent_write:items[].open']);
+});
+
+test('view_field_agent_write: weitere Formen, die aus dem Parameter stammen', () => {
+  const hit = ['view_field_agent_write:selected'];
+  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.selected = id.value;'), hit, 'Eigenschaftszugriff');
+  assert.deepEqual(viewWriteFindings('pick(id)', 'const x = id.value; const y = x; this.model.selected = y;'), hit, 'Kette');
+  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.selected = (id);'), hit, 'Klammern');
+  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.set(id.value);', { modelMembers: 'set(a) { const c = a; this.selected = c; }' }), hit, 'Alias im Model');
+  assert.deepEqual(viewWriteFindings('pick(id, v)', 'this.model.open(id, v);', {
+    views: ['items[].open'], modelMembers: 'open(id, v) { const s = this.items.find(i => i.id === id); s.open = v; }',
+  }), ['view_field_agent_write:items[].open'], 'Aliaspfad im Model');
+});
+
+test('view_field_agent_write: was die Herkunft trennt, ist kein Befund', () => {
+  assert.deepEqual(viewWriteFindings('pick(id)', 'const q = new Thing(id); this.model.selected = q.id;'), [], 'new');
+  assert.deepEqual(viewWriteFindings('pick(id)', 'const q = { id }; this.model.selected = q.id;'), [], 'Objektliteral');
+  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.selected = String(id);'), [], 'Aufruf rechts');
+  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.set(make(id));', { modelMembers: 'set(a) { this.selected = a; }' }), [], 'Aufruf als Argument');
+  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.set(id);', { modelMembers: 'set(a) { const q = make(a); this.selected = q.id; }' }), [], 'Aufruf im Model');
+  assert.deepEqual(viewWriteFindings('pick(id)', 'const s = this.model.items.find(i => i.id === id); this.model.selected = s.id;'), [], 'Wert aus der Sammlung');
+  assert.deepEqual(viewWriteFindings('pick(id)', '[1].forEach(id => { this.model.selected = id; });'), [], 'verdeckter Name');
+});
+
+test('view_field_agent_write: die dritte Model-Ebene bleibt ungesehen', () => {
+  const modelMembers = 'one(a) { this.two(a); }\n  two(b) { this.three(b); }\n  three(c) { this.selected = c; }';
+  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.one(id);', { modelMembers }), []);
+});
+
+test('view_field_agent_write: writtenFields bleibt die weite Menge', () => {
+  const action = `/**
+       * Die Probe.
+       * @agent
+       * @param {string} type der Typ
+       * @returns {string} die id
+       */
+      add(type) { const q = make(type); this.model.selected = q.id; return q.id; },`;
+  const root = fixture({ foo: { 'foo.js': viewVm({ extra: action }), 'foo-model.js': viewModel(
+    "static VIEW_FIELDS = ['activeTab', 'selected'];\n  selected = '';",
+    'activeTab: this.activeTab, title: this.title, selected: this.selected') } });
+  assert.ok(collectAgentData(root).writtenFields.foo.includes('selected'));
+});
+
+test('view_field_declared: reiner Typedef-Name nennt seine Schlüssel', () => {
+  const typedef = `/**
+ * @typedef {object} SelType
+ * @property {boolean} open  offen
+ */
+/**
+ * @typedef {object} AgentRead
+ * @property {SelType} selected  die Auswahl
+ */
+`;
+  const vm = viewVm({ typedef, readBody: "return readAgentState('foo', { selected: null }, options);" });
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': viewModel(
+    "static VIEW_FIELDS = ['activeTab', 'selected.open'];\n  selected = null;",
+    'activeTab: this.activeTab, title: this.title, selected: this.selected') } });
+  assert.ok(collectAgentData(root).modules.foo.reported.includes('view_field_declared:selected.open'));
+});
+
+test('unresolvable_tojson: mit VIEW_FIELDS auch bei erklärter Lesefläche, und nur einmal', () => {
+  const typedef = `/**
+ * @typedef {object} AgentRead
+ * @property {string} title  der Titel
+ */
+`;
+  const declaredVm = viewVm({ typedef, readBody: "return readAgentState('foo', { title: '' }, options);" });
+  const spreadModel = (fields) => viewModel(fields, '...this.base(), title: this.title');
+  const count = (vm, model) => collectAgentData(fixture({ foo: { 'foo.js': vm, 'foo-model.js': model } }))
+    .modules.foo.reported.filter(code => code === 'unresolvable_tojson').length;
+  assert.equal(count(declaredVm, spreadModel("static VIEW_FIELDS = ['activeTab'];")), 1, 'erklärt, mit Liste');
+  assert.equal(count(viewVm(), spreadModel("static VIEW_FIELDS = ['activeTab'];")), 1, 'abgeleitet, keine Doppelung');
+  assert.equal(count(declaredVm, spreadModel('')), 0, 'erklärt, ohne Liste bleibt es still');
+});
+
 test('Ansichtsfelder: keine Ausnahme bleibt offen bei einer Vorlagenbindung', () => {
   const root = fixture({ foo: {
     'foo.js': viewVm(),
