@@ -63,6 +63,7 @@ export const VIOLATION_REMEDIES = Object.freeze({
   view_field_agent_write: 'Setter auf @noagent setzen, oder das Feld ist Inhalt und gehört aus VIEW_FIELDS',
   unreadable_state_key: 'Feldnamen zwischen toJSON() und Model-Deklaration angleichen oder das Feld annotieren',
   declared_not_returned: 'den Schlüssel in read() an readAgentState übergeben oder aus @typedef AgentRead streichen',
+  missing_bulk_columns: 'read() liefert zu jedem Tabellen-Massenfeld ein Schwesterfeld <feld>Columns',
   unresolved_read_return: 'read() auf readAgentState(id, {…}) mit Literal, Spread von this.model.toJSON() / module.model.toJSON() (oder einer const darauf; ein Hilfsparameter als Empfänger wird abgelehnt), lokaler const, this.<hilfe>() oder importierter Funktion mit genau einem return umstellen',
   invalid_bulk_kind: 'Massendaten-Art auf table oder tree setzen',
   invalid_omit_path: 'Auslassungspfad aus Schlüsseln und [] bilden, mit einem Schlüssel am Ende (inScope[].dataUrl, [][].image)',

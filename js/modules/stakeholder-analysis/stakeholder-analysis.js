@@ -99,6 +99,10 @@ function initialsOf(name) {
  * @property {StakeholderEntry[]} stakeholders  [bulk] die Beteiligten in Anlegereihenfolge
  * @property {Array<{id: string, quadrant: string}>} quadrants  [bulk] Quadrant je Eintrag
  */
+/** Spaltennamen der Tabellenfelder in `read()` (Schwesterfelder `<feld>Columns`). */
+const STAKEHOLDER_COLUMNS = ['id', 'name', 'role', 'power', 'interest', 'support', 'category', 'notes'].map(name => ({ name }));
+const QUADRANT_COLUMNS = ['id', 'quadrant'].map(name => ({ name }));
+
 export default createModule({
   config: {
     id: 'stakeholder-analysis',
@@ -125,6 +129,8 @@ export default createModule({
         return readAgentState('stakeholder-analysis', {
           ...this.model.toJSON(),
           quadrants: this.model.stakeholders.map((s) => ({ id: s.id, quadrant: s.quadrant })),
+          stakeholdersColumns: STAKEHOLDER_COLUMNS,
+          quadrantsColumns: QUADRANT_COLUMNS,
         }, options);
       },
 

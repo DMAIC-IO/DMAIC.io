@@ -3727,6 +3727,30 @@ test('declared_not_returned: vollständig gelieferte Lesefläche ist befundfrei'
   assert.deepEqual(modules.foo.reported, []);
 });
 
+const TWO_TABLES_VM = (readBody) => DECLARED_VM('').replace(
+  " * @property {string} title  der Titel\n * @property {number} count  die Anzahl\n",
+  " * @property {Array<{x: number}>} a  [bulk] erste Tabelle\n * @property {Array<{y: number}>} b  [bulk] zweite Tabelle\n",
+).replace('read(options) {  }', `read(options) { ${readBody} }`);
+const TWO_TABLES_MODEL = `export class State {
+  /** @type {Array<{x: number}>} erste Tabelle */
+  a = [];
+  /** @type {Array<{y: number}>} zweite Tabelle */
+  b = [];
+  toJSON() { return { a: this.a, b: this.b }; }
+}`;
+
+test('missing_bulk_columns: zwei Tabellenfelder, nur eines mit Schwesterfeld', () => {
+  const root = fixture({ foo: { 'foo.js': TWO_TABLES_VM(`return readAgentState('foo', { ...this.model.toJSON(), aColumns: [{ name: 'x' }] }, options);`), 'foo-model.js': TWO_TABLES_MODEL } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, ['missing_bulk_columns:b']);
+});
+
+test('missing_bulk_columns: ein einziges Tabellenfeld braucht kein Schwesterfeld', () => {
+  const root = fixture({ foo: { 'foo.js': TWO_TABLES_VM(`return readAgentState('foo', { a: [], b: [] }, options);`).replace(/ \* @property \{Array<\{y: number\}>\} b .*\n/, ''), 'foo-model.js': TWO_TABLES_MODEL.replace(/  \/\*\* @type \{Array<\{y: number\}>\}.*\n  b = \[\];\n/, '').replace(', b: this.b', '') } });
+  const { modules } = collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, []);
+});
+
 test('unresolved_read_return: nicht auflösbarer read()-Rückgabewert ist eine gemeldete Blindstelle', () => {
   const root = fixture({ foo: { 'foo.js': DECLARED_VM(`return readAgentState('foo', build(), options);`), 'foo-model.js': DECL_MODEL } });
   const { modules } = collectAgentData(root);
