@@ -146,7 +146,7 @@ export function defaultPhaseFor(def, activeCycle) {
  * @param {{ activeCycle: string,
  *           instances: Map<string, { module: string, phase: string }>,
  *           completed: boolean }} world
- *   das Lese-Abbild aus `buildWorld` — kein neuer Zustandsbegriff.
+ *   das Lese-Abbild aus `buildWorld` oder `instanceWorld` — kein neuer Zustandsbegriff.
  *   `activeCycle` ist die Kennung des aktiven Zyklus und ist Pflicht.
  * @returns {{ ok: true } | { ok: false, reason: 'wrongPhase'|'singleton'|'completed', allowedPhases?: string[] }}
  * @throws {Error} wenn `world.activeCycle` fehlt oder keinen bekannten Zyklus nennt

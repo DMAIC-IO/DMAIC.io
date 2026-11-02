@@ -3887,7 +3887,7 @@ export class DraftViewModel {
   assert.equal(action.params[0].type, "'title'|'hint'");
 });
 
-test('Teil-Viewmodel: ein DOM-Umweg in der Datei der Klasse trägt Pfad und Zeile', () => {
+test('Teil-Viewmodel: ein DOM-Umweg in der Datei der Klasse trägt den Pfad', () => {
   const body = DRAFT_VM.replace('_helper() {}', '_helper(el) { el.innerHTML = this._t("x"); }');
   const { modules } = collectAgentData(subVmFixture(body));
   assert.ok(modules.foo.reported.some(c => /^dom_detour:innerHTML@js\/modules\/foo\/viewmodel\/draft\.js$/.test(c)),

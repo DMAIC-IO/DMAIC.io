@@ -39,12 +39,9 @@ export function allowedPhasesFor(def, activeCycle) {
 /**
  * Darf dieses Modul nur EINMAL im Projekt vorkommen?
  *
- * Die EINE Stelle, an der die Agentenschicht `def.singleton` liest — der
- * Prüfer (über `buildWorld`) und die Verteidigung in `agent-ops.js` benutzen
- * beide dieses Ergebnis, damit die Regel nicht ein zweites Mal buchstabiert
- * wird. Die UI-Fassung derselben Regel steht heute noch separat in
- * `ui/dmaic-tiles.js:_canAdd`; sie zusammenzuziehen ist ein eigener Durchgang
- * (Roadmap: „Ein Ort für Modul-Vorbedingungen").
+ * Die EINE Stelle, an der die Agentenschicht `def.singleton` liest: `buildWorld`
+ * ist der einzige Nutzer. Die Regel selbst (`canAddInstance`) steht in
+ * `core/router/instance-ops.js`.
  *
  * @param {object|null|undefined} def  normalisierte Moduldefinition
  * @returns {boolean}

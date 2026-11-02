@@ -474,10 +474,6 @@ function isPrimitiveType(node) {
  */
 const DOM_STATE_PROPS = new Set(['innerHTML', 'outerHTML']);
 
-/** Zuweisungsoperatoren, die einen Schreibweg bedeuten. Alle Formen zählen:
- *  `+=` und `-=` schreiben additiv, `??=`, `||=` und `&&=` bedingt — in den
- *  Zustand schreiben sie genauso. Genutzt für DOM-Umwege und für die
- *  Schreibweg-Erkennung (`collectCoveredFields`). */
 /** Sammelmethoden, die einen Wert in die Sammlung aufnehmen. */
 const COLLECTION_MUTATORS = new Set(['push', 'unshift', 'splice']);
 
@@ -486,6 +482,10 @@ const ELEMENT_PICKERS = new Set(['find', 'findLast', 'at']);
 /** Sammelmethoden, deren Argumente nur wählen, welche vorhandenen Elemente sie liefern. */
 const ELEMENT_SELECTORS = new Set(['slice', 'splice']);
 
+/** Zuweisungsoperatoren, die einen Schreibweg bedeuten: `=`, `+=` und `-=`
+ *  (additiv) sowie `??=`, `||=` und `&&=` (bedingt). `*=` und `/=` gehören
+ *  nicht dazu. Genutzt für DOM-Umwege und für die Schreibweg-Erkennung
+ *  (`collectCoveredFields`). */
 const ASSIGN_KINDS = new Set([
   ts.SyntaxKind.EqualsToken,
   ts.SyntaxKind.PlusEqualsToken,
@@ -1261,8 +1261,9 @@ const PASS_THROUGH_CALL_RE = /^(?:require[A-Z]\w*|String|Number|Boolean)$/;
 
 /**
  * Die Model-Felder, die der Parameter einer `@agent`-Methode SELBST steuert: die
- * strenge Schwester von `writtenModelFields`. Dort lautet die Frage „kann der
- * Agent das Feld erreichen“, hier „steuert sein Parameter die Ansicht“. Darum
+ * strengere Variante von `writtenModelFields`, aber KEINE Teilmenge davon: sie
+ * sieht zwei Ebenen statt einer, und ein `const` im Block zählt. Dort lautet
+ * die Frage „kann der Agent das Feld erreichen“, hier „steuert sein Parameter die Ansicht“. Darum
  * trennt ein Aufruf die Herkunft: `const q = make(type); … = q.id` zählt dort,
  * hier nicht. Prüfer und Typwandlungen geben den Wert zurück und trennen nicht.
  *
@@ -1282,12 +1283,11 @@ const PASS_THROUGH_CALL_RE = /^(?:require[A-Z]\w*|String|Number|Boolean)$/;
 function directWrittenFields(fn, resolver, modelDecl) {
   const params = new Set(parameterNames(fn).filter(Boolean));
   const helperOf = viewmodelHelperLookup(fn, resolver, modelDecl);
-  const isModelValue = modelValueTest(fn.body, 'model', helperOf);
   const sf = fn.getSourceFile();
   const keySets = requireEnumKeySets(fn.body, params, sf);
   return collectCoveredFields(fn.body, 'model', directNames(fn.body, params), keySets,
     (call, active) => [
-      ...fieldsCoveredByPathHelper(call, sf, keySets, active, isModelValue, isDirectValue),
+      ...fieldsCoveredByPathHelper(call, sf, keySets, active, undefined, isDirectValue),
       ...directFieldsOfDelegation(resolver, modelDecl, modelMethodCallOf(call), call.arguments, active, 1),
     ],
     helperOf, DIRECT_FLOW);
@@ -1369,10 +1369,10 @@ function directNames(body, names) {
  *   Eintritt in einen verschachtelten Block dazukommen
  */
 
-/** Die weite Menge `written`: ein Alias zählt nur auf der obersten Körperebene. */
+/** Die weite Menge `written`: ein abgeleiteter Name zählt nur auf der obersten Körperebene. */
 const DERIVED_FLOW = { isValue: derivesFromParams, inBlock: (_block, names) => names };
 
-/** Die strenge Menge `directWritten`: Aliasse gelten bis zum Ende ihres Blocks. */
+/** Die strenge Menge `directWritten`: abgeleitete Namen gelten bis zum Ende ihres Blocks. */
 const DIRECT_FLOW = { isValue: isDirectValue, inBlock: directNames };
 
 /**
