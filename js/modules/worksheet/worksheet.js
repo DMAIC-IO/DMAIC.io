@@ -604,12 +604,13 @@ const mod = createModule({
        * @throws {Error} if position is not an integer in 0..column count
        */
       addColumn(sheetId, position) {
-        this._ensureSheet(sheetId);
+        const view = this._sheetView(sheetId);
         // `DataGrid.addColumn` spleißt ungeprüft: 99 hängte still hinten an,
         // -1 fügte VOR der letzten Spalte ein, 'x' ebenfalls irgendwo.
         if (position !== undefined) {
-          requireIndex('position', position, (this._grid?.columns ?? []).length);
+          requireIndex('position', position, view.columns.length);
         }
+        this._ensureSheet(sheetId);
         const col = this._grid.addColumn(position === undefined ? {} : { position });
         this._persistNow();
         return col.id;
@@ -628,19 +629,20 @@ const mod = createModule({
        *   if the column is locked
        */
       renameColumn(sheetId, columnId, name) {
-        this._ensureSheet(sheetId);
+        const view = this._sheetView(sheetId);
         // `DataGrid.renameColumn` kehrt bei unbekannter id und bei JEDER
         // Sperre still zurück — der Agent bekäme Erfolg gemeldet. Das
         // Kopfmenü bietet Umbenennen bei einer Sperre gar nicht erst an.
-        requireKnownId('columnId', columnId, (this._grid?.columns ?? []).map(c => c.id));
+        requireKnownId('columnId', columnId, view.columns.map(c => c.id));
         requireText('name', name);
-        const col = this._grid.getColumn(columnId);
-        if (col.meta?.lock) {
-          throw new Error(`column "${columnId}" is locked (${col.meta.lock})`);
+        const lock = view.columns.find(c => c.id === columnId).meta?.lock;
+        if (lock) {
+          throw new Error(`column "${columnId}" is locked (${lock})`);
         }
+        this._ensureSheet(sheetId);
         this._grid.renameColumn(columnId, name);
         this._persistNow();
-        return col.name;
+        return this._grid.getColumn(columnId).name;
       },
       /**
        * Remove a column with its values and formulas. Undo restores it.
@@ -653,15 +655,15 @@ const mod = createModule({
        *   hard-locked (a soft lock allows removal, as in the header menu)
        */
       removeColumn(sheetId, columnId) {
-        this._ensureSheet(sheetId);
+        const view = this._sheetView(sheetId);
         // `DataGrid.removeColumn` kehrt bei unbekannter id und bei harter
         // Sperre still zurück. Eine weiche Sperre blockt hier bewusst nicht:
         // das Kopfmenü bietet „Spalte löschen“ dann ebenfalls an.
-        requireKnownId('columnId', columnId, (this._grid?.columns ?? []).map(c => c.id));
-        const col = this._grid.getColumn(columnId);
-        if (col.meta?.lock === 'hard') {
+        requireKnownId('columnId', columnId, view.columns.map(c => c.id));
+        if (view.columns.find(c => c.id === columnId).meta?.lock === 'hard') {
           throw new Error(`column "${columnId}" is locked (hard)`);
         }
+        this._ensureSheet(sheetId);
         this._grid.removeColumn(columnId);
         this._persistNow();
       },
@@ -684,15 +686,16 @@ const mod = createModule({
        *   an integer in 0..row count
        */
       addRows(sheetId, count, position) {
-        this._ensureSheet(sheetId);
+        const view = this._sheetView(sheetId);
         // Früher klemmte diese Methode still: negativ → 0 Zeilen, Unsinn → 10,
         // und der Aufruf meldete Erfolg. `DataGrid.addRows` prüft nichts —
         // ein negatives count wirft dort erst in `new Array`, eine Position
         // 99 hängt still an.
         const n = count === undefined ? 10 : requireNumber('count', count, { min: 1, integer: true });
         if (position !== undefined) {
-          requireIndex('position', position, this._grid?.rowCount ?? 0);
+          requireIndex('position', position, view.rowCount);
         }
+        this._ensureSheet(sheetId);
         this._grid.addRows(n, position);
         this._persistNow();
       },
@@ -712,14 +715,15 @@ const mod = createModule({
        *   not a whole number in 1..(row count − startRow)
        */
       removeRows(sheetId, startRow, count) {
-        this._ensureSheet(sheetId);
+        const view = this._sheetView(sheetId);
         // `DataGrid.removeRows` prüft keinen Bereich: ein Index hinter dem
         // Ende spliced ins Leere, `rowCount` sinkt trotzdem. Eine Sperre
         // prüft das Zeilenmenü nicht — hier also auch nicht.
-        const rowCount = this._grid?.rowCount ?? 0;
+        const rowCount = view.rowCount;
         requireIndex('startRow', startRow, rowCount, { existing: true });
         const n = requireNumber('count', count, { min: 1, max: rowCount - startRow, integer: true });
         const indices = Array.from({ length: n }, (_, i) => startRow + i);
+        this._ensureSheet(sheetId);
         this._grid.removeRows(indices);
         this._persistNow();
         return indices.length;
@@ -739,12 +743,13 @@ const mod = createModule({
        *   'asc' nor 'desc'
        */
       sortRows(sheetId, columnId, direction) {
-        this._ensureSheet(sheetId);
+        const view = this._sheetView(sheetId);
         // `DataGrid.sortByColumn` kehrt bei ungültigem Index still zurück und
         // schaltet ohne Richtung um — der Agent wählt sie darum absolut.
-        const ids = (this._grid?.columns ?? []).map(c => c.id);
+        const ids = view.columns.map(c => c.id);
         requireKnownId('columnId', columnId, ids);
         requireEnum('direction', direction, ['asc', 'desc']);
+        this._ensureSheet(sheetId);
         const changed = this._grid.sortByColumn(ids.indexOf(columnId), direction);
         // Sortieren sendet kein Datenereignis (nur `render`): ohne sofortiges
         // Ablegen spiegelte erst der 2-s-`_autoSave` das Blatt, und die
@@ -801,6 +806,25 @@ const mod = createModule({
         this._applyActiveSheetToGrid();
         this._flushAndNotify();
         return this.model.activeSheetId;
+      },
+      /**
+       * Was die Prüfung einer Blattaktion braucht, ohne Wirkung: kein Umschalten,
+       * kein Commit, kein Schließen eines Dialogs. Ein abgelehnter Aufruf darf
+       * weder das Blatt wechseln noch die Historie leeren.
+       * @param {string} sheetId id des Blatts
+       * @returns {{ columns: object[], rowCount: number }}
+       * @throws {Error} if no sheet has this id
+       */
+      _sheetView(sheetId) {
+        requireKnownId('sheetId', sheetId, this.model.sheets.map(s => s.id));
+        if (sheetId === this.model.activeSheetId) {
+          return { columns: this._grid?.columns ?? [], rowCount: this._grid?.rowCount ?? 0 };
+        }
+        const state = this.model.sheets.find(s => s.id === sheetId).state;
+        return {
+          columns: (state?.columns ?? []).map(c => ({ ...c, type: c.type ?? 'numeric' })),
+          rowCount: state?.rowCount ?? 0,
+        };
       },
       /**
        * Prüft die Blatt-id und holt das Blatt ins Grid. Ein Schreiben ohne Grid
@@ -1167,17 +1191,18 @@ const mod = createModule({
        * @throws {Error} if no column has this id, or if the column is locked
        */
       setCells(sheetId, columnId, startRow, values) {
-        this._ensureSheet(sheetId);
+        const view = this._sheetView(sheetId);
         // `setCellValue` kehrt bei unbekannter Spalte und bei gesperrter
         // Spalte STILL zurück. Ohne diese Prüfung bekäme ein Agent, der sich
         // in der columnId vertippt, die Zahl seiner Eingabewerte als Erfolg
         // gemeldet — und baute seinen nächsten Schritt auf Daten, die es
         // nicht gibt.
-        requireKnownId('columnId', columnId, (this._grid?.columns ?? []).map(c => c.id));
-        const col = this._grid.getColumn(columnId);
-        if (col.meta?.lock) {
-          throw new Error(`column "${columnId}" is locked (${col.meta.lock})`);
+        requireKnownId('columnId', columnId, view.columns.map(c => c.id));
+        const lock = view.columns.find(c => c.id === columnId).meta?.lock;
+        if (lock) {
+          throw new Error(`column "${columnId}" is locked (${lock})`);
         }
+        this._ensureSheet(sheetId);
         const list = Array.isArray(values) ? values : [];
         const from = Number.isFinite(Number(startRow)) ? Math.max(0, Math.trunc(Number(startRow))) : 0;
         // Gezählt wird, was das Grid tatsächlich geschrieben hat, nicht, was
@@ -1233,22 +1258,23 @@ const mod = createModule({
        *   not an integer in 0..row count, or formula does not start with "="
        */
       setFormula(sheetId, columnId, row, formula) {
-        this._ensureSheet(sheetId);
+        const view = this._sheetView(sheetId);
         // `setCellFormula` kehrt bei unbekannter Spalte und bei Sperre mit
         // `null` zurück — still für den Aufrufer. Dieselbe Vorabprüfung wie
         // `setCells`, damit beide Schreibwege dieselbe Sperre gleich melden.
-        requireKnownId('columnId', columnId, (this._grid?.columns ?? []).map(c => c.id));
-        const col = this._grid.getColumn(columnId);
-        if (col.meta?.lock) {
-          throw new Error(`column "${columnId}" is locked (${col.meta.lock})`);
+        requireKnownId('columnId', columnId, view.columns.map(c => c.id));
+        const lock = view.columns.find(c => c.id === columnId).meta?.lock;
+        if (lock) {
+          throw new Error(`column "${columnId}" is locked (${lock})`);
         }
-        requireIndex('row', row, this._grid?.rowCount ?? 0);
+        requireIndex('row', row, view.rowCount);
         // Nicht `requireText`: dessen Meldung verspricht `"" clears it`. Ein
         // Text ohne "=" ginge in `setCellFormula` still auf den Wertweg —
         // eine zweite Form von `setCells`, die der Agent nicht bestellt hat.
         if (!isFormula(formula)) {
           throw new Error(`invalid formula ${JSON.stringify(formula)}; allowed: a text starting with "="`);
         }
+        this._ensureSheet(sheetId);
         const result = this._grid.setCellFormula(columnId, row, formula);
         this._grid.render();
         // `cell:changed` hat den Entpreller angestoßen; sofort ablegen, sonst
@@ -1278,14 +1304,14 @@ const mod = createModule({
        *   valid for the column type, or if the column is locked
        */
       setColumnRole(sheetId, columnId, role) {
-        this._ensureSheet(sheetId);
+        const view = this._sheetView(sheetId);
         // `DataGrid.setColumnRole` kehrt bei unbekannter id, unbekannter
         // Rolle, unpassendem Typ und JEDER Sperre still zurück — der Agent
         // bekäme Erfolg gemeldet. Zweistufig geprüft: erst die volle
         // Rollenliste (Konstante), dann die für den Typ zulässige.
-        requireKnownId('columnId', columnId, (this._grid?.columns ?? []).map(c => c.id));
+        requireKnownId('columnId', columnId, view.columns.map(c => c.id));
         requireEnum('role', role, ALL_ROLES);
-        const col = this._grid.getColumn(columnId);
+        const col = view.columns.find(c => c.id === columnId);
         if (!isRoleValidForType(role, col.type)) {
           throw new Error(
             `invalid role ${JSON.stringify(role)} for column type ${JSON.stringify(col.type)}; `
@@ -1295,6 +1321,7 @@ const mod = createModule({
         if (col.meta?.lock) {
           throw new Error(`column "${columnId}" is locked (${col.meta.lock})`);
         }
+        this._ensureSheet(sheetId);
         this._grid.setColumnRole(columnId, role);
         // `column:role-changed` steht nicht in `dataMutationEvents`: ohne
         // dieses Ablegen sähe chart-suggestion (liest `roleManual` aus dem
@@ -1314,13 +1341,14 @@ const mod = createModule({
        * @throws {Error} if fromRow or toRow is not an existing row index
        */
       moveRow(sheetId, fromRow, toRow) {
-        this._ensureSheet(sheetId);
+        const view = this._sheetView(sheetId);
         // `DataGrid.moveRow` kehrt bei einem Index außerhalb STILL zurück.
         // Eine Sperre prüft das Ziehen nicht — hier also auch nicht.
-        const rowCount = this._grid?.rowCount ?? 0;
+        const rowCount = view.rowCount;
         requireIndex('fromRow', fromRow, rowCount, { existing: true });
         requireIndex('toRow', toRow, rowCount, { existing: true });
         if (fromRow === toRow) return false;
+        this._ensureSheet(sheetId);
         this._grid.moveRow(fromRow, toRow);
         this._persistNow();
         return true;
@@ -1339,13 +1367,14 @@ const mod = createModule({
        *   existing column position
        */
       moveColumn(sheetId, columnId, toIndex) {
-        this._ensureSheet(sheetId);
+        const view = this._sheetView(sheetId);
         // `DataGrid.moveColumn` kehrt bei einem Index außerhalb STILL zurück.
-        const ids = (this._grid?.columns ?? []).map(c => c.id);
+        const ids = view.columns.map(c => c.id);
         requireKnownId('columnId', columnId, ids);
         requireIndex('toIndex', toIndex, ids.length, { existing: true });
         const fromIndex = ids.indexOf(columnId);
         if (fromIndex === toIndex) return false;
+        this._ensureSheet(sheetId);
         this._grid.moveColumn(fromIndex, toIndex);
         this._persistNow();
         return true;
@@ -1369,16 +1398,17 @@ const mod = createModule({
        *   column is locked
        */
       setColumnType(sheetId, columnId, type) {
-        this._ensureSheet(sheetId);
+        const view = this._sheetView(sheetId);
         // `DataGrid.setColumnType` kehrt bei unbekannter id, gleichem Typ und
         // JEDER Sperre still zurück; einen unbekannten Typ nähme es an.
-        requireKnownId('columnId', columnId, (this._grid?.columns ?? []).map(c => c.id));
+        requireKnownId('columnId', columnId, view.columns.map(c => c.id));
         requireEnum('type', type, Object.keys(COLUMN_TYPES));
-        const col = this._grid.getColumn(columnId);
+        const col = view.columns.find(c => c.id === columnId);
         if (col.meta?.lock) {
           throw new Error(`column "${columnId}" is locked (${col.meta.lock})`);
         }
         if (col.type === type) return false;
+        this._ensureSheet(sheetId);
         this._grid.setColumnType(columnId, type);
         this._persistNow();
         return true;
@@ -1404,13 +1434,13 @@ const mod = createModule({
        *   fit the column type, value is not allowed, or the column is locked
        */
       setColumnFormat(sheetId, columnId, key, value) {
-        this._ensureSheet(sheetId);
+        const view = this._sheetView(sheetId);
         // `DataGrid.setColumnFormat` übernimmt jeden Schlüssel und Wert
         // ungeprüft und kehrt bei Sperre still zurück. Zweistufig wie
         // `setColumnRole`: erst alle Schlüssel, dann die des Typs.
-        requireKnownId('columnId', columnId, (this._grid?.columns ?? []).map(c => c.id));
+        requireKnownId('columnId', columnId, view.columns.map(c => c.id));
         requireEnum('key', key, FORMAT_KEYS);
-        const col = this._grid.getColumn(columnId);
+        const col = view.columns.find(c => c.id === columnId);
         const keysForType = FORMAT_KEYS_BY_TYPE[col.type] ?? [];
         if (!keysForType.includes(key)) {
           const allowed = keysForType.length ? keysForType.join(', ') : 'none, this column type has no format';
@@ -1429,6 +1459,7 @@ const mod = createModule({
         if (col.meta?.lock) {
           throw new Error(`column "${columnId}" is locked (${col.meta.lock})`);
         }
+        this._ensureSheet(sheetId);
         this._grid.setColumnFormat(columnId, { [key]: checked });
         // `column:format-changed` steht nicht in `dataMutationEvents`: ohne
         // dieses Ablegen ginge das Format beim nächsten Blattwechsel verloren.
