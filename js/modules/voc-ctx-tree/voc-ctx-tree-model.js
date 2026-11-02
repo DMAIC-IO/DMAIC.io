@@ -94,7 +94,7 @@ export class State {
   addVoc(text, source = '') {
     const voc = { id: uid(), text, source, needs: [] };
     this.vocs.push(voc);
-    this._selectVoc(voc.id);
+    this.activeVocId = voc.id;
     return voc.id;
   }
 
@@ -113,21 +113,14 @@ export class State {
   deleteVoc(id) {
     this.vocs = this.vocs.filter((v) => v.id !== id);
     if (this.activeVocId === id) {
-      this._selectVoc(this.vocs.length ? this.vocs[0].id : null);
+      this.activeVocId = this.vocs.length ? this.vocs[0].id : null;
     }
   }
 
   /** Select a VoC by id. */
   setActiveVoc(id) {
-    this._selectVoc(id);
+    this.activeVocId = id;
   }
-
-  /**
-   * Setzt die gezeigte Kundenstimme (Ansichtsfeld, nur als Folge der Aktionen).
-   * @param {string|null} id
-   * @returns {void}
-   */
-  _selectVoc(id) { this.activeVocId = id; }
 
   // ─── Need CRUD ──────────────────────────────────────────────
 

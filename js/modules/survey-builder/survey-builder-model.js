@@ -166,15 +166,6 @@ export class State {
   // ─── Questions ──────────────────────────────────────────────
 
   /**
-   * Folge von addQuestion: die neue Frage ist in der Oberfläche gewählt.
-   * Eigene Methode, weil die Auswahl ein Ansichtsfeld ist (VIEW_FIELDS) und keine
-   * parametergetriebene Schreibung einer @agent-Aktion sein soll.
-   * @param {string} id
-   * @returns {void}
-   */
-  _selectQuestion(id) { this.ui.selectedQuestionId = id; }
-
-  /**
    * @param {string} sectionId
    * @param {string} type one of QUESTION_TYPES
    * @returns {string|null} new question id, null for an unknown section or type
@@ -184,7 +175,7 @@ export class State {
     if (!s || !QUESTION_TYPES.includes(type)) return null;
     const q = emptyQuestion(type);
     s.questions.push(q);
-    this._selectQuestion(q.id);
+    this.ui.selectedQuestionId = q.id;
     this.dirtyStructure = true;
     return q.id;
   }

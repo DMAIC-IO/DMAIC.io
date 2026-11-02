@@ -103,18 +103,11 @@ export class State {
 
   // ─── Befragte ───────────────────────────────────────────────
 
-  /**
-   * Setzt die gezeigte Befragte (Ansichtsfeld, nur als Folge der Aktionen).
-   * @param {string|null} id
-   * @returns {void}
-   */
-  _selectRespondent(id) { this.activeRespondentId = id; }
-
   /** @returns {string} id der neuen Befragten; die erste wird aktiv */
   addRespondent(name) {
     const r = { id: uid(), name: name || '' };
     this.respondents.push(r);
-    if (!this.activeRespondentId) this._selectRespondent(r.id);
+    if (!this.activeRespondentId) this.activeRespondentId = r.id;
     return r.id;
   }
 
@@ -128,7 +121,7 @@ export class State {
     this.respondents = this.respondents.filter((r) => r.id !== id);
     delete this.answers[id];
     if (this.activeRespondentId === id) {
-      this._selectRespondent(this.respondents.length ? this.respondents[0].id : null);
+      this.activeRespondentId = this.respondents.length ? this.respondents[0].id : null;
     }
   }
 
