@@ -7,8 +7,6 @@
  * erst bei Bedarf geladen wird. Dieser Auflöser lädt ihn beim ersten Bedarf
  * (`describe`, `instance.call`, `instance.set`) und hält ihn danach.
  * `catalog.read` kommt mit dem Platzhalter aus — er lädt nichts.
- *
- * Spec 2026-11-03-module-einzeln-nachladbar-design.md §9 („describe lädt nach“, „Übergang“).
  */
 
 /**

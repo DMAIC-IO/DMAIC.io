@@ -4,7 +4,7 @@
  * Für ein Modul mit deklarativem Model (`core/model.js`) entsteht der
  * Registry-Eintrag zur Laufzeit aus `Model.schema` — in DERSELBEN Form wie
  * ein Eintrag von `agent-registry.generated.js`, damit Katalog, Prüfer und
- * `describe` unverändert bleiben (Spec 2026-11-03 §9).
+ * `describe` unverändert bleiben.
  *
  * Kommandos nehmen über die Fläche genau EIN Objekt (`args: [{ … }]`). In
  * `describe` erscheint dafür ein Parameter `command` vom Typ `object`; seine

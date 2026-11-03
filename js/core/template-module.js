@@ -150,7 +150,7 @@ export function createModule(base) {
             context.stateManager.getModuleState(context.instanceId), createDefault, context);
 
           if (schema) {
-            // Das Model kennt den Bus nicht; der Beobachter übersetzt (Spec §6).
+            // Das Model kennt den Bus nicht; der Beobachter übersetzt.
             setCommandObserver(freshState, (command, args, result) => context.eventBus?.emit?.(
               'command:executed', { instanceId: context.instanceId, command, args, result }));
           }

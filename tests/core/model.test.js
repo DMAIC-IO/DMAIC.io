@@ -1,6 +1,5 @@
 /**
  * Tests for core/model.js — Felder, Ansichtsfelder, toJSON/fromJSON, Typtexte.
- * Spec: docs/superpowers/specs/2026-11-03-module-einzeln-nachladbar-design.md §6
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../test-utils.js';
 import {

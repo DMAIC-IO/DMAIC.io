@@ -14,7 +14,6 @@
  * nur `['_v']`; wer ein Model kopiert, nimmt `toJSON()`.
  *
  * Rein: kein DOM, kein Alpine, kein Kontext.
- * Spec: docs/superpowers/specs/2026-11-03-module-einzeln-nachladbar-design.md §6
  */
 import {
   requireText, requireNumber, requireBoolean, requireEnum, requireIndex,

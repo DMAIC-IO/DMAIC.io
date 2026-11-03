@@ -196,7 +196,7 @@ export function createOps(deps) {
           t('agent.errors.viewmodelNotAlive', { instance: action.instance }), { available: [] });
       }
       // Schema-Kommandos (agent-schema.js) tragen `target`: das Model oder das
-      // Viewmodel. Die Fläche ruft das REAKTIVE Model des Viewmodels (Spec §9).
+      // Viewmodel. Die Fläche ruft das REAKTIVE Model des Viewmodels.
       const target = spec.target === 'model'
         ? { object: viewmodel.model, name: action.method }
         : callTarget(viewmodel, action.method);
