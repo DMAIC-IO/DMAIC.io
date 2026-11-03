@@ -61,8 +61,8 @@ test('rendert Felder, Ansicht, Kommandos und das Model', async () => {
   assert.match(out, / \* @typedef \{object\} StateFields\n \* @property \{string\} title\n \* @property \{number\|null\} alpha\n \* @property \{Record<'a'\|'b', string\[\]>\} columns\n/);
   assert.match(out, / \* @typedef \{object\} StateView\n \* @property \{'month'\|'week'\} mode\n/);
   assert.match(out, / \* @typedef \{object\} MoveItemCommand\n \* @property \{'a'\|'b'\} from\n \* @property \{number\} idx\n \* @property \{string\} \[note\]\n/);
-  assert.match(out, / \*   moveItem\(cmd: MoveItemCommand\): boolean,/);
-  assert.match(out, / \*   execute\(cmd: \(\{ type: 'moveItem' \} & MoveItemCommand\)\): unknown,/);
+  assert.match(out, / \* {3}moveItem\(cmd: MoveItemCommand\): boolean,/);
+  assert.match(out, / \* {3}execute\(cmd: \(\{ type: 'moveItem' \} & MoveItemCommand\)\): unknown,/);
   assert.match(out, / \* \}\} StateModel\n/);
   assert.match(out, /\nexport \{\};\n$/);
 });
