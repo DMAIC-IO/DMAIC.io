@@ -589,6 +589,22 @@ suite('agent runtime — Lesen vor Schreiben (stale_revision)', () => {
     assertEqual(log.some(e => e.startsWith('vm:')), false, 'die Op lief nicht');
   });
 
+  test('instance.set verlangt wie instance.call eine gelesene Revision', async () => {
+    const { runtime, log } = setup();
+    const out = await runtime.interact([{ op: 'instance.set', instance: 'ws-1', values: { x: 1 } }]);
+    assertEqual(out.ok, false);
+    assertEqual(out.results[0].error, 'stale_revision');
+    // `log` kennt hier nur Seiteneffekte der Methoden (importCsv:…); nichts davon lief.
+    assertDeepEqual(log, ['consent']);
+  });
+
+  test('instance.set nach dem Lesen: kein stale_revision mehr (worksheet hat kein Schema → call_failed)', async () => {
+    const { runtime } = setup();
+    await runtime.interact([read('ws-1')]);
+    const out = await runtime.interact([{ op: 'instance.set', instance: 'ws-1', values: { x: 1 } }]);
+    assertEqual(out.results[0].error, 'call_failed');
+  });
+
   test('lesen, dann zwei Schreibzugriffe in getrennten Stapeln: eigene Änderungen sind keine fremden', async () => {
     const { runtime } = setup();
     await runtime.interact([read('ws-1')]);

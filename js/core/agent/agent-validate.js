@@ -49,9 +49,10 @@ const UNIVERSAL_FIELDS = new Set(['id', 'op']);
  * die Daten. Das geteilte `read()` über `instance.call` ist der EINZIGE Weg
  * zu Feldwerten; ein pauschaler Block hätte jedes Auslesen aus genau den
  * Projekten entzogen, die ein Agent am ehesten zusammenfassen soll. Siehe
- * `CONDITIONAL_WRITE_OPS` unten für die feinere Regel.
+ * `CONDITIONAL_WRITE_OPS` unten für die feinere Regel. `instance.set`
+ * schreibt immer.
  */
-export const WRITE_OPS = new Set(['module.add', 'module.remove']);
+export const WRITE_OPS = new Set(['module.add', 'module.remove', 'instance.set']);
 
 /**
  * `instance.call` schreibt NUR, wenn die aufgerufene Methode nicht `read`
@@ -260,7 +261,7 @@ export function validateBatch(input, world) {
         { available: [...world.instances.keys()] }));
     }
 
-    if (a.op === 'instance.call') {
+    if (a.op === 'instance.call' || a.op === 'instance.set') {
       // Das Zielmodul ist statisch bekannt, wenn `instance` literal ist ODER
       // auf das Ergebnis eines `module.add` mit literalem `module` zeigt.
       // Zeigt es in ein Leseergebnis hinein, bleibt nur die Laufzeitprüfung.
@@ -271,7 +272,7 @@ export function validateBatch(input, world) {
           return fail(i, axiError(ERRORS.MODULE_NOT_AGENT_READY,
             world.t('agent.errors.moduleNotAgentReady', { module: moduleId })));
         }
-        if (!entry.methods.includes(a.method)) {
+        if (a.op === 'instance.call' && !entry.methods.includes(a.method)) {
           // `entry.methods` sind die KATALOG-Aktionen (agent-catalog.js,
           // `buildWorld`), nicht die Mitglieder des Viewmodels: ein Name, der
           // hier fehlt, kann im Modul sehr wohl existieren. Daher derselbe

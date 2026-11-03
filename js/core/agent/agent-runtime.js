@@ -87,7 +87,7 @@ export function createAgentRuntime(deps) {
    */
   function staleRevision(op, params) {
     if (!isWritingAction({ op, method: params.method })) return null;
-    if (op === 'instance.call') {
+    if (op === 'instance.call' || op === 'instance.set') {
       // Eine Instanz, die es nicht gibt, meldet die Op selbst als
       // `unknown_instance` mit den gültigen Ids — die nützlichere Antwort.
       const exists = buildInstanceList({ stateManager, i18n }).some(i => i.id === params.instance);
@@ -118,7 +118,7 @@ export function createAgentRuntime(deps) {
     try {
       if (op === 'project.read') {
         revisions.markStructure();
-      } else if (op === 'instance.call') {
+      } else if (op === 'instance.call' || op === 'instance.set') {
         await host.settle(params.instance);
         revisions.markInstance(params.instance);
       } else if (op === 'module.add') {

@@ -1,11 +1,12 @@
 /**
- * D.Mike — Die sieben Kernaktionen (agent-ops.js)
+ * D.Mike — Die acht Kernaktionen (agent-ops.js)
  *
  * Alles Fachliche ist eine Modulaktion; die Kernschicht kennt nur
- * Projekt, Katalog und Instanzen. Darum sind es sieben und nicht fünfzehn —
+ * Projekt, Katalog und Instanzen. Darum sind es acht und nicht fünfzehn —
  * kein `help.read`, kein `instance.read`, kein `worksheet.import`, kein
  * `connect`. Die Begründung steht in der Spec, die Konsequenz hier: diese
- * Datei wächst nicht, wenn Module dazukommen.
+ * Datei wächst nicht, wenn Module dazukommen. Die achte, `instance.set`, setzt
+ * Felder eines Schema-Moduls.
  *
  * Jede Funktion WIRFT NICHT. Sie liefert entweder ihr Ergebnis oder ein
  * AXI-Fehlerobjekt (`{ ok: false, error, message, available? }`); die
@@ -23,6 +24,7 @@ import { getAllPhaseIds } from '../cycles/cycles.js';
 import { requireArity, requireForm } from './agent-argcheck.js';
 import { createEntryResolver } from './agent-entries.js';
 import { stripPaths } from '../view-fields.js';
+import { setFields } from '../model.js';
 
 /**
  * @param {object} deps  { stateManager, moduleRegistry, i18n, registry, getHelp, host, appVersion }
@@ -232,6 +234,35 @@ export function createOps(deps) {
       } catch (err) {
         return axiError(ERRORS.CALL_FAILED,
           t('agent.errors.callFailed', { method: action.method, detail: err?.message ?? String(err) }));
+      }
+    },
+
+    'instance.set': async (action) => {
+      const instances = buildInstanceList({ stateManager, i18n });
+      const found = instances.find(i => i.id === action.instance);
+      if (!found) return unknownInstanceError(t, instances, action.instance);
+      const entry = await entries.resolve(found.module);
+      if (entry?.available !== true) {
+        return axiError(ERRORS.MODULE_NOT_AGENT_READY,
+          t('agent.errors.moduleNotAgentReady', { module: found.module }));
+      }
+      // Nur ein Schema-Modul kennt setzbare Felder; ein Modul alter Form ändert
+      // seine Felder über Aktionen. Kein neuer Fehlercode (contract bleibt 2).
+      if (!Array.isArray(entry.settable)) {
+        return axiError(ERRORS.CALL_FAILED, t('agent.errors.setNotSupported', { module: found.module }));
+      }
+      const viewmodel = await host.getViewmodel(action.instance);
+      if (!viewmodel) {
+        return axiError(ERRORS.UNKNOWN_INSTANCE,
+          t('agent.errors.viewmodelNotAlive', { instance: action.instance }), { available: [] });
+      }
+      try {
+        // Alles prüfen, dann alles schreiben — auf dem REAKTIVEN Model.
+        const values = setFields(viewmodel.model, action.values);
+        return { instanceId: action.instance, values };
+      } catch (err) {
+        return axiError(ERRORS.CALL_FAILED,
+          t('agent.errors.callFailed', { method: 'instance.set', detail: err?.message ?? String(err) }));
       }
     },
   };

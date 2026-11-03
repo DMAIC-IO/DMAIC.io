@@ -76,6 +76,7 @@ eindeutig sein (`duplicate_id`).
 | `module.remove` | `instance` | `{ instanceId, removed }` | ja |
 | `instance.open` | `instance` | `{ instanceId, module, phase }` | nein |
 | `instance.call` | `instance`, `method`, `args?` | `{ instanceId, method, value }` | ja, außer `method: 'read'` |
+| `instance.set` | `instance`, `values` | `{ instanceId, values }` | ja |
 
 `module.describe` liefert je Aktion `{ name, help, returns, params, keys }`
 und je Lesefeld `{ name, type, help, bulk, derived, keys }`. `derived: false`
@@ -97,6 +98,29 @@ der Oberfläche an der Beschriftung, wenn der Mensch Alt hält.
 **Aktionsnamen mit Punkt.** Ein Modul kann Teil-Viewmodels haben; ihre
 Methoden heißen `<teil>.<methode>` (`draft.addQuestion`) und werden wie
 jede andere über `instance.call` mit `method: 'draft.addQuestion'` gerufen.
+
+### Module mit deklarativem Model: Kommandos und `instance.set`
+
+Ein Modul, dessen Model mit `defineModel` erklärt ist (`app/dev/js/core/model.js`),
+führt seine Aktionen als **Kommandos**: `describe` nennt je Kommando genau einen
+Parameter `command` vom Typ `object`, seine Schlüssel stehen in `keys`
+(`{ name, type, help, optional }`). Aufgerufen wird mit einem Objekt:
+
+    { op: 'instance.call', instance, method: 'moveItem',
+      args: [{ sourceCol: 'inputs', sourceIdx: 0, targetCol: 'process', dropIdx: 2 }] }
+
+Ein fehlender Schlüssel antwortet wie ein fehlendes Argument (`missing argument
+"dropIdx" of moveItem; expected: …`), ein unbekannter mit `unknown moveItem param
+"x"; available: …`.
+
+Felder setzt `instance.set`:
+
+    { op: 'instance.set', instance, values: { alpha: 0.1, mode: 'less' } }
+
+Alles wird geprüft, dann alles geschrieben; scheitert ein Wert, ist nichts
+geschrieben (`call_failed`). Setzbar sind die Felder aus `describe` — keine
+Ansichtsfelder (`unknown field "<x>"; available: …`). Ein Modul alter Form
+antwortet auf `instance.set` mit `call_failed`.
 
 ### Phasenprüfung in zwei Stufen
 
@@ -348,6 +372,7 @@ Endpunkt, ein Schreiben auf ein Blatt macht es sichtbar.
 | `instance.call` mit `method: 'read'` | der Instanz, auf die aktuelle Revision |
 | `project.read`, `interact()` ohne Parameter | der Projektstruktur |
 | eigenes `instance.call` (nicht `read`), erfolgreich | der Instanz, auf die Revision nach der Aktion |
+| eigenes `instance.set`, erfolgreich | der Instanz, auf die Revision nach der Aktion |
 | eigenes `module.add`, erfolgreich | der Projektstruktur und der neuen Instanz |
 | eigenes `module.remove`, erfolgreich | der Projektstruktur; der Merker der Instanz entfällt |
 
@@ -356,7 +381,7 @@ Vor dem Merken wartet die Fläche, bis die Persistenz der Aktion gelaufen ist
 `catalog.read`, `module.describe` und `instance.open` setzen nichts.
 
 Geprüft wird zur Ausführungszeit, Aktion für Aktion: `instance.call` mit
-`method !== 'read'` verlangt, dass der Merker der Instanz vorhanden und gleich
+`method !== 'read'` und `instance.set` verlangen, dass der Merker der Instanz vorhanden und gleich
 ihrer aktuellen Revision ist; `module.add` und `module.remove` verlangen das
 für die Projektstruktur. Sonst antwortet die Aktion mit `stale_revision` —
 ohne Token und ohne `available`; die Meldung nennt den Aufruf, der es
@@ -379,6 +404,7 @@ also nicht halb und scheitert dann am Schreibschutz:
 |---|---|
 | `module.add`, `module.remove` | abgelehnt (`project_completed`) |
 | `instance.call` mit `method !== 'read'` | abgelehnt (`project_completed`) |
+| `instance.set` | abgelehnt (`project_completed`) |
 | `instance.call` mit `method: 'read'` | **erlaubt** |
 | `project.read`, `catalog.read`, `module.describe`, `instance.open` | erlaubt |
 
@@ -437,6 +463,10 @@ Setter der Ansichtsfelder sind keine Aktionen mehr, ein Aufruf antwortet
 das erste, und die Antwort führt `sheetId` statt `activeSheetId`. `rest-api` nennt
 seinen Endpunkt: die Detailaktionen tragen `endpointId` als ersten Parameter,
 `lastResponse` und `scheduleRunning` stehen je Endpunkt in `endpoints[]`.
+
+Deklaratives Model (2026-11-03, `contract` bleibt `2`): neue `op` `instance.set`;
+Kommandos von Schema-Modulen nehmen ein Objekt in `args[0]`. Beides ist nach
+der Regel oben kein Bruch — neue `op`, gleiche Hülle, keine neuen Fehlercodes.
 
 Aktionsnamen mit Punkt (`draft.addQuestion`) sind ebenfalls kein Bruch: die
 Aktionsform `{ op: 'instance.call', instance, method, args }` bleibt,

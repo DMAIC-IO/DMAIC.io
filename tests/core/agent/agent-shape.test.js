@@ -126,9 +126,9 @@ suite('agent contract', () => {
     assertEqual(CONTRACT_VERSION, 2);
   });
 
-  test('exactly the seven core ops are declared', () => {
+  test('exactly the eight core ops are declared', () => {
     assertDeepEqual(Object.keys(OPS).sort(), [
-      'catalog.read', 'instance.call', 'instance.open',
+      'catalog.read', 'instance.call', 'instance.open', 'instance.set',
       'module.add', 'module.describe', 'module.remove', 'project.read',
     ]);
   });

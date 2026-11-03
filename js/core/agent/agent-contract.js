@@ -158,6 +158,13 @@ export const OPS = deepFreeze({
     },
     result: { instanceId: 'string', method: 'string', value: 'any' },
   },
+  'instance.set': {
+    params: {
+      instance: { type: 'string', required: true },
+      values:   { type: 'object', required: true },
+    },
+    result: { instanceId: 'string', values: 'any' },
+  },
 });
 
 /**

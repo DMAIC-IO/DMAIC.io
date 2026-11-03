@@ -258,4 +258,34 @@ suite('agent ops — Schema-Module', () => {
     assertEqual(out.modules[0].available, true);
     assertEqual(loads, 0);
   });
+
+  test('instance.set setzt Felder und liefert normalisierte Werte', async () => {
+    const { deps, model } = schemaDeps();
+    const out = await createOps(deps)['instance.set']({ instance: 'b-1', values: { title: 'Neu' } });
+    assertDeepEqual(out, { instanceId: 'b-1', values: { title: 'Neu' } });
+    assertEqual(model.title, 'Neu');
+  });
+
+  test('instance.set: Ansichtsfeld → call_failed, nichts geschrieben', async () => {
+    const { deps, model } = schemaDeps();
+    const out = await createOps(deps)['instance.set']({ instance: 'b-1', values: { title: 'Neu', mode: 'month' } });
+    assertEqual(out.error, 'call_failed');
+    assertTrue(out.message.includes('unknown field "mode"; available: title, columns'), out.message);
+    assertEqual(model.title, 'T');
+  });
+
+  test('instance.set auf einem Modul ohne Schema → call_failed setNotSupported', async () => {
+    const deps = makeDeps({ completed: false });
+    // Vor createOps setzen: createOps liest deps.registry beim Erzeugen.
+    deps.registry = { 'five-why': { tagged: true, available: true, violations: [], actions: { read: { params: [] } }, fields: {} } };
+    const out = await createOps(deps)['instance.set']({ instance: 'fw-1', values: { problem: 'x' } });
+    assertEqual(out.error, 'call_failed');
+    assertTrue(out.message.startsWith('agent.errors.setNotSupported'), out.message);
+  });
+
+  test('instance.set mit unbekannter Instanz → unknown_instance', async () => {
+    const { deps } = schemaDeps();
+    const out = await createOps(deps)['instance.set']({ instance: 'nope', values: {} });
+    assertEqual(out.error, 'unknown_instance');
+  });
 });

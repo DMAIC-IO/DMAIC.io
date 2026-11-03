@@ -78,7 +78,7 @@ suite('agent validate — Stufe 2: op existiert', () => {
     assertEqual(r.ok, false);
     assertEqual(r.cause.error, 'unknown_op');
     assertTrue(r.cause.available.includes('instance.call'));
-    assertEqual(r.cause.available.length, 7);
+    assertEqual(r.cause.available.length, 8);
   });
 
   test('nothing in the batch validates once one op is unknown — the LAST entry counts too', () => {
@@ -445,6 +445,11 @@ suite('agent validate — Stufe 6: abgeschlossenes Projekt', () => {
   test('every op in the contract is classified as write, conditional-write, or read', () => {
     const classified = new Set([...WRITE_OPS, ...CONDITIONAL_WRITE_OPS, ...READ_OPS]);
     assertDeepEqual([...classified].sort(), Object.keys(OPS).sort());
+  });
+
+  test('instance.set schreibt immer', () => {
+    assertEqual(isWritingAction({ op: 'instance.set', instance: 'i1', values: {} }), true);
+    assertTrue(WRITE_OPS.has('instance.set'));
   });
 
   test('isWritingAction kennt die vier Fälle', () => {
