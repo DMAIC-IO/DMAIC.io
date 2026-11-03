@@ -127,6 +127,7 @@ const SKIP = new Set([
   'core/storage/local-adapter-idb.test.js',
   'core/template-module-imagepaths.test.js',
   'core/template-module-route.test.js',
+  'core/template-module-schema.test.js',
   'core/template-module.test.js',
   'core/worksheet-pool.test.js',
   'core/workspace-detached.test.js',

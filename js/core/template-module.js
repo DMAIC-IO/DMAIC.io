@@ -2,7 +2,9 @@ import Alpine from '@alpinejs/csp';
 import { cloneTemplate, templateKey } from './dom.js';
 import { getModuleHelp, hasModuleHelp } from './help-registry.js';
 import { getModuleReferences, hasModuleReferences } from './references-registry.js';
-import { initialModel } from './initial-model.js';
+import { initialModel, loadModel } from './initial-model.js';
+import { schemaOf, setCommandObserver, replaceFields, runCommand } from './model.js';
+import { schemaAgentEntry, readSchemaModel } from './agent/agent-schema.js';
 
 /**
  * Pure gate: returns true iff the given route store state belongs to the
@@ -17,9 +19,43 @@ export function shouldApplyRoute(store, instanceId) {
   return Boolean(store && store.instanceId === instanceId);
 }
 
+/**
+ * Eigenschaften samt Gettern/Settern übertragen. Spread und
+ * `Object.assign` werten Getter einmal aus und kopieren den Wert — ein
+ * berechneter Anzeigewert im Viewmodel wäre danach eingefroren.
+ * @param {object} target @param {object} source @returns {object} target
+ */
+function copyMembers(target, source) {
+  return Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
+}
+
+/**
+ * Die Mitglieder, die ein Schema-Modul zusätzlich bekommt: `moduleId` (für
+ * `x-field`), `read()` und je Viewmodel-Kommando eine geprüfte Methode.
+ * @param {string} moduleId @param {object} entry @param {Record<string, object>} vmCommands
+ * @returns {object}
+ */
+function schemaMembers(moduleId, entry, vmCommands) {
+  const members = {
+    moduleId,
+    /** @noagent Lesefläche aus dem Schema (agent-schema.js) */
+    read(options) { return readSchemaModel(entry, this.model, options); },
+  };
+  for (const [name, def] of Object.entries(vmCommands)) {
+    members[name] = function viewmodelCommand(cmd) { return runCommand(name, def, this, this.model, cmd); };
+  }
+  return members;
+}
+
 // base.createDefault(context) — optional factory for the model of an empty instance.
 export function createModule(base) {
   const { config, Model, data, afterMount, beforeLoadExample, createDefault } = base;
+  const schema = schemaOf(Model);
+  const vmCommands = base.commands ?? {};
+  if (!schema && Object.keys(vmCommands).length > 0) {
+    throw new Error(`createModule ${config.id}: commands need a defineModel Model`);
+  }
+  const agentEntry = schema ? schemaAgentEntry(Model, vmCommands) : undefined;
   const i18nKey = `modules.${  config.id}`;
   // Derive the template URL from document.baseURI so the key is stable whether
   // the app runs unbundled or from app.min.js (where import.meta.url → bundle path).
@@ -62,6 +98,7 @@ export function createModule(base) {
     i18nKey,
     imagePaths(json) { return Model.imagePaths?.(json) ?? []; },
     ...config,
+    agentEntry,
     help: hasModuleHelp(config.id) ? () => getModuleHelp(config.id) : undefined,
     references: hasModuleReferences(config.id) ? () => getModuleReferences(config.id) : undefined,
 
@@ -99,7 +136,7 @@ export function createModule(base) {
       if (config.engine === 'alpine') {
         dataCtxTarget.t = _t;
         dataCtxTarget.model = state;
-        Object.assign(dataCtxTarget, dataResult);
+        copyMembers(dataCtxTarget, dataResult);
 
         // The data-fn may define its own init()/destroy() lifecycle hooks (e.g. async
         // data loading). The object literal below redefines init/destroy after the
@@ -112,12 +149,21 @@ export function createModule(base) {
           const freshState = initialModel(Model,
             context.stateManager.getModuleState(context.instanceId), createDefault, context);
 
-          return {
+          if (schema) {
+            // Das Model kennt den Bus nicht; der Beobachter übersetzt (Spec §6).
+            setCommandObserver(freshState, (command, args, result) => context.eventBus?.emit?.(
+              'command:executed', { instanceId: context.instanceId, command, args, result }));
+          }
+
+          const comp = {
             model: freshState,
             t: _t,
             /** Navigate the active module to a sub-path. Modules may override this. */
             changeRoute(sub) { this.$route?.go(sub); },
-            ...dataResult,
+          };
+          if (schema) copyMembers(comp, schemaMembers(config.id, agentEntry, vmCommands));
+          copyMembers(comp, dataResult);
+          return copyMembers(comp, {
             init() {
               freshState.init?.();
               dataInit?.call(this);
@@ -157,7 +203,7 @@ export function createModule(base) {
               dataDestroy?.call(this);
               freshState.destroy?.();
             }
-          };
+          });
         });
 
         container.replaceChildren(...cloneForInstance(uniqueName));
@@ -231,7 +277,7 @@ export function createModule(base) {
 
     setState(state) {
       if (config.engine === 'alpine') {
-        const model = Model.fromJSON(state);
+        const model = loadModel(Model, state);
         this._persist(model);
         // Guard: a detached/aborted instance (init threw or never ran to
         // completion) has no mounted container. Still persist the state —
@@ -266,9 +312,13 @@ export function createModule(base) {
       if (config.engine !== 'alpine') return;
       const root = this._container?.querySelector('[x-data]');
       if (!root) return;
-      const fresh = Model.fromJSON(state);
+      const fresh = loadModel(Model, state);
       this._applyingRemote = true;
-      Object.assign(Alpine.$data(root).model, fresh);
+      const live = Alpine.$data(root).model;
+      // Accessoren am Prototyp: Object.assign träfe nur `_v` und ersetzte das
+      // reaktive Werteobjekt am Proxy vorbei.
+      if (schema) replaceFields(live, fresh);
+      else Object.assign(live, fresh);
       // Reset after Alpine flushes the reactive effects this mutation queued —
       // the persist-$watch runs in that flush and must see the guard still set.
       // queueMicrotask can resolve before the scheduler flush, leaking a persist.
@@ -287,7 +337,7 @@ export function createModule(base) {
       // Read the LIVE state (engine-aware) — for the Alpine engine the reactive model
       // lives inside the Alpine component, not in _tmpl._state.
       const current = this.getState();
-      const model = current ? Model.fromJSON(current) : null;
+      const model = current ? loadModel(Model, current) : null;
       if (typeof model?.hasContent === 'function' && model.hasContent() && this._context?.dialog) {
         const ok = await this._context.dialog.confirm({
           message: this._context.i18n.t('moduleHelp.confirmOverwrite'),
