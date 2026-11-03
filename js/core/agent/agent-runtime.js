@@ -28,6 +28,7 @@ import { resolveRefs } from './agent-refs.js';
 import { buildWorld, buildCatalog, buildInstanceList } from './agent-catalog.js';
 import { flattenBriefing } from './agent-briefing.js';
 import { createOps } from './agent-ops.js';
+import { createEntryResolver, referencedModules } from './agent-entries.js';
 import { createRevisionTracker } from './agent-revisions.js';
 
 /**
@@ -51,20 +52,24 @@ function opShapes() {
  * @param {{ ensure: () => Promise<object> }} deps.consent
  * @param {object} deps.host  siehe ui/agent-host.js
  * @param {string} deps.appVersion
+ * @param {object} [deps.entries]  Auflöser aus agent-entries.js (Naht für Tests)
  * @param {object} [deps.revisions]  Merker aus agent-revisions.js; ohne Angabe
  *   ein frischer (Naht für Unit-Tests)
  * @returns {{ interact: (input?: object|object[]) => Promise<object> }}
  */
 export function createAgentRuntime(deps) {
   const { stateManager, moduleRegistry, i18n, registry, consent, host, appVersion } = deps;
-  const ops = createOps(deps);
+  // Schema-Module stehen im Registry nur als Platzhalter; der Auflöser lädt
+  // ihren Eintrag bei Bedarf aus dem Modulcode (agent-entries.js).
+  const entries = deps.entries ?? createEntryResolver(registry, (id) => moduleRegistry.loadModule?.(id));
+  const ops = createOps({ ...deps, entries });
 
   // Ansichtsfelder zählen nicht zur Revision: ein Klick des Nutzers macht
   // nichts veraltet. Der Kern kennt nur Pfade, die Zuordnung Instanz → Modul
   // → `viewFields` steht hier.
   const ignorePathsOf = (instanceId) => {
     const instance = buildInstanceList({ stateManager, i18n }).find(i => i.id === instanceId);
-    return registry[instance?.module]?.viewFields ?? [];
+    return entries.view()[instance?.module]?.viewFields ?? [];
   };
 
   // Lesen vor Schreiben: was der Agent gesehen hat.
@@ -160,7 +165,7 @@ export function createAgentRuntime(deps) {
       // Die Daten des früheren `usage`; die Prosa dazu steht nur im Briefing.
       ops: opShapes(),
       errors: Object.values(ERRORS),
-      catalog: buildCatalog({ moduleRegistry, i18n, registry }),
+      catalog: buildCatalog({ moduleRegistry, i18n, registry: entries.view() }),
       instances: buildInstanceList({ stateManager, i18n }),
       view: host.getCurrentView(),
     };
@@ -180,7 +185,10 @@ export function createAgentRuntime(deps) {
 
     // Eine Momentaufnahme für den ganzen Prüflauf: der Prüfer darf nicht
     // gegen einen Zustand prüfen, der sich zwischen den Stufen verschiebt.
-    const world = buildWorld({ stateManager, moduleRegistry, i18n, registry, completed: host.isCompleted() });
+    // Schema-Module, die der Stapel nennt, vorher auflösen: der Prüfer
+    // (Stufe 5) kennt ihre Aktionen sonst nicht.
+    await entries.preload(referencedModules(input, buildInstanceList({ stateManager, i18n })));
+    const world = buildWorld({ stateManager, moduleRegistry, i18n, registry: entries.view(), completed: host.isCompleted() });
     const checked = validateBatch(input, world);
     if (!checked.ok) return { ...checked, contract: CONTRACT_VERSION };
 

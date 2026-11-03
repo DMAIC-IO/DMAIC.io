@@ -9,6 +9,8 @@
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import { createOps } from '../../../js/core/agent/agent-ops.js';
+import { defineModel, command, oneOf, index, list, record, text } from '../../../js/core/model.js';
+import { schemaAgentEntry } from '../../../js/core/agent/agent-schema.js';
 
 const DEFS = [
   { id: 'five-why', phase: 'define', cycles: { dmaic: { phase: 'define' } } },
@@ -170,5 +172,90 @@ suite('agent ops — Teil-Viewmodels', () => {
   test('only one level: draft.inner.go is not resolved', async () => {
     const out = await call({ model: {}, draft: new Draft() }, 'draft.inner.go');
     assertEqual(out.error, 'unknown_method');
+  });
+});
+
+suite('agent ops — Schema-Module', () => {
+  const COLS = ['a', 'b'];
+  const Board = defineModel({
+    fields: { title: text(), columns: record(COLS, list(text())) },
+    view: { mode: oneOf(['month', 'week']) },
+    commands: {
+      moveItem: command({
+        params: { from: oneOf(COLS), idx: index('columns[from]', { existing: true }), to: oneOf(COLS) },
+        run({ from, idx, to }) { const [x] = this.columns[from].splice(idx, 1); this.columns[to].push(x); return true; },
+      }),
+    },
+  });
+  const VM_COMMANDS = { label: command({ params: {}, run() { return `#${this.model.title}`; } }) };
+  const ENTRY = schemaAgentEntry(Board, VM_COMMANDS);
+  const STUB = { tagged: true, available: true, schema: true, violations: [], reported: [], actions: {}, fields: {} };
+
+  function schemaDeps() {
+    const model = Board.fromJSON({ title: 'T', columns: { a: ['x'], b: [] }, mode: 'week' });
+    const viewmodel = { model, label() { return `#${this.model.title}`; }, read() { return model.toJSON(); } };
+    const defs = [{ id: 'board', phase: 'define', cycles: { dmaic: { phase: 'define' } } }];
+    const phases = { define: [{ instanceId: 'b-1', moduleId: 'board', order: 0 }] };
+    const deps = {
+      stateManager: { get: (p) => (p === 'phases' ? phases : p.startsWith('phases.') ? phases[p.slice(7)] : undefined) },
+      moduleRegistry: { getAll: () => defs, get: (id) => defs.find(d => d.id === id), getActiveCycle: () => 'dmaic' },
+      i18n: I18N,
+      registry: { board: STUB },
+      loadModule: async () => ({ agentEntry: ENTRY }),
+      getHelp: async () => null,
+      appVersion: '1.2.3',
+      host: { isCompleted: () => false, getViewmodel: async () => viewmodel, getCurrentView: () => null },
+    };
+    return { deps, model };
+  }
+
+  test('Kommando mit einem Objekt läuft auf dem Model', async () => {
+    const { deps, model } = schemaDeps();
+    const out = await createOps(deps)['instance.call']({ instance: 'b-1', method: 'moveItem', args: [{ from: 'a', idx: 0, to: 'b' }] });
+    assertEqual(out.value, true);
+    assertDeepEqual(model.columns.b, ['x']);
+  });
+
+  test('ungültiges Kommando → call_failed mit Vertragsmeldung', async () => {
+    const { deps } = schemaDeps();
+    const out = await createOps(deps)['instance.call']({ instance: 'b-1', method: 'moveItem', args: [{ from: 'a', idx: 5, to: 'b' }] });
+    assertEqual(out.ok, false);
+    assertEqual(out.error, 'call_failed');
+    assertTrue(out.message.includes('invalid idx 5; allowed: 0..0'), out.message);
+  });
+
+  test('mehr als ein Argument → call_failed', async () => {
+    const { deps } = schemaDeps();
+    const out = await createOps(deps)['instance.call']({ instance: 'b-1', method: 'moveItem', args: [{}, {}] });
+    assertEqual(out.error, 'call_failed');
+  });
+
+  test('Viewmodel-Kommando läuft auf dem Viewmodel', async () => {
+    const { deps } = schemaDeps();
+    const out = await createOps(deps)['instance.call']({ instance: 'b-1', method: 'label', args: [] });
+    assertEqual(out.value, '#T');
+  });
+
+  test('read lässt Ansichtsfelder weg', async () => {
+    const { deps } = schemaDeps();
+    const out = await createOps(deps)['instance.call']({ instance: 'b-1', method: 'read' });
+    assertEqual(out.value.title, 'T');
+    assertEqual('mode' in out.value, false);
+  });
+
+  test('describe lädt das Modul und nennt die Kommandos', async () => {
+    const { deps } = schemaDeps();
+    const out = await createOps(deps)['module.describe']({ module: 'board' });
+    assertDeepEqual(out.actions.map(a => a.name), ['read', 'moveItem', 'label']);
+    assertDeepEqual(out.actions[1].keys.map(k => k.name), ['from', 'idx', 'to']);
+  });
+
+  test('catalog.read zeigt den Platzhalter als verfügbar, ohne zu laden', async () => {
+    const { deps } = schemaDeps();
+    let loads = 0;
+    deps.loadModule = async () => { loads += 1; return { agentEntry: ENTRY }; };
+    const out = await createOps(deps)['catalog.read']();
+    assertEqual(out.modules[0].available, true);
+    assertEqual(loads, 0);
   });
 });

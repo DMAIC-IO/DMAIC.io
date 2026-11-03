@@ -20,15 +20,18 @@ import { axiError } from './agent-errors.js';
 import { buildCatalog, buildInstanceList, describeModule } from './agent-catalog.js';
 import { canAddInstance, defaultPhaseFor, instanceWorld } from '../router/instance-ops.js';
 import { getAllPhaseIds } from '../cycles/cycles.js';
-import { requireArity } from './agent-argcheck.js';
+import { requireArity, requireForm } from './agent-argcheck.js';
+import { createEntryResolver } from './agent-entries.js';
 import { stripPaths } from '../view-fields.js';
 
 /**
  * @param {object} deps  { stateManager, moduleRegistry, i18n, registry, getHelp, host, appVersion }
+ *   plus optional `entries` (Auflöser, agent-entries.js) and `loadModule` (for the default resolver)
  * @returns {Record<string, (action: object) => Promise<any>>}
  */
 export function createOps(deps) {
   const { stateManager, moduleRegistry, i18n, registry, getHelp, host, appVersion } = deps;
+  const entries = deps.entries ?? createEntryResolver(registry, deps.loadModule);
   const t = (key, params) => i18n.t(key, params);
 
   return {
@@ -42,11 +45,13 @@ export function createOps(deps) {
 
     'catalog.read': async () => ({
       contract: CONTRACT_VERSION,
-      modules: buildCatalog({ moduleRegistry, i18n, registry }),
+      modules: buildCatalog({ moduleRegistry, i18n, registry: entries.view() }),
     }),
 
-    'module.describe': async (action) =>
-      describeModule({ moduleRegistry, i18n, registry, getHelp }, action.module, action.sections),
+    'module.describe': async (action) => {
+      await entries.resolve(action.module);
+      return describeModule({ moduleRegistry, i18n, registry: entries.view(), getHelp }, action.module, action.sections);
+    },
 
     'module.add': async (action) => {
       // Stufe 5 des Prüfers fängt ein unbekanntes Modul schon vorher ab —
@@ -145,7 +150,7 @@ export function createOps(deps) {
       }
       // Die Freigabe wird hier ERNEUT geprüft: der Prüfer kommt an sie nur
       // heran, wenn die Modulidentität statisch bekannt war.
-      const entry = registry[found.module];
+      const entry = await entries.resolve(found.module);
       if (entry?.available !== true) {
         return axiError(ERRORS.MODULE_NOT_AGENT_READY,
           t('agent.errors.moduleNotAgentReady', { module: found.module }));
@@ -188,7 +193,11 @@ export function createOps(deps) {
         return axiError(ERRORS.UNKNOWN_INSTANCE,
           t('agent.errors.viewmodelNotAlive', { instance: action.instance }), { available: [] });
       }
-      const target = callTarget(viewmodel, action.method);
+      // Schema-Kommandos (agent-schema.js) tragen `target`: das Model oder das
+      // Viewmodel. Die Fläche ruft das REAKTIVE Model des Viewmodels (Spec §9).
+      const target = spec.target === 'model'
+        ? { object: viewmodel.model, name: action.method }
+        : callTarget(viewmodel, action.method);
       if (typeof target.object?.[target.name] !== 'function') {
         // Die Methodenliste der LEBENDEN Komponente, nicht die der Registry:
         // weicht sie ab, ist die generierte Registry stale, und genau das
@@ -206,8 +215,16 @@ export function createOps(deps) {
         // Wert und meldete Erfolg. Der Parametersatz ist immer da
         // — ein Aufruf ohne Katalogeintrag ist oben schon abgewiesen, die
         // Prüfung läuft also nie mehr fail open.
-        requireArity(action.method, args, spec.params ?? []);
-        const value = await target.object[target.name](...args);
+        let value;
+        if (spec.target) {
+          // Ein Kommando nimmt genau EIN Objekt; die Prüfung seiner Schlüssel
+          // macht das Model selbst (requireKeys, gleiche Meldungsform).
+          requireForm('args', args, args.length <= 1, `one command object for ${action.method}`);
+          value = await target.object[target.name](args[0]);
+        } else {
+          requireArity(action.method, args, spec.params ?? []);
+          value = await target.object[target.name](...args);
+        }
         // Die eine Stelle, an der Ansichtsfelder aus jedem `read()` fallen — auch
         // aus einem handgeschriebenen, das nicht durch `projectReadState` läuft.
         const shown = action.method === 'read' ? stripPaths(value, entry.viewFields) : value;
