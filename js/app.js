@@ -23,6 +23,7 @@ import { startupTasks } from './startup/index.js';
 import { initRouteDirectives, initRouter, createAppActionVerbs } from './core/router/index.js';
 import { setCreatePageRouter } from './core/create-page.js';
 import { registerTablistDirective } from './core/tablist.js';
+import { registerFieldDirective } from './core/field-directive.js';
 
 async function init() {
   // ─── Core Services ───────────────────────────────────────
@@ -41,6 +42,7 @@ async function init() {
   // ─── Alpine.js Bootstrap ─────────────────────────────────
   const routeDirectives = initRouteDirectives(Alpine);
   registerTablistDirective(Alpine);
+  registerFieldDirective(Alpine, { i18n });
   Alpine.start();
 
   // ─── UI Components ───────────────────────────────────────
