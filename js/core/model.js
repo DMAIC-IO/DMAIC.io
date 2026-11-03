@@ -51,6 +51,19 @@ export const record = (keys, value, opts) => spec('record', { keys: Object.freez
 /** Objekt mit fester Form. @param {Record<string, object>} shape @param {object} [opts] @returns {Readonly<object>} */
 export const object = (shape, opts) => spec('object', { shape: Object.freeze({ ...shape }) }, opts);
 
+/**
+ * Ein Kommando: Parameter, Rückgabetyp und Implementierung an einer Stelle.
+ * `run` bekommt die geprüften Parameter als ein Objekt; `this` ist das
+ * reaktive Model (bzw. das Viewmodel bei Viewmodel-Kommandos) — darum keine
+ * Pfeilfunktion.
+ * @param {{ params?: Record<string, object>, returns?: object|null, run: Function }} def
+ * @returns {Readonly<{ params: Record<string, object>, returns: object|null, run: Function }>}
+ */
+export function command(def) {
+  if (typeof def?.run !== 'function') throw new Error('command: run must be a function');
+  return Object.freeze({ params: Object.freeze({ ...(def.params ?? {}) }), returns: def.returns ?? null, run: def.run });
+}
+
 // ─── Werte ──────────────────────────────────────────────────
 
 /** @param {any} v @returns {boolean} ein schlichtes Objekt (auch hinter Alpines Proxy) */
@@ -224,6 +237,91 @@ export function describeType(s) {
   return s.nullable ? `${t}|null` : t;
 }
 
+// ─── Kommandos ──────────────────────────────────────────────
+
+/**
+ * Die Parameter eines Kommandos prüfen, in Erklärungsreihenfolge — ein
+ * Pfad wie `columns[sourceCol]` sieht so den schon geprüften `sourceCol`.
+ * @param {string} name @param {Record<string, object>} params @param {any} cmd @param {object} root
+ * @returns {object} die geprüften Parameter
+ */
+function checkParams(name, params, cmd, root) {
+  const names = Object.keys(params);
+  const given = cmd === undefined ? {} : cmd;
+  requireForm(name, given, isPlainObject(given), names.length ? `an object with ${names.join(', ')}` : 'an empty object');
+  for (const k of Object.keys(given)) requireKnownId(`${name} param`, k, names);
+  requireKeys(name, given, names.map(n => ({ name: n, optional: params[n].optional === true })));
+  const args = {};
+  for (const n of names) {
+    if (!Object.hasOwn(given, n)) continue;
+    args[n] = checkValue(params[n], n, given[n], { root, params: args });
+  }
+  return args;
+}
+
+/**
+ * Ein Kommando prüfen, ausführen, melden. Der einzige Weg zu `run`.
+ * @param {string} name Kommandoname
+ * @param {{ params: object, run: Function }} def aus `command()`
+ * @param {object} self `this` für `run` (Model oder Viewmodel)
+ * @param {object} root das Model: Wurzel der Pfade, Träger des Beobachters
+ * @param {any} [cmd] die Parameter als ein Objekt
+ * @returns {any} das Ergebnis von `run`
+ */
+export function runCommand(name, def, self, root, cmd) {
+  const args = checkParams(name, def.params, cmd, root);
+  const result = def.run.call(self, args);
+  const observer = root?._obs;
+  if (typeof observer === 'function') observer(name, cloneJSON(args), result);
+  return result;
+}
+
+/**
+ * Den Beobachter eines Models setzen (`createModule` macht daraus
+ * `command:executed` auf dem Event-Bus — das Model kennt den Bus nicht).
+ * Nicht aufzählbar: weder in `Object.keys`, noch in `Object.assign`, noch in `toJSON`.
+ * @param {object} model @param {(command: string, args: object, result: any) => void} fn
+ * @returns {void}
+ */
+export function setCommandObserver(model, fn) {
+  Object.defineProperty(model, '_obs', { value: fn, writable: true, configurable: true, enumerable: false });
+}
+
+/**
+ * Mehrere Inhaltsfelder setzen: alles prüfen, dann alles schreiben
+ * (`instance.set`). Ansichtsfelder sind nicht setzbar.
+ * @param {object} model @param {any} values
+ * @throws {Error} beim ersten ungültigen Namen oder Wert; dann ist nichts geschrieben
+ * @returns {object} die normalisierten Werte
+ */
+export function setFields(model, values) {
+  const { fields } = schemaOf(model);
+  const names = Object.keys(fields);
+  requireForm('values', values, isPlainObject(values), `an object with any of ${names.join(', ')}`);
+  for (const k of Object.keys(values)) requireKnownId('field', k, names);
+  const staged = {};
+  for (const k of names) staged[k] = model[k];
+  const out = {};
+  for (const k of names) {
+    if (!Object.hasOwn(values, k)) continue;
+    out[k] = checkValue(fields[k], k, values[k], { root: staged });
+    staged[k] = out[k];
+  }
+  for (const k of Object.keys(out)) model[k] = out[k];
+  return cloneJSON(out);
+}
+
+/**
+ * Alle Felder und Ansichtsfelder aus einem anderen Model übernehmen, ohne
+ * den Beobachter zu berühren (`applyRemoteState`). `source` ist bereits geprüft.
+ * @param {object} model @param {object} source
+ * @returns {void}
+ */
+export function replaceFields(model, source) {
+  const { fields, view } = schemaOf(model);
+  for (const k of [...Object.keys(fields), ...Object.keys(view)]) model._v[k] = cloneJSON(source._v[k]);
+}
+
 // ─── defineModel ────────────────────────────────────────────
 
 const RESERVED = new Set(['constructor', 'toJSON', 'fromJSON', 'hasContent', 'execute', '_v', '_obs']);
@@ -313,6 +411,17 @@ export function defineModel(schema) {
     hasContent() {
       return Object.entries(fields).some(([k, s]) => JSON.stringify(this._v[k]) !== JSON.stringify(defaultOf(s)));
     }
+
+    /**
+     * Ein Kommando als Objekt ausführen: `{ type, …params }`.
+     * @param {any} cmd @returns {any}
+     */
+    execute(cmd) {
+      requireForm('command', cmd, isPlainObject(cmd), 'an object with type and the command parameters');
+      const { type, ...params } = cmd;
+      requireKnownId('command', type, Object.keys(commands));
+      return this[type](params);
+    }
   }
 
   Model.schema = Object.freeze({ fields, view, commands });
@@ -321,6 +430,13 @@ export function defineModel(schema) {
       get() { return this._v[k]; },
       set(v) { this._v[k] = checkValue(s, k, v, { root: this }); },
       enumerable: true,
+      configurable: true,
+    });
+  }
+  for (const [name, def] of Object.entries(commands)) {
+    Object.defineProperty(Model.prototype, name, {
+      value(cmd) { return runCommand(name, def, this, this, cmd); },
+      writable: true,
       configurable: true,
     });
   }
