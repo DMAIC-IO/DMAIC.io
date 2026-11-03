@@ -118,6 +118,14 @@ export function collectAgentData(appDir, { baseline = loadWriteBaseline() } = {}
   for (const id of readdirSync(root).sort()) {
     const dir = join(root, id);
     if (!statSync(dir).isDirectory()) continue;
+    // Ein Modul mit deklarativem Model (core/model.js) erzeugt seine Fläche zur
+    // Laufzeit aus dem Schema (core/agent/agent-schema.js). Hier steht nur der
+    // Platzhalter, den core/agent/agent-entries.js beim ersten Bedarf ersetzt.
+    if (existsSync(join(dir, 'domain', 'model.js'))) {
+      modules[id] = { tagged: true, available: true, schema: true, violations: [], reported: [], actions: {}, fields: {} };
+      writtenFields[id] = [];
+      continue;
+    }
     const viewmodelFile = join(dir, `${id}.js`);
     if (!existsSync(viewmodelFile)) continue;
     // Die Model-DATEI wird hier nicht mehr gesucht: welche Klasse den Zustand

@@ -20,6 +20,7 @@ import { collectLabData, renderLabDataModule } from './lab-data.mjs';
 import { collectHelpIds, renderHelpRegistryModule } from './help-data.mjs';
 import { collectReferenceIds, renderReferencesRegistryModule } from './references-data.mjs';
 import { collectAgentData, renderAgentRegistryModule } from './agent-data.mjs';
+import { collectModelFiles, loadModelSchema, renderModelTypes } from './model-types.mjs';
 import { collectGlossaryData, renderGlossaryDataModule } from './glossary-data.mjs';
 import { collectLicenseData, renderLicenseDataModule, renderLicenseText } from '../license-report/license-report.mjs';
 import { collectPrecache, precacheVersion, bundleServiceWorker } from './service-worker.mjs';
@@ -309,6 +310,11 @@ export async function runBuild(appDir = APP_DIR, { check = false } = {}) {
   // 1b3. agent registry (JSDoc-derived action/field schema per module)
   const agentRegistry = renderAgentRegistryModule(collectAgentData(appDir));
   emit(join(appDir, 'js', 'core', 'agent', 'agent-registry.generated.js'), agentRegistry, check, changed);
+
+  // 1b4. Typen je Modul mit deklarativem Model (domain/model.js → domain/model.types.js)
+  for (const { file } of collectModelFiles(appDir)) {
+    emit(join(dirname(file), 'model.types.js'), renderModelTypes(await loadModelSchema(file)), check, changed);
+  }
 
   // 1c. glossary data (catalog + all terms inlined; no runtime fetch)
   const glossaryData = renderGlossaryDataModule(collectGlossaryData(appDir));

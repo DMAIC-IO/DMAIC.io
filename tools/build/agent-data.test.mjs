@@ -4686,3 +4686,14 @@ test('Element-Zeiger: eine Pfad-Hilfe, die nur einen Model-Wert umkopiert, deckt
   const { modules } = collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreachable_write:params.alpha', 'unreachable_write:params.beta']);
 });
+
+test('ein Modul mit domain/model.js bekommt den Schema-Platzhalter', () => {
+  const root = fixture({}, {
+    'js/modules/neu/domain/model.js': 'export const State = null;\n',
+    'js/modules/neu/viewmodel/viewmodel.js': '',
+  });
+  const { modules } = collectAgentData(root, { baseline: new Set() });
+  assert.deepEqual(modules.neu, {
+    tagged: true, available: true, schema: true, violations: [], reported: [], actions: {}, fields: {},
+  });
+});
