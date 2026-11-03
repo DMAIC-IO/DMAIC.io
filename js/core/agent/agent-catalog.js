@@ -269,16 +269,19 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
  *
  * @param {object} i18n
  * @param {string} moduleId
- * @param {{ keysOf?: string, keys?: Record<string, object> }} node
+ * @param {{ keysOf?: string, keysHelp?: string, keys?: Record<string, object> }} node
  * @returns {{ keys: object[] }}
  */
 function describeKeys(i18n, moduleId, node) {
   if (!node.keys || !node.keysOf) return { keys: [] };
+  // `keysHelp` (Schema-Kommandos, agent-schema.js) nennt den Hilfepfad der
+  // Schlüssel ausdrücklich — `actions.<name>.params` statt `types.<Typedef>`.
+  const prefix = node.keysHelp ?? `types.${node.keysOf}`;
   return {
     keys: Object.entries(node.keys).map(([key, k]) => ({
       name: key,
       type: k.type,
-      help: contextHelp(i18n, moduleId, `types.${node.keysOf}.${key}`, k.help),
+      help: contextHelp(i18n, moduleId, `${prefix}.${key}`, k.help),
       // Immer da, wie `keys`: die Vertragsform nennt es an jedem Schlüssel.
       optional: k.optional === true,
       ...describeKeys(i18n, moduleId, k),

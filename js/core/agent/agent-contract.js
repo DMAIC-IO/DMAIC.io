@@ -182,10 +182,17 @@ export const OPS = deepFreeze({
  * @property {string[]} reported      alle Befunde, auch die ohne Modul-Tag
  * @property {Record<string, { params: Array<{name:string,type:string,optional:boolean,help:string}>,
  *                             returns: string, help: string,
- *                             keysOf?: string, keys?: Record<string, AgentTypedefKey> }>} actions
+ *                             keysOf?: string, keys?: Record<string, AgentTypedefKey>,
+ *                             target?: 'model'|'viewmodel', keysHelp?: string }>} actions
  *   `keysOf`/`keys` stehen NUR an einem generischen Setter, dessen
  *   Schlüsselparameter `keyof <Typedef>` trägt: je Schlüssel der Wertetyp und
  *   die JSDoc-Prosa (`tools/build/agent-data.mjs:readKeySurface`).
+ *   `target` und `keysHelp` nur an Schema-Kommandos: wohin `instance.call`
+ *   ruft, und unter welchem Pfad die Schlüsselhilfe steht. Nicht in `describe()`.
+ * @property {true} [schema]  aus dem deklarativen Model erzeugt (`agent-schema.js`);
+ *   im generierten Registry steht dafür nur ein Platzhalter, den
+ *   `agent-entries.js` beim ersten Bedarf durch den echten Eintrag ersetzt
+ * @property {string[]} [settable]  über `instance.set` setzbare Felder (nur Schema-Module)
  * @property {string[]} [viewFields]  gespeicherte Ansichtspfade (`static VIEW_FIELDS` am Model):
  *   zählen nicht zur Revision, erscheinen nicht in `read()`. Fehlt, wenn das Modul keine führt.
  * @property {Record<string, { type: string, help: string, bulk: boolean,
