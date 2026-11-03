@@ -262,6 +262,22 @@ test('Abschnittsmarken auf Specs ohne Pfad', () => {
   ]);
 });
 
+test('Spec-Verweis per Dateiname', () => {
+  const found = scanRefs({
+    'js/d.js': [
+      ' * (Spec `2026-11-03-module-einzeln-nachladbar-design.md` §6)',
+      ' * Spec 2026-11-03-some-name-design.md genannt',
+      ' * siehe spec `2026-11-03-some-name-design`',
+      'const spec = loadSpec("x");',
+    ].join('\n'),
+  });
+  assert.deepEqual(refs(found), [
+    'js/d.js:1 Spec-Marke',
+    'js/d.js:2 Spec-Marke',
+    'js/d.js:3 Spec-Marke',
+  ]);
+});
+
 test('Entscheidungsmarken (E3) und Erwähnungen des privaten Repos', () => {
   const found = scanRefs({
     'js/d.js': [

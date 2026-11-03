@@ -141,7 +141,6 @@ export class ModuleRegistry {
   }
 
   /**
-  /**
    * Den Code eines Moduls laden (einmal) und seinen Default-Export liefern —
    * das `createModule`-Objekt. Hängt nichts ein; Agentenfläche und
    * Dashboard laden so, ohne eine Instanz zu bauen.

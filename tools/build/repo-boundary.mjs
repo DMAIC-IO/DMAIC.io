@@ -426,7 +426,7 @@ const PRIVATE_PATTERNS = [
   // `(spec:`, `siehe Modul-Spec`, `Spec-Review`. Code mit einer Variablen
   // `spec` (`fn(spec)`, `if (spec)`, `(spec) =>`) bleibt außen vor.
   ['Spec-Marke', new RegExp([
-    /\b[Ss]pec\b(?:[\s-]*(?:§|E\d|\d{4}-\d{2}-\d{2})|\s+(?:(?:[Dd]ecision|[Aa]ddendum|[Ss]ection|[Aa]bschnitt)\b|["„“]))/.source,
+    /\b[Ss]pec\b(?:[\s`-]*(?:§|E\d|\d{4}-\d{2}-\d{2})|\s+(?:(?:[Dd]ecision|[Aa]ddendum|[Ss]ection|[Aa]bschnitt)\b|["„“]))/.source,
     /(?<![\w$.(]|(?:if|while|switch|for|return) )\([Ss]pec\)(?!\s*=>)(?=[:.,]?\s|[:.,]?$)/.source,
     /\([Ss]pec:\s/.source,
     /\([Ss]pec\s*$/.source,

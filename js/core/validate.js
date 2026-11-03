@@ -13,7 +13,7 @@
  * finden, und die Paritätstests sichern sie mit `toContain` zu. Darum steht
  * sie hier wörtlich so, wie sie vorher an fünf Aufrufstellen stand.
  *
- * Seit Teilprojekt B (Spec `2026-11-03-module-einzeln-nachladbar-design.md` §6) die Prüfschicht für Agentenfläche **und** deklaratives Model (`core/model.js`). `core/agent/agent-argcheck.js` leitet nur noch hierher weiter und fällt mit Teilprojekt G.
+ * Seit Teilprojekt B die Prüfschicht für Agentenfläche **und** deklaratives Model (`core/model.js`). `core/agent/agent-argcheck.js` leitet nur noch hierher weiter und fällt mit Teilprojekt G.
  *
  * Zehn Prüfer, drei Listenwörter — das ist der vollständige Vertrag:
  *
