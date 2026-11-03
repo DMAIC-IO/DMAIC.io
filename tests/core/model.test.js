@@ -126,6 +126,41 @@ suite('defineModel — toJSON / fromJSON', () => {
   });
 });
 
+suite('defineModel — fromJSON unabhängig von der Feldreihenfolge', () => {
+  const Early = defineModel({
+    fields: {
+      sel: index('items', { existing: true, nullable: true, default: null }),
+      items: list(object({ id: text() })),
+      focus: idOf('items', { nullable: true, default: null }),
+    },
+    view: { cursor: index('items', { existing: true, nullable: true, default: null }) },
+  });
+  const make = () => {
+    const m = new Early();
+    m.items = [{ id: 'a' }, { id: 'b' }];
+    m.sel = 1; m.focus = 'b'; m.cursor = 0;
+    return m.toJSON();
+  };
+
+  test('streng: abhängiges Feld vor seinem Ziel überlebt den Rundlauf', () => {
+    const json = make();
+    assertDeepEqual(Early.fromJSON(json).toJSON(), json);
+  });
+
+  test('repair: abhängige Felder bleiben erhalten', () => {
+    const json = make();
+    assertDeepEqual(Early.fromJSON(json, { repair: true }).toJSON(), json);
+  });
+
+  test('echt ungültiger Verweis wirft streng, fällt bei repair/Ansicht zurück', () => {
+    const json = { ...make(), sel: 7, cursor: 9 };
+    assertThrows(() => Early.fromJSON(json), /^invalid sel 7/);
+    const m = Early.fromJSON(json, { repair: true });
+    assertEqual(m.sel, null);
+    assertEqual(m.cursor, null);
+  });
+});
+
 suite('defineModel — hasContent, Schema, Typtexte', () => {
   test('hasContent: nur Inhaltsfelder zählen', () => {
     const m = new Board();
@@ -154,7 +189,7 @@ suite('defineModel — hasContent, Schema, Typtexte', () => {
   });
 
   test('Feld und Ansichtsfeld mit gleichem Namen ist ein Fehler', () => {
-    assertThrows(() => defineModel({ fields: { a: text() }, view: { a: text() } }), /a/);
+    assertThrows(() => defineModel({ fields: { a: text() }, view: { a: text() } }), /^defineModel: a is both a field and a view field$/);
   });
 
   test('describeType', () => {

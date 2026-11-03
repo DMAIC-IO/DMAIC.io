@@ -186,6 +186,20 @@ export function checkValue(s, name, value, ctx = {}) {
   }
 }
 
+/**
+ * Liest die Spec (irgendwo im Baum) einen Pfad, also `index` oder `idOf`?
+ * @param {object} s @returns {boolean}
+ */
+function usesPath(s) {
+  switch (s.kind) {
+    case 'index': case 'idOf': return true;
+    case 'list': return usesPath(s.item);
+    case 'record': return usesPath(s.value);
+    case 'object': return Object.values(s.shape).some(usesPath);
+    default: return false;
+  }
+}
+
 /** @param {string|number} v @returns {string} */
 const literal = (v) => (typeof v === 'string' ? `'${v}'` : String(v));
 
@@ -269,18 +283,21 @@ export function defineModel(schema) {
     static fromJSON(json, { repair = false } = {}) {
       const m = new this();
       if (!isPlainObject(json)) return m;
-      for (const [k, s] of Object.entries(fields)) {
-        if (!Object.hasOwn(json, k)) continue;
+      // Zwei Durchgänge: pfadabhängige Specs (index/idOf) werden erst geprüft,
+      // wenn alle pfadfreien Felder und Ansichtsfelder geladen sind — die
+      // Deklarationsreihenfolge im Schema spielt so keine Rolle.
+      const load = (k, s, isView) => {
+        if (!Object.hasOwn(json, k)) return;
         try {
           m._v[k] = checkValue(s, k, json[k], { root: m });
         } catch (err) {
-          if (!repair) throw err;
+          // D11: ein ungültiger gespeicherter Ansichtswert fällt still auf den Vorgabewert.
+          if (!repair && !isView) throw err;
         }
-      }
-      for (const [k, s] of Object.entries(view)) {
-        if (!Object.hasOwn(json, k)) continue;
-        // D11: ein ungültiger gespeicherter Ansichtswert fällt still auf den Vorgabewert.
-        try { m._v[k] = checkValue(s, k, json[k], { root: m }); } catch { /* Vorgabewert bleibt */ }
+      };
+      for (const dependent of [false, true]) {
+        for (const [k, s] of Object.entries(fields)) if (usesPath(s) === dependent) load(k, s, false);
+        for (const [k, s] of Object.entries(view)) if (usesPath(s) === dependent) load(k, s, true);
       }
       return m;
     }
