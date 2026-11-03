@@ -155,4 +155,20 @@ suite('ModuleRegistry', () => {
     assertEqual(reg.getByPhase('improve').length, 0);
     assertEqual(reg.getByPhase('design').length, 1);
   });
+  test('loadModule lädt den Default-Export einmal', async () => {
+    const reg = new ModuleRegistry();
+    let loads = 0;
+    const exported = { id: 'lm' };
+    reg.register({ id: 'lm', phase: 'define', load: async () => { loads += 1; return { default: exported }; } });
+    assertEqual(await reg.loadModule('lm'), exported);
+    assertEqual(await reg.loadModule('lm'), exported);
+    assertEqual(loads, 1);
+  });
+
+  test('loadModule mit unbekannter Id wirft', async () => {
+    const reg = new ModuleRegistry();
+    let msg = '';
+    try { await reg.loadModule('nope'); } catch (e) { msg = e.message; }
+    assertEqual(msg, '[ModuleRegistry] Unknown module: "nope"');
+  });
 });

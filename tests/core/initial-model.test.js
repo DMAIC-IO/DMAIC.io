@@ -1,5 +1,6 @@
 import { suite, test, assertEqual } from '../test-utils.js';
-import { initialModel } from '../../js/core/initial-model.js';
+import { initialModel, loadModel } from '../../js/core/initial-model.js';
+import { defineModel, text } from '../../js/core/model.js';
 import { State, fmeaCreateDefault } from '../../js/modules/fmea/fmea-model.js';
 
 class Plain {
@@ -44,5 +45,34 @@ suite('FMEA createDefault from settings', () => {
       assertEqual(s.method, 'ap', JSON.stringify(v));
       assertEqual(s.fmeaType, 'process', JSON.stringify(v));
     }
+  });
+});
+
+suite('loadModel', () => {
+  const M = defineModel({ fields: { title: text(), note: text() } });
+
+  test('Schema-Model: gültiger Zustand streng geladen', () => {
+    assertEqual(loadModel(M, { title: 'T' }).title, 'T');
+  });
+
+  test('Schema-Model: ungültiges Feld → Vorgabe, gültige Felder bleiben', () => {
+    const warn = console.warn; let warned = 0;
+    console.warn = () => { warned += 1; };
+    try {
+      const m = loadModel(M, { title: 5, note: 'n' });
+      assertEqual(m.title, '');
+      assertEqual(m.note, 'n');
+      assertEqual(warned, 1);
+    } finally { console.warn = warn; }
+  });
+
+  test('Klasse ohne Schema: Model.fromJSON wie bisher', () => {
+    class Legacy { static fromJSON(j) { const l = new Legacy(); l.v = j.v; return l; } }
+    assertEqual(loadModel(Legacy, { v: 3 }).v, 3);
+  });
+
+  test('initialModel nutzt loadModel für gespeicherten Zustand', () => {
+    const warn = console.warn; console.warn = () => {};
+    try { assertEqual(initialModel(M, { title: 9 }, undefined, {}).title, ''); } finally { console.warn = warn; }
   });
 });

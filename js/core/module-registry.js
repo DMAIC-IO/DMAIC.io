@@ -141,6 +141,27 @@ export class ModuleRegistry {
   }
 
   /**
+  /**
+   * Den Code eines Moduls laden (einmal) und seinen Default-Export liefern —
+   * das `createModule`-Objekt. Hängt nichts ein; Agentenfläche und
+   * Dashboard laden so, ohne eine Instanz zu bauen.
+   * @param {string} moduleId
+   * @returns {Promise<object>}
+   */
+  async loadModule(moduleId) {
+    const definition = this._registry.get(moduleId);
+    if (!definition) throw new Error(`[ModuleRegistry] Unknown module: "${moduleId}"`);
+    // Lazy-load the module JS (only once).
+    // Call definition.load() — a () => import(...) arrow defined in manifest.js,
+    // so the path resolves relative to manifest.js, not to this file.
+    if (!definition._loaded) {
+      const module = await definition.load();
+      definition._loaded = module.default;
+    }
+    return definition._loaded;
+  }
+
+  /**
    * Lazy-load a module, call init(), and return the instance.
    * @param {string} moduleId
    * @param {HTMLElement} container
@@ -148,24 +169,14 @@ export class ModuleRegistry {
    * @returns {Promise<object>} module instance
    */
   async instantiate(moduleId, container, context) {
-    const definition = this._registry.get(moduleId);
-    if (!definition) throw new Error(`[ModuleRegistry] Unknown module: "${moduleId}"`);
-
-    // Lazy-load the module JS (only once).
-    // Call definition.load() — a () => import(...) arrow defined in manifest.js,
-    // so the path resolves relative to manifest.js, not to this file.
-    if (!definition._loaded) {
-      try {
-        const module = await definition.load();
-        definition._loaded = module.default;
-      } catch (err) {
-        console.error(`[ModuleRegistry] Failed to load module "${moduleId}":`, err);
-        this._renderErrorCard(container, moduleId, err);
-        throw err;
-      }
+    let moduleExport;
+    try {
+      moduleExport = await this.loadModule(moduleId);
+    } catch (err) {
+      console.error(`[ModuleRegistry] Failed to load module "${moduleId}":`, err);
+      this._renderErrorCard(container, moduleId, err);
+      throw err;
     }
-
-    const moduleExport = definition._loaded;
 
     // Create a fresh instance object (spread to avoid shared state)
     const instance = { ...moduleExport };
