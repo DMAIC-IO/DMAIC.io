@@ -1,0 +1,347 @@
+/**
+ * D.Mike — Argumentprüfungen (validate.js)
+ *
+ * Die Fehlermeldungen, die jedes freigegebene Modul braucht, an EINER Stelle.
+ * Die Regel der Fläche ist „ungültiges Argument wirft, fachliche Absage
+ * liefert einen Wert" — geworfen wird hier also, und `agent-ops.js` macht
+ * daraus `call_failed` samt Meldung.
+ *
+ * Grund für die eigene Datei: die Pilotmodule hatten dieselbe Meldung drei
+ * Mal gebaut (`unknown … id "x"; available: …`) und das Aufzähl-Argument ein
+ * Mal generisch. Die GESTALT der Meldung ist dabei längst Vertrag — ein Agent
+ * liest das Listenwort und die Liste dahinter, um seinen Tippfehler selbst zu
+ * finden, und die Paritätstests sichern sie mit `toContain` zu. Darum steht
+ * sie hier wörtlich so, wie sie vorher an fünf Aufrufstellen stand.
+ *
+ * Seit Teilprojekt B (Spec `2026-11-03-module-einzeln-nachladbar-design.md` §6) die Prüfschicht für Agentenfläche **und** deklaratives Model (`core/model.js`). `core/agent/agent-argcheck.js` leitet nur noch hierher weiter und fällt mit Teilprojekt G.
+ *
+ * Zehn Prüfer, drei Listenwörter — das ist der vollständige Vertrag:
+ *
+ * | Prüfer | Listenwort | Beispielmeldung |
+ * |---|---|---|
+ * | `requireEnum`    | `allowed:`  | `invalid mode "x"; allowed: DEG, RAD` (mit `numeric` dieselbe Meldung) |
+ * | `requireBoolean` | `allowed:`  | `invalid on "ja"; allowed: true, false` |
+ * | `requireNumericText` | `allowed:` | `invalid value null; allowed: any string or finite number, "" clears it` |
+ * | `requireKnownId` | `available:`| `unknown stepId "x"; available: s-1, s-2` |
+ * | `requireIndex`   | `allowed:`  | `invalid idx 9; allowed: 0..3` |
+ * | `requireIndex` mit `existing` | `allowed:` | `invalid idx 3; allowed: 0..2`, leer `invalid index 0; allowed: none, the collection is empty` |
+ * | `requireArity`   | `expected:` | `missing argument "values" of setCells; expected: columnId, startRow, values` — ein optionaler Parameter steht darin in Klammerform (`[name]`) |
+ * | `requireText`    | `allowed:`  | `invalid text 7; allowed: any string, "" clears it` |
+ * | `requireKeys` | `expected:` | `missing argument "dropIdx" of moveItem; expected: sourceCol, sourceIdx, targetCol, dropIdx` — Objektform von `requireArity`, Nomen wählbar (`missing key "a" of columns; …`) |
+ * | `requireForm` | `allowed:` | `invalid items "x"; allowed: a list` |
+ * | `requireNumber`  | `allowed:`  | `invalid mu0 "zehn"; allowed: any finite number`, mit Bereich `invalid value 0.3; allowed: a number from 0.5 to 0.99`, offen `invalid value 0; allowed: a number greater than 0 and less than 1` |
+ *
+ * Ein neuer Prüfer nimmt eines dieser drei Listenwörter, oder er begründet
+ * sein viertes hier.
+ *
+ * Build-Gate `undeclared_option_source` (agent-data.mjs): hängt das dritte
+ * Argument von `requireEnum`/`requireKnownId` an `this` (`this.model.opts`,
+ * `Object.keys(this.model.keys())`, `this.columns()`), muss die Lesefläche
+ * dieselbe Menge unter diesem Namen nennen — sonst erfährt ein Agent sie nur
+ * aus dem Fehlschlag. Konstanten sind frei. Erkennung ist formgebunden;
+ * Spread im Array-Literal, `(x ?? [])` und Cache-Variablen sieht sie nicht.
+ *
+ * Die Kernschicht benutzt von diesen Funktionen genau eine — `requireArity`,
+ * aus `agent-ops.js` vor dem Methodenaufruf. Ein fehlendes Argument IST ein
+ * ungültiges Argument eines Methodenaufrufs und gehört damit in dieselbe
+ * Fehlerform wie die übrigen fünf (`call_failed` samt Meldung); die
+ * Ablehnungen der Kernschicht an ihren eigenen Stufen bleiben
+ * AXI-Fehlerobjekte (`agent-errors.js`).
+ */
+
+/** Dezimalschreibweise eines Zahlentexts; `Number()` nähme sonst auch '0x10' und '0b101'. */
+const DECIMAL_NUMBER = /^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/;
+
+/**
+ * Ein Aufzähl-Argument gegen seine ERKLÄRTE Wertemenge prüfen.
+ *
+ * Die Oberfläche kann einen Wert daneben nicht erzeugen (eine Liste von
+ * `<option>`, zwei Segmentknöpfe), ein Agent schon. Ungeprüft landete er im
+ * Model, und eine Engine liest einen unbekannten Wert als ihren letzten
+ * `else`-Zweig: der Aufruf meldete Erfolg, das Ergebnis wäre das einer
+ * anderen Rechnung, und der falsche Wert wanderte in das Projekt des Nutzers.
+ *
+ * @param {string} name Name des Arguments (erscheint in der Meldung)
+ * @param {any} value der übergebene Wert
+ * @param {readonly (string|number)[]} allowed die erklärte Wertemenge
+ * @param {{numeric?: boolean}} [opts] `numeric`: eine Zahl oder ein Zahlentext
+ *   wird dem zahlenwertgleichen Mitglied zugeordnet (`0.1` → `'0.10'`)
+ * @throws {Error} wenn `value` nicht in `allowed` steht
+ * @returns {string|number} das Mitglied von `allowed`, dem `value` entspricht
+ */
+export function requireEnum(name, value, allowed, { numeric = false } = {}) {
+  if (allowed.includes(value)) return value;
+  if (numeric) {
+    const n = typeof value === 'number' ? value
+      : (typeof value === 'string' && DECIMAL_NUMBER.test(value.trim()) ? Number(value) : NaN);
+    if (Number.isFinite(n)) {
+      const hit = allowed.find(a => (typeof a === 'number' || typeof a === 'string') && a !== '' && Number(a) === n);
+      if (hit !== undefined) return hit;
+    }
+  }
+  throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: ${allowed.join(', ')}`);
+}
+
+/**
+ * Eine id gegen die Liste der vorhandenen ids prüfen.
+ *
+ * Fast jede Mutation eines Models kehrt bei einer unbekannten id STILL
+ * zurück. Ohne diese Prüfung bekäme ein Agent, der sich vertippt, Erfolg
+ * gemeldet und baute den nächsten Schritt auf Daten, die es nicht gibt. Die
+ * Liste der vorhandenen ids gehört in die Meldung, damit er seinen Tippfehler
+ * sieht statt zu raten.
+ *
+ * @param {string} kind Art der id, wie sie in der Meldung steht — der Name
+ *   des Parameters (`'columnId'`, `'nodeId'`) oder seine Umschreibung
+ *   (`'sheet id'`)
+ * @param {any} id der übergebene Wert
+ * @param {readonly any[]} availableIds die vorhandenen ids, in Anzeigereihenfolge
+ * @throws {Error} wenn `id` nicht in `availableIds` steht
+ * @returns {void}
+ */
+export function requireKnownId(kind, id, availableIds) {
+  if (!availableIds.includes(id)) {
+    throw new Error(`unknown ${kind} ${JSON.stringify(id)}; available: ${availableIds.join(', ')}`);
+  }
+}
+
+/**
+ * Eine Einfügeposition gegen die aktuelle Länge der Sammlung prüfen.
+ *
+ * Ein Model, das eine Einfügeposition KLAMMERT (`Math.max(0, Math.min(idx,
+ * length))`), tut bei einem Wert außerhalb des gültigen Bereichs still etwas
+ * ANDERES als behauptet — negativ landet vorn, zu groß landet hinten, und
+ * der Aufruf meldet trotzdem Erfolg. Ein Agent, der sich bei der Lücke
+ * vertippt (`idx: 99` auf einer Kette mit drei Schritten), bekäme eine
+ * Zusage für eine Position, die es nicht gibt, statt eines Fehlers. Ebenso
+ * ein nicht-ganzzahliger Wert (`'x'`), den `Number.isInteger` ausschließt,
+ * bevor er lautlos als `NaN`/`0` interpretiert wird.
+ *
+ * @param {string} name Name des Arguments (erscheint in der Meldung)
+ * @param {any} value der übergebene Wert
+ * @param {number} length aktuelle Länge der Sammlung — `value === length`
+ *   heißt „ans Ende einfügen" und ist gültig
+ * @param {{existing?: boolean}} [opts] `existing`: nur vorhandene Elemente
+ *   (`0..length-1`), „ans Ende" ist dann ungültig; leere Sammlung wird benannt
+ * @throws {Error} wenn `value` keine ganze Zahl im erlaubten Bereich ist
+ * @returns {void}
+ */
+export function requireIndex(name, value, length, { existing = false } = {}) {
+  const max = existing ? length - 1 : length;
+  if (!Number.isInteger(value) || value < 0 || value > max) {
+    const range = max < 0 ? 'none, the collection is empty' : `0..${max}`;
+    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: ${range}`);
+  }
+}
+
+/**
+ * Einen Wahrheitswert prüfen: genau `true` oder `false`, nichts Ähnliches
+ * (`'true'`, `1`, `null` würden sonst als Schalterstellung durchgehen).
+ *
+ * @param {string} name Name des Arguments (erscheint in der Meldung)
+ * @param {any} value der übergebene Wert
+ * @throws {Error} wenn `value` kein Boolean ist
+ * @returns {boolean} der geprüfte Wert
+ */
+export function requireBoolean(name, value) {
+  if (value !== true && value !== false) {
+    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: true, false`);
+  }
+  return value;
+}
+
+/**
+ * Ein Eingabefeld für Zahlentext prüfen: Text bleibt unverändert (auch
+ * Zwischenstände wie `''`, `'-'`, `'1.'`), eine endliche Zahl wird Text.
+ *
+ * @param {string} name Name des Arguments (erscheint in der Meldung)
+ * @param {any} value der übergebene Wert
+ * @throws {Error} wenn `value` weder Text noch endliche Zahl ist
+ * @returns {string} der Text
+ */
+export function requireNumericText(name, value) {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: any string or finite number, "" clears it`);
+}
+
+/**
+ * Die Argumentzahl eines Methodenaufrufs gegen den Parametersatz prüfen.
+ *
+ * `agent-ops.js` ruft die Senke mit `...(action.args ?? [])` auf: ein
+ * WEGGELASSENES Argument kommt als `undefined` an. Eine Senke, die ihren
+ * dokumentierten Leerwert (`null`, `''`, `-1`) annimmt, löschte damit bei
+ * einem Aufruf mit zu wenigen Argumenten still einen Wert und meldete
+ * Erfolg — gemessen an `ce-matrix.setScore(0, 0)`, wo das dritte Argument
+ * fehlte und die Bewertung verschwand.
+ *
+ * Geprüft wird hier und nicht in der Senke: dieselben Senken ruft auch die
+ * Oberfläche, und dort ist ein weggelassenes Argument zulässig (der
+ * Leistenknopf ruft `addRows()`, Alpine CSP erlaubt im `@click` kein
+ * Argument). Eine Prüfung in der Senke bräche also die Bedienung. Der
+ * Parametersatz, gegen den geprüft wird, ist der der erzeugten Registry —
+ * dieselbe Quelle, aus der der Agent die Signatur liest.
+ *
+ * Ein ausdrücklich übergebenes `null` bleibt ein Argument: der
+ * dokumentierte Leerwert ist weiter erreichbar.
+ *
+ * @param {string} method Name der Methode (erscheint in der Meldung)
+ * @param {readonly any[]} args die übergebenen Argumente
+ * @param {ReadonlyArray<{ name: string, optional?: boolean }>} params der
+ *   Parametersatz der Aktion, in Reihenfolge
+ * @throws {Error} wenn ein Pflichtargument fehlt
+ * @returns {void}
+ */
+export function requireArity(method, args, params) {
+  const list = Array.isArray(params) ? params : [];
+  const expected = list.map(p => (p.optional ? `[${p.name}]` : p.name)).join(', ');
+  for (let i = 0; i < list.length; i++) {
+    if (list[i].optional) continue;
+    if (i < args.length) continue;
+    throw new Error(`missing argument ${JSON.stringify(list[i].name)} of ${method}; expected: ${expected}`);
+  }
+}
+
+/**
+ * Ein freies Textargument prüfen, dessen dokumentierter Leerwert die leere
+ * Zeichenkette ist.
+ *
+ * Das Eingabefeld der Oberfläche kann nur eine Zeichenkette liefern, ein
+ * Agent jeden Typ. Ohne diese Prüfung landete eine Zahl oder ein Objekt im
+ * Zustand und tauchte als `[object Object]` in der Anzeige auf. `''` bleibt
+ * ausdrücklich zulässig — er ist der dokumentierte Leerwert.
+ *
+ * Die Rückgabe erlaubt die Kurzform `this.model.feld = requireText(…)`;
+ * Aufrufer, die nur prüfen wollen, ignorieren sie.
+ *
+ * @param {string} name Name des Arguments (erscheint in der Meldung)
+ * @param {any} value der übergebene Wert
+ * @throws {Error} wenn `value` keine Zeichenkette ist
+ * @returns {string} der geprüfte Text
+ */
+export function requireText(name, value) {
+  if (typeof value !== 'string') {
+    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: any string, "" clears it`);
+  }
+  return value;
+}
+
+/**
+ * Ein Zahlenargument prüfen, das die Oberfläche über `x-model.number` bindet.
+ *
+ * Das Zahlenfeld der Oberfläche liefert dem Model eine Zahl; ein Agent kann
+ * jeden Typ schicken. Als Text im Model landete `'zehn'` dort, wo eine Zahl
+ * erwartet wird, und `toJSON()` machte daraus beim Lesen `null`. Angenommen
+ * werden darum endliche Zahlen und Zahlentexte (`'10'`, wie ein Feld sie
+ * liefert, auch `'1e3'`; nicht `'0x10'` oder `'0b101'`); alles andere — `NaN`, `Infinity`, leerer Text, `null` — wirft.
+ *
+ * Die Rückgabe ist die Zahl; Aufrufer schreiben `model.feld = requireNumber(…)`.
+ *
+ * @param {string} name Name des Arguments (erscheint in der Meldung)
+ * @param {any} value der übergebene Wert
+ * @param {{ min?: number, max?: number, exclusiveMin?: number, exclusiveMax?: number, integer?: boolean }} [bounds]
+ *   optionaler Bereich — `min`/`max` schließen die Grenze ein, `exclusiveMin`/`exclusiveMax`
+ *   schließen sie aus — und Ganzzahligkeit; die Meldung nennt ihn
+ * @throws {Error} wenn `value` keine endliche Zahl und kein Zahlentext ist oder
+ *   außerhalb von `bounds` liegt
+ * @returns {number} der geprüfte Wert als Zahl
+ */
+export function requireNumber(name, value, bounds = {}) {
+  const n = typeof value === 'number' ? value
+    : (typeof value === 'string' && DECIMAL_NUMBER.test(value.trim()) ? Number(value) : NaN);
+  if (!Number.isFinite(n)) {
+    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: any finite number`);
+  }
+  const { min, max, exclusiveMin, exclusiveMax, integer = false } = bounds;
+  const outside = (min !== undefined && n < min) || (max !== undefined && n > max)
+    || (exclusiveMin !== undefined && n <= exclusiveMin)
+    || (exclusiveMax !== undefined && n >= exclusiveMax)
+    || (integer && !Number.isInteger(n));
+  if (outside) {
+    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: ${describeBounds(bounds)}`);
+  }
+  return n;
+}
+
+/**
+ * Ein Konfidenzniveau in Prozent prüfen: echt größer 0 und echt kleiner 100
+ * (die Grenzen selbst sind ausgeschlossen, anders als bei `requireNumber`).
+ * @param {any} value der übergebene Wert, Zahl oder Zahlentext
+ * @returns {number} der geprüfte Wert als Zahl
+ * @throws {Error} wenn `value` keine Zahl ist oder nicht in (0, 100) liegt
+ */
+export function requireConfLevel(value) {
+  return requireNumber('value', value, { exclusiveMin: 0, exclusiveMax: 100 });
+}
+
+/**
+ * Den zulässigen Bereich als Satzteil nach `allowed:` formulieren.
+ *
+ * Nur geschlossene Grenzen behalten die bisherigen Sätze („from … to …",
+ * „of at least …", „of at most …"); eine offene Grenze macht daraus
+ * „greater than …" / „less than …", verbunden mit „and".
+ *
+ * @param {{ min?: number, max?: number, exclusiveMin?: number, exclusiveMax?: number, integer?: boolean }} bounds
+ * @returns {string}
+ */
+function describeBounds({ min, max, exclusiveMin, exclusiveMax, integer = false }) {
+  const kind = integer ? 'a whole number' : 'a number';
+  if (exclusiveMin === undefined && exclusiveMax === undefined) {
+    if (min !== undefined && max !== undefined) return `${kind} from ${min} to ${max}`;
+    if (min !== undefined) return `${kind} of at least ${min}`;
+    if (max !== undefined) return `${kind} of at most ${max}`;
+    return kind;
+  }
+  const lower = exclusiveMin !== undefined ? `greater than ${exclusiveMin}`
+    : (min !== undefined ? `at least ${min}` : '');
+  const upper = exclusiveMax !== undefined ? `less than ${exclusiveMax}`
+    : (max !== undefined ? `at most ${max}` : '');
+  return `${kind} ${[lower, upper].filter(Boolean).join(' and ')}`;
+}
+
+/**
+ * Die Pflichtschlüssel eines Objektarguments prüfen.
+ *
+ * Die Objektform von `requireArity`: ein Kommando des deklarativen Models
+ * (`core/model.js`) bekommt seine Parameter als EIN Objekt, und ein
+ * fehlender Schlüssel ist dort dasselbe wie ein weggelassenes Argument.
+ * Darum wörtlich derselbe Satz — ein Agent, der die Meldung von
+ * `requireArity` lesen kann, liest auch diese.
+ *
+ * @param {string} owner Name des Kommandos oder Feldes (erscheint in der Meldung)
+ * @param {object} obj das übergebene Objekt
+ * @param {ReadonlyArray<{ name: string, optional?: boolean }>} params die
+ *   erklärten Schlüssel, in Reihenfolge
+ * @param {string} [noun] das Wort für einen Schlüssel in der Meldung
+ * @throws {Error} wenn ein Pflichtschlüssel fehlt
+ * @returns {void}
+ */
+export function requireKeys(owner, obj, params, noun = 'argument') {
+  const expected = params.map(p => (p.optional ? `[${p.name}]` : p.name)).join(', ');
+  for (const p of params) {
+    if (p.optional || Object.hasOwn(obj, p.name)) continue;
+    throw new Error(`missing ${noun} ${JSON.stringify(p.name)} of ${owner}; expected: ${expected}`);
+  }
+}
+
+/**
+ * Die Form eines Werts prüfen (Liste, Objekt), deren Bedingung der Aufrufer
+ * schon ausgewertet hat.
+ *
+ * @param {string} name Name des Arguments (erscheint in der Meldung)
+ * @param {any} value der übergebene Wert
+ * @param {boolean} ok ob die Form passt
+ * @param {string} allowed der Satzteil nach `allowed:` (`'a list'`)
+ * @throws {Error} wenn `ok` falsch ist
+ * @returns {any} `value`
+ */
+export function requireForm(name, value, ok, allowed) {
+  if (!ok) throw new Error(`invalid ${name} ${showValue(value)}; allowed: ${allowed}`);
+  return value;
+}
+
+/** Ein Wert für die Meldung; `JSON.stringify` kennt `undefined` und Zyklen nicht. */
+function showValue(value) {
+  if (value === undefined) return 'undefined';
+  try { return JSON.stringify(value); } catch { return String(value); }
+}
