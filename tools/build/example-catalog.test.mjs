@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { readIndexEntries, readScenarios } from './example-catalog.mjs';
+import { readIndexEntries, readScenarios, readModuleExamples, readExampleOwners } from './example-catalog.mjs';
 import { APP_DIR } from './build.mjs';
 
 function appWith(files) {
@@ -46,4 +46,14 @@ test('echter Baum: 12 Szenarien in shared/, keine mehr in index.json, neun getei
   for (const keep of ['resampling-ruestzeit', 'msa-typ1-hubschrauber-flyer']) {
     assert.ok(existsSync(join(APP_DIR, 'examples', 'worksheets', `${keep}.json`)), `${keep} bleibt`);
   }
+});
+
+test('readModuleExamples und readExampleOwners: Index-Besitzer ist modules[0], Modulbeispiele gehören dem Modul', () => {
+  const root = appWith({
+    'examples/index.json': { version: '1.0', examples: [{ id: 'alt-1', type: 'project', modules: ['histogram', 'boxplot'] }] },
+    'js/modules/neu/resources/examples/examples.json': { $schema: 'x', examples: [{ id: 'neu-1', type: 'project', file: 'p.json' }] },
+  });
+  assert.deepEqual(readModuleExamples(root, 'neu').map((e) => e.id), ['neu-1']);
+  assert.deepEqual(readModuleExamples(root, 'ohne'), []);
+  assert.deepEqual([...readExampleOwners(root, ['neu'])], [['alt-1', 'histogram'], ['neu-1', 'neu']]);
 });

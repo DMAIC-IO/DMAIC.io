@@ -130,8 +130,19 @@ test('collectModuleResources: Templates, Style und Dateien mit ?v=', () => {
   assert.equal(res.neu.templates, 'js/chunks/templates/neu-11111111.html');
   assert.equal(res.neu.style, 'js/chunks/styles/neu-22222222.css');
   assert.deepEqual(Object.keys(res.neu.files).sort(),
-    ['data/references.json', 'examples/examples.json', 'i18n/help.de.json', 'i18n/ui.de.json']);
+    ['data/references.json', 'examples/examples.json', 'examples/pizza.csv', 'i18n/help.de.json', 'i18n/ui.de.json']);
   assert.match(res.neu.files['i18n/ui.de.json'], /^js\/modules\/neu\/resources\/i18n\/ui\.de\.json\?v=[0-9a-f]{8}$/);
+});
+
+test('collectModuleResources führt jede Datei unter resources/examples/, auch in Unterordnern', () => {
+  const root = appWith({
+    'js/modules/neu/resources/examples/examples.json': '{}',
+    'js/modules/neu/resources/examples/pizza.csv': 'a\n1\n',
+    'js/modules/neu/resources/examples/projects/p.json': '{}',
+  });
+  const res = collectModuleResources(root, ['neu'], { templates: { neu: 't.html' }, styles: {} });
+  assert.deepEqual(Object.keys(res.neu.files), ['examples/examples.json', 'examples/pizza.csv', 'examples/projects/p.json']);
+  assert.ok(moduleResourceUrls(res).some((u) => u.startsWith('js/modules/neu/resources/examples/projects/p.json?v=')), 'Precache');
 });
 
 test('collectModuleResources: ohne Style kein style-Schlüssel', () => {

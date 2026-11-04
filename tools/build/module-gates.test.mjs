@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkContextHelp, readViewmodelCommands, checkConvertedModule, checkReferenceFile, checkHelpFiles } from './module-gates.mjs';
+import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkContextHelp, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles } from './module-gates.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { APP_DIR } from './build.mjs';
 import { defineModel, command, text, number, oneOf, index, idOf, list, record, object, boolean } from '../../js/core/model.js';
@@ -553,4 +553,20 @@ test('checkConvertedModule ruft die Hilfe- und Referenz-Gates auf', async () => 
   const findings = await checkConvertedModule(root, 'neu');
   assert.ok(findings.some((f) => f.startsWith('references: resources/data/references.json: unbekanntes Buch: nope')), findings.join('\n'));
   assert.ok(findings.some((f) => f === 'help: resources/i18n/help.de.json: {{ref:melzer-2019}} fehlt in resources/data/references.json'), findings.join('\n'));
+});
+
+test('checkDescriptor: exampleRefs auf ein eigenes Beispiel wird gemeldet', () => {
+  const text = `/** @type {import('../../core/module-descriptor.js').ModuleDescriptor} */\nexport default { id: 'neu', version: '1.0.0', icon: 'module.neu', exampleRefs: ['eigen', 'fremd'], load: () => import('./viewmodel/viewmodel.js') };\n`;
+  const out = checkDescriptor('neu', text, {
+    moduleIds: ['neu'], exampleIds: ['eigen', 'fremd'], paths: ['viewmodel/viewmodel.js'],
+    exampleOwners: new Map([['eigen', 'neu'], ['fremd', 'histogram']]),
+  });
+  assert.deepEqual(out, ['descriptor: module.js: exampleRefs: eigen gehört diesem Modul selbst — exampleRefs nennt nur Beispiele anderer Module']);
+});
+
+test('readExampleIds: Index ohne Szenarien plus Beispiele umgestellter Module', () => {
+  const root = appWith({
+    'examples/index.json': JSON.stringify({ examples: [{ id: 'a', type: 'project', modules: ['x'] }, { id: 's', type: 'scenario' }] }),
+  });
+  assert.deepEqual(readExampleIds(root), ['a']);
 });

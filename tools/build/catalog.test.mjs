@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
-  renderCatalogModule, collectCatalogTexts, renderCatalogTexts, catalogConflicts, readLegacyIds,
+  renderCatalogModule, collectExampleCatalog, collectCatalogTexts, renderCatalogTexts, catalogConflicts, readLegacyIds,
   CATALOG_LANGS, CATALOG_TEXT_KEYS, CATALOG_SCHEMA_REF,
 } from './catalog.mjs';
 import { APP_DIR } from './build.mjs';
@@ -28,6 +28,8 @@ const UI = (name) => JSON.stringify({ name, description: `${name} kurz`, whenToU
 
 test('renderCatalogModule ohne umgestellte Module: nur manifest.js', () => {
   const src = renderCatalogModule([]);
+  assert.match(src, /export const EXAMPLES = Object\.freeze\(\{\}\);/);
+  assert.match(src, /export const EXAMPLE_REFS = Object\.freeze\(\{\}\);/);
   assert.match(src, /^\/\/ ERZEUGT von tools\/build\/catalog\.mjs/);
   assert.match(src, /import legacy from '\.\/manifest\.js';/);
   assert.match(src, /export const CONVERTED = Object\.freeze\(\[\]\);/);
@@ -86,9 +88,24 @@ test('Konstanten', () => {
 });
 
 test('eingecheckter Katalog ist aktuell', () => {
-  assert.equal(readFileSync(join(APP_DIR, 'js', 'modules', 'catalog.generated.js'), 'utf8'), renderCatalogModule(CONVERTED_MODULES));
+  assert.equal(readFileSync(join(APP_DIR, 'js', 'modules', 'catalog.generated.js'), 'utf8'), renderCatalogModule(CONVERTED_MODULES, collectExampleCatalog(APP_DIR, CONVERTED_MODULES)));
   for (const lang of CATALOG_LANGS) {
     assert.equal(readFileSync(join(APP_DIR, 'js', 'modules', `catalog.${lang}.json`), 'utf8'),
       renderCatalogTexts(collectCatalogTexts(APP_DIR, CONVERTED_MODULES, lang)));
   }
+});
+
+test('collectExampleCatalog: Besitzer aus examples.json, Nutzer aus exampleRefs, sortiert', () => {
+  const desc = (id, refs) => `/** @type {import('../../core/module-descriptor.js').ModuleDescriptor} */\nexport default { id: '${id}', version: '1.0.0', icon: 'module.x', exampleRefs: ${JSON.stringify(refs)}, load: () => import('./viewmodel/viewmodel.js') };\n`;
+  const root = appWith({
+    'js/modules/beta/module.js': desc('beta', ['b-2', 'alt-1']),
+    'js/modules/beta/resources/examples/examples.json': JSON.stringify({ examples: [{ id: 'b-2' }, { id: 'b-1' }] }),
+    'js/modules/alpha/module.js': desc('alpha', ['b-1']),
+  });
+  const cat = collectExampleCatalog(root, ['alpha', 'beta']);
+  assert.deepEqual(cat, { examples: { 'b-1': 'beta', 'b-2': 'beta' }, exampleRefs: { 'alt-1': ['beta'], 'b-1': ['alpha'], 'b-2': ['beta'] } });
+  assert.deepEqual(Object.keys(cat.examples), ['b-1', 'b-2']);
+  const src = renderCatalogModule(['alpha', 'beta'], cat);
+  assert.match(src, /export const EXAMPLES = Object\.freeze\(\{"b-1":"beta","b-2":"beta"\}\);/);
+  assert.match(src, /export const EXAMPLE_REFS = Object\.freeze\(\{"alt-1":\["beta"\],"b-1":\["alpha"\],"b-2":\["beta"\]\}\);/);
 });

@@ -165,7 +165,7 @@ export function collectModuleResources(appDir, converted, { templates, styles })
     const rels = [
       ...filesBelow(base, 'i18n'),
       ...filesBelow(base, 'data'),
-      ...(existsSync(join(base, 'examples', 'examples.json')) ? ['examples/examples.json'] : []),
+      ...filesBelow(base, 'examples'),
     ].sort();
     const files = {};
     for (const rel of rels) {

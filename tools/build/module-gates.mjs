@@ -17,6 +17,8 @@ import ts from 'typescript';
 import { parsePath } from '../../js/core/model.js';
 import { loadModelSchema } from './model-types.mjs';
 import { BOOKS } from '../../js/core/references-books.js';
+import { readExampleOwners } from './example-catalog.mjs';
+import { CONVERTED_MODULES } from './converted-modules.mjs';
 
 /**
  * Alle Dateien eines Moduls, relativ zum Modulordner, POSIX, sortiert.
@@ -181,10 +183,10 @@ const strings = (v) => (Array.isArray(v) ? v.filter((x) => typeof x === 'string'
  * Gate Beschreibung.
  * @param {string} id
  * @param {string} text Inhalt von module.js
- * @param {{ moduleIds: string[], exampleIds: string[], paths: string[] }} ctx
+ * @param {{ moduleIds: string[], exampleIds: string[], paths: string[], exampleOwners?: Map<string, string> }} ctx
  * @returns {string[]}
  */
-export function checkDescriptor(id, text, { moduleIds, exampleIds, paths }) {
+export function checkDescriptor(id, text, { moduleIds, exampleIds, paths, exampleOwners }) {
   const { fields, problems, shapeOk } = parseDescriptor(text);
   const out = problems.map((p) => `descriptor: module.js: ${p}`);
   if (!shapeOk) return out;
@@ -199,20 +201,21 @@ export function checkDescriptor(id, text, { moduleIds, exampleIds, paths }) {
     } else if (key === 'id' && value !== id) bad(`id ${JSON.stringify(value)} ≠ Ordner ${id}`);
     else if (key === 'version' && !(typeof value === 'string' && /^\d+\.\d+\.\d+$/.test(value))) bad(`version ${JSON.stringify(value)}: x.y.z erwartet`);
     else if (key === 'uses') for (const u of strings(value)) { if (!moduleIds.includes(u)) bad(`uses: unbekanntes Modul ${u}`); }
-    else if (key === 'exampleRefs') for (const e of strings(value)) { if (!exampleIds.includes(e)) bad(`exampleRefs: unbekanntes Beispiel ${e}`); }
+    else if (key === 'exampleRefs') for (const e of strings(value)) {
+      if (!exampleIds.includes(e)) bad(`exampleRefs: unbekanntes Beispiel ${e}`);
+      else if (exampleOwners?.get(e) === id) bad(`exampleRefs: ${e} gehört diesem Modul selbst — exampleRefs nennt nur Beispiele anderer Module`);
+    }
   }
   return out;
 }
 
 /**
- * Ids aller Beispiele (vorerst aus examples/index.json; später
- * aus dem Beispielkatalog).
+ * Ids aller Beispiele: examples/index.json ohne Szenarien plus
+ * resources/examples/examples.json der umgestellten Module.
  * @param {string} appDir @returns {string[]}
  */
 export function readExampleIds(appDir) {
-  const file = join(appDir, 'examples', 'index.json');
-  if (!existsSync(file)) return [];
-  return (JSON.parse(readFileSync(file, 'utf8')).examples ?? []).map((e) => e.id);
+  return [...readExampleOwners(appDir).keys()];
 }
 
 const WORKSHEET_USES = [
@@ -691,13 +694,15 @@ export function checkHelpFiles(base, refIds) {
  * Alle Gates für ein umgestelltes Modul.
  * @param {string} appDir
  * @param {string} id
- * @param {{ moduleIds?: string[], exampleIds?: string[] }} [ctx] Vorgabe: aus dem Baum
+ * @param {{ moduleIds?: string[], exampleIds?: string[], exampleOwners?: Map<string, string> }} [ctx] Vorgabe: aus dem Baum
  * @returns {Promise<string[]>}
  */
 export async function checkConvertedModule(appDir, id, ctx = {}) {
   const base = join(appDir, 'js', 'modules', id);
   const moduleIds = ctx.moduleIds ?? readdirSync(join(appDir, 'js', 'modules')).filter((d) => statSync(join(appDir, 'js', 'modules', d)).isDirectory());
-  const exampleIds = ctx.exampleIds ?? readExampleIds(appDir);
+  // Das geprüfte Modul sieht seine eigenen Beispiele schon vor dem Eintrag in CONVERTED_MODULES.
+  const exampleOwners = ctx.exampleOwners ?? readExampleOwners(appDir, [...new Set([...CONVERTED_MODULES, id])]);
+  const exampleIds = ctx.exampleIds ?? [...exampleOwners.keys()];
   const paths = listModuleFiles(appDir, id);
   const read = (p) => ({ path: p, text: readFileSync(join(base, p), 'utf8') });
   const js = paths.filter((p) => p.endsWith('.js') && p !== 'domain/model.types.js').map(read);
@@ -705,7 +710,7 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
 
   if (paths.includes('module.js')) {
     const text = readFileSync(join(base, 'module.js'), 'utf8');
-    out.push(...checkDescriptor(id, text, { moduleIds, exampleIds, paths }));
+    out.push(...checkDescriptor(id, text, { moduleIds, exampleIds, paths, exampleOwners }));
     const uses = parseDescriptor(text).fields.get('uses');
     out.push(...checkUses(js.filter((f) => f.path !== 'module.js'), Array.isArray(uses) ? uses : []));
   }
