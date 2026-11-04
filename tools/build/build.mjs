@@ -24,6 +24,7 @@ import { collectModelFiles, loadModelSchema, renderModelTypes } from './model-ty
 import { collectGlossaryData, renderGlossaryDataModule } from './glossary-data.mjs';
 import { collectLicenseData, renderLicenseDataModule, renderLicenseText } from '../license-report/license-report.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
+import { writeModuleTemplates } from './module-assets.mjs';
 import {
   renderCatalogModule, collectCatalogTexts, renderCatalogTexts, catalogConflicts, readLegacyIds, CATALOG_LANGS,
 } from './catalog.mjs';
@@ -354,7 +355,7 @@ export async function runBuild(appDir = APP_DIR, { check = false, converted = CO
   //    Datei zwischendurch im Dev-Entry-Zustand (Script-Tag auf js/app.js mit
   //    blanken Specifiern) und ein parallel laufender Testlauf sieht eine tote
   //    App-Shell.
-  let html = renderIndexHtml(appDir);
+  let html = renderIndexHtml(appDir, { converted });
 
   // 1. lab-data
   const labData = renderLabDataModule(await collectLabData(appDir));
@@ -427,6 +428,10 @@ export async function runBuild(appDir = APP_DIR, { check = false, converted = CO
   ({ code: cssCode } = await bundleCss(appDir, hrefs, { write: !check }));
 
   if (check) emit(minCssPath, cssCode, true, changed);
+
+  // 3b. Templates je umgestelltem Modul (js/chunks/templates/, gitignored —
+  //     immer geschrieben, auch im Prüfmodus, nie in changed[]).
+  const moduleTemplates = writeModuleTemplates(appDir, converted);
 
   // 4. index rewrite with content hashes — always write (index.html is git-ignored).
   //    index.html is NOT a committed artifact; it is never added to changed[].

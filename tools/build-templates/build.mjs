@@ -4,6 +4,9 @@
  * <template data-tpl="<relpath>"> blocks, so the engine can clone() them
  * (sink-free) instead of fetch()+DOMParser. Zero dependencies.
  *
+ * Templates umgestellter Module (CONVERTED_MODULES) liegen nicht in index.html,
+ * sondern je Modul in js/chunks/templates/ (tools/build/module-assets.mjs).
+ *
  * Library only: tools/build/build.mjs calls renderIndexHtml(). Run
  * `npm run build` / `npm run build:check` — running this file directly just
  * points there.
@@ -12,6 +15,7 @@ import { readFileSync } from 'node:fs';
 import { readdirSync, statSync } from 'node:fs';
 import { join, relative, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { CONVERTED_MODULES } from '../build/converted-modules.mjs';
 
 const APP_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 export const KEY_PREFIX = 'js/';
@@ -92,13 +96,19 @@ export function validateTemplate(key, content) {
   return true;
 }
 
-/** Build the inlined <template> block from {key, content} records. */
-export function buildTemplateBlock(records) {
+/**
+ * Die <template>-Elemente der Records, deren Schlüssel `keys` annimmt —
+ * Partials aus ALLEN Records aufgelöst, sortiert nach Schlüssel, ohne Marker.
+ * @param {{key: string, content: string}[]} records
+ * @param {(key: string) => boolean} [keys]
+ * @returns {string[]}
+ */
+export function renderTemplates(records, keys = () => true) {
   const partials = new Map(
     records.filter((r) => isPartial(r.key)).map((r) => [r.key, r.content]),
   );
-  const parts = records
-    .filter((r) => !isPartial(r.key))
+  return records
+    .filter((r) => !isPartial(r.key) && keys(r.key))
     .slice()
     .sort((a, b) => a.key.localeCompare(b.key))
     .map(({ key, content }) => {
@@ -106,7 +116,11 @@ export function buildTemplateBlock(records) {
       validateTemplate(key, expanded);
       return `<template data-tpl="${key}">${expanded.trim()}</template>`;
     });
-  return [START, ...parts, END].join('\n');
+}
+
+/** Build the inlined <template> block from {key, content} records. */
+export function buildTemplateBlock(records, keys) {
+  return [START, ...renderTemplates(records, keys), END].join('\n');
 }
 
 /**
@@ -114,7 +128,7 @@ export function buildTemplateBlock(records) {
  * @param {string} [dir] App-Wurzel (Standard: dieses Repo)
  * @returns {{key: string, content: string}[]}
  */
-function collect(dir = APP_DIR) {
+export function collectTemplateRecords(dir = APP_DIR) {
   return htmlFiles(join(dir, KEY_PREFIX)).map(abs => ({
     key: relative(dir, abs).split('\\').join('/'),
     content: readFileSync(abs, 'utf8'),
@@ -141,10 +155,14 @@ function splice(name, html, block) {
  * tote App-Shell.
  *
  * @param {string} [dir] App-Wurzel (Standard: dieses Repo)
+ * @param {{ converted?: readonly string[] }} [opts]
  * @returns {string} vollständige index.html
  */
-export function renderIndexHtml(dir = APP_DIR) {
-  const block = buildTemplateBlock(collect(dir));
+export function renderIndexHtml(dir = APP_DIR, { converted = CONVERTED_MODULES } = {}) {
+  // Umgestellte Module bringen ihre Templates selbst mit (js/chunks/templates/,
+  // tools/build/module-assets.mjs) — sie stehen nicht mehr in index.html.
+  const own = converted.map((id) => `js/modules/${id}/resources/`);
+  const block = buildTemplateBlock(collectTemplateRecords(dir), (key) => !own.some((p) => key.startsWith(p)));
   const distPath = join(dir, 'index.dist.html');
   return splice('index.dist.html', readFileSync(distPath, 'utf8'), block);
 }
