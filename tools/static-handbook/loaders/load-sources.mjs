@@ -1,6 +1,8 @@
 /**
  * Loads every source artefact the static handbook generator needs:
- *   - module manifest + handbooks (dynamic import of *-help.js)
+ *   - module catalog (`js/modules/catalog.generated.js`) + handbooks: old form
+ *     `<id>-help.js`/`<id>-references.js`, new form
+ *     `resources/i18n/help.<lang>.json`/`resources/data/references.json`
  *   - algorithm lab index + per-algorithm JSON files
  *   - i18n strings for the page shell (DE/EN)
  *
@@ -13,6 +15,9 @@ import { existsSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import path from 'node:path';
 
+import { withoutSchema } from '../../../js/core/json-file.js';
+import { helpDefFromFiles } from '../../../js/core/module-help-files.js';
+import { resolveReferences } from '../../../js/core/references-books.js';
 import { loadGlossary } from './load-glossary.mjs';
 import { loadVideos } from './load-videos.mjs';
 
@@ -34,42 +39,87 @@ export async function loadAllSources(repoRoot) {
 // ─── Modules ────────────────────────────────────────────────────────
 
 /**
+ * Der Modulkatalog: alle Registry-Einträge und die Ids der neuen Form.
+ * @param {string} repoRoot
+ * @returns {Promise<{ modules: object[], converted: readonly string[] }>}
+ */
+async function readCatalog(repoRoot) {
+  const url = pathToFileURL(path.join(repoRoot, 'js/modules/catalog.generated.js')).href;
+  const { MODULES, CONVERTED } = await import(url);
+  return { modules: MODULES, converted: CONVERTED };
+}
+
+/**
  * Load every module's handbook and references.
  * @param {string} repoRoot
- * @param {Array<{id: string, phase: string, cycles?: object}>} [manifestOverride] - for tests
+ * @param {{ modules: Array<{id: string, phase?: string, cycles?: object}>, converted: readonly string[] }} [catalog] - for tests
  */
-export async function loadModules(repoRoot, manifestOverride) {
-  let manifest = manifestOverride;
-  if (!manifest) {
-    const manifestPath = path.join(repoRoot, 'js/modules/manifest.js');
-    ({ default: manifest } = await import(pathToFileURL(manifestPath).href));
-  }
-
+export async function loadModules(repoRoot, catalog) {
+  const { modules, converted } = catalog ?? await readCatalog(repoRoot);
+  const isNew = new Set(converted);
   const results = [];
-  for (const entry of manifest) {
+  for (const entry of modules) {
     const dir = path.join(repoRoot, 'js/modules', entry.id);
-    const helpPath = path.join(dir, `${entry.id}-help.js`);
-
-    let help = null;
-    try {
-      const mod = await import(pathToFileURL(helpPath).href);
-      help = mod.default || mod;
-    } catch (err) {
-      if (err?.code !== 'ERR_MODULE_NOT_FOUND') {
-        console.warn(`[handbook] Failed to load ${helpPath}: ${err.message}`);
-      }
-    }
+    const { help, references } = isNew.has(entry.id)
+      ? await loadNewForm(dir, entry.id)
+      : await loadLegacy(dir, entry.id);
     if (!help) continue;
-
     results.push({
       id: entry.id,
       phase: entry.phase,
       cycles: entry.cycles || null,
       help: normalizeHelp(help),
-      references: await loadReferences(path.join(dir, `${entry.id}-references.js`)),
+      references,
     });
   }
   return results;
+}
+
+/**
+ * Alte Form: `<id>-help.js` und `<id>-references.js`.
+ * @param {string} dir @param {string} id
+ * @returns {Promise<{ help: object|null, references: object[] }>}
+ */
+async function loadLegacy(dir, id) {
+  const helpPath = path.join(dir, `${id}-help.js`);
+  let help = null;
+  try {
+    const mod = await import(pathToFileURL(helpPath).href);
+    help = mod.default || mod;
+  } catch (err) {
+    if (err?.code !== 'ERR_MODULE_NOT_FOUND') {
+      console.warn(`[handbook] Failed to load ${helpPath}: ${err.message}`);
+    }
+  }
+  return { help, references: help ? await loadReferences(path.join(dir, `${id}-references.js`)) : [] };
+}
+
+/**
+ * Neue Form: `resources/i18n/help.<lang>.json` (zur Zwei-Sprachen-Form
+ * zusammengeführt) und `resources/data/references.json` (Bücher aufgelöst).
+ * Eine kaputte Datei gilt wie in der alten Form als fehlend.
+ * @param {string} dir @param {string} id
+ * @returns {Promise<{ help: object|null, references: object[] }>}
+ */
+async function loadNewForm(dir, id) {
+  const read = async (rel) => {
+    const file = path.join(dir, rel);
+    if (!existsSync(file)) return undefined;
+    try {
+      return withoutSchema(await readJson(file));
+    } catch (err) {
+      console.warn(`[handbook] Failed to load ${file}: ${err.message}`);
+      return undefined;
+    }
+  };
+  const files = {};
+  for (const lang of ['de', 'en']) {
+    const file = await read(`resources/i18n/help.${lang}.json`);
+    if (file) files[lang] = file;
+  }
+  if (Object.keys(files).length === 0) return { help: null, references: [] };
+  const refs = await read('resources/data/references.json');
+  return { help: helpDefFromFiles(id, files), references: resolveReferences(refs?.references ?? []) };
 }
 
 /**
@@ -214,12 +264,24 @@ export function getExamplesForModule(examples, moduleId) {
 
 // ─── i18n ───────────────────────────────────────────────────────────
 
-async function loadI18n(repoRoot) {
-  const [de, en] = await Promise.all([
-    readJson(path.join(repoRoot, 'i18n/de.json')),
-    readJson(path.join(repoRoot, 'i18n/en.json')),
-  ]);
-  return { de, en };
+/**
+ * Sprachdateien des Handbuchs: `i18n/<lang>.json`, dazu die Katalogtexte
+ * (`js/modules/catalog.<lang>.json`) unter `modules.<id>` — dort stehen Name,
+ * Beschreibung und whenToUse der Module in neuer Form.
+ * @param {string} repoRoot
+ * @returns {Promise<{ de: object, en: object }>}
+ */
+export async function loadI18n(repoRoot) {
+  const out = {};
+  for (const lang of ['de', 'en']) {
+    const table = await readJson(path.join(repoRoot, `i18n/${lang}.json`));
+    const catalogPath = path.join(repoRoot, `js/modules/catalog.${lang}.json`);
+    const catalog = existsSync(catalogPath) ? withoutSchema(await readJson(catalogPath)) : {};
+    table.modules ??= {};
+    for (const [id, texts] of Object.entries(catalog)) table.modules[id] = { ...table.modules[id], ...texts };
+    out[lang] = table;
+  }
+  return out;
 }
 
 async function readJson(p) {

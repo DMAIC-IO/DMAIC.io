@@ -87,7 +87,7 @@ test('loader attaches references, [] when the file is missing or broken', async 
     `export default [ this is not javascript`);
   const manifest = ['with-refs', 'no-refs', 'broken-refs'].map(id => ({ id, phase: 'measure' }));
 
-  const mods = await loadModules(root, manifest);
+  const mods = await loadModules(root, { modules: manifest, converted: [] });
   const byId = Object.fromEntries(mods.map(m => [m.id, m]));
   assert.deepEqual(byId['with-refs'].references.map(r => r.id), ['x']);
   assert.deepEqual(byId['no-refs'].references, []);
