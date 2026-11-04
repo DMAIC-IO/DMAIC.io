@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkContextHelp, readViewmodelCommands, checkConvertedModule } from './module-gates.mjs';
+import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkContextHelp, readViewmodelCommands, checkConvertedModule, checkReferenceFile, checkHelpFiles } from './module-gates.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { APP_DIR } from './build.mjs';
 import { defineModel, command, text, number, oneOf, index, idOf, list, record, object, boolean } from '../../js/core/model.js';
@@ -494,4 +494,55 @@ test('checkConvertedModule: Viewmodel-Kommando ohne Hilfetext wird gemeldet', as
   const findings = await checkConvertedModule(root, 'neu');
   assert.ok(findings.includes('help: resources/i18n/context-help.de.json: actions.open.help fehlt'), findings.join('\n'));
   assert.ok(findings.includes('help: resources/i18n/context-help.en.json: actions.open.params.x fehlt'), findings.join('\n'));
+});
+
+const HELP_DE = { sections: { overview: { title: 'Ü', blocks: [{ type: 'paragraph', content: 'Siehe {{ref:melzer-2019}} und {{ref:x|X}}.' }] }, steps: { title: 'S', blocks: [{ type: 'steps', items: ['a'] }] } } };
+const HELP_EN = { sections: { overview: { title: 'O', blocks: [{ type: 'paragraph', content: 'See {{ref:melzer-2019}}.' }] }, steps: { title: 'S', blocks: [{ type: 'steps', items: ['a'] }] } } };
+const REFS_OK = { references: [{ book: 'melzer-2019' }, { id: 'x', type: 'webpage', title: 'X', author: [{ literal: 'X' }] }] };
+const J = (v) => JSON.stringify(v);
+
+test('checkReferenceFile: ohne Datei leer; Ids aus Büchern und CSL', () => {
+  assert.deepEqual(checkReferenceFile(join(appWith({ 'js/modules/neu/module.js': '' }), 'js', 'modules', 'neu')), { findings: [], ids: new Set() });
+  const base = join(appWith({ 'js/modules/neu/resources/data/references.json': J(REFS_OK) }), 'js', 'modules', 'neu');
+  const { findings, ids } = checkReferenceFile(base);
+  assert.deepEqual(findings, []);
+  assert.deepEqual([...ids].sort(), ['melzer-2019', 'x']);
+});
+
+test('checkReferenceFile: unbekanntes Buch und doppelte Id', () => {
+  const refs = { references: [{ book: 'nope' }, { book: 'melzer-2019' }, { id: 'melzer-2019', type: 'book', title: 'T', author: [{ family: 'M' }] }] };
+  const base = join(appWith({ 'js/modules/neu/resources/data/references.json': J(refs) }), 'js', 'modules', 'neu');
+  assert.deepEqual(checkReferenceFile(base).findings, [
+    'references: resources/data/references.json: unbekanntes Buch: nope (bekannt: aiag-msa-4, bosch-heft-10, melzer-2019, montgomery-sqc-6)',
+    'references: resources/data/references.json: Id doppelt: melzer-2019',
+  ]);
+});
+
+test('checkHelpFiles: gleiche Abschnitte und bekannte Referenzen sind grün, ohne Dateien auch', () => {
+  const ids = new Set(['melzer-2019', 'x']);
+  assert.deepEqual(checkHelpFiles(join(appWith({ 'js/modules/neu/module.js': '' }), 'js', 'modules', 'neu'), ids), []);
+  const base = join(appWith({ 'js/modules/neu/resources/i18n/help.de.json': J(HELP_DE), 'js/modules/neu/resources/i18n/help.en.json': J(HELP_EN) }), 'js', 'modules', 'neu');
+  assert.deepEqual(checkHelpFiles(base, ids), []);
+});
+
+test('checkHelpFiles: fehlende Sprache, abweichende Abschnitte, unbekannte Referenz', () => {
+  const one = join(appWith({ 'js/modules/neu/resources/i18n/help.de.json': J(HELP_DE) }), 'js', 'modules', 'neu');
+  assert.deepEqual(checkHelpFiles(one, new Set(['melzer-2019', 'x'])), ['help: resources/i18n/help.en.json fehlt']);
+  const swapped = { sections: { steps: HELP_EN.sections.steps, overview: HELP_EN.sections.overview } };
+  const base = join(appWith({ 'js/modules/neu/resources/i18n/help.de.json': J(HELP_DE), 'js/modules/neu/resources/i18n/help.en.json': J(swapped) }), 'js', 'modules', 'neu');
+  assert.deepEqual(checkHelpFiles(base, new Set(['melzer-2019'])), [
+    'help: resources/i18n/help.en.json: Abschnitte weichen von help.de.json ab (de: overview, steps; en: steps, overview)',
+    'help: resources/i18n/help.de.json: {{ref:x}} fehlt in resources/data/references.json',
+  ]);
+});
+
+test('checkConvertedModule ruft die Hilfe- und Referenz-Gates auf', async () => {
+  const root = convertedFixture({
+    'js/modules/neu/resources/i18n/help.de.json': J(HELP_DE),
+    'js/modules/neu/resources/i18n/help.en.json': J(HELP_EN),
+    'js/modules/neu/resources/data/references.json': J({ references: [{ book: 'nope' }] }),
+  });
+  const findings = await checkConvertedModule(root, 'neu');
+  assert.ok(findings.some((f) => f.startsWith('references: resources/data/references.json: unbekanntes Buch: nope')), findings.join('\n'));
+  assert.ok(findings.some((f) => f === 'help: resources/i18n/help.de.json: {{ref:melzer-2019}} fehlt in resources/data/references.json'), findings.join('\n'));
 });

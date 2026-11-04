@@ -16,6 +16,7 @@ import { join } from 'node:path';
 import ts from 'typescript';
 import { parsePath } from '../../js/core/model.js';
 import { loadModelSchema } from './model-types.mjs';
+import { BOOKS } from '../../js/core/references-books.js';
 
 /**
  * Alle Dateien eines Moduls, relativ zum Modulordner, POSIX, sortiert.
@@ -618,6 +619,73 @@ export function checkUiTexts(base) {
   return out;
 }
 
+const REF_TOKEN = /\{\{ref:([a-z0-9-]+)(?:\|[^}]+)?\}\}/gi;
+
+/** Alle Strings eines JSON-Werts. @param {any} v @param {string[]} [acc] @returns {string[]} */
+function allStrings(v, acc = []) {
+  if (typeof v === 'string') acc.push(v);
+  else if (Array.isArray(v)) v.forEach((x) => allStrings(x, acc));
+  else if (v && typeof v === 'object') Object.values(v).forEach((x) => allStrings(x, acc));
+  return acc;
+}
+
+/**
+ * Gate Referenzen: jede `book`-Id steht in BOOKS, jede Referenz-Id ist im
+ * Modul eindeutig. Liefert dazu die Ids für das Hilfe-Gate.
+ * @param {string} base Modulordner
+ * @param {Record<string, object>} [books]
+ * @returns {{ findings: string[], ids: Set<string> }}
+ */
+export function checkReferenceFile(base, books = BOOKS) {
+  const rel = 'resources/data/references.json';
+  const file = readJson(join(base, ...rel.split('/')));
+  const findings = [];
+  const ids = new Set();
+  for (const entry of file?.references ?? []) {
+    let id = entry.id;
+    if (Object.hasOwn(entry, 'book')) {
+      if (!books[entry.book]) {
+        findings.push(`references: ${rel}: unbekanntes Buch: ${entry.book} (bekannt: ${Object.keys(books).sort().join(', ')})`);
+        continue;
+      }
+      id = books[entry.book].id;
+    }
+    if (ids.has(id)) findings.push(`references: ${rel}: Id doppelt: ${id}`);
+    ids.add(id);
+  }
+  return { findings, ids };
+}
+
+/**
+ * Gate Hilfe-Dateien: help.de.json und help.en.json haben dieselben
+ * Abschnitte in derselben Reihenfolge; jedes {{ref:<id>}} steht in references.json.
+ * @param {string} base Modulordner
+ * @param {Set<string>} refIds  Ids aus checkReferenceFile
+ * @returns {string[]}
+ */
+export function checkHelpFiles(base, refIds) {
+  const files = { de: 'resources/i18n/help.de.json', en: 'resources/i18n/help.en.json' };
+  const help = { de: readJson(join(base, ...files.de.split('/'))), en: readJson(join(base, ...files.en.split('/'))) };
+  if (!help.de && !help.en) return [];
+  const out = [];
+  for (const lang of ['de', 'en']) if (!help[lang]) out.push(`help: ${files[lang]} fehlt`);
+  if (help.de && help.en) {
+    const de = Object.keys(help.de.sections ?? {});
+    const en = Object.keys(help.en.sections ?? {});
+    if (de.join('\n') !== en.join('\n')) {
+      out.push(`help: ${files.en}: Abschnitte weichen von help.de.json ab (de: ${de.join(', ')}; en: ${en.join(', ')})`);
+    }
+  }
+  for (const lang of ['de', 'en']) {
+    const missing = new Set();
+    for (const s of allStrings(help[lang])) {
+      for (const m of s.matchAll(REF_TOKEN)) if (!refIds.has(m[1])) missing.add(m[1]);
+    }
+    for (const id of missing) out.push(`help: ${files[lang]}: {{ref:${id}}} fehlt in resources/data/references.json`);
+  }
+  return out;
+}
+
 /**
  * Alle Gates für ein umgestelltes Modul.
  * @param {string} appDir
@@ -643,6 +711,8 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
   out.push(...checkLayers(js));
   out.push(...checkWritePath(js));
   out.push(...checkUiTexts(base));
+  const refs = checkReferenceFile(base);
+  out.push(...refs.findings, ...checkHelpFiles(base, refs.ids));
 
   if (paths.includes('domain/model.js')) {
     const file = join(base, 'domain', 'model.js');
