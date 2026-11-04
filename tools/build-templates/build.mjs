@@ -13,7 +13,7 @@
  */
 import { readFileSync } from 'node:fs';
 import { readdirSync, statSync } from 'node:fs';
-import { join, relative, dirname, resolve } from 'node:path';
+import { join, relative, dirname, resolve, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CONVERTED_MODULES } from '../build/converted-modules.mjs';
 
@@ -78,12 +78,15 @@ export function expandIncludes(key, content, resolve) {
   });
 }
 
-/** Recursively list *.html under a dir. */
+/** Recursively list *.html under a dir; js/chunks/ (erzeugte Ausgaben) wird übersprungen. */
 function htmlFiles(dir) {
   const out = [];
   for (const name of readdirSync(dir)) {
     const p = join(dir, name);
-    if (statSync(p).isDirectory()) out.push(...htmlFiles(p));
+    if (statSync(p).isDirectory()) {
+      if (name === 'chunks' && basename(dir) === 'js') continue;
+      out.push(...htmlFiles(p));
+    }
     else if (name.endsWith('.html')) out.push(p);
   }
   return out;

@@ -75,3 +75,10 @@ test('writeModuleTemplates ohne umgestellte Module: leeres Ergebnis, kein Ordner
   assert.deepEqual(writeModuleTemplates(root, []), {});
   assert.equal(existsSync(join(root, 'js', 'chunks', 'templates')), false);
 });
+
+test('erzeugte Dateien in js/chunks/ werden nie als Template-Quelle gesammelt', () => {
+  const root = appWith(TPL_APP);
+  writeModuleTemplates(root, ['neu']);
+  assert.doesNotMatch(renderIndexHtml(root, { converted: ['neu'] }), /js\/chunks\//);
+  assert.doesNotMatch(renderModuleTemplates(root, 'neu'), /js\/chunks\//);
+});
