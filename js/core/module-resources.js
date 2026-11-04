@@ -1,0 +1,190 @@
+/**
+ * D.Mike — Bestandteile von Modulen in neuer Form nachladen (module-resources.js)
+ *
+ * Die Build-Liste `#module-resources` (index.html, tools/build/module-assets.mjs)
+ * nennt je umgestelltem Modul die gehashten URLs: Templates
+ * (js/chunks/templates/…), CSS (js/chunks/styles/…) und die Dateien unter
+ * `resources/` mit Versionsparameter. `prepare(id)` lädt vor dem ersten
+ * `init()` Templates, CSS und `i18n/ui.<lang>.json` der aktiven Sprache —
+ * je Modul einmal; ein Fehlschlag wird nicht gespeichert, der nächste
+ * Versuch lädt neu.
+ *
+ * Templates kommen per XHR mit `responseType = 'document'`: unter der CSP
+ * (require-trusted-types-for 'script') werfen DOMParser und innerHTML.
+ */
+
+/**
+ * @typedef {object} ModuleResourceEntry
+ * @property {string} templates  URL der Template-Datei
+ * @property {string} [style]  URL der CSS-Datei
+ * @property {Record<string, string>} files  Pfad unter resources/ → URL mit ?v=
+ */
+
+/**
+ * Die Liste `#module-resources` lesen.
+ * @param {Document} [doc]
+ * @returns {Record<string, ModuleResourceEntry>} leer, wenn der Block fehlt oder kaputt ist
+ */
+export function readModuleResources(doc = document) {
+  const el = doc.getElementById('module-resources');
+  if (!el) return {};
+  try {
+    const value = JSON.parse(el.textContent);
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Eine HTML-Datei als Dokument laden (XHR, responseType 'document').
+ * @param {string} url
+ * @returns {Promise<Document>}
+ */
+export function fetchDocument(url) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', url);
+    xhr.responseType = 'document';
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300 && xhr.response) resolve(xhr.response);
+      else reject(new Error(`[module-resources] ${url}: HTTP ${xhr.status}`));
+    };
+    xhr.onerror = () => reject(new Error(`[module-resources] ${url}: Netzwerkfehler`));
+    xhr.send();
+  });
+}
+
+/**
+ * @param {string} url
+ * @returns {Promise<any>}
+ */
+export async function fetchJson(url) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`[module-resources] ${url}: HTTP ${response.status}`);
+  return response.json();
+}
+
+/**
+ * Ein Stylesheet ans Ende von <head> hängen (nach css/app.min.css) und auf
+ * das Laden warten.
+ * @param {string} url
+ * @param {Document} [doc]
+ * @returns {Promise<HTMLLinkElement>}
+ */
+export function loadStylesheet(url, doc = document) {
+  return new Promise((resolve, reject) => {
+    const link = doc.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = url;
+    link.onload = () => resolve(link);
+    link.onerror = () => {
+      link.remove();
+      reject(new Error(`[module-resources] ${url}: Stylesheet nicht geladen`));
+    };
+    doc.head.append(link);
+  });
+}
+
+export class ModuleResources {
+  /**
+   * @param {object} opts
+   * @param {Record<string, ModuleResourceEntry>} opts.manifest  readModuleResources()
+   * @param {import('./i18n.js').I18n} opts.i18n
+   * @param {Document} [opts.doc]
+   * @param {{ fetchJson?: Function, fetchDocument?: Function, loadStylesheet?: Function }} [opts.loaders]
+   */
+  constructor({ manifest, i18n, doc = document, loaders = {} }) {
+    this._manifest = manifest;
+    this._i18n = i18n;
+    this._doc = doc;
+    this._fetchJson = loaders.fetchJson ?? fetchJson;
+    this._fetchDocument = loaders.fetchDocument ?? fetchDocument;
+    this._loadStylesheet = loaders.loadStylesheet ?? ((url) => loadStylesheet(url, doc));
+    /** @type {Map<string, Promise<void>>} id → laufendes oder fertiges prepare */
+    this._prepared = new Map();
+    /** @type {Map<string, Promise<void>>} `${id}:${lang}` → UI-Texte */
+    this._texts = new Map();
+  }
+
+  /**
+   * @param {string} id
+   * @returns {boolean} ob das Modul in der Liste steht (neue Form)
+   */
+  has(id) {
+    return Object.hasOwn(this._manifest, id);
+  }
+
+  /**
+   * @param {string} id
+   * @param {string} file  Pfad unter resources/, z. B. 'i18n/help.de.json'
+   * @returns {string|undefined}
+   */
+  url(id, file) {
+    return this._manifest[id]?.files?.[file];
+  }
+
+  /**
+   * Templates, CSS und UI-Texte der aktiven Sprache laden — einmal je Modul.
+   * @param {string} id
+   * @returns {Promise<void>}
+   */
+  prepare(id) {
+    if (!this.has(id)) return Promise.reject(new Error(`[module-resources] ${id}: nicht in #module-resources`));
+    let pending = this._prepared.get(id);
+    if (!pending) {
+      pending = Promise.all([
+        this._templates(id),
+        this._style(id),
+        this._uiTexts(id, this._i18n.getLanguage()),
+      ]).then(() => {});
+      pending.catch(() => this._prepared.delete(id));
+      this._prepared.set(id, pending);
+    }
+    return pending;
+  }
+
+  /**
+   * UI-Texte aller vorbereiteten Module für `lang` laden (Sprachwechsel).
+   * @param {string} lang
+   * @returns {Promise<void>}
+   */
+  async loadLanguage(lang) {
+    await Promise.all([...this._prepared.keys()].map((id) => this._uiTexts(id, lang)));
+  }
+
+  /** @param {string} id */
+  async _templates(id) {
+    const loaded = await this._fetchDocument(this._manifest[id].templates);
+    for (const tpl of loaded.querySelectorAll('template[data-tpl]')) {
+      const key = tpl.getAttribute('data-tpl');
+      if (this._doc.querySelector(`template[data-tpl="${CSS.escape(key)}"]`)) continue;
+      this._doc.body.append(this._doc.adoptNode(tpl));
+    }
+  }
+
+  /** @param {string} id */
+  async _style(id) {
+    const url = this._manifest[id].style;
+    if (url) await this._loadStylesheet(url);
+  }
+
+  /**
+   * @param {string} id
+   * @param {string} lang
+   * @returns {Promise<void>}
+   */
+  _uiTexts(id, lang) {
+    const key = `${id}:${lang}`;
+    let pending = this._texts.get(key);
+    if (!pending) {
+      const url = this.url(id, `i18n/ui.${lang}.json`);
+      pending = url
+        ? this._fetchJson(url).then((tree) => this._i18n.mergeModule(id, lang, tree))
+        : Promise.resolve();
+      pending.catch(() => this._texts.delete(key));
+      this._texts.set(key, pending);
+    }
+    return pending;
+  }
+}

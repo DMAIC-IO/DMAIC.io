@@ -118,6 +118,7 @@ const SKIP = new Set([
   'core/help-renderer.test.js',
   'core/html-utils.test.js',
   'core/i18n-module-texts.test.js',
+  'core/module-resources.test.js',
   'core/icon.test.js',
   'core/markdown-parser.test.js',
   'core/notify.test.js',
