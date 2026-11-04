@@ -88,7 +88,7 @@ suite('defineModel — toJSON / fromJSON', () => {
     m.title = 'T'; m.mode = 'week'; m.columns = { suppliers: ['a'], inputs: [] };
     const json = m.toJSON();
     assertDeepEqual(Object.keys(json),
-      ['title', 'alpha', 'columns', 'events', 'selected', 'focusId', 'mode', 'expanded']);
+      ['_schema', 'title', 'alpha', 'columns', 'events', 'selected', 'focusId', 'mode', 'expanded']);
     assertDeepEqual(Board.fromJSON(json).toJSON(), json);
   });
 

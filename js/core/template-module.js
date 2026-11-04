@@ -3,7 +3,7 @@ import { cloneTemplate, templateKey } from './dom.js';
 import { getModuleHelp, hasModuleHelp } from './help-registry.js';
 import { getModuleReferences, hasModuleReferences } from './references-registry.js';
 import { initialModel, loadModel } from './initial-model.js';
-import { schemaOf, setCommandObserver, replaceFields, runCommand } from './model.js';
+import { schemaOf, setModelName, setCommandObserver, replaceFields, runCommand } from './model.js';
 import { schemaAgentEntry, readSchemaModel } from './agent/agent-schema.js';
 import { attachGesture } from './interaction/attach.js';
 import { isGesture } from './interaction/define.js';
@@ -94,6 +94,7 @@ export function createModule(base) {
     ? { engine: 'alpine', ...Object.fromEntries(FROM_DESCRIPTOR.filter((k) => descriptor[k] !== undefined).map((k) => [k, descriptor[k]])) }
     : {};
   const schema = schemaOf(Model);
+  if (schema && descriptor) setModelName(Model, id);
   const vmCommands = base.commands ?? {};
   if (!schema && Object.keys(vmCommands).length > 0) {
     throw new Error(`createModule ${id}: commands need a defineModel Model`);

@@ -13,6 +13,10 @@
  * Alpines Proxy. Accessoren liegen am Prototyp: `Object.keys(model)` liefert
  * nur `['_v']`; wer ein Model kopiert, nimmt `toJSON()`.
  *
+ * `version`/`migrations`: gespeicherte Stände tragen `_schema: { name, version }`;
+ * `fromJSON` hebt ältere Stände über die Kette `'a→b'` auf `version` (fehlend =
+ * `'0'`), neuere lehnt es ab.
+ *
  * Rein: kein DOM, kein Alpine, kein Kontext.
  */
 import {
@@ -333,7 +337,7 @@ export function replaceFields(model, source) {
 
 // ─── defineModel ────────────────────────────────────────────
 
-const RESERVED = new Set(['constructor', 'toJSON', 'fromJSON', 'hasContent', 'execute', '_v', '_obs']);
+const RESERVED = new Set(['constructor', 'toJSON', 'fromJSON', 'hasContent', 'execute', '_v', '_obs', '_schema']);
 
 /**
  * Das Schema eines Models oder einer Model-Klasse.
@@ -354,16 +358,99 @@ export function fieldSpec(model, name) {
   return s ? (s.fields[name] ?? s.view[name]) : undefined;
 }
 
+// ─── Versionen und Migrationen ──────────────────────────────
+
+// Der Build-Gate `tools/build/module-gates.mjs` führt eine Kopie dieser beiden
+// Muster — bei Änderungen synchron halten.
+const VERSION = /^\d+\.\d+$/;
+const MIGRATION_KEY = /^(0|\d+\.\d+)→(\d+\.\d+)$/;
+
+/**
+ * Versionen `MAJOR.MINOR` (oder `'0'`) numerisch vergleichen.
+ * @param {string} a @param {string} b @returns {number} <0, 0, >0
+ */
+export function compareVersions(a, b) {
+  const [a1, a2 = 0] = String(a).split('.').map(Number);
+  const [b1, b2 = 0] = String(b).split('.').map(Number);
+  return a1 - b1 || a2 - b2;
+}
+
+/**
+ * `version` und `migrations` prüfen und als Schrittkarte liefern.
+ * @param {string} version @param {Record<string, Function>} migrations
+ * @returns {Map<string, { to: string, fn: Function }>} Startversion → Schritt
+ * @throws {Error} bei falscher Form, Lücke, Doppel oder Rückschritt
+ */
+function migrationSteps(version, migrations) {
+  if (!VERSION.test(version)) throw new Error(`defineModel: invalid version ${JSON.stringify(version)}; allowed: MAJOR.MINOR`);
+  const steps = new Map();
+  for (const [key, fn] of Object.entries(migrations)) {
+    const m = MIGRATION_KEY.exec(key);
+    if (!m) throw new Error(`defineModel: invalid migration key ${JSON.stringify(key)}; allowed: 'a→b' with a = 0 or MAJOR.MINOR, b = MAJOR.MINOR`);
+    const [, from, to] = m;
+    if (typeof fn !== 'function') throw new Error(`defineModel: migration ${key} must be a function`);
+    if (compareVersions(to, from) <= 0) throw new Error(`defineModel: migration ${key} does not move forward`);
+    if (compareVersions(to, version) > 0) throw new Error(`defineModel: migration ${key} goes beyond version ${version}`);
+    if (steps.has(from)) throw new Error(`defineModel: two migrations start at ${from}`);
+    steps.set(from, { to, fn });
+  }
+  for (const start of steps.keys()) {
+    let v = start;
+    while (steps.has(v)) v = steps.get(v).to;
+    if (v !== version) throw new Error(`defineModel: migration chain from ${start} ends at ${v}, not at version ${version}`);
+  }
+  return steps;
+}
+
+/**
+ * Gespeicherten Zustand auf `version` heben (Kopie je Schritt).
+ * @param {object} json @param {string} version @param {Map<string, { to: string, fn: Function }>} steps
+ * @returns {object}
+ * @throws {Error} neuere oder unbekannte gespeicherte Version
+ */
+function migrate(json, version, steps) {
+  const saved = isPlainObject(json._schema) && typeof json._schema.version === 'string' ? json._schema.version : '0';
+  requireForm('_schema.version', saved, compareVersions(saved, version) <= 0,
+    `up to ${version} (saved by a newer version of this module)`);
+  if (steps.size === 0 || saved === version) return json;
+  if (!steps.has(saved)) requireKnownId('_schema.version', saved, [...steps.keys(), version].sort(compareVersions));
+  let v = saved;
+  let out = json;
+  while (v !== version) {
+    const { to, fn } = steps.get(v);
+    out = fn(cloneJSON(out));
+    v = to;
+  }
+  return out;
+}
+
+/**
+ * Den Modulnamen für `_schema.name` setzen (`createModule` mit `descriptor`).
+ * Nicht aufzählbar, damit `Object.keys(Model)` unverändert bleibt.
+ * @param {Function} Model Klasse aus `defineModel` @param {string} name
+ * @returns {void}
+ */
+export function setModelName(Model, name) {
+  Object.defineProperty(Model, 'moduleName', { value: name, writable: true, configurable: true, enumerable: false });
+}
+
 /**
  * Model-Klasse aus einem Schema-Literal.
  * @param {{ fields?: Record<string, object>, view?: Record<string, object>,
- *           commands?: Record<string, object> }} schema
+ *           commands?: Record<string, object>, version?: string,
+ *           migrations?: Record<string, Function> }} schema
  * @returns {any} die Klasse (`new`, `fromJSON`, `schema`)
  */
 export function defineModel(schema) {
   const fields = Object.freeze({ ...(schema.fields ?? {}) });
   const view = Object.freeze({ ...(schema.view ?? {}) });
   const commands = Object.freeze({ ...(schema.commands ?? {}) });
+  if (schema.migrations !== undefined && schema.version === undefined) {
+    throw new Error('defineModel: version is required when migrations are set');
+  }
+  const version = schema.version ?? '1.0';
+  const migrations = Object.freeze({ ...(schema.migrations ?? {}) });
+  const steps = migrationSteps(version, migrations);
   for (const name of Object.keys(view)) {
     if (Object.hasOwn(fields, name)) throw new Error(`defineModel: ${name} is both a field and a view field`);
   }
@@ -390,6 +477,8 @@ export function defineModel(schema) {
     static fromJSON(json, { repair = false } = {}) {
       const m = new this();
       if (!isPlainObject(json)) return m;
+      json = migrate(json, version, steps);
+      if (!isPlainObject(json)) return m;
       // Zwei Durchgänge: pfadabhängige Specs (index/idOf) werden erst geprüft,
       // wenn alle pfadfreien Felder und Ansichtsfelder geladen sind — die
       // Deklarationsreihenfolge im Schema spielt so keine Rolle.
@@ -409,9 +498,10 @@ export function defineModel(schema) {
       return m;
     }
 
-    /** @returns {object} Inhalt und Ansicht, in Schema-Reihenfolge, als Kopie */
+    /** @returns {object} `_schema`, dann Inhalt und Ansicht in Schema-Reihenfolge, als Kopie */
     toJSON() {
-      const out = {};
+      const name = /** @type {any} */ (this.constructor).moduleName;
+      const out = { _schema: typeof name === 'string' ? { name, version } : { version } };
       for (const k of Object.keys(all)) out[k] = cloneJSON(this._v[k]);
       return out;
     }
@@ -433,7 +523,7 @@ export function defineModel(schema) {
     }
   }
 
-  Model.schema = Object.freeze({ fields, view, commands });
+  Model.schema = Object.freeze({ fields, view, commands, version, migrations });
   for (const [k, s] of Object.entries(all)) {
     Object.defineProperty(Model.prototype, k, {
       get() { return this._v[k]; },

@@ -36,6 +36,12 @@ function fakeContext(saved) {
 const flush = () => new Promise((r) => setTimeout(r, 0));
 
 suite('createModule mit descriptor (neue Form)', () => {
+  test('createModule setzt den Modulnamen für _schema', () => {
+    const Named = defineModel({ fields: { title: text() } });
+    createModule({ descriptor: { ...DESCRIPTOR }, config: { actions: [] }, Model: Named, data: () => ({}) });
+    assertEqual(new Named().toJSON()._schema.name, ID);
+  });
+
   test('Felder aus module.js an der Instanz, Template aus resources/view.html', async () => {
     ensureTemplate();
     const mod = createModule({ descriptor: DESCRIPTOR, config: { actions: [] }, Model: Note, data: () => ({}) });
