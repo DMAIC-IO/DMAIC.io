@@ -117,6 +117,7 @@ const PATH_TOKEN = /([A-Za-z_$][\w$]*)|\.([A-Za-z_$][\w$]*)|\[([A-Za-z_$][\w$]*)
  * @param {string} path @returns {{ kind: 'field'|'key'|'ref', name: string }[]}
  */
 export function parsePath(path) {
+  /** @type {{ kind: 'field'|'key'|'ref', name: string }[]} */
   const out = [];
   PATH_TOKEN.lastIndex = 0;
   while (PATH_TOKEN.lastIndex < path.length) {

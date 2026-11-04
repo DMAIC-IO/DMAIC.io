@@ -6,6 +6,7 @@
     "dev": "npx serve . --no-cache",
     "build": "node tools/build-icons.mjs && node tools/build/build.mjs",
     "build:check": "node tools/build/build.mjs --check",
+    "typecheck": "node tools/build/typecheck.mjs",
     "build:watch": "node tools/build/build.mjs --watch",
     "test:build": "node --test tools/build/*.test.mjs tools/static-handbook/render/*.test.mjs tools/static-handbook/loaders/*.test.mjs .github/scripts/*.test.mjs tools/resampling-coverage/*.test.mjs",
     "test:unit": "node tests/run-node.mjs",
