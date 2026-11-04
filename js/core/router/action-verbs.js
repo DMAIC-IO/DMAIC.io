@@ -150,7 +150,7 @@ export function createActionVerbs(ctx) {
       render([scenarioId]) {
         return {
           title: i18n.t('actions.loadingScenario'),
-          subtitle: titleOf(examplesRegistry.get(scenarioId)),
+          subtitle: titleOf(examplesRegistry.getScenario(scenarioId)),
         };
       },
       /**
@@ -167,7 +167,7 @@ export function createActionVerbs(ctx) {
        * @returns {{title: string, subtitle: string, note: string|null, confirmLabel: string}}
        */
       done(detail, [scenarioId]) {
-        const scenario = examplesRegistry.get(scenarioId);
+        const scenario = examplesRegistry.getScenario(scenarioId);
         return scenarioDoneState({
           i18n, result: detail, total: scenario?.items?.length ?? 0,
         });
@@ -179,7 +179,7 @@ export function createActionVerbs(ctx) {
      * @returns {Promise<{route: object, detail: object}>}
      */
     async run([scenarioId]) {
-      const scenario = examplesRegistry.get(scenarioId);
+      const scenario = examplesRegistry.getScenario(scenarioId);
       // Same definition of "scenario" as list() / ExamplesRegistry.getScenarios():
       // `type === 'scenario'`. The `items` check is an additional guard against a
       // scenario entry authored without items (which would load nothing).
@@ -229,7 +229,7 @@ export function createActionVerbs(ctx) {
       render([exampleId]) {
         return {
           title: i18n.t('actions.loadingExample'),
-          subtitle: titleOf(examplesRegistry.get(exampleId)),
+          subtitle: titleOf(examplesRegistry.peek(exampleId)),
         };
       },
       // Auto-close: a single example is self-explanatory and the success toast
@@ -242,7 +242,7 @@ export function createActionVerbs(ctx) {
      * @returns {Promise<{route: object, detail: object}>}
      */
     async run([exampleId]) {
-      const meta = examplesRegistry.get(exampleId);
+      const meta = await examplesRegistry.get(exampleId);
       if (!meta || meta.type === 'scenario') throw new Error(`Unknown example: ${exampleId}`);
       const scenario = { id: `ad-hoc:${exampleId}`, items: [exampleId], startPhase: null };
       const result = await ctx.loadScenario({ scenario });

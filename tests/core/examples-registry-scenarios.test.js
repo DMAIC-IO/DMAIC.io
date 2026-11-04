@@ -31,12 +31,12 @@ suite('parseScenarioItem', () => {
 });
 
 suite('ExamplesRegistry scenarios', () => {
-  test('setCatalog: Szenarien aus beiden Quellen, Reihenfolge scenarios zuerst', () => {
+  test('setCatalog: Szenarien aus beiden Quellen, Reihenfolge scenarios zuerst', async () => {
     const reg = new ExamplesRegistry();
     reg.setCatalog({ examples: CATALOG.examples, scenarios: [{ id: 'scn-shared', type: 'scenario', cycle: 'dmaic', items: ['ex-a'] }] });
     assertDeepEqual(reg.getScenarios().map((s) => s.id), ['scn-shared', 'scn-full', 'scn-starter', 'scn-other']);
     assertEqual(reg.get('scn-shared').id, 'scn-shared');
-    assertDeepEqual(reg.getForModule('sipoc').map((e) => e.id), ['ex-a']);
+    assertDeepEqual((await reg.getForModule('sipoc')).map((e) => e.id), ['ex-a']);
   });
 
   test('getScenarios returns every scenario entry', () => {
@@ -58,9 +58,25 @@ suite('ExamplesRegistry scenarios', () => {
     assertDeepEqual(makeRegistry().getScenariosForExample('nope'), []);
   });
 
-  test('getForModule never returns scenarios', () => {
-    const ids = makeRegistry().getForModule('sipoc').map(e => e.id);
+  test('getForModule never returns scenarios', async () => {
+    const ids = (await makeRegistry().getForModule('sipoc')).map(e => e.id);
     assertDeepEqual(ids, ['ex-a']);
+  });
+
+  test('getScenario liefert nur Szenarien; peek liefert jeden bekannten Eintrag', () => {
+    const reg = makeRegistry();
+    assertEqual(reg.getScenario('scn-full').id, 'scn-full');
+    assertEqual(reg.getScenario('ex-a'), undefined);
+    assertEqual(reg.peek('ex-a').id, 'ex-a');
+    assertEqual(reg.peek('scn-full').id, 'scn-full');
+    assertEqual(reg.peek('nope'), undefined);
+  });
+
+  test('hasExamples aus dem Index', () => {
+    const reg = makeRegistry();
+    assertEqual(reg.hasExamples('histogram'), true);
+    assertEqual(reg.hasExamples('sipoc'), true);
+    assertEqual(reg.hasExamples('kano'), false);
   });
 });
 

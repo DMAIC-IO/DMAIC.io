@@ -41,7 +41,7 @@ function makeCtx(overrides = {}) {
     },
     examplesRegistry: {
       load: async () => ({ data: {}, meta: {} }),
-      get: (id) => ({ id, type: 'scenario', items: ['ex-a#histogram', 'ex-b#boxplot'] }),
+      getScenario: (id) => ({ id, type: 'scenario', items: ['ex-a#histogram', 'ex-b#boxplot'] }),
     },
     workspace: { getActiveModuleInfo: () => null },
     notify: (msg, level) => notified.push({ msg, level }),
@@ -121,7 +121,7 @@ suite('startup/example-deeplink', () => {
     setSearch('scenario=gibt-es-nicht');
     let called = false;
     const ctx = makeCtx({
-      examplesRegistry: { load: async () => ({}), get: () => undefined },
+      examplesRegistry: { load: async () => ({}), getScenario: () => undefined },
       __loadScenario: async () => { called = true; return { loaded: [], failed: [] }; },
     });
     exampleDeeplink.run(ctx);

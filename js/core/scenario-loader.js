@@ -20,11 +20,11 @@ import { createInstance } from './router/instance-ops.js';
  * Resolve the module a scenario item targets.
  * @param {string} item
  * @param {object} examplesRegistry
- * @returns {{ exampleId: string, moduleId: string|null, meta: object|undefined }}
+ * @returns {Promise<{ exampleId: string, moduleId: string|null, meta: object|undefined }>}
  */
-function resolveItem(item, examplesRegistry) {
+async function resolveItem(item, examplesRegistry) {
   const { exampleId, moduleId } = parseScenarioItem(item);
-  const meta = examplesRegistry.get(exampleId);
+  const meta = await examplesRegistry.get(exampleId);
   return { exampleId, moduleId: moduleId || meta?.modules?.[0] || null, meta };
 }
 
@@ -135,7 +135,7 @@ export async function loadScenario({
   };
 
   for (const [i, item] of items.entries()) {
-    const { exampleId, moduleId, meta } = resolveItem(item, examplesRegistry);
+    const { exampleId, moduleId, meta } = await resolveItem(item, examplesRegistry);
     emitSafe('scenario:progress', {
       index: i + 1, total: items.length, exampleId, moduleId,
       title: meta?.title ?? null,

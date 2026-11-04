@@ -22,7 +22,9 @@ function makeCtx() {
       i18n: { t: (k, p) => (p ? `${k}:${JSON.stringify(p)}` : k), getLanguage: () => 'de' },
       examplesRegistry: {
         getScenarios: () => SCENARIOS,
-        get: (id) => SCENARIOS.find(s => s.id === id) || (id === 'ex-a' ? { id, modules: ['sipoc'] } : undefined),
+        getScenario: (id) => SCENARIOS.find(s => s.id === id),
+        get: async (id) => (id === 'ex-a' ? { id, modules: ['sipoc'] } : undefined),
+        peek: (id) => (id === 'ex-a' ? { id, modules: ['sipoc'] } : undefined),
       },
       stateManager: {
         createProject: (name, cycle) => { calls.push(`create:${name}:${cycle}`); return 'p-new'; },
@@ -92,7 +94,7 @@ suite('action verbs', () => {
     const { ctx } = makeCtx();
     // Same shape as a scenario (has `items`) but not typed as one — must not
     // be loadable via #/action/scenario/…, or list() and run() would disagree.
-    ctx.examplesRegistry.get = (id) => (id === 'faux'
+    ctx.examplesRegistry.getScenario = (id) => (id === 'faux'
       ? { id: 'faux', type: 'project', items: ['ex-a'] } : undefined);
     let error = null;
     try { await createActionVerbs(ctx).get('scenario').run(['faux']); }
@@ -102,7 +104,7 @@ suite('action verbs', () => {
 
   test('scenario verb falls back when startPhase is unknown', async () => {
     const { ctx } = makeCtx();
-    ctx.examplesRegistry.get = (id) => (id === 'scn-typo'
+    ctx.examplesRegistry.getScenario = (id) => (id === 'scn-typo'
       ? { ...SCENARIOS[0], id: 'scn-typo', startPhase: 'defien' } : undefined);
     const res = await createActionVerbs(ctx).get('scenario').run(['scn-typo']);
     assertEqual(res.route.phaseId, 'define', 'typo falls back to the first phase');

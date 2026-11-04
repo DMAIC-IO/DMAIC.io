@@ -116,12 +116,41 @@ export class ExamplesRegistry {
   }
 
   /**
+   * Ein Szenario (synchron — Szenarien stehen nach init() vollständig bereit).
+   * @param {string} scenarioId
+   * @returns {object|undefined}
+   */
+  getScenario(scenarioId) {
+    return this._scenarios.find(s => s.id === scenarioId);
+  }
+
+  /**
+   * Ein schon bekannter Eintrag (Beispiel oder Szenario), ohne zu laden —
+   * für synchrone Stellen wie Modal-Titel. Ein noch nicht geladenes
+   * Modulbeispiel liefert undefined.
+   * @param {string} id
+   * @returns {object|undefined}
+   */
+  peek(id) {
+    return this._examples.find(e => e.id === id) ?? this.getScenario(id);
+  }
+
+  /**
+   * Ob ein Modul Beispiele hat, ohne zu laden.
+   * @param {string} moduleId
+   * @returns {boolean}
+   */
+  hasExamples(moduleId) {
+    return this._examples.some(e => Array.isArray(e.modules) && e.modules.includes(moduleId));
+  }
+
+  /**
    * Get a single catalog entry by id.
    * @param {string} exampleId
    * @returns {object|undefined}
    */
   get(exampleId) {
-    return this._examples.find(e => e.id === exampleId) ?? this._scenarios.find(e => e.id === exampleId);
+    return this.peek(exampleId);
   }
 
   /**

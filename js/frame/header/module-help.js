@@ -36,7 +36,7 @@ export function initModuleHelp(
   const scenarioConfirmDialog = buildScenarioConfirmDialog({ i18n, eventBus });
   scenarioConfirmDialog.prewarm?.();
 
-  const _activeContext = () => {
+  const _activeContext = async () => {
     const info = workspace.getActiveModuleInfo();
     if (!info) {
       return {
@@ -44,7 +44,7 @@ export function initModuleHelp(
       };
     }
     const hasHelp = typeof info.instance?.help === 'function';
-    const examples = examplesRegistry ? examplesRegistry.getForModule(info.moduleId) : [];
+    const examples = examplesRegistry?.hasExamples(info.moduleId) ? await examplesRegistry.getForModule(info.moduleId) : [];
     const canLoadExample = typeof info.instance?.loadExample === 'function';
     const glossary = glossaryRegistry ? glossaryRegistry.getForModule(info.moduleId) : [];
     const videos = videosRegistry ? videosRegistry.getForModule(info.moduleId) : [];
@@ -71,7 +71,7 @@ export function initModuleHelp(
   btn.style.display = '';
 
   const loadExampleAndApply = async (exampleId) => {
-    const { info, canLoadExample } = _activeContext();
+    const { info, canLoadExample } = await _activeContext();
     if (!info || !canLoadExample || !examplesRegistry) return;
 
     try {
@@ -116,7 +116,7 @@ export function initModuleHelp(
     let scenario;
     let scenarioTitle;
     try {
-      scenario = examplesRegistry.get(scenarioId);
+      scenario = examplesRegistry.getScenario(scenarioId);
       if (!scenario) return;
       scenarioTitle = scenario.title?.[i18n.getLanguage()] || scenario.title?.en || scenario.id;
 
@@ -202,7 +202,7 @@ export function initModuleHelp(
   // `preferredTab` (optional) keeps the user on their current tab across a
   // module switch; on first open it defaults to the help tab.
   async function populatePanel(preferredTab) {
-    const { info, hasHelp, examples, canLoadExample, glossary, scenarios, videos } = _activeContext();
+    const { info, hasHelp, examples, canLoadExample, glossary, scenarios, videos } = await _activeContext();
     const references = info?.instance?.references ? await info.instance.references() : [];
     const tabPref = preferredTab ? { preferredTab } : {};
 

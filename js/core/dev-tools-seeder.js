@@ -50,7 +50,7 @@ export async function seedAllModules({
     }
     added.push(def.id);
 
-    const ex = examplesRegistry.getForModule(def.id)[0];
+    const ex = (await examplesRegistry.getForModule(def.id))[0];
     if (!ex) continue;                                 // module stays empty
 
     const instance = await workspace.instantiateDetached(instanceId, def.id);

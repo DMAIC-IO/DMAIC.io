@@ -42,7 +42,7 @@ export default createStartup({
     // module instances, so activating a single module first would only add a
     // sixth, empty one next to them.
     if (scenarioId) {
-      const scenario = examplesRegistry?.get(scenarioId);
+      const scenario = examplesRegistry?.getScenario(scenarioId);
       if (!scenario) {
         console.warn(`[Deeplink] Unknown scenario: ${scenarioId}`);
         notify?.(i18n.t('moduleHelp.scenarioNotFound'), 'error');

@@ -48,7 +48,7 @@ suite('shipped scenario catalog', () => {
 
   test('the seven worksheet examples are present', async () => {
     const reg = await loadedRegistry();
-    const ids = reg.getForModule('worksheet').map(e => e.id);
+    const ids = (await reg.getForModule('worksheet')).map(e => e.id);
     EXPECTED_WORKSHEETS.forEach(id => assertTrue(ids.includes(id), `${id} missing`));
   });
 
@@ -71,7 +71,7 @@ suite('shipped scenario catalog', () => {
         `${scenario.id}: items must be a non-empty array`);
       for (const item of scenario.items) {
         const { exampleId, moduleId } = parseScenarioItem(item);
-        const meta = reg.get(exampleId);
+        const meta = await reg.get(exampleId);
         assertTrue(!!meta, `${scenario.id}: unknown example ${exampleId}`);
         if (moduleId) {
           assertTrue(Array.isArray(meta.modules) && meta.modules.includes(moduleId),
@@ -90,7 +90,7 @@ suite('shipped scenario catalog', () => {
       }
     }
     for (const id of referencedIds) {
-      const meta = reg.get(id);
+      const meta = await reg.get(id);
       if (meta.type === 'generator') continue;
       assertTrue(typeof meta.file === 'string' && meta.file.length > 0,
         `${id}: missing file field`);
@@ -129,7 +129,7 @@ suite('shipped scenario catalog', () => {
   // there, update this expected count in the same commit.
   test('the pizza scenario covers 21 examples', async () => {
     const reg = await loadedRegistry();
-    assertEqual(reg.get('scenario-pizza-full').items.length, 21);
+    assertEqual(reg.getScenario('scenario-pizza-full').items.length, 21);
   });
 
   // NOTE for maintainers: coupled to the literal item list of
@@ -137,7 +137,7 @@ suite('shipped scenario catalog', () => {
   // commit when items are added or removed there.
   test('the helicopter scenario covers 18 examples', async () => {
     const reg = await loadedRegistry();
-    assertEqual(reg.get('scenario-hubschrauber-full').items.length, 18);
+    assertEqual(reg.getScenario('scenario-hubschrauber-full').items.length, 18);
   });
 
   // The catalog array order IS the display order — getScenarios() does not
@@ -163,12 +163,12 @@ suite('shipped scenario catalog', () => {
 
   test('worksheet examples resolve to the worksheet module', async () => {
     const reg = await loadedRegistry();
-    EXPECTED_WORKSHEETS.forEach(id => {
-      const meta = reg.get(id);
+    for (const id of EXPECTED_WORKSHEETS) {
+      const meta = await reg.get(id);
       assertTrue(!!meta, `${id} missing`);
       assertEqual(meta.modules[0], 'worksheet');
       assertEqual(meta.format, 'json');
-    });
+    }
   });
 
   // NOTE: a starter scenario is NOT guaranteed to reuse the exact example ids
@@ -190,8 +190,8 @@ suite('shipped scenario catalog', () => {
       ['scenario-sprit-starter', 'scenario-sprit-full'],
     ];
     for (const [starterId, fullId] of pairs) {
-      const starter = reg.get(starterId);
-      const full = reg.get(fullId);
+      const starter = reg.getScenario(starterId);
+      const full = reg.getScenario(fullId);
       assertTrue(!!starter, `${starterId} missing`);
       assertTrue(!!full, `${fullId} missing`);
       assertEqual(starter.cycle, full.cycle, `${starterId}/${fullId}: cycle mismatch`);
