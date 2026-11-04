@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.qprovement.com/schemas/module-examples.schema.json",
+  "title": "Beispiele eines Moduls (resources/examples/examples.json) — Besitzer ist das Modul, darum kein modules",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["examples"],
+  "properties": {
+    "$schema": { "$ref": "common.schema.json#/$defs/schemaRef" },
+    "examples": {
+      "type": "array",
+      "items": { "type": "object", "$ref": "example-entry.schema.json#/$defs/entry", "unevaluatedProperties": false }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.qprovement.com/schemas/scenarios.schema.json",
+  "title": "Szenarien (examples/shared/scenarios.json)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["scenarios"],
+  "properties": {
+    "$schema": { "$ref": "common.schema.json#/$defs/schemaRef" },
+    "scenarios": { "type": "array", "items": { "$ref": "#/$defs/scenario" } }
+  },
+  "$defs": {
+    "scenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "title", "description", "cycle", "startPhase", "tags", "items"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "type": { "const": "scenario" },
+        "title": { "$ref": "common.schema.json#/$defs/localized" },
+        "description": { "$ref": "common.schema.json#/$defs/localized" },
+        "projectName": { "$ref": "common.schema.json#/$defs/localized" },
+        "cycle": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "startPhase": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "tags": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/text" } },
+        "items": {
+          "type": "array", "minItems": 1,
+          "items": { "type": "string", "pattern": "^[a-z0-9-]+(#[a-z0-9-]+)?$" }
+        }
+      }
+    }
+  }
+}

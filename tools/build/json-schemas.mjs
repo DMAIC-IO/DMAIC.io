@@ -24,6 +24,10 @@ export const FORMATS = Object.freeze({
   'module-references': { schema: 'module-references.schema.json', glob: 'js/modules/*/resources/data/references.json' },
   'module-resources': { schema: 'module-resources.schema.json', glob: null },
   'catalog-texts': { schema: 'catalog-texts.schema.json', glob: 'js/modules/catalog.*.json' },
+  'example-entry': { schema: 'example-entry.schema.json', glob: null },
+  'module-examples': { schema: 'module-examples.schema.json', glob: 'js/modules/*/resources/examples/examples.json' },
+  'examples-index': { schema: 'examples-index.schema.json', glob: null },
+  'scenarios': { schema: 'scenarios.schema.json', glob: null },
 });
 
 /** @type {import('ajv').default | null} */

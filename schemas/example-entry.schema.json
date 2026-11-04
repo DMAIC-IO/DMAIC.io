@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.qprovement.com/schemas/example-entry.schema.json",
+  "title": "Ein Beispiel (project, dataset, generator) — ohne modules",
+  "type": "object",
+  "$ref": "#/$defs/entry",
+  "unevaluatedProperties": false,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "common": {
+      "type": "object",
+      "required": ["id", "type", "title", "description", "source", "tags"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "type": { "type": "string" },
+        "title": { "$ref": "common.schema.json#/$defs/localized" },
+        "description": { "$ref": "common.schema.json#/$defs/localized" },
+        "source": { "$ref": "common.schema.json#/$defs/text" },
+        "license": { "$ref": "common.schema.json#/$defs/text" },
+        "tags": { "type": "array", "minItems": 1, "items": { "$ref": "common.schema.json#/$defs/text" } }
+      }
+    },
+    "column": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "$ref": "common.schema.json#/$defs/text" },
+        "type": { "$ref": "common.schema.json#/$defs/text" },
+        "unit": { "$ref": "common.schema.json#/$defs/text" }
+      }
+    },
+    "columns": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/column" } },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": { "lsl": { "type": "number" }, "usl": { "type": "number" }, "target": { "type": "number" } }
+    },
+    "project": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/common" }],
+      "required": ["file", "format"],
+      "properties": {
+        "type": { "const": "project" },
+        "file": { "$ref": "common.schema.json#/$defs/text" },
+        "format": { "const": "json" }
+      }
+    },
+    "dataset": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/common" }],
+      "required": ["file", "format", "columns"],
+      "properties": {
+        "type": { "const": "dataset" },
+        "file": { "$ref": "common.schema.json#/$defs/text" },
+        "format": { "const": "csv" },
+        "columns": { "$ref": "#/$defs/columns" },
+        "spec": { "$ref": "#/$defs/spec" },
+        "preview": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["rows"],
+          "properties": { "rows": { "type": "integer", "minimum": 1 } }
+        }
+      }
+    },
+    "generator": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/common" }],
+      "required": ["generator", "columns"],
+      "properties": {
+        "type": { "const": "generator" },
+        "generator": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["algorithm", "params", "seed"],
+          "properties": {
+            "algorithm": { "$ref": "common.schema.json#/$defs/text" },
+            "params": { "type": "object" },
+            "seed": { "type": "integer" }
+          }
+        },
+        "columns": { "$ref": "#/$defs/columns" },
+        "spec": { "$ref": "#/$defs/spec" }
+      }
+    },
+    "entry": {
+      "oneOf": [{ "$ref": "#/$defs/project" }, { "$ref": "#/$defs/dataset" }, { "$ref": "#/$defs/generator" }]
+    }
+  }
+}

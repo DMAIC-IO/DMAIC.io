@@ -3,7 +3,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { FORMATS, validateValue, validateFile, schemaRef, checkTree } from './json-schemas.mjs';
@@ -194,4 +194,62 @@ test('Passform: jede Referenzliste erfüllt module-references', () => {
 
 test('echter Baum: jede Datei eines Formats ist gültig und verweist auf ihr Schema', () => {
   assert.deepEqual(checkTree(APP_DIR), []);
+});
+
+// ─── A3: Beispiel-Formate ──────────────────────────────────────────
+
+const L = (de, en = de) => ({ de, en });
+const PROJECT = { id: 'p1', type: 'project', title: L('P'), description: L('D'), source: 'Q', license: 'public-domain', file: 'projects/p1.json', format: 'json', tags: ['t'] };
+const DATASET = { id: 'd1', type: 'dataset', title: L('D'), description: L('D'), source: 'Q', file: 'data/d1.csv', format: 'csv', tags: ['t'],
+  columns: [{ name: 'Durchmesser', type: 'numeric', unit: 'mm' }], spec: { lsl: 9.8, usl: 10.2, target: 10 }, preview: { rows: 10 } };
+const GENERATOR = { id: 'g1', type: 'generator', title: L('G'), description: L('G'), source: 'Q', tags: ['t'],
+  generator: { algorithm: 'normal', params: { n: 100 }, seed: 7 }, columns: [{ name: 'x', type: 'numeric' }] };
+const SCENARIO = { id: 's1', type: 'scenario', title: L('S'), description: L('S'), cycle: 'dmaic', startPhase: 'define', tags: ['scenario'], items: ['p1', 'd1#histogram'] };
+
+test('example-entry: die drei Typen gültig; modules, fremder Typ, fehlende Pflicht ungültig', () => {
+  for (const e of [PROJECT, DATASET, GENERATOR]) assert.deepEqual(validateValue(e, 'example-entry').errors, [], e.id);
+  assert.equal(validateValue({ ...PROJECT, modules: ['sipoc'] }, 'example-entry').ok, false, 'modules gehört nicht in die Modul-Datei');
+  assert.equal(validateValue({ ...PROJECT, type: 'scenario' }, 'example-entry').ok, false);
+  assert.equal(validateValue({ ...PROJECT, format: 'csv' }, 'example-entry').ok, false);
+  const noSource = { ...PROJECT };
+  delete noSource.source;
+  assert.equal(validateValue(noSource, 'example-entry').ok, false);
+  assert.equal(validateValue({ ...GENERATOR, file: 'x' }, 'example-entry').ok, false);
+  assert.equal(validateValue({ ...DATASET, title: { de: 'nur de' } }, 'example-entry').ok, false);
+});
+
+test('module-examples: { $schema, examples } gültig; nacktes Array und modules ungültig', () => {
+  assert.deepEqual(validateValue({ $schema: 'x', examples: [PROJECT, DATASET, GENERATOR] }, 'module-examples').errors, []);
+  assert.equal(validateValue([PROJECT], 'module-examples').ok, false);
+  assert.equal(validateValue({ examples: [{ ...PROJECT, modules: ['a'] }] }, 'module-examples').ok, false);
+});
+
+test('examples-index: Einträge brauchen modules; Szenarien gehören nicht hinein', () => {
+  const ok = { $schema: 'x', version: '1.0', examples: [{ ...PROJECT, modules: ['sipoc'] }, { ...DATASET, modules: ['process-capability', 'histogram'] }] };
+  assert.deepEqual(validateValue(ok, 'examples-index').errors, []);
+  assert.equal(validateValue({ version: '1.0', examples: [PROJECT] }, 'examples-index').ok, false);
+  assert.equal(validateValue({ version: '1.0', examples: [SCENARIO] }, 'examples-index').ok, false);
+  assert.equal(validateValue({ version: '1.0', examples: [{ ...PROJECT, modules: [] }] }, 'examples-index').ok, false);
+});
+
+test('scenarios: gültig mit optionalem projectName; Item-Muster und Pflichtfelder', () => {
+  assert.deepEqual(validateValue({ $schema: 'x', scenarios: [SCENARIO, { ...SCENARIO, id: 's2', projectName: L('Pr') }] }, 'scenarios').errors, []);
+  assert.equal(validateValue({ scenarios: [{ ...SCENARIO, items: ['p1#'] }] }, 'scenarios').ok, false);
+  assert.equal(validateValue({ scenarios: [{ ...SCENARIO, items: ['P1'] }] }, 'scenarios').ok, false);
+  const noCycle = { ...SCENARIO };
+  delete noCycle.cycle;
+  assert.equal(validateValue({ scenarios: [noCycle] }, 'scenarios').ok, false);
+  assert.equal(validateValue({ scenarios: [{ ...SCENARIO, type: 'project' }] }, 'scenarios').ok, false);
+});
+
+test('Passform: examples/index.json ohne Szenarien erfüllt examples-index, die Szenarien erfüllen scenarios', () => {
+  const index = JSON.parse(readFileSync(join(APP_DIR, 'examples', 'index.json'), 'utf8'));
+  const examples = index.examples.filter((e) => e.type !== 'scenario');
+  const scenarios = index.examples.filter((e) => e.type === 'scenario');
+  // Vor Task 2 stehen die Szenarien noch in index.json, danach in examples/shared/scenarios.json.
+  const shared = join(APP_DIR, 'examples', 'shared', 'scenarios.json');
+  if (scenarios.length === 0 && existsSync(shared)) scenarios.push(...JSON.parse(readFileSync(shared, 'utf8')).scenarios);
+  assert.deepEqual(validateValue({ version: index.version, examples }, 'examples-index').errors, []);
+  assert.deepEqual(validateValue({ scenarios }, 'scenarios').errors, []);
+  assert.equal(scenarios.length, 12);
 });
