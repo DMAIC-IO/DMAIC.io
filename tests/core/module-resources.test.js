@@ -149,4 +149,34 @@ suite('ModuleResources', () => {
     assertEqual(res.url('probe', 'i18n/ui.en.json'), FIX('ui.en.json'));
     assertEqual(res.url('probe', 'i18n/help.de.json'), undefined);
   });
+
+  test('prepare während eines laufenden setLanguage: Texte der Zielsprache sind danach da', async () => {
+    cleanup();
+    const i18n = makeI18n('de');
+    const res = new ModuleResources({ manifest: MANIFEST, i18n });
+    i18n.addLanguageHook((lang) => res.loadLanguage(lang));
+    let release;
+    i18n.addLanguageHook(() => new Promise((r) => { release = r; }));
+    const switching = i18n.setLanguage('en');
+    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 0));
+    const preparing = res.prepare('probe');
+    await preparing;
+    release();
+    await switching;
+    assertEqual(i18n.t('modules.probe.col'), 'Column');
+    cleanup();
+  });
+
+  test('erneutes prepare nach Teil-Fehlschlag hängt das Stylesheet nicht doppelt an', async () => {
+    cleanup();
+    let fail = true;
+    const res = new ModuleResources({ manifest: MANIFEST, i18n: makeI18n(),
+      loaders: { fetchDocument: (url) => (fail ? Promise.reject(new Error('net')) : fetchDocument(url)) } });
+    try { await res.prepare('probe'); } catch { /* erwartet */ }
+    fail = false;
+    await res.prepare('probe');
+    assertEqual(document.querySelectorAll(`link[href="${FIX('style.css')}"]`).length, 1);
+    cleanup();
+  });
 });

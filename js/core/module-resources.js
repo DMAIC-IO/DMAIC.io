@@ -107,6 +107,8 @@ export class ModuleResources {
     this._prepared = new Map();
     /** @type {Map<string, Promise<void>>} `${id}:${lang}` → UI-Texte */
     this._texts = new Map();
+    /** @type {Map<string, Promise<void>>} id → Stylesheet (nie doppelt anhängen) */
+    this._styles = new Map();
     // Nicht reaktiv: die Instanz hängt über ModuleRegistry._resources am
     // stateManager und hält i18n, dessen _stateManager zurückführt. Hält ein
     // Viewmodel den Modulkontext als Datenfeld, stiege Alpines
@@ -140,10 +142,14 @@ export class ModuleResources {
     if (!this.has(id)) return Promise.reject(new Error(`[module-resources] ${id}: nicht in #module-resources`));
     let pending = this._prepared.get(id);
     if (!pending) {
+      const pendingLang = this._i18n.getPendingLanguage?.();
       pending = Promise.all([
         this._templates(id),
         this._style(id),
         this._uiTexts(id, this._i18n.getLanguage()),
+        // Läuft gerade ein Sprachwechsel, hat dessen Haken _prepared evtl.
+        // schon durchlaufen: Texte der Zielsprache gleich mitladen.
+        ...(pendingLang && pendingLang !== this._i18n.getLanguage() ? [this._uiTexts(id, pendingLang)] : []),
       ]).then(() => {});
       pending.catch(() => this._prepared.delete(id));
       this._prepared.set(id, pending);
@@ -171,9 +177,16 @@ export class ModuleResources {
   }
 
   /** @param {string} id */
-  async _style(id) {
+  _style(id) {
     const url = this._manifest[id].style;
-    if (url) await this._loadStylesheet(url);
+    if (!url) return Promise.resolve();
+    let pending = this._styles.get(id);
+    if (!pending) {
+      pending = Promise.resolve(this._loadStylesheet(url)).then(() => {});
+      pending.catch(() => this._styles.delete(id));
+      this._styles.set(id, pending);
+    }
+    return pending;
   }
 
   /**

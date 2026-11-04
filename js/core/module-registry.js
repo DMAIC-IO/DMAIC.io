@@ -107,7 +107,7 @@ export class ModuleRegistry {
     const definition = this._registry.get(moduleId);
     if (!definition || typeof definition.loadTile !== 'function') return undefined;
     if (!definition._tile) {
-      await this._prepare(definition);
+      await loadChunk(() => this._prepare(definition));
       const mod = await loadChunk(definition.loadTile);
       definition._tile = mod.default;
     }

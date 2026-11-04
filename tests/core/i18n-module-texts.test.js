@@ -60,4 +60,33 @@ suite('I18n: Katalogtexte und Sprach-Haken', () => {
     assertDeepEqual(order, ['hook:en', 'event:language:changed']);
     assertEqual(i18n.t('modules.neu.col'), 'Column');
   });
+
+  test('ein abgelehnter Haken hält setLanguage nicht auf; Fehler per console.error', async () => {
+    const i18n = new I18n('de');
+    i18n._cache.set('de', {}); i18n._cache.set('en', {});
+    const events = [];
+    i18n.connect({ emit: (name) => events.push(name) }, null);
+    i18n.addLanguageHook(() => Promise.reject(new Error('kaputt')));
+    let ran = false;
+    i18n.addLanguageHook(() => { ran = true; });
+    const errors = [];
+    const orig = console.error;
+    console.error = (...a) => errors.push(a.join(' '));
+    try { await i18n.setLanguage('en'); } finally { console.error = orig; }
+    assertEqual(i18n.getLanguage(), 'en');
+    assertDeepEqual(events, ['language:changed']);
+    assertEqual(ran, true);
+    assertEqual(errors.length, 1);
+  });
+
+  test('getPendingLanguage: Zielsprache nur während setLanguage', async () => {
+    const i18n = new I18n('de');
+    i18n._cache.set('de', {}); i18n._cache.set('en', {});
+    let during = 'unset';
+    i18n.addLanguageHook(() => { during = i18n.getPendingLanguage(); });
+    assertEqual(i18n.getPendingLanguage(), null);
+    await i18n.setLanguage('en');
+    assertEqual(during, 'en');
+    assertEqual(i18n.getPendingLanguage(), null);
+  });
 });

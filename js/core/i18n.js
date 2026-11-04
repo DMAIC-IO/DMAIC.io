@@ -35,6 +35,8 @@ export class I18n {
     this._stateManager = null;
     /** @type {((lang: string) => Promise<void>|void)[]} */
     this._languageHooks = [];
+    /** @type {string|null} Zielsprache, solange setLanguage läuft */
+    this._pendingLang = null;
   }
 
   /**
@@ -73,14 +75,31 @@ export class I18n {
    * @param {string} lang
    */
   async setLanguage(lang) {
-    await this.loadLanguage(lang);
-    // Nachgeladene Modultexte (ModuleResources) vor dem Umschalten holen —
-    // sonst zeigte ein offenes Modul nach language:changed Schlüssel statt Text.
-    await Promise.all(this._languageHooks.map((fn) => fn(lang)));
-    this._lang = lang;
+    this._pendingLang = lang;
+    try {
+      await this.loadLanguage(lang);
+      // Nachgeladene Modultexte (ModuleResources) vor dem Umschalten holen —
+      // sonst zeigte ein offenes Modul nach language:changed Schlüssel statt Text.
+      // Ein abgelehnter Haken hält das Umschalten nicht auf.
+      const results = await Promise.allSettled(this._languageHooks.map((fn) => fn(lang)));
+      for (const r of results) {
+        if (r.status === 'rejected') console.error('[i18n] Sprach-Haken fehlgeschlagen:', r.reason);
+      }
+      this._lang = lang;
+    } finally {
+      this._pendingLang = null;
+    }
     this._updateDOM();
     this._stateManager?.set('settings.language', lang);
     this._eventBus?.emit('language:changed', { lang });
+  }
+
+  /**
+   * Zielsprache eines laufenden `setLanguage`, sonst null.
+   * @returns {string|null}
+   */
+  getPendingLanguage() {
+    return this._pendingLang;
   }
 
   /**

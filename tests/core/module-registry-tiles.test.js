@@ -93,4 +93,16 @@ suite('ModuleRegistry: Module in neuer Form', () => {
     assertEqual((await r.loadTile('neu')).t, 1);
     assertDeepEqual(log, ['prepare:neu']);
   });
+
+  test('loadTile: scheitert prepare, kommt ChunkLoadError (wie ein Chunk-Fehler) und der nächste Versuch lädt neu', async () => {
+    const r = new ModuleRegistry();
+    let fail = true;
+    r.setResources({ prepare: () => (fail ? Promise.reject(new Error('net')) : Promise.resolve()) });
+    r.register({ id: 'neu', phase: 'define', form: 'module', load: noopLoad, loadTile: () => Promise.resolve({ default: { t: 1 } }) });
+    let caught = null;
+    try { await r.loadTile('neu'); } catch (err) { caught = err; }
+    assertTrue(caught instanceof ChunkLoadError);
+    fail = false;
+    assertEqual((await r.loadTile('neu')).t, 1);
+  });
 });
