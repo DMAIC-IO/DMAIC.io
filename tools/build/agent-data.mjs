@@ -50,6 +50,7 @@
  * Mirrors help-data.mjs: collect + render, kein Schreibzugriff hier.
  */
 import { readReturnKeys } from './agent-read-return.mjs';
+import { CONVERTED_MODULES } from './converted-modules.mjs';
 import ts from 'typescript';
 import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
 import { join, relative, sep, dirname, basename } from 'node:path';
@@ -99,14 +100,15 @@ export const CREATING_VOID_EXEMPT = new Set(['doe-planner.factors.insertLevel', 
 /**
  * Sammle die Agenten-Registry über alle Module.
  * @param {string} appDir  Wurzel von app/dev
- * @param {{ baseline?: Set<string> }} [options]  `baseline`: eingefrorene Zeilen
- *   `<modul> <code>`, Vorgabe ist `agent-write-baseline.txt`
+ * @param {{ baseline?: Set<string>, converted?: readonly string[] }} [options]  `baseline`: eingefrorene Zeilen
+ *   `<modul> <code>`, Vorgabe ist `agent-write-baseline.txt`; `converted`: umgestellte Module
+ *   (Vorgabe `CONVERTED_MODULES`), nur sie bekommen den Schema-Platzhalter
  * @returns {{ modules: Record<string, object>, coverage: { total: number, available: number }, writtenFields: Record<string, string[]>, frozen: Record<string, string[]> }}
  *   `writtenFields` nennt je Modul die Felder, die eine `@agent`-Aktion
  *   zuweist, `frozen` die Befunde aus der Baseline — beides nur für Bericht und
  *   Test, nicht Teil der Registry
  */
-export function collectAgentData(appDir, { baseline = loadWriteBaseline() } = {}) {
+export function collectAgentData(appDir, { baseline = loadWriteBaseline(), converted = CONVERTED_MODULES } = {}) {
   const root = join(appDir, MODULES_DIR);
   // EIN Auflöser für den ganzen Lauf: nur so trägt sein Parse-Zwischenspeicher
   // über Modulgrenzen (`chart-module-base.js` hängt an elf Modulen).
@@ -118,10 +120,10 @@ export function collectAgentData(appDir, { baseline = loadWriteBaseline() } = {}
   for (const id of readdirSync(root).sort()) {
     const dir = join(root, id);
     if (!statSync(dir).isDirectory()) continue;
-    // Ein Modul mit deklarativem Model (core/model.js) erzeugt seine Fläche zur
+    // Ein umgestelltes Modul (converted-modules.mjs) erzeugt seine Fläche zur
     // Laufzeit aus dem Schema (core/agent/agent-schema.js). Hier steht nur der
     // Platzhalter, den core/agent/agent-entries.js beim ersten Bedarf ersetzt.
-    if (existsSync(join(dir, 'domain', 'model.js'))) {
+    if (converted.includes(id)) {
       modules[id] = { tagged: true, available: true, schema: true, violations: [], reported: [], actions: {}, fields: {} };
       writtenFields[id] = [];
       continue;

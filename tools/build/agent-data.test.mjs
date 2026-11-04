@@ -4687,13 +4687,22 @@ test('Element-Zeiger: eine Pfad-Hilfe, die nur einen Model-Wert umkopiert, deckt
   assert.deepEqual(modules.foo.reported, ['unreachable_write:params.alpha', 'unreachable_write:params.beta']);
 });
 
-test('ein Modul mit domain/model.js bekommt den Schema-Platzhalter', () => {
+test('ein Modul aus der Liste der umgestellten bekommt den Schema-Platzhalter', () => {
   const root = fixture({}, {
     'js/modules/neu/domain/model.js': 'export const State = null;\n',
     'js/modules/neu/viewmodel/viewmodel.js': '',
   });
-  const { modules } = collectAgentData(root, { baseline: new Set() });
+  const { modules } = collectAgentData(root, { baseline: new Set(), converted: ['neu'] });
   assert.deepEqual(modules.neu, {
     tagged: true, available: true, schema: true, violations: [], reported: [], actions: {}, fields: {},
   });
+});
+
+test('domain/model.js allein macht kein Schema-Modul', () => {
+  const root = fixture({}, {
+    'js/modules/neu/domain/model.js': 'export const State = null;\n',
+    'js/modules/neu/viewmodel/viewmodel.js': '',
+  });
+  const { modules } = collectAgentData(root, { baseline: new Set(), converted: [] });
+  assert.equal(modules.neu, undefined);
 });
