@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, readdirSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { renderModuleTemplates, writeModuleTemplates } from './module-assets.mjs';
+import { renderModuleTemplates, writeModuleTemplates, moduleCss, writeModuleStyles, linkedModuleCss } from './module-assets.mjs';
 import { renderIndexHtml } from '../build-templates/build.mjs';
 
 /** Temp-App aus `{ pfad: inhalt }`. */
@@ -81,4 +81,34 @@ test('erzeugte Dateien in js/chunks/ werden nie als Template-Quelle gesammelt', 
   writeModuleTemplates(root, ['neu']);
   assert.doesNotMatch(renderIndexHtml(root, { converted: ['neu'] }), /js\/chunks\//);
   assert.doesNotMatch(renderModuleTemplates(root, 'neu'), /js\/chunks\//);
+});
+
+test('moduleCss: minifiziert, null ohne style.css', async () => {
+  const root = appWith({ 'js/modules/neu/resources/style.css': '.module-neu__box {\n  color: var(--color-text);\n}\n' });
+  assert.equal((await moduleCss(root, 'neu')).trim(), '.module-neu__box{color:var(--color-text)}');
+  assert.equal(await moduleCss(appWith({}), 'neu'), null);
+});
+
+test('moduleCss: url( und @import sind Build-Fehler', async () => {
+  const withUrl = appWith({ 'js/modules/neu/resources/style.css': '.a { background: url(x.png); }' });
+  await assert.rejects(() => moduleCss(withUrl, 'neu'), /neu: resources\/style\.css: url\( und @import sind nicht erlaubt/);
+  const withImport = appWith({ 'js/modules/neu/resources/style.css': '@import "x.css";' });
+  await assert.rejects(() => moduleCss(withImport, 'neu'), /@import/);
+});
+
+test('writeModuleStyles schreibt js/chunks/styles/<id>-<hash8>.css, ohne style.css kein Eintrag', async () => {
+  const root = appWith({
+    'js/modules/neu/resources/style.css': '.a { color: red; }',
+    'js/modules/leer/resources/view.html': '<div></div>',
+  });
+  const urls = await writeModuleStyles(root, ['leer', 'neu']);
+  assert.deepEqual(Object.keys(urls), ['neu']);
+  assert.match(urls.neu, /^js\/chunks\/styles\/neu-[0-9a-f]{8}\.css$/);
+  assert.equal(readFileSync(join(root, ...urls.neu.split('/')), 'utf8'), await moduleCss(root, 'neu'));
+});
+
+test('linkedModuleCss: STYLES-Link auf ein umgestelltes Modul ist ein Befund', () => {
+  assert.deepEqual(linkedModuleCss(['css/variables.css', 'js/modules/neu/neu.css', 'js/modules/alt/alt.css'], ['neu']),
+    ['styles: neu: index.dist.html verlinkt js/modules/neu/neu.css — umgestellte Module laden ihr CSS selbst']);
+  assert.deepEqual(linkedModuleCss(['js/modules/alt/alt.css'], ['neu']), []);
 });

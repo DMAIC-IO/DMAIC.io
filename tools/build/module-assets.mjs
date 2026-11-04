@@ -7,9 +7,10 @@
  * js/chunks/ ist gitignored: die Dateien werden bei jedem Build geschrieben,
  * auch im Prüfmodus, und nie als veraltet gemeldet — wie index.html.
  */
-import { existsSync, mkdirSync, readdirSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
+import { transform } from 'esbuild';
 import { collectTemplateRecords, renderTemplates } from '../build-templates/build.mjs';
 
 /** sha256, 8 Hex-Zeichen (wie hash8 in build.mjs — hier eigen, sonst Importkreis). */
@@ -71,4 +72,64 @@ export function writeModuleTemplates(appDir, converted) {
   }
   prune(dir, keep);
   return urls;
+}
+
+/**
+ * Das CSS eines umgestellten Moduls, minifiziert.
+ * @param {string} appDir
+ * @param {string} id
+ * @returns {Promise<string|null>} null, wenn das Modul kein resources/style.css hat
+ */
+export async function moduleCss(appDir, id) {
+  const file = join(appDir, 'js', 'modules', id, 'resources', 'style.css');
+  if (!existsSync(file)) return null;
+  const source = readFileSync(file, 'utf8');
+  // Die Datei landet in js/chunks/styles/ — relative url() und @import zeigten
+  // dort ins Leere. Heute braucht kein Modul-CSS eines von beiden.
+  if (/url\(|@import/.test(source)) {
+    throw new Error(`${id}: resources/style.css: url( und @import sind nicht erlaubt`);
+  }
+  return (await transform(source, { loader: 'css', minify: true })).code;
+}
+
+/**
+ * CSS-Dateien aller umgestellten Module schreiben.
+ * @param {string} appDir
+ * @param {readonly string[]} converted
+ * @returns {Promise<Record<string, string>>} id → URL relativ zur App-Wurzel
+ */
+export async function writeModuleStyles(appDir, converted) {
+  if (!converted.length) return {};
+  const dir = join(appDir, 'js', 'chunks', 'styles');
+  mkdirSync(dir, { recursive: true });
+  const urls = {};
+  const keep = new Set();
+  for (const id of converted) {
+    const css = await moduleCss(appDir, id);
+    if (css === null) continue;
+    const name = `${id}-${hash8(css)}.css`;
+    writeAtomic(join(dir, name), css);
+    keep.add(name);
+    urls[id] = `js/chunks/styles/${name}`;
+  }
+  prune(dir, keep);
+  return urls;
+}
+
+/**
+ * STYLES-Links in index.dist.html, die auf ein umgestelltes Modul zeigen.
+ * @param {string[]} hrefs  readCssLinks(html)
+ * @param {readonly string[]} converted
+ * @returns {string[]} Befunde
+ */
+export function linkedModuleCss(hrefs, converted) {
+  const out = [];
+  for (const id of converted) {
+    for (const href of hrefs) {
+      if (href.startsWith(`js/modules/${id}/`)) {
+        out.push(`styles: ${id}: index.dist.html verlinkt ${href} — umgestellte Module laden ihr CSS selbst`);
+      }
+    }
+  }
+  return out;
 }

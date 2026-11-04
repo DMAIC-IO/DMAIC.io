@@ -24,7 +24,7 @@ import { collectModelFiles, loadModelSchema, renderModelTypes } from './model-ty
 import { collectGlossaryData, renderGlossaryDataModule } from './glossary-data.mjs';
 import { collectLicenseData, renderLicenseDataModule, renderLicenseText } from '../license-report/license-report.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
-import { writeModuleTemplates } from './module-assets.mjs';
+import { writeModuleTemplates, writeModuleStyles, linkedModuleCss } from './module-assets.mjs';
 import {
   renderCatalogModule, collectCatalogTexts, renderCatalogTexts, catalogConflicts, readLegacyIds, CATALOG_LANGS,
 } from './catalog.mjs';
@@ -423,6 +423,8 @@ export async function runBuild(appDir = APP_DIR, { check = false, converted = CO
   //    Bundle-Link.
   const indexPath = join(appDir, 'index.html');
   const hrefs = readCssLinks(html);
+  const linked = linkedModuleCss(hrefs, converted);
+  if (linked.length) throw new Error(linked.join('\n'));
   const minCssPath = join(appDir, 'css', 'app.min.css');
   let cssCode;
   ({ code: cssCode } = await bundleCss(appDir, hrefs, { write: !check }));
@@ -432,6 +434,9 @@ export async function runBuild(appDir = APP_DIR, { check = false, converted = CO
   // 3b. Templates je umgestelltem Modul (js/chunks/templates/, gitignored —
   //     immer geschrieben, auch im Prüfmodus, nie in changed[]).
   const moduleTemplates = writeModuleTemplates(appDir, converted);
+
+  // 3c. CSS je umgestelltem Modul (js/chunks/styles/, gitignored).
+  const moduleStyles = await writeModuleStyles(appDir, converted);
 
   // 4. index rewrite with content hashes — always write (index.html is git-ignored).
   //    index.html is NOT a committed artifact; it is never added to changed[].
