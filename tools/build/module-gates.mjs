@@ -446,3 +446,99 @@ export function checkSchemaPaths(schema) {
   }
   return out;
 }
+
+/** Specs, an die `x-field` binden darf: nur Felder mit Regeln. */
+export const RULE_KINDS = Object.freeze(['number', 'index', 'idOf', 'oneOf']);
+const BINDING = /\b(x-model(?:\.[\w.]+)?|x-field|x-text)\s*=\s*"\s*model\.([A-Za-z_$][\w$]*)/g;
+
+/**
+ * Gate Template ↔ Schema: Bindungen zeigen auf Felder oder Ansichtsfelder,
+ * `x-field` nur auf Felder mit Regeln.
+ * @param {{ path: string, text: string }[]} files view.html und *.part.html
+ * @param {{ fields: object, view: object }} schema
+ * @returns {string[]}
+ */
+export function checkTemplateBindings(files, schema) {
+  const all = { ...schema.fields, ...schema.view };
+  const out = [];
+  for (const { path, text } of files) {
+    for (const m of text.matchAll(BINDING)) {
+      const [, attr, name] = m;
+      const shown = `${attr}="model.${name}"`;
+      const spec = all[name];
+      if (!spec) { out.push(`template: ${path}: ${shown}: ${name} ist weder Feld noch Ansichtsfeld`); continue; }
+      if (attr === 'x-field' && !RULE_KINDS.includes(spec.kind)) {
+        out.push(`template: ${path}: ${shown}: ${name} (${spec.kind}) hat keine Regeln — x-model verwenden`);
+      }
+    }
+  }
+  return out;
+}
+
+/** Ist `n` (PropertyAccess/ElementAccess) ein Ziel unterhalb von `this.model`? */
+function isModelTarget(n) {
+  let depth = 0;
+  while (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) {
+    if (ts.isPropertyAccessExpression(n) && n.expression.kind === ts.SyntaxKind.ThisKeyword && n.name.text === 'model') return depth > 0;
+    n = n.expression;
+    depth += 1;
+  }
+  return false;
+}
+
+/**
+ * Gate Schreibweg: im Viewmodel keine Zuweisung an `this.model.…`.
+ * @param {{ path: string, text: string }[]} files
+ * @returns {string[]}
+ */
+export function checkWritePath(files) {
+  const out = [];
+  const HINT = '— über ein Kommando, instance.set oder x-model/x-field schreiben';
+  for (const { path, text } of files) {
+    if (!path.startsWith('viewmodel/') || !path.endsWith('.js')) continue;
+    const sf = parseJs(path, text);
+    const visit = (n) => {
+      if (ts.isBinaryExpression(n) && n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && n.operatorToken.kind <= ts.SyntaxKind.LastAssignment && isModelTarget(n.left)) {
+        out.push(`write: ${path}: ${n.left.getText(sf)} ${n.operatorToken.getText(sf)} … ${HINT}`);
+      } else if ((ts.isPrefixUnaryExpression(n) || ts.isPostfixUnaryExpression(n))
+        && (n.operator === ts.SyntaxKind.PlusPlusToken || n.operator === ts.SyntaxKind.MinusMinusToken) && isModelTarget(n.operand)) {
+        out.push(`write: ${path}: ${n.getText(sf)} ${HINT}`);
+      } else if (ts.isDeleteExpression(n) && isModelTarget(n.expression)) {
+        out.push(`write: ${path}: ${n.getText(sf)} ${HINT}`);
+      }
+      ts.forEachChild(n, visit);
+    };
+    visit(sf);
+  }
+  return out;
+}
+
+/** @param {any} obj @param {string} path @returns {any} */
+const at = (obj, path) => path.split('.').reduce((o, k) => (o && typeof o === 'object' ? o[k] : undefined), obj);
+
+/**
+ * Gate Hilfe: Kontexthilfe für jedes Feld, jedes Kommando und jeden
+ * Parameter, in de und en (der Teilbaum steht ohne das Präfix `modules.<id>`).
+ * @param {{ fields: object, commands: object }} schema
+ * @param {{ de: object|null, en: object|null }} help
+ * @returns {string[]}
+ */
+export function checkContextHelp(schema, help) {
+  const keys = [
+    ...Object.keys(schema.fields).map((f) => `fields.${f}.help`),
+    ...Object.entries(schema.commands).flatMap(([c, def]) => [
+      `actions.${c}.help`,
+      ...Object.keys(def.params ?? {}).map((p) => `actions.${c}.params.${p}`),
+    ]),
+  ];
+  const out = [];
+  for (const lang of ['de', 'en']) {
+    const file = `resources/i18n/context-help.${lang}.json`;
+    if (!help[lang]) { out.push(`help: ${file}: Datei fehlt`); continue; }
+    for (const k of keys) {
+      const v = at(help[lang], k);
+      if (typeof v !== 'string' || v.trim() === '') out.push(`help: ${file}: ${k} fehlt`);
+    }
+  }
+  return out;
+}

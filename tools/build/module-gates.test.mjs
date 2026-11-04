@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkSchemaPaths } from './module-gates.mjs';
+import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkContextHelp } from './module-gates.mjs';
 import { defineModel, command, text, number, oneOf, index, idOf, list, record, object, boolean } from '../../js/core/model.js';
 
 /** Temp-App aus `{ pfad: inhalt }`. */
@@ -298,4 +298,64 @@ test('Schema-Pfade: Felder und Parameter', () => {
     `${P} commands.pick.params.i: Pfad cols[col]: Feld cols gibt es nicht`,
     `${P} commands.pick.params.i: Pfad cols[col]: [col] ist weder Parameter noch Feld`,
   ]);
+});
+
+const SCHEMA_FOR_VIEW = defineModel({
+  fields: { title: text(), alpha: number({ min: 0 }), mode: oneOf(['a', 'b']), done: boolean() },
+  view: { zoom: number({ min: 1 }) },
+  commands: { reset: command({ params: { to: number() }, returns: boolean(), run() { return true; } }) },
+}).schema;
+
+test('Template ↔ Schema: Bindungen auf bekannte Felder, x-field nur mit Regeln', () => {
+  const files = [
+    { path: 'resources/view.html', text: '<input x-model="model.title"><input x-field="model.alpha"><span x-text="model.zoom"></span><input x-model.number="model.nope">' },
+    { path: 'resources/rows.part.html', text: '<input x-field="model.title"><select x-field="model.mode"></select><input type="checkbox" x-field="model.done"><span x-text="model.ghost + 1"></span>' },
+  ];
+  assert.deepEqual(checkTemplateBindings(files, SCHEMA_FOR_VIEW), [
+    'template: resources/view.html: x-model.number="model.nope": nope ist weder Feld noch Ansichtsfeld',
+    'template: resources/rows.part.html: x-field="model.title": title (text) hat keine Regeln — x-model verwenden',
+    'template: resources/rows.part.html: x-field="model.done": done (boolean) hat keine Regeln — x-model verwenden',
+    'template: resources/rows.part.html: x-text="model.ghost": ghost ist weder Feld noch Ansichtsfeld',
+  ]);
+});
+
+test('Schreibweg: keine Zuweisung an this.model.<feld> im Viewmodel', () => {
+  const files = [
+    { path: 'viewmodel/viewmodel.js', text: 'function a() { this.model.title = "x"; this.model.count += 1; this.model.count++; --this.model.n; delete this.model.x; }\n' },
+    { path: 'viewmodel/part.js', text: 'function b() { this.model.columns.a = []; this.model["t"] = 1; const m = this.model; this.view = 1; this.model.reset({ to: 1 }); }\n' },
+    { path: 'domain/model.js', text: 'function c() { this.model.title = 1; }\n' },
+  ];
+  assert.deepEqual(checkWritePath(files), [
+    'write: viewmodel/viewmodel.js: this.model.title = … — über ein Kommando, instance.set oder x-model/x-field schreiben',
+    'write: viewmodel/viewmodel.js: this.model.count += … — über ein Kommando, instance.set oder x-model/x-field schreiben',
+    'write: viewmodel/viewmodel.js: this.model.count++ — über ein Kommando, instance.set oder x-model/x-field schreiben',
+    'write: viewmodel/viewmodel.js: --this.model.n — über ein Kommando, instance.set oder x-model/x-field schreiben',
+    'write: viewmodel/viewmodel.js: delete this.model.x — über ein Kommando, instance.set oder x-model/x-field schreiben',
+    'write: viewmodel/part.js: this.model.columns.a = … — über ein Kommando, instance.set oder x-model/x-field schreiben',
+    'write: viewmodel/part.js: this.model["t"] = … — über ein Kommando, instance.set oder x-model/x-field schreiben',
+  ]);
+});
+
+test('Hilfe: jedes Feld, Kommando und jeder Parameter in de und en', () => {
+  const full = {
+    fields: { title: { help: 'T' }, alpha: { help: 'A' }, mode: { help: 'M' }, done: { help: 'D' } },
+    actions: { reset: { help: 'R', params: { to: 'Ziel' } } },
+  };
+  assert.deepEqual(checkContextHelp(SCHEMA_FOR_VIEW, { de: full, en: full }), []);
+  const partial = { fields: { title: { help: 'T' }, alpha: { help: '' } }, actions: { reset: { params: {} } } };
+  assert.deepEqual(checkContextHelp(SCHEMA_FOR_VIEW, { de: partial, en: null }), [
+    'help: resources/i18n/context-help.de.json: fields.alpha.help fehlt',
+    'help: resources/i18n/context-help.de.json: fields.mode.help fehlt',
+    'help: resources/i18n/context-help.de.json: fields.done.help fehlt',
+    'help: resources/i18n/context-help.de.json: actions.reset.help fehlt',
+    'help: resources/i18n/context-help.de.json: actions.reset.params.to fehlt',
+    'help: resources/i18n/context-help.en.json: Datei fehlt',
+  ]);
+});
+
+test('Hilfe: Kommando ohne Parameter braucht nur den Hilfetext', () => {
+  const schema = defineModel({ fields: {}, commands: { ping: command({ returns: boolean(), run() { return true; } }) } }).schema;
+  const ok = { actions: { ping: { help: 'P' } } };
+  assert.deepEqual(checkContextHelp(schema, { de: ok, en: ok }), []);
+  assert.deepEqual(checkContextHelp(schema, { de: {}, en: ok }), ['help: resources/i18n/context-help.de.json: actions.ping.help fehlt']);
 });
