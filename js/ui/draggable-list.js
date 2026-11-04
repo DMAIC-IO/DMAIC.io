@@ -1,3 +1,5 @@
+import { listIndexAt } from '../core/interaction/helpers.js';
+
 /**
  * Alpine data-mixin for HTML5 drag-and-drop **reordering** of items that live
  * inside one or more grouped lists rendered by a module's Alpine template.
@@ -371,10 +373,5 @@ export function draggableRows(options = {}) {
  * @returns {number} insert index in [0, items.length]
  */
 export function computeDropIndex(items, clientY) {
-  const n = items.length;
-  for (let i = 0; i < n; i++) {
-    const rect = items[i].getBoundingClientRect();
-    if (clientY < rect.top + rect.height / 2) return i;
-  }
-  return n;
+  return listIndexAt(items, { x: 0, y: clientY }, 'y');
 }
