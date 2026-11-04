@@ -4,7 +4,7 @@
  * Jede Datei eines Formats trägt `"$schema": "<relativer Pfad zur Schema-Datei>"`
  * (Editor-Hilfe); geprüft wird hier, dass der Verweis stimmt und der Inhalt
  * das Schema erfüllt. ajv lebt nur in tools/, nie zur Laufzeit.
- * Spec: docs/superpowers/specs/2026-11-04-module-nachladbar-a2-a3-design.md §3.
+ * Spec Teilprojekte A2/A3 §3.
  */
 import Ajv2020 from 'ajv/dist/2020.js';
 import { readFileSync, readdirSync, globSync } from 'node:fs';
