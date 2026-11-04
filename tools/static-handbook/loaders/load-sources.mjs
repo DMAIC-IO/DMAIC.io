@@ -25,11 +25,12 @@ import { loadVideos } from './load-videos.mjs';
  * @param {string} repoRoot
  */
 export async function loadAllSources(repoRoot) {
+  const catalog = await readCatalog(repoRoot);
   const [modules, algorithms, i18n, examples, glossary, videos] = await Promise.all([
-    loadModules(repoRoot),
+    loadModules(repoRoot, catalog),
     loadAlgorithms(repoRoot),
     loadI18n(repoRoot),
-    loadExamples(repoRoot),
+    loadExamples(repoRoot, catalog),
     loadGlossary(repoRoot),
     loadVideos(repoRoot),
   ]);
@@ -41,12 +42,12 @@ export async function loadAllSources(repoRoot) {
 /**
  * Der Modulkatalog: alle Registry-Einträge und die Ids der neuen Form.
  * @param {string} repoRoot
- * @returns {Promise<{ modules: object[], converted: readonly string[] }>}
+ * @returns {Promise<{ modules: object[], converted: readonly string[], examples: Record<string,string>, exampleRefs: Record<string,string[]> }>}
  */
 async function readCatalog(repoRoot) {
   const url = pathToFileURL(path.join(repoRoot, 'js/modules/catalog.generated.js')).href;
-  const { MODULES, CONVERTED } = await import(url);
-  return { modules: MODULES, converted: CONVERTED };
+  const { MODULES, CONVERTED, EXAMPLES, EXAMPLE_REFS } = await import(url);
+  return { modules: MODULES, converted: CONVERTED, examples: EXAMPLES, exampleRefs: EXAMPLE_REFS };
 }
 
 /**
@@ -202,47 +203,63 @@ async function loadAlgorithms(repoRoot) {
 // ─── Examples ───────────────────────────────────────────────────────
 
 /**
- * Load the example data catalog (`examples/index.json`) plus the scenarios
- * (`examples/shared/scenarios.json`) and, for
- * dataset-type entries, attach a small preview (the first `preview.rows`
- * lines of the CSV file). Generator entries materialise their data at
- * runtime in the app — for the handbook we render only the spec.
+ * Beispielkatalog des Handbuchs: examples/index.json (alte Form),
+ * resources/examples/examples.json der Module in neuer Form und
+ * examples/shared/scenarios.json. Jeder Eintrag mit `file` bekommt
+ * `sourcePath` (zum Kopieren und für die CSV-Vorschau); `modules` enthält
+ * Besitzer und Nutzer aus exampleRefs. Dataset-Einträge bekommen eine kleine
+ * Vorschau (die ersten `preview.rows` Zeilen der CSV-Datei). Generatoren
+ * werden im Handbuch nur als Spezifikation gezeigt.
  *
- * Empty/missing catalog → returns { entries: [] } without warning, so the
- * handbook still builds in environments without examples.
+ * Fehlender Katalog gibt { entries: [] } ohne Warnung zurück, damit das
+ * Handbuch auch ohne Beispiele baut.
+ * @param {string} repoRoot
+ * @param {{ converted: readonly string[], examples: Record<string,string>, exampleRefs: Record<string,string[]> }} [catalog]
+ * @returns {Promise<{ entries: object[] }>}
  */
-export async function loadExamples(repoRoot) {
-  const indexPath = path.join(repoRoot, 'examples/index.json');
-  let catalog;
+export async function loadExamples(repoRoot, catalog) {
+  const { converted = [], exampleRefs = {} } = catalog ?? await readCatalog(repoRoot);
+  const withRefs = (id, mods) => [...new Set([...mods, ...(Object.hasOwn(exampleRefs, id) ? exampleRefs[id] : [])])];
+  const sources = [];
   try {
-    catalog = JSON.parse(await readFile(indexPath, 'utf8'));
+    const index = withoutSchema(await readJson(path.join(repoRoot, 'examples/index.json')));
+    for (const ex of index.examples ?? []) {
+      sources.push({ ex: { ...ex, modules: withRefs(ex.id, ex.modules ?? []) }, base: path.join(repoRoot, 'examples') });
+    }
   } catch (err) {
-    if (err?.code === 'ENOENT') return { entries: [] };
-    console.warn(`[handbook] Failed to load examples catalog: ${err.message}`);
-    return { entries: [] };
+    if (err?.code !== 'ENOENT') console.warn(`[handbook] Failed to load examples catalog: ${err.message}`);
+  }
+  for (const id of converted) {
+    const base = path.join(repoRoot, 'js/modules', id, 'resources/examples');
+    const file = path.join(base, 'examples.json');
+    if (!existsSync(file)) continue;
+    try {
+      for (const ex of withoutSchema(await readJson(file)).examples ?? []) {
+        sources.push({ ex: { ...ex, modules: withRefs(ex.id, [id]) }, base });
+      }
+    } catch (err) {
+      console.warn(`[handbook] Failed to load ${file}: ${err.message}`);
+    }
+  }
+  try {
+    const shared = withoutSchema(await readJson(path.join(repoRoot, 'examples/shared/scenarios.json')));
+    for (const ex of shared.scenarios ?? []) sources.push({ ex });
+  } catch (err) {
+    if (err?.code !== 'ENOENT') console.warn(`[handbook] Failed to load scenarios: ${err.message}`);
   }
 
   const entries = [];
-  for (const ex of catalog.examples || []) {
+  for (const { ex, base } of sources) {
     const enriched = { ...ex };
-    if (ex.type === 'dataset' && ex.file) {
-      const filePath = path.join(repoRoot, 'examples', ex.file);
+    if (ex.file && base) enriched.sourcePath = path.join(base, ex.file);
+    if (ex.type === 'dataset' && enriched.sourcePath) {
       try {
-        const previewRows = ex.preview?.rows || 10;
-        enriched.previewData = await readCsvPreview(filePath, previewRows);
+        enriched.previewData = await readCsvPreview(enriched.sourcePath, ex.preview?.rows || 10);
       } catch (err) {
         console.warn(`[handbook] Could not read preview for ${ex.id}: ${err.message}`);
       }
     }
     entries.push(enriched);
-  }
-
-  // Szenarien liegen seit Teilprojekt A3 in examples/shared/scenarios.json.
-  try {
-    const shared = await readJson(path.join(repoRoot, 'examples/shared/scenarios.json'));
-    entries.unshift(...(shared.scenarios ?? []));
-  } catch (err) {
-    if (err?.code !== 'ENOENT') console.warn(`[handbook] Failed to load scenarios: ${err.message}`);
   }
   return { entries };
 }

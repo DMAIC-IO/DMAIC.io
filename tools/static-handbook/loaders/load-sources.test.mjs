@@ -19,9 +19,9 @@ test('loadAllSources liefert keine modulfreien Kapitel', async () => {
   assert.equal('guides' in sources, false, 'modulfreie Kapitel gibt es nicht mehr');
 });
 
-test('loadExamples stellt die Szenarien in Reihenfolge von scenarios.json voran', async () => {
+test('loadExamples hängt die Szenarien in Reihenfolge von scenarios.json an', async () => {
   const { scenarios } = JSON.parse(readFileSync(path.join(REPO, 'examples/shared/scenarios.json'), 'utf8'));
   const { entries } = await loadExamples(REPO);
-  assert.deepEqual(entries.slice(0, scenarios.length).map((e) => e.id), scenarios.map((e) => e.id));
-  assert.ok(entries.length > scenarios.length, 'danach folgen die Beispiele aus index.json');
+  assert.deepEqual(entries.slice(-scenarios.length).map((e) => e.id), scenarios.map((e) => e.id));
+  assert.ok(entries.length > scenarios.length, 'davor stehen die Beispiele aus index.json');
 });

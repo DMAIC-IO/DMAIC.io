@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { loadModules, loadI18n, getModuleName } from './load-sources.mjs';
+import { loadModules, loadExamples, loadI18n, getModuleName } from './load-sources.mjs';
 
 async function write(root, rel, value) {
   const full = path.join(root, rel);
@@ -62,4 +62,23 @@ test('loadModules ohne Katalog-Argument liest catalog.generated.js (echter Baum)
   const mods = await loadModules(repo);
   assert.ok(mods.length > 50, `nur ${mods.length} Module`);
   assert.ok(mods.some((m) => m.id === 'sipoc'));
+});
+
+test('loadExamples: Index, Szenarien und Modulbeispiele; sourcePath, Vorschau, modules mit exampleRefs', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'handbook-examples-'));
+  await write(root, 'examples/index.json', { $schema: 'x', version: '1.0', examples: [{ id: 'alt', type: 'project', modules: ['histogram'], file: 'projects/alt.json', format: 'json' }] });
+  await write(root, 'examples/projects/alt.json', {});
+  await write(root, 'examples/shared/scenarios.json', { $schema: 'x', scenarios: [{ id: 's', type: 'scenario', items: ['alt'] }] });
+  await write(root, 'js/modules/neu/resources/examples/examples.json', { $schema: 'x', examples: [
+    { id: 'neu-d', type: 'dataset', file: 'd.csv', format: 'csv', preview: { rows: 1 } },
+  ] });
+  await write(root, 'js/modules/neu/resources/examples/d.csv', 'a\n1\n2\n');
+  const { entries } = await loadExamples(root, { converted: ['neu'], examples: { 'neu-d': 'neu' }, exampleRefs: { 'neu-d': ['andere'], alt: ['neu'] } });
+  assert.deepEqual(entries.map((e) => e.id), ['alt', 'neu-d', 's']);
+  const byId = Object.fromEntries(entries.map((e) => [e.id, e]));
+  assert.deepEqual(byId.alt.modules, ['histogram', 'neu']);
+  assert.deepEqual(byId['neu-d'].modules, ['neu', 'andere']);
+  assert.equal(byId['neu-d'].sourcePath, path.join(root, 'js/modules/neu/resources/examples/d.csv'));
+  assert.equal(byId.alt.sourcePath, path.join(root, 'examples/projects/alt.json'));
+  assert.deepEqual(byId['neu-d'].previewData.rows, [['1']]);
 });

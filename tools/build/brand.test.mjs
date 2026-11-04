@@ -68,6 +68,7 @@ test('JS string literals (help sources, messages) carry no retired product name'
 test('example data and algorithm descriptions carry no retired product name', () => {
   const files = [
     ...walk('examples', /\.json$/),
+    ...walk('js/modules', /\.json$/).filter((f) => f.includes('/resources/examples/')),
     ...walk('js/algorithm-lab/algorithms', /\.json$/),
     // Inlined into the Algorithm Lab's validation tab (tools/build/lab-data.mjs).
     ...walk('tests/fixtures', /\.fixtures\.json$/),

@@ -309,7 +309,7 @@ async function copyExampleFiles(examples) {
   await mkdir(destDir, { recursive: true });
   for (const ex of examples.entries) {
     if (!ex.file) continue;
-    const src = path.join(REPO, 'examples', ex.file);
+    const src = ex.sourcePath ?? path.join(REPO, 'examples', ex.file);
     const dest = path.join(destDir, path.basename(ex.file));
     try {
       await copyFile(src, dest);
