@@ -5,6 +5,9 @@ import { getModuleReferences, hasModuleReferences } from './references-registry.
 import { initialModel, loadModel } from './initial-model.js';
 import { schemaOf, setCommandObserver, replaceFields, runCommand } from './model.js';
 import { schemaAgentEntry, readSchemaModel } from './agent/agent-schema.js';
+import { attachGesture } from './interaction/attach.js';
+import { isGesture } from './interaction/define.js';
+import { requireKnownId } from './validate.js';
 
 /**
  * Pure gate: returns true iff the given route store state belongs to the
@@ -47,6 +50,22 @@ function schemaMembers(moduleId, entry, vmCommands) {
   return members;
 }
 
+/**
+ * Das Kommando einer Geste auf dem reaktiven Model ausführen — Model- oder
+ * Viewmodel-Kommando, wie die Agentenfläche (Spec C §6).
+ * @param {object} vm reaktives Viewmodel (Alpine-Zustand der Instanz)
+ * @param {Record<string, object>} vmCommands
+ * @param {string} name @param {object} args
+ * @returns {any} Ergebnis von `run`
+ * @throws {Error} unbekanntes Kommando oder Prüfung in `runCommand`
+ */
+function executeCommand(vm, vmCommands, name, args) {
+  const commands = schemaOf(vm.model)?.commands ?? {};
+  if (Object.hasOwn(commands, name)) return vm.model[name](args);
+  if (Object.hasOwn(vmCommands, name)) return vm[name](args);
+  return requireKnownId('command', name, [...Object.keys(commands), ...Object.keys(vmCommands)]);
+}
+
 /** Was in der neuen Form aus module.js kommt oder entfällt — nie in config. */
 const NOT_IN_CONFIG = ['id', 'version', 'icon', 'phase', 'allowedPhases', 'engine', 'meta', 'templateUrl'];
 /** Felder aus module.js, die die Instanz trägt (wie bisher aus config). */
@@ -57,7 +76,7 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
 // id/version/icon/phase/allowedPhases; Template unter resources/view.html;
 // immer Alpine. Ohne descriptor gilt die alte Form (alles in config).
 export function createModule(base) {
-  const { config = {}, descriptor, Model, data, afterMount, beforeLoadExample, createDefault } = base;
+  const { config = {}, descriptor, Model, data, afterMount, beforeLoadExample, createDefault, gestures = [] } = base;
   if (descriptor) {
     for (const key of NOT_IN_CONFIG) {
       if (Object.hasOwn(config, key)) {
@@ -66,6 +85,9 @@ export function createModule(base) {
     }
   }
   const id = descriptor ? descriptor.id : config.id;
+  gestures.forEach((g, i) => {
+    if (!isGesture(g)) throw new Error(`createModule ${id}: gestures[${i}] is not a defineGesture result`);
+  });
   const alpine = descriptor ? true : config.engine === 'alpine';
   const placement = descriptor
     ? { engine: 'alpine', ...Object.fromEntries(FROM_DESCRIPTOR.filter((k) => descriptor[k] !== undefined).map((k) => [k, descriptor[k]])) }
@@ -129,6 +151,7 @@ export function createModule(base) {
     _container: null,
     _context: null,
     _tmpl: null,
+    _gestureDetach: [],
     _applyingRemote: false,
 
     async init(container, context) {
@@ -232,6 +255,16 @@ export function createModule(base) {
 
         container.replaceChildren(...cloneForInstance(uniqueName));
         Alpine.initTree(container);
+        // Gesten hängen am Container (Delegation) und überleben Sprachwechsel
+        // und setState; das Viewmodel wird je Geste frisch aufgelöst.
+        module._gestureDetach.forEach((detach) => detach());
+        const currentVm = () => Alpine.$data(container.querySelector('[x-data]'));
+        const gestureEnv = {
+          execute: (name, args) => executeCommand(currentVm(), vmCommands, name, args),
+          notify: (message, type) => context.notify?.(message, type),
+          t: _t,
+        };
+        module._gestureDetach = gestures.map((g) => attachGesture(container, g, currentVm, gestureEnv));
         module._tmpl = {
           _state: state,
           getState() { return { model: this._state }; }
@@ -247,6 +280,8 @@ export function createModule(base) {
       // to tear down.
       if (!this._container) return;
       if (alpine) {
+        this._gestureDetach.forEach((detach) => detach());
+        this._gestureDetach = [];
         this._container.querySelectorAll('[x-data]').forEach(root => {
           Alpine.destroyTree(root);
         });
