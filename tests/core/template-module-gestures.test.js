@@ -90,13 +90,25 @@ suite('createModule mit gestures', () => {
   });
 
   test('destroy löst die Geste', async () => {
-    const { mod, container, events } = await mount();
+    const { mod, container, events, notes } = await mount();
     const handle = container.querySelector('.gt-h');
     await mod.destroy();
     container.append(handle);
-    altRight(container);
-    await flush();
+    // Eine noch angehängte Geste scheitert hier am fehlenden Viewmodel: der Fehler
+    // entsteht beim Auflösen des Hosts und läuft als unbehandelter Listener-Fehler
+    // auf window (nicht über notify) — beides wird geprüft.
+    const errors = [];
+    const onError = (e) => { errors.push(e.message); e.preventDefault(); };
+    window.addEventListener('error', onError);
+    try {
+      altRight(container);
+      await flush();
+    } finally {
+      window.removeEventListener('error', onError);
+    }
     assertEqual(executed(events).length, 0);
+    assertEqual(notes.length, 0);
+    assertEqual(errors.length, 0, errors.join('; '));
   });
 
   test('nach onLanguageChange genau ein Kommando, auf dem neuen Viewmodel', async () => {
