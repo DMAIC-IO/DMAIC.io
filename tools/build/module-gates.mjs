@@ -14,6 +14,7 @@
 import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';
+import { parsePath } from '../../js/core/model.js';
 
 /**
  * Alle Dateien eines Moduls, relativ zum Modulordner, POSIX, sortiert.
@@ -295,6 +296,153 @@ export function checkLayers(files) {
       ts.forEachChild(n, visit);
     };
     visit(sf);
+  }
+  return out;
+}
+
+const MODEL_SPEC = /(^|\/)core\/model\.js$/;
+/** Präfix aller Schema-Befunde. */
+const SCHEMA_PREFIX = 'schema: domain/model.js:';
+
+/**
+ * Gate Schema, Teil Literal: `defineModel({ … })` ist ein reines Literal
+ * (feste Schlüssel, Konstruktoren aus core/model.js, Literale, Konstanten
+ * dieser Datei; Funktionen nur als `run`).
+ * @param {string} text Inhalt von domain/model.js
+ * @returns {string[]}
+ */
+export function checkSchemaLiteral(text) {
+  const P = SCHEMA_PREFIX;
+  const sf = parseJs('model.js', text);
+  const ctors = new Map(); // lokaler Name → importierter Name
+  const runImports = new Set();
+  const consts = new Set();
+  for (const st of sf.statements) {
+    if (ts.isImportDeclaration(st) && ts.isStringLiteral(st.moduleSpecifier) && st.importClause?.namedBindings && ts.isNamedImports(st.importClause.namedBindings)) {
+      const spec = st.moduleSpecifier.text;
+      for (const el of st.importClause.namedBindings.elements) {
+        const imported = (el.propertyName ?? el.name).text;
+        if (MODEL_SPEC.test(spec)) ctors.set(el.name.text, imported);
+        else if (/^\.\/commands\//.test(spec)) runImports.add(el.name.text);
+      }
+    }
+    const decl = ts.isVariableStatement(st) ? st.declarationList : null;
+    if (decl && (decl.flags & ts.NodeFlags.Const)) {
+      for (const d of decl.declarations) if (ts.isIdentifier(d.name) && d.initializer && !ts.isCallExpression(d.initializer)) consts.add(d.name.text);
+    }
+  }
+  const calls = [];
+  const find = (n) => {
+    if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && ctors.get(n.expression.text) === 'defineModel') calls.push(n);
+    ts.forEachChild(n, find);
+  };
+  find(sf);
+  if (calls.length !== 1 || !calls[0].arguments[0] || !ts.isObjectLiteralExpression(calls[0].arguments[0])) {
+    return [`${P} genau ein Aufruf defineModel({ … }) aus core/model.js erwartet, gefunden ${calls.length}`];
+  }
+  const out = [];
+  const src = (n) => n.getText(sf);
+  /** Name des Kommandos = Schlüssel der umgebenden PropertyAssignment. */
+  const commandName = (call) => (ts.isPropertyAssignment(call.parent) && call.parent.name && 'text' in call.parent.name ? call.parent.name.text : '?');
+  const check = (n, cmdName = null) => {
+    if (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n) || ts.isNumericLiteral(n)) return;
+    if ([ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword, ts.SyntaxKind.NullKeyword].includes(n.kind)) return;
+    if (ts.isPrefixUnaryExpression(n) && n.operator === ts.SyntaxKind.MinusToken && ts.isNumericLiteral(n.operand)) return;
+    if (ts.isIdentifier(n)) {
+      if (!consts.has(n.text)) out.push(`${P} Bezeichner ${n.text} ist keine Konstante dieser Datei`);
+      return;
+    }
+    if (ts.isArrayLiteralExpression(n)) {
+      for (const el of n.elements) {
+        if (ts.isSpreadElement(el)) out.push(`${P} Spread nicht erlaubt (${src(el)})`);
+        else check(el);
+      }
+      return;
+    }
+    if (ts.isObjectLiteralExpression(n)) {
+      for (const p of n.properties) {
+        if (ts.isSpreadAssignment(p)) { out.push(`${P} Spread nicht erlaubt (${src(p)})`); continue; }
+        if (p.name && ts.isComputedPropertyName(p.name)) { out.push(`${P} berechneter Schlüssel nicht erlaubt (${src(p.name)})`); continue; }
+        const key = p.name && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? p.name.text : null;
+        if (cmdName !== null && key === 'run') {
+          if (ts.isMethodDeclaration(p)) continue;
+          const v = ts.isPropertyAssignment(p) ? p.initializer : null;
+          if (v && ts.isArrowFunction(v)) out.push(`${P} run von ${cmdName} ist eine Pfeilfunktion — this muss das reaktive Model sein`);
+          else if (v && (ts.isFunctionExpression(v) || (ts.isIdentifier(v) && runImports.has(v.text)))) continue;
+          else out.push(`${P} run von ${cmdName}: Funktion, Methode oder Import aus ./commands/ erwartet`);
+          continue;
+        }
+        if (ts.isShorthandPropertyAssignment(p)) { out.push(`${P} Kurzschreibweise nicht erlaubt (${src(p)})`); continue; }
+        if (!ts.isPropertyAssignment(p)) { out.push(`${P} Funktion nicht erlaubt (${src(p)}) — Callbacks nur als run`); continue; }
+        check(p.initializer);
+      }
+      return;
+    }
+    if (ts.isArrowFunction(n) || ts.isFunctionExpression(n)) {
+      out.push(`${P} Funktion nicht erlaubt (${src(n)}) — Callbacks nur als run`);
+      return;
+    }
+    if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && ctors.has(n.expression.text) && ctors.get(n.expression.text) !== 'defineModel') {
+      const isCommand = ctors.get(n.expression.text) === 'command';
+      for (const a of n.arguments) {
+        if (isCommand && ts.isObjectLiteralExpression(a)) check(a, commandName(n));
+        else check(a);
+      }
+      return;
+    }
+    if (ts.isCallExpression(n)) {
+      out.push(`${P} Aufruf ${src(n)} ist kein Konstruktor aus core/model.js`);
+      return;
+    }
+    out.push(`${P} nicht erlaubt: ${src(n)}`);
+  };
+  check(calls[0].arguments[0]);
+  return out;
+}
+
+/**
+ * Specs, die einen Pfad lesen, samt Ort im Schema.
+ * @param {object} s @param {string} at @param {Array<{ at: string, path: string }>} acc
+ */
+function collectPaths(s, at, acc) {
+  if (s.kind === 'index' || s.kind === 'idOf') acc.push({ at, path: s.path });
+  if (s.kind === 'list') collectPaths(s.item, at, acc);
+  if (s.kind === 'record') collectPaths(s.value, at, acc);
+  if (s.kind === 'object') for (const v of Object.values(s.shape)) collectPaths(v, at, acc);
+}
+
+/**
+ * Gate Schema, Teil Pfade: das erste Segment eines Pfads ist ein Feld
+ * oder Ansichtsfeld; `[name]` ist ein Parameter des Kommandos (ersatzweise
+ * ein Feld).
+ * @param {{ fields: object, view: object, commands: object }} schema
+ * @returns {string[]}
+ */
+export function checkSchemaPaths(schema) {
+  const P = SCHEMA_PREFIX;
+  const known = new Set([...Object.keys(schema.fields), ...Object.keys(schema.view)]);
+  const out = [];
+  const verify = (at, path, params) => {
+    let tokens;
+    try { tokens = parsePath(path); } catch (err) { out.push(`${P} ${at}: ${err.message}`); return; }
+    const [first, ...rest] = tokens;
+    if (!known.has(first.name)) out.push(`${P} ${at}: Pfad ${path}: Feld ${first.name} gibt es nicht`);
+    for (const t of rest) {
+      if (t.kind === 'ref' && !params.has(t.name) && !known.has(t.name)) out.push(`${P} ${at}: Pfad ${path}: [${t.name}] ist weder Parameter noch Feld`);
+    }
+  };
+  for (const part of ['fields', 'view']) {
+    for (const [k, s] of Object.entries(schema[part])) {
+      const acc = []; collectPaths(s, `${part}.${k}`, acc);
+      for (const { at, path } of acc) verify(at, path, new Set());
+    }
+  }
+  for (const [c, def] of Object.entries(schema.commands)) {
+    const params = new Set(Object.keys(def.params ?? {}));
+    for (const [p, s] of Object.entries(def.params ?? {})) {
+      const acc = []; collectPaths(s, `commands.${c}.params.${p}`, acc);
+      for (const { at, path } of acc) verify(at, path, params);
+    }
   }
   return out;
 }

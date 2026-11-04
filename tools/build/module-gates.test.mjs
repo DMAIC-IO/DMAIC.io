@@ -6,7 +6,9 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers } from './module-gates.mjs';
+import { pathToFileURL } from 'node:url';
+import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkSchemaPaths } from './module-gates.mjs';
+import { defineModel, command, text, number, oneOf, index, idOf, list, record, object, boolean } from '../../js/core/model.js';
 
 /** Temp-App aus `{ pfad: inhalt }`. */
 function appWith(files) {
@@ -203,4 +205,97 @@ test('Layer: Viewmodel-Kern-Import, window und Re-Export in domain', () => {
     'layer: domain/w.js: window in domain/ verboten',
     'layer: domain/w.js: Import ../io/export.js in domain/ verboten (höhere Schicht)',
   ]));
+});
+
+const MODEL_URL = pathToFileURL(join(import.meta.dirname, '..', '..', 'js', 'core', 'model.js')).href;
+const GOOD_MODEL = `import { defineModel, command, text, number, oneOf, index, list, record, boolean } from '${MODEL_URL}';
+import { moveRun } from './commands/move.js';
+export const COL_KEYS = ['a', 'b'];
+const MAX = 10;
+export const State = defineModel({
+  fields: { title: text(), alpha: number({ min: 0, max: MAX, nullable: true, default: null }), columns: record(COL_KEYS, list(text())), mode2: oneOf(['x', 'y']) },
+  view: { zoom: number({ min: -1 }) },
+  commands: {
+    moveItem: command({
+      params: { from: oneOf(COL_KEYS), idx: index('columns[from]', { existing: true }), to: oneOf(COL_KEYS) },
+      returns: boolean(),
+      run({ from, idx, to }) { return true; },
+    }),
+    rename: command({ params: { title: text() }, returns: boolean(), run: function ({ title }) { this.title = title; return true; } }),
+    move2: command({ params: {}, returns: boolean(), run: moveRun }),
+  },
+});
+`;
+
+/** Präfix aller Schema-Befunde. */
+const P = 'schema: domain/model.js:';
+const MODEL_IMPORT = "import { defineModel, command, text, number } from '@/core/model.js';\n";
+
+test('Schema-Literal: gültiges Model ist grün', () => {
+  assert.deepEqual(checkSchemaLiteral(GOOD_MODEL), []);
+});
+
+test('Schema-Literal: Spread, berechnete Schlüssel, fremde Aufrufe, Pfeil-run, Callbacks', () => {
+  const src = `${MODEL_IMPORT}import { LIMIT } from './limits.js';
+const extra = {};
+export const State = defineModel({
+  fields: { ...extra, ['x' + 1]: text(), n: number({ max: LIMIT }), t: text({ check: (v) => v }), u: makeField() },
+  commands: {
+    go: command({ params: {}, run: () => true }),
+  },
+});
+`.replaceAll('@/', ['..', '..', '..', ''].join('/'));
+  assert.deepEqual(checkSchemaLiteral(src), [
+    `${P} Spread nicht erlaubt (...extra)`,
+    `${P} berechneter Schlüssel nicht erlaubt (['x' + 1])`,
+    `${P} Bezeichner LIMIT ist keine Konstante dieser Datei`,
+    `${P} Funktion nicht erlaubt ((v) => v) — Callbacks nur als run`,
+    `${P} Aufruf makeField() ist kein Konstruktor aus core/model.js`,
+    `${P} run von go ist eine Pfeilfunktion — this muss das reaktive Model sein`,
+  ]);
+});
+
+test('Schema-Literal: kein oder zwei defineModel', () => {
+  assert.deepEqual(checkSchemaLiteral(`export const x = 1;\n`), [
+    `${P} genau ein Aufruf defineModel({ … }) aus core/model.js erwartet, gefunden 0`,
+  ]);
+  const two = `${MODEL_IMPORT}export const A = defineModel({ fields: { a: text() } });\nexport const B = defineModel({ fields: { b: text() } });\n`
+    .replaceAll('@/', ['..', '..', '..', ''].join('/'));
+  assert.deepEqual(checkSchemaLiteral(two), [
+    `${P} genau ein Aufruf defineModel({ … }) aus core/model.js erwartet, gefunden 2`,
+  ]);
+});
+
+test('Schema-Literal: run weder Funktion noch Import, Kurzschreibweise, sonstiger Ausdruck', () => {
+  const src = `${MODEL_IMPORT}const t = 1;
+export const State = defineModel({
+  fields: { t, o: number({ max: obj.limit }) },
+  commands: { go: command({ params: {}, run: 5 }) },
+});
+`.replaceAll('@/', ['..', '..', '..', ''].join('/'));
+  assert.deepEqual(checkSchemaLiteral(src), [
+    `${P} Kurzschreibweise nicht erlaubt (t)`,
+    `${P} nicht erlaubt: obj.limit`,
+    `${P} run von go: Funktion, Methode oder Import aus ./commands/ erwartet`,
+  ]);
+});
+
+test('Schema-Pfade: Felder und Parameter', () => {
+  const ok = defineModel({
+    fields: { items: list(object({ id: text() })), sel: idOf('items'), cols: record(['a'], list(text())) },
+    commands: { pick: command({ params: { col: oneOf(['a']), i: index('cols[col]') }, returns: boolean(), run() { return true; } }) },
+  });
+  assert.deepEqual(checkSchemaPaths(ok.schema), []);
+  const bad = defineModel({
+    fields: { sel: idOf('nope'), nested: list(index('items')) },
+    view: { cur: index('cols.a') },
+    commands: { pick: command({ params: { i: index('cols[col]') }, returns: boolean(), run() { return true; } }) },
+  });
+  assert.deepEqual(checkSchemaPaths(bad.schema), [
+    `${P} fields.sel: Pfad nope: Feld nope gibt es nicht`,
+    `${P} fields.nested: Pfad items: Feld items gibt es nicht`,
+    `${P} view.cur: Pfad cols.a: Feld cols gibt es nicht`,
+    `${P} commands.pick.params.i: Pfad cols[col]: Feld cols gibt es nicht`,
+    `${P} commands.pick.params.i: Pfad cols[col]: [col] ist weder Parameter noch Feld`,
+  ]);
 });
