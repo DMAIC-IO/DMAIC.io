@@ -13,6 +13,8 @@
  * (require-trusted-types-for 'script') werfen DOMParser und innerHTML.
  */
 
+import { nonReactive } from './non-reactive.js';
+
 /**
  * @typedef {object} ModuleResourceEntry
  * @property {string} templates  URL der Template-Datei
@@ -105,6 +107,11 @@ export class ModuleResources {
     this._prepared = new Map();
     /** @type {Map<string, Promise<void>>} `${id}:${lang}` → UI-Texte */
     this._texts = new Map();
+    // Nicht reaktiv: die Instanz hängt über ModuleRegistry._resources am
+    // stateManager und hält i18n, dessen _stateManager zurückführt. Hält ein
+    // Viewmodel den Modulkontext als Datenfeld, stiege Alpines
+    // initInterceptors sonst endlos durch diesen Kreis (Stapelüberlauf).
+    nonReactive(this);
   }
 
   /**

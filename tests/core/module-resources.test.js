@@ -5,6 +5,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import { ModuleResources, readModuleResources, fetchDocument } from '../../js/core/module-resources.js';
 import { I18n } from '../../js/core/i18n.js';
+import { ModuleRegistry } from '../../js/core/module-registry.js';
 
 const FIX = (file) => new URL(`../fixtures/module-resources/probe/${file}`, import.meta.url).href;
 
@@ -22,12 +23,46 @@ function makeI18n(lang = 'de') {
   return i18n;
 }
 
+/**
+ * Alpines `initInterceptors` (vendor/alpinejs/csp.js) im Kleinen: steigt über
+ * aufzählbare eigene Eigenschaften in Objekte hinab, überspringt `__v_skip`
+ * und nur die direkte Selbstreferenz. Gibt die erreichte Tiefe zurück; über
+ * `limit` heißt: ein Kreis, Alpine liefe in den Stapelüberlauf.
+ */
+function interceptorDepth(obj, limit = 200, depth = 0) {
+  if (depth > limit) return depth;
+  let max = depth;
+  for (const { value, enumerable } of Object.values(Object.getOwnPropertyDescriptors(obj))) {
+    if (!enumerable || value === undefined) continue;
+    if (typeof value === 'object' && value !== null && value.__v_skip) continue;
+    if (typeof value === 'object' && value !== null && !Array.isArray(value) && value !== obj && !(value instanceof Element)) {
+      max = Math.max(max, interceptorDepth(value, limit, depth + 1));
+      if (max > limit) return max;
+    }
+  }
+  return max;
+}
+
 function cleanup() {
   document.querySelectorAll('template[data-tpl^="js/modules/probe/"]').forEach((t) => t.remove());
   document.querySelectorAll(`link[href="${FIX('style.css')}"]`).forEach((l) => l.remove());
 }
 
 suite('ModuleResources', () => {
+  test('ist nicht reaktiv (__v_skip): Alpine steigt nicht über die Registry in i18n/stateManager hinab', () => {
+    const i18n = makeI18n();
+    const resources = new ModuleResources({ manifest: MANIFEST, i18n });
+    assertEqual(resources.__v_skip, true);
+    // Verdrahtung wie in bootKernel: stateManager → Registry → Resources → i18n → stateManager.
+    const registry = new ModuleRegistry();
+    registry.setResources(resources);
+    const stateManager = { _moduleRegistry: registry };
+    i18n.connect(null, stateManager);
+    // Ein Viewmodel, das den Modulkontext als Feld hält (ishikawa, doe-planner, survey-builder).
+    const data = { vm: { deps: { context: { stateManager, i18n } } } };
+    assertTrue(interceptorDepth(data) < 20, 'kein Kreis über ModuleResources');
+  });
+
   test('readModuleResources liest den JSON-Block, sonst {}', () => {
     const doc = document.implementation.createHTMLDocument('');
     assertDeepEqual(readModuleResources(doc), {});
