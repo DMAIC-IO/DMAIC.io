@@ -106,3 +106,20 @@ suite('describeModule mit Schema-Eintrag (keysHelp)', () => {
     assertEqual(move.keys.find(k => k.name === 'note').optional, true);
   });
 });
+
+suite('schemaAgentEntry — text-Regeln', () => {
+  test('text-Optionen erscheinen als rules am Schlüssel', () => {
+    const M = defineModel({
+      fields: { t: text() },
+      commands: {
+        add: command({
+          params: { col: oneOf(['a']), text: text({ trim: true, nonEmpty: true }) },
+          run() {},
+        }),
+      },
+    });
+    const { keys } = schemaAgentEntry(M).actions.add;
+    assertDeepEqual(keys.text, { type: 'string', help: '', rules: ['trim', 'nonEmpty'] });
+    assertEqual('rules' in keys.col, false);
+  });
+});

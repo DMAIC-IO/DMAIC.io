@@ -30,6 +30,9 @@ const READ_ACTION = Object.freeze({
 /** Rückfalltext des Objektparameters, wenn i18n keinen Satz führt. */
 const COMMAND_PARAM_HELP = 'Das Kommando als ein Objekt; seine Schlüssel stehen unter keys.';
 
+/** Die `text`-Optionen, die als `rules` im Schlüssel erscheinen (feste Reihenfolge). */
+const TEXT_RULES = ['trim', 'nonEmpty'];
+
 /**
  * @param {string} name @param {{ params: Record<string, object>, returns: object|null }} def
  * @param {'model'|'viewmodel'} target
@@ -38,7 +41,13 @@ const COMMAND_PARAM_HELP = 'Das Kommando als ein Objekt; seine Schlüssel stehen
 function commandAction(name, def, target) {
   const keys = {};
   for (const [param, spec] of Object.entries(def.params)) {
-    keys[param] = { type: describeType(spec), help: '', ...(spec.optional === true ? { optional: true } : {}) };
+    const rules = spec.kind === 'text' ? TEXT_RULES.filter((r) => spec[r] === true) : [];
+    keys[param] = {
+      type: describeType(spec),
+      help: '',
+      ...(spec.optional === true ? { optional: true } : {}),
+      ...(rules.length ? { rules } : {}),
+    };
   }
   return {
     target,

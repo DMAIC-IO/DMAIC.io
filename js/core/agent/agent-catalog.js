@@ -284,6 +284,7 @@ function describeKeys(i18n, moduleId, node) {
       help: contextHelp(i18n, moduleId, `${prefix}.${key}`, k.help),
       // Immer da, wie `keys`: die Vertragsform nennt es an jedem Schlüssel.
       optional: k.optional === true,
+      ...(Array.isArray(k.rules) ? { rules: [...k.rules] } : {}),
       ...describeKeys(i18n, moduleId, k),
     })),
   };

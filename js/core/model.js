@@ -28,7 +28,11 @@ function spec(kind, props, opts = {}) {
   return Object.freeze({ kind, ...props, ...rest });
 }
 
-/** Freier Text. @param {object} [opts] @returns {Readonly<object>} */
+/**
+ * Freier Text. `trim`: der geprüfte Wert ist getrimmt; `nonEmpty`: leer
+ * (nach `trim`) wird abgelehnt.
+ * @param {{ trim?: boolean, nonEmpty?: boolean } & object} [opts] @returns {Readonly<object>}
+ */
 export const text = (opts) => spec('text', {}, opts);
 /** Zahl, Grenzen wie `requireNumber`. @param {object} [opts] @returns {Readonly<object>} */
 export const number = (opts) => spec('number', {}, opts);
@@ -163,7 +167,12 @@ function bounds(s) {
 export function checkValue(s, name, value, ctx = {}) {
   if (s.nullable && value === null) return null;
   switch (s.kind) {
-    case 'text': return requireText(name, value);
+    case 'text': {
+      const v = requireText(name, value);
+      const out = s.trim === true ? v.trim() : v;
+      if (s.nonEmpty === true) requireForm(name, value, out !== '', 'a non-empty text');
+      return out;
+    }
     case 'number': return requireNumber(name, value, bounds(s));
     case 'boolean': return requireBoolean(name, value);
     case 'oneOf': return requireEnum(name, value, s.values, { numeric: s.values.some(v => typeof v === 'number') });

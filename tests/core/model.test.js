@@ -3,7 +3,7 @@
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../test-utils.js';
 import {
-  defineModel, text, number, boolean, oneOf, index, idOf, list, record, object,
+  defineModel, command, text, number, boolean, oneOf, index, idOf, list, record, object,
   defaultOf, checkValue, describeType, schemaOf, fieldSpec,
 } from '../../js/core/model.js';
 
@@ -205,5 +205,43 @@ suite('defineModel — hasContent, Schema, Typtexte', () => {
   test('defaultOf und checkValue sind auch einzeln nutzbar', () => {
     assertDeepEqual(defaultOf(record(COLS, number())), { suppliers: 0, inputs: 0 });
     assertEqual(checkValue(oneOf([1, 2]), 'n', '2'), 2);
+  });
+});
+
+suite('defineModel — text-Optionen trim und nonEmpty', () => {
+  const Note = defineModel({
+    fields: { title: text() },
+    commands: {
+      rename: command({
+        params: { title: text({ trim: true, nonEmpty: true }) },
+        run({ title }) { this.title = title; return title; },
+      }),
+    },
+  });
+
+  test('trim: run sieht den getrimmten Text', () => {
+    const m = new Note();
+    assertEqual(m.rename({ title: '  Teig  ' }), 'Teig');
+    assertEqual(m.title, 'Teig');
+  });
+
+  test('nonEmpty: leerer Text nach trim wird abgelehnt, nichts geschrieben', () => {
+    const m = new Note();
+    assertThrows(() => m.rename({ title: '   ' }), /^invalid title " {3}"; allowed: a non-empty text$/);
+    assertThrows(() => m.rename({ title: '' }), /^invalid title ""; allowed: a non-empty text$/);
+    assertEqual(m.title, '');
+  });
+
+  test('kein Text bleibt der bekannte Fehler', () => {
+    assertThrows(() => new Note().rename({ title: 7 }), /^invalid title 7; allowed: any string, "" clears it$/);
+  });
+
+  test('ohne Optionen unverändert: Leerzeichen bleiben, "" erlaubt', () => {
+    assertEqual(checkValue(text(), 'x', '  a '), '  a ');
+    assertEqual(checkValue(text(), 'x', ''), '');
+  });
+
+  test('describeType bleibt string', () => {
+    assertEqual(describeType(text({ trim: true, nonEmpty: true })), 'string');
   });
 });
