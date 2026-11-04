@@ -18,3 +18,20 @@ export function withoutSchema(value) {
   delete rest.$schema;
   return rest;
 }
+
+/**
+ * Tiefer Merge zweier Übersetzungsbäume — `over` gewinnt; Arrays und
+ * Werte werden ersetzt, Objekte gemischt. Gibt ein neues Objekt zurück.
+ * Laufzeit (I18n) und Werkzeuge (agent-report) mischen damit identisch.
+ * @param {object} base @param {object} over @returns {object}
+ */
+export function mergeTree(base, over) {
+  if (!over || typeof over !== 'object') return base;
+  const out = { ...base };
+  for (const [k, v] of Object.entries(over)) {
+    out[k] = v && typeof v === 'object' && !Array.isArray(v)
+      ? mergeTree(base?.[k] && typeof base[k] === 'object' ? base[k] : {}, v)
+      : v;
+  }
+  return out;
+}

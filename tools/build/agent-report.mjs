@@ -20,7 +20,7 @@ import { countAnchorCoverage } from './anchor-coverage.mjs';
 import { explainViolation } from './agent-release.mjs';
 import { APP_DIR } from './build.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
-import { withoutSchema } from '../../js/core/json-file.js';
+import { withoutSchema, mergeTree } from '../../js/core/json-file.js';
 
 const LANGS = ['de', 'en'];
 
@@ -43,7 +43,7 @@ export function readHelpTables(appDir, converted = CONVERTED_MODULES) {
       const parts = [`ui.${lang}.json`, `context-help.${lang}.json`]
         .map((f) => join(dir, f)).filter((f) => existsSync(f))
         .map((f) => withoutSchema(JSON.parse(readFileSync(f, 'utf8'))));
-      table.modules[id] = Object.assign({}, table.modules[id], ...parts);
+      table.modules[id] = parts.reduce(mergeTree, table.modules[id] ?? {});
     }
     tables[lang] = table;
   }

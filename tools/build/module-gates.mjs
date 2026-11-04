@@ -644,12 +644,13 @@ export function checkReferenceFile(base, books = BOOKS) {
   for (const entry of file?.references ?? []) {
     let id = entry.id;
     if (Object.hasOwn(entry, 'book')) {
-      if (!books[entry.book]) {
+      if (!Object.hasOwn(books, entry.book)) {
         findings.push(`references: ${rel}: unbekanntes Buch: ${entry.book} (bekannt: ${Object.keys(books).sort().join(', ')})`);
         continue;
       }
       id = books[entry.book].id;
     }
+    if (id === undefined) continue; // fehlende Id meldet das Schema
     if (ids.has(id)) findings.push(`references: ${rel}: Id doppelt: ${id}`);
     ids.add(id);
   }

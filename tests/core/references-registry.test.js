@@ -70,6 +70,16 @@ suite('references-books: BOOKS und resolveReferences', () => {
     assertTrue(BOOKS['melzer-2019'] === MELZER_2019);
   });
 
+  test('Buch-Id aus der Prototypenkette ist unbekannt und fällt mit Warnung weg', () => {
+    const warn = console.warn;
+    const warned = [];
+    console.warn = (...a) => warned.push(a.join(' '));
+    let out;
+    try { out = resolveReferences([{ book: 'constructor' }]); } finally { console.warn = warn; }
+    assertEqual(out.length, 0);
+    assertEqual(warned.length, 1);
+  });
+
   test('{ book, note } wird zum Buch mit note; CSL bleibt; unbekanntes Buch fällt weg', () => {
     const warn = console.warn;
     const warned = [];

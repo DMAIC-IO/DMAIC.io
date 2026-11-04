@@ -518,6 +518,14 @@ test('checkReferenceFile: unbekanntes Buch und doppelte Id', () => {
   ]);
 });
 
+test('checkReferenceFile: Buch-Id aus der Prototypenkette ist unbekannt, id-lose Einträge sind keine Dubletten', () => {
+  const refs = { references: [{ book: 'constructor' }, { type: 'webpage' }, { type: 'webpage' }] };
+  const base = join(appWith({ 'js/modules/neu/resources/data/references.json': J(refs) }), 'js', 'modules', 'neu');
+  assert.deepEqual(checkReferenceFile(base).findings, [
+    'references: resources/data/references.json: unbekanntes Buch: constructor (bekannt: aiag-msa-4, bosch-heft-10, melzer-2019, montgomery-sqc-6)',
+  ]);
+});
+
 test('checkHelpFiles: gleiche Abschnitte und bekannte Referenzen sind grün, ohne Dateien auch', () => {
   const ids = new Set(['melzer-2019', 'x']);
   assert.deepEqual(checkHelpFiles(join(appWith({ 'js/modules/neu/module.js': '' }), 'js', 'modules', 'neu'), ids), []);

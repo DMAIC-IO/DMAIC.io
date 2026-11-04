@@ -7,23 +7,7 @@
  * Fallback chain: active language → 'en' → key itself.
  */
 
-import { withoutSchema } from './json-file.js';
-
-/**
- * Tiefer Merge zweier Übersetzungsbäume — `over` gewinnt; Arrays und
- * Werte werden ersetzt, Objekte gemischt. Gibt ein neues Objekt zurück.
- * @param {object} base @param {object} over @returns {object}
- */
-function mergeTree(base, over) {
-  if (!over || typeof over !== 'object') return base;
-  const out = { ...base };
-  for (const [k, v] of Object.entries(over)) {
-    out[k] = v && typeof v === 'object' && !Array.isArray(v)
-      ? mergeTree(base?.[k] && typeof base[k] === 'object' ? base[k] : {}, v)
-      : v;
-  }
-  return out;
-}
+import { withoutSchema, mergeTree } from './json-file.js';
 
 export class I18n {
   /**

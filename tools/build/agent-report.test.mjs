@@ -379,6 +379,16 @@ test('readHelpTables mischt ui und context-help umgestellter Module ein, ohne $s
   assert.equal(tables.de.modules.foo.name, 'Foo', 'alte Form bleibt');
 });
 
+test('readHelpTables mischt tief wie die Laufzeit: Altbestand und context-help behalten beide', () => {
+  const root = i18nFixture({ modules: { neu: { fields: { a: { help: 'alt a' } } } } });
+  const dir = join(root, 'js', 'modules', 'neu', 'resources', 'i18n');
+  mkdirSync(dir, { recursive: true });
+  for (const lang of ['de', 'en']) writeFileSync(join(dir, `context-help.${lang}.json`), JSON.stringify({ fields: { b: { help: 'neu b' } } }));
+  const { de } = readHelpTables(root, ['neu']);
+  assert.equal(de.modules.neu.fields.a.help, 'alt a');
+  assert.equal(de.modules.neu.fields.b.help, 'neu b');
+});
+
 test('countHelpCoverage zählt die Kontexthilfe eines umgestellten Moduls aus seinen Dateien', () => {
   const out = countHelpCoverage(newFormFixture(), NEU, ['neu']);
   assert.deepEqual(out.missing, []);

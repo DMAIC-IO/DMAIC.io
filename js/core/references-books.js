@@ -72,7 +72,7 @@ export function resolveReferences(list, books = BOOKS) {
   const out = [];
   for (const entry of list) {
     if (!Object.hasOwn(entry, 'book')) { out.push(entry); continue; }
-    const book = books[entry.book];
+    const book = Object.hasOwn(books, entry.book) ? books[entry.book] : undefined;
     if (!book) { console.warn('[references] unbekanntes Buch:', entry.book); continue; }
     out.push(entry.note ? { ...book, note: entry.note } : { ...book });
   }
