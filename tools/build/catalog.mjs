@@ -52,7 +52,7 @@ export function renderCatalogModule(converted, { examples = {}, exampleRefs = {}
 }
 
 /** @param {Record<string, any>} obj @returns {Record<string, any>} Schlüssel sortiert */
-const sortKeys = (obj) => Object.fromEntries(Object.entries(obj).sort(([a], [b]) => a.localeCompare(b)));
+const sortKeys = (obj) => Object.fromEntries(Object.entries(obj).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
 
 /**
  * Beispiel-Zuordnung der Module in neuer Form: wem ein Beispiel gehört
