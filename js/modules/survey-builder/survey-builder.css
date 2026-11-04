@@ -223,9 +223,21 @@
 /* ── Results tab ──────────────────────────────────────────────── */
 
 .survey-builder__subtitle {
-  margin: var(--spacing-sm) 0 var(--spacing-xs);
-  font-size: var(--font-size-sm);
+  margin: var(--spacing-l) 0 var(--spacing-sm);
+  font-size: var(--font-size-md);
   font-weight: 600;
+}
+
+.survey-builder__summary > .survey-builder__subtitle:first-child {
+  margin-top: var(--spacing-m);
+}
+
+.survey-builder__summary .survey-builder__counts {
+  margin: 0 0 var(--spacing-sm);
+}
+
+.survey-builder__more {
+  margin-top: var(--spacing-sm);
 }
 
 .survey-builder__texts {
@@ -253,14 +265,32 @@
 }
 
 .survey-builder__block {
-  margin-top: var(--spacing-m);
-  padding-top: var(--spacing-sm);
+  margin-top: var(--spacing-l);
+  padding-top: var(--spacing-ml);
   border-top: 1px solid var(--color-border-primary);
 }
 
 .survey-builder__block-title {
-  margin: 0;
+  margin: 0 0 var(--spacing-xs);
   font-size: var(--font-size-md);
+}
+
+.survey-builder__block .survey-builder__counts {
+  margin: 0 0 var(--spacing-sm);
+}
+
+/* Choice questions: the table (and the "other" answers) on the left, the
+   chart beside it — a short table no longer leaves a wide empty strip
+   above a chart that spans the full width. */
+.survey-builder__block-body--side {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--spacing-l);
+  align-items: start;
+}
+
+.survey-builder__block-body--side > .survey-builder__chart {
+  margin-top: 0;
 }
 
 .survey-builder__stats {
@@ -293,7 +323,8 @@
 /* ── Summary, group comparison, report ────────────────────────── */
 
 .survey-builder__summary {
-  padding-bottom: var(--spacing-sm);
+  padding-bottom: var(--spacing-ml);
+  margin-bottom: var(--spacing-ml);
   border-bottom: 1px solid var(--color-border-primary);
 }
 
@@ -316,7 +347,7 @@
 }
 
 .survey-builder__group-part {
-  margin-top: var(--spacing-m);
+  margin-top: var(--spacing-l);
 }
 
 .survey-builder__part-title {

@@ -365,7 +365,7 @@
                 </template>
               </tbody>
             </table>
-            <button class="btn btn--sm" type="button" data-ref="rankingToggle" x-show="results.hasMoreRanking()"
+            <button class="btn btn--sm survey-builder__more" type="button" data-ref="rankingToggle" x-show="results.hasMoreRanking()"
                     @click="results.toggleRanking()" x-text="results.rankingToggleLabel()"></button>
           </div>
 
@@ -455,38 +455,40 @@
               <p class="survey-builder__counts" x-text="results.blockN(b)"></p>
 
               <template x-if="results.isChoice(b)">
-                <div class="survey-builder__block-body">
-                  <table class="dmike-table survey-builder__stats">
-                    <thead><tr><th><span data-help-key="modules.survey-builder.columns.option" x-text="t('colOption')"></span></th><th><span data-help-key="modules.survey-builder.columns.count" x-text="t('colCount')"></span></th><th><span data-help-key="modules.survey-builder.columns.share" x-text="t('colShare')"></span></th></tr></thead>
-                    <tbody>
-                      <template x-for="o in b.stats.options" :key="o.id">
-                        <tr :data-option-id="o.id">
-                          <td data-ref="option" x-text="o.text"></td>
-                          <td data-ref="count" x-text="o.count"></td>
-                          <td data-ref="share" x-text="fmtPct(o.share)"></td>
+                <div class="survey-builder__block-body survey-builder__block-body--side">
+                  <div class="survey-builder__block-main">
+                    <table class="dmike-table survey-builder__stats">
+                      <thead><tr><th><span data-help-key="modules.survey-builder.columns.option" x-text="t('colOption')"></span></th><th><span data-help-key="modules.survey-builder.columns.count" x-text="t('colCount')"></span></th><th><span data-help-key="modules.survey-builder.columns.share" x-text="t('colShare')"></span></th></tr></thead>
+                      <tbody>
+                        <template x-for="o in b.stats.options" :key="o.id">
+                          <tr :data-option-id="o.id">
+                            <td data-ref="option" x-text="o.text"></td>
+                            <td data-ref="count" x-text="o.count"></td>
+                            <td data-ref="share" x-text="fmtPct(o.share)"></td>
+                          </tr>
+                        </template>
+                        <tr data-option-id="__other" x-show="results.hasOther(b)">
+                          <td data-ref="option" x-text="t('answerOther')"></td>
+                          <td data-ref="count" x-text="b.stats.otherCount"></td>
+                          <td data-ref="share" x-text="results.otherShare(b)"></td>
                         </tr>
-                      </template>
-                      <tr data-option-id="__other" x-show="results.hasOther(b)">
-                        <td data-ref="option" x-text="t('answerOther')"></td>
-                        <td data-ref="count" x-text="b.stats.otherCount"></td>
-                        <td data-ref="share" x-text="results.otherShare(b)"></td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  <div x-show="results.hasOtherTexts(b)">
-                    <div class="survey-builder__subtitle" x-text="t('otherTitle')"></div>
-                    <ul class="survey-builder__texts" data-ref="otherAnswers">
-                      <template x-for="a in handover.otherAnswers(b)" :key="a.key">
-                        <li class="survey-builder__answer">
-                          <input type="checkbox" data-ref="vocCheck"
-                                 :checked="handover.isVocSelected(a.key)" @change="handover.toggleVoc(a.key)">
-                          <span class="icon icon--sm survey-builder__taken" data-icon="status.ok" data-ref="vocTaken"
-                                x-show="handover.isVocTaken(a.key)" :title="t('vocTakenMark')"></span>
-                          <span data-ref="answerText" x-text="a.text"></span>
-                          <span class="survey-builder__hint" x-show="handover.hasName(a)" x-text="a.name"></span>
-                        </li>
-                      </template>
-                    </ul>
+                      </tbody>
+                    </table>
+                    <div x-show="results.hasOtherTexts(b)">
+                      <div class="survey-builder__subtitle" x-text="t('otherTitle')"></div>
+                      <ul class="survey-builder__texts" data-ref="otherAnswers">
+                        <template x-for="a in handover.otherAnswers(b)" :key="a.key">
+                          <li class="survey-builder__answer">
+                            <input type="checkbox" data-ref="vocCheck"
+                                   :checked="handover.isVocSelected(a.key)" @change="handover.toggleVoc(a.key)">
+                            <span class="icon icon--sm survey-builder__taken" data-icon="status.ok" data-ref="vocTaken"
+                                  x-show="handover.isVocTaken(a.key)" :title="t('vocTakenMark')"></span>
+                            <span data-ref="answerText" x-text="a.text"></span>
+                            <span class="survey-builder__hint" x-show="handover.hasName(a)" x-text="a.name"></span>
+                          </li>
+                        </template>
+                      </ul>
+                    </div>
                   </div>
                   <div class="survey-builder__chart" :data-chart="results.chartKey('q', b.question.id)"></div>
                 </div>
