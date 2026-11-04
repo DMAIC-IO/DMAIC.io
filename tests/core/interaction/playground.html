@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Interaktionsschicht — Testseite</title>
+<style>
+  body { margin: 0; font: 14px sans-serif; }
+  .dmike-sr-only { position: absolute; left: -9999px; }
+  .pg-lists { display: flex; gap: 24px; padding: 16px; }
+  .pg-list { width: 160px; min-height: 120px; margin: 0; padding: 4px; list-style: none; outline: 1px solid GrayText; }
+  .pg-list[data-drop-target] { outline: 2px solid Highlight; }
+  .pg-item { height: 28px; }
+  .pg-item[data-dragging] { opacity: 0.5; }
+  .pg-item__grip { width: 100%; height: 28px; touch-action: none; }
+  .pg-grid { display: flex; padding: 16px; }
+  .pg-col { position: relative; width: 120px; height: 480px; outline: 1px solid GrayText; }
+  .pg-slot { height: 30px; box-sizing: border-box; border-bottom: 1px dotted GrayText; touch-action: none; }
+  .pg-block { position: absolute; left: 4px; right: 4px; outline: 1px solid CanvasText; background: Canvas; }
+  .pg-block__body { position: absolute; top: 8px; bottom: 8px; left: 0; width: 100%; touch-action: none; }
+  .pg-block__edge { position: absolute; left: 0; width: 100%; height: 8px; padding: 0; touch-action: none; }
+  .pg-block__edge[data-edge="start"] { top: 0; }
+  .pg-block__edge[data-edge="end"] { bottom: 0; }
+</style>
+</head>
+<body>
+  <section class="pg-lists" data-testid="lists"></section>
+  <section class="pg-grid" data-testid="grid"></section>
+  <pre data-testid="preview"></pre>
+  <pre data-testid="actions"></pre>
+  <pre data-testid="notices"></pre>
+  <pre data-testid="state"></pre>
+  <script type="module" src="./playground.js"></script>
+</body>
+</html>
