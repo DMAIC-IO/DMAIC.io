@@ -78,7 +78,7 @@ export async function bootKernel(adapter = new LocalAdapter()) {
 
   const chartManager = new ChartManager(eventBus, i18n, stateManager);
 
-  const examplesRegistry = new ExamplesRegistry();
+  const examplesRegistry = new ExamplesRegistry({ resources: moduleResources });
   await examplesRegistry.init();
 
   const videosRegistry = new VideosRegistry();

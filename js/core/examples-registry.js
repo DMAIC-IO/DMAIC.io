@@ -5,6 +5,11 @@
  * `examples/shared/scenarios.json` at startup and serves catalog entries to
  * modules.
  *
+ * Beispiele der Module in neuer Form stehen in `resources/examples/examples.json`
+ * ihres Besitzers; `EXAMPLES`/`EXAMPLE_REFS` aus dem Katalog nennen Besitzer und
+ * Nutzer. Geladen wird die Datei über `ModuleResources.url`, ohne das Modul zu
+ * laden. `get`, `getForModule`, `load` sind `async`; Szenarien synchron.
+ *
  * Three entry types:
  *   - dataset:   tabular data shipped as CSV/JSON file
  *   - project:   pre-filled module-state snapshot (passes through to setState)
@@ -12,6 +17,8 @@
  */
 
 import { uid } from './uid.js';
+import { withoutSchema } from './json-file.js';
+import { EXAMPLES, EXAMPLE_REFS } from '../modules/catalog.generated.js';
 
 const CATALOG_URL = './examples/index.json';
 const BASE_PATH = './examples/';
@@ -45,13 +52,86 @@ async function fetchCatalogFile(url) {
 }
 
 export class ExamplesRegistry {
-  constructor() {
+  /**
+   * @param {object} [opts]
+   * @param {{ url(id: string, file: string): string|undefined } | null} [opts.resources]  ModuleResources
+   * @param {{ examples: Record<string, string>, exampleRefs: Record<string, string[]> }} [opts.catalog]
+   */
+  constructor({ resources = null, catalog = { examples: EXAMPLES, exampleRefs: EXAMPLE_REFS } } = {}) {
     /** @type {object[]} */
     this._examples = [];
     /** @type {object[]} */
     this._scenarios = [];
     /** @type {boolean} */
     this._initialized = false;
+    this._resources = resources;
+    this._catalog = catalog;
+    /** @type {Map<string, Promise<object[]>>} Besitzer → laufendes oder fertiges Laden */
+    this._owned = new Map();
+    /** @type {Map<string, object>} geladene Modulbeispiele (für peek) */
+    this._loaded = new Map();
+  }
+
+  /**
+   * `modules` eines Eintrags um die Nutzer aus exampleRefs ergänzen.
+   * @param {object} entry @param {string[]} modules @returns {object}
+   */
+  _withRefs(entry, modules) {
+    const refs = Object.hasOwn(this._catalog.exampleRefs, entry.id) ? this._catalog.exampleRefs[entry.id] : [];
+    return refs.length ? { ...entry, modules: [...new Set([...modules, ...refs])] } : { ...entry, modules };
+  }
+
+  /**
+   * Beispiele eines Besitzers aus seiner examples.json — einmal je Besitzer,
+   * ein Fehlschlag wird nicht gespeichert.
+   * @param {string} owner
+   * @returns {Promise<object[]>}
+   */
+  _ownedBy(owner) {
+    let pending = this._owned.get(owner);
+    if (!pending) {
+      const url = this._resources?.url(owner, 'examples/examples.json');
+      pending = !url ? Promise.resolve([]) : fetch(url, { cache: 'no-cache' })
+        .then((res) => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+        .then((file) => (withoutSchema(file)?.examples ?? []).map((e) => {
+          const entry = this._withRefs(e, [owner]);
+          this._loaded.set(entry.id, entry);
+          return entry;
+        }));
+      pending.catch(() => this._owned.delete(owner));
+      this._owned.set(owner, pending);
+    }
+    return pending;
+  }
+
+  /**
+   * Besitzer eines Modulbeispiels der neuen Form, sonst null.
+   * @param {string} id @returns {string|null}
+   */
+  _ownerOf(id) {
+    return Object.hasOwn(this._catalog.examples, id) ? this._catalog.examples[id] : null;
+  }
+
+  /**
+   * Ids der Modulbeispiele, die ein Modul besitzt oder per exampleRefs nutzt.
+   * @param {string} moduleId @returns {string[]}
+   */
+  _catalogIdsFor(moduleId) {
+    const { examples, exampleRefs } = this._catalog;
+    return [
+      ...Object.keys(examples).filter((id) => examples[id] === moduleId),
+      ...Object.keys(exampleRefs).filter((id) => exampleRefs[id].includes(moduleId)),
+    ];
+  }
+
+  /**
+   * URL einer Datei unter resources/examples/ eines Moduls.
+   * @param {string} owner @param {string} file @returns {string}
+   */
+  _moduleUrl(owner, file) {
+    const url = this._resources?.url(owner, `examples/${file}`);
+    if (!url) throw new Error(`[ExamplesRegistry] ${owner}: examples/${file} fehlt in #module-resources`);
+    return url;
   }
 
   /**
@@ -74,7 +154,7 @@ export class ExamplesRegistry {
    * @param {{ examples?: object[], scenarios?: object[] }} catalog
    */
   setCatalog({ examples = [], scenarios = [] } = {}) {
-    this._examples = examples.filter((e) => e.type !== 'scenario');
+    this._examples = examples.filter((e) => e.type !== 'scenario').map((e) => this._withRefs(e, e.modules ?? []));
     this._scenarios = [...scenarios, ...examples.filter((e) => e.type === 'scenario')];
   }
 
@@ -84,14 +164,21 @@ export class ExamplesRegistry {
   }
 
   /**
-   * Return all catalog entries whose `modules` list contains the given moduleId.
+   * Beispiele eines Moduls: aus examples/index.json, aus der eigenen
+   * examples.json und über exampleRefs — ohne Szenarien, ohne Doppel.
    * @param {string} moduleId
-   * @returns {object[]}
+   * @returns {Promise<object[]>}
    */
-  getForModule(moduleId) {
+  async getForModule(moduleId) {
     if (!moduleId) return [];
-    return this._examples.filter(e =>
-      Array.isArray(e.modules) && e.modules.includes(moduleId));
+    const out = this._examples.filter((e) => Array.isArray(e.modules) && e.modules.includes(moduleId));
+    const seen = new Set(out.map((e) => e.id));
+    for (const id of this._catalogIdsFor(moduleId)) {
+      if (seen.has(id)) continue;
+      const entry = await this.get(id);
+      if (entry) { out.push(entry); seen.add(id); }
+    }
+    return out;
   }
 
   /**
@@ -132,7 +219,7 @@ export class ExamplesRegistry {
    * @returns {object|undefined}
    */
   peek(id) {
-    return this._examples.find(e => e.id === id) ?? this.getScenario(id);
+    return this._examples.find(e => e.id === id) ?? this.getScenario(id) ?? this._loaded.get(id);
   }
 
   /**
@@ -141,16 +228,22 @@ export class ExamplesRegistry {
    * @returns {boolean}
    */
   hasExamples(moduleId) {
-    return this._examples.some(e => Array.isArray(e.modules) && e.modules.includes(moduleId));
+    return this._examples.some(e => Array.isArray(e.modules) && e.modules.includes(moduleId))
+      || this._catalogIdsFor(moduleId).length > 0;
   }
 
   /**
-   * Get a single catalog entry by id.
+   * Ein Eintrag (Beispiel oder Szenario); ein Beispiel der neuen Form wird
+   * dafür aus der examples.json seines Besitzers geladen.
    * @param {string} exampleId
-   * @returns {object|undefined}
+   * @returns {Promise<object|undefined>}
    */
-  get(exampleId) {
-    return this.peek(exampleId);
+  async get(exampleId) {
+    const known = this.peek(exampleId);
+    if (known) return known;
+    const owner = this._ownerOf(exampleId);
+    if (!owner) return undefined;
+    return (await this._ownedBy(owner)).find((e) => e.id === exampleId);
   }
 
   /**
@@ -161,7 +254,7 @@ export class ExamplesRegistry {
    * @returns {Promise<{ meta: object, data: any, worksheetKey: string|null }>}
    */
   async load(exampleId) {
-    const meta = this.get(exampleId);
+    const meta = await this.get(exampleId);
     if (!meta) throw new Error(`Unknown example id: ${exampleId}`);
 
     if (meta.type === 'generator') {
@@ -170,7 +263,9 @@ export class ExamplesRegistry {
 
     if (!meta.file) throw new Error(`Example "${exampleId}" has no file`);
 
-    const url = `${BASE_PATH}${meta.file}`;
+    const owner = this._ownerOf(exampleId);
+    const url = owner ? this._moduleUrl(owner, meta.file) : `${BASE_PATH}${meta.file}`;
+    const fileKey = owner ? `modules/${owner}/${meta.file}` : meta.file;
     const res = await fetch(url, { cache: 'no-cache' });
     if (!res.ok) throw new Error(`Failed to fetch ${url}: HTTP ${res.status}`);
 
@@ -183,8 +278,10 @@ export class ExamplesRegistry {
       // straight into setState().
       let worksheetKey = null;
       if (data && typeof data.sourceWorksheetFile === 'string') {
-        worksheetKey = data.sourceWorksheetFile;
-        const wsUrl = `${BASE_PATH}${data.sourceWorksheetFile}`;
+        const ws = data.sourceWorksheetFile;
+        const own = owner && !ws.startsWith('shared/');
+        worksheetKey = own ? `modules/${owner}/${ws}` : ws;
+        const wsUrl = own ? this._moduleUrl(owner, ws) : `${BASE_PATH}${ws}`;
         try {
           const wsRes = await fetch(wsUrl, { cache: 'no-cache' });
           if (wsRes.ok) {
@@ -198,7 +295,7 @@ export class ExamplesRegistry {
         delete data.sourceWorksheetFile;
       } else if (Array.isArray(meta.modules) && meta.modules.includes('worksheet')) {
         // A worksheet example IS the data collection — key it by its own file.
-        worksheetKey = meta.file;
+        worksheetKey = fileKey;
       }
       return { meta, data, worksheetKey };
     }
@@ -206,7 +303,7 @@ export class ExamplesRegistry {
     // Default: CSV — the source file is the dedup key.
     const text = await res.text();
     const data = parseCsv(text);
-    return { meta, data, worksheetKey: meta.file };
+    return { meta, data, worksheetKey: fileKey };
   }
 
   // ─── Generators ─────────────────────────────────────────────

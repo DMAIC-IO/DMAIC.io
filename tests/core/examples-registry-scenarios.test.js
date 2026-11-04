@@ -35,7 +35,7 @@ suite('ExamplesRegistry scenarios', () => {
     const reg = new ExamplesRegistry();
     reg.setCatalog({ examples: CATALOG.examples, scenarios: [{ id: 'scn-shared', type: 'scenario', cycle: 'dmaic', items: ['ex-a'] }] });
     assertDeepEqual(reg.getScenarios().map((s) => s.id), ['scn-shared', 'scn-full', 'scn-starter', 'scn-other']);
-    assertEqual(reg.get('scn-shared').id, 'scn-shared');
+    assertEqual((await reg.get('scn-shared')).id, 'scn-shared');
     assertDeepEqual((await reg.getForModule('sipoc')).map((e) => e.id), ['ex-a']);
   });
 
