@@ -17,7 +17,7 @@ import { GlossaryRegistry } from './glossary-registry.js';
 import { configureStatsPanel } from './stats-panel.js';
 import { setGlossaryInlineConfig } from './glossary-inline.js';
 import ChartManager       from './chart/chart-manager.js';
-import manifest           from '../modules/manifest.js';
+import { MODULES }        from '../modules/catalog.generated.js';
 import { TipEngine }      from './tips/tip-engine.js';
 import { shortcutRegistry } from './shortcut-registry.js';
 import { installErrorLog } from './error-log.js';
@@ -58,7 +58,7 @@ export async function bootKernel(adapter = new LocalAdapter()) {
   shortcutRegistry.init(stateManager, eventBus);
 
   const moduleRegistry = new ModuleRegistry();
-  manifest.forEach(def => moduleRegistry.register(def));
+  MODULES.forEach(def => moduleRegistry.register(def));
   moduleRegistry.setActiveCycle(stateManager.getProjectCycle());
   stateManager.setModuleRegistry(moduleRegistry);
 

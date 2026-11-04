@@ -1,12 +1,12 @@
 /**
  * D.Mike — voc-ctx-tree phase lookup (voc-ctx-tree-phase.js)
  *
- * Pure helper shared by kano and survey-builder. Reads the static manifest
- * (plain data, no bootstrap side effects) because the module context carries
- * no module registry.
+ * Pure helper shared by kano and survey-builder. Reads the module catalog
+ * (catalog.generated.js, plain data, no bootstrap side effects) because the
+ * module context carries no module registry.
  */
 
-import manifest from '../manifest.js';
+import { MODULES } from '../catalog.generated.js';
 
 /**
  * Phase in which a freshly provisioned `voc-ctx-tree` instance belongs in the
@@ -17,6 +17,6 @@ import manifest from '../manifest.js';
  * @returns {string}
  */
 export function treePhaseForCycle(cycleId) {
-  const def = manifest.find((m) => m.id === 'voc-ctx-tree');
+  const def = MODULES.find((m) => m.id === 'voc-ctx-tree');
   return def?.cycles?.[cycleId]?.phase || def?.phase || 'define';
 }
