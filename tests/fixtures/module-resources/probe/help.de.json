@@ -1,0 +1,7 @@
+{
+  "$schema": "../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": { "title": "Überblick", "blocks": [{ "type": "paragraph", "content": "Die Sonde {{ref:melzer-2019}}." }] },
+    "steps": { "title": "Schritte", "blocks": [{ "type": "steps", "items": ["Eins", "Zwei"] }] }
+  }
+}

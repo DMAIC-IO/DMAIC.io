@@ -1,4 +1,5 @@
 import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
+import { BOOKS, resolveReferences, MELZER_2019 } from '../../js/core/references-books.js';
 import { getModuleReferences, hasModuleReferences } from '../../js/core/references-registry.js';
 import { REFS } from '../../js/core/references-registry.generated.js';
 
@@ -60,5 +61,35 @@ suite('references-registry — book review sources', () => {
       }
     }
     assertEqual(offenders.join('\n'), '', 'malformed references');
+  });
+});
+
+suite('references-books: BOOKS und resolveReferences', () => {
+  test('BOOKS führt die vier Bücher unter ihrer id', () => {
+    assertEqual(Object.keys(BOOKS).sort().join(','), 'aiag-msa-4,bosch-heft-10,melzer-2019,montgomery-sqc-6');
+    assertTrue(BOOKS['melzer-2019'] === MELZER_2019);
+  });
+
+  test('{ book, note } wird zum Buch mit note; CSL bleibt; unbekanntes Buch fällt weg', () => {
+    const warn = console.warn;
+    const warned = [];
+    console.warn = (...a) => warned.push(a.join(' '));
+    let out;
+    try {
+      out = resolveReferences([
+        { book: 'melzer-2019', note: { de: 'K3', en: 'C3' } },
+        { book: 'aiag-msa-4' },
+        { book: 'nope' },
+        { id: 'x', type: 'webpage', title: 'X', author: [{ literal: 'X' }] },
+      ]);
+    } finally { console.warn = warn; }
+    assertEqual(out.length, 3);
+    assertEqual(out[0].id, 'melzer-2019');
+    assertEqual(out[0].note.de, 'K3');
+    assertEqual('note' in out[1], false);
+    assertEqual(out[2].id, 'x');
+    assertEqual(warned.length, 1);
+    assertTrue(warned[0].includes('nope'));
+    assertEqual('note' in MELZER_2019, false, 'Buch-Konstante unverändert');
   });
 });

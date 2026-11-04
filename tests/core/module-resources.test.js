@@ -13,7 +13,12 @@ const MANIFEST = {
   probe: {
     templates: FIX('templates.html'),
     style: FIX('style.css'),
-    files: { 'i18n/ui.de.json': FIX('ui.de.json'), 'i18n/ui.en.json': FIX('ui.en.json') },
+    files: {
+      'i18n/ui.de.json': FIX('ui.de.json'), 'i18n/ui.en.json': FIX('ui.en.json'),
+      'i18n/context-help.de.json': FIX('context-help.de.json'), 'i18n/context-help.en.json': FIX('context-help.en.json'),
+      'i18n/help.de.json': FIX('help.de.json'), 'i18n/help.en.json': FIX('help.en.json'),
+      'data/references.json': FIX('references.json'),
+    },
   },
 };
 
@@ -147,7 +152,7 @@ suite('ModuleResources', () => {
     assertTrue(res.has('probe'));
     assertEqual(res.has('nope'), false);
     assertEqual(res.url('probe', 'i18n/ui.en.json'), FIX('ui.en.json'));
-    assertEqual(res.url('probe', 'i18n/help.de.json'), undefined);
+    assertEqual(res.url('probe', 'i18n/fehlt.json'), undefined);
   });
 
   test('prepare während eines laufenden setLanguage: Texte der Zielsprache sind danach da', async () => {
@@ -178,5 +183,90 @@ suite('ModuleResources', () => {
     await res.prepare('probe');
     assertEqual(document.querySelectorAll(`link[href="${FIX('style.css')}"]`).length, 1);
     cleanup();
+  });
+
+  test('prepare mischt die Kontexthilfe der aktiven Sprache ein, ohne $schema', async () => {
+    cleanup();
+    const i18n = makeI18n('de');
+    const res = new ModuleResources({ manifest: MANIFEST, i18n });
+    await res.prepare('probe');
+    assertEqual(i18n.t('modules.probe.fields.title.help'), 'Der Titel der Sonde.');
+    assertEqual(i18n.exists('modules.probe.actions.add.params.text'), true);
+    assertEqual(i18n.t('modules.probe.col'), 'Spalte', 'UI-Texte bleiben');
+    assertEqual(i18n._resolve('modules.probe.$schema', 'de'), undefined);
+    assertEqual(i18n._resolve('modules.probe.fields.title.help', 'en'), undefined, 'nur die aktive Sprache');
+    cleanup();
+  });
+
+  test('Sprachwechsel lädt die Kontexthilfe mit', async () => {
+    cleanup();
+    const i18n = makeI18n('de');
+    const res = new ModuleResources({ manifest: MANIFEST, i18n });
+    await res.prepare('probe');
+    await res.loadLanguage('en');
+    assertEqual(i18n._resolve('modules.probe.fields.title.help', 'en'), 'The probe title.');
+    cleanup();
+  });
+
+  test('prepare ohne context-help-Datei: nur UI-Texte, kein Fehler', async () => {
+    cleanup();
+    const files = { 'i18n/ui.de.json': FIX('ui.de.json') };
+    const i18n = makeI18n('de');
+    const res = new ModuleResources({ manifest: { probe: { ...MANIFEST.probe, files } }, i18n });
+    await res.prepare('probe');
+    assertEqual(i18n.t('modules.probe.col'), 'Spalte');
+    assertEqual(i18n.exists('modules.probe.fields.title.help'), false);
+    cleanup();
+  });
+
+  test('help(id, lang): Form für renderModuleHelp, nur diese Sprache, Reihenfolge der Datei', async () => {
+    const res = new ModuleResources({ manifest: MANIFEST, i18n: makeI18n() });
+    const def = await res.help('probe', 'en');
+    assertEqual(def.moduleId, 'probe');
+    assertDeepEqual(Object.keys(def.sections), ['overview', 'steps']);
+    assertEqual(def.sections.overview.en.title, 'Overview');
+    assertEqual('de' in def.sections.overview, false);
+    assertEqual('$schema' in def, false);
+  });
+
+  test('help lädt je Modul und Sprache einmal; ohne Datei null', async () => {
+    let fetches = 0;
+    const res = new ModuleResources({ manifest: MANIFEST, i18n: makeI18n(),
+      loaders: { fetchJson: async (url) => { fetches++; return (await fetch(url)).json(); } } });
+    await Promise.all([res.help('probe', 'de'), res.help('probe', 'de')]);
+    await res.help('probe', 'de');
+    assertEqual(fetches, 1);
+    assertEqual(await res.help('nope', 'de'), null);
+    const noHelp = new ModuleResources({ manifest: { probe: { ...MANIFEST.probe, files: {} } }, i18n: makeI18n() });
+    assertEqual(await noHelp.help('probe', 'de'), null);
+  });
+
+  test('help: Fehlschlag wird nicht gespeichert', async () => {
+    let fail = true;
+    const res = new ModuleResources({ manifest: MANIFEST, i18n: makeI18n(),
+      loaders: { fetchJson: async (url) => { if (fail) throw new Error('net'); return (await fetch(url)).json(); } } });
+    let threw = false;
+    try { await res.help('probe', 'de'); } catch { threw = true; }
+    assertTrue(threw);
+    fail = false;
+    assertEqual((await res.help('probe', 'de')).sections.overview.de.title, 'Überblick');
+  });
+
+  test('references(id): Bücher aufgelöst, unbekanntes Buch übersprungen, einmal geladen; ohne Datei []', async () => {
+    let fetches = 0;
+    const res = new ModuleResources({ manifest: MANIFEST, i18n: makeI18n(),
+      loaders: { fetchJson: async (url) => { fetches++; return (await fetch(url)).json(); } } });
+    const warn = console.warn;
+    console.warn = () => {};
+    let refs;
+    try {
+      refs = await res.references('probe');
+      await res.references('probe');
+    } finally { console.warn = warn; }
+    assertDeepEqual(refs.map((r) => r.id), ['melzer-2019', 'nelson-1984']);
+    assertEqual(refs[0].publisher, 'Springer Gabler');
+    assertEqual(refs[0].note.en, 'Chapter 3');
+    assertEqual(fetches, 1);
+    assertDeepEqual(await res.references('nope'), []);
   });
 });

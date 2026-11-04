@@ -1,0 +1,5 @@
+{
+  "$schema": "../../../../schemas/module-context-help.schema.json",
+  "fields": { "title": { "help": "The probe title." } },
+  "actions": { "add": { "help": "Adds a row.", "params": { "text": "The text." } } }
+}

@@ -1,0 +1,8 @@
+{
+  "$schema": "../../../../schemas/module-references.schema.json",
+  "references": [
+    { "book": "melzer-2019", "note": { "de": "Kapitel 3", "en": "Chapter 3" } },
+    { "book": "gibt-es-nicht" },
+    { "id": "nelson-1984", "type": "article-journal", "title": "The Shewhart Control Chart", "author": [{ "family": "Nelson" }] }
+  ]
+}

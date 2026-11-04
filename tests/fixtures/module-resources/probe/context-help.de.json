@@ -1,0 +1,5 @@
+{
+  "$schema": "../../../../schemas/module-context-help.schema.json",
+  "fields": { "title": { "help": "Der Titel der Sonde." } },
+  "actions": { "add": { "help": "Fügt eine Zeile hinzu.", "params": { "text": "Der Text." } } }
+}

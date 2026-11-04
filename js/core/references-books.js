@@ -1,6 +1,8 @@
 /**
  * D.Mike — bibliographic data shared by several module reference lists.
  * Each module spreads an entry and adds its own localized `note`.
+ * Module in neuer Form verweisen in `resources/data/references.json` per
+ * `{ book: <id> }` auf ein Buch; `resolveReferences` löst das auf.
  */
 
 /** Melzer 2019 — basis of a book review. */
@@ -52,3 +54,27 @@ export const MONTGOMERY_SQC_6 = {
   issued: { 'date-parts': [[2009]] },
   ISBN: '978-0-470-16992-6',
 };
+
+/** Die Bücher unter ihrer id — Ziel von `{ book: <id> }` in resources/data/references.json. */
+export const BOOKS = Object.freeze(Object.fromEntries(
+  [MELZER_2019, AIAG_MSA_4, BOSCH_HEFT_10, MONTGOMERY_SQC_6].map((b) => [b.id, b]),
+));
+
+/**
+ * Buchverweise einer Referenzliste auflösen: `{ book, note? }` wird zum
+ * Buch-Eintrag mit eigener `note`; CSL-Einträge bleiben unverändert. Ein
+ * unbekanntes Buch fällt mit Warnung weg (das Build-Gate verhindert ihn).
+ * @param {object[]} list
+ * @param {Record<string, object>} [books]
+ * @returns {object[]}
+ */
+export function resolveReferences(list, books = BOOKS) {
+  const out = [];
+  for (const entry of list) {
+    if (!Object.hasOwn(entry, 'book')) { out.push(entry); continue; }
+    const book = books[entry.book];
+    if (!book) { console.warn('[references] unbekanntes Buch:', entry.book); continue; }
+    out.push(entry.note ? { ...book, note: entry.note } : { ...book });
+  }
+  return out;
+}

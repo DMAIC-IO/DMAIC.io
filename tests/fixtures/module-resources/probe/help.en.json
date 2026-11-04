@@ -1,0 +1,7 @@
+{
+  "$schema": "../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": { "title": "Overview", "blocks": [{ "type": "paragraph", "content": "The probe {{ref:melzer-2019}}." }] },
+    "steps": { "title": "Steps", "blocks": [{ "type": "steps", "items": ["One", "Two"] }] }
+  }
+}

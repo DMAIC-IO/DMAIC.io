@@ -5,15 +5,20 @@
  * nennt je umgestelltem Modul die gehashten URLs: Templates
  * (js/chunks/templates/…), CSS (js/chunks/styles/…) und die Dateien unter
  * `resources/` mit Versionsparameter. `prepare(id)` lädt vor dem ersten
- * `init()` Templates, CSS und `i18n/ui.<lang>.json` der aktiven Sprache —
- * je Modul einmal; ein Fehlschlag wird nicht gespeichert, der nächste
- * Versuch lädt neu.
+ * `init()` Templates, CSS sowie `i18n/ui.<lang>.json` **und**
+ * `i18n/context-help.<lang>.json` der aktiven Sprache — je Modul einmal; ein
+ * Fehlschlag wird nicht gespeichert, der nächste Versuch lädt neu.
+ * `help(id, lang)` und `references(id)` laden für das Hilfe-Panel
+ * `i18n/help.<lang>.json` und `data/references.json`, je Schlüssel einmal.
  *
  * Templates kommen per XHR mit `responseType = 'document'`: unter der CSP
  * (require-trusted-types-for 'script') werfen DOMParser und innerHTML.
  */
 
 import { nonReactive } from './non-reactive.js';
+import { withoutSchema } from './json-file.js';
+import { helpDefFromFile } from './module-help-files.js';
+import { resolveReferences } from './references-books.js';
 
 /**
  * @typedef {object} ModuleResourceEntry
@@ -109,6 +114,10 @@ export class ModuleResources {
     this._texts = new Map();
     /** @type {Map<string, Promise<void>>} id → Stylesheet (nie doppelt anhängen) */
     this._styles = new Map();
+    /** @type {Map<string, Promise<object|null>>} `${id}:${lang}` → Hilfe */
+    this._help = new Map();
+    /** @type {Map<string, Promise<object[]>>} id → Referenzen */
+    this._references = new Map();
     // Nicht reaktiv: die Instanz hängt über ModuleRegistry._resources am
     // stateManager und hält i18n, dessen _stateManager zurückführt. Hält ein
     // Viewmodel den Modulkontext als Datenfeld, stiege Alpines
@@ -166,6 +175,49 @@ export class ModuleResources {
     await Promise.all([...this._prepared.keys()].map((id) => this._uiTexts(id, lang)));
   }
 
+  /**
+   * Das Handbuch eines Moduls in einer Sprache (Hilfe-Panel, module.describe).
+   * @param {string} id
+   * @param {string} lang
+   * @returns {Promise<object|null>} `{ moduleId, sections: { <sec>: { [lang]: { title, blocks } } } }`, ohne Datei null
+   */
+  help(id, lang) {
+    const url = this.url(id, `i18n/help.${lang}.json`);
+    if (!url) return Promise.resolve(null);
+    return this._once(this._help, `${id}:${lang}`,
+      () => this._fetchJson(url).then((file) => helpDefFromFile(id, lang, withoutSchema(file))));
+  }
+
+  /**
+   * Die Referenzen eines Moduls, Buchverweise aufgelöst.
+   * @param {string} id
+   * @returns {Promise<object[]>} ohne Datei []
+   */
+  references(id) {
+    const url = this.url(id, 'data/references.json');
+    if (!url) return Promise.resolve([]);
+    return this._once(this._references, id,
+      () => this._fetchJson(url).then((file) => resolveReferences(file?.references ?? [])));
+  }
+
+  /**
+   * Einmal laden je Schlüssel; ein Fehlschlag wird nicht gespeichert.
+   * @template T
+   * @param {Map<string, Promise<T>>} cache
+   * @param {string} key
+   * @param {() => Promise<T>} load
+   * @returns {Promise<T>}
+   */
+  _once(cache, key, load) {
+    let pending = cache.get(key);
+    if (!pending) {
+      pending = load();
+      pending.catch(() => cache.delete(key));
+      cache.set(key, pending);
+    }
+    return pending;
+  }
+
   /** @param {string} id */
   async _templates(id) {
     const loaded = await this._fetchDocument(this._manifest[id].templates);
@@ -180,31 +232,21 @@ export class ModuleResources {
   _style(id) {
     const url = this._manifest[id].style;
     if (!url) return Promise.resolve();
-    let pending = this._styles.get(id);
-    if (!pending) {
-      pending = Promise.resolve(this._loadStylesheet(url)).then(() => {});
-      pending.catch(() => this._styles.delete(id));
-      this._styles.set(id, pending);
-    }
-    return pending;
+    return this._once(this._styles, id, () => Promise.resolve(this._loadStylesheet(url)).then(() => {}));
   }
 
   /**
+   * UI-Texte und Kontexthilfe einer Sprache laden und gemeinsam einmischen.
    * @param {string} id
    * @param {string} lang
    * @returns {Promise<void>}
    */
   _uiTexts(id, lang) {
-    const key = `${id}:${lang}`;
-    let pending = this._texts.get(key);
-    if (!pending) {
-      const url = this.url(id, `i18n/ui.${lang}.json`);
-      pending = url
-        ? this._fetchJson(url).then((tree) => this._i18n.mergeModule(id, lang, tree))
-        : Promise.resolve();
-      pending.catch(() => this._texts.delete(key));
-      this._texts.set(key, pending);
-    }
-    return pending;
+    return this._once(this._texts, `${id}:${lang}`, async () => {
+      const urls = [`i18n/ui.${lang}.json`, `i18n/context-help.${lang}.json`]
+        .map((file) => this.url(id, file)).filter(Boolean);
+      const trees = await Promise.all(urls.map((url) => this._fetchJson(url)));
+      for (const tree of trees) this._i18n.mergeModule(id, lang, withoutSchema(tree));
+    });
   }
 }
