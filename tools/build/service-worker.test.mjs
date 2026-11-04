@@ -107,3 +107,14 @@ test('bundleServiceWorker emits one eval-free classic script with both constants
   assert.ok(code.includes('js/app.min.js?v=11111111'), 'PRECACHE inlined');
   assert.ok(code.includes('dmaic:'), 'cache prefix present');
 });
+
+test('collectPrecache: Katalogtexte mit ?v= und Modul-URLs', () => {
+  const urls = collectPrecache(APP_DIR, {
+    jsHref: 'js/app.min.js?v=1', cssHref: 'css/app.min.css?v=1', cssCode: '', chunks: [], i18nHash: 'abcd1234',
+    moduleUrls: ['js/chunks/templates/neu-11111111.html', 'js/modules/neu/resources/i18n/ui.de.json?v=9'],
+  });
+  assert.ok(urls.includes('js/modules/catalog.de.json?v=abcd1234'));
+  assert.ok(urls.includes('js/modules/catalog.en.json?v=abcd1234'));
+  assert.ok(urls.includes('js/chunks/templates/neu-11111111.html'));
+  assert.ok(urls.includes('js/modules/neu/resources/i18n/ui.de.json?v=9'));
+});

@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, readdirSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { renderModuleTemplates, writeModuleTemplates, moduleCss, writeModuleStyles, linkedModuleCss } from './module-assets.mjs';
+import { renderModuleTemplates, writeModuleTemplates, moduleCss, writeModuleStyles, linkedModuleCss, collectModuleResources, buildModuleResourcesBlock, moduleResourceUrls } from './module-assets.mjs';
 import { renderIndexHtml } from '../build-templates/build.mjs';
 
 /** Temp-App aus `{ pfad: inhalt }`. */
@@ -111,4 +111,36 @@ test('linkedModuleCss: STYLES-Link auf ein umgestelltes Modul ist ein Befund', (
   assert.deepEqual(linkedModuleCss(['css/variables.css', 'js/modules/neu/neu.css', 'js/modules/alt/alt.css'], ['neu']),
     ['styles: neu: index.dist.html verlinkt js/modules/neu/neu.css — umgestellte Module laden ihr CSS selbst']);
   assert.deepEqual(linkedModuleCss(['js/modules/alt/alt.css'], ['neu']), []);
+});
+
+test('collectModuleResources: Templates, Style und Dateien mit ?v=', () => {
+  const root = appWith({
+    'js/modules/neu/resources/i18n/ui.de.json': '{"name":"Neu"}',
+    'js/modules/neu/resources/i18n/help.de.json': '{}',
+    'js/modules/neu/resources/data/references.json': '[]',
+    'js/modules/neu/resources/examples/examples.json': '{"examples":[]}',
+    'js/modules/neu/resources/examples/pizza.csv': 'a\n1\n',
+    'js/modules/neu/resources/view.html': '<div></div>',
+  });
+  const res = collectModuleResources(root, ['neu'], {
+    templates: { neu: 'js/chunks/templates/neu-11111111.html' },
+    styles: { neu: 'js/chunks/styles/neu-22222222.css' },
+  });
+  assert.equal(res.neu.templates, 'js/chunks/templates/neu-11111111.html');
+  assert.equal(res.neu.style, 'js/chunks/styles/neu-22222222.css');
+  assert.deepEqual(Object.keys(res.neu.files).sort(),
+    ['data/references.json', 'examples/examples.json', 'i18n/help.de.json', 'i18n/ui.de.json']);
+  assert.match(res.neu.files['i18n/ui.de.json'], /^js\/modules\/neu\/resources\/i18n\/ui\.de\.json\?v=[0-9a-f]{8}$/);
+});
+
+test('collectModuleResources: ohne Style kein style-Schlüssel', () => {
+  const root = appWith({ 'js/modules/neu/resources/view.html': '<div></div>' });
+  const res = collectModuleResources(root, ['neu'], { templates: { neu: 't.html' }, styles: {} });
+  assert.deepEqual(res, { neu: { templates: 't.html', files: {} } });
+});
+
+test('buildModuleResourcesBlock und moduleResourceUrls', () => {
+  assert.equal(buildModuleResourcesBlock({}), '  <script type="application/json" id="module-resources">{}</script>');
+  const res = { neu: { templates: 't.html', style: 's.css', files: { 'i18n/ui.de.json': 'u?v=1' } } };
+  assert.deepEqual(moduleResourceUrls(res), ['s.css', 't.html', 'u?v=1']);
 });

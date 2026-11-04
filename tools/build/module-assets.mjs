@@ -133,3 +133,66 @@ export function linkedModuleCss(hrefs, converted) {
   }
   return out;
 }
+
+/**
+ * Alle Dateien unter `dir`, rekursiv, als Pfade relativ zu `base` (posix).
+ * @param {string} base @param {string} dir @returns {string[]}
+ */
+function filesBelow(base, dir) {
+  const abs = join(base, ...dir.split('/'));
+  if (!existsSync(abs)) return [];
+  const out = [];
+  for (const entry of readdirSync(abs, { withFileTypes: true })) {
+    const rel = `${dir}/${entry.name}`;
+    if (entry.isDirectory()) out.push(...filesBelow(base, rel));
+    else out.push(rel);
+  }
+  return out;
+}
+
+/**
+ * Die Liste `#module-resources`: je umgestelltem Modul die URLs, die der
+ * Browser nachlädt.
+ * @param {string} appDir
+ * @param {readonly string[]} converted
+ * @param {{ templates: Record<string, string>, styles: Record<string, string> }} built
+ * @returns {Record<string, { templates: string, style?: string, files: Record<string, string> }>}
+ */
+export function collectModuleResources(appDir, converted, { templates, styles }) {
+  const out = {};
+  for (const id of converted) {
+    const base = join(appDir, 'js', 'modules', id, 'resources');
+    const rels = [
+      ...filesBelow(base, 'i18n'),
+      ...filesBelow(base, 'data'),
+      ...(existsSync(join(base, 'examples', 'examples.json')) ? ['examples/examples.json'] : []),
+    ].sort();
+    const files = {};
+    for (const rel of rels) {
+      const text = readFileSync(join(base, ...rel.split('/')), 'utf8');
+      files[rel] = `js/modules/${id}/resources/${rel}?v=${hash8(text)}`;
+    }
+    out[id] = { templates: templates[id], ...(styles[id] ? { style: styles[id] } : {}), files };
+  }
+  return out;
+}
+
+/**
+ * @param {object} resources  collectModuleResources(…)
+ * @returns {string} Inhalt des MODULE_RESOURCES-Blocks in index.html
+ */
+export function buildModuleResourcesBlock(resources) {
+  return `  <script type="application/json" id="module-resources">${JSON.stringify(resources)}</script>`;
+}
+
+/**
+ * @param {object} resources  collectModuleResources(…)
+ * @returns {string[]} alle URLs, sortiert (für den Precache)
+ */
+export function moduleResourceUrls(resources) {
+  const urls = [];
+  for (const { templates, style, files } of Object.values(resources)) {
+    urls.push(templates, ...(style ? [style] : []), ...Object.values(files));
+  }
+  return urls.sort();
+}

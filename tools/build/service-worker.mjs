@@ -60,13 +60,14 @@ export function fontUrlsFromCss(css) {
 /**
  * Every URL the app fetches at runtime, relative to the scope, sorted.
  * @param {string} appDir
- * @param {{ jsHref: string, cssHref: string, cssCode: string, chunks: string[], i18nHash: string }} build
+ * @param {{ jsHref: string, cssHref: string, cssCode: string, chunks: string[], i18nHash: string, moduleUrls?: string[] }} build
  * @returns {string[]}
  */
-export function collectPrecache(appDir, { jsHref, cssHref, cssCode, chunks, i18nHash }) {
-  const urls = new Set(['./', 'index.html', jsHref, cssHref, ...chunks, ...fontUrlsFromCss(cssCode)]);
+export function collectPrecache(appDir, { jsHref, cssHref, cssCode, chunks, i18nHash, moduleUrls = [] }) {
+  const urls = new Set(['./', 'index.html', jsHref, cssHref, ...chunks, ...fontUrlsFromCss(cssCode), ...moduleUrls]);
   // Same query i18n.js appends from the i18n-version meta.
   for (const f of filesIn(appDir, 'i18n', { match: /\.json$/ })) urls.add(`${f}?v=${i18nHash}`);
+  for (const f of filesIn(appDir, 'js/modules', { match: /^catalog\.[a-z]+\.json$/ })) urls.add(`${f}?v=${i18nHash}`);
   for (const tree of TREES) for (const f of filesIn(appDir, tree, { deep: true })) urls.add(f);
   for (const [dir, match] of FLAT) for (const f of filesIn(appDir, dir, { match })) urls.add(f);
   for (const mod of readdirSync(abs(appDir, 'js/modules'))) {

@@ -24,7 +24,7 @@ import { collectModelFiles, loadModelSchema, renderModelTypes } from './model-ty
 import { collectGlossaryData, renderGlossaryDataModule } from './glossary-data.mjs';
 import { collectLicenseData, renderLicenseDataModule, renderLicenseText } from '../license-report/license-report.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
-import { writeModuleTemplates, writeModuleStyles, linkedModuleCss } from './module-assets.mjs';
+import { writeModuleTemplates, writeModuleStyles, linkedModuleCss, collectModuleResources, buildModuleResourcesBlock, moduleResourceUrls } from './module-assets.mjs';
 import {
   renderCatalogModule, collectCatalogTexts, renderCatalogTexts, catalogConflicts, readLegacyIds, CATALOG_LANGS,
 } from './catalog.mjs';
@@ -442,12 +442,15 @@ export async function runBuild(appDir = APP_DIR, { check = false, converted = CO
   //    index.html is NOT a committed artifact; it is never added to changed[].
   const jsHref  = `js/app.min.js?v=${hash8(jsCode)}`;
   const cssHref = `css/app.min.css?v=${hash8(cssCode)}`;
-  const deJson  = readFileSync(join(appDir, 'i18n', 'de.json'), 'utf8');
-  const enJson  = readFileSync(join(appDir, 'i18n', 'en.json'), 'utf8');
-  const i18nHash = hash8(deJson + enJson);
+  // i18n-version deckt die globalen Sprachdateien UND die Katalogtexte ab —
+  // i18n.js holt beide mit demselben ?v=.
+  const i18nHash = hash8(['i18n/de.json', 'i18n/en.json', 'js/modules/catalog.de.json', 'js/modules/catalog.en.json']
+    .map((rel) => readFileSync(join(appDir, ...rel.split('/')), 'utf8')).join(''));
+  const moduleResources = collectModuleResources(appDir, converted, { templates: moduleTemplates, styles: moduleStyles });
   html = rewriteBlock(html, 'STYLES',  buildStylesBlock(cssHref));
   html = rewriteBlock(html, 'SCRIPTS', buildScriptsBlock(jsHref));
   html = rewriteBlock(html, 'CHUNKS',  buildChunkManifestBlock(chunks));
+  html = rewriteBlock(html, 'MODULE_RESOURCES', buildModuleResourcesBlock(moduleResources));
   html = rewriteBlock(html, 'I18N_VERSION',
     `  <meta name="i18n-version" content="${i18nHash}">`);
   // Atomar schreiben: ein parallel laufender Testlauf sieht entweder die alte
@@ -458,7 +461,7 @@ export async function runBuild(appDir = APP_DIR, { check = false, converted = CO
 
   // 5. Service worker — git-ignored like index.html: written on every run,
   //    also in check mode, never added to changed[].
-  const precache = collectPrecache(appDir, { jsHref, cssHref, cssCode, chunks, i18nHash });
+  const precache = collectPrecache(appDir, { jsHref, cssHref, cssCode, chunks, i18nHash, moduleUrls: moduleResourceUrls(moduleResources) });
   const swCode = await bundleServiceWorker(appDir, {
     version: precacheVersion(appDir, precache, { html }),
     precache,
