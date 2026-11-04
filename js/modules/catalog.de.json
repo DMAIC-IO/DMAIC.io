@@ -1,1 +1,3 @@
-{}
+{
+  "$schema": "../../schemas/catalog-texts.schema.json"
+}

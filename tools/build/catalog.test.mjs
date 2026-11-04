@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
   renderCatalogModule, collectCatalogTexts, renderCatalogTexts, catalogConflicts, readLegacyIds,
-  CATALOG_LANGS, CATALOG_TEXT_KEYS,
+  CATALOG_LANGS, CATALOG_TEXT_KEYS, CATALOG_SCHEMA_REF,
 } from './catalog.mjs';
 import { APP_DIR } from './build.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
@@ -61,9 +61,11 @@ test('collectCatalogTexts wirft bei fehlendem oder leerem Schlüssel', () => {
     /catalog: neu: resources\/i18n\/ui\.de\.json ohne description/);
 });
 
-test('renderCatalogTexts: stabiles JSON mit Zeilenende', () => {
-  assert.equal(renderCatalogTexts({}), '{}\n');
-  assert.equal(renderCatalogTexts({ a: { name: 'A' } }), '{\n  "a": {\n    "name": "A"\n  }\n}\n');
+test('renderCatalogTexts: stabiles JSON mit $schema zuerst und Zeilenende', () => {
+  assert.equal(CATALOG_SCHEMA_REF, '../../schemas/catalog-texts.schema.json');
+  assert.equal(renderCatalogTexts({}), '{\n  "$schema": "../../schemas/catalog-texts.schema.json"\n}\n');
+  assert.equal(renderCatalogTexts({ a: { name: 'A' } }),
+    '{\n  "$schema": "../../schemas/catalog-texts.schema.json",\n  "a": {\n    "name": "A"\n  }\n}\n');
 });
 
 test('catalogConflicts meldet Ids, die in manifest.js und CONVERTED_MODULES stehen', () => {

@@ -28,6 +28,7 @@ import { writeModuleTemplates, writeModuleStyles, linkedModuleCss, collectModule
 import {
   renderCatalogModule, collectCatalogTexts, renderCatalogTexts, catalogConflicts, readLegacyIds, CATALOG_LANGS,
 } from './catalog.mjs';
+import { validateValue } from './json-schemas.mjs';
 import { collectPrecache, precacheVersion, bundleServiceWorker } from './service-worker.mjs';
 
 export const APP_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -447,6 +448,9 @@ export async function runBuild(appDir = APP_DIR, { check = false, converted = CO
   const i18nHash = hash8(['i18n/de.json', 'i18n/en.json', 'js/modules/catalog.de.json', 'js/modules/catalog.en.json']
     .map((rel) => readFileSync(join(appDir, ...rel.split('/')), 'utf8')).join(''));
   const moduleResources = collectModuleResources(appDir, converted, { templates: moduleTemplates, styles: moduleStyles });
+  // Die Liste ist keine Datei und trägt kein $schema — geprüft wird das Build-Ergebnis.
+  const resourcesCheck = validateValue(moduleResources, 'module-resources');
+  if (!resourcesCheck.ok) throw new Error(resourcesCheck.errors.map((e) => `module-resources: ${e}`).join('\n'));
   html = rewriteBlock(html, 'STYLES',  buildStylesBlock(cssHref));
   html = rewriteBlock(html, 'SCRIPTS', buildScriptsBlock(jsHref));
   html = rewriteBlock(html, 'CHUNKS',  buildChunkManifestBlock(chunks));

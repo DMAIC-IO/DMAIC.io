@@ -64,12 +64,15 @@ export function collectCatalogTexts(appDir, converted, lang) {
   return out;
 }
 
+/** `$schema` von js/modules/catalog.<lang>.json (relativ zu js/modules/). */
+export const CATALOG_SCHEMA_REF = '../../schemas/catalog-texts.schema.json';
+
 /**
  * @param {object} texts  Ergebnis von collectCatalogTexts
- * @returns {string} Inhalt von catalog.<lang>.json
+ * @returns {string} Inhalt von catalog.<lang>.json, `$schema` zuerst
  */
 export function renderCatalogTexts(texts) {
-  return `${JSON.stringify(texts, null, 2)}\n`;
+  return `${JSON.stringify({ $schema: CATALOG_SCHEMA_REF, ...texts }, null, 2)}\n`;
 }
 
 /**

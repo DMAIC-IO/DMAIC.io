@@ -7,6 +7,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, readdirSync, exist
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { renderModuleTemplates, writeModuleTemplates, moduleCss, writeModuleStyles, linkedModuleCss, collectModuleResources, buildModuleResourcesBlock, moduleResourceUrls } from './module-assets.mjs';
+import { validateValue } from './json-schemas.mjs';
 import { renderIndexHtml } from '../build-templates/build.mjs';
 
 /** Temp-App aus `{ pfad: inhalt }`. */
@@ -143,4 +144,13 @@ test('buildModuleResourcesBlock und moduleResourceUrls', () => {
   assert.equal(buildModuleResourcesBlock({}), '  <script type="application/json" id="module-resources">{}</script>');
   const res = { neu: { templates: 't.html', style: 's.css', files: { 'i18n/ui.de.json': 'u?v=1' } } };
   assert.deepEqual(moduleResourceUrls(res), ['s.css', 't.html', 'u?v=1']);
+});
+
+test('collectModuleResources erfüllt das Schema module-resources', () => {
+  const root = appWith({
+    'js/modules/neu/resources/i18n/ui.de.json': '{}',
+    'js/modules/neu/resources/data/references.json': '{}',
+  });
+  const res = collectModuleResources(root, ['neu'], { templates: { neu: 'js/chunks/templates/neu-1.html' }, styles: {} });
+  assert.deepEqual(validateValue(res, 'module-resources'), { ok: true, errors: [] });
 });

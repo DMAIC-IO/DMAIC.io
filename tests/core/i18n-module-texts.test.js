@@ -34,6 +34,16 @@ suite('I18n: Katalogtexte und Sprach-Haken', () => {
     assertDeepEqual(seen.sort(), [`i18n/de.json${q}`, `js/modules/catalog.de.json${q}`].sort());
   });
 
+  test('loadLanguage: $schema der Katalogdatei wird kein Modul', async () => {
+    const i18n = new I18n('de');
+    await withFetch({
+      'i18n/de.json': {},
+      'js/modules/catalog.de.json': { $schema: '../../schemas/catalog-texts.schema.json', neu: { name: 'Neu', description: 'Kurz', whenToUse: 'Wann' } },
+    }, () => i18n.loadLanguage('de'));
+    assertEqual(i18n._resolve('modules.neu.name', 'de'), 'Neu');
+    assertEqual(i18n._resolve('modules.$schema', 'de'), undefined);
+  });
+
   test('loadLanguage ohne Katalogdatei: Sprache trotzdem geladen', async () => {
     const i18n = new I18n('de');
     const errors = [];

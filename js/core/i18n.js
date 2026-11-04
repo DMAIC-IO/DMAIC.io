@@ -7,6 +7,8 @@
  * Fallback chain: active language → 'en' → key itself.
  */
 
+import { withoutSchema } from './json-file.js';
+
 /**
  * Tiefer Merge zweier Übersetzungsbäume — `over` gewinnt; Arrays und
  * Werte werden ersetzt, Objekte gemischt. Gibt ein neues Objekt zurück.
@@ -67,7 +69,7 @@ export class I18n {
     ]);
     if (!response.ok) throw new Error(`[i18n] Could not load language: ${lang}`);
     this._cache.set(lang, await response.json());
-    for (const [id, texts] of Object.entries(catalog)) this.mergeModule(id, lang, texts);
+    for (const [id, texts] of Object.entries(withoutSchema(catalog))) this.mergeModule(id, lang, texts);
   }
 
   /**

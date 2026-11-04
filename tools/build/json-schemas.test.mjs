@@ -191,3 +191,7 @@ test('Passform: jede Referenzliste erfüllt module-references', () => {
     assert.deepEqual(validateValue({ references: list }, 'module-references').errors, [], id);
   }
 });
+
+test('echter Baum: jede Datei eines Formats ist gültig und verweist auf ihr Schema', () => {
+  assert.deepEqual(checkTree(APP_DIR), []);
+});
