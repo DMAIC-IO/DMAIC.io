@@ -2295,7 +2295,7 @@
           "markSent": { "help": "Marks a recipient as sent without building a file — when the file arrived another way. This records the current questionnaire version: if the structure changes later and the next export raises the version, this recipient's file counts as outdated.", "params": { "recipientId": "The recipient." } }
         },
         "responses": {
-          "importResponse": { "help": "Read in an answer file the questionnaire saved on the recipient's side. Files of this questionnaire are taken in, also those of an older version; a file read before, one of another questionnaire or a broken one only shows in the log.", "params": { "json": "The content of the answer file as text.", "fileName": "The name shown in the log." } },
+          "importResponse": { "help": "Read in an answer file the questionnaire saved on the recipient's side. Files of this questionnaire are taken in, also those of an older version; a file read before, one of another questionnaire or a broken one is rejected with a notification.", "params": { "json": "The content of the answer file as text.", "fileName": "The file name shown in the notification." } },
           "removeResponse": { "help": "Delete an imported response, without asking; its VoC take-over marks go with it.", "params": { "responseId": "The response." } }
         },
         "results": {
@@ -2556,17 +2556,16 @@
       "recipientUnnamed": "(no name)",
       "confirmRecipientDelete": "“{name}” has already answered. Delete anyway? The response stays, without a recipient.",
       "importAnswers": "Import answers",
-      "importHint": "Pick answer files (.json) or drop them here – several at once are fine.",
-      "importLogTitle": "Imported files",
-      "importOk": "imported",
       "importOlder": "imported – older questionnaire version",
       "importDuplicate": "already imported – skipped",
       "importForeign": "belongs to another questionnaire – rejected",
       "importInvalid": "not a valid answer file – rejected",
       "importUnknownRecipient": "recipient no longer in the list – imported without recipient",
       "importOrphans": "{count} answers no longer match a question and were dropped",
+      "importDone": "Answers imported: {count}",
+      "importFileNote": "{file}: {reason}",
       "responsesTitle": "Responses",
-      "responsesEmpty": "No responses imported yet.",
+      "responsesEmpty": "No responses yet. “Import answers” at the top right picks answer files (.json) – several at once are fine.",
       "colDate": "Received",
       "colRespondent": "From",
       "respWithoutRecipient": "without recipient",

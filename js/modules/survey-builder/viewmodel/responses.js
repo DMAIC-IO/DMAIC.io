@@ -2,7 +2,8 @@
  * D.Mike — Survey builder responses (viewmodel/responses.js)
  *
  * Sub-viewmodel of the results tab's upper part: importing answer files and
- * the list of responses. Knows the model, survey-labels.js and the pure
+ * the list of responses. Import feedback goes out as toasts only; files that
+ * were taken in show up in the list of responses. Knows the model, survey-labels.js and the pure
  * survey-*.js modules — never a sibling or the shell. Deleting a
  * response leaves the VoC selection alone; the hand-over cleans it itself.
  */
@@ -12,11 +13,10 @@ import { parseResponse } from '../survey-import.js';
 import { formatAnswer } from '../survey-stats.js';
 import { plainCopy } from '../survey-builder-model.js';
 import { catLabels, formatDateTime, localeOf, questionLabel, recipientName } from '../survey-labels.js';
-import { uid } from '../../../core/uid.js';
 import { requireKnownId, requireText } from '../../../core/agent/agent-argcheck.js';
 
 const IMPORT_LABELS = {
-  ok: 'importOk', older: 'importOlder', duplicate: 'importDuplicate', foreign: 'importForeign', invalid: 'importInvalid',
+  older: 'importOlder', duplicate: 'importDuplicate', foreign: 'importForeign', invalid: 'importInvalid',
 };
 
 export class ResponsesViewModel {
@@ -29,11 +29,6 @@ export class ResponsesViewModel {
     this._container = container;
     /** @type {?object} the component's State, set by attach() */
     this.model = null;
-    /**
-     * Result of every imported file in this session (not persisted).
-     * @type {Array<{key: string, name: string, status: string, notes: string[]}>}
-     */
-    this.importLog = [];
     /** Response whose answers are unfolded in the list. */
     this.openResponseId = null;
   }
@@ -74,40 +69,31 @@ export class ResponsesViewModel {
   }
 
   /**
-   * `@dragover.prevent` only has to exist so the drop is allowed.
-   * @noagent template handler, see importResponse
-   */
-  onDragOver() {}
-
-  /**
-   * Imports the dropped files.
-   * @noagent template handler, see importResponse
-   * @param {DragEvent} ev
-   */
-  async onDrop(ev) {
-    await this.importFiles(Array.from((ev.dataTransfer && ev.dataTransfer.files) || []));
-  }
-
-  /**
    * @noagent template handler, see importResponse
    * @param {File[]} files
    * @returns {Promise<void>}
    */
   async importFiles(files) {
+    if (files.length === 0) return;
+    let taken = 0;
     for (const file of files) {
       let text = '';
       try { text = await file.text(); } catch { /* unreadable → invalid */ }
-      this.importResponse(text, file.name);
+      const status = this.importResponse(text, file.name);
+      if (status === 'ok' || status === 'older') taken += 1;
     }
+    if (taken > 0) this._context.notify(this._t('importDone', { count: taken }), 'success');
   }
 
   /**
    * Read one answer file as the questionnaire saved it. Files of this
    * questionnaire are taken in, also those of an older version; a file read
-   * before, one of another questionnaire, or a broken one is only logged.
+   * before, one of another questionnaire, or a broken one is rejected with a
+   * toast. A file taken in with a caveat (older version, unknown recipient,
+   * dropped answers) gets a toast too.
    * @agent
    * @param {string} json the content of the answer file
-   * @param {string} fileName the name shown in the import log
+   * @param {string} fileName the name shown in the toast
    * @returns {'ok'|'older'|'duplicate'|'foreign'|'invalid'} how the file was handled
    * @throws {Error} if `json` or `fileName` is no string
    */
@@ -115,48 +101,25 @@ export class ResponsesViewModel {
     requireText('json', json);
     requireText('fileName', fileName);
     const result = parseResponse(json, plainCopy(this.model.survey), this.model.responseIds());
-    const entry = { key: uid(), name: fileName, status: result.status, notes: [] };
+    const notes = [];
     if (result.status === 'ok' || result.status === 'older') {
+      if (result.status === 'older') notes.push(this._t(IMPORT_LABELS.older));
       const { unknownRecipient } = this.model.addResponse(result.response);
-      if (unknownRecipient) entry.notes.push(this._t('importUnknownRecipient'));
+      if (unknownRecipient) notes.push(this._t('importUnknownRecipient'));
       const orphans = (result.orphanIds || []).length;
-      if (orphans > 0) entry.notes.push(this._t('importOrphans', { count: orphans }));
+      if (orphans > 0) notes.push(this._t('importOrphans', { count: orphans }));
+      if (notes.length > 0) this._notifyFile(fileName, notes.join(' · '), 'info');
+    } else {
+      const type = result.status === 'duplicate' ? 'warning' : 'error';
+      this._notifyFile(fileName, this._t(IMPORT_LABELS[result.status] || IMPORT_LABELS.invalid), type);
     }
-    this.importLog.push(entry);
     return result.status;
   }
 
-  /**
-   * @noagent view transform
-   * @returns {boolean} whether any file was imported this session
-   */
-  hasImportLog() { return this.importLog.length > 0; }
-
-  /**
-   * @noagent view transform
-   * @param {string} status parse status
-   * @returns {string} translated status
-   */
-  importStatusLabel(status) { return this._t(IMPORT_LABELS[status] || 'importInvalid'); }
-
-  /**
-   * @noagent view transform
-   * @param {string} status parse status
-   * @returns {object} class map of the log line
-   */
-  importStatusClass(status) {
-    return {
-      'survey-builder__import--ok': status === 'ok' || status === 'older',
-      'survey-builder__import--rejected': status === 'foreign' || status === 'invalid',
-    };
+  /** One toast about one answer file. */
+  _notifyFile(fileName, reason, type) {
+    this._context.notify(this._t('importFileNote', { file: fileName, reason }), type);
   }
-
-  /**
-   * @noagent view transform
-   * @param {{notes: string[]}} entry
-   * @returns {string} notes of a log line, joined
-   */
-  noteLine(entry) { return entry.notes.join(' · '); }
 
   /**
    * @noagent view transform

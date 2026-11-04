@@ -197,6 +197,9 @@ export default createModule({
     icon: 'module.survey-builder',
     version: '1.0.0',
     meta: import.meta,
+    actions: [
+      { icon: 'action.upload', title: 'importAnswers', agentAction: 'responses.importResponse', onClick: (d) => d.importAnswers() },
+    ],
   },
   Model: State,
 
@@ -297,6 +300,16 @@ export default createModule({
       setTab(tab) {
         requireEnum('tab', tab, TABS);
         this.model.ui.tab = tab;
+      },
+
+      /**
+       * Action bar „Antworten einlesen“: shows the results tab, where the
+       * imported answers appear, and opens the file picker.
+       * @noagent file picker, see responses.importResponse
+       */
+      importAnswers() {
+        this.setTab('results');
+        this.responses.openImport();
       },
 
       // ── Template-wide labels (pure functions in survey-labels.js) ──

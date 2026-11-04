@@ -222,44 +222,16 @@
 
 /* ── Results tab ──────────────────────────────────────────────── */
 
-.survey-builder__dropzone {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-m);
-  border: 1px dashed var(--color-border-primary);
-  border-radius: var(--border-radius-sm);
-}
-
 .survey-builder__subtitle {
   margin: var(--spacing-sm) 0 var(--spacing-xs);
   font-size: var(--font-size-sm);
   font-weight: 600;
 }
 
-.survey-builder__import-log,
 .survey-builder__texts {
   margin: 0 0 var(--spacing-sm);
   padding-left: var(--spacing-l);
   font-size: var(--font-size-sm);
-}
-
-.survey-builder__import-log li {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-sm);
-}
-
-.survey-builder__file {
-  font-weight: 600;
-}
-
-.survey-builder__import--ok [data-ref="importStatus"] {
-  color: var(--color-success);
-}
-
-.survey-builder__import--rejected [data-ref="importStatus"] {
-  color: var(--color-error);
 }
 
 .survey-builder__details {

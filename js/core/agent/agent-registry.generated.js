@@ -19519,11 +19519,11 @@ export const AGENT_REGISTRY = {
             "name": "fileName",
             "type": "string",
             "optional": false,
-            "help": "the name shown in the import log"
+            "help": "the name shown in the toast"
           }
         ],
         "returns": "'ok'|'older'|'duplicate'|'foreign'|'invalid'",
-        "help": "Read one answer file as the questionnaire saved it. Files of this questionnaire are taken in, also those of an older version; a file read before, one of another questionnaire, or a broken one is only logged."
+        "help": "Read one answer file as the questionnaire saved it. Files of this questionnaire are taken in, also those of an older version; a file read before, one of another questionnaire, or a broken one is rejected with a toast. A file taken in with a caveat (older version, unknown recipient, dropped answers) gets a toast too."
       },
       "responses.removeResponse": {
         "params": [

@@ -265,30 +265,10 @@
     </section>
 
     <section class="survey-builder__tab survey-builder__page" data-ref="resultsTab" x-show="isTab('results')">
-      <div class="dmike-split__section-title"><span data-help-key="modules.survey-builder.actions.responses.importResponse.help" x-text="t('importAnswers')"></span></div>
-      <div class="survey-builder__dropzone" data-ref="dropzone"
-           @dragover.prevent="responses.onDragOver()" @drop.prevent="responses.onDrop($event)">
-        <button class="btn btn--sm" type="button" data-ref="importButton" @click="responses.openImport()">
-          <span class="icon icon--sm" data-icon="action.upload" aria-hidden="true"></span><span x-text="t('importAnswers')"></span>
-        </button>
-        <span class="survey-builder__hint" x-text="t('importHint')"></span>
-        <input type="file" hidden multiple accept=".json,application/json" data-ref="importInput"
-               @change="responses.importFromEvent($event)">
-      </div>
-      <div x-show="responses.hasImportLog()">
-        <div class="survey-builder__subtitle" x-text="t('importLogTitle')"></div>
-        <ul class="survey-builder__import-log" data-ref="importLog">
-          <template x-for="entry in responses.importLog" :key="entry.key">
-            <li :class="responses.importStatusClass(entry.status)">
-              <span class="survey-builder__file" data-ref="fileName" x-text="entry.name"></span>
-              <span data-ref="importStatus" x-text="responses.importStatusLabel(entry.status)"></span>
-              <span class="survey-builder__hint" data-ref="importNotes" x-text="responses.noteLine(entry)"></span>
-            </li>
-          </template>
-        </ul>
-      </div>
+      <input type="file" hidden multiple accept=".json,application/json" data-ref="importInput"
+             @change="responses.importFromEvent($event)">
 
-      <div class="dmike-split__section-title"><span data-help-key="modules.survey-builder.fields.responses.help" x-text="t('responsesTitle')"></span></div>
+      <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.survey-builder.fields.responses.help" x-text="t('responsesTitle')"></span></div>
       <p class="survey-builder__hint" x-show="!responses.hasResponses()" x-text="t('responsesEmpty')"></p>
       <div class="dmike-table-wrap" x-show="responses.hasResponses()">
         <table class="dmike-table survey-builder__responses" data-ref="responses">
@@ -328,8 +308,8 @@
         </table>
       </div>
 
+      <div class="dmike-split__output-section" x-show="responses.hasResponses()"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.survey-builder.fields.results.help" x-text="t('evaluationTitle')"></span></div>
       <div data-ref="evaluation" x-show="responses.hasResponses()">
-        <div class="dmike-split__section-title"><span data-help-key="modules.survey-builder.fields.results.help" x-text="t('evaluationTitle')"></span></div>
         <div class="survey-builder__toolbar">
           <label class="survey-builder__counts" data-help-key="modules.survey-builder.actions.results.setFilter.help" x-text="t('filterLabel')"></label>
           <select class="field" data-ref="filter" @change="results.setFilterFromEvent($event)">
