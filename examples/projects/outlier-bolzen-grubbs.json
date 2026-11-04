@@ -18,5 +18,5 @@
     "modified-z"
   ],
   "chartMethod": "all",
-  "sourceWorksheetFile": "worksheets/outlier-bolzen-grubbs.json"
+  "sourceWorksheetFile": "shared/worksheets/outlier-bolzen-grubbs.json"
 }

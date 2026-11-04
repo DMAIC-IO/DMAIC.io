@@ -30,10 +30,11 @@ async function known() {
   const { MODULES: manifest } = await import(pathToFileURL(path.join(REPO, 'js/modules/catalog.generated.js')).href);
   const glossary = JSON.parse(await readFile(path.join(REPO, 'glossary/index.json'), 'utf8'));
   const examples = JSON.parse(await readFile(path.join(REPO, 'examples/index.json'), 'utf8'));
+  const scenarios = JSON.parse(await readFile(path.join(REPO, 'examples/shared/scenarios.json'), 'utf8'));
   return {
     modules: new Set(manifest.map((m) => m.id)),
     glossary: new Set(glossary.terms.map((t) => t.id)),
-    examples: new Set(examples.examples.map((e) => e.id)),
+    examples: new Set([...examples.examples, ...scenarios.scenarios].map((e) => e.id)),
   };
 }
 

@@ -12,5 +12,5 @@
   "showCI": true,
   "activeTab": "scatter",
   "excludedTerms": [],
-  "sourceWorksheetFile": "worksheets/regression-outliers.json"
+  "sourceWorksheetFile": "shared/worksheets/regression-outliers.json"
 }

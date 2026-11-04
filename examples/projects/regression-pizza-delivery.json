@@ -17,5 +17,5 @@
   "showCI": true,
   "activeTab": "scatter",
   "excludedTerms": [],
-  "sourceWorksheetFile": "worksheets/pizza-delivery.json"
+  "sourceWorksheetFile": "shared/worksheets/pizza-delivery.json"
 }

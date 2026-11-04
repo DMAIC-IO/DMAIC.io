@@ -19,7 +19,7 @@ B_RUN <- 10000
 RUNS <- 50
 no_params <- setNames(list(), character(0))
 
-worksheets_dir <- file.path(script_dir, "..", "..", "..", "examples", "worksheets")
+worksheets_dir <- file.path(script_dir, "..", "..", "..", "examples", "shared", "worksheets")
 read_column <- function(file, column_id) {
   ws <- jsonlite::fromJSON(file.path(worksheets_dir, file), simplifyVector = FALSE)
   for (sheet in ws$sheets) for (col in sheet$state$columns) {

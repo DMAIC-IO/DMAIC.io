@@ -5,5 +5,5 @@
     "columnId": "c-lebensdauer"
   },
   "dataType": "continuous",
-  "sourceWorksheetFile": "worksheets/distribution-weibull.json"
+  "sourceWorksheetFile": "shared/worksheets/distribution-weibull.json"
 }

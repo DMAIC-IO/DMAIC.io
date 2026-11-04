@@ -1,8 +1,9 @@
 /**
  * DMAIC.io — Examples Registry (examples-registry.js)
  *
- * Central registry for example data. Loads `app/dev/examples/index.json`
- * at startup and serves catalog entries to modules.
+ * Central registry for example data. Loads `examples/index.json` and
+ * `examples/shared/scenarios.json` at startup and serves catalog entries to
+ * modules.
  *
  * Three entry types:
  *   - dataset:   tabular data shipped as CSV/JSON file
@@ -14,6 +15,7 @@ import { uid } from './uid.js';
 
 const CATALOG_URL = './examples/index.json';
 const BASE_PATH = './examples/';
+const SCENARIOS_URL = './examples/shared/scenarios.json';
 
 /**
  * Split a scenario item into example id and optional explicit module.
@@ -26,10 +28,28 @@ export function parseScenarioItem(item) {
   return { exampleId, moduleId: moduleId || null };
 }
 
+/**
+ * Eine Katalogdatei holen; ein Fehlschlag ist nicht fatal (Warnung, null).
+ * @param {string} url
+ * @returns {Promise<object|null>}
+ */
+async function fetchCatalogFile(url) {
+  try {
+    const res = await fetch(url, { cache: 'no-cache' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn('[ExamplesRegistry] Could not load', url, err.message);
+    return null;
+  }
+}
+
 export class ExamplesRegistry {
   constructor() {
     /** @type {object[]} */
     this._examples = [];
+    /** @type {object[]} */
+    this._scenarios = [];
     /** @type {boolean} */
     this._initialized = false;
   }
@@ -40,16 +60,22 @@ export class ExamplesRegistry {
    * @returns {Promise<void>}
    */
   async init() {
-    try {
-      const res = await fetch(CATALOG_URL, { cache: 'no-cache' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const catalog = await res.json();
-      this._examples = Array.isArray(catalog?.examples) ? catalog.examples : [];
-    } catch (err) {
-      console.warn('[ExamplesRegistry] Could not load catalog:', err.message);
-      this._examples = [];
-    }
+    const [index, shared] = await Promise.all([fetchCatalogFile(CATALOG_URL), fetchCatalogFile(SCENARIOS_URL)]);
+    this.setCatalog({
+      examples: Array.isArray(index?.examples) ? index.examples : [],
+      scenarios: Array.isArray(shared?.scenarios) ? shared.scenarios : [],
+    });
     this._initialized = true;
+  }
+
+  /**
+   * Katalog setzen (init, Tests). Einträge mit `type: 'scenario'` unter
+   * `examples` (alte Form) zählen als Szenarien.
+   * @param {{ examples?: object[], scenarios?: object[] }} catalog
+   */
+  setCatalog({ examples = [], scenarios = [] } = {}) {
+    this._examples = examples.filter((e) => e.type !== 'scenario');
+    this._scenarios = [...scenarios, ...examples.filter((e) => e.type === 'scenario')];
   }
 
   /** @returns {boolean} */
@@ -65,8 +91,7 @@ export class ExamplesRegistry {
   getForModule(moduleId) {
     if (!moduleId) return [];
     return this._examples.filter(e =>
-      e.type !== 'scenario'
-      && Array.isArray(e.modules) && e.modules.includes(moduleId));
+      Array.isArray(e.modules) && e.modules.includes(moduleId));
   }
 
   /**
@@ -75,8 +100,7 @@ export class ExamplesRegistry {
    * @returns {object[]}
    */
   getScenarios({ cycle } = {}) {
-    return this._examples.filter(e =>
-      e.type === 'scenario' && (!cycle || e.cycle === cycle));
+    return this._scenarios.filter(e => !cycle || e.cycle === cycle);
   }
 
   /**
@@ -97,7 +121,7 @@ export class ExamplesRegistry {
    * @returns {object|undefined}
    */
   get(exampleId) {
-    return this._examples.find(e => e.id === exampleId);
+    return this._examples.find(e => e.id === exampleId) ?? this._scenarios.find(e => e.id === exampleId);
   }
 
   /**

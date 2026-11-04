@@ -26,8 +26,8 @@ export const FORMATS = Object.freeze({
   'catalog-texts': { schema: 'catalog-texts.schema.json', glob: 'js/modules/catalog.*.json' },
   'example-entry': { schema: 'example-entry.schema.json', glob: null },
   'module-examples': { schema: 'module-examples.schema.json', glob: 'js/modules/*/resources/examples/examples.json' },
-  'examples-index': { schema: 'examples-index.schema.json', glob: null },
-  'scenarios': { schema: 'scenarios.schema.json', glob: null },
+  'examples-index': { schema: 'examples-index.schema.json', glob: 'examples/index.json' },
+  'scenarios': { schema: 'scenarios.schema.json', glob: 'examples/shared/scenarios.json' },
 });
 
 /** @type {import('ajv').default | null} */

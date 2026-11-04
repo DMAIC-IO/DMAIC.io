@@ -13,5 +13,5 @@
   "confidence": 0.95,
   "ciMethod": "bca",
   "result": null,
-  "sourceWorksheetFile": "worksheets/hypothesis-pizza-fahrer.json"
+  "sourceWorksheetFile": "shared/worksheets/hypothesis-pizza-fahrer.json"
 }

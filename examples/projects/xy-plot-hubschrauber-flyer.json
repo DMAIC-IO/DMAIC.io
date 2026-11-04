@@ -9,5 +9,5 @@
   "showLines": false,
   "showMarkers": true,
   "showStats": true,
-  "sourceWorksheetFile": "worksheets/hubschrauber-flyer.json"
+  "sourceWorksheetFile": "shared/worksheets/hubschrauber-flyer.json"
 }

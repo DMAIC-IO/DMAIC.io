@@ -9,5 +9,5 @@
   "showLines": false,
   "showMarkers": true,
   "showStats": true,
-  "sourceWorksheetFile": "worksheets/regression-outliers.json"
+  "sourceWorksheetFile": "shared/worksheets/regression-outliers.json"
 }

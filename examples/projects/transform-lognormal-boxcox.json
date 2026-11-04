@@ -5,5 +5,5 @@
     "sheetId": "sheet-dist-lognormal",
     "columnId": "c-zykluszeit"
   },
-  "sourceWorksheetFile": "worksheets/distribution-lognormal.json"
+  "sourceWorksheetFile": "shared/worksheets/distribution-lognormal.json"
 }

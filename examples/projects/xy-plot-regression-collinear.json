@@ -14,5 +14,5 @@
   "showLines": false,
   "showMarkers": true,
   "showStats": true,
-  "sourceWorksheetFile": "worksheets/regression-collinear.json"
+  "sourceWorksheetFile": "shared/worksheets/regression-collinear.json"
 }

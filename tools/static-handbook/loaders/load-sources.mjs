@@ -202,7 +202,8 @@ async function loadAlgorithms(repoRoot) {
 // ─── Examples ───────────────────────────────────────────────────────
 
 /**
- * Load the example data catalog (`app/dev/examples/index.json`) and, for
+ * Load the example data catalog (`examples/index.json`) plus the scenarios
+ * (`examples/shared/scenarios.json`) and, for
  * dataset-type entries, attach a small preview (the first `preview.rows`
  * lines of the CSV file). Generator entries materialise their data at
  * runtime in the app — for the handbook we render only the spec.
@@ -234,6 +235,18 @@ async function loadExamples(repoRoot) {
       }
     }
     entries.push(enriched);
+  }
+
+  // Szenarien liegen seit Teilprojekt A3 in examples/shared/scenarios.json.
+  try {
+    const shared = await readJson(path.join(repoRoot, 'examples/shared/scenarios.json'));
+    // Reihenfolge wie vor dem Umzug: die beiden Hubschrauber-Szenarien standen
+    // vor den Beispielen, die übrigen dahinter (Sitemap und Seitenfolge).
+    const scenarios = shared.scenarios ?? [];
+    entries.unshift(...scenarios.slice(0, 2));
+    entries.push(...scenarios.slice(2));
+  } catch (err) {
+    if (err?.code !== 'ENOENT') console.warn(`[handbook] Failed to load scenarios: ${err.message}`);
   }
   return { entries };
 }

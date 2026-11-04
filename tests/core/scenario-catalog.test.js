@@ -1,5 +1,5 @@
 /**
- * Integrity tests for the shipped scenario entries in examples/index.json.
+ * Integrity tests for the shipped scenario entries in examples/index.json and examples/shared/scenarios.json.
  */
 import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
 import { ExamplesRegistry, parseScenarioItem } from '../../js/core/examples-registry.js';
@@ -20,21 +20,22 @@ const EXPECTED_WORKSHEETS = [
   'worksheet-motorversuche', 'worksheet-spritverbrauch',
 ];
 
-// `ExamplesRegistry.init()` fetches its hardcoded `./examples/index.json`
+// `ExamplesRegistry.init()` fetches its hardcoded `./examples/...` URLs
 // relative to the *document* the test runner is executing in
 // (tests/runner.html), not relative to this test module — so a plain
-// `reg.init()` here would 404 against tests/examples/index.json. Fetch the
-// real catalog ourselves (resolved against this module's URL, so the path
-// holds both in the browser runner and in the headless node runner) and
-// inject it, the same way the fixture-based scenario tests build a registry.
+// `reg.init()` here would 404. Fetch examples/index.json and
+// examples/shared/scenarios.json ourselves (resolved against this module's
+// URL, so the path holds both in the browser runner and in the headless node
+// runner) and inject them via setCatalog.
 async function loadedRegistry() {
   const reg = new ExamplesRegistry();
-  const url = new URL('../../examples/index.json', import.meta.url);
-  const res = await fetch(url, { cache: 'no-cache' });
-  assertTrue(res.ok, `could not fetch examples/index.json: HTTP ${res.status}`);
-  const catalog = await res.json();
-  reg._examples = catalog.examples;
-  reg._initialized = true;
+  const read = async (rel) => {
+    const res = await fetch(new URL(`../../examples/${rel}`, import.meta.url), { cache: 'no-cache' });
+    assertTrue(res.ok, `could not fetch examples/${rel}: HTTP ${res.status}`);
+    return res.json();
+  };
+  const [index, shared] = await Promise.all([read('index.json'), read('shared/scenarios.json')]);
+  reg.setCatalog({ examples: index.examples, scenarios: shared.scenarios });
   return reg;
 }
 

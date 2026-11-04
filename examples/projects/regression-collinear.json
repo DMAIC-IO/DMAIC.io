@@ -17,5 +17,5 @@
   "showCI": true,
   "activeTab": "scatter",
   "excludedTerms": [],
-  "sourceWorksheetFile": "worksheets/regression-collinear.json"
+  "sourceWorksheetFile": "shared/worksheets/regression-collinear.json"
 }

@@ -242,14 +242,10 @@ test('scenarios: gültig mit optionalem projectName; Item-Muster und Pflichtfeld
   assert.equal(validateValue({ scenarios: [{ ...SCENARIO, type: 'project' }] }, 'scenarios').ok, false);
 });
 
-test('Passform: examples/index.json ohne Szenarien erfüllt examples-index, die Szenarien erfüllen scenarios', () => {
+test('Passform: examples/index.json erfüllt examples-index, shared/scenarios.json erfüllt scenarios', () => {
   const index = JSON.parse(readFileSync(join(APP_DIR, 'examples', 'index.json'), 'utf8'));
-  const examples = index.examples.filter((e) => e.type !== 'scenario');
-  const scenarios = index.examples.filter((e) => e.type === 'scenario');
-  // Vor Task 2 stehen die Szenarien noch in index.json, danach in examples/shared/scenarios.json.
-  const shared = join(APP_DIR, 'examples', 'shared', 'scenarios.json');
-  if (scenarios.length === 0 && existsSync(shared)) scenarios.push(...JSON.parse(readFileSync(shared, 'utf8')).scenarios);
-  assert.deepEqual(validateValue({ version: index.version, examples }, 'examples-index').errors, []);
+  const { scenarios } = JSON.parse(readFileSync(join(APP_DIR, 'examples', 'shared', 'scenarios.json'), 'utf8'));
+  assert.deepEqual(validateValue({ version: index.version, examples: index.examples }, 'examples-index').errors, []);
   assert.deepEqual(validateValue({ scenarios }, 'scenarios').errors, []);
   assert.equal(scenarios.length, 12);
 });

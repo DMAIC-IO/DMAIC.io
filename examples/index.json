@@ -1,77 +1,7 @@
 {
+  "$schema": "../schemas/examples-index.schema.json",
   "version": "1.0",
   "examples": [
-    {
-      "id": "scenario-hubschrauber-full",
-      "type": "scenario",
-      "title": {
-        "de": "Papier-Hubschrauber — vollständig",
-        "en": "Paper helicopter — complete"
-      },
-      "projectName": {
-        "de": "Papier-Hubschrauber",
-        "en": "Paper helicopter"
-      },
-      "description": {
-        "de": "Kompletter DMAIC-Durchlauf des Messestand-Projekts, von der Charter über MSA und Ursachenanalyse bis zum 3² Voll-Faktoriell mit Response-Optimierung.",
-        "en": "Complete DMAIC walkthrough of the trade-fair project, from charter through MSA and root-cause analysis to a 3² full factorial with response optimization."
-      },
-      "cycle": "dmaic",
-      "startPhase": "define",
-      "tags": [
-        "scenario",
-        "helicopter",
-        "doe-training"
-      ],
-      "items": [
-        "worksheet-hubschrauber-flyer",
-        "worksheet-msa-typ1-hubschrauber-flyer",
-        "project-charter-hubschrauber-flyer",
-        "sipoc-hubschrauber-flyer",
-        "voc-ctx-tree-hubschrauber-flyer",
-        "kano-hubschrauber-flyer",
-        "stakeholder-analysis-hubschrauber-flyer",
-        "process-map-hubschrauber-flyer",
-        "msa-typ1-hubschrauber-flyer",
-        "individual-value-plot-hubschrauber-flyer",
-        "ishikawa-hubschrauber-flyer",
-        "five-why-hubschrauber-flyer",
-        "xy-plot-hubschrauber-flyer",
-        "doe-planner-hubschrauber-flyer",
-        "response-optimization-hubschrauber-flyer",
-        "control-chart-hubschrauber-flyer",
-        "lessons-learned-hubschrauber-flyer",
-        "todo-hubschrauber-flyer"
-      ]
-    },
-    {
-      "id": "scenario-hubschrauber-starter",
-      "type": "scenario",
-      "title": {
-        "de": "Papier-Hubschrauber — Einstieg",
-        "en": "Paper helicopter — starter"
-      },
-      "projectName": {
-        "de": "Papier-Hubschrauber",
-        "en": "Paper helicopter"
-      },
-      "description": {
-        "de": "Nur der Einstieg: Charter, die Flugzeit-Datensammlung (Baseline, DoE, Bestätigung) und der Baseline-Plot. Die Auswertung baust du selbst auf.",
-        "en": "Just the starting point: charter, the flight-time data collection (baseline, DoE, confirmation) and the baseline plot. The analysis is up to you."
-      },
-      "cycle": "dmaic",
-      "startPhase": "define",
-      "tags": [
-        "scenario",
-        "helicopter",
-        "doe-training"
-      ],
-      "items": [
-        "worksheet-hubschrauber-flyer",
-        "project-charter-hubschrauber-flyer",
-        "individual-value-plot-hubschrauber-flyer"
-      ]
-    },
     {
       "id": "capability-bolzendurchmesser",
       "type": "dataset",
@@ -106,7 +36,7 @@
       "spec": {
         "lsl": 9.8,
         "usl": 10.2,
-        "target": 10.0
+        "target": 10
       },
       "preview": {
         "rows": 10
@@ -153,7 +83,7 @@
       "spec": {
         "lsl": 9.8,
         "usl": 10.2,
-        "target": 10.0
+        "target": 10
       }
     },
     {
@@ -190,7 +120,7 @@
       "spec": {
         "lsl": 9.8,
         "usl": 10.2,
-        "target": 10.0
+        "target": 10
       },
       "preview": {
         "rows": 10
@@ -301,7 +231,10 @@
     {
       "id": "kano-lieferservice",
       "type": "project",
-      "title": { "de": "Kano: Lieferservice", "en": "Kano: delivery service" },
+      "title": {
+        "de": "Kano: Lieferservice",
+        "en": "Kano: delivery service"
+      },
       "description": {
         "de": "Sechs Kundenbedürfnisse eines Lieferservice, von drei Kunden nach Kano bewertet — inklusive Wichtigkeitsfrage und einem Gleichstand.",
         "en": "Six customer needs of a delivery service, rated by three customers using Kano — including the importance question and one tie."
@@ -310,13 +243,23 @@
       "license": "public-domain",
       "file": "projects/kano-lieferservice.json",
       "format": "json",
-      "modules": ["kano"],
-      "tags": ["kano", "voc", "define", "priorisierung"]
+      "modules": [
+        "kano"
+      ],
+      "tags": [
+        "kano",
+        "voc",
+        "define",
+        "priorisierung"
+      ]
     },
     {
       "id": "survey-builder-software",
       "type": "project",
-      "title": { "de": "Fragebogen: Software-Support", "en": "Questionnaire: software support" },
+      "title": {
+        "de": "Fragebogen: Software-Support",
+        "en": "Questionnaire: software support"
+      },
       "description": {
         "de": "Kundenbefragung zum Software-Support mit Kundengruppe, einem nur für Industriekunden sichtbaren Abschnitt, Zufriedenheitsmatrix, Kano-Frage und Freitext — drei verschickte Fragebögen und sechs eingelesene Antworten, bereit für Gruppenvergleich und Kano-Übergabe.",
         "en": "Customer survey on software support with a customer-group question, a section shown only to industry customers, a rating matrix, a Kano question and a free text — three questionnaires sent and six responses imported, ready for the group comparison and the Kano hand-over."
@@ -325,8 +268,15 @@
       "license": "public-domain",
       "file": "projects/survey-builder-software.json",
       "format": "json",
-      "modules": ["survey-builder"],
-      "tags": ["voc", "kano", "define", "befragung"]
+      "modules": [
+        "survey-builder"
+      ],
+      "tags": [
+        "voc",
+        "kano",
+        "define",
+        "befragung"
+      ]
     },
     {
       "id": "regression-collinear",
@@ -1568,7 +1518,10 @@
     {
       "id": "resampling-ppk-bolzen",
       "type": "project",
-      "title": { "de": "Bolzendurchmesser: Ppk mit Bootstrap-Intervall", "en": "Bolt diameter: Ppk with a bootstrap interval" },
+      "title": {
+        "de": "Bolzendurchmesser: Ppk mit Bootstrap-Intervall",
+        "en": "Bolt diameter: Ppk with a bootstrap interval"
+      },
       "description": {
         "de": "30 Bolzendurchmesser aus dem Grubbs-Arbeitsblatt (mit den dort eingebauten Ausreißern), Toleranz 9,7–10,3 mm. Der Bootstrap liefert ein BCa-Intervall für Ppk; liegt dessen untere Grenze über dem Sollwert 1,33, spricht das für eine fähige Fertigung.",
         "en": "30 bolt diameters from the Grubbs sheet (including its seeded outliers), tolerance 9.7–10.3 mm. The bootstrap gives a BCa interval for Ppk; a lower bound above the target 1.33 indicates capability."
@@ -1577,13 +1530,24 @@
       "license": "public-domain",
       "file": "projects/resampling-ppk-bolzen.json",
       "format": "json",
-      "modules": ["resampling"],
-      "tags": ["resampling", "bootstrap", "ppk", "capability", "bolzen"]
+      "modules": [
+        "resampling"
+      ],
+      "tags": [
+        "resampling",
+        "bootstrap",
+        "ppk",
+        "capability",
+        "bolzen"
+      ]
     },
     {
       "id": "resampling-pizza-two",
       "type": "project",
-      "title": { "de": "Lieferzeit Fahrer A vs. B (Median, Permutationstest)", "en": "Delivery time driver A vs. B (median, permutation test)" },
+      "title": {
+        "de": "Lieferzeit Fahrer A vs. B (Median, Permutationstest)",
+        "en": "Delivery time driver A vs. B (median, permutation test)"
+      },
       "description": {
         "de": "Je 15 Lieferzeiten zweier Fahrer. Bootstrap-Intervall für die Differenz der Mediane und zweiseitiger Permutationstest — ohne Normalverteilungsannahme.",
         "en": "15 delivery times each for two drivers. Bootstrap interval for the difference of medians and a two-sided permutation test — no normality assumption."
@@ -1592,13 +1556,24 @@
       "license": "public-domain",
       "file": "projects/resampling-pizza-two.json",
       "format": "json",
-      "modules": ["resampling"],
-      "tags": ["resampling", "permutation", "median", "two-sample", "pizza"]
+      "modules": [
+        "resampling"
+      ],
+      "tags": [
+        "resampling",
+        "permutation",
+        "median",
+        "two-sample",
+        "pizza"
+      ]
     },
     {
       "id": "resampling-ruestzeit-paired",
       "type": "project",
-      "title": { "de": "Rüstzeit vorher/nachher (gepaart)", "en": "Setup time before/after (paired)" },
+      "title": {
+        "de": "Rüstzeit vorher/nachher (gepaart)",
+        "en": "Setup time before/after (paired)"
+      },
       "description": {
         "de": "Rüstzeiten (min) an 12 Maschinen vor und nach einem SMED-Workshop. Gepaarter Bootstrap der mittleren Einsparung und einseitiger Vorzeichen-Permutationstest (exakt, 2¹² Zuordnungen).",
         "en": "Setup times (min) on 12 machines before and after a SMED workshop. Paired bootstrap of the mean saving and a one-sided sign-flip permutation test (exact, 2¹² assignments)."
@@ -1607,13 +1582,24 @@
       "license": "public-domain",
       "file": "projects/resampling-ruestzeit-paired.json",
       "format": "json",
-      "modules": ["resampling"],
-      "tags": ["resampling", "permutation", "paired", "smed", "ruestzeit"]
+      "modules": [
+        "resampling"
+      ],
+      "tags": [
+        "resampling",
+        "permutation",
+        "paired",
+        "smed",
+        "ruestzeit"
+      ]
     },
     {
       "id": "resampling-pizza-k",
       "type": "project",
-      "title": { "de": "Lieferzeit pro Fahrer (k Stichproben, Permutation)", "en": "Delivery time by driver (k samples, permutation)" },
+      "title": {
+        "de": "Lieferzeit pro Fahrer (k Stichproben, Permutation)",
+        "en": "Delivery time by driver (k samples, permutation)"
+      },
       "description": {
         "de": "Drei Fahrer mit je 15 Lieferzeiten. Globaler Permutationstest der Mittelwerte, Bootstrap-Intervall je Fahrer und Paarvergleiche mit Holm-Korrektur — das verteilungsfreie Gegenstück zum ANOVA-Beispiel.",
         "en": "Three drivers with 15 delivery times each. Global permutation test of the means, a bootstrap interval per driver and pairwise comparisons with Holm correction — the distribution-free counterpart of the ANOVA example."
@@ -1622,8 +1608,16 @@
       "license": "public-domain",
       "file": "projects/resampling-pizza-k.json",
       "format": "json",
-      "modules": ["resampling"],
-      "tags": ["resampling", "permutation", "k-sample", "holm", "pizza"]
+      "modules": [
+        "resampling"
+      ],
+      "tags": [
+        "resampling",
+        "permutation",
+        "k-sample",
+        "holm",
+        "pizza"
+      ]
     },
     {
       "id": "boxplot-pizza-fahrer",
@@ -1788,8 +1782,14 @@
       "license": "public-domain",
       "file": "projects/attribute-scrap-before-after.json",
       "format": "json",
-      "modules": ["attribute-test"],
-      "tags": ["attribute", "proportion", "fisher"]
+      "modules": [
+        "attribute-test"
+      ],
+      "tags": [
+        "attribute",
+        "proportion",
+        "fisher"
+      ]
     },
     {
       "id": "attribute-reklamation-one",
@@ -1806,8 +1806,14 @@
       "license": "public-domain",
       "file": "projects/attribute-reklamation-one.json",
       "format": "json",
-      "modules": ["attribute-test"],
-      "tags": ["attribute", "proportion", "binomial"]
+      "modules": [
+        "attribute-test"
+      ],
+      "tags": [
+        "attribute",
+        "proportion",
+        "binomial"
+      ]
     },
     {
       "id": "attribute-shift-pass-fail",
@@ -1824,8 +1830,14 @@
       "license": "public-domain",
       "file": "projects/attribute-shift-pass-fail.json",
       "format": "json",
-      "modules": ["attribute-test"],
-      "tags": ["attribute", "chi-square", "contingency"]
+      "modules": [
+        "attribute-test"
+      ],
+      "tags": [
+        "attribute",
+        "chi-square",
+        "contingency"
+      ]
     },
     {
       "id": "attribute-paint-defects-rates",
@@ -1842,8 +1854,14 @@
       "license": "public-domain",
       "file": "projects/attribute-paint-defects-rates.json",
       "format": "json",
-      "modules": ["attribute-test"],
-      "tags": ["attribute", "poisson", "rate"]
+      "modules": [
+        "attribute-test"
+      ],
+      "tags": [
+        "attribute",
+        "poisson",
+        "rate"
+      ]
     },
     {
       "id": "attribute-supplier-equivalence",
@@ -1860,8 +1878,15 @@
       "license": "public-domain",
       "file": "projects/attribute-supplier-equivalence.json",
       "format": "json",
-      "modules": ["attribute-test"],
-      "tags": ["attribute", "proportion", "equivalence", "tost"]
+      "modules": [
+        "attribute-test"
+      ],
+      "tags": [
+        "attribute",
+        "proportion",
+        "equivalence",
+        "tost"
+      ]
     },
     {
       "id": "attribute-before-after-paired",
@@ -1878,8 +1903,14 @@
       "license": "public-domain",
       "file": "projects/attribute-before-after-paired.json",
       "format": "json",
-      "modules": ["attribute-test"],
-      "tags": ["attribute", "mcnemar", "paired"]
+      "modules": [
+        "attribute-test"
+      ],
+      "tags": [
+        "attribute",
+        "mcnemar",
+        "paired"
+      ]
     },
     {
       "id": "outlier-bolzen-grubbs",
@@ -3723,8 +3754,8 @@
         "en": "Deployment Flowchart Order Flow"
       },
       "description": {
-        "de": "5 Schritte von der Bestellung bis zur Warenannahme, verteilt auf die drei Lanes Kunde, Vertrieb und Fertigung \u2014 vier \u00dcbergaben werden als Lane-Wechsel sichtbar.",
-        "en": "5 steps from order to goods receipt across three lanes \u2014 customer, sales, and production \u2014 with four hand-offs made visible as lane switches."
+        "de": "5 Schritte von der Bestellung bis zur Warenannahme, verteilt auf die drei Lanes Kunde, Vertrieb und Fertigung — vier Übergaben werden als Lane-Wechsel sichtbar.",
+        "en": "5 steps from order to goods receipt across three lanes — customer, sales, and production — with four hand-offs made visible as lane switches."
       },
       "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
@@ -3747,8 +3778,8 @@
         "en": "Opportunity Flowchart Quotation Process"
       },
       "description": {
-        "de": "5 Schritte von der Kundenanfrage bis zum versendeten Angebot — 3 wertsch\u00f6pfende Schritte links, 2 Nacharbeits-Schritte rechts (Nachforderung fehlender Angaben, Korrektur der Kalkulation).",
-        "en": "5 steps from the customer inquiry to the sent quotation \u2014 3 value-added steps on the left, 2 rework steps on the right (chasing missing details, correcting the calculation)."
+        "de": "5 Schritte von der Kundenanfrage bis zum versendeten Angebot — 3 wertschöpfende Schritte links, 2 Nacharbeits-Schritte rechts (Nachforderung fehlender Angaben, Korrektur der Kalkulation).",
+        "en": "5 steps from the customer inquiry to the sent quotation — 3 value-added steps on the left, 2 rework steps on the right (chasing missing details, correcting the calculation)."
       },
       "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
@@ -3800,7 +3831,7 @@
       },
       "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
       "license": "public-domain",
-      "file": "worksheets/hubschrauber-flyer.json",
+      "file": "shared/worksheets/hubschrauber-flyer.json",
       "format": "json",
       "modules": [
         "worksheet"
@@ -3839,37 +3870,58 @@
     {
       "id": "worksheet-pizza-lieferungen",
       "type": "project",
-      "title": { "de": "Pizza-Lieferungen (Datensammlung)", "en": "Pizza deliveries (data collection)" },
+      "title": {
+        "de": "Pizza-Lieferungen (Datensammlung)",
+        "en": "Pizza deliveries (data collection)"
+      },
       "description": {
         "de": "Rohdaten der Pizza-Lieferungen: Lieferzeit, Entfernung, Anzahl Pizzen, Fahrer.",
         "en": "Raw pizza delivery data: delivery time, distance, number of pizzas, driver."
       },
       "source": "Qprovement Lehrcase",
       "license": "public-domain",
-      "file": "worksheets/pizza-delivery.json",
+      "file": "shared/worksheets/pizza-delivery.json",
       "format": "json",
-      "modules": ["worksheet"],
-      "tags": ["worksheet", "pizza", "rohdaten"]
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "pizza",
+        "rohdaten"
+      ]
     },
     {
       "id": "worksheet-pizza-fahrer",
       "type": "project",
-      "title": { "de": "Lieferzeit pro Fahrer (Datensammlung)", "en": "Delivery time per driver (data collection)" },
+      "title": {
+        "de": "Lieferzeit pro Fahrer (Datensammlung)",
+        "en": "Delivery time per driver (data collection)"
+      },
       "description": {
         "de": "Rohdaten der Lieferzeiten, gruppiert nach Fahrer.",
         "en": "Raw delivery-time data, grouped by driver."
       },
       "source": "Qprovement Lehrcase",
       "license": "public-domain",
-      "file": "worksheets/hypothesis-pizza-fahrer.json",
+      "file": "shared/worksheets/hypothesis-pizza-fahrer.json",
       "format": "json",
-      "modules": ["worksheet"],
-      "tags": ["worksheet", "pizza", "rohdaten"]
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "pizza",
+        "rohdaten"
+      ]
     },
     {
       "id": "worksheet-resampling-ruestzeit",
       "type": "project",
-      "title": { "de": "Rüstzeit vorher/nachher (Datensammlung)", "en": "Setup time before/after (data collection)" },
+      "title": {
+        "de": "Rüstzeit vorher/nachher (Datensammlung)",
+        "en": "Setup time before/after (data collection)"
+      },
       "description": {
         "de": "Rüstzeiten an 12 Maschinen vor und nach einem SMED-Workshop.",
         "en": "Setup times on 12 machines before and after a SMED workshop."
@@ -3878,53 +3930,86 @@
       "license": "public-domain",
       "file": "worksheets/resampling-ruestzeit.json",
       "format": "json",
-      "modules": ["worksheet"],
-      "tags": ["worksheet", "ruestzeit", "rohdaten"]
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "ruestzeit",
+        "rohdaten"
+      ]
     },
     {
       "id": "worksheet-bolzendurchmesser",
       "type": "project",
-      "title": { "de": "Bolzendurchmesser (Datensammlung)", "en": "Bolt diameter (data collection)" },
+      "title": {
+        "de": "Bolzendurchmesser (Datensammlung)",
+        "en": "Bolt diameter (data collection)"
+      },
       "description": {
         "de": "Messreihe der Bolzendurchmesser mit eingestreuten Ausreißern.",
         "en": "Bolt diameter measurement series with a few embedded outliers."
       },
       "source": "Qprovement synthetisch",
       "license": "public-domain",
-      "file": "worksheets/outlier-bolzen-grubbs.json",
+      "file": "shared/worksheets/outlier-bolzen-grubbs.json",
       "format": "json",
-      "modules": ["worksheet"],
-      "tags": ["worksheet", "bolzen", "rohdaten"]
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "bolzen",
+        "rohdaten"
+      ]
     },
     {
       "id": "worksheet-motorversuche",
       "type": "project",
-      "title": { "de": "Motor-Versuche (Datensammlung)", "en": "Engine trials (data collection)" },
+      "title": {
+        "de": "Motor-Versuche (Datensammlung)",
+        "en": "Engine trials (data collection)"
+      },
       "description": {
         "de": "Rohdaten der Motor-Versuchsreihe mit mehreren kollinearen Einflussgrößen.",
         "en": "Raw engine-trial data with several collinear predictors."
       },
       "source": "Qprovement synthetisch",
       "license": "public-domain",
-      "file": "worksheets/regression-collinear.json",
+      "file": "shared/worksheets/regression-collinear.json",
       "format": "json",
-      "modules": ["worksheet"],
-      "tags": ["worksheet", "regression", "rohdaten"]
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "regression",
+        "rohdaten"
+      ]
     },
     {
       "id": "worksheet-spritverbrauch",
       "type": "project",
-      "title": { "de": "Spritverbrauch (Datensammlung)", "en": "Fuel consumption (data collection)" },
+      "title": {
+        "de": "Spritverbrauch (Datensammlung)",
+        "en": "Fuel consumption (data collection)"
+      },
       "description": {
         "de": "Rohdaten des Spritverbrauchs mit eingestreuten Ausreißern.",
         "en": "Raw fuel-consumption data with a few embedded outliers."
       },
       "source": "Qprovement synthetisch",
       "license": "public-domain",
-      "file": "worksheets/regression-outliers.json",
+      "file": "shared/worksheets/regression-outliers.json",
       "format": "json",
-      "modules": ["worksheet"],
-      "tags": ["worksheet", "regression", "rohdaten"]
+      "modules": [
+        "worksheet"
+      ],
+      "tags": [
+        "worksheet",
+        "regression",
+        "rohdaten"
+      ]
     },
     {
       "id": "multi-vari-spritzguss",
@@ -3941,8 +4026,14 @@
       "license": "public-domain",
       "file": "projects/multi-vari-spritzguss.json",
       "format": "json",
-      "modules": ["multi-vari"],
-      "tags": ["multi-vari", "varianzkomponenten", "geschachtelt"]
+      "modules": [
+        "multi-vari"
+      ],
+      "tags": [
+        "multi-vari",
+        "varianzkomponenten",
+        "geschachtelt"
+      ]
     },
     {
       "id": "multi-vari-abfuellanlage",
@@ -3959,8 +4050,15 @@
       "license": "public-domain",
       "file": "projects/multi-vari-abfuellanlage.json",
       "format": "json",
-      "modules": ["multi-vari"],
-      "tags": ["multi-vari", "varianzkomponenten", "gekreuzt", "unbalanciert"]
+      "modules": [
+        "multi-vari"
+      ],
+      "tags": [
+        "multi-vari",
+        "varianzkomponenten",
+        "gekreuzt",
+        "unbalanciert"
+      ]
     },
     {
       "id": "multi-vari-pressen",
@@ -3977,176 +4075,14 @@
       "license": "public-domain",
       "file": "projects/multi-vari-pressen.json",
       "format": "json",
-      "modules": ["multi-vari"],
-      "tags": ["multi-vari", "darstellungsgrenze", "gekreuzt"]
-    },
-    {
-      "id": "scenario-pizza-full",
-      "type": "scenario",
-      "title": { "de": "Pizza-Lieferzeit — vollständig", "en": "Pizza delivery time — complete" },
-      "projectName": { "de": "Pizza-Lieferzeit", "en": "Pizza delivery time" },
-      "description": {
-        "de": "Kompletter DMAIC-Durchlauf vom Project Charter bis Lessons Learned, inklusive Datenauswertung.",
-        "en": "Complete DMAIC walkthrough from project charter to lessons learned, including data analysis."
-      },
-      "cycle": "dmaic",
-      "startPhase": "define",
-      "tags": ["scenario", "pizza"],
-      "items": [
-        "worksheet-pizza-lieferungen",
-        "worksheet-pizza-fahrer",
-        "charter-pizza-lieferzeit",
-        "dmaic-calendar-pizza-projekt",
-        "sipoc-pizza-lieferprozess",
-        "raci-pizza-lieferprozess",
-        "stakeholders-pizza-lieferung",
-        "voc-ctx-pizza-lieferung",
-        "todo-pizza-lieferzeit",
-        "ce-matrix-pizza-lieferzeit",
-        "process-map-pizza-lieferung",
-        "fmea-pizza-lieferprozess",
-        "ishikawa-lieferzeit-zu-lang",
-        "five-why-lieferzeit",
-        "regression-pizza-delivery",
-        "correlation-pizza-delivery",
-        "xy-plot-pizza-delivery",
-        "hypothesis-pizza-fahrer",
-        "boxplot-pizza-fahrer",
-        "ivplot-pizza-fahrer",
-        "lessons-pizza-pilotprojekt"
+      "modules": [
+        "multi-vari"
+      ],
+      "tags": [
+        "multi-vari",
+        "darstellungsgrenze",
+        "gekreuzt"
       ]
-    },
-    {
-      "id": "scenario-pizza-starter",
-      "type": "scenario",
-      "title": { "de": "Pizza-Lieferzeit — nur Vorgaben", "en": "Pizza delivery time — inputs only" },
-      "description": {
-        "de": "Problemstellung, Prozessrahmen und Rohdaten. Die Auswertung machst du selbst; einzelne Beispiele lassen sich jederzeit nachladen.",
-        "en": "Problem statement, process frame and raw data. You do the analysis; individual examples can be loaded later."
-      },
-      "cycle": "dmaic",
-      "startPhase": "define",
-      "tags": ["scenario", "pizza"],
-      "items": [
-        "worksheet-pizza-lieferungen",
-        "worksheet-pizza-fahrer",
-        "charter-pizza-lieferzeit",
-        "sipoc-pizza-lieferprozess",
-        "todo-pizza-lieferzeit"
-      ]
-    },
-    {
-      "id": "scenario-bolzen-full",
-      "type": "scenario",
-      "title": { "de": "Bolzendurchmesser — vollständig", "en": "Bolt diameter — complete" },
-      "projectName": { "de": "Bolzendurchmesser", "en": "Bolt diameter" },
-      "description": {
-        "de": "Fähigkeitsanalyse, Histogramm, Regelkarte und Ausreißertest auf einer Messreihe.",
-        "en": "Capability analysis, histogram, control chart and outlier test on one measurement series."
-      },
-      "cycle": "dmaic",
-      "startPhase": "measure",
-      "tags": ["scenario", "bolzen"],
-      "items": [
-        "capability-bolzendurchmesser#process-capability",
-        "capability-bolzendurchmesser#histogram",
-        "capability-bolzendurchmesser#control-chart",
-        "outlier-bolzen-grubbs#outlier-test"
-      ]
-    },
-    {
-      "id": "scenario-bolzen-starter",
-      "type": "scenario",
-      "title": { "de": "Bolzendurchmesser — nur Daten", "en": "Bolt diameter — data only" },
-      "description": {
-        "de": "Nur die Messreihe als Datensammlung. Auswertung frei wählbar.",
-        "en": "Just the measurement series as a data collection. Analysis is up to you."
-      },
-      "cycle": "dmaic",
-      "startPhase": "measure",
-      "tags": ["scenario", "bolzen"],
-      "items": ["worksheet-bolzendurchmesser"]
-    },
-    {
-      "id": "scenario-triz-band-full",
-      "type": "scenario",
-      "title": { "de": "TRIZ Bandförderer — vollständig", "en": "TRIZ conveyor — complete" },
-      "projectName": { "de": "TRIZ Bandförderer", "en": "TRIZ conveyor" },
-      "description": {
-        "de": "Ideales Endresultat und Ressourcen-Checkliste zur selben Aufgabenstellung.",
-        "en": "Ideal final result and resource checklist for the same problem."
-      },
-      "cycle": "dmaic",
-      "startPhase": "improve",
-      "tags": ["scenario", "triz"],
-      "items": ["triz-ifr-bandfoerderer", "triz-resources-bandfoerderer"]
-    },
-    {
-      "id": "scenario-triz-band-starter",
-      "type": "scenario",
-      "title": { "de": "TRIZ Bandförderer — nur Aufgabenstellung", "en": "TRIZ conveyor — problem only" },
-      "description": {
-        "de": "Nur das ideale Endresultat als Ausgangspunkt.",
-        "en": "Only the ideal final result as a starting point."
-      },
-      "cycle": "dmaic",
-      "startPhase": "improve",
-      "tags": ["scenario", "triz"],
-      "items": ["triz-ifr-bandfoerderer"]
-    },
-    {
-      "id": "scenario-motor-full",
-      "type": "scenario",
-      "title": { "de": "Motor-Versuche — vollständig", "en": "Engine trials — complete" },
-      "projectName": { "de": "Motor-Versuche", "en": "Engine trials" },
-      "description": {
-        "de": "Multiple Regression mit Multikollinearität plus Streudiagramm derselben Daten.",
-        "en": "Multiple regression with multicollinearity plus a scatter plot of the same data."
-      },
-      "cycle": "dmaic",
-      "startPhase": "analyze",
-      "tags": ["scenario", "regression"],
-      "items": ["regression-collinear", "xy-plot-regression-collinear"]
-    },
-    {
-      "id": "scenario-motor-starter",
-      "type": "scenario",
-      "title": { "de": "Motor-Versuche — nur Daten", "en": "Engine trials — data only" },
-      "description": {
-        "de": "Nur die Versuchsdaten als Datensammlung.",
-        "en": "Just the trial data as a data collection."
-      },
-      "cycle": "dmaic",
-      "startPhase": "analyze",
-      "tags": ["scenario", "regression"],
-      "items": ["worksheet-motorversuche"]
-    },
-    {
-      "id": "scenario-sprit-full",
-      "type": "scenario",
-      "title": { "de": "Spritverbrauch — vollständig", "en": "Fuel consumption — complete" },
-      "projectName": { "de": "Spritverbrauch", "en": "Fuel consumption" },
-      "description": {
-        "de": "Regression mit Ausreißerdiagnostik plus Streudiagramm derselben Daten.",
-        "en": "Regression with outlier diagnostics plus a scatter plot of the same data."
-      },
-      "cycle": "dmaic",
-      "startPhase": "analyze",
-      "tags": ["scenario", "regression"],
-      "items": ["regression-outliers", "xy-plot-regression-outliers"]
-    },
-    {
-      "id": "scenario-sprit-starter",
-      "type": "scenario",
-      "title": { "de": "Spritverbrauch — nur Daten", "en": "Fuel consumption — data only" },
-      "description": {
-        "de": "Nur die Verbrauchsdaten als Datensammlung.",
-        "en": "Just the consumption data as a data collection."
-      },
-      "cycle": "dmaic",
-      "startPhase": "analyze",
-      "tags": ["scenario", "regression"],
-      "items": ["worksheet-spritverbrauch"]
     }
   ]
 }

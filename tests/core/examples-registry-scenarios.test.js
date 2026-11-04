@@ -17,8 +17,7 @@ const CATALOG = {
 
 function makeRegistry() {
   const reg = new ExamplesRegistry();
-  reg._examples = CATALOG.examples;
-  reg._initialized = true;
+  reg.setCatalog({ examples: CATALOG.examples });
   return reg;
 }
 
@@ -32,6 +31,14 @@ suite('parseScenarioItem', () => {
 });
 
 suite('ExamplesRegistry scenarios', () => {
+  test('setCatalog: Szenarien aus beiden Quellen, Reihenfolge scenarios zuerst', () => {
+    const reg = new ExamplesRegistry();
+    reg.setCatalog({ examples: CATALOG.examples, scenarios: [{ id: 'scn-shared', type: 'scenario', cycle: 'dmaic', items: ['ex-a'] }] });
+    assertDeepEqual(reg.getScenarios().map((s) => s.id), ['scn-shared', 'scn-full', 'scn-starter', 'scn-other']);
+    assertEqual(reg.get('scn-shared').id, 'scn-shared');
+    assertDeepEqual(reg.getForModule('sipoc').map((e) => e.id), ['ex-a']);
+  });
+
   test('getScenarios returns every scenario entry', () => {
     assertEqual(makeRegistry().getScenarios().length, 3);
   });
@@ -71,8 +78,7 @@ suite('ExamplesRegistry load() worksheetKey', () => {
 
   function makeLoadRegistry(examples) {
     const reg = new ExamplesRegistry();
-    reg._examples = examples;
-    reg._initialized = true;
+    reg.setCatalog({ examples });
     return reg;
   }
 

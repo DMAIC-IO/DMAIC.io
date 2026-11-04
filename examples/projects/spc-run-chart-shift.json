@@ -5,5 +5,5 @@
     "columnId": "c-value"
   },
   "alpha": 0.05,
-  "sourceWorksheetFile": "worksheets/spc-imr-shift.json"
+  "sourceWorksheetFile": "shared/worksheets/spc-imr-shift.json"
 }

@@ -6,5 +6,5 @@
   },
   "showStats": true,
   "confLevel": 95,
-  "sourceWorksheetFile": "worksheets/distribution-weibull.json"
+  "sourceWorksheetFile": "shared/worksheets/distribution-weibull.json"
 }

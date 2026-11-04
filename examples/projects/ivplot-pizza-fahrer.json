@@ -46,5 +46,5 @@
   "pointColors": [],
   "pointSymbol": "circle",
   "pointSize": 6,
-  "sourceWorksheetFile": "worksheets/hypothesis-pizza-fahrer.json"
+  "sourceWorksheetFile": "shared/worksheets/hypothesis-pizza-fahrer.json"
 }

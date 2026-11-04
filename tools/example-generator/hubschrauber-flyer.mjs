@@ -19,7 +19,7 @@
  * CLI usage:
  *   node hubschrauber-flyer.mjs              → full generator output (JSON)
  *   node hubschrauber-flyer.mjs --worksheet  → shared worksheet JSON only
- *     ({ sheets: [...] }, for app/dev/examples/worksheets/hubschrauber-flyer.json)
+ *     ({ sheets: [...] }, for app/dev/examples/shared/worksheets/hubschrauber-flyer.json)
  */
 
 /**
