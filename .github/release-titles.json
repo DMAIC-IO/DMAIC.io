@@ -82,5 +82,9 @@
   "1.6.0": {
     "de": "Kurs „Statistik-Grundlagen“ mit sechs Lektionen, Agentenfläche mit Lesen vor Schreiben und neuen Tabellenaktionen, Umfrage-Antworten über die Aktionsleiste importieren",
     "en": "Statistics basics course with six lessons, agent interface with read-before-write and new worksheet actions, import survey answers from the action bar"
+  },
+  "1.6.1": {
+    "de": "Fragebogen-Generator: Grafik neben der Tabelle und mehr Luft in der Ergebnisansicht",
+    "en": "Survey builder: chart beside the table and more room in the results view"
   }
 }
