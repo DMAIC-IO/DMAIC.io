@@ -78,5 +78,9 @@
   "1.5.0": {
     "de": "Morphologischer Kasten, Kontexthilfe per Alt-Taste in allen Modulen, Paarvergleich-Export als CSV/JSON und neue Beispiele für Regelkarten, Hypothesentests und Regression",
     "en": "Morphological box, Alt-key context help across all modules, pairwise comparison export as CSV/JSON, and new examples for control charts, hypothesis tests and regression"
+  },
+  "1.6.0": {
+    "de": "Kurs „Statistik-Grundlagen“ mit sechs Lektionen, Agentenfläche mit Lesen vor Schreiben und neuen Tabellenaktionen, Umfrage-Antworten über die Aktionsleiste importieren",
+    "en": "Statistics basics course with six lessons, agent interface with read-before-write and new worksheet actions, import survey answers from the action bar"
   }
 }

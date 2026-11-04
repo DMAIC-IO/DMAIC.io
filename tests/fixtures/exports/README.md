@@ -36,6 +36,7 @@ Aktueller Stand:
 | v1.3.0_single_project.json      | 1        | 11              |
 | v1.4.0_single_project.json      | 1        | 11              |
 | v1.5.0_single_project.json      | 1        | 11              |
+| v1.6.0_single_project.json      | 1        | 11              |
 
 Die v0.3-Fixtures decken zusammen **alle produktiven Module** aus
 `js/modules/manifest.js` mindestens einmal ab. Wenn ein neues Modul hinzukommt,
@@ -87,6 +88,12 @@ Morphologischen Kasten ein neues Modul; der Modulzustand wächst nur
 additiv, fehlende Felder bekommen beim Laden ihren Standardwert. Deshalb
 gibt es keinen Migrationsschritt `1.4→1.5`, und die Fixture ist
 inhaltsgleich mit der v1.4-Fixture.
+
+Die v1.6-Fixture zieht die 1.6-Linie nach. 1.6 bringt kein neues Modul,
+aber den Kurs „Statistik-Grundlagen“, Vertrag 2 der Agentenfläche und
+additive Ergänzungen am Modulzustand; fehlende Felder bekommen beim Laden ihren
+Standardwert. Deshalb gibt es keinen Migrationsschritt `1.5→1.6`, und die
+Fixture ist inhaltsgleich mit der v1.5-Fixture.
 
 ## Pflicht beim Release
 
