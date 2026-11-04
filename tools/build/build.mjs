@@ -134,11 +134,36 @@ export function buildScriptsBlock(jsHref) {
   ].join('\n');
 }
 
-/** esbuild options for the app bundle — shared by build, check and tests. */
-export function jsBuildOptions(appDir = APP_DIR) {
+/**
+ * Benannte Einstiegspunkte eines umgestellten Moduls: das Viewmodel, dazu
+ * die Kachel (`tile/tile.js`), wenn vorhanden. Ohne Namen hießen alle
+ * Chunks `viewmodel-<hash>`.
+ * @param {string} appDir
+ * @param {string} id
+ * @returns {{ in: string, out: string }[]}
+ */
+export function moduleEntryPoints(appDir, id) {
+  const dir = join(appDir, 'js', 'modules', id);
+  const out = [{ in: join(dir, 'viewmodel', 'viewmodel.js'), out: `chunks/${id}` }];
+  const tile = join(dir, 'tile', 'tile.js');
+  if (existsSync(tile)) out.push({ in: tile, out: `chunks/${id}-tile` });
+  return out;
+}
+
+/**
+ * esbuild options for the app bundle — shared by build, check and tests.
+ * @param {string} [appDir]
+ * @param {{ converted?: readonly string[] }} [opts]
+ */
+export function jsBuildOptions(appDir = APP_DIR, { converted = CONVERTED_MODULES } = {}) {
   return {
     absWorkingDir: appDir,
-    entryPoints: [join(appDir, 'js', 'app.js')],
+    // Der App-Einstieg heißt bei esbuild app-<HASH>.min.js (entryNames gilt
+    // für alle Einstiege); bundleJs benennt ihn in app.min.js um.
+    entryPoints: [
+      { in: join(appDir, 'js', 'app.js'), out: 'app' },
+      ...converted.flatMap((id) => moduleEntryPoints(appDir, id)),
+    ],
     bundle: true,
     splitting: true,
     minify: true,
@@ -147,11 +172,44 @@ export function jsBuildOptions(appDir = APP_DIR) {
     sourcemap: true,
     legalComments: 'external',
     outdir: join(appDir, 'js'),
-    entryNames: 'app.min',
+    entryNames: '[dir]/[name]-[hash].min',
     chunkNames: 'chunks/[name]-[hash].min',
     metafile: true,
     write: false,
   };
+}
+
+/** Gehashter Name des App-Einstiegs, wie esbuild ihn mit entryNames vergibt. */
+const HASHED_APP = /^app-[A-Z0-9]+\.min\.js/;
+
+/**
+ * Den App-Einstieg `js/app-<HASH>.min.js` (samt .map und .LEGAL.txt) in
+ * `js/app.min.js` umbenennen — index.html, Service Worker und Tests kennen
+ * den festen Namen; der Inhalt-Hash steht als `?v=` in index.html.
+ * @param {{ outputFiles: object[], metafile: object }} result  esbuild-Ergebnis
+ * @param {string} appDir
+ * @returns {{ outputFiles: object[], metafile: object }}
+ */
+export function renameAppEntry({ outputFiles, metafile }, appDir) {
+  const jsDir = join(appDir, 'js');
+  const hashed = outputFiles.find((f) => dirname(f.path) === jsDir && /^app-[A-Z0-9]+\.min\.js$/.test(f.path.slice(jsDir.length + 1)));
+  if (!hashed) return { outputFiles, metafile };
+  const from = hashed.path.slice(jsDir.length + 1);
+  const rename = (name) => name.replace(HASHED_APP, 'app.min.js');
+  const files = outputFiles.map((f) => {
+    const name = f.path.slice(jsDir.length + 1);
+    if (dirname(f.path) !== jsDir || !HASHED_APP.test(name)) return f;
+    let text = f.text;
+    if (name === from) text = text.replace(`sourceMappingURL=${from}.map`, 'sourceMappingURL=app.min.js.map');
+    if (name === `${from}.map`) text = JSON.stringify({ ...JSON.parse(text), file: 'app.min.js' });
+    const contents = new TextEncoder().encode(text);
+    return { path: join(jsDir, rename(name)), contents, text };
+  });
+  const outputs = {};
+  for (const [key, value] of Object.entries(metafile.outputs)) {
+    outputs[key.startsWith(`js/${from}`) ? `js/${rename(key.slice(3))}` : key] = value;
+  }
+  return { outputFiles: files, metafile: { ...metafile, outputs } };
 }
 
 /**
@@ -182,12 +240,12 @@ export function staticClosure(metafile, entryOut = 'js/app.min.js') {
  * first and stale chunks removed afterwards, so the chunk set on disk is never
  * incomplete (a watcher-triggered rebuild during a test run).
  * @param {string} appDir
- * @param {{ write?: boolean }} opts  write:false → in-memory only, no file written
+ * @param {{ write?: boolean, converted?: readonly string[] }} opts  write:false → in-memory only, no file written
  * @returns {Promise<{ outfile: string, code: string, chunks: string[], metafile: object, outputFiles: object[] }>}
  */
-export async function bundleJs(appDir = APP_DIR, { write = true, writeOutput = writeOutputAtomic } = {}) {
+export async function bundleJs(appDir = APP_DIR, { write = true, writeOutput = writeOutputAtomic, converted = CONVERTED_MODULES } = {}) {
   const outfile = join(appDir, 'js', 'app.min.js');
-  const result = await esbuild(jsBuildOptions(appDir));
+  const result = renameAppEntry(await esbuild(jsBuildOptions(appDir, { converted })), appDir);
   const chunkDir = join(appDir, 'js', 'chunks');
   const chunks = [];
   let code = '';
@@ -208,9 +266,9 @@ export async function bundleJs(appDir = APP_DIR, { write = true, writeOutput = w
     const keep = new Set(result.outputFiles.map((f) => f.path));
     // A concurrent build (watcher plus a manual run) may own *.tmp files here
     // or already have removed the same stale chunk.
-    for (const name of readdirSync(chunkDir)) {
-      const p = join(chunkDir, name);
-      if (keep.has(p) || name.endsWith('.tmp')) continue;
+    for (const entry of readdirSync(chunkDir, { withFileTypes: true })) {
+      const p = join(chunkDir, entry.name);
+      if (entry.isDirectory() || keep.has(p) || entry.name.endsWith('.tmp')) continue;
       try { unlinkSync(p); } catch (e) { if (e.code !== 'ENOENT') throw e; }
     }
   }
@@ -285,7 +343,7 @@ export function writeFileAtomicSync(path, text) {
  * Returns { changed: string[] } — empty array means everything is up to date.
  *
  * @param {string} [appDir]
- * @param {{ check?: boolean }} [opts]
+ * @param {{ check?: boolean, converted?: readonly string[] }} [opts]
  * @returns {Promise<{ changed: string[] }>}
  */
 export async function runBuild(appDir = APP_DIR, { check = false, converted = CONVERTED_MODULES } = {}) {
@@ -341,7 +399,7 @@ export async function runBuild(appDir = APP_DIR, { check = false, converted = CO
   }
 
   // 2. JS bundle (in check mode: in-memory only — compare, do not write)
-  const { code: jsCode, chunks, outputFiles } = await bundleJs(appDir, { write: !check });
+  const { code: jsCode, chunks, outputFiles } = await bundleJs(appDir, { write: !check, converted });
   if (check) {
     for (const f of outputFiles) {
       if (!f.path.endsWith('.js')) continue;
