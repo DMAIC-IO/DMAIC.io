@@ -122,7 +122,8 @@ export function createModule(base) {
     ...placement,
     ...config,
     agentEntry,
-    help: hasModuleHelp(id) ? () => getModuleHelp(id) : undefined,
+    // Methode, nicht Pfeil: die neue Form braucht die aktive Sprache der Instanz.
+    help: hasModuleHelp(id) ? function help() { return getModuleHelp(id, this._context?.i18n?.getLanguage()); } : undefined,
     references: hasModuleReferences(id) ? () => getModuleReferences(id) : undefined,
 
     _container: null,

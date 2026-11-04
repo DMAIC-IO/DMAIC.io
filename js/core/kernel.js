@@ -12,6 +12,8 @@ import { I18n }           from './i18n.js';
 import { ThemeManager }   from './theme-manager.js';
 import { ModuleRegistry } from './module-registry.js';
 import { ModuleResources, readModuleResources } from './module-resources.js';
+import { connectHelpResources } from './help-registry.js';
+import { connectReferenceResources } from './references-registry.js';
 import { ExamplesRegistry } from './examples-registry.js';
 import { VideosRegistry } from './videos-registry.js';
 import { GlossaryRegistry } from './glossary-registry.js';
@@ -68,6 +70,10 @@ export async function bootKernel(adapter = new LocalAdapter()) {
   // language:changed feuert.
   const moduleResources = new ModuleResources({ manifest: readModuleResources(), i18n });
   moduleRegistry.setResources(moduleResources);
+  // Hilfe-Panel und module.describe holen Hilfe und Referenzen der neuen Form
+  // über dieselben Registries wie die der alten Form.
+  connectHelpResources(moduleResources);
+  connectReferenceResources(moduleResources);
   i18n.addLanguageHook((lang) => moduleResources.loadLanguage(lang));
 
   const chartManager = new ChartManager(eventBus, i18n, stateManager);

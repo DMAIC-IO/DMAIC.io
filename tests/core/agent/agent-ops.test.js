@@ -10,6 +10,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import { createOps } from '../../../js/core/agent/agent-ops.js';
 import { defineModel, command, oneOf, index, list, record, text } from '../../../js/core/model.js';
+import { I18n } from '../../../js/core/i18n.js';
 import { schemaAgentEntry } from '../../../js/core/agent/agent-schema.js';
 
 const DEFS = [
@@ -256,6 +257,24 @@ suite('agent ops — Schema-Module', () => {
     deps.loadModule = async () => { loads += 1; return { agentEntry: ENTRY }; };
     const out = await createOps(deps)['catalog.read']();
     assertEqual(out.modules[0].available, true);
+    assertEqual(loads, 0);
+  });
+
+  test('catalog.read: Modul in neuer Form mit Name und whenToUse aus den Katalogtexten, ohne zu laden', async () => {
+    const { deps } = schemaDeps();
+    const i18n = new I18n('de');
+    i18n._cache.set('de', {});
+    i18n.mergeModule('neu', 'de', { name: 'Neu', description: 'Kurz', whenToUse: 'Wann' });
+    const defs = [{ id: 'neu', form: 'module', phase: 'define', cycles: { dmaic: { phase: 'define' } } }];
+    let loads = 0;
+    const out = await createOps({
+      ...deps,
+      i18n,
+      moduleRegistry: { getAll: () => defs, get: (id) => defs.find((d) => d.id === id), getActiveCycle: () => 'dmaic' },
+      registry: {},
+      loadModule: async () => { loads += 1; return {}; },
+    })['catalog.read']();
+    assertDeepEqual(out.modules.map((m) => [m.id, m.name, m.whenToUse, m.phase]), [['neu', 'Neu', 'Wann', 'define']]);
     assertEqual(loads, 0);
   });
 

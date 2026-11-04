@@ -62,7 +62,7 @@ export default createStartup({
       moduleRegistry,
       i18n,
       registry: AGENT_REGISTRY,
-      getHelp: getModuleHelp,
+      getHelp: (id) => getModuleHelp(id, i18n.getLanguage()),
       consent,
       host,
       appVersion: VERSION,
