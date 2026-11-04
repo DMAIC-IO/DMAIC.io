@@ -3,7 +3,7 @@ import { suite, test, assertEqual, assertThrows } from '../../test-utils.js';
 import { allowedPhasesFor, defaultPhaseFor, canAddInstance } from '../../../js/core/router/instance-ops.js';
 import { ModuleRegistry } from '../../../js/core/module-registry.js';
 import { CYCLES, getAllPhaseIds } from '../../../js/core/cycles/cycles.js';
-import manifest from '../../../js/modules/manifest.js';
+import { MODULES as manifest } from '../../../js/modules/catalog.generated.js';
 
 /**
  * Ein Modul-Stellvertreter aus dem Manifest. Der Manifest-Eintrag trägt

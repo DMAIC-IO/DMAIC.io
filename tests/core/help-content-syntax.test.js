@@ -11,7 +11,7 @@
  * Unterstützt sind: **fett**, *kursiv*, $latex$ und {{term:id|label}}.
  */
 import { suite, test, assertEqual } from '../test-utils.js';
-import MODULE_MANIFEST from '../../js/modules/manifest.js';
+import { MODULES as MODULE_MANIFEST } from '../../js/modules/catalog.generated.js';
 
 /** Alle Strings einer Hilfedefinition mit ihrem Pfad. */
 function collectStrings(node, path = [], out = []) {

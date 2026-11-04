@@ -4,7 +4,7 @@
  */
 
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
-import manifest from '../../js/modules/manifest.js';
+import { MODULES as manifest } from '../../js/modules/catalog.generated.js';
 
 async function loadText(path) {
   const resp = await fetch(new URL(path, import.meta.url));

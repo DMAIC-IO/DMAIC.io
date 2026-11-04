@@ -1,6 +1,6 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import { mountTile, waitFor } from './tile-test-utils.js';
-import manifest from '../../js/modules/manifest.js';
+import { MODULES as manifest } from '../../js/modules/catalog.generated.js';
 import fmeaTile from '../../js/modules/fmea/fmea.tile.js';
 import ishikawaTile from '../../js/modules/ishikawa/ishikawa.tile.js';
 import charterTiles, { charterTile, goalsTile, orgTile } from '../../js/modules/project-charter/project-charter.tile.js';

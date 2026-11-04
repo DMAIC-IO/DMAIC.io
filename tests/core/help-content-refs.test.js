@@ -4,7 +4,7 @@
  * stumm als Klartext — ohne diesen Test fiele ein Tippfehler niemandem auf.
  */
 import { suite, test, assertEqual } from '../test-utils.js';
-import MODULE_MANIFEST from '../../js/modules/manifest.js';
+import { MODULES as MODULE_MANIFEST } from '../../js/modules/catalog.generated.js';
 import { REFS } from '../../js/core/references-registry.generated.js';
 
 const REF_TOKEN = /\{\{ref:([a-z0-9-]+)(?:\|[^}]+)?\}\}/gi;

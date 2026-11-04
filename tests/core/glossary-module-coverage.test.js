@@ -11,7 +11,7 @@
  */
 import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
 import { GLOSSARY_CATALOG, GLOSSARY_TERMS } from '../../js/core/glossary-data.generated.js';
-import MODULE_MANIFEST from '../../js/modules/manifest.js';
+import { MODULES as MODULE_MANIFEST } from '../../js/modules/catalog.generated.js';
 
 const TERMS = Object.values(GLOSSARY_TERMS);
 const TERM_IDS = new Set(Object.keys(GLOSSARY_TERMS));

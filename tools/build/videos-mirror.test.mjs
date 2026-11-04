@@ -27,7 +27,7 @@ async function mirror() {
 }
 
 async function known() {
-  const { default: manifest } = await import(pathToFileURL(path.join(REPO, 'js/modules/manifest.js')).href);
+  const { MODULES: manifest } = await import(pathToFileURL(path.join(REPO, 'js/modules/catalog.generated.js')).href);
   const glossary = JSON.parse(await readFile(path.join(REPO, 'glossary/index.json'), 'utf8'));
   const examples = JSON.parse(await readFile(path.join(REPO, 'examples/index.json'), 'utf8'));
   return {
