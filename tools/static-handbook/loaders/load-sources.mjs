@@ -211,7 +211,7 @@ async function loadAlgorithms(repoRoot) {
  * Empty/missing catalog → returns { entries: [] } without warning, so the
  * handbook still builds in environments without examples.
  */
-async function loadExamples(repoRoot) {
+export async function loadExamples(repoRoot) {
   const indexPath = path.join(repoRoot, 'examples/index.json');
   let catalog;
   try {
@@ -240,11 +240,7 @@ async function loadExamples(repoRoot) {
   // Szenarien liegen seit Teilprojekt A3 in examples/shared/scenarios.json.
   try {
     const shared = await readJson(path.join(repoRoot, 'examples/shared/scenarios.json'));
-    // Reihenfolge wie vor dem Umzug: die beiden Hubschrauber-Szenarien standen
-    // vor den Beispielen, die übrigen dahinter (Sitemap und Seitenfolge).
-    const scenarios = shared.scenarios ?? [];
-    entries.unshift(...scenarios.slice(0, 2));
-    entries.push(...scenarios.slice(2));
+    entries.unshift(...(shared.scenarios ?? []));
   } catch (err) {
     if (err?.code !== 'ENOENT') console.warn(`[handbook] Failed to load scenarios: ${err.message}`);
   }

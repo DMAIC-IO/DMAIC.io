@@ -54,7 +54,7 @@ suite('shipped scenario catalog', () => {
 
   test('no duplicate ids across the whole catalog', async () => {
     const reg = await loadedRegistry();
-    const ids = reg._examples.map(e => e.id);
+    const ids = [...reg._examples, ...reg.getScenarios()].map(e => e.id);
     const seen = new Set();
     const dupes = [];
     ids.forEach(id => {
