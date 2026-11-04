@@ -11,6 +11,7 @@ import { LocalAdapter }   from './storage/local-adapter.js';
 import { I18n }           from './i18n.js';
 import { ThemeManager }   from './theme-manager.js';
 import { ModuleRegistry } from './module-registry.js';
+import { ModuleResources, readModuleResources } from './module-resources.js';
 import { ExamplesRegistry } from './examples-registry.js';
 import { VideosRegistry } from './videos-registry.js';
 import { GlossaryRegistry } from './glossary-registry.js';
@@ -62,6 +63,13 @@ export async function bootKernel(adapter = new LocalAdapter()) {
   moduleRegistry.setActiveCycle(stateManager.getProjectCycle());
   stateManager.setModuleRegistry(moduleRegistry);
 
+  // Module in neuer Form laden Templates, CSS und UI-Texte selbst nach; ein
+  // Sprachwechsel holt die UI-Texte der schon geladenen Module, bevor
+  // language:changed feuert.
+  const moduleResources = new ModuleResources({ manifest: readModuleResources(), i18n });
+  moduleRegistry.setResources(moduleResources);
+  i18n.addLanguageHook((lang) => moduleResources.loadLanguage(lang));
+
   const chartManager = new ChartManager(eventBus, i18n, stateManager);
 
   const examplesRegistry = new ExamplesRegistry();
@@ -100,7 +108,7 @@ export async function bootKernel(adapter = new LocalAdapter()) {
   await tipEngine.init();
 
   return {
-    eventBus, stateManager, i18n, themeManager, moduleRegistry,
+    eventBus, stateManager, i18n, themeManager, moduleRegistry, moduleResources,
     chartManager, examplesRegistry, videosRegistry, glossaryRegistry, tipEngine, shortcutRegistry,
   };
 }

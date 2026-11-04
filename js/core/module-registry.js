@@ -1,7 +1,9 @@
 /**
  * D.Mike — Module Registry (module-registry.js)
  * Central hub for all available modules.
- * Reads from manifest.js at startup, lazy-loads module JS on demand.
+ * Reads the module catalog (catalog.generated.js) at startup, lazy-loads module JS on demand.
+ * Module in neuer Form (`form: 'module'`) lassen vor dem ersten Laden ihre
+ * Bestandteile über ModuleResources nachladen.
  *
  * Cycle awareness (v0.3): each module declares per-cycle phase placement
  * via `cycles[<cycleId>] = { phase, allowedPhases? }`. Modules with
@@ -21,6 +23,31 @@ export class ModuleRegistry {
     this._registry = new Map();
     /** @type {string} active cycle (drives `getByPhase` and `extras` filtering) */
     this._activeCycle = DEFAULT_CYCLE;
+    /** @type {{ prepare(id: string): Promise<void> } | null} Lader für Module in neuer Form */
+    this._resources = null;
+  }
+
+  /**
+   * Den Lader für Bestandteile von Modulen in neuer Form setzen
+   * (ModuleResources, js/core/module-resources.js). Der Kernel ruft das beim Start.
+   * @param {{ prepare(id: string): Promise<void> }} resources
+   */
+  setResources(resources) {
+    this._resources = resources;
+  }
+
+  /**
+   * Templates, CSS und UI-Texte eines Moduls in neuer Form laden; für die
+   * alte Form nichts (ihre Bestandteile stecken in index.html und den Bündeln).
+   * @param {object} definition
+   * @returns {Promise<void>}
+   */
+  _prepare(definition) {
+    if (definition.form !== 'module') return Promise.resolve();
+    if (!this._resources) {
+      return Promise.reject(new Error(`[ModuleRegistry] ${definition.id}: Modul in neuer Form, aber kein Lader für Bestandteile`));
+    }
+    return this._resources.prepare(definition.id);
   }
 
   /**
@@ -80,6 +107,7 @@ export class ModuleRegistry {
     const definition = this._registry.get(moduleId);
     if (!definition || typeof definition.loadTile !== 'function') return undefined;
     if (!definition._tile) {
+      await this._prepare(definition);
       const mod = await loadChunk(definition.loadTile);
       definition._tile = mod.default;
     }
@@ -154,7 +182,7 @@ export class ModuleRegistry {
     // Call definition.load() — a () => import(...) arrow defined in manifest.js,
     // so the path resolves relative to manifest.js, not to this file.
     if (!definition._loaded) {
-      const module = await definition.load();
+      const [module] = await Promise.all([definition.load(), this._prepare(definition)]);
       definition._loaded = module.default;
     }
     return definition._loaded;

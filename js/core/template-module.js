@@ -47,26 +47,48 @@ function schemaMembers(moduleId, entry, vmCommands) {
   return members;
 }
 
+/** Was in der neuen Form aus module.js kommt oder entfällt — nie in config. */
+const NOT_IN_CONFIG = ['id', 'version', 'icon', 'phase', 'allowedPhases', 'engine', 'meta', 'templateUrl'];
+/** Felder aus module.js, die die Instanz trägt (wie bisher aus config). */
+const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
+
 // base.createDefault(context) — optional factory for the model of an empty instance.
+// base.descriptor — module.js-Beschreibung (neue Form): liefert
+// id/version/icon/phase/allowedPhases; Template unter resources/view.html;
+// immer Alpine. Ohne descriptor gilt die alte Form (alles in config).
 export function createModule(base) {
-  const { config, Model, data, afterMount, beforeLoadExample, createDefault } = base;
+  const { config = {}, descriptor, Model, data, afterMount, beforeLoadExample, createDefault } = base;
+  if (descriptor) {
+    for (const key of NOT_IN_CONFIG) {
+      if (Object.hasOwn(config, key)) {
+        throw new Error(`createModule ${descriptor.id}: config.${key} gehört nicht in config — ${FROM_DESCRIPTOR.includes(key) ? 'steht in module.js' : 'entfällt in der neuen Form'}`);
+      }
+    }
+  }
+  const id = descriptor ? descriptor.id : config.id;
+  const alpine = descriptor ? true : config.engine === 'alpine';
+  const placement = descriptor
+    ? { engine: 'alpine', ...Object.fromEntries(FROM_DESCRIPTOR.filter((k) => descriptor[k] !== undefined).map((k) => [k, descriptor[k]])) }
+    : {};
   const schema = schemaOf(Model);
   const vmCommands = base.commands ?? {};
   if (!schema && Object.keys(vmCommands).length > 0) {
-    throw new Error(`createModule ${config.id}: commands need a defineModel Model`);
+    throw new Error(`createModule ${id}: commands need a defineModel Model`);
   }
   const agentEntry = schema ? schemaAgentEntry(Model, vmCommands) : undefined;
-  const i18nKey = `modules.${  config.id}`;
+  const i18nKey = `modules.${  id}`;
   // Derive the template URL from document.baseURI so the key is stable whether
   // the app runs unbundled or from app.min.js (where import.meta.url → bundle path).
-  const templateUrl = config.templateUrl
-    ? config.templateUrl
-    : new URL(`js/modules/${  config.id  }/${  config.id  }.html`, document.baseURI).href;
+  const templateUrl = descriptor
+    ? new URL(`js/modules/${id}/resources/view.html`, document.baseURI).href
+    : config.templateUrl
+      ? config.templateUrl
+      : new URL(`js/modules/${id}/${id}.html`, document.baseURI).href;
   const tplKey = templateKey(templateUrl);
   // Alpine's CSP build parses the x-data expression, so the component name must be a
   // valid JS identifier — a kebab-case id like "triz-resources" would be read as the
   // subtraction "triz - resources". Register/reference Alpine components in camelCase.
-  const alpineName = config.id.replace(/-([a-z0-9])/g, (_, c) => c.toUpperCase());
+  const alpineName = id.replace(/-([a-z0-9])/g, (_, c) => c.toUpperCase());
 
   /**
    * Clone the module template and rebind its root `x-data` from the shared,
@@ -97,10 +119,11 @@ export function createModule(base) {
   const m = {
     i18nKey,
     imagePaths(json) { return Model.imagePaths?.(json) ?? []; },
+    ...placement,
     ...config,
     agentEntry,
-    help: hasModuleHelp(config.id) ? () => getModuleHelp(config.id) : undefined,
-    references: hasModuleReferences(config.id) ? () => getModuleReferences(config.id) : undefined,
+    help: hasModuleHelp(id) ? () => getModuleHelp(id) : undefined,
+    references: hasModuleReferences(id) ? () => getModuleReferences(id) : undefined,
 
     _container: null,
     _context: null,
@@ -121,7 +144,7 @@ export function createModule(base) {
       const saved = context.stateManager.getModuleState(context.instanceId);
       const state = initialModel(Model, saved, createDefault, context);
 
-      if (!container.id) container.id = `${config.id  }-${  context.instanceId}`;
+      if (!container.id) container.id = `${id  }-${  context.instanceId}`;
 
       const module = this;
       const _t = module._context.i18n.tf(i18nKey);
@@ -133,7 +156,7 @@ export function createModule(base) {
       });
       const dataResult = data.call(dataCtx, module, _t);
 
-      if (config.engine === 'alpine') {
+      if (alpine) {
         dataCtxTarget.t = _t;
         dataCtxTarget.model = state;
         copyMembers(dataCtxTarget, dataResult);
@@ -161,7 +184,7 @@ export function createModule(base) {
             /** Navigate the active module to a sub-path. Modules may override this. */
             changeRoute(sub) { this.$route?.go(sub); },
           };
-          if (schema) copyMembers(comp, schemaMembers(config.id, agentEntry, vmCommands));
+          if (schema) copyMembers(comp, schemaMembers(id, agentEntry, vmCommands));
           copyMembers(comp, dataResult);
           return copyMembers(comp, {
             init() {
@@ -222,7 +245,7 @@ export function createModule(base) {
       // completion) can reach destroy() with no mounted container — nothing
       // to tear down.
       if (!this._container) return;
-      if (config.engine === 'alpine') {
+      if (alpine) {
         this._container.querySelectorAll('[x-data]').forEach(root => {
           Alpine.destroyTree(root);
         });
@@ -238,7 +261,7 @@ export function createModule(base) {
     },
 
     onLanguageChange() {
-      if (config.engine === 'alpine') {
+      if (alpine) {
         Alpine.destroyTree(this._container);
         this._container.replaceChildren(...cloneForInstance(this._alpineName));
         Alpine.initTree(this._container);
@@ -249,7 +272,7 @@ export function createModule(base) {
     onThemeChange() {},
 
     getState() {
-      if (config.engine === 'alpine') {
+      if (alpine) {
         const root = this._container?.querySelector('[x-data]');
         if (root) {
           try {
@@ -265,7 +288,7 @@ export function createModule(base) {
     getActions() { return config.actions ?? []; },
 
     getActionData() {
-      if (config.engine !== 'alpine') return null;
+      if (!alpine) return null;
       const root = this._container?.querySelector('[x-data]');
       return root ? Alpine.$data(root) : null;
     },
@@ -276,7 +299,7 @@ export function createModule(base) {
     },
 
     setState(state) {
-      if (config.engine === 'alpine') {
+      if (alpine) {
         const model = loadModel(Model, state);
         this._persist(model);
         // Guard: a detached/aborted instance (init threw or never ran to
@@ -309,7 +332,7 @@ export function createModule(base) {
     },
 
     applyRemoteState(state) {
-      if (config.engine !== 'alpine') return;
+      if (!alpine) return;
       const root = this._container?.querySelector('[x-data]');
       if (!root) return;
       const fresh = loadModel(Model, state);
@@ -376,7 +399,7 @@ export function createModule(base) {
       );
     };
   } else {
-    console.warn(`[createModule] ${config.id}: loadExample benötigt hasContent() im Model — wird übersprungen`);
+    console.warn(`[createModule] ${id}: loadExample benötigt hasContent() im Model — wird übersprungen`);
   }
 
   return m;
