@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor } from './module-gates.mjs';
+import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers } from './module-gates.mjs';
 
 /** Temp-App aus `{ pfad: inhalt }`. */
 function appWith(files) {
@@ -148,4 +148,59 @@ test('Beschreibung: export default ohne Objektliteral', () => {
   assert.deepEqual(checkDescriptor('neu', 'export default makeIt();\n', CTX), [
     'descriptor: module.js: genau eine Anweisung: export default { … } (kein import, keine weiteren Anweisungen)',
   ]);
+});
+
+/** Platzhalter @/ steht für den Weg aus dem Modul zu js/ (kein Literal, das den Repo-Grenzen-Scan auslöst). */
+const fx = (files) => files.map((f) => ({ ...f, text: f.text.replaceAll('@/', ['..', '..', '..', ''].join('/')) }));
+const ex = (lines) => lines.map((l) => l.replaceAll('@/', ['..', '..', '..', ''].join('/')));
+
+test('uses: Worksheet-Nutzung verlangt uses worksheet', () => {
+  const files = [
+    { path: 'viewmodel/viewmodel.js', text: "import { createColumnPicker } from '@/ui/column-picker.js';\n" },
+    { path: 'io/handoff.js', text: "import { appendRows } from '@/core/worksheet-append.js';\n" },
+    { path: 'viewmodel/events.js', text: "bus.on('worksheet:changed', f);\n" },
+    { path: 'domain/model.js', text: "export const x = 'worksheets';\n" },
+  ];
+  assert.deepEqual(checkUses(fx(files), []), [
+    "uses: viewmodel/viewmodel.js: nutzt das Worksheet (ui/column-picker.js) → uses: ['worksheet'] in module.js",
+    "uses: io/handoff.js: nutzt das Worksheet (core/worksheet-*) → uses: ['worksheet'] in module.js",
+    "uses: viewmodel/events.js: nutzt das Worksheet (Ereignis worksheet:…) → uses: ['worksheet'] in module.js",
+  ]);
+  assert.deepEqual(checkUses(fx(files), ['worksheet']), []);
+});
+
+test('Layer: domain ohne Alpine, DOM, UI, Kontext und höhere Schichten', () => {
+  const files = [
+    { path: 'domain/model.js', text: "import { defineModel } from '@/core/model.js';\nimport { mean } from '@/core/stats.js';\n" },
+    { path: 'domain/a.js', text: "import Alpine from '@alpinejs/csp';\nimport { h } from '@/core/dom.js';\nimport { p } from '@/ui/column-picker.js';\nimport { v } from '../viewmodel/viewmodel.js';\n" },
+    { path: 'domain/b.js', text: "export const f = () => document.body;\nexport function g(context) { return this.context; }\nexport const ok = { document: 1 }.document;\n" },
+    { path: 'domain/deep/c.js', text: "const m = await import('../../interaction/reorder.js');\n" },
+    { path: 'io/export.js', text: "import Alpine from 'alpinejs';\nexport const x = () => Alpine.store('a');\nexport const y = () => document.title;\n" },
+    { path: 'viewmodel/viewmodel.js', text: "import Alpine from '@alpinejs/csp';\n" },
+  ];
+  assert.deepEqual(checkLayers(fx(files)), ex([
+    'layer: domain/a.js: Import @alpinejs/csp in domain/ verboten (Alpine)',
+    'layer: domain/a.js: Import @/core/dom.js in domain/ verboten (DOM-Helfer)',
+    'layer: domain/a.js: Import @/ui/column-picker.js in domain/ verboten (UI)',
+    'layer: domain/a.js: Import ../viewmodel/viewmodel.js in domain/ verboten (höhere Schicht)',
+    'layer: domain/b.js: document in domain/ verboten',
+    'layer: domain/b.js: context in domain/ verboten',
+    'layer: domain/b.js: this.context in domain/ verboten',
+    'layer: domain/deep/c.js: Import ../../interaction/reorder.js in domain/ verboten (höhere Schicht)',
+    'layer: io/export.js: Import alpinejs in io/ verboten (Alpine)',
+    'layer: io/export.js: Alpine in io/ verboten',
+  ]));
+});
+
+test('Layer: Viewmodel-Kern-Import, window und Re-Export in domain', () => {
+  const files = [
+    { path: 'domain/k.js', text: "import { createTemplateModule } from '@/core/template-module.js';\nimport { fieldDirective } from '@/core/field-directive.js';\n" },
+    { path: 'domain/w.js', text: "export const w = () => window.location;\nexport { x } from '../io/export.js';\n" },
+  ];
+  assert.deepEqual(checkLayers(fx(files)), ex([
+    'layer: domain/k.js: Import @/core/template-module.js in domain/ verboten (Viewmodel-Kern)',
+    'layer: domain/k.js: Import @/core/field-directive.js in domain/ verboten (Viewmodel-Kern)',
+    'layer: domain/w.js: window in domain/ verboten',
+    'layer: domain/w.js: Import ../io/export.js in domain/ verboten (höhere Schicht)',
+  ]));
 });

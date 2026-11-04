@@ -211,3 +211,90 @@ export function readExampleIds(appDir) {
   if (!existsSync(file)) return [];
   return (JSON.parse(readFileSync(file, 'utf8')).examples ?? []).map((e) => e.id);
 }
+
+const WORKSHEET_USES = [
+  { re: /['"][^'"]*\/ui\/column-picker\.js['"]/, what: 'ui/column-picker.js' },
+  { re: /['"][^'"]*\/ui\/dataset-picker\.js['"]/, what: 'ui/dataset-picker.js' },
+  { re: /['"][^'"]*\/core\/worksheet-[\w-]+\.js['"]/, what: 'core/worksheet-*' },
+  { re: /['"`]worksheet:/, what: 'Ereignis worksheet:…' },
+];
+
+/**
+ * Gate `uses` vollständig: wer das Datenformat des Worksheets nutzt,
+ * erklärt `uses: ['worksheet']`. Ein Befund je Datei (erster Treffer).
+ * @param {{ path: string, text: string }[]} files .js-Dateien des Moduls
+ * @param {string[]} uses aus module.js
+ * @returns {string[]}
+ */
+export function checkUses(files, uses) {
+  if (uses.includes('worksheet')) return [];
+  const out = [];
+  for (const { path, text } of files) {
+    const hit = WORKSHEET_USES.find(({ re }) => re.test(text));
+    if (hit) out.push(`uses: ${path}: nutzt das Worksheet (${hit.what}) → uses: ['worksheet'] in module.js`);
+  }
+  return out;
+}
+
+const LAYER_RULES = {
+  domain: {
+    imports: [
+      { re: /alpinejs/, why: 'Alpine' },
+      { re: /\/core\/dom\.js$/, why: 'DOM-Helfer' },
+      { re: /(^|\/)ui\//, why: 'UI' },
+      { re: /\/core\/(template-module|field-directive)\.js$/, why: 'Viewmodel-Kern' },
+      { re: /^(\.\.\/)+(viewmodel|interaction|io|tile|resources)\//, why: 'höhere Schicht' },
+    ],
+    globals: ['document', 'window', 'Alpine', 'context'],
+  },
+  io: {
+    imports: [{ re: /alpinejs/, why: 'Alpine' }],
+    globals: ['Alpine'],
+  },
+};
+
+/** Ist `id` hier ein freier Bezeichner (kein Eigenschafts- oder Schlüsselname)? */
+function isFreeIdentifier(id) {
+  const p = id.parent;
+  if (ts.isPropertyAccessExpression(p) && p.name === id) return false;
+  if ((ts.isPropertyAssignment(p) || ts.isMethodDeclaration(p) || ts.isPropertyDeclaration(p)) && p.name === id) return false;
+  if (ts.isBindingElement(p) && p.propertyName === id) return false;
+  return true;
+}
+
+/**
+ * Gate Layer: `domain/` ohne Alpine, DOM, UI, Kontext, höhere Schichten;
+ * `io/` ohne Alpine. Ein Befund je Datei und verbotenem Namen.
+ * @param {{ path: string, text: string }[]} files
+ * @returns {string[]}
+ */
+export function checkLayers(files) {
+  const out = [];
+  for (const { path, text } of files) {
+    const layer = path.split('/')[0];
+    const rule = LAYER_RULES[layer];
+    if (!rule || !path.endsWith('.js')) continue;
+    const sf = parseJs(path, text);
+    const seen = new Set();
+    const report = (msg) => { if (!seen.has(msg)) { seen.add(msg); out.push(msg); } };
+    const visit = (n) => {
+      let spec = null;
+      if ((ts.isImportDeclaration(n) || ts.isExportDeclaration(n)) && n.moduleSpecifier && ts.isStringLiteral(n.moduleSpecifier)) spec = n.moduleSpecifier.text;
+      if (ts.isCallExpression(n) && n.expression.kind === ts.SyntaxKind.ImportKeyword && n.arguments[0] && ts.isStringLiteral(n.arguments[0])) spec = n.arguments[0].text;
+      if (spec !== null) {
+        const hit = rule.imports.find(({ re }) => re.test(spec));
+        if (hit) report(`layer: ${path}: Import ${spec} in ${layer}/ verboten (${hit.why})`);
+      }
+      if (ts.isPropertyAccessExpression(n) && n.expression.kind === ts.SyntaxKind.ThisKeyword && n.name.text === 'context' && layer === 'domain') {
+        report(`layer: ${path}: this.context in ${layer}/ verboten`);
+      }
+      if (ts.isIdentifier(n) && rule.globals.includes(n.text) && isFreeIdentifier(n)) {
+        const inImport = ts.isImportClause(n.parent) || ts.isImportSpecifier(n.parent) || ts.isNamespaceImport(n.parent);
+        if (!inImport) report(`layer: ${path}: ${n.text} in ${layer}/ verboten`);
+      }
+      ts.forEachChild(n, visit);
+    };
+    visit(sf);
+  }
+  return out;
+}
