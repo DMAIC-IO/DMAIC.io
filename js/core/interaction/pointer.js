@@ -24,6 +24,7 @@ export function bindPointer(root, def, gesture) {
       console.warn(`[gesture] ${def.kind}: handle "${def.handle}" is not focusable — use <button> or tabindex="0"`);
     }
     if (!gesture.press(el, e)) return;
+    stopActive?.();
     const id = e.pointerId;
     try { el.setPointerCapture(id); } catch { /* synthetischer Zeiger: keine Erfassung */ }
     const onMove = (ev) => { if (ev.pointerId === id) gesture.pointerMove(ev); };

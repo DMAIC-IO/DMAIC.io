@@ -289,9 +289,12 @@ suite('interaction/attach — Zeiger', () => {
 
   test('Zeiger-Listener werden gelöst, wenn die Geste ohne Adapter endet', () => {
     const root = document.createElement('div');
-    root.innerHTML = '<button class="h" type="button">h</button>';
+    const h = document.createElement('button');
+    h.type = 'button';
+    h.className = 'h';
+    h.textContent = 'h';
+    root.append(h);
     document.body.append(root);
-    const h = root.firstChild;
     const moves = [];
     let endHook = null;
     const gesture = {

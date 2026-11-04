@@ -170,6 +170,7 @@ function createController(root, def, host, env) {
       if (before === 'pressed' && state.phase === 'idle') {
         pressedEl = null;
         release(doc, owner);
+        settle();
         return;
       }
       if (state.phase !== 'dropped') return;
@@ -184,6 +185,7 @@ function createController(root, def, host, env) {
       if (before === 'pressed' && state.phase === 'idle') {
         pressedEl = null;
         release(doc, owner);
+        settle();
         return;
       }
       if (state.phase !== 'cancelled') return;
