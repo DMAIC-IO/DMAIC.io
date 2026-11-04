@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.qprovement.com/schemas/module-ui.schema.json",
+  "title": "UI-Texte eines Moduls (resources/i18n/ui.<lang>.json)",
+  "type": "object",
+  "required": ["name", "description", "whenToUse"],
+  "properties": {
+    "$schema": { "$ref": "common.schema.json#/$defs/schemaRef" },
+    "name": { "$ref": "common.schema.json#/$defs/text" },
+    "description": { "$ref": "common.schema.json#/$defs/text" },
+    "whenToUse": { "$ref": "common.schema.json#/$defs/text" },
+    "fields": false,
+    "actions": false,
+    "types": false
+  },
+  "additionalProperties": { "$ref": "#/$defs/node" },
+  "$defs": {
+    "node": {
+      "anyOf": [
+        { "$ref": "common.schema.json#/$defs/text" },
+        { "type": "number" },
+        { "type": "boolean" },
+        { "type": "array", "items": { "$ref": "#/$defs/node" } },
+        { "type": "object", "additionalProperties": { "$ref": "#/$defs/node" } }
+      ]
+    }
+  }
+}

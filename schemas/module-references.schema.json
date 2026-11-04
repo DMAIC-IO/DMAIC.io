@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.qprovement.com/schemas/module-references.schema.json",
+  "title": "Referenzen eines Moduls (resources/data/references.json)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["references"],
+  "properties": {
+    "$schema": { "$ref": "common.schema.json#/$defs/schemaRef" },
+    "references": { "type": "array", "items": { "oneOf": [{ "$ref": "#/$defs/bookRef" }, { "$ref": "#/$defs/csl" }] } }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "bookRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["book"],
+      "properties": {
+        "book": { "$ref": "#/$defs/id" },
+        "note": { "$ref": "common.schema.json#/$defs/localized" }
+      }
+    },
+    "author": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["family"],
+          "properties": {
+            "family": { "$ref": "common.schema.json#/$defs/text" },
+            "given": { "$ref": "common.schema.json#/$defs/text" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["literal"],
+          "properties": { "literal": { "$ref": "common.schema.json#/$defs/text" } }
+        }
+      ]
+    },
+    "csl": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "title", "author"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "type": { "enum": ["book", "article-journal", "webpage", "standard"] },
+        "title": { "$ref": "common.schema.json#/$defs/text" },
+        "author": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/author" } },
+        "edition": { "$ref": "common.schema.json#/$defs/text" },
+        "publisher": { "$ref": "common.schema.json#/$defs/text" },
+        "publisher-place": { "$ref": "common.schema.json#/$defs/text" },
+        "issued": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["date-parts"],
+          "properties": {
+            "date-parts": {
+              "type": "array", "minItems": 1,
+              "items": { "type": "array", "minItems": 1, "maxItems": 3, "items": { "type": "integer" } }
+            }
+          }
+        },
+        "ISBN": { "$ref": "common.schema.json#/$defs/text" },
+        "DOI": { "$ref": "common.schema.json#/$defs/text" },
+        "URL": { "$ref": "common.schema.json#/$defs/text" },
+        "container-title": { "$ref": "common.schema.json#/$defs/text" },
+        "volume": { "$ref": "common.schema.json#/$defs/text" },
+        "issue": { "$ref": "common.schema.json#/$defs/text" },
+        "page": { "$ref": "common.schema.json#/$defs/text" },
+        "note": { "$ref": "common.schema.json#/$defs/localized" }
+      }
+    }
+  }
+}

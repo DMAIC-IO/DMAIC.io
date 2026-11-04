@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.qprovement.com/schemas/module-context-help.schema.json",
+  "title": "Kontexthilfe eines Moduls (resources/i18n/context-help.<lang>.json)",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "$ref": "common.schema.json#/$defs/schemaRef" },
+    "fields": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["help"],
+        "properties": { "help": { "$ref": "common.schema.json#/$defs/text" } }
+      }
+    },
+    "actions": { "type": "object", "additionalProperties": { "$ref": "#/$defs/action" } },
+    "types": { "type": "object", "additionalProperties": { "$ref": "#/$defs/typeTree" } }
+  },
+  "$defs": {
+    "action": {
+      "type": "object",
+      "minProperties": 1,
+      "properties": {
+        "help": { "$ref": "common.schema.json#/$defs/text" },
+        "params": { "type": "object", "additionalProperties": { "$ref": "common.schema.json#/$defs/text" } }
+      },
+      "additionalProperties": { "$ref": "#/$defs/action" }
+    },
+    "typeTree": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/typeNode" }
+    },
+    "typeNode": {
+      "anyOf": [
+        { "$ref": "common.schema.json#/$defs/text" },
+        { "$ref": "#/$defs/typeTree" }
+      ]
+    }
+  }
+}

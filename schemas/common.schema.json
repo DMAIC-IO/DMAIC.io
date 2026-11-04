@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.qprovement.com/schemas/common.schema.json",
+  "title": "Gemeinsame Definitionen der Modul-Dateien",
+  "$defs": {
+    "text": { "type": "string", "pattern": "\\S" },
+    "localized": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["de", "en"],
+      "properties": { "de": { "$ref": "#/$defs/text" }, "en": { "$ref": "#/$defs/text" } }
+    },
+    "schemaRef": { "type": "string", "minLength": 1 }
+  }
+}

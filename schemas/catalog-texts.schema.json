@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.qprovement.com/schemas/catalog-texts.schema.json",
+  "title": "Katalogtexte (js/modules/catalog.<lang>.json, erzeugt von tools/build/catalog.mjs)",
+  "type": "object",
+  "properties": { "$schema": { "$ref": "common.schema.json#/$defs/schemaRef" } },
+  "propertyNames": { "type": "string", "pattern": "^(\\$schema|[a-z0-9-]+)$" },
+  "additionalProperties": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["name", "description", "whenToUse"],
+    "properties": {
+      "name": { "$ref": "common.schema.json#/$defs/text" },
+      "description": { "$ref": "common.schema.json#/$defs/text" },
+      "whenToUse": { "$ref": "common.schema.json#/$defs/text" }
+    }
+  }
+}

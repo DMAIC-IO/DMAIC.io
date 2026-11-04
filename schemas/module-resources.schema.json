@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.qprovement.com/schemas/module-resources.schema.json",
+  "title": "Liste #module-resources in index.html (erzeugt von tools/build/module-assets.mjs)",
+  "type": "object",
+  "propertyNames": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+  "additionalProperties": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["templates", "files"],
+    "properties": {
+      "templates": { "$ref": "common.schema.json#/$defs/text" },
+      "style": { "$ref": "common.schema.json#/$defs/text" },
+      "files": { "type": "object", "additionalProperties": { "$ref": "common.schema.json#/$defs/text" } }
+    }
+  }
+}
