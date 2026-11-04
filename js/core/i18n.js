@@ -7,6 +7,22 @@
  * Fallback chain: active language → 'en' → key itself.
  */
 
+/**
+ * Tiefer Merge zweier Übersetzungsbäume — `over` gewinnt; Arrays und
+ * Werte werden ersetzt, Objekte gemischt. Gibt ein neues Objekt zurück.
+ * @param {object} base @param {object} over @returns {object}
+ */
+function mergeTree(base, over) {
+  if (!over || typeof over !== 'object') return base;
+  const out = { ...base };
+  for (const [k, v] of Object.entries(over)) {
+    out[k] = v && typeof v === 'object' && !Array.isArray(v)
+      ? mergeTree(base?.[k] && typeof base[k] === 'object' ? base[k] : {}, v)
+      : v;
+  }
+  return out;
+}
+
 export class I18n {
   /**
    * @param {string} [defaultLang='de']
@@ -17,6 +33,8 @@ export class I18n {
     this._cache = new Map();
     this._eventBus = null;
     this._stateManager = null;
+    /** @type {((lang: string) => Promise<void>|void)[]} */
+    this._languageHooks = [];
   }
 
   /**
@@ -30,16 +48,24 @@ export class I18n {
   }
 
   /**
-   * Fetch and cache a language file.
+   * Fetch and cache a language file — dazu die Katalogtexte der Module
+   * (js/modules/catalog.<lang>.json: name, description, whenToUse), damit
+   * Menü und Agentenkatalog sie ohne Laden des Moduls kennen.
    * @param {string} lang
    */
   async loadLanguage(lang) {
     if (this._cache.has(lang)) return;
     const v = document.querySelector('meta[name="i18n-version"]')?.content;
-    const url = v ? `i18n/${lang}.json?v=${v}` : `i18n/${lang}.json`;
-    const response = await fetch(url);
+    const q = v ? `?v=${v}` : '';
+    const [response, catalog] = await Promise.all([
+      fetch(`i18n/${lang}.json${q}`),
+      fetch(`js/modules/catalog.${lang}.json${q}`)
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+        .catch((err) => { console.error(`[i18n] Katalogtexte ${lang} nicht geladen:`, err); return {}; }),
+    ]);
     if (!response.ok) throw new Error(`[i18n] Could not load language: ${lang}`);
     this._cache.set(lang, await response.json());
+    for (const [id, texts] of Object.entries(catalog)) this.mergeModule(id, lang, texts);
   }
 
   /**
@@ -48,6 +74,9 @@ export class I18n {
    */
   async setLanguage(lang) {
     await this.loadLanguage(lang);
+    // Nachgeladene Modultexte (ModuleResources) vor dem Umschalten holen —
+    // sonst zeigte ein offenes Modul nach language:changed Schlüssel statt Text.
+    await Promise.all(this._languageHooks.map((fn) => fn(lang)));
     this._lang = lang;
     this._updateDOM();
     this._stateManager?.set('settings.language', lang);
@@ -130,19 +159,9 @@ export class I18n {
         try { await this.loadLanguage(l); } catch { /* fall back to what is cached */ }
       }
     }
-    const merge = (base, over) => {
-      if (!over || typeof over !== 'object') return base;
-      const out = { ...base };
-      for (const [k, v] of Object.entries(over)) {
-        out[k] = v && typeof v === 'object' && !Array.isArray(v)
-          ? merge(base?.[k] && typeof base[k] === 'object' ? base[k] : {}, v)
-          : v;
-      }
-      return out;
-    };
     const en = this._resolve(key, 'en');
     const own = lang === 'en' ? undefined : this._resolve(key, lang);
-    return JSON.parse(JSON.stringify(merge(merge({}, en), own)));
+    return JSON.parse(JSON.stringify(mergeTree(mergeTree({}, en), own)));
   }
 
   /**
@@ -157,6 +176,29 @@ export class I18n {
       data.modules[moduleId] = { ...data.modules[moduleId], ...strings };
       this._cache.set(lang, data);
     }
+  }
+
+  /**
+   * Texte eines Moduls tief in `modules.<id>` einer Sprache mischen. Module in
+   * neuer Form bringen ihre Texte selbst mit (resources/i18n/*.json).
+   * @param {string} moduleId
+   * @param {string} lang
+   * @param {object} tree
+   */
+  mergeModule(moduleId, lang, tree) {
+    const data = this._cache.get(lang) ?? {};
+    if (!data.modules) data.modules = {};
+    data.modules[moduleId] = mergeTree(data.modules[moduleId] ?? {}, tree);
+    this._cache.set(lang, data);
+  }
+
+  /**
+   * Haken, auf den `setLanguage` wartet, bevor es umschaltet (z. B. das
+   * Nachladen der UI-Texte geladener Module).
+   * @param {(lang: string) => Promise<void>|void} fn
+   */
+  addLanguageHook(fn) {
+    this._languageHooks.push(fn);
   }
 
   // ─── DOM Auto-Update ────────────────────────────────────────

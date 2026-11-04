@@ -117,6 +117,7 @@ const SKIP = new Set([
   'core/flowchart-view-autosize.test.js',
   'core/help-renderer.test.js',
   'core/html-utils.test.js',
+  'core/i18n-module-texts.test.js',
   'core/icon.test.js',
   'core/markdown-parser.test.js',
   'core/notify.test.js',

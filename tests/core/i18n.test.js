@@ -80,6 +80,23 @@ suite('I18n', () => {
 
   test.todo('setLanguage: emits language:changed event');
   test.todo('registerModuleTranslations: makes module keys accessible');
+
+  test('mergeModule mischt tief in modules.<id>, Rest bleibt', () => {
+    const i18n = makeI18n();
+    i18n.mergeModule('neu', 'de', { name: 'Neu', actions: { add: { help: 'Fügt hinzu' } } });
+    i18n.mergeModule('neu', 'de', { actions: { remove: { help: 'Entfernt' } }, col: 'Spalte' });
+    assertEqual(i18n.t('modules.neu.name'), 'Neu');
+    assertEqual(i18n.t('modules.neu.actions.add.help'), 'Fügt hinzu');
+    assertEqual(i18n.t('modules.neu.actions.remove.help'), 'Entfernt');
+    assertEqual(i18n.t('modules.neu.col'), 'Spalte');
+    assertEqual(i18n.t('greeting'), 'Hallo');
+  });
+
+  test('mergeModule für eine noch nicht geladene Sprache legt sie an', () => {
+    const i18n = makeI18n();
+    i18n.mergeModule('neu', 'fr', { name: 'Nouveau' });
+    assertEqual(i18n._resolve('modules.neu.name', 'fr'), 'Nouveau');
+  });
 });
 
 suite('I18n.section', () => {
