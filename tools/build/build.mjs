@@ -23,6 +23,10 @@ import { collectAgentData, renderAgentRegistryModule } from './agent-data.mjs';
 import { collectModelFiles, loadModelSchema, renderModelTypes } from './model-types.mjs';
 import { collectGlossaryData, renderGlossaryDataModule } from './glossary-data.mjs';
 import { collectLicenseData, renderLicenseDataModule, renderLicenseText } from '../license-report/license-report.mjs';
+import { CONVERTED_MODULES } from './converted-modules.mjs';
+import {
+  renderCatalogModule, collectCatalogTexts, renderCatalogTexts, catalogConflicts, readLegacyIds, CATALOG_LANGS,
+} from './catalog.mjs';
 import { collectPrecache, precacheVersion, bundleServiceWorker } from './service-worker.mjs';
 
 export const APP_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -284,7 +288,7 @@ export function writeFileAtomicSync(path, text) {
  * @param {{ check?: boolean }} [opts]
  * @returns {Promise<{ changed: string[] }>}
  */
-export async function runBuild(appDir = APP_DIR, { check = false } = {}) {
+export async function runBuild(appDir = APP_DIR, { check = false, converted = CONVERTED_MODULES } = {}) {
   const changed = [];
 
   // 0. templates — die fertige Shell NUR in den Speicher rendern. Geschrieben
@@ -325,6 +329,16 @@ export async function runBuild(appDir = APP_DIR, { check = false } = {}) {
   mkdirSync(join(appDir, 'js', 'pages', 'licenses'), { recursive: true });
   emit(join(appDir, 'js', 'pages', 'licenses', 'licenses-data.generated.js'), renderLicenseDataModule(licenseEntries), check, changed);
   emit(join(appDir, 'THIRD-PARTY-LICENSES.txt'), renderLicenseText(licenseEntries), check, changed);
+
+  // 1e. Modulkatalog: Registry-Einträge alt + neu,
+  //     dazu je Sprache name/description/whenToUse der umgestellten Module.
+  const conflicts = catalogConflicts(await readLegacyIds(appDir), converted);
+  if (conflicts.length) throw new Error(conflicts.join('\n'));
+  emit(join(appDir, 'js', 'modules', 'catalog.generated.js'), renderCatalogModule(converted), check, changed);
+  for (const lang of CATALOG_LANGS) {
+    emit(join(appDir, 'js', 'modules', `catalog.${lang}.json`),
+      renderCatalogTexts(collectCatalogTexts(appDir, converted, lang)), check, changed);
+  }
 
   // 2. JS bundle (in check mode: in-memory only — compare, do not write)
   const { code: jsCode, chunks, outputFiles } = await bundleJs(appDir, { write: !check });
