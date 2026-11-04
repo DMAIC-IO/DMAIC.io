@@ -37,6 +37,8 @@ export function bindKeyboard(root, def, gesture) {
   };
 
   const onKeyDown = (e) => {
+    // Ein keyup, das den Container nie erreicht hat, darf nicht nachwirken.
+    swallowKeyup = false;
     // Zeiger-Geste: gedrückt (unter der Schwelle) oder ziehend.
     if (e.key === 'Escape' && !gesture.idle() && !gesture.picking()) {
       e.preventDefault();
@@ -59,22 +61,23 @@ export function bindKeyboard(root, def, gesture) {
         gesture.keyCancel();
       } else if (e.key === 'Tab') {
         gesture.keyCancel();
-      } else if (dir && !e.altKey) {
+      } else if (dir) {
+        // Alt+Pfeil im Aufnahme-Modus: kein Schritt, aber auch kein Verlauf.
         e.preventDefault();
-        gesture.keyStep(dir);
+        if (!e.altKey) gesture.keyStep(dir);
       }
       return;
     }
-    if (!gesture.idle()) return;
 
     if (dir && e.altKey) {
-      const endEdge = e.shiftKey;
-      if (endEdge !== (def.kind === 'resize')) return;
-      // Auch am Rand: Alt+←/→ darf nie im Browserverlauf navigieren.
+      // Alt+←/→ am Griff darf nie im Browserverlauf navigieren — auch am Rand,
+      // an der falschen Kante (resize ohne Shift) und während einer Zeiger-Geste.
       e.preventDefault();
-      gesture.shortcut(el, dir, endEdge);
+      const endEdge = e.shiftKey;
+      if (gesture.idle() && endEdge === (def.kind === 'resize')) gesture.shortcut(el, dir, endEdge);
       return;
     }
+    if (!gesture.idle()) return;
     if (isToggle(e)) {
       e.preventDefault();
       swallowKeyup = true;

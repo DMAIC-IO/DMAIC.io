@@ -30,16 +30,19 @@ import { bindKeyboard } from './keyboard.js';
  * @param {Readonly<object>} def Ergebnis von `defineGesture`
  * @param {object|(() => object)} host `this` der Callbacks, oder Funktion, die ihn liefert
  * @param {GestureEnv} [env] Vorgabe: `host` (nur, wenn `host` ein Objekt ist)
- * @returns {() => void} detach
+ * @returns {(() => void) & { cancel: () => void }} detach; `detach.cancel()`
+ *   bricht nur eine laufende Geste ab (Sperre frei) und lässt die Geste angehängt
  */
 export function attachGesture(root, def, host, env = host) {
   if (!isGesture(def)) throw new Error('attachGesture: def is not a defineGesture result');
   const gesture = createController(root, def, host, env);
   const unbind = [bindPointer(root, def, gesture), bindKeyboard(root, def, gesture)];
-  return function detach() {
+  function detach() {
     gesture.abort();
     for (const fn of unbind) fn();
-  };
+  }
+  detach.cancel = () => gesture.abort();
+  return detach;
 }
 
 /**
@@ -90,10 +93,23 @@ function createController(root, def, host, env) {
     };
   }
 
+  /**
+   * Lauf beginnen. Wirft ein Callback (`start`, `preview`, Host-Auflösung),
+   * wird erst aufgeräumt — idle, Sperre frei, Zeiger-Listener gelöst — und
+   * der Fehler dann weitergeworfen: er bleibt als Programmierfehler sichtbar,
+   * blockiert aber keine weitere Geste im Dokument.
+   */
   function begin(el, source, origin) {
-    g = makeRun(el, source, origin);
-    g.marked.setAttribute('data-dragging', def.kind);
-    show(g.from);
+    try {
+      g = makeRun(el, source, origin);
+      g.marked.setAttribute('data-dragging', def.kind);
+      show(g.from);
+    } catch (err) {
+      g?.marked.removeAttribute('data-dragging');
+      markTarget(null);
+      reset();
+      throw err;
+    }
   }
 
   function settle() {
@@ -102,17 +118,22 @@ function createController(root, def, host, env) {
     hook?.();
   }
 
-  /** Vorschau und Markierungen weg, Sperre frei. @returns {object} der beendete Lauf */
-  function end() {
-    const run = g;
+  /** Zustand idle, Sperre frei, Zeiger-Listener gelöst — vor jedem Callback. */
+  function reset() {
     g = null;
     pressedEl = null;
-    run.marked.removeAttribute('data-dragging');
-    markTarget(null);
-    def.preview.call(run.h, null);
     state = IDLE;
     release(doc, owner);
     settle();
+  }
+
+  /** Vorschau und Markierungen weg, Sperre frei. @returns {object} der beendete Lauf */
+  function end() {
+    const run = g;
+    reset();
+    run.marked.removeAttribute('data-dragging');
+    markTarget(null);
+    def.preview.call(run.h, null);
     return run;
   }
 
@@ -144,7 +165,6 @@ function createController(root, def, host, env) {
     onEnd(fn) { endHook = fn; },
     idle: () => state.phase === 'idle',
     picking: (el) => Boolean(g && g.source === 'keyboard' && (el === undefined || g.el === el)),
-    pointerDragging: () => Boolean(g && g.source === 'pointer'),
 
     press(el, e) {
       if (state.phase !== 'idle' || !claim(doc, owner)) return false;
@@ -168,9 +188,7 @@ function createController(root, def, host, env) {
       const before = state.phase;
       state = next(state, { type: 'release', pointerId: e.pointerId });
       if (before === 'pressed' && state.phase === 'idle') {
-        pressedEl = null;
-        release(doc, owner);
-        settle();
+        reset();
         return;
       }
       if (state.phase !== 'dropped') return;
@@ -183,9 +201,7 @@ function createController(root, def, host, env) {
       const before = state.phase;
       state = next(state, { type: 'cancel', source: 'pointer' });
       if (before === 'pressed' && state.phase === 'idle') {
-        pressedEl = null;
-        release(doc, owner);
-        settle();
+        reset();
         return;
       }
       if (state.phase !== 'cancelled') return;
@@ -247,12 +263,10 @@ function createController(root, def, host, env) {
       }
     },
 
+    /** Laufende Geste abbrechen; gibt die Sperre in jedem Fall frei (nur die eigene). */
     abort() {
       if (g) end();
-      else if (state.phase === 'pressed') release(doc, owner);
-      state = IDLE;
-      pressedEl = null;
-      settle();
+      else reset();
     },
   };
 }
@@ -267,6 +281,7 @@ function createController(root, def, host, env) {
  */
 function restoreFocus(root, def, run, to) {
   const find = () => {
+    if (!root.isConnected) return;
     let scope = null;
     if (run.sourceId !== null) {
       scope = [...root.querySelectorAll('[data-id]')].find((n) => n.dataset.id === run.sourceId) ?? null;

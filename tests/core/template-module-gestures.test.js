@@ -77,6 +77,8 @@ async function mount(saved = { x: 0 }) {
 
 const altRight = (c) => c.querySelector('.gt-h').dispatchEvent(
   new KeyboardEvent('keydown', { key: 'ArrowRight', altKey: true, bubbles: true, cancelable: true }));
+const space = (c) => c.querySelector('.gt-h').dispatchEvent(
+  new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true }));
 const executed = (events) => events.filter(([n]) => n === 'command:executed');
 
 suite('createModule mit gestures', () => {
@@ -129,6 +131,37 @@ suite('createModule mit gestures', () => {
     assertEqual(notes[0][1], 'error');
     assertTrue(/invalid x 4/.test(notes[0][0]), notes[0][0]);
     assertEqual(container.querySelector('.gt-x').textContent, '3');
+  });
+
+  test('laufende Tastaturaufnahme: onLanguageChange bricht sie ab, die nächste Geste läuft', async () => {
+    const { mod, container, events } = await mount();
+    space(container);
+    assertTrue(container.querySelector('[data-dragging]') !== null, 'aufgenommen');
+    mod.onLanguageChange();
+    altRight(container);
+    await flush();
+    assertEqual(executed(events).length, 1);
+    assertEqual(container.querySelector('.gt-x').textContent, '1');
+  });
+
+  test('laufende Tastaturaufnahme: setState bricht sie ab, die nächste Geste läuft', async () => {
+    const { mod, container, events } = await mount();
+    space(container);
+    mod.setState({ x: 2 });
+    assertTrue(!container.querySelector('[data-dragging]'), 'nichts mehr aufgenommen');
+    altRight(container);
+    await flush();
+    // Der Fake-stateManager verwirft setModuleState; der Neuaufbau liest x = 0.
+    assertEqual(executed(events).length, 1);
+    assertEqual(container.querySelector('.gt-x').textContent, '1');
+  });
+
+  test('gestures verlangen die Alpine-Engine', () => {
+    assertThrows(() => createModule({
+      config: { id: 'gesture-plain', phase: 'define' },
+      Model: Counter,
+      gestures: [stepRight],
+    }), /createModule gesture-plain: gestures require the Alpine engine/);
   });
 
   test('gestures nimmt nur defineGesture-Ergebnisse', () => {

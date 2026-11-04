@@ -89,6 +89,7 @@ export function createModule(base) {
     if (!isGesture(g)) throw new Error(`createModule ${id}: gestures[${i}] is not a defineGesture result`);
   });
   const alpine = descriptor ? true : config.engine === 'alpine';
+  if (gestures.length > 0 && !alpine) throw new Error(`createModule ${id}: gestures require the Alpine engine`);
   const placement = descriptor
     ? { engine: 'alpine', ...Object.fromEntries(FROM_DESCRIPTOR.filter((k) => descriptor[k] !== undefined).map((k) => [k, descriptor[k]])) }
     : {};
@@ -256,7 +257,8 @@ export function createModule(base) {
         container.replaceChildren(...cloneForInstance(uniqueName));
         Alpine.initTree(container);
         // Gesten hängen am Container (Delegation) und überleben Sprachwechsel
-        // und setState; das Viewmodel wird je Geste frisch aufgelöst.
+        // und setState (die eine laufende Geste abbrechen); das Viewmodel wird
+        // je Geste frisch aufgelöst.
         module._gestureDetach.forEach((detach) => detach());
         const currentVm = () => Alpine.$data(container.querySelector('[x-data]'));
         const gestureEnv = {
@@ -298,6 +300,8 @@ export function createModule(base) {
 
     onLanguageChange() {
       if (alpine) {
+        // Eine laufende Geste verlöre mit dem DOM ihren Griff und hielte die Sperre.
+        this._gestureDetach.forEach((detach) => detach.cancel());
         Alpine.destroyTree(this._container);
         this._container.replaceChildren(...cloneForInstance(this._alpineName));
         Alpine.initTree(this._container);
@@ -350,6 +354,7 @@ export function createModule(base) {
           }
           return;
         }
+        this._gestureDetach.forEach((detach) => detach.cancel());
         Alpine.destroyTree(this._container);
         this._container.replaceChildren(...cloneForInstance(this._alpineName));
         Alpine.initTree(this._container);

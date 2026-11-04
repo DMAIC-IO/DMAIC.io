@@ -314,3 +314,46 @@ suite('interaction/attach — Zeiger', () => {
     assertEqual(moves.length, 1, 'nach dem Ende kein Move mehr');
   });
 });
+
+suite('interaction/attach — Fehler im Callback', () => {
+  afterEach(() => { while (cleanup.length) cleanup.pop()(); });
+
+  test('wirft start an der Schwelle: Sperre frei, Rest der Geste still, zweite Geste läuft', () => {
+    const root = document.createElement('div');
+    root.style.cssText = 'position:fixed;left:400px;top:0;';
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'bad';
+    b.style.cssText = 'width:40px;height:20px;';
+    root.append(b);
+    document.body.append(root);
+    const def = defineGesture({
+      kind: 'move', handle: '.bad',
+      start() { throw new Error('start kaputt'); },
+      locate: () => null, step: () => null, preview() {}, toCommand: () => ['x', {}],
+    });
+    const detach = attachGesture(root, def, {}, { execute() {} });
+    cleanup.push(() => { detach(); root.remove(); });
+    const errors = [];
+    const onError = (e) => { errors.push(e.message); e.preventDefault(); };
+    window.addEventListener('error', onError);
+    try {
+      drag(b, 410, 10, 410, 50);
+    } finally {
+      window.removeEventListener('error', onError);
+    }
+    assertDeepEqual(errors.map((m) => m.replace(/^Uncaught (Error: )?/, '')), ['start kaputt']);
+    const { calls, btn } = setup();
+    drag(btn('x'), 50, 10, 50, 45);
+    assertEqual(calls.length, 1);
+  });
+
+  test('detach gibt die Sperre immer frei', () => {
+    const one = setup();
+    pointer(one.btn('x'), 'pointerdown', 50, 10);
+    one.detach();
+    const two = setup({ left: 300 });
+    drag(two.btn('x'), 350, 10, 350, 45);
+    assertEqual(two.calls.length, 1);
+  });
+});

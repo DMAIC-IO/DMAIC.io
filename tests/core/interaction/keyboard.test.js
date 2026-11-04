@@ -176,6 +176,16 @@ suite('interaction/keyboard — Ein-Schritt-Kürzel', () => {
     assertEqual(calls.length, 0);
   });
 
+  test('Alt+Pfeil im Aufnahme-Modus: preventDefault, kein Schritt, kein Kommando', () => {
+    const { host, calls, btn } = setup();
+    key(btn('x'), ' ');
+    const n = host.previews.length;
+    const e = key(btn('x'), 'ArrowLeft', { altKey: true });
+    assertTrue(e.defaultPrevented);
+    assertEqual(host.previews.length, n);
+    assertEqual(calls.length, 0);
+  });
+
   test('Alt+→ → Nachbargruppe', () => {
     const { calls, btn } = setup();
     key(btn('x'), 'ArrowRight', { altKey: true });
@@ -225,7 +235,7 @@ suite('interaction/keyboard — Ein-Schritt-Kürzel', () => {
     cleanup.push(() => { detach(); root.remove(); });
     const startEdge = root.querySelector('[data-edge="start"]');
     const plain = key(startEdge, 'ArrowDown', { altKey: true });
-    assertTrue(!plain.defaultPrevented);
+    assertTrue(plain.defaultPrevented, 'Alt+Pfeil ohne Shift: kein Kommando, aber preventDefault');
     assertEqual(calls.length, 0);
     key(startEdge, 'ArrowDown', { altKey: true, shiftKey: true });
     assertDeepEqual(calls, [['updateBlock', { id: 'k', start: 0, end: 60, edge: 'end' }]]);
@@ -307,5 +317,54 @@ suite('interaction/keyboard — Esc bei Zeiger-Gesten (Ende zu Ende)', () => {
     assertTrue(!root.querySelector('[data-dragging]'));
     key(btn('y'), ' ');
     assertEqual(root.querySelector('[data-id="y"]').getAttribute('data-dragging'), 'reorder');
+  });
+});
+
+/** Fehler aus Listenern abfangen (sonst landen sie unbehandelt auf window). */
+function catchErrors(fn) {
+  const errors = [];
+  const onError = (e) => { errors.push(e.message); e.preventDefault(); };
+  window.addEventListener('error', onError);
+  try { fn(); } finally { window.removeEventListener('error', onError); }
+  return errors;
+}
+
+suite('interaction/keyboard — Fehler im Callback', () => {
+  afterEach(() => { while (cleanup.length) cleanup.pop()(); });
+
+  test('wirft start bei der Aufnahme: Fehler sichtbar, Sperre frei, zweite Geste läuft', () => {
+    const root = document.createElement('div');
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'bad';
+    root.append(b);
+    document.body.append(root);
+    const def = defineGesture({
+      kind: 'move', handle: '.bad',
+      start() { throw new Error('start kaputt'); },
+      locate: () => null, step: () => null, preview() {}, toCommand: () => ['x', {}],
+    });
+    const detach = attachGesture(root, def, {}, { execute() {}, t: tt });
+    cleanup.push(() => { detach(); root.remove(); });
+    const errors = catchErrors(() => key(b, ' '));
+    assertDeepEqual(errors.map((m) => m.replace(/^Uncaught (Error: )?/, '')), ['start kaputt']);
+    assertTrue(!root.querySelector('[data-dragging]'));
+    const { root: other, btn } = setup();
+    key(btn('x'), ' ');
+    assertEqual(other.querySelector('[data-id="x"]').getAttribute('data-dragging'), 'reorder');
+  });
+
+  test('ein verlorenes keyup verschluckt keinen späteren Tastendruck', () => {
+    const { root, btn } = setup();
+    const extra = document.createElement('button');
+    extra.type = 'button';
+    root.append(extra);
+    key(btn('x'), ' ');
+    key(btn('x'), 'Escape');
+    // Das keyup der Leertaste kam nie an; Enter an einem anderen Knopf bleibt unberührt.
+    key(extra, 'Enter');
+    const up = new KeyboardEvent('keyup', { key: 'Enter', bubbles: true, cancelable: true });
+    extra.dispatchEvent(up);
+    assertTrue(!up.defaultPrevented);
   });
 });
