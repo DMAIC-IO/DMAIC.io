@@ -329,7 +329,8 @@ export function checkSchemaLiteral(text) {
     }
     const decl = ts.isVariableStatement(st) ? st.declarationList : null;
     if (decl && (decl.flags & ts.NodeFlags.Const)) {
-      for (const d of decl.declarations) if (ts.isIdentifier(d.name) && d.initializer && !ts.isCallExpression(d.initializer)) consts.add(d.name.text);
+      for (const d of decl.declarations) if (ts.isIdentifier(d.name) && d.initializer && !ts.isCallExpression(d.initializer)
+          && !ts.isArrowFunction(d.initializer) && !ts.isFunctionExpression(d.initializer) && !ts.isClassExpression(d.initializer)) consts.add(d.name.text);
     }
   }
   const calls = [];
@@ -522,12 +523,13 @@ const at = (obj, path) => path.split('.').reduce((o, k) => (o && typeof o === 'o
  * Parameter, in de und en (der Teilbaum steht ohne das Präfix `modules.<id>`).
  * @param {{ fields: object, commands: object }} schema
  * @param {{ de: object|null, en: object|null }} help
+ * @param {Record<string, { params?: object }>} [viewmodelCommands] Kommandos aus `createModule({ commands })`
  * @returns {string[]}
  */
-export function checkContextHelp(schema, help) {
+export function checkContextHelp(schema, help, viewmodelCommands = {}) {
   const keys = [
     ...Object.keys(schema.fields).map((f) => `fields.${f}.help`),
-    ...Object.entries(schema.commands).flatMap(([c, def]) => [
+    ...Object.entries({ ...schema.commands, ...viewmodelCommands }).flatMap(([c, def]) => [
       `actions.${c}.help`,
       ...Object.keys(def.params ?? {}).map((p) => `actions.${c}.params.${p}`),
     ]),
@@ -541,6 +543,40 @@ export function checkContextHelp(schema, help) {
       if (typeof v !== 'string' || v.trim() === '') out.push(`help: ${file}: ${k} fehlt`);
     }
   }
+  return out;
+}
+
+/**
+ * Viewmodel-Kommandos aus `commands: { name: command({ params: { … } }) }`
+ * in viewmodel/viewmodel.js, ohne das Viewmodel zu laden (es hängt an
+ * Alpine und DOM). Was kein erkennbares Literal ist, bleibt außen vor.
+ * @param {string} text Inhalt von viewmodel/viewmodel.js
+ * @returns {Record<string, { params: Record<string, true> }>}
+ */
+export function readViewmodelCommands(text) {
+  const sf = parseJs('viewmodel.js', text);
+  const key = (p) => (p.name && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? p.name.text : null);
+  const prop = (obj, name) => obj.properties.find((p) => ts.isPropertyAssignment(p) && key(p) === name)?.initializer;
+  const out = {};
+  const visit = (n) => {
+    const block = ts.isPropertyAssignment(n) && key(n) === 'commands' && ts.isObjectLiteralExpression(n.initializer) ? n.initializer : null;
+    if (block) {
+      for (const p of block.properties) {
+        const name = ts.isPropertyAssignment(p) ? key(p) : null;
+        const call = ts.isPropertyAssignment(p) ? p.initializer : null;
+        if (!name || !ts.isCallExpression(call) || !ts.isIdentifier(call.expression) || call.expression.text !== 'command') continue;
+        const arg = call.arguments[0];
+        const params = arg && ts.isObjectLiteralExpression(arg) ? prop(arg, 'params') : null;
+        out[name] = { params: {} };
+        if (params && ts.isObjectLiteralExpression(params)) {
+          for (const q of params.properties) { const k = ts.isPropertyAssignment(q) || ts.isShorthandPropertyAssignment(q) ? key(q) : null; if (k) out[name].params[k] = true; }
+        }
+      }
+      return;
+    }
+    ts.forEachChild(n, visit);
+  };
+  visit(sf);
   return out;
 }
 
@@ -585,10 +621,11 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
       out.push(...checkSchemaPaths(schema));
       const views = paths.filter((p) => p === 'resources/view.html' || /^resources\/[^/]+\.part\.html$/.test(p)).map(read);
       out.push(...checkTemplateBindings(views, schema));
+      const vmFile = join(base, 'viewmodel', 'viewmodel.js');
       out.push(...checkContextHelp(schema, {
         de: readJson(join(base, 'resources', 'i18n', 'context-help.de.json')),
         en: readJson(join(base, 'resources', 'i18n', 'context-help.en.json')),
-      }));
+      }, existsSync(vmFile) ? readViewmodelCommands(readFileSync(vmFile, 'utf8')) : {}));
     }
   }
   return out;

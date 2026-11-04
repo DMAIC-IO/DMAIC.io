@@ -54,3 +54,27 @@ test('typecheck: module.js wird gegen ModuleDescriptor geprüft', () => {
 test('echter Baum: Kerndateien ohne Befund', () => {
   assert.deepEqual(typecheck(TYPED_CORE.map((f) => join(APP_DIR, f))), []);
 });
+
+test('typecheck: run-Methode eines Kommandos darf this.<Feld> lesen', () => {
+  const up = '@/'.replace('@/', '../../../');
+  const root = appWith({
+    'js/modules/neu/domain/model.js': `import { defineModel, command, text, boolean } from '${up}core/model.js';
+export const State = defineModel({
+  fields: { title: text() },
+  commands: {
+    rename: command({ params: { title: text() }, returns: boolean(), run({ title }) { this.title = title; return this.title === title; } }),
+  },
+});
+`,
+  });
+  mkdirSync(join(root, 'js', 'core'), { recursive: true });
+  for (const f of ['model.js', 'validate.js']) copyFileSync(join(APP_DIR, 'js', 'core', f), join(root, 'js', 'core', f));
+  const findings = typecheck([join(root, 'js', 'modules', 'neu', 'domain', 'model.js')]);
+  assert.deepEqual(findings, []);
+});
+
+test('typecheck: Diagnose ohne Datei (fehlende Lib) wird gemeldet', () => {
+  const root = appWith({ 'main.js': 'export const a = 1;\n' });
+  const findings = typecheck([join(root, 'main.js')], { lib: ['lib.gibtesnicht.d.ts'] });
+  assert.ok(findings.some((f) => /^typecheck: TS\d+: /.test(f)), findings.join('\n'));
+});

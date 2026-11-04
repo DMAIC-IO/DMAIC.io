@@ -55,8 +55,8 @@ export const object = (shape, opts) => spec('object', { shape: Object.freeze({ .
  * `run` bekommt die geprüften Parameter als ein Objekt; `this` ist das
  * reaktive Model (bzw. das Viewmodel bei Viewmodel-Kommandos) — darum keine
  * Pfeilfunktion.
- * @param {{ params?: Record<string, object>, returns?: object|null, run: Function }} def
- * @returns {Readonly<{ params: Record<string, object>, returns: object|null, run: Function }>}
+ * @param {{ params?: Record<string, object>, returns?: object|null, run: (this: any, args: any) => any }} def
+ * @returns {Readonly<{ params: Record<string, object>, returns: object|null, run: (this: any, args: any) => any }>}
  */
 export function command(def) {
   if (typeof def?.run !== 'function') throw new Error('command: run must be a function');

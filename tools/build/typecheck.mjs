@@ -48,14 +48,16 @@ export function typecheckFiles(appDir, converted = CONVERTED_MODULES) {
 /**
  * Typbefunde, nur für `files`.
  * @param {string[]} files absolute Pfade
+ * @param {object} [extraOptions] zusätzliche Compiler-Optionen (Tests)
  * @returns {string[]} `<pfad>(<zeile>,<spalte>): TS<code>: <text>`
  */
-export function typecheck(files) {
+export function typecheck(files, extraOptions = {}) {
   const wanted = new Set(files.map((f) => resolve(f)));
-  const program = ts.createProgram(files, OPTIONS);
+  const program = ts.createProgram(files, { ...OPTIONS, ...extraOptions });
   return ts.getPreEmitDiagnostics(program)
-    .filter((d) => d.file && wanted.has(resolve(d.file.fileName)))
+    .filter((d) => !d.file || wanted.has(resolve(d.file.fileName)))
     .map((d) => {
+      if (!d.file) return `typecheck: TS${d.code}: ${ts.flattenDiagnosticMessageText(d.messageText, ' ')}`;
       const { line, character } = d.file.getLineAndCharacterOfPosition(d.start ?? 0);
       const text = ts.flattenDiagnosticMessageText(d.messageText, ' ');
       return `${relative(process.cwd(), d.file.fileName)}(${line + 1},${character + 1}): TS${d.code}: ${text}`;

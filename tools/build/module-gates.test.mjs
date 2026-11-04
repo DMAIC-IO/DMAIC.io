@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkContextHelp, checkConvertedModule } from './module-gates.mjs';
+import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkContextHelp, readViewmodelCommands, checkConvertedModule } from './module-gates.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { APP_DIR } from './build.mjs';
 import { defineModel, command, text, number, oneOf, index, idOf, list, record, object, boolean } from '../../js/core/model.js';
@@ -425,3 +425,56 @@ for (const id of CONVERTED_MODULES) {
     assert.deepEqual(await checkConvertedModule(APP_DIR, id), []);
   });
 }
+
+test('Schema-Literal: Konstante mit Funktions- oder Klasseninitialisierer ist keine Konstante', () => {
+  const src = `${MODEL_IMPORT}const f = (v) => v;
+const g = function (v) { return v; };
+const K = class {};
+export const State = defineModel({
+  fields: { a: number({ validate: f }), b: number({ validate: g }), c: number({ validate: K }) },
+});
+`.replaceAll('@/', ['..', '..', '..', ''].join('/'));
+  assert.deepEqual(checkSchemaLiteral(src), [
+    `${P} Bezeichner f ist keine Konstante dieser Datei`,
+    `${P} Bezeichner g ist keine Konstante dieser Datei`,
+    `${P} Bezeichner K ist keine Konstante dieser Datei`,
+  ]);
+});
+
+const VM_WITH_COMMANDS = `import { createModule } from '@/core/template-module.js';
+import { command, text } from '@/core/model.js';
+export default createModule({
+  id: 'neu',
+  commands: {
+    openDialog: command({ params: { title: text(), 'mode': text() }, run() { return true; } }),
+    close: command({ run() { return true; } }),
+    dyn: makeCommand(),
+  },
+});
+`.replaceAll('@/', ['..', '..', '..', ''].join('/'));
+
+test('readViewmodelCommands: Kommandos und Parameter aus dem Literal, Unerkennbares übersprungen', () => {
+  assert.deepEqual(readViewmodelCommands(VM_WITH_COMMANDS), { openDialog: { params: { title: true, mode: true } }, close: { params: {} } });
+  assert.deepEqual(readViewmodelCommands('export default { show() {} };\n'), {});
+  assert.deepEqual(readViewmodelCommands('export default createModule({ commands: shared });\n'), {});
+});
+
+test('Hilfe: Viewmodel-Kommandos brauchen Hilfetexte', () => {
+  const schema = { fields: {}, commands: {} };
+  const vm = readViewmodelCommands(VM_WITH_COMMANDS);
+  const ok = { actions: { openDialog: { help: 'O', params: { title: 't', mode: 'm' } }, close: { help: 'C' } } };
+  assert.deepEqual(checkContextHelp(schema, { de: ok, en: ok }, vm), []);
+  assert.deepEqual(checkContextHelp(schema, { de: { actions: { close: { help: 'C' } } }, en: ok }, vm), [
+    'help: resources/i18n/context-help.de.json: actions.openDialog.help fehlt',
+    'help: resources/i18n/context-help.de.json: actions.openDialog.params.title fehlt',
+    'help: resources/i18n/context-help.de.json: actions.openDialog.params.mode fehlt',
+  ]);
+});
+
+test('checkConvertedModule: Viewmodel-Kommando ohne Hilfetext wird gemeldet', async () => {
+  const vm = "export default { commands: { open: command({ params: { x: text() }, run() {} }) } };\n";
+  const root = convertedFixture({ 'js/modules/neu/viewmodel/viewmodel.js': vm });
+  const findings = await checkConvertedModule(root, 'neu');
+  assert.ok(findings.includes('help: resources/i18n/context-help.de.json: actions.open.help fehlt'), findings.join('\n'));
+  assert.ok(findings.includes('help: resources/i18n/context-help.en.json: actions.open.params.x fehlt'), findings.join('\n'));
+});
