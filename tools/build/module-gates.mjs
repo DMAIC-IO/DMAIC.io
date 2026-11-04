@@ -1,7 +1,7 @@
 /**
  * D.Mike — Gates der umgestellten Module (module-gates.mjs)
  *
- * Spec 2026-11-03 §11: Struktur, Beschreibung, `uses`, Layer, Schema,
+ * Geprüft werden: Struktur, Beschreibung, `uses`, Layer, Schema,
  * Template ↔ Schema, Schreibweg, Hilfe. Gilt NUR für Module in
  * `CONVERTED_MODULES` (converted-modules.mjs); `module-gates.test.mjs` führt
  * sie unter `npm run test:build` aus.
@@ -44,7 +44,7 @@ const RESOURCE_TOP = /^(view\.html|[a-z0-9-]+\.part\.html|style\.css|tile(\.[a-z
 const I18N_FILE = /^(ui|help|context-help)\.(de|en)\.json$/;
 
 /**
- * Gate Struktur (§4, D2).
+ * Gate Struktur.
  * @param {string} id @param {string[]} paths aus listModuleFiles
  * @returns {string[]}
  */
@@ -65,7 +65,7 @@ export function checkStructure(id, paths) {
       continue;
     }
     if (parts[1] !== 'examples' && (name === 'index.js' || name.startsWith(`${id}.`) || name.startsWith(`${id}-`))) {
-      bad('Dateiname nach Rolle, ohne Modulnamen und ohne index (D2)');
+      bad('Dateiname nach Rolle, ohne Modulnamen und ohne index');
     }
     if (top === 'resources') {
       if (parts.length === 2) {
@@ -175,7 +175,7 @@ export function parseDescriptor(text) {
 const strings = (v) => (Array.isArray(v) ? v.filter((x) => typeof x === 'string') : []);
 
 /**
- * Gate Beschreibung (§5).
+ * Gate Beschreibung.
  * @param {string} id
  * @param {string} text Inhalt von module.js
  * @param {{ moduleIds: string[], exampleIds: string[], paths: string[] }} ctx
@@ -202,8 +202,8 @@ export function checkDescriptor(id, text, { moduleIds, exampleIds, paths }) {
 }
 
 /**
- * Ids aller Beispiele (vorerst aus examples/index.json; Teilprojekt A stellt
- * auf den Katalog um).
+ * Ids aller Beispiele (vorerst aus examples/index.json; später
+ * aus dem Beispielkatalog).
  * @param {string} appDir @returns {string[]}
  */
 export function readExampleIds(appDir) {

@@ -1,5 +1,5 @@
 /**
- * Die umgestellten Module (Spec 2026-11-03 §11, Teilprojekt D).
+ * Die umgestellten Module (Gates in module-gates.mjs).
  *
  * `CONVERTED_MODULES` ist die EINE Liste der Module in der neuen Form
  * (`module.js`, `domain/`, `viewmodel/`, `resources/`, deklaratives Model).

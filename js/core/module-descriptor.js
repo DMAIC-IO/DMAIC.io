@@ -1,7 +1,7 @@
 /**
  * D.Mike — Modulbeschreibung (module-descriptor.js)
  *
- * Der Vertrag von `js/modules/<id>/module.js` (Spec 2026-11-03 §5) — nur
+ * Der Vertrag von `js/modules/<id>/module.js` — nur
  * Kommentare, kein Laufzeitcode. Jede `module.js` trägt
  * `@type {import('../../core/module-descriptor.js').ModuleDescriptor}`;
  * `tools/build/typecheck.mjs` prüft sie dagegen, `tools/build/module-gates.mjs`
@@ -22,8 +22,8 @@
  * @property {string[]} [allowedPhases]  Altlast neben `cycles`, unverändert übernommen
  * @property {boolean} [singleton]  höchstens eine Instanz je Projekt
  * @property {boolean} [hiddenFromMenu]  nicht im Phasenmenü
- * @property {string[]} [uses]  weiche Abhängigkeiten: nur Vorladen und Build-Prüfung (D15)
- * @property {string[]} [exampleRefs]  Beispiele anderer Module (D16)
+ * @property {string[]} [uses]  weiche Abhängigkeiten: nur Vorladen und Build-Prüfung
+ * @property {string[]} [exampleRefs]  Beispiele anderer Module
  * @property {() => Promise<{ default: object }>} load  `() => import('./viewmodel/viewmodel.js')`
  * @property {() => Promise<{ default: object }>} [tile]  `() => import('./tile/tile.js')`
  */
