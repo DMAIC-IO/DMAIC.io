@@ -583,6 +583,41 @@ export function readViewmodelCommands(text) {
 /** @param {string} file @returns {object|null} */
 const readJson = (file) => (existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null);
 
+/** Blatt-Schlüsselpfade eines JSON-Baums (`a.b.c`). */
+function leafPaths(v, at = '', acc = new Set()) {
+  if (v && typeof v === 'object' && !Array.isArray(v)) {
+    for (const [k, x] of Object.entries(v)) leafPaths(x, at ? `${at}.${k}` : k, acc);
+  } else if (at) acc.add(at);
+  return acc;
+}
+
+/**
+ * ui-Texte: de und en müssen dieselben Blatt-Schlüssel haben. ModuleResources
+ * lädt nur die aktive Sprache, der en-Fallback von `I18n.t` greift dort nicht.
+ * @param {string} base Modulordner
+ * @returns {string[]}
+ */
+export function checkUiTexts(base) {
+  const dir = join(base, 'resources', 'i18n');
+  const files = { de: join(dir, 'ui.de.json'), en: join(dir, 'ui.en.json') };
+  if (!existsSync(files.de) && !existsSync(files.en)) return [];
+  const out = [];
+  const keys = {};
+  for (const lang of ['de', 'en']) {
+    if (!existsSync(files[lang])) { out.push(`ui: resources/i18n/ui.${lang}.json fehlt`); continue; }
+    try { keys[lang] = leafPaths(JSON.parse(readFileSync(files[lang], 'utf8'))); }
+    catch (err) { out.push(`ui: resources/i18n/ui.${lang}.json: kein gültiges JSON (${err.message})`); }
+  }
+  if (keys.de && keys.en) {
+    for (const [from, to] of [['de', 'en'], ['en', 'de']]) {
+      for (const k of [...keys[from]].sort()) {
+        if (!keys[to].has(k)) out.push(`ui: resources/i18n/ui.${to}.json: Schlüssel fehlt: ${k}`);
+      }
+    }
+  }
+  return out;
+}
+
 /**
  * Alle Gates für ein umgestelltes Modul.
  * @param {string} appDir
@@ -607,6 +642,7 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
   }
   out.push(...checkLayers(js));
   out.push(...checkWritePath(js));
+  out.push(...checkUiTexts(base));
 
   if (paths.includes('domain/model.js')) {
     const file = join(base, 'domain', 'model.js');

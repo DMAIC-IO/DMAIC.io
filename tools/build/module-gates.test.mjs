@@ -406,6 +406,23 @@ test('checkConvertedModule: Befunde mehrerer Gates gesammelt', async () => {
   assert.ok(!findings.some((f) => f.startsWith('uses:')), 'uses: worksheet ist erklärt');
 });
 
+const UI_FULL = JSON.stringify({ title: 'T', actions: { add: { label: 'A' } } });
+
+test('ui: gleiche Schlüssel in de und en sind grün, ohne ui-Dateien auch', async () => {
+  const ok = convertedFixture({ 'js/modules/neu/resources/i18n/ui.de.json': UI_FULL, 'js/modules/neu/resources/i18n/ui.en.json': UI_FULL });
+  assert.deepEqual(await checkConvertedModule(ok, 'neu'), []);
+});
+
+test('ui: fehlender Schlüssel in jeder Richtung und fehlende Datei', async () => {
+  const less = JSON.stringify({ title: 'T' });
+  const en = convertedFixture({ 'js/modules/neu/resources/i18n/ui.de.json': UI_FULL, 'js/modules/neu/resources/i18n/ui.en.json': less });
+  assert.deepEqual((await checkConvertedModule(en, 'neu')).filter((f) => f.startsWith('ui:')), ['ui: resources/i18n/ui.en.json: Schlüssel fehlt: actions.add.label']);
+  const de = convertedFixture({ 'js/modules/neu/resources/i18n/ui.de.json': less, 'js/modules/neu/resources/i18n/ui.en.json': UI_FULL });
+  assert.deepEqual((await checkConvertedModule(de, 'neu')).filter((f) => f.startsWith('ui:')), ['ui: resources/i18n/ui.de.json: Schlüssel fehlt: actions.add.label']);
+  const gone = convertedFixture({ 'js/modules/neu/resources/i18n/ui.de.json': UI_FULL });
+  assert.deepEqual((await checkConvertedModule(gone, 'neu')).filter((f) => f.startsWith('ui:')), ['ui: resources/i18n/ui.en.json fehlt']);
+});
+
 test('checkConvertedModule: ohne domain/model.js kein Absturz, nur Strukturbefund', async () => {
   const root = appWith({ 'js/modules/neu/module.js': DESCRIPTOR });
   const findings = await checkConvertedModule(root, 'neu', { moduleIds: ['neu', 'worksheet'], exampleIds: ['pizza'] });
