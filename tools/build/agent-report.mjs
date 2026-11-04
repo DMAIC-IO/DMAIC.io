@@ -12,15 +12,43 @@
  *   node tools/build/agent-report.mjs            # Abdeckung + Verstoßübersicht
  *   node tools/build/agent-report.mjs --verbose  # jeden Verstoß einzeln
  */
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { collectAgentData } from './agent-data.mjs';
 import { countAnchorCoverage } from './anchor-coverage.mjs';
 import { explainViolation } from './agent-release.mjs';
 import { APP_DIR } from './build.mjs';
+import { CONVERTED_MODULES } from './converted-modules.mjs';
+import { withoutSchema } from '../../js/core/json-file.js';
 
 const LANGS = ['de', 'en'];
+
+/**
+ * Die Hilfetexte je Sprache, wie die Laufzeit sie sieht: `i18n/<lang>.json`,
+ * dazu je umgestelltem Modul `resources/i18n/ui.<lang>.json` (whenToUse) und
+ * `context-help.<lang>.json` unter `modules.<id>`. Eine fehlende Datei heißt
+ * fehlende Schlüssel — sie zählt als Lücke, nicht als Fehler.
+ * @param {string} appDir
+ * @param {readonly string[]} [converted]
+ * @returns {Record<string, object>} Sprache → Baum
+ */
+export function readHelpTables(appDir, converted = CONVERTED_MODULES) {
+  const tables = {};
+  for (const lang of LANGS) {
+    const table = JSON.parse(readFileSync(join(appDir, 'i18n', `${lang}.json`), 'utf8'));
+    table.modules ??= {};
+    for (const id of converted) {
+      const dir = join(appDir, 'js', 'modules', id, 'resources', 'i18n');
+      const parts = [`ui.${lang}.json`, `context-help.${lang}.json`]
+        .map((f) => join(dir, f)).filter((f) => existsSync(f))
+        .map((f) => withoutSchema(JSON.parse(readFileSync(f, 'utf8'))));
+      table.modules[id] = Object.assign({}, table.modules[id], ...parts);
+    }
+    tables[lang] = table;
+  }
+  return tables;
+}
 
 /**
  * Dotted-Path-Auflösung, die an einem Nicht-Objekt abbricht statt zu raten.
@@ -148,6 +176,7 @@ export function typedefHelpSuffixes(entry) {
  *
  * @param {string} appDir  Wurzel von app/dev
  * @param {Record<string, object>} modules  die Registry-Einträge
+ * @param {readonly string[]} [converted]  umgestellte Module (Texte aus ihren Dateien)
  * @returns {{ actions: {total:number,covered:number}, params: {total:number,covered:number},
  *             keys: {total:number,covered:number},
  *             fields: {total:number,covered:number}, whenToUse: {total:number,covered:number},
@@ -157,11 +186,8 @@ export function typedefHelpSuffixes(entry) {
  *   einmal — die Zahl, die ein Mensch meint, wenn er „wie viele Lücken"
  *   fragt.
  */
-export function countHelpCoverage(appDir, modules) {
-  const tables = {};
-  for (const lang of LANGS) {
-    tables[lang] = JSON.parse(readFileSync(join(appDir, 'i18n', `${lang}.json`), 'utf8'));
-  }
+export function countHelpCoverage(appDir, modules, converted = CONVERTED_MODULES) {
+  const tables = readHelpTables(appDir, converted);
 
   const out = {
     actions: { total: 0, covered: 0 },
@@ -218,10 +244,11 @@ function escapeRegExp(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
  * sieht der Agent im Hilfetext nicht, womit er das Feld bewegt.
  * @param {string} appDir
  * @param {Record<string, object>} modules  Ergebnis von collectAgentData
+ * @param {readonly string[]} [converted]
  * @returns {string[]} je Lücke `<lang>: modules.<id>.fields.<f>.help nennt <aktion> nicht`
  */
-export function viaHelpGaps(appDir, modules) {
-  const tables = Object.fromEntries(LANGS.map(lang => [lang, JSON.parse(readFileSync(join(appDir, 'i18n', `${lang}.json`), 'utf8'))]));
+export function viaHelpGaps(appDir, modules, converted = CONVERTED_MODULES) {
+  const tables = readHelpTables(appDir, converted);
   const out = [];
   for (const [id, entry] of Object.entries(modules)) {
     if (entry.available !== true) continue;

@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { collectAgentData } from './agent-data.mjs';
 import { APP_DIR } from './build.mjs';
-import { viaHelpGaps, fieldsWithoutWritePath, countHelpCoverage, lookup, helpExists, helpKeys, STRUCTURE_JARGON, typedefHelpSuffixes } from './agent-report.mjs';
+import { viaHelpGaps, fieldsWithoutWritePath, countHelpCoverage, lookup, helpExists, helpKeys, STRUCTURE_JARGON, typedefHelpSuffixes, readHelpTables } from './agent-report.mjs';
 
 /** Ein Minimal-App-Verzeichnis mit nur den i18n-Dateien. */
 function i18nFixture(de, en = de) {
@@ -354,4 +354,44 @@ test('viaHelpGaps: Aktionsnamen mit $ oder Punkt brechen den Abgleich nicht', ()
   mkdirSync(join(dir, 'i18n'));
   for (const l of ['de', 'en']) writeFileSync(join(dir, 'i18n', `${l}.json`), JSON.stringify({ modules: { m: { fields: { f: { help: 'mit part.add$x() geht es' } } } } }));
   assert.deepEqual(viaHelpGaps(dir, modules), []);
+});
+
+/** Temp-App mit alter i18n und einem Modul `neu` in neuer Form. */
+function newFormFixture({ ui = true, ctx = true } = {}) {
+  const root = i18nFixture({ modules: { foo: { name: 'Foo' } } });
+  const dir = join(root, 'js', 'modules', 'neu', 'resources', 'i18n');
+  mkdirSync(dir, { recursive: true });
+  for (const lang of ['de', 'en']) {
+    if (ui) writeFileSync(join(dir, `ui.${lang}.json`), JSON.stringify({ $schema: 'x', name: 'Neu', description: 'Kurz', whenToUse: `Wann ${lang}` }));
+    if (ctx) writeFileSync(join(dir, `context-help.${lang}.json`), JSON.stringify({ $schema: 'x', fields: { problem: { help: `Problem ${lang}` } },
+      actions: { read: { help: 'Liest.' }, setProblem: { help: 'Setzt.', params: { text: 'Text.' } } } }));
+  }
+  return root;
+}
+
+const NEU = { neu: { available: true, actions: { read: { params: [] }, setProblem: { params: [{ name: 'text' }] } }, fields: { problem: {} } } };
+
+test('readHelpTables mischt ui und context-help umgestellter Module ein, ohne $schema', () => {
+  const tables = readHelpTables(newFormFixture(), ['neu']);
+  assert.equal(tables.de.modules.neu.whenToUse, 'Wann de');
+  assert.equal(tables.en.modules.neu.fields.problem.help, 'Problem en');
+  assert.equal('$schema' in tables.de.modules.neu, false);
+  assert.equal(tables.de.modules.foo.name, 'Foo', 'alte Form bleibt');
+});
+
+test('countHelpCoverage zählt die Kontexthilfe eines umgestellten Moduls aus seinen Dateien', () => {
+  const out = countHelpCoverage(newFormFixture(), NEU, ['neu']);
+  assert.deepEqual(out.missing, []);
+  assert.deepEqual([out.whenToUse.covered, out.actions.covered, out.params.covered, out.fields.covered], [1, 2, 1, 1]);
+});
+
+test('countHelpCoverage: fehlende context-help-Datei ist eine Lücke, kein Absturz', () => {
+  const out = countHelpCoverage(newFormFixture({ ctx: false }), NEU, ['neu']);
+  assert.equal(out.whenToUse.covered, 1);
+  assert.ok(out.missing.some((m) => m.startsWith('de: modules.neu.fields.problem.help')), out.missing.join('\n'));
+});
+
+test('ohne umgestellte Module: nur i18n/<lang>.json', () => {
+  const out = countHelpCoverage(newFormFixture(), NEU, []);
+  assert.equal(out.whenToUse.covered, 0);
 });

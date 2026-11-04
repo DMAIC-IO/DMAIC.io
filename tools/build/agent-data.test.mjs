@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { collectAgentData, renderAgentRegistryModule, collectDomDetours, CREATING_VOID_EXEMPT,
          readAgentReadTypedef } from './agent-data.mjs';
-import { lookup, helpExists, STRUCTURE_JARGON, typedefHelpSuffixes } from './agent-report.mjs';
+import { readHelpTables, lookup, helpExists, STRUCTURE_JARGON, typedefHelpSuffixes } from './agent-report.mjs';
 import { helpKeysInTemplates, helpKeysInScripts, helpKeysInSharedSources,
   BOUND_HELP_KEY_FAMILIES } from './help-anchors.mjs';
 import ts from 'typescript';
@@ -1466,10 +1466,7 @@ test('i18n-Tor: die geteilte Statistiktabelle liefert ihre Anker-Schlüssel an d
 test('i18n-Tor: jede Aktion, jeder Parameter und jedes Feld eines freigegebenen Moduls hat einen Schlüssel in BEIDEN Sprachdateien', () => {
   const appDir = join(import.meta.dirname, '..', '..');
   const { modules } = collectAgentData(appDir);
-  const trees = {
-    de: JSON.parse(readFileSync(join(appDir, 'i18n', 'de.json'), 'utf8')),
-    en: JSON.parse(readFileSync(join(appDir, 'i18n', 'en.json'), 'utf8')),
-  };
+  const trees = readHelpTables(appDir);
   const released = Object.entries(modules).filter(([, m]) => m.available === true);
   assert.ok(released.length >= 1, 'kein freigegebenes Modul — das Tor prüfte nichts');
 
@@ -1507,10 +1504,7 @@ test('i18n-Tor: jede Aktion, jeder Parameter und jedes Feld eines freigegebenen 
 test('i18n-Tor: jeder Anker-Schlüssel (Vorlage, Modul-JS, geteilter Baustein) löst in BEIDEN Sprachdateien auf', () => {
   const appDir = join(import.meta.dirname, '..', '..');
   const { modules } = collectAgentData(appDir);
-  const trees = {
-    de: JSON.parse(readFileSync(join(appDir, 'i18n', 'de.json'), 'utf8')),
-    en: JSON.parse(readFileSync(join(appDir, 'i18n', 'en.json'), 'utf8')),
-  };
+  const trees = readHelpTables(appDir);
   const broken = [];
   let checked = 0;
   for (const [id, entry] of Object.entries(modules)) {
@@ -1540,10 +1534,7 @@ test('i18n-Tor: ein verankerter Satz (Vorlage, Modul-JS, geteilter Baustein) ent
   // für Menschen geschrieben ist. Die Struktur steht im JSDoc-Typ.
   const appDir = join(import.meta.dirname, '..', '..');
   const { modules } = collectAgentData(appDir);
-  const trees = {
-    de: JSON.parse(readFileSync(join(appDir, 'i18n', 'de.json'), 'utf8')),
-    en: JSON.parse(readFileSync(join(appDir, 'i18n', 'en.json'), 'utf8')),
-  };
+  const trees = readHelpTables(appDir);
   const jargon = [];
   for (const [id, entry] of Object.entries(modules)) {
     if (entry.available !== true) continue;
@@ -1567,10 +1558,7 @@ test('i18n-Tor: ein verankerter Satz (Vorlage, Modul-JS, geteilter Baustein) ent
 
 test('i18n-Tor: jeder zur Laufzeit gebundene Hilfeschlüssel löst in BEIDEN Sprachdateien auf und ist frei von Strukturjargon', async () => {
   const appDir = join(import.meta.dirname, '..', '..');
-  const trees = {
-    de: JSON.parse(readFileSync(join(appDir, 'i18n', 'de.json'), 'utf8')),
-    en: JSON.parse(readFileSync(join(appDir, 'i18n', 'en.json'), 'utf8')),
-  };
+  const trees = readHelpTables(appDir);
   const problems = [];
   let checked = 0;
   for (const { moduleId, keys } of BOUND_HELP_KEY_FAMILIES) {
@@ -1601,10 +1589,7 @@ test('i18n-Tor: jeder zur Laufzeit gebundene Hilfeschlüssel löst in BEIDEN Spr
 test('i18n-Tor: der read-Hilfetext jedes freigegebenen Moduls löst über die dokumentierte Kette auf', () => {
   const appDir = join(import.meta.dirname, '..', '..');
   const { modules } = collectAgentData(appDir);
-  const trees = {
-    de: JSON.parse(readFileSync(join(appDir, 'i18n', 'de.json'), 'utf8')),
-    en: JSON.parse(readFileSync(join(appDir, 'i18n', 'en.json'), 'utf8')),
-  };
+  const trees = readHelpTables(appDir);
   const released = Object.entries(modules).filter(([, m]) => m.available === true);
   assert.ok(released.length >= 2, 'weniger als zwei freigegebene Module');
 

@@ -7,7 +7,7 @@
  * `em-algorithmus`) that were only caught by hand, so an unknown id is a
  * test failure.
  */
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 /** Same id grammar as the renderers (help-renderer, static-handbook inline.mjs). */
@@ -47,7 +47,8 @@ export function findUnknownTerms(ids, refs) {
 
 /**
  * Reads the help sources of the app: all JS below `js/` (module help, algorithm
- * lab, core help) and the glossary term files themselves.
+ * lab, core help), the `help.<lang>.json` files of modules in the new form and
+ * the glossary term files themselves.
  * @param {string} root  app root (the directory holding `js/` and `glossary/`)
  * @returns {Array<{path: string, text: string}>}
  */
@@ -62,6 +63,17 @@ export function readHelpSources(root) {
   };
   walk(join(root, 'js'), (n) => n.endsWith('.js') && !n.includes('.generated.') && !n.includes('.min.'));
   walk(join(root, 'glossary', 'terms'), (n) => n.endsWith('.json'));
+  // Module in neuer Form: Handbuch je Sprache unter resources/i18n/.
+  const modules = join(root, 'js', 'modules');
+  if (existsSync(modules)) {
+    for (const id of readdirSync(modules).sort()) {
+      const dir = join(modules, id, 'resources', 'i18n');
+      if (!existsSync(dir)) continue;
+      for (const name of readdirSync(dir).sort()) {
+        if (/^help\.[a-z]{2}\.json$/.test(name)) files.push({ path: relative(root, join(dir, name)), text: readFileSync(join(dir, name), 'utf8') });
+      }
+    }
+  }
   return files;
 }
 
