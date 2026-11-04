@@ -890,6 +890,15 @@
     "rangeInteger": "ganzzahlig",
     "reorder": "Zeile verschieben",
     "rowMoved": "Zeile verschoben, Position {pos} von {total}",
+    "gesture": {
+      "instructions": "Leertaste oder Enter nimmt auf, Pfeiltasten bewegen, Leertaste oder Enter legt ab, Escape bricht ab. Alt+Pfeil bewegt um einen Schritt.",
+      "picked": "Aufgenommen. {position}",
+      "dropped": "Abgelegt. {position}",
+      "cancelled": "Abgebrochen.",
+      "rejected": "Nicht möglich: {reason}",
+      "position": "Position {pos} von {total}",
+      "positionInGroup": "{group}, Position {pos} von {total}"
+    },
     "confirm": "Bestätigen",
     "cancel": "Abbrechen",
     "save": "Speichern",

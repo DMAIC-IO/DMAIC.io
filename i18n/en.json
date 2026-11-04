@@ -890,6 +890,15 @@
     "rangeInteger": "whole number",
     "reorder": "Reorder row",
     "rowMoved": "Row moved, position {pos} of {total}",
+    "gesture": {
+      "instructions": "Space or Enter picks up, arrow keys move, Space or Enter drops, Escape cancels. Alt+Arrow moves one step.",
+      "picked": "Picked up. {position}",
+      "dropped": "Dropped. {position}",
+      "cancelled": "Cancelled.",
+      "rejected": "Not possible: {reason}",
+      "position": "Position {pos} of {total}",
+      "positionInGroup": "{group}, position {pos} of {total}"
+    },
     "confirm": "Confirm",
     "cancel": "Cancel",
     "save": "Save",

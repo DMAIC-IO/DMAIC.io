@@ -131,6 +131,7 @@ const SKIP = new Set([
   'core/template-module-imagepaths.test.js',
   'core/template-module-route.test.js',
   'core/template-module-descriptor.test.js',
+  'core/interaction/announce.test.js',
   'core/interaction/reorder.test.js',
   'core/template-module-schema.test.js',
   'core/template-module.test.js',

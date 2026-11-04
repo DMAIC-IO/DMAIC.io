@@ -1,4 +1,5 @@
 import { listIndexAt } from '../core/interaction/helpers.js';
+import { announce } from '../core/interaction/announce.js';
 
 /**
  * Alpine data-mixin for HTML5 drag-and-drop **reordering** of items that live
@@ -165,22 +166,6 @@ function releaseDisarm(doc) {
   if (armRegistry.refs > 0 || !armRegistry.handler) return;
   doc.removeEventListener('mouseup', armRegistry.handler);
   armRegistry.handler = null;
-}
-
-/** Lazily created, shared aria-live region for keyboard reorder feedback. */
-function announce(doc, message) {
-  let region = doc.getElementById('dmike-live-region');
-  if (!region) {
-    region = doc.createElement('div');
-    region.id = 'dmike-live-region';
-    region.className = 'dmike-sr-only';
-    region.setAttribute('aria-live', 'polite');
-    region.setAttribute('role', 'status');
-    doc.body.appendChild(region);
-  }
-  // Re-setting identical text does not re-announce — clear first.
-  region.textContent = '';
-  region.textContent = message;
 }
 
 /**
