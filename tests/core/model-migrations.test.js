@@ -68,6 +68,16 @@ suite('defineModel — Migrationskette', () => {
     assertEqual(m.title, '');
   });
 
+  test('Schritt ohne Objekt als Ergebnis wirft, auch mit repair', () => {
+    const Lost = defineModel({
+      version: '1.0',
+      migrations: { '0→1.0': () => undefined },
+      fields: { items: list(text()) },
+    });
+    assertThrows(() => Lost.fromJSON({ list: ['a'] }), /^invalid migration 0→1\.0 result/);
+    assertThrows(() => Lost.fromJSON({ list: ['a'] }, { repair: true }), /invalid migration 0→1\.0 result/);
+  });
+
   test('kein Objekt → Vorgabewerte, keine Migration', () => {
     assertDeepEqual(Two.fromJSON(null).items, []);
   });

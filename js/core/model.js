@@ -419,6 +419,7 @@ function migrate(json, version, steps) {
   while (v !== version) {
     const { to, fn } = steps.get(v);
     out = fn(cloneJSON(out));
+    requireForm(`migration ${v}→${to} result`, out, isPlainObject(out), 'a plain object');
     v = to;
   }
   return out;
