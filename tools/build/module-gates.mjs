@@ -15,6 +15,7 @@ import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';
 import { parsePath } from '../../js/core/model.js';
+import { loadModelSchema } from './model-types.mjs';
 
 /**
  * Alle Dateien eines Moduls, relativ zum Modulordner, POSIX, sortiert.
@@ -538,6 +539,56 @@ export function checkContextHelp(schema, help) {
     for (const k of keys) {
       const v = at(help[lang], k);
       if (typeof v !== 'string' || v.trim() === '') out.push(`help: ${file}: ${k} fehlt`);
+    }
+  }
+  return out;
+}
+
+/** @param {string} file @returns {object|null} */
+const readJson = (file) => (existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null);
+
+/**
+ * Alle Gates für ein umgestelltes Modul.
+ * @param {string} appDir
+ * @param {string} id
+ * @param {{ moduleIds?: string[], exampleIds?: string[] }} [ctx] Vorgabe: aus dem Baum
+ * @returns {Promise<string[]>}
+ */
+export async function checkConvertedModule(appDir, id, ctx = {}) {
+  const base = join(appDir, 'js', 'modules', id);
+  const moduleIds = ctx.moduleIds ?? readdirSync(join(appDir, 'js', 'modules')).filter((d) => statSync(join(appDir, 'js', 'modules', d)).isDirectory());
+  const exampleIds = ctx.exampleIds ?? readExampleIds(appDir);
+  const paths = listModuleFiles(appDir, id);
+  const read = (p) => ({ path: p, text: readFileSync(join(base, p), 'utf8') });
+  const js = paths.filter((p) => p.endsWith('.js') && p !== 'domain/model.types.js').map(read);
+  const out = [...checkStructure(id, paths)];
+
+  if (paths.includes('module.js')) {
+    const text = readFileSync(join(base, 'module.js'), 'utf8');
+    out.push(...checkDescriptor(id, text, { moduleIds, exampleIds, paths }));
+    const uses = parseDescriptor(text).fields.get('uses');
+    out.push(...checkUses(js.filter((f) => f.path !== 'module.js'), Array.isArray(uses) ? uses : []));
+  }
+  out.push(...checkLayers(js));
+  out.push(...checkWritePath(js));
+
+  if (paths.includes('domain/model.js')) {
+    const file = join(base, 'domain', 'model.js');
+    out.push(...checkSchemaLiteral(readFileSync(file, 'utf8')));
+    let schema = null;
+    try {
+      ({ schema } = await loadModelSchema(file));
+    } catch (err) {
+      out.push(`schema: domain/model.js: lässt sich nicht laden (${err.message})`);
+    }
+    if (schema) {
+      out.push(...checkSchemaPaths(schema));
+      const views = paths.filter((p) => p === 'resources/view.html' || /^resources\/[^/]+\.part\.html$/.test(p)).map(read);
+      out.push(...checkTemplateBindings(views, schema));
+      out.push(...checkContextHelp(schema, {
+        de: readJson(join(base, 'resources', 'i18n', 'context-help.de.json')),
+        en: readJson(join(base, 'resources', 'i18n', 'context-help.en.json')),
+      }));
     }
   }
   return out;

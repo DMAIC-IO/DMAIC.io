@@ -7,7 +7,9 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkContextHelp } from './module-gates.mjs';
+import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkContextHelp, checkConvertedModule } from './module-gates.mjs';
+import { CONVERTED_MODULES } from './converted-modules.mjs';
+import { APP_DIR } from './build.mjs';
 import { defineModel, command, text, number, oneOf, index, idOf, list, record, object, boolean } from '../../js/core/model.js';
 
 /** Temp-App aus `{ pfad: inhalt }`. */
@@ -359,3 +361,67 @@ test('Hilfe: Kommando ohne Parameter braucht nur den Hilfetext', () => {
   assert.deepEqual(checkContextHelp(schema, { de: ok, en: ok }), []);
   assert.deepEqual(checkContextHelp(schema, { de: {}, en: ok }), ['help: resources/i18n/context-help.de.json: actions.ping.help fehlt']);
 });
+
+const HELP_FULL = JSON.stringify({
+  fields: { title: { help: 'T' }, alpha: { help: 'A' }, columns: { help: 'C' }, mode2: { help: 'M' } },
+  actions: {
+    moveItem: { help: 'Verschieben', params: { from: 'von', idx: 'Index', to: 'nach' } },
+    rename: { help: 'Umbenennen', params: { title: 'Titel' } },
+    move2: { help: 'Zwei' },
+  },
+});
+
+/** Ein vollständig umgestelltes Fixture-Modul `neu`. */
+function convertedFixture(overrides = {}) {
+  return appWith({
+    'examples/index.json': JSON.stringify({ examples: [{ id: 'pizza' }] }),
+    'js/modules/worksheet/worksheet.js': '',
+    'js/modules/neu/module.js': DESCRIPTOR,
+    'js/modules/neu/domain/model.js': GOOD_MODEL,
+    'js/modules/neu/domain/commands/move.js': 'export function moveRun() { return true; }\n',
+    'js/modules/neu/viewmodel/viewmodel.js': "import { pick } from '@/ui/column-picker.js';\nexport default { show() { return this.model.title; } };\n".replaceAll('@/', ['..', '..', '..', ''].join('/')),
+    'js/modules/neu/tile/tile.js': 'export default {};\n',
+    'js/modules/neu/resources/view.html': '<template data-tpl="neu"><input x-model="model.title"><input x-field="model.alpha"></template>',
+    'js/modules/neu/resources/i18n/context-help.de.json': HELP_FULL,
+    'js/modules/neu/resources/i18n/context-help.en.json': HELP_FULL,
+    ...overrides,
+  });
+}
+
+test('checkConvertedModule: vollständiges Fixture-Modul ist grün', async () => {
+  assert.deepEqual(await checkConvertedModule(convertedFixture(), 'neu'), []);
+});
+
+test('checkConvertedModule: Befunde mehrerer Gates gesammelt', async () => {
+  const root = convertedFixture({
+    'js/modules/neu/viewmodel/viewmodel.js': 'export default { set() { this.model.title = 1; } };\n',
+    'js/modules/neu/domain/extra.js': 'export const d = () => document;\n',
+    'js/modules/neu/resources/view.html': '<input x-field="model.title">',
+    'js/modules/neu/resources/i18n/context-help.en.json': '{}',
+  });
+  const findings = await checkConvertedModule(root, 'neu');
+  for (const prefix of ['layer:', 'template:', 'write:', 'help:']) {
+    assert.ok(findings.some((f) => f.startsWith(prefix)), `${prefix} fehlt in:\n${findings.join('\n')}`);
+  }
+  assert.ok(!findings.some((f) => f.startsWith('uses:')), 'uses: worksheet ist erklärt');
+});
+
+test('checkConvertedModule: ohne domain/model.js kein Absturz, nur Strukturbefund', async () => {
+  const root = appWith({ 'js/modules/neu/module.js': DESCRIPTOR });
+  const findings = await checkConvertedModule(root, 'neu', { moduleIds: ['neu', 'worksheet'], exampleIds: ['pizza'] });
+  assert.ok(findings.includes('structure: domain/model.js: fehlt'));
+});
+
+test('checkConvertedModule: nicht ladbares oder schemaloses model.js wird gemeldet', async () => {
+  for (const body of ["import './fehlt.js';\nexport const x = 1;\n", 'export const x = 1;\n']) {
+    const root = convertedFixture({ 'js/modules/neu/domain/model.js': body });
+    const findings = await checkConvertedModule(root, 'neu');
+    assert.ok(findings.some((f) => f.startsWith('schema: domain/model.js: lässt sich nicht laden (')), findings.join('\n'));
+  }
+});
+
+for (const id of CONVERTED_MODULES) {
+  test(`umgestelltes Modul ${id} besteht alle Gates`, async () => {
+    assert.deepEqual(await checkConvertedModule(APP_DIR, id), []);
+  });
+}
