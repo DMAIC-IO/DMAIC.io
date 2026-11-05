@@ -1,0 +1,32 @@
+<template x-if="vm.empty">
+  <p class="dashboard-area__empty" x-text="vm.empty"></p>
+</template>
+<template x-if="vm.filled">
+  <p class="dashboard-sipoc__filled" x-text="vm.filled"></p>
+</template>
+<template x-if="!vm.empty">
+  <div class="dashboard-sipoc__board">
+    <template x-for="col in vm.columns">
+      <section class="dashboard-sipoc__col" :class="col.modifier" :data-col="col.key">
+        <header class="dashboard-sipoc__head">
+          <span class="dashboard-sipoc__letter" x-text="col.letter"></span>
+          <span class="dashboard-sipoc__name" x-text="col.name"></span>
+          <span class="dashboard-sipoc__count" x-text="col.count"></span>
+        </header>
+        <template x-if="col.gap">
+          <p class="dashboard-sipoc__gap">—</p>
+        </template>
+        <template x-if="!col.gap">
+          <ul class="dashboard-sipoc__items">
+            <template x-for="text in col.items">
+              <li class="dashboard-sipoc__item" :title="text" x-text="text"></li>
+            </template>
+          </ul>
+        </template>
+        <template x-if="col.more">
+          <p class="dashboard-sipoc__more" x-text="col.more"></p>
+        </template>
+      </section>
+    </template>
+  </div>
+</template>

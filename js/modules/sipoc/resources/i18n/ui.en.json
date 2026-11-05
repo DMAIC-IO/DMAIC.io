@@ -1,0 +1,30 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "SIPOC",
+  "description": "Supplier-Input-Process-Output-Customer diagram",
+  "whenToUse": "When the boundaries of a process need clarifying — who supplies, what goes in, which steps run, what comes out and who receives it; not for the flow itself with its decisions and branches, which is what a flowchart is for.",
+  "col": {
+    "suppliers": "Suppliers",
+    "inputs": "Inputs",
+    "process": "Process",
+    "outputs": "Outputs",
+    "customers": "Customers"
+  },
+  "colDesc": {
+    "suppliers": "Providers / Sources",
+    "inputs": "Inputs / Resources",
+    "process": "Process Steps",
+    "outputs": "Results / Products",
+    "customers": "Customers / Recipients"
+  },
+  "placeholder": {
+    "suppliers": "Add supplier...",
+    "inputs": "Add input...",
+    "process": "Add step...",
+    "outputs": "Add output...",
+    "customers": "Add customer..."
+  },
+  "processStart": "Process Start",
+  "processEnd": "Process End",
+  "gripLabel": "Move entry"
+}

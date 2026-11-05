@@ -1,0 +1,41 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "columns": {
+      "help": "Je SIPOC-Spalte die Einträge in Anzeigereihenfolge, adressiert als columns[spalte]. Die fünf Spaltenschlüssel sind suppliers (Lieferanten), inputs (Eingaben), process (Prozessschritte), outputs (Ergebnisse) und customers (Kunden)."
+    }
+  },
+  "actions": {
+    "addItem": {
+      "help": "Hängt einen Eintrag an eine der fünf SIPOC-Spalten an und liefert seine Position.",
+      "params": {
+        "col": "Die Spalte: suppliers (Lieferanten), inputs (Eingaben), process (Prozessschritte), outputs (Ergebnisse) oder customers (Kunden). Ein Wert daneben ist ein Fehler.",
+        "text": "Der Eintrag; Leerzeichen am Rand fallen weg. Ein leerer Text ist ein Fehler."
+      }
+    },
+    "setItem": {
+      "help": "Ersetzt den Eintrag an einer Position einer SIPOC-Spalte.",
+      "params": {
+        "col": "Die Spalte: suppliers, inputs, process, outputs oder customers. Ein Wert daneben ist ein Fehler.",
+        "idx": "Die Position des Eintrags in der Spalte, von 0 an gezählt. Eine Position, an der die Spalte keinen Eintrag hat, ist ein Fehler.",
+        "text": "Der neue Eintrag; Leerzeichen am Rand fallen weg. Ein leerer Text ist ein Fehler und lässt den alten Eintrag stehen."
+      }
+    },
+    "removeItem": {
+      "help": "Entfernt den Eintrag an einer Position einer SIPOC-Spalte.",
+      "params": {
+        "col": "Die Spalte: suppliers, inputs, process, outputs oder customers. Ein Wert daneben ist ein Fehler.",
+        "idx": "Die Position des Eintrags in der Spalte, von 0 an gezählt. Eine Position ohne Eintrag ist ein Fehler."
+      }
+    },
+    "moveItem": {
+      "help": "Verschiebt einen Eintrag innerhalb seiner Spalte oder in eine andere Spalte.",
+      "params": {
+        "fromCol": "Die Spalte, aus der der Eintrag kommt: suppliers, inputs, process, outputs oder customers.",
+        "fromIdx": "Die Position des Eintrags in fromCol, von 0 an gezählt. Eine Position ohne Eintrag ist ein Fehler.",
+        "toCol": "Die Spalte, in die der Eintrag soll: suppliers, inputs, process, outputs oder customers.",
+        "toIdx": "Die Position, die der Eintrag NACH dem Verschieben hat, von 0 an gezählt. In derselben Spalte höchstens Länge − 1, in einer anderen höchstens deren Länge (ans Ende)."
+      }
+    }
+  }
+}

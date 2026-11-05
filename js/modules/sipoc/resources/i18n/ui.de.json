@@ -1,0 +1,30 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "SIPOC",
+  "description": "Supplier-Input-Process-Output-Customer Diagramm",
+  "whenToUse": "Wenn die Grenzen eines Prozesses geklärt werden sollen — wer liefert, was geht hinein, welche Schritte laufen, was kommt heraus und wer empfängt es; nicht für den Ablauf selbst mit Entscheidungen und Verzweigungen, dafür ist ein Flussdiagramm da.",
+  "col": {
+    "suppliers": "Suppliers",
+    "inputs": "Inputs",
+    "process": "Process",
+    "outputs": "Outputs",
+    "customers": "Customers"
+  },
+  "colDesc": {
+    "suppliers": "Lieferanten",
+    "inputs": "Eingaben / Ressourcen",
+    "process": "Prozessschritte",
+    "outputs": "Ergebnisse / Produkte",
+    "customers": "Kunden / Empfänger"
+  },
+  "placeholder": {
+    "suppliers": "Lieferant hinzufügen...",
+    "inputs": "Input hinzufügen...",
+    "process": "Schritt hinzufügen...",
+    "outputs": "Output hinzufügen...",
+    "customers": "Kunde hinzufügen..."
+  },
+  "processStart": "Prozessstart",
+  "processEnd": "Prozessende",
+  "gripLabel": "Eintrag verschieben"
+}
