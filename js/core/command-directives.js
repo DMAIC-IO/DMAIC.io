@@ -5,6 +5,7 @@
  * der Oberfläche auslösen, ohne Handler im Viewmodel:
  *
  * - `x-command="cmd"` am Knopf: Klick führt das Kommando aus.
+ * - `x-command-form="cmd"` am `<form>` mit `x-param="name"` an den freien Feldern.
  *
  * Feste Argumente stehen als `data-arg-<kebab>` am Element und werden beim
  * Auslösen gelesen (`data-arg-from-col` → `fromCol`). Liefert `confirm` der
@@ -18,7 +19,10 @@
  * Dialog verschoben wird. CSP-tauglich: kein Ausdruck wird ausgewertet, der
  * Direktivenwert ist ein Name.
  */
-import { commandDefOf, confirmOf, fromAttr } from './model.js';
+import { commandDefOf, confirmOf, fromAttr, currentOf, defaultOf, checkValue, cloneJSON } from './model.js';
+import { requireKnownId } from './validate.js';
+import { applyAttributes, readElement, writeElement, rejectionHint } from './field-directive.js';
+import { clearRejection, markRejection } from './param-input.js';
 
 const registered = new WeakSet();
 /** Formular-Element → Steuerung. */
@@ -101,6 +105,151 @@ function closeDialogAround(el) {
   }
 }
 
+/** Programmierfehler, die nicht als Ablehnung einer Eingabe gelten. */
+const isBug = (err) => err instanceof TypeError || err instanceof ReferenceError || err instanceof SyntaxError;
+
+/**
+ * Die Steuerung eines `<form x-command-form>`: Werte, Startwerte, Absenden,
+ * Markieren. Fest ist ein Parameter mit `data-arg-*`, frei einer mit
+ * `x-param`; mit `data-form` sind die freien Felder die des Formular-Schemas.
+ * @param {any} Alpine @param {HTMLFormElement} formEl @param {string} baseCommand
+ */
+function createFormController(Alpine, formEl, baseCommand) {
+  const ui = () => uiOf(Alpine, formEl, 'x-command-form');
+  const formName = formEl.dataset.form ?? null;
+  const forms = ui().forms ?? {};
+  if (formName !== null) requireKnownId('form', formName, Object.keys(forms));
+  const formDef = formName !== null ? forms[formName] : null;
+  const values = Alpine.reactive({});
+  /** @type {Map<string, { el: HTMLElement, spec: object }>} */
+  const free = new Map();
+  let command = baseCommand;
+  /** @type {{ onSuccess: () => void, onUnchanged: () => void }|null} */
+  let dialog = null;
+  let start = {};
+
+  const params = () => commandDef(ui(), command).params;
+  const fixed = () => readFixedArgs(formEl, params());
+  const specOf = (name) => (formDef ? formDef.schema.fields[name] : params()[name]);
+
+  /**
+   * Jeder Pflicht-Positionsparameter (index/idOf) ist fest — erst dann kann
+   * `current` den Stand lesen. Ein Dialog-Formular vor dem ersten Öffnen ist
+   * es nicht.
+   */
+  const complete = () => {
+    const fx = fixed();
+    return Object.entries(params()).every(([k, s]) => s.optional === true
+      || (s.kind !== 'index' && s.kind !== 'idOf') || Object.hasOwn(fx, k));
+  };
+
+  /** Startwerte: Vorgaben, darüber current, mit Schema über fromParams. */
+  const startValues = (withCurrent) => {
+    const fx = fixed();
+    const ps = params();
+    const p = {};
+    for (const [k, s] of Object.entries(ps)) if (!Object.hasOwn(fx, k)) p[k] = defaultOf(s);
+    Object.assign(p, fx, withCurrent ? currentOf(ui().model, command, fx) : {});
+    if (!formDef) return Object.fromEntries(Object.keys(ps).filter((k) => !Object.hasOwn(fx, k)).map((k) => [k, p[k]]));
+    const mapped = formDef.fromParams(p) ?? {};
+    return Object.fromEntries(Object.entries(formDef.schema.fields)
+      .map(([k, s]) => [k, Object.hasOwn(mapped, k) ? mapped[k] : defaultOf(s)]));
+  };
+
+  const reset = (withCurrent) => {
+    const next = startValues(withCurrent);
+    for (const k of Object.keys(values)) if (!Object.hasOwn(next, k)) delete values[k];
+    Object.assign(values, next);
+    start = cloneJSON(next);
+    for (const [name, { el, spec }] of free) {
+      clearRejection(el);
+      writeElement(el, spec, values[name]);
+    }
+  };
+
+  const reject = (u, error) => {
+    const hit = typeof error?.param === 'string' ? free.get(error.param) : undefined;
+    if (!hit) { u.notify(error?.message ?? String(error), 'error'); return; }
+    markRejection(hit.el, rejectionHint(hit.spec, u.i18n));
+    hit.el.focus();
+  };
+
+  const submit = async () => {
+    const names = [...free.keys()];
+    if (!names.some((k) => JSON.stringify(values[k]) !== JSON.stringify(start[k]))) {
+      dialog?.onUnchanged();
+      return;
+    }
+    const u = ui();
+    const fx = fixed();
+    let args;
+    try {
+      const current = cloneJSON(values);
+      const own = formDef ? formDef.toParams(current, fx) : Object.fromEntries(names.map((k) => [k, current[k]]));
+      args = { ...own, ...fx };
+    } catch (error) {
+      reject(u, error);
+      return;
+    }
+    const r = await runUiCommand(u, command, args);
+    if (r.ok) {
+      if (dialog) dialog.onSuccess();
+      else reset(complete());
+    } else if ('error' in r) {
+      reject(u, r.error);
+    }
+  };
+
+  return {
+    values,
+    formName,
+    get command() { return command; },
+    fixed,
+    specOf,
+    complete,
+    reset,
+    submit,
+    /** @param {string} name @param {HTMLElement} el @param {object} spec */
+    register(name, el, spec) { free.set(name, { el, spec }); },
+    /** @param {string} name */
+    unregister(name) { free.delete(name); },
+    /** @param {string} name @param {string} moduleId @returns {string} */
+    helpKeyOf(name, moduleId) {
+      return formDef && !Object.hasOwn(params(), name)
+        ? `modules.${moduleId}.forms.${formName}.${name}.help`
+        : `modules.${moduleId}.actions.${command}.params.${name}`;
+    },
+    /**
+     * Im Dialog öffnen: Kommando für dieses Öffnen, Startwerte mit current.
+     * @param {{ command?: string, onSuccess: () => void, onUnchanged: () => void }} opts
+     */
+    open({ command: cmd, onSuccess, onUnchanged }) {
+      command = cmd ?? baseCommand;
+      commandDef(ui(), command);
+      const fx = fixed();
+      for (const name of free.keys()) {
+        if (Object.hasOwn(fx, name)) throw new Error(`x-param="${name}": ${name} is also a fixed argument (data-arg-*)`);
+      }
+      dialog = { onSuccess, onUnchanged };
+      reset(true);
+    },
+    /** Nach dem Schließen: Kommando zurück, Markierungen weg. */
+    close() {
+      dialog = null;
+      command = baseCommand;
+      reset(complete());
+    },
+    /** Fokus auf das erste freie Feld, Cursor am Ende. */
+    focusFirst() {
+      const first = [...free.values()].map((f) => f.el)
+        .sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1))[0];
+      if (!first) return;
+      first.focus();
+      if (first.tagName === 'TEXTAREA' || first.type === 'text') first.setSelectionRange(first.value.length, first.value.length);
+    },
+  };
+}
+
 /**
  * Die Direktiven registrieren. Vor `Alpine.start()` aufrufen; je Alpine-Instanz einmal.
  * @param {any} Alpine der Default-Export von csp.js
@@ -127,6 +276,61 @@ export function registerCommandDirectives(Alpine) {
     el.addEventListener('click', onClick);
     cleanup(() => el.removeEventListener('click', onClick));
   });
-}
 
-export { uiOf, commandDef, setHelpKey, closeDialogAround, FORMS, OPEN_DIALOGS };
+  Alpine.directive('command-form', (el, { expression }, { cleanup }) => {
+    if (el.tagName !== 'FORM') throw new Error(`x-command-form must sit on a <form>, got <${el.tagName.toLowerCase()}>`);
+    const name = expression.trim();
+    const ui = uiOf(Alpine, el, 'x-command-form');
+    commandDef(ui, name);
+    const ctl = createFormController(Alpine, el, name);
+    FORMS.set(el, ctl);
+    Alpine.addScopeToNode(el, { form: ctl.values });
+    setHelpKey(el, `modules.${ui.moduleId}.actions.${name}.help`);
+    ctl.reset(ctl.complete());
+    const onSubmit = (e) => { e.preventDefault(); ctl.submit(); };
+    el.addEventListener('submit', onSubmit);
+    cleanup(() => { el.removeEventListener('submit', onSubmit); FORMS.delete(el); });
+  });
+
+  Alpine.directive('param', (el, { expression }, { effect, cleanup }) => {
+    const name = expression.trim();
+    const formEl = el.closest('form');
+    const ctl = formEl ? FORMS.get(formEl) : undefined;
+    if (!ctl) throw new Error(`x-param="${name}" needs an enclosing <form x-command-form>`);
+    const spec = ctl.specOf(name);
+    if (!spec) {
+      throw new Error(`x-param="${name}": ${ctl.formName !== null ? `not a field of ${ctl.formName}` : `not a parameter of ${ctl.command}`}`);
+    }
+    if (Object.hasOwn(ctl.fixed(), name)) throw new Error(`x-param="${name}": ${name} is also a fixed argument (data-arg-*)`);
+    const ui = () => uiOf(Alpine, el, 'x-param');
+    applyAttributes(el, spec);
+    setHelpKey(el, ctl.helpKeyOf(name, ui().moduleId));
+    ctl.register(name, el, spec);
+
+    effect(() => writeElement(el, spec, ctl.values[name]));
+
+    const onInput = () => {
+      ctl.values[name] = readElement(el, spec);
+      clearRejection(el);
+    };
+    const onChange = () => {
+      const raw = readElement(el, spec);
+      ctl.values[name] = raw;
+      try {
+        checkValue(spec, name, raw, { root: ui().model, params: { ...ctl.fixed(), ...cloneJSON(ctl.values) } });
+        clearRejection(el);
+      } catch (err) {
+        if (isBug(err)) throw err;
+        markRejection(el, rejectionHint(spec, ui().i18n));
+      }
+    };
+    const live = el.type !== 'checkbox' && el.tagName !== 'SELECT';
+    if (live) el.addEventListener('input', onInput);
+    el.addEventListener('change', onChange);
+    cleanup(() => {
+      if (live) el.removeEventListener('input', onInput);
+      el.removeEventListener('change', onChange);
+      ctl.unregister(name);
+    });
+  });
+}
