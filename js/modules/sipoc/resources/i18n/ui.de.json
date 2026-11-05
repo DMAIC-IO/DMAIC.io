@@ -26,5 +26,8 @@
   },
   "processStart": "Prozessstart",
   "processEnd": "Prozessende",
-  "gripLabel": "Eintrag verschieben"
+  "gripLabel": "Eintrag verschieben",
+  "tileEmpty": "Das SIPOC ist noch leer.",
+  "tileFilled": "{filled} von {total} Spalten gefüllt",
+  "tileMore": "+ {n} weitere"
 }

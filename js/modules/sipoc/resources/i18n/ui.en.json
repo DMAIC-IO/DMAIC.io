@@ -26,5 +26,8 @@
   },
   "processStart": "Process Start",
   "processEnd": "Process End",
-  "gripLabel": "Move entry"
+  "gripLabel": "Move entry",
+  "tileEmpty": "The SIPOC is still empty.",
+  "tileFilled": "{filled} of {total} columns filled",
+  "tileMore": "+ {n} more"
 }

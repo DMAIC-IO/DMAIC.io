@@ -1385,18 +1385,18 @@ suite('dashboard tiles: sipoc', () => {
   test('empty state for an empty or undefined state', async () => {
     for (const state of [{}, undefined, { columns: { inputs: [] } }]) {
       const host = (await render(sipocTile, state));
-      assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'dashboard.sipocEmpty');
+      assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'modules.sipoc.tileEmpty');
     }
   });
 
   test('a stored state from a newer version shows the empty state instead of throwing', async () => {
     const host = (await render(sipocTile, { _schema: { version: '9.0' }, columns: { inputs: ['Flour'] } }));
-    assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'dashboard.sipocEmpty');
+    assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'modules.sipoc.tileEmpty');
   });
 
   test('a current-version state with a bad entry renders (repaired) instead of throwing', async () => {
     const host = (await render(sipocTile, { _schema: { version: '1.0' }, columns: { inputs: [42], outputs: ['Bread'] } }));
-    assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'dashboard.sipocEmpty');
+    assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'modules.sipoc.tileEmpty');
   });
 
   test('five columns in order with letter, name and count', async () => {
@@ -1412,7 +1412,7 @@ suite('dashboard tiles: sipoc', () => {
     const host = (await render(sipocTile, SIPOC_STATE));
     const inputs = host.querySelector('[data-col="inputs"]');
     assertDeepEqual([...inputs.querySelectorAll('.dashboard-sipoc__item')].map(e => e.textContent), ['Flour', 'Water', 'Yeast']);
-    assertEqual(inputs.querySelector('.dashboard-sipoc__more').textContent, 'dashboard.sipocMore');
+    assertEqual(inputs.querySelector('.dashboard-sipoc__more').textContent, 'modules.sipoc.tileMore');
     assertEqual(host.querySelector('[data-col="process"] .dashboard-sipoc__more'), null);
   });
 
@@ -1434,7 +1434,7 @@ suite('dashboard tiles: sipoc', () => {
     const gaps = [...host.querySelectorAll('.dashboard-sipoc__col--gap')].map(c => c.dataset.col);
     assertDeepEqual(gaps, ['customers']);
     assertEqual(host.querySelector('[data-col="customers"] .dashboard-sipoc__gap').textContent, '—');
-    assertEqual(host.querySelector('.dashboard-sipoc__filled').textContent, 'dashboard.sipocFilled');
+    assertEqual(host.querySelector('.dashboard-sipoc__filled').textContent, 'modules.sipoc.tileFilled');
   });
 
   test('all five filled: no gap, no filled line', async () => {
@@ -1448,9 +1448,9 @@ suite('dashboard tiles: sipoc', () => {
     const vm = vmOf(sipocTile, SIPOC_STATE);
     assertPlain(vm);
     assertEqual(vm.empty, null);
-    assertEqual(vm.filled, 'dashboard.sipocFilled');
+    assertEqual(vm.filled, 'modules.sipoc.tileFilled');
     assertDeepEqual(vm.columns[1], { key: 'inputs', letter: 'I', name: 'modules.sipoc.col.inputs', count: '4',
-      gap: false, modifier: '', items: ['Flour', 'Water', 'Yeast'], more: 'dashboard.sipocMore' });
+      gap: false, modifier: '', items: ['Flour', 'Water', 'Yeast'], more: 'modules.sipoc.tileMore' });
     assertDeepEqual(vm.columns[4], { key: 'customers', letter: 'C', name: 'modules.sipoc.col.customers', count: '0',
       gap: true, modifier: 'dashboard-sipoc__col--gap', items: [], more: null });
   });
@@ -1458,7 +1458,7 @@ suite('dashboard tiles: sipoc', () => {
   test('viewModel: empty state', () => {
     const vm = vmOf(sipocTile, undefined);
     assertPlain(vm);
-    assertEqual(vm.empty, 'dashboard.sipocEmpty');
+    assertEqual(vm.empty, 'modules.sipoc.tileEmpty');
   });
 });
 
