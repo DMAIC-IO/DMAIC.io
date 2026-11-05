@@ -4,6 +4,7 @@
 import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
 import { ExamplesRegistry, parseScenarioItem } from '../../js/core/examples-registry.js';
 import { getPhaseIds } from '../../js/core/cycles/cycles.js';
+import { EXAMPLES } from '../../js/modules/catalog.generated.js';
 
 const EXPECTED_SCENARIOS = [
   'scenario-hubschrauber-full', 'scenario-hubschrauber-starter',
@@ -27,15 +28,30 @@ const EXPECTED_WORKSHEETS = [
 // examples/shared/scenarios.json ourselves (resolved against this module's
 // URL, so the path holds both in the browser runner and in the headless node
 // runner) and inject them via setCatalog.
+// Beispiele von Modulen in neuer Form liegen in
+// js/modules/<id>/resources/examples/examples.json; sie werden hier mit dem
+// Besitzer als `modules` eingemischt, ihre Dateien relativ zu diesem Ordner.
+const MODULE_EXAMPLE_DIRS = new Map();
+
 async function loadedRegistry() {
   const reg = new ExamplesRegistry();
   const read = async (rel) => {
-    const res = await fetch(new URL(`../../examples/${rel}`, import.meta.url), { cache: 'no-cache' });
-    assertTrue(res.ok, `could not fetch examples/${rel}: HTTP ${res.status}`);
+    const res = await fetch(new URL(`../../${rel}`, import.meta.url), { cache: 'no-cache' });
+    assertTrue(res.ok, `could not fetch ${rel}: HTTP ${res.status}`);
     return res.json();
   };
-  const [index, shared] = await Promise.all([read('index.json'), read('shared/scenarios.json')]);
-  reg.setCatalog({ examples: index.examples, scenarios: shared.scenarios });
+  const [index, shared] = await Promise.all([read('examples/index.json'), read('examples/shared/scenarios.json')]);
+  const owners = [...new Set(Object.values(EXAMPLES))];
+  const owned = [];
+  for (const owner of owners) {
+    const dir = `js/modules/${owner}/resources/examples`;
+    const { examples } = await read(`${dir}/examples.json`);
+    for (const e of examples) {
+      MODULE_EXAMPLE_DIRS.set(e.id, dir);
+      owned.push({ ...e, modules: [owner] });
+    }
+  }
+  reg.setCatalog({ examples: [...index.examples, ...owned], scenarios: shared.scenarios });
   return reg;
 }
 
@@ -94,7 +110,7 @@ suite('shipped scenario catalog', () => {
       if (meta.type === 'generator') continue;
       assertTrue(typeof meta.file === 'string' && meta.file.length > 0,
         `${id}: missing file field`);
-      const res = await fetch(new URL(`../../examples/${meta.file}`, import.meta.url),
+      const res = await fetch(new URL(`../../${MODULE_EXAMPLE_DIRS.get(id) ?? 'examples'}/${meta.file}`, import.meta.url),
         { cache: 'no-cache' });
       assertTrue(res.ok, `${id}: file ${meta.file} not reachable (HTTP ${res.status})`);
     }

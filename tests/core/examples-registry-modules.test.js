@@ -127,9 +127,9 @@ suite('ExamplesRegistry: Beispiele der neuen Form', () => {
     assertEqual((await reg.load('alt-1')).worksheetKey, 'shared/worksheets/w.json');
   });
 
-  test('Standard-Katalog ist der eingecheckte (heute leer): Index-Verhalten wie bisher', async () => {
-    const reg = new ExamplesRegistry();
-    reg.setCatalog({ examples: [{ id: 'x', type: 'project', modules: ['sipoc'] }] });
-    assertDeepEqual((await reg.getForModule('sipoc')).map((e) => e.id), ['x']);
+  test('Standard-Katalog ist der eingecheckte: sipoc-Beispiele gehören sipoc', async () => {
+    const { EXAMPLES } = await import('../../js/modules/catalog.generated.js');
+    assertEqual(EXAMPLES['sipoc-pizza-lieferprozess'], 'sipoc');
+    assertEqual(EXAMPLES['sipoc-hubschrauber-flyer'], 'sipoc');
   });
 });

@@ -1,0 +1,47 @@
+{
+  "$schema": "../../../../../schemas/module-examples.schema.json",
+  "examples": [
+    {
+      "id": "sipoc-pizza-lieferprozess",
+      "type": "project",
+      "title": {
+        "de": "Pizza-Lieferprozess (SIPOC)",
+        "en": "Pizza Delivery (SIPOC)"
+      },
+      "description": {
+        "de": "Suppliers, Inputs, Process, Outputs, Customers für den Bella-Margherita-Lieferprozess — 8 Prozessschritte von Bestellannahme bis Übergabe.",
+        "en": "Suppliers, Inputs, Process, Outputs, Customers for the Bella Margherita delivery process — 8 process steps from order intake to handover."
+      },
+      "source": "Qprovement Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/sipoc-pizza-lieferprozess.json",
+      "format": "json",
+      "tags": [
+        "define",
+        "sipoc",
+        "pizza-lehrcase"
+      ]
+    },
+    {
+      "id": "sipoc-hubschrauber-flyer",
+      "type": "project",
+      "title": {
+        "de": "Papier-Hubschrauber — SIPOC",
+        "en": "Paper Helicopter — SIPOC"
+      },
+      "description": {
+        "de": "SIPOC des Hubschrauber-Prozesses: vom Rohflyer über Ausschneiden, Falten, Klammern und Fallenlassen bis zur 18er-Log-Tabelle. Zeigt den physisch erzwungenen Schritt „Rotor kürzen (zwischen Blöcken)“, der die spätere DoE-Blockung motiviert.",
+        "en": "SIPOC of the helicopter process: from the raw flyer through cutting, folding, clipping and dropping to the 18-run log table. Highlights the physically forced \"trim rotor (between blocks)\" step that motivates the later DoE blocking."
+      },
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
+      "license": "public-domain",
+      "file": "projects/sipoc-hubschrauber-flyer.json",
+      "format": "json",
+      "tags": [
+        "helicopter",
+        "doe-training",
+        "sequential-blocks"
+      ]
+    }
+  ]
+}
