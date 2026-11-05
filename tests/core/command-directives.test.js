@@ -325,3 +325,106 @@ suite('x-param', () => {
     assertThrows(() => mountDetached('<form x-command-form="setItem" data-form="ItemForm"><input x-param="nope"></form>'), /x-param="nope": not a field of ItemForm/);
   });
 });
+
+const EDIT = `
+  <button class="edit" x-dialog="editForm" data-arg-col="a" data-arg-idx="0" data-dialog-title="Bearbeiten">e</button>
+  <div hidden><form x-ref="editForm" x-command-form="setItem"><textarea x-param="text"></textarea></form></div>`;
+
+suite('x-dialog', () => {
+  test('öffnet den Ref, kopiert die Argumente und entfernt sie beim Schließen', async () => {
+    const { $, dialog } = await mount(EDIT, { columns: { a: ['eins'] } });
+    const form = $('form');
+    const area = $('textarea');
+    $('.edit').click();
+    const { opts, api } = dialog.open;
+    assertEqual(opts.title, 'Bearbeiten');
+    assertEqual(opts.confirmLabel, 'common.save');
+    assertEqual(opts.hideConfirm, false);
+    assertEqual(form.getAttribute('data-arg-idx'), '0');
+    assertEqual(area.value, 'eins');
+    assertEqual(document.activeElement, area);
+    assertEqual(area.selectionStart, 4);
+    api.cancel();
+    await flush();
+    assertEqual(dialog.open, null);
+    assertEqual(form.getAttribute('data-arg-idx'), null);
+  });
+
+  test('Bestätigen ohne Änderung schließt wie Abbrechen', async () => {
+    const { $, dialog, model } = await mount(EDIT, { columns: { a: ['eins'] } });
+    $('.edit').click();
+    dialog.open.api.confirm();
+    await flush();
+    assertEqual(dialog.open, null);
+    assertEqual(model.columns.a[0], 'eins');
+  });
+
+  test('schließt nur bei Erfolg; Markierung weg nach dem Schließen', async () => {
+    const { $, dialog, model } = await mount(EDIT, { columns: { a: ['eins'] } });
+    const area = $('textarea');
+    $('.edit').click();
+    typeIn(area, '  ');
+    dialog.open.api.confirm();
+    await flush();
+    assertTrue(dialog.open !== null, 'Ablehnung: bleibt offen');
+    assertEqual(area.getAttribute('aria-invalid'), 'true');
+    typeIn(area, 'neu');
+    dialog.open.api.confirm();
+    await flush();
+    assertEqual(dialog.open, null);
+    assertEqual(model.columns.a[0], 'neu');
+    assertEqual(area.getAttribute('aria-invalid'), null);
+  });
+
+  test('data-dialog-command überschreibt das Kommando für dieses Öffnen', async () => {
+    const { $, dialog, model } = await mount(`
+      <button class="new" x-dialog="itemForm" data-arg-col="a">n</button>
+      <button class="edit" x-dialog="itemForm" data-dialog-command="setItem" data-arg-col="a" data-arg-idx="0">e</button>
+      <div hidden><form x-ref="itemForm" x-command-form="addItem"><input x-param="text"></form></div>`, { columns: { a: ['eins'] } });
+    const input = $('input');
+    $('.edit').click();
+    assertEqual(input.value, 'eins');
+    typeIn(input, 'zwei');
+    dialog.open.api.confirm();
+    await flush();
+    assertDeepEqual([...model.columns.a], ['zwei']);
+    $('.new').click();
+    assertEqual(input.value, '');
+    typeIn(input, 'drei');
+    dialog.open.api.confirm();
+    await flush();
+    assertDeepEqual([...model.columns.a], ['zwei', 'drei']);
+  });
+
+  test('data-dialog-delete: Löschen im Fuß mit denselben Argumenten', async () => {
+    const { $, dialog, model } = await mount(EDIT.replace('data-dialog-title', 'data-dialog-delete="removeItem" data-dialog-title'), { columns: { a: ['eins'] } });
+    $('.edit').click();
+    assertEqual(typeof dialog.open.opts.onDelete, 'function');
+    dialog.open.api.remove();
+    await flush();
+    assertDeepEqual([...model.columns.a], []);
+    assertEqual(dialog.open, null);
+  });
+
+  test('ohne Formular: kein Bestätigen-Knopf, x-command darin schließt bei Erfolg', async () => {
+    const { $, dialog, model } = await mount(`
+      <button class="ask" x-dialog="askRef">?</button>
+      <div hidden><div x-ref="askRef"><button class="yes" x-command="removeItem" data-arg-col="a" data-arg-idx="0">ja</button></div></div>`, { columns: { a: ['eins'] } });
+    $('.ask').click();
+    assertEqual(dialog.open.opts.hideConfirm, true);
+    dialog.open.body.querySelector('.yes').click();
+    await flush();
+    assertEqual(dialog.open, null);
+    assertDeepEqual([...model.columns.a], []);
+  });
+
+  test('Anker am Knopf aus dem Kommando des Formulars bzw. data-dialog-command', async () => {
+    const { $ } = await mount(`${EDIT}<button class="other" x-dialog="editForm" data-dialog-command="addItem">o</button>`);
+    assertEqual($('.edit').getAttribute('data-help-key'), 'modules.ct.actions.setItem.help');
+    assertEqual($('.other').getAttribute('data-help-key'), 'modules.ct.actions.addItem.help');
+  });
+
+  test('unbekannter Ref wirft beim Einbau', () => {
+    assertThrows(() => mountDetached('<button x-dialog="nope">x</button>'), /x-dialog="nope": no element with x-ref="nope"/);
+  });
+});

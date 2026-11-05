@@ -251,6 +251,83 @@ function createFormController(Alpine, formEl, baseCommand) {
 }
 
 /**
+ * Das Element mit `x-ref="<ref>"` der umgebenden Komponente — registriert
+ * (auch während es im Dialog ausgeliehen ist) oder noch im Template.
+ * @param {any} Alpine @param {HTMLElement} el @param {string} ref
+ * @returns {HTMLElement|null}
+ */
+function findRef(Alpine, el, ref) {
+  const root = Alpine.closestRoot(el);
+  // `_x_refs` ist Alpines Ablage der registrierten Refs.
+  return root?._x_refs?.[ref] ?? root?.querySelector(`[x-ref="${CSS.escape(ref)}"]`) ?? null;
+}
+
+/** @param {HTMLElement} target @returns {HTMLFormElement|null} der Ref selbst oder das Formular darin */
+function formIn(target) {
+  return target.matches('form[x-command-form]') ? /** @type {HTMLFormElement} */ (target) : target.querySelector('form[x-command-form]');
+}
+
+/**
+ * Den Ref im Dialog-Dienst öffnen. `onConfirm` sendet ab und liefert
+ * `false`; geschlossen wird erst bei Erfolg über den confirm-Griff (dann
+ * liefert `onConfirm` `true`). So wirft `onConfirm` nie, und eine Rückfrage
+ * aus `confirm()` läuft asynchron dazwischen.
+ * @param {any} Alpine @param {HTMLElement} el der Knopf @param {string} ref
+ */
+async function openDialog(Alpine, el, ref) {
+  const ui = uiOf(Alpine, el, 'x-dialog');
+  const target = findRef(Alpine, el, ref);
+  if (!target) throw new Error(`x-dialog="${ref}": no element with x-ref="${ref}"`);
+  const formEl = formIn(target);
+  const ctl = formEl ? FORMS.get(formEl) : undefined;
+  const copied = [];
+  if (formEl) {
+    for (const { name, value } of [...el.attributes]) {
+      if (name.startsWith('data-arg-')) { formEl.setAttribute(name, value); copied.push(name); }
+    }
+  }
+  let done = false;
+  let api = null;
+  const finish = () => { done = true; api?.confirm(); };
+  try {
+    ctl?.open({ command: el.dataset.dialogCommand, onSuccess: finish, onUnchanged: () => api?.cancel() });
+  } catch (err) {
+    for (const name of copied) formEl.removeAttribute(name);
+    throw err;
+  }
+  OPEN_DIALOGS.set(target, finish);
+  const del = el.dataset.dialogDelete;
+  try {
+    await ui.dialog.form({
+      title: el.dataset.dialogTitle ?? '',
+      content: target,
+      confirmLabel: ui.i18n.t(el.dataset.dialogConfirm ?? 'common.save'),
+      hideConfirm: !ctl,
+      onMount: (_body, handle) => { api = handle; ctl?.focusFirst(); },
+      onConfirm: () => {
+        if (done || !ctl) return true;
+        ctl.submit();
+        return false;
+      },
+      ...(del ? {
+        onDelete: () => {
+          if (done) return true;
+          runUiCommand(ui, del, readFixedArgs(el, commandDef(ui, del).params)).then((r) => {
+            if (r.ok) finish();
+            else if ('error' in r) ui.notify(r.error?.message ?? String(r.error), 'error');
+          });
+          return false;
+        },
+      } : {}),
+    });
+  } finally {
+    OPEN_DIALOGS.delete(target);
+    for (const name of copied) formEl.removeAttribute(name);
+    ctl?.close();
+  }
+}
+
+/**
  * Die Direktiven registrieren. Vor `Alpine.start()` aufrufen; je Alpine-Instanz einmal.
  * @param {any} Alpine der Default-Export von csp.js
  * @returns {void}
@@ -332,5 +409,18 @@ export function registerCommandDirectives(Alpine) {
       el.removeEventListener('change', onChange);
       ctl.unregister(name);
     });
+  });
+
+  Alpine.directive('dialog', (el, { expression }, { cleanup }) => {
+    const ref = expression.trim();
+    const ui = uiOf(Alpine, el, 'x-dialog');
+    const target = findRef(Alpine, el, ref);
+    if (!target) throw new Error(`x-dialog="${ref}": no element with x-ref="${ref}"`);
+    for (const cmd of [el.dataset.dialogCommand, el.dataset.dialogDelete]) if (cmd) commandDef(ui, cmd);
+    const cmd = el.dataset.dialogCommand ?? formIn(target)?.getAttribute('x-command-form')?.trim();
+    if (cmd) setHelpKey(el, `modules.${ui.moduleId}.actions.${cmd}.help`);
+    const onClick = () => { openDialog(Alpine, el, ref); };
+    el.addEventListener('click', onClick);
+    cleanup(() => el.removeEventListener('click', onClick));
   });
 }
