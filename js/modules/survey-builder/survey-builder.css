@@ -279,12 +279,13 @@
   margin: 0 0 var(--spacing-sm);
 }
 
-/* Choice questions: the table (and the "other" answers) on the left, the
+/* Table (with the "other" answers or the Kano hand-over) on the left, the
    chart beside it — a short table no longer leaves a wide empty strip
-   above a chart that spans the full width. */
+   above a chart that spans the full width. A wide table gets at most 60 %
+   and wraps its texts, so the chart keeps room to read. */
 .survey-builder__block-body--side {
   display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
+  grid-template-columns: fit-content(60%) minmax(20rem, 1fr);
   gap: var(--spacing-l);
   align-items: start;
 }

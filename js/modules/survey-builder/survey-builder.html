@@ -371,6 +371,7 @@
 
           <div x-show="results.hasKanoOverview()">
             <div class="survey-builder__subtitle" x-text="t('report.kanoTitle')"></div>
+            <div class="survey-builder__block-body survey-builder__block-body--side">
             <table class="dmike-table survey-builder__stats" data-ref="kanoOverview">
               <thead>
                 <tr>
@@ -388,6 +389,7 @@
               </tbody>
             </table>
             <div class="survey-builder__chart" data-chart="kano-overview"></div>
+            </div>
           </div>
 
           <p class="survey-builder__counts" data-ref="freeText" x-text="results.freeTextLine()"></p>
@@ -421,6 +423,7 @@
           <template x-for="part in results.comparisonParts()" :key="part.key">
             <div class="survey-builder__group-part" :data-group-question-id="part.questionId">
               <h4 class="survey-builder__part-title" x-text="part.title"></h4>
+              <div class="survey-builder__block-body" :class="results.partBodyClass(part)">
               <table class="dmike-table survey-builder__stats">
                 <thead>
                   <tr>
@@ -445,6 +448,7 @@
                 </tbody>
               </table>
               <div class="survey-builder__chart" x-show="part.chart" :data-chart="results.chartKey('g', part.questionId)"></div>
+              </div>
             </div>
           </template>
         </section>
@@ -495,7 +499,7 @@
               </template>
 
               <template x-if="results.isType(b, 'rating')">
-                <div class="survey-builder__block-body">
+                <div class="survey-builder__block-body survey-builder__block-body--side">
                   <table class="dmike-table survey-builder__stats">
                     <thead>
                       <tr>
@@ -522,7 +526,8 @@
               </template>
 
               <template x-if="results.isType(b, 'kano')">
-                <div class="survey-builder__block-body">
+                <div class="survey-builder__block-body survey-builder__block-body--side">
+                  <div class="survey-builder__block-main">
                   <table class="dmike-table survey-builder__stats">
                     <thead>
                       <tr>
@@ -556,6 +561,7 @@
                     <button class="btn btn--sm" type="button" data-action="handOverKano" data-help-key="modules.survey-builder.actions.handover.handOverToKano.help" @click="handover.handOverToKano(b.question.id)">
                       <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span><span x-text="t('handOverKano')"></span>
                     </button>
+                  </div>
                   </div>
                   <div class="survey-builder__chart" :data-chart="results.chartKey('q', b.question.id)"></div>
                 </div>

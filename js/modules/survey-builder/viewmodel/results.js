@@ -581,6 +581,14 @@ export class ResultsViewModel {
    */
   rowClass(row) { return { 'survey-builder__row--differs': row.differs }; }
 
+  /**
+   * Only a comparison part with a chart lays table and chart side by side.
+   * @noagent view transform
+   * @param {{chart: boolean}} part comparison part
+   * @returns {object} class map for :class
+   */
+  partBodyClass(part) { return { 'survey-builder__block-body--side': part.chart }; }
+
   // Report
 
   /**
