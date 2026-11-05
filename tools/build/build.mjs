@@ -20,7 +20,7 @@ import { collectLabData, renderLabDataModule } from './lab-data.mjs';
 import { collectHelpIds, renderHelpRegistryModule } from './help-data.mjs';
 import { collectReferenceIds, renderReferencesRegistryModule } from './references-data.mjs';
 import { collectAgentData, renderAgentRegistryModule } from './agent-data.mjs';
-import { collectModelFiles, loadModelSchema, renderModelTypes, collectStateFiles, loadStateSchema, renderStateTypes, collectFormFiles, loadFormSchemas, renderFormTypes } from './model-types.mjs';
+import { collectModelFiles, loadModelSchema, renderModelTypes, collectStateFiles, loadStateSchema, renderStateTypes, collectFormFiles, loadFormSchemas, renderFormTypes, collectSettingsFiles, loadSettingsSchema, renderSettingsTypes } from './model-types.mjs';
 import { collectGlossaryData, renderGlossaryDataModule } from './glossary-data.mjs';
 import { collectLicenseData, renderLicenseDataModule, renderLicenseText } from '../license-report/license-report.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
@@ -389,6 +389,12 @@ export async function runBuild(appDir = APP_DIR, { check = false, converted = CO
   // 1b6. Formular-Typen (viewmodel/forms.js → viewmodel/forms.types.js)
   for (const { file } of collectFormFiles(appDir)) {
     emit(join(dirname(file), 'forms.types.js'), renderFormTypes({ forms: await loadFormSchemas(file) }), check, changed);
+  }
+
+  // 1b7. Kachel-Einstellungen (tile/settings.js → tile/settings.types.js)
+  for (const { id, file } of collectSettingsFiles(appDir)) {
+    const { name: modelName } = await loadModelSchema(join(appDir, 'js', 'modules', id, 'domain', 'model.js'));
+    emit(join(dirname(file), 'settings.types.js'), renderSettingsTypes({ id, ...(await loadSettingsSchema(file)), modelName }), check, changed);
   }
 
   // 1c. glossary data (catalog + all terms inlined; no runtime fetch)

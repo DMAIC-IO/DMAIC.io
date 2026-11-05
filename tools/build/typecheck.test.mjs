@@ -140,3 +140,20 @@ export const def = {
   assert.equal(findings.length, 1, findings.join('\n'));
   assert.match(findings[0], /vm\.js\(7,\d+\): TS2339: Property 'nope'/);
 });
+
+test('typecheck: this im Kachel-view ist über TileViewFn getypt', () => {
+  const tt = join(APP_DIR, 'js', 'core', 'template-tile.js');
+  const root = appWith({
+    'tile.js': `/** @typedef {{ topN: number }} S */
+/** @typedef {{ items: string[], hasContent(): boolean }} M */
+/** @type {import('${tt}').TileViewFn<Readonly<M>, S>} */
+export const view = (ctx) => ({
+  get top() { return this.model.items.slice(0, this.settings.topN).length + this.t('x') + ctx.moduleId; },
+  bad() { return this.settings.nope; },
+});
+`,
+  });
+  const findings = typecheck([join(root, 'tile.js')]);
+  assert.equal(findings.length, 1, findings.join('\n'));
+  assert.match(findings[0], /tile\.js\(6,\d+\): TS2339: Property 'nope'/);
+});
