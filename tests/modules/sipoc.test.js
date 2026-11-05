@@ -1,236 +1,155 @@
-import { suite, test, assertEqual } from '../test-utils.js';
-import { State, COLUMNS, columnSummary } from '../../js/modules/sipoc/sipoc-model.js';
+/**
+ * SIPOC in neuer Form: Kommandos, Endindex, Migration '0→1.0', Zusammenfassung.
+ */
+import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../test-utils.js';
+import { State, COL_KEYS } from '../../js/modules/sipoc/domain/model.js';
+import { from0 } from '../../js/modules/sipoc/domain/migrations.js';
+import { COLUMNS, columnSummary } from '../../js/modules/sipoc/domain/summary.js';
 
-const COL_KEYS = ['suppliers', 'inputs', 'process', 'outputs', 'customers'];
+const filled = (cols) => State.fromJSON({ _schema: { version: '1.0' }, columns: { suppliers: [], inputs: [], process: [], outputs: [], customers: [], ...cols } });
 
-suite('SIPOC Model — constants', () => {
-  test('COLUMNS has the five SIPOC columns in order', () => {
-    assertEqual(COLUMNS.map(c => c.key).join(','), COL_KEYS.join(','));
-  });
-
-  test('COLUMNS carry the S/I/P/O/C letters', () => {
-    assertEqual(COLUMNS.map(c => c.letter).join(''), 'SIPOC');
+suite('SIPOC — Konstanten', () => {
+  test('fünf Spalten in Reihenfolge, Buchstaben SIPOC', () => {
+    assertDeepEqual(COL_KEYS, ['suppliers', 'inputs', 'process', 'outputs', 'customers']);
+    assertDeepEqual(COLUMNS.map((c) => c.key), COL_KEYS);
+    assertEqual(COLUMNS.map((c) => c.letter).join(''), 'SIPOC');
   });
 });
 
-suite('SIPOC Model — State construction', () => {
-  test('constructor creates five empty arrays', () => {
+suite('SIPOC — addItem', () => {
+  test('hängt getrimmt an und liefert den Index', () => {
     const s = new State();
-    for (const k of COL_KEYS) {
-      assertEqual(Array.isArray(s.columns[k]), true);
-      assertEqual(s.columns[k].length, 0);
-    }
+    assertEqual(s.addItem({ col: 'suppliers', text: '  Mühle ' }), 0);
+    assertEqual(s.addItem({ col: 'suppliers', text: 'Bäcker' }), 1);
+    assertDeepEqual(s.columns.suppliers, ['Mühle', 'Bäcker']);
   });
+  test('leerer Text wird abgelehnt, nichts angelegt', () => {
+    const s = new State();
+    assertThrows(() => s.addItem({ col: 'inputs', text: '   ' }), /^invalid text " {3}"; allowed: a non-empty text$/);
+    assertDeepEqual(s.columns.inputs, []);
+  });
+  test('unbekannte Spalte wird abgelehnt', () => {
+    assertThrows(() => new State().addItem({ col: 's', text: 'x' }),
+      /^invalid col "s"; allowed: suppliers, inputs, process, outputs, customers$/);
+  });
+  test('fehlender Parameter', () => {
+    assertThrows(() => new State().addItem({ col: 'inputs' }), /^missing argument "text" of addItem/);
+  });
+});
 
-  test('hasContent is false on a fresh state', () => {
+suite('SIPOC — setItem und removeItem', () => {
+  test('setItem ersetzt getrimmt', () => {
+    const s = filled({ inputs: ['Mehl'] });
+    s.setItem({ col: 'inputs', idx: 0, text: ' Mehl Type 550 ' });
+    assertDeepEqual(s.columns.inputs, ['Mehl Type 550']);
+  });
+  test('setItem: leerer Text abgelehnt, alter Eintrag bleibt', () => {
+    const s = filled({ inputs: ['Mehl'] });
+    assertThrows(() => s.setItem({ col: 'inputs', idx: 0, text: '' }), /allowed: a non-empty text$/);
+    assertDeepEqual(s.columns.inputs, ['Mehl']);
+  });
+  test('Index ohne Eintrag wird abgelehnt', () => {
+    const s = filled({ inputs: ['Mehl'] });
+    assertThrows(() => s.setItem({ col: 'inputs', idx: 1, text: 'x' }), /^invalid idx 1; allowed: 0\.\.0$/);
+    assertThrows(() => s.removeItem({ col: 'outputs', idx: 0 }), /^invalid idx 0; allowed: none, the collection is empty$/);
+  });
+  test('removeItem entfernt genau einen Eintrag', () => {
+    const s = filled({ process: ['A', 'B', 'C'] });
+    s.removeItem({ col: 'process', idx: 1 });
+    assertDeepEqual(s.columns.process, ['A', 'C']);
+  });
+});
+
+suite('SIPOC — moveItem mit Endindex', () => {
+  test('in derselben Spalte nach unten: Endindex = Position danach', () => {
+    const s = filled({ suppliers: ['A', 'B', 'C'] });
+    s.moveItem({ fromCol: 'suppliers', fromIdx: 0, toCol: 'suppliers', toIdx: 2 });
+    assertDeepEqual(s.columns.suppliers, ['B', 'C', 'A']);
+  });
+  test('in derselben Spalte nach oben', () => {
+    const s = filled({ suppliers: ['A', 'B', 'C'] });
+    s.moveItem({ fromCol: 'suppliers', fromIdx: 2, toCol: 'suppliers', toIdx: 0 });
+    assertDeepEqual(s.columns.suppliers, ['C', 'A', 'B']);
+  });
+  test('eigene Spalte: Obergrenze länge − 1', () => {
+    const s = filled({ suppliers: ['A', 'B'] });
+    assertThrows(() => s.moveItem({ fromCol: 'suppliers', fromIdx: 0, toCol: 'suppliers', toIdx: 2 }),
+      /^invalid toIdx 2; allowed: 0\.\.1$/);
+    assertDeepEqual(s.columns.suppliers, ['A', 'B']);
+  });
+  test('fremde Spalte: Obergrenze länge (ans Ende), auch in leere Spalte', () => {
+    const s = filled({ outputs: ['Pizza'], customers: ['Kunde'] });
+    s.moveItem({ fromCol: 'outputs', fromIdx: 0, toCol: 'customers', toIdx: 1 });
+    assertDeepEqual(s.columns.customers, ['Kunde', 'Pizza']);
+    assertDeepEqual(s.columns.outputs, []);
+    s.moveItem({ fromCol: 'customers', fromIdx: 0, toCol: 'outputs', toIdx: 0 });
+    assertDeepEqual(s.columns.outputs, ['Kunde']);
+  });
+  test('fremde Spalte: hinter dem Ende abgelehnt', () => {
+    const s = filled({ outputs: ['Pizza'] });
+    assertThrows(() => s.moveItem({ fromCol: 'outputs', fromIdx: 0, toCol: 'customers', toIdx: 1 }),
+      /^invalid toIdx 1; allowed: 0\.\.0$/);
+  });
+  test('Quelle ohne Eintrag abgelehnt', () => {
+    assertThrows(() => filled({}).moveItem({ fromCol: 'process', fromIdx: 0, toCol: 'inputs', toIdx: 0 }),
+      /^invalid fromIdx 0; allowed: none, the collection is empty$/);
+  });
+});
+
+suite('SIPOC — Speichern und Laden', () => {
+  test('toJSON: _schema zuerst, dann columns', () => {
+    const json = filled({ inputs: ['Mehl'] }).toJSON();
+    assertDeepEqual(Object.keys(json), ['_schema', 'columns']);
+    assertEqual(json._schema.version, '1.0');
+    assertDeepEqual(json.columns.inputs, ['Mehl']);
+  });
+  test('Rundlauf verlustfrei', () => {
+    const json = filled({ process: ['A', 'B'], customers: ['K'] }).toJSON();
+    assertDeepEqual(State.fromJSON(json).toJSON(), json);
+  });
+  test('Altstand ohne _schema läuft durch 0→1.0', () => {
+    const s = State.fromJSON({ columns: { suppliers: ['Mühle', 3, null], inputs: 'kaputt' } });
+    assertDeepEqual(s.columns, { suppliers: ['Mühle'], inputs: [], process: [], outputs: [], customers: [] });
+  });
+  test('nackte Spaltenkarte (Altformat) wird zu { columns }', () => {
+    assertDeepEqual(State.fromJSON({ process: ['A'] }).columns.process, ['A']);
+  });
+  test('neuere Version wird abgelehnt', () => {
+    assertThrows(() => State.fromJSON({ _schema: { version: '1.1' }, columns: {} }), /allowed: up to 1\.0/);
+  });
+  test('kein Objekt → leere Spalten', () => {
+    assertDeepEqual(State.fromJSON(null).columns.suppliers, []);
     assertEqual(new State().hasContent(), false);
-  });
-
-  test('hasContent is true once any column has an item', () => {
-    const s = new State();
-    s.columns.process.push('Step 1');
-    assertEqual(s.hasContent(), true);
+    assertTrue(filled({ outputs: ['x'] }).hasContent());
   });
 });
 
-suite('SIPOC Model — addItem', () => {
-  test('addItem appends a trimmed value and returns true', () => {
-    const s = new State();
-    assertEqual(s.addItem('suppliers', '  Acme  '), true);
-    assertEqual(s.columns.suppliers.length, 1);
-    assertEqual(s.columns.suppliers[0], 'Acme');
+suite('SIPOC — Migration 0→1.0', () => {
+  test('nackte Map, fehlende Spalten, Nicht-Arrays, Nicht-Strings, fremde Schlüssel', () => {
+    assertDeepEqual(from0({ suppliers: ['a', 1], inputs: 'x', fremd: true }),
+      { columns: { suppliers: ['a'], inputs: [], process: [], outputs: [], customers: [] } });
   });
-
-  test('addItem rejects empty / whitespace-only text', () => {
-    const s = new State();
-    assertEqual(s.addItem('inputs', ''), false);
-    assertEqual(s.addItem('inputs', '   '), false);
-    assertEqual(s.columns.inputs.length, 0);
+  test('kanonische Form bleibt, fremde Schlüssel fallen weg', () => {
+    assertDeepEqual(from0({ columns: { process: ['p'] }, legacy: 1 }),
+      { columns: { suppliers: [], inputs: [], process: ['p'], outputs: [], customers: [] } });
   });
-
-  test('addItem ignores unknown column', () => {
-    const s = new State();
-    assertEqual(s.addItem('nope', 'x'), false);
-  });
-
-  test('addItem preserves order across multiple adds', () => {
-    const s = new State();
-    s.addItem('process', 'A');
-    s.addItem('process', 'B');
-    s.addItem('process', 'C');
-    assertEqual(s.columns.process.join(','), 'A,B,C');
+  test('ohne Spaltenschlüssel: leere Spalten', () => {
+    assertDeepEqual(from0({ irgendwas: 1 }).columns.customers, []);
   });
 });
 
-suite('SIPOC Model — setItem', () => {
-  test('setItem replaces a value and returns true', () => {
-    const s = new State();
-    s.addItem('outputs', 'Old');
-    assertEqual(s.setItem('outputs', 0, ' New '), true);
-    assertEqual(s.columns.outputs[0], 'New');
+suite('SIPOC — columnSummary', () => {
+  test('Anzahl, erste n, Rest; n < 1 oder keine Zahl zählt als 1', () => {
+    const s = filled({ suppliers: ['a', 'b', 'c'] });
+    const [sup, inp] = columnSummary(s, 2);
+    assertDeepEqual(sup, { key: 'suppliers', letter: 'S', count: 3, top: ['a', 'b'], more: 1 });
+    assertDeepEqual(inp, { key: 'inputs', letter: 'I', count: 0, top: [], more: 0 });
+    assertEqual(columnSummary(s, 0)[0].top.length, 1);
+    assertEqual(columnSummary(s, 'x')[0].top.length, 1);
   });
-
-  test('setItem rejects empty text and leaves value unchanged', () => {
-    const s = new State();
-    s.addItem('outputs', 'Keep');
-    assertEqual(s.setItem('outputs', 0, '   '), false);
-    assertEqual(s.columns.outputs[0], 'Keep');
-  });
-
-  test('setItem ignores out-of-range index', () => {
-    const s = new State();
-    s.addItem('outputs', 'Keep');
-    assertEqual(s.setItem('outputs', 5, 'X'), false);
-    assertEqual(s.columns.outputs.join(','), 'Keep');
-  });
-});
-
-suite('SIPOC Model — deleteItem', () => {
-  test('deleteItem removes by index', () => {
-    const s = new State();
-    s.addItem('customers', 'A');
-    s.addItem('customers', 'B');
-    s.deleteItem('customers', 0);
-    assertEqual(s.columns.customers.join(','), 'B');
-  });
-
-  test('deleteItem ignores out-of-range index', () => {
-    const s = new State();
-    s.addItem('customers', 'A');
-    s.deleteItem('customers', 9);
-    assertEqual(s.columns.customers.join(','), 'A');
-  });
-});
-
-suite('SIPOC Model — moveItem (reorder)', () => {
-  test('moveItem within a column moves to the top', () => {
-    const s = new State();
-    s.addItem('suppliers', 'First');
-    s.addItem('suppliers', 'Second');
-    s.addItem('suppliers', 'Third');
-    // drag Third (idx 2) to idx 0
-    s.moveItem('suppliers', 2, 'suppliers', 0);
-    assertEqual(s.columns.suppliers.join(','), 'Third,First,Second');
-  });
-
-  test('moveItem corrects the drop index when moving downward in same column', () => {
-    const s = new State();
-    s.addItem('suppliers', 'A');
-    s.addItem('suppliers', 'B');
-    s.addItem('suppliers', 'C');
-    // move A (idx 0) towards the end (dropIdx 3)
-    s.moveItem('suppliers', 0, 'suppliers', 3);
-    assertEqual(s.columns.suppliers.join(','), 'B,C,A');
-  });
-
-  test('moveItem across columns relocates the value', () => {
-    const s = new State();
-    s.addItem('suppliers', 'X');
-    s.moveItem('suppliers', 0, 'inputs', 0);
-    assertEqual(s.columns.suppliers.length, 0);
-    assertEqual(s.columns.inputs.join(','), 'X');
-  });
-});
-
-suite('SIPOC Model — serialization', () => {
-  test('toJSON returns a { columns } shape with all five columns', () => {
-    const s = new State();
-    s.addItem('suppliers', 'Sup');
-    const json = s.toJSON();
-    assertEqual(typeof json.columns, 'object');
-    for (const k of COL_KEYS) assertEqual(Array.isArray(json.columns[k]), true);
-    assertEqual(json.columns.suppliers.join(','), 'Sup');
-  });
-
-  test('toJSON does not leak internal array references', () => {
-    const s = new State();
-    s.addItem('inputs', 'A');
-    const json = s.toJSON();
-    json.columns.inputs.push('mutated');
-    assertEqual(s.columns.inputs.join(','), 'A');
-  });
-
-  test('fromJSON(null) returns a valid default state', () => {
-    const s = State.fromJSON(null);
-    for (const k of COL_KEYS) assertEqual(s.columns[k].length, 0);
-  });
-
-  test('fromJSON(undefined) returns a valid default state', () => {
-    const s = State.fromJSON(undefined);
-    assertEqual(s.hasContent(), false);
-  });
-
-  test('fromJSON restores the { columns } shape', () => {
-    const s = State.fromJSON({ columns: { suppliers: ['A'], process: ['P1', 'P2'] } });
-    assertEqual(s.columns.suppliers.join(','), 'A');
-    assertEqual(s.columns.process.join(','), 'P1,P2');
-    assertEqual(s.columns.inputs.length, 0);
-  });
-
-  test('fromJSON also accepts a bare columns object (legacy import)', () => {
-    const s = State.fromJSON({ suppliers: ['A'], customers: ['C'] });
-    assertEqual(s.columns.suppliers.join(','), 'A');
-    assertEqual(s.columns.customers.join(','), 'C');
-  });
-
-  test('fromJSON ignores non-array column values', () => {
-    const s = State.fromJSON({ columns: { suppliers: 'not-an-array', inputs: ['ok'] } });
-    assertEqual(s.columns.suppliers.length, 0);
-    assertEqual(s.columns.inputs.join(','), 'ok');
-  });
-
-  test('fromJSON keeps only string entries', () => {
-    const s = State.fromJSON({ columns: { suppliers: ['a', 1, null, 'b'] } });
-    assertEqual(s.columns.suppliers.join(','), 'a,b');
-  });
-
-  test('round-trip toJSON -> fromJSON is lossless', () => {
-    const s = new State();
-    s.addItem('suppliers', 'Lieferant Alpha');
-    s.addItem('process', 'Schritt 1');
-    s.addItem('process', 'Schritt 2');
-    s.addItem('customers', 'Endkunde');
-    const restored = State.fromJSON(s.toJSON());
-    assertEqual(restored.columns.suppliers.join(','), 'Lieferant Alpha');
-    assertEqual(restored.columns.process.join(','), 'Schritt 1,Schritt 2');
-    assertEqual(restored.columns.customers.join(','), 'Endkunde');
-  });
-});
-
-suite('SIPOC Model — columnSummary', () => {
-  test('empty state: five columns with count 0', () => {
-    const sum = columnSummary(new State(), 3);
-    assertEqual(sum.map(c => c.key).join(','), COL_KEYS.join(','));
-    assertEqual(sum.map(c => c.letter).join(''), 'SIPOC');
-    for (const c of sum) {
-      assertEqual(c.count, 0);
-      assertEqual(c.top.length, 0);
-      assertEqual(c.more, 0);
-    }
-  });
-
-  test('top holds the first n entries, more the rest', () => {
-    const s = State.fromJSON({ columns: { inputs: ['a', 'b', 'c', 'd'], process: ['x'] } });
-    const byKey = Object.fromEntries(columnSummary(s, 3).map(c => [c.key, c]));
-    assertEqual(byKey.inputs.count, 4);
-    assertEqual(byKey.inputs.top.join(','), 'a,b,c');
-    assertEqual(byKey.inputs.more, 1);
-    assertEqual(byKey.process.top.join(','), 'x');
-    assertEqual(byKey.process.more, 0);
-  });
-
-  test('n below 1 or not a number is treated as 1', () => {
-    const s = State.fromJSON({ columns: { inputs: ['a', 'b'] } });
-    for (const n of [0, -2, undefined, 'x']) {
-      const inputs = columnSummary(s, n).find(c => c.key === 'inputs');
-      assertEqual(inputs.top.join(','), 'a', String(n));
-      assertEqual(inputs.more, 1, String(n));
-    }
-  });
-
-  test('top is a copy, not the live column', () => {
-    const s = State.fromJSON({ columns: { inputs: ['a'] } });
-    columnSummary(s, 3).find(c => c.key === 'inputs').top.push('z');
-    assertEqual(s.columns.inputs.length, 1);
+  test('top ist eine Kopie', () => {
+    const s = filled({ suppliers: ['a'] });
+    columnSummary(s, 3)[0].top.push('z');
+    assertDeepEqual(s.columns.suppliers, ['a']);
   });
 });

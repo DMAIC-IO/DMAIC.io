@@ -1,5 +1,5 @@
 /**
- * D.Mike — SIPOC: Einträge umsortieren (Geste reorder, Spec E1 §5.3).
+ * D.Mike — SIPOC: Einträge umsortieren (Geste reorder).
  *
  * Geste und Kommando sprechen dieselbe Position `{ group, index }` mit
  * Endindex: Gruppe = Spaltenschlüssel, Index = Position nach dem
