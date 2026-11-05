@@ -6,6 +6,7 @@ import {
   defineModel, command, text, number, boolean, oneOf, index, idOf, list, record, object,
   defaultOf, checkValue, describeType, schemaOf, fieldSpec, defineState, stateSchemaOf,
   currentOf, confirmOf, commandDefOf, fromAttr, defineForm,
+  defineSettings, isSettings, readSettings,
 } from '../../js/core/model.js';
 
 const COLS = ['suppliers', 'inputs'];
@@ -446,5 +447,40 @@ suite('defineForm', () => {
     assertThrows(() => defineForm({ fields: { r: object({ id: idOf('items') }) } }), /^defineForm: r uses index\/idOf/);
     assertThrows(() => defineForm({ fields: {}, toParams: 1 }), /^defineForm: toParams must be a function$/);
     assertThrows(() => defineForm({ fields: {}, fromParams: 'x' }), /^defineForm: fromParams must be a function$/);
+  });
+});
+
+suite('defineSettings / readSettings', () => {
+  test('erlaubte Arten, eingefroren, erkennbar', () => {
+    const S = defineSettings({
+      topN: number({ integer: true, min: 1, max: 10, default: 3 }),
+      view: oneOf(['bar', 'list']),
+      showLegend: boolean({ default: true }),
+    });
+    assertDeepEqual(Object.keys(S.schema.fields), ['topN', 'view', 'showLegend']);
+    assertTrue(Object.isFrozen(S) && Object.isFrozen(S.schema) && Object.isFrozen(S.schema.fields));
+    assertTrue(isSettings(S));
+    assertTrue(!isSettings({ schema: { fields: {} } }));
+  });
+
+  test('Ablehnungen', () => {
+    assertThrows(() => defineSettings({ title: text() }), /^defineSettings: title is text; allowed: number, oneOf, boolean$/);
+    assertThrows(() => defineSettings({ items: list(text()) }), /^defineSettings: items is list; allowed: number, oneOf, boolean$/);
+    assertThrows(() => defineSettings({ _source: oneOf(['a']) }), /^defineSettings: _source — names starting with "_" belong to the host$/);
+    assertThrows(() => defineSettings({ n: number({ default: 1 }) }), /^defineSettings: n needs finite min <= max$/);
+    assertThrows(() => defineSettings({ n: number({ min: 5, max: 1, default: 3 }) }), /^defineSettings: n needs finite min <= max$/);
+    assertThrows(() => defineSettings({ n: number({ min: 1, max: 10 }) }), /^defineSettings: n default — /);
+    assertThrows(() => defineSettings({ n: number({ min: 1, max: 10, default: 11 }) }), /^defineSettings: n default — /);
+    assertThrows(() => defineSettings({ v: oneOf([1, 2]) }), /^defineSettings: v values must be strings$/);
+    assertThrows(() => defineSettings({ b: boolean({ nullable: true }) }), /^defineSettings: b may not be nullable or optional$/);
+  });
+
+  test('readSettings: gültige Werte, sonst still die Vorgabe', () => {
+    const S = defineSettings({ topN: number({ integer: true, min: 1, max: 10, default: 3 }), view: oneOf(['bar', 'list']) });
+    assertDeepEqual(readSettings(S, { topN: 4, view: 'list' }), { topN: 4, view: 'list' });
+    assertDeepEqual(readSettings(S, { topN: 11, view: 'pie', extra: 1 }), { topN: 3, view: 'bar' });
+    assertDeepEqual(readSettings(S, { topN: 2.5 }), { topN: 3, view: 'bar' });
+    assertDeepEqual(readSettings(S, undefined), { topN: 3, view: 'bar' });
+    assertDeepEqual(readSettings(S, 'kaputt'), { topN: 3, view: 'bar' });
   });
 });

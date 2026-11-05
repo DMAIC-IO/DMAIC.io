@@ -16,6 +16,10 @@
  * dessen Felder nicht die Parameter eines Kommandos sind; `fromAttr` wandelt
  * den Text eines `data-arg-*` in den Wert einer Feldart.
  *
+ * `defineSettings(fields)` beschreibt die Einstellungen einer Dashboard-Kachel
+ * (`number` mit Grenzen, `oneOf`, `boolean`); `readSettings` liest
+ * gespeicherte Werte und fällt still auf die Vorgabe zurück.
+ *
  * Werte liegen in `this._v`, nicht in `#privaten` Feldern — die brechen mit
  * Alpines Proxy. Accessoren liegen am Prototyp: `Object.keys(model)` liefert
  * nur `['_v']`; wer ein Model kopiert, nimmt `toJSON()`.
@@ -515,6 +519,66 @@ export function defineForm({ fields, fromParams, toParams }) {
     fromParams: fromParams ?? ((params) => ({ ...params })),
     toParams: toParams ?? ((values) => ({ ...values })),
   });
+}
+
+// ─── Kachel-Einstellungen ───────────────────────────────────
+
+/** Feldarten, die eine Kachel-Einstellung haben darf. */
+const SETTINGS_KINDS = new Set(['number', 'oneOf', 'boolean']);
+/** Die Schemata aus `defineSettings` — Erkennung ohne Markerfeld. */
+const SETTINGS_SCHEMAS = new WeakSet();
+
+/**
+ * Einstellungen einer Dashboard-Kachel aus einem Schema-Literal: nur
+ * `number` (mit endlichem `min` ≤ `max`), `oneOf` mit Text-Werten und
+ * `boolean`; die Vorgabe muss gültig sein. Namen mit `_` am Anfang gehören
+ * dem Host (`_source`).
+ * @param {Record<string, object>} fields
+ * @returns {Readonly<{ schema: Readonly<{ fields: Readonly<Record<string, object>> }> }>}
+ */
+export function defineSettings(fields) {
+  for (const [name, s] of Object.entries(fields)) {
+    if (name.startsWith('_')) throw new Error(`defineSettings: ${name} — names starting with "_" belong to the host`);
+    if (!s || !SETTINGS_KINDS.has(s.kind)) throw new Error(`defineSettings: ${name} is ${s?.kind}; allowed: number, oneOf, boolean`);
+    if (s.nullable === true || s.optional === true) throw new Error(`defineSettings: ${name} may not be nullable or optional`);
+    if (s.kind === 'number' && !(Number.isFinite(s.min) && Number.isFinite(s.max) && s.min <= s.max)) {
+      throw new Error(`defineSettings: ${name} needs finite min <= max`);
+    }
+    if (s.kind === 'oneOf' && !s.values.every((v) => typeof v === 'string')) throw new Error(`defineSettings: ${name} values must be strings`);
+    try { checkValue(s, name, defaultOf(s)); } catch (err) { throw new Error(`defineSettings: ${name} default — ${err.message}`); }
+  }
+  const schema = Object.freeze({ fields: Object.freeze({ ...fields }) });
+  SETTINGS_SCHEMAS.add(schema);
+  return Object.freeze({ schema });
+}
+
+/**
+ * Stammt `x` aus `defineSettings`?
+ * @param {unknown} x @returns {boolean}
+ */
+export function isSettings(x) {
+  return Boolean(x && typeof x === 'object' && SETTINGS_SCHEMAS.has(/** @type {any} */ (x).schema));
+}
+
+/**
+ * Gespeicherte Einstellungen lesen, ohne zu werfen: je Feld der geprüfte
+ * Wert, sonst die Vorgabe. Unbekannte Schlüssel fallen weg.
+ * @param {{ schema: { fields: Record<string, object> } }} Settings aus `defineSettings`
+ * @param {unknown} stored
+ * @returns {Record<string, any>}
+ */
+export function readSettings(Settings, stored) {
+  /** @type {Record<string, unknown>} */
+  const src = isPlainObject(stored) ? /** @type {any} */ (stored) : {};
+  const out = {};
+  for (const [name, s] of Object.entries(Settings.schema.fields)) {
+    try {
+      out[name] = Object.hasOwn(src, name) ? checkValue(/** @type {any} */ (s), name, src[name]) : defaultOf(/** @type {any} */ (s));
+    } catch {
+      out[name] = defaultOf(/** @type {any} */ (s));
+    }
+  }
+  return out;
 }
 
 // ─── Versionen und Migrationen ──────────────────────────────
