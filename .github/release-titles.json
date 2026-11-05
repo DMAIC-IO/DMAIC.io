@@ -86,5 +86,9 @@
   "1.6.1": {
     "de": "Fragebogen-Generator: Grafik neben der Tabelle und mehr Luft in der Ergebnisansicht",
     "en": "Survey builder: chart beside the table and more room in the results view"
+  },
+  "1.6.2": {
+    "de": "Fragebogen-Generator: alle Grafiken der Ergebnisansicht neben ihrer Tabelle",
+    "en": "Survey builder: every results chart beside its table"
   }
 }
