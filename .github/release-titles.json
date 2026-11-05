@@ -94,5 +94,9 @@
   "1.6.3": {
     "de": "Balkendiagramme: lange Achsenbeschriftungen umbrechen statt drehen",
     "en": "Bar charts: wrap long axis labels instead of rotating them"
+  },
+  "1.6.4": {
+    "de": "DoE-Planer: Vorschau-Tabelle immer sichtbar, Abschnitte klappen einzeln",
+    "en": "DoE planner: run preview always visible, sections collapse one at a time"
   }
 }
