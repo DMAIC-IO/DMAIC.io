@@ -40,6 +40,17 @@ suite('defineModel — Migrationskette', () => {
     assertThrows(() => Two.fromJSON({ _schema: { version: '3.0' }, items: [] }, { repair: true }), /allowed: up to 2\.0/);
   });
 
+  test('gespeicherte Version in falscher Form wird abgelehnt, auch mit repair', () => {
+    assertThrows(() => Two.fromJSON({ _schema: { version: 2 }, items: [] }),
+      /^invalid _schema\.version 2; allowed: 0 or MAJOR\.MINOR$/);
+    assertThrows(() => Two.fromJSON({ _schema: { version: 'abc' }, items: [] }, { repair: true }),
+      /^invalid _schema\.version "abc"; allowed: 0 or MAJOR\.MINOR$/);
+    assertThrows(() => Two.fromJSON({ _schema: { version: '1' }, items: [] }),
+      /^invalid _schema\.version "1"; allowed: 0 or MAJOR\.MINOR$/);
+    assertThrows(() => defineModel({ fields: { t: text() } }).fromJSON({ _schema: { version: null }, t: 'x' }),
+      /^invalid _schema\.version null; allowed: 0 or MAJOR\.MINOR$/);
+  });
+
   test('unbekannte Zwischenversion wird abgelehnt', () => {
     assertThrows(() => Two.fromJSON({ _schema: { version: '0.5' }, items: [] }),
       /^unknown _schema\.version "0\.5"; available: 0, 1\.0, 2\.0$/);

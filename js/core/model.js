@@ -364,6 +364,8 @@ export function fieldSpec(model, name) {
 // Muster — bei Änderungen synchron halten.
 const VERSION = /^\d+\.\d+$/;
 const MIGRATION_KEY = /^(0|\d+\.\d+)→(\d+\.\d+)$/;
+/** Gespeicherte Version: `0` (vor dem ersten Schema) oder `MAJOR.MINOR`. */
+const STORED_VERSION = /^(0|\d+\.\d+)$/;
 
 /**
  * Versionen `MAJOR.MINOR` (oder `'0'`) numerisch vergleichen.
@@ -406,10 +408,12 @@ function migrationSteps(version, migrations) {
  * Gespeicherten Zustand auf `version` heben (Kopie je Schritt).
  * @param {object} json @param {string} version @param {Map<string, { to: string, fn: Function }>} steps
  * @returns {object}
- * @throws {Error} neuere oder unbekannte gespeicherte Version
+ * @throws {Error} gespeicherte Version in falscher Form, neuer oder unbekannt
  */
 function migrate(json, version, steps) {
-  const saved = isPlainObject(json._schema) && typeof json._schema.version === 'string' ? json._schema.version : '0';
+  const stored = isPlainObject(json._schema) && Object.hasOwn(json._schema, 'version');
+  const saved = stored ? json._schema.version : '0';
+  if (stored) requireForm('_schema.version', saved, typeof saved === 'string' && STORED_VERSION.test(saved), '0 or MAJOR.MINOR');
   requireForm('_schema.version', saved, compareVersions(saved, version) <= 0,
     `up to ${version} (saved by a newer version of this module)`);
   if (steps.size === 0 || saved === version) return json;

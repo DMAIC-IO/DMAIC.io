@@ -11,6 +11,17 @@
 import { State } from '../domain/model.js';
 import { columnSummary } from '../domain/summary.js';
 
+/**
+ * Gespeicherten Zustand für die Kachel laden, ohne zu werfen: streng, sonst
+ * repariert, sonst (neuere oder unlesbare Version) leer.
+ * @param {object|undefined} state
+ * @returns {InstanceType<typeof State>}
+ */
+function readState(state) {
+  try { return State.fromJSON(state); } catch { /* reparieren */ }
+  try { return State.fromJSON(state, { repair: true }); } catch { return new State(); }
+}
+
 export default {
   size: { defaultW: 6, defaultH: 10, minW: 4, minH: 6 },
   titlePrefix: 'SIPOC',
@@ -25,7 +36,7 @@ export default {
    * @returns {{empty: string|null, filled: string|null, columns: Array<object>}}
    */
   viewModel({ state, settings, i18n }) {
-    const model = State.fromJSON(state);
+    const model = readState(state);
     if (!model.hasContent()) return { empty: i18n.t('dashboard.sipocEmpty'), filled: null, columns: [] };
     const cols = columnSummary(model, settings.topN);
     const filled = cols.filter(c => c.count > 0).length;

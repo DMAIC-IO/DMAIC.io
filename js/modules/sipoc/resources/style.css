@@ -147,16 +147,13 @@
   letter-spacing: 1.2px;
   text-transform: uppercase;
   color: var(--color-text-primary);
-}
-
-/* Kontexthilfe-Anker: schrumpfbreit, damit der Kreis neben dem Spaltennamen
-   sitzt statt jenseits der Spaltenkante; senkrecht mittig, weil die Spalte
-   clippt (`overflow: hidden`) und der Kreis auf der Oberkante dort
-   angeschnitten würde. */
-.sipoc__col-label {
+  /* Kontexthilfe-Anker: schrumpfbreit, damit der Kreis neben dem Spaltennamen
+     sitzt statt jenseits der Spaltenkante. */
   width: fit-content;
 }
 
+/* Senkrecht mittig, weil die Spalte clippt (`overflow: hidden`) und der
+   Kreis auf der Oberkante dort angeschnitten würde. */
 .sipoc__col-label.context-help-anchor > .context-help__btn {
   top: 50%;
 }

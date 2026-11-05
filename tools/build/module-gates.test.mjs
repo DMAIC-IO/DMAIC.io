@@ -480,6 +480,29 @@ export const State = defineModel({
   ]);
 });
 
+test('Schema-Literal: migrations als Konstante oder Aufruf, Kurzschreibweise, Methode', () => {
+  const head = `import { defineModel, text } from '${MODEL_URL}';
+import { from0 } from './migrations.js';
+const STEPS = { '0→1.0': from0 };
+const version = '1.0';
+const migrations = STEPS;
+const make = () => STEPS;
+`;
+  const P = 'schema: domain/model.js:';
+  assert.deepEqual(checkSchemaLiteral(`${head}export const State = defineModel({ version: '1.0', migrations: STEPS, fields: { t: text() } });\n`),
+    [`${P} migrations muss ein Objekt-Literal { 'a→b': <Import aus ./migrations.js> } sein (STEPS)`]);
+  assert.deepEqual(checkSchemaLiteral(`${head}export const State = defineModel({ version: '1.0', migrations: make(), fields: { t: text() } });\n`),
+    [`${P} migrations muss ein Objekt-Literal { 'a→b': <Import aus ./migrations.js> } sein (make())`]);
+  assert.deepEqual(checkSchemaLiteral(`${head}export const State = defineModel({ version, migrations, fields: { t: text() } });\n`), [
+    `${P} version muss ein String-Literal MAJOR.MINOR sein (version)`,
+    `${P} migrations muss ein Objekt-Literal { 'a→b': <Import aus ./migrations.js> } sein (migrations)`,
+  ]);
+  assert.deepEqual(checkSchemaLiteral(`${head}export const State = defineModel({ version() { return '1.0'; }, migrations() { return STEPS; }, fields: { t: text() } });\n`), [
+    `${P} version muss ein String-Literal MAJOR.MINOR sein (version() { return '1.0'; })`,
+    `${P} migrations muss ein Objekt-Literal { 'a→b': <Import aus ./migrations.js> } sein (migrations() { return STEPS; })`,
+  ]);
+});
+
 test('Schema-Literal: Aufruf als Konstante zählt nicht (itemText)', () => {
   const text = `import { defineModel, text, command } from '${MODEL_URL}';
 const itemText = text({ trim: true });

@@ -11,11 +11,15 @@
  * Ein deklaratives Model (`Model.schema`, core/model.js) lädt streng; wirft
  * das, fällt nur das ungültige Feld auf seinen Vorgabewert
  * (`fromJSON(json, { repair: true })`) — ein leicht kaputter Projektstand
- * verliert so nichts Gültiges. Andere Models laden wie bisher.
+ * verliert so nichts Gültiges. Ausnahme: eine gespeicherte `_schema.version`,
+ * die in falscher Form, neuer als `version` oder in der Migrationskette
+ * unbekannt ist, wirft auch mit `repair` — der Fehler geht an den Aufrufer.
+ * Andere Models laden wie bisher.
  *
  * @param {{ fromJSON(d: object, opts?: object): object, schema?: object }} Model
  * @param {object} json
  * @returns {object}
+ * @throws {Error} gespeicherte `_schema.version` nicht ladbar (s. o.)
  */
 export function loadModel(Model, json) {
   if (!Model.schema) return Model.fromJSON(json);

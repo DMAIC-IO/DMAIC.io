@@ -1389,6 +1389,16 @@ suite('dashboard tiles: sipoc', () => {
     }
   });
 
+  test('a stored state from a newer version shows the empty state instead of throwing', async () => {
+    const host = (await render(sipocTile, { _schema: { version: '9.0' }, columns: { inputs: ['Flour'] } }));
+    assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'dashboard.sipocEmpty');
+  });
+
+  test('a current-version state with a bad entry renders (repaired) instead of throwing', async () => {
+    const host = (await render(sipocTile, { _schema: { version: '1.0' }, columns: { inputs: [42], outputs: ['Bread'] } }));
+    assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'dashboard.sipocEmpty');
+  });
+
   test('five columns in order with letter, name and count', async () => {
     const host = (await render(sipocTile, SIPOC_STATE));
     const cols = [...host.querySelectorAll('.dashboard-sipoc__col')];

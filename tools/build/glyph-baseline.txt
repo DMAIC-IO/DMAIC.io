@@ -18,7 +18,7 @@
 #     Icon-System vorbei ins Repo kommen, ohne dass es hier auffällt.
 #
 # WIE MAN EINE ZEILE LOSWIRD:
-#   Migrieren heißt LÖSCHEN. Wird die Zeile in `js/modules/sipoc/sipoc.js` auf
+#   Migrieren heißt LÖSCHEN. Wird die Zeile in `js/modules/<id>/<id>.js` auf
 #   `icon('action.delete')` umgestellt, verschwindet die Glyphe aus dem
 #   Quelltext — der nächste `icons:check`-Lauf findet sie ohnehin nicht
 #   mehr, aber die verwaiste Baseline-Zeile sollte man trotzdem von Hand

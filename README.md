@@ -117,10 +117,10 @@ Every module exports a default object conforming to this contract:
 
 ```js
 export default {
-  id: 'sipoc',
+  id: 'five-why',
   phase: 'define',            // mapped to cycles via manifest.js
   icon: 'clipboard-list',
-  i18nKey: 'modules.sipoc',
+  i18nKey: 'modules.five-why',
   version: '1.0.0',
 
   // Lifecycle
@@ -134,7 +134,7 @@ export default {
   setState(data) {},
 
   // Optional handbook (lazy-loaded)
-  help: () => import('./sipoc-help.js'),
+  help: () => import('./five-why-help.js'),
 };
 ```
 

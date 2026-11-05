@@ -1,7 +1,8 @@
 /* ============================================================
    D.Mike — Module Container Styles (modules.css)
    Base styles for module containers. Module-specific styles
-   live in their own CSS files (e.g. js/modules/sipoc/sipoc.css).
+   live in their own CSS files (e.g. js/modules/five-why/five-why.css,
+   or resources/style.css in a converted module such as sipoc).
    ============================================================ */
 
 /* ===== Module container ===== */

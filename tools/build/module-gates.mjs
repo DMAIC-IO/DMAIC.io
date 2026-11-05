@@ -357,20 +357,25 @@ export function checkSchemaLiteral(text) {
   const MIGRATION_KEY = /^(0|\d+\.\d+)→(\d+\.\d+)$/;
   const keyOf = (p) => (p.name && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? p.name.text : null);
   for (const p of top.properties) {
-    if (!ts.isPropertyAssignment(p)) continue;
-    if (keyOf(p) === 'version') {
-      const v = p.initializer;
+    const key = keyOf(p);
+    if (key !== 'version' && key !== 'migrations') continue;
+    // Kurzschreibweise, Methode, Getter: keine Zuweisung — die ganze Eigenschaft zeigen.
+    const v = ts.isPropertyAssignment(p) ? p.initializer : p;
+    if (key === 'version') {
       if (!(ts.isStringLiteral(v) && VERSION_LITERAL.test(v.text))) out.push(`${P} version muss ein String-Literal MAJOR.MINOR sein (${src(v)})`);
+      continue;
     }
-    if (keyOf(p) === 'migrations' && ts.isObjectLiteralExpression(p.initializer)) {
-      for (const m of p.initializer.properties) {
-        if (!ts.isPropertyAssignment(m) || !ts.isStringLiteral(m.name) || !MIGRATION_KEY.test(m.name.text)) {
-          out.push(`${P} migrations: Schlüssel ${src(m.name ?? m)} hat nicht die Form 'a→b'`);
-          continue;
-        }
-        const v = m.initializer;
-        if (!(ts.isIdentifier(v) && migrationImports.has(v.text))) out.push(`${P} migrations: Wert ${src(v)} ist kein Import aus ./migrations.js`);
+    if (!ts.isObjectLiteralExpression(v)) {
+      out.push(`${P} migrations muss ein Objekt-Literal { 'a→b': <Import aus ./migrations.js> } sein (${src(v)})`);
+      continue;
+    }
+    for (const m of v.properties) {
+      if (!ts.isPropertyAssignment(m) || !ts.isStringLiteral(m.name) || !MIGRATION_KEY.test(m.name.text)) {
+        out.push(`${P} migrations: Schlüssel ${src(m.name ?? m)} hat nicht die Form 'a→b'`);
+        continue;
       }
+      const step = m.initializer;
+      if (!(ts.isIdentifier(step) && migrationImports.has(step.text))) out.push(`${P} migrations: Wert ${src(step)} ist kein Import aus ./migrations.js`);
     }
   }
   /** Name des Kommandos = Schlüssel der umgebenden PropertyAssignment. */
