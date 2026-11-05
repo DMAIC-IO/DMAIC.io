@@ -8,12 +8,15 @@ import { schemaAgentEntry, readSchemaModel } from './agent/agent-schema.js';
 import { attachGesture } from './interaction/attach.js';
 import { isGesture } from './interaction/define.js';
 import { requireKnownId } from './validate.js';
+import { formatsOf } from './exporter.js';
 
 /**
  * Was `view(ctx)` bekommt: die Kontextdienste und die Kennungen der Instanz.
+ * `cssVars(map)` liest CSS-Variablen am Wurzelelement der Instanz.
  * @typedef {{ context: object,
  *   notify: (message: string, type?: string, titleKey?: string) => void,
- *   dialog: any, i18n: any, eventBus: any, instanceId: string, moduleId: string }} ViewContext
+ *   dialog: any, i18n: any, eventBus: any, instanceId: string, moduleId: string,
+ *   cssVars: (map: Record<string, string>) => Record<string, string> }} ViewContext
  */
 /**
  * `this` in den Gliedern eines `view`-Blocks. Die eigenen Glieder des Blocks
@@ -27,6 +30,23 @@ import { requireKnownId } from './validate.js';
  * Der `view`-Block eines Moduls in der neuen Form.
  * @template M, S
  * @typedef {(ctx: ViewContext) => Record<string, any> & ThisType<Record<string, any> & ViewThis<M, S>>} ViewFn
+ */
+/** Zeilen eines Tabellen-Exports; die erste Zeile ist der Kopf. @typedef {(string|number|null)[][]} ExportRows */
+/**
+ * `this` in den Mappern eines `exports`-Blocks: die Komponente wie im
+ * `view`-Block, dazu `cssVars`.
+ * @template M, S
+ * @typedef {ViewThis<M, S> & { cssVars: (map: Record<string, string>) => Record<string, string> }} ExportThis
+ */
+/**
+ * Der `exports`-Block eines Moduls: Mapper nach Datenform. Die Formate
+ * folgen daraus (`core/exporter.js`).
+ * @template M, S
+ * @typedef {{ fileName?: string|(() => string),
+ *   table?: () => ExportRows|Promise<ExportRows>,
+ *   tables?: () => Record<string, ExportRows>|Promise<Record<string, ExportRows>>,
+ *   tree?: () => unknown,
+ *   image?: () => string|Promise<string> } & ThisType<Record<string, any> & ExportThis<M, S>>} ExportsDef
  */
 
 /**
@@ -50,6 +70,40 @@ export function shouldApplyRoute(store, instanceId) {
  */
 function copyMembers(target, source) {
   return Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
+}
+
+/** Erlaubte Schlüssel in `exports`; die Mapper darunter. */
+const EXPORT_KEYS = ['fileName', 'table', 'tables', 'tree', 'image'];
+const EXPORT_MAPPERS = ['table', 'tables', 'tree', 'image'];
+
+/**
+ * CSS-Variablen an `el`, getrimmt; fehlt eine, `''`.
+ * @param {Element|null|undefined} el @param {Record<string, string>} map
+ * @returns {Record<string, string>}
+ */
+function readCssVars(el, map) {
+  const style = el ? getComputedStyle(el) : null;
+  return Object.fromEntries(Object.entries(map).map(([key, name]) => [key, style ? style.getPropertyValue(name).trim() : '']));
+}
+
+/**
+ * `exports` prüfen; wirft mit der Modul-Id.
+ * @param {string} id @param {Record<string, unknown>} def @param {boolean} hasView
+ */
+function checkExports(id, def, hasView) {
+  if (!hasView) throw new Error(`createModule(${id}): exports requires view`);
+  for (const key of Object.keys(def)) {
+    if (!EXPORT_KEYS.includes(key)) throw new Error(`createModule(${id}): exports.${key} is unknown (allowed: ${EXPORT_KEYS.join(', ')})`);
+  }
+  if (!EXPORT_MAPPERS.some((k) => def[k] !== undefined)) {
+    throw new Error(`createModule(${id}): exports needs at least one of ${EXPORT_MAPPERS.join(', ')}`);
+  }
+  for (const key of EXPORT_MAPPERS) {
+    if (def[key] !== undefined && typeof def[key] !== 'function') throw new Error(`createModule(${id}): exports.${key} must be a function`);
+  }
+  if (def.fileName !== undefined && typeof def.fileName !== 'string' && typeof def.fileName !== 'function') {
+    throw new Error(`createModule(${id}): exports.fileName must be a string or a function`);
+  }
 }
 
 /**
@@ -98,10 +152,12 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
 // base.view(ctx) — neue Form statt base.data(module, t): liefert Getter und
 // Handler; `this` ist die Komponente mit model, state, t. base.State — UI-State
 // aus defineState, nur zusammen mit view.
+// base.exports — Mapper nach Datenform (table/tables/tree/image, fileName),
+// nur mit view; daraus entstehen Export-Menü und Dateien (core/exporter.js).
 // base.forms — Namensraum von viewmodel/forms.js (defineForm), für
 // x-command-form mit data-form; Vorgabe {}.
 export function createModule(base) {
-  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, createDefault, gestures = [], forms = {} } = base;
+  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, createDefault, gestures = [], forms = {}, exports: exportsDef } = base;
   if (descriptor) {
     for (const key of NOT_IN_CONFIG) {
       if (Object.hasOwn(config, key)) {
@@ -112,6 +168,12 @@ export function createModule(base) {
   const id = descriptor ? descriptor.id : config.id;
   if (data && view) throw new Error(`createModule(${id}): data and view are mutually exclusive`);
   if (UiState && !view) throw new Error(`createModule(${id}): State requires view`);
+  if (exportsDef !== undefined) checkExports(id, exportsDef, Boolean(view));
+  const actions = exportsDef === undefined ? (config.actions ?? []) : [...(config.actions ?? []), {
+    icon: 'action.download',
+    title: 'export.label',
+    children: formatsOf(exportsDef).map((fmt) => ({ icon: `format.${fmt}`, title: `export.${fmt}`, export: fmt })),
+  }];
   gestures.forEach((g, i) => {
     if (!isGesture(g)) throw new Error(`createModule ${id}: gestures[${i}] is not a defineGesture result`);
   });
@@ -217,6 +279,7 @@ export function createModule(base) {
           eventBus: context.eventBus,
           instanceId: context.instanceId,
           moduleId: id,
+          cssVars: (map) => readCssVars(container.querySelector('[x-data]'), map),
         });
       } else {
         const dataCtx = new Proxy(dataCtxTarget, {
@@ -255,10 +318,14 @@ export function createModule(base) {
             changeRoute(sub) { this.$route?.go(sub); },
           };
           // Neue Form: UI-State je Komponente, frisch aus dem Schema.
-          if (view) Object.assign(comp, { state: UiState ? UiState.create() : {}, moduleId: id });
+          if (view) {
+            Object.assign(comp, { state: UiState ? UiState.create() : {}, moduleId: id });
+            comp.cssVars = function cssVars(map) { return readCssVars(this.$root, map); };
+          }
           if (schema) copyMembers(comp, schemaMembers(id, agentEntry, vmCommands));
-          if (schema) {
-            // Griff der Kommando-Primitive (core/command-directives.js). Nicht
+          if (schema || exportsDef) {
+            // Griff der Kommando-Primitive (core/command-directives.js) und, für
+            // exports/component, von runExport (core/exporter.js). Nicht
             // aufzählbar; `this` ist Alpines Proxy, `this.model` also reaktiv.
             // Den Dialog-Dienst gibt es erst nach Alpine.start() — beim Lesen holen.
             Object.defineProperty(comp, '_ui', {
@@ -272,6 +339,8 @@ export function createModule(base) {
                   i18n: context.i18n,
                   moduleId: id,
                   forms,
+                  exports: exportsDef ?? null,
+                  component: this,
                 };
               },
             });
@@ -399,7 +468,7 @@ export function createModule(base) {
       }
     },
 
-    getActions() { return config.actions ?? []; },
+    getActions() { return actions; },
 
     getActionData() {
       if (!alpine) return null;
