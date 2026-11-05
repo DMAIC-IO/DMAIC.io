@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
   renderCatalogModule, collectExampleCatalog, collectCatalogTexts, renderCatalogTexts, catalogConflicts, readLegacyIds,
-  CATALOG_LANGS, CATALOG_TEXT_KEYS, CATALOG_SCHEMA_REF,
+  moduleOrderDiff, MODULE_ORDER, CATALOG_LANGS, CATALOG_TEXT_KEYS, CATALOG_SCHEMA_REF,
 } from './catalog.mjs';
 import { APP_DIR } from './build.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
@@ -27,18 +27,19 @@ function appWith(files) {
 const UI = (name) => JSON.stringify({ name, description: `${name} kurz`, whenToUse: `${name} wann`, col: 'Spalte' });
 
 test('renderCatalogModule ohne umgestellte Module: nur manifest.js', () => {
-  const src = renderCatalogModule([]);
+  const src = renderCatalogModule([], {}, ['sipoc']);
   assert.match(src, /export const EXAMPLES = Object\.freeze\(\{\}\);/);
   assert.match(src, /export const EXAMPLE_REFS = Object\.freeze\(\{\}\);/);
   assert.match(src, /^\/\/ ERZEUGT von tools\/build\/catalog\.mjs/);
   assert.match(src, /import legacy from '\.\/manifest\.js';/);
   assert.match(src, /export const CONVERTED = Object\.freeze\(\[\]\);/);
-  assert.match(src, /export const MODULES = Object\.freeze\(\[\.\.\.legacy, \.\.\.\[\]\.map\(fromDescriptor\)\]\);/);
+  assert.match(src, /export const MODULES = Object\.freeze\(\[\.\.\.legacy, \.\.\.\[\]\.map\(fromDescriptor\)\]\s*\.sort\(\(a, b\) => MODULE_ORDER\.indexOf\(a\.id\) - MODULE_ORDER\.indexOf\(b\.id\)\)\);/);
+  assert.match(src, /export const MODULE_ORDER = Object\.freeze\(\["sipoc"\]\);/);
   assert.doesNotMatch(src, /module\.js'/);
 });
 
 test('renderCatalogModule importiert je umgestelltem Modul dessen module.js', () => {
-  const src = renderCatalogModule(['alpha', 'beta']);
+  const src = renderCatalogModule(['alpha', 'beta'], {}, ['alpha', 'beta']);
   assert.match(src, /import m0 from '\.\/alpha\/module\.js';/);
   assert.match(src, /import m1 from '\.\/beta\/module\.js';/);
   assert.match(src, /export const CONVERTED = Object\.freeze\(\["alpha","beta"\]\);/);
@@ -82,13 +83,40 @@ test('readLegacyIds liest die Ids aus manifest.js', async () => {
   assert.equal(new Set(ids).size, ids.length);
 });
 
+test('MODULE_ORDER: echter Baum — jedes Modul genau einmal', async () => {
+  assert.deepEqual(moduleOrderDiff(await readLegacyIds(APP_DIR), CONVERTED_MODULES), []);
+});
+
+test('moduleOrderDiff meldet Fehlende, Doppel und Unbekannte', () => {
+  assert.deepEqual(moduleOrderDiff(['a', 'b'], ['c'], ['a', 'a', 'x']), [
+    'catalog: MODULE_ORDER: a steht mehrfach darin',
+    'catalog: MODULE_ORDER: x ist kein Modul',
+    'catalog: MODULE_ORDER: b fehlt',
+    'catalog: MODULE_ORDER: c fehlt',
+  ]);
+});
+
+test('renderCatalogModule sortiert MODULES nach MODULE_ORDER', () => {
+  const out = renderCatalogModule(['neu'], {}, ['alt', 'neu', 'ende']);
+  assert.match(out, /export const MODULE_ORDER = Object\.freeze\(\["alt","neu","ende"\]\);/);
+  assert.match(out, /export const MODULES = Object\.freeze\(\[\.\.\.legacy, \.\.\.\[m0\]\.map\(fromDescriptor\)\]\s*\.sort\(\(a, b\) => MODULE_ORDER\.indexOf\(a\.id\) - MODULE_ORDER\.indexOf\(b\.id\)\)\);/);
+});
+
+test('MODULE_ORDER wird vor jeder Verwendung im Katalog ausgegeben (TDZ)', () => {
+  const out = renderCatalogModule(['neu'], {}, ['neu']);
+  const decl = out.indexOf('export const MODULE_ORDER');
+  assert.ok(decl > -1);
+  assert.ok(decl < out.indexOf('export const MODULES'));
+  assert.ok(decl < out.indexOf('MODULE_ORDER.indexOf'));
+});
+
 test('Konstanten', () => {
   assert.deepEqual([...CATALOG_LANGS], ['de', 'en']);
   assert.deepEqual([...CATALOG_TEXT_KEYS], ['name', 'description', 'whenToUse']);
 });
 
 test('eingecheckter Katalog ist aktuell', () => {
-  assert.equal(readFileSync(join(APP_DIR, 'js', 'modules', 'catalog.generated.js'), 'utf8'), renderCatalogModule(CONVERTED_MODULES, collectExampleCatalog(APP_DIR, CONVERTED_MODULES)));
+  assert.equal(readFileSync(join(APP_DIR, 'js', 'modules', 'catalog.generated.js'), 'utf8'), renderCatalogModule(CONVERTED_MODULES, collectExampleCatalog(APP_DIR, CONVERTED_MODULES), MODULE_ORDER));
   for (const lang of CATALOG_LANGS) {
     assert.equal(readFileSync(join(APP_DIR, 'js', 'modules', `catalog.${lang}.json`), 'utf8'),
       renderCatalogTexts(collectCatalogTexts(APP_DIR, CONVERTED_MODULES, lang)));

@@ -26,7 +26,7 @@ import { collectLicenseData, renderLicenseDataModule, renderLicenseText } from '
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { writeModuleTemplates, writeModuleStyles, linkedModuleCss, collectModuleResources, buildModuleResourcesBlock, moduleResourceUrls } from './module-assets.mjs';
 import {
-  renderCatalogModule, collectExampleCatalog, collectCatalogTexts, renderCatalogTexts, catalogConflicts, readLegacyIds, CATALOG_LANGS,
+  renderCatalogModule, collectExampleCatalog, collectCatalogTexts, renderCatalogTexts, catalogConflicts, moduleOrderDiff, readLegacyIds, CATALOG_LANGS,
 } from './catalog.mjs';
 import { validateValue } from './json-schemas.mjs';
 import { collectPrecache, precacheVersion, bundleServiceWorker } from './service-worker.mjs';
@@ -392,8 +392,9 @@ export async function runBuild(appDir = APP_DIR, { check = false, converted = CO
 
   // 1e. Modulkatalog: Registry-Einträge alt + neu,
   //     dazu je Sprache name/description/whenToUse der umgestellten Module.
-  const conflicts = catalogConflicts(await readLegacyIds(appDir), converted);
-  if (conflicts.length) throw new Error(conflicts.join('\n'));
+  const legacyIds = await readLegacyIds(appDir);
+  const problems = [...catalogConflicts(legacyIds, converted), ...moduleOrderDiff(legacyIds, converted)];
+  if (problems.length) throw new Error(problems.join('\n'));
   emit(join(appDir, 'js', 'modules', 'catalog.generated.js'), renderCatalogModule(converted, collectExampleCatalog(appDir, converted)), check, changed);
   for (const lang of CATALOG_LANGS) {
     emit(join(appDir, 'js', 'modules', `catalog.${lang}.json`),

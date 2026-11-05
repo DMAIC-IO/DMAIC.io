@@ -24,23 +24,52 @@ export const CATALOG_LANGS = Object.freeze(['de', 'en']);
 export const CATALOG_TEXT_KEYS = Object.freeze(['name', 'description', 'whenToUse']);
 
 /**
+ * Menüreihenfolge aller Module — die EINE Quelle, sobald `manifest.js`
+ * entfällt (Teilprojekt G). Umgestellte Module behalten ihren alten Platz.
+ * Ein neues Modul kommt hier von Hand hinein.
+ * @type {readonly string[]}
+ */
+export const MODULE_ORDER = Object.freeze([
+  'worksheet', 'xy-plot', 'pie-chart', 'bar', 'pareto', 'mosaic', 'heatmap', 'contour-plot',
+  'histogram', 'boxplot', 'individual-value-plot', 'run-chart', 'probability-plot',
+  'chart-suggestion', 'data-import', 'rest-api', 'random-generator', 'model-data-generator',
+  'calculator', 'unit-converter', 'data-transformation', 'project-charter', 'dmaic-calendar',
+  'todo', 'stakeholder-analysis', 'voc-ctx-tree', 'kano', 'survey-builder', 'raci-matrix', 'sipoc',
+  'five-why', 'process-map', 'gage-run-chart', 'msa-typ1', 'msa-typ2', 'msa-typ4', 'msa-typ5',
+  'msa-typ6', 'process-capability', 'ce-matrix', 'ishikawa', 'makigami', 'activity-flowchart',
+  'opportunity-flowchart', 'deployment-flowchart', 'correlation', 'distribution-fit', 'fmea',
+  'hypothesis-test', 'attribute-test', 'resampling', 'multi-vari', 'sample-size',
+  'pairwise-comparison', 'outlier-test', 'doe-advisor', 'doe-planner', 'regression',
+  'glm-regression', 'response-optimization', 'control-chart', 'attribute-control-chart',
+  'time-weighted-chart', 'rare-event-chart', 'multivariate-control-chart', 'short-run-chart',
+  'transformed-imr-chart', 'lessons-learned', 'triz-contradiction-matrix', 'triz-9-windows',
+  'morphological-box', 'triz-physical-contradiction', 'triz-ifr', 'triz-resources',
+  'triz-evolution-trends', 'triz-sufield', 'triz-function-analysis',
+]);
+
+/**
  * Quelltext von js/modules/catalog.generated.js.
  * @param {readonly string[]} converted  Ids, sortiert (CONVERTED_MODULES)
  * @param {{ examples?: Record<string, string>, exampleRefs?: Record<string, string[]> }} [exampleCatalog]  collectExampleCatalog(…)
+ * @param {readonly string[]} [order]  Menüreihenfolge (MODULE_ORDER)
  * @returns {string}
  */
-export function renderCatalogModule(converted, { examples = {}, exampleRefs = {} } = {}) {
+export function renderCatalogModule(converted, { examples = {}, exampleRefs = {} } = {}, order = MODULE_ORDER) {
   const lines = [
     '// ERZEUGT von tools/build/catalog.mjs — nicht von Hand ändern.',
     "import legacy from './manifest.js';",
     "import { fromDescriptor } from '../core/module-catalog.js';",
     ...converted.map((id, i) => `import m${i} from './${id}/module.js';`),
     '',
+    '/** Menüreihenfolge (tools/build/catalog.mjs MODULE_ORDER). */',
+    `export const MODULE_ORDER = Object.freeze(${JSON.stringify([...order])});`,
+    '',
     '/** Ids der Module in der neuen Form (module.js), sortiert. */',
     `export const CONVERTED = Object.freeze(${JSON.stringify([...converted])});`,
     '',
-    '/** Alle Registry-Einträge: alte Form aus manifest.js, neue aus module.js. */',
-    `export const MODULES = Object.freeze([...legacy, ...[${converted.map((_, i) => `m${i}`).join(', ')}].map(fromDescriptor)]);`,
+    '/** Alle Registry-Einträge: alte Form aus manifest.js, neue aus module.js; in Menüreihenfolge. */',
+    `export const MODULES = Object.freeze([...legacy, ...[${converted.map((_, i) => `m${i}`).join(', ')}].map(fromDescriptor)]`,
+    '  .sort((a, b) => MODULE_ORDER.indexOf(a.id) - MODULE_ORDER.indexOf(b.id)));',
     '',
     '/** Beispiel-Id → Besitzermodul (Module in neuer Form, resources/examples/examples.json). */',
     `export const EXAMPLES = Object.freeze(${JSON.stringify(examples)});`,
@@ -121,6 +150,26 @@ export function renderCatalogTexts(texts) {
 export function catalogConflicts(legacyIds, converted) {
   return converted.filter((id) => legacyIds.includes(id))
     .map((id) => `catalog: ${id}: steht noch in manifest.js — ein umgestelltes Modul hat nur module.js`);
+}
+
+/**
+ * Gate Menüreihenfolge: jedes Modul (manifest.js + umgestellte) genau einmal.
+ * @param {string[]} legacyIds
+ * @param {readonly string[]} converted
+ * @param {readonly string[]} [order]
+ * @returns {string[]}
+ */
+export function moduleOrderDiff(legacyIds, converted, order = MODULE_ORDER) {
+  const all = new Set([...legacyIds, ...converted]);
+  const out = [];
+  const seen = new Set();
+  for (const id of order) {
+    if (seen.has(id)) out.push(`catalog: MODULE_ORDER: ${id} steht mehrfach darin`);
+    seen.add(id);
+  }
+  for (const id of seen) if (!all.has(id)) out.push(`catalog: MODULE_ORDER: ${id} ist kein Modul`);
+  for (const id of all) if (!seen.has(id)) out.push(`catalog: MODULE_ORDER: ${id} fehlt`);
+  return out;
 }
 
 /**

@@ -147,6 +147,9 @@ export function createModule(base) {
     ...config,
     agentEntry,
     // Methode, nicht Pfeil: die neue Form braucht die aktive Sprache der Instanz.
+    // hasModuleHelp/hasModuleReferences: einmal beim Erzeugen ausgewertet. Das
+    // genügt — der Katalog (#module-resources, HELP/REFS) ist statisch und vor
+    // dem ersten createModule gesetzt.
     help: hasModuleHelp(id) ? function help() { return getModuleHelp(id, this._context?.i18n?.getLanguage()); } : undefined,
     references: hasModuleReferences(id) ? () => getModuleReferences(id) : undefined,
 
