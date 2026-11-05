@@ -7,6 +7,8 @@ import { mkdtempSync, mkdirSync, writeFileSync, copyFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { typecheck, typecheckFiles, TYPED_CORE } from './typecheck.mjs';
+import { renderModelTypes } from './model-types.mjs';
+import { defineModel, command, text, index, list } from '../../js/core/model.js';
 import { APP_DIR } from './build.mjs';
 
 function appWith(files) {
@@ -96,4 +98,26 @@ export const view = (ctx) => ({
   assert.equal(findings.length, 2, findings.join('\n'));
   assert.match(findings[0], /vm\.js\(6,\d+\): TS2339: Property 'nope'/);
   assert.match(findings[1], /vm\.js\(7,\d+\): TS2322: /);
+});
+
+test('typecheck: fremder Schlüssel in der Rückgabe von current ist ein Befund', () => {
+  const Doc = defineModel({
+    fields: { items: list(text()) },
+    commands: {
+      setItem: command({ params: { idx: index('items', { existing: true }), text: text() }, current() { return {}; }, run() {} }),
+    },
+  });
+  const dir = mkdtempSync(join(tmpdir(), 'typecheck-current-'));
+  writeFileSync(join(dir, 'model.types.js'), renderModelTypes({ name: 'Doc', schema: Doc.schema }));
+  const hooks = (body) => `export const hooks = {
+  /** @type {import('./model.types.js').SetItemCurrent} */
+  current({ idx }) { return ${body}; },
+};
+`;
+  writeFileSync(join(dir, 'ok.js'), hooks('{ text: this.items[idx] }'));
+  writeFileSync(join(dir, 'bad.js'), hooks('{ text: this.items[idx], bogus: 1 }'));
+  assert.deepEqual(typecheck([join(dir, 'ok.js')]), []);
+  const findings = typecheck([join(dir, 'bad.js')]);
+  assert.equal(findings.length, 1);
+  assert.match(String(findings[0]), /bogus/);
 });
