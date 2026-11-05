@@ -52,10 +52,10 @@
             </div>
             <table class="doe__evop-table">
               <thead><tr>
-                <th data-help-key="modules.doe-planner.columns.term" x-text="t('term')"></th>
-                <th data-help-key="modules.doe-planner.columns.effect" x-text="t('effect')"></th>
-                <th data-help-key="modules.doe-planner.columns.evopErrorLimit" x-text="t('evopErrorLimit')"></th>
-                <th data-help-key="modules.doe-planner.columns.evopSignificant" x-text="t('evopSignificant')"></th>
+                <th><span data-help-key="modules.doe-planner.columns.term" x-text="t('term')"></span></th>
+                <th><span data-help-key="modules.doe-planner.columns.effect" x-text="t('effect')"></span></th>
+                <th><span data-help-key="modules.doe-planner.columns.evopErrorLimit" x-text="t('evopErrorLimit')"></span></th>
+                <th><span data-help-key="modules.doe-planner.columns.evopSignificant" x-text="t('evopSignificant')"></span></th>
               </tr></thead>
               <tbody>
                 <template x-for="(e, ei) in evop.evopSummary().effects" :key="ei">
@@ -265,7 +265,7 @@
             </template>
             <template x-if="design.resAliasDetail().aliases.length">
               <table class="doe__res-alias-table">
-                <thead><tr><th data-help-key="modules.doe-planner.columns.term" x-text="t('term')"></th><th data-help-key="modules.doe-planner.columns.aliasedWith" x-text="t('aliasedWith')"></th></tr></thead>
+                <thead><tr><th><span data-help-key="modules.doe-planner.columns.term" x-text="t('term')"></span></th><th><span data-help-key="modules.doe-planner.columns.aliasedWith" x-text="t('aliasedWith')"></span></th></tr></thead>
                 <tbody>
                   <template x-for="(a, ai) in design.resAliasDetail().aliases" :key="ai">
                     <tr>
@@ -707,7 +707,7 @@
                     </template>
                     <template x-if="evaluation.aliasRows().length">
                       <table class="doe__alias-table">
-                        <thead><tr><th data-help-key="modules.doe-planner.columns.term" x-text="t('term')"></th><th data-help-key="modules.doe-planner.columns.aliasedWith" x-text="t('aliasedWith')"></th></tr></thead>
+                        <thead><tr><th><span data-help-key="modules.doe-planner.columns.term" x-text="t('term')"></span></th><th><span data-help-key="modules.doe-planner.columns.aliasedWith" x-text="t('aliasedWith')"></span></th></tr></thead>
                         <tbody>
                           <template x-for="(a, ai) in evaluation.aliasRows()" :key="ai">
                             <tr>
@@ -733,7 +733,7 @@
                     <p class="doe__eval-note" x-text="evaluation.powerDescText()"></p>
                     <p class="doe__eval-note" x-show="evaluation.powerSaturated()" x-text="t('powerSaturated')"></p>
                     <table class="doe__power-table">
-                      <thead><tr><th data-help-key="modules.doe-planner.columns.effectSize" x-text="t('effectSize')"></th><th data-help-key="modules.doe-planner.columns.power" x-text="t('power')"></th><th></th></tr></thead>
+                      <thead><tr><th><span data-help-key="modules.doe-planner.columns.effectSize" x-text="t('effectSize')"></span></th><th><span data-help-key="modules.doe-planner.columns.power" x-text="t('power')"></span></th><th></th></tr></thead>
                       <tbody>
                         <template x-for="(row, pi) in evaluation.powerRows()" :key="pi">
                           <tr :class="evaluation.powerRating(row.power)">
@@ -771,12 +771,12 @@
                     <table class="doe__alias-table doe__dispersion-table">
                       <thead>
                         <tr>
-                          <th data-help-key="modules.doe-planner.columns.dispersionPoint" x-text="t('dispersionPoint')"></th>
-                          <th data-help-key="modules.doe-planner.columns.dispersionN">n</th>
-                          <th data-help-key="modules.doe-planner.columns.dispersionMean" x-text="t('dispersionMean')"></th>
-                          <th data-help-key="modules.doe-planner.columns.dispersionS">s</th>
-                          <th data-help-key="modules.doe-planner.columns.dispersionVar">s&sup2;</th>
-                          <th data-help-key="modules.doe-planner.columns.dispersionLnVar">ln(s&sup2;)</th>
+                          <th><span data-help-key="modules.doe-planner.columns.dispersionPoint" x-text="t('dispersionPoint')"></span></th>
+                          <th><span data-help-key="modules.doe-planner.columns.dispersionN">n</span></th>
+                          <th><span data-help-key="modules.doe-planner.columns.dispersionMean" x-text="t('dispersionMean')"></span></th>
+                          <th><span data-help-key="modules.doe-planner.columns.dispersionS">s</span></th>
+                          <th><span data-help-key="modules.doe-planner.columns.dispersionVar">s&sup2;</span></th>
+                          <th><span data-help-key="modules.doe-planner.columns.dispersionLnVar">ln(s&sup2;)</span></th>
                         </tr>
                       </thead>
                       <tbody>
@@ -808,10 +808,10 @@
                               <table class="doe__alias-table doe__dispersion-coef-table">
                                 <thead>
                                   <tr>
-                                    <th data-help-key="modules.doe-planner.columns.term" x-text="t('term')"></th>
-                                    <th data-help-key="modules.doe-planner.columns.coefficient" x-text="t('coefficient')"></th>
-                                    <th data-help-key="modules.doe-planner.columns.effect" x-text="t('effect')"></th>
-                                    <th data-help-key="modules.doe-planner.columns.pValue">p</th>
+                                    <th><span data-help-key="modules.doe-planner.columns.term" x-text="t('term')"></span></th>
+                                    <th><span data-help-key="modules.doe-planner.columns.coefficient" x-text="t('coefficient')"></span></th>
+                                    <th><span data-help-key="modules.doe-planner.columns.effect" x-text="t('effect')"></span></th>
+                                    <th><span data-help-key="modules.doe-planner.columns.pValue">p</span></th>
                                   </tr>
                                 </thead>
                                 <tbody>

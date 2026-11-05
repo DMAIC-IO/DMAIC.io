@@ -4,7 +4,7 @@
  * Zählt in den Vorlagen der freigegebenen Module jede sichtbare Beschriftung
  * — `<label>`, `.dmike-kpi-label`, `<th>` — und prüft, ob sie ein
  * Fragezeichen bekommt (`data-help-key` bzw. `:data-help-key` am Element
- * oder darin). `agent:report` gibt die Zeile aus; hart prüft sie der
+ * oder darin; bei `<th>` nur darin). `agent:report` gibt die Zeile aus; hart prüft sie der
  * Test im echten Baum in `anchor-coverage.test.mjs` (keine Lücke, keine
  * Ausnahme ohne oder mit falscher Trefferzahl).
  *
@@ -61,7 +61,10 @@ export function scanCaptions(html) {
       if (!hasCaption(attrs, inner)) continue;
       out.push({
         kind, snippet: snippetOf(kind, attrs, inner), line: lineAt(html, m.index),
-        anchored: HELP_ATTR.test(attrs) || HELP_ATTR.test(inner),
+        // A header cell counts only with the key INSIDE it (a span around the
+        // text): on the cell itself the badge lands at the cell's right edge,
+        // far from the caption and in front of the next column.
+        anchored: (kind !== 'th' && HELP_ATTR.test(attrs)) || HELP_ATTR.test(inner),
       });
     }
   }

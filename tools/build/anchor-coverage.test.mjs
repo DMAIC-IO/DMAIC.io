@@ -24,6 +24,14 @@ test('scanCaptions: Label, KPI-Beschriftung und Kopfzelle, je mit und ohne Anker
   ]);
 });
 
+test('scanCaptions: a help key on the header cell itself does not count, only inside it', () => {
+  // On the cell, the badge sits at the cell's right edge, far from the text.
+  const html = `
+    <th data-help-key="modules.foo.columns.a" x-text="t('a')"></th>
+    <th><span data-help-key="modules.foo.columns.b" x-text="t('b')"></span></th>`;
+  assert.deepEqual(scanCaptions(html).map(c => c.anchored), [false, true]);
+});
+
 test('scanCaptions: Ausschnitt mit Inhalt und Zeilennummer unterscheidet gleiche öffnende Tags', () => {
   const html = '<table>\n  <th>n</th>\n  <th>\n    MW\n  </th>\n</table>';
   assert.deepEqual(scanCaptions(html).map(c => [c.snippet, c.line]), [
