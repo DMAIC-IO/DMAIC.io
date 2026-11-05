@@ -96,3 +96,41 @@ suite('Werkzeugleiste: Einträge mit { command, args }', () => {
     assertDeepEqual([...model.items], ['kind']);
   });
 });
+
+suite('Werkzeugleiste: Export-Einträge', () => {
+  test('resolveActions reicht export durch', () => {
+    const [vm] = resolveActions([{ icon: 'format.csv', title: 'export.csv', export: 'csv' }], tf);
+    assertEqual(vm.export, 'csv');
+    const [plain] = resolveActions([{ icon: 'format.csv', title: 't' }], tf);
+    assertEqual(plain.export, null);
+  });
+
+  test('Untereintrag mit export: Datei aus dem Mapper, Erfolgsmeldung', async () => {
+    const notified = [];
+    const ui = {
+      exports: { tree() { return { n: this.n }; } },
+      component: { n: 7 },
+      moduleId: 'ws',
+      i18n: { t: (k) => k },
+      notify: (...a) => notified.push(a),
+    };
+    const inst = { i18nKey: 'modules.ws', getActionData: () => ({ _ui: ui }) };
+    const ws = Object.create(Workspace.prototype);
+    ws._actionEffectDisposers = [];
+    const realCreate = URL.createObjectURL;
+    const realClick = HTMLAnchorElement.prototype.click;
+    const blobs = [];
+    URL.createObjectURL = (b) => { blobs.push(b); return 'blob:x'; };
+    HTMLAnchorElement.prototype.click = () => {};
+    try {
+      const [vm] = resolveActions([{ icon: 'action.download', title: 'export.label', children: [{ icon: 'format.json', title: 'export.json', export: 'json' }] }], tf);
+      ws._buildActionDropdown(vm, inst).querySelector('.workspace__action-item').click();
+      await new Promise((r) => setTimeout(r, 20));
+    } finally {
+      URL.createObjectURL = realCreate;
+      HTMLAnchorElement.prototype.click = realClick;
+    }
+    assertEqual(await blobs[0].text(), '{\n  "n": 7\n}');
+    assertDeepEqual(notified, [['JSON', 'success', 'status.ok']]);
+  });
+});

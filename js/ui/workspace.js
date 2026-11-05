@@ -8,6 +8,7 @@ import { h } from '../core/dom.js';
 import { icon } from '../core/icon.js';
 import { resolveActions } from './resolve-actions.js';
 import { runUiCommand } from '../core/command-directives.js';
+import { runExport } from '../core/exporter.js';
 import { describeElement } from '../core/context-help.js';
 import { findInstancePhase } from '../core/router/instance-ops.js';
 
@@ -382,7 +383,13 @@ export class Workspace {
       item.className = 'workspace__action-item';
       item.append(icon(child.iconId, { size: 'sm' }), h('span', { class: 'workspace__action-item-text' }, child.text));
       describeAction(item, child, inst.i18nKey);
-      if (child.command) {
+      if (child.export) {
+        item.addEventListener('click', () => {
+          menu.classList.remove('open');
+          const ui = inst.getActionData?.()?._ui;
+          if (ui?.exports) runExport(ui, child.export);
+        });
+      } else if (child.command) {
         item.addEventListener('click', () => {
           menu.classList.remove('open');
           runActionCommand(child, inst);
