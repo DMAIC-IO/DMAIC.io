@@ -78,3 +78,22 @@ test('typecheck: Diagnose ohne Datei (fehlende Lib) wird gemeldet', () => {
   const findings = typecheck([join(root, 'main.js')], { lib: ['lib.gibtesnicht.d.ts'] });
   assert.ok(findings.some((f) => /^typecheck: TS\d+: /.test(f)), findings.join('\n'));
 });
+
+test('typecheck: this im view-Block ist über ViewFn getypt', () => {
+  const tm = join(APP_DIR, 'js', 'core', 'template-module.js');
+  const root = appWith({
+    'vm.js': `/** @typedef {{ tab: 'a'|'b' }} Ui */
+/** @typedef {{ title: string, rename(cmd: { title: string }): void }} M */
+/** @type {import('${tm}').ViewFn<M, Ui>} */
+export const view = (ctx) => ({
+  ok() { this.model.rename({ title: this.state.tab }); return ctx.moduleId + this.t('x') + this.other(); },
+  bad() { return this.state.nope; },
+  badCmd() { this.model.rename({ title: 1 }); },
+});
+`,
+  });
+  const findings = typecheck([join(root, 'vm.js')]);
+  assert.equal(findings.length, 2, findings.join('\n'));
+  assert.match(findings[0], /vm\.js\(6,\d+\): TS2339: Property 'nope'/);
+  assert.match(findings[1], /vm\.js\(7,\d+\): TS2322: /);
+});

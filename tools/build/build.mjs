@@ -20,7 +20,7 @@ import { collectLabData, renderLabDataModule } from './lab-data.mjs';
 import { collectHelpIds, renderHelpRegistryModule } from './help-data.mjs';
 import { collectReferenceIds, renderReferencesRegistryModule } from './references-data.mjs';
 import { collectAgentData, renderAgentRegistryModule } from './agent-data.mjs';
-import { collectModelFiles, loadModelSchema, renderModelTypes } from './model-types.mjs';
+import { collectModelFiles, loadModelSchema, renderModelTypes, collectStateFiles, loadStateSchema, renderStateTypes } from './model-types.mjs';
 import { collectGlossaryData, renderGlossaryDataModule } from './glossary-data.mjs';
 import { collectLicenseData, renderLicenseDataModule, renderLicenseText } from '../license-report/license-report.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
@@ -378,6 +378,12 @@ export async function runBuild(appDir = APP_DIR, { check = false, converted = CO
   // 1b4. Typen je Modul mit deklarativem Model (domain/model.js → domain/model.types.js)
   for (const { file } of collectModelFiles(appDir)) {
     emit(join(dirname(file), 'model.types.js'), renderModelTypes(await loadModelSchema(file)), check, changed);
+  }
+
+  // 1b5. UI-State-Typen (viewmodel/state.js → viewmodel/state.types.js)
+  for (const { id, file } of collectStateFiles(appDir)) {
+    const { name: modelName } = await loadModelSchema(join(appDir, 'js', 'modules', id, 'domain', 'model.js'));
+    emit(join(dirname(file), 'state.types.js'), renderStateTypes({ id, ...(await loadStateSchema(file)), modelName }), check, changed);
   }
 
   // 1c. glossary data (catalog + all terms inlined; no runtime fetch)
