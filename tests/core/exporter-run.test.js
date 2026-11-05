@@ -122,4 +122,12 @@ suite('runExport', () => {
     try { await runExport(ui, 'csv', io); } finally { console.error = orig; }
     assertDeepEqual(log, [['notify', 'export.failed|{"format":"CSV"}', 'error']]);
   });
+
+  test('json: tree() liefert undefined → export.failed, keine Datei', async () => {
+    const { ui, io, log, files } = setup({ tree() { return undefined; } });
+    const orig = console.error; console.error = () => {};
+    try { await runExport(ui, 'json', io); } finally { console.error = orig; }
+    assertDeepEqual(log, [['notify', 'export.failed|{"format":"JSON"}', 'error']]);
+    assertDeepEqual(Object.keys(files), []);
+  });
 });

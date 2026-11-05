@@ -125,7 +125,7 @@ suite('Werkzeugleiste: Export-Einträge', () => {
     try {
       const [vm] = resolveActions([{ icon: 'action.download', title: 'export.label', children: [{ icon: 'format.json', title: 'export.json', export: 'json' }] }], tf);
       ws._buildActionDropdown(vm, inst).querySelector('.workspace__action-item').click();
-      await new Promise((r) => setTimeout(r, 20));
+      for (let i = 0; i < 200 && !(blobs.length && notified.length); i++) await new Promise((r) => setTimeout(r, 5));
     } finally {
       URL.createObjectURL = realCreate;
       HTMLAnchorElement.prototype.click = realClick;

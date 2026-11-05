@@ -92,6 +92,7 @@ function readCssVars(el, map) {
  */
 function checkExports(id, def, hasView) {
   if (!hasView) throw new Error(`createModule(${id}): exports requires view`);
+  if (def === null || typeof def !== 'object' || Array.isArray(def)) throw new Error(`createModule(${id}): exports must be an object`);
   for (const key of Object.keys(def)) {
     if (!EXPORT_KEYS.includes(key)) throw new Error(`createModule(${id}): exports.${key} is unknown (allowed: ${EXPORT_KEYS.join(', ')})`);
   }

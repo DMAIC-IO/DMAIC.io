@@ -159,7 +159,9 @@ export async function runExport(ui, fmt, io = DEFAULT_IO) {
     if (fmt === 'csv') {
       io.downloadFile(toCsvText(await call('table')), name, 'text/csv;charset=utf-8');
     } else if (fmt === 'json') {
-      io.downloadBlob(new Blob([toJsonText(await call('tree'))], { type: 'application/json' }), name);
+      const tree = await call('tree');
+      if (tree === undefined) throw new Error('tree() returned undefined');
+      io.downloadBlob(new Blob([toJsonText(tree)], { type: 'application/json' }), name);
     } else if (fmt === 'xlsx') {
       const sheets = typeof def.tables === 'function'
         ? await call('tables')

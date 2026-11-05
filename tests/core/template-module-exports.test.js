@@ -58,6 +58,9 @@ suite('createModule mit exports: Prüfungen', () => {
     assertThrows(() => createModule({ config: { id: 'x-ex', engine: 'alpine' }, Model: Doc, data: () => ({}), exports: { table: f } }),
       /^createModule\(x-ex\): exports requires view$/);
   });
+  test('exports: null ist kein Objekt', () => {
+    assertThrows(() => make(null), /^createModule\(exports-test\): exports must be an object$/);
+  });
   test('unbekannter Schlüssel', () => {
     assertThrows(() => make({ table: f, csv: f }), /^createModule\(exports-test\): exports\.csv is unknown \(allowed: fileName, table, tables, tree, image\)$/);
   });
