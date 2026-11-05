@@ -10,4 +10,8 @@
  * @typedef {import('../../../core/template-module.js').ViewFn<import('../domain/model.types.js').StateModel, UiState>} SipocViewFn
  */
 
+/**
+ * @typedef {import('../../../core/template-module.js').ExportsDef<import('../domain/model.types.js').StateModel, UiState>} SipocExports
+ */
+
 export {};
