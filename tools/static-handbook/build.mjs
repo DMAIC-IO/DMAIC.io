@@ -310,8 +310,9 @@ async function copyExampleFiles(examples) {
   for (const ex of examples.entries) {
     if (!ex.file) continue;
     const src = ex.sourcePath ?? path.join(REPO, 'examples', ex.file);
-    const dest = path.join(destDir, path.basename(ex.file));
+    const dest = path.join(destDir, ex.downloadName ?? path.basename(ex.file));
     try {
+      await mkdir(path.dirname(dest), { recursive: true });
       await copyFile(src, dest);
     } catch (err) {
       console.warn(`[handbook] Could not copy ${ex.file}: ${err.message}`);

@@ -235,7 +235,7 @@ export async function loadExamples(repoRoot, catalog) {
     if (!existsSync(file)) continue;
     try {
       for (const ex of withoutSchema(await readJson(file)).examples ?? []) {
-        sources.push({ ex: { ...ex, modules: withRefs(ex.id, [id]) }, base });
+        sources.push({ ex: { ...ex, modules: withRefs(ex.id, [id]) }, base, owner: id });
       }
     } catch (err) {
       console.warn(`[handbook] Failed to load ${file}: ${err.message}`);
@@ -249,9 +249,13 @@ export async function loadExamples(repoRoot, catalog) {
   }
 
   const entries = [];
-  for (const { ex, base } of sources) {
+  for (const { ex, base, owner } of sources) {
     const enriched = { ...ex };
-    if (ex.file && base) enriched.sourcePath = path.join(base, ex.file);
+    if (ex.file && base) {
+      enriched.sourcePath = path.join(base, ex.file);
+      const name = path.basename(ex.file);
+      enriched.downloadName = owner ? `${owner}/${name}` : name;
+    }
     if (ex.type === 'dataset' && enriched.sourcePath) {
       try {
         enriched.previewData = await readCsvPreview(enriched.sourcePath, ex.preview?.rows || 10);

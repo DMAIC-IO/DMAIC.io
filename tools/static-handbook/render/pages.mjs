@@ -1053,9 +1053,9 @@ export function renderExamplePage({ example, modules, lang, i18n, videos }) {
   // ─── Download + deeplink actions ─────────────────────────
   const actions = [];
   if (ex.file && (ex.type === 'dataset' || ex.type === 'project')) {
-    // Files are shipped at /examples/data/<basename> — relative path from /{lang}/examples/<id>.html
-    const fileBasename = ex.file.split('/').pop();
-    const downloadHref = `../../examples/data/${fileBasename}`;
+    // Dateien liegen unter /examples/data/<downloadName> (umgestellte Module: <modul>/<datei>).
+    const downloadName = ex.downloadName ?? ex.file.split('/').pop();
+    const downloadHref = `../../examples/data/${downloadName}`;
     const downloadLabel = ex.type === 'project' ? s.exampleProjectDownload : s.exampleDownload;
     actions.push(`<a class="handbook-cta__button" href="${escapeAttr(downloadHref)}" download>${escapeHtml(downloadLabel)} ↓</a>`);
   }

@@ -66,6 +66,18 @@ suite('ExamplesRegistry: Beispiele der neuen Form', () => {
     assertEqual((await reg.get('neu-p')).id, 'neu-p');
   });
 
+  test('getForModule: ein kaputtes examples.json warnt und wird übersprungen', async () => {
+    stubFetch({ 'mod/neu/examples/examples.json': { reject: true } });
+    const reg = makeRegistry();
+    const warn = console.warn; const warned = [];
+    console.warn = (...a) => warned.push(a.join(' '));
+    try {
+      const list = await reg.getForModule('neu');
+      assertDeepEqual(list.map((e) => e.id), ['alt-1']);
+      assertTrue(warned.some((w) => w.includes('[examples]') && w.includes('neu-p')));
+    } finally { console.warn = warn; }
+  });
+
   test('getForModule vereint Index, eigene Beispiele und exampleRefs, ohne Doppel', async () => {
     stubFetch({ 'mod/neu/examples/examples.json': { json: NEU_FILE } });
     const reg = makeRegistry();

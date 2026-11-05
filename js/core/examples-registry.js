@@ -173,10 +173,13 @@ export class ExamplesRegistry {
     if (!moduleId) return [];
     const out = this._examples.filter((e) => Array.isArray(e.modules) && e.modules.includes(moduleId));
     const seen = new Set(out.map((e) => e.id));
-    for (const id of this._catalogIdsFor(moduleId)) {
-      if (seen.has(id)) continue;
-      const entry = await this.get(id);
-      if (entry) { out.push(entry); seen.add(id); }
+    const ids = this._catalogIdsFor(moduleId).filter((id) => !seen.has(id));
+    const loaded = await Promise.all(ids.map((id) => this.get(id).catch((err) => {
+      console.warn(`[examples] ${id} (${moduleId}) übersprungen: ${err.message}`);
+      return null;
+    })));
+    for (const entry of loaded) {
+      if (entry && !seen.has(entry.id)) { out.push(entry); seen.add(entry.id); }
     }
     return out;
   }
