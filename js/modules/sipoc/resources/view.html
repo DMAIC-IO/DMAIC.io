@@ -15,11 +15,11 @@
     <div class="sipoc__grid" data-ref="sipocGrid">
       <template x-for="col in columns" :key="col.key">
         <div class="sipoc__column" :data-col="col.key">
-          <div class="sipoc__col-header" data-help-key="modules.sipoc.fields.columns.help">
+          <div class="sipoc__col-header">
             <div class="sipoc__col-title">
               <div class="sipoc__col-indicator"></div>
               <div>
-                <div class="sipoc__col-label" x-text="t('col.' + col.key)"></div>
+                <div class="sipoc__col-label" data-help-key="modules.sipoc.fields.columns.help" x-text="t('col.' + col.key)"></div>
                 <div class="sipoc__col-desc" x-text="t('colDesc.' + col.key)"></div>
               </div>
             </div>
@@ -62,7 +62,6 @@
                 x-model="drafts[col.key]"
                 :placeholder="t('placeholder.' + col.key)"
                 :aria-label="t('placeholder.' + col.key)"
-                data-help-key="modules.sipoc.actions.addItem.help"
                 @keydown.enter="addFromDraft(col.key)">
               <button type="button" class="sipoc__add-btn" data-help-key="modules.sipoc.actions.addItem.help" :data-col="col.key" :title="t('common.add')"
                 @click="addFromDraft(col.key)">+</button>

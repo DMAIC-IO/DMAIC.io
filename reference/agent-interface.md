@@ -261,7 +261,7 @@ Fehler selbst findet (`js/core/agent/agent-argcheck.js`).
 | `requireNumber` mit Bereich | `allowed:` | `invalid value 0.3; allowed: a number from 0.5 to 0.99` |
 | `requireNumber` mit `integer` | `allowed:` | `invalid n 2.5; allowed: a whole number from 1 to 50` |
 | `requireForm` (Schlüssel mit `nonEmpty`) | `allowed:` | `invalid text "  "; allowed: a non-empty text` |
-| `requireForm` (`_schema.version`) | `allowed:` | `invalid _schema.version "9"; allowed: up to 1 (saved by a newer version of this module)` |
+| `requireForm` (`_schema.version`) | `allowed:` | `invalid _schema.version "9"; allowed: up to 1.0 (saved by a newer version of this module)` |
 
 `requireNumber` nimmt endliche Zahlen und Zahlentexte (`'10'`) und schreibt
 die Zahl. Außerhalb eines Bereichs **wirft** der Setter — er klemmt nicht

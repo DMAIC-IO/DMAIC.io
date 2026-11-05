@@ -149,6 +149,18 @@
   color: var(--color-text-primary);
 }
 
+/* Kontexthilfe-Anker: schrumpfbreit, damit der Kreis neben dem Spaltennamen
+   sitzt statt jenseits der Spaltenkante; senkrecht mittig, weil die Spalte
+   clippt (`overflow: hidden`) und der Kreis auf der Oberkante dort
+   angeschnitten würde. */
+.sipoc__col-label {
+  width: fit-content;
+}
+
+.sipoc__col-label.context-help-anchor > .context-help__btn {
+  top: 50%;
+}
+
 .sipoc__col-desc {
   font-family: var(--font-family-mono);
   font-size: 10px;
