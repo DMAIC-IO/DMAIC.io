@@ -10,13 +10,61 @@
  *   stacked: false                 — when true, segments stack within a single bar per category
  *   barGap: 4                      — gap in px between bars within a group (grouped mode only)
  *   categoryGap: 0.3               — fraction of category width reserved as spacing (0–0.8)
+ *
+ * Category labels that are wider than their slot wrap onto up to three lines
+ * (the bottom margin grows with them); only when the slots get too narrow to
+ * wrap sensibly are the labels rotated instead.
  */
 
-import ChartBase, { X_TICKS_BOTTOM, DEFAULT_MARGIN } from '../chart-base.js';
+import ChartBase, { X_TICKS_BOTTOM, DEFAULT_MARGIN, FONT_MAIN } from '../chart-base.js';
 import { h } from '../../dom.js';
 import {
-  svgEl, svgText, resolveColor, formatNum, getChartColors
+  svgEl, svgText, resolveColor, formatNum, getChartColors, generateTicks
 } from '../chart-core.js';
+
+/** Most lines a wrapped category label takes; the rest ends in an ellipsis. */
+const MAX_LABEL_LINES = 3;
+/** Narrower category slots (px) rotate their labels instead of wrapping them. */
+const MIN_WRAP_SLOT = 40;
+/** Horizontal room (px) kept free on each side of a wrapped label. */
+const LABEL_PAD = 4;
+
+/**
+ * Break a label into lines no wider than `maxWidth`: at spaces first, a word
+ * that is too wide on its own is split by characters. Past `maxLines` the
+ * last kept line ends in an ellipsis.
+ * @param {string} text
+ * @param {number} maxWidth px
+ * @param {(s: string) => number} measure width of a string in px
+ * @param {number} maxLines
+ * @returns {string[]} at least one line
+ */
+export function wrapCategoryLabel(text, maxWidth, measure, maxLines) {
+  const words = String(text ?? '').split(/\s+/).filter(Boolean);
+  if (!words.length) return [''];
+  const lines = [];
+  let line = '';
+  for (const word of words) {
+    const candidate = line ? `${line} ${word}` : word;
+    if (measure(candidate) <= maxWidth) { line = candidate; continue; }
+    if (line) lines.push(line);
+    let rest = word;
+    while (rest.length > 1 && measure(rest) > maxWidth) {
+      let n = 1;
+      while (n < rest.length && measure(rest.slice(0, n + 1)) <= maxWidth) n++;
+      lines.push(rest.slice(0, n));
+      rest = rest.slice(n);
+    }
+    line = rest;
+  }
+  if (line) lines.push(line);
+  if (lines.length <= maxLines) return lines;
+  const kept = lines.slice(0, maxLines);
+  let last = kept[maxLines - 1];
+  while (last && measure(`${last}…`) > maxWidth) last = last.slice(0, -1);
+  kept[maxLines - 1] = `${last}…`;
+  return kept;
+}
 
 export default class BarChart extends ChartBase {
   /**
@@ -100,6 +148,7 @@ export default class BarChart extends ChartBase {
     const groupWidth = stacked ? barW : (nGroups * barW + (nGroups - 1) * barGap);
 
     const yBase = yScale(0);
+    const layout = this._categoryLabelLayout();
 
     // Store geometry for tooltip. For stacked mode the y-extent of each
     // segment is in *data* coordinates (yBot, yTop) — that's what
@@ -171,27 +220,33 @@ export default class BarChart extends ChartBase {
         }
       }
 
-      // Category label (rotated if needed)
-      const label = cats[ci];
-      const labelX = catCx;
-      const labelY = plotArea.y + plotArea.h + 14;
+      this._drawCategoryLabel(svg, layout, ci, catCx, plotArea.y + plotArea.h + 14);
+    }
+  }
 
-      if (this._rotatesCategoryLabels()) {
-        svgText(label, {
-          x: labelX, y: labelY,
-          'text-anchor': 'end',
-          'font-size': `${this.config.tickSize || 11}px`,
-          fill: resolveColor('var(--color-text-secondary)'),
-          transform: `rotate(-30 ${labelX} ${labelY})`,
-        }, svg);
-      } else {
-        svgText(label, {
-          x: labelX, y: labelY,
-          'text-anchor': 'middle',
-          'font-size': `${this.config.tickSize || 11}px`,
-          fill: resolveColor('var(--color-text-secondary)'),
-        }, svg);
-      }
+  /**
+   * One category label below the plot: plain, wrapped into tspans, or
+   * rotated when the slots are too narrow to wrap.
+   * @private
+   */
+  _drawCategoryLabel(svg, layout, ci, x, y) {
+    const attrs = {
+      class: 'dmike-bar__category',
+      x, y,
+      'text-anchor': 'middle',
+      'font-size': `${this.config.tickSize || 11}px`,
+      fill: resolveColor('var(--color-text-secondary)'),
+    };
+    const lines = layout.lines[ci];
+    if (layout.rotated) {
+      svgText(lines[0], { ...attrs, 'text-anchor': 'end', transform: `rotate(-30 ${x} ${y})` }, svg);
+    } else if (lines.length === 1) {
+      svgText(lines[0], attrs, svg);
+    } else {
+      const text = svgEl('text', attrs, svg);
+      lines.forEach((line, i) => {
+        svgEl('tspan', { x, dy: i === 0 ? 0 : layout.lineHeight }, text).textContent = line;
+      });
     }
   }
 
@@ -288,16 +343,37 @@ export default class BarChart extends ChartBase {
 
   /** @override — category labels are drawn below the plot (rotated ones need the full default bottom). */
   _getBottomTickGutter() {
-    return this._rotatesCategoryLabels() ? DEFAULT_MARGIN.bottom : X_TICKS_BOTTOM;
+    return this._categoryLabelLayout().rotated ? DEFAULT_MARGIN.bottom : X_TICKS_BOTTOM;
+  }
+
+  /** @override — room for the second and third line of wrapped labels. */
+  _getBottomExtra() {
+    const layout = this._categoryLabelLayout();
+    if (layout.rotated) return 0;
+    const most = Math.max(1, ...layout.lines.map(l => l.length));
+    return (most - 1) * layout.lineHeight;
   }
 
   /**
-   * Whether category labels are drawn rotated — the one rule both the label
-   * drawing and the bottom gutter follow.
-   * @returns {boolean}
+   * How the category labels are drawn — the one rule both the drawing and
+   * the bottom margin follow. The slot width uses the same nice-rounded x
+   * range as the scale, so it is known before the margins are.
+   * @private
+   * @returns {{rotated: boolean, lines: string[][], lineHeight: number}}
    */
-  _rotatesCategoryLabels() {
-    const cats = this.config.categories || [];
-    return cats.length > 6 || cats.some(c => c.length > 8);
+  _categoryLabelLayout() {
+    const cats = (this.config.categories || []).map(c => String(c ?? ''));
+    const fontSize = this.config.tickSize || 11;
+    const lineHeight = Math.round(fontSize * 1.25);
+    const bounds = this._getAxisBounds();
+    const exact = this.config.xExact && bounds.xMax > bounds.xMin;
+    const tick = exact ? { min: bounds.xMin, max: bounds.xMax } : generateTicks(bounds.xMin, bounds.xMax);
+    const slot = cats.length ? this._getPlotWidth() / (tick.max - tick.min) : 0;
+    if (slot < MIN_WRAP_SLOT) return { rotated: true, lines: cats.map(c => [c]), lineHeight };
+    const ctx = document.createElement('canvas').getContext('2d');
+    ctx.font = `${fontSize}px ${FONT_MAIN}`;
+    const measure = (str) => ctx.measureText(str).width;
+    const lines = cats.map(c => wrapCategoryLabel(c, slot - 2 * LABEL_PAD, measure, MAX_LABEL_LINES));
+    return { rotated: false, lines, lineHeight };
   }
 }

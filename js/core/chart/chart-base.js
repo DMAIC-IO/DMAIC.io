@@ -24,7 +24,7 @@ import { h } from '../dom.js';
 import { debounce } from '../debounce.js';
 
 /** Font families embedded in SVG for export fidelity */
-const FONT_MAIN = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
+export const FONT_MAIN = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
 const FONT_MONO = "'SF Mono', 'Cascadia Code', Consolas, 'Liberation Mono', monospace";
 
 /** Default margins (every element drawn). */
@@ -862,6 +862,16 @@ export default class ChartBase {
   }
 
   /**
+   * Extra pixels a type needs below its tick gutter (e.g. category labels
+   * wrapped onto several lines); the x title moves down by the same amount.
+   * @protected
+   * @returns {number}
+   */
+  _getBottomExtra() {
+    return 0;
+  }
+
+  /**
    * Top and bottom margins from the drawn elements. With everything drawn
    * they equal DEFAULT_MARGIN.
    * @protected
@@ -876,7 +886,7 @@ export default class ChartBase {
     const bottom = hasXLabel
       ? (gutter > 0 ? Math.max(DEFAULT_MARGIN.bottom, gutter) : X_LABEL_ONLY_BOTTOM)
       : Math.max(gutter, COMPACT_MARGIN.bottom);
-    return { top, bottom };
+    return { top, bottom: bottom + this._getBottomExtra() };
   }
 
   /**
@@ -912,11 +922,29 @@ export default class ChartBase {
   }
 
   /** @private */
+  _getHorizontalMargins() {
+    const lw = this._legendWidth || LEGEND_WIDTH;
+    return {
+      left: this._leftMargin ?? DEFAULT_MARGIN.left,
+      right: this.config.showLegend ? lw + 16 : DEFAULT_MARGIN.right,
+    };
+  }
+
+  /**
+   * Plot width without the vertical margins — usable while the margins are
+   * still being computed (e.g. to lay out labels below the plot).
+   * @protected
+   * @returns {number}
+   */
+  _getPlotWidth() {
+    const { left, right } = this._getHorizontalMargins();
+    return this._getSize().w - left - right;
+  }
+
+  /** @private */
   _getPlotArea() {
     const size = this._getSize();
-    const lw = this._legendWidth || LEGEND_WIDTH;
-    const rMargin = this.config.showLegend ? lw + 16 : DEFAULT_MARGIN.right;
-    const lMargin = this._leftMargin ?? DEFAULT_MARGIN.left;
+    const { left: lMargin, right: rMargin } = this._getHorizontalMargins();
     const { top, bottom } = this._getMargins();
     return {
       x: lMargin,
@@ -1117,7 +1145,7 @@ export default class ChartBase {
     // X Label
     if (this.config.showXLabel !== false && this.config.xLabel) {
       svgText(this.config.xLabel, {
-        x: pa.x + pa.w / 2, y: pa.y + pa.h + (this._getBottomTickGutter() > 0 ? 46 : 20),
+        x: pa.x + pa.w / 2, y: pa.y + pa.h + (this._getBottomTickGutter() > 0 ? 46 : 20) + this._getBottomExtra(),
         'text-anchor': 'middle', 'font-size': `${this.config.labelSize  }px`, 'font-weight': '600', fill: textPrimary,
         'font-family': FONT_MAIN
       }, svg);

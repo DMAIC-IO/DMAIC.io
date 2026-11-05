@@ -4,7 +4,7 @@
  */
 import { suite, test, assertEqual, assertTrue } from '../../test-utils.js';
 import ScatterChart from '../../../js/core/chart/types/scatter.js';
-import BarChart from '../../../js/core/chart/types/bar.js';
+import BarChart, { wrapCategoryLabel } from '../../../js/core/chart/types/bar.js';
 import IndividualValuePlotChart from '../../../js/core/chart/types/individual-value-plot.js';
 import MultiVariChart from '../../../js/core/chart/types/multi-vari.js';
 import {
@@ -84,34 +84,70 @@ suite('ChartBase margins', () => {
     chart.destroy(); host.remove();
   });
 
-  test('bar with rotated labels keeps the full default bottom without an x title', () => {
-    const cats = ['alpha-long-name', 'beta-long-name', 'gamma'];
+  test('bar wraps category labels that are wider than their slot instead of rotating them', () => {
+    const cats = [
+      'Prozesse verbessern (inkl. 8D/PDCA)', 'Projekte planen und auswerten', 'Daten auswerten und berichten',
+      'Methoden anwenden (z. B. Six Sigma, 8D)', 'Moderation/Coaching anderer', 'Trainer', 'Methodenkoordination', 'keine davon',
+    ];
     const { host, chart } = mount(BarChart, {
-      categories: cats, series: [{ name: 'S', values: [1, 2, 3] }], showXLabel: false,
+      categories: cats, groups: [{ name: 'S', values: cats.map(() => 1) }], showXLabel: false,
     });
-    assertEqual(margins(chart).bottom, DEFAULT_MARGIN.bottom);
+    const pa = chart._getPlotArea();
+    const slot = pa.w / cats.length;
+    const labels = [...host.querySelectorAll('text.dmike-bar__category')];
+    assertEqual(labels.length, cats.length, 'one label per category');
+    assertTrue(labels.every(t => !t.getAttribute('transform')), 'no label is rotated');
+    for (const t of labels) {
+      const lines = [...t.querySelectorAll('tspan')];
+      const parts = lines.length ? lines : [t];
+      for (const line of parts) {
+        assertTrue(line.getComputedTextLength() <= slot, `"${line.textContent}" fits ${Math.round(slot)} px`);
+      }
+    }
+    const most = Math.max(...labels.map(t => Math.max(1, t.querySelectorAll('tspan').length)));
+    assertTrue(most > 1, 'long labels take more than one line');
+    const lineHeight = Math.round(chart.config.tickSize * 1.25);
+    assertEqual(margins(chart).bottom, X_TICKS_BOTTOM + (most - 1) * lineHeight, 'bottom grows by the extra lines');
+    const box = labels[0].getBBox();
+    assertTrue(box.y + box.height <= pa.totalH, 'the last line stays inside the chart');
     chart.destroy(); host.remove();
   });
 
-  test('bar reserves the rotated-label bottom exactly when it draws rotated labels', () => {
-    const cases = [
-      ['a', 'b', 'c'],
-      ['a', 'b', 'c', 'd', 'e', 'f'],
-      ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
-      ['12345678', 'b'],
-      ['123456789', 'b'],
-    ];
-    for (const cats of cases) {
-      const { host, chart } = mount(BarChart, {
-        categories: cats, groups: [{ name: 'S', values: cats.map(() => 1) }], showXLabel: false,
-      });
-      const labels = [...host.querySelectorAll('text')].filter(t => cats.includes(t.textContent));
-      assertEqual(labels.length, cats.length, `all labels drawn for ${cats.join(',')}`);
-      const drawnRotated = labels.every(t => /rotate\(/.test(t.getAttribute('transform') || ''));
-      const reservedRotated = margins(chart).bottom === DEFAULT_MARGIN.bottom;
-      assertEqual(drawnRotated, reservedRotated, `rotation and gutter agree for ${cats.join(',')}`);
-      chart.destroy(); host.remove();
-    }
+  test('bar keeps short category labels on one line', () => {
+    const cats = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+    const { host, chart } = mount(BarChart, {
+      categories: cats, groups: [{ name: 'S', values: cats.map(() => 1) }], showXLabel: false,
+    });
+    const labels = [...host.querySelectorAll('text.dmike-bar__category')];
+    assertEqual(labels.map(t => t.textContent).join(','), cats.join(','));
+    assertTrue(labels.every(t => t.querySelectorAll('tspan').length === 0 && !t.getAttribute('transform')), 'plain, unrotated');
+    assertEqual(margins(chart).bottom, X_TICKS_BOTTOM);
+    chart.destroy(); host.remove();
+  });
+
+  test('bar moves the x title below wrapped category labels', () => {
+    const cats = ['Prozesse verbessern (inkl. 8D/PDCA)', 'Projekte planen und auswerten', 'Trainer', 'keine davon',
+      'Daten auswerten und berichten', 'Methodenkoordination', 'Moderation/Coaching anderer', 'x'];
+    const { host, chart } = mount(BarChart, {
+      categories: cats, groups: [{ name: 'S', values: cats.map(() => 1) }], xLabel: 'Antwort',
+    });
+    const labels = [...host.querySelectorAll('text.dmike-bar__category')];
+    const lowest = Math.max(...labels.map(t => { const b = t.getBBox(); return b.y + b.height; }));
+    const title = [...host.querySelectorAll('svg text')].find(t => t.textContent === 'Antwort');
+    assertTrue(title.getBBox().y >= lowest, `x title ${title.getBBox().y} below labels ${lowest}`);
+    assertTrue(title.getBBox().y + title.getBBox().height <= chart._getPlotArea().totalH, 'x title inside the chart');
+    chart.destroy(); host.remove();
+  });
+
+  test('wrapCategoryLabel breaks at spaces, splits over-long words and ellipsises past the line limit', () => {
+    const measure = (str) => str.length * 6;
+    assertEqual(JSON.stringify(wrapCategoryLabel('Trainer', 60, measure, 3)), JSON.stringify(['Trainer']));
+    assertEqual(JSON.stringify(wrapCategoryLabel('Daten auswerten und berichten', 60, measure, 3)),
+      JSON.stringify(['Daten', 'auswerten', 'und…']));
+    assertEqual(JSON.stringify(wrapCategoryLabel('keine davon', 72, measure, 3)), JSON.stringify(['keine davon']));
+    assertEqual(JSON.stringify(wrapCategoryLabel('Methodenkoordination', 60, measure, 3)),
+      JSON.stringify(['Methodenko', 'ordination']));
+    assertEqual(JSON.stringify(wrapCategoryLabel('', 60, measure, 3)), JSON.stringify(['']));
   });
 
   test('individual-value plot keeps its hanging category labels inside the chart', () => {
