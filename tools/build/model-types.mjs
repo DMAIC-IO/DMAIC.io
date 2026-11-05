@@ -61,6 +61,9 @@ const pascal = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /** @param {string} name @param {Record<string, object>} specs @returns {string[]} */
 function typedef(name, specs) {
+  // Ohne Eigenschaften `{}` statt `object`: ein leeres `object` wird in JS ohne
+  // strict zu `any` und reißt jede Schnittmenge mit (z. B. den <Name>Model-Typ).
+  if (Object.keys(specs).length === 0) return ['/**', ` * @typedef {{}} ${name}`, ' */', ''];
   const out = ['/**', ` * @typedef {object} ${name}`];
   for (const [k, s] of Object.entries(specs)) {
     out.push(` * @property {${describeType(s)}} ${s.optional === true ? `[${k}]` : k}`);

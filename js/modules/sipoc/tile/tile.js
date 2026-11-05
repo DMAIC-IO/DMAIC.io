@@ -4,49 +4,41 @@
  * „Wie ist der Prozess gerahmt?“ — kompaktes Fünf-Spalten-Brett mit der
  * Anzahl und den ersten Einträgen je Spalte; leere Spalten sind als Lücke
  * markiert. Eine Kachel je Instanz; Quelle und Kopien über den Host.
- * Importiert aus dem Modul nur domain/; das Markup liegt in resources/tile.html.
- * Kachel-Vertrag: der Lebenszyklus in js/pages/dashboard/tile-render.js.
+ * Form: createTile (core/template-tile.js); Einstellungen in settings.js,
+ * Markup in resources/tile.html.
  */
 
-import { readModel } from '../../../core/model.js';
-import { topN } from '../../../ui/tile-kit.js';
+import { createTile } from '../../../core/template-tile.js';
+import descriptor from '../module.js';
 import { State } from '../domain/model.js';
 import { columnSummary } from '../domain/summary.js';
+import { Settings } from './settings.js';
 
-export default {
+export default createTile({
+  descriptor,
+  Model: State,
+  Settings,
   size: { defaultW: 6, defaultH: 10, minW: 4, minH: 6 },
   titlePrefix: 'SIPOC',
-  settings: {
-    topN: topN({ default: 3 }),
-  },
-  template: 'js/modules/sipoc/resources/tile.html',
 
-  /**
-   * Brett-Daten oder der Leerzustand, wenn keine Spalte einen Eintrag hat.
-   * @param {{state: object, settings: {topN: number}, i18n: object}} args
-   * @returns {{empty: string|null, filled: string|null, columns: Array<object>}}
-   */
-  viewModel({ state, settings, i18n }) {
-    const model = readModel(State, state);
-    if (!model.hasContent()) return { empty: i18n.t('modules.sipoc.tileEmpty'), filled: null, columns: [] };
-    const cols = columnSummary(model, settings.topN);
-    const filled = cols.filter(c => c.count > 0).length;
+  /** @type {import('./settings.types.js').SipocTileViewFn} */
+  view() {
     return {
-      empty: null,
-      filled: filled < cols.length ? i18n.t('modules.sipoc.tileFilled', { filled, total: cols.length }) : null,
-      columns: cols.map(c => {
-        const gap = c.count === 0;
-        return {
-          key: c.key,
-          letter: c.letter,
-          name: i18n.t(`modules.sipoc.col.${c.key}`),
-          count: String(c.count),
-          gap,
-          modifier: gap ? 'dashboard-sipoc__col--gap' : '',
-          items: [...c.top],
-          more: c.more ? i18n.t('modules.sipoc.tileMore', { n: c.more }) : null,
-        };
-      }),
+      /** Je Spalte Anzahl, die ersten topN Einträge und der Rest. */
+      get columns() { return columnSummary(this.model, this.settings.topN); },
+      /** Anzahl der Spalten mit mindestens einem Eintrag. */
+      get filled() { return this.columns.filter((c) => c.count > 0).length; },
+      /** Keine Spalte hat einen Eintrag. */
+      get empty() { return !this.model.hasContent(); },
+      /** „x von 5 gefüllt“, solange nicht alle Spalten gefüllt sind; sonst leer. */
+      get filledText() {
+        if (this.empty || this.filled === this.columns.length) return '';
+        return this.t('tileFilled', { filled: this.filled, total: this.columns.length });
+      },
+      /** Lückenklasse einer leeren Spalte. @param {{ count: number }} col @returns {string} */
+      colClass(col) { return col.count === 0 ? 'dashboard-sipoc__col--gap' : ''; },
+      /** „+ n weitere“ oder leer. @param {{ more: number }} col @returns {string} */
+      moreText(col) { return col.more > 0 ? this.t('tileMore', { n: col.more }) : ''; },
     };
   },
-};
+});

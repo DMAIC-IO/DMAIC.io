@@ -37,5 +37,12 @@
         "toIdx": "The position the entry has AFTER the move, counted from 0. Within the same column at most length − 1, in another column at most its length (append)."
       }
     }
+  },
+  "tile": {
+    "settings": {
+      "topN": {
+        "help": "How many entries the tile shows per SIPOC column, from 1 to 10. Further entries are summarised in the line “+ n more”."
+      }
+    }
   }
 }

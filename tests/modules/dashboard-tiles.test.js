@@ -1444,21 +1444,36 @@ suite('dashboard tiles: sipoc', () => {
     assertEqual(host.querySelector('.dashboard-sipoc__filled'), null);
   });
 
-  test('viewModel: translated, plain column data', () => {
+  test('viewModel: Scope der neuen Form (Model, Einstellungen, view-Glieder)', () => {
     const vm = vmOf(sipocTile, SIPOC_STATE);
-    assertPlain(vm);
-    assertEqual(vm.empty, null);
-    assertEqual(vm.filled, 'modules.sipoc.tileFilled');
-    assertDeepEqual(vm.columns[1], { key: 'inputs', letter: 'I', name: 'modules.sipoc.col.inputs', count: '4',
-      gap: false, modifier: '', items: ['Flour', 'Water', 'Yeast'], more: 'modules.sipoc.tileMore' });
-    assertDeepEqual(vm.columns[4], { key: 'customers', letter: 'C', name: 'modules.sipoc.col.customers', count: '0',
-      gap: true, modifier: 'dashboard-sipoc__col--gap', items: [], more: null });
+    assertEqual(vm._templateTile, true);
+    assertEqual(vm.settings.topN, 3);
+    assertEqual(vm.empty, false);
+    assertEqual(vm.filledText, 'modules.sipoc.tileFilled');
+    assertDeepEqual(vm.columns[1], { key: 'inputs', letter: 'I', count: 4, top: ['Flour', 'Water', 'Yeast'], more: 1 });
+    assertEqual(vm.colClass(vm.columns[4]), 'dashboard-sipoc__col--gap');
+    assertEqual(vm.moreText(vm.columns[2]), '');
   });
 
   test('viewModel: empty state', () => {
     const vm = vmOf(sipocTile, undefined);
-    assertPlain(vm);
-    assertEqual(vm.empty, 'modules.sipoc.tileEmpty');
+    assertEqual(vm.empty, true);
+    assertEqual(vm.filledText, '');
+  });
+
+  test('neue Form: Einstellung topN mit Beschriftungsliste und Hilfe-Schlüssel', () => {
+    assertDeepEqual(sipocTile.settings.topN, {
+      type: 'number', min: 1, max: 10, step: 1, default: 3,
+      label: ['modules.sipoc.tile.settings.topN.label', 'dashboard.tileSettings.topN'],
+      helpKey: 'modules.sipoc.tile.settings.topN.help',
+    });
+  });
+
+  test('Spaltenköpfe tragen den Anker des Feldes columns', async () => {
+    const host = (await render(sipocTile, SIPOC_STATE));
+    const heads = [...host.querySelectorAll('.dashboard-sipoc__head')];
+    assertEqual(heads.length, 5);
+    assertTrue(heads.every((h) => h.dataset.helpKey === 'modules.sipoc.fields.columns.help'));
   });
 });
 

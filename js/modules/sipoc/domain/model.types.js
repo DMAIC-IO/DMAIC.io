@@ -7,7 +7,7 @@
  */
 
 /**
- * @typedef {object} StateView
+ * @typedef {{}} StateView
  */
 
 /**

@@ -67,6 +67,13 @@ test('rendert Felder, Ansicht, Kommandos und das Model', async () => {
   assert.match(out, /\nexport \{\};\n$/);
 });
 
+test('leere Ansicht wird {{}}, nicht object (sonst ist das Model in JS ohne strict any)', async () => {
+  const src = MODEL_SRC.replace("view: { mode: oneOf(['month', 'week']) },", 'view: {},');
+  const root = appWith({ 'js/modules/neu/domain/model.js': src });
+  const out = renderModelTypes(await loadModelSchema(collectModelFiles(root)[0].file));
+  assert.match(out, / \* @typedef \{\{\}\} StateView\n \*\/\n/);
+});
+
 const STATE_SRC = `import { defineState, text, oneOf, number, record, object } from '${MODEL_URL}';
 const COLS = ['a', 'b'];
 export const UiState = defineState({

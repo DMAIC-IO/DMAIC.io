@@ -37,5 +37,12 @@
         "toIdx": "Die Position, die der Eintrag NACH dem Verschieben hat, von 0 an gezählt. In derselben Spalte höchstens Länge − 1, in einer anderen höchstens deren Länge (ans Ende)."
       }
     }
+  },
+  "tile": {
+    "settings": {
+      "topN": {
+        "help": "Wie viele Einträge die Kachel je SIPOC-Spalte zeigt, von 1 bis 10. Weitere Einträge fasst die Zeile „+ n weitere“ zusammen."
+      }
+    }
   }
 }

@@ -1,30 +1,30 @@
-<template x-if="vm.empty">
-  <p class="dashboard-area__empty" x-text="vm.empty"></p>
+<template x-if="empty">
+  <p class="dashboard-area__empty" x-text="t('tileEmpty')"></p>
 </template>
-<template x-if="vm.filled">
-  <p class="dashboard-sipoc__filled" x-text="vm.filled"></p>
+<template x-if="filledText">
+  <p class="dashboard-sipoc__filled" x-text="filledText"></p>
 </template>
-<template x-if="!vm.empty">
+<template x-if="!empty">
   <div class="dashboard-sipoc__board">
-    <template x-for="col in vm.columns">
-      <section class="dashboard-sipoc__col" :class="col.modifier" :data-col="col.key">
-        <header class="dashboard-sipoc__head">
+    <template x-for="col in columns">
+      <section class="dashboard-sipoc__col" :class="colClass(col)" :data-col="col.key">
+        <header class="dashboard-sipoc__head" data-help-key="modules.sipoc.fields.columns.help">
           <span class="dashboard-sipoc__letter" x-text="col.letter"></span>
-          <span class="dashboard-sipoc__name" x-text="col.name"></span>
+          <span class="dashboard-sipoc__name" x-text="t('col.' + col.key)"></span>
           <span class="dashboard-sipoc__count" x-text="col.count"></span>
         </header>
-        <template x-if="col.gap">
+        <template x-if="!col.count">
           <p class="dashboard-sipoc__gap">—</p>
         </template>
-        <template x-if="!col.gap">
+        <template x-if="col.count">
           <ul class="dashboard-sipoc__items">
-            <template x-for="text in col.items">
+            <template x-for="text in col.top">
               <li class="dashboard-sipoc__item" :title="text" x-text="text"></li>
             </template>
           </ul>
         </template>
-        <template x-if="col.more">
-          <p class="dashboard-sipoc__more" x-text="col.more"></p>
+        <template x-if="moreText(col)">
+          <p class="dashboard-sipoc__more" x-text="moreText(col)"></p>
         </template>
       </section>
     </template>
