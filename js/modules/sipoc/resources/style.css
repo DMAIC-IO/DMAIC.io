@@ -223,7 +223,6 @@
   color: var(--color-text-tertiary);
   font-size: var(--font-size-xs);
   line-height: 1;
-  padding-top: var(--spacing-2xs);
   flex-shrink: 0;
   user-select: none;
   border: 0;
