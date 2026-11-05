@@ -299,3 +299,30 @@ suite('defineState — UI-State', () => {
     assertEqual(fieldSpec(new Board(), 'title'), Board.schema.fields.title, 'Model wie bisher');
   });
 });
+
+const ParamBoard = defineModel({
+  fields: { columns: record(['a', 'b'], list(text())) },
+  commands: {
+    setItem: command({
+      params: { col: oneOf(['a', 'b']), idx: index('columns[col]', { existing: true }), text: text({ trim: true, nonEmpty: true }) },
+      run({ col, idx, text: t }) { this.columns[col][idx] = t; },
+    }),
+  },
+});
+
+suite('model err.param', () => {
+  const paramOf = (fn) => { try { fn(); } catch (e) { return e.param; } return 'no throw'; };
+
+  test('checkValue: oberster Name auch bei verschachteltem Wert', () => {
+    assertEqual(paramOf(() => checkValue(record(['a'], list(text())), 'columns', { a: [7] })), 'columns');
+  });
+
+  test('Kommando: der Parameter, an dem die Prüfung scheitert', () => {
+    const m = ParamBoard.fromJSON({ columns: { a: ['x'], b: [] } });
+    assertEqual(paramOf(() => m.setItem({ col: 'a', idx: 0, text: '  ' })), 'text');
+    assertEqual(paramOf(() => m.setItem({ col: 'a', idx: 5, text: 'y' })), 'idx');
+    assertEqual(paramOf(() => m.setItem({ col: 'c', idx: 0, text: 'y' })), 'col');
+    assertEqual(paramOf(() => m.setItem({ col: 'a', text: 'y' })), 'idx');
+    assertEqual(paramOf(() => m.setItem({ col: 'a', idx: 0, text: 'y', extra: 1 })), 'extra');
+  });
+});

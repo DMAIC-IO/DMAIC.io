@@ -52,3 +52,31 @@ suite('validate Weiterleitung', () => {
     }
   });
 });
+
+/** Das `param` eines geworfenen Fehlers, sonst 'no throw'. */
+const paramOf = (fn) => { try { fn(); } catch (e) { return e.param; } return 'no throw'; };
+
+suite('validate err.param', () => {
+  test('Prüfer setzen den obersten Namen', () => {
+    assertEqual(paramOf(() => validate.requireEnum('mode', 'x', ['a'])), 'mode');
+    assertEqual(paramOf(() => validate.requireKnownId('columns key', 'x', ['a'])), 'columns');
+    assertEqual(paramOf(() => validate.requireIndex('idx', 9, 2)), 'idx');
+    assertEqual(paramOf(() => validate.requireBoolean('on', 'ja')), 'on');
+    assertEqual(paramOf(() => validate.requireNumericText('v', null)), 'v');
+    assertEqual(paramOf(() => validate.requireText('columns.suppliers[1]', 7)), 'columns');
+    assertEqual(paramOf(() => validate.requireNumber('alpha', 'x')), 'alpha');
+    assertEqual(paramOf(() => validate.requireNumber('alpha', 5, { max: 1 })), 'alpha');
+    assertEqual(paramOf(() => validate.requireForm('items', 'x', false, 'a list')), 'items');
+  });
+
+  test('fehlender Schlüssel: der fehlende Parameter, beim Nomen key das Feld', () => {
+    assertEqual(paramOf(() => validate.requireKeys('moveItem', {}, [{ name: 'col' }])), 'col');
+    assertEqual(paramOf(() => validate.requireKeys('columns', {}, [{ name: 'a' }], 'key')), 'columns');
+    assertEqual(paramOf(() => validate.requireArity('setCells', [], [{ name: 'columnId' }])), 'columnId');
+  });
+
+  test('Meldungstexte bleiben unverändert', () => {
+    assertThrows(() => validate.requireText('columns.suppliers[1]', 7), /^invalid columns\.suppliers\[1\] 7; allowed: any string, "" clears it$/);
+    assertThrows(() => validate.requireKeys('moveItem', {}, [{ name: 'col' }]), /^missing argument "col" of moveItem; expected: col$/);
+  });
+});

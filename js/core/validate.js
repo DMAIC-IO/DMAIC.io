@@ -34,6 +34,10 @@
  * Ein neuer Prüfer nimmt eines dieser drei Listenwörter, oder er begründet
  * sein viertes hier.
  *
+ * Jeder Fehler trägt `param`: den obersten Namen des Arguments
+ * (`columns.suppliers[1]` → `columns`), bei einem fehlenden Schlüssel den
+ * fehlenden Parameter. Formulare markieren darüber das Feld.
+ *
  * Build-Gate `undeclared_option_source` (agent-data.mjs): hängt das dritte
  * Argument von `requireEnum`/`requireKnownId` an `this` (`this.model.opts`,
  * `Object.keys(this.model.keys())`, `this.columns()`), muss die Lesefläche
@@ -51,6 +55,23 @@
 
 /** Dezimalschreibweise eines Zahlentexts; `Number()` nähme sonst auch '0x10' und '0b101'. */
 const DECIMAL_NUMBER = /^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/;
+
+/**
+ * Der oberste Name eines Arguments: `columns.suppliers[1]` → `columns`,
+ * `columns key` → `columns`. Formulare markieren darüber ihr Feld.
+ * @param {string} name @returns {string}
+ */
+function topName(name) {
+  return String(name).split(/[.[\s]/, 1)[0];
+}
+
+/**
+ * Ein Prüffehler mit `param` — dem Parameter oder Feld, an dem er hängt.
+ * @param {string} message @param {string} param @returns {Error & { param: string }}
+ */
+function argError(message, param) {
+  return Object.assign(new Error(message), { param });
+}
 
 /**
  * Ein Aufzähl-Argument gegen seine ERKLÄRTE Wertemenge prüfen.
@@ -79,7 +100,7 @@ export function requireEnum(name, value, allowed, { numeric = false } = {}) {
       if (hit !== undefined) return hit;
     }
   }
-  throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: ${allowed.join(', ')}`);
+  throw argError(`invalid ${name} ${JSON.stringify(value)}; allowed: ${allowed.join(', ')}`, topName(name));
 }
 
 /**
@@ -101,7 +122,7 @@ export function requireEnum(name, value, allowed, { numeric = false } = {}) {
  */
 export function requireKnownId(kind, id, availableIds) {
   if (!availableIds.includes(id)) {
-    throw new Error(`unknown ${kind} ${JSON.stringify(id)}; available: ${availableIds.join(', ')}`);
+    throw argError(`unknown ${kind} ${JSON.stringify(id)}; available: ${availableIds.join(', ')}`, topName(kind));
   }
 }
 
@@ -130,7 +151,7 @@ export function requireIndex(name, value, length, { existing = false } = {}) {
   const max = existing ? length - 1 : length;
   if (!Number.isInteger(value) || value < 0 || value > max) {
     const range = max < 0 ? 'none, the collection is empty' : `0..${max}`;
-    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: ${range}`);
+    throw argError(`invalid ${name} ${JSON.stringify(value)}; allowed: ${range}`, topName(name));
   }
 }
 
@@ -145,7 +166,7 @@ export function requireIndex(name, value, length, { existing = false } = {}) {
  */
 export function requireBoolean(name, value) {
   if (value !== true && value !== false) {
-    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: true, false`);
+    throw argError(`invalid ${name} ${JSON.stringify(value)}; allowed: true, false`, topName(name));
   }
   return value;
 }
@@ -162,7 +183,7 @@ export function requireBoolean(name, value) {
 export function requireNumericText(name, value) {
   if (typeof value === 'string') return value;
   if (typeof value === 'number' && Number.isFinite(value)) return String(value);
-  throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: any string or finite number, "" clears it`);
+  throw argError(`invalid ${name} ${JSON.stringify(value)}; allowed: any string or finite number, "" clears it`, topName(name));
 }
 
 /**
@@ -198,7 +219,7 @@ export function requireArity(method, args, params) {
   for (let i = 0; i < list.length; i++) {
     if (list[i].optional) continue;
     if (i < args.length) continue;
-    throw new Error(`missing argument ${JSON.stringify(list[i].name)} of ${method}; expected: ${expected}`);
+    throw argError(`missing argument ${JSON.stringify(list[i].name)} of ${method}; expected: ${expected}`, list[i].name);
   }
 }
 
@@ -221,7 +242,7 @@ export function requireArity(method, args, params) {
  */
 export function requireText(name, value) {
   if (typeof value !== 'string') {
-    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: any string, "" clears it`);
+    throw argError(`invalid ${name} ${JSON.stringify(value)}; allowed: any string, "" clears it`, topName(name));
   }
   return value;
 }
@@ -250,7 +271,7 @@ export function requireNumber(name, value, bounds = {}) {
   const n = typeof value === 'number' ? value
     : (typeof value === 'string' && DECIMAL_NUMBER.test(value.trim()) ? Number(value) : NaN);
   if (!Number.isFinite(n)) {
-    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: any finite number`);
+    throw argError(`invalid ${name} ${JSON.stringify(value)}; allowed: any finite number`, topName(name));
   }
   const { min, max, exclusiveMin, exclusiveMax, integer = false } = bounds;
   const outside = (min !== undefined && n < min) || (max !== undefined && n > max)
@@ -258,7 +279,7 @@ export function requireNumber(name, value, bounds = {}) {
     || (exclusiveMax !== undefined && n >= exclusiveMax)
     || (integer && !Number.isInteger(n));
   if (outside) {
-    throw new Error(`invalid ${name} ${JSON.stringify(value)}; allowed: ${describeBounds(bounds)}`);
+    throw argError(`invalid ${name} ${JSON.stringify(value)}; allowed: ${describeBounds(bounds)}`, topName(name));
   }
   return n;
 }
@@ -320,7 +341,7 @@ export function requireKeys(owner, obj, params, noun = 'argument') {
   const expected = params.map(p => (p.optional ? `[${p.name}]` : p.name)).join(', ');
   for (const p of params) {
     if (p.optional || Object.hasOwn(obj, p.name)) continue;
-    throw new Error(`missing ${noun} ${JSON.stringify(p.name)} of ${owner}; expected: ${expected}`);
+    throw argError(`missing ${noun} ${JSON.stringify(p.name)} of ${owner}; expected: ${expected}`, noun === 'argument' ? p.name : topName(owner));
   }
 }
 
@@ -336,7 +357,7 @@ export function requireKeys(owner, obj, params, noun = 'argument') {
  * @returns {any} `value`
  */
 export function requireForm(name, value, ok, allowed) {
-  if (!ok) throw new Error(`invalid ${name} ${showValue(value)}; allowed: ${allowed}`);
+  if (!ok) throw argError(`invalid ${name} ${showValue(value)}; allowed: ${allowed}`, topName(name));
   return value;
 }
 

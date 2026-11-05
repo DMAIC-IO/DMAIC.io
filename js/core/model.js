@@ -265,7 +265,9 @@ function checkParams(name, params, cmd, root) {
   const names = Object.keys(params);
   const given = cmd === undefined ? {} : cmd;
   requireForm(name, given, isPlainObject(given), names.length ? `an object with ${names.join(', ')}` : 'an empty object');
-  for (const k of Object.keys(given)) requireKnownId(`${name} param`, k, names);
+  for (const k of Object.keys(given)) {
+    try { requireKnownId(`${name} param`, k, names); } catch (err) { err.param = k; throw err; }
+  }
   requireKeys(name, given, names.map(n => ({ name: n, optional: params[n].optional === true })));
   const args = {};
   for (const n of names) {
