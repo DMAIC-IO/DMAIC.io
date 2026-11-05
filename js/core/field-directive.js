@@ -27,8 +27,8 @@ const registered = new WeakSet();
 /** @param {object} spec @returns {boolean} */
 const isNumeric = (spec) => spec.kind === 'number' || spec.kind === 'index';
 
-/** @param {HTMLElement} el @param {object} spec */
-function applyAttributes(el, spec) {
+/** Auch von `x-param` benutzt. @param {HTMLElement} el @param {object} spec */
+export function applyAttributes(el, spec) {
   if (!isNumeric(spec) || el.tagName !== 'INPUT') return;
   if (!el.hasAttribute('type')) el.setAttribute('type', 'number');
   const min = spec.kind === 'index' ? 0 : (spec.min ?? spec.exclusiveMin);
@@ -38,8 +38,8 @@ function applyAttributes(el, spec) {
   if (!el.hasAttribute('step')) el.setAttribute('step', spec.integer || spec.kind === 'index' ? '1' : 'any');
 }
 
-/** @param {HTMLInputElement} el @param {object} spec @returns {any} der Rohwert für den Setter */
-function readElement(el, spec) {
+/** Auch von `x-param` benutzt. @param {HTMLInputElement} el @param {object} spec @returns {any} der Rohwert für den Setter */
+export function readElement(el, spec) {
   if (el.type === 'checkbox') return el.checked;
   const raw = el.value;
   if (!isNumeric(spec)) return raw;
@@ -48,14 +48,25 @@ function readElement(el, spec) {
   return typeof n === 'number' && Number.isFinite(n) ? n : raw;
 }
 
-/** @param {HTMLInputElement} el @param {object} spec @param {any} value */
-function writeElement(el, spec, value) {
+/** Auch von `x-param` benutzt. @param {HTMLInputElement} el @param {object} spec @param {any} value */
+export function writeElement(el, spec, value) {
   if (el.type === 'checkbox') { el.checked = value === true; return; }
   const shown = value === null || value === undefined ? '' : String(value);
   // Beim Tippen nicht überschreiben, solange das Feld denselben Wert meint
   // („0,“ oder „1.“ würden sonst zu „0“ bzw. „1“ gekürzt).
   if (el.ownerDocument?.activeElement === el && isNumeric(spec) && readElement(el, spec) === value) return;
   if (el.value !== shown) el.value = shown;
+}
+
+/**
+ * Der Hinweis zu einer abgelehnten Eingabe: mit Bereich bei Zahlenfeldern.
+ * @param {object} spec Feld-Spec
+ * @param {{ t: (key: string, params?: object) => string, getLanguage: () => string }} i18n
+ * @returns {string}
+ */
+export function rejectionHint(spec, i18n) {
+  const range = isNumeric(spec) ? describeRange(spec, i18n.getLanguage(), (k, p) => i18n.t(k, p)) : '';
+  return range ? i18n.t('common.inputRejected', { range }) : i18n.t('common.inputRejectedPlain');
 }
 
 /**
@@ -98,8 +109,7 @@ export function registerFieldDirective(Alpine, { i18n }) {
         if (err instanceof TypeError || err instanceof ReferenceError || err instanceof SyntaxError) throw err;
         if (live) return;
         writeElement(el, spec, owner()?.[key]);
-        const range = isNumeric(spec) ? describeRange(spec, i18n.getLanguage(), (k, p) => i18n.t(k, p)) : '';
-        markRejection(el, range ? i18n.t('common.inputRejected', { range }) : i18n.t('common.inputRejectedPlain'));
+        markRejection(el, rejectionHint(spec, i18n));
       }
     };
     const onInput = () => commit(true);
