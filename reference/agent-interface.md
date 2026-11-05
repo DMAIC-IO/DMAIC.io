@@ -107,10 +107,17 @@ Parameter `command` vom Typ `object`, seine Schlüssel stehen in `keys`
 (`{ name, type, help, optional }`). Aufgerufen wird mit einem Objekt:
 
     { op: 'instance.call', instance, method: 'moveItem',
-      args: [{ sourceCol: 'inputs', sourceIdx: 0, targetCol: 'process', dropIdx: 2 }] }
+      args: [{ fromCol: 'inputs', fromIdx: 0, toCol: 'process', toIdx: 2 }] }
+
+`sipoc` (erstes Modul in neuer Form):
+`{ op: 'instance.call', instance, method: 'addItem', args: [{ col: 'inputs', text: 'Teig' }] }` → `value: 0`.
+`moveItem` nimmt `{ fromCol, fromIdx, toCol, toIdx }`; `toIdx` ist die Position NACH dem
+Verschieben (eigene Spalte bis Länge − 1, fremde bis Länge). Ein Schlüssel mit
+`rules: ['trim', 'nonEmpty']` in `module.describe` wird getrimmt und lehnt leeren Text ab
+(`invalid text "  "; allowed: a non-empty text`).
 
 Ein fehlender Schlüssel antwortet wie ein fehlendes Argument (`missing argument
-"dropIdx" of moveItem; expected: …`), ein unbekannter mit `unknown moveItem param
+"toIdx" of moveItem; expected: …`), ein unbekannter mit `unknown moveItem param
 "x"; available: …`.
 
 Felder setzt `instance.set`:
@@ -253,6 +260,8 @@ Fehler selbst findet (`js/core/agent/agent-argcheck.js`).
 | `requireNumber` | `allowed:` | `invalid mu0 "zehn"; allowed: any finite number` |
 | `requireNumber` mit Bereich | `allowed:` | `invalid value 0.3; allowed: a number from 0.5 to 0.99` |
 | `requireNumber` mit `integer` | `allowed:` | `invalid n 2.5; allowed: a whole number from 1 to 50` |
+| `requireForm` (Schlüssel mit `nonEmpty`) | `allowed:` | `invalid text "  "; allowed: a non-empty text` |
+| `requireForm` (`_schema.version`) | `allowed:` | `invalid _schema.version "9"; allowed: up to 1 (saved by a newer version of this module)` |
 
 `requireNumber` nimmt endliche Zahlen und Zahlentexte (`'10'`) und schreibt
 die Zahl. Außerhalb eines Bereichs **wirft** der Setter — er klemmt nicht
