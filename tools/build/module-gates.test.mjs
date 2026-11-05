@@ -443,6 +443,54 @@ for (const id of CONVERTED_MODULES) {
   });
 }
 
+const MIGRATING = (extra = '') => `import { defineModel, text, list } from '${MODEL_URL}';
+import { from0, other } from './migrations.js';
+export const State = defineModel({
+  version: '1.0',
+  migrations: { '0→1.0': from0 },
+  fields: { items: list(text()) },${extra}
+});
+`;
+
+test('Schema-Literal: version und migrations mit Import aus ./migrations.js sind grün', () => {
+  assert.deepEqual(checkSchemaLiteral(MIGRATING()), []);
+});
+
+test('Schema-Literal: Migrationsimport außerhalb von migrations', () => {
+  assert.deepEqual(checkSchemaLiteral(MIGRATING("\n  view: { x: other },")), [
+    'schema: domain/model.js: Bezeichner other aus ./migrations.js nur als Wert unter migrations erlaubt',
+  ]);
+});
+
+test('Schema-Literal: falscher Schlüssel, falscher Wert, falsche version', () => {
+  const text = `import { defineModel, text } from '${MODEL_URL}';
+import { from0 } from './migrations.js';
+const LOCAL = 1;
+export const State = defineModel({
+  version: 1,
+  migrations: { '0-1.0': from0, '0.5→1.0': LOCAL, '0.1→1.0': (j) => j },
+  fields: { t: text() },
+});
+`;
+  assert.deepEqual(checkSchemaLiteral(text), [
+    'schema: domain/model.js: version muss ein String-Literal MAJOR.MINOR sein (1)',
+    "schema: domain/model.js: migrations: Schlüssel '0-1.0' hat nicht die Form 'a→b'",
+    'schema: domain/model.js: migrations: Wert LOCAL ist kein Import aus ./migrations.js',
+    'schema: domain/model.js: migrations: Wert (j) => j ist kein Import aus ./migrations.js',
+  ]);
+});
+
+test('Schema-Literal: Aufruf als Konstante zählt nicht (itemText)', () => {
+  const text = `import { defineModel, text, command } from '${MODEL_URL}';
+const itemText = text({ trim: true });
+export const State = defineModel({
+  fields: { t: text() },
+  commands: { add: command({ params: { t: itemText }, run({ t }) { this.t = t; } }) },
+});
+`;
+  assert.deepEqual(checkSchemaLiteral(text), ['schema: domain/model.js: Bezeichner itemText ist keine Konstante dieser Datei']);
+});
+
 test('Schema-Literal: Konstante mit Funktions- oder Klasseninitialisierer ist keine Konstante', () => {
   const src = `${MODEL_IMPORT}const f = (v) => v;
 const g = function (v) { return v; };

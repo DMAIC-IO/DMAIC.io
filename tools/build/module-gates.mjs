@@ -312,7 +312,8 @@ const SCHEMA_PREFIX = 'schema: domain/model.js:';
 /**
  * Gate Schema, Teil Literal: `defineModel({ … })` ist ein reines Literal
  * (feste Schlüssel, Konstruktoren aus core/model.js, Literale, Konstanten
- * dieser Datei; Funktionen nur als `run`).
+ * dieser Datei; Funktionen nur als `run`). `version` ist ein String-Literal
+ * `MAJOR.MINOR`; `migrations` nur `'a→b': <Import aus ./migrations.js>`.
  * @param {string} text Inhalt von domain/model.js
  * @returns {string[]}
  */
@@ -321,6 +322,7 @@ export function checkSchemaLiteral(text) {
   const sf = parseJs('model.js', text);
   const ctors = new Map(); // lokaler Name → importierter Name
   const runImports = new Set();
+  const migrationImports = new Set();
   const consts = new Set();
   for (const st of sf.statements) {
     if (ts.isImportDeclaration(st) && ts.isStringLiteral(st.moduleSpecifier) && st.importClause?.namedBindings && ts.isNamedImports(st.importClause.namedBindings)) {
@@ -329,6 +331,7 @@ export function checkSchemaLiteral(text) {
         const imported = (el.propertyName ?? el.name).text;
         if (MODEL_SPEC.test(spec)) ctors.set(el.name.text, imported);
         else if (/^\.\/commands\//.test(spec)) runImports.add(el.name.text);
+        else if (spec === './migrations.js') migrationImports.add(el.name.text);
       }
     }
     const decl = ts.isVariableStatement(st) ? st.declarationList : null;
@@ -348,6 +351,28 @@ export function checkSchemaLiteral(text) {
   }
   const out = [];
   const src = (n) => n.getText(sf);
+  const top = calls[0].arguments[0];
+  // Kopien von VERSION / MIGRATION_KEY in js/core/model.js — synchron halten.
+  const VERSION_LITERAL = /^\d+\.\d+$/;
+  const MIGRATION_KEY = /^(0|\d+\.\d+)→(\d+\.\d+)$/;
+  const keyOf = (p) => (p.name && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? p.name.text : null);
+  for (const p of top.properties) {
+    if (!ts.isPropertyAssignment(p)) continue;
+    if (keyOf(p) === 'version') {
+      const v = p.initializer;
+      if (!(ts.isStringLiteral(v) && VERSION_LITERAL.test(v.text))) out.push(`${P} version muss ein String-Literal MAJOR.MINOR sein (${src(v)})`);
+    }
+    if (keyOf(p) === 'migrations' && ts.isObjectLiteralExpression(p.initializer)) {
+      for (const m of p.initializer.properties) {
+        if (!ts.isPropertyAssignment(m) || !ts.isStringLiteral(m.name) || !MIGRATION_KEY.test(m.name.text)) {
+          out.push(`${P} migrations: Schlüssel ${src(m.name ?? m)} hat nicht die Form 'a→b'`);
+          continue;
+        }
+        const v = m.initializer;
+        if (!(ts.isIdentifier(v) && migrationImports.has(v.text))) out.push(`${P} migrations: Wert ${src(v)} ist kein Import aus ./migrations.js`);
+      }
+    }
+  }
   /** Name des Kommandos = Schlüssel der umgebenden PropertyAssignment. */
   const commandName = (call) => (ts.isPropertyAssignment(call.parent) && call.parent.name && 'text' in call.parent.name ? call.parent.name.text : '?');
   const check = (n, cmdName = null) => {
@@ -355,6 +380,7 @@ export function checkSchemaLiteral(text) {
     if ([ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword, ts.SyntaxKind.NullKeyword].includes(n.kind)) return;
     if (ts.isPrefixUnaryExpression(n) && n.operator === ts.SyntaxKind.MinusToken && ts.isNumericLiteral(n.operand)) return;
     if (ts.isIdentifier(n)) {
+      if (migrationImports.has(n.text)) { out.push(`${P} Bezeichner ${n.text} aus ./migrations.js nur als Wert unter migrations erlaubt`); return; }
       if (!consts.has(n.text)) out.push(`${P} Bezeichner ${n.text} ist keine Konstante dieser Datei`);
       return;
     }
@@ -370,6 +396,7 @@ export function checkSchemaLiteral(text) {
         if (ts.isSpreadAssignment(p)) { out.push(`${P} Spread nicht erlaubt (${src(p)})`); continue; }
         if (p.name && ts.isComputedPropertyName(p.name)) { out.push(`${P} berechneter Schlüssel nicht erlaubt (${src(p.name)})`); continue; }
         const key = p.name && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? p.name.text : null;
+        if (n === top && (key === 'version' || key === 'migrations')) continue;
         if (cmdName !== null && key === 'run') {
           if (ts.isMethodDeclaration(p)) continue;
           const v = ts.isPropertyAssignment(p) ? p.initializer : null;
@@ -402,7 +429,7 @@ export function checkSchemaLiteral(text) {
     }
     out.push(`${P} nicht erlaubt: ${src(n)}`);
   };
-  check(calls[0].arguments[0]);
+  check(top);
   return out;
 }
 
