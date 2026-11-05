@@ -376,13 +376,27 @@ function wireGlobalHandlers() {
 }
 
 /**
- * Das Fenster unter dem Knopf platzieren und am Viewport-Rand zurückholen.
- * Feste Positionierung, damit Scrollcontainer es nicht abschneiden.
+ * Place the panel below the badge, keeping it inside the viewport.
+ * Fixed positioning, so scroll containers cannot clip it. If it does not fit
+ * below, it opens above the badge; if it fits on neither side, it takes the
+ * roomier side and scrolls inside.
  */
 function position(panel, button) {
+  const MARGIN = 8;
+  const GAP = 6;
   const rect = button.getBoundingClientRect();
   const width = panel.offsetWidth || 280;
-  const left = Math.min(Math.max(8, rect.left), window.innerWidth - width - 8);
+  const left = Math.min(Math.max(MARGIN, rect.left), window.innerWidth - width - MARGIN);
   panel.style.left = `${left}px`;
-  panel.style.top = `${rect.bottom + 6}px`;
+
+  const height = panel.offsetHeight;
+  const spaceBelow = window.innerHeight - rect.bottom - GAP - MARGIN;
+  const spaceAbove = rect.top - GAP - MARGIN;
+  if (height <= spaceBelow || spaceBelow >= spaceAbove) {
+    if (height > spaceBelow) panel.style.maxHeight = `${Math.max(0, spaceBelow)}px`;
+    panel.style.top = `${rect.bottom + GAP}px`;
+  } else {
+    if (height > spaceAbove) panel.style.maxHeight = `${Math.max(0, spaceAbove)}px`;
+    panel.style.top = `${rect.top - GAP - Math.min(height, spaceAbove)}px`;
+  }
 }

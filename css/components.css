@@ -2057,6 +2057,7 @@ body.dmike-context-help-armed .context-help__btn {
   font-size: var(--font-size-sm);
   line-height: 1.45;
   color: var(--color-text-primary);
+  overflow-y: auto;
 }
 
 /* Help texts may carry line breaks (lists in the DoE planner tips). */
