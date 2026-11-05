@@ -6,6 +6,7 @@
  * Geste reorder (interaction/reorder.js): in der eigenen Spalte bis
  * `länge − 1`, in einer fremden bis `länge`. Den ersten Fall kann der Pfad
  * von `index` nicht ausdrücken; `run` prüft ihn nach.
+ * `setItem.current` liefert den Text zum Bearbeiten (Startwert des Dialogs).
  */
 import { defineModel, record, list, text, oneOf, index, command } from '../../../core/model.js';
 import { requireIndex } from '../../../core/validate.js';
@@ -35,6 +36,8 @@ export const State = defineModel({
         idx: index('columns[col]', { existing: true }),
         text: text({ trim: true, nonEmpty: true }),
       },
+      /** @type {import('./model.types.js').SetItemCurrent} */
+      current({ col, idx }) { return { text: this.columns[col][idx] }; },
       run({ col, idx, text }) {
         this.columns[col][idx] = text;
       },

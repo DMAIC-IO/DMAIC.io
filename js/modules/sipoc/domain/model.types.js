@@ -49,4 +49,8 @@
  * }} StateModel
  */
 
+/**
+ * @typedef {(this: StateModel, fixed: Partial<SetItemCommand>) => Partial<SetItemCommand>} SetItemCurrent
+ */
+
 export {};

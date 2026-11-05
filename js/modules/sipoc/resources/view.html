@@ -41,11 +41,12 @@
                 <span class="sipoc__item-text" x-text="item"></span>
                 <div class="sipoc__item-actions">
                   <button type="button" class="btn btn--icon-sm sipoc__item-btn" data-action="edit"
-                    :data-col="col.key" :data-idx="i" :title="t('common.edit')" data-help-key="modules.sipoc.actions.setItem.help"
-                    @click="editItem(col.key, i)"><span class="icon icon--sm" data-icon="action.edit" aria-hidden="true"></span></button>
+                    x-dialog="editForm" :data-arg-col="col.key" :data-arg-idx="i"
+                    :data-dialog-title="t('col.' + col.key) + ' — ' + t('common.edit')"
+                    :data-col="col.key" :data-idx="i" :title="t('common.edit')"><span class="icon icon--sm" data-icon="action.edit" aria-hidden="true"></span></button>
                   <button type="button" class="btn btn--icon-sm sipoc__item-btn sipoc__item-btn--delete" data-action="delete"
-                    :data-col="col.key" :data-idx="i" :title="t('common.delete')" data-help-key="modules.sipoc.actions.removeItem.help"
-                    @click="deleteItem(col.key, i)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                    x-command="removeItem" :data-arg-col="col.key" :data-arg-idx="i"
+                    :data-col="col.key" :data-idx="i" :title="t('common.delete')"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                 </div>
               </div>
             </template>
@@ -56,16 +57,11 @@
           </div>
 
           <div class="sipoc__add-area">
-            <div class="sipoc__add-row">
-              <input class="field sipoc__add-input" type="text"
-                :data-col="col.key"
-                x-model="state.drafts[col.key]"
-                :placeholder="t('placeholder.' + col.key)"
-                :aria-label="t('placeholder.' + col.key)"
-                @keydown.enter="addFromDraft(col.key)">
-              <button type="button" class="sipoc__add-btn" data-help-key="modules.sipoc.actions.addItem.help" :data-col="col.key" :title="t('common.add')"
-                @click="addFromDraft(col.key)">+</button>
-            </div>
+            <form class="sipoc__add-row" x-command-form="addItem" :data-arg-col="col.key">
+              <input class="field sipoc__add-input" type="text" x-param="text" :data-col="col.key"
+                :placeholder="t('placeholder.' + col.key)" :aria-label="t('placeholder.' + col.key)">
+              <button type="submit" class="sipoc__add-btn" :data-col="col.key" :title="t('common.add')">+</button>
+            </form>
           </div>
         </div>
       </template>
@@ -74,8 +70,8 @@
 
   <!-- Edit dialog: lives hidden here; borrowed into the shared modal on edit, restored on close -->
   <div class="sipoc__modal-forms" hidden>
-    <div class="sipoc__edit-form" x-ref="editForm">
-      <textarea class="field" data-field="text" style="min-height:80px;" x-model="state.editDraft.text"></textarea>
-    </div>
+    <form class="sipoc__edit-form" x-ref="editForm" x-command-form="setItem">
+      <textarea class="field" data-field="text" x-param="text" style="min-height:80px;"></textarea>
+    </form>
   </div>
 </div>

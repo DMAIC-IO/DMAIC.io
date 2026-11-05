@@ -3,8 +3,6 @@
 
 /**
  * @typedef {object} UiState
- * @property {Record<'suppliers'|'inputs'|'process'|'outputs'|'customers', string>} drafts
- * @property {{ text: string }} editDraft
  * @property {{ group: 'suppliers'|'inputs'|'process'|'outputs'|'customers', index: number }|null} dropPreview
  */
 

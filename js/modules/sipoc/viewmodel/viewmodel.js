@@ -2,9 +2,10 @@
  * D.Mike — SIPOC: Viewmodel.
  *
  * Inhalt und Kommandos liegen im Model (domain/model.js); die Agentenfläche
- * entsteht aus dessen Schema. Der UI-State (Entwürfe, Vorschau der Geste)
- * steht in viewmodel/state.js. Hier bleiben: Handler der Eingabezeilen,
- * Bearbeiten-Dialog und die Downloads.
+ * entsteht aus dessen Schema. Der UI-State (Vorschau der Geste) steht in
+ * viewmodel/state.js. Eingabezeile, Bearbeiten-Dialog und Löschknopf lösen
+ * ihre Kommandos im Template aus (`x-command-form`, `x-dialog`, `x-command`).
+ * Hier bleiben: Spalten, Einfügemarke und die Downloads.
  */
 import { createModule } from '../../../core/template-module.js';
 import { downloadFile, ensureXLSX, exportColumnsAsPNG, exportColumnsAsSVG } from '../../../core/export-utils.js';
@@ -53,53 +54,6 @@ export default createModule({
       itemClass(col, idx) {
         const p = this.state.dropPreview;
         return p && p.group === col && p.index === idx ? 'sipoc__item--drop-at' : '';
-      },
-
-      /**
-       * Oberflächenhandler der Eingabezeile; der Text geht durch das
-       * Kommando `addItem` (Agenten rufen es direkt).
-       * @param {ColKey} col
-       */
-      addFromDraft(col) {
-        const text = this.state.drafts[col];
-        if (text.trim() === '') return;
-        try {
-          this.model.addItem({ col, text });
-          this.state.drafts[col] = '';
-        } catch (err) {
-          ctx.notify(err.message, 'error');
-        }
-      },
-
-      /**
-       * Oberflächenhandler am Löschknopf; ruft das Kommando `removeItem`.
-       * @param {ColKey} col @param {number} idx
-       */
-      deleteItem(col, idx) {
-        this.model.removeItem({ col, idx });
-      },
-
-      /**
-       * Öffnet den Bearbeiten-Dialog — ein Agent darf keinen Dialog öffnen;
-       * der Text geht durch das Kommando `setItem`.
-       * @param {ColKey} col @param {number} idx
-       */
-      async editItem(col, idx) {
-        this.state.editDraft.text = this.model.columns[col][idx] ?? '';
-        await ctx.dialog.form({
-          title: `${this.t(`col.${col}`)} — ${this.t('common.edit')}`,
-          content: this.$refs.editForm,
-          confirmLabel: this.t('common.save'),
-          onMount: (el) => {
-            const ta = el.querySelector('[data-field="text"]');
-            if (ta) { ta.focus(); ta.selectionStart = ta.value.length; }
-          },
-          onConfirm: () => {
-            if (this.state.editDraft.text.trim() === '') return false;
-            this.model.setItem({ col, idx, text: this.state.editDraft.text });
-            return true;
-          },
-        });
       },
 
       /** Farben der Spalten aus den CSS-Variablen (für PNG/SVG). @returns {Record<string, string>} */
