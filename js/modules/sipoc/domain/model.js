@@ -1,5 +1,5 @@
 /**
- * D.Mike — SIPOC: Model (Spec E1 §5.2).
+ * D.Mike — SIPOC: Model.
  *
  * Fünf Spalten mit Texteinträgen. Gespeichert: `{ _schema, columns }`.
  * `moveItem.toIdx` ist der ENDINDEX (Position nach dem Verschieben), wie die

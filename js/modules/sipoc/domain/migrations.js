@@ -1,5 +1,5 @@
 /**
- * D.Mike — SIPOC: Migrationen des gespeicherten Zustands (Spec E1 §5.2).
+ * D.Mike — SIPOC: Migrationen des gespeicherten Zustands.
  *
  * Reine Funktionen; jede beschreibt einen FESTEN Formatstand und importiert
  * darum nichts aus model.js (das Schema darf sich ändern, die Migration nicht).

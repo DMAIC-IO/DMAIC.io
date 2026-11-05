@@ -103,6 +103,11 @@ suite('SIPOC — Speichern und Laden', () => {
     assertEqual(json._schema.version, '1.0');
     assertDeepEqual(json.columns.inputs, ['Mehl']);
   });
+  test('toJSON gibt keine inneren Array-Referenzen heraus', () => {
+    const s = filled({ inputs: ['Mehl'] });
+    s.toJSON().columns.inputs.push('z');
+    assertDeepEqual(s.columns.inputs, ['Mehl']);
+  });
   test('Rundlauf verlustfrei', () => {
     const json = filled({ process: ['A', 'B'], customers: ['K'] }).toJSON();
     assertDeepEqual(State.fromJSON(json).toJSON(), json);
@@ -146,6 +151,8 @@ suite('SIPOC — columnSummary', () => {
     assertDeepEqual(inp, { key: 'inputs', letter: 'I', count: 0, top: [], more: 0 });
     assertEqual(columnSummary(s, 0)[0].top.length, 1);
     assertEqual(columnSummary(s, 'x')[0].top.length, 1);
+    assertEqual(columnSummary(s, -2)[0].top.length, 1);
+    assertEqual(columnSummary(s, undefined)[0].top.length, 1);
   });
   test('top ist eine Kopie', () => {
     const s = filled({ suppliers: ['a'] });
