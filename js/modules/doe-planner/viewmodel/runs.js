@@ -59,6 +59,9 @@ export class RunsViewModel {
    * @noagent lifecycle
    */
   detach() {
+    // A mount queued by attach() can still fire after the component was
+    // rebuilt; it would put a second grid into the NEW build's slot.
+    this._detached = true;
     this.destroyPreviewGrid();
     this._save = () => {};
     this._nextTick = () => {};
@@ -189,6 +192,7 @@ export class RunsViewModel {
   /** @noagent widget lifecycle — (re)mounts the preview grid into its anchor */
   mountPreviewGrid() {
     this.destroyPreviewGrid();
+    if (this._detached) return;
     const root = this._container();
     if (!root) return;
     const slot = root.querySelector('[data-ref="preview-grid"]');
