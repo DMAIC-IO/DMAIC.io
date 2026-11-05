@@ -1453,6 +1453,7 @@ suite('dashboard tiles: sipoc', () => {
     assertDeepEqual(vm.columns[1], { key: 'inputs', letter: 'I', count: 4, top: ['Flour', 'Water', 'Yeast'], more: 1 });
     assertEqual(vm.colClass(vm.columns[4]), 'dashboard-sipoc__col--gap');
     assertEqual(vm.moreText(vm.columns[2]), '');
+    assertEqual(vm.moreText(vm.columns[1]), 'modules.sipoc.tileMore');
   });
 
   test('viewModel: empty state', () => {

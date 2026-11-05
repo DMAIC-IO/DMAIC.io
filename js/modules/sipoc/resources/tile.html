@@ -8,7 +8,7 @@
   <div class="dashboard-sipoc__board">
     <template x-for="col in columns">
       <section class="dashboard-sipoc__col" :class="colClass(col)" :data-col="col.key">
-        <header class="dashboard-sipoc__head" data-help-key="modules.sipoc.fields.columns.help">
+        <header class="dashboard-sipoc__head context-help-anchor--overlay" data-help-key="modules.sipoc.fields.columns.help">
           <span class="dashboard-sipoc__letter" x-text="col.letter"></span>
           <span class="dashboard-sipoc__name" x-text="t('col.' + col.key)"></span>
           <span class="dashboard-sipoc__count" x-text="col.count"></span>
