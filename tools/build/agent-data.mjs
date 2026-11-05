@@ -957,6 +957,9 @@ function hasModuleTag(sf) {
  */
 function readViewmodel(sf, resolver, appDir) {
   const out = { actions: {}, violations: [], written: new Set(), directWritten: new Set(), optionSources: [], subViewModels: [], noAgentWrites: new Map() };
+  // Neue Form: `view(ctx)` statt `data()`. Die Agentenfläche kommt aus dem
+  // Model-Schema; die Glieder des view-Blocks tragen keine Marken.
+  if (!findCreateModuleMember(sf, 'data') && findCreateModuleMember(sf, 'view')) return out;
   const literal = resolver.findDataReturnLiteral(sf);
   // Was der Generator NICHT sehen kann, muss er melden — sonst ginge ein
   // solches Modul mit gesetztem Modul-Tag und NULL Verstößen durch den Build

@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkContextHelp, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles } from './module-gates.mjs';
+import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles } from './module-gates.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { APP_DIR } from './build.mjs';
 import { defineModel, command, text, number, oneOf, index, idOf, list, record, object, boolean } from '../../js/core/model.js';
@@ -360,6 +360,25 @@ test('Hilfe: Kommando ohne Parameter braucht nur den Hilfetext', () => {
   const ok = { actions: { ping: { help: 'P' } } };
   assert.deepEqual(checkContextHelp(schema, { de: ok, en: ok }), []);
   assert.deepEqual(checkContextHelp(schema, { de: {}, en: ok }), ['help: resources/i18n/context-help.de.json: actions.ping.help fehlt']);
+});
+
+test('Hilfe: x-field auf UI-State braucht state.<name>.help, ungebundene State-Felder nicht', () => {
+  const schema = defineModel({ fields: {} }).schema;
+  const bound = readStateBindings([
+    { path: 'resources/view.html', text: '<input x-field="state.tab"><input x-model="state.drafts[col.key]"><input x-field = "state.tab">' },
+    { path: 'resources/tile.html', text: '<select x-field="state.unit"></select>' },
+  ]);
+  assert.deepEqual(bound, ['tab', 'unit']);
+  const ok = { state: { tab: { help: 'T' }, unit: { help: 'U' } } };
+  assert.deepEqual(checkContextHelp(schema, { de: ok, en: ok }, {}, bound), []);
+  assert.deepEqual(checkContextHelp(schema, { de: { state: { tab: { help: 'T' } } }, en: ok }, {}, bound), [
+    'help: resources/i18n/context-help.de.json: state.unit.help fehlt',
+  ]);
+});
+
+test('Struktur: viewmodel/state.js und viewmodel/state.types.js sind erlaubt', () => {
+  const paths = ['module.js', 'domain/model.js', 'viewmodel/viewmodel.js', 'viewmodel/state.js', 'viewmodel/state.types.js', 'resources/view.html'];
+  assert.deepEqual(checkStructure('neu', paths), []);
 });
 
 const HELP_FULL = JSON.stringify({

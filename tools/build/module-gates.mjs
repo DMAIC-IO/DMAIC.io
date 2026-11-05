@@ -554,21 +554,37 @@ export function checkWritePath(files) {
 /** @param {any} obj @param {string} path @returns {any} */
 const at = (obj, path) => path.split('.').reduce((o, k) => (o && typeof o === 'object' ? o[k] : undefined), obj);
 
+const STATE_FIELD = /\bx-field\s*=\s*"\s*state\.([A-Za-z_$][\w$]*)\s*"/g;
+
+/**
+ * Die UI-State-Felder, die ein Template per `x-field="state.<name>"` bindet.
+ * @param {{ path: string, text: string }[]} files Templates unter resources/
+ * @returns {string[]} Namen, sortiert, ohne Doppel
+ */
+export function readStateBindings(files) {
+  const names = new Set();
+  for (const { text } of files) for (const m of text.matchAll(STATE_FIELD)) names.add(m[1]);
+  return [...names].sort();
+}
+
 /**
  * Gate Hilfe: Kontexthilfe für jedes Feld, jedes Kommando und jeden
  * Parameter, in de und en (der Teilbaum steht ohne das Präfix `modules.<id>`).
+ * UI-State-Felder brauchen Hilfe nur, wenn ein Template sie per `x-field` bindet.
  * @param {{ fields: object, commands: object }} schema
  * @param {{ de: object|null, en: object|null }} help
  * @param {Record<string, { params?: object }>} [viewmodelCommands] Kommandos aus `createModule({ commands })`
+ * @param {string[]} [stateFields] per `x-field="state.<name>"` gebundene UI-State-Felder
  * @returns {string[]}
  */
-export function checkContextHelp(schema, help, viewmodelCommands = {}) {
+export function checkContextHelp(schema, help, viewmodelCommands = {}, stateFields = []) {
   const keys = [
     ...Object.keys(schema.fields).map((f) => `fields.${f}.help`),
     ...Object.entries({ ...schema.commands, ...viewmodelCommands }).flatMap(([c, def]) => [
       `actions.${c}.help`,
       ...Object.keys(def.params ?? {}).map((p) => `actions.${c}.params.${p}`),
     ]),
+    ...stateFields.map((f) => `state.${f}.help`),
   ];
   const out = [];
   for (const lang of ['de', 'en']) {
@@ -737,7 +753,7 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
   const exampleIds = ctx.exampleIds ?? [...exampleOwners.keys()];
   const paths = listModuleFiles(appDir, id);
   const read = (p) => ({ path: p, text: readFileSync(join(base, p), 'utf8') });
-  const js = paths.filter((p) => p.endsWith('.js') && p !== 'domain/model.types.js').map(read);
+  const js = paths.filter((p) => p.endsWith('.js') && p !== 'domain/model.types.js' && p !== 'viewmodel/state.types.js').map(read);
   const out = [...checkStructure(id, paths)];
 
   if (paths.includes('module.js')) {
@@ -766,10 +782,11 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
       const views = paths.filter((p) => p === 'resources/view.html' || /^resources\/[^/]+\.part\.html$/.test(p)).map(read);
       out.push(...checkTemplateBindings(views, schema));
       const vmFile = join(base, 'viewmodel', 'viewmodel.js');
+      const templates = paths.filter((p) => /^resources\/[^/]+\.html$/.test(p)).map(read);
       out.push(...checkContextHelp(schema, {
         de: readJson(join(base, 'resources', 'i18n', 'context-help.de.json')),
         en: readJson(join(base, 'resources', 'i18n', 'context-help.en.json')),
-      }, existsSync(vmFile) ? readViewmodelCommands(readFileSync(vmFile, 'utf8')) : {}));
+      }, existsSync(vmFile) ? readViewmodelCommands(readFileSync(vmFile, 'utf8')) : {}, readStateBindings(templates)));
     }
   }
   return out;

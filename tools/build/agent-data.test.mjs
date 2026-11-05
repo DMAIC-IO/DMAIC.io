@@ -302,6 +302,28 @@ test('collectAgentData: a missing data() literal on an UNTAGGED module does not 
   assert.deepEqual(coverage, { total: 1, available: 0 });
 });
 
+test('collectAgentData: ein Viewmodel in view-Form verlangt keine Marken', () => {
+  const vm = `/**
+ * Foo module.
+ * @agent
+ */
+import { State } from './foo-model.js';
+export default createModule({
+  config: { id: 'foo' },
+  Model: State,
+  view(ctx) {
+    return {
+      get label() { return 'x'; },
+      addFromDraft(col) { this.model.addItem({ col }); },
+    };
+  },
+});`;
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': 'export class State { toJSON() { return {}; } }' } });
+  const { modules } = collectAgentData(root);
+  const codes = [...modules.foo.violations, ...(modules.foo.reported ?? [])];
+  assert.equal(codes.some((c) => c.startsWith('unmarked_method') || c === 'unresolvable_data_literal'), false, codes.join('\n'));
+});
+
 // ── Mixin-Auflösung ────────────────────────────────────────────────────────
 // 21 von 72 Modulen holen Viewmodel-Methoden aus einem Mixin oder haben kein
 // Return-Literal an der Stelle. Nur zu melden, was man nicht sieht, genügt
