@@ -90,5 +90,9 @@
   "1.6.2": {
     "de": "Fragebogen-Generator: alle Grafiken der Ergebnisansicht neben ihrer Tabelle",
     "en": "Survey builder: every results chart beside its table"
+  },
+  "1.6.3": {
+    "de": "Balkendiagramme: lange Achsenbeschriftungen umbrechen statt drehen",
+    "en": "Bar charts: wrap long axis labels instead of rotating them"
   }
 }
