@@ -5,6 +5,7 @@ import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } f
 import {
   defineModel, command, text, number, boolean, oneOf, index, idOf, list, record, object,
   defaultOf, checkValue, describeType, schemaOf, fieldSpec, defineState, stateSchemaOf,
+  currentOf, confirmOf, commandDefOf,
 } from '../../js/core/model.js';
 
 const COLS = ['suppliers', 'inputs'];
@@ -324,5 +325,77 @@ suite('model err.param', () => {
     assertEqual(paramOf(() => m.setItem({ col: 'c', idx: 0, text: 'y' })), 'col');
     assertEqual(paramOf(() => m.setItem({ col: 'a', text: 'y' })), 'idx');
     assertEqual(paramOf(() => m.setItem({ col: 'a', idx: 0, text: 'y', extra: 1 })), 'extra');
+  });
+});
+
+let confirmCalls = 0;
+const Hooked = defineModel({
+  fields: { items: list(text()) },
+  commands: {
+    setItem: command({
+      params: { idx: index('items', { existing: true }), text: text() },
+      current({ idx }) { return { text: this.items[idx] }; },
+      run({ idx, text: t }) { this.items[idx] = t; },
+    }),
+    removeItem: command({
+      params: { idx: index('items', { existing: true }) },
+      confirm({ idx }) {
+        confirmCalls += 1;
+        return this.items[idx] === 'wichtig' ? { key: 'confirm.removeImportant', params: { idx } } : null;
+      },
+      run({ idx }) { this.items.splice(idx, 1); },
+    }),
+    leak: command({ params: { idx: number() }, current() { return { idx: 1, extra: 2 }; }, run() {} }),
+  },
+});
+
+suite('command: current und confirm', () => {
+  test('current/confirm müssen Funktionen sein', () => {
+    assertThrows(() => command({ run() {}, current: 1 }), /^command: current must be a function$/);
+    assertThrows(() => command({ run() {}, confirm: 'x' }), /^command: confirm must be a function$/);
+  });
+
+  test('die Definition behält die Haken nur, wenn angegeben', () => {
+    const { setItem, removeItem } = Hooked.schema.commands;
+    assertEqual(typeof setItem.current, 'function');
+    assertEqual(setItem.confirm, undefined);
+    assertEqual(typeof removeItem.confirm, 'function');
+    assertTrue(!('current' in removeItem));
+  });
+
+  test('commandDefOf: liefert die Definition, unbekannt wirft', () => {
+    assertEqual(commandDefOf(Hooked, 'setItem'), Hooked.schema.commands.setItem);
+    assertThrows(() => commandDefOf(Hooked, 'nope'), /^unknown command "nope"; available: setItem, removeItem, leak$/);
+  });
+
+  test('currentOf: Werte zum aktuellen Stand, ohne current {}', () => {
+    const m = Hooked.fromJSON({ items: ['a', 'wichtig'] });
+    assertDeepEqual(currentOf(m, 'setItem', { idx: 1 }), { text: 'wichtig' });
+    assertDeepEqual(currentOf(m, 'removeItem', { idx: 0 }), {});
+  });
+
+  test('currentOf: fremder Rückgabeschlüssel und unbekanntes Kommando werfen', () => {
+    const m = new Hooked();
+    assertThrows(() => currentOf(m, 'leak', {}), /^unknown leak current key "extra"; available: idx$/);
+    assertThrows(() => currentOf(m, 'nope', {}), /^unknown command "nope"; available: setItem, removeItem, leak$/);
+  });
+
+  test('confirmOf: prüft erst, fragt dann', () => {
+    const m = Hooked.fromJSON({ items: ['a', 'wichtig'] });
+    confirmCalls = 0;
+    assertDeepEqual(confirmOf(m, 'removeItem', { idx: 1 }), { key: 'confirm.removeImportant', params: { idx: 1 } });
+    assertEqual(confirmOf(m, 'removeItem', { idx: 0 }), null);
+    assertEqual(confirmCalls, 2);
+    assertThrows(() => confirmOf(m, 'removeItem', { idx: 9 }), /^invalid idx 9; allowed: 0\.\.1$/);
+    assertEqual(confirmCalls, 2, 'ungültige Argumente: confirm wird nicht gerufen');
+    assertEqual(confirmOf(m, 'setItem', { idx: 0, text: 'x' }), null);
+  });
+
+  test('direkter Aufruf fragt nie', () => {
+    const m = Hooked.fromJSON({ items: ['wichtig'] });
+    confirmCalls = 0;
+    m.removeItem({ idx: 0 });
+    assertEqual(confirmCalls, 0);
+    assertDeepEqual([...m.items], []);
   });
 });

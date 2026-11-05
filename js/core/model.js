@@ -66,12 +66,29 @@ export const object = (shape, opts) => spec('object', { shape: Object.freeze({ .
  * `run` bekommt die geprüften Parameter als ein Objekt; `this` ist das
  * reaktive Model (bzw. das Viewmodel bei Viewmodel-Kommandos) — darum keine
  * Pfeilfunktion.
- * @param {{ params?: Record<string, object>, returns?: object|null, run: (this: any, args: any) => any }} def
- * @returns {Readonly<{ params: Record<string, object>, returns: object|null, run: (this: any, args: any) => any }>}
+ *
+ * `current(fixed)` liefert zu festen Argumenten die übrigen Parameter zum
+ * aktuellen Stand (Startwerte eines Formulars). `confirm(args)` liefert
+ * `null` oder `{ key, params? }` für eine Rückfrage; `key` ist relativ zu
+ * `modules.<id>.`. Beide: `this` = Model, rein, nicht beobachtet, nur von
+ * der Oberfläche ausgewertet.
+ * @param {{ params?: Record<string, object>, returns?: object|null, run: (this: any, args: any) => any,
+ *   current?: (this: any, fixed: any) => object, confirm?: (this: any, args: any) => ({ key: string, params?: object }|null) }} def
+ * @returns {Readonly<{ params: Record<string, object>, returns: object|null, run: (this: any, args: any) => any,
+ *   current?: Function, confirm?: Function }>}
  */
 export function command(def) {
   if (typeof def?.run !== 'function') throw new Error('command: run must be a function');
-  return Object.freeze({ params: Object.freeze({ ...(def.params ?? {}) }), returns: def.returns ?? null, run: def.run });
+  for (const hook of ['current', 'confirm']) {
+    if (def[hook] !== undefined && typeof def[hook] !== 'function') throw new Error(`command: ${hook} must be a function`);
+  }
+  return Object.freeze({
+    params: Object.freeze({ ...(def.params ?? {}) }),
+    returns: def.returns ?? null,
+    run: def.run,
+    ...(def.current ? { current: def.current } : {}),
+    ...(def.confirm ? { confirm: def.confirm } : {}),
+  });
 }
 
 // ─── Werte ──────────────────────────────────────────────────
@@ -292,6 +309,47 @@ export function runCommand(name, def, self, root, cmd) {
   const observer = root?._obs;
   if (typeof observer === 'function') observer(name, cloneJSON(args), result);
   return result;
+}
+
+/**
+ * Die Kommando-Definition zu einem Namen aus dem Schema des Models.
+ * @param {object} model Model oder Model-Klasse @param {string} name Kommandoname
+ * @returns {any} die Definition aus `command()`
+ * @throws {Error} unbekanntes Kommando
+ */
+export function commandDefOf(model, name) {
+  const commands = schemaOf(model)?.commands ?? {};
+  requireKnownId('command', name, Object.keys(commands));
+  return commands[name];
+}
+
+/**
+ * Die übrigen Parameter eines Kommandos zum aktuellen Stand (`current` der
+ * Kommando-Definition), sonst `{}`.
+ * @param {object} model @param {string} name Kommandoname @param {object} fixed feste Argumente
+ * @returns {object}
+ * @throws {Error} unbekanntes Kommando; Rückgabeschlüssel, der kein Parameter ist
+ */
+export function currentOf(model, name, fixed) {
+  const def = commandDefOf(model, name);
+  if (!def.current) return {};
+  const out = def.current.call(model, fixed) ?? {};
+  const names = Object.keys(def.params);
+  for (const k of Object.keys(out)) requireKnownId(`${name} current key`, k, names);
+  return out;
+}
+
+/**
+ * Die Rückfrage eines Kommandos zu diesen Argumenten: erst prüfen (ungültige
+ * Argumente werfen, bevor gefragt wird), dann `confirm`.
+ * @param {object} model @param {string} name Kommandoname @param {object} args
+ * @returns {{ key: string, params?: object }|null}
+ * @throws {Error} unbekanntes Kommando oder ungültige Argumente
+ */
+export function confirmOf(model, name, args) {
+  const def = commandDefOf(model, name);
+  const checked = checkParams(name, def.params, args, model);
+  return def.confirm ? (def.confirm.call(model, checked) ?? null) : null;
 }
 
 /**
