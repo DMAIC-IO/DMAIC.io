@@ -1,22 +1,21 @@
 /**
- * D.Mike — SIPOC: Exportinhalte. Reine Funktionen; den Download
- * (export-utils.js) löst das Viewmodel aus.
+ * D.Mike — SIPOC: Exportinhalte. Reine Funktionen; Dateien und Download
+ * baut der Kern (core/exporter.js) aus den Mappern im Viewmodel.
  */
 import { COLUMNS } from '../domain/summary.js';
-
-export const FILE_NAMES = Object.freeze({ json: 'sipoc.json', csv: 'sipoc.csv', xlsx: 'sipoc.xlsx', png: 'sipoc.png', svg: 'sipoc.svg' });
 
 /** @param {{ columns: Record<string, string[]> }} state @returns {number} */
 const rowCount = (state) => Math.max(...COLUMNS.map((c) => state.columns[c.key].length), 1);
 
 /**
  * @param {{ columns: Record<string, string[]> }} state @param {Date} [now]
- * @returns {string}
+ * @returns {{ tool: string, timestamp: string, sipoc: Record<string, string[]> }}
  */
-export function toJSONExport(state, now = new Date()) {
+export function toJSONObject(state, now = new Date()) {
+  /** @type {Record<string, string[]>} */
   const sipoc = {};
   for (const { key } of COLUMNS) sipoc[key] = [...state.columns[key]];
-  return JSON.stringify({ tool: 'SIPOC', timestamp: now.toISOString(), sipoc }, null, 2);
+  return { tool: 'SIPOC', timestamp: now.toISOString(), sipoc };
 }
 
 /**
@@ -31,16 +30,7 @@ export function toRows(state, t) {
 }
 
 /**
- * @param {{ columns: Record<string, string[]> }} state @param {(key: string) => string} t
- * @returns {string}
- */
-export function toCSV(state, t) {
-  const quote = (v) => `"${String(v).replace(/"/g, '""')}"`;
-  return `sep=;\n${toRows(state, t).map((row) => row.map(quote).join(';')).join('\n')}\n`;
-}
-
-/**
- * Spalten für die Bildexporte (export-utils.js exportColumnsAs*).
+ * Spalten für das Bild (export-utils.js columnsToSVG).
  * @param {{ columns: Record<string, string[]> }} state @param {(key: string) => string} t
  * @param {Record<string, string>} colors Farbe je Spaltenschlüssel (aus den CSS-Variablen)
  * @returns {{ title: string, desc: string, color: string, items: string[] }[]}
