@@ -10,20 +10,7 @@
 
 import { getPhaseIds } from '../../../core/cycles/cycles.js';
 import { findZegSheet } from '../../../core/zeg-sheet/zeg-sheet.js';
-import { showLegend } from '../../../ui/tile-kit.js';
-
-/** host -> { chart, chartManager, token } of the latest render. */
-const charts = new WeakMap();
-
-/**
- * Destroy the chart of the latest render in a host and forget it.
- * @param {HTMLElement} host
- */
-function release(host) {
-  const entry = charts.get(host);
-  if (entry?.chart) entry.chartManager.destroy(entry.chart);
-  charts.delete(host);
-}
+import { showLegend, chartSlot } from '../../../ui/tile-kit.js';
 
 /**
  * Resolve the CSS colour of a phase.
@@ -112,35 +99,10 @@ export default {
     };
   },
 
-  /**
-   * Create the timeline in the chart slot, with a localized date tick format.
-   * A newer render or dispose invalidates a chart that is still being created.
-   * @param {HTMLElement} root  tile body
-   * @param {object} vm  view model from viewModel()
-   * @param {{i18n: object, chartManager: object}} args
-   * @returns {Promise<void>}
-   */
-  async mount(root, vm, { i18n, chartManager }) {
-    release(root);
-    const token = {};
-    charts.set(root, { chart: null, chartManager, token });
-    if (!vm.chart || !chartManager) return;
-
-    const dateFmt = (ts) => new Date(ts).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', {
+  ...chartSlot('scatter', (vm, { i18n }) => ({
+    ...vm.chart,
+    xTickFormat: (ts) => new Date(ts).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : 'en-US', {
       day: '2-digit', month: '2-digit', year: '2-digit',
-    });
-    const slot = root.querySelector('[data-tile-slot="chart"]');
-    const chart = await chartManager.create(slot, 'scatter', { ...vm.chart, xTickFormat: dateFmt });
-    const entry = charts.get(root);
-    if (entry?.token !== token) { chartManager.destroy(chart); return; }
-    entry.chart = chart;
-  },
-
-  /**
-   * Release the chart of the host (tile removed or host abandoned).
-   * @param {HTMLElement} host
-   */
-  dispose(host) {
-    release(host);
-  },
+    }),
+  })),
 };

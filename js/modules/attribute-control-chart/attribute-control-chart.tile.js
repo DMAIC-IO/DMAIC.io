@@ -12,20 +12,7 @@ import { getColumnValues } from '../../ui/column-picker.js';
 import { windowed } from '../../ui/tile-chart-window.js';
 import { State } from './attribute-control-chart-model.js';
 import { analyzeState } from './attribute-control-chart-analysis.js';
-import { showChart } from '../../ui/tile-kit.js';
-
-/** host -> { chart, chartManager, token } of the latest render. */
-const charts = new WeakMap();
-
-/**
- * Destroy the chart of the latest render in a host and forget it.
- * @param {HTMLElement} host
- */
-function release(host) {
-  const entry = charts.get(host);
-  if (entry?.chart) entry.chartManager.destroy(entry.chart);
-  charts.delete(host);
-}
+import { showChart, chartSlot } from '../../ui/tile-kit.js';
 
 /** Mean of the finite entries of a limit (array for variable limits). */
 function meanOf(v) {
@@ -105,35 +92,8 @@ export default {
     };
   },
 
-  /**
-   * Create the control chart in the chart slot. A newer render or dispose
-   * invalidates a chart that is still being created.
-   * @param {HTMLElement} root  tile body
-   * @param {object} vm  view model from viewModel()
-   * @param {{chartManager: object}} args
-   * @returns {Promise<void>}
-   */
-  async mount(root, vm, { chartManager }) {
-    release(root);
-    const token = {};
-    charts.set(root, { chart: null, chartManager, token });
-    if (!vm.chart || !chartManager) return;
-
-    const slot = root.querySelector('[data-tile-slot="chart"]');
-    const chart = await chartManager.create(slot, 'control-chart', {
-      ...vm.chart,
-      violationIndices: new Set(vm.chart.violationIndices),
-    });
-    const entry = charts.get(root);
-    if (entry?.token !== token) { chartManager.destroy(chart); return; }
-    entry.chart = chart;
-  },
-
-  /**
-   * Release the chart of the host (tile removed or host abandoned).
-   * @param {HTMLElement} host
-   */
-  dispose(host) {
-    release(host);
-  },
+  ...chartSlot('control-chart', (vm) => ({
+    ...vm.chart,
+    violationIndices: new Set(vm.chart.violationIndices),
+  })),
 };

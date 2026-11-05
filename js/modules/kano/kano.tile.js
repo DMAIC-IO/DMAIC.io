@@ -12,20 +12,7 @@
 import { State } from './kano-model.js';
 import { evaluate, CATEGORIES, Q_WARN } from '../../engines/kano-engine.js';
 import { kanoScatterConfig } from './kano-chart.js';
-import { showChart } from '../../ui/tile-kit.js';
-
-/** host -> { chart, chartManager, token } of the latest render. */
-const charts = new WeakMap();
-
-/**
- * Destroy the chart of the latest render in a host and forget it.
- * @param {HTMLElement} host
- */
-function release(host) {
-  const entry = charts.get(host);
-  if (entry?.chart) entry.chartManager.destroy(entry.chart);
-  charts.delete(host);
-}
+import { showChart, chartSlot } from '../../ui/tile-kit.js';
 
 /** Share as a whole percent ("75 %"); `|| 0` smooths a possible -0. */
 function pct(v) {
@@ -102,32 +89,5 @@ export default {
     };
   },
 
-  /**
-   * Create the scatter in the chart slot. A newer render or dispose
-   * invalidates a chart that is still being created.
-   * @param {HTMLElement} root  tile body
-   * @param {object} vm  view model from viewModel()
-   * @param {{chartManager: object}} args
-   * @returns {Promise<void>}
-   */
-  async mount(root, vm, { chartManager }) {
-    release(root);
-    const token = {};
-    charts.set(root, { chart: null, chartManager, token });
-    if (!vm.chart || !chartManager) return;
-
-    const slot = root.querySelector('[data-tile-slot="chart"]');
-    const chart = await chartManager.create(slot, 'scatter', { ...vm.chart });
-    const entry = charts.get(root);
-    if (entry?.token !== token) { chartManager.destroy(chart); return; }
-    entry.chart = chart;
-  },
-
-  /**
-   * Release the chart of the host (tile removed or host abandoned).
-   * @param {HTMLElement} host
-   */
-  dispose(host) {
-    release(host);
-  },
+  ...chartSlot('scatter'),
 };

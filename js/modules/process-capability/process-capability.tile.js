@@ -12,26 +12,13 @@ import { getColumnValues } from '../../ui/column-picker.js';
 import { State } from './process-capability-model.js';
 import { analyzeState, formatHint, specRefLines } from './process-capability-analysis.js';
 import { fmt as formatNumber } from './process-capability-format.js';
-import { showChart } from '../../ui/tile-kit.js';
-
-/** host -> { chart, chartManager, token } of the latest render. */
-const charts = new WeakMap();
+import { showChart, chartSlot } from '../../ui/tile-kit.js';
 
 /** ppmBasis setting → engine result field. */
 const PPM_FIELD = { overall: 'ppmTotal', within: 'ppmWithinTotal', observed: 'ppmObservedTotal' };
 
 /** Engine cpkStatus → SPC metric modifier. */
 const CPK_MODIFIER = { pass: 'ok', warn: 'warn', fail: 'bad' };
-
-/**
- * Destroy the chart of the latest render in a host and forget it.
- * @param {HTMLElement} host
- */
-function release(host) {
-  const entry = charts.get(host);
-  if (entry?.chart) entry.chartManager.destroy(entry.chart);
-  charts.delete(host);
-}
 
 /** Fixed decimals, '—' when missing or not finite (e.g. Cp with a within-sigma of 0). */
 function fmt(v, d) {
@@ -109,32 +96,5 @@ export default {
     };
   },
 
-  /**
-   * Create the histogram in the chart slot. A newer render or dispose
-   * invalidates a chart that is still being created.
-   * @param {HTMLElement} root  tile body
-   * @param {object} vm  view model from viewModel()
-   * @param {{chartManager: object}} args
-   * @returns {Promise<void>}
-   */
-  async mount(root, vm, { chartManager }) {
-    release(root);
-    const token = {};
-    charts.set(root, { chart: null, chartManager, token });
-    if (!vm.chart || !chartManager) return;
-
-    const slot = root.querySelector('[data-tile-slot="chart"]');
-    const chart = await chartManager.create(slot, 'histogram', { ...vm.chart });
-    const entry = charts.get(root);
-    if (entry?.token !== token) { chartManager.destroy(chart); return; }
-    entry.chart = chart;
-  },
-
-  /**
-   * Release the chart of the host (tile removed or host abandoned).
-   * @param {HTMLElement} host
-   */
-  dispose(host) {
-    release(host);
-  },
+  ...chartSlot('histogram'),
 };
