@@ -1,3 +1,8 @@
 {
-  "$schema": "../../schemas/catalog-texts.schema.json"
+  "$schema": "../../schemas/catalog-texts.schema.json",
+  "sipoc": {
+    "name": "SIPOC",
+    "description": "Supplier-Input-Process-Output-Customer Diagramm",
+    "whenToUse": "Wenn die Grenzen eines Prozesses geklärt werden sollen — wer liefert, was geht hinein, welche Schritte laufen, was kommt heraus und wer empfängt es; nicht für den Ablauf selbst mit Entscheidungen und Verzweigungen, dafür ist ein Flussdiagramm da."
+  }
 }

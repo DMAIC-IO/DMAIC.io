@@ -8,7 +8,7 @@ import { renderTileSafely } from '../../js/pages/dashboard/tile-render.js';
 
 /**
  * Fetch a tile template file and inline it as <template data-tpl="key">, once.
- * @param {string} key  template path relative to app/dev, e.g. 'js/modules/sipoc/sipoc.tile.html'
+ * @param {string} key  template path relative to app/dev, e.g. 'js/modules/sipoc/resources/tile.html'
  */
 export async function inlineTileTemplate(key) {
   const selector = `template[data-tpl="${CSS.escape(key)}"]`;

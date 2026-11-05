@@ -1,13 +1,15 @@
 /**
- * D.Mike — SIPOC dashboard tile (sipoc.tile.js)
+ * D.Mike — SIPOC dashboard tile
  *
  * "How is the process framed?" — compact five-column board with the count
  * and the first entries per column; empty columns are marked as gaps. One
- * tile per instance; source/copies via the host. Imports only the model;
- * the markup lives in sipoc.tile.html. Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
+ * tile per instance; source/copies via the host.
+ * Importiert nur domain/; das Markup liegt in resources/tile.html.
+ * Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
  */
 
-import { State, columnSummary } from './sipoc-model.js';
+import { State } from '../domain/model.js';
+import { columnSummary } from '../domain/summary.js';
 
 export default {
   size: { defaultW: 6, defaultH: 10, minW: 4, minH: 6 },
@@ -15,7 +17,7 @@ export default {
   settings: {
     topN: { type: 'number', min: 1, max: 10, step: 1, default: 3, label: 'dashboard.tileSettings.topN' },
   },
-  template: 'js/modules/sipoc/sipoc.tile.html',
+  template: 'js/modules/sipoc/resources/tile.html',
 
   /**
    * Board data, or the empty state when no column has an entry.

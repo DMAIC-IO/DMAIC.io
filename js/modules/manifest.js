@@ -259,18 +259,6 @@ export default [
     },
   },
   {
-    id: 'sipoc',
-    phase: 'define',
-    group: 'scope',
-    load: () => import('./sipoc/sipoc.js'),
-    loadTile: () => import('./sipoc/sipoc.tile.js'),
-    cycles: {
-      dmaic:  { phase: 'define'  },
-      dmadv:  { phase: 'define'  },
-      eightd: { phase: 'problem' },
-    },
-  },
-  {
     id: 'five-why',
     phase: 'define',
     group: 'causes',

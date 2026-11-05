@@ -6,6 +6,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { bundleJs, assertEvalFree, readCssLinks, bundleCss, hash8, rewriteBlock, buildStylesBlock, buildScriptsBlock, buildChunkManifestBlock, staticClosure, writeOutputAtomic, runBuild, isWatchedSource, watchSourceTree } from './build.mjs';
 import { renderIndexHtml } from '../build-templates/build.mjs';
+import { CONVERTED_MODULES } from './converted-modules.mjs';
 
 const APP_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -560,7 +561,7 @@ test('entry static closure: modules split off, no heavy dependency', async () =>
   const { inputs } = staticClosure(metafile);
   const has = (frag) => [...inputs].some((i) => i.includes(frag));
   assert.ok(has('js/app.js'), 'closure contains the entry source');
-  assert.equal(has('js/modules/sipoc/sipoc.js'), false, 'modules are split off');
+  assert.equal(has('js/modules/sipoc/viewmodel/viewmodel.js'), false, 'modules are split off');
   for (const frag of HEAVY_INPUTS) assert.equal(has(frag), false, `${frag} in entry closure`);
 });
 
@@ -583,12 +584,14 @@ test('isWatchedSource rebuilds on worker sources, never on sw.js itself', () => 
   assert.equal(isWatchedSource('sw.js'), false);
 });
 
-test('index.dist.html links every stylesheet under js/', () => {
+test('index.dist.html links every stylesheet under js/ (except converted modules)', () => {
   // A module stylesheet missing from the STYLES list never reaches app.min.css.
+  // Converted modules load their own resources/style.css; linking it is a build error.
+  const own = CONVERTED_MODULES.map((id) => `js/modules/${id}/`);
   const linked = new Set(readCssLinks(readFileSync(join(APP_DIR, 'index.dist.html'), 'utf8')));
   const walk = (rel) => readdirSync(join(APP_DIR, rel), { withFileTypes: true }).flatMap((e) =>
     e.isDirectory() ? (e.name === 'chunks' ? [] : walk(`${rel}/${e.name}`))
       : e.name.endsWith('.css') ? [`${rel}/${e.name}`] : []);
-  const missing = walk('js').filter((href) => !linked.has(href));
+  const missing = walk('js').filter((href) => !linked.has(href) && !own.some((dir) => href.startsWith(dir)));
   assert.deepEqual(missing, []);
 });

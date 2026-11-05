@@ -77,9 +77,10 @@ test('catalogConflicts meldet Ids, die in manifest.js und CONVERTED_MODULES steh
   assert.deepEqual(catalogConflicts(['pareto'], ['sipoc']), []);
 });
 
-test('readLegacyIds liest die Ids aus manifest.js', async () => {
+test('readLegacyIds liest die Ids aus manifest.js (ohne umgestellte)', async () => {
   const ids = await readLegacyIds(APP_DIR);
-  assert.ok(ids.includes('sipoc'));
+  assert.ok(ids.includes('pareto'));
+  assert.ok(!ids.includes('sipoc'));
   assert.equal(new Set(ids).size, ids.length);
 });
 

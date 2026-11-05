@@ -176,18 +176,6 @@
   --color-action-bar-bg: var(--color-bg-primary);
   --color-action-bar-border: var(--color-border-primary);
 
-  /* SIPOC column colors */
-  --color-sipoc-s: #f59e0b;
-  --color-sipoc-i: #3b82f6;
-  --color-sipoc-p: #10b981;
-  --color-sipoc-o: #a855f7;
-  --color-sipoc-c: #ef4444;
-  --color-sipoc-s-bg: rgb(245 158 11 / 8%);
-  --color-sipoc-i-bg: rgb(59 130 246 / 8%);
-  --color-sipoc-p-bg: rgb(16 185 129 / 8%);
-  --color-sipoc-o-bg: rgb(168 85 247 / 8%);
-  --color-sipoc-c-bg: rgb(239 68 68 / 8%);
-
   /* Flowchart family (Process Map, Activity, Opportunity, Deployment) —
      shared step-card accent, consumed by js/core/flowchart/flowchart.css.
      The --color-pmap-* aliases below keep Process Map's existing selectors

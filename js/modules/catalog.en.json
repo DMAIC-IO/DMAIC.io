@@ -1,3 +1,8 @@
 {
-  "$schema": "../../schemas/catalog-texts.schema.json"
+  "$schema": "../../schemas/catalog-texts.schema.json",
+  "sipoc": {
+    "name": "SIPOC",
+    "description": "Supplier-Input-Process-Output-Customer diagram",
+    "whenToUse": "When the boundaries of a process need clarifying — who supplies, what goes in, which steps run, what comes out and who receives it; not for the flow itself with its decisions and branches, which is what a flowchart is for."
+  }
 }

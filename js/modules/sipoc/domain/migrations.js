@@ -18,6 +18,7 @@ const COLUMN_KEYS_1_0 = ['suppliers', 'inputs', 'process', 'outputs', 'customers
 export function from0(json) {
   const hasColumns = json.columns !== null && typeof json.columns === 'object' && !Array.isArray(json.columns);
   const source = hasColumns ? json.columns : json;
+  /** @type {Record<string, string[]>} */
   const columns = {};
   for (const key of COLUMN_KEYS_1_0) {
     const list = source[key];

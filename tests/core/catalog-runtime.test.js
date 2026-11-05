@@ -2,15 +2,16 @@
  * Der erzeugte Katalog (js/modules/catalog.generated.js) zur Laufzeit.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
-import { MODULES, CONVERTED } from '../../js/modules/catalog.generated.js';
+import { MODULES, CONVERTED, MODULE_ORDER } from '../../js/modules/catalog.generated.js';
 import manifest from '../../js/modules/manifest.js';
 import { treePhaseForCycle } from '../../js/modules/voc-ctx-tree/voc-ctx-tree-phase.js';
 
 suite('Katalog zur Laufzeit', () => {
-  test('MODULES = manifest.js-Einträge, dahinter je umgestelltem Modul einer mit form: module', () => {
+  test('MODULES = manifest.js-Einträge plus je umgestelltem Modul einer mit form: module, in MODULE_ORDER', () => {
     assertEqual(MODULES.length, manifest.length + CONVERTED.length);
-    assertTrue(manifest.every((e, i) => MODULES[i] === e));
-    assertDeepEqual(MODULES.slice(manifest.length).map((e) => [e.id, e.form]), CONVERTED.map((id) => [id, 'module']));
+    assertTrue(manifest.every((e) => MODULES.includes(e)));
+    assertDeepEqual(MODULES.filter((e) => !manifest.includes(e)).map((e) => [e.id, e.form]), CONVERTED.map((id) => [id, 'module']));
+    assertDeepEqual(MODULES.map((e) => e.id), MODULE_ORDER.filter((id) => MODULES.some((e) => e.id === id)));
   });
 
   test('Ids sind eindeutig', () => {

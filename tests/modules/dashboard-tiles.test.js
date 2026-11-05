@@ -18,7 +18,7 @@ import { I18n } from '../../js/core/i18n.js';
 import capabilityTile from '../../js/modules/process-capability/process-capability.tile.js';
 import attrSpcTile from '../../js/modules/attribute-control-chart/attribute-control-chart.tile.js';
 import zegTile from '../../js/pages/dashboard/tiles/zeg-timeline.tile.js';
-import sipocTile from '../../js/modules/sipoc/sipoc.tile.js';
+import sipocTile from '../../js/modules/sipoc/tile/tile.js';
 import kanoTile from '../../js/modules/kano/kano.tile.js';
 
 const i18n = { t: (k) => k };

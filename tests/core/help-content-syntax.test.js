@@ -24,18 +24,43 @@ function collectStrings(node, path = [], out = []) {
   return out;
 }
 
+/**
+ * Hilfedefinition eines Katalogeintrags in der Form, die der Renderer liest
+ * (`sections.<id>.<lang>`). Alte Form: `<id>/<id>-help.js`; neue Form
+ * (`form: 'module'`): je Sprache `resources/i18n/help.<lang>.json`, hier zu
+ * einer Definition zusammengeführt. `null`, wenn keine Hilfedatei existiert.
+ */
+async function loadHelp(entry) {
+  if (entry.form !== 'module') {
+    try {
+      return (await import(`../../js/modules/${entry.id}/${entry.id}-help.js`)).default;
+    } catch {
+      return null;
+    }
+  }
+  const sections = {};
+  for (const lang of ['de', 'en']) {
+    let json;
+    try {
+      json = (await import(`../../js/modules/${entry.id}/resources/i18n/help.${lang}.json`, { with: { type: 'json' } })).default;
+    } catch {
+      return null;
+    }
+    for (const [key, section] of Object.entries(json?.sections ?? {})) {
+      (sections[key] ??= {})[lang] = section;
+    }
+  }
+  return { sections };
+}
+
 const HTML_TAG = /<\/?(?:sub|sup|em|strong|code|b|i|u|br|span|div|p|ul|li|table)\b[^>]*>/i;
 
 suite('Hilfetexte: unterstützte Auszeichnung', () => {
   test('kein Hilfetext enthält rohes HTML', async () => {
     const offenders = [];
     for (const entry of MODULE_MANIFEST) {
-      let help;
-      try {
-        help = (await import(`../../js/modules/${entry.id}/${entry.id}-help.js`)).default;
-      } catch {
-        continue;   // Modul ohne eigenen Hilfetext
-      }
+      const help = await loadHelp(entry);
+      if (!help) continue;   // Modul ohne eigenen Hilfetext
       for (const { path, value } of collectStrings(help)) {
         const m = value.match(HTML_TAG);
         if (m) offenders.push(`${entry.id} (${path}): ${m[0]}`);
@@ -56,13 +81,8 @@ suite('Hilfetexte: Format, das der Renderer liest', () => {
   test('jedes Modul hat Abschnitte mit nicht-leeren DE- und EN-Blöcken', async () => {
     const offenders = [];
     for (const entry of MODULE_MANIFEST) {
-      let help;
-      try {
-        help = (await import(`../../js/modules/${entry.id}/${entry.id}-help.js`)).default;
-      } catch {
-        offenders.push(`${entry.id}: keine Hilfedatei`);
-        continue;
-      }
+      const help = await loadHelp(entry);
+      if (!help) { offenders.push(`${entry.id}: keine Hilfedatei`); continue; }
       const sections = Object.entries(help?.sections ?? {});
       if (!sections.length) { offenders.push(`${entry.id}: keine sections`); continue; }
       for (const [key, section] of sections) {
