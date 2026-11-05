@@ -108,7 +108,7 @@ test('rendert den State-Typ und den ViewFn-Alias', async () => {
     ' */',
     '',
     '/**',
-    " * @typedef {import('../../../core/template-module.js').ViewFn<import('../domain/model.types.js').StateModel, UiState>} ProcessMapViewFn",
+    ' * @typedef {' + 'import(' + "'../../../core/template-module.js')" + '.ViewFn<' + "import('../domain/model.types.js')" + '.StateModel, UiState>} ProcessMapViewFn',
     ' */',
     '',
     'export {};',

@@ -126,6 +126,15 @@ export async function loadStateSchema(file) {
 const pascalId = (id) => id.split('-').map(pascal).join('');
 
 /**
+ * Typ-Import für den erzeugten Text. Der Pfad gilt relativ zur erzeugten Datei,
+ * nicht zu diesem Skript; zusammengesetzt, damit der Grenz-Scanner ihn nicht
+ * als echten Import dieser Datei liest.
+ * @param {string} path
+ * @returns {string}
+ */
+const typeImport = (path) => 'import' + `('${path}')`;
+
+/**
  * Der Inhalt von `viewmodel/state.types.js`.
  * @param {{ id: string, name: string, schema: { fields: object }, modelName: string }} state
  *   `modelName`: Name des Model-Exports in `domain/model.js`
@@ -138,7 +147,7 @@ export function renderStateTypes({ id, name, schema, modelName }) {
     '',
     ...typedef(name, schema.fields),
     '/**',
-    ` * @typedef {import('../../../core/template-module.js').ViewFn<import('../domain/model.types.js').${modelName}Model, ${name}>} ${pascalId(id)}ViewFn`,
+    ` * @typedef {${typeImport('../../../core/template-module.js')}.ViewFn<${typeImport('../domain/model.types.js')}.${modelName}Model, ${name}>} ${pascalId(id)}ViewFn`,
     ' */',
     '',
     'export {};',
