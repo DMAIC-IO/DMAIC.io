@@ -34,7 +34,9 @@ function reservedProblem(key, field) {
 function fieldProblem(field) {
   if (!field || typeof field !== 'object') return 'not an object';
   if (!TYPES.has(field.type)) return `unknown type "${field.type}"`;
-  if (typeof field.label !== 'string' || field.label === '') return 'missing label';
+  const labelOk = (l) => typeof l === 'string' && l !== '';
+  if (!(labelOk(field.label) || (Array.isArray(field.label) && field.label.length > 0 && field.label.every(labelOk)))) return 'missing label';
+  if (field.helpKey !== undefined && !labelOk(field.helpKey)) return 'helpKey must be a non-empty string';
   if (!Object.hasOwn(field, 'default')) return 'missing default';
   if (field.type === 'number') {
     if (!Number.isFinite(field.min) || !Number.isFinite(field.max) || field.min > field.max) {

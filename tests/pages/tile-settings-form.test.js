@@ -92,3 +92,27 @@ suite('tile settings form: literal option texts', () => {
     assertDeepEqual(form.read(), { _source: 'i2' });
   });
 });
+
+suite('tile settings form: Beschriftungsliste und helpKey', () => {
+  const labelOf = (form, key) => form.el.querySelector(`label[for="${input(form, key).id}"]`).textContent;
+  const field = { type: 'number', min: 1, max: 10, step: 1, default: 3, label: ['m.label', 'g.label'], helpKey: 'm.help' };
+
+  test('erster vorhandener Schlüssel gewinnt', () => {
+    const i18nX = { t: (k) => `T:${k}`, exists: (k) => k === 'g.label' };
+    assertEqual(labelOf(buildSettingsForm({ topN: field }, { topN: 3 }, i18nX), 'topN'), 'T:g.label');
+    const both = { t: (k) => `T:${k}`, exists: () => true };
+    assertEqual(labelOf(buildSettingsForm({ topN: field }, { topN: 3 }, both), 'topN'), 'T:m.label');
+  });
+
+  test('ohne exists oder ohne Treffer: der letzte Kandidat', () => {
+    assertEqual(labelOf(buildSettingsForm({ topN: field }, { topN: 3 }, i18n), 'topN'), 'T:g.label');
+    const none = { t: (k) => `T:${k}`, exists: () => false };
+    assertEqual(labelOf(buildSettingsForm({ topN: field }, { topN: 3 }, none), 'topN'), 'T:g.label');
+  });
+
+  test('helpKey setzt data-help-key am Bedienelement', () => {
+    const form = buildSettingsForm({ topN: field, plain: SCHEMA.topN }, { topN: 3, plain: 5 }, i18n);
+    assertEqual(input(form, 'topN').dataset.helpKey, 'm.help');
+    assertEqual(input(form, 'plain').dataset.helpKey, undefined);
+  });
+});

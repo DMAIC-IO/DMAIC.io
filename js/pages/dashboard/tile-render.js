@@ -3,7 +3,9 @@
  *
  * The single place where tiles are mounted and released. A tile provides a
  * template key and a viewModel(); the host clones the inlined template,
- * binds { vm } as Alpine scope and lets the optional mount() add imperative
+ * binds { vm } as Alpine scope — or, for a tile built with createTile
+ * (core/template-tile.js, scope marked `_templateTile`), the scope itself —
+ * and lets the optional mount() add imperative
  * parts (charts, hand-drawn SVG) into [data-tile-slot] elements. A failing
  * step shows a placeholder instead of breaking the dashboard; a render that
  * is superseded or disposed while its viewModel is pending is dropped.
@@ -20,7 +22,7 @@ const renders = new WeakMap();
  * Replace the body content with a fresh clone of the template, scoped to vm.
  * @param {HTMLElement} body
  * @param {string} key  inlined-template key
- * @param {object} vm
+ * @param {object} vm  a vm with the `_templateTile` mark is bound as the scope itself
  */
 function mountTemplate(body, key, vm) {
   Alpine.destroyTree(body);
@@ -29,8 +31,9 @@ function mountTemplate(body, key, vm) {
   stripBlankText(fragment);
   const nodes = [...fragment.children];
   body.replaceChildren(...nodes);
+  const scope = vm?._templateTile === true ? vm : { vm };
   for (const node of nodes) {
-    Alpine.addScopeToNode(node, { vm });
+    Alpine.addScopeToNode(node, scope);
     Alpine.initTree(node);
   }
 }

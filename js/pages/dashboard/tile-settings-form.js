@@ -27,6 +27,18 @@ function optionText(field, option, index, i18n) {
 }
 
 /**
+ * The label key of a field: a single key, or the first key of a candidate
+ * list that exists (else the last candidate).
+ * @param {object} field
+ * @param {{t: function, exists?: function}} i18n
+ * @returns {string}
+ */
+function labelKey(field, i18n) {
+  if (!Array.isArray(field.label)) return field.label;
+  return field.label.find((k) => i18n.exists?.(k)) ?? field.label.at(-1);
+}
+
+/**
  * Create the control for one field.
  * @param {object} field
  * @param {object} i18n
@@ -80,10 +92,11 @@ export function buildSettingsForm(schema, values, i18n) {
     control.id = `${prefix}-${key}`;
     control.classList.add('tile-settings__input');
     control.dataset.setting = key;
+    if (field.helpKey) control.dataset.helpKey = field.helpKey;
     writeControl(control, field, values[key]);
     controls.set(key, control);
     return h('div', { class: `tile-settings__row tile-settings__row--${field.type}` },
-      h('label', { class: 'tile-settings__label', for: control.id }, i18n.t(field.label)),
+      h('label', { class: 'tile-settings__label', for: control.id }, i18n.t(labelKey(field, i18n))),
       control);
   });
 

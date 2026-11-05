@@ -199,3 +199,23 @@ suite('disposeTile', () => {
     assertEqual(body.childNodes.length, 0);
   });
 });
+
+inline('test/new-form.html', '<p class="n" x-text="label"></p><b class="m" x-text="model.title"></b>');
+
+suite('renderTileSafely: neue Form', () => {
+  test('ein markierter Scope wird selbst gebunden, Getter sehen this', async () => {
+    const body = document.createElement('div');
+    const vm = { model: Object.freeze({ title: 'Brett' }), get label() { return `L:${this.model.title}`; } };
+    Object.defineProperty(vm, '_templateTile', { value: true });
+    const ok = await renderTileSafely({ template: 'test/new-form.html', viewModel: () => vm }, body, { tileId: 't' }, i18n);
+    assertTrue(ok);
+    assertEqual(body.querySelector('.n').textContent, 'L:Brett');
+    assertEqual(body.querySelector('.m').textContent, 'Brett');
+  });
+
+  test('ohne Marke bleibt es bei { vm }', async () => {
+    const body = document.createElement('div');
+    await renderTileSafely(scopeTile({ title: 'Alt', items: [] }), body, { tileId: 't' }, i18n);
+    assertEqual(body.querySelector('.a').textContent, 'Alt');
+  });
+});

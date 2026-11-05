@@ -277,3 +277,25 @@ suite('tile settings: chart edits', () => {
     assertEqual(withCopiedChartEdits(undefined, 'cap:a', 'cap~z'), null);
   });
 });
+
+suite('validateSchema: Beschriftungsliste und helpKey', () => {
+  test('label als nicht leere Liste von Schlüsseln, helpKey als Text', () => {
+    const warnings = [];
+    const field = { ...TOP_N, label: ['modules.x.tile.settings.topN.label', 'dashboard.tileSettings.topN'], helpKey: 'modules.x.tile.settings.topN.help' };
+    assertDeepEqual(validateSchema({ topN: field }, (m) => warnings.push(m)), { topN: field });
+    assertDeepEqual(warnings, []);
+  });
+  test('leere Liste, leerer Eintrag, leerer helpKey werden verworfen', () => {
+    const warnings = [];
+    validateSchema({
+      a: { ...TOP_N, label: [] },
+      b: { ...TOP_N, label: ['x', ''] },
+      c: { ...TOP_N, helpKey: '' },
+    }, (m) => warnings.push(m));
+    assertDeepEqual(warnings, [
+      '[tile-settings] field "a" ignored: missing label',
+      '[tile-settings] field "b" ignored: missing label',
+      '[tile-settings] field "c" ignored: helpKey must be a non-empty string',
+    ]);
+  });
+});
