@@ -9,10 +9,15 @@
  * `parseDecimalInput`. Fehlt ein `data-help-key`, entsteht er aus dem
  * Feldnamen. Ersetzt für Schema-Module das param-input-Mixin.
  *
+ * `x-field="state.name"` bindet ebenso an ein Feld des UI-State
+ * (`defineState`): der State hat keine prüfenden Setter, darum prüft die
+ * Direktive mit `checkValue`, bevor sie schreibt. Der Anker heißt dann
+ * `modules.<id>.state.<name>.help`.
+ *
  * CSP-tauglich: kein Ausdruck wird ausgewertet — der Pfad wird zerlegt und
  * über `Alpine.$data` gelesen.
  */
-import { fieldSpec } from './model.js';
+import { fieldSpec, stateSchemaOf, checkValue } from './model.js';
 import { parseDecimalInput } from './parse-decimal.js';
 import { clearRejection, markRejection, describeRange } from './param-input.js';
 
@@ -73,19 +78,21 @@ export function registerFieldDirective(Alpine, { i18n }) {
     const owner = () => segments.reduce((o, s) => (o === null || o === undefined ? o : o[s]), data);
     const spec = fieldSpec(owner(), key);
     if (!spec) {
-      console.error(`[x-field] ${expression} is not a field of a defineModel model`);
+      console.error(`[x-field] ${expression} is not a field of a defineModel model or a defineState state`);
       return;
     }
+    const isState = stateSchemaOf(owner()) !== null;
     applyAttributes(el, spec);
     if (!el.hasAttribute('data-help-key') && data.moduleId) {
-      el.setAttribute('data-help-key', `modules.${data.moduleId}.fields.${key}.help`);
+      el.setAttribute('data-help-key', `modules.${data.moduleId}.${isState ? 'state' : 'fields'}.${key}.help`);
     }
 
     effect(() => writeElement(el, spec, owner()?.[key]));
 
     const commit = (live) => {
       try {
-        owner()[key] = readElement(el, spec);
+        const raw = readElement(el, spec);
+        owner()[key] = isState ? checkValue(spec, key, raw) : raw;
         clearRejection(el);
       } catch (err) {
         if (err instanceof TypeError || err instanceof ReferenceError || err instanceof SyntaxError) throw err;

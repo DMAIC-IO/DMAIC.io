@@ -5,7 +5,7 @@
 import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { registerFieldDirective } from '../../js/core/field-directive.js';
-import { defineModel, text, number, oneOf, boolean } from '../../js/core/model.js';
+import { defineModel, defineState, text, number, oneOf, boolean } from '../../js/core/model.js';
 
 const M = defineModel({
   fields: {
@@ -18,6 +18,11 @@ const M = defineModel({
   view: { mode: oneOf(['a', 'b']) },
 });
 
+const Ui = defineState({
+  level: number({ min: 0, max: 5, integer: true, default: 2 }),
+  label: text(),
+});
+
 const I18N = { t: (k, p) => (p ? `${k}|${p.range}` : k), getLanguage: () => 'de' };
 const flush = () => new Promise(r => setTimeout(r, 0));
 
@@ -27,7 +32,7 @@ async function mount() {
   if (!Alpine.version) Alpine.start();
   const name = `fieldTest${++n}`;
   const model = new M();
-  Alpine.data(name, () => ({ model, moduleId: 'ft' }));
+  Alpine.data(name, () => ({ model, state: Ui.create(), moduleId: 'ft' }));
   const host = document.createElement('div');
   const root = document.createElement('div');
   root.setAttribute('x-data', name);
@@ -40,13 +45,16 @@ async function mount() {
     title: add('input', { 'x-field': 'model.title', 'data-help-key': 'eigener.schluessel' }),
     on: add('input', { type: 'checkbox', 'x-field': 'model.on' }),
     mode: add('select', { 'x-field': 'model.mode' }),
+    level: add('input', { 'x-field': 'state.level' }),
+    label: add('input', { 'x-field': 'state.label' }),
   };
   for (const v of ['a', 'b']) { const o = document.createElement('option'); o.value = v; o.textContent = v; els.mode.append(o); }
   host.append(root);
   document.body.append(host);
   Alpine.initTree(host);
   await flush();
-  return { model: Alpine.$data(root).model, els };
+  const vm = Alpine.$data(root);
+  return { model: vm.model, state: vm.state, els };
 }
 
 const change = (el, value) => { el.value = value; el.dispatchEvent(new Event('change')); };
@@ -121,5 +129,44 @@ suite('x-field — Bindung', () => {
     assertEqual(model.on, true);
     change(els.mode, 'b');
     assertEqual(model.mode, 'b');
+  });
+});
+
+suite('x-field — UI-State (state.<name>)', () => {
+  test('Attribute und Anker aus der State-Spec', async () => {
+    const { els } = await mount();
+    assertEqual(els.level.type, 'number');
+    assertEqual(els.level.getAttribute('min'), '0');
+    assertEqual(els.level.getAttribute('max'), '5');
+    assertEqual(els.level.getAttribute('step'), '1');
+    assertEqual(els.level.getAttribute('data-help-key'), 'modules.ft.state.level.help');
+    assertEqual(els.label.getAttribute('data-help-key'), 'modules.ft.state.label.help');
+  });
+
+  test('State → Feld', async () => {
+    const { state, els } = await mount();
+    assertEqual(els.level.value, '2');
+    state.level = 3;
+    await flush();
+    assertEqual(els.level.value, '3');
+  });
+
+  test('gültige Eingabe wird geprüft geschrieben (Zahl, nicht Text)', async () => {
+    const { state, els } = await mount();
+    change(els.level, '4');
+    assertEqual(state.level, 4);
+    type(els.label, 'Hallo');
+    assertEqual(state.label, 'Hallo');
+  });
+
+  test('ungültige Eingabe: State bleibt, Feld zurück, markiert', async () => {
+    const { state, els } = await mount();
+    change(els.level, '9');
+    assertEqual(state.level, 2);
+    assertEqual(els.level.value, '2');
+    assertEqual(els.level.getAttribute('aria-invalid'), 'true');
+    change(els.level, '1');
+    assertEqual(state.level, 1);
+    assertEqual(els.level.getAttribute('aria-invalid'), null);
   });
 });
