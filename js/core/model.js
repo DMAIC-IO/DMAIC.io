@@ -12,6 +12,10 @@
  * `defineState(fields)` beschreibt UI-State mit denselben Feldkonstruktoren:
  * ein schlichtes Objekt je Komponente, ungeprüft beschrieben, nie gespeichert.
  *
+ * `defineForm({ fields, fromParams?, toParams? })` beschreibt ein Formular,
+ * dessen Felder nicht die Parameter eines Kommandos sind; `fromAttr` wandelt
+ * den Text eines `data-arg-*` in den Wert einer Feldart.
+ *
  * Werte liegen in `this._v`, nicht in `#privaten` Feldern — die brechen mit
  * Alpines Proxy. Accessoren liegen am Prototyp: `Object.keys(model)` liefert
  * nur `['_v']`; wer ein Model kopiert, nimmt `toJSON()`.
@@ -461,6 +465,55 @@ export function defineState(fields) {
       for (const [k, s] of Object.entries(schema.fields)) state[k] = defaultOf(s);
       return Object.defineProperty(state, '_schema', { value: schema, enumerable: false });
     },
+  });
+}
+
+// ─── Formulare und Attribute ────────────────────────────────
+
+const FROM_ATTR_FORBIDDEN = new Set(['object', 'list', 'record']);
+
+/**
+ * Den Text eines `data-arg-*`-Attributs in den Wert seiner Feldart wandeln.
+ * Was sich nicht wandeln lässt, bleibt Text — die Prüfung danach lehnt mit
+ * der üblichen Meldung ab. `oneOf` bleibt Text: `checkValue` ordnet
+ * Zahlentexte dem Mitglied zu.
+ * @param {object} s Feld-Spec @param {string} text
+ * @returns {any}
+ * @throws {Error} für `object`, `list`, `record`
+ */
+export function fromAttr(s, text) {
+  if (FROM_ATTR_FORBIDDEN.has(s.kind)) throw new Error(`fromAttr: ${s.kind} cannot come from an attribute`);
+  if (s.nullable && text === '') return null;
+  switch (s.kind) {
+    case 'index': return /^\d+$/.test(text.trim()) ? Number(text) : text;
+    case 'number': try { return requireNumber('value', text); } catch { return text; }
+    case 'boolean': return text === 'true' ? true : (text === 'false' ? false : text);
+    default: return text;
+  }
+}
+
+/**
+ * Formular-Schema für Formulare, deren Felder nicht die Parameter eines
+ * Kommandos sind. Dieselben Feldkonstruktoren wie `defineState`, ohne
+ * `index`/`idOf`. `fromParams(params)` macht aus Parametern Formularwerte,
+ * `toParams(values, fixed)` aus Formularwerten Parameter; beide rein,
+ * fehlend gilt 1:1. Das Kommando steht nicht im Schema, sondern am Element.
+ * @param {{ fields: Record<string, object>, fromParams?: (params: any) => object,
+ *   toParams?: (values: any, fixed: any) => object }} def
+ * @returns {Readonly<{ schema: Readonly<{ fields: Readonly<Record<string, object>> }>,
+ *   fromParams: (params: any) => object, toParams: (values: any, fixed: any) => object }>}
+ */
+export function defineForm({ fields, fromParams, toParams }) {
+  for (const [name, s] of Object.entries(fields)) {
+    if (usesPath(s)) throw new Error(`defineForm: ${name} uses index/idOf — paths refer to the model, not to the form`);
+  }
+  for (const [key, fn] of [['fromParams', fromParams], ['toParams', toParams]]) {
+    if (fn !== undefined && typeof fn !== 'function') throw new Error(`defineForm: ${key} must be a function`);
+  }
+  return Object.freeze({
+    schema: Object.freeze({ fields: Object.freeze({ ...fields }) }),
+    fromParams: fromParams ?? ((params) => ({ ...params })),
+    toParams: toParams ?? ((values) => ({ ...values })),
   });
 }
 

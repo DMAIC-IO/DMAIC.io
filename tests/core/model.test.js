@@ -5,7 +5,7 @@ import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } f
 import {
   defineModel, command, text, number, boolean, oneOf, index, idOf, list, record, object,
   defaultOf, checkValue, describeType, schemaOf, fieldSpec, defineState, stateSchemaOf,
-  currentOf, confirmOf, commandDefOf,
+  currentOf, confirmOf, commandDefOf, fromAttr, defineForm,
 } from '../../js/core/model.js';
 
 const COLS = ['suppliers', 'inputs'];
@@ -397,5 +397,54 @@ suite('command: current und confirm', () => {
     m.removeItem({ idx: 0 });
     assertEqual(confirmCalls, 0);
     assertDeepEqual([...m.items], []);
+  });
+});
+
+suite('fromAttr', () => {
+  test('Wandlung je Feldart', () => {
+    assertEqual(fromAttr(index('x'), '3'), 3);
+    assertEqual(fromAttr(index('x'), 'drei'), 'drei');
+    assertEqual(fromAttr(number(), '2.5'), 2.5);
+    assertEqual(fromAttr(number(), '2,5'), '2,5');
+    assertEqual(fromAttr(boolean(), 'true'), true);
+    assertEqual(fromAttr(boolean(), 'false'), false);
+    assertEqual(fromAttr(boolean(), 'ja'), 'ja');
+    assertEqual(fromAttr(oneOf([1, 2]), '2'), '2');
+    assertEqual(fromAttr(text(), ' a '), ' a ');
+    assertEqual(fromAttr(idOf('items'), 'x-1'), 'x-1');
+    assertEqual(fromAttr(text({ nullable: true }), ''), null);
+  });
+
+  test('object, list, record kommen nicht aus einem Attribut', () => {
+    assertThrows(() => fromAttr(list(text()), '[]'), /^fromAttr: list cannot come from an attribute$/);
+    assertThrows(() => fromAttr(record(['a'], text()), '{}'), /^fromAttr: record cannot come from an attribute$/);
+    assertThrows(() => fromAttr(object({ a: text() }), '{}'), /^fromAttr: object cannot come from an attribute$/);
+  });
+});
+
+suite('defineForm', () => {
+  test('eingefroren, ohne Abbildungen 1:1', () => {
+    const F = defineForm({ fields: { a: text(), b: number() } });
+    assertTrue(Object.isFrozen(F) && Object.isFrozen(F.schema) && Object.isFrozen(F.schema.fields));
+    assertDeepEqual(Object.keys(F.schema.fields), ['a', 'b']);
+    assertDeepEqual(F.fromParams({ a: 'x', b: 1 }), { a: 'x', b: 1 });
+    assertDeepEqual(F.toParams({ a: 'x', b: 1 }, { col: 'c' }), { a: 'x', b: 1 });
+  });
+
+  test('eigene Abbildungen', () => {
+    const G = defineForm({
+      fields: { a: text() },
+      fromParams: (p) => ({ a: p.x }),
+      toParams: (v, fixed) => ({ x: v.a, col: fixed.col }),
+    });
+    assertDeepEqual(G.fromParams({ x: 'q' }), { a: 'q' });
+    assertDeepEqual(G.toParams({ a: 'q' }, { col: 'c' }), { x: 'q', col: 'c' });
+  });
+
+  test('index/idOf und Nicht-Funktionen werden abgelehnt', () => {
+    assertThrows(() => defineForm({ fields: { i: index('items') } }), /^defineForm: i uses index\/idOf/);
+    assertThrows(() => defineForm({ fields: { r: object({ id: idOf('items') }) } }), /^defineForm: r uses index\/idOf/);
+    assertThrows(() => defineForm({ fields: {}, toParams: 1 }), /^defineForm: toParams must be a function$/);
+    assertThrows(() => defineForm({ fields: {}, fromParams: 'x' }), /^defineForm: fromParams must be a function$/);
   });
 });
