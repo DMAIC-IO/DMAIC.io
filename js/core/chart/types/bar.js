@@ -11,12 +11,17 @@
  *   barGap: 4                      — gap in px between bars within a group (grouped mode only)
  *   categoryGap: 0.3               — fraction of category width reserved as spacing (0–0.8)
  *
+ * The category axis runs exactly from the first to the last slot
+ * (-0.5 … n-0.5), so the bars fill the plot width.
+ *
  * Category labels that are wider than their slot wrap onto up to three lines
  * (the bottom margin grows with them); only when the slots get too narrow to
- * wrap sensibly are the labels rotated instead.
+ * wrap sensibly are the labels rotated by 45° instead. Rotated labels get a
+ * bottom (and, if needed, left) margin measured from their length; labels
+ * longer than ROTATED_MAX_SHARE of the chart height end in an ellipsis.
  */
 
-import ChartBase, { X_TICKS_BOTTOM, DEFAULT_MARGIN, FONT_MAIN } from '../chart-base.js';
+import ChartBase, { X_TICKS_BOTTOM, FONT_MAIN } from '../chart-base.js';
 import { h } from '../../dom.js';
 import {
   svgEl, svgText, resolveColor, formatNum, getChartColors, generateTicks
@@ -25,7 +30,13 @@ import {
 /** Most lines a wrapped category label takes; the rest ends in an ellipsis. */
 const MAX_LABEL_LINES = 3;
 /** Narrower category slots (px) rotate their labels instead of wrapping them. */
-const MIN_WRAP_SLOT = 40;
+const MIN_WRAP_SLOT = 50;
+/** Rotation (degrees) of category labels in slots too narrow to wrap. */
+const ROTATE_DEG = 45;
+/** Most of the chart height (share) the rotated labels may take below the plot. */
+const ROTATED_MAX_SHARE = 0.4;
+/** Baseline offset (px) of the category labels below the plot. */
+const LABEL_OFFSET = 14;
 /** Horizontal room (px) kept free on each side of a wrapped label. */
 const LABEL_PAD = 4;
 
@@ -66,6 +77,21 @@ export function wrapCategoryLabel(text, maxWidth, measure, maxLines) {
   return kept;
 }
 
+/**
+ * Shorten a label to `maxWidth`, ending in an ellipsis when cut.
+ * @param {string} text
+ * @param {number} maxWidth px
+ * @param {(s: string) => number} measure width of a string in px
+ * @returns {string}
+ */
+export function ellipsizeLabel(text, maxWidth, measure) {
+  const s = String(text ?? '');
+  if (measure(s) <= maxWidth) return s;
+  let cut = s;
+  while (cut && measure(`${cut.trimEnd()}…`) > maxWidth) cut = cut.slice(0, -1);
+  return `${cut.trimEnd()}…`;
+}
+
 export default class BarChart extends ChartBase {
   /**
    * @param {HTMLElement} container
@@ -82,6 +108,7 @@ export default class BarChart extends ChartBase {
       yMin: 0,
       showXTicks: false,   // we draw our own category labels
       categoricalX: true,  // suppress the "X-Achse Skala" toggle in the editor
+      xExact: true,        // the category axis is not nice-rounded
     };
     super(container, Object.assign(defaults, config), context);
   }
@@ -116,6 +143,22 @@ export default class BarChart extends ChartBase {
       xMax: cats.length - 0.5,
       yMin: 0,
       yMax,
+    };
+  }
+
+  /**
+   * @override — the category axis spans exactly the slots, without the
+   * generic 6 % padding; configured xMin/xMax and zoom still win.
+   */
+  _getAxisBounds() {
+    const bounds = super._getAxisBounds();
+    if (this._viewState) return bounds;
+    const n = (this.config.categories || []).length;
+    if (!n) return bounds;
+    return {
+      ...bounds,
+      xMin: this.config.xMin ?? -0.5,
+      xMax: this.config.xMax ?? n - 0.5,
     };
   }
 
@@ -220,7 +263,7 @@ export default class BarChart extends ChartBase {
         }
       }
 
-      this._drawCategoryLabel(svg, layout, ci, catCx, plotArea.y + plotArea.h + 14);
+      this._drawCategoryLabel(svg, layout, ci, catCx, plotArea.y + plotArea.h + LABEL_OFFSET);
     }
   }
 
@@ -239,7 +282,7 @@ export default class BarChart extends ChartBase {
     };
     const lines = layout.lines[ci];
     if (layout.rotated) {
-      svgText(lines[0], { ...attrs, 'text-anchor': 'end', transform: `rotate(-30 ${x} ${y})` }, svg);
+      svgText(lines[0], { ...attrs, 'text-anchor': 'end', transform: `rotate(-${ROTATE_DEG} ${x} ${y})` }, svg);
     } else if (lines.length === 1) {
       svgText(lines[0], attrs, svg);
     } else {
@@ -341,25 +384,56 @@ export default class BarChart extends ChartBase {
     }];
   }
 
-  /** @override — category labels are drawn below the plot (rotated ones need the full default bottom). */
+  /** @override — category labels are drawn below the plot. */
   _getBottomTickGutter() {
-    return this._categoryLabelLayout().rotated ? DEFAULT_MARGIN.bottom : X_TICKS_BOTTOM;
+    return X_TICKS_BOTTOM;
   }
 
-  /** @override — room for the second and third line of wrapped labels. */
+  /** @override — room for wrapped lines, or for the drop of rotated labels. */
   _getBottomExtra() {
     const layout = this._categoryLabelLayout();
-    if (layout.rotated) return 0;
+    if (layout.rotated) {
+      const fontSize = this.config.tickSize || 11;
+      const sin = Math.sin(ROTATE_DEG * Math.PI / 180);
+      // baseline end at LABEL_OFFSET, the text start drops by width·sin; the
+      // descenders reach a little further down
+      const drop = LABEL_OFFSET + layout.maxWidth * sin + fontSize * 0.5;
+      return Math.max(0, Math.ceil(drop) - X_TICKS_BOTTOM + LABEL_PAD);
+    }
     const most = Math.max(1, ...layout.lines.map(l => l.length));
     return (most - 1) * layout.lineHeight;
   }
 
   /**
+   * @override — rotated labels hang down to the left of their slot; the
+   * first ones may need more room than the y axis labels.
+   */
+  _measureLeftMargin() {
+    const base = super._measureLeftMargin();
+    const fontSize = this.config.tickSize || 11;
+    const rad = ROTATE_DEG * Math.PI / 180;
+    // the slot width depends on the left margin itself: settle it in two passes
+    let margin = base;
+    for (let pass = 0; pass < 2; pass++) {
+      this._leftMargin = margin;
+      const layout = this._categoryLabelLayout();
+      if (!layout.rotated) return base;
+      let need = 0;
+      layout.widths.forEach((w, i) => {
+        need = Math.max(need, w * Math.cos(rad) + fontSize * Math.sin(rad) - (i + 0.5) * layout.slot);
+      });
+      margin = Math.max(base, Math.ceil(need) + LABEL_PAD);
+    }
+    return margin;
+  }
+
+  /**
    * How the category labels are drawn — the one rule both the drawing and
-   * the bottom margin follow. The slot width uses the same nice-rounded x
-   * range as the scale, so it is known before the margins are.
+   * the margins follow. The slot width comes from the exact category range,
+   * so it is known before the margins are.
    * @private
-   * @returns {{rotated: boolean, lines: string[][], lineHeight: number}}
+   * @returns {{rotated: boolean, lines: string[][], lineHeight: number,
+   *   slot: number, widths: number[], maxWidth: number}}
    */
   _categoryLabelLayout() {
     const cats = (this.config.categories || []).map(c => String(c ?? ''));
@@ -369,11 +443,17 @@ export default class BarChart extends ChartBase {
     const exact = this.config.xExact && bounds.xMax > bounds.xMin;
     const tick = exact ? { min: bounds.xMin, max: bounds.xMax } : generateTicks(bounds.xMin, bounds.xMax);
     const slot = cats.length ? this._getPlotWidth() / (tick.max - tick.min) : 0;
-    if (slot < MIN_WRAP_SLOT) return { rotated: true, lines: cats.map(c => [c]), lineHeight };
     const ctx = document.createElement('canvas').getContext('2d');
     ctx.font = `${fontSize}px ${FONT_MAIN}`;
     const measure = (str) => ctx.measureText(str).width;
+    if (slot < MIN_WRAP_SLOT) {
+      const sin = Math.sin(ROTATE_DEG * Math.PI / 180);
+      const cap = Math.max(60, (this._getSize().h * ROTATED_MAX_SHARE) / sin);
+      const lines = cats.map(c => [ellipsizeLabel(c, cap, measure)]);
+      const widths = lines.map(l => measure(l[0]));
+      return { rotated: true, lines, lineHeight, slot, widths, maxWidth: Math.max(0, ...widths) };
+    }
     const lines = cats.map(c => wrapCategoryLabel(c, slot - 2 * LABEL_PAD, measure, MAX_LABEL_LINES));
-    return { rotated: false, lines, lineHeight };
+    return { rotated: false, lines, lineHeight, slot, widths: [], maxWidth: 0 };
   }
 }

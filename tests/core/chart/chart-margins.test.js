@@ -139,6 +139,42 @@ suite('ChartBase margins', () => {
     chart.destroy(); host.remove();
   });
 
+  test('bar spreads its categories over the full plot width', () => {
+    const cats = Array.from({ length: 25 }, (_, i) => `Kategorie ${i + 1}`);
+    const { host, chart } = mount(BarChart, {
+      categories: cats, groups: [{ name: 'S', values: cats.map(() => 1) }], showXLabel: false,
+    });
+    const pa = chart._getPlotArea();
+    assertTrue(Math.abs(chart._xScale(-0.5) - pa.x) < 0.5, `first slot starts at the plot edge (${chart._xScale(-0.5)} vs ${pa.x})`);
+    assertTrue(Math.abs(chart._xScale(cats.length - 0.5) - (pa.x + pa.w)) < 0.5, 'last slot ends at the plot edge');
+    chart.destroy(); host.remove();
+  });
+
+  test('bar keeps rotated category labels inside the chart and the x title below them', () => {
+    const base = ['Daten visualisieren', 'Ursache-Wirkungs-Analyse (z. B. Ishikawa)', 'Versuchsplanung: Screening, Split-Plot',
+      'Statistische Toleranzanalyse', 'Monte-Carlo-Simulation', 'Gage R&R'];
+    const cats = Array.from({ length: 25 }, (_, i) => base[i % base.length]);
+    const { host, chart } = mount(BarChart, {
+      categories: cats, groups: [{ name: 'S', values: cats.map(() => 1) }], xLabel: 'Antwort', yLabel: '%',
+    });
+    const svg = host.querySelector('svg');
+    const frame = svg.getBoundingClientRect();
+    const labels = [...host.querySelectorAll('text.dmike-bar__category')];
+    assertTrue(labels.every(t => t.getAttribute('transform')), 'labels are rotated');
+    let lowest = 0;
+    for (const t of labels) {
+      const r = t.getBoundingClientRect();
+      assertTrue(r.left >= frame.left - 0.5, `"${t.textContent}" not cut off left (${Math.round(r.left - frame.left)})`);
+      assertTrue(r.bottom <= frame.bottom + 0.5, `"${t.textContent}" not cut off below (${Math.round(frame.bottom - r.bottom)})`);
+      lowest = Math.max(lowest, r.bottom);
+    }
+    const title = [...svg.querySelectorAll('text')].find(t => t.textContent === 'Antwort');
+    const tr = title.getBoundingClientRect();
+    assertTrue(tr.top >= lowest, 'x title below the rotated labels');
+    assertTrue(tr.bottom <= frame.bottom + 0.5, 'x title inside the chart');
+    chart.destroy(); host.remove();
+  });
+
   test('wrapCategoryLabel breaks at spaces, splits over-long words and ellipsises past the line limit', () => {
     const measure = (str) => str.length * 6;
     assertEqual(JSON.stringify(wrapCategoryLabel('Trainer', 60, measure, 3)), JSON.stringify(['Trainer']));
