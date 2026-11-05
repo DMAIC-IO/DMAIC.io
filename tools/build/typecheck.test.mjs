@@ -121,3 +121,22 @@ test('typecheck: fremder Schlüssel in der Rückgabe von current ist ein Befund'
   assert.equal(findings.length, 1);
   assert.match(String(findings[0]), /bogus/);
 });
+
+test('typecheck: this in exports ist über ExportsDef getypt, auch an einer Eigenschaft', () => {
+  const tm = join(APP_DIR, 'js', 'core', 'template-module.js');
+  const root = appWith({
+    'vm.js': `/** @typedef {{ tab: 'a'|'b' }} Ui */
+/** @typedef {{ title: string }} M */
+export const def = {
+  /** @type {import('${tm}').ExportsDef<M, Ui>} */
+  exports: {
+    table() { return [[this.model.title, this.state.tab, this.cssVars({ a: '--a' }).a]]; },
+    tree() { return this.model.nope; },
+  },
+};
+`,
+  });
+  const findings = typecheck([join(root, 'vm.js')]);
+  assert.equal(findings.length, 1, findings.join('\n'));
+  assert.match(findings[0], /vm\.js\(7,\d+\): TS2339: Property 'nope'/);
+});

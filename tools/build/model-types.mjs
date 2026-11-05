@@ -7,7 +7,8 @@
  *
  * Ebenso je Modul mit `viewmodel/state.js` (UI-State aus `defineState`)
  * `viewmodel/state.types.js`: der State-Typ und der Alias `<Id>ViewFn` für
- * den `view`-Block (`this` getypt über `ThisType`).
+ * den `view`-Block sowie `<Id>Exports` für den `exports`-Block (`this` getypt
+ * über `ThisType`).
  *
  * Kommandos mit `current`/`confirm` bekommen in `model.types.js` die
  * Funktionstypen `<Cmd>Current` bzw. `<Cmd>Confirm` (`this` = Model); das
@@ -157,6 +158,10 @@ export function renderStateTypes({ id, name, schema, modelName }) {
     ...typedef(name, schema.fields),
     '/**',
     ` * @typedef {${typeImport('../../../core/template-module.js')}.ViewFn<${typeImport('../domain/model.types.js')}.${modelName}Model, ${name}>} ${pascalId(id)}ViewFn`,
+    ' */',
+    '',
+    '/**',
+    ` * @typedef {${typeImport('../../../core/template-module.js')}.ExportsDef<${typeImport('../domain/model.types.js')}.${modelName}Model, ${name}>} ${pascalId(id)}Exports`,
     ' */',
     '',
     'export {};',
