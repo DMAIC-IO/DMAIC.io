@@ -7,11 +7,12 @@
 
 import { todayISO } from '../../core/local-date.js';
 import { State, upcomingEvents } from './dmaic-calendar-model.js';
+import { topN } from '../../ui/tile-kit.js';
 
 export default {
   size: { defaultW: 3, defaultH: 10, minW: 2, minH: 6 },
   settings: {
-    topN: { type: 'number', min: 1, max: 10, step: 1, default: 5, label: 'dashboard.tileSettings.topN' },
+    topN: topN(),
     horizon: { type: 'select', options: ['7', '14', '30'], default: '14', label: 'dashboard.tileSettings.horizon',
       optionLabels: { 7: 'dashboard.tileSettings.horizon7', 14: 'dashboard.tileSettings.horizon14', 30: 'dashboard.tileSettings.horizon30' } },
   },

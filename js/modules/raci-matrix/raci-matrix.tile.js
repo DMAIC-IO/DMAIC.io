@@ -6,6 +6,8 @@
  * Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
  */
 
+import { topN, showLegend } from '../../ui/tile-kit.js';
+
 const ROLES = ['R', 'A', 'C', 'I'];
 const ROLE_COLORS = {
   R: 'var(--color-error)',
@@ -18,8 +20,8 @@ export default {
   size: { defaultW: 3, defaultH: 10, minW: 2, minH: 6 },
   titlePrefix: 'RACI',
   settings: {
-    topN: { type: 'number', min: 1, max: 20, step: 1, default: 5, label: 'dashboard.tileSettings.topWarnings' },
-    showLegend: { type: 'boolean', default: true, label: 'dashboard.tileSettings.showLegend' },
+    topN: topN({ max: 20, label: 'dashboard.tileSettings.topWarnings' }),
+    showLegend: showLegend(),
   },
 
   /**

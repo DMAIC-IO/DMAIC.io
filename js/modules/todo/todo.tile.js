@@ -7,6 +7,7 @@
 
 import { todayISO } from '../../core/local-date.js';
 import { State, STATUSES, statusCounts, nextDueItems, isOverdue } from './todo-model.js';
+import { topN } from '../../ui/tile-kit.js';
 
 const STATUS_COLOR = {
   open: 'var(--color-text-tertiary)',
@@ -19,7 +20,7 @@ export default {
   size: { defaultW: 3, defaultH: 10, minW: 2, minH: 6 },
   titlePrefix: 'Todo',
   settings: {
-    topN: { type: 'number', min: 1, max: 10, step: 1, default: 5, label: 'dashboard.tileSettings.topN' },
+    topN: topN(),
     showDone: { type: 'boolean', default: false, label: 'dashboard.tileSettings.showDone' },
   },
 

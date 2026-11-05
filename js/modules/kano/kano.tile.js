@@ -12,6 +12,7 @@
 import { State } from './kano-model.js';
 import { evaluate, CATEGORIES, Q_WARN } from '../../engines/kano-engine.js';
 import { kanoScatterConfig } from './kano-chart.js';
+import { showChart } from '../../ui/tile-kit.js';
 
 /** host -> { chart, chartManager, token } of the latest render. */
 const charts = new WeakMap();
@@ -41,7 +42,7 @@ export default {
   titlePrefix: 'Kano',
   refreshOn: ['state:saved', 'resize'],
   settings: {
-    showChart: { type: 'boolean', default: true, label: 'dashboard.tileSettings.showChart' },
+    showChart: showChart(),
   },
 
   template: 'js/modules/kano/kano.tile.html',

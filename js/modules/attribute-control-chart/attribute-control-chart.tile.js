@@ -12,6 +12,7 @@ import { getColumnValues } from '../../ui/column-picker.js';
 import { windowed } from '../../ui/tile-chart-window.js';
 import { State } from './attribute-control-chart-model.js';
 import { analyzeState } from './attribute-control-chart-analysis.js';
+import { showChart } from '../../ui/tile-kit.js';
 
 /** host -> { chart, chartManager, token } of the latest render. */
 const charts = new WeakMap();
@@ -44,7 +45,7 @@ export default {
   refreshOn: ['state:saved', 'resize'],
   settings: {
     lastN: { type: 'number', min: 0, max: 500, step: 1, default: 0, label: 'dashboard.tileSettings.lastN' },
-    showChart: { type: 'boolean', default: true, label: 'dashboard.tileSettings.showChart' },
+    showChart: showChart(),
   },
 
   template: 'js/modules/attribute-control-chart/attribute-control-chart.tile.html',

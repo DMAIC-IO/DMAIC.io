@@ -7,6 +7,7 @@
  */
 
 import { CATS } from './ishikawa-constants.js';
+import { topN, showLegend } from '../../ui/tile-kit.js';
 
 const STATUS_ORDER = ['open', 'testing', 'confirmed', 'rejected'];
 const STATUS_COLORS = {
@@ -18,8 +19,8 @@ export default {
   size: { defaultW: 3, defaultH: 10, minW: 2, minH: 6 },
   titlePrefix: 'Ishikawa',
   settings: {
-    topN: { type: 'number', min: 1, max: 10, step: 1, default: 5, label: 'dashboard.tileSettings.topN' },
-    showLegend: { type: 'boolean', default: true, label: 'dashboard.tileSettings.showLegend' },
+    topN: topN(),
+    showLegend: showLegend(),
   },
 
   template: 'js/modules/ishikawa/ishikawa.tile.html',

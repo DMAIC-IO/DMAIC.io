@@ -7,6 +7,7 @@
  */
 
 import { State, rpnCategory } from './fmea-model.js';
+import { topN, showLegend } from '../../ui/tile-kit.js';
 
 const CATS = new Set(['critical', 'high', 'medium', 'low']);
 /** Fill colour of a category — the module's palette from fmea.css. */
@@ -18,8 +19,8 @@ export default {
   size: { defaultW: 3, defaultH: 10, minW: 2, minH: 6 },
   titlePrefix: 'FMEA',
   settings: {
-    topN: { type: 'number', min: 1, max: 10, step: 1, default: 5, label: 'dashboard.tileSettings.topN' },
-    showLegend: { type: 'boolean', default: true, label: 'dashboard.tileSettings.showLegend' },
+    topN: topN(),
+    showLegend: showLegend(),
   },
 
   template: 'js/modules/fmea/fmea.tile.html',

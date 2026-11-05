@@ -7,11 +7,12 @@
  */
 
 import { State, openHighImpact } from './lessons-learned-model.js';
+import { topN } from '../../ui/tile-kit.js';
 
 export default {
   size: { defaultW: 3, defaultH: 10, minW: 2, minH: 6 },
   settings: {
-    topN: { type: 'number', min: 1, max: 10, step: 1, default: 5, label: 'dashboard.tileSettings.topN' },
+    topN: topN(),
   },
 
   template: 'js/modules/lessons-learned/lessons-learned.tile.html',

@@ -11,6 +11,7 @@
 import { getChartType, evaluateNelsonRules, computeCapability, capabilitySigma, DEFAULT_ENABLED_RULES } from '../../engines/control-chart-engine.js';
 import { getColumnValues, getColumnName } from '../../ui/column-picker.js';
 import { windowed } from '../../ui/tile-chart-window.js';
+import { showChart } from '../../ui/tile-kit.js';
 
 /** host -> { chart, chartManager, token } of the latest render. */
 const charts = new WeakMap();
@@ -31,7 +32,7 @@ export default {
   refreshOn: ['state:saved', 'resize'],
   settings: {
     lastN: { type: 'number', min: 0, max: 500, step: 1, default: 0, label: 'dashboard.tileSettings.lastN' },
-    showChart: { type: 'boolean', default: true, label: 'dashboard.tileSettings.showChart' },
+    showChart: showChart(),
   },
 
   /**

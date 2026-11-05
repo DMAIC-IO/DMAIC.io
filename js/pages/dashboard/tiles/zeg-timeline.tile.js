@@ -10,6 +10,7 @@
 
 import { getPhaseIds } from '../../../core/cycles/cycles.js';
 import { findZegSheet } from '../../../core/zeg-sheet/zeg-sheet.js';
+import { showLegend } from '../../../ui/tile-kit.js';
 
 /** host -> { chart, chartManager, token } of the latest render. */
 const charts = new WeakMap();
@@ -72,7 +73,7 @@ export default {
   size: { defaultW: 3, defaultH: 10, minW: 3, minH: 6 },
   refreshOn: ['phase:achievement-changed'],
   settings: {
-    showLegend: { type: 'boolean', default: true, label: 'dashboard.tileSettings.showLegend' },
+    showLegend: showLegend(),
   },
 
   /**

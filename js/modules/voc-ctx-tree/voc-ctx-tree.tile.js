@@ -6,6 +6,8 @@
  * Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
  */
 
+import { topN, showLegend } from '../../ui/tile-kit.js';
+
 const DRIVERS = [
   { type: 'ctq', label: 'CTQ', color: 'var(--color-voc-ctq, rgba(39,174,96,1))' },
   { type: 'ctd', label: 'CTD', color: 'var(--color-voc-ctd, rgba(41,128,185,1))' },
@@ -16,8 +18,8 @@ export default {
   size: { defaultW: 3, defaultH: 10, minW: 2, minH: 6 },
   titleKey: 'dashboard.vocTitle',
   settings: {
-    topN: { type: 'number', min: 1, max: 20, step: 1, default: 6, label: 'dashboard.tileSettings.topStatements' },
-    showLegend: { type: 'boolean', default: true, label: 'dashboard.tileSettings.showLegend' },
+    topN: topN({ max: 20, default: 6, label: 'dashboard.tileSettings.topStatements' }),
+    showLegend: showLegend(),
   },
 
   /**

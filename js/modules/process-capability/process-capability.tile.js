@@ -12,6 +12,7 @@ import { getColumnValues } from '../../ui/column-picker.js';
 import { State } from './process-capability-model.js';
 import { analyzeState, formatHint, specRefLines } from './process-capability-analysis.js';
 import { fmt as formatNumber } from './process-capability-format.js';
+import { showChart } from '../../ui/tile-kit.js';
 
 /** host -> { chart, chartManager, token } of the latest render. */
 const charts = new WeakMap();
@@ -56,7 +57,7 @@ export default {
         observed: 'dashboard.tileSettings.ppmObserved',
       },
     },
-    showChart: { type: 'boolean', default: true, label: 'dashboard.tileSettings.showChart' },
+    showChart: showChart(),
   },
 
   template: 'js/modules/process-capability/process-capability.tile.html',
