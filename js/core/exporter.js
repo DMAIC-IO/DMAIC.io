@@ -6,8 +6,11 @@
  * entstehen daraus die Dateien — Trenner, BOM und Meldungen sind damit
  * überall gleich.
  *
- * Die Serialisierer sind rein (in Node testbar).
+ * Die Serialisierer sind rein (in Node testbar). `runExport` baut die Datei
+ * und meldet; es wirft nie.
  */
+
+import { downloadFile, downloadBlob, ensureXLSX, svgStringToPngBlob } from './export-utils.js';
 
 /** Alle Formate in Menüreihenfolge. */
 export const EXPORT_FORMATS = Object.freeze(['xlsx', 'csv', 'json', 'png', 'svg']);
@@ -90,4 +93,97 @@ export function withStyle(svg, css) {
   if (!m) throw new Error('svg: no root element');
   const at = m.index + m[0].length;
   return `${svg.slice(0, at)}<defs><style>${css}</style></defs>${svg.slice(at)}`;
+}
+
+/** Name des Formats in den Meldungen. */
+const LABELS = Object.freeze({ csv: 'CSV', json: 'JSON', xlsx: 'Excel', png: 'PNG', svg: 'SVG' });
+
+/** App-Schriften, die ein SVG in `<img>` sonst nicht sieht. */
+const FONTS = Object.freeze([
+  ['DM Sans', 'assets/fonts/dmsans-latin.woff2'],
+  ['JetBrains Mono', 'assets/fonts/jetbrainsmono-latin.woff2'],
+]);
+
+/** @type {Promise<string>|null} */
+let fontCss = null;
+
+/** @param {ArrayBuffer} buf @returns {string} */
+function base64(buf) {
+  const bytes = new Uint8Array(buf);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+
+/**
+ * `@font-face`-Regeln für DM Sans und JetBrains Mono mit Daten-URL, einmal
+ * geladen. Schlägt das Laden fehl, `''` (dann ohne Schriften rastern) und
+ * beim nächsten Mal neu versuchen.
+ * @returns {Promise<string>}
+ */
+export function fontFaces() {
+  fontCss ??= Promise.all(FONTS.map(async ([family, url]) => {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`${url}: ${res.status}`);
+    return `@font-face{font-family:"${family}";src:url(data:font/woff2;base64,${base64(await res.arrayBuffer())}) format("woff2")}`;
+  })).then((rules) => rules.join(''), (err) => {
+    console.warn('[export] fonts not embedded', err);
+    fontCss = null;
+    return '';
+  });
+  return fontCss;
+}
+
+/** @typedef {{ downloadFile: Function, downloadBlob: Function, ensureXLSX: Function, svgStringToPngBlob: Function, fontFaces: () => Promise<string> }} ExportIo */
+
+/** @type {ExportIo} */
+const DEFAULT_IO = { downloadFile, downloadBlob, ensureXLSX, svgStringToPngBlob, fontFaces };
+
+/**
+ * Eine Datei aus den Mappern eines Moduls bauen und herunterladen. Wirft
+ * nie: Erfolg und Fehler gehen per `ui.notify`.
+ * @param {{ exports: Record<string, any>, component: object, moduleId: string,
+ *   i18n: { t: (key: string, params?: object) => string },
+ *   notify: (message: string, type?: string, titleKey?: string) => void }} ui
+ * @param {string} fmt `xlsx`, `csv`, `json`, `png` oder `svg`
+ * @param {ExportIo} [io] Ein-/Ausgabe (Tests)
+ * @returns {Promise<void>}
+ */
+export async function runExport(ui, fmt, io = DEFAULT_IO) {
+  const label = LABELS[fmt] ?? fmt;
+  try {
+    const { exports: def, component, moduleId, i18n } = ui;
+    const call = (key) => def[key].call(component);
+    const base = typeof def.fileName === 'function' ? def.fileName.call(component) : (def.fileName ?? moduleId);
+    const name = `${base}.${fmt}`;
+    if (fmt === 'csv') {
+      io.downloadFile(toCsvText(await call('table')), name, 'text/csv;charset=utf-8');
+    } else if (fmt === 'json') {
+      io.downloadBlob(new Blob([toJsonText(await call('tree'))], { type: 'application/json' }), name);
+    } else if (fmt === 'xlsx') {
+      const sheets = typeof def.tables === 'function'
+        ? await call('tables')
+        : { [i18n.t(`modules.${moduleId}.name`)]: await call('table') };
+      let XLSX;
+      try { XLSX = await io.ensureXLSX(); } catch { return; } // Ladefehler hat core/chunks.js schon gemeldet
+      const wb = XLSX.utils.book_new();
+      for (const [sheet, rows] of Object.entries(sheets)) {
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), sheetName(sheet));
+      }
+      XLSX.writeFile(wb, name);
+    } else if (fmt === 'svg') {
+      io.downloadBlob(new Blob([await call('image')], { type: 'image/svg+xml' }), name);
+    } else if (fmt === 'png') {
+      const svg = await call('image');
+      const size = svgSize(svg);
+      const css = await io.fontFaces();
+      io.downloadBlob(await io.svgStringToPngBlob(css ? withStyle(svg, css) : svg, { ...size, scale: 2 }), name);
+    } else {
+      throw new Error(`unknown export format ${fmt}`);
+    }
+    ui.notify(label, 'success', 'status.ok');
+  } catch (err) {
+    console.error(`[export] ${fmt} failed`, err);
+    ui.notify(ui.i18n.t('export.failed', { format: label }), 'error');
+  }
 }

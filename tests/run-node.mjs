@@ -113,6 +113,7 @@ const SKIP = new Set([
   'core/datagrid-dialogs.test.js',
   'core/context-language.test.js',
   'core/dom.test.js',
+  'core/exporter-run.test.js',
   'core/field-directive.test.js',
   'core/command-directives.test.js',
   'core/flowchart-view-autosize.test.js',

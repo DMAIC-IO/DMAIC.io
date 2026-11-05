@@ -1159,7 +1159,8 @@
     "csv": "CSV (.csv)",
     "json": "JSON (.json)",
     "png": "Bild (.png)",
-    "svg": "Vektor (.svg)"
+    "svg": "Vektor (.svg)",
+    "failed": "{format}-Export fehlgeschlagen"
   },
   "ui": {
     "datasetPicker": {
