@@ -5,12 +5,12 @@
   <div class="dashboard-kano">
     <div class="dashboard-fmea__bar">
       <template x-for="seg in vm.bar">
-        <div class="dashboard-fmea__bar-seg" :data-cat="seg.cat" :style="seg.style" :title="seg.title"></div>
+        <div class="dashboard-fmea__bar-seg" :data-cat="seg.key" :style="seg.style" :title="seg.title"></div>
       </template>
     </div>
     <div class="dashboard-fmea__legend">
       <template x-for="l in vm.legend">
-        <span class="dashboard-fmea__legend-item" :data-cat="l.cat"><span class="dashboard-fmea__legend-dot" :style="l.dot"></span><span x-text="l.text"></span></span>
+        <span class="dashboard-fmea__legend-item" :data-cat="l.key"><span class="dashboard-fmea__legend-dot" :style="l.dot"></span><span x-text="l.text"></span></span>
       </template>
     </div>
     <div class="dashboard-kano__totals">

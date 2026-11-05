@@ -7,7 +7,7 @@
  */
 
 import { State, rpnCategory } from './fmea-model.js';
-import { topN, showLegend } from '../../ui/tile-kit.js';
+import { topN, showLegend, distribution } from '../../ui/tile-kit.js';
 
 const CATS = new Set(['critical', 'high', 'medium', 'low']);
 /** Fill colour of a category — the module's palette from fmea.css. */
@@ -50,6 +50,7 @@ export default {
         none: i18n.t('dashboard.fmeaNotRated') };
     const barCats = isAp ? ['high', 'medium', 'low'] : ['critical', 'high', 'medium', 'low'];
     const badge = (r) => (isAp ? `AP ${r.ap()}` : `RPN ${r.rpn()}`);
+    const part = (cat) => ({ key: cat, label: catLabels[cat], count: cats[cat], color: catColor(cat) });
 
     const summary = [{ label: `${i18n.t('dashboard.fmeaRisks')}: `, value: String(model.risks.length), style: '', modifier: '' }];
     if (isAp) {
@@ -72,14 +73,8 @@ export default {
     return {
       empty: null,
       summary,
-      segments: barCats.filter(cat => cats[cat] > 0).map(cat => ({
-        style: `width:${cats[cat] / model.risks.length * 100}%;background:${catColor(cat)}`,
-        title: `${catLabels[cat]}: ${cats[cat]}`,
-      })),
-      legend: settings.showLegend
-        ? [...barCats, 'none'].filter(c => cats[c] > 0)
-          .map(cat => ({ dot: `background:${catColor(cat)}`, text: ` ${catLabels[cat]}: ${cats[cat]}` }))
-        : null,
+      segments: distribution(barCats.map(part), { total: model.risks.length }).segments,
+      legend: settings.showLegend ? distribution([...barCats, 'none'].map(part)).legend : null,
       topLabel: top.length ? i18n.t('dashboard.fmeaTopRisks') : null,
       top: top.map(r => ({
         desc: r.failureMode || r.step || '—',

@@ -6,7 +6,7 @@
  * Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
  */
 
-import { topN, showLegend } from '../../ui/tile-kit.js';
+import { topN, showLegend, distribution } from '../../ui/tile-kit.js';
 
 const ROLES = ['R', 'A', 'C', 'I'];
 const ROLE_COLORS = {
@@ -74,7 +74,7 @@ export default {
       if (!hasA) warnings.push({ act, missing: 'A' });
     });
 
-    const used = ROLES.filter(r => counts[r] > 0);
+    const roles = distribution(ROLES.map(role => ({ key: role, label: role, count: counts[role], color: ROLE_COLORS[role] })));
     return {
       empty: null,
       summary: [
@@ -82,15 +82,8 @@ export default {
         { label: `${i18n.t('dashboard.raciStakeholders')}: `, value: String(stakeholders.length) },
         { label: `${i18n.t('dashboard.raciCoverage')}: `, value: `${coverage}%` },
       ],
-      segments: filled > 0
-        ? used.map(role => ({
-          style: `width:${counts[role] / filled * 100}%;background:${ROLE_COLORS[role]}`,
-          title: `${role}: ${counts[role]}`,
-        }))
-        : [],
-      legend: settings.showLegend
-        ? used.map(role => ({ dot: `background:${ROLE_COLORS[role]}`, text: `${role}: ${counts[role]}` }))
-        : null,
+      segments: roles.segments,
+      legend: settings.showLegend ? roles.legend : null,
       warnLabel: warnings.length ? i18n.t('dashboard.raciWarnings') : null,
       warnings: warnings.slice(0, settings.topN).map(w => ({
         role: w.missing,

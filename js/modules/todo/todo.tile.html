@@ -11,7 +11,7 @@
 <template x-if="!vm.empty">
   <div class="dashboard-fmea__bar">
     <template x-for="seg in vm.segments">
-      <div class="dashboard-fmea__bar-seg" :data-status="seg.status" :style="seg.style" :title="seg.title"></div>
+      <div class="dashboard-fmea__bar-seg" :data-status="seg.key" :style="seg.style" :title="seg.title"></div>
     </template>
   </div>
 </template>

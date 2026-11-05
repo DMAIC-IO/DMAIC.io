@@ -6,7 +6,7 @@
  * Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
  */
 
-import { topN, showLegend } from '../../ui/tile-kit.js';
+import { topN, showLegend, distribution } from '../../ui/tile-kit.js';
 
 const DRIVERS = [
   { type: 'ctq', label: 'CTQ', color: 'var(--color-voc-ctq, rgba(39,174,96,1))' },
@@ -58,7 +58,7 @@ export default {
       }
     }
     const drivers = byType.ctq + byType.ctd + byType.ctc;
-    const used = DRIVERS.filter(d => byType[d.type] > 0);
+    const bar = distribution(DRIVERS.map(d => ({ key: d.type, label: d.label, count: byType[d.type], color: d.color })));
 
     return {
       empty: null,
@@ -68,10 +68,8 @@ export default {
         { value: String(drivers), label: ` ${i18n.t('dashboard.vocDrivers')}` },
         { value: String(reqs), label: ` ${i18n.t('dashboard.vocReqs')}` },
       ],
-      segments: used.map(d => ({ style: `flex:${byType[d.type]};background:${d.color}`, title: `${d.label}: ${byType[d.type]}` })),
-      legend: settings.showLegend && drivers > 0
-        ? used.map(d => ({ dot: `background:${d.color}`, text: `${d.label}: ${byType[d.type]}` }))
-        : null,
+      segments: bar.segments,
+      legend: settings.showLegend && drivers > 0 ? bar.legend : null,
       listLabel: i18n.t('dashboard.vocStatements'),
       items: vocs.slice(0, settings.topN).map(v => ({
         quote: v.source ? `„${v.text || '—'}“ ` : `„${v.text || '—'}“`,

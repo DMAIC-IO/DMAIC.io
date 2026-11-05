@@ -7,7 +7,7 @@
 
 import { todayISO } from '../../core/local-date.js';
 import { State, STATUSES, statusCounts, nextDueItems, isOverdue } from './todo-model.js';
-import { topN } from '../../ui/tile-kit.js';
+import { topN, distribution } from '../../ui/tile-kit.js';
 
 const STATUS_COLOR = {
   open: 'var(--color-text-tertiary)',
@@ -39,17 +39,12 @@ export default {
     const today = todayISO();
     const counts = statusCounts(model.items);
     const shown = STATUSES.filter(s => settings.showDone || s !== 'done');
-    const total = shown.reduce((sum, s) => sum + counts[s], 0);
     const label = (s) => i18n.t(`modules.todo.status_${s}`);
     const next = nextDueItems(model.items, settings.topN);
     return {
       empty: null,
       summary: shown.map(s => ({ status: s, label: `${label(s)}: `, count: String(counts[s]) })),
-      segments: shown.filter(s => counts[s] > 0).map(s => ({
-        status: s,
-        style: `width:${counts[s] / total * 100}%;background:${STATUS_COLOR[s]}`,
-        title: `${label(s)}: ${counts[s]}`,
-      })),
+      segments: distribution(shown.map(s => ({ key: s, label: label(s), count: counts[s], color: STATUS_COLOR[s] }))).segments,
       nextLabel: next.length ? i18n.t('dashboard.todoNextDue') : null,
       next: next.map(item => {
         const overdue = isOverdue(item, today);

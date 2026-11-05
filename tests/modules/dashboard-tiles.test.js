@@ -220,7 +220,7 @@ suite('dashboard tiles: fmea', () => {
     assertEqual(vm.summary[2].style, 'color:var(--fmea-cat-critical-text)');
     assertEqual(vm.segments.length, 4);
     assertEqual(vm.legend[0].dot, 'background:var(--fmea-cat-critical)');
-    assertEqual(vm.legend[0].text, ' dashboard.fmeaCritical: 1');
+    assertEqual(vm.legend[0].text, 'dashboard.fmeaCritical: 1');
     assertEqual(vm.top[0].badge, 'RPN 560');
     assertEqual(vm.top[0].flag, null);
     assertEqual(vmOf(fmeaTile, FMEA_STATE, { showLegend: false }).legend, null);
@@ -268,11 +268,11 @@ suite('dashboard tiles: ishikawa', () => {
       { label: 'dashboard.ishikawaHypotheses: ', value: '4' },
       { label: 'dashboard.ishikawaExperts: ', value: '1' },
     ]);
-    assertDeepEqual(vm.segments[0], { style: 'width:25%;background:#2563eb', title: 'modules.ishikawa.cat.man: 1' });
-    assertDeepEqual(vm.legend.map(l => l.text), [' modules.ishikawa.cat.man: 1', ' modules.ishikawa.cat.machine: 1',
-      ' modules.ishikawa.cat.material: 1', ' modules.ishikawa.cat.method: 1']);
-    assertDeepEqual(vm.statusLegend.map(l => l.text), [' modules.ishikawa.status.open: 2',
-      ' modules.ishikawa.status.testing: 1', ' modules.ishikawa.status.confirmed: 1']);
+    assertDeepEqual(vm.segments[0], { key: 'man', style: 'width:25%;background:#2563eb', title: 'modules.ishikawa.cat.man: 1' });
+    assertDeepEqual(vm.legend.map(l => l.text), ['modules.ishikawa.cat.man: 1', 'modules.ishikawa.cat.machine: 1',
+      'modules.ishikawa.cat.material: 1', 'modules.ishikawa.cat.method: 1']);
+    assertDeepEqual(vm.statusLegend.map(l => l.text), ['modules.ishikawa.status.open: 2',
+      'modules.ishikawa.status.testing: 1', 'modules.ishikawa.status.confirmed: 1']);
     assertEqual(vm.topLabel, 'dashboard.ishikawaTopScored');
     assertDeepEqual(vm.top[0], { name: 'A', score: '5.0', style: 'color:#2563eb' });
     const off = vmOf(ishikawaTile, ISHIKAWA_STATE, { showLegend: false });
@@ -426,8 +426,8 @@ suite('dashboard tiles: voc', () => {
       { value: '8', label: ' dashboard.vocDrivers' },
       { value: '0', label: ' dashboard.vocReqs' },
     ]);
-    assertDeepEqual(vm.segments, [{ style: 'flex:8;background:var(--color-voc-ctq, rgba(39,174,96,1))', title: 'CTQ: 8' }]);
-    assertDeepEqual(vm.legend, [{ dot: 'background:var(--color-voc-ctq, rgba(39,174,96,1))', text: 'CTQ: 8' }]);
+    assertDeepEqual(vm.segments, [{ key: 'ctq', style: 'width:100%;background:var(--color-voc-ctq, rgba(39,174,96,1))', title: 'CTQ: 8' }]);
+    assertDeepEqual(vm.legend, [{ key: 'ctq', dot: 'background:var(--color-voc-ctq, rgba(39,174,96,1))', text: 'CTQ: 8' }]);
     assertEqual(vm.listLabel, 'dashboard.vocStatements');
     assertEqual(vm.items.length, 6);
     assertDeepEqual(vm.items[0], { quote: '„S0“', source: null });
@@ -1595,10 +1595,10 @@ suite('dashboard tiles: kano', () => {
     const vm = vmOf(kanoTile, KANO_STATE);
     assertPlain({ ...vm, chart: null });
     assertEqual(vm.empty, null);
-    assertDeepEqual(vm.bar.map(b => b.cat), ['M', 'O', 'A']);
+    assertDeepEqual(vm.bar.map(b => b.key), ['M', 'O', 'A']);
     assertEqual(vm.bar[0].title, 'modules.kano.catM: 1');
     assertTrue(vm.bar[0].style.endsWith(';background:var(--color-chart-1)'), vm.bar[0].style);
-    assertDeepEqual(vm.legend[0], { cat: 'M', dot: 'background:var(--color-chart-1)', text: ' modules.kano.catM: 1' });
+    assertDeepEqual(vm.legend[0], { key: 'M', dot: 'background:var(--color-chart-1)', text: 'modules.kano.catM: 1' });
     assertDeepEqual(vm.totals, [
       { label: 'dashboard.kanoCompleteness', value: '100 %' },
       { label: 'dashboard.kanoItems', value: '3' },

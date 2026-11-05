@@ -7,7 +7,7 @@
  */
 
 import { CATS } from './ishikawa-constants.js';
-import { topN, showLegend } from '../../ui/tile-kit.js';
+import { topN, showLegend, distribution } from '../../ui/tile-kit.js';
 
 const STATUS_ORDER = ['open', 'testing', 'confirmed', 'rejected'];
 const STATUS_COLORS = {
@@ -58,7 +58,6 @@ export default {
     const catCounts = {};
     CATS.forEach(c => catCounts[c.key] = 0);
     rows.forEach(r => { const ec = effCat(r); if (ec && Object.hasOwn(catCounts, ec)) catCounts[ec]++; });
-    const totalCategorized = Object.values(catCounts).reduce((a, b) => a + b, 0);
 
     const statusCounts = { open: 0, testing: 0, confirmed: 0, rejected: 0 };
     rows.forEach(r => { const s = r.status || 'open'; if (Object.hasOwn(statusCounts, s)) statusCounts[s]++; });
@@ -72,8 +71,9 @@ export default {
       .sort((a, b) => b.score - a.score)
       .slice(0, settings.topN);
 
-    const usedCats = CATS.filter(c => catCounts[c.key] > 0);
-    const statusItems = STATUS_ORDER.filter(s => statusCounts[s] > 0);
+    const cats = distribution(CATS.map(c => ({ key: c.key, label: catLabel(c.key), count: catCounts[c.key], color: c.color })));
+    const statusLegend = distribution(STATUS_ORDER.map(s => ({ key: s, label: i18n.t(`modules.ishikawa.status.${s}`),
+      count: statusCounts[s], color: STATUS_COLORS[s] }))).legend;
     return {
       empty: null,
       problem: problem || null,
@@ -81,19 +81,9 @@ export default {
         { label: `${i18n.t('dashboard.ishikawaHypotheses')}: `, value: String(rows.length) },
         { label: `${i18n.t('dashboard.ishikawaExperts')}: `, value: String(experts.length) },
       ],
-      segments: totalCategorized > 0
-        ? usedCats.map(c => ({
-          style: `width:${catCounts[c.key] / totalCategorized * 100}%;background:${c.color}`,
-          title: `${catLabel(c.key)}: ${catCounts[c.key]}`,
-        }))
-        : [],
-      legend: settings.showLegend
-        ? usedCats.map(c => ({ dot: `background:${c.color}`, text: ` ${catLabel(c.key)}: ${catCounts[c.key]}` }))
-        : null,
-      statusLegend: settings.showLegend && statusItems.length
-        ? statusItems.map(s => ({ dot: `background:${STATUS_COLORS[s]}`,
-          text: ` ${i18n.t(`modules.ishikawa.status.${s}`)}: ${statusCounts[s]}` }))
-        : null,
+      segments: cats.segments,
+      legend: settings.showLegend ? cats.legend : null,
+      statusLegend: settings.showLegend && statusLegend.length ? statusLegend : null,
       topLabel: scored.length ? i18n.t('dashboard.ishikawaTopScored') : null,
       top: scored.map(t => {
         const catObj = CATS.find(c => c.key === t.cat);

@@ -12,7 +12,7 @@
 import { State } from './kano-model.js';
 import { evaluate, CATEGORIES, Q_WARN } from '../../engines/kano-engine.js';
 import { kanoScatterConfig } from './kano-chart.js';
-import { showChart, chartSlot } from '../../ui/tile-kit.js';
+import { showChart, chartSlot, distribution } from '../../ui/tile-kit.js';
 
 /** Share as a whole percent ("75 %"); `|| 0` smooths a possible -0. */
 function pct(v) {
@@ -49,9 +49,8 @@ export default {
 
     const counts = Object.fromEntries(CATEGORIES.map(c => [c, 0]));
     for (const r of rows) if (r.category) counts[r.category]++;
-    const classified = CATEGORIES.reduce((s, c) => s + counts[c], 0);
-    const present = CATEGORIES.filter(c => counts[c] > 0);
     const catName = (c) => i18n.t(`modules.kano.cat${c}`);
+    const { segments, legend } = distribution(CATEGORIES.map(c => ({ key: c, label: catName(c), count: counts[c], color: catColor(c) })));
 
     let chart = null;
     if (settings.showChart) {
@@ -73,12 +72,8 @@ export default {
 
     return {
       empty: null,
-      bar: present.map(c => ({
-        cat: c,
-        style: `width:${counts[c] / classified * 100}%;background:${catColor(c)}`,
-        title: `${catName(c)}: ${counts[c]}`,
-      })),
-      legend: present.map(c => ({ cat: c, dot: `background:${catColor(c)}`, text: ` ${catName(c)}: ${counts[c]}` })),
+      bar: segments,
+      legend,
       totals: [
         { label: i18n.t('dashboard.kanoCompleteness'), value: pct(totals.completeness) },
         { label: i18n.t('dashboard.kanoItems'), value: String(totals.items) },
