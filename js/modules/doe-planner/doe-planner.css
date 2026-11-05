@@ -1174,6 +1174,10 @@
   border-radius: var(--border-radius);
   background: var(--color-bg-secondary);
   overflow: hidden;
+
+  /* A flex item of the output column: with overflow:hidden its min-height
+     is 0, so without this the evaluation below squeezes the grid away. */
+  flex-shrink: 0;
 }
 
 .doe__preview-label {

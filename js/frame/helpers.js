@@ -77,13 +77,13 @@ export function initCollapsibleSections() {
       markerIcon.dataset.icon = collapsed ? 'nav.expand-right' : 'nav.expand-down';
     }
 
-    // Walk forward siblings, hide/show until we hit the next section label.
+    // Walk forward siblings, hide/show until we hit the next section label —
+    // or a wrapper holding one (e.g. a region template whose first child is
+    // its own section header), which belongs to the next section.
+    const SECTION = '.dmike-split__output-section, .dmike-split__output-section-header';
     let sib = toggle.nextElementSibling;
     while (sib) {
-      if (sib.classList.contains('dmike-split__output-section') ||
-          sib.classList.contains('dmike-split__output-section-header')) {
-        break;
-      }
+      if (sib.matches(SECTION) || sib.querySelector(SECTION)) break;
       sib.classList.toggle('dmike-split__output-section-hidden', collapsed);
       sib = sib.nextElementSibling;
     }
