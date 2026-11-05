@@ -2,7 +2,7 @@
  * Tests for core/model.js — Version, Migrationskette, _schema.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../test-utils.js';
-import { defineModel, text, list, setModelName, compareVersions } from '../../js/core/model.js';
+import { defineModel, text, list, setModelName, compareVersions, readModel } from '../../js/core/model.js';
 
 const toV1 = (j) => ({ items: Array.isArray(j.list) ? j.list : [] });
 const toV2 = (j) => ({ ...j, items: j.items.map((s) => s.toUpperCase()) });
@@ -165,5 +165,37 @@ suite('defineModel — _schema', () => {
 
   test('_schema ist als Feldname reserviert', () => {
     assertThrows(() => defineModel({ fields: { _schema: text() } }), /^defineModel: _schema is a reserved name$/);
+  });
+});
+
+suite('readModel — laden, ohne zu werfen', () => {
+  const Titled = defineModel({
+    version: '2.0',
+    migrations: { '0→1.0': toV1, '1.0→2.0': toV2 },
+    fields: { items: list(text()), title: text() },
+  });
+
+  test('gültiger Stand: wie fromJSON streng', () => {
+    const m = readModel(Titled, { _schema: { version: '2.0' }, items: ['x'], title: 'T' });
+    assertTrue(m instanceof Titled);
+    assertDeepEqual(m.items, ['x']);
+    assertEqual(m.title, 'T');
+  });
+
+  test('ungültiges Feld: repariert, der Rest bleibt', () => {
+    const m = readModel(Titled, { _schema: { version: '2.0' }, items: ['x'], title: 5 });
+    assertDeepEqual(m.items, ['x']);
+    assertEqual(m.title, '');
+  });
+
+  test('neuere Version: leeres Model statt Fehler', () => {
+    const m = readModel(Titled, { _schema: { version: '3.0' }, items: ['x'], title: 'T' });
+    assertTrue(m instanceof Titled);
+    assertDeepEqual(m.toJSON(), new Titled().toJSON());
+  });
+
+  test('unlesbare Version und fehlender Stand: leeres Model', () => {
+    assertDeepEqual(readModel(Titled, { _schema: { version: 'abc' } }).toJSON(), new Titled().toJSON());
+    assertDeepEqual(readModel(Titled, undefined).toJSON(), new Titled().toJSON());
   });
 });

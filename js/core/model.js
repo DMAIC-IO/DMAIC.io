@@ -440,6 +440,19 @@ export function setModelName(Model, name) {
 }
 
 /**
+ * Gespeicherten Zustand laden, ohne zu werfen: streng, sonst repariert,
+ * sonst (neuere oder unlesbare Version) leer. Für Stellen, die nicht werfen
+ * dürfen, etwa Dashboard-Kacheln.
+ * @param {any} Model Klasse aus `defineModel`
+ * @param {any} json gespeicherter Zustand
+ * @returns {any} eine Instanz von `Model`
+ */
+export function readModel(Model, json) {
+  try { return Model.fromJSON(json); } catch { /* reparieren */ }
+  try { return Model.fromJSON(json, { repair: true }); } catch { return new Model(); }
+}
+
+/**
  * Model-Klasse aus einem Schema-Literal.
  * @param {{ fields?: Record<string, object>, view?: Record<string, object>,
  *           commands?: Record<string, object>, version?: string,
