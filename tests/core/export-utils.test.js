@@ -4,13 +4,14 @@
  * Covers the pure, DOM-free helpers of the column/card exporter:
  *  - columnExportDims  (canvas dimension geometry)
  *  - truncateColumnLabel (card-label truncation)
+ *  - columnsToSVG      (card board as SVG text, byte-stable)
  *
  * The canvas/SVG draw paths are DOM/canvas-bound and are covered by sipoc's
  * E2E export + visual-snapshot tests; here we only assert the pure math.
  */
 
 import { suite, test, assertEqual } from '../test-utils.js';
-import { columnExportDims, truncateColumnLabel } from '../../js/core/export-utils.js';
+import { columnExportDims, truncateColumnLabel, columnsToSVG } from '../../js/core/export-utils.js';
 
 // Defaults baked into export-utils (must stay in sync with _COL_DEFAULTS).
 const D = { COL_W: 200, GAP: 8, PAD: 20, HEADER_H: 48, ITEM_H: 32, ITEM_PAD: 6 };
@@ -71,5 +72,28 @@ suite('export-utils: truncateColumnLabel', () => {
 
   test('custom max/trunc thresholds honoured', () => {
     assertEqual(truncateColumnLabel('abcdef', 4, 2), 'ab…', 'custom thresholds');
+  });
+});
+
+const GOLDEN = '<svg xmlns="http://www.w3.org/2000/svg" width="448" height="170" viewBox="0 0 448 170"><rect width="448" height="170" fill="#fff"/><rect x="20" y="20" width="200" height="130" rx="6" fill="#eee" stroke="#ccc"/><rect x="20" y="20" width="200" height="48" rx="6" fill="#112233" fill-opacity="0.09"/><rect x="20" y="62" width="200" height="6" fill="#112233" fill-opacity="0.09"/><line x1="20" y1="68" x2="220" y2="68" stroke="#ccc"/><circle cx="34" cy="44" r="5" fill="#112233"/><text x="46" y="38" fill="#111" font-size="11" font-weight="bold" font-family="DM Sans, system-ui, sans-serif" dominant-baseline="central">SUPPLIERS</text><text x="46" y="52" fill="#999" font-size="10" font-family="JetBrains Mono, monospace" dominant-baseline="central">Lieferanten</text><rect x="28" y="74" width="184" height="32" rx="4" fill="#fff" stroke="#ccc"/><text x="34" y="90" fill="#111" font-size="13" font-family="DM Sans, system-ui, sans-serif" dominant-baseline="central">A &amp; &quot;B&quot;</text><rect x="28" y="112" width="184" height="32" rx="4" fill="#fff" stroke="#ccc"/><text x="34" y="128" fill="#111" font-size="13" font-family="DM Sans, system-ui, sans-serif" dominant-baseline="central">Ein sehr langer Eintrag mi…</text><rect x="228" y="20" width="200" height="92" rx="6" fill="#eee" stroke="#ccc"/><rect x="228" y="20" width="200" height="48" rx="6" fill="#445566" fill-opacity="0.09"/><rect x="228" y="62" width="200" height="6" fill="#445566" fill-opacity="0.09"/><line x1="228" y1="68" x2="428" y2="68" stroke="#ccc"/><circle cx="242" cy="44" r="5" fill="#445566"/><text x="254" y="38" fill="#111" font-size="11" font-weight="bold" font-family="DM Sans, system-ui, sans-serif" dominant-baseline="central">INPUTS</text><text x="254" y="52" fill="#999" font-size="10" font-family="JetBrains Mono, monospace" dominant-baseline="central"></text></svg>';
+
+suite('export-utils: columnsToSVG', () => {
+  test('byte-gleich zur bisherigen SVG-Ausgabe', () => {
+    // In Node fehlen document und getComputedStyle; die Farben kommen hier ohnehin aus opts.
+    const stubbed = typeof document === 'undefined';
+    if (stubbed) {
+      globalThis.document = { documentElement: {} };
+      globalThis.getComputedStyle = () => ({ getPropertyValue: () => '' });
+    }
+    try {
+      const cols = [
+        { title: 'SUPPLIERS', desc: 'Lieferanten', color: '#112233', items: ['A & "B"', 'Ein sehr langer Eintrag mit über achtundzwanzig Zeichen'] },
+        { title: 'INPUTS', desc: '', color: '#445566', items: [] },
+      ];
+      const colors = { bgPrimary: '#fff', bgSecondary: '#eee', borderColor: '#ccc', textPrimary: '#111', textSecondary: '#555', textTertiary: '#999' };
+      assertEqual(columnsToSVG(cols, colors), GOLDEN);
+    } finally {
+      if (stubbed) { delete globalThis.document; delete globalThis.getComputedStyle; }
+    }
   });
 });

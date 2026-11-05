@@ -3,6 +3,7 @@
  *
  * Provides:
  *  - downloadFile / downloadBlob — trigger browser download
+ *  - columnsToSVG / exportColumnsAsSVG — column/card board as SVG text or download
  *  - ensureXLSX — lazy-load SheetJS
  *  - createExportDropdown — reusable dropdown button + menu
  *  - exportTableAsPNG / exportTableAsSVG — render a table descriptor
@@ -854,14 +855,14 @@ export function exportColumnsAsPNG(columns, opts = {}, filename = 'columns.png')
 }
 
 /**
- * Export a column/card board as SVG (native `<text>`, not vectorised paths —
- * matching the historical SIPOC export output byte-for-byte).
+ * Render a column/card board as SVG text (native `<text>`, not vectorised
+ * paths — matching the historical SIPOC export output byte-for-byte).
  *
  * @param {ExportColumn[]} columns - the columns to render
  * @param {Object} [opts] - geometry/font overrides + optional theme colors
- * @param {string} [filename='columns.svg']
+ * @returns {string} SVG markup with width/height on the root element
  */
-export function exportColumnsAsSVG(columns, opts = {}, filename = 'columns.svg') {
+export function columnsToSVG(columns, opts = {}) {
   const o = { ..._colOpts(opts), ..._columnThemeColors(), ...opts };
   const { w: W, h: H } = columnExportDims(columns, o);
 
@@ -892,6 +893,16 @@ export function exportColumnsAsSVG(columns, opts = {}, filename = 'columns.svg')
     }
   }
 
-  svg += '</svg>';
-  downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), filename);
+  return `${svg}</svg>`;
+}
+
+/**
+ * Export a column/card board as SVG download (see columnsToSVG).
+ *
+ * @param {ExportColumn[]} columns - the columns to render
+ * @param {Object} [opts] - geometry/font overrides + optional theme colors
+ * @param {string} [filename='columns.svg']
+ */
+export function exportColumnsAsSVG(columns, opts = {}, filename = 'columns.svg') {
+  downloadBlob(new Blob([columnsToSVG(columns, opts)], { type: 'image/svg+xml' }), filename);
 }
