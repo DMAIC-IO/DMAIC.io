@@ -109,6 +109,17 @@ function closeDialogAround(el) {
 const isBug = (err) => err instanceof TypeError || err instanceof ReferenceError || err instanceof SyntaxError;
 
 /**
+ * Das Öffnen scheiterte am Stand der Daten (z. B. die Position, die `current`
+ * lesen soll, gibt es nicht mehr) — eine Meldung für den Nutzer. Alles andere,
+ * was beim Öffnen wirft (unbekanntes Kommando, fest/frei-Konflikt, fehlender
+ * Ref, Programmierfehler), ist ein Fehler der Vorlage und geht in die Konsole.
+ */
+class StartStateError extends Error {
+  /** @param {any} cause */
+  constructor(cause) { super(cause?.message ?? String(cause), { cause }); }
+}
+
+/**
  * Die Steuerung eines `<form x-command-form>`: Werte, Startwerte, Absenden,
  * Markieren. Fest ist ein Parameter mit `data-arg-*`, frei einer mit
  * `x-param`; mit `data-form` sind die freien Felder die des Formular-Schemas.
@@ -231,7 +242,11 @@ function createFormController(Alpine, formEl, baseCommand) {
         if (Object.hasOwn(fx, name)) throw new Error(`x-param="${name}": ${name} is also a fixed argument (data-arg-*)`);
       }
       dialog = { onSuccess, onUnchanged };
-      reset(true);
+      try {
+        reset(true);
+      } catch (err) {
+        throw isBug(err) ? err : new StartStateError(err);
+      }
     },
     /** Nach dem Schließen: Kommando zurück, Markierungen weg. */
     close() {
@@ -280,10 +295,16 @@ async function openDialog(Alpine, el, ref) {
   if (!target) throw new Error(`x-dialog="${ref}": no element with x-ref="${ref}"`);
   const formEl = formIn(target);
   const ctl = formEl ? FORMS.get(formEl) : undefined;
-  const copied = [];
+  /** Vorheriger Wert (oder `null`) der Formular-Attribute, die der Knopf überschreibt. */
+  const previous = new Map();
+  const restoreArgs = () => {
+    for (const [name, value] of previous) {
+      if (value === null) formEl.removeAttribute(name); else formEl.setAttribute(name, value);
+    }
+  };
   if (formEl) {
     for (const { name, value } of [...el.attributes]) {
-      if (name.startsWith('data-arg-')) { formEl.setAttribute(name, value); copied.push(name); }
+      if (name.startsWith('data-arg-')) { previous.set(name, formEl.getAttribute(name)); formEl.setAttribute(name, value); }
     }
   }
   let done = false;
@@ -292,7 +313,8 @@ async function openDialog(Alpine, el, ref) {
   try {
     ctl?.open({ command: el.dataset.dialogCommand, onSuccess: finish, onUnchanged: () => api?.cancel() });
   } catch (err) {
-    for (const name of copied) formEl.removeAttribute(name);
+    restoreArgs();
+    ctl?.close();
     throw err;
   }
   OPEN_DIALOGS.set(target, finish);
@@ -322,7 +344,7 @@ async function openDialog(Alpine, el, ref) {
     });
   } finally {
     OPEN_DIALOGS.delete(target);
-    for (const name of copied) formEl.removeAttribute(name);
+    restoreArgs();
     ctl?.close();
   }
 }
@@ -419,7 +441,13 @@ export function registerCommandDirectives(Alpine) {
     for (const cmd of [el.dataset.dialogCommand, el.dataset.dialogDelete]) if (cmd) commandDef(ui, cmd);
     const cmd = el.dataset.dialogCommand ?? formIn(target)?.getAttribute('x-command-form')?.trim();
     if (cmd) setHelpKey(el, `modules.${ui.moduleId}.actions.${cmd}.help`);
-    const onClick = () => { openDialog(Alpine, el, ref); };
+    const onClick = () => {
+      openDialog(Alpine, el, ref).catch((err) => {
+        const current = Alpine.$data(el)?._ui;
+        if (err instanceof StartStateError && current) current.notify(err.message, 'error');
+        else console.error(err);
+      });
+    };
     el.addEventListener('click', onClick);
     cleanup(() => el.removeEventListener('click', onClick));
   });

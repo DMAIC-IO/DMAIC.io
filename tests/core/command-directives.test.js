@@ -26,6 +26,11 @@ const Board = defineModel({
       confirm({ col, idx }) { return this.columns[col][idx] === 'wichtig' ? { key: 'confirm.removeImportant', params: { n: 1 } } : null; },
       run({ col, idx }) { this.columns[col].splice(idx, 1); },
     }),
+    pickItem: command({
+      params: { col: oneOf(COLS), idx: number({ integer: true }), text: text() },
+      current() { throw new Error('Eintrag gibt es nicht mehr'); },
+      run() {},
+    }),
     setLimit: command({ params: { limit: number({ min: 0, max: 9, integer: true }) }, run() {} }),
   },
 });
@@ -184,7 +189,7 @@ suite('x-command', () => {
   });
 
   test('unbekanntes Kommando wirft beim Einbau', () => {
-    assertThrows(() => mountDetached('<button x-command="nope">x</button>'), /unknown command "nope"; available: addItem, setItem, removeItem, setLimit/);
+    assertThrows(() => mountDetached('<button x-command="nope">x</button>'), /unknown command "nope"; available: addItem, setItem, removeItem, pickItem, setLimit/);
   });
 
   test('aus dem Wurzelknoten herausgenommener Knopf läuft weiter (Dialog-Körper)', async () => {
@@ -426,5 +431,70 @@ suite('x-dialog', () => {
 
   test('unbekannter Ref wirft beim Einbau', () => {
     assertThrows(() => mountDetached('<button x-dialog="nope">x</button>'), /x-dialog="nope": no element with x-ref="nope"/);
+  });
+});
+
+suite('x-dialog: Fehler beim Öffnen und Argumente des Formulars', () => {
+  /** Fängt unbehandelte Zurückweisungen und console.error während `fn`. */
+  async function watch(fn) {
+    const rejections = [];
+    const errors = [];
+    const onRejection = (e) => { rejections.push(e.reason); e.preventDefault(); };
+    const original = console.error;
+    window.addEventListener('unhandledrejection', onRejection);
+    console.error = (...a) => errors.push(a);
+    try {
+      await fn();
+      await flush();
+      await flush();
+    } finally {
+      console.error = original;
+      window.removeEventListener('unhandledrejection', onRejection);
+    }
+    return { rejections, errors };
+  }
+
+  test('Position gibt es nicht mehr: Meldung an den Nutzer, Steuerung zurückgesetzt', async () => {
+    const { $, dialog, model, notified } = await mount(`
+      <button class="edit" x-dialog="itemForm" data-dialog-command="pickItem" data-arg-col="a" data-arg-idx="5">e</button>
+      <div hidden><form x-ref="itemForm" x-command-form="addItem" data-arg-col="b"><input x-param="text"></form></div>`, { columns: { a: ['eins'] } });
+    const { rejections, errors } = await watch(async () => { $('.edit').click(); });
+    assertEqual(rejections.length, 0, 'keine unbehandelte Zurückweisung');
+    assertEqual(errors.length, 0, 'keine Konsolenmeldung');
+    assertEqual(dialog.open, null);
+    assertEqual(notified.length, 1);
+    assertEqual(notified[0][1], 'error');
+    assertEqual(notified[0][0], 'Eintrag gibt es nicht mehr');
+    typeIn($('input'), 'neu');
+    $('form').requestSubmit();
+    await flush();
+    assertDeepEqual([...model.columns.b], ['neu']);
+  });
+
+  test('Programmierfehler beim Öffnen: Konsole, keine Meldung, keine Zurückweisung', async () => {
+    const { $, dialog, notified } = await mount(`
+      <button class="edit" x-dialog="itemForm" data-arg-col="a">e</button>
+      <div hidden><form x-ref="itemForm" x-command-form="addItem"><input x-param="col"><input x-param="text"></form></div>`);
+    const { rejections, errors } = await watch(async () => { $('.edit').click(); });
+    assertEqual(rejections.length, 0);
+    assertEqual(errors.length, 1);
+    assertTrue(/also a fixed argument/.test(String(errors[0][0]?.message)), 'Konflikt fest/frei');
+    assertEqual(notified.length, 0);
+    assertEqual(dialog.open, null);
+  });
+
+  test('eigenes data-arg-* des Formulars bleibt nach dem Schließen erhalten', async () => {
+    const { $, dialog } = await mount(`
+      <button class="edit" x-dialog="itemForm" data-arg-col="b" data-arg-idx="0">e</button>
+      <div hidden><form x-ref="itemForm" x-command-form="setItem" data-arg-col="a"><input x-param="text"></form></div>`, { columns: { a: ['x'], b: ['y'] } });
+    const form = $('form');
+    const input = $('input');
+    $('.edit').click();
+    assertEqual(form.getAttribute('data-arg-col'), 'b');
+    assertEqual(input.value, 'y');
+    dialog.open.api.cancel();
+    await flush();
+    assertEqual(form.getAttribute('data-arg-col'), 'a');
+    assertEqual(form.getAttribute('data-arg-idx'), null);
   });
 });
