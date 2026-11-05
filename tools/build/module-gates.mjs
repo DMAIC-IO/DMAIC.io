@@ -2,7 +2,7 @@
  * D.Mike — Gates der umgestellten Module (module-gates.mjs)
  *
  * Geprüft werden: Struktur, Beschreibung, `uses`, Layer, Schema,
- * Template ↔ Schema, Schreibweg, Hilfe. Gilt NUR für Module in
+ * Template ↔ Schema, Kommando-Bezüge, Schreibweg, Hilfe. Gilt NUR für Module in
  * `CONVERTED_MODULES` (converted-modules.mjs); `module-gates.test.mjs` führt
  * sie unter `npm run test:build` aus.
  *
@@ -15,7 +15,7 @@ import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';
 import { parsePath } from '../../js/core/model.js';
-import { loadModelSchema } from './model-types.mjs';
+import { loadModelSchema, loadFormSchemas } from './model-types.mjs';
 import { BOOKS } from '../../js/core/references-books.js';
 import { readExampleOwners } from './example-catalog.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
@@ -312,7 +312,7 @@ const SCHEMA_PREFIX = 'schema: domain/model.js:';
 /**
  * Gate Schema, Teil Literal: `defineModel({ … })` ist ein reines Literal
  * (feste Schlüssel, Konstruktoren aus core/model.js, Literale, Konstanten
- * dieser Datei; Funktionen nur als `run`). `version` ist ein String-Literal
+ * dieser Datei; Funktionen nur als `run`, `current`, `confirm`). `version` ist ein String-Literal
  * `MAJOR.MINOR`; `migrations` nur `'a→b': <Import aus ./migrations.js>`.
  * @param {string} text Inhalt von domain/model.js
  * @returns {string[]}
@@ -380,6 +380,7 @@ export function checkSchemaLiteral(text) {
   }
   /** Name des Kommandos = Schlüssel der umgebenden PropertyAssignment. */
   const commandName = (call) => (ts.isPropertyAssignment(call.parent) && call.parent.name && 'text' in call.parent.name ? call.parent.name.text : '?');
+  const HOOKS = ['run', 'current', 'confirm'];
   const check = (n, cmdName = null) => {
     if (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n) || ts.isNumericLiteral(n)) return;
     if ([ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword, ts.SyntaxKind.NullKeyword].includes(n.kind)) return;
@@ -402,12 +403,12 @@ export function checkSchemaLiteral(text) {
         if (p.name && ts.isComputedPropertyName(p.name)) { out.push(`${P} berechneter Schlüssel nicht erlaubt (${src(p.name)})`); continue; }
         const key = p.name && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? p.name.text : null;
         if (n === top && (key === 'version' || key === 'migrations')) continue;
-        if (cmdName !== null && key === 'run') {
+        if (cmdName !== null && HOOKS.includes(key)) {
           if (ts.isMethodDeclaration(p)) continue;
           const v = ts.isPropertyAssignment(p) ? p.initializer : null;
-          if (v && ts.isArrowFunction(v)) out.push(`${P} run von ${cmdName} ist eine Pfeilfunktion — this muss das reaktive Model sein`);
+          if (v && ts.isArrowFunction(v)) out.push(`${P} ${key} von ${cmdName} ist eine Pfeilfunktion — this muss das reaktive Model sein`);
           else if (v && (ts.isFunctionExpression(v) || (ts.isIdentifier(v) && runImports.has(v.text)))) continue;
-          else out.push(`${P} run von ${cmdName}: Funktion, Methode oder Import aus ./commands/ erwartet`);
+          else out.push(`${P} ${key} von ${cmdName}: Funktion, Methode oder Import aus ./commands/ erwartet`);
           continue;
         }
         if (ts.isShorthandPropertyAssignment(p)) { out.push(`${P} Kurzschreibweise nicht erlaubt (${src(p)})`); continue; }
@@ -575,9 +576,10 @@ export function readStateBindings(files) {
  * @param {{ de: object|null, en: object|null }} help
  * @param {Record<string, { params?: object }>} [viewmodelCommands] Kommandos aus `createModule({ commands })`
  * @param {string[]} [stateFields] per `x-field="state.<name>"` gebundene UI-State-Felder
+ * @param {string[]} [formKeys] Hilfeschlüssel der Formularfelder (formHelpKeys)
  * @returns {string[]}
  */
-export function checkContextHelp(schema, help, viewmodelCommands = {}, stateFields = []) {
+export function checkContextHelp(schema, help, viewmodelCommands = {}, stateFields = [], formKeys = []) {
   const keys = [
     ...Object.keys(schema.fields).map((f) => `fields.${f}.help`),
     ...Object.entries({ ...schema.commands, ...viewmodelCommands }).flatMap(([c, def]) => [
@@ -585,6 +587,7 @@ export function checkContextHelp(schema, help, viewmodelCommands = {}, stateFiel
       ...Object.keys(def.params ?? {}).map((p) => `actions.${c}.params.${p}`),
     ]),
     ...stateFields.map((f) => `state.${f}.help`),
+    ...formKeys,
   ];
   const out = [];
   for (const lang of ['de', 'en']) {
@@ -593,6 +596,119 @@ export function checkContextHelp(schema, help, viewmodelCommands = {}, stateFiel
     for (const k of keys) {
       const v = at(help[lang], k);
       if (typeof v !== 'string' || v.trim() === '') out.push(`help: ${file}: ${k} fehlt`);
+    }
+  }
+  return out;
+}
+
+const FORM_BLOCK = /<form\b([^>]*)>([\s\S]*?)<\/form>/g;
+/** Wörtliches Attribut (nicht `:gebunden`) aus einem Attributtext. */
+const plainAttr = (attrs, name) => attrs.match(new RegExp(`(?:^|\\s)${name}="\\s*([^"]*?)\\s*"`))?.[1] ?? null;
+const X_PARAM = /\sx-param="\s*([^"]*?)\s*"/g;
+const COMMAND_ATTRS = ['x-command', 'x-command-form', 'data-dialog-command', 'data-dialog-delete'];
+
+/**
+ * Die Kommando-Formulare der Templates: `<form … x-command-form="cmd" [data-form="Name"]>`
+ * mit den `x-param`-Namen darin. Formulare sind in HTML nie verschachtelt.
+ * @param {{ path: string, text: string }[]} files Templates unter resources/
+ * @returns {{ path: string, command: string, form: string|null, params: string[] }[]}
+ */
+export function readCommandForms(files) {
+  const out = [];
+  for (const { path, text } of files) {
+    for (const m of text.matchAll(FORM_BLOCK)) {
+      const command = plainAttr(m[1], 'x-command-form');
+      if (command === null) continue;
+      out.push({ path, command, form: plainAttr(m[1], 'data-form'), params: [...m[2].matchAll(X_PARAM)].map((p) => p[1]) });
+    }
+  }
+  return out;
+}
+
+/**
+ * Gate Kommando-Bezüge: `x-command`, `x-command-form`, `data-dialog-command`,
+ * `data-dialog-delete` nennen ein Kommando des Models; `data-form` einen
+ * Export aus viewmodel/forms.js; `x-param` einen Parameter des Kommandos
+ * bzw. ein Feld des Formulars.
+ * @param {{ path: string, text: string }[]} files
+ * @param {{ commands: Record<string, { params: object }> }} schema
+ * @param {Record<string, { fields: object }>} formSchemas Name → Schema
+ * @returns {string[]}
+ */
+export function checkCommandRefs(files, schema, formSchemas) {
+  const out = [];
+  const commands = Object.keys(schema.commands);
+  for (const { path, text } of files) {
+    for (const attr of COMMAND_ATTRS) {
+      for (const m of text.matchAll(new RegExp(`\\s${attr}="\\s*([^"]*?)\\s*"`, 'g'))) {
+        if (!commands.includes(m[1])) out.push(`command: ${path}: ${attr}="${m[1]}": kein Kommando des Models`);
+      }
+    }
+    for (const m of text.matchAll(/\sdata-form="\s*([^"]*?)\s*"/g)) {
+      if (!Object.hasOwn(formSchemas, m[1])) out.push(`command: ${path}: data-form="${m[1]}": kein Export aus viewmodel/forms.js`);
+    }
+  }
+  for (const { path, command, form, params } of readCommandForms(files)) {
+    const cmdParams = schema.commands[command]?.params;
+    const fields = form !== null ? formSchemas[form]?.fields : cmdParams;
+    if (!cmdParams || !fields) continue;
+    for (const p of params) {
+      if (!Object.hasOwn(fields, p)) out.push(`command: ${path}: x-param="${p}": ${form !== null ? `kein Feld von ${form}` : `kein Parameter von ${command}`}`);
+    }
+  }
+  return out;
+}
+
+/**
+ * Hilfeschlüssel der Formularfelder: ein Feld mit `data-form`, das kein
+ * Parameter des Kommandos ist, braucht `forms.<Name>.<feld>.help`.
+ * @param {ReturnType<typeof readCommandForms>} commandForms
+ * @param {{ commands: Record<string, { params: object }> }} schema
+ * @param {Record<string, { fields: object }>} formSchemas
+ * @returns {string[]} sortiert, ohne Doppel
+ */
+export function formHelpKeys(commandForms, schema, formSchemas) {
+  const keys = new Set();
+  for (const { command, form, params } of commandForms) {
+    if (form === null || !formSchemas[form]) continue;
+    const cmdParams = schema.commands[command]?.params ?? {};
+    for (const p of params) {
+      if (Object.hasOwn(formSchemas[form].fields, p) && !Object.hasOwn(cmdParams, p)) keys.add(`forms.${form}.${p}.help`);
+    }
+  }
+  return [...keys].sort();
+}
+
+/**
+ * Die literalen `key: '…'` in den `confirm`-Haken von domain/model.js.
+ * @param {string} text Inhalt von domain/model.js
+ * @returns {string[]} in Fundreihenfolge, ohne Doppel
+ */
+export function readConfirmKeys(text) {
+  const keys = new Set();
+  const nameOf = (n) => (n.name && (ts.isIdentifier(n.name) || ts.isStringLiteral(n.name)) ? n.name.text : null);
+  const visit = (n, inside) => {
+    const isConfirm = (ts.isMethodDeclaration(n) || ts.isPropertyAssignment(n)) && nameOf(n) === 'confirm';
+    const now = inside || isConfirm;
+    if (now && ts.isPropertyAssignment(n) && nameOf(n) === 'key' && ts.isStringLiteral(n.initializer)) keys.add(n.initializer.text);
+    ts.forEachChild(n, (c) => visit(c, now));
+  };
+  visit(parseJs('model.js', text), false);
+  return [...keys];
+}
+
+/**
+ * Gate Rückfragetexte: jeder confirm-Schlüssel steht in ui.de.json und ui.en.json.
+ * @param {string[]} keys aus readConfirmKeys
+ * @param {{ de: object|null, en: object|null }} ui
+ * @returns {string[]}
+ */
+export function checkConfirmKeys(keys, ui) {
+  const out = [];
+  for (const lang of ['de', 'en']) {
+    for (const k of keys) {
+      const v = ui[lang] ? at(ui[lang], k) : undefined;
+      if (typeof v !== 'string' || v.trim() === '') out.push(`command: domain/model.js: confirm-Schlüssel ${k} fehlt in resources/i18n/ui.${lang}.json`);
     }
   }
   return out;
@@ -753,7 +869,8 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
   const exampleIds = ctx.exampleIds ?? [...exampleOwners.keys()];
   const paths = listModuleFiles(appDir, id);
   const read = (p) => ({ path: p, text: readFileSync(join(base, p), 'utf8') });
-  const js = paths.filter((p) => p.endsWith('.js') && p !== 'domain/model.types.js' && p !== 'viewmodel/state.types.js').map(read);
+  const GENERATED = ['domain/model.types.js', 'viewmodel/state.types.js', 'viewmodel/forms.types.js'];
+  const js = paths.filter((p) => p.endsWith('.js') && !GENERATED.includes(p)).map(read);
   const out = [...checkStructure(id, paths)];
 
   if (paths.includes('module.js')) {
@@ -783,10 +900,24 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
       out.push(...checkTemplateBindings(views, schema));
       const vmFile = join(base, 'viewmodel', 'viewmodel.js');
       const templates = paths.filter((p) => /^resources\/[^/]+\.html$/.test(p)).map(read);
+      let formSchemas = {};
+      if (paths.includes('viewmodel/forms.js')) {
+        try {
+          formSchemas = Object.fromEntries((await loadFormSchemas(join(base, 'viewmodel', 'forms.js'))).map(({ name, schema: s }) => [name, s]));
+        } catch (err) {
+          out.push(`command: viewmodel/forms.js: lässt sich nicht laden (${err.message})`);
+        }
+      }
+      out.push(...checkCommandRefs(templates, schema, formSchemas));
+      out.push(...checkConfirmKeys(readConfirmKeys(readFileSync(file, 'utf8')), {
+        de: readJson(join(base, 'resources', 'i18n', 'ui.de.json')),
+        en: readJson(join(base, 'resources', 'i18n', 'ui.en.json')),
+      }));
       out.push(...checkContextHelp(schema, {
         de: readJson(join(base, 'resources', 'i18n', 'context-help.de.json')),
         en: readJson(join(base, 'resources', 'i18n', 'context-help.en.json')),
-      }, existsSync(vmFile) ? readViewmodelCommands(readFileSync(vmFile, 'utf8')) : {}, readStateBindings(templates)));
+      }, existsSync(vmFile) ? readViewmodelCommands(readFileSync(vmFile, 'utf8')) : {}, readStateBindings(templates),
+      formHelpKeys(readCommandForms(templates), schema, formSchemas)));
     }
   }
   return out;

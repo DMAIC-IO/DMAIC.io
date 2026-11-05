@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles } from './module-gates.mjs';
+import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys } from './module-gates.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { APP_DIR } from './build.mjs';
 import { defineModel, command, text, number, oneOf, index, idOf, list, record, object, boolean } from '../../js/core/model.js';
@@ -659,4 +659,105 @@ test('readExampleIds: Index ohne Szenarien plus Beispiele umgestellter Module', 
     'examples/index.json': JSON.stringify({ examples: [{ id: 'a', type: 'project', modules: ['x'] }, { id: 's', type: 'scenario' }] }),
   });
   assert.deepEqual(readExampleIds(root), ['a']);
+});
+
+test('Schema-Literal: current und confirm sind wie run als Methode erlaubt, als Pfeil nicht', () => {
+  const ok = `${MODEL_IMPORT}export const State = defineModel({
+  fields: { t: text() },
+  commands: {
+    go: command({ params: {}, current() { return {}; }, confirm() { return null; }, run() {} }),
+  },
+});
+`.replaceAll('@/', ['..', '..', '..', ''].join('/'));
+  assert.deepEqual(checkSchemaLiteral(ok), []);
+  const bad = ok.replace('current() { return {}; }', 'current: () => ({})');
+  assert.deepEqual(checkSchemaLiteral(bad), [`${P} current von go ist eine Pfeilfunktion — this muss das reaktive Model sein`]);
+});
+
+const CMD_SCHEMA = defineModel({
+  fields: { columns: record(['a', 'b'], list(text())) },
+  commands: {
+    addItem: command({ params: { col: oneOf(['a', 'b']), text: text() }, run() {} }),
+    removeItem: command({ params: { col: oneOf(['a', 'b']), idx: index('columns[col]') }, run() {} }),
+  },
+}).schema;
+const FORM_SCHEMAS = { NoteForm: { fields: { text: text(), note: text() } } };
+
+test('readCommandForms: Formulare mit Kommando, data-form und x-param', () => {
+  const files = [{ path: 'resources/view.html', text: '<form class="x" x-command-form="addItem" :data-arg-col="c"><input x-param="text"></form><form><input x-param="nope"></form><form x-command-form="addItem" data-form="NoteForm"><textarea x-param="note"></textarea></form>' }];
+  assert.deepEqual(readCommandForms(files), [
+    { path: 'resources/view.html', command: 'addItem', form: null, params: ['text'] },
+    { path: 'resources/view.html', command: 'addItem', form: 'NoteForm', params: ['note'] },
+  ]);
+});
+
+test('Kommando-Bezüge: Kommandos, data-form, x-param', () => {
+  const files = [{ path: 'resources/view.html', text: [
+    '<button x-command="removeItem"></button><button x-command="ghost"></button>',
+    '<form x-command-form="addItem"><input x-param="text"><input x-param="col2"></form>',
+    '<form x-command-form="addItem" data-form="NoteForm"><input x-param="note"><input x-param="zzz"></form>',
+    '<form x-command-form="nope"></form><form x-command-form="addItem" data-form="Gone"></form>',
+    '<button x-dialog="f" data-dialog-command="addItem" data-dialog-delete="drop"></button>',
+  ].join('') }];
+  assert.deepEqual(checkCommandRefs(files, CMD_SCHEMA, FORM_SCHEMAS), [
+    'command: resources/view.html: x-command="ghost": kein Kommando des Models',
+    'command: resources/view.html: x-command-form="nope": kein Kommando des Models',
+    'command: resources/view.html: data-dialog-delete="drop": kein Kommando des Models',
+    'command: resources/view.html: data-form="Gone": kein Export aus viewmodel/forms.js',
+    'command: resources/view.html: x-param="col2": kein Parameter von addItem',
+    'command: resources/view.html: x-param="zzz": kein Feld von NoteForm',
+  ]);
+});
+
+test('Formularhilfe: nur Felder, die kein Parameter des Kommandos sind', () => {
+  const forms = readCommandForms([{ path: 'resources/view.html', text: '<form x-command-form="addItem" data-form="NoteForm"><input x-param="text"><input x-param="note"></form><form x-command-form="addItem"><input x-param="text"></form>' }]);
+  assert.deepEqual(formHelpKeys(forms, CMD_SCHEMA, FORM_SCHEMAS), ['forms.NoteForm.note.help']);
+  const help = { fields: { columns: { help: 'C' } }, actions: { addItem: { help: 'A', params: { col: 'c', text: 't' } }, removeItem: { help: 'R', params: { col: 'c', idx: 'i' } } } };
+  assert.deepEqual(checkContextHelp(CMD_SCHEMA, { de: help, en: help }, {}, [], ['forms.NoteForm.note.help']), [
+    'help: resources/i18n/context-help.de.json: forms.NoteForm.note.help fehlt',
+    'help: resources/i18n/context-help.en.json: forms.NoteForm.note.help fehlt',
+  ]);
+});
+
+test('confirm-Schlüssel: Literale aus confirm müssen in ui.de/en stehen', () => {
+  const src = `${MODEL_IMPORT}export const State = defineModel({
+  fields: { t: text() },
+  commands: {
+    a: command({ params: {}, confirm() { return this.t ? { key: 'confirm.a', params: { n: 1 } } : null; }, run() {} }),
+    b: command({ params: {}, confirm: function () { return { key: 'confirm.b' }; }, run() { return { key: 'nicht.gezaehlt' }; } }),
+  },
+});
+`;
+  assert.deepEqual(readConfirmKeys(src), ['confirm.a', 'confirm.b']);
+  assert.deepEqual(checkConfirmKeys(['confirm.a', 'confirm.b'], { de: { confirm: { a: 'A', b: 'B' } }, en: { confirm: { a: 'A' } } }), [
+    'command: domain/model.js: confirm-Schlüssel confirm.b fehlt in resources/i18n/ui.en.json',
+  ]);
+  assert.deepEqual(checkConfirmKeys(['confirm.a'], { de: null, en: { confirm: { a: 'A' } } }), [
+    'command: domain/model.js: confirm-Schlüssel confirm.a fehlt in resources/i18n/ui.de.json',
+  ]);
+});
+
+test('Struktur: viewmodel/forms.js und viewmodel/forms.types.js sind erlaubt', () => {
+  const paths = ['module.js', 'domain/model.js', 'viewmodel/viewmodel.js', 'viewmodel/forms.js', 'viewmodel/forms.types.js', 'resources/view.html'];
+  assert.deepEqual(checkStructure('neu', paths), []);
+});
+
+const FORMS_FIXTURE = `import { defineForm, text } from '${MODEL_URL}';
+export const MoveForm = defineForm({ fields: { to: text(), note: text() } });
+`;
+
+test('checkConvertedModule: Kommando-Formular mit data-form verlangt Formularhilfe', async () => {
+  const view = '<form x-command-form="moveItem" data-form="MoveForm" data-arg-from="a" data-arg-idx="0"><input x-param="to"><input x-param="note"></form>';
+  const base = { 'js/modules/neu/viewmodel/forms.js': FORMS_FIXTURE, 'js/modules/neu/resources/view.html': view };
+  assert.deepEqual(await checkConvertedModule(convertedFixture(base), 'neu'), [
+    'help: resources/i18n/context-help.de.json: forms.MoveForm.note.help fehlt',
+    'help: resources/i18n/context-help.en.json: forms.MoveForm.note.help fehlt',
+  ]);
+  const help = JSON.stringify({ ...JSON.parse(HELP_FULL), forms: { MoveForm: { note: { help: 'Notiz' } } } });
+  const ok = convertedFixture({
+    ...base,
+    'js/modules/neu/resources/i18n/context-help.de.json': help,
+    'js/modules/neu/resources/i18n/context-help.en.json': help,
+  });
+  assert.deepEqual(await checkConvertedModule(ok, 'neu'), []);
 });
