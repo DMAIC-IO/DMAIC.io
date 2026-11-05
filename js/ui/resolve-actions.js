@@ -2,6 +2,8 @@
  * Resolve module action descriptors to render-ready view models.
  * Pure — no Alpine, no DOM. i18n resolution, default variant, and dropdown
  * detection live here so they can be unit-tested in isolation.
+ * Ein Eintrag mit `command` (und optional `args`) führt ein Kommando des
+ * Models aus; `agentAction` ist dann das Kommando.
  *
  * @param {Array<object>|null|undefined} actions - descriptor list from config.actions
  * @param {(key: string, params?: object) => string} tf - module translation fn (i18n.tf(i18nKey))
@@ -13,7 +15,7 @@
  *   would surface as a tooltip reading "actions.foo.help".
  * @returns {Array<{iconId:string, text:string, tooltip:string|null, help:string|null,
  *   agentAction:string|null, variant:'primary'|'secondary', isDropdown:boolean,
- *   onClick:?function, dynamicText:?function, children:Array<object>}>}
+ *   onClick:?function, command:?string, args:object, dynamicText:?function, children:Array<object>}>}
  */
 export function resolveActions(actions, tf, helpFor) {
   if (!Array.isArray(actions)) return [];
@@ -29,11 +31,13 @@ export function resolveActions(actions, tf, helpFor) {
       // `module.describe` liefert. Ohne `agentAction` gibt es ihn nicht:
       // `title` ist ein Beschriftungsschlüssel und nur zufällig manchmal
       // gleich dem Methodennamen.
-      agentAction: a.agentAction ?? null,
-      help: (a.agentAction && helpFor) ? (helpFor(a.agentAction) ?? null) : null,
+      agentAction: a.agentAction ?? a.command ?? null,
+      help: ((a.agentAction ?? a.command) && helpFor) ? (helpFor(a.agentAction ?? a.command) ?? null) : null,
       variant: a.variant === 'primary' ? 'primary' : 'secondary',
       isDropdown: children.length > 0,
       onClick: a.onClick ?? null,
+      command: a.command ?? null,
+      args: a.args ?? {},
       // Bind the module tf so a reactive label can pick its own i18n key.
       dynamicText: a.dynamicText ? (data) => a.dynamicText(data, tf) : null,
       children,

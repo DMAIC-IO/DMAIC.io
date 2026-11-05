@@ -7,6 +7,7 @@
 import { h } from '../core/dom.js';
 import { icon } from '../core/icon.js';
 import { resolveActions } from './resolve-actions.js';
+import { runUiCommand } from '../core/command-directives.js';
 import { describeElement } from '../core/context-help.js';
 import { findInstancePhase } from '../core/router/instance-ops.js';
 
@@ -20,6 +21,19 @@ import { findInstancePhase } from '../core/router/instance-ops.js';
  * Absage `unknown_instance` als ein Versprechen, das nie einlöst.
  */
 const MOUNT_TIMEOUT_MS = 20000;
+
+/**
+ * Ein Werkzeugleisten-Eintrag mit `command`: Rückfrage und Kommando über
+ * den Griff `_ui` der Komponente, Fehler per notify.
+ * @param {{ command: string, args: object }} vm @param {{ getActionData?: () => any }} inst
+ * @returns {Promise<void>}
+ */
+async function runActionCommand(vm, inst) {
+  const ui = inst.getActionData?.()?._ui;
+  if (!ui) return;
+  const r = await runUiCommand(ui, vm.command, vm.args);
+  if (!r.ok && 'error' in r) ui.notify(r.error?.message ?? String(r.error), 'error');
+}
 
 /**
  * Einen vom Rahmen gerenderten Aktionsknopf seiner Agentenaktion zuordnen und
@@ -338,7 +352,9 @@ export class Workspace {
     // Beschriftung zu wiederholen) — aber nur, wenn er auch wirklich ankam.
     const applied = describeAction(btn, vm, inst.i18nKey);
     if (vm.tooltip && !applied) btn.title = vm.tooltip;
-    if (vm.onClick) {
+    if (vm.command) {
+      btn.addEventListener('click', () => { runActionCommand(vm, inst); });
+    } else if (vm.onClick) {
       btn.addEventListener('click', () => vm.onClick(inst.getActionData?.()));
     }
     if (vm.dynamicText && typeof inst.bindEffect === 'function') {
@@ -366,7 +382,12 @@ export class Workspace {
       item.className = 'workspace__action-item';
       item.append(icon(child.iconId, { size: 'sm' }), h('span', { class: 'workspace__action-item-text' }, child.text));
       describeAction(item, child, inst.i18nKey);
-      if (child.onClick) {
+      if (child.command) {
+        item.addEventListener('click', () => {
+          menu.classList.remove('open');
+          runActionCommand(child, inst);
+        });
+      } else if (child.onClick) {
         item.addEventListener('click', () => {
           menu.classList.remove('open');
           child.onClick(inst.getActionData?.());
