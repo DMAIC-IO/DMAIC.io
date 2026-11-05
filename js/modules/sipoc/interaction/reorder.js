@@ -15,7 +15,7 @@ export const reorder = defineGesture({
 
   /** @param {{ group: string, index: number }|null} pos Vorschau, null = aufräumen */
   preview(pos) {
-    this.dropPreview = pos;
+    this.state.dropPreview = pos;
   },
 
   /**

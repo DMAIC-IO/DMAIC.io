@@ -59,7 +59,7 @@
             <div class="sipoc__add-row">
               <input class="field sipoc__add-input" type="text"
                 :data-col="col.key"
-                x-model="drafts[col.key]"
+                x-model="state.drafts[col.key]"
                 :placeholder="t('placeholder.' + col.key)"
                 :aria-label="t('placeholder.' + col.key)"
                 @keydown.enter="addFromDraft(col.key)">
@@ -75,7 +75,7 @@
   <!-- Edit dialog: lives hidden here; borrowed into the shared modal on edit, restored on close -->
   <div class="sipoc__modal-forms" hidden>
     <div class="sipoc__edit-form" x-ref="editForm">
-      <textarea class="field" data-field="text" style="min-height:80px;" x-model="editDraft.text"></textarea>
+      <textarea class="field" data-field="text" style="min-height:80px;" x-model="state.editDraft.text"></textarea>
     </div>
   </div>
 </div>

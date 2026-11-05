@@ -35,12 +35,12 @@ suite('sipoc — Geste reorder', () => {
       ['moveItem', { fromCol: 'outputs', fromIdx: 0, toCol: 'outputs', toIdx: 3 }]);
   });
 
-  test('preview schreibt dropPreview am Host, null räumt auf', () => {
-    const host = { dropPreview: null };
+  test('preview schreibt state.dropPreview am Host, null räumt auf', () => {
+    const host = { state: { dropPreview: null } };
     reorder.preview.call(host, { group: 'inputs', index: 1 });
-    assertDeepEqual(host.dropPreview, { group: 'inputs', index: 1 });
+    assertDeepEqual(host.state.dropPreview, { group: 'inputs', index: 1 });
     reorder.preview.call(host, null);
-    assertEqual(host.dropPreview, null);
+    assertEqual(host.state.dropPreview, null);
   });
 
   test('Ansage kommt aus der Vorgabe des Kerns (Spaltenname bei Gruppenwechsel)', () => {
