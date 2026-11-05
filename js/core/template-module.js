@@ -3,11 +3,31 @@ import { cloneTemplate, templateKey } from './dom.js';
 import { getModuleHelp, hasModuleHelp } from './help-registry.js';
 import { getModuleReferences, hasModuleReferences } from './references-registry.js';
 import { initialModel, loadModel } from './initial-model.js';
-import { schemaOf, setModelName, setCommandObserver, replaceFields, runCommand } from './model.js';
+import { schemaOf, setModelName, setCommandObserver, replaceFields, runCommand, cloneJSON } from './model.js';
 import { schemaAgentEntry, readSchemaModel } from './agent/agent-schema.js';
 import { attachGesture } from './interaction/attach.js';
 import { isGesture } from './interaction/define.js';
 import { requireKnownId } from './validate.js';
+
+/**
+ * Was `view(ctx)` bekommt: die Kontextdienste und die Kennungen der Instanz.
+ * @typedef {{ context: object,
+ *   notify: (message: string, type?: string, titleKey?: string) => void,
+ *   dialog: any, i18n: any, eventBus: any, instanceId: string, moduleId: string }} ViewContext
+ */
+/**
+ * `this` in den Gliedern eines `view`-Blocks. Die eigenen Glieder des Blocks
+ * sind untereinander `any`.
+ * @template M, S
+ * @typedef {{ model: M, state: S, t: (key: string, params?: object) => string,
+ *   moduleId: string, $refs: Record<string, HTMLElement>, $root: HTMLElement,
+ *   $watch: Function, $nextTick: Function }} ViewThis
+ */
+/**
+ * Der `view`-Block eines Moduls in der neuen Form.
+ * @template M, S
+ * @typedef {(ctx: ViewContext) => Record<string, any> & ThisType<Record<string, any> & ViewThis<M, S>>} ViewFn
+ */
 
 /**
  * Pure gate: returns true iff the given route store state belongs to the
@@ -75,8 +95,11 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
 // base.descriptor — module.js-Beschreibung (neue Form): liefert
 // id/version/icon/phase/allowedPhases; Template unter resources/view.html;
 // immer Alpine. Ohne descriptor gilt die alte Form (alles in config).
+// base.view(ctx) — neue Form statt base.data(module, t): liefert Getter und
+// Handler; `this` ist die Komponente mit model, state, t. base.State — UI-State
+// aus defineState, nur zusammen mit view.
 export function createModule(base) {
-  const { config = {}, descriptor, Model, data, afterMount, beforeLoadExample, createDefault, gestures = [] } = base;
+  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, createDefault, gestures = [] } = base;
   if (descriptor) {
     for (const key of NOT_IN_CONFIG) {
       if (Object.hasOwn(config, key)) {
@@ -85,6 +108,8 @@ export function createModule(base) {
     }
   }
   const id = descriptor ? descriptor.id : config.id;
+  if (data && view) throw new Error(`createModule(${id}): data and view are mutually exclusive`);
+  if (UiState && !view) throw new Error(`createModule(${id}): State requires view`);
   gestures.forEach((g, i) => {
     if (!isGesture(g)) throw new Error(`createModule ${id}: gestures[${i}] is not a defineGesture result`);
   });
@@ -179,11 +204,25 @@ export function createModule(base) {
       const _t = module._context.i18n.tf(i18nKey);
 
       const dataCtxTarget = {};
-      const dataCtx = new Proxy(dataCtxTarget, {
-        get: (t, prop) => t[prop],
-        set: (t, prop, value) => { t[prop] = value; return true; }
-      });
-      const dataResult = data.call(dataCtx, module, _t);
+      let dataResult;
+      if (view) {
+        // Neue Form: kein `module`, nur die Dienste und Kennungen.
+        dataResult = view({
+          context,
+          notify: (...args) => context.notify(...args),
+          dialog: context.dialog,
+          i18n: context.i18n,
+          eventBus: context.eventBus,
+          instanceId: context.instanceId,
+          moduleId: id,
+        });
+      } else {
+        const dataCtx = new Proxy(dataCtxTarget, {
+          get: (t, prop) => t[prop],
+          set: (t, prop, value) => { t[prop] = value; return true; }
+        });
+        dataResult = data.call(dataCtx, module, _t);
+      }
 
       if (alpine) {
         dataCtxTarget.t = _t;
@@ -213,11 +252,21 @@ export function createModule(base) {
             /** Navigate the active module to a sub-path. Modules may override this. */
             changeRoute(sub) { this.$route?.go(sub); },
           };
+          // Neue Form: UI-State je Komponente, frisch aus dem Schema.
+          if (view) Object.assign(comp, { state: UiState ? UiState.create() : {}, moduleId: id });
           if (schema) copyMembers(comp, schemaMembers(id, agentEntry, vmCommands));
           copyMembers(comp, dataResult);
           return copyMembers(comp, {
             init() {
               freshState.init?.();
+              // UI-State ist nicht gespeichert, aber beobachtbar — wie
+              // command:executed für das Model. $watch liest tief.
+              if (UiState) {
+                for (const key of Object.keys(UiState.schema.fields)) {
+                  this.$watch(() => this.state[key], (value) => context.eventBus?.emit?.(
+                    'state:changed', { instanceId: context.instanceId, key, value: cloneJSON(value) }));
+                }
+              }
               dataInit?.call(this);
               // Automatic persist-$watch: persists on every model mutation by
               // deep-cloning model.toJSON() through Alpine's reactivity proxy.
