@@ -46,6 +46,20 @@ suite('context help', () => {
     assertTrue(label.classList.contains('context-help-anchor'));
   });
 
+  test('a form control gets no badge (it cannot render children) but keeps title and description', () => {
+    for (const tag of ['input', 'textarea', 'select']) {
+      const field = document.createElement(tag);
+      field.setAttribute('data-help-key', 'modules.five-why.fields.problem.help');
+      host.appendChild(field);
+
+      augmentContextHelp(host);
+
+      assertEqual(field.querySelector('.context-help__btn'), null);
+      assertEqual(field.getAttribute('title'), HELP['modules.five-why.fields.problem.help']);
+      assertEqual(field.dataset.contextHelpAugmented, '1');
+    }
+  });
+
   test('does NOT augment an anchor whose help key is missing — a gap stays visible', () => {
     const label = document.createElement('label');
     label.setAttribute('data-help-key', 'modules.five-why.fields.nope.help');

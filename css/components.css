@@ -1977,6 +1977,21 @@ button.btn--primary.context-help-anchor > .context-help__btn {
   background: var(--color-bg-secondary);
 }
 
+/* FORMULAR-Anker (`x-command-form`, etwa die Eingabezeile „Feld + Knopf“).
+   Ein Formular ist ein gestreckter Block: `left: 100%` legte den Kreis
+   jenseits der rechten Kante, wo ihn der Spaltenrand abschneidet. Der ganze
+   Kasten ist der Anker, also liegt der Kreis innen, bündig am rechten Rand
+   und senkrecht mittig, mit eigenem Hintergrund — solange Alt gehalten
+   wird, überdeckt er das Zeilenende (wie beim Ausführknopf oben). */
+form.context-help-anchor > .context-help__btn {
+  top: 50%;
+  left: auto;
+  right: 0;
+  margin-left: 0;
+  border-radius: 50%;
+  background: var(--color-bg-secondary);
+}
+
 /* Anker IN einer Tabellenkopfzelle (Kennzahlen einer Statistiktabelle,
    msa-typ1). Der Anker ist ein Span um den Text, nicht die Zelle: an der
    Zelle läge der Kreis jenseits ihrer rechten Kante und damit vor dem Text

@@ -36,6 +36,9 @@ const ARMED_CLASS = 'dmike-context-help-armed';
    und wäre damit selbst ein Anker — die Negation hält ihn aus dem Durchlauf. */
 const ANCHOR_SELECTOR = '[data-help-key]:not(.context-help__btn)';
 
+/* Felder, die keine Kindknoten darstellen — Anker ohne Fragezeichen. */
+const NO_BADGE_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
+
 const STATE = {
   /** @type {object|null} i18n-Instanz, gesetzt über setContextHelpConfig */
   i18n: null,
@@ -259,6 +262,16 @@ function augmentOne(anchor) {
   // wird über `npm run agent:report` gezählt, statt eine leere Blase zu
   // öffnen.
   if (!key || !STATE.i18n?.exists?.(key)) return;
+
+  // Ein Eingabefeld kann kein Kind darstellen: ein eingehängtes Fragezeichen
+  // bliebe ohne Box (unsichtbar, nicht anklickbar). Das Feld trägt den Satz
+  // über `title` und `aria-describedby`; das Fragezeichen gehört an sein
+  // Label bzw. an das umschließende Formular.
+  if (NO_BADGE_TAGS.has(anchor.tagName)) {
+    describeElement(anchor, key);
+    anchor.dataset.contextHelpAugmented = '1';
+    return;
+  }
 
   // Idempotenz am tatsächlich vorhandenen Kind, nicht nur am Merkmal: Alpines
   // `x-text` setzt `textContent` und wischt den eingespritzten Knopf dabei
