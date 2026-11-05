@@ -122,3 +122,15 @@ test('Anker-Abdeckung im echten Baum: jede Beschriftung verankert oder begründe
   ];
   assert.deepEqual(rows, [], `\n  ${rows.join('\n  ')}`);
 });
+
+test('countAnchorCoverage: zählt auch resources/*.html (umgestellte Module)', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'anchor-res-'));
+  const res = join(dir, 'js', 'modules', 'neu', 'resources');
+  mkdirSync(res, { recursive: true });
+  writeFileSync(join(res, 'view.html'), '<label data-help-key="k">A</label>');
+  writeFileSync(join(res, 'tile.html'), '<p>x</p>\n<label>Ohne</label>');
+  const out = countAnchorCoverage(dir, { neu: { available: true } }, {});
+  assert.equal(out.total, 2);
+  assert.equal(out.covered, 1);
+  assert.deepEqual(out.missing, ['neu: resources/tile.html:2: <label>Ohne</label>']);
+});

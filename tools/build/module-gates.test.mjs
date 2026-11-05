@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys } from './module-gates.mjs';
+import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys } from './module-gates.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { APP_DIR } from './build.mjs';
 import { defineModel, command, text, number, oneOf, index, idOf, list, record, object, boolean } from '../../js/core/model.js';
@@ -760,4 +760,38 @@ test('checkConvertedModule: Kommando-Formular mit data-form verlangt Formularhil
     'js/modules/neu/resources/i18n/context-help.en.json': help,
   });
   assert.deepEqual(await checkConvertedModule(ok, 'neu'), []);
+});
+
+test('Struktur: tile/settings.js und tile/settings.types.js sind erlaubt', () => {
+  assert.deepEqual(checkStructure('neu', [...GOOD_PATHS, 'tile/settings.js', 'tile/settings.types.js']), []);
+});
+
+const SETTINGS_IMPORT = "import { defineSettings, number, oneOf } from '@/core/model.js';\n";
+const SP = 'schema: tile/settings.js:';
+
+test('Settings-Literal: rein ist ohne Befund, Funktion und fremder Aufruf sind Befunde', () => {
+  const opts = { define: 'defineSettings', file: 'tile/settings.js' };
+  assert.deepEqual(checkSchemaLiteral(`${SETTINGS_IMPORT}export const Settings = defineSettings({ topN: number({ integer: true, min: 1, max: 10, default: 3 }), view: oneOf(['a', 'b']) });\n`, opts), []);
+  assert.deepEqual(checkSchemaLiteral(`${SETTINGS_IMPORT}export const Settings = defineSettings({ topN: number({ min: 1, max: Math.max(1, 2) }) });\n`, opts), [
+    `${SP} Aufruf Math.max(1, 2) ist kein Konstruktor aus core/model.js`,
+  ]);
+  assert.deepEqual(checkSchemaLiteral('export const x = 1;\n', opts), [
+    `${SP} genau ein Aufruf defineSettings({ … }) aus core/model.js erwartet, gefunden 0`,
+  ]);
+});
+
+test('Kachel-Hilfe: help je Setting, Beschriftung im Modul oder global, Optionstexte', () => {
+  const fields = { topN: { kind: 'number' }, view: { kind: 'oneOf', values: ['bar', 'list'] } };
+  const help = { tile: { settings: { topN: { help: 'h' }, view: { help: 'h' } } } };
+  const ui = { tile: { settings: { view: { label: 'Ansicht', options: { bar: 'Balken', list: 'Liste' } } } } };
+  const global = { dashboard: { tileSettings: { topN: 'Anzahl' } } };
+  assert.deepEqual(checkTileSettings(fields, { help: { de: help, en: help }, ui: { de: ui, en: ui }, global: { de: global, en: global } }), []);
+  assert.deepEqual(checkTileSettings(fields, { help: { de: {}, en: help }, ui: { de: {}, en: ui }, global: { de: {}, en: global } }), [
+    'help: resources/i18n/context-help.de.json: tile.settings.topN.help fehlt',
+    'help: tile.settings.topN: Beschriftung fehlt (de) — tile.settings.topN.label in resources/i18n/ui.de.json oder dashboard.tileSettings.topN in i18n/de.json',
+    'help: resources/i18n/context-help.de.json: tile.settings.view.help fehlt',
+    'help: tile.settings.view: Beschriftung fehlt (de) — tile.settings.view.label in resources/i18n/ui.de.json oder dashboard.tileSettings.view in i18n/de.json',
+    'help: resources/i18n/ui.de.json: tile.settings.view.options.bar fehlt',
+    'help: resources/i18n/ui.de.json: tile.settings.view.options.list fehlt',
+  ]);
 });

@@ -1,7 +1,7 @@
 /**
  * Abdeckungszahl „Beschriftungen mit Anker“.
  *
- * Zählt in den Vorlagen der freigegebenen Module jede sichtbare Beschriftung
+ * Zählt in den Vorlagen der freigegebenen Module (`*.html` im Modulordner und unter `resources/`) jede sichtbare Beschriftung
  * — `<label>`, `.dmike-kpi-label`, `<th>` — und prüft, ob sie ein
  * Fragezeichen bekommt (`data-help-key` bzw. `:data-help-key` am Element
  * oder darin). `agent:report` gibt die Zeile aus; hart prüft sie der
@@ -100,7 +100,12 @@ export function countAnchorCoverage(appDir, modules, exemptions = ANCHOR_EXEMPTI
     const hits = new Map(own.map(e => [e, 0]));
     const dir = join(appDir, 'js', 'modules', id);
     if (!existsSync(dir)) continue;
-    for (const file of readdirSync(dir).filter(f => f.endsWith('.html')).sort()) {
+    const resDir = join(dir, 'resources');
+    const files = [
+      ...readdirSync(dir).filter(f => f.endsWith('.html')).sort(),
+      ...(existsSync(resDir) ? readdirSync(resDir).filter(f => f.endsWith('.html')).sort().map(f => `resources/${f}`) : []),
+    ];
+    for (const file of files) {
       for (const c of scanCaptions(readFileSync(join(dir, file), 'utf8'))) {
         out.total++;
         if (c.anchored) { out.covered++; continue; }

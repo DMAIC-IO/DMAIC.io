@@ -15,7 +15,7 @@ import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';
 import { parsePath } from '../../js/core/model.js';
-import { loadModelSchema, loadFormSchemas } from './model-types.mjs';
+import { loadModelSchema, loadSettingsSchema, loadFormSchemas } from './model-types.mjs';
 import { BOOKS } from '../../js/core/references-books.js';
 import { readExampleOwners } from './example-catalog.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
@@ -315,10 +315,11 @@ const SCHEMA_PREFIX = 'schema: domain/model.js:';
  * dieser Datei; Funktionen nur als `run`, `current`, `confirm`). `version` ist ein String-Literal
  * `MAJOR.MINOR`; `migrations` nur `'a→b': <Import aus ./migrations.js>`.
  * @param {string} text Inhalt von domain/model.js
+ * @param {{ define?: string, file?: string }} [opts] Aufruf und Datei (Vorgabe defineModel, domain/model.js); version/migrations nur bei defineModel
  * @returns {string[]}
  */
-export function checkSchemaLiteral(text) {
-  const P = SCHEMA_PREFIX;
+export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domain/model.js' } = {}) {
+  const P = `schema: ${file}:`;
   const sf = parseJs('model.js', text);
   const ctors = new Map(); // lokaler Name → importierter Name
   const runImports = new Set();
@@ -342,12 +343,12 @@ export function checkSchemaLiteral(text) {
   }
   const calls = [];
   const find = (n) => {
-    if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && ctors.get(n.expression.text) === 'defineModel') calls.push(n);
+    if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && ctors.get(n.expression.text) === define) calls.push(n);
     ts.forEachChild(n, find);
   };
   find(sf);
   if (calls.length !== 1 || !calls[0].arguments[0] || !ts.isObjectLiteralExpression(calls[0].arguments[0])) {
-    return [`${P} genau ein Aufruf defineModel({ … }) aus core/model.js erwartet, gefunden ${calls.length}`];
+    return [`${P} genau ein Aufruf ${define}({ … }) aus core/model.js erwartet, gefunden ${calls.length}`];
   }
   const out = [];
   const src = (n) => n.getText(sf);
@@ -358,7 +359,7 @@ export function checkSchemaLiteral(text) {
   const keyOf = (p) => (p.name && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? p.name.text : null);
   for (const p of top.properties) {
     const key = keyOf(p);
-    if (key !== 'version' && key !== 'migrations') continue;
+    if (define !== 'defineModel' || (key !== 'version' && key !== 'migrations')) continue;
     // Kurzschreibweise, Methode, Getter: keine Zuweisung — die ganze Eigenschaft zeigen.
     const v = ts.isPropertyAssignment(p) ? p.initializer : p;
     if (key === 'version') {
@@ -402,7 +403,7 @@ export function checkSchemaLiteral(text) {
         if (ts.isSpreadAssignment(p)) { out.push(`${P} Spread nicht erlaubt (${src(p)})`); continue; }
         if (p.name && ts.isComputedPropertyName(p.name)) { out.push(`${P} berechneter Schlüssel nicht erlaubt (${src(p.name)})`); continue; }
         const key = p.name && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? p.name.text : null;
-        if (n === top && (key === 'version' || key === 'migrations')) continue;
+        if (define === 'defineModel' && n === top && (key === 'version' || key === 'migrations')) continue;
         if (cmdName !== null && HOOKS.includes(key)) {
           if (ts.isMethodDeclaration(p)) continue;
           const v = ts.isPropertyAssignment(p) ? p.initializer : null;
@@ -421,7 +422,7 @@ export function checkSchemaLiteral(text) {
       out.push(`${P} Funktion nicht erlaubt (${src(n)}) — Callbacks nur als run`);
       return;
     }
-    if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && ctors.has(n.expression.text) && ctors.get(n.expression.text) !== 'defineModel') {
+    if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && ctors.has(n.expression.text) && ctors.get(n.expression.text) !== define) {
       const isCommand = ctors.get(n.expression.text) === 'command';
       for (const a of n.arguments) {
         if (isCommand && ts.isObjectLiteralExpression(a)) check(a, commandName(n));
@@ -596,6 +597,35 @@ export function checkContextHelp(schema, help, viewmodelCommands = {}, stateFiel
     for (const k of keys) {
       const v = at(help[lang], k);
       if (typeof v !== 'string' || v.trim() === '') out.push(`help: ${file}: ${k} fehlt`);
+    }
+  }
+  return out;
+}
+
+/**
+ * Gate Hilfe, Teil Kachel: je Einstellung `tile.settings.<name>.help` in
+ * `context-help.<lang>.json`, eine Beschriftung (`tile.settings.<name>.label`
+ * in `ui.<lang>.json` oder `dashboard.tileSettings.<name>` in
+ * `i18n/<lang>.json`) und bei `oneOf` jeder Optionstext
+ * `tile.settings.<name>.options.<wert>` in `ui.<lang>.json`.
+ * @param {Record<string, any>} fields Felder aus `defineSettings`
+ * @param {{ help: { de: object|null, en: object|null }, ui: { de: object|null, en: object|null },
+ *   global: { de: object|null, en: object|null } }} texts
+ * @returns {string[]}
+ */
+export function checkTileSettings(fields, { help, ui, global }) {
+  const has = (tree, key) => { const v = at(tree, key); return typeof v === 'string' && v.trim() !== ''; };
+  const out = [];
+  for (const lang of ['de', 'en']) {
+    for (const [name, s] of Object.entries(fields)) {
+      const base = `tile.settings.${name}`;
+      if (!has(help[lang], `${base}.help`)) out.push(`help: resources/i18n/context-help.${lang}.json: ${base}.help fehlt`);
+      if (!has(ui[lang], `${base}.label`) && !has(global[lang], `dashboard.tileSettings.${name}`)) {
+        out.push(`help: ${base}: Beschriftung fehlt (${lang}) — ${base}.label in resources/i18n/ui.${lang}.json oder dashboard.tileSettings.${name} in i18n/${lang}.json`);
+      }
+      if (s.kind === 'oneOf') {
+        for (const v of s.values) if (!has(ui[lang], `${base}.options.${v}`)) out.push(`help: resources/i18n/ui.${lang}.json: ${base}.options.${v} fehlt`);
+      }
     }
   }
   return out;
@@ -918,6 +948,24 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
         en: readJson(join(base, 'resources', 'i18n', 'context-help.en.json')),
       }, existsSync(vmFile) ? readViewmodelCommands(readFileSync(vmFile, 'utf8')) : {}, readStateBindings(templates),
       formHelpKeys(readCommandForms(templates), schema, formSchemas)));
+    }
+  }
+  if (paths.includes('tile/settings.js')) {
+    const file = join(base, 'tile', 'settings.js');
+    out.push(...checkSchemaLiteral(readFileSync(file, 'utf8'), { define: 'defineSettings', file: 'tile/settings.js' }));
+    let settings = null;
+    try {
+      settings = await loadSettingsSchema(file);
+    } catch (err) {
+      out.push(`schema: tile/settings.js: lässt sich nicht laden (${err.message})`);
+    }
+    if (settings) {
+      const i18nFile = (name) => readJson(join(base, 'resources', 'i18n', name));
+      out.push(...checkTileSettings(settings.schema.fields, {
+        help: { de: i18nFile('context-help.de.json'), en: i18nFile('context-help.en.json') },
+        ui: { de: i18nFile('ui.de.json'), en: i18nFile('ui.en.json') },
+        global: { de: readJson(join(appDir, 'i18n', 'de.json')), en: readJson(join(appDir, 'i18n', 'en.json')) },
+      }));
     }
   }
   return out;

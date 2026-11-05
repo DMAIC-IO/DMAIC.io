@@ -36,6 +36,21 @@
         }
       }
     },
+    "tile": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "settings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["help"],
+            "properties": { "help": { "$ref": "common.schema.json#/$defs/text" } }
+          }
+        }
+      }
+    },
     "actions": { "type": "object", "additionalProperties": { "$ref": "#/$defs/action" } },
     "types": { "type": "object", "additionalProperties": { "$ref": "#/$defs/typeTree" } }
   },
