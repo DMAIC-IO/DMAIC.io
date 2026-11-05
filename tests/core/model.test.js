@@ -4,7 +4,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../test-utils.js';
 import {
   defineModel, command, text, number, boolean, oneOf, index, idOf, list, record, object,
-  defaultOf, checkValue, describeType, schemaOf, fieldSpec,
+  defaultOf, checkValue, describeType, schemaOf, fieldSpec, defineState, stateSchemaOf,
 } from '../../js/core/model.js';
 
 const COLS = ['suppliers', 'inputs'];
@@ -243,5 +243,59 @@ suite('defineModel — text-Optionen trim und nonEmpty', () => {
 
   test('describeType bleibt string', () => {
     assertEqual(describeType(text({ trim: true, nonEmpty: true })), 'string');
+  });
+});
+
+const Ui = defineState({
+  tab: oneOf(['a', 'b']),
+  drafts: record(COLS, text()),
+  editDraft: object({ text: text() }),
+  preview: object({ group: oneOf(COLS), index: number({ integer: true, min: 0 }) }, { nullable: true }),
+});
+
+suite('defineState — UI-State', () => {
+  test('create() liefert die Vorgabewerte, je Aufruf frisch', () => {
+    const a = Ui.create();
+    const b = Ui.create();
+    assertDeepEqual(a, { tab: 'a', drafts: { suppliers: '', inputs: '' }, editDraft: { text: '' }, preview: null });
+    a.drafts.suppliers = 'x';
+    assertEqual(b.drafts.suppliers, '');
+  });
+
+  test('_schema ist nicht aufzählbar, nichts wird gespeichert', () => {
+    const s = Ui.create();
+    assertDeepEqual(Object.keys(s), ['tab', 'drafts', 'editDraft', 'preview']);
+    assertEqual(s._schema, Ui.schema);
+    assertEqual(JSON.stringify(s).includes('_schema'), false);
+    assertEqual(s.toJSON, undefined);
+  });
+
+  test('Schreiben ist ungeprüft', () => {
+    const s = Ui.create();
+    s.tab = 'z';
+    assertEqual(s.tab, 'z');
+  });
+
+  test('Rückgabe und Schema sind eingefroren', () => {
+    assertTrue(Object.isFrozen(Ui));
+    assertTrue(Object.isFrozen(Ui.schema));
+    assertTrue(Object.isFrozen(Ui.schema.fields));
+  });
+
+  test('index, idOf (auch verschachtelt) und _schema werden abgelehnt', () => {
+    assertThrows(() => defineState({ sel: index('events') }), /^defineState: sel uses index\/idOf/);
+    assertThrows(() => defineState({ ids: list(idOf('events')) }), /^defineState: ids uses index\/idOf/);
+    assertThrows(() => defineState({ _schema: text() }), /^defineState: _schema is a reserved name$/);
+  });
+
+  test('stateSchemaOf und fieldSpec erkennen den State', () => {
+    const s = Ui.create();
+    assertEqual(stateSchemaOf(s), Ui.schema);
+    assertEqual(fieldSpec(s, 'tab'), Ui.schema.fields.tab);
+    assertEqual(fieldSpec(s, 'nope'), undefined);
+    assertEqual(stateSchemaOf(new Board()), null);
+    assertEqual(stateSchemaOf({ _schema: { fields: {} } }), null, 'nur Schemata aus defineState');
+    assertEqual(stateSchemaOf(null), null);
+    assertEqual(fieldSpec(new Board(), 'title'), Board.schema.fields.title, 'Model wie bisher');
   });
 });

@@ -9,6 +9,9 @@
  * (`tools/build/model-types.mjs`) und die Attribute von `x-field`
  * (`core/field-directive.js`).
  *
+ * `defineState(fields)` beschreibt UI-State mit denselben Feldkonstruktoren:
+ * ein schlichtes Objekt je Komponente, ungeprüft beschrieben, nie gespeichert.
+ *
  * Werte liegen in `this._v`, nicht in `#privaten` Feldern — die brechen mit
  * Alpines Proxy. Accessoren liegen am Prototyp: `Object.keys(model)` liefert
  * nur `['_v']`; wer ein Model kopiert, nimmt `toJSON()`.
@@ -350,12 +353,55 @@ export function schemaOf(x) {
 }
 
 /**
- * Die Spec eines Feldes oder Ansichtsfeldes.
- * @param {object} model @param {string} name @returns {object|undefined}
+ * Die Spec eines Feldes oder Ansichtsfeldes — bei einer UI-State-Instanz
+ * (`defineState`) die Spec des State-Feldes.
+ * @param {object} owner Model oder UI-State @param {string} name @returns {object|undefined}
  */
-export function fieldSpec(model, name) {
-  const s = schemaOf(model);
+export function fieldSpec(owner, name) {
+  const st = stateSchemaOf(owner);
+  if (st) return st.fields[name];
+  const s = schemaOf(owner);
   return s ? (s.fields[name] ?? s.view[name]) : undefined;
+}
+
+// ─── defineState ────────────────────────────────────────────
+
+/** Die Schemata aus `defineState` — Erkennung ohne Markerfeld. */
+const STATE_SCHEMAS = new WeakSet();
+
+/**
+ * Das Schema einer UI-State-Instanz aus `defineState`, sonst null. Das
+ * Schema ist eingefroren; Alpines Proxy reicht es darum unverändert durch.
+ * @param {any} x @returns {{ fields: Record<string, object> }|null}
+ */
+export function stateSchemaOf(x) {
+  const s = x !== null && typeof x === 'object' ? x._schema : undefined;
+  return s && STATE_SCHEMAS.has(s) ? s : null;
+}
+
+/**
+ * UI-State aus einem Schema-Literal: dieselben Feldkonstruktoren wie
+ * `defineModel`, ohne `index`/`idOf` (Pfade zeigen ins Model). `create()`
+ * liefert ein schlichtes Objekt mit den Vorgabewerten; geprüft wird an der
+ * Eingabegrenze (`x-field`), nicht beim Schreiben. Nichts wird gespeichert.
+ * @param {Record<string, object>} fields
+ * @returns {Readonly<{ schema: Readonly<{ fields: Readonly<Record<string, object>> }>, create: () => Record<string, any> }>}
+ */
+export function defineState(fields) {
+  for (const [name, s] of Object.entries(fields)) {
+    if (name === '_schema') throw new Error(`defineState: ${name} is a reserved name`);
+    if (usesPath(s)) throw new Error(`defineState: ${name} uses index/idOf — paths refer to the model, not to the UI state`);
+  }
+  const schema = Object.freeze({ fields: Object.freeze({ ...fields }) });
+  STATE_SCHEMAS.add(schema);
+  return Object.freeze({
+    schema,
+    create() {
+      const state = {};
+      for (const [k, s] of Object.entries(schema.fields)) state[k] = defaultOf(s);
+      return Object.defineProperty(state, '_schema', { value: schema, enumerable: false });
+    },
+  });
 }
 
 // ─── Versionen und Migrationen ──────────────────────────────
