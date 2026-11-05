@@ -98,8 +98,10 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
 // base.view(ctx) — neue Form statt base.data(module, t): liefert Getter und
 // Handler; `this` ist die Komponente mit model, state, t. base.State — UI-State
 // aus defineState, nur zusammen mit view.
+// base.forms — Namensraum von viewmodel/forms.js (defineForm), für
+// x-command-form mit data-form; Vorgabe {}.
 export function createModule(base) {
-  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, createDefault, gestures = [] } = base;
+  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, createDefault, gestures = [], forms = {} } = base;
   if (descriptor) {
     for (const key of NOT_IN_CONFIG) {
       if (Object.hasOwn(config, key)) {
@@ -255,6 +257,25 @@ export function createModule(base) {
           // Neue Form: UI-State je Komponente, frisch aus dem Schema.
           if (view) Object.assign(comp, { state: UiState ? UiState.create() : {}, moduleId: id });
           if (schema) copyMembers(comp, schemaMembers(id, agentEntry, vmCommands));
+          if (schema) {
+            // Griff der Kommando-Primitive (core/command-directives.js). Nicht
+            // aufzählbar; `this` ist Alpines Proxy, `this.model` also reaktiv.
+            // Den Dialog-Dienst gibt es erst nach Alpine.start() — beim Lesen holen.
+            Object.defineProperty(comp, '_ui', {
+              enumerable: false,
+              configurable: true,
+              get() {
+                return {
+                  model: this.model,
+                  notify: (...args) => context.notify?.(...args),
+                  dialog: context.dialog,
+                  i18n: context.i18n,
+                  moduleId: id,
+                  forms,
+                };
+              },
+            });
+          }
           copyMembers(comp, dataResult);
           return copyMembers(comp, {
             init() {

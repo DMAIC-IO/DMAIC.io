@@ -129,6 +129,28 @@ suite('createModule mit view(ctx) und State', () => {
       data: () => ({}) }), /^createModule\(x-state\): State requires view$/);
   });
 
+  test('_ui: Griff der Kommando-Primitive mit reaktivem Model, Diensten und forms', async () => {
+    const forms = { NoteForm: { schema: { fields: {} } } };
+    const { data, context, container, notified } = await mount({ forms });
+    const ui = data()._ui;
+    // Alpines Reaktivität hüllt Objekte ein; Identität prüft das Rohobjekt.
+    const raw = Alpine.raw(ui);
+    assertEqual(ui.moduleId, ID);
+    assertEqual(raw.forms, forms);
+    assertEqual(raw.dialog, context.dialog);
+    assertEqual(raw.i18n, context.i18n);
+    ui.notify('kaputt', 'error');
+    assertDeepEqual(notified.at(-1), ['kaputt', 'error']);
+    ui.model.title = 'neu';
+    await flush();
+    assertEqual(container.querySelector('.vt-label').textContent, 'neu:a');
+  });
+
+  test('_ui: ohne forms ein leeres Objekt', async () => {
+    const { data } = await mount();
+    assertDeepEqual(data()._ui.forms, {});
+  });
+
   test('Aufräumen: gemountete Container entfernen', () => {
     while (mounted.length) mounted.pop().remove();
     assertEqual(mounted.length, 0);
