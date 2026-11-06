@@ -9378,6 +9378,7 @@
         "ResidualPlot": {"residuals": "Die Residuen je Beobachtung, Wert minus Gruppenmittelwert, in der Reihenfolge der Gruppen.", "fitted": "Die angepassten Werte je Beobachtung, der Mittelwert ihrer Gruppe."},
         "Result": {
           "residualPlot": "Die Daten der vier Residuendiagramme (Residuen gegen Anpassung, Wahrscheinlichkeitsnetz, Histogramm, Reihenfolge) unter dem Ergebnis. Nur bei k Stichproben im Fisher- oder Welch-Weg, sonst null.",
+          "pairInfo": "Nur bei gepaarten Stichproben: die Zahl der vollständigen Paare (n) und der verworfenen Zeilen mit Lücke (dropped).",
           "isK": "Wahr beim Testtyp „k Stichproben“, sonst falsch. Bei wahr zeigt die Oberfläche je Gruppe eine Normalitätskarte, die Gruppenübersicht und gegebenenfalls die paarweisen Vergleiche, aber keine Power-Analyse.",
           "allNormal": "Wahr, wenn jede Stichprobe als normalverteilt gilt, also der Anderson-Darling-Test für jede Stichprobe p ≥ α liefert; Shapiro-Wilk wird mit angezeigt, entscheidet aber nicht. Die Oberfläche zeigt das als Wegschritt „Normalverteilung: Ja/Nein“.",
           "normCards": "Die Normalverteilungsprüfung, eine Karte je Stichprobe: eine oder zwei bei Ein- und Zwei-Stichproben, k beim Testtyp „k Stichproben“.",

@@ -7655,6 +7655,11 @@ export const AGENT_REGISTRY = {
                 "help": "angepasste Werte je Beobachtung"
               }
             }
+          },
+          "pairInfo": {
+            "type": "{ n: number, dropped: number }",
+            "help": "nur gepaart: Paare und verworfene Zeilen",
+            "optional": true
           }
         }
       }

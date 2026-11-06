@@ -9374,6 +9374,7 @@
         "ResidualPlot": {"residuals": "The residuals per observation, value minus group mean, in group order.", "fitted": "The fitted values per observation, the mean of its group."},
         "Result": {
           "residualPlot": "The data of the four residual plots (residuals versus fits, probability plot, histogram, order) below the result. Only for k samples on the Fisher or Welch route, otherwise null.",
+          "pairInfo": "Only for paired samples: the number of complete pairs (n) and of rows dropped for a gap (dropped).",
           "isK": "True for the test type “k Samples”, otherwise false. When true, the interface shows a normality card per group, the group overview and, where applicable, the pairwise comparisons, but no power analysis.",
           "allNormal": "True when every sample counts as normally distributed, that is, the Anderson-Darling test gives p ≥ α for each sample; Shapiro-Wilk is shown as well but does not decide. The interface shows this as the route step “Normality: Yes/No”.",
           "normCards": "The normality assessment, one card per sample: one or two for one- and two-sample tests, k for the test type “k Samples”.",

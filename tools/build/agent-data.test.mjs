@@ -3692,6 +3692,32 @@ test('Ausgaben: eine Typedef, die sich selbst enthält, bricht die Auflösung ni
   assert.equal('keys' in again, false, 'eine zweite Ebene derselben Typedef wird nicht aufgelöst');
 });
 
+test('Ausgaben: eine Typedef als import()-Alias wird in der Quelldatei aufgelöst, auch verschachtelt', () => {
+  const vm = RESULT_VM
+    .replace(/\/\*\*\n \* @typedef \{object\} BiasTest[\s\S]*?@property \{Detail\[\]\} details die Einzelwerte\n \*\/\n/,
+      "/** @typedef {import('./present.js').Result} Result */\n");
+  const present = `/** @typedef {import('./numbers.js').BiasTest} BiasTest */
+
+/**
+ * @typedef {object} Result
+ * @property {number|null} Cg die Fähigkeit
+ * @property {BiasTest} biasTest der Test
+ */
+export {};`;
+  const numbers = `/**
+ * @typedef {object} BiasTest
+ * @property {number|null} p der p-Wert
+ */
+export {};`;
+  const { modules } = collectAgentData(fixture({ foo: { 'foo.js': vm, 'present.js': present, 'numbers.js': numbers } }));
+  const result = modules.foo.fields.result;
+  assert.equal(result.keysOf, 'Result');
+  assert.deepEqual(Object.keys(result.keys), ['Cg', 'biasTest']);
+  assert.equal(result.keys.biasTest.keysOf, 'BiasTest');
+  assert.deepEqual(result.keys.biasTest.keys, { p: { type: 'number|null', help: 'der p-Wert' } });
+  assert.deepEqual(modules.foo.reported, []);
+});
+
 const RECORD_MODEL = `/**
  * Eine Zeile, wie toJSON() sie liefert.
  * @typedef {object} Entry

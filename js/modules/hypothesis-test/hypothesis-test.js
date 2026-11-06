@@ -7,8 +7,8 @@
  * holds only the persistent configuration; the full analysis result is derived
  * transiently in the view from those inputs plus the live worksheet columns,
  * and exposed to the template as a single plain `result` object (no HTML built
- * in JS). All statistics stay in the engines (hypothesis-test-engine,
- * normality-test-engine, math-utils) — nothing is reimplemented here.
+ * in JS). The numbers come from `domain/analyze.js` (over the engines), the
+ * display model from `viewmodel/present.js` — no statistics live here.
  *
  * ColumnPickers are mounted imperatively (one / two / multi depending on the
  * test type); they are not pure-template concerns.
@@ -25,29 +25,15 @@
 
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { finiteOrNull, warning } from '../../core/agent/agent-results.js';
 import { requireBoolean, requireEnum, requireNumber } from '../../core/agent/agent-argcheck.js';
 import { paramInputMixin, numberCheck } from '../../core/param-input.js';
 import {
   State, CATEGORIES, TEST_TYPES, DIRECTIONS, TARGET_TYPES, ALPHA_BOUNDS, POWER_GOAL_BOUNDS,
 } from './hypothesis-test-model.js';
-import {
-  chiSquareVarianceTest, fTest, leveneTest,
-  oneSampleTTest, twoSampleTTest, welchTTest,
-  wilcoxonSignedRank, mannWhitneyU, hodgesLehmann,
-  bonettVarianceTest, bonettRatioTest,
-  oneWayANOVA, welchANOVA, leveneTestK, kruskalWallis, bartlettTest,
-  pairDifferences, pairedTTest,
-} from '../../engines/hypothesis-test-engine.js';
-import { shapiroWilk, andersonDarling, descriptiveStats } from '../../engines/normality-test-engine.js';
-import { tInv, chi2Inv } from '../../engines/math-utils.js';
 import { ColumnPicker, getColumnValues, getColumnName } from '../../ui/column-picker.js';
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
-
-/** Mapping: test name → Algorithm Lab ID. */
-import { isNormalByAD, meanRoute, kMeanRoute, varianceRoute, isConstant, ciContains } from './domain/routing.js';
-import { computePower } from './domain/power.js';
-import { simultaneousPairwise, bonferroniPairwise, compactLetterDisplay } from './domain/posthoc.js';
+import { analyze, algoIdOf } from './domain/analyze.js';
+import { presentResult, insufficientText, fmt } from './viewmodel/present.js';
 
 /**
  * Zahlenfelder der Oberfläche; die Grenzen von α und Power sind dieselben wie
@@ -69,208 +55,7 @@ const PARAM_CHECKS = {
 /** Je Feld der Setter, über den die Oberfläche schreibt. */
 const PARAM_SETTERS = { alpha: 'setAlpha', powerGoal: 'setPowerGoal', targetValue: 'setTargetValue' };
 
-const ALGO_LAB_IDS = {
-  'Shapiro-Wilk': 'shapiro-wilk',
-  'Anderson-Darling': 'anderson-darling',
-  'Chi-Square Variance Test': 'chi-square-variance',
-  'F-Test': 'f-test',
-  'Levene Test (Brown-Forsythe)': 'levene-test',
-  'Bonett Variance Test': 'bonett-variance',
-  'Bonett Ratio Test': 'bonett-ratio',
-  'One-Sample t-Test': 'one-sample-t-test',
-  'Two-Sample t-Test (pooled)': 'two-sample-t-test',
-  'Welch t-Test': 'welch-t-test',
-  'Paired t-Test': 'paired-t-test',
-  'Wilcoxon Signed-Rank Test': 'wilcoxon-signed-rank',
-  'Mann-Whitney U Test': 'mann-whitney-u',
-  'One-Way ANOVA': 'one-way-anova',
-  'Welch ANOVA': 'welch-anova',
-  'Tukey HSD': 'tukey-hsd',
-  'Games-Howell': 'games-howell',
-  'Kruskal-Wallis Test': 'kruskal-wallis',
-  "Bartlett's Test": 'bartlett-test',
-  'Hodges-Lehmann': 'hodges-lehmann',
-};
-
-/** @param {number} v @param {number} [d] @returns {string} */
-function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–'; }
-
-/**
- * Das Ergebnis, wie `read().result` es liefert: ein Anzeigemodell. Alle
- * Werte sind formatierte Texte: Beschriftungen in der Sprache der
- * Oberfläche, Zahlen mit Dezimalpunkt (meist vier Nachkommastellen, „–“ für
- * nicht endliche Werte); die Klassenfelder sind
- * Darstellungsklassen der Oberfläche.
- *
- * @typedef {object} Result
- * @property {boolean} isK  k-Stichproben-Vergleich
- * @property {boolean} allNormal  alle Stichproben normalverteilt
- * @property {NormCard[]} normCards  Normalitätsprüfung je Stichprobe
- * @property {Route} route  gewähltes Verfahren
- * @property {VarEquality|null} varEquality  Varianzgleichheit
- * @property {MainResult} main  Haupttest
- * @property {Numeric} numeric  das Ergebnis des Haupttests als Zahlen
- * @property {SecondaryResult|null} secondary  Vergleichstest, nur großer Stichprobenweg und Bonett bei zwei Varianzen
- * @property {PowerInfo|null} power  Teststärke, nicht bei k
- * @property {PairwiseSection|null} pairwise  Paarvergleiche, nur bei k ≥ 3
- * @property {ResidualPlot|null} residualPlot  Residuen der einfaktoriellen ANOVA, nur Fisher- und Welch-Weg
- */
-
-/**
- * Der Haupttest als Zahlen, sprachunabhängig und ungerundet.
- *
- * @typedef {object} Numeric
- * @property {number|null} statistic  Prüfgröße
- * @property {number|null} df  Freiheitsgrade, bei F-Test und ANOVA der Zählerfreiheitsgrad
- * @property {number|null} df2  Nennerfreiheitsgrad, null bei nur einem Freiheitsgrad
- * @property {number|null} p  p-Wert
- * @property {Array<number|null>|null} ci  Konfidenzintervall [unten, oben], null ohne Intervall
- * @property {'reject'|'keep'} decision  Entscheidung gegen α
- * @property {number|null} power  Teststärke als Anteil, nicht bei k
- * @property {boolean} powerApprox  Teststärke ist eine Normalapproximation (Bonett)
- * @property {Warning[]} notes  Hinweise zum Intervall als Codes mit Zahlen
- */
-
-/**
- * @typedef {object} Warning
- * @property {string} code  Kennung des Hinweises, gleich dem Textschlüssel
- * @property {Record<string, number|null>} values  eingesetzte Zahlen
- */
-
-/**
- * @typedef {object} ResidualPlot
- * @property {number[]} residuals  Residuen je Beobachtung
- * @property {number[]} fitted  angepasste Werte je Beobachtung
- */
-
-/**
- * @typedef {object} Route
- * @property {string} name  Name des Verfahrens
- * @property {string} algoId  Kennung im Algorithm Lab
- */
-
-/**
- * @typedef {object} NormCard
- * @property {string} label  Stichprobe
- * @property {string} badgeClass  Darstellungsklasse des Urteils
- * @property {string} badgeText  Urteil normal oder nicht
- * @property {NormRow[]} rows  Shapiro-Wilk und Anderson-Darling
- * @property {Metric[]} metrics  n, x̄, s, s²
- */
-
-/**
- * @typedef {object} NormRow
- * @property {string} name  Test
- * @property {string} algoId  Kennung im Algorithm Lab
- * @property {string} stat  Statistik
- * @property {string} p  p-Wert
- * @property {string} pClass  Darstellungsklasse des p-Werts
- * @property {string} decisionIcon  Symbol der Entscheidung
- * @property {string} decisionText  Entscheidung
- */
-
-/**
- * Eine Kennzahl. In den Normalitätskarten fehlt `valueClass`, `ci` steht
- * nur dort (leer, wo kein Intervall berechenbar ist); `algoId` nur an der
- * Testmethode und am Hodges-Lehmann-Schätzer.
- *
- * @typedef {object} Metric
- * @property {string} label  Beschriftung
- * @property {string} value  Wert
- * @property {string} [valueClass]  Darstellungsklasse
- * @property {string} title  Tooltip
- * @property {string} [algoId]  Kennung im Algorithm Lab
- * @property {string|null} [ci]  Konfidenzintervall
- */
-
-/**
- * @typedef {object} VarEquality
- * @property {boolean} varsEqual  Varianzen gleich
- * @property {Metric[]|null} metrics  Kennzahlen der Varianzprüfung, nur bei k
- * @property {string} trailLabelKey  Text des Wegschritts
- * @property {boolean} trailYes  Wegschritt mit ja beantwortet
- */
-
-/**
- * @typedef {object} MainResult
- * @property {string} h0  Nullhypothese
- * @property {string} h1  Alternativhypothese
- * @property {string} [ciNote]  Hinweis zum Intervall, nicht bei k
- * @property {string} h0Class  Darstellungsklasse H₀
- * @property {string} h1Class  Darstellungsklasse H₁
- * @property {string} h0Tip  Tooltip H₀
- * @property {string} h1Tip  Tooltip H₁
- * @property {Metric[]} metrics  Testmethode, Statistik, p und mehr
- * @property {AnovaRow[]|null} [anovaRows]  ANOVA-Tabelle, nur k
- * @property {Metric[]|null} [modelSummary]  Modellzusammenfassung S, R², R²(kor), R²(prog), nur Fisher- und Welch-Weg
- * @property {GroupRow[]} [groupRows]  Gruppenübersicht, nur k
- * @property {boolean} [showCi]  Konfidenzintervalle je Gruppe zeigen, nur k
- * @property {string} [ciHeader]  Spaltenkopf der Konfidenzintervalle, nur k
- * @property {boolean} [showCld]  Buchstaben zeigen, nur k
- */
-
-/**
- * @typedef {object} AnovaRow
- * @property {string} src  Quelle
- * @property {string} ss  Quadratsumme
- * @property {string} df  Freiheitsgrade
- * @property {string} ms  mittlere Quadratsumme
- * @property {string} f  F-Wert
- * @property {string} p  p-Wert
- * @property {string} pClass  Darstellungsklasse des p-Werts
- * @property {boolean} bold  hervorgehoben
- */
-
-/**
- * @typedef {object} GroupRow
- * @property {string} name  Gruppe
- * @property {string} n  Anzahl
- * @property {string} mean  Mittelwert
- * @property {string} variance  Varianz
- * @property {string} ci  Konfidenzintervall des Mittelwerts
- * @property {string} letters  Gruppierungsbuchstaben
- */
-
-/**
- * @typedef {object} SecondaryResult
- * @property {Metric[]} metrics  Testmethode, Statistik, p
- * @property {string} title  Abschnittstitel
- * @property {string} note  Hinweis zum Vergleichstest
- */
-
-/**
- * @typedef {object} PowerInfo
- * @property {string} goalPct  Ziel-Teststärke in Prozent
- * @property {string} goalBoxClass  Darstellungsklasse
- * @property {string} requiredLine  benötigter Stichprobenumfang
- * @property {Metric[]} metrics  Power, n, Effekt, α
- * @property {string} note  Hinweis zur Näherung, sonst leer
- */
-
-/**
- * @typedef {object} PairwiseSection
- * @property {string} methodName  Verfahren
- * @property {string} methodAlgoId  Kennung im Algorithm Lab
- * @property {string} hint  Hinweis zur Korrektur
- * @property {string[]} headers  Spaltenköpfe
- * @property {PairwiseRow[]} rows  Zeilen der Matrix
- * @property {string} lettersJoined  Buchstaben je Gruppe
- */
-
-/**
- * @typedef {object} PairwiseRow
- * @property {string} head  Zeilenkopf
- * @property {PairwiseCell[]} cells  Zellen
- */
-
-/**
- * @typedef {object} PairwiseCell
- * @property {string} cls  Darstellungsklasse
- * @property {string} title  Tooltip
- * @property {string} text  angepasster p-Wert
- * @property {string} ci  Konfidenzintervall der Differenz
- * @property {string} key  Zellkennung
- */
+/** @typedef {import('./viewmodel/present.js').Result} Result */
 
 /**
  * Die Agenten-Lesefläche des Hypothesentests.
@@ -525,7 +310,7 @@ const definition = {
       // ── Algorithm Lab link ─────────────────────────────────────
 
       /** @noagent view transform (Algorithm-Lab id of the chosen route) */
-      algoId: (name) => ALGO_LAB_IDS[name] || '',
+      algoId: (name) => algoIdOf(name) ?? '',
       /** @noagent navigates to the Algorithm Lab page */
       algoNavigate(algoId, event) {
         event?.preventDefault();
@@ -537,337 +322,12 @@ const definition = {
 
       // ── Data retrieval (live worksheet) ────────────────────────
 
-      _pickerValues(picker) {
-        if (!picker?.value) return [];
-        const raw = getColumnValues(module._context.stateManager, picker.value);
-        return raw.filter(v => v != null && typeof v === 'number' && !isNaN(v));
-      },
       _valuesForRef(ref) {
         const raw = getColumnValues(module._context.stateManager, ref);
         return raw.filter(v => v != null && typeof v === 'number' && !isNaN(v));
       },
       _refName(ref) {
         return getColumnName(module._context.stateManager, ref);
-      },
-
-      // ── CI helpers (thin wrappers over math-utils) ─────────────
-
-      _ciMean(mean, sd, n, alpha) {
-        if (n < 2 || !isFinite(sd) || sd <= 0) return null;
-        const tCrit = tInv(1 - alpha / 2, n - 1);
-        const se = sd / Math.sqrt(n);
-        return [mean - tCrit * se, mean + tCrit * se];
-      },
-      _ciVariance(variance, n, alpha) {
-        if (n < 2 || !isFinite(variance) || variance <= 0) return null;
-        const lo = (n - 1) * variance / chi2Inv(1 - alpha / 2, n - 1);
-        const hi = (n - 1) * variance / chi2Inv(alpha / 2, n - 1);
-        return [lo, hi];
-      },
-
-      // ── Tooltips (declarative :title; matches legacy _metricTooltips) ──
-
-      _tip(label) {
-        const ci = _t('tipConfidenceInterval');
-        if (label.endsWith('KI') || label.endsWith('CI')) return ci;
-        const map = {
-          [_t('testMethod')]: _t('tipTestMethod'),
-          [_t('statistic')]: _t('tipStatistic'),
-          [_t('currentPower')]: _t('tipCurrentPower'),
-          [_t('powerGoal')]: _t('tipPowerGoal'),
-          [_t('requiredN')]: _t('tipRequiredN'),
-          [_t('varianceRatio')]: _t('tipVarianceRatio'),
-          'p': _t('tipPValue'),
-          'df': _t('tipDf'),
-          'n': _t('tipN'),
-          'N': _t('tipBigN'),
-          'k': _t('tipK'),
-          'x̄': _t('tipMean'),
-          'x̄₁': _t('tipMean1'),
-          'x̄₂': _t('tipMean2'),
-          's': _t('tipStdDev'),
-          's²': _t('tipVariance'),
-          's²₁': _t('tipVariance1'),
-          's²₂': _t('tipVariance2'),
-          's²ₚ': _t('tipPooledVar'),
-          'α': _t('tipAlpha'),
-          'd̄': _t('tipMeanDiff'),
-          "Cohen's d": _t('tipCohensD'),
-          "Cohen's d_z": _t('tipCohensD'),
-          'S': _t('tipModelS'),
-          'R²': _t('tipR2'),
-          [_t('labelR2adj')]: _t('tipR2adj'),
-          [_t('labelR2pred')]: _t('tipR2pred'),
-        };
-        return map[label] || '';
-      },
-
-      // ── Normality card builder ─────────────────────────────────
-
-      _normCard(label, data, sw, ad, isNormal, alpha) {
-        const ds = descriptiveStats(data);
-        const { mean, stdDev: sd, variance } = ds;
-        const n = data.length;
-        const ciMean = this._ciMean(mean, sd, n, alpha);
-        const ciVar = this._ciVariance(variance, n, alpha);
-        const ciSd = ciVar ? [Math.sqrt(ciVar[0]), Math.sqrt(ciVar[1])] : null;
-        const ciFmt = (ci) => ci ? `[${fmt(ci[0])}, ${fmt(ci[1])}]` : '';
-        // Normality assumption check per test: reject H0 (✗) means the
-        // normality assumption is violated, not-reject (✓) means it holds —
-        // status.warning/status.ok, not status.error, since a rejected
-        // normality assumption is a diagnostic finding, not a computation
-        // failure.
-        const decisionIcon = (p) => p < alpha ? 'status.warning' : 'status.ok';
-        const decisionText = (p) => p < alpha ? _t('reject') : _t('notReject');
-        const pCls = (p) => p < alpha ? 'hyptest__text-danger' : 'hyptest__text-success';
-
-        return {
-          label: String(label),
-          badgeClass: isNormal ? 'hyptest__badge--pass' : 'hyptest__badge--fail',
-          badgeText: isNormal ? _t('normal') : _t('notNormal'),
-          rows: [
-            { name: 'Shapiro-Wilk', algoId: ALGO_LAB_IDS['Shapiro-Wilk'], stat: fmt(sw.statistic), p: fmt(sw.pValue), pClass: pCls(sw.pValue), decisionIcon: decisionIcon(sw.pValue), decisionText: decisionText(sw.pValue) },
-            { name: 'Anderson-Darling', algoId: ALGO_LAB_IDS['Anderson-Darling'], stat: fmt(ad.statistic), p: fmt(ad.pValue), pClass: pCls(ad.pValue), decisionIcon: decisionIcon(ad.pValue), decisionText: decisionText(ad.pValue) },
-          ],
-          metrics: [
-            { label: _t('common.sym.n'), value: String(n), title: this._tip('n') },
-            { label: _t('common.sym.xbar'), value: fmt(mean), ci: ciMean ? ciFmt(ciMean) : null, title: this._tip('x̄') },
-            { label: _t('symS'), value: fmt(sd), ci: ciSd ? ciFmt(ciSd) : null, title: this._tip('s') },
-            { label: _t('common.sym.s2'), value: fmt(variance), ci: ciVar ? ciFmt(ciVar) : null, title: this._tip('s²') },
-          ],
-        };
-      },
-
-      // ── Main test metrics (mirrors legacy _renderMainResult) ───
-
-      _mainResult(r, alpha, target) {
-        const s0 = this._sym0();
-        const s1 = this._sym1();
-        const isVariance = this.model.category === 'variance';
-        const isTwo = this.model.testType === 'two';
-        const isPaired = this.model.testType === 'paired';
-        let h0, h1;
-        if (isVariance) {
-          h0 = isTwo ? `σ²₁ ${s0} σ²₂` : `σ² ${s0} ${fmt(target)}`;
-          h1 = isTwo ? `σ²₁ ${s1} σ²₂` : `σ² ${s1} ${fmt(target)}`;
-        } else if (isPaired) {
-          h0 = `μ_d ${s0} ${fmt(target)}`;
-          h1 = `μ_d ${s1} ${fmt(target)}`;
-        } else {
-          h0 = isTwo ? `μ₁ ${s0} μ₂` : `μ ${s0} ${fmt(target)}`;
-          h1 = isTwo ? `μ₁ ${s1} μ₂` : `μ ${s1} ${fmt(target)}`;
-        }
-
-        const pCls = r.pValue < alpha ? 'hyptest__metric-value--danger' : 'hyptest__metric-value--success';
-        const metrics = [
-          { label: _t('testMethod'), value: r.testName, algoId: ALGO_LAB_IDS[r.testName] || '', valueClass: 'hyptest__metric-value--sm', title: this._tip(_t('testMethod')) },
-          { label: _t('statistic'), value: fmt(r.statistic), valueClass: '', title: this._tip(_t('statistic')) },
-          { label: _t('common.sym.p'), value: fmt(r.pValue), valueClass: pCls, title: r.method ? `${this._tip('p')} (${r.method === 'exact' ? _t('pMethodExact') : _t('pMethodNormal')})` : this._tip('p') },
-        ];
-        if (r.df != null) {
-          metrics.push({ label: _t('common.sym.df'), value: (typeof r.df === 'number' && r.df % 1) ? fmt(r.df, 1) : String(r.df), valueClass: '', title: this._tip('df') });
-        }
-        const level = Math.round((1 - alpha) * 100);
-        const { isMeanDiff } = this._ciKind(r);
-        const fmtCi = (ci) => `[${fmt(ci[0])}, ${fmt(ci[1])}]`;
-        if (isVariance && isTwo && r.ratio != null) {
-          metrics.push({ label: _t('varianceRatio'), value: fmt(r.ratio), valueClass: '', title: this._tip(_t('varianceRatio')) });
-        }
-        if (r.ci) {
-          const ciLabel = isPaired ? _t('ciPairedDiffLabel', { level })
-            : isMeanDiff ? _t('ciDiffLabel', { level })
-            : isVariance && isTwo ? _t('ciRatioLabel', { level })
-            : _t('ciLabel', { level });
-          // Bonett: a confidence set split into disjoint pieces has no interval (Minitab: "(*; *)")
-          metrics.push({ label: ciLabel, value: r.ciUndefined ? '–' : fmtCi(r.ci), valueClass: 'hyptest__metric-value--sm', title: this._tip('KI') });
-        }
-        if (r.ciSigma) {
-          metrics.push({ label: _t('ciSigmaLabel', { level }), value: fmtCi(r.ciSigma), valueClass: 'hyptest__metric-value--sm', title: this._tip('KI') });
-        }
-        if (r.hl) {
-          const achieved = fmt(r.hl.achievedConfidence * 100, 1);
-          const methodText = r.hl.method === 'exact' ? _t('pMethodExact') : _t('pMethodNormal');
-          metrics.push({ label: _t('hlEstimateLabel'), value: fmt(r.hl.estimate), valueClass: '', title: _t('tipHlEstimate'), algoId: ALGO_LAB_IDS['Hodges-Lehmann'] });
-          metrics.push({
-            label: _t('ciShiftLabel', { level: achieved }),
-            value: `[${fmt(r.hl.lower)}, ${fmt(r.hl.upper)}]`,
-            valueClass: 'hyptest__metric-value--sm',
-            title: _t('ciShiftTip', { level, achieved, method: methodText }),
-          });
-        }
-        if (r.meanDiff != null) {
-          metrics.push({ label: _t('symXbar1'), value: fmt(r.mean1), valueClass: '', title: this._tip('x̄₁') });
-          metrics.push({ label: _t('symXbar2'), value: fmt(r.mean2), valueClass: '', title: this._tip('x̄₂') });
-          metrics.push({ label: _t('symDbar'), value: fmt(r.meanDiff), valueClass: '', title: this._tip('d̄') });
-        } else if (r.mean != null) {
-          metrics.push({ label: _t('common.sym.xbar'), value: fmt(r.mean), valueClass: '', title: this._tip('x̄') });
-        }
-        if (r.meanDiff == null && r.mean1 != null) {
-          metrics.push({ label: _t('symXbar1'), value: fmt(r.mean1), valueClass: '', title: this._tip('x̄₁') });
-          metrics.push({ label: _t('symXbar2'), value: fmt(r.mean2), valueClass: '', title: this._tip('x̄₂') });
-        }
-        if (r.sampleVariance != null) {
-          metrics.push({ label: _t('common.sym.s2'), value: fmt(r.sampleVariance), valueClass: '', title: this._tip('s²') });
-        }
-        if (r.variance1 != null && !r.pooledVariance) {
-          metrics.push({ label: _t('symS21'), value: fmt(r.variance1), valueClass: '', title: this._tip('s²₁') });
-          metrics.push({ label: _t('symS22'), value: fmt(r.variance2), valueClass: '', title: this._tip('s²₂') });
-        }
-
-        const h0Tip = r.reject
-          ? `${_t('h0Rejected')}: p (${fmt(r.pValue)}) < α (${alpha})`
-          : `${_t('h0NotRejected')}: p (${fmt(r.pValue)}) ≥ α (${alpha})`;
-        const h1Tip = r.reject
-          ? `${_t('significant')}: ${_t('h0Rejected')}`
-          : `${_t('notSignificant')}: ${_t('h0NotRejected')}`;
-
-        const ciNote = this._ciNoteCodes(r, alpha, target).map((w) => {
-          if (w.code === 'ciRatioUndefinedNote') return _t(w.code);
-          if (w.code === 'ciShiftTooSmall') {
-            return _t(w.code, { level, achieved: fmt(w.values.achieved * 100, 1) });
-          }
-          return _t(w.code, { lo: fmt(w.values.lo), hi: fmt(w.values.hi) });
-        }).join(' ');
-
-        return {
-          h0, h1, ciNote,
-          h0Class: r.reject ? 'hyptest__h-box--rejected' : 'hyptest__h-box--accepted',
-          h1Class: r.reject ? 'hyptest__h-box--accepted' : 'hyptest__h-box--rejected',
-          h0Tip, h1Tip,
-          metrics,
-        };
-      },
-
-      /**
-       * Welches Intervall ein Ergebnis trägt: Differenz gepaarter Werte oder
-       * Mittelwertdifferenz zweier Stichproben.
-       * @noagent Ableitung aus dem Testergebnis
-       */
-      _ciKind(r) {
-        return {
-          isPaired: this.model.testType === 'paired',
-          isMeanDiff: this.model.category !== 'variance' && this.model.testType === 'two' && r.ci != null,
-        };
-      },
-
-      /**
-       * Die Hinweise zum Intervall als Codes mit ungerundeten Zahlen — Quelle
-       * für den Hinweistext und für `numeric.notes`. `level` und `achieved`
-       * sind Anteile (0,95), nicht Prozent.
-       * @noagent Ableitung aus dem Testergebnis
-       */
-      _ciNoteCodes(r, alpha, target) {
-        const { isPaired, isMeanDiff } = this._ciKind(r);
-        // A non-rejected one-sided test can leave the target outside the CI
-        const ciHoldsTarget = ciContains(r.ci, target ?? 0);
-        const out = [];
-        if (r.ciUndefined) {
-          out.push(warning('ciRatioUndefinedNote'));
-        } else if (isPaired && r.ci && !r.reject) {
-          if (ciHoldsTarget) out.push(warning('ciPairedDiffNote', { lo: r.ci[0], hi: r.ci[1] }));
-        } else if (isMeanDiff && !r.reject) {
-          if (ciHoldsTarget) out.push(warning('ciDiffNote', { lo: r.ci[0], hi: r.ci[1] }));
-        } else if (r.hl) {
-          if (!r.reject) out.push(warning('ciShiftNote', { lo: r.hl.lower, hi: r.hl.upper }));
-          if (r.hl.K === 1 && r.hl.achievedConfidence > 0 && r.hl.achievedConfidence < 1 - alpha - 1e-9) {
-            out.push(warning('ciShiftTooSmall', { level: 1 - alpha, achieved: r.hl.achievedConfidence }));
-          }
-        }
-        return out;
-      },
-
-      /**
-       * Das Testergebnis als Zahlen.
-       * @noagent Ableitung aus dem Testergebnis
-       */
-      _numeric(r, alpha, target, power, powerApprox = false) {
-        const p = finiteOrNull(r.pValue);
-        let ci = null;
-        if (Array.isArray(r.ci)) ci = r.ci.map(finiteOrNull);
-        else if (r.hl) ci = [finiteOrNull(r.hl.lower), finiteOrNull(r.hl.upper)];
-        return {
-          statistic: finiteOrNull(r.statistic),
-          df: finiteOrNull(r.df ?? r.df1),
-          df2: finiteOrNull(r.df2 ?? null),
-          p,
-          ci,
-          decision: (r.reject ?? (p != null && p < alpha)) ? 'reject' : 'keep',
-          power: finiteOrNull(power),
-          powerApprox,
-          notes: this._ciNoteCodes(r, alpha, target),
-        };
-      },
-
-      // ── Rank test shown next to a large-n parametric result ──
-
-      _secondaryResult(r, alpha, { title = _t('sectionSecondary'), note = _t('secondaryNote'), showTwoSidedSuffix = false } = {}) {
-        const pCls = r.pValue < alpha ? 'hyptest__metric-value--danger' : 'hyptest__metric-value--success';
-        const methodLabel = showTwoSidedSuffix ? `${_t('testMethod')} (${_t('twoSidedSuffix')})` : _t('testMethod');
-        return {
-          metrics: [
-            { label: methodLabel, value: r.testName, algoId: ALGO_LAB_IDS[r.testName] || '', valueClass: 'hyptest__metric-value--sm', title: this._tip(_t('testMethod')) },
-            { label: _t('statistic'), value: fmt(r.statistic), valueClass: '', title: this._tip(_t('statistic')) },
-            { label: _t('common.sym.p'), value: fmt(r.pValue), valueClass: pCls, title: this._tip('p') },
-          ],
-          title,
-          note,
-        };
-      },
-
-      // ── Variance-equality card (k-sample mean) ──
-
-      _varEqualityCard(veResult, varsEqual, alpha, withDf) {
-        const pCls = veResult.pValue < alpha ? 'hyptest__metric-value--danger' : 'hyptest__metric-value--success';
-        const metrics = [
-          { label: _t('testMethod'), value: veResult.testName, algoId: ALGO_LAB_IDS[veResult.testName] || '', valueClass: 'hyptest__metric-value--sm', title: this._tip(_t('testMethod')) },
-          { label: _t('statistic'), value: fmt(veResult.statistic), valueClass: '', title: this._tip(_t('statistic')) },
-        ];
-        if (withDf) {
-          metrics.push({ label: _t('common.sym.df'), value: `${veResult.df1} / ${veResult.df2}`, valueClass: '', title: this._tip('df') });
-        }
-        metrics.push({ label: _t('common.sym.p'), value: fmt(veResult.pValue), valueClass: pCls, title: this._tip('p') });
-        if (!withDf) {
-          metrics.push({ label: _t('symS21'), value: fmt(veResult.variance1), valueClass: '', title: this._tip('s²₁') });
-          metrics.push({ label: _t('symS22'), value: fmt(veResult.variance2), valueClass: '', title: this._tip('s²₂') });
-        }
-        return { metrics, varsEqual };
-      },
-
-      // ── Power analysis (non-k; mirrors legacy _renderPower) ────
-
-      /**
-       * Teststärke, Effektstärke und nötiger Umfang als Zahlen.
-       * @noagent Ableitung aus den Daten
-       */
-      _powerCalc(d1, d2, target, alpha) {
-        const r = computePower({ ...this.model, d1, d2, target, alpha });
-        const effLabel = r.effectKind === 'varianceRatio' ? _t('varianceRatio')
-          : r.effectKind === 'cohenDz' ? "Cohen's d_z" : "Cohen's d";
-        return { curPow: r.power, curEff: r.effect, effLabel, nForGoal: r.requiredN };
-      },
-
-      _powerInfo(d1, d2, target, alpha, calc = this._powerCalc(d1, d2, target, alpha)) {
-        const n1 = d1.length;
-        const goal = this.model.powerGoal;
-        const { curPow, curEff, effLabel, nForGoal } = calc;
-        const goalPct = (goal * 100).toFixed(0);
-        const goalReached = curPow >= goal;
-        const nDisplay = nForGoal >= 5000 ? '> 5000' : String(nForGoal);
-        const requiredLine = `${_t('requiredN')}${d2 ? ` (${  _t('perGroup')  })` : ''}: ${nDisplay}`
-          + ` — ${goalReached ? `✓ ${  _t('achieved')}` : `✗ ${  _t('notAchieved')}`}`;
-
-        return {
-          goalPct,
-          goalBoxClass: goalReached ? 'hyptest__decision--accept' : 'hyptest__decision--warn',
-          requiredLine,
-          note: '',
-          metrics: [
-            { label: _t('currentPower'), value: `${(curPow * 100).toFixed(1)}%`, valueClass: goalReached ? 'hyptest__metric-value--success' : 'hyptest__metric-value--warning', title: this._tip(_t('currentPower')) },
-            { label: _t('common.sym.n'), value: `${n1}${d2 ? ` / ${  d2.length}` : ''}`, valueClass: '', title: this._tip('n') },
-            { label: effLabel, value: fmt(curEff, 3), valueClass: '', title: this._tip(effLabel) },
-            { label: _t('symAlpha'), value: String(alpha), valueClass: '', title: this._tip('α') },
-          ],
-        };
       },
 
       // ── Analysis controller ────────────────────────────────────
@@ -880,11 +340,45 @@ const definition = {
        * @returns {void}
        */
       runAnalysis() {
-        this.errorText = '';
-        if (this.model.testType === 'k') this._runAnalysisK();
-        else if (this.model.testType === 'paired') this._runAnalysisPaired();
-        else this._runAnalysisOneTwo();
+        const analysis = analyze(this._analysisInput());
+        if (analysis.status !== 'ok') {
+          this.result = null;
+          this.errorText = insufficientText(analysis, _t);
+        } else {
+          this.result = presentResult(analysis, _t, this.model);
+          this.errorText = '';
+        }
         this._renderResidualCharts();
+      },
+
+      /**
+       * Die Eingabe der Analyse aus Model und Pickern: Konfiguration, das
+       * aufgelöste Ziel und die Stichproben aus dem Arbeitsblatt. Gepaart
+       * gehen die Spalten ungefiltert hinein, die Paarbildung dünnt selbst aus.
+       * @returns {import('./domain/analyze.js').AnalysisInput}
+       */
+      _analysisInput() {
+        const m = this.model;
+        const sm = module._context.stateManager;
+        const one = (picker) => picker?.value
+          ? { name: this._refName(picker.value), values: this._valuesForRef(picker.value) }
+          : { name: '', values: null };
+        const raw = (picker) => ({ name: '', values: picker?.value ? getColumnValues(sm, picker.value) : null });
+        let samples;
+        if (m.testType === 'k') {
+          samples = (this._pickerK?.value || []).map(ref => ({ name: this._refName(ref), values: this._valuesForRef(ref) }));
+        } else if (m.testType === 'paired') {
+          samples = [raw(this._picker1), raw(this._picker2)];
+        } else if (m.testType === 'two') {
+          samples = [one(this._picker1), one(this._picker2)];
+        } else {
+          samples = [one(this._picker1)];
+        }
+        return {
+          category: m.category, testType: m.testType, direction: m.direction,
+          alpha: m.alpha, powerGoal: m.powerGoal, target: m.resolveTarget(),
+          targetType: m.targetType, equalVariances: m.equalVariances, samples,
+        };
       },
 
       // ── Residual plots (one-way ANOVA routes) ─────────────────
@@ -980,411 +474,6 @@ const definition = {
         };
         this._residualRender = render();
         return this._residualRender;
-      },
-
-      _runAnalysisPaired() {
-        const alpha = this.model.alpha;
-        if (!this._picker1?.value || !this._picker2?.value) { this.result = null; return; }
-        const sm = module._context.stateManager;
-        const { x1, x2, d, dropped } = pairDifferences(
-          getColumnValues(sm, this._picker1.value),
-          getColumnValues(sm, this._picker2.value));
-        if (d.length < 3) {
-          this.result = null;
-          this.errorText = _t('pairedTooFew', { count: d.length, n: d.length });
-          return;
-        }
-        const target = this.model.resolveTarget();
-        if (target == null) { this.result = null; return; }
-        // Identical columns (or a constant shift) leave no variation to test
-        if (isConstant(d)) {
-          this.result = null;
-          this.errorText = _t('pairedNoVariation');
-          return;
-        }
-
-        const sw = shapiroWilk(d), ad = andersonDarling(d);
-        const dNormal = isNormalByAD(ad, alpha);
-        const family = meanRoute(dNormal, [d.length]);
-        const dir = this.model.direction;
-        const means = { mean1: descriptiveStats(x1).mean, mean2: descriptiveStats(x2).mean };
-
-        let r, algoName;
-        if (family === 'rank') {
-          algoName = 'Wilcoxon Signed-Rank Test';
-          r = { ...wilcoxonSignedRank(d, target, dir, alpha), ...means, meanDiff: descriptiveStats(d).mean };
-        } else {
-          algoName = 'Paired t-Test';
-          r = pairedTTest(x1, x2, target, dir, alpha);
-        }
-
-        let secondary = null;
-        if (family === 'parametric-large-n') {
-          secondary = this._secondaryResult(wilcoxonSignedRank(d, target, dir, alpha), alpha);
-        }
-
-        const powerCalc = this._powerCalc(d, null, target, alpha);
-        this.result = {
-          isK: false,
-          allNormal: dNormal,
-          normCards: [this._normCard(_t('differences'), d, sw, ad, dNormal, alpha)],
-          route: { name: algoName, algoId: ALGO_LAB_IDS[algoName] || '' },
-          varEquality: null,
-          main: this._mainResult(r, alpha, target),
-          numeric: this._numeric(r, alpha, target, powerCalc.curPow),
-          secondary,
-          power: this._powerInfo(d, null, target, alpha, powerCalc),
-          pairwise: null,
-          residualPlot: null,
-          pairInfo: { n: d.length, dropped },
-        };
-      },
-
-      _runAnalysisOneTwo() {
-        const alpha = this.model.alpha;
-        const d1 = this._pickerValues(this._picker1);
-        if (d1.length < 3) { this.result = null; return; }
-
-        let d2 = null;
-        if (this.model.testType === 'two') {
-          d2 = this._pickerValues(this._picker2);
-          if (d2.length < 3) { this.result = null; return; }
-        }
-
-        let target = null;
-        if (this.model.testType === 'one') {
-          target = this.model.resolveTarget();
-          if (target == null) { this.result = null; return; }
-        }
-
-        // Normality
-        // The normality engines throw on a constant sample (zero variance)
-        let sw1, ad1, n1Normal, sw2 = null, ad2 = null, n2Normal = true;
-        try {
-          sw1 = shapiroWilk(d1); ad1 = andersonDarling(d1);
-          n1Normal = isNormalByAD(ad1, alpha);
-          if (d2) {
-            sw2 = shapiroWilk(d2); ad2 = andersonDarling(d2);
-            n2Normal = isNormalByAD(ad2, alpha);
-          }
-        } catch (err) {
-          console.error('[hypothesis-test] normality check failed:', err);
-          this.result = null;
-          this.errorText = _t('testNotComputable');
-          return;
-        }
-        const allNormal = n1Normal && n2Normal;
-
-        // Route
-        let algo;
-        let meanFamily = null;
-        if (this.model.category === 'variance') {
-          const VARIANCE_ALGOS = {
-            chi2: { id: 'chi2', name: 'Chi-Square Variance Test' },
-            bonett1: { id: 'bonett1', name: 'Bonett Variance Test' },
-            ftest: { id: 'ftest', name: 'F-Test' },
-            bonett2: { id: 'bonett2', name: 'Bonett Ratio Test' },
-          };
-          algo = VARIANCE_ALGOS[varianceRoute(this.model.testType, allNormal)];
-        } else if (this.model.testType === 'one') {
-          meanFamily = meanRoute(n1Normal, [d1.length]);
-          algo = meanFamily === 'rank'
-            ? { id: 'wilcoxon', name: 'Wilcoxon Signed-Rank Test' }
-            : { id: 'ttest1', name: 'One-Sample t-Test' };
-        } else {
-          algo = { id: 'pending', name: '' };
-        }
-
-        // Two-sample mean: Welch by default; the pooled t-test only when the
-        // user assumes equal variances. No variance pretest decides the route
-        // (C1-006: sequential pretesting distorts the type I error).
-        let varEquality = null;
-        if (this.model.category === 'mean' && this.model.testType === 'two') {
-          meanFamily = meanRoute(allNormal, [d1.length, d2.length]);
-          if (meanFamily !== 'rank') {
-            const varsEqual = this.model.equalVariances === true;
-            varEquality = { varsEqual, metrics: null, trailLabelKey: 'varEqualLabel', trailYes: varsEqual };
-            algo = varsEqual
-              ? { id: 'ttest2p', name: 'Two-Sample t-Test (pooled)' }
-              : { id: 'welch', name: 'Welch t-Test' };
-          } else {
-            algo = { id: 'mannwhitney', name: 'Mann-Whitney U Test' };
-          }
-        }
-
-        // Run main test
-        const dir = this.model.direction;
-        let r;
-        try {
-          if (algo.id === 'chi2') r = chiSquareVarianceTest(d1, target, dir, alpha);
-          else if (algo.id === 'ftest') r = fTest(d1, d2, dir, alpha);
-          else if (algo.id === 'bonett1') r = bonettVarianceTest(d1, target, dir, alpha);
-          else if (algo.id === 'bonett2') r = bonettRatioTest(d1, d2, dir, alpha);
-          else if (algo.id === 'ttest1') r = oneSampleTTest(d1, target, dir, alpha);
-          else if (algo.id === 'wilcoxon') r = wilcoxonSignedRank(d1, target, dir, alpha);
-          else if (algo.id === 'ttest2p') r = twoSampleTTest(d1, d2, dir, alpha);
-          else if (algo.id === 'welch') r = welchTTest(d1, d2, dir, alpha);
-          else if (algo.id === 'mannwhitney') r = mannWhitneyU(d1, d2, dir, alpha);
-        } catch (err) {
-          // Bonett's CI is undefined for degenerate samples (no spread, tiny n)
-          console.error('[hypothesis-test] test computation failed:', err);
-          this.result = null;
-          this.errorText = _t('testNotComputable');
-          return;
-        }
-        // Shift estimate and CI for the rank test (two-sided, like the t CIs)
-        if (algo.id === 'mannwhitney') r = { ...r, hl: hodgesLehmann(d1, d2, alpha) };
-
-        // Large-n parametric route: the rank test is shown alongside (C1-017)
-        let secondary = null;
-        if (meanFamily === 'parametric-large-n') {
-          secondary = this._secondaryResult(d2
-            ? mannWhitneyU(d1, d2, dir, alpha)
-            : wilcoxonSignedRank(d1, target, dir, alpha), alpha);
-        }
-        // Two-sample Bonett: Levene alongside, as Minitab's "2 Variances" shows both
-        if (algo.id === 'bonett2') {
-          secondary = this._secondaryResult(leveneTest(d1, d2, alpha), alpha, {
-            title: _t('sectionSecondaryLevene'),
-            note: _t('secondaryNoteLevene'),
-            showTwoSidedSuffix: dir !== 'two-sided',
-          });
-        }
-
-        const normCards = [this._normCard('S1', d1, sw1, ad1, n1Normal, alpha)];
-        if (d2) normCards.push(this._normCard('S2', d2, sw2, ad2, n2Normal, alpha));
-
-        const powerCalc = this._powerCalc(d1, d2, target, alpha);
-        const power = this._powerInfo(d1, d2, target, alpha, powerCalc);
-        const powerApprox = algo.id === 'bonett1' || algo.id === 'bonett2';
-        power.note = powerApprox ? _t('powerNormalApprox') : '';
-
-        this.result = {
-          isK: false,
-          allNormal,
-          normCards,
-          route: { name: algo.name, algoId: ALGO_LAB_IDS[algo.name] || '' },
-          varEquality,
-          main: this._mainResult(r, alpha, target),
-          numeric: this._numeric(r, alpha, target, powerCalc.curPow, powerApprox),
-          secondary,
-          power,
-          pairwise: null,
-          residualPlot: null,
-        };
-      },
-
-      _runAnalysisK() {
-        const refs = this._pickerK?.value || [];
-        const groups = refs.map(ref => this._valuesForRef(ref));
-        if (groups.length < 2 || groups.some(g => g.length < 3)) { this.result = null; return; }
-
-        const alpha = this.model.alpha;
-        const isVariance = this.model.category === 'variance';
-
-        // The normality engines throw on a constant group; Welch ANOVA throws on
-        // a zero-variance group or n_i < 2 — shown as "not computable", as for
-        // one and two samples.
-        let sws, ads, groupNormal, allNormal;
-        let algo, r, varEquality = null, secondary = null, parametric, meanTest = null;
-        try {
-          sws = groups.map(g => shapiroWilk(g));
-          ads = groups.map(g => andersonDarling(g));
-          groupNormal = ads.map(ad => isNormalByAD(ad, alpha));
-          allNormal = groupNormal.every(Boolean);
-          parametric = allNormal;
-
-          if (isVariance) {
-            if (allNormal) { algo = { name: "Bartlett's Test" }; r = bartlettTest(groups, alpha); }
-            else { algo = { name: 'Levene Test (Brown-Forsythe)' }; r = leveneTestK(groups, alpha); }
-          } else {
-            // Welch by default, Fisher only when the user assumes equal variances.
-            // Levene is shown for information; no variance pretest picks the
-            // route (C1-006, C1-019). The trail reports the assumption.
-            const equalVariances = this.model.equalVariances === true;
-            const lev = leveneTestK(groups, alpha);
-            varEquality = {
-              ...this._varEqualityCard(lev, !lev.reject, alpha, true),
-              trailLabelKey: 'varEqualLabel', trailYes: equalVariances,
-            };
-            const sizes = groups.map(g => g.length);
-            meanTest = kMeanRoute(allNormal, sizes, equalVariances);
-            parametric = meanTest !== 'kruskal';
-            if (meanTest === 'fisher') { algo = { name: 'One-Way ANOVA' }; r = oneWayANOVA(groups, alpha); }
-            else if (meanTest === 'welch') { algo = { name: 'Welch ANOVA' }; r = welchANOVA(groups, alpha); }
-            else { algo = { name: 'Kruskal-Wallis Test' }; r = kruskalWallis(groups, alpha); }
-            if (meanRoute(allNormal, sizes) === 'parametric-large-n') {
-              secondary = this._secondaryResult(kruskalWallis(groups, alpha), alpha);
-            }
-          }
-        } catch (err) {
-          console.error('[hypothesis-test] k-group test computation failed:', err);
-          this.result = null;
-          this.errorText = _t('testNotComputable');
-          return;
-        }
-
-        let pairwise = null;
-        if (groups.length >= 3) {
-          if (meanTest === 'fisher' || meanTest === 'welch') {
-            // A failing post-hoc hides the section; the omnibus result stays
-            try {
-              pairwise = this._simultaneousPairwise(groups, alpha, meanTest);
-            } catch (err) {
-              console.error('[hypothesis-test] pairwise comparisons failed:', err);
-              pairwise = null;
-            }
-          } else {
-            pairwise = this._computePairwise(groups, alpha, isVariance, parametric);
-          }
-        }
-
-        const normCards = groups.map((g, i) =>
-          this._normCard(this._refName(refs[i]), g, sws[i], ads[i], groupNormal[i], alpha));
-
-        const hasResiduals = meanTest === 'fisher' || meanTest === 'welch';
-        this.result = {
-          isK: true,
-          allNormal,
-          normCards,
-          route: { name: algo.name, algoId: ALGO_LAB_IDS[algo.name] || '' },
-          varEquality,
-          main: this._kMainResult(r, refs, groups, alpha, pairwise),
-          numeric: this._numeric(r, alpha, null, null),
-          secondary,
-          power: null,
-          pairwise: pairwise ? this._pairwiseSection(pairwise, refs, groups, alpha) : null,
-          residualPlot: hasResiduals ? { residuals: r.residuals, fitted: r.fitted } : null,
-        };
-      },
-
-      _kMainResult(r, refs, groups, alpha, pairwise) {
-        const isAnova = r.testName === 'One-Way ANOVA';
-        const isVariance = this.model.category === 'variance';
-        const has2Df = r.df1 != null && r.df2 != null;
-        const h0 = isVariance ? 'σ²₁ = σ²₂ = … = σ²ₖ' : 'μ₁ = μ₂ = … = μₖ';
-        const h1 = isVariance ? _t('kSampleVarH1') : _t('kSampleH1');
-        // Welch's df2 is fractional (Satterthwaite-type)
-        const df2Display = has2Df && r.testName === 'Welch ANOVA' ? fmt(r.df2, 2) : String(r.df2);
-        const dfDisplay = has2Df ? `${r.df1} / ${df2Display}` : String(r.df);
-        const pCls = r.pValue < alpha ? 'hyptest__metric-value--danger' : 'hyptest__metric-value--success';
-
-        const metrics = [
-          { label: _t('testMethod'), value: r.testName, algoId: ALGO_LAB_IDS[r.testName] || '', valueClass: 'hyptest__metric-value--sm', title: this._tip(_t('testMethod')) },
-          { label: _t('statistic'), value: fmt(r.statistic), valueClass: '', title: this._tip(_t('statistic')) },
-          { label: _t('common.sym.df'), value: dfDisplay, valueClass: '', title: this._tip('df') },
-          { label: _t('common.sym.p'), value: fmt(r.pValue), valueClass: pCls, title: this._tip('p') },
-          { label: _t('symK'), value: String(r.k), valueClass: '', title: this._tip('k') },
-        ];
-        if (r.N != null) metrics.push({ label: _t('symBigN'), value: String(r.N), valueClass: '', title: this._tip('N') });
-        if (r.pooledVariance != null) metrics.push({ label: _t('symS2p'), value: fmt(r.pooledVariance), valueClass: '', title: this._tip('s²ₚ') });
-
-        let anovaRows = null;
-        if (isAnova) {
-          const dCls = r.pValue < alpha ? 'hyptest__text-danger' : 'hyptest__text-success';
-          anovaRows = [
-            { src: _t('between'), ss: fmt(r.SSB), df: String(r.df1), ms: fmt(r.MSB), f: fmt(r.statistic), p: fmt(r.pValue), pClass: dCls, bold: false },
-            { src: _t('within'), ss: fmt(r.SSW), df: String(r.df2), ms: fmt(r.MSW), f: '—', p: '—', pClass: '', bold: false },
-            { src: _t('total'), ss: fmt(r.SST), df: String(r.df1 + r.df2), ms: '—', f: '—', p: '—', pClass: '', bold: true },
-          ];
-        }
-
-        const letters = pairwise?.letters || [];
-        const showCld = letters.length > 0;
-        const groupCIs = Array.isArray(r.groupCIs) ? r.groupCIs : null;
-        const groupRows = groups.map((g, i) => {
-          const ds = descriptiveStats(g);
-          const ci = groupCIs ? `[${fmt(groupCIs[i][0])}, ${fmt(groupCIs[i][1])}]` : '';
-          return { name: this._refName(refs[i]), n: String(g.length), mean: fmt(ds.mean), variance: fmt(ds.variance), ci, letters: letters[i] || '' };
-        });
-
-        return {
-          h0, h1,
-          h0Class: r.reject ? 'hyptest__h-box--rejected' : 'hyptest__h-box--accepted',
-          h1Class: r.reject ? 'hyptest__h-box--accepted' : 'hyptest__h-box--rejected',
-          h0Tip: '', h1Tip: '',
-          metrics,
-          anovaRows,
-          modelSummary: r.S != null ? this._modelSummary(r) : null,
-          groupRows,
-          showCi: groupCIs !== null,
-          ciHeader: _t('groupCi', { level: Math.round((1 - alpha) * 100) }),
-          showCld,
-        };
-      },
-
-      /**
-       * Minitab-style model summary of the one-way fit (C1-020): S with four
-       * decimals, R² values as percentages with two, R²(adj) and R²(pred)
-       * clamped at 0 %; R²(pred) is undefined when a group has one value.
-       * @param {{S: number, R2: number, R2adj: number, R2pred: (number|null)}} r
-       * @returns {{label: string, value: string, title: string}[]}
-       */
-      _modelSummary(r) {
-        const pct = (v) => (v != null && isFinite(v) ? `${(Math.max(0, v) * 100).toFixed(2)} %` : '–');
-        const row = (label, value) => ({ label, value, title: this._tip(label) });
-        return [
-          row('S', fmt(r.S)),
-          row('R²', pct(r.R2)),
-          row(_t('labelR2adj'), pct(r.R2adj)),
-          row(_t('labelR2pred'), pct(r.R2pred)),
-        ];
-      },
-
-      // ── Pairwise post-hoc ──
-
-      /** Alle Paarvergleiche, simultan (Tukey bzw. Games-Howell). */
-      _simultaneousPairwise(groups, alpha, meanTest) {
-        return simultaneousPairwise(groups, alpha, meanTest);
-      },
-
-      /** Bonferroni pairwise tests: variance questions and the rank route. */
-      _computePairwise(groups, alpha, isVariance, isNormal) {
-        return bonferroniPairwise(groups, alpha, isVariance, isNormal);
-      },
-
-      _compactLetterDisplay(k, comparisons) {
-        return compactLetterDisplay(k, comparisons);
-      },
-
-      _pairwiseSection(pairwise, refs, groups, alpha) {
-        const { comparisons, m, methodName, letters, isRank, simultaneous } = pairwise;
-        const k = groups.length;
-        const find = (i, j) => comparisons.find(c => (c.i === i && c.j === j) || (c.i === j && c.j === i));
-        const headers = refs.map(ref => this._refName(ref));
-        const rows = [];
-        for (let i = 0; i < k; i++) {
-          const cells = [];
-          for (let j = 0; j < k; j++) {
-            if (j <= i) {
-              cells.push({ cls: 'hyptest__pairwise-empty', title: '', text: '—', ci: '', key: `${i}-${j}` });
-            } else {
-              const c = find(i, j);
-              const cls = c.equal ? 'hyptest__pairwise-equal' : 'hyptest__pairwise-diff';
-              const verdict = c.equal ? _t('pairwiseEqual') : _t('pairwiseDifferent');
-              // Tukey / Games-Howell yield adjusted p-values only
-              const tip = c.p != null
-                ? `p=${fmt(c.p)}  ·  p_adj=${fmt(c.pAdj)}  ·  ${verdict}`
-                : `p_adj=${fmt(c.pAdj)}  ·  ${verdict}`;
-              const ci = c.ci ? `[${fmt(c.ci[0])}, ${fmt(c.ci[1])}]` : '';
-              cells.push({ cls, title: tip, text: fmt(c.pAdj), ci, key: `${i}-${j}` });
-            }
-          }
-          rows.push({ head: this._refName(refs[i]), cells });
-        }
-        const methodHint = simultaneous
-          ? _t('pairwiseSimultaneousHint', { level: Math.round((1 - alpha) * 100) })
-          : _t('pairwiseHint', { m });
-        return {
-          methodName,
-          methodAlgoId: ALGO_LAB_IDS[methodName] || '',
-          hint: comparisons.some(c => c.ci)
-            ? `${methodHint}; ${_t(isRank ? 'pairwiseShiftCiHint' : 'pairwiseCiHint')}`
-            : methodHint,
-          headers,
-          rows,
-          lettersJoined: letters.join(', '),
-        };
       },
 
       // ── ColumnPickers (imperative widgets) ─────────────────────

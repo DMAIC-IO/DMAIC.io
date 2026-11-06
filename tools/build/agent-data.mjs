@@ -724,6 +724,43 @@ function findTypedefLiteral(sf, name) {
 }
 
 /**
+ * Die Quelle einer Alias-Typedef `@typedef {import('./x.js').Name} Alias`:
+ * die geparste Datei und der Name dort — oder null, wenn `name` kein solcher
+ * Alias ist oder die Datei fehlt. So darf ein Modul seine Typedefs in
+ * Nachbardateien halten (`viewmodel/present.js`), ohne die Lesefläche zu
+ * verlieren.
+ *
+ * @param {ts.SourceFile} sf
+ * @param {string} name
+ * @returns {{ sf: ts.SourceFile, name: string }|null}
+ */
+function findTypedefImport(sf, name) {
+  let found = null;
+  const walk = (node) => {
+    if (node.kind === ts.SyntaxKind.EndOfFileToken) return;
+    for (const doc of node.jsDoc ?? []) {
+      for (const tag of doc.tags ?? []) {
+        if (!ts.isJSDocTypedefTag(tag) || tag.name?.text !== name) continue;
+        const type = tag.typeExpression?.type;
+        if (!type || !ts.isImportTypeNode(type) || type.typeArguments) continue;
+        const arg = type.argument;
+        if (!ts.isLiteralTypeNode(arg) || !ts.isStringLiteral(arg.literal)) continue;
+        if (!type.qualifier || !ts.isIdentifier(type.qualifier)) continue;
+        found = { specifier: arg.literal.text, name: type.qualifier.text };
+      }
+    }
+    ts.forEachChild(node, walk);
+  };
+  walk(sf);
+  if (!found) return null;
+  const file = resolveSpecifier(found.specifier, sf.fileName);
+  if (!file) return null;
+  // Kein Cache: der Build-Wächter läuft lange, die Datei kann sich ändern.
+  const target = ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
+  return { sf: target, name: found.name };
+}
+
+/**
  * Die Properties einer Typedef der Moduldatei als beschreibbare Schlüssel:
  * je Property Typ und JSDoc-Prosa. Ist eine Property selbst vom Typ einer
  * Typedef der Datei (auch als Liste oder mit `|null`), kommen deren
@@ -740,7 +777,10 @@ function findTypedefLiteral(sf, name) {
  */
 function typedefKeys(sf, name, open = new Set()) {
   const literal = findTypedefLiteral(sf, name);
-  if (!literal) return null;
+  if (!literal) {
+    const alias = findTypedefImport(sf, name);
+    return alias ? typedefKeys(alias.sf, alias.name, new Set([...open, name])) : null;
+  }
   const inner = new Set([...open, name]);
   const keys = {};
   for (const property of literal.jsDocPropertyTags ?? []) {
