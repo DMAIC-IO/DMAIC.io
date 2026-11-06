@@ -5,7 +5,7 @@
 import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertThrows } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { registerFieldDirective } from '../../js/core/field-directive.js';
-import { registerCommandDirectives, runUiCommand } from '../../js/core/command-directives.js';
+import { registerCommandDirectives, runUiCommand, openDialogAt } from '../../js/core/command-directives.js';
 import { defineModel, defineForm, command, text, number, oneOf, index, list, record } from '../../js/core/model.js';
 
 const COLS = ['a', 'b'];
@@ -552,5 +552,45 @@ suite('Startwerte data-default-arg-*', () => {
     assertEqual(dialog.open, null);
     assertEqual(notified.length, 1);
     assertTrue(/invalid col "z"/.test(notified[0][0]));
+  });
+});
+
+suite('Dialog aus Code und x-dialog.dblclick', () => {
+  test('openDialogAt: Startwerte und Titel aus Code', async () => {
+    const { root, dialog, model } = await mount('<form x-ref="f" x-command-form="addItem"><input x-param="col"><input x-param="text"></form>');
+    const done = openDialogAt(Alpine, root, 'f', { defaults: { col: 'b', text: 'Entwurf' }, title: 'Neu' });
+    await flush();
+    assertEqual(dialog.open.opts.title, 'Neu');
+    const text = dialog.open.body.querySelector('[x-param="text"]');
+    assertEqual(text.value, 'Entwurf');
+    // Unverändert abgesendet hieße „abbrechen“ (onUnchanged) — also eine Änderung.
+    text.value = 'Entwurf 2';
+    text.dispatchEvent(new Event('input'));
+    dialog.open.api.confirm();
+    await done;
+    assertDeepEqual([...model.columns.b], ['Entwurf 2']);
+    assertTrue(!root.querySelector('form').hasAttribute('data-default-arg-text'));
+  });
+
+  test('openDialogAt: feste Argumente und Löschen', async () => {
+    const { root, dialog, model } = await mount('<form x-ref="f" x-command-form="setItem"><input x-param="text"></form>', { columns: { a: ['x', 'y'] } });
+    const done = openDialogAt(Alpine, root, 'f', { command: 'setItem', args: { col: 'a', idx: 1 }, delete: 'removeItem' });
+    await flush();
+    assertEqual(dialog.open.body.querySelector('[x-param="text"]').value, 'y');
+    dialog.open.api.remove();
+    await done;
+    assertDeepEqual([...model.columns.a], ['x']);
+  });
+
+  test('x-dialog.dblclick öffnet erst beim Doppelklick', async () => {
+    const { $, dialog } = await mount('<div class="cell" x-dialog.dblclick="f" data-default-arg-col="b"></div><form x-ref="f" x-command-form="addItem"><input x-param="col"><input x-param="text"></form>');
+    $('.cell').click();
+    await flush();
+    assertEqual(dialog.open, null);
+    $('.cell').dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+    await flush();
+    assertEqual(dialog.open.body.querySelector('[x-param="col"]').value, 'b');
+    dialog.open.api.cancel();
+    await flush();
   });
 });

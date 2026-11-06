@@ -88,13 +88,18 @@ suite('createModule mit view(ctx) und State', () => {
 
   test('ctx: Kontextdienste und Kennungen, kein module', async () => {
     const { context, notified } = await mount();
-    assertDeepEqual(Object.keys(seenCtx).sort(), ['context', 'cssVars', 'dialog', 'eventBus', 'i18n', 'instanceId', 'moduleId', 'notify']);
+    assertDeepEqual(Object.keys(seenCtx).sort(), ['context', 'cssVars', 'dialog', 'eventBus', 'i18n', 'instanceId', 'moduleId', 'notify', 'openDialog']);
     assertEqual(seenCtx.context, context);
     assertEqual(seenCtx.dialog, context.dialog);
     assertEqual(seenCtx.instanceId, 'vt-1');
     assertEqual(seenCtx.moduleId, ID);
     seenCtx.notify('m', 'error');
     assertDeepEqual(notified, [['m', 'error']]);
+  });
+
+  test('ctx.openDialog ist eine Funktion', async () => {
+    await mount();
+    assertEqual(typeof seenCtx.openDialog, 'function');
   });
 
   test('init aus dem view-Block läuft', async () => {

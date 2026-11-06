@@ -15,6 +15,9 @@
  * Kommando-Definition eine Rückfrage, fragt nur die Oberfläche
  * (`runUiCommand`), nie ein direkter Aufruf.
  *
+ * `x-dialog.dblclick` öffnet beim Doppelklick; aus eigenem Code `openDialogAt`/
+ * `ctx.openDialog` mit denselben Optionen wie die `data-dialog-*`-Attribute.
+ *
  * Startwerte: `data-default-arg-<kebab>` belegt einen freien Parameter vor (im
  * Formular änderbar), an `<form x-command-form>` oder am `x-dialog`-Knopf.
  * Schichtung: Vorgabe der Parameter-Spec → `data-default-arg-*` → `current` →
@@ -338,19 +341,53 @@ function formIn(target) {
 }
 
 /**
- * Den Ref im Dialog-Dienst öffnen. `onConfirm` sendet ab und liefert
- * `false`; geschlossen wird erst bei Erfolg über den confirm-Griff (dann
- * liefert `onConfirm` `true`). So wirft `onConfirm` nie, und eine Rückfrage
- * aus `confirm()` läuft asynchron dazwischen.
- * @param {any} Alpine @param {HTMLElement} el der Knopf @param {string} ref
+ * @typedef {object} DialogOptions
+ * @property {Record<string, any>} [args] feste Argumente (wie `data-arg-*`)
+ * @property {Record<string, any>} [defaults] Startwerte (wie `data-default-arg-*`)
+ * @property {string} [command] Kommando für dieses Öffnen (wie `data-dialog-command`)
+ * @property {string} [delete] Lösch-Kommando (wie `data-dialog-delete`), mit `args`
+ * @property {string} [title] fertiger Titel (wie `data-dialog-title`)
+ * @property {string} [confirmLabel] i18n-Schlüssel des Bestätigen-Knopfs (wie `data-dialog-confirm`)
  */
-async function openDialog(Alpine, el, ref) {
-  const ui = uiOf(Alpine, el, 'x-dialog');
-  const target = findRef(Alpine, el, ref);
+
+/**
+ * Die Optionen eines `x-dialog`-Knopfs aus seinen Attributen.
+ * @param {HTMLElement} el @returns {DialogOptions}
+ */
+function optionsFromButton(el) {
+  const args = {};
+  const defaults = {};
+  for (const [key, text] of Object.entries(el.dataset)) {
+    if (key.startsWith('defaultArg') && key.length > 10) defaults[key.charAt(10).toLowerCase() + key.slice(11)] = text;
+    else if (key.startsWith('arg') && key.length > 3) args[key.charAt(3).toLowerCase() + key.slice(4)] = text;
+  }
+  return {
+    args, defaults,
+    command: el.dataset.dialogCommand,
+    delete: el.dataset.dialogDelete,
+    title: el.dataset.dialogTitle,
+    confirmLabel: el.dataset.dialogConfirm,
+  };
+}
+
+/**
+ * Den Ref im Dialog-Dienst öffnen — aus einem `x-dialog`-Knopf oder aus
+ * eigenem Code (`ctx.openDialog`). Argumente und Startwerte stehen für die
+ * Dauer des Dialogs als `data-arg-*` bzw. `data-default-arg-*` am Formular.
+ * `onConfirm` sendet ab und liefert `false`; geschlossen wird erst bei Erfolg
+ * über den confirm-Griff. So wirft `onConfirm` nie, und eine Rückfrage aus
+ * `confirm()` läuft asynchron dazwischen.
+ * @param {any} Alpine @param {HTMLElement} anchor Element in der Komponente
+ * @param {string} ref @param {DialogOptions} [opts]
+ * @returns {Promise<void>}
+ */
+export async function openDialogAt(Alpine, anchor, ref, opts = {}) {
+  const ui = uiOf(Alpine, anchor, 'x-dialog');
+  const target = findRef(Alpine, anchor, ref);
   if (!target) throw new Error(`x-dialog="${ref}": no element with x-ref="${ref}"`);
   const formEl = formIn(target);
   const ctl = formEl ? FORMS.get(formEl) : undefined;
-  /** Vorheriger Wert (oder `null`) der Formular-Attribute, die der Knopf überschreibt. */
+  /** Vorheriger Wert (oder `null`) der Formular-Attribute, die das Öffnen überschreibt. */
   const previous = new Map();
   const restoreArgs = () => {
     for (const [name, value] of previous) {
@@ -358,27 +395,38 @@ async function openDialog(Alpine, el, ref) {
     }
   };
   if (formEl) {
-    for (const { name, value } of [...el.attributes]) {
-      if (name.startsWith('data-arg-') || name.startsWith('data-default-arg-')) { previous.set(name, formEl.getAttribute(name)); formEl.setAttribute(name, value); }
-    }
+    const put = (prefix, values) => {
+      for (const [k, v] of Object.entries(values ?? {})) {
+        const name = `${prefix}${kebab(k)}`;
+        if (!previous.has(name)) previous.set(name, formEl.getAttribute(name));
+        formEl.setAttribute(name, String(v));
+      }
+    };
+    put('data-arg-', opts.args);
+    put('data-default-arg-', opts.defaults);
   }
   let done = false;
   let api = null;
   const finish = () => { done = true; api?.confirm(); };
   try {
-    ctl?.open({ command: el.dataset.dialogCommand, onSuccess: finish, onUnchanged: () => api?.cancel() });
+    ctl?.open({ command: opts.command, onSuccess: finish, onUnchanged: () => api?.cancel() });
   } catch (err) {
     restoreArgs();
     ctl?.close();
     throw err;
   }
   OPEN_DIALOGS.set(target, finish);
-  const del = el.dataset.dialogDelete;
+  const del = opts.delete;
+  const deleteArgs = () => {
+    const params = commandDef(ui, del).params;
+    return Object.fromEntries(Object.entries(opts.args ?? {})
+      .map(([k, v]) => [k, typeof v === 'string' && Object.hasOwn(params, k) ? fromAttr(params[k], v) : v]));
+  };
   try {
     await ui.dialog.form({
-      title: el.dataset.dialogTitle ?? '',
+      title: opts.title ?? '',
       content: target,
-      confirmLabel: ui.i18n.t(el.dataset.dialogConfirm ?? 'common.save'),
+      confirmLabel: ui.i18n.t(opts.confirmLabel ?? 'common.save'),
       hideConfirm: !ctl,
       onMount: (_body, handle) => { api = handle; ctl?.focusFirst(); },
       onConfirm: () => {
@@ -389,7 +437,7 @@ async function openDialog(Alpine, el, ref) {
       ...(del ? {
         onDelete: () => {
           if (done) return true;
-          runUiCommand(ui, del, readFixedArgs(el, commandDef(ui, del).params)).then((r) => {
+          runUiCommand(ui, del, deleteArgs()).then((r) => {
             if (r.ok) finish();
             else if ('error' in r) ui.notify(r.error?.message ?? String(r.error), 'error');
           });
@@ -401,6 +449,22 @@ async function openDialog(Alpine, el, ref) {
     OPEN_DIALOGS.delete(target);
     restoreArgs();
     ctl?.close();
+  }
+}
+
+/**
+ * Wie `openDialogAt`, wirft aber nie: ein Fehler am Stand der Daten wird
+ * gemeldet, alles andere geht in die Konsole.
+ * @param {any} Alpine @param {HTMLElement} anchor @param {string} ref @param {DialogOptions} [opts]
+ * @returns {Promise<void>}
+ */
+export async function openDialogSafely(Alpine, anchor, ref, opts) {
+  try {
+    await openDialogAt(Alpine, anchor, ref, opts);
+  } catch (err) {
+    const current = Alpine.$data(anchor)?._ui;
+    if (err instanceof StartStateError && current) current.notify(err.message, 'error');
+    else console.error(err);
   }
 }
 
@@ -509,7 +573,7 @@ export function registerCommandDirectives(Alpine) {
     });
   });
 
-  Alpine.directive('dialog', (el, { expression }, { cleanup }) => {
+  Alpine.directive('dialog', (el, { expression, modifiers }, { cleanup }) => {
     const ref = expression.trim();
     const ui = uiOf(Alpine, el, 'x-dialog');
     const target = findRef(Alpine, el, ref);
@@ -518,14 +582,9 @@ export function registerCommandDirectives(Alpine) {
     const cmd = el.dataset.dialogCommand ?? formIn(target)?.getAttribute('x-command-form')?.trim();
     if (cmd) checkDefaultArgs(el, commandDef(ui, cmd).params);
     if (cmd) setHelpKey(el, `modules.${ui.moduleId}.actions.${cmd}.help`);
-    const onClick = () => {
-      openDialog(Alpine, el, ref).catch((err) => {
-        const current = Alpine.$data(el)?._ui;
-        if (err instanceof StartStateError && current) current.notify(err.message, 'error');
-        else console.error(err);
-      });
-    };
-    el.addEventListener('click', onClick);
-    cleanup(() => el.removeEventListener('click', onClick));
+    const event = modifiers.includes('dblclick') ? 'dblclick' : 'click';
+    const onOpen = () => { openDialogSafely(Alpine, el, ref, optionsFromButton(el)); };
+    el.addEventListener(event, onOpen);
+    cleanup(() => el.removeEventListener(event, onOpen));
   });
 }

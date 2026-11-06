@@ -9,6 +9,7 @@ import { attachGesture } from './interaction/attach.js';
 import { isGesture } from './interaction/define.js';
 import { requireKnownId } from './validate.js';
 import { formatsOf } from './exporter.js';
+import { openDialogSafely } from './command-directives.js';
 
 /**
  * Was `view(ctx)` bekommt: die Kontextdienste und die Kennungen der Instanz.
@@ -16,7 +17,8 @@ import { formatsOf } from './exporter.js';
  * @typedef {{ context: object,
  *   notify: (message: string, type?: string, titleKey?: string) => void,
  *   dialog: any, i18n: any, eventBus: any, instanceId: string, moduleId: string,
- *   cssVars: (map: Record<string, string>) => Record<string, string> }} ViewContext
+ *   cssVars: (map: Record<string, string>) => Record<string, string>,
+ *   openDialog: (ref: string, opts?: import('./command-directives.js').DialogOptions) => Promise<void> }} ViewContext
  */
 /**
  * `this` in den Gliedern eines `view`-Blocks. Die eigenen Glieder des Blocks
@@ -281,6 +283,7 @@ export function createModule(base) {
           instanceId: context.instanceId,
           moduleId: id,
           cssVars: (map) => readCssVars(container.querySelector('[x-data]'), map),
+          openDialog: (ref, opts) => openDialogSafely(Alpine, container.querySelector('[x-data]'), ref, opts),
         });
       } else {
         const dataCtx = new Proxy(dataCtxTarget, {
