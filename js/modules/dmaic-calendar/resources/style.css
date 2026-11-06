@@ -1,5 +1,5 @@
 /* ============================================================
-   D.Mike — DMAIC Calendar Module (dmaic-calendar.css)
+   D.Mike — DMAIC Calendar Module
    Base layout provided by .dmike-split (css/modules.css).
    Only calendar-specific styles here.
    ============================================================ */
@@ -667,6 +667,16 @@
 
 .module-calendar__phase-chip--foreign {
   font-style: italic;
+}
+
+/* Tastaturfokus der Knopfgruppen (Phasenfilter, Ansichtsumschaltung).
+   Gehoben, damit der Ring nicht unter dem Nachbarknopf liegt. */
+.module-calendar__phase-chip:focus-visible,
+.module-calendar__view-toggle button:focus-visible {
+  outline: none;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 0 0 3px var(--color-accent-light);
 }
 
 .module-calendar__week-day-col--drop-target {

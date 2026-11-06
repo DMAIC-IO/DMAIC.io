@@ -290,4 +290,29 @@ suite('x-field auf Listeneinträgen', () => {
     assertEqual($$('select.s')[0].value, 'b');
     host.remove();
   });
+
+  test('select: sofort abgebaut, kein Fehler aus dem aufgeschobenen Abgleich', async () => {
+    registerFieldDirective(Alpine, { i18n: I18N });
+    if (!Alpine.version) Alpine.start();
+    const name = `fieldSelectGone${++n}`;
+    Alpine.data(name, () => ({ model: new M(), moduleId: 'ft' }));
+    const host = document.createElement('div');
+    host.innerHTML = `<div x-data="${name}"><select x-field="model.mode"><option value="a">a</option><option value="b">b</option></select></div>`;
+    document.body.append(host);
+    const errors = [];
+    const onError = (ev) => { errors.push(ev.message); ev.preventDefault(); };
+    window.addEventListener('error', onError);
+    try {
+      // Wie ein abgelöstes Modul: einbauen und im selben Takt wieder abbauen.
+      Alpine.initTree(host);
+      Alpine.destroyTree(host);
+      host.replaceChildren();
+      await flush();
+      await flush();
+    } finally {
+      window.removeEventListener('error', onError);
+      host.remove();
+    }
+    assertEqual(errors.join(' | '), '');
+  });
 });

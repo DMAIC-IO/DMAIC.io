@@ -41,9 +41,9 @@
           "type": "list",
           "items": [
             "In der Wochenansicht: in eine freie Stelle klicken und ziehen → neuer Termin.",
-            "In der Monatsansicht: auf einen Tag klicken → Termin-Dialog öffnet sich.",
+            "In der Monatsansicht: Doppelklick auf einen Tag → Termin-Dialog öffnet sich, auch auf den Tagen des Vor- und Folgemonats.",
             "Termine per Drag & Drop verschieben — die DMAIC-Phase bleibt erhalten.",
-            "Untere Kante eines Termins ziehen, um die Dauer anzupassen.",
+            "In der Wochenansicht die obere oder untere Kante eines Termins ziehen, um Beginn oder Ende anzupassen.",
             "Klick auf einen Termin → Dialog zum Bearbeiten von Titel, Zeit, Phase und Notizen."
           ]
         },

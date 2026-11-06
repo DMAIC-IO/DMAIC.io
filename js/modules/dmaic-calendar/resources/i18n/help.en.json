@@ -41,9 +41,9 @@
           "type": "list",
           "items": [
             "Week view: click and drag on a free area → new event.",
-            "Month view: click a day → event dialog opens.",
+            "Month view: double-click a day → event dialog opens, also on the days of the previous and next month.",
             "Move events with drag & drop — the DMAIC phase is preserved.",
-            "Drag the bottom edge of an event to adjust its duration.",
+            "Week view: drag the top or bottom edge of an event to adjust its start or end.",
             "Click an event → dialog to edit title, time, phase, and notes."
           ]
         },

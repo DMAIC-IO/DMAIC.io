@@ -114,11 +114,14 @@ export function registerFieldDirective(Alpine, { i18n }) {
     const show = () => writeElement(el, spec, target.get());
     effect(show);
     if (el.tagName === 'SELECT') {
-      // Optionen aus x-for entstehen erst nach dieser Direktive.
-      Alpine.nextTick(show);
+      // Optionen aus x-for entstehen erst nach dieser Direktive. Der
+      // aufgeschobene Abgleich darf nach dem Abbau nicht mehr laufen: dann
+      // fehlen dem Element die Daten der Komponente (Alpine.$data ohne model).
+      let alive = true;
+      Alpine.nextTick(() => { if (alive) show(); });
       const observer = new MutationObserver(show);
       observer.observe(el, { childList: true, subtree: true });
-      cleanup(() => observer.disconnect());
+      cleanup(() => { alive = false; observer.disconnect(); });
     }
 
     const commit = (live) => {
