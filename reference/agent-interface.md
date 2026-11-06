@@ -129,6 +129,16 @@ geschrieben (`call_failed`). Setzbar sind die Felder aus `describe` — keine
 Ansichtsfelder (`unknown field "<x>"; available: …`). Ein Modul alter Form
 antwortet auf `instance.set` mit `call_failed`.
 
+`dmaic-calendar` (Termine als Kommandos):
+`{ op: 'instance.call', instance, method: 'addEvent', args: [{ title: 'Review', date: '2026-03-02', time: '14:00', duration: 45 }] }`
+→ `value: <id>`. `addEvent` nimmt `{ title, date, time?, duration?, desc?, phase? }`
+(`time` auf 5 Minuten gerastert, Vorgabe `09:00`; `duration` in Minuten, Vorgabe 60);
+`updateEvent` nimmt `{ id, … }` mit denselben optionalen Schlüsseln; `removeEvent` nimmt
+`{ id }`. `read()` liefert die Termine unter `events`. `phase` akzeptiert jede Phase eines
+bekannten Zyklus; ohne `phase` gilt die erste Phase des aktiven Zyklus. Die Aktionen
+`setAxisFrom`, `setAxisTo`, `setDayFrom` und `setDayTo` gibt es nicht mehr; ein Aufruf
+antwortet mit `unknown_method`. Tagesachse und Wochentage sind Ansichtsfelder.
+
 ### Phasenprüfung in zwei Stufen
 
 Eine angegebene `phase` (z. B. in `module.add`) durchläuft zwei Hürden.
