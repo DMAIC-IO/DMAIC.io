@@ -583,6 +583,101 @@ export function checkWritePath(files) {
   return out;
 }
 
+/**
+ * Der `view`-Block (Methode oder Eigenschaft `view` im createModule-Literal).
+ * @param {string} text
+ * @returns {import('typescript').Node|null}
+ */
+function findViewBlock(text) {
+  const sf = ts.createSourceFile('viewmodel.js', text, ts.ScriptTarget.Latest, true);
+  /** @type {import('typescript').Node|null} */
+  let found = null;
+  const visit = (n) => {
+    if (found) return;
+    if ((ts.isMethodDeclaration(n) || ts.isPropertyAssignment(n)) && n.name && ts.isIdentifier(n.name) && n.name.text === 'view') {
+      found = n;
+      return;
+    }
+    ts.forEachChild(n, visit);
+  };
+  visit(sf);
+  return found;
+}
+
+const VIEW_FORBIDDEN = ['stateManager', 'getModuleState'];
+
+/**
+ * Gate Lesezugriff: im view-Block (auch in `computed`) kein `stateManager`
+ * und kein `getModuleState` — Arbeitsblätter nur über `ctx.data`, sonst
+ * fehlt die Abhängigkeit und das Ergebnis veraltet.
+ * @param {{ path: string, text: string }[]} files
+ * @returns {string[]}
+ */
+export function checkViewReads(files) {
+  const out = [];
+  for (const { path, text } of files) {
+    if (!path.startsWith('viewmodel/')) continue;
+    const view = findViewBlock(text);
+    if (!view) continue;
+    const seen = new Set();
+    const visit = (n) => {
+      if (ts.isIdentifier(n) && VIEW_FORBIDDEN.includes(n.text)) seen.add(n.text);
+      ts.forEachChild(n, visit);
+    };
+    visit(view);
+    for (const name of VIEW_FORBIDDEN) {
+      if (seen.has(name)) out.push(`view: ${path}: ${name} im view-Block — Arbeitsblätter über ctx.data lesen`);
+    }
+  }
+  return out;
+}
+
+const PICKER_CLASS = /\.(col-picker[\w-]*)/g;
+
+/**
+ * Gate Picker-Vertrag: das Modul-CSS greift nicht in den Spalten-Picker.
+ * @param {{ path: string, text: string }|null} css resources/style.css
+ * @returns {string[]}
+ */
+export function checkPickerCss(css) {
+  if (!css) return [];
+  const names = [...new Set([...css.text.matchAll(PICKER_CLASS)].map((m) => m[1]))];
+  return names.map((n) => `css: ${css.path}: .${n} — Klassen des Pickers nicht stylen, nur das Wirtselement`);
+}
+
+const CHART_BINDING = /\bx-chart\s*=\s*"([^"]*)"/g;
+
+/**
+ * Gate x-chart: der Ausdruck ist der Name eines Getters oder eines
+ * `computed` des view-Blocks.
+ * @param {{ path: string, text: string }[]} templates
+ * @param {{ path: string, text: string }|null} vmFile viewmodel/viewmodel.js
+ * @returns {string[]}
+ */
+export function checkChartBindings(templates, vmFile) {
+  const allowed = new Set();
+  const view = vmFile ? findViewBlock(vmFile.text) : null;
+  if (view) {
+    const visit = (n) => {
+      if (ts.isGetAccessorDeclaration(n) && ts.isIdentifier(n.name)) allowed.add(n.name.text);
+      if (ts.isPropertyAssignment(n) && ts.isIdentifier(n.name) && n.name.text === 'computed'
+          && ts.isObjectLiteralExpression(n.initializer)) {
+        for (const p of n.initializer.properties) if (p.name && ts.isIdentifier(p.name)) allowed.add(p.name.text);
+      }
+      ts.forEachChild(n, visit);
+    };
+    visit(view);
+  }
+  const out = [];
+  for (const { path, text } of templates) {
+    for (const [, raw] of text.matchAll(CHART_BINDING)) {
+      const name = raw.trim();
+      if (!allowed.has(name)) out.push(`template: ${path}: x-chart="${raw}": ${name} ist weder Getter noch computed des view-Blocks`);
+    }
+  }
+  return out;
+}
+
 /** @param {any} obj @param {string} path @returns {any} */
 const at = (obj, path) => path.split('.').reduce((o, k) => (o && typeof o === 'object' ? o[k] : undefined), obj);
 
@@ -1111,6 +1206,11 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
   }
   out.push(...checkLayers(js));
   out.push(...checkWritePath(js));
+  out.push(...checkViewReads(js));
+  const cssPath = 'resources/style.css';
+  out.push(...checkPickerCss(paths.includes(cssPath) ? read(cssPath) : null));
+  const chartTemplates = paths.filter((p) => /^resources\/[^/]+\.html$/.test(p)).map(read);
+  out.push(...checkChartBindings(chartTemplates, paths.includes('viewmodel/viewmodel.js') ? read('viewmodel/viewmodel.js') : null));
   out.push(...checkUiTexts(base));
   const refs = checkReferenceFile(base);
   out.push(...refs.findings, ...checkHelpFiles(base, refs.ids));

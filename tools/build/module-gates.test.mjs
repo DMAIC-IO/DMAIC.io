@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts } from './module-gates.mjs';
+import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkViewReads, checkPickerCss, checkChartBindings, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts } from './module-gates.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { APP_DIR } from './build.mjs';
 import { defineModel, command, text, number, oneOf, index, idOf, list, record, object, boolean, date, columnRef } from '../../js/core/model.js';
@@ -919,5 +919,46 @@ test('Template: x-field auf columnRef und list(columnRef) ist erlaubt, auf list(
   const files = [{ path: 'resources/view.html', text: '<div x-field="model.a"></div><div x-field="model.k"></div><div x-field="model.t"></div>' }];
   assert.deepEqual(checkTemplateBindings(files, schema), [
     'template: resources/view.html: x-field="model.t": t (list) hat keine Regeln — x-model verwenden',
+  ]);
+});
+
+test('view-Block: kein stateManager/getModuleState, außerhalb erlaubt', () => {
+  const text = `export default createModule({
+  createDefault(context) { return context.stateManager.get('settings'); },
+  view(ctx) {
+    return {
+      computed: { result() { return ctx.context.stateManager.getModuleState('x'); } },
+      get n() { return ctx.data.numeric(this.model.colRef1); },
+    };
+  },
+});`;
+  assert.deepEqual(checkViewReads([{ path: 'viewmodel/viewmodel.js', text }]), [
+    'view: viewmodel/viewmodel.js: stateManager im view-Block — Arbeitsblätter über ctx.data lesen',
+    'view: viewmodel/viewmodel.js: getModuleState im view-Block — Arbeitsblätter über ctx.data lesen',
+  ]);
+});
+
+test('Picker-CSS: keine Regeln auf col-picker-Klassen', () => {
+  assert.deepEqual(checkPickerCss({ path: 'resources/style.css', text: '.hyptest__picker { margin: 0; }' }), []);
+  assert.deepEqual(checkPickerCss({ path: 'resources/style.css', text: '.hyptest__picker .col-picker__select { width: 100%; }' }), [
+    'css: resources/style.css: .col-picker__select — Klassen des Pickers nicht stylen, nur das Wirtselement',
+  ]);
+  assert.deepEqual(checkPickerCss(null), []);
+});
+
+test('x-chart: Getter oder computed des view-Blocks', () => {
+  const vm = { path: 'viewmodel/viewmodel.js', text: `export default createModule({ view(ctx) { return {
+    computed: { result() { return 1; } },
+    get residFitted() { return null; },
+    helper() { return null; },
+  }; } });` };
+  const tpl = (v) => [{ path: 'resources/view.html', text: `<div x-chart="${v}"></div>` }];
+  assert.deepEqual(checkChartBindings(tpl('residFitted'), vm), []);
+  assert.deepEqual(checkChartBindings(tpl('result'), vm), []);
+  assert.deepEqual(checkChartBindings(tpl('helper'), vm), [
+    'template: resources/view.html: x-chart="helper": helper ist weder Getter noch computed des view-Blocks',
+  ]);
+  assert.deepEqual(checkChartBindings(tpl('a.b'), vm), [
+    'template: resources/view.html: x-chart="a.b": a.b ist weder Getter noch computed des view-Blocks',
   ]);
 });
