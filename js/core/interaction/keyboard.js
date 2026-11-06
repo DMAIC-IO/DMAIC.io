@@ -9,7 +9,7 @@
  *   Alt+Shift+Pfeil   Endkante ein Schritt (resize)
  *
  * `draw` hat keinen Tastaturmodus. Esc bricht auch eine laufende
- * Zeiger-Geste ab, sofern das Ereignis aus dem Container kommt.
+ * Zeiger-Geste ab — am Container und dokumentweit.
  */
 import { instructionsId } from './announce.js';
 
@@ -34,6 +34,16 @@ export function bindKeyboard(root, def, gesture) {
   const handleOf = (target) => {
     const el = target?.closest?.(def.handle);
     return el && root.contains(el) ? el : null;
+  };
+
+  // Esc während einer Zeiger-Geste, auch wenn der Fokus außerhalb liegt
+  // (z. B. auf body beim Aufziehen über nicht fokussierbare Slots).
+  const doc = root.ownerDocument;
+  const onDocKeyDown = (e) => {
+    if (e.key !== 'Escape' || root.contains(/** @type {Node} */ (e.target))) return;
+    if (gesture.idle() || gesture.picking()) return;
+    e.preventDefault();
+    gesture.pointerCancel();
   };
 
   const onKeyDown = (e) => {
@@ -107,11 +117,13 @@ export function bindKeyboard(root, def, gesture) {
   };
 
   root.addEventListener('keydown', onKeyDown);
+  doc.addEventListener('keydown', onDocKeyDown);
   root.addEventListener('keyup', onKeyUp);
   root.addEventListener('focusin', onFocusIn);
   root.addEventListener('focusout', onFocusOut);
   return () => {
     root.removeEventListener('keydown', onKeyDown);
+    doc.removeEventListener('keydown', onDocKeyDown);
     root.removeEventListener('keyup', onKeyUp);
     root.removeEventListener('focusin', onFocusIn);
     root.removeEventListener('focusout', onFocusOut);

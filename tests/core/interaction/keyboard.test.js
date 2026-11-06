@@ -304,6 +304,25 @@ suite('interaction/keyboard — Esc bei Zeiger-Gesten (Ende zu Ende)', () => {
     assertEqual(root.querySelector('[data-id="y"]').getAttribute('data-dragging'), 'reorder');
   });
 
+  test('Esc außerhalb des Containers bricht eine laufende Zeiger-Geste ab', () => {
+    const { root, host, calls, btn } = setup();
+    const el = btn('x');
+    ptr(el, 'pointerdown', 50, 10);
+    ptr(el, 'pointermove', 50, 40);
+    const e = key(document.body, 'Escape');
+    assertTrue(e.defaultPrevented, 'Esc verbraucht');
+    assertEqual(host.previews.at(-1), null);
+    assertTrue(!root.querySelector('[data-dragging]'), 'kein data-dragging');
+    ptr(el, 'pointerup', 50, 50);
+    assertEqual(calls.length, 0);
+  });
+
+  test('Esc außerhalb ohne laufende Geste bleibt unberührt', () => {
+    setup();
+    const e = key(document.body, 'Escape');
+    assertTrue(!e.defaultPrevented, 'kein preventDefault ohne Geste');
+  });
+
   test('Esc im gedrückten Zustand (unter der Schwelle) → idle, pointerup führt nichts aus', () => {
     const { root, host, calls, btn } = setup();
     const el = btn('x');
