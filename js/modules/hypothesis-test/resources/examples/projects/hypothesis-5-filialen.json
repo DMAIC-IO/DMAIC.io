@@ -1,0 +1,39 @@
+{
+  "category": "mean",
+  "testType": "k",
+  "direction": "two-sided",
+  "alpha": 0.05,
+  "powerGoal": 0.8,
+  "targetValue": "",
+  "targetType": "variance",
+  "colRef1": null,
+  "colRef2": null,
+  "colRefsK": [
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-5-filialen",
+      "columnId": "c-filiale-a"
+    },
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-5-filialen",
+      "columnId": "c-filiale-b"
+    },
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-5-filialen",
+      "columnId": "c-filiale-c"
+    },
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-5-filialen",
+      "columnId": "c-filiale-d"
+    },
+    {
+      "instanceId": "__source__",
+      "sheetId": "sheet-5-filialen",
+      "columnId": "c-filiale-e"
+    }
+  ],
+  "sourceWorksheetFile": "worksheets/hypothesis-5-filialen.json"
+}

@@ -1,0 +1,17 @@
+{
+  "category": "mean",
+  "testType": "one",
+  "direction": "two-sided",
+  "alpha": 0.05,
+  "powerGoal": 0.8,
+  "targetValue": "50",
+  "targetType": "variance",
+  "colRef1": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-fuellmenge",
+    "columnId": "c-fuellmenge"
+  },
+  "colRef2": null,
+  "colRefsK": [],
+  "sourceWorksheetFile": "worksheets/hypothesis-1-stichprobe-fuellmenge.json"
+}

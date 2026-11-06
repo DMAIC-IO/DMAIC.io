@@ -1,0 +1,21 @@
+{
+  "category": "mean",
+  "testType": "two",
+  "direction": "two-sided",
+  "alpha": 0.05,
+  "powerGoal": 0.8,
+  "targetValue": "",
+  "targetType": "variance",
+  "colRef1": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-bearbeitungszeit",
+    "columnId": "c-alt"
+  },
+  "colRef2": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-bearbeitungszeit",
+    "columnId": "c-neu"
+  },
+  "colRefsK": [],
+  "sourceWorksheetFile": "worksheets/hypothesis-2-stichproben-rang.json"
+}

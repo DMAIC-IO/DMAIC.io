@@ -1,0 +1,55 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "category": {
+      "help": "What is being tested: 'variance' (spread) or 'mean' (location)."
+    },
+    "testType": {
+      "help": "Sample layout: 'one', 'two' or 'k'."
+    },
+    "direction": {
+      "help": "Direction of the alternative hypothesis: 'two-sided', 'greater' or 'less'."
+    },
+    "alpha": {
+      "help": "Significance level, for example 0.05."
+    },
+    "powerGoal": {
+      "help": "Desired power, for example 0.8."
+    },
+    "targetValue": {
+      "help": "The entered target value: μ₀ or σ²₀ for one sample, the hypothesised mean difference μ_d₀ for the paired test."
+    },
+    "targetType": {
+      "help": "Whether the spread target value counts as a variance or as a standard deviation."
+    },
+    "colRef1": {
+      "help": "Column reference of the first sample."
+    },
+    "colRef2": {
+      "help": "Column reference of the second sample."
+    },
+    "colRefsK": {
+      "help": "The column references of the k-sample test."
+    },
+    "equalVariances": {
+      "help": "Whether equal variances are assumed: the pooled t-test instead of Welch with two samples, Fisher's ANOVA instead of Welch with k."
+    },
+    "result": {
+      "help": "The result of the analysis as numbers: route, normality findings, main test (statistic, degrees of freedom, p, interval, decision), power, pairwise comparisons and residuals; `{ status: 'insufficient', reason }` while the inputs are not sufficient."
+    }
+  },
+  "actions": {
+    "setCategory": {
+      "help": "Chooses what is being tested: the spread (Variances) or the location (Means). The recomputation only follows on the next tick, because the column pickers are remounted — a query in the same batch still sees the old or an empty result.",
+      "params": {
+        "category": "'variance' or 'mean'. Any other value is an error."
+      }
+    },
+    "setTestType": {
+      "help": "Chooses the sample layout: one sample against a target value, two samples against each other, or k groups. The recomputation only follows on the next tick, because the column pickers are remounted — a query in the same batch still sees the old or an empty result.",
+      "params": {
+        "testType": "'one', 'two' or 'k'. Any other value is an error."
+      }
+    }
+  }
+}

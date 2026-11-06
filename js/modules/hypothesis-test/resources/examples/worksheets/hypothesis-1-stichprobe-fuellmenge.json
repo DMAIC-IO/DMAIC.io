@@ -1,0 +1,48 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-fuellmenge",
+      "name": "Füllmenge",
+      "state": {
+        "columns": [
+          {
+            "id": "c-fuellmenge",
+            "name": "Fuellmenge_g",
+            "shortName": "F",
+            "type": "numeric",
+            "values": [
+              51.25,
+              51.44,
+              50.92,
+              47.64,
+              50.85,
+              50.74,
+              51.56,
+              48.9,
+              50.05,
+              49.44,
+              50.28,
+              50.74,
+              49.24,
+              49.95,
+              52.61,
+              49.94,
+              49.36,
+              48.69,
+              50.39,
+              49.49,
+              48.36,
+              50.04,
+              47.42,
+              51.09,
+              49.89
+            ]
+          }
+        ],
+        "rowCount": 25
+      }
+    }
+  ],
+  "activeSheetId": "sheet-fuellmenge",
+  "sheetCounter": 1
+}

@@ -1,0 +1,126 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Overview",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "A {{term:hypothesentest|hypothesis test}} checks whether an observed deviation in the data is a real effect or could have arisen by chance. It is the central decision instrument of the Analyze phase — used to statistically back up statements like \"the {{term:mittelwert|mean}} has changed\" or \"the two machines deliver different quality\"."
+        },
+        {
+          "type": "definition",
+          "term": "Null hypothesis (H₀)",
+          "content": "The {{term:nullhypothese|null hypothesis H₀}} is the \"nothing going on\" assumption. Typical: \"means are equal\", \"there is no difference\". The test tries to refute it — never to confirm it."
+        },
+        {
+          "type": "definition",
+          "term": "Alternative hypothesis (H₁)",
+          "content": "The {{term:alternativhypothese|alternative hypothesis H₁}} is the interesting counter-assumption: \"the means differ\", \"the new process is better\". Accepted when data refute H₀."
+        },
+        {
+          "type": "definition",
+          "term": "p-value",
+          "content": "The {{term:p-wert|p-value}} is the probability of seeing data this extreme (or more) if H₀ were true. A small p-value means the data are hard to explain under H₀. It is not the probability that H₀ is true, nor the probability that the difference is \"just chance\". Usual threshold: p < 0.05 → reject H₀."
+        },
+        {
+          "type": "definition",
+          "term": "Significance level (α)",
+          "content": "The {{term:signifikanzniveau|significance level α}} — the risk threshold, set in advance, for wrongly rejecting H₀. Usually 0.05 (5%). α is an analyst decision, not a data property."
+        },
+        {
+          "type": "definition",
+          "term": "Type I and Type II errors",
+          "content": "{{term:fehler-erster-art|Type I (α)}}: reject H₀ when it is true — \"{{term:false-alarm-rate|false alarm}}\". Type II (β): fail to reject H₀ when it is false — \"missed real effect\". Power = 1 − β."
+        },
+        {
+          "type": "definition",
+          "term": "Test statistic",
+          "content": "The {{term:teststatistik|test statistic}} — a quantity computed from the data (e.g. t, z, F, χ²) placed against a known distribution. From it the p-value is derived."
+        },
+        {
+          "type": "paragraph",
+          "content": "The right test depends on the question (one mean, two groups, more than two?), the scale (continuous, categorical), and distributional assumptions. Common tests: 1-sample t, 2-sample {{term:t-test|t}}, paired t, {{term:anova|ANOVA}}, Mann-Whitney (nonparametric). Tests for proportions and categorical data (chi-square, Fisher) are in the \"Attribute Tests\" module."
+        },
+        {
+          "type": "definition",
+          "term": "Two-sample comparison (means)",
+          "content": "For two means the module runs the Welch t-test by default. It does not assume equal {{term:varianz|variances}} and loses hardly any power when the variances are in fact equal. A variance pretest that switches between the pooled t-test and Welch distorts the α risk, so the module does not use one. The pooled t-test is available only via the option “Assume equal variances”, when equal spread is justified by the subject matter (e.g. same process, same measurement system). For non-normal data (Anderson-Darling) with fewer than 20 values in a group the module runs Mann-Whitney; with n ≥ 20 per group the t-test is kept and Mann-Whitney is shown as a secondary result. For Mann-Whitney the module shows the Hodges-Lehmann estimate η̂₁−η₂, the median of all pairwise differences, with a confidence interval and the achieved confidence. It estimates the location shift between the groups, not the difference of the medians – the two coincide only when the distributions have the same shape. The p-value is exact for n < 50 per group without ties, otherwise a normal approximation with tie and continuity correction."
+        },
+        {
+          "type": "definition",
+          "term": "Paired comparison (means)",
+          "content": "Paired means two measurements on the same unit – before/after, or two measurement systems on the same part. The module forms the row-wise difference d = column 1 − column 2 and tests whether its mean μ_d equals a hypothesized value μ_d₀ (usually 0). Rows with only one value are dropped; the note above the results says how many. Normality is checked on the differences, not on the columns. If the differences are normal the paired {{term:t-test|t-test}} runs; otherwise, with fewer than 20 pairs, the Wilcoxon signed-rank test on the differences, and from 20 pairs on it is shown alongside. Because every unit is its own control, the paired test is clearly more powerful on such data than the two-sample comparison."
+        },
+        {
+          "type": "definition",
+          "term": "k-sample comparison (means)",
+          "content": "For more than two groups, one-way {{term:anova|analysis of variance}} compares the means via an F-statistic. As for two samples, the module runs Welch's ANOVA by default: it does not assume equal {{term:varianz|variances}} and therefore shows no sum-of-squares table; its denominator degrees of freedom are fractional. With the option “Assume equal variances” the module runs Fisher's classic ANOVA with the sum-of-squares table. The Levene test is shown for information only — a variance pretest that switches the method distorts the α risk. On both routes the module shows the model summary as Minitab does: S (standard deviation of the residuals), R², R² (adj) and R² (pred), negative values as 0 %, plus a confidence interval of each group mean (Fisher from the pooled, Welch from the group's own standard deviation). Whether data count as normal is decided by the Anderson-Darling test; Shapiro-Wilk is shown for information only. If data are non-normal and at least one group has fewer than 20 values, the module switches to the rank-based Kruskal-Wallis test (nonparametric counterpart of {{term:anova|ANOVA}}). With n ≥ 20 per group the ANOVA is robust and remains the main result; Kruskal-Wallis is then shown as a secondary result for cross-checking, because it tests a different hypothesis (a shift of the distribution rather than the means). Both are omnibus tests: they show that at least one mean differs without identifying which one. From three groups on, the module therefore compares all pairs: after Welch's ANOVA with Games-Howell, after Fisher's ANOVA with Tukey HSD — both with adjusted p-values and simultaneous confidence intervals for μᵢ − μⱼ that jointly keep the chosen family confidence (e.g. 95 %). After Kruskal-Wallis, pairwise Mann-Whitney tests follow with Bonferroni correction and Hodges-Lehmann intervals. From the adjusted p-values the module builds the letter grouping: groups that share no letter differ significantly."
+        },
+        {
+          "type": "definition",
+          "term": "One- and two-sample variance",
+          "content": "For normal data (Anderson-Darling) the module runs the χ² test (one {{term:varianz|variance}}) or the F-test (two variances); both are exact then. When Anderson-Darling rejects normality, the module switches to Bonett's method – as Minitab does. χ² and F react strongly to skewed or heavy-tailed data: the p-value and the confidence interval are no longer right. Bonett estimates the kurtosis from a trimmed mean and gives a confidence interval for σ² and σ, or for σ²₁/σ²₂, also one-sided. In extreme designs (very unequal sample sizes) the confidence set for σ²₁/σ²₂ can split into separate pieces; the module then shows no interval, as Minitab does, and the p-value remains valid. For two samples the Levene test (Brown-Forsythe) is shown as a cross-check; it is two-sided only. The power analysis on these routes assumes normality and is an approximation only."
+        },
+        {
+          "type": "definition",
+          "term": "k-sample comparison (variances)",
+          "content": "For equality of variances across several groups, two tests are available: {{term:varianzhomogenitaet|Bartlett}} (parametric, very powerful under normality but sensitive to departures from it) and {{term:varianzhomogenitaet|Levene}} (Brown-Forsythe variant, robust to non-normality). The module picks automatically based on the normality assessment."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Approach",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "State the question precisely — what do I actually want to know?",
+            "Write down H₀ and H₁ clearly — before analyzing data.",
+            "Set the {{term:signifikanzniveau|significance level α}} (typically 0.05) — before computing.",
+            "Choose the right test (based on scale, number of groups, distribution, independence).",
+            "Check assumptions ({{term:normalitaetstest|normality}}? equal variances? independent observations?).",
+            "Run the test and read the p-value.",
+            "Decide: p < α → reject H₀; otherwise no evidence against H₀.",
+            "Additionally report {{term:effektstaerke|effect size}} and confidence interval — a p-value alone says little about magnitude and relevance."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "\"Accept H₀\" instead of \"fail to reject\"",
+          "content": "A non-significant result does not prove H₀ — it only shows the data are not enough to refute it. Absence of evidence is not evidence of absence."
+        },
+        {
+          "type": "definition",
+          "term": "Reading the {{term:p-wert|p-value}} as {{term:effektstaerke|effect size}}",
+          "content": "p = 0.001 does not mean \"large effect\", only \"very unlikely under H₀\". p-values depend heavily on sample size. Effect size and confidence interval show magnitude."
+        },
+        {
+          "type": "definition",
+          "term": "Assumptions not checked",
+          "content": "A t-test on strongly skewed data or ANOVA on very unequal variances yields wrong p-values. At least check histogram and variances, switch to nonparametric if needed."
+        },
+        {
+          "type": "definition",
+          "term": "Multiple testing without correction",
+          "content": "Running 20 tests on random data produces roughly one with p < 0.05 by chance. For many comparisons use Bonferroni, FDR, or a better design."
+        },
+        {
+          "type": "definition",
+          "term": "Hypothesizing after seeing the data",
+          "content": "Writing H₀/H₁ only after looking at the data turns exploration into apparent confirmation (p-hacking). The hypothesis belongs before the experiment."
+        },
+        {
+          "type": "definition",
+          "term": "Significant ≠ practically relevant",
+          "content": "At n = 100,000 even the tiniest difference becomes significant. Before presenting always ask: \"is the difference big enough to act on?\"."
+        }
+      ]
+    }
+  }
+}

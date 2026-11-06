@@ -1,0 +1,55 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "category": {
+      "help": "Was geprüft wird: 'variance' (Streuung) oder 'mean' (Lage)."
+    },
+    "testType": {
+      "help": "Stichprobenlage: 'one', 'two' oder 'k'."
+    },
+    "direction": {
+      "help": "Richtung der Alternativhypothese: 'two-sided', 'greater' oder 'less'."
+    },
+    "alpha": {
+      "help": "Signifikanzniveau, zum Beispiel 0.05."
+    },
+    "powerGoal": {
+      "help": "Angestrebte Power, zum Beispiel 0.8."
+    },
+    "targetValue": {
+      "help": "Der eingegebene Zielwert: bei einer Stichprobe μ₀ oder σ²₀, beim gepaarten Test die angenommene mittlere Differenz μ_d₀."
+    },
+    "targetType": {
+      "help": "Ob der Streuungs-Zielwert als Varianz oder als Standardabweichung gilt."
+    },
+    "colRef1": {
+      "help": "Spaltenbezug der ersten Stichprobe."
+    },
+    "colRef2": {
+      "help": "Spaltenbezug der zweiten Stichprobe."
+    },
+    "colRefsK": {
+      "help": "Die Spaltenbezüge der k-Stichproben-Prüfung."
+    },
+    "equalVariances": {
+      "help": "Ob gleiche Varianzen angenommen werden: bei zwei Stichproben der gepoolte t-Test statt Welch, bei k die ANOVA nach Fisher statt Welch."
+    },
+    "result": {
+      "help": "Das Ergebnis der Analyse als Zahlen: Route, Normalitätsbefunde, Haupttest (Statistik, Freiheitsgrade, p, Intervall, Entscheidung), Teststärke, Paarvergleiche und Residuen; `{ status: 'insufficient', reason }`, solange die Eingaben nicht reichen."
+    }
+  },
+  "actions": {
+    "setCategory": {
+      "help": "Wählt, was geprüft wird: die Streuung (Varianzen) oder die Lage (Mittelwerte). Die Neuberechnung folgt erst im nächsten Tick, weil die Spaltenauswahl neu eingehängt wird — eine Abfrage im selben Stapel sieht noch das alte oder ein leeres Ergebnis.",
+      "params": {
+        "category": "'variance' oder 'mean'. Jeder andere Wert ist ein Fehler."
+      }
+    },
+    "setTestType": {
+      "help": "Wählt die Stichprobenlage: eine Stichprobe gegen einen Zielwert, zwei Stichproben gegeneinander oder k Gruppen. Die Neuberechnung folgt erst im nächsten Tick, weil die Spaltenauswahl neu eingehängt wird — eine Abfrage im selben Stapel sieht noch das alte oder ein leeres Ergebnis.",
+      "params": {
+        "testType": "'one', 'two' oder 'k'. Jeder andere Wert ist ein Fehler."
+      }
+    }
+  }
+}

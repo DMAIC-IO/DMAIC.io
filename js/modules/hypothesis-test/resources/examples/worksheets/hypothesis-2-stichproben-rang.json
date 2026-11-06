@@ -1,0 +1,55 @@
+{
+  "sheets": [
+    {
+      "id": "sheet-bearbeitungszeit",
+      "name": "Bearbeitungszeit",
+      "state": {
+        "columns": [
+          {
+            "id": "c-alt",
+            "name": "Altes_Verfahren",
+            "shortName": "A",
+            "type": "numeric",
+            "values": [
+              12.88,
+              12.24,
+              16.34,
+              12.69,
+              35.41,
+              9.55,
+              22.41,
+              16.11,
+              20.8,
+              16.95,
+              13.96,
+              9.21
+            ]
+          },
+          {
+            "id": "c-neu",
+            "name": "Neues_Verfahren",
+            "shortName": "N",
+            "type": "numeric",
+            "values": [
+              14.09,
+              26.56,
+              26.54,
+              19.03,
+              40.4,
+              15.14,
+              14.22,
+              53.3,
+              44.56,
+              18.93,
+              41.84,
+              14.77
+            ]
+          }
+        ],
+        "rowCount": 12
+      }
+    }
+  ],
+  "activeSheetId": "sheet-bearbeitungszeit",
+  "sheetCounter": 1
+}
