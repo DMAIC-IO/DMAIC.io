@@ -8,12 +8,7 @@
     "$schema": { "$ref": "common.schema.json#/$defs/schemaRef" },
     "fields": {
       "type": "object",
-      "additionalProperties": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["help"],
-        "properties": { "help": { "$ref": "common.schema.json#/$defs/text" } }
-      }
+      "additionalProperties": { "$ref": "#/$defs/fieldHelp" }
     },
     "state": {
       "type": "object",
@@ -55,6 +50,12 @@
     "types": { "type": "object", "additionalProperties": { "$ref": "#/$defs/typeTree" } }
   },
   "$defs": {
+    "fieldHelp": {
+      "type": "object",
+      "required": ["help"],
+      "properties": { "help": { "$ref": "common.schema.json#/$defs/text" } },
+      "additionalProperties": { "$ref": "#/$defs/fieldHelp" }
+    },
     "action": {
       "type": "object",
       "minProperties": 1,

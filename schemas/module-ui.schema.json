@@ -9,6 +9,10 @@
     "name": { "$ref": "common.schema.json#/$defs/text" },
     "description": { "$ref": "common.schema.json#/$defs/text" },
     "whenToUse": { "$ref": "common.schema.json#/$defs/text" },
+    "invariants": {
+      "type": "object",
+      "additionalProperties": { "$ref": "common.schema.json#/$defs/text" }
+    },
     "fields": false,
     "actions": false,
     "types": false

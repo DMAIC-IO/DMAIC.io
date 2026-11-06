@@ -383,6 +383,32 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
   /** Name des Kommandos = Schlüssel der umgebenden PropertyAssignment. */
   const commandName = (call) => (ts.isPropertyAssignment(call.parent) && call.parent.name && 'text' in call.parent.name ? call.parent.name.text : '?');
   const HOOKS = ['run', 'current', 'confirm'];
+  /** `invariants: { <name>: { fields: ['…'], test(m) { … } } }` am obersten Literal. */
+  const checkInvariants = (p) => {
+    const v = ts.isPropertyAssignment(p) ? p.initializer : null;
+    if (!v || !ts.isObjectLiteralExpression(v)) {
+      out.push(`${P} invariants muss ein Objekt-Literal { name: { fields: […], test(m) { … } } } sein (${src(p)})`);
+      return;
+    }
+    for (const inv of v.properties) {
+      const name = keyOf(inv) ?? '?';
+      const body = ts.isPropertyAssignment(inv) ? inv.initializer : null;
+      if (!body || !ts.isObjectLiteralExpression(body)) { out.push(`${P} invariants.${name} muss ein Objekt-Literal sein (${src(inv)})`); continue; }
+      for (const q of body.properties) {
+        const k = keyOf(q);
+        if (k === 'test') {
+          if (ts.isMethodDeclaration(q)) continue;
+          const f = ts.isPropertyAssignment(q) ? q.initializer : null;
+          if (f && ts.isArrowFunction(f)) out.push(`${P} test von invariants.${name} ist eine Pfeilfunktion — this muss das Model sein`);
+          else if (!(f && ts.isFunctionExpression(f))) out.push(`${P} test von invariants.${name}: Funktion oder Methode erwartet`);
+          continue;
+        }
+        if (k === 'fields' && ts.isPropertyAssignment(q) && ts.isArrayLiteralExpression(q.initializer)
+          && q.initializer.elements.every((e) => ts.isStringLiteral(e))) continue;
+        out.push(`${P} invariants.${name}: nur fields (String-Literale) und test erlaubt (${src(q)})`);
+      }
+    }
+  };
   const check = (n, cmdName = null) => {
     if (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n) || ts.isNumericLiteral(n)) return;
     if ([ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword, ts.SyntaxKind.NullKeyword].includes(n.kind)) return;
@@ -405,6 +431,7 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
         if (p.name && ts.isComputedPropertyName(p.name)) { out.push(`${P} berechneter Schlüssel nicht erlaubt (${src(p.name)})`); continue; }
         const key = p.name && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? p.name.text : null;
         if (define === 'defineModel' && n === top && (key === 'version' || key === 'migrations')) continue;
+        if (define === 'defineModel' && n === top && key === 'invariants') { checkInvariants(p); continue; }
         if (cmdName !== null && HOOKS.includes(key)) {
           if (ts.isMethodDeclaration(p)) continue;
           const v = ts.isPropertyAssignment(p) ? p.initializer : null;
@@ -883,6 +910,24 @@ export function readConfirmKeys(text) {
 }
 
 /**
+ * Gate UI-Texte, Teil Invarianten: je Invariante `invariants.<name>` in
+ * `ui.de.json` und `ui.en.json` (Text der Ablehnung am Feld).
+ * @param {{ invariants?: Record<string, object> }} schema
+ * @param {{ de: object|null, en: object|null }} ui
+ * @returns {string[]}
+ */
+export function checkInvariantTexts(schema, ui) {
+  const out = [];
+  for (const name of Object.keys(schema.invariants ?? {})) {
+    for (const lang of ['de', 'en']) {
+      const v = ui[lang]?.invariants?.[name];
+      if (typeof v !== 'string' || v.trim() === '') out.push(`ui: resources/i18n/ui.${lang}.json: invariants.${name} fehlt`);
+    }
+  }
+  return out;
+}
+
+/**
  * Gate Rückfragetexte: jeder confirm-Schlüssel steht in ui.de.json und ui.en.json.
  * @param {string[]} keys aus readConfirmKeys
  * @param {{ de: object|null, en: object|null }} ui
@@ -1097,6 +1142,10 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
       const lists = checkListBindings(templates, schema);
       out.push(...lists.findings, ...checkDefaultArgRefs(templates, schema), ...checkChoiceGroups(templates));
       out.push(...checkConfirmKeys(readConfirmKeys(readFileSync(file, 'utf8')), {
+        de: readJson(join(base, 'resources', 'i18n', 'ui.de.json')),
+        en: readJson(join(base, 'resources', 'i18n', 'ui.en.json')),
+      }));
+      out.push(...checkInvariantTexts(schema, {
         de: readJson(join(base, 'resources', 'i18n', 'ui.de.json')),
         en: readJson(join(base, 'resources', 'i18n', 'ui.en.json')),
       }));

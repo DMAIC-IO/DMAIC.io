@@ -2,7 +2,7 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "columns": {
-      "help": "Je SIPOC-Spalte die Einträge in Anzeigereihenfolge, adressiert als columns[spalte]. Die fünf Spaltenschlüssel sind suppliers (Lieferanten), inputs (Eingaben), process (Prozessschritte), outputs (Ergebnisse) und customers (Kunden)."
+      "help": "Je SIPOC-Spalte die Einträge in Anzeigereihenfolge, je Spalte unter ihrem Schlüssel. Die fünf Spaltenschlüssel sind suppliers (Lieferanten), inputs (Eingaben), process (Prozessschritte), outputs (Ergebnisse) und customers (Kunden)."
     }
   },
   "actions": {

@@ -249,3 +249,10 @@ test('Passform: examples/index.json erfüllt examples-index, shared/scenarios.js
   assert.deepEqual(validateValue({ scenarios }, 'scenarios').errors, []);
   assert.equal(scenarios.length, 12);
 });
+
+test('Kontexthilfe: Element-Felder unter fields; UI-Texte: invariants', () => {
+  assert.deepEqual(validateValue({ ...CTX, fields: { events: { help: 'Termine.', title: { help: 'Titel.' } } } }, 'module-context-help'), { ok: true, errors: [] });
+  assert.equal(validateValue({ ...CTX, fields: { events: { help: 'Termine.', title: {} } } }, 'module-context-help').ok, false);
+  assert.deepEqual(validateValue({ ...UI, invariants: { order: 'Von liegt vor Bis.' } }, 'module-ui'), { ok: true, errors: [] });
+  assert.equal(validateValue({ ...UI, invariants: { order: 3 } }, 'module-ui').ok, false);
+});

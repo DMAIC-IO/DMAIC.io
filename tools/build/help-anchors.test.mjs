@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { helpKeysInScripts, anchorKeysOf } from './help-anchors.mjs';
+import { helpKeysInScripts, helpKeysInTemplates, anchorKeysOf } from './help-anchors.mjs';
 
 /** Minimaler App-Baum: ein Modul `foo` mit den gegebenen Dateien, dazu die geteilte Statistiktabelle. */
 function fixture(files, shared = '') {
@@ -59,4 +59,11 @@ test('helpKeysInScripts: agentAction mit Teil-Viewmodel und Schlüssel aus viewm
     ['foo.js', 'modules.foo.actions.draft.addQuestion.help'],
     ['viewmodel/draft.js', 'modules.foo.types.Fields.title'],
   ]);
+});
+
+test('helpKeysInTemplates: liest auch resources/*.html', () => {
+  const root = fixture({});
+  mkdirSync(join(root, 'js', 'modules', 'foo', 'resources'), { recursive: true });
+  writeFileSync(join(root, 'js', 'modules', 'foo', 'resources', 'view.html'), '<label data-help-key="modules.x.fields.a.help">A</label>');
+  assert.deepEqual(helpKeysInTemplates(root, 'foo'), [['resources/view.html', 'modules.x.fields.a.help']]);
 });

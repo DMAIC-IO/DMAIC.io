@@ -2,7 +2,7 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "columns": {
-      "help": "The entries of each SIPOC column in display order, addressed as columns[column]. The five column keys are suppliers, inputs, process, outputs and customers."
+      "help": "The entries of each SIPOC column in display order, each under its column key. The five column keys are suppliers, inputs, process, outputs and customers."
     }
   },
   "actions": {

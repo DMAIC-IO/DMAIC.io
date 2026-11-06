@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups } from './module-gates.mjs';
+import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts } from './module-gates.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { APP_DIR } from './build.mjs';
 import { defineModel, command, text, number, oneOf, index, idOf, list, record, object, boolean, date } from '../../js/core/model.js';
@@ -872,4 +872,32 @@ test('Listenpfade: derselbe Eintragsname über zwei Listen wird in Dokumentreihe
     'template: resources/view.html: x-field="x.due": due passt nicht zum Schema',
   ]);
   assert.deepEqual(helpKeys, ['fields.items.text.help', 'fields.risks.actions.owner.help']);
+});
+
+const INVARIANT_MODEL = `import { defineModel, number } from '@/core/model.js';
+export const State = defineModel({
+  fields: {},
+  view: { a: number({ default: 1 }), b: number({ default: 2 }) },
+  invariants: {
+    order: { fields: ['a', 'b'], test(m) { return m.a < m.b; } },
+    arrow: { fields: ['a'], test: (m) => m.a > 0 },
+    extra: { fields: ['a'], test(m) { return true; }, note: 'x' },
+  },
+  commands: {},
+});
+`;
+
+test('Schema-Literal: invariants mit test als Methode', () => {
+  assert.deepEqual(checkSchemaLiteral(INVARIANT_MODEL), [
+    'schema: domain/model.js: test von invariants.arrow ist eine Pfeilfunktion — this muss das Model sein',
+    "schema: domain/model.js: invariants.extra: nur fields (String-Literale) und test erlaubt (note: 'x')",
+  ]);
+});
+
+test('Invarianten: Text je Sprache', () => {
+  const schema = { invariants: { order: { fields: ['a', 'b'] }, span: { fields: ['a'] } } };
+  assert.deepEqual(checkInvariantTexts(schema, { de: { invariants: { order: 'Von vor Bis.' } }, en: { invariants: { order: 'From before to.', span: ' ' } } }), [
+    'ui: resources/i18n/ui.de.json: invariants.span fehlt',
+    'ui: resources/i18n/ui.en.json: invariants.span fehlt',
+  ]);
 });

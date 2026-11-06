@@ -8,20 +8,24 @@
  * Sammler könnten auseinanderlaufen — das Tor prüfte dann andere Anker, als
  * die Kennzahl zählt.
  */
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /** Alle `data-help-key`-Werte aus den Vorlagen eines Moduls. */
 export function helpKeysInTemplates(appDir, moduleId) {
   const dir = join(appDir, 'js', 'modules', moduleId);
   const keys = [];
-  for (const file of readdirSync(dir)) {
-    if (!file.endsWith('.html')) continue;
-    const html = readFileSync(join(dir, file), 'utf8');
-    // Nur das wörtliche Merkmal: `:data-help-key="col.help"` ist ein
-    // Alpine-Ausdruck, kein Schlüssel (msa-typ1, Statistiktabelle) — deren
-    // Ziele sind Typedef-Sätze und stehen schon im Typedef-Tor.
-    for (const m of html.matchAll(/(?<![:\w-])data-help-key="([^"]+)"/g)) keys.push([file, m[1]]);
+  const dirs = [['', dir], ['resources/', join(dir, 'resources')]];
+  for (const [prefix, d] of dirs) {
+    if (!existsSync(d)) continue;
+    for (const file of readdirSync(d)) {
+      if (!file.endsWith('.html')) continue;
+      const html = readFileSync(join(d, file), 'utf8');
+      // Nur das wörtliche Merkmal: `:data-help-key="col.help"` ist ein
+      // Alpine-Ausdruck, kein Schlüssel (msa-typ1, Statistiktabelle) — deren
+      // Ziele sind Typedef-Sätze und stehen schon im Typedef-Tor.
+      for (const m of html.matchAll(/(?<![:\w-])data-help-key="([^"]+)"/g)) keys.push([prefix + file, m[1]]);
+    }
   }
   return keys;
 }
