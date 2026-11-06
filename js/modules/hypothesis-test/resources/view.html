@@ -1,5 +1,6 @@
 <div class="hyptest dmike-split" x-data="hypothesisTest">
 
+  <!-- data-help-key="" auf den Schaltflächen und Auswahl-Hosts ist gewollt: die Hilfe hängt an der Gruppe bzw. am Feldlabel, der automatische Schlüssel ergäbe doppelte Fragezeichen. -->
   <!-- ─── Input (left) ─────────────────────────────────────────── -->
   <div class="hyptest__input dmike-split__input">
 
@@ -127,14 +128,14 @@
       <div class="hyptest__field field-group field-group--minor">
         <label data-help-key="modules.hypothesis-test.fields.alpha.help">α</label>
         <input type="number" data-ref="alpha" class="field field--num"
-          x-field="model.alpha">
+          x-field="model.alpha" step="0.01">
       </div>
       <template x-if="model.testType !== 'k'">
         <div class="hyptest__field field-group field-group--minor">
           <label data-help-key="modules.hypothesis-test.fields.powerGoal.help"
                  x-text="t('powerGoal')"></label>
           <input type="number" data-ref="power-goal" class="field field--num"
-            x-field="model.powerGoal">
+            x-field="model.powerGoal" step="0.05">
         </div>
       </template>
     </div>

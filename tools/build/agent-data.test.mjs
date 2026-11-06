@@ -1667,8 +1667,8 @@ test('Domänen-Tor: die erklärten Wertemengen des Hypothesentests sind GENAU di
     return [...html.slice(open, end).matchAll(/<option value="([^"]+)"/g)].map(m => m[1]);
   };
 
-  assert.deepEqual(attrValues('data-cat'), [...CATEGORIES]);
-  assert.deepEqual(attrValues('data-type'), [...TEST_TYPES]);
+  assert.deepEqual(attrValues('data-arg-category'), [...CATEGORIES]);
+  assert.deepEqual(attrValues('data-arg-test-type'), [...TEST_TYPES]);
   assert.deepEqual(optionValues('direction'), [...DIRECTIONS]);
   assert.deepEqual(optionValues('target-type'), [...TARGET_TYPES]);
 
