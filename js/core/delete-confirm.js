@@ -13,8 +13,6 @@
  * `data-confirm-delete="off"` opts a trash-icon button out.
  * `data-confirm-message` replaces the generic question with a specific one
  * (Alpine can bind it: `:data-confirm-message="vm.deleteMessage(id)"`).
- *
- * Spec: docs/superpowers/specs/2026-11-06-delete-confirm-design.md
  */
 
 const TRIGGER = 'button, [role="button"]';

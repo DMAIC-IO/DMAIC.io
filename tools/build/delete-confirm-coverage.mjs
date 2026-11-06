@@ -6,8 +6,6 @@
  * the generic layer: it contains the trash icon (`data-icon="action.delete"`)
  * or carries `data-confirm-delete` — `="off"` when its handler asks itself.
  * Anything else is listed in DELETE_CONFIRM_EXEMPTIONS with a reason.
- *
- * Spec: docs/superpowers/specs/2026-11-06-delete-confirm-design.md
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';

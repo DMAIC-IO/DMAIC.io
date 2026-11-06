@@ -64,8 +64,8 @@ suite('survey-vm recipients — list and status', () => {
 });
 
 suite('survey-vm recipients — delete', () => {
-  // Every delete asks (spec 2026-11-06-delete-confirm-design.md): a recipient
-  // without an answer gets the generic question.
+  // Every delete asks: a recipient without an answer gets the generic
+  // question.
   test('a recipient without an answer is asked with the generic question', async () => {
     const { ctx, vm, model } = setup();
     vm.addRecipient();
