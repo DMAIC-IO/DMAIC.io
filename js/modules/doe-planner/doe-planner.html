@@ -90,7 +90,7 @@
     </div>
 
     <!-- ── Factors section ────────────────────────────────────── -->
-    <div class="dmike-split__section-title" data-help-key="modules.doe-planner.fields.factors.help" x-text="t('stepFactors')"></div>
+    <div class="dmike-split__section-title"><span data-help-key="modules.doe-planner.fields.factors.help" x-text="t('stepFactors')"></span></div>
     <div class="doe__factors-list">
       <template x-for="(f, fi) in model.factors" :key="f.id">
         <div class="doe__factor-row" :data-factor-id="f.id" :data-factor-kind="factors.factorKind(f)">
@@ -143,7 +143,7 @@
     <button class="btn btn--sm doe__add-factor-btn" data-help-key="modules.doe-planner.actions.factors.addFactor.help" type="button" @click="factors.addFactor()"><span x-text="'+ ' + t('addFactor')"></span></button>
 
     <!-- ── Responses section ──────────────────────────────────── -->
-    <div class="dmike-split__section-title" data-help-key="modules.doe-planner.fields.responses.help" x-text="t('stepResponses')"></div>
+    <div class="dmike-split__section-title"><span data-help-key="modules.doe-planner.fields.responses.help" x-text="t('stepResponses')"></span></div>
     <div class="doe__responses-list">
       <template x-for="(r, ri) in model.responses" :key="ri">
         <div class="doe__response-row" :data-response-idx="ri">
@@ -166,7 +166,7 @@
     <button class="btn btn--sm doe__add-response-btn" data-help-key="modules.doe-planner.actions.factors.addResponse.help" type="button" @click="factors.addResponse()"><span x-text="'+ ' + t('addResponse')"></span></button>
 
     <!-- ── Design section ─────────────────────────────────────── -->
-    <div class="dmike-split__section-title" data-help-key="modules.doe-planner.actions.design.selectDesignType.help" x-text="t('stepDesignType')"></div>
+    <div class="dmike-split__section-title"><span data-help-key="modules.doe-planner.actions.design.selectDesignType.help" x-text="t('stepDesignType')"></span></div>
 
     <!-- Recommendation -->
     <template x-if="design.recommendation()">
@@ -206,7 +206,7 @@
     <!-- Resolution table (frac) -->
     <template x-if="model.designType === 'frac'">
       <div class="doe__sub-panel">
-        <div class="dmike-split__section-title" data-help-key="modules.doe-planner.actions.design.selectResolution.help" x-text="t('resTableTitle')"></div>
+        <div class="dmike-split__section-title"><span data-help-key="modules.doe-planner.actions.design.selectResolution.help" x-text="t('resTableTitle')"></span></div>
         <div class="doe__res-info" x-text="design.resInfoText()"></div>
         <div class="doe__res-table-wrap">
           <table class="doe__res-table">
@@ -296,7 +296,7 @@
     <!-- PB table -->
     <template x-if="model.designType === 'pb'">
       <div class="doe__sub-panel">
-        <div class="dmike-split__section-title" data-help-key="modules.doe-planner.actions.design.selectPB.help" x-text="t('pbTitle')"></div>
+        <div class="dmike-split__section-title"><span data-help-key="modules.doe-planner.actions.design.selectPB.help" x-text="t('pbTitle')"></span></div>
         <div class="doe__pb-info" x-text="design.pbInfoText()"></div>
         <table class="doe__pb-table">
           <thead><tr><th></th><th x-text="t('factors')"></th><th x-text="t('runs')"></th></tr></thead>
@@ -331,7 +331,7 @@
     <!-- Taguchi selector -->
     <template x-if="model.designType === 'taguchi'">
       <div class="doe__sub-panel">
-        <div class="dmike-split__section-title" data-help-key="modules.doe-planner.actions.design.selectTaguchi.help" x-text="t('taguchiTitle')"></div>
+        <div class="dmike-split__section-title"><span data-help-key="modules.doe-planner.actions.design.selectTaguchi.help" x-text="t('taguchiTitle')"></span></div>
         <div class="doe__taguchi-info" x-text="design.taguchiInfoText()"></div>
         <template x-if="design.taguchiCandidatesList().length > 0">
           <table class="doe__taguchi-table">
@@ -461,7 +461,7 @@
     </template>
 
     <!-- Design parameters -->
-    <div class="dmike-split__section-title" data-help-key="modules.doe-planner.fields.options.help" x-text="t('stepParameters')"></div>
+    <div class="dmike-split__section-title"><span data-help-key="modules.doe-planner.fields.options.help" x-text="t('stepParameters')"></span></div>
     <div class="doe__param-group">
       <div class="field-checks">
         <label class="field-check">

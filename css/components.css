@@ -1987,6 +1987,15 @@ th .context-help-anchor > .context-help__btn {
   top: 50%;
 }
 
+/* Section titles in the input panel are full-width blocks with a bottom
+   rule; as an anchor the badge would land at the panel's right edge. The
+   anchor is therefore a span around the title text, and the badge is
+   centred on that text line instead of its top edge (small uppercase text,
+   the 16px circle would otherwise stick out above it). */
+.dmike-split__section-title > .context-help-anchor > .context-help__btn {
+  top: 50%;
+}
+
 /* Anker NEBEN einem Eingabefeld: DatasetPicker-Slotbuchstabe (X, Y, G) und
    der Text einer Optionszeile (`…__opt-row`, Label mit Select). Der Kreis
    rechts vom Anker läge auf dem Select und verdeckte dessen ersten Buchstaben

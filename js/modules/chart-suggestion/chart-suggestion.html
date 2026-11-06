@@ -14,7 +14,7 @@
   <template x-if="model.suggestions && model.suggestions.length > 0">
     <div class="chart-suggestion dmike-split">
       <aside class="chart-suggestion__gallery dmike-split__input">
-        <div class="dmike-split__section-title" data-help-key="modules.chart-suggestion.fields.suggestions.help" x-text="t('sectionSuggestions')"></div>
+        <div class="dmike-split__section-title"><span data-help-key="modules.chart-suggestion.fields.suggestions.help" x-text="t('sectionSuggestions')"></span></div>
         <div class="chart-suggestion__selection-info" data-ref="selection-info" data-help-key="modules.chart-suggestion.fields.selection.help">
           <div class="chart-suggestion__selection-label" x-text="selectionLabel()"></div>
           <template x-for="c in selectionColumns()" :key="c.id">
