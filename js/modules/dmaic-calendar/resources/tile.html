@@ -1,0 +1,20 @@
+<template x-if="empty">
+  <p class="dashboard-area__empty" x-text="t('tileEmpty')"></p>
+</template>
+<template x-if="!empty">
+  <div class="dashboard-fmea__summary" data-help-key="modules.dmaic-calendar.fields.events.help" x-text="summary"></div>
+</template>
+<template x-if="none">
+  <p class="dashboard-calendar__none" x-text="t('tileNone')"></p>
+</template>
+<template x-if="shown.length">
+  <ol class="dashboard-fmea__top-list">
+    <template x-for="e in shown" :key="e.id">
+      <li class="dashboard-fmea__top-item">
+        <span class="dashboard-calendar__when" x-text="e.when"></span>
+        <span class="dashboard-fmea__top-desc" x-text="e.title"></span>
+        <span class="dashboard-calendar__phase" x-text="e.phase"></span>
+      </li>
+    </template>
+  </ol>
+</template>

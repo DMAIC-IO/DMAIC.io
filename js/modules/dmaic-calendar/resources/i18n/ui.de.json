@@ -1,0 +1,88 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Kalender",
+  "description": "Projektkalender: Termine je Phase in Monats- und Wochenansicht",
+  "whenToUse": "Wenn die Termine eines Projekts geführt werden sollen — Besprechungen, Messzeiträume, Stichtage —, je Termin einer Phase zugeordnet und in einer Monats- oder Wochenansicht dargestellt; nicht für Aufgaben ohne festen Zeitpunkt, dafür ist die Aufgabenliste da, und nicht für die Planung von Vorgangsdauern und Abhängigkeiten.",
+  "phases": "Phasen",
+  "timeAxis": "Zeitachse",
+  "time": "Uhrzeit",
+  "startTime": "Start",
+  "endTime": "Ende",
+  "from": "Von",
+  "to": "Bis",
+  "weekdays": "Wochentage",
+  "upcoming": "Nächste Termine",
+  "noEvents": "Keine Termine",
+  "newEvent": "Neuer Termin",
+  "editEvent": "Termin bearbeiten",
+  "title": "Titel",
+  "titlePlaceholder": "z.B. Tollgate Review Define",
+  "date": "Datum",
+  "duration": "Dauer",
+  "phase": "Phase",
+  "descLabel": "Beschreibung",
+  "descPlaceholder": "Agenda, Teilnehmer, Ziele …",
+  "view": "Ansicht",
+  "month": "Monat",
+  "week": "Woche",
+  "today": "Heute",
+  "previous": "Vorheriger Zeitraum",
+  "next": "Nächster Zeitraum",
+  "more": "+{n} mehr",
+  "resizeStart": "Beginn verschieben",
+  "resizeEnd": "Ende verschieben",
+  "monthName": {
+    "0": "Januar",
+    "1": "Februar",
+    "2": "März",
+    "3": "April",
+    "4": "Mai",
+    "5": "Juni",
+    "6": "Juli",
+    "7": "August",
+    "8": "September",
+    "9": "Oktober",
+    "10": "November",
+    "11": "Dezember"
+  },
+  "dayName": {
+    "0": "Montag",
+    "1": "Dienstag",
+    "2": "Mittwoch",
+    "3": "Donnerstag",
+    "4": "Freitag",
+    "5": "Samstag",
+    "6": "Sonntag"
+  },
+  "dayAbbr": {
+    "0": "Mo",
+    "1": "Di",
+    "2": "Mi",
+    "3": "Do",
+    "4": "Fr",
+    "5": "Sa",
+    "6": "So"
+  },
+  "confirm": {
+    "removeEvent": "Den Termin „{title}“ löschen?"
+  },
+  "invariants": {
+    "axisOrder": "Die erste Stunde der Tagesachse muss vor der letzten liegen.",
+    "dayOrder": "Der erste Wochentag darf nicht nach dem letzten liegen."
+  },
+  "tileEmpty": "Keine Termine erfasst.",
+  "tileSummary": "{count} Termine in den nächsten {days} Tagen",
+  "tileSummary_one": "1 Termin in den nächsten {days} Tagen",
+  "tileNone": "Keine anstehenden Termine.",
+  "tile": {
+    "settings": {
+      "horizon": {
+        "options": {
+          "7": "7 Tage",
+          "14": "14 Tage",
+          "30": "30 Tage"
+        }
+      }
+    }
+  }
+}

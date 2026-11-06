@@ -1,0 +1,95 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "events": {
+      "help": "Die Termine des Projekts. Das Ende eines Termins ist aus Beginn und Dauer gerechnet und steht in keinem Feld. Massendaten: ohne options.fields = ['events'] kommt nur der Umfang.",
+      "id": {
+        "help": "Die Kennung des Termins; die App vergibt sie beim Anlegen. Mit ihr sprechen Sie den Termin beim Ändern und Löschen an."
+      },
+      "title": {
+        "help": "Die Bezeichnung des Termins. Sie darf nicht leer sein; Leerzeichen am Rand werden entfernt."
+      },
+      "date": {
+        "help": "Der Tag des Termins als JJJJ-MM-TT, zum Beispiel 2026-03-14; es muss ein echtes Kalenderdatum sein."
+      },
+      "time": {
+        "help": "Der Beginn des Termins als HH:MM im 5-Minuten-Raster, zwischen 00:00 und 23:55; ohne Angabe 09:00."
+      },
+      "duration": {
+        "help": "Die Dauer in ganzen Minuten, mindestens 5; ohne Angabe 60. Im Dialog ergibt sie sich aus Ende minus Beginn und wird nur angezeigt."
+      },
+      "desc": {
+        "help": "Eine Beschreibung des Termins als freier Text; ohne Angabe leer."
+      },
+      "phase": {
+        "help": "Die Phase, nach der der Termin eingefärbt wird. Gültig ist jede Phase eines Zyklus; ohne Angabe die erste Phase des aktiven Zyklus. Ein Termin aus einem anderen Zyklus behält seine Phase — der Dialog zeigt sie als zusätzliche Wahl „Phase (Zyklus)“."
+      },
+      "source": {
+        "help": "Woher der Termin stammt. Nur Termine aus der Aufgabenliste tragen den Wert todo; ändern Sie sie dort, denn die nächste Meldung der Aufgabenliste ersetzt sie."
+      }
+    },
+    "viewMode": {
+      "help": "Die Ansicht des Kalenders: der Monat oder die Woche. Die Wahl wird mit dem Projekt gespeichert."
+    },
+    "axisFrom": {
+      "help": "Die erste angezeigte Stunde der Tagesachse, 0 bis 23. Sie muss vor der letzten liegen und begrenzt nur die Wochenansicht, nicht die Termine."
+    },
+    "axisTo": {
+      "help": "Die letzte angezeigte Stunde der Tagesachse, 1 bis 24. Sie muss nach der ersten liegen und begrenzt nur die Wochenansicht, nicht die Termine."
+    },
+    "dayFrom": {
+      "help": "Der erste angezeigte Wochentag, Montag bis Sonntag. Er darf nicht nach dem letzten liegen."
+    },
+    "dayTo": {
+      "help": "Der letzte angezeigte Wochentag, Montag bis Sonntag. Er darf nicht vor dem ersten liegen."
+    }
+  },
+  "actions": {
+    "addEvent": {
+      "help": "Legt einen Termin an und gibt seine id zurück.",
+      "params": {
+        "title": "Die Bezeichnung; Leerzeichen am Rand fallen weg. Ein leerer Text ist ein Fehler.",
+        "date": "Der Tag als JJJJ-MM-TT; ein Datum, das es nicht gibt (etwa 2026-02-30), ist ein Fehler.",
+        "time": "Der Beginn als HH:MM im 5-Minuten-Raster; ohne Angabe 09:00. Eine Zeit außerhalb des Rasters ist ein Fehler.",
+        "duration": "Die Dauer in ganzen Minuten, mindestens 5; ohne Angabe 60.",
+        "desc": "Die Beschreibung; ohne Angabe leer.",
+        "phase": "Die Phase des Termins; gültig ist jede Phase eines Zyklus, ohne Angabe die erste Phase des aktiven Zyklus."
+      }
+    },
+    "updateEvent": {
+      "help": "Ändert die übergebenen Angaben eines Termins; die übrigen bleiben stehen.",
+      "params": {
+        "id": "Die id des Termins, wie read() sie unter events führt. Eine unbekannte id ist ein Fehler.",
+        "title": "Die neue Bezeichnung; Leerzeichen am Rand fallen weg. Ein leerer Text ist ein Fehler.",
+        "date": "Der neue Tag als JJJJ-MM-TT.",
+        "time": "Der neue Beginn als HH:MM im 5-Minuten-Raster.",
+        "duration": "Die neue Dauer in ganzen Minuten, mindestens 5.",
+        "desc": "Die neue Beschreibung.",
+        "phase": "Die neue Phase; gültig ist jede Phase eines Zyklus."
+      }
+    },
+    "removeEvent": {
+      "help": "Entfernt einen Termin. In der Oberfläche fragt der Kalender vorher nach.",
+      "params": {
+        "id": "Die id des Termins, wie read() sie unter events führt. Eine unbekannte id ist ein Fehler."
+      }
+    }
+  },
+  "forms": {
+    "EventForm": {
+      "end": {
+        "help": "Das Ende des Termins als HH:MM. Es muss nach dem Beginn liegen; die Dauer ergibt sich aus Ende minus Beginn."
+      }
+    }
+  },
+  "tile": {
+    "settings": {
+      "topN": {
+        "help": "Wie viele anstehende Termine die Kachel höchstens zeigt, von 1 bis 10."
+      },
+      "horizon": {
+        "help": "Wie weit die Kachel vorausschaut: 7, 14 oder 30 Tage ab heute."
+      }
+    }
+  }
+}

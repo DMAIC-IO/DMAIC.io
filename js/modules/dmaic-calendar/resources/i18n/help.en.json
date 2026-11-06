@@ -1,0 +1,107 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Overview",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The DMAIC calendar is a project calendar with built-in phase logic. Every event can be tagged with a DMAIC phase (Define, Measure, Analyze, Improve, Control) and is rendered in the corresponding phase color — at a glance you can see which project phase carries most of the workload."
+        },
+        {
+          "type": "definition",
+          "term": "Month view",
+          "content": "Shows a full calendar month as a grid. Events stack per day, sorted by start time. Ideal for long-term project planning and tollgate scheduling."
+        },
+        {
+          "type": "definition",
+          "term": "Week view",
+          "content": "Shows one week with a vertical time axis. Events are drawn as colored blocks at their real start and end times. Ideal for detailed planning of workshops, reviews, and operational activities."
+        },
+        {
+          "type": "definition",
+          "term": "Phase filter",
+          "content": "Phase buttons restrict the calendar to a single DMAIC phase — e.g. show only Define events to see the Define workload at a glance."
+        },
+        {
+          "type": "definition",
+          "term": "Configurable time axis",
+          "content": "The visible range of the week view (hours and weekdays) can be adjusted. Hide weekends or night hours to gain space for the relevant working hours."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Operation",
+      "blocks": [
+        {
+          "type": "heading",
+          "content": "Creating and editing events"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Week view: click and drag on a free area → new event.",
+            "Month view: click a day → event dialog opens.",
+            "Move events with drag & drop — the DMAIC phase is preserved.",
+            "Drag the bottom edge of an event to adjust its duration.",
+            "Click an event → dialog to edit title, time, phase, and notes."
+          ]
+        },
+        {
+          "type": "heading",
+          "content": "Navigation"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Arrow buttons in the header → previous / next month or week.",
+            "\"Today\" button jumps back to the current week / month.",
+            "Switch between month and week view via the view buttons."
+          ]
+        },
+        {
+          "type": "heading",
+          "content": "Phase assignment"
+        },
+        {
+          "type": "list",
+          "items": [
+            "When creating an event, pick one of the five DMAIC phases — the color follows automatically.",
+            "Change the phase later through the edit dialog.",
+            "Toggle the phase filter via the buttons above the calendar."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Events without a phase",
+          "content": "Events without a phase tag are displayed but cannot be filtered and do not contribute to phase statistics. Choose a phase deliberately for every new event."
+        },
+        {
+          "type": "definition",
+          "term": "Event from another cycle",
+          "content": "An event from another cycle keeps its phase. The dialog offers it as an extra choice ‘Phase (cycle)’; saving changes it only if you pick another phase."
+        },
+        {
+          "type": "definition",
+          "term": "Time axis too narrow",
+          "content": "If the visible range is restricted to e.g. 9 a.m.–5 p.m., earlier or later events become invisible. After adjusting the time axis, spot-check that no events are hidden."
+        },
+        {
+          "type": "definition",
+          "term": "Drag accidentally moves events",
+          "content": "Drag & drop is sensitive — even a small offset when clicking can move an event. If events appear to \"wander\": undo with Ctrl+Z and use click instead of drag."
+        },
+        {
+          "type": "definition",
+          "term": "The calendar is not a task manager",
+          "content": "The calendar schedules events — it does not replace a task list with priorities, owners, and status. Use the Lessons Learned module or external tools for tasks."
+        }
+      ]
+    }
+  }
+}

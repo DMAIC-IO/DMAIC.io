@@ -1,0 +1,107 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Der {{term:dmaic|DMAIC}}-Kalender ist ein Projektkalender mit eingebauter Phasen-Logik. Jeder Termin lässt sich einer DMAIC-Phase (Define, Measure, Analyze, Improve, Control) zuordnen und wird in der jeweiligen Phasenfarbe dargestellt — so sieht man auf einen Blick, in welcher Projektphase der meiste Aufwand liegt."
+        },
+        {
+          "type": "definition",
+          "term": "Monatsansicht",
+          "content": "Zeigt einen vollständigen Kalendermonat als Raster. Pro Tag werden bis zu mehrere Termine gestapelt, sortiert nach Startzeit. Ideal für die langfristige Projektplanung und Tollgate-Termine."
+        },
+        {
+          "type": "definition",
+          "term": "Wochenansicht",
+          "content": "Zeigt eine Woche mit einer vertikalen Zeitachse. Termine werden als farbige Blöcke an ihrer realen Uhrzeit gezeichnet. Ideal für die Detailplanung von Workshops, Reviews und operativen Aktivitäten."
+        },
+        {
+          "type": "definition",
+          "term": "Phasen-Filter",
+          "content": "Über die Phasen-Buttons lässt sich der Kalender auf eine einzelne DMAIC-Phase einschränken — z. B. nur Define-Termine anzeigen, um den Define-Aufwand auf einen Blick zu sehen."
+        },
+        {
+          "type": "definition",
+          "term": "Konfigurierbare Zeitachse",
+          "content": "Anzeigebereich der Wochenansicht (Stunden und Wochentage) lässt sich anpassen. So blendet man z. B. Wochenenden oder Nachtstunden aus und gewinnt Platz für die relevanten Arbeitszeiten."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Bedienung",
+      "blocks": [
+        {
+          "type": "heading",
+          "content": "Termine anlegen und ändern"
+        },
+        {
+          "type": "list",
+          "items": [
+            "In der Wochenansicht: in eine freie Stelle klicken und ziehen → neuer Termin.",
+            "In der Monatsansicht: auf einen Tag klicken → Termin-Dialog öffnet sich.",
+            "Termine per Drag & Drop verschieben — die DMAIC-Phase bleibt erhalten.",
+            "Untere Kante eines Termins ziehen, um die Dauer anzupassen.",
+            "Klick auf einen Termin → Dialog zum Bearbeiten von Titel, Zeit, Phase und Notizen."
+          ]
+        },
+        {
+          "type": "heading",
+          "content": "Navigation"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Pfeil-Buttons im Header → vorheriger / nächster Monat oder Woche.",
+            "„Heute\"-Button springt zur aktuellen Woche / zum aktuellen Monat zurück.",
+            "Umschalten zwischen Monats- und Wochenansicht über die Ansicht-Buttons."
+          ]
+        },
+        {
+          "type": "heading",
+          "content": "Phasenzuordnung"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Beim Anlegen eines Termins eine der fünf DMAIC-Phasen wählen — die Farbe folgt automatisch.",
+            "Phase nachträglich über den Bearbeiten-Dialog ändern.",
+            "Phasen-Filter über die Buttons oberhalb des Kalenders ein- und ausschalten."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Termine ohne Phase",
+          "content": "Termine ohne Phasen-Tag werden zwar angezeigt, lassen sich aber nicht filtern und tragen nicht zur Phasenstatistik bei. Bei jedem neuen Termin bewusst eine Phase wählen."
+        },
+        {
+          "type": "definition",
+          "term": "Termin aus einem anderen Zyklus",
+          "content": "Ein Termin aus einem anderen Zyklus behält seine Phase. Der Dialog zeigt sie als zusätzliche Wahl „Phase (Zyklus)“; Speichern ändert sie nur, wenn Sie eine andere Phase wählen."
+        },
+        {
+          "type": "definition",
+          "term": "Zu enge Zeitachse",
+          "content": "Wird der Anzeigebereich auf z. B. 9–17 Uhr beschränkt, sind frühere oder spätere Termine unsichtbar. Nach Anpassung der Zeitachse stichprobenartig prüfen, dass keine Termine versteckt liegen."
+        },
+        {
+          "type": "definition",
+          "term": "Drag verschiebt versehentlich Termine",
+          "content": "Drag & Drop ist sensibel — schon ein kleiner Versatz beim Klicken kann einen Termin verschieben. Wenn Termine „wandern\": Drag rückgängig (Strg+Z) und Klick statt Drag verwenden."
+        },
+        {
+          "type": "definition",
+          "term": "Kalender ist kein Aufgabenmanager",
+          "content": "Der Kalender plant Termine — er ersetzt keine Aufgabenliste mit Prioritäten, Verantwortlichen und Status. Für Aufgaben das Modul „{{term:lessons-learned|Lessons Learned}}\" oder externe Tools nutzen."
+        }
+      ]
+    }
+  }
+}

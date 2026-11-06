@@ -1,0 +1,95 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "events": {
+      "help": "The appointments of the project. The end of an appointment is computed from start and duration and is held in no field. Bulk data: without options.fields = ['events'] only the extent is delivered.",
+      "id": {
+        "help": "The identifier of the appointment; the app assigns it on creation. Use it to address the appointment when changing or deleting."
+      },
+      "title": {
+        "help": "The label of the appointment. It must not be empty; spaces at the edges are removed."
+      },
+      "date": {
+        "help": "The day of the appointment as YYYY-MM-DD, for example 2026-03-14; it must be a real calendar date."
+      },
+      "time": {
+        "help": "The start of the appointment as HH:MM on a 5-minute grid, between 00:00 and 23:55; 09:00 when not given."
+      },
+      "duration": {
+        "help": "The duration in whole minutes, at least 5; 60 when not given. In the dialog it results from end minus start and is only displayed."
+      },
+      "desc": {
+        "help": "A description of the appointment as free text; empty when not given."
+      },
+      "phase": {
+        "help": "The phase the appointment is coloured by. Any phase of any cycle is valid; when not given, the first phase of the active cycle. An appointment from another cycle keeps its phase — the dialog offers it as an extra choice “Phase (cycle)”."
+      },
+      "source": {
+        "help": "Where the appointment comes from. Only appointments from the task list carry the value todo; change them there, because the next report from the task list replaces them."
+      }
+    },
+    "viewMode": {
+      "help": "The calendar view: month or week. The choice is saved with the project."
+    },
+    "axisFrom": {
+      "help": "The first hour shown on the day axis, 0 to 23. It must come before the last and only bounds the week view, not the appointments."
+    },
+    "axisTo": {
+      "help": "The last hour shown on the day axis, 1 to 24. It must come after the first and only bounds the week view, not the appointments."
+    },
+    "dayFrom": {
+      "help": "The first weekday shown, Monday to Sunday. It must not come after the last."
+    },
+    "dayTo": {
+      "help": "The last weekday shown, Monday to Sunday. It must not come before the first."
+    }
+  },
+  "actions": {
+    "addEvent": {
+      "help": "Adds an appointment and returns its id.",
+      "params": {
+        "title": "The label; spaces at the edges are removed. An empty text is an error.",
+        "date": "The day as YYYY-MM-DD; a date that does not exist (such as 2026-02-30) is an error.",
+        "time": "The start as HH:MM on a 5-minute grid; 09:00 when not given. A time off the grid is an error.",
+        "duration": "The duration in whole minutes, at least 5; 60 when not given.",
+        "desc": "The description; empty when not given.",
+        "phase": "The phase of the appointment; any phase of any cycle is valid, when not given the first phase of the active cycle."
+      }
+    },
+    "updateEvent": {
+      "help": "Changes the supplied entries of an appointment; the others stay as they are.",
+      "params": {
+        "id": "The id of the appointment as read() lists it under events. An unknown id is an error.",
+        "title": "The new label; spaces at the edges are removed. An empty text is an error.",
+        "date": "The new day as YYYY-MM-DD.",
+        "time": "The new start as HH:MM on a 5-minute grid.",
+        "duration": "The new duration in whole minutes, at least 5.",
+        "desc": "The new description.",
+        "phase": "The new phase; any phase of any cycle is valid."
+      }
+    },
+    "removeEvent": {
+      "help": "Removes an appointment. In the interface the calendar asks first.",
+      "params": {
+        "id": "The id of the appointment as read() lists it under events. An unknown id is an error."
+      }
+    }
+  },
+  "forms": {
+    "EventForm": {
+      "end": {
+        "help": "The end of the appointment as HH:MM. It must come after the start; the duration is end minus start."
+      }
+    }
+  },
+  "tile": {
+    "settings": {
+      "topN": {
+        "help": "How many upcoming appointments the tile shows at most, from 1 to 10."
+      },
+      "horizon": {
+        "help": "How far ahead the tile looks: 7, 14 or 30 days from today."
+      }
+    }
+  }
+}

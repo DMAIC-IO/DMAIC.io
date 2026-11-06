@@ -243,12 +243,12 @@
   border-right: var(--border-width) solid var(--color-border-primary);
 }
 
-.module-calendar__view-toggle button.active {
+.module-calendar__view-toggle button[aria-checked="true"] {
   background: var(--color-accent);
   color: var(--color-text-inverse);
 }
 
-.module-calendar__view-toggle button:hover:not(.active) {
+.module-calendar__view-toggle button:hover:not([aria-checked="true"]) {
   background: var(--color-bg-tertiary);
   color: var(--color-text-primary);
 }
@@ -551,6 +551,10 @@
 
 /* Resize handles */
 .module-calendar__ev-handle {
+  appearance: none;
+  padding: 0;
+  border: 0;
+  background: none;
   position: absolute;
   left: 0;
   right: 0;
@@ -623,6 +627,8 @@
 }
 
 .module-calendar__phase-chip {
+  font: inherit;
+  appearance: none;
   padding: var(--spacing-xs) var(--spacing-m);
   border-radius: 20px;
   font-size: var(--font-size-sm);
@@ -638,7 +644,25 @@
   opacity: 0.8;
 }
 
-.module-calendar__phase-chip--selected {
+.module-calendar__phase-chip[aria-checked="true"] {
   opacity: 1;
   border-color: currentcolor;
+}
+
+.module-calendar__phase-chip--foreign {
+  font-style: italic;
+}
+
+.module-calendar__week-day-col--drop-target {
+  background: var(--color-accent-light);
+}
+
+.module-calendar__week-ev[data-dragging] {
+  z-index: 3;
+  opacity: 0.85;
+}
+
+.module-calendar__week-ev-content {
+  height: 100%;
+  outline-offset: -2px;
 }
