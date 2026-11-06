@@ -1,0 +1,125 @@
+import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../test-utils.js';
+import { State, resolveTarget } from '../../js/modules/hypothesis-test/domain/model.js';
+
+const ref = (c) => ({ instanceId: 'ws1', sheetId: 's1', columnId: c });
+
+suite('hypothesis-test Model', () => {
+  test('Vorgaben', () => {
+    const m = new State();
+    const json = m.toJSON();
+    delete json._schema;
+    assertDeepEqual(json, {
+      category: 'variance', testType: 'one', direction: 'two-sided', alpha: 0.05, powerGoal: 0.8,
+      targetValue: '', targetType: 'variance', colRef1: null, colRef2: null, colRefsK: [], equalVariances: false,
+      exampleWorksheetId: null,
+    });
+    assertEqual(m.hasContent(), false);
+  });
+
+  test('setCategory: Varianz bei gepaart erzwingt two', () => {
+    const m = new State();
+    m.setCategory({ category: 'mean' });
+    m.setTestType({ testType: 'paired' });
+    m.setCategory({ category: 'variance' });
+    assertEqual(m.testType, 'two');
+  });
+
+  test('setCategory behält andere Testarten', () => {
+    const m = new State();
+    m.setCategory({ category: 'mean' });
+    m.setTestType({ testType: 'k' });
+    m.setCategory({ category: 'variance' });
+    assertEqual(m.testType, 'k');
+  });
+
+  test('setTestType: in/aus paired leert targetValue, sonst nicht', () => {
+    const m = new State();
+    m.setCategory({ category: 'mean' });
+    m.targetValue = '5';
+    m.setTestType({ testType: 'two' });
+    assertEqual(m.targetValue, '5');
+    m.setTestType({ testType: 'paired' });
+    assertEqual(m.targetValue, '');
+    m.targetValue = '1';
+    m.setTestType({ testType: 'one' });
+    assertEqual(m.targetValue, '');
+  });
+
+  test('Invariante: paired nur bei Mittelwerten', () => {
+    const m = new State();
+    assertThrows(() => { m.testType = 'paired'; }, /invalid testType "paired"; allowed: a value that keeps pairedMeansOnly/);
+  });
+
+  test('Grenzen und Spaltenform', () => {
+    const m = new State();
+    assertThrows(() => { m.alpha = 1; }, /invalid alpha/);
+    assertThrows(() => { m.powerGoal = 0.4; }, /invalid powerGoal/);
+    assertThrows(() => { m.colRef1 = { instanceId: 'x' }; }, /invalid colRef1/);
+    assertThrows(() => { m.colRefsK = [ref('a'), null]; }, /invalid colRefsK\[1\]/);
+    m.colRefsK = [ref('a')];
+    assertEqual(m.hasContent(), true);
+  });
+
+  test('hasContent: colRef1 oder colRef2', () => {
+    const a = new State(); a.colRef1 = ref('a');
+    const b = new State(); b.colRef2 = ref('b');
+    assertEqual(a.hasContent(), true);
+    assertEqual(b.hasContent(), true);
+  });
+
+  test('resolveTarget wie bisher', () => {
+    const m = new State();
+    assertEqual(resolveTarget(m), null);
+    m.targetValue = '4'; m.targetType = 'stddev';
+    assertEqual(resolveTarget(m), 16);
+    m.targetType = 'variance';
+    assertEqual(resolveTarget(m), 4);
+    m.targetValue = '-1';
+    assertEqual(resolveTarget(m), null);
+    m.setCategory({ category: 'mean' });
+    assertEqual(resolveTarget(m), -1);
+    m.targetValue = 'abc';
+    assertEqual(resolveTarget(m), null);
+    m.setTestType({ testType: 'paired' });
+    assertEqual(resolveTarget(m), 0);
+    m.targetValue = '2.5';
+    assertEqual(resolveTarget(m), 2.5);
+  });
+
+  test('toJSON → fromJSON ist verlustfrei', () => {
+    const m = new State();
+    m.setCategory({ category: 'mean' });
+    m.setTestType({ testType: 'k' });
+    m.colRefsK = [ref('a'), ref('b')];
+    m.equalVariances = true;
+    const back = State.fromJSON(m.toJSON());
+    assertDeepEqual(back.toJSON(), m.toJSON());
+  });
+
+  test('Migration 0→1.0: Altstand lädt, Unbrauchbares fällt auf die Vorgabe', () => {
+    const m = State.fromJSON({
+      category: 'variance', testType: 'paired', direction: 'sideways', alpha: null, powerGoal: '0.9',
+      targetValue: 3, targetType: 'variance', colRef1: { instanceId: 'ws1', columnId: 'c1' },
+      colRef2: { instanceId: null }, colRefsK: [ref('a'), 'x', null], equalVariances: 'yes', exampleWorksheetId: 'ws1',
+    });
+    assertEqual(m.testType, 'two');
+    assertEqual(m.direction, 'two-sided');
+    assertEqual(m.alpha, 0.05);
+    assertEqual(m.powerGoal, 0.9);
+    assertEqual(m.targetValue, '3');
+    assertDeepEqual(m.colRef1, { instanceId: 'ws1', columnId: 'c1' });
+    assertEqual(m.colRef2, null);
+    assertDeepEqual(m.colRefsK, [ref('a')]);
+    assertEqual(m.equalVariances, false);
+    assertEqual(m.exampleWorksheetId, 'ws1');
+    assertEqual(m.toJSON()._schema.version, '1.0');
+  });
+
+  test('Migration: leerer Altstand und alpha/powerGoal außerhalb des Bereichs', () => {
+    assertEqual(State.fromJSON({}).alpha, 0.05);
+    const m = State.fromJSON({ alpha: 1.5, powerGoal: 0.1, category: 'mean', testType: 'paired' });
+    assertEqual(m.alpha, 0.05);
+    assertEqual(m.powerGoal, 0.8);
+    assertEqual(m.testType, 'paired');
+  });
+});
