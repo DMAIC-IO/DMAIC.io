@@ -374,6 +374,7 @@ export function createModule(base) {
                   dialog: context.dialog,
                   i18n: context.i18n,
                   chartManager: context.chartManager ?? null,
+                  services: { eventBus: context.eventBus, stateManager: context.stateManager, i18n: context.i18n },
                   moduleId: id,
                   instanceId: context.instanceId,
                   forms,

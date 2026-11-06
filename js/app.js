@@ -23,7 +23,8 @@ import { startupTasks } from './startup/index.js';
 import { initRouteDirectives, initRouter, createAppActionVerbs } from './core/router/index.js';
 import { setCreatePageRouter } from './core/create-page.js';
 import { registerTablistDirective } from './core/tablist.js';
-import { registerFieldDirective } from './core/field-directive.js';
+import { registerFieldDirective, registerFieldWidget } from './core/field-directive.js';
+import { mountColumnField } from './ui/column-field.js';
 import { registerCommandDirectives } from './core/command-directives.js';
 import { registerChartDirective } from './core/chart-directive.js';
 import { installWorksheetRevisions } from './core/worksheet-data.js';
@@ -45,6 +46,7 @@ async function init() {
   // ─── Alpine.js Bootstrap ─────────────────────────────────
   const routeDirectives = initRouteDirectives(Alpine);
   registerTablistDirective(Alpine);
+  registerFieldWidget('columnRef', mountColumnField);
   registerFieldDirective(Alpine, { i18n });
   registerCommandDirectives(Alpine);
   registerChartDirective(Alpine);

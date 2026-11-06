@@ -2,10 +2,10 @@
  * Tests for core/field-directive.js — x-field bindet ein Formularfeld an ein
  * Feld des deklarativen Models, mit Attributen und Prüfanzeige aus dem Schema.
  */
-import { suite, test, assertEqual, assertTrue, assertThrows } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue, assertThrows, assertDeepEqual } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
-import { registerFieldDirective } from '../../js/core/field-directive.js';
-import { defineModel, defineState, text, number, oneOf, boolean, list, object, command, idOf, date } from '../../js/core/model.js';
+import { registerFieldDirective, registerFieldWidget } from '../../js/core/field-directive.js';
+import { defineModel, defineState, text, number, oneOf, boolean, list, object, command, idOf, date, columnRef } from '../../js/core/model.js';
 
 const M = defineModel({
   fields: {
@@ -314,5 +314,90 @@ suite('x-field auf Listeneinträgen', () => {
       host.remove();
     }
     assertEqual(errors.join(' | '), '');
+  });
+});
+
+suite('x-field auf columnRef', () => {
+  const Cols = defineModel({ fields: {
+    colRef1: columnRef({ types: ['numeric'], minCount: 3 }),
+    colRefsK: list(columnRef({ types: ['numeric'], minCount: 3, nullable: false })),
+  } });
+  const ref = (c) => ({ instanceId: 'ws1', sheetId: 's1', columnId: c });
+
+  /** Stub-Picker: zeichnet die Auswahl als Text, ruft onChange auf Zuruf. */
+  const mounted = [];
+  registerFieldWidget('columnRef', (el, target, services) => {
+    const w = { el, target, services, synced: [], destroyed: false,
+      sync(v) { this.synced.push(JSON.parse(JSON.stringify(v))); },
+      destroy() { this.destroyed = true; } };
+    mounted.push(w);
+    return w;
+  });
+
+  async function mountCols(html) {
+    mounted.length = 0;
+    if (!Alpine.version) Alpine.start();
+    registerFieldDirective(Alpine, { i18n: { t: (k) => k, getLanguage: () => 'de' } });
+    const name = `colsTest${Math.random().toString(36).slice(2)}`;
+    const model = new Cols();
+    const services = { eventBus: {}, stateManager: {}, i18n: {} };
+    Alpine.data(name, () => {
+      const comp = { model, moduleId: 'demo', box: { show: true } };
+      Object.defineProperty(comp, '_ui', { enumerable: false, get() { return { services }; } });
+      return comp;
+    });
+    const host = document.createElement('div');
+    host.innerHTML = `<div x-data="${name}">${html}</div>`;
+    document.body.append(host);
+    Alpine.initTree(host);
+    await flush();
+    return { host, services, data: () => Alpine.$data(host.firstElementChild) };
+  }
+
+  test('Picker eingehängt, Dienste und Spec übergeben, Hilfe-Anker gesetzt', async () => {
+    const { host, services } = await mountCols('<div class="pick" x-field="model.colRef1"></div><div x-field="model.colRefsK"></div>');
+    assertEqual(mounted.length, 2);
+    assertTrue(mounted[0].services === services);
+    assertEqual(mounted[0].target.spec.kind, 'columnRef');
+    assertEqual(mounted[1].target.spec.kind, 'list');
+    assertEqual(host.querySelector('.pick').getAttribute('data-help-key'), 'modules.demo.fields.colRef1.help');
+    host.remove();
+  });
+
+  test('Wahl im Picker landet geprüft im Model', async () => {
+    const { host, data } = await mountCols('<div x-field="model.colRef1"></div>');
+    mounted[0].target.set(ref('c1'));
+    assertDeepEqual(data().model.colRef1, ref('c1'));
+    let caught = null;
+    try { mounted[0].target.set({ instanceId: 'x' }); } catch (err) { caught = err; }
+    assertTrue(caught === null, 'Ablehnung wirft nicht aus dem Picker heraus');
+    assertTrue(host.querySelector('[x-field]').getAttribute('aria-invalid') === 'true');
+    assertDeepEqual(data().model.colRef1, ref('c1'));
+    host.remove();
+  });
+
+  test('Model-Änderung wird in den Picker gespiegelt', async () => {
+    const { host, data } = await mountCols('<div x-field="model.colRefsK"></div>');
+    data().model.colRefsK = [ref('a'), ref('b')];
+    await flush();
+    assertDeepEqual(mounted[0].synced.at(-1), [ref('a'), ref('b')]);
+    host.remove();
+  });
+
+  test('Abbau mit dem Element', async () => {
+    const { host, data } = await mountCols('<template x-if="box.show"><div x-field="model.colRef1"></div></template>');
+    data().box.show = false;
+    await flush();
+    assertTrue(mounted[0].destroyed);
+    host.remove();
+  });
+
+  test('auf <select> wirft beim Einbau', async () => {
+    let caught = null;
+    const onErr = (e) => { caught = e.error ?? e.reason; e.preventDefault?.(); };
+    window.addEventListener('error', onErr);
+    try { await mountCols('<select x-field="model.colRef1"></select>'); } catch (err) { caught = err; }
+    window.removeEventListener('error', onErr);
+    assertTrue(/needs a host element/.test(String(caught?.message ?? caught)), String(caught));
   });
 });
