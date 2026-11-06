@@ -25,7 +25,9 @@ export function computePower({ category, testType, direction, powerGoal, alpha, 
   const n1 = d1.length;
   const goal = powerGoal;
   const ds = (a) => descriptiveStats(a);
-  let power, effect, effectKind, requiredN;
+  let power, effect, requiredN;
+  /** @type {'varianceRatio'|'cohenD'|'cohenDz'} */
+  let effectKind;
 
   if (category === 'variance') {
     if (testType === 'one') {

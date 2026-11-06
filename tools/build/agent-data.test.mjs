@@ -1426,21 +1426,23 @@ test('collectAgentData: the released pilot modules are available in the real tre
   // Freigabe festhält. Er wächst mit jedem freigegebenen Pilotmodul.
   const appDir = join(import.meta.dirname, '..', '..');
   const { modules, coverage } = collectAgentData(appDir);
-  for (const id of ['five-why', 'worksheet', 'hypothesis-test']) {
+  for (const id of ['five-why', 'worksheet']) {
     assert.deepEqual(modules[id].violations, [], `${id} hat Verstöße`);
     assert.equal(modules[id].available, true, `${id} ist nicht freigegeben`);
     assert.ok('read' in modules[id].actions, `${id} hat kein read()`);
   }
+  // Ein umgestelltes Modul bekommt nur den Platzhalter; seine Fläche entsteht
+  // zur Laufzeit aus dem Schema (siehe viewmodel-Test des Moduls).
+  assert.deepEqual(modules['hypothesis-test'].violations, [], 'hypothesis-test hat Verstöße');
+  assert.equal(modules['hypothesis-test'].available, true, 'hypothesis-test ist nicht freigegeben');
   assert.ok(coverage.available >= 3);
 });
 
-test('collectAgentData: hypothesis-test exposes the computed result as a read field', () => {
+test('collectAgentData: hypothesis-test ist umgestellt und trägt den Schema-Platzhalter', () => {
   const appDir = join(import.meta.dirname, '..', '..');
   const { modules } = collectAgentData(appDir);
-  assert.ok('result' in modules['hypothesis-test'].fields);
-  assert.equal(modules['hypothesis-test'].fields.result.derived, true);
-  // Die interne Beispiel-Buchführung gehört NICHT zur Lesefläche.
-  assert.equal('exampleWorksheetId' in modules['hypothesis-test'].fields, false);
+  assert.equal(modules['hypothesis-test'].schema, true);
+  assert.deepEqual(modules['hypothesis-test'].fields, {});
 });
 
 test('collectAgentData: worksheet declares its read surface, rows are bulk', () => {
@@ -1650,9 +1652,9 @@ test('i18n-Tor: das deutsche read-Hilfetext von five-why bleibt der modulspezifi
 test('Domänen-Tor: die erklärten Wertemengen des Hypothesentests sind GENAU die der Vorlage', async () => {
   const appDir = join(import.meta.dirname, '..', '..');
   const { CATEGORIES, TEST_TYPES, DIRECTIONS, TARGET_TYPES } =
-    await import(join(appDir, 'js', 'modules', 'hypothesis-test', 'hypothesis-test-model.js'));
+    await import(join(appDir, 'js', 'modules', 'hypothesis-test', 'domain', 'model.js'));
   const html = readFileSync(
-    join(appDir, 'js', 'modules', 'hypothesis-test', 'hypothesis-test.html'), 'utf8');
+    join(appDir, 'js', 'modules', 'hypothesis-test', 'resources', 'view.html'), 'utf8');
 
   /** Alle Werte eines Attributs in der Vorlage, in Vorkommensreihenfolge. */
   const attrValues = (attr) =>

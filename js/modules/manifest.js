@@ -451,17 +451,6 @@ export default [
     },
   },
   {
-    id: 'hypothesis-test',
-    phase: 'analyze',
-    group: 'statistics',
-    load: () => import('./hypothesis-test/hypothesis-test.js'),
-    cycles: {
-      dmaic:  { phase: 'analyze' },
-      dmadv:  { phase: 'analyze',   allowedPhases: ['analyze', 'verify'] },
-      eightd: { phase: 'rootcause', allowedPhases: ['rootcause', 'implementation'] },
-    },
-  },
-  {
     id: 'attribute-test',
     phase: 'analyze',
     group: 'statistics',

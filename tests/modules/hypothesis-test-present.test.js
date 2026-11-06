@@ -1,6 +1,6 @@
 import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
 import { analyze } from '../../js/modules/hypothesis-test/domain/analyze.js';
-import { presentResult, insufficientText } from '../../js/modules/hypothesis-test/viewmodel/present.js';
+import { presentResult, insufficientText, residualCharts } from '../../js/modules/hypothesis-test/viewmodel/present.js';
 import { NORMAL_GROUPS, SKEWED_GROUPS, bookGroups, loadT } from './hypothesis-test-groups.js';
 
 const t = await loadT();
@@ -109,5 +109,35 @@ suite('insufficientText', () => {
     assertEqual(insufficientText({ status: 'insufficient', reason: 'notComputable' }, t), t('testNotComputable'));
     assertEqual(insufficientText({ status: 'insufficient', reason: 'noVariation' }, t), t('pairedNoVariation'));
     assertEqual(insufficientText({ status: 'insufficient', reason: 'paired', count: 2 }, t), t('pairedTooFew', { count: 2, n: 2 }));
+  });
+});
+
+suite('residualCharts', () => {
+  const analyzeK = (groups, equalVariances) => analyze({
+    ...base, testType: 'k', equalVariances, samples: groups.map((values, i) => ({ name: `G${i + 1}`, values })),
+  });
+
+  for (const [label, eq] of [['Welch', false], ['Fisher', true]]) {
+    test(`${label}-Weg liefert die vier Diagramme`, () => {
+      const result = analyzeK(NORMAL_GROUPS, eq);
+      const c = residualCharts(result, t);
+      assertEqual([c.fitted, c.prob, c.hist, c.order].map(x => x.type).join(','), 'scatter,probability-plot,histogram,scatter');
+      assertEqual(c.fitted.config.editKey, 'hyptest:chart-resid-fits');
+      assertEqual(c.prob.config.editKey, 'hyptest:chart-resid-normal');
+      assertEqual(c.hist.config.editKey, 'hyptest:chart-resid-hist');
+      assertEqual(c.order.config.editKey, 'hyptest:chart-resid-order');
+      assertTrue(c.hist.config.showNormalCurve, 'Histogramm mit Normalkurve');
+      assertEqual(c.fitted.config.series[0].x.length, 24);
+    });
+  }
+
+  test('derselbe Befund und dieselbe Übersetzung geben dasselbe Objekt zurück', () => {
+    const result = analyzeK(NORMAL_GROUPS, false);
+    assertTrue(residualCharts(result, t) === residualCharts(result, t), 'Zwischenspeicher');
+  });
+
+  test('Rangweg und fehlender Befund: keine Diagramme', () => {
+    assertEqual(residualCharts(analyzeK(SKEWED_GROUPS, true), t), null);
+    assertEqual(residualCharts(null, t), null);
   });
 });

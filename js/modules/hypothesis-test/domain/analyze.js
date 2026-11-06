@@ -170,6 +170,7 @@ function insufficient(reason, more = {}) {
 
 // ── Intervalle (dünne Hüllen über math-utils) ────────────────
 
+/** @returns {[number, number]|null} */
 function ciMean(mean, sd, n, alpha) {
   if (n < 2 || !isFinite(sd) || sd <= 0) return null;
   const tCrit = tInv(1 - alpha / 2, n - 1);
@@ -177,6 +178,7 @@ function ciMean(mean, sd, n, alpha) {
   return [mean - tCrit * se, mean + tCrit * se];
 }
 
+/** @returns {[number, number]|null} */
 function ciVariance(variance, n, alpha) {
   if (n < 2 || !isFinite(variance) || variance <= 0) return null;
   const lo = (n - 1) * variance / chi2Inv(1 - alpha / 2, n - 1);
@@ -201,6 +203,7 @@ function sampleStats(name, data, sw, ad, normal, alpha) {
 
 /** Ein Engine-Ergebnis als Zahlen. @returns {TestOutcome} */
 function outcome(r) {
+  /** @type {Record<string, number|null>} */
   const extra = {};
   for (const key of EXTRA_FIELDS) if (r[key] !== undefined) extra[key] = r[key];
   return {
@@ -321,7 +324,7 @@ function analyzePaired(input) {
   const power = powerOf(input, d, null, target, false);
   const numeric = numericOf(r, alpha, target, power.power, false, input);
   return {
-    status: 'ok',
+    status: /** @type {const} */ ('ok'),
     isK: false,
     allNormal: dNormal,
     alpha,
@@ -455,7 +458,7 @@ function analyzeOneTwo(input) {
   const power = powerOf(input, d1, d2, target, powerApprox);
   const numeric = numericOf(r, alpha, target, power.power, powerApprox, input);
   return {
-    status: 'ok',
+    status: /** @type {const} */ ('ok'),
     isK: false,
     allNormal,
     alpha,
@@ -539,9 +542,9 @@ function analyzeK(input, deps) {
   const groupCIs = Array.isArray(r.groupCIs) ? r.groupCIs : null;
   const anova = {
     rows: r.testName === 'One-Way ANOVA' ? [
-      { source: 'factor', ss: r.SSB, df: r.df1, ms: r.MSB, f: r.statistic, p: r.pValue },
-      { source: 'error', ss: r.SSW, df: r.df2, ms: r.MSW, f: null, p: null },
-      { source: 'total', ss: r.SST, df: r.df1 + r.df2, ms: null, f: null, p: null },
+      { source: /** @type {const} */ ('factor'), ss: r.SSB, df: r.df1, ms: r.MSB, f: r.statistic, p: r.pValue },
+      { source: /** @type {const} */ ('error'), ss: r.SSW, df: r.df2, ms: r.MSW, f: null, p: null },
+      { source: /** @type {const} */ ('total'), ss: r.SST, df: r.df1 + r.df2, ms: null, f: null, p: null },
     ] : null,
     summary: r.S != null ? { s: r.S, r2: r.R2, r2adj: r.R2adj, r2pred: r.R2pred ?? null } : null,
     groups: groups.map((g, i) => {
@@ -556,7 +559,7 @@ function analyzeK(input, deps) {
   const hasResiduals = meanTest === 'fisher' || meanTest === 'welch';
   const numeric = numericOf(r, alpha, null, null, false, input);
   return {
-    status: 'ok',
+    status: /** @type {const} */ ('ok'),
     isK: true,
     allNormal,
     alpha,

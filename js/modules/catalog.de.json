@@ -5,6 +5,11 @@
     "description": "Projektkalender: Termine je Phase in Monats- und Wochenansicht",
     "whenToUse": "Wenn die Termine eines Projekts geführt werden sollen — Besprechungen, Messzeiträume, Stichtage —, je Termin einer Phase zugeordnet und in einer Monats- oder Wochenansicht dargestellt; nicht für Aufgaben ohne festen Zeitpunkt, dafür ist die Aufgabenliste da, und nicht für die Planung von Vorgangsdauern und Abhängigkeiten."
   },
+  "hypothesis-test": {
+    "name": "Hypothesentest",
+    "description": "Varianz- und Mittelwerttests mit automatischer Normalverteilungsprüfung und Power-Analyse",
+    "whenToUse": "Wenn zu entscheiden ist, ob ein beobachteter Unterschied in Lage oder Streuung über das Rauschen hinausgeht — ein Mittelwert gegen einen Zielwert, zwei Stichproben gegeneinander, oder k Gruppen gemeinsam. Setzt metrische Daten in einer Datensammlung voraus."
+  },
   "sipoc": {
     "name": "SIPOC",
     "description": "Supplier-Input-Process-Output-Customer Diagramm",
