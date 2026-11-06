@@ -68,9 +68,9 @@ export function bindChoiceGroup(group, { spec, name, radioName, read, write, hin
     }
   };
   const choose = (o) => {
-    const v = valueOf(o);
-    if (same(v, read())) return;
     try {
+      const v = valueOf(o);
+      if (same(v, read())) return;
       write(v);
       clearRejection(group);
     } catch (err) {

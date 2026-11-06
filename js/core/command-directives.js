@@ -426,7 +426,7 @@ export function registerCommandDirectives(Alpine) {
           ctl.values[name] = v;
         },
         hint: () => rejectionHint(spec, ui().i18n),
-        checkCtx: () => ({ root: ui().model, context: contextOf(ui().model) }),
+        checkCtx: () => ({ root: ui().model, params: { ...ctl.fixed(), ...cloneJSON(ctl.values) }, context: contextOf(ui().model) }),
         effect,
         cleanup,
       });

@@ -24,7 +24,7 @@ const Ui = defineState({ tab: oneOf(['a', 'b']) });
 
 
 const Pick = defineModel({
-  fields: { col: oneOf(['a', 'b'], { default: 'a' }), rows: record(['a', 'b'], list(text()), { default: { a: ['x', 'y'], b: ['z'] } }) },
+  fields: { rows: record(['a', 'b'], list(text()), { default: { a: ['x', 'y'], b: ['z'] } }) },
   commands: {
     pick: command({
       params: { col: oneOf(['a', 'b']), idx: index('rows[col]', { existing: true }) },
