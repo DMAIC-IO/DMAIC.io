@@ -11,6 +11,7 @@ import { requireKnownId } from './validate.js';
 import { formatsOf } from './exporter.js';
 import { openDialogSafely } from './command-directives.js';
 import { defineComputedSlots, bindComputed } from './computed.js';
+import { createWorksheetData } from './worksheet-data.js';
 
 /**
  * Was `view(ctx)` bekommt: die Kontextdienste und die Kennungen der Instanz.
@@ -19,6 +20,7 @@ import { defineComputedSlots, bindComputed } from './computed.js';
  *   notify: (message: string, type?: string, titleKey?: string) => void,
  *   dialog: any, i18n: any, eventBus: any, instanceId: string, moduleId: string,
  *   cssVars: (map: Record<string, string>) => Record<string, string>,
+ *   data: import('./worksheet-data.js').WorksheetData,
  *   openDialog: (ref: string, opts?: import('./command-directives.js').DialogOptions) => Promise<void> }} ViewContext
  */
 /**
@@ -290,6 +292,7 @@ export function createModule(base) {
           eventBus: context.eventBus,
           instanceId: context.instanceId,
           moduleId: id,
+          data: createWorksheetData(context.stateManager),
           cssVars: (map) => readCssVars(container.querySelector('[x-data]'), map),
           openDialog: (ref, opts) => openDialogSafely(Alpine, container.querySelector('[x-data]'), ref, opts),
         });

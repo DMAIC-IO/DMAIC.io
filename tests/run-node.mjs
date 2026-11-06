@@ -99,6 +99,7 @@ const SKIP = new Set([
   'core/chart/trend.test.js',
   'core/chunks.test.js',
   'core/computed.test.js',
+  'core/worksheet-data.test.js',
   'core/context-help-describe.test.js',
   'core/context-help.test.js',
   'core/create-dialog.test.js',

@@ -88,7 +88,7 @@ suite('createModule mit view(ctx) und State', () => {
 
   test('ctx: Kontextdienste und Kennungen, kein module', async () => {
     const { context, notified } = await mount();
-    assertDeepEqual(Object.keys(seenCtx).sort(), ['context', 'cssVars', 'dialog', 'eventBus', 'i18n', 'instanceId', 'moduleId', 'notify', 'openDialog']);
+    assertDeepEqual(Object.keys(seenCtx).sort(), ['context', 'cssVars', 'data', 'dialog', 'eventBus', 'i18n', 'instanceId', 'moduleId', 'notify', 'openDialog']);
     assertEqual(seenCtx.context, context);
     assertEqual(seenCtx.dialog, context.dialog);
     assertEqual(seenCtx.instanceId, 'vt-1');
