@@ -244,7 +244,7 @@
                            @input="recipients.updateRecipientFromEvent(r.id, 'email', $event)"></td>
                 <td><input class="field" type="text" data-field="note" :value="r.note"
                            @input="recipients.updateRecipientFromEvent(r.id, 'note', $event)"></td>
-                <td>
+                <td class="survey-builder__status" :class="recipients.recipientStatusClass(r.id)">
                   <span data-ref="status" x-text="recipients.recipientStatusLabel(r.id)"></span>
                   <span class="survey-builder__outdated" data-ref="outdated"
                         x-show="recipients.isOutdated(r.id)" x-text="recipients.outdatedHint(r)"></span>

@@ -210,6 +210,26 @@
   min-width: 6rem;
 }
 
+/* Status cell in the recipients table: a faint tint of the status colour
+   (not sent / sent / answered). Mixed with transparent so it sits on the
+   row background in light and dark mode alike. The hover selector keeps
+   the tint while the pointer is on the row: the generic table hover rule
+   (`.dmike-table tr:hover td`) would otherwise replace it. */
+.survey-builder__recipients td.survey-builder__status--not-sent,
+.survey-builder__recipients.dmike-table tr:hover td.survey-builder__status--not-sent {
+  background: color-mix(in srgb, var(--color-error) 10%, transparent);
+}
+
+.survey-builder__recipients td.survey-builder__status--sent,
+.survey-builder__recipients.dmike-table tr:hover td.survey-builder__status--sent {
+  background: color-mix(in srgb, var(--color-warning) 14%, transparent);
+}
+
+.survey-builder__recipients td.survey-builder__status--answered,
+.survey-builder__recipients.dmike-table tr:hover td.survey-builder__status--answered {
+  background: color-mix(in srgb, var(--color-success) 14%, transparent);
+}
+
 .survey-builder__outdated {
   display: block;
   font-size: var(--font-size-xs);

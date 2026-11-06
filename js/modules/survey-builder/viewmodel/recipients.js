@@ -132,6 +132,13 @@ export class RecipientsViewModel {
   /**
    * @noagent view transform
    * @param {string} id recipient id
+   * @returns {string} modifier class tinting the status cell by status
+   */
+  recipientStatusClass(id) { return `survey-builder__status--${this.model.recipientStatus(id)}`; }
+
+  /**
+   * @noagent view transform
+   * @param {string} id recipient id
    * @returns {boolean} whether the sent file predates the current structure
    */
   isOutdated(id) { return this.model.isOutdated(id); }
