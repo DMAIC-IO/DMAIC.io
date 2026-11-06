@@ -711,9 +711,11 @@ export function checkListBindings(files, schema) {
   const findings = [];
   const helpKeys = new Set();
   for (const { path, text } of files) {
-    /** @type {Map<string, { spec: any, listPath: string }>} */
-    const aliases = new Map();
-    for (const [, alias, source] of text.matchAll(X_FOR)) {
+    /** @type {{ alias: string, at: number, spec: any, listPath: string }[]} */
+    const loops = [];
+    /** Nächstliegende vorangehende Schleife mit diesem Eintragsnamen (Dokumentreihenfolge). */
+    const aliasAt = (name, pos) => loops.findLast((l) => l.alias === name && l.at < pos);
+    for (const { 1: alias, 2: source, index: at } of text.matchAll(X_FOR)) {
       const [head, ...rest] = source.split('.');
       let spec;
       let listPath;
@@ -721,14 +723,14 @@ export function checkListBindings(files, schema) {
         spec = all[rest[0]];
         listPath = rest[0];
         for (const seg of rest.slice(1)) { spec = spec?.kind === 'object' ? spec.shape[seg] : undefined; listPath += `.${seg}`; }
-      } else if (aliases.has(head) && rest.length === 1) {
-        const a = aliases.get(head);
+      } else if (rest.length === 1 && aliasAt(head, at)) {
+        const a = aliasAt(head, at);
         spec = a.spec.item.shape[rest[0]];
         listPath = `${a.listPath}[].${rest[0]}`;
       }
-      if (spec?.kind === 'list' && spec.item?.kind === 'object') aliases.set(alias, { spec, listPath });
+      if (spec?.kind === 'list' && spec.item?.kind === 'object') loops.push({ alias, at, spec, listPath });
     }
-    for (const [, attr, expr] of text.matchAll(LIST_BINDING)) {
+    for (const { 1: attr, 2: expr, index: pos } of text.matchAll(LIST_BINDING)) {
       const shown = `${attr}="${expr}"`;
       let parsed;
       try { parsed = parseFieldPath(expr); } catch (err) { findings.push(`template: ${path}: ${shown}: ${err.message}`); continue; }
@@ -746,9 +748,10 @@ export function checkListBindings(files, schema) {
           else { spec = undefined; break; }
         }
         listPath = p.replace(/\[\]$/, '');
-      } else if (aliases.has(root) && steps.length === 0) {
-        ({ listPath } = aliases.get(root));
-        spec = aliases.get(root).spec.item;
+      } else if (steps.length === 0 && aliasAt(root, pos)) {
+        const a = aliasAt(root, pos);
+        ({ listPath } = a);
+        spec = a.spec.item;
       } else {
         findings.push(`template: ${path}: ${shown}: ${root} ist weder model, state noch ein Eintrag einer Modell-Liste aus x-for`);
         continue;

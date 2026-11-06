@@ -860,3 +860,16 @@ test('Knopfgruppen: Optionen brauchen role="radio" (außer input type=radio)', (
 test('readStateBindings: auch x-set="state.<f>"', () => {
   assert.deepEqual(readStateBindings([{ path: 'resources/view.html', text: '<div x-set="state.tab"></div><input x-field="state.level">' }]), ['level', 'tab']);
 });
+
+test('Listenpfade: derselbe Eintragsname über zwei Listen wird in Dokumentreihenfolge aufgelöst', () => {
+  const text = [
+    '<template x-for="x in model.items"><input x-field="x.text"><input x-field="x.owner"></template>',
+    '<template x-for="r in model.risks"><template x-for="x in r.actions"><input x-field="x.owner"><input x-field="x.due"></template></template>',
+  ].join('\n');
+  const { findings, helpKeys } = checkListBindings([{ path: 'resources/view.html', text }], LIST_SCHEMA);
+  assert.deepEqual(findings, [
+    'template: resources/view.html: x-field="x.owner": owner passt nicht zum Schema',
+    'template: resources/view.html: x-field="x.due": due passt nicht zum Schema',
+  ]);
+  assert.deepEqual(helpKeys, ['fields.items.text.help', 'fields.risks.actions.owner.help']);
+});
