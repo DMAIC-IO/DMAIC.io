@@ -7,7 +7,7 @@ import {
   defaultOf, checkValue, describeType, schemaOf, fieldSpec, defineState, stateSchemaOf,
   currentOf, confirmOf, commandDefOf, fromAttr, defineForm,
   defineSettings, isSettings, readSettings,
-  date, time, phase, setCommandObserver, setModelContext, contextOf, checkContext, DEFAULT_CONTEXT,
+  date, time, phase, activeContext, setCommandObserver, setModelContext, contextOf, checkContext, DEFAULT_CONTEXT,
 } from '../../js/core/model.js';
 
 const COLS = ['suppliers', 'inputs'];
@@ -651,5 +651,13 @@ suite('Invarianten', () => {
   test('Schema nennt die Invarianten', () => {
     assertDeepEqual(Object.keys(Axis.schema.invariants), ['order']);
     assertDeepEqual([...Axis.schema.invariants.order.fields], ['from', 'to']);
+  });
+});
+
+suite('activeContext', () => {
+  test('Zyklus des Projekts, sonst Vorgabe', () => {
+    assertDeepEqual(activeContext({ getProjectCycle: () => 'eightd' }), { cycle: 'eightd' });
+    assertDeepEqual(activeContext({ getProjectCycle: () => 'unbekannt' }), { cycle: 'dmaic' });
+    assertDeepEqual(activeContext(undefined), { cycle: 'dmaic' });
   });
 });

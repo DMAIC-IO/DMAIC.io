@@ -3,7 +3,7 @@ import { cloneTemplate, templateKey } from './dom.js';
 import { getModuleHelp, hasModuleHelp } from './help-registry.js';
 import { getModuleReferences, hasModuleReferences } from './references-registry.js';
 import { initialModel, loadModel } from './initial-model.js';
-import { schemaOf, setModelName, setCommandObserver, replaceFields, runCommand, cloneJSON } from './model.js';
+import { schemaOf, setModelName, setCommandObserver, replaceFields, runCommand, cloneJSON, setModelContext, activeContext } from './model.js';
 import { schemaAgentEntry, readSchemaModel } from './agent/agent-schema.js';
 import { attachGesture } from './interaction/attach.js';
 import { isGesture } from './interaction/define.js';
@@ -306,6 +306,11 @@ export function createModule(base) {
           const freshState = initialModel(Model,
             context.stateManager.getModuleState(context.instanceId), createDefault, context);
 
+          let offCycle = null;
+          if (schema) {
+            setModelContext(freshState, activeContext(context.stateManager));
+          }
+
           if (schema) {
             // Das Model kennt den Bus nicht; der Beobachter übersetzt.
             setCommandObserver(freshState, (command, args, result) => context.eventBus?.emit?.(
@@ -339,6 +344,7 @@ export function createModule(base) {
                   dialog: context.dialog,
                   i18n: context.i18n,
                   moduleId: id,
+                  instanceId: context.instanceId,
                   forms,
                   exports: exportsDef ?? null,
                   component: this,
@@ -350,6 +356,12 @@ export function createModule(base) {
           return copyMembers(comp, {
             init() {
               freshState.init?.();
+              if (schema) {
+                // Der Kontext folgt dem Zyklus des Projekts (Phasen-Vorgaben, Invarianten).
+                const onCycle = () => setModelContext(this.model, activeContext(context.stateManager));
+                context.eventBus?.on?.('cycle:changed', onCycle);
+                offCycle = () => context.eventBus?.off?.('cycle:changed', onCycle);
+              }
               // UI-State ist nicht gespeichert, aber beobachtbar — wie
               // command:executed für das Model. $watch liest tief.
               if (UiState) {
@@ -392,6 +404,7 @@ export function createModule(base) {
               }
             },
             destroy() {
+              offCycle?.(); offCycle = null;
               dataDestroy?.call(this);
               freshState.destroy?.();
             }

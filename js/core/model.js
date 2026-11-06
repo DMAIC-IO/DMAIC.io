@@ -195,6 +195,17 @@ export function contextOf(model) {
 }
 
 /**
+ * Der Kontext des offenen Projekts aus dem State-Manager; ein unbekannter
+ * oder fehlender Zyklus gilt als Vorgabezyklus.
+ * @param {{ getProjectCycle?: () => string }|undefined|null} stateManager
+ * @returns {ModelContext}
+ */
+export function activeContext(stateManager) {
+  const cycle = stateManager?.getProjectCycle?.();
+  return { cycle: typeof cycle === 'string' && Object.hasOwn(CYCLES, cycle) ? cycle : DEFAULT_CYCLE };
+}
+
+/**
  * Der Vorgabewert eines Feldes, jedes Mal frisch.
  * @param {object} s Feld-Spec
  * @param {ModelContext} [context] Kontext des Models (Zyklus für `phase`)

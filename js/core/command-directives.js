@@ -38,7 +38,7 @@ function missingUiError(directive) {
 /**
  * Der Griff `_ui` der umgebenden Komponente (jetzt gelesen).
  * @param {any} Alpine @param {HTMLElement} el @param {string} directive für die Meldung
- * @returns {{ model: any, notify: Function, dialog: any, i18n: any, moduleId: string, forms: Record<string, any> }}
+ * @returns {{ model: any, notify: Function, dialog: any, i18n: any, moduleId: string, instanceId?: string, forms: Record<string, any> }}
  */
 function uiOf(Alpine, el, directive) {
   const ui = Alpine.$data(el)?._ui;

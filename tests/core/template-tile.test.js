@@ -97,3 +97,15 @@ suite('createTile: Scope', () => {
     assertDeepEqual({ ...vm.settings }, {});
   });
 });
+
+suite('createTile: Kontext', () => {
+  test('das Model der Kachel kennt den Zyklus des Projekts', () => {
+    const Plan = defineModel({ fields: { items: list(text()) } });
+    let seen = null;
+    const tile = createTile({ descriptor, Model: Plan, view() { return { get cycle() { seen = this.model.context.cycle; return seen; } }; } });
+    const vm = tile.viewModel({ state: {}, settings: {}, i18n, stateManager: { getProjectCycle: () => 'eightd' } });
+    assertEqual(vm.cycle, 'eightd');
+    const vm2 = tile.viewModel({ state: {}, settings: {}, i18n });
+    assertEqual(vm2.cycle, 'dmaic');
+  });
+});

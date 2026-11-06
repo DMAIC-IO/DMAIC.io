@@ -13,6 +13,9 @@ const Ui = defineState({ tab: oneOf(['a', 'b']), drafts: record(['x', 'y'], text
 const ID = 'view-test';
 const TPL_KEY = `js/modules/${ID}/${ID}.html`;
 
+let projectCycle = 'dmaic';
+const busListeners = [];
+
 function ensureTemplate() {
   if (!Alpine.version) Alpine.start();
   if (document.querySelector(`template[data-tpl="${TPL_KEY}"]`)) return;
@@ -44,9 +47,13 @@ function makeModule(extra = {}) {
 function fakeContext({ events, notified }) {
   return {
     instanceId: 'vt-1',
-    stateManager: { getModuleState: () => ({ title: 'abc' }), setModuleState: () => {} },
+    stateManager: { getModuleState: () => ({ title: 'abc' }), setModuleState: () => {}, getProjectCycle: () => projectCycle },
     i18n: { t: k => k, tf: () => k => k, getLanguage: () => 'de' },
-    eventBus: { on: () => {}, emit: (name, payload) => events.push([name, payload]) },
+    eventBus: {
+      on: (name, fn) => busListeners.push([name, fn]),
+      off: (name, fn) => { const i = busListeners.findIndex(([n, f]) => n === name && f === fn); if (i >= 0) busListeners.splice(i, 1); },
+      emit: (name, payload) => { events.push([name, payload]); for (const [n, f] of [...busListeners]) if (n === name) f(payload); },
+    },
     notify: (...args) => notified.push(args),
     dialog: { confirm: async () => true },
     theme: 'light',
@@ -154,5 +161,23 @@ suite('createModule mit view(ctx) und State', () => {
   test('Aufräumen: gemountete Container entfernen', () => {
     while (mounted.length) mounted.pop().remove();
     assertEqual(mounted.length, 0);
+  });
+});
+
+suite('createModule: Kontext des Models', () => {
+  test('Zyklus beim Anlegen, Wechsel per cycle:changed, Abmelden beim Abbau', async () => {
+    projectCycle = 'eightd';
+    busListeners.length = 0;
+    const { data, context, container } = await mount();
+    await flush();
+    assertEqual(busListeners.filter(([n]) => n === 'cycle:changed').length, 1);
+    assertEqual(data().model.context.cycle, 'eightd');
+    assertEqual(data()._ui.instanceId, 'vt-1');
+    projectCycle = 'dmadv';
+    context.eventBus.emit('cycle:changed', { from: 'eightd', to: 'dmadv' });
+    assertEqual(data().model.context.cycle, 'dmadv');
+    Alpine.destroyTree(container);
+    assertEqual(busListeners.filter(([n]) => n === 'cycle:changed').length, 0);
+    projectCycle = 'dmaic';
   });
 });

@@ -13,7 +13,7 @@
  * Importiert weder Alpine noch template-module.js — sonst zöge das
  * Dashboard den Modul-Chunk mit.
  */
-import { readModel, readSettings, isSettings, defaultOf } from './model.js';
+import { readModel, readSettings, isSettings, defaultOf, setModelContext, activeContext } from './model.js';
 
 /**
  * Was `view(ctx)` einer Kachel bekommt.
@@ -91,13 +91,15 @@ export function createTile(base) {
     template: `js/modules/${id}/resources/tile.html`,
     /**
      * Scope der Kachel für dieses Rendern.
-     * @param {{ state: unknown, settings: unknown, i18n: any, theme?: string, instanceId?: string|null }} args
+     * @param {{ state: unknown, settings: unknown, i18n: any, theme?: string, instanceId?: string|null, stateManager?: { getProjectCycle?: () => string } }} args
      * @returns {object}
      */
     viewModel(args) {
       const { i18n } = args;
+      const model = readModel(Model, args.state);
+      setModelContext(model, activeContext(args.stateManager));
       const scope = {
-        model: Object.freeze(readModel(Model, args.state)),
+        model: Object.freeze(model),
         settings: Object.freeze(Settings ? readSettings(Settings, args.settings) : {}),
         t: typeof i18n.tf === 'function' ? i18n.tf(prefix) : (key, params) => i18n.t(`${prefix}.${key}`, params),
       };
