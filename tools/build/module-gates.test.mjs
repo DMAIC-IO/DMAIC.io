@@ -909,7 +909,7 @@ test('Invarianten: Text je Sprache', () => {
 });
 
 test('Schema-Literal: columnRef mit Literal-Optionen ist erlaubt', () => {
-  const src = `import { defineModel, columnRef, list } from '../../../core/model.js';
+  const src = `import { defineModel, columnRef, list } from '${MODEL_URL}';
 export const State = defineModel({ fields: { a: columnRef({ types: ['numeric'], minCount: 3 }), k: list(columnRef({ nullable: false })) } });`;
   assert.deepEqual(checkSchemaLiteral(src), []);
 });
