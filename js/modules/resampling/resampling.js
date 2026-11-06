@@ -698,8 +698,8 @@ mod.runnerFactory = () => createInlineRunner();
 mod.loadExample = function loadExample(payload) {
   return loadExampleViaWorksheet(this, payload, {
     State,
-    rewriteRefs(data, instanceId) {
-      const rewrite = (r) => (r && r.instanceId === '__source__') ? { ...r, instanceId } : r;
+    rewriteRefs(data, from, to) {
+      const rewrite = (r) => (r && r.instanceId === from) ? { ...r, instanceId: to } : r;
       const out = { ...data };
       if (out.colRef1) out.colRef1 = rewrite(out.colRef1);
       if (out.colRef2) out.colRef2 = rewrite(out.colRef2);

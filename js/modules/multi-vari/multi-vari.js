@@ -811,7 +811,7 @@ const mod = createModule({
 mod.loadExample = function loadExample(payload) {
   return loadWorksheetExample(this, payload, {
     Model: State,
-    // `loadWorksheetExample` verwirft den Rückgabewert — `data` in place ändern.
+    // `data` in place ändern und zurückgeben (`loadWorksheetExample` übernimmt die Rückgabe).
     rewriteRefs(data, oldId, newId) {
       const refs = data.columnRefs;
       if (!refs) return data;

@@ -1601,17 +1601,17 @@ const mod = createModule({
 mod.loadExample = function loadExample(payload) {
   return loadExampleViaWorksheet(this, payload, {
     State,
-    rewriteRefs(data, instanceId) {
+    rewriteRefs(data, from, to) {
       if (!data.columns) return data;
       const next = { ...data.columns };
       for (const role of ['part', 'appraiser', 'rating', 'reference', 'replicate']) {
         const r = next[role];
-        if (r && r.instanceId === '__source__') {
-          next[role] = { ...r, instanceId };
+        if (r && r.instanceId === from) {
+          next[role] = { ...r, instanceId: to };
         }
       }
       if (Array.isArray(next.ratings)) {
-        next.ratings = next.ratings.map((r) => (r && r.instanceId === '__source__' ? { ...r, instanceId } : r));
+        next.ratings = next.ratings.map((r) => (r && r.instanceId === from ? { ...r, instanceId: to } : r));
       }
       return { ...data, columns: next };
     },

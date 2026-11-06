@@ -905,12 +905,12 @@ const mod = createModule({
 mod.loadExample = function loadExample(payload) {
   return loadExampleViaWorksheet(this, payload, {
     State,
-    rewriteRefs(data, instanceId) {
+    rewriteRefs(data, from, to) {
       if (!data.columnRefs) return data;
       const next = { ...data.columnRefs };
       for (const key of ['part', 'operator', 'measurement']) {
         const r = next[key];
-        if (r && r.instanceId === '__source__') next[key] = { ...r, instanceId };
+        if (r && r.instanceId === from) next[key] = { ...r, instanceId: to };
       }
       return { ...data, columnRefs: next };
     },

@@ -1375,14 +1375,14 @@ const mod = createModule({
 mod.loadExample = function loadExample(payload) {
   return loadExampleViaWorksheet(this, payload, {
     State,
-    rewriteRefs(data, instanceId) {
+    rewriteRefs(data, from, to) {
       data.colRefs = (data.colRefs || []).map(r =>
-        (r && r.instanceId === '__source__') ? { ...r, instanceId } : r);
-      if (typeof data.yKey === 'string' && data.yKey.startsWith('__source__|')) {
-        data.yKey = data.yKey.replace('__source__', instanceId);
+        (r && r.instanceId === from) ? { ...r, instanceId: to } : r);
+      if (typeof data.yKey === 'string' && data.yKey.startsWith(`${from}|`)) {
+        data.yKey = data.yKey.replace(from, to);
       }
-      if (typeof data.trialsKey === 'string' && data.trialsKey.startsWith('__source__|')) {
-        data.trialsKey = data.trialsKey.replace('__source__', instanceId);
+      if (typeof data.trialsKey === 'string' && data.trialsKey.startsWith(`${from}|`)) {
+        data.trialsKey = data.trialsKey.replace(from, to);
       }
       // Drop any persisted derived result — the fresh worksheet refits.
       delete data.result;

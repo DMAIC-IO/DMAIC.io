@@ -221,20 +221,21 @@ export class State {
 }
 
 /**
- * Replace the `__source__` placeholder of an example payload with the id of
- * the provisioned worksheet instance — in `columnRef` and in the column the
- * frozen limits were computed from (`frozenLimits.columnRef`).
+ * Replace the placeholder `from` (`__source__`) of an example payload with
+ * the id `to` of the provisioned worksheet instance — in `columnRef` and in
+ * the column the frozen limits were computed from (`frozenLimits.columnRef`).
  * @param {object} data example payload (mutated and returned)
- * @param {string} instanceId id of the provisioned worksheet instance
+ * @param {string} from placeholder instance id
+ * @param {string} to id of the provisioned worksheet instance
  * @returns {object} the same payload
  */
-export function rewriteSourceRefs(data, instanceId) {
-  if (data.columnRef?.instanceId === '__source__') {
-    data.columnRef = { ...data.columnRef, instanceId };
+export function rewriteSourceRefs(data, from, to) {
+  if (data.columnRef?.instanceId === from) {
+    data.columnRef = { ...data.columnRef, instanceId: to };
   }
   const fl = data.frozenLimits;
-  if (fl?.columnRef?.instanceId === '__source__') {
-    data.frozenLimits = { ...fl, columnRef: { ...fl.columnRef, instanceId } };
+  if (fl?.columnRef?.instanceId === from) {
+    data.frozenLimits = { ...fl, columnRef: { ...fl.columnRef, instanceId: to } };
   }
   return data;
 }

@@ -557,7 +557,7 @@ const mod = createModule({
 mod.loadExample = function loadExample(payload) {
   return loadWorksheetExample(this, payload, {
     Model: State,
-    // `loadWorksheetExample` discards the return value — mutate `data` in place.
+    // Mutate `data` in place and return it (`loadWorksheetExample` uses the return value).
     rewriteRefs(data, oldId, newId) {
       if (!data.columnRefs) return data;
       for (const key of ['part', 'operator', 'measurement']) {

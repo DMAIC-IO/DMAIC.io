@@ -18,6 +18,8 @@
 
 import { uid } from './uid.js';
 import { withoutSchema } from './json-file.js';
+import { rewriteColumnRefs } from './model.js';
+import { loadModel } from './initial-model.js';
 import { EXAMPLES, EXAMPLE_REFS } from '../modules/catalog.generated.js';
 
 const CATALOG_URL = './examples/index.json';
@@ -496,6 +498,29 @@ export function csvPayloadToWorksheetState(csvData, meta = {}) {
 }
 
 /**
+ * Den Platzhalter `from` in den Spaltenbezügen durch `to` ersetzen: über die
+ * übergebene `rewriteRefs(data, from, to)` oder — bei einem Model aus
+ * `defineModel` ohne eigene Funktion — über das Schema.
+ * @param {any} Model
+ * @param {((data: object, from: string, to: string) => object|void)|undefined} rewriteRefs
+ * @param {object} data @param {string} from @param {string} to
+ * @returns {object}
+ */
+function rewritePlaceholder(Model, rewriteRefs, data, from, to) {
+  if (typeof rewriteRefs === 'function') return rewriteRefs(data, from, to) ?? data;
+  if (Model?.schema) return rewriteColumnRefs(Model, data, from, to);
+  throw new Error('example loader: rewriteRefs is required for models without a schema');
+}
+
+/**
+ * Den aktuellen Stand als Model laden — für die Überschreib-Rückfrage und die
+ * `exampleWorksheetId` des vorigen Beispiels. Ein Schema-Model lädt mit
+ * Reparatur-Rückfall (`loadModel`), statt an einem kaputten Stand zu werfen.
+ * @param {any} Model @param {object|null|undefined} json @returns {any}
+ */
+const currentModelOf = (Model, json) => (json ? loadModel(Model, json) : null);
+
+/**
  * Shared example-load flow for modules whose example data is backed by a
  * provisioned Worksheet (Datensammlung). Captures the common sequence used by
  * the chart modules (control-chart, run-chart, xy-plot, boxplot, …):
@@ -518,10 +543,12 @@ export function csvPayloadToWorksheetState(csvData, meta = {}) {
  *                      `{ sourceWorksheetData, columnRef }` (or a falsy value to
  *                      skip). Called only when `data` has no `sourceWorksheetData`
  *                      and no `columnRef`.
- *   - `rewriteRefs(data, instanceId)` — rewrite every `__source__` placeholder
- *                      reference in `data` to the provisioned `instanceId`.
- *                      Receives the (shallow-cloned) data object and the new
- *                      instance id; mutate/return it as needed.
+ *   - `rewriteRefs(data, from, to)` — rewrite every `from` (`__source__`)
+ *                      placeholder reference in `data` to the provisioned
+ *                      instance id `to`. Receives the (shallow-cloned) data
+ *                      object; returns the new data (or mutates it and returns
+ *                      nothing). Optional for a `defineModel` model: its
+ *                      `columnRef` fields are rewritten from the schema.
  *
  * The helper performs NO worksheet provisioning when the payload carries no
  * `sourceWorksheetData` (after optional synthesis) — it still applies the
@@ -532,21 +559,21 @@ export function csvPayloadToWorksheetState(csvData, meta = {}) {
  *   `instanceId`, and may expose `dialog`/`notify`.
  * @param {{ meta: object, data: object }} payload
  * @param {{
- *   State: { fromJSON: (json: object) => any },
+ *   State: { fromJSON: (json: object) => any, schema?: object },
  *   synthesizeFromCsv?: (data: object, meta: object) => (object | null),
- *   rewriteRefs: (data: object, instanceId: string) => object,
+ *   rewriteRefs?: (data: object, from: string, to: string) => (object | void),
+ *   confirmed?: boolean,
  * }} options
  * @returns {Promise<void>}
  */
 export async function loadExampleViaWorksheet(module, payload, options) {
   if (!payload || !payload.data) return;
-  const { State, synthesizeFromCsv, rewriteRefs } = options;
+  const { State, synthesizeFromCsv, rewriteRefs, confirmed = false } = options;
   const ctx = module._context;
   const t = (key) => ctx.i18n.t(key);
 
-  const current = module.getState();
-  const currentModel = current ? State.fromJSON(current) : null;
-  if (currentModel?.hasContent?.() && ctx?.dialog) {
+  const currentModel = currentModelOf(State, module.getState());
+  if (!confirmed && currentModel?.hasContent?.() && ctx?.dialog) {
     const ok = await ctx.dialog.confirm({ message: t('moduleHelp.confirmOverwrite'), danger: true });
     if (!ok) return;
   }
@@ -570,7 +597,7 @@ export async function loadExampleViaWorksheet(module, payload, options) {
     const ref = provisionWorksheet(ctx, wsState);
     if (ref) {
       data.exampleWorksheetId = ref.instanceId;
-      data = rewriteRefs(data, ref.instanceId);
+      data = rewritePlaceholder(State, rewriteRefs, data, '__source__', ref.instanceId);
     }
   }
 
@@ -588,7 +615,8 @@ export async function loadExampleViaWorksheet(module, payload, options) {
  * `oldId` placeholder is replaced immutably with `{ ...ref, instanceId: newId }`.
  *
  * Returned function signature: `(data, oldId, newId) => data` (mutates and
- * returns the same `data` object, matching prior per-module behaviour).
+ * returns the same `data` object, matching prior per-module behaviour) — the
+ * `rewriteRefs` form both example loaders take.
  *
  * @param {string[]} fields — ref field names to rewrite (e.g. ['xRef','yRef','gRef'])
  * @returns {(data: object, oldId: string, newId: string) => object}
@@ -646,24 +674,26 @@ export function rewriteRefArray(field) {
  *   `dialog` and `notify`.
  * @param {{ meta: object, data: object }} payload
  * @param {{
- *   Model: { fromJSON: (json: object) => { hasContent: () => boolean, exampleWorksheetId?: string } },
- *   rewriteRefs: (data: object, oldId: string, newId: string) => object,
- * }} options
+ *   Model: { fromJSON: (json: object) => { hasContent: () => boolean, exampleWorksheetId?: string }, schema?: object },
+ *   rewriteRefs?: (data: object, from: string, to: string) => (object | void),
+ *   confirmed?: boolean,
+ * }} options — `rewriteRefs` is optional for a `defineModel` model (its
+ *   `columnRef` fields are rewritten from the schema); `confirmed` skips the
+ *   overwrite question when the caller has already asked it.
  * @returns {Promise<void>}
  */
-export async function loadWorksheetExample(mod, payload, { Model, rewriteRefs }) {
+export async function loadWorksheetExample(mod, payload, { Model, rewriteRefs, confirmed = false }) {
   if (!payload || !payload.data) return;
   const ctx = mod._context;
   const t = (key) => ctx.i18n.t(key);
 
-  const current = mod.getState();
-  const currentModel = current ? Model.fromJSON(current) : null;
-  if (currentModel?.hasContent() && ctx?.dialog) {
+  const currentModel = currentModelOf(Model, mod.getState());
+  if (!confirmed && currentModel?.hasContent?.() && ctx?.dialog) {
     const ok = await ctx.dialog.confirm({ message: t('moduleHelp.confirmOverwrite'), danger: true });
     if (!ok) return;
   }
 
-  const data = { ...payload.data };
+  let data = { ...payload.data };
 
   if (data.sourceWorksheetData) {
     const wsState = data.sourceWorksheetData;
@@ -675,7 +705,7 @@ export async function loadWorksheetExample(mod, payload, { Model, rewriteRefs })
     const ref = provisionWorksheet(ctx, wsState);
     if (ref) {
       data.exampleWorksheetId = ref.instanceId;
-      rewriteRefs(data, '__source__', ref.instanceId);
+      data = rewritePlaceholder(Model, rewriteRefs, data, '__source__', ref.instanceId);
     }
   }
 

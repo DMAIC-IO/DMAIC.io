@@ -999,9 +999,9 @@ const mod = createModule({
 mod.loadExample = function loadExample(payload) {
   return loadExampleViaWorksheet(this, payload, {
     State,
-    rewriteRefs(data, instanceId) {
+    rewriteRefs(data, from, to) {
       data.colRefs = (data.colRefs || []).map(r =>
-        (r && r.instanceId === '__source__') ? { ...r, instanceId } : r);
+        (r && r.instanceId === from) ? { ...r, instanceId: to } : r);
       // Drop any persisted derived result from old snapshots — auto-run recomputes.
       delete data.result;
       delete data.matrixResult;

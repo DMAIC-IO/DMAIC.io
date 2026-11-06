@@ -7,7 +7,7 @@ import {
   defaultOf, checkValue, describeType, schemaOf, fieldSpec, defineState, stateSchemaOf,
   currentOf, confirmOf, commandDefOf, fromAttr, defineForm,
   defineSettings, isSettings, readSettings,
-  columnRef, date, time, phase, activeContext, setCommandObserver, setModelContext, contextOf, checkContext, DEFAULT_CONTEXT,
+  columnRef, rewriteColumnRefs, date, time, phase, activeContext, setCommandObserver, setModelContext, contextOf, checkContext, DEFAULT_CONTEXT,
 } from '../../js/core/model.js';
 
 const COLS = ['suppliers', 'inputs'];
@@ -717,5 +717,43 @@ suite('Feldart columnRef', () => {
     assertThrows(() => { m.colRef1 = { instanceId: 'x' }; }, /invalid colRef1/);
     assertEqual(new M().hasContent(), false);
     assertEqual(m.hasContent(), true);
+  });
+});
+
+suite('rewriteColumnRefs', () => {
+  const M = defineModel({
+    fields: {
+      one: columnRef(),
+      many: list(columnRef({ nullable: false })),
+      pair: object({ x: columnRef(), label: text() }),
+      byKey: record(['a', 'b'], columnRef()),
+      other: text(),
+    },
+    view: { seen: columnRef() },
+  });
+  const src = (c) => ({ instanceId: '__source__', sheetId: 's', columnId: c });
+
+  test('ersetzt from durch to, verschachtelt; Fremdes bleibt', () => {
+    const data = {
+      one: src('a'), many: [src('b'), { instanceId: 'keep', columnId: 'c' }],
+      pair: { x: src('d'), label: '__source__' }, byKey: { a: src('e'), b: null },
+      other: '__source__', seen: src('f'), unknown: src('g'),
+    };
+    const out = rewriteColumnRefs(M, data, '__source__', 'ws9');
+    assertEqual(out.one.instanceId, 'ws9');
+    assertDeepEqual(out.many.map((r) => r.instanceId), ['ws9', 'keep']);
+    assertEqual(out.pair.x.instanceId, 'ws9');
+    assertEqual(out.pair.label, '__source__');
+    assertEqual(out.byKey.a.instanceId, 'ws9');
+    assertEqual(out.byKey.b, null);
+    assertEqual(out.other, '__source__');
+    assertEqual(out.seen.instanceId, 'ws9');
+    assertEqual(out.unknown.instanceId, '__source__');
+    assertEqual(data.one.instanceId, '__source__', 'Eingabe unverändert');
+  });
+
+  test('fehlende und kaputte Werte bleiben stehen', () => {
+    const out = rewriteColumnRefs(M, { one: null, many: 'x' }, '__source__', 'ws9');
+    assertDeepEqual(out, { one: null, many: 'x' });
   });
 });

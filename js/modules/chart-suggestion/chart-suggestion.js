@@ -775,9 +775,9 @@ const mod = createModule({
 mod.loadExample = function loadExample(payload) {
   return loadExampleViaWorksheet(this, payload, {
     State,
-    rewriteRefs(data, instanceId) {
-      if (data.selection && data.selection.sourceInstanceId === '__source__') {
-        data.selection = { ...data.selection, sourceInstanceId: instanceId };
+    rewriteRefs(data, from, to) {
+      if (data.selection && data.selection.sourceInstanceId === from) {
+        data.selection = { ...data.selection, sourceInstanceId: to };
       }
       if (data.selection) data.selection = { ...data.selection, ts: Date.now() };
       return data;

@@ -796,12 +796,12 @@ const mod = createModule({
 mod.loadExample = function loadExample(payload) {
   return loadExampleViaWorksheet(this, payload, {
     State,
-    rewriteRefs(data, instanceId) {
+    rewriteRefs(data, from, to) {
       let out = data;
       for (const key of ['refColumn', 'measColumn']) {
         const r = out[key];
-        if (r && r.instanceId === '__source__') {
-          out = { ...out, [key]: { ...r, instanceId } };
+        if (r && r.instanceId === from) {
+          out = { ...out, [key]: { ...r, instanceId: to } };
         }
       }
       return out;

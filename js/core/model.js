@@ -408,6 +408,38 @@ export function describeType(s) {
   return s.nullable ? `${t}|null` : t;
 }
 
+/**
+ * Spaltenbezüge umhängen: in allen `columnRef`-Werten des Schemas (auch in
+ * `list`, `object`, `record`) wird `instanceId === from` durch `to` ersetzt.
+ * Liefert eine flache Kopie; Werte, die nicht zur Spec passen, bleiben stehen.
+ * @param {Function} Model Klasse aus `defineModel`
+ * @param {Record<string, any>} data gespeicherter oder geladener Zustand
+ * @param {string} from @param {string} to
+ * @returns {Record<string, any>}
+ */
+export function rewriteColumnRefs(Model, data, from, to) {
+  const schema = schemaOf(Model);
+  if (!schema || !isPlainObject(data)) return data;
+  /** @param {any} s @param {any} v @returns {any} */
+  const walk = (s, v) => {
+    if (v === null || v === undefined) return v;
+    switch (s.kind) {
+      case 'columnRef': return isPlainObject(v) && v.instanceId === from ? { ...v, instanceId: to } : v;
+      case 'list': return Array.isArray(v) ? v.map((x) => walk(s.item, x)) : v;
+      case 'record': return isPlainObject(v)
+        ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, walk(s.value, x)])) : v;
+      case 'object': return isPlainObject(v)
+        ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, s.shape[k] ? walk(s.shape[k], x) : x])) : v;
+      default: return v;
+    }
+  };
+  const out = { ...data };
+  for (const [k, s] of Object.entries({ ...schema.fields, ...schema.view })) {
+    if (Object.hasOwn(out, k)) out[k] = walk(s, out[k]);
+  }
+  return out;
+}
+
 // ─── Kommandos ──────────────────────────────────────────────
 
 /**

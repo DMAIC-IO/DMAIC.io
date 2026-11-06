@@ -6,7 +6,7 @@
 import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertThrows } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { createModule } from '../../js/core/template-module.js';
-import { defineModel, command, text, oneOf, index, list, record, boolean } from '../../js/core/model.js';
+import { defineModel, command, text, oneOf, index, list, record, boolean, columnRef } from '../../js/core/model.js';
 
 const COLS = ['a', 'b'];
 const Board = defineModel({
@@ -148,5 +148,75 @@ suite('createModule mit Schema-Model', () => {
   test('Aufräumen: gemountete Container entfernen', () => {
     while (mounted.length) mounted.pop().remove();
     assertEqual(mounted.length, 0);
+  });
+});
+
+// ─── Standard-loadExample mit Arbeitsblatt ──────────────────
+
+const Sourced = defineModel({ fields: { title: text(), src: columnRef(), exampleWorksheetId: text() } });
+
+/** Modul ohne Einbau: setState/getState laufen über `_tmpl`, der Kontext ist ein Stub. */
+function sourcedModule({ answer }) {
+  const log = { confirms: 0, hook: [], events: [], notes: [] };
+  const store = { phases: { data: [] } };
+  const states = {};
+  const mod = createModule({
+    config: { id: 'schema-sourced', engine: 'alpine', phase: 'analyze' },
+    Model: Sourced,
+    data: () => ({}),
+    beforeLoadExample(data) {
+      log.hook.push(this._loadingExample);
+      return { ...data, title: 'Beispiel' };
+    },
+  });
+  mod._context = {
+    instanceId: 'me',
+    i18n: { t: (k) => k, getLanguage: () => 'de' },
+    notify: (msg, kind) => log.notes.push(kind),
+    dialog: { confirm: async () => { log.confirms++; return answer; } },
+    eventBus: { emit: (name) => log.events.push(name), on() {}, off() {} },
+    stateManager: {
+      get: (path) => path.split('.').reduce((o, k) => o?.[k], store),
+      set(path, v) { const ks = path.split('.'); const last = ks.pop(); ks.reduce((o, k) => (o[k] ??= {}), store)[last] = v; },
+      setModuleState(id, st) { states[id] = st; },
+      getModuleState: (id) => states[id] ?? null,
+      removeModuleState(id) { delete states[id]; },
+    },
+  };
+  mod.setState({ title: 'alt' });
+  return { mod, log, store, states };
+}
+
+const sourcedPayload = () => ({ meta: { id: 'ex' }, data: {
+  src: { instanceId: '__source__', sheetId: 's1', columnId: 'c1' },
+  sourceWorksheetData: { sheets: [{ id: 's1', name: 'S', state: { columns: [] } }] },
+} });
+
+suite('createModule: Standard-loadExample mit sourceWorksheetData', () => {
+  test('provisioniert, hängt Spaltenbezüge um, Hook im Ladefenster, eine Rückfrage', async () => {
+    const { mod, log, store, states } = sourcedModule({ answer: true });
+    await mod.loadExample(sourcedPayload());
+    const st = mod.getState();
+    assertEqual(log.confirms, 1);
+    assertDeepEqual(log.hook, [true]);
+    assertEqual(mod._loadingExample, false);
+    assertEqual(st.title, 'Beispiel');
+    assertEqual(store.phases.data.length, 1);
+    assertEqual(st.exampleWorksheetId, store.phases.data[0].instanceId);
+    assertEqual(st.src.instanceId, st.exampleWorksheetId);
+    assertEqual(states.me.src.instanceId, st.exampleWorksheetId);
+    assertTrue(log.events.includes('module:added'));
+    assertDeepEqual(log.notes, ['success']);
+  });
+
+  test('abgelehnte Rückfrage: kein Hook, kein Arbeitsblatt, Stand unverändert', async () => {
+    const { mod, log, store } = sourcedModule({ answer: false });
+    await mod.loadExample(sourcedPayload());
+    assertEqual(log.confirms, 1);
+    assertDeepEqual(log.hook, []);
+    assertEqual(store.phases.data.length, 0);
+    assertDeepEqual(log.events, []);
+    assertDeepEqual(log.notes, []);
+    assertEqual(mod.getState().title, 'alt');
   });
 });

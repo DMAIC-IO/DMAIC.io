@@ -833,8 +833,8 @@ const mod = createModule({
 mod.loadExample = function loadExample(payload) {
   return loadExampleViaWorksheet(this, payload, {
     State,
-    rewriteRefs(data, instanceId) {
-      const rewrite = (r) => (r && r.instanceId === '__source__' ? { ...r, instanceId } : r);
+    rewriteRefs(data, from, to) {
+      const rewrite = (r) => (r && r.instanceId === from ? { ...r, instanceId: to } : r);
       const refs = data.colRefs || {};
       return {
         ...data,

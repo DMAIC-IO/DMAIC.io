@@ -956,13 +956,13 @@ const mod = createModule({
 mod.loadExample = function loadExample(payload) {
   return loadExampleViaWorksheet(this, payload, {
     State,
-    rewriteRefs(data, instanceId) {
+    rewriteRefs(data, from, to) {
       if (!data.columns) return data;
       const next = { ...data.columns };
       for (const role of ['timestamp', 'value', 'subgroup']) {
         const r = next[role];
-        if (r && r.instanceId === '__source__') {
-          next[role] = { ...r, instanceId };
+        if (r && r.instanceId === from) {
+          next[role] = { ...r, instanceId: to };
         }
       }
       return { ...data, columns: next };

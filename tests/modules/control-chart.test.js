@@ -391,14 +391,14 @@ suite('Control Chart Model — rewriteSourceRefs', () => {
   const ref = { instanceId: '__source__', sheetId: 's', columnId: 'c' };
 
   test('rewrites __source__ in columnRef and in frozenLimits.columnRef', () => {
-    const out = rewriteSourceRefs({ columnRef: ref, frozenLimits: { columnRef: { ...ref } } }, 'inst-1');
+    const out = rewriteSourceRefs({ columnRef: ref, frozenLimits: { columnRef: { ...ref } } }, '__source__', 'inst-1');
     assertEqual(out.columnRef.instanceId, 'inst-1');
     assertEqual(out.frozenLimits.columnRef.instanceId, 'inst-1');
     assertEqual(out.frozenLimits.columnRef.columnId, 'c');
   });
 
   test('leaves null frozenLimits and foreign instance ids alone', () => {
-    const out = rewriteSourceRefs({ columnRef: { ...ref, instanceId: 'other' }, frozenLimits: null }, 'inst-1');
+    const out = rewriteSourceRefs({ columnRef: { ...ref, instanceId: 'other' }, frozenLimits: null }, '__source__', 'inst-1');
     assertEqual(out.columnRef.instanceId, 'other');
     assertEqual(out.frozenLimits, null);
   });

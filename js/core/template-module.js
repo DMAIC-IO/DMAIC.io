@@ -602,6 +602,14 @@ export function createModule(base) {
         if (!ok) return;
       }
       let exampleData = payload.data;
+      // Beispiele mit eigenem Arbeitsblatt: provisionieren und die Spalten-
+      // bezüge aus dem Schema umhängen (examples-registry.js). Dynamisch
+      // geladen — examples-registry hängt am Katalog der Module. Die Rückfrage
+      // oben gilt auch hier (`confirmed`), der Lader fragt nicht noch einmal.
+      const loadWorksheetExample = schema && payload.data.sourceWorksheetData
+        ? (await import('./examples-registry.js')).loadWorksheetExample : null;
+      /** @type {Promise<void>|null} */
+      let loading = null;
       // `_loadingExample` marks the synchronous window in which a hook-driven
       // side effect (e.g. examples-registry.js `provisionInstance`) may emit a
       // global event (`module:added`) BEFORE `setState()` below has replaced
@@ -619,11 +627,18 @@ export function createModule(base) {
         if (typeof beforeLoadExample === 'function') {
           exampleData = beforeLoadExample.call(this, payload.data);
         }
-        this.setState(exampleData);
-        this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
+        if (loadWorksheetExample) {
+          // Ohne Rückfrage läuft der Lader bis zum Ende synchron — Arbeits-
+          // blatt, setState und Meldung fallen in dieses Fenster.
+          loading = loadWorksheetExample(this, { ...payload, data: exampleData }, { Model, confirmed: true });
+        } else {
+          this.setState(exampleData);
+          this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
+        }
       } finally {
         this._loadingExample = false;
       }
+      if (loading) return loading;
       const lang = this._context.i18n.getLanguage();
       const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
       this._context.notify?.(
