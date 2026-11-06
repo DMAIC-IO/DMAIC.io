@@ -63,6 +63,7 @@ test('rendert Felder, Ansicht, Kommandos und das Model', async () => {
   assert.match(out, / \* @typedef \{object\} MoveItemCommand\n \* @property \{'a'\|'b'\} from\n \* @property \{number\} idx\n \* @property \{string\} \[note\]\n/);
   assert.match(out, / \* {3}moveItem\(cmd: MoveItemCommand\): boolean,/);
   assert.match(out, / \* {3}execute\(cmd: \(\{ type: 'moveItem' \} & MoveItemCommand\)\): unknown,/);
+  assert.match(out, / \* {3}readonly context: import\('\.\.\/\.\.\/\.\.\/core\/model\.js'\)\.ModelContext,\n \* \}\} StateModel\n/);
   assert.match(out, / \* \}\} StateModel\n/);
   assert.match(out, /\nexport \{\};\n$/);
 });

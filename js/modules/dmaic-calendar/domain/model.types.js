@@ -49,6 +49,7 @@
  *   execute(cmd: ({ type: 'addEvent' } & AddEventCommand) | ({ type: 'updateEvent' } & UpdateEventCommand) | ({ type: 'removeEvent' } & RemoveEventCommand)): unknown,
  *   toJSON(): object,
  *   hasContent(): boolean,
+ *   readonly context: import('../../../core/model.js').ModelContext,
  * }} StateModel
  */
 

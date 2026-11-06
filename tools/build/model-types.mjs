@@ -97,6 +97,9 @@ export function renderModelTypes({ name, schema }) {
     ` *   execute(cmd: ${exec}): unknown,`,
     ' *   toJSON(): object,',
     ' *   hasContent(): boolean,',
+    // Modellkontext (createModule/createTile); der Pfad ist zusammengesetzt,
+    // damit kein Import-Literal im Generator steht.
+    ' *   readonly context: ' + 'import(' + "'../../../core/model.js')" + '.ModelContext,',
     ` * }} ${name}Model`,
     ' */',
     '',

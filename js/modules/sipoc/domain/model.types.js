@@ -46,6 +46,7 @@
  *   execute(cmd: ({ type: 'addItem' } & AddItemCommand) | ({ type: 'setItem' } & SetItemCommand) | ({ type: 'removeItem' } & RemoveItemCommand) | ({ type: 'moveItem' } & MoveItemCommand)): unknown,
  *   toJSON(): object,
  *   hasContent(): boolean,
+ *   readonly context: import('../../../core/model.js').ModelContext,
  * }} StateModel
  */
 

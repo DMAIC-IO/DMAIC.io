@@ -271,7 +271,9 @@ function isFreeIdentifier(id) {
 
 /**
  * Gate Layer: `domain/` ohne Alpine, DOM, UI, Kontext, höhere Schichten;
- * `io/` ohne Alpine. Ein Befund je Datei und verbotenem Namen.
+ * `io/` ohne Alpine. Ein Befund je Datei und verbotenem Namen. Gemeint ist
+ * der Dienst-Kontext des Moduls; `this.context` im Model ist der
+ * Modellkontext (schlichte Werte wie der Zyklus) und erlaubt.
  * @param {{ path: string, text: string }[]} files
  * @returns {string[]}
  */
@@ -291,9 +293,6 @@ export function checkLayers(files) {
       if (spec !== null) {
         const hit = rule.imports.find(({ re }) => re.test(spec));
         if (hit) report(`layer: ${path}: Import ${spec} in ${layer}/ verboten (${hit.why})`);
-      }
-      if (ts.isPropertyAccessExpression(n) && n.expression.kind === ts.SyntaxKind.ThisKeyword && n.name.text === 'context' && layer === 'domain') {
-        report(`layer: ${path}: this.context in ${layer}/ verboten`);
       }
       if (ts.isIdentifier(n) && rule.globals.includes(n.text) && isFreeIdentifier(n)) {
         const inImport = ts.isImportClause(n.parent) || ts.isImportSpecifier(n.parent) || ts.isNamespaceImport(n.parent);

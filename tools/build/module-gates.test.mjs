@@ -189,11 +189,17 @@ test('Layer: domain ohne Alpine, DOM, UI, Kontext und höhere Schichten', () => 
     'layer: domain/a.js: Import ../viewmodel/viewmodel.js in domain/ verboten (höhere Schicht)',
     'layer: domain/b.js: document in domain/ verboten',
     'layer: domain/b.js: context in domain/ verboten',
-    'layer: domain/b.js: this.context in domain/ verboten',
     'layer: domain/deep/c.js: Import ../../interaction/reorder.js in domain/ verboten (höhere Schicht)',
     'layer: io/export.js: Import alpinejs in io/ verboten (Alpine)',
     'layer: io/export.js: Alpine in io/ verboten',
   ]));
+});
+
+test('Layer: this.context im Model ist der Modellkontext (schlichte Werte) und erlaubt', () => {
+  const files = [
+    { path: 'domain/model.js', text: "export const m = { run() { return this.context.cycle; } };\n" },
+  ];
+  assert.deepEqual(checkLayers(fx(files)), []);
 });
 
 test('Layer: Viewmodel-Kern-Import, window und Re-Export in domain', () => {
