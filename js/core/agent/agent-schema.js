@@ -34,6 +34,21 @@ const COMMAND_PARAM_HELP = 'Das Kommando als ein Objekt; seine Schlüssel stehen
 const TEXT_RULES = ['trim', 'nonEmpty'];
 
 /**
+ * Die Regeln eines Parameters als Tokens: `text` mit `trim`/`nonEmpty`,
+ * `date`, `time` (mit `step:<n>`), `phase`.
+ * @param {object} spec @returns {string[]}
+ */
+function ruleTokens(spec) {
+  switch (spec.kind) {
+    case 'text': return TEXT_RULES.filter((r) => spec[r] === true);
+    case 'date': return ['date'];
+    case 'time': return spec.step === undefined ? ['time'] : ['time', `step:${spec.step}`];
+    case 'phase': return ['phase'];
+    default: return [];
+  }
+}
+
+/**
  * @param {string} name @param {{ params: Record<string, object>, returns: object|null }} def
  * @param {'model'|'viewmodel'} target
  * @returns {object} Aktion in Registry-Form
@@ -41,7 +56,7 @@ const TEXT_RULES = ['trim', 'nonEmpty'];
 function commandAction(name, def, target) {
   const keys = {};
   for (const [param, spec] of Object.entries(def.params)) {
-    const rules = spec.kind === 'text' ? TEXT_RULES.filter((r) => spec[r] === true) : [];
+    const rules = ruleTokens(spec);
     keys[param] = {
       type: describeType(spec),
       help: '',

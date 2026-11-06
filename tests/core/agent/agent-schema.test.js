@@ -3,7 +3,7 @@
  * Schema-Moduls in der Form von AGENT_REGISTRY.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../../test-utils.js';
-import { defineModel, command, text, number, oneOf, index, list, record, boolean } from '../../../js/core/model.js';
+import { defineModel, command, text, number, oneOf, index, list, record, boolean, date, time, phase } from '../../../js/core/model.js';
 import { schemaAgentEntry, readSchemaModel } from '../../../js/core/agent/agent-schema.js';
 import { describeModule } from '../../../js/core/agent/agent-catalog.js';
 
@@ -121,5 +121,25 @@ suite('schemaAgentEntry — text-Regeln', () => {
     const { keys } = schemaAgentEntry(M).actions.add;
     assertDeepEqual(keys.text, { type: 'string', help: '', rules: ['trim', 'nonEmpty'] });
     assertEqual('rules' in keys.col, false);
+  });
+});
+
+suite('agent-schema: Regeln der Datums-, Zeit- und Phasenfelder', () => {
+  const M = defineModel({
+    fields: {},
+    commands: {
+      plan: command({
+        params: { d: date(), t: time({ step: 5, optional: true }), p: phase({ optional: true }), u: time({ optional: true }) },
+        run() {},
+      }),
+    },
+  });
+  test('rules nennen Art und Raster', () => {
+    const { keys } = schemaAgentEntry(M).actions.plan;
+    assertDeepEqual(keys.d.rules, ['date']);
+    assertDeepEqual(keys.t.rules, ['time', 'step:5']);
+    assertDeepEqual(keys.p.rules, ['phase']);
+    assertDeepEqual(keys.u.rules, ['time']);
+    assertEqual(keys.d.type, 'string');
   });
 });

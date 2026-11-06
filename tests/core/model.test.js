@@ -7,6 +7,7 @@ import {
   defaultOf, checkValue, describeType, schemaOf, fieldSpec, defineState, stateSchemaOf,
   currentOf, confirmOf, commandDefOf, fromAttr, defineForm,
   defineSettings, isSettings, readSettings,
+  date, time, phase, setModelContext, contextOf, checkContext, DEFAULT_CONTEXT,
 } from '../../js/core/model.js';
 
 const COLS = ['suppliers', 'inputs'];
@@ -482,5 +483,92 @@ suite('defineSettings / readSettings', () => {
     assertDeepEqual(readSettings(S, { topN: 2.5 }), { topN: 3, view: 'bar' });
     assertDeepEqual(readSettings(S, undefined), { topN: 3, view: 'bar' });
     assertDeepEqual(readSettings(S, 'kaputt'), { topN: 3, view: 'bar' });
+  });
+});
+
+suite('Feldarten date, time, phase', () => {
+  test('date: echtes Kalenderdatum, empty erlaubt leer, optional nicht', () => {
+    assertEqual(checkValue(date(), 'd', '2026-02-28'), '2026-02-28');
+    assertThrows(() => checkValue(date(), 'd', '2026-02-31'), /^invalid d "2026-02-31"; allowed: a date YYYY-MM-DD$/);
+    assertThrows(() => checkValue(date(), 'd', ''), /invalid d ""/);
+    assertEqual(checkValue(date({ empty: true }), 'd', ''), '');
+    assertThrows(() => checkValue(date({ optional: true }), 'd', ''), /invalid d ""/);
+    assertThrows(() => checkValue(date(), 'd', 20260228), /invalid d/);
+  });
+
+  test('time: HH:MM, mit step auf dem Raster', () => {
+    assertEqual(checkValue(time(), 't', '23:59'), '23:59');
+    assertThrows(() => checkValue(time(), 't', '24:00'), /^invalid t "24:00"; allowed: a time HH:MM$/);
+    assertThrows(() => checkValue(time(), 't', '9:00'), /invalid t/);
+    assertEqual(checkValue(time({ step: 5 }), 't', '09:05'), '09:05');
+    assertThrows(() => checkValue(time({ step: 5 }), 't', '09:03'), /^invalid t "09:03"; allowed: a time HH:MM on a 5-minute grid$/);
+  });
+
+  test('phase: jede Phase irgendeines Zyklus ist gültig', () => {
+    assertEqual(checkValue(phase(), 'p', 'define'), 'define');
+    assertEqual(checkValue(phase(), 'p', 'containment'), 'containment');
+    assertThrows(() => checkValue(phase(), 'p', 'data'), /invalid p "data"/);
+    assertEqual(checkValue(phase({ nullable: true }), 'p', null), null);
+  });
+
+  test('Vorgaben: date leer, time 00:00 oder default, phase aus dem Kontext', () => {
+    assertEqual(defaultOf(date()), '');
+    assertEqual(defaultOf(time()), '00:00');
+    assertEqual(defaultOf(time({ default: '09:00' })), '09:00');
+    assertEqual(defaultOf(phase()), 'define');
+    assertEqual(defaultOf(phase(), { cycle: 'eightd' }), 'prepare');
+  });
+
+  test('describeType: string', () => {
+    assertEqual(describeType(date()), 'string');
+    assertEqual(describeType(time({ step: 5 })), 'string');
+    assertEqual(describeType(phase({ nullable: true })), 'string|null');
+  });
+
+  test('fromAttr: Text bleibt Text', () => {
+    assertEqual(fromAttr(date(), '2026-01-02'), '2026-01-02');
+    assertEqual(fromAttr(time(), '09:00'), '09:00');
+    assertEqual(fromAttr(phase(), 'measure'), 'measure');
+  });
+});
+
+suite('ModelContext', () => {
+  const Ctx = defineModel({
+    fields: { p: phase() },
+    commands: {
+      firstPhase: command({ params: {}, run() { return defaultOf(phase(), this.context); } }),
+    },
+  });
+
+  test('ohne Kontext gilt der Vorgabezyklus', () => {
+    const m = new Ctx();
+    assertDeepEqual({ ...m.context }, { cycle: 'dmaic' });
+    assertDeepEqual({ ...contextOf(m) }, { ...DEFAULT_CONTEXT });
+  });
+
+  test('setModelContext setzt und aktualisiert, nicht aufzählbar', () => {
+    const m = new Ctx();
+    setModelContext(m, { cycle: 'eightd' });
+    assertEqual(m.context.cycle, 'eightd');
+    assertEqual(m.firstPhase({}), 'prepare');
+    setModelContext(m, { cycle: 'dmadv' });
+    assertEqual(m.context.cycle, 'dmadv');
+    assertTrue(!Object.keys(m).includes('_ctx'));
+    assertTrue(!('_ctx' in m.toJSON()));
+  });
+
+  test('unbekannter Schlüssel oder Zyklus wirft', () => {
+    assertThrows(() => checkContext({ cycle: 'dmaic', user: 'x' }), /unknown context key "user"; available: cycle/);
+    assertThrows(() => checkContext({ cycle: 'six' }), /invalid context\.cycle "six"/);
+    assertThrows(() => checkContext({}), /missing key "cycle" of context/);
+  });
+
+  test('context ist ein reservierter Name', () => {
+    assertThrows(() => defineModel({ fields: { context: text() } }), /context is a reserved name/);
+  });
+
+  test('Kommando-Parameter sehen den Kontext (phase-Vorgabe beim Setzen über Setter egal)', () => {
+    const m = Ctx.fromJSON({ p: 'team' });
+    assertEqual(m.p, 'team');
   });
 });

@@ -28,12 +28,18 @@
  * `fromJSON` hebt ältere Stände über die Kette `'a→b'` auf `version` (fehlend =
  * `'0'`), neuere lehnt es ab.
  *
- * Rein: kein DOM, kein Alpine, kein Kontext.
+ * `ModelContext` (`setModelContext`): Fakten als schlichte Werte, heute der
+ * aktive Zyklus. Feldarten lesen ihn über `checkValue`/`defaultOf`, das Model
+ * über `this.context`. Keine Dienste.
+ *
+ * Rein: kein DOM, kein Alpine.
  */
 import {
   requireText, requireNumber, requireBoolean, requireEnum, requireIndex,
   requireKnownId, requireKeys, requireForm,
 } from './validate.js';
+import { CYCLES, DEFAULT_CYCLE, getPhaseIds } from './cycles/cycles.js';
+import { isIsoDate } from './local-date.js';
 
 // ─── Feld-Konstruktoren ─────────────────────────────────────
 
@@ -68,6 +74,30 @@ export const list = (item, opts) => spec('list', { item }, opts);
 export const record = (keys, value, opts) => spec('record', { keys: Object.freeze([...keys]), value }, opts);
 /** Objekt mit fester Form. @param {Record<string, object>} shape @param {object} [opts] @returns {Readonly<object>} */
 export const object = (shape, opts) => spec('object', { shape: Object.freeze({ ...shape }) }, opts);
+
+/**
+ * Kalenderdatum `JJJJ-MM-TT` (echtes Datum). `empty`: auch `''` (kein Datum).
+ * @param {{ empty?: boolean } & object} [opts] @returns {Readonly<object>}
+ */
+export const date = (opts) => spec('date', {}, opts);
+
+/**
+ * Uhrzeit `HH:MM` (00–23, 00–59). `step`: Raster in Minuten.
+ * @param {{ step?: number } & object} [opts] @returns {Readonly<object>}
+ */
+export const time = (opts) => spec('time', {}, opts);
+
+/**
+ * Eine Phase irgendeines Zyklus (`core/cycles/cycles.js`); Vorgabe ist die
+ * erste Phase des aktiven Zyklus (`context.cycle`).
+ * @param {object} [opts] @returns {Readonly<object>}
+ */
+export const phase = (opts) => spec('phase', {}, opts);
+
+/** Alle Phasen aller Zyklen (ohne `data`/`extras`), ohne Doppel. */
+export const ALL_PHASE_IDS = Object.freeze([...new Set(Object.keys(CYCLES).flatMap((c) => getPhaseIds(c)))]);
+
+const TIME = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
 /**
  * Ein Kommando: Parameter, Rückgabetyp und Implementierung an einer Stelle.
@@ -123,23 +153,67 @@ export function cloneJSON(v) {
   return v;
 }
 
+// ─── Kontext des Models ─────────────────────────────────────
+
+/** @typedef {{ cycle: string }} ModelContext */
+
+/** Der Kontext ohne gesetzte Fakten (reine Tests, alte Pfade). */
+export const DEFAULT_CONTEXT = Object.freeze({ cycle: DEFAULT_CYCLE });
+const CONTEXT_KEYS = ['cycle'];
+
+/**
+ * Einen Kontext prüfen: nur bekannte Schlüssel, nur schlichte Werte.
+ * @param {any} ctx @returns {Readonly<ModelContext>}
+ * @throws {Error} unbekannter Schlüssel, fehlender Schlüssel, unbekannter Zyklus
+ */
+export function checkContext(ctx) {
+  requireForm('context', ctx, isPlainObject(ctx), 'an object with cycle');
+  for (const k of Object.keys(ctx)) requireKnownId('context key', k, CONTEXT_KEYS);
+  requireKeys('context', ctx, CONTEXT_KEYS.map((name) => ({ name })), 'key');
+  requireEnum('context.cycle', ctx.cycle, Object.keys(CYCLES));
+  return Object.freeze({ cycle: ctx.cycle });
+}
+
+/**
+ * Den Kontext eines Models setzen (beim Anlegen und bei jeder Änderung).
+ * Nicht aufzählbar: weder in `Object.keys` noch in `toJSON`.
+ * @param {object} model @param {ModelContext} ctx @returns {void}
+ */
+export function setModelContext(model, ctx) {
+  const value = checkContext(ctx);
+  // Zuweisen, sobald es das Feld gibt: über Alpines Proxy löst das Effekte aus.
+  if (Object.hasOwn(model, '_ctx')) { model._ctx = value; return; }
+  Object.defineProperty(model, '_ctx', { value, writable: true, configurable: true, enumerable: false });
+}
+
+/**
+ * Der Kontext eines Models, sonst `DEFAULT_CONTEXT`.
+ * @param {any} model @returns {ModelContext}
+ */
+export function contextOf(model) {
+  return model?._ctx ?? DEFAULT_CONTEXT;
+}
+
 /**
  * Der Vorgabewert eines Feldes, jedes Mal frisch.
  * @param {object} s Feld-Spec
+ * @param {ModelContext} [context] Kontext des Models (Zyklus für `phase`)
  * @returns {any}
  */
-export function defaultOf(s) {
+export function defaultOf(s, context = DEFAULT_CONTEXT) {
   if (Object.hasOwn(s, 'default')) return cloneJSON(s.default);
   if (s.nullable) return null;
   switch (s.kind) {
-    case 'text': case 'idOf': return '';
+    case 'text': case 'idOf': case 'date': return '';
+    case 'time': return '00:00';
+    case 'phase': return getPhaseIds(context.cycle)[0];
     case 'number': case 'index': return 0;
     case 'boolean': return false;
     case 'oneOf': return s.values[0];
     case 'list': return [];
-    case 'record': return Object.fromEntries(s.keys.map(k => [k, defaultOf(s.value)]));
+    case 'record': return Object.fromEntries(s.keys.map(k => [k, defaultOf(s.value, context)]));
     case 'object': return Object.fromEntries(Object.entries(s.shape)
-      .filter(([, v]) => v.optional !== true).map(([k, v]) => [k, defaultOf(v)]));
+      .filter(([, v]) => v.optional !== true).map(([k, v]) => [k, defaultOf(v, context)]));
     default: throw new Error(`defineModel: unknown kind ${JSON.stringify(s.kind)}`);
   }
 }
@@ -192,7 +266,7 @@ function bounds(s) {
  * @param {object} s Feld-Spec
  * @param {string} name Name in der Meldung (`columns.suppliers[1]`)
  * @param {any} value
- * @param {{ root?: object, params?: object }} [ctx] Wurzel für Pfade; Parameter eines Kommandos
+ * @param {{ root?: object, params?: object, context?: ModelContext }} [ctx] Wurzel für Pfade; Parameter eines Kommandos; Kontext des Models
  * @throws {Error} in der Vertragsform von `core/validate.js`
  * @returns {any}
  */
@@ -236,6 +310,18 @@ export function checkValue(s, name, value, ctx = {}) {
       for (const k of keys) if (Object.hasOwn(value, k)) out[k] = checkValue(s.shape[k], `${name}.${k}`, value[k], ctx);
       return out;
     }
+    case 'date': {
+      const v = requireText(name, value);
+      if (v === '' && s.empty === true) return v;
+      return requireForm(name, value, isIsoDate(v), 'a date YYYY-MM-DD');
+    }
+    case 'time': {
+      const v = requireText(name, value);
+      const m = TIME.exec(v);
+      const onGrid = m !== null && (s.step === undefined || (Number(m[1]) * 60 + Number(m[2])) % s.step === 0);
+      return requireForm(name, value, onGrid, s.step === undefined ? 'a time HH:MM' : `a time HH:MM on a ${s.step}-minute grid`);
+    }
+    case 'phase': return requireEnum(name, value, ALL_PHASE_IDS);
     default: throw new Error(`defineModel: unknown kind ${JSON.stringify(s.kind)}`);
   }
 }
@@ -265,7 +351,7 @@ const literal = (v) => (typeof v === 'string' ? `'${v}'` : String(v));
 export function describeType(s) {
   let t;
   switch (s.kind) {
-    case 'text': case 'idOf': t = 'string'; break;
+    case 'text': case 'idOf': case 'date': case 'time': case 'phase': t = 'string'; break;
     case 'number': case 'index': t = 'number'; break;
     case 'boolean': t = 'boolean'; break;
     case 'oneOf': t = s.values.map(literal).join('|'); break;
@@ -297,7 +383,7 @@ function checkParams(name, params, cmd, root) {
   const args = {};
   for (const n of names) {
     if (!Object.hasOwn(given, n)) continue;
-    args[n] = checkValue(params[n], n, given[n], { root, params: args });
+    args[n] = checkValue(params[n], n, given[n], { root, params: args, context: contextOf(root) });
   }
   return args;
 }
@@ -388,7 +474,7 @@ export function setFields(model, values) {
   const out = {};
   for (const k of names) {
     if (!Object.hasOwn(values, k)) continue;
-    out[k] = checkValue(fields[k], k, values[k], { root: staged });
+    out[k] = checkValue(fields[k], k, values[k], { root: staged, context: contextOf(model) });
     staged[k] = out[k];
   }
   for (const k of Object.keys(out)) model[k] = out[k];
@@ -408,7 +494,7 @@ export function replaceFields(model, source) {
 
 // ─── defineModel ────────────────────────────────────────────
 
-const RESERVED = new Set(['constructor', 'toJSON', 'fromJSON', 'hasContent', 'execute', '_v', '_obs', '_schema']);
+const RESERVED = new Set(['constructor', 'toJSON', 'fromJSON', 'hasContent', 'execute', '_v', '_obs', '_schema', 'context', '_ctx', '_run']);
 
 /**
  * Das Schema eines Models oder einer Model-Klasse.
@@ -726,7 +812,7 @@ export function defineModel(schema) {
       const load = (k, s, isView) => {
         if (!Object.hasOwn(json, k)) return;
         try {
-          m._v[k] = checkValue(s, k, json[k], { root: m });
+          m._v[k] = checkValue(s, k, json[k], { root: m, context: contextOf(m) });
         } catch (err) {
           // D11: ein ungültiger gespeicherter Ansichtswert fällt still auf den Vorgabewert.
           if (!repair && !isView) throw err;
@@ -768,7 +854,7 @@ export function defineModel(schema) {
   for (const [k, s] of Object.entries(all)) {
     Object.defineProperty(Model.prototype, k, {
       get() { return this._v[k]; },
-      set(v) { this._v[k] = checkValue(s, k, v, { root: this }); },
+      set(v) { this._v[k] = checkValue(s, k, v, { root: this, context: contextOf(this) }); },
       enumerable: true,
       configurable: true,
     });
@@ -780,5 +866,10 @@ export function defineModel(schema) {
       configurable: true,
     });
   }
+  Object.defineProperty(Model.prototype, 'context', {
+    get() { return contextOf(this); },
+    enumerable: false,
+    configurable: true,
+  });
   return Model;
 }
