@@ -7,6 +7,9 @@
  * - `x-command="cmd"` am Knopf: Klick führt das Kommando aus.
  * - `x-command-form="cmd"` am `<form>` mit `x-param="name"` an den freien Feldern.
  *
+ * `x-param` an einer Gruppe (`role="radiogroup"` mit `role="radio"`-Optionen)
+ * setzt das Formularfeld wie ein Eingabefeld.
+ *
  * Feste Argumente stehen als `data-arg-<kebab>` am Element und werden beim
  * Auslösen gelesen (`data-arg-from-col` → `fromCol`). Liefert `confirm` der
  * Kommando-Definition eine Rückfrage, fragt nur die Oberfläche
@@ -19,10 +22,11 @@
  * Dialog verschoben wird. CSP-tauglich: kein Ausdruck wird ausgewertet, der
  * Direktivenwert ist ein Name.
  */
-import { commandDefOf, confirmOf, fromAttr, currentOf, defaultOf, checkValue, cloneJSON } from './model.js';
+import { commandDefOf, confirmOf, fromAttr, currentOf, defaultOf, checkValue, cloneJSON, contextOf } from './model.js';
 import { requireKnownId } from './validate.js';
 import { applyAttributes, readElement, writeElement, rejectionHint } from './field-directive.js';
 import { clearRejection, markRejection } from './param-input.js';
+import { bindChoiceGroup, focusChoice, isChoiceGroup } from './choice-group.js';
 
 const registered = new WeakSet();
 /** Formular-Element → Steuerung. */
@@ -108,6 +112,12 @@ function closeDialogAround(el) {
 /** Programmierfehler, die nicht als Ablehnung einer Eingabe gelten. */
 const isBug = (err) => err instanceof TypeError || err instanceof ReferenceError || err instanceof SyntaxError;
 
+/** Fokus auf ein freies Feld: bei einer Gruppe die gewählte Option. @param {HTMLElement} el */
+function focusField(el) {
+  if (isChoiceGroup(el)) focusChoice(el);
+  else el.focus();
+}
+
 /**
  * Das Öffnen scheiterte am Stand der Daten (z. B. die Position, die `current`
  * lesen soll, gibt es nicht mehr) — eine Meldung für den Nutzer. Alles andere,
@@ -174,7 +184,7 @@ function createFormController(Alpine, formEl, baseCommand) {
     start = cloneJSON(next);
     for (const [name, { el, spec }] of free) {
       clearRejection(el);
-      writeElement(el, spec, values[name]);
+      if (!isChoiceGroup(el)) writeElement(el, spec, values[name]);
     }
   };
 
@@ -182,7 +192,7 @@ function createFormController(Alpine, formEl, baseCommand) {
     const hit = typeof error?.param === 'string' ? free.get(error.param) : undefined;
     if (!hit) { u.notify(error?.message ?? String(error), 'error'); return; }
     markRejection(hit.el, rejectionHint(hit.spec, u.i18n));
-    hit.el.focus();
+    focusField(hit.el);
   };
 
   const submit = async () => {
@@ -259,7 +269,7 @@ function createFormController(Alpine, formEl, baseCommand) {
       const first = [...free.values()].map((f) => f.el)
         .sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1))[0];
       if (!first) return;
-      first.focus();
+      focusField(first);
       if (first.tagName === 'TEXTAREA' || first.type === 'text') first.setSelectionRange(first.value.length, first.value.length);
     },
   };
@@ -402,6 +412,27 @@ export function registerCommandDirectives(Alpine) {
     }
     if (Object.hasOwn(ctl.fixed(), name)) throw new Error(`x-param="${name}": ${name} is also a fixed argument (data-arg-*)`);
     const ui = () => uiOf(Alpine, el, 'x-param');
+    if (isChoiceGroup(el)) {
+      setHelpKey(el, ctl.helpKeyOf(name, ui().moduleId));
+      ctl.register(name, el, spec);
+      bindChoiceGroup(el, {
+        spec,
+        name,
+        radioName: `${ui().instanceId ?? ui().moduleId}-${name}`,
+        read: () => ctl.values[name],
+        write: (v) => {
+          const model = ui().model;
+          checkValue(spec, name, v, { root: model, params: { ...ctl.fixed(), ...cloneJSON(ctl.values), [name]: v }, context: contextOf(model) });
+          ctl.values[name] = v;
+        },
+        hint: () => rejectionHint(spec, ui().i18n),
+        checkCtx: () => ({ root: ui().model, context: contextOf(ui().model) }),
+        effect,
+        cleanup,
+      });
+      cleanup(() => ctl.unregister(name));
+      return;
+    }
     applyAttributes(el, spec);
     setHelpKey(el, ctl.helpKeyOf(name, ui().moduleId));
     ctl.register(name, el, spec);
@@ -416,7 +447,7 @@ export function registerCommandDirectives(Alpine) {
       const raw = readElement(el, spec);
       ctl.values[name] = raw;
       try {
-        checkValue(spec, name, raw, { root: ui().model, params: { ...ctl.fixed(), ...cloneJSON(ctl.values) } });
+        checkValue(spec, name, raw, { root: ui().model, params: { ...ctl.fixed(), ...cloneJSON(ctl.values) }, context: contextOf(ui().model) });
         clearRejection(el);
       } catch (err) {
         if (isBug(err)) throw err;

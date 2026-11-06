@@ -20,10 +20,15 @@
  * heißt `modules.<id>.fields.<liste>.<feld>.help`. `type="date"`/`"time"`
  * kommt aus den Feldarten `date()`/`time()`.
  *
+ * `x-set="<pfad>"` an einer Gruppe (kein `input`/`select`/`textarea`) bindet
+ * deren Optionen (`core/choice-group.js`); Pfade wie `x-field`.
+ *
  * CSP-tauglich: kein Ausdruck wird ausgewertet — der Pfad wird zerlegt und
  * über `Alpine.$data` gelesen.
  */
 import { resolveTarget } from './field-path.js';
+import { bindChoiceGroup, isChoiceGroup } from './choice-group.js';
+import { contextOf } from './model.js';
 import { parseDecimalInput } from './parse-decimal.js';
 import { clearRejection, markRejection, describeRange } from './param-input.js';
 
@@ -136,6 +141,29 @@ export function registerFieldDirective(Alpine, { i18n }) {
     cleanup(() => {
       if (live) el.removeEventListener('input', onInput);
       el.removeEventListener('change', onChange);
+    });
+  });
+
+  Alpine.directive('set', (el, { expression }, { effect, cleanup }) => {
+    if (!isChoiceGroup(el)) {
+      throw new Error(`x-set="${expression}" binds a group of options; use x-field on <${el.tagName.toLowerCase()}>`);
+    }
+    const target = resolveTarget(Alpine, el, expression, 'x-set');
+    const data = Alpine.$data(el);
+    if (!el.hasAttribute('data-help-key') && data.moduleId) {
+      el.setAttribute('data-help-key', `modules.${data.moduleId}.${target.helpKey}`);
+    }
+    bindChoiceGroup(el, {
+      spec: target.spec,
+      name: target.name,
+      radioName: `${data._ui?.instanceId ?? data.moduleId ?? 'group'}-${expression}`,
+      read: target.get,
+      write: target.set,
+      hint: (err) => (typeof err?.invariant === 'string' && data.moduleId
+        ? invariantHint(i18n, data.moduleId, err.invariant) : rejectionHint(target.spec, i18n)),
+      checkCtx: () => ({ root: data.model, context: contextOf(data.model) }),
+      effect,
+      cleanup,
     });
   });
 }
