@@ -46,14 +46,17 @@ const widgets = new Map();
 /**
  * Ein Widget für eine Feldart einhängen. `x-field` auf einem Feld dieser Art
  * (oder einer Liste davon) steht auf einem Wirtselement; `mount` baut das
- * Widget dort auf. Mehrfacher Aufruf ersetzt den Eintrag.
+ * Widget dort auf. Mehrfacher Aufruf ersetzt den Eintrag; `null` entfernt ihn.
  * @param {'columnRef'} kind
  * @param {(el: HTMLElement, target: { spec: object, get: () => any, set: (v: any) => void },
- *   services: { eventBus: any, stateManager: any, i18n: any }) => { sync: (v: any) => void, destroy: () => void }} mount
- * @returns {void}
+ *   services: { eventBus: any, stateManager: any, i18n: any }) => { sync: (v: any) => void, destroy: () => void } | null} mount
+ * @returns {Function|undefined} der bisherige Eintrag (zum Wiederherstellen)
  */
 export function registerFieldWidget(kind, mount) {
-  widgets.set(kind, mount);
+  const previous = widgets.get(kind);
+  if (mount === null) widgets.delete(kind);
+  else widgets.set(kind, mount);
+  return previous;
 }
 
 /** @param {object} spec @returns {string|null} */
@@ -159,6 +162,7 @@ export function registerFieldDirective(Alpine, { i18n }) {
           } catch (err) {
             if (err instanceof TypeError || err instanceof ReferenceError || err instanceof SyntaxError) throw err;
             markRejection(el, rejectionHint(spec, i18n));
+            widget.sync(target.get());
           }
         },
       }, services);

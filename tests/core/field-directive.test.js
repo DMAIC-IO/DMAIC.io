@@ -326,16 +326,19 @@ suite('x-field auf columnRef', () => {
 
   /** Stub-Picker: zeichnet die Auswahl als Text, ruft onChange auf Zuruf. */
   const mounted = [];
-  registerFieldWidget('columnRef', (el, target, services) => {
+  const stubMount = (el, target, services) => {
     const w = { el, target, services, synced: [], destroyed: false,
       sync(v) { this.synced.push(JSON.parse(JSON.stringify(v))); },
       destroy() { this.destroyed = true; } };
     mounted.push(w);
     return w;
-  });
+  };
 
   async function mountCols(html) {
     mounted.length = 0;
+    // Der Stub gilt nur für den Einbau dieses Tests; danach gilt wieder der vorige Eintrag.
+    const previous = registerFieldWidget('columnRef', stubMount);
+    try {
     if (!Alpine.version) Alpine.start();
     registerFieldDirective(Alpine, { i18n: { t: (k) => k, getLanguage: () => 'de' } });
     const name = `colsTest${Math.random().toString(36).slice(2)}`;
@@ -352,6 +355,9 @@ suite('x-field auf columnRef', () => {
     Alpine.initTree(host);
     await flush();
     return { host, services, data: () => Alpine.$data(host.firstElementChild) };
+    } finally {
+      registerFieldWidget('columnRef', previous ?? null);
+    }
   }
 
   test('Picker eingehängt, Dienste und Spec übergeben, Hilfe-Anker gesetzt', async () => {
@@ -390,6 +396,19 @@ suite('x-field auf columnRef', () => {
     await flush();
     assertTrue(mounted[0].destroyed);
     host.remove();
+  });
+
+  test('der Stub verdrängt einen vorhandenen Eintrag nicht dauerhaft', async () => {
+    const sentinel = () => ({ sync() {}, destroy() {} });
+    const before = registerFieldWidget('columnRef', sentinel);
+    try {
+      const { host } = await mountCols('<div x-field="model.colRef1"></div>');
+      host.remove();
+      const current = registerFieldWidget('columnRef', sentinel);
+      assertTrue(current === sentinel, 'nach dem Einbau gilt wieder der vorige Eintrag');
+    } finally {
+      registerFieldWidget('columnRef', before ?? null);
+    }
   });
 
   test('auf <select> wirft beim Einbau', async () => {
