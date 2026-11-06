@@ -25,6 +25,7 @@ import { setCreatePageRouter } from './core/create-page.js';
 import { registerTablistDirective } from './core/tablist.js';
 import { registerFieldDirective } from './core/field-directive.js';
 import { registerCommandDirectives } from './core/command-directives.js';
+import { registerChartDirective } from './core/chart-directive.js';
 import { installWorksheetRevisions } from './core/worksheet-data.js';
 
 async function init() {
@@ -46,6 +47,7 @@ async function init() {
   registerTablistDirective(Alpine);
   registerFieldDirective(Alpine, { i18n });
   registerCommandDirectives(Alpine);
+  registerChartDirective(Alpine);
   installWorksheetRevisions(eventBus);
   Alpine.start();
 

@@ -373,6 +373,7 @@ export function createModule(base) {
                   notify: (...args) => context.notify?.(...args),
                   dialog: context.dialog,
                   i18n: context.i18n,
+                  chartManager: context.chartManager ?? null,
                   moduleId: id,
                   instanceId: context.instanceId,
                   forms,
