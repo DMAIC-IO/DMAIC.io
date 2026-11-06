@@ -14,14 +14,19 @@
  * Direktive mit `checkValue`, bevor sie schreibt. Der Anker heißt dann
  * `modules.<id>.state.<name>.help`.
  *
+ * Pfade (`core/field-path.js`): `model.<feld>`, `state.<feld>`,
+ * `model.<liste>[i].<feld>` und `<eintrag>.<feld>` aus einem `x-for`. Felder
+ * in Listeneinträgen prüft `checkValue` gegen die Element-Spec; der Anker
+ * heißt `modules.<id>.fields.<liste>.<feld>.help`. `type="date"`/`"time"`
+ * kommt aus den Feldarten `date()`/`time()`.
+ *
  * CSP-tauglich: kein Ausdruck wird ausgewertet — der Pfad wird zerlegt und
  * über `Alpine.$data` gelesen.
  */
-import { fieldSpec, stateSchemaOf, checkValue } from './model.js';
+import { resolveTarget } from './field-path.js';
 import { parseDecimalInput } from './parse-decimal.js';
 import { clearRejection, markRejection, describeRange } from './param-input.js';
 
-const PATH = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)+$/;
 const registered = new WeakSet();
 
 /** @param {object} spec @returns {boolean} */
@@ -29,7 +34,13 @@ const isNumeric = (spec) => spec.kind === 'number' || spec.kind === 'index';
 
 /** Auch von `x-param` benutzt. @param {HTMLElement} el @param {object} spec */
 export function applyAttributes(el, spec) {
-  if (!isNumeric(spec) || el.tagName !== 'INPUT') return;
+  if (el.tagName !== 'INPUT') return;
+  if (spec.kind === 'date' || spec.kind === 'time') {
+    if (!el.hasAttribute('type')) el.setAttribute('type', spec.kind);
+    if (spec.kind === 'time' && spec.step !== undefined && !el.hasAttribute('step')) el.setAttribute('step', String(spec.step * 60));
+    return;
+  }
+  if (!isNumeric(spec)) return;
   if (!el.hasAttribute('type')) el.setAttribute('type', 'number');
   const min = spec.kind === 'index' ? 0 : (spec.min ?? spec.exclusiveMin);
   const max = spec.max ?? spec.exclusiveMax;
@@ -88,36 +99,31 @@ export function registerFieldDirective(Alpine, { i18n }) {
   if (registered.has(Alpine)) return;
   registered.add(Alpine);
   Alpine.directive('field', (el, { expression }, { effect, cleanup }) => {
-    if (!PATH.test(expression)) {
-      console.error(`[x-field] expected a path like model.name, got ${JSON.stringify(expression)}`);
-      return;
-    }
-    const segments = expression.split('.');
-    const key = segments.pop();
+    const target = resolveTarget(Alpine, el, expression, 'x-field');
+    const { spec } = target;
     const data = Alpine.$data(el);
-    const owner = () => segments.reduce((o, s) => (o === null || o === undefined ? o : o[s]), data);
-    const spec = fieldSpec(owner(), key);
-    if (!spec) {
-      console.error(`[x-field] ${expression} is not a field of a defineModel model or a defineState state`);
-      return;
-    }
-    const isState = stateSchemaOf(owner()) !== null;
     applyAttributes(el, spec);
     if (!el.hasAttribute('data-help-key') && data.moduleId) {
-      el.setAttribute('data-help-key', `modules.${data.moduleId}.${isState ? 'state' : 'fields'}.${key}.help`);
+      el.setAttribute('data-help-key', `modules.${data.moduleId}.${target.helpKey}`);
     }
-
-    effect(() => writeElement(el, spec, owner()?.[key]));
+    const show = () => writeElement(el, spec, target.get());
+    effect(show);
+    if (el.tagName === 'SELECT') {
+      // Optionen aus x-for entstehen erst nach dieser Direktive.
+      Alpine.nextTick(show);
+      const observer = new MutationObserver(show);
+      observer.observe(el, { childList: true, subtree: true });
+      cleanup(() => observer.disconnect());
+    }
 
     const commit = (live) => {
       try {
-        const raw = readElement(el, spec);
-        owner()[key] = isState ? checkValue(spec, key, raw) : raw;
+        target.set(readElement(el, spec));
         clearRejection(el);
       } catch (err) {
         if (err instanceof TypeError || err instanceof ReferenceError || err instanceof SyntaxError) throw err;
         if (live) return;
-        writeElement(el, spec, owner()?.[key]);
+        show();
         markRejection(el, typeof err?.invariant === 'string' && data.moduleId
           ? invariantHint(i18n, data.moduleId, err.invariant) : rejectionHint(spec, i18n));
       }

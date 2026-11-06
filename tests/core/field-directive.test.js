@@ -2,10 +2,10 @@
  * Tests for core/field-directive.js — x-field bindet ein Formularfeld an ein
  * Feld des deklarativen Models, mit Attributen und Prüfanzeige aus dem Schema.
  */
-import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue, assertThrows } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { registerFieldDirective } from '../../js/core/field-directive.js';
-import { defineModel, defineState, text, number, oneOf, boolean } from '../../js/core/model.js';
+import { defineModel, defineState, text, number, oneOf, boolean, list, object, command, idOf, date } from '../../js/core/model.js';
 
 const M = defineModel({
   fields: {
@@ -194,6 +194,100 @@ suite('x-field — Invarianten', () => {
     assertEqual(input.value, '6');
     assertEqual(input.getAttribute('aria-invalid'), 'true');
     assertEqual(input.title, 'modules.fx.invariants.order');
+    host.remove();
+  });
+});
+
+const Plan = defineModel({
+  fields: {
+    items: list(object({ id: text(), text: text({ trim: true, nonEmpty: true }), due: date({ empty: true }) })),
+    risks: list(object({ id: text(), actions: list(object({ id: text(), owner: text() })) })),
+  },
+  view: { mode: oneOf(['a', 'b']) },
+  commands: { removeItem: command({ params: { id: idOf('items') }, run({ id }) { this.items = this.items.filter((x) => x.id !== id); } }) },
+});
+
+async function mountList(html, json) {
+  registerFieldDirective(Alpine, { i18n: I18N });
+  if (!Alpine.version) Alpine.start();
+  const name = `fieldList${++n}`;
+  const model = Plan.fromJSON(json);
+  Alpine.data(name, () => ({ model, moduleId: 'fl', modes: ['a', 'b'] }));
+  const host = document.createElement('div');
+  host.innerHTML = `<div x-data="${name}">${html}</div>`;
+  document.body.append(host);
+  Alpine.initTree(host);
+  await flush();
+  return { host, model: Alpine.$data(host.firstElementChild).model, $$: (s) => [...host.querySelectorAll(s)] };
+}
+
+const LIST = { items: [{ id: 'a', text: 'eins', due: '' }, { id: 'b', text: 'zwei', due: '2026-03-01' }], risks: [{ id: 'r', actions: [{ id: 'x', owner: 'Ana' }] }] };
+
+suite('x-field auf Listeneinträgen', () => {
+  test('Form item.<feld>: lesen, schreiben, Anker', async () => {
+    const { host, model, $$ } = await mountList('<template x-for="item in model.items" :key="item.id"><input class="t" x-field="item.text"></template>', LIST);
+    const [a, b] = $$('input.t');
+    assertEqual(a.value, 'eins');
+    assertEqual(b.getAttribute('data-help-key'), 'modules.fl.fields.items.text.help');
+    change(b, '  drei ');
+    assertEqual(model.items[1].text, 'drei');
+    host.remove();
+  });
+
+  test('Form model.<liste>[i].<feld>: Index frisch nach Umsortieren', async () => {
+    const { host, model, $$ } = await mountList('<template x-for="(item, i) in model.items" :key="item.id"><input class="t" x-field="model.items[i].text"></template>', LIST);
+    model.items = [model.items[1], model.items[0]];
+    await flush();
+    const [first] = $$('input.t');
+    assertEqual(first.value, 'zwei');
+    change(first, 'vier');
+    assertEqual(model.items[0].text, 'vier');
+    assertEqual(model.items[1].text, 'eins');
+    host.remove();
+  });
+
+  test('verschachtelt: Anker ohne Index, Ablehnung setzt zurück', async () => {
+    const { host, model, $$ } = await mountList(
+      '<template x-for="r in model.risks" :key="r.id"><template x-for="act in r.actions" :key="act.id"><input class="o" x-field="act.owner"></template></template>', LIST);
+    const [o] = $$('input.o');
+    assertEqual(o.getAttribute('data-help-key'), 'modules.fl.fields.risks.actions.owner.help');
+    change(o, 'Bo');
+    assertEqual(model.risks[0].actions[0].owner, 'Bo');
+    host.remove();
+    const { host: h2, model: m2, $$: q2 } = await mountList('<template x-for="item in model.items" :key="item.id"><input class="t" x-field="item.text"></template>', LIST);
+    const [t] = q2('input.t');
+    change(t, '   ');
+    assertEqual(m2.items[0].text, 'eins');
+    assertEqual(t.value, 'eins');
+    assertEqual(t.getAttribute('aria-invalid'), 'true');
+    h2.remove();
+  });
+
+  test('date-Feld bekommt type=date', async () => {
+    const { host, $$ } = await mountList('<template x-for="item in model.items" :key="item.id"><input class="d" x-field="item.due"></template>', LIST);
+    assertEqual($$('input.d')[1].type, 'date');
+    assertEqual($$('input.d')[1].value, '2026-03-01');
+    host.remove();
+  });
+
+  test('Schlüsselfeld, fremder Eintrag und Schema-Fehler werfen beim Einbau', async () => {
+    registerFieldDirective(Alpine, { i18n: I18N });
+    const name = `fieldListErr${++n}`;
+    const model = Plan.fromJSON(LIST);
+    Alpine.data(name, () => ({ model, moduleId: 'fl', other: { text: 'x' } }));
+    const build = (html) => { const h = document.createElement('div'); h.innerHTML = `<div x-data="${name}">${html}</div>`; return h; };
+    // Direktes Element statt x-for-Klon: der Wurf kommt sicher synchron an.
+    assertThrows(() => Alpine.initTree(build('<input x-field="model.items[0].id">')),
+      /x-field="model\.items\[0\]\.id": id is the key of items and cannot be edited/);
+    assertThrows(() => Alpine.initTree(build('<input x-field="other.text">')), /x-field="other\.text": other is not an entry of a list field of the model/);
+    assertThrows(() => Alpine.initTree(build('<input x-field="model.items.text">')), /x-field="model\.items\.text": text does not match the schema/);
+  });
+
+  test('select mit Optionen aus x-for zeigt den Wert', async () => {
+    const { host, $$ } = await mountList('<select class="s" x-field="model.mode"><template x-for="v in modes" :key="v"><option :value="v" x-text="v"></option></template></select>',
+      { ...LIST, mode: 'b' });
+    await flush();
+    assertEqual($$('select.s')[0].value, 'b');
     host.remove();
   });
 });
