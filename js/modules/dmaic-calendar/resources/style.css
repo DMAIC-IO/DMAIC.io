@@ -227,11 +227,11 @@
 
 /* Kein overflow: hidden — es schnitte den Kontexthilfe-Kreis ab. Die Rundung
    der Ecken tragen stattdessen die äußeren Knöpfe. */
-.module-calendar__view-toggle button:first-child {
+.module-calendar__view-toggle button:first-of-type {
   border-radius: var(--border-radius) 0 0 var(--border-radius);
 }
 
-.module-calendar__view-toggle button:last-child {
+.module-calendar__view-toggle button:last-of-type {
   border-radius: 0 var(--border-radius) var(--border-radius) 0;
 }
 
@@ -256,7 +256,7 @@
   font-weight: var(--font-weight-semibold);
 }
 
-.module-calendar__view-toggle button:not(:last-child) {
+.module-calendar__view-toggle button:not(:last-of-type) {
   border-right: var(--border-width) solid var(--color-border-primary);
 }
 
