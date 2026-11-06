@@ -10,7 +10,7 @@ suite('Katalog zur Laufzeit', () => {
   test('MODULES = manifest.js-Einträge plus je umgestelltem Modul einer mit form: module, in MODULE_ORDER', () => {
     assertEqual(MODULES.length, manifest.length + CONVERTED.length);
     assertTrue(manifest.every((e) => MODULES.includes(e)));
-    assertDeepEqual(MODULES.filter((e) => !manifest.includes(e)).map((e) => [e.id, e.form]), CONVERTED.map((id) => [id, 'module']));
+    assertDeepEqual(MODULES.filter((e) => !manifest.includes(e)).map((e) => [e.id, e.form]), [...CONVERTED].sort((a, b) => MODULE_ORDER.indexOf(a) - MODULE_ORDER.indexOf(b)).map((id) => [id, 'module']));
     assertDeepEqual(MODULES.map((e) => e.id), MODULE_ORDER.filter((id) => MODULES.some((e) => e.id === id)));
   });
 

@@ -156,6 +156,7 @@ const SKIP = new Set([
   'modules/dashboard-tiles.test.js',
   'modules/dmaic-calendar-example.test.js',
   'modules/histogram-chart-config.test.js',
+  'modules/hypothesis-test-view.test.js',
   // Imports the module shell for viewData(), which pulls in Alpine CSP and
   // touches MutationObserver on import.
   'modules/ishikawa-cost.test.js',

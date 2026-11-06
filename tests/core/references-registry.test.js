@@ -42,8 +42,14 @@ const BOOK_REVIEW_REFS = {
 
 suite('references-registry — book review sources', () => {
   for (const [moduleId, ids] of Object.entries(BOOK_REVIEW_REFS)) {
-    test(`${moduleId} lists ${ids.join(', ')}`, () => {
-      const known = new Set((REFS[moduleId] || []).map(r => r.id));
+    test(`${moduleId} lists ${ids.join(', ')}`, async () => {
+      // Umgestellte Module führen ihre Quellen in resources/data/references.json, nicht in REFS
+      let refs = REFS[moduleId];
+      if (!refs) {
+        const res = await fetch(new URL(`../../js/modules/${moduleId}/resources/data/references.json`, import.meta.url));
+        refs = res.ok ? resolveReferences((await res.json()).references ?? []) : [];
+      }
+      const known = new Set(refs.map(r => r.id));
       const missing = ids.filter(id => !known.has(id));
       assertEqual(missing.join(', '), '', `${moduleId} missing references`);
     });

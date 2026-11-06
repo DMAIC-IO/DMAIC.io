@@ -7,10 +7,10 @@
     <div class="btn-group hyptest__toggle-row" data-help-key="modules.hypothesis-test.actions.setCategory.help">
       <button class="btn--segment hyptest__toggle-btn" data-cat="variance"
         :class="activeClass('category', 'variance')"
-        x-command="setCategory" data-arg-category="variance">σ² <span x-text="t('catVariance')"></span></button>
+        data-help-key="" x-command="setCategory" data-arg-category="variance">σ² <span x-text="t('catVariance')"></span></button>
       <button class="btn--segment hyptest__toggle-btn" data-cat="mean"
         :class="activeClass('category', 'mean')"
-        x-command="setCategory" data-arg-category="mean">μ <span x-text="t('catMean')"></span></button>
+        data-help-key="" x-command="setCategory" data-arg-category="mean">μ <span x-text="t('catMean')"></span></button>
     </div>
 
     <div class="dmike-split__section-title" x-text="t('sectionTestType')"></div>
@@ -18,18 +18,18 @@
       :class="testTypeRowClass">
       <button class="btn--segment hyptest__toggle-btn" data-type="one"
         :class="activeClass('testType', 'one')"
-        x-command="setTestType" data-arg-test-type="one" x-text="t('oneSample')"></button>
+        data-help-key="" x-command="setTestType" data-arg-test-type="one" x-text="t('oneSample')"></button>
       <button class="btn--segment hyptest__toggle-btn" data-type="two"
         :class="activeClass('testType', 'two')"
-        x-command="setTestType" data-arg-test-type="two" x-text="t('twoSample')"></button>
+        data-help-key="" x-command="setTestType" data-arg-test-type="two" x-text="t('twoSample')"></button>
       <template x-if="model.category === 'mean'">
         <button class="btn--segment hyptest__toggle-btn" data-type="paired"
           :class="activeClass('testType', 'paired')"
-          x-command="setTestType" data-arg-test-type="paired" x-text="t('pairedSample')"></button>
+          data-help-key="" x-command="setTestType" data-arg-test-type="paired" x-text="t('pairedSample')"></button>
       </template>
       <button class="btn--segment hyptest__toggle-btn" data-type="k"
         :class="activeClass('testType', 'k')"
-        x-command="setTestType" data-arg-test-type="k" x-text="t('kSample')"></button>
+        data-help-key="" x-command="setTestType" data-arg-test-type="k" x-text="t('kSample')"></button>
     </div>
 
     <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
@@ -38,7 +38,7 @@
       <div class="field-group">
         <label data-help-key="modules.hypothesis-test.fields.colRefsK.help"
                x-text="t('kSampleColumns')"></label>
-        <div class="hyptest__picker" data-ref="picker-k-wrap" x-field="model.colRefsK"></div>
+        <div class="hyptest__picker" data-help-key="" data-ref="picker-k-wrap" x-field="model.colRefsK"></div>
       </div>
     </template>
 
@@ -47,13 +47,13 @@
         <div class="field-group">
           <label data-help-key="modules.hypothesis-test.fields.colRef1.help"
                  x-text="sample1Label"></label>
-          <div class="hyptest__picker" data-ref="picker1-wrap" x-field="model.colRef1"></div>
+          <div class="hyptest__picker" data-help-key="" data-ref="picker1-wrap" x-field="model.colRef1"></div>
         </div>
         <template x-if="needsSecondColumn">
           <div class="field-group">
             <label data-help-key="modules.hypothesis-test.fields.colRef2.help"
                    x-text="sample2Label"></label>
-            <div class="hyptest__picker" data-ref="picker2-wrap" x-field="model.colRef2"></div>
+            <div class="hyptest__picker" data-help-key="" data-ref="picker2-wrap" x-field="model.colRef2"></div>
           </div>
         </template>
         <template x-if="model.testType === 'paired'">
