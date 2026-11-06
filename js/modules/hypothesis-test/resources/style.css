@@ -289,7 +289,7 @@
 
 .hyptest__metric-value--success { color: var(--color-success); }
 .hyptest__metric-value--danger { color: var(--color-error); }
-.hyptest__metric-value--warning { color: var(--color-warning, #fbbf24); }
+.hyptest__metric-value--warning { color: var(--color-warning); }
 
 /* Decision box */
 .hyptest__decision {
@@ -321,8 +321,8 @@
 }
 
 .hyptest__decision--warn {
-  background: rgb(251 191 36 / 6%);
-  border: var(--border-width) solid rgb(251 191 36 / 20%);
+  background: color-mix(in srgb, var(--color-warning) 6%, transparent);
+  border: var(--border-width) solid color-mix(in srgb, var(--color-warning) 20%, transparent);
 }
 
 /* Text colors */
@@ -440,3 +440,6 @@
   height: 280px;
   min-width: 0;
 }
+
+/* Wirtselement der Spaltenauswahl (x-field) */
+.hyptest__picker { display: block; }
