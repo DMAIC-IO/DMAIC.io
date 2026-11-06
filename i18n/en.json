@@ -894,6 +894,7 @@
     "cancel": "Cancel",
     "save": "Save",
     "delete": "Delete",
+    "confirmDelete": "Really delete?",
     "edit": "Edit",
     "add": "Add",
     "remove": "Remove",

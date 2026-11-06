@@ -50,7 +50,7 @@
                 <div class="ishikawa__img-meta">
                   <span class="ishikawa__img-size" x-text="problem.formatImgSize(img.dataUrl)"></span>
                   <button class="ishikawa__img-del" type="button" :data-img-del="img.id" :data-img-kind="kind"
-                          :title="t('common.delete')" @click="problem.deleteImage(kind, img.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                          :title="t('common.delete')" data-confirm-delete="off" @click="problem.deleteImage(kind, img.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                 </div>
               </figure>
             </template>
@@ -103,7 +103,7 @@
                   <td><input class="field field--sm field--ghost ishikawa__exp-date-input" type="date" :data-fact-date="f.id" x-model="f.date" /></td>
                   <td><input class="field field--sm field--ghost ishikawa__exp-resp-input" type="text" :placeholder="t('factOwnerPlaceholder')" list="ishikawa-fact-owner-list" :data-fact-owner="f.id" x-model="f.owner" /></td>
                   <td><div class="ishikawa__row-actions">
-                    <button class="btn btn--icon-sm btn--danger" :title="t('common.delete')" :data-fact-del="f.id" @click="experiments.confirmDeleteFact(f.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                    <button class="btn btn--icon-sm btn--danger" :title="t('common.delete')" :data-fact-del="f.id" data-confirm-delete="off" @click="experiments.confirmDeleteFact(f.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                   </div></td>
                 </tr>
               </template>
@@ -138,7 +138,7 @@
                 <input type="text" class="ishikawa__expert-name-edit" :data-expert-name-id="e.id"
                        :value="e.name" spellcheck="false"
                        @keydown="causes.expertEditKey(e.id, $event)" @blur="causes.commitExpertRename(e.id, $event)" />
-                <button class="ishikawa__expert-rm" :data-expert-id="e.id" :title="t('common.remove')" @click="causes.removeExpert(e.id)"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
+                <button class="ishikawa__expert-rm" :data-expert-id="e.id" :title="t('common.remove')" data-confirm-delete @click="causes.removeExpert(e.id)"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
               </span>
             </template>
           </div>
@@ -289,7 +289,7 @@
                       <span class="ishikawa__exp-link-badge" x-text="causes.linkedExpCount(vr.row)"></span>
                     </template>
                   </button>
-                  <button class="btn btn--icon-sm btn--danger" :title="t('common.delete')" :data-del-row="vr.row.id" @click="causes.confirmDeleteRow(vr.row.id)"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
+                  <button class="btn btn--icon-sm btn--danger" :title="t('common.delete')" :data-del-row="vr.row.id" data-confirm-delete="off" @click="causes.confirmDeleteRow(vr.row.id)"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
                 </div></td>
               </tr>
             </template>
@@ -354,7 +354,7 @@
                   <span class="ishikawa__snap-date" x-text="snapshots.snapDate(s)"></span>
                   <span class="ishikawa__snap-name" x-text="s.name"></span>
                   <span class="ishikawa__snap-badge" x-text="snapshots.snapBadge(s)"></span>
-                  <button class="ishikawa__snap-del" :data-snap-del="s.id" :title="t('common.delete')" @click="snapshots.removeFromList(s.id, $event)"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
+                  <button class="ishikawa__snap-del" :data-snap-del="s.id" :title="t('common.delete')" data-confirm-delete @click="snapshots.removeFromList(s.id, $event)"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
                 </div>
               </template>
             </div>
@@ -434,7 +434,7 @@
                   <td><input class="field field--sm field--ghost field--num ishikawa__exp-num-input" type="number" min="0" step="0.5" placeholder="0" :data-xp-hours="x.id" x-model="x.costHours" @input="experiments.expCostChanged()" /></td>
                   <td><button class="btn btn--sm ishikawa__exp-link-btn" :data-xp-link="x.id" @click="experiments.openHypLink(x.id)" x-text="experiments.expLinkText(x)"></button></td>
                   <td><div class="ishikawa__row-actions">
-                    <button class="btn btn--icon-sm btn--danger" :title="t('common.delete')" :data-xp-del="x.id" @click="experiments.confirmDeleteExperiment(x.id)"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
+                    <button class="btn btn--icon-sm btn--danger" :title="t('common.delete')" :data-xp-del="x.id" data-confirm-delete="off" @click="experiments.confirmDeleteExperiment(x.id)"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
                   </div></td>
                 </tr>
               </template>

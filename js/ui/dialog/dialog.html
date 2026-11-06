@@ -51,7 +51,7 @@
       <div class="dialog__footer-start" data-dialog-slot="footer-start"></div>
       <template x-if="dlg.hasDelete">
         <button type="button" class="btn btn--danger dialog__delete"
-                x-text="dlg.deleteLabel" @click="dlg.remove()"></button>
+                x-text="dlg.deleteLabel" data-confirm-delete @click="dlg.remove()"></button>
       </template>
       <template x-if="dlg.hasCancel">
         <button type="button" class="btn btn--secondary dialog__cancel"

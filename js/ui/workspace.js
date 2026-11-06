@@ -307,6 +307,9 @@ export class Workspace {
         this._removeModule(instanceId, moduleId);
       });
 
+    // `_removeModule` asks itself, naming the module — the generic delete
+    // confirmation (core/delete-confirm.js) must not ask a second time.
+    remove.dataset.confirmDelete = 'off';
     this._actionsEl.append(rename, remove);
   }
 

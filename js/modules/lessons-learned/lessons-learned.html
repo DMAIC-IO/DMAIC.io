@@ -127,7 +127,7 @@
               <button class="btn btn--sm btn--ghost" data-action="edit"
                 @click="openEditModal(lesson)" type="button" x-text="t('edit')"></button>
               <button class="btn btn--sm btn--ghost btn--danger" data-action="delete"
-                @click="deleteLesson(lesson)" type="button" x-text="t('delete')"></button>
+                data-confirm-delete="off" @click="deleteLesson(lesson)" type="button" x-text="t('delete')"></button>
             </div>
           </div>
         </div>

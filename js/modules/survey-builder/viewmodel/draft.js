@@ -318,10 +318,10 @@ export class DraftViewModel {
     const sec = this.model.section(id);
     if (!sec) return;
     const count = sec.questions.length;
-    if (count > 0) {
-      const ok = await this._context.dialog.confirm({ message: this._t('confirmSectionDelete', { count }), danger: true });
-      if (!ok) return;
-    }
+    // Always ask (generic delete confirmation is off for this button).
+    const message = count > 0 ? this._t('confirmSectionDelete', { count }) : this._context.i18n.t('common.confirmDelete');
+    const ok = await this._context.dialog.confirm({ message, danger: true });
+    if (!ok) return;
     this.removeSection(id);
   }
 
@@ -394,10 +394,10 @@ export class DraftViewModel {
    */
   async confirmDeleteQuestion(id) {
     const count = this.model.countAffectedResponses(id);
-    if (count > 0) {
-      const ok = await this._context.dialog.confirm({ message: this._t('confirmDeleteAffected', { count }), danger: true });
-      if (!ok) return;
-    }
+    // Always ask (generic delete confirmation is off for this button).
+    const message = count > 0 ? this._t('confirmDeleteAffected', { count }) : this._context.i18n.t('common.confirmDelete');
+    const ok = await this._context.dialog.confirm({ message, danger: true });
+    if (!ok) return;
     this.removeQuestion(id);
   }
 
@@ -696,10 +696,10 @@ export class DraftViewModel {
     const q = this.selectedQuestion();
     if (!q || !itemKindOf(q)) return;
     const count = this.model.countAffectedResponses(q.id, itemId);
-    if (count > 0) {
-      const ok = await this._context.dialog.confirm({ message: this._t('confirmDeleteAffected', { count }), danger: true });
-      if (!ok) return;
-    }
+    // Always ask (generic delete confirmation is off for this button).
+    const message = count > 0 ? this._t('confirmDeleteAffected', { count }) : this._context.i18n.t('common.confirmDelete');
+    const ok = await this._context.dialog.confirm({ message, danger: true });
+    if (!ok) return;
     this.removeItem(q.id, itemId);
   }
 

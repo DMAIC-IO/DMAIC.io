@@ -211,12 +211,13 @@ export default createModule({
        *   confirmation dialog — it would block the batch.
        */
       deleteNode(node) {
-        if (this.model.nodeHasChildren(node.id)) {
-          module._context.dialog.confirm({ message: _t('modules.five-why.deleteConfirm'), danger: true })
-            .then((confirmed) => { if (confirmed) this.removeNode(node.id); });
-          return;
-        }
-        this.removeNode(node.id);
+        // Always ask (generic delete confirmation is off for this button);
+        // the specific text warns that the subtree goes too.
+        const message = this.model.nodeHasChildren(node.id)
+          ? _t('modules.five-why.deleteConfirm')
+          : _t('common.confirmDelete');
+        module._context.dialog.confirm({ message, danger: true })
+          .then((confirmed) => { if (confirmed) this.removeNode(node.id); });
       },
       /**
        * Collapse every node that has children.

@@ -45,7 +45,7 @@
                 <option value="supersystem" :selected="c.kind === 'supersystem'" x-text="t('kind.supersystem')"></option>
               </select>
               <button type="button" class="btn btn--sm" data-role="component-remove"
-                :title="t('removeComponent')" :aria-label="t('removeComponent')" @click="deleteComponent(c)">
+                :title="t('removeComponent')" :aria-label="t('removeComponent')" data-confirm-delete="off" @click="deleteComponent(c)">
                 <span class="icon icon--sm" data-icon="action.delete"></span>
               </button>
             </div>

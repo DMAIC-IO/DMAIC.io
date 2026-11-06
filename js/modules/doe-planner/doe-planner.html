@@ -111,7 +111,7 @@
               <option value="categorical" x-text="t('factorKindCategorical')"></option>
             </select>
             <button class="doe__factor-remove-btn" type="button" :data-factor-id="f.id"
-                    :title="t('removeFactor')" @click="factors.removeFactor(f.id)">&#10005;</button>
+                    :title="t('removeFactor')" data-confirm-delete @click="factors.removeFactor(f.id)">&#10005;</button>
           </div>
           <div class="doe__levels-row">
             <button class="doe__insert-level-btn" type="button"
@@ -128,7 +128,7 @@
                   <template x-if="f.levels.length > 2">
                     <button class="doe__remove-level-btn" type="button"
                             :data-factor-id="f.id" :data-level-idx="li"
-                            :title="t('removeLevel')" @click="factors.removeLevel(f.id, li)">&#10005;</button>
+                            :title="t('removeLevel')" data-confirm-delete @click="factors.removeLevel(f.id, li)">&#10005;</button>
                   </template>
                 </div>
                 <button class="doe__insert-level-btn" type="button"
@@ -157,7 +157,7 @@
                    :placeholder="t('responseUnitPlaceholder')" />
             <template x-if="model.responses.length > 1">
               <button class="doe__response-remove-btn" type="button" :data-idx="ri"
-                      :title="t('removeResponse')" @click="factors.removeResponse(ri)">&#10005;</button>
+                      :title="t('removeResponse')" data-confirm-delete @click="factors.removeResponse(ri)">&#10005;</button>
             </template>
           </div>
         </div>
@@ -417,7 +417,7 @@
                 <span class="doe__forbidden-rule" x-text="optimal.forbiddenRuleText(rule)"></span>
                 <button type="button" class="doe__forbidden-remove-btn"
                         :data-rule-idx="ri" :title="t('forbiddenRemoveTitle')"
-                        @click="optimal.removeForbiddenVertex(ri)">&#10005;</button>
+                        data-confirm-delete @click="optimal.removeForbiddenVertex(ri)">&#10005;</button>
               </li>
             </template>
           </ul>

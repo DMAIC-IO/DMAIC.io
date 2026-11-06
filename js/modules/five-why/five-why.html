@@ -47,7 +47,7 @@
               </template>
               <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--delete" type="button"
                       data-action="delete" :data-id="n1.id" :title="deleteTitle()"
-                      @click.stop="deleteNode(n1)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                      data-confirm-delete="off" @click.stop="deleteNode(n1)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
             </div>
           </div>
 
@@ -77,7 +77,7 @@
                       </template>
                       <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--delete" type="button"
                               data-action="delete" :data-id="n2.id" :title="deleteTitle()"
-                              @click.stop="deleteNode(n2)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                              data-confirm-delete="off" @click.stop="deleteNode(n2)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                     </div>
                   </div>
 
@@ -107,7 +107,7 @@
                               </template>
                               <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--delete" type="button"
                                       data-action="delete" :data-id="n3.id" :title="deleteTitle()"
-                                      @click.stop="deleteNode(n3)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                                      data-confirm-delete="off" @click.stop="deleteNode(n3)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                             </div>
                           </div>
 
@@ -137,7 +137,7 @@
                                       </template>
                                       <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--delete" type="button"
                                               data-action="delete" :data-id="n4.id" :title="deleteTitle()"
-                                              @click.stop="deleteNode(n4)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                                              data-confirm-delete="off" @click.stop="deleteNode(n4)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                                     </div>
                                   </div>
 
@@ -164,7 +164,7 @@
                                               </template>
                                               <button class="btn btn--icon-sm five-why__icon-btn five-why__icon-btn--delete" type="button"
                                                       data-action="delete" :data-id="n5.id" :title="deleteTitle()"
-                                                      @click.stop="deleteNode(n5)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                                                      data-confirm-delete="off" @click.stop="deleteNode(n5)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                                             </div>
                                           </div>
                                         </div>

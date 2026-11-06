@@ -11,6 +11,7 @@ import { createDialogService } from './ui/dialog/dialog.js';
 import { HelpPanel }      from './ui/help-panel.js';
 import { VERSION }        from './core/version.js';
 import { initNightlyMode }   from './core/nightly-mode.js';
+import { startDeleteConfirm } from './core/delete-confirm.js';
 import { ExportReminder }    from './core/export-reminder.js';
 import { notify }            from './core/notify.js';
 import { setChunkErrorHandler, guardChunkRejections, prefetchChunks } from './core/chunks.js';
@@ -49,6 +50,7 @@ async function init() {
   const dialog = createDialogService({ i18n });
 
   initNightlyMode({ dialog, i18n });
+  startDeleteConfirm({ dialog, i18n });
 
   const dmaicTiles = new DmaicTiles(
     document.getElementById('dmaic-tiles'),

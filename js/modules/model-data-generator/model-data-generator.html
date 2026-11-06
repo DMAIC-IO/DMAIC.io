@@ -24,7 +24,7 @@
                 <template x-if="model.factors.length > 1">
                   <button class="btn btn--icon-sm btn--danger mdg-btn-remove" type="button"
                     data-help-key="modules.model-data-generator.actions.removeFactor.help"
-                    :data-idx="i" :title="t('remove')" @click="removeFactor(i)">×</button>
+                    :data-idx="i" :title="t('remove')" data-confirm-delete @click="removeFactor(i)">×</button>
                 </template>
               </span>
             </div>

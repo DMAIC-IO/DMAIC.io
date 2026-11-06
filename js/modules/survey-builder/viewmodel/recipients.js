@@ -114,11 +114,14 @@ export class RecipientsViewModel {
    * @returns {Promise<void>}
    */
   async confirmDeleteRecipient(id) {
-    if (this.model.recipientStatus(id) === 'answered') {
-      const name = recipientName(this.model.recipients, id) || this._t('recipientUnnamed');
-      const ok = await this._context.dialog.confirm({ message: this._t('confirmRecipientDelete', { name }), danger: true });
-      if (!ok) return;
-    }
+    // Always ask (generic delete confirmation is off for this button); the
+    // specific text warns that the answers go too.
+    const name = recipientName(this.model.recipients, id) || this._t('recipientUnnamed');
+    const message = this.model.recipientStatus(id) === 'answered'
+      ? this._t('confirmRecipientDelete', { name })
+      : this._context.i18n.t('common.confirmDelete');
+    const ok = await this._context.dialog.confirm({ message, danger: true });
+    if (!ok) return;
     this.removeRecipient(id);
   }
 

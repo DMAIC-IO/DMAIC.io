@@ -52,7 +52,7 @@
                 <button class="btn btn--icon-sm" type="button" data-action="moveSectionDown" :title="t('moveDown')"
                         @click="draft.moveSectionDown(sec.id)"><span class="icon icon--sm" data-icon="nav.arrow-down" aria-hidden="true"></span></button>
                 <button class="btn btn--icon-sm btn--danger" type="button" data-action="deleteSection" :title="t('delete')"
-                        @click="draft.confirmDeleteSection(sec.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                        data-confirm-delete="off" @click="draft.confirmDeleteSection(sec.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
               </div>
               <ul class="survey-builder__questions">
                 <template x-for="q in sec.questions" :key="q.id">
@@ -68,7 +68,7 @@
                     <button class="btn btn--icon-sm" type="button" data-action="moveQuestionDown" :title="t('moveDown')"
                             @click.stop="draft.moveQuestionDown(q.id)"><span class="icon icon--sm" data-icon="nav.arrow-down" aria-hidden="true"></span></button>
                     <button class="btn btn--icon-sm btn--danger" type="button" data-action="deleteQuestion" :title="t('delete')"
-                            @click.stop="draft.confirmDeleteQuestion(q.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                            data-confirm-delete="off" @click.stop="draft.confirmDeleteQuestion(q.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                   </li>
                 </template>
               </ul>
@@ -140,7 +140,7 @@
                   <button class="btn btn--icon-sm" type="button" data-action="moveItemDown" :title="t('moveDown')"
                           @click="draft.moveItemDown(item.id)"><span class="icon icon--sm" data-icon="nav.arrow-down" aria-hidden="true"></span></button>
                   <button class="btn btn--icon-sm btn--danger" type="button" data-action="deleteItem" :title="t('delete')"
-                          @click="draft.confirmDeleteItem(item.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                          data-confirm-delete="off" @click="draft.confirmDeleteItem(item.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                 </div>
               </template>
               <button class="btn btn--sm" type="button" data-ref="addItem" data-help-key="modules.survey-builder.actions.draft.addItem.help" @click="draft.addItemToSelected()">
@@ -255,7 +255,7 @@
                     <span class="icon icon--sm" data-icon="action.download" aria-hidden="true"></span><span x-text="t('exportRecipient')"></span>
                   </button>
                   <button class="btn btn--icon-sm btn--danger" type="button" data-action="deleteRecipient" :title="t('delete')"
-                          @click="recipients.confirmDeleteRecipient(r.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                          data-confirm-delete="off" @click="recipients.confirmDeleteRecipient(r.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                 </td>
               </tr>
             </template>
@@ -288,7 +288,7 @@
                   <button class="btn btn--icon-sm" type="button" data-action="toggleResponse" :title="t('showDetails')"
                           @click="responses.toggleResponse(row.id)"><span class="icon icon--sm" data-icon="action.show" aria-hidden="true"></span></button>
                   <button class="btn btn--icon-sm btn--danger" type="button" data-action="deleteResponse" :title="t('delete')"
-                          @click="responses.confirmDeleteResponse(row.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                          data-confirm-delete="off" @click="responses.confirmDeleteResponse(row.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
                 </td>
               </tr>
               <tr data-ref="details" x-show="responses.isResponseOpen(row.id)">

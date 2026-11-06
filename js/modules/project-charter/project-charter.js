@@ -743,7 +743,7 @@ export default createModule({
                     icon(n._col ? 'nav.expand-down' : 'nav.collapse-up', { cls: 'pc__org-node-ico' }),
                     n._col ? String(childCount) : null)
                 : null,
-              h('button', { class: 'pc__org-node-btn pc__org-node-btn--del', 'data-action': 'del', title: module._context.i18n.t('common.delete') },
+              h('button', { class: 'pc__org-node-btn pc__org-node-btn--del', 'data-action': 'del', 'data-confirm-delete': 'off', title: module._context.i18n.t('common.delete') },
                 icon('action.delete', { cls: 'pc__org-node-ico' })),
             ),
             h('div', { class: 'pc__org-dot-b' }),

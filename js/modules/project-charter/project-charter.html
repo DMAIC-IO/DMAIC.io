@@ -138,6 +138,7 @@
                       :title="isConfirmingDelete(goal.id) ? t('deleteGoalConfirm') : t('deleteGoal')"
                       :aria-label="isConfirmingDelete(goal.id) ? t('deleteGoalConfirm') : t('deleteGoal')"
                       :class="isConfirmingDelete(goal.id) ? 'btn--danger' : 'btn--ghost'"
+                      data-confirm-delete="off"
                       @click="goalDeleteClick(goal.id, $event)"
                     ><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true" x-show="!isConfirmingDelete(goal.id)"></span><span x-show="isConfirmingDelete(goal.id)" x-text="t('deleteGoalConfirm')"></span></button>
                   </td>
