@@ -131,5 +131,6 @@ suite('ExamplesRegistry: Beispiele der neuen Form', () => {
     const { EXAMPLES } = await import('../../js/modules/catalog.generated.js');
     assertEqual(EXAMPLES['sipoc-pizza-lieferprozess'], 'sipoc');
     assertEqual(EXAMPLES['sipoc-hubschrauber-flyer'], 'sipoc');
+    assertEqual(EXAMPLES['dmaic-calendar-pizza-projekt'], 'dmaic-calendar');
   });
 });

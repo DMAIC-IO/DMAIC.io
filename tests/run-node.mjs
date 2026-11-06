@@ -151,6 +151,7 @@ const SKIP = new Set([
   // (tests/runner.html) — dort ist die Suite seit jeher registriert.
   'modules/activity-flowchart.test.js',
   'modules/dashboard-tiles.test.js',
+  'modules/dmaic-calendar-example.test.js',
   'modules/histogram-chart-config.test.js',
   // Imports the module shell for viewData(), which pulls in Alpine CSP and
   // touches MutationObserver on import.

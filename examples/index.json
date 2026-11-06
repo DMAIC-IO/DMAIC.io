@@ -2310,30 +2310,6 @@
       ]
     },
     {
-      "id": "dmaic-calendar-pizza-projekt",
-      "type": "project",
-      "title": {
-        "de": "DMAIC-Projektplan Pizza-Lieferzeit",
-        "en": "DMAIC Project Plan Pizza Delivery"
-      },
-      "description": {
-        "de": "32 Termine über 7 Wochen — vom Kickoff bis zum Projektabschluss, je Phase ein Gate Review. Daten werden beim Laden auf die aktuelle Woche (Montag = Anker) verschoben, sodass der Plan immer um heute zentriert ist.",
-        "en": "32 events across 7 weeks — from kickoff to project closure, with a gate review per phase. Dates are remapped to the current week (Monday anchor) on load so the plan always centers on today."
-      },
-      "source": "Qprovement Lehrkonfiguration",
-      "license": "public-domain",
-      "file": "projects/dmaic-calendar-pizza-projekt.json",
-      "format": "json",
-      "modules": [
-        "dmaic-calendar"
-      ],
-      "tags": [
-        "define",
-        "calendar",
-        "pizza-lehrcase"
-      ]
-    },
-    {
       "id": "ce-matrix-pizza-lieferzeit",
       "type": "project",
       "title": {

@@ -15,7 +15,7 @@ export const MODULES = Object.freeze([...legacy, ...[m0, m1].map(fromDescriptor)
   .sort((a, b) => MODULE_ORDER.indexOf(a.id) - MODULE_ORDER.indexOf(b.id)));
 
 /** Beispiel-Id → Besitzermodul (Module in neuer Form, resources/examples/examples.json). */
-export const EXAMPLES = Object.freeze({"sipoc-hubschrauber-flyer":"sipoc","sipoc-pizza-lieferprozess":"sipoc"});
+export const EXAMPLES = Object.freeze({"dmaic-calendar-pizza-projekt":"dmaic-calendar","sipoc-hubschrauber-flyer":"sipoc","sipoc-pizza-lieferprozess":"sipoc"});
 
 /** Beispiel-Id → Module, die es per exampleRefs (module.js) nutzen. */
 export const EXAMPLE_REFS = Object.freeze({});
