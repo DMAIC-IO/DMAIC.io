@@ -498,3 +498,59 @@ suite('x-dialog: Fehler beim Öffnen und Argumente des Formulars', () => {
     assertEqual(form.getAttribute('data-arg-idx'), null);
   });
 });
+
+suite('Startwerte data-default-arg-*', () => {
+  test('Inline-Formular: Startwert beim Einbau und nach dem Leeren, änderbar', async () => {
+    const { $, model } = await mount('<form x-command-form="addItem" data-default-arg-col="b"><input x-param="col"><input x-param="text"></form>');
+    assertEqual($('[x-param="col"]').value, 'b');
+    $('[x-param="text"]').value = 'neu';
+    $('[x-param="text"]').dispatchEvent(new Event('input'));
+    $('form').requestSubmit();
+    await flush();
+    assertDeepEqual([...model.columns.b], ['neu']);
+    assertEqual($('[x-param="col"]').value, 'b');
+  });
+
+  test('current liegt über dem Startwert', async () => {
+    const { $, dialog } = await mount(
+      '<button x-dialog="f" data-dialog-command="setItem" data-arg-col="a" data-arg-idx="0" data-default-arg-text="Vorgabe">e</button>'
+      + '<form x-ref="f" x-command-form="setItem"><input x-param="text"></form>', { columns: { a: ['Stand'] } });
+    $('button').click();
+    await flush();
+    assertEqual(dialog.open.body.querySelector('[x-param="text"]').value, 'Stand');
+    dialog.open.api.cancel();
+    await flush();
+  });
+
+  test('x-dialog überträgt Startwerte und setzt sie danach zurück', async () => {
+    const { $, dialog } = await mount(
+      '<button x-dialog="f" data-default-arg-col="b">n</button>'
+      + '<form x-ref="f" x-command-form="addItem"><input x-param="col"><input x-param="text"></form>');
+    $('button').click();
+    await flush();
+    const form = dialog.open.body.querySelector('form');
+    assertEqual(form.querySelector('[x-param="col"]').value, 'b');
+    dialog.open.api.cancel();
+    await flush();
+    assertTrue(!$('form').hasAttribute('data-default-arg-col'));
+  });
+
+  test('unbekannter Name und Konflikt mit data-arg-* werfen beim Einbau', () => {
+    assertThrows(() => mountDetached('<form x-command-form="addItem" data-default-arg-nope="x"><input x-param="text"></form>'),
+      /unknown default argument "nope"; available: col, text/);
+    assertThrows(() => mountDetached('<form x-command-form="addItem" data-arg-col="a" data-default-arg-col="b"><input x-param="text"></form>'),
+      /data-default-arg-col: col is also a fixed argument \(data-arg-\*\)/);
+    assertThrows(() => mountDetached('<button x-dialog="f" data-default-arg-nope="1">x</button><form x-ref="f" x-command-form="addItem"></form>'),
+      /unknown default argument "nope"; available: col, text/);
+  });
+
+  test('ungültiger Startwert beim Öffnen: Meldung über notify', async () => {
+    const { $, notified, dialog } = await mount(
+      '<button x-dialog="f" data-default-arg-col="z">n</button><form x-ref="f" x-command-form="addItem"><input x-param="col"><input x-param="text"></form>');
+    $('button').click();
+    await flush();
+    assertEqual(dialog.open, null);
+    assertEqual(notified.length, 1);
+    assertTrue(/invalid col "z"/.test(notified[0][0]));
+  });
+});

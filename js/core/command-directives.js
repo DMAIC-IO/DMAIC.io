@@ -15,6 +15,11 @@
  * Kommando-Definition eine Rückfrage, fragt nur die Oberfläche
  * (`runUiCommand`), nie ein direkter Aufruf.
  *
+ * Startwerte: `data-default-arg-<kebab>` belegt einen freien Parameter vor (im
+ * Formular änderbar), an `<form x-command-form>` oder am `x-dialog`-Knopf.
+ * Schichtung: Vorgabe der Parameter-Spec → `data-default-arg-*` → `current` →
+ * `data-arg-*` → `fromParams`.
+ *
  * Die Komponente liefert ihren Griff `_ui` (createModule): Model, notify,
  * dialog, i18n, moduleId, forms. Die Direktive merkt sich beim Einbau die
  * Daten der Komponente und liest `_ui` erst beim Auslösen — so läuft sie
@@ -76,6 +81,39 @@ export function readFixedArgs(el, params) {
     out[name] = Object.hasOwn(params, name) ? fromAttr(params[name], text) : text;
   }
   return out;
+}
+
+/** `fromCol` → `from-col`. @param {string} name @returns {string} */
+const kebab = (name) => name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
+
+/**
+ * Die Startwerte aus den `data-default-arg-*` eines Elements, gewandelt nach
+ * der Spec des Parameters (ungeprüft — geprüft wird beim Anwenden).
+ * @param {HTMLElement} el @param {Record<string, object>} params
+ * @returns {Record<string, any>}
+ * @throws {Error} unbekannter Parametername
+ */
+export function readDefaultArgs(el, params) {
+  const out = {};
+  for (const [key, text] of Object.entries(el.dataset)) {
+    if (!key.startsWith('defaultArg') || key.length === 10) continue;
+    const name = key.charAt(10).toLowerCase() + key.slice(11);
+    requireKnownId('default argument', name, Object.keys(params));
+    out[name] = fromAttr(params[name], text);
+  }
+  return out;
+}
+
+/**
+ * Startwerte und feste Argumente eines Elements dürfen denselben Parameter nicht nennen.
+ * @param {HTMLElement} el @param {Record<string, object>} params @returns {void}
+ */
+function checkDefaultArgs(el, params) {
+  const defaults = readDefaultArgs(el, params);
+  const fixed = readFixedArgs(el, params);
+  for (const name of Object.keys(defaults)) {
+    if (Object.hasOwn(fixed, name)) throw new Error(`data-default-arg-${kebab(name)}: ${name} is also a fixed argument (data-arg-*)`);
+  }
 }
 
 /**
@@ -164,17 +202,24 @@ function createFormController(Alpine, formEl, baseCommand) {
       || (s.kind !== 'index' && s.kind !== 'idOf') || Object.hasOwn(fx, k));
   };
 
-  /** Startwerte: Vorgaben, darüber current, mit Schema über fromParams. */
+  /** Startwerte: Vorgaben, data-default-arg-*, current, feste Argumente; mit Schema über fromParams. */
   const startValues = (withCurrent) => {
     const fx = fixed();
     const ps = params();
+    const model = ui().model;
+    const context = contextOf(model);
     const p = {};
-    for (const [k, s] of Object.entries(ps)) if (!Object.hasOwn(fx, k)) p[k] = defaultOf(s);
-    Object.assign(p, fx, withCurrent ? currentOf(ui().model, command, fx) : {});
+    for (const [k, s] of Object.entries(ps)) if (!Object.hasOwn(fx, k)) p[k] = defaultOf(s, context);
+    const dflt = {};
+    for (const [k, v] of Object.entries(readDefaultArgs(formEl, ps))) {
+      if (Object.hasOwn(fx, k)) throw new Error(`data-default-arg-${kebab(k)}: ${k} is also a fixed argument (data-arg-*)`);
+      dflt[k] = checkValue(ps[k], k, v, { root: model, params: fx, context });
+    }
+    Object.assign(p, dflt, withCurrent ? currentOf(model, command, fx) : {}, fx);
     if (!formDef) return Object.fromEntries(Object.keys(ps).filter((k) => !Object.hasOwn(fx, k)).map((k) => [k, p[k]]));
     const mapped = formDef.fromParams(p) ?? {};
     return Object.fromEntries(Object.entries(formDef.schema.fields)
-      .map(([k, s]) => [k, Object.hasOwn(mapped, k) ? mapped[k] : defaultOf(s)]));
+      .map(([k, s]) => [k, Object.hasOwn(mapped, k) ? mapped[k] : defaultOf(s, context)]));
   };
 
   const reset = (withCurrent) => {
@@ -314,7 +359,7 @@ async function openDialog(Alpine, el, ref) {
   };
   if (formEl) {
     for (const { name, value } of [...el.attributes]) {
-      if (name.startsWith('data-arg-')) { previous.set(name, formEl.getAttribute(name)); formEl.setAttribute(name, value); }
+      if (name.startsWith('data-arg-') || name.startsWith('data-default-arg-')) { previous.set(name, formEl.getAttribute(name)); formEl.setAttribute(name, value); }
     }
   }
   let done = false;
@@ -390,7 +435,7 @@ export function registerCommandDirectives(Alpine) {
     if (el.tagName !== 'FORM') throw new Error(`x-command-form must sit on a <form>, got <${el.tagName.toLowerCase()}>`);
     const name = expression.trim();
     const ui = uiOf(Alpine, el, 'x-command-form');
-    commandDef(ui, name);
+    checkDefaultArgs(el, commandDef(ui, name).params);
     const ctl = createFormController(Alpine, el, name);
     FORMS.set(el, ctl);
     Alpine.addScopeToNode(el, { form: ctl.values });
@@ -471,6 +516,7 @@ export function registerCommandDirectives(Alpine) {
     if (!target) throw new Error(`x-dialog="${ref}": no element with x-ref="${ref}"`);
     for (const cmd of [el.dataset.dialogCommand, el.dataset.dialogDelete]) if (cmd) commandDef(ui, cmd);
     const cmd = el.dataset.dialogCommand ?? formIn(target)?.getAttribute('x-command-form')?.trim();
+    if (cmd) checkDefaultArgs(el, commandDef(ui, cmd).params);
     if (cmd) setHelpKey(el, `modules.${ui.moduleId}.actions.${cmd}.help`);
     const onClick = () => {
       openDialog(Alpine, el, ref).catch((err) => {
