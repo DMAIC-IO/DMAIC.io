@@ -1,7 +1,7 @@
 /**
  * D.Mike — Hypothesentest: die Anzeige aus der Analyse (viewmodel/present.js).
  * Baut aus den Zahlen von domain/analyze.js das Anzeigemodell, das die
- * Oberfläche zeigt und `read().result` liefert: übersetzte Beschriftungen,
+ * Oberfläche zeigt: übersetzte Beschriftungen,
  * formatierte Zahlen, Darstellungsklassen und Tooltips. Rechnet nichts.
  */
 import { algoIdOf } from '../domain/analyze.js';
@@ -15,7 +15,7 @@ import { algoIdOf } from '../domain/analyze.js';
 /** @typedef {{ category: string, testType: string, direction: string, targetType?: string }} PresentModel */
 
 /**
- * Das Ergebnis, wie `read().result` es liefert: ein Anzeigemodell. Alle
+ * Das Anzeigemodell des Ergebnisses (`display` des Viewmodels). Alle
  * Werte sind formatierte Texte: Beschriftungen in der Sprache der
  * Oberfläche, Zahlen mit Dezimalpunkt (meist vier Nachkommastellen, „–“ für
  * nicht endliche Werte); die Klassenfelder sind
@@ -619,4 +619,109 @@ export function insufficientText(analysis, t) {
   if (analysis.reason === 'noVariation') return t('pairedNoVariation');
   if (analysis.reason === 'notComputable') return t('testNotComputable');
   return '';
+}
+
+// ── Residuendiagramme ────────────────────────────────────────
+
+/**
+ * Ein Diagramm für `x-chart`: Typ und Konfiguration.
+ * @typedef {{ type: string, config: object }} ChartSpec
+ */
+/** @typedef {{ fitted: ChartSpec, prob: ChartSpec, hist: ChartSpec, order: ChartSpec }} ResidualCharts */
+
+/** Je Ergebnisobjekt einmal gebaut: vier Getter lesen dasselbe. @type {WeakMap<object, { t: Translate, charts: ResidualCharts }>} */
+const residualCache = new WeakMap();
+
+/**
+ * Die vier Residuendiagramme (Fisher / Welch). Die Residuen sind durch ihre
+ * Stichprobenstandardabweichung standardisiert, wie im Regressionsmodul.
+ * @param {{ residualPlot?: { residuals: number[], fitted: number[] }|null }|null|undefined} result  Ergebnis von `analyze()`
+ * @param {Translate} t
+ * @returns {ResidualCharts|null}  `null`, wenn keine Residuen vorliegen
+ */
+export function residualCharts(result, t) {
+  const plot = result?.residualPlot;
+  if (!plot) return null;
+  const hit = residualCache.get(result);
+  if (hit && hit.t === t) return hit.charts;
+
+  const { residuals, fitted } = plot;
+  const n = residuals.length;
+  const mean = residuals.reduce((a, v) => a + v, 0) / n;
+  const sd = Math.sqrt(residuals.reduce((a, v) => a + (v - mean) ** 2, 0) / (n - 1));
+  const standardized = residuals.map((v) => (sd > 0 ? (v - mean) / sd : 0));
+  const order = residuals.map((_, i) => i + 1);
+  const zeroLine = [{ dir: 'h', value: 0, dash: 'dash', width: 1, color: 'var(--color-error)', label: '0' }];
+  const dot = (color, x, y) => ({
+    name: t('residuals'), color, markerSize: 4, strokeWidth: 0.75, symbol: 'circle', x, y,
+  });
+  /** @type {ResidualCharts} */
+  const charts = {
+    fitted: {
+      type: 'scatter',
+      config: {
+        editKey: 'hyptest:chart-resid-fits',
+        title: t('residualsVsFitted'), xLabel: t('fittedValues'), yLabel: t('residuals'),
+        showLegend: false, refLines: zeroLine, series: [dot('var(--color-chart-3)', fitted, residuals)],
+      },
+    },
+    prob: {
+      type: 'probability-plot',
+      config: {
+        editKey: 'hyptest:chart-resid-normal',
+        title: t('residualsNormalPlot'), xLabel: t('residuals'), yLabel: t('residualsPercent'),
+        showLegend: false,
+        series: [{ name: t('residuals'), values: standardized, color: 'var(--color-chart-5)' }],
+      },
+    },
+    hist: {
+      type: 'histogram',
+      config: {
+        editKey: 'hyptest:chart-resid-hist',
+        title: t('residualsHistogram'), xLabel: t('residuals'), yLabel: t('residualsFrequency'),
+        showLegend: false, showNormalCurve: true, data: residuals,
+      },
+    },
+    order: {
+      type: 'scatter',
+      config: {
+        editKey: 'hyptest:chart-resid-order',
+        title: t('residualsVsOrder'), xLabel: t('residualsVsOrderByGroup'), yLabel: t('residuals'),
+        showLegend: false, refLines: zeroLine, series: [dot('var(--color-chart-4)', order, residuals)],
+      },
+    },
+  };
+  residualCache.set(result, { t, charts });
+  return charts;
+}
+
+// ── Hypothesenvorschau ───────────────────────────────────────
+
+/**
+ * H₀ und H₁ als Text, schon vor der ersten Analyse.
+ * @param {PresentModel} model
+ * @param {Translate} t
+ * @returns {{ h0: string, h1: string }}
+ */
+export function previewHypotheses(model, t) {
+  const d = model.direction;
+  const s0 = d === 'two-sided' ? '=' : d === 'greater' ? '≤' : '≥';
+  const s1 = d === 'two-sided' ? '≠' : d === 'greater' ? '>' : '<';
+  const isMean = model.category === 'mean';
+  const isTwo = model.testType === 'two';
+  if (model.testType === 'k') {
+    return {
+      h0: isMean ? 'H₀: μ₁ = μ₂ = … = μₖ' : 'H₀: σ²₁ = σ²₂ = … = σ²ₖ',
+      h1: isMean ? `H₁: ${t('kSampleH1')}` : `H₁: ${t('kSampleVarH1')}`,
+    };
+  }
+  if (model.testType === 'paired') return { h0: `H₀: μ_d ${s0} μ_d₀`, h1: `H₁: μ_d ${s1} μ_d₀` };
+  if (!isMean) {
+    return isTwo
+      ? { h0: `H₀: σ²₁ ${s0} σ²₂`, h1: `H₁: σ²₁ ${s1} σ²₂` }
+      : { h0: `H₀: σ² ${s0} σ²₀`, h1: `H₁: σ² ${s1} σ²₀` };
+  }
+  return isTwo
+    ? { h0: `H₀: μ₁ ${s0} μ₂`, h1: `H₁: μ₁ ${s1} μ₂` }
+    : { h0: `H₀: μ ${s0} μ₀`, h1: `H₁: μ ${s1} μ₀` };
 }
