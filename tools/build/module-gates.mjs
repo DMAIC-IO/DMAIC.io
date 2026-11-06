@@ -15,6 +15,7 @@ import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';
 import { parsePath } from '../../js/core/model.js';
+import { parseFieldPath, keyFieldsOf } from '../../js/core/field-path.js';
 import { loadModelSchema, loadSettingsSchema, loadFormSchemas } from './model-types.mjs';
 import { BOOKS } from '../../js/core/references-books.js';
 import { readExampleOwners } from './example-catalog.mjs';
@@ -488,8 +489,10 @@ export function checkSchemaPaths(schema) {
 }
 
 /** Specs, an die `x-field` binden darf: nur Felder mit Regeln. */
-export const RULE_KINDS = Object.freeze(['number', 'index', 'idOf', 'oneOf']);
-const BINDING = /\b(x-model(?:\.[\w.]+)?|x-field|x-text)\s*=\s*"\s*model\.([A-Za-z_$][\w$]*)/g;
+export const RULE_KINDS = Object.freeze(['number', 'index', 'idOf', 'oneOf', 'date', 'time', 'phase']);
+const BINDING = /\b(x-model(?:\.[\w.]+)?|x-text)\s*=\s*"\s*model\.([A-Za-z_$][\w$]*)/g;
+/** `x-field`/`x-set` auf ein Feld der obersten Ebene (Listenpfade: checkListBindings). */
+const FIELD_BINDING = /\b(x-field|x-set)\s*=\s*"\s*model\.([A-Za-z_$][\w$]*)\s*"/g;
 
 /**
  * Gate Template ↔ Schema: Bindungen zeigen auf Felder oder Ansichtsfelder,
@@ -502,7 +505,7 @@ export function checkTemplateBindings(files, schema) {
   const all = { ...schema.fields, ...schema.view };
   const out = [];
   for (const { path, text } of files) {
-    for (const m of text.matchAll(BINDING)) {
+    for (const m of [...text.matchAll(BINDING), ...text.matchAll(FIELD_BINDING)].sort((a, b) => a.index - b.index)) {
       const [, attr, name] = m;
       const shown = `${attr}="model.${name}"`;
       const spec = all[name];
@@ -556,10 +559,10 @@ export function checkWritePath(files) {
 /** @param {any} obj @param {string} path @returns {any} */
 const at = (obj, path) => path.split('.').reduce((o, k) => (o && typeof o === 'object' ? o[k] : undefined), obj);
 
-const STATE_FIELD = /\bx-field\s*=\s*"\s*state\.([A-Za-z_$][\w$]*)\s*"/g;
+const STATE_FIELD = /\bx-(?:field|set)\s*=\s*"\s*state\.([A-Za-z_$][\w$]*)\s*"/g;
 
 /**
- * Die UI-State-Felder, die ein Template per `x-field="state.<name>"` bindet.
+ * Die UI-State-Felder, die ein Template per `x-field`/`x-set` (`state.<name>`) bindet.
  * @param {{ path: string, text: string }[]} files Templates unter resources/
  * @returns {string[]} Namen, sortiert, ohne Doppel
  */
@@ -684,6 +687,155 @@ export function checkCommandRefs(files, schema, formSchemas) {
     if (!cmdParams || !fields) continue;
     for (const p of params) {
       if (!Object.hasOwn(fields, p)) out.push(`command: ${path}: x-param="${p}": ${form !== null ? `kein Feld von ${form}` : `kein Parameter von ${command}`}`);
+    }
+  }
+  return out;
+}
+
+const LIST_BINDING = /\b(x-field|x-set)\s*=\s*"\s*([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*|\[[^\]"]*\])+)\s*"/g;
+const X_FOR = /\bx-for\s*=\s*"\s*\(?\s*([A-Za-z_$][\w$]*)[^"]*?\s+in\s+([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*)\s*"/g;
+
+/**
+ * Gate Template ↔ Schema, Teil Listen: `x-field`/`x-set` auf Feldern in
+ * Listeneinträgen — `model.<liste>[i].<feld>` und `<eintrag>.<feld>` mit
+ * `<eintrag>` aus `x-for="… in model.<liste>"` (auch verschachtelt). Prüft
+ * Feld gegen die Element-Spec und Schlüsselfelder (`idOf`); liefert die
+ * Pflichtanker `fields.<liste>.<feld>.help`.
+ * @param {{ path: string, text: string }[]} files Templates unter resources/
+ * @param {{ fields: object, view: object, commands: object }} schema
+ * @returns {{ findings: string[], helpKeys: string[] }}
+ */
+export function checkListBindings(files, schema) {
+  const all = { ...schema.fields, ...schema.view };
+  const keys = keyFieldsOf(schema);
+  const findings = [];
+  const helpKeys = new Set();
+  for (const { path, text } of files) {
+    /** @type {Map<string, { spec: any, listPath: string }>} */
+    const aliases = new Map();
+    for (const [, alias, source] of text.matchAll(X_FOR)) {
+      const [head, ...rest] = source.split('.');
+      let spec;
+      let listPath;
+      if (head === 'model' && rest.length > 0) {
+        spec = all[rest[0]];
+        listPath = rest[0];
+        for (const seg of rest.slice(1)) { spec = spec?.kind === 'object' ? spec.shape[seg] : undefined; listPath += `.${seg}`; }
+      } else if (aliases.has(head) && rest.length === 1) {
+        const a = aliases.get(head);
+        spec = a.spec.item.shape[rest[0]];
+        listPath = `${a.listPath}[].${rest[0]}`;
+      }
+      if (spec?.kind === 'list' && spec.item?.kind === 'object') aliases.set(alias, { spec, listPath });
+    }
+    for (const [, attr, expr] of text.matchAll(LIST_BINDING)) {
+      const shown = `${attr}="${expr}"`;
+      let parsed;
+      try { parsed = parseFieldPath(expr); } catch (err) { findings.push(`template: ${path}: ${shown}: ${err.message}`); continue; }
+      const { root, steps, field } = parsed;
+      if (root === 'state' || (root === 'model' && steps.length === 0)) continue;
+      let spec;
+      let listPath;
+      if (root === 'model') {
+        const [first, ...rest] = steps;
+        spec = first.kind === 'name' ? all[first.name] : undefined;
+        let p = first.kind === 'name' ? first.name : '';
+        for (const st of rest) {
+          if (st.kind === 'index' && spec?.kind === 'list') { spec = spec.item; p += '[]'; }
+          else if (st.kind === 'name' && spec?.kind === 'object' && Object.hasOwn(spec.shape, st.name)) { spec = spec.shape[st.name]; p += `.${st.name}`; }
+          else { spec = undefined; break; }
+        }
+        listPath = p.replace(/\[\]$/, '');
+      } else if (aliases.has(root) && steps.length === 0) {
+        ({ listPath } = aliases.get(root));
+        spec = aliases.get(root).spec.item;
+      } else {
+        findings.push(`template: ${path}: ${shown}: ${root} ist weder model, state noch ein Eintrag einer Modell-Liste aus x-for`);
+        continue;
+      }
+      if (spec?.kind !== 'object' || !Object.hasOwn(spec.shape, field)) { findings.push(`template: ${path}: ${shown}: ${field} passt nicht zum Schema`); continue; }
+      if (keys.get(listPath)?.has(field)) { findings.push(`template: ${path}: ${shown}: ${field} ist der Schlüssel von ${listPath}`); continue; }
+      helpKeys.add(`fields.${listPath.replace(/\[\]/g, '')}.${field}.help`);
+    }
+  }
+  return { findings, helpKeys: [...helpKeys].sort() };
+}
+
+const TAG = /<([a-zA-Z][\w-]*)\b((?:[^>"']|"[^"]*"|'[^']*')*)>/g;
+const DEFAULT_ARG = /(?:^|\s):?data-default-arg-([\w-]+)=/g;
+const camel = (kebabName) => kebabName.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+
+/**
+ * Gate Kommando-Bezüge, Teil Startwerte: jedes `data-default-arg-<p>` (auch
+ * gebunden, `:data-default-arg-<p>`) an `<form x-command-form>` oder an einem
+ * `x-dialog`-Knopf nennt einen Parameter des Kommandos und steht nicht
+ * zugleich als `data-arg-<p>`.
+ * @param {{ path: string, text: string }[]} files @param {{ commands: object }} schema
+ * @returns {string[]}
+ */
+export function checkDefaultArgRefs(files, schema) {
+  const out = [];
+  for (const { path, text } of files) {
+    const formCommand = new Map();
+    for (const [, tag, attrs] of text.matchAll(TAG)) {
+      if (tag !== 'form') continue;
+      const ref = plainAttr(attrs, 'x-ref');
+      const cmd = plainAttr(attrs, 'x-command-form');
+      if (ref && cmd) formCommand.set(ref, cmd);
+    }
+    for (const [, tag, attrs] of text.matchAll(TAG)) {
+      const names = [...attrs.matchAll(DEFAULT_ARG)].map((m) => m[1]);
+      if (names.length === 0) continue;
+      const dialogRef = attrs.match(/(?:^|\s)x-dialog(?:\.[\w]+)*="\s*([^"]*?)\s*"/)?.[1] ?? null;
+      const cmd = tag === 'form' ? plainAttr(attrs, 'x-command-form')
+        : dialogRef !== null ? (plainAttr(attrs, 'data-dialog-command') ?? formCommand.get(dialogRef) ?? null) : null;
+      const params = cmd ? schema.commands[cmd]?.params : undefined;
+      if (!params) continue;
+      for (const k of names) {
+        const p = camel(k);
+        if (!Object.hasOwn(params, p)) { out.push(`command: ${path}: data-default-arg-${k}: kein Parameter von ${cmd}`); continue; }
+        if (new RegExp(`(?:^|\\s):?data-arg-${k}=`).test(attrs)) out.push(`command: ${path}: data-default-arg-${k}: ${p} steht auch als data-arg-${k}`);
+      }
+    }
+  }
+  return out;
+}
+
+const GROUP_OPEN = /<([a-zA-Z][\w-]*)\b((?:[^>"']|"[^"]*"|'[^']*')*\b(x-set|x-param)\s*=\s*"([^"]*)"(?:[^>"']|"[^"]*"|'[^']*')*)>/g;
+const FORM_CONTROLS = new Set(['input', 'select', 'textarea']);
+
+/** Inhalt eines Elements ab `from` bis zu seinem schließenden Tag (gleichnamige Tags gezählt). */
+function elementBody(html, from, tag) {
+  const re = new RegExp(`<(/?)${tag}\\b[^>]*>`, 'g');
+  re.lastIndex = from;
+  let depth = 1;
+  for (let m = re.exec(html); m; m = re.exec(html)) {
+    depth += m[1] ? -1 : 1;
+    if (depth === 0) return html.slice(from, m.index);
+  }
+  return html.slice(from);
+}
+
+/**
+ * Gate Knopfgruppen: in einer Gruppe (`x-set`/`x-param` an einem Element,
+ * das kein Eingabefeld ist) trägt jede Option (`<button>` mit `value` oder
+ * `:value`) `role="radio"`; `<input type="radio">` braucht keine Rolle.
+ * @param {{ path: string, text: string }[]} files @returns {string[]}
+ */
+export function checkChoiceGroups(files) {
+  const out = [];
+  for (const { path, text } of files) {
+    for (const m of text.matchAll(GROUP_OPEN)) {
+      const [whole, tag, , attr, value] = m;
+      if (FORM_CONTROLS.has(tag.toLowerCase())) continue;
+      const body = elementBody(text, m.index + whole.length, tag);
+      for (const [, optTag, optAttrs] of body.matchAll(/<(button|input)\b((?:[^>"']|"[^"]*"|'[^']*')*)>/g)) {
+        if (!/(?:^|\s):?value=/.test(optAttrs)) continue;
+        if (optTag === 'input' && /(?:^|\s)type="radio"/.test(optAttrs)) continue;
+        if (/(?:^|\s)role="radio"/.test(optAttrs)) continue;
+        const shownOpt = `<${optTag}${optAttrs.replace(/\s*type="button"/, '')}>`;
+        out.push(`template: ${path}: ${attr}="${value}": Option ${shownOpt.replace(/\s+/g, ' ')} ohne role="radio"`);
+      }
     }
   }
   return out;
@@ -939,6 +1091,8 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
         }
       }
       out.push(...checkCommandRefs(templates, schema, formSchemas));
+      const lists = checkListBindings(templates, schema);
+      out.push(...lists.findings, ...checkDefaultArgRefs(templates, schema), ...checkChoiceGroups(templates));
       out.push(...checkConfirmKeys(readConfirmKeys(readFileSync(file, 'utf8')), {
         de: readJson(join(base, 'resources', 'i18n', 'ui.de.json')),
         en: readJson(join(base, 'resources', 'i18n', 'ui.en.json')),
@@ -947,7 +1101,7 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
         de: readJson(join(base, 'resources', 'i18n', 'context-help.de.json')),
         en: readJson(join(base, 'resources', 'i18n', 'context-help.en.json')),
       }, existsSync(vmFile) ? readViewmodelCommands(readFileSync(vmFile, 'utf8')) : {}, readStateBindings(templates),
-      formHelpKeys(readCommandForms(templates), schema, formSchemas)));
+      [...formHelpKeys(readCommandForms(templates), schema, formSchemas), ...lists.helpKeys]));
     }
   }
   if (paths.includes('tile/settings.js')) {

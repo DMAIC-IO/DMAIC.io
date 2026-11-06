@@ -7,10 +7,10 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys } from './module-gates.mjs';
+import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups } from './module-gates.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { APP_DIR } from './build.mjs';
-import { defineModel, command, text, number, oneOf, index, idOf, list, record, object, boolean } from '../../js/core/model.js';
+import { defineModel, command, text, number, oneOf, index, idOf, list, record, object, boolean, date } from '../../js/core/model.js';
 
 /** Temp-App aus `{ pfad: inhalt }`. */
 function appWith(files) {
@@ -794,4 +794,69 @@ test('Kachel-Hilfe: help je Setting, Beschriftung im Modul oder global, Optionst
     'help: resources/i18n/ui.de.json: tile.settings.view.options.bar fehlt',
     'help: resources/i18n/ui.de.json: tile.settings.view.options.list fehlt',
   ]);
+});
+
+const LIST_SCHEMA = defineModel({
+  fields: {
+    items: list(object({ id: text(), text: text(), due: date({ empty: true }) })),
+    risks: list(object({ id: text(), actions: list(object({ id: text(), owner: text() })) })),
+  },
+  view: { mode: oneOf(['a', 'b']) },
+  commands: {
+    removeItem: command({ params: { id: idOf('items') }, run() {} }),
+    addItem: command({ params: { text: text(), due: date({ optional: true }) }, run() {} }),
+  },
+}).schema;
+
+test('Template ↔ Schema: x-set auf Felder, x-field auf date', () => {
+  const files = [{ path: 'resources/view.html', text: '<div x-set="model.mode"></div><div x-set="model.nope"></div><input x-field="model.items[i].due">' }];
+  assert.deepEqual(checkTemplateBindings(files, LIST_SCHEMA), [
+    'template: resources/view.html: x-set="model.nope": nope ist weder Feld noch Ansichtsfeld',
+  ]);
+});
+
+test('Listenpfade: beide Formen, verschachtelt, Schlüssel, Anker', () => {
+  const text = [
+    '<template x-for="(item, i) in model.items" :key="item.id">',
+    '  <input x-field="item.text"><input x-field="model.items[i].due"><input x-field="item.id"><input x-field="item.nope">',
+    '</template>',
+    '<template x-for="r in model.risks" :key="r.id"><template x-for="act in r.actions" :key="act.id"><input x-field="act.owner"></template></template>',
+    '<template x-for="c in columns" :key="c"><input x-field="c.name"></template>',
+  ].join('\n');
+  const { findings, helpKeys } = checkListBindings([{ path: 'resources/view.html', text }], LIST_SCHEMA);
+  assert.deepEqual(findings, [
+    'template: resources/view.html: x-field="item.id": id ist der Schlüssel von items',
+    'template: resources/view.html: x-field="item.nope": nope passt nicht zum Schema',
+    'template: resources/view.html: x-field="c.name": c ist weder model, state noch ein Eintrag einer Modell-Liste aus x-for',
+  ]);
+  assert.deepEqual(helpKeys, ['fields.items.due.help', 'fields.items.text.help', 'fields.risks.actions.owner.help']);
+});
+
+test('Startwerte: Parameter des Kommandos, kein Konflikt mit data-arg-*', () => {
+  const text = [
+    '<form x-command-form="addItem" data-default-arg-text="x" data-default-arg-nope="1"></form>',
+    '<button x-dialog.dblclick="f" :data-default-arg-due="d"></button>',
+    '<button x-dialog="f" data-arg-text="a" data-default-arg-text="b"></button>',
+    '<form x-ref="f" x-command-form="addItem"></form>',
+  ].join('\n');
+  assert.deepEqual(checkDefaultArgRefs([{ path: 'resources/view.html', text }], LIST_SCHEMA), [
+    'command: resources/view.html: data-default-arg-nope: kein Parameter von addItem',
+    'command: resources/view.html: data-default-arg-text: text steht auch als data-arg-text',
+  ]);
+});
+
+test('Knopfgruppen: Optionen brauchen role="radio" (außer input type=radio)', () => {
+  const text = [
+    '<div role="radiogroup" x-set="model.mode"><button type="button" role="radio" value="a"></button><button type="button" value="b"></button></div>',
+    '<div x-param="due"><div><input type="radio" value="x"><button :value="p"></button></div></div>',
+    '<input x-param="text">',
+  ].join('\n');
+  assert.deepEqual(checkChoiceGroups([{ path: 'resources/view.html', text }]), [
+    'template: resources/view.html: x-set="model.mode": Option <button value="b"> ohne role="radio"',
+    'template: resources/view.html: x-param="due": Option <button :value="p"> ohne role="radio"',
+  ]);
+});
+
+test('readStateBindings: auch x-set="state.<f>"', () => {
+  assert.deepEqual(readStateBindings([{ path: 'resources/view.html', text: '<div x-set="state.tab"></div><input x-field="state.level">' }]), ['level', 'tab']);
 });
