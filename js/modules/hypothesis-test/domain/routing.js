@@ -1,5 +1,5 @@
 /**
- * D.Mike — Hypothesis Test Module — Routing rules (hypothesis-test-routing.js)
+ * D.Mike — Hypothesentest: Wahl des Verfahrens (domain/routing.js)
  *
  * Pure decisions that pick the test family; no DOM, no i18n.
  *

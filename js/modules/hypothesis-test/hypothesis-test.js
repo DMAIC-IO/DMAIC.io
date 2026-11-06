@@ -36,9 +36,8 @@ import {
   oneSampleTTest, twoSampleTTest, welchTTest,
   wilcoxonSignedRank, mannWhitneyU, hodgesLehmann,
   bonettVarianceTest, bonettRatioTest,
-  oneWayANOVA, welchANOVA, tukeyHSD, gamesHowell, leveneTestK, kruskalWallis, bartlettTest,
-  powerChiSquare, powerFTest, powerOneSampleT, powerTwoSampleT,
-  findRequiredN, pairDifferences, pairedTTest,
+  oneWayANOVA, welchANOVA, leveneTestK, kruskalWallis, bartlettTest,
+  pairDifferences, pairedTTest,
 } from '../../engines/hypothesis-test-engine.js';
 import { shapiroWilk, andersonDarling, descriptiveStats } from '../../engines/normality-test-engine.js';
 import { tInv, chi2Inv } from '../../engines/math-utils.js';
@@ -46,7 +45,9 @@ import { ColumnPicker, getColumnValues, getColumnName } from '../../ui/column-pi
 import { loadExampleViaWorksheet } from '../../core/examples-registry.js';
 
 /** Mapping: test name → Algorithm Lab ID. */
-import { isNormalByAD, meanRoute, kMeanRoute, varianceRoute, isConstant, ciContains } from './hypothesis-test-routing.js';
+import { isNormalByAD, meanRoute, kMeanRoute, varianceRoute, isConstant, ciContains } from './domain/routing.js';
+import { computePower } from './domain/power.js';
+import { simultaneousPairwise, bonferroniPairwise, compactLetterDisplay } from './domain/posthoc.js';
 
 /**
  * Zahlenfelder der Oberfläche; die Grenzen von α und Power sind dieselben wie
@@ -839,45 +840,10 @@ const definition = {
        * @noagent Ableitung aus den Daten
        */
       _powerCalc(d1, d2, target, alpha) {
-        const dir = this.model.direction;
-        const n1 = d1.length;
-        const goal = this.model.powerGoal;
-        const ds = (a) => descriptiveStats(a);
-        let curPow, curEff, effLabel, nForGoal;
-
-        if (this.model.category === 'variance') {
-          if (this.model.testType === 'one') {
-            const s2 = ds(d1).variance;
-            curEff = s2 / target;
-            curPow = powerChiSquare(n1, target, s2, alpha, dir);
-            effLabel = _t('varianceRatio');
-            nForGoal = findRequiredN(goal, n => powerChiSquare(n, target, s2, alpha, dir));
-          } else {
-            const s1 = ds(d1).variance, s2 = ds(d2).variance;
-            curEff = s1 / s2;
-            curPow = powerFTest(n1, d2.length, curEff, alpha, dir);
-            effLabel = _t('varianceRatio');
-            nForGoal = findRequiredN(goal, n => powerFTest(n, n, curEff, alpha, dir));
-          }
-        } else {
-          const sigma = ds(d1).stdDev;
-          if (this.model.testType === 'one' || this.model.testType === 'paired') {
-            const delta = Math.abs(ds(d1).mean - target);
-            curEff = sigma > 0 ? delta / sigma : 0;
-            curPow = powerOneSampleT(n1, delta, sigma, alpha, dir);
-            effLabel = this.model.testType === 'paired' ? "Cohen's d_z" : "Cohen's d";
-            nForGoal = findRequiredN(goal, n => powerOneSampleT(n, delta, sigma, alpha, dir));
-          } else {
-            const delta = Math.abs(ds(d1).mean - ds(d2).mean);
-            const sp = Math.sqrt(((d1.length - 1) * ds(d1).variance + (d2.length - 1) * ds(d2).variance) / (d1.length + d2.length - 2));
-            curEff = sp > 0 ? delta / sp : 0;
-            curPow = powerTwoSampleT(n1, d2.length, delta, sp, alpha, dir);
-            effLabel = "Cohen's d";
-            nForGoal = findRequiredN(goal, n => powerTwoSampleT(n, n, delta, sp, alpha, dir));
-          }
-        }
-
-        return { curPow, curEff, effLabel, nForGoal };
+        const r = computePower({ ...this.model, d1, d2, target, alpha });
+        const effLabel = r.effectKind === 'varianceRatio' ? _t('varianceRatio')
+          : r.effectKind === 'cohenDz' ? "Cohen's d_z" : "Cohen's d";
+        return { curPow: r.power, curEff: r.effect, effLabel, nForGoal: r.requiredN };
       },
 
       _powerInfo(d1, d2, target, alpha, calc = this._powerCalc(d1, d2, target, alpha)) {
@@ -1367,90 +1333,18 @@ const definition = {
 
       // ── Pairwise post-hoc ──
 
-      /**
-       * Simultaneous all-pairs comparisons for the parametric k-group routes:
-       * Tukey HSD with Fisher, Games-Howell with Welch. Throws when the
-       * engine does (zero variance, n_i < 2).
-       * @param {number[][]} groups
-       * @param {number} alpha
-       * @param {'fisher'|'welch'} meanTest
-       */
+      /** Alle Paarvergleiche, simultan (Tukey bzw. Games-Howell). */
       _simultaneousPairwise(groups, alpha, meanTest) {
-        const res = meanTest === 'fisher' ? tukeyHSD(groups, alpha) : gamesHowell(groups, alpha);
-        const comparisons = res.comparisons.map(c => ({
-          i: c.i, j: c.j, p: null, pAdj: c.pAdj, ci: c.ci, equal: c.pAdj >= alpha,
-        }));
-        const letters = this._compactLetterDisplay(groups.length, comparisons);
-        return { comparisons, letters, m: comparisons.length, methodName: res.testName, isRank: false, simultaneous: true };
+        return simultaneousPairwise(groups, alpha, meanTest);
       },
 
       /** Bonferroni pairwise tests: variance questions and the rank route. */
       _computePairwise(groups, alpha, isVariance, isNormal) {
-        const k = groups.length;
-        const m = k * (k - 1) / 2;
-        const methodName = isVariance
-          ? (isNormal ? 'F-Test' : 'Levene Test (Brown-Forsythe)')
-          : 'Mann-Whitney U Test';
-
-        const comparisons = [];
-        for (let i = 0; i < k; i++) {
-          for (let j = i + 1; j < k; j++) {
-            let r;
-            if (isVariance) {
-              r = isNormal ? fTest(groups[i], groups[j], 'two-sided', alpha) : leveneTest(groups[i], groups[j], alpha);
-            } else {
-              r = mannWhitneyU(groups[i], groups[j], 'two-sided', alpha);
-            }
-            const p = r.pValue;
-            const pAdj = Math.min(1, p * m);
-            // Bonferroni Hodges-Lehmann CI of the shift at alpha/m (rank path)
-            let ci = null;
-            if (!isVariance) {
-              const hl = hodgesLehmann(groups[i], groups[j], alpha / m);
-              ci = [hl.lower, hl.upper];
-            }
-            comparisons.push({ i, j, p, pAdj, ci, equal: pAdj >= alpha });
-          }
-        }
-        const letters = this._compactLetterDisplay(k, comparisons);
-        return { comparisons, letters, m, methodName, isRank: !isVariance, simultaneous: false };
+        return bonferroniPairwise(groups, alpha, isVariance, isNormal);
       },
 
       _compactLetterDisplay(k, comparisons) {
-        const adj = Array.from({ length: k }, () => new Set());
-        for (let i = 0; i < k; i++) for (let j = 0; j < k; j++) if (i !== j) adj[i].add(j);
-        for (const c of comparisons) {
-          if (!c.equal) { adj[c.i].delete(c.j); adj[c.j].delete(c.i); }
-        }
-        const cliques = [];
-        const bk = (R, P, X) => {
-          if (P.size === 0 && X.size === 0) { cliques.push([...R].sort((a, b) => a - b)); return; }
-          for (const v of [...P]) {
-            const N = adj[v];
-            bk(new Set([...R, v]), new Set([...P].filter(x => N.has(x))), new Set([...X].filter(x => N.has(x))));
-            P.delete(v); X.add(v);
-          }
-        };
-        bk(new Set(), new Set(Array.from({ length: k }, (_, i) => i)), new Set());
-        const seen = new Set();
-        const unique = [];
-        for (const c of cliques) {
-          const key = c.join(',');
-          if (!seen.has(key)) { seen.add(key); unique.push(c); }
-        }
-        unique.sort((a, b) => {
-          for (let i = 0; i < Math.min(a.length, b.length); i++) if (a[i] !== b[i]) return a[i] - b[i];
-          return a.length - b.length;
-        });
-        const letters = Array.from({ length: k }, () => '');
-        for (let c = 0; c < unique.length; c++) {
-          const letter = String.fromCharCode(97 + c);
-          for (const v of unique[c]) letters[v] += letter;
-        }
-        for (let i = 0; i < k; i++) {
-          if (letters[i] === '') letters[i] = String.fromCharCode(97 + unique.length + i);
-        }
-        return letters;
+        return compactLetterDisplay(k, comparisons);
       },
 
       _pairwiseSection(pairwise, refs, groups, alpha) {

@@ -1,7 +1,7 @@
 import { suite, test, assertEqual } from '../test-utils.js';
 import {
   LARGE_SAMPLE_N, isNormalByAD, meanRoute, kMeanRoute, isConstant, ciContains, varianceRoute,
-} from '../../js/modules/hypothesis-test/hypothesis-test-routing.js';
+} from '../../js/modules/hypothesis-test/domain/routing.js';
 
 // C1-017: normality is judged by Anderson-Darling alone; for means the
 // parametric test is kept when every group has n >= LARGE_SAMPLE_N.
