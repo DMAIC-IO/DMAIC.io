@@ -129,6 +129,16 @@ geschrieben (`call_failed`). Setzbar sind die Felder aus `describe` — keine
 Ansichtsfelder (`unknown field "<x>"; available: …`). Ein Modul alter Form
 antwortet auf `instance.set` mit `call_failed`.
 
+Spaltenfelder (`columnRef`) nennen eine Arbeitsblattspalte als
+`{ instanceId, sheetId?, columnId }`; eine Liste von Spalten ist
+`list(columnRef)`. In `module.describe` tragen sie die Regel-Tokens
+`columnRef`, `types:<art>` (zulässige Spaltenarten, z. B. `types:numeric`) und
+`minCount:<n>` (Mindestzahl Werte). `instance.set` prüft nur die Form; eine
+falsche Form wird mit `invalid colRef1 …; allowed: a column reference
+{ instanceId, sheetId?, columnId }` abgelehnt. Ob Blatt und Spalte existieren, prüft das
+Model nicht — das zeigt sich im abgeleiteten Ergebnis
+(`{ status: 'insufficient', reason }`).
+
 `dmaic-calendar` (Termine als Kommandos):
 `{ op: 'instance.call', instance, method: 'addEvent', args: [{ title: 'Review', date: '2026-03-02', time: '14:00', duration: 45 }] }`
 → `value: <id>`. `addEvent` nimmt `{ title, date, time?, duration?, desc?, phase? }`
@@ -342,6 +352,19 @@ leer sein — eine falsche Spaltenliste wäre schlechter als keine.
 `options.fields`. `null` bleibt `null`, damit „kein Bild" von „Bild
 ausgelassen" unterscheidbar bleibt. Ausgelassene Werte sind über `read()`
 nicht abrufbar.
+
+**Abgeleitete Ergebnisse.** Module mit Ableitungen (`readComputed`) liefern sie
+in `read()` als Zahlen, nicht als Anzeigetexte. In `module.describe` steht ein
+solches Feld mit `derived: true`; es ist nur lesbar, `instance.set` lehnt es
+ab. Beispiel `hypothesis-test`, Feld `result`:
+
+    { status: 'ok', route: { name, algoId, … }, samples: [ … ],
+      main: { statistic, df, p, ci, decision, … }, power, pairwise, … }
+
+Solange Eingaben fehlen, steht dort `{ status: 'insufficient', reason }`; scheitert
+die Rechnung, `{ error: <Meldung> }`. Das Ergebnis folgt dem Zustand: wer eine Spalte
+wählt (`instance.set` auf `colRef1`) oder einen Wert im Arbeitsblatt ändert, liest
+beim nächsten `read()` das neu gerechnete Ergebnis.
 
 **`read()` liest.** Ein `read()` ist nebenwirkungsfrei; es ist deshalb auch
 im abgeschlossenen Projekt erlaubt.
