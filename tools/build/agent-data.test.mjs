@@ -3720,6 +3720,23 @@ export {};`;
   assert.deepEqual(modules.foo.reported, []);
 });
 
+test('Ausgaben: ein Alias-Zyklus über zwei Dateien bricht die Auflösung nicht', () => {
+  const vm = RESULT_VM
+    .replace(/\/\*\*\n \* @typedef \{object\} Result[\s\S]*?@property \{Detail\[\]\} details die Einzelwerte\n \*\/\n/,
+      "/** @typedef {import('./a.js').Result} Result */\n");
+  const a = "/** @typedef {import('./b.js').Result} Result */\nexport {};";
+  const b = "/** @typedef {import('./a.js').Result} Result */\nexport {};";
+  assert.doesNotThrow(() => collectAgentData(fixture({ foo: { 'foo.js': vm, 'a.js': a, 'b.js': b } })));
+});
+
+test('Ausgaben: ein Selbst-Alias bricht die Auflösung nicht', () => {
+  const vm = RESULT_VM
+    .replace(/\/\*\*\n \* @typedef \{object\} Result[\s\S]*?@property \{Detail\[\]\} details die Einzelwerte\n \*\/\n/,
+      "/** @typedef {import('./a.js').Result} Result */\n");
+  const a = "/** @typedef {import('./a.js').Result} Result */\nexport {};";
+  assert.doesNotThrow(() => collectAgentData(fixture({ foo: { 'foo.js': vm, 'a.js': a } })));
+});
+
 const RECORD_MODEL = `/**
  * Eine Zeile, wie toJSON() sie liefert.
  * @typedef {object} Entry

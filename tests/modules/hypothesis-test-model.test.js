@@ -122,4 +122,10 @@ suite('hypothesis-test Model', () => {
     assertEqual(m.powerGoal, 0.8);
     assertEqual(m.testType, 'paired');
   });
+
+  test('Migration: paired ohne gespeicherte Kategorie wird zu two und lädt ohne Reparatur', () => {
+    const m = State.fromJSON({ testType: 'paired' });
+    assertEqual(m.category, 'variance');
+    assertEqual(m.testType, 'two');
+  });
 });

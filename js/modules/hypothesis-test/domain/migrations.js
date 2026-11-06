@@ -53,6 +53,6 @@ export function from0(json) {
   out.colRefsK = Array.isArray(json.colRefsK) ? json.colRefsK.map(refOrNull).filter((r) => r !== null) : [];
   if (typeof json.equalVariances === 'boolean') out.equalVariances = json.equalVariances;
   out.exampleWorksheetId = typeof json.exampleWorksheetId === 'string' ? json.exampleWorksheetId : null;
-  if (out.category === 'variance' && out.testType === 'paired') out.testType = 'two';
+  if ((out.category ?? 'variance') === 'variance' && out.testType === 'paired') out.testType = 'two';
   return out;
 }

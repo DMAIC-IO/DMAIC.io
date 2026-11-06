@@ -779,6 +779,7 @@ function typedefKeys(sf, name, open = new Set()) {
   const literal = findTypedefLiteral(sf, name);
   if (!literal) {
     const alias = findTypedefImport(sf, name);
+    if (open.has(name)) return null; // Alias-Zyklus
     return alias ? typedefKeys(alias.sf, alias.name, new Set([...open, name])) : null;
   }
   const inner = new Set([...open, name]);
