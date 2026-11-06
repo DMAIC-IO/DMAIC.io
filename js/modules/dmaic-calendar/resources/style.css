@@ -223,7 +223,24 @@
   background: var(--color-bg-secondary);
   border: var(--border-width) solid var(--color-border-primary);
   border-radius: var(--border-radius);
-  overflow: hidden;
+}
+
+/* Kein overflow: hidden — es schnitte den Kontexthilfe-Kreis ab. Die Rundung
+   der Ecken tragen stattdessen die äußeren Knöpfe. */
+.module-calendar__view-toggle button:first-child {
+  border-radius: var(--border-radius) 0 0 var(--border-radius);
+}
+
+.module-calendar__view-toggle button:last-child {
+  border-radius: 0 var(--border-radius) var(--border-radius) 0;
+}
+
+.module-calendar__view-toggle > .context-help__btn {
+  top: 0;
+  left: auto;
+  right: 0;
+  margin-left: 0;
+  transform: translate(50%, -50%);
 }
 
 .module-calendar__view-toggle button {
