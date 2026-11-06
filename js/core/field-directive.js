@@ -70,6 +70,15 @@ export function rejectionHint(spec, i18n) {
 }
 
 /**
+ * Der Hinweis zu einer Ablehnung durch eine Invariante des Models.
+ * @param {{ t: (key: string) => string }} i18n @param {string} moduleId @param {string} name
+ * @returns {string}
+ */
+export function invariantHint(i18n, moduleId, name) {
+  return i18n.t(`modules.${moduleId}.invariants.${name}`);
+}
+
+/**
  * Die Direktive registrieren. Vor `Alpine.start()` aufrufen; je Alpine-Instanz einmal.
  * @param {object} Alpine der Default-Export von csp.js
  * @param {{ i18n: { t: (key: string, params?: object) => string, getLanguage: () => string } }} deps
@@ -109,7 +118,8 @@ export function registerFieldDirective(Alpine, { i18n }) {
         if (err instanceof TypeError || err instanceof ReferenceError || err instanceof SyntaxError) throw err;
         if (live) return;
         writeElement(el, spec, owner()?.[key]);
-        markRejection(el, rejectionHint(spec, i18n));
+        markRejection(el, typeof err?.invariant === 'string' && data.moduleId
+          ? invariantHint(i18n, data.moduleId, err.invariant) : rejectionHint(spec, i18n));
       }
     };
     const onInput = () => commit(true);

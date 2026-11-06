@@ -389,6 +389,62 @@ function checkParams(name, params, cmd, root) {
 }
 
 /**
+ * Der Fehler einer verletzten Invariante, in der Vertragsform von `validate.js`.
+ * @param {string} field @param {any} value @param {string} name
+ * @returns {Error} mit `param` und `invariant`
+ */
+function invariantError(field, value, name) {
+  try {
+    requireForm(field, value, false, `a value that keeps ${name}`);
+  } catch (err) {
+    err.invariant = name;
+    return err;
+  }
+  return new Error('unreachable');
+}
+
+/**
+ * Den Namen der ersten verletzten Invariante aus `names`, sonst `null`.
+ * @param {object} model @param {Record<string, { readonly fields: readonly string[], test: Function }>} invariants @param {string[]} names
+ * @returns {string|null}
+ */
+function brokenInvariant(model, invariants, names) {
+  for (const n of names) if (!invariants[n].test.call(model, model)) return n;
+  return null;
+}
+
+/**
+ * `fn` mit ausgesetzten Invarianten ausführen und danach die betroffenen
+ * prüfen; bei Verletzung die genannten Felder auf den Stand davor setzen.
+ * @param {object} root das Model @param {() => any} fn @returns {any}
+ */
+function withInvariants(root, fn) {
+  const invariants = schemaOf(root)?.invariants;
+  const names = invariants ? Object.keys(invariants) : [];
+  if (names.length === 0) return fn();
+  const watched = [...new Set(names.flatMap((n) => invariants[n].fields))];
+  const before = Object.fromEntries(watched.map((f) => [f, cloneJSON(root._v[f])]));
+  root._run = (root._run ?? 0) + 1;
+  let result;
+  try {
+    result = fn();
+  } finally {
+    root._run -= 1;
+  }
+  if (root._run > 0) return result;
+  const changed = new Set(watched.filter((f) => JSON.stringify(root._v[f]) !== JSON.stringify(before[f])));
+  const affected = names.filter((n) => invariants[n].fields.some((f) => changed.has(f)));
+  const broken = brokenInvariant(root, invariants, affected);
+  if (broken !== null) {
+    const field = invariants[broken].fields[0];
+    const err = invariantError(field, root._v[field], broken);
+    for (const f of watched) root._v[f] = before[f];
+    throw err;
+  }
+  return result;
+}
+
+/**
  * Ein Kommando prüfen, ausführen, melden. Der einzige Weg zu `run`.
  * @param {string} name Kommandoname
  * @param {{ params: object, run: Function }} def aus `command()`
@@ -399,7 +455,7 @@ function checkParams(name, params, cmd, root) {
  */
 export function runCommand(name, def, self, root, cmd) {
   const args = checkParams(name, def.params, cmd, root);
-  const result = def.run.call(self, args);
+  const result = withInvariants(root, () => def.run.call(self, args));
   const observer = root?._obs;
   if (typeof observer === 'function') observer(name, cloneJSON(args), result);
   return result;
@@ -499,7 +555,7 @@ const RESERVED = new Set(['constructor', 'toJSON', 'fromJSON', 'hasContent', 'ex
 /**
  * Das Schema eines Models oder einer Model-Klasse.
  * @param {object|Function|null|undefined} x
- * @returns {{ fields: object, view: object, commands: object }|null}
+ * @returns {{ fields: object, view: object, commands: object, invariants?: object }|null}
  */
 export function schemaOf(x) {
   const cls = typeof x === 'function' ? x : x?.constructor;
@@ -765,7 +821,8 @@ export function readModel(Model, json) {
  * Model-Klasse aus einem Schema-Literal.
  * @param {{ fields?: Record<string, object>, view?: Record<string, object>,
  *           commands?: Record<string, object>, version?: string,
- *           migrations?: Record<string, Function> }} schema
+ *           migrations?: Record<string, Function>,
+ *           invariants?: Record<string, { fields: string[], test: (m: any) => boolean }> }} schema
  * @returns {any} die Klasse (`new`, `fromJSON`, `schema`)
  */
 export function defineModel(schema) {
@@ -788,11 +845,22 @@ export function defineModel(schema) {
     if (Object.hasOwn(fields, name) || Object.hasOwn(view, name)) throw new Error(`defineModel: ${name} is both a field and a command`);
   }
   const all = { ...fields, ...view };
+  const invariants = Object.freeze(Object.fromEntries(Object.entries(schema.invariants ?? {}).map(([name, inv]) => {
+    if (typeof inv?.test !== 'function') throw new Error(`defineModel: invariant ${name} needs a test function`);
+    const names = Array.isArray(inv.fields) ? inv.fields : [];
+    if (names.length === 0) throw new Error(`defineModel: invariant ${name} needs fields`);
+    for (const f of names) requireKnownId(`invariant ${name} field`, f, Object.keys(all));
+    return [name, Object.freeze({ fields: Object.freeze([...names]), test: inv.test })];
+  })));
+  /** Feld → Namen der Invarianten, die es nennen. */
+  const invariantsOf = {};
+  for (const [name, inv] of Object.entries(invariants)) for (const f of inv.fields) (invariantsOf[f] ??= []).push(name);
 
   class Model {
     constructor() {
       this._v = {};
       for (const [k, s] of Object.entries(all)) this._v[k] = defaultOf(s);
+      Object.defineProperty(this, '_run', { value: 0, writable: true, configurable: true, enumerable: false });
     }
 
     /**
@@ -822,6 +890,12 @@ export function defineModel(schema) {
         for (const [k, s] of Object.entries(fields)) if (usesPath(s) === dependent) load(k, s, false);
         for (const [k, s] of Object.entries(view)) if (usesPath(s) === dependent) load(k, s, true);
       }
+      for (const [name, inv] of Object.entries(invariants)) {
+        if (inv.test.call(m, m)) continue;
+        const onlyView = inv.fields.every((f) => Object.hasOwn(view, f));
+        if (!onlyView && !repair) throw invariantError(inv.fields[0], m._v[inv.fields[0]], name);
+        for (const f of inv.fields) m._v[f] = defaultOf(all[f], contextOf(m));
+      }
       return m;
     }
 
@@ -850,11 +924,21 @@ export function defineModel(schema) {
     }
   }
 
-  Model.schema = Object.freeze({ fields, view, commands, version, migrations });
+  Model.schema = Object.freeze({ fields, view, commands, version, migrations, invariants });
   for (const [k, s] of Object.entries(all)) {
     Object.defineProperty(Model.prototype, k, {
       get() { return this._v[k]; },
-      set(v) { this._v[k] = checkValue(s, k, v, { root: this, context: contextOf(this) }); },
+      set(v) {
+        const next = checkValue(s, k, v, { root: this, context: contextOf(this) });
+        const before = this._v[k];
+        this._v[k] = next;
+        if ((this._run ?? 0) > 0 || !invariantsOf[k]) return;
+        const broken = brokenInvariant(this, invariants, invariantsOf[k]);
+        if (broken !== null) {
+          this._v[k] = before;
+          throw invariantError(k, next, broken);
+        }
+      },
       enumerable: true,
       configurable: true,
     });
@@ -871,5 +955,9 @@ export function defineModel(schema) {
     enumerable: false,
     configurable: true,
   });
+  const probe = new Model();
+  for (const [name, inv] of Object.entries(invariants)) {
+    if (!inv.test.call(probe, probe)) throw new Error(`defineModel: invariant ${name} fails on the defaults`);
+  }
   return Model;
 }

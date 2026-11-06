@@ -170,3 +170,30 @@ suite('x-field — UI-State (state.<name>)', () => {
     assertEqual(els.level.getAttribute('aria-invalid'), null);
   });
 });
+
+suite('x-field — Invarianten', () => {
+  test('x-field: Ablehnung durch eine Invariante zeigt deren Text', async () => {
+    registerFieldDirective(Alpine, { i18n: I18N });
+    if (!Alpine.version) Alpine.start();
+    const Range = defineModel({
+      view: { from: number({ integer: true, min: 0, max: 23, default: 6 }), to: number({ integer: true, min: 1, max: 24, default: 22 }) },
+      invariants: { order: { fields: ['from', 'to'], test(m) { return m.from < m.to; } } },
+    });
+    const model = new Range();
+    const name = `fieldInv${Date.now()}`;
+    Alpine.data(name, () => ({ model, moduleId: 'fx' }));
+    const host = document.createElement('div');
+    host.innerHTML = `<div x-data="${name}"><input x-field="model.from"></div>`;
+    document.body.append(host);
+    Alpine.initTree(host);
+    await flush();
+    const input = host.querySelector('input');
+    input.value = '23';
+    input.dispatchEvent(new Event('change'));
+    assertEqual(model.from, 6);
+    assertEqual(input.value, '6');
+    assertEqual(input.getAttribute('aria-invalid'), 'true');
+    assertEqual(input.title, 'modules.fx.invariants.order');
+    host.remove();
+  });
+});

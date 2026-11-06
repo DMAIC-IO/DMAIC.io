@@ -7,7 +7,7 @@ import {
   defaultOf, checkValue, describeType, schemaOf, fieldSpec, defineState, stateSchemaOf,
   currentOf, confirmOf, commandDefOf, fromAttr, defineForm,
   defineSettings, isSettings, readSettings,
-  date, time, phase, setModelContext, contextOf, checkContext, DEFAULT_CONTEXT,
+  date, time, phase, setCommandObserver, setModelContext, contextOf, checkContext, DEFAULT_CONTEXT,
 } from '../../js/core/model.js';
 
 const COLS = ['suppliers', 'inputs'];
@@ -570,5 +570,86 @@ suite('ModelContext', () => {
   test('Kommando-Parameter sehen den Kontext (phase-Vorgabe beim Setzen über Setter egal)', () => {
     const m = Ctx.fromJSON({ p: 'team' });
     assertEqual(m.p, 'team');
+  });
+});
+
+const Axis = defineModel({
+  fields: { label: text() },
+  view: { from: number({ integer: true, min: 0, max: 23, default: 6 }), to: number({ integer: true, min: 1, max: 24, default: 22 }) },
+  invariants: { order: { fields: ['from', 'to'], test(m) { return m.from < m.to; } } },
+  commands: {
+    setRange: command({ params: { from: number({ integer: true }), to: number({ integer: true }) }, run({ from, to }) { this.to = to; this.from = from; } }),
+    widen: command({ params: {}, run() { this.from = 20; this.to = 23; } }),
+  },
+});
+const Budget = defineModel({
+  fields: { min: number(), max: number({ default: 10 }) },
+  invariants: { minMax: { fields: ['min', 'max'], test(m) { return m.min <= m.max; } } },
+});
+
+suite('Invarianten', () => {
+  const errOf = (fn) => { try { fn(); } catch (e) { return e; } return null; };
+
+  test('Setter: Verletzung setzt zurück und wirft mit param und invariant', () => {
+    const m = new Axis();
+    const err = errOf(() => { m.from = 22; });
+    assertEqual(err.param, 'from');
+    assertEqual(err.invariant, 'order');
+    assertTrue(/^invalid from 22; allowed: a value that keeps order$/.test(err.message));
+    assertEqual(m.from, 6);
+    m.from = 21;
+    assertEqual(m.from, 21);
+  });
+
+  test('Kommando: Zwischenstand erlaubt, Ende geprüft', () => {
+    const m = new Axis();
+    m.setRange({ from: 23, to: 24 });
+    assertEqual(m.from, 23);
+    assertEqual(m.to, 24);
+  });
+
+  test('Kommando mit Verletzung rollt alle Felder zurück, Beobachter schweigt', () => {
+    const m = new Axis();
+    const seen = [];
+    setCommandObserver(m, (name) => seen.push(name));
+    const err = errOf(() => m.setRange({ from: 10, to: 9 }));
+    assertEqual(err.param, 'from');
+    assertEqual(err.invariant, 'order');
+    assertEqual(m.from, 6);
+    assertEqual(m.to, 22);
+    assertDeepEqual(seen, []);
+  });
+
+  test('Kommando, das gültig endet', () => {
+    const m = new Axis();
+    m.widen({});
+    assertEqual(m.from, 20);
+  });
+
+  test('Laden: verletzte Ansichtsfelder fallen still auf die Vorgabe', () => {
+    const m = Axis.fromJSON({ label: 'x', from: 20, to: 8 });
+    assertEqual(m.from, 6);
+    assertEqual(m.to, 22);
+    assertEqual(m.label, 'x');
+  });
+
+  test('Laden: verletzter Inhalt wirft, mit repair Vorgabe', () => {
+    assertThrows(() => Budget.fromJSON({ min: 5, max: 1 }), /^invalid min 5; allowed: a value that keeps minMax$/);
+    const m = Budget.fromJSON({ min: 5, max: 1 }, { repair: true });
+    assertEqual(m.min, 0);
+    assertEqual(m.max, 10);
+  });
+
+  test('Definition: unbekanntes Feld, fehlender Test, verletzte Vorgabe werfen', () => {
+    assertThrows(() => defineModel({ fields: { a: number() }, invariants: { x: { fields: ['b'], test() { return true; } } } }),
+      /unknown invariant x field "b"; available: a/);
+    assertThrows(() => defineModel({ fields: { a: number() }, invariants: { x: { fields: ['a'] } } }), /invariant x needs a test function/);
+    assertThrows(() => defineModel({ fields: { a: number() }, invariants: { x: { fields: ['a'], test(m) { return m.a > 0; } } } }),
+      /invariant x fails on the defaults/);
+  });
+
+  test('Schema nennt die Invarianten', () => {
+    assertDeepEqual(Object.keys(Axis.schema.invariants), ['order']);
+    assertDeepEqual([...Axis.schema.invariants.order.fields], ['from', 'to']);
   });
 });
