@@ -10,7 +10,7 @@ import { pathToFileURL } from 'node:url';
 import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts } from './module-gates.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { APP_DIR } from './build.mjs';
-import { defineModel, command, text, number, oneOf, index, idOf, list, record, object, boolean, date } from '../../js/core/model.js';
+import { defineModel, command, text, number, oneOf, index, idOf, list, record, object, boolean, date, columnRef } from '../../js/core/model.js';
 
 /** Temp-App aus `{ pfad: inhalt }`. */
 function appWith(files) {
@@ -905,5 +905,19 @@ test('Invarianten: Text je Sprache', () => {
   assert.deepEqual(checkInvariantTexts(schema, { de: { invariants: { order: 'Von vor Bis.' } }, en: { invariants: { order: 'From before to.', span: ' ' } } }), [
     'ui: resources/i18n/ui.de.json: invariants.span fehlt',
     'ui: resources/i18n/ui.en.json: invariants.span fehlt',
+  ]);
+});
+
+test('Schema-Literal: columnRef mit Literal-Optionen ist erlaubt', () => {
+  const src = `import { defineModel, columnRef, list } from '../../../core/model.js';
+export const State = defineModel({ fields: { a: columnRef({ types: ['numeric'], minCount: 3 }), k: list(columnRef({ nullable: false })) } });`;
+  assert.deepEqual(checkSchemaLiteral(src), []);
+});
+
+test('Template: x-field auf columnRef und list(columnRef) ist erlaubt, auf list(text) nicht', () => {
+  const schema = { fields: { a: columnRef(), k: list(columnRef({ nullable: false })), t: list(text()) }, view: {} };
+  const files = [{ path: 'resources/view.html', text: '<div x-field="model.a"></div><div x-field="model.k"></div><div x-field="model.t"></div>' }];
+  assert.deepEqual(checkTemplateBindings(files, schema), [
+    'template: resources/view.html: x-field="model.t": t (list) hat keine Regeln — x-model verwenden',
   ]);
 });

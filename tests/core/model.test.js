@@ -7,7 +7,7 @@ import {
   defaultOf, checkValue, describeType, schemaOf, fieldSpec, defineState, stateSchemaOf,
   currentOf, confirmOf, commandDefOf, fromAttr, defineForm,
   defineSettings, isSettings, readSettings,
-  date, time, phase, activeContext, setCommandObserver, setModelContext, contextOf, checkContext, DEFAULT_CONTEXT,
+  columnRef, date, time, phase, activeContext, setCommandObserver, setModelContext, contextOf, checkContext, DEFAULT_CONTEXT,
 } from '../../js/core/model.js';
 
 const COLS = ['suppliers', 'inputs'];
@@ -659,5 +659,63 @@ suite('activeContext', () => {
     assertDeepEqual(activeContext({ getProjectCycle: () => 'eightd' }), { cycle: 'eightd' });
     assertDeepEqual(activeContext({ getProjectCycle: () => 'unbekannt' }), { cycle: 'dmaic' });
     assertDeepEqual(activeContext(undefined), { cycle: 'dmaic' });
+  });
+});
+
+suite('Feldart columnRef', () => {
+  const ref = { instanceId: 'ws1', sheetId: 's1', columnId: 'c1' };
+
+  test('Form: Strings, sheetId optional, keine Zusatzschlüssel', () => {
+    assertDeepEqual(checkValue(columnRef(), 'c', ref), ref);
+    assertDeepEqual(checkValue(columnRef(), 'c', { instanceId: 'ws1', columnId: 'c1' }), { instanceId: 'ws1', columnId: 'c1' });
+    assertThrows(() => checkValue(columnRef(), 'c', { ...ref, extra: 1 }),
+      /^invalid c .*; allowed: a column reference \{ instanceId, sheetId\?, columnId \}$/);
+    assertThrows(() => checkValue(columnRef(), 'c', { instanceId: 'ws1' }), /invalid c/);
+    assertThrows(() => checkValue(columnRef(), 'c', { instanceId: 1, columnId: 'c1' }), /invalid c/);
+    assertThrows(() => checkValue(columnRef(), 'c', 'ws1|s1|c1'), /invalid c/);
+  });
+
+  test('null erlaubt und Vorgabe; abschaltbar', () => {
+    assertEqual(checkValue(columnRef(), 'c', null), null);
+    assertEqual(defaultOf(columnRef()), null);
+    assertThrows(() => checkValue(columnRef({ nullable: false }), 'c', null), /invalid c/);
+  });
+
+  test('Kopie, nicht dasselbe Objekt', () => {
+    const out = checkValue(columnRef(), 'c', ref);
+    assertTrue(out !== ref);
+  });
+
+  test('Optionen stehen im Schema', () => {
+    const s = columnRef({ types: ['numeric'], minCount: 3 });
+    assertDeepEqual([...s.types], ['numeric']);
+    assertEqual(s.minCount, 3);
+    assertEqual(columnRef().types, null);
+    assertEqual(columnRef().minCount, 0);
+  });
+
+  test('list(columnRef) prüft jeden Eintrag', () => {
+    const s = list(columnRef({ nullable: false }));
+    assertDeepEqual(checkValue(s, 'k', [ref, ref]), [ref, ref]);
+    assertThrows(() => checkValue(s, 'k', [ref, null]), /invalid k\[1\]/);
+  });
+
+  test('describeType', () => {
+    assertEqual(describeType(columnRef()), '{ instanceId: string, sheetId?: string, columnId: string }|null');
+    assertEqual(describeType(list(columnRef({ nullable: false }))), '{ instanceId: string, sheetId?: string, columnId: string }[]');
+  });
+
+  test('fromAttr verboten, keine Kachel-Einstellung', () => {
+    assertThrows(() => fromAttr(columnRef(), 'x'), /fromAttr: columnRef cannot come from an attribute/);
+    assertThrows(() => defineSettings({ c: columnRef() }), /defineSettings: c is columnRef/);
+  });
+
+  test('defineModel: Feld, fromJSON, toJSON', () => {
+    const M = defineModel({ fields: { colRef1: columnRef({ types: ['numeric'] }), colRefsK: list(columnRef({ nullable: false })) } });
+    const m = M.fromJSON({ colRef1: ref, colRefsK: [ref] });
+    assertDeepEqual(m.toJSON().colRef1, ref);
+    assertThrows(() => { m.colRef1 = { instanceId: 'x' }; }, /invalid colRef1/);
+    assertEqual(new M().hasContent(), false);
+    assertEqual(m.hasContent(), true);
   });
 });

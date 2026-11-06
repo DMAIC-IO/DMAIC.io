@@ -515,7 +515,7 @@ export function checkSchemaPaths(schema) {
 }
 
 /** Specs, an die `x-field` binden darf: nur Felder mit Regeln. */
-export const RULE_KINDS = Object.freeze(['number', 'index', 'idOf', 'oneOf', 'date', 'time', 'phase']);
+export const RULE_KINDS = Object.freeze(['number', 'index', 'idOf', 'oneOf', 'date', 'time', 'phase', 'columnRef']);
 const BINDING = /\b(x-model(?:\.[\w.]+)?|x-text)\s*=\s*"\s*model\.([A-Za-z_$][\w$]*)/g;
 /** `x-field`/`x-set` auf ein Feld der obersten Ebene (Listenpfade: checkListBindings). */
 const FIELD_BINDING = /\b(x-field|x-set)\s*=\s*"\s*model\.([A-Za-z_$][\w$]*)\s*"/g;
@@ -536,7 +536,8 @@ export function checkTemplateBindings(files, schema) {
       const shown = `${attr}="model.${name}"`;
       const spec = all[name];
       if (!spec) { out.push(`template: ${path}: ${shown}: ${name} ist weder Feld noch Ansichtsfeld`); continue; }
-      if (attr === 'x-field' && !RULE_KINDS.includes(spec.kind)) {
+      const bindable = RULE_KINDS.includes(spec.kind) || (spec.kind === 'list' && spec.item?.kind === 'columnRef');
+      if (attr === 'x-field' && !bindable) {
         out.push(`template: ${path}: ${shown}: ${name} (${spec.kind}) hat keine Regeln — x-model verwenden`);
       }
     }

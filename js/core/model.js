@@ -94,6 +94,29 @@ export const time = (opts) => spec('time', {}, opts);
  */
 export const phase = (opts) => spec('phase', {}, opts);
 
+/**
+ * Bezug auf eine Spalte eines Arbeitsblatts `{ instanceId, sheetId?, columnId }`.
+ * Geprüft wird nur die Form — ob Blatt und Spalte existieren, prüft das
+ * Model nicht. `types`/`minCount` sagen, welche Spalten passen (Picker,
+ * Agent). Nullbar per Vorgabe, Vorgabewert `null`; in Listen
+ * `columnRef({ nullable: false })`.
+ * @param {{ types?: readonly string[], minCount?: number, nullable?: boolean } & object} [opts]
+ * @returns {Readonly<object>}
+ */
+export const columnRef = ({ types, minCount = 0, ...opts } = {}) => spec('columnRef',
+  { types: types ? Object.freeze([...types]) : null, minCount }, { nullable: true, ...opts });
+
+const COLUMN_REF_KEYS = Object.freeze(['instanceId', 'sheetId', 'columnId']);
+
+/** @param {unknown} v @returns {boolean} */
+function isColumnRef(v) {
+  if (!isPlainObject(v)) return false;
+  const r = /** @type {Record<string, unknown>} */ (v);
+  const id = (x) => typeof x === 'string' && x !== '';
+  return id(r.instanceId) && id(r.columnId) && (r.sheetId === undefined || id(r.sheetId))
+    && Object.keys(r).every((k) => COLUMN_REF_KEYS.includes(k));
+}
+
 /** Alle Phasen aller Zyklen (ohne `data`/`extras`), ohne Doppel. */
 export const ALL_PHASE_IDS = Object.freeze([...new Set(Object.keys(CYCLES).flatMap((c) => getPhaseIds(c)))]);
 
@@ -218,6 +241,7 @@ export function defaultOf(s, context = DEFAULT_CONTEXT) {
     case 'text': case 'idOf': case 'date': return '';
     case 'time': return '00:00';
     case 'phase': return getPhaseIds(context.cycle)[0];
+    case 'columnRef': return null;
     case 'number': case 'index': return 0;
     case 'boolean': return false;
     case 'oneOf': return s.values[0];
@@ -333,6 +357,14 @@ export function checkValue(s, name, value, ctx = {}) {
       return requireForm(name, value, onGrid, s.step === undefined ? 'a time HH:MM' : `a time HH:MM on a ${s.step}-minute grid`);
     }
     case 'phase': return requireEnum(name, value, ALL_PHASE_IDS);
+    case 'columnRef': {
+      requireForm(name, value, isColumnRef(value), 'a column reference { instanceId, sheetId?, columnId }');
+      return {
+        instanceId: value.instanceId,
+        ...(value.sheetId !== undefined ? { sheetId: value.sheetId } : {}),
+        columnId: value.columnId,
+      };
+    }
     default: throw new Error(`defineModel: unknown kind ${JSON.stringify(s.kind)}`);
   }
 }
@@ -370,6 +402,7 @@ export function describeType(s) {
     case 'record': t = `Record<${s.keys.map(literal).join('|')}, ${describeType(s.value)}>`; break;
     case 'object': t = `{ ${Object.entries(s.shape)
       .map(([k, v]) => `${k}${v.optional ? '?' : ''}: ${describeType(v)}`).join(', ')} }`; break;
+    case 'columnRef': t = '{ instanceId: string, sheetId?: string, columnId: string }'; break;
     default: throw new Error(`defineModel: unknown kind ${JSON.stringify(s.kind)}`);
   }
   return s.nullable ? `${t}|null` : t;
@@ -627,7 +660,7 @@ export function defineState(fields) {
 
 // ─── Formulare und Attribute ────────────────────────────────
 
-const FROM_ATTR_FORBIDDEN = new Set(['object', 'list', 'record']);
+const FROM_ATTR_FORBIDDEN = new Set(['object', 'list', 'record', 'columnRef']);
 
 /**
  * Den Text eines `data-arg-*`-Attributs in den Wert seiner Feldart wandeln.

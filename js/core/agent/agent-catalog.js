@@ -247,6 +247,7 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
       // Durchreichen erzeugt der Extraktor die Marke und niemand sieht sie.
       derived: field.derived === true,
       help: contextHelp(i18n, moduleId, `fields.${name}.help`, field.help),
+      ...(Array.isArray(field.rules) ? { rules: [...field.rules] } : {}),
       // Nur an einem Feld vom Typ einer Typedef (`{Result|null} result`):
       // je Kennzahl Typ und Satz, verschachtelt.
       ...describeKeys(i18n, moduleId, field),

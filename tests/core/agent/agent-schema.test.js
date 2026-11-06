@@ -3,7 +3,7 @@
  * Schema-Moduls in der Form von AGENT_REGISTRY.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../../test-utils.js';
-import { defineModel, command, text, number, oneOf, index, list, record, boolean, date, time, phase } from '../../../js/core/model.js';
+import { defineModel, command, text, number, oneOf, index, list, record, boolean, date, time, phase, columnRef } from '../../../js/core/model.js';
 import { schemaAgentEntry, readSchemaModel } from '../../../js/core/agent/agent-schema.js';
 import { describeModule } from '../../../js/core/agent/agent-catalog.js';
 
@@ -151,5 +151,18 @@ suite('schemaAgentEntry: derived', () => {
     assertDeepEqual(entry.fields.result, { type: 'object|null', help: '', bulk: false, derived: true });
     assertEqual(entry.fields.title.derived, undefined);
     assertDeepEqual(entry.settable, ['title']);
+  });
+
+  test('rules nur an columnRef-Feldern und Listen davon, nicht an text/date', () => {
+    const M = defineModel({ fields: {
+      title: text({ trim: true }), day: date(), c: columnRef({ types: ['numeric'], minCount: 2 }),
+      cs: list(columnRef({ nullable: false })), names: list(text()),
+    } });
+    const f = schemaAgentEntry(M).fields;
+    assertEqual(f.title.rules, undefined);
+    assertEqual(f.day.rules, undefined);
+    assertEqual(f.names.rules, undefined);
+    assertDeepEqual(f.c.rules, ['columnRef', 'types:numeric', 'minCount:2']);
+    assertDeepEqual(f.cs.rules, ['columnRef']);
   });
 });

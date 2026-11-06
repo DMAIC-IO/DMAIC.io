@@ -35,7 +35,8 @@ const TEXT_RULES = ['trim', 'nonEmpty'];
 
 /**
  * Die Regeln eines Parameters als Tokens: `text` mit `trim`/`nonEmpty`,
- * `date`, `time` (mit `step:<n>`), `phase`.
+ * `date`, `time` (mit `step:<n>`), `phase`, `columnRef` (mit `types:`/`minCount:`;
+ * auch als Listeneintrag).
  * @param {object} spec @returns {string[]}
  */
 function ruleTokens(spec) {
@@ -44,6 +45,10 @@ function ruleTokens(spec) {
     case 'date': return ['date'];
     case 'time': return spec.step === undefined ? ['time'] : ['time', `step:${spec.step}`];
     case 'phase': return ['phase'];
+    case 'columnRef': return ['columnRef',
+      ...(spec.types ? [`types:${spec.types.join(',')}`] : []),
+      ...(spec.minCount > 0 ? [`minCount:${spec.minCount}`] : [])];
+    case 'list': return spec.item?.kind === 'columnRef' ? ruleTokens(spec.item) : [];
     default: return [];
   }
 }
@@ -90,11 +95,15 @@ export function schemaAgentEntry(Model, vmCommands = {}, { derived = [] } = {}) 
   for (const [name, def] of Object.entries(vmCommands)) actions[name] = commandAction(name, def, 'viewmodel');
   const fields = {};
   for (const [name, spec] of Object.entries(schema.fields)) {
+    // Felder tragen Regeln nur für Spaltenbezüge; die übrigen Felder bleiben,
+    // wie sie waren (die Beschreibung der Agentenfläche ändert sich nicht).
+    const isRef = spec.kind === 'columnRef' || (spec.kind === 'list' && spec.item?.kind === 'columnRef');
     fields[name] = {
       type: describeType(spec),
       help: '',
       bulk: spec.bulk === true,
       ...(spec.bulk === true && spec.bulkKind ? { bulkKind: spec.bulkKind } : {}),
+      ...(isRef ? { rules: ruleTokens(spec) } : {}),
     };
   }
   for (const name of derived) fields[name] = { type: 'object|null', help: '', bulk: false, derived: true };

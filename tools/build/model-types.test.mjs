@@ -215,3 +215,12 @@ test('settings.js ohne defineSettings-Export ist ein Fehler', async () => {
   const root = appWith({ 'js/modules/x/tile/settings.js': 'export const A = 1;\n' });
   await assert.rejects(loadSettingsSchema(collectSettingsFiles(root)[0].file), /genau einen Export aus defineSettings, gefunden 0/);
 });
+
+test('rendert columnRef als Strukturtyp', async () => {
+  const src = `import { defineModel, columnRef } from '${MODEL_URL}';
+export const State = defineModel({ fields: { colRef1: columnRef() } });
+`;
+  const root = appWith({ 'js/modules/neu/domain/model.js': src });
+  const out = renderModelTypes(await loadModelSchema(collectModelFiles(root)[0].file));
+  assert.match(out, /@property \{\{ instanceId: string, sheetId\?: string, columnId: string \}\|null\} colRef1/);
+});
