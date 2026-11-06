@@ -9,7 +9,7 @@
  * sind.
  */
 import Alpine from '@alpinejs/csp';
-import { resolveColumnRef } from './worksheet-columns.js';
+import { resolveColumnRef, coerceNumeric } from './worksheet-columns.js';
 
 /** Zähler je Arbeitsblatt-Instanz; `'*'` zählt Ereignisse, die alle betreffen. */
 const rev = Alpine.reactive({ '*': 0 });
@@ -41,7 +41,7 @@ export function installWorksheetRevisions(eventBus) {
 
 /**
  * Lesezugriff auf Arbeitsblattspalten; `null`, wenn `ref` fehlt oder Blatt/Spalte nicht auflösbar sind.
- * `numeric` behält nur echte Zahlen (wie die Analyse bisher): Leerwerte und Text fallen heraus.
+ * `numeric` liefert die Zahlen über `coerceNumeric`: Leerwerte und Text fallen heraus, saubere Zahlenstrings zählen.
  * @param {{ getModuleState: (id: string) => any }} stateManager
  * @returns {Readonly<WorksheetData>}
  */
@@ -57,7 +57,7 @@ export function createWorksheetData(stateManager) {
     values(ref) { const c = column(ref); return c ? [...(c.values ?? [])] : null; },
     numeric(ref) {
       const c = column(ref);
-      return c ? (c.values ?? []).filter((v) => v != null && typeof v === 'number' && !isNaN(v)) : null;
+      return c ? (c.values ?? []).map(coerceNumeric).filter((v) => v !== null && Number.isFinite(v)) : null;
     },
     name(ref) { const c = column(ref); return c ? (c.name || c.shortName || '?') : null; },
   });

@@ -24,11 +24,11 @@ const sheet = (values) => ({ sheets: [{ id: 's1', state: { columns: [{ id: 'c1',
 
 suite('ctx.data', () => {
   test('values, numeric, name; fehlend → null', () => {
-    const data = createWorksheetData(fakeStore({ ws1: sheet([1, '2,5', '', null, 'x', 3]) }));
+    const data = createWorksheetData(fakeStore({ ws1: sheet([1, '2,5', '', null, 'x', 3, '4']) }));
     const ref = { instanceId: 'ws1', sheetId: 's1', columnId: 'c1' };
-    assertDeepEqual(data.values(ref), [1, '2,5', '', null, 'x', 3]);
-    // wie die bisherige Analyse: nur echte Zahlen, Text (auch '2,5') fällt heraus
-    assertDeepEqual(data.numeric(ref), [1, 3]);
+    assertDeepEqual(data.values(ref), [1, '2,5', '', null, 'x', 3, '4']);
+    // coerceNumeric: '4' zählt, '2,5', '', null und 'x' fallen heraus
+    assertDeepEqual(data.numeric(ref), [1, 3, 4]);
     assertEqual(data.name(ref), 'Gewicht');
     assertEqual(data.numeric({ ...ref, columnId: 'nope' }), null);
     assertEqual(data.values({ instanceId: 'ws1', columnId: 'c1' }), null);
