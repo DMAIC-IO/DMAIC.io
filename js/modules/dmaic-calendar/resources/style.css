@@ -516,7 +516,6 @@
 
 .module-calendar__week-ev-content {
   padding: var(--spacing-xs) var(--spacing-sm);
-  pointer-events: none;
   flex: 1;
   overflow: hidden;
 }
