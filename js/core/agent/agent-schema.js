@@ -79,9 +79,10 @@ function commandAction(name, def, target) {
  * Der Registry-Eintrag eines Schema-Moduls.
  * @param {Function} Model Klasse aus `defineModel`
  * @param {Record<string, object>} [vmCommands] Viewmodel-Kommandos aus `createModule({ commands })`
+ * @param {{ derived?: string[] }} [opts] `derived`: Namen von Ableitungen, die als Lesefelder erscheinen
  * @returns {object} `AgentModuleEntry` mit `schema: true`, `settable`, `viewFields`
  */
-export function schemaAgentEntry(Model, vmCommands = {}) {
+export function schemaAgentEntry(Model, vmCommands = {}, { derived = [] } = {}) {
   const schema = schemaOf(Model);
   if (!schema) throw new Error('schemaAgentEntry: Model has no schema (defineModel)');
   const actions = { read: READ_ACTION };
@@ -96,6 +97,7 @@ export function schemaAgentEntry(Model, vmCommands = {}) {
       ...(spec.bulk === true && spec.bulkKind ? { bulkKind: spec.bulkKind } : {}),
     };
   }
+  for (const name of derived) fields[name] = { type: 'object|null', help: '', bulk: false, derived: true };
   return {
     tagged: true,
     available: true,

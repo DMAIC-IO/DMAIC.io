@@ -186,3 +186,53 @@ suite('createModule: Kontext des Models', () => {
     projectCycle = 'dmaic';
   });
 });
+
+suite('createModule: computed im view-Block', () => {
+  test('this.<name> liest das computed, neu nach Model-Änderung', async () => {
+    let runs = 0;
+    const { data } = await mount({
+      view() {
+        return {
+          computed: { shout() { runs += 1; return String(this.model.title).toUpperCase(); } },
+          get label() { return this.shout; },
+        };
+      },
+    });
+    assertEqual(data().label, 'ABC');
+    data().model.title = 'xy';
+    await flush();
+    assertEqual(data().shout, 'XY');
+    assertEqual(runs, 2);
+  });
+
+  test('Name eines computed kollidiert mit einem Glied → wirft beim Einbau', async () => {
+    let caught = null;
+    try {
+      await mount({ view() { return { computed: { label() { return 1; } }, get label() { return 2; } }; } });
+    } catch (err) { caught = err; }
+    assertTrue(caught !== null && /computed label collides/.test(caught.message), String(caught?.message));
+  });
+
+  test('readComputed: read() liefert das computed als Kopie', async () => {
+    const { data } = await mount({
+      readComputed: ['shout'],
+      view() { return { computed: { shout() { return { text: String(this.model.title) }; } } }; },
+    });
+    const out = data().read();
+    assertDeepEqual(out.shout, { text: 'abc' });
+    out.shout.text = 'zz';
+    assertEqual(data().shout.text, 'abc');
+  });
+
+  test('destroy gibt die Effects frei', async () => {
+    let runs = 0;
+    const { data, container } = await mount({
+      view() { return { computed: { c() { runs += 1; return this.model.title; } } }; },
+    });
+    const vm = data();
+    Alpine.destroyTree(container.querySelector('[x-data]'));
+    vm.model.title = 'neu';
+    await flush();
+    assertEqual(runs, 1);
+  });
+});

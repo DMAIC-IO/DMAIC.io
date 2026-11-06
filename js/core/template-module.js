@@ -10,6 +10,7 @@ import { isGesture } from './interaction/define.js';
 import { requireKnownId } from './validate.js';
 import { formatsOf } from './exporter.js';
 import { openDialogSafely } from './command-directives.js';
+import { defineComputedSlots, bindComputed } from './computed.js';
 
 /**
  * Was `view(ctx)` bekommt: die Kontextdienste und die Kennungen der Instanz.
@@ -29,7 +30,8 @@ import { openDialogSafely } from './command-directives.js';
  *   $watch: Function, $nextTick: Function }} ViewThis
  */
 /**
- * Der `view`-Block eines Moduls in der neuen Form.
+ * Der `view`-Block eines Moduls in der neuen Form. `computed: { name() {…} }`
+ * liefert Ableitungen, als `this.<name>` lesbar.
  * @template M, S
  * @typedef {(ctx: ViewContext) => Record<string, any> & ThisType<Record<string, any> & ViewThis<M, S>>} ViewFn
  */
@@ -115,11 +117,15 @@ function checkExports(id, def, hasView) {
  * @param {string} moduleId @param {object} entry @param {Record<string, object>} vmCommands
  * @returns {object}
  */
-function schemaMembers(moduleId, entry, vmCommands) {
+function schemaMembers(moduleId, entry, vmCommands, readComputed = []) {
   const members = {
     moduleId,
     /** @noagent Lesefläche aus dem Schema (agent-schema.js) */
-    read(options) { return readSchemaModel(entry, this.model, options); },
+    read(options) {
+      const out = readSchemaModel(entry, this.model, options);
+      for (const name of readComputed) out[name] = this[name] === undefined ? null : cloneJSON(this[name]);
+      return out;
+    },
   };
   for (const [name, def] of Object.entries(vmCommands)) {
     members[name] = function viewmodelCommand(cmd) { return runCommand(name, def, this, this.model, cmd); };
@@ -160,7 +166,7 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
 // base.forms — Namensraum von viewmodel/forms.js (defineForm), für
 // x-command-form mit data-form; Vorgabe {}.
 export function createModule(base) {
-  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, createDefault, gestures = [], forms = {}, exports: exportsDef } = base;
+  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, createDefault, gestures = [], forms = {}, exports: exportsDef, readComputed = [] } = base;
   if (descriptor) {
     for (const key of NOT_IN_CONFIG) {
       if (Object.hasOwn(config, key)) {
@@ -171,6 +177,7 @@ export function createModule(base) {
   const id = descriptor ? descriptor.id : config.id;
   if (data && view) throw new Error(`createModule(${id}): data and view are mutually exclusive`);
   if (UiState && !view) throw new Error(`createModule(${id}): State requires view`);
+  if (readComputed.length > 0 && !view) throw new Error(`createModule(${id}): readComputed needs view`);
   if (exportsDef !== undefined) checkExports(id, exportsDef, Boolean(view));
   const actions = exportsDef === undefined ? (config.actions ?? []) : [...(config.actions ?? []), {
     icon: 'action.download',
@@ -191,7 +198,7 @@ export function createModule(base) {
   if (!schema && Object.keys(vmCommands).length > 0) {
     throw new Error(`createModule ${id}: commands need a defineModel Model`);
   }
-  const agentEntry = schema ? schemaAgentEntry(Model, vmCommands) : undefined;
+  const agentEntry = schema ? schemaAgentEntry(Model, vmCommands, { derived: readComputed }) : undefined;
   const i18nKey = `modules.${  id}`;
   // Derive the template URL from document.baseURI so the key is stable whether
   // the app runs unbundled or from app.min.js (where import.meta.url → bundle path).
@@ -272,6 +279,7 @@ export function createModule(base) {
 
       const dataCtxTarget = {};
       let dataResult;
+      let computedDefs = null;
       if (view) {
         // Neue Form: kein `module`, nur die Dienste und Kennungen.
         dataResult = view({
@@ -285,6 +293,21 @@ export function createModule(base) {
           cssVars: (map) => readCssVars(container.querySelector('[x-data]'), map),
           openDialog: (ref, opts) => openDialogSafely(Alpine, container.querySelector('[x-data]'), ref, opts),
         });
+        // `computed` ist kein Glied, sondern die Liste der Ableitungen — vor
+        // dem Kopieren herausnehmen (der Deskriptor, nicht der Wert: Getter
+        // des Blocks dürfen hier noch nicht laufen).
+        const computedDesc = Object.getOwnPropertyDescriptor(dataResult, 'computed');
+        computedDefs = computedDesc ? computedDesc.value : null;
+        if (computedDesc) delete dataResult.computed;
+        for (const [name, fn] of Object.entries(computedDefs ?? {})) {
+          if (typeof fn !== 'function') throw new Error(`createModule: ${id}: computed ${name} must be a function`);
+          if (Object.hasOwn(dataResult, name) || ['model', 'state', 't', 'moduleId', 'read'].includes(name)) {
+            throw new Error(`createModule: ${id}: computed ${name} collides with a member of the view block`);
+          }
+        }
+        for (const name of readComputed) {
+          if (!Object.hasOwn(computedDefs ?? {}, name)) throw new Error(`createModule: ${id}: readComputed ${name} is not a computed`);
+        }
       } else {
         const dataCtx = new Proxy(dataCtxTarget, {
           get: (t, prop) => t[prop],
@@ -310,6 +333,7 @@ export function createModule(base) {
             context.stateManager.getModuleState(context.instanceId), createDefault, context);
 
           let offCycle = null;
+          let releaseComputed = null;
           if (schema) {
             setModelContext(freshState, activeContext(context.stateManager));
           }
@@ -331,7 +355,7 @@ export function createModule(base) {
             Object.assign(comp, { state: UiState ? UiState.create() : {}, moduleId: id });
             comp.cssVars = function cssVars(map) { return readCssVars(this.$root, map); };
           }
-          if (schema) copyMembers(comp, schemaMembers(id, agentEntry, vmCommands));
+          if (schema) copyMembers(comp, schemaMembers(id, agentEntry, vmCommands, readComputed));
           if (schema || exportsDef) {
             // Griff der Kommando-Primitive (core/command-directives.js) und, für
             // exports/component, von runExport (core/exporter.js). Nicht
@@ -356,6 +380,7 @@ export function createModule(base) {
             });
           }
           copyMembers(comp, dataResult);
+          if (computedDefs) defineComputedSlots(comp, Object.keys(computedDefs));
           return copyMembers(comp, {
             init() {
               freshState.init?.();
@@ -373,6 +398,7 @@ export function createModule(base) {
                     'state:changed', { instanceId: context.instanceId, key, value: cloneJSON(value) }));
                 }
               }
+              if (computedDefs) releaseComputed = bindComputed(Alpine, this, computedDefs);
               dataInit?.call(this);
               // Automatic persist-$watch: persists on every model mutation by
               // deep-cloning model.toJSON() through Alpine's reactivity proxy.
@@ -407,6 +433,7 @@ export function createModule(base) {
               }
             },
             destroy() {
+              releaseComputed?.(); releaseComputed = null;
               offCycle?.(); offCycle = null;
               dataDestroy?.call(this);
               freshState.destroy?.();

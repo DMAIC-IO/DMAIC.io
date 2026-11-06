@@ -143,3 +143,13 @@ suite('agent-schema: Regeln der Datums-, Zeit- und Phasenfelder', () => {
     assertEqual(keys.d.type, 'string');
   });
 });
+
+suite('schemaAgentEntry: derived', () => {
+  test('derived-Namen werden Lesefelder', () => {
+    const M = defineModel({ fields: { title: text() } });
+    const entry = schemaAgentEntry(M, {}, { derived: ['result'] });
+    assertDeepEqual(entry.fields.result, { type: 'object|null', help: '', bulk: false, derived: true });
+    assertEqual(entry.fields.title.derived, undefined);
+    assertDeepEqual(entry.settable, ['title']);
+  });
+});
