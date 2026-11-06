@@ -767,10 +767,6 @@
     "todoEmpty": "No tasks recorded.",
     "todoNextDue": "Next due",
     "todoOverdue": "Overdue",
-    "calendarEmpty": "No events recorded.",
-    "calendarSummary": "{count} events in the next {days} days",
-    "calendarSummary_one": "1 event in the next {days} days",
-    "calendarNone": "No upcoming events.",
     "stakeholderEmpty": "No stakeholders recorded.",
     "stakeholderOther": "Other",
     "stakeholderCritics": "Critics to manage closely",
@@ -3110,119 +3106,6 @@
       "statsDepth": "Max Depth",
       "statsBranches": "Branches",
       "statsAnswered": "Answered"
-    },
-    "dmaic-calendar": {
-      "name": "Calendar",
-      "description": "Description",
-      "phases": "Phases",
-      "timeAxis": "Time Axis",
-      "time": "Time",
-      "startTime": "Start",
-      "endTime": "End",
-      "from": "From",
-      "to": "To",
-      "weekdays": "Weekdays",
-      "upcoming": "Upcoming Events",
-      "noEvents": "No events",
-      "newEvent": "New Event",
-      "editEvent": "Edit Event",
-      "title": "Title",
-      "titlePlaceholder": "e.g. Tollgate Review Define",
-      "date": "Date",
-      "duration": "Duration",
-      "phase": "Phase",
-      "descPlaceholder": "Agenda, participants, objectives …",
-      "deleteEvent": "Delete event",
-      "cancel": "Cancel",
-      "save": "Save",
-      "month": "Month",
-      "week": "Week",
-      "today": "Today",
-      "invalidTimeRange": "The end time must be after the start time.",
-      "requiredFields": "Title and date are required fields.",
-      "phaseAdjusted": "This appointment carried a phase the active cycle does not know. The form shows the first phase of the cycle — saving will write it.",
-
-      "whenToUse": "When the appointments of a project should be kept — meetings, measurement windows, deadlines —, each assigned to a phase and shown in a month or week view; not for tasks without a fixed point in time, that is what the todo list is for, and not for planning activity durations and dependencies.",
-      "actions": {
-        "addEvent": {
-          "help": "Adds an appointment and returns its id.",
-          "params": {
-            "fields": "The fields of the appointment: title (the label, must not be empty), date (the day as YYYY-MM-DD), time (the start time as HH:MM, 09:00 if omitted), duration (the duration in whole minutes, at least 5, 60 if omitted), desc (the description, empty if omitted) and phase (the phase of the active cycle the appointment is coloured by; the first phase if omitted). Title and date must be present. An unknown key, a value outside the value set of its field and a missing argument are errors."
-          }
-        },
-        "updateEvent": {
-          "help": "Changes the supplied fields of an appointment; the others stay as they are.",
-          "params": {
-            "id": "The id of the appointment as read() lists it under events. An unknown id is an error.",
-            "fields": "The fields to change, at least one of title, date, time, duration, desc and phase — with the same meaning and the same value sets as in addEvent. An empty field set, an unknown key, a value outside the value set of its field and a missing argument are errors."
-          }
-        },
-        "removeEvent": {
-          "help": "Removes an appointment.",
-          "params": {
-            "id": "The id of the appointment as read() lists it under events. An unknown id is an error."
-          }
-        },
-        "setView": {
-          "help": "Sets the calendar view to the month (month) or the week (week).",
-          "params": {
-            "v": "The view: month shows the month, week the week. Any other value is an error."
-          }
-        },
-        "setAxisFrom": {
-          "help": "Sets the first hour shown on the day axis. If it is not before the last hour shown, the axis stays as it is and the call reports false.",
-          "params": {
-            "hour": "The hour from 0 to 23. Any other value is an error."
-          }
-        },
-        "setAxisTo": {
-          "help": "Sets the last hour shown on the day axis. If it is not after the first hour shown, the axis stays as it is and the call reports false.",
-          "params": {
-            "hour": "The hour from 1 to 24; 24 is the end of the day. Any other value is an error."
-          }
-        },
-        "setDayFrom": {
-          "help": "Sets the first weekday shown. If it is after the last weekday shown, the selection stays as it is and the call reports false.",
-          "params": {
-            "dayIndex": "The weekday, 0 for Monday through 6 for Sunday. Any other value is an error."
-          }
-        },
-        "setDayTo": {
-          "help": "Sets the last weekday shown. If it is before the first weekday shown, the selection stays as it is and the call reports false.",
-          "params": {
-            "dayIndex": "The weekday, 0 for Monday through 6 for Sunday. Any other value is an error."
-          }
-        }
-      },
-      "fields": {
-        "events": {
-          "help": "The appointments, each entry described individually under keys. The end of an appointment is computed from start time and duration and is held in no field. Bulk data: without options.fields = ['events'] only the extent is delivered."
-        },
-        "axisFrom": {
-          "help": "The first hour shown on the day axis, 0 to 23. It only bounds the display of the week view, not the appointments themselves."
-        },
-        "axisTo": {
-          "help": "The last hour shown on the day axis, 1 to 24. It only bounds the display of the week view, not the appointments themselves."
-        },
-        "dayFrom": {
-          "help": "The first weekday shown, 0 for Monday through 6 for Sunday."
-        },
-        "dayTo": {
-          "help": "The last weekday shown, 0 for Monday through 6 for Sunday."
-        }
-      },
-      "types": {
-        "CalendarEvent": {
-          "id": "The identifier of the appointment; the app assigns it when the appointment is created. Use it to address the appointment when changing or deleting.",
-          "title": "The label of the appointment. It must not be empty; spaces at the edges are removed.",
-          "date": "The day of the appointment as YYYY-MM-DD, for example 2026-03-14. Title and date are the required entries.",
-          "time": "The start of the appointment as HH:MM between 00:00 and 23:59; 09:00 when not given. In the dialog the field moves in steps of 5 minutes.",
-          "duration": "The duration of the appointment in whole minutes, at least 5; 60 when not given. In the dialog it is calculated as end minus start and only displayed.",
-          "desc": "A description of the appointment as free text; empty when not given.",
-          "phase": "The phase of the cycle the appointment is coloured by; the phases of the active cycle count, the first one when not given. If the active cycle does not know the phase of an appointment, the dialog shows the first phase and saving writes it in.",
-          "source": "Where the appointment comes from. Only appointments reported from the task list carry this entry, with the value todo; changes made in the calendar are lost at the next report from the task list; change them there."
-        }
-      }
     },
     "todo": {
       "name": "Todo",

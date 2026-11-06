@@ -169,20 +169,6 @@ export default [
     },
   },
   {
-    id: 'dmaic-calendar',
-    phase: 'define',
-    group: 'team',
-    singleton: true,
-    allowedPhases: ['define'],
-    load: () => import('./dmaic-calendar/dmaic-calendar.js'),
-    loadTile: () => import('./dmaic-calendar/dmaic-calendar.tile.js'),
-    cycles: {
-      dmaic:  { phase: 'define', allowedPhases: ['define'] },
-      dmadv:  { phase: 'define', allowedPhases: ['define'] },
-      eightd: { phase: 'team',   allowedPhases: ['team']   },
-    },
-  },
-  {
     id: 'todo',
     phase: 'define',
     group: 'team',

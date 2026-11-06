@@ -2,7 +2,7 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "events": {
-      "help": "Die Termine des Projekts. Das Ende eines Termins ist aus Beginn und Dauer gerechnet und steht in keinem Feld. Massendaten: ohne options.fields = ['events'] kommt nur der Umfang.",
+      "help": "Die Termine des Projekts. Das Ende eines Termins ist aus Beginn und Dauer gerechnet und steht in keinem Feld. Beim Lesen kommt nur ihr Umfang, solange dieses Feld nicht ausdrücklich angefordert wird.",
       "id": {
         "help": "Die Kennung des Termins; die App vergibt sie beim Anlegen. Mit ihr sprechen Sie den Termin beim Ändern und Löschen an."
       },

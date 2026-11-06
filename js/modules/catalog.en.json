@@ -1,5 +1,10 @@
 {
   "$schema": "../../schemas/catalog-texts.schema.json",
+  "dmaic-calendar": {
+    "name": "Calendar",
+    "description": "Project calendar: appointments per phase in a month and a week view",
+    "whenToUse": "When the appointments of a project should be kept — meetings, measurement windows, deadlines —, each assigned to a phase and shown in a month or week view; not for tasks without a fixed point in time, that is what the todo list is for, and not for planning activity durations and dependencies."
+  },
   "sipoc": {
     "name": "SIPOC",
     "description": "Supplier-Input-Process-Output-Customer diagram",

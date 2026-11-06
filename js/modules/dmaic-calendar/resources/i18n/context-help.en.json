@@ -2,7 +2,7 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "events": {
-      "help": "The appointments of the project. The end of an appointment is computed from start and duration and is held in no field. Bulk data: without options.fields = ['events'] only the extent is delivered.",
+      "help": "The appointments of the project. The end of an appointment is computed from start and duration and is held in no field. When reading, only their extent is delivered unless this field is requested explicitly.",
       "id": {
         "help": "The identifier of the appointment; the app assigns it on creation. Use it to address the appointment when changing or deleting."
       },

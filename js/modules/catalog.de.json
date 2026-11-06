@@ -1,5 +1,10 @@
 {
   "$schema": "../../schemas/catalog-texts.schema.json",
+  "dmaic-calendar": {
+    "name": "Kalender",
+    "description": "Projektkalender: Termine je Phase in Monats- und Wochenansicht",
+    "whenToUse": "Wenn die Termine eines Projekts geführt werden sollen — Besprechungen, Messzeiträume, Stichtage —, je Termin einer Phase zugeordnet und in einer Monats- oder Wochenansicht dargestellt; nicht für Aufgaben ohne festen Zeitpunkt, dafür ist die Aufgabenliste da, und nicht für die Planung von Vorgangsdauern und Abhängigkeiten."
+  },
   "sipoc": {
     "name": "SIPOC",
     "description": "Supplier-Input-Process-Output-Customer Diagramm",

@@ -8,7 +8,7 @@ import vocTile from '../../js/modules/voc-ctx-tree/voc-ctx-tree.tile.js';
 import raciTile from '../../js/modules/raci-matrix/raci-matrix.tile.js';
 import spcTile from '../../js/modules/control-chart/control-chart.tile.js';
 import todoTile from '../../js/modules/todo/todo.tile.js';
-import calendarTile from '../../js/modules/dmaic-calendar/dmaic-calendar.tile.js';
+import calendarTile from '../../js/modules/dmaic-calendar/tile/tile.js';
 import stakeholderTile from '../../js/modules/stakeholder-analysis/stakeholder-analysis.tile.js';
 import lessonsTile from '../../js/modules/lessons-learned/lessons-learned.tile.js';
 import { todayISO, addDaysISO } from '../../js/core/local-date.js';
@@ -867,31 +867,39 @@ suite('dashboard tiles: todo', () => {
 suite('dashboard tiles: dmaic-calendar', () => {
   const t0 = todayISO();
   const CAL_STATE = { events: [
-    { id: '1', title: 'Kickoff', date: t0, time: '10:00', duration: 60, phase: 'define' },
-    { id: '2', title: 'Review', date: addDaysISO(t0, 10), time: '09:00', duration: 60, phase: 'measure' },
-    { id: '3', title: 'Gate', date: addDaysISO(t0, 20), time: '09:00', duration: 60, phase: 'analyze' },
-    { id: '4', title: 'Past', date: addDaysISO(t0, -1), time: '09:00', duration: 60, phase: 'define' },
+    { id: '1', title: 'Kickoff', date: t0, time: '10:00', duration: 60, desc: '', phase: 'define' },
+    { id: '2', title: 'Review', date: addDaysISO(t0, 10), time: '09:00', duration: 60, desc: '', phase: 'measure' },
+    { id: '3', title: 'Gate', date: addDaysISO(t0, 20), time: '09:00', duration: 60, desc: '', phase: 'analyze' },
+    { id: '4', title: 'Past', date: addDaysISO(t0, -1), time: '09:00', duration: 60, desc: '', phase: 'define' },
   ] };
 
-  test('default horizon (14 days) lists today and +10', async () => {
-    const host = (await render(calendarTile, CAL_STATE));
-    assertDeepEqual([...host.querySelectorAll('.dashboard-fmea__top-desc')].map(e => e.textContent), ['Kickoff', 'Review']);
+  test('Größe wie bisher', () => {
+    assertDeepEqual(calendarTile.size, { defaultW: 3, defaultH: 10, minW: 2, minH: 6 });
   });
 
-  test('horizon 30 adds +20; topN caps', async () => {
+  test('Vorgabe 14 Tage: heute und +10', async () => {
+    const host = await render(calendarTile, CAL_STATE);
+    assertDeepEqual([...host.querySelectorAll('.dashboard-fmea__top-desc')].map((e) => e.textContent), ['Kickoff', 'Review']);
+  });
+
+  test('30 Tage nimmt +20 dazu; topN begrenzt', async () => {
     assertEqual((await render(calendarTile, CAL_STATE, { horizon: '30' })).querySelectorAll('.dashboard-fmea__top-item').length, 3);
     assertEqual((await render(calendarTile, CAL_STATE, { horizon: '30', topN: 1 })).querySelectorAll('.dashboard-fmea__top-item').length, 1);
   });
 
-  test('summary names count and horizon', async () => {
+  test('Zusammenfassung, Hinweis, Leerzustand', async () => {
     assertEqual((await render(calendarTile, CAL_STATE, { horizon: '7' })).querySelector('.dashboard-fmea__summary').textContent,
-      'dashboard.calendarSummary');
+      'modules.dmaic-calendar.tileSummary');
+    assertTrue((await render(calendarTile, { events: [CAL_STATE.events[3]] })).querySelector('.dashboard-calendar__none') !== null);
+    assertEqual((await render(calendarTile, undefined)).querySelector('.dashboard-area__empty').textContent, 'modules.dmaic-calendar.tileEmpty');
   });
 
-  test('summary uses the singular for exactly one upcoming event (real de/en strings)', async () => {
+  test('Einzahl mit echten Texten (de/en)', async () => {
     const real = new I18n('de');
     for (const lang of ['de', 'en']) {
-      real._cache.set(lang, await (await fetch(new URL(`../../i18n/${lang}.json`, import.meta.url))).json());
+      const global = await (await fetch(new URL(`../../i18n/${lang}.json`, import.meta.url))).json();
+      const ui = await (await fetch(new URL(`../../js/modules/dmaic-calendar/resources/i18n/ui.${lang}.json`, import.meta.url))).json();
+      real._cache.set(lang, { ...global, modules: { ...global.modules, 'dmaic-calendar': ui } });
     }
     const host = document.createElement('div');
     const one = { events: [CAL_STATE.events[0]] };
@@ -903,18 +911,16 @@ suite('dashboard tiles: dmaic-calendar', () => {
     assertEqual(host.querySelector('.dashboard-fmea__summary').textContent, '1 event in the next 14 days');
   });
 
-  test('no upcoming events shows a hint; no events at all the empty state', async () => {
-    assertTrue((await render(calendarTile, { events: [CAL_STATE.events[3]] })).querySelector('.dashboard-calendar__none') !== null);
-    assertEqual((await render(calendarTile, undefined)).querySelector('.dashboard-area__empty').textContent, 'dashboard.calendarEmpty');
+  test('Zeilen: Datum und Zeit, Titel, Phase', () => {
+    const vm = vmOf(calendarTile, CAL_STATE);
+    assertDeepEqual(vm.shown[0], { id: '1', when: `${t0} 10:00`, title: 'Kickoff', phase: 'phases.define' });
+    assertEqual(vm.none, false);
+    assertEqual(vmOf(calendarTile, { events: [CAL_STATE.events[3]] }).none, true);
   });
 
-  test('viewModel: summary, hint and events as display data', () => {
-    const vm = vmOf(calendarTile, CAL_STATE);
-    assertPlain(vm);
-    assertEqual(vm.summary, 'dashboard.calendarSummary');
-    assertEqual(vm.none, null);
-    assertDeepEqual(vm.events[0], { when: `${t0} 10:00`, title: 'Kickoff', phase: 'phases.define' });
-    assertEqual(vmOf(calendarTile, { events: [CAL_STATE.events[3]] }).none, 'dashboard.calendarNone');
+  test('ein Stand aus einer neueren Version zeigt den Leerzustand', async () => {
+    const host = await render(calendarTile, { _schema: { version: '9.0' }, events: CAL_STATE.events });
+    assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'modules.dmaic-calendar.tileEmpty');
   });
 });
 

@@ -178,9 +178,6 @@ export const ANCHOR_EXEMPTIONS = {
   'ce-matrix': [
     { match: 'ce-matrix__weight-cell', reason: 'Gewichtsauswahl je Ergebnisgröße; die Zeile ist am Kopf „Wichtigkeit für Kunden“ erklärt', count: 1 },
   ],
-  'dmaic-calendar': [
-    { match: "t('endTime')", reason: 'nur im Dialog; das Ende wird mit dem Beginn zur Dauer verrechnet, die Dauer ist erklärt', count: 1 },
-  ],
   makigami: [
     { match: "t('colCode')", reason: 'Einstellungen, Eingabetabelle der Verschwendungsarten', count: 1 },
     { match: "t('colLabel')", reason: 'Einstellungen, Eingabetabellen (Verschwendungsarten, Zeiteinheiten)', count: 2 },
