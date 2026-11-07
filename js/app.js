@@ -27,7 +27,6 @@ import { registerFieldDirective } from './core/field-directive.js';
 import { registerCommandDirectives } from './core/command-directives.js';
 import { registerWidgetDirective } from './core/widget-directive.js';
 import { WIDGETS } from './widgets/registry.js';
-import { registerChartDirective } from './core/chart-directive.js';
 import { installWorksheetRevisions } from './core/worksheet-data.js';
 
 async function init() {
@@ -50,7 +49,6 @@ async function init() {
   registerFieldDirective(Alpine, { i18n, widgets: WIDGETS });
   registerWidgetDirective(Alpine, { i18n, widgets: WIDGETS });
   registerCommandDirectives(Alpine);
-  registerChartDirective(Alpine);
   installWorksheetRevisions(eventBus);
   Alpine.start();
 

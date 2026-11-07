@@ -58,6 +58,11 @@ export default createModule({
         if (r.error != null) return this.t('analysisFailed', { message: r.error });
         return r.status === 'ok' ? '' : insufficientText(r, this.t);
       },
+      /** Alter Schlüssel je Residuendiagramm, unter dem früher gespeichert wurde. */
+      legacyEditKeys: {
+        fitted: 'hyptest:chart-resid-fits', prob: 'hyptest:chart-resid-normal',
+        hist: 'hyptest:chart-resid-hist', order: 'hyptest:chart-resid-order',
+      },
       get residFitted() { return residualCharts(this.result, this.t)?.fitted ?? null; },
       get residProb() { return residualCharts(this.result, this.t)?.prob ?? null; },
       get residHist() { return residualCharts(this.result, this.t)?.hist ?? null; },

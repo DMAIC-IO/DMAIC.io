@@ -2,7 +2,7 @@
  * D.Mike — Kachel der attributiven Regelkarte
  *
  * „Ist der Prozess stabil?“ — Stabilitätsmarke, verletzende Punkte, CL und
- * Grenzen und eine kompakte Regelkarte (`x-chart`). Form: createTile
+ * Grenzen und eine kompakte Regelkarte (Widget `control-chart`). Form: createTile
  * (core/template-tile.js); Einstellungen in settings.js, Markup in
  * resources/tile.html. Das Arbeitsblatt kommt über `ctx.data`.
  */
@@ -12,6 +12,7 @@ import descriptor from '../module.js';
 import { State } from '../domain/model.js';
 import { analyzeState, signalIndices, baselineEndOf } from '../domain/analyze.js';
 import { meanOf } from '../viewmodel/present.js';
+import { asList } from '../domain/limits.js';
 import { Settings } from './settings.js';
 
 /** Vier Nachkommastellen, `—` ohne Wert. @param {number|null|undefined} v @returns {string} */
@@ -66,17 +67,16 @@ export default createTile({
         const r = a.result;
         const win = windowed(r, new Set(this.signals), baselineEndOf(this.model.baselineCount, r.values.length), this.settings.lastN);
         return {
-          type: 'control-chart',
-          config: {
-            ...win,
-            editKey: 'control-chart',
-            usl: null, lsl: null,
-            showZones: !this.variable,
-            xLabel: this.t('xLabelSample'),
-            yLabel: this.t(`yLabel_${this.model.chartTypeId}`),
-            showTitle: false, showXLabel: false, showYLabel: false,
-            showXTicks: false, showYTicks: false, showLegend: false,
-          },
+          ...win,
+          cl: asList(win.cl), ucl: asList(win.ucl), lcl: asList(win.lcl),
+          ...(win.sigma == null ? {} : { sigma: asList(win.sigma) }),
+          violationIndices: [...win.violationIndices],
+          usl: null, lsl: null,
+          showZones: !this.variable,
+          xLabel: this.t('xLabelSample'),
+          yLabel: this.t(`yLabel_${this.model.chartTypeId}`),
+          showTitle: false, showXLabel: false, showYLabel: false,
+          showXTicks: false, showYTicks: false, showLegend: false,
         };
       },
     };

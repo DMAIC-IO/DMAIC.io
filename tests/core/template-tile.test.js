@@ -121,14 +121,13 @@ suite('createTile: Daten und Diagramm-Manager', () => {
   let seen = null;
   const tile = createTile({ descriptor, Model: Doc, view(ctx) { seen = ctx; return {}; } });
 
-  test('ctx.data aus args.data, moduleId lesend, _ui.chartManager nicht aufzählbar', () => {
+  test('ctx.data aus args.data, moduleId lesend, _ui.services.chartManager nicht aufzählbar', () => {
     const data = { values: () => [1], numeric: () => [1], name: () => 'A', columns: () => [] };
     const cm = { create() {}, destroy() {} };
     const vm = tile.viewModel({ state: {}, settings: {}, i18n, data, chartManager: cm });
     assertTrue(seen.data === data);
     assertEqual(vm.moduleId, 'demo-tile');
     assertThrows(() => { 'use strict'; vm.moduleId = 'x'; }, /read only|Cannot assign/);
-    assertTrue(vm._ui.chartManager === cm);
     assertTrue(vm._ui.services.chartManager === cm);
     assertTrue(!Object.keys(vm).includes('_ui'));
   });
@@ -142,8 +141,8 @@ suite('createTile: Daten und Diagramm-Manager', () => {
     assertDeepEqual(seen.data.columns({}), []);
   });
 
-  test('ohne chartManager: _ui.chartManager null', () => {
+  test('ohne chartManager: _ui.services.chartManager null', () => {
     const vm = tile.viewModel({ state: {}, settings: {}, i18n });
-    assertEqual(vm._ui.chartManager, null);
+    assertEqual(vm._ui.services.chartManager, null);
   });
 });

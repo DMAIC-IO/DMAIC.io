@@ -623,11 +623,7 @@ export function insufficientText(analysis, t) {
 
 // ── Residuendiagramme ────────────────────────────────────────
 
-/**
- * Ein Diagramm für `x-chart`: Typ und Konfiguration.
- * @typedef {{ type: string, config: object }} ChartSpec
- */
-/** @typedef {{ fitted: ChartSpec, prob: ChartSpec, hist: ChartSpec, order: ChartSpec }} ResidualCharts */
+/** @typedef {{ fitted: object, prob: object, hist: object, order: object }} ResidualCharts */
 
 /** Je Ergebnisobjekt einmal gebaut: vier Getter lesen dasselbe. @type {WeakMap<object, { t: Translate, charts: ResidualCharts }>} */
 const residualCache = new WeakMap();
@@ -658,37 +654,21 @@ export function residualCharts(result, t) {
   /** @type {ResidualCharts} */
   const charts = {
     fitted: {
-      type: 'scatter',
-      config: {
-        editKey: 'hyptest:chart-resid-fits',
-        title: t('residualsVsFitted'), xLabel: t('fittedValues'), yLabel: t('residuals'),
-        showLegend: false, refLines: zeroLine, series: [dot('var(--color-chart-3)', fitted, residuals)],
-      },
+      title: t('residualsVsFitted'), xLabel: t('fittedValues'), yLabel: t('residuals'),
+      showLegend: false, refLines: zeroLine, series: [dot('var(--color-chart-3)', fitted, residuals)],
     },
     prob: {
-      type: 'probability-plot',
-      config: {
-        editKey: 'hyptest:chart-resid-normal',
-        title: t('residualsNormalPlot'), xLabel: t('residuals'), yLabel: t('residualsPercent'),
-        showLegend: false,
-        series: [{ name: t('residuals'), values: standardized, color: 'var(--color-chart-5)' }],
-      },
+      title: t('residualsNormalPlot'), xLabel: t('residuals'), yLabel: t('residualsPercent'),
+      showLegend: false,
+      series: [{ name: t('residuals'), values: standardized, color: 'var(--color-chart-5)' }],
     },
     hist: {
-      type: 'histogram',
-      config: {
-        editKey: 'hyptest:chart-resid-hist',
-        title: t('residualsHistogram'), xLabel: t('residuals'), yLabel: t('residualsFrequency'),
-        showLegend: false, showNormalCurve: true, data: residuals,
-      },
+      title: t('residualsHistogram'), xLabel: t('residuals'), yLabel: t('residualsFrequency'),
+      showLegend: false, showNormalCurve: true, data: residuals,
     },
     order: {
-      type: 'scatter',
-      config: {
-        editKey: 'hyptest:chart-resid-order',
-        title: t('residualsVsOrder'), xLabel: t('residualsVsOrderByGroup'), yLabel: t('residuals'),
-        showLegend: false, refLines: zeroLine, series: [dot('var(--color-chart-4)', order, residuals)],
-      },
+      title: t('residualsVsOrder'), xLabel: t('residualsVsOrderByGroup'), yLabel: t('residuals'),
+      showLegend: false, refLines: zeroLine, series: [dot('var(--color-chart-4)', order, residuals)],
     },
   };
   residualCache.set(result, { t, charts });

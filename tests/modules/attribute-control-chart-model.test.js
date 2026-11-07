@@ -20,7 +20,14 @@ suite('attribute-control-chart Model', () => {
     const m = new State();
     const { _schema, ...rest } = m.toJSON();
     assertEqual(_schema.version, '1.0');
-    assertDeepEqual(rest, { chartTypeId: 'p', defectsRef: null, sizeRef: null, constantN: 50, baselineCount: null, enabledRules: [1], exampleWorksheetId: null });
+    assertDeepEqual(rest, { chartTypeId: 'p', defectsRef: null, sizeRef: null, constantN: 50, baselineCount: null, enabledRules: [1], exampleWorksheetId: null, controlChartEdits: {} });
+    assertEqual(m.hasContent(), false);
+  });
+
+  test('gespeicherter Stand ohne Diagramm-Schlüssel lädt unverändert; Diagrammeinstellungen sind kein Inhalt', () => {
+    assertDeepEqual(State.fromJSON({ chartTypeId: 'c' }).toJSON().controlChartEdits, {});
+    const m = State.fromJSON({ controlChartEdits: { title: 'X' } });
+    assertEqual(m.controlChartEdits.title, 'X');
     assertEqual(m.hasContent(), false);
   });
 

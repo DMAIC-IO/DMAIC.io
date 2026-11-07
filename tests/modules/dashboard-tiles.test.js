@@ -20,10 +20,16 @@ import attrSpcTile from '../../js/modules/attribute-control-chart/tile/tile.js';
 import { disposeTile } from '../../js/pages/dashboard/tile-render.js';
 import { createWorksheetData } from '../../js/core/worksheet-data.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
-import { registerChartDirective } from '../../js/core/chart-directive.js';
+import { registerWidgetDirective } from '../../js/core/widget-directive.js';
+import { WIDGETS } from '../../js/widgets/registry.js';
+import { checkValue } from '../../js/core/model.js';
+import controlChartWidget from '../../js/widgets/control-chart/schema.js';
 import zegTile from '../../js/pages/dashboard/tiles/zeg-timeline.tile.js';
 import sipocTile from '../../js/modules/sipoc/tile/tile.js';
 import kanoTile from '../../js/modules/kano/kano.tile.js';
+
+/** Dieselbe Übersetzung wie in tests/core/widget-directive.test.js: die Direktive übernimmt die erste. */
+const WIDGET_I18N = { t: (k, p) => (p ? `${k}:${p.message ?? JSON.stringify(p)}` : k), getLanguage: () => 'de' };
 
 const i18n = { t: (k) => k };
 
@@ -1245,13 +1251,13 @@ const C_UNSTABLE = { d: [2, 2, 2, 2, 2, 2, 2, 2, 2, 30] };
 
 suite('dashboard tiles: attribute-control-chart', () => {
   if (!Alpine.version) Alpine.start();
-  registerChartDirective(Alpine);
+  registerWidgetDirective(Alpine, { i18n: WIDGET_I18N, widgets: WIDGETS });
 
   test('chart carries the module axis titles while the flags keep them hidden', async () => {
     const { host, cm } = await renderAttr(C_STATE, C_STABLE);
     await waitFor(() => cm.made.length > 0);
     const { cfg } = cm.made[0];
-    assertEqual(cfg.editKey, 'control-chart');
+    assertEqual(cfg.editKey, undefined);
     assertEqual(cfg.xLabel, 'modules.attribute-control-chart.xLabelSample');
     assertEqual(cfg.yLabel, 'modules.attribute-control-chart.yLabel_c');
     assertEqual(cfg.showXLabel, false);
@@ -1300,7 +1306,7 @@ suite('dashboard tiles: attribute-control-chart', () => {
     await waitFor(() => cm.made.length > 0);
     const cfg = cm.made[0].cfg;
     assertEqual(cm.made[0].type, 'control-chart');
-    assertEqual(cfg.editKey, 'control-chart');
+    assertEqual(cfg.editKey, undefined);
     assertTrue(cfg.violationIndices.has(9));
     assertEqual(cfg.showZones, true);
     for (const k of ['showTitle', 'showXLabel', 'showYLabel', 'showXTicks', 'showYTicks', 'showLegend']) {
@@ -1389,12 +1395,14 @@ suite('dashboard tiles: attribute-control-chart', () => {
     assertDeepEqual(vm.metric, { modifier: 'dashboard-spc__metric--bad', value: '1',
       label: 'dashboard.spcViolations', sub: 'dashboard.spcOf' });
     assertDeepEqual([vm.clText, vm.uclLabel, vm.lclLabel], ['4.8000', 'UCL', 'LCL']);
-    assertEqual(vm.chart.type, 'control-chart');
-    assertTrue(vm.chart.config.violationIndices.has(9));
-    assertEqual(vm.chart.config.violationIndices.size, 1);
-    assertEqual(vm.chart.config.showZones, true);
-    assertEqual(vm.chart.config.editKey, 'control-chart');
-    assertEqual(vm.chart.config.yLabel, 'modules.attribute-control-chart.yLabel_c');
+    assertEqual(vm.chart.type, undefined);
+    assertDeepEqual(vm.chart.violationIndices, [9]);
+    assertEqual(vm.chart.showZones, true);
+    assertEqual(vm.chart.editKey, undefined);
+    assertEqual(vm.chart.showXLabel, false);
+    assertEqual(vm.chart.yLabel, 'modules.attribute-control-chart.yLabel_c');
+    assertTrue(Array.isArray(vm.chart.cl));
+    checkValue(controlChartWidget.props.config, 'chart', vm.chart);
   });
 
   test('viewModel: empty, no-data and showChart off', () => {

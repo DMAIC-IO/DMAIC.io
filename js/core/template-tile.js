@@ -7,8 +7,8 @@
  * durchgereicht). `viewModel(args)` baut je Rendern einen Scope: einen
  * eingefrorenen Schnappschuss des Models (`readModel`), die geprüften
  * Einstellungen (`readSettings`), `t` mit dem Präfix `modules.<id>` und die
- * Glieder aus `view(ctx)`. `ctx.data` liest das Arbeitsblatt, `x-chart`
- * zeichnet über den Kachel-`chartManager` (`_ui`); beides je Rendern einmal.
+ * Glieder aus `view(ctx)`. `ctx.data` liest das Arbeitsblatt, `x-widget`
+ * zeichnet über den Kachel-`chartManager` (`_ui.services`); beides je Rendern einmal.
  * Die Marke `_templateTile` sagt dem Host
  * (pages/dashboard/tile-render.js), dass der Scope selbst gebunden wird.
  *
@@ -118,9 +118,8 @@ export function createTile(base) {
       };
       Object.defineProperty(scope, 'moduleId', { value: id, enumerable: true });
       Object.defineProperty(scope, TEMPLATE_TILE, { value: true });
-      // Griff für x-chart (core/chart-directive.js): der Kachel-chartManager des Hosts.
+      // Griff für x-widget (core/widget-directive.js): die Dienste, darunter der Kachel-chartManager des Hosts.
       Object.defineProperty(scope, '_ui', { value: Object.freeze({
-        chartManager: args.chartManager ?? null,
         services: Object.freeze({
           eventBus: null, stateManager: args.stateManager ?? null, i18n, chartManager: args.chartManager ?? null,
           instanceId: args.instanceId ?? null, moduleId: id,

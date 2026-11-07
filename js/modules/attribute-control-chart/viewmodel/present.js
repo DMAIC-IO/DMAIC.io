@@ -5,6 +5,7 @@
  * und der Diagramm-Konfiguration. `t` übersetzt im Modul, `gt` global.
  */
 import { uniqueViolations, signalIndices, baselineEndOf } from '../domain/analyze.js';
+import { asList } from '../domain/limits.js';
 
 /**
  * Mittel einer Grenze (Liste bei je Punkt wechselnden Grenzen), ein Einzelwert
@@ -71,30 +72,27 @@ export function violationRowsOf(analysis, gt) {
 }
 
 /**
- * Die Regelkarte für x-chart. `editKey` bleibt `control-chart`, damit
- * gespeicherte Bearbeitungen der Instanz gelten.
+ * Konfiguration des Regelkarten-Widgets. Gespeicherte Bearbeitungen der
+ * Instanz liegen im Modellzustand (`controlChartEdits`).
  * @param {any} analysis
  * @param {{ chartTypeId: string, baselineCount: number|null }} model
  * @param {(key: string, params?: object) => string} t
- * @returns {{ type: 'control-chart', config: object }|null}
+ * @returns {object|null}
  */
 export function controlChartOf(analysis, model, t) {
   if (!analysis?.result) return null;
   const r = analysis.result;
   return {
-    type: 'control-chart',
-    config: {
-      editKey: 'control-chart',
-      title: '',
-      xLabel: t('xLabelSample'),
-      yLabel: t(`yLabel_${model.chartTypeId}`),
-      showLegend: false,
-      showTitle: false,
-      values: r.values, cl: r.cl, ucl: r.ucl, lcl: r.lcl, sigma: r.sigma,
-      violationIndices: new Set(signalIndices(analysis.violations)),
-      baselineEnd: baselineEndOf(model.baselineCount, r.values.length),
-      usl: null, lsl: null,
-      showZones: !r.variableLimits,
-    },
+    title: '',
+    xLabel: t('xLabelSample'),
+    yLabel: t(`yLabel_${model.chartTypeId}`),
+    showLegend: false,
+    showTitle: false,
+    values: r.values, cl: asList(r.cl), ucl: asList(r.ucl), lcl: asList(r.lcl),
+    ...(r.sigma == null ? {} : { sigma: asList(r.sigma) }),
+    violationIndices: [...new Set(signalIndices(analysis.violations))],
+    baselineEnd: baselineEndOf(model.baselineCount, r.values.length),
+    usl: null, lsl: null,
+    showZones: !r.variableLimits,
   };
 }

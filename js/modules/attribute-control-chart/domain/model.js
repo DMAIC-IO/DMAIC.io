@@ -8,6 +8,7 @@
  * und Regeln entsprechen der Engine (attribute-control-chart-engine.js).
  */
 import { defineModel, command, number, boolean, oneOf, list, columnRef, text } from '../../../core/model.js';
+import controlChart from '../../../widgets/control-chart/schema.js';
 
 export const State = defineModel({
   version: '1.0',
@@ -21,6 +22,7 @@ export const State = defineModel({
   },
   view: {
     exampleWorksheetId: text({ nullable: true }),
+    controlChartEdits: controlChart.edits(),
   },
   commands: {
     toggleRule: command({

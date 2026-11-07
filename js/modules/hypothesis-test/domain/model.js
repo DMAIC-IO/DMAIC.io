@@ -6,6 +6,9 @@
  */
 import { defineModel, command, text, number, boolean, oneOf, list, columnRef } from '../../../core/model.js';
 import { from0 } from './migrations.js';
+import histogramChart from '../../../widgets/histogram-chart/schema.js';
+import probabilityPlotChart from '../../../widgets/probability-plot-chart/schema.js';
+import scatterChart from '../../../widgets/scatter-chart/schema.js';
 
 /** @type {readonly ('variance'|'mean')[]} */
 export const CATEGORIES = Object.freeze(['variance', 'mean']);
@@ -42,6 +45,10 @@ export const State = defineModel({
   },
   view: {
     exampleWorksheetId: text({ nullable: true }),
+    residFittedChart: scatterChart.edits(),
+    residProbChart: probabilityPlotChart.edits(),
+    residHistChart: histogramChart.edits(),
+    residOrderChart: scatterChart.edits(),
   },
   invariants: {
     pairedMeansOnly: {

@@ -2,13 +2,19 @@
  * Attributive Regelkarte: das Viewmodel im Browser (viewmodel/viewmodel.js)
  * mit dem echten Modul, einem Fake-stateManager mit Arbeitsblatt und einem
  * Fake-chartManager. Prüft die reaktive Ableitung, das Diagramm über
- * x-chart, die Lesefläche und das Regel-Kästchen.
+ * das Diagramm-Widget, die Lesefläche und das Regel-Kästchen.
  */
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import mod from '../../js/modules/attribute-control-chart/viewmodel/viewmodel.js';
 import { installWorksheetRevisions } from '../../js/core/worksheet-data.js';
-import { registerChartDirective } from '../../js/core/chart-directive.js';
+import { registerWidgetDirective } from '../../js/core/widget-directive.js';
+import { WIDGETS } from '../../js/widgets/registry.js';
+import { checkValue } from '../../js/core/model.js';
+import controlChart from '../../js/widgets/control-chart/schema.js';
+
+/** Dieselbe Übersetzung wie in tests/core/widget-directive.test.js: die Direktive übernimmt die erste. */
+const WIDGET_I18N = { t: (k, p) => (p ? `${k}:${p.message ?? JSON.stringify(p)}` : k), getLanguage: () => 'de' };
 
 const ID = 'attribute-control-chart';
 const TPL_KEY = `js/modules/${ID}/resources/view.html`;
@@ -28,19 +34,20 @@ const sheetWith = (...cols) => ({
 /** Phasen des Fake-Projekts: ein Arbeitsblatt in control. */
 const PHASES = { control: [{ instanceId: 'ws1', moduleId: 'worksheet' }] };
 
+let widgetsRegistered = false;
 const flush = () => new Promise((r) => setTimeout(r, 0));
 const mounted = [];
 
 function ensureTemplate() {
   if (!Alpine.version) Alpine.start();
-  registerChartDirective(Alpine);
+  if (!widgetsRegistered) { registerWidgetDirective(Alpine, { i18n: WIDGET_I18N, widgets: WIDGETS }); widgetsRegistered = true; }
   if (document.querySelector(`template[data-tpl="${TPL_KEY}"]`)) return;
-  // Schlankes Gerüst mit dem Namen und der x-chart-Bindung der echten Vorlage
+  // Schlankes Gerüst mit dem Namen und der x-widget-Bindung der echten Vorlage
   const tpl = document.createElement('template');
   tpl.setAttribute('data-tpl', TPL_KEY);
   tpl.innerHTML = '<div x-data="attributeControlChart">'
     + '<span class="acc-title" x-text="chartTitle"></span>'
-    + '<div class="acc-plot" x-chart="controlChart"></div>'
+    + '<div class="acc-plot" x-widget="control-chart" x-widget-config="controlChart" x-widget-value="model.controlChartEdits" x-widget-legacy-edit-key="legacyEditKeys.control"></div>'
     + '</div>';
   document.body.append(tpl);
 }
@@ -63,8 +70,9 @@ async function mount(model, sheets = {}) {
   installWorksheetRevisions(bus);
   const chartCalls = [];
   const chartManager = {
-    create: async (el, type, config) => { chartCalls.push(['create', type, config]); return { el, type }; },
-    update: (chart, config) => { chartCalls.push(['update', chart.type, config]); },
+    // Wie der echte Manager: das Diagramm trägt seine Konfiguration (das Widget liest `chart.config`).
+    create: async (el, type, config) => { chartCalls.push(['create', type, config]); return { el, type, config: { ...config } }; },
+    update: (chart, config) => { chartCalls.push(['update', chart.type, config]); Object.assign(chart.config, config); },
     destroy: () => {},
   };
   const context = {
@@ -112,13 +120,18 @@ suite('attribute-control-chart: Viewmodel im Browser', () => {
     assertDeepEqual(vm().result.signals, [9]);
   });
 
-  test('ein Diagramm über x-chart, editKey control-chart', async () => {
-    const { chartCalls } = await mount(cState, { ws1: sheetWith([2, 2, 2, 2, 2, 2, 2, 2, 2, 30]) });
+  test('ein Diagramm über das Widget; Konfiguration ohne editKey, Listen statt Set und Zahl', async () => {
+    const { chartCalls, vm } = await mount(cState, { ws1: sheetWith([2, 2, 2, 2, 2, 2, 2, 2, 2, 30]) });
     await flush();
     const creates = chartCalls.filter((c) => c[0] === 'create');
     assertEqual(creates.length, 1);
     assertEqual(creates[0][1], 'control-chart');
-    assertEqual(creates[0][2].editKey, 'control-chart');
+    const cfg = vm().controlChart;
+    assertEqual(cfg.editKey, undefined);
+    assertTrue(Array.isArray(cfg.violationIndices));
+    assertDeepEqual(cfg.violationIndices, [9]);
+    assertTrue(Array.isArray(cfg.cl));
+    checkValue(controlChart.props.config, 'controlChart', cfg);
   });
 
   test('read(): Felder, Lesefelder, Punkte als Massenfeld', async () => {

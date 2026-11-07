@@ -478,10 +478,10 @@
             <div class="hyptest__contents">
               <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionResiduals')"></span></div>
               <div class="hyptest__residuals">
-                <div class="hyptest__residual-chart" data-ref="chart-resid-fits" x-chart="residFitted"></div>
-                <div class="hyptest__residual-chart" data-ref="chart-resid-normal" x-chart="residProb"></div>
-                <div class="hyptest__residual-chart" data-ref="chart-resid-hist" x-chart="residHist"></div>
-                <div class="hyptest__residual-chart" data-ref="chart-resid-order" x-chart="residOrder"></div>
+                <div class="hyptest__residual-chart" data-ref="chart-resid-fits" x-widget="scatter-chart" x-widget-config="residFitted" x-widget-value="model.residFittedChart" x-widget-legacy-edit-key="legacyEditKeys.fitted"></div>
+                <div class="hyptest__residual-chart" data-ref="chart-resid-normal" x-widget="probability-plot-chart" x-widget-config="residProb" x-widget-value="model.residProbChart" x-widget-legacy-edit-key="legacyEditKeys.prob"></div>
+                <div class="hyptest__residual-chart" data-ref="chart-resid-hist" x-widget="histogram-chart" x-widget-config="residHist" x-widget-value="model.residHistChart" x-widget-legacy-edit-key="legacyEditKeys.hist"></div>
+                <div class="hyptest__residual-chart" data-ref="chart-resid-order" x-widget="scatter-chart" x-widget-config="residOrder" x-widget-value="model.residOrderChart" x-widget-legacy-edit-key="legacyEditKeys.order"></div>
               </div>
             </div>
           </template>

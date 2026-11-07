@@ -28,8 +28,19 @@ suite('hypothesis-test Model', () => {
       category: 'variance', testType: 'one', direction: 'two-sided', alpha: 0.05, powerGoal: 0.8,
       targetValue: '', targetType: 'variance', colRef1: null, colRef2: null, colRefsK: [], equalVariances: false,
       exampleWorksheetId: null,
+      residFittedChart: {}, residProbChart: {}, residHistChart: {}, residOrderChart: {},
     });
     assertEqual(m.hasContent(), false);
+  });
+
+  test('gespeicherter Stand ohne Diagramm-Schlüssel lädt unverändert; Diagrammeinstellungen sind kein Inhalt', () => {
+    const saved = new State({ cycle: 'dmaic' }).toJSON();
+    for (const k of ['residFittedChart', 'residProbChart', 'residHistChart', 'residOrderChart']) delete saved[k];
+    const old = State.fromJSON(saved);
+    for (const k of ['residFittedChart', 'residProbChart', 'residHistChart', 'residOrderChart']) assertDeepEqual(old.toJSON()[k], {});
+    const edited = State.fromJSON({ ...old.toJSON(), residHistChart: { title: 'X' } });
+    assertEqual(edited.residHistChart.title, 'X');
+    assertEqual(edited.hasContent(), false);
   });
 
   test('setCategory: Varianz bei gepaart erzwingt two', () => {

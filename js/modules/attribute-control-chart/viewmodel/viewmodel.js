@@ -3,7 +3,7 @@
  *
  * `computed analysis` rechnet aus Model und Arbeitsblatt (`ctx.data`);
  * daraus entstehen die Lesefelder (Zahlen) und über Getter Kennzahlen,
- * Marke, Verletzungsliste und die Regelkarte (`x-chart`).
+ * Marke, Verletzungsliste und die Regelkarte (Widget `control-chart`).
  */
 import { createModule } from '../../../core/template-module.js';
 import { getAttributeChartType, ATTRIBUTE_NELSON_RULES } from '../../../engines/attribute-control-chart-engine.js';
@@ -56,6 +56,8 @@ export default createModule({
       get violationKpiClass() { return this.kpis?.violationCount === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad'; },
       get badge() { return badgeOf(this.analysis, this.t); },
       get chartTitle() { return this.t(`subchart_${this.model.chartTypeId}`, { col: ctx.data.name(this.model.defectsRef) ?? '' }); },
+      /** Alter Schlüssel, unter dem die Regelkarte früher gespeichert wurde. */
+      legacyEditKeys: { control: 'control-chart' },
       get controlChart() { return controlChartOf(this.analysis, this.model, this.t); },
       get violationRows() { return violationRowsOf(this.analysis, gt); },
       get violationsHeader() { return `⚑ ${this.t('violationsTitle', { count: this.violationRows.length })}`; },

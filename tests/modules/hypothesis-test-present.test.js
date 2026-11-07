@@ -121,13 +121,10 @@ suite('residualCharts', () => {
     test(`${label}-Weg liefert die vier Diagramme`, () => {
       const result = analyzeK(NORMAL_GROUPS, eq);
       const c = residualCharts(result, t);
-      assertEqual([c.fitted, c.prob, c.hist, c.order].map(x => x.type).join(','), 'scatter,probability-plot,histogram,scatter');
-      assertEqual(c.fitted.config.editKey, 'hyptest:chart-resid-fits');
-      assertEqual(c.prob.config.editKey, 'hyptest:chart-resid-normal');
-      assertEqual(c.hist.config.editKey, 'hyptest:chart-resid-hist');
-      assertEqual(c.order.config.editKey, 'hyptest:chart-resid-order');
-      assertTrue(c.hist.config.showNormalCurve, 'Histogramm mit Normalkurve');
-      assertEqual(c.fitted.config.series[0].x.length, 24);
+      assertEqual(Object.keys(c).join(','), 'fitted,prob,hist,order');
+      for (const x of Object.values(c)) { assertEqual(x.type, undefined); assertEqual(x.editKey, undefined); }
+      assertTrue(c.hist.showNormalCurve, 'Histogramm mit Normalkurve');
+      assertEqual(c.fitted.series[0].x.length, 24);
     });
   }
 

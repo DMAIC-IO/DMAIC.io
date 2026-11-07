@@ -8,7 +8,16 @@ import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-u
 import Alpine from '../../vendor/alpinejs/csp.js';
 import mod from '../../js/modules/hypothesis-test/viewmodel/viewmodel.js';
 import { installWorksheetRevisions } from '../../js/core/worksheet-data.js';
-import { registerChartDirective } from '../../js/core/chart-directive.js';
+import { registerWidgetDirective } from '../../js/core/widget-directive.js';
+import { WIDGETS } from '../../js/widgets/registry.js';
+import { checkValue } from '../../js/core/model.js';
+import scatterChart from '../../js/widgets/scatter-chart/schema.js';
+import probabilityPlotChart from '../../js/widgets/probability-plot-chart/schema.js';
+import histogramChart from '../../js/widgets/histogram-chart/schema.js';
+import { residualCharts } from '../../js/modules/hypothesis-test/viewmodel/present.js';
+
+/** Dieselbe Übersetzung wie in tests/core/widget-directive.test.js: die Direktive übernimmt die erste. */
+const WIDGET_I18N = { t: (k, p) => (p ? `${k}:${p.message ?? JSON.stringify(p)}` : k), getLanguage: () => 'de' };
 
 const ID = 'hypothesis-test';
 const TPL_KEY = `js/modules/${ID}/resources/view.html`;
@@ -25,22 +34,23 @@ const sheetWith = (...cols) => ({
 });
 const ref = (i, instanceId = 'ws1') => ({ instanceId, sheetId: 's1', columnId: `c${i}` });
 
+let widgetsRegistered = false;
 const flush = () => new Promise((r) => setTimeout(r, 0));
 const mounted = [];
 
 function ensureTemplate() {
   if (!Alpine.version) Alpine.start();
-  registerChartDirective(Alpine);
+  if (!widgetsRegistered) { registerWidgetDirective(Alpine, { i18n: WIDGET_I18N, widgets: WIDGETS }); widgetsRegistered = true; }
   if (document.querySelector(`template[data-tpl="${TPL_KEY}"]`)) return;
-  // Schlankes Gerüst mit dem Namen und den x-chart-Bindungen der echten Vorlage
+  // Schlankes Gerüst mit dem Namen und den x-widget-Bindungen der echten Vorlage
   const tpl = document.createElement('template');
   tpl.setAttribute('data-tpl', TPL_KEY);
   tpl.innerHTML = '<div x-data="hypothesisTest">'
     + '<span class="ht-error" x-text="errorText"></span>'
-    + '<div class="ht-fits" x-chart="residFitted"></div>'
-    + '<div class="ht-normal" x-chart="residProb"></div>'
-    + '<div class="ht-hist" x-chart="residHist"></div>'
-    + '<div class="ht-order" x-chart="residOrder"></div>'
+    + '<div class="ht-fits" x-widget="scatter-chart" x-widget-config="residFitted" x-widget-value="model.residFittedChart" x-widget-legacy-edit-key="legacyEditKeys.fitted"></div>'
+    + '<div class="ht-normal" x-widget="probability-plot-chart" x-widget-config="residProb" x-widget-value="model.residProbChart" x-widget-legacy-edit-key="legacyEditKeys.prob"></div>'
+    + '<div class="ht-hist" x-widget="histogram-chart" x-widget-config="residHist" x-widget-value="model.residHistChart" x-widget-legacy-edit-key="legacyEditKeys.hist"></div>'
+    + '<div class="ht-order" x-widget="scatter-chart" x-widget-config="residOrder" x-widget-value="model.residOrderChart" x-widget-legacy-edit-key="legacyEditKeys.order"></div>'
     + '</div>';
   document.body.append(tpl);
 }
@@ -64,8 +74,9 @@ async function mount(model, sheets = {}, settings = {}) {
   installWorksheetRevisions(bus);
   const chartCalls = [];
   const chartManager = {
-    create: async (el, type, config) => { chartCalls.push(['create', type, config]); return { el, type }; },
-    update: (chart, config) => { chartCalls.push(['update', chart.type, config]); },
+    // Wie der echte Manager: das Diagramm trägt seine Konfiguration (das Widget liest `chart.config`).
+    create: async (el, type, config) => { chartCalls.push(['create', type, config]); return { el, type, config: { ...config } }; },
+    update: (chart, config) => { chartCalls.push(['update', chart.type, config]); Object.assign(chart.config, config); },
     destroy: () => {},
   };
   const context = {
@@ -143,17 +154,34 @@ suite('hypothesis-test: Viewmodel im Browser', () => {
     assertEqual(vm().display, null);
   });
 
-  test('vier Residuendiagramme bei k Stichproben über x-chart, editKey hyptest:*', async () => {
+  test('vier Residuendiagramme bei k Stichproben über Widgets, Konfiguration ohne editKey', async () => {
     const { chartCalls, vm } = await mount({
       category: 'mean', testType: 'k', direction: 'two-sided', alpha: 0.05, colRefsK: [ref(0), ref(1), ref(2)],
     }, { ws1: sheetWith(A, B, C) });
     await flush();
     assertEqual(vm().result.status, 'ok');
     const created = chartCalls.filter((c) => c[0] === 'create');
-    assertDeepEqual(created.map((c) => c[2].editKey).sort(), [
-      'hyptest:chart-resid-fits', 'hyptest:chart-resid-hist', 'hyptest:chart-resid-normal', 'hyptest:chart-resid-order',
-    ]);
+    assertEqual(created.length, 4);
     assertDeepEqual(created.map((c) => c[1]).sort(), ['histogram', 'probability-plot', 'scatter', 'scatter']);
+    assertTrue(created.every((c) => c[2].editKey === undefined));
+  });
+
+  test('residualCharts: vier Konfigurationen, die das Widget-Schema besteht', async () => {
+    const { vm } = await mount({
+      category: 'mean', testType: 'k', direction: 'two-sided', alpha: 0.05, colRefsK: [ref(0), ref(1), ref(2)],
+    }, { ws1: sheetWith(A, B, C) });
+    const t = (k) => k;
+    const charts = residualCharts(vm().result, t);
+    const n = A.length + B.length + C.length;
+    assertDeepEqual(Object.keys(charts), ['fitted', 'prob', 'hist', 'order']);
+    for (const c of Object.values(charts)) assertEqual(c.editKey, undefined);
+    assertEqual(charts.fitted.series[0].x.length, n);
+    assertEqual(charts.prob.series[0].values.length, n);
+    assertEqual(charts.hist.data.length, n);
+    checkValue(scatterChart.props.config, 'fitted', charts.fitted);
+    checkValue(probabilityPlotChart.props.config, 'prob', charts.prob);
+    checkValue(histogramChart.props.config, 'hist', charts.hist);
+    checkValue(scatterChart.props.config, 'order', charts.order);
   });
 
   test('zwei Stichproben: keine Residuendiagramme', async () => {

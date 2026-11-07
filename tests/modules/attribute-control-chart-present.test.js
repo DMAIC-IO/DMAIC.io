@@ -8,6 +8,9 @@ const t = (k, p) => (p ? `${k}|${JSON.stringify(p)}` : k);
 const unstable = analyzeState(model, () => [2, 2, 2, 2, 2, 2, 2, 2, 2, 30]);
 const stable = analyzeState(model, () => [3, 4, 2, 5, 3, 4, 3, 2, 4, 3]);
 
+import { checkValue } from '../../js/core/model.js';
+import controlChart from '../../js/widgets/control-chart/schema.js';
+
 suite('attribute-control-chart: Anzeige', () => {
   test('meanOf: Mittel einer Liste, Einzelwert unverändert, nicht-endlich bleibt nicht-endlich', () => {
     assertEqual(meanOf([1, 2, 3]), 2);
@@ -37,15 +40,18 @@ suite('attribute-control-chart: Anzeige', () => {
     assertDeepEqual(violationRowsOf(null, t), []);
   });
 
-  test('controlChartOf: Konfiguration wie bisher, editKey control-chart', () => {
+  test('controlChartOf: Konfiguration des Widgets, Listen statt Set und Zahl, ohne editKey', () => {
     const c = controlChartOf(unstable, model, t);
-    assertEqual(c.type, 'control-chart');
-    assertEqual(c.config.editKey, 'control-chart');
-    assertEqual(c.config.yLabel, 'yLabel_c');
-    assertTrue(c.config.violationIndices instanceof Set && c.config.violationIndices.has(9));
-    assertEqual(c.config.baselineEnd, null);
-    assertEqual(c.config.showZones, true);
-    assertEqual(controlChartOf({ ...unstable }, { ...model, baselineCount: 4 }, t).config.baselineEnd, 4);
+    assertEqual(c.type, undefined);
+    assertEqual(c.editKey, undefined);
+    assertEqual(c.yLabel, 'yLabel_c');
+    assertTrue(Array.isArray(c.violationIndices));
+    assertTrue(c.violationIndices.includes(9));
+    assertTrue(Array.isArray(c.cl) && Array.isArray(c.ucl) && Array.isArray(c.lcl));
+    assertEqual(c.baselineEnd, null);
+    assertEqual(c.showZones, true);
+    checkValue(controlChart.props.config, 'controlChart', c);
+    assertEqual(controlChartOf({ ...unstable }, { ...model, baselineCount: 4 }, t).baselineEnd, 4);
     assertEqual(controlChartOf(null, model, t), null);
   });
 });

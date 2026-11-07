@@ -946,35 +946,16 @@ test('Picker-CSS: keine Regeln auf col-picker-Klassen', () => {
   assert.deepEqual(checkPickerCss(null), []);
 });
 
-test('x-chart: Getter oder computed des view-Blocks', () => {
-  const vm = { path: 'viewmodel/viewmodel.js', text: `export default createModule({ view(ctx) { return {
-    computed: { result() { return 1; } },
-    get residFitted() { return null; },
-    helper() { return null; },
-  }; } });` };
-  const tpl = (v) => [{ path: 'resources/view.html', text: `<div x-chart="${v}"></div>` }];
-  assert.deepEqual(checkChartBindings(tpl('residFitted'), vm), []);
-  assert.deepEqual(checkChartBindings(tpl('result'), vm), []);
-  assert.deepEqual(checkChartBindings(tpl('helper'), vm), [
-    'template: resources/view.html: x-chart="helper": helper ist weder Getter noch computed des view-Blocks',
+test('x-chart ist verboten', () => {
+  assert.deepEqual(checkChartBindings([{ path: 'resources/view.html', text: '<div x-chart="plot"></div>' }]), [
+    'template: resources/view.html: x-chart="plot": x-chart ist abgelöst — x-widget mit einem Diagramm-Widget verwenden',
   ]);
-  assert.deepEqual(checkChartBindings(tpl('a.b'), vm), [
-    'template: resources/view.html: x-chart="a.b": a.b ist weder Getter noch computed des view-Blocks',
-  ]);
+  assert.deepEqual(checkChartBindings([{ path: 'resources/tile.html', text: '<div x-widget="control-chart" x-widget-config="chart"></div>' }]), []);
 });
 
 test('checkViewReads: auch tile/*.js', () => {
   const tile = { path: 'tile/tile.js', text: 'export default createTile({ view(ctx) { return { get x() { return ctx.stateManager.get("a"); } }; } });' };
   assert.deepEqual(checkViewReads([tile]), ['view: tile/tile.js: stateManager im view-Block — Arbeitsblätter über ctx.data lesen']);
-});
-
-test('checkChartBindings: tile.html gegen tile/tile.js', () => {
-  const vm = { path: 'viewmodel/viewmodel.js', text: 'createModule({ view() { return { get plot() { return null; } }; } });' };
-  const tileJs = { path: 'tile/tile.js', text: 'createTile({ view() { return { get chart() { return null; } }; } });' };
-  const ok = [{ path: 'resources/view.html', text: '<div x-chart="plot"></div>' }, { path: 'resources/tile.html', text: '<div x-chart="chart"></div>' }];
-  assert.deepEqual(checkChartBindings(ok, vm, [tileJs]), []);
-  const bad = [{ path: 'resources/tile.html', text: '<div x-chart="plot"></div>' }];
-  assert.deepEqual(checkChartBindings(bad, vm, [tileJs]), ['template: resources/tile.html: x-chart="plot": plot ist weder Getter noch computed des view-Blocks']);
 });
 
 test('checkSchemaLiteral: default als Funktion des Kontexts', () => {

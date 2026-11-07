@@ -705,42 +705,16 @@ export function viewNamesOf(text) {
   return new Set([...getters, ...computed, ...data]);
 }
 
-/** Erlaubte x-chart-Namen eines view-Blocks (Getter und computed). @param {string} text @returns {Set<string>} */
-export function chartNamesOf(text) {
-  const allowed = new Set();
-  const view = findViewBlock(text);
-  if (!view) return allowed;
-  const visit = (n) => {
-    if (ts.isGetAccessorDeclaration(n) && ts.isIdentifier(n.name)) allowed.add(n.name.text);
-    if (ts.isPropertyAssignment(n) && ts.isIdentifier(n.name) && n.name.text === 'computed'
-        && ts.isObjectLiteralExpression(n.initializer)) {
-      for (const p of n.initializer.properties) if (p.name && ts.isIdentifier(p.name)) allowed.add(p.name.text);
-    }
-    ts.forEachChild(n, visit);
-  };
-  visit(view);
-  return allowed;
-}
-
 /**
- * Gate x-chart: der Ausdruck ist der Name eines Getters oder eines
- * `computed` des view-Blocks — `resources/tile[.<name>].html` gegen
- * `tile/tile.js` bzw. `tile/<name>.js`, alle übrigen gegen das Viewmodel.
+ * Gate x-chart: die Direktive ist abgelöst, Diagramme laufen über Diagramm-Widgets.
  * @param {{ path: string, text: string }[]} templates
- * @param {{ path: string, text: string }|null} vmFile viewmodel/viewmodel.js
- * @param {{ path: string, text: string }[]} [tileFiles] tile/*.js
  * @returns {string[]}
  */
-export function checkChartBindings(templates, vmFile, tileFiles = []) {
-  const vmNames = vmFile ? chartNamesOf(vmFile.text) : new Set();
+export function checkChartBindings(templates) {
   const out = [];
   for (const { path, text } of templates) {
-    const m = /^resources\/tile(?:\.([a-z0-9-]+))?\.html$/.exec(path);
-    const tileFile = m ? tileFiles.find((f) => f.path === `tile/${m[1] ?? 'tile'}.js`) : null;
-    const allowed = m ? (tileFile ? chartNamesOf(tileFile.text) : new Set()) : vmNames;
     for (const [, raw] of text.matchAll(CHART_BINDING)) {
-      const name = raw.trim();
-      if (!allowed.has(name)) out.push(`template: ${path}: x-chart="${raw}": ${name} ist weder Getter noch computed des view-Blocks`);
+      out.push(`template: ${path}: x-chart="${raw}": x-chart ist abgelöst — x-widget mit einem Diagramm-Widget verwenden`);
     }
   }
   return out;
@@ -1278,7 +1252,7 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
   const cssPath = 'resources/style.css';
   out.push(...checkPickerCss(paths.includes(cssPath) ? read(cssPath) : null));
   const chartTemplates = paths.filter((p) => /^resources\/[^/]+\.html$/.test(p)).map(read);
-  out.push(...checkChartBindings(chartTemplates, paths.includes('viewmodel/viewmodel.js') ? read('viewmodel/viewmodel.js') : null, js.filter((f) => f.path.startsWith('tile/'))));
+  out.push(...checkChartBindings(chartTemplates));
   out.push(...checkUiTexts(base));
   const refs = checkReferenceFile(base);
   out.push(...refs.findings, ...checkHelpFiles(base, refs.ids));
