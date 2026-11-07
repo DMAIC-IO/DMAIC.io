@@ -38,7 +38,7 @@ import {
   ATTRIBUTE_CHART_TYPES,
   ATTRIBUTE_NELSON_RULES,
 } from '../../engines/attribute-control-chart-engine.js';
-import { analyzeState } from './attribute-control-chart-analysis.js';
+import { analyzeState, uniqueViolations, resultOf, pointsOf } from './domain/analyze.js';
 
 import { loadWorksheetExample, rewriteRefFields } from '../../core/examples-registry.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
@@ -46,7 +46,6 @@ import { requireEnum, requireKnownId, requireNumber } from '../../core/agent/age
 import { paramInputMixin, numberCheck } from '../../core/param-input.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import { pickableColumnList } from '../../core/agent/agent-options.js';
-import { finiteOrNull, zipPoints } from '../../core/agent/agent-results.js';
 
 /** Auto-run debounce delay (ms) — matches the legacy module. */
 const AUTORUN_DELAY = 120;
@@ -274,44 +273,14 @@ const mod = createModule({
 
       /** Eindeutige Paare (Index, Regel), nach Index sortiert — eine Quelle für violationRows und read(). */
       _uniqueViolations() {
-        const violations = this._lastResult?.violations || [];
-        const unique = [];
-        const seen = new Set();
-        violations.forEach(v => {
-          const k = `${v.index}-${v.ruleId}`;
-          if (!seen.has(k)) { seen.add(k); unique.push(v); }
-        });
-        return unique.sort((a, b) => a.index - b.index);
+        return uniqueViolations(this._lastResult?.violations || []);
       },
 
       /** Ergebnis und Punkte für read(), aus `_lastResult`. */
       _agentResult() {
         const a = this._lastResult;
-        if (!a) return { result: null, points: [], pointsColumns: [] };
-        const r = a.result;
-        const violations = this._uniqueViolations().map(v => ({ index: v.index, ruleId: v.ruleId }));
-        const signals = [...new Set(violations.map(v => v.index))];
-        const scalar = (v) => (Array.isArray(v) ? null : finiteOrNull(v));
-        const { rows, columns } = zipPoints(
-          { value: r.values, n: a.n, ucl: r.ucl, lcl: r.lcl },
-          { signal: signals },
-        );
-        return {
-          result: {
-            chartType: this.model.chartTypeId,
-            statistic: r.statistic,
-            valid: a.valid,
-            cl: finiteOrNull(r.cl),
-            ucl: scalar(r.ucl),
-            lcl: scalar(r.lcl),
-            sigma: scalar(r.sigma),
-            variableLimits: Boolean(r.variableLimits),
-            violations,
-            signals,
-          },
-          points: rows,
-          pointsColumns: columns,
-        };
+        const points = pointsOf(a);
+        return { result: resultOf(a, this.model.chartTypeId), points, pointsColumns: points.length ? Object.keys(points[0]) : [] };
       },
 
       // ── View transformations ──────────────────────────────────

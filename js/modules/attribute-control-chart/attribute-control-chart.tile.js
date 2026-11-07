@@ -11,7 +11,7 @@
 import { getColumnValues } from '../../ui/column-picker.js';
 import { windowed } from '../../ui/tile-chart-window.js';
 import { State } from './attribute-control-chart-model.js';
-import { analyzeState } from './attribute-control-chart-analysis.js';
+import { analyzeState } from './domain/analyze.js';
 import { showChart, chartSlot } from '../../ui/tile-kit.js';
 
 /** Mean of the finite entries of a limit (array for variable limits). */
