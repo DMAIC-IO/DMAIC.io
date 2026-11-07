@@ -30,9 +30,9 @@ export function ownedKeys(config) {
 export function applyEdits(config, edits, editable, owned) {
   const out = { ...config };
   for (const k of editable.base) if (!owned.has(k) && edits[k] !== undefined) out[k] = clone(edits[k]);
-  if (Array.isArray(config.series) && Array.isArray(edits.series)) {
+  if (Array.isArray(config.series)) {
     out.series = config.series.map((/** @type {any} */ s) => {
-      const e = edits.series.find((/** @type {any} */ x) => x.name === s.name);
+      const e = (Array.isArray(edits.series) ? edits.series : []).find((/** @type {any} */ x) => x.name === s.name);
       // Immer eine Kopie: der Diagramm-Editor ändert die Reihen des Diagramms
       // an Ort und Stelle, das darf die Konfiguration des Moduls nicht berühren.
       const merged = { ...s };
