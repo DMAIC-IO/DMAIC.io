@@ -1,5 +1,5 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
-import { State } from '../../js/modules/attribute-control-chart/attribute-control-chart-model.js';
+import { State } from '../../js/modules/attribute-control-chart/domain/model.js';
 import {
   analyzeState, uniqueViolations, signalIndices, baselineEndOf, resultOf, pointsOf,
 } from '../../js/modules/attribute-control-chart/domain/analyze.js';

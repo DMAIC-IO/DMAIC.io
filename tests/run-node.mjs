@@ -154,6 +154,7 @@ const SKIP = new Set([
   // MutationObserver anfasst. Läuft unverändert im Browser-Runner
   // (tests/runner.html) — dort ist die Suite seit jeher registriert.
   'modules/activity-flowchart.test.js',
+  'modules/attribute-control-chart-view.test.js',
   'modules/dashboard-tiles.test.js',
   'modules/dmaic-calendar-example.test.js',
   'modules/histogram-chart-config.test.js',

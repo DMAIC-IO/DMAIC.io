@@ -1,0 +1,149 @@
+/**
+ * Attributive Regelkarte: das Viewmodel im Browser (viewmodel/viewmodel.js)
+ * mit dem echten Modul, einem Fake-stateManager mit Arbeitsblatt und einem
+ * Fake-chartManager. Prüft die reaktive Ableitung, das Diagramm über
+ * x-chart, die Lesefläche und das Regel-Kästchen.
+ */
+import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
+import Alpine from '../../vendor/alpinejs/csp.js';
+import mod from '../../js/modules/attribute-control-chart/viewmodel/viewmodel.js';
+import { installWorksheetRevisions } from '../../js/core/worksheet-data.js';
+import { registerChartDirective } from '../../js/core/chart-directive.js';
+
+const ID = 'attribute-control-chart';
+const TPL_KEY = `js/modules/${ID}/resources/view.html`;
+
+const D = { instanceId: 'ws1', sheetId: 's1', columnId: 'c0' };
+const cState = { chartTypeId: 'c', defectsRef: D };
+
+/** Ein Arbeitsblatt mit Zahlenspalten `c0`, `c1`, … */
+const sheetWith = (...cols) => ({
+  sheets: [{
+    id: 's1',
+    name: 'Blatt',
+    state: { columns: cols.map((values, i) => ({ id: `c${i}`, name: `Spalte ${i}`, type: 'numeric', values })) },
+  }],
+});
+
+/** Phasen des Fake-Projekts: ein Arbeitsblatt in control. */
+const PHASES = { control: [{ instanceId: 'ws1', moduleId: 'worksheet' }] };
+
+const flush = () => new Promise((r) => setTimeout(r, 0));
+const mounted = [];
+
+function ensureTemplate() {
+  if (!Alpine.version) Alpine.start();
+  registerChartDirective(Alpine);
+  if (document.querySelector(`template[data-tpl="${TPL_KEY}"]`)) return;
+  // Schlankes Gerüst mit dem Namen und der x-chart-Bindung der echten Vorlage
+  const tpl = document.createElement('template');
+  tpl.setAttribute('data-tpl', TPL_KEY);
+  tpl.innerHTML = '<div x-data="attributeControlChart">'
+    + '<span class="acc-title" x-text="chartTitle"></span>'
+    + '<div class="acc-plot" x-chart="controlChart"></div>'
+    + '</div>';
+  document.body.append(tpl);
+}
+
+/**
+ * Modul mit Fake-Diensten einhängen.
+ * @param {object} model gespeicherter Zustand der Instanz
+ * @param {Record<string, any>} [sheets] Modulzustände der Arbeitsblätter
+ */
+async function mount(model, sheets = {}) {
+  ensureTemplate();
+  while (mounted.length) mounted.pop().remove();
+  const states = { 'acc-1': model, ...sheets };
+  const handlers = [];
+  const bus = {
+    on: (name, fn) => handlers.push([name, fn]),
+    off: (name, fn) => { const i = handlers.findIndex(([n, f]) => n === name && f === fn); if (i >= 0) handlers.splice(i, 1); },
+    emit: (name, payload) => { for (const [n, f] of [...handlers]) if (n === name) f(payload); },
+  };
+  installWorksheetRevisions(bus);
+  const chartCalls = [];
+  const chartManager = {
+    create: async (el, type, config) => { chartCalls.push(['create', type, config]); return { el, type }; },
+    update: (chart, config) => { chartCalls.push(['update', chart.type, config]); },
+    destroy: () => {},
+  };
+  const context = {
+    instanceId: 'acc-1',
+    stateManager: {
+      getModuleState: (id) => states[id] ?? null,
+      setModuleState: () => {},
+      getProjectCycle: () => 'dmaic',
+      get: (path) => {
+        if (path === 'phases') return PHASES;
+        const m = /^phases\.(.+)$/.exec(path);
+        return m ? PHASES[m[1]] ?? [] : undefined;
+      },
+    },
+    i18n: {
+      t: (k) => k,
+      tf: () => (k) => k,
+      getLanguage: () => 'de',
+    },
+    eventBus: bus,
+    chartManager,
+    notify: () => {},
+    dialog: { confirm: async () => true },
+    theme: 'light',
+    language: 'de',
+  };
+  const container = document.createElement('div');
+  document.body.append(container);
+  mounted.push(container);
+  await mod.init(container, context);
+  await flush();
+  return {
+    states, bus, chartCalls, container,
+    vm: () => Alpine.$data(container.querySelector('[x-data]')),
+  };
+}
+
+suite('attribute-control-chart: Viewmodel im Browser', () => {
+  test('Wert im Arbeitsblatt ändern rechnet neu', async () => {
+    const { vm, states, bus } = await mount(cState, { ws1: sheetWith([3, 4, 2, 5, 3, 4, 3, 2, 4, 3]) });
+    assertDeepEqual(vm().result.signals, []);
+    states.ws1 = sheetWith([2, 2, 2, 2, 2, 2, 2, 2, 2, 30]);
+    bus.emit('worksheet:dataChanged', { instanceId: 'ws1' });
+    await flush();
+    assertDeepEqual(vm().result.signals, [9]);
+  });
+
+  test('ein Diagramm über x-chart, editKey control-chart', async () => {
+    const { chartCalls } = await mount(cState, { ws1: sheetWith([2, 2, 2, 2, 2, 2, 2, 2, 2, 30]) });
+    await flush();
+    const creates = chartCalls.filter((c) => c[0] === 'create');
+    assertEqual(creates.length, 1);
+    assertEqual(creates[0][1], 'control-chart');
+    assertEqual(creates[0][2].editKey, 'control-chart');
+  });
+
+  test('read(): Felder, Lesefelder, Punkte als Massenfeld', async () => {
+    const { vm } = await mount(cState, { ws1: sheetWith([2, 2, 2, 2, 2, 2, 2, 2, 2, 30]) });
+    const out = vm().read();
+    assertEqual(out.chartTypeId, 'c');
+    assertDeepEqual(out.activeColumnSlots, ['defects']);
+    assertDeepEqual(out.activeParams, ['chartTypeId', 'baselineCount', 'enabledRules']);
+    assertDeepEqual(out.pickableColumns.defects.map((c) => c.key), ['ws1|s1|c0']);
+    assertEqual(out.result.valid, 10);
+    assertDeepEqual(out.points, { $bulk: true, kind: 'table', rowCount: 10, columns: ['value', 'n', 'ucl', 'lcl', 'signal'] });
+    assertTrue(!('exampleWorksheetId' in out));
+  });
+
+  test('np: constantN aktiv, size nicht', async () => {
+    const { vm } = await mount({ chartTypeId: 'np', defectsRef: D, constantN: 100 }, { ws1: sheetWith([3, 4, 2, 5]) });
+    assertDeepEqual(vm().activeParams, ['chartTypeId', 'constantN', 'baselineCount', 'enabledRules']);
+    assertEqual(vm().requiresConstantN, true);
+    assertEqual(vm().requiresSampleSize, false);
+  });
+
+  test('ruleChanged geht über toggleRule', async () => {
+    const { vm } = await mount(cState, { ws1: sheetWith([3, 4, 2, 5]) });
+    vm().ruleChanged({ id: 5 }, { target: { checked: true } });
+    vm().ruleChanged({ id: 2 }, { target: { checked: true } });
+    assertDeepEqual([...vm().model.enabledRules], [1, 2, 5]);
+  });
+});

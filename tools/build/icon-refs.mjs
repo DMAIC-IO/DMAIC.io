@@ -11,8 +11,8 @@
 const CALL = /\bicon\(\s*['"]([a-z0-9.-]+)['"]/g;
 /** icon: 'name' in Modul- und Aktions-Deskriptoren */
 const FIELD = /\bicon:\s*['"]([a-z0-9.-]+)['"]/g;
-/** data-icon="name" in Alpine-Templates */
-const ATTR = /\bdata-icon="([a-z0-9.-]+)"/g;
+/** data-icon="name" in Alpine-Templates; `:data-icon="ausdruck"` ist gebunden, kein Name. */
+const ATTR = /(?<![:\w-])data-icon="([a-z0-9.-]+)"/g;
 
 /** Kommentare entfernen, damit Beispiele in JSDoc nicht als Referenz zählen. */
 function stripComments(text) {

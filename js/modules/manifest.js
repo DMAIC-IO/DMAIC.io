@@ -590,19 +590,6 @@ export default [
     },
   },
   {
-    id: 'attribute-control-chart',
-    phase: 'control',
-    group: 'charts',
-    allowedPhases: ['control'],
-    load: () => import('./attribute-control-chart/attribute-control-chart.js'),
-    loadTile: () => import('./attribute-control-chart/attribute-control-chart.tile.js'),
-    cycles: {
-      dmaic:  { phase: 'control',        allowedPhases: ['control'] },
-      dmadv:  { phase: 'verify',         allowedPhases: ['verify']  },
-      eightd: { phase: 'implementation', allowedPhases: ['implementation', 'prevent'] },
-    },
-  },
-  {
     id: 'time-weighted-chart',
     phase: 'control',
     group: 'charts',

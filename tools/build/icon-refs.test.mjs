@@ -17,6 +17,11 @@ test('collectIconRefs finds data-icon attributes in templates', () => {
   assert.deepEqual(refs, [{ name: 'action.add', path: 'c.html', line: 1 }]);
 });
 
+test('collectIconRefs skips a bound :data-icon expression', () => {
+  const refs = collectIconRefs([{ path: 'c.html', text: '<span class="icon" :data-icon="badge.icon"></span>' }]);
+  assert.deepEqual(refs, []);
+});
+
 test('collectIconRefs ignores block comments', () => {
   const text = '/**\n * Beispiel: <span data-icon="name">, icon(\'placeholder\')\n */\nicon(\'action.add\');';
   const refs = collectIconRefs([{ path: 'd.js', text }]);

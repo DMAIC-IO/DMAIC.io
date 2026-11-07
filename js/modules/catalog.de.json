@@ -1,5 +1,10 @@
 {
   "$schema": "../../schemas/catalog-texts.schema.json",
+  "attribute-control-chart": {
+    "name": "Regelkarte (attributiv)",
+    "description": "SPC-Karten für Zähldaten: p, np, c, u",
+    "whenToUse": "Gezählte Daten in einer Regelkarte überwachen: p und np für fehlerhafte Einheiten, c und u für Fehler, mit Regeln nach Nelson auf den gezeichneten Punkten."
+  },
   "dmaic-calendar": {
     "name": "Kalender",
     "description": "Projektkalender: Termine je Phase in Monats- und Wochenansicht",

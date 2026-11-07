@@ -1,5 +1,10 @@
 {
   "$schema": "../../schemas/catalog-texts.schema.json",
+  "attribute-control-chart": {
+    "name": "Control Chart (Attribute)",
+    "description": "SPC charts for count data: p, np, c, u",
+    "whenToUse": "Control-chart counted data: p and np for defectives, c and u for defects, with Nelson-type rules on the plotted points."
+  },
   "dmaic-calendar": {
     "name": "Calendar",
     "description": "Project calendar: appointments per phase in a month and a week view",

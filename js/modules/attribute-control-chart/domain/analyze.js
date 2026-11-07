@@ -17,7 +17,7 @@ function numericColumn(readColumn, ref) {
  * Run the attribute control chart analysis for a model state.
  * @param {{ chartTypeId: string, defectsRef: object|null, sizeRef: object|null, constantN: number, baselineCount: number|null, enabledRules: readonly number[] }} state
  * @param {(ref: object) => any[]} readColumn - raw worksheet column values
- * @returns {{ result: object, ct: object, violations: Array<{index: number}>, n: number[]|number|null, valid: number }|null}
+ * @returns {{ result: object, ct: object, violations: Array<{index: number, ruleId: number}>, n: number[]|number|null, valid: number }|null}
  *   null without a defects column, without a size column (p, u), with fewer
  *   than two usable points or when the computation throws (logged)
  */
@@ -65,7 +65,7 @@ export function analyzeState(state, readColumn) {
   }
 
   const violations = evaluateAttributeRules(
-    result.values, result.cl, result.ucl, result.lcl, result.sigma, state.enabledRules,
+    result.values, result.cl, result.ucl, result.lcl, result.sigma, [...state.enabledRules],
   );
   return { result, ct, violations, n, valid };
 }
