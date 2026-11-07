@@ -30,7 +30,7 @@ const mod = createModule({
   readComputed: ['decision'],
   asyncTasks: {
     compute: asyncTask({
-      blocked() { return this.validation ? this.t(this.validation) : null; },
+      blocked() { return this.validationText || null; },
       async run(_args, { signal, progress }) {
         // Stand vor dem ersten await: der Lauf rechnet mit den Einstellungen seines Starts.
         const snap = JSON.parse(JSON.stringify(this.model.toJSON()));
@@ -50,8 +50,10 @@ const mod = createModule({
           }
         } catch (err) {
           if (err?.name === 'AbortError') throw err;
-          throw new Error(this.t(err?.code ? errorKeyForCode(err.code, snap.statisticId) : 'errUnexpected'));
+          throw new Error(this.t(err?.code ? errorKeyForCode(err.code, snap.statisticId) : 'errUnexpected'), { cause: err });
         }
+        // Ein Abbruch nach dem letzten Teil-Lauf darf kein Ergebnis mehr schreiben.
+        signal.throwIfAborted();
         const summary = JSON.parse(JSON.stringify(summarize(snap, inputs, outcomes, hash, labels)));
         setFields(this.model, { result: summary });
         return summary;

@@ -181,6 +181,23 @@ suite('resampling: Viewmodel im Browser', () => {
     assertTrue(/** @type {HTMLElement} */ (container.querySelector('.rs-error')).hidden, 'Fehlerzeile verborgen');
   });
 
+  test('Abbruch nach dem letzten Teil-Lauf: Ergebnis bleibt unverändert, Status cancelled', async () => {
+    const { vm } = await mount(twoSamples(), { ws1: sheetWith(A, B) });
+    await runToEnd(vm);
+    const before = vm().model.result;
+    vm().model.seed = 9;
+    await flush();
+    const done = vm()._asyncTaskHost.start('compute');
+    await flush();
+    calls.shift().resolve(); await flush();
+    // Letzter Teil-Lauf löst auf und der Abbruch kommt vor der Fortsetzung von run.
+    calls.shift().resolve();
+    vm()._asyncTaskHost.cancel('compute');
+    assertEqual((await done).status, 'cancelled');
+    await flush();
+    assertEqual(vm().model.result, before);
+  });
+
   test('Fehlercode der Engine: Fehlerzeile nennt den Text', async () => {
     const { container, vm } = await mount(twoSamples(), { ws1: sheetWith(A, B) });
     const done = vm()._asyncTaskHost.start('compute');
