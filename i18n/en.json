@@ -961,6 +961,9 @@
       "kurtosis": "Kurtosis",
       "ci": "CI",
       "ciTitle": "{n}% confidence interval"
+    },
+    "widget": {
+      "bindError": "Control is bound incorrectly: {message}"
     }
   },
   "bugReport": {

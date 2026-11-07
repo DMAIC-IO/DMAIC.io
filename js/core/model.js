@@ -804,6 +804,39 @@ export function isSettings(x) {
   return Boolean(x && typeof x === 'object' && SETTINGS_SCHEMAS.has(/** @type {any} */ (x).schema));
 }
 
+// ─── Widgets ────────────────────────────────────────────────
+
+const WIDGET_NAME = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
+const WIDGET = Symbol('widget');
+
+/**
+ * Ein Widget beschreiben: Eingaben (`props`, je eine Feldart; Pflicht außer
+ * `optional: true`), optionale Wertbindung (`value`, eine Feldart — bei
+ * Feldarten mit Parametern gilt die Art als Familie) und `forKind` (das
+ * Widget ist das Bedienelement dieser Feldart für `x-field`).
+ * @param {{ name: string, props?: Record<string, object>, value?: object|null, forKind?: string|null, api?: Record<string, any> }} def
+ * @returns {Readonly<{ name: string, props: Readonly<Record<string, object>>, value: object|null, forKind: string|null, slots: Readonly<object> } & Record<string, any>>}
+ */
+export function defineWidget({ name, props = {}, value = null, forKind = null, api = {} }) {
+  if (typeof name !== 'string' || !WIDGET_NAME.test(name)) throw new Error('defineWidget: name must be kebab-case');
+  for (const [p, s] of Object.entries(props)) {
+    if (!s || typeof s !== 'object' || typeof s.kind !== 'string') throw new Error(`defineWidget(${name}): props.${p} is not a field kind`);
+  }
+  if (forKind !== null && value?.kind !== forKind) throw new Error(`defineWidget(${name}): forKind needs value of that kind`);
+  for (const k of Object.keys(api)) {
+    if (['name', 'props', 'value', 'forKind', 'slots'].includes(k)) throw new Error(`defineWidget(${name}): api.${k} is reserved`);
+  }
+  const w = { ...api, name, props: Object.freeze({ ...props }), value, forKind, slots: Object.freeze({}) };
+  Object.defineProperty(w, WIDGET, { value: true });
+  return Object.freeze(w);
+}
+
+/**
+ * Stammt `x` aus `defineWidget`?
+ * @param {unknown} x @returns {boolean}
+ */
+export const isWidget = (x) => Boolean(x && /** @type {any} */ (x)[WIDGET]);
+
 /**
  * Gespeicherte Einstellungen lesen, ohne zu werfen: je Feld der geprüfte
  * Wert, sonst die Vorgabe. Unbekannte Schlüssel fallen weg.

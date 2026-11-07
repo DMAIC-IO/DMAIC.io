@@ -510,6 +510,16 @@ select.input {
   display: none;
 }
 
+/* Widget-Wurzel: erzeugt keine eigene Box, Layouts und Selektoren bleiben gleich */
+.widget-root {
+  display: contents;
+}
+
+.widget-root--error {
+  display: block;
+  color: var(--color-error);
+}
+
 /* ===== Badges ===== */
 .badge {
   display: inline-flex;

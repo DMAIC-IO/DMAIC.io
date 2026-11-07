@@ -218,3 +218,17 @@ export function createInstanceChartManager(manager, stateManager, instanceId, mo
     isInside: (node) => !!node && (inRoot ? moduleRoot.contains(node) : isAttached(node)),
   });
 }
+
+/**
+ * Fassade, die keine Editor-Änderungen in `chartEdits` speichert — für
+ * Diagramm-Widgets im Modul: mit Wertbindung speichert das Widget selbst im
+ * Model, ohne sie wird nichts gespeichert.
+ * @param {any} manager Instanz-chartManager (oder null)
+ * @returns {any}
+ */
+export function withoutStoredEdits(manager) {
+  if (!manager) return null;
+  const facade = Object.create(manager);
+  facade.create = (container, type, config) => manager.create(container, type, { ...config, persistEdits: false });
+  return facade;
+}

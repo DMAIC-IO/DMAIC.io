@@ -7,7 +7,7 @@ import {
   defineModel, command, text, number, boolean, oneOf, index, idOf, list, record, object,
   defaultOf, checkValue, describeType, schemaOf, fieldSpec, defineState, stateSchemaOf,
   currentOf, confirmOf, commandDefOf, fromAttr, defineForm,
-  defineSettings, isSettings, readSettings,
+  defineSettings, isSettings, readSettings, defineWidget, isWidget,
   columnRef, rewriteColumnRefs, readModel, date, time, phase, activeContext, setCommandObserver, setModelContext, contextOf, checkContext, DEFAULT_CONTEXT,
 } from '../../js/core/model.js';
 
@@ -823,5 +823,26 @@ suite('Vorgaben aus dem Kontext', () => {
 
   test('describeType nennt keine default-Funktion', () => {
     assertTrue(!JSON.stringify(describeType(Stats.schema.fields.alpha)).includes('default'));
+  });
+});
+
+suite('defineWidget', () => {
+  test('Eingaben, Wert, forKind', () => {
+    const w = defineWidget({ name: 'stat-list', props: { rows: list(number()), digits: number({ optional: true }) } });
+    assertEqual(w.name, 'stat-list');
+    assertEqual(w.value, null);
+    assertEqual(w.forKind, null);
+    assertTrue(isWidget(w));
+    assertTrue(Object.isFrozen(w));
+    const p = defineWidget({ name: 'picker', value: columnRef(), forKind: 'columnRef' });
+    assertEqual(p.forKind, 'columnRef');
+  });
+  test('Fehlermeldungen', () => {
+    assertThrows(() => defineWidget({ name: 'StatList' }), /defineWidget: name must be kebab-case/);
+    assertThrows(() => defineWidget({ name: 'x', props: { a: 1 } }), /defineWidget\(x\): props\.a is not a field kind/);
+    assertThrows(() => defineWidget({ name: 'x', forKind: 'columnRef' }), /defineWidget\(x\): forKind needs value of that kind/);
+    assertThrows(() => defineWidget({ name: 'x', value: number(), forKind: 'columnRef' }), /forKind needs value of that kind/);
+    assertThrows(() => defineWidget({ name: 'x', api: { props: 1 } }), /defineWidget\(x\): api\.props is reserved/);
+    assertEqual(defineWidget({ name: 'x', api: { chartType: 'histogram' } }).chartType, 'histogram');
   });
 });

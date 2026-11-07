@@ -12,6 +12,7 @@ import { formatsOf } from './exporter.js';
 import { openDialogSafely } from './command-directives.js';
 import { defineComputedSlots, bindComputed } from './computed.js';
 import { createWorksheetData } from './worksheet-data.js';
+import { withoutStoredEdits } from './chart/instance-chart-manager.js';
 
 /**
  * Was `view(ctx)` bekommt: die Kontextdienste und die Kennungen der Instanz.
@@ -376,6 +377,7 @@ export function createModule(base) {
             // exports/component, von runExport (core/exporter.js). Nicht
             // aufzählbar; `this` ist Alpines Proxy, `this.model` also reaktiv.
             // Den Dialog-Dienst gibt es erst nach Alpine.start() — beim Lesen holen.
+            const storedEditsOff = withoutStoredEdits(context.chartManager ?? null);
             Object.defineProperty(comp, '_ui', {
               enumerable: false,
               configurable: true,
@@ -386,7 +388,10 @@ export function createModule(base) {
                   dialog: context.dialog,
                   i18n: context.i18n,
                   chartManager: context.chartManager ?? null,
-                  services: { eventBus: context.eventBus, stateManager: context.stateManager, i18n: context.i18n },
+                  services: {
+                    eventBus: context.eventBus, stateManager: context.stateManager, i18n: context.i18n,
+                    chartManager: storedEditsOff, instanceId: context.instanceId, moduleId: id,
+                  },
                   moduleId: id,
                   instanceId: context.instanceId,
                   forms,

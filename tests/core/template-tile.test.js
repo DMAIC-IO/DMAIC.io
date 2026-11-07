@@ -129,6 +129,7 @@ suite('createTile: Daten und Diagramm-Manager', () => {
     assertEqual(vm.moduleId, 'demo-tile');
     assertThrows(() => { 'use strict'; vm.moduleId = 'x'; }, /read only|Cannot assign/);
     assertTrue(vm._ui.chartManager === cm);
+    assertTrue(vm._ui.services.chartManager === cm);
     assertTrue(!Object.keys(vm).includes('_ui'));
   });
 

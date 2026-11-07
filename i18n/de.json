@@ -961,6 +961,9 @@
       "kurtosis": "Kurtosis",
       "ci": "KI",
       "ciTitle": "{n}%-Konfidenzintervall"
+    },
+    "widget": {
+      "bindError": "Bedienelement falsch gebunden: {message}"
     }
   },
   "bugReport": {

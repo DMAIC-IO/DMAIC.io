@@ -118,7 +118,13 @@ export function createTile(base) {
       Object.defineProperty(scope, 'moduleId', { value: id, enumerable: true });
       Object.defineProperty(scope, TEMPLATE_TILE, { value: true });
       // Griff für x-chart (core/chart-directive.js): der Kachel-chartManager des Hosts.
-      Object.defineProperty(scope, '_ui', { value: Object.freeze({ chartManager: args.chartManager ?? null }) });
+      Object.defineProperty(scope, '_ui', { value: Object.freeze({
+        chartManager: args.chartManager ?? null,
+        services: Object.freeze({
+          eventBus: null, stateManager: args.stateManager ?? null, i18n, chartManager: args.chartManager ?? null,
+          instanceId: args.instanceId ?? null, moduleId: id,
+        }),
+      }) });
       const data = args.data ?? NO_DATA;
       const members = view ? view({ i18n, theme: args.theme, instanceId: args.instanceId ?? null, moduleId: id, data }) : {};
       return Object.defineProperties(scope, Object.getOwnPropertyDescriptors(members));

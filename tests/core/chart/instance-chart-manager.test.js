@@ -5,7 +5,7 @@
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import { reactive } from '@vue/reactivity';
-import { createInstanceChartManager, createEditBoundChartManager, LABEL_EDIT_KEYS, TILE_EDIT_KEYS } from '../../../js/core/chart/instance-chart-manager.js';
+import { createInstanceChartManager, createEditBoundChartManager, withoutStoredEdits, LABEL_EDIT_KEYS, TILE_EDIT_KEYS } from '../../../js/core/chart/instance-chart-manager.js';
 
 function fakeChart(config) {
   const root = { parentNode: {} };
@@ -441,5 +441,17 @@ suite('EditBoundChartManager — keys as a function', () => {
     c.config.bgColor = 'red';
     c._onEditorChange(c);
     assertDeepEqual(s.writes, []);
+  });
+});
+
+suite('withoutStoredEdits', () => {
+  test('create reicht persistEdits:false durch, null bleibt null', async () => {
+    const calls = [];
+    const fake = { create: async (c, t, cfg) => { calls.push([t, cfg]); return 'chart'; }, other: () => 'o' };
+    const f = withoutStoredEdits(fake);
+    assertEqual(await f.create({}, 'histogram', { title: 'A' }), 'chart');
+    assertDeepEqual(calls[0], ['histogram', { title: 'A', persistEdits: false }]);
+    assertEqual(f.other(), 'o');
+    assertEqual(withoutStoredEdits(null), null);
   });
 });

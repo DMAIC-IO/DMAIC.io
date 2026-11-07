@@ -147,6 +147,7 @@ const SKIP = new Set([
   'core/template-module-gestures.test.js',
   'core/template-module.test.js',
   'core/value-channel.test.js',
+  'core/widget-directive.test.js',
   'core/worksheet-data.test.js',
   'core/worksheet-pool.test.js',
   'core/workspace-detached.test.js',
