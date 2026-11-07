@@ -1,0 +1,244 @@
+<div class="resampling dmike-split" x-data="resampling">
+
+  <!-- data-help-key="" an den Modus-Knöpfen und Auswahl-Hosts ist gewollt: die Hilfe hängt an der Gruppe bzw. am Feldlabel. -->
+  <!-- ─── Input (left) ─────────────────────────────────────────── -->
+  <div class="resampling__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionMode')"></div>
+    <div class="btn-group" data-help-key="modules.resampling.actions.setMode.help">
+      <template x-for="m in modeButtons" :key="m.value">
+        <button type="button" class="btn--segment" :class="m.cls" :data-ref="m.ref" :data-mode="m.value"
+          :aria-pressed="m.pressed" data-help-key="" x-command="setMode" :data-arg-mode="m.value" x-text="m.label"></button>
+      </template>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+    <template x-if="isK">
+      <div class="field-group">
+        <label data-help-key="modules.resampling.fields.colRefsK.help" x-text="t('kColumns')"></label>
+        <div class="resampling__picker" data-ref="picker-k-wrap" data-help-key="" x-field="model.colRefsK"></div>
+      </div>
+    </template>
+    <template x-if="notK">
+      <div class="resampling__contents">
+        <div class="field-group">
+          <label data-help-key="modules.resampling.fields.colRef1.help" x-text="sample1Label"></label>
+          <div class="resampling__picker" data-ref="picker1-wrap" data-help-key="" x-field="model.colRef1"></div>
+        </div>
+        <template x-if="hasTwo">
+          <div class="field-group">
+            <label data-help-key="modules.resampling.fields.colRef2.help" x-text="sample2Label"></label>
+            <div class="resampling__picker" data-ref="picker2-wrap" data-help-key="" x-field="model.colRef2"></div>
+          </div>
+        </template>
+      </div>
+    </template>
+
+    <div class="dmike-split__section-title" x-text="t('sectionStatistic')"></div>
+    <div class="field-group">
+      <label data-help-key="modules.resampling.fields.statisticId.help" x-text="t('statistic')"></label>
+      <select class="field" data-ref="statistic" x-field="model.statisticId">
+        <template x-for="o in statisticOptions" :key="o.value">
+          <option :value="o.value" :selected="o.selected" x-text="o.label"></option>
+        </template>
+      </select>
+    </div>
+    <div class="field-grid field-grid--2" x-show="showTrim">
+      <div class="field-group">
+        <label data-help-key="modules.resampling.fields.statParams.trim.help" x-text="t('trim')"></label>
+        <input type="number" class="field field--num" data-ref="trim" step="0.01" x-field="model.statParams.trim">
+      </div>
+    </div>
+    <div class="field-grid field-grid--2" x-show="showQuantileP">
+      <div class="field-group">
+        <label data-help-key="modules.resampling.fields.statParams.p.help" x-text="t('quantileP')"></label>
+        <input type="number" class="field field--num" data-ref="quantile-p" step="0.01" x-field="model.statParams.p">
+      </div>
+    </div>
+    <div class="field-grid field-grid--2" x-show="showLimits">
+      <div class="field-group">
+        <label data-help-key="modules.resampling.fields.statParams.lsl.help" x-text="t('lsl')"></label>
+        <input type="text" class="field field--num" data-ref="lsl" x-model="model.statParams.lsl">
+      </div>
+      <div class="field-group">
+        <label data-help-key="modules.resampling.fields.statParams.usl.help" x-text="t('usl')"></label>
+        <input type="text" class="field field--num" data-ref="usl" x-model="model.statParams.usl">
+      </div>
+    </div>
+    <div class="field-group" x-show="showContrast">
+      <label data-help-key="modules.resampling.fields.contrast.help" x-text="t('contrast')"></label>
+      <select class="field" data-ref="contrast" x-field="model.contrast">
+        <template x-for="o in contrastOptions" :key="o.value">
+          <option :value="o.value" :selected="o.selected" x-text="o.label"></option>
+        </template>
+      </select>
+    </div>
+    <div class="field-group" x-show="showDirection">
+      <label data-help-key="modules.resampling.fields.direction.help" x-text="t('direction')"></label>
+      <select class="field" data-ref="direction" x-field="model.direction">
+        <template x-for="o in directionOptions" :key="o.value">
+          <option :value="o.value" :selected="o.selected" x-text="o.label"></option>
+        </template>
+      </select>
+    </div>
+    <div class="field-grid field-grid--2" x-show="showTarget">
+      <div class="field-group">
+        <label data-help-key="modules.resampling.fields.target.help" x-text="t('target')"></label>
+        <input type="text" class="field field--num" data-ref="target" :placeholder="t('targetPh')" x-model="model.target">
+      </div>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionSettings')"></div>
+    <div class="field-grid field-grid--2">
+      <div class="field-group">
+        <label data-help-key="modules.resampling.fields.B.help" x-text="t('B')"></label>
+        <input type="number" class="field field--num" data-ref="b" step="1000" x-field="model.B">
+      </div>
+      <div class="field-group">
+        <label data-help-key="modules.resampling.fields.confidence.help" x-text="t('confidence')"></label>
+        <input type="number" class="field field--num" data-ref="confidence" step="0.01" x-field="model.confidence">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <label data-help-key="modules.resampling.fields.seed.help" x-text="t('seed')"></label>
+        <input type="number" class="field field--num" data-ref="seed" x-field="model.seed">
+      </div>
+      <button type="button" class="btn resampling__seed-roll" data-ref="seed-roll" x-command="rollSeed" :title="t('rollSeed')" :aria-label="t('rollSeed')">
+        <span class="icon" data-icon="action.roll-seed" aria-hidden="true"></span>
+      </button>
+    </div>
+    <div class="field-group">
+      <label data-help-key="modules.resampling.fields.ciMethod.help" x-text="t('ciMethod')"></label>
+      <select class="field" data-ref="ci-method" x-field="model.ciMethod">
+        <template x-for="o in ciMethodOptions" :key="o.value">
+          <option :value="o.value" :selected="o.selected" x-text="o.label"></option>
+        </template>
+      </select>
+    </div>
+
+    <p class="resampling__validation" data-ref="validation" data-help-key="modules.resampling.fields.validation.help" x-show="showValidation" x-text="validationText"></p>
+
+    <div class="resampling__run" x-async-task="compute">
+      <button type="button" class="dmike-btn-run" data-ref="compute" x-async-task-start>
+        <span class="icon icon--sm" data-icon="action.run" aria-hidden="true"></span>
+        <span x-text="t('compute')"></span>
+      </button>
+      <div class="resampling__running">
+        <progress class="resampling__progress" data-ref="progress" x-async-task-progress></progress>
+        <button type="button" class="btn" data-ref="cancel" x-async-task-cancel x-text="t('cancel')"></button>
+      </div>
+      <p class="field-error" data-ref="error" x-async-task-error></p>
+    </div>
+  </div>
+
+  <!-- ─── Output (right) ───────────────────────────────────────── -->
+  <div class="resampling__output dmike-split__output" data-ref="output">
+
+    <div class="resampling__placeholder" data-ref="placeholder" x-show="noResult">
+      <span class="icon icon--lg icon--empty-state" data-icon="status.no-data" aria-hidden="true"></span>
+      <p x-text="t('placeholderText')"></p>
+    </div>
+
+    <p class="resampling__stale" data-ref="stale" data-help-key="modules.resampling.fields.stale.help" x-show="showStale" x-text="t('stale')"></p>
+
+    <template x-if="hasResult">
+      <div class="resampling__contents">
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionResult')"></span></div>
+        <p class="resampling__statement" data-ref="result-statement" x-show="hasStatement" x-text="statementText"></p>
+        <table class="dmike-table dmike-table--head-mono resampling__result-table" data-ref="result-table">
+          <thead>
+            <tr>
+              <template x-if="notK">
+                <th><span data-help-key="modules.resampling.types.Boot.estimate" x-text="t('estimate')"></span></th>
+              </template>
+              <template x-if="isK">
+                <th><span data-help-key="modules.resampling.types.KResult.estimate" x-text="t('estimate')"></span></th>
+              </template>
+              <template x-if="resultView.hasBoot">
+                <th><span data-help-key="modules.resampling.types.Boot.se" x-text="t('se')"></span></th>
+              </template>
+              <template x-if="resultView.hasBoot">
+                <th><span data-help-key="modules.resampling.types.Boot.bias" x-text="t('bias')"></span></th>
+              </template>
+              <template x-if="resultView.hasBoot">
+                <th><span data-help-key="modules.resampling.types.Boot.ci" x-text="intervalHeader"></span></th>
+              </template>
+              <template x-if="showDecision">
+                <th><span data-help-key="modules.resampling.fields.decision.help" x-text="t('decision')"></span></th>
+              </template>
+              <template x-if="resultView.hasTest">
+                <th><span data-help-key="modules.resampling.types.Perm.observed" x-text="t('observedT')"></span></th>
+              </template>
+              <template x-if="resultView.hasTest">
+                <th><span data-help-key="modules.resampling.types.Perm.pValue" x-text="t('pValue')"></span></th>
+              </template>
+              <template x-if="resultView.hasTest">
+                <th><span data-help-key="modules.resampling.types.Perm.permutations" x-text="t('permutations')"></span></th>
+              </template>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td data-ref="result-estimate" x-text="resultView.estimate"></td>
+              <template x-if="resultView.hasBoot">
+                <td data-ref="result-se" x-text="resultView.se"></td>
+              </template>
+              <template x-if="resultView.hasBoot">
+                <td data-ref="result-bias" x-text="resultView.bias"></td>
+              </template>
+              <template x-if="resultView.hasBoot">
+                <td data-ref="result-interval" x-text="resultView.interval"></td>
+              </template>
+              <template x-if="showDecision">
+                <td data-ref="result-decision" x-text="decisionText"></td>
+              </template>
+              <template x-if="resultView.hasTest">
+                <td data-ref="result-observed" x-text="resultView.test.observed"></td>
+              </template>
+              <template x-if="resultView.hasTest">
+                <td data-ref="result-pvalue" x-text="resultView.test.pValue"></td>
+              </template>
+              <template x-if="resultView.hasTest">
+                <td data-ref="result-method" x-text="methodText"></td>
+              </template>
+            </tr>
+          </tbody>
+        </table>
+        <p class="resampling__note" data-ref="result-bca-fallback" data-help-key="modules.resampling.types.Intervals.bcaFallback" x-show="resultView.bcaFallback" x-text="t('bcaFallback')"></p>
+      </div>
+    </template>
+
+    <div class="resampling__chart-block" x-show="hasBootChart">
+      <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.resampling.types.Boot.bins" x-text="t('sectionBootChart')"></span></div>
+      <div class="resampling__chart" data-ref="chart-boot" x-widget="histogram-chart" x-widget-config="bootChart" x-widget-value="model.bootChartEdits"></div>
+    </div>
+    <div class="resampling__chart-block" x-show="hasPermChart">
+      <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.resampling.types.Perm.bins" x-text="t('sectionPermChart')"></span></div>
+      <div class="resampling__chart" data-ref="chart-perm" x-widget="histogram-chart" x-widget-config="permChart" x-widget-value="model.permChartEdits"></div>
+    </div>
+
+    <template x-if="isK">
+      <div class="resampling__contents">
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionGroups')"></span></div>
+        <table class="resampling__table" data-ref="groups-table">
+          <thead><tr><th><span data-help-key="modules.resampling.types.Result.labels" x-text="t('group')"></span></th><th><span data-help-key="modules.resampling.types.Result.n" x-text="t('common.sym.n')"></span></th><th><span data-help-key="modules.resampling.types.KGroup.estimate" x-text="t('estimate')"></span></th><th><span data-help-key="modules.resampling.types.KGroup.ci" x-text="t('interval')"></span></th></tr></thead>
+          <tbody>
+            <template x-for="(g, idx) in resultView.groups" :key="idx">
+              <tr><td x-text="g.label"></td><td x-text="g.n"></td><td x-text="g.estimate"></td><td x-text="g.interval"></td></tr>
+            </template>
+          </tbody>
+        </table>
+        <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('sectionPosthoc')"></span></div>
+        <table class="resampling__table" data-ref="posthoc-table">
+          <thead><tr><th><span data-help-key="modules.resampling.types.PostHoc.i" x-text="t('pair')"></span></th><th><span data-help-key="modules.resampling.types.PostHoc.contrast" x-text="t('estimate')"></span></th><th><span data-help-key="modules.resampling.types.PostHoc.ci" x-text="t('interval')"></span></th><th><span data-help-key="modules.resampling.types.PostHoc.pRaw" x-text="t('pRaw')"></span></th><th><span data-help-key="modules.resampling.types.PostHoc.pHolm" x-text="t('pHolm')"></span></th><th><span data-help-key="modules.resampling.types.PostHoc.exact" x-text="t('pMethod')"></span></th></tr></thead>
+          <tbody>
+            <template x-for="(h, idx) in resultView.posthoc" :key="idx">
+              <tr><td x-text="h.pair"></td><td x-text="h.contrast"></td><td x-text="h.interval"></td><td x-text="h.pRaw"></td><td x-text="h.pHolm"></td><td x-text="t(h.methodKey)"></td></tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </template>
+  </div>
+</div>

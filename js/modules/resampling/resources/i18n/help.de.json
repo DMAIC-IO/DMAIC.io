@@ -1,0 +1,107 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Resampling beantwortet statistische Fragen, indem es die vorhandenen Daten selbst immer wieder neu zieht oder neu zuordnet — statt eine Verteilungsannahme (etwa Normalverteilung) vorauszusetzen. Das Modul bietet zwei Verfahren: den {{term:bootstrap|Bootstrap}} für Konfidenzintervalle beliebiger Kenngrößen und den {{term:permutationstest|Permutationstest}} für Vergleiche von Gruppen {{ref:efron-tibshirani-1993}}."
+        },
+        {
+          "type": "definition",
+          "term": "Wann Resampling?",
+          "content": "Wenn für eine Kenngröße keine geschlossene Intervallformel existiert (z. B. {{term:median|Median}}, getrimmter Mittelwert, {{term:ppk|Ppk}}), wenn die Daten deutlich schief sind oder wenn wenige Werte vorliegen und Normalverteilungsannahmen fraglich sind."
+        },
+        {
+          "type": "list",
+          "items": [
+            "1 Stichprobe: Konfidenzintervall der Kenngröße, optional Entscheidung gegen einen Sollwert.",
+            "2 Stichproben: Intervall für Differenz oder Verhältnis, dazu ein Permutationstest.",
+            "Gepaart: Intervall und Vorzeichen-Permutationstest der Differenzen (Vorher/Nachher).",
+            "k Stichproben: globaler Permutationstest, Intervall je Gruppe und Paarvergleiche mit Holm-Korrektur."
+          ]
+        },
+        {
+          "type": "definition",
+          "term": "Kernaussage lesen",
+          "content": "Über der Ergebnistabelle fasst ein Absatz das Ergebnis in Worten zusammen: zuerst das Urteil — signifikant oder nicht —, dann die Größe des Effekts samt Konfidenzintervall. Als {{term:signifikanzniveau|Signifikanzniveau}} gilt α = 1 − Konfidenzniveau (bei 95 % also 0,05); signifikant heißt {{term:p-wert|p-Wert}} < α. Nicht signifikant bedeutet nicht „gleich“: Ein breites Intervall um 0 heißt, dass die Daten einen Unterschied weder belegen noch ausschließen."
+        },
+        {
+          "type": "paragraph",
+          "content": "Gerechnet wird nur auf Knopfdruck. Ändern sich Daten oder Einstellungen, markiert das Modul das Ergebnis als veraltet, statt sofort neu zu rechnen. Mit demselben Startwert (Seed) liefert jede Berechnung exakt dasselbe Ergebnis."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Methodik",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Bootstrap",
+          "content": "Aus den n Werten werden B-mal n Werte mit Zurücklegen gezogen: Nach jedem Zug wird der gezogene Wert wieder in die Stichprobe zurückgelegt, kann also erneut gezogen werden. Eine Bootstrap-Stichprobe enthält deshalb manche Werte mehrfach und andere gar nicht — etwa aus 1, 2, 3, 4, 5 wird 2, 2, 4, 5, 5. Ohne Zurücklegen ergäbe sich bei n Zügen immer nur eine Umordnung derselben Werte und damit dieselbe Kenngröße. Für jede Bootstrap-Stichprobe wird die Kenngröße berechnet. Die Streuung dieser Replikate schätzt den Standardfehler, ihr Mittel minus θ̂ die {{term:bias|Verzerrung}}. Bei zwei Stichproben wird jede Gruppe für sich gezogen, bei gepaarten Daten die Differenzen {{ref:davison-hinkley-1997}}."
+        },
+        {
+          "type": "definition",
+          "term": "Perzentil- und BCa-Intervall",
+          "content": "Das Perzentil-Intervall nimmt die α/2- und 1−α/2-Quantile der Replikate. Das {{term:bca-intervall|BCa-Intervall}} (Standard) korrigiert diese Quantile um Verzerrung (z₀) und Beschleunigung (a, aus dem Jackknife) und hält das Konfidenzniveau bei schiefen Kenngrößen deutlich besser ein {{ref:efron-tibshirani-1993}}. Lässt sich BCa nicht bestimmen — etwa wenn alle Replikate gleich sind —, zeigt das Modul das Perzentil-Intervall und weist darauf hin."
+        },
+        {
+          "type": "definition",
+          "term": "Permutationstest",
+          "content": "Unter der {{term:nullhypothese|Nullhypothese}} sind die Gruppenzugehörigkeiten austauschbar. Der Test ordnet die Werte B-mal zufällig neu den Gruppen zu (gepaart: zufällige Vorzeichen der Differenzen) und zählt, wie oft die {{term:teststatistik|Teststatistik}} mindestens so extrem ist wie beobachtet. {{term:p-wert|p-Wert}} = (1 + Anzahl) / (B + 1) (Monte Carlo). Gibt es höchstens 20 000 verschiedene Zuordnungen, werden alle N durchgezählt, und der p-Wert ist exakt: p = Anzahl / N, wobei die beobachtete Zuordnung mitzählt {{ref:good-2005}}."
+        },
+        {
+          "type": "definition",
+          "term": "k Stichproben",
+          "content": "Globale Teststatistik T = Σ nᵢ (θ̂ᵢ − θ̂)², θ̂ aus allen Daten zusammen; beim Mittelwert ist das die Quadratsumme zwischen den Gruppen der {{term:anova|ANOVA}}. Danach folgen alle Paarvergleiche als Zwei-Stichproben-Permutationstests; ihre p-Werte werden nach Holm korrigiert {{ref:good-2005}}."
+        },
+        {
+          "type": "definition",
+          "term": "Ppk mit Konfidenzintervall",
+          "content": "Für {{term:ppk|Ppk}} ist das Bootstrap-Intervall der übliche Weg zu einer Unsicherheitsangabe ohne Normalverteilungsformel. Es braucht mindestens 10 Werte je Stichprobe und mindestens eine Toleranzgrenze."
+        },
+        {
+          "type": "definition",
+          "term": "Warum kein Cpk?",
+          "content": "Für Cpk braucht es σ_within, und das setzt die zeitliche Reihenfolge oder rationale Untergruppen voraus. Das Resampling mit Zurücklegen (i.i.d.) zerstört diese Reihenfolge; ein „Cpk-Intervall“ wäre nur ein schlechteres Ppk-Intervall. Das Modul bietet deshalb ausschließlich Ppk an."
+        },
+        {
+          "type": "definition",
+          "term": "Wahl von B",
+          "content": "Standard sind etwa 10 000. Perzentil- und BCa-Ränder brauchen mindestens 2 000. Der Monte-Carlo-Standardfehler eines p-Werts beträgt ≈ √(p(1−p)/B). Ändern sich die Ergebnisse zwischen Seeds, B erhöhen."
+        },
+        {
+          "type": "definition",
+          "term": "Zweiseitiger Permutationstest",
+          "content": "Der zweiseitige Test vergleicht |T|. Bei Kenngrößen, die unter H₀ nicht um null zentriert sind (etwa Differenzen von Median oder Varianz bei ungleichem n), ist der zweiseitige p-Wert nur näherungsweise gültig."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolpersteine",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Zu wenige Daten",
+          "content": "Der Bootstrap kann nur zeigen, was in den Daten steckt. Bei sehr kleinen Stichproben (unter etwa 10 Werten) sind Intervalle zu schmal, besonders für Median, Quantile und Ppk — das Konfidenzniveau wird dann nicht eingehalten. Bei der Standardabweichung unterschreiten die Intervalle bei schiefen Daten die Überdeckung selbst bei n = 20 deutlich: BCa erreicht bei lognormalen Daten nur 0,58, bei exponentialverteilten 0,77 (Simulationsstudie, n = 20, Konfidenzniveau 95 %). Für Varianz und Variationskoeffizient ist ähnliches Verhalten zu erwarten."
+        },
+        {
+          "type": "definition",
+          "term": "Abhängige Werte",
+          "content": "Bootstrap und Permutationstest setzen unabhängige Werte voraus. Zeitlich korrelierte Prozessdaten (Drift, Autokorrelation) liefern zu enge Intervalle. Vorher/Nachher-Messungen an denselben Teilen gehören in den Modus „Gepaart“."
+        },
+        {
+          "type": "definition",
+          "term": "Seed als Stellschraube",
+          "content": "Einen Seed so lange zu wechseln, bis das Ergebnis gefällt, ist eine Form von p-Hacking. Seed vor der Analyse festlegen; schwankt das Ergebnis zwischen Seeds spürbar, B erhöhen."
+        },
+        {
+          "type": "definition",
+          "term": "Permutationstest prüft Austauschbarkeit",
+          "content": "Ein kleiner p-Wert heißt: Die Gruppen sind nicht austauschbar. Unterscheiden sich die Gruppen stark in der Streuung, kann das auch bei gleichem Median zu kleinen p-Werten führen. Das Intervall des Kontrasts zeigt, wie groß der Unterschied der gewählten Kenngröße ist."
+        }
+      ]
+    }
+  }
+}

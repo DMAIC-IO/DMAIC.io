@@ -1,0 +1,107 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Overview",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Resampling answers statistical questions by redrawing or reassigning the observed data over and over — instead of assuming a distribution such as the normal. The module offers two methods: the {{term:bootstrap|bootstrap}} for confidence intervals of any statistic and the {{term:permutationstest|permutation test}} for comparing groups {{ref:efron-tibshirani-1993}}."
+        },
+        {
+          "type": "definition",
+          "term": "When to resample?",
+          "content": "When a statistic has no closed-form interval (e.g. {{term:median|median}}, trimmed mean, {{term:ppk|Ppk}}), when the data are clearly skewed, or when there are few values and normality assumptions are doubtful."
+        },
+        {
+          "type": "list",
+          "items": [
+            "1 sample: confidence interval of the statistic, optional decision against a target value.",
+            "2 samples: interval for the difference or ratio, plus a permutation test.",
+            "Paired: interval and sign-flip permutation test of the differences (before/after).",
+            "k samples: global permutation test, an interval per group and pairwise comparisons with Holm correction."
+          ]
+        },
+        {
+          "type": "definition",
+          "term": "Reading the key statement",
+          "content": "Above the result table a paragraph sums up the result in words: first the verdict — significant or not —, then the size of the effect with its confidence interval. The {{term:signifikanzniveau|significance level}} is α = 1 − confidence level (0.05 at 95 %); significant means {{term:p-wert|p-value}} < α. Not significant does not mean \"equal\": a wide interval around 0 means the data neither prove nor rule out a difference."
+        },
+        {
+          "type": "paragraph",
+          "content": "The module computes only when you click the button. When data or settings change it marks the result as outdated instead of recomputing right away. The same seed always reproduces exactly the same result."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Methodology",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Bootstrap",
+          "content": "B times, n values are drawn with replacement from the n observations: after each draw the value is put back into the sample, so it can be drawn again. A bootstrap sample therefore contains some values several times and others not at all — from 1, 2, 3, 4, 5 you might get 2, 2, 4, 5, 5. Without replacement, n draws would only reorder the same values and always give the same statistic. The statistic is computed for each bootstrap sample. The spread of these replicates estimates the standard error, their mean minus θ̂ the {{term:bias|bias}}. With two samples each group is resampled on its own, with paired data the differences {{ref:davison-hinkley-1997}}."
+        },
+        {
+          "type": "definition",
+          "term": "Percentile and BCa interval",
+          "content": "The percentile interval takes the α/2 and 1−α/2 quantiles of the replicates. The {{term:bca-intervall|BCa interval}} (default) adjusts these quantiles for bias (z₀) and acceleration (a, from the jackknife) and keeps the confidence level much better for skewed statistics {{ref:efron-tibshirani-1993}}. When BCa cannot be determined — for example when all replicates are equal — the module shows the percentile interval and says so."
+        },
+        {
+          "type": "definition",
+          "term": "Permutation test",
+          "content": "Under the {{term:nullhypothese|null hypothesis}} group labels are exchangeable. The test reassigns the values to the groups B times at random (paired: random signs of the differences) and counts how often the {{term:teststatistik|test statistic}} is at least as extreme as observed. {{term:p-wert|p-value}} = (1 + count) / (B + 1) (Monte Carlo). With at most 20,000 distinct assignments all N of them are enumerated, and the p-value is exact: p = count / N, the observed assignment included {{ref:good-2005}}."
+        },
+        {
+          "type": "definition",
+          "term": "k samples",
+          "content": "Global test statistic T = Σ nᵢ (θ̂ᵢ − θ̂)², θ̂ from all data pooled; for the mean this is the between-groups sum of squares of the {{term:anova|ANOVA}}. All pairwise comparisons follow as two-sample permutation tests, their p-values Holm-adjusted {{ref:good-2005}}."
+        },
+        {
+          "type": "definition",
+          "term": "Ppk with a confidence interval",
+          "content": "For {{term:ppk|Ppk}} the bootstrap interval is the usual way to state uncertainty without a normal-theory formula. It needs at least 10 values per sample and at least one spec limit."
+        },
+        {
+          "type": "definition",
+          "term": "Why no Cpk?",
+          "content": "Cpk needs σ_within, which requires the time order or rational subgroups. i.i.d. resampling destroys that order, so a \"Cpk interval\" would only be a worse Ppk interval. The module therefore offers Ppk only."
+        },
+        {
+          "type": "definition",
+          "term": "Choosing B",
+          "content": "The default is about 10,000. Percentile and BCa tails need at least 2,000. The Monte Carlo standard error of a p-value is ≈ √(p(1−p)/B). If results move between seeds, increase B."
+        },
+        {
+          "type": "definition",
+          "term": "Two-sided permutation test",
+          "content": "The two-sided test compares |T|. For statistics that are not centred at zero under H₀ (e.g. median or variance differences with unequal n), the two-sided p-value is only approximate."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Too little data",
+          "content": "The bootstrap can only show what is in the data. With very small samples (below about 10 values) intervals are too narrow, especially for the median, quantiles and Ppk — the confidence level is then not kept. For the standard deviation on skewed data the intervals undercover even at n = 20: BCa reaches only 0.58 for lognormal and 0.77 for exponential data (simulation study, n = 20, 95 % level). Similar behaviour is expected for variance and CV."
+        },
+        {
+          "type": "definition",
+          "term": "Dependent values",
+          "content": "Bootstrap and permutation test assume independent values. Time-correlated process data (drift, autocorrelation) give intervals that are too narrow. Before/after measurements on the same parts belong in the \"Paired\" mode."
+        },
+        {
+          "type": "definition",
+          "term": "The seed as a tuning knob",
+          "content": "Changing the seed until the result looks right is a form of p-hacking. Fix the seed before the analysis; if results move noticeably between seeds, increase B."
+        },
+        {
+          "type": "definition",
+          "term": "A permutation test checks exchangeability",
+          "content": "A small p-value means the groups are not exchangeable. Groups that differ strongly in spread can yield small p-values even with equal medians. The interval of the contrast shows how large the difference in the chosen statistic is."
+        }
+      ]
+    }
+  }
+}
