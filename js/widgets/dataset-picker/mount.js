@@ -32,7 +32,7 @@ export function mount(root, { value, services, effect }) {
   }));
   const picker = new DatasetPicker(root, services, {
     slots, multi: spec.multi, colors: spec.colors ? [...spec.colors] : CHART_COLORS, addHelpKey: `${base}.help`,
-    onChange: (rows) => { if (!value.set(rows)) picker.syncValue(value.get()); },
+    onChange: (rows) => { if (!value.set(rows)) picker.value = value.get(); },
   });
   effect(() => picker.syncValue(value.get()));
   return { destroy: () => picker.destroy() };

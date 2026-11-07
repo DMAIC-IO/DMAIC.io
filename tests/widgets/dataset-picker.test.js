@@ -117,4 +117,18 @@ suite('Widget dataset-picker', () => {
     assertTrue(marks[1].getAttribute('style').includes('#00ff00') || marks[1].style.background.includes('0, 255, 0'));
     host.remove();
   });
+  test('abgelehnte Eingabe: Picker zeigt trotz Fokus wieder den Wert des Models', async () => {
+    const { host, model } = await mountPicker(Multi);
+    const m = model();
+    const proto = Object.getPrototypeOf(m);
+    const desc = Object.getOwnPropertyDescriptor(proto, 'datasets');
+    Object.defineProperty(m, 'datasets', { configurable: true, get: () => desc.get.call(m), set() { throw new Error('abgelehnt'); } });
+    const sel = host.querySelector('select[data-slot="valueRef"]');
+    sel.focus();
+    choose(sel, 'b');
+    await flush();
+    const now = host.querySelector('select[data-slot="valueRef"]');
+    assertEqual(now.value, '', 'abgelehnter Wert wird nicht angezeigt');
+    host.remove();
+  });
 });
