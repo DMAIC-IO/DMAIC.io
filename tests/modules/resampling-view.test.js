@@ -206,4 +206,27 @@ suite('resampling: Viewmodel im Browser', () => {
     assertEqual(r.asyncTasks.compute.running, false);
     assertEqual(r.asyncTasks.compute.error, null);
   });
+  test('view: nie null, trägt jeden Schlüssel, den die Vorlage liest', async () => {
+    const { vm } = await mount(null);
+    assertEqual(vm().resultView, null);
+    const html = await (await fetch(new URL('../../js/modules/resampling/resources/view.html', import.meta.url))).text();
+    const keys = [...new Set([...html.matchAll(/\bview\.(\w+)/g)].map((m) => m[1]))];
+    assertTrue(keys.length >= 8, 'Vorlage liest Schlüssel von view');
+    assertTrue(vm().view !== null && vm().view !== undefined, 'view vorhanden');
+    for (const k of keys) assertTrue(k in vm().view, `view.${k} vorhanden`);
+    assertEqual(vm().view.hasBoot, false);
+    assertEqual(vm().view.groups.length, 0);
+  });
+
+  test('view: nach geleertem Ergebnis bleibt die Ansicht lesbar, Ergebnisblock weg', async () => {
+    const { vm } = await mount(twoSamples(), { ws1: sheetWith(A, B) });
+    await runToEnd(vm);
+    assertEqual(vm().hasResult, true);
+    assertEqual(vm().view.hasBoot, true);
+    vm().model.result = null;
+    await flush();
+    assertEqual(vm().hasResult, false);
+    assertEqual(vm().view.hasBoot, false);
+    assertEqual(vm().view.test, null);
+  });
 });
