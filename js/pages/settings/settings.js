@@ -335,24 +335,28 @@ export default createPage({
         this.confidence = v;
         this.alpha = linkedAlpha(v);
         stateManager.set('settings.confidenceLevel', v);
+        eventBus.emit('settings:changed', { key: 'confidenceLevel', value: v });
       },
       onAlpha() {
         const v = clampRisk(this.alpha, 5);
         const conf = Number((100 - v).toFixed(2));
         this.confidence = conf;
         stateManager.set('settings.confidenceLevel', conf);
+        eventBus.emit('settings:changed', { key: 'confidenceLevel', value: conf });
       },
       onPower() {
         const v = clampConfPower(this.power, 80);
         this.power = v;
         this.beta = linkedBeta(v);
         stateManager.set('settings.power', v);
+        eventBus.emit('settings:changed', { key: 'power', value: v });
       },
       onBeta() {
         const v = clampRisk(this.beta, 20);
         const power = Number((100 - v).toFixed(2));
         this.power = power;
         stateManager.set('settings.power', power);
+        eventBus.emit('settings:changed', { key: 'power', value: power });
       },
       resetStats() {
         this.confidence = STAT_DEFAULTS.confidenceLevel;
@@ -361,6 +365,8 @@ export default createPage({
         this.beta = linkedBeta(this.power);
         stateManager.set('settings.confidenceLevel', STAT_DEFAULTS.confidenceLevel);
         stateManager.set('settings.power', STAT_DEFAULTS.power);
+        eventBus.emit('settings:changed', { key: 'confidenceLevel', value: STAT_DEFAULTS.confidenceLevel });
+        eventBus.emit('settings:changed', { key: 'power', value: STAT_DEFAULTS.power });
       },
 
       // ── shortcuts list (state machine; capture is imperative) ──

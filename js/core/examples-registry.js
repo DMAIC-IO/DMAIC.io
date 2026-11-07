@@ -18,7 +18,7 @@
 
 import { uid } from './uid.js';
 import { withoutSchema } from './json-file.js';
-import { rewriteColumnRefs } from './model.js';
+import { rewriteColumnRefs, activeContext } from './model.js';
 import { loadModel } from './initial-model.js';
 import { EXAMPLES, EXAMPLE_REFS } from '../modules/catalog.generated.js';
 
@@ -518,7 +518,7 @@ function rewritePlaceholder(Model, rewriteRefs, data, from, to) {
  * Reparatur-Rückfall (`loadModel`), statt an einem kaputten Stand zu werfen.
  * @param {any} Model @param {object|null|undefined} json @returns {any}
  */
-const currentModelOf = (Model, json) => (json ? loadModel(Model, json) : null);
+const currentModelOf = (Model, json, stateManager) => (json ? loadModel(Model, json, Model.schema ? activeContext(stateManager) : undefined) : null);
 
 /**
  * Shared example-load flow for modules whose example data is backed by a
@@ -572,7 +572,7 @@ export async function loadExampleViaWorksheet(module, payload, options) {
   const ctx = module._context;
   const t = (key) => ctx.i18n.t(key);
 
-  const currentModel = currentModelOf(State, module.getState());
+  const currentModel = currentModelOf(State, module.getState(), module._context?.stateManager);
   if (!confirmed && currentModel?.hasContent?.() && ctx?.dialog) {
     const ok = await ctx.dialog.confirm({ message: t('moduleHelp.confirmOverwrite'), danger: true });
     if (!ok) return;
@@ -687,7 +687,7 @@ export async function loadWorksheetExample(mod, payload, { Model, rewriteRefs, c
   const ctx = mod._context;
   const t = (key) => ctx.i18n.t(key);
 
-  const currentModel = currentModelOf(Model, mod.getState());
+  const currentModel = currentModelOf(Model, mod.getState(), mod._context?.stateManager);
   if (!confirmed && currentModel?.hasContent?.() && ctx?.dialog) {
     const ok = await ctx.dialog.confirm({ message: t('moduleHelp.confirmOverwrite'), danger: true });
     if (!ok) return;

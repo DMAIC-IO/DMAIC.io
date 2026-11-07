@@ -1,6 +1,6 @@
 import { suite, test, assertEqual } from '../test-utils.js';
 import { initialModel, loadModel } from '../../js/core/initial-model.js';
-import { defineModel, text } from '../../js/core/model.js';
+import { defineModel, text, number } from '../../js/core/model.js';
 import { State, fmeaCreateDefault } from '../../js/modules/fmea/fmea-model.js';
 
 class Plain {
@@ -74,5 +74,21 @@ suite('loadModel', () => {
   test('initialModel nutzt loadModel für gespeicherten Zustand', () => {
     const warn = console.warn; console.warn = () => {};
     try { assertEqual(initialModel(M, { title: 9 }, undefined, {}).title, ''); } finally { console.warn = warn; }
+  });
+});
+
+suite('initialModel: Kontext', () => {
+  const Stats = defineModel({ fields: { alpha: number({ exclusiveMin: 0, exclusiveMax: 1, default: (c) => Number((1 - c.confidenceLevel / 100).toFixed(4)) }) } });
+  const ctxOf = (conf) => ({ stateManager: { getProjectCycle: () => 'dmaic', get: (k) => (k === 'settings.confidenceLevel' ? conf : undefined) } });
+
+  test('frisches Schema-Model mit dem Kontext des Projekts', () => {
+    const m = initialModel(Stats, null, undefined, ctxOf(90));
+    assertEqual(m.alpha, 0.1);
+    assertEqual(m.hasContent(), false);
+  });
+
+  test('gespeichert: fehlende Felder aus dem Kontext', () => {
+    assertEqual(initialModel(Stats, { _schema: { version: '1.0' } }, undefined, ctxOf(90)).alpha, 0.1);
+    assertEqual(loadModel(Stats, {}, { cycle: 'dmaic', confidenceLevel: 99, power: 80 }).alpha, 0.01);
   });
 });

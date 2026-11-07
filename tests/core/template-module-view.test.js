@@ -14,6 +14,7 @@ const ID = 'view-test';
 const TPL_KEY = `js/modules/${ID}/${ID}.html`;
 
 let projectCycle = 'dmaic';
+let projectSettings = {};
 const busListeners = [];
 
 function ensureTemplate() {
@@ -47,7 +48,7 @@ function makeModule(extra = {}) {
 function fakeContext({ events, notified }) {
   return {
     instanceId: 'vt-1',
-    stateManager: { getModuleState: () => ({ title: 'abc' }), setModuleState: () => {}, getProjectCycle: () => projectCycle },
+    stateManager: { getModuleState: () => ({ title: 'abc' }), setModuleState: () => {}, getProjectCycle: () => projectCycle, get: (k) => projectSettings[k] },
     i18n: { t: k => k, tf: () => k => k, getLanguage: () => 'de' },
     eventBus: {
       on: (name, fn) => busListeners.push([name, fn]),
@@ -184,6 +185,17 @@ suite('createModule: Kontext des Models', () => {
     Alpine.destroyTree(container);
     assertEqual(busListeners.filter(([n]) => n === 'cycle:changed').length, 0);
     projectCycle = 'dmaic';
+  });
+
+  test('settings:changed setzt Konfidenzniveau und Teststärke neu', async () => {
+    projectSettings = { 'settings.confidenceLevel': 95 };
+    const { data, context } = await mount();
+    assertEqual(data().model.context.confidenceLevel, 95);
+    projectSettings = { 'settings.confidenceLevel': 90, 'settings.power': 85 };
+    context.eventBus.emit('settings:changed', { key: 'confidenceLevel', value: 90 });
+    assertEqual(data().model.context.confidenceLevel, 90);
+    assertEqual(data().model.context.power, 85);
+    projectSettings = {};
   });
 });
 

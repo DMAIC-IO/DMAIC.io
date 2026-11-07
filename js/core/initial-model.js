@@ -5,6 +5,8 @@
  * Kept out of template-module.js so it is testable without Alpine.
  */
 
+import { activeContext } from './model.js';
+
 /**
  * Gespeicherten Zustand in ein Model laden.
  *
@@ -14,24 +16,27 @@
  * verliert so nichts Gültiges. Ausnahme: eine gespeicherte `_schema.version`,
  * die in falscher Form, neuer als `version` oder in der Migrationskette
  * unbekannt ist, wirft auch mit `repair` — der Fehler geht an den Aufrufer.
- * Andere Models laden wie bisher.
+ * Andere Models laden wie bisher. `context` ist der Kontext des Models
+ * (core/model.js); fehlende Felder bekommen ihre Vorgabe daraus.
  *
  * @param {{ fromJSON(d: object, opts?: object): object, schema?: object }} Model
  * @param {object} json
+ * @param {object} [context] ModelContext
  * @returns {object}
  * @throws {Error} gespeicherte `_schema.version` nicht ladbar (s. o.)
  */
-export function loadModel(Model, json) {
+export function loadModel(Model, json, context) {
   if (!Model.schema) return Model.fromJSON(json);
   try {
-    return Model.fromJSON(json);
+    return Model.fromJSON(json, { context });
   } catch (err) {
     console.warn(`[createModule] gespeicherter Zustand ungültig, Feld auf Vorgabe gesetzt: ${err.message}`);
-    return Model.fromJSON(json, { repair: true });
+    return Model.fromJSON(json, { repair: true, context });
   }
 }
 
 /**
+ * Schema-Models entstehen im Kontext des Projekts (`activeContext`).
  * @param {{new(): object, fromJSON(d: object): object}} Model module model class
  * @param {object|null|undefined} saved persisted instance state, if any
  * @param {((context: object) => object)|undefined} createDefault optional factory for an empty instance
@@ -39,7 +44,8 @@ export function loadModel(Model, json) {
  * @returns {object} model instance
  */
 export function initialModel(Model, saved, createDefault, context) {
-  if (saved) return loadModel(Model, saved);
+  const modelContext = Model.schema ? activeContext(context?.stateManager) : undefined;
+  if (saved) return loadModel(Model, saved, modelContext);
   if (typeof createDefault === 'function') {
     try {
       const m = createDefault(context);
@@ -48,5 +54,5 @@ export function initialModel(Model, saved, createDefault, context) {
       console.warn('[createModule] createDefault failed, using new Model()', err);
     }
   }
-  return new Model();
+  return modelContext ? new Model(modelContext) : new Model();
 }

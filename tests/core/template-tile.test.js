@@ -108,6 +108,13 @@ suite('createTile: Kontext', () => {
     const vm2 = tile.viewModel({ state: {}, settings: {}, i18n });
     assertEqual(vm2.cycle, 'dmaic');
   });
+
+  test('Vorgaben der Kachel kommen aus den Einstellungen', () => {
+    const Stats = defineModel({ fields: { alpha: number({ exclusiveMin: 0, exclusiveMax: 1, default: (c) => Number((1 - c.confidenceLevel / 100).toFixed(4)) }) } });
+    const t = createTile({ descriptor, Model: Stats, view() { return { get a() { return this.model.alpha; } }; } });
+    const vm = t.viewModel({ state: {}, settings: {}, i18n, stateManager: { getProjectCycle: () => 'dmaic', get: (k) => (k === 'settings.confidenceLevel' ? 90 : undefined) } });
+    assertEqual(vm.a, 0.1);
+  });
 });
 
 suite('createTile: Daten und Diagramm-Manager', () => {

@@ -402,10 +402,15 @@ export function createModule(base) {
             init() {
               freshState.init?.();
               if (schema) {
-                // Der Kontext folgt dem Zyklus des Projekts (Phasen-Vorgaben, Invarianten).
-                const onCycle = () => setModelContext(this.model, activeContext(context.stateManager));
-                context.eventBus?.on?.('cycle:changed', onCycle);
-                offCycle = () => context.eventBus?.off?.('cycle:changed', onCycle);
+                // Der Kontext folgt Zyklus und Einstellungen des Projekts (Phasen-Vorgaben, Invarianten, Vorgaben aus dem Kontext).
+                const refresh = () => setModelContext(this.model, activeContext(context.stateManager));
+                const onSettings = (p) => { if (p?.key === 'confidenceLevel' || p?.key === 'power') refresh(); };
+                context.eventBus?.on?.('cycle:changed', refresh);
+                context.eventBus?.on?.('settings:changed', onSettings);
+                offCycle = () => {
+                  context.eventBus?.off?.('cycle:changed', refresh);
+                  context.eventBus?.off?.('settings:changed', onSettings);
+                };
               }
               // UI-State ist nicht gespeichert, aber beobachtbar — wie
               // command:executed für das Model. $watch liest tief.
@@ -605,7 +610,7 @@ export function createModule(base) {
       // Read the LIVE state (engine-aware) — for the Alpine engine the reactive model
       // lives inside the Alpine component, not in _tmpl._state.
       const current = this.getState();
-      const model = current ? loadModel(Model, current) : null;
+      const model = current ? loadModel(Model, current, schema ? activeContext(this._context?.stateManager) : undefined) : null;
       if (typeof model?.hasContent === 'function' && model.hasContent() && this._context?.dialog) {
         const ok = await this._context.dialog.confirm({
           message: this._context.i18n.t('moduleHelp.confirmOverwrite'),

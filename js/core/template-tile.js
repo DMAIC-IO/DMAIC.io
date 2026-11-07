@@ -15,7 +15,7 @@
  * Importiert weder Alpine noch template-module.js — sonst zöge das
  * Dashboard den Modul-Chunk mit.
  */
-import { readModel, readSettings, isSettings, defaultOf, setModelContext, activeContext } from './model.js';
+import { readModel, readSettings, isSettings, defaultOf, activeContext } from './model.js';
 
 /**
  * Was `view(ctx)` einer Kachel bekommt. `data` liest das Arbeitsblatt
@@ -109,8 +109,7 @@ export function createTile(base) {
      */
     viewModel(args) {
       const { i18n } = args;
-      const model = readModel(Model, args.state);
-      setModelContext(model, activeContext(args.stateManager));
+      const model = readModel(Model, args.state, activeContext(args.stateManager));
       const scope = {
         model: Object.freeze(model),
         settings: Object.freeze(Settings ? readSettings(Settings, args.settings) : {}),
