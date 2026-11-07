@@ -21,7 +21,7 @@ function fakeManager({ delay = 0, fonts = { titleSize: 15 }, real = false } = {}
     create(el, type, config) {
       const chart = real
         ? new HistogramChart(el, { ...fonts, ...config }, { i18n, language: 'de', theme: 'light' })
-        : { type, config: { ...fonts, ...config }, el };
+        : { type, config: { ...fonts, ...config }, el, refreshes: 0, refreshEditor() { this.refreshes++; } };
       log.created.push(chart);
       return new Promise((r) => setTimeout(() => r(chart), delay));
     },
@@ -89,6 +89,17 @@ suite('Diagramm-Widgets (chart-mount)', () => {
     data.show = false;
     await flush();
     assertEqual(cm.log.destroyed, 1);
+    root.remove();
+  });
+
+  test('nach einem Aktualisieren wird der offene Editor auf die neuen Reihen umgestellt', async () => {
+    const cm = fakeManager();
+    const { root, data } = await host(HIST, { cm });
+    const chart = cm.log.created[0];
+    assertEqual(chart.refreshes, 0);
+    data.n = 2;
+    await flush();
+    assertEqual(chart.refreshes, 1);
     root.remove();
   });
 

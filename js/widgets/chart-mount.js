@@ -67,7 +67,7 @@ export function chartMount(widget, toChart = (c) => c) {
       const vanished = editable.base.filter((/** @type {string} */ k) => appliedEdits[k] !== undefined && edits[k] === undefined && !owned.has(k) && !(k in config));
       appliedEdits = edits;
       if (slot.token) {
-        if (slot.chart) { resetToDefaults(slot.chart, config, vanished, cfg); cm.update(slot.chart, config); shown = pickShown(slot.chart.config, editable); } else slot.pending = config;
+        if (slot.chart) { resetToDefaults(slot.chart, config, vanished, cfg); cm.update(slot.chart, config); slot.chart.refreshEditor?.(); shown = pickShown(slot.chart.config, editable); } else slot.pending = config;
         return;
       }
       const token = {};
@@ -77,7 +77,7 @@ export function chartMount(widget, toChart = (c) => c) {
         if (!alive || slot.token !== token) { if (chart) cm.destroy(chart); return; }
         if (!chart) return;
         slot.chart = chart;
-        if (slot.pending) { cm.update(chart, slot.pending); slot.pending = null; }
+        if (slot.pending) { cm.update(chart, slot.pending); chart.refreshEditor?.(); slot.pending = null; }
         shown = pickShown(chart.config, editable);
       });
     });
