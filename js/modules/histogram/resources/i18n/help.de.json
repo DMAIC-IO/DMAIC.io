@@ -1,0 +1,86 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Aufbau eines Histogramms",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Ein Histogramm zeigt die Häufigkeitsverteilung einer numerischen Variable. Die Werte werden in gleich breite Klassen (Bins) aufgeteilt; die Höhe jedes Balkens entspricht der Anzahl der Beobachtungen in dieser Klasse. Es ist eines der wichtigsten Werkzeuge zur visuellen Charakterisierung eines Datensatzes."
+        },
+        {
+          "type": "definition",
+          "term": "Bins (Klassen)",
+          "content": "Die Anzahl der Balken bestimmt, wie fein die Verteilung aufgelöst wird. Zu wenige Bins verbergen Strukturen, zu viele erzeugen ein zerklüftetes Bild. Faustregel: ⌈√n⌉ oder die Sturges-/Freedman-Diaconis-Regel."
+        },
+        {
+          "type": "definition",
+          "term": "Häufigkeit vs. Dichte",
+          "content": "Die Y-Achse zeigt entweder absolute Häufigkeiten (Anzahl) oder Dichten (relative Häufigkeit pro Klassenbreite). Die Dichte-Darstellung ist nötig, um eine theoretische Verteilungskurve zu überlagern."
+        },
+        {
+          "type": "definition",
+          "term": "Normalverteilungs-Kurve",
+          "content": "Optionale Überlagerung einer Normalverteilung mit derselben Lage (μ) und Streuung (σ) wie die Stichprobe. Zeigt auf einen Blick, wie gut die Daten zur Glockenkurve passen."
+        },
+        {
+          "type": "definition",
+          "term": "Spezifikationsgrenzen",
+          "content": "USL und LSL können als vertikale Linien eingeblendet werden. Damit lässt sich sofort einschätzen, ob die Verteilung innerhalb der Toleranz liegt — ein erster Schritt vor der formalen Cpk-Analyse."
+        },
+        {
+          "type": "paragraph",
+          "content": "Kurz gesagt: Ein Histogramm zeigt Lage, Streuung, Form und mögliche Ausreißer einer Stichprobe — und sollte am Anfang fast jeder datengetriebenen Analyse stehen."
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "Typische Formen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Glockenförmig, symmetrisch → Normalverteilung plausibel.",
+            "Rechtsschief (lange rechte Flanke) → typisch für Bearbeitungszeiten, Wartezeiten, Reaktionszeiten.",
+            "Linksschief → seltener, oft bei oberen Sättigungseffekten.",
+            "Zwei Gipfel (bimodal) → vermischte Populationen — z. B. zwei Maschinen, zwei Schichten — Daten stratifizieren.",
+            "Plateau / Rechteck → Gleichverteilung oder Mischung mehrerer Quellen mit ähnlicher Häufigkeit.",
+            "Kamm-Muster mit regelmäßigen Lücken → Rundung oder Messauflösung — Skala oder Messgerät prüfen.",
+            "Einzelne abgesetzte Balken weit außen → Ausreißer.",
+            "Verteilung an USL/LSL „abgeschnitten\" → die Daten wurden vorab gefiltert oder das Messgerät hat eine Grenze."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Zu wenige Daten",
+          "content": "Bei n < 30 ist die Form nur schwach belastbar. Zufällige Lücken können wie Bimodalität aussehen, glatte Glocken können trotzdem nicht-normal sein."
+        },
+        {
+          "type": "definition",
+          "term": "Bin-Anzahl manipuliert das Bild",
+          "content": "Die gleiche Stichprobe sieht mit 5 oder 50 Bins völlig anders aus. Bei wichtigen Aussagen mehrere Bin-Anzahlen testen, bevor man sich auf eine Interpretation festlegt."
+        },
+        {
+          "type": "definition",
+          "term": "Histogramm ≠ Normalitätstest",
+          "content": "Eine glockenförmige Form ist ein Indiz, kein Beweis. Vor Cpk- oder t-Test-Anwendungen mit einem {{term:wahrscheinlichkeitsnetz|Wahrscheinlichkeitsnetz}} oder einem formalen Test absichern."
+        },
+        {
+          "type": "definition",
+          "term": "Gemischte Populationen übersehen",
+          "content": "Ein einzelner Gipfel kann durch zwei sehr nahe {{term:mittelwert|Mittelwerte}} entstehen. Wenn Stratifizierungsmerkmale vorliegen (Schicht, Maschine), die Daten getrennt darstellen."
+        },
+        {
+          "type": "definition",
+          "term": "Diskrete Daten in stetigem Histogramm",
+          "content": "Zähldaten oder gerundete Werte erzeugen typische Lücken im Histogramm. Für diskrete Daten sind Balkendiagramme oder {{term:pareto|Pareto}} besser geeignet."
+        }
+      ]
+    }
+  }
+}

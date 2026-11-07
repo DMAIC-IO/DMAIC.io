@@ -1,0 +1,54 @@
+/* ============================================================
+   Histogram Module Styles (histogram.css)
+   BEM: .histogram__ prefix
+   ============================================================ */
+
+/* Layout provided by .dmike-split (css/modules.css) */
+
+/* Section labels: use global .dmike-split__output-section (css/modules.css) */
+
+/* Fields use global .field / .field-group (components.css) */
+
+/* Column selects: use global .ds-picker (dataset-picker.css) */
+
+/* Buttons: use global .btn (components.css) */
+
+/* Options */
+.histogram__options {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+/* Placeholder */
+.histogram__placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 300px;
+  color: var(--color-text-tertiary);
+  gap: var(--spacing-md);
+}
+
+.histogram__placeholder p {
+  max-width: 300px;
+  text-align: center;
+  font-size: var(--font-size-sm);
+}
+
+/* Chart area */
+.histogram__chart-area {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Chart host — ChartBase fills it (card, modebar, editor). Height covers
+   plot + boxplot strip (the strip takes its rows from the plot area). */
+.histogram__chart {
+  height: 520px;
+}
+
+/* Statistics table — uses shared dmike-stats-panel (js/core/stats-panel.css) */

@@ -1,0 +1,41 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "datasets": {
+      "help": "Je Datenreihe ihre Spalten, jede Spalte einer Reihe unter keys einzeln beschrieben.",
+      "valueRef": {
+        "label": "V",
+        "title": "Die Wertespalte der Reihe (Slot V), numerisch und Pflicht",
+        "help": "Die Wertespalte der Reihe (Slot V), numerisch und Pflicht. Ohne sie bleibt die Reihe stehen, wird aber nicht gezeichnet. Leer, solange keine gewählt ist."
+      },
+      "groupRef": {
+        "label": "G",
+        "title": "Die Gruppenspalte der Reihe (Slot G), optional",
+        "help": "Die Gruppenspalte der Reihe (Slot G), optional; sie teilt die Reihe in Serien, eine je Gruppenwert. Leer, solange keine gewählt ist."
+      }
+    },
+    "binMode": {
+      "help": "Wie die Klassen (die Balken) gebildet werden: automatisch oder mit fester Breite. Automatisch: Breite = Spannweite aller sichtbaren Werte geteilt durch ⌈log₂ n⌉ + 1 Klassen (mindestens 3, Sturges), auf einen runden Wert gerundet; n zählt die Werte aller sichtbaren Reihen. Fest: es gilt die eingestellte Klassenbreite; ist sie leer, wird die Breite automatisch bestimmt."
+    },
+    "binWidth": {
+      "help": "Die feste Breite jeder Klasse, eine Zahl größer 0 in den Einheiten der Werte. Leer heißt automatische Breite. Die Option lässt sich nur bei fester Breite wählen."
+    },
+    "confLevel": {
+      "help": "Das Konfidenzniveau in Prozent, größer 0 und kleiner 100 (zum Beispiel 95). Es bestimmt die Konfidenzintervalle in der Statistiktabelle."
+    },
+    "showStats": {
+      "help": "Kennzahlen je Reihe unter dem Diagramm ein- oder ausblenden."
+    },
+    "stats": {
+      "help": "Je gezeichneter Reihe ihre Kennzahlen und Konfidenzintervalle, aufgebaut wie modules.shared.types.SeriesStats; leer, solange nichts gerechnet werden kann."
+    }
+  },
+  "actions": {
+    "setBinMode": {
+      "help": "Wählt, wie die Klassen gebildet werden: automatisch oder mit fester Breite. Bei automatisch wird eine gesetzte Klassenbreite zurückgesetzt.",
+      "params": {
+        "binMode": "'auto' oder 'manual'. Jeder andere Wert ist ein Fehler."
+      }
+    }
+  }
+}

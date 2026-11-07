@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Histogram",
+  "description": "Frequency distribution with boxplot and statistics",
+  "whenToUse": "Show the distribution of one or more numeric columns as frequency bars, with summary statistics and a confidence interval.",
+  "sectionData": "Data Source",
+  "sectionBinning": "Binning",
+  "sectionOptions": "Options",
+  "groupSeriesName": "{col} — {level}",
+  "errNoGroupLevels": "Dataset {n}: the grouping column has no valid values.",
+  "binMode": "Mode",
+  "binAuto": "Automatic (Sturges)",
+  "binManual": "Manual",
+  "binWidth": "Bin width",
+  "binWidthAuto": "automatic",
+  "confLevel": "Confidence level (%)",
+  "showStats": "Statistics table",
+  "chartTitle": "Histogram",
+  "placeholderText": "Select at least one numeric column to create a histogram.",
+  "errTooFew": "Too few values for column \"{col}\".",
+  "xLabel": "Value",
+  "yLabel": "Frequency",
+  "invariants": {
+    "binWidthOnlyManual": "The bin width only applies to manual binning."
+  }
+}

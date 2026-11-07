@@ -1,0 +1,41 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "datasets": {
+      "help": "Per data row its columns, each column of a row described individually under keys.",
+      "valueRef": {
+        "label": "V",
+        "title": "The value column of the row (slot V), numeric and required",
+        "help": "The value column of the row (slot V), numeric and required. Without it the row is kept but not plotted. Empty until one is chosen."
+      },
+      "groupRef": {
+        "label": "G",
+        "title": "The group column of the row (slot G), optional",
+        "help": "The group column of the row (slot G), optional; it splits the row into series, one per group value. Empty until one is chosen."
+      }
+    },
+    "binMode": {
+      "help": "How the bins (the bars) are formed: automatically or with a fixed width. Automatic: width = range of all visible values divided by ⌈log₂ n⌉ + 1 bins (at least 3, Sturges), rounded to a round value; n counts the values of all visible series. Fixed: the set bin width applies; if it is empty, the width is determined automatically."
+    },
+    "binWidth": {
+      "help": "The fixed width of each bin, a number greater than 0 in the units of the values. Empty means automatic width. The option can only be chosen with a fixed width."
+    },
+    "confLevel": {
+      "help": "The confidence level in percent, greater than 0 and less than 100 (for example 95). It determines the confidence intervals in the statistics table."
+    },
+    "showStats": {
+      "help": "Show or hide the statistics per series below the chart."
+    },
+    "stats": {
+      "help": "Per plotted series its statistics and confidence intervals, structured like modules.shared.types.SeriesStats; empty while nothing can be computed."
+    }
+  },
+  "actions": {
+    "setBinMode": {
+      "help": "Chooses how the bins are formed: automatic or with a fixed width. With automatic, a set bin width is reset.",
+      "params": {
+        "binMode": "'auto' or 'manual'. Any other value is an error."
+      }
+    }
+  }
+}

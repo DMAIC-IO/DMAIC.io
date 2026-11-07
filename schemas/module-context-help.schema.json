@@ -53,7 +53,11 @@
     "fieldHelp": {
       "type": "object",
       "required": ["help"],
-      "properties": { "help": { "$ref": "common.schema.json#/$defs/text" } },
+      "properties": {
+        "help": { "$ref": "common.schema.json#/$defs/text" },
+        "label": { "anyOf": [{ "$ref": "common.schema.json#/$defs/text" }, { "$ref": "#/$defs/fieldHelp" }] },
+        "title": { "anyOf": [{ "$ref": "common.schema.json#/$defs/text" }, { "$ref": "#/$defs/fieldHelp" }] }
+      },
       "additionalProperties": { "$ref": "#/$defs/fieldHelp" }
     },
     "action": {

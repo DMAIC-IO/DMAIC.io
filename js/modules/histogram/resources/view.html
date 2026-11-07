@@ -1,0 +1,47 @@
+<div class="histogram dmike-split dmike-split--input-sm" x-data="histogram">
+  <!-- data-help-key="" am Auswahl-Host ist gewollt: die Hilfe hängt an den Slots des Pickers (fields.datasets.*). -->
+  <div class="histogram__input dmike-split__input">
+    <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
+    <div class="histogram__picker" data-ref="picker-wrap" data-help-key="" x-field="model.datasets"></div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionBinning')"></div>
+    <div class="histogram__options">
+      <div class="field-group">
+        <label data-help-key="modules.histogram.actions.setBinMode.help" x-text="t('binMode')"></label>
+        <select class="field" data-ref="bin-mode" @change="binModeChanged($event)">
+          <template x-for="o in binModeOptions" :key="o.value">
+            <option :value="o.value" :selected="o.selected" x-text="o.label"></option>
+          </template>
+        </select>
+      </div>
+      <div class="field-group" data-ref="bin-width-row" x-show="isManual">
+        <label data-help-key="modules.histogram.fields.binWidth.help" x-text="t('binWidth')"></label>
+        <input class="field field--num" data-ref="bin-width" x-field="model.binWidth" :placeholder="t('binWidthAuto')">
+      </div>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionOptions')"></div>
+    <div class="histogram__options">
+      <div class="field-group">
+        <label data-help-key="modules.histogram.fields.confLevel.help" x-text="t('confLevel')"></label>
+        <input class="field field--num" data-ref="conf-level" x-field="model.confLevel">
+      </div>
+      <label class="field-check" data-help-key="modules.histogram.fields.showStats.help">
+        <input type="checkbox" data-ref="show-stats" x-field="model.showStats">
+        <span x-text="t('showStats')"></span>
+      </label>
+    </div>
+
+    <div class="field-error" data-ref="error-box" x-show="errorText" x-text="errorText"></div>
+  </div>
+
+  <div class="histogram__output dmike-split__output">
+    <div class="histogram__placeholder" data-ref="placeholder" x-show="!hasSeries" x-text="t('placeholderText')"></div>
+    <template x-if="hasSeries">
+      <div class="histogram__chart-area" data-ref="chart-area">
+        <div class="histogram__chart" data-ref="chart" x-widget="histogram-chart" x-widget-config="histogram" x-widget-value="model.histogramChart"></div>
+        <div data-ref="stats-panel" x-show="model.showStats" x-widget="stats-table" x-widget-rows="stats" x-widget-conf-level="model.confLevel"></div>
+      </div>
+    </template>
+  </div>
+</div>

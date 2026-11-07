@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Histogramm",
+  "description": "Häufigkeitsverteilung mit Boxplot und Statistik",
+  "whenToUse": "Die Verteilung einer oder mehrerer numerischer Spalten als Häufigkeitsbalken zeigen, mit Kennzahlen und Konfidenzintervall.",
+  "sectionData": "Datenquelle",
+  "sectionBinning": "Binning",
+  "sectionOptions": "Optionen",
+  "groupSeriesName": "{col} — {level}",
+  "errNoGroupLevels": "Datensatz {n}: Die Gruppierungsspalte enthält keine gültigen Werte.",
+  "binMode": "Modus",
+  "binAuto": "Automatisch (Sturges)",
+  "binManual": "Manuell",
+  "binWidth": "Bin-Breite",
+  "binWidthAuto": "automatisch",
+  "confLevel": "Konfidenzniveau (%)",
+  "showStats": "Statistiktabelle",
+  "chartTitle": "Histogramm",
+  "placeholderText": "Wählen Sie mindestens eine numerische Spalte, um ein Histogramm zu erstellen.",
+  "errTooFew": "Zu wenig Werte für Spalte \"{col}\".",
+  "xLabel": "Messwert",
+  "yLabel": "Häufigkeit",
+  "invariants": {
+    "binWidthOnlyManual": "Die Klassenbreite gilt nur bei manueller Einteilung."
+  }
+}
