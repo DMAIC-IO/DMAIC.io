@@ -99,18 +99,27 @@ export function mountWidget(Alpine, el, name, entry, { valuePath, i18n, effect, 
   }
   if (Object.keys(errors).length) { fail(Object.values(errors).join('; ')); return; }
 
-  let value = null;
-  if (valuePath !== null) {
-    const ch = openChannel(Alpine, el, valuePath, { where: 'x-widget-value', i18n });
-    value = { spec: ch.spec, name: ch.name, get: ch.get, set: ch.set, rejected: ch.rejected };
+  let handle = null;
+  try {
+    let value = null;
+    if (valuePath !== null) {
+      const ch = openChannel(Alpine, el, valuePath, { where: 'x-widget-value', i18n });
+      value = { spec: ch.spec, name: ch.name, get: ch.get, set: ch.set, rejected: ch.rejected };
+    }
+    const data = Alpine.reactive({ ...(entry.view ? entry.view({ props, value, services }) : {}), props });
+    Object.defineProperty(Alpine.raw(data), '_ui', { value: { services }, enumerable: false, configurable: true });
+    root._x_dataStack = [data];
+    if (entry.template) root.append(...cloneTemplate(entry.template));
+    handle = entry.mount(root, { props, value, services, effect });
+    mounted = true;
+    Alpine.initTree(root);
+  } catch (err) {
+    if (err instanceof TypeError || err instanceof ReferenceError || err instanceof SyntaxError) throw err;
+    handle?.destroy?.();
+    root.replaceChildren();
+    fail(String(err.message));
+    return;
   }
-  const data = Alpine.reactive({ ...(entry.view ? entry.view({ props, value, services }) : {}), props });
-  Object.defineProperty(Alpine.raw(data), '_ui', { value: { services }, enumerable: false, configurable: true });
-  root._x_dataStack = [data];
-  if (entry.template) root.append(...cloneTemplate(entry.template));
-  const handle = entry.mount(root, { props, value, services, effect });
-  mounted = true;
-  Alpine.initTree(root);
   cleanup(() => {
     handle?.destroy?.();
     Alpine.destroyTree(root);

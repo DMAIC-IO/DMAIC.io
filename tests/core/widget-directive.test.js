@@ -79,12 +79,20 @@ async function host(inner, extra = {}) {
   return { root, data: Alpine.$data(root) };
 }
 
-/** Warnungen einsammeln, solange `fn` läuft. */
+/**
+ * Warnungen einsammeln, solange `fn` läuft. Alpine wirft Fehler seiner Ausdrücke
+ * zusätzlich per setTimeout nach außen; die erwarteten fängt der Test ab, damit
+ * der Lauf sie nicht als unbehandelte Seitenfehler zählt.
+ */
 async function withWarnings(fn) {
   const seen = [];
   const orig = console.warn;
+  const origTimeout = window.setTimeout;
   console.warn = (...a) => { seen.push(a.map(String).join(' ')); };
-  try { await fn(); } finally { console.warn = orig; }
+  window.setTimeout = (cb, ...rest) => origTimeout(() => {
+    try { cb(); } catch (err) { if (!/^Undefined variable/.test(String(err?.message))) throw err; }
+  }, ...rest);
+  try { await fn(); } finally { console.warn = orig; window.setTimeout = origTimeout; }
   return seen;
 }
 
@@ -205,6 +213,16 @@ suite('x-widget', () => {
     let ctx;
     await withWarnings(async () => { ctx = await host('<div x-widget="stat-list" x-widget-rows="rows" x-widget-value="model.choice"></div>'); });
     assertTrue(ctx.root.querySelector('.widget-root--error').textContent.includes('stat-list takes no x-widget-value'));
+    ctx.root.remove();
+  });
+
+  test('falscher x-widget-value-Pfad endet im Fehlerzustand', async () => {
+    let ctx;
+    await withWarnings(async () => {
+      ctx = await host('<div class="a" x-widget="pick" x-widget-value="model.nope"></div><span class="after" x-text="label"></span>');
+    });
+    assertTrue(ctx.root.querySelector('.a .widget-root--error').textContent.includes('model.nope'));
+    assertEqual(ctx.root.querySelector('.after').textContent, 'host-label');
     ctx.root.remove();
   });
 
