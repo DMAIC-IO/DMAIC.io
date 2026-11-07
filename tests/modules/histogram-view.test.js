@@ -199,6 +199,17 @@ suite('histogram: Viewmodel im Browser', () => {
     assertDeepEqual(vm().stats.map((r) => r.name), ['Spalte 0']);
   });
 
+  test('im Editor ausgeblendete Reihe fehlt im Titel', async () => {
+    const { vm } = await mount(
+      { datasets: [{ valueRef: ref(0), groupRef: null }, { valueRef: ref(1), groupRef: null }] },
+      { ws1: sheetWith([1, 2, 3, 4], [5, 6, 7, 8]) },
+    );
+    assertEqual(vm().histogram.title, 'Histogramm: Spalte 0, Spalte 1');
+    vm().model.histogramChart = { series: [{ name: 'Spalte 1', visible: false }] };
+    await flush();
+    assertEqual(vm().histogram.title, 'Histogramm: Spalte 0');
+  });
+
   test('read(): Felder und Kennzahlen, keine alten Hilfsfelder', async () => {
     const { vm } = await mount(one(), { ws1: sheetWith([1, 2, 3, 4]) });
     const out = vm().read();

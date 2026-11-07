@@ -42,17 +42,20 @@ export default createModule({
             })),
           };
         },
+        /** Reihen nach den Editor-Einstellungen; leer, solange es keine gibt. */
+        shown() {
+          const s = this.series;
+          if (!hasSeriesKey(s)) return [];
+          return applyEdits({ series: s.series }, this.model.histogramChart ?? {}, histogramChart.editable, new Set()).series;
+        },
         /**
          * Kennzahlen je sichtbarer Reihe (Konfidenzniveau in Prozent). Gerechnet
          * auf den Reihen nach den Editor-Einstellungen: im Editor ausgeblendete
          * Reihen fehlen.
          */
         stats() {
-          const s = this.series;
-          if (!hasSeriesKey(s)) return [];
-          const shown = applyEdits({ series: s.series }, this.model.histogramChart ?? {}, histogramChart.editable, new Set()).series;
           return computeSeriesStats(
-            shown.map((/** @type {any} */ r) => ({ name: r.name, values: r.values, color: r.fillColor, visible: r.visible })),
+            this.shown.map((/** @type {any} */ r) => ({ name: r.name, values: r.values, color: r.fillColor, visible: r.visible })),
             this.model.confLevel / 100,
           );
         },
@@ -73,7 +76,7 @@ export default createModule({
         if (!this.hasSeries) return null;
         const series = this.series.series;
         return {
-          title: `${this.t('chartTitle')}: ${series.filter((/** @type {any} */ s) => s.visible !== false).map((/** @type {any} */ s) => s.name).join(', ')}`,
+          title: `${this.t('chartTitle')}: ${this.shown.filter((/** @type {any} */ s) => s.visible !== false).map((/** @type {any} */ s) => s.name).join(', ')}`,
           xLabel: this.t('xLabel'), yLabel: this.t('yLabel'),
           pareto: true, boxplotStrip: true, barGap: 1, fileName: 'histogram',
           ...(this.isManual && this.model.binWidth !== null ? { binWidth: this.model.binWidth } : {}),
