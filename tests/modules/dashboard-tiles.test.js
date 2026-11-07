@@ -666,7 +666,7 @@ suite('dashboard tiles: spc', () => {
   test('a chart that resolves after a newer render is destroyed (stale token)', async () => {
     const made = []; const destroyed = []; const pending = [];
     const cm = {
-      create: (el, type, cfg) => new Promise(r => { const c = { cfg }; made.push(c); pending.push(() => r(c)); }),
+      create: (el, type, cfg) => new Promise(r => { const c = { cfg, config: { ...cfg } }; made.push(c); pending.push(() => r(c)); }),
       destroy: (c) => destroyed.push(c),
     };
     const host = document.createElement('div');
@@ -699,7 +699,7 @@ function fakeChartManager() {
   const made = []; const destroyed = [];
   return {
     made, destroyed,
-    create: async (el, type, cfg) => { const c = { el, cfg }; made.push(c); return c; },
+    create: async (el, type, cfg) => { const c = { el, cfg, config: { ...cfg } }; made.push(c); return c; },
     destroy: (c) => { destroyed.push(c); },
   };
 }
@@ -764,7 +764,7 @@ suite('dashboard tiles: zeg-timeline', () => {
     const sm = zegStateManager({ define: [{ t: 1, v: 10 }] });
     const made = []; const destroyed = []; const pending = [];
     const cm = {
-      create: (el, type, cfg) => new Promise(r => { const c = { cfg }; made.push(c); pending.push(() => r(c)); }),
+      create: (el, type, cfg) => new Promise(r => { const c = { cfg, config: { ...cfg } }; made.push(c); pending.push(() => r(c)); }),
       destroy: (c) => destroyed.push(c),
     };
     const first = mountTile(zegTile, args(cm, sm), host);
@@ -1022,7 +1022,7 @@ function recordingChartManager() {
   const made = []; const destroyed = [];
   return {
     made, destroyed,
-    create: async (el, type, cfg) => { const c = { el, type, cfg }; made.push(c); return c; },
+    create: async (el, type, cfg) => { const c = { el, type, cfg, config: { ...cfg } }; made.push(c); return c; },
     update: () => {},
     destroy: (c) => { destroyed.push(c); },
   };
@@ -1156,7 +1156,7 @@ suite('dashboard tiles: process-capability', () => {
   test('a chart that resolves after a newer render is destroyed (stale token)', async () => {
     const made = []; const destroyed = []; const pending = [];
     const cm = {
-      create: (el, type, cfg) => new Promise(r => { const c = { cfg }; made.push(c); pending.push(() => r(c)); }),
+      create: (el, type, cfg) => new Promise(r => { const c = { cfg, config: { ...cfg } }; made.push(c); pending.push(() => r(c)); }),
       destroy: (c) => destroyed.push(c),
     };
     const host = document.createElement('div');
@@ -1370,7 +1370,7 @@ suite('dashboard tiles: attribute-control-chart', () => {
   test('a chart that resolves after a newer render is destroyed (stale token)', async () => {
     const made = []; const destroyed = []; const pending = [];
     const cm = {
-      create: (el, type, cfg) => new Promise(r => { const c = { cfg }; made.push(c); pending.push(() => r(c)); }),
+      create: (el, type, cfg) => new Promise(r => { const c = { cfg, config: { ...cfg } }; made.push(c); pending.push(() => r(c)); }),
       update: () => {},
       destroy: (c) => destroyed.push(c),
     };
@@ -1638,7 +1638,7 @@ suite('dashboard tiles: kano', () => {
   test('a chart that resolves after a newer render is destroyed (stale token)', async () => {
     const made = []; const destroyed = []; const pending = [];
     const cm = {
-      create: (el, type, cfg) => new Promise(r => { const c = { cfg }; made.push(c); pending.push(() => r(c)); }),
+      create: (el, type, cfg) => new Promise(r => { const c = { cfg, config: { ...cfg } }; made.push(c); pending.push(() => r(c)); }),
       destroy: (c) => destroyed.push(c),
     };
     const host = document.createElement('div');
