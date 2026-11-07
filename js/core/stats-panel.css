@@ -9,6 +9,13 @@
   margin-top: var(--spacing-md);
 }
 
+/* Als Widget-Wirt (`.widget-root` ist `display: contents`) braucht das Panel
+   eine eigene Box: sonst gelten Rand und Überlauf nicht, und der
+   Kontexthilfe-Kreis wird nicht am Panel geclippt. */
+.widget-root.dmike-stats-panel {
+  display: block;
+}
+
 /* Table — monospace for numeric alignment */
 .dmike-stats-table {
   font-family: var(--font-family-mono);
