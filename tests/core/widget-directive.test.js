@@ -75,6 +75,8 @@ async function host(inner, extra = {}) {
     const comp = {
       model: new Doc(), moduleId: 'demo', hostOnly: 'LEAK', show: true, label: 'host-label', bad: false,
       get rows() { return this.bad ? 'kein array' : this.model.values.map((v, i) => ({ name: `R${i}`, mean: v })); },
+      explode: false,
+      get throwing() { if (this.explode) throw new Error('getter kaputt'); return 5; },
       get badRows() { return 'kein array'; },
       items: [{ id: 1, rows: [{ name: 'i1', mean: 1 }] }, { id: 2, rows: [{ name: 'i2', mean: 2 }] }],
       ...extra,
@@ -276,6 +278,22 @@ suite('x-widget', () => {
     data.n = 2;
     await flush();
     assertEqual(w.textContent, 'n2');
+    assertTrue(!w.classList.contains('widget-root--error'));
+    root.remove();
+  });
+
+  test('werfender Getter einer Eingabe beim Wiederlauf hält Alpine nicht an', async () => {
+    const { root, data } = await host('<div class="b" x-widget="boom" x-widget-n="throwing"></div><span class="after" x-text="label"></span>');
+    const w = root.querySelector('.b .widget-root');
+    assertEqual(w.textContent, 'n5');
+    const seen = await withWarnings(async () => { data.explode = true; await flush(); });
+    assertTrue(w.classList.contains('widget-root--error'));
+    assertTrue(seen.some((m) => m.includes('getter kaputt')));
+    data.label = 'after-getter';
+    await flush();
+    assertEqual(root.querySelector('.after').textContent, 'after-getter');
+    data.explode = false;
+    await flush();
     assertTrue(!w.classList.contains('widget-root--error'));
     root.remove();
   });

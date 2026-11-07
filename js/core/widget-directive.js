@@ -87,8 +87,8 @@ export function mountWidget(Alpine, el, name, entry, { valuePath, i18n, effect, 
   for (const [p, path] of bound) {
     const spec = schema.props[p];
     effect(() => {
-      const raw = readPath(host, path);
       try {
+        const raw = readPath(host, path);
         props[p] = raw === undefined && spec.optional === true
           ? undefined
           : checkValue(spec, `${name}.${p}`, JSON.parse(JSON.stringify(raw ?? null)));
