@@ -84,10 +84,10 @@ function commandAction(name, def, target) {
  * Der Registry-Eintrag eines Schema-Moduls.
  * @param {Function} Model Klasse aus `defineModel`
  * @param {Record<string, object>} [vmCommands] Viewmodel-Kommandos aus `createModule({ commands })`
- * @param {{ derived?: string[] }} [opts] `derived`: Namen von Ableitungen, die als Lesefelder erscheinen
+ * @param {{ derived?: string[], bulk?: string[] }} [opts] `derived`: Namen von Ableitungen, die als Lesefelder erscheinen; `bulk`: davon die Massenfelder (Zeilenlisten)
  * @returns {object} `AgentModuleEntry` mit `schema: true`, `settable`, `viewFields`
  */
-export function schemaAgentEntry(Model, vmCommands = {}, { derived = [] } = {}) {
+export function schemaAgentEntry(Model, vmCommands = {}, { derived = [], bulk = [] } = {}) {
   const schema = schemaOf(Model);
   if (!schema) throw new Error('schemaAgentEntry: Model has no schema (defineModel)');
   const actions = { read: READ_ACTION };
@@ -106,7 +106,11 @@ export function schemaAgentEntry(Model, vmCommands = {}, { derived = [] } = {}) 
       ...(isRef ? { rules: ruleTokens(spec) } : {}),
     };
   }
-  for (const name of derived) fields[name] = { type: 'object|null', help: '', bulk: false, derived: true };
+  for (const name of derived) {
+    fields[name] = bulk.includes(name)
+      ? { type: 'object[]', help: '', bulk: true, bulkKind: 'table', derived: true }
+      : { type: 'object|null', help: '', bulk: false, derived: true };
+  }
   return {
     tagged: true,
     available: true,
@@ -126,11 +130,12 @@ export function schemaAgentEntry(Model, vmCommands = {}, { derived = [] } = {}) 
  * @param {object} entry aus `schemaAgentEntry`
  * @param {object} model das (reaktive) Model
  * @param {object} [options] `{ fields?, rows? }`
+ * @param {Record<string, any>} [extra] weitere Quellwerte (Ableitungen), über das Model-JSON gelegt
  * @throws {Error} wenn `options.rows` kaputt ist
  * @returns {object}
  */
-export function readSchemaModel(entry, model, options) {
-  const out = projectReadState(model?.toJSON?.() ?? {}, entry.fields, options ?? {});
+export function readSchemaModel(entry, model, options, extra = {}) {
+  const out = projectReadState({ ...(model?.toJSON?.() ?? {}), ...extra }, entry.fields, options ?? {});
   if (out && typeof out.$invalidCall === 'string') throw new Error(out.$invalidCall);
   return out;
 }

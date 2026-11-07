@@ -236,3 +236,29 @@ suite('createModule: computed im view-Block', () => {
     assertEqual(runs, 1);
   });
 });
+
+suite('createModule: readBulk', () => {
+  test('Massenfeld als Deskriptor, voll mit fields, zugeschnitten mit rows', async () => {
+    const { data } = await mount({
+      readComputed: ['rows', 'sum'],
+      readBulk: ['rows'],
+      view() {
+        return { computed: {
+          rows() { return [{ v: 1, s: false }, { v: 2, s: true }, { v: 3, s: false }]; },
+          sum() { return { total: 6 }; },
+        } };
+      },
+    });
+    const out = data().read();
+    assertDeepEqual(out.rows, { $bulk: true, kind: 'table', rowCount: 3, columns: ['v', 's'] });
+    assertDeepEqual(out.sum, { total: 6 });
+    assertEqual(data().read({ fields: ['rows'] }).rows.length, 3);
+    const cut = data().read({ fields: ['rows'], rows: { from: 1, to: 2 } });
+    assertDeepEqual(cut.rows, [{ v: 2, s: true }]);
+    assertDeepEqual(cut['rows$range'], { from: 1, to: 2, rowCount: 3 });
+  });
+
+  test('readBulk außerhalb von readComputed wirft', () => {
+    assertThrows(() => makeModule({ readComputed: [], readBulk: ['x'] }), /readBulk x is not in readComputed/);
+  });
+});

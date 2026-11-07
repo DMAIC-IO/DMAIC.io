@@ -119,14 +119,21 @@ function checkExports(id, def, hasView) {
  * @param {string} moduleId @param {object} entry @param {Record<string, object>} vmCommands
  * @returns {object}
  */
-function schemaMembers(moduleId, entry, vmCommands, readComputed = []) {
+function schemaMembers(moduleId, entry, vmCommands, readComputed = [], readBulk = []) {
   const members = {
     moduleId,
     /** @noagent Lesefläche aus dem Schema (agent-schema.js) */
     read(options) {
-      const out = readSchemaModel(entry, this.model, options);
-      for (const name of readComputed) out[name] = this[name] === undefined ? null : cloneJSON(this[name]);
-      return out;
+      /** @type {Record<string, any>} */
+      const extra = {};
+      for (const name of readComputed) {
+        const value = this[name];
+        extra[name] = value === undefined ? null : cloneJSON(value);
+        if (readBulk.includes(name)) {
+          extra[`${name}Columns`] = Array.isArray(value) && value.length > 0 ? Object.keys(value[0]) : [];
+        }
+      }
+      return readSchemaModel(entry, this.model, options, extra);
     },
   };
   for (const [name, def] of Object.entries(vmCommands)) {
@@ -163,12 +170,14 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
 // base.view(ctx) — neue Form statt base.data(module, t): liefert Getter und
 // Handler; `this` ist die Komponente mit model, state, t. base.State — UI-State
 // aus defineState, nur zusammen mit view.
+// base.readBulk — Massenfelder unter readComputed (Zeilenlisten): read() liefert sie
+// als Deskriptor, voll mit fields/rows.
 // base.exports — Mapper nach Datenform (table/tables/tree/image, fileName),
 // nur mit view; daraus entstehen Export-Menü und Dateien (core/exporter.js).
 // base.forms — Namensraum von viewmodel/forms.js (defineForm), für
 // x-command-form mit data-form; Vorgabe {}.
 export function createModule(base) {
-  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, createDefault, gestures = [], forms = {}, exports: exportsDef, readComputed = [] } = base;
+  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, createDefault, gestures = [], forms = {}, exports: exportsDef, readComputed = [], readBulk = [] } = base;
   if (descriptor) {
     for (const key of NOT_IN_CONFIG) {
       if (Object.hasOwn(config, key)) {
@@ -180,6 +189,9 @@ export function createModule(base) {
   if (data && view) throw new Error(`createModule(${id}): data and view are mutually exclusive`);
   if (UiState && !view) throw new Error(`createModule(${id}): State requires view`);
   if (readComputed.length > 0 && !view) throw new Error(`createModule(${id}): readComputed needs view`);
+  for (const name of readBulk) {
+    if (!readComputed.includes(name)) throw new Error(`createModule(${id}): readBulk ${name} is not in readComputed`);
+  }
   if (exportsDef !== undefined) checkExports(id, exportsDef, Boolean(view));
   const actions = exportsDef === undefined ? (config.actions ?? []) : [...(config.actions ?? []), {
     icon: 'action.download',
@@ -200,7 +212,7 @@ export function createModule(base) {
   if (!schema && Object.keys(vmCommands).length > 0) {
     throw new Error(`createModule ${id}: commands need a defineModel Model`);
   }
-  const agentEntry = schema ? schemaAgentEntry(Model, vmCommands, { derived: readComputed }) : undefined;
+  const agentEntry = schema ? schemaAgentEntry(Model, vmCommands, { derived: readComputed, bulk: readBulk }) : undefined;
   const i18nKey = `modules.${  id}`;
   // Derive the template URL from document.baseURI so the key is stable whether
   // the app runs unbundled or from app.min.js (where import.meta.url → bundle path).
@@ -358,7 +370,7 @@ export function createModule(base) {
             Object.assign(comp, { state: UiState ? UiState.create() : {}, moduleId: id });
             comp.cssVars = function cssVars(map) { return readCssVars(this.$root, map); };
           }
-          if (schema) copyMembers(comp, schemaMembers(id, agentEntry, vmCommands, readComputed));
+          if (schema) copyMembers(comp, schemaMembers(id, agentEntry, vmCommands, readComputed, readBulk));
           if (schema || exportsDef) {
             // Griff der Kommando-Primitive (core/command-directives.js) und, für
             // exports/component, von runExport (core/exporter.js). Nicht
