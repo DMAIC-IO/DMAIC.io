@@ -1,5 +1,5 @@
 /** Histogramm (Chart-Framework-Typ `histogram`). */
-import { text, number, boolean, oneOf, list } from '../../core/model.js';
+import { text, number, boolean, oneOf, list, object } from '../../core/model.js';
 import { chartWidget } from '../chart-parts.js';
 
 const opt = { optional: true };
@@ -9,7 +9,7 @@ export default chartWidget({
   name: 'histogram-chart',
   type: 'histogram',
   keys: {
-    data: list(number(), opt), showNormalCurve: boolean(opt), binWidth: number({ ...opt, nullable: true, exclusiveMin: 0 }),
+    data: list(number(), opt), bins: list(object({ x0: number(), x1: number(), count: number() }), opt), showNormalCurve: boolean(opt), binWidth: number({ ...opt, nullable: true, exclusiveMin: 0 }),
     barGap: number({ ...ed, min: 0 }), pareto: boolean(ed), boxplotStrip: boolean(ed),
   },
   series: {

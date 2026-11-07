@@ -22,6 +22,13 @@ suite('Diagramm-Widgets: Schemas', () => {
     assertThrows(() => checkValue(histogramChart.props.config, 'c', { series: [{ name: 'A', values: ['x'] }] }), /c\.series\[0\]\.values\[0\]/);
   });
 
+  test('bins und showLabel werden angenommen, bins ist nicht editable', () => {
+    const cfg = { data: [], bins: [{ x0: 0, x1: 1, count: 2 }], refLines: [{ dir: 'v', value: 1, label: 'a', showLabel: true }] };
+    assertDeepEqual(checkValue(histogramChart.props.config, 'c', cfg), cfg);
+    assertTrue(!histogramChart.editable.base.includes('bins'));
+    assertDeepEqual(Object.keys(histogramChart.edits().fields || {}).filter((k) => k === 'bins'), []);
+  });
+
   test('edits(): bearbeitbare Teilmenge, alles optional, Reihen mit Namen', () => {
     const e = histogramChart.edits();
     assertDeepEqual(defaultOf(e), {});
