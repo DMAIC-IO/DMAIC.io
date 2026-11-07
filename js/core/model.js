@@ -28,9 +28,10 @@
  * `fromJSON` hebt ältere Stände über die Kette `'a→b'` auf `version` (fehlend =
  * `'0'`), neuere lehnt es ab.
  *
- * `ModelContext` (`setModelContext`): Fakten als schlichte Werte, heute der
- * aktive Zyklus. Feldarten lesen ihn über `checkValue`/`defaultOf`, das Model
- * über `this.context`. Keine Dienste.
+ * `ModelContext` (`setModelContext`): Fakten als schlichte Werte — der aktive
+ * Zyklus und die Einstellungen Konfidenzniveau/Teststärke. Feldarten lesen ihn
+ * über `checkValue`/`defaultOf` (auch eine `default`-Funktion), das Model über
+ * `this.context`. Keine Dienste.
  *
  * Rein: kein DOM, kein Alpine.
  */
@@ -178,23 +179,31 @@ export function cloneJSON(v) {
 
 // ─── Kontext des Models ─────────────────────────────────────
 
-/** @typedef {{ cycle: string }} ModelContext */
+/** @typedef {{ cycle: string, confidenceLevel: number, power: number }} ModelContext */
 
-/** Der Kontext ohne gesetzte Fakten (reine Tests, alte Pfade). */
-export const DEFAULT_CONTEXT = Object.freeze({ cycle: DEFAULT_CYCLE });
-const CONTEXT_KEYS = ['cycle'];
+/** Der Kontext ohne gesetzte Fakten (reine Tests, alte Pfade); Prozentwerte wie die Einstellungen. */
+export const DEFAULT_CONTEXT = Object.freeze({ cycle: DEFAULT_CYCLE, confidenceLevel: 95, power: 80 });
+const CONTEXT_KEYS = ['cycle', 'confidenceLevel', 'power'];
+/** Bereich der Prozentwerte im Kontext. */
+const PERCENT = Object.freeze({ exclusiveMin: 0, exclusiveMax: 100 });
 
 /**
  * Einen Kontext prüfen: nur bekannte Schlüssel, nur schlichte Werte.
+ * `cycle` ist Pflicht; `confidenceLevel`/`power` fallen auf `DEFAULT_CONTEXT`.
  * @param {any} ctx @returns {Readonly<ModelContext>}
- * @throws {Error} unbekannter Schlüssel, fehlender Schlüssel, unbekannter Zyklus
+ * @throws {Error} unbekannter Schlüssel, fehlender Zyklus, unbekannter Zyklus, Prozentwert außerhalb (0, 100)
  */
 export function checkContext(ctx) {
   requireForm('context', ctx, isPlainObject(ctx), 'an object with cycle');
   for (const k of Object.keys(ctx)) requireKnownId('context key', k, CONTEXT_KEYS);
-  requireKeys('context', ctx, CONTEXT_KEYS.map((name) => ({ name })), 'key');
+  requireKeys('context', ctx, [{ name: 'cycle' }], 'key');
   requireEnum('context.cycle', ctx.cycle, Object.keys(CYCLES));
-  return Object.freeze({ cycle: ctx.cycle });
+  const pct = (k) => {
+    if (!Object.hasOwn(ctx, k)) return DEFAULT_CONTEXT[k];
+    requireNumber(`context.${k}`, ctx[k], PERCENT);
+    return ctx[k];
+  };
+  return Object.freeze({ cycle: ctx.cycle, confidenceLevel: pct('confidenceLevel'), power: pct('power') });
 }
 
 /**
@@ -218,24 +227,41 @@ export function contextOf(model) {
 }
 
 /**
- * Der Kontext des offenen Projekts aus dem State-Manager; ein unbekannter
- * oder fehlender Zyklus gilt als Vorgabezyklus.
- * @param {{ getProjectCycle?: () => string }|undefined|null} stateManager
+ * Der Kontext des offenen Projekts aus dem State-Manager: Zyklus des
+ * Projekts, Konfidenzniveau und Teststärke aus den Einstellungen. Ein
+ * unbekannter Zyklus gilt als Vorgabezyklus; ein Prozentwert, der keine
+ * endliche Zahl in (0, 100) ist, als Vorgabe (95 bzw. 80).
+ * @param {{ getProjectCycle?: () => string, get?: (path: string) => any }|undefined|null} stateManager
  * @returns {ModelContext}
  */
 export function activeContext(stateManager) {
   const cycle = stateManager?.getProjectCycle?.();
-  return { cycle: typeof cycle === 'string' && Object.hasOwn(CYCLES, cycle) ? cycle : DEFAULT_CYCLE };
+  const pct = (key) => {
+    const v = stateManager?.get?.(`settings.${key}`);
+    return typeof v === 'number' && Number.isFinite(v) && v > 0 && v < 100 ? v : DEFAULT_CONTEXT[key];
+  };
+  return {
+    cycle: typeof cycle === 'string' && Object.hasOwn(CYCLES, cycle) ? cycle : DEFAULT_CYCLE,
+    confidenceLevel: pct('confidenceLevel'),
+    power: pct('power'),
+  };
 }
 
 /**
- * Der Vorgabewert eines Feldes, jedes Mal frisch.
+ * Der Vorgabewert eines Feldes, jedes Mal frisch. Ist `default` eine
+ * Funktion, liefert sie den Wert aus dem Kontext; er wird gegen die Feldart
+ * geprüft.
  * @param {object} s Feld-Spec
- * @param {ModelContext} [context] Kontext des Models (Zyklus für `phase`)
+ * @param {ModelContext} [context] Kontext des Models (Zyklus für `phase`, Einstellungen für `default`-Funktionen)
+ * @param {string} [name] Feldname für die Meldung
  * @returns {any}
+ * @throws {Error} wenn eine `default`-Funktion einen ungültigen Wert liefert
  */
-export function defaultOf(s, context = DEFAULT_CONTEXT) {
-  if (Object.hasOwn(s, 'default')) return cloneJSON(s.default);
+export function defaultOf(s, context = DEFAULT_CONTEXT, name = 'default') {
+  if (Object.hasOwn(s, 'default')) {
+    if (typeof s.default !== 'function') return cloneJSON(s.default);
+    return checkValue(s, name, s.default(context), { context });
+  }
   if (s.nullable) return null;
   switch (s.kind) {
     case 'text': case 'idOf': case 'date': return '';
@@ -886,11 +912,12 @@ export function setModelName(Model, name) {
  * dürfen, etwa Dashboard-Kacheln.
  * @param {any} Model Klasse aus `defineModel`
  * @param {any} json gespeicherter Zustand
+ * @param {ModelContext} [context] Kontext, aus dem fehlende Felder ihre Vorgabe bekommen
  * @returns {any} eine Instanz von `Model`
  */
-export function readModel(Model, json) {
-  try { return Model.fromJSON(json); } catch { /* reparieren */ }
-  try { return Model.fromJSON(json, { repair: true }); } catch { return new Model(); }
+export function readModel(Model, json, context) {
+  try { return Model.fromJSON(json, { context }); } catch { /* reparieren */ }
+  try { return Model.fromJSON(json, { repair: true, context }); } catch { return new Model(context); }
 }
 
 /**
@@ -933,20 +960,24 @@ export function defineModel(schema) {
   for (const [name, inv] of Object.entries(invariants)) for (const f of inv.fields) (invariantsOf[f] ??= []).push(name);
 
   class Model {
-    constructor() {
+    /** @param {ModelContext} [context] Kontext, aus dem die Vorgaben kommen (sonst der Vorgabe-Kontext) */
+    constructor(context) {
       this._v = {};
-      for (const [k, s] of Object.entries(all)) this._v[k] = defaultOf(s);
       Object.defineProperty(this, '_run', { value: 0, writable: true, configurable: true, enumerable: false });
+      if (context !== undefined) setModelContext(this, context);
+      const ctx = contextOf(this);
+      for (const [k, s] of Object.entries(all)) this._v[k] = defaultOf(s, ctx, k);
     }
 
     /**
      * @param {any} json gespeicherter Zustand
-     * @param {{ repair?: boolean }} [opts] `repair`: ungültige Inhaltsfelder
-     *   auf den Vorgabewert setzen statt zu werfen
+     * @param {{ repair?: boolean, context?: ModelContext }} [opts] `repair`: ungültige Inhaltsfelder
+     *   auf den Vorgabewert setzen statt zu werfen; `context`: Kontext des Models,
+     *   fehlende Felder bekommen ihre Vorgabe daraus
      * @returns {any}
      */
-    static fromJSON(json, { repair = false } = {}) {
-      const m = new this();
+    static fromJSON(json, { repair = false, context } = {}) {
+      const m = new this(context);
       if (!isPlainObject(json)) return m;
       json = migrate(json, version, steps);
       if (!isPlainObject(json)) return m;
@@ -970,7 +1001,7 @@ export function defineModel(schema) {
         if (inv.test.call(m, m)) continue;
         const onlyView = inv.fields.every((f) => Object.hasOwn(view, f));
         if (!onlyView && !repair) throw invariantError(inv.fields[0], m._v[inv.fields[0]], name);
-        for (const f of inv.fields) m._v[f] = defaultOf(all[f], contextOf(m));
+        for (const f of inv.fields) m._v[f] = defaultOf(all[f], contextOf(m), f);
       }
       return m;
     }
@@ -983,9 +1014,10 @@ export function defineModel(schema) {
       return out;
     }
 
-    /** @returns {boolean} true, sobald ein Inhaltsfeld vom Vorgabewert abweicht */
+    /** @returns {boolean} true, sobald ein Inhaltsfeld vom Vorgabewert (im Kontext des Models) abweicht */
     hasContent() {
-      return Object.entries(fields).some(([k, s]) => JSON.stringify(this._v[k]) !== JSON.stringify(defaultOf(s)));
+      const ctx = contextOf(this);
+      return Object.entries(fields).some(([k, s]) => JSON.stringify(this._v[k]) !== JSON.stringify(defaultOf(s, ctx, k)));
     }
 
     /**

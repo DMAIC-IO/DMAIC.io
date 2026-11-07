@@ -2,12 +2,13 @@
  * Tests for core/model.js — Felder, Ansichtsfelder, toJSON/fromJSON, Typtexte.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../test-utils.js';
+import { getPhaseIds } from '../../js/core/cycles/cycles.js';
 import {
   defineModel, command, text, number, boolean, oneOf, index, idOf, list, record, object,
   defaultOf, checkValue, describeType, schemaOf, fieldSpec, defineState, stateSchemaOf,
   currentOf, confirmOf, commandDefOf, fromAttr, defineForm,
   defineSettings, isSettings, readSettings,
-  columnRef, rewriteColumnRefs, date, time, phase, activeContext, setCommandObserver, setModelContext, contextOf, checkContext, DEFAULT_CONTEXT,
+  columnRef, rewriteColumnRefs, readModel, date, time, phase, activeContext, setCommandObserver, setModelContext, contextOf, checkContext, DEFAULT_CONTEXT,
 } from '../../js/core/model.js';
 
 const COLS = ['suppliers', 'inputs'];
@@ -542,7 +543,7 @@ suite('ModelContext', () => {
 
   test('ohne Kontext gilt der Vorgabezyklus', () => {
     const m = new Ctx();
-    assertDeepEqual({ ...m.context }, { cycle: 'dmaic' });
+    assertDeepEqual({ ...m.context }, { cycle: 'dmaic', confidenceLevel: 95, power: 80 });
     assertDeepEqual({ ...contextOf(m) }, { ...DEFAULT_CONTEXT });
   });
 
@@ -656,9 +657,9 @@ suite('Invarianten', () => {
 
 suite('activeContext', () => {
   test('Zyklus des Projekts, sonst Vorgabe', () => {
-    assertDeepEqual(activeContext({ getProjectCycle: () => 'eightd' }), { cycle: 'eightd' });
-    assertDeepEqual(activeContext({ getProjectCycle: () => 'unbekannt' }), { cycle: 'dmaic' });
-    assertDeepEqual(activeContext(undefined), { cycle: 'dmaic' });
+    assertDeepEqual(activeContext({ getProjectCycle: () => 'eightd' }), { cycle: 'eightd', confidenceLevel: 95, power: 80 });
+    assertDeepEqual(activeContext({ getProjectCycle: () => 'unbekannt' }), { cycle: 'dmaic', confidenceLevel: 95, power: 80 });
+    assertDeepEqual(activeContext(undefined), { cycle: 'dmaic', confidenceLevel: 95, power: 80 });
   });
 });
 
@@ -755,5 +756,72 @@ suite('rewriteColumnRefs', () => {
   test('fehlende und kaputte Werte bleiben stehen', () => {
     const out = rewriteColumnRefs(M, { one: null, many: 'x' }, '__source__', 'ws9');
     assertDeepEqual(out, { one: null, many: 'x' });
+  });
+});
+
+suite('Vorgaben aus dem Kontext', () => {
+  const Stats = defineModel({
+    fields: {
+      alpha: number({ exclusiveMin: 0, exclusiveMax: 1, default: (c) => Number((1 - c.confidenceLevel / 100).toFixed(4)) }),
+      powerGoal: number({ min: 0.5, max: 0.99, default: (c) => c.power / 100 }),
+      note: text(),
+    },
+  });
+  const ctx90 = { cycle: 'dmaic', confidenceLevel: 90, power: 90 };
+
+  test('activeContext liest die Einstellungen; fehlend oder ungültig → 95/80', () => {
+    const sm = (conf, power) => ({ getProjectCycle: () => 'dmaic', get: (k) => ({ 'settings.confidenceLevel': conf, 'settings.power': power })[k] });
+    assertDeepEqual(activeContext(sm(90, 85)), { cycle: 'dmaic', confidenceLevel: 90, power: 85 });
+    assertDeepEqual(activeContext(sm(undefined, null)), { cycle: 'dmaic', confidenceLevel: 95, power: 80 });
+    assertDeepEqual(activeContext(sm('90', NaN)), { cycle: 'dmaic', confidenceLevel: 95, power: 80 });
+    assertDeepEqual(activeContext(sm(0, 100)), { cycle: 'dmaic', confidenceLevel: 95, power: 80 });
+  });
+
+  test('checkContext: Einstellungen optional, geprüft', () => {
+    assertDeepEqual({ ...checkContext({ cycle: 'dmadv' }) }, { cycle: 'dmadv', confidenceLevel: 95, power: 80 });
+    assertThrows(() => checkContext({ cycle: 'dmaic', confidenceLevel: 120 }), /invalid context\.confidenceLevel 120/);
+    assertThrows(() => checkContext({ cycle: 'dmaic', power: 'x' }), /invalid context\.power "x"/);
+  });
+
+  test('default als Funktion: ohne Kontext die Vorgabe, mit Kontext daraus', () => {
+    const m = new Stats();
+    assertEqual(m.alpha, 0.05);
+    assertEqual(m.powerGoal, 0.8);
+    const n = new Stats(ctx90);
+    assertEqual(n.alpha, 0.1);
+    assertEqual(n.powerGoal, 0.9);
+    assertEqual(n.context.confidenceLevel, 90);
+    assertEqual(defaultOf(Stats.schema.fields.alpha, { ...DEFAULT_CONTEXT, confidenceLevel: 99 }), 0.01);
+  });
+
+  test('ungültiger Rückgabewert wirft mit Feldnamen', () => {
+    const Bad = defineModel({ fields: { alpha: number({ min: 0, max: 1, default: (c) => (c.power > 90 ? 2 : 0.5) }) } });
+    assertEqual(new Bad().alpha, 0.5);
+    assertThrows(() => new Bad({ cycle: 'dmaic', power: 95 }), /invalid alpha 2/);
+    assertThrows(() => defineModel({ fields: { a: number({ min: 0, max: 1, default: () => 5 }) } }), /invalid a 5/);
+  });
+
+  test('fromJSON füllt fehlende Felder aus dem Kontext, gespeicherte bleiben', () => {
+    assertEqual(Stats.fromJSON({ note: 'x' }, { context: ctx90 }).alpha, 0.1);
+    assertEqual(Stats.fromJSON({ alpha: 0.05 }, { context: ctx90 }).alpha, 0.05);
+    assertEqual(readModel(Stats, { note: 'x' }, ctx90).powerGoal, 0.9);
+  });
+
+  test('hasContent vergleicht gegen die Vorgaben des Kontexts', () => {
+    assertEqual(new Stats(ctx90).hasContent(), false);
+    const m = new Stats(ctx90);
+    setModelContext(m, { cycle: 'dmaic' });
+    assertEqual(m.hasContent(), true, 'α 0.10 weicht von der Vorgabe 0.05 ab');
+  });
+
+  test('hasContent: phase() unter DMADV auf seiner Vorgabe ist kein Inhalt', () => {
+    const P = defineModel({ fields: { at: phase() } });
+    const m = new P({ cycle: 'dmadv' });
+    assertEqual(m.at, getPhaseIds('dmadv')[0]);
+    assertEqual(m.hasContent(), false);
+  });
+
+  test('describeType nennt keine default-Funktion', () => {
+    assertTrue(!JSON.stringify(describeType(Stats.schema.fields.alpha)).includes('default'));
   });
 });
