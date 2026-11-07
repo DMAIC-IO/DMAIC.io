@@ -5,9 +5,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readViewmodelAsyncTasks, checkAsyncTaskRefs, asyncTaskHelpKeys, checkAsyncTaskDecls, asyncTaskAnchors } from './async-task-gates.mjs';
 
+const CORE = ['..', '..', '..', 'core'].join('/');
 const VM = `
-import { asyncTask } from '../../../core/async-task.js';
-import { number } from '../../../core/model.js';
+import { asyncTask } from '${CORE}/async-task.js';
+import { number } from '${CORE}/model.js';
 export default createModule({
   asyncTasks: {
     compute: asyncTask({ params: { n: number() }, blocked() { return null; }, async run() {} }),
