@@ -366,6 +366,14 @@ die Rechnung, `{ error: <Meldung> }`. Das Ergebnis folgt dem Zustand: wer eine S
 wählt (`instance.set` auf `colRef1`) oder einen Wert im Arbeitsblatt ändert, liest
 beim nächsten `read()` das neu gerechnete Ergebnis.
 
+Ableitungen können auch Massenfelder sein (`bulk: true, bulkKind: 'table',
+derived: true`, etwa die Punkte einer Regelkarte). Sie verhalten sich wie jedes
+Massenfeld: `read()` liefert den Deskriptor ohne Nennung der Zeilen, die vollen
+Zeilen kommen mit `read({ fields: ['points'] })`, ein Zuschnitt mit `rows`.
+Beispiel `attribute-control-chart`: `result` (Kennzahlen, Grenzen, Verletzungen)
+und `points` (Zeilentabelle); schreibend bleibt nur das Kommando
+`toggleRule({ ruleId, on })`.
+
 **`read()` liest.** Ein `read()` ist nebenwirkungsfrei; es ist deshalb auch
 im abgeschlossenen Projekt erlaubt.
 
