@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkViewReads, checkPickerCss, checkChartBindings, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts } from './module-gates.mjs';
+import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkViewReads, checkPickerCss, checkChartBindings, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts, viewNamesOf, viewNamesDetailOf } from './module-gates.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { APP_DIR } from './build.mjs';
 import { defineModel, command, text, number, oneOf, index, idOf, list, record, object, boolean, date, columnRef } from '../../js/core/model.js';
@@ -987,4 +987,41 @@ export const State = defineModel({ fields: {
   const settings = `import { defineSettings, number } from 'core/model.js';
 export const Settings = defineSettings({ n: number({ min: 0, max: 1, default: () => 1 }) });\n`;
   assert.ok(checkSchemaLiteral(settings, { define: 'defineSettings', file: 'tile/settings.js' })[0].includes('Funktion nicht erlaubt'));
+});
+
+// Importzeilen zusammengesetzt, damit der Grenz-Scanner sie nicht als echte Importe liest.
+const imp = (what, from) => 'import' + ` ${what} from '${from}';`;
+
+test('checkSchemaLiteral: edits() eines Widget-Schemas und Diagrammfarben', () => {
+  const ok = [
+    imp('{ defineModel, list, text }', '../../../core/model.js'),
+    imp('histogramChart', '../../../widgets/histogram-chart/schema.js'),
+    imp('{ CHART_COLORS_RGBA }', '../../../core/chart/chart-colors.js'),
+    'export const State = defineModel({ fields: { c: list(text(), { default: CHART_COLORS_RGBA }) }, view: { h: histogramChart.edits() } });',
+  ].join('\n');
+  assert.deepEqual(checkSchemaLiteral(ok), []);
+  const bad = ok.replace('histogramChart.edits()', 'histogramChart.other()');
+  assert.deepEqual(checkSchemaLiteral(bad), ['schema: domain/model.js: Aufruf histogramChart.other() ist kein Konstruktor aus core/model.js']);
+  const withArg = ok.replace('histogramChart.edits()', 'histogramChart.edits(1)');
+  assert.equal(checkSchemaLiteral(withArg).length, 1);
+});
+
+test('Layer: domain importiert aus js/widgets nur schema.js, Diagrammfarben sind erlaubt', () => {
+  const files = [
+    { path: 'domain/model.js', text: [imp('h', '../../../widgets/histogram-chart/schema.js'), imp('{ CHART_COLORS_RGBA }', '../../../core/chart/chart-colors.js')].join('\n') },
+    { path: 'domain/a.js', text: [imp('m', '../../../widgets/histogram-chart/mount.js'), imp('p', '../../../widgets/chart-mount.js'), imp('q', '../../../widgets/chart-parts.js')].join('\n') },
+  ];
+  assert.deepEqual(checkLayers(files), [
+    'layer: domain/a.js: Import ../../../widgets/histogram-chart/mount.js in domain/ verboten (aus js/widgets/ nur schema.js)',
+    'layer: domain/a.js: Import ../../../widgets/chart-mount.js in domain/ verboten (aus js/widgets/ nur schema.js)',
+    'layer: domain/a.js: Import ../../../widgets/chart-parts.js in domain/ verboten (aus js/widgets/ nur schema.js)',
+  ]);
+});
+
+test('viewNamesOf: Getter, computed und Datenglieder des view-Blocks', () => {
+  const vm = `export default createModule({ view() { return {
+    get stats() { return 1; }, computed: { helper() { return 2; } }, legacyEditKeys: { a: 'x' }, plain: 3,
+  }; } });`;
+  assert.deepEqual(viewNamesDetailOf(vm), { getters: ['stats'], computed: ['helper'], data: ['legacyEditKeys', 'plain'] });
+  assert.deepEqual([...viewNamesOf(vm)].sort(), ['helper', 'legacyEditKeys', 'plain', 'stats']);
 });

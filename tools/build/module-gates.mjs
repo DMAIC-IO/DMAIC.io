@@ -16,7 +16,8 @@ import { join } from 'node:path';
 import ts from 'typescript';
 import { parsePath } from '../../js/core/model.js';
 import { parseFieldPath, keyFieldsOf } from '../../js/core/field-path.js';
-import { loadModelSchema, loadSettingsSchema, loadFormSchemas } from './model-types.mjs';
+import { loadModelSchema, loadSettingsSchema, loadFormSchemas, loadStateSchema } from './model-types.mjs';
+import { checkWidgetBindings, loadWidgetSchemas } from './widget-gates.mjs';
 import { BOOKS } from '../../js/core/references-books.js';
 import { readExampleOwners } from './example-catalog.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
@@ -251,6 +252,7 @@ const LAYER_RULES = {
       { re: /(^|\/)ui\//, why: 'UI' },
       { re: /\/core\/(template-module|field-directive)\.js$/, why: 'Viewmodel-Kern' },
       { re: /^(\.\.\/)+(viewmodel|interaction|io|tile|resources)\//, why: 'höhere Schicht' },
+      { re: /\/widgets\/(?![a-z0-9-]+\/schema\.js$)/, why: 'aus js/widgets/ nur schema.js' },
     ],
     globals: ['document', 'window', 'Alpine', 'context'],
   },
@@ -306,6 +308,8 @@ export function checkLayers(files) {
 }
 
 const MODEL_SPEC = /(^|\/)core\/model\.js$/;
+const WIDGET_SCHEMA_SPEC = /\/widgets\/[a-z0-9-]+\/schema\.js$/;
+const CHART_COLORS_SPEC = /\/core\/chart\/chart-colors\.js$/;
 /** Präfix aller Schema-Befunde. */
 const SCHEMA_PREFIX = 'schema: domain/model.js:';
 
@@ -325,12 +329,17 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
   const runImports = new Set();
   const migrationImports = new Set();
   const consts = new Set();
+  const widgetSchemas = new Set(); // Default-Importe von widgets/<name>/schema.js
   for (const st of sf.statements) {
+    if (ts.isImportDeclaration(st) && ts.isStringLiteral(st.moduleSpecifier) && st.importClause?.name && WIDGET_SCHEMA_SPEC.test(st.moduleSpecifier.text)) {
+      widgetSchemas.add(st.importClause.name.text);
+    }
     if (ts.isImportDeclaration(st) && ts.isStringLiteral(st.moduleSpecifier) && st.importClause?.namedBindings && ts.isNamedImports(st.importClause.namedBindings)) {
       const spec = st.moduleSpecifier.text;
       for (const el of st.importClause.namedBindings.elements) {
         const imported = (el.propertyName ?? el.name).text;
         if (MODEL_SPEC.test(spec)) ctors.set(el.name.text, imported);
+        else if (CHART_COLORS_SPEC.test(spec)) consts.add(el.name.text);
         else if (/^\.\/commands\//.test(spec)) runImports.add(el.name.text);
         else if (spec === './migrations.js') migrationImports.add(el.name.text);
       }
@@ -463,6 +472,9 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
       }
       return;
     }
+    // `<WidgetSchema>.edits()` — Bearbeitungsfeld eines Diagramm-Widgets, ohne Argumente.
+    if (ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression) && ts.isIdentifier(n.expression.expression)
+        && widgetSchemas.has(n.expression.expression.text) && n.expression.name.text === 'edits' && n.arguments.length === 0) return;
     if (ts.isCallExpression(n)) {
       out.push(`${P} Aufruf ${src(n)} ist kein Konstruktor aus core/model.js`);
       return;
@@ -531,9 +543,11 @@ const FIELD_BINDING = /\b(x-field|x-set)\s*=\s*"\s*model\.([A-Za-z_$][\w$]*)\s*"
  * `x-field` nur auf Felder mit Regeln.
  * @param {{ path: string, text: string }[]} files view.html und *.part.html
  * @param {{ fields: object, view: object }} schema
+ * @param {Map<string, any>} [widgets] registrierte Widgets; eines mit passendem `forKind` macht das Feld für `x-field` bindbar
  * @returns {string[]}
  */
-export function checkTemplateBindings(files, schema) {
+export function checkTemplateBindings(files, schema, widgets = new Map()) {
+  const widgetKinds = new Set([...widgets.values()].map((w) => w.forKind).filter(Boolean));
   const all = { ...schema.fields, ...schema.view };
   const out = [];
   for (const { path, text } of files) {
@@ -542,7 +556,8 @@ export function checkTemplateBindings(files, schema) {
       const shown = `${attr}="model.${name}"`;
       const spec = all[name];
       if (!spec) { out.push(`template: ${path}: ${shown}: ${name} ist weder Feld noch Ansichtsfeld`); continue; }
-      const bindable = RULE_KINDS.includes(spec.kind) || (spec.kind === 'list' && spec.item?.kind === 'columnRef');
+      const bindable = RULE_KINDS.includes(spec.kind) || (spec.kind === 'list' && spec.item?.kind === 'columnRef')
+        || widgetKinds.has(spec.kind) || (spec.kind === 'list' && widgetKinds.has(spec.item?.kind));
       if (attr === 'x-field' && !bindable) {
         out.push(`template: ${path}: ${shown}: ${name} (${spec.kind}) hat keine Regeln — x-model verwenden`);
       }
@@ -653,8 +668,45 @@ export function checkPickerCss(css) {
 
 const CHART_BINDING = /\bx-chart\s*=\s*"([^"]*)"/g;
 
+/**
+ * Die Namen des view-Blocks nach Herkunft: Getter (überall im Block),
+ * `computed`-Schlüssel und Datenglieder (Eigenschaften mit Bezeichner-Schlüssel
+ * am zurückgegebenen Objekt, ausgenommen `computed`).
+ * @param {string} text Quelltext von viewmodel.js oder einer Kachel
+ * @returns {{ getters: string[], computed: string[], data: string[] }}
+ */
+export function viewNamesDetailOf(text) {
+  const getters = new Set();
+  const computed = new Set();
+  const data = new Set();
+  const view = findViewBlock(text);
+  if (!view) return { getters: [], computed: [], data: [] };
+  let top = null; // das Objekt, das der view-Block liefert
+  const visit = (n) => {
+    if (ts.isGetAccessorDeclaration(n) && ts.isIdentifier(n.name)) getters.add(n.name.text);
+    if (ts.isPropertyAssignment(n) && ts.isIdentifier(n.name) && n.name.text === 'computed'
+        && ts.isObjectLiteralExpression(n.initializer)) {
+      for (const p of n.initializer.properties) if (p.name && ts.isIdentifier(p.name)) computed.add(p.name.text);
+    }
+    if (!top && ts.isReturnStatement(n) && n.expression && ts.isObjectLiteralExpression(n.expression)) top = n.expression;
+    ts.forEachChild(n, visit);
+  };
+  visit(view);
+  if (!top && ts.isPropertyAssignment(view) && ts.isObjectLiteralExpression(view.initializer)) top = view.initializer;
+  for (const p of top?.properties ?? []) {
+    if (ts.isPropertyAssignment(p) && ts.isIdentifier(p.name) && p.name.text !== 'computed') data.add(p.name.text);
+  }
+  return { getters: [...getters], computed: [...computed], data: [...data] };
+}
+
+/** Alle Namen, die ein Template aus dem view-Block lesen darf. @param {string} text @returns {Set<string>} */
+export function viewNamesOf(text) {
+  const { getters, computed, data } = viewNamesDetailOf(text);
+  return new Set([...getters, ...computed, ...data]);
+}
+
 /** Erlaubte x-chart-Namen eines view-Blocks (Getter und computed). @param {string} text @returns {Set<string>} */
-function chartNamesOf(text) {
+export function chartNamesOf(text) {
   const allowed = new Set();
   const view = findViewBlock(text);
   if (!view) return allowed;
@@ -1243,7 +1295,8 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
     if (schema) {
       out.push(...checkSchemaPaths(schema));
       const views = paths.filter((p) => p === 'resources/view.html' || /^resources\/[^/]+\.part\.html$/.test(p)).map(read);
-      out.push(...checkTemplateBindings(views, schema));
+      const widgets = ctx.widgets ?? await loadWidgetSchemas(appDir);
+      out.push(...checkTemplateBindings(views, schema, widgets));
       const vmFile = join(base, 'viewmodel', 'viewmodel.js');
       const templates = paths.filter((p) => /^resources\/[^/]+\.html$/.test(p)).map(read);
       let formSchemas = {};
@@ -1253,6 +1306,21 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
         } catch (err) {
           out.push(`command: viewmodel/forms.js: lässt sich nicht laden (${err.message})`);
         }
+      }
+      let stateSchema = null;
+      if (paths.includes('viewmodel/state.js')) {
+        try {
+          ({ schema: stateSchema } = await loadStateSchema(join(base, 'viewmodel', 'state.js')));
+        } catch (err) {
+          out.push(`state: viewmodel/state.js: lässt sich nicht laden (${err.message})`);
+        }
+      }
+      const tileText = (p) => (paths.includes(p) ? readFileSync(join(base, p), 'utf8') : '');
+      const vmNames = paths.includes('viewmodel/viewmodel.js') ? viewNamesOf(tileText('viewmodel/viewmodel.js')) : new Set();
+      out.push(...checkWidgetBindings(templates.filter((f) => !/^resources\/tile(\.|$)/.test(f.path)), { widgets, schema, stateSchema, viewNames: vmNames }));
+      for (const f of templates) {
+        const m = /^resources\/tile(?:\.([a-z0-9-]+))?\.html$/.exec(f.path);
+        if (m) out.push(...checkWidgetBindings([f], { widgets, schema, stateSchema: null, viewNames: viewNamesOf(tileText(`tile/${m[1] ?? 'tile'}.js`)) }));
       }
       out.push(...checkCommandRefs(templates, schema, formSchemas));
       const lists = checkListBindings(templates, schema);
