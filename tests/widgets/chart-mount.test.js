@@ -128,6 +128,17 @@ suite('Diagramm-Widgets (chart-mount)', () => {
     root.remove();
   });
 
+  test('entfallene gespeicherte Einstellung wird im Diagramm zurückgesetzt', async () => {
+    const cm = fakeManager();
+    const { root, data } = await host(HIST, { cm, model: { chartEdits: { showLegend: false } } });
+    assertEqual(cm.log.created[0].config.showLegend, false);
+    data.model.chartEdits = {};
+    await flush();
+    assertTrue(cm.log.created[0].config.showLegend !== false);
+    assertEqual(cm.log.created.length, 1);
+    root.remove();
+  });
+
   test('ohne x-widget-value keine Rückmeldung', async () => {
     const cm = fakeManager();
     const { root } = await host('<div x-widget="histogram-chart" x-widget-config="histogram"></div>', { cm });

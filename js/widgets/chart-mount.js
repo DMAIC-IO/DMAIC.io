@@ -27,6 +27,8 @@ export function chartMount(widget, toChart = (c) => c) {
     let written = null;
     /** @type {string|null} */
     let lastCfg = null;
+    /** Zuletzt angewandte Einstellungen: entfallene Schlüssel müssen beim Aktualisieren zurückgesetzt werden. */
+    let appliedEdits = {};
 
     const release = () => {
       const { chart } = slot;
@@ -61,6 +63,9 @@ export function chartMount(widget, toChart = (c) => c) {
       lastCfg = cfgJson;
       const config = toChart(applyEdits(cfg, edits, editable, ownedKeys(cfg)));
       if (value) config.onEditorChange = onEditorChange;
+      const owned = ownedKeys(cfg);
+      for (const k of editable.base) if (appliedEdits[k] !== undefined && edits[k] === undefined && !owned.has(k) && !(k in config)) config[k] = cfg[k];
+      appliedEdits = edits;
       if (slot.token) {
         if (slot.chart) { cm.update(slot.chart, config); shown = pickShown(slot.chart.config, editable); } else slot.pending = config;
         return;
