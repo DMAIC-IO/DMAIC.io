@@ -16,7 +16,7 @@ import { openChannel } from './value-channel.js';
 import { cloneTemplate } from './dom.js';
 import { clearRejection, markRejection } from './param-input.js';
 
-const registered = new WeakSet();
+const registered = new WeakMap();
 const PROP_ATTR = /^x-widget-([a-z][a-z0-9-]*)$/;
 
 /** @param {string} kebab @returns {string} */
@@ -135,17 +135,19 @@ export function mountWidget(Alpine, el, name, entry, { valuePath, i18n, effect, 
 }
 
 /**
- * `x-widget` registrieren; je Alpine-Instanz einmal wirksam.
+ * `x-widget` registrieren; je Alpine-Instanz einmal wirksam, weitere Aufrufe ergänzen die Widgets.
  * @param {any} Alpine
  * @param {{ i18n: any, widgets: Record<string, any> }} deps
  * @returns {void}
  */
 export function registerWidgetDirective(Alpine, { i18n, widgets }) {
-  if (registered.has(Alpine)) return;
-  registered.add(Alpine);
+  let known = registered.get(Alpine);
+  if (known) { Object.assign(known, widgets); return; }
+  known = { ...widgets };
+  registered.set(Alpine, known);
   Alpine.directive('widget', (el, { expression }, { effect, cleanup }) => {
     const name = String(expression).trim();
-    mountWidget(Alpine, el, name, widgets[name], {
+    mountWidget(Alpine, el, name, known[name], {
       valuePath: el.hasAttribute('x-widget-value') ? el.getAttribute('x-widget-value').trim() : null,
       i18n, effect, cleanup,
     });

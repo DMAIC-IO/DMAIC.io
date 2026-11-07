@@ -89,7 +89,7 @@ export function diffEdits(prev, before, after, editable, owned) {
         if (same(before.series[i][k], s[k])) continue;
         let row = rows.find((/** @type {any} */ r) => r.name === name);
         if (!row) { row = { name }; rows.push(row); }
-        row[k] = clone(s[k]);
+        if (s[k] === undefined) delete row[k]; else row[k] = clone(s[k]);
       }
     });
     if (rows.length) next.series = rows; else delete next.series;

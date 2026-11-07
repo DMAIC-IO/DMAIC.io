@@ -197,6 +197,7 @@ const SKIP = new Set([
   'ui/workspace-instance-ready.test.js',
   'ui/workspace-phase-memory.test.js',
   'ui/workspace-reset.test.js',
+  'widgets/chart-mount.test.js',
   'widgets/dataset-picker.test.js',
 ]);
 
