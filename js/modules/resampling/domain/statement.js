@@ -67,6 +67,7 @@ function pairedParts(summary, interval, alpha, conf, stat) {
 function oneParts(summary, interval, conf, stat, target, ciMethod) {
   const est = summary.boot ? summary.boot.estimate : null;
   if (!Number.isFinite(est) || !interval) return [];
+  /** @type {StatementPart[]} */
   const parts = [{
     key: 'stmtOneEstimate',
     params: { a: summary.labels[0], stat, est: fmt(est), lo: fmt(interval[0]), hi: fmt(interval[1]), conf },

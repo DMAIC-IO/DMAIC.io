@@ -39,11 +39,11 @@ test('echter Baum: 12 Szenarien in shared/, keine mehr in index.json, neun getei
   const raw = JSON.parse(readFileSync(join(APP_DIR, 'examples', 'index.json'), 'utf8'));
   assert.equal(raw.examples.filter((e) => e.type === 'scenario').length, 0);
   for (const name of ['pizza-delivery', 'regression-collinear', 'regression-outliers', 'spc-imr-shift', 'hypothesis-pizza-fahrer',
-    'outlier-bolzen-grubbs', 'distribution-weibull', 'distribution-lognormal', 'hubschrauber-flyer']) {
+    'outlier-bolzen-grubbs', 'distribution-weibull', 'distribution-lognormal', 'hubschrauber-flyer', 'resampling-ruestzeit']) {
     assert.ok(existsSync(join(APP_DIR, 'examples', 'shared', 'worksheets', `${name}.json`)), name);
     assert.equal(existsSync(join(APP_DIR, 'examples', 'worksheets', `${name}.json`)), false, `${name} liegt noch unter worksheets/`);
   }
-  for (const keep of ['resampling-ruestzeit', 'msa-typ1-hubschrauber-flyer']) {
+  for (const keep of ['msa-typ1-hubschrauber-flyer']) {
     assert.ok(existsSync(join(APP_DIR, 'examples', 'worksheets', `${keep}.json`)), `${keep} bleibt`);
   }
 });

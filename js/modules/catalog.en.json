@@ -20,6 +20,11 @@
     "description": "Variance and mean tests with automatic normality assessment and power analysis",
     "whenToUse": "When you need to decide whether an observed difference in location or spread goes beyond the noise — one mean against a target value, two samples against each other, or k groups together. Requires metric data in a data collection."
   },
+  "resampling": {
+    "name": "Resampling",
+    "description": "Bootstrap confidence intervals and permutation tests for one, two, paired and k samples",
+    "whenToUse": "When a statistic of one, two, paired or k samples needs a confidence interval or a test without assuming a distribution: bootstraps the interval (BCa or percentile) and tests by permutation (two samples, paired, k groups) or against a target value (one sample). Each sample needs at least 2 numeric values (10 for Ppk)."
+  },
   "sipoc": {
     "name": "SIPOC",
     "description": "Supplier-Input-Process-Output-Customer diagram",

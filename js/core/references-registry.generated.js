@@ -8,8 +8,7 @@ import r5 from '../modules/msa-typ2/msa-typ2-references.js';
 import r6 from '../modules/msa-typ5/msa-typ5-references.js';
 import r7 from '../modules/msa-typ6/msa-typ6-references.js';
 import r8 from '../modules/process-capability/process-capability-references.js';
-import r9 from '../modules/resampling/resampling-references.js';
-import r10 from '../modules/sample-size/sample-size-references.js';
+import r9 from '../modules/sample-size/sample-size-references.js';
 
 export const REFS = {
   "attribute-test": r0,
@@ -21,6 +20,5 @@ export const REFS = {
   "msa-typ5": r6,
   "msa-typ6": r7,
   "process-capability": r8,
-  "resampling": r9,
-  "sample-size": r10,
+  "sample-size": r9,
 };

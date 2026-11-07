@@ -4,11 +4,11 @@
  */
 
 import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertAlmostEqual } from '../test-utils.js';
-import { State } from '../../js/modules/resampling/resampling-model.js';
+import { State } from '../../js/modules/resampling/domain/model.js';
 import {
   parseOptionalNumber, readInputs, validateInputs, errorKeyForCode, statParamsFor,
   buildJobs, computeInputsHash, summarize, pickCI, decision,
-} from '../../js/modules/resampling/resampling-analysis.js';
+} from '../../js/modules/resampling/domain/analyze.js';
 import { runJobSync, validateJob } from '../../js/engines/resampling-engine.js';
 
 const ref = (columnId) => ({ instanceId: 'ws', sheetId: 's1', columnId });
@@ -26,7 +26,8 @@ function stateFor(mode, patch = {}) {
   s.colRef1 = ref('a');
   s.colRef2 = ref('b');
   s.colRefsK = [ref('a'), ref('b'), ref('c')];
-  return Object.assign(s, patch);
+  // Reine Kopie statt State: das Modell weist ungültige Werte ab, die Prüfung soll sie aber sehen.
+  return Object.assign(s.toJSON(), patch);
 }
 
 suite('resampling-analysis — parseOptionalNumber', () => {

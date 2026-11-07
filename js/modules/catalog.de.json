@@ -20,6 +20,11 @@
     "description": "Varianz- und Mittelwerttests mit automatischer Normalverteilungsprüfung und Power-Analyse",
     "whenToUse": "Wenn zu entscheiden ist, ob ein beobachteter Unterschied in Lage oder Streuung über das Rauschen hinausgeht — ein Mittelwert gegen einen Zielwert, zwei Stichproben gegeneinander, oder k Gruppen gemeinsam. Setzt metrische Daten in einer Datensammlung voraus."
   },
+  "resampling": {
+    "name": "Resampling",
+    "description": "Bootstrap-Konfidenzintervalle und Permutationstests für eine, zwei, gepaarte und k Stichproben",
+    "whenToUse": "Wenn für eine Kennzahl von einer, zwei, gepaarten oder k Stichproben ein Konfidenzintervall oder ein Test ohne Verteilungsannahme gebraucht wird: bestimmt das Intervall per Bootstrap (BCa oder Perzentil) und testet per Permutation (zwei Stichproben, gepaart, k Gruppen) beziehungsweise gegen einen Zielwert (eine Stichprobe). Jede Stichprobe braucht mindestens 2 numerische Werte (10 bei Ppk)."
+  },
   "sipoc": {
     "name": "SIPOC",
     "description": "Supplier-Input-Process-Output-Customer Diagramm",

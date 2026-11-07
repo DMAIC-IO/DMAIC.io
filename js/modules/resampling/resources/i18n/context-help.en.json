@@ -78,7 +78,7 @@
   },
   "asyncTasks": {
     "compute": {
-      "help": "Runs the resampling and returns after the last pass; result holds the new summary. It does not start while a run is in progress or while the validation field names a reason (invalid parameters, missing or too short columns, fewer than 3 groups in mode 'k', the ratio contrast with values of zero or below); result then stays as it was. A failed run leaves result as it was and reports the reason as the task's error (read().asyncTasks.compute.error).",
+      "help": "Runs the resampling and returns after the last pass; result holds the new summary. It does not start while a run is in progress or while the validation field names a reason (invalid parameters, missing or too short columns, fewer than 3 groups in mode 'k', the ratio contrast with values of zero or below); result then stays as it was. A failed run leaves result as it was and reports the reason as the task's error.",
       "cancel": {
         "help": "Aborts a run in progress; result stays as it was and the task's error stays empty. Without a run nothing happens."
       }

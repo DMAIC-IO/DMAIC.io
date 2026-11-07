@@ -3,7 +3,7 @@
  */
 
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
-import { statementParts, renderStatement } from '../../js/modules/resampling/resampling-statement.js';
+import { statementParts, renderStatement } from '../../js/modules/resampling/domain/statement.js';
 
 const CI = { percentile: [-3.69, 2.15], bca: [-3.5, 2.3], bcaFallback: false };
 const OPTS = { ciMethod: 'percentile', target: '' };

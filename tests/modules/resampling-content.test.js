@@ -5,10 +5,8 @@
  */
 
 import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
-import help from '../../js/modules/resampling/resampling-help.js';
-import references from '../../js/modules/resampling/resampling-references.js';
-import { State } from '../../js/modules/resampling/resampling-model.js';
-import { readInputs, validateInputs, buildJobs } from '../../js/modules/resampling/resampling-analysis.js';
+import { State } from '../../js/modules/resampling/domain/model.js';
+import { readInputs, validateInputs, buildJobs } from '../../js/modules/resampling/domain/analyze.js';
 import { runJobSync } from '../../js/engines/resampling-engine.js';
 
 async function fetchJson(relPath) {
@@ -30,6 +28,15 @@ function strings(node, out = []) {
   return out;
 }
 
+const RES = '../../js/modules/resampling/resources/';
+const helpDe = await fetchJson(`${RES}i18n/help.de.json`);
+const helpEn = await fetchJson(`${RES}i18n/help.en.json`);
+const references = (await fetchJson(`${RES}data/references.json`)).references;
+// Je Sprache eine Datei; für die Prüfungen als {sections:{<id>:{de,en}}} zusammengeführt.
+const help = {
+  sections: Object.fromEntries(Object.keys(helpDe.sections).map((id) => [id, { de: helpDe.sections[id], en: helpEn.sections[id] }])),
+};
+
 const NEW_TERMS = ['bootstrap', 'permutationstest', 'bca-intervall'];
 const EXAMPLES = {
   'resampling-ppk-bolzen': 'one',
@@ -40,7 +47,6 @@ const EXAMPLES = {
 
 suite('resampling — handbook and references', () => {
   test('overview, methodology and pitfalls in both languages', () => {
-    assertEqual(help.moduleId, 'resampling');
     assertEqual(Object.keys(help.sections).join(','), 'overview,methodology,pitfalls');
     for (const section of Object.values(help.sections)) {
       for (const lang of ['de', 'en']) {
@@ -100,7 +106,7 @@ suite('resampling — glossary', () => {
 
 suite('resampling — catalog examples', () => {
   test('one example per mode: registered, valid, computable', async () => {
-    const catalog = await fetchJson('../../examples/index.json');
+    const catalog = await fetchJson(`${RES}examples/examples.json`);
     const byId = Object.fromEntries(catalog.examples.map((e) => [e.id, e]));
     for (const [id, mode] of Object.entries(EXAMPLES)) {
       const entry = byId[id];
@@ -108,8 +114,7 @@ suite('resampling — catalog examples', () => {
       assertEqual(entry.type, 'project');
       assertEqual(entry.format, 'json');
       assertEqual(entry.file, `projects/${id}.json`);
-      assertEqual(entry.modules.join(','), 'resampling');
-      const project = await fetchJson(`../../examples/${entry.file}`);
+      const project = await fetchJson(`${RES}examples/${entry.file}`);
       const worksheet = await fetchJson(`../../examples/${project.sourceWorksheetFile}`);
       const sheet = worksheet.sheets[0];
       const cols = Object.fromEntries(sheet.state.columns.map((c) => [c.id, c.values]));
@@ -134,10 +139,18 @@ suite('resampling — catalog examples', () => {
     const catalog = await fetchJson('../../examples/index.json');
     const entry = catalog.examples.find((e) => e.id === 'worksheet-resampling-ruestzeit');
     assertTrue(Boolean(entry), 'registered');
-    assertEqual(entry.file, 'worksheets/resampling-ruestzeit.json');
+    assertEqual(entry.file, 'shared/worksheets/resampling-ruestzeit.json');
     assertEqual(entry.modules.join(','), 'worksheet');
-    const ws = await fetchJson('../../examples/worksheets/resampling-ruestzeit.json');
+    const ws = await fetchJson('../../examples/shared/worksheets/resampling-ruestzeit.json');
     assertEqual(ws.sheets[0].state.rowCount, 12);
     assertEqual(ws.sheets[0].state.columns.map((c) => c.id).join(','), 'c-vorher,c-nachher');
+  });
+});
+
+suite('resampling — icons', () => {
+  test('icon map has the module icon and the seed dice', async () => {
+    const map = await fetchJson('../../assets/icons/icon-map.json');
+    assertEqual(map['module.resampling'], 'lucide:repeat');
+    assertEqual(map['action.roll-seed'], 'lucide:dices');
   });
 });
