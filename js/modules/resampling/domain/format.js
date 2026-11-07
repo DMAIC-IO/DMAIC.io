@@ -4,6 +4,8 @@
 
 import { pickCI, decision, parseOptionalNumber } from './analyze.js';
 
+/**
+ * Fixed-decimal number, '–' when not finite.
  * @param {number|null} v
  * @param {number} [d]
  * @returns {string}

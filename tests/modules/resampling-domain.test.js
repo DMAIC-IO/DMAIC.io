@@ -2,6 +2,8 @@ import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } f
 import { State, STATS_BY_MODE, STATISTIC_IDS, SEED_MAX } from '../../js/modules/resampling/domain/model.js';
 import { STATISTIC_IDS as ENGINE_IDS } from '../../js/engines/resampling-engine.js';
 import { readInputs, buildJobs, computeInputsHash, summarize } from '../../js/modules/resampling/domain/analyze.js';
+import { fmt, fmtP, fmtInterval, statisticKey, bootDecision } from '../../js/modules/resampling/domain/format.js';
+import { statementParts, renderStatement } from '../../js/modules/resampling/domain/statement.js';
 import { runJobSync } from '../../js/engines/resampling-engine.js';
 
 const ref = (c) => ({ instanceId: 'w', sheetId: 's', columnId: c });
@@ -86,5 +88,34 @@ suite('resampling: Model', () => {
     const m = new State();
     m.bootChartEdits = { title: 'X' };
     assertEqual(m.hasContent(), false);
+  });
+});
+
+suite('resampling: Formatierung und Aussagesatz', () => {
+  const boot = { estimate: 22.5, se: 0.5, bias: 0, ci: { percentile: [21, 24], bca: [21, 24], bcaFallback: false }, bins: [] };
+  const one = { inputsHash: 'h', mode: 'one', statisticId: 'median', contrast: 'difference', direction: 'two-sided', confidence: 0.95, B: 10000, seed: 42, labels: ['X'], n: [15], boot, perm: null, k: null };
+  test('fmt, fmtP, fmtInterval, statisticKey', () => {
+    assertEqual(fmt(1.23456), '1.2346');
+    assertEqual(fmt(null), '–');
+    assertEqual(fmtP(0.00001), '< 0.0001');
+    assertEqual(fmtP(0.5), '0.5000');
+    assertEqual(fmtP(null), '–');
+    assertEqual(fmtInterval([1, 2]), '[1.0000; 2.0000]');
+    assertEqual(fmtInterval(null), '–');
+    assertEqual(statisticKey('trimmedMean'), 'statTrimmedMean');
+  });
+  test('bootDecision', () => {
+    assertEqual(bootDecision(one, { ciMethod: 'bca', target: '30' }), 'reject');
+    assertEqual(bootDecision(one, { ciMethod: 'bca', target: '22' }), 'retain');
+    assertEqual(bootDecision(one, { ciMethod: 'bca', target: '' }), null);
+    assertEqual(bootDecision({ ...one, mode: 'two' }, { ciMethod: 'bca', target: '22' }), null);
+    assertEqual(bootDecision(null, { ciMethod: 'bca', target: '22' }), null);
+  });
+  test('statementParts und renderStatement', () => {
+    assertDeepEqual(statementParts(null, { ciMethod: 'bca', target: '' }), []);
+    const parts = statementParts(one, { ciMethod: 'percentile', target: '' });
+    assertTrue(parts.length > 0 && parts.every((p) => typeof p.key === 'string'));
+    const text = renderStatement([{ key: 'k', params: { stat: 'stmtStatMedian' } }], (k, p) => (p ? `${k}:${p.stat}` : k));
+    assertEqual(text, 'k:stmtStatMedian');
   });
 });

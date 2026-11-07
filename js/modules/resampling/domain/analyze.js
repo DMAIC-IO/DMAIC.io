@@ -1,5 +1,5 @@
 /**
- * D.Mike — Resampling Module — Analysis (resampling-analysis.js)
+ * D.Mike — Resampling: Analyse (analyze.js)
  *
  * Pure glue between the model, the worksheet columns and the engine: reads
  * and cleans the inputs, validates them (i18n error keys), builds the engine

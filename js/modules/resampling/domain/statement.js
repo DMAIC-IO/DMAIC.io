@@ -1,5 +1,5 @@
 /**
- * D.Mike — Resampling key statement (resampling-statement.js)
+ * D.Mike — Resampling: Aussagesatz (statement.js)
  * Pure mapping from the persisted summary to the plain-language key statement:
  * a list of i18n sentence keys with their placeholder values. Significance uses
  * α = 1 − confidence so the verdict always matches the shown interval level.
