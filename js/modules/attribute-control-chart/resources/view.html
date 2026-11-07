@@ -4,7 +4,7 @@
     <div class="dmike-split__section-title" x-text="t('sectionChartType')"></div>
     <div class="field-group">
       <label data-help-key="modules.attribute-control-chart.fields.chartTypeId.help" x-text="t('chartType')"></label>
-      <select class="field" data-ref="chart-type" data-help-key="" x-field="model.chartTypeId">
+      <select class="field" data-ref="chart-type" x-field="model.chartTypeId">
         <option value="p" x-text="t('type_p')"></option>
         <option value="np" x-text="t('type_np')"></option>
         <option value="c" x-text="t('type_c')"></option>
@@ -28,13 +28,13 @@
 
     <div class="field-group" data-ref="constn-row" x-show="requiresConstantN">
       <label data-help-key="modules.attribute-control-chart.fields.constantN.help" x-text="t('constantN')"></label>
-      <input class="field field--num" data-ref="constant-n" data-help-key="" x-field="model.constantN">
+      <input class="field field--num" data-ref="constant-n" x-field="model.constantN">
       <span class="field-hint" x-text="t('constantNHint')"></span>
     </div>
 
     <div class="field-group">
       <label data-help-key="modules.attribute-control-chart.fields.baselineCount.help" x-text="t('baselineCount')"></label>
-      <input class="field field--num" data-ref="baseline-count" data-help-key="" :placeholder="t('baselineAll')" x-field="model.baselineCount">
+      <input class="field field--num" data-ref="baseline-count" :placeholder="t('baselineAll')" x-field="model.baselineCount">
       <span class="field-hint" x-text="t('baselineHint')"></span>
     </div>
 
