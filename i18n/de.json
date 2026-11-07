@@ -962,6 +962,9 @@
       "ci": "KI",
       "ciTitle": "{n}%-Konfidenzintervall"
     },
+    "asyncTask": {
+      "rejected": "Start nicht möglich: {reason}"
+    },
     "widget": {
       "bindError": "Bedienelement falsch gebunden: {message}"
     }

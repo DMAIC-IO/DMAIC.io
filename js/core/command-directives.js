@@ -63,8 +63,8 @@ function commandDef(ui, name) {
   return commandDefOf(ui.model, name);
 }
 
-/** @param {HTMLElement} el @param {string} key */
-function setHelpKey(el, key) {
+/** Setzt den Hilfeanker, sofern das Element keinen trägt. @param {HTMLElement} el @param {string} key */
+export function setHelpKey(el, key) {
   if (!el.hasAttribute('data-help-key')) el.setAttribute('data-help-key', key);
 }
 

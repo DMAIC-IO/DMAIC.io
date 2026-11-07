@@ -117,6 +117,7 @@ const SKIP = new Set([
   'core/exporter-run.test.js',
   'core/field-directive.test.js',
   'core/command-directives.test.js',
+  'core/async-task-directives.test.js',
   'core/choice-group.test.js',
   'core/flowchart-view-autosize.test.js',
   'core/help-renderer.test.js',

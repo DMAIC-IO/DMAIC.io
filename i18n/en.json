@@ -962,6 +962,9 @@
       "ci": "CI",
       "ciTitle": "{n}% confidence interval"
     },
+    "asyncTask": {
+      "rejected": "Cannot start: {reason}"
+    },
     "widget": {
       "bindError": "Control is bound incorrectly: {message}"
     }
