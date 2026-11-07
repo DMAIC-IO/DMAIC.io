@@ -1,0 +1,14 @@
+{
+  "chartTypeId": "u",
+  "defectsRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-spc-attr-u",
+    "columnId": "c-defekte"
+  },
+  "sizeRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-spc-attr-u",
+    "columnId": "c-einheiten"
+  },
+  "sourceWorksheetFile": "worksheets/spc-attribute-u-defects.json"
+}

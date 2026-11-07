@@ -1,0 +1,116 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Attributive Regelkarten",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Attributive {{term:regelkarte|Regelkarten}} überwachen Prozesse mit gezählten statt gemessenen Daten — Anzahl fehlerhafter Einheiten, Anzahl Fehler pro Einheit. Sie sind das Pendant zu Shewhart-Karten (I-MR, X̄-R) für Variablendaten und unterscheiden zufällige Streuung von systematischen {{term:sonderursache|Sonderursachen}}."
+        },
+        {
+          "type": "definition",
+          "term": "p-Karte (Anteil fehlerhaft) — siehe {{term:p-chart|p-Karte}}",
+          "content": "Anteil defekter Einheiten pro Stichprobe. Stichprobengröße darf variieren. Grundlage: Binomialverteilung. Beispiel: Tagesproduktion 1.000–2.000 Stück, Anzahl Ausschuss pro Tag."
+        },
+        {
+          "type": "definition",
+          "term": "np-Karte (Anzahl fehlerhaft)",
+          "content": "Absolute Anzahl defekter Einheiten bei konstanter Stichprobengröße n. Einfacher zu interpretieren als die p-Karte, aber nur sinnvoll, wenn n wirklich konstant ist."
+        },
+        {
+          "type": "definition",
+          "term": "c-Karte (Fehler pro Einheit, konstante Gelegenheit) — siehe {{term:c-chart|c-Karte}}",
+          "content": "Anzahl der Fehler pro Inspektionseinheit, wobei die „Inspektionsgelegenheit\" (Fläche, Länge, Volumen, Zeit) konstant ist. Grundlage: Poisson-Verteilung. Beispiel: Lackfehler pro Karosserie."
+        },
+        {
+          "type": "definition",
+          "term": "u-Karte (Fehler pro Einheit, variable Gelegenheit)",
+          "content": "Fehler pro Inspektionseinheit, wenn die Gelegenheit variiert (z. B. unterschiedlich große Stoffrollen). Die Karte plottet Fehler/Einheit; die Eingriffsgrenzen variieren mit der jeweiligen Inspektionsmenge."
+        },
+        {
+          "type": "paragraph",
+          "content": "Variable Eingriffsgrenzen: Bei p- und u-Karten mit unterschiedlichen Stichprobengrößen sind UCL und LCL pro Punkt verschieden — die Karte zeigt eine treppenförmige Grenzlinie. {{term:sigma-zonen|Zonen A/B/C}} werden nicht eingezeichnet, weil σ nicht konstant ist."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Vorgehen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Datentyp prüfen: Zählen wir defekte Einheiten (p, np) oder Fehleranzahl (c, u)?",
+            "Untergruppengröße prüfen: konstant (np, c) oder variabel (p, u)?",
+            "Mindestens 20–25 Untergruppen Vorlauf für eine stabile Baseline sammeln.",
+            "Bei p-/np-Karten: ausreichend großes n, damit n·p̄ ≥ 5 (sonst sind die Grenzen unsymmetrisch und unzuverlässig).",
+            "Phase I: {{term:mittellinie|Mittellinie}} und Grenzen aus dem Vorlauf berechnen.",
+            "Sonderursachen identifizieren, ausschließen, Grenzen ggf. neu berechnen.",
+            "Phase II: Laufender Betrieb mit fixen Grenzen — neue Punkte werden geprüft, nicht in die Berechnung gemischt."
+          ]
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "Regeln und Auswertung",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Auf attributiven Karten gelten dieselben Grundprinzipien wie auf Shewhart-Karten: Werte außerhalb der Grenzen, Niveauverschiebungen und Trends weisen auf Sonderursachen hin. Wegen der diskreten Zählwerte und (bei p/u) variabler σ ist der Regelsatz eingeschränkt."
+        },
+        {
+          "type": "list",
+          "items": [
+            "Regel 1: 1 Punkt außerhalb UCL/LCL — eindeutige Sonderursache.",
+            "Regel 2: 9 aufeinanderfolgende Punkte auf derselben Seite der Mittellinie — Niveauverschiebung.",
+            "Regel 3: 6 aufeinanderfolgende steigende oder fallende Punkte — Trend.",
+            "Regel 5/6 (nur konstante Untergruppengröße): Zonen-basierte Frühwarnungen wie bei Shewhart-Karten."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Regel 4 (14 alternierend) wird für attributive Karten nicht empfohlen, weil Zählwerte häufig Gleichstände produzieren. Bei variabler Untergruppengröße sind die zonenbasierten Regeln 5–8 nicht definiert."
+        },
+        {
+          "type": "paragraph",
+          "content": "Voreingestellt ist wie in Minitab nur Regel 1. Jede weitere Regel erhöht die Fehlalarm-Rate; Regeln 2 und 3 bei Bedarf zuschalten."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Falscher Kartentyp",
+          "content": "p- und np-Karten brauchen Anteilsdaten (defekt/nicht defekt pro Einheit). c- und u-Karten brauchen Fehleranzahlen (mehrere Fehler pro Einheit möglich). Verwechslung führt zu falschen Grenzen."
+        },
+        {
+          "type": "definition",
+          "term": "Zu kleines n bei p-/np-Karten",
+          "content": "Wenn n·p̄ < 5, wird die Binomialverteilung schlecht durch eine Normalverteilung approximiert. Die 3σ-Grenzen sind dann unsymmetrisch und können den Prozess als \"stabiler\" zeigen, als er ist."
+        },
+        {
+          "type": "definition",
+          "term": "Konstante Grenzen bei variablem n",
+          "content": "Bei p- und u-Karten mit variabler Stichprobengröße müssen die Grenzen pro Punkt berechnet werden. Eine pauschale Mittel-Grenze unterschätzt das Risiko bei kleinen n und überschätzt es bei großen n."
+        },
+        {
+          "type": "definition",
+          "term": "Überdispersion ignorieren",
+          "content": "Wenn die tatsächliche Streuung größer ist als von Binomial/Poisson erwartet (z. B. heterogene Stichproben, gemischte Quellen), schlagen Standard-p/u-Karten ständig falsch Alarm. Hier helfen Laney p'/u'-Karten — derzeit nicht implementiert."
+        },
+        {
+          "type": "definition",
+          "term": "Fehler-Definition uneinheitlich",
+          "content": "Wer „Fehler\" pro Einheit zählt, muss vorher festlegen, was als Fehler gilt. Wechselnde Definitionen (oder Inspekteure) erzeugen Streuung, die fälschlich dem Prozess zugeschrieben wird."
+        },
+        {
+          "type": "definition",
+          "term": "Spezifikation und Eingriffsgrenze verwechseln — {{term:spezifikationsgrenzen|USL/LSL}} vs. {{term:regelgrenze|UCL/LCL}}",
+          "content": "Auch bei attributiven Karten gilt: UCL/LCL kommen aus den Daten, nicht aus einer Spezifikation. Eine Forderung „weniger als 2% Ausschuss\" ist eine Spezifikation, keine Regelgrenze."
+        }
+      ]
+    }
+  }
+}

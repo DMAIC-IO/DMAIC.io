@@ -9,10 +9,9 @@ async function loadJson(path) {
   return resp.json();
 }
 
-// Task 10 stellt den Pfad auf resources/examples/projects/ um.
 const EXAMPLES = {};
 for (const name of ['p', 'c', 'np', 'u']) {
-  EXAMPLES[name] = await loadJson(`../../examples/projects/spc-attribute-${name}-chart.json`);
+  EXAMPLES[name] = await loadJson(`../../js/modules/attribute-control-chart/resources/examples/projects/spc-attribute-${name}-chart.json`);
 }
 
 suite('attribute-control-chart Model', () => {

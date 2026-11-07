@@ -1,0 +1,14 @@
+{
+  "chartTypeId": "p",
+  "defectsRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-spc-attr-p",
+    "columnId": "c-defekte"
+  },
+  "sizeRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-spc-attr-p",
+    "columnId": "c-stichprobe"
+  },
+  "sourceWorksheetFile": "worksheets/spc-attribute-p-defects.json"
+}

@@ -1,0 +1,116 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Attribute Control Charts",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Attribute {{term:regelkarte|control charts}} monitor processes with counted (not measured) data — number of defective units, number of defects per unit. They are the counterpart to Shewhart charts (I-MR, X̄-R) for variables data, separating random variation from systematic {{term:sonderursache|special causes}}."
+        },
+        {
+          "type": "definition",
+          "term": "p chart (fraction defective) — see {{term:p-chart|p chart}}",
+          "content": "Proportion of defective units per sample. Sample size may vary. Basis: binomial distribution. Example: daily production 1,000–2,000 pieces, number of rejects per day."
+        },
+        {
+          "type": "definition",
+          "term": "np chart (number defective)",
+          "content": "Absolute number of defective units with constant sample size n. Easier to interpret than the p chart, but only meaningful when n really is constant."
+        },
+        {
+          "type": "definition",
+          "term": "c chart (defects per unit, constant area) — see {{term:c-chart|c chart}}",
+          "content": "Number of defects per inspection unit when the inspection opportunity (area, length, volume, time) is constant. Basis: Poisson distribution. Example: paint defects per car body."
+        },
+        {
+          "type": "definition",
+          "term": "u chart (defects per unit, variable area)",
+          "content": "Defects per inspection unit when the opportunity varies (e.g. fabric rolls of different sizes). The chart plots defects/unit; control limits vary with the actual inspection size per point."
+        },
+        {
+          "type": "paragraph",
+          "content": "Variable control limits: for p and u charts with different sample sizes, UCL and LCL differ per point — the chart shows a stepped limit line. Zones A/B/C are not drawn because σ is not constant."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Approach",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Check the data type: are we counting defective units (p, np) or defect counts (c, u)?",
+            "Check {{term:subgruppe|subgroup}} size: constant (np, c) or variable (p, u)?",
+            "Collect at least 20–25 subgroups of baseline data for stable limits.",
+            "For p/np: ensure n is large enough that n·p̄ ≥ 5 (otherwise limits are asymmetric and unreliable).",
+            "Phase I: compute center line and limits from the baseline.",
+            "Identify and exclude special causes, recompute limits if needed.",
+            "Phase II: ongoing monitoring with fixed limits — new points are checked, not mixed back into the computation."
+          ]
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "Rules and Evaluation",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Attribute charts use the same principles as Shewhart charts: out-of-limit points, level shifts, and trends indicate special causes. Because of discrete counts and (for p/u) variable σ, the rule set is reduced."
+        },
+        {
+          "type": "list",
+          "items": [
+            "Rule 1: 1 point outside UCL/LCL — clear special cause.",
+            "Rule 2: 9 consecutive points on the same side of the center line — level shift.",
+            "Rule 3: 6 consecutive increasing or decreasing points — trend.",
+            "Rules 5/6 (constant subgroup size only): zone-based early warnings, like on Shewhart charts."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Rule 4 (14 alternating) is not recommended for attribute charts because count data frequently produces ties. With variable subgroup size, zone-based rules 5–8 are not defined."
+        },
+        {
+          "type": "paragraph",
+          "content": "As in Minitab, only rule 1 is on by default. Every further rule raises the false-alarm rate; switch rules 2 and 3 on when needed."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Wrong chart type",
+          "content": "p and np charts need fraction data (defective/not defective per unit). c and u charts need defect counts (multiple defects per unit possible). Mixing them yields wrong limits."
+        },
+        {
+          "type": "definition",
+          "term": "Too small n for p/np charts",
+          "content": "When n·p̄ < 5 the binomial distribution is poorly approximated by a normal. The 3σ limits become asymmetric and can make the process look more stable than it is."
+        },
+        {
+          "type": "definition",
+          "term": "Constant limits on variable n",
+          "content": "For p and u charts with varying sample size, limits must be computed per point. A blanket mean limit underestimates risk for small n and overestimates it for large n."
+        },
+        {
+          "type": "definition",
+          "term": "Ignoring overdispersion",
+          "content": "When real variation is larger than binomial/Poisson predicts (heterogeneous samples, mixed sources), standard p/u charts trigger constant false alarms. Laney p'/u' charts help — not yet implemented."
+        },
+        {
+          "type": "definition",
+          "term": "Inconsistent defect definition",
+          "content": "Counting \"defects per unit\" requires a clear definition of what counts. Shifting definitions (or inspectors) create variation that gets falsely attributed to the process."
+        },
+        {
+          "type": "definition",
+          "term": "Specification vs. control limits — {{term:spezifikationsgrenzen|USL/LSL}} vs. {{term:regelgrenze|UCL/LCL}}",
+          "content": "On attribute charts too: UCL/LCL come from the data, not from a specification. \"Less than 2% reject\" is a spec, not a control limit."
+        }
+      ]
+    }
+  }
+}

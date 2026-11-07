@@ -1,0 +1,12 @@
+{
+  "$schema": "../../../../../schemas/module-references.schema.json",
+  "references": [
+    {
+      "book": "montgomery-sqc-6",
+      "note": {
+        "de": "Abschn. 5.3.6: Jede zusätzliche Sensitivitätsregel erhöht die Fehlalarm-Rate; Grundlage für die Voreinstellung „nur Test 1“.",
+        "en": "Sec. 5.3.6: every additional sensitizing rule raises the false-alarm rate; basis for the default of test 1 only."
+      }
+    }
+  ]
+}

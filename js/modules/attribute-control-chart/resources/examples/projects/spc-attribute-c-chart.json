@@ -1,0 +1,9 @@
+{
+  "chartTypeId": "c",
+  "defectsRef": {
+    "instanceId": "__source__",
+    "sheetId": "sheet-spc-attr-c",
+    "columnId": "c-defekte"
+  },
+  "sourceWorksheetFile": "worksheets/spc-attribute-c-defects.json"
+}
