@@ -312,7 +312,7 @@ const SCHEMA_PREFIX = 'schema: domain/model.js:';
 /**
  * Gate Schema, Teil Literal: `defineModel({ … })` ist ein reines Literal
  * (feste Schlüssel, Konstruktoren aus core/model.js, Literale, Konstanten
- * dieser Datei; Funktionen nur als `run`, `current`, `confirm`). `version` ist ein String-Literal
+ * dieser Datei; Funktionen nur als `run`, `current`, `confirm` und — bei `defineModel` — als `default` (Vorgabe aus dem Kontext)). `version` ist ein String-Literal
  * `MAJOR.MINOR`; `migrations` nur `'a→b': <Import aus ./migrations.js>`.
  * @param {string} text Inhalt von domain/model.js
  * @param {{ define?: string, file?: string }} [opts] Aufruf und Datei (Vorgabe defineModel, domain/model.js); version/migrations nur bei defineModel
@@ -438,6 +438,12 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
           else if (v && (ts.isFunctionExpression(v) || (ts.isIdentifier(v) && runImports.has(v.text)))) continue;
           else out.push(`${P} ${key} von ${cmdName}: Funktion, Methode oder Import aus ./commands/ erwartet`);
           continue;
+        }
+        // Vorgabe aus dem Kontext des Models: (c) => … — reine Funktion, ihr Rumpf bleibt ungeprüft.
+        if (define === 'defineModel' && key === 'default') {
+          if (ts.isMethodDeclaration(p)) continue;
+          const v = ts.isPropertyAssignment(p) ? p.initializer : null;
+          if (v && (ts.isArrowFunction(v) || ts.isFunctionExpression(v))) continue;
         }
         if (ts.isShorthandPropertyAssignment(p)) { out.push(`${P} Kurzschreibweise nicht erlaubt (${src(p)})`); continue; }
         if (!ts.isPropertyAssignment(p)) { out.push(`${P} Funktion nicht erlaubt (${src(p)}) — Callbacks nur als run`); continue; }
@@ -607,7 +613,7 @@ function findViewBlock(text) {
 const VIEW_FORBIDDEN = ['stateManager', 'getModuleState'];
 
 /**
- * Gate Lesezugriff: im view-Block (auch in `computed`) kein `stateManager`
+ * Gate Lesezugriff: im view-Block des Viewmodels und der Kachel (auch in `computed`) kein `stateManager`
  * und kein `getModuleState` — Arbeitsblätter nur über `ctx.data`, sonst
  * fehlt die Abhängigkeit und das Ergebnis veraltet.
  * @param {{ path: string, text: string }[]} files
@@ -616,7 +622,7 @@ const VIEW_FORBIDDEN = ['stateManager', 'getModuleState'];
 export function checkViewReads(files) {
   const out = [];
   for (const { path, text } of files) {
-    if (!path.startsWith('viewmodel/')) continue;
+    if (!path.startsWith('viewmodel/') && !path.startsWith('tile/')) continue;
     const view = findViewBlock(text);
     if (!view) continue;
     const seen = new Set();
@@ -647,29 +653,39 @@ export function checkPickerCss(css) {
 
 const CHART_BINDING = /\bx-chart\s*=\s*"([^"]*)"/g;
 
+/** Erlaubte x-chart-Namen eines view-Blocks (Getter und computed). @param {string} text @returns {Set<string>} */
+function chartNamesOf(text) {
+  const allowed = new Set();
+  const view = findViewBlock(text);
+  if (!view) return allowed;
+  const visit = (n) => {
+    if (ts.isGetAccessorDeclaration(n) && ts.isIdentifier(n.name)) allowed.add(n.name.text);
+    if (ts.isPropertyAssignment(n) && ts.isIdentifier(n.name) && n.name.text === 'computed'
+        && ts.isObjectLiteralExpression(n.initializer)) {
+      for (const p of n.initializer.properties) if (p.name && ts.isIdentifier(p.name)) allowed.add(p.name.text);
+    }
+    ts.forEachChild(n, visit);
+  };
+  visit(view);
+  return allowed;
+}
+
 /**
  * Gate x-chart: der Ausdruck ist der Name eines Getters oder eines
- * `computed` des view-Blocks.
+ * `computed` des view-Blocks — `resources/tile[.<name>].html` gegen
+ * `tile/tile.js` bzw. `tile/<name>.js`, alle übrigen gegen das Viewmodel.
  * @param {{ path: string, text: string }[]} templates
  * @param {{ path: string, text: string }|null} vmFile viewmodel/viewmodel.js
+ * @param {{ path: string, text: string }[]} [tileFiles] tile/*.js
  * @returns {string[]}
  */
-export function checkChartBindings(templates, vmFile) {
-  const allowed = new Set();
-  const view = vmFile ? findViewBlock(vmFile.text) : null;
-  if (view) {
-    const visit = (n) => {
-      if (ts.isGetAccessorDeclaration(n) && ts.isIdentifier(n.name)) allowed.add(n.name.text);
-      if (ts.isPropertyAssignment(n) && ts.isIdentifier(n.name) && n.name.text === 'computed'
-          && ts.isObjectLiteralExpression(n.initializer)) {
-        for (const p of n.initializer.properties) if (p.name && ts.isIdentifier(p.name)) allowed.add(p.name.text);
-      }
-      ts.forEachChild(n, visit);
-    };
-    visit(view);
-  }
+export function checkChartBindings(templates, vmFile, tileFiles = []) {
+  const vmNames = vmFile ? chartNamesOf(vmFile.text) : new Set();
   const out = [];
   for (const { path, text } of templates) {
+    const m = /^resources\/tile(?:\.([a-z0-9-]+))?\.html$/.exec(path);
+    const tileFile = m ? tileFiles.find((f) => f.path === `tile/${m[1] ?? 'tile'}.js`) : null;
+    const allowed = m ? (tileFile ? chartNamesOf(tileFile.text) : new Set()) : vmNames;
     for (const [, raw] of text.matchAll(CHART_BINDING)) {
       const name = raw.trim();
       if (!allowed.has(name)) out.push(`template: ${path}: x-chart="${raw}": ${name} ist weder Getter noch computed des view-Blocks`);
@@ -1210,7 +1226,7 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
   const cssPath = 'resources/style.css';
   out.push(...checkPickerCss(paths.includes(cssPath) ? read(cssPath) : null));
   const chartTemplates = paths.filter((p) => /^resources\/[^/]+\.html$/.test(p)).map(read);
-  out.push(...checkChartBindings(chartTemplates, paths.includes('viewmodel/viewmodel.js') ? read('viewmodel/viewmodel.js') : null));
+  out.push(...checkChartBindings(chartTemplates, paths.includes('viewmodel/viewmodel.js') ? read('viewmodel/viewmodel.js') : null, js.filter((f) => f.path.startsWith('tile/'))));
   out.push(...checkUiTexts(base));
   const refs = checkReferenceFile(base);
   out.push(...refs.findings, ...checkHelpFiles(base, refs.ids));

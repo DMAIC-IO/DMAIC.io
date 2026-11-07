@@ -962,3 +962,29 @@ test('x-chart: Getter oder computed des view-Blocks', () => {
     'template: resources/view.html: x-chart="a.b": a.b ist weder Getter noch computed des view-Blocks',
   ]);
 });
+
+test('checkViewReads: auch tile/*.js', () => {
+  const tile = { path: 'tile/tile.js', text: 'export default createTile({ view(ctx) { return { get x() { return ctx.stateManager.get("a"); } }; } });' };
+  assert.deepEqual(checkViewReads([tile]), ['view: tile/tile.js: stateManager im view-Block — Arbeitsblätter über ctx.data lesen']);
+});
+
+test('checkChartBindings: tile.html gegen tile/tile.js', () => {
+  const vm = { path: 'viewmodel/viewmodel.js', text: 'createModule({ view() { return { get plot() { return null; } }; } });' };
+  const tileJs = { path: 'tile/tile.js', text: 'createTile({ view() { return { get chart() { return null; } }; } });' };
+  const ok = [{ path: 'resources/view.html', text: '<div x-chart="plot"></div>' }, { path: 'resources/tile.html', text: '<div x-chart="chart"></div>' }];
+  assert.deepEqual(checkChartBindings(ok, vm, [tileJs]), []);
+  const bad = [{ path: 'resources/tile.html', text: '<div x-chart="plot"></div>' }];
+  assert.deepEqual(checkChartBindings(bad, vm, [tileJs]), ['template: resources/tile.html: x-chart="plot": plot ist weder Getter noch computed des view-Blocks']);
+});
+
+test('checkSchemaLiteral: default als Funktion des Kontexts', () => {
+  const src = `import { defineModel, number } from 'core/model.js';
+export const State = defineModel({ fields: {
+  alpha: number({ default: (c) => Number((1 - c.confidenceLevel / 100).toFixed(4)) }),
+  powerGoal: number({ default(c) { return c.power / 100; } }),
+} });\n`;
+  assert.deepEqual(checkSchemaLiteral(src), []);
+  const settings = `import { defineSettings, number } from 'core/model.js';
+export const Settings = defineSettings({ n: number({ min: 0, max: 1, default: () => 1 }) });\n`;
+  assert.ok(checkSchemaLiteral(settings, { define: 'defineSettings', file: 'tile/settings.js' })[0].includes('Funktion nicht erlaubt'));
+});
