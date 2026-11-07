@@ -1,6 +1,9 @@
 /**
  * D.Mike — Histogramm: Migrationen. Rein.
  */
+import { checkValue } from '../../../core/model.js';
+import histogramChart from '../../../widgets/histogram-chart/schema.js';
+
 const BIN_MODES_0 = ['auto', 'manual'];
 
 /** @param {any} r @returns {{ instanceId: string, sheetId?: string, columnId: string }|null} */
@@ -15,10 +18,37 @@ const numberOr = (v, ok) => (typeof v === 'number' && Number.isFinite(v) && ok(v
 const CHART_DEFAULTS = { showTitle: true, titleSize: 15, labelSize: 12, tickSize: 11, showXLabel: true, showYLabel: true, showXTicks: true, showYTicks: true, barGap: 1 };
 const TEXTS = { chartTitleText: 'title', chartXLabelText: 'xLabel', chartYLabelText: 'yLabel' };
 
+/** Bearbeitbare Schlüssel einer Reihe und ihre Feldbeschreibungen (ohne `name`). */
+const SERIES_SHAPE = /** @type {Record<string, any>} */ (histogramChart.edits().shape.series.item.shape);
+
+/**
+ * Reihen-Einstellungen des alten Stands nach Reihenname. Einträge ohne Namen,
+ * doppelte Namen (der erste gewinnt), unbekannte Schlüssel und ungültige
+ * Einzelwerte entfallen; ein Eintrag ohne übrige Schlüssel entfällt ganz.
+ * @param {unknown} old
+ * @returns {Array<Record<string, any>>}
+ */
+function seriesFrom(old) {
+  if (!Array.isArray(old)) return [];
+  const seen = new Set();
+  const out = [];
+  for (const o of old) {
+    if (!o || typeof o !== 'object' || typeof o.name !== 'string' || o.name === '' || seen.has(o.name)) continue;
+    seen.add(o.name);
+    const entry = {};
+    for (const [k, spec] of Object.entries(SERIES_SHAPE)) {
+      if (k === 'name' || !(k in o) || o[k] === null || o[k] === undefined) continue;
+      try { entry[k] = checkValue(spec, k, o[k]); } catch { /* ungültiger Einzelwert entfällt */ }
+    }
+    if (Object.keys(entry).length > 0) out.push({ name: o.name, ...entry });
+  }
+  return out;
+}
+
 /**
  * '0→2.0': Altstände ohne `_schema` (flache Form, v1 mit `seriesRefs`).
- * Reihen-Einstellungen (`seriesOverrides`) werden verworfen: ohne
- * Arbeitsblatt sind die Reihennamen unbekannt.
+ * Reihen-Einstellungen (`seriesOverrides`) werden nach Reihenname in
+ * `histogramChart.series` übernommen; Einträge ohne Namen entfallen.
  * @param {Record<string, any>} json
  * @returns {Record<string, any>}
  */
@@ -46,6 +76,8 @@ export function from0(json) {
   for (const k of ['refLines', 'refAreas']) if (Array.isArray(json[k]) && json[k].length > 0) chart[k] = json[k];
   if (json.showPareto === false) chart.pareto = false;
   if (json.showBoxplot === false) chart.boxplotStrip = false;
+  const series = seriesFrom(json.seriesOverrides);
+  if (series.length > 0) chart.series = series;
   out.histogramChart = chart;
   return out;
 }

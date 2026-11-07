@@ -26,6 +26,27 @@ suite('histogram: Migration', () => {
     assertEqual(out.binWidth, 2);
     assertEqual(out.confLevel, 90);
   });
+  test('Reihen-Einstellungen mit Namen landen in histogramChart.series', () => {
+    const out = from0({ seriesOverrides: [{ name: 'A', visible: false, fillColor: 'red', borderWidth: 2, unbekannt: 1 }, { name: 'A', fillColor: 'blue' }] });
+    assertDeepEqual(out.histogramChart.series, [{ name: 'A', visible: false, fillColor: 'red', borderWidth: 2 }]);
+    assertEqual(out.seriesOverrides, undefined);
+  });
+  test('Reihen-Einstellungen ohne Namen entfallen, ebenso Einträge ohne gültige Schlüssel', () => {
+    const out = from0({ seriesOverrides: [{ fillColor: 'red' }, { name: '', fillColor: 'red' }, { name: 'B', borderWidth: -1 }] });
+    assertEqual(out.histogramChart.series, undefined);
+  });
+  test('ungültiger Einzelwert entfällt, der Rest bleibt', () => {
+    const out = from0({ seriesOverrides: [{ name: 'A', borderStyle: 'wellig', patternSolidity: 7, fillColor: 'red', visible: null }] });
+    assertDeepEqual(out.histogramChart.series, [{ name: 'A', fillColor: 'red' }]);
+  });
+  test('Altstand mit Reihen-Einstellung lädt ohne Reparaturwarnung und behält sie', () => {
+    const warn = console.warn; const seen = []; console.warn = (...a) => seen.push(a.join(' '));
+    try {
+      const m = loadModel(State, { datasets: [{ valueRef: r, groupRef: null }], showStats: true, binMode: 'auto', binWidth: null, confLevel: 95, seriesOverrides: [{ name: 'Spalte 0', visible: false, fillColor: 'red', borderStyle: 'wellig' }] });
+      assertDeepEqual(m.histogramChart, { series: [{ name: 'Spalte 0', visible: false, fillColor: 'red' }] });
+      assertDeepEqual(seen, []);
+    } finally { console.warn = warn; }
+  });
   test('Unsinn wird bereinigt, binWidth nur bei manual', () => {
     const out = from0({ binMode: 'weird', binWidth: 3, confLevel: 'x', datasets: 'kaputt' });
     assertEqual(out.binMode, undefined);
