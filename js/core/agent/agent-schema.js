@@ -92,10 +92,10 @@ function commandAction(name, def, target) {
  * Der Registry-Eintrag eines Schema-Moduls.
  * @param {Function} Model Klasse aus `defineModel`
  * @param {Record<string, object>} [vmCommands] Viewmodel-Kommandos aus `createModule({ commands })`
- * @param {{ derived?: string[], bulk?: string[] }} [opts] `derived`: Namen von Ableitungen, die als Lesefelder erscheinen; `bulk`: davon die Massenfelder (Zeilenlisten)
+ * @param {{ derived?: string[], bulk?: string[], asyncTasks?: Record<string, object> }} [opts] `derived`: Namen von Ableitungen, die als Lesefelder erscheinen; `bulk`: davon die Massenfelder (Zeilenlisten)
  * @returns {object} `AgentModuleEntry` mit `schema: true`, `settable`, `viewFields`
  */
-export function schemaAgentEntry(Model, vmCommands = {}, { derived = [], bulk = [] } = {}) {
+export function schemaAgentEntry(Model, vmCommands = {}, { derived = [], bulk = [], asyncTasks = {} } = {}) {
   const schema = schemaOf(Model);
   if (!schema) throw new Error('schemaAgentEntry: Model has no schema (defineModel)');
   const actions = { read: READ_ACTION };
@@ -122,6 +122,7 @@ export function schemaAgentEntry(Model, vmCommands = {}, { derived = [], bulk = 
       ? { type: 'object[]', help: '', bulk: true, bulkKind: 'table', derived: true }
       : { type: 'object|null', help: '', bulk: false, derived: true };
   }
+  if (Object.keys(asyncTasks).length > 0) fields.asyncTasks = { type: 'object', help: '', bulk: false, derived: true };
   return {
     tagged: true,
     available: true,

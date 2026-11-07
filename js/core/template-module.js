@@ -3,7 +3,7 @@ import { cloneTemplate, templateKey } from './dom.js';
 import { getModuleHelp, hasModuleHelp } from './help-registry.js';
 import { getModuleReferences, hasModuleReferences } from './references-registry.js';
 import { initialModel, loadModel } from './initial-model.js';
-import { schemaOf, setModelName, setCommandObserver, replaceFields, runCommand, cloneJSON, setModelContext, activeContext } from './model.js';
+import { schemaOf, checkParams, setModelName, setCommandObserver, replaceFields, runCommand, cloneJSON, setModelContext, activeContext } from './model.js';
 import { schemaAgentEntry, readSchemaModel } from './agent/agent-schema.js';
 import { attachGesture } from './interaction/attach.js';
 import { isGesture } from './interaction/define.js';
@@ -11,6 +11,7 @@ import { requireKnownId } from './validate.js';
 import { formatsOf } from './exporter.js';
 import { openDialogSafely } from './command-directives.js';
 import { defineComputedSlots, bindComputed } from './computed.js';
+import { checkAsyncTasks, defineAsyncTaskSlots, createAsyncTasks } from './async-task.js';
 import { createWorksheetData } from './worksheet-data.js';
 import { withoutStoredEdits } from './chart/instance-chart-manager.js';
 
@@ -134,6 +135,7 @@ function schemaMembers(moduleId, entry, vmCommands, readComputed = [], readBulk 
           extra[`${name}Columns`] = Array.isArray(value) && value.length > 0 ? Object.keys(value[0]) : [];
         }
       }
+      if (this._asyncTaskHost) extra.asyncTasks = this._asyncTaskHost.readStatus();
       return readSchemaModel(entry, this.model, options, extra);
     },
   };
@@ -173,18 +175,19 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
 // aus defineState, nur zusammen mit view.
 // base.readBulk — Massenfelder unter readComputed (Zeilenlisten): read() liefert sie
 // als Deskriptor, voll mit fields/rows.
+// base.asyncTasks — asynchrone Abläufe (core/async-task.js), nur mit view und defineModel; Wert unter dem Namen, Status unter _asyncTasks.
 // base.exports — Mapper nach Datenform (table/tables/tree/image, fileName),
 // nur mit view; daraus entstehen Export-Menü und Dateien (core/exporter.js).
 // base.forms — Namensraum von viewmodel/forms.js (defineForm), für
 // x-command-form mit data-form; Vorgabe {}.
 /**
  * Ein Modul aus Model, Viewmodel und Template bauen.
- * @template V
- * @param {{ view?: (ctx: any) => V } & Record<string, any>} base
- * @returns {Record<string, any> & { readonly __view?: V }}
+ * @template V, T
+ * @param {{ view?: (ctx: any) => V, asyncTasks?: T } & Record<string, any>} base
+ * @returns {Record<string, any> & { readonly __view?: V, readonly __asyncTasks?: T }}
  */
 export function createModule(base) {
-  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, fromExample, createDefault, gestures = [], forms = {}, exports: exportsDef, readComputed = [], readBulk = [] } = base;
+  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, fromExample, createDefault, gestures = [], forms = {}, exports: exportsDef, readComputed = [], readBulk = [], asyncTasks: taskDefs = {} } = base;
   if (descriptor) {
     for (const key of NOT_IN_CONFIG) {
       if (Object.hasOwn(config, key)) {
@@ -196,6 +199,8 @@ export function createModule(base) {
   if (data && view) throw new Error(`createModule(${id}): data and view are mutually exclusive`);
   if (UiState && !view) throw new Error(`createModule(${id}): State requires view`);
   if (readComputed.length > 0 && !view) throw new Error(`createModule(${id}): readComputed needs view`);
+  const taskNames = Object.keys(taskDefs);
+  if (taskNames.length > 0 && !view) throw new Error(`createModule(${id}): asyncTasks needs view`);
   for (const name of readBulk) {
     if (!readComputed.includes(name)) throw new Error(`createModule(${id}): readBulk ${name} is not in readComputed`);
   }
@@ -221,7 +226,17 @@ export function createModule(base) {
   if (!schema && Object.keys(vmCommands).length > 0) {
     throw new Error(`createModule ${id}: commands need a defineModel Model`);
   }
-  const agentEntry = schema ? schemaAgentEntry(Model, vmCommands, { derived: readComputed, bulk: readBulk }) : undefined;
+  if (taskNames.length > 0) {
+    if (!schema) throw new Error(`createModule(${id}): asyncTasks need a defineModel Model`);
+    checkAsyncTasks(`createModule(${id})`, taskDefs, {
+      ...Object.fromEntries(Object.keys(schema.fields).map((n) => [n, 'field'])),
+      ...Object.fromEntries(Object.keys(schema.view).map((n) => [n, 'field'])),
+      ...Object.fromEntries(Object.keys(schema.commands).map((n) => [n, 'command'])),
+      ...Object.fromEntries(Object.keys(vmCommands).map((n) => [n, 'command'])),
+      ...Object.fromEntries(['model', 'state', 't', 'moduleId', 'read'].map((n) => [n, 'view member'])),
+    });
+  }
+  const agentEntry = schema ? schemaAgentEntry(Model, vmCommands, { derived: readComputed, bulk: readBulk, asyncTasks: taskDefs }) : undefined;
   const i18nKey = `modules.${  id}`;
   // Derive the template URL from document.baseURI so the key is stable whether
   // the app runs unbundled or from app.min.js (where import.meta.url → bundle path).
@@ -329,6 +344,10 @@ export function createModule(base) {
             throw new Error(`createModule: ${id}: computed ${name} collides with a member of the view block`);
           }
         }
+        for (const name of taskNames) {
+          if (Object.hasOwn(dataResult, name)) throw new Error(`createModule: ${id}: asyncTask ${name} collides with view member`);
+          if (Object.hasOwn(computedDefs ?? {}, name)) throw new Error(`createModule: ${id}: asyncTask ${name} collides with computed`);
+        }
         for (const name of readComputed) {
           if (!Object.hasOwn(computedDefs ?? {}, name)) throw new Error(`createModule: ${id}: readComputed ${name} is not a computed`);
         }
@@ -358,6 +377,7 @@ export function createModule(base) {
 
           let offCycle = null;
           let releaseComputed = null;
+          let taskHost = null;
           if (schema) {
             setModelContext(freshState, activeContext(context.stateManager));
           }
@@ -411,6 +431,9 @@ export function createModule(base) {
           }
           copyMembers(comp, dataResult);
           if (computedDefs) defineComputedSlots(comp, Object.keys(computedDefs));
+          if (taskNames.length > 0) defineAsyncTaskSlots(comp, taskNames);
+          // Der Griff gehört zur Komponente, nicht zum Alpine-Proxy: im Getter lesen, nicht nachträglich setzen.
+          if (taskNames.length > 0) Object.defineProperty(comp, '_asyncTaskHost', { get: () => taskHost, enumerable: false, configurable: true });
           return copyMembers(comp, {
             init() {
               freshState.init?.();
@@ -435,6 +458,16 @@ export function createModule(base) {
               }
               if (computedDefs) releaseComputed = bindComputed(Alpine, this, computedDefs);
               dataInit?.call(this);
+              if (taskNames.length > 0) {
+                const vm = this;
+                taskHost = createAsyncTasks({
+                  defs: taskDefs,
+                  vm,
+                  reactivity: { effect: (fn) => Alpine.effect(fn), release: (h) => Alpine.release(h) },
+                  checkArgs: (name, params, args) => checkParams(name, params, args, vm.model),
+                  notify: (message) => context.notify?.(message, 'error'),
+                });
+              }
               // Automatic persist-$watch: persists on every model mutation by
               // deep-cloning model.toJSON() through Alpine's reactivity proxy.
               //
@@ -468,6 +501,7 @@ export function createModule(base) {
               }
             },
             destroy() {
+              taskHost?.release(); taskHost = null;
               releaseComputed?.(); releaseComputed = null;
               offCycle?.(); offCycle = null;
               dataDestroy?.call(this);
