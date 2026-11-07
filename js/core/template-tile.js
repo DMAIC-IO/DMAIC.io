@@ -7,7 +7,9 @@
  * durchgereicht). `viewModel(args)` baut je Rendern einen Scope: einen
  * eingefrorenen Schnappschuss des Models (`readModel`), die geprüften
  * Einstellungen (`readSettings`), `t` mit dem Präfix `modules.<id>` und die
- * Glieder aus `view(ctx)`. Die Marke `_templateTile` sagt dem Host
+ * Glieder aus `view(ctx)`. `ctx.data` liest das Arbeitsblatt, `x-chart`
+ * zeichnet über den Kachel-`chartManager` (`_ui`); beides je Rendern einmal.
+ * Die Marke `_templateTile` sagt dem Host
  * (pages/dashboard/tile-render.js), dass der Scope selbst gebunden wird.
  *
  * Importiert weder Alpine noch template-module.js — sonst zöge das
@@ -16,8 +18,10 @@
 import { readModel, readSettings, isSettings, defaultOf, setModelContext, activeContext } from './model.js';
 
 /**
- * Was `view(ctx)` einer Kachel bekommt.
- * @typedef {{ i18n: any, theme: string|undefined, instanceId: string|null, moduleId: string }} TileContext
+ * Was `view(ctx)` einer Kachel bekommt. `data` liest das Arbeitsblatt
+ * (Schnappschuss je Rendern; der Host baut bei `refreshOn` neu auf).
+ * @typedef {{ i18n: any, theme: string|undefined, instanceId: string|null, moduleId: string,
+ *   data: import('./worksheet-data.js').WorksheetData }} TileContext
  */
 /**
  * `this` in den Gliedern eines Kachel-`view`-Blocks.
@@ -35,6 +39,14 @@ export const TEMPLATE_TILE = '_templateTile';
 
 /** Hooks des alten Vertrags, die unverändert durchgehen. */
 const PASS_THROUGH = ['enumerate', 'refreshOn', 'mount', 'dispose'];
+
+/** Lesezugriff ohne Arbeitsblätter: jeder Bezug `null`, keine Spalten. */
+const NO_DATA = Object.freeze({
+  values: () => null,
+  numeric: () => null,
+  name: () => null,
+  columns: () => [],
+});
 
 /**
  * Ein Feld aus `defineSettings` als Feld des Einstellungsdialogs.
@@ -91,7 +103,7 @@ export function createTile(base) {
     template: `js/modules/${id}/resources/tile.html`,
     /**
      * Scope der Kachel für dieses Rendern.
-     * @param {{ state: unknown, settings: unknown, i18n: any, theme?: string, instanceId?: string|null, stateManager?: { getProjectCycle?: () => string } }} args
+     * @param {{ state: unknown, settings: unknown, i18n: any, theme?: string, instanceId?: string|null, data?: object, chartManager?: object, stateManager?: { getProjectCycle?: () => string } }} args
      * @returns {object}
      */
     viewModel(args) {
@@ -103,8 +115,12 @@ export function createTile(base) {
         settings: Object.freeze(Settings ? readSettings(Settings, args.settings) : {}),
         t: typeof i18n.tf === 'function' ? i18n.tf(prefix) : (key, params) => i18n.t(`${prefix}.${key}`, params),
       };
+      Object.defineProperty(scope, 'moduleId', { value: id, enumerable: true });
       Object.defineProperty(scope, TEMPLATE_TILE, { value: true });
-      const members = view ? view({ i18n, theme: args.theme, instanceId: args.instanceId ?? null, moduleId: id }) : {};
+      // Griff für x-chart (core/chart-directive.js): der Kachel-chartManager des Hosts.
+      Object.defineProperty(scope, '_ui', { value: Object.freeze({ chartManager: args.chartManager ?? null }) });
+      const data = args.data ?? NO_DATA;
+      const members = view ? view({ i18n, theme: args.theme, instanceId: args.instanceId ?? null, moduleId: id, data }) : {};
       return Object.defineProperties(scope, Object.getOwnPropertyDescriptors(members));
     },
   };

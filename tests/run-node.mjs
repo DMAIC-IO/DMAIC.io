@@ -142,6 +142,7 @@ const SKIP = new Set([
   'core/interaction/reorder.test.js',
   'core/template-module-schema.test.js',
   'core/template-module-view.test.js',
+  'core/template-tile-chart.test.js',
   'core/template-module-exports.test.js',
   'core/template-module-gestures.test.js',
   'core/template-module.test.js',

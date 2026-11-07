@@ -71,7 +71,7 @@ suite('createTile: Scope', () => {
     assertEqual(vm[TEMPLATE_TILE], true);
     assertEqual(TEMPLATE_TILE, '_templateTile');
     assertTrue(!Object.keys(vm).includes(TEMPLATE_TILE));
-    assertDeepEqual(Object.keys(seenCtx).sort(), ['i18n', 'instanceId', 'moduleId', 'theme']);
+    assertDeepEqual(Object.keys(seenCtx).sort(), ['data', 'i18n', 'instanceId', 'moduleId', 'theme']);
     assertTrue(seenCtx.i18n === i18n);
     assertEqual(seenCtx.theme, 'dark');
     assertEqual(seenCtx.instanceId, 'i1');
@@ -93,7 +93,7 @@ suite('createTile: Scope', () => {
   test('ohne view und Settings: nur model, settings {}, t', async () => {
     const plain = createTile({ descriptor, Model: Doc });
     const vm = await plain.viewModel({ tileId: 't', state: {}, settings: {}, i18n });
-    assertDeepEqual(Object.keys(vm).sort(), ['model', 'settings', 't']);
+    assertDeepEqual(Object.keys(vm).sort(), ['model', 'moduleId', 'settings', 't']);
     assertDeepEqual({ ...vm.settings }, {});
   });
 });
@@ -107,5 +107,35 @@ suite('createTile: Kontext', () => {
     assertEqual(vm.cycle, 'eightd');
     const vm2 = tile.viewModel({ state: {}, settings: {}, i18n });
     assertEqual(vm2.cycle, 'dmaic');
+  });
+});
+
+suite('createTile: Daten und Diagramm-Manager', () => {
+  let seen = null;
+  const tile = createTile({ descriptor, Model: Doc, view(ctx) { seen = ctx; return {}; } });
+
+  test('ctx.data aus args.data, moduleId lesend, _ui.chartManager nicht aufzählbar', () => {
+    const data = { values: () => [1], numeric: () => [1], name: () => 'A', columns: () => [] };
+    const cm = { create() {}, destroy() {} };
+    const vm = tile.viewModel({ state: {}, settings: {}, i18n, data, chartManager: cm });
+    assertTrue(seen.data === data);
+    assertEqual(vm.moduleId, 'demo-tile');
+    assertThrows(() => { 'use strict'; vm.moduleId = 'x'; }, /read only|Cannot assign/);
+    assertTrue(vm._ui.chartManager === cm);
+    assertTrue(!Object.keys(vm).includes('_ui'));
+  });
+
+  test('ohne args.data: jeder Bezug null, keine Spalten', () => {
+    tile.viewModel({ state: {}, settings: {}, i18n });
+    const ref = { instanceId: 'w', sheetId: 's', columnId: 'c' };
+    assertEqual(seen.data.values(ref), null);
+    assertEqual(seen.data.numeric(ref), null);
+    assertEqual(seen.data.name(ref), null);
+    assertDeepEqual(seen.data.columns({}), []);
+  });
+
+  test('ohne chartManager: _ui.chartManager null', () => {
+    const vm = tile.viewModel({ state: {}, settings: {}, i18n });
+    assertEqual(vm._ui.chartManager, null);
   });
 });
