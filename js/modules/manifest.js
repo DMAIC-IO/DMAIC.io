@@ -71,12 +71,6 @@ export default [
     load: () => import('./contour-plot/contour-plot.js'),
   },
   {
-    id: 'histogram',
-    phase: 'data',
-    group: 'visualize',
-    load: () => import('./histogram/histogram.js'),
-  },
-  {
     id: 'boxplot',
     phase: 'data',
     group: 'visualize',

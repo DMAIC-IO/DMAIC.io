@@ -4618,6 +4618,8 @@
       "errCompute": "Varianzkomponenten konnten nicht berechnet werden: {msg}"
     },
     "process-capability": {
+      "histogramXLabel": "Messwert",
+      "histogramYLabel": "Häufigkeit",
       "name": "Prozessfähigkeit",
       "description": "Prozessfähigkeitsanalyse — Cp, Cpk, Pp, Ppk, PPM, Sigma-Level",
       "whenToUse": "Wenn gezeigt werden soll, wie gut ein Prozess ein Merkmal innerhalb seiner Spezifikationsgrenzen hält: Cp und Cpk (kurzfristig, aus der Streuung innerhalb der Untergruppen), Pp und Ppk (langfristig), PPM und Sigma-Level, jeweils mit Konfidenzintervallen. Geht mit einseitigen und zweiseitigen Grenzen, Einzelwerten und Untergruppen. Braucht mindestens eine Grenze (untere oder obere) und mindestens 2 numerische Werte aus einer Spalte einer Datensammlung oder aus geladenen Beispieldaten.",
@@ -6414,89 +6416,6 @@
       "recSmallN": "Kleine Stichprobe (n = {n}) — Kendall τ hat bei kleinem n bessere statistische Eigenschaften.",
       "recLargeN": "Ausreichende Stichprobengröße (n = {n}) — alle drei Verfahren statistisch belastbar.",
       "recLowMono": "Monotonie-Index niedrig ({pct} %) — Zusammenhang möglicherweise nicht monoton."
-    },
-    "histogram": {
-      "whenToUse": "Die Verteilung einer oder mehrerer numerischer Spalten als Häufigkeitsbalken zeigen, mit Kennzahlen und Konfidenzintervall.",
-      "actions": {
-        "read": {
-          "help": "Die Datenreihen, die Klassenbildung, das Konfidenzniveau und die Spalten lesen, die jeder Slot annimmt, dazu die Kennzahlen neben dem Diagramm."
-        },
-        "setDatasets": {
-          "help": "Die Datenreihen festlegen. Eine Reihe besteht aus einer Wertespalte und optional einer Gruppenspalte; der Knopf „Datensatz hinzufügen“ fügt eine Reihe hinzu. Unvollständige Reihen bleiben stehen, werden aber nicht gezeichnet. Der Agent ersetzt mit einem Aufruf die ganze Liste.",
-          "params": {
-            "rows": "Eine Liste von Reihen, jeweils { value, group }: 'value' — eine numerische Spalte (Pflicht, damit die Reihe gezeichnet wird); 'group' — eine optionale Spalte, die die Reihe in Serien aufteilt. Jeder Eintrag ist ein Spaltenbezug { instanceId, sheetId, columnId } aus read().pickableColumns dieses Slots, oder null. [] leert die Liste."
-          }
-        },
-        "setParam": {
-          "help": "Eine Analyseoption setzen. read().activeParams nennt die gerade gültigen Optionen.",
-          "params": {
-            "key": "Welche Option; jede ist unter keys einzeln beschrieben, die im aktuellen Zustand zulässigen nennt activeParams. Jeder andere Wert ist ein Fehler.",
-            "value": "Der Wert; Typ und zulässiger Bereich stehen je Schlüssel unter keys."
-          }
-        }
-      },
-      "fields": {
-        "datasets": {
-          "help": "Je Datenreihe ihre Spalten, jede Spalte einer Reihe unter keys einzeln beschrieben."
-        },
-        "binMode": {
-          "help": "Wie die Klassen gebildet werden: auto oder manual."
-        },
-        "binWidth": {
-          "help": "Die feste Klassenbreite bei binMode manual, oder null."
-        },
-        "confLevel": {
-          "help": "Das Konfidenzniveau der Kennzahlen in Prozent."
-        },
-        "activeParams": {
-          "help": "Die Optionen, die setParam im aktuellen Zustand annimmt."
-        },
-        "activeColumnSlots": {
-          "help": "Die Slot-Schlüssel, die eine Reihe tragen darf: value, group."
-        },
-        "pickableColumns": {
-          "help": "Je Slot die Spalten, die setDatasets annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId."
-        },
-        "stats": {
-          "help": "Je gezeichneter Reihe ihre Kennzahlen und Konfidenzintervalle, jede Kennzahl unter keys einzeln beschrieben; null, solange nichts gerechnet werden kann."
-        }
-      },
-      "types": {
-        "Params": {
-          "binMode": "Wie die Klassen (die Balken) gebildet werden: automatisch oder mit fester Breite. Automatisch: Breite = Spannweite aller sichtbaren Werte geteilt durch ⌈log₂ n⌉ + 1 Klassen (mindestens 3, Sturges), auf einen runden Wert gerundet; n zählt die Werte aller sichtbaren Reihen. Fest: es gilt die eingestellte Klassenbreite; ist sie leer, wird die Breite automatisch bestimmt.",
-          "binWidth": "Die feste Breite jeder Klasse, eine Zahl größer 0 in den Einheiten der Werte. Leer heißt automatische Breite. Die Option lässt sich nur bei fester Breite wählen.",
-          "confLevel": "Das Konfidenzniveau in Prozent, größer 0 und kleiner 100 (zum Beispiel 95). Es bestimmt die Konfidenzintervalle in der Statistiktabelle."
-        },
-        "Dataset": {
-          "valueRef": "Die Wertespalte der Reihe (Slot V), numerisch und Pflicht. Ohne sie bleibt die Reihe stehen, wird aber nicht gezeichnet. Leer, solange keine gewählt ist.",
-          "groupRef": "Die Gruppenspalte der Reihe (Slot G), optional; sie teilt die Reihe in Serien, eine je Gruppenwert. Leer, solange keine gewählt ist."
-        }
-      },
-      "name": "Histogramm",
-      "description": "Häufigkeitsverteilung mit Boxplot und Statistik",
-      "sectionData": "Datenquelle",
-      "sectionBinning": "Binning",
-      "sectionOptions": "Optionen",
-      "datasets": "Datensätze",
-      "groupSeriesName": "{col} — {level}",
-      "errNoGroupLevels": "Datensatz {n}: Die Gruppierungsspalte enthält keine gültigen Werte.",
-      "binMode": "Modus",
-      "binAuto": "Automatisch (Sturges)",
-      "binManual": "Manuell",
-      "binWidth": "Bin-Breite",
-      "binWidthAuto": "automatisch",
-      "confLevel": "Konfidenzniveau (%)",
-      "showTitle": "Überschrift anzeigen",
-      "showPareto": "Pareto-Linie",
-      "showStats": "Statistiktabelle",
-      "showBoxplot": "Boxplot",
-      "chartTitle": "Histogramm",
-      "reset": "Zurücksetzen",
-      "placeholderText": "Wählen Sie mindestens eine numerische Spalte, um ein Histogramm zu erstellen.",
-      "errNoSeries": "Bitte mindestens eine Datenreihe hinzufügen.",
-      "errTooFew": "Zu wenig Werte für Spalte \"{col}\".",
-      "xLabel": "Messwert",
-      "yLabel": "Häufigkeit"
     },
     "boxplot": {
       "name": "Boxplot",

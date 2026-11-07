@@ -10,6 +10,11 @@
     "description": "Project calendar: appointments per phase in a month and a week view",
     "whenToUse": "When the appointments of a project should be kept — meetings, measurement windows, deadlines —, each assigned to a phase and shown in a month or week view; not for tasks without a fixed point in time, that is what the todo list is for, and not for planning activity durations and dependencies."
   },
+  "histogram": {
+    "name": "Histogram",
+    "description": "Frequency distribution with boxplot and statistics",
+    "whenToUse": "Show the distribution of one or more numeric columns as frequency bars, with summary statistics and a confidence interval."
+  },
   "hypothesis-test": {
     "name": "Hypothesis Test",
     "description": "Variance and mean tests with automatic normality assessment and power analysis",

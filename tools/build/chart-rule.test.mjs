@@ -22,7 +22,7 @@ const FORBIDDEN = [
 for (const mod of CHART_RULE_MODULES) {
   test(`${mod} draws no own SVG`, () => {
     const dir = join(MODULES_DIR, mod);
-    const files = readdirSync(dir).filter((f) => /\.(js|html)$/.test(f));
+    const files = readdirSync(dir, { recursive: true }).map(String).filter((f) => /\.(js|html)$/.test(f));
     assert.ok(files.length > 0, `${mod} has source files`);
     const hits = [];
     for (const f of files) {

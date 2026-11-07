@@ -13,7 +13,7 @@ import { join } from 'node:path';
 import { RELEASED_MODULES } from './agent-release.mjs';
 
 /** @type {readonly string[]} sortiert */
-export const CONVERTED_MODULES = Object.freeze(['attribute-control-chart', 'dmaic-calendar', 'hypothesis-test', 'sipoc']);
+export const CONVERTED_MODULES = Object.freeze(['attribute-control-chart', 'dmaic-calendar', 'histogram', 'hypothesis-test', 'sipoc']);
 
 const NEW_FORM_MARKERS = ['module.js', 'domain/model.js'];
 

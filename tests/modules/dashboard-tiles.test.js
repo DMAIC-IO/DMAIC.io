@@ -1117,11 +1117,11 @@ suite('dashboard tiles: process-capability', () => {
     host.remove();
   });
 
-  test('histogram passes the histogram module axis titles (hidden by default)', async () => {
+  test('histogram passes the capability axis titles (hidden by default)', async () => {
     const { host, cm } = await renderChartTile(capabilityTile, CAP_STATE);
     const { cfg } = cm.made[0];
-    assertEqual(cfg.xLabel, 'modules.histogram.xLabel');
-    assertEqual(cfg.yLabel, 'modules.histogram.yLabel');
+    assertEqual(cfg.xLabel, 'modules.process-capability.histogramXLabel');
+    assertEqual(cfg.yLabel, 'modules.process-capability.histogramYLabel');
     assertEqual(cfg.showXLabel, false);
     assertEqual(cfg.showYLabel, false);
     host.remove();

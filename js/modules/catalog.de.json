@@ -10,6 +10,11 @@
     "description": "Projektkalender: Termine je Phase in Monats- und Wochenansicht",
     "whenToUse": "Wenn die Termine eines Projekts geführt werden sollen — Besprechungen, Messzeiträume, Stichtage —, je Termin einer Phase zugeordnet und in einer Monats- oder Wochenansicht dargestellt; nicht für Aufgaben ohne festen Zeitpunkt, dafür ist die Aufgabenliste da, und nicht für die Planung von Vorgangsdauern und Abhängigkeiten."
   },
+  "histogram": {
+    "name": "Histogramm",
+    "description": "Häufigkeitsverteilung mit Boxplot und Statistik",
+    "whenToUse": "Die Verteilung einer oder mehrerer numerischer Spalten als Häufigkeitsbalken zeigen, mit Kennzahlen und Konfidenzintervall."
+  },
   "hypothesis-test": {
     "name": "Hypothesentest",
     "description": "Varianz- und Mittelwerttests mit automatischer Normalverteilungsprüfung und Power-Analyse",

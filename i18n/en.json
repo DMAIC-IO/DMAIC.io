@@ -4614,6 +4614,8 @@
       "errCompute": "Variance components could not be computed: {msg}"
     },
     "process-capability": {
+      "histogramXLabel": "Value",
+      "histogramYLabel": "Frequency",
       "name": "Process Capability",
       "description": "Process Capability Analysis — Cp, Cpk, Pp, Ppk, PPM, Sigma Level",
       "whenToUse": "When it must be shown how well a process keeps a measured characteristic inside its specification limits: Cp and Cpk (short term, from the within-subgroup spread), Pp and Ppk (long term), PPM and sigma level, with confidence intervals. Works with one-sided or two-sided limits, individual values or subgroups. Needs at least one limit (lower or upper) and at least 2 numeric values from a data collection column or from loaded example data.",
@@ -6410,89 +6412,6 @@
       "recSmallN": "Small sample (n = {n}) — Kendall τ has better statistical properties for small n.",
       "recLargeN": "Sufficient sample size (n = {n}) — all three methods are statistically reliable.",
       "recLowMono": "Monotonicity index low ({pct}%) — relationship may not be monotonic."
-    },
-    "histogram": {
-      "whenToUse": "Show the distribution of one or more numeric columns as frequency bars, with summary statistics and a confidence interval.",
-      "actions": {
-        "read": {
-          "help": "Read the data rows, the binning, the confidence level and the columns each slot accepts, and the figures shown next to the chart."
-        },
-        "setDatasets": {
-          "help": "Set the data rows. A row consists of a value column and optionally a group column; the button \"Add dataset\" adds a row. Incomplete rows are kept but not plotted. The agent replaces the whole list in one call.",
-          "params": {
-            "rows": "A list of rows, each { value, group }: 'value' — a numeric column (required for the row to be plotted); 'group' — an optional column that splits the row into series. Each entry is a column reference { instanceId, sheetId, columnId } from read().pickableColumns of that slot, or null. [] clears the list."
-          }
-        },
-        "setParam": {
-          "help": "Set an analysis option. read().activeParams names the options valid right now.",
-          "params": {
-            "key": "Which option; each is described individually under keys, the ones allowed in the current state are listed in activeParams. Any other value is an error.",
-            "value": "The value; type and allowed range per key are given under keys."
-          }
-        }
-      },
-      "fields": {
-        "datasets": {
-          "help": "Per data row its columns, each column of a row described individually under keys."
-        },
-        "binMode": {
-          "help": "How bins are formed: auto or manual."
-        },
-        "binWidth": {
-          "help": "The fixed bin width with binMode manual, or null."
-        },
-        "confLevel": {
-          "help": "The confidence level of the statistics in percent."
-        },
-        "activeParams": {
-          "help": "The options setParam accepts in the current state."
-        },
-        "activeColumnSlots": {
-          "help": "The slot keys a row may carry: value, group."
-        },
-        "pickableColumns": {
-          "help": "Per slot the columns setDatasets accepts, each { key, name }; the key is instanceId|sheetId|columnId."
-        },
-        "stats": {
-          "help": "Per plotted series its statistics and confidence intervals, each figure described individually under keys; null while nothing can be computed."
-        }
-      },
-      "types": {
-        "Params": {
-          "binMode": "How the bins (the bars) are formed: automatically or with a fixed width. Automatic: width = range of all visible values divided by ⌈log₂ n⌉ + 1 bins (at least 3, Sturges), rounded to a round value; n counts the values of all visible series. Fixed: the set bin width applies; if it is empty, the width is determined automatically.",
-          "binWidth": "The fixed width of each bin, a number greater than 0 in the units of the values. Empty means automatic width. The option can only be chosen with a fixed width.",
-          "confLevel": "The confidence level in percent, greater than 0 and less than 100 (for example 95). It determines the confidence intervals in the statistics table."
-        },
-        "Dataset": {
-          "valueRef": "The value column of the row (slot V), numeric and required. Without it the row is kept but not plotted. Empty until one is chosen.",
-          "groupRef": "The group column of the row (slot G), optional; it splits the row into series, one per group value. Empty until one is chosen."
-        }
-      },
-      "name": "Histogram",
-      "description": "Frequency distribution with boxplot and statistics",
-      "sectionData": "Data Source",
-      "sectionBinning": "Binning",
-      "sectionOptions": "Options",
-      "datasets": "Datasets",
-      "groupSeriesName": "{col} — {level}",
-      "errNoGroupLevels": "Dataset {n}: the grouping column has no valid values.",
-      "binMode": "Mode",
-      "binAuto": "Automatic (Sturges)",
-      "binManual": "Manual",
-      "binWidth": "Bin width",
-      "binWidthAuto": "automatic",
-      "confLevel": "Confidence level (%)",
-      "showTitle": "Show title",
-      "showPareto": "Pareto line",
-      "showStats": "Statistics table",
-      "showBoxplot": "Boxplot",
-      "chartTitle": "Histogram",
-      "reset": "Reset",
-      "placeholderText": "Select at least one numeric column to create a histogram.",
-      "errNoSeries": "Please add at least one data series.",
-      "errTooFew": "Too few values for column \"{col}\".",
-      "xLabel": "Value",
-      "yLabel": "Frequency"
     },
     "boxplot": {
       "name": "Boxplot",

@@ -3,7 +3,7 @@
  */
 const BIN_MODES_0 = ['auto', 'manual'];
 
-/** @param {unknown} r @returns {{ instanceId: string, sheetId?: string, columnId: string }|null} */
+/** @param {any} r @returns {{ instanceId: string, sheetId?: string, columnId: string }|null} */
 function refOrNull(r) {
   if (!r || typeof r !== 'object' || typeof r.instanceId !== 'string' || typeof r.columnId !== 'string' || !r.instanceId || !r.columnId) return null;
   return { instanceId: r.instanceId, ...(typeof r.sheetId === 'string' && r.sheetId ? { sheetId: r.sheetId } : {}), columnId: r.columnId };
