@@ -33,8 +33,10 @@ export function applyEdits(config, edits, editable, owned) {
   if (Array.isArray(config.series) && Array.isArray(edits.series)) {
     out.series = config.series.map((/** @type {any} */ s) => {
       const e = edits.series.find((/** @type {any} */ x) => x.name === s.name);
-      if (!e) return s;
+      // Immer eine Kopie: der Diagramm-Editor ändert die Reihen des Diagramms
+      // an Ort und Stelle, das darf die Konfiguration des Moduls nicht berühren.
       const merged = { ...s };
+      if (!e) return merged;
       for (const k of editable.series) if (e[k] !== undefined) merged[k] = clone(e[k]);
       return merged;
     });

@@ -13,6 +13,14 @@ suite('Editor-Einstellungen', () => {
     assertDeepEqual(out.series.map((s) => s.fillColor), ['red', 'green']);
   });
 
+  test('applyEdits: Reihen sind Kopien, auch ohne Einstellung — Änderungen am Ergebnis erreichen die Konfiguration nicht', () => {
+    const cfg = { series: [{ name: 'A', fillColor: 'red' }, { name: 'B', fillColor: 'blue' }] };
+    const out = applyEdits(cfg, { series: [{ name: 'B', fillColor: 'green' }] }, editable, new Set());
+    out.series[0].fillColor = 'pink';
+    out.series[1].fillColor = 'pink';
+    assertDeepEqual(cfg.series.map((s) => s.fillColor), ['red', 'blue']);
+  });
+
   test('diffEdits: geänderte Schlüssel, geleertes Textfeld entfällt, Reihen nach Name', () => {
     const before = { title: 'auto', showLegend: true, series: [{ name: 'A', fillColor: 'red', visible: true }] };
     const after = { title: '', showLegend: false, series: [{ name: 'A', fillColor: 'pink', visible: true }] };
