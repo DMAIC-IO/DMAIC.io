@@ -15,6 +15,7 @@ const statList = defineWidget({ name: 'stat-list', props: { rows: list(object({ 
 const picker = defineWidget({ name: 'pick', value: oneOf(['a', 'b', 'c']) });
 const panel = defineWidget({ name: 'panel', props: { rows: list(object({ name: text(), mean: number() })) } });
 const leaky = defineWidget({ name: 'leaky' });
+const boom = defineWidget({ name: 'boom', props: { n: number() } });
 
 /** Imperativ: schreibt Zeilen als Text. */
 function mountStatList(root, { props, effect }) {
@@ -32,7 +33,18 @@ function mountPick(root, { value, effect }) {
   return { destroy() {} };
 }
 
+/** Imperativ: wirft bei n = 13 (TypeError) beziehungsweise n = 14 (Error). */
+function mountBoom(root, { props, effect }) {
+  effect(() => {
+    if (props.n === 13) null.x = 1;
+    if (props.n === 14) throw new Error('kaputt');
+    root.textContent = `n${props.n}`;
+  });
+  return { destroy() {} };
+}
+
 const WIDGETS = {
+  boom: { schema: boom, mount: mountBoom },
   'stat-list': { schema: statList, mount: mountStatList },
   pick: { schema: picker, mount: mountPick },
   panel: { schema: panel, mount: () => ({ destroy() {} }), template: 'tests/panel.html', view: () => ({ label: 'panel-label' }) },
@@ -246,6 +258,25 @@ suite('x-widget', () => {
     assertEqual(probe.alive, before + 1);
     Alpine.destroyTree(root);
     assertEqual(probe.alive, before);
+    root.remove();
+  });
+
+  test('werfender Effect hält Alpine nicht an', async () => {
+    const { root, data } = await host('<div class="b" x-widget="boom" x-widget-n="n"></div><span class="after" x-text="label"></span>', { n: 1 });
+    const w = root.querySelector('.b .widget-root');
+    assertEqual(w.textContent, 'n1');
+    for (const bad of [13, 14]) {
+      const seen = await withWarnings(async () => { data.n = bad; await flush(); });
+      assertTrue(w.classList.contains('widget-root--error'));
+      assertTrue(seen.some((m) => m.includes('x-widget="boom"')));
+      data.label = `after-${bad}`;
+      await flush();
+      assertEqual(root.querySelector('.after').textContent, `after-${bad}`);
+    }
+    data.n = 2;
+    await flush();
+    assertEqual(w.textContent, 'n2');
+    assertTrue(!w.classList.contains('widget-root--error'));
     root.remove();
   });
 });

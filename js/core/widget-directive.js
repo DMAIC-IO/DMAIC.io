@@ -81,7 +81,9 @@ export function mountWidget(Alpine, el, name, entry, { valuePath, i18n, effect, 
 
   const props = Alpine.reactive({});
   const errors = Alpine.reactive({});
+  const crashed = new Set();
   let mounted = false;
+  const showError = () => root.classList.toggle('widget-root--error', Object.keys(errors).length > 0 || crashed.size > 0);
   for (const [p, path] of bound) {
     const spec = schema.props[p];
     effect(() => {
@@ -95,7 +97,7 @@ export function mountWidget(Alpine, el, name, entry, { valuePath, i18n, effect, 
         errors[p] = String(err.message);
         console.warn(`${where}: ${err.message}`);
       }
-      if (mounted) root.classList.toggle('widget-root--error', Object.keys(errors).length > 0);
+      if (mounted) showError();
     });
   }
   if (Object.keys(errors).length) { fail(Object.values(errors).join('; ')); return; }
@@ -117,7 +119,23 @@ export function mountWidget(Alpine, el, name, entry, { valuePath, i18n, effect, 
     Object.defineProperty(Alpine.raw(data), '_ui', { value: { services }, enumerable: false, configurable: true });
     root._x_dataStack = [data];
     if (entry.template) root.append(...cloneTemplate(entry.template));
-    handle = entry.mount(root, { props, value, services, effect });
+    // Ein werfender Effect-Lauf bliebe in Alpines Flush stecken und hielte die ganze Reaktivität an.
+    let slot = 0;
+    const guardedEffect = (fn, ...rest) => {
+      const id = slot++;
+      return effect(() => {
+        try {
+          fn();
+          if (crashed.delete(id) && mounted) showError();
+        } catch (err) {
+          crashed.add(id);
+          console.warn(`${where}: ${err?.message ?? err}`);
+          if (mounted) showError();
+          else root.classList.add('widget-root--error');
+        }
+      }, ...rest);
+    };
+    handle = entry.mount(root, { props, value, services, effect: guardedEffect });
     mounted = true;
     Alpine.initTree(root);
   } catch (err) {
