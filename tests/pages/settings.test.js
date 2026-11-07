@@ -2,7 +2,7 @@ import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
 import {
   linkedAlpha, linkedBeta, clampConfPower, clampRisk, clampMinutes,
   groupShortcuts, DEFAULT_CHART_COLORS, STAT_DEFAULTS, SHORTCUT_GROUP_ORDER, FONT_SLIDERS,
-  buildActionUrlGroups, copyToClipboardFallback,
+  buildActionUrlGroups, copyToClipboardFallback, statsSettingsData,
 } from '../../js/pages/settings/settings.js';
 import { CYCLES } from '../../js/core/cycles/cycles.js';
 
@@ -135,5 +135,40 @@ suite('settings pure helpers — copyToClipboardFallback', () => {
     const before = document.querySelectorAll('textarea').length;
     copyToClipboardFallback('https://example.test/#/action/scenario/s1');
     assertEqual(document.querySelectorAll('textarea').length, before);
+  });
+});
+
+suite('settings stats — settings:changed mit den Schlüsseln confidenceLevel und power', () => {
+  function setup() {
+    const store = {};
+    const events = [];
+    const data = statsSettingsData({
+      stateManager: { get: (k) => store[k], set: (k, v) => { store[k] = v; } },
+      eventBus: { emit: (name, payload) => events.push([name, payload]) },
+    });
+    return { data, store, events };
+  }
+
+  test('onConfidence meldet confidenceLevel', () => {
+    const { data, events } = setup();
+    data.confidence = 90;
+    data.onConfidence();
+    assertEqual(JSON.stringify(events), JSON.stringify([['settings:changed', { key: 'confidenceLevel', value: 90 }]]));
+  });
+
+  test('onPower meldet power', () => {
+    const { data, events } = setup();
+    data.power = 85;
+    data.onPower();
+    assertEqual(JSON.stringify(events), JSON.stringify([['settings:changed', { key: 'power', value: 85 }]]));
+  });
+
+  test('resetStats meldet beide Schlüssel', () => {
+    const { data, events } = setup();
+    data.resetStats();
+    assertEqual(JSON.stringify(events), JSON.stringify([
+      ['settings:changed', { key: 'confidenceLevel', value: 95 }],
+      ['settings:changed', { key: 'power', value: 80 }],
+    ]));
   });
 });

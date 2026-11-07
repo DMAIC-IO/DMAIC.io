@@ -1,4 +1,5 @@
 import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../test-utils.js';
+import { loadModel } from '../../js/core/initial-model.js';
 import { State } from '../../js/modules/attribute-control-chart/domain/model.js';
 import { ATTRIBUTE_CHART_TYPES, ATTRIBUTE_NELSON_RULES, ATTR_DEFAULT_ENABLED_RULES } from '../../js/engines/attribute-control-chart-engine.js';
 
@@ -80,5 +81,16 @@ suite('attribute-control-chart Model', () => {
   test('Rundreise', () => {
     const m = State.fromJSON({ chartTypeId: 'np', defectsRef: ref('d'), constantN: 100, baselineCount: 5, enabledRules: [1, 2] });
     assertDeepEqual(State.fromJSON(m.toJSON()).toJSON(), m.toJSON());
+  });
+
+  test('Reparatur: unbekannte Regel und Kartentyp laden ohne Wurf, mit Warnung', () => {
+    const warnings = [];
+    const warn = console.warn; console.warn = (m) => warnings.push(m);
+    try {
+      const m = loadModel(State, { chartTypeId: 'bogus', enabledRules: [5, 1, 1, 99, 3] });
+      assertEqual(m.chartTypeId, 'p');
+      assertDeepEqual([...m.enabledRules], [1]);
+    } finally { console.warn = warn; }
+    assertEqual(warnings.length, 1);
   });
 });

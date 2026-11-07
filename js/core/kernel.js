@@ -100,7 +100,8 @@ export async function bootKernel(adapter = new LocalAdapter()) {
     enabled: inlineLinksOn(),
   });
   // Re-apply when the user toggles the setting (UI for the toggle comes later).
-  eventBus.on('settings:changed', () => {
+  eventBus.on('settings:changed', (p) => {
+    if (!p?.key?.startsWith('glossary.')) return;
     const on = inlineLinksOn();
     configureStatsPanel({ glossaryEnabled: on });
     setGlossaryInlineConfig({ enabled: on });

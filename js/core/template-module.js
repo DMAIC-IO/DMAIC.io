@@ -549,7 +549,7 @@ export function createModule(base) {
 
     setState(state) {
       if (alpine) {
-        const model = loadModel(Model, state);
+        const model = loadModel(Model, state, schema ? activeContext(this._context?.stateManager) : undefined);
         this._persist(model);
         // Guard: a detached/aborted instance (init threw or never ran to
         // completion) has no mounted container. Still persist the state —
@@ -585,7 +585,7 @@ export function createModule(base) {
       if (!alpine) return;
       const root = this._container?.querySelector('[x-data]');
       if (!root) return;
-      const fresh = loadModel(Model, state);
+      const fresh = loadModel(Model, state, schema ? activeContext(this._context?.stateManager) : undefined);
       this._applyingRemote = true;
       const live = Alpine.$data(root).model;
       // Accessoren am Prototyp: Object.assign träfe nur `_v` und ersetzte das

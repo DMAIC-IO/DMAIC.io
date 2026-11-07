@@ -6,7 +6,7 @@
 import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertThrows } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { createModule } from '../../js/core/template-module.js';
-import { defineModel, command, text, oneOf, index, list, record, boolean, columnRef } from '../../js/core/model.js';
+import { defineModel, command, text, number, oneOf, index, list, record, boolean, columnRef } from '../../js/core/model.js';
 
 const COLS = ['a', 'b'];
 const Board = defineModel({
@@ -218,5 +218,55 @@ suite('createModule: Standard-loadExample mit sourceWorksheetData', () => {
     assertDeepEqual(log.events, []);
     assertDeepEqual(log.notes, []);
     assertEqual(mod.getState().title, 'alt');
+  });
+});
+
+// ─── Vorgaben aus dem Kontext beim Setzen und Fernübernehmen ─────
+
+const Ctx = defineModel({
+  fields: {
+    title: text(),
+    alpha: number({ exclusiveMin: 0, exclusiveMax: 1, default: (c) => Number((1 - c.confidenceLevel / 100).toFixed(4)) }),
+  },
+});
+
+function ctxContext(persisted) {
+  return {
+    instanceId: 'ctx-1',
+    stateManager: {
+      get: (path) => (path === 'settings.confidenceLevel' ? 90 : undefined),
+      getModuleState: () => ({ title: 'abc' }),
+      setModuleState: (id, st) => persisted.push(st),
+    },
+    i18n: { t: (k) => k, tf: () => (k) => k, getLanguage: () => 'de' },
+    eventBus: { on: () => {}, emit: () => {} },
+    theme: 'light',
+    language: 'de',
+  };
+}
+
+suite('createModule: fehlende Felder bekommen die Vorgabe des Projektkontexts', () => {
+  test('setState ohne alpha speichert 0,1 bei Konfidenzniveau 90', () => {
+    const persisted = [];
+    const mod = createModule({ config: { id: 'schema-ctx', engine: 'alpine', phase: 'define' }, Model: Ctx, data: () => ({}) });
+    mod._context = ctxContext(persisted);
+    mod.setState({ title: 'neu' });
+    assertEqual(persisted.at(-1).alpha, 0.1);
+    assertEqual(mod.getState().alpha, 0.1);
+  });
+
+  test('applyRemoteState ohne alpha übernimmt 0,1 bei Konfidenzniveau 90', async () => {
+    ensureTemplate();
+    while (mounted.length) mounted.pop().remove();
+    const persisted = [];
+    const mod = createModule({ config: { id: ID, engine: 'alpine', phase: 'define',
+      templateUrl: new URL(TPL_KEY, document.baseURI).href }, Model: Ctx, data: () => ({}) });
+    const container = document.createElement('div');
+    document.body.append(container);
+    mounted.push(container);
+    await mod.init(container, ctxContext(persisted));
+    await mod.applyRemoteState({ title: 'remote' });
+    assertEqual(Alpine.$data(container.querySelector('[x-data]')).model.alpha, 0.1);
+    container.remove(); mounted.pop();
   });
 });
