@@ -10,8 +10,13 @@
  */
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { asyncTaskAnchors } from './async-task-gates.mjs';
 
-/** Alle `data-help-key`-Werte aus den Vorlagen eines Moduls. */
+/**
+ * Alle `data-help-key`-Werte aus den Vorlagen eines Moduls, dazu die Anker,
+ * die `x-async-task-start` (`modules.<id>.asyncTasks.<n>.help`) und
+ * `x-async-task-cancel` (`….cancel.help`) zur Laufzeit an ihren Knopf hängen.
+ */
 export function helpKeysInTemplates(appDir, moduleId) {
   const dir = join(appDir, 'js', 'modules', moduleId);
   const keys = [];
@@ -25,6 +30,10 @@ export function helpKeysInTemplates(appDir, moduleId) {
       // Alpine-Ausdruck, kein Schlüssel (msa-typ1, Statistiktabelle) — deren
       // Ziele sind Typedef-Sätze und stehen schon im Typedef-Tor.
       for (const m of html.matchAll(/(?<![:\w-])data-help-key="([^"]+)"/g)) keys.push([prefix + file, m[1]]);
+      for (const { name, start, cancel } of asyncTaskAnchors(html)) {
+        if (start) keys.push([prefix + file, `modules.${moduleId}.asyncTasks.${name}.help`]);
+        if (cancel) keys.push([prefix + file, `modules.${moduleId}.asyncTasks.${name}.cancel.help`]);
+      }
     }
   }
   return keys;

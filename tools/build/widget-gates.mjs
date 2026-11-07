@@ -140,7 +140,7 @@ export function collectBindings(templates, names) {
 export function bindingChecks(appDir, id, widgets) {
   const base = join(appDir, 'js', 'modules', id);
   const res = join(base, 'resources');
-  if (widgets.size === 0 || !existsSync(res)) return [];
+  if (!existsSync(res)) return [];
   const read = (f) => readFileSync(join(base, f), 'utf8');
   const jobs = [];
   const files = readdirSync(res).filter((f) => f.endsWith('.html')).sort();
@@ -157,7 +157,16 @@ export function bindingChecks(appDir, id, widgets) {
     }
   }
   return jobs.map(({ out, vmImport, js, templates }) => {
-    const bindings = collectBindings(templates.map((f) => ({ path: `resources/${f}`, text: read(`resources/${f}`) })), viewNamesDetailOf(read(js)));
+    const tpls = templates.map((f) => ({ path: `resources/${f}`, text: read(`resources/${f}`) }));
+    const bindings = widgets.size === 0 ? [] : collectBindings(tpls, viewNamesDetailOf(read(js)));
+    if (js === 'viewmodel/viewmodel.js') {
+      for (const { path, text } of tpls) {
+        for (const m of text.matchAll(/\bx-async-task="([A-Za-z_$][\w$]*)"/g)) {
+          const line = text.slice(0, m.index).split('\n').length;
+          bindings.push({ kind: 'asyncTask', name: m[1], where: `${path}:${line} x-async-task` });
+        }
+      }
+    }
     return { out, text: bindings.length ? renderBindingCheck({ vmImport, bindings }) : null };
   });
 }

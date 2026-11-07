@@ -67,3 +67,14 @@ test('helpKeysInTemplates: liest auch resources/*.html', () => {
   writeFileSync(join(root, 'js', 'modules', 'foo', 'resources', 'view.html'), '<label data-help-key="modules.x.fields.a.help">A</label>');
   assert.deepEqual(helpKeysInTemplates(root, 'foo'), [['resources/view.html', 'modules.x.fields.a.help']]);
 });
+
+test('helpKeysInTemplates: Start- und Abbrechen-Knopf eines x-async-task tragen ihre Anker', () => {
+  const root = fixture({});
+  mkdirSync(join(root, 'js', 'modules', 'foo', 'resources'), { recursive: true });
+  writeFileSync(join(root, 'js', 'modules', 'foo', 'resources', 'view.html'),
+    '<div x-async-task="compute"><button x-async-task-start></button><button x-async-task-cancel></button></div><div x-async-task="preview"><p x-async-task-error></p></div>');
+  assert.deepEqual(helpKeysInTemplates(root, 'foo'), [
+    ['resources/view.html', 'modules.foo.asyncTasks.compute.help'],
+    ['resources/view.html', 'modules.foo.asyncTasks.compute.cancel.help'],
+  ]);
+});

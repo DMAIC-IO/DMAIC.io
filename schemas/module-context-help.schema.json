@@ -47,6 +47,24 @@
       }
     },
     "actions": { "type": "object", "additionalProperties": { "$ref": "#/$defs/action" } },
+    "asyncTasks": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["help"],
+        "properties": {
+          "help": { "$ref": "common.schema.json#/$defs/text" },
+          "cancel": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["help"],
+            "properties": { "help": { "$ref": "common.schema.json#/$defs/text" } }
+          },
+          "params": { "type": "object", "additionalProperties": { "$ref": "common.schema.json#/$defs/text" } }
+        }
+      }
+    },
     "types": { "type": "object", "additionalProperties": { "$ref": "#/$defs/typeTree" } }
   },
   "$defs": {

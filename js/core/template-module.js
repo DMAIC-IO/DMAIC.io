@@ -182,7 +182,8 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
 // x-command-form mit data-form; Vorgabe {}.
 /**
  * Ein Modul aus Model, Viewmodel und Template bauen.
- * @template V, T
+ * @template V
+ * @template [T={}]
  * @param {{ view?: (ctx: any) => V, asyncTasks?: T } & Record<string, any>} base
  * @returns {Record<string, any> & { readonly __view?: V, readonly __asyncTasks?: T }}
  */

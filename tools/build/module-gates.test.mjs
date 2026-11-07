@@ -592,6 +592,37 @@ test('checkConvertedModule: Viewmodel-Kommando ohne Hilfetext wird gemeldet', as
   assert.ok(findings.includes('help: resources/i18n/context-help.en.json: actions.open.params.x fehlt'), findings.join('\n'));
 });
 
+const VM_WITH_TASK = 'export default createModule({ asyncTasks: { compute: asyncTask({ async run() {} }) } });\n';
+const TASK_VIEW = '<template data-tpl="neu"><input x-model="model.title"><input x-field="model.alpha"><div x-async-task="compute"><button x-async-task-start></button></div></template>';
+const helpWithTasks = () => JSON.stringify({ ...JSON.parse(HELP_FULL), asyncTasks: { compute: { help: 'Rechnen', cancel: { help: 'Abbrechen' } } } });
+
+test('checkConvertedModule: asyncTask ohne Hilfetexte wird gemeldet, mit Hilfe grün', async () => {
+  const bare = await checkConvertedModule(convertedFixture({
+    'js/modules/neu/viewmodel/viewmodel.js': VM_WITH_TASK, 'js/modules/neu/resources/view.html': TASK_VIEW,
+  }), 'neu');
+  assert.deepEqual(bare, ['de', 'en'].flatMap((lang) => [
+    `help: resources/i18n/context-help.${lang}.json: asyncTasks.compute.help fehlt`,
+    `help: resources/i18n/context-help.${lang}.json: asyncTasks.compute.cancel.help fehlt`,
+  ]));
+  const full = await checkConvertedModule(convertedFixture({
+    'js/modules/neu/viewmodel/viewmodel.js': VM_WITH_TASK, 'js/modules/neu/resources/view.html': TASK_VIEW,
+    'js/modules/neu/resources/i18n/context-help.de.json': helpWithTasks(),
+    'js/modules/neu/resources/i18n/context-help.en.json': helpWithTasks(),
+  }), 'neu');
+  assert.deepEqual(full, []);
+});
+
+test('checkConvertedModule: unbekannter Task in der Vorlage und auto mit params', async () => {
+  const findings = await checkConvertedModule(convertedFixture({
+    'js/modules/neu/viewmodel/viewmodel.js': 'export default createModule({ asyncTasks: { compute: asyncTask({ async run() {} }), preview: asyncTask({ auto: true, params: { n: number() }, async run() {} }) } });\n',
+    'js/modules/neu/resources/view.html': TASK_VIEW.replace('"compute"', '"ghost"'),
+    'js/modules/neu/resources/i18n/context-help.de.json': helpWithTasks(),
+    'js/modules/neu/resources/i18n/context-help.en.json': helpWithTasks(),
+  }), 'neu');
+  assert.ok(findings.includes('template: resources/view.html: x-async-task="ghost": kein Task aus asyncTasks'), findings.join('\n'));
+  assert.ok(findings.includes('asyncTask: viewmodel/viewmodel.js: preview: invalid params with auto: true; allowed: params and blocked only without auto'), findings.join('\n'));
+});
+
 const HELP_DE = { sections: { overview: { title: 'Ü', blocks: [{ type: 'paragraph', content: 'Siehe {{ref:melzer-2019}} und {{ref:x|X}}.' }] }, steps: { title: 'S', blocks: [{ type: 'steps', items: ['a'] }] } } };
 const HELP_EN = { sections: { overview: { title: 'O', blocks: [{ type: 'paragraph', content: 'See {{ref:melzer-2019}}.' }] }, steps: { title: 'S', blocks: [{ type: 'steps', items: ['a'] }] } } };
 const REFS_OK = { references: [{ book: 'melzer-2019' }, { id: 'x', type: 'webpage', title: 'X', author: [{ literal: 'X' }] }] };

@@ -180,6 +180,56 @@ test('typecheck: Getter-Bindung mit falschem Typ meldet die Zeile der Zuweisung'
   assert.match(findings[0], /view\.bindings\.js\(4,\d+\): TS2322: .*Type 'string' is not assignable to type 'string\[\]'/);
 });
 
+/** Temporärer App-Baum: Modul mit `asyncTasks` aus `tasksSrc`, Prüfdatei mit Behälter `compute`. */
+function taskBindingApp(tasksSrc) {
+  const tm = join(APP_DIR, 'js', 'core', 'template-module.js');
+  const at = join(APP_DIR, 'js', 'core', 'async-task.js');
+  const check = renderBindingCheck({ vmImport: './viewmodel.js', bindings: [
+    { kind: 'asyncTask', name: 'compute', where: 'resources/view.html:1 x-async-task' },
+  ] }).replace('../../../core/async-task.js', at);
+  return appWith({
+    'js/modules/m/viewmodel/viewmodel.js': `import { createModule } from '${tm}';\nimport { asyncTask } from '${at}';\n`
+      + `export default createModule({ view() { return {}; }, asyncTasks: { ${tasksSrc} } });\n`,
+    'js/modules/m/viewmodel/view.bindings.js': check,
+  });
+}
+
+test('typecheck: x-async-task auf einen Task, den das Viewmodel nicht hat, meldet die Zeile', () => {
+  const root = taskBindingApp('preview: asyncTask({ auto: true, async run() {} })');
+  const findings = typecheck([join(root, 'js/modules/m/viewmodel/view.bindings.js')]);
+  assert.equal(findings.length, 1, findings.join('\n'));
+  assert.match(findings[0], /view\.bindings\.js\(3,\d+\): TS2339: Property 'compute' does not exist/);
+});
+
+test('typecheck: x-async-task in einem Modul ganz ohne asyncTasks meldet die Zeile', () => {
+  const dir = taskBindingApp('');
+  const vm = join(dir, 'js/modules/m/viewmodel/viewmodel.js');
+  const tm = join(APP_DIR, 'js', 'core', 'template-module.js');
+  writeFileSync(vm, `import { createModule } from '${tm}';\nexport default createModule({ view() { return {}; } });\n`);
+  const findings = typecheck([join(dir, 'js/modules/m/viewmodel/view.bindings.js')]);
+  assert.equal(findings.length, 1, findings.join('\n'));
+  assert.match(findings[0], /view\.bindings\.js\(3,\d+\): TS2339: Property 'compute' does not exist/);
+});
+
+test('typecheck: x-async-task auf einen deklarierten Task ist ohne Befund', () => {
+  const root = taskBindingApp('compute: asyncTask({ async run() {} })');
+  const findings = typecheck([join(root, 'js/modules/m/viewmodel/view.bindings.js')]);
+  assert.equal(findings.length, 0, findings.join('\n'));
+});
+
+test('renderBindingCheck: nur Task-Bindungen ohne WidgetProps, gemischt mit beiden Köpfen', () => {
+  const only = renderBindingCheck({ vmImport: './viewmodel.js', bindings: [{ kind: 'asyncTask', name: 'compute', where: 'resources/view.html:1 x-async-task' }] });
+  assert.doesNotMatch(only, /WidgetProps/);
+  assert.match(only, /const tasks = /);
+  assert.match(only, /export const b0 = tasks\.compute; \/\/ resources\/view\.html:1 x-async-task/);
+  const mixed = renderBindingCheck({ vmImport: './viewmodel.js', bindings: [
+    { widget: 'w', prop: 'rows', path: 'rows', computed: false, where: 'resources/view.html:1 x-widget-rows' },
+    { kind: 'asyncTask', name: 'compute', where: 'resources/view.html:2 x-async-task' },
+  ] });
+  assert.match(mixed, /WidgetProps\['w'\]\['rows'\]\} \*\/ export const b0 = vm\.rows;/);
+  assert.match(mixed, /export const b1 = tasks\.compute;/);
+});
+
 test('typecheck: Getter-Bindung mit passendem Typ ist ohne Befund', () => {
   const root = bindingApp("return ['x'];");
   const findings = typecheck([join(root, 'js/modules/m/viewmodel/view.bindings.js')]);

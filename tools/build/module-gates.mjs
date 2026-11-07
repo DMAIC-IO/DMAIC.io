@@ -21,6 +21,7 @@ import { checkWidgetBindings, loadWidgetSchemas } from './widget-gates.mjs';
 import { BOOKS } from '../../js/core/references-books.js';
 import { readExampleOwners } from './example-catalog.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
+import { readViewmodelAsyncTasks, checkAsyncTaskRefs, checkAsyncTaskDecls, asyncTaskHelpKeys } from './async-task-gates.mjs';
 
 /**
  * Alle Dateien eines Moduls, relativ zum Modulordner, POSIX, sortiert.
@@ -250,7 +251,7 @@ const LAYER_RULES = {
       { re: /alpinejs/, why: 'Alpine' },
       { re: /\/core\/dom\.js$/, why: 'DOM-Helfer' },
       { re: /(^|\/)ui\//, why: 'UI' },
-      { re: /\/core\/(template-module|field-directive)\.js$/, why: 'Viewmodel-Kern' },
+      { re: /\/core\/(template-module|field-directive|async-task-directives)\.js$/, why: 'Viewmodel-Kern' },
       { re: /^(\.\.\/)+(viewmodel|interaction|io|tile|resources)\//, why: 'höhere Schicht' },
       { re: /\/widgets\/(?![a-z0-9-]+\/schema\.js$)/, why: 'aus js/widgets/ nur schema.js' },
     ],
@@ -1249,6 +1250,7 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
   out.push(...checkLayers(js));
   out.push(...checkWritePath(js));
   out.push(...checkViewReads(js));
+  out.push(...checkAsyncTaskDecls(js));
   const cssPath = 'resources/style.css';
   out.push(...checkPickerCss(paths.includes(cssPath) ? read(cssPath) : null));
   const chartTemplates = paths.filter((p) => /^resources\/[^/]+\.html$/.test(p)).map(read);
@@ -1297,6 +1299,8 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
         if (m) out.push(...checkWidgetBindings([f], { widgets, schema, stateSchema: null, viewNames: viewNamesOf(tileText(`tile/${m[1] ?? 'tile'}.js`)) }));
       }
       out.push(...checkCommandRefs(templates, schema, formSchemas));
+      const asyncTasks = existsSync(vmFile) ? readViewmodelAsyncTasks(readFileSync(vmFile, 'utf8')) : {};
+      out.push(...checkAsyncTaskRefs(templates, asyncTasks));
       const lists = checkListBindings(templates, schema);
       out.push(...lists.findings, ...checkDefaultArgRefs(templates, schema), ...checkChoiceGroups(templates));
       out.push(...checkConfirmKeys(readConfirmKeys(readFileSync(file, 'utf8')), {
@@ -1311,7 +1315,7 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
         de: readJson(join(base, 'resources', 'i18n', 'context-help.de.json')),
         en: readJson(join(base, 'resources', 'i18n', 'context-help.en.json')),
       }, existsSync(vmFile) ? readViewmodelCommands(readFileSync(vmFile, 'utf8')) : {}, readStateBindings(templates),
-      [...formHelpKeys(readCommandForms(templates), schema, formSchemas), ...lists.helpKeys]));
+      [...formHelpKeys(readCommandForms(templates), schema, formSchemas), ...lists.helpKeys, ...asyncTaskHelpKeys(asyncTasks)]));
     }
   }
   if (paths.includes('tile/settings.js')) {

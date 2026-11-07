@@ -274,6 +274,7 @@ export function renderSettingsTypes({ id, name, schema, modelName }) {
 
 /** Pfad der Prüfdatei zur Typdatei der Widgets (Prüfdateien liegen in viewmodel/ bzw. tile/). */
 const WIDGET_PROPS_IMPORT = '../../../widgets/widget-props.types.js';
+const ASYNC_TASK_IMPORT = '../../../core/async-task.js';
 
 /**
  * Typen der Widget-Eingaben und -Werte für tsc.
@@ -291,17 +292,23 @@ export function renderWidgetProps(widgets) {
 
 /**
  * Prüfdatei der Getter-/computed-Bindungen eines Templates: eine Zuweisung je
- * Bindung, tsc meldet Typabweichungen zeilengenau.
- * @param {{ vmImport: string, bindings: { widget: string, prop: string, path: string, computed: boolean, where: string }[] }} input
+ * Bindung, tsc meldet Typabweichungen zeilengenau. Bindungen mit
+ * `kind: 'asyncTask'` (Behälter `x-async-task="<name>"`) greifen auf
+ * `__asyncTasks` des Viewmodels zu — fehlt der Task, meldet tsc die Zeile.
+ * @param {{ vmImport: string, bindings: ({ widget: string, prop: string, path: string, computed: boolean, where: string } | { kind: 'asyncTask', name: string, where: string })[] }} input
  * @returns {string}
  */
 export function renderBindingCheck({ vmImport, bindings }) {
-  const head = [
-    '// erzeugt von tools/build/build.mjs — nicht von Hand ändern',
-    '/** @typedef {' + 'import' + "('" + WIDGET_PROPS_IMPORT + "').WidgetProps} WidgetProps */",
-    '/** @type {NonNullable<typeof ' + 'import' + "('" + vmImport + "').default['__view']>} */ const vm = /** @type {any} */ (null);",
-  ];
+  const isTask = (b) => b.kind === 'asyncTask';
+  const vmType = (prop) => '/** @type {NonNullable<typeof ' + 'import' + "('" + vmImport + "').default['" + prop + "']>} */";
+  const head = ['// erzeugt von tools/build/build.mjs — nicht von Hand ändern'];
+  if (bindings.some((b) => !isTask(b))) {
+    head.push('/** @typedef {' + 'import' + "('" + WIDGET_PROPS_IMPORT + "').WidgetProps} WidgetProps */");
+    head.push(vmType('__view') + ' const vm = /** @type {any} */ (null);');
+  }
+  if (bindings.some(isTask)) head.push(vmType('__asyncTasks') + ' const tasks = /** @type {any} */ (null);');
   const lines = bindings.map((b, i) => {
+    if (isTask(b)) return '/** @type {' + 'import' + "('" + ASYNC_TASK_IMPORT + "').AsyncTaskDef} */ export const b" + i + ` = tasks.${b.name}; // ${b.where}`;
     const [first, ...rest] = b.path.split('.');
     const expr = b.computed ? `vm.computed.${first}()${rest.map((r) => `.${r}`).join('')}` : `vm.${b.path}`;
     return `/** @type {WidgetProps['${b.widget}']['${b.prop}']} */ export const b${i} = ${expr}; // ${b.where}`;
