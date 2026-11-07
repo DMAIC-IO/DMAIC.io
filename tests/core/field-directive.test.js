@@ -4,8 +4,8 @@
  */
 import { suite, test, assertEqual, assertTrue, assertThrows, assertDeepEqual } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
-import { registerFieldDirective, registerFieldWidget } from '../../js/core/field-directive.js';
-import { defineModel, defineState, text, number, oneOf, boolean, list, object, command, idOf, date, columnRef } from '../../js/core/model.js';
+import { registerFieldDirective } from '../../js/core/field-directive.js';
+import { defineModel, defineWidget, defineState, text, number, oneOf, boolean, list, object, command, idOf, date, columnRef } from '../../js/core/model.js';
 
 const M = defineModel({
   fields: {
@@ -323,24 +323,26 @@ suite('x-field auf columnRef', () => {
     colRefsK: list(columnRef({ types: ['numeric'], minCount: 3, nullable: false })),
   } });
   const ref = (c) => ({ instanceId: 'ws1', sheetId: 's1', columnId: c });
+  const I18N_COLS = { t: (k) => k, getLanguage: () => 'de' };
+  const TEST_WIDGETS = {};
 
-  /** Stub-Picker: zeichnet die Auswahl als Text, ruft onChange auf Zuruf. */
+  /** Stub-Widget: merkt sich Wert, Dienste, Effect-Läufe und den Abbau. */
   const mounted = [];
-  const stubMount = (el, target, services) => {
-    const w = { el, target, services, synced: [], destroyed: false,
-      sync(v) { this.synced.push(JSON.parse(JSON.stringify(v))); },
-      destroy() { this.destroyed = true; } };
+  const stubMount = (root, { value, services, effect }) => {
+    const w = { root, value, services, seen: [], destroyed: false, destroy() { this.destroyed = true; } };
+    effect(() => w.seen.push(JSON.parse(JSON.stringify(value.get() ?? null))));
     mounted.push(w);
     return w;
   };
 
   async function mountCols(html) {
     mounted.length = 0;
-    // Der Stub gilt nur für den Einbau dieses Tests; danach gilt wieder der vorige Eintrag.
-    const previous = registerFieldWidget('columnRef', stubMount);
-    try {
+    TEST_WIDGETS['column-picker'] = {
+      schema: defineWidget({ name: 'column-picker', value: columnRef(), forKind: 'columnRef' }),
+      mount: stubMount,
+    };
+    registerFieldDirective(Alpine, { i18n: I18N_COLS, widgets: TEST_WIDGETS });
     if (!Alpine.version) Alpine.start();
-    registerFieldDirective(Alpine, { i18n: { t: (k) => k, getLanguage: () => 'de' } });
     const name = `colsTest${Math.random().toString(36).slice(2)}`;
     const model = new Cols();
     const services = { eventBus: {}, stateManager: {}, i18n: {} };
@@ -355,38 +357,38 @@ suite('x-field auf columnRef', () => {
     Alpine.initTree(host);
     await flush();
     return { host, services, data: () => Alpine.$data(host.firstElementChild) };
-    } finally {
-      registerFieldWidget('columnRef', previous ?? null);
-    }
   }
 
-  test('Picker eingehängt, Dienste und Spec übergeben, Hilfe-Anker gesetzt', async () => {
-    const { host, services } = await mountCols('<div class="pick" x-field="model.colRef1"></div><div x-field="model.colRefsK"></div>');
+  test('Widget eingehängt, Dienste übergeben, Hilfe-Anker gesetzt, vorhandener Anker bleibt', async () => {
+    const { host, services } = await mountCols('<div class="pick" x-field="model.colRef1"></div><div class="own" data-help-key="" x-field="model.colRefsK"></div>');
     assertEqual(mounted.length, 2);
-    assertTrue(mounted[0].services === services);
-    assertEqual(mounted[0].target.spec.kind, 'columnRef');
-    assertEqual(mounted[1].target.spec.kind, 'list');
+    assertTrue(mounted[0].services.eventBus === services.eventBus);
+    assertEqual(mounted[0].value.spec.kind, 'columnRef');
+    assertEqual(mounted[1].value.spec.kind, 'list');
+    assertTrue(host.querySelector('.pick > .widget-root') !== null);
     assertEqual(host.querySelector('.pick').getAttribute('data-help-key'), 'modules.demo.fields.colRef1.help');
+    assertEqual(host.querySelector('.own').getAttribute('data-help-key'), '');
     host.remove();
   });
 
-  test('Wahl im Picker landet geprüft im Model', async () => {
+  test('Setzen landet geprüft im Model, Ablehnung markiert den Wirt', async () => {
     const { host, data } = await mountCols('<div x-field="model.colRef1"></div>');
-    mounted[0].target.set(ref('c1'));
+    assertTrue(mounted[0].value.set(ref('c1')) === true);
     assertDeepEqual(data().model.colRef1, ref('c1'));
-    let caught = null;
-    try { mounted[0].target.set({ instanceId: 'x' }); } catch (err) { caught = err; }
-    assertTrue(caught === null, 'Ablehnung wirft nicht aus dem Picker heraus');
-    assertTrue(host.querySelector('[x-field]').getAttribute('aria-invalid') === 'true');
+    assertTrue(mounted[0].value.set('kaputt') === false);
+    assertEqual(host.querySelector('[x-field]').getAttribute('aria-invalid'), 'true');
+    assertTrue(mounted[0].value.rejected.message.startsWith('common.inputRejected'), mounted[0].value.rejected.message);
     assertDeepEqual(data().model.colRef1, ref('c1'));
+    mounted[0].value.set(ref('c2'));
+    assertTrue(host.querySelector('[x-field]').getAttribute('aria-invalid') === null);
     host.remove();
   });
 
-  test('Model-Änderung wird in den Picker gespiegelt', async () => {
+  test('Model-Änderung läuft in den Effect des Widgets', async () => {
     const { host, data } = await mountCols('<div x-field="model.colRefsK"></div>');
     data().model.colRefsK = [ref('a'), ref('b')];
     await flush();
-    assertDeepEqual(mounted[0].synced.at(-1), [ref('a'), ref('b')]);
+    assertDeepEqual(mounted[0].seen.at(-1), [ref('a'), ref('b')]);
     host.remove();
   });
 
@@ -398,17 +400,11 @@ suite('x-field auf columnRef', () => {
     host.remove();
   });
 
-  test('der Stub verdrängt einen vorhandenen Eintrag nicht dauerhaft', async () => {
-    const sentinel = () => ({ sync() {}, destroy() {} });
-    const before = registerFieldWidget('columnRef', sentinel);
-    try {
-      const { host } = await mountCols('<div x-field="model.colRef1"></div>');
-      host.remove();
-      const current = registerFieldWidget('columnRef', sentinel);
-      assertTrue(current === sentinel, 'nach dem Einbau gilt wieder der vorige Eintrag');
-    } finally {
-      registerFieldWidget('columnRef', before ?? null);
-    }
+  test('list(columnRef) nimmt dasselbe Widget', async () => {
+    const { host } = await mountCols('<div x-field="model.colRefsK"></div>');
+    assertEqual(mounted.length, 1);
+    assertEqual(mounted[0].value.spec.item.kind, 'columnRef');
+    host.remove();
   });
 
   test('auf <select> wirft beim Einbau', async () => {
@@ -417,6 +413,6 @@ suite('x-field auf columnRef', () => {
     window.addEventListener('error', onErr);
     try { await mountCols('<select x-field="model.colRef1"></select>'); } catch (err) { caught = err; }
     window.removeEventListener('error', onErr);
-    assertTrue(/needs a host element/.test(String(caught?.message ?? caught)), String(caught));
+    assertTrue(/a columnRef field needs a host element \(div\), not <select>/.test(String(caught?.message ?? caught)), String(caught));
   });
 });

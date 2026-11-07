@@ -23,15 +23,16 @@
  * `x-set="<pfad>"` an einer Gruppe (kein `input`/`select`/`textarea`) bindet
  * deren Optionen (`core/choice-group.js`); Pfade wie `x-field`.
  *
- * `x-field` auf `columnRef` bzw. `list(columnRef)` steht auf einem Wirtselement
- * (`div`); der Kern hängt dort das registrierte Widget ein (`registerFieldWidget`,
- * in der App der Spalten-Picker aus `ui/column-field.js`), mit `types`/`minCount`
- * aus dem Schema. Module rufen keine Methoden des Pickers auf und stylen nur das
+ * `x-field` auf einer Feldart, für die ein Widget zuständig ist (z. B. `columnRef`
+ * und `list(columnRef)` für den Spalten-Picker), steht auf einem Wirtselement
+ * (`div`); die Direktive hängt dort das Widget aus der übergebenen Registry ein
+ * (`mountWidget`). Module rufen keine Methoden des Widgets auf und stylen nur das
  * Wirtselement.
  *
  * CSP-tauglich: kein Ausdruck wird ausgewertet — der Pfad wird zerlegt und
  * über `Alpine.$data` gelesen.
  */
+import { widgetForKind, mountWidget } from './widget-directive.js';
 import { openChannel, anchorHelp, rejectionHint, invariantHint } from './value-channel.js';
 import { bindChoiceGroup, isChoiceGroup } from './choice-group.js';
 import { contextOf } from './model.js';
@@ -42,31 +43,8 @@ export { rejectionHint, invariantHint };
 
 const registered = new WeakSet();
 
-/** Widgets je Feldart (z. B. der Spalten-Picker für columnRef); `registerFieldWidget`. */
-const widgets = new Map();
-
-/**
- * Ein Widget für eine Feldart einhängen. `x-field` auf einem Feld dieser Art
- * (oder einer Liste davon) steht auf einem Wirtselement; `mount` baut das
- * Widget dort auf. Mehrfacher Aufruf ersetzt den Eintrag; `null` entfernt ihn.
- * @param {'columnRef'} kind
- * @param {(el: HTMLElement, target: { spec: object, get: () => any, set: (v: any) => void },
- *   services: { eventBus: any, stateManager: any, i18n: any }) => { sync: (v: any) => void, destroy: () => void } | null} mount
- * @returns {Function|undefined} der bisherige Eintrag (zum Wiederherstellen)
- */
-export function registerFieldWidget(kind, mount) {
-  const previous = widgets.get(kind);
-  if (mount === null) widgets.delete(kind);
-  else widgets.set(kind, mount);
-  return previous;
-}
-
-/** @param {object} spec @returns {string|null} */
-function widgetKind(spec) {
-  if (spec.kind === 'columnRef') return 'columnRef';
-  if (spec.kind === 'list' && spec.item?.kind === 'columnRef') return 'columnRef';
-  return null;
-}
+/** Widget-Registry je Alpine-Instanz; spätere Aufrufe mit `widgets` ersetzen sie. */
+const widgetsOf = new WeakMap();
 
 /** @param {object} spec @returns {boolean} */
 const isNumeric = (spec) => spec.kind === 'number' || spec.kind === 'index';
@@ -111,40 +89,25 @@ export function writeElement(el, spec, value) {
 /**
  * Die Direktive registrieren. Vor `Alpine.start()` aufrufen; je Alpine-Instanz einmal.
  * @param {object} Alpine der Default-Export von csp.js
- * @param {{ i18n: { t: (key: string, params?: object) => string, getLanguage: () => string } }} deps
+ * @param {{ i18n: { t: (key: string, params?: object) => string, getLanguage: () => string }, widgets?: Record<string, any> }} deps `widgets`: Widget-Registry (`js/widgets/registry.js`)
  * @returns {void}
  */
-export function registerFieldDirective(Alpine, { i18n }) {
+export function registerFieldDirective(Alpine, { i18n, widgets }) {
+  if (widgets) widgetsOf.set(Alpine, widgets);
   if (registered.has(Alpine)) return;
   registered.add(Alpine);
   Alpine.directive('field', (el, { expression }, { effect, cleanup }) => {
     const ch = openChannel(Alpine, el, expression, { where: 'x-field', i18n });
     const { spec } = ch;
     const data = Alpine.$data(el);
-    const wk = widgetKind(spec);
-    if (wk) {
-      const where = `x-field="${expression}"`;
+    const widgets = widgetsOf.get(Alpine) ?? {};
+    const widgetName = widgetForKind(widgets, spec);
+    if (widgetName) {
       if (['INPUT', 'SELECT', 'TEXTAREA'].includes(el.tagName)) {
-        throw new Error(`${where}: a ${wk} field needs a host element (div), not <${el.tagName.toLowerCase()}>`);
+        throw new Error(`x-field="${expression}": a ${spec.kind === 'list' ? spec.item.kind : spec.kind} field needs a host element (div), not <${el.tagName.toLowerCase()}>`);
       }
-      const mount = widgets.get(wk);
-      if (!mount) throw new Error(`${where}: no widget registered for ${wk}`);
-      const services = Alpine.raw(data._ui?.services);
-      if (!services) throw new Error(`${where}: ${wk} fields need a module with defineModel`);
       anchorHelp(el, data, ch.helpKey);
-      const widget = mount(el, {
-        spec,
-        get: ch.get,
-        set: (value) => {
-          if (ch.set(value)) clearRejection(el);
-          else {
-            markRejection(el, ch.rejected.message);
-            widget.sync(ch.get());
-          }
-        },
-      }, services);
-      effect(() => widget.sync(ch.get()));
-      cleanup(() => widget.destroy());
+      mountWidget(Alpine, el, widgetName, widgets[widgetName], { valuePath: expression, i18n, effect, cleanup });
       return;
     }
     applyAttributes(el, spec);

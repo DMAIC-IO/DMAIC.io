@@ -14,6 +14,7 @@
 import { checkValue } from './model.js';
 import { openChannel } from './value-channel.js';
 import { cloneTemplate } from './dom.js';
+import { clearRejection, markRejection } from './param-input.js';
 
 const registered = new WeakSet();
 const PROP_ATTR = /^x-widget-([a-z][a-z0-9-]*)$/;
@@ -104,7 +105,13 @@ export function mountWidget(Alpine, el, name, entry, { valuePath, i18n, effect, 
     let value = null;
     if (valuePath !== null) {
       const ch = openChannel(Alpine, el, valuePath, { where: 'x-widget-value', i18n });
-      value = { spec: ch.spec, name: ch.name, get: ch.get, set: ch.set, rejected: ch.rejected };
+      const set = (v) => {
+        const ok = ch.set(v);
+        if (ok) clearRejection(el);
+        else markRejection(el, ch.rejected.message);
+        return ok;
+      };
+      value = { spec: ch.spec, name: ch.name, get: ch.get, set, rejected: ch.rejected };
     }
     const data = Alpine.reactive({ ...(entry.view ? entry.view({ props, value, services }) : {}), props });
     Object.defineProperty(Alpine.raw(data), '_ui', { value: { services }, enumerable: false, configurable: true });
