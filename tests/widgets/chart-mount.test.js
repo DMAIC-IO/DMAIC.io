@@ -7,18 +7,21 @@ import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-u
 import { defineModel, number } from '../../js/core/model.js';
 import { registerWidgetDirective } from '../../js/core/widget-directive.js';
 import { WIDGETS } from '../../js/widgets/registry.js';
+import HistogramChart from '../../js/core/chart/types/histogram.js';
 import histogramChart from '../../js/widgets/histogram-chart/schema.js';
 
 const i18n = { t: (k) => k, getLanguage: () => 'de' };
 const flush = () => new Promise((r) => setTimeout(r, 0));
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
-function fakeManager({ delay = 0, fonts = { titleSize: 15 } } = {}) {
+function fakeManager({ delay = 0, fonts = { titleSize: 15 }, real = false } = {}) {
   const log = { created: [], updated: [], destroyed: 0 };
   return {
     log,
     create(el, type, config) {
-      const chart = { type, config: { ...fonts, ...config }, el };
+      const chart = real
+        ? new HistogramChart(el, { ...fonts, ...config }, { i18n, language: 'de', theme: 'light' })
+        : { type, config: { ...fonts, ...config }, el };
       log.created.push(chart);
       return new Promise((r) => setTimeout(() => r(chart), delay));
     },
@@ -129,12 +132,12 @@ suite('Diagramm-Widgets (chart-mount)', () => {
   });
 
   test('entfallene gespeicherte Einstellung wird im Diagramm zurückgesetzt', async () => {
-    const cm = fakeManager();
+    const cm = fakeManager({ real: true });
     const { root, data } = await host(HIST, { cm, model: { chartEdits: { showLegend: false } } });
     assertEqual(cm.log.created[0].config.showLegend, false);
     data.model.chartEdits = {};
     await flush();
-    assertTrue(cm.log.created[0].config.showLegend !== false);
+    assertEqual(cm.log.created[0].config.showLegend, true);
     assertEqual(cm.log.created.length, 1);
     root.remove();
   });

@@ -64,10 +64,10 @@ export function chartMount(widget, toChart = (c) => c) {
       const config = toChart(applyEdits(cfg, edits, editable, ownedKeys(cfg)));
       if (value) config.onEditorChange = onEditorChange;
       const owned = ownedKeys(cfg);
-      for (const k of editable.base) if (appliedEdits[k] !== undefined && edits[k] === undefined && !owned.has(k) && !(k in config)) config[k] = cfg[k];
+      const vanished = editable.base.filter((/** @type {string} */ k) => appliedEdits[k] !== undefined && edits[k] === undefined && !owned.has(k) && !(k in config));
       appliedEdits = edits;
       if (slot.token) {
-        if (slot.chart) { cm.update(slot.chart, config); shown = pickShown(slot.chart.config, editable); } else slot.pending = config;
+        if (slot.chart) { resetToDefaults(slot.chart, config, vanished, cfg); cm.update(slot.chart, config); shown = pickShown(slot.chart.config, editable); } else slot.pending = config;
         return;
       }
       const token = {};
@@ -84,6 +84,25 @@ export function chartMount(widget, toChart = (c) => c) {
 
     return { destroy() { alive = false; release(); } };
   };
+}
+
+/**
+ * Entfallene Einstellungen auf den Wert zurücksetzen, den der Diagrammtyp ohne
+ * Einstellung hätte (Vorgabe des Moduls, sonst Vorgabe des Typs). `update`
+ * mischt nur; ein fehlender Schlüssel bliebe sonst stehen.
+ * @param {any} chart @param {any} patch @param {string[]} keys @param {any} cfg
+ * @returns {void}
+ */
+function resetToDefaults(chart, patch, keys, cfg) {
+  if (!keys.length) return;
+  /** @type {Record<string, any>} */
+  let defaults = {};
+  try {
+    const probe = new chart.constructor(document.createElement('div'), {}, chart.context);
+    defaults = { ...probe.config };
+    probe.destroy?.();
+  } catch { /* ohne Typvorgabe bleibt die Vorgabe des Moduls */ }
+  for (const k of keys) patch[k] = cfg[k] !== undefined ? cfg[k] : defaults[k];
 }
 
 /**
