@@ -49,8 +49,9 @@ function ensureTemplate() {
  * Modul mit Fake-Diensten einhängen.
  * @param {object} model gespeicherter Zustand der Instanz
  * @param {Record<string, any>} [sheets] Modulzustände weiterer Instanzen
+ * @param {Record<string, any>} [settings] Werte für `stateManager.get`
  */
-async function mount(model, sheets = {}) {
+async function mount(model, sheets = {}, settings = {}) {
   ensureTemplate();
   while (mounted.length) mounted.pop().remove();
   const states = { 'ht-1': model, ...sheets };
@@ -76,7 +77,7 @@ async function mount(model, sheets = {}) {
       },
       setModuleState: () => {},
       getProjectCycle: () => 'dmaic',
-      get: () => undefined,
+      get: (k) => settings[k],
     },
     i18n: {
       t: (k) => k,
@@ -106,6 +107,12 @@ const twoSamples = (a = ref(0), b = ref(1)) => ({
 });
 
 suite('hypothesis-test: Viewmodel im Browser', () => {
+  test('frisches Modul bei 90 %: α 0,10 und kein Inhalt', async () => {
+    const { vm } = await mount(null, {}, { 'settings.confidenceLevel': 90 });
+    assertEqual(vm().model.alpha, 0.1);
+    assertEqual(vm().model.hasContent(), false);
+  });
+
   test('Wert im Arbeitsblatt ändern rechnet neu', async () => {
     const { vm, states, bus } = await mount(twoSamples(), { ws1: sheetWith(A, B) });
     assertEqual(vm().result.status, 'ok');

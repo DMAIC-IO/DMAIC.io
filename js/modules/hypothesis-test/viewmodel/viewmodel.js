@@ -15,15 +15,6 @@ export default createModule({
   descriptor,
   Model: State,
   readComputed: ['result'],
-  /** Beim ersten Öffnen α und Ziel-Teststärke aus den Einstellungen. */
-  createDefault(context) {
-    const m = new State();
-    const conf = (context.stateManager.get('settings.confidenceLevel') ?? 95) / 100;
-    const power = (context.stateManager.get('settings.power') ?? 80) / 100;
-    m.alpha = Number((1 - conf).toFixed(4));
-    m.powerGoal = power;
-    return m;
-  },
   /** @type {import('../../../core/template-module.js').ViewFn<import('../domain/model.types.js').StateModel, {}>} */
   view(ctx) {
     /** Anzeigemodell je Ergebnisobjekt, einmal gebaut. */

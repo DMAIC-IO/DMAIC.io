@@ -4,6 +4,22 @@ import { State, resolveTarget } from '../../js/modules/hypothesis-test/domain/mo
 const ref = (c) => ({ instanceId: 'ws1', sheetId: 's1', columnId: c });
 
 suite('hypothesis-test Model', () => {
+  test('Vorgaben aus dem Kontext: 90 % → α 0,10, kein Inhalt', () => {
+    const m = new State({ cycle: 'dmaic', confidenceLevel: 90, power: 90 });
+    assertEqual(m.alpha, 0.1);
+    assertEqual(m.powerGoal, 0.9);
+    assertEqual(m.hasContent(), false);
+  });
+
+  test('Vorgaben aus dem Kontext werden an Extremwerten geklemmt', () => {
+    const hi = new State({ cycle: 'dmaic', confidenceLevel: 99.99999, power: 99.9 });
+    assertEqual(hi.alpha, 0.0001);
+    assertEqual(hi.powerGoal, 0.99);
+    const lo = new State({ cycle: 'dmaic', confidenceLevel: 0.5, power: 10 });
+    assertEqual(lo.alpha, 0.995);
+    assertEqual(lo.powerGoal, 0.5);
+  });
+
   test('Vorgaben', () => {
     const m = new State();
     const json = m.toJSON();

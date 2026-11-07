@@ -23,8 +23,16 @@ export const State = defineModel({
     category: oneOf(['variance', 'mean']),
     testType: oneOf(['one', 'two', 'paired', 'k']),
     direction: oneOf(['two-sided', 'greater', 'less']),
-    alpha: number({ exclusiveMin: 0, exclusiveMax: 1, default: 0.05 }),
-    powerGoal: number({ min: 0.5, max: 0.99, default: 0.8 }),
+    alpha: number({
+      exclusiveMin: 0, exclusiveMax: 1,
+      // Aus dem Konfidenzniveau; auf den erlaubten Bereich geklemmt (Kontext erlaubt 0 < Wert < 100).
+      default: (c) => Math.min(0.9999, Math.max(0.0001, Number((1 - c.confidenceLevel / 100).toFixed(4)))),
+    }),
+    powerGoal: number({
+      min: 0.5, max: 0.99,
+      // Aus der Teststärke; auf den erlaubten Bereich geklemmt.
+      default: (c) => Math.min(0.99, Math.max(0.5, c.power / 100)),
+    }),
     targetValue: text(),
     targetType: oneOf(['variance', 'stddev']),
     colRef1: columnRef({ types: ['numeric'], minCount: 3 }),
