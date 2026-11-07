@@ -184,7 +184,7 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
  * @returns {Record<string, any> & { readonly __view?: V }}
  */
 export function createModule(base) {
-  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, createDefault, gestures = [], forms = {}, exports: exportsDef, readComputed = [], readBulk = [] } = base;
+  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, fromExample, createDefault, gestures = [], forms = {}, exports: exportsDef, readComputed = [], readBulk = [] } = base;
   if (descriptor) {
     for (const key of NOT_IN_CONFIG) {
       if (Object.hasOwn(config, key)) {
@@ -199,6 +199,8 @@ export function createModule(base) {
   for (const name of readBulk) {
     if (!readComputed.includes(name)) throw new Error(`createModule(${id}): readBulk ${name} is not in readComputed`);
   }
+  if (fromExample !== undefined && typeof fromExample !== 'function') throw new Error(`createModule(${id}): fromExample must be a function`);
+  if (fromExample && beforeLoadExample) throw new Error(`createModule(${id}): fromExample and beforeLoadExample are exclusive`);
   if (exportsDef !== undefined) checkExports(id, exportsDef, Boolean(view));
   const actions = exportsDef === undefined ? (config.actions ?? []) : [...(config.actions ?? []), {
     icon: 'action.download',
@@ -630,12 +632,19 @@ export function createModule(base) {
         if (!ok) return;
       }
       let exampleData = payload.data;
+      // `fromExample` übersetzt fremde Beispielformen (etwa eine CSV-Datei) in
+      // die eigene, bevor ein Arbeitsblatt bereitgestellt wird.
       // Beispiele mit eigenem Arbeitsblatt: provisionieren und die Spalten-
       // bezüge aus dem Schema umhängen (examples-registry.js). Dynamisch
       // geladen — examples-registry hängt am Katalog der Module. Die Rückfrage
       // oben gilt auch hier (`confirmed`), der Lader fragt nicht noch einmal.
-      const loadWorksheetExample = schema && payload.data.sourceWorksheetData
-        ? (await import('./examples-registry.js')).loadWorksheetExample : null;
+      const registry = (typeof fromExample === 'function' || (schema && payload.data.sourceWorksheetData))
+        ? await import('./examples-registry.js') : null;
+      if (typeof fromExample === 'function') {
+        exampleData = fromExample(payload.data, payload.meta ?? {}, { csvToWorksheet: registry.csvPayloadToWorksheetState });
+      }
+      const loadWorksheetExample = schema && exampleData?.sourceWorksheetData
+        ? registry.loadWorksheetExample : null;
       /** @type {Promise<void>|null} */
       let loading = null;
       // `_loadingExample` marks the synchronous window in which a hook-driven

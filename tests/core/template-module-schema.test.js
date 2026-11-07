@@ -221,6 +221,85 @@ suite('createModule: Standard-loadExample mit sourceWorksheetData', () => {
   });
 });
 
+// ─── fromExample: fremde Beispielformen vor dem Arbeitsblatt-Zweig ─────
+
+/** Wie `sourcedModule`, aber mit `fromExample` statt `beforeLoadExample`. */
+function fromExampleModule(fromExample) {
+  const log = { notes: [] };
+  const store = { phases: { data: [] } };
+  const states = {};
+  const mod = createModule({
+    config: { id: 'schema-from-example', engine: 'alpine', phase: 'analyze' },
+    Model: Sourced,
+    data: () => ({}),
+    fromExample,
+  });
+  mod._context = {
+    instanceId: 'me',
+    i18n: { t: (k) => k, getLanguage: () => 'de' },
+    notify: (msg, kind) => log.notes.push(kind),
+    dialog: { confirm: async () => true },
+    eventBus: { emit() {}, on() {}, off() {} },
+    stateManager: {
+      get: (path) => path.split('.').reduce((o, k) => o?.[k], store),
+      set(path, v) { const ks = path.split('.'); const last = ks.pop(); ks.reduce((o, k) => (o[k] ??= {}), store)[last] = v; },
+      setModuleState(id, st) { states[id] = st; },
+      getModuleState: (id) => states[id] ?? null,
+      removeModuleState(id) { delete states[id]; },
+    },
+  };
+  mod.setState({ title: 'alt' });
+  return { mod, log, store };
+}
+
+suite('createModule: fromExample', () => {
+  test('bekommt data und meta; Ergebnis mit sourceWorksheetData geht durch den Arbeitsblatt-Zweig', async () => {
+    const seen = [];
+    const { mod, store } = fromExampleModule((data, meta) => {
+      seen.push([data, meta]);
+      return { title: 'Beispiel', src: { instanceId: '__source__', sheetId: 's1', columnId: 'c1' },
+        sourceWorksheetData: { sheets: [{ id: 's1', name: 'S', state: { columns: [] } }] } };
+    });
+    const payload = { meta: { id: 'ex' }, data: { fremd: 1 } };
+    await mod.loadExample(payload);
+    assertEqual(seen[0][0], payload.data);
+    assertEqual(seen[0][1], payload.meta);
+    const st = mod.getState();
+    assertEqual(st.title, 'Beispiel');
+    assertEqual(store.phases.data.length, 1);
+    assertEqual(st.exampleWorksheetId, store.phases.data[0].instanceId);
+    assertEqual(st.src.instanceId, st.exampleWorksheetId);
+  });
+
+  test('CSV-Form: csvToWorksheet baut das Arbeitsblatt, der Bezug wird umgebogen', async () => {
+    const { mod, store } = fromExampleModule((data, meta, { csvToWorksheet }) => ({
+      title: 'CSV',
+      sourceWorksheetData: csvToWorksheet(data, meta),
+      src: { instanceId: '__source__', sheetId: 'sheet-csv', columnId: 'c-0' },
+    }));
+    await mod.loadExample({ meta: { id: 'csv-ex', columns: [{ name: 'x' }] }, data: { columns: [{ name: 'x', values: [1, 2, 3] }] } });
+    const st = mod.getState();
+    assertEqual(store.phases.data.length, 1);
+    assertEqual(st.src.instanceId, st.exampleWorksheetId);
+    assertEqual(st.src.sheetId, 'sheet-csv');
+    assertEqual(st.src.columnId, 'c-0');
+  });
+
+  test('ohne sourceWorksheetData im Ergebnis: setState-Zweig', async () => {
+    const { mod, store } = fromExampleModule((data) => ({ title: `x${data.n}` }));
+    await mod.loadExample({ meta: { id: 'ex' }, data: { n: 1 } });
+    assertEqual(mod.getState().title, 'x1');
+    assertEqual(store.phases.data.length, 0);
+  });
+
+  test('fromExample und beforeLoadExample schließen sich aus', () => {
+    assertThrows(() => createModule({
+      config: { id: 'schema-both', engine: 'alpine', phase: 'analyze' },
+      Model: Sourced, data: () => ({}), fromExample: (d) => d, beforeLoadExample: (d) => d,
+    }), /createModule\(schema-both\): fromExample and beforeLoadExample are exclusive/);
+  });
+});
+
 // ─── Vorgaben aus dem Kontext beim Setzen und Fernübernehmen ─────
 
 const Ctx = defineModel({
