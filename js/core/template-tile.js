@@ -41,6 +41,7 @@ export const TEMPLATE_TILE = '_templateTile';
 const PASS_THROUGH = ['enumerate', 'refreshOn', 'mount', 'dispose'];
 
 /** Lesezugriff ohne Arbeitsblätter: jeder Bezug `null`, keine Spalten. */
+/** @type {import('./worksheet-data.js').WorksheetData} */
 const NO_DATA = Object.freeze({
   values: () => null,
   numeric: () => null,

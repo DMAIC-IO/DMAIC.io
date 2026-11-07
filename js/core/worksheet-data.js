@@ -9,14 +9,14 @@
  * sind.
  */
 import Alpine from '@alpinejs/csp';
-import { resolveColumnRef, coerceNumeric } from './worksheet-columns.js';
+import { resolveColumnRef, coerceNumeric, discoverColumns, columnOption } from './worksheet-columns.js';
 
-/** Zähler je Arbeitsblatt-Instanz; `'*'` zählt Ereignisse, die alle betreffen. */
-const rev = Alpine.reactive({ '*': 0 });
+/** Zähler je Arbeitsblatt-Instanz; `'*'` zählt Ereignisse, die alle betreffen, `'#list'` jede Änderung (Spaltenlisten). */
+const rev = Alpine.reactive({ '*': 0, '#list': 0 });
 const installed = new WeakSet();
 
 /** @param {string} key */
-function bump(key) { rev[key] = (rev[key] ?? 0) + 1; }
+function bump(key) { rev[key] = (rev[key] ?? 0) + 1; if (key !== '#list') rev['#list'] += 1; }
 
 /**
  * Den Zähler an den Bus hängen; je Bus nur einmal wirksam.
@@ -29,6 +29,7 @@ export function installWorksheetRevisions(eventBus) {
   eventBus.on('worksheet:dataChanged', (p) => { if (p?.instanceId) bump(p.instanceId); });
   eventBus.on('module:removed', (p) => { if (p?.instanceId) bump(p.instanceId); });
   eventBus.on('state:remote-changed', (p) => { for (const id of p?.instanceIds ?? []) bump(id); });
+  eventBus.on('module:added', (p) => { if (p?.moduleId === 'worksheet') bump('#list'); });
   for (const ev of ['project:imported', 'project:switched']) eventBus.on(ev, () => bump('*'));
 }
 
@@ -36,13 +37,14 @@ export function installWorksheetRevisions(eventBus) {
  * @typedef {{ instanceId: string, sheetId?: string, columnId: string }} ColumnRef
  * @typedef {{ values: (ref: ColumnRef|null) => any[]|null,
  *   numeric: (ref: ColumnRef|null) => number[]|null,
- *   name: (ref: ColumnRef|null) => string|null }} WorksheetData
+ *   name: (ref: ColumnRef|null) => string|null,
+ *   columns: (filter?: { types?: string[], minCount?: number }) => { key: string, name: string }[] }} WorksheetData
  */
 
 /**
- * Lesezugriff auf Arbeitsblattspalten; `null`, wenn `ref` fehlt oder Blatt/Spalte nicht auflösbar sind.
+ * Lesezugriff auf Arbeitsblattspalten; `columns(filter)` listet die wählbaren Spalten als `{ key, name }` (reaktiv auf jede Änderung und auf neue Arbeitsblätter); `null`, wenn `ref` fehlt oder Blatt/Spalte nicht auflösbar sind.
  * `numeric` liefert die Zahlen über `coerceNumeric`: Leerwerte und Text fallen heraus, saubere Zahlenstrings zählen.
- * @param {{ getModuleState: (id: string) => any }} stateManager
+ * @param {{ getModuleState: (id: string) => any, get: (path: string) => any }} stateManager
  * @returns {Readonly<WorksheetData>}
  */
 export function createWorksheetData(stateManager) {
@@ -58,6 +60,11 @@ export function createWorksheetData(stateManager) {
     numeric(ref) {
       const c = column(ref);
       return c ? (c.values ?? []).map(coerceNumeric).filter((v) => v !== null && Number.isFinite(v)) : null;
+    },
+    columns(filter) {
+      void rev['*'];
+      void rev['#list'];
+      return discoverColumns(stateManager, filter ?? {}).map(columnOption);
     },
     name(ref) { const c = column(ref); return c ? (c.name || c.shortName || '?') : null; },
   });

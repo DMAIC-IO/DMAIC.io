@@ -78,3 +78,50 @@ suite('ctx.data', () => {
     Alpine.release(runner);
   });
 });
+
+function fakeProject(states, phases) {
+  return {
+    getModuleState: (id) => states[id] ?? null,
+    get: (path) => {
+      if (path === 'phases') return phases;
+      const m = /^phases\.(.+)$/.exec(path);
+      return m ? phases[m[1]] ?? [] : undefined;
+    },
+  };
+}
+
+suite('ctx.data.columns', () => {
+  test('wählbare Spalten nach Typ und Anzahl, Form { key, name }', () => {
+    const states = {
+      ws1: { sheets: [{ id: 's1', name: 'Blatt', state: { columns: [
+        { id: 'c1', name: 'Fehler', type: 'numeric', values: [1, 2, 3] },
+        { id: 'c2', name: 'Text', type: 'text', values: ['a', 'b'] },
+        { id: 'c3', name: '', shortName: 'K', type: 'numeric', values: [4] },
+      ] } }] },
+    };
+    const data = createWorksheetData(fakeProject(states, { control: [{ instanceId: 'ws1', moduleId: 'worksheet' }] }));
+    assertDeepEqual(data.columns({ types: ['numeric'], minCount: 2 }), [{ key: 'ws1|s1|c1', name: 'Fehler' }]);
+    assertDeepEqual(data.columns({ types: ['numeric'] }).map((c) => c.name), ['Fehler', 'K']);
+  });
+
+  test('neue Spalte im Blatt und module:added rechnen neu', async () => {
+    const bus = fakeBus();
+    installWorksheetRevisions(bus);
+    const phases = { control: [{ instanceId: 'ws9', moduleId: 'worksheet' }] };
+    const states = { ws9: { sheets: [{ id: 's1', state: { columns: [] } }] } };
+    const data = createWorksheetData(fakeProject(states, phases));
+    let seen = null;
+    const runner = Alpine.effect(() => { seen = data.columns({}).length; });
+    assertEqual(seen, 0);
+    states.ws9 = { sheets: [{ id: 's1', state: { columns: [{ id: 'c1', name: 'A', type: 'numeric', values: [1] }] } }] };
+    bus.emit('worksheet:dataChanged', { instanceId: 'ws9' });
+    await flush();
+    assertEqual(seen, 1);
+    phases.control.push({ instanceId: 'ws10', moduleId: 'worksheet' });
+    states.ws10 = { sheets: [{ id: 's1', state: { columns: [{ id: 'c1', name: 'B', type: 'numeric', values: [1] }] } }] };
+    bus.emit('module:added', { moduleId: 'worksheet', instanceId: 'ws10' });
+    await flush();
+    assertEqual(seen, 2);
+    Alpine.release(runner);
+  });
+});

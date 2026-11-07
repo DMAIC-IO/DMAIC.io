@@ -44,29 +44,11 @@
  *   // Limit to one sheet: filter: (c) => c.sheetId === ref.sheetId
  */
 
-/**
- * Iterate every phase that currently exists in state. Cycle-agnostic — the
- * keys reflect whatever phases the active project's cycle defines (incl.
- * `data`, `extras`, and any future methodology phases like `design` / `verify`).
- * @param {object} stateManager
- * @returns {string[]}
- */
-function _allPhaseKeys(stateManager) {
-  return Object.keys(stateManager.get('phases') || {});
-}
+import { resolveColumnRef, getColumnRawValues, refToKey, discoverColumns } from '../core/worksheet-columns.js';
 
-import { resolveColumnRef, getColumnRawValues } from '../core/worksheet-columns.js';
+export { refToKey, discoverColumns } from '../core/worksheet-columns.js';
 
 // ── Pure utility functions (exported for use without widget) ──────────
-
-/**
- * Serialize a column reference to a pipe-delimited key.
- * @param {{ instanceId: string, sheetId: string, columnId: string }} ref
- * @returns {string}
- */
-export function refToKey(ref) {
-  return ref ? `${ref.instanceId}|${ref.sheetId}|${ref.columnId}` : '';
-}
 
 /**
  * Deserialize a pipe-delimited key to a column reference.
@@ -90,52 +72,6 @@ export function keyToRef(key) {
  * @property {string} type
  * @property {number} valueCount
  */
-
-/**
- * Discover all worksheet columns, optionally filtered.
- * @param {Object} stateManager
- * @param {Object} [filter]
- * @param {Set<string>|string[]} [filter.types] — Allowed types. Omit for all.
- * @param {number} [filter.minCount=0] — Minimum non-null values.
- * @param {number} [filter.maxCount=Infinity] — Maximum non-null values. Use 0 to show only empty columns.
- * @returns {ColumnInfo[]}
- */
-export function discoverColumns(stateManager, filter) {
-  const typeSet = filter?.types
-    ? (filter.types instanceof Set ? filter.types : new Set(filter.types))
-    : null;
-  const minCount = filter?.minCount || 0;
-  const maxCount = filter?.maxCount ?? Infinity;
-  const columns = [];
-
-  for (const phase of _allPhaseKeys(stateManager)) {
-    const instances = stateManager.get(`phases.${phase}`) ?? [];
-    for (const inst of instances) {
-      if (inst.moduleId !== 'worksheet') continue;
-      const ws = stateManager.getModuleState(inst.instanceId);
-      if (!ws?.sheets) continue;
-      for (const sheet of ws.sheets) {
-        if (!sheet.state?.columns) continue;
-        for (const col of sheet.state.columns) {
-          if (typeSet && !typeSet.has(col.type)) continue;
-          const nonNull = (col.values || []).filter(v => v != null).length;
-          if (nonNull < minCount || nonNull > maxCount) continue;
-          columns.push({
-            instanceId: inst.instanceId,
-            sheetId: sheet.id,
-            sheetName: sheet.name,
-            columnId: col.id,
-            columnName: col.name || '',
-            shortName: col.shortName || '?',
-            type: col.type,
-            valueCount: nonNull,
-          });
-        }
-      }
-    }
-  }
-  return columns;
-}
 
 /** Column ID of a "new column in an existing sheet" target (`inst|sheet|__new__`). */
 export const NEW_COLUMN_ID = '__new__';
