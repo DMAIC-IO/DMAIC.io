@@ -78,9 +78,9 @@
   },
   "asyncTasks": {
     "compute": {
-      "help": "Rechnet das Resampling und kehrt nach dem letzten Durchlauf zurück; result enthält danach die neue Zusammenfassung. Es rechnet nicht, solange ein Lauf läuft oder validationMsg einen Grund nennt (ungültige Parameter, fehlende oder zu kurze Spalten, weniger als 3 Gruppen im Modus 'k', das Verhältnis mit Werten von 0 oder darunter); result bleibt dann, wie es war, und es gibt keinen Fehler. Ein fehlgeschlagener Lauf lässt result, wie es war, und nennt den Grund in errorMsg.",
+      "help": "Rechnet das Resampling und kehrt nach dem letzten Durchlauf zurück; result enthält danach die neue Zusammenfassung. Es startet nicht, solange ein Lauf läuft oder das Feld validation einen Grund nennt (ungültige Parameter, fehlende oder zu kurze Spalten, weniger als 3 Gruppen im Modus 'k', das Verhältnis mit Werten von 0 oder darunter); result bleibt dann, wie es war. Ein fehlgeschlagener Lauf lässt result, wie es war, und meldet den Grund als Fehler des Tasks (read().asyncTasks.compute.error).",
       "cancel": {
-        "help": "Bricht einen laufenden Lauf ab; result bleibt, wie es war, und errorMsg bleibt leer. Ohne Lauf geschieht nichts."
+        "help": "Bricht einen laufenden Lauf ab; result bleibt, wie es war, und der Fehler des Tasks bleibt leer. Ohne Lauf geschieht nichts."
       }
     }
   },

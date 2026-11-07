@@ -5,7 +5,7 @@
   <div class="resampling__input dmike-split__input">
 
     <div class="dmike-split__section-title" x-text="t('sectionMode')"></div>
-    <div class="btn-group" data-help-key="modules.resampling.actions.setMode.help">
+    <div class="btn-group" role="group" data-help-key="modules.resampling.actions.setMode.help">
       <template x-for="m in modeButtons" :key="m.value">
         <button type="button" class="btn--segment" :class="m.cls" :data-ref="m.ref" :data-mode="m.value"
           :aria-pressed="m.pressed" data-help-key="" x-command="setMode" :data-arg-mode="m.value" x-text="m.label"></button>
@@ -167,14 +167,23 @@
               <template x-if="showDecision">
                 <th><span data-help-key="modules.resampling.fields.decision.help" x-text="t('decision')"></span></th>
               </template>
-              <template x-if="resultView.hasTest">
-                <th><span data-help-key="modules.resampling.types.Perm.observed" x-text="t('observedT')"></span></th>
+              <template x-if="notK">
+                <th x-show="resultView.hasTest"><span data-help-key="modules.resampling.types.Perm.observed" x-text="t('observedT')"></span></th>
               </template>
-              <template x-if="resultView.hasTest">
-                <th><span data-help-key="modules.resampling.types.Perm.pValue" x-text="t('pValue')"></span></th>
+              <template x-if="isK">
+                <th><span data-help-key="modules.resampling.types.KResult.observed" x-text="t('observedT')"></span></th>
               </template>
-              <template x-if="resultView.hasTest">
-                <th><span data-help-key="modules.resampling.types.Perm.permutations" x-text="t('permutations')"></span></th>
+              <template x-if="notK">
+                <th x-show="resultView.hasTest"><span data-help-key="modules.resampling.types.Perm.pValue" x-text="t('pValue')"></span></th>
+              </template>
+              <template x-if="isK">
+                <th><span data-help-key="modules.resampling.types.KResult.pValue" x-text="t('pValue')"></span></th>
+              </template>
+              <template x-if="notK">
+                <th x-show="resultView.hasTest"><span data-help-key="modules.resampling.types.Perm.permutations" x-text="t('permutations')"></span></th>
+              </template>
+              <template x-if="isK">
+                <th><span data-help-key="modules.resampling.types.KResult.permutations" x-text="t('permutations')"></span></th>
               </template>
             </tr>
           </thead>
@@ -214,7 +223,7 @@
       <div class="resampling__chart" data-ref="chart-boot" x-widget="histogram-chart" x-widget-config="bootChart" x-widget-value="model.bootChartEdits"></div>
     </div>
     <div class="resampling__chart-block" x-show="hasPermChart">
-      <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.resampling.types.Perm.bins" x-text="t('sectionPermChart')"></span></div>
+      <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-show="notK" data-help-key="modules.resampling.types.Perm.bins" x-text="t('sectionPermChart')"></span><span x-show="isK" data-help-key="modules.resampling.types.KResult.bins" x-text="t('sectionPermChart')"></span></div>
       <div class="resampling__chart" data-ref="chart-perm" x-widget="histogram-chart" x-widget-config="permChart" x-widget-value="model.permChartEdits"></div>
     </div>
 
