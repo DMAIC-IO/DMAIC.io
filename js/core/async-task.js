@@ -233,11 +233,11 @@ export function createAsyncTasks({ defs, vm, reactivity, checkArgs, notify = () 
       const deadline = new Promise((r) => { timer = setTimeout(() => r(false), timeoutMs); });
       const drain = async () => {
         for (;;) {
+          // Erst abgeben: ein anstehender Neustart (Microtask-Flush der Reaktivität) läuft vorher.
+          await Promise.resolve();
           const pending = Object.keys(live).filter((n) => defs[n].auto).map((n) => live[n].outcome);
           if (pending.length === 0) return true;
           await Promise.all(pending);
-          // Ein Neustart kann im selben Flush anstehen.
-          await Promise.resolve();
         }
       };
       try {

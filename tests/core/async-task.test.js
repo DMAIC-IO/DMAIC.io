@@ -228,6 +228,30 @@ suite('asyncTask: auto', () => {
     assertEqual(vm.live, 7);
     host.release();
   });
+  test('settle direkt nach einer Änderung wartet auf den Neustart', async () => {
+    const { vm, host } = setup({ live: asyncTask({ auto: true, async run() { const a = this.model.a; await flush(); return a; } }) });
+    assertEqual(await host.settle(1000), true);
+    assertEqual(vm.live, 1);
+    vm.model.a = 2;
+    assertEqual(await host.settle(1000), true);
+    assertEqual(vm.live, 2);
+    assertEqual(vm._asyncTasks.live.running, false);
+    host.release();
+  });
+  test('AbortError lässt einen gesetzten Fehler unverändert', async () => {
+    let n = 0;
+    const { vm, host } = setup({ calc: asyncTask({ async run(_a, { signal }) {
+      n += 1;
+      if (n === 1) throw new Error('erst kaputt');
+      await waitFor(deferred(), signal);
+    } }) });
+    await host.start('calc');
+    assertEqual(vm._asyncTasks.calc.error, 'erst kaputt');
+    const p = host.start('calc');
+    host.cancel('calc');
+    assertEqual((await p).status, 'cancelled');
+    assertEqual(vm._asyncTasks.calc.error, 'erst kaputt');
+  });
   test('settle mit Zeitgrenze kehrt mit false zurück', async () => {
     const { host } = setup({ live: asyncTask({ auto: true, run() { return new Promise(() => {}); } }) });
     assertEqual(await host.settle(5), false);
