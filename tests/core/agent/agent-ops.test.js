@@ -315,9 +315,9 @@ suite('agent ops — asynchrone Abläufe', () => {
   const ENTRY_T = schemaAgentEntry(Board, {}, { asyncTasks: { compute: asyncTask({ params: {}, run() { return 1; } }) } });
   const STUB = { tagged: true, available: true, schema: true, violations: [], reported: [], actions: {}, fields: {} };
 
-  function setup(outcomes) {
+  function setup(outcomes, vmExtra = null) {
     const cancelled = [];
-    const viewmodel = {
+    const viewmodel = vmExtra ?? {
       model: Board.fromJSON({ title: 'T' }),
       _asyncTaskHost: { start: async () => outcomes.shift(), cancel: (name) => (cancelled.push(name), true) },
     };
@@ -344,7 +344,7 @@ suite('agent ops — asynchrone Abläufe', () => {
   test('Abbruch liefert { cancelled: true } ohne Fehler', async () => {
     const { ops } = setup([{ status: 'cancelled' }]);
     const out = await call(ops, 'compute');
-    assertEqual(out.ok, undefined);
+    assertEqual(out.error, undefined);
     assertDeepEqual(out.value, { cancelled: true });
   });
   test('Fehler → call_failed mit der Meldung', async () => {
@@ -372,5 +372,13 @@ suite('agent ops — asynchrone Abläufe', () => {
     const bad = await call(ops, 'gibtEsNicht', []);
     assertEqual(bad.error, 'unknown_method');
     assertDeepEqual(bad.available, ['compute', 'compute.cancel', 'read']);
+  });
+  test('ohne Ablauf-Host: unknown_method, und der Task gilt nicht als Teil-Viewmodel', async () => {
+    // `compute` am Viewmodel ist hier ein Objekt mit einer Methode; als Teil-Viewmodel
+    // gelesen erschiene `compute.foo` in der Liste der lebenden Methoden.
+    const { ops } = setup([], { model: Board.fromJSON({ title: 'T' }), read() {}, compute: { foo() {} } });
+    const out = await call(ops, 'compute');
+    assertEqual(out.error, 'unknown_method');
+    assertDeepEqual(out.available, ['read']);
   });
 });

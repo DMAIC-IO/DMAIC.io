@@ -195,8 +195,9 @@ export function createOps(deps) {
         return axiError(ERRORS.UNKNOWN_INSTANCE,
           t('agent.errors.viewmodelNotAlive', { instance: action.instance }), { available: [] });
       }
-      // Schema-Kommandos (agent-schema.js) tragen `target`: das Model oder das
-      // Viewmodel. Die Fläche ruft das REAKTIVE Model des Viewmodels.
+      // Schema-Kommandos (agent-schema.js) tragen `target`: das Model, das
+      // Viewmodel oder `asyncTask` (Ablauf-Host, eigener Zweig darunter).
+      // Die Fläche ruft das REAKTIVE Model des Viewmodels.
       if (spec.target === 'asyncTask') return callAsyncTask(viewmodel, spec, action, found.module, entry, t);
       const target = spec.target === 'model'
         ? { object: viewmodel.model, name: action.method }
@@ -367,7 +368,8 @@ async function callAsyncTask(viewmodel, spec, action, moduleId, entry, t) {
       const out = await host.start(spec.task, args[0]);
       if (out.status === 'done') value = out.value;
       else if (out.status === 'cancelled') value = { cancelled: true };
-      else throw out.status === 'failed' ? out.error : new Error(out.reason);
+      else if (out.status === 'failed') throw out.error;
+      else throw new Error(out.status === 'rejected' ? out.reason : `unknown outcome ${String(out?.status)}`);
     }
     return { instanceId: action.instance, method: action.method, value: value ?? null };
   } catch (err) {
