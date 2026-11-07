@@ -118,6 +118,16 @@ Verschieben (eigene Spalte bis Länge − 1, fremde bis Länge). Ein Schlüssel 
 Ein Feld vom Typ Datensatzliste (`rules: ['datasets', …]`) nennt je Spaltenslot seine Regeln
 unter `slots`, z. B. `slots: { valueRef: ['columnRef', 'types:numeric', 'minCount:1', 'required'] }`.
 
+Datensätze (Feldart `datasets`) sind eine Liste von Zeilen, deren Schlüssel die
+Spaltenslots des Moduls sind: `[{ valueRef: { instanceId, columnId }, groupRef: null }]`.
+Ein Slot ist ein Spaltenbezug oder `null`; unbekannte Schlüssel werden abgelehnt, die Liste
+braucht mindestens eine Zeile, und ohne das Token `multi` in `rules` genau eine. In
+`module.describe` steht je Feld `rules: ['datasets', 'multi'?]` und `slots` mit den Regeln
+je Slot (`columnRef`, `types:<art>`, `minCount:<n>`; `required` = die Zeile ist ohne diesen
+Slot unvollständig, bleibt aber gültig und liefert im abgeleiteten Ergebnis keine Reihe;
+`group` = der Slot nimmt jeden Spaltentyp und darf `null` bleiben, also „keine Gruppierung“).
+`instance.set` prüft nur die Form der Zeilen, nicht, ob die Spalten existieren.
+
 Ein fehlender Schlüssel antwortet wie ein fehlendes Argument (`missing argument
 "toIdx" of moveItem; expected: …`), ein unbekannter mit `unknown moveItem param
 "x"; available: …`.
