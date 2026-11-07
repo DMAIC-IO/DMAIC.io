@@ -107,6 +107,20 @@ export const phase = (opts) => spec('phase', {}, opts);
 export const columnRef = ({ types, minCount = 0, ...opts } = {}) => spec('columnRef',
   { types: types ? Object.freeze([...types]) : null, minCount }, { nullable: true, ...opts });
 
+/**
+ * Datensätze: Liste von Zeilen `{ <slot>: Spaltenbezug|null }`, mindestens
+ * eine Zeile, ohne `multi` genau eine. Slots sind `columnRef`-Beschreibungen,
+ * dazu `required` (Zeile ohne diesen Slot ist unvollständig — bleibt aber
+ * gültig) und `group` (Platzhalter „keine Gruppierung“, jeder Spaltentyp).
+ * `colors`: CSS-Farben je Zeile. Geprüft wird nur die Form.
+ * @param {Record<string, object>} slots
+ * @param {{ multi?: boolean, colors?: readonly string[]|null } & object} [opts]
+ * @returns {Readonly<object>}
+ */
+export const datasets = (slots, { multi = false, colors = null, ...opts } = {}) => spec('datasets', {
+  slots: Object.freeze({ ...slots }), multi, colors: colors ? Object.freeze([...colors]) : null,
+}, opts);
+
 const COLUMN_REF_KEYS = Object.freeze(['instanceId', 'sheetId', 'columnId']);
 
 /** @param {unknown} v @returns {boolean} */
@@ -268,6 +282,7 @@ export function defaultOf(s, context = DEFAULT_CONTEXT, name = 'default') {
     case 'time': return '00:00';
     case 'phase': return getPhaseIds(context.cycle)[0];
     case 'columnRef': return null;
+    case 'datasets': return [Object.fromEntries(Object.keys(s.slots).map((k) => [k, null]))];
     case 'number': case 'index': return 0;
     case 'boolean': return false;
     case 'oneOf': return s.values[0];
@@ -391,6 +406,19 @@ export function checkValue(s, name, value, ctx = {}) {
         columnId: value.columnId,
       };
     }
+    case 'datasets': {
+      const slotNames = Object.keys(s.slots);
+      requireForm(name, value, Array.isArray(value), 'a list of rows');
+      requireForm(name, value, value.length >= 1, 'at least one row');
+      if (!s.multi) requireForm(name, value, value.length === 1, 'exactly one row');
+      return value.map((row, i) => {
+        const at = `${name}[${i}]`;
+        requireForm(at, row, isPlainObject(row), `an object with keys ${slotNames.join(', ')}`);
+        for (const k of Object.keys(row)) requireKnownId(`${at} key`, k, slotNames);
+        return Object.fromEntries(slotNames.map((k) => [k,
+          row[k] === null || row[k] === undefined ? null : checkValue(s.slots[k], `${at}.${k}`, row[k], ctx)]));
+      });
+    }
     default: throw new Error(`defineModel: unknown kind ${JSON.stringify(s.kind)}`);
   }
 }
@@ -429,6 +457,8 @@ export function describeType(s) {
     case 'object': t = `{ ${Object.entries(s.shape)
       .map(([k, v]) => `${k}${v.optional ? '?' : ''}: ${describeType(v)}`).join(', ')} }`; break;
     case 'columnRef': t = '{ instanceId: string, sheetId?: string, columnId: string }'; break;
+    case 'datasets': t = `Array<{ ${Object.entries(s.slots)
+      .map(([k, v]) => `${k}: ${describeType({ ...v, nullable: true })}`).join(', ')} }>`; break;
     default: throw new Error(`defineModel: unknown kind ${JSON.stringify(s.kind)}`);
   }
   return s.nullable ? `${t}|null` : t;
@@ -451,6 +481,8 @@ export function rewriteColumnRefs(Model, data, from, to) {
     if (v === null || v === undefined) return v;
     switch (s.kind) {
       case 'columnRef': return isPlainObject(v) && v.instanceId === from ? { ...v, instanceId: to } : v;
+      case 'datasets': return Array.isArray(v) ? v.map((row) => (isPlainObject(row)
+        ? Object.fromEntries(Object.entries(row).map(([k, r]) => [k, s.slots[k] ? walk(s.slots[k], r) : r])) : row)) : v;
       case 'list': return Array.isArray(v) ? v.map((x) => walk(s.item, x)) : v;
       case 'record': return isPlainObject(v)
         ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, walk(s.value, x)])) : v;
@@ -718,7 +750,7 @@ export function defineState(fields) {
 
 // ─── Formulare und Attribute ────────────────────────────────
 
-const FROM_ATTR_FORBIDDEN = new Set(['object', 'list', 'record', 'columnRef']);
+const FROM_ATTR_FORBIDDEN = new Set(['object', 'list', 'record', 'columnRef', 'datasets']);
 
 /**
  * Den Text eines `data-arg-*`-Attributs in den Wert seiner Feldart wandeln.

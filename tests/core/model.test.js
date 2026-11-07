@@ -8,7 +8,7 @@ import {
   defaultOf, checkValue, describeType, schemaOf, fieldSpec, defineState, stateSchemaOf,
   currentOf, confirmOf, commandDefOf, fromAttr, defineForm,
   defineSettings, isSettings, readSettings, defineWidget, isWidget,
-  columnRef, rewriteColumnRefs, readModel, date, time, phase, activeContext, setCommandObserver, setModelContext, contextOf, checkContext, DEFAULT_CONTEXT,
+  columnRef, datasets, rewriteColumnRefs, readModel, date, time, phase, activeContext, setCommandObserver, setModelContext, contextOf, checkContext, DEFAULT_CONTEXT,
 } from '../../js/core/model.js';
 
 const COLS = ['suppliers', 'inputs'];
@@ -844,5 +844,63 @@ suite('defineWidget', () => {
     assertThrows(() => defineWidget({ name: 'x', value: number(), forKind: 'columnRef' }), /forKind needs value of that kind/);
     assertThrows(() => defineWidget({ name: 'x', api: { props: 1 } }), /defineWidget\(x\): api\.props is reserved/);
     assertEqual(defineWidget({ name: 'x', api: { chartType: 'histogram' } }).chartType, 'histogram');
+  });
+});
+
+suite('Feldart datasets', () => {
+  const ds = datasets({
+    valueRef: columnRef({ types: ['numeric'], minCount: 1, required: true }),
+    groupRef: columnRef({ group: true }),
+  }, { multi: true, colors: ['red', 'blue'] });
+  const ref = { instanceId: 'w', sheetId: 's', columnId: 'c' };
+
+  test('Beschreibung: Slots, multi, colors', () => {
+    assertEqual(ds.kind, 'datasets');
+    assertDeepEqual(Object.keys(ds.slots), ['valueRef', 'groupRef']);
+    assertEqual(ds.slots.valueRef.required, true);
+    assertEqual(ds.slots.groupRef.group, true);
+    assertEqual(ds.multi, true);
+    assertDeepEqual([...ds.colors], ['red', 'blue']);
+    assertEqual(datasets({ a: columnRef() }).multi, false);
+  });
+
+  test('Vorgabe: eine Zeile mit null je Slot', () => {
+    assertDeepEqual(defaultOf(ds), [{ valueRef: null, groupRef: null }]);
+  });
+
+  test('Form: Liste, mindestens eine Zeile, bekannte Slots, Bezug oder null', () => {
+    assertDeepEqual(checkValue(ds, 'datasets', [{ valueRef: ref, groupRef: null }, { valueRef: null }]),
+      [{ valueRef: ref, groupRef: null }, { valueRef: null, groupRef: null }]);
+    assertThrows(() => checkValue(ds, 'datasets', []), /invalid datasets \[\]; allowed: at least one row/);
+    assertThrows(() => checkValue(ds, 'datasets', 'x'), /allowed: a list of rows/);
+    assertThrows(() => checkValue(ds, 'datasets', [{ other: ref }]), /unknown datasets\[0\] key "other"; available: valueRef, groupRef/);
+    assertThrows(() => checkValue(ds, 'datasets', [{ valueRef: 'x' }]), /datasets\[0\]\.valueRef/);
+    const single = datasets({ a: columnRef() });
+    assertThrows(() => checkValue(single, 'd', [{ a: null }, { a: null }]), /allowed: exactly one row/);
+  });
+
+  test('describeType', () => {
+    assertEqual(describeType(ds),
+      'Array<{ valueRef: { instanceId: string, sheetId?: string, columnId: string }|null, groupRef: { instanceId: string, sheetId?: string, columnId: string }|null }>');
+  });
+
+  test('fromAttr verboten', () => {
+    assertThrows(() => fromAttr(ds, 'd', 'x'), /fromAttr: datasets cannot come from an attribute/);
+  });
+
+  test('rewriteColumnRefs in allen Zeilen und Slots', () => {
+    const M = defineModel({ fields: { datasets: ds } });
+    const json = { datasets: [{ valueRef: { instanceId: '__source__', columnId: 'a' }, groupRef: { instanceId: '__source__', columnId: 'g' } }, { valueRef: null, groupRef: null }] };
+    const out = rewriteColumnRefs(M, json, '__source__', 'ws-1');
+    assertEqual(out.datasets[0].valueRef.instanceId, 'ws-1');
+    assertEqual(out.datasets[0].groupRef.instanceId, 'ws-1');
+    assertEqual(out.datasets[1].valueRef, null);
+  });
+
+  test('defineModel: Rundreise', () => {
+    const M = defineModel({ fields: { datasets: ds } });
+    const m = new M();
+    m.datasets = [{ valueRef: ref, groupRef: null }];
+    assertDeepEqual(M.fromJSON(m.toJSON()).datasets, [{ valueRef: ref, groupRef: null }]);
   });
 });

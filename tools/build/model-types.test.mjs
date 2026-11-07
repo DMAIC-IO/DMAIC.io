@@ -226,6 +226,15 @@ export const State = defineModel({ fields: { colRef1: columnRef() } });
   assert.match(out, /@property \{\{ instanceId: string, sheetId\?: string, columnId: string \}\|null\} colRef1/);
 });
 
+test('rendert datasets als Zeilenliste', async () => {
+  const src = `import { defineModel, columnRef, datasets } from '${MODEL_URL}';
+export const State = defineModel({ fields: { datasets: datasets({ valueRef: columnRef() }) } });
+`;
+  const root = appWith({ 'js/modules/neu/domain/model.js': src });
+  const out = renderModelTypes(await loadModelSchema(collectModelFiles(root)[0].file));
+  assert.match(out, /@property \{Array<\{ valueRef: \{ instanceId: string, sheetId\?: string, columnId: string \}\|null \}>\} datasets/);
+});
+
 test('renderWidgetProps: Eingaben und Wert je Widget', () => {
   const w = defineWidget({ name: 'stats-table', props: { rows: list(text()), confLevel: number({ optional: true }) } });
   const out = renderWidgetProps(new Map([['stats-table', w]]));

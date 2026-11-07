@@ -3,7 +3,7 @@
  * Schema-Moduls in der Form von AGENT_REGISTRY.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../../test-utils.js';
-import { defineModel, command, text, number, oneOf, index, list, record, boolean, date, time, phase, columnRef } from '../../../js/core/model.js';
+import { defineModel, command, text, number, oneOf, index, list, record, boolean, date, time, phase, columnRef, datasets } from '../../../js/core/model.js';
 import { schemaAgentEntry, readSchemaModel } from '../../../js/core/agent/agent-schema.js';
 import { describeModule } from '../../../js/core/agent/agent-catalog.js';
 
@@ -164,5 +164,18 @@ suite('schemaAgentEntry: derived', () => {
     assertEqual(f.names.rules, undefined);
     assertDeepEqual(f.c.rules, ['columnRef', 'types:numeric', 'minCount:2']);
     assertDeepEqual(f.cs.rules, ['columnRef']);
+  });
+
+  test('datasets: Regeln je Slot', () => {
+    const M = defineModel({ fields: { datasets: datasets({
+      valueRef: columnRef({ types: ['numeric'], minCount: 1, required: true }),
+      groupRef: columnRef({ group: true }),
+    }, { multi: true }) } });
+    const f = schemaAgentEntry(M).fields.datasets;
+    assertDeepEqual(f.rules, ['datasets', 'multi']);
+    assertDeepEqual(f.slots, {
+      valueRef: ['columnRef', 'types:numeric', 'minCount:1', 'required'],
+      groupRef: ['columnRef', 'group'],
+    });
   });
 });
