@@ -32,11 +32,13 @@
  * CSP-tauglich: kein Ausdruck wird ausgewertet — der Pfad wird zerlegt und
  * über `Alpine.$data` gelesen.
  */
-import { resolveTarget } from './field-path.js';
+import { openChannel, anchorHelp, rejectionHint, invariantHint } from './value-channel.js';
 import { bindChoiceGroup, isChoiceGroup } from './choice-group.js';
 import { contextOf } from './model.js';
 import { parseDecimalInput } from './parse-decimal.js';
-import { clearRejection, markRejection, describeRange } from './param-input.js';
+import { clearRejection, markRejection } from './param-input.js';
+
+export { rejectionHint, invariantHint };
 
 const registered = new WeakSet();
 
@@ -107,26 +109,6 @@ export function writeElement(el, spec, value) {
 }
 
 /**
- * Der Hinweis zu einer abgelehnten Eingabe: mit Bereich bei Zahlenfeldern.
- * @param {object} spec Feld-Spec
- * @param {{ t: (key: string, params?: object) => string, getLanguage: () => string }} i18n
- * @returns {string}
- */
-export function rejectionHint(spec, i18n) {
-  const range = isNumeric(spec) ? describeRange(spec, i18n.getLanguage(), (k, p) => i18n.t(k, p)) : '';
-  return range ? i18n.t('common.inputRejected', { range }) : i18n.t('common.inputRejectedPlain');
-}
-
-/**
- * Der Hinweis zu einer Ablehnung durch eine Invariante des Models.
- * @param {{ t: (key: string) => string }} i18n @param {string} moduleId @param {string} name
- * @returns {string}
- */
-export function invariantHint(i18n, moduleId, name) {
-  return i18n.t(`modules.${moduleId}.invariants.${name}`);
-}
-
-/**
  * Die Direktive registrieren. Vor `Alpine.start()` aufrufen; je Alpine-Instanz einmal.
  * @param {object} Alpine der Default-Export von csp.js
  * @param {{ i18n: { t: (key: string, params?: object) => string, getLanguage: () => string } }} deps
@@ -136,8 +118,8 @@ export function registerFieldDirective(Alpine, { i18n }) {
   if (registered.has(Alpine)) return;
   registered.add(Alpine);
   Alpine.directive('field', (el, { expression }, { effect, cleanup }) => {
-    const target = resolveTarget(Alpine, el, expression, 'x-field');
-    const { spec } = target;
+    const ch = openChannel(Alpine, el, expression, { where: 'x-field', i18n });
+    const { spec } = ch;
     const data = Alpine.$data(el);
     const wk = widgetKind(spec);
     if (wk) {
@@ -149,32 +131,25 @@ export function registerFieldDirective(Alpine, { i18n }) {
       if (!mount) throw new Error(`${where}: no widget registered for ${wk}`);
       const services = Alpine.raw(data._ui?.services);
       if (!services) throw new Error(`${where}: ${wk} fields need a module with defineModel`);
-      if (!el.hasAttribute('data-help-key') && data.moduleId) {
-        el.setAttribute('data-help-key', `modules.${data.moduleId}.${target.helpKey}`);
-      }
+      anchorHelp(el, data, ch.helpKey);
       const widget = mount(el, {
         spec,
-        get: target.get,
+        get: ch.get,
         set: (value) => {
-          try {
-            target.set(value);
-            clearRejection(el);
-          } catch (err) {
-            if (err instanceof TypeError || err instanceof ReferenceError || err instanceof SyntaxError) throw err;
-            markRejection(el, rejectionHint(spec, i18n));
-            widget.sync(target.get());
+          if (ch.set(value)) clearRejection(el);
+          else {
+            markRejection(el, ch.rejected.message);
+            widget.sync(ch.get());
           }
         },
       }, services);
-      effect(() => widget.sync(target.get()));
+      effect(() => widget.sync(ch.get()));
       cleanup(() => widget.destroy());
       return;
     }
     applyAttributes(el, spec);
-    if (!el.hasAttribute('data-help-key') && data.moduleId) {
-      el.setAttribute('data-help-key', `modules.${data.moduleId}.${target.helpKey}`);
-    }
-    const show = () => writeElement(el, spec, target.get());
+    anchorHelp(el, data, ch.helpKey);
+    const show = () => writeElement(el, spec, ch.get());
     effect(show);
     if (el.tagName === 'SELECT') {
       // Optionen aus x-for entstehen erst nach dieser Direktive. Der
@@ -188,15 +163,10 @@ export function registerFieldDirective(Alpine, { i18n }) {
     }
 
     const commit = (live) => {
-      try {
-        target.set(readElement(el, spec));
-        clearRejection(el);
-      } catch (err) {
-        if (err instanceof TypeError || err instanceof ReferenceError || err instanceof SyntaxError) throw err;
-        if (live) return;
+      if (ch.set(readElement(el, spec))) clearRejection(el);
+      else if (!live) {
         show();
-        markRejection(el, typeof err?.invariant === 'string' && data.moduleId
-          ? invariantHint(i18n, data.moduleId, err.invariant) : rejectionHint(spec, i18n));
+        markRejection(el, ch.rejected.message);
       }
     };
     const onInput = () => commit(true);
@@ -214,19 +184,16 @@ export function registerFieldDirective(Alpine, { i18n }) {
     if (!isChoiceGroup(el)) {
       throw new Error(`x-set="${expression}" binds a group of options; use x-field on <${el.tagName.toLowerCase()}>`);
     }
-    const target = resolveTarget(Alpine, el, expression, 'x-set');
+    const ch = openChannel(Alpine, el, expression, { where: 'x-set', i18n });
     const data = Alpine.$data(el);
-    if (!el.hasAttribute('data-help-key') && data.moduleId) {
-      el.setAttribute('data-help-key', `modules.${data.moduleId}.${target.helpKey}`);
-    }
+    anchorHelp(el, data, ch.helpKey);
     bindChoiceGroup(el, {
-      spec: target.spec,
-      name: target.name,
+      spec: ch.spec,
+      name: ch.name,
       radioName: `${data._ui?.instanceId ?? data.moduleId ?? 'group'}-${expression}`,
-      read: target.get,
-      write: target.set,
-      hint: (err) => (typeof err?.invariant === 'string' && data.moduleId
-        ? invariantHint(i18n, data.moduleId, err.invariant) : rejectionHint(target.spec, i18n)),
+      read: ch.get,
+      write: ch.rawSet,
+      hint: ch.hint,
       checkCtx: () => ({ root: data.model, context: contextOf(data.model) }),
       effect,
       cleanup,
