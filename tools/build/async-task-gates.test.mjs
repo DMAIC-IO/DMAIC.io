@@ -3,6 +3,10 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { bindingChecks } from './widget-gates.mjs';
 import { readViewmodelAsyncTasks, checkAsyncTaskRefs, asyncTaskHelpKeys, checkAsyncTaskDecls, asyncTaskAnchors } from './async-task-gates.mjs';
 
 const CORE = ['..', '..', '..', 'core'].join('/');
@@ -81,4 +85,21 @@ export default createModule({ asyncTasks: {
     'asyncTask: viewmodel/viewmodel.js: later: invalid blocked with auto: true; allowed: params and blocked only without auto',
     'asyncTask: viewmodel/viewmodel.js: preview: invalid params with auto: true; allowed: params and blocked only without auto',
   ]);
+});
+
+test('Prüfdatei: Task-Bindung ohne Widgets; ohne Bindung text null (stale Datei wird gelöscht)', () => {
+  const root = mkdtempSync(join(tmpdir(), 'tasks-'));
+  const mod = (id, html) => {
+    const base = join(root, 'js', 'modules', id);
+    mkdirSync(join(base, 'resources'), { recursive: true });
+    mkdirSync(join(base, 'viewmodel'), { recursive: true });
+    writeFileSync(join(base, 'resources', 'view.html'), html);
+    writeFileSync(join(base, 'viewmodel', 'viewmodel.js'), 'export default {};\n');
+  };
+  mod('a', '<p></p>\n<div x-async-task="compute"></div>');
+  mod('b', '<p></p>');
+  const a = bindingChecks(root, 'a', new Map());
+  assert.equal(a.length, 1);
+  assert.match(a[0].text, /export const b0 = tasks\.compute; \/\/ resources\/view\.html:2 x-async-task/);
+  assert.deepEqual(bindingChecks(root, 'b', new Map()).map((j) => j.text), [null]);
 });

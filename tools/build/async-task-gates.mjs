@@ -10,31 +10,16 @@
  * (`asyncTaskHelpKeys`). Befunde `<gate>: <pfad im Modul>: <Text>`; leer = grün.
  */
 import ts from 'typescript';
+import { TAG, camel, keyOf, parseJs, bodyEnd } from './template-scan.mjs';
 
-const TAG = /<([a-zA-Z][\w-]*)\b((?:[^>"']|"[^"]*"|'[^']*')*)>/g;
 const CONTAINER = /(?:^|\s)x-async-task="\s*([^"]*?)\s*"/;
 const CHILD = /(?:^|\s)x-async-task-(start|cancel|progress|error)(?=[\s=/]|$)/g;
 const DATA_ARG = /(?:^|\s):?data-arg-([\w-]+)=/g;
 /** Element, auf das ein Kind gehört (`error` darf überall stehen). */
 const CHILD_TAG = { start: 'button', cancel: 'button', progress: 'progress' };
-const camel = (kebabName) => kebabName.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
 
-const parseJs = (name, text) => ts.createSourceFile(name, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
-const keyOf = (p) => (p.name && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? p.name.text : null);
 const propOf = (obj, name) => obj.properties.find((p) => (ts.isPropertyAssignment(p) || ts.isMethodDeclaration(p) || ts.isShorthandPropertyAssignment(p)) && keyOf(p) === name);
 const isAsyncTaskCall = (n) => ts.isCallExpression(n) && ts.isIdentifier(n.expression) && n.expression.text === 'asyncTask';
-
-/** Ende (exklusiv) des Rumpfs eines Elements, das bei `from` nach seinem Start-Tag beginnt. */
-function bodyEnd(html, from, tag) {
-  const re = new RegExp(`<(/?)${tag}\\b[^>]*>`, 'g');
-  re.lastIndex = from;
-  let depth = 1;
-  for (let m = re.exec(html); m; m = re.exec(html)) {
-    depth += m[1] ? -1 : 1;
-    if (depth === 0) return m.index;
-  }
-  return html.length;
-}
 
 /**
  * Behälter und Kinder einer Vorlage; jedes Kind gehört zum innersten
@@ -48,7 +33,7 @@ function scan(html) {
     const [whole, tag, attrs] = m;
     const name = attrs.match(CONTAINER)?.[1];
     const start = m.index + whole.length;
-    if (name !== undefined) boxes.push({ name, start, end: bodyEnd(html, start, tag) });
+    if (name !== undefined) boxes.push({ name, at: m.index, start, end: bodyEnd(html, start, tag) });
     for (const c of attrs.matchAll(CHILD)) {
       children.push({ kind: c[1], tag: tag.toLowerCase(), at: m.index, args: [...attrs.matchAll(DATA_ARG)].map((a) => a[1]) });
     }
@@ -151,6 +136,15 @@ export function checkAsyncTaskRefs(templates, tasks) {
     });
   }
   return out;
+}
+
+/**
+ * Behälter `x-async-task="<n>"` einer Vorlage mit Textposition des Start-Tags.
+ * @param {string} html
+ * @returns {{ name: string, at: number }[]}
+ */
+export function asyncTaskContainers(html) {
+  return scan(html).boxes.map((b) => ({ name: b.name, at: b.at }));
 }
 
 /**

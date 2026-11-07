@@ -14,6 +14,7 @@
 import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';
+import { TAG, camel, keyOf, parseJs, bodyEnd } from './template-scan.mjs';
 import { parsePath } from '../../js/core/model.js';
 import { parseFieldPath, keyFieldsOf } from '../../js/core/field-path.js';
 import { loadModelSchema, loadSettingsSchema, loadFormSchemas, loadStateSchema } from './model-types.mjs';
@@ -41,10 +42,7 @@ export function listModuleFiles(appDir, id) {
   return out.sort();
 }
 
-/** @param {string} name @param {string} text @returns {ts.SourceFile} */
-export function parseJs(name, text) {
-  return ts.createSourceFile(name, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
-}
+export { parseJs };
 
 const DIRS = ['domain', 'viewmodel', 'interaction', 'io', 'tile', 'resources'];
 const REQUIRED_FILES = ['module.js', 'domain/model.js', 'viewmodel/viewmodel.js', 'resources/view.html'];
@@ -366,7 +364,6 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
   // Kopien von VERSION / MIGRATION_KEY in js/core/model.js — synchron halten.
   const VERSION_LITERAL = /^\d+\.\d+$/;
   const MIGRATION_KEY = /^(0|\d+\.\d+)→(\d+\.\d+)$/;
-  const keyOf = (p) => (p.name && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? p.name.text : null);
   for (const p of top.properties) {
     const key = keyOf(p);
     if (define !== 'defineModel' || (key !== 'version' && key !== 'migrations')) continue;
@@ -929,9 +926,7 @@ export function checkListBindings(files, schema) {
   return { findings, helpKeys: [...helpKeys].sort() };
 }
 
-const TAG = /<([a-zA-Z][\w-]*)\b((?:[^>"']|"[^"]*"|'[^']*')*)>/g;
 const DEFAULT_ARG = /(?:^|\s):?data-default-arg-([\w-]+)=/g;
-const camel = (kebabName) => kebabName.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
 
 /**
  * Gate Kommando-Bezüge, Teil Startwerte: jedes `data-default-arg-<p>` (auch
@@ -974,14 +969,7 @@ const FORM_CONTROLS = new Set(['input', 'select', 'textarea']);
 
 /** Inhalt eines Elements ab `from` bis zu seinem schließenden Tag (gleichnamige Tags gezählt). */
 function elementBody(html, from, tag) {
-  const re = new RegExp(`<(/?)${tag}\\b[^>]*>`, 'g');
-  re.lastIndex = from;
-  let depth = 1;
-  for (let m = re.exec(html); m; m = re.exec(html)) {
-    depth += m[1] ? -1 : 1;
-    if (depth === 0) return html.slice(from, m.index);
-  }
-  return html.slice(from);
+  return html.slice(from, bodyEnd(html, from, tag));
 }
 
 /**

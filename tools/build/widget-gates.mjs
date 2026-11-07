@@ -13,6 +13,7 @@ import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { viewNamesDetailOf } from './module-gates.mjs';
 import { renderBindingCheck } from './model-types.mjs';
+import { asyncTaskContainers } from './async-task-gates.mjs';
 
 /** Ein Treffer = ein Wirts-Tag mit `x-widget`; das Tag trägt die Eingaben. */
 export const WIDGET_TAG = /<[^>]*\bx-widget\s*=\s*"([^"]*)"[^>]*>/g;
@@ -161,9 +162,9 @@ export function bindingChecks(appDir, id, widgets) {
     const bindings = widgets.size === 0 ? [] : collectBindings(tpls, viewNamesDetailOf(read(js)));
     if (js === 'viewmodel/viewmodel.js') {
       for (const { path, text } of tpls) {
-        for (const m of text.matchAll(/\bx-async-task="([A-Za-z_$][\w$]*)"/g)) {
-          const line = text.slice(0, m.index).split('\n').length;
-          bindings.push({ kind: 'asyncTask', name: m[1], where: `${path}:${line} x-async-task` });
+        for (const b of asyncTaskContainers(text)) {
+          const line = text.slice(0, b.at).split('\n').length;
+          bindings.push({ kind: 'asyncTask', name: b.name, where: `${path}:${line} x-async-task` });
         }
       }
     }
