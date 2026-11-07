@@ -161,6 +161,34 @@ bekannten Zyklus; ohne `phase` gilt die erste Phase des aktiven Zyklus. Die Akti
 `setAxisFrom`, `setAxisTo`, `setDayFrom` und `setDayTo` gibt es nicht mehr; ein Aufruf
 antwortet mit `unknown_method`. Tagesachse und Wochentage sind Ansichtsfelder.
 
+#### Asynchrone Abläufe
+
+Dauert eine Berechnung (Bootstrap, Permutationstest), führt das Modul sie als
+asynchronen Ablauf (`asyncTask`). `describe` nennt ihn unter `asyncTasks`
+(`{ name, auto, help, params }`) und im Katalog als zwei Aktionen:
+
+- `<name>` startet den Ablauf und **wartet bis zum Ende**. Erfolg: `value` ist
+  der Rückgabewert des Ablaufs. Fehler im Ablauf: `call_failed` mit dem Text
+  des Fehlers. Abbruch: `value: { cancelled: true }`, kein Fehler. Parameter
+  stehen wie bei Kommandos in einem Objekt: `args: [{ … }]`.
+- `<name>.cancel` ohne Parameter bricht einen laufenden Ablauf ab und
+  antwortet `{ cancelled: boolean }` (`false`, wenn keiner lief).
+
+Läuft der Ablauf schon, oder nennt das Modul einen Grund, warum er nicht
+starten kann (fehlende oder ungültige Eingaben), antwortet die Aktion mit
+`call_failed` und diesem Grund; es wird nichts gestartet und nichts gequeued.
+Ein Ablauf mit `auto: true` startet von selbst, wenn sich seine Eingaben
+ändern; er hat keine Aktionen, nur den Status.
+
+`read()` führt unter `asyncTasks` den Status je Ablauf:
+`{ running, progress, error }` (`progress` 0…1 oder `null`), bei `auto`-Abläufen
+zusätzlich `value`. Das Ergebnis eines manuellen Ablaufs steht dort nicht; es
+liegt, wo das Modul es hinschreibt (bei `resampling` im Feld `result`). Der
+Status gehört zur Anzeige, er wird nicht gespeichert.
+
+`settle` (die interne Ruhe vor einem `read()`) wartet zusätzlich auf laufende
+`auto`-Abläufe, höchstens 20 Sekunden, und geht danach ohne Fehler weiter.
+
 ### Phasenprüfung in zwei Stufen
 
 Eine angegebene `phase` (z. B. in `module.add`) durchläuft zwei Hürden.
@@ -398,6 +426,10 @@ Zustand zum Beginn der Ausführung**, und zwei nebenläufige Aufrufe können
 ihre Effekte nicht verschränken. Ein Stapel B wird erst geprüft, wenn
 Stapel A fertig ist — kein Seiteneffekt vor vollständiger Prüfung.
 
+Ein asynchroner Ablauf, den der Agent startet, hält diese Kette bis zu seinem
+Ende; ein `<name>.cancel` im selben Strom käme erst danach dran. Abbrechen über
+die Fläche erreicht darum nur Läufe, die die Oberfläche gestartet hat.
+
 **`ok: true` heißt „angewandt und gespeichert".** Nach einem Stapel, der
 geschrieben hat, speichert die Fläche einmal beide Persistenzhälften
 (`saveNow()` für die oberste Zustandsebene, `flushNow()` für die
@@ -529,6 +561,11 @@ seinen Endpunkt: die Detailaktionen tragen `endpointId` als ersten Parameter,
 Deklaratives Model (2026-11-03, `contract` bleibt `2`): neue `op` `instance.set`;
 Kommandos von Schema-Modulen nehmen ein Objekt in `args[0]`. Beides ist nach
 der Regel oben kein Bruch — neue `op`, gleiche Hülle, keine neuen Fehlercodes.
+
+Asynchrone Abläufe (2026-11-07, `contract` bleibt `2`): neue Aktionen
+`<name>` und `<name>.cancel`, neues Feld `asyncTasks` in `read()` und
+`describe`. Neue Aktionen und Antwortfelder, gleiche Hülle, keine neuen
+Fehlercodes — kein Bruch.
 
 Aktionsnamen mit Punkt (`draft.addQuestion`) sind ebenfalls kein Bruch: die
 Aktionsform `{ op: 'instance.call', instance, method, args }` bleibt,
