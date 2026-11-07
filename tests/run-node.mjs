@@ -197,6 +197,7 @@ const SKIP = new Set([
   'ui/workspace-instance-ready.test.js',
   'ui/workspace-phase-memory.test.js',
   'ui/workspace-reset.test.js',
+  'widgets/dataset-picker.test.js',
 ]);
 
 /** Recursively collect every `*.test.js` file under `dir`. */

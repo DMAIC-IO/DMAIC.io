@@ -66,3 +66,21 @@ suite('DatasetPicker — nicht reaktiv (Bug 14)', () => {
     p.destroy?.();
   });
 });
+
+suite('DatasetPicker — syncValue', () => {
+  afterEach(() => { if (host) { host.remove(); host = null; } });
+  const ref = { instanceId: 'ws-1', sheetId: 's1', columnId: 'a' };
+
+  test('gleicher Wert baut nicht neu, anderer schon', () => {
+    const p = mount({ slots: [{ key: 'x', label: 'X' }] });
+    const before = host.querySelector('select');
+    p.syncValue([{ x: null }]);
+    assertEqual(host.querySelector('select') === before, true);
+    p.syncValue([{ x: ref }]);
+    assertEqual(host.querySelector('select') === before, false);
+    const after = host.querySelector('select');
+    p.syncValue([{ x: { ...ref } }]);
+    assertEqual(host.querySelector('select') === after, true);
+    p.destroy?.();
+  });
+});

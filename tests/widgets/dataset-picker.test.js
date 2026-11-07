@@ -1,0 +1,120 @@
+/**
+ * Tests für das Widget dataset-picker — Einhängen über x-field, Setzen,
+ * Model → Picker ohne Fokusverlust, Texte, Farbmarken.
+ */
+import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
+import Alpine from '../../vendor/alpinejs/csp.js';
+import { registerFieldDirective } from '../../js/core/field-directive.js';
+import { WIDGETS } from '../../js/widgets/registry.js';
+import { defineModel, datasets, columnRef } from '../../js/core/model.js';
+
+const flush = () => new Promise((r) => setTimeout(r, 0));
+
+const worksheet = { sheets: [{ id: 's1', name: 'Eins', state: { columns: [
+  { id: 'a', shortName: 'C1', type: 'numeric', values: [1, 2, 3] },
+  { id: 'b', shortName: 'C2', type: 'numeric', values: [4, 5, 6] },
+  { id: 'g', shortName: 'C3', type: 'text', values: ['x', 'y', 'x'] },
+] } }] };
+const phases = { data: [{ moduleId: 'worksheet', instanceId: 'ws-1' }] };
+const ref = (c) => ({ instanceId: 'ws-1', sheetId: 's1', columnId: c });
+
+const stateManager = {
+  get(path) {
+    if (path === 'phases') return phases;
+    if (path.startsWith('phases.')) return phases[path.slice(7)] ?? [];
+    return undefined;
+  },
+  getModuleState: (id) => (id === 'ws-1' ? worksheet : null),
+};
+
+const Slots = { valueRef: columnRef({ types: ['numeric'], required: true }), groupRef: columnRef({ group: true }) };
+const Multi = defineModel({ fields: { datasets: datasets(Slots, { multi: true, colors: ['#ff0000', '#00ff00'] }) } });
+const Single = defineModel({ fields: { datasets: datasets(Slots) } });
+
+let n = 0;
+async function mountPicker(Model, { texts = {} } = {}) {
+  const i18n = {
+    t: (k) => (k in texts ? texts[k] : k),
+    exists: (k) => k in texts,
+    getLanguage: () => 'de',
+  };
+  registerFieldDirective(Alpine, { i18n, widgets: WIDGETS });
+  if (!Alpine.version) Alpine.start();
+  const name = `dsWidget${++n}`;
+  const model = new Model();
+  const services = { eventBus: { on() {}, off() {} }, stateManager, i18n, moduleId: 'demo' };
+  Alpine.data(name, () => {
+    const comp = { model, moduleId: 'demo' };
+    Object.defineProperty(comp, '_ui', { enumerable: false, get() { return { services }; } });
+    return comp;
+  });
+  const host = document.createElement('div');
+  host.innerHTML = `<div x-data="${name}"><div class="pick" x-field="model.datasets"></div></div>`;
+  document.body.append(host);
+  Alpine.initTree(host);
+  await flush();
+  return { host, model: () => Alpine.$data(host.firstElementChild).model };
+}
+
+const choose = (sel, columnId) => {
+  const opt = [...sel.options].find((o) => o.value && o.value.includes(columnId));
+  sel.value = opt.value;
+  sel.dispatchEvent(new Event('change', { bubbles: true }));
+};
+
+suite('Widget dataset-picker', () => {
+  test('hängt Selects je Slot und den Hinzufügen-Knopf mit Anker ein', async () => {
+    const { host } = await mountPicker(Multi);
+    assertTrue(host.querySelector('select[data-slot="valueRef"]') !== null);
+    assertTrue(host.querySelector('select[data-slot="groupRef"]') !== null);
+    assertEqual(host.querySelector('[data-action="add-dataset"]').getAttribute('data-help-key'), 'modules.demo.fields.datasets.help');
+    host.remove();
+  });
+
+  test('Auswahl im Select landet im Model', async () => {
+    const { host, model } = await mountPicker(Multi);
+    choose(host.querySelector('select[data-slot="valueRef"]'), 'b');
+    assertDeepEqual(model().datasets[0].valueRef, ref('b'));
+    host.remove();
+  });
+
+  test('Model-Änderung wird angezeigt; gleicher Wert baut nicht neu, Fokus bleibt', async () => {
+    const { host, model } = await mountPicker(Multi);
+    const sel = host.querySelector('select[data-slot="valueRef"]');
+    sel.focus();
+    model().datasets = [{ valueRef: null, groupRef: null }];
+    await flush();
+    assertTrue(document.activeElement === sel, 'Fokus bleibt');
+    assertTrue(host.querySelector('select[data-slot="valueRef"]') === sel, 'nicht neu gezeichnet');
+    sel.blur();
+    model().datasets = [{ valueRef: ref('a'), groupRef: null }];
+    await flush();
+    const now = host.querySelector('select[data-slot="valueRef"]');
+    assertTrue(now.value.includes('a'), now.value);
+    host.remove();
+  });
+
+  test('ohne multi kein Hinzufügen-Knopf', async () => {
+    const { host } = await mountPicker(Single);
+    assertTrue(host.querySelector('[data-action="add-dataset"]') === null);
+    assertTrue(host.querySelector('select[data-slot="valueRef"]') !== null);
+    host.remove();
+  });
+
+  test('Texte: Feldschlüssel vor gemeinsamem Rückfall', async () => {
+    const { host } = await mountPicker(Single, { texts: { 'modules.demo.fields.datasets.valueRef.label': 'W', 'ui.datasetPicker.slotV': 'V', 'ui.datasetPicker.slotG': 'G' } });
+    const labels = [...host.querySelectorAll('.ds-picker__slot-label')].map((l) => l.textContent);
+    assertDeepEqual(labels, ['W', 'G']);
+    host.remove();
+  });
+
+  test('Farben der Beschreibung erscheinen als Marke je Zeile', async () => {
+    const { host, model } = await mountPicker(Multi);
+    model().datasets = [{ valueRef: null, groupRef: null }, { valueRef: null, groupRef: null }];
+    await flush();
+    const marks = [...host.querySelectorAll('.ds-picker__color')];
+    assertEqual(marks.length, 2);
+    assertTrue(marks[1].getAttribute('style').includes('#00ff00') || marks[1].style.background.includes('0, 255, 0'));
+    host.remove();
+  });
+});

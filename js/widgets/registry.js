@@ -7,7 +7,10 @@
  */
 import columnPicker from './column-picker/schema.js';
 import { mount as mountColumnPicker } from './column-picker/mount.js';
+import datasetPicker from './dataset-picker/schema.js';
+import { mount as mountDatasetPicker } from './dataset-picker/mount.js';
 
 export const WIDGETS = Object.freeze({
   'column-picker': { schema: columnPicker, mount: mountColumnPicker },
+  'dataset-picker': { schema: datasetPicker, mount: mountDatasetPicker },
 });

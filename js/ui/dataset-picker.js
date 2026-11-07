@@ -141,6 +141,19 @@ export class DatasetPicker {
     this._render();
   }
 
+  /**
+   * Wert übernehmen, ohne neu zu zeichnen, wenn er gleich ist oder der Picker
+   * den Fokus hat (sonst ginge eine laufende Auswahl verloren).
+   * @param {Array<Object>} rows
+   */
+  syncValue(rows) {
+    const list = Array.isArray(rows) ? rows : (rows ? [rows] : []);
+    const key = (arr) => JSON.stringify(arr.map((ds) => this._slots.map((s) => ds?.[s.key] || null)));
+    if (key(list) === key(this._datasets)) return;
+    if (isPickerFocused(this._container)) return;
+    this.value = rows;
+  }
+
   /** Refresh column lists (called automatically on worksheet changes). */
   refresh() {
     this._refresh();
