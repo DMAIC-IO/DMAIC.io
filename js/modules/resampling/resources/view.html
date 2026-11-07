@@ -155,32 +155,32 @@
               <template x-if="isK">
                 <th><span data-help-key="modules.resampling.types.KResult.estimate" x-text="t('estimate')"></span></th>
               </template>
-              <template x-if="resultView.hasBoot">
+              <template x-if="view.hasBoot">
                 <th><span data-help-key="modules.resampling.types.Boot.se" x-text="t('se')"></span></th>
               </template>
-              <template x-if="resultView.hasBoot">
+              <template x-if="view.hasBoot">
                 <th><span data-help-key="modules.resampling.types.Boot.bias" x-text="t('bias')"></span></th>
               </template>
-              <template x-if="resultView.hasBoot">
+              <template x-if="view.hasBoot">
                 <th><span data-help-key="modules.resampling.types.Boot.ci" x-text="intervalHeader"></span></th>
               </template>
               <template x-if="showDecision">
                 <th><span data-help-key="modules.resampling.fields.decision.help" x-text="t('decision')"></span></th>
               </template>
               <template x-if="notK">
-                <th x-show="resultView.hasTest"><span data-help-key="modules.resampling.types.Perm.observed" x-text="t('observedT')"></span></th>
+                <th x-show="view.hasTest"><span data-help-key="modules.resampling.types.Perm.observed" x-text="t('observedT')"></span></th>
               </template>
               <template x-if="isK">
                 <th><span data-help-key="modules.resampling.types.KResult.observed" x-text="t('observedT')"></span></th>
               </template>
               <template x-if="notK">
-                <th x-show="resultView.hasTest"><span data-help-key="modules.resampling.types.Perm.pValue" x-text="t('pValue')"></span></th>
+                <th x-show="view.hasTest"><span data-help-key="modules.resampling.types.Perm.pValue" x-text="t('pValue')"></span></th>
               </template>
               <template x-if="isK">
                 <th><span data-help-key="modules.resampling.types.KResult.pValue" x-text="t('pValue')"></span></th>
               </template>
               <template x-if="notK">
-                <th x-show="resultView.hasTest"><span data-help-key="modules.resampling.types.Perm.permutations" x-text="t('permutations')"></span></th>
+                <th x-show="view.hasTest"><span data-help-key="modules.resampling.types.Perm.permutations" x-text="t('permutations')"></span></th>
               </template>
               <template x-if="isK">
                 <th><span data-help-key="modules.resampling.types.KResult.permutations" x-text="t('permutations')"></span></th>
@@ -189,32 +189,32 @@
           </thead>
           <tbody>
             <tr>
-              <td data-ref="result-estimate" x-text="resultView.estimate"></td>
-              <template x-if="resultView.hasBoot">
-                <td data-ref="result-se" x-text="resultView.se"></td>
+              <td data-ref="result-estimate" x-text="view.estimate"></td>
+              <template x-if="view.hasBoot">
+                <td data-ref="result-se" x-text="view.se"></td>
               </template>
-              <template x-if="resultView.hasBoot">
-                <td data-ref="result-bias" x-text="resultView.bias"></td>
+              <template x-if="view.hasBoot">
+                <td data-ref="result-bias" x-text="view.bias"></td>
               </template>
-              <template x-if="resultView.hasBoot">
-                <td data-ref="result-interval" x-text="resultView.interval"></td>
+              <template x-if="view.hasBoot">
+                <td data-ref="result-interval" x-text="view.interval"></td>
               </template>
               <template x-if="showDecision">
                 <td data-ref="result-decision" x-text="decisionText"></td>
               </template>
-              <template x-if="resultView.hasTest">
-                <td data-ref="result-observed" x-text="resultView.test.observed"></td>
+              <template x-if="view.hasTest">
+                <td data-ref="result-observed" x-text="view.test.observed"></td>
               </template>
-              <template x-if="resultView.hasTest">
-                <td data-ref="result-pvalue" x-text="resultView.test.pValue"></td>
+              <template x-if="view.hasTest">
+                <td data-ref="result-pvalue" x-text="view.test.pValue"></td>
               </template>
-              <template x-if="resultView.hasTest">
+              <template x-if="view.hasTest">
                 <td data-ref="result-method" x-text="methodText"></td>
               </template>
             </tr>
           </tbody>
         </table>
-        <p class="resampling__note" data-ref="result-bca-fallback" data-help-key="modules.resampling.types.Intervals.bcaFallback" x-show="resultView.bcaFallback" x-text="t('bcaFallback')"></p>
+        <p class="resampling__note" data-ref="result-bca-fallback" data-help-key="modules.resampling.types.Intervals.bcaFallback" x-show="view.bcaFallback" x-text="t('bcaFallback')"></p>
       </div>
     </template>
 
@@ -233,7 +233,7 @@
         <table class="resampling__table" data-ref="groups-table">
           <thead><tr><th><span data-help-key="modules.resampling.types.Result.labels" x-text="t('group')"></span></th><th><span data-help-key="modules.resampling.types.Result.n" x-text="t('common.sym.n')"></span></th><th><span data-help-key="modules.resampling.types.KGroup.estimate" x-text="t('estimate')"></span></th><th><span data-help-key="modules.resampling.types.KGroup.ci" x-text="t('interval')"></span></th></tr></thead>
           <tbody>
-            <template x-for="(g, idx) in resultView.groups" :key="idx">
+            <template x-for="(g, idx) in view.groups" :key="idx">
               <tr><td x-text="g.label"></td><td x-text="g.n"></td><td x-text="g.estimate"></td><td x-text="g.interval"></td></tr>
             </template>
           </tbody>
@@ -242,7 +242,7 @@
         <table class="resampling__table" data-ref="posthoc-table">
           <thead><tr><th><span data-help-key="modules.resampling.types.PostHoc.i" x-text="t('pair')"></span></th><th><span data-help-key="modules.resampling.types.PostHoc.contrast" x-text="t('estimate')"></span></th><th><span data-help-key="modules.resampling.types.PostHoc.ci" x-text="t('interval')"></span></th><th><span data-help-key="modules.resampling.types.PostHoc.pRaw" x-text="t('pRaw')"></span></th><th><span data-help-key="modules.resampling.types.PostHoc.pHolm" x-text="t('pHolm')"></span></th><th><span data-help-key="modules.resampling.types.PostHoc.exact" x-text="t('pMethod')"></span></th></tr></thead>
           <tbody>
-            <template x-for="(h, idx) in resultView.posthoc" :key="idx">
+            <template x-for="(h, idx) in view.posthoc" :key="idx">
               <tr><td x-text="h.pair"></td><td x-text="h.contrast"></td><td x-text="h.interval"></td><td x-text="h.pRaw"></td><td x-text="h.pHolm"></td><td x-text="t(h.methodKey)"></td></tr>
             </template>
           </tbody>

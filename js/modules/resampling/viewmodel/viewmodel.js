@@ -75,6 +75,8 @@ const mod = createModule({
       },
       get stale() { return !!this.model.result && this.model.result.inputsHash !== this.inputsHash; },
       get resultView() { return resultView(this.model.result, { ciMethod: this.model.ciMethod, target: this.model.target }); },
+      /** Ergebnisansicht für die Vorlage: nie null, damit ein beim Abbau noch laufender Ausdruck nicht ins Leere greift. */
+      get view() { return this.resultView ?? EMPTY_VIEW; },
       get hasResult() { return this.resultView !== null; },
       get noResult() { return this.resultView === null; },
       get showStale() { return this.hasResult && this.stale; },
@@ -133,5 +135,8 @@ const mod = createModule({
 
 /** Austauschbar (Tests, späterer Worker-Runner). */
 mod.runnerFactory = () => createInlineRunner();
+
+/** Inerte Ansicht ohne Ergebnis. */
+const EMPTY_VIEW = Object.freeze({ hasBoot: false, hasTest: false, isK: false, bcaFallback: false, estimate: '', se: '', bias: '', interval: '', test: null, groups: [], posthoc: [] });
 
 export default mod;
