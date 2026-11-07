@@ -11,6 +11,7 @@ import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../tes
 import { createOps } from '../../../js/core/agent/agent-ops.js';
 import { defineModel, command, oneOf, index, list, record, text } from '../../../js/core/model.js';
 import { I18n } from '../../../js/core/i18n.js';
+import { asyncTask } from '../../../js/core/async-task.js';
 import { schemaAgentEntry } from '../../../js/core/agent/agent-schema.js';
 
 const DEFS = [
@@ -306,5 +307,70 @@ suite('agent ops — Schema-Module', () => {
     const { deps } = schemaDeps();
     const out = await createOps(deps)['instance.set']({ instance: 'nope', values: {} });
     assertEqual(out.error, 'unknown_instance');
+  });
+});
+
+suite('agent ops — asynchrone Abläufe', () => {
+  const Board = defineModel({ fields: { title: text() } });
+  const ENTRY_T = schemaAgentEntry(Board, {}, { asyncTasks: { compute: asyncTask({ params: {}, run() { return 1; } }) } });
+  const STUB = { tagged: true, available: true, schema: true, violations: [], reported: [], actions: {}, fields: {} };
+
+  function setup(outcomes) {
+    const cancelled = [];
+    const viewmodel = {
+      model: Board.fromJSON({ title: 'T' }),
+      _asyncTaskHost: { start: async () => outcomes.shift(), cancel: (name) => (cancelled.push(name), true) },
+    };
+    const defs = [{ id: 'board', phase: 'define', cycles: { dmaic: { phase: 'define' } } }];
+    const phases = { define: [{ instanceId: 'b-1', moduleId: 'board', order: 0 }] };
+    const ops = createOps({
+      stateManager: { get: (p) => (p === 'phases' ? phases : p.startsWith('phases.') ? phases[p.slice(7)] : undefined) },
+      moduleRegistry: { getAll: () => defs, get: (id) => defs.find(d => d.id === id), getActiveCycle: () => 'dmaic' },
+      i18n: I18N,
+      registry: { board: STUB },
+      loadModule: async () => ({ agentEntry: ENTRY_T }),
+      getHelp: async () => null,
+      appVersion: '1.2.3',
+      host: { isCompleted: () => false, getViewmodel: async () => viewmodel, getCurrentView: () => null },
+    });
+    return { ops, cancelled };
+  }
+  const call = (ops, method, args = [{}]) => ops['instance.call']({ instance: 'b-1', method, args });
+
+  test('Erfolg liefert den Rückgabewert', async () => {
+    const { ops } = setup([{ status: 'done', value: { x: 1 } }]);
+    assertDeepEqual((await call(ops, 'compute')).value, { x: 1 });
+  });
+  test('Abbruch liefert { cancelled: true } ohne Fehler', async () => {
+    const { ops } = setup([{ status: 'cancelled' }]);
+    const out = await call(ops, 'compute');
+    assertEqual(out.ok, undefined);
+    assertDeepEqual(out.value, { cancelled: true });
+  });
+  test('Fehler → call_failed mit der Meldung', async () => {
+    const { ops } = setup([{ status: 'failed', error: new Error('kaputt') }]);
+    const out = await call(ops, 'compute');
+    assertEqual(out.error, 'call_failed');
+    assertTrue(out.message.includes('kaputt'), out.message);
+  });
+  test('Abweisung → call_failed mit dem Grund', async () => {
+    const { ops } = setup([{ status: 'rejected', reason: 'asyncTask compute is already running' }]);
+    const out = await call(ops, 'compute');
+    assertEqual(out.error, 'call_failed');
+    assertTrue(out.message.includes('already running'), out.message);
+  });
+  test('compute.cancel → { cancelled: true }', async () => {
+    const { ops, cancelled } = setup([]);
+    const out = await call(ops, 'compute.cancel', []);
+    assertDeepEqual(out.value, { cancelled: true });
+    assertDeepEqual(cancelled, ['compute']);
+  });
+  test('Task-Aktionen stehen im Katalog und sind keine Teil-Viewmodels', async () => {
+    const { ops } = setup([]);
+    const out = await ops['module.describe']({ module: 'board' });
+    assertDeepEqual(out.actions.map(a => a.name), ['read', 'compute', 'compute.cancel']);
+    const bad = await call(ops, 'gibtEsNicht', []);
+    assertEqual(bad.error, 'unknown_method');
+    assertDeepEqual(bad.available, ['compute', 'compute.cancel', 'read']);
   });
 });

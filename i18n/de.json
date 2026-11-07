@@ -1278,6 +1278,11 @@
           "stddev": "Konfidenzintervall für die Standardabweichung: die Wurzeln der Grenzen des Varianzintervalls. Fehlt bei weniger als zwei Werten, ohne Streuung oder wenn ein χ²-Quantil nicht berechenbar ist."
         }
       },
+      "fields": {
+        "asyncTasks": {
+          "help": "Laufzustand je asynchronem Ablauf: läuft er (`running`), Fortschritt von 0 bis 1 oder `null` (unbestimmt), letzte Fehlermeldung; bei automatisch laufenden Abläufen dazu der Wert (`value`)."
+        }
+      },
       "actions": {
         "read": {
           "help": "Liefert den vollständigen Lesezustand dieser Instanz. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor, damit gezielt nachgefragt werden kann statt tausende Zeilen zu übertragen.",

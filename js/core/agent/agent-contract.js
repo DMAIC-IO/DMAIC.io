@@ -131,6 +131,7 @@ export const OPS = deepFreeze({
                   keys: [DESCRIBED_KEY] }],
       fields:  [{ name: 'string', type: 'string', help: 'string', bulk: 'boolean',
                   derived: 'boolean', rules: ['string'], slots: { '*': ['string'] }, keys: [DESCRIBED_KEY] }],
+      asyncTasks: [{ name: 'string', auto: 'boolean', help: 'string', params: ['string'] }],
       sections: [{ id: 'string', title: 'string' }],
       prose: 'any',
     },

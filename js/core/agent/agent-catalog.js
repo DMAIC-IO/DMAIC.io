@@ -224,7 +224,7 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
       // `…actions.<name>.params.<param>` — NICHT `…actions.<name>` plus
       // `…actions.<name>.<param>`: in verschachteltem JSON kann ein String
       // keine Kinder haben, und `i18n._resolve` läuft Segment für Segment.
-      help: contextHelp(i18n, moduleId, `actions.${name}.help`, action.help),
+      help: contextHelp(i18n, moduleId, action.helpKey ?? `actions.${name}.help`, action.help),
       returns: action.returns,
       params: action.params.map(p => ({
         name: p.name,
@@ -254,6 +254,12 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
       // Nur an einem Feld vom Typ einer Typedef (`{Result|null} result`):
       // je Kennzahl Typ und Satz, verschachtelt.
       ...describeKeys(i18n, moduleId, field),
+    })),
+    asyncTasks: (entry.asyncTasks ?? []).map((task) => ({
+      name: task.name,
+      auto: task.auto === true,
+      help: contextHelp(i18n, moduleId, `asyncTasks.${task.name}.help`, ''),
+      params: [...task.params],
     })),
     sections: sectionList,
     prose,

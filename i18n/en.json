@@ -1278,6 +1278,11 @@
           "stddev": "Confidence interval for the standard deviation: the square roots of the variance interval's bounds. Missing for fewer than two values, without spread, or if a χ² quantile cannot be computed."
         }
       },
+      "fields": {
+        "asyncTasks": {
+          "help": "Run state per asynchronous task: whether it is running (`running`), progress from 0 to 1 or `null` (indeterminate), the last error message; for tasks that run on their own also the value (`value`)."
+        }
+      },
       "actions": {
         "read": {
           "help": "Returns the full read state of this instance. Without parameters bulk data stays out and appears as a scope descriptor, so it can be requested deliberately instead of transferring thousands of rows.",

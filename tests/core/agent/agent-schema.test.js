@@ -4,6 +4,7 @@
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../../test-utils.js';
 import { defineModel, command, text, number, oneOf, index, list, record, boolean, date, time, phase, columnRef, datasets } from '../../../js/core/model.js';
+import { asyncTask } from '../../../js/core/async-task.js';
 import { schemaAgentEntry, readSchemaModel } from '../../../js/core/agent/agent-schema.js';
 import { describeModule } from '../../../js/core/agent/agent-catalog.js';
 
@@ -177,5 +178,29 @@ suite('schemaAgentEntry: derived', () => {
       valueRef: ['columnRef', 'types:numeric', 'minCount:1', 'required'],
       groupRef: ['columnRef', 'group'],
     });
+  });
+});
+
+suite('schemaAgentEntry: asyncTasks', () => {
+  const Doc = defineModel({ fields: { a: number() } });
+  const tasks = {
+    compute: asyncTask({ params: { n: number({ min: 0 }) }, run() { return 1; } }),
+    live: asyncTask({ auto: true, run() { return 2; } }),
+  };
+  const entry = schemaAgentEntry(Doc, {}, { asyncTasks: tasks });
+  test('manuelle Tasks: <name> und <name>.cancel; auto ohne Aktion', () => {
+    assertDeepEqual(Object.keys(entry.actions), ['read', 'compute', 'compute.cancel']);
+    assertEqual(entry.actions.compute.target, 'asyncTask');
+    assertEqual(entry.actions.compute.op, 'start');
+    assertEqual(entry.actions.compute.helpKey, 'asyncTasks.compute.help');
+    assertEqual(entry.actions.compute.keysHelp, 'asyncTasks.compute.params');
+    assertEqual(entry.actions.compute.keys.n.type, 'number');
+    assertEqual(entry.actions['compute.cancel'].op, 'cancel');
+    assertDeepEqual(entry.actions['compute.cancel'].params, []);
+    assertEqual(entry.actions['compute.cancel'].helpKey, 'asyncTasks.compute.cancel.help');
+  });
+  test('Liste der Tasks und Lesefeld', () => {
+    assertDeepEqual(entry.asyncTasks, [{ name: 'compute', auto: false, params: ['n'] }, { name: 'live', auto: true, params: [] }]);
+    assertEqual(entry.fields.asyncTasks.derived, true);
   });
 });

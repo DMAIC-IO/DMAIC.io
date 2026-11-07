@@ -89,6 +89,21 @@ function commandAction(name, def, target) {
 }
 
 /**
+ * Die Aktionen eines manuellen asynchronen Ablaufs: Start (wartet bis zum Ende) und Abbrechen.
+ * @param {string} name @param {{ params: Record<string, object> }} def
+ * @returns {Record<string, object>}
+ */
+function taskActions(name, def) {
+  const start = commandAction(name, { params: def.params, returns: null }, 'viewmodel');
+  return {
+    [name]: { ...start, target: 'asyncTask', task: name, op: 'start', returns: 'any',
+      helpKey: `asyncTasks.${name}.help`, keysHelp: `asyncTasks.${name}.params` },
+    [`${name}.cancel`]: { target: 'asyncTask', task: name, op: 'cancel', params: [], returns: '{ cancelled: boolean }',
+      help: '', helpKey: `asyncTasks.${name}.cancel.help` },
+  };
+}
+
+/**
  * Der Registry-Eintrag eines Schema-Moduls.
  * @param {Function} Model Klasse aus `defineModel`
  * @param {Record<string, object>} [vmCommands] Viewmodel-Kommandos aus `createModule({ commands })`
@@ -101,6 +116,9 @@ export function schemaAgentEntry(Model, vmCommands = {}, { derived = [], bulk = 
   const actions = { read: READ_ACTION };
   for (const [name, def] of Object.entries(schema.commands)) actions[name] = commandAction(name, def, 'model');
   for (const [name, def] of Object.entries(vmCommands)) actions[name] = commandAction(name, def, 'viewmodel');
+  for (const [name, def] of Object.entries(asyncTasks)) {
+    if (!def.auto) Object.assign(actions, taskActions(name, def));
+  }
   const fields = {};
   for (const [name, spec] of Object.entries(schema.fields)) {
     // Felder tragen Regeln nur für Spaltenbezüge; die übrigen Felder bleiben,
@@ -131,6 +149,9 @@ export function schemaAgentEntry(Model, vmCommands = {}, { derived = [], bulk = 
     reported: [],
     actions,
     fields,
+    asyncTasks: Object.entries(asyncTasks).map(([name, def]) => ({
+      name, auto: def.auto === true, params: Object.keys(def.params ?? {}),
+    })),
     viewFields: Object.keys(schema.view),
     settable: Object.keys(schema.fields),
   };

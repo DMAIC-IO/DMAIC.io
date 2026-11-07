@@ -38,6 +38,7 @@ const I18N_TABLE = {
   // Die geteilten Schlüssel des `read()`-Mixins: der Code ist zentral, der
   // Text war es nicht — ohne diesen Rückfall müsste jedes Modul dieselben
   // zwei Strings in beide Sprachdateien kopieren.
+  'modules.board.asyncTasks.compute.help': 'Rechnet.',
   'modules.shared.actions.read.help': 'Liefert den vollständigen Lesezustand dieser Instanz.',
   'modules.shared.actions.read.params.options': 'Optionale Auswahl der Massenfelder und Zeilenbereiche.',
 };
@@ -65,6 +66,7 @@ const REGISTRY = {
   'worksheet':  { tagged: true, available: true, violations: [], actions: { read: { params: [{ name: 'options', type: 'object', optional: true, help: 'JSDoc-Prosa zu options' }], returns: 'object', help: 'Liest alles' }, importCsv: { params: [{ name: 'csv', type: 'string', optional: false, help: 'CSV-Text' }], returns: 'boolean', help: '' } }, fields: { rows: { type: 'any[][]', help: 'Zeilen', bulk: true, derived: true } } },
   'five-why':   { tagged: false, available: false, violations: [], actions: {}, fields: { problem: { type: 'string', help: 'Problemstellung', bulk: false } } },
   'regression': { tagged: false, available: false, violations: [], actions: {}, fields: {} },
+  'board':      { tagged: true, available: true, violations: [], actions: { compute: { target: 'asyncTask', task: 'compute', op: 'start', params: [], returns: 'any', help: '', helpKey: 'asyncTasks.compute.help' } }, fields: {}, asyncTasks: [{ name: 'compute', auto: false, params: [] }] },
   'hist':       { tagged: true, available: true, violations: [], actions: {}, fields: { datasets: { type: 'any[]', help: '', bulk: false, rules: ['datasets', 'multi'], slots: { valueRef: ['columnRef', 'required'] } } } },
   'kano':       { tagged: false, available: false, violations: [], actions: {}, fields: {} },
 };
@@ -221,6 +223,14 @@ suite('agent catalog — module.describe', () => {
     const out = await describeModule(deps, 'five-why', ['overview']);
     assertDeepEqual(Object.keys(out.prose), ['overview']);
     assertEqual(out.prose.overview.blocks[0].content, 'Die 5-Why-Methode …');
+  });
+
+  test('describe nennt die asynchronen Abläufe mit Hilfe; ohne Tasks leer', async () => {
+    const reg = { ...makeRegistry(), get: (id) => (id === 'board' ? { id: 'board', phase: 'analyze' } : DEFS.find(d => d.id === id)) };
+    const out = await describeModule({ ...deps, moduleRegistry: reg }, 'board');
+    assertEqual(out.actions[0].help, 'Rechnet.');
+    assertDeepEqual(out.asyncTasks, [{ name: 'compute', auto: false, help: 'Rechnet.', params: [] }]);
+    assertDeepEqual((await describeModule(deps, 'five-why')).asyncTasks, []);
   });
 
   test('describe reicht die Spaltenslots einer Datensatzliste durch', async () => {

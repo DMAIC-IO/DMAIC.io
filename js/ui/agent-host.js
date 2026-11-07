@@ -17,6 +17,9 @@
  */
 import { createInstance, findInstancePhase } from '../core/router/instance-ops.js';
 
+// Zeitgrenze für laufende Abläufe, wie `MOUNT_TIMEOUT_MS` in `workspace.js`.
+const SETTLE_TASKS_TIMEOUT_MS = 20000;
+
 /**
  * @param {object} deps
  * @param {object} deps.stateManager
@@ -163,6 +166,10 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
       if (typeof viewmodel?.flushPendingWork === 'function') {
         viewmodel.flushPendingWork();
         await tick();
+      }
+      // Laufende auto-Abläufe (core/async-task.js) gehören zum Stand der Instanz.
+      if (typeof viewmodel?._asyncTaskHost?.settle === 'function') {
+        await viewmodel._asyncTaskHost.settle(SETTLE_TASKS_TIMEOUT_MS);
       }
       persistLive(instanceId, instance);
     },

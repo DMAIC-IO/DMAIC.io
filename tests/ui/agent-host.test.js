@@ -232,6 +232,18 @@ suite('agent host — Persistenz abwarten (Lesen vor Schreiben)', () => {
     assertDeepEqual(calls.filter(c => c[0] === 'persist').at(-1), ['persist', 'fw-1', { design: 'erzeugt' }]);
   });
 
+  test('settle(id) wartet auf laufende auto-Abläufe (20000 ms), dann wird abgelegt', async () => {
+    const seen = [];
+    const { host, calls, mounted } = makeHost();
+    mounted.set('fw-1', {
+      getState: () => ({ a: 1 }),
+      getActionData: () => ({ _asyncTaskHost: { settle: async (ms) => { seen.push([ms, calls.filter(c => c[0] === 'persist').length]); return true; } } }),
+    });
+    await host.settle('fw-1');
+    assertDeepEqual(seen, [[20000, 0]]);
+    assertEqual(calls.filter(c => c[0] === 'persist').length, 1);
+  });
+
   test('gespeichert, gelesen, dann normalisiert ein Ansichtswechsel: die Instanz bleibt aktuell', async () => {
     const { host, mounted, stateManager } = makeHost();
     stateManager.setModuleState('fw-1', { problem: 'x' });

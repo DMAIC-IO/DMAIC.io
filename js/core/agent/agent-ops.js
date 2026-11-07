@@ -197,6 +197,7 @@ export function createOps(deps) {
       }
       // Schema-Kommandos (agent-schema.js) tragen `target`: das Model oder das
       // Viewmodel. Die Fläche ruft das REAKTIVE Model des Viewmodels.
+      if (spec.target === 'asyncTask') return callAsyncTask(viewmodel, spec, action, found.module, entry, t);
       const target = spec.target === 'model'
         ? { object: viewmodel.model, name: action.method }
         : callTarget(viewmodel, action.method);
@@ -337,6 +338,40 @@ function callTarget(viewmodel, method) {
  * @returns {string[]}
  */
 function subViewModelNames(entry) {
-  const names = Object.keys(entry.actions ?? {}).filter((k) => k.includes('.')).map((k) => k.slice(0, k.indexOf('.')));
+  const names = Object.entries(entry.actions ?? {})
+    .filter(([k, a]) => k.includes('.') && a?.target !== 'asyncTask')
+    .map(([k]) => k.slice(0, k.indexOf('.')));
   return [...new Set(names)];
+}
+
+/**
+ * Ruft eine Aufgabenaktion (Start oder Abbrechen) am Ablauf-Host des Viewmodels.
+ * Der Start wartet bis zum Ende: Wert, `{ cancelled: true }` oder `call_failed`.
+ * @param {object} viewmodel @param {object} spec Katalogaktion @param {{ instance: string, method: string, args?: any[] }} action
+ * @param {string} moduleId @param {object} entry @param {Function} t
+ * @returns {Promise<object>}
+ */
+async function callAsyncTask(viewmodel, spec, action, moduleId, entry, t) {
+  const host = viewmodel._asyncTaskHost;
+  if (!host) {
+    return axiError(ERRORS.UNKNOWN_METHOD, t('agent.errors.unknownMethod', { module: moduleId, method: action.method }),
+      { available: publicMethodsOf(viewmodel, subViewModelNames(entry)) });
+  }
+  const args = action.args ?? [];
+  try {
+    requireForm('args', args, args.length <= 1, `one command object for ${action.method}`);
+    let value;
+    if (spec.op === 'cancel') {
+      value = { cancelled: host.cancel(spec.task) };
+    } else {
+      const out = await host.start(spec.task, args[0]);
+      if (out.status === 'done') value = out.value;
+      else if (out.status === 'cancelled') value = { cancelled: true };
+      else throw out.status === 'failed' ? out.error : new Error(out.reason);
+    }
+    return { instanceId: action.instance, method: action.method, value: value ?? null };
+  } catch (err) {
+    return axiError(ERRORS.CALL_FAILED,
+      t('agent.errors.callFailed', { method: action.method, detail: err?.message ?? String(err) }));
+  }
 }
