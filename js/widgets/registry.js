@@ -17,10 +17,13 @@ import probabilityPlotChart from './probability-plot-chart/schema.js';
 import { mount as mountProbabilityPlotChart } from './probability-plot-chart/mount.js';
 import scatterChart from './scatter-chart/schema.js';
 import { mount as mountScatterChart } from './scatter-chart/mount.js';
+import statsTable from './stats-table/schema.js';
+import { mount as mountStatsTable } from './stats-table/mount.js';
 
 export const WIDGETS = Object.freeze({
   'column-picker': { schema: columnPicker, mount: mountColumnPicker },
   'dataset-picker': { schema: datasetPicker, mount: mountDatasetPicker },
+  'stats-table': { schema: statsTable, mount: mountStatsTable },
   'histogram-chart': { schema: histogramChart, mount: mountHistogramChart },
   'control-chart': { schema: controlChart, mount: mountControlChart },
   'probability-plot-chart': { schema: probabilityPlotChart, mount: mountProbabilityPlotChart },

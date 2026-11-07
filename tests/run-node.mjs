@@ -198,6 +198,7 @@ const SKIP = new Set([
   'ui/workspace-reset.test.js',
   'widgets/chart-mount.test.js',
   'widgets/dataset-picker.test.js',
+  'widgets/stats-table.test.js',
 ]);
 
 /** Recursively collect every `*.test.js` file under `dir`. */

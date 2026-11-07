@@ -4,7 +4,7 @@
  */
 
 import { suite, test, assertAlmostEqual, assertEqual } from '../test-utils.js';
-import { computeCI, computeSeriesStats, renderStatsTable } from '../../js/core/stats-panel.js';
+import { computeCI, computeStats, computeSeriesStats, renderStatsTable } from '../../js/core/stats-panel.js';
 
 suite('Stats panel — variance/SD CI', () => {
   test('df = 9 matches qchisq(0.025/0.975, 9)', () => {
@@ -96,5 +96,23 @@ suite('Stats panel — nicht definierte Kennzahlen', () => {
     ]), { confLevel: 95 });
     assertEqual(host.querySelector('td[data-stat="stddev"]').textContent, '–', 'stddev');
     assertEqual(host.querySelector('td[data-stat="variance"]').textContent, '–', 'variance');
+  });
+});
+
+suite('Stats panel — Dezimalzeichen nach Sprache', () => {
+  const stats = computeStats([1, 2, 3, 4]);
+  const rows = [{ name: 'A', color: 'red', stats, ci: computeCI(stats, 0.95) }];
+
+  test('mit lang "de" Dezimalkomma in Wert und Intervall', () => {
+    const host = document.createElement('div');
+    renderStatsTable(host, rows, { confLevel: 95, lang: 'de' });
+    assertEqual(host.querySelector('td[data-stat="mean"]').textContent.startsWith('2,5000'), true, 'Mittelwert');
+    assertEqual(/\[\d,\d{4}; \d,\d{4}\]/.test(host.querySelector('td[data-stat="mean"]').textContent), true, 'Intervall');
+  });
+
+  test('ohne lang bleibt der Punkt', () => {
+    const host = document.createElement('div');
+    renderStatsTable(host, rows, { confLevel: 95 });
+    assertEqual(host.querySelector('td[data-stat="mean"]').textContent.startsWith('2.5000'), true);
   });
 });

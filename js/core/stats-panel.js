@@ -43,16 +43,34 @@ function percentile(sorted, p) {
 }
 
 /**
- * Format CI bound: fixed 4 decimals; 4 significant digits (toPrecision) only for |v| < 0.001 or ≥ 1e6.
+ * Feste Nachkommastellen, Dezimalzeichen nach Sprache; ohne `lang` wie toFixed.
  * @param {number} v
+ * @param {number} digits
+ * @param {string} [lang]
  * @returns {string}
  */
-function fmtCI(v) {
+function fixed(v, digits, lang) {
+  return lang
+    ? v.toLocaleString(lang, { minimumFractionDigits: digits, maximumFractionDigits: digits, useGrouping: false })
+    : v.toFixed(digits);
+}
+
+/**
+ * Format CI bound: fixed 4 decimals; 4 significant digits (toPrecision) only for |v| < 0.001 or ≥ 1e6.
+ * @param {number} v
+ * @param {string} [lang] - Sprache für das Dezimalzeichen (ohne: Punkt)
+ * @returns {string}
+ */
+function fmtCI(v, lang) {
   if (v == null || !isFinite(v)) return '–';
   const abs = Math.abs(v);
   if (abs === 0) return '0';
-  if (abs < 0.001 || abs >= 1e6) return v.toPrecision(4);
-  return v.toFixed(4);
+  if (abs < 0.001 || abs >= 1e6) {
+    return lang
+      ? Number(v.toPrecision(4)).toLocaleString(lang, { maximumSignificantDigits: 4, useGrouping: false })
+      : v.toPrecision(4);
+  }
+  return fixed(v, 4, lang);
 }
 
 // ─── Statistics Computation ─────────────────────────────────
@@ -189,6 +207,7 @@ const DEFAULT_COLUMNS = [
  * @param {number} [options.confLevel=95] - Confidence level as percentage (for label)
  * @param {Array}  [options.columns] - Column subset (default: all 10 columns)
  * @param {string} [options.cssPrefix='dmike'] - CSS class prefix for BEM overrides
+ * @param {string} [options.lang] - Sprache für das Dezimalzeichen (z. B. 'de' → Komma); ohne: Punkt wie toFixed
  */
 export function renderStatsTable(container, seriesStats, options = {}) {
   if (!container) return;
@@ -205,6 +224,7 @@ export function renderStatsTable(container, seriesStats, options = {}) {
   const confPct = options.confLevel ?? 95;
   const cols = options.columns || DEFAULT_COLUMNS;
   const prefix = options.cssPrefix || 'dmike';
+  const lang = options.lang;
 
   const ciTitle = t('ciTitle', { n: confPct });
 
@@ -246,7 +266,7 @@ export function renderStatsTable(container, seriesStats, options = {}) {
     if (s.stats) {
       cols.forEach(c => {
         const val = s.stats[c.key];
-        const valStr = c.key === 'n' ? String(val) : (Number.isFinite(val) ? val.toFixed(4) : '–');
+        const valStr = c.key === 'n' ? String(val) : (Number.isFinite(val) ? fixed(val, 4, lang) : '–');
         // `data-stat` benennt die Wertzelle eindeutig, damit sie sich von
         // außen adressieren und annotieren lässt, ohne an `:nth-of-type` zu
         // hängen — sonst verschiebt jede neue Spalte das Ziel. Der
@@ -259,7 +279,7 @@ export function renderStatsTable(container, seriesStats, options = {}) {
             cell.append(
               ' ',
               h('span', { class: `${prefix}-stats-ci`, title: ciTitle },
-                `[${fmtCI(bounds[0])}; ${fmtCI(bounds[1])}]`),
+                `[${fmtCI(bounds[0], lang)}; ${fmtCI(bounds[1], lang)}]`),
             );
           }
         }
