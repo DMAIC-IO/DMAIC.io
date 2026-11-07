@@ -115,6 +115,8 @@ Parameter `command` vom Typ `object`, seine Schlüssel stehen in `keys`
 Verschieben (eigene Spalte bis Länge − 1, fremde bis Länge). Ein Schlüssel mit
 `rules: ['trim', 'nonEmpty']` in `module.describe` wird getrimmt und lehnt leeren Text ab
 (`invalid text "  "; allowed: a non-empty text`).
+Ein Feld vom Typ Datensatzliste (`rules: ['datasets', …]`) nennt je Spaltenslot seine Regeln
+unter `slots`, z. B. `slots: { valueRef: ['columnRef', 'types:numeric', 'minCount:1', 'required'] }`.
 
 Ein fehlender Schlüssel antwortet wie ein fehlendes Argument (`missing argument
 "toIdx" of moveItem; expected: …`), ein unbekannter mit `unknown moveItem param

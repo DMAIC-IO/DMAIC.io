@@ -130,7 +130,7 @@ export const OPS = deepFreeze({
                   params: [{ name: 'string', type: 'string', optional: 'boolean', help: 'string' }],
                   keys: [DESCRIBED_KEY] }],
       fields:  [{ name: 'string', type: 'string', help: 'string', bulk: 'boolean',
-                  derived: 'boolean', keys: [DESCRIBED_KEY] }],
+                  derived: 'boolean', rules: ['string'], slots: { '*': ['string'] }, keys: [DESCRIBED_KEY] }],
       sections: [{ id: 'string', title: 'string' }],
       prose: 'any',
     },

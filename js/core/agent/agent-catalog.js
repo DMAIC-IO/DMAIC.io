@@ -248,6 +248,9 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
       derived: field.derived === true,
       help: contextHelp(i18n, moduleId, `fields.${name}.help`, field.help),
       ...(Array.isArray(field.rules) ? { rules: [...field.rules] } : {}),
+      // Spaltenslots einer Datensatzliste: je Slot die Regeln (`types:numeric`, `required`, …).
+      ...(field.slots && typeof field.slots === 'object'
+        ? { slots: Object.fromEntries(Object.entries(field.slots).map(([k, v]) => [k, [...v]])) } : {}),
       // Nur an einem Feld vom Typ einer Typedef (`{Result|null} result`):
       // je Kennzahl Typ und Satz, verschachtelt.
       ...describeKeys(i18n, moduleId, field),
