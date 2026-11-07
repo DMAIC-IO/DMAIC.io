@@ -503,10 +503,11 @@ export function rewriteColumnRefs(Model, data, from, to) {
 /**
  * Die Parameter eines Kommandos prüfen, in Erklärungsreihenfolge — ein
  * Pfad wie `columns[sourceCol]` sieht so den schon geprüften `sourceCol`.
+ * Auch für die Parameter asynchroner Abläufe (`core/async-task.js`).
  * @param {string} name @param {Record<string, object>} params @param {any} cmd @param {object} root
  * @returns {object} die geprüften Parameter
  */
-function checkParams(name, params, cmd, root) {
+export function checkParams(name, params, cmd, root) {
   const names = Object.keys(params);
   const given = cmd === undefined ? {} : cmd;
   requireForm(name, given, isPlainObject(given), names.length ? `an object with ${names.join(', ')}` : 'an empty object');
