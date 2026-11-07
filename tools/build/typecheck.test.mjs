@@ -7,8 +7,8 @@ import { mkdtempSync, mkdirSync, writeFileSync, copyFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { typecheck, typecheckFiles, TYPED_CORE } from './typecheck.mjs';
-import { renderModelTypes } from './model-types.mjs';
-import { defineModel, command, text, index, list } from '../../js/core/model.js';
+import { renderModelTypes, renderWidgetProps, renderBindingCheck } from './model-types.mjs';
+import { defineModel, defineWidget, command, text, index, list } from '../../js/core/model.js';
 import { APP_DIR } from './build.mjs';
 
 function appWith(files) {
@@ -156,4 +156,32 @@ export const view = (ctx) => ({
   const findings = typecheck([join(root, 'tile.js')]);
   assert.equal(findings.length, 1, findings.join('\n'));
   assert.match(findings[0], /tile\.js\(6,\d+\): TS2339: Property 'nope'/);
+});
+
+/** Temporärer App-Baum: Modul mit view-Getter `rows`, Widget `w` mit `rows: string[]`, Prüfdatei. */
+function bindingApp(getter) {
+  const tm = join(APP_DIR, 'js', 'core', 'template-module.js');
+  const w = defineWidget({ name: 'w', props: { rows: list(text()) } });
+  const check = renderBindingCheck({ vmImport: './viewmodel.js', bindings: [
+    { widget: 'w', prop: 'rows', path: 'rows', computed: false, where: 'resources/view.html:1 x-widget-rows' },
+  ] });
+  return appWith({
+    'js/widgets/widget-props.types.js': renderWidgetProps(new Map([['w', w]])),
+    'js/modules/m/viewmodel/viewmodel.js': `import { createModule } from '${tm}';\nexport default createModule({ view() { return { get rows() { ${getter} } }; } });\n`,
+    'js/modules/m/viewmodel/view.bindings.js': check,
+  });
+}
+
+test('typecheck: Getter-Bindung mit falschem Typ meldet die Zeile der Zuweisung', () => {
+  const root = bindingApp("return 'x';");
+  const file = join(root, 'js/modules/m/viewmodel/view.bindings.js');
+  const findings = typecheck([file]);
+  assert.equal(findings.length, 1, findings.join('\n'));
+  assert.match(findings[0], /view\.bindings\.js\(4,\d+\): TS2322: .*Type 'string' is not assignable to type 'string\[\]'/);
+});
+
+test('typecheck: Getter-Bindung mit passendem Typ ist ohne Befund', () => {
+  const root = bindingApp("return ['x'];");
+  const findings = typecheck([join(root, 'js/modules/m/viewmodel/view.bindings.js')]);
+  assert.equal(findings.length, 0, findings.join('\n'));
 });

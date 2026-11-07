@@ -11,6 +11,7 @@
  * Aufruf: `npm run typecheck` (dlvr-Werkzeug `tsc`, Stage 1-commit). Läuft
  * bewusst NICHT unter test:build.
  */
+import { existsSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
@@ -42,7 +43,8 @@ export function typecheckFiles(appDir, converted = CONVERTED_MODULES) {
   const mods = converted.flatMap((id) => listModuleFiles(appDir, id)
     .filter((p) => p.endsWith('.js'))
     .map((p) => join(appDir, 'js', 'modules', id, p)));
-  return [...TYPED_CORE.map((f) => join(appDir, f)), ...mods];
+  const props = join(appDir, 'js', 'widgets', 'widget-props.types.js');
+  return [...TYPED_CORE.map((f) => join(appDir, f)), ...(existsSync(props) ? [props] : []), ...mods];
 }
 
 /**

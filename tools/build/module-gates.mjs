@@ -1263,7 +1263,7 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
   const paths = listModuleFiles(appDir, id);
   const read = (p) => ({ path: p, text: readFileSync(join(base, p), 'utf8') });
   const GENERATED = ['domain/model.types.js', 'viewmodel/state.types.js', 'viewmodel/forms.types.js', 'tile/settings.types.js'];
-  const js = paths.filter((p) => p.endsWith('.js') && !GENERATED.includes(p)).map(read);
+  const js = paths.filter((p) => p.endsWith('.js') && !GENERATED.includes(p) && !/\.bindings\.js$/.test(p)).map(read);
   const out = [...checkStructure(id, paths)];
 
   if (paths.includes('module.js')) {

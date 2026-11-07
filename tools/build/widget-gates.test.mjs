@@ -48,3 +48,11 @@ test('loadWidgetSchemas: ohne Ordner js/widgets leer', async () => {
   const w = await loadWidgetSchemas(mkdtempSync(join(tmpdir(), 'wg-')));
   assert.equal(w.size, 0);
 });
+
+test('collectBindings: nur Getter/computed der obersten Ebene, Zeile des Attributs', async () => {
+  const { collectBindings } = await import('./widget-gates.mjs');
+  const text = '<div>\n<div x-widget="w" x-widget-rows="stats" x-widget-config="model.cfg" x-widget-other="row.x"></div>\n</div>\n';
+  const out = collectBindings([{ path: 'resources/view.html', text: text.replace('<div>\n', '<div x-for="row in rows">\n') }],
+    { getters: ['rows'], computed: ['stats'], data: [] });
+  assert.deepEqual(out, [{ widget: 'w', prop: 'rows', path: 'stats', computed: true, where: 'resources/view.html:2 x-widget-rows' }]);
+});

@@ -7,7 +7,8 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { collectModelFiles, loadModelSchema, renderModelTypes, collectStateFiles, loadStateSchema, renderStateTypes, collectFormFiles, loadFormSchemas, renderFormTypes, collectSettingsFiles, loadSettingsSchema, renderSettingsTypes } from './model-types.mjs';
+import { collectModelFiles, loadModelSchema, renderModelTypes, collectStateFiles, loadStateSchema, renderStateTypes, collectFormFiles, loadFormSchemas, renderFormTypes, collectSettingsFiles, loadSettingsSchema, renderSettingsTypes, renderWidgetProps, renderBindingCheck } from './model-types.mjs';
+import { defineWidget, list, text, number } from '../../js/core/model.js';
 
 const MODEL_URL = pathToFileURL(join(import.meta.dirname, '..', '..', 'js', 'core', 'model.js')).href;
 
@@ -223,4 +224,20 @@ export const State = defineModel({ fields: { colRef1: columnRef() } });
   const root = appWith({ 'js/modules/neu/domain/model.js': src });
   const out = renderModelTypes(await loadModelSchema(collectModelFiles(root)[0].file));
   assert.match(out, /@property \{\{ instanceId: string, sheetId\?: string, columnId: string \}\|null\} colRef1/);
+});
+
+test('renderWidgetProps: Eingaben und Wert je Widget', () => {
+  const w = defineWidget({ name: 'stats-table', props: { rows: list(text()), confLevel: number({ optional: true }) } });
+  const out = renderWidgetProps(new Map([['stats-table', w]]));
+  assert.match(out, /'stats-table': \{ rows: string\[\], confLevel\?: number \}/);
+  assert.match(out, /@typedef/);
+});
+
+test('renderBindingCheck: eine Zuweisung je Bindung, computed als Aufruf', () => {
+  const out = renderBindingCheck({ vmImport: './viewmodel.js', bindings: [
+    { widget: 'stats-table', prop: 'rows', path: 'stats', computed: true, where: 'resources/view.html:12 x-widget-rows' },
+    { widget: 'histogram-chart', prop: 'config', path: 'histogram', computed: false, where: 'resources/view.html:14 x-widget-config' },
+  ] });
+  assert.match(out, /\/\*\* @type \{WidgetProps\['stats-table'\]\['rows'\]\} \*\/ export const b0 = vm\.computed\.stats\(\); \/\/ resources\/view\.html:12 x-widget-rows/);
+  assert.match(out, /export const b1 = vm\.histogram;/);
 });

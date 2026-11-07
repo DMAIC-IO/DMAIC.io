@@ -271,3 +271,40 @@ export function renderSettingsTypes({ id, name, schema, modelName }) {
     '',
   ].join('\n');
 }
+
+/** Pfad der Prüfdatei zur Typdatei der Widgets (Prüfdateien liegen in viewmodel/ bzw. tile/). */
+const WIDGET_PROPS_IMPORT = '../../../widgets/widget-props.types.js';
+
+/**
+ * Typen der Widget-Eingaben und -Werte für tsc.
+ * @param {Map<string, any>} widgets aus loadWidgetSchemas
+ * @returns {string}
+ */
+export function renderWidgetProps(widgets) {
+  const entries = [...widgets].map(([name, w]) => {
+    const props = Object.entries(w.props).map(([k, s]) => `${k}${s.optional ? '?' : ''}: ${describeType(s)}`);
+    if (w.value) props.push(`value: ${describeType(w.value)}`);
+    return ` *   '${name}': { ${props.join(', ')} },`;
+  });
+  return `// erzeugt von tools/build/build.mjs — nicht von Hand ändern\n/**\n * @typedef {{\n${entries.join('\n')}\n * }} WidgetProps\n */\nexport {};\n`;
+}
+
+/**
+ * Prüfdatei der Getter-/computed-Bindungen eines Templates: eine Zuweisung je
+ * Bindung, tsc meldet Typabweichungen zeilengenau.
+ * @param {{ vmImport: string, bindings: { widget: string, prop: string, path: string, computed: boolean, where: string }[] }} input
+ * @returns {string}
+ */
+export function renderBindingCheck({ vmImport, bindings }) {
+  const head = [
+    '// erzeugt von tools/build/build.mjs — nicht von Hand ändern',
+    '/** @typedef {' + 'import' + "('" + WIDGET_PROPS_IMPORT + "').WidgetProps} WidgetProps */",
+    '/** @type {NonNullable<typeof ' + 'import' + "('" + vmImport + "').default['__view']>} */ const vm = /** @type {any} */ (null);",
+  ];
+  const lines = bindings.map((b, i) => {
+    const [first, ...rest] = b.path.split('.');
+    const expr = b.computed ? `vm.computed.${first}()${rest.map((r) => `.${r}`).join('')}` : `vm.${b.path}`;
+    return `/** @type {WidgetProps['${b.widget}']['${b.prop}']} */ export const b${i} = ${expr}; // ${b.where}`;
+  });
+  return [...head, ...lines].join('\n') + '\n';
+}

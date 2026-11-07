@@ -85,10 +85,11 @@ export function tileSettingsOf(id, Settings) {
 
 /**
  * Eine Kachel in der Form des Moduls.
- * @param {{ descriptor: { id: string }, Model: any, Settings?: any, view?: (ctx: TileContext) => object,
+ * @template V
+ * @param {{ descriptor: { id: string }, Model: any, Settings?: any, view?: (ctx: TileContext) => V,
  *   size?: object, titlePrefix?: string, enumerate?: Function, refreshOn?: any,
  *   mount?: Function, dispose?: Function }} base
- * @returns {Record<string, any>} Objekt im Kachel-Vertrag des Dashboards
+ * @returns {Record<string, any> & { readonly __view?: V }} Objekt im Kachel-Vertrag des Dashboards
  */
 export function createTile(base) {
   const { descriptor, Model, Settings, view, size, titlePrefix } = base;

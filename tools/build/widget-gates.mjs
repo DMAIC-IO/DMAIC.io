@@ -9,7 +9,10 @@
  */
 import { readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
+import { viewNamesDetailOf } from './module-gates.mjs';
+import { renderBindingCheck } from './model-types.mjs';
 
 /** Ein Treffer = ein Wirts-Tag mit `x-widget`; das Tag trägt die Eingaben. */
 export const WIDGET_TAG = /<[^>]*\bx-widget\s*=\s*"([^"]*)"[^>]*>/g;
@@ -98,4 +101,63 @@ function checkPath(P, shown, path, spec, { schema, stateSchema, viewNames, alias
   }
   if (head === 'props' || aliases.has(head) || viewNames.has(head)) return [];
   return [`${P} ${shown}: ${head} ist weder Getter noch computed des view-Blocks`];
+}
+
+/**
+ * Bindungen von `x-widget-*` auf Getter/`computed` der obersten Ebene eines
+ * Templates, für die Prüfdatei (Zeile = Zeile des Attributs im Template).
+ * @param {{ path: string, text: string }[]} templates
+ * @param {{ getters: string[], computed: string[], data: string[] }} names
+ * @returns {{ widget: string, prop: string, path: string, computed: boolean, where: string }[]}
+ */
+export function collectBindings(templates, names) {
+  const known = new Set([...names.getters, ...names.computed, ...names.data]);
+  const computed = new Set(names.computed);
+  const out = [];
+  for (const { path, text } of templates) {
+    const aliases = new Set([...text.matchAll(X_FOR)].map((m) => m[1]));
+    for (const tag of text.matchAll(WIDGET_TAG)) {
+      const widget = tag[1].trim();
+      for (const m of tag[0].matchAll(ATTR)) {
+        const p = m[2].trim();
+        const head = p.split('.')[0];
+        if (m[1] === 'value' || !known.has(head) || aliases.has(head)) continue;
+        const line = text.slice(0, tag.index + m.index).split('\n').length;
+        out.push({ widget, prop: camel(m[1]), path: p, computed: computed.has(head) && !names.getters.includes(head), where: `${path}:${line} x-widget-${m[1]}` });
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * Prüfdateien der Widget-Bindungen eines Moduls: `viewmodel/view.bindings.js`
+ * (view.html und *.part.html) und `tile/<n>.bindings.js` je Kachel-Template.
+ * Ohne Bindungen steht `text` auf `null` (Datei soll fehlen).
+ * @param {string} appDir @param {string} id @param {Map<string, any>} widgets
+ * @returns {{ out: string, text: string|null }[]}
+ */
+export function bindingChecks(appDir, id, widgets) {
+  const base = join(appDir, 'js', 'modules', id);
+  const res = join(base, 'resources');
+  if (widgets.size === 0 || !existsSync(res)) return [];
+  const read = (f) => readFileSync(join(base, f), 'utf8');
+  const jobs = [];
+  const files = readdirSync(res).filter((f) => f.endsWith('.html')).sort();
+  const views = files.filter((f) => f === 'view.html' || f.endsWith('.part.html'));
+  if (existsSync(join(base, 'viewmodel', 'viewmodel.js'))) {
+    jobs.push({ out: join(base, 'viewmodel', 'view.bindings.js'), vmImport: './viewmodel.js', js: 'viewmodel/viewmodel.js', templates: views });
+  }
+  for (const f of files) {
+    const m = /^tile(?:\.([a-z0-9-]+))?\.html$/.exec(f);
+    if (!m) continue;
+    const n = m[1] ?? 'tile';
+    if (existsSync(join(base, 'tile', `${n}.js`))) {
+      jobs.push({ out: join(base, 'tile', `${n}.bindings.js`), vmImport: `./${n}.js`, js: `tile/${n}.js`, templates: [f] });
+    }
+  }
+  return jobs.map(({ out, vmImport, js, templates }) => {
+    const bindings = collectBindings(templates.map((f) => ({ path: `resources/${f}`, text: read(`resources/${f}`) })), viewNamesDetailOf(read(js)));
+    return { out, text: bindings.length ? renderBindingCheck({ vmImport, bindings }) : null };
+  });
 }

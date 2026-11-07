@@ -177,6 +177,12 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
 // nur mit view; daraus entstehen Export-Menü und Dateien (core/exporter.js).
 // base.forms — Namensraum von viewmodel/forms.js (defineForm), für
 // x-command-form mit data-form; Vorgabe {}.
+/**
+ * Ein Modul aus Model, Viewmodel und Template bauen.
+ * @template V
+ * @param {{ view?: (ctx: any) => V } & Record<string, any>} base
+ * @returns {Record<string, any> & { readonly __view?: V }}
+ */
 export function createModule(base) {
   const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, createDefault, gestures = [], forms = {}, exports: exportsDef, readComputed = [], readBulk = [] } = base;
   if (descriptor) {

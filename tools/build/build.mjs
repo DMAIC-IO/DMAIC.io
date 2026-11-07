@@ -20,10 +20,11 @@ import { collectLabData, renderLabDataModule } from './lab-data.mjs';
 import { collectHelpIds, renderHelpRegistryModule } from './help-data.mjs';
 import { collectReferenceIds, renderReferencesRegistryModule } from './references-data.mjs';
 import { collectAgentData, renderAgentRegistryModule } from './agent-data.mjs';
-import { collectModelFiles, loadModelSchema, renderModelTypes, collectStateFiles, loadStateSchema, renderStateTypes, collectFormFiles, loadFormSchemas, renderFormTypes, collectSettingsFiles, loadSettingsSchema, renderSettingsTypes } from './model-types.mjs';
+import { collectModelFiles, loadModelSchema, renderModelTypes, collectStateFiles, loadStateSchema, renderStateTypes, collectFormFiles, loadFormSchemas, renderFormTypes, collectSettingsFiles, loadSettingsSchema, renderSettingsTypes, renderWidgetProps } from './model-types.mjs';
+import { loadWidgetSchemas, bindingChecks } from './widget-gates.mjs';
+import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { collectGlossaryData, renderGlossaryDataModule } from './glossary-data.mjs';
 import { collectLicenseData, renderLicenseDataModule, renderLicenseText } from '../license-report/license-report.mjs';
-import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { writeModuleTemplates, writeModuleStyles, linkedModuleCss, collectModuleResources, buildModuleResourcesBlock, moduleResourceUrls } from './module-assets.mjs';
 import {
   renderCatalogModule, collectExampleCatalog, collectCatalogTexts, renderCatalogTexts, catalogConflicts, moduleOrderDiff, readLegacyIds, CATALOG_LANGS,
@@ -395,6 +396,18 @@ export async function runBuild(appDir = APP_DIR, { check = false, converted = CO
   for (const { id, file } of collectSettingsFiles(appDir)) {
     const { name: modelName } = await loadModelSchema(join(appDir, 'js', 'modules', id, 'domain', 'model.js'));
     emit(join(dirname(file), 'settings.types.js'), renderSettingsTypes({ id, ...(await loadSettingsSchema(file)), modelName }), check, changed);
+  }
+
+  // 1b8. Typen der Widget-Eingaben (js/widgets/*/schema.js → js/widgets/widget-props.types.js)
+  const widgetSchemas = await loadWidgetSchemas(appDir);
+  if (widgetSchemas.size > 0) emit(join(appDir, 'js', 'widgets', 'widget-props.types.js'), renderWidgetProps(widgetSchemas), check, changed);
+
+  // 1b9. Prüfdateien der Widget-Bindungen auf Getter/computed (je Template der umgestellten Module)
+  for (const id of CONVERTED_MODULES) {
+    for (const { out, text } of bindingChecks(appDir, id, widgetSchemas)) {
+      if (text !== null) emit(out, text, check, changed);
+      else if (existsSync(out)) { if (check) changed.push(out); else unlinkSync(out); }
+    }
   }
 
   // 1c. glossary data (catalog + all terms inlined; no runtime fetch)
