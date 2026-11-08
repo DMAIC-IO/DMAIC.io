@@ -32,7 +32,7 @@
  */
 import { commandDefOf, confirmOf, fromAttr, currentOf, defaultOf, checkValue, cloneJSON, contextOf } from './model.js';
 import { requireKnownId } from './validate.js';
-import { applyAttributes, readElement, writeElement, rejectionHint } from './field-directive.js';
+import { applyAttributes, readElement, writeElement, rejectionHint, invariantHint } from './field-directive.js';
 import { clearRejection, markRejection } from './param-input.js';
 import { bindChoiceGroup, focusChoice, isChoiceGroup } from './choice-group.js';
 
@@ -238,7 +238,13 @@ function createFormController(Alpine, formEl, baseCommand) {
 
   const reject = (u, error) => {
     const hit = typeof error?.param === 'string' ? free.get(error.param) : undefined;
-    if (!hit) { u.notify(error?.message ?? String(error), 'error'); return; }
+    if (!hit) {
+      const hint = typeof error?.invariant === 'string'
+        ? invariantHint(u.i18n, u.moduleId, error.invariant)
+        : rejectionHint(specOf(error?.param) ?? {}, u.i18n);
+      u.notify(hint, 'error');
+      return;
+    }
     markRejection(hit.el, rejectionHint(hit.spec, u.i18n));
     focusField(hit.el);
   };

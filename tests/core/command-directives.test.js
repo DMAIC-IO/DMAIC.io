@@ -267,7 +267,7 @@ suite('x-command-form', () => {
     const { $, notified } = await mount('<form x-command-form="addItem"><input x-param="text"></form>');
     typeIn($('input'), 'x');
     await submitForm($('form'));
-    assertTrue(/^missing argument "col" of addItem/.test(notified[0][0]));
+    assertEqual(notified[0][0], 'common.inputRejectedPlain');
     assertEqual(notified[0][1], 'error');
   });
 

@@ -101,9 +101,16 @@
   border-color: var(--color-border-primary);
 }
 
-.sipoc__items-list[data-drop-target] {
+.sipoc__column:has(.sipoc__items-list[data-drop-target]) {
   border-color: var(--color-text-tertiary);
+}
+
+.sipoc__items-list[data-drop-target] {
   background: var(--color-bg-tertiary);
+}
+
+textarea.sipoc__edit-text {
+  min-height: calc(var(--spacing-md) * 5);
 }
 
 /* Column headers */
