@@ -61,6 +61,38 @@ suite('computed', () => {
     release();
   });
 
+  test('Kette mit gemeinsamer Quelle stellt sich in einem Durchlauf ein', async () => {
+    // up liest a; mid liest nur up; down liest mid und a. Ändert sich a,
+    // stehen up und down schon in der Warteschlange, mid erst nach up.
+    const { vm, release } = makeVm({
+      up() { return this.model.a * 10; },
+      mid() { return this.up + 1; },
+      down() { return `${this.model.a}:${this.mid}`; },
+    });
+    assertEqual(vm.down, '1:11');
+    vm.model.a = 2;
+    await flush();
+    assertEqual(vm.mid, 21);
+    assertEqual(vm.down, '2:21', 'down sieht das frische mid');
+    release();
+  });
+
+  test('ein DOM-Effect sieht das frische computed', async () => {
+    // Ein Effect, der a und das computed liest, steht vor dem computed in der
+    // Warteschlange, sobald das computed zuletzt allein lief, ohne seinen Wert
+    // zu ändern (hier über b).
+    const { vm, release } = makeVm({ twice() { return this.model.b > 0 ? this.model.a * 2 : 0; } });
+    let seen = '';
+    const runner = Alpine.effect(() => { seen = `${vm.model.a}:${vm.twice}`; });
+    vm.model.b = 3;
+    await flush();
+    vm.model.a = 6;
+    await flush();
+    assertEqual(seen, '6:12');
+    Alpine.release(runner);
+    release();
+  });
+
   test('Fehler → { error }, die übrigen laufen weiter', async () => {
     const original = console.error;
     const calls = [];
