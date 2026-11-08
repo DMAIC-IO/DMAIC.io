@@ -202,6 +202,20 @@ suite('asyncTask: auto', () => {
     assertEqual(vm.live, 3);
     host.release();
   });
+  test('Neustart feuert das Abbruchsignal des alten Laufs', async () => {
+    const signals = [];
+    const { vm, host } = setup({ live: asyncTask({ auto: true, async run(_a, { signal }) {
+      const a = this.model.a; signals.push(signal); await new Promise(() => {}); return a;
+    } }) });
+    assertEqual(signals.length, 1);
+    assertEqual(signals[0].aborted, false);
+    vm.model.a = 2; await flush();
+    assertEqual(signals.length, 2);
+    assertEqual(signals[0].aborted, true, 'alter Lauf abgebrochen');
+    assertEqual(signals[1].aborted, false, 'neuer Lauf läuft');
+    host.release();
+    assertEqual(signals[1].aborted, true);
+  });
   test('fünf Änderungen in einem Tick: ein Neustart', async () => {
     let starts = 0;
     const { vm, host } = setup({ live: asyncTask({ auto: true, run() { starts += 1; return this.model.a; } }) });

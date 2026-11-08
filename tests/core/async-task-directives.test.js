@@ -120,6 +120,20 @@ suite('x-async-task', () => {
     await mod.destroy(); container.remove();
   });
 
+  test('abgewiesener Start meldet common.asyncTask.rejected mit dem Grund', async () => {
+    control.fail = false;
+    const { $, notified, mod, container } = await mount();
+    $('.start').click(); await flush();
+    assertEqual($('.start').disabled, true);
+    $('.start').disabled = false; // die Sperre umgehen: der Kern weist den Doppelstart ab
+    $('.start').click(); await flush();
+    assertEqual(notified.length, 1);
+    assertEqual(notified[0][0], 'common.asyncTask.rejected:{"reason":"asyncTask calc is already running"}');
+    assertEqual(notified[0][1], 'error');
+    control.gate(); await flush();
+    await mod.destroy(); container.remove();
+  });
+
   test('Fehler: Anzeige und Meldung', async () => {
     control.fail = true;
     const { $, notified, mod, container } = await mount();
@@ -127,7 +141,9 @@ suite('x-async-task', () => {
     control.gate(); await flush(); await flush();
     assertEqual($('.err').hidden, false);
     assertEqual($('.err').textContent, 'kaputt');
-    assertEqual(notified.length, 1);
+    assertEqual(notified.length, 1, 'genau eine Meldung für den Fehler');
+    assertEqual(notified[0][0], 'kaputt');
+    assertEqual(notified[0][1], 'error');
     control.fail = false;
     await mod.destroy(); container.remove();
   });

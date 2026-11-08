@@ -115,6 +115,38 @@ suite('createModule mit asyncTasks', () => {
     await mod.destroy(); container.remove();
   });
 
+  test('Sprachwechsel bricht das Signal des alten Laufs ab', async () => {
+    const signals = [];
+    const { mod, container } = await mount({ asyncTasks: {
+      twice: asyncTask({ auto: true, async run(_a, { signal }) { signals.push(signal); await new Promise(() => {}); } }),
+    } });
+    assertEqual(signals.length, 1);
+    assertEqual(signals[0].aborted, false);
+    mod.onLanguageChange(); await flush();
+    assertEqual(signals.length, 2);
+    assertEqual(signals[0].aborted, true, 'alter Lauf beim Neuaufbau abgebrochen');
+    assertEqual(signals[1].aborted, false);
+    await mod.destroy(); container.remove();
+    assertEqual(signals[1].aborted, true, 'destroy bricht den laufenden Lauf ab');
+  });
+
+  test('ein Task-Wert lässt sich am Viewmodel nicht schreiben', async () => {
+    const { mod, container, vm } = await mount();
+    assertThrows(() => { vm().twice = 5; }, /asyncTask twice is read-only/);
+    assertThrows(() => { vm().calc = 5; }, /asyncTask calc is read-only/);
+    await mod.destroy(); container.remove();
+  });
+
+  test('blocked() eines deklarierten Tasks läuft mit this.model und sperrt den Start', async () => {
+    const { mod, container, vm } = await mount();
+    vm().model.a = -1;
+    assertEqual(vm()._asyncTaskHost.blockedReason('calc'), 'negativ');
+    assertEqual((await vm()._asyncTaskHost.start('calc', { n: 1 })).status, 'rejected');
+    vm().model.a = 3;
+    assertEqual(vm()._asyncTaskHost.blockedReason('calc'), null);
+    await mod.destroy(); container.remove();
+  });
+
   test('destroy gibt die Beobachter frei', async () => {
     gates.length = 0; autoStarts = 0;
     const { mod, container, vm } = await mount();
@@ -148,6 +180,21 @@ suite('createModule mit asyncTasks', () => {
       /createModule\(task-test\): asyncTask init collides with view member$/);
     assertThrows(() => createModule({ ...base, asyncTasks: { asyncTasks: tasks.calc }, view() { return {}; } }),
       /createModule\(task-test\): asyncTask asyncTasks collides with view member$/);
+  });
+
+  test('Kollision mit einem Kommando wirft beim Anlegen', () => {
+    const WithCmd = defineModel({ fields: { a: number({ default: 1 }) }, commands: { calc: { run() {} } } });
+    assertThrows(() => createModule({
+      config: { id: ID, engine: 'alpine', phase: 'define', templateUrl: new URL(TPL_KEY, document.baseURI).href },
+      Model: WithCmd, asyncTasks: { calc: tasks.calc }, view() { return {}; },
+    }), /createModule\(task-test\): asyncTask calc collides with command$/);
+  });
+
+  test('Tasks ohne defineModel-Model werfen beim Anlegen', () => {
+    assertThrows(() => createModule({
+      config: { id: ID, engine: 'alpine', phase: 'define', templateUrl: new URL(TPL_KEY, document.baseURI).href },
+      asyncTasks: { calc: tasks.calc }, view() { return {}; },
+    }), /createModule\(task-test\): asyncTasks need a defineModel Model$/);
   });
 
   test('ein Feld namens asyncTasks wirft beim Anlegen', () => {
