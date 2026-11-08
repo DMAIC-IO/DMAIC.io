@@ -241,7 +241,8 @@ function createFormController(Alpine, formEl, baseCommand) {
     if (!hit) {
       const hint = typeof error?.invariant === 'string'
         ? invariantHint(u.i18n, u.moduleId, error.invariant)
-        : rejectionHint(specOf(error?.param) ?? {}, u.i18n);
+        : rejectionHint({}, u.i18n);
+      if (isBug(error)) console.error(error);
       u.notify(hint, 'error');
       return;
     }

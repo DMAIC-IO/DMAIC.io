@@ -31,6 +31,9 @@ const Board = defineModel({
       current() { throw new Error('Eintrag gibt es nicht mehr'); },
       run() {},
     }),
+    boom: command({ params: { text: text() }, run() { null.x; } }),
+    guarded: command({ params: { text: text() }, run() { throw Object.assign(new Error('nein'), { invariant: 'noGo' }); } }),
+    limitText: command({ params: { limit: number({ min: 0, max: 9, integer: true }), text: text() }, run() { throw new Error('zu groß'); } }),
     setLimit: command({ params: { limit: number({ min: 0, max: 9, integer: true }) }, run() {} }),
   },
 });
@@ -205,7 +208,7 @@ suite('x-command', () => {
   });
 
   test('unbekanntes Kommando wirft beim Einbau', () => {
-    assertThrows(() => mountDetached('<button x-command="nope">x</button>'), /unknown command "nope"; available: addItem, setItem, removeItem, pickItem, setLimit/);
+    assertThrows(() => mountDetached('<button x-command="nope">x</button>'), /unknown command "nope"; available: addItem, setItem, removeItem, pickItem, boom, guarded, limitText, setLimit/);
   });
 
   test('aus dem Wurzelknoten herausgenommener Knopf läuft weiter (Dialog-Körper)', async () => {
@@ -261,6 +264,31 @@ suite('x-command-form', () => {
     assertEqual(notified.length, 0);
     typeIn($('input'), 'x');
     assertEqual($('input').getAttribute('aria-invalid'), null);
+  });
+
+  test('Programmierfehler: übersetzter Hinweis und console.error', async () => {
+    const { $, notified } = await mount('<form x-command-form="boom"><input x-param="text"></form>');
+    typeIn($('input'), 'x');
+    const orig = console.error;
+    let count = 0;
+    console.error = () => { count++; };
+    try { await submitForm($('form')); } finally { console.error = orig; }
+    assertEqual(count, 1);
+    assertEqual(notified[0][0], 'common.inputRejectedPlain');
+  });
+
+  test('Invariante: Hinweis des Moduls', async () => {
+    const { $, notified } = await mount('<form x-command-form="guarded"><input x-param="text"></form>');
+    typeIn($('input'), 'x');
+    await submitForm($('form'));
+    assertEqual(notified[0][0], 'modules.ct.invariants.noGo');
+  });
+
+  test('fester Parameter in der Ablehnung: einfacher Hinweis ohne Bereich', async () => {
+    const { $, notified } = await mount('<form x-command-form="limitText" data-arg-limit="99"><input x-param="text"></form>');
+    typeIn($('input'), 'x');
+    await submitForm($('form'));
+    assertEqual(notified[0][0], 'common.inputRejectedPlain');
   });
 
   test('sonstige Fehler an notify (Parameter weder fest noch frei)', async () => {
