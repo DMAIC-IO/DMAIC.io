@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkViewReads, checkPickerCss, checkChartBindings, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts, viewNamesOf, viewNamesDetailOf, computedNamesOf, checkWidgetTemplates } from './module-gates.mjs';
+import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkViewReads, checkPickerCss, checkChartBindings, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts, viewNamesOf, viewNamesDetailOf, computedNamesOf, checkWidgetTemplates, modelMembersOf } from './module-gates.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { APP_DIR } from './build.mjs';
 import { defineModel, command, text, number, oneOf, index, idOf, list, record, object, boolean, date, columnRef, defineWidget, datasets } from '../../js/core/model.js';
@@ -347,6 +347,36 @@ test('Template ↔ Schema: Bindungen auf bekannte Felder, x-field nur mit Regeln
     'template: resources/rows.part.html: x-field="model.title": title (text) hat keine Regeln — x-model verwenden',
     'template: resources/rows.part.html: x-field="model.done": done (boolean) hat keine Regeln — x-model verwenden',
     'template: resources/rows.part.html: x-text="model.ghost": ghost ist weder Feld noch Ansichtsfeld',
+  ]);
+});
+
+test('Template ↔ Schema: einfache Anführungszeichen werden ebenso geprüft', () => {
+  const files = [{ path: 'resources/view.html', text: "<input x-model='model.nope'><input x-field='model.title'><span x-text='model.ghost'></span><input x-field='model.alpha'>" }];
+  assert.deepEqual(checkTemplateBindings(files, SCHEMA_FOR_VIEW), [
+    'template: resources/view.html: x-model="model.nope": nope ist weder Feld noch Ansichtsfeld',
+    'template: resources/view.html: x-field="model.title": title (text) hat keine Regeln — x-model verwenden',
+    'template: resources/view.html: x-text="model.ghost": ghost ist weder Feld noch Ansichtsfeld',
+  ]);
+});
+
+test('modelMembersOf: Getter und Methoden der Klasse über defineModel', () => {
+  const text = [
+    "import { defineModel, text } from '@/core/model.js';",
+    'export class State extends defineModel({ fields: { title: text() } }) {',
+    '  get label() { return this.title; }',
+    '  shout() { return this.title.toUpperCase(); }',
+    '  static make() { return new State(); }',
+    '}',
+    'class Other { get nope() { return 1; } }',
+  ].join('\n');
+  assert.deepEqual([...modelMembersOf(text)].sort(), ['label', 'shout']);
+});
+
+test('Template ↔ Schema: Getter der Model-Klasse sind lesbar, nicht bindbar', () => {
+  const files = [{ path: 'resources/view.html', text: '<span x-text="model.label"></span><input x-model="model.label"><div x-field="model.shout"></div>' }];
+  assert.deepEqual(checkTemplateBindings(files, SCHEMA_FOR_VIEW, new Map(), new Set(['label', 'shout'])), [
+    'template: resources/view.html: x-model="model.label": label ist ein Getter oder eine Methode der Model-Klasse — nur lesbar',
+    'template: resources/view.html: x-field="model.shout": shout ist ein Getter oder eine Methode der Model-Klasse — nur lesbar',
   ]);
 });
 
@@ -924,6 +954,13 @@ test('Listenpfade: beide Formen, verschachtelt, Schlüssel, Anker', () => {
     'template: resources/view.html: x-field="c.name": c ist weder model, state noch ein Eintrag einer Modell-Liste aus x-for',
   ]);
   assert.deepEqual(helpKeys, ['fields.items.due.help', 'fields.items.text.help', 'fields.risks.actions.owner.help']);
+});
+
+test('Listenpfade: einfache Anführungszeichen, Klammerinhalt mit dem anderen Anführungszeichen', () => {
+  const text = "<input x-field='model.items[i].due'><input x-field='model.items[i].nope'><input x-field=\"model.items[i].text\">";
+  const { findings, helpKeys } = checkListBindings([{ path: 'resources/view.html', text }], LIST_SCHEMA);
+  assert.deepEqual(findings, ['template: resources/view.html: x-field="model.items[i].nope": nope passt nicht zum Schema']);
+  assert.deepEqual(helpKeys, ['fields.items.due.help', 'fields.items.text.help']);
 });
 
 test('Startwerte: Parameter des Kommandos, kein Konflikt mit data-arg-*', () => {

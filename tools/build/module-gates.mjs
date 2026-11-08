@@ -533,9 +533,33 @@ export function checkSchemaPaths(schema) {
 
 /** Specs, an die `x-field` binden darf: nur Felder mit Regeln. */
 export const RULE_KINDS = Object.freeze(['number', 'index', 'idOf', 'oneOf', 'date', 'time', 'phase', 'columnRef']);
-const BINDING = /\b(x-model(?:\.[\w.]+)?|x-text)\s*=\s*"\s*model\.([A-Za-z_$][\w$]*)/g;
+const BINDING = /\b(x-model(?:\.[\w.]+)?|x-text)\s*=\s*["']\s*model\.([A-Za-z_$][\w$]*)/g;
 /** `x-field`/`x-set` auf ein Feld der obersten Ebene (Listenpfade: checkListBindings). */
-const FIELD_BINDING = /\b(x-field|x-set)\s*=\s*"\s*model\.([A-Za-z_$][\w$]*)\s*"/g;
+const FIELD_BINDING = /\b(x-field|x-set)\s*=\s*(["'])\s*model\.([A-Za-z_$][\w$]*)\s*\2/g;
+
+/**
+ * Getter und Methoden (nicht statisch) der Klassen in `domain/model.js`, die
+ * von `defineModel(…)` erben — im Template lesbar, aber kein Bindungsziel.
+ * @param {string} text
+ * @returns {Set<string>}
+ */
+export function modelMembersOf(text) {
+  const out = new Set();
+  const sf = parseJs('domain/model.js', text);
+  const extendsModel = (c) => (c.heritageClauses ?? []).some((h) => h.types.some((t) => ts.isCallExpression(t.expression)
+    && ts.isIdentifier(t.expression.expression) && t.expression.expression.text === 'defineModel'));
+  const visit = (n) => {
+    if ((ts.isClassDeclaration(n) || ts.isClassExpression(n)) && extendsModel(n)) {
+      for (const m of n.members) {
+        const isStatic = m.modifiers?.some((x) => x.kind === ts.SyntaxKind.StaticKeyword);
+        if ((ts.isGetAccessorDeclaration(m) || ts.isMethodDeclaration(m)) && !isStatic && m.name && ts.isIdentifier(m.name)) out.add(m.name.text);
+      }
+    }
+    ts.forEachChild(n, visit);
+  };
+  visit(sf);
+  return out;
+}
 
 /**
  * Gate Template ↔ Schema: Bindungen zeigen auf Felder oder Ansichtsfelder,
@@ -543,17 +567,25 @@ const FIELD_BINDING = /\b(x-field|x-set)\s*=\s*"\s*model\.([A-Za-z_$][\w$]*)\s*"
  * @param {{ path: string, text: string }[]} files view.html und *.part.html
  * @param {{ fields: object, view: object }} schema
  * @param {Map<string, any>} [widgets] registrierte Widgets; eines mit passendem `forKind` macht das Feld für `x-field` bindbar
+ * @param {Set<string>} [members] Getter/Methoden der Model-Klasse (modelMembersOf) — lesbar für x-text, nicht bindbar
  * @returns {string[]}
  */
-export function checkTemplateBindings(files, schema, widgets = new Map()) {
+export function checkTemplateBindings(files, schema, widgets = new Map(), members = new Set()) {
   const widgetKinds = new Set([...widgets.values()].map((w) => w.forKind).filter(Boolean));
   const all = { ...schema.fields, ...schema.view };
   const out = [];
   for (const { path, text } of files) {
-    for (const m of [...text.matchAll(BINDING), ...text.matchAll(FIELD_BINDING)].sort((a, b) => a.index - b.index)) {
-      const [, attr, name] = m;
+    const hits = [
+      ...[...text.matchAll(BINDING)].map((m) => ({ index: m.index, attr: m[1], name: m[2] })),
+      ...[...text.matchAll(FIELD_BINDING)].map((m) => ({ index: m.index, attr: m[1], name: m[3] })),
+    ].sort((a, b) => a.index - b.index);
+    for (const { attr, name } of hits) {
       const shown = `${attr}="model.${name}"`;
       const spec = all[name];
+      if (!spec && members.has(name)) {
+        if (attr !== 'x-text') out.push(`template: ${path}: ${shown}: ${name} ist ein Getter oder eine Methode der Model-Klasse — nur lesbar`);
+        continue;
+      }
       if (!spec) { out.push(`template: ${path}: ${shown}: ${name} ist weder Feld noch Ansichtsfeld`); continue; }
       const bindable = RULE_KINDS.includes(spec.kind) || (spec.kind === 'list' && spec.item?.kind === 'columnRef')
         || widgetKinds.has(spec.kind) || (spec.kind === 'list' && spec.item?.kind === 'columnRef' && widgetKinds.has('columnRef'));
@@ -878,7 +910,7 @@ export function checkCommandRefs(files, schema, formSchemas) {
   return out;
 }
 
-const LIST_BINDING = /\b(x-field|x-set)\s*=\s*"\s*([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*|\[[^\]"]*\])+)\s*"/g;
+const LIST_BINDING = /\b(x-field|x-set)\s*=\s*(?:"\s*([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*|\[[^\]"]*\])+)\s*"|'\s*([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*|\[[^\]']*\])+)\s*')/g;
 /** Quelle einer Schleife, die dieses Gate versteht: ein Pfad aus Namen. */
 const PATH_SOURCE = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*$/;
 
@@ -919,7 +951,8 @@ export function checkListBindings(files, schema) {
       }
       if (spec?.kind === 'list' && spec.item?.kind === 'object') loops.push({ alias, at, spec, listPath });
     }
-    for (const { 1: attr, 2: expr, index: pos } of text.matchAll(LIST_BINDING)) {
+    for (const { 1: attr, 2: dq, 3: sq, index: pos } of text.matchAll(LIST_BINDING)) {
+      const expr = dq ?? sq;
       const shown = `${attr}="${expr}"`;
       let parsed;
       try { parsed = parseFieldPath(expr); } catch (err) { findings.push(`template: ${path}: ${shown}: ${err.message}`); continue; }
@@ -1325,7 +1358,7 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
           out.push(`widget: js/widgets: Schemas lassen sich nicht laden (${err.message})`);
         }
       }
-      out.push(...checkTemplateBindings(views, schema, widgets));
+      out.push(...checkTemplateBindings(views, schema, widgets, modelMembersOf(readFileSync(file, 'utf8'))));
       const vmFile = join(base, 'viewmodel', 'viewmodel.js');
       const templates = paths.filter((p) => /^resources\/[^/]+\.html$/.test(p)).map(read);
       let formSchemas = {};
