@@ -2,7 +2,7 @@
  * Reaktiver Lesezugriff auf Arbeitsblätter (core/worksheet-data.js) — im Browser (Alpine).
  */
 import Alpine from '../../vendor/alpinejs/csp.js';
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { installWorksheetRevisions, createWorksheetData } from '../../js/core/worksheet-data.js';
 
 const flush = () => new Promise((r) => setTimeout(r, 0));
@@ -161,7 +161,7 @@ suite('ctx.data.columns', () => {
     bus.emit('module:removed', { moduleId: 'worksheet', phase: 'measure', instanceId: 'wsM' });
     bus.emit('module:added', { moduleId: 'worksheet', phase: 'analyze', instanceId: 'wsM' });
     await flush();
-    assertTrue(runs >= 2, 'columns() rechnet nach der Verschiebung neu');
+    assertEqual(runs, 2);
     Alpine.release(runner);
   });
 
