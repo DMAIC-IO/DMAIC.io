@@ -171,8 +171,42 @@ export function createAgentRuntime(deps) {
     };
   }
 
-  /** Der eigentliche Durchlauf. Serialisiert aufgerufen, siehe unten. */
-  async function runInteract(input) {
+  /**
+   * Die Eingabe als Aktionsliste, falls jede Aktion syntaktisch ein
+   * Abbruchaufruf ist (`instance.call` auf eine Methode, die auf `.cancel` endet).
+   * @param {object|object[]} input
+   * @returns {boolean}
+   */
+  function looksLikeCancelBatch(input) {
+    const actions = Array.isArray(input) ? input : [input];
+    return actions.length > 0 && actions.every((a) => a && typeof a === 'object' && a.op === 'instance.call'
+      && typeof a.instance === 'string' && typeof a.method === 'string' && a.method.endsWith('.cancel'));
+  }
+
+  /**
+   * Ob jede Aktion im aufgelösten Eintrag ein Task-Abbruch ist (nicht bloß
+   * eine Methode, die zufällig `cancel` heißt).
+   * @param {object|object[]} input
+   * @returns {boolean}
+   */
+  function isTaskCancelBatch(input) {
+    const view = entries.view();
+    const instances = buildInstanceList({ stateManager, i18n });
+    return (Array.isArray(input) ? input : [input]).every((a) => {
+      const module = instances.find((i) => i.id === a.instance)?.module;
+      const actions = module ? view[module]?.actions : null;
+      const spec = actions && Object.hasOwn(actions, a.method) ? actions[a.method] : null;
+      return spec?.target === 'asyncTask' && spec.op === 'cancel';
+    });
+  }
+
+  /**
+   * Der eigentliche Durchlauf. Serialisiert aufgerufen, siehe unten; ein
+   * reiner Task-Abbruch-Stapel (`cancelOnly`) läuft sofort.
+   * @param {object|object[]} [input]
+   * @param {{ cancelOnly?: boolean }} [opts]
+   */
+  async function runInteract(input, { cancelOnly = false } = {}) {
     const gate = await consent.ensure();
     if (!gate.ok) return { ...gate, contract: CONTRACT_VERSION };
 
@@ -188,6 +222,9 @@ export function createAgentRuntime(deps) {
     // Schema-Module, die der Stapel nennt, vorher auflösen: der Prüfer
     // (Stufe 5) kennt ihre Aktionen sonst nicht.
     await entries.preload(referencedModules(input, buildInstanceList({ stateManager, i18n })));
+    // Ein Abbruch darf nicht hinter dem Lauf warten, den er beendet. Ist nicht
+    // jede Aktion ein Task-Abbruch, reiht sich der Stapel normal in die Kette ein.
+    if (cancelOnly && !isTaskCancelBatch(input)) return enqueue(input);
     const world = buildWorld({ stateManager, moduleRegistry, i18n, registry: entries.view(), completed: host.isCompleted() });
     const checked = validateBatch(input, world);
     if (!checked.ok) return { ...checked, contract: CONTRACT_VERSION };
@@ -327,13 +364,23 @@ export function createAgentRuntime(deps) {
    */
   let queue = Promise.resolve();
 
+  /**
+   * Reiht die Eingabe in die Kette ein.
+   * @param {object|object[]} [input]
+   * @returns {Promise<object>}
+   */
+  function enqueue(input) {
+    const run = queue.then(() => runInteract(input).catch(surfaceFailure));
+    // Die Kette darf nie in einen abgelehnten Zustand geraten, sonst
+    // schlüge der Fehler von Stapel A auf Stapel B durch.
+    queue = run.then(() => undefined, () => undefined);
+    return run;
+  }
+
   return {
     interact(input) {
-      const run = queue.then(() => runInteract(input).catch(surfaceFailure));
-      // Die Kette darf nie in einen abgelehnten Zustand geraten, sonst
-      // schlüge der Fehler von Stapel A auf Stapel B durch.
-      queue = run.then(() => undefined, () => undefined);
-      return run;
+      if (looksLikeCancelBatch(input)) return runInteract(input, { cancelOnly: true }).catch(surfaceFailure);
+      return enqueue(input);
     },
   };
 }

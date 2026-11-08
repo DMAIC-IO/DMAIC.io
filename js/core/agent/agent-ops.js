@@ -206,9 +206,7 @@ export function createOps(deps) {
         // Die Methodenliste der LEBENDEN Komponente, nicht die der Registry:
         // weicht sie ab, ist die generierte Registry stale, und genau das
         // soll der Agent sehen.
-        return axiError(ERRORS.UNKNOWN_METHOD,
-          t('agent.errors.unknownMethod', { module: found.module, method: action.method }),
-          { available: publicMethodsOf(viewmodel, subViewModelNames(entry)) });
+        return unknownMethodError(t, found.module, action.method, viewmodel, entry);
       }
       const args = action.args ?? [];
       try {
@@ -232,10 +230,9 @@ export function createOps(deps) {
         // Die eine Stelle, an der Ansichtsfelder aus jedem `read()` fallen — auch
         // aus einem handgeschriebenen, das nicht durch `projectReadState` läuft.
         const shown = action.method === 'read' ? stripPaths(value, entry.viewFields) : value;
-        return { instanceId: action.instance, method: action.method, value: shown ?? null };
+        return callResult(action, shown);
       } catch (err) {
-        return axiError(ERRORS.CALL_FAILED,
-          t('agent.errors.callFailed', { method: action.method, detail: err?.message ?? String(err) }));
+        return callFailedError(t, action.method, err);
       }
     },
 
@@ -346,6 +343,36 @@ function subViewModelNames(entry) {
 }
 
 /**
+ * Der Fehler für eine Methode, die das lebende Viewmodel nicht hat.
+ * @param {Function} t @param {string} moduleId @param {string} method
+ * @param {object} viewmodel @param {object} entry
+ * @returns {object}
+ */
+function unknownMethodError(t, moduleId, method, viewmodel, entry) {
+  return axiError(ERRORS.UNKNOWN_METHOD, t('agent.errors.unknownMethod', { module: moduleId, method }),
+    { available: publicMethodsOf(viewmodel, subViewModelNames(entry)) });
+}
+
+/**
+ * Die Erfolgsform eines Methodenaufrufs.
+ * @param {{ instance: string, method: string }} action @param {any} value
+ * @returns {{ instanceId: string, method: string, value: any }}
+ */
+function callResult(action, value) {
+  return { instanceId: action.instance, method: action.method, value: value ?? null };
+}
+
+/**
+ * Der Fehler eines geworfenen Aufrufs.
+ * @param {Function} t @param {string} method @param {any} err
+ * @returns {object}
+ */
+function callFailedError(t, method, err) {
+  return axiError(ERRORS.CALL_FAILED,
+    t('agent.errors.callFailed', { method, detail: err?.message ?? String(err) }));
+}
+
+/**
  * Ruft eine Aufgabenaktion (Start oder Abbrechen) am Ablauf-Host des Viewmodels.
  * Der Start wartet bis zum Ende: Wert, `{ cancelled: true }` oder `call_failed`.
  * @param {object} viewmodel @param {object} spec Katalogaktion @param {{ instance: string, method: string, args?: any[] }} action
@@ -355,8 +382,7 @@ function subViewModelNames(entry) {
 async function callAsyncTask(viewmodel, spec, action, moduleId, entry, t) {
   const host = viewmodel._asyncTaskHost;
   if (!host) {
-    return axiError(ERRORS.UNKNOWN_METHOD, t('agent.errors.unknownMethod', { module: moduleId, method: action.method }),
-      { available: publicMethodsOf(viewmodel, subViewModelNames(entry)) });
+    return unknownMethodError(t, moduleId, action.method, viewmodel, entry);
   }
   const args = action.args ?? [];
   try {
@@ -371,9 +397,8 @@ async function callAsyncTask(viewmodel, spec, action, moduleId, entry, t) {
       else if (out.status === 'failed') throw out.error;
       else throw new Error(out.status === 'rejected' ? out.reason : `unknown outcome ${String(out?.status)}`);
     }
-    return { instanceId: action.instance, method: action.method, value: value ?? null };
+    return callResult(action, value);
   } catch (err) {
-    return axiError(ERRORS.CALL_FAILED,
-      t('agent.errors.callFailed', { method: action.method, detail: err?.message ?? String(err) }));
+    return callFailedError(t, action.method, err);
   }
 }

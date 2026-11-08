@@ -432,8 +432,11 @@ ihre Effekte nicht verschränken. Ein Stapel B wird erst geprüft, wenn
 Stapel A fertig ist — kein Seiteneffekt vor vollständiger Prüfung.
 
 Ein asynchroner Ablauf, den der Agent startet, hält diese Kette bis zu seinem
-Ende; ein `<name>.cancel` im selben Strom käme erst danach dran. Abbrechen über
-die Fläche erreicht darum nur Läufe, die die Oberfläche gestartet hat.
+Ende. Ein Stapel, der nur aus Abbrüchen besteht (`instance.call` mit
+`<name>.cancel` eines asynchronen Ablaufs), läuft darum sofort und an der Kette
+vorbei; er erreicht auch Läufe, die der Agent selbst gestartet hat. Enthält ein
+Stapel daneben eine andere Aktion, oder heißt die Methode nur zufällig
+`….cancel`, ohne ein Ablauf-Abbruch zu sein, bleibt er in der Kette.
 
 **`ok: true` heißt „angewandt und gespeichert".** Nach einem Stapel, der
 geschrieben hat, speichert die Fläche einmal beide Persistenzhälften

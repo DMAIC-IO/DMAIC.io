@@ -1044,6 +1044,72 @@ suite('agent runtime — concurrent calls are serialized (I7)', () => {
   });
 });
 
+// Abbruch an der Warteschlange vorbei: ein Lauf, der bis zum Abbruch hängt,
+// hielte sonst die Kette an und seinen eigenen Abbruch hinter sich.
+suite('agent runtime — Abbruch-Stapel umgehen die Kette', () => {
+  const taskActions = {
+    read: { params: [], returns: 'object', help: '' },
+    compute: { target: 'asyncTask', task: 'compute', op: 'start', params: [{ name: 'command', type: 'object', optional: false, help: '' }], returns: 'any', help: '' },
+    'compute.cancel': { target: 'asyncTask', task: 'compute', op: 'cancel', params: [], returns: '{ cancelled: boolean }', help: '' },
+    'sub.cancel': { params: [], returns: 'void', help: '' },
+  };
+  const registry = { 'five-why': { tagged: true, available: true, violations: [], actions: taskActions, fields: {} } };
+  const settleWithin = (p, ms = 300) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('hängt in der Kette')), ms))]);
+
+  /** Ein Viewmodel, dessen Task `hang` bis zum Abbruch hängt, sonst nach ein paar Ticks endet. */
+  function makeVm(log, { hang }) {
+    let release = null;
+    return {
+      _asyncTaskHost: {
+        start: async () => {
+          log.push('start-begin');
+          if (hang) await new Promise((r) => { release = r; });
+          else await tick(10);
+          log.push('start-end');
+          return hang ? { status: 'cancelled' } : { status: 'done', value: 7 };
+        },
+        cancel: () => { log.push('cancel'); const had = release !== null; if (release) release(); release = null; return had; },
+      },
+      sub: { cancel: () => { log.push('sub-cancel'); return null; } },
+      read: () => { log.push('read'); return {}; },
+    };
+  }
+  const start = { op: 'instance.call', instance: 'fw-1', method: 'compute', args: [{}] };
+  const cancel = { op: 'instance.call', instance: 'fw-1', method: 'compute.cancel', args: [] };
+
+  test('ein reiner Abbruch-Stapel läuft an einem hängenden Lauf vorbei', async () => {
+    const log = [];
+    const { runtime } = makeRuntime({ registry, viewmodel: makeVm(log, { hang: true }) });
+    const started = runtime.interact(start);
+    await tick(20);
+    const cancelled = await settleWithin(runtime.interact(cancel));
+    assertEqual(cancelled.ok, true, JSON.stringify(cancelled));
+    assertDeepEqual(cancelled.results[0].result.value, { cancelled: true });
+    const r = await settleWithin(started);
+    assertDeepEqual(r.results[0].result.value, { cancelled: true });
+  });
+
+  test('ein Stapel mit Abbruch und anderer Aktion bleibt in der Kette', async () => {
+    const log = [];
+    const { runtime } = makeRuntime({ registry, viewmodel: makeVm(log, { hang: false }) });
+    const first = runtime.interact(start);
+    await tick(2);
+    const mixed = runtime.interact([cancel, { op: 'instance.call', instance: 'fw-1', method: 'read', args: [] }]);
+    await Promise.all([first, mixed]);
+    assertDeepEqual(log, ['start-begin', 'start-end', 'cancel', 'read'], 'der gemischte Stapel wartet auf den laufenden');
+  });
+
+  test('.cancel einer Nicht-Task-Methode bleibt in der Kette', async () => {
+    const log = [];
+    const { runtime } = makeRuntime({ registry, viewmodel: makeVm(log, { hang: false }) });
+    const first = runtime.interact(start);
+    await tick(2);
+    const sub = runtime.interact({ op: 'instance.call', instance: 'fw-1', method: 'sub.cancel', args: [] });
+    await Promise.all([first, sub]);
+    assertDeepEqual(log, ['start-begin', 'start-end', 'sub-cancel'], 'sub.cancel ist kein Task-Abbruch');
+  });
+});
+
 // ── Review-Befund I8 ───────────────────────────────────────────────
 // Die Doku sagt, `interact()` gebe „nie eine unbehandelte Ausnahme nach
 // außen" — der `try/catch` lag aber nur um den Op-Aufruf. Außerhalb lagen
