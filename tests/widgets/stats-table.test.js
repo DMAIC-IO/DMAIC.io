@@ -81,7 +81,7 @@ suite('Widget stats-table', () => {
       effect: (fn) => fn(),
     });
     assertTrue(root.classList.contains('dmike-stats-panel'));
-    root.style.display = 'none';
+    assertEqual(root.style.display, 'none', 'mount blendet die leere Tabelle aus');
     handle.destroy();
     assertEqual(root.classList.contains('dmike-stats-panel'), false);
     assertEqual(root.style.display, '');

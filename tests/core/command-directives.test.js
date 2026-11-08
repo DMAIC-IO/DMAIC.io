@@ -31,6 +31,7 @@ const Board = defineModel({
       current() { throw new Error('Eintrag gibt es nicht mehr'); },
       run() {},
     }),
+    plainFail: command({ params: { text: text() }, run() { throw new Error('run must be synchronous'); } }),
     boom: command({ params: { text: text() }, run() { null.x; } }),
     guarded: command({ params: { text: text() }, run() { throw Object.assign(new Error('nein'), { invariant: 'noGo' }); } }),
     limitText: command({ params: { limit: number({ min: 0, max: 9, integer: true }), text: text() }, run() { throw new Error('zu groß'); } }),
@@ -208,7 +209,7 @@ suite('x-command', () => {
   });
 
   test('unbekanntes Kommando wirft beim Einbau', () => {
-    assertThrows(() => mountDetached('<button x-command="nope">x</button>'), /unknown command "nope"; available: addItem, setItem, removeItem, pickItem, boom, guarded, limitText, setLimit/);
+    assertThrows(() => mountDetached('<button x-command="nope">x</button>'), /unknown command "nope"; available: addItem, setItem, removeItem, pickItem, plainFail, boom, guarded, limitText, setLimit/);
   });
 
   test('aus dem Wurzelknoten herausgenommener Knopf läuft weiter (Dialog-Körper)', async () => {
@@ -274,6 +275,18 @@ suite('x-command-form', () => {
     console.error = () => { count++; };
     try { await submitForm($('form')); } finally { console.error = orig; }
     assertEqual(count, 1);
+    assertEqual(notified[0][0], 'common.inputRejectedPlain');
+  });
+
+  test('einfacher Error ohne param/invariant: übersetzter Hinweis und genau ein console.error', async () => {
+    const { $, notified } = await mount('<form x-command-form="plainFail"><input x-param="text"></form>');
+    typeIn($('input'), 'x');
+    const orig = console.error;
+    const logged = [];
+    console.error = (...a) => logged.push(a);
+    try { await submitForm($('form')); } finally { console.error = orig; }
+    assertEqual(logged.length, 1);
+    assertEqual(logged[0][0].message, 'run must be synchronous');
     assertEqual(notified[0][0], 'common.inputRejectedPlain');
   });
 

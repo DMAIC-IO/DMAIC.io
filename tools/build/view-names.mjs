@@ -106,24 +106,12 @@ export function viewNamesDetailOf(text) {
 }
 
 /**
- * Die Schlüssel des `computed:`-Objekts im view-Block, statisch gelesen.
+ * Die Schlüssel des obersten `computed:`-Objekts im view-Block, statisch gelesen wie zur Laufzeit.
  * @param {string} text Quelltext von viewmodel.js
  * @returns {string[]}
  */
 export function computedNamesOf(text) {
-  const view = findViewBlock(text);
-  if (!view) return [];
-  const names = [];
-  const visit = (n) => {
-    if (ts.isPropertyAssignment(n) && ts.isIdentifier(n.name) && n.name.text === 'computed'
-        && ts.isObjectLiteralExpression(n.initializer)) {
-      for (const p of n.initializer.properties) if (p.name && ts.isIdentifier(p.name)) names.push(p.name.text);
-      return;
-    }
-    ts.forEachChild(n, visit);
-  };
-  visit(view);
-  return names;
+  return viewNamesDetailOf(text).computed;
 }
 
 /** Alle Namen, die ein Template aus dem view-Block lesen darf. @param {string} text @returns {Set<string>} */

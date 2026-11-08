@@ -33,6 +33,7 @@
 import { commandDefOf, confirmOf, fromAttr, currentOf, defaultOf, checkValue, cloneJSON, contextOf } from './model.js';
 import { requireKnownId } from './validate.js';
 import { applyAttributes, readElement, writeElement, rejectionHint, invariantHint } from './field-directive.js';
+import { isBug } from './value-channel.js';
 import { clearRejection, markRejection } from './param-input.js';
 import { bindChoiceGroup, focusChoice, isChoiceGroup } from './choice-group.js';
 
@@ -150,9 +151,6 @@ function closeDialogAround(el) {
   }
 }
 
-/** Programmierfehler, die nicht als Ablehnung einer Eingabe gelten. */
-const isBug = (err) => err instanceof TypeError || err instanceof ReferenceError || err instanceof SyntaxError;
-
 /** Fokus auf ein freies Feld: bei einer Gruppe die gewählte Option. @param {HTMLElement} el */
 function focusField(el) {
   if (isChoiceGroup(el)) focusChoice(el);
@@ -242,7 +240,7 @@ function createFormController(Alpine, formEl, baseCommand) {
       const hint = typeof error?.invariant === 'string'
         ? invariantHint(u.i18n, u.moduleId, error.invariant)
         : rejectionHint({}, u.i18n);
-      if (isBug(error)) console.error(error);
+      if (typeof error?.param !== 'string' && typeof error?.invariant !== 'string') console.error(error);
       u.notify(hint, 'error');
       return;
     }

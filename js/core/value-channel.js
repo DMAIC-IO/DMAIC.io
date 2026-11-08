@@ -15,8 +15,8 @@ import { describeRange } from './param-input.js';
  *   rejected: { message: string }, hint: (err: any) => string }} ValueChannel
  */
 
-/** @param {unknown} err @returns {boolean} */
-const isBug = (err) => err instanceof TypeError || err instanceof ReferenceError || err instanceof SyntaxError;
+/** Programmierfehler, die nicht als Ablehnung einer Eingabe gelten. @param {unknown} err @returns {boolean} */
+export const isBug = (err) => err instanceof TypeError || err instanceof ReferenceError || err instanceof SyntaxError;
 
 /** Zahlenfeld (`number`, `index`)? @param {object} spec @returns {boolean} */
 export const isNumeric = (spec) => spec.kind === 'number' || spec.kind === 'index';

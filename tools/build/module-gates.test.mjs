@@ -1075,6 +1075,16 @@ test('checkContextHelp verlangt fields.<computed>.help', () => {
   assert.deepEqual(checkContextHelp(schema, { de: { fields: {} }, en: { fields: {} } }), []);
 });
 
+test('computedNamesOf meldet kein verschachteltes computed in einem Datenglied', () => {
+  const vm = `export default createModule({
+    view: (ctx) => ({
+      opts: { computed: { fake() { return 1; } } },
+      computed: { real() { return 1; } },
+    }),
+  });`;
+  assert.deepEqual(computedNamesOf(vm), ['real']);
+});
+
 test('computedNamesOf liest die Schlüssel des computed-Objekts im view-Block', () => {
   const vm = `export default createModule({
     view: (ctx) => ({
