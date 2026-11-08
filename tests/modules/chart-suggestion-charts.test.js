@@ -88,14 +88,17 @@ suite('chart-suggestion domain — buildChartConfig', () => {
   });
 
   test('Datumslinien: xAxis date, kein xTickFormat, keine legendTitle', () => {
-    const d = dat(['2026-01-02', '2026-01-01', '2026-01-03'], 'Tag');
-    const { widget, config } = built('scatter', [d, num([2, 1, 3], 'y'), cat(['a', 'a', 'b'], 'g')]);
+    const d = dat(['2026-01-03', '2026-01-01', '2026-01-02', '2026-01-05'], 'Tag');
+    const { widget, config } = built('scatter', [d, num([3, 1, 2, 9], 'y'), cat(['a', 'a', 'a', 'b'], 'g')]);
     assertEqual(widget, 'scatter-chart');
     assertEqual(config.xAxis, 'date');
     assertEqual('xTickFormat' in config, false);
     assertEqual('legendTitle' in config, false);
     assertEqual(config.series.length, 2);
-    assertEqual(config.series[0].x[0] < config.series[0].x[1] || config.series[0].x.length === 2, true);
+    const first = config.series[0];
+    assertEqual(first.x.length, 3);
+    assertDeepEqual(first.x, [...first.x].sort((a, b) => a - b));
+    assertDeepEqual(first.y, [1, 2, 3]);
     assertEqual(config.showLegend, true);
   });
 
@@ -155,8 +158,9 @@ suite('chart-suggestion domain — buildChartConfig', () => {
   });
 
   test('transformierte IMR und EWMA: Signale aufsteigend als Liste', () => {
+    const base = Array.from({ length: 20 }, (_, i) => 10 + ((i * 7) % 5) * 0.1);
     const series = {
-      'transformed-imr-chart': [10, 11, 10.5, 12, 11.5, 10.2, 11.1, 10.8, 25, 11.3, 10.9, 11.7],
+      'transformed-imr-chart': [...base.slice(0, 10), 13, ...base.slice(10)],
       ewma: [...ramp(10), ...ramp(10).map((v) => v + 20)],
     };
     for (const [type, vals] of Object.entries(series)) {
@@ -166,7 +170,9 @@ suite('chart-suggestion domain — buildChartConfig', () => {
       assertEqual(config.showZones, false);
       for (const k of ['cl', 'ucl', 'lcl']) assertEqual(Array.isArray(config[k]), true, `${type} ${k}`);
     }
-    assertEqual(built('ewma', [num(series.ewma)]).config.violationIndices.length > 0, true);
+    for (const type of Object.keys(series)) {
+      assertEqual(built(type, [num(series[type])]).config.violationIndices.length > 0, true, `${type} Signal`);
+    }
   });
 
   test('zu kurze oder nicht positive Reihen ergeben null', () => {
