@@ -93,6 +93,38 @@ suite('computed', () => {
     release();
   });
 
+  test('Diamant: jeder Knoten rechnet einmal, mehrfaches Lesen rechnet nicht neu', async () => {
+    const runs = { top: 0, left: 0, right: 0, bottom: 0 };
+    const { vm, release } = makeVm({
+      top() { runs.top += 1; return this.model.a; },
+      left() { runs.left += 1; return this.top + 1; },
+      right() { runs.right += 1; return this.top * 2; },
+      bottom() { runs.bottom += 1; return this.left + this.right; },
+    });
+    assertEqual(vm.bottom, 4);
+    assertDeepEqual({ ...runs }, { top: 1, left: 1, right: 1, bottom: 1 });
+    vm.model.a = 3;
+    await flush();
+    assertEqual(vm.bottom, 10);
+    assertEqual(vm.bottom, 10);
+    assertEqual(vm.left, 4);
+    assertDeepEqual({ ...runs }, { top: 2, left: 2, right: 2, bottom: 2 });
+    release();
+  });
+
+  test('Zyklus hält an', async () => {
+    const { vm, release } = makeVm({
+      ping() { return `ping:${this.pong}`; },
+      pong() { return `pong:${this.model.a}:${typeof this.ping}`; },
+    });
+    assertEqual(typeof vm.ping, 'string');
+    vm.model.a = 2;
+    await flush();
+    assertEqual(typeof vm.ping, 'string');
+    assertEqual(typeof vm.pong, 'string');
+    release();
+  });
+
   test('Fehler → { error }, die übrigen laufen weiter', async () => {
     const original = console.error;
     const calls = [];

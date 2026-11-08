@@ -13,6 +13,11 @@
  * Effect der Vorlage — im selben Durchlauf den frischen Wert, egal in welcher
  * Reihenfolge Alpines Warteschlange die Effects abarbeitet (sie überspringt
  * einen Effect, der in diesem Durchlauf schon lief).
+ *
+ * Ein Effect, der ein computed liest und danach dessen Quelle schreibt, läuft
+ * nicht erneut: Alpine stößt den gerade laufenden Effect nicht selbst wieder an.
+ * Die Werte kommen roh zurück, nicht als reaktiver Proxy — ein Ergebnis an Ort
+ * und Stelle zu ändern, stößt niemanden an.
  */
 
 /**
@@ -88,7 +93,9 @@ export function bindComputed(Alpine, vm, defs) {
         cell.dirty = false;
       });
       // Nicht in Alpines Warteschlange: veraltet markieren und die Leser wecken.
-      if (runner?.options) {
+      // Ohne _isEffect ist es der Leerlauf-Effect von Alpine (Effects abgeschaltet).
+      if (runner?._isEffect) {
+        if (!runner.options) throw new TypeError(`computed ${name}: effect without options — scheduler cannot be replaced`);
         runner.options.scheduler = () => {
           if (cell.dirty) return;
           cell.dirty = true;
