@@ -133,7 +133,7 @@ export async function runUiCommand(ui, name, args) {
       const ok = await ui.dialog.confirm({ message: ui.i18n.t(`modules.${ui.moduleId}.${ask.key}`, ask.params), danger: true });
       if (!ok) return { ok: false, cancelled: true };
     }
-    return { ok: true, result: ui.model[name](args) };
+    return { ok: true, result: await ui.model[name](args) };
   } catch (error) {
     return { ok: false, error };
   }

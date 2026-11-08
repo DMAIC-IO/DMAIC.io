@@ -649,7 +649,14 @@ function withInvariants(root, fn) {
  */
 export function runCommand(name, def, self, root, cmd) {
   const args = checkParams(name, def.params, cmd, root);
-  const result = withInvariants(root, () => def.run.call(self, args));
+  const result = withInvariants(root, () => {
+    const r = def.run.call(self, args);
+    if (r && typeof r.then === 'function') {
+      if (typeof r.catch === 'function') r.catch(() => {});
+      throw new Error(`command ${name}: run must be synchronous — use asyncTask`);
+    }
+    return r;
+  });
   const observer = root?._obs;
   if (typeof observer === 'function') observer(name, cloneJSON(args), result);
   return result;

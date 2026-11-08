@@ -147,6 +147,22 @@ suite('runUiCommand', () => {
     assertTrue(/^invalid idx 0/.test(failed.error.message));
     assertEqual(failed.error.param, 'idx');
   });
+
+  test('run wirft synchron → { ok: false, error }', async () => {
+    const M = defineModel({ name: 'B', version: '1.0', fields: {}, commands: { boom: command({ params: {}, run() { throw new Error('kaputt'); } }) } });
+    const ui = { model: new M(), notify() {}, dialog: fakeDialog([], () => true), i18n: I18N, moduleId: 'ct', forms: {} };
+    const r = await runUiCommand(ui, 'boom', {});
+    assertEqual(r.ok, false);
+    assertEqual(r.error.message, 'kaputt');
+  });
+
+  test('run liefert ein Promise → { ok: false } mit Hinweis auf asyncTask', async () => {
+    const M = defineModel({ name: 'C', version: '1.0', fields: {}, commands: { later: command({ params: {}, run() { return Promise.reject(new Error('spät')); } }) } });
+    const ui = { model: new M(), notify() {}, dialog: fakeDialog([], () => true), i18n: I18N, moduleId: 'ct', forms: {} };
+    const r = await runUiCommand(ui, 'later', {});
+    assertEqual(r.ok, false);
+    assertEqual(r.error.message, 'command later: run must be synchronous — use asyncTask');
+  });
 });
 
 suite('x-command', () => {

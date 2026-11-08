@@ -94,6 +94,17 @@ suite('Kommandos — Prüfung und Ausführung', () => {
   });
 });
 
+suite('Kommandos — synchron', () => {
+  test('run liefert ein Promise → wirft, Beobachter bleibt still', () => {
+    const M = defineModel({ name: 'A', version: '1.0', fields: {}, commands: { go: command({ params: {}, run() { return Promise.resolve(1); } }) } });
+    const m = new M();
+    let calls = 0;
+    setCommandObserver(m, () => { calls += 1; });
+    assertThrows(() => m.go({}), /^command go: run must be synchronous — use asyncTask$/);
+    assertEqual(calls, 0);
+  });
+});
+
 suite('Kommandos — Beobachter', () => {
   test('meldet Name, geprüfte Argumente und Ergebnis', () => {
     const m = filled();

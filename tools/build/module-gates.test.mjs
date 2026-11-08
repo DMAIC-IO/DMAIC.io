@@ -243,6 +243,29 @@ test('Schema-Literal: gültiges Model ist grün', () => {
   assert.deepEqual(checkSchemaLiteral(GOOD_MODEL), []);
 });
 
+test('Schema-Literal: async run (Methode, Funktionsausdruck, Pfeil) wird gemeldet', () => {
+  const src = `${MODEL_IMPORT}export const State = defineModel({
+  fields: { n: number() },
+  commands: {
+    a: command({ params: {}, async run() {} }),
+    b: command({ params: {}, run: async function () {} }),
+    c: command({ params: {}, run: async () => {} }),
+    d: command({ params: {}, run() {} }),
+  },
+});
+`.replaceAll('@/', ['..', '..', '..', ''].join('/'));
+  assert.deepEqual(checkSchemaLiteral(src), [
+    `${P} command a: async run — use asyncTask`,
+    `${P} command b: async run — use asyncTask`,
+    `${P} command c: async run — use asyncTask`,
+  ]);
+});
+
+test('readViewmodelCommands: async run wird vermerkt', () => {
+  const vm = 'export default createModule({ commands: { a: command({ params: {}, async run() {} }), b: command({ run: async () => {} }), c: command({ run() {} }) } });\n';
+  assert.deepEqual(readViewmodelCommands(vm), { a: { params: {}, asyncRun: true }, b: { params: {}, asyncRun: true }, c: { params: {} } });
+});
+
 test('Schema-Literal: Spread, berechnete Schlüssel, fremde Aufrufe, Pfeil-run, Callbacks', () => {
   const src = `${MODEL_IMPORT}import { LIMIT } from './limits.js';
 const extra = {};
@@ -590,6 +613,13 @@ test('checkConvertedModule: Viewmodel-Kommando ohne Hilfetext wird gemeldet', as
   const findings = await checkConvertedModule(root, 'neu');
   assert.ok(findings.includes('help: resources/i18n/context-help.de.json: actions.open.help fehlt'), findings.join('\n'));
   assert.ok(findings.includes('help: resources/i18n/context-help.en.json: actions.open.params.x fehlt'), findings.join('\n'));
+});
+
+test('checkConvertedModule: Viewmodel-Kommando mit async run wird gemeldet', async () => {
+  const vm = "export default { commands: { open: command({ params: {}, async run() {} }) } };\n";
+  const root = convertedFixture({ 'js/modules/neu/viewmodel/viewmodel.js': vm });
+  const findings = await checkConvertedModule(root, 'neu');
+  assert.ok(findings.includes('viewmodel: viewmodel/viewmodel.js: command open: async run — use asyncTask'), findings.join('\n'));
 });
 
 const VM_WITH_TASK = 'export default createModule({ asyncTasks: { compute: asyncTask({ async run() {} }) } });\n';

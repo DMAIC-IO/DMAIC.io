@@ -439,6 +439,7 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
         if (define === 'defineModel' && n === top && (key === 'version' || key === 'migrations')) continue;
         if (define === 'defineModel' && n === top && key === 'invariants') { checkInvariants(p); continue; }
         if (cmdName !== null && HOOKS.includes(key)) {
+          if (key === 'run' && isAsyncRun(p)) { out.push(`${P} command ${cmdName}: async run — use asyncTask`); continue; }
           if (ts.isMethodDeclaration(p)) continue;
           const v = ts.isPropertyAssignment(p) ? p.initializer : null;
           if (v && ts.isArrowFunction(v)) out.push(`${P} ${key} von ${cmdName} ist eine Pfeilfunktion — this muss das reaktive Model sein`);
@@ -1093,6 +1094,13 @@ export function checkConfirmKeys(keys, ui) {
   return out;
 }
 
+/** Ist `run` einer Kommando-Definition als `async` geschrieben (Methode, Funktionsausdruck, Pfeil)? */
+function isAsyncRun(p) {
+  const fn = ts.isPropertyAssignment(p) ? p.initializer : p;
+  return !!fn && (ts.isMethodDeclaration(fn) || ts.isFunctionExpression(fn) || ts.isArrowFunction(fn))
+    && !!fn.modifiers?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword);
+}
+
 /**
  * Viewmodel-Kommandos aus `commands: { name: command({ params: { … } }) }`
  * in viewmodel/viewmodel.js, ohne das Viewmodel zu laden (es hängt an
@@ -1115,6 +1123,8 @@ export function readViewmodelCommands(text) {
         const arg = call.arguments[0];
         const params = arg && ts.isObjectLiteralExpression(arg) ? prop(arg, 'params') : null;
         out[name] = { params: {} };
+        const run = arg && ts.isObjectLiteralExpression(arg) ? arg.properties.find((q) => key(q) === 'run') : null;
+        if (run && isAsyncRun(run)) out[name].asyncRun = true;
         if (params && ts.isObjectLiteralExpression(params)) {
           for (const q of params.properties) { const k = ts.isPropertyAssignment(q) || ts.isShorthandPropertyAssignment(q) ? key(q) : null; if (k) out[name].params[k] = true; }
         }
@@ -1328,6 +1338,11 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
       }, existsSync(vmFile) ? readViewmodelCommands(readFileSync(vmFile, 'utf8')) : {}, readStateBindings(templates),
       [...formHelpKeys(readCommandForms(templates), schema, formSchemas), ...lists.helpKeys, ...asyncTaskHelpKeys(asyncTasks)],
       existsSync(vmFile) ? computedNamesOf(readFileSync(vmFile, 'utf8')) : []));
+      if (existsSync(vmFile)) {
+        for (const [name, c] of Object.entries(readViewmodelCommands(readFileSync(vmFile, 'utf8')))) {
+          if (c.asyncRun) out.push(`viewmodel: viewmodel/viewmodel.js: command ${name}: async run — use asyncTask`);
+        }
+      }
     }
   }
   if (paths.includes('tile/settings.js')) {
