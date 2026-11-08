@@ -645,11 +645,28 @@ const MUTATORS = new Set(['push', 'pop', 'shift', 'unshift', 'splice', 'sort', '
 /** Knoten, die einen eigenen Gültigkeitsbereich für `const`/`let`/Parameter öffnen. */
 const isScope = (n) => ts.isBlock(n) || ts.isFunctionLike(n) || ts.isForStatement(n) || ts.isForOfStatement(n) || ts.isForInStatement(n) || ts.isCaseBlock(n) || ts.isCatchClause(n);
 const isThisModel = (n) => ts.isPropertyAccessExpression(n) && n.expression.kind === ts.SyntaxKind.ThisKeyword && n.name.text === 'model';
+/** Methoden, die ein Element der Liste liefern — das Ergebnis ist selbst ein Model-Objekt. */
+const ELEMENT_METHODS = new Set(['find', 'findLast', 'at']);
+/** Methoden, deren Callback als ersten Parameter ein Element der Liste bekommt. */
+const CALLBACK_METHODS = new Set(['forEach', 'map', 'filter', 'find', 'findLast', 'some', 'every', 'flatMap']);
+
+/**
+ * Ist `n` ein Aufruf einer der `methods` auf einem Model-Ziel
+ * (`this.model.items.find(…)`, `alias.forEach(…)`)?
+ * @param {import('typescript').Node} n
+ * @param {Set<string>} methods
+ * @param {(name: string) => boolean} isAlias
+ */
+function callsOnModel(n, methods, isAlias) {
+  return ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression)
+    && methods.has(n.expression.name.text) && refersToModel(n.expression.expression, isAlias, true);
+}
 
 /**
  * Zeigt `n` auf das Model oder einen Pfad darunter? Ein Alias ist ein
  * Bezeichner, der mit `this.model` oder einem Pfad darunter initialisiert
- * wurde. Ohne `root` zählt nur ein Pfad *unter* `this.model`/dem Alias
+ * wurde. Ein Listenelement (`this.model.items.find(…)`, `.at(…)`) liegt
+ * immer unter dem Model. Ohne `root` zählt nur ein Pfad *unter* `this.model`/dem Alias
  * (Zuweisungsziel), mit `root` auch `this.model`/der Alias selbst
  * (Empfänger eines Aufrufs, Initialisierer eines Alias).
  * @param {import('typescript').Node} n
@@ -663,6 +680,7 @@ function refersToModel(n, isAlias, root = false) {
     if (!ts.isParenthesizedExpression(n)) depth += 1;
     n = n.expression;
   }
+  if (callsOnModel(n, ELEMENT_METHODS, isAlias)) return true;
   return ts.isIdentifier(n) && isAlias(n.text) && (root || depth > 0);
 }
 
@@ -670,7 +688,10 @@ function refersToModel(n, isAlias, root = false) {
  * Gate Schreibweg: in `viewmodel/` und `tile/` keine Zuweisung an das Model
  * — weder über `this.model.…` noch über einen Alias (`const m = this.model`,
  * `const { list } = this.model`), auch nicht über mutierende Aufrufe
- * (`push`, `splice`, …, `Object.assign(<Model-Ziel>, …)`).
+ * (`push`, `splice`, …, `Object.assign(<Model-Ziel>, …)`). Listenelemente
+ * zählen mit: Ergebnisse von `find`/`findLast`/`at`, `for…of`-Variablen und
+ * erste Callback-Parameter von `forEach`/`map`/… auf einem Model-Ziel sind
+ * Aliase. Eine Kopie (`this.model.items.slice()`) ist keiner.
  * @param {{ path: string, text: string }[]} files
  * @returns {string[]}
  */
@@ -691,11 +712,20 @@ export function checkWritePath(files) {
       for (const el of name.elements) if (!ts.isOmittedExpression(el)) declare(el.name, alias);
     };
     const target = (n) => refersToModel(n, isAlias);
+    /** `for (const it of <Model-Ziel>)`: die Schleifenvariable ist ein Listenelement. */
+    const elementSource = (decl) => ts.isVariableDeclarationList(decl.parent) && ts.isForOfStatement(decl.parent.parent)
+      && decl.parent.parent.initializer === decl.parent && refersToModel(decl.parent.parent.expression, isAlias, true);
+    /** Erster Parameter eines Callbacks von `forEach`, `map`, … auf einem Model-Ziel. */
+    const isElementCallback = (param) => {
+      const fn = param.parent;
+      return fn.parameters[0] === param && ts.isCallExpression(fn.parent) && fn.parent.arguments[0] === fn
+        && callsOnModel(fn.parent, CALLBACK_METHODS, isAlias);
+    };
     const visit = (n) => {
       const scoped = isScope(n);
       if (scoped) scopes.push(new Map());
-      if (ts.isVariableDeclaration(n)) declare(n.name, !!n.initializer && refersToModel(n.initializer, isAlias, true));
-      else if (ts.isParameter(n)) declare(n.name, false);
+      if (ts.isVariableDeclaration(n)) declare(n.name, elementSource(n) || (!!n.initializer && refersToModel(n.initializer, isAlias, true)));
+      else if (ts.isParameter(n)) declare(n.name, isElementCallback(n));
       if (ts.isBinaryExpression(n) && n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && n.operatorToken.kind <= ts.SyntaxKind.LastAssignment && target(n.left)) {
         out.push(`write: ${path}: ${n.left.getText(sf)} ${n.operatorToken.getText(sf)} … ${HINT}`);
       } else if ((ts.isPrefixUnaryExpression(n) || ts.isPostfixUnaryExpression(n))

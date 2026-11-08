@@ -433,7 +433,7 @@ test('Schreibweg: tile/ zählt, Aliase auf this.model und mutierende Aufrufe sin
   const files = [
     { path: 'tile/tile.js', text: 'function a() { this.model.title = "x"; }\n' },
     { path: 'viewmodel/alias.js', text: [
-      'function b() { const m = this.model; m.title = 1; m = null; }',
+      'function b() { const m = this.model; m.title = 1; m.count++; Object.assign(m, {}); m = null; }',
       'function c() { const { list } = this.model; list.push(1); list.x = 2; }',
       'function d() { const items = this.model.items; items.sort(); items[0] = 1; }',
       'function e() { this.model.list.splice(0, 1); Object.assign(this.model, { a: 1 }); Object.assign(this.model.cfg, {}); }',
@@ -445,6 +445,8 @@ test('Schreibweg: tile/ zählt, Aliase auf this.model und mutierende Aufrufe sin
   assert.deepEqual(checkWritePath(files), [
     `write: tile/tile.js: this.model.title = … ${H}`,
     `write: viewmodel/alias.js: m.title = … ${H}`,
+    `write: viewmodel/alias.js: m.count++ ${H}`,
+    `write: viewmodel/alias.js: Object.assign(m, …) ${H}`,
     `write: viewmodel/alias.js: list.push(…) ${H}`,
     `write: viewmodel/alias.js: list.x = … ${H}`,
     `write: viewmodel/alias.js: items.sort(…) ${H}`,
@@ -452,6 +454,35 @@ test('Schreibweg: tile/ zählt, Aliase auf this.model und mutierende Aufrufe sin
     `write: viewmodel/alias.js: this.model.list.splice(…) ${H}`,
     `write: viewmodel/alias.js: Object.assign(this.model, …) ${H}`,
     `write: viewmodel/alias.js: Object.assign(this.model.cfg, …) ${H}`,
+  ]);
+});
+
+test('Schreibweg: Listenelemente über find/at, for…of und Callback-Parameter sind Model-Ziele', () => {
+  const H = '— über ein Kommando, instance.set oder x-model/x-field schreiben';
+  const files = [
+    { path: 'viewmodel/items.js', text: [
+      'function a(v) { this.model.factors.find((f) => f.id === v).name = v; this.model.items.at(-1).tags.push(v); }',
+      'function b(v) { const f = this.model.factors.find((x) => x.id === v); f.unit = v; f.n++; Object.assign(f, {}); f = null; }',
+      'function c() { for (const it of this.model.items) { it.done = true; delete it.tmp; } for (let it of this.model.items) it = null; }',
+      'function d() { this.model.items.forEach((i) => { i.done = true; }); this.model.items.map(function (i, k) { i.k = k; k = 0; }); }',
+      'function e() { const m = this.model; m.items.findLast((i) => i.ok).ok = false; m.items.some(({ sub }) => sub.push(1)); }',
+      'function f() { return this.model.items.map((i) => i.x).filter((x) => x); }',
+      'function g() { for (const it of this.model.items.slice()) it.copy = 1; for (const it of [1, 2]) it.x = 1; [1].forEach((i) => { i.x = 1; }); }',
+      'function h() { this.model.items.forEach((i) => { const j = {}; j.x = i.x; }); }',
+    ].join('\n') },
+  ];
+  assert.deepEqual(checkWritePath(files), [
+    `write: viewmodel/items.js: this.model.factors.find((f) => f.id === v).name = … ${H}`,
+    `write: viewmodel/items.js: this.model.items.at(-1).tags.push(…) ${H}`,
+    `write: viewmodel/items.js: f.unit = … ${H}`,
+    `write: viewmodel/items.js: f.n++ ${H}`,
+    `write: viewmodel/items.js: Object.assign(f, …) ${H}`,
+    `write: viewmodel/items.js: it.done = … ${H}`,
+    `write: viewmodel/items.js: delete it.tmp ${H}`,
+    `write: viewmodel/items.js: i.done = … ${H}`,
+    `write: viewmodel/items.js: i.k = … ${H}`,
+    `write: viewmodel/items.js: m.items.findLast((i) => i.ok).ok = … ${H}`,
+    `write: viewmodel/items.js: sub.push(…) ${H}`,
   ]);
 });
 
