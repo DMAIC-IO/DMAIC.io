@@ -255,6 +255,39 @@ suite('Diagramm-Widgets (chart-mount)', () => {
     }
   });
 
+  test('Boxplot und Einzelwertdiagramm: Gruppenfarben werden zur Farbliste', async () => {
+    const groups = [{ name: 'A', values: [1, 2], color: 'var(--color-chart-1)' }, { name: 'B', values: [3, 4], color: 'var(--color-chart-2)' }];
+    for (const [name, type, key] of [['boxplot-chart', 'boxplot', 'boxColors'], ['individual-value-plot-chart', 'individual-value-plot', 'pointColors']]) {
+      const cm = fakeManager();
+      const { root } = await host(`<div x-widget="${name}" x-widget-config="cfg"></div>`, { cm, extra: { cfg: { groups } } });
+      assertEqual(cm.log.created[0].type, type);
+      assertDeepEqual(cm.log.created[0].config[key], ['var(--color-chart-1)', 'var(--color-chart-2)']);
+      root.remove();
+    }
+  });
+
+  test('Boxplot ohne Gruppenfarben: keine Farbliste', async () => {
+    const cm = fakeManager();
+    const cfg = { groups: [{ name: 'A', values: [1, 2] }] };
+    const { root } = await host('<div x-widget="boxplot-chart" x-widget-config="cfg"></div>', { cm, extra: { cfg } });
+    assertEqual(cm.log.created[0].config.boxColors, undefined);
+    assertDeepEqual(cm.log.created[0].config.groups, cfg.groups);
+    root.remove();
+  });
+
+  test('Heatmap: null in den Zellen wird NaN', async () => {
+    const cm = fakeManager();
+    const cfg = { xCategories: ['u', 'v'], yCategories: ['p', 'q'], cells: [[1, null], [null, 4]] };
+    const { root } = await host('<div x-widget="heatmap-chart" x-widget-config="cfg"></div>', { cm, extra: { cfg } });
+    const cells = cm.log.created[0].config.cells;
+    assertEqual(cm.log.created[0].type, 'heatmap');
+    assertEqual(cells[0][0], 1);
+    assertTrue(Number.isNaN(cells[0][1]));
+    assertTrue(Number.isNaN(cells[1][0]));
+    assertEqual(cells[1][1], 4);
+    root.remove();
+  });
+
   test('config null: kein Diagramm, dann gültig, dann wieder abgebaut', async () => {
     const cm = fakeManager();
     const { root, data } = await host('<div x-widget="histogram-chart" x-widget-config="nothing"></div>', { cm, extra: { none: true } });

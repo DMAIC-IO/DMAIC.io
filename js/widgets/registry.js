@@ -25,6 +25,12 @@ import runChart from './run-chart/schema.js';
 import { mount as mountRunChart } from './run-chart/mount.js';
 import paretoChart from './pareto-chart/schema.js';
 import { mount as mountParetoChart } from './pareto-chart/mount.js';
+import boxplotChart from './boxplot-chart/schema.js';
+import { mount as mountBoxplotChart } from './boxplot-chart/mount.js';
+import individualValuePlotChart from './individual-value-plot-chart/schema.js';
+import { mount as mountIndividualValuePlotChart } from './individual-value-plot-chart/mount.js';
+import heatmapChart from './heatmap-chart/schema.js';
+import { mount as mountHeatmapChart } from './heatmap-chart/mount.js';
 import statsTable from './stats-table/schema.js';
 import { mount as mountStatsTable } from './stats-table/mount.js';
 
@@ -40,4 +46,7 @@ export const WIDGETS = Object.freeze({
   'mosaic-chart': { schema: mosaicChart, mount: mountMosaicChart },
   'run-chart': { schema: runChart, mount: mountRunChart },
   'pareto-chart': { schema: paretoChart, mount: mountParetoChart },
+  'boxplot-chart': { schema: boxplotChart, mount: mountBoxplotChart },
+  'individual-value-plot-chart': { schema: individualValuePlotChart, mount: mountIndividualValuePlotChart },
+  'heatmap-chart': { schema: heatmapChart, mount: mountHeatmapChart },
 });

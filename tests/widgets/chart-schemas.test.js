@@ -8,6 +8,12 @@ import barChart from '../../js/widgets/bar-chart/schema.js';
 import mosaicChart from '../../js/widgets/mosaic-chart/schema.js';
 import runChart from '../../js/widgets/run-chart/schema.js';
 import paretoChart from '../../js/widgets/pareto-chart/schema.js';
+import boxplotChart from '../../js/widgets/boxplot-chart/schema.js';
+import individualValuePlotChart from '../../js/widgets/individual-value-plot-chart/schema.js';
+import heatmapChart from '../../js/widgets/heatmap-chart/schema.js';
+import Boxplot from '../../js/core/chart/types/boxplot.js';
+import IndividualValuePlot from '../../js/core/chart/types/individual-value-plot.js';
+import Heatmap from '../../js/core/chart/types/heatmap.js';
 import Bar from '../../js/core/chart/types/bar.js';
 import Mosaic from '../../js/core/chart/types/mosaic.js';
 import RunChart from '../../js/core/chart/types/run-chart.js';
@@ -95,5 +101,35 @@ suite('Diagramm-Widgets: Schemas', () => {
     assertDeepEqual(mosaicChart.editable.base, Mosaic.editorKeys);
     assertDeepEqual(paretoChart.editable.base, Pareto.editorKeys);
     for (const w of [barChart, mosaicChart, runChart, paretoChart]) assertDeepEqual(w.editable.series, []);
+  });
+
+  test('Boxplot, Einzelwertdiagramm, Heatmap: Name und Typ', () => {
+    assertDeepEqual([boxplotChart, individualValuePlotChart, heatmapChart].map((w) => [w.name, w.chartType]), [
+      ['boxplot-chart', 'boxplot'], ['individual-value-plot-chart', 'individual-value-plot'], ['heatmap-chart', 'heatmap'],
+    ]);
+  });
+
+  test('Boxplot, Einzelwertdiagramm, Heatmap: Konfigurationen des Moduls bestehen', () => {
+    const groups = [{ name: 'A', values: [1, 2, 3], color: 'var(--color-chart-1)' }, { name: 'B', values: [2, 4], color: 'var(--color-chart-2)' }];
+    const box = { title: '', xLabel: 'Y', showLegend: true, showMean: true, showOutliers: true, groups, orientation: 'vertical', boxHeight: 0.5,
+      outlierSymbol: 'square', outlierSize: 5, outlierColor: null, outlierStroke: 'red', outlierStrokeWidth: 2, xMin: 0, xMax: 9, titleSize: 12 };
+    assertDeepEqual(checkValue(boxplotChart.props.config, 'c', box), box);
+    const ivp = { title: '', yLabel: 'Y', showLegend: true, groups, jitter: 0.4, showMean: true, showMedian: true, connectMeans: true, showOverallMean: true };
+    assertDeepEqual(checkValue(individualValuePlotChart.props.config, 'c', ivp), ivp);
+    const heat = { title: '', xLabel: 'B', yLabel: 'A', xCategories: ['u', 'v'], yCategories: ['p', 'q'], cells: [[1, null], [null, 4]],
+      valueLabel: 'n', valueDecimals: 0, colorScheme: 'plasma', showCellLabels: false, cellGap: 2 };
+    assertDeepEqual(checkValue(heatmapChart.props.config, 'c', heat), heat);
+  });
+
+  test('Boxplot: Ausrichtung nur horizontal oder vertical', () => {
+    assertThrows(() => checkValue(boxplotChart.props.config, 'c', { orientation: 'diagonal' }), /orientation/);
+    assertThrows(() => checkValue(heatmapChart.props.config, 'c', { cells: [['x']] }), /cells/);
+  });
+
+  test('Boxplot, Einzelwertdiagramm, Heatmap: bearbeitbar sind Basis plus editorKeys', () => {
+    assertDeepEqual(boxplotChart.editable.base, Boxplot.editorKeys);
+    assertDeepEqual(individualValuePlotChart.editable.base, IndividualValuePlot.editorKeys);
+    assertDeepEqual(heatmapChart.editable.base, Heatmap.editorKeys);
+    for (const w of [boxplotChart, individualValuePlotChart, heatmapChart]) assertDeepEqual(w.editable.series, []);
   });
 });
