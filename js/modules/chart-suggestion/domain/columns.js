@@ -1,0 +1,217 @@
+/**
+ * D.Mike — Diagramm-Vorschlag: Spaltenhilfen. Rein.
+ *
+ * Zahlen- und Datumsleser, Gruppierungen für die Vorschau sowie die lebende
+ * Spaltenliste samt Bezugsprüfung und gezeigter Wahl.
+ */
+import { CHART_COLORS } from '../../../core/chart/chart-colors.js';
+import { refToKey } from '../../../core/worksheet-columns.js';
+import { requireKnownId } from '../../../core/agent/agent-argcheck.js';
+
+/**
+ * @typedef {{ id: string, name: string, role: string, type: string, values: any[], roleConfirmed: boolean }} LiveColumn
+ */
+
+export function collectTimeOrderedSeries(date, cont) {
+  if (cont.length === 0) return null;
+  const valueCol = cont[0];
+  const dateCol = date[0];
+  const rawVals = valueCol.values || [];
+  let values;
+  if (dateCol && Array.isArray(dateCol.values)) {
+    const N = Math.min(dateCol.values.length, rawVals.length);
+    const pairs = [];
+    for (let i = 0; i < N; i++) {
+      const dt = parseDateValue(dateCol.values[i]);
+      const v = toNum(rawVals[i]);
+      if (dt !== null && Number.isFinite(v)) pairs.push({ d: dt, v });
+    }
+    pairs.sort((a, b) => a.d - b.d);
+    values = pairs.map(p => p.v);
+  } else {
+    values = rawVals.map(toNum).filter(Number.isFinite);
+  }
+  return { values, valueName: valueCol.name || '', xLabel: dateCol ? (dateCol.name || '') : '' };
+}
+
+export function mean(arr) {
+  if (!arr.length) return 0;
+  let s = 0;
+  for (const v of arr) s += v;
+  return s / arr.length;
+}
+
+export function parseDateValue(v) {
+  if (v == null || v === '') return null;
+  if (v instanceof Date) { const t = v.getTime(); return Number.isFinite(t) ? t : null; }
+  if (typeof v === 'number') return Number.isFinite(v) ? v : null;
+  const d = new Date(String(v));
+  const t = d.getTime();
+  return Number.isFinite(t) ? t : null;
+}
+
+export function collectDateLineGroups(date, cont, cat) {
+  if (date.length < 1 || cont.length < 1) return null;
+  const dateCol = date[0];
+  const rawDates = dateCol.values || [];
+  if (cont.length === 1 && cat.length === 1) {
+    const yCol = cont[0], gCol = cat[0];
+    const yRaw = yCol.values || [], gRaw = gCol.values || [];
+    const N = Math.min(rawDates.length, yRaw.length, gRaw.length);
+    const buckets = new Map();
+    for (let i = 0; i < N; i++) {
+      const dt = parseDateValue(rawDates[i]);
+      const yn = toNum(yRaw[i]);
+      if (dt === null || !Number.isFinite(yn)) continue;
+      const key = gRaw[i] == null ? '' : String(gRaw[i]);
+      if (!buckets.has(key)) buckets.set(key, []);
+      buckets.get(key).push({ d: dt, v: yn });
+    }
+    return { groups: Array.from(buckets, ([name, points]) => ({ name, points })), xLabel: dateCol.name || '', yLabel: yCol.name || '', legendTitle: gCol.name || '' };
+  }
+  const groups = cont.map((yCol, idx) => {
+    const yRaw = yCol.values || [];
+    const n = Math.min(rawDates.length, yRaw.length);
+    const points = [];
+    for (let i = 0; i < n; i++) {
+      const dt = parseDateValue(rawDates[i]);
+      const yn = toNum(yRaw[i]);
+      if (dt !== null && Number.isFinite(yn)) points.push({ d: dt, v: yn });
+    }
+    return { name: yCol.name || `Y${idx + 1}`, points };
+  });
+  return { groups, xLabel: dateCol.name || '', yLabel: cont.length === 1 ? (cont[0].name || '') : '', legendTitle: '' };
+}
+
+
+/**
+ * Axis titles for the grouped value charts (boxplot, individual value plot),
+ * matching the group layout of boxplotGroups(): one response by factor, one
+ * response alone, or several responses side by side.
+ * @param {object[]} cont continuous columns
+ * @param {object[]} cat categorical / ordinal columns
+ * @param {{ variable: string, value: string }} labels Achsentitel für den Fall mehrerer Antworten
+ * @returns {{xLabel: string, yLabel: string}}
+ */
+export function groupedAxisLabels(cont, cat, labels) {
+  if (cont.length > 1 && cat.length === 0) return { xLabel: labels.variable, yLabel: labels.value };
+  return { xLabel: cat.length >= 1 ? (cat[0].name || '') : '', yLabel: cont[0]?.name || '' };
+}
+
+export function boxplotGroups(cont, cat) {
+  if (cont.length === 0) return null;
+  if (cont.length > 1 && cat.length === 0) {
+    return cont.map((c, i) => ({ name: c.name || `c${i + 1}`, values: (c.values || []).map(toNum).filter(Number.isFinite), color: CHART_COLORS[i % CHART_COLORS.length] }));
+  }
+  if (cont.length === 1 && cat.length === 0) {
+    const c = cont[0];
+    return [{ name: c.name || '', values: (c.values || []).map(toNum).filter(Number.isFinite), color: CHART_COLORS[0] }];
+  }
+  if (cont.length === 1 && cat.length >= 1) {
+    const cVals = cont[0].values || [], gVals = cat[0].values || [];
+    const buckets = new Map();
+    const n = Math.min(cVals.length, gVals.length);
+    for (let i = 0; i < n; i++) {
+      const key = gVals[i] == null ? '' : String(gVals[i]);
+      const num = toNum(cVals[i]);
+      if (!Number.isFinite(num)) continue;
+      if (!buckets.has(key)) buckets.set(key, []);
+      buckets.get(key).push(num);
+    }
+    return Array.from(buckets.entries()).map(([name, values], i) => ({ name, values, color: CHART_COLORS[i % CHART_COLORS.length] }));
+  }
+  return null;
+}
+
+export function countCategories(values) {
+  const counts = new Map();
+  for (const v of values) {
+    if (v == null || v === '') continue;
+    const key = String(v);
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+  return { categories: Array.from(counts.keys()), counts: Array.from(counts.values()) };
+}
+
+export function crossTabCategorical(colA, colB) {
+  const aVals = colA.values || [], bVals = colB.values || [];
+  const n = Math.min(aVals.length, bVals.length);
+  const aCats = [], bCats = [];
+  const aIdx = new Map(), bIdx = new Map();
+  const counts = [];
+  for (let i = 0; i < n; i++) {
+    const av = aVals[i], bv = bVals[i];
+    if (av == null || av === '' || bv == null || bv === '') continue;
+    const ak = String(av), bk = String(bv);
+    if (!aIdx.has(ak)) { aIdx.set(ak, aCats.length); aCats.push(ak); counts.push([]); }
+    if (!bIdx.has(bk)) { bIdx.set(bk, bCats.length); bCats.push(bk); }
+    const ai = aIdx.get(ak), bi = bIdx.get(bk);
+    if (counts[ai][bi] == null) counts[ai][bi] = 0;
+    counts[ai][bi] += 1;
+  }
+  const groups = bCats.map((bName, bi) => ({ name: bName, values: aCats.map((_, ai) => counts[ai][bi] || 0), color: CHART_COLORS[bi % CHART_COLORS.length] }));
+  return { categories: aCats, groups };
+}
+
+export function toNum(v) {
+  if (v == null || v === '') return NaN;
+  if (typeof v === 'number') return v;
+  const s = String(v).trim().replace(',', '.');
+  return Number(s);
+}
+
+
+/**
+ * Die gewählten Spalten live aus dem Arbeitsblatt. Nicht auflösbare Bezüge fallen weg.
+ * @param {Array<{ instanceId: string, sheetId?: string, columnId: string }>} refs
+ * @param {{ column: (ref: object) => ({ name: string, type: string, role: string, roleConfirmed: boolean }|null), values: (ref: object) => (any[]|null) }} data
+ * @returns {LiveColumn[]}
+ */
+export function liveColumns(refs, data) {
+  const out = [];
+  for (const ref of refs) {
+    const info = data.column(ref);
+    if (!info) continue;
+    out.push({
+      id: ref.columnId,
+      name: info.name,
+      role: info.role,
+      type: info.type,
+      values: data.values(ref) ?? [],
+      roleConfirmed: info.roleConfirmed === true,
+    });
+  }
+  return out;
+}
+
+/**
+ * Prüft die Bezüge für `setColumns`: nicht leer, jeder wählbar, jeder einmal, ein Blatt.
+ * @param {unknown} refs
+ * @param {string[]} pickableKeys Schlüssel der wählbaren Spalten (`refToKey`)
+ * @returns {void}
+ * @throws {Error} bei leerer, unbekannter, doppelter oder blattübergreifender Auswahl
+ */
+export function checkRefs(refs, pickableKeys) {
+  if (!Array.isArray(refs) || refs.length === 0) {
+    throw new Error(`invalid refs ${JSON.stringify(refs)}; allowed: a non-empty list of column references`);
+  }
+  for (const ref of refs) requireKnownId('ref', refToKey(ref), pickableKeys);
+  if (new Set(refs.map(refToKey)).size !== refs.length) {
+    throw new Error(`invalid refs ${JSON.stringify(refs)}; allowed: each column once`);
+  }
+  const { instanceId, sheetId } = refs[0];
+  if (refs.some((r) => r.instanceId !== instanceId || r.sheetId !== sheetId)) {
+    throw new Error(`invalid refs ${JSON.stringify(refs)}; allowed: columns of one sheet`);
+  }
+}
+
+/**
+ * Gezeigte Wahl: `pick`, wenn unter den Vorschlägen, sonst der Spitzenreiter.
+ * @param {Array<{ type: string }>} suggestions
+ * @param {string|null} pick
+ * @returns {string|null}
+ */
+export function shownType(suggestions, pick) {
+  if (pick && suggestions.some((s) => s.type === pick)) return pick;
+  return suggestions[0]?.type ?? null;
+}
