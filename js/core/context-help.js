@@ -317,6 +317,28 @@ function placeFieldBadges() {
   }
 }
 
+// Beobachter der Felder mit Abzeichen, solange Alt gehalten wird: fließt der
+// Dialog um (Fenstergröße, Inhaltswechsel, Größenziehen am Textfeld), rücken
+// die Abzeichen mit. Nur im geschärften Zustand aktiv, `disarm` löst ihn.
+let fieldResizeObserver = null;
+
+function watchFieldBadges() {
+  unwatchFieldBadges();
+  if (typeof ResizeObserver !== 'function') return;
+  fieldResizeObserver = new ResizeObserver(() => placeFieldBadges());
+  for (const badge of document.querySelectorAll('.context-help__btn--field')) {
+    const field = badge.previousElementSibling;
+    if (!field) continue;
+    fieldResizeObserver.observe(field);
+    if (field.parentElement) fieldResizeObserver.observe(field.parentElement);
+  }
+}
+
+function unwatchFieldBadges() {
+  fieldResizeObserver?.disconnect();
+  fieldResizeObserver = null;
+}
+
 function augmentOne(anchor) {
   if (!anchor || anchor.classList.contains('context-help__btn')) return;
   const key = anchor.getAttribute('data-help-key');
@@ -428,10 +450,14 @@ function wireGlobalHandlers() {
     if (event.key === 'Alt') {
       document.body.classList.add(ARMED_CLASS);
       placeFieldBadges();
+      watchFieldBadges();
     }
     if (event.key === 'Escape') closeContextHelp();
   });
-  const disarm = () => document.body.classList.remove(ARMED_CLASS);
+  const disarm = () => {
+    document.body.classList.remove(ARMED_CLASS);
+    unwatchFieldBadges();
+  };
   window.addEventListener('keyup', (event) => {
     if (event.key !== 'Alt') return;
     if (altAlone) event.preventDefault();

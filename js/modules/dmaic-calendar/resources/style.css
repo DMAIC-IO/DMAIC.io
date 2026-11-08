@@ -642,6 +642,30 @@
   flex-wrap: wrap;
 }
 
+/* Fragezeichen der zwei Blockanker im Termindialog. Beide sitzen am rechten
+   Rand INNEN, nie rechts daneben (dort ragte der Kreis über die Feldspalte)
+   und nie auf der Mitte des Blocks (dort läge er auf „Dauer“).
+   - Die Radiogruppe trägt ihn senkrecht mittig an der Chipzeile; die Chips
+     enden weit vor dem Rand.
+   - Das Formular trägt ihn in der Titelzeile, in der rechts neben dem
+     Label „Titel“ nichts steht. */
+.module-calendar__phase-select.context-help-anchor > .context-help__btn,
+.module-calendar__event-form.context-help-anchor > .context-help__btn {
+  left: auto;
+  right: 0;
+  margin-left: 0;
+  border-radius: 50%;
+  background: var(--color-bg-secondary);
+}
+
+.module-calendar__phase-select.context-help-anchor > .context-help__btn {
+  top: 50%;
+}
+
+.module-calendar__event-form.context-help-anchor > .context-help__btn {
+  top: 0;
+}
+
 .module-calendar__phase-chip {
   font: inherit;
   appearance: none;

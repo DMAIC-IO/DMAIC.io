@@ -242,12 +242,15 @@ textarea.sipoc__edit-text {
   cursor: grabbing;
 }
 
-/* Das Fragezeichen sitzt auf dem Griff selbst statt rechts daneben: dort
-   läge es auf Schrittnummer und Eintragstext. */
+/* Das Fragezeichen sitzt UNTER dem Griff, mittig zu ihm: rechts daneben läge
+   es auf Schrittnummer und Eintragstext, auf dem Griff verdeckte es das
+   Symbol, das der Nutzer fassen will, und links schneidet die Spalte es ab.
+   Unter dem Griff ist die Spalte des Eintrags leer. */
 .sipoc__grip.context-help-anchor > .context-help__btn {
+  top: 100%;
   left: 50%;
   margin-left: 0;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   border-radius: 50%;
   background: var(--color-bg-primary);
 }
