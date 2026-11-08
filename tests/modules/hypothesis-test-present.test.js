@@ -217,6 +217,20 @@ suite('present — ciNote je Code', () => {
     assertTrue(r.main.ciNote.includes(tr('ciShiftNote', { lo: fmt(r.numeric.ci[0]), hi: fmt(r.numeric.ci[1]) })), 'beide Hinweise, durch Leerzeichen getrennt');
   });
 
+  test('ciShiftTooSmall: sehr kleines α rundet gefordert und erreicht nicht auf denselben Wert', () => {
+    const a = analyze({ ...base, testType: 'two', alpha: 0.0001, samples: [{ name: 'A', values: HEAVY_X }, { name: 'B', values: HEAVY_Y }] });
+    a.notes = [{ code: 'ciShiftTooSmall', values: { achieved: 0.99985, level: 0.9999 } }];
+    const r = presentResult(a, tr, { category: 'mean', testType: 'two', direction: 'two-sided', targetType: base.targetType });
+    assertEqual(r.main.ciNote, 'Samples too small for 99.99% – achieved 99.98%.');
+  });
+
+  test('ciShiftTooSmall: normales α zeigt eine Nachkommastelle bei beiden', () => {
+    const a = analyze({ ...base, testType: 'two', alpha: 0.05, samples: [{ name: 'A', values: HEAVY_X }, { name: 'B', values: HEAVY_Y }] });
+    a.notes = [{ code: 'ciShiftTooSmall', values: { achieved: 0.931, level: 0.95 } }];
+    const r = presentResult(a, tr, { category: 'mean', testType: 'two', direction: 'two-sided', targetType: base.targetType });
+    assertEqual(r.main.ciNote, 'Samples too small for 95.0% – achieved 93.1%.');
+  });
+
   test('Rangweg mit Ablehnung und ausreichender Konfidenz: kein Hinweis', () => {
     const r = two(HEAVY_X, [3, 3.5, 4, 12, 13, 14, 15, 16].map((v) => v + 20000));
     assertEqual(r.numeric.decision, 'reject');
