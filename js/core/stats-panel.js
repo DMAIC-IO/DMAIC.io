@@ -78,26 +78,27 @@ function fmtCI(v, lang) {
 /**
  * Compute descriptive statistics for a single numeric array.
  * @param {number[]} values - Raw numeric values
- * @returns {Object|null} Stats object or null if empty
+ * @returns {Object|null} Stats object or null if empty; nicht endliche Kennzahlen (Varianz, Streuung, Standardfehler bei n = 1) sind null
  */
 export function computeStats(values) {
   if (!values || values.length === 0) return null;
   const ds = descriptiveStats(values);
   const sorted = values.slice().sort((a, b) => a - b);
+  const finite = (v) => (Number.isFinite(v) ? v : null);
   return {
     n: ds.n,
-    mean: ds.mean,
-    stddev: ds.stdDev,
-    variance: ds.variance,
-    seMean: ds.n > 0 ? ds.stdDev / Math.sqrt(ds.n) : 0,
-    median: ds.median,
-    min: ds.min,
-    max: ds.max,
-    range: ds.max - ds.min,
-    q1: percentile(sorted, 25),
-    q3: percentile(sorted, 75),
-    skewness: ds.skewness,
-    kurtosis: ds.kurtosis,
+    mean: finite(ds.mean),
+    stddev: finite(ds.stdDev),
+    variance: finite(ds.variance),
+    seMean: finite(ds.n > 0 ? ds.stdDev / Math.sqrt(ds.n) : 0),
+    median: finite(ds.median),
+    min: finite(ds.min),
+    max: finite(ds.max),
+    range: finite(ds.max - ds.min),
+    q1: finite(percentile(sorted, 25)),
+    q3: finite(percentile(sorted, 75)),
+    skewness: finite(ds.skewness),
+    kurtosis: finite(ds.kurtosis),
   };
 }
 

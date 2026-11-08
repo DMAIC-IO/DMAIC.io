@@ -475,4 +475,59 @@ suite('x-widget', () => {
       ctx.root.remove();
     });
   });
+
+  test('tiefe Reaktivität: Änderung in verschachtelten Zeilen erreicht das Widget', async () => {
+    const { root, data } = await host('<div class="d" x-widget="stat-list" x-widget-rows="box.rows"></div>',
+      { box: { rows: [{ name: 'a', mean: 1 }] } });
+    const w = root.querySelector('.d .widget-root');
+    assertEqual(w.textContent, 'a:1.0');
+    data.box.rows[0].mean = 7;
+    await flush();
+    assertEqual(w.textContent, 'a:7.0');
+    data.box.rows.push({ name: 'b', mean: 2 });
+    await flush();
+    assertEqual(w.textContent, 'a:7.0|b:2.0');
+    root.remove();
+  });
+
+  test('Schlüssel mit undefined fallen weg (wie beim JSON-Klon)', async () => {
+    let got;
+    await withWidgets({
+      undef: {
+        schema: defineWidget({ name: 'undef', props: { o: object({ a: number(), b: number({ optional: true }) }) } }),
+        mount(root, { props, effect }) { effect(() => { got = props.o; }); return { destroy() {} }; },
+      },
+    }, async () => {
+      const ctx = await host('<div x-widget="undef" x-widget-o="o"></div>', { o: { a: 1, b: undefined } });
+      assertEqual(Object.hasOwn(got, 'b'), false);
+      ctx.root.remove();
+    });
+  });
+
+  test('nicht kopierbarer Wert: Meldung nennt Feld und Wert', async () => {
+    let ctx;
+    await withWarnings(async () => { ctx = await host('<div class="a" x-widget="boom" x-widget-n="bad"></div>', { bad: { f() {} } }); });
+    const m = ctx.root.querySelector('.a .widget-root--error').textContent;
+    assertTrue(m.includes('invalid boom.n.f') && m.includes('allowed: plain data'), m);
+    ctx.root.remove();
+  });
+
+  test('Crash im Mount, Erfolg vor dem Ende des Mounts: showError nach dem Mount räumt die Klasse', async () => {
+    await withWidgets({
+      early: {
+        schema: defineWidget({ name: 'early', props: { n: number() } }),
+        mount(root, { props, effect }) {
+          const run = effect(() => { if (props.n === 13) throw new Error('im Mount kaputt'); });
+          props.n = 2;
+          run();
+          return { destroy() {} };
+        },
+      },
+    }, async () => {
+      let ctx;
+      await withWarnings(async () => { ctx = await host('<div class="e" x-widget="early" x-widget-n="n"></div>', { n: 13 }); });
+      assertTrue(!ctx.root.querySelector('.e .widget-root').classList.contains('widget-root--error'));
+      ctx.root.remove();
+    });
+  });
 });

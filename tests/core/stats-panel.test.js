@@ -6,6 +6,16 @@
 import { suite, test, assertAlmostEqual, assertEqual } from '../test-utils.js';
 import { computeCI, computeStats, computeSeriesStats, renderStatsTable } from '../../js/core/stats-panel.js';
 
+suite('Stats panel — ein Wert', () => {
+  test('computeStats mit einem Wert: nicht endliche Kennzahlen sind null', () => {
+    const st = computeStats([5]);
+    assertEqual(st.n, 1);
+    assertEqual(st.mean, 5);
+    for (const k of ['variance', 'stddev', 'seMean']) assertEqual(st[k], null, k);
+    for (const v of Object.values(st)) assertEqual(v === null || Number.isFinite(v), true);
+  });
+});
+
 suite('Stats panel — variance/SD CI', () => {
   test('df = 9 matches qchisq(0.025/0.975, 9)', () => {
     const ci = computeCI({ n: 10, mean: 0, stddev: 2, variance: 4 }, 0.95);

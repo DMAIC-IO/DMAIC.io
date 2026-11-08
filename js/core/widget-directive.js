@@ -43,30 +43,35 @@ export function widgetForKind(widgets, spec) {
 }
 
 /**
- * Eingabewert tief kopieren (`structuredClone`); vorher prüfen, dass alle Zahlen endlich sind,
- * damit `NaN`/`Infinity` mit Feldname gemeldet statt still zu `null` werden.
- * @param {any} Alpine @param {any} raw @param {string} field @returns {any}
+ * Eingabewert tief kopieren. Gelesen wird durch die reaktive Hülle (jede verschachtelte Lesung wird verfolgt),
+ * geschrieben in eine einfache Kopie; Schlüssel mit `undefined` fallen weg, Zahlen müssen endlich sein
+ * (`NaN`/`Infinity` werden mit Feldname gemeldet statt still zu `null`). Danach `structuredClone` für Sonderwerte (Date, Map, …).
+ * @param {any} Alpine @param {any} value @param {string} field @returns {any}
  */
-function cloneInput(Alpine, raw, field) {
+function cloneInput(Alpine, value, field) {
+  const bad = (at, v, why) => new Error(`invalid ${at} ${String(v)}; allowed: ${why}`);
   const seen = new WeakSet();
-  const walk = (v, at) => {
-    if (typeof v === 'number' && !Number.isFinite(v)) throw new Error(`invalid ${at} ${v}; allowed: any finite number`);
-    if (v === null || typeof v !== 'object' || seen.has(v)) return;
+  const bare = (v, at) => {
+    if (typeof v === 'number' && !Number.isFinite(v)) throw bad(at, v, 'any finite number');
+    if (typeof v === 'function' || typeof v === 'symbol') throw bad(at, v, 'plain data');
+    if (v === null || typeof v !== 'object') return v;
+    if (seen.has(v)) throw bad(at, '[circular]', 'plain data');
     seen.add(v);
-    if (Array.isArray(v)) v.forEach((x, i) => walk(x, `${at}[${i}]`));
-    else for (const k of Object.keys(v)) walk(v[k], `${at}.${k}`);
+    try {
+      if (Array.isArray(v)) return Array.from({ length: v.length }, (_, i) => bare(v[i], `${at}[${i}]`));
+      if (Object.getPrototypeOf(v) === Object.prototype) {
+        const out = {};
+        for (const k of Object.keys(v)) {
+          const x = v[k];
+          if (x !== undefined) out[k] = bare(x, `${at}.${k}`);
+        }
+        return out;
+      }
+      return Alpine.raw(v);
+    } finally { seen.delete(v); }
   };
-  walk(raw, field);
-  try { return structuredClone(raw); } catch { /* verschachtelte Proxys: unten ohne Hülle kopieren */ }
-  const bare = (v) => {
-    const r = Alpine.raw(v);
-    if (Array.isArray(r)) return r.map(bare);
-    if (r !== null && typeof r === 'object' && Object.getPrototypeOf(r) === Object.prototype) {
-      return Object.fromEntries(Object.keys(r).map((k) => [k, bare(r[k])]));
-    }
-    return r;
-  };
-  try { return structuredClone(bare(raw)); } catch (err) { throw new Error(`invalid ${field}; allowed: plain data (${err.message})`); }
+  const copy = bare(value, field);
+  try { return structuredClone(copy); } catch (err) { throw bad(field, Object.prototype.toString.call(copy), `plain data (${err.message})`); }
 }
 
 /**
@@ -158,7 +163,7 @@ export function mountWidget(Alpine, el, name, entry, { valuePath, channel, i18n,
         const raw = readPath(host, path);
         props[p] = raw === undefined && spec.optional === true
           ? undefined
-          : checkValue(spec, `${name}.${p}`, cloneInput(Alpine, Alpine.raw(raw ?? null), `${name}.${p}`));
+          : checkValue(spec, `${name}.${p}`, cloneInput(Alpine, raw ?? null, `${name}.${p}`));
         delete errors[p];
       } catch (err) {
         errors[p] = String(err.message);
@@ -186,7 +191,8 @@ export function mountWidget(Alpine, el, name, entry, { valuePath, channel, i18n,
     Object.defineProperty(Alpine.raw(data), '_ui', { value: { services }, enumerable: false, configurable: true });
     root._x_dataStack = [data];
     if (entry.template) root.append(...cloneTemplate(entry.template));
-    const guardedEffect = (fn, ...rest) => guarded(Symbol(name), fn, ...rest);
+    let mountEffects = 0;
+    const guardedEffect = (fn, ...rest) => guarded(`${name}#${mountEffects++}`, fn, ...rest);
     handle = entry.mount(root, { props, value, services, effect: guardedEffect });
     if (!alive) { handle?.destroy?.(); handle = null; return; }
     mounted = true;
