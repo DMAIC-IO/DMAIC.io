@@ -48,10 +48,10 @@ export function widgetForKind(widgets, spec) {
  * @param {HTMLElement} el Wirtselement
  * @param {string} name
  * @param {{ schema: any, mount: Function, view?: Function, template?: string }|undefined} entry
- * @param {{ valuePath: string|null, i18n: any, effect: Function, cleanup: Function }} opts
+ * @param {{ valuePath: string|null, channel?: import('./value-channel.js').ValueChannel, i18n: any, effect: Function, cleanup: Function }} opts `channel`: der schon geöffnete Wertkanal (von `x-field`)
  * @returns {void}
  */
-export function mountWidget(Alpine, el, name, entry, { valuePath, i18n, effect, cleanup }) {
+export function mountWidget(Alpine, el, name, entry, { valuePath, channel, i18n, effect, cleanup }) {
   const where = `x-widget="${name}"`;
   const root = document.createElement('div');
   root.className = 'widget-root';
@@ -106,14 +106,14 @@ export function mountWidget(Alpine, el, name, entry, { valuePath, i18n, effect, 
   try {
     let value = null;
     if (valuePath !== null) {
-      const ch = openChannel(Alpine, el, valuePath, { where: 'x-widget-value', i18n });
+      const ch = channel ?? openChannel(Alpine, el, valuePath, { where: 'x-widget-value', i18n });
       const set = (v) => {
         const ok = ch.set(v);
         if (ok) clearRejection(el);
         else markRejection(el, ch.rejected.message);
         return ok;
       };
-      value = { spec: ch.spec, name: ch.name, get: ch.get, set, rejected: ch.rejected };
+      value = { spec: ch.spec, name: ch.name, get: ch.get, set, get rejected() { return ch.rejected; } };
     }
     const data = Alpine.reactive({ ...(entry.view ? entry.view({ props, value, services }) : {}), props });
     Object.defineProperty(Alpine.raw(data), '_ui', { value: { services }, enumerable: false, configurable: true });
@@ -159,15 +159,15 @@ export function mountWidget(Alpine, el, name, entry, { valuePath, i18n, effect, 
  * @returns {void}
  */
 export function registerWidgetDirective(Alpine, { i18n, widgets }) {
-  let known = registered.get(Alpine);
-  if (known) { Object.assign(known, widgets); return; }
-  known = { ...widgets };
-  registered.set(Alpine, known);
+  let reg = registered.get(Alpine);
+  if (reg) { reg.i18n = i18n; Object.assign(reg.widgets, widgets); return; }
+  reg = { i18n, widgets: { ...widgets } };
+  registered.set(Alpine, reg);
   Alpine.directive('widget', (el, { expression }, { effect, cleanup }) => {
     const name = String(expression).trim();
-    mountWidget(Alpine, el, name, known[name], {
+    mountWidget(Alpine, el, name, reg.widgets[name], {
       valuePath: el.hasAttribute('x-widget-value') ? el.getAttribute('x-widget-value').trim() : null,
-      i18n, effect, cleanup,
+      i18n: reg.i18n, effect, cleanup,
     });
   });
 }

@@ -33,7 +33,7 @@
  * über `Alpine.$data` gelesen.
  */
 import { widgetForKind, mountWidget } from './widget-directive.js';
-import { openChannel, anchorHelp, rejectionHint, invariantHint } from './value-channel.js';
+import { openChannel, anchorHelp, rejectionHint, invariantHint, isNumeric } from './value-channel.js';
 import { bindChoiceGroup, isChoiceGroup } from './choice-group.js';
 import { contextOf } from './model.js';
 import { parseDecimalInput } from './parse-decimal.js';
@@ -43,11 +43,8 @@ export { rejectionHint, invariantHint };
 
 const registered = new WeakSet();
 
-/** Widget-Registry je Alpine-Instanz; spätere Aufrufe mit `widgets` ersetzen sie. */
-const widgetsOf = new WeakMap();
-
-/** @param {object} spec @returns {boolean} */
-const isNumeric = (spec) => spec.kind === 'number' || spec.kind === 'index';
+/** Widget-Registry und i18n je Alpine-Instanz; spätere Aufrufe ergänzen die Widgets, die letzte i18n gilt. */
+const stateOf = new WeakMap();
 
 /** Auch von `x-param` benutzt. @param {HTMLElement} el @param {object} spec */
 export function applyAttributes(el, spec) {
@@ -93,22 +90,28 @@ export function writeElement(el, spec, value) {
  * @returns {void}
  */
 export function registerFieldDirective(Alpine, { i18n, widgets }) {
-  if (widgets) widgetsOf.set(Alpine, widgets);
+  let reg = stateOf.get(Alpine);
+  if (!reg) stateOf.set(Alpine, reg = { i18n, widgets: {} });
+  reg.i18n = i18n;
+  if (widgets) Object.assign(reg.widgets, widgets);
   if (registered.has(Alpine)) return;
   registered.add(Alpine);
   Alpine.directive('field', (el, { expression }, { effect, cleanup }) => {
+    const { widgets, i18n } = reg;
     const ch = openChannel(Alpine, el, expression, { where: 'x-field', i18n });
     const { spec } = ch;
     const data = Alpine.$data(el);
-    const widgets = widgetsOf.get(Alpine) ?? {};
     const widgetName = widgetForKind(widgets, spec);
     if (widgetName) {
       if (['INPUT', 'SELECT', 'TEXTAREA'].includes(el.tagName)) {
         throw new Error(`x-field="${expression}": a ${spec.kind === 'list' ? spec.item.kind : spec.kind} field needs a host element (div), not <${el.tagName.toLowerCase()}>`);
       }
       anchorHelp(el, data, ch.helpKey);
-      mountWidget(Alpine, el, widgetName, widgets[widgetName], { valuePath: expression, i18n, effect, cleanup });
+      mountWidget(Alpine, el, widgetName, widgets[widgetName], { valuePath: expression, channel: ch, i18n, effect, cleanup });
       return;
+    }
+    if (spec.kind === 'columnRef' || (spec.kind === 'list' && spec.item?.kind === 'columnRef')) {
+      throw new Error(`x-field ${expression}: no widget registered for columnRef`);
     }
     applyAttributes(el, spec);
     anchorHelp(el, data, ch.helpKey);
@@ -147,7 +150,7 @@ export function registerFieldDirective(Alpine, { i18n, widgets }) {
     if (!isChoiceGroup(el)) {
       throw new Error(`x-set="${expression}" binds a group of options; use x-field on <${el.tagName.toLowerCase()}>`);
     }
-    const ch = openChannel(Alpine, el, expression, { where: 'x-set', i18n });
+    const ch = openChannel(Alpine, el, expression, { where: 'x-set', i18n: reg.i18n });
     const data = Alpine.$data(el);
     anchorHelp(el, data, ch.helpKey);
     bindChoiceGroup(el, {

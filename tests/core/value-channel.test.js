@@ -4,7 +4,7 @@
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
 import { defineModel, number } from '../../js/core/model.js';
-import { openChannel, anchorHelp } from '../../js/core/value-channel.js';
+import { openChannel, anchorHelp, isNumeric } from '../../js/core/value-channel.js';
 
 const i18n = { t: (k, p) => (p ? `${k}:${JSON.stringify(p)}` : k), getLanguage: () => 'de' };
 const Doc = defineModel({
@@ -65,6 +65,32 @@ suite('value-channel', () => {
     el.setAttribute('data-help-key', '');
     anchorHelp(el, data, 'fields.n.help');
     assertEqual(el.getAttribute('data-help-key'), '');
+    root.remove();
+  });
+
+  test('isNumeric: number und index', () => {
+    assertTrue(isNumeric({ kind: 'number' }));
+    assertTrue(isNumeric({ kind: 'index' }));
+    assertEqual(isNumeric({ kind: 'text' }), false);
+  });
+
+  test('rejected entsteht erst, wenn ein Hinweis gezeigt wird', async () => {
+    const { root, el } = await host();
+    const desc = Object.getOwnPropertyDescriptor(Alpine, 'reactive');
+    const orig = Alpine.reactive;
+    let reactives = 0;
+    Object.defineProperty(Alpine, 'reactive', { configurable: true, value: (...a) => { reactives++; return orig(...a); } });
+    try {
+      const ch = openChannel(Alpine, el, 'model.n', { where: 'test', i18n });
+      assertTrue(ch.set(4));
+      assertEqual(reactives, 0);
+      assertEqual(ch.set(99), false);
+      assertEqual(reactives, 1);
+      assertTrue(ch.rejected.message.startsWith('common.inputRejected'));
+      assertTrue(ch.set(3));
+      assertEqual(ch.rejected.message, '');
+      assertEqual(reactives, 1);
+    } finally { Object.defineProperty(Alpine, 'reactive', desc); }
     root.remove();
   });
 });

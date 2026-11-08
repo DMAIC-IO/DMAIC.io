@@ -18,8 +18,8 @@ import { describeRange } from './param-input.js';
 /** @param {unknown} err @returns {boolean} */
 const isBug = (err) => err instanceof TypeError || err instanceof ReferenceError || err instanceof SyntaxError;
 
-/** @param {object} spec @returns {boolean} */
-const isNumeric = (spec) => spec.kind === 'number' || spec.kind === 'index';
+/** Zahlenfeld (`number`, `index`)? @param {object} spec @returns {boolean} */
+export const isNumeric = (spec) => spec.kind === 'number' || spec.kind === 'index';
 
 /**
  * Der Hinweis zu einer abgelehnten Eingabe: mit Bereich bei Zahlenfeldern.
@@ -54,7 +54,9 @@ export function invariantHint(i18n, moduleId, name) {
 export function openChannel(Alpine, el, path, { where, i18n }) {
   const target = resolveTarget(Alpine, el, path, where);
   const data = Alpine.$data(el);
-  const rejected = Alpine.reactive({ message: '' });
+  // Erst anlegen, wenn ein Hinweis gezeigt wird: die meisten Kanäle erleben nie eine Ablehnung.
+  let rejected = null;
+  const rejection = () => (rejected ??= Alpine.reactive({ message: '' }));
   const hint = (err) => (typeof err?.invariant === 'string' && data.moduleId
     ? invariantHint(i18n, data.moduleId, err.invariant) : rejectionHint(target.spec, i18n));
   return {
@@ -66,15 +68,15 @@ export function openChannel(Alpine, el, path, { where, i18n }) {
     set(value) {
       try {
         target.set(value);
-        rejected.message = '';
+        if (rejected) rejected.message = '';
         return true;
       } catch (err) {
         if (isBug(err)) throw err;
-        rejected.message = hint(err);
+        rejection().message = hint(err);
         return false;
       }
     },
-    rejected,
+    get rejected() { return rejection(); },
     hint,
   };
 }
