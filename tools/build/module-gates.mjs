@@ -685,6 +685,7 @@ export function checkViewReads(files) {
   return out;
 }
 
+// Nur der Text vor `{` (Selektoren und At-Regel-Köpfe) zählt; Kommentare und Deklarationen nicht.
 const PICKER_CLASS = /\.(col-picker[\w-]*)/g;
 
 /**
@@ -694,41 +695,70 @@ const PICKER_CLASS = /\.(col-picker[\w-]*)/g;
  */
 export function checkPickerCss(css) {
   if (!css) return [];
-  const names = [...new Set([...css.text.matchAll(PICKER_CLASS)].map((m) => m[1]))];
+  const selectors = [...css.text.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]*)\{/g)].map((m) => m[1]).join('\n');
+  const names = [...new Set([...selectors.matchAll(PICKER_CLASS)].map((m) => m[1]))];
   return names.map((n) => `css: ${css.path}: .${n} — Klassen des Pickers nicht stylen, nur das Wirtselement`);
 }
 
-const CHART_BINDING = /\bx-chart\s*=\s*"([^"]*)"/g;
+const CHART_BINDING = /\bx-chart\s*=\s*(?:"([^"]*)"|'([^']*)')/g;
 
 /**
- * Die Namen des view-Blocks nach Herkunft: Getter (überall im Block),
- * `computed`-Schlüssel und Datenglieder (Eigenschaften mit Bezeichner-Schlüssel
- * am zurückgegebenen Objekt, ausgenommen `computed`).
+ * Das Objektliteral, das der view-Block liefert: das erste `return { … }` der
+ * Funktion (verschachtelte Funktionen zählen nicht), bei Pfeilfunktionen der
+ * Ausdruckskörper, bei einem Objektliteral als `view` dieses selbst.
+ * @param {import('typescript').Node} view
+ * @returns {import('typescript').ObjectLiteralExpression|null}
+ */
+function viewReturnObject(view) {
+  const unwrap = (e) => { while (e && ts.isParenthesizedExpression(e)) e = e.expression; return e; };
+  let fn = view;
+  if (ts.isPropertyAssignment(view)) {
+    const init = unwrap(view.initializer);
+    if (init && ts.isObjectLiteralExpression(init)) return init;
+    fn = init;
+  }
+  if (!fn || !(ts.isMethodDeclaration(fn) || ts.isArrowFunction(fn) || ts.isFunctionExpression(fn))) return null;
+  if (ts.isArrowFunction(fn) && !ts.isBlock(fn.body)) {
+    const body = unwrap(fn.body);
+    return ts.isObjectLiteralExpression(body) ? body : null;
+  }
+  /** @type {import('typescript').ObjectLiteralExpression|null} */
+  let top = null;
+  const visit = (n) => {
+    if (top || ts.isFunctionLike(n)) return;
+    if (ts.isReturnStatement(n) && n.expression) {
+      const e = unwrap(n.expression);
+      if (ts.isObjectLiteralExpression(e)) top = e;
+      return;
+    }
+    ts.forEachChild(n, visit);
+  };
+  visit(/** @type {any} */ (fn).body);
+  return top;
+}
+
+/**
+ * Die Namen des view-Blocks nach Herkunft, gelesen am zurückgegebenen Objekt:
+ * Getter, `computed`-Schlüssel und Datenglieder (Eigenschaften und Kurzschreibweise
+ * mit Bezeichner-Schlüssel, ausgenommen `computed`).
  * @param {string} text Quelltext von viewmodel.js oder einer Kachel
  * @returns {{ getters: string[], computed: string[], data: string[] }}
  */
 export function viewNamesDetailOf(text) {
-  const getters = new Set();
-  const computed = new Set();
-  const data = new Set();
+  const getters = [];
+  const computed = [];
+  const data = [];
   const view = findViewBlock(text);
-  if (!view) return { getters: [], computed: [], data: [] };
-  let top = null; // das Objekt, das der view-Block liefert
-  const visit = (n) => {
-    if (ts.isGetAccessorDeclaration(n) && ts.isIdentifier(n.name)) getters.add(n.name.text);
-    if (ts.isPropertyAssignment(n) && ts.isIdentifier(n.name) && n.name.text === 'computed'
-        && ts.isObjectLiteralExpression(n.initializer)) {
-      for (const p of n.initializer.properties) if (p.name && ts.isIdentifier(p.name)) computed.add(p.name.text);
-    }
-    if (!top && ts.isReturnStatement(n) && n.expression && ts.isObjectLiteralExpression(n.expression)) top = n.expression;
-    ts.forEachChild(n, visit);
-  };
-  visit(view);
-  if (!top && ts.isPropertyAssignment(view) && ts.isObjectLiteralExpression(view.initializer)) top = view.initializer;
+  const top = view ? viewReturnObject(view) : null;
   for (const p of top?.properties ?? []) {
-    if (ts.isPropertyAssignment(p) && ts.isIdentifier(p.name) && p.name.text !== 'computed') data.add(p.name.text);
+    if (!p.name || !ts.isIdentifier(p.name)) continue;
+    const name = p.name.text;
+    if (ts.isGetAccessorDeclaration(p)) getters.push(name);
+    else if (name === 'computed' && ts.isPropertyAssignment(p) && ts.isObjectLiteralExpression(p.initializer)) {
+      for (const c of p.initializer.properties) if (c.name && ts.isIdentifier(c.name)) computed.push(c.name.text);
+    } else if (name !== 'computed' && (ts.isPropertyAssignment(p) || ts.isShorthandPropertyAssignment(p))) data.push(name);
   }
-  return { getters: [...getters], computed: [...computed], data: [...data] };
+  return { getters, computed, data };
 }
 
 /**
@@ -766,8 +796,9 @@ export function viewNamesOf(text) {
 export function checkChartBindings(templates) {
   const out = [];
   for (const { path, text } of templates) {
-    for (const [, raw] of text.matchAll(CHART_BINDING)) {
-      out.push(`template: ${path}: x-chart="${raw}": x-chart ist abgelöst — x-widget mit einem Diagramm-Widget verwenden`);
+    for (const [, dq, sq] of text.matchAll(CHART_BINDING)) {
+      const shown = dq !== undefined ? `"${dq}"` : `'${sq}'`;
+      out.push(`template: ${path}: x-chart=${shown}: x-chart ist abgelöst — x-widget mit einem Diagramm-Widget verwenden`);
     }
   }
   return out;

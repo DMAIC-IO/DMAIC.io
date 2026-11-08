@@ -1136,3 +1136,100 @@ test('checkViewReads: auch asyncTasks.*.run, wie im view-Block', () => {
     'view: viewmodel/viewmodel.js: stateManager in asyncTasks.compute.run — Arbeitsblätter über ctx.data lesen',
   ]);
 });
+
+test('Picker-CSS: Selektoren zählen, Kommentare, Deklarationen und Zeichenketten nicht', () => {
+  const css = (text) => checkPickerCss({ path: 'resources/style.css', text });
+  assert.deepEqual(css('/* .col-picker__select war früher gestylt */ .a { margin: 0; }'), []);
+  assert.deepEqual(css('.a { content: ".col-picker__x"; }'), []);
+  assert.deepEqual(css('.a { margin: 0; }\n/* .col-picker */\n.b .col-picker-row, .c { margin: 0; }'), [
+    'css: resources/style.css: .col-picker-row — Klassen des Pickers nicht stylen, nur das Wirtselement',
+  ]);
+  assert.deepEqual(css('@media (min-width: 1px) { .x > .col-picker__select:hover { width: 1px; } }'), [
+    'css: resources/style.css: .col-picker__select — Klassen des Pickers nicht stylen, nur das Wirtselement',
+  ]);
+});
+
+test('x-chart in einfachen Anführungszeichen wird geprüft', () => {
+  assert.deepEqual(checkChartBindings([{ path: 'resources/view.html', text: "<div x-chart='name'></div><p x-chart = \"b\"></p>" }]), [
+    "template: resources/view.html: x-chart='name': x-chart ist abgelöst — x-widget mit einem Diagramm-Widget verwenden",
+    'template: resources/view.html: x-chart="b": x-chart ist abgelöst — x-widget mit einem Diagramm-Widget verwenden',
+  ]);
+});
+
+test('viewNamesDetailOf: nur Getter der obersten Ebene, verschachtelte zählen nicht', () => {
+  const vm = `export default createModule({ view() { return {
+    get top() { return { get inner() { return 1; } }; },
+    helper: { get deep() { return 1; } },
+    computed: { c() { return 1; } },
+  }; } });`;
+  assert.deepEqual(viewNamesDetailOf(vm), { getters: ['top'], computed: ['c'], data: ['helper'] });
+});
+
+test('viewNamesDetailOf: Kurzschreibweise liefert die Namen', () => {
+  const vm = `export default createModule({ view() { const foo = 1; const bar = 2; return { foo, bar }; } });`;
+  assert.deepEqual(viewNamesDetailOf(vm), { getters: [], computed: [], data: ['foo', 'bar'] });
+});
+
+test('viewNamesDetailOf: das return des view-Blocks, nicht das erste Objekt davor', () => {
+  const vm = `export default createModule({ view(ctx) {
+    const helper = () => { return { wrong: 1, get alsoWrong() { return 1; } }; };
+    return { right: helper() };
+  } });`;
+  assert.deepEqual(viewNamesDetailOf(vm), { getters: [], computed: [], data: ['right'] });
+  const arrow = `export default createModule({ view: (ctx) => ({ get g() { return 1; }, d: 1 }) });`;
+  assert.deepEqual(viewNamesDetailOf(arrow), { getters: ['g'], computed: [], data: ['d'] });
+});
+
+test('kein view-Block oder kein Literal am createModule: keine Namen, kein Befund (bewusst)', () => {
+  const empty = { getters: [], computed: [], data: [] };
+  assert.deepEqual(viewNamesDetailOf('export default createModule({ commands: {} });'), empty);
+  assert.deepEqual(viewNamesDetailOf('export default createModule(config);'), empty);
+  assert.deepEqual(viewNamesDetailOf('export default {};'), empty);
+  assert.deepEqual(computedNamesOf('export default createModule(config);'), []);
+  const hidden = 'export default createModule(config);\nconst config = { view() { return { get x() { return ctx.stateManager; } }; } };';
+  assert.deepEqual(checkViewReads([{ path: 'viewmodel/viewmodel.js', text: hidden }]), []);
+  assert.deepEqual(checkViewReads([{ path: 'viewmodel/viewmodel.js', text: 'export default createModule({});' }]), []);
+});
+
+const DEMO_WIDGETS = new Map([['demo', { props: { items: { optional: true } }, value: null }]]);
+const TILE_BINDING = '<template data-tpl="tile-extra"><div x-widget="demo" x-widget-items="foo"></div></template>';
+const TILE_FINDING = 'template: resources/tile.extra.html: x-widget-items="foo": foo ist weder Getter noch computed des view-Blocks';
+
+test('Kachelvorlage resources/tile.extra.html liest die Namen aus tile/extra.js', async () => {
+  const tile = 'export default createTile({ view() { return { get foo() { return []; } }; } });\n';
+  const ok = convertedFixture({ 'js/modules/neu/resources/tile.extra.html': TILE_BINDING, 'js/modules/neu/tile/extra.js': tile });
+  assert.deepEqual(await checkConvertedModule(ok, 'neu', { widgets: DEMO_WIDGETS }), []);
+  const wrong = convertedFixture({ 'js/modules/neu/resources/tile.extra.html': TILE_BINDING, 'js/modules/neu/tile/extra.js': tile.replace('foo', 'bar') });
+  assert.deepEqual(await checkConvertedModule(wrong, 'neu', { widgets: DEMO_WIDGETS }), [TILE_FINDING]);
+});
+
+test('Kachelvorlage ohne tile/<name>.js: die Namen sind leer, die Bindung wird gemeldet', async () => {
+  const root = convertedFixture({ 'js/modules/neu/resources/tile.extra.html': TILE_BINDING });
+  const findings = await checkConvertedModule(root, 'neu', { widgets: DEMO_WIDGETS });
+  assert.deepEqual(findings, [TILE_FINDING]);
+});
+
+test('checkConvertedModule: Picker-CSS und x-chart über die Verdrahtung', async () => {
+  const root = convertedFixture({
+    'js/modules/neu/resources/style.css': '/* .col-picker */ .neu .col-picker__select { width: 1px; }',
+    'js/modules/neu/resources/other.html': "<div x-chart='plot'></div>",
+  });
+  const findings = await checkConvertedModule(root, 'neu');
+  assert.deepEqual(findings.filter((f) => f.startsWith('css:') || f.includes('x-chart')), [
+    'css: resources/style.css: .col-picker__select — Klassen des Pickers nicht stylen, nur das Wirtselement',
+    "template: resources/other.html: x-chart='plot': x-chart ist abgelöst — x-widget mit einem Diagramm-Widget verwenden",
+  ]);
+});
+
+test('checkConvertedModule: Lesezugriffe im view-Block und in asyncTasks über die Verdrahtung', async () => {
+  const vm = `export default createModule({
+  asyncTasks: { compute: asyncTask({ run(_, ctx) { return ctx.stateManager.get('a'); } }) },
+  view(ctx) { return { get x() { return ctx.getModuleState('m'); } }; },
+});\n`;
+  const root = convertedFixture({ 'js/modules/neu/viewmodel/viewmodel.js': vm });
+  const findings = (await checkConvertedModule(root, 'neu')).filter((f) => f.startsWith('view:'));
+  assert.deepEqual(findings, [
+    'view: viewmodel/viewmodel.js: getModuleState im view-Block — Arbeitsblätter über ctx.data lesen',
+    'view: viewmodel/viewmodel.js: stateManager in asyncTasks.compute.run — Arbeitsblätter über ctx.data lesen',
+  ]);
+});
