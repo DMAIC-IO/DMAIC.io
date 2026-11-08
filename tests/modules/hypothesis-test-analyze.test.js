@@ -56,6 +56,19 @@ suite('analyze', () => {
     assertDeepEqual(r, { status: 'insufficient', reason: 'noVariation' });
   });
 
+  test('gepaart: die Differenzreihe trägt die Spaltennamen, ohne Namen bleibt sie leer', () => {
+    const B2 = [10.5, 10.1, 10.3, 9.7, 10.6];
+    const named = analyze({ ...base, testType: 'paired', target: 0, samples: [{ name: 'Vorher', values: A }, { name: 'Nachher', values: B2 }] });
+    assertEqual(named.samples[0].name, 'Vorher − Nachher');
+    const anon = analyze({ ...base, testType: 'paired', target: 0, samples: [{ name: '', values: A }, { name: '', values: B2 }] });
+    assertEqual(anon.samples[0].name, '');
+  });
+
+  test('Route trägt nur Name und Lab-Kennung', () => {
+    const r = analyze({ ...base, testType: 'paired', target: 0, samples: [{ name: 'A', values: A }, { name: 'B', values: [10.5, 10.1, 10.3, 9.7, 10.6] }] });
+    assertDeepEqual(Object.keys(r.route).sort(), ['algoId', 'name']);
+  });
+
   test('algoIdOf: bekannte Namen auf Lab-IDs, unbekannte auf null', () => {
     assertEqual(algoIdOf('Welch t-Test'), 'welch-t-test');
     assertEqual(algoIdOf('Tukey HSD'), 'tukey-hsd');

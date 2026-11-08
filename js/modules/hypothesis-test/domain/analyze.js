@@ -104,7 +104,7 @@ import { simultaneousPairwise, bonferroniPairwise } from './posthoc.js';
  * @property {number} alpha  Signifikanzniveau der Rechnung
  * @property {number|null} target  aufgelöster Zielwert, null ohne
  * @property {SampleStats[]} samples  gepaart: eine Stichprobe, die Differenzen
- * @property {{ name: string, algoId: string|null, reasonKeys: string[] }} route  gewähltes Verfahren und die Wegschritte als Schlüssel
+ * @property {{ name: string, algoId: string|null }} route  gewähltes Verfahren
  * @property {{ varsEqual: boolean, test: TestOutcome|null, trailLabelKey: string, trailYes: boolean }|null} varEquality
  * @property {TestOutcome & { decision: 'reject'|'keep' }} main
  * @property {{ rows: { source: 'factor'|'error'|'total', ss: number, df: number, ms: number|null, f: number|null, p: number|null }[]|null,
@@ -292,6 +292,16 @@ function mainOf(r, numeric) {
 
 // ── Die drei Wege ────────────────────────────────────────────
 
+/**
+ * Name der Differenzreihe: `Spalte1 − Spalte2`, leer, wenn eine Spalte ohne Namen ist.
+ * @param {{ name: string }[]} samples
+ * @returns {string}
+ */
+function pairName(samples) {
+  const [a, b] = [samples[0]?.name, samples[1]?.name];
+  return a && b ? `${a} − ${b}` : '';
+}
+
 function analyzePaired(input) {
   const { alpha, samples } = input;
   if (samples[0]?.values == null || samples[1]?.values == null) return insufficient('columns');
@@ -329,8 +339,8 @@ function analyzePaired(input) {
     allNormal: dNormal,
     alpha,
     target,
-    samples: [sampleStats('', d, sw, ad, dNormal, alpha)],
-    route: { name: algoName, algoId: algoIdOf(algoName), reasonKeys: [] },
+    samples: [sampleStats(pairName(samples), d, sw, ad, dNormal, alpha)],
+    route: { name: algoName, algoId: algoIdOf(algoName) },
     varEquality: null,
     main: mainOf(r, numeric),
     anova: null,
@@ -464,7 +474,7 @@ function analyzeOneTwo(input) {
     alpha,
     target,
     samples,
-    route: { name: algo.name, algoId: algoIdOf(algo.name), reasonKeys: [] },
+    route: { name: algo.name, algoId: algoIdOf(algo.name) },
     varEquality,
     main: mainOf(r, numeric),
     anova: null,
@@ -565,7 +575,7 @@ function analyzeK(input, deps) {
     alpha,
     target: null,
     samples: groups.map((g, i) => sampleStats(input.samples[i].name, g, sws[i], ads[i], groupNormal[i], alpha)),
-    route: { name: algo.name, algoId: algoIdOf(algo.name), reasonKeys: [] },
+    route: { name: algo.name, algoId: algoIdOf(algo.name) },
     varEquality,
     main: mainOf(r, numeric),
     anova,

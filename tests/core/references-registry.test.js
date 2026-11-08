@@ -2,6 +2,14 @@ import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
 import { BOOKS, resolveReferences, MELZER_2019 } from '../../js/core/references-books.js';
 import { getModuleReferences, hasModuleReferences } from '../../js/core/references-registry.js';
 import { REFS } from '../../js/core/references-registry.generated.js';
+import attributeControlChartRefs from '../../js/modules/attribute-control-chart/resources/data/references.json' with { type: 'json' };
+import hypothesisTestRefs from '../../js/modules/hypothesis-test/resources/data/references.json' with { type: 'json' };
+
+/** Umgestellte Module führen ihre Quellen in resources/data/references.json, nicht in REFS. */
+const JSON_REFS = {
+  'attribute-control-chart': resolveReferences(attributeControlChartRefs.references ?? []),
+  'hypothesis-test': resolveReferences(hypothesisTestRefs.references ?? []),
+};
 
 suite('references-registry', () => {
   test('hasModuleReferences is false for an unknown module', () => {
@@ -42,13 +50,9 @@ const BOOK_REVIEW_REFS = {
 
 suite('references-registry — book review sources', () => {
   for (const [moduleId, ids] of Object.entries(BOOK_REVIEW_REFS)) {
-    test(`${moduleId} lists ${ids.join(', ')}`, async () => {
-      // Umgestellte Module führen ihre Quellen in resources/data/references.json, nicht in REFS
-      let refs = REFS[moduleId];
-      if (!refs) {
-        const res = await fetch(new URL(`../../js/modules/${moduleId}/resources/data/references.json`, import.meta.url));
-        refs = res.ok ? resolveReferences((await res.json()).references ?? []) : [];
-      }
+    test(`${moduleId} lists ${ids.join(', ')}`, () => {
+      const refs = REFS[moduleId] ?? JSON_REFS[moduleId];
+      assertTrue(Array.isArray(refs), `${moduleId}: keine Quellen in REFS oder JSON_REFS`);
       const known = new Set(refs.map(r => r.id));
       const missing = ids.filter(id => !known.has(id));
       assertEqual(missing.join(', '), '', `${moduleId} missing references`);

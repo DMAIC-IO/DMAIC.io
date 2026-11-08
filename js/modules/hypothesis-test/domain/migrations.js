@@ -22,12 +22,28 @@ function numberOr(v, ok) {
 }
 
 /**
+ * Id als nicht leeren Text; Zahlen aus Altständen werden Text.
+ * @param {any} v
+ * @returns {string|null}
+ */
+function idOrNull(v) {
+  if (typeof v === 'number' && Number.isFinite(v)) return String(v);
+  return typeof v === 'string' && v !== '' ? v : null;
+}
+
+/**
+ * Spaltenbezug auf die Schlüssel, die das Feld `columnRef` zulässt;
+ * Zusatzschlüssel entfallen.
  * @param {any} r
  * @returns {object|null}
  */
 function refOrNull(r) {
-  if (!r || typeof r !== 'object' || typeof r.instanceId !== 'string' || typeof r.columnId !== 'string') return null;
-  return { instanceId: r.instanceId, ...(typeof r.sheetId === 'string' ? { sheetId: r.sheetId } : {}), columnId: r.columnId };
+  if (!r || typeof r !== 'object') return null;
+  const instanceId = idOrNull(r.instanceId);
+  const columnId = idOrNull(r.columnId);
+  if (instanceId === null || columnId === null) return null;
+  const sheetId = idOrNull(r.sheetId);
+  return { instanceId, ...(sheetId !== null ? { sheetId } : {}), columnId };
 }
 
 /**
@@ -52,7 +68,7 @@ export function from0(json) {
   out.colRef2 = refOrNull(json.colRef2);
   out.colRefsK = Array.isArray(json.colRefsK) ? json.colRefsK.map(refOrNull).filter((r) => r !== null) : [];
   if (typeof json.equalVariances === 'boolean') out.equalVariances = json.equalVariances;
-  out.exampleWorksheetId = typeof json.exampleWorksheetId === 'string' ? json.exampleWorksheetId : null;
+  out.exampleWorksheetId = idOrNull(json.exampleWorksheetId);
   if ((out.category ?? 'variance') === 'variance' && out.testType === 'paired') out.testType = 'two';
   return out;
 }

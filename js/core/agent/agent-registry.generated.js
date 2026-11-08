@@ -7051,8 +7051,8 @@ export const AGENT_REGISTRY = {
             "optional": true
           },
           "route": {
-            "type": "{ name: string, algoId: string|null, reasonKeys: string[] }",
-            "help": "gewähltes Verfahren und die Wegschritte als Schlüssel",
+            "type": "{ name: string, algoId: string|null }",
+            "help": "gewähltes Verfahren",
             "optional": true
           },
           "varEquality": {

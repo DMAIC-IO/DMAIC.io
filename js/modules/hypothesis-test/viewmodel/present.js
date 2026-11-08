@@ -474,22 +474,15 @@ function secondaryResult(sec, alpha, t, tip) {
  * @param {TestOutcome} ve
  * @returns {Metric[]}
  */
-function varEqualityMetrics(ve, alpha, t, tip, withDf = true) {
+function varEqualityMetrics(ve, alpha, t, tip) {
   const x = ve.extra || {};
   const pCls = ve.p < alpha ? 'hyptest__metric-value--danger' : 'hyptest__metric-value--success';
-  const metrics = [
+  return [
     { label: t('testMethod'), value: ve.name, algoId: labId(ve.name), valueClass: 'hyptest__metric-value--sm', title: tip(t('testMethod')) },
     { label: t('statistic'), value: fmt(ve.statistic), valueClass: '', title: tip(t('statistic')) },
+    { label: t('common.sym.df'), value: `${x.df1} / ${ve.df2}`, valueClass: '', title: tip('df') },
+    { label: t('common.sym.p'), value: fmt(ve.p), valueClass: pCls, title: tip('p') },
   ];
-  if (withDf) {
-    metrics.push({ label: t('common.sym.df'), value: `${x.df1} / ${ve.df2}`, valueClass: '', title: tip('df') });
-  }
-  metrics.push({ label: t('common.sym.p'), value: fmt(ve.p), valueClass: pCls, title: tip('p') });
-  if (!withDf) {
-    metrics.push({ label: t('symS21'), value: fmt(x.variance1), valueClass: '', title: tip('s²₁') });
-    metrics.push({ label: t('symS22'), value: fmt(x.variance2), valueClass: '', title: tip('s²₂') });
-  }
-  return metrics;
 }
 
 /** @param {AnalysisOk} a @returns {VarEquality|null} */
@@ -684,9 +677,8 @@ export function residualCharts(result, t) {
  * @returns {{ h0: string, h1: string }}
  */
 export function previewHypotheses(model, t) {
-  const d = model.direction;
-  const s0 = d === 'two-sided' ? '=' : d === 'greater' ? '≤' : '≥';
-  const s1 = d === 'two-sided' ? '≠' : d === 'greater' ? '>' : '<';
+  const s0 = sym0(model.direction);
+  const s1 = sym1(model.direction);
   const isMean = model.category === 'mean';
   const isTwo = model.testType === 'two';
   if (model.testType === 'k') {

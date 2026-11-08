@@ -155,4 +155,22 @@ suite('hypothesis-test Model', () => {
     assertEqual(m.category, 'variance');
     assertEqual(m.testType, 'two');
   });
+
+  test('Migration: Bezug mit Zusatzschlüssel verliert sie, numerische Ids werden Text, ohne Reparaturwarnung', () => {
+    const warn = console.warn; const seen = []; console.warn = (...a) => seen.push(a.join(' '));
+    try {
+      const m = State.fromJSON({
+        colRef1: { instanceId: 'ws1', sheetId: 's1', columnId: 'c1', label: 'x' },
+        colRef2: { instanceId: 7, columnId: 'c2' },
+        colRefsK: [{ instanceId: 'ws1', columnId: 'c3', extra: 1 }],
+        exampleWorksheetId: 12,
+      });
+      // Das Feld columnRef lässt nur instanceId/sheetId/columnId zu: Zusatzschlüssel entfallen bewusst
+      assertDeepEqual(m.colRef1, { instanceId: 'ws1', sheetId: 's1', columnId: 'c1' });
+      assertDeepEqual(m.colRef2, { instanceId: '7', columnId: 'c2' });
+      assertDeepEqual(m.colRefsK, [{ instanceId: 'ws1', columnId: 'c3' }]);
+      assertEqual(m.exampleWorksheetId, '12');
+      assertDeepEqual(seen, []);
+    } finally { console.warn = warn; }
+  });
 });

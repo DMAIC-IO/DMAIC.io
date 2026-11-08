@@ -32,7 +32,7 @@ export default createModule({
             : (m.testType === 'one' ? [m.colRef1] : [m.colRef1, m.colRef2]);
           const samples = refs.map((ref) => {
             if (!ref) return { name: '', values: null };
-            if (m.testType === 'paired') return { name: '', values: ctx.data.values(ref) };
+            if (m.testType === 'paired') return { name: ctx.data.name(ref) ?? '', values: ctx.data.values(ref) };
             return { name: ctx.data.name(ref) ?? '', values: ctx.data.numeric(ref) };
           });
           return analyze({

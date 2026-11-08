@@ -1,6 +1,6 @@
 import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
 import { analyze } from '../../js/modules/hypothesis-test/domain/analyze.js';
-import { presentResult, insufficientText, residualCharts } from '../../js/modules/hypothesis-test/viewmodel/present.js';
+import { presentResult, insufficientText, residualCharts, previewHypotheses } from '../../js/modules/hypothesis-test/viewmodel/present.js';
 import { NORMAL_GROUPS, SKEWED_GROUPS, bookGroups, loadT } from './hypothesis-test-groups.js';
 
 const t = await loadT();
@@ -136,5 +136,20 @@ suite('residualCharts', () => {
   test('Rangweg und fehlender Befund: keine Diagramme', () => {
     assertEqual(residualCharts(analyzeK(SKEWED_GROUPS, true), t), null);
     assertEqual(residualCharts(null, t), null);
+  });
+});
+
+suite('present — previewHypotheses', () => {
+  const pv = (category, testType, direction) => previewHypotheses({ category, testType, direction }, t);
+  test('Richtung bestimmt die Zeichen: zweiseitig, größer, kleiner', () => {
+    assertEqual(pv('mean', 'one', 'two-sided').h0, 'H₀: μ = μ₀');
+    assertEqual(pv('mean', 'one', 'two-sided').h1, 'H₁: μ ≠ μ₀');
+    assertEqual(pv('mean', 'two', 'greater').h0, 'H₀: μ₁ ≤ μ₂');
+    assertEqual(pv('mean', 'two', 'greater').h1, 'H₁: μ₁ > μ₂');
+    assertEqual(pv('mean', 'paired', 'less').h0, 'H₀: μ_d ≥ μ_d₀');
+    assertEqual(pv('mean', 'paired', 'less').h1, 'H₁: μ_d < μ_d₀');
+    assertEqual(pv('variance', 'one', 'greater').h0, 'H₀: σ² ≤ σ²₀');
+    assertEqual(pv('variance', 'two', 'less').h1, 'H₁: σ²₁ < σ²₂');
+    assertEqual(pv('variance', 'two', 'two-sided').h0, 'H₀: σ²₁ = σ²₂');
   });
 });
