@@ -18015,7 +18015,10 @@ export const AGENT_REGISTRY = {
           },
           "toIdx": {
             "type": "number",
-            "help": ""
+            "help": "",
+            "rules": [
+              "afterRemovalFrom:columns[fromCol]"
+            ]
           }
         }
       }
