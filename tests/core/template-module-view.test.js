@@ -303,6 +303,38 @@ suite('createModule: readBulk', () => {
     assertDeepEqual(cut['rows$range'], { from: 1, to: 2, rowCount: 3 });
   });
 
+  const bulkView = (rows) => () => ({ computed: { rows() { return rows; } } });
+
+  test('readBulk: Spalten aus allen Zeilen', async () => {
+    const { data } = await mount({ readBulk: ['rows'], view: bulkView([{ a: 1 }, { a: 2, b: 3 }, { c: 4, a: 5 }]) });
+    assertDeepEqual(data().read().rows.columns, ['a', 'b', 'c']);
+  });
+
+  test('readBulk: leerer Massenwert', async () => {
+    const { data } = await mount({ readBulk: ['rows'], view: bulkView([]) });
+    assertDeepEqual(data().read().rows, { $bulk: true, kind: 'table', rowCount: 0, columns: [] });
+  });
+
+  test('readBulk: describe trägt bulk und derived', () => {
+    const f = makeModule({ readBulk: ['rows'], view: bulkView([]) }).agentEntry.fields.rows;
+    assertTrue(f.bulk === true && f.derived === true && f.bulkKind === 'table');
+  });
+
+  test('readBulk: Zeilen werden nur geklont, wenn sie angefordert sind', async () => {
+    const rows = [{ a: 1 }];
+    const { data } = await mount({ readBulk: ['rows'], view: bulkView(rows) });
+    assertTrue(data().read().rows.$bulk === true);
+    const got = data().read({ fields: ['rows'] }).rows;
+    assertDeepEqual(got, [{ a: 1 }]);
+    assertTrue(got !== rows && got[0] !== rows[0]);
+  });
+
+  test('readBulk: Feld rowsColumns kollidiert', () => {
+    const Bad = defineModel({ fields: { title: text(), rowsColumns: text() } });
+    assertThrows(() => makeModule({ Model: Bad, readBulk: ['rows'], view: bulkView([]) }),
+      /createModule\(view-test\): field rowsColumns collides with readBulk rows$/);
+  });
+
   test('readBulk muss auf ein computed zeigen', () => {
     assertThrows(() => makeModule({ readBulk: ['rows'], view() { return { computed: {} }; } }), /createModule\(view-test\): readBulk rows is not a computed$/);
   });

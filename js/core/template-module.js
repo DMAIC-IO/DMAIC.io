@@ -132,10 +132,15 @@ function schemaMembers(moduleId, entry, vmCommands, computedNames = [], readBulk
       const extra = {};
       for (const name of computedNames) {
         const value = this[name];
-        extra[name] = value === undefined ? null : cloneJSON(value);
         if (readBulk.includes(name)) {
-          extra[`${name}Columns`] = Array.isArray(value) && value.length > 0 ? Object.keys(value[0]) : [];
+          const rows = Array.isArray(value) ? value : [];
+          const wanted = Array.isArray(options?.fields) && options.fields.includes(name);
+          // Ohne angeforderte Zeilen genügt der Deskriptor: kein Klon der Zeilen.
+          extra[name] = wanted ? cloneJSON(rows) : rows;
+          extra[`${name}Columns`] = [...new Set(rows.flatMap((row) => Object.keys(row ?? {})))];
+          continue;
         }
+        extra[name] = value === undefined ? null : cloneJSON(value);
       }
       if (this._asyncTaskHost) extra.asyncTasks = this._asyncTaskHost.readStatus();
       return readSchemaModel(entry, this.model, options, extra);
@@ -281,6 +286,9 @@ export function createModule(base) {
     checkReserved(id, 'command', [...Object.keys(schema.commands), ...Object.keys(vmCommands)]);
     for (const name of fieldNames) {
       if (computedNames.includes(name)) throw new Error(`createModule(${id}): field ${name} collides with computed`);
+      if (name.endsWith('Columns') && readBulk.includes(name.slice(0, -'Columns'.length))) {
+        throw new Error(`createModule(${id}): field ${name} collides with readBulk ${name.slice(0, -'Columns'.length)}`);
+      }
     }
   }
   if (taskNames.length > 0) {

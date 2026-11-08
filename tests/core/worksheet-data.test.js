@@ -27,12 +27,17 @@ suite('ctx.data', () => {
     const data = createWorksheetData(fakeStore({ ws1: sheet([1, '2,5', '', null, 'x', 3, '4']) }));
     const ref = { instanceId: 'ws1', sheetId: 's1', columnId: 'c1' };
     assertDeepEqual(data.values(ref), [1, '2,5', '', null, 'x', 3, '4']);
-    // coerceNumeric: '4' zählt, '2,5', '', null und 'x' fallen heraus
-    assertDeepEqual(data.numeric(ref), [1, 3, 4]);
+    // wie das Arbeitsblatt: '4' und '2,5' zählen, '', null und 'x' fallen heraus
+    assertDeepEqual(data.numeric(ref), [1, 2.5, 3, 4]);
     assertEqual(data.name(ref), 'Gewicht');
     assertEqual(data.numeric({ ...ref, columnId: 'nope' }), null);
     assertEqual(data.values({ instanceId: 'ws1', columnId: 'c1' }), null);
     assertEqual(data.name(null), null);
+  });
+
+  test('numeric liest Dezimalkomma, Wahrheitswerte zählen nicht', () => {
+    const data = createWorksheetData(fakeStore({ ws1: sheet(['4', '2,5', true, false, '', null, 'x', 7, Infinity]) }));
+    assertDeepEqual(data.numeric({ instanceId: 'ws1', sheetId: 's1', columnId: 'c1' }), [4, 2.5, 7]);
   });
 
   test('worksheet:dataChanged des Blatts rechnet neu, ein fremdes nicht', async () => {

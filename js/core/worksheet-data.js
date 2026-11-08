@@ -9,7 +9,8 @@
  * sind.
  */
 import Alpine from '@alpinejs/csp';
-import { resolveColumnRef, coerceNumeric, discoverColumns, columnOption } from './worksheet-columns.js';
+import { resolveColumnRef, discoverColumns, columnOption } from './worksheet-columns.js';
+import { parseNumeric } from './datagrid/datagrid-utils.js';
 
 /** Zähler je Arbeitsblatt-Instanz; `'*'` zählt Ereignisse, die alle betreffen, `'#list'` jede Änderung (Spaltenlisten). */
 const rev = Alpine.reactive({ '*': 0, '#list': 0 });
@@ -43,7 +44,7 @@ export function installWorksheetRevisions(eventBus) {
 
 /**
  * Lesezugriff auf Arbeitsblattspalten; `columns(filter)` listet die wählbaren Spalten als `{ key, name }` (reaktiv auf jede Änderung und auf neue Arbeitsblätter); `null`, wenn `ref` fehlt oder Blatt/Spalte nicht auflösbar sind.
- * `numeric` liefert die Zahlen über `coerceNumeric`: Leerwerte und Text fallen heraus, saubere Zahlenstrings zählen.
+ * `numeric` liest wie das Arbeitsblatt (`parseNumeric`): Dezimalkomma zählt, Leerwerte, Text und Wahrheitswerte fallen heraus; `Infinity` bleibt ausgeschlossen.
  * @param {{ getModuleState: (id: string) => any, get: (path: string) => any }} stateManager
  * @returns {Readonly<WorksheetData>}
  */
@@ -59,7 +60,7 @@ export function createWorksheetData(stateManager) {
     values(ref) { const c = column(ref); return c ? [...(c.values ?? [])] : null; },
     numeric(ref) {
       const c = column(ref);
-      return c ? (c.values ?? []).map(coerceNumeric).filter((v) => v !== null && Number.isFinite(v)) : null;
+      return c ? (c.values ?? []).map((v) => (typeof v === 'boolean' ? null : parseNumeric(v))).filter((v) => v !== null && Number.isFinite(v)) : null;
     },
     columns(filter) {
       void rev['*'];
