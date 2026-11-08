@@ -587,11 +587,11 @@ test('isWatchedSource rebuilds on worker sources, never on sw.js itself', () => 
 test('index.dist.html links every stylesheet under js/ (except converted modules)', () => {
   // A module stylesheet missing from the STYLES list never reaches app.min.css.
   // Converted modules load their own resources/style.css; linking it is a build error.
-  const own = CONVERTED_MODULES.map((id) => `js/modules/${id}/`);
+  const own = CONVERTED_MODULES.map((id) => `js/modules/${id}/resources/style.css`);
   const linked = new Set(readCssLinks(readFileSync(join(APP_DIR, 'index.dist.html'), 'utf8')));
   const walk = (rel) => readdirSync(join(APP_DIR, rel), { withFileTypes: true }).flatMap((e) =>
     e.isDirectory() ? (e.name === 'chunks' ? [] : walk(`${rel}/${e.name}`))
       : e.name.endsWith('.css') ? [`${rel}/${e.name}`] : []);
-  const missing = walk('js').filter((href) => !linked.has(href) && !own.some((dir) => href.startsWith(dir)));
+  const missing = walk('js').filter((href) => !linked.has(href) && !own.includes(href));
   assert.deepEqual(missing, []);
 });

@@ -89,6 +89,11 @@ test('MODULE_ORDER: echter Baum — jedes Modul genau einmal', async () => {
   assert.deepEqual(moduleOrderDiff(await readLegacyIds(APP_DIR), CONVERTED_MODULES), []);
 });
 
+test('MODULE_ORDER: die Alt-Module stehen in der Reihenfolge von manifest.js', async () => {
+  const legacy = await readLegacyIds(APP_DIR);
+  assert.deepEqual(MODULE_ORDER.filter((id) => legacy.includes(id)), legacy);
+});
+
 test('moduleOrderDiff meldet Fehlende, Doppel und Unbekannte', () => {
   assert.deepEqual(moduleOrderDiff(['a', 'b'], ['c'], ['a', 'a', 'x']), [
     'catalog: MODULE_ORDER: a steht mehrfach darin',
