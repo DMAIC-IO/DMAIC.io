@@ -94,6 +94,8 @@ export function diffEdits(prev, before, after, editable, owned) {
         if (s[k] === undefined) delete row[k]; else row[k] = clone(s[k]);
       }
     });
+    const kept = rows.filter((/** @type {any} */ r) => Object.keys(r).some((k) => k !== 'name'));
+    rows.length = 0; rows.push(...kept);
     if (rows.length) next.series = rows; else delete next.series;
   }
   return { next, cleared };

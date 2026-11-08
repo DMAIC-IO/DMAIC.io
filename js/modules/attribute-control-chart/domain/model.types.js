@@ -14,7 +14,7 @@
 /**
  * @typedef {object} StateView
  * @property {string|null} exampleWorksheetId
- * @property {{ title?: string, showTitle?: boolean, xLabel?: string, yLabel?: string, showXLabel?: boolean, showYLabel?: boolean, showLegend?: boolean, titleSize?: number, labelSize?: number, tickSize?: number, showXTicks?: boolean, showYTicks?: boolean, bgColor?: string|null, refLines?: Array<{ dir: 'h'|'v', value: number, label?: string, showLabel?: boolean, dash?: 'solid'|'dash'|'dot'|'longdash', width?: number, color?: string }>, refAreas?: Array<{ dir: 'x'|'y', min: number, max: number, label?: string, color?: string }>, pointColor?: string, pointSymbol?: string, pointSize?: number, pointStroke?: string, pointStrokeWidth?: number }} controlChartEdits
+ * @property {{ title?: string, showTitle?: boolean, xLabel?: string, yLabel?: string, showXLabel?: boolean, showYLabel?: boolean, showLegend?: boolean, titleSize?: number, labelSize?: number, tickSize?: number, showXTicks?: boolean, showYTicks?: boolean, bgColor?: string|null, refLines?: Array<{ dir: 'h'|'v', value: number, label?: string, showLabel?: boolean, dash?: 'solid'|'dash'|'dot'|'dashdot'|'longdash', width?: number, color?: string }>, refAreas?: Array<{ dir: 'x'|'y', min: number, max: number, label?: string, color?: string }>, pointColor?: string, pointSymbol?: string, pointSize?: number, pointStroke?: string, pointStrokeWidth?: number }} controlChartEdits
  */
 
 /**

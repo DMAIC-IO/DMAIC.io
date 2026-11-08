@@ -90,10 +90,13 @@ export function chartMount(widget, toChart = (c) => c) {
       root.replaceChildren();
       Promise.resolve(cm.create(root, widget.chartType, config)).then((chart) => {
         if (!alive || slot.token !== token) { if (chart) cm.destroy(chart); return; }
-        if (!chart) return;
+        if (!chart) { slot = { chart: null, token: null, pending: null }; return; }
         slot.chart = chart;
-        if (slot.pending) { cm.update(chart, slot.pending); chart.refreshEditor?.(); slot.pending = null; }
+        if (slot.pending) { cm.update(chart, slot.pending); slot.pending = null; }
         shown = pickShown(chart.config, editable);
+      }, (err) => {
+        if (slot.token === token) slot = { chart: null, token: null, pending: null };
+        console.warn('chart create failed', err);
       });
     });
 

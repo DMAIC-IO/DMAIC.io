@@ -15,7 +15,7 @@ const ed = { optional: true, editable: true };
 /** Bezugslinie, wie der Diagramm-Editor sie schreibt. */
 export const REF_LINE = object({
   dir: oneOf(['h', 'v']), value: number(),
-  label: text(opt), showLabel: boolean(opt), dash: oneOf(['solid', 'dash', 'dot', 'longdash'], opt), width: number(opt), color: text(opt),
+  label: text(opt), showLabel: boolean(opt), dash: oneOf(['solid', 'dash', 'dot', 'dashdot', 'longdash'], opt), width: number(opt), color: text(opt),
 });
 /** Bezugsbereich, wie der Diagramm-Editor ihn schreibt. */
 export const REF_AREA = object({

@@ -1,4 +1,6 @@
 import { suite, test, assertDeepEqual } from '../test-utils.js';
+import { checkValue } from '../../js/core/model.js';
+import { REF_LINE } from '../../js/widgets/chart-parts.js';
 import { applyEdits, diffEdits, ownedKeys, pickShown } from '../../js/widgets/chart-edits.js';
 
 const editable = { base: ['title', 'showLegend', 'refLines', 'barGap'], series: ['fillColor', 'visible'] };
@@ -34,6 +36,19 @@ suite('Editor-Einstellungen', () => {
     const { next, cleared } = diffEdits({ title: 'alt', barGap: 2 }, before, after, editable, new Set());
     assertDeepEqual(next, { barGap: 2, showLegend: false, series: [{ name: 'A', fillColor: 'pink' }] });
     assertDeepEqual(cleared, ['title']);
+  });
+
+  test('diffEdits: eine Reihe, deren einziger Schlüssel der Name ist, wird nicht gespeichert', () => {
+    const before = { series: [{ name: 'A', fillColor: 'red' }] };
+    const after = { series: [{ name: 'A' }] };
+    assertDeepEqual(diffEdits(null, before, after, editable, new Set()).next, {});
+    const prev = { series: [{ name: 'A', fillColor: 'red' }] };
+    assertDeepEqual(diffEdits(prev, before, after, editable, new Set()).next, {});
+  });
+
+  test('REF_LINE nimmt dash „dashdot“ an', () => {
+    const line = { dir: 'h', value: 1, dash: 'dashdot' };
+    assertDeepEqual(checkValue(REF_LINE, 'l', line), line);
   });
 
   test('diffEdits: Reihen-Einstellungen überleben Umsortieren', () => {

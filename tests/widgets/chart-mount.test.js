@@ -112,6 +112,53 @@ suite('Diagramm-Widgets (chart-mount)', () => {
     root.remove();
   });
 
+  test('abgelehntes create: der nächste Effektlauf versucht es erneut', async () => {
+    const cm = fakeManager();
+    let reject = null;
+    let fail = true;
+    const orig = cm.create;
+    cm.create = (...a) => {
+      if (!fail) return orig(...a);
+      cm.log.created.push(null);
+      return new Promise((_, rej) => { reject = rej; });
+    };
+    const { root, data } = await host(HIST, { cm });
+    fail = false;
+    const ow = console.warn; console.warn = () => {};
+    reject(new Error('boom'));
+    await flush();
+    data.n = 2;
+    await flush(); await flush();
+    console.warn = ow;
+    assertEqual(cm.log.created.length, 2);
+    assertTrue(cm.log.created[1] !== null);
+    root.remove();
+  });
+
+  test('create liefert null: der nächste Effektlauf versucht es erneut', async () => {
+    const cm = fakeManager();
+    let empty = true;
+    const orig = cm.create;
+    cm.create = (...a) => { if (empty) { cm.log.created.push(null); return Promise.resolve(null); } return orig(...a); };
+    const { root, data } = await host(HIST, { cm });
+    empty = false;
+    data.n = 2;
+    await flush(); await flush();
+    assertEqual(cm.log.created.length, 2);
+    root.remove();
+  });
+
+  test('Änderung vor dem Eintreffen des Diagramms wird ohne Editor-Neuaufbau nachgeführt', async () => {
+    const cm = fakeManager({ delay: 20 });
+    const { root, data } = await host(HIST, { cm });
+    data.n = 2;
+    await flush();
+    await wait(60);
+    const chart = cm.log.created[0];
+    assertEqual(chart.refreshes, 0);
+    root.remove();
+  });
+
   test('Editor-Änderung geht in value, Leeren stellt automatisch wieder her, Reihen nach Name', async () => {
     const cm = fakeManager();
     const { root, data } = await host(HIST, { cm });
