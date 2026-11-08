@@ -16,7 +16,7 @@ import {
 } from './columns.js';
 
 /**
- * Die Texte der Vorschau: Achsentitel (`axis.*`) und `previewUnavailable` (mit Platzhalter `{type}`).
+ * Die Texte der Vorschau: Achsentitel (`axis.*`) und `previewUnavailable`, das unaufgelöst mit Platzhalter `{type}` hineingegeben wird; die Domäne setzt den Typ ein.
  * @typedef {{ frequency: string, observation: string, count: string, proportion: string, mean: string, other: string, otherCategories: string, percentile: string, variable: string, value: string, cumulativeSum: string, previewUnavailable: string }} ChartLabels
  */
 

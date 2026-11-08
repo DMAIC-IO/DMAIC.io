@@ -12,7 +12,7 @@ import { toNum, mean, collectTimeOrderedSeries } from './columns.js';
 import { buildChartConfig } from './charts.js';
 
 /**
- * Eine Zelle einer zusammengesetzten Vorschau. Ohne `widget` ist sie eine Beschriftung,
+ * Eine Zelle einer zusammengesetzten Vorschau. Zellen mit `widget` haben `label` leer (der Titel steht in `config`). Ohne `widget` ist sie eine Beschriftung,
  * eine Lücke (`label` leer) oder, mit `placeholder`, ein Hinweis, dass hier nichts zu zeigen ist.
  * @typedef {{ key: string, widget: string|null, config: object|null, label: string, placeholder: boolean }} Cell
  */
@@ -31,8 +31,8 @@ const NONE = Object.freeze({ kind: 'none' });
 const isCat = (c) => c.role === 'categorical' || c.role === 'ordinal';
 const finiteOrNull = (v) => (Number.isFinite(v) ? v : null);
 
-/** @param {string} key @param {string} widget @param {object} config @param {string} [label] @returns {Cell} */
-const chartCell = (key, widget, config, label = '') => ({ key, widget, config, label, placeholder: false });
+/** @param {string} key @param {string} widget @param {object} config @returns {Cell} */
+const chartCell = (key, widget, config) => ({ key, widget, config, label: '', placeholder: false });
 /** @param {string} key @param {string} label @returns {Cell} */
 const textCell = (key, label) => ({ key, widget: null, config: null, label, placeholder: false });
 
@@ -50,14 +50,18 @@ function finitePairs(xRaw, yRaw) {
   return { xs, ys };
 }
 
-/** Rand von 15 % um den Wertebereich der y-Achse, Sonderfälle wie beim Haupteffektdiagramm. */
-function padded(yMin, yMax, fallbackLo, fallbackHi, ratio) {
+/**
+ * Achsengrenzen mit Randabstand: `ratio` des Wertebereichs, bei Bereich 0 der Abstand `fallbackPad`.
+ * Ist der Bereich leer, unendlich oder ohne Ausdehnung, gelten `fallbackLo`/`fallbackHi`.
+ * @returns {{ min: number, max: number }}
+ */
+function padded(yMin, yMax, fallbackLo, fallbackHi, ratio, fallbackPad) {
   if (!Number.isFinite(yMin) || !Number.isFinite(yMax) || yMin === yMax) { yMin = fallbackLo; yMax = fallbackHi; }
-  const pad = (yMax - yMin) * ratio || (ratio === 0.15 ? 1 : 0.5);
+  const pad = (yMax - yMin) * ratio || fallbackPad;
   return { min: yMin - pad, max: yMax + pad };
 }
 
-function scatterMatrix(cols, labels) {
+function scatterMatrix(cols) {
   const allCont = cols.filter((c) => c.role === 'continuous');
   if (allCont.length < 2) return NONE;
   const used = allCont.slice(0, MATRIX_MAX);
@@ -91,7 +95,7 @@ function mainEffects(cols, labels) {
     for (const m of gm.means) if (Number.isFinite(m)) { if (m < lo) lo = m; if (m > hi) hi = m; }
   }
   if (Number.isFinite(overallY)) { if (overallY < lo) lo = overallY; if (overallY > hi) hi = overallY; }
-  const y = padded(lo, hi, Number.isFinite(overallY) ? overallY - 1 : 0, Number.isFinite(overallY) ? overallY + 1 : 1, 0.15);
+  const y = padded(lo, hi, Number.isFinite(overallY) ? overallY - 1 : 0, Number.isFinite(overallY) ? overallY + 1 : 1, 0.15, 1);
 
   const cells = items.map(({ factor, gm }) => {
     const key = `factor-${factor.id}`;
@@ -109,7 +113,7 @@ function mainEffects(cols, labels) {
         x: xs, y: gm.means.map(finiteOrNull),
         connectLine: { show: true, dash: 'solid', width: 2, color: CHART_COLORS[0] },
       }],
-    }, factor.name || '');
+    });
   });
   return panels('row', items.length, cells);
 }
@@ -132,7 +136,7 @@ function interactionPlot(cols) {
   });
   let lo = Infinity, hi = -Infinity;
   for (const s of series) for (const v of s.y) if (v !== null) { if (v < lo) lo = v; if (v > hi) hi = v; }
-  const y = padded(lo, hi, (lo === hi && Number.isFinite(lo)) ? lo - 1 : 0, Number.isFinite(hi) ? hi + 1 : 1, 0.15);
+  const y = padded(lo, hi, (lo === hi && Number.isFinite(lo)) ? lo - 1 : 0, Number.isFinite(hi) ? hi + 1 : 1, 0.15, 1);
   return {
     kind: 'single', widget: 'scatter-chart',
     config: {
@@ -172,7 +176,7 @@ function boxplotTrellis(cols) {
     if (v > hi) hi = v;
   }
   const x = padded(Number.isFinite(lo) ? lo : NaN, Number.isFinite(hi) ? hi : NaN,
-    Number.isFinite(lo) ? lo - 1 : 0, Number.isFinite(hi) ? hi + 1 : 1, 0.05);
+    Number.isFinite(lo) ? lo - 1 : 0, Number.isFinite(hi) ? hi + 1 : 1, 0.05, 0.5);
   const cells = bLevels.map((bLevel, bi) => {
     const title = `${fB.name || ''}: ${bLevel}`.trim();
     return chartCell(`level-${bi}`, 'boxplot-chart', {
@@ -180,7 +184,7 @@ function boxplotTrellis(cols) {
       xLabel: yCol.name || '', yLabel: '', showLegend: false, showMean: true, showOutliers: true,
       xMin: x.min, xMax: x.max,
       groups: aLevels.map((aLevel, ai) => ({ name: aLevel, values: bucket.get(bLevel).get(aLevel), color: CHART_COLORS[ai % CHART_COLORS.length] })),
-    }, title);
+    });
   });
   return panels('row', bLevels.length, cells);
 }
@@ -236,7 +240,7 @@ function cusumStacked(cols, labels) {
     xLabel: prep.xLabel || labels.observation, yLabel: labels.cumulativeSum, showLegend: false,
     values, cl: [0], ucl: [r.h], lcl: [0], sigma: [0], showZones: false,
     violationIndices: [...new Set(signals)],
-  }, label);
+  });
   return panels('stack', 1, [half('c-plus', 'C⁺', r.cPlus, r.signalsHi), half('c-minus', 'C⁻', r.cMinus, r.signalsLo)]);
 }
 
@@ -249,7 +253,7 @@ function cusumStacked(cols, labels) {
  */
 export function buildPreview(type, cols, labels) {
   switch (type) {
-    case 'scatter-matrix': return scatterMatrix(cols, labels);
+    case 'scatter-matrix': return scatterMatrix(cols);
     case 'main-effects': return mainEffects(cols, labels);
     case 'interaction-plot': return interactionPlot(cols);
     case 'boxplot':

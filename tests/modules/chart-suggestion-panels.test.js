@@ -4,6 +4,7 @@
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { buildPreview } from '../../js/modules/chart-suggestion/domain/panels.js';
 import { WIDGETS } from '../../js/widgets/registry.js';
+import { CHART_COLORS } from '../../js/core/chart/chart-colors.js';
 import { checkValue } from '../../js/core/model.js';
 
 const L = {
@@ -78,6 +79,14 @@ suite('chart-suggestion domain — buildPreview', () => {
     assertEqual(p.cells[1].label, 'Für „main-effects“ keine Vorschau.');
   });
 
+  test('main-effects: ohne Zahlenwerte entsteht nur die Platzhalterzelle', () => {
+    const p = built('main-effects', [num('y', ['x', 'y', 'z']), cat('f1', ['a', 'b', 'a'])]);
+    assertEqual(p.cells.length, 1);
+    assertEqual(p.cells[0].placeholder, true);
+    assertEqual(p.cells[0].widget, null);
+    assertEqual(p.cells[0].label, 'Für „main-effects“ keine Vorschau.');
+  });
+
   test('interaction-plot: eine Reihe je Stufe von B, fehlender Zellmittelwert null', () => {
     const p = built('interaction-plot', [num('y', [1, 2, 3]), cat('a', ['a1', 'a1', 'a2']), cat('b', ['b1', 'b2', 'b1'])]);
     assertEqual(p.kind, 'single');
@@ -100,6 +109,12 @@ suite('chart-suggestion domain — buildPreview', () => {
     assertEqual(p.cells[0].widget, 'boxplot-chart');
     assertEqual(p.cells[0].config.xMin, p.cells[1].config.xMin);
     assertEqual(p.cells[0].config.xMax, p.cells[1].config.xMax);
+    // Wertebereich 1 … 6, Rand 5 % von 5 = 0,25
+    assertEqual(p.cells[0].config.xMin, 0.75);
+    assertEqual(p.cells[0].config.xMax, 6.25);
+    assertDeepEqual(p.cells[0].config.groups.map((g) => g.color), [CHART_COLORS[0], CHART_COLORS[1]]);
+    assertDeepEqual(p.cells[0].config.groups.map((g) => g.name), ['p', 'q']);
+    assertEqual(p.cells.every((c) => c.label === ''), true);
     assertEqual(p.cells[0].config.title, 'b: u');
     assertEqual(p.cells[0].config.groups.length, 2);
     const single = built('boxplot', [num('y', y), cat('a', a)]);
@@ -129,11 +144,20 @@ suite('chart-suggestion domain — buildPreview', () => {
     const p = built('cusum', [num('v', [10, 11, 9, 10, 12, 8, 10, 13, 7, 10])]);
     assertEqual(p.layout, 'stack');
     assertEqual(p.cells.length, 2);
-    assertEqual(p.cells[0].label, 'C⁺');
-    assertEqual(p.cells[1].label, 'C⁻');
+    assertEqual(p.cells[0].config.title, 'C⁺');
+    assertEqual(p.cells[1].config.title, 'C⁻');
+    assertEqual(p.cells.every((c) => c.label === ''), true);
     assertEqual(p.cells[0].widget, 'control-chart');
     assertEqual(p.cells[0].config.ucl.length, 1);
     assertEqual(Array.isArray(p.cells[0].config.violationIndices), true);
+    const shift = Array.from({ length: 20 }, (_, i) => 10 + (i % 2 ? 0.2 : -0.2) + (i >= 10 ? 3 : 0));
+    const q = built('cusum', [num('v', shift)]);
+    const h = q.cells[0].config.ucl[0];
+    assertEqual(q.cells[1].config.ucl[0], h);
+    assertEqual(h > 0, true);
+    assertEqual(q.cells[0].config.values.length, 20);
+    assertDeepEqual(q.cells[0].config.violationIndices, [11, 12, 13, 14, 15, 16, 17, 18, 19]);
+    assertDeepEqual(q.cells[1].config.violationIndices, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
     assertEqual(buildPreview('cusum', [num('v', [1, 2])], L).kind, 'none');
     assertEqual(buildPreview('cusum', [num('v', [5, 5, 5, 5])], L).kind, 'none');
   });
