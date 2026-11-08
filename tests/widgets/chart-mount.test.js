@@ -237,6 +237,23 @@ suite('Diagramm-Widgets (chart-mount)', () => {
     root.remove();
   });
 
+  test('Balken, Mosaik, Verlauf, Pareto: Typ und Gruppen unverändert durchgereicht', async () => {
+    const groups = [{ name: 'B1', values: [1, 2], color: 'var(--color-chart-1)' }];
+    const cases = [
+      ['bar-chart', 'bar', { categories: ['x', 'y'], groups, stacked: true }],
+      ['mosaic-chart', 'mosaic', { categories: ['x', 'y'], groups }],
+      ['run-chart', 'run-chart', { values: [1, 2, 3], median: 2 }],
+      ['pareto-chart', 'pareto', { categories: ['x', 'y'], groups, otherBucket: true }],
+    ];
+    for (const [name, type, cfg] of cases) {
+      const cm = fakeManager();
+      const { root } = await host(`<div x-widget="${name}" x-widget-config="cfg"></div>`, { cm, extra: { cfg } });
+      assertEqual(cm.log.created[0].type, type);
+      assertDeepEqual(cm.log.created[0].config.groups, cfg.groups);
+      root.remove();
+    }
+  });
+
   test('config null: kein Diagramm, dann gültig, dann wieder abgebaut', async () => {
     const cm = fakeManager();
     const { root, data } = await host('<div x-widget="histogram-chart" x-widget-config="nothing"></div>', { cm, extra: { none: true } });

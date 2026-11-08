@@ -17,6 +17,14 @@ import probabilityPlotChart from './probability-plot-chart/schema.js';
 import { mount as mountProbabilityPlotChart } from './probability-plot-chart/mount.js';
 import scatterChart from './scatter-chart/schema.js';
 import { mount as mountScatterChart } from './scatter-chart/mount.js';
+import barChart from './bar-chart/schema.js';
+import { mount as mountBarChart } from './bar-chart/mount.js';
+import mosaicChart from './mosaic-chart/schema.js';
+import { mount as mountMosaicChart } from './mosaic-chart/mount.js';
+import runChart from './run-chart/schema.js';
+import { mount as mountRunChart } from './run-chart/mount.js';
+import paretoChart from './pareto-chart/schema.js';
+import { mount as mountParetoChart } from './pareto-chart/mount.js';
 import statsTable from './stats-table/schema.js';
 import { mount as mountStatsTable } from './stats-table/mount.js';
 
@@ -28,4 +36,8 @@ export const WIDGETS = Object.freeze({
   'control-chart': { schema: controlChart, mount: mountControlChart },
   'probability-plot-chart': { schema: probabilityPlotChart, mount: mountProbabilityPlotChart },
   'scatter-chart': { schema: scatterChart, mount: mountScatterChart },
+  'bar-chart': { schema: barChart, mount: mountBarChart },
+  'mosaic-chart': { schema: mosaicChart, mount: mountMosaicChart },
+  'run-chart': { schema: runChart, mount: mountRunChart },
+  'pareto-chart': { schema: paretoChart, mount: mountParetoChart },
 });
