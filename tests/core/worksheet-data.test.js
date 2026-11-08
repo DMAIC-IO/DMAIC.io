@@ -2,7 +2,7 @@
  * Reaktiver Lesezugriff auf Arbeitsblätter (core/worksheet-data.js) — im Browser (Alpine).
  */
 import Alpine from '../../vendor/alpinejs/csp.js';
-import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import { installWorksheetRevisions, createWorksheetData } from '../../js/core/worksheet-data.js';
 
 const flush = () => new Promise((r) => setTimeout(r, 0));
@@ -128,5 +128,49 @@ suite('ctx.data.columns', () => {
     await flush();
     assertEqual(seen, 2);
     Alpine.release(runner);
+  });
+
+  test('project:rehydrated rechnet column() neu', async () => {
+    const bus = fakeBus();
+    installWorksheetRevisions(bus);
+    const states = { wsR: sheet([1]) };
+    const data = createWorksheetData(fakeStore(states));
+    const ref = { instanceId: 'wsR', sheetId: 's1', columnId: 'c1' };
+    let last;
+    const runner = Alpine.effect(() => { last = data.numeric(ref); });
+    states.wsR = sheet([7, 8]);
+    bus.emit('project:rehydrated', {});
+    await flush();
+    assertDeepEqual(last, [7, 8]);
+    Alpine.release(runner);
+  });
+
+  test('Verschiebung eines Arbeitsblatts (removed + added) rechnet columns() neu, ein Nicht-Arbeitsblatt nicht', async () => {
+    const bus = fakeBus();
+    installWorksheetRevisions(bus);
+    const phases = { measure: [{ instanceId: 'wsM', moduleId: 'worksheet' }], analyze: [] };
+    const states = { wsM: { sheets: [{ id: 's1', state: { columns: [{ id: 'c1', name: 'A', type: 'numeric', values: [1] }] } }] } };
+    const data = createWorksheetData(fakeProject(states, phases));
+    let runs = 0;
+    const runner = Alpine.effect(() => { runs += 1; data.columns({}); });
+    assertEqual(runs, 1);
+    bus.emit('module:added', { moduleId: 'histogram', phase: 'analyze', instanceId: 'h1' });
+    await flush();
+    assertEqual(runs, 1);
+    phases.analyze.push(phases.measure.pop());
+    bus.emit('module:removed', { moduleId: 'worksheet', phase: 'measure', instanceId: 'wsM' });
+    bus.emit('module:added', { moduleId: 'worksheet', phase: 'analyze', instanceId: 'wsM' });
+    await flush();
+    assertTrue(runs >= 2, 'columns() rechnet nach der Verschiebung neu');
+    Alpine.release(runner);
+  });
+
+  test('columns({ maxCount }) filtert nach Werteanzahl', () => {
+    const states = { ws1: { sheets: [{ id: 's1', state: { columns: [
+      { id: 'c1', name: 'Kurz', type: 'numeric', values: [1, 2] },
+      { id: 'c2', name: 'Lang', type: 'numeric', values: [1, 2, 3, 4] },
+    ] } }] } };
+    const data = createWorksheetData(fakeProject(states, { control: [{ instanceId: 'ws1', moduleId: 'worksheet' }] }));
+    assertDeepEqual(data.columns({ maxCount: 3 }).map((c) => c.name), ['Kurz']);
   });
 });

@@ -1,4 +1,4 @@
-import { suite, test, assertEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
 import { State } from '../../js/modules/worksheet/worksheet-model.js';
 
 /**
@@ -226,5 +226,16 @@ suite('Worksheet Model — serialization', () => {
     s.setActive('sheet_1');
     const round = State.fromJSON(s.toJSON());
     assertEqual(JSON.stringify(round.toJSON()), JSON.stringify(s.toJSON()));
+  });
+});
+
+suite('Worksheet — Undo/Redo melden worksheet:dataChanged', () => {
+  test('undo und redo laufen über den entprellten Persist-und-Melde-Weg', async () => {
+    const src = await (await fetch(new URL('../../js/modules/worksheet/worksheet.js', import.meta.url))).text();
+    const list = /const dataMutationEvents = \[([\s\S]*?)\];/.exec(src);
+    assertTrue(list !== null, 'dataMutationEvents vorhanden');
+    assertTrue(/'undo'/.test(list[1]) && /'redo'/.test(list[1]), 'undo und redo in dataMutationEvents');
+    assertTrue(/for \(const evt of dataMutationEvents\) this\._grid\.on\(evt, schedulePersist\)/.test(src), 'Ereignisse lösen schedulePersist aus');
+    assertTrue(/_persistAndNotify = debounce\([\s\S]*?worksheet:dataChanged/.test(src), 'Persist meldet worksheet:dataChanged');
   });
 });

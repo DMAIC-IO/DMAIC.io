@@ -31,7 +31,7 @@ export function installWorksheetRevisions(eventBus) {
   eventBus.on('module:removed', (p) => { if (p?.instanceId) bump(p.instanceId); });
   eventBus.on('state:remote-changed', (p) => { for (const id of p?.instanceIds ?? []) bump(id); });
   eventBus.on('module:added', (p) => { if (p?.moduleId === 'worksheet') bump('#list'); });
-  for (const ev of ['project:imported', 'project:switched']) eventBus.on(ev, () => bump('*'));
+  for (const ev of ['project:imported', 'project:switched', 'project:rehydrated']) eventBus.on(ev, () => bump('*'));
 }
 
 /**
