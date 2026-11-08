@@ -71,6 +71,19 @@ suite('Diagramm-Widgets: Schemas', () => {
     assertDeepEqual(scatterChart.editable.series, ['color', 'visible', 'symbol', 'markerSize', 'stroke', 'strokeWidth']);
   });
 
+  test('Streudiagramm: Ticks, Verbindungslinie, Blasen, Lücken in y; Histogramm und Wahrscheinlichkeitsnetz: Ausrichtung und Farben', () => {
+    const line = { show: true, dash: 'solid', width: 2, color: 'var(--color-chart-1)' };
+    const sc = { xTicks: [0, 1, 2], xTickLabels: ['A', 'B', 'C'], xAxis: 'date', series: [{ name: 'R', x: [0, 1, 2], y: [1, null, 3], connectLine: line, sizes: [1, 2, 3], sizeValues: [10, 20, 30], sizeLabel: 'n' }] };
+    assertDeepEqual(checkValue(scatterChart.props.config, 'c', sc), sc);
+    assertThrows(() => checkValue(scatterChart.props.config, 'c', { connectLine: true }), /unknown c key "connectLine"/);
+    assertThrows(() => checkValue(scatterChart.props.config, 'c', { xAxis: 'log' }), /xAxis/);
+    const h = { orientation: 'horizontal', barColor: 'var(--color-chart-1)', data: [1, 2] };
+    assertDeepEqual(checkValue(histogramChart.props.config, 'c', h), h);
+    assertThrows(() => checkValue(histogramChart.props.config, 'c', { orientation: 'diagonal' }), /orientation/);
+    const p = { markerColor: 'var(--color-chart-2)', data: [1, 2] };
+    assertDeepEqual(checkValue(probabilityPlotChart.props.config, 'c', p), p);
+  });
+
   test('Balken, Mosaik, Verlauf, Pareto: Name und Typ', () => {
     assertDeepEqual([barChart, mosaicChart, runChart, paretoChart].map((w) => [w.name, w.chartType]), [
       ['bar-chart', 'bar'], ['mosaic-chart', 'mosaic'], ['run-chart', 'run-chart'], ['pareto-chart', 'pareto'],

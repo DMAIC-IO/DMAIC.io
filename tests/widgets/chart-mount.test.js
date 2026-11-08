@@ -8,6 +8,7 @@ import { defineModel, number } from '../../js/core/model.js';
 import { registerWidgetDirective } from '../../js/core/widget-directive.js';
 import { WIDGETS } from '../../js/widgets/registry.js';
 import HistogramChart from '../../js/core/chart/types/histogram.js';
+import { toChart as scatterToChart } from '../../js/widgets/scatter-chart/mount.js';
 import histogramChart from '../../js/widgets/histogram-chart/schema.js';
 
 const i18n = { t: (k) => k, getLanguage: () => 'de' };
@@ -404,5 +405,34 @@ suite('Diagramm-Widgets (chart-mount)', () => {
     const a = document.activeElement;
     assertTrue(!chart._editorInner.contains(a), 'kein Feld des Editors fokussiert');
     root.remove();
+  });
+});
+
+suite('Diagramm-Widgets: Streudiagramm toChart', () => {
+  test('xTickLabels: Beschriftung am nächsten ganzen Tick, sonst leer; xTicks bleibt', () => {
+    const c = scatterToChart({ xTicks: [0, 1, 2], xTickLabels: ['A', 'B', 'C'], series: [] });
+    assertEqual(c.xTickFormat(1), 'B');
+    assertEqual(c.xTickFormat(1.2), 'B');
+    assertEqual(c.xTickFormat(5), '');
+    assertDeepEqual(c.xTicks, [0, 1, 2]);
+    assertTrue(!('xTickLabels' in c) && !('xAxis' in c));
+  });
+  test('xAxis date: ISO-Datum, NaN leer', () => {
+    const c = scatterToChart({ xAxis: 'date', series: [] });
+    assertEqual(c.xTickFormat(Date.UTC(2026, 0, 5)), '2026-01-05');
+    assertEqual(c.xTickFormat(NaN), '');
+    assertTrue(!('xAxis' in c));
+  });
+  test('y mit null wird NaN, Eingabe bleibt unverändert', () => {
+    const cfg = { series: [{ name: 'R', x: [1, 2, 3], y: [1, null, 3] }] };
+    const c = scatterToChart(cfg);
+    assertTrue(Number.isNaN(c.series[0].y[1]));
+    assertEqual(c.series[0].y[0], 1);
+    assertEqual(cfg.series[0].y[1], null);
+  });
+  test('ohne Besonderheiten bleibt die Konfiguration gleich', () => {
+    const c = scatterToChart({ title: 'T', series: [{ name: 'R', x: [1], y: [2] }] });
+    assertEqual(c.title, 'T');
+    assertTrue(!('xTickFormat' in c));
   });
 });
