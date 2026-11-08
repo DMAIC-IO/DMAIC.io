@@ -951,21 +951,24 @@ export function readCommandForms(files) {
 
 /**
  * Gate Kommando-Bezüge: `x-command`, `x-command-form`, `data-dialog-command`,
- * `data-dialog-delete` nennen ein Kommando des Models; `data-form` einen
+ * `data-dialog-delete` nennen ein Kommando des Models (`x-command` auch ein
+ * Viewmodel-Kommando); `data-form` einen
  * Export aus viewmodel/forms.js; `x-param` einen Parameter des Kommandos
  * bzw. ein Feld des Formulars.
  * @param {{ path: string, text: string }[]} files
  * @param {{ commands: Record<string, { params: object }> }} schema
  * @param {Record<string, { fields: object }>} formSchemas Name → Schema
+ * @param {Record<string, object>} [vmCommands] Viewmodel-Kommandos (`readViewmodelCommands`); nur `x-command` darf sie nennen
  * @returns {string[]}
  */
-export function checkCommandRefs(files, schema, formSchemas) {
+export function checkCommandRefs(files, schema, formSchemas, vmCommands = {}) {
   const out = [];
   const commands = Object.keys(schema.commands);
   for (const { path, text } of files) {
     for (const attr of COMMAND_ATTRS) {
+      const known = attr === 'x-command' ? [...commands, ...Object.keys(vmCommands)] : commands;
       for (const m of text.matchAll(new RegExp(`\\s${attr}="\\s*([^"]*?)\\s*"`, 'g'))) {
-        if (!commands.includes(m[1])) out.push(`command: ${path}: ${attr}="${m[1]}": kein Kommando des Models`);
+        if (!known.includes(m[1])) out.push(`command: ${path}: ${attr}="${m[1]}": kein Kommando des Models`);
       }
     }
     for (const m of text.matchAll(/\sdata-form="\s*([^"]*?)\s*"/g)) {
@@ -1453,7 +1456,7 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
       const tileText = (p) => (paths.includes(p) ? readFileSync(join(base, p), 'utf8') : '');
       const vmNames = paths.includes('viewmodel/viewmodel.js') ? viewNamesOf(tileText('viewmodel/viewmodel.js')) : new Set();
       out.push(...checkWidgetTemplates(templates, { widgets, schema, stateSchema, viewNames: vmNames, tileText }));
-      out.push(...checkCommandRefs(templates, schema, formSchemas));
+      out.push(...checkCommandRefs(templates, schema, formSchemas, existsSync(vmFile) ? readViewmodelCommands(readFileSync(vmFile, 'utf8')) : {}));
       const asyncTasks = existsSync(vmFile) ? readViewmodelAsyncTasks(readFileSync(vmFile, 'utf8')) : {};
       out.push(...checkAsyncTaskRefs(templates, asyncTasks));
       const lists = checkListBindings(templates, schema);

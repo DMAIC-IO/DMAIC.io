@@ -4,7 +4,9 @@
  * Bausteine, die ein Kommando des deklarativen Models (core/model.js) aus
  * der Oberfläche auslösen, ohne Handler im Viewmodel:
  *
- * - `x-command="cmd"` am Knopf: Klick führt das Kommando aus.
+ * - `x-command="cmd"` am Knopf: Klick führt das Kommando aus — ein Kommando
+ *   des Models oder, wenn das Model keins dieses Namens hat, ein
+ *   Viewmodel-Kommando aus `createModule({ commands })` (`_ui.vmCommands`).
  * - `x-command-form="cmd"` am `<form>` mit `x-param="name"` an den freien Feldern.
  *
  * `x-param` an einer Gruppe (`role="radiogroup"` mit `role="radio"`-Optionen)
@@ -30,7 +32,7 @@
  * Dialog verschoben wird. CSP-tauglich: kein Ausdruck wird ausgewertet, der
  * Direktivenwert ist ein Name.
  */
-import { commandDefOf, confirmOf, fromAttr, currentOf, defaultOf, checkValue, cloneJSON, contextOf } from './model.js';
+import { commandDefOf, confirmOf, fromAttr, currentOf, defaultOf, checkValue, cloneJSON, contextOf, schemaOf, checkParams } from './model.js';
 import { requireKnownId } from './validate.js';
 import { applyAttributes, readElement, writeElement, rejectionHint, invariantHint } from './field-directive.js';
 import { isBug } from './value-channel.js';
@@ -62,6 +64,33 @@ function uiOf(Alpine, el, directive) {
 /** @param {{ model: any }} ui @param {string} name @returns {any} die Kommando-Definition */
 function commandDef(ui, name) {
   return commandDefOf(ui.model, name);
+}
+
+/**
+ * Das Viewmodel-Kommando `name` aus `createModule({ commands })`, sofern das
+ * Model kein gleichnamiges hat (Model-Kommandos gehen vor); sonst `null`.
+ * @param {{ model: any, vmCommands?: Record<string, any> }} ui @param {string} name
+ * @returns {any|null}
+ */
+function vmCommandDef(ui, name) {
+  const modelCommands = schemaOf(ui.model)?.commands ?? {};
+  if (Object.hasOwn(modelCommands, name)) return null;
+  const vm = ui.vmCommands ?? {};
+  return Object.hasOwn(vm, name) ? vm[name] : null;
+}
+
+/**
+ * Die Definition für `x-command`: Model-Kommando, sonst Viewmodel-Kommando.
+ * @param {{ model: any, vmCommands?: Record<string, any> }} ui @param {string} name
+ * @returns {any}
+ * @throws {Error} weder Model- noch Viewmodel-Kommando
+ */
+function buttonCommandDef(ui, name) {
+  const vmDef = vmCommandDef(ui, name);
+  if (vmDef) return vmDef;
+  const modelCommands = Object.keys(schemaOf(ui.model)?.commands ?? {});
+  requireKnownId('command', name, [...modelCommands, ...Object.keys(ui.vmCommands ?? {})]);
+  return commandDef(ui, name);
 }
 
 /** Setzt den Hilfeanker, sofern das Element keinen trägt. @param {HTMLElement} el @param {string} key */
@@ -123,12 +152,14 @@ function checkDefaultArgs(el, params) {
 /**
  * Ein Kommando aus der Oberfläche: Rückfrage (`confirm` der Definition,
  * immer als `danger`), dann das Kommando. Wirft nie.
- * @param {{ model: any, dialog: any, i18n: any, moduleId: string }} ui
+ * @param {{ model: any, dialog: any, i18n: any, moduleId: string, vmCommands?: Record<string, any>, component?: any }} ui
  * @param {string} name @param {object} args
  * @returns {Promise<{ ok: true, result: any } | { ok: false, error: any } | { ok: false, cancelled: true }>}
  */
 export async function runUiCommand(ui, name, args) {
   try {
+    const vmDef = vmCommandDef(ui, name);
+    if (vmDef) return await runVmCommand(ui, name, vmDef, args);
     const ask = confirmOf(ui.model, name, args);
     if (ask) {
       const ok = await ui.dialog.confirm({ message: ui.i18n.t(`modules.${ui.moduleId}.${ask.key}`, ask.params), danger: true });
@@ -138,6 +169,25 @@ export async function runUiCommand(ui, name, args) {
   } catch (error) {
     return { ok: false, error };
   }
+}
+
+/**
+ * Ein Viewmodel-Kommando aus der Oberfläche: Rückfrage wie bei Model-Kommandos
+ * (`confirm` mit der Komponente als `this`), dann die Methode der Komponente.
+ * @param {{ model: any, dialog: any, i18n: any, moduleId: string, component?: any }} ui
+ * @param {string} name @param {any} def @param {object} args
+ * @returns {Promise<{ ok: true, result: any } | { ok: false, cancelled: true }>}
+ * @throws {Error} ungültige Argumente oder Fehler aus `run`
+ */
+async function runVmCommand(ui, name, def, args) {
+  if (def.confirm) {
+    const ask = def.confirm.call(ui.component, checkParams(name, def.params, args, ui.model)) ?? null;
+    if (ask) {
+      const ok = await ui.dialog.confirm({ message: ui.i18n.t(`modules.${ui.moduleId}.${ask.key}`, ask.params), danger: true });
+      if (!ok) return { ok: false, cancelled: true };
+    }
+  }
+  return { ok: true, result: await ui.component[name](args) };
 }
 
 /**
@@ -487,7 +537,7 @@ export function registerCommandDirectives(Alpine) {
     const data = Alpine.$data(el);
     const ui = data?._ui;
     if (!ui) throw missingUiError('x-command');
-    const { params } = commandDef(ui, name);
+    const { params } = buttonCommandDef(ui, name);
     readFixedArgs(el, params);
     setHelpKey(el, `modules.${ui.moduleId}.actions.${name}.help`);
     const onClick = async () => {

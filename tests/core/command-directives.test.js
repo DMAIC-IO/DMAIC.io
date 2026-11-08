@@ -6,7 +6,7 @@ import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertThrows } f
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { registerFieldDirective } from '../../js/core/field-directive.js';
 import { registerCommandDirectives, runUiCommand, openDialogAt } from '../../js/core/command-directives.js';
-import { defineModel, defineForm, command, text, number, oneOf, index, list, record } from '../../js/core/model.js';
+import { defineModel, defineForm, command, text, number, oneOf, index, list, record, runCommand } from '../../js/core/model.js';
 
 const COLS = ['a', 'b'];
 const Board = defineModel({
@@ -48,6 +48,19 @@ const ItemForm = defineForm({
     return { text: `${first} ${last}`.trim() };
   },
 });
+
+/** Viewmodel-Kommandos wie aus createModule({ commands }): `this` ist die Komponente. */
+const VM_COMMANDS = {
+  pickType: command({
+    params: { type: oneOf(['bar', 'pie']), n: number({ integer: true }) },
+    run({ type, n: count }) { this.picked.push({ type, n: count }); return type; },
+  }),
+  dropAll: command({
+    params: {},
+    confirm() { return { key: 'confirm.dropAll' }; },
+    run() { this.picked.push('dropped'); },
+  }),
+};
 
 const I18N = { t: (k, p) => (p ? `${k}|${JSON.stringify(p)}` : k), getLanguage: () => 'de' };
 const flush = () => new Promise((r) => setTimeout(r, 0));
@@ -103,10 +116,13 @@ function build(html, { confirmAnswer = true, columns = {} } = {}) {
   const name = `cmdTest${++n}`;
   const model = Board.fromJSON({ columns: { a: [], b: [], ...columns } });
   Alpine.data(name, () => {
-    const comp = { model, moduleId: 'ct' };
+    const comp = { model, moduleId: 'ct', picked: [] };
+    for (const [cmd, def] of Object.entries(VM_COMMANDS)) {
+      comp[cmd] = function viewmodelCommand(args) { return runCommand(cmd, def, this, this.model, args); };
+    }
     Object.defineProperty(comp, '_ui', {
       enumerable: false,
-      get() { return { model: this.model, notify: (...a) => notified.push(a), dialog, i18n: I18N, moduleId: 'ct', forms: { ItemForm } }; },
+      get() { return { model: this.model, notify: (...a) => notified.push(a), dialog, i18n: I18N, moduleId: 'ct', forms: { ItemForm }, vmCommands: VM_COMMANDS, component: this }; },
     });
     return comp;
   });
@@ -126,7 +142,7 @@ async function mount(html, opts) {
   mounted.push(b.host);
   Alpine.initTree(b.host);
   await flush();
-  return { ...b, model: Alpine.$data(b.root).model, $: (s) => b.root.querySelector(s) };
+  return { ...b, model: Alpine.$data(b.root).model, vm: Alpine.$data(b.root), $: (s) => b.root.querySelector(s) };
 }
 
 /** Nur eingebaut, nicht im Dokument — für Fehler beim Einbau (kein Beobachter baut nach). */
@@ -210,6 +226,32 @@ suite('x-command', () => {
 
   test('unbekanntes Kommando wirft beim Einbau', () => {
     assertThrows(() => mountDetached('<button x-command="nope">x</button>'), /unknown command "nope"; available: addItem, setItem, removeItem, pickItem, plainFail, boom, guarded, limitText, setLimit/);
+  });
+
+  test('Viewmodel-Kommando: Klick ruft die Methode der Komponente mit festen Argumenten', async () => {
+    const { $, vm, notified } = await mount('<button x-command="pickType" data-arg-type="pie" data-arg-n="3">x</button>');
+    assertEqual($('button').getAttribute('data-help-key'), 'modules.ct.actions.pickType.help');
+    $('button').click();
+    await flush();
+    assertDeepEqual(JSON.parse(JSON.stringify(vm.picked)), [{ type: 'pie', n: 3 }]);
+    assertEqual(notified.length, 0);
+  });
+
+  test('Viewmodel-Kommando: Prüffehler gehen an notify', async () => {
+    const { $, vm, notified } = await mount('<button x-command="pickType" data-arg-type="line" data-arg-n="1">x</button>');
+    $('button').click();
+    await flush();
+    assertEqual(vm.picked.length, 0);
+    assertTrue(/^invalid type "line"/.test(notified[0][0]));
+    assertEqual(notified[0][1], 'error');
+  });
+
+  test('Viewmodel-Kommando: Rückfrage aus confirm, nein führt nicht aus', async () => {
+    const { $, vm, asked } = await mount('<button x-command="dropAll">x</button>', { confirmAnswer: false });
+    $('button').click();
+    await flush();
+    assertEqual(asked[0].message, 'modules.ct.confirm.dropAll');
+    assertEqual(vm.picked.length, 0);
   });
 
   test('aus dem Wurzelknoten herausgenommener Knopf läuft weiter (Dialog-Körper)', async () => {

@@ -6,6 +6,7 @@
 import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertThrows } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { createModule } from '../../js/core/template-module.js';
+import { runUiCommand } from '../../js/core/command-directives.js';
 import { defineModel, command, text, number, oneOf, index, list, record, boolean, columnRef } from '../../js/core/model.js';
 
 const COLS = ['a', 'b'];
@@ -112,6 +113,11 @@ suite('createModule mit Schema-Model', () => {
     assertEqual(data().label({ upper: true }), 'ABC');
     assertThrows(() => data().label({ upper: 'ja' }), /^invalid upper "ja"; allowed: true, false$/);
     assertTrue(events.some(([n, p]) => n === 'command:executed' && p.command === 'label'));
+  });
+
+  test('Viewmodel-Kommando aus der Oberfläche: _ui führt es über die Komponente aus', async () => {
+    const { data } = await mount();
+    assertDeepEqual(await runUiCommand(data()._ui, 'label', { upper: true }), { ok: true, result: 'ABC' });
   });
 
   test('moduleId und agentEntry', async () => {

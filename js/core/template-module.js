@@ -480,6 +480,7 @@ export function createModule(base) {
                   moduleId: id,
                   instanceId: context.instanceId,
                   forms,
+                  vmCommands,
                   exports: exportsDef ?? null,
                   component: this,
                 };

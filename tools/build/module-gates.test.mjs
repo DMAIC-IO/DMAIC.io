@@ -895,6 +895,17 @@ test('Kommando-Bezüge: Kommandos, data-form, x-param', () => {
   ]);
 });
 
+test('Kommando-Bezüge: x-command nennt auch ein Viewmodel-Kommando', () => {
+  const files = [{ path: 'resources/view.html', text: [
+    '<button x-command="pickChart" :data-arg-type="s.type"></button><button x-command="ghost"></button>',
+    '<form x-command-form="pickChart"></form>',
+  ].join('') }];
+  assert.deepEqual(checkCommandRefs(files, CMD_SCHEMA, FORM_SCHEMAS, { pickChart: { params: { type: true } } }), [
+    'command: resources/view.html: x-command="ghost": kein Kommando des Models',
+    'command: resources/view.html: x-command-form="pickChart": kein Kommando des Models',
+  ]);
+});
+
 test('Formularhilfe: nur Felder, die kein Parameter des Kommandos sind', () => {
   const forms = readCommandForms([{ path: 'resources/view.html', text: '<form x-command-form="addItem" data-form="NoteForm"><input x-param="text"><input x-param="note"></form><form x-command-form="addItem"><input x-param="text"></form>' }]);
   assert.deepEqual(formHelpKeys(forms, CMD_SCHEMA, FORM_SCHEMAS), ['forms.NoteForm.note.help']);
