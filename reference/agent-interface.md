@@ -582,6 +582,14 @@ tragen `bulkKind`; Felder und Parameter vom Typ Phase tragen die Regeln
 `phase` und `phases:<id>,…` mit den Phasen des aktiven Zyklus. Neue
 Antwortfelder, gleiche Hülle, keine neuen Fehlercodes — kein Bruch.
 
+Nacharbeiten (2026-11-08, `contract` bleibt `2`): `read()` führt jedes
+`computed` des `view`-Blocks (als Feld mit `derived: true`, Massenwerte als
+Deskriptor), `describe` nennt den Schlüsselbaum aus dem `@returns` der
+`computed`-Methode. Neue Regel-Tokens an Feldern und Parametern:
+`afterRemovalFrom:<pfad>`, `unique`, `sorted`, `maxCount:<n>`. Aktionen
+`….cancel` laufen an der Warteschlange vorbei. Neue Antwortfelder und
+Tokens, gleiche Hülle, keine neuen Fehlercodes — kein Bruch.
+
 Aktionsnamen mit Punkt (`draft.addQuestion`) sind ebenfalls kein Bruch: die
 Aktionsform `{ op: 'instance.call', instance, method, args }` bleibt,
 `method` bleibt ein String, neu ist nur die Menge seiner Werte. Ein Bump
