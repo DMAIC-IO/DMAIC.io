@@ -602,7 +602,6 @@ export async function loadExampleViaWorksheet(module, payload, options) {
   }
 
   module.setState(data);
-  ctx.stateManager.setModuleState(ctx.instanceId, module.getState());
 
   const lang = ctx.i18n.getLanguage();
   const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
@@ -714,7 +713,6 @@ export async function loadWorksheetExample(mod, payload, { Model, rewriteRefs, c
   }
 
   mod.setState(data);
-  ctx.stateManager.setModuleState(ctx.instanceId, mod.getState());
 
   const lang = ctx.i18n.getLanguage();
   const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';

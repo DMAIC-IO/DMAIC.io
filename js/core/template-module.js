@@ -766,6 +766,7 @@ export function createModule(base) {
         if (loadWorksheetExample) {
           // Ohne Rückfrage läuft der Lader bis zum Ende synchron — Arbeits-
           // blatt, setState und Meldung fallen in dieses Fenster.
+          // `prevId` stammt aus dem vor dem Hook geladenen Stand: der Hook ersetzt ihn nicht.
           loading = loadWorksheetExample(this, { ...payload, data: exampleData },
             { Model, confirmed: true, prevId: model?.exampleWorksheetId ?? null });
         } else {

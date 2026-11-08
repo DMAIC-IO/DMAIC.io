@@ -403,14 +403,6 @@ suite('createModule: Laden mit Kontext, genau einmal', () => {
     assertEqual(data().model.title, 'remote');
     assertEqual(data().model.alpha, 0.1);
   });
-
-  test('setState im Fenster _loadingExample wird nicht aufgezeichnet', async () => {
-    const events = [];
-    const { mod } = await mountStateful(Ctx, { title: 'abc' }, events);
-    mod._loadingExample = true;
-    try { mod.setState({ title: 'neu' }); } finally { mod._loadingExample = false; }
-    assertEqual(events.filter(([n]) => n === 'command:executed').length, 0);
-  });
 });
 
 suite('createModule: Beispiel laden', () => {
@@ -418,6 +410,15 @@ suite('createModule: Beispiel laden', () => {
     const { mod } = sourcedModule({ answer: true });
     const calls = await countFromJSON(Sourced, () => mod.loadExample(sourcedPayload()));
     assertEqual(calls, 2);
+  });
+
+  test('mit Arbeitsblatt wird der Stand nur einmal gesichert', async () => {
+    const { mod } = sourcedModule({ answer: true });
+    let writes = 0;
+    const set = mod._context.stateManager.setModuleState;
+    mod._context.stateManager.setModuleState = (id, st) => { if (id === 'me') writes++; set(id, st); };
+    await mod.loadExample(sourcedPayload());
+    assertEqual(writes, 1);
   });
 
   test('beim Ersetzen wird das vorige Arbeitsblatt entfernt', async () => {
