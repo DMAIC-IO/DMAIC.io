@@ -90,13 +90,13 @@ suite('attribute-control-chart Model', () => {
     assertDeepEqual(State.fromJSON(m.toJSON()).toJSON(), m.toJSON());
   });
 
-  test('Reparatur: unbekannte Regel und Kartentyp laden ohne Wurf, mit Warnung', () => {
+  test('Reparatur: unbekannte Regel (je Eintrag) und Kartentyp laden ohne Wurf, mit Warnung', () => {
     const warnings = [];
     const warn = console.warn; console.warn = (m) => warnings.push(m);
     try {
       const m = loadModel(State, { chartTypeId: 'bogus', enabledRules: [5, 1, 1, 99, 3] });
       assertEqual(m.chartTypeId, 'p');
-      assertDeepEqual([...m.enabledRules], [1]);
+      assertDeepEqual([...m.enabledRules], [5, 1, 1, 3], 'ungültige Einträge entfallen, der Rest bleibt');
     } finally { console.warn = warn; }
     assertEqual(warnings.length, 1);
   });

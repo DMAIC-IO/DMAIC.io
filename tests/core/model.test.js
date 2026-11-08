@@ -904,3 +904,74 @@ suite('Feldart datasets', () => {
     assertDeepEqual(M.fromJSON(m.toJSON()).datasets, [{ valueRef: ref, groupRef: null }]);
   });
 });
+
+suite('list unique/sorted, Reparatur je Eintrag', () => {
+  const SCHEMA = { name: 'Rules', version: '1.0' };
+  const Rules = defineModel({ name: 'Rules', version: '1.0', fields: {
+    ids: list(oneOf([1, 2, 3, 5]), { unique: true, sorted: true, default: [] }),
+    tags: list(text(), { unique: true, sorted: true, default: [] }),
+  } });
+  const RepairBoard = defineModel({ name: 'RepairBoard', version: '1.0', fields: {
+    a: number({ min: 0, default: 0 }),
+    b: text({ nonEmpty: true, default: 'x' }),
+  } });
+  const Params = defineModel({ name: 'Params', version: '1.0',
+    fields: { ids: list(oneOf([1, 2, 3, 5]), { unique: true, sorted: true, default: [] }) },
+    commands: { setIds: command({ params: { ids: list(oneOf([1, 2, 3, 5]), { unique: true, sorted: true }) }, run({ ids }) { this.ids = ids; } }) },
+  });
+
+  test('Setter, fromJSON und Kommando liefern die Normalform', () => {
+    const m = new Rules();
+    m.ids = [5, 1, 1, 3];
+    assertDeepEqual(m.ids, [1, 3, 5]);
+    assertDeepEqual(Rules.fromJSON({ _schema: SCHEMA, ids: [3, 3, 1] }).ids, [1, 3]);
+    m.tags = ['b', 'ä', 'a', 'b'];
+    assertDeepEqual(m.tags, ['a', 'ä', 'b']);
+  });
+
+  test('ein ungültiger Eintrag lehnt die ganze Liste ab', () => {
+    const m = new Rules();
+    assertThrows(() => { m.ids = [1, 99]; }, /^invalid ids\[1\] 99; allowed: 1, 2, 3, 5$/);
+    assertDeepEqual(m.ids, []);
+    assertThrows(() => Rules.fromJSON({ _schema: SCHEMA, ids: [1, 99] }), /^invalid ids\[1\] 99; allowed: 1, 2, 3, 5$/);
+  });
+
+  test('Kommandoparameter werden normalisiert', () => {
+    assertDeepEqual(checkValue(list(oneOf([1, 2, 3]), { unique: true, sorted: true }), 'ids', [3, 1, 3]), [1, 3]);
+    const m = new Params();
+    m.setIds({ ids: [5, 5, 2] });
+    assertDeepEqual(m.ids, [2, 5]);
+    assertThrows(() => m.setIds({ ids: [2, 7] }), /^invalid ids\[1\] 7; allowed: 1, 2, 3, 5$/);
+  });
+
+  test('Reparatur verwirft in Listen nur die ungültigen Einträge', () => {
+    const m = Rules.fromJSON({ _schema: SCHEMA, ids: [5, 1, 1, 99, 3] }, { repair: true });
+    assertDeepEqual(m.ids, [1, 3, 5]);
+  });
+
+  test('Reparatur: keine Liste fällt auf die Vorgabe', () => {
+    const seen = [];
+    const m = Rules.fromJSON({ _schema: SCHEMA, ids: 'x' }, { repair: true, onRepair: (n) => seen.push(n) });
+    assertDeepEqual(m.ids, []);
+    assertDeepEqual(seen, ['ids']);
+  });
+
+  test('Reparatur meldet jedes zurückgesetzte Feld', () => {
+    const seen = [];
+    const m = RepairBoard.fromJSON({ _schema: { name: 'RepairBoard', version: '1.0' }, a: -1, b: '' },
+      { repair: true, onRepair: (name, err) => { seen.push(name); assertTrue(err instanceof Error); } });
+    assertDeepEqual(seen, ['a', 'b']);
+    assertEqual(m.a, 0);
+    assertEqual(m.b, 'x');
+  });
+
+  test('Reparatur meldet eine gekürzte Liste', () => {
+    const seen = [];
+    Rules.fromJSON({ _schema: SCHEMA, ids: [1, 99] }, { repair: true, onRepair: (n, err) => seen.push([n, err.message]) });
+    assertDeepEqual(seen, [['ids', 'invalid ids[1] 99; allowed: 1, 2, 3, 5']]);
+  });
+
+  test('defineState lehnt eine Funktion als default ab', () => {
+    assertThrows(() => defineState({ x: number({ default: () => 1 }) }), /^state field x: default must not be a function$/);
+  });
+});

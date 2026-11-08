@@ -69,7 +69,11 @@ export const index = (path, opts) => spec('index', { path }, opts);
  * @param {string} path @param {{ key?: string }} [opts] @returns {Readonly<object>}
  */
 export const idOf = (path, { key = 'id', ...opts } = {}) => spec('idOf', { path, key }, opts);
-/** Liste. @param {object} item @param {object} [opts] @returns {Readonly<object>} */
+/**
+ * Liste. `unique`: ohne Doppelte; `sorted`: Zahlen numerisch, sonst per `localeCompare`.
+ * Gesetzte Werte werden in diese Normalform gebracht.
+ * @param {object} item @param {{ unique?: boolean, sorted?: boolean } & object} [opts] @returns {Readonly<object>}
+ */
 export const list = (item, opts) => spec('list', { item }, opts);
 /** Objekt mit festen Schlüsseln, gleicher Werttyp. @param {readonly string[]} keys @param {object} value @param {object} [opts] @returns {Readonly<object>} */
 export const record = (keys, value, opts) => spec('record', { keys: Object.freeze([...keys]), value }, opts);
@@ -370,7 +374,7 @@ export function checkValue(s, name, value, ctx = {}) {
     }
     case 'list':
       requireForm(name, value, Array.isArray(value), 'a list');
-      return value.map((v, i) => checkValue(s.item, `${name}[${i}]`, v, ctx));
+      return normalList(s, value.map((v, i) => checkValue(s.item, `${name}[${i}]`, v, ctx)));
     case 'record': {
       requireForm(name, value, isPlainObject(value), `an object with keys ${s.keys.join(', ')}`);
       for (const k of Object.keys(value)) requireKnownId(`${name} key`, k, s.keys);
@@ -421,6 +425,34 @@ export function checkValue(s, name, value, ctx = {}) {
     }
     default: throw new Error(`defineModel: unknown kind ${JSON.stringify(s.kind)}`);
   }
+}
+
+/**
+ * Normalform einer Liste mit `unique`/`sorted`: ohne Doppelte, Zahlen numerisch, Text per `localeCompare`.
+ * @param {object} s Listen-Spec @param {any[]} items @returns {any[]}
+ */
+function normalList(s, items) {
+  let out = s.unique === true ? [...new Set(items)] : items;
+  if (s.sorted === true) {
+    out = [...out].sort((a, b) => (typeof a === 'number' && typeof b === 'number' ? a - b : String(a).localeCompare(String(b))));
+  }
+  return out;
+}
+
+/**
+ * Reparatur eines gespeicherten Werts: Listen verlieren nur ihre ungültigen
+ * Einträge, alles andere wird strikt geprüft.
+ * @param {object} s @param {string} name @param {any} value @param {object} ctx
+ * @param {(err: Error) => void} dropped wird mit dem ersten verworfenen Eintragsfehler gerufen
+ * @returns {any}
+ */
+function repairValue(s, name, value, ctx, dropped) {
+  if (s.kind !== 'list' || !Array.isArray(value) || (s.nullable && value === null)) return checkValue(s, name, value, ctx);
+  const kept = [];
+  value.forEach((v, i) => {
+    try { kept.push(checkValue(s.item, `${name}[${i}]`, v, ctx)); } catch (err) { dropped(err); }
+  });
+  return normalList(s, kept);
 }
 
 /**
@@ -734,6 +766,7 @@ export function stateSchemaOf(x) {
  */
 export function defineState(fields) {
   for (const [name, s] of Object.entries(fields)) {
+    if (typeof s.default === 'function') throw new Error(`state field ${name}: default must not be a function`);
     if (name === '_schema') throw new Error(`defineState: ${name} is a reserved name`);
     if (usesPath(s)) throw new Error(`defineState: ${name} uses index/idOf — paths refer to the model, not to the UI state`);
   }
@@ -1037,12 +1070,13 @@ export function defineModel(schema) {
 
     /**
      * @param {any} json gespeicherter Zustand
-     * @param {{ repair?: boolean, context?: ModelContext }} [opts] `repair`: ungültige Inhaltsfelder
-     *   auf den Vorgabewert setzen statt zu werfen; `context`: Kontext des Models,
-     *   fehlende Felder bekommen ihre Vorgabe daraus
+     * @param {{ repair?: boolean, context?: ModelContext, onRepair?: (name: string, err: Error) => void }} [opts]
+     *   `repair`: ungültige Inhaltsfelder auf den Vorgabewert setzen statt zu werfen, in Listen nur die
+     *   ungültigen Einträge verwerfen; `onRepair`: wird für jedes zurückgesetzte oder gekürzte Feld
+     *   gerufen; `context`: Kontext des Models, fehlende Felder bekommen ihre Vorgabe daraus
      * @returns {any}
      */
-    static fromJSON(json, { repair = false, context } = {}) {
+    static fromJSON(json, { repair = false, context, onRepair } = {}) {
       const m = new this(context);
       if (!isPlainObject(json)) return m;
       json = migrate(json, version, steps);
@@ -1052,11 +1086,17 @@ export function defineModel(schema) {
       // Deklarationsreihenfolge im Schema spielt so keine Rolle.
       const load = (k, s, isView) => {
         if (!Object.hasOwn(json, k)) return;
+        const ctx = { root: m, context: contextOf(m) };
         try {
-          m._v[k] = checkValue(s, k, json[k], { root: m, context: contextOf(m) });
+          if (repair && !isView) {
+            let first = null;
+            m._v[k] = repairValue(s, k, json[k], ctx, (err) => { first ??= err; });
+            if (first) onRepair?.(k, first);
+          } else m._v[k] = checkValue(s, k, json[k], ctx);
         } catch (err) {
           // D11: ein ungültiger gespeicherter Ansichtswert fällt still auf den Vorgabewert.
           if (!repair && !isView) throw err;
+          if (!isView) onRepair?.(k, err);
         }
       };
       for (const dependent of [false, true]) {
@@ -1067,7 +1107,10 @@ export function defineModel(schema) {
         if (inv.test.call(m, m)) continue;
         const onlyView = inv.fields.every((f) => Object.hasOwn(view, f));
         if (!onlyView && !repair) throw invariantError(inv.fields[0], m._v[inv.fields[0]], name);
-        for (const f of inv.fields) m._v[f] = defaultOf(all[f], contextOf(m), f);
+        for (const f of inv.fields) {
+          m._v[f] = defaultOf(all[f], contextOf(m), f);
+          if (!onlyView) onRepair?.(f, invariantError(f, m._v[f], name));
+        }
       }
       return m;
     }
