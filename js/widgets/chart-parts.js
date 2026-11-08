@@ -42,13 +42,19 @@ const pick = (shape, keys) => Object.fromEntries(keys.map((k) => [k, shape[k]]))
 
 /**
  * Ein Diagramm-Widget für einen Typ des Chart-Frameworks.
- * @param {{ name: string, type: string, keys?: Record<string, any>, series?: Record<string, any>|null }} def
+ * Mit `editable` ist die Liste der bearbeitbaren Schlüssel fest vorgegeben (Reihenfolge
+ * wie übergeben) statt aus den `editable`-Markierungen der Schlüssel abgeleitet.
+ * @param {{ name: string, type: string, keys?: Record<string, any>, series?: Record<string, any>|null, editable?: string[] }} def
  * @returns {Readonly<any>}
  */
-export function chartWidget({ name, type, keys = {}, series = null }) {
+export function chartWidget({ name, type, keys = {}, series = null, editable = undefined }) {
   const baseShape = { ...BASE, ...keys };
   const shape = { ...baseShape, ...(series ? { series: list(object(series), opt) } : {}) };
-  const baseKeys = editableOf(baseShape);
+  if (editable) {
+    const unknown = editable.filter((k) => !(k in baseShape));
+    if (unknown.length) throw new Error(`chartWidget ${name}: unknown editable key ${unknown.map((k) => `"${k}"`).join(', ')}`);
+  }
+  const baseKeys = editable ? [...editable] : editableOf(baseShape);
   const seriesKeys = series ? editableOf(series) : [];
   const edits = object({
     ...pick(baseShape, baseKeys),

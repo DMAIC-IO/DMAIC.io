@@ -18,6 +18,9 @@ import Bar from '../../js/core/chart/types/bar.js';
 import Mosaic from '../../js/core/chart/types/mosaic.js';
 import RunChart from '../../js/core/chart/types/run-chart.js';
 import Pareto from '../../js/core/chart/types/pareto.js';
+import Pie from '../../js/core/chart/types/pie.js';
+import pieChart from '../../js/widgets/pie-chart/schema.js';
+import { chartWidget } from '../../js/widgets/chart-parts.js';
 
 suite('Diagramm-Widgets: Schemas', () => {
   test('ein Widget je Typ', () => {
@@ -131,5 +134,26 @@ suite('Diagramm-Widgets: Schemas', () => {
     assertDeepEqual(individualValuePlotChart.editable.base, IndividualValuePlot.editorKeys);
     assertDeepEqual(heatmapChart.editable.base, Heatmap.editorKeys);
     for (const w of [boxplotChart, individualValuePlotChart, heatmapChart]) assertDeepEqual(w.editable.series, []);
+  });
+  test('Torte: bearbeitbar ist genau PieChart.editorKeys, keine Achsenschlüssel', () => {
+    assertEqual(pieChart.chartType, 'pie');
+    assertDeepEqual(pieChart.editable.base, Pie.editorKeys);
+    assertDeepEqual(pieChart.editable.series, []);
+    assertThrows(() => checkValue(pieChart.edits(), 'e', { xLabel: 'x' }), /unknown e key "xLabel"/);
+    assertDeepEqual(checkValue(pieChart.edits(), 'e', { innerRadius: 0.4, sortSlices: 'desc' }), { innerRadius: 0.4, sortSlices: 'desc' });
+  });
+
+  test('Torte: slices mit name, value, color; Modul-Schlüssel gültig, legendTitle und label abgelehnt', () => {
+    const cfg = { title: 'T', slices: [{ name: 'A', value: 3, color: 'red' }, { name: 'B', value: 1 }], showLegend: true, centerLabel: 'n' };
+    assertDeepEqual(checkValue(pieChart.props.config, 'c', cfg), cfg);
+    assertThrows(() => checkValue(pieChart.props.config, 'c', { legendTitle: 'x' }), /unknown c key "legendTitle"/);
+    assertThrows(() => checkValue(pieChart.props.config, 'c', { slices: [{ label: 'A', value: 1 }] }), /c\.slices\[0\]/);
+  });
+
+  test('chartWidget: editable legt die Liste fest, Unbekanntes wirft', () => {
+    const w = chartWidget({ name: 'x', type: 'pie', editable: ['showLegend', 'title'] });
+    assertDeepEqual(w.editable.base, ['showLegend', 'title']);
+    assertThrows(() => checkValue(w.edits(), 'e', { bgColor: 'red' }), /unknown e key "bgColor"/);
+    assertThrows(() => chartWidget({ name: 'x', type: 'pie', editable: ['title', 'nope'] }), /nope/);
   });
 });

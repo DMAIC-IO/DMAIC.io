@@ -288,6 +288,17 @@ suite('Diagramm-Widgets (chart-mount)', () => {
     root.remove();
   });
 
+  test('Torte: Typ pie, Stücke mit name unverändert durchgereicht', async () => {
+    const cm = fakeManager();
+    const cfg = { title: 'T', slices: [{ name: 'A', value: 3, color: 'red' }, { name: 'B', value: 1 }], innerRadius: 0.5 };
+    const { root } = await host('<div x-widget="pie-chart" x-widget-config="cfg"></div>', { cm, extra: { cfg } });
+    assertEqual(cm.log.created[0].type, 'pie');
+    assertEqual(cm.log.created[0].config.slices[0].name, 'A');
+    assertDeepEqual(cm.log.created[0].config.slices, cfg.slices);
+    assertEqual(cm.log.created[0].config.innerRadius, 0.5);
+    root.remove();
+  });
+
   test('config null: kein Diagramm, dann gültig, dann wieder abgebaut', async () => {
     const cm = fakeManager();
     const { root, data } = await host('<div x-widget="histogram-chart" x-widget-config="nothing"></div>', { cm, extra: { none: true } });
