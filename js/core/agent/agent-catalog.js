@@ -17,7 +17,7 @@
  */
 import { ERRORS } from './agent-contract.js';
 import { axiError } from './agent-errors.js';
-import { getAllPhaseIds } from '../cycles/cycles.js';
+import { getAllPhaseIds, getPhaseIds } from '../cycles/cycles.js';
 import { allowedPhasesFor as phasesFor } from '../router/instance-ops.js';
 
 /**
@@ -174,6 +174,7 @@ export function buildWorld({ moduleRegistry, stateManager, i18n, registry, compl
  */
 export async function describeModule({ moduleRegistry, i18n, registry, getHelp }, moduleId, sections) {
   const def = moduleRegistry.get(moduleId);
+  const cycle = moduleRegistry.getActiveCycle();
   // Ein Name, den die Modulregistry nicht kennt, bekam eine leere
   // Pseudo-Beschreibung mit `phase: 'extras'` — eine fehlerfreie Antwort für
   // ein Modul, das es nicht gibt. Erreichbar nur über eine Referenz, weil
@@ -216,7 +217,7 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
     name: i18n.t(`modules.${moduleId}.name`),
     whenToUse: whenToUse(i18n, moduleId),
     available: entry.available === true,
-    phase: allowedPhasesFor(def, moduleRegistry.getActiveCycle())[0],
+    phase: allowedPhasesFor(def, cycle)[0],
     actions: Object.entries(entry.actions).map(([name, action]) => ({
       name,
       // i18n hat Vorrang; die JSDoc-Prosa ist nur der Rückfall.
@@ -234,12 +235,13 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
       })),
       // Nur an einem generischen Setter mit erklärter Schlüsselfläche
       // (`@param {keyof Params} key`): je Schlüssel Typ und Satz.
-      ...describeKeys(i18n, moduleId, action),
+      ...describeKeys(i18n, moduleId, action, cycle),
     })),
     fields: Object.entries(entry.fields).map(([name, field]) => ({
       name,
       type: field.type,
       bulk: field.bulk === true,
+      ...(field.bulk === true && field.bulkKind ? { bulkKind: field.bulkKind } : {}),
       // `derived` sagt dem Agenten, woher die Lesefläche kommt: false heißt
       // „das ist die persistierte Model-Form", true heißt „das Modul
       // hat sie erklärt, weil seine persistierte Form als Lesefläche nutzlos
@@ -247,13 +249,13 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
       // Durchreichen erzeugt der Extraktor die Marke und niemand sieht sie.
       derived: field.derived === true,
       help: contextHelp(i18n, moduleId, `fields.${name}.help`, field.help),
-      ...(Array.isArray(field.rules) ? { rules: [...field.rules] } : {}),
+      ...(Array.isArray(field.rules) ? { rules: expandRules(field.rules, cycle) } : {}),
       // Spaltenslots einer Datensatzliste: je Slot die Regeln (`types:numeric`, `required`, …).
       ...(field.slots && typeof field.slots === 'object'
         ? { slots: Object.fromEntries(Object.entries(field.slots).map(([k, v]) => [k, [...v]])) } : {}),
       // Nur an einem Feld vom Typ einer Typedef (`{Result|null} result`):
       // je Kennzahl Typ und Satz, verschachtelt.
-      ...describeKeys(i18n, moduleId, field),
+      ...describeKeys(i18n, moduleId, field, cycle),
     })),
     asyncTasks: (entry.asyncTasks ?? []).map((task) => ({
       name: task.name,
@@ -264,6 +266,24 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
     sections: sectionList,
     prose,
   };
+}
+
+/**
+ * Regeln für `describe`: das Token `phase` wird um die Phasen des aktiven
+ * Zyklus ergänzt (`phases:<id>,<id>,…`). Der Katalogeintrag bleibt zyklusfrei
+ * (er wird einmal gebaut und zwischengespeichert), darum geschieht es hier.
+ *
+ * @param {string[]} rules
+ * @param {string} cycle  Id des aktiven Zyklus
+ * @returns {string[]}
+ */
+function expandRules(rules, cycle) {
+  const out = [];
+  for (const r of rules) {
+    out.push(r);
+    if (r === 'phase') out.push(`phases:${getPhaseIds(cycle).join(',')}`);
+  }
+  return out;
 }
 
 /**
@@ -280,9 +300,10 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
  * @param {object} i18n
  * @param {string} moduleId
  * @param {{ keysOf?: string, keysHelp?: string, keys?: Record<string, object> }} node
+ * @param {string} cycle  Id des aktiven Zyklus (für die Phasenregel)
  * @returns {{ keys: object[] }}
  */
-function describeKeys(i18n, moduleId, node) {
+function describeKeys(i18n, moduleId, node, cycle) {
   if (!node.keys || !node.keysOf) return { keys: [] };
   // `keysHelp` (Schema-Kommandos, agent-schema.js) nennt den Hilfepfad der
   // Schlüssel ausdrücklich — `actions.<name>.params` statt `types.<Typedef>`.
@@ -294,8 +315,8 @@ function describeKeys(i18n, moduleId, node) {
       help: contextHelp(i18n, moduleId, `${prefix}.${key}`, k.help),
       // Immer da, wie `keys`: die Vertragsform nennt es an jedem Schlüssel.
       optional: k.optional === true,
-      ...(Array.isArray(k.rules) ? { rules: [...k.rules] } : {}),
-      ...describeKeys(i18n, moduleId, k),
+      ...(Array.isArray(k.rules) ? { rules: expandRules(k.rules, cycle) } : {}),
+      ...describeKeys(i18n, moduleId, k, cycle),
     })),
   };
 }

@@ -8,7 +8,7 @@ import {
 } from '../../../js/core/agent/agent-catalog.js';
 import { OPS } from '../../../js/core/agent/agent-contract.js';
 import { pathExistsInShape } from '../../../js/core/agent/agent-shape.js';
-import { getAllPhaseIds } from '../../../js/core/cycles/cycles.js';
+import { getAllPhaseIds, getPhaseIds } from '../../../js/core/cycles/cycles.js';
 
 const DEFS = [
   { id: 'worksheet', phase: 'data', group: 'collect' },
@@ -237,6 +237,28 @@ suite('agent catalog — module.describe', () => {
     const reg = { ...makeRegistry(), get: (id) => (id === 'hist' ? { id: 'hist', phase: 'analyze' } : DEFS.find(d => d.id === id)) };
     const out = await describeModule({ ...deps, moduleRegistry: reg }, 'hist');
     assertDeepEqual(out.fields[0].slots, { valueRef: ['columnRef', 'required'] });
+  });
+
+  test('describe: Phasenfeld und Phasenparameter nennen die Phasen des aktiven Zyklus', async () => {
+    const registry = {
+      ...REGISTRY,
+      'cal': { tagged: true, available: true, violations: [], actions: { addEvent: { params: [], returns: 'string', help: '', keysOf: 'Cmd', keysHelp: 'actions.addEvent.params', keys: { phase: { type: 'string', help: '', rules: ['phase'] } } } }, fields: { focus: { type: 'string', help: '', bulk: false, rules: ['phase'] } } },
+    };
+    const reg = (cycle) => ({ ...makeRegistry(), getActiveCycle: () => cycle, get: (id) => (id === 'cal' ? { id: 'cal', phase: 'define' } : DEFS.find(d => d.id === id)) });
+    const dmaic = await describeModule({ ...deps, registry, moduleRegistry: reg('dmaic') }, 'cal');
+    assertDeepEqual(dmaic.fields[0].rules, ['phase', 'phases:define,measure,analyze,improve,control']);
+    assertDeepEqual(dmaic.actions[0].keys[0].rules, ['phase', 'phases:define,measure,analyze,improve,control']);
+    const eightd = await describeModule({ ...deps, registry, moduleRegistry: reg('eightd') }, 'cal');
+    assertDeepEqual(eightd.fields[0].rules, ['phase', 'phases:' + getPhaseIds('eightd').join(',')]);
+  });
+
+  test('describe reicht bulkKind eines Massenfelds durch', async () => {
+    const registry = { ...REGISTRY, 'tree': { tagged: true, available: true, violations: [], actions: {}, fields: { nodes: { type: 'object', help: '', bulk: true, bulkKind: 'tree' }, rows: { type: 'any[]', help: '', bulk: true, bulkKind: 'table' }, plain: { type: 'string', help: '', bulk: false } } } };
+    const reg = { ...makeRegistry(), get: (id) => (id === 'tree' ? { id: 'tree', phase: 'define' } : DEFS.find(d => d.id === id)) };
+    const out = await describeModule({ ...deps, registry, moduleRegistry: reg }, 'tree');
+    assertEqual(out.fields[0].bulkKind, 'tree');
+    assertEqual(out.fields[1].bulkKind, 'table');
+    assertEqual('bulkKind' in out.fields[2], false);
   });
 
   test('module.describe mit unbekanntem Modul meldet unknown_module statt einer Leerbeschreibung', async () => {

@@ -129,7 +129,7 @@ export const OPS = deepFreeze({
       actions: [{ name: 'string', help: 'string', returns: 'string',
                   params: [{ name: 'string', type: 'string', optional: 'boolean', help: 'string' }],
                   keys: [DESCRIBED_KEY] }],
-      fields:  [{ name: 'string', type: 'string', help: 'string', bulk: 'boolean',
+      fields:  [{ name: 'string', type: 'string', help: 'string', bulk: 'boolean', bulkKind: 'string',
                   derived: 'boolean', rules: ['string'], slots: { '*': ['string'] }, keys: [DESCRIBED_KEY] }],
       asyncTasks: [{ name: 'string', auto: 'boolean', help: 'string', params: ['string'] }],
       sections: [{ id: 'string', title: 'string' }],
@@ -215,12 +215,13 @@ export const OPS = deepFreeze({
  *   `'tree'` → `nodeCount` + `depth`. Fehlt es an einem Massenfeld, gilt
  *   `'table'`. Die Menge ist durchgesetzt, nicht nur zugesichert: eine andere
  *   Art ist ein Verstoß des Moduls (`invalid_bulk_kind:<feld>:<wert>`,
- *   `tools/build/agent-data.mjs`) und das Modul damit nicht freigegeben. `describe()` gibt es nicht heraus — die Deskriptorform steht
- *   in der Antwort von `read()`, und `describe()` ist Vertragsfläche.
+ *   `tools/build/agent-data.mjs`) und das Modul damit nicht freigegeben.
+ *   `describe()` nennt `bulkKind` am Massenfeld; die Deskriptorform selbst
+ *   steht in der Antwort von `read()`.
  *   `omit` steht NUR an einem Feld mit Auslassung (`@agentOmit` am
  *   Model-Feld, `[omit:…]` im Typedef) und nennt Pfade relativ zum Feld;
- *   `read()` liefert dort `{ $omitted: true, bytes }` statt des Werts. Wie
- *   `bulkKind` nicht in `describe()`.
+ *   `read()` liefert dort `{ $omitted: true, bytes }` statt des Werts. Nicht
+ *   in `describe()`.
  *   `via` steht NUR an einem abgeleiteten Feld ohne eigenen Setter
  *   (`[via: a, b]` im Typedef) und nennt die Katalogaktionen, die es
  *   verändern; die Feldhilfe muss sie nennen. Nicht in `describe()`.

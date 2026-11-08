@@ -79,7 +79,9 @@ eindeutig sein (`duplicate_id`).
 | `instance.set` | `instance`, `values` | `{ instanceId, values }` | ja |
 
 `module.describe` liefert je Aktion `{ name, help, returns, params, keys }`
-und je Lesefeld `{ name, type, help, bulk, derived, keys }`. `derived: false`
+und je Lesefeld `{ name, type, help, bulk, bulkKind?, derived, rules?, keys }`. `bulkKind`
+(`'table'` oder `'tree'`) steht nur an einem Massenfeld und nennt die Art seines
+Umfangs-Deskriptors in `read()`. `derived: false`
 heißt „die Lesefläche ist die persistierte Model-Form", `true` heißt „das
 Modul hat sie eigens erklärt".
 
@@ -157,7 +159,9 @@ Model nicht — das zeigt sich im abgeleiteten Ergebnis
 (`time` auf 5 Minuten gerastert, Vorgabe `09:00`; `duration` in Minuten, Vorgabe 60);
 `updateEvent` nimmt `{ id, … }` mit denselben optionalen Schlüsseln; `removeEvent` nimmt
 `{ id }`. `read()` liefert die Termine unter `events`. `phase` akzeptiert jede Phase eines
-bekannten Zyklus; ohne `phase` gilt die erste Phase des aktiven Zyklus. Die Aktionen
+bekannten Zyklus; ohne `phase` gilt die erste Phase des aktiven Zyklus. In
+`module.describe` trägt `phase` (Feld und Parameter) die Regeln
+`['phase', 'phases:<id>,<id>,…']` mit den Phasen des aktiven Zyklus. Die Aktionen
 `setAxisFrom`, `setAxisTo`, `setDayFrom` und `setDayTo` gibt es nicht mehr; ein Aufruf
 antwortet mit `unknown_method`. Tagesachse und Wochentage sind Ansichtsfelder.
 
@@ -372,7 +376,8 @@ das Feldschema — beides ohne Werte.
 
 **Umfang statt Masse.** Ein Massenfeld (`bulk: true` in `module.describe`)
 kommt ohne `options.fields` nicht als Daten, sondern als
-Umfangs-Deskriptor, der seine Art trägt:
+Umfangs-Deskriptor, der seine Art trägt (`bulkKind` des Felds in
+`module.describe` nennt sie vorab):
 
 | Art | Deskriptor |
 |---|---|
@@ -566,6 +571,11 @@ Asynchrone Abläufe (2026-11-07, `contract` bleibt `2`): neue Aktionen
 `<name>` und `<name>.cancel`, neues Feld `asyncTasks` in `read()` und
 `describe`. Neue Aktionen und Antwortfelder, gleiche Hülle, keine neuen
 Fehlercodes — kein Bruch.
+
+`bulkKind` und Phasen in `describe` (2026-11-08, `contract` bleibt `2`): Massenfelder
+tragen `bulkKind`; Felder und Parameter vom Typ Phase tragen die Regeln
+`phase` und `phases:<id>,…` mit den Phasen des aktiven Zyklus. Neue
+Antwortfelder, gleiche Hülle, keine neuen Fehlercodes — kein Bruch.
 
 Aktionsnamen mit Punkt (`draft.addQuestion`) sind ebenfalls kein Bruch: die
 Aktionsform `{ op: 'instance.call', instance, method, args }` bleibt,

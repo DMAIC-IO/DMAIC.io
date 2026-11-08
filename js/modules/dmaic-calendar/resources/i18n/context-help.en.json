@@ -22,7 +22,7 @@
         "help": "A description of the appointment as free text; empty when not given."
       },
       "phase": {
-        "help": "The phase the appointment is coloured by. Any phase of any cycle is valid; when not given, the first phase of the active cycle. An appointment from another cycle keeps its phase — the dialog offers it as an extra choice “Phase (cycle)”."
+        "help": "The phase the appointment is coloured by. Any phase of a known cycle is valid; the rules list the phases of the active cycle; when not given, the first phase of the active cycle. An appointment from another cycle keeps its phase — the dialog offers it as an extra choice “Phase (cycle)”."
       },
       "source": {
         "help": "Where the appointment comes from. Only appointments from the task list carry the value todo; change them there, because the next report from the task list replaces them."
@@ -53,7 +53,7 @@
         "time": "The start as HH:MM on a 5-minute grid; 09:00 when not given. A time off the grid is an error.",
         "duration": "The duration in whole minutes, at least 5; 60 when not given.",
         "desc": "The description; empty when not given.",
-        "phase": "The phase of the appointment; any phase of any cycle is valid, when not given the first phase of the active cycle.",
+        "phase": "The phase of the appointment; any phase of a known cycle is valid; the rules list the phases of the active cycle, when not given the first phase of the active cycle.",
         "command": "The command as one object with title, date, time, duration, desc and phase."
       }
     },
@@ -66,7 +66,7 @@
         "time": "The new start as HH:MM on a 5-minute grid.",
         "duration": "The new duration in whole minutes, at least 5.",
         "desc": "The new description.",
-        "phase": "The new phase; any phase of any cycle is valid.",
+        "phase": "The new phase; any phase of a known cycle is valid; the rules list the phases of the active cycle.",
         "command": "The command as one object with id, title, date, time, duration, desc and phase."
       }
     },
