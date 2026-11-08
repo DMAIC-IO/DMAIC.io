@@ -565,19 +565,37 @@ export function checkTemplateBindings(files, schema, widgets = new Map()) {
   return out;
 }
 
-/** Ist `n` (PropertyAccess/ElementAccess) ein Ziel unterhalb von `this.model`? */
-function isModelTarget(n) {
+/** Mutierende Array-Methoden: ein Aufruf auf einem Model-Ziel schreibt am Kommando vorbei. */
+const MUTATORS = new Set(['push', 'pop', 'shift', 'unshift', 'splice', 'sort', 'reverse', 'fill', 'copyWithin']);
+/** Knoten, die einen eigenen Gültigkeitsbereich für `const`/`let`/Parameter öffnen. */
+const isScope = (n) => ts.isBlock(n) || ts.isFunctionLike(n) || ts.isForStatement(n) || ts.isForOfStatement(n) || ts.isForInStatement(n) || ts.isCaseBlock(n) || ts.isCatchClause(n);
+const isThisModel = (n) => ts.isPropertyAccessExpression(n) && n.expression.kind === ts.SyntaxKind.ThisKeyword && n.name.text === 'model';
+
+/**
+ * Zeigt `n` auf das Model oder einen Pfad darunter? Ein Alias ist ein
+ * Bezeichner, der mit `this.model` oder einem Pfad darunter initialisiert
+ * wurde. Ohne `root` zählt nur ein Pfad *unter* `this.model`/dem Alias
+ * (Zuweisungsziel), mit `root` auch `this.model`/der Alias selbst
+ * (Empfänger eines Aufrufs, Initialisierer eines Alias).
+ * @param {import('typescript').Node} n
+ * @param {(name: string) => boolean} isAlias
+ * @param {boolean} [root]
+ */
+function refersToModel(n, isAlias, root = false) {
   let depth = 0;
-  while (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) {
-    if (ts.isPropertyAccessExpression(n) && n.expression.kind === ts.SyntaxKind.ThisKeyword && n.name.text === 'model') return depth > 0;
+  while (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n) || ts.isParenthesizedExpression(n)) {
+    if (isThisModel(n)) return root || depth > 0;
+    if (!ts.isParenthesizedExpression(n)) depth += 1;
     n = n.expression;
-    depth += 1;
   }
-  return false;
+  return ts.isIdentifier(n) && isAlias(n.text) && (root || depth > 0);
 }
 
 /**
- * Gate Schreibweg: im Viewmodel keine Zuweisung an `this.model.…`.
+ * Gate Schreibweg: in `viewmodel/` und `tile/` keine Zuweisung an das Model
+ * — weder über `this.model.…` noch über einen Alias (`const m = this.model`,
+ * `const { list } = this.model`), auch nicht über mutierende Aufrufe
+ * (`push`, `splice`, …, `Object.assign(<Model-Ziel>, …)`).
  * @param {{ path: string, text: string }[]} files
  * @returns {string[]}
  */
@@ -585,18 +603,42 @@ export function checkWritePath(files) {
   const out = [];
   const HINT = '— über ein Kommando, instance.set oder x-model/x-field schreiben';
   for (const { path, text } of files) {
-    if (!path.startsWith('viewmodel/') || !path.endsWith('.js')) continue;
+    if (!(path.startsWith('viewmodel/') || path.startsWith('tile/')) || !path.endsWith('.js')) continue;
     const sf = parseJs(path, text);
+    /** Je Gültigkeitsbereich: Name → ist Alias auf das Model. */
+    const scopes = [new Map()];
+    const isAlias = (name) => {
+      for (let i = scopes.length - 1; i >= 0; i -= 1) if (scopes[i].has(name)) return scopes[i].get(name);
+      return false;
+    };
+    const declare = (name, alias) => {
+      if (ts.isIdentifier(name)) { scopes.at(-1).set(name.text, alias); return; }
+      for (const el of name.elements) if (!ts.isOmittedExpression(el)) declare(el.name, alias);
+    };
+    const target = (n) => refersToModel(n, isAlias);
     const visit = (n) => {
-      if (ts.isBinaryExpression(n) && n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && n.operatorToken.kind <= ts.SyntaxKind.LastAssignment && isModelTarget(n.left)) {
+      const scoped = isScope(n);
+      if (scoped) scopes.push(new Map());
+      if (ts.isVariableDeclaration(n)) declare(n.name, !!n.initializer && refersToModel(n.initializer, isAlias, true));
+      else if (ts.isParameter(n)) declare(n.name, false);
+      if (ts.isBinaryExpression(n) && n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && n.operatorToken.kind <= ts.SyntaxKind.LastAssignment && target(n.left)) {
         out.push(`write: ${path}: ${n.left.getText(sf)} ${n.operatorToken.getText(sf)} … ${HINT}`);
       } else if ((ts.isPrefixUnaryExpression(n) || ts.isPostfixUnaryExpression(n))
-        && (n.operator === ts.SyntaxKind.PlusPlusToken || n.operator === ts.SyntaxKind.MinusMinusToken) && isModelTarget(n.operand)) {
+        && (n.operator === ts.SyntaxKind.PlusPlusToken || n.operator === ts.SyntaxKind.MinusMinusToken) && target(n.operand)) {
         out.push(`write: ${path}: ${n.getText(sf)} ${HINT}`);
-      } else if (ts.isDeleteExpression(n) && isModelTarget(n.expression)) {
+      } else if (ts.isDeleteExpression(n) && target(n.expression)) {
         out.push(`write: ${path}: ${n.getText(sf)} ${HINT}`);
+      } else if (ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression)) {
+        const callee = n.expression;
+        if (MUTATORS.has(callee.name.text) && refersToModel(callee.expression, isAlias, true)) {
+          out.push(`write: ${path}: ${callee.getText(sf)}(…) ${HINT}`);
+        } else if (ts.isIdentifier(callee.expression) && callee.expression.text === 'Object' && callee.name.text === 'assign'
+          && n.arguments[0] && refersToModel(n.arguments[0], isAlias, true)) {
+          out.push(`write: ${path}: Object.assign(${n.arguments[0].getText(sf)}, …) ${HINT}`);
+        }
       }
       ts.forEachChild(n, visit);
+      if (scoped) scopes.pop();
     };
     visit(sf);
   }

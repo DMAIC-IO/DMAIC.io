@@ -367,6 +367,33 @@ test('Schreibweg: keine Zuweisung an this.model.<feld> im Viewmodel', () => {
   ]);
 });
 
+test('Schreibweg: tile/ zählt, Aliase auf this.model und mutierende Aufrufe sind Schreibzugriffe', () => {
+  const H = '— über ein Kommando, instance.set oder x-model/x-field schreiben';
+  const files = [
+    { path: 'tile/tile.js', text: 'function a() { this.model.title = "x"; }\n' },
+    { path: 'viewmodel/alias.js', text: [
+      'function b() { const m = this.model; m.title = 1; m = null; }',
+      'function c() { const { list } = this.model; list.push(1); list.x = 2; }',
+      'function d() { const items = this.model.items; items.sort(); items[0] = 1; }',
+      'function e() { this.model.list.splice(0, 1); Object.assign(this.model, { a: 1 }); Object.assign(this.model.cfg, {}); }',
+      'function f() { const m = []; m.push(1); const n = this.model.items.slice(); n.push(1); Object.assign({}, this.model); }',
+      'function g() { const m = this.model; { const m = []; m.push(1); } }',
+    ].join('\n') },
+    { path: 'domain/model.js', text: 'function h() { this.model.list.push(1); }\n' },
+  ];
+  assert.deepEqual(checkWritePath(files), [
+    `write: tile/tile.js: this.model.title = … ${H}`,
+    `write: viewmodel/alias.js: m.title = … ${H}`,
+    `write: viewmodel/alias.js: list.push(…) ${H}`,
+    `write: viewmodel/alias.js: list.x = … ${H}`,
+    `write: viewmodel/alias.js: items.sort(…) ${H}`,
+    `write: viewmodel/alias.js: items[0] = … ${H}`,
+    `write: viewmodel/alias.js: this.model.list.splice(…) ${H}`,
+    `write: viewmodel/alias.js: Object.assign(this.model, …) ${H}`,
+    `write: viewmodel/alias.js: Object.assign(this.model.cfg, …) ${H}`,
+  ]);
+});
+
 test('Hilfe: jedes Feld, Kommando und jeder Parameter in de und en', () => {
   const full = {
     fields: { title: { help: 'T' }, alpha: { help: 'A' }, mode: { help: 'M' }, done: { help: 'D' } },
