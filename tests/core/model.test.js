@@ -3,6 +3,7 @@
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../test-utils.js';
 import { getPhaseIds } from '../../js/core/cycles/cycles.js';
+import { COLUMN_TYPES } from '../../js/core/datagrid/datagrid-utils.js';
 import {
   defineModel, command, text, number, boolean, oneOf, index, idOf, list, record, object,
   defaultOf, checkValue, describeType, schemaOf, fieldSpec, defineState, stateSchemaOf,
@@ -695,6 +696,28 @@ suite('Feldart columnRef', () => {
     assertEqual(columnRef().minCount, 0);
   });
 
+  test('maxCount wird durchgereicht, Vorgabe fehlt', () => {
+    assertEqual(columnRef({ maxCount: 3 }).maxCount, 3);
+    assertEqual(columnRef().maxCount, undefined);
+  });
+
+  test('unbekannte Spaltenart wirft beim Anlegen', () => {
+    assertThrows(() => columnRef({ types: ['nummer'] }),
+      /^invalid types nummer; allowed: numeric, text, date, time, currency, percent, binary$/);
+    assertThrows(() => columnRef({ types: ['numeric', 'x', 'y'] }), /^invalid types x, y; allowed: /);
+    assertDeepEqual([...columnRef({ types: ['numeric', 'binary'] }).types], ['numeric', 'binary']);
+  });
+
+  test('bekannte Spaltenarten entsprechen COLUMN_TYPES', () => {
+    for (const t of Object.keys(COLUMN_TYPES)) columnRef({ types: [t] });
+    assertDeepEqual(Object.keys(COLUMN_TYPES).sort(), ['binary', 'currency', 'date', 'numeric', 'percent', 'text', 'time']);
+  });
+
+  test('describeType: list(columnRef) mit und ohne null', () => {
+    assertEqual(describeType(list(columnRef())), 'Array<{ instanceId: string, sheetId?: string, columnId: string }|null>');
+    assertEqual(describeType(list(columnRef({ nullable: false }))), '{ instanceId: string, sheetId?: string, columnId: string }[]');
+  });
+
   test('list(columnRef) prüft jeden Eintrag', () => {
     const s = list(columnRef({ nullable: false }));
     assertDeepEqual(checkValue(s, 'k', [ref, ref]), [ref, ref]);
@@ -877,6 +900,13 @@ suite('Feldart datasets', () => {
     assertThrows(() => checkValue(ds, 'datasets', [{ valueRef: 'x' }]), /datasets\[0\]\.valueRef/);
     const single = datasets({ a: columnRef() });
     assertThrows(() => checkValue(single, 'd', [{ a: null }, { a: null }]), /allowed: exactly one row/);
+  });
+
+  test('Slot mit nullable:false lehnt null ab', () => {
+    const strict = datasets({ a: columnRef({ nullable: false }), b: columnRef() }, { multi: true });
+    assertThrows(() => checkValue(strict, 'datasets', [{ a: null, b: null }]), /^invalid datasets\[0\]\.a null; allowed: a column reference/);
+    assertThrows(() => checkValue(strict, 'datasets', [{ b: null }]), /^invalid datasets\[0\]\.a /);
+    assertDeepEqual(checkValue(strict, 'datasets', [{ a: ref, b: null }]), [{ a: ref, b: null }]);
   });
 
   test('describeType', () => {

@@ -26,6 +26,7 @@ export function mount(root, { value, services, effect }) {
     title: text(`${base}.${key}.title`, sharedKey(key)),
     ...(s.types ? { types: [...s.types] } : {}),
     ...(s.minCount ? { minCount: s.minCount } : {}),
+    ...(s.maxCount !== undefined ? { maxCount: s.maxCount } : {}),
     ...(s.required ? { required: true } : {}),
     ...(s.group ? { group: true } : {}),
     helpKey: `${base}.${key}.help`,

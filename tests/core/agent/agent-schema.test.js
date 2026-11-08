@@ -167,6 +167,13 @@ suite('schemaAgentEntry: derived', () => {
     assertDeepEqual(f.cs.rules, ['columnRef']);
   });
 
+  test('columnRef maxCount erscheint als Token maxCount:<n>', () => {
+    const M = defineModel({ fields: { c: columnRef({ types: ['numeric'], minCount: 1, maxCount: 4 }), d: columnRef({ maxCount: 0 }) } });
+    const f = schemaAgentEntry(M).fields;
+    assertDeepEqual(f.c.rules, ['columnRef', 'types:numeric', 'minCount:1', 'maxCount:4']);
+    assertDeepEqual(f.d.rules, ['columnRef', 'maxCount:0']);
+  });
+
   test('list unique/sorted erscheint als rules am Feld', () => {
     const M = defineModel({ fields: {
       ids: list(oneOf([1, 2, 3]), { unique: true, sorted: true, default: [] }),

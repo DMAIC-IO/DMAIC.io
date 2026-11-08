@@ -7,6 +7,7 @@ import Alpine from '../../vendor/alpinejs/csp.js';
 import { registerFieldDirective } from '../../js/core/field-directive.js';
 import { WIDGETS } from '../../js/widgets/registry.js';
 import { defineModel, datasets, columnRef } from '../../js/core/model.js';
+import { mount as mountColumnPicker } from '../../js/widgets/column-picker/mount.js';
 
 const flush = () => new Promise((r) => setTimeout(r, 0));
 
@@ -130,5 +131,35 @@ suite('Widget dataset-picker', () => {
     const now = host.querySelector('select[data-slot="valueRef"]');
     assertEqual(now.value, '', 'abgelehnter Wert wird nicht angezeigt');
     host.remove();
+  });
+});
+
+suite('Widget dataset-picker und column-picker — maxCount', () => {
+  test('dataset-picker: maxCount des Slots filtert Spalten', async () => {
+    const Capped = defineModel({ fields: { datasets: datasets({ valueRef: columnRef({ types: ['numeric'], maxCount: 2 }) }) } });
+    const { host } = await mountPicker(Capped);
+    const sel = host.querySelector('select[data-slot="valueRef"]');
+    assertEqual([...sel.options].filter((o) => o.hasAttribute('value') && o.value).length, 0);
+    host.remove();
+    const Open = defineModel({ fields: { datasets: datasets({ valueRef: columnRef({ types: ['numeric'], maxCount: 3 }) }) } });
+    const r = await mountPicker(Open);
+    assertEqual([...r.host.querySelector('select[data-slot="valueRef"]').options].filter((o) => o.hasAttribute('value') && o.value).length, 2);
+    r.host.remove();
+  });
+
+  test('column-picker mount reicht maxCount an den Spaltenfilter', () => {
+    const count = (spec) => {
+      const root = document.createElement('div');
+      document.body.append(root);
+      const services = { eventBus: { on() {}, off() {} }, stateManager, i18n: { t: (k) => k } };
+      const value = { spec, get: () => null, set: () => true };
+      const w = mountColumnPicker(root, { value, services, effect: () => {} });
+      const n = [...root.querySelectorAll('option')].filter((o) => o.hasAttribute('value') && o.value).length;
+      w.destroy(); root.remove();
+      return n;
+    };
+    assertEqual(count({ kind: 'columnRef', types: ['numeric'], minCount: 0 }), 2);
+    assertEqual(count({ kind: 'columnRef', types: ['numeric'], minCount: 0, maxCount: 2 }), 0);
+    assertEqual(count({ kind: 'columnRef', types: ['numeric'], minCount: 0, maxCount: 3 }), 2);
   });
 });

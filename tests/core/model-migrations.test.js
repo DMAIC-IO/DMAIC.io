@@ -146,6 +146,21 @@ suite('defineModel — _schema', () => {
     assertDeepEqual(json._schema, { version: '1.0' });
   });
 
+  test('_schema als String oder Array gilt nicht als Altstand ohne Version', () => {
+    const P = defineModel({ fields: { t: text() } });
+    assertThrows(() => P.fromJSON({ _schema: '1.0', t: 'x' }), /^invalid _schema\.version "1\.0"; allowed: 0 or MAJOR\.MINOR$/);
+    assertThrows(() => P.fromJSON({ _schema: ['1.0'], t: 'x' }), /^invalid _schema\.version \["1\.0"\]; allowed: 0 or MAJOR\.MINOR$/);
+    assertThrows(() => P.fromJSON({ _schema: { name: 'x' }, t: 'x' }), /^invalid _schema\.version undefined; allowed: 0 or MAJOR\.MINOR$/);
+  });
+
+  test('setModelName: zweite Id für dieselbe Klasse wirft, gleiche Id nicht', () => {
+    const Once = defineModel({ version: '1.0', fields: { t: text() } });
+    setModelName(Once, 'a');
+    setModelName(Once, 'a');
+    assertThrows(() => setModelName(Once, 'b'), /^Model \w+ already belongs to module a$/);
+    assertEqual(new Once().toJSON()._schema.name, 'a');
+  });
+
   test('setModelName: name erscheint in _schema, nicht aufzählbar am Model', () => {
     const Named = defineModel({ version: '1.0', fields: { t: text() } });
     setModelName(Named, 'sipoc');

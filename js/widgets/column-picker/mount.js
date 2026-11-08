@@ -17,6 +17,7 @@ export function mount(root, { value, services, effect }) {
     mode: multi ? 'multi' : 'single',
     ...(item.types ? { types: [...item.types] } : {}),
     minCount: item.minCount ?? 0,
+    ...(item.maxCount !== undefined ? { maxCount: item.maxCount } : {}),
     onChange: (v) => { if (!value.set(v ?? empty)) picker.syncValue(value.get() ?? empty); },
   });
   effect(() => picker.syncValue(value.get() ?? empty));

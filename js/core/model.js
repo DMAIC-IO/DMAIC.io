@@ -104,16 +104,30 @@ export const time = (opts) => spec('time', {}, opts);
 export const phase = (opts) => spec('phase', {}, opts);
 
 /**
+ * Spaltenarten eines Arbeitsblatts (Schlüssel von `COLUMN_TYPES` in
+ * `core/datagrid/datagrid-utils.js`; ein Test hält beide gleich — das Model
+ * bleibt frei von DOM-Importen).
+ */
+const COLUMN_KINDS = Object.freeze(['numeric', 'text', 'date', 'time', 'currency', 'percent', 'binary']);
+
+/**
  * Bezug auf eine Spalte eines Arbeitsblatts `{ instanceId, sheetId?, columnId }`.
  * Geprüft wird nur die Form — ob Blatt und Spalte existieren, prüft das
- * Model nicht. `types`/`minCount` sagen, welche Spalten passen (Picker,
+ * Model nicht. `types` (bekannte Spaltenarten)/`minCount`/`maxCount` sagen, welche Spalten passen (Picker,
  * Agent). Nullbar per Vorgabe, Vorgabewert `null`; in Listen
  * `columnRef({ nullable: false })`.
- * @param {{ types?: readonly string[], minCount?: number, nullable?: boolean } & object} [opts]
+ * @param {{ types?: readonly string[], minCount?: number, maxCount?: number, nullable?: boolean } & object} [opts]
  * @returns {Readonly<object>}
  */
-export const columnRef = ({ types, minCount = 0, ...opts } = {}) => spec('columnRef',
-  { types: types ? Object.freeze([...types]) : null, minCount }, { nullable: true, ...opts });
+export const columnRef = ({ types, minCount = 0, maxCount, ...opts } = {}) => {
+  if (types) {
+    const unknown = types.filter((t) => !COLUMN_KINDS.includes(t));
+    if (unknown.length > 0) throw new Error(`invalid types ${unknown.join(', ')}; allowed: ${COLUMN_KINDS.join(', ')}`);
+  }
+  return spec('columnRef',
+    { types: types ? Object.freeze([...types]) : null, minCount, ...(maxCount !== undefined ? { maxCount } : {}) },
+    { nullable: true, ...opts });
+};
 
 /**
  * Datensätze: Liste von Zeilen `{ <slot>: Spaltenbezug|null }`, mindestens
@@ -427,7 +441,7 @@ export function checkValue(s, name, value, ctx = {}) {
         requireForm(at, row, isPlainObject(row), `an object with keys ${slotNames.join(', ')}`);
         for (const k of Object.keys(row)) requireKnownId(`${at} key`, k, slotNames);
         return Object.fromEntries(slotNames.map((k) => [k,
-          row[k] === null || row[k] === undefined ? null : checkValue(s.slots[k], `${at}.${k}`, row[k], ctx)]));
+          (row[k] === null || row[k] === undefined) && s.slots[k].nullable !== false ? null : checkValue(s.slots[k], `${at}.${k}`, row[k], ctx)]));
       });
     }
     default: throw new Error(`defineModel: unknown kind ${JSON.stringify(s.kind)}`);
@@ -877,6 +891,27 @@ export function isSettings(x) {
   return Boolean(x && typeof x === 'object' && SETTINGS_SCHEMAS.has(/** @type {any} */ (x).schema));
 }
 
+/**
+ * Gespeicherte Einstellungen lesen, ohne zu werfen: je Feld der geprüfte
+ * Wert, sonst die Vorgabe. Unbekannte Schlüssel fallen weg.
+ * @param {{ schema: { fields: Record<string, object> } }} Settings aus `defineSettings`
+ * @param {unknown} stored
+ * @returns {Record<string, any>}
+ */
+export function readSettings(Settings, stored) {
+  /** @type {Record<string, unknown>} */
+  const src = isPlainObject(stored) ? /** @type {any} */ (stored) : {};
+  const out = {};
+  for (const [name, s] of Object.entries(Settings.schema.fields)) {
+    try {
+      out[name] = Object.hasOwn(src, name) ? checkValue(/** @type {any} */ (s), name, src[name]) : defaultOf(/** @type {any} */ (s));
+    } catch {
+      out[name] = defaultOf(/** @type {any} */ (s));
+    }
+  }
+  return out;
+}
+
 // ─── Widgets ────────────────────────────────────────────────
 
 const WIDGET_NAME = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
@@ -909,27 +944,6 @@ export function defineWidget({ name, props = {}, value = null, forKind = null, a
  * @param {unknown} x @returns {boolean}
  */
 export const isWidget = (x) => Boolean(x && /** @type {any} */ (x)[WIDGET]);
-
-/**
- * Gespeicherte Einstellungen lesen, ohne zu werfen: je Feld der geprüfte
- * Wert, sonst die Vorgabe. Unbekannte Schlüssel fallen weg.
- * @param {{ schema: { fields: Record<string, object> } }} Settings aus `defineSettings`
- * @param {unknown} stored
- * @returns {Record<string, any>}
- */
-export function readSettings(Settings, stored) {
-  /** @type {Record<string, unknown>} */
-  const src = isPlainObject(stored) ? /** @type {any} */ (stored) : {};
-  const out = {};
-  for (const [name, s] of Object.entries(Settings.schema.fields)) {
-    try {
-      out[name] = Object.hasOwn(src, name) ? checkValue(/** @type {any} */ (s), name, src[name]) : defaultOf(/** @type {any} */ (s));
-    } catch {
-      out[name] = defaultOf(/** @type {any} */ (s));
-    }
-  }
-  return out;
-}
 
 // ─── Versionen und Migrationen ──────────────────────────────
 
@@ -984,9 +998,10 @@ function migrationSteps(version, migrations) {
  * @throws {Error} gespeicherte Version in falscher Form, neuer oder unbekannt
  */
 function migrate(json, version, steps) {
-  const stored = isPlainObject(json._schema) && Object.hasOwn(json._schema, 'version');
-  const saved = stored ? json._schema.version : '0';
-  if (stored) requireForm('_schema.version', saved, typeof saved === 'string' && STORED_VERSION.test(saved), '0 or MAJOR.MINOR');
+  const present = json._schema !== undefined;
+  if (present && !isPlainObject(json._schema)) requireForm('_schema.version', json._schema, false, '0 or MAJOR.MINOR');
+  const saved = present ? json._schema.version : '0';
+  if (present) requireForm('_schema.version', saved, typeof saved === 'string' && STORED_VERSION.test(saved), '0 or MAJOR.MINOR');
   requireForm('_schema.version', saved, compareVersions(saved, version) <= 0,
     `up to ${version} (saved by a newer version of this module)`);
   if (steps.size === 0 || saved === version) return json;
@@ -1009,6 +1024,10 @@ function migrate(json, version, steps) {
  * @returns {void}
  */
 export function setModelName(Model, name) {
+  const named = /** @type {any} */ (Model);
+  if (Object.hasOwn(named, 'moduleName') && named.moduleName !== name) {
+    throw new Error(`Model ${Model.name} already belongs to module ${named.moduleName}`);
+  }
   Object.defineProperty(Model, 'moduleName', { value: name, writable: true, configurable: true, enumerable: false });
 }
 
