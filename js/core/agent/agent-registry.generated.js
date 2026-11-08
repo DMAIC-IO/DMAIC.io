@@ -1941,6 +1941,7 @@ export const AGENT_REGISTRY = {
   "chart-suggestion": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -1950,46 +1951,88 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[] }`"
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "setColumns": {
+        "target": "viewmodel",
         "params": [
           {
-            "name": "refs",
-            "type": "Array<{ instanceId: string, sheetId: string, columnId: string }>",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "nicht leere Liste wählbarer Spalten (`read().pickableColumns`), alle aus demselben Blatt, jede einmal"
-          }
-        ],
-        "returns": "string[]",
-        "help": "Spalten eines Blatts als Auswahl übernehmen; die Vorschläge werden neu geordnet und der Spitzenreiter gewählt. Die Rollen kommen aus dem Worksheet; setzen oder bestätigen lassen sie sich dort mit `setColumnRole`."
-      },
-      "pickChart": {
-        "params": [
-          {
-            "name": "type",
-            "type": "string",
-            "optional": false,
-            "help": "ein Wert aus `read().suggestions[].type`"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Einen der Vorschläge als Diagramm wählen und die Vorschau zeichnen. Ist der Typ schon gewählt, geschieht nichts."
+        "help": "",
+        "keysOf": "setColumns",
+        "keysHelp": "actions.setColumns.params",
+        "keys": {
+          "refs": {
+            "type": "unknown",
+            "help": ""
+          }
+        }
+      },
+      "pickChart": {
+        "target": "viewmodel",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "pickChart",
+        "keysHelp": "actions.pickChart.params",
+        "keys": {
+          "type": {
+            "type": "unknown",
+            "help": ""
+          }
+        }
       },
       "openInModule": {
-        "params": [],
-        "returns": "{ instanceId: string, moduleId: string }|null",
-        "help": "Das gewählte Diagramm als eigenes Modul mit denselben Spalten anlegen, in der Phase dieser Instanz."
+        "target": "viewmodel",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "openInModule",
+        "keysHelp": "actions.openInModule.params",
+        "keys": {}
       }
     },
     "fields": {
+      "columns": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }[]",
+        "help": "",
+        "bulk": false,
+        "rules": [
+          "columnRef"
+        ]
+      },
+      "pick": {
+        "type": "string|null",
+        "help": "",
+        "bulk": false
+      },
       "selection": {
-        "type": "Selection|null",
-        "help": "the selected columns and their source sheet, or null without a selection",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Selection",
@@ -2028,8 +2071,8 @@ export const AGENT_REGISTRY = {
         }
       },
       "suggestions": {
-        "type": "Suggestion[]",
-        "help": "the matching charts in rank order",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Suggestion",
@@ -2049,24 +2092,38 @@ export const AGENT_REGISTRY = {
         }
       },
       "selectedChartType": {
-        "type": "string|null",
-        "help": "the picked chart type, or null without suggestions",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "openTarget": {
-        "type": "string|null",
-        "help": "module id openInModule would create, or null for a preview-only type",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "pickableColumns": {
-        "type": "object[]",
-        "help": "the columns setColumns accepts, each `{ key, name }`",
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "preview": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "exampleWorksheetId"
+    ],
+    "settable": [
+      "columns",
+      "pick"
+    ]
   },
   "contour-plot": {
     "tagged": true,

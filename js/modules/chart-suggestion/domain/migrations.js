@@ -24,15 +24,18 @@ export function refsFromSelection(selection) {
 
 /**
  * '0→1.0': Altstände ohne `_schema` — gespeicherte Altform, Vorbelegung des
- * Arbeitsblatts und Beispiele mit `__source__`.
+ * Arbeitsblatts und Beispiele mit `__source__`. Die eigene Form ohne
+ * `_schema` (Beispiele nach `fromExample`) bleibt, wie sie ist.
  * @param {Record<string, any>} json
  * @returns {{ columns: object[], pick: string|null, exampleWorksheetId: string|null }}
  */
 export function from0(json) {
   const old = json && typeof json === 'object' ? json : {};
+  const own = Array.isArray(old.columns);
+  const pick = own ? old.pick : old.selectedChartType;
   return {
-    columns: refsFromSelection(old.selection),
-    pick: typeof old.selectedChartType === 'string' ? old.selectedChartType : null,
+    columns: own ? old.columns : refsFromSelection(old.selection),
+    pick: typeof pick === 'string' ? pick : null,
     exampleWorksheetId: typeof old.exampleWorksheetId === 'string' ? old.exampleWorksheetId : null,
   };
 }

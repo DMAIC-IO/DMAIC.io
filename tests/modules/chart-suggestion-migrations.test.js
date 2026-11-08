@@ -23,6 +23,9 @@ suite('chart-suggestion: Migration', () => {
     assertDeepEqual(from0({ selection: { ...sel, sourceInstanceId: null } }).columns, []);
     assertDeepEqual(from0({}).columns, []);
   });
+  test('eigene Form ohne _schema (aus fromExample) bleibt', () => {
+    assertDeepEqual(from0({ columns: refs, pick: 'bubble', exampleWorksheetId: 'w' }), { columns: refs, pick: 'bubble', exampleWorksheetId: 'w' });
+  });
   test('refsFromSelection', () => {
     assertDeepEqual(refsFromSelection(sel), refs);
     assertDeepEqual(refsFromSelection(null), []);

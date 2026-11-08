@@ -213,7 +213,7 @@ function configFor(type, columns, labels) {
     case 'control-chart': {
       const prep = collectTimeOrderedSeries(date, cont);
       if (!prep || prep.values.length < 2) return null;
-      const result = computeIMR(prep.values);
+      const result = computeIMR(prep.values, 1);
       const sub = result.subcharts.i;
       return {
         title: prep.valueName, xLabel: prep.xLabel || labels.observation, yLabel: prep.valueName,

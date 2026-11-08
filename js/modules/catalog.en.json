@@ -5,6 +5,11 @@
     "description": "SPC charts for count data: p, np, c, u",
     "whenToUse": "Control-chart counted data: p and np for defectives, c and u for defects, with Nelson-type rules on the plotted points."
   },
+  "chart-suggestion": {
+    "name": "Chart Suggestion",
+    "description": "Proposes suitable chart types for the selected columns",
+    "whenToUse": "You have columns of a worksheet and need to know which chart fits their roles — a ranked list with a preview, from which the chosen chart opens as a module of its own."
+  },
   "dmaic-calendar": {
     "name": "Calendar",
     "description": "Project calendar: appointments per phase in a month and a week view",

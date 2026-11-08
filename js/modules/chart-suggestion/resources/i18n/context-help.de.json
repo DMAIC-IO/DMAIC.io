@@ -21,6 +21,9 @@
     },
     "pick": {
       "help": "Der vom Nutzer gewählte Diagrammtyp, oder leer; dann gilt der Spitzenreiter der Vorschläge."
+    },
+    "preview": {
+      "help": "Die Vorschau des gewählten Diagramms: kind single mit widget und config, kind panels mit layout, n, note und cells (zusammengesetzte Vorschau) oder kind none, wenn es für den Typ keine Vorschau gibt."
     }
   },
   "actions": {
@@ -30,17 +33,22 @@
     "setColumns": {
       "help": "Spalten einer Datensammlung als Auswahl übernehmen; die Vorschläge werden neu geordnet und der Spitzenreiter gewählt. Die Rollen kommen aus der Datensammlung. Liefert die Typen der Vorschläge in Rangfolge.",
       "params": {
-        "refs": "Eine nicht leere Liste von Spaltenbezügen { instanceId, sheetId, columnId } aus read().pickableColumns, alle aus demselben Blatt, jede höchstens einmal."
+        "refs": "Eine nicht leere Liste von Spaltenbezügen { instanceId, sheetId, columnId } aus read().pickableColumns, alle aus demselben Blatt, jede höchstens einmal.",
+        "command": "Das Kommando als ein Objekt mit refs."
       }
     },
     "pickChart": {
       "help": "Einen der Vorschläge wählen; die Vorschau rechts zeigt das Diagramm mit den gewählten Spalten.",
       "params": {
-        "type": "Der Diagrammtyp, einer der Werte aus read().suggestions[].type. Jeder andere Wert ist ein Fehler."
+        "type": "Der Diagrammtyp, einer der Werte aus read().suggestions[].type. Jeder andere Wert ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit type."
       }
     },
     "openInModule": {
-      "help": "Das gewählte Diagramm als eigenes Modul mit denselben Spalten anlegen. Gibt es den Typ nur als Vorschau, wird nichts angelegt."
+      "help": "Das gewählte Diagramm als eigenes Modul mit denselben Spalten anlegen. Gibt es den Typ nur als Vorschau, wird nichts angelegt.",
+      "params": {
+        "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben."
+      }
     }
   },
   "types": {

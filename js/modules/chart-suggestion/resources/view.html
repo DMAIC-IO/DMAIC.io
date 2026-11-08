@@ -1,0 +1,89 @@
+<div class="chart-suggestion-root" x-data="chartSuggestion">
+  <!-- Leerzustand: keine Auswahl, oder keine Regel passt. -->
+  <template x-if="!hasSuggestions">
+    <div class="chart-suggestion chart-suggestion--empty">
+      <div class="chart-suggestion__empty-card">
+        <div class="chart-suggestion__empty-icon"><span class="icon" data-icon="module.chart-suggestion" aria-hidden="true"></span></div>
+        <h2 class="chart-suggestion__empty-title" x-text="t('emptyTitle')"></h2>
+        <p class="chart-suggestion__empty-text" x-text="emptyText"></p>
+      </div>
+    </div>
+  </template>
+
+  <!-- Galerie und Vorschau. data-help-key="" an den Karten ist gewollt: der Anker sitzt am Kartenkörper. -->
+  <template x-if="hasSuggestions">
+    <div class="chart-suggestion dmike-split">
+      <aside class="chart-suggestion__gallery dmike-split__input">
+        <div class="dmike-split__section-title" data-help-key="modules.chart-suggestion.fields.suggestions.help" x-text="t('sectionSuggestions')"></div>
+        <div class="chart-suggestion__selection-info" data-ref="selection-info" data-help-key="modules.chart-suggestion.fields.selection.help">
+          <div class="chart-suggestion__selection-label" x-text="selectionLabel"></div>
+          <template x-for="c in selectionColumns" :key="c.id">
+            <span class="chart-suggestion__col-chip" :class="'col-role-' + c.role">
+              <span x-text="c.name || '?'"></span> <em x-text="roleName(c.role)"></em>
+            </span>
+          </template>
+        </div>
+        <ul class="chart-suggestion__cards" data-ref="cards" role="radiogroup" :aria-label="t('sectionSuggestions')">
+          <template x-for="s in suggestions" :key="s.type">
+            <li role="none">
+              <button type="button" class="chart-suggestion__card" role="radio"
+                      :class="isActive(s) ? 'chart-suggestion__card--active' : ''" :aria-checked="isActive(s) ? 'true' : 'false'"
+                      :data-chart-type="s.type" data-help-key="" x-command="pickChart" :data-arg-type="s.type">
+                <div class="chart-suggestion__card-thumb" aria-hidden="true">
+                  <span class="icon" :class="thumbRaw(s.type) ? 'icon--raw' : ''" :data-icon="thumbIcon(s.type)"></span>
+                </div>
+                <div class="chart-suggestion__card-body context-help-anchor--overlay" data-help-key="modules.chart-suggestion.actions.pickChart.help">
+                  <div class="chart-suggestion__card-title" x-text="s.title"></div>
+                  <template x-if="s.notes">
+                    <div class="chart-suggestion__card-notes" x-text="s.notes"></div>
+                  </template>
+                </div>
+              </button>
+            </li>
+          </template>
+        </ul>
+      </aside>
+      <section class="chart-suggestion__preview dmike-split__output">
+        <header class="chart-suggestion__preview-header">
+          <span class="chart-suggestion__preview-title" data-ref="preview-title" data-help-key="modules.chart-suggestion.fields.selectedChartType.help" x-text="previewTitle"></span>
+          <span class="chart-suggestion__preview-notes" data-ref="preview-notes" x-text="previewNotes"></span>
+          <button type="button" class="chart-suggestion__open-btn context-help-anchor--overlay" data-ref="open-btn" data-help-key="modules.chart-suggestion.actions.openInModule.help"
+                  data-action="open-in-module" x-show="openTarget" x-command="openInModule"
+                  x-text="t('openInModule')"></button>
+        </header>
+        <template x-if="previewPlaceholder"><div class="chart-suggestion__placeholder" x-text="previewPlaceholder"></div></template>
+        <div class="chart-suggestion__plot" data-ref="plot" x-show="!previewPlaceholder">
+          <template x-if="isWidget('histogram-chart')"><div class="chart-suggestion__widget" x-widget="histogram-chart" x-widget-config="previewConfig"></div></template>
+          <template x-if="isWidget('boxplot-chart')"><div class="chart-suggestion__widget" x-widget="boxplot-chart" x-widget-config="previewConfig"></div></template>
+          <template x-if="isWidget('individual-value-plot-chart')"><div class="chart-suggestion__widget" x-widget="individual-value-plot-chart" x-widget-config="previewConfig"></div></template>
+          <template x-if="isWidget('run-chart')"><div class="chart-suggestion__widget" x-widget="run-chart" x-widget-config="previewConfig"></div></template>
+          <template x-if="isWidget('scatter-chart')"><div class="chart-suggestion__widget" x-widget="scatter-chart" x-widget-config="previewConfig"></div></template>
+          <template x-if="isWidget('bar-chart')"><div class="chart-suggestion__widget" x-widget="bar-chart" x-widget-config="previewConfig"></div></template>
+          <template x-if="isWidget('mosaic-chart')"><div class="chart-suggestion__widget" x-widget="mosaic-chart" x-widget-config="previewConfig"></div></template>
+          <template x-if="isWidget('heatmap-chart')"><div class="chart-suggestion__widget" x-widget="heatmap-chart" x-widget-config="previewConfig"></div></template>
+          <template x-if="isWidget('pareto-chart')"><div class="chart-suggestion__widget" x-widget="pareto-chart" x-widget-config="previewConfig"></div></template>
+          <template x-if="isWidget('pie-chart')"><div class="chart-suggestion__widget" x-widget="pie-chart" x-widget-config="previewConfig"></div></template>
+          <template x-if="isWidget('probability-plot-chart')"><div class="chart-suggestion__widget" x-widget="probability-plot-chart" x-widget-config="previewConfig"></div></template>
+          <template x-if="isWidget('control-chart')"><div class="chart-suggestion__widget" x-widget="control-chart" x-widget-config="previewConfig"></div></template>
+          <template x-if="isPanels">
+            <div class="chart-suggestion__panels">
+              <div class="chart-suggestion__matrix" :class="previewLayoutClass" :style="previewGridStyle">
+                <template x-for="cell in previewCells" :key="cell.key">
+                  <div class="chart-suggestion__matrix-cell" :class="cellClass(cell)">
+                    <template x-if="cellHasText(cell)"><span x-text="cell.label"></span></template>
+                    <template x-if="cell.placeholder"><div class="chart-suggestion__placeholder" x-text="cell.label"></div></template>
+                    <template x-if="cellIs(cell, 'scatter-chart')"><div class="chart-suggestion__widget" x-widget="scatter-chart" x-widget-config="cell.config"></div></template>
+                    <template x-if="cellIs(cell, 'boxplot-chart')"><div class="chart-suggestion__widget" x-widget="boxplot-chart" x-widget-config="cell.config"></div></template>
+                    <template x-if="cellIs(cell, 'histogram-chart')"><div class="chart-suggestion__widget" x-widget="histogram-chart" x-widget-config="cell.config"></div></template>
+                    <template x-if="cellIs(cell, 'control-chart')"><div class="chart-suggestion__widget" x-widget="control-chart" x-widget-config="cell.config"></div></template>
+                  </div>
+                </template>
+              </div>
+              <template x-if="previewNoteText"><div class="chart-suggestion__matrix-note" x-text="previewNoteText"></div></template>
+            </div>
+          </template>
+        </div>
+      </section>
+    </div>
+  </template>
+</div>

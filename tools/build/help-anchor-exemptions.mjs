@@ -87,6 +87,9 @@ export const HELP_ANCHOR_EXEMPTIONS = {
   'chart-suggestion': [
     { name: 'actions.setColumns', reason: 'die Auswahl kommt in der Oberfläche aus dem Worksheet („Diagramm vorschlagen“); das Modul hat kein eigenes Bedienelement dafür' },
     { name: 'fields.openTarget', reason: 'abgeleitet aus dem gewählten Diagramm; sichtbar nur als Knopf „In Modul öffnen“, dessen Anker an openInModule hängt' },
+    { name: 'fields.columns', reason: 'die Spaltenbezüge kommen aus dem Worksheet; sichtbar als Auswahl-Chips, deren Anker an fields.selection hängt' },
+    { name: 'fields.pick', reason: 'die Wahl des Nutzers; gesetzt über die Karten, deren Anker an pickChart hängt' },
+    { name: 'fields.preview', reason: 'abgeleitet aus dem gewählten Diagramm; der Vorschaukopf ist an fields.selectedChartType verankert' },
   ],
   'doe-planner': [
     { name: 'actions.factors.removeFactor', reason: 'Entfernen-Knopf je Faktorzeile; ein Fragezeichen je Zeile wäre Rauschen' },

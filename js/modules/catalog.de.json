@@ -5,6 +5,11 @@
     "description": "SPC-Karten für Zähldaten: p, np, c, u",
     "whenToUse": "Gezählte Daten in einer Regelkarte überwachen: p und np für fehlerhafte Einheiten, c und u für Fehler, mit Regeln nach Nelson auf den gezeichneten Punkten."
   },
+  "chart-suggestion": {
+    "name": "Diagramm-Vorschlag",
+    "description": "Schlägt passende Diagrammtypen für die ausgewählten Spalten vor",
+    "whenToUse": "Spalten einer Datensammlung liegen vor und es ist offen, welches Diagramm zu ihren Rollen passt — eine Rangliste mit Vorschau, aus der das gewählte Diagramm als eigenes Modul geöffnet wird."
+  },
   "dmaic-calendar": {
     "name": "Kalender",
     "description": "Projektkalender: Termine je Phase in Monats- und Wochenansicht",

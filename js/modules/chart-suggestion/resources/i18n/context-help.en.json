@@ -21,6 +21,9 @@
     },
     "pick": {
       "help": "The chart type chosen by the user, or empty; then the top-ranked suggestion applies."
+    },
+    "preview": {
+      "help": "The preview of the chosen chart: kind single with widget and config, kind panels with layout, n, note and cells (composite preview), or kind none when the type has no preview."
     }
   },
   "actions": {
@@ -30,17 +33,22 @@
     "setColumns": {
       "help": "Take columns of a worksheet as the selection; the suggestions are re-ranked and the top one is chosen. Roles come from the worksheet. Returns the suggestion types in rank order.",
       "params": {
-        "refs": "A non-empty list of column references { instanceId, sheetId, columnId } from read().pickableColumns, all from the same sheet, each at most once."
+        "refs": "A non-empty list of column references { instanceId, sheetId, columnId } from read().pickableColumns, all from the same sheet, each at most once.",
+        "command": "The command as one object with refs."
       }
     },
     "pickChart": {
       "help": "Choose one of the suggestions; the preview on the right shows the chart with the selected columns.",
       "params": {
-        "type": "The chart type, one of the values in read().suggestions[].type. Any other value is an error."
+        "type": "The chart type, one of the values in read().suggestions[].type. Any other value is an error.",
+        "command": "The command as one object with type."
       }
     },
     "openInModule": {
-      "help": "Create the chosen chart as a module of its own with the same columns. If the type exists only as a preview, nothing is created."
+      "help": "Create the chosen chart as a module of its own with the same columns. If the type exists only as a preview, nothing is created.",
+      "params": {
+        "command": "An empty object; the command takes no arguments."
+      }
     }
   },
   "types": {

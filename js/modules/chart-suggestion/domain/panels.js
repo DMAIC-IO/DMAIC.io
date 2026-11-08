@@ -138,7 +138,7 @@ function interactionPlot(cols) {
   for (const s of series) for (const v of s.y) if (v !== null) { if (v < lo) lo = v; if (v > hi) hi = v; }
   const y = padded(lo, hi, (lo === hi && Number.isFinite(lo)) ? lo - 1 : 0, Number.isFinite(hi) ? hi + 1 : 1, 0.15, 1);
   return {
-    kind: 'single', widget: 'scatter-chart',
+    kind: /** @type {const} */ ('single'), widget: 'scatter-chart',
     config: {
       title: '', titleSize: 13, labelSize: 11, tickSize: 10,
       xLabel: fA.name || '', yLabel: yCol.name || '', showLegend: true,
@@ -265,5 +265,5 @@ export function buildPreview(type, cols, labels) {
     default:
   }
   const built = buildChartConfig(type, cols, labels);
-  return built ? { kind: 'single', widget: built.widget, config: built.config } : NONE;
+  return built ? { kind: /** @type {const} */ ('single'), widget: built.widget, config: built.config } : NONE;
 }
