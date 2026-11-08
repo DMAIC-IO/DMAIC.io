@@ -55,6 +55,54 @@
     }
   },
   "types": {
+    "Analysis": {
+      "status": "Outcome of the analysis: “ok” when it was computed, “insufficient” while inputs are missing.",
+      "reason": "Only for “insufficient”: why nothing was computed (columns missing, fewer than 3 values, target missing, pairing, no variation, not computable).",
+      "count": "Only for “insufficient” with paired data: number of usable pairs.",
+      "isK": "True with more than two samples (ANOVA branch).",
+      "allNormal": "True when every sample passes the normality test (Anderson-Darling against α).",
+      "alpha": "Significance level α used for the computation.",
+      "target": "Resolved target value (variance tests), otherwise empty.",
+      "samples": "Statistics per sample; when paired, one sample holding the differences.",
+      "route": "The chosen main procedure, as the route under “Algorithm Routing” shows it. Normality is decided by the Anderson-Darling test alone, with p ≥ α. For variances: one sample always uses the χ² variance test, two samples the F-test when all are normal, otherwise Levene (Brown-Forsythe), k samples Bartlett or Levene. For means: when all samples are normal, the parametric test; otherwise it stays when every sample has n ≥ 20 (the rank test is added as a cross-check); otherwise the rank route. Parametric means the one-sample t-test, the Welch t-test (pooled t-test only when equal variances are assumed) or one-way ANOVA; the rank route means Wilcoxon signed-rank, Mann-Whitney U or Kruskal-Wallis.",
+      "varEquality": "Test for equal variances with its verdict and the route step label; empty when not needed.",
+      "main": "Result of the main procedure: statistic, degrees of freedom, p-value, interval and decision.",
+      "anova": "Only for k samples: ANOVA table, model fit and group statistics.",
+      "numeric": "Numeric output of the test: statistic, degrees of freedom, p-value, interval, decision, power and notes.",
+      "secondary": "Cross-check with the rank test when the parametric procedure stays although samples are not normal; otherwise empty.",
+      "power": "Power, effect and required sample size; empty when not computed.",
+      "pairwise": "Pairwise comparisons after the overall test (k samples only) with procedure, comparisons and grouping letters.",
+      "residualPlot": "Residuals and fitted values for the residual plots; empty when there are none.",
+      "notes": "Notes on the interval as codes with the numbers filled in.",
+      "pairInfo": "Paired only: number of pairs and of dropped rows."
+    },
+    "Numeric": {
+      "statistic": "Test statistic.",
+      "df": "Degrees of freedom; for the F-test and ANOVA the numerator degrees of freedom.",
+      "df2": "Denominator degrees of freedom; empty when there is only one.",
+      "p": "p-value of the test.",
+      "ci": "Confidence interval [lower, upper]; empty without an interval.",
+      "decision": "Decision against α: “reject” or “keep”.",
+      "power": "Power as a proportion; not for k samples.",
+      "powerApprox": "True when the power is a normal approximation (Bonett).",
+      "notes": "Notes on the interval as codes with numbers."
+    },
+    "SampleStats": {
+      "name": "Column name of the sample.",
+      "n": "Number of values.",
+      "mean": "Mean x̄.",
+      "sd": "Standard deviation s.",
+      "variance": "Sample variance s².",
+      "sw": "Shapiro-Wilk test: statistic W and p-value.",
+      "ad": "Anderson-Darling test: statistic A² and p-value.",
+      "normal": "Normality verdict (Anderson-Darling against α).",
+      "ciMean": "Confidence interval of the mean; empty when not computable.",
+      "ciVariance": "Confidence interval of the variance; empty when not computable."
+    },
+    "Warning": {
+      "code": "Identifier of the note, equal to the text key.",
+      "values": "Numbers filled into the note."
+    },
     "NormRow": {
       "name": "The normality test of this row, “Shapiro-Wilk” or “Anderson-Darling”. Column “Test”.",
       "stat": "The test statistic with four decimals: W for Shapiro-Wilk, A² for Anderson-Darling. Column “Statistic”.",

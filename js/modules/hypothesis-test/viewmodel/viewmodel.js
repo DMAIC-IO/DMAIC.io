@@ -23,6 +23,8 @@ export default createModule({
         /**
          * Die Analyse als Zahlen; `{ status: 'insufficient', reason }`, solange Eingaben fehlen.
          * Gepaart kommen die Spalten ungefiltert (die Paarbildung dünnt sie aus), sonst nur Zahlen.
+         *
+         * @returns {import('../domain/analyze.js').Analysis}
          */
         result() {
           const m = this.model;

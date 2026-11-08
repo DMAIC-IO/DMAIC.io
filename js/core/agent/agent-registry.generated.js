@@ -6971,7 +6971,208 @@ export const AGENT_REGISTRY = {
         "type": "object|null",
         "help": "",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "Analysis",
+        "keys": {
+          "status": {
+            "type": "'ok'|'insufficient'",
+            "help": ""
+          },
+          "isK": {
+            "type": "boolean",
+            "help": "",
+            "optional": true
+          },
+          "allNormal": {
+            "type": "boolean",
+            "help": "",
+            "optional": true
+          },
+          "alpha": {
+            "type": "number",
+            "help": "Signifikanzniveau der Rechnung",
+            "optional": true
+          },
+          "target": {
+            "type": "number|null",
+            "help": "aufgelöster Zielwert, null ohne",
+            "optional": true
+          },
+          "samples": {
+            "type": "SampleStats[]",
+            "help": "gepaart: eine Stichprobe, die Differenzen",
+            "keysOf": "SampleStats",
+            "keys": {
+              "name": {
+                "type": "string",
+                "help": "Spaltenname"
+              },
+              "n": {
+                "type": "number",
+                "help": ""
+              },
+              "mean": {
+                "type": "number",
+                "help": ""
+              },
+              "sd": {
+                "type": "number",
+                "help": ""
+              },
+              "variance": {
+                "type": "number",
+                "help": ""
+              },
+              "sw": {
+                "type": "{ w: number, p: number }",
+                "help": "Shapiro-Wilk"
+              },
+              "ad": {
+                "type": "{ a2: number, p: number }",
+                "help": "Anderson-Darling"
+              },
+              "normal": {
+                "type": "boolean",
+                "help": "Urteil (Anderson-Darling gegen α)"
+              },
+              "ciMean": {
+                "type": "[number, number]|null",
+                "help": "Intervall des Mittelwerts"
+              },
+              "ciVariance": {
+                "type": "[number, number]|null",
+                "help": "Intervall der Varianz"
+              }
+            },
+            "optional": true
+          },
+          "route": {
+            "type": "{ name: string, algoId: string|null, reasonKeys: string[] }",
+            "help": "gewähltes Verfahren und die Wegschritte als Schlüssel",
+            "optional": true
+          },
+          "varEquality": {
+            "type": "{ varsEqual: boolean, test: TestOutcome|null, trailLabelKey: string, trailYes: boolean }|null",
+            "help": "",
+            "optional": true
+          },
+          "main": {
+            "type": "TestOutcome & { decision: 'reject'|'keep' }",
+            "help": "",
+            "optional": true
+          },
+          "anova": {
+            "type": "{ rows: { source: 'factor'|'error'|'total', ss: number, df: number, ms: number|null, f: number|null, p: number|null }[]|null,\n *   summary: { s: number, r2: number, r2adj: number, r2pred: number|null }|null,\n *   groups: { name: string, n: number, mean: number, variance: number, ci: [number, number]|null, letters: string }[] }|null",
+            "help": "nur k; `rows` nur bei der einfaktoriellen ANOVA (Fisher), `summary` nur Fisher- und Welch-Weg",
+            "optional": true
+          },
+          "numeric": {
+            "type": "Numeric",
+            "help": "wie heute",
+            "keysOf": "Numeric",
+            "keys": {
+              "statistic": {
+                "type": "number|null",
+                "help": "Prüfgröße"
+              },
+              "df": {
+                "type": "number|null",
+                "help": "Freiheitsgrade, bei F-Test und ANOVA der Zählerfreiheitsgrad"
+              },
+              "df2": {
+                "type": "number|null",
+                "help": "Nennerfreiheitsgrad, null bei nur einem Freiheitsgrad"
+              },
+              "p": {
+                "type": "number|null",
+                "help": "p-Wert"
+              },
+              "ci": {
+                "type": "Array<number|null>|null",
+                "help": "Konfidenzintervall [unten, oben], null ohne Intervall"
+              },
+              "decision": {
+                "type": "'reject'|'keep'",
+                "help": "Entscheidung gegen α"
+              },
+              "power": {
+                "type": "number|null",
+                "help": "Teststärke als Anteil, nicht bei k"
+              },
+              "powerApprox": {
+                "type": "boolean",
+                "help": "Teststärke ist eine Normalapproximation (Bonett)"
+              },
+              "notes": {
+                "type": "Warning[]",
+                "help": "Hinweise zum Intervall als Codes mit Zahlen",
+                "keysOf": "Warning",
+                "keys": {
+                  "code": {
+                    "type": "string",
+                    "help": "Kennung des Hinweises, gleich dem Textschlüssel"
+                  },
+                  "values": {
+                    "type": "Record<string, number|null>",
+                    "help": "eingesetzte Zahlen"
+                  }
+                }
+              }
+            },
+            "optional": true
+          },
+          "secondary": {
+            "type": "{ test: TestOutcome, titleKey: string, noteKey: string, twoSidedSuffix: boolean }|null",
+            "help": "",
+            "optional": true
+          },
+          "power": {
+            "type": "{ power: number, effect: number, effectKind: string, requiredN: number, goal: number, n: number[], approx: boolean }|null",
+            "help": "",
+            "optional": true
+          },
+          "pairwise": {
+            "type": "{ methodName: string, algoId: string|null, simultaneous: boolean, isRank: boolean, m: number,\n *   comparisons: { i: number, j: number, p: number|null, pAdj: number, ci: [number, number]|null, equal: boolean }[],\n *   letters: string[] }|null",
+            "help": "",
+            "optional": true
+          },
+          "residualPlot": {
+            "type": "{ residuals: number[], fitted: number[] }|null",
+            "help": "",
+            "optional": true
+          },
+          "notes": {
+            "type": "Warning[]",
+            "help": "Hinweise zum Intervall, gleich `numeric.notes`",
+            "keysOf": "Warning",
+            "keys": {
+              "code": {
+                "type": "string",
+                "help": "Kennung des Hinweises, gleich dem Textschlüssel"
+              },
+              "values": {
+                "type": "Record<string, number|null>",
+                "help": "eingesetzte Zahlen"
+              }
+            },
+            "optional": true
+          },
+          "pairInfo": {
+            "type": "{ n: number, dropped: number }",
+            "help": "nur gepaart: Paare und verworfene Zeilen",
+            "optional": true
+          },
+          "reason": {
+            "type": "'columns'|'min3'|'target'|'paired'|'noVariation'|'notComputable'",
+            "help": "",
+            "optional": true
+          },
+          "count": {
+            "type": "number",
+            "help": "nur bei `paired`",
+            "optional": true
+          }
+        }
       }
     },
     "asyncTasks": [],

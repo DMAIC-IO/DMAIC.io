@@ -55,6 +55,54 @@
     }
   },
   "types": {
+    "Analysis": {
+      "status": "Ausgang der Analyse: „ok“, wenn gerechnet wurde, „insufficient“, solange Eingaben fehlen.",
+      "reason": "Nur bei „insufficient“: warum nicht gerechnet wurde (Spalten fehlen, weniger als 3 Werte, Zielwert fehlt, Paarbildung, keine Streuung, nicht berechenbar).",
+      "count": "Nur bei „insufficient“ und gepaarten Daten: Anzahl der verwertbaren Paare.",
+      "isK": "Wahr bei mehr als zwei Stichproben (ANOVA-Zweig).",
+      "allNormal": "Wahr, wenn jede Stichprobe den Normalitätstest (Anderson-Darling gegen α) besteht.",
+      "alpha": "Signifikanzniveau α, mit dem gerechnet wurde.",
+      "target": "Aufgelöster Zielwert (bei Varianztests), sonst leer.",
+      "samples": "Kennzahlen je Stichprobe; gepaart eine Stichprobe, die Differenzen.",
+      "route": "Das gewählte Hauptverfahren, wie der Weg unter „Algorithmus-Routing“ es zeigt. Normalität entscheidet allein der Anderson-Darling-Test mit p ≥ α. Bei Varianzen: eine Stichprobe immer der χ²-Varianztest, zwei Stichproben der F-Test, wenn alle normal sind, sonst Levene (Brown-Forsythe), k Stichproben Bartlett bzw. Levene. Bei Mittelwerten: sind alle Stichproben normal, der parametrische Test; sonst bleibt er, wenn jede Stichprobe n ≥ 20 hat (der Rangtest kommt als Vergleich hinzu); sonst der Rangweg. Parametrisch heißt das Ein-Stichproben-t-Test, Welch-t-Test (gepoolter t-Test nur, wenn gleiche Varianzen angenommen sind) oder einfaktorielle ANOVA; der Rangweg Wilcoxon-Vorzeichen-Rang, Mann-Whitney-U oder Kruskal-Wallis.",
+      "varEquality": "Test auf gleiche Varianzen mit Urteil und Beschriftung des Wegschritts; leer, wenn er nicht nötig ist.",
+      "main": "Ergebnis des Hauptverfahrens: Prüfgröße, Freiheitsgrade, p-Wert, Intervall und Entscheidung.",
+      "anova": "Nur bei k Stichproben: ANOVA-Tabelle, Modellgüte und Gruppenkennzahlen.",
+      "numeric": "Zahlenausgabe des Tests: Prüfgröße, Freiheitsgrade, p-Wert, Intervall, Entscheidung, Teststärke und Hinweise.",
+      "secondary": "Gegenprobe mit dem Rangtest, wenn das parametrische Verfahren bleibt, die Stichproben aber nicht normal sind; sonst leer.",
+      "power": "Teststärke, Effekt und benötigter Stichprobenumfang; leer, wenn nicht berechnet.",
+      "pairwise": "Paarvergleiche nach dem Gesamttest (nur k Stichproben) mit Verfahren, Vergleichen und Gruppenbuchstaben.",
+      "residualPlot": "Residuen und Anpassungswerte für die Residuendiagramme; leer, wenn es keine gibt.",
+      "notes": "Hinweise zum Intervall als Codes mit eingesetzten Zahlen.",
+      "pairInfo": "Nur gepaart: Anzahl der Paare und der verworfenen Zeilen."
+    },
+    "Numeric": {
+      "statistic": "Prüfgröße des Tests.",
+      "df": "Freiheitsgrade; bei F-Test und ANOVA der Zählerfreiheitsgrad.",
+      "df2": "Nennerfreiheitsgrad; leer, wenn es nur einen Freiheitsgrad gibt.",
+      "p": "p-Wert des Tests.",
+      "ci": "Konfidenzintervall [unten, oben]; leer ohne Intervall.",
+      "decision": "Entscheidung gegen α: „reject“ oder „keep“.",
+      "power": "Teststärke als Anteil; nicht bei k Stichproben.",
+      "powerApprox": "Wahr, wenn die Teststärke eine Normalapproximation (Bonett) ist.",
+      "notes": "Hinweise zum Intervall als Codes mit Zahlen."
+    },
+    "SampleStats": {
+      "name": "Spaltenname der Stichprobe.",
+      "n": "Anzahl der Werte.",
+      "mean": "Mittelwert x̄.",
+      "sd": "Standardabweichung s.",
+      "variance": "Stichprobenvarianz s².",
+      "sw": "Shapiro-Wilk-Test: Prüfgröße W und p-Wert.",
+      "ad": "Anderson-Darling-Test: Prüfgröße A² und p-Wert.",
+      "normal": "Urteil zur Normalität (Anderson-Darling gegen α).",
+      "ciMean": "Konfidenzintervall des Mittelwerts; leer, wenn nicht berechenbar.",
+      "ciVariance": "Konfidenzintervall der Varianz; leer, wenn nicht berechenbar."
+    },
+    "Warning": {
+      "code": "Kennung des Hinweises, gleich dem Textschlüssel.",
+      "values": "Eingesetzte Zahlen des Hinweises."
+    },
     "NormRow": {
       "name": "Der Normalverteilungstest dieser Zeile, „Shapiro-Wilk“ oder „Anderson-Darling“. Spalte „Test“.",
       "stat": "Die Teststatistik mit vier Nachkommastellen: W bei Shapiro-Wilk, A² bei Anderson-Darling. Spalte „Statistik“.",
