@@ -203,9 +203,11 @@ export function createAgentRuntime(deps) {
   /**
    * Der eigentliche Durchlauf. Serialisiert aufgerufen, siehe unten.
    * @param {object|object[]} [input]
+   * @param {{ gate: object }|null} [decided]  Einwilligung und Laden hat
+   *   `decideCancel` schon erledigt; der Lauf überspringt beides.
    */
-  async function runInteract(input) {
-    const gate = await consent.ensure();
+  async function runInteract(input, decided = null) {
+    const gate = decided ? decided.gate : await consent.ensure();
     if (!gate.ok) return { ...gate, contract: CONTRACT_VERSION };
 
     if (input === undefined || input === null) {
@@ -219,7 +221,7 @@ export function createAgentRuntime(deps) {
     // gegen einen Zustand prüfen, der sich zwischen den Stufen verschiebt.
     // Schema-Module, die der Stapel nennt, vorher auflösen: der Prüfer
     // (Stufe 5) kennt ihre Aktionen sonst nicht.
-    await entries.preload(referencedModules(input, buildInstanceList({ stateManager, i18n })));
+    if (!decided) await entries.preload(referencedModules(input, buildInstanceList({ stateManager, i18n })));
     const world = buildWorld({ stateManager, moduleRegistry, i18n, registry: entries.view(), completed: host.isCompleted() });
     const checked = validateBatch(input, world);
     if (!checked.ok) return { ...checked, contract: CONTRACT_VERSION };
@@ -361,19 +363,19 @@ export function createAgentRuntime(deps) {
 
   /**
    * Ob der Stapel ein reiner Task-Abbruch ist: Einwilligung, Einträge laden,
-   * dann die Prüfung am aufgelösten Eintrag. Wirft nie; im Zweifel `false`
-   * (der Stapel läuft dann in der Kette und meldet dort selbst).
+   * dann die Prüfung am aufgelösten Eintrag. Wirft nie; ohne Entscheidung
+   * (`decided: null`) läuft der Stapel in der Kette den ganzen Weg selbst.
    * @param {object|object[]} input
-   * @returns {Promise<boolean>}
+   * @returns {Promise<{ cancel: boolean, decided: { gate: object }|null }>}
    */
   async function decideCancel(input) {
     try {
       const gate = await consent.ensure();
-      if (!gate.ok) return false;
+      if (!gate.ok) return { cancel: false, decided: { gate } };
       await entries.preload(referencedModules(input, buildInstanceList({ stateManager, i18n })));
-      return isTaskCancelBatch(input);
+      return { cancel: isTaskCancelBatch(input), decided: { gate } };
     } catch {
-      return false;
+      return { cancel: false, decided: null };
     }
   }
 
@@ -397,9 +399,9 @@ export function createAgentRuntime(deps) {
       // Aufruf nicht überholt; die Entscheidung läuft daneben an.
       const decision = decideCancel(input);
       const queued = queue.then(() => decision)
-        .then((isCancel) => (isCancel ? undefined : runInteract(input).catch(surfaceFailure)));
+        .then((d) => (d.cancel ? undefined : runInteract(input, d.decided).catch(surfaceFailure)));
       queue = queued.then(() => undefined, () => undefined);
-      return decision.then((isCancel) => (isCancel ? runInteract(input).catch(surfaceFailure) : queued));
+      return decision.then((d) => (d.cancel ? runInteract(input, d.decided).catch(surfaceFailure) : queued));
     },
   };
 }

@@ -1108,6 +1108,24 @@ suite('agent runtime — Abbruch-Stapel umgehen die Kette', () => {
     assertDeepEqual(log, ['sub-cancel', 'read'], 'die Reihenfolge der Aufrufe bleibt');
   });
 
+  test('verweigerte Einwilligung bei einem cancel-förmigen Nicht-Task-Stapel fragt genau einmal', async () => {
+    const log = [];
+    const { runtime, log: calls } = makeRuntime({ registry, denied: true, viewmodel: makeVm(log, { hang: false }) });
+    const out = await runtime.interact({ op: 'instance.call', instance: 'fw-1', method: 'sub.cancel', args: [] });
+    assertEqual(out.ok, false);
+    assertEqual(out.error, 'consent_denied');
+    assertEqual(calls.filter((e) => e === 'consent').length, 1, 'ensure genau einmal');
+    assertDeepEqual(log, []);
+  });
+
+  test('ein echter Abbruch fragt die Einwilligung genau einmal', async () => {
+    const log = [];
+    const { runtime, log: calls } = makeRuntime({ registry, viewmodel: makeVm(log, { hang: false }) });
+    const out = await runtime.interact(cancel);
+    assertEqual(out.ok, true, JSON.stringify(out));
+    assertEqual(calls.filter((e) => e === 'consent').length, 1, 'ensure genau einmal');
+  });
+
   test('.cancel einer Nicht-Task-Methode bleibt in der Kette', async () => {
     const log = [];
     const { runtime } = makeRuntime({ registry, viewmodel: makeVm(log, { hang: false }) });
