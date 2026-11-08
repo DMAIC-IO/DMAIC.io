@@ -59,10 +59,19 @@
       "help": "Wahr, wenn ein Ergebnis vorliegt, das aus anderen Eingaben als den jetzigen berechnet wurde; die Oberfläche zeigt dann den Hinweis „Ergebnis veraltet“."
     },
     "validation": {
-      "help": "Der Grund, warum compute nicht rechnen würde (ungültiger Parameter, fehlende oder zu kurze Spalte, weniger als 3 Gruppen im Modus 'k', das Verhältnis mit Werten von 0 oder darunter), oder ein leerer Text. Ein laufender Lauf setzt ihn nicht."
+      "help": "Der erste Grund, warum nicht gerechnet werden kann, als Textschlüssel; leer, wenn die Eingaben gültig sind."
     },
     "decision": {
       "help": "Das Urteil über den Zielwert, Spalte „Entscheidung“: „reject“, wenn der Zielwert außerhalb des Konfidenzintervalls der gewählten Intervallmethode liegt (Tabelle: „H₀ ablehnen“), „retain“, wenn er darin liegt („H₀ beibehalten“). Nur im Aufbau eine Stichprobe mit einem Zielwert, sonst ist das Feld leer; die Lesefläche berechnet es mit der Intervallmethode und dem Zielwert, die gerade eingestellt sind."
+    },
+    "inputs": {
+      "help": "Die Stichproben aus dem Arbeitsblatt, roh gelesen: bei gepaarten Daten bleiben die Zeilen zusammen."
+    },
+    "inputsHash": {
+      "help": "Der Fingerabdruck der aktuellen Eingaben. Weicht er von dem des gespeicherten Ergebnisses ab, ist das Ergebnis veraltet."
+    },
+    "labels": {
+      "help": "Die Spaltennamen je Stichprobe; leer für eine nicht gewählte Spalte."
     }
   },
   "actions": {

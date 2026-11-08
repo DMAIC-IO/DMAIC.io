@@ -28,6 +28,12 @@
     },
     "stats": {
       "help": "Je gezeichneter Reihe ihre Kennzahlen und Konfidenzintervalle, aufgebaut wie modules.shared.types.SeriesStats; leer, solange nichts gerechnet werden kann."
+    },
+    "series": {
+      "help": "Die Reihen aus den Datenzeilen mit Darstellung (Name, Werte, Farben, Normalkurve), oder ein Objekt mit „error“ und „params“, wenn sich keine Reihen bilden lassen."
+    },
+    "shown": {
+      "help": "Die Reihen nach den Editor-Einstellungen des Diagramms. Leer, solange es keine Reihen gibt; im Editor ausgeblendete Reihen sind enthalten, aber nicht sichtbar."
     }
   },
   "actions": {

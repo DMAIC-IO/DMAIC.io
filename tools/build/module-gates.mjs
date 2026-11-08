@@ -697,6 +697,27 @@ export function viewNamesDetailOf(text) {
   return { getters: [...getters], computed: [...computed], data: [...data] };
 }
 
+/**
+ * Die Schlüssel des `computed:`-Objekts im view-Block, statisch gelesen.
+ * @param {string} text Quelltext von viewmodel.js
+ * @returns {string[]}
+ */
+export function computedNamesOf(text) {
+  const view = findViewBlock(text);
+  if (!view) return [];
+  const names = [];
+  const visit = (n) => {
+    if (ts.isPropertyAssignment(n) && ts.isIdentifier(n.name) && n.name.text === 'computed'
+        && ts.isObjectLiteralExpression(n.initializer)) {
+      for (const p of n.initializer.properties) if (p.name && ts.isIdentifier(p.name)) names.push(p.name.text);
+      return;
+    }
+    ts.forEachChild(n, visit);
+  };
+  visit(view);
+  return names;
+}
+
 /** Alle Namen, die ein Template aus dem view-Block lesen darf. @param {string} text @returns {Set<string>} */
 export function viewNamesOf(text) {
   const { getters, computed, data } = viewNamesDetailOf(text);
@@ -743,11 +764,13 @@ export function readStateBindings(files) {
  * @param {Record<string, { params?: object }>} [viewmodelCommands] Kommandos aus `createModule({ commands })`
  * @param {string[]} [stateFields] per `x-field="state.<name>"` gebundene UI-State-Felder
  * @param {string[]} [formKeys] Hilfeschlüssel der Formularfelder (formHelpKeys)
+ * @param {string[]} [computedNames] Namen der `computed` des view-Blocks (computedNamesOf)
  * @returns {string[]}
  */
-export function checkContextHelp(schema, help, viewmodelCommands = {}, stateFields = [], formKeys = []) {
+export function checkContextHelp(schema, help, viewmodelCommands = {}, stateFields = [], formKeys = [], computedNames = []) {
   const keys = [
     ...Object.keys(schema.fields).map((f) => `fields.${f}.help`),
+    ...computedNames.map((c) => `fields.${c}.help`),
     ...Object.entries({ ...schema.commands, ...viewmodelCommands }).flatMap(([c, def]) => [
       `actions.${c}.help`,
       ...Object.keys(def.params ?? {}).map((p) => `actions.${c}.params.${p}`),
@@ -1303,7 +1326,8 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
         de: readJson(join(base, 'resources', 'i18n', 'context-help.de.json')),
         en: readJson(join(base, 'resources', 'i18n', 'context-help.en.json')),
       }, existsSync(vmFile) ? readViewmodelCommands(readFileSync(vmFile, 'utf8')) : {}, readStateBindings(templates),
-      [...formHelpKeys(readCommandForms(templates), schema, formSchemas), ...lists.helpKeys, ...asyncTaskHelpKeys(asyncTasks)]));
+      [...formHelpKeys(readCommandForms(templates), schema, formSchemas), ...lists.helpKeys, ...asyncTaskHelpKeys(asyncTasks)],
+      existsSync(vmFile) ? computedNamesOf(readFileSync(vmFile, 'utf8')) : []));
     }
   }
   if (paths.includes('tile/settings.js')) {

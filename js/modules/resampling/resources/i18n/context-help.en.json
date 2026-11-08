@@ -59,10 +59,19 @@
       "help": "True when a result exists that was computed from inputs other than the current ones; the interface then shows the note “Result outdated”."
     },
     "validation": {
-      "help": "The reason compute would not run (invalid parameter, missing or too short column, fewer than 3 groups in mode 'k', the ratio contrast with values of zero or below), or an empty string. A running run does not set it."
+      "help": "The first reason why nothing can be computed, as a text key; empty when the inputs are valid."
     },
     "decision": {
       "help": "The verdict on the target value, column “Decision”: “reject” when the target lies outside the confidence interval of the chosen interval method (table: “Reject H₀”), “retain” when it lies inside (“Retain H₀”). Only in the one-sample setup with a target value, otherwise the field is empty; the read surface computes it with the interval method and target currently set."
+    },
+    "inputs": {
+      "help": "The samples read from the worksheet, raw: for paired data the rows stay together."
+    },
+    "inputsHash": {
+      "help": "The fingerprint of the current inputs. If it differs from that of the stored result, the result is stale."
+    },
+    "labels": {
+      "help": "The column names per sample; empty for a column that is not chosen."
     }
   },
   "actions": {

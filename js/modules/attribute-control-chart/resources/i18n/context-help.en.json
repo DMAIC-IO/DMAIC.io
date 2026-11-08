@@ -33,6 +33,9 @@
     },
     "points": {
       "help": "One row per plotted point: { value, n, ucl, lcl, signal }; n is null for the c chart. read({ fields: ['points'] }) returns them in full."
+    },
+    "analysis": {
+      "help": "The analysis of the chart type: center line and control limits per sample, the plotted values and the violated rules. It is null without the required columns or with fewer than 2 points."
     }
   },
   "actions": {

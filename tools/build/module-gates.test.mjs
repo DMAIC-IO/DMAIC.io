@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkViewReads, checkPickerCss, checkChartBindings, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts, viewNamesOf, viewNamesDetailOf } from './module-gates.mjs';
+import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkViewReads, checkPickerCss, checkChartBindings, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts, viewNamesOf, viewNamesDetailOf, computedNamesOf } from './module-gates.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { APP_DIR } from './build.mjs';
 import { defineModel, command, text, number, oneOf, index, idOf, list, record, object, boolean, date, columnRef } from '../../js/core/model.js';
@@ -1036,4 +1036,24 @@ test('viewNamesOf: Getter, computed und Datenglieder des view-Blocks', () => {
   }; } });`;
   assert.deepEqual(viewNamesDetailOf(vm), { getters: ['stats'], computed: ['helper'], data: ['legacyEditKeys', 'plain'] });
   assert.deepEqual([...viewNamesOf(vm)].sort(), ['helper', 'legacyEditKeys', 'plain', 'stats']);
+});
+
+test('checkContextHelp verlangt fields.<computed>.help', () => {
+  const schema = { fields: {}, commands: {} };
+  assert.deepEqual(checkContextHelp(schema, { de: { fields: {} }, en: { fields: { series: { help: 'S' } } } }, {}, [], [], ['series']),
+    ['help: resources/i18n/context-help.de.json: fields.series.help fehlt']);
+  assert.deepEqual(checkContextHelp(schema, { de: { fields: {} }, en: { fields: {} } }), []);
+});
+
+test('computedNamesOf liest die Schlüssel des computed-Objekts im view-Block', () => {
+  const vm = `export default createModule({
+    view: (ctx) => ({
+      plain: 1,
+      computed: { a() { return 1; }, b: () => 2, get c() { return 3; } },
+    }),
+  });`;
+  assert.deepEqual(computedNamesOf(vm), ['a', 'b', 'c']);
+  assert.deepEqual(computedNamesOf('export default createModule({ view: () => ({ x: 1 }) });'), []);
+  assert.deepEqual(computedNamesOf('export default {}'), []);
+  assert.deepEqual(computedNamesOf(`const computed = { other() {} }; export default createModule({ view: () => ({ computed: { z() {} } }) });`), ['z']);
 });

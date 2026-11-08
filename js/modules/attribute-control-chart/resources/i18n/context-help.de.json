@@ -33,6 +33,9 @@
     },
     "points": {
       "help": "Je gezeichnetem Punkt eine Zeile: { value, n, ucl, lcl, signal }; n ist bei der c-Karte null. read({ fields: ['points'] }) liefert sie vollständig."
+    },
+    "analysis": {
+      "help": "Die Auswertung des Kontrollkartentyps: Mittellinie und Kontrollgrenzen je Stichprobe, die Punktwerte sowie die verletzten Regeln. Ohne die nötigen Spalten oder mit weniger als 2 Punkten ist sie null."
     }
   },
   "actions": {

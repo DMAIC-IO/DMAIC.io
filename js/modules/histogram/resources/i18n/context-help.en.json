@@ -28,6 +28,12 @@
     },
     "stats": {
       "help": "Per plotted series its statistics and confidence intervals, structured like modules.shared.types.SeriesStats; empty while nothing can be computed."
+    },
+    "series": {
+      "help": "The series built from the data rows with their presentation (name, values, colors, normal curve), or an object with “error” and “params” when no series can be built."
+    },
+    "shown": {
+      "help": "The series after the chart editor settings. Empty as long as there are no series; series hidden in the editor are included but not visible."
     }
   },
   "actions": {
