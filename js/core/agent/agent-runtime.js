@@ -172,8 +172,8 @@ export function createAgentRuntime(deps) {
   }
 
   /**
-   * Die Eingabe als Aktionsliste, falls jede Aktion syntaktisch ein
-   * Abbruchaufruf ist (`instance.call` auf eine Methode, die auf `.cancel` endet).
+   * Ob jede Aktion syntaktisch ein Abbruchaufruf ist (`instance.call` auf
+   * eine Methode, die auf `.cancel` endet).
    * @param {object|object[]} input
    * @returns {boolean}
    */
@@ -201,12 +201,10 @@ export function createAgentRuntime(deps) {
   }
 
   /**
-   * Der eigentliche Durchlauf. Serialisiert aufgerufen, siehe unten; ein
-   * reiner Task-Abbruch-Stapel (`cancelOnly`) läuft sofort.
+   * Der eigentliche Durchlauf. Serialisiert aufgerufen, siehe unten.
    * @param {object|object[]} [input]
-   * @param {{ cancelOnly?: boolean }} [opts]
    */
-  async function runInteract(input, { cancelOnly = false } = {}) {
+  async function runInteract(input) {
     const gate = await consent.ensure();
     if (!gate.ok) return { ...gate, contract: CONTRACT_VERSION };
 
@@ -222,9 +220,6 @@ export function createAgentRuntime(deps) {
     // Schema-Module, die der Stapel nennt, vorher auflösen: der Prüfer
     // (Stufe 5) kennt ihre Aktionen sonst nicht.
     await entries.preload(referencedModules(input, buildInstanceList({ stateManager, i18n })));
-    // Ein Abbruch darf nicht hinter dem Lauf warten, den er beendet. Ist nicht
-    // jede Aktion ein Task-Abbruch, reiht sich der Stapel normal in die Kette ein.
-    if (cancelOnly && !isTaskCancelBatch(input)) return enqueue(input);
     const world = buildWorld({ stateManager, moduleRegistry, i18n, registry: entries.view(), completed: host.isCompleted() });
     const checked = validateBatch(input, world);
     if (!checked.ok) return { ...checked, contract: CONTRACT_VERSION };
@@ -365,6 +360,24 @@ export function createAgentRuntime(deps) {
   let queue = Promise.resolve();
 
   /**
+   * Ob der Stapel ein reiner Task-Abbruch ist: Einwilligung, Einträge laden,
+   * dann die Prüfung am aufgelösten Eintrag. Wirft nie; im Zweifel `false`
+   * (der Stapel läuft dann in der Kette und meldet dort selbst).
+   * @param {object|object[]} input
+   * @returns {Promise<boolean>}
+   */
+  async function decideCancel(input) {
+    try {
+      const gate = await consent.ensure();
+      if (!gate.ok) return false;
+      await entries.preload(referencedModules(input, buildInstanceList({ stateManager, i18n })));
+      return isTaskCancelBatch(input);
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Reiht die Eingabe in die Kette ein.
    * @param {object|object[]} [input]
    * @returns {Promise<object>}
@@ -379,8 +392,14 @@ export function createAgentRuntime(deps) {
 
   return {
     interact(input) {
-      if (looksLikeCancelBatch(input)) return runInteract(input, { cancelOnly: true }).catch(surfaceFailure);
-      return enqueue(input);
+      if (!looksLikeCancelBatch(input)) return enqueue(input);
+      // Den Platz in der Kette sofort reservieren, damit ein später abgesetzter
+      // Aufruf nicht überholt; die Entscheidung läuft daneben an.
+      const decision = decideCancel(input);
+      const queued = queue.then(() => decision)
+        .then((isCancel) => (isCancel ? undefined : runInteract(input).catch(surfaceFailure)));
+      queue = queued.then(() => undefined, () => undefined);
+      return decision.then((isCancel) => (isCancel ? runInteract(input).catch(surfaceFailure) : queued));
     },
   };
 }

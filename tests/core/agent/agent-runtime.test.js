@@ -1099,6 +1099,15 @@ suite('agent runtime — Abbruch-Stapel umgehen die Kette', () => {
     assertDeepEqual(log, ['start-begin', 'start-end', 'cancel', 'read'], 'der gemischte Stapel wartet auf den laufenden');
   });
 
+  test('ein späterer Aufruf überholt ein .cancel der Kette nicht', async () => {
+    const log = [];
+    const { runtime } = makeRuntime({ registry, viewmodel: makeVm(log, { hang: false }) });
+    const sub = runtime.interact({ op: 'instance.call', instance: 'fw-1', method: 'sub.cancel', args: [] });
+    const next = runtime.interact({ op: 'instance.call', instance: 'fw-1', method: 'read', args: [] });
+    await Promise.all([sub, next]);
+    assertDeepEqual(log, ['sub-cancel', 'read'], 'die Reihenfolge der Aufrufe bleibt');
+  });
+
   test('.cancel einer Nicht-Task-Methode bleibt in der Kette', async () => {
     const log = [];
     const { runtime } = makeRuntime({ registry, viewmodel: makeVm(log, { hang: false }) });

@@ -175,8 +175,8 @@ asynchronen Ablauf (`asyncTask`). `describe` nennt ihn unter `asyncTasks`
   der Rückgabewert des Ablaufs. Fehler im Ablauf: `call_failed` mit dem Text
   des Fehlers. Abbruch: `value: { cancelled: true }`, kein Fehler. Parameter
   stehen wie bei Kommandos in einem Objekt: `args: [{ … }]`.
-- `<name>.cancel` ohne Parameter bricht einen laufenden Ablauf ab und
-  antwortet `{ cancelled: boolean }` (`false`, wenn keiner lief).
+- `<name>.cancel` ohne Parameter bricht einen laufenden Ablauf ab (er läuft
+  sofort, nicht in der Kette) und antwortet `{ cancelled: boolean }` (`false`, wenn keiner lief).
 
 Läuft der Ablauf schon, oder nennt das Modul einen Grund, warum er nicht
 starten kann (fehlende oder ungültige Eingaben), antwortet die Aktion mit
@@ -426,7 +426,7 @@ im abgeschlossenen Projekt erlaubt.
 
 ### Aufrufe sind serialisiert, und nichts wirft nach außen
 
-`interact()` legt jeden Aufruf in eine Kette: **die Prüfung gilt gegen den
+`interact()` legt jeden Aufruf in eine Kette (Ausnahme: reine Abbruch-Stapel, siehe unten): **die Prüfung gilt gegen den
 Zustand zum Beginn der Ausführung**, und zwei nebenläufige Aufrufe können
 ihre Effekte nicht verschränken. Ein Stapel B wird erst geprüft, wenn
 Stapel A fertig ist — kein Seiteneffekt vor vollständiger Prüfung.
@@ -436,7 +436,9 @@ Ende. Ein Stapel, der nur aus Abbrüchen besteht (`instance.call` mit
 `<name>.cancel` eines asynchronen Ablaufs), läuft darum sofort und an der Kette
 vorbei; er erreicht auch Läufe, die der Agent selbst gestartet hat. Enthält ein
 Stapel daneben eine andere Aktion, oder heißt die Methode nur zufällig
-`….cancel`, ohne ein Ablauf-Abbruch zu sein, bleibt er in der Kette.
+`….cancel`, ohne ein Ablauf-Abbruch zu sein, bleibt er in der Kette. Ein
+Abbruch-Stapel läuft auch, während ein Stapel der Kette noch arbeitet; nach
+einer fremden Änderung kann er darum `stale_revision` melden.
 
 **`ok: true` heißt „angewandt und gespeichert".** Nach einem Stapel, der
 geschrieben hat, speichert die Fläche einmal beide Persistenzhälften
