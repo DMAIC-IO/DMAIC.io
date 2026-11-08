@@ -217,23 +217,57 @@ suite('createModule: computed im view-Block', () => {
     assertEqual(runs, 2);
   });
 
-  test('Name eines computed kollidiert mit einem Glied → wirft beim Einbau', async () => {
-    let caught = null;
-    try {
-      await mount({ view() { return { computed: { label() { return 1; } }, get label() { return 2; } }; } });
-    } catch (err) { caught = err; }
-    assertTrue(caught !== null && /computed label collides/.test(caught.message), String(caught?.message));
+  test('Name eines computed kollidiert mit einem Glied → wirft beim Anlegen', () => {
+    assertThrows(() => makeModule({ view() { return { computed: { label() { return 1; } }, get label() { return 2; } }; } }),
+      /computed label collides/);
   });
 
-  test('readComputed: read() liefert das computed als Kopie', async () => {
+  test('read() liefert jedes computed als Kopie, ohne Liste', async () => {
     const { data } = await mount({
-      readComputed: ['shout'],
       view() { return { computed: { shout() { return { text: String(this.model.title) }; } } }; },
     });
     const out = data().read();
     assertDeepEqual(out.shout, { text: 'abc' });
     out.shout.text = 'zz';
     assertEqual(data().shout.text, 'abc');
+  });
+
+  test('read() liefert mehrere computed, agentEntry kennt sie als derived', async () => {
+    const extra = { view() { return { computed: { a() { return 1; }, b() { return { x: 2 }; } } }; } };
+    const { data } = await mount(extra);
+    const r = data().read();
+    assertEqual(r.a, 1);
+    assertDeepEqual(r.b, { x: 2 });
+    const entry = makeModule(extra).agentEntry;
+    assertTrue(entry.fields.a.derived === true && entry.fields.b.derived === true);
+  });
+
+  test('readComputed als Option wirft', () => {
+    assertThrows(() => makeModule({ readComputed: ['a'], view() { return { computed: { a() { return 1; } } }; } }),
+      /createModule\(view-test\): readComputed is gone — every computed is readable$/);
+  });
+
+  test('computed muss eine Funktion sein — beim Anlegen', () => {
+    assertThrows(() => makeModule({ view() { return { computed: { a: 1 } }; } }), /createModule\(view-test\): computed a must be a function$/);
+  });
+
+  for (const name of ['cssVars', 'changeRoute', '_ui', 'init', 'destroy', '_asyncTasks', '_asyncTaskHost', 'asyncTasks', 'moduleId']) {
+    test(`computed ${name} kollidiert beim Anlegen`, () => {
+      assertThrows(() => makeModule({ view() { return { computed: { [name]() { return 1; } } }; } }), new RegExp(`computed ${name} collides`));
+    });
+  }
+
+  test('view-Glied moduleId wirft lesbar statt „Cannot redefine property“', () => {
+    assertThrows(() => makeModule({ view() { return { moduleId: 'x' }; } }), /createModule\(view-test\): view member moduleId is reserved$/);
+  });
+
+  test('Feld mit dem Namen eines computed wirft', () => {
+    assertThrows(() => makeModule({ view() { return { computed: { title() { return 1; } } }; } }), /createModule\(view-test\): field title collides with computed$/);
+  });
+
+  test('view liest ctx beim Anlegen nicht', () => {
+    assertThrows(() => makeModule({ view(ctx) { void ctx.data; return {}; } }),
+      /createModule\(view-test\): view\(ctx\) reads ctx\.data while the module is created — read ctx only inside members$/);
   });
 
   test('destroy gibt die Effects frei', async () => {
@@ -252,7 +286,6 @@ suite('createModule: computed im view-Block', () => {
 suite('createModule: readBulk', () => {
   test('Massenfeld als Deskriptor, voll mit fields, zugeschnitten mit rows', async () => {
     const { data } = await mount({
-      readComputed: ['rows', 'sum'],
       readBulk: ['rows'],
       view() {
         return { computed: {
@@ -270,7 +303,7 @@ suite('createModule: readBulk', () => {
     assertDeepEqual(cut['rows$range'], { from: 1, to: 2, rowCount: 3 });
   });
 
-  test('readBulk außerhalb von readComputed wirft', () => {
-    assertThrows(() => makeModule({ readComputed: [], readBulk: ['x'] }), /readBulk x is not in readComputed/);
+  test('readBulk muss auf ein computed zeigen', () => {
+    assertThrows(() => makeModule({ readBulk: ['rows'], view() { return { computed: {} }; } }), /createModule\(view-test\): readBulk rows is not a computed$/);
   });
 });

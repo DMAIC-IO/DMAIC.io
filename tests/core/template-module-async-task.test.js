@@ -132,16 +132,44 @@ suite('createModule mit asyncTasks', () => {
     assertThrows(() => createModule({ ...base, view() { return {}; }, asyncTasks: { a: tasks.calc } }), /asyncTask a collides with field/);
   });
 
-  test('Kollision mit einem Glied des view-Blocks wirft beim Aufbau', async () => {
-    ensureTemplate();
-    const mod = createModule({
+  test('Kollision mit einem Glied des view-Blocks wirft beim Anlegen', () => {
+    assertThrows(() => createModule({
       config: { id: ID, engine: 'alpine', phase: 'define', templateUrl: new URL(TPL_KEY, document.baseURI).href },
       Model: Doc, asyncTasks: { calc: tasks.calc },
       view() { return { get calc() { return 1; } }; },
-    });
-    const container = document.createElement('div');
-    let error = null;
-    try { await mod.init(container, fakeContext([])); } catch (err) { error = err; }
-    assertTrue(error && /asyncTask calc collides with view member/.test(error.message));
+    }), /createModule\(task-test\): asyncTask calc collides with view member$/);
+  });
+
+  test('Kollision mit einem computed oder reservierten Namen wirft beim Anlegen', () => {
+    const base = { config: { id: ID, engine: 'alpine', phase: 'define', templateUrl: new URL(TPL_KEY, document.baseURI).href }, Model: Doc };
+    assertThrows(() => createModule({ ...base, asyncTasks: { calc: tasks.calc }, view() { return { computed: { calc() { return 1; } } }; } }),
+      /createModule\(task-test\): asyncTask calc collides with computed$/);
+    assertThrows(() => createModule({ ...base, asyncTasks: { init: tasks.calc }, view() { return {}; } }),
+      /createModule\(task-test\): asyncTask init collides with view member$/);
+    assertThrows(() => createModule({ ...base, asyncTasks: { asyncTasks: tasks.calc }, view() { return {}; } }),
+      /createModule\(task-test\): asyncTask asyncTasks collides with view member$/);
+  });
+
+  test('ein Feld namens asyncTasks wirft beim Anlegen', () => {
+    const Bad = defineModel({ fields: { asyncTasks: number({ default: 1 }) } });
+    assertThrows(() => createModule({
+      config: { id: ID, engine: 'alpine', phase: 'define', templateUrl: new URL(TPL_KEY, document.baseURI).href },
+      Model: Bad, asyncTasks: { calc: tasks.calc }, view() { return {}; },
+    }), /createModule\(task-test\): field asyncTasks is reserved$/);
+  });
+
+  test('ein Feld namens init wirft beim Anlegen, auch ohne asyncTasks', () => {
+    const Bad = defineModel({ fields: { init: number({ default: 1 }) } });
+    assertThrows(() => createModule({
+      config: { id: ID, engine: 'alpine', phase: 'define', templateUrl: new URL(TPL_KEY, document.baseURI).href },
+      Model: Bad, view() { return {}; },
+    }), /createModule\(task-test\): field init is reserved$/);
+  });
+
+  test('view().init() sieht den Task-Host', async () => {
+    let seen = null;
+    const { mod, container } = await mount({ view() { return { init() { seen = this._asyncTaskHost; } }; } });
+    assertTrue(seen !== null && typeof seen.start === 'function', String(seen));
+    await mod.destroy(); container.remove();
   });
 });

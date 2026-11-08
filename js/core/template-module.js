@@ -119,16 +119,18 @@ function checkExports(id, def, hasView) {
  * Die Mitglieder, die ein Schema-Modul zusätzlich bekommt: `moduleId` (für
  * `x-field`), `read()` und je Viewmodel-Kommando eine geprüfte Methode.
  * @param {string} moduleId @param {object} entry @param {Record<string, object>} vmCommands
+ * @param {string[]} [computedNames] alle `computed` des view-Blocks — `read()` liefert jedes
+ * @param {string[]} [readBulk] davon die Massenfelder
  * @returns {object}
  */
-function schemaMembers(moduleId, entry, vmCommands, readComputed = [], readBulk = []) {
+function schemaMembers(moduleId, entry, vmCommands, computedNames = [], readBulk = []) {
   const members = {
     moduleId,
     /** @noagent Lesefläche aus dem Schema (agent-schema.js) */
     read(options) {
       /** @type {Record<string, any>} */
       const extra = {};
-      for (const name of readComputed) {
+      for (const name of computedNames) {
         const value = this[name];
         extra[name] = value === undefined ? null : cloneJSON(value);
         if (readBulk.includes(name)) {
@@ -161,6 +163,50 @@ function executeCommand(vm, vmCommands, name, args) {
   return requireKnownId('command', name, [...Object.keys(commands), ...Object.keys(vmCommands)]);
 }
 
+/** Glieder, die createModule selbst setzt — kein view-Glied, computed, Feld, Kommando oder Task darf so heißen. */
+const RESERVED_MEMBERS = Object.freeze(['model', 'state', 't', 'moduleId', 'read', 'cssVars', 'changeRoute', '_ui', '_asyncTasks', '_asyncTaskHost', 'asyncTasks']);
+/** Lebenszyklus des view-Blocks — als Name eines computed, Felds, Kommandos oder Tasks gesperrt. */
+const LIFECYCLE = Object.freeze(['init', 'destroy']);
+
+/**
+ * Den view-Block einmal mit einem Probe-Kontext bauen und seine Glieder und
+ * `computed` lesen, ohne dass ein Getter läuft. Liest der Block `ctx` außerhalb
+ * seiner Glieder, wirft die Probe.
+ * @param {string} id @param {(ctx: any) => object} view
+ * @returns {{ members: string[], computed: Record<string, Function> }}
+ * @throws {Error} reservierter Name, `computed` ohne Funktion, Kollision, Zugriff auf ctx
+ */
+function computedDefsOf(id, view) {
+  const probe = new Proxy({}, {
+    get: (_t, prop) => { throw new Error(`createModule(${id}): view(ctx) reads ctx.${String(prop)} while the module is created — read ctx only inside members`); },
+  });
+  const block = view(probe);
+  for (const name of Object.keys(block)) {
+    if (RESERVED_MEMBERS.includes(name)) throw new Error(`createModule(${id}): view member ${name} is reserved`);
+  }
+  const desc = Object.getOwnPropertyDescriptor(block, 'computed');
+  /** @type {Record<string, Function>} */
+  const defs = desc ? (desc.value ?? {}) : {};
+  for (const [name, fn] of Object.entries(defs)) {
+    if (typeof fn !== 'function') throw new Error(`createModule(${id}): computed ${name} must be a function`);
+    if (Object.hasOwn(block, name) || RESERVED_MEMBERS.includes(name) || LIFECYCLE.includes(name)) {
+      throw new Error(`createModule(${id}): computed ${name} collides with a member of the view block`);
+    }
+  }
+  return { members: Object.keys(block).filter((n) => n !== 'computed'), computed: defs };
+}
+
+/**
+ * Namen gegen die reservierten Glieder prüfen.
+ * @param {string} id @param {string} kind `field` oder `command` @param {string[]} names
+ * @returns {void}
+ */
+function checkReserved(id, kind, names) {
+  for (const name of names) {
+    if (RESERVED_MEMBERS.includes(name) || LIFECYCLE.includes(name)) throw new Error(`createModule(${id}): ${kind} ${name} is reserved`);
+  }
+}
+
 /** Was in der neuen Form aus module.js kommt oder entfällt — nie in config. */
 const NOT_IN_CONFIG = ['id', 'version', 'icon', 'phase', 'allowedPhases', 'engine', 'meta', 'templateUrl'];
 /** Felder aus module.js, die die Instanz trägt (wie bisher aus config). */
@@ -173,7 +219,7 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
 // base.view(ctx) — neue Form statt base.data(module, t): liefert Getter und
 // Handler; `this` ist die Komponente mit model, state, t. base.State — UI-State
 // aus defineState, nur zusammen mit view.
-// base.readBulk — Massenfelder unter readComputed (Zeilenlisten): read() liefert sie
+// base.readBulk — Massenfelder unter den computed (Zeilenlisten): read() liefert sie
 // als Deskriptor, voll mit fields/rows.
 // base.asyncTasks — asynchrone Abläufe (core/async-task.js), nur mit view und defineModel; Wert unter dem Namen, Status unter _asyncTasks.
 // base.exports — Mapper nach Datenform (table/tables/tree/image, fileName),
@@ -188,7 +234,7 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
  * @returns {Record<string, any> & { readonly __view?: V, readonly __asyncTasks?: T }}
  */
 export function createModule(base) {
-  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, fromExample, createDefault, gestures = [], forms = {}, exports: exportsDef, readComputed = [], readBulk = [], asyncTasks: taskDefs = {} } = base;
+  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, fromExample, createDefault, gestures = [], forms = {}, exports: exportsDef, readBulk = [], asyncTasks: taskDefs = {} } = base;
   if (descriptor) {
     for (const key of NOT_IN_CONFIG) {
       if (Object.hasOwn(config, key)) {
@@ -199,11 +245,13 @@ export function createModule(base) {
   const id = descriptor ? descriptor.id : config.id;
   if (data && view) throw new Error(`createModule(${id}): data and view are mutually exclusive`);
   if (UiState && !view) throw new Error(`createModule(${id}): State requires view`);
-  if (readComputed.length > 0 && !view) throw new Error(`createModule(${id}): readComputed needs view`);
+  if (Object.hasOwn(base, 'readComputed')) throw new Error(`createModule(${id}): readComputed is gone — every computed is readable`);
   const taskNames = Object.keys(taskDefs);
   if (taskNames.length > 0 && !view) throw new Error(`createModule(${id}): asyncTasks needs view`);
+  const probed = view ? computedDefsOf(id, view) : { members: [], computed: {} };
+  const computedNames = Object.keys(probed.computed);
   for (const name of readBulk) {
-    if (!readComputed.includes(name)) throw new Error(`createModule(${id}): readBulk ${name} is not in readComputed`);
+    if (!computedNames.includes(name)) throw new Error(`createModule(${id}): readBulk ${name} is not a computed`);
   }
   if (fromExample !== undefined && typeof fromExample !== 'function') throw new Error(`createModule(${id}): fromExample must be a function`);
   if (fromExample && beforeLoadExample) throw new Error(`createModule(${id}): fromExample and beforeLoadExample are exclusive`);
@@ -227,6 +275,14 @@ export function createModule(base) {
   if (!schema && Object.keys(vmCommands).length > 0) {
     throw new Error(`createModule ${id}: commands need a defineModel Model`);
   }
+  if (schema) {
+    const fieldNames = [...Object.keys(schema.fields), ...Object.keys(schema.view)];
+    checkReserved(id, 'field', fieldNames);
+    checkReserved(id, 'command', [...Object.keys(schema.commands), ...Object.keys(vmCommands)]);
+    for (const name of fieldNames) {
+      if (computedNames.includes(name)) throw new Error(`createModule(${id}): field ${name} collides with computed`);
+    }
+  }
   if (taskNames.length > 0) {
     if (!schema) throw new Error(`createModule(${id}): asyncTasks need a defineModel Model`);
     checkAsyncTasks(`createModule(${id})`, taskDefs, {
@@ -234,10 +290,12 @@ export function createModule(base) {
       ...Object.fromEntries(Object.keys(schema.view).map((n) => [n, 'field'])),
       ...Object.fromEntries(Object.keys(schema.commands).map((n) => [n, 'command'])),
       ...Object.fromEntries(Object.keys(vmCommands).map((n) => [n, 'command'])),
-      ...Object.fromEntries(['model', 'state', 't', 'moduleId', 'read'].map((n) => [n, 'view member'])),
+      ...Object.fromEntries(probed.members.map((n) => [n, 'view member'])),
+      ...Object.fromEntries(computedNames.map((n) => [n, 'computed'])),
+      ...Object.fromEntries([...RESERVED_MEMBERS, ...LIFECYCLE].map((n) => [n, 'view member'])),
     });
   }
-  const agentEntry = schema ? schemaAgentEntry(Model, vmCommands, { derived: readComputed, bulk: readBulk, asyncTasks: taskDefs }) : undefined;
+  const agentEntry = schema ? schemaAgentEntry(Model, vmCommands, { derived: computedNames, bulk: readBulk, asyncTasks: taskDefs }) : undefined;
   const i18nKey = `modules.${  id}`;
   // Derive the template URL from document.baseURI so the key is stable whether
   // the app runs unbundled or from app.min.js (where import.meta.url → bundle path).
@@ -335,23 +393,11 @@ export function createModule(base) {
         });
         // `computed` ist kein Glied, sondern die Liste der Ableitungen — vor
         // dem Kopieren herausnehmen (der Deskriptor, nicht der Wert: Getter
-        // des Blocks dürfen hier noch nicht laufen).
+        // des Blocks dürfen hier noch nicht laufen). Namen und Kollisionen
+        // sind beim Anlegen geprüft (computedDefsOf).
         const computedDesc = Object.getOwnPropertyDescriptor(dataResult, 'computed');
         computedDefs = computedDesc ? computedDesc.value : null;
         if (computedDesc) delete dataResult.computed;
-        for (const [name, fn] of Object.entries(computedDefs ?? {})) {
-          if (typeof fn !== 'function') throw new Error(`createModule: ${id}: computed ${name} must be a function`);
-          if (Object.hasOwn(dataResult, name) || ['model', 'state', 't', 'moduleId', 'read'].includes(name)) {
-            throw new Error(`createModule: ${id}: computed ${name} collides with a member of the view block`);
-          }
-        }
-        for (const name of taskNames) {
-          if (Object.hasOwn(dataResult, name)) throw new Error(`createModule: ${id}: asyncTask ${name} collides with view member`);
-          if (Object.hasOwn(computedDefs ?? {}, name)) throw new Error(`createModule: ${id}: asyncTask ${name} collides with computed`);
-        }
-        for (const name of readComputed) {
-          if (!Object.hasOwn(computedDefs ?? {}, name)) throw new Error(`createModule: ${id}: readComputed ${name} is not a computed`);
-        }
       } else {
         const dataCtx = new Proxy(dataCtxTarget, {
           get: (t, prop) => t[prop],
@@ -400,7 +446,7 @@ export function createModule(base) {
             Object.assign(comp, { state: UiState ? UiState.create() : {}, moduleId: id });
             comp.cssVars = function cssVars(map) { return readCssVars(this.$root, map); };
           }
-          if (schema) copyMembers(comp, schemaMembers(id, agentEntry, vmCommands, readComputed, readBulk));
+          if (schema) copyMembers(comp, schemaMembers(id, agentEntry, vmCommands, computedNames, readBulk));
           if (schema || exportsDef) {
             // Griff der Kommando-Primitive (core/command-directives.js) und, für
             // exports/component, von runExport (core/exporter.js). Nicht
@@ -458,7 +504,7 @@ export function createModule(base) {
                 }
               }
               if (computedDefs) releaseComputed = bindComputed(Alpine, this, computedDefs);
-              dataInit?.call(this);
+              // Der Task-Host steht vor view().init() — init darf Tasks starten und lesen.
               if (taskNames.length > 0) {
                 const vm = this;
                 taskHost = createAsyncTasks({
@@ -469,6 +515,7 @@ export function createModule(base) {
                   notify: (message) => context.notify?.(message, 'error'),
                 });
               }
+              dataInit?.call(this);
               // Automatic persist-$watch: persists on every model mutation by
               // deep-cloning model.toJSON() through Alpine's reactivity proxy.
               //

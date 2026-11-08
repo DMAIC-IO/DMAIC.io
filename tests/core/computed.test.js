@@ -62,15 +62,24 @@ suite('computed', () => {
   });
 
   test('Fehler → { error }, die übrigen laufen weiter', async () => {
-    const { vm, release } = makeVm({
-      bad() { if (this.model.a > 1) throw new Error('kaputt'); return 'ok'; },
-      sum() { return this.model.a + this.model.b; },
-    });
-    vm.model.a = 2;
-    await flush();
-    assertDeepEqual(JSON.parse(JSON.stringify(vm.bad)), { error: 'kaputt' });
-    assertEqual(vm.sum, 4);
-    release();
+    const original = console.error;
+    const calls = [];
+    console.error = (...args) => { calls.push(args); };
+    try {
+      const { vm, release } = makeVm({
+        bad() { if (this.model.a > 1) throw new Error('kaputt'); return 'ok'; },
+        sum() { return this.model.a + this.model.b; },
+      });
+      vm.model.a = 2;
+      await flush();
+      assertDeepEqual(JSON.parse(JSON.stringify(vm.bad)), { error: 'kaputt' });
+      assertEqual(vm.sum, 4);
+      assertEqual(calls.length, 1);
+      assertEqual(calls[0][0], '[computed] bad:');
+      release();
+    } finally {
+      console.error = original;
+    }
   });
 
   test('nur lesend', () => {

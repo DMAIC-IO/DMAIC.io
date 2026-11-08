@@ -393,8 +393,8 @@ leer sein — eine falsche Spaltenliste wäre schlechter als keine.
 ausgelassen" unterscheidbar bleibt. Ausgelassene Werte sind über `read()`
 nicht abrufbar.
 
-**Abgeleitete Ergebnisse.** Module mit Ableitungen (`readComputed`) liefern sie
-in `read()` als Zahlen, nicht als Anzeigetexte. In `module.describe` steht ein
+**Abgeleitete Ergebnisse.** Jedes `computed` des view-Blocks erscheint
+in `read()` — als Zahlen, nicht als Anzeigetexte. In `module.describe` steht ein
 solches Feld mit `derived: true`; es ist nur lesbar, `instance.set` lehnt es
 ab. Beispiel `hypothesis-test`, Feld `result`:
 

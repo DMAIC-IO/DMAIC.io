@@ -20,7 +20,6 @@ export default createModule({
   descriptor,
   Model: State,
   State: UiState,
-  readComputed: ['activeColumnSlots', 'activeParams', 'pickableColumns', 'result', 'points'],
   readBulk: ['points'],
   /** @type {import('./state.types.js').AttributeControlChartViewFn} */
   view(ctx) {

@@ -14,7 +14,6 @@ import { presentResult, insufficientText, residualCharts, previewHypotheses } fr
 export default createModule({
   descriptor,
   Model: State,
-  readComputed: ['result'],
   /** @type {import('../../../core/template-module.js').ViewFn<import('../domain/model.types.js').StateModel, {}>} */
   view(ctx) {
     /** Anzeigemodell je Ergebnisobjekt, einmal gebaut. */
