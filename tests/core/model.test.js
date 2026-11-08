@@ -902,11 +902,10 @@ suite('Feldart datasets', () => {
     assertThrows(() => checkValue(single, 'd', [{ a: null }, { a: null }]), /allowed: exactly one row/);
   });
 
-  test('Slot mit nullable:false lehnt null ab', () => {
-    const strict = datasets({ a: columnRef({ nullable: false }), b: columnRef() }, { multi: true });
-    assertThrows(() => checkValue(strict, 'datasets', [{ a: null, b: null }]), /^invalid datasets\[0\]\.a null; allowed: a column reference/);
-    assertThrows(() => checkValue(strict, 'datasets', [{ b: null }]), /^invalid datasets\[0\]\.a /);
-    assertDeepEqual(checkValue(strict, 'datasets', [{ a: ref, b: null }]), [{ a: ref, b: null }]);
+  test('Slot mit nullable:false wird beim Anlegen abgelehnt (Vorgabezeile hätte null)', () => {
+    assertThrows(() => datasets({ a: columnRef({ nullable: false }), b: columnRef() }),
+      /^invalid datasets slot a nullable:false; allowed: nullable slots/);
+    assertDeepEqual(defaultOf(datasets({ a: columnRef(), b: columnRef() })), [{ a: null, b: null }]);
   });
 
   test('describeType', () => {

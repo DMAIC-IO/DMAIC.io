@@ -157,7 +157,7 @@ suite('defineModel — _schema', () => {
     const Once = defineModel({ version: '1.0', fields: { t: text() } });
     setModelName(Once, 'a');
     setModelName(Once, 'a');
-    assertThrows(() => setModelName(Once, 'b'), /^Model \w+ already belongs to module a$/);
+    assertThrows(() => setModelName(Once, 'b'), /^Model already belongs to module a$/);
     assertEqual(new Once().toJSON()._schema.name, 'a');
   });
 

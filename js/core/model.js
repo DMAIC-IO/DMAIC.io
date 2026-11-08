@@ -130,7 +130,8 @@ export const columnRef = ({ types, minCount = 0, maxCount, ...opts } = {}) => {
 };
 
 /**
- * Datensätze: Liste von Zeilen `{ <slot>: Spaltenbezug|null }`, mindestens
+ * Datensätze: Liste von Zeilen `{ <slot>: Spaltenbezug|null }` (jeder Slot ist nullbar:
+ * eine neue Zeile beginnt mit `null` in allen Slots, `columnRef({ nullable: false })` wird abgelehnt), mindestens
  * eine Zeile, ohne `multi` genau eine. Slots sind `columnRef`-Beschreibungen,
  * dazu `required` (Zeile ohne diesen Slot ist unvollständig — bleibt aber
  * gültig) und `group` (Platzhalter „keine Gruppierung“, jeder Spaltentyp).
@@ -139,9 +140,14 @@ export const columnRef = ({ types, minCount = 0, maxCount, ...opts } = {}) => {
  * @param {{ multi?: boolean, colors?: readonly string[]|null } & object} [opts]
  * @returns {Readonly<object>}
  */
-export const datasets = (slots, { multi = false, colors = null, ...opts } = {}) => spec('datasets', {
-  slots: Object.freeze({ ...slots }), multi, colors: colors ? Object.freeze([...colors]) : null,
-}, opts);
+export const datasets = (slots, { multi = false, colors = null, ...opts } = {}) => {
+  for (const [k, slot] of Object.entries(slots)) {
+    if (slot?.nullable === false) throw new Error(`invalid datasets slot ${k} nullable:false; allowed: nullable slots (a new row starts with null in every slot)`);
+  }
+  return spec('datasets', {
+    slots: Object.freeze({ ...slots }), multi, colors: colors ? Object.freeze([...colors]) : null,
+  }, opts);
+};
 
 const COLUMN_REF_KEYS = Object.freeze(['instanceId', 'sheetId', 'columnId']);
 
@@ -441,7 +447,7 @@ export function checkValue(s, name, value, ctx = {}) {
         requireForm(at, row, isPlainObject(row), `an object with keys ${slotNames.join(', ')}`);
         for (const k of Object.keys(row)) requireKnownId(`${at} key`, k, slotNames);
         return Object.fromEntries(slotNames.map((k) => [k,
-          (row[k] === null || row[k] === undefined) && s.slots[k].nullable !== false ? null : checkValue(s.slots[k], `${at}.${k}`, row[k], ctx)]));
+          row[k] === null || row[k] === undefined ? null : checkValue(s.slots[k], `${at}.${k}`, row[k], ctx)]));
       });
     }
     default: throw new Error(`defineModel: unknown kind ${JSON.stringify(s.kind)}`);
@@ -511,7 +517,7 @@ export function describeType(s) {
       .map(([k, v]) => `${k}${v.optional ? '?' : ''}: ${describeType(v)}`).join(', ')} }`; break;
     case 'columnRef': t = '{ instanceId: string, sheetId?: string, columnId: string }'; break;
     case 'datasets': t = `Array<{ ${Object.entries(s.slots)
-      .map(([k, v]) => `${k}: ${describeType({ ...v, nullable: true })}`).join(', ')} }>`; break;
+      .map(([k, v]) => `${k}: ${describeType(v)}`).join(', ')} }>`; break;
     default: throw new Error(`defineModel: unknown kind ${JSON.stringify(s.kind)}`);
   }
   return s.nullable ? `${t}|null` : t;
@@ -1026,7 +1032,7 @@ function migrate(json, version, steps) {
 export function setModelName(Model, name) {
   const named = /** @type {any} */ (Model);
   if (Object.hasOwn(named, 'moduleName') && named.moduleName !== name) {
-    throw new Error(`Model ${Model.name} already belongs to module ${named.moduleName}`);
+    throw new Error(`Model${Model.name === 'Model' ? '' : ` ${Model.name}`} already belongs to module ${named.moduleName}`);
   }
   Object.defineProperty(Model, 'moduleName', { value: name, writable: true, configurable: true, enumerable: false });
 }
