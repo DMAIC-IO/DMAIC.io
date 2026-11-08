@@ -1,7 +1,8 @@
 import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
 import { analyze } from '../../js/modules/hypothesis-test/domain/analyze.js';
 import { presentResult, insufficientText, residualCharts, previewHypotheses } from '../../js/modules/hypothesis-test/viewmodel/present.js';
-import { NORMAL_GROUPS, SKEWED_GROUPS, bookGroups, loadT } from './hypothesis-test-groups.js';
+import { NORMAL_GROUPS, SKEWED_GROUPS, bookGroups, loadT, loadRealT, BONETT_SPLIT_LARGE, BONETT_SPLIT_SMALL } from './hypothesis-test-groups.js';
+import { fmt } from '../../js/modules/hypothesis-test/viewmodel/present.js';
 
 const t = await loadT();
 const BOOK = await bookGroups();
@@ -151,5 +152,101 @@ suite('present — previewHypotheses', () => {
     assertEqual(pv('variance', 'one', 'greater').h0, 'H₀: σ² ≤ σ²₀');
     assertEqual(pv('variance', 'two', 'less').h1, 'H₁: σ²₁ < σ²₂');
     assertEqual(pv('variance', 'two', 'two-sided').h0, 'H₀: σ²₁ = σ²₂');
+  });
+});
+
+// ── Hinweise zum Intervall (ciNote) und Verschiebungsschätzer im Hauptergebnis ──
+
+const tr = await loadRealT();
+/** Wie `show`, aber mit den echten Modultexten. */
+function showR(input) {
+  const a = analyze({ ...base, ...input });
+  return presentResult(a, tr, { category: input.category ?? base.category, testType: input.testType, direction: input.direction ?? base.direction, targetType: base.targetType });
+}
+
+
+/** Rechtsschiefe Reihen mit n = 8: der Rangweg (Mann-Whitney) mit exaktem Hodges-Lehmann-Intervall. */
+const HEAVY_X = [1, 1.01, 1.02, 1.03, 1.04, 1.05, 100, 10000];
+const HEAVY_Y = [1.005, 1.015, 1.025, 1.035, 1.045, 1.055, 150, 12000];
+
+suite('present — ciNote je Code', () => {
+  const C = [10.3, 10.0, 10.5, 9.9, 10.2];
+  const two = (x, y, extra = {}) => showR({ testType: 'two', samples: [{ name: 'A', values: x }, { name: 'B', values: y }], ...extra });
+
+  test('ciDiffNote: nicht abgelehnter Zwei-Stichproben-Test nennt das Intervall der Differenz', () => {
+    const r = two(A, C);
+    assertEqual(r.numeric.decision, 'keep');
+    const [lo, hi] = r.numeric.ci;
+    assertEqual(r.main.ciNote, tr('ciDiffNote', { lo: fmt(lo), hi: fmt(hi) }));
+    assertTrue(r.main.ciNote.includes('No significant difference'), r.main.ciNote);
+    assertTrue(lo < 0 && hi > 0, 'das Intervall enthält 0');
+  });
+
+  test('ciDiffNote entfällt bei Ablehnung', () => {
+    assertEqual(two(A, B).main.ciNote, '');
+  });
+
+  test('ciDiffNote entfällt, wenn das einseitig nicht abgelehnte Intervall den Zielwert 0 nicht enthält', () => {
+    const r = two(A, B, { direction: 'greater' });
+    assertEqual(r.numeric.decision, 'keep');
+    assertTrue(r.numeric.ci[1] < 0, 'Intervall liegt links von 0');
+    assertEqual(r.main.ciNote, '');
+  });
+
+  test('ciPairedDiffNote: gepaart, nicht abgelehnt, Intervall enthält das Ziel', () => {
+    const r = showR({ testType: 'paired', target: 0, samples: [{ name: 'A', values: A }, { name: 'C', values: C }] });
+    assertEqual(r.numeric.decision, 'keep');
+    const [lo, hi] = r.numeric.ci;
+    assertEqual(r.main.ciNote, tr('ciPairedDiffNote', { lo: fmt(lo), hi: fmt(hi) }));
+  });
+
+  test('ciShiftNote: Rangweg ohne Ablehnung nennt das Verschiebungsintervall', () => {
+    const r = two(HEAVY_X, HEAVY_Y);
+    assertEqual(r.route.name, 'Mann-Whitney U Test');
+    assertEqual(r.numeric.decision, 'keep');
+    const [lo, hi] = r.numeric.ci;
+    assertTrue(r.main.ciNote.startsWith(tr('ciShiftNote', { lo: fmt(lo), hi: fmt(hi) })), r.main.ciNote);
+  });
+
+  test('ciShiftTooSmall: erreichte Konfidenz unter 1 − α, Zahlen in Prozent', () => {
+    const r = two(HEAVY_X, HEAVY_Y, { alpha: 0.0001 });
+    const small = r.numeric.notes.find((n) => n.code === 'ciShiftTooSmall');
+    assertTrue(small !== undefined, 'Code ciShiftTooSmall');
+    assertTrue(small.values.achieved > 0 && small.values.achieved < small.values.level, 'erreicht < gefordert');
+    assertTrue(r.main.ciNote.includes('Samples too small for'), r.main.ciNote);
+    assertTrue(r.main.ciNote.includes(tr('ciShiftNote', { lo: fmt(r.numeric.ci[0]), hi: fmt(r.numeric.ci[1]) })), 'beide Hinweise, durch Leerzeichen getrennt');
+  });
+
+  test('Rangweg mit Ablehnung und ausreichender Konfidenz: kein Hinweis', () => {
+    const r = two(HEAVY_X, [3, 3.5, 4, 12, 13, 14, 15, 16].map((v) => v + 20000));
+    assertEqual(r.numeric.decision, 'reject');
+    assertEqual(r.main.ciNote, '');
+  });
+
+  test('ciRatioUndefinedNote: Bonett-Konfidenzgebiet zerfällt, KI-Wert „–“', () => {
+    const r = showR({ category: 'variance', testType: 'two', samples: [{ name: 'A', values: BONETT_SPLIT_LARGE }, { name: 'B', values: BONETT_SPLIT_SMALL }] });
+    assertEqual(r.route.name, 'Bonett Ratio Test');
+    assertEqual(r.main.ciNote, tr('ciRatioUndefinedNote'));
+    const ciMetric = r.main.metrics.find((m) => m.label.startsWith('95%') && m.value === '–');
+    assertTrue(ciMetric !== undefined, 'Intervall zeigt „–“');
+  });
+});
+
+suite('present — Hodges-Lehmann im Hauptergebnis', () => {
+  test('Mann-Whitney: Schätzer und Verschiebungsintervall mit erreichtem Niveau, Methode im Tooltip', () => {
+    const r = showR({ testType: 'two', samples: [{ name: 'A', values: SKEWED_GROUPS[0] }, { name: 'B', values: SKEWED_GROUPS[1] }] });
+    assertEqual(r.route.name, 'Mann-Whitney U Test');
+    const hl = r.numeric.ci;
+    assertEqual(metric(r.main.metrics, tr('hlEstimateLabel')) !== undefined, true);
+    assertTrue(Math.abs(Number(metric(r.main.metrics, tr('hlEstimateLabel'))) - (-1)) < 0.5, metric(r.main.metrics, tr('hlEstimateLabel')));
+    const shift = r.main.metrics.find((m) => m.label.includes('η₁−η₂') && m.label.includes('CI'));
+    assertEqual(shift.value, `[${fmt(hl[0])}, ${fmt(hl[1])}]`);
+    assertTrue(shift.label.startsWith('95'), shift.label);
+    assertTrue(shift.title.includes(tr('pMethodExact')), shift.title);
+  });
+
+  test('Parametrische Wege haben keine HL-Zeile', () => {
+    const r = showR({ testType: 'two', samples: [{ name: 'A', values: A }, { name: 'B', values: B }] });
+    assertEqual(metric(r.main.metrics, tr('hlEstimateLabel')), undefined);
   });
 });

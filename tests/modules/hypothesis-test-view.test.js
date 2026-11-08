@@ -219,3 +219,89 @@ suite('hypothesis-test: Viewmodel im Browser', () => {
     assertEqual(vm().errorText, 'analysisFailed|Blatt kaputt');
   });
 });
+
+suite('hypothesis-test: reine Getter des Viewmodels', () => {
+  const withModel = (m) => mount({ category: 'mean', testType: 'two', direction: 'two-sided', alpha: 0.05, ...m });
+
+  test('activeClass markiert genau den gewählten Wert', async () => {
+    const { vm } = await withModel({ direction: 'greater' });
+    assertEqual(vm().activeClass('direction', 'greater'), 'btn--active');
+    assertEqual(vm().activeClass('direction', 'less'), '');
+  });
+
+  test('Rasterklasse der Testart-Reihe nur bei Mittelwert', async () => {
+    assertEqual((await withModel({ category: 'mean' })).vm().testTypeRowClass, 'hyptest__toggle-row--grid');
+    assertEqual((await withModel({ category: 'variance' })).vm().testTypeRowClass, '');
+  });
+
+  test('Spaltenbeschriftungen und zweite Spalte folgen der Testart', async () => {
+    let v = (await withModel({ testType: 'paired' })).vm();
+    assertEqual([v.sample1Label, v.sample2Label, v.needsSecondColumn].join('|'), 'pairedColumn1|pairedColumn2|true');
+    v = (await withModel({ testType: 'two' })).vm();
+    assertEqual([v.sample1Label, v.sample2Label, v.needsSecondColumn].join('|'), 'sample1Column|sample2Column|true');
+    v = (await withModel({ testType: 'one' })).vm();
+    assertEqual(v.needsSecondColumn, false);
+    assertEqual(v.sample1Label, 'sample1Column');
+  });
+
+  test('Zielwert-Überschrift: Mittelwert oder Varianz', async () => {
+    assertEqual((await withModel({ testType: 'one', category: 'mean' })).vm().targetTitle, 'targetMean');
+    assertEqual((await withModel({ testType: 'one', category: 'variance' })).vm().targetTitle, 'targetVariance');
+  });
+
+  test('Annahme gleicher Varianzen: nur Mittelwert mit zwei oder k Stichproben, Text je Art', async () => {
+    const flag = async (category, testType) => (await withModel({ category, testType })).vm();
+    assertEqual((await flag('mean', 'two')).showEqualVariances, true);
+    assertEqual((await flag('mean', 'k')).showEqualVariances, true);
+    assertEqual((await flag('mean', 'one')).showEqualVariances, false);
+    assertEqual((await flag('mean', 'paired')).showEqualVariances, false);
+    assertEqual((await flag('variance', 'two')).showEqualVariances, false);
+    assertEqual((await flag('mean', 'two')).equalVariancesLabel, 'assumeEqualVariances');
+    assertEqual((await flag('mean', 'k')).equalVariancesLabel, 'assumeEqualVariancesK');
+  });
+
+  test('ohne Ergebnis: Anzeige-Getter fallen auf ihre neutralen Werte zurück', async () => {
+    const v = (await withModel({})).vm();
+    assertEqual(v.display, null);
+    assertEqual(v.pairedNote, '');
+    assertEqual(v.normLayoutClass, 'hyptest__contents');
+    assertEqual(v.normalDotClass, 'hyptest__trail-dot--fail');
+    assertEqual(v.normalAnswer, 'no');
+    assertEqual(v.varTrailDotClass, 'hyptest__trail-dot--fail');
+    assertEqual(v.varTrailAnswer, 'no');
+    assertEqual(v.varTrailLabel, 'varEqual');
+    assertEqual(v.varDecisionClass, 'hyptest__decision--reject');
+    assertEqual(v.varDecisionText, 'varUnequal');
+  });
+
+  test('normale Zwei-Stichproben-Daten: Normalitäts-Getter bejahen, Varianzweg nach Annahme', async () => {
+    const { vm } = await mount({ ...twoSamples(), equalVariances: true }, { ws1: sheetWith(A, C) });
+    const v = vm();
+    assertEqual(v.normalAnswer, 'yes');
+    assertEqual(v.normalDotClass, 'hyptest__trail-dot--pass');
+    assertEqual(v.normLayoutClass, 'hyptest__contents');
+    assertEqual(v.varTrailAnswer, 'yes');
+    assertEqual(v.varDecisionClass, 'hyptest__decision--accept');
+    assertEqual(v.varDecisionText, 'varEqual');
+  });
+
+  test('k Stichproben: Raster für die Normalitätskarten', async () => {
+    const { vm } = await mount({ category: 'mean', testType: 'k', direction: 'two-sided', alpha: 0.05, colRefsK: [ref(0), ref(1), ref(2)] }, { ws1: sheetWith(A, B, C) });
+    assertEqual(vm().normLayoutClass, 'hyptest__norm-grid');
+  });
+
+  test('gepaart mit fehlenden Werten: pairedNote nennt die verworfenen Zeilen', async () => {
+    const { vm } = await mount(
+      { category: 'mean', testType: 'paired', direction: 'two-sided', alpha: 0.05, targetValue: '0', colRef1: ref(0), colRef2: ref(1) },
+      { ws1: sheetWith([1, 2, 3.5, 4, null, 6.5], [1.2, 2.1, 3.9, 4.4, 5, null]) },
+    );
+    assertEqual(vm().display.pairInfo.dropped, 2);
+    assertEqual(vm().pairedNote, 'pairedDropped');
+  });
+
+  test('previewH0/previewH1 kommen aus dem Modell', async () => {
+    const v = (await withModel({ category: 'mean', testType: 'two', direction: 'greater' })).vm();
+    assertEqual(v.previewH0, 'H₀: μ₁ ≤ μ₂');
+    assertEqual(v.previewH1, 'H₁: μ₁ > μ₂');
+  });
+});

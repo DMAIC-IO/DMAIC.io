@@ -1,6 +1,9 @@
 import { suite, test, assertEqual, assertClose, assertTrue, assertDeepEqual } from '../test-utils.js';
 import { analyze, algoIdOf } from '../../js/modules/hypothesis-test/domain/analyze.js';
-import { NORMAL_GROUPS, SKEWED_GROUPS, bookGroups } from './hypothesis-test-groups.js';
+import {
+  chiSquareVarianceTest, fTest, bonettVarianceTest, bonettRatioTest, leveneTest, bartlettTest, leveneTestK,
+} from '../../js/engines/hypothesis-test-engine.js';
+import { NORMAL_GROUPS, SKEWED_GROUPS, bookGroups, BONETT_SPLIT_LARGE, BONETT_SPLIT_SMALL } from './hypothesis-test-groups.js';
 
 const A = [10.1, 10.4, 9.8, 10.2, 10.0];
 const B = [10.9, 11.2, 10.7, 11.0, 10.8];
@@ -181,5 +184,139 @@ suite('analyze — k-Gruppen-Mittelwertwege', () => {
   test('zu wenige Gruppen → columns, zu kleine Gruppe → min3', () => {
     assertDeepEqual(runK([NORMAL_GROUPS[0]]), { status: 'insufficient', reason: 'columns' });
     assertDeepEqual(runK([NORMAL_GROUPS[0], [1, 2]]), { status: 'insufficient', reason: 'min3' });
+  });
+});
+
+// ── Varianzwege ──────────────────────────────────────────────
+
+const VAR = { ...base, category: 'variance' };
+const SKEW = [1, 1.1, 1.2, 1.3, 1.4, 1.5, 9, 10];
+const SKEW2 = [1.05, 1.3, 1.1, 1.6, 1.2, 1.4, 3, 20];
+const smp = (...cols) => cols.map((values, i) => ({ name: `S${i + 1}`, values }));
+
+/** Alle Zahlen in einem Ergebnis sind endlich (kein NaN, kein ±Infinity). */
+function assertAllFinite(value, path = 'result') {
+  if (typeof value === 'number') assertTrue(Number.isFinite(value), `${path} = ${value}`);
+  else if (Array.isArray(value)) value.forEach((v, i) => assertAllFinite(v, `${path}[${i}]`));
+  else if (value && typeof value === 'object') for (const [k, v] of Object.entries(value)) assertAllFinite(v, `${path}.${k}`);
+}
+
+suite('analyze — Varianzwege', () => {
+  test('eine Stichprobe, normal: Chi-Quadrat gegen die Sollvarianz, Teststärke exakt', () => {
+    const r = analyze({ ...VAR, testType: 'one', target: 0.1, samples: smp(A) });
+    const e = chiSquareVarianceTest(A, 0.1, 'two-sided', 0.05);
+    assertEqual(r.route.name, 'Chi-Square Variance Test');
+    assertEqual(r.route.algoId, 'chi-square-variance');
+    assertClose(r.main.statistic, e.statistic, 1e-12);
+    assertClose(r.main.p, e.pValue, 1e-12);
+    assertEqual(r.main.df, 4);
+    assertEqual(r.numeric.powerApprox, false);
+    assertEqual(r.power.effectKind, 'varianceRatio');
+    assertEqual(r.power.approx, false);
+    assertEqual(r.secondary, null);
+    assertEqual(r.varEquality, null);
+  });
+
+  test('eine Stichprobe, nicht normal: Bonett mit Näherung bei der Teststärke', () => {
+    const r = analyze({ ...VAR, testType: 'one', target: 0.1, samples: smp(SKEW) });
+    const e = bonettVarianceTest(SKEW, 0.1, 'two-sided', 0.05);
+    assertEqual(r.allNormal, false);
+    assertEqual(r.route.name, 'Bonett Variance Test');
+    assertClose(r.main.p, e.pValue, 1e-12);
+    assertTrue(Array.isArray(r.numeric.ci), 'Intervall');
+    assertEqual(r.numeric.powerApprox, true);
+    assertEqual(r.power.approx, true);
+  });
+
+  test('zwei Stichproben, normal: F-Test mit Verhältnis, df1 und df2', () => {
+    const r = analyze({ ...VAR, testType: 'two', samples: smp(A, B) });
+    const e = fTest(A, B, 'two-sided', 0.05);
+    assertEqual(r.route.name, 'F-Test');
+    assertClose(r.main.statistic, e.statistic, 1e-12);
+    assertClose(r.main.p, e.pValue, 1e-12);
+    assertEqual(r.main.extra.df1, 4);
+    assertEqual(r.main.df2, 4);
+    assertClose(r.main.extra.ratio, e.ratio, 1e-12);
+    assertEqual(r.secondary, null);
+    assertEqual(r.power.approx, false);
+  });
+
+  test('zwei Stichproben, nicht normal: Bonett-Verhältnis, Levene daneben, Teststärke genähert', () => {
+    const r = analyze({ ...VAR, testType: 'two', samples: smp(SKEW, SKEW2) });
+    const e = bonettRatioTest(SKEW, SKEW2, 'two-sided', 0.05);
+    assertEqual(r.route.name, 'Bonett Ratio Test');
+    assertClose(r.main.p, e.pValue, 1e-12);
+    assertEqual(r.secondary.test.name, 'Levene Test (Brown-Forsythe)');
+    assertClose(r.secondary.test.p, leveneTest(SKEW, SKEW2, 0.05).pValue, 1e-12);
+    assertEqual(r.secondary.noteKey, 'secondaryNoteLevene');
+    assertEqual(r.secondary.twoSidedSuffix, false);
+    assertEqual(r.power.approx, true);
+  });
+
+  test('Bonett einseitig: Levene bleibt zweiseitig und sagt das über twoSidedSuffix', () => {
+    const r = analyze({ ...VAR, direction: 'greater', testType: 'two', samples: smp(SKEW, SKEW2) });
+    assertEqual(r.secondary.twoSidedSuffix, true);
+  });
+
+  test('Ablehnung folgt dem p-Wert: deutlich verschiedene Varianzen verwerfen H₀, gleiche nicht', () => {
+    const wide = A.map((x) => 10 + (x - 10) * 5);
+    assertEqual(analyze({ ...VAR, testType: 'two', samples: smp(A, wide) }).main.decision, 'reject');
+    assertEqual(analyze({ ...VAR, testType: 'two', samples: smp(A, A.map((x) => x + 3)) }).main.decision, 'keep');
+  });
+
+  test('k Gruppen, normal: Bartlett, Paarvergleiche mit F-Test und Bonferroni', () => {
+    const r = analyze({ ...VAR, testType: 'k', samples: smp(...NORMAL_GROUPS) });
+    const e = bartlettTest(NORMAL_GROUPS, 0.05);
+    assertEqual(r.route.name, "Bartlett's Test");
+    assertClose(r.main.p, e.pValue, 1e-12);
+    assertEqual(r.pairwise.methodName, 'F-Test');
+    assertEqual(r.pairwise.m, 3);
+    assertEqual(r.power, null);
+    assertEqual(r.anova.rows, null);
+  });
+
+  test('k Gruppen, nicht normal: Levene (Brown-Forsythe) mit Levene-Paarvergleichen', () => {
+    const r = analyze({ ...VAR, testType: 'k', samples: smp(...SKEWED_GROUPS) });
+    const e = leveneTestK(SKEWED_GROUPS, 0.05);
+    assertEqual(r.route.name, 'Levene Test (Brown-Forsythe)');
+    assertClose(r.main.p, e.pValue, 1e-12);
+    assertEqual(r.pairwise.methodName, 'Levene Test (Brown-Forsythe)');
+    assertEqual(r.pairwise.isRank, false);
+    assertEqual(r.pairwise.comparisons.every((c) => c.ci === null), true);
+  });
+
+  test('Bonett mit zerfallendem Konfidenzgebiet: ciUndefined, Hinweiscode, p-Wert gültig', () => {
+    const r = analyze({ ...VAR, testType: 'two', samples: smp(BONETT_SPLIT_LARGE, BONETT_SPLIT_SMALL) });
+    assertEqual(r.route.name, 'Bonett Ratio Test');
+    assertEqual(r.main.ciUndefined, true);
+    assertDeepEqual(r.notes.map((n) => n.code), ['ciRatioUndefinedNote']);
+    assertTrue(r.main.p > 0 && r.main.p < 1, 'p-Wert bleibt gültig');
+  });
+});
+
+suite('analyze — Streuung null (kein NaN, ein Hinweis)', () => {
+  const FLAT = [5, 5, 5, 5];
+  const cases = [
+    ['Mittelwert, eine Stichprobe', { testType: 'one', target: 4, samples: smp(FLAT) }],
+    ['Mittelwert, zwei Stichproben (beide konstant)', { testType: 'two', samples: smp(FLAT, [6, 6, 6, 6]) }],
+    ['Mittelwert, zwei Stichproben (eine konstant)', { testType: 'two', samples: smp(A, FLAT) }],
+    ['Varianz, eine Stichprobe', { category: 'variance', testType: 'one', target: 1, samples: smp(FLAT) }],
+    ['Varianz, zwei Stichproben', { category: 'variance', testType: 'two', samples: smp(FLAT, A) }],
+  ];
+  for (const [label, input] of cases) {
+    test(`${label}: nicht berechenbar, keine Teststärke mit NaN`, () => {
+      const r = analyze({ ...base, ...input });
+      assertDeepEqual(r, { status: 'insufficient', reason: 'notComputable' });
+    });
+  }
+
+  test('gepaart mit gleicher Spalte: noVariation statt NaN-Teststärke', () => {
+    assertDeepEqual(analyze({ ...base, testType: 'paired', target: 0, samples: smp(A, A) }), { status: 'insufficient', reason: 'noVariation' });
+  });
+
+  test('gültige Fälle liefern nur endliche Zahlen, auch bei sehr kleinem Effekt', () => {
+    assertAllFinite(analyze({ ...base, testType: 'two', samples: smp(A, A.map((x, i) => x + (i % 2 ? 1e-9 : -1e-9))) }).power);
+    assertAllFinite(analyze({ ...base, testType: 'two', samples: smp(A, B) }).power);
+    assertAllFinite(analyze({ ...VAR, testType: 'two', samples: smp(A, B) }).power);
   });
 });
