@@ -20,7 +20,7 @@
       "help": "Die gewählten Spalten als Bezüge { instanceId, sheetId, columnId } auf eine Datensammlung, alle aus demselben Blatt, jede höchstens einmal. Leer, solange nichts gewählt ist."
     },
     "pick": {
-      "help": "Der vom Nutzer gewählte Diagrammtyp, oder leer; dann gilt der Spitzenreiter der Vorschläge."
+      "help": "Der vom Nutzer gewählte Diagrammtyp, oder leer. Gezeigt wird er, solange er unter den Vorschlägen steht, sonst der Spitzenreiter; die Wahl bleibt über Spaltenwechsel hinweg stehen."
     },
     "preview": {
       "help": "Die Vorschau des gewählten Diagramms: kind single mit widget und config, kind panels mit layout, n, note und cells (zusammengesetzte Vorschau) oder kind none, wenn es für den Typ keine Vorschau gibt."
@@ -31,7 +31,7 @@
       "help": "Die gewählten Spalten mit Rolle, die Rangliste der Vorschläge, das gewählte Diagramm und das Zielmodul lesen."
     },
     "setColumns": {
-      "help": "Spalten einer Datensammlung als Auswahl übernehmen; die Vorschläge werden neu geordnet und der Spitzenreiter gewählt. Die Rollen kommen aus der Datensammlung. Liefert die Typen der Vorschläge in Rangfolge.",
+      "help": "Spalten einer Datensammlung als Auswahl übernehmen; die Rangliste wird neu gebildet; gezeigt wird die eigene Wahl, wenn sie unter den Vorschlägen steht, sonst der Spitzenreiter. Die Rollen kommen aus der Datensammlung. Liefert die Typen der Vorschläge in Rangfolge.",
       "params": {
         "refs": "Eine nicht leere Liste von Spaltenbezügen { instanceId, sheetId, columnId } aus read().pickableColumns, alle aus demselben Blatt, jede höchstens einmal.",
         "command": "Das Kommando als ein Objekt mit refs."

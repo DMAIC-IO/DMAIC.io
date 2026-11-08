@@ -20,7 +20,7 @@
       "help": "The chosen columns as references { instanceId, sheetId, columnId } into a data collection, all from the same sheet, each at most once. Empty until something is chosen."
     },
     "pick": {
-      "help": "The chart type chosen by the user, or empty; then the top-ranked suggestion applies."
+      "help": "The chart type chosen by the user, or empty. It is shown while it is among the suggestions, otherwise the top-ranked one; the pick is kept across column changes."
     },
     "preview": {
       "help": "The preview of the chosen chart: kind single with widget and config, kind panels with layout, n, note and cells (composite preview), or kind none when the type has no preview."
@@ -31,7 +31,7 @@
       "help": "Read the selected columns with their roles, the ranked suggestions, the chosen chart and the target module."
     },
     "setColumns": {
-      "help": "Take columns of a worksheet as the selection; the suggestions are re-ranked and the top one is chosen. Roles come from the worksheet. Returns the suggestion types in rank order.",
+      "help": "Take columns of a worksheet as the selection; the ranking is rebuilt; the user's own pick is shown if it is among the suggestions, otherwise the top-ranked one. Roles come from the worksheet. Returns the suggestion types in rank order.",
       "params": {
         "refs": "A non-empty list of column references { instanceId, sheetId, columnId } from read().pickableColumns, all from the same sheet, each at most once.",
         "command": "The command as one object with refs."

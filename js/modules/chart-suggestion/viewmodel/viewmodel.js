@@ -77,15 +77,15 @@ export default createModule({
       run({ refs }) {
         checkRefs(refs, this.pickableKeys());
         setFields(this.model, { columns: refs });
-        return this.rankingFor(refs).map((/** @type {{ type: string }} */ s) => s.type);
+        return this.snapshot(refs).ranking.map((s) => s.type);
       },
     }),
     pickChart: command({
       params: { type: text() },
       run({ type }) {
-        const ranking = this.rankingFor(this.model.columns);
-        requireEnum('type', type, ranking.map((/** @type {{ type: string }} */ s) => s.type));
-        if (type === shownType(ranking, this.model.pick)) return;
+        const { ranking, shown } = this.snapshot(this.model.columns);
+        requireEnum('type', type, ranking.map((s) => s.type));
+        if (type === shown) return;
         setFields(this.model, { pick: type });
       },
     }),
@@ -93,7 +93,8 @@ export default createModule({
       params: {},
       returns: object({ instanceId: text(), moduleId: text() }, { nullable: true }),
       run() {
-        const prefill = this.currentPrefill();
+        const { cols, shown } = this.snapshot(this.model.columns);
+        const prefill = this.prefillFor(shown, cols);
         if (!prefill) return null;
         return openInstance(this._ui.services, { moduleId: prefill.target, state: prefill.state });
       },
@@ -140,7 +141,7 @@ export default createModule({
          * @returns {Suggestion[]}
          */
         suggestions() {
-          return this.rankingFor(this.model.columns).map((/** @type {any} */ s) => ({
+          return getSuggestionsFor(this.liveColumns).map((s) => ({
             type: s.type,
             title: this.t(`charts.${s.i18nKey}`),
             notes: s.notesKey ? this.t(`notes.${s.notesKey}`) : '',
@@ -151,14 +152,14 @@ export default createModule({
          * @returns {string|null}
          */
         selectedChartType() {
-          return shownType(this.rankingFor(this.model.columns), this.model.pick);
+          return Array.isArray(this.suggestions) ? shownType(this.suggestions, this.model.pick) : null;
         },
         /**
          * Das Modul, das openInModule anlegt, oder null.
          * @returns {string|null}
          */
         openTarget() {
-          return this.currentPrefill()?.target ?? null;
+          return this.prefillFor(this.selectedChartType, this.liveColumns)?.target ?? null;
         },
         /**
          * Die Spalten, die setColumns annimmt.
@@ -182,19 +183,27 @@ export default createModule({
       /** Die gewählten Spalten mit Werten. */
       get liveColumns() { return liveColumns(this.model.columns, ctx.data); },
       /**
-       * Rangliste der Regelmaschine für diese Bezüge (frisch, nicht über `computed`).
+       * Spalten, Rangliste und gezeigte Wahl für diese Bezüge, frisch gerechnet —
+       * für Kommandos, die nicht auf die nächste Runde der `computed` warten.
        * @param {Array<{ instanceId: string, sheetId?: string, columnId: string }>} refs
-       * @returns {Array<{ type: string, i18nKey: string, notesKey: string|null }>}
+       * @returns {{ cols: import('../domain/columns.js').LiveColumn[], ranking: Array<{ type: string, i18nKey: string, notesKey: string|null }>, shown: string|null }}
        */
-      rankingFor(refs) { return getSuggestionsFor(liveColumns(refs, ctx.data)); },
+      snapshot(refs) {
+        const cols = liveColumns(refs, ctx.data);
+        const ranking = getSuggestionsFor(cols);
+        return { cols, ranking, shown: shownType(ranking, this.model.pick) };
+      },
       /** Schlüssel der wählbaren Spalten. @returns {string[]} */
       pickableKeys() { return ctx.data.columns().map((c) => c.key); },
-      /** Vorbelegung des Zielmoduls für die gezeigte Wahl, oder null. */
-      currentPrefill() {
+      /**
+       * Vorbelegung des Zielmoduls für einen Typ und die gewählten Spalten, oder null.
+       * @param {string|null} type @param {import('../domain/columns.js').LiveColumn[]} cols
+       * @returns {{ target: string, state: object }|null}
+       */
+      prefillFor(type, cols) {
         const first = this.model.columns[0];
         if (!first) return null;
-        const cols = this.liveColumns;
-        return buildPrefill(shownType(getSuggestionsFor(cols), this.model.pick), cols, first.instanceId, first.sheetId ?? '');
+        return buildPrefill(type, cols, first.instanceId, first.sheetId ?? '');
       },
       /** Texte der Vorschau; `previewUnavailable` behält `{type}` (die Domäne setzt ihn ein). */
       get labels() {
@@ -209,7 +218,7 @@ export default createModule({
 
       // ─── Galerie ──────────────────────────────────────────
       get hasSuggestions() { return Array.isArray(this.suggestions) && this.suggestions.length > 0; },
-      get emptyText() { return this.t(this.model.columns.length > 0 ? 'emptyStateNoMatch' : 'emptyStateNoSelection'); },
+      get emptyText() { return this.t(this.selection ? 'emptyStateNoMatch' : 'emptyStateNoSelection'); },
       get selectionColumns() { return this.selection && Array.isArray(this.selection.columns) ? this.selection.columns : []; },
       get selectionLabel() { return this.t('selectionLabel', { n: this.selectionColumns.length }); },
       /** @param {string} role @returns {string} */
