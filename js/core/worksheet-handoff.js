@@ -14,21 +14,10 @@
  * Rein: kein DOM, kein `window`.
  */
 import { uid } from './uid.js';
+import { findOwnPhase } from './instance-handoff.js';
 import { uniqueSheetName, buildInitialWorksheetState } from './worksheet-sheets.js';
 
-/**
- * Die Phase, in der eine Instanz registriert ist.
- * @param {object} stateManager der StateManager aus `module._context`
- * @param {string} instanceId die eigene Instanz-id
- * @returns {string} die Phasen-id, `'data'`, wenn die Instanz nirgends steht
- */
-export function findOwnPhase(stateManager, instanceId) {
-  for (const p of Object.keys(stateManager.get('phases') || {})) {
-    const items = stateManager.get(`phases.${p}`) ?? [];
-    if (items.some(i => i.instanceId === instanceId)) return p;
-  }
-  return 'data';
-}
+export { findOwnPhase };
 
 /**
  * Obergrenze für das Warten auf `module:activated`. Wechselt der Nutzer
