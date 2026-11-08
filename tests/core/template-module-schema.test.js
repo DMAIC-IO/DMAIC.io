@@ -146,6 +146,11 @@ suite('createModule mit Schema-Model', () => {
     assertTrue(events.some(([n, p]) => n === 'command:executed' && p.args.idx === 0));
   });
 
+  test('Model- und Viewmodel-Kommando mit demselben Namen wirft', () => {
+    assertThrows(() => createModule({ config: { id: 'x-clash', engine: 'alpine' }, Model: Board,
+      commands: { moveItem: command({ run() {} }) }, data: () => ({}) }), /command moveItem is both a model and a viewmodel command/);
+  });
+
   test('commands ohne Schema-Model wirft', () => {
     assertThrows(() => createModule({ config: { id: 'x-legacy', engine: 'alpine' }, Model: class {},
       commands: { a: command({ run() {} }) }, data: () => ({}) }), /commands need a defineModel Model/);

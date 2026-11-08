@@ -886,7 +886,7 @@ test('Kommando-Bezüge: Kommandos, data-form, x-param', () => {
     '<button x-dialog="f" data-dialog-command="addItem" data-dialog-delete="drop"></button>',
   ].join('') }];
   assert.deepEqual(checkCommandRefs(files, CMD_SCHEMA, FORM_SCHEMAS), [
-    'command: resources/view.html: x-command="ghost": kein Kommando des Models',
+    'command: resources/view.html: x-command="ghost": kein Kommando des Models oder Viewmodels',
     'command: resources/view.html: x-command-form="nope": kein Kommando des Models',
     'command: resources/view.html: data-dialog-delete="drop": kein Kommando des Models',
     'command: resources/view.html: data-form="Gone": kein Export aus viewmodel/forms.js',
@@ -901,7 +901,7 @@ test('Kommando-Bezüge: x-command nennt auch ein Viewmodel-Kommando', () => {
     '<form x-command-form="pickChart"></form>',
   ].join('') }];
   assert.deepEqual(checkCommandRefs(files, CMD_SCHEMA, FORM_SCHEMAS, { pickChart: { params: { type: true } } }), [
-    'command: resources/view.html: x-command="ghost": kein Kommando des Models',
+    'command: resources/view.html: x-command="ghost": kein Kommando des Models oder Viewmodels',
     'command: resources/view.html: x-command-form="pickChart": kein Kommando des Models',
   ]);
 });

@@ -968,7 +968,7 @@ export function checkCommandRefs(files, schema, formSchemas, vmCommands = {}) {
     for (const attr of COMMAND_ATTRS) {
       const known = attr === 'x-command' ? [...commands, ...Object.keys(vmCommands)] : commands;
       for (const m of text.matchAll(new RegExp(`\\s${attr}="\\s*([^"]*?)\\s*"`, 'g'))) {
-        if (!known.includes(m[1])) out.push(`command: ${path}: ${attr}="${m[1]}": kein Kommando des Models`);
+        if (!known.includes(m[1])) out.push(`command: ${path}: ${attr}="${m[1]}": kein Kommando des Models${attr === 'x-command' ? ' oder Viewmodels' : ''}`);
       }
     }
     for (const m of text.matchAll(/\sdata-form="\s*([^"]*?)\s*"/g)) {

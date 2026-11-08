@@ -151,7 +151,10 @@ function checkDefaultArgs(el, params) {
 
 /**
  * Ein Kommando aus der Oberfläche: Rückfrage (`confirm` der Definition,
- * immer als `danger`), dann das Kommando. Wirft nie.
+ * immer als `danger`), dann das Kommando. Wirft nie. Hat das Model kein
+ * Kommando `name`, läuft das gleichnamige Viewmodel-Kommando aus `ui.vmCommands`
+ * (als Methode von `ui.component`) — für `x-command` und ebenso für die
+ * Aktionsknöpfe der Werkzeugleiste (`runActionCommand` in js/ui/workspace.js).
  * @param {{ model: any, dialog: any, i18n: any, moduleId: string, vmCommands?: Record<string, any>, component?: any }} ui
  * @param {string} name @param {object} args
  * @returns {Promise<{ ok: true, result: any } | { ok: false, error: any } | { ok: false, cancelled: true }>}

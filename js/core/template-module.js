@@ -284,6 +284,10 @@ export function createModule(base) {
     const fieldNames = [...Object.keys(schema.fields), ...Object.keys(schema.view)];
     checkReserved(id, 'field', fieldNames);
     checkReserved(id, 'command', [...Object.keys(schema.commands), ...Object.keys(vmCommands)]);
+    // Oberfläche und Agentenfläche lösten einen gemeinsamen Namen verschieden auf.
+    for (const name of Object.keys(vmCommands)) {
+      if (Object.hasOwn(schema.commands, name)) throw new Error(`createModule(${id}): command ${name} is both a model and a viewmodel command`);
+    }
     for (const name of fieldNames) {
       if (computedNames.includes(name)) throw new Error(`createModule(${id}): field ${name} collides with computed`);
       if (name.endsWith('Columns') && readBulk.includes(name.slice(0, -'Columns'.length))) {
