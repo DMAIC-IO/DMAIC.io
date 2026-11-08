@@ -4,8 +4,8 @@
  * Fünf Spalten mit Texteinträgen. Gespeichert: `{ _schema, columns }`.
  * `moveItem.toIdx` ist der ENDINDEX (Position nach dem Verschieben), wie die
  * Geste reorder (interaction/reorder.js): in der eigenen Spalte bis
- * `länge − 1`, in einer fremden bis `länge`. Den ersten Fall kann der Pfad
- * von `index` nicht ausdrücken; `run` prüft ihn nach.
+ * `länge − 1`, in einer fremden bis `länge`; `index(…, { afterRemovalFrom })`
+ * prüft den Index gegen die Länge nach dem Entfernen aus der Quellspalte.
  * `setItem.current` liefert den Text zum Bearbeiten (Startwert des Dialogs).
  */
 import { defineModel, record, list, text, oneOf, index, command } from '../../../core/model.js';

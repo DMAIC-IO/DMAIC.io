@@ -293,8 +293,8 @@ function buildBadge(key) {
  */
 function hasLabelledLabel(field) {
   if (field.id) {
-    const labels = field.ownerDocument.querySelectorAll('label[for][data-help-key]');
-    for (const label of labels) if (label.htmlFor === field.id) return true;
+    const selector = `label[for="${CSS.escape(field.id)}"][data-help-key]`;
+    if (field.ownerDocument.querySelector(selector)) return true;
   }
   const group = field.closest('.field-group');
   if (!group || field.parentElement !== group) return false;
@@ -330,6 +330,8 @@ function augmentOne(anchor) {
   // über `title` und `aria-describedby`; das Fragezeichen hängt als
   // Geschwister dahinter — außer ein beschriftetes Label trägt es schon.
   if (NO_BADGE_TAGS.has(anchor.tagName)) {
+    // Ein verstecktes Feld hat keine Box: kein Ziel für ein Fragezeichen.
+    if (anchor.type === 'hidden') return;
     describeElement(anchor, key);
     anchor.dataset.contextHelpAugmented = '1';
     if (hasLabelledLabel(anchor)) return;
@@ -339,9 +341,15 @@ function augmentOne(anchor) {
       sibling.classList.add('context-help__btn--field');
       anchor.after(sibling);
     }
+    const fieldLabel = anchor.getAttribute('aria-label')
+      || anchor.getAttribute('name')
+      || anchor.getAttribute('placeholder')
+      || '';
     sibling.setAttribute(
       'aria-label',
-      STATE.i18n.t('contextHelp.ariaLabel', { label: anchor.getAttribute('aria-label') || anchor.getAttribute('name') || '' }),
+      fieldLabel
+        ? STATE.i18n.t('contextHelp.ariaLabel', { label: fieldLabel })
+        : STATE.i18n.t('contextHelp.ariaLabelBare'),
     );
     return;
   }

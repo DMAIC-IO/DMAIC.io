@@ -235,6 +235,16 @@
   cursor: grabbing;
 }
 
+/* Das Fragezeichen sitzt auf dem Griff selbst statt rechts daneben: dort
+   läge es auf Schrittnummer und Eintragstext. */
+.sipoc__grip.context-help-anchor > .context-help__btn {
+  left: 50%;
+  margin-left: 0;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--color-bg-primary);
+}
+
 .sipoc__grip:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;

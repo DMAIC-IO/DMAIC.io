@@ -287,6 +287,7 @@
   },
   "contextHelp": {
     "ariaLabel": "Kontexthilfe zu „{label}“ anzeigen",
+    "ariaLabelBare": "Kontexthilfe zu diesem Feld anzeigen",
     "hint": "Alt halten, um Kontexthilfen anzuzeigen",
     "close": "Kontexthilfe schließen"
   },

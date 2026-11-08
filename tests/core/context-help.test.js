@@ -134,6 +134,50 @@ suite('context help', () => {
     }
   });
 
+  test('the field badge aria-label falls back to the placeholder, then to a label-less text', () => {
+    const wrap = document.createElement('div');
+    const withPlaceholder = document.createElement('input');
+    withPlaceholder.setAttribute('data-help-key', KEY);
+    withPlaceholder.setAttribute('placeholder', 'Lieferant');
+    const bare = document.createElement('input');
+    bare.setAttribute('data-help-key', KEY);
+    wrap.append(withPlaceholder, bare);
+    host.appendChild(wrap);
+
+    augmentContextHelp(host);
+
+    const [first, second] = [...wrap.querySelectorAll('.context-help__btn--field')];
+    assertEqual(first.getAttribute('aria-label'), 'contextHelp.ariaLabel:{"label":"Lieferant"}');
+    assertEqual(second.getAttribute('aria-label'), 'contextHelp.ariaLabelBare');
+  });
+
+  test('a hidden input gets no badge', () => {
+    const wrap = document.createElement('div');
+    const field = document.createElement('input');
+    field.type = 'hidden';
+    field.setAttribute('data-help-key', KEY);
+    wrap.appendChild(field);
+    host.appendChild(wrap);
+
+    augmentContextHelp(host);
+
+    assertEqual(field.nextElementSibling, null);
+  });
+
+  test('a label[for] whose id needs escaping still counts', () => {
+    const field = document.createElement('input');
+    field.id = 'a.b:c';
+    field.setAttribute('data-help-key', KEY);
+    const label = document.createElement('label');
+    label.htmlFor = 'a.b:c';
+    label.setAttribute('data-help-key', KEY);
+    host.append(label, field);
+
+    augmentContextHelp(host);
+
+    assertEqual(field.nextElementSibling, null);
+  });
+
   test('does NOT augment an anchor whose help key is missing — a gap stays visible', () => {
     const label = document.createElement('label');
     label.setAttribute('data-help-key', 'modules.five-why.fields.nope.help');

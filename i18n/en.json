@@ -287,6 +287,7 @@
   },
   "contextHelp": {
     "ariaLabel": "Show context help for \"{label}\"",
+    "ariaLabelBare": "Show context help for this field",
     "hint": "Hold Alt to reveal context help",
     "close": "Close context help"
   },
