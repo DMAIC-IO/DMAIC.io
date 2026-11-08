@@ -12,6 +12,12 @@ import { requireKnownId } from '../../../core/agent/agent-argcheck.js';
  * @typedef {{ id: string, name: string, role: string, type: string, values: any[], roleConfirmed: boolean }} LiveColumn
  */
 
+/**
+ * Erste stetige Spalte als Zeitreihe; mit Datumsspalte nach Datum sortiert.
+ * @param {object[]} date Datumsspalten (die erste zählt)
+ * @param {object[]} cont stetige Spalten (die erste zählt)
+ * @returns {{ values: number[], valueName: string, xLabel: string }|null} null ohne stetige Spalte
+ */
 export function collectTimeOrderedSeries(date, cont) {
   if (cont.length === 0) return null;
   const valueCol = cont[0];
@@ -34,6 +40,11 @@ export function collectTimeOrderedSeries(date, cont) {
   return { values, valueName: valueCol.name || '', xLabel: dateCol ? (dateCol.name || '') : '' };
 }
 
+/**
+ * Arithmetisches Mittel; leer ergibt 0.
+ * @param {number[]} arr
+ * @returns {number}
+ */
 export function mean(arr) {
   if (!arr.length) return 0;
   let s = 0;
@@ -41,6 +52,11 @@ export function mean(arr) {
   return s / arr.length;
 }
 
+/**
+ * Zeitstempel in Millisekunden aus Date, Zahl oder Text.
+ * @param {unknown} v
+ * @returns {number|null} null, wenn leer oder nicht lesbar
+ */
 export function parseDateValue(v) {
   if (v == null || v === '') return null;
   if (v instanceof Date) { const t = v.getTime(); return Number.isFinite(t) ? t : null; }
@@ -50,6 +66,13 @@ export function parseDateValue(v) {
   return Number.isFinite(t) ? t : null;
 }
 
+/**
+ * Linien über der Zeit: je Gruppenstufe oder je stetiger Spalte eine Reihe.
+ * @param {object[]} date Datumsspalten (die erste zählt)
+ * @param {object[]} cont stetige Spalten
+ * @param {object[]} cat kategoriale Spalten
+ * @returns {{ groups: Array<{ name: string, points: Array<{ d: number, v: number }> }>, xLabel: string, yLabel: string, legendTitle: string }|null}
+ */
 export function collectDateLineGroups(date, cont, cat) {
   if (date.length < 1 || cont.length < 1) return null;
   const dateCol = date[0];
@@ -98,6 +121,13 @@ export function groupedAxisLabels(cont, cat, labels) {
   return { xLabel: cat.length >= 1 ? (cat[0].name || '') : '', yLabel: cont[0]?.name || '' };
 }
 
+/**
+ * Gruppen für Boxplot und Einzelwertdiagramm: mehrere Antworten nebeneinander,
+ * eine Antwort allein oder eine Antwort nach Faktor.
+ * @param {object[]} cont stetige Spalten
+ * @param {object[]} cat kategoriale Spalten
+ * @returns {Array<{ name: string, values: number[], color: string }>|null}
+ */
 export function boxplotGroups(cont, cat) {
   if (cont.length === 0) return null;
   if (cont.length > 1 && cat.length === 0) {
@@ -123,6 +153,11 @@ export function boxplotGroups(cont, cat) {
   return null;
 }
 
+/**
+ * Häufigkeit je Stufe; leere Werte zählen nicht.
+ * @param {any[]} values
+ * @returns {{ categories: string[], counts: number[] }}
+ */
 export function countCategories(values) {
   const counts = new Map();
   for (const v of values) {
@@ -133,6 +168,12 @@ export function countCategories(values) {
   return { categories: Array.from(counts.keys()), counts: Array.from(counts.values()) };
 }
 
+/**
+ * Kreuztabelle zweier kategorialer Spalten: Stufen von A als Kategorien, Stufen von B als Gruppen.
+ * @param {{ values: any[] }} colA
+ * @param {{ values: any[] }} colB
+ * @returns {{ categories: string[], groups: Array<{ name: string, values: number[], color: string }> }}
+ */
 export function crossTabCategorical(colA, colB) {
   const aVals = colA.values || [], bVals = colB.values || [];
   const n = Math.min(aVals.length, bVals.length);
@@ -153,6 +194,11 @@ export function crossTabCategorical(colA, colB) {
   return { categories: aCats, groups };
 }
 
+/**
+ * Zahl aus Wert oder Text, Komma als Dezimaltrenner.
+ * @param {unknown} v
+ * @returns {number} NaN, wenn leer oder keine Zahl
+ */
 export function toNum(v) {
   if (v == null || v === '') return NaN;
   if (typeof v === 'number') return v;
