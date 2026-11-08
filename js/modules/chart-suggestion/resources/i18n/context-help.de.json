@@ -73,7 +73,8 @@
       "suggestions": "Die zu den Rollen passenden Diagramme in Rangfolge, jeweils mit Titel und Hinweis.",
       "selectedChartType": "Das gewählte Diagramm, dessen Vorschau rechts steht.",
       "openTarget": "Das Modul, das openInModule anlegt, oder null, wenn der gewählte Typ nur als Vorschau existiert.",
-      "pickableColumns": "Die Spalten, die setColumns annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId."
+      "pickableColumns": "Die Spalten, die setColumns annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId.",
+      "preview": "Die Diagrammdaten der gezeigten Vorschau: ein Diagramm, mehrere Felder oder keine Vorschau."
     }
   }
 }

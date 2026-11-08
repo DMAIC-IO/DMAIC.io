@@ -58,7 +58,7 @@ suite('chart-suggestion domain — Gruppierungen', () => {
     const g = { name: 'G', values: ['a', 'b'] };
     const r = collectDateLineGroups([d], [y], [g]);
     assertEqual(r.groups.length, 2);
-    assertEqual(r.legendTitle, 'G');
+    assertEqual('legendTitle' in r, false);
     assertEqual(collectDateLineGroups([], [y], []), null);
   });
   test('boxplotGroups', () => {

@@ -71,7 +71,7 @@ export function parseDateValue(v) {
  * @param {object[]} date Datumsspalten (die erste zählt)
  * @param {object[]} cont stetige Spalten
  * @param {object[]} cat kategoriale Spalten
- * @returns {{ groups: Array<{ name: string, points: Array<{ d: number, v: number }> }>, xLabel: string, yLabel: string, legendTitle: string }|null}
+ * @returns {{ groups: Array<{ name: string, points: Array<{ d: number, v: number }> }>, xLabel: string, yLabel: string }|null}
  */
 export function collectDateLineGroups(date, cont, cat) {
   if (date.length < 1 || cont.length < 1) return null;
@@ -90,7 +90,7 @@ export function collectDateLineGroups(date, cont, cat) {
       if (!buckets.has(key)) buckets.set(key, []);
       buckets.get(key).push({ d: dt, v: yn });
     }
-    return { groups: Array.from(buckets, ([name, points]) => ({ name, points })), xLabel: dateCol.name || '', yLabel: yCol.name || '', legendTitle: gCol.name || '' };
+    return { groups: Array.from(buckets, ([name, points]) => ({ name, points })), xLabel: dateCol.name || '', yLabel: yCol.name || '' };
   }
   const groups = cont.map((yCol, idx) => {
     const yRaw = yCol.values || [];
@@ -103,7 +103,7 @@ export function collectDateLineGroups(date, cont, cat) {
     }
     return { name: yCol.name || `Y${idx + 1}`, points };
   });
-  return { groups, xLabel: dateCol.name || '', yLabel: cont.length === 1 ? (cont[0].name || '') : '', legendTitle: '' };
+  return { groups, xLabel: dateCol.name || '', yLabel: cont.length === 1 ? (cont[0].name || '') : '' };
 }
 
 

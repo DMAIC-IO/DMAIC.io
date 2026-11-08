@@ -73,7 +73,8 @@
       "suggestions": "The charts that fit the roles, in rank order, each with title and note.",
       "selectedChartType": "The chosen chart, shown in the preview on the right.",
       "openTarget": "The module openInModule creates, or null when the chosen type exists only as a preview.",
-      "pickableColumns": "The columns setColumns accepts, each { key, name }; the key is instanceId|sheetId|columnId."
+      "pickableColumns": "The columns setColumns accepts, each { key, name }; the key is instanceId|sheetId|columnId.",
+      "preview": "The chart data of the shown preview: one chart, a panel set or none."
     }
   }
 }

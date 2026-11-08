@@ -31,6 +31,7 @@ import { thumbIcon, thumbRaw } from './thumbs.js';
  * @property {string|null} selectedChartType  the picked chart type, or null without suggestions
  * @property {string|null} openTarget  module id openInModule would create, or null for a preview-only type
  * @property {object[]} pickableColumns  the columns setColumns accepts, each `{ key, name }`
+ * @property {import('../domain/panels.js').Preview} preview  the chart data of the shown preview: one chart, a panel set or none
  */
 
 /**
@@ -83,9 +84,9 @@ export default createModule({
     pickChart: command({
       params: { type: text() },
       run({ type }) {
-        const { ranking, shown } = this.snapshot(this.model.columns);
+        const { ranking } = this.snapshot(this.model.columns);
         requireEnum('type', type, ranking.map((s) => s.type));
-        if (type === shown) return;
+        if (type === this.model.pick) return;
         setFields(this.model, { pick: type });
       },
     }),
