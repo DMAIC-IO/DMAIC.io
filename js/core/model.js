@@ -941,7 +941,7 @@ const WIDGET = Symbol('widget');
 export function defineWidget({ name, props = {}, value = null, forKind = null, api = {} }) {
   if (typeof name !== 'string' || !WIDGET_NAME.test(name)) throw new Error('defineWidget: name must be kebab-case');
   for (const [p, s] of Object.entries(props)) {
-    if (!s || typeof s !== 'object' || typeof s.kind !== 'string') throw new Error(`defineWidget(${name}): props.${p} is not a field kind`);
+    if (typeof s?.kind !== 'string') throw new Error(`defineWidget(${name}): props.${p} is not a field kind`);
   }
   if (forKind !== null && value?.kind !== forKind) throw new Error(`defineWidget(${name}): forKind needs value of that kind`);
   for (const k of Object.keys(api)) {

@@ -126,3 +126,19 @@ suite('Stats panel — Dezimalzeichen nach Sprache', () => {
     assertEqual(host.querySelector('td[data-stat="mean"]').textContent.startsWith('2.5000'), true);
   });
 });
+
+suite('Stats panel — Intervallgrenzen ab 1e6 mit lang', () => {
+  const stats = computeStats([1e7, 2e7, 3e7, 4e7]);
+  const rows = [{ name: 'A', color: 'red', stats, ci: computeCI(stats, 0.95) }];
+
+  test('gleiche Stellenzahl und Exponentenschreibweise wie ohne lang, nur mit Komma', () => {
+    const plain = document.createElement('div');
+    const de = document.createElement('div');
+    renderStatsTable(plain, rows, { confLevel: 95 });
+    renderStatsTable(de, rows, { confLevel: 95, lang: 'de' });
+    const a = plain.querySelector('td[data-stat="mean"]').textContent;
+    const b = de.querySelector('td[data-stat="mean"]').textContent;
+    assertEqual(/e\+\d/.test(a), true, 'Ausgangslage nutzt Exponentenschreibweise: ' + a);
+    assertEqual(b, a.replaceAll('.', ','));
+  });
+});

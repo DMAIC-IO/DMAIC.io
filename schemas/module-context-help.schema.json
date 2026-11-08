@@ -71,12 +71,24 @@
     "fieldHelp": {
       "type": "object",
       "required": ["help"],
+      "properties": { "help": { "$ref": "common.schema.json#/$defs/text" } },
+      "additionalProperties": { "$ref": "#/$defs/fieldChildHelp" }
+    },
+    "fieldChildHelp": {
+      "type": "object",
+      "required": ["help"],
       "properties": {
         "help": { "$ref": "common.schema.json#/$defs/text" },
-        "label": { "anyOf": [{ "$ref": "common.schema.json#/$defs/text" }, { "$ref": "#/$defs/fieldHelp" }] },
-        "title": { "anyOf": [{ "$ref": "common.schema.json#/$defs/text" }, { "$ref": "#/$defs/fieldHelp" }] }
+        "label": { "$ref": "common.schema.json#/$defs/text" },
+        "title": { "$ref": "common.schema.json#/$defs/text" }
       },
-      "additionalProperties": { "$ref": "#/$defs/fieldHelp" }
+      "additionalProperties": { "$ref": "#/$defs/fieldDeepHelp" }
+    },
+    "fieldDeepHelp": {
+      "type": "object",
+      "required": ["help"],
+      "properties": { "help": { "$ref": "common.schema.json#/$defs/text" } },
+      "additionalProperties": { "$ref": "#/$defs/fieldDeepHelp" }
     },
     "action": {
       "type": "object",

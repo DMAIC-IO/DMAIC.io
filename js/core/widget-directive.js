@@ -39,7 +39,7 @@ function readPath(scope, path) {
  */
 export function widgetForKind(widgets, spec) {
   const kind = spec.kind === 'list' && /** @type {any} */ (spec).item?.kind === 'columnRef' ? 'columnRef' : spec.kind;
-  return Object.keys(widgets).find((n) => widgets[n].schema.forKind === kind) ?? null;
+  return Object.keys(widgets).find((n) => widgets[n].schema?.forKind === kind) ?? null;
 }
 
 /**
@@ -94,6 +94,8 @@ export function mountWidget(Alpine, el, name, entry, { valuePath, channel, i18n,
     console.warn(`${where}: ${message}`);
   };
   if (!entry) { fail(`unknown widget ${name}`); return; }
+  if (!entry.schema) { fail(`widget ${name} has no schema`); return; }
+  if (typeof entry.mount !== 'function') { fail(`widget ${name} has no mount function`); return; }
   const { schema } = entry;
   const host = Alpine.$data(el);
   const services = Alpine.raw(host._ui?.services ?? null);

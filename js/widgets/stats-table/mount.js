@@ -10,5 +10,11 @@ export function mount(root, { props, services, effect }) {
   const { i18n } = services;
   root.classList.add('dmike-stats-panel');
   effect(() => renderStatsTable(root, props.rows, { i18n, confLevel: props.confLevel, lang: i18n.getLanguage() }));
-  return { destroy: () => root.replaceChildren() };
+  return {
+    destroy: () => {
+      root.replaceChildren();
+      root.classList.remove('dmike-stats-panel');
+      root.style.display = '';
+    },
+  };
 }

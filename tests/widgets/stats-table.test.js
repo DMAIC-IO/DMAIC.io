@@ -7,6 +7,7 @@ import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
 import { registerWidgetDirective } from '../../js/core/widget-directive.js';
 import { WIDGETS } from '../../js/widgets/registry.js';
 import { computeSeriesStats } from '../../js/core/stats-panel.js';
+import { mount as mountStatsTable } from '../../js/widgets/stats-table/mount.js';
 
 const i18n = { t: (k, p) => (p ? `${k}|${p.n}` : k), getLanguage: () => 'de' };
 const flush = () => new Promise((r) => setTimeout(r, 0));
@@ -59,5 +60,30 @@ suite('Widget stats-table', () => {
     });
     assertEqual(root.querySelectorAll('tbody tr').length, 1);
     root.remove();
+  });
+
+  test('Farbfeld: ohne color kein Hintergrund, mit color gesetzt', async () => {
+    const { root } = await host({
+      get stats() { return [{ name: 'B', stats: null, ci: {} }, { name: 'C', color: '#ff0000', stats: null, ci: {} }]; },
+    });
+    const swatches = root.querySelectorAll('tbody tr .dmike-stats-color');
+    assertEqual(swatches.length, 2, 'ein Farbfeld je Zeile');
+    assertEqual(swatches[0].getAttribute('style'), null, 'ohne color kein style-Attribut');
+    assertTrue(swatches[1].getAttribute('style').includes('#ff0000'), 'mit color gesetzt');
+    root.remove();
+  });
+
+  test('destroy entfernt Klasse und display vom Wirtselement', () => {
+    const root = document.createElement('div');
+    const handle = mountStatsTable(root, {
+      props: { rows: [], confLevel: 95 },
+      services: { i18n },
+      effect: (fn) => fn(),
+    });
+    assertTrue(root.classList.contains('dmike-stats-panel'));
+    root.style.display = 'none';
+    handle.destroy();
+    assertEqual(root.classList.contains('dmike-stats-panel'), false);
+    assertEqual(root.style.display, '');
   });
 });

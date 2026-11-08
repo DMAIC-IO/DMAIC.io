@@ -5,7 +5,7 @@
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
 import { defineModel, defineWidget, list, number, object, text, oneOf } from '../../js/core/model.js';
-import { registerWidgetDirective } from '../../js/core/widget-directive.js';
+import { registerWidgetDirective, widgetForKind } from '../../js/core/widget-directive.js';
 
 const i18n = { t: (k, p) => (p ? `${k}:${p.message ?? JSON.stringify(p)}` : k), getLanguage: () => 'de' };
 const flush = () => new Promise((r) => setTimeout(r, 0));
@@ -529,5 +529,21 @@ suite('x-widget', () => {
       assertTrue(!ctx.root.querySelector('.e .widget-root').classList.contains('widget-root--error'));
       ctx.root.remove();
     });
+  });
+
+  test('Registry-Eintrag ohne Schema oder ohne mount: definierte Meldung statt TypeError', async () => {
+    if (!Alpine.version) Alpine.start();
+    registerWidgetDirective(Alpine, { i18n, widgets: { 'no-schema': { mount() {} }, 'no-mount': { schema: statList } } });
+    let ctx;
+    await withWarnings(async () => {
+      ctx = await host('<div class="a" x-widget="no-schema"></div><div class="b" x-widget="no-mount" x-widget-rows="values"></div>');
+    });
+    assertTrue(ctx.root.querySelector('.a .widget-root--error').textContent.includes('widget no-schema has no schema'));
+    assertTrue(ctx.root.querySelector('.b .widget-root--error').textContent.includes('widget no-mount has no mount function'));
+    ctx.root.remove();
+  });
+
+  test('widgetForKind überspringt Einträge ohne Schema', () => {
+    assertEqual(widgetForKind({ x: { mount() {} }, y: { schema: { forKind: 'columnRef' } } }, { kind: 'columnRef' }), 'y');
   });
 });

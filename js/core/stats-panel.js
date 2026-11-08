@@ -66,9 +66,10 @@ function fmtCI(v, lang) {
   const abs = Math.abs(v);
   if (abs === 0) return '0';
   if (abs < 0.001 || abs >= 1e6) {
-    return lang
-      ? Number(v.toPrecision(4)).toLocaleString(lang, { maximumSignificantDigits: 4, useGrouping: false })
-      : v.toPrecision(4);
+    const text = v.toPrecision(4);
+    if (!lang) return text;
+    const sep = new Intl.NumberFormat(lang).formatToParts(1.1).find((p) => p.type === 'decimal')?.value ?? '.';
+    return text.replace('.', sep);
   }
   return fixed(v, 4, lang);
 }
@@ -259,7 +260,7 @@ export function renderStatsTable(container, seriesStats, options = {}) {
   seriesStats.forEach(s => {
     const row = h('tr', null,
       h('td', null,
-        h('span', { class: `${prefix}-stats-color`, style: `background:${s.color}` }),
+        h('span', { class: `${prefix}-stats-color`, style: s.color ? `background:${s.color}` : false }),
         s.name,
       ),
     );

@@ -3,7 +3,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { FORMATS, validateValue, validateFile, schemaRef, checkTree } from './json-schemas.mjs';
@@ -66,6 +66,26 @@ test('module-ui: gültig; Pflichtschlüssel, verbotene Kontexthilfe und leere St
   assert.equal(validateValue({ ...UI, actions: { add: { help: 'x' } } }, 'module-ui').ok, false);
   assert.equal(validateValue({ ...UI, col: '' }, 'module-ui').ok, false);
   assert.equal(validateValue({ ...UI, col: null }, 'module-ui').ok, false);
+});
+
+test('module-context-help: label/title als String nur eine Ebene unter dem Feld, nicht tiefer', () => {
+  const leaf = { help: 'x', label: 'V', title: 'Wertespalte' };
+  const field = (inner) => ({ ...CTX, fields: { datasets: { help: 'x', ...inner } } });
+  assert.deepEqual(validateValue(field({ valueRef: leaf }), 'module-context-help'), { ok: true, errors: [] });
+  assert.equal(validateValue(field({ valueRef: { help: 'x', deep: leaf } }), 'module-context-help').ok, false, 'label in tiefer Ebene');
+  assert.equal(validateValue(field({ label: 'V' }), 'module-context-help').ok, false, 'label direkt am Feld');
+  assert.deepEqual(validateValue({ ...CTX, fields: { events: { help: 'x', title: { help: 'Feld "title"' } } } }, 'module-context-help'), { ok: true, errors: [] });
+});
+
+test('module-context-help: alle vorhandenen Dateien bestehen das Schema', () => {
+  const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) =>
+    e.isDirectory() ? (e.name === 'node_modules' ? [] : walk(join(d, e.name))) : [join(d, e.name)]);
+  const files = walk(join(import.meta.dirname, '..', '..', 'js', 'modules')).filter((f) => /context-help\.\w+\.json$/.test(f));
+  assert.ok(files.length > 0);
+  for (const f of files) {
+    const r = validateValue(JSON.parse(readFileSync(f, 'utf8')), 'module-context-help');
+    assert.equal(r.ok, true, `${f}: ${JSON.stringify(r.errors)}`);
+  }
 });
 
 test('module-context-help: gültig; fremder Oberschlüssel, Feld ohne help, Nicht-String-Parameter ungültig', () => {
