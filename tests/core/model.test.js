@@ -971,6 +971,16 @@ suite('list unique/sorted, Reparatur je Eintrag', () => {
     assertDeepEqual(seen, [['ids', 'invalid ids[1] 99; allowed: 1, 2, 3, 5']]);
   });
 
+  test('Reparatur einer Invariante meldet den fehlerhaften Wert, nicht die Vorgabe', () => {
+    const seen = [];
+    Budget.fromJSON({ _schema: { name: 'Budget', version: '1.0' }, min: 20, max: 5 },
+      { repair: true, onRepair: (n, err) => seen.push([n, err.message]) });
+    assertDeepEqual(seen, [
+      ['min', 'invalid min 20; allowed: a value that keeps minMax'],
+      ['max', 'invalid max 5; allowed: a value that keeps minMax'],
+    ]);
+  });
+
   test('defineState lehnt eine Funktion als default ab', () => {
     assertThrows(() => defineState({ x: number({ default: () => 1 }) }), /^state field x: default must not be a function$/);
   });

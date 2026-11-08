@@ -1,4 +1,4 @@
-import { suite, test, assertEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
 import { initialModel, loadModel } from '../../js/core/initial-model.js';
 import { defineModel, text, number } from '../../js/core/model.js';
 import { State, fmeaCreateDefault } from '../../js/modules/fmea/fmea-model.js';
@@ -63,6 +63,18 @@ suite('loadModel', () => {
       assertEqual(m.title, '');
       assertEqual(m.note, 'n');
       assertEqual(warned, 1);
+    } finally { console.warn = warn; }
+  });
+
+  test('Schema-Model: genau eine Sammelwarnung nennt alle zurückgesetzten Felder', () => {
+    const warn = console.warn; const warnings = [];
+    console.warn = (msg) => { warnings.push(String(msg)); };
+    try {
+      const m = loadModel(M, { title: 5, note: 7 });
+      assertEqual(m.title, '');
+      assertEqual(m.note, '');
+      assertEqual(warnings.length, 1);
+      assertTrue(/Felder auf Vorgabe gesetzt: title, note/.test(warnings[0]), warnings[0]);
     } finally { console.warn = warn; }
   });
 

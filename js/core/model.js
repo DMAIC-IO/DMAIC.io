@@ -1107,10 +1107,11 @@ export function defineModel(schema) {
         if (inv.test.call(m, m)) continue;
         const onlyView = inv.fields.every((f) => Object.hasOwn(view, f));
         if (!onlyView && !repair) throw invariantError(inv.fields[0], m._v[inv.fields[0]], name);
-        for (const f of inv.fields) {
+        const broken = inv.fields.map((f) => invariantError(f, m._v[f], name));
+        inv.fields.forEach((f, i) => {
           m._v[f] = defaultOf(all[f], contextOf(m), f);
-          if (!onlyView) onRepair?.(f, invariantError(f, m._v[f], name));
-        }
+          if (!onlyView) onRepair?.(f, broken[i]);
+        });
       }
       return m;
     }

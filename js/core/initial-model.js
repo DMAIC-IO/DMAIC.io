@@ -29,9 +29,16 @@ export function loadModel(Model, json, context) {
   if (!Model.schema) return Model.fromJSON(json);
   try {
     return Model.fromJSON(json, { context });
-  } catch (err) {
-    console.warn(`[createModule] gespeicherter Zustand ungültig, Feld auf Vorgabe gesetzt: ${err.message}`);
-    return Model.fromJSON(json, { repair: true, context });
+  } catch {
+    const reset = [];
+    let first = '';
+    const model = Model.fromJSON(json, {
+      repair: true,
+      context,
+      onRepair: (name, err) => { if (!reset.includes(name)) reset.push(name); first ||= err.message; },
+    });
+    console.warn(`[createModule] gespeicherter Zustand ungültig, Felder auf Vorgabe gesetzt: ${reset.join(', ')} (${first})`);
+    return model;
   }
 }
 

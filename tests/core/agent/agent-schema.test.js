@@ -154,17 +154,29 @@ suite('schemaAgentEntry: derived', () => {
     assertDeepEqual(entry.settable, ['title']);
   });
 
-  test('rules nur an columnRef-Feldern und Listen davon, nicht an text/date', () => {
+  test('Felder tragen rules, wenn ihre Feldart Tokens hat; text ohne Optionen und Listen davon nicht', () => {
     const M = defineModel({ fields: {
       title: text({ trim: true }), day: date(), c: columnRef({ types: ['numeric'], minCount: 2 }),
       cs: list(columnRef({ nullable: false })), names: list(text()),
     } });
     const f = schemaAgentEntry(M).fields;
-    assertEqual(f.title.rules, undefined);
-    assertEqual(f.day.rules, undefined);
+    assertDeepEqual(f.title.rules, ['trim']);
+    assertDeepEqual(f.day.rules, ['date']);
     assertEqual(f.names.rules, undefined);
     assertDeepEqual(f.c.rules, ['columnRef', 'types:numeric', 'minCount:2']);
     assertDeepEqual(f.cs.rules, ['columnRef']);
+  });
+
+  test('list unique/sorted erscheint als rules am Feld', () => {
+    const M = defineModel({ fields: {
+      ids: list(oneOf([1, 2, 3]), { unique: true, sorted: true, default: [] }),
+      onlyU: list(text(), { unique: true, default: [] }),
+      plain: list(text()),
+    } });
+    const f = schemaAgentEntry(M).fields;
+    assertDeepEqual(f.ids.rules, ['unique', 'sorted']);
+    assertDeepEqual(f.onlyU.rules, ['unique']);
+    assertEqual(f.plain.rules, undefined);
   });
 
   test('datasets: Regeln je Slot', () => {
