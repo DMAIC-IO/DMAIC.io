@@ -54,6 +54,23 @@ export function typecheckFiles(appDir, converted = CONVERTED_MODULES) {
  * @returns {string[]} `<pfad>(<zeile>,<spalte>): TS<code>: <text>`
  */
 export function typecheck(files, extraOptions = {}) {
+  const isBindings = (f) => /\.bindings\.js$/.test(f);
+  const out = [];
+  // Die erzeugten Bindungsdateien laufen mit strictNullChecks: ein Getter, der null
+  // für eine Pflicht-Eingabe liefert, fällt sonst nicht auf. Der übrige Code bleibt
+  // ohne (strict über alles brächte 617 Altbefunde).
+  for (const [group, strictNull] of [[files.filter((f) => !isBindings(f)), false], [files.filter(isBindings), true]]) {
+    if (group.length > 0) out.push(...run(group, { ...extraOptions, ...(strictNull ? { strictNullChecks: true } : {}) }));
+  }
+  return out;
+}
+
+/**
+ * Ein Programm über `files`, Befunde nur für diese Dateien.
+ * @param {string[]} files @param {object} extraOptions
+ * @returns {string[]}
+ */
+function run(files, extraOptions) {
   const wanted = new Set(files.map((f) => resolve(f)));
   const program = ts.createProgram(files, { ...OPTIONS, ...extraOptions });
   return ts.getPreEmitDiagnostics(program)

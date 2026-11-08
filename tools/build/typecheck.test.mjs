@@ -235,3 +235,54 @@ test('typecheck: Getter-Bindung mit passendem Typ ist ohne Befund', () => {
   const findings = typecheck([join(root, 'js/modules/m/viewmodel/view.bindings.js')]);
   assert.equal(findings.length, 0, findings.join('\n'));
 });
+
+/** Temporärer App-Baum für eine Bindung (Modul, Kachel oder computed) mit frei wählbarem Quelltext der Hauptdatei. */
+function strictApp({ file, source, binding }) {
+  const w = defineWidget({ name: 'w', props: { rows: list(text()) } });
+  const check = renderBindingCheck({ vmImport: './' + file.split('/').pop(), bindings: [
+    { widget: 'w', prop: 'rows', where: 'resources/view.html:1 x-widget-rows', ...binding },
+  ] });
+  const dir = file.split('/').slice(0, -1).join('/');
+  return appWith({
+    'js/widgets/widget-props.types.js': renderWidgetProps(new Map([['w', w]])),
+    [`js/modules/m/${file}`]: source,
+    [`js/modules/m/${dir}/x.bindings.js`]: check,
+  });
+}
+const strictFile = (root, dir) => join(root, `js/modules/m/${dir}/x.bindings.js`);
+
+test('typecheck: Getter, der null für eine Pflicht-Eingabe liefert, ist ein Befund', () => {
+  const tm = join(APP_DIR, 'js', 'core', 'template-module.js');
+  const root = strictApp({
+    file: 'viewmodel/viewmodel.js',
+    source: `import { createModule } from '${tm}';\nexport default createModule({ view() { return { get cfg() { return null; } }; } });\n`,
+    binding: { prop: 'rows', path: 'cfg', computed: false },
+  });
+  const findings = typecheck([strictFile(root, 'viewmodel')]);
+  assert.equal(findings.length, 1, findings.join('\n'));
+  assert.match(findings[0], /x\.bindings\.js\(\d+,\d+\): TS2322: .*null.*not assignable/);
+});
+
+test('typecheck: Kachel-Getter, der null für eine Pflicht-Eingabe liefert, ist ein Befund', () => {
+  const tt = join(APP_DIR, 'js', 'core', 'template-tile.js');
+  const root = strictApp({
+    file: 'tile/tile.js',
+    source: `import { createTile } from '${tt}';\nexport default createTile({ descriptor: { id: 'm' }, Model: {}, view() { return { get cfg() { return null; } }; } });\n`,
+    binding: { prop: 'rows', path: 'cfg', computed: false },
+  });
+  const findings = typecheck([strictFile(root, 'tile')]);
+  assert.equal(findings.length, 1, findings.join('\n'));
+  assert.match(findings[0], /x\.bindings\.js\(\d+,\d+\): TS2322: .*null.*not assignable/);
+});
+
+test('typecheck: computed, das null für eine Pflicht-Eingabe liefert, ist ein Befund', () => {
+  const tm = join(APP_DIR, 'js', 'core', 'template-module.js');
+  const root = strictApp({
+    file: 'viewmodel/viewmodel.js',
+    source: `import { createModule } from '${tm}';\nexport default createModule({ view() { return { computed: { cfg() { return null; } } }; } });\n`,
+    binding: { prop: 'rows', path: 'cfg', computed: true },
+  });
+  const findings = typecheck([strictFile(root, 'viewmodel')]);
+  assert.equal(findings.length, 1, findings.join('\n'));
+  assert.match(findings[0], /x\.bindings\.js\(\d+,\d+\): TS2322: .*null.*not assignable/);
+});
