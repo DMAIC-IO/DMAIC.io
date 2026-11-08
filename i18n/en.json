@@ -4623,10 +4623,10 @@
       "errCompute": "Variance components could not be computed: {msg}"
     },
     "process-capability": {
-      "histogramXLabel": "Value",
-      "histogramYLabel": "Frequency",
       "name": "Process Capability",
       "description": "Process Capability Analysis — Cp, Cpk, Pp, Ppk, PPM, Sigma Level",
+      "histogramXLabel": "Value",
+      "histogramYLabel": "Frequency",
       "whenToUse": "When it must be shown how well a process keeps a measured characteristic inside its specification limits: Cp and Cpk (short term, from the within-subgroup spread), Pp and Ppk (long term), PPM and sigma level, with confidence intervals. Works with one-sided or two-sided limits, individual values or subgroups. Needs at least one limit (lower or upper) and at least 2 numeric values from a data collection column or from loaded example data.",
       "actions": {
         "read": {
