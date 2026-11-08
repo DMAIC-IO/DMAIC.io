@@ -77,33 +77,33 @@ const MODEL = `export class State {
   toJSON() { return {}; }
 }`;
 
-test('collectAgentData: untagged module is listed but not available, without violations', () => {
+test('collectAgentData: untagged module is listed but not available, without violations', async () => {
   const root = fixture({ bar: { 'bar.js': 'export default createModule({ config: { id: "bar" }, data() { return { nope() {} }; } });', 'bar-model.js': MODEL } });
-  const { modules, coverage } = collectAgentData(root);
+  const { modules, coverage } = await collectAgentData(root);
   assert.equal(modules.bar.tagged, false);
   assert.equal(modules.bar.available, false);
   assert.deepEqual(modules.bar.violations, []);
   assert.deepEqual(coverage, { total: 1, available: 0 });
 });
 
-test('collectAgentData: tagged module with complete marks is available', () => {
+test('collectAgentData: tagged module with complete marks is available', async () => {
   const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': MODEL } });
-  const { modules, coverage } = collectAgentData(root);
+  const { modules, coverage } = await collectAgentData(root);
   assert.equal(modules.foo.tagged, true);
   assert.deepEqual(modules.foo.violations, []);
   assert.equal(modules.foo.available, true);
   assert.deepEqual(coverage, { total: 1, available: 1 });
 });
 
-test('collectAgentData: only @agent methods become actions', () => {
+test('collectAgentData: only @agent methods become actions', async () => {
   const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(Object.keys(modules.foo.actions).sort(), ['read', 'setProblem']);
 });
 
-test('collectAgentData: params and returns are extracted with type and help', () => {
+test('collectAgentData: params and returns are extracted with type and help', async () => {
   const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.actions.setProblem.params, [
     { name: 'text', type: 'string', optional: false, help: 'the problem statement' },
   ]);
@@ -111,53 +111,53 @@ test('collectAgentData: params and returns are extracted with type and help', ()
   assert.equal(modules.foo.actions.read.help, 'Read the full state.');
 });
 
-test('collectAgentData: non-function properties and _-prefixed methods need no mark', () => {
+test('collectAgentData: non-function properties and _-prefixed methods need no mark', async () => {
   const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.violations, []);
   assert.equal('maxLevel' in modules.foo.actions, false);
   assert.equal('_private' in modules.foo.actions, false);
 });
 
-test('collectAgentData: an unmarked public method on a TAGGED module is a violation', () => {
+test('collectAgentData: an unmarked public method on a TAGGED module is a violation', async () => {
   const vm = TAGGED_VM.replace('/** @noagent */\n      cardClass(node) { return \'\'; },', 'cardClass(node) { return \'\'; },');
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.violations, ['unmarked_method:cardClass']);
   assert.equal(modules.foo.available, false);
 });
 
-test('collectAgentData: an @agent method missing @param is a violation', () => {
+test('collectAgentData: an @agent method missing @param is a violation', async () => {
   const vm = TAGGED_VM.replace('       * @param {string} text - the problem statement\n', '');
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.violations, ['missing_param:setProblem.text']);
 });
 
-test('collectAgentData: an @agent method missing @returns is a violation', () => {
+test('collectAgentData: an @agent method missing @returns is a violation', async () => {
   const vm = TAGGED_VM.replace('       * @returns {boolean} whether it was accepted\n', '');
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.violations, ['missing_returns:setProblem']);
 });
 
-test('collectAgentData: model fields carry type, help and the bulk mark; _-fields are dropped', () => {
+test('collectAgentData: model fields carry type, help and the bulk mark; _-fields are dropped', async () => {
   const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.fields.problem, { type: 'string', help: 'the observed problem statement', bulk: false });
   assert.equal(modules.foo.fields.rows.bulk, true);
   assert.equal('_idCounter' in modules.foo.fields, false);
 });
 
-test('collectAgentData: a module without a model file still yields an entry with empty fields', () => {
+test('collectAgentData: a module without a model file still yields an entry with empty fields', async () => {
   const root = fixture({ foo: { 'foo.js': TAGGED_VM } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.fields, {});
 });
 
-test('collectAgentData: directories without <id>.js are skipped', () => {
+test('collectAgentData: directories without <id>.js are skipped', async () => {
   const root = fixture({ foo: { 'foo.js': TAGGED_VM }, notamodule: { 'readme.md': '' } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(Object.keys(modules), ['foo']);
 });
 
@@ -166,58 +166,58 @@ function sourceOf(code) {
   return ts.createSourceFile('x.js', code, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
 }
 
-test('collectDomDetours: innerHTML write is a detour', () => {
+test('collectDomDetours: innerHTML write is a detour', async () => {
   const hits = collectDomDetours(sourceOf('function f(el) { el.innerHTML = "<b>x</b>"; }'));
   assert.equal(hits.length, 1);
   assert.match(hits[0], /^dom_detour:innerHTML$/);
 });
 
-test('collectDomDetours: outerHTML write is a detour', () => {
+test('collectDomDetours: outerHTML write is a detour', async () => {
   assert.equal(collectDomDetours(sourceOf('function f(el) { el.outerHTML = ""; }')).length, 1);
 });
 
-test('collectDomDetours: dataset write is a detour and names the key', () => {
+test('collectDomDetours: dataset write is a detour and names the key', async () => {
   const hits = collectDomDetours(sourceOf('function f(el) { el.dataset.orgId = "7"; }'));
   assert.equal(hits.length, 1);
   assert.match(hits[0], /^dom_detour:dataset\.orgId$/);
 });
 
-test('collectDomDetours: a dataset READ is not a detour', () => {
+test('collectDomDetours: a dataset READ is not a detour', async () => {
   assert.deepEqual(collectDomDetours(sourceOf('function f(el) { return el.dataset.orgId; }')), []);
 });
 
-test('collectDomDetours: uncontrolled-input buffers are NOT detours', () => {
+test('collectDomDetours: uncontrolled-input buffers are NOT detours', async () => {
   // The prevailing idiom in this codebase: commit to the model, then
   // normalise the input display. 52/72 modules do this legitimately.
   const code = 'function f(el) { el.value = ""; el.textContent = "3.14"; el.checked = true; }';
   assert.deepEqual(collectDomDetours(sourceOf(code)), []);
 });
 
-test('collectDomDetours: presentation writes are NOT detours', () => {
+test('collectDomDetours: presentation writes are NOT detours', async () => {
   const code = 'function f(el) { el.style.height = "0px"; el.classList.add("x"); el.scrollTop = 0; }';
   assert.deepEqual(collectDomDetours(sourceOf(code)), []);
 });
 
-test('collectAgentData: a DOM detour counts as a violation on a TAGGED module', () => {
+test('collectAgentData: a DOM detour counts as a violation on a TAGGED module', async () => {
   const vm = TAGGED_VM.replace('      maxLevel: 5,', `      /** @noagent */
       paint(el) { el.innerHTML = ""; },
       maxLevel: 5,`);
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.equal(modules.foo.available, false);
   assert.ok(modules.foo.violations.some(v => v.startsWith('dom_detour:innerHTML')),
     `expected a dom_detour violation, got ${JSON.stringify(modules.foo.violations)}`);
 });
 
-test('collectAgentData: a DOM detour on an UNTAGGED module is reported but not a violation', () => {
+test('collectAgentData: a DOM detour on an UNTAGGED module is reported but not a violation', async () => {
   const vm = 'export default createModule({ config: { id: "bar" }, data() { return { paint(el) { el.innerHTML = ""; } }; } });';
   const root = fixture({ bar: { 'bar.js': vm } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.bar.violations, []);
   assert.ok(modules.bar.reported.some(v => v.startsWith('dom_detour:innerHTML')));
 });
 
-test('renderAgentRegistryModule emits a data-only module', () => {
+test('renderAgentRegistryModule emits a data-only module', async () => {
   const text = renderAgentRegistryModule({
     modules: { foo: { tagged: true, available: true, violations: [], actions: {}, fields: {} } },
     coverage: { total: 1, available: 1 },
@@ -229,7 +229,7 @@ test('renderAgentRegistryModule emits a data-only module', () => {
   assert.match(text, /"foo"/);
 });
 
-test('renderAgentRegistryModule is deterministic (sorted keys)', () => {
+test('renderAgentRegistryModule is deterministic (sorted keys)', async () => {
   const data = {
     modules: { zeta: { tagged: false, available: false, violations: [], actions: {}, fields: {} },
                alpha: { tagged: false, available: false, violations: [], actions: {}, fields: {} } },
@@ -246,34 +246,34 @@ test('renderAgentRegistryModule is deterministic (sorted keys)', () => {
 // Verstößen durch den Build gehen und `available: true` werden können,
 // während zwanzig echte Viewmodel-Methoden nie begutachtet wurden.
 
-test('collectAgentData: a spread in the data() literal is a violation (mixin methods are invisible)', () => {
+test('collectAgentData: a spread in the data() literal is a violation (mixin methods are invisible)', async () => {
   const vm = TAGGED_VM.replace('      maxLevel: 5,', `      ...chartModuleLifecycle(module),
       maxLevel: 5,`);
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.violations, ['unresolved_spread:chartModuleLifecycle(module)']);
   assert.equal(modules.foo.available, false);
 });
 
-test('collectAgentData: a multi-line spread expression is reported on one line', () => {
+test('collectAgentData: a multi-line spread expression is reported on one line', async () => {
   const vm = TAGGED_VM.replace('      maxLevel: 5,', `      ...draggablePopout(
         module,
       ),
       maxLevel: 5,`);
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.violations, ['unresolved_spread:draggablePopout( module, )']);
 });
 
-test('collectAgentData: a spread on an UNTAGGED module is reported but not a violation', () => {
+test('collectAgentData: a spread on an UNTAGGED module is reported but not a violation', async () => {
   const vm = 'import { State } from "./bar-model.js"; export default createModule({ config: { id: "bar" }, Model: State, data(module) { return { ...renderMethods }; } });';
   const root = fixture({ bar: { 'bar.js': vm, 'bar-model.js': 'export class State { toJSON() { return {}; } }' } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.bar.violations, []);
   assert.deepEqual(modules.bar.reported, ['unresolved_spread:renderMethods']);
 });
 
-test('collectAgentData: a data() without a return literal is a violation, not silence', () => {
+test('collectAgentData: a data() without a return literal is a violation, not silence', async () => {
   const vm = `/**
  * Foo module.
  * @agent
@@ -287,22 +287,22 @@ export default createModule({
   },
 });`;
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': 'export class State { toJSON() { return {}; } }' } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.violations, ['unresolvable_data_literal']);
   assert.equal(modules.foo.available, false);
   assert.deepEqual(modules.foo.actions, {});
 });
 
-test('collectAgentData: a missing data() literal on an UNTAGGED module does not block the build', () => {
+test('collectAgentData: a missing data() literal on an UNTAGGED module does not block the build', async () => {
   const vm = 'import { State } from "./bar-model.js"; export default createModule({ config: { id: "bar" }, Model: State, data(module) { return build(module); } });';
   const root = fixture({ bar: { 'bar.js': vm, 'bar-model.js': 'export class State { toJSON() { return {}; } }' } });
-  const { modules, coverage } = collectAgentData(root);
+  const { modules, coverage } = await collectAgentData(root);
   assert.deepEqual(modules.bar.violations, []);
   assert.deepEqual(modules.bar.reported, ['unresolvable_data_literal']);
   assert.deepEqual(coverage, { total: 1, available: 0 });
 });
 
-test('collectAgentData: ein Viewmodel in view-Form verlangt keine Marken', () => {
+test('collectAgentData: ein Viewmodel in view-Form verlangt keine Marken', async () => {
   const vm = `/**
  * Foo module.
  * @agent
@@ -319,7 +319,7 @@ export default createModule({
   },
 });`;
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': 'export class State { toJSON() { return {}; } }' } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   const codes = [...modules.foo.violations, ...(modules.foo.reported ?? [])];
   assert.equal(codes.some((c) => c.startsWith('unmarked_method') || c === 'unresolvable_data_literal'), false, codes.join('\n'));
 });
@@ -370,12 +370,12 @@ function vmWith(spread, imports = `import { mixFactory, mixConst } from '../../u
     .replace('      maxLevel: 5,', `      ${spread}\n      maxLevel: 5,`);
 }
 
-test('collectAgentData: a spread of an imported factory call resolves its methods', () => {
+test('collectAgentData: a spread of an imported factory call resolves its methods', async () => {
   const root = fixture(
     { foo: { 'foo.js': vmWith('...mixFactory(module, { mountPicker() {} }),'), 'foo-model.js': MODEL } },
     { 'js/ui/mix.js': MIXIN },
   );
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.violations, []);
   assert.deepEqual(Object.keys(modules.foo.actions).sort(), ['pushStep', 'read', 'setProblem']);
   assert.deepEqual(modules.foo.actions.pushStep.params, [
@@ -384,34 +384,34 @@ test('collectAgentData: a spread of an imported factory call resolves its method
   assert.equal(modules.foo.available, true);
 });
 
-test('collectAgentData: the config object handed to a factory contributes no members', () => {
+test('collectAgentData: the config object handed to a factory contributes no members', async () => {
   // `mountPicker` ist ein Argument, das die Fabrik VERBRAUCHT — es landet nicht
   // auf dem Viewmodel und darf daher weder Aktion noch Verstoß werden.
   const root = fixture(
     { foo: { 'foo.js': vmWith('...mixFactory(module, { mountPicker() {} }),'), 'foo-model.js': MODEL } },
     { 'js/ui/mix.js': MIXIN },
   );
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.equal('mountPicker' in modules.foo.actions, false);
   assert.deepEqual(modules.foo.reported.filter(v => v.includes('mountPicker')), []);
 });
 
-test('collectAgentData: an unmarked mixin method is a violation that names its origin', () => {
+test('collectAgentData: an unmarked mixin method is a violation that names its origin', async () => {
   const mixin = MIXIN.replace('    /** @noagent */\n    init()', '    init()');
   const root = fixture(
     { foo: { 'foo.js': vmWith('...mixFactory(module, { mountPicker() {} }),'), 'foo-model.js': MODEL } },
     { 'js/ui/mix.js': mixin },
   );
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.violations, ['unmarked_method:init@js/ui/mix.js']);
 });
 
-test('collectAgentData: a spread of an imported object constant resolves its methods', () => {
+test('collectAgentData: a spread of an imported object constant resolves its methods', async () => {
   const root = fixture(
     { foo: { 'foo.js': vmWith('...mixConst,'), 'foo-model.js': MODEL } },
     { 'js/ui/mix.js': MIXIN },
   );
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.violations, []);
   assert.equal('paint' in modules.foo.actions, false);
   // Positiv belegt, nicht nur „kein Verstoß": die @agent-Methode der Konstante
@@ -424,18 +424,18 @@ test('collectAgentData: a spread of an imported object constant resolves its met
   assert.equal(modules.foo.actions.renameStep.help, 'Rename a step.');
 });
 
-test('collectAgentData: a spread of a local constant holding a factory call resolves', () => {
+test('collectAgentData: a spread of a local constant holding a factory call resolves', async () => {
   // Das Muster von process-map: `const _core = chainViewMixin(…)` im `data()`,
   // danach `..._core` plus Aufrufe von `_core.x.call(this)`.
   const vm = vmWith('..._core,').replace('  data(module, _t) {\n    return {',
     '  data(module, _t) {\n    const _core = mixFactory(module, { mountPicker() {} });\n    return {');
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } }, { 'js/ui/mix.js': MIXIN });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.violations, []);
   assert.ok('pushStep' in modules.foo.actions);
 });
 
-test('collectAgentData: a member of the module overrides the mixin member of the same name', () => {
+test('collectAgentData: a member of the module overrides the mixin member of the same name', async () => {
   const vm = vmWith(`...mixFactory(module, { mountPicker() {} }),
       /**
        * @agent
@@ -444,13 +444,13 @@ test('collectAgentData: a member of the module overrides the mixin member of the
        */
       pushStep(title) { return 'x'; },`);
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } }, { 'js/ui/mix.js': MIXIN });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.violations, []);
   assert.equal(modules.foo.actions.pushStep.returns, 'string');
   assert.equal(modules.foo.actions.pushStep.params[0].help, 'the local title');
 });
 
-test('collectAgentData: a data() that names a local function resolves its return literal', () => {
+test('collectAgentData: a data() that names a local function resolves its return literal', async () => {
   // Das Muster von activity-flowchart: `data: activityFlowchartData` mit einer
   // exportierten Funktion, damit die Ansichtstransformationen testbar sind.
   const vm = `/**
@@ -482,12 +482,12 @@ export function fooData(module, _t) {
   };
 }`;
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.violations, []);
   assert.deepEqual(Object.keys(modules.foo.actions), ['read', 'setProblem']);
 });
 
-test('collectAgentData: a nested spread inside a mixin resolves too', () => {
+test('collectAgentData: a nested spread inside a mixin resolves too', async () => {
   const inner = `export const innerMix = {
   /**
    * Drop a step.
@@ -506,12 +506,12 @@ export function mixFactory(module, cfg) {
     { foo: { 'foo.js': vmWith('...mixFactory(module, {}),', `import { mixFactory } from '../../ui/mix.js';`), 'foo-model.js': MODEL } },
     { 'js/ui/mix.js': outer, 'js/ui/inner.js': inner },
   );
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.violations, []);
   assert.ok('dropStep' in modules.foo.actions);
 });
 
-test('collectAgentData: a self-referential mixin terminates instead of looping', () => {
+test('collectAgentData: a self-referential mixin terminates instead of looping', async () => {
   const mixin = `export const loopMix = {
   ...loopMix,
   /** @noagent */
@@ -522,14 +522,14 @@ test('collectAgentData: a self-referential mixin terminates instead of looping',
     { foo: { 'foo.js': vmWith('...loopMix,', `import { loopMix } from '../../ui/mix.js';`), 'foo-model.js': MODEL } },
     { 'js/ui/mix.js': mixin },
   );
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.equal('paint' in modules.foo.actions, false);
   assert.deepEqual(modules.foo.violations, []);
 });
 
-test('collectAgentData: a spread whose source stays unresolvable is still reported', () => {
+test('collectAgentData: a spread whose source stays unresolvable is still reported', async () => {
   const root = fixture({ foo: { 'foo.js': vmWith('...fromNowhere(module),', ''), 'foo-model.js': MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.violations, ['unresolved_spread:fromNowhere(module)']);
 });
 
@@ -582,7 +582,7 @@ const WHOLE_PARAMS_VM = TAGGED_VM.replace('this.model.problem = text; this.model
 /** Dasselbe Viewmodel ohne Modul-Tag — Befunde bleiben berichtend. */
 const UNTAGGED_VM = CLEAN_VM.replace(' * @agent\n', '');
 
-test('readModelFields: a subclass inherits the fields of its imported base class', () => {
+test('readModelFields: a subclass inherits the fields of its imported base class', async () => {
   const base = `export class Base {
   /** @type {string} the base title */
   title = '';
@@ -596,12 +596,12 @@ export class State extends Base {
     { foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } },
     { 'js/core/b/base.js': base },
   );
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.fields.title, { type: 'string', help: 'the base title', bulk: false });
   assert.deepEqual(modules.foo.fields.count, { type: 'number', help: 'the own counter', bulk: false });
 });
 
-test('readModelFields: an own field overrides the same-named base field', () => {
+test('readModelFields: an own field overrides the same-named base field', async () => {
   const base = `export class Base {
   /** @type {string} the base title */
   title = '';
@@ -617,14 +617,14 @@ export class State extends Base {
     { foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } },
     { 'js/core/b/base.js': base },
   );
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.fields.title, { type: 'number', help: 'the own title', bulk: false });
   // Ohne diese zweite Zusicherung wäre der Test auch dann grün, wenn die
   // Basisklasse überhaupt nicht gelesen würde.
   assert.equal(modules.foo.fields.flag.type, 'boolean');
 });
 
-test('readModelFields: two-step inheritance collects all three levels', () => {
+test('readModelFields: two-step inheritance collects all three levels', async () => {
   const a = `export class A {
   /** @type {string} from A */
   a = '';
@@ -643,13 +643,13 @@ export class State extends B {
     { foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } },
     { 'js/core/b/a.js': a, 'js/core/b/b.js': b },
   );
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.equal(modules.foo.fields.a.help, 'from A');
   assert.equal(modules.foo.fields.b.help, 'from B');
   assert.equal(modules.foo.fields.c.help, 'from C');
 });
 
-test('readModelFields: a base class in the SAME file is resolved, and the subclass still wins', () => {
+test('readModelFields: a base class in the SAME file is resolved, and the subclass still wins', async () => {
   // Die Basisklasse steht ABSICHTLICH nach der Unterklasse: eine Zusammen-
   // führung „alle Klassen der Datei in Quellreihenfolge" hätte hier die
   // Basis gewinnen lassen.
@@ -664,12 +664,12 @@ export class Base {
   flag = false;
 }`;
   const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.fields.title, { type: 'number', help: 'the own title', bulk: false });
   assert.equal(modules.foo.fields.flag.type, 'boolean');
 });
 
-test('readModelFields: an annotated constructor assignment becomes a field', () => {
+test('readModelFields: an annotated constructor assignment becomes a field', async () => {
   const model = `export class State {
   constructor() {
     /** @type {Array<object>} ordered chain of steps */
@@ -677,13 +677,13 @@ test('readModelFields: an annotated constructor assignment becomes a field', () 
   }
 }`;
   const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.fields.steps, {
     type: 'Array<object>', help: 'ordered chain of steps', bulk: false,
   });
 });
 
-test('readModelFields: a constructor assignment WITHOUT @type is not a field', () => {
+test('readModelFields: a constructor assignment WITHOUT @type is not a field', async () => {
   const model = `export class State {
   constructor() {
     /** just a cache */
@@ -692,11 +692,11 @@ test('readModelFields: a constructor assignment WITHOUT @type is not a field', (
   }
 }`;
   const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.fields, {});
 });
 
-test('readModelFields: an annotated _-prefixed constructor assignment is not a field', () => {
+test('readModelFields: an annotated _-prefixed constructor assignment is not a field', async () => {
   const model = `export class State {
   constructor() {
     /** @type {number} private counter */
@@ -704,11 +704,11 @@ test('readModelFields: an annotated _-prefixed constructor assignment is not a f
   }
 }`;
   const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.fields, {});
 });
 
-test('readModelFields: an annotated this-assignment in another METHOD is not a field', () => {
+test('readModelFields: an annotated this-assignment in another METHOD is not a field', async () => {
   const model = `export class State {
   reset() {
     /** @type {string} view buffer */
@@ -716,11 +716,11 @@ test('readModelFields: an annotated this-assignment in another METHOD is not a f
   }
 }`;
   const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.fields, {});
 });
 
-test('readModelFields: an annotated this-assignment in a CALLBACK inside the constructor is not a field', () => {
+test('readModelFields: an annotated this-assignment in a CALLBACK inside the constructor is not a field', async () => {
   const model = `export class State {
   constructor() {
     /** @type {Array<object>} real field */
@@ -732,11 +732,11 @@ test('readModelFields: an annotated this-assignment in a CALLBACK inside the con
   }
 }`;
   const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(Object.keys(modules.foo.fields), ['steps']);
 });
 
-test('readModelFields: @agentBulk on a constructor assignment is carried over', () => {
+test('readModelFields: @agentBulk on a constructor assignment is carried over', async () => {
   const model = `export class State {
   constructor() {
     /**
@@ -747,13 +747,13 @@ test('readModelFields: @agentBulk on a constructor assignment is carried over', 
   }
 }`;
   const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.fields.rows, {
     type: 'any[][]', help: 'the measured rows', bulk: true, bulkKind: 'table',
   });
 });
 
-test('readModelFields: a cycle in the extends chain terminates', () => {
+test('readModelFields: a cycle in the extends chain terminates', async () => {
   const base = `import { State } from '../../modules/foo/foo-model.js';
 export class Base extends State {
   /** @type {string} from base */
@@ -768,18 +768,18 @@ export class State extends Base {
     { foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } },
     { 'js/core/b/base.js': base },
   );
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.equal(modules.foo.fields.n.help, 'from state');
   assert.equal(modules.foo.fields.s.help, 'from base');
 });
 
-test('readModelFields: an unresolvable base class is reported, and hard only with the module tag', () => {
+test('readModelFields: an unresolvable base class is reported, and hard only with the module tag', async () => {
   const model = `export class State extends Nowhere {
   /** @type {number} the own counter */
   count = 0;
 }`;
   const soft = fixture({ foo: { 'foo.js': UNTAGGED_VM, 'foo-model.js': model } });
-  const softResult = collectAgentData(soft).modules.foo;
+  const softResult = (await collectAgentData(soft)).modules.foo;
   assert.deepEqual(softResult.violations, []);
   assert.ok(softResult.reported.includes('unresolved_base_class:Nowhere'),
     `expected unresolved_base_class, got ${JSON.stringify(softResult.reported)}`);
@@ -788,7 +788,7 @@ test('readModelFields: an unresolvable base class is reported, and hard only wit
   assert.equal(softResult.fields.count.type, 'number');
 
   const hard = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
-  const hardResult = collectAgentData(hard).modules.foo;
+  const hardResult = (await collectAgentData(hard)).modules.foo;
   assert.ok(hardResult.violations.includes('unresolved_base_class:Nowhere'));
   assert.equal(hardResult.available, false);
 });
@@ -800,7 +800,7 @@ test('readModelFields: an unresolvable base class is reported, and hard only wit
 // Model-Objekt nicht existieren. Eine Registry, die Felder behauptet, die es
 // nicht gibt, widerspricht dem Grundsatz „die Lesefläche IST die persistierte Form“.
 
-test('readModelFields: a helper class in the model file contributes NOTHING', () => {
+test('readModelFields: a helper class in the model file contributes NOTHING', async () => {
   const model = `export class Endpoint {
   constructor() {
     /** @type {Array<object>} request headers */
@@ -814,11 +814,11 @@ export class State {
   }
 }`;
   const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(Object.keys(modules.foo.fields), ['endpoints']);
 });
 
-test('readModelFields: a SUBCLASS of the model in the same file does not leak into the read surface', () => {
+test('readModelFields: a SUBCLASS of the model in the same file does not leak into the read surface', async () => {
   // Das latente Risiko der alten `roots`-Heuristik: `State` wäre als „Basis
   // einer Klasse derselben Datei" herausgefallen und `Spezial` an ihre Stelle
   // getreten — mit Vorrang bei Namensgleichheit.
@@ -833,71 +833,71 @@ export class Spezial extends State {
   extra = false;
 }`;
   const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.fields, {
     title: { type: 'string', help: 'the real title', bulk: false },
   });
 });
 
-test('readModelFields: a missing Model member is reported, not silently empty', () => {
+test('readModelFields: a missing Model member is reported, not silently empty', async () => {
   const vm = CLEAN_VM.replace('  Model: State,\n', '');
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.fields, {});
   assert.ok(modules.foo.violations.includes('unresolvable_model_class'),
     `got ${JSON.stringify(modules.foo.violations)}`);
 });
 
-test('readModelFields: a computed Model value is reported as unresolvable', () => {
+test('readModelFields: a computed Model value is reported as unresolvable', async () => {
   const vm = CLEAN_VM.replace('  Model: State,', '  Model: makeModel(),');
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.violations, ['unresolvable_model_class']);
 });
 
-test('readModelFields: a Model name that resolves to something other than a class is reported', () => {
+test('readModelFields: a Model name that resolves to something other than a class is reported', async () => {
   const vm = CLEAN_VM
     .replace(`import { State } from './foo-model.js';`, 'const State = { steps: [] };')
     .replace(' * @agent\n', '');
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.fields, {});
   assert.deepEqual(modules.foo.reported, ['unresolved_model_class:State']);
   assert.deepEqual(modules.foo.violations, []);     // ohne Modul-Tag berichtend
 });
 
-test('readModelFields: the shorthand `{ Model }` names the class too', () => {
+test('readModelFields: the shorthand `{ Model }` names the class too', async () => {
   const vm = CLEAN_VM.replace('  Model: State,', '  Model,').replace('{ State }', '{ State as Model }');
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.equal(modules.foo.fields.problem.type, 'string');
   assert.deepEqual(modules.foo.violations, []);
 });
 
-test('readModelFields: a non-identifier extends clause is reported, not resolved', () => {
+test('readModelFields: a non-identifier extends clause is reported, not resolved', async () => {
   const model = `export class State extends ns.Base {
   /** @type {number} the own counter */
   count = 0;
   toJSON() { return { count: this.count }; }
 }`;
   const root = fixture({ foo: { 'foo.js': COUNT_VM, 'foo-model.js': model } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.violations, ['unresolved_base_class:ns.Base']);
   assert.equal(modules.foo.fields.count.type, 'number');
 });
 
-test('readModelFields: a mixin factory as base class is reported, not resolved', () => {
+test('readModelFields: a mixin factory as base class is reported, not resolved', async () => {
   const model = `export class State extends withSteps(Base) {
   /** @type {number} the own counter */
   count = 0;
   toJSON() { return { count: this.count }; }
 }`;
   const root = fixture({ foo: { 'foo.js': COUNT_VM, 'foo-model.js': model } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.violations, ['unresolved_base_class:withSteps(Base)']);
 });
 
-test('readModelFields: a class that extends ITSELF terminates AND is reported', () => {
+test('readModelFields: a class that extends ITSELF terminates AND is reported', async () => {
   // Der Abstieg endet weiterhin am Pfadschutz (keine Rekursion, die eigenen
   // Felder bleiben) — aber nicht mehr still: `class State extends State` ist
   // zur Laufzeit ein Wurf und damit ein Autorenfehler, kein Randfall.
@@ -907,14 +907,14 @@ test('readModelFields: a class that extends ITSELF terminates AND is reported', 
   toJSON() { return { count: this.count }; }
 }`;
   const root = fixture({ foo: { 'foo.js': COUNT_VM, 'foo-model.js': model } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.fields, {
     count: { type: 'number', help: 'the own counter', bulk: false },
   });
   assert.deepEqual(modules.foo.violations, ['self_inheriting_class:State']);
 });
 
-test('readModelFields: an extends chain beyond the depth limit is reported as a blind spot', () => {
+test('readModelFields: an extends chain beyond the depth limit is reported as a blind spot', async () => {
   // 14 Klassen: `State` erbt C12 … C0. Der Abstieg endet vor C0, und das endet
   // nicht still — eine abgeschnittene Kette ist eine Blindstelle.
   const chain = ['export class C0 {\n  /** @type {string} deepest field */\n  deepest = \'\';\n}'];
@@ -926,13 +926,13 @@ export class State extends C12 {
   toJSON() { return { count: this.count }; }
 }`;
   const root = fixture({ foo: { 'foo.js': COUNT_VM, 'foo-model.js': model } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.violations, ['unresolved_base_class:C0']);
   assert.equal('deepest' in modules.foo.fields, false);
   assert.equal(modules.foo.fields.count.type, 'number');
 });
 
-test('readModelFields: a static class member is not a read field', () => {
+test('readModelFields: a static class member is not a read field', async () => {
   // `static VERSION` ist Schema-Metadatum der Klasse, kein Instanzzustand: es
   // steht in keinem `toJSON()` und würde der Registry ein Feld andichten, das
   // das Model nicht hält — genau der Widerspruch zur persistierten Form, den die
@@ -944,7 +944,7 @@ test('readModelFields: a static class member is not a read field', () => {
   title = '';
 }`;
   const root = fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': model } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.equal('VERSION' in modules.foo.fields, false,
     `static member leaked: ${JSON.stringify(Object.keys(modules.foo.fields))}`);
   assert.deepEqual(modules.foo.fields.title,
@@ -994,24 +994,24 @@ const BAR_MODEL = `export class State {
   toJSON() { return { sheets: this.sheets }; }
 }`;
 
-test('collectAgentData: an AgentRead typedef REPLACES the model fields', () => {
+test('collectAgentData: an AgentRead typedef REPLACES the model fields', async () => {
   const root = fixture({ bar: { 'bar.js': AGENT_READ_VM, 'bar-model.js': BAR_MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(Object.keys(modules.bar.fields), ['activeSheetId', 'rows']);
   assert.equal(modules.bar.fields.activeSheetId.type, 'string');
   assert.equal(modules.bar.fields.activeSheetId.help, 'id of the active sheet');
   assert.equal(modules.bar.fields.activeSheetId.derived, true);
 });
 
-test('collectAgentData: the [bulk] sentinel marks a bulk field and leaves the help clean', () => {
+test('collectAgentData: the [bulk] sentinel marks a bulk field and leaves the help clean', async () => {
   const root = fixture({ bar: { 'bar.js': AGENT_READ_VM, 'bar-model.js': BAR_MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.equal(modules.bar.fields.rows.bulk, true);
   assert.equal(modules.bar.fields.rows.help, 'every data row of the active sheet');
   assert.equal(modules.bar.fields.activeSheetId.bulk, false);
 });
 
-test('collectAgentData: [bulk] heisst table, [bulk:tree] heisst tree, ohne Marke steht nichts da', () => {
+test('collectAgentData: [bulk] heisst table, [bulk:tree] heisst tree, ohne Marke steht nichts da', async () => {
   // Das Sentinel trug bisher nur „ja/nein". Welchen Umfangs-Deskriptor ein
   // Massenfeld bekommt (Zeilen+Spalten oder Knoten+Tiefe), stand nirgends —
   // ein Baum wurde als Tabelle beschrieben.
@@ -1021,7 +1021,7 @@ test('collectAgentData: [bulk] heisst table, [bulk:tree] heisst tree, ohne Marke
     + ' * @property {object[]} nodes  [bulk:tree] the question tree\n',
   );
   const root = fixture({ bar: { 'bar.js': vm, 'bar-model.js': BAR_MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   const fields = modules.bar.fields;
 
   assert.equal(fields.rows.bulk, true);
@@ -1037,7 +1037,7 @@ test('collectAgentData: [bulk] heisst table, [bulk:tree] heisst tree, ohne Marke
   assert.equal('bulkKind' in fields.activeSheetId, false);
 });
 
-test('collectAgentData: bulkKind am Model-Feld — @agentBulk tree gegen @agentBulk', () => {
+test('collectAgentData: bulkKind am Model-Feld — @agentBulk tree gegen @agentBulk', async () => {
   const model = MODEL.replace(
     `  /** @type {object[]} branching tree of Why nodes */
   nodes = [];`,
@@ -1048,7 +1048,7 @@ test('collectAgentData: bulkKind am Model-Feld — @agentBulk tree gegen @agentB
   nodes = [];`,
   );
   const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': model } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
 
   assert.equal(modules.foo.fields.nodes.bulk, true);
   assert.equal(modules.foo.fields.nodes.bulkKind, 'tree');
@@ -1056,7 +1056,7 @@ test('collectAgentData: bulkKind am Model-Feld — @agentBulk tree gegen @agentB
   assert.equal('bulkKind' in modules.foo.fields.problem, false);
 });
 
-test('collectAgentData: eine unbekannte Massendaten-Art im Typedef ist ein Verstoß', () => {
+test('collectAgentData: eine unbekannte Massendaten-Art im Typedef ist ein Verstoß', async () => {
   // `agent-contract.js` sichert `'table'|'tree'` zu, der Generator prüfte es
   // nicht: `[bulk:graph]` kam durch, und zur Laufzeit partitionierten die
   // beiden Prädikate in `projectReadState` dann unterschiedlich — das Feld
@@ -1064,14 +1064,14 @@ test('collectAgentData: eine unbekannte Massendaten-Art im Typedef ist ein Verst
   // Massenfelder bekamen die globalen Spalten.
   const vm = AGENT_READ_VM.replace('[bulk] every data row', '[bulk:graph] every data row');
   const root = fixture({ bar: { 'bar.js': vm, 'bar-model.js': BAR_MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
 
   assert.ok(modules.bar.violations.includes('invalid_bulk_kind:rows:graph'),
     `erwartet invalid_bulk_kind:rows:graph, bekam ${JSON.stringify(modules.bar.violations)}`);
   assert.equal(modules.bar.available, false);
 });
 
-test('collectAgentData: eine unbekannte Massendaten-Art am Model-Feld ist ein Verstoß, einzeilig', () => {
+test('collectAgentData: eine unbekannte Massendaten-Art am Model-Feld ist ein Verstoß, einzeilig', async () => {
   // `cleanComment(bulkTag.comment) || 'table'` machte JEDEN Kommentartext am
   // Tag zur Art — auch einen mehrzeiligen. Verstoßcodes sind zeilenfrei.
   const model = MODEL.replace(
@@ -1082,7 +1082,7 @@ test('collectAgentData: eine unbekannte Massendaten-Art am Model-Feld ist ein Ve
   `,
   );
   const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': model } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
 
   assert.ok(modules.foo.violations.includes('invalid_bulk_kind:rows:die Zeilen'),
     `erwartet invalid_bulk_kind:rows:die Zeilen, bekam ${JSON.stringify(modules.foo.violations)}`);
@@ -1090,14 +1090,14 @@ test('collectAgentData: eine unbekannte Massendaten-Art am Model-Feld ist ein Ve
     `Verstoßcodes sind zeilenfrei: ${JSON.stringify(modules.foo.violations)}`);
 });
 
-test('collectAgentData: table und tree sind erlaubt und melden nichts — die Prüfung weist nicht zu viel ab', () => {
+test('collectAgentData: table und tree sind erlaubt und melden nichts — die Prüfung weist nicht zu viel ab', async () => {
   const vm = AGENT_READ_VM.replace(
     ' * @property {any[][]} rows  [bulk] every data row of the active sheet\n',
     ' * @property {any[][]} rows  [bulk] every data row of the active sheet\n'
     + ' * @property {object[]} nodes  [bulk:tree] the question tree\n',
   ).replace('rows: [] }', 'rows: [], nodes: [] }');
   const root = fixture({ bar: { 'bar.js': vm, 'bar-model.js': BAR_MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
 
   assert.deepEqual(modules.bar.reported.filter(v => v.startsWith('invalid_bulk_kind')), []);
   assert.equal(modules.bar.available, true);
@@ -1130,9 +1130,9 @@ function cellsVm(sentinels, type = 'Array<Array<{ text: string, image: string|nu
   );
 }
 
-test('collectAgentData: @agentOmit am Model-Feld landet als omit im Feldschema', () => {
+test('collectAgentData: @agentOmit am Model-Feld landet als omit im Feldschema', async () => {
   const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': OMIT_MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
 
   assert.deepEqual(modules.foo.fields.images.omit, ['inScope[].dataUrl', 'outScope[].dataUrl']);
   assert.equal(modules.foo.fields.images.help, 'image galleries');
@@ -1140,10 +1140,10 @@ test('collectAgentData: @agentOmit am Model-Feld landet als omit im Feldschema',
   assert.deepEqual(modules.foo.reported.filter(v => v.includes('omit')), []);
 });
 
-test('collectAgentData: [omit:…] im Typedef, vor oder nach [bulk], hält die Hilfe sauber', () => {
+test('collectAgentData: [omit:…] im Typedef, vor oder nach [bulk], hält die Hilfe sauber', async () => {
   for (const sentinels of ['[bulk] [omit:[][].image]', '[omit:[][].image] [bulk]']) {
     const root = fixture({ bar: { 'bar.js': cellsVm(sentinels), 'bar-model.js': BAR_MODEL } });
-    const { modules } = collectAgentData(root);
+    const { modules } = await collectAgentData(root);
     const cells = modules.bar.fields.cells;
 
     assert.equal(cells.bulk, true, sentinels);
@@ -1153,10 +1153,10 @@ test('collectAgentData: [omit:…] im Typedef, vor oder nach [bulk], hält die H
     assert.deepEqual(modules.bar.reported.filter(v => v.includes('omit')), [], sentinels);
   }
   const root = fixture({ bar: { 'bar.js': AGENT_READ_VM, 'bar-model.js': BAR_MODEL } });
-  assert.equal('omit' in collectAgentData(root).modules.bar.fields.rows, false);
+  assert.equal('omit' in (await collectAgentData(root)).modules.bar.fields.rows, false);
 });
 
-test('collectAgentData: ein Auslassungspfad gegen die Grammatik ist invalid_omit_path', () => {
+test('collectAgentData: ein Auslassungspfad gegen die Grammatik ist invalid_omit_path', async () => {
   const cases = [
     ['@agentOmit', 'invalid_omit_path:images:'],
     ['@agentOmit inScope[]', 'invalid_omit_path:images:inScope[]'],
@@ -1165,13 +1165,13 @@ test('collectAgentData: ein Auslassungspfad gegen die Grammatik ist invalid_omit
   ];
   for (const [tag, code] of cases) {
     const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': omitModel(tag) } });
-    const { modules } = collectAgentData(root);
+    const { modules } = await collectAgentData(root);
     assert.ok(modules.foo.violations.includes(code), `${tag}: erwartet ${code}, bekam ${JSON.stringify(modules.foo.violations)}`);
     assert.equal(modules.foo.available, false, tag);
   }
 });
 
-test('collectAgentData: ein Pfad, der nicht zum Typ passt, ist omit_path_mismatch', () => {
+test('collectAgentData: ein Pfad, der nicht zum Typ passt, ist omit_path_mismatch', async () => {
   const cases = [
     [omitModel('@agentOmit inScope.dataUrl'), 'omit_path_mismatch:images:inScope.dataUrl'],
     [omitModel('@agentOmit gallery[].dataUrl'), 'omit_path_mismatch:images:gallery[].dataUrl'],
@@ -1179,32 +1179,32 @@ test('collectAgentData: ein Pfad, der nicht zum Typ passt, ist omit_path_mismatc
   ];
   for (const [model, code] of cases) {
     const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': model } });
-    const { modules } = collectAgentData(root);
+    const { modules } = await collectAgentData(root);
     assert.ok(modules.foo.violations.includes(code), `erwartet ${code}, bekam ${JSON.stringify(modules.foo.violations)}`);
   }
   const root = fixture({ bar: { 'bar.js': cellsVm('[bulk] [omit:[].image]'), 'bar-model.js': BAR_MODEL } });
-  assert.ok(collectAgentData(root).modules.bar.violations.includes('omit_path_mismatch:cells:[].image'));
+  assert.ok((await collectAgentData(root)).modules.bar.violations.includes('omit_path_mismatch:cells:[].image'));
 });
 
-test('collectAgentData: ein nicht auflösbarer Typ widerlegt keinen Pfad', () => {
+test('collectAgentData: ein nicht auflösbarer Typ widerlegt keinen Pfad', async () => {
   for (const type of ['object', 'any', 'Gallery', '{a: string}|{b: string}', '{x: object}']) {
     const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': omitModel('@agentOmit x.y', type) } });
-    const { modules } = collectAgentData(root);
+    const { modules } = await collectAgentData(root);
     assert.deepEqual(modules.foo.reported.filter(v => v.includes('omit')), [], type);
   }
 });
 
-test('collectAgentData: a module with an AgentRead typedef is available without a model class', () => {
+test('collectAgentData: a module with an AgentRead typedef is available without a model class', async () => {
   // Kein `Model:`-Mitglied → readModelFields würde `unresolvable_model_class`
   // melden. Mit deklarierter Lesefläche ist das Model irrelevant.
   const noModel = AGENT_READ_VM.replace('  Model: State,\n', '');
   const root = fixture({ bar: { 'bar.js': noModel, 'bar-model.js': BAR_MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.bar.violations, []);
   assert.equal(modules.bar.available, true);
 });
 
-test('readAgentReadTypedef: returns null when the module declares none', () => {
+test('readAgentReadTypedef: returns null when the module declares none', async () => {
   const sf = ts.createSourceFile('x.js', TAGGED_VM, ts.ScriptTarget.ESNext, true);
   assert.equal(readAgentReadTypedef(sf), null);
 });
@@ -1239,14 +1239,14 @@ export default createModule({
  */
 `;
 
-test('readAgentReadTypedef: a typedef block NOT attached to a statement (trailing at end of file) is not found', () => {
+test('readAgentReadTypedef: a typedef block NOT attached to a statement (trailing at end of file) is not found', async () => {
   const sf = ts.createSourceFile('x.js', TRAILING_AGENT_READ_VM, ts.ScriptTarget.ESNext, true);
   assert.equal(readAgentReadTypedef(sf), null);
 });
 
-test('collectAgentData: a trailing, unattached AgentRead typedef falls back to the Model-derived fields', () => {
+test('collectAgentData: a trailing, unattached AgentRead typedef falls back to the Model-derived fields', async () => {
   const root = fixture({ bar: { 'bar.js': TRAILING_AGENT_READ_VM, 'bar-model.js': BAR_MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(Object.keys(modules.bar.fields), ['sheets']);
   assert.equal('derived' in modules.bar.fields.sheets, false);
 });
@@ -1257,7 +1257,7 @@ const VIA_VM = (via) => TAGGED_VM.replace('export default createModule', `/**
  */
 export default createModule`);
 
-test('readAgentReadTypedef: [via: a, b] wird gelesen und aus der Hilfe entfernt', () => {
+test('readAgentReadTypedef: [via: a, b] wird gelesen und aus der Hilfe entfernt', async () => {
   const sf = sourceOf(`
 /**
  * @typedef {object} AgentRead
@@ -1270,7 +1270,7 @@ export default 1;
   assert.equal(fields.step.help, 'die offene Frage');
 });
 
-test('readAgentReadTypedef: [via:] steht mit [bulk] in beliebiger Reihenfolge', () => {
+test('readAgentReadTypedef: [via:] steht mit [bulk] in beliebiger Reihenfolge', async () => {
   const sf = sourceOf(`
 /**
  * @typedef {object} AgentRead
@@ -1283,20 +1283,20 @@ export default 1;
   assert.deepEqual(f.via, ['addRow']);
 });
 
-test('collectAgentData: [via:] mit unbekannter Aktion meldet unknown_via_action', () => {
+test('collectAgentData: [via:] mit unbekannter Aktion meldet unknown_via_action', async () => {
   const root = fixture({ foo: { 'foo.js': VIA_VM('nope'), 'foo-model.js': MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.ok(modules.foo.violations.includes('unknown_via_action:problem:nope'));
 });
 
-test('collectAgentData: [via:] mit echter Aktion meldet nichts', () => {
+test('collectAgentData: [via:] mit echter Aktion meldet nichts', async () => {
   const root = fixture({ foo: { 'foo.js': VIA_VM('setProblem'), 'foo-model.js': MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.equal(modules.foo.violations.includes('unknown_via_action:problem:setProblem'), false);
   assert.deepEqual(modules.foo.fields.problem.via, ['setProblem']);
 });
 
-test('readAgentReadTypedef: [omit:…] und [via:…] stehen in beliebiger Reihenfolge', () => {
+test('readAgentReadTypedef: [omit:…] und [via:…] stehen in beliebiger Reihenfolge', async () => {
   const sf = sourceOf(`
 /**
  * @typedef {object} AgentRead
@@ -1313,7 +1313,7 @@ export default 1;
   assert.equal(f.cells.help, 'die Zellen');
 });
 
-test('readAgentReadTypedef: [via:] erlaubt Teil-Viewmodel-Namen mit Punkt', () => {
+test('readAgentReadTypedef: [via:] erlaubt Teil-Viewmodel-Namen mit Punkt', async () => {
   const sf = sourceOf(`
 /**
  * @typedef {object} AgentRead
@@ -1324,13 +1324,13 @@ export default 1;
   assert.deepEqual(readAgentReadTypedef(sf).f.via, ['part.add', 'other']);
 });
 
-test('collectAgentData: eine @noagent-Methode in [via:] ist eine unbekannte Aktion', () => {
+test('collectAgentData: eine @noagent-Methode in [via:] ist eine unbekannte Aktion', async () => {
   const root = fixture({ foo: { 'foo.js': VIA_VM('cardClass'), 'foo-model.js': MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.ok(modules.foo.violations.includes('unknown_via_action:problem:cardClass'));
 });
 
-test('collectAgentData: ein missratenes [via …] meldet invalid_via statt still Prosa zu sein', () => {
+test('collectAgentData: ein missratenes [via …] meldet invalid_via statt still Prosa zu sein', async () => {
   for (const bad of ['', ' a b', ' : x']) {
     const vm = TAGGED_VM.replace('export default createModule', `/**
  * @typedef {object} AgentRead
@@ -1338,23 +1338,23 @@ test('collectAgentData: ein missratenes [via …] meldet invalid_via statt still
  */
 export default createModule`);
     const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
-    assert.ok(collectAgentData(root).modules.foo.violations.includes('invalid_via:problem'), `[via${bad}]`);
+    assert.ok((await collectAgentData(root)).modules.foo.violations.includes('invalid_via:problem'), `[via${bad}]`);
   }
   const bad2 = VIA_VM('a b');
   const root = fixture({ foo: { 'foo.js': bad2, 'foo-model.js': MODEL } });
-  assert.ok(collectAgentData(root).modules.foo.violations.includes('invalid_via:problem'));
+  assert.ok((await collectAgentData(root)).modules.foo.violations.includes('invalid_via:problem'));
 });
 
-test('collectAgentData: die beschriebenen Schreibwege stehen neben den Einträgen, nicht darin', () => {
+test('collectAgentData: die beschriebenen Schreibwege stehen neben den Einträgen, nicht darin', async () => {
   const root = fixture({ foo: { 'foo.js': VIA_VM('setProblem'), 'foo-model.js': MODEL } });
-  const data = collectAgentData(root);
+  const data = await collectAgentData(root);
   assert.equal('writtenFields' in data.modules.foo, false);
   assert.ok(Array.isArray(data.writtenFields.foo));
 });
 
-test('die erzeugte Registry trägt keine Berichtsfelder', () => {
+test('die erzeugte Registry trägt keine Berichtsfelder', async () => {
   const root = fixture({ foo: { 'foo.js': VIA_VM('setProblem'), 'foo-model.js': MODEL } });
-  assert.equal(renderAgentRegistryModule(collectAgentData(root)).includes('writtenFields'), false);
+  assert.equal(renderAgentRegistryModule(await collectAgentData(root)).includes('writtenFields'), false);
 });
 
 const TAGGED_NO_ACTIONS = `/**
@@ -1374,9 +1374,9 @@ export default createModule({
   },
 });`;
 
-test('collectAgentData: a module tag with zero @agent actions is a violation', () => {
+test('collectAgentData: a module tag with zero @agent actions is a violation', async () => {
   const root = fixture({ empty: { 'empty.js': TAGGED_NO_ACTIONS, 'empty-model.js': BAR_MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.ok(modules.empty.violations.includes('module_tag_without_actions'));
   assert.equal(modules.empty.available, false);
 });
@@ -1392,9 +1392,9 @@ const TAGGED_ONLY_READ = TAGGED_NO_ACTIONS.replace('      /** @noagent */', `   
       read() { return {}; },
       /** @noagent */`);
 
-test('collectAgentData: a module whose ONLY action is read() is still a violation', () => {
+test('collectAgentData: a module whose ONLY action is read() is still a violation', async () => {
   const root = fixture({ empty: { 'empty.js': TAGGED_ONLY_READ, 'empty-model.js': BAR_MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(Object.keys(modules.empty.actions), ['read']);
   // `no_read_action` ist erfüllt — die erste Hürde muss trotzdem greifen,
   // sonst sind die beiden Codes redundant statt orthogonal.
@@ -1403,29 +1403,29 @@ test('collectAgentData: a module whose ONLY action is read() is still a violatio
   assert.equal(modules.empty.available, false);
 });
 
-test('collectAgentData: a released module without a read() action is a violation', () => {
+test('collectAgentData: a released module without a read() action is a violation', async () => {
   const noRead = TAGGED_VM.replace(/\/\*\*\n\s+\* Read the full state\.\n\s+\* @agent\n\s+\* @returns \{object\} the state\n\s+\*\/\n\s+read\(\) \{ return \{\}; \},\n/, '');
   const root = fixture({ foo: { 'foo.js': noRead, 'foo-model.js': MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.ok(modules.foo.violations.includes('no_read_action'));
   assert.equal(modules.foo.available, false);
 });
 
-test('collectAgentData: both new hurdles are only REPORTED on an untagged module', () => {
+test('collectAgentData: both new hurdles are only REPORTED on an untagged module', async () => {
   const root = fixture({
     empty: { 'empty.js': TAGGED_NO_ACTIONS.replace(' * @agent\n', ''), 'empty-model.js': BAR_MODEL },
   });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.empty.violations, []);
   assert.ok(modules.empty.reported.includes('module_tag_without_actions'));
   assert.ok(modules.empty.reported.includes('no_read_action'));
 });
 
-test('collectAgentData: the released pilot modules are available in the real tree', () => {
+test('collectAgentData: the released pilot modules are available in the real tree', async () => {
   // Der echte Baum, nicht ein Fixture: dieser Fall ist das Tor, das eine
   // Freigabe festhält. Er wächst mit jedem freigegebenen Pilotmodul.
   const appDir = join(import.meta.dirname, '..', '..');
-  const { modules, coverage } = collectAgentData(appDir);
+  const { modules, coverage } = await collectAgentData(appDir);
   for (const id of ['five-why', 'worksheet']) {
     assert.deepEqual(modules[id].violations, [], `${id} hat Verstöße`);
     assert.equal(modules[id].available, true, `${id} ist nicht freigegeben`);
@@ -1438,16 +1438,16 @@ test('collectAgentData: the released pilot modules are available in the real tre
   assert.ok(coverage.available >= 3);
 });
 
-test('collectAgentData: hypothesis-test ist umgestellt und trägt den Schema-Platzhalter', () => {
+test('collectAgentData: hypothesis-test ist umgestellt und trägt den Schema-Platzhalter', async () => {
   const appDir = join(import.meta.dirname, '..', '..');
-  const { modules } = collectAgentData(appDir);
+  const { modules } = await collectAgentData(appDir);
   assert.equal(modules['hypothesis-test'].schema, true);
   assert.deepEqual(modules['hypothesis-test'].fields, {});
 });
 
-test('collectAgentData: worksheet declares its read surface, rows are bulk', () => {
+test('collectAgentData: worksheet declares its read surface, rows are bulk', async () => {
   const appDir = join(import.meta.dirname, '..', '..');
-  const { modules } = collectAgentData(appDir);
+  const { modules } = await collectAgentData(appDir);
   assert.deepEqual(Object.keys(modules.worksheet.fields),
     ['sheets', 'sheetId', 'columns', 'rows', 'formulas']);
   assert.equal(modules.worksheet.fields.rows.bulk, true);
@@ -1480,16 +1480,16 @@ test('collectAgentData: worksheet declares its read surface, rows are bulk', () 
    `lookup` geprüft. Dass ein LEERER Schlüssel als nicht vorhanden gilt, ist
    in `agent-report.test.mjs` festgenagelt. */
 
-test('i18n-Tor: die geteilte Statistiktabelle liefert ihre Anker-Schlüssel an die Tore', () => {
+test('i18n-Tor: die geteilte Statistiktabelle liefert ihre Anker-Schlüssel an die Tore', async () => {
   const appDir = join(import.meta.dirname, '..', '..');
   const keys = helpKeysInSharedSources(appDir).map(([, k]) => k);
   assert.ok(keys.includes('modules.shared.types.Stats.mean'), keys.join(', '));
   assert.ok(keys.includes('modules.shared.types.SeriesStats.name'), keys.join(', '));
 });
 
-test('i18n-Tor: jede Aktion, jeder Parameter und jedes Feld eines freigegebenen Moduls hat einen Schlüssel in BEIDEN Sprachdateien', () => {
+test('i18n-Tor: jede Aktion, jeder Parameter und jedes Feld eines freigegebenen Moduls hat einen Schlüssel in BEIDEN Sprachdateien', async () => {
   const appDir = join(import.meta.dirname, '..', '..');
-  const { modules } = collectAgentData(appDir);
+  const { modules } = await collectAgentData(appDir);
   const trees = readHelpTables(appDir);
   const released = Object.entries(modules).filter(([, m]) => m.available === true);
   assert.ok(released.length >= 1, 'kein freigegebenes Modul — das Tor prüfte nichts');
@@ -1525,9 +1525,9 @@ test('i18n-Tor: jede Aktion, jeder Parameter und jedes Feld eines freigegebenen 
   assert.deepEqual(missing, [], `fehlende i18n-Schlüssel:\n${missing.join('\n')}`);
 });
 
-test('i18n-Tor: jeder Anker-Schlüssel (Vorlage, Modul-JS, geteilter Baustein) löst in BEIDEN Sprachdateien auf', () => {
+test('i18n-Tor: jeder Anker-Schlüssel (Vorlage, Modul-JS, geteilter Baustein) löst in BEIDEN Sprachdateien auf', async () => {
   const appDir = join(import.meta.dirname, '..', '..');
-  const { modules } = collectAgentData(appDir);
+  const { modules } = await collectAgentData(appDir);
   const trees = readHelpTables(appDir);
   const broken = [];
   let checked = 0;
@@ -1552,12 +1552,12 @@ test('i18n-Tor: jeder Anker-Schlüssel (Vorlage, Modul-JS, geteilter Baustein) l
   assert.deepEqual(broken, [], `nicht auflösbare data-help-key:\n${broken.join('\n')}`);
 });
 
-test('i18n-Tor: ein verankerter Satz (Vorlage, Modul-JS, geteilter Baustein) enthält keinen Strukturjargon', () => {
+test('i18n-Tor: ein verankerter Satz (Vorlage, Modul-JS, geteilter Baustein) enthält keinen Strukturjargon', async () => {
   // Doppelnutzen: der Satz am Label ist derselbe, den der Agent liest. Wer
   // Alt hält, prüft damit die Agentenbeschreibung — das geht nur, wenn sie
   // für Menschen geschrieben ist. Die Struktur steht im JSDoc-Typ.
   const appDir = join(import.meta.dirname, '..', '..');
-  const { modules } = collectAgentData(appDir);
+  const { modules } = await collectAgentData(appDir);
   const trees = readHelpTables(appDir);
   const jargon = [];
   for (const [id, entry] of Object.entries(modules)) {
@@ -1610,9 +1610,9 @@ test('i18n-Tor: jeder zur Laufzeit gebundene Hilfeschlüssel löst in BEIDEN Spr
    Veralterung, für die es gebaut ist — eine umbenannte Aktion, ein
    umbenannter Parameter, ein umbenanntes Feld hat keinen geteilten
    Rückfall und wird rot. */
-test('i18n-Tor: der read-Hilfetext jedes freigegebenen Moduls löst über die dokumentierte Kette auf', () => {
+test('i18n-Tor: der read-Hilfetext jedes freigegebenen Moduls löst über die dokumentierte Kette auf', async () => {
   const appDir = join(import.meta.dirname, '..', '..');
-  const { modules } = collectAgentData(appDir);
+  const { modules } = await collectAgentData(appDir);
   const trees = readHelpTables(appDir);
   const released = Object.entries(modules).filter(([, m]) => m.available === true);
   assert.ok(released.length >= 2, 'weniger als zwei freigegebene Module');
@@ -1628,7 +1628,7 @@ test('i18n-Tor: der read-Hilfetext jedes freigegebenen Moduls löst über die do
   assert.deepEqual(missing, [], `unauflösbare read-Hilfetexte:\n${missing.join('\n')}`);
 });
 
-test('i18n-Tor: das deutsche read-Hilfetext von five-why bleibt der modulspezifische', () => {
+test('i18n-Tor: das deutsche read-Hilfetext von five-why bleibt der modulspezifische', async () => {
   // Der geteilte Rückfall (`modules.shared.actions.read.help`) ist additiv: der
   // Modulschlüssel gewinnt weiterhin. Dieser Fall hält fest, dass die
   // Freigabe von five-why ihren eigenen Text behält.
@@ -1683,30 +1683,30 @@ test('Domänen-Tor: die erklärten Wertemengen des Hypothesentests sind GENAU di
 // Generator-Härtung: was der Generator bisher verschluckte
 // ═══════════════════════════════════════════════════════════════
 
-test('collectDomDetours erkennt += auf innerHTML', () => {
+test('collectDomDetours erkennt += auf innerHTML', async () => {
   const hits = collectDomDetours(sourceOf(`function render(el) { el.innerHTML += '<b>x</b>'; }`));
   assert.equal(hits.length, 1);
   assert.match(hits[0], /^dom_detour:innerHTML$/);
 });
 
-test('collectDomDetours sieht ??=, ||=, &&= und -=', () => {
+test('collectDomDetours sieht ??=, ||=, &&= und -=', async () => {
   for (const op of ['??=', '||=', '&&=', '-=']) {
     const hits = collectDomDetours(sourceOf(`el.dataset.k ${op} 'x';`));
     assert.deepEqual(hits, ['dom_detour:dataset.k'], op);
   }
 });
 
-test('collectDomDetours meldet dieselbe Eigenschaft einmal', () => {
+test('collectDomDetours meldet dieselbe Eigenschaft einmal', async () => {
   assert.deepEqual(collectDomDetours(sourceOf(`el.innerHTML = 'a';\nel.innerHTML = 'b';`)), ['dom_detour:innerHTML']);
 });
 
-test('collectDomDetours erkennt dataset mit Klammerzugriff', () => {
+test('collectDomDetours erkennt dataset mit Klammerzugriff', async () => {
   const hits = collectDomDetours(sourceOf(`function mark(el) { el.dataset['state'] = 'on'; }`));
   assert.equal(hits.length, 1);
   assert.match(hits[0], /^dom_detour:dataset\.state$/);
 });
 
-test('eine Hilfsklasse in der Model-Datei mischt ihre Felder nicht unter', () => {
+test('eine Hilfsklasse in der Model-Datei mischt ihre Felder nicht unter', async () => {
   // Punkt (b) der Härtung: sieht behoben aus. Der Test hält die Korrektur.
   const root = fixture({
     foo: {
@@ -1714,109 +1714,109 @@ test('eine Hilfsklasse in der Model-Datei mischt ihre Felder nicht unter', () =>
       'foo-model.js': `export class Helper {\n  /** @type {string} nicht die Lesefläche */\n  secret = '';\n}\nexport class State {\n  /** @type {string} der Titel */\n  title = '';\n}`,
     },
   });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(Object.keys(modules.foo.fields), ['title']);
 });
 
-test('ein geklammerter Funktionswert gilt als Methode, nicht als Daten', () => {
+test('ein geklammerter Funktionswert gilt als Methode, nicht als Daten', async () => {
   const root = fixture({
     foo: {
       'foo.js': `/**\n * Foo.\n * @agent\n */\ncreateModule({ id: 'foo', data() { return {\n  /**\n   * Tut etwas.\n   * @agent\n   * @returns {void} nichts\n   */\n  doIt: (() => {}),\n}; } });`,
     },
   });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.ok(Object.prototype.hasOwnProperty.call(modules.foo.actions, 'doIt'),
     'der geklammerte Funktionswert wurde stumm übersprungen');
 });
 
-test('ein Verstoßcode eines vererbten Mitglieds trägt keine Zeilennummer', () => {
+test('ein Verstoßcode eines vererbten Mitglieds trägt keine Zeilennummer', async () => {
   const root = fixture({
     foo: { 'foo.js': `/**\n * Foo.\n * @agent\n */\nimport { mix } from '../../ui/mix.js';\ncreateModule({ id: 'foo', data() { return { ...mix() }; } });` },
   }, { 'js/ui/mix.js': `export function mix() { return { unmarkiert() {} }; }` });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   const code = modules.foo.reported.find(c => c.startsWith('unmarked_method:unmarkiert'));
   assert.equal(code, 'unmarked_method:unmarkiert@js/ui/mix.js');
 });
 
-test('class State extends State wird gemeldet, nicht still terminiert', () => {
+test('class State extends State wird gemeldet, nicht still terminiert', async () => {
   const root = fixture({
     foo: {
       'foo.js': `/**\n * Foo.\n * @agent\n */\nimport { State } from './foo-model.js';\ncreateModule({ id: 'foo', Model: State });`,
       'foo-model.js': `export class State extends State {\n  /** @type {string} der Titel */\n  title = '';\n}`,
     },
   });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.ok(modules.foo.violations.some(v => v.startsWith('self_inheriting_class:')),
     `kein Befund: ${JSON.stringify(modules.foo.violations)}`);
 });
 
-test('calculator führt alle neun Modellfelder', () => {
+test('calculator führt alle neun Modellfelder', async () => {
   const appDir = join(import.meta.dirname, '..', '..');
-  const { modules } = collectAgentData(appDir);
+  const { modules } = await collectAgentData(appDir);
   assert.deepEqual(Object.keys(modules.calculator.fields).sort(),
     ['angleMode', 'dataset', 'expression', 'lastResult', 'lsl', 'memory', 'mode', 'ssDataset', 'usl']);
 });
 
-test('unreadable_state_key: ein persistierter Schlüssel ohne Lesefeld ist ein Befund', () => {
+test('unreadable_state_key: ein persistierter Schlüssel ohne Lesefeld ist ein Befund', async () => {
   const root = fixture({ foo: { 'foo.js': TITLE_VM, 'foo-model.js': `export class State {
     /** @type {string} der Titel */
     title = '';
     toJSON() { return { title: this.title, hidden: 'weg' }; }
   }` } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreadable_state_key:hidden']);
   // tagged⇒hard: der Befund blockiert tatsächlich die Freigabe, nicht nur `reported`.
   assert.ok(modules.foo.violations.includes('unreadable_state_key:hidden'));
   assert.equal(modules.foo.available, false);
 });
 
-test('unreadable_state_key: ein _-präfigierter persistierter Schlüssel wird NICHT gemeldet', () => {
+test('unreadable_state_key: ein _-präfigierter persistierter Schlüssel wird NICHT gemeldet', async () => {
   const root = fixture({ foo: { 'foo.js': TITLE_VM, 'foo-model.js': `export class State {
     /** @type {string} der Titel */
     title = '';
     toJSON() { return { title: this.title, _schema: 3 }; }
   }` } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, []);
 });
 
-test('unreadable_state_key: JSON.parse(JSON.stringify({…})) wird entpackt', () => {
+test('unreadable_state_key: JSON.parse(JSON.stringify({…})) wird entpackt', async () => {
   const root = fixture({ foo: { 'foo.js': TITLE_VM, 'foo-model.js': `export class State {
     /** @type {string} der Titel */
     title = '';
     toJSON() { return JSON.parse(JSON.stringify({ title: this.title, hidden: 1 })); }
   }` } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreadable_state_key:hidden']);
 });
 
-test('unreadable_state_key: eine lokale Variable wird verfolgt', () => {
+test('unreadable_state_key: eine lokale Variable wird verfolgt', async () => {
   const root = fixture({ foo: { 'foo.js': TITLE_VM, 'foo-model.js': `export class State {
     /** @type {string} der Titel */
     title = '';
     toJSON() { const out = { title: this.title, hidden: 1 }; return out; }
   }` } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreadable_state_key:hidden']);
 });
 
-test('unresolvable_tojson: ein Spread im Rückgabeobjekt ist eine Blindstelle', () => {
+test('unresolvable_tojson: ein Spread im Rückgabeobjekt ist eine Blindstelle', async () => {
   const root = fixture({ foo: { 'foo.js': TITLE_VM, 'foo-model.js': `export class State {
     /** @type {string} der Titel */
     title = '';
     toJSON() { return { ...this.base(), title: this.title }; }
   }` } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unresolvable_tojson']);
 });
 
-test('ein erklärtes AgentRead-Typedef setzt das Gate aus', () => {
+test('ein erklärtes AgentRead-Typedef setzt das Gate aus', async () => {
   const root = fixture({ bar: { 'bar.js': AGENT_READ_VM, 'bar-model.js': BAR_MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.bar.reported, []);
 });
 
-test('geerbtes toJSON wird gefunden', () => {
+test('geerbtes toJSON wird gefunden', async () => {
   const root = fixture({ foo: { 'foo.js': TITLE_VM, 'foo-model.js': `export class Base {
     toJSON() { return { title: this.title, hidden: 1 }; }
   }
@@ -1824,11 +1824,11 @@ test('geerbtes toJSON wird gefunden', () => {
     /** @type {string} der Titel */
     title = '';
   }` } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreadable_state_key:hidden']);
 });
 
-test('unresolvable_tojson: eine nicht-const lokale Variable (let, neu zugewiesen) ist eine Blindstelle', () => {
+test('unresolvable_tojson: eine nicht-const lokale Variable (let, neu zugewiesen) ist eine Blindstelle', async () => {
   // Review-Fund 1: die alte Fassung folgte JEDER lokalen Variable, auch
   // einer mit `let` neu zugewiesenen. `out` zeigte hier zuerst auf
   // { title } — die zweite, per `if` zugewiesene Fassung mit `hidden` wäre
@@ -1842,11 +1842,11 @@ test('unresolvable_tojson: eine nicht-const lokale Variable (let, neu zugewiesen
       return out;
     }
   }` } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unresolvable_tojson']);
 });
 
-test('unresolvable_tojson: mehr als eine return-Anweisung ist eine Blindstelle', () => {
+test('unresolvable_tojson: mehr als eine return-Anweisung ist eine Blindstelle', async () => {
   // Review-Fund 2: die alte Fassung las nur die erste TOP-LEVEL
   // `return`-Anweisung. Der `if`-Zweig unten (mit `onlyInIf`) landete nie
   // im entpackten Literal, aber auch ohne jeden Befund — die zweite
@@ -1861,11 +1861,11 @@ test('unresolvable_tojson: mehr als eine return-Anweisung ist eine Blindstelle',
       return { title: this.title };
     }
   }` } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unresolvable_tojson']);
 });
 
-test('unreachable_write: eine x-model-Bindung ohne @agent-Setter ist ein Befund', () => {
+test('unreachable_write: eine x-model-Bindung ohne @agent-Setter ist ein Befund', async () => {
   const root = fixture({ foo: {
     'foo.js': TAGGED_VM,
     'foo-model.js': `export class State {
@@ -1875,7 +1875,7 @@ test('unreachable_write: eine x-model-Bindung ohne @agent-Setter ist ein Befund'
     }`,
     'foo.html': '<input x-model="model.title">',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreachable_write:title']);
   // tagged⇒hard: der Befund blockiert tatsächlich die Freigabe, nicht nur `reported`.
   assert.ok(modules.foo.violations.includes('unreachable_write:title'));
@@ -1922,33 +1922,33 @@ const viewModel = (fields, body = 'activeTab: this.activeTab, title: this.title'
   toJSON() { return { ${body} }; }
 }`;
 
-test('viewFields: Liste kommt in die Registry, das Feld fällt aus der Lesefläche', () => {
+test('viewFields: Liste kommt in die Registry, das Feld fällt aus der Lesefläche', async () => {
   const root = fixture({ foo: { 'foo.js': viewVm(), 'foo-model.js': viewModel("static VIEW_FIELDS = ['activeTab'];") } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.viewFields, ['activeTab']);
   assert.ok(!Object.hasOwn(modules.foo.fields, 'activeTab'));
   assert.ok(Object.hasOwn(modules.foo.fields, 'title'));
   assert.deepEqual(modules.foo.reported, [], 'auch kein unreadable_state_key');
 });
 
-test('viewFields: ohne Deklaration kein Schlüssel', () => {
+test('viewFields: ohne Deklaration kein Schlüssel', async () => {
   const root = fixture({ foo: { 'foo.js': viewVm(), 'foo-model.js': viewModel('') } });
-  assert.equal(collectAgentData(root).modules.foo.viewFields, undefined);
+  assert.equal((await collectAgentData(root)).modules.foo.viewFields, undefined);
 });
 
-test('unresolved_view_fields: kein Literal, oder Pfad gegen die Grammatik', () => {
+test('unresolved_view_fields: kein Literal, oder Pfad gegen die Grammatik', async () => {
   for (const decl of ['static VIEW_FIELDS = makeList();', "static VIEW_FIELDS = ['a[]'];", "static VIEW_FIELDS = ['a..b'];"]) {
     const root = fixture({ foo: { 'foo.js': viewVm(), 'foo-model.js': `const makeList = () => [];\n${viewModel(decl)}` } });
-    assert.ok(collectAgentData(root).modules.foo.reported.includes('unresolved_view_fields'), decl);
+    assert.ok((await collectAgentData(root)).modules.foo.reported.includes('unresolved_view_fields'), decl);
   }
 });
 
-test('view_field_not_persisted: erstes Segment fehlt in toJSON()', () => {
+test('view_field_not_persisted: erstes Segment fehlt in toJSON()', async () => {
   const root = fixture({ foo: { 'foo.js': viewVm(), 'foo-model.js': viewModel("static VIEW_FIELDS = ['activeTab', 'gibtEsNicht[].x'];") } });
-  assert.deepEqual(collectAgentData(root).modules.foo.reported, ['view_field_not_persisted:gibtEsNicht[].x']);
+  assert.deepEqual((await collectAgentData(root)).modules.foo.reported, ['view_field_not_persisted:gibtEsNicht[].x']);
 });
 
-test('view_field_declared: Feld steht im AgentRead-Typedef, auch verschachtelt', () => {
+test('view_field_declared: Feld steht im AgentRead-Typedef, auch verschachtelt', async () => {
   const typedef = `/**
  * @typedef {object} AgentRead
  * @property {string} activeTab  der Reiter
@@ -1958,12 +1958,12 @@ test('view_field_declared: Feld steht im AgentRead-Typedef, auch verschachtelt',
   const vm = viewVm({ typedef, readBody: "return readAgentState('foo', { activeTab: 'a', risks: [] }, options);" });
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js':
     viewModel("static VIEW_FIELDS = ['activeTab', 'risks[].collapsed'];\n  risks = [];", 'activeTab: this.activeTab, title: this.title, risks: this.risks') } });
-  const { reported } = collectAgentData(root).modules.foo;
+  const { reported } = (await collectAgentData(root)).modules.foo;
   assert.ok(reported.includes('view_field_declared:activeTab'));
   assert.ok(reported.includes('view_field_declared:risks[].collapsed'));
 });
 
-test('view_field_agent_write: parametergetrieben ist ein Befund, die Folgeschreibung nicht', () => {
+test('view_field_agent_write: parametergetrieben ist ein Befund, die Folgeschreibung nicht', async () => {
   const setter = `/**
        * Setzt den Reiter.
        * @agent
@@ -1979,9 +1979,9 @@ test('view_field_agent_write: parametergetrieben ist ein Befund, die Folgeschrei
       openThing() { this.model.title = 'neu'; this.model.activeTab = 'neu'; },`;
   const modelText = viewModel("static VIEW_FIELDS = ['activeTab'];");
   const hit = fixture({ foo: { 'foo.js': viewVm({ extra: setter }), 'foo-model.js': modelText } });
-  assert.deepEqual(collectAgentData(hit).modules.foo.reported, ['view_field_agent_write:activeTab']);
+  assert.deepEqual((await collectAgentData(hit)).modules.foo.reported, ['view_field_agent_write:activeTab']);
   const clean = fixture({ foo: { 'foo.js': viewVm({ extra: consequence }), 'foo-model.js': modelText } });
-  assert.deepEqual(collectAgentData(clean).modules.foo.reported, []);
+  assert.deepEqual((await collectAgentData(clean)).modules.foo.reported, []);
 });
 
 /**
@@ -1992,7 +1992,7 @@ test('view_field_agent_write: parametergetrieben ist ein Befund, die Folgeschrei
  * @param {{ modelMembers?: string, views?: string[] }} [options]
  * @returns {string[]} die Befunde zu den Ansichtsfeldern
  */
-const viewWriteFindings = (signature, body, { modelMembers = '', views = ['selected'] } = {}) => {
+const viewWriteFindings = async (signature, body, { modelMembers = '', views = ['selected'] } = {}) => {
   const params = signature.slice(signature.indexOf('(') + 1, -1).split(',').map(p => p.trim()).filter(Boolean);
   const action = `/**
        * Die Probe.
@@ -2005,90 +2005,90 @@ ${params.map(p => `       * @param {string} ${p} der Wert`).join('\n')}
   const root = fixture({ foo: { 'foo.js': viewVm({ extra: action }), 'foo-model.js': viewModel(
     `static VIEW_FIELDS = [${list}];\n  selected = '';\n  items = [];\n  ${modelMembers}`,
     'activeTab: this.activeTab, title: this.title, selected: this.selected, items: this.items') } });
-  return collectAgentData(root).modules.foo.reported.filter(code => code.startsWith('view_field_'));
+  return (await collectAgentData(root)).modules.foo.reported.filter(code => code.startsWith('view_field_'));
 };
 
-test('view_field_agent_write: ein Aufruf trennt die Herkunft vom Parameter', () => {
-  assert.deepEqual(viewWriteFindings('add(type)', 'const q = make(type); this.model.selected = q.id;'), []);
+test('view_field_agent_write: ein Aufruf trennt die Herkunft vom Parameter', async () => {
+  assert.deepEqual(await viewWriteFindings('add(type)', 'const q = make(type); this.model.selected = q.id;'), []);
 });
 
-test('view_field_agent_write: der Parameter selbst ist ein Befund', () => {
-  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.selected = id;'), ['view_field_agent_write:selected']);
+test('view_field_agent_write: der Parameter selbst ist ein Befund', async () => {
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'this.model.selected = id;'), ['view_field_agent_write:selected']);
 });
 
-test('view_field_agent_write: ein reiner Alias des Parameters ist ein Befund', () => {
-  assert.deepEqual(viewWriteFindings('pick(id)', 'const x = id; this.model.selected = x;'), ['view_field_agent_write:selected']);
+test('view_field_agent_write: ein reiner Alias des Parameters ist ein Befund', async () => {
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'const x = id; this.model.selected = x;'), ['view_field_agent_write:selected']);
 });
 
-test('view_field_agent_write: die Prüfung sieht zwei Model-Ebenen tief', () => {
+test('view_field_agent_write: die Prüfung sieht zwei Model-Ebenen tief', async () => {
   const modelMembers = 'set(a) { this._put(a); }\n  _put(b) { this.selected = b; }';
-  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.set(id);', { modelMembers }), ['view_field_agent_write:selected']);
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'this.model.set(id);', { modelMembers }), ['view_field_agent_write:selected']);
 });
 
-test('view_field_agent_write: ein Aliaspfad trifft das Element-Ansichtsfeld', () => {
+test('view_field_agent_write: ein Aliaspfad trifft das Element-Ansichtsfeld', async () => {
   assert.deepEqual(
-    viewWriteFindings('pick(id, v)', 'const s = this.model.items.find(i => i.id === id); s.open = v;', { views: ['items[].open'] }),
+    await viewWriteFindings('pick(id, v)', 'const s = this.model.items.find(i => i.id === id); s.open = v;', { views: ['items[].open'] }),
     ['view_field_agent_write:items[].open']);
 });
 
-test('view_field_agent_write: weitere Formen, die aus dem Parameter stammen', () => {
+test('view_field_agent_write: weitere Formen, die aus dem Parameter stammen', async () => {
   const hit = ['view_field_agent_write:selected'];
-  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.selected = id.value;'), hit, 'Eigenschaftszugriff');
-  assert.deepEqual(viewWriteFindings('pick(id)', 'const x = id.value; const y = x; this.model.selected = y;'), hit, 'Kette');
-  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.selected = (id);'), hit, 'Klammern');
-  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.set(id.value);', { modelMembers: 'set(a) { const c = a; this.selected = c; }' }), hit, 'Alias im Model');
-  assert.deepEqual(viewWriteFindings('pick(id, v)', 'this.model.open(id, v);', {
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'this.model.selected = id.value;'), hit, 'Eigenschaftszugriff');
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'const x = id.value; const y = x; this.model.selected = y;'), hit, 'Kette');
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'this.model.selected = (id);'), hit, 'Klammern');
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'this.model.set(id.value);', { modelMembers: 'set(a) { const c = a; this.selected = c; }' }), hit, 'Alias im Model');
+  assert.deepEqual(await viewWriteFindings('pick(id, v)', 'this.model.open(id, v);', {
     views: ['items[].open'], modelMembers: 'open(id, v) { const s = this.items.find(i => i.id === id); s.open = v; }',
   }), ['view_field_agent_write:items[].open'], 'Aliaspfad im Model');
 });
 
-test('view_field_agent_write: was die Herkunft trennt, ist kein Befund', () => {
-  assert.deepEqual(viewWriteFindings('pick(id)', 'const q = new Thing(id); this.model.selected = q.id;'), [], 'new');
-  assert.deepEqual(viewWriteFindings('pick(id)', 'const q = { id }; this.model.selected = q.id;'), [], 'Objektliteral');
-  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.selected = make(id);'), [], 'Aufruf rechts');
-  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.selected = id ? id : null;'), [], 'Bedingung');
-  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.selected = id || null;'), [], 'Operator');
-  assert.deepEqual(viewWriteFindings('pick(id)', "this.model.selected = requireText('id', make(id));"), [], 'Prüfer um einen fremden Aufruf');
-  assert.deepEqual(viewWriteFindings('pick(id)', "this.model.selected = this.requireText('id', id);"), [], 'Prüfer als Methode');
-  assert.deepEqual(viewWriteFindings('pick(id)', "this.model.selected = requirements(id);"), [], 'nur der Name beginnt gleich');
-  assert.deepEqual(viewWriteFindings('pick(id)', "const q = requireThing(make(id)); this.model.selected = q;"), [], 'Alias eines Prüfers ohne direkten Wert');
-  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.set(make(id));', { modelMembers: 'set(a) { this.selected = a; }' }), [], 'Aufruf als Argument');
-  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.set(id);', { modelMembers: 'set(a) { const q = make(a); this.selected = q.id; }' }), [], 'Aufruf im Model');
-  assert.deepEqual(viewWriteFindings('pick(id)', 'const s = this.model.items.find(i => i.id === id); this.model.selected = s.id;'), [], 'Wert aus der Sammlung');
-  assert.deepEqual(viewWriteFindings('pick(id)', '[1].forEach(id => { this.model.selected = id; });'), [], 'verdeckter Name');
+test('view_field_agent_write: was die Herkunft trennt, ist kein Befund', async () => {
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'const q = new Thing(id); this.model.selected = q.id;'), [], 'new');
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'const q = { id }; this.model.selected = q.id;'), [], 'Objektliteral');
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'this.model.selected = make(id);'), [], 'Aufruf rechts');
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'this.model.selected = id ? id : null;'), [], 'Bedingung');
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'this.model.selected = id || null;'), [], 'Operator');
+  assert.deepEqual(await viewWriteFindings('pick(id)', "this.model.selected = requireText('id', make(id));"), [], 'Prüfer um einen fremden Aufruf');
+  assert.deepEqual(await viewWriteFindings('pick(id)', "this.model.selected = this.requireText('id', id);"), [], 'Prüfer als Methode');
+  assert.deepEqual(await viewWriteFindings('pick(id)', "this.model.selected = requirements(id);"), [], 'nur der Name beginnt gleich');
+  assert.deepEqual(await viewWriteFindings('pick(id)', "const q = requireThing(make(id)); this.model.selected = q;"), [], 'Alias eines Prüfers ohne direkten Wert');
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'this.model.set(make(id));', { modelMembers: 'set(a) { this.selected = a; }' }), [], 'Aufruf als Argument');
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'this.model.set(id);', { modelMembers: 'set(a) { const q = make(a); this.selected = q.id; }' }), [], 'Aufruf im Model');
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'const s = this.model.items.find(i => i.id === id); this.model.selected = s.id;'), [], 'Wert aus der Sammlung');
+  assert.deepEqual(await viewWriteFindings('pick(id)', '[1].forEach(id => { this.model.selected = id; });'), [], 'verdeckter Name');
 });
 
-test('view_field_agent_write: Prüfer und Typwandlung geben den Parameter zurück', () => {
+test('view_field_agent_write: Prüfer und Typwandlung geben den Parameter zurück', async () => {
   const hit = ['view_field_agent_write:selected'];
-  assert.deepEqual(viewWriteFindings('pick(id)', "this.model.selected = requireText('id', id);"), hit, 'Prüfer rechts');
-  assert.deepEqual(viewWriteFindings('pick(id)', "const x = requireId('id', id); this.model.selected = x;"), hit, 'Prüfer als Alias');
-  assert.deepEqual(viewWriteFindings('pick(id)', "this.model.selected = requireEnum('id', id, IDS);"), hit, 'Prüfer mit Menge');
+  assert.deepEqual(await viewWriteFindings('pick(id)', "this.model.selected = requireText('id', id);"), hit, 'Prüfer rechts');
+  assert.deepEqual(await viewWriteFindings('pick(id)', "const x = requireId('id', id); this.model.selected = x;"), hit, 'Prüfer als Alias');
+  assert.deepEqual(await viewWriteFindings('pick(id)', "this.model.selected = requireEnum('id', id, IDS);"), hit, 'Prüfer mit Menge');
   for (const wrap of ['String', 'Number', 'Boolean']) {
-    assert.deepEqual(viewWriteFindings('pick(id)', `this.model.selected = ${wrap}(id);`), hit, wrap);
+    assert.deepEqual(await viewWriteFindings('pick(id)', `this.model.selected = ${wrap}(id);`), hit, wrap);
   }
-  assert.deepEqual(viewWriteFindings('pick(id)', "this.model.set(requireText('id', id));", { modelMembers: 'set(a) { this.selected = a; }' }), hit, 'als Argument');
-  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.set(id);', { modelMembers: 'set(a) { const c = String(a); this.selected = c; }' }), hit, 'im Model');
+  assert.deepEqual(await viewWriteFindings('pick(id)', "this.model.set(requireText('id', id));", { modelMembers: 'set(a) { this.selected = a; }' }), hit, 'als Argument');
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'this.model.set(id);', { modelMembers: 'set(a) { const c = String(a); this.selected = c; }' }), hit, 'im Model');
 });
 
-test('view_field_agent_write: ein Alias im Block zählt nur dort', () => {
+test('view_field_agent_write: ein Alias im Block zählt nur dort', async () => {
   const hit = ['view_field_agent_write:selected'];
-  assert.deepEqual(viewWriteFindings('pick(id)', 'if (id) { const x = id; this.model.selected = x; }'), hit, 'Block');
-  assert.deepEqual(viewWriteFindings('pick(id)', 'const a = id; if (id) { const b = a.v; if (b) { const c = b; this.model.selected = c; } }'), hit, 'verschachtelt');
-  assert.deepEqual(viewWriteFindings('pick(id)', '[1].forEach(() => { const x = id; this.model.selected = x; });'), hit, 'Closure');
-  assert.deepEqual(viewWriteFindings('pick(id)', 'if (id) { const x = id; this.model.set(x); }', { modelMembers: 'set(a) { this.selected = a; }' }), hit, 'Delegation');
-  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.set(id);', { modelMembers: 'set(a) { if (a) { const c = a; this.selected = c; } }' }), hit, 'im Model');
-  assert.deepEqual(viewWriteFindings('pick(id)', 'if (id) { const x = make(id); this.model.selected = x; }'), [], 'Aufruf im Block');
-  assert.deepEqual(viewWriteFindings('pick(id)', 'const x = id; if (id) { const x = make(id); this.model.selected = x; }'), [], 'Neubindung im Block');
-  assert.deepEqual(viewWriteFindings('pick(id)', 'if (id) { const x = id; } if (!id) { this.model.selected = x; }'), [], 'außerhalb des Blocks');
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'if (id) { const x = id; this.model.selected = x; }'), hit, 'Block');
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'const a = id; if (id) { const b = a.v; if (b) { const c = b; this.model.selected = c; } }'), hit, 'verschachtelt');
+  assert.deepEqual(await viewWriteFindings('pick(id)', '[1].forEach(() => { const x = id; this.model.selected = x; });'), hit, 'Closure');
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'if (id) { const x = id; this.model.set(x); }', { modelMembers: 'set(a) { this.selected = a; }' }), hit, 'Delegation');
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'this.model.set(id);', { modelMembers: 'set(a) { if (a) { const c = a; this.selected = c; } }' }), hit, 'im Model');
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'if (id) { const x = make(id); this.model.selected = x; }'), [], 'Aufruf im Block');
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'const x = id; if (id) { const x = make(id); this.model.selected = x; }'), [], 'Neubindung im Block');
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'if (id) { const x = id; } if (!id) { this.model.selected = x; }'), [], 'außerhalb des Blocks');
 });
 
-test('view_field_agent_write: ein Mutator mit dem Parameter ist eine Schreibung', () => {
+test('view_field_agent_write: ein Mutator mit dem Parameter ist eine Schreibung', async () => {
   const hit = ['view_field_agent_write:selected'];
-  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.selected.push(id);'), hit, 'direkt');
-  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.add(id);', { modelMembers: 'add(a) { this.selected.push(a); }' }), hit, 'über das Model');
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'this.model.selected.push(id);'), hit, 'direkt');
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'this.model.add(id);', { modelMembers: 'add(a) { this.selected.push(a); }' }), hit, 'über das Model');
 });
 
-test('writtenFields: ein Block-Alias bleibt in der weiten Menge ungesehen', () => {
+test('writtenFields: ein Block-Alias bleibt in der weiten Menge ungesehen', async () => {
   const action = `/**
        * Die Probe.
        * @agent
@@ -2099,15 +2099,15 @@ test('writtenFields: ein Block-Alias bleibt in der weiten Menge ungesehen', () =
   const root = fixture({ foo: { 'foo.js': viewVm({ extra: action }), 'foo-model.js': viewModel(
     "static VIEW_FIELDS = ['activeTab', 'selected'];\n  selected = '';",
     'activeTab: this.activeTab, title: this.title, selected: this.selected') } });
-  assert.ok(!collectAgentData(root).writtenFields.foo.includes('selected'));
+  assert.ok(!(await collectAgentData(root)).writtenFields.foo.includes('selected'));
 });
 
-test('view_field_agent_write: die dritte Model-Ebene bleibt ungesehen', () => {
+test('view_field_agent_write: die dritte Model-Ebene bleibt ungesehen', async () => {
   const modelMembers = 'one(a) { this.two(a); }\n  two(b) { this.three(b); }\n  three(c) { this.selected = c; }';
-  assert.deepEqual(viewWriteFindings('pick(id)', 'this.model.one(id);', { modelMembers }), []);
+  assert.deepEqual(await viewWriteFindings('pick(id)', 'this.model.one(id);', { modelMembers }), []);
 });
 
-test('view_field_agent_write: writtenFields bleibt die weite Menge', () => {
+test('view_field_agent_write: writtenFields bleibt die weite Menge', async () => {
   const action = `/**
        * Die Probe.
        * @agent
@@ -2118,10 +2118,10 @@ test('view_field_agent_write: writtenFields bleibt die weite Menge', () => {
   const root = fixture({ foo: { 'foo.js': viewVm({ extra: action }), 'foo-model.js': viewModel(
     "static VIEW_FIELDS = ['activeTab', 'selected'];\n  selected = '';",
     'activeTab: this.activeTab, title: this.title, selected: this.selected') } });
-  assert.ok(collectAgentData(root).writtenFields.foo.includes('selected'));
+  assert.ok((await collectAgentData(root)).writtenFields.foo.includes('selected'));
 });
 
-test('view_field_declared: reiner Typedef-Name nennt seine Schlüssel', () => {
+test('view_field_declared: reiner Typedef-Name nennt seine Schlüssel', async () => {
   const typedef = `/**
  * @typedef {object} SelType
  * @property {boolean} open  offen
@@ -2135,10 +2135,10 @@ test('view_field_declared: reiner Typedef-Name nennt seine Schlüssel', () => {
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': viewModel(
     "static VIEW_FIELDS = ['activeTab', 'selected.open'];\n  selected = null;",
     'activeTab: this.activeTab, title: this.title, selected: this.selected') } });
-  assert.ok(collectAgentData(root).modules.foo.reported.includes('view_field_declared:selected.open'));
+  assert.ok((await collectAgentData(root)).modules.foo.reported.includes('view_field_declared:selected.open'));
 });
 
-test('unresolvable_tojson: mit VIEW_FIELDS auch bei erklärter Lesefläche, und nur einmal', () => {
+test('unresolvable_tojson: mit VIEW_FIELDS auch bei erklärter Lesefläche, und nur einmal', async () => {
   const typedef = `/**
  * @typedef {object} AgentRead
  * @property {string} title  der Titel
@@ -2146,23 +2146,23 @@ test('unresolvable_tojson: mit VIEW_FIELDS auch bei erklärter Lesefläche, und 
 `;
   const declaredVm = viewVm({ typedef, readBody: "return readAgentState('foo', { title: '' }, options);" });
   const spreadModel = (fields) => viewModel(fields, '...this.base(), title: this.title');
-  const count = (vm, model) => collectAgentData(fixture({ foo: { 'foo.js': vm, 'foo-model.js': model } }))
+  const count = async (vm, model) => (await collectAgentData(fixture({ foo: { 'foo.js': vm, 'foo-model.js': model } })))
     .modules.foo.reported.filter(code => code === 'unresolvable_tojson').length;
-  assert.equal(count(declaredVm, spreadModel("static VIEW_FIELDS = ['activeTab'];")), 1, 'erklärt, mit Liste');
-  assert.equal(count(viewVm(), spreadModel("static VIEW_FIELDS = ['activeTab'];")), 1, 'abgeleitet, keine Doppelung');
-  assert.equal(count(declaredVm, spreadModel('')), 0, 'erklärt, ohne Liste bleibt es still');
+  assert.equal(await count(declaredVm, spreadModel("static VIEW_FIELDS = ['activeTab'];")), 1, 'erklärt, mit Liste');
+  assert.equal(await count(viewVm(), spreadModel("static VIEW_FIELDS = ['activeTab'];")), 1, 'abgeleitet, keine Doppelung');
+  assert.equal(await count(declaredVm, spreadModel('')), 0, 'erklärt, ohne Liste bleibt es still');
 });
 
-test('Ansichtsfelder: keine Ausnahme bleibt offen bei einer Vorlagenbindung', () => {
+test('Ansichtsfelder: keine Ausnahme bleibt offen bei einer Vorlagenbindung', async () => {
   const root = fixture({ foo: {
     'foo.js': viewVm(),
     'foo-model.js': viewModel("static VIEW_FIELDS = ['activeTab'];"),
     'foo.html': '<select x-model="model.activeTab"></select>',
   } });
-  assert.deepEqual(collectAgentData(root).modules.foo.reported, []);
+  assert.deepEqual((await collectAgentData(root)).modules.foo.reported, []);
 });
 
-test('unreachable_write: eine direkte Zuweisung in einer @agent-Methode deckt ab', () => {
+test('unreachable_write: eine direkte Zuweisung in einer @agent-Methode deckt ab', async () => {
   const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
        * @agent
        * @param {string} t
@@ -2180,11 +2180,11 @@ test('unreachable_write: eine direkte Zuweisung in einer @agent-Methode deckt ab
     }`,
     'foo.html': '<input x-model="model.title">',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, []);
 });
 
-test('unreachable_write: eine Zuweisung in einer @noagent-Methode deckt NICHT ab', () => {
+test('unreachable_write: eine Zuweisung in einer @noagent-Methode deckt NICHT ab', async () => {
   const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/** @noagent */
       setTitle(t) { this.model.title = String(t ?? ''); },
       /** @noagent */
@@ -2198,11 +2198,11 @@ test('unreachable_write: eine Zuweisung in einer @noagent-Methode deckt NICHT ab
     }`,
     'foo.html': '<input x-model="model.title">',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreachable_write:title']);
 });
 
-test('unreachable_write: Elementbindungen und Puffer lösen nichts aus', () => {
+test('unreachable_write: Elementbindungen und Puffer lösen nichts aus', async () => {
   const root = fixture({ foo: {
     'foo.js': TITLE_VM,
     'foo-model.js': `export class State {
@@ -2212,11 +2212,11 @@ test('unreachable_write: Elementbindungen und Puffer lösen nichts aus', () => {
     }`,
     'foo.html': '<input x-model="step.title"><input x-model="draft">',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, []);
 });
 
-test('template_model_call: ein direkter model.*-Aufruf aus der Vorlage ist ein Befund', () => {
+test('template_model_call: ein direkter model.*-Aufruf aus der Vorlage ist ein Befund', async () => {
   const root = fixture({ foo: {
     'foo.js': TITLE_VM,
     'foo-model.js': `export class State {
@@ -2226,14 +2226,14 @@ test('template_model_call: ein direkter model.*-Aufruf aus der Vorlage ist ein B
     }`,
     'foo.html': '<button @click="model.removeTitle()">',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['template_model_call:removeTitle']);
   // tagged⇒hard: genauso blockierend wie `unreachable_write`, nicht nur `reported`.
   assert.ok(modules.foo.violations.includes('template_model_call:removeTitle'));
   assert.equal(modules.foo.available, false);
 });
 
-test('template_model_call: ein Ereignismodifikator verdeckt den model.*-Aufruf nicht (W1-4)', () => {
+test('template_model_call: ein Ereignismodifikator verdeckt den model.*-Aufruf nicht (W1-4)', async () => {
   const root = fixture({ foo: {
     'foo.js': TITLE_VM,
     'foo-model.js': `export class State {
@@ -2243,13 +2243,13 @@ test('template_model_call: ein Ereignismodifikator verdeckt den model.*-Aufruf n
     }`,
     'foo.html': '<button @click.stop.prevent="model.removeTitle()">',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['template_model_call:removeTitle']);
   assert.ok(modules.foo.violations.includes('template_model_call:removeTitle'));
   assert.equal(modules.foo.available, false);
 });
 
-test('unreachable_write: eine Delegation an eine zuweisende Model-Methode deckt ab', () => {
+test('unreachable_write: eine Delegation an eine zuweisende Model-Methode deckt ab', async () => {
   // `setTitle` ruft nicht `this.model.title = …` direkt auf, sondern
   // delegiert an `this.model.setTitle(t)` — und GENAU DIE Model-Methode
   // weist `this.title` zu. Das ist die Form, die Welle-1-Module wie
@@ -2272,11 +2272,11 @@ test('unreachable_write: eine Delegation an eine zuweisende Model-Methode deckt 
     }`,
     'foo.html': '<input x-model="model.title">',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, []);
 });
 
-test('unreachable_write: eine Delegation an eine Model-Methode, die das Feld NICHT zuweist, deckt NICHT ab', () => {
+test('unreachable_write: eine Delegation an eine Model-Methode, die das Feld NICHT zuweist, deckt NICHT ab', async () => {
   const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
        * @agent
        * @param {string} t
@@ -2295,11 +2295,11 @@ test('unreachable_write: eine Delegation an eine Model-Methode, die das Feld NIC
     }`,
     'foo.html': '<input x-model="model.title">',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreachable_write:title']);
 });
 
-test('unreachable_write: eine Delegation an eine nicht auflösbare Model-Methode deckt NICHT ab (fail closed)', () => {
+test('unreachable_write: eine Delegation an eine nicht auflösbare Model-Methode deckt NICHT ab (fail closed)', async () => {
   // Die Model-Klasse hat KEIN `setTitle` — weder eigen noch geerbt.
   const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
        * @agent
@@ -2318,11 +2318,11 @@ test('unreachable_write: eine Delegation an eine nicht auflösbare Model-Methode
     }`,
     'foo.html': '<input x-model="model.title">',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreachable_write:title']);
 });
 
-test('unreachable_write: eine parameterlose @agent-Methode deckt NICHT ab, auch wenn eine Model-Methode zuweist (Review-Fund, Fix-Runde 3)', () => {
+test('unreachable_write: eine parameterlose @agent-Methode deckt NICHT ab, auch wenn eine Model-Methode zuweist (Review-Fund, Fix-Runde 3)', async () => {
   // Der exakte Repro-Fall aus dem Review: `changed()` hat keinen Parameter,
   // delegiert aber an `apply(t)`, die `this.title` zuweist. Ohne die
   // Parameterfluss-Schranke hätte das als Abdeckung gezählt — genau die
@@ -2347,12 +2347,12 @@ test('unreachable_write: eine parameterlose @agent-Methode deckt NICHT ab, auch 
     }`,
     'foo.html': '<input x-model="model.title">',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreachable_write:title']);
   assert.equal(modules.foo.available, false);
 });
 
-test('unreachable_write: eine direkte Zuweisung einer Konstante deckt NICHT ab (kein Parameterfluss)', () => {
+test('unreachable_write: eine direkte Zuweisung einer Konstante deckt NICHT ab (kein Parameterfluss)', async () => {
   // `setTitle` HAT einen Parameter `t` — weist aber eine Konstante zu,
   // nicht `t`. Ein Agent kann über diesen Setter das Feld nicht auf einen
   // von ihm gewählten Wert bringen.
@@ -2373,11 +2373,11 @@ test('unreachable_write: eine direkte Zuweisung einer Konstante deckt NICHT ab (
     }`,
     'foo.html': '<input x-model="model.title">',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreachable_write:title']);
 });
 
-test('unreachable_write: eine Delegation deckt ab, wenn der Wert über eine lokale Zwischenvariable aus dem Parameter fließt', () => {
+test('unreachable_write: eine Delegation deckt ab, wenn der Wert über eine lokale Zwischenvariable aus dem Parameter fließt', async () => {
   // Spiegelt `hypothesis-test.setPowerGoal`: die Model-Methode weist nicht
   // direkt ihren Parameter zu, sondern eine lokale `const`, die aus ihm
   // abgeleitet ist (`const n = parseFloat(v)`).
@@ -2402,11 +2402,11 @@ test('unreachable_write: eine Delegation deckt ab, wenn der Wert über eine loka
     }`,
     'foo.html': '<input x-model="model.title">',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, []);
 });
 
-test('unreachable_write: eine Model-Methode, die an eine weitere Methode delegiert, deckt NICHT ab (nur eine Delegationsebene)', () => {
+test('unreachable_write: eine Model-Methode, die an eine weitere Methode delegiert, deckt NICHT ab (nur eine Delegationsebene)', async () => {
   // Guard (a): `setTitle` (Model) weist `title` nicht selbst zu, sondern
   // ruft `applyTitle` auf, die es tut. Die Prüfung schaut nur in den
   // Körper der UNMITTELBAR aufgerufenen Methode — eine zweite Ebene zählt
@@ -2430,11 +2430,11 @@ test('unreachable_write: eine Model-Methode, die an eine weitere Methode delegie
     }`,
     'foo.html': '<input x-model="model.title">',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreachable_write:title']);
 });
 
-test('unreachable_write: eine direkte `this.<feld>`-Zuweisung am Viewmodel (ohne `.model`) deckt NICHT ab', () => {
+test('unreachable_write: eine direkte `this.<feld>`-Zuweisung am Viewmodel (ohne `.model`) deckt NICHT ab', async () => {
   // Guard (b): `assignTargetAfterThis` mit `through: 'model'` muss `this.title = t`
   // (am Viewmodel selbst, kein `this.model...`) verwerfen — sonst würde ein
   // Tippfehler im Modulquelltext als Abdeckung durchgehen.
@@ -2455,11 +2455,11 @@ test('unreachable_write: eine direkte `this.<feld>`-Zuweisung am Viewmodel (ohne
     }`,
     'foo.html': '<input x-model="model.title">',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreachable_write:title']);
 });
 
-test('unreachable_write: eine nicht auflösbare Model-Klasse lässt eine Delegation NICHT als Abdeckung zählen (fail closed)', () => {
+test('unreachable_write: eine nicht auflösbare Model-Klasse lässt eine Delegation NICHT als Abdeckung zählen (fail closed)', async () => {
   // Guard (c): `Model: makeModel()` ist kein Name — `resolveModelClass`
   // liefert `null`, und die Delegation darf dann nicht stillschweigend als
   // Abdeckung gelten, nur weil sie nicht geprüft werden konnte.
@@ -2481,7 +2481,7 @@ test('unreachable_write: eine nicht auflösbare Model-Klasse lässt eine Delegat
     }; }`,
     'foo.html': '<input x-model="model.title">',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   // Vollständige Gleichheit statt nur `includes` (Review-Fund, Fix-Runde 4):
   // sonst hätte eine Regression, die `unreachable_write:title` zusätzlich
   // zu einem FALSCH angenommenen Treffer meldete, diesen Test nicht rot
@@ -2491,7 +2491,7 @@ test('unreachable_write: eine nicht auflösbare Model-Klasse lässt eine Delegat
   assert.deepEqual(modules.foo.reported, ['unresolvable_model_class', 'unreachable_write:title']);
 });
 
-test('unreachable_write: ein Objektliteral-Schlüssel, der zufällig wie der Parameter heißt, beweist KEINEN Parameterfluss', () => {
+test('unreachable_write: ein Objektliteral-Schlüssel, der zufällig wie der Parameter heißt, beweist KEINEN Parameterfluss', async () => {
   // Review-Fund, Fix-Runde 4 (1/3): `{ t: 1 }` enthält den Bezeichner `t`
   // nur als SCHLÜSSEL (ein Name, kein Verweis) — ohne die Ausnahme für
   // `PropertyAssignment` hätte das als Abdeckung gezählt, nur weil der
@@ -2513,11 +2513,11 @@ test('unreachable_write: ein Objektliteral-Schlüssel, der zufällig wie der Par
     }`,
     'foo.html': '<input x-model="model.title">',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreachable_write:title']);
 });
 
-test('unreachable_write: ein Closure-Parameter, der den Methodenparameter überschattet, deckt NICHT ab', () => {
+test('unreachable_write: ein Closure-Parameter, der den Methodenparameter überschattet, deckt NICHT ab', async () => {
   // Review-Fund, Fix-Runde 4 (2/3): `forEach((t) => { this.model.title = t; })`
   // — das `t` IN der Closure ist das Element der Iteration, nicht der
   // äußere Methodenparameter `t`, obwohl beide denselben Namen tragen.
@@ -2538,11 +2538,11 @@ test('unreachable_write: ein Closure-Parameter, der den Methodenparameter übers
     }`,
     'foo.html': '<input x-model="model.title">',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreachable_write:title']);
 });
 
-test('unreachable_write: eine blockweit neu gebundene lokale Variable überschattet den Methodenparameter', () => {
+test('unreachable_write: eine blockweit neu gebundene lokale Variable überschattet den Methodenparameter', async () => {
   // Review-Fund, Fix-Runde 4 (3/3): innerhalb des `if`-Blocks ist `t` die
   // lokale Deklaration (`this.model.other` gelesen), nicht der äußere
   // Parameter — die Zuweisung `this.model.title = t` dort liest also KEINEN
@@ -2577,11 +2577,11 @@ test('unreachable_write: eine blockweit neu gebundene lokale Variable überschat
     }`,
     'foo.html': '<input x-model="model.title">',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreachable_write:title']);
 });
 
-test('unreachable_write: eine verschachtelte Bindung ohne Setter ist ein Befund', () => {
+test('unreachable_write: eine verschachtelte Bindung ohne Setter ist ein Befund', async () => {
   const root = fixture({ foo: {
     'foo.js': WHOLE_PARAMS_VM,
     'foo-model.js': `export class State {
@@ -2591,12 +2591,12 @@ test('unreachable_write: eine verschachtelte Bindung ohne Setter ist ein Befund'
     }`,
     'foo.html': '<input x-model="model.params.alpha">',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreachable_write:params.alpha']);
   assert.equal(modules.foo.available, false);
 });
 
-test('unreachable_write: eine verschachtelte Zuweisung aus einem Parameter deckt ab', () => {
+test('unreachable_write: eine verschachtelte Zuweisung aus einem Parameter deckt ab', async () => {
   const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
        * @agent
        * @param {string} value der Wert
@@ -2612,12 +2612,12 @@ test('unreachable_write: eine verschachtelte Zuweisung aus einem Parameter deckt
     }`,
     'foo.html': '<input x-model="model.params.alpha">',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, []);
   assert.equal(modules.foo.available, true);
 });
 
-test('unreachable_write: ein dynamischer Schlüssel deckt genau die geprüfte Menge ab', () => {
+test('unreachable_write: ein dynamischer Schlüssel deckt genau die geprüfte Menge ab', async () => {
   const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
        * @agent
        * @param {string} key der Schlüssel
@@ -2637,12 +2637,12 @@ test('unreachable_write: ein dynamischer Schlüssel deckt genau die geprüfte Me
     }`,
     'foo.html': '<input x-model="model.params.alpha"><input x-model="model.params.beta"><input x-model="model.params.gamma">',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   // alpha und beta sind abgedeckt, gamma NICHT — es steht nicht in PARAM_KEYS.
   assert.deepEqual(modules.foo.reported, ['unreachable_write:params.gamma']);
 });
 
-test('unreachable_write: ein Schlüssel mit Punkt deckt die zweite Ebene ab', () => {
+test('unreachable_write: ein Schlüssel mit Punkt deckt die zweite Ebene ab', async () => {
   const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
        * @agent
        * @param {string} key der Schlüssel
@@ -2669,12 +2669,12 @@ ${vm}`,
     }`,
     'foo.html': '<input x-model="model.params.alpha"><input x-model="model.params.tolerance.LSL"><input x-model="model.params.tolerance.USL">',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   // `tolerance.USL` steht nicht in PARAM_KEYS — genau dieses Feld bleibt offen.
   assert.deepEqual(modules.foo.reported, ['unreachable_write:params.tolerance.USL']);
 });
 
-test('unreachable_write: ein dynamischer Schlüssel ohne auflösbare Menge deckt NICHTS ab', () => {
+test('unreachable_write: ein dynamischer Schlüssel ohne auflösbare Menge deckt NICHTS ab', async () => {
   const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
        * @agent
        * @param {string} key der Schlüssel
@@ -2691,13 +2691,13 @@ test('unreachable_write: ein dynamischer Schlüssel ohne auflösbare Menge deckt
     }`,
     'foo.html': '<input x-model="model.params.alpha">',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   // Fail closed: ohne geprüfte Schlüsselmenge ist nicht entscheidbar, welche
   // Felder der Agent wirklich treffen kann.
   assert.deepEqual(modules.foo.reported, ['unreachable_write:params.alpha']);
 });
 
-test('unreachable_write: eine Pfad-Hilfe, die nur LIEST, deckt NICHTS ab (Review-Fund)', () => {
+test('unreachable_write: eine Pfad-Hilfe, die nur LIEST, deckt NICHTS ab (Review-Fund)', async () => {
   // Der Repro-Fall des Reviews: `logKeys` erfüllt alle äußeren Merkmale einer
   // Pfad-Hilfe (lokal auflösbar, erstes Argument `this.model.params`, ein
   // Argument mit geprüfter Schlüsselmenge) — und weist doch nichts zu. Zählte
@@ -2726,12 +2726,12 @@ ${vm}`,
     }`,
     'foo.html': '<input x-model="model.params.alpha">',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreachable_write:params.alpha']);
   assert.equal(modules.foo.available, false);
 });
 
-test('unreachable_write: eine Pfeilfunktions-Pfad-Hilfe deckt ab, eine gleichnamige Klasse NICHT', () => {
+test('unreachable_write: eine Pfeilfunktions-Pfad-Hilfe deckt ab, eine gleichnamige Klasse NICHT', async () => {
   // Zwei Deklarationsformen am selben Aufruf: die Pfeilfunktion führt dieselbe
   // Aliaskette (`let cur = obj`) wie die Funktionsdeklaration und deckt
   // deshalb ab; die Klasse hat keinen Funktionskörper, den die Prüfung lesen
@@ -2764,7 +2764,7 @@ ${vm}`,
     'foo-model.js': model,
     'foo.html': html,
   } });
-  assert.deepEqual(collectAgentData(arrow).modules.foo.reported, []);
+  assert.deepEqual((await collectAgentData(arrow)).modules.foo.reported, []);
 
   const asClass = fixture({ foo: {
     'foo.js': `const PARAM_KEYS = ['alpha'];
@@ -2773,10 +2773,10 @@ ${vm}`,
     'foo-model.js': model,
     'foo.html': html,
   } });
-  assert.deepEqual(collectAgentData(asClass).modules.foo.reported, ['unreachable_write:params.alpha']);
+  assert.deepEqual((await collectAgentData(asClass)).modules.foo.reported, ['unreachable_write:params.alpha']);
 });
 
-test('unreachable_write: ein zweimal gebundener Pfad ist EIN Befund, nicht zwei', () => {
+test('unreachable_write: ein zweimal gebundener Pfad ist EIN Befund, nicht zwei', async () => {
   // `bindings.models` trägt einen Eintrag JE Bindung. Ohne Entdoppelung
   // stünde derselbe Code mehrfach in `reported` — und die Vertragsfläche,
   // die Gate und Agent lesen, zählte Bindungen statt Felder.
@@ -2789,11 +2789,11 @@ test('unreachable_write: ein zweimal gebundener Pfad ist EIN Befund, nicht zwei'
     }`,
     'foo.html': '<input x-model="model.params.alpha"><select x-model="model.params.alpha"></select>',
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreachable_write:params.alpha']);
 });
 
-test('unresolvable_tojson: eine Pfeilfunktions-toJSON als Klassenfeld wird nicht als MethodDeclaration erkannt und klettert nicht zur Basisklasse', () => {
+test('unresolvable_tojson: eine Pfeilfunktions-toJSON als Klassenfeld wird nicht als MethodDeclaration erkannt und klettert nicht zur Basisklasse', async () => {
   // Review-Fund 3 (latent, 0 Treffer im Bestand): die alte Fassung suchte
   // `toJSON` nur als `MethodDeclaration`. Eine überschreibende Pfeilfunktion
   // als Klassenfeld fiel durch das Raster, und der Abstieg kletterte zur
@@ -2807,11 +2807,11 @@ test('unresolvable_tojson: eine Pfeilfunktions-toJSON als Klassenfeld wird nicht
     title = '';
     toJSON = () => ({ title: this.title, hidden: 1 });
   }` } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unresolvable_tojson']);
 });
 
-test('undeclared_option_source: eine zustandsabhängige Menge über einen lokalen Namen ist ein Befund', () => {
+test('undeclared_option_source: eine zustandsabhängige Menge über einen lokalen Namen ist ein Befund', async () => {
   // Die Form aus doe-advisor.js:170,176 — das dritte Argument ist ein
   // Bezeichner, nicht `this.*`.
   const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
@@ -2833,11 +2833,11 @@ test('undeclared_option_source: eine zustandsabhängige Menge über einen lokale
       toJSON() { return { chosen: this.chosen }; }
     }`,
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['undeclared_option_source:answer:opt']);
 });
 
-test('undeclared_option_source: eine eingewickelte Menge wird am inneren Zugriff benannt', () => {
+test('undeclared_option_source: eine eingewickelte Menge wird am inneren Zugriff benannt', async () => {
   // Die Form aus unit-converter.js:217 — `Object.keys(this.model.unitKeys())`.
   // Der Feldname ist der letzte an `this` hängende Zugriff: `unitKeys`.
   const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
@@ -2858,11 +2858,11 @@ test('undeclared_option_source: eine eingewickelte Menge wird am inneren Zugriff
       toJSON() { return { chosen: this.chosen }; }
     }`,
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['undeclared_option_source:setUnit:unitKey']);
 });
 
-test('undeclared_option_source: auch requireKnownId zählt', () => {
+test('undeclared_option_source: auch requireKnownId zählt', async () => {
   // Die Spaltenmenge wird mit requireKnownId geprüft. Ein Gate,
   // das nur requireEnum ansieht, ließe den Vorzeigefall dieses Plans durch.
   const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
@@ -2882,11 +2882,11 @@ test('undeclared_option_source: auch requireKnownId zählt', () => {
       toJSON() { return { chosen: this.chosen }; }
     }`,
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['undeclared_option_source:setColumn:key']);
 });
 
-test('undeclared_option_source: eine Konstante als Wertemenge ist kein Befund', () => {
+test('undeclared_option_source: eine Konstante als Wertemenge ist kein Befund', async () => {
   const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
        * @agent
        * @param {string} mode der Modus
@@ -2904,11 +2904,11 @@ test('undeclared_option_source: eine Konstante als Wertemenge ist kein Befund', 
       toJSON() { return { chosen: this.chosen }; }
     }`,
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, []);
 });
 
-test('undeclared_option_source: ein deklariertes Lesefeld desselben Namens genügt', () => {
+test('undeclared_option_source: ein deklariertes Lesefeld desselben Namens genügt', async () => {
   const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
        * @agent
        * @param {string} opt die Möglichkeit
@@ -2934,11 +2934,11 @@ export default createModule`).replace('read() { return {}; }', "read() { return 
       toJSON() { return { chosen: this.chosen }; }
     }`,
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, []);
 });
 
-test('undeclared_option_source: eine _-präfixierte Menge ist kein Befund', () => {
+test('undeclared_option_source: eine _-präfixierte Menge ist kein Befund', async () => {
   const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
        * @agent
        * @param {string} v der Wert
@@ -2956,11 +2956,11 @@ test('undeclared_option_source: eine _-präfixierte Menge ist kein Befund', () =
       toJSON() { return { chosen: this.chosen }; }
     }`,
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, []);
 });
 
-test('undeclared_option_source: ein parametrisierter Aufruf ist kein Befund', () => {
+test('undeclared_option_source: ein parametrisierter Aufruf ist kein Befund', async () => {
   const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
        * @agent
        * @param {string} v der Wert
@@ -2978,11 +2978,11 @@ test('undeclared_option_source: ein parametrisierter Aufruf ist kein Befund', ()
       toJSON() { return { chosen: this.chosen }; }
     }`,
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, []);
 });
 
-test('undeclared_option_source: die Projektion eines deklarierten Feldes ist kein Befund', () => {
+test('undeclared_option_source: die Projektion eines deklarierten Feldes ist kein Befund', async () => {
   const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
        * @agent
        * @param {string} v der Wert
@@ -3008,11 +3008,11 @@ test('undeclared_option_source: die Projektion eines deklarierten Feldes ist kei
       toJSON() { return { chosen: this.chosen, items: this.items }; }
     }`,
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, []);
 });
 
-test('undeclared_option_source: die Projektion eines nicht deklarierten Namens ist ein Befund', () => {
+test('undeclared_option_source: die Projektion eines nicht deklarierten Namens ist ein Befund', async () => {
   const vm = TAGGED_VM.replace("/** @noagent */\n      cardClass(node) { return ''; },", `/**
        * @agent
        * @param {string} v der Wert
@@ -3030,7 +3030,7 @@ test('undeclared_option_source: die Projektion eines nicht deklarierten Namens i
       toJSON() { return { chosen: this.chosen }; }
     }`,
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['undeclared_option_source:pick:v']);
 });
 
@@ -3059,16 +3059,16 @@ const SET_COLUMN_ELEMENT_ACCESS = `/**
         this.model.chosen = ref;
       },`;
 
-test('undeclared_option_source: ein Elementzugriff ohne Lesefeld ist ein Befund (A-I1)', () => {
+test('undeclared_option_source: ein Elementzugriff ohne Lesefeld ist ein Befund (A-I1)', async () => {
   const root = fixture({ foo: {
     'foo.js': vmWithAgent(SET_COLUMN_ELEMENT_ACCESS),
     'foo-model.js': CHOSEN_MODEL,
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['undeclared_option_source:setColumn:ref']);
 });
 
-test('undeclared_option_source: ein Elementzugriff mit Lesefeld ist kein Befund (A-I1)', () => {
+test('undeclared_option_source: ein Elementzugriff mit Lesefeld ist kein Befund (A-I1)', async () => {
   const root = fixture({ foo: {
     'foo.js': vmWithAgent(SET_COLUMN_ELEMENT_ACCESS).replace('export default createModule', `/**
  * @typedef {object} AgentRead
@@ -3078,11 +3078,11 @@ test('undeclared_option_source: ein Elementzugriff mit Lesefeld ist kein Befund 
 export default createModule`).replace('read() { return {}; }', "read() { return readAgentState('foo', {chosen: '', pickableColumns: {}}); }"),
     'foo-model.js': CHOSEN_MODEL,
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, []);
 });
 
-test('undeclared_option_source: eine Alias-Kette über zwei Stufen wird verfolgt', () => {
+test('undeclared_option_source: eine Alias-Kette über zwei Stufen wird verfolgt', async () => {
   const root = fixture({ foo: {
     'foo.js': vmWithAgent(`/**
        * @agent
@@ -3097,11 +3097,11 @@ test('undeclared_option_source: eine Alias-Kette über zwei Stufen wird verfolgt
       },`),
     'foo-model.js': CHOSEN_MODEL,
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['undeclared_option_source:pick:v']);
 });
 
-test('undeclared_option_source: eine .filter-Projektion eines nicht deklarierten Namens ist ein Befund', () => {
+test('undeclared_option_source: eine .filter-Projektion eines nicht deklarierten Namens ist ein Befund', async () => {
   const root = fixture({ foo: {
     'foo.js': vmWithAgent(`/**
        * @agent
@@ -3114,11 +3114,11 @@ test('undeclared_option_source: eine .filter-Projektion eines nicht deklarierten
       },`),
     'foo-model.js': CHOSEN_MODEL,
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['undeclared_option_source:pick:v']);
 });
 
-test('undeclared_option_source: bares this.model als Menge ist kein Befund (blinder Fleck)', () => {
+test('undeclared_option_source: bares this.model als Menge ist kein Befund (blinder Fleck)', async () => {
   const root = fixture({ foo: {
     'foo.js': vmWithAgent(`/**
        * @agent
@@ -3131,11 +3131,11 @@ test('undeclared_option_source: bares this.model als Menge ist kein Befund (blin
       },`),
     'foo-model.js': CHOSEN_MODEL,
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, []);
 });
 
-test('undeclared_option_source: zwei Prüfungen derselben Menge sind EIN Befund', () => {
+test('undeclared_option_source: zwei Prüfungen derselben Menge sind EIN Befund', async () => {
   const root = fixture({ foo: {
     'foo.js': vmWithAgent(`/**
        * @agent
@@ -3149,7 +3149,7 @@ test('undeclared_option_source: zwei Prüfungen derselben Menge sind EIN Befund'
       },`),
     'foo-model.js': CHOSEN_MODEL,
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['undeclared_option_source:pick:v']);
 });
 
@@ -3171,7 +3171,7 @@ const SET_WHOLE_PARAMS = `/**
        */
       setParams(params) { this.model.params = params; },`;
 
-test('unreachable_write: eine Pfad-Hilfe mit konstantem Wert deckt NICHTS ab (A-I3)', () => {
+test('unreachable_write: eine Pfad-Hilfe mit konstantem Wert deckt NICHTS ab (A-I3)', async () => {
   const root = fixture({ foo: {
     'foo.js': SET_AT_PATH + vmWithAgent(`${SET_WHOLE_PARAMS}
       /**
@@ -3186,11 +3186,11 @@ test('unreachable_write: eine Pfad-Hilfe mit konstantem Wert deckt NICHTS ab (A-
     'foo-model.js': PARAMS_MODEL,
     'foo.html': PARAMS_HTML,
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreachable_write:params.alpha', 'unreachable_write:params.beta']);
 });
 
-test('unreachable_write: ein überschatteter Schlüssel deckt NICHTS ab (A-M2)', () => {
+test('unreachable_write: ein überschatteter Schlüssel deckt NICHTS ab (A-M2)', async () => {
   const root = fixture({ foo: {
     'foo.js': `const KEYS = ['alpha', 'beta'];\n` + vmWithAgent(`/**
        * @agent
@@ -3205,11 +3205,11 @@ test('unreachable_write: ein überschatteter Schlüssel deckt NICHTS ab (A-M2)',
     'foo-model.js': PARAMS_MODEL,
     'foo.html': PARAMS_HTML,
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreachable_write:params.alpha', 'unreachable_write:params.beta']);
 });
 
-test('unreachable_write: ein überschatteter Schlüssel an einer Pfad-Hilfe deckt NICHTS ab (A-M2)', () => {
+test('unreachable_write: ein überschatteter Schlüssel an einer Pfad-Hilfe deckt NICHTS ab (A-M2)', async () => {
   const root = fixture({ foo: {
     'foo.js': SET_AT_PATH + vmWithAgent(`${SET_WHOLE_PARAMS}
       /**
@@ -3225,11 +3225,11 @@ test('unreachable_write: ein überschatteter Schlüssel an einer Pfad-Hilfe deck
     'foo-model.js': PARAMS_MODEL,
     'foo.html': PARAMS_HTML,
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreachable_write:params.alpha', 'unreachable_write:params.beta']);
 });
 
-test('unreachable_write: eine Pfad-Hilfe mit Parameterwert deckt die geprüfte Menge ab', () => {
+test('unreachable_write: eine Pfad-Hilfe mit Parameterwert deckt die geprüfte Menge ab', async () => {
   const root = fixture({ foo: {
     'foo.js': SET_AT_PATH + vmWithAgent(`/**
        * @agent
@@ -3244,7 +3244,7 @@ test('unreachable_write: eine Pfad-Hilfe mit Parameterwert deckt die geprüfte M
     'foo-model.js': PARAMS_MODEL,
     'foo.html': PARAMS_HTML,
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, []);
 });
 
@@ -3284,14 +3284,14 @@ ${body}
   } });
 }
 
-test('unreachable_write: eine Direktzuweisung an der Model-Wurzel deckt die geprüften Schlüssel ab', () => {
+test('unreachable_write: eine Direktzuweisung an der Model-Wurzel deckt die geprüften Schlüssel ab', async () => {
   const root = flatRoot(`const PARAM_KEYS = ['alpha', 'power'];\n`,
     `        requireEnum('key', key, PARAM_KEYS);\n        this.model[key] = value;`);
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported.filter(r => /:(alpha|power)$/.test(r)), []);
 });
 
-test('unreachable_write: eine importierte Pfad-Hilfe deckt die geprüfte Menge ab', () => {
+test('unreachable_write: eine importierte Pfad-Hilfe deckt die geprüfte Menge ab', async () => {
   const root = fixture({ foo: {
     'foo.js': `import { setAtPath } from './foo-path.js';\nconst KEYS = ['alpha', 'beta'];\n` + vmWithAgent(`/**
        * @agent
@@ -3307,11 +3307,11 @@ test('unreachable_write: eine importierte Pfad-Hilfe deckt die geprüfte Menge a
     'foo-model.js': PARAMS_MODEL,
     'foo.html': PARAMS_HTML,
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, []);
 });
 
-test('unreachable_write: eine importierte Hilfe, die nur LIEST, deckt NICHTS ab', () => {
+test('unreachable_write: eine importierte Hilfe, die nur LIEST, deckt NICHTS ab', async () => {
   const root = fixture({ foo: {
     'foo.js': `import { setAtPath } from './foo-path.js';\nconst KEYS = ['alpha', 'beta'];\n` + vmWithAgent(`/**
        * @agent
@@ -3327,29 +3327,29 @@ test('unreachable_write: eine importierte Hilfe, die nur LIEST, deckt NICHTS ab'
     'foo-model.js': PARAMS_MODEL,
     'foo.html': PARAMS_HTML,
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.notDeepEqual(modules.foo.reported, []);
 });
 
-test('unreachable_write: eine Pfad-Hilfe an der Model-Wurzel deckt Punkt-Schlüssel ab', () => {
+test('unreachable_write: eine Pfad-Hilfe an der Model-Wurzel deckt Punkt-Schlüssel ab', async () => {
   const root = flatRoot(`const PARAM_KEYS = ['alpha', 'statParams.trim'];
 function setAtPath(obj, path, value) { obj[path] = value; }
 `, `        requireEnum('key', key, PARAM_KEYS);\n        setAtPath(this.model, key, value);`);
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported.filter(r => /:(alpha|statParams\.trim)$/.test(r)), []);
 });
 
-test('unreachable_write: Wächter – ohne requireEnum bleibt die Wurzelzuweisung ungedeckt', () => {
+test('unreachable_write: Wächter – ohne requireEnum bleibt die Wurzelzuweisung ungedeckt', async () => {
   const root = flatRoot(`const PARAM_KEYS = ['alpha', 'power'];\n`, `        this.model[key] = value;`);
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported.filter(r => /:(alpha|power)$/.test(r)),
     ['unreachable_write:alpha', 'unreachable_write:power']);
 });
 
-test('unreachable_write: Wächter – ein konstanter Wert an der Model-Wurzel deckt NICHTS ab', () => {
+test('unreachable_write: Wächter – ein konstanter Wert an der Model-Wurzel deckt NICHTS ab', async () => {
   const root = flatRoot(`const PARAM_KEYS = ['alpha', 'power'];\n`,
     `        requireEnum('key', key, PARAM_KEYS);\n        this.model[key] = 42;`);
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported.filter(r => /:(alpha|power)$/.test(r)),
     ['unreachable_write:alpha', 'unreachable_write:power']);
 });
@@ -3402,13 +3402,13 @@ const KEYED_MODEL = `export class State {
   toJSON() { return { params: { ...this.params } }; }
 }`;
 
-function keyedModules(opts) {
+async function keyedModules(opts) {
   const root = fixture({ foo: { 'foo.js': keyedVm(opts), 'foo-model.js': KEYED_MODEL } });
-  return collectAgentData(root).modules;
+  return (await collectAgentData(root)).modules;
 }
 
-test('Schlüsselfläche: keyof Params liefert je Schlüssel Typ und Prosa an der Aktion', () => {
-  const { foo } = keyedModules();
+test('Schlüsselfläche: keyof Params liefert je Schlüssel Typ und Prosa an der Aktion', async () => {
+  const { foo } = await keyedModules();
   assert.deepEqual(foo.reported, []);
   assert.deepEqual(foo.actions.setParam.keys, {
     name: { type: 'string', help: 'der Name des Merkmals' },
@@ -3417,39 +3417,39 @@ test('Schlüsselfläche: keyof Params liefert je Schlüssel Typ und Prosa an der
   });
 });
 
-test('Schlüsselfläche: der Schlüsselparameter trägt in der Registry die Vereinigung der Schlüssel', () => {
-  const { foo } = keyedModules();
+test('Schlüsselfläche: der Schlüsselparameter trägt in der Registry die Vereinigung der Schlüssel', async () => {
+  const { foo } = await keyedModules();
   const key = foo.actions.setParam.params.find(p => p.name === 'key');
   assert.equal(key.type, "'name'|'k1'|'n'");
 });
 
-test('Schlüsselfläche: eine Aktion ohne keyof trägt kein keys-Feld', () => {
-  const { foo } = keyedModules();
+test('Schlüsselfläche: eine Aktion ohne keyof trägt kein keys-Feld', async () => {
+  const { foo } = await keyedModules();
   assert.equal('keys' in foo.actions.setProblem, false);
 });
 
-test('Schlüsselfläche: eine nicht auffindbare Typedef ist ein Verstoß', () => {
-  const { foo } = keyedModules({ keyParamType: 'keyof Missing' });
+test('Schlüsselfläche: eine nicht auffindbare Typedef ist ein Verstoß', async () => {
+  const { foo } = await keyedModules({ keyParamType: 'keyof Missing' });
   assert.deepEqual(foo.reported, ['unresolved_key_typedef:setParam:Missing']);
 });
 
-test('Schlüsselfläche: weicht PARAM_KEYS von der Typedef ab, wird jeder abweichende Schlüssel gemeldet', () => {
-  const { foo } = keyedModules({ keys: "['name', 'k1', 'extra']" });
+test('Schlüsselfläche: weicht PARAM_KEYS von der Typedef ab, wird jeder abweichende Schlüssel gemeldet', async () => {
+  const { foo } = await keyedModules({ keys: "['name', 'k1', 'extra']" });
   assert.deepEqual(foo.reported, ['key_set_mismatch:setParam:extra', 'key_set_mismatch:setParam:n']);
 });
 
-test('Schlüsselfläche: ohne auflösbare Laufzeitmenge ist die Schlüsselmenge ungeprüft — ein Verstoß', () => {
+test('Schlüsselfläche: ohne auflösbare Laufzeitmenge ist die Schlüsselmenge ungeprüft — ein Verstoß', async () => {
   const vm = keyedVm().replace("requireEnum('key', key, PARAM_KEYS);", "requireEnum('key', key, this.activeParams());");
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': KEYED_MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.ok(modules.foo.reported.includes('unverified_key_set:setParam'), modules.foo.reported.join(', '));
 });
 
-test('Schlüsselfläche: ein requireEnum über die Elemente einer Liste prüft nicht den ganzen Wert', () => {
+test('Schlüsselfläche: ein requireEnum über die Elemente einer Liste prüft nicht den ganzen Wert', async () => {
   // `enabled: string[]` wird elementweise gegen eine Menge geprüft. Das ist
   // keine Aussage über den Typ des Werts selbst und darf nicht gegen die
   // Typedef gehalten werden.
-  const { foo } = keyedModules({
+  const { foo } = await keyedModules({
     typedef: ` * @typedef {object} Params
  * @property {string} name der Name des Merkmals
  * @property {'0.2'|'0.15'} k1 der Anteil der Toleranz
@@ -3469,55 +3469,55 @@ function importedKeysVm(specifier, importName = 'PARAM_KEYS') {
   return `import { ${local} } from '${specifier}';\n${keyedVm().replace("const PARAM_KEYS = ['name', 'k1', 'n'];\n", '')}`;
 }
 
-test('Schlüsselfläche: eine importierte Laufzeitmenge wird über den Import aufgelöst', () => {
+test('Schlüsselfläche: eine importierte Laufzeitmenge wird über den Import aufgelöst', async () => {
   const root = fixture({ foo: {
     'foo.js': importedKeysVm('./foo-keys.js'),
     'foo-model.js': KEYED_MODEL,
     'foo-keys.js': "export const PARAM_KEYS = ['name', 'k1', 'n'];\n",
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, []);
 });
 
-test('Schlüsselfläche: ein umbenannter Import zählt wie der Originalname', () => {
+test('Schlüsselfläche: ein umbenannter Import zählt wie der Originalname', async () => {
   const root = fixture({ foo: {
     'foo.js': importedKeysVm('./foo-keys.js', 'KEYS'),
     'foo-model.js': KEYED_MODEL,
     'foo-keys.js': "export const KEYS = ['name', 'k1', 'n'];\n",
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, []);
 });
 
-test('Schlüsselfläche: weicht die importierte Menge von der Typedef ab, wird jeder abweichende Schlüssel gemeldet', () => {
+test('Schlüsselfläche: weicht die importierte Menge von der Typedef ab, wird jeder abweichende Schlüssel gemeldet', async () => {
   const root = fixture({ foo: {
     'foo.js': importedKeysVm('./foo-keys.js'),
     'foo-model.js': KEYED_MODEL,
     'foo-keys.js': "export const PARAM_KEYS = ['name', 'k1', 'extra'];\n",
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['key_set_mismatch:setParam:extra', 'key_set_mismatch:setParam:n']);
 });
 
-test('Schlüsselfläche: ein Import aus einem Paket ist nicht auflösbar — die Menge bleibt ungeprüft', () => {
+test('Schlüsselfläche: ein Import aus einem Paket ist nicht auflösbar — die Menge bleibt ungeprüft', async () => {
   const root = fixture({ foo: {
     'foo.js': importedKeysVm('some-package'),
     'foo-model.js': KEYED_MODEL,
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.ok(modules.foo.reported.includes('unverified_key_set:setParam'), modules.foo.reported.join(', '));
 });
 
-test('Schlüsselfläche: ein Wertebereich, der nicht zur Prüfung passt, ist ein Verstoß', () => {
-  const { foo } = keyedModules({ typedef: ` * @typedef {object} Params
+test('Schlüsselfläche: ein Wertebereich, der nicht zur Prüfung passt, ist ein Verstoß', async () => {
+  const { foo } = await keyedModules({ typedef: ` * @typedef {object} Params
  * @property {string} name der Name
  * @property {'0.2'|'0.1'} k1 der Anteil
  * @property {string} n die Anzahl` });
   assert.deepEqual(foo.reported, ['key_value_mismatch:setParam:k1', 'key_value_mismatch:setParam:n']);
 });
 
-test('Schlüsselfläche: eine eigene Prüffunktion ist ein blinder Fleck, kein Verstoß', () => {
-  const { foo } = keyedModules({ checks: `{
+test('Schlüsselfläche: eine eigene Prüffunktion ist ein blinder Fleck, kein Verstoß', async () => {
+  const { foo } = await keyedModules({ checks: `{
   name: (v) => requireText('value', v),
   k1: (v) => requireEnum('value', v, K1_OPTIONS),
   n: (v) => customCheck(v),
@@ -3525,7 +3525,7 @@ test('Schlüsselfläche: eine eigene Prüffunktion ist ein blinder Fleck, kein V
   assert.deepEqual(foo.reported, []);
 });
 
-test('Schlüsselfläche: requireBoolean passt zu boolean und nicht zu string', () => {
+test('Schlüsselfläche: requireBoolean passt zu boolean und nicht zu string', async () => {
   const td = t => ` * @typedef {object} Params
  * @property {string} name der Name
  * @property {'0.2'|'0.15'} k1 der Anteil
@@ -3535,11 +3535,11 @@ test('Schlüsselfläche: requireBoolean passt zu boolean und nicht zu string', (
   k1: (v) => requireEnum('value', v, K1_OPTIONS),
   n: (v) => requireBoolean('value', v),
 }`;
-  assert.deepEqual(keyedModules({ typedef: td('boolean'), checks }).foo.reported, []);
-  assert.deepEqual(keyedModules({ typedef: td('string'), checks }).foo.reported, ['key_value_mismatch:setParam:n']);
+  assert.deepEqual((await keyedModules({ typedef: td('boolean'), checks })).foo.reported, []);
+  assert.deepEqual((await keyedModules({ typedef: td('string'), checks })).foo.reported, ['key_value_mismatch:setParam:n']);
 });
 
-test('Schlüsselfläche: requireNumericText passt zu string und nicht zu number', () => {
+test('Schlüsselfläche: requireNumericText passt zu string und nicht zu number', async () => {
   const td = t => ` * @typedef {object} Params
  * @property {string} name der Name
  * @property {'0.2'|'0.15'} k1 der Anteil
@@ -3549,11 +3549,11 @@ test('Schlüsselfläche: requireNumericText passt zu string und nicht zu number'
   k1: (v) => requireEnum('value', v, K1_OPTIONS),
   n: (v) => requireNumericText('value', v),
 }`;
-  assert.deepEqual(keyedModules({ typedef: td('string'), checks }).foo.reported, []);
-  assert.deepEqual(keyedModules({ typedef: td('number'), checks }).foo.reported, ['key_value_mismatch:setParam:n']);
+  assert.deepEqual((await keyedModules({ typedef: td('string'), checks })).foo.reported, []);
+  assert.deepEqual((await keyedModules({ typedef: td('number'), checks })).foo.reported, ['key_value_mismatch:setParam:n']);
 });
 
-test('Schlüsselfläche: die Typedef wird auch gefunden, wenn vor derselben Anweisung noch ein JSDoc-Block folgt', () => {
+test('Schlüsselfläche: die Typedef wird auch gefunden, wenn vor derselben Anweisung noch ein JSDoc-Block folgt', async () => {
   const vm = keyedVm().replace('const PARAM_KEYS =', `/**
  * @typedef {object} Params2
  * @property {string} name der Name des Merkmals
@@ -3564,7 +3564,7 @@ test('Schlüsselfläche: die Typedef wird auch gefunden, wenn vor derselben Anwe
 /** Die Schlüssel. */
 const PARAM_KEYS =`).replace('{keyof Params}', '{keyof Params2}');
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': KEYED_MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, []);
   assert.deepEqual(Object.keys(modules.foo.actions.setParam.keys), ['name', 'k1', 'n']);
 });
@@ -3627,12 +3627,12 @@ export default createModule({
   },
 });`;
 
-function resultModules() {
-  return collectAgentData(fixture({ foo: { 'foo.js': RESULT_VM } })).modules;
+async function resultModules() {
+  return (await collectAgentData(fixture({ foo: { 'foo.js': RESULT_VM } }))).modules;
 }
 
-test('Ausgaben: ein Feld vom Typ einer Typedef trägt keys und keysOf, verschachtelt', () => {
-  const { foo } = resultModules();
+test('Ausgaben: ein Feld vom Typ einer Typedef trägt keys und keysOf, verschachtelt', async () => {
+  const { foo } = await resultModules();
   const result = foo.fields.result;
   assert.equal(result.type, 'Result|null');
   assert.equal(result.keysOf, 'Result');
@@ -3644,30 +3644,30 @@ test('Ausgaben: ein Feld vom Typ einer Typedef trägt keys und keysOf, verschach
   assert.deepEqual(Object.keys(result.keys.details.keys), ['value']);
 });
 
-test('Ausgaben: ein Typname ohne Typedef in der Moduldatei bleibt ohne keys und ohne Befund', () => {
-  const { foo } = resultModules();
+test('Ausgaben: ein Typname ohne Typedef in der Moduldatei bleibt ohne keys und ohne Befund', async () => {
+  const { foo } = await resultModules();
   assert.equal('keys' in foo.fields.things, false);
   assert.equal('keys' in foo.fields.name, false);
   assert.deepEqual(foo.reported, []);
 });
 
-test('Ausgaben: die Schlüsselfläche eines generischen Setters nennt ihre Typedef (keysOf)', () => {
-  const { foo } = keyedModules();
+test('Ausgaben: die Schlüsselfläche eines generischen Setters nennt ihre Typedef (keysOf)', async () => {
+  const { foo } = await keyedModules();
   assert.equal(foo.actions.setParam.keysOf, 'Params');
 });
 
-test('Ausgaben: eine eckig geklammerte Property ist optional, die anderen tragen kein optional', () => {
+test('Ausgaben: eine eckig geklammerte Property ist optional, die anderen tragen kein optional', async () => {
   const vm = RESULT_VM.replace(
     ' * @property {number|null} Cg die Fähigkeit',
     ' * @property {number|null} Cg die Fähigkeit\n * @property {number} [Cgk] nur bei zweiseitiger Toleranz',
   );
-  const { modules } = collectAgentData(fixture({ foo: { 'foo.js': vm } }));
+  const { modules } = await collectAgentData(fixture({ foo: { 'foo.js': vm } }));
   const keys = modules.foo.fields.result.keys;
   assert.deepEqual(keys.Cgk, { type: 'number', help: 'nur bei zweiseitiger Toleranz', optional: true });
   assert.equal('optional' in keys.Cg, false);
 });
 
-test('Ausgaben: eine Map Object<string, T> trägt keys und keysOf ihrer Werttypedef', () => {
+test('Ausgaben: eine Map Object<string, T> trägt keys und keysOf ihrer Werttypedef', async () => {
   const vm = RESULT_VM.replace(
     ' * @property {Detail[]} details die Einzelwerte',
     ' * @property {Detail[]} details die Einzelwerte\n'
@@ -3675,7 +3675,7 @@ test('Ausgaben: eine Map Object<string, T> trägt keys und keysOf ihrer Werttype
     + ' * @property {Object<string, Detail>|null} [byOther] je Name, manchmal leer\n'
     + ' * @property {Object<string, number>} means je Name der Mittelwert',
   );
-  const { modules } = collectAgentData(fixture({ foo: { 'foo.js': vm } }));
+  const { modules } = await collectAgentData(fixture({ foo: { 'foo.js': vm } }));
   const keys = modules.foo.fields.result.keys;
   assert.equal(keys.byName.type, 'Object<string, Detail>');
   assert.equal(keys.byName.keysOf, 'Detail');
@@ -3686,15 +3686,15 @@ test('Ausgaben: eine Map Object<string, T> trägt keys und keysOf ihrer Werttype
   assert.deepEqual(modules.foo.reported, []);
 });
 
-test('Ausgaben: eine Typedef, die sich selbst enthält, bricht die Auflösung nicht', () => {
+test('Ausgaben: eine Typedef, die sich selbst enthält, bricht die Auflösung nicht', async () => {
   const vm = RESULT_VM.replace(' * @property {number|null} p der p-Wert', ' * @property {number|null} p der p-Wert\n * @property {BiasTest} again zyklisch');
-  const { modules } = collectAgentData(fixture({ foo: { 'foo.js': vm } }));
+  const { modules } = await collectAgentData(fixture({ foo: { 'foo.js': vm } }));
   const again = modules.foo.fields.result.keys.biasTest.keys.again;
   assert.equal(again.type, 'BiasTest');
   assert.equal('keys' in again, false, 'eine zweite Ebene derselben Typedef wird nicht aufgelöst');
 });
 
-test('Ausgaben: eine Typedef als import()-Alias wird in der Quelldatei aufgelöst, auch verschachtelt', () => {
+test('Ausgaben: eine Typedef als import()-Alias wird in der Quelldatei aufgelöst, auch verschachtelt', async () => {
   const vm = RESULT_VM
     .replace(/\/\*\*\n \* @typedef \{object\} BiasTest[\s\S]*?@property \{Detail\[\]\} details die Einzelwerte\n \*\/\n/,
       "/** @typedef {import('./present.js').Result} Result */\n");
@@ -3711,7 +3711,7 @@ export {};`;
  * @property {number|null} p der p-Wert
  */
 export {};`;
-  const { modules } = collectAgentData(fixture({ foo: { 'foo.js': vm, 'present.js': present, 'numbers.js': numbers } }));
+  const { modules } = await collectAgentData(fixture({ foo: { 'foo.js': vm, 'present.js': present, 'numbers.js': numbers } }));
   const result = modules.foo.fields.result;
   assert.equal(result.keysOf, 'Result');
   assert.deepEqual(Object.keys(result.keys), ['Cg', 'biasTest']);
@@ -3720,21 +3720,39 @@ export {};`;
   assert.deepEqual(modules.foo.reported, []);
 });
 
-test('Ausgaben: ein Alias-Zyklus über zwei Dateien bricht die Auflösung nicht', () => {
+test('Ausgaben: ein Alias-Zyklus über zwei Dateien bricht die Auflösung nicht', async () => {
   const vm = RESULT_VM
     .replace(/\/\*\*\n \* @typedef \{object\} Result[\s\S]*?@property \{Detail\[\]\} details die Einzelwerte\n \*\/\n/,
       "/** @typedef {import('./a.js').Result} Result */\n");
   const a = "/** @typedef {import('./b.js').Result} Result */\nexport {};";
   const b = "/** @typedef {import('./a.js').Result} Result */\nexport {};";
-  assert.doesNotThrow(() => collectAgentData(fixture({ foo: { 'foo.js': vm, 'a.js': a, 'b.js': b } })));
+  const { modules } = await collectAgentData(fixture({ foo: { 'foo.js': vm, 'a.js': a, 'b.js': b } }));
+  assert.equal('keys' in modules.foo.fields.result, false, 'ein Zyklus löst keine Schlüssel auf');
 });
 
-test('Ausgaben: ein Selbst-Alias bricht die Auflösung nicht', () => {
+test('Ausgaben: ein Selbst-Alias bricht die Auflösung nicht', async () => {
   const vm = RESULT_VM
     .replace(/\/\*\*\n \* @typedef \{object\} Result[\s\S]*?@property \{Detail\[\]\} details die Einzelwerte\n \*\/\n/,
       "/** @typedef {import('./a.js').Result} Result */\n");
   const a = "/** @typedef {import('./a.js').Result} Result */\nexport {};";
-  assert.doesNotThrow(() => collectAgentData(fixture({ foo: { 'foo.js': vm, 'a.js': a } })));
+  const { modules } = await collectAgentData(fixture({ foo: { 'foo.js': vm, 'a.js': a } }));
+  assert.equal('keys' in modules.foo.fields.result, false, 'ein Selbst-Alias löst keine Schlüssel auf');
+});
+
+test('Ausgaben: eine Alias-Kette gleichen Namens über zwei Dateien ist kein Zyklus', async () => {
+  const vm = RESULT_VM
+    .replace(/\/\*\*\n \* @typedef \{object\} Result[\s\S]*?@property \{Detail\[\]\} details die Einzelwerte\n \*\/\n/,
+      "/** @typedef {import('./a.js').Result} Result */\n");
+  const a = "/** @typedef {import('./b.js').Result} Result */\nexport {};";
+  const b = `/**
+ * @typedef {object} Result
+ * @property {number} n die Zahl
+ */
+export {};`;
+  const { modules } = await collectAgentData(fixture({ foo: { 'foo.js': vm, 'a.js': a, 'b.js': b } }));
+  const result = modules.foo.fields.result;
+  assert.equal(result.keysOf, 'Result');
+  assert.deepEqual(result.keys, { n: { type: 'number', help: 'die Zahl' } });
 });
 
 const RECORD_MODEL = `/**
@@ -3759,8 +3777,8 @@ export class State {
   toJSON() { return { entries: this.entries, others: this.others }; }
 }`;
 
-test('Ausgaben: ein Model-Feld vom Typ einer Typedef der Model-Datei trägt keys und keysOf', () => {
-  const { modules } = collectAgentData(fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': RECORD_MODEL } }));
+test('Ausgaben: ein Model-Feld vom Typ einer Typedef der Model-Datei trägt keys und keysOf', async () => {
+  const { modules } = await collectAgentData(fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': RECORD_MODEL } }));
   const entries = modules.foo.fields.entries;
   assert.equal(entries.type, 'Entry[]');
   assert.equal(entries.bulk, true);
@@ -3771,8 +3789,8 @@ test('Ausgaben: ein Model-Feld vom Typ einer Typedef der Model-Datei trägt keys
   assert.deepEqual(Object.keys(entries.keys.notes.keys), ['text']);
 });
 
-test('Ausgaben: ein Model-Feld ohne passende Typedef bleibt ohne keys', () => {
-  const { modules } = collectAgentData(fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': RECORD_MODEL } }));
+test('Ausgaben: ein Model-Feld ohne passende Typedef bleibt ohne keys', async () => {
+  const { modules } = await collectAgentData(fixture({ foo: { 'foo.js': CLEAN_VM, 'foo-model.js': RECORD_MODEL } }));
   assert.equal('keys' in modules.foo.fields.others, false);
   assert.deepEqual(modules.foo.fields.entries.help, 'die Zeilen');
 });
@@ -3839,8 +3857,8 @@ const DRAFT_VM = `export class DraftViewModel {
 
 const FROM_DRAFT = '@js/modules/foo/viewmodel/draft.js';
 
-test('Teil-Viewmodel: Methoden werden zu Aktionen <teil>.<methode>; eingebaute Klassen und Fabriken bleiben Daten', () => {
-  const { modules } = collectAgentData(subVmFixture(DRAFT_VM));
+test('Teil-Viewmodel: Methoden werden zu Aktionen <teil>.<methode>; eingebaute Klassen und Fabriken bleiben Daten', async () => {
+  const { modules } = await collectAgentData(subVmFixture(DRAFT_VM));
   assert.deepEqual(modules.foo.violations, []);
   assert.equal(modules.foo.available, true);
   assert.deepEqual(Object.keys(modules.foo.actions).sort(), ['draft.setProblem', 'read']);
@@ -3848,24 +3866,24 @@ test('Teil-Viewmodel: Methoden werden zu Aktionen <teil>.<methode>; eingebaute K
     [{ name: 'text', type: 'string', optional: false, help: 'the problem statement' }]);
 });
 
-test('Teil-Viewmodel: Befunde tragen das Präfix und die Datei der Klasse', () => {
+test('Teil-Viewmodel: Befunde tragen das Präfix und die Datei der Klasse', async () => {
   const body = DRAFT_VM
     .replace('/** @noagent presentation */\n  problemClass', 'problemClass')
     .replace('   * @param {string} text the problem statement\n', '');
-  const { modules } = collectAgentData(subVmFixture(body));
+  const { modules } = await collectAgentData(subVmFixture(body));
   assert.deepEqual([...modules.foo.violations].sort(), [
     `missing_param:draft.setProblem.text${FROM_DRAFT}`,
     `unmarked_method:draft.problemClass${FROM_DRAFT}`,
   ]);
 });
 
-test('Teil-Viewmodel: eine Wurzelbindung x-model="model.…" zählt als abgedeckt, wenn eine @agent-Methode des Teils sie schreibt', () => {
-  const { modules } = collectAgentData(subVmFixture(DRAFT_VM, { html: '<input x-model="model.problem">' }));
+test('Teil-Viewmodel: eine Wurzelbindung x-model="model.…" zählt als abgedeckt, wenn eine @agent-Methode des Teils sie schreibt', async () => {
+  const { modules } = await collectAgentData(subVmFixture(DRAFT_VM, { html: '<input x-model="model.problem">' }));
   assert.ok(!modules.foo.reported.includes('unreachable_write:problem'), modules.foo.reported.join(', '));
 });
 
-test('Teil-Viewmodel: importiert, aber keine auflösbare Klasse → unresolved_sub_viewmodel', () => {
-  const { modules } = collectAgentData(subVmFixture(DRAFT_VM, {
+test('Teil-Viewmodel: importiert, aber keine auflösbare Klasse → unresolved_sub_viewmodel', async () => {
+  const { modules } = await collectAgentData(subVmFixture(DRAFT_VM, {
     imports: "import { GhostViewModel } from './viewmodel/ghost.js';",
     members: 'ghost: new GhostViewModel(),',
   }));
@@ -3873,8 +3891,8 @@ test('Teil-Viewmodel: importiert, aber keine auflösbare Klasse → unresolved_s
   assert.equal(modules.foo.available, false);
 });
 
-test('Teil-Viewmodel: eine Klasse mit extends → unresolved_sub_viewmodel', () => {
-  const { modules } = collectAgentData(subVmFixture(DRAFT_VM, {
+test('Teil-Viewmodel: eine Klasse mit extends → unresolved_sub_viewmodel', async () => {
+  const { modules } = await collectAgentData(subVmFixture(DRAFT_VM, {
     imports: "import { ChildViewModel } from './viewmodel/child.js';",
     members: 'child: new ChildViewModel(),',
     extra: { 'js/modules/foo/viewmodel/child.js': 'export class BaseViewModel {}\nexport class ChildViewModel extends BaseViewModel {}' },
@@ -3882,31 +3900,31 @@ test('Teil-Viewmodel: eine Klasse mit extends → unresolved_sub_viewmodel', () 
   assert.ok(modules.foo.reported.includes('unresolved_sub_viewmodel:child'), modules.foo.reported.join(', '));
 });
 
-test('Teil-Viewmodel: ein Teil-Viewmodel im Teil-Viewmodel → nested_sub_viewmodel; eingebaute Klassen und _-Felder nicht', () => {
+test('Teil-Viewmodel: ein Teil-Viewmodel im Teil-Viewmodel → nested_sub_viewmodel; eingebaute Klassen und _-Felder nicht', async () => {
   const body = DRAFT_VM
     .replace('export class DraftViewModel', "import { InnerViewModel } from './inner.js';\nexport class DraftViewModel")
     .replace('    this.model = null;\n', '    this.model = null;\n    this.inner = new InnerViewModel();\n    this.seen = new Set();\n    this._cache = new InnerViewModel();\n');
-  const { modules } = collectAgentData(subVmFixture(body, {
+  const { modules } = await collectAgentData(subVmFixture(body, {
     extra: { 'js/modules/foo/viewmodel/inner.js': 'export class InnerViewModel {}' },
   }));
   assert.deepEqual(modules.foo.reported.filter(c => c.startsWith('nested_sub_viewmodel:')), ['nested_sub_viewmodel:draft.inner']);
 });
 
-test('Teil-Viewmodel: eine Vorlagenbindung an <teil>.model.… ist ein Befund', () => {
-  const { modules } = collectAgentData(subVmFixture(DRAFT_VM, {
+test('Teil-Viewmodel: eine Vorlagenbindung an <teil>.model.… ist ein Befund', async () => {
+  const { modules } = await collectAgentData(subVmFixture(DRAFT_VM, {
     html: '<input :value="draft.model.problem" @input="draft.setProblem($event.target.value)">',
   }));
   assert.ok(modules.foo.reported.includes('sub_viewmodel_model_binding:draft.model.problem'), modules.foo.reported.join(', '));
 });
 
-test('Teil-Viewmodel: eine Methode help oder params kollidiert mit dem Hilfeschlüssel', () => {
+test('Teil-Viewmodel: eine Methode help oder params kollidiert mit dem Hilfeschlüssel', async () => {
   const body = DRAFT_VM.replace('/** @noagent presentation */\n  problemClass() { return {}; }', '/** @noagent */\n  help() { return {}; }');
-  const { modules } = collectAgentData(subVmFixture(body));
+  const { modules } = await collectAgentData(subVmFixture(body));
   assert.ok(modules.foo.reported.includes(`sub_viewmodel_key_collision:draft.help${FROM_DRAFT}`), modules.foo.reported.join(', '));
   assert.ok(!('draft.help' in modules.foo.actions));
 });
 
-test('Teil-Viewmodel: keyof-Typedef und Prüfmenge stehen in der Datei der Klasse', () => {
+test('Teil-Viewmodel: keyof-Typedef und Prüfmenge stehen in der Datei der Klasse', async () => {
   const body = `/**
  * @typedef {object} Fields
  * @property {string} title  the title
@@ -3931,7 +3949,7 @@ export class DraftViewModel {
    */
   setRest(text) { this.model.problem = text; this.model.nodes = text; this.model.rows = text; }
 }`;
-  const { modules } = collectAgentData(subVmFixture(body));
+  const { modules } = await collectAgentData(subVmFixture(body));
   assert.deepEqual(modules.foo.violations, []);
   const action = modules.foo.actions['draft.setField'];
   assert.equal(action.keysOf, 'Fields');
@@ -3939,9 +3957,9 @@ export class DraftViewModel {
   assert.equal(action.params[0].type, "'title'|'hint'");
 });
 
-test('Teil-Viewmodel: ein DOM-Umweg in der Datei der Klasse trägt den Pfad', () => {
+test('Teil-Viewmodel: ein DOM-Umweg in der Datei der Klasse trägt den Pfad', async () => {
   const body = DRAFT_VM.replace('_helper() {}', '_helper(el) { el.innerHTML = this._t("x"); }');
-  const { modules } = collectAgentData(subVmFixture(body));
+  const { modules } = await collectAgentData(subVmFixture(body));
   assert.ok(modules.foo.reported.some(c => /^dom_detour:innerHTML@js\/modules\/foo\/viewmodel\/draft\.js$/.test(c)),
     modules.foo.reported.join(', '));
 });
@@ -3987,16 +4005,16 @@ const DECL_MODEL = `export class State {
   toJSON() { return { title: this.title }; }
 }`;
 
-test('declared_not_returned: erklärter Schlüssel fehlt im read()-Rückgabewert', () => {
+test('declared_not_returned: erklärter Schlüssel fehlt im read()-Rückgabewert', async () => {
   const root = fixture({ foo: { 'foo.js': DECLARED_VM(`return readAgentState('foo', { ...this.model.toJSON() }, options);`), 'foo-model.js': DECL_MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['declared_not_returned:count']);
   assert.equal(modules.foo.available, false);
 });
 
-test('declared_not_returned: vollständig gelieferte Lesefläche ist befundfrei', () => {
+test('declared_not_returned: vollständig gelieferte Lesefläche ist befundfrei', async () => {
   const root = fixture({ foo: { 'foo.js': DECLARED_VM(`return readAgentState('foo', { ...this.model.toJSON(), count: 1 }, options);`), 'foo-model.js': DECL_MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, []);
 });
 
@@ -4012,90 +4030,90 @@ const TWO_TABLES_MODEL = `export class State {
   toJSON() { return { a: this.a, b: this.b }; }
 }`;
 
-test('missing_bulk_columns: zwei Tabellenfelder, nur eines mit Schwesterfeld', () => {
+test('missing_bulk_columns: zwei Tabellenfelder, nur eines mit Schwesterfeld', async () => {
   const root = fixture({ foo: { 'foo.js': TWO_TABLES_VM(`return readAgentState('foo', { ...this.model.toJSON(), aColumns: [{ name: 'x' }] }, options);`), 'foo-model.js': TWO_TABLES_MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['missing_bulk_columns:b']);
 });
 
-test('missing_bulk_columns: ein einziges Tabellenfeld braucht kein Schwesterfeld', () => {
+test('missing_bulk_columns: ein einziges Tabellenfeld braucht kein Schwesterfeld', async () => {
   const root = fixture({ foo: { 'foo.js': TWO_TABLES_VM(`return readAgentState('foo', { a: [], b: [] }, options);`).replace(/ \* @property \{Array<\{y: number\}>\} b .*\n/, ''), 'foo-model.js': TWO_TABLES_MODEL.replace(/ {2}\/\*\* @type \{Array<\{y: number\}>\}.*\n {2}b = \[\];\n/, '').replace(', b: this.b', '') } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, []);
 });
 
-test('unresolved_read_return: nicht auflösbarer read()-Rückgabewert ist eine gemeldete Blindstelle', () => {
+test('unresolved_read_return: nicht auflösbarer read()-Rückgabewert ist eine gemeldete Blindstelle', async () => {
   const root = fixture({ foo: { 'foo.js': DECLARED_VM(`return readAgentState('foo', build(), options);`), 'foo-model.js': DECL_MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unresolved_read_return']);
 });
 
-test('collectAgentData: eine anlegende @agent-Aktion mit @returns {void} ist ein Befund', () => {
+test('collectAgentData: eine anlegende @agent-Aktion mit @returns {void} ist ein Befund', async () => {
   const vm = TAGGED_VM.replace(
     '       * @returns {boolean} whether it was accepted\n',
     '       * @returns {void}\n',
   ).replace('setProblem(text)', 'addProblem(text)');
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.ok(modules.foo.violations.includes('void_creating_action:addProblem'));
 });
 
-test('collectAgentData: address/adder zählen nicht als anlegend', () => {
+test('collectAgentData: address/adder zählen nicht als anlegend', async () => {
   const vm = TAGGED_VM.replace(
     '       * @returns {boolean} whether it was accepted\n',
     '       * @returns {void}\n',
   ).replace('setProblem(text)', 'address(text)');
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
-  assert.ok(!collectAgentData(root).modules.foo.violations.some((v) => v.startsWith('void_creating_action')));
+  assert.ok(!(await collectAgentData(root)).modules.foo.violations.some((v) => v.startsWith('void_creating_action')));
 });
 
-test('Teil-Viewmodel: eine anlegende Aktion mit @returns {void} ist ein Befund mit Teil-Präfix', () => {
+test('Teil-Viewmodel: eine anlegende Aktion mit @returns {void} ist ein Befund mit Teil-Präfix', async () => {
   const body = DRAFT_VM.replace('setProblem(text)', 'addProblem(text)');
-  const { modules } = collectAgentData(subVmFixture(body));
+  const { modules } = await collectAgentData(subVmFixture(body));
   assert.ok(modules.foo.violations.includes('void_creating_action:draft.addProblem'), modules.foo.violations.join(', '));
 });
 
-test('collectAgentData: eine @agent-Aktion delete… ist ein Befund — das Verb heißt remove…', () => {
+test('collectAgentData: eine @agent-Aktion delete… ist ein Befund — das Verb heißt remove…', async () => {
   const vm = TAGGED_VM.replace('setProblem(text)', 'deleteProblem(text)');
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
-  assert.ok(collectAgentData(root).modules.foo.violations.includes('delete_verb_action:deleteProblem'));
+  assert.ok((await collectAgentData(root)).modules.foo.violations.includes('delete_verb_action:deleteProblem'));
 });
 
-test('Teil-Viewmodel: eine Aktion delete… ist ein Befund mit Teil-Präfix', () => {
+test('Teil-Viewmodel: eine Aktion delete… ist ein Befund mit Teil-Präfix', async () => {
   const body = DRAFT_VM.replace('setProblem(text)', 'deleteProblem(text)');
-  const { modules } = collectAgentData(subVmFixture(body));
+  const { modules } = await collectAgentData(subVmFixture(body));
   assert.ok(modules.foo.violations.includes('delete_verb_action:draft.deleteProblem'), modules.foo.violations.join(', '));
 });
 
-test('collectAgentData: deletedCount ist kein Löschverb', () => {
+test('collectAgentData: deletedCount ist kein Löschverb', async () => {
   const vm = TAGGED_VM.replace('setProblem(text)', 'deletedCount(text)');
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
-  assert.ok(!collectAgentData(root).modules.foo.violations.some((v) => v.startsWith('delete_verb_action')));
+  assert.ok(!(await collectAgentData(root)).modules.foo.violations.some((v) => v.startsWith('delete_verb_action')));
 });
 
-test('void_creating_action: Promise<void>, undefined und Promise<undefined> zählen als nichts geliefert', () => {
+test('void_creating_action: Promise<void>, undefined und Promise<undefined> zählen als nichts geliefert', async () => {
   for (const ret of ['Promise<void>', 'undefined', 'Promise<undefined>']) {
     const vm = TAGGED_VM
       .replace('       * @returns {boolean} whether it was accepted\n', `       * @returns {${ret}}\n`)
       .replace('setProblem(text)', 'createProblem(text)');
     const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
-    assert.ok(collectAgentData(root).modules.foo.violations.includes('void_creating_action:createProblem'), ret);
+    assert.ok((await collectAgentData(root)).modules.foo.violations.includes('void_creating_action:createProblem'), ret);
   }
 });
 
-test('void_creating_action: eine Ausnahme aus CREATING_VOID_EXEMPT bleibt befundfrei', () => {
+test('void_creating_action: eine Ausnahme aus CREATING_VOID_EXEMPT bleibt befundfrei', async () => {
   const vm = TAGGED_VM
     .replace('       * @returns {boolean} whether it was accepted\n', '       * @returns {void}\n')
     .replace("config: { id: 'foo' }", "config: { id: 'attribute-test' }")
     .replace('setProblem(text)', 'addRow(text)');
   const root = fixture({ 'attribute-test': { 'attribute-test.js': vm, 'foo-model.js': MODEL } });
-  const entry = collectAgentData(root).modules['attribute-test'];
+  const entry = (await collectAgentData(root)).modules['attribute-test'];
   assert.ok(!entry.violations.some((v) => v.startsWith('void_creating_action')), entry.violations.join(', '));
 });
 
-test('void_creating_action: jede Ausnahme trifft im echten Baum noch eine void-Anlegeaktion', () => {
+test('void_creating_action: jede Ausnahme trifft im echten Baum noch eine void-Anlegeaktion', async () => {
   const appDir = join(import.meta.dirname, '..', '..');
-  const { modules } = collectAgentData(appDir);
+  const { modules } = await collectAgentData(appDir);
   for (const key of CREATING_VOID_EXEMPT) {
     const dot = key.indexOf('.');
     const action = modules[key.slice(0, dot)]?.actions?.[key.slice(dot + 1)];
@@ -4114,54 +4132,54 @@ function vmWithKnownIdCheck(decl, source) {
       `setProblem(text) { requireKnownId('text', text, ${source}); return true; }`);
 }
 
-test('module_state_option_source: eine Wertemenge aus einem veränderlichen Modul-let ist ein Befund', () => {
+test('module_state_option_source: eine Wertemenge aus einem veränderlichen Modul-let ist ein Befund', async () => {
   const root = fixture({ foo: { 'foo.js': vmWithKnownIdCheck('let _ids = [];', '_ids'), 'foo-model.js': MODEL } });
-  assert.ok(collectAgentData(root).modules.foo.violations.includes('module_state_option_source:setProblem:text'));
+  assert.ok((await collectAgentData(root)).modules.foo.violations.includes('module_state_option_source:setProblem:text'));
 });
 
-test('module_state_option_source: auch über Methodenkette und lokalen Alias auf das let', () => {
+test('module_state_option_source: auch über Methodenkette und lokalen Alias auf das let', async () => {
   const vm = vmWithKnownIdCheck('let _ids = [];', 'ids').replace('requireKnownId(\'text\'', "const ids = _ids.map(x => x.id);\n requireKnownId('text'");
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
-  assert.ok(collectAgentData(root).modules.foo.violations.includes('module_state_option_source:setProblem:text'));
+  assert.ok((await collectAgentData(root)).modules.foo.violations.includes('module_state_option_source:setProblem:text'));
 });
 
-test('module_state_option_source: eine Modul-const bleibt befundfrei', () => {
+test('module_state_option_source: eine Modul-const bleibt befundfrei', async () => {
   const root = fixture({ foo: { 'foo.js': vmWithKnownIdCheck("const IDS = ['a', 'b'];", 'IDS'), 'foo-model.js': MODEL } });
-  assert.ok(!collectAgentData(root).modules.foo.violations.some((v) => v.startsWith('module_state_option_source')));
+  assert.ok(!(await collectAgentData(root)).modules.foo.violations.some((v) => v.startsWith('module_state_option_source')));
 });
 
-test('module_state_option_source: Parameter gleichen Namens wie ein Modul-let wird nicht gemeldet', () => {
+test('module_state_option_source: Parameter gleichen Namens wie ein Modul-let wird nicht gemeldet', async () => {
   const vm = vmWithKnownIdCheck('let ids = [];', 'ids').replace('setProblem(text)', 'setProblem(text, ids)');
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
-  assert.ok(!collectAgentData(root).modules.foo.violations.some((v) => v.startsWith('module_state_option_source')));
+  assert.ok(!(await collectAgentData(root)).modules.foo.violations.some((v) => v.startsWith('module_state_option_source')));
 });
 
-test('module_state_option_source: ein lokales let gleichen Namens wie ein Modul-let wird nicht gemeldet', () => {
+test('module_state_option_source: ein lokales let gleichen Namens wie ein Modul-let wird nicht gemeldet', async () => {
   const vm = vmWithKnownIdCheck('let ids = [];', 'ids').replace("requireKnownId('text'", "{ const { ids } = this.model; }\n let ids2 = 1; if (text) { var ids = ['a']; }\n requireKnownId('text'");
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } });
-  assert.ok(!collectAgentData(root).modules.foo.violations.some((v) => v.startsWith('module_state_option_source')));
+  assert.ok(!(await collectAgentData(root)).modules.foo.violations.some((v) => v.startsWith('module_state_option_source')));
 });
 
-test('module_state_option_source: das let einer Mixin-Datei wird dem Mixin-Mitglied zugerechnet', () => {
+test('module_state_option_source: das let einer Mixin-Datei wird dem Mixin-Mitglied zugerechnet', async () => {
   const mixin = `let _ids = [];\n` + MIXIN.replace('renameStep(name) { return true; }', "renameStep(name) { requireKnownId('name', name, _ids); return true; }");
   const root = fixture(
     { foo: { 'foo.js': vmWith('...mixConst,'), 'foo-model.js': MODEL } },
     { 'js/ui/mix.js': mixin },
   );
-  assert.ok(collectAgentData(root).modules.foo.violations.some((v) => v.startsWith('module_state_option_source:renameStep:name')));
+  assert.ok((await collectAgentData(root)).modules.foo.violations.some((v) => v.startsWith('module_state_option_source:renameStep:name')));
 });
 
-test('module_state_option_source: ein gleichnamiges let der Moduldatei wird dem Mixin nicht zugerechnet', () => {
+test('module_state_option_source: ein gleichnamiges let der Moduldatei wird dem Mixin nicht zugerechnet', async () => {
   const mixin = MIXIN.replace('renameStep(name) { return true; }', "renameStep(name) { requireKnownId('name', name, _ids); return true; }");
   const vm = vmWith('...mixConst,').replace('export default', 'let _ids = [];\nexport default');
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': MODEL } }, { 'js/ui/mix.js': mixin });
-  assert.ok(!collectAgentData(root).modules.foo.violations.some((v) => v.startsWith('module_state_option_source')));
+  assert.ok(!(await collectAgentData(root)).modules.foo.violations.some((v) => v.startsWith('module_state_option_source')));
 });
 
-test('module_state_option_source: statische Wrapper Object.keys/Array.from/Object.values werden aufgelöst', () => {
+test('module_state_option_source: statische Wrapper Object.keys/Array.from/Object.values werden aufgelöst', async () => {
   for (const source of ['Object.keys(_ids)', 'Array.from(_ids)', 'Object.values(_ids)']) {
     const root = fixture({ foo: { 'foo.js': vmWithKnownIdCheck('let _ids = [];', source), 'foo-model.js': MODEL } });
-    assert.ok(collectAgentData(root).modules.foo.violations.includes('module_state_option_source:setProblem:text'), source);
+    assert.ok((await collectAgentData(root)).modules.foo.violations.includes('module_state_option_source:setProblem:text'), source);
   }
 });
 
@@ -4184,53 +4202,53 @@ const PROBLEM_MODEL = `export class State {
       toJSON() { return { problem: this.problem }; }
     }`;
 
-function reportedFor(html, vm = setterVm(), model = PROBLEM_MODEL) {
+async function reportedFor(html, vm = setterVm(), model = PROBLEM_MODEL) {
   const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': model, 'foo.html': html } });
-  return collectAgentData(root).modules.foo.reported;
+  return (await collectAgentData(root)).modules.foo.reported;
 }
 
-test('setter_bypass_binding: x-model auf einem select umgeht den Setter', () => {
-  assert.deepEqual(reportedFor('<select x-model="model.problem"></select>'), ['setter_bypass_binding:problem']);
+test('setter_bypass_binding: x-model auf einem select umgeht den Setter', async () => {
+  assert.deepEqual(await reportedFor('<select x-model="model.problem"></select>'), ['setter_bypass_binding:problem']);
 });
 
-test('setter_bypass_binding: Textfelder sind ausgenommen', () => {
-  assert.deepEqual(reportedFor('<input type="text" x-model="model.problem">'), []);
-  assert.deepEqual(reportedFor('<input x-model="model.problem">'), []);
-  assert.deepEqual(reportedFor('<textarea x-model="model.problem"></textarea>'), []);
+test('setter_bypass_binding: Textfelder sind ausgenommen', async () => {
+  assert.deepEqual(await reportedFor('<input type="text" x-model="model.problem">'), []);
+  assert.deepEqual(await reportedFor('<input x-model="model.problem">'), []);
+  assert.deepEqual(await reportedFor('<textarea x-model="model.problem"></textarea>'), []);
 });
 
-test('setter_bypass_binding: > in Alpine-Ausdrücken und Pfeilfunktionen verfehlt das Element nicht', () => {
+test('setter_bypass_binding: > in Alpine-Ausdrücken und Pfeilfunktionen verfehlt das Element nicht', async () => {
   const html = '<input type="checkbox" x-show="a > b" @click="items.forEach(i => i.on = true)" x-model="model.problem">';
-  assert.deepEqual(reportedFor(html), ['setter_bypass_binding:problem']);
+  assert.deepEqual(await reportedFor(html), ['setter_bypass_binding:problem']);
   // Ein vorangehendes Element mit > im Ausdruck darf den Typ nicht verschleppen.
   const html2 = '<input type="checkbox" x-show="a > b"><input x-model="model.problem">';
-  assert.deepEqual(reportedFor(html2), []);
+  assert.deepEqual(await reportedFor(html2), []);
 });
 
 const NUMBER_VM = TAGGED_VM;
-test('hardcoded_param_bounds: festes min/max neben onParamInput ist ein Befund', () => {
-  const root = (html) => collectAgentData(fixture({ foo: {
+test('hardcoded_param_bounds: festes min/max neben onParamInput ist ein Befund', async () => {
+  const root = async (html) => (await collectAgentData(fixture({ foo: {
     'foo.js': NUMBER_VM,
     'foo-model.js': PROBLEM_MODEL,
     'foo.html': html,
-  } })).modules.foo.reported;
-  assert.deepEqual(root('<input type="number" min="0" max="5" @change="onParamInput(\'k\', $event)">'), ['hardcoded_param_bounds:k']);
-  assert.deepEqual(root('<input type="number" :min="paramMin(\'k\')" :max="paramMax(\'k\')" @change="onParamInput(\'k\', $event)">'), []);
-  assert.deepEqual(root('<input type="number" x-show="a > b" min="0" @change="onParamInput(\'k\', $event)">'), ['hardcoded_param_bounds:k']);
+  } }))).modules.foo.reported;
+  assert.deepEqual(await root('<input type="number" min="0" max="5" @change="onParamInput(\'k\', $event)">'), ['hardcoded_param_bounds:k']);
+  assert.deepEqual(await root('<input type="number" :min="paramMin(\'k\')" :max="paramMax(\'k\')" @change="onParamInput(\'k\', $event)">'), []);
+  assert.deepEqual(await root('<input type="number" x-show="a > b" min="0" @change="onParamInput(\'k\', $event)">'), ['hardcoded_param_bounds:k']);
 });
 
-test('hardcoded_param_bounds: dokumentierte Grenze — eigener Handler mit festem min/max wird NICHT gemeldet', () => {
-  const reported = collectAgentData(fixture({ foo: {
+test('hardcoded_param_bounds: dokumentierte Grenze — eigener Handler mit festem min/max wird NICHT gemeldet', async () => {
+  const reported = (await collectAgentData(fixture({ foo: {
     'foo.js': TAGGED_VM,
     'foo-model.js': PROBLEM_MODEL,
     'foo.html': '<input type="number" min="1" max="10" @change="fooChanged($event)"><input type="number" :min="0" max="3" @change="setX(1)">',
-  } })).modules.foo.reported;
+  } }))).modules.foo.reported;
   assert.deepEqual(reported, []);
 });
 
-test('setter_bypass_binding: type= wird ohne Beachtung der Schreibweise gelesen, gebundenes :type zählt als Text', () => {
-  assert.deepEqual(reportedFor('<input type="CHECKBOX" x-model="model.problem">'), ['setter_bypass_binding:problem']);
-  assert.deepEqual(reportedFor('<input :type="kind" x-model="model.problem">'), []);
+test('setter_bypass_binding: type= wird ohne Beachtung der Schreibweise gelesen, gebundenes :type zählt als Text', async () => {
+  assert.deepEqual(await reportedFor('<input type="CHECKBOX" x-model="model.problem">'), ['setter_bypass_binding:problem']);
+  assert.deepEqual(await reportedFor('<input :type="kind" x-model="model.problem">'), []);
 });
 
 // ── unreachable_write geschärft: Sammlungen, Aliasse, Auswahl, Vorlagenmethoden, Baseline ──
@@ -4269,7 +4287,7 @@ const writeGateField = (name, type = 'string', comment = 'das Feld') => `/** @ty
   ${name} = null;`;
 
 /** @returns {{ reported: string[], written: string[], entry: object, frozen: string[] }} */
-function writeGateRun({ vm, fields, methods = '', html, baseline }) {
+async function writeGateRun({ vm, fields, methods = '', html, baseline }) {
   const files = {
     'foo.js': vm,
     'foo-model.js': `export class State {
@@ -4279,7 +4297,7 @@ function writeGateRun({ vm, fields, methods = '', html, baseline }) {
 }`,
   };
   if (html) files['foo.html'] = html;
-  const result = collectAgentData(fixture({ foo: files }), baseline ? { baseline } : undefined);
+  const result = await collectAgentData(fixture({ foo: files }), baseline ? { baseline } : undefined);
   return {
     reported: result.modules.foo.reported,
     written: result.writtenFields.foo,
@@ -4299,8 +4317,8 @@ ${params.map(p => `       * @param {any} ${p} - Wert`).join('\n')}
       ${signature} { ${body} },`;
 };
 
-test('Schreibweg: push aus einem Parameter deckt die Sammlung ab', () => {
-  const { written, reported } = writeGateRun({
+test('Schreibweg: push aus einem Parameter deckt die Sammlung ab', async () => {
+  const { written, reported } = await writeGateRun({
     vm: writeGateVm(agentMethod('pushItem(text)', 'this.model.items.push({ text });')),
     fields: [writeGateField('items', 'Array<object>')],
   });
@@ -4308,38 +4326,38 @@ test('Schreibweg: push aus einem Parameter deckt die Sammlung ab', () => {
   assert.deepEqual(reported, []);
 });
 
-test('Schreibweg: unshift und splice mit eingefügtem Wert decken ab, reines Entfernen nicht', () => {
-  const run = (body) => writeGateRun({
+test('Schreibweg: unshift und splice mit eingefügtem Wert decken ab, reines Entfernen nicht', async () => {
+  const run = async (body) => (await writeGateRun({
     vm: writeGateVm(agentMethod('change(v)', body)),
     fields: [writeGateField('items', 'Array<object>')],
-  }).written;
-  assert.deepEqual(run('this.model.items.unshift(v);'), ['items']);
-  assert.deepEqual(run('this.model.items.splice(0, 0, v);'), ['items']);
-  assert.deepEqual(run('this.model.items.splice(v, 1);'), []);
+  })).written;
+  assert.deepEqual(await run('this.model.items.unshift(v);'), ['items']);
+  assert.deepEqual(await run('this.model.items.splice(0, 0, v);'), ['items']);
+  assert.deepEqual(await run('this.model.items.splice(v, 1);'), []);
 });
 
-test('Schreibweg: ein konstanter push-Wert oder eine unbekannte Sammelmethode deckt NICHT ab', () => {
-  const run = (signature, body) => writeGateRun({
+test('Schreibweg: ein konstanter push-Wert oder eine unbekannte Sammelmethode deckt NICHT ab', async () => {
+  const run = async (signature, body) => await writeGateRun({
     vm: writeGateVm(agentMethod(signature, body)),
     fields: [writeGateField('items', 'Array<object>')],
   });
-  const constant = run('pushItem()', 'this.model.items.push({ text: "" });');
+  const constant = await run('pushItem()', 'this.model.items.push({ text: "" });');
   assert.deepEqual(constant.reported, ['unreachable_write:items']);
-  assert.deepEqual(run('touch(v)', 'this.model.items.includes(v);').reported, ['unreachable_write:items']);
+  assert.deepEqual((await run('touch(v)', 'this.model.items.includes(v);')).reported, ['unreachable_write:items']);
 });
 
-test('Schreibweg: Elementzuweisung aus einem Parameter deckt die Sammlung ab', () => {
-  const run = (body) => writeGateRun({
+test('Schreibweg: Elementzuweisung aus einem Parameter deckt die Sammlung ab', async () => {
+  const run = async (body) => (await writeGateRun({
     vm: writeGateVm(agentMethod('setAt(i, v)', body)),
     fields: [writeGateField('items', 'Array<object>')],
-  }).written;
-  assert.deepEqual(run('this.model.items[i] = v;'), ['items']);
-  assert.deepEqual(run('this.model.items[i + 1] = v;'), ['items']);
-  assert.deepEqual(run('this.model.items[i] = 1;'), []);
+  })).written;
+  assert.deepEqual(await run('this.model.items[i] = v;'), ['items']);
+  assert.deepEqual(await run('this.model.items[i + 1] = v;'), ['items']);
+  assert.deepEqual(await run('this.model.items[i] = 1;'), []);
 });
 
-test('Schreibweg: ein Alias aus find deckt Sammlung und Elementfeld ab', () => {
-  const { written, reported } = writeGateRun({
+test('Schreibweg: ein Alias aus find deckt Sammlung und Elementfeld ab', async () => {
+  const { written, reported } = await writeGateRun({
     vm: writeGateVm(agentMethod('setTitle(id, title)', 'const s = this.model.steps.find(x => x.id === id); s.title = title;')),
     fields: [writeGateField('steps', 'Array<object>')],
   });
@@ -4347,59 +4365,59 @@ test('Schreibweg: ein Alias aus find deckt Sammlung und Elementfeld ab', () => {
   assert.deepEqual(reported, []);
 });
 
-test('Schreibweg: die weiteren Aliasformen filter()[0], [i] und die Sammlung selbst', () => {
-  const run = (body) => writeGateRun({
+test('Schreibweg: die weiteren Aliasformen filter()[0], [i] und die Sammlung selbst', async () => {
+  const run = async (body) => (await writeGateRun({
     vm: writeGateVm(agentMethod('setTitle(i, title)', body)),
     fields: [writeGateField('steps', 'Array<object>')],
-  }).written;
-  assert.deepEqual(run('const s = this.model.steps.filter(x => x.ok)[0]; s.title = title;'), ['steps', 'steps.title']);
-  assert.deepEqual(run('const s = this.model.steps[i]; s.title = title;'), ['steps', 'steps.title']);
-  assert.deepEqual(run('const all = this.model.steps; all.push(title);'), ['steps']);
-  assert.deepEqual(run('const all = this.model.steps; all[i] = title;'), ['steps']);
+  })).written;
+  assert.deepEqual(await run('const s = this.model.steps.filter(x => x.ok)[0]; s.title = title;'), ['steps', 'steps.title']);
+  assert.deepEqual(await run('const s = this.model.steps[i]; s.title = title;'), ['steps', 'steps.title']);
+  assert.deepEqual(await run('const all = this.model.steps; all.push(title);'), ['steps']);
+  assert.deepEqual(await run('const all = this.model.steps; all[i] = title;'), ['steps']);
 });
 
-test('Schreibweg: ein Alias deckt NICHT ab bei Konstante, Überschattung oder unbekannter Herkunft', () => {
-  const run = (body) => writeGateRun({
+test('Schreibweg: ein Alias deckt NICHT ab bei Konstante, Überschattung oder unbekannter Herkunft', async () => {
+  const run = async (body) => (await writeGateRun({
     vm: writeGateVm(agentMethod('setTitle(id, title)', body)),
     fields: [writeGateField('steps', 'Array<object>')],
-  }).written;
-  assert.deepEqual(run('const s = this.model.steps.find(x => x.id === id); s.title = "fest";'), []);
-  assert.deepEqual(run('const s = lookup(id); s.title = title;'), []);
-  assert.deepEqual(run('const s = this.model.steps.map(x => x.a); s.title = title;'), []);
+  })).written;
+  assert.deepEqual(await run('const s = this.model.steps.find(x => x.id === id); s.title = "fest";'), []);
+  assert.deepEqual(await run('const s = lookup(id); s.title = title;'), []);
+  assert.deepEqual(await run('const s = this.model.steps.map(x => x.a); s.title = title;'), []);
   // Der Closure-Parameter `s` ist nicht der Alias …
-  assert.deepEqual(run('const s = this.model.steps.find(x => x.id === id); others.forEach(s => { s.title = title; });'), []);
+  assert.deepEqual(await run('const s = this.model.steps.find(x => x.id === id); others.forEach(s => { s.title = title; });'), []);
   // … die Blockbindung auch nicht …
-  assert.deepEqual(run('const s = this.model.steps[0]; if (id) { const s = other(); s.title = title; }'), []);
+  assert.deepEqual(await run('const s = this.model.steps[0]; if (id) { const s = other(); s.title = title; }'), []);
   // … und auch nicht die Schleifenvariable.
-  assert.deepEqual(run('const s = this.model.steps[0]; for (const s of others) { s.title = title; }'), []);
+  assert.deepEqual(await run('const s = this.model.steps[0]; for (const s of others) { s.title = title; }'), []);
   // Innerhalb einer Closure bleibt der äußere Alias sichtbar.
-  assert.deepEqual(run('const s = this.model.steps[0]; later(() => { s.title = title; });'), ['steps', 'steps.title']);
+  assert.deepEqual(await run('const s = this.model.steps[0]; later(() => { s.title = title; });'), ['steps', 'steps.title']);
   // Ein Alias gilt erst in seinem Block, nicht danach.
-  assert.deepEqual(run('if (id) { const s = this.model.steps[0]; } s.title = title;'), []);
+  assert.deepEqual(await run('if (id) { const s = this.model.steps[0]; } s.title = title;'), []);
 });
 
-test('Schreibweg: Sammlung und Alias eine Ebene tief in einer Model-Methode', () => {
-  const push = writeGateRun({
+test('Schreibweg: Sammlung und Alias eine Ebene tief in einer Model-Methode', async () => {
+  const push = await writeGateRun({
     vm: writeGateVm(agentMethod('pushItem(text)', 'this.model.add(text);')),
     fields: [writeGateField('items', 'Array<object>')],
     methods: 'add(text) { this.items.push(text); }',
   });
   assert.deepEqual(push.written, ['items']);
   assert.deepEqual(push.reported, []);
-  const alias = writeGateRun({
+  const alias = await writeGateRun({
     vm: writeGateVm(agentMethod('setTitle(id, title)', 'this.model.rename(id, title);')),
     fields: [writeGateField('steps', 'Array<object>')],
     methods: 'rename(id, title) { const s = this.steps.find(x => x.id === id); s.title = title; }',
   });
   assert.deepEqual(alias.written, ['steps', 'steps.title']);
   // Zwei Ebenen bleiben außen vor, ebenso ein konstantes Argument.
-  const deep = writeGateRun({
+  const deep = await writeGateRun({
     vm: writeGateVm(agentMethod('pushItem(text)', 'this.model.add(text);')),
     fields: [writeGateField('items', 'Array<object>')],
     methods: 'add(text) { this._put(text); } _put(t) { this.items.push(t); }',
   });
   assert.deepEqual(deep.written, []);
-  const constant = writeGateRun({
+  const constant = await writeGateRun({
     vm: writeGateVm(agentMethod('pushItem(text)', 'this.model.add("fest");')),
     fields: [writeGateField('items', 'Array<object>')],
     methods: 'add(text) { this.items.push(text); }',
@@ -4407,21 +4425,21 @@ test('Schreibweg: Sammlung und Alias eine Ebene tief in einer Model-Methode', ()
   assert.deepEqual(constant.written, []);
 });
 
-test('Auswahl: ein Lesefeld ohne Schreibweg ist ein Befund, auch ohne x-model', () => {
-  const { reported, entry } = writeGateRun({ vm: writeGateVm(''), fields: [writeGateField('note')] });
+test('Auswahl: ein Lesefeld ohne Schreibweg ist ein Befund, auch ohne x-model', async () => {
+  const { reported, entry } = await writeGateRun({ vm: writeGateVm(''), fields: [writeGateField('note')] });
   assert.ok(reported.includes('unreachable_write:note'), reported.join(', '));
   assert.equal(entry.available, false);
 });
 
-test('Auswahl: [via: …] am Model-Feld und VIEW_FIELDS nehmen das Feld aus', () => {
-  const via = writeGateRun({
+test('Auswahl: [via: …] am Model-Feld und VIEW_FIELDS nehmen das Feld aus', async () => {
+  const via = await writeGateRun({
     vm: writeGateVm(agentMethod('foo(v)', 'this.model.other = v;')),
     fields: [writeGateField('note', 'string', '[via: foo] die Notiz'), writeGateField('other')],
   });
   assert.deepEqual(via.reported, []);
   assert.deepEqual(via.entry.fields.note.via, ['foo']);
   assert.equal(via.entry.fields.note.help, 'die Notiz');
-  const view = writeGateRun({
+  const view = await writeGateRun({
     vm: writeGateVm(''),
     fields: [writeGateField('note')],
     methods: "static VIEW_FIELDS = ['note'];",
@@ -4429,18 +4447,18 @@ test('Auswahl: [via: …] am Model-Feld und VIEW_FIELDS nehmen das Feld aus', ()
   assert.ok(!view.reported.includes('unreachable_write:note'), view.reported.join(', '));
 });
 
-test('Auswahl: ein Feld, von dem nur Unterpfade geschrieben werden, hat einen Schreibweg; eine x-model-Bindung auf das Ganze bleibt ein Befund', () => {
-  const run = (html) => writeGateRun({
+test('Auswahl: ein Feld, von dem nur Unterpfade geschrieben werden, hat einen Schreibweg; eine x-model-Bindung auf das Ganze bleibt ein Befund', async () => {
+  const run = async (html) => (await writeGateRun({
     vm: writeGateVm(agentMethod('setAlpha(v)', 'this.model.params.alpha = v;')),
     fields: [writeGateField('params', 'object')],
     html,
-  }).reported;
-  assert.deepEqual(run(undefined), []);
-  assert.deepEqual(run('<input x-model="model.params">'), ['unreachable_write:params']);
+  })).reported;
+  assert.deepEqual(await run(undefined), []);
+  assert.deepEqual(await run('<input x-model="model.params">'), ['unreachable_write:params']);
 });
 
-test('Auswahl: `_`-Felder bleiben außen vor', () => {
-  const { reported } = writeGateRun({
+test('Auswahl: `_`-Felder bleiben außen vor', async () => {
+  const { reported } = await writeGateRun({
     vm: writeGateVm('/** @noagent */\n      go() { this.model._cache = 1; },'),
     fields: [],
     html: '<button @click="go()"></button>',
@@ -4458,51 +4476,51 @@ const declaredVm = (members, property = '@property {string} other das Feld') => 
 export default createModule`,
 ).replace('read() { return {}; }', 'read() { return { other: 1 }; }');
 
-test('Auswahl: erklärte AgentRead-Felder ohne Setter sind kein Befund', () => {
-  const { reported } = writeGateRun({ vm: declaredVm(''), fields: [writeGateField('other')] });
+test('Auswahl: erklärte AgentRead-Felder ohne Setter sind kein Befund', async () => {
+  const { reported } = await writeGateRun({ vm: declaredVm(''), fields: [writeGateField('other')] });
   assert.ok(!reported.some(c => c.startsWith('unreachable_write:')), reported.join(', '));
 });
 
-test('Vorlagenmethode: @noagent hinter @click, die ein Feld zuweist, ist ein Befund', () => {
+test('Vorlagenmethode: @noagent hinter @click, die ein Feld zuweist, ist ein Befund', async () => {
   const toggle = '/** @noagent */\n      toggle() { this.model.flag = !this.model.flag; },';
   const fields = [writeGateField('flag', 'boolean'), writeGateField('other')];
-  const run = (members, html) => writeGateRun({ vm: declaredVm(members), fields, html }).reported
+  const run = async (members, html) => (await writeGateRun({ vm: declaredVm(members), fields, html })).reported
     .filter(c => c.startsWith('unreachable_write:'));
-  assert.deepEqual(run(toggle, '<button @click="toggle()"></button>'), ['unreachable_write:flag']);
+  assert.deepEqual(await run(toggle, '<button @click="toggle()"></button>'), ['unreachable_write:flag']);
   // Ohne Klammer und über die lange Schreibweise genauso.
-  assert.deepEqual(run(toggle, '<button x-on:click.prevent="toggle"></button>'), ['unreachable_write:flag']);
-  assert.deepEqual(run(toggle, '<select @change="toggle($event)"></select>'), ['unreachable_write:flag']);
+  assert.deepEqual(await run(toggle, '<button x-on:click.prevent="toggle"></button>'), ['unreachable_write:flag']);
+  assert.deepEqual(await run(toggle, '<select @change="toggle($event)"></select>'), ['unreachable_write:flag']);
   // Elementzuweisung zählt für die Sammlung.
-  assert.deepEqual(run('/** @noagent */\n      toggle(i) { this.model.flag[i] = true; },', '<button @click="toggle(1)"></button>'), ['unreachable_write:flag']);
+  assert.deepEqual(await run('/** @noagent */\n      toggle(i) { this.model.flag[i] = true; },', '<button @click="toggle(1)"></button>'), ['unreachable_write:flag']);
   // Nicht in der Vorlage: kein Befund.
-  assert.deepEqual(run(toggle, '<button @click="other()"></button>'), []);
+  assert.deepEqual(await run(toggle, '<button @click="other()"></button>'), []);
   // Nur gelesen statt geschrieben: kein Befund.
-  assert.deepEqual(run('/** @noagent */\n      toggle() { return this.model.flag; },', '<button @click="toggle()"></button>'), []);
+  assert.deepEqual(await run('/** @noagent */\n      toggle() { return this.model.flag; },', '<button @click="toggle()"></button>'), []);
   // Eine @agent-Methode schreibt das Feld: kein Befund.
-  assert.deepEqual(run(`${toggle}\n      ${agentMethod('setFlag(v)', 'this.model.flag = v;')}`, '<button @click="toggle()"></button>'), []);
+  assert.deepEqual(await run(`${toggle}\n      ${agentMethod('setFlag(v)', 'this.model.flag = v;')}`, '<button @click="toggle()"></button>'), []);
   // Eine @agent-Methode hinter der Vorlage ist selbst der Schreibweg, keine Lücke.
-  assert.deepEqual(run(agentMethod('setFlag(v)', 'this.model.flag = v;'), '<button @click="setFlag(1)"></button>'), []);
+  assert.deepEqual(await run(agentMethod('setFlag(v)', 'this.model.flag = v;'), '<button @click="setFlag(1)"></button>'), []);
 });
 
-test('Baseline: ein Treffer landet in frozen statt reported, das Modul bleibt verfügbar', () => {
+test('Baseline: ein Treffer landet in frozen statt reported, das Modul bleibt verfügbar', async () => {
   const baseline = new Set(['foo unreachable_write:note']);
-  const { reported, frozen, entry } = writeGateRun({ vm: writeGateVm(''), fields: [writeGateField('note')], baseline });
+  const { reported, frozen, entry } = await writeGateRun({ vm: writeGateVm(''), fields: [writeGateField('note')], baseline });
   assert.deepEqual(reported, []);
   assert.deepEqual(frozen, ['unreachable_write:note']);
   assert.equal(entry.available, true);
   assert.equal(entry.frozen, undefined, 'frozen gehört nicht in den Registry-Eintrag');
   // Eine Zeile eines anderen Moduls friert nichts ein.
-  const other = writeGateRun({ vm: writeGateVm(''), fields: [writeGateField('note')], baseline: new Set(['bar unreachable_write:note']) });
+  const other = await writeGateRun({ vm: writeGateVm(''), fields: [writeGateField('note')], baseline: new Set(['bar unreachable_write:note']) });
   assert.deepEqual(other.reported, ['unreachable_write:note']);
   assert.deepEqual(other.frozen, []);
 });
 
-test('Baseline: nur unreachable_write wird eingefroren, fremde Codes bleiben offen', () => {
+test('Baseline: nur unreachable_write wird eingefroren, fremde Codes bleiben offen', async () => {
   const vm = writeGateVm('unmarkiert() {},');
-  const probe = writeGateRun({ vm, fields: [writeGateField('note')] });
+  const probe = await writeGateRun({ vm, fields: [writeGateField('note')] });
   const foreign = probe.reported.find(c => c.startsWith('unmarked_method:'));
   assert.ok(foreign, `Fixture soll unmarked_method melden: ${probe.reported}`);
-  const { reported, frozen } = writeGateRun({
+  const { reported, frozen } = await writeGateRun({
     vm, fields: [writeGateField('note')],
     baseline: new Set([`foo ${foreign}`, 'foo unreachable_write:note']),
   });
@@ -4510,12 +4528,12 @@ test('Baseline: nur unreachable_write wird eingefroren, fremde Codes bleiben off
   assert.deepEqual(frozen, ['unreachable_write:note']);
 });
 
-test('Baseline: frozen gelangt nicht in die erzeugte Registry', () => {
+test('Baseline: frozen gelangt nicht in die erzeugte Registry', async () => {
   const root = fixture({ foo: { 'foo.js': writeGateVm(''), 'foo-model.js': `export class State {
   ${writeGateField('note')}
   toJSON() { return { note: this.note }; }
 }` } });
-  const data = collectAgentData(root, { baseline: new Set(['foo unreachable_write:note']) });
+  const data = await collectAgentData(root, { baseline: new Set(['foo unreachable_write:note']) });
   assert.deepEqual(data.frozen, { foo: ['unreachable_write:note'] });
   assert.ok(!renderAgentRegistryModule(data).includes('unreachable_write:note'));
 });
@@ -4534,8 +4552,8 @@ const FIND_NODE = `findNode(id, nodes = this.nodes) {
     return null;
   }`;
 
-test('Schreibweg: eine private Hilfe, die ein Element liefert, trägt die Spur eine Ebene weit', () => {
-  const { written, reported } = writeGateRun({
+test('Schreibweg: eine private Hilfe, die ein Element liefert, trägt die Spur eine Ebene weit', async () => {
+  const { written, reported } = await writeGateRun({
     vm: writeGateVm(`${agentMethod('setText(id, text)', 'this._itemById(id).text = text;')}\n      ${ITEM_BY_ID}`),
     fields: [writeGateField('items', 'Array<object>')],
   });
@@ -4543,8 +4561,8 @@ test('Schreibweg: eine private Hilfe, die ein Element liefert, trägt die Spur e
   assert.deepEqual(reported, []);
 });
 
-test('Schreibweg: eine rekursive Model-Methode, die ein Element liefert, bindet den Alias', () => {
-  const { written, reported } = writeGateRun({
+test('Schreibweg: eine rekursive Model-Methode, die ein Element liefert, bindet den Alias', async () => {
+  const { written, reported } = await writeGateRun({
     vm: writeGateVm(agentMethod('setAnswer(id, text)', 'const node = this.model.findNode(id); node.answer = String(text);')),
     fields: [writeGateField('nodes', 'Array<object>')],
     methods: FIND_NODE,
@@ -4553,8 +4571,8 @@ test('Schreibweg: eine rekursive Model-Methode, die ein Element liefert, bindet 
   assert.deepEqual(reported, []);
 });
 
-test('Schreibweg: dieselbe Form gilt in der delegierten Model-Methode', () => {
-  const { written } = writeGateRun({
+test('Schreibweg: dieselbe Form gilt in der delegierten Model-Methode', async () => {
+  const { written } = await writeGateRun({
     vm: writeGateVm(agentMethod('setAnswer(id, text)', 'this.model.answer(id, text);')),
     fields: [writeGateField('nodes', 'Array<object>')],
     methods: `${FIND_NODE}
@@ -4563,34 +4581,34 @@ test('Schreibweg: dieselbe Form gilt in der delegierten Model-Methode', () => {
   assert.deepEqual(written, ['nodes', 'nodes.answer']);
 });
 
-test('Schreibweg: Hilfen ohne Element oder ohne Parameterwert decken NICHT ab', () => {
-  const run = (setBody, helper) => writeGateRun({
+test('Schreibweg: Hilfen ohne Element oder ohne Parameterwert decken NICHT ab', async () => {
+  const run = async (setBody, helper) => (await writeGateRun({
     vm: writeGateVm(`${agentMethod('setText(id, text)', setBody)}\n      /** Hilfe. */\n      ${helper}`),
     fields: [writeGateField('items', 'Array<object>')],
-  }).reported;
+  })).reported;
   const finding = ['unreachable_write:items'];
   const set = 'this._pick(id).text = text;';
   // Konstanter Wert: Das Element ist bekannt, der Wert nicht vom Agenten.
-  assert.deepEqual(run('this._pick(id).text = "";', '_pick(id) { return this.model.items.find(i => i.id === id); },'), finding);
+  assert.deepEqual(await run('this._pick(id).text = "";', '_pick(id) { return this.model.items.find(i => i.id === id); },'), finding);
   // Eine Kopie ist kein Element.
-  assert.deepEqual(run(set, '_pick(id) { return { ...this.model.items.find(i => i.id === id) }; },'), finding);
-  assert.deepEqual(run(set, '_pick(id) { return this.model.items.map(i => i)[id]; },'), finding);
+  assert.deepEqual(await run(set, '_pick(id) { return { ...this.model.items.find(i => i.id === id) }; },'), finding);
+  assert.deepEqual(await run(set, '_pick(id) { return this.model.items.map(i => i)[id]; },'), finding);
   // Die Sammlung als Ganzes ist kein Element.
-  assert.deepEqual(run(set, '_pick(id) { return this.model.items; },'), finding);
+  assert.deepEqual(await run(set, '_pick(id) { return this.model.items; },'), finding);
   // Zwei Ebenen: Die Spur reicht genau eine weit.
-  assert.deepEqual(run(set, `_pick(id) { return this._pick2(id); },
+  assert.deepEqual(await run(set, `_pick(id) { return this._pick2(id); },
       /** Hilfe. */
       _pick2(id) { return this.model.items.find(i => i.id === id); },`), finding);
   // Ein unbekannter Rückgabezweig schließt die ganze Hilfe.
-  assert.deepEqual(run(set, '_pick(id) { if (id) return this.fallback; return this.model.items.find(i => i.id === id); },'), finding);
+  assert.deepEqual(await run(set, '_pick(id) { if (id) return this.fallback; return this.model.items.find(i => i.id === id); },'), finding);
   // Eine Hilfe ohne Element: nur `null`.
-  assert.deepEqual(run(set, '_pick(id) { return null; },'), finding);
+  assert.deepEqual(await run(set, '_pick(id) { return null; },'), finding);
   // Eine Hilfe außerhalb dieses Viewmodels.
-  assert.deepEqual(run('this.other._pick(id).text = text;', '_pick(id) { return this.model.items.find(i => i.id === id); },'), finding);
+  assert.deepEqual(await run('this.other._pick(id).text = text;', '_pick(id) { return this.model.items.find(i => i.id === id); },'), finding);
 });
 
-test('Schreibweg: zwei Sammlungen in einer Hilfe ergeben keine Spur', () => {
-  const { reported } = writeGateRun({
+test('Schreibweg: zwei Sammlungen in einer Hilfe ergeben keine Spur', async () => {
+  const { reported } = await writeGateRun({
     vm: writeGateVm(`${agentMethod('setText(id, text)', 'this._pick(id).text = text;')}
       /** Hilfe. */
       _pick(id) { if (id) return this.model.a.find(i => i.id === id); return this.model.b.find(i => i.id === id); },`),
@@ -4599,8 +4617,8 @@ test('Schreibweg: zwei Sammlungen in einer Hilfe ergeben keine Spur', () => {
   assert.deepEqual(reported, ['unreachable_write:a', 'unreachable_write:b']);
 });
 
-test('Schreibweg: Eine Neubindung in der Hilfe nimmt dem Namen die Spur', () => {
-  const { reported } = writeGateRun({
+test('Schreibweg: Eine Neubindung in der Hilfe nimmt dem Namen die Spur', async () => {
+  const { reported } = await writeGateRun({
     vm: writeGateVm(agentMethod('setText(id, text)', 'const node = this.model.findNode(id); node.answer = text;')),
     fields: [writeGateField('nodes', 'Array<object>')],
     methods: `findNode(id) {
@@ -4615,112 +4633,112 @@ test('Schreibweg: Eine Neubindung in der Hilfe nimmt dem Namen die Spur', () => 
 // ── Fix-Runde 1: Element-Zeiger sind kein Parameterwert, Vorlagenmethoden in Ausdrücken ──
 
 /** Ein Lauf über ein Feld `steps` mit Element-Hilfen im Viewmodel und im Model. */
-const pointerRun = (signature, body, modelMethods = '') => writeGateRun({
+const pointerRun = async (signature, body, modelMethods = '') => (await writeGateRun({
   vm: writeGateVm(`/** @noagent */
       pick(id) { return this.model.steps.find(x => x.id === id); },
       ${agentMethod(signature, body)}`),
   fields: [writeGateField('steps', 'Array<object>')],
   methods: `findStep(id) { return this.steps.find(x => x.id === id); }
   ${modelMethods}`,
-}).written;
+})).written;
 
-test('Element-Zeiger: Umschalten aus dem Element selbst wählt keinen Wert, in jeder Lieferform', () => {
-  assert.deepEqual(pointerRun('flip(i)', 'const s = this.model.steps[i]; s.done = !s.done;'), []);
-  assert.deepEqual(pointerRun('flip(i)', 'const list = this.model.steps; const s = list[i]; s.done = !s.done;'), []);
-  assert.deepEqual(pointerRun('flip(id)', 'const s = this.pick(id); s.done = !s.done;'), []);
-  assert.deepEqual(pointerRun('flip(id)', 'const s = this.model.findStep(id); s.done = !s.done;'), []);
+test('Element-Zeiger: Umschalten aus dem Element selbst wählt keinen Wert, in jeder Lieferform', async () => {
+  assert.deepEqual(await pointerRun('flip(i)', 'const s = this.model.steps[i]; s.done = !s.done;'), []);
+  assert.deepEqual(await pointerRun('flip(i)', 'const list = this.model.steps; const s = list[i]; s.done = !s.done;'), []);
+  assert.deepEqual(await pointerRun('flip(id)', 'const s = this.pick(id); s.done = !s.done;'), []);
+  assert.deepEqual(await pointerRun('flip(id)', 'const s = this.model.findStep(id); s.done = !s.done;'), []);
   // Dieselbe Form über `.find` war schon vorher leer; beide Wege stimmen jetzt überein.
-  assert.deepEqual(pointerRun('flip(id)', 'const s = this.model.steps.find(x => x.id === id); s.done = !s.done;'), []);
+  assert.deepEqual(await pointerRun('flip(id)', 'const s = this.model.steps.find(x => x.id === id); s.done = !s.done;'), []);
 });
 
-test('Element-Zeiger: Entfernen und Selbstkopie sind kein Parameterwert', () => {
-  assert.deepEqual(pointerRun('drop(i, k)', 'const s = this.model.steps[i]; s.kids = s.kids.filter(x => x !== k);'), []);
-  assert.deepEqual(pointerRun('copy(i)', 'const s = this.model.steps[i]; s.copy = s.title;'), []);
-  assert.deepEqual(pointerRun('copy(i)', 'const s = this.model.steps[i]; const t = s.title; s.copy = t;'), []);
-  assert.deepEqual(pointerRun('copy(i)', 'this.model.steps[i].copy = this.model.steps[i].title;'), []);
-  assert.deepEqual(pointerRun('trim(i)', 'const s = this.model.steps[0]; s.kids = s.kids.slice(i);'), []);
-  assert.deepEqual(pointerRun('dup(i)', 'const c = { ...this.model.steps[i] }; this.model.steps.push(c);'), []);
+test('Element-Zeiger: Entfernen und Selbstkopie sind kein Parameterwert', async () => {
+  assert.deepEqual(await pointerRun('drop(i, k)', 'const s = this.model.steps[i]; s.kids = s.kids.filter(x => x !== k);'), []);
+  assert.deepEqual(await pointerRun('copy(i)', 'const s = this.model.steps[i]; s.copy = s.title;'), []);
+  assert.deepEqual(await pointerRun('copy(i)', 'const s = this.model.steps[i]; const t = s.title; s.copy = t;'), []);
+  assert.deepEqual(await pointerRun('copy(i)', 'this.model.steps[i].copy = this.model.steps[i].title;'), []);
+  assert.deepEqual(await pointerRun('trim(i)', 'const s = this.model.steps[0]; s.kids = s.kids.slice(i);'), []);
+  assert.deepEqual(await pointerRun('dup(i)', 'const c = { ...this.model.steps[i] }; this.model.steps.push(c);'), []);
 });
 
-test('Element-Zeiger: das Durchreichen an eine Model-Methode bleibt ohne Parameterwert', () => {
+test('Element-Zeiger: das Durchreichen an eine Model-Methode bleibt ohne Parameterwert', async () => {
   const put = 'put(x) { this.steps.push(x); }';
-  assert.deepEqual(pointerRun('dup(i)', 'const s = this.model.steps[i]; this.model.put(s);', put), []);
-  assert.deepEqual(pointerRun('dup(i)', 'this.model.put(this.model.steps[i]);', put), []);
-  assert.deepEqual(pointerRun('dup(i)', 'const l = this.model.steps; this.model.put(l[i]);', put), []);
+  assert.deepEqual(await pointerRun('dup(i)', 'const s = this.model.steps[i]; this.model.put(s);', put), []);
+  assert.deepEqual(await pointerRun('dup(i)', 'this.model.put(this.model.steps[i]);', put), []);
+  assert.deepEqual(await pointerRun('dup(i)', 'const l = this.model.steps; this.model.put(l[i]);', put), []);
 });
 
-test('Element-Zeiger: Tausch und Verschieben ordnen nur um', () => {
-  assert.deepEqual(pointerRun('swap(i, j)',
+test('Element-Zeiger: Tausch und Verschieben ordnen nur um', async () => {
+  assert.deepEqual(await pointerRun('swap(i, j)',
     'const a = this.model.steps[i]; this.model.steps[i] = this.model.steps[j]; this.model.steps[j] = a;'), []);
-  assert.deepEqual(pointerRun('swap(i, j)',
+  assert.deepEqual(await pointerRun('swap(i, j)',
     'const l = this.model.steps; const a = l[i]; l[i] = l[j]; l[j] = a;'), []);
-  assert.deepEqual(pointerRun('move(i, j)',
+  assert.deepEqual(await pointerRun('move(i, j)',
     'const it = this.model.steps.splice(i, 1)[0]; this.model.steps.splice(j, 0, it);'), []);
 });
 
-test('Element-Zeiger: in der delegierten Model-Methode gilt dasselbe', () => {
-  const via = (name, code) => pointerRun(`${name}(i, j)`, `this.model.${name}(i, j);`, `${name}(i, j) { ${code} }`);
-  assert.deepEqual(via('flip', 'const s = this.steps[i]; s.done = !s.done;'), []);
-  assert.deepEqual(via('flip', 'const s = this.findStep(i); s.done = !s.done;'), []);
-  assert.deepEqual(via('cycle', "const C = ['a', 'b', 'c']; const s = this.findStep(i); const k = C.indexOf(s.v); s.v = C[(k + 1) % 3];"), []);
-  assert.deepEqual(via('drop', 'const s = this.findStep(i); s.kids = s.kids.filter(x => x !== j);'), []);
-  assert.deepEqual(via('swap', 'const a = this.steps[i]; this.steps[i] = this.steps[j]; this.steps[j] = a;'), []);
-  assert.deepEqual(via('move', 'const it = this.steps.splice(i, 1)[0]; this.steps.splice(j, 0, it);'), []);
+test('Element-Zeiger: in der delegierten Model-Methode gilt dasselbe', async () => {
+  const via = async (name, code) => await pointerRun(`${name}(i, j)`, `this.model.${name}(i, j);`, `${name}(i, j) { ${code} }`);
+  assert.deepEqual(await via('flip', 'const s = this.steps[i]; s.done = !s.done;'), []);
+  assert.deepEqual(await via('flip', 'const s = this.findStep(i); s.done = !s.done;'), []);
+  assert.deepEqual(await via('cycle', "const C = ['a', 'b', 'c']; const s = this.findStep(i); const k = C.indexOf(s.v); s.v = C[(k + 1) % 3];"), []);
+  assert.deepEqual(await via('drop', 'const s = this.findStep(i); s.kids = s.kids.filter(x => x !== j);'), []);
+  assert.deepEqual(await via('swap', 'const a = this.steps[i]; this.steps[i] = this.steps[j]; this.steps[j] = a;'), []);
+  assert.deepEqual(await via('move', 'const it = this.steps.splice(i, 1)[0]; this.steps.splice(j, 0, it);'), []);
 });
 
-test('Element-Zeiger: ein echter Parameterwert über den Zeiger deckt weiter ab', () => {
+test('Element-Zeiger: ein echter Parameterwert über den Zeiger deckt weiter ab', async () => {
   const both = ['steps', 'steps.title'];
-  assert.deepEqual(pointerRun('setTitle(id, title)', 'const s = this.model.steps.find(x => x.id === id); s.title = title;'), both);
-  assert.deepEqual(pointerRun('setTitle(id, data)', 'const s = this.model.steps.find(x => x.id === id); s.title = data.code;'), both);
-  assert.deepEqual(pointerRun('setTitle(i, title)', 'const s = this.model.steps[i]; s.title = title;'), both);
-  assert.deepEqual(pointerRun('setTitle(i, title)', 'const s = this.model.steps[i]; const t = title.trim(); s.title = t;'), both);
-  assert.deepEqual(pointerRun('setTitle(id, title)', 'const s = this.pick(id); s.title = title;'), both);
-  assert.deepEqual(pointerRun('setTitle(id, title)', 'const s = this.model.findStep(id); s.title = title;'), both);
+  assert.deepEqual(await pointerRun('setTitle(id, title)', 'const s = this.model.steps.find(x => x.id === id); s.title = title;'), both);
+  assert.deepEqual(await pointerRun('setTitle(id, data)', 'const s = this.model.steps.find(x => x.id === id); s.title = data.code;'), both);
+  assert.deepEqual(await pointerRun('setTitle(i, title)', 'const s = this.model.steps[i]; s.title = title;'), both);
+  assert.deepEqual(await pointerRun('setTitle(i, title)', 'const s = this.model.steps[i]; const t = title.trim(); s.title = t;'), both);
+  assert.deepEqual(await pointerRun('setTitle(id, title)', 'const s = this.pick(id); s.title = title;'), both);
+  assert.deepEqual(await pointerRun('setTitle(id, title)', 'const s = this.model.findStep(id); s.title = title;'), both);
   // Mischformen: Das Element liefert nur den Rest, der Wert kommt vom Parameter.
-  assert.deepEqual(pointerRun('setTitle(i, title)', 'const s = this.model.steps[i]; s.title = `${s.title} ${title}`;'), both);
-  assert.deepEqual(pointerRun('add(i, v)', 'const s = this.model.steps[i]; s.kids = [...s.kids, v];'), ['steps', 'steps.kids']);
-  assert.deepEqual(pointerRun('add(i, v)', 'const c = { ...this.model.steps[i], title: v }; this.model.steps[i] = c;'), ['steps']);
+  assert.deepEqual(await pointerRun('setTitle(i, title)', 'const s = this.model.steps[i]; s.title = `${s.title} ${title}`;'), both);
+  assert.deepEqual(await pointerRun('add(i, v)', 'const s = this.model.steps[i]; s.kids = [...s.kids, v];'), ['steps', 'steps.kids']);
+  assert.deepEqual(await pointerRun('add(i, v)', 'const c = { ...this.model.steps[i], title: v }; this.model.steps[i] = c;'), ['steps']);
   // Eine Tabelle außerhalb des Models, gewählt per Parameter, bleibt ein Parameterwert.
-  assert.deepEqual(pointerRun('setKind(i, k)', "const C = ['a', 'b']; const s = this.model.steps[i]; s.kind = C[k];"), ['steps', 'steps.kind']);
+  assert.deepEqual(await pointerRun('setKind(i, k)', "const C = ['a', 'b']; const s = this.model.steps[i]; s.kind = C[k];"), ['steps', 'steps.kind']);
   // Delegation mit Wert: Zeiger und Parameter nebeneinander.
-  assert.deepEqual(pointerRun('setTitle(id, title)', 'this.model.setTitle(id, title);',
+  assert.deepEqual(await pointerRun('setTitle(id, title)', 'this.model.setTitle(id, title);',
     'setTitle(id, title) { const s = this.findStep(id); s.title = title; }'), both);
-  assert.deepEqual(pointerRun('setTitle(i, title)', 'const s = this.model.steps[i]; this.model.rename(s, title);',
+  assert.deepEqual(await pointerRun('setTitle(i, title)', 'const s = this.model.steps[i]; this.model.rename(s, title);',
     'rename(s, title) { s.title = title; this.steps.push(title); }'), ['steps']);
 });
 
-test('Vorlagenmethode: jede Ausdrucksform hinter dem Ereignis zählt', () => {
+test('Vorlagenmethode: jede Ausdrucksform hinter dem Ereignis zählt', async () => {
   const toggle = '/** @noagent */\n      toggle() { this.model.flag = !this.model.flag; },';
   const fields = [writeGateField('flag', 'boolean'), writeGateField('other')];
-  const run = (html) => writeGateRun({ vm: declaredVm(toggle), fields, html }).reported
+  const run = async (html) => (await writeGateRun({ vm: declaredVm(toggle), fields, html })).reported
     .filter(c => c.startsWith('unreachable_write:'));
   const hit = ['unreachable_write:flag'];
-  assert.deepEqual(run('<button @click="$event.stopPropagation(); toggle()"></button>'), hit);
-  assert.deepEqual(run('<button @click="open && toggle()"></button>'), hit);
-  assert.deepEqual(run('<button @click="foo(); toggle()"></button>'), hit);
-  assert.deepEqual(run('<button @click="open ? toggle() : 0"></button>'), hit);
-  assert.deepEqual(run('<button x-on:click.stop="!open || toggle()"></button>'), hit);
-  assert.deepEqual(run('<button @click="\n  foo();\n  toggle();\n"></button>'), hit);
-  assert.deepEqual(run("<button @click='foo(); toggle()'></button>"), hit);
+  assert.deepEqual(await run('<button @click="$event.stopPropagation(); toggle()"></button>'), hit);
+  assert.deepEqual(await run('<button @click="open && toggle()"></button>'), hit);
+  assert.deepEqual(await run('<button @click="foo(); toggle()"></button>'), hit);
+  assert.deepEqual(await run('<button @click="open ? toggle() : 0"></button>'), hit);
+  assert.deepEqual(await run('<button x-on:click.stop="!open || toggle()"></button>'), hit);
+  assert.deepEqual(await run('<button @click="\n  foo();\n  toggle();\n"></button>'), hit);
+  assert.deepEqual(await run("<button @click='foo(); toggle()'></button>"), hit);
   // Die Grenze: ein längerer Name oder ein fremder Empfänger ist nicht die Methode.
   for (const expr of ['toggleAll()', 'untoggle()', '$toggle()', 'toggle$()', 'obj.toggle()', 'foo(); obj.toggle()']) {
-    assert.deepEqual(run(`<button @click="${expr}"></button>`), [], expr);
+    assert.deepEqual(await run(`<button @click="${expr}"></button>`), [], expr);
   }
   // Eine Bindung oder ein Text ist kein Ereignis.
-  assert.deepEqual(run('<button :class="toggle()">toggle()</button>'), []);
+  assert.deepEqual(await run('<button :class="toggle()">toggle()</button>'), []);
 });
 
-test('Vorlagenmethode: eine @noagent-Methode eines Teil-Viewmodels zählt unter ihrem Pfadnamen', () => {
+test('Vorlagenmethode: eine @noagent-Methode eines Teil-Viewmodels zählt unter ihrem Pfadnamen', async () => {
   const body = DRAFT_VM.replace('problemClass() { return {}; }', 'problemClass() { this.model.extra = 1; return {}; }');
-  const reported = (html) => collectAgentData(subVmFixture(body, { html })).modules.foo.reported;
-  assert.ok(reported('<button @click="draft.problemClass()"></button>').includes('unreachable_write:extra'));
-  assert.ok(reported('<button @click="foo(); draft.problemClass()"></button>').includes('unreachable_write:extra'));
+  const reported = async (html) => (await collectAgentData(subVmFixture(body, { html }))).modules.foo.reported;
+  assert.ok((await reported('<button @click="draft.problemClass()"></button>')).includes('unreachable_write:extra'));
+  assert.ok((await reported('<button @click="foo(); draft.problemClass()"></button>')).includes('unreachable_write:extra'));
   // Der nackte Name ohne Empfänger ist eine andere Methode.
-  assert.ok(!reported('<button @click="problemClass()"></button>').includes('unreachable_write:extra'));
-  assert.ok(!reported('<button @click="other.draft.problemClass()"></button>').includes('unreachable_write:extra'));
+  assert.ok(!(await reported('<button @click="problemClass()"></button>')).includes('unreachable_write:extra'));
+  assert.ok(!(await reported('<button @click="other.draft.problemClass()"></button>')).includes('unreachable_write:extra'));
 });
 
-test('Element-Zeiger: eine Pfad-Hilfe, die nur einen Model-Wert umkopiert, deckt NICHTS ab', () => {
+test('Element-Zeiger: eine Pfad-Hilfe, die nur einen Model-Wert umkopiert, deckt NICHTS ab', async () => {
   const root = fixture({ foo: {
     'foo.js': SET_AT_PATH + vmWithAgent(`${SET_WHOLE_PARAMS}
       /**
@@ -4735,26 +4753,26 @@ test('Element-Zeiger: eine Pfad-Hilfe, die nur einen Model-Wert umkopiert, deckt
     'foo-model.js': PARAMS_MODEL,
     'foo.html': PARAMS_HTML,
   } });
-  const { modules } = collectAgentData(root);
+  const { modules } = await collectAgentData(root);
   assert.deepEqual(modules.foo.reported, ['unreachable_write:params.alpha', 'unreachable_write:params.beta']);
 });
 
-test('ein Modul aus der Liste der umgestellten bekommt den Schema-Platzhalter', () => {
+test('ein Modul aus der Liste der umgestellten bekommt den Schema-Platzhalter', async () => {
   const root = fixture({}, {
     'js/modules/neu/domain/model.js': 'export const State = null;\n',
     'js/modules/neu/viewmodel/viewmodel.js': '',
   });
-  const { modules } = collectAgentData(root, { baseline: new Set(), converted: ['neu'] });
+  const { modules } = await collectAgentData(root, { baseline: new Set(), converted: ['neu'] });
   assert.deepEqual(modules.neu, {
     tagged: true, available: true, schema: true, violations: [], reported: [], actions: {}, fields: {},
   });
 });
 
-test('domain/model.js allein macht kein Schema-Modul', () => {
+test('domain/model.js allein macht kein Schema-Modul', async () => {
   const root = fixture({}, {
     'js/modules/neu/domain/model.js': 'export const State = null;\n',
     'js/modules/neu/viewmodel/viewmodel.js': '',
   });
-  const { modules } = collectAgentData(root, { baseline: new Set(), converted: [] });
+  const { modules } = await collectAgentData(root, { baseline: new Set(), converted: [] });
   assert.equal(modules.neu, undefined);
 });

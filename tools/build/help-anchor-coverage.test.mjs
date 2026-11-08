@@ -97,7 +97,7 @@ test('nicht freigegebene Module und Module ohne Ordner zählen nicht', async () 
 });
 
 test('echter Baum: läuft durch und liefert eine plausible Zahl (berichtend, kein Lücken-Gate)', async () => {
-  const { modules } = collectAgentData(APP_DIR);
+  const { modules } = await collectAgentData(APP_DIR);
   const out = await countHelpAnchorCoverage(APP_DIR, modules);
   assert.ok(out.total > 0);
   assert.ok(out.covered <= out.total);

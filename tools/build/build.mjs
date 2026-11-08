@@ -373,7 +373,7 @@ export async function runBuild(appDir = APP_DIR, { check = false, converted = CO
   emit(join(appDir, 'js', 'core', 'references-registry.generated.js'), referencesRegistry, check, changed);
 
   // 1b3. agent registry (JSDoc-derived action/field schema per module)
-  const agentRegistry = renderAgentRegistryModule(collectAgentData(appDir));
+  const agentRegistry = renderAgentRegistryModule(await collectAgentData(appDir));
   emit(join(appDir, 'js', 'core', 'agent', 'agent-registry.generated.js'), agentRegistry, check, changed);
 
   // 1b4. Typen je Modul mit deklarativem Model (domain/model.js → domain/model.types.js)

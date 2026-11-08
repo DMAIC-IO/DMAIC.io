@@ -288,7 +288,7 @@ export function fieldsWithoutWritePath(modules, writtenFields) {
 /** Der CLI-Teil. Berichtend: Exit immer 0. */
 async function main() {
   const verbose = process.argv.includes('--verbose');
-  const { modules, coverage, writtenFields, frozen } = collectAgentData(APP_DIR);
+  const { modules, coverage, writtenFields, frozen } = await collectAgentData(APP_DIR);
 
   console.log(`Agentenfläche: ${coverage.available} von ${coverage.total} Modulen freigegeben`);
 

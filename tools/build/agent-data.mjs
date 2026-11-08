@@ -103,12 +103,12 @@ export const CREATING_VOID_EXEMPT = new Set(['doe-planner.factors.insertLevel', 
  * @param {{ baseline?: Set<string>, converted?: readonly string[] }} [options]  `baseline`: eingefrorene Zeilen
  *   `<modul> <code>`, Vorgabe ist `agent-write-baseline.txt`; `converted`: umgestellte Module
  *   (Vorgabe `CONVERTED_MODULES`), nur sie bekommen den Schema-Platzhalter
- * @returns {{ modules: Record<string, object>, coverage: { total: number, available: number }, writtenFields: Record<string, string[]>, frozen: Record<string, string[]> }}
+ * @returns {Promise<{ modules: Record<string, object>, coverage: { total: number, available: number }, writtenFields: Record<string, string[]>, frozen: Record<string, string[]> }>}
  *   `writtenFields` nennt je Modul die Felder, die eine `@agent`-Aktion
  *   zuweist, `frozen` die Befunde aus der Baseline — beides nur für Bericht und
  *   Test, nicht Teil der Registry
  */
-export function collectAgentData(appDir, { baseline = loadWriteBaseline(), converted = CONVERTED_MODULES } = {}) {
+export async function collectAgentData(appDir, { baseline = loadWriteBaseline(), converted = CONVERTED_MODULES } = {}) {
   const root = join(appDir, MODULES_DIR);
   // EIN Auflöser für den ganzen Lauf: nur so trägt sein Parse-Zwischenspeicher
   // über Modulgrenzen (`chart-module-base.js` hängt an elf Modulen).
@@ -771,7 +771,7 @@ function findTypedefImport(sf, name) {
  *
  * @param {ts.SourceFile} sf
  * @param {string} name  der Typedef-Name
- * @param {Set<string>} [open]  die auf dem Pfad offenen Typedefs
+ * @param {Set<string>} [open]  die auf dem Pfad offenen Typedefs (`typedefKey`)
  * @returns {Record<string, { type: string, help: string, optional?: true, keysOf?: string, keys?: object }>|null}
  *   null, wenn die Typedef in der Datei fehlt
  */
@@ -779,10 +779,12 @@ function typedefKeys(sf, name, open = new Set()) {
   const literal = findTypedefLiteral(sf, name);
   if (!literal) {
     const alias = findTypedefImport(sf, name);
-    if (open.has(name)) return null; // Alias-Zyklus
-    return alias ? typedefKeys(alias.sf, alias.name, new Set([...open, name])) : null;
+    // Alias-Zyklus: derselbe Name in derselben Datei. Gleichnamige Aliase in
+    // verschiedenen Dateien sind eine Kette, kein Zyklus.
+    if (open.has(typedefKey(sf, name))) return null;
+    return alias ? typedefKeys(alias.sf, alias.name, new Set([...open, typedefKey(sf, name)])) : null;
   }
-  const inner = new Set([...open, name]);
+  const inner = new Set([...open, typedefKey(sf, name)]);
   const keys = {};
   for (const property of literal.jsDocPropertyTags ?? []) {
     const prop = property.name?.getText(sf);
@@ -802,6 +804,16 @@ function typedefKeys(sf, name, open = new Set()) {
 }
 
 /**
+ * Der Schlüssel einer Typedef auf dem Auflösungspfad: Datei und Name.
+ * @param {ts.SourceFile} sf
+ * @param {string} name
+ * @returns {string}
+ */
+function typedefKey(sf, name) {
+  return `${sf.fileName}#${name}`;
+}
+
+/**
  * `keysOf`/`keys` für einen Typ, der eine Typedef der Datei nennt — sonst `{}`.
  * @param {ts.SourceFile} sf
  * @param {string} type
@@ -810,7 +822,7 @@ function typedefKeys(sf, name, open = new Set()) {
  */
 function nestedKeys(sf, type, open) {
   const ref = typeRefName(type);
-  if (!ref || open.has(ref)) return {};
+  if (!ref || open.has(typedefKey(sf, ref))) return {};
   const keys = typedefKeys(sf, ref, open);
   return keys ? { keysOf: ref, keys } : {};
 }

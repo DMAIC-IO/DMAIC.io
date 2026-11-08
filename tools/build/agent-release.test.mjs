@@ -6,17 +6,17 @@ import { collectAgentData, loadWriteBaseline } from './agent-data.mjs';
 import { RELEASED_MODULES, VIOLATION_REMEDIES, explainViolation, releaseDiff } from './agent-release.mjs';
 import { APP_DIR } from './build.mjs';
 
-test('Freigabe: genau die Module aus RELEASED_MODULES sind agentenfähig', () => {
-  const { modules } = collectAgentData(APP_DIR);
+test('Freigabe: genau die Module aus RELEASED_MODULES sind agentenfähig', async () => {
+  const { modules } = await collectAgentData(APP_DIR);
   const diff = releaseDiff(modules);
   assert.deepEqual(diff, [], `Freigaben weichen ab (Diagnose: npm run agent:report -- --verbose):\n  ${diff.join('\n  ')}`);
 });
 
-test('RELEASED_MODULES ist sortiert und ohne Doppel', () => {
+test('RELEASED_MODULES ist sortiert und ohne Doppel', async () => {
   assert.deepEqual([...RELEASED_MODULES], [...new Set(RELEASED_MODULES)].sort());
 });
 
-test('jede Verstoßart aus agent-data.mjs hat eine Abhilfe', () => {
+test('jede Verstoßart aus agent-data.mjs hat eine Abhilfe', async () => {
   const source = readFileSync(join(APP_DIR, 'tools', 'build', 'agent-data.mjs'), 'utf8')
     .split('\n').filter(line => !/^\s*(\*|\/\/)/.test(line)).join('\n');
   const kinds = new Set([...source.matchAll(/[`']([a-z]+(?:_[a-z]+)+)[:`']/g)].map(m => m[1]));
@@ -26,7 +26,7 @@ test('jede Verstoßart aus agent-data.mjs hat eine Abhilfe', () => {
   assert.deepEqual(unused, [], 'Verstoßart gibt es in agent-data.mjs nicht mehr — Abhilfe streichen');
 });
 
-test('releaseDiff: Verstoß wörtlich mit Abhilfe, fehlendes Tag, unbekanntes und neues Modul', () => {
+test('releaseDiff: Verstoß wörtlich mit Abhilfe, fehlendes Tag, unbekanntes und neues Modul', async () => {
   const modules = {
     a: { tagged: true, available: false, reported: ['unmarked_method:onX', 'dom_detour:innerHTML'] },
     b: { tagged: false, available: false, reported: [] },
@@ -42,19 +42,19 @@ test('releaseDiff: Verstoß wörtlich mit Abhilfe, fehlendes Tag, unbekanntes un
   ]);
 });
 
-test('explainViolation: unbekannte Verstoßart verweist auf den Generator', () => {
+test('explainViolation: unbekannte Verstoßart verweist auf den Generator', async () => {
   assert.equal(explainViolation('x', 'brand_new:y'), 'x: brand_new:y → Befundart in tools/build/agent-data.mjs nachschlagen');
 });
 
-test('jede Baseline-Zeile entspricht einem echten Befund', () => {
-  const { frozen } = collectAgentData(APP_DIR);
+test('jede Baseline-Zeile entspricht einem echten Befund', async () => {
+  const { frozen } = await collectAgentData(APP_DIR);
   const live = new Set(Object.entries(frozen).flatMap(([id, codes]) => codes.map(c => `${id} ${c}`)));
   const stale = [...loadWriteBaseline()].filter(l => !live.has(l));
   assert.deepEqual(stale, [], 'erledigte Zeilen aus agent-write-baseline.txt streichen');
 });
 
-test('kein freigegebenes Modul meldet unreachable_write außerhalb der Baseline', () => {
-  const { modules } = collectAgentData(APP_DIR);
+test('kein freigegebenes Modul meldet unreachable_write außerhalb der Baseline', async () => {
+  const { modules } = await collectAgentData(APP_DIR);
   const open = Object.entries(modules)
     .filter(([id]) => RELEASED_MODULES.includes(id))
     .flatMap(([id, entry]) => entry.reported.filter(c => c.startsWith('unreachable_write:')).map(c => `${id} ${c}`));

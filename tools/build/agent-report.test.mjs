@@ -25,7 +25,7 @@ const MODULES = {
   bar: { available: false, actions: {}, fields: {} },
 };
 
-test('countHelpCoverage counts only released modules', () => {
+test('countHelpCoverage counts only released modules', async () => {
   const root = i18nFixture({
     modules: {
       foo: {
@@ -45,7 +45,7 @@ test('countHelpCoverage counts only released modules', () => {
   assert.deepEqual(out.missing, []);
 });
 
-test('countHelpCoverage names every gap, per language', () => {
+test('countHelpCoverage names every gap, per language', async () => {
   const root = i18nFixture(
     { modules: { foo: { actions: { read: { help: 'r' } } } } },   // de
     { modules: { foo: { actions: { read: { help: 'r' } } } } },   // en
@@ -61,7 +61,7 @@ test('countHelpCoverage names every gap, per language', () => {
   );
 });
 
-test('countHelpCoverage treats a key present in only ONE language as missing', () => {
+test('countHelpCoverage treats a key present in only ONE language as missing', async () => {
   const root = i18nFixture(
     { modules: { foo: { whenToUse: 'wann', actions: { read: { help: 'r' } } } } },
     { modules: { foo: { actions: { read: { help: 'r' } } } } },
@@ -83,7 +83,7 @@ test('countHelpCoverage treats a key present in only ONE language as missing', (
    kopieren. Zählte die Abdeckung ihn nicht mit, wiese sie eine Lücke aus,
    die es für den Agenten gar nicht gibt, und träte damit genau zu der
    Doppelpflege an, die der Rückfall vermeidet. */
-test('countHelpCoverage honours the shared fallback modules.shared.<suffix>', () => {
+test('countHelpCoverage honours the shared fallback modules.shared.<suffix>', async () => {
   const modules = {
     foo: { available: true, actions: { read: { params: [{ name: 'options' }] } }, fields: {} },
   };
@@ -99,7 +99,7 @@ test('countHelpCoverage honours the shared fallback modules.shared.<suffix>', ()
   assert.deepEqual(out.missing, []);
 });
 
-test('countHelpCoverage does NOT apply a shared fallback to whenToUse', () => {
+test('countHelpCoverage does NOT apply a shared fallback to whenToUse', async () => {
   // `whenToUse` ist modulspezifische Prosa („wann nehme ich dieses Werkzeug")
   // und hat per Form keinen geteilten Pfad — ein geteilter Satz wäre dort
   // sinnlos und würde eine echte Lücke verdecken.
@@ -113,7 +113,7 @@ test('countHelpCoverage does NOT apply a shared fallback to whenToUse', () => {
    Ein vorhandener, aber leerer Schlüssel ist keine Hilfe: die Fläche erzeugt
    einen Knopf, der ein leeres Panel öffnet, und der Agent bekommt einen
    leeren Hilfetext statt der JSDoc-Prosa. Er zählt deshalb als Lücke. */
-test('countHelpCoverage counts an empty string as a gap, not as coverage', () => {
+test('countHelpCoverage counts an empty string as a gap, not as coverage', async () => {
   const modules = { foo: { available: true, actions: { read: { params: [] } }, fields: {} } };
   const tree = { modules: { foo: { whenToUse: '   ', actions: { read: { help: '' } } } } };
   const out = countHelpCoverage(i18nFixture(tree), modules);
@@ -129,7 +129,7 @@ test('countHelpCoverage counts an empty string as a gap, not as coverage', () =>
    Ein naives `o[k]` auf einem String liefert `undefined` statt zu werfen —
    aber `o['length']` wäre eine Zahl, und ein Schlüsselsegment ist nicht
    garantiert kein Eigenschaftsname von String.prototype. */
-test('countHelpCoverage survives an absent subtree and a string intermediate segment', () => {
+test('countHelpCoverage survives an absent subtree and a string intermediate segment', async () => {
   const modules = {
     foo: { available: true, actions: { read: { params: [] } }, fields: { length: {} } },
   };
@@ -152,7 +152,7 @@ test('countHelpCoverage survives an absent subtree and a string intermediate seg
 test('countHelpCoverage resolves the real tree through the documented chain', async () => {
   const { collectAgentData } = await import('./agent-data.mjs');
   const { APP_DIR } = await import('./build.mjs');
-  const { modules } = collectAgentData(APP_DIR);
+  const { modules } = await collectAgentData(APP_DIR);
   const out = countHelpCoverage(APP_DIR, modules);
   assert.ok(out.actions.total > 0, 'kein freigegebenes Modul — die Zahl prüfte nichts');
   assert.ok(modules['five-why']?.actions?.read?.params?.some(p => p.name === 'options'),
@@ -171,14 +171,14 @@ test('countHelpCoverage resolves the real tree through the documented chain', as
    hergibt (dort ist kein Schlüssel leer), der aber beide Verbraucher
    betrifft. */
 
-test('lookup: leerer und nur aus Leerzeichen bestehender Wert gilt als nicht vorhanden', () => {
+test('lookup: leerer und nur aus Leerzeichen bestehender Wert gilt als nicht vorhanden', async () => {
   const tree = { a: { voll: 'text', leer: '', blank: '   \n ' } };
   assert.equal(lookup(tree, 'a.voll'), 'text');
   assert.equal(lookup(tree, 'a.leer'), undefined);
   assert.equal(lookup(tree, 'a.blank'), undefined);
 });
 
-test('lookup: bricht an einem Nicht-Objekt ab, statt String-Eigenschaften zu finden', () => {
+test('lookup: bricht an einem Nicht-Objekt ab, statt String-Eigenschaften zu finden', async () => {
   const tree = { a: 'kein Objekt' };
   assert.equal(lookup(tree, 'a.length'), undefined);
   assert.equal(lookup(tree, 'a.b.c'), undefined);
@@ -186,7 +186,7 @@ test('lookup: bricht an einem Nicht-Objekt ab, statt String-Eigenschaften zu fin
   assert.equal(lookup({ a: { b: 5 } }, 'a.b'), undefined, 'eine Zahl ist kein Hilfetext');
 });
 
-test('helpKeys / helpExists: Modulschlüssel zuerst, modules.shared als Rückfall', () => {
+test('helpKeys / helpExists: Modulschlüssel zuerst, modules.shared als Rückfall', async () => {
   // EINE Schablone mit `shared` als Ersatz-Modulkennung, nicht zwei
   // verschiedene. Kein Hilfetext trägt `agent` im Schlüsselnamen: der
   // Nutzen gilt dem Menschen, dass ein Agent denselben Satz liest, ist eine
@@ -211,7 +211,7 @@ test('helpKeys / helpExists: Modulschlüssel zuerst, modules.shared als Rückfal
     'foo', 'actions.read.help'), false);
 });
 
-test('ein Feldschlüssel ist ein Objekt mit help, nicht eine Zeichenkette', () => {
+test('ein Feldschlüssel ist ein Objekt mit help, nicht eine Zeichenkette', async () => {
   // `lookup` gilt ein Nicht-String als nicht vorhanden. Ohne das `.help`-
   // Suffix fiele die Feldabdeckung von 18/18 auf 0/18 — und zwar lautlos.
   const tree = { modules: { foo: { fields: { problem: { help: 'der Satz' } } } } };
@@ -219,7 +219,7 @@ test('ein Feldschlüssel ist ein Objekt mit help, nicht eine Zeichenkette', () =
   assert.equal(lookup(tree, 'modules.foo.fields.problem'), undefined);
 });
 
-test('countHelpCoverage: eine Lücke nennt BEIDE Kandidatenorte', () => {
+test('countHelpCoverage: eine Lücke nennt BEIDE Kandidatenorte', async () => {
   const modules = {
     foo: { available: true, actions: { read: { params: [{ name: 'options' }] } }, fields: {} },
   };
@@ -237,7 +237,7 @@ test('countHelpCoverage: eine Lücke nennt BEIDE Kandidatenorte', () => {
   assert.deepEqual(plain.missing, ['de: modules.foo.whenToUse', 'en: modules.foo.whenToUse']);
 });
 
-test('countHelpCoverage: missingKeys zählt Schlüssel, missing zählt Sprachfälle', () => {
+test('countHelpCoverage: missingKeys zählt Schlüssel, missing zählt Sprachfälle', async () => {
   const modules = { foo: { available: true, actions: { read: { params: [] } }, fields: {} } };
   // Ein Schlüssel fehlt in beiden Sprachen, einer nur im Englischen.
   const out = countHelpCoverage(i18nFixture(
@@ -249,7 +249,7 @@ test('countHelpCoverage: missingKeys zählt Schlüssel, missing zählt Sprachfä
     ['modules.foo.actions.read.help', 'modules.foo.whenToUse']);
 });
 
-test('countHelpCoverage zählt jede Typedef-Property einmal je Modul, verschachtelt', () => {
+test('countHelpCoverage zählt jede Typedef-Property einmal je Modul, verschachtelt', async () => {
   // `Params` hängt am Setter UND am Lesefeld — ein Satz, also einmal gezählt.
   const params = { alpha: { type: 'string' }, k1: { type: 'string' } };
   const modules = {
@@ -277,7 +277,7 @@ test('countHelpCoverage zählt jede Typedef-Property einmal je Modul, verschacht
     ['modules.foo.types.BiasTest.p', 'modules.foo.types.Params.k1']);
 });
 
-test('typedefHelpSuffixes: jede Typedef-Property eines Eintrags genau einmal', () => {
+test('typedefHelpSuffixes: jede Typedef-Property eines Eintrags genau einmal', async () => {
   const entry = {
     actions: { setParam: { keysOf: 'Params', keys: { a: {} } } },
     fields: { params: { keysOf: 'Params', keys: { a: {} } },
@@ -286,7 +286,7 @@ test('typedefHelpSuffixes: jede Typedef-Property eines Eintrags genau einmal', (
   assert.deepEqual(typedefHelpSuffixes(entry), ['types.Params.a', 'types.Result.t', 'types.T.x']);
 });
 
-test('STRUCTURE_JARGON: fängt Strukturschreibweise, lässt Fachsprache durch', () => {
+test('STRUCTURE_JARGON: fängt Strukturschreibweise, lässt Fachsprache durch', async () => {
   for (const bad of ['als { instanceId, sheetId, columnId }', 'oder null', 'die Schlüssel aus activeParams für setParam',
     'ruft read() auf', 'returns null when empty', 'Werte wie [1, 2]', 'der `value`-Slot', 'Spalte über columnId']) {
     assert.ok(STRUCTURE_JARGON.test(bad), bad);
@@ -299,7 +299,7 @@ test('STRUCTURE_JARGON: fängt Strukturschreibweise, lässt Fachsprache durch', 
   }
 });
 
-test('countHelpCoverage: eine Aktion eines Teil-Viewmodels liest ihren Satz aus dem verschachtelten Baum', () => {
+test('countHelpCoverage: eine Aktion eines Teil-Viewmodels liest ihren Satz aus dem verschachtelten Baum', async () => {
   const root = i18nFixture({
     modules: { sb: {
       whenToUse: 'wann',
@@ -314,7 +314,7 @@ test('countHelpCoverage: eine Aktion eines Teil-Viewmodels liest ihren Satz aus 
   assert.deepEqual(out.missing, []);
 });
 
-test('viaHelpGaps: jede [via]-Aktion steht in der Feldhilfe beider Sprachen', () => {
+test('viaHelpGaps: jede [via]-Aktion steht in der Feldhilfe beider Sprachen', async () => {
   const modules = { m: { available: true, fields: { f: { via: ['go', 'stop'] } } } };
   const dir = mkdtempSync(join(tmpdir(), 'via-'));
   mkdirSync(join(dir, 'i18n'));
@@ -323,23 +323,23 @@ test('viaHelpGaps: jede [via]-Aktion steht in der Feldhilfe beider Sprachen', ()
   assert.deepEqual(viaHelpGaps(dir, modules), ['en: modules.m.fields.f.help nennt stop nicht']);
 });
 
-test('viaHelpGaps: der echte Baum hat keine Lücken', () => {
-  const { modules } = collectAgentData(APP_DIR);
+test('viaHelpGaps: der echte Baum hat keine Lücken', async () => {
+  const { modules } = await collectAgentData(APP_DIR);
   assert.deepEqual(viaHelpGaps(APP_DIR, modules), []);
 });
 
-test('fieldsWithoutWritePath: weder zugewiesen noch [via] heißt ohne Schreibweg', () => {
+test('fieldsWithoutWritePath: weder zugewiesen noch [via] heißt ohne Schreibweg', async () => {
   const modules = { m: { available: true, fields: { a: {}, b: { via: ['go'] }, c: {} } },
                     n: { available: false, fields: { z: {} } } };
   assert.deepEqual(fieldsWithoutWritePath(modules, { m: ['c'], n: [] }), { model: ['m.a'], derived: [] });
 });
 
-test('fieldsWithoutWritePath: erklärte (derived) Felder zählen getrennt von Model-Feldern', () => {
+test('fieldsWithoutWritePath: erklärte (derived) Felder zählen getrennt von Model-Feldern', async () => {
   const modules = { m: { available: true, fields: { a: {}, d: { derived: true }, e: { derived: true, via: ['go'] } } } };
   assert.deepEqual(fieldsWithoutWritePath(modules, { m: [] }), { model: ['m.a'], derived: ['m.d'] });
 });
 
-test('viaHelpGaps: ein gewöhnliches Wort ist keine Nennung der Aktion', () => {
+test('viaHelpGaps: ein gewöhnliches Wort ist keine Nennung der Aktion', async () => {
   const modules = { m: { available: true, fields: { f: { via: ['back'] } } } };
   const dir = mkdtempSync(join(tmpdir(), 'via-'));
   mkdirSync(join(dir, 'i18n'));
@@ -348,7 +348,7 @@ test('viaHelpGaps: ein gewöhnliches Wort ist keine Nennung der Aktion', () => {
   assert.deepEqual(viaHelpGaps(dir, modules), ['en: modules.m.fields.f.help nennt back nicht']);
 });
 
-test('viaHelpGaps: Aktionsnamen mit $ oder Punkt brechen den Abgleich nicht', () => {
+test('viaHelpGaps: Aktionsnamen mit $ oder Punkt brechen den Abgleich nicht', async () => {
   const modules = { m: { available: true, fields: { f: { via: ['part.add$x'] } } } };
   const dir = mkdtempSync(join(tmpdir(), 'via-'));
   mkdirSync(join(dir, 'i18n'));
@@ -371,7 +371,7 @@ function newFormFixture({ ui = true, ctx = true } = {}) {
 
 const NEU = { neu: { available: true, actions: { read: { params: [] }, setProblem: { params: [{ name: 'text' }] } }, fields: { problem: {} } } };
 
-test('readHelpTables mischt ui und context-help umgestellter Module ein, ohne $schema', () => {
+test('readHelpTables mischt ui und context-help umgestellter Module ein, ohne $schema', async () => {
   const tables = readHelpTables(newFormFixture(), ['neu']);
   assert.equal(tables.de.modules.neu.whenToUse, 'Wann de');
   assert.equal(tables.en.modules.neu.fields.problem.help, 'Problem en');
@@ -379,7 +379,7 @@ test('readHelpTables mischt ui und context-help umgestellter Module ein, ohne $s
   assert.equal(tables.de.modules.foo.name, 'Foo', 'alte Form bleibt');
 });
 
-test('readHelpTables mischt tief wie die Laufzeit: Altbestand und context-help behalten beide', () => {
+test('readHelpTables mischt tief wie die Laufzeit: Altbestand und context-help behalten beide', async () => {
   const root = i18nFixture({ modules: { neu: { fields: { a: { help: 'alt a' } } } } });
   const dir = join(root, 'js', 'modules', 'neu', 'resources', 'i18n');
   mkdirSync(dir, { recursive: true });
@@ -389,19 +389,19 @@ test('readHelpTables mischt tief wie die Laufzeit: Altbestand und context-help b
   assert.equal(de.modules.neu.fields.b.help, 'neu b');
 });
 
-test('countHelpCoverage zählt die Kontexthilfe eines umgestellten Moduls aus seinen Dateien', () => {
+test('countHelpCoverage zählt die Kontexthilfe eines umgestellten Moduls aus seinen Dateien', async () => {
   const out = countHelpCoverage(newFormFixture(), NEU, ['neu']);
   assert.deepEqual(out.missing, []);
   assert.deepEqual([out.whenToUse.covered, out.actions.covered, out.params.covered, out.fields.covered], [1, 2, 1, 1]);
 });
 
-test('countHelpCoverage: fehlende context-help-Datei ist eine Lücke, kein Absturz', () => {
+test('countHelpCoverage: fehlende context-help-Datei ist eine Lücke, kein Absturz', async () => {
   const out = countHelpCoverage(newFormFixture({ ctx: false }), NEU, ['neu']);
   assert.equal(out.whenToUse.covered, 1);
   assert.ok(out.missing.some((m) => m.startsWith('de: modules.neu.fields.problem.help')), out.missing.join('\n'));
 });
 
-test('ohne umgestellte Module: nur i18n/<lang>.json', () => {
+test('ohne umgestellte Module: nur i18n/<lang>.json', async () => {
   const out = countHelpCoverage(newFormFixture(), NEU, []);
   assert.equal(out.whenToUse.covered, 0);
 });
