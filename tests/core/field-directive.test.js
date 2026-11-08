@@ -5,6 +5,7 @@
 import { suite, test, assertEqual, assertTrue, assertThrows, assertDeepEqual } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { registerFieldDirective } from '../../js/core/field-directive.js';
+import { WIDGETS } from '../../js/widgets/registry.js';
 import { defineModel, defineWidget, defineState, text, number, oneOf, boolean, list, object, command, idOf, date, time, columnRef } from '../../js/core/model.js';
 
 const M = defineModel({
@@ -330,6 +331,8 @@ function countReactive(fn) {
 suite('x-field: Registry, Kanal, x-set', () => {
   const Cols0 = defineModel({ fields: { pick: columnRef({ types: ['numeric'], minCount: 3 }), n: number({ min: 0, max: 9, default: 1 }), mode: oneOf(['a', 'b']), day: date(), hour: time() } });
   const I18N_B = { t: (k) => `B:${k}`, getLanguage: () => 'de' };
+  /** Ersatz für Test-Widgets: passt auf keine Feldart. */
+  const INERT = { schema: { forKind: null }, mount() {} };
 
   async function mountHtml(html) {
     if (!Alpine.version) Alpine.start();
@@ -360,24 +363,33 @@ suite('x-field: Registry, Kanal, x-set', () => {
   }
 
   test('columnRef ohne registriertes Widget wirft beim Einbau', async () => {
-    registerFieldDirective(Alpine, { i18n: I18N });
-    const err = await caught(() => mountHtml('<div x-field="model.pick"></div>'));
+    // Die Registry je Alpine-Instanz ist dauerhaft: ein früher registrierter Spalten-Picker wird still gelegt und danach wiederhergestellt.
+    registerFieldDirective(Alpine, { i18n: I18N, widgets: { 'column-picker': INERT } });
+    let err;
+    try {
+      err = await caught(() => mountHtml('<div x-field="model.pick"></div>'));
+    } finally {
+      registerFieldDirective(Alpine, { i18n: I18N, widgets: { 'column-picker': WIDGETS['column-picker'] } });
+    }
     assertTrue(/x-field model\.pick: no widget registered for columnRef/.test(String(err?.message ?? err)), String(err));
   });
 
   test('zweite Registrierung behält die ersten Widgets und nimmt die neue i18n', async () => {
     const mk = (n, value, kind, log) => ({ schema: defineWidget({ name: n, value, forKind: kind }), mount: () => { log.push(n); return {}; } });
     const log = [];
-    registerFieldDirective(Alpine, { i18n: I18N, widgets: { 'w-day': mk('w-day', date(), 'date', log) } });
-    registerFieldDirective(Alpine, { i18n: I18N_B, widgets: { 'w-hour': mk('w-hour', time(), 'time', log) } });
-    const host = await mountHtml('<div x-field="model.day"></div><div x-field="model.hour"></div><input x-field="model.n">');
-    assertEqual(log.sort().join(','), 'w-day,w-hour');
-    const input = host.querySelector('input');
-    input.value = '99';
-    input.dispatchEvent(new Event('change'));
-    assertTrue(input.title.startsWith('B:common.inputRejected'), input.title);
-    host.remove();
-    registerFieldDirective(Alpine, { i18n: I18N });
+    try {
+      registerFieldDirective(Alpine, { i18n: I18N, widgets: { 'w-day': mk('w-day', date(), 'date', log) } });
+      registerFieldDirective(Alpine, { i18n: I18N_B, widgets: { 'w-hour': mk('w-hour', time(), 'time', log) } });
+      const host = await mountHtml('<div x-field="model.day"></div><div x-field="model.hour"></div><input x-field="model.n">');
+      assertEqual(log.sort().join(','), 'w-day,w-hour');
+      const input = host.querySelector('input');
+      input.value = '99';
+      input.dispatchEvent(new Event('change'));
+      assertTrue(input.title.startsWith('B:common.inputRejected'), input.title);
+      host.remove();
+    } finally {
+      registerFieldDirective(Alpine, { i18n: I18N, widgets: { 'w-day': INERT, 'w-hour': INERT } });
+    }
   });
 
   test('genau ein openChannel je x-field mit Widget', async () => {
@@ -394,9 +406,13 @@ suite('x-field: Registry, Kanal, x-set', () => {
       calls = 0;
       (await mountHtml('<input x-field="model.n">')).remove();
       inputCalls = calls;
-    } finally { Alpine.$data = orig; }
-    // Ein Kanal je x-field: der Widget-Zweig darf nicht mehr Datenzugriffe brauchen als die Eingabe plus der Wirt in mountWidget.
-    assertTrue(widgetCalls <= inputCalls, `widget ${widgetCalls} vs input ${inputCalls}`);
+    } finally {
+      Alpine.$data = orig;
+      registerFieldDirective(Alpine, { i18n: I18N, widgets: { 'w-day': INERT } });
+    }
+    // Beide Zweige brauchen gleich viele `Alpine.$data`-Zugriffe (Handler + ein Kanal + Wirt/Anker); gemessen: Differenz 0.
+    // Ein zweiter Kanal im Widget-Zweig brachte vorher +2.
+    assertEqual(widgetCalls - inputCalls, 0);
   });
 
   test('x-set legt kein Alpine.reactive je Kanal an', async () => {
@@ -405,6 +421,10 @@ suite('x-field: Registry, Kanal, x-set', () => {
     const base = await countReactive(async (box) => { (await mountHtml('<div><button role="radio" value="a"></button></div>')).remove(); return box.n; });
     const withSet = await countReactive(async (box) => { (await mountHtml('<div x-set="model.mode"><button role="radio" value="a"></button><button role="radio" value="b"></button></div>')).remove(); return box.n; });
     assertEqual(withSet, base);
+    const host = await mountHtml('<div x-set="model.mode"><button role="radio" value="a"></button><button role="radio" value="b"></button></div>');
+    const first = host.querySelector('button[value="a"]');
+    assertEqual(first.getAttribute('aria-checked'), 'true');
+    host.remove();
   });
 });
 
