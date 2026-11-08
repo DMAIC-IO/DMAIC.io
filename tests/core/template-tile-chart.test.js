@@ -8,8 +8,6 @@ import { defineModel, defineSettings, list, text, boolean } from '../../js/core/
 import { registerWidgetDirective } from '../../js/core/widget-directive.js';
 import { WIDGETS } from '../../js/widgets/registry.js';
 import { renderTileSafely, disposeTile } from '../../js/pages/dashboard/tile-render.js';
-
-/** Dieselbe Übersetzung wie in tests/core/widget-directive.test.js: die Direktive übernimmt die erste. */
 import { WIDGET_I18N } from '../widget-i18n.js';
 
 const ID = 'demo-chart-tile';

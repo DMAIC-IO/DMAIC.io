@@ -86,6 +86,7 @@ suite('histogram: Migration', () => {
       assertDeepEqual(seen, []);
     } finally { console.warn = warn; }
   });
+  // Absichtlich aktuelles Format: from0 bereinigt einen kaputten Altstand still (gewollt), dort entsteht keine Warnung.
   test('Kaputter Zustand im aktuellen Format meldet genau eine Reparaturwarnung, der Rest bleibt', () => {
     const warn = console.warn; const seen = []; console.warn = (...a) => seen.push(a.join(' '));
     try {

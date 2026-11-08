@@ -27,8 +27,6 @@ import controlChartWidget from '../../js/widgets/control-chart/schema.js';
 import zegTile from '../../js/pages/dashboard/tiles/zeg-timeline.tile.js';
 import sipocTile from '../../js/modules/sipoc/tile/tile.js';
 import kanoTile from '../../js/modules/kano/kano.tile.js';
-
-/** Dieselbe Übersetzung wie in tests/core/widget-directive.test.js: die Direktive übernimmt die erste. */
 import { WIDGET_I18N } from '../widget-i18n.js';
 
 const i18n = { t: (k) => k };

@@ -15,8 +15,6 @@ import scatterChart from '../../js/widgets/scatter-chart/schema.js';
 import probabilityPlotChart from '../../js/widgets/probability-plot-chart/schema.js';
 import histogramChart from '../../js/widgets/histogram-chart/schema.js';
 import { residualCharts } from '../../js/modules/hypothesis-test/viewmodel/present.js';
-
-/** Dieselbe Übersetzung wie in tests/core/widget-directive.test.js: die Direktive übernimmt die erste. */
 import { WIDGET_I18N } from '../widget-i18n.js';
 
 const ID = 'hypothesis-test';

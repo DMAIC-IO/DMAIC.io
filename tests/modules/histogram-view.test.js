@@ -11,8 +11,6 @@ import { installWorksheetRevisions } from '../../js/core/worksheet-data.js';
 import { registerWidgetDirective } from '../../js/core/widget-directive.js';
 import { WIDGETS } from '../../js/widgets/registry.js';
 import { CHART_COLORS_RGBA } from '../../js/core/chart/chart-colors.js';
-
-/** Dieselbe Übersetzung wie in tests/core/widget-directive.test.js: die Direktive übernimmt die erste. */
 import { WIDGET_I18N } from '../widget-i18n.js';
 
 const ID = 'histogram';

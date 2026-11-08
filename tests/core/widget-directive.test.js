@@ -110,7 +110,7 @@ async function withWarnings(fn) {
   const mine = (a) => /x-widget="/.test(String(a[0])) || a.some((x) => x instanceof Node && hosted.some((r) => r.contains(x)));
   console.warn = (...a) => { if (mine(a)) seen.push(a.map(String).join(' ')); else orig.apply(console, a); };
   window.setTimeout = (cb, ...rest) => origTimeout(() => {
-    try { cb(); } catch (err) { if (!/^Undefined variable/.test(String(err?.message))) throw err; }
+    try { cb(); } catch (err) { if (!(/^Undefined variable/.test(String(err?.message)) && err.el instanceof Node && hosted.some((r) => r.contains(err.el)))) throw err; }
   }, ...rest);
   try { await fn(); } finally { console.warn = orig; window.setTimeout = origTimeout; }
   return seen;
