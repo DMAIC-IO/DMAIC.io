@@ -20,7 +20,7 @@
         {
           "type": "definition",
           "term": "Output: ranking",
-          "content": "On the left you see the ranked suggestions in ranked order, the best fit on top. On the right we render a preview of the selected chart type. Click a suggestion to switch the preview."
+          "content": "On the left you see the suggestions in ranked order, the best fit on top. On the right we render a preview of the selected chart type. Click a suggestion to switch the preview."
         },
         {
           "type": "definition",
@@ -30,7 +30,7 @@
         {
           "type": "definition",
           "term": "Open in module",
-          "content": "Most previews carry an \"Open in module\" button above the chart. It spawns a new instance of the full module (histogram, boxplot, individual-value plot, run chart, bar chart, Pareto chart, mosaic plot, heatmap, probability plot, or XY plot) in the same phase area, with the selected columns already wired up — so you can carry on with annotations, reference lines, axis tuning, or export. For pie, the scatter matrix and the preview-only combinations (main effects, interaction, marginal distributions, CUSUM) there is no target module — the button is hidden there."
+          "content": "Most previews carry an \"Open in module\" button above the chart. It spawns a new instance of the full module (histogram, boxplot, individual-value plot, run chart, I-MR control chart (only without a date column, because that module plots in row order), Box-Cox I-MR control chart, bar chart, Pareto chart, mosaic plot, heatmap, probability plot, or XY plot) in the same phase area, with the selected columns already wired up — so you can carry on with annotations, reference lines, axis tuning, or export. For pie, the scatter matrix and the preview-only combinations (main effects, interaction, marginal distributions, CUSUM) there is no target module — the button is hidden there."
         },
         {
           "type": "definition",
@@ -40,7 +40,7 @@
         {
           "type": "definition",
           "term": "Control-chart preview",
-          "content": "For the combination \"date + continuous\" the suggestion includes a {{term:regelkarte|control chart}}. The preview automatically computes an I-chart (Individuals) with the {{term:mittellinie|centerline}} at the mean, ±3σ limits (σ derived from the mean moving range, d2=1.128) and observations sorted by date. Switch to the full Control-chart module under \"Control\" for X̄/R, X̄/S, or Phase-I exclusions."
+          "content": "For the combination \"date + continuous\" the suggestion includes a {{term:regelkarte|control chart}}. The preview automatically computes an I-chart (Individuals) with the {{term:mittellinie|centerline}} at the mean, ±3σ limits (σ derived from the mean moving range, d2=1.128) and observations sorted by date. “Open in module” creates the I-MR chart as long as no date column is selected. Switch to the full Control-chart module under \"Control\" for X̄/R, X̄/S, or Phase-I exclusions."
         }
       ]
     }

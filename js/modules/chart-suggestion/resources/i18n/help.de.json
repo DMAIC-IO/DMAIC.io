@@ -6,11 +6,11 @@
       "blocks": [
         {
           "type": "paragraph",
-          "content": "Die Diagramm-Vorschlag-Werkzeug liest die analytischen Rollen Deiner ausgewählten Spalten und schlägt geeignete Diagrammtypen vor — sortiert nach Eignung. Die Logik orientiert sich an „Show-Me\"-Mustern aus Tableau und dem Minitab Graph Builder."
+          "content": "Das Diagramm-Vorschlag-Werkzeug liest die analytischen Rollen Deiner ausgewählten Spalten und schlägt geeignete Diagrammtypen vor — sortiert nach Eignung. Die Logik orientiert sich an „Show-Me“-Mustern aus Tableau und dem Minitab Graph Builder."
         },
         {
           "type": "paragraph",
-          "content": "Du erreichst das Werkzeug am schnellsten über den Button „Diagramm vorschlagen\" in der Worksheet-Werkzeugleiste. Wähle vorher eine oder mehrere Spalten aus."
+          "content": "Du erreichst das Werkzeug am schnellsten über den Button „Diagramm vorschlagen“ in der Worksheet-Werkzeugleiste. Wähle vorher eine oder mehrere Spalten aus."
         },
         {
           "type": "definition",
@@ -30,7 +30,7 @@
         {
           "type": "definition",
           "term": "Im eigenen Modul öffnen",
-          "content": "Über der Vorschau gibt es bei vielen Diagrammen den Button „Im eigenen Modul öffnen\". Er legt eine neue Instanz des entsprechenden Vollmoduls ({{term:histogramm|Histogramm}}, {{term:boxplot|Boxplot}}, Einzelwertdiagramm, Verlaufsdiagramm, Balkendiagramm, {{term:pareto|Pareto}}-Diagramm, Mosaikplot, Wärmekarte, {{term:wahrscheinlichkeitsnetz|Wahrscheinlichkeitsnetz}} oder {{term:streudiagramm|XY-Diagramm}}) im gleichen Phasenbereich an — mit den ausgewählten Spalten bereits vorverknüpft, sodass Du direkt mit Anmerkungen, Referenzlinien, Achsen-Tuning oder Export weiterarbeiten kannst. Für Torte, Streudiagramm-Matrix und die reinen Vorschau-Kombinationen (Haupteffekte, Wechselwirkung, Randverteilungen, CUSUM) gibt es kein Zielmodul — der Button ist dort ausgeblendet."
+          "content": "Über der Vorschau gibt es bei vielen Diagrammen den Button „Im eigenen Modul öffnen“. Er legt eine neue Instanz des entsprechenden Vollmoduls ({{term:histogramm|Histogramm}}, {{term:boxplot|Boxplot}}, Einzelwertdiagramm, Verlaufsdiagramm, I-MR-Regelkarte (nur ohne Datumsspalte, weil das Modul in Zeilenreihenfolge zeichnet), Box-Cox-I-MR-Regelkarte, Balkendiagramm, {{term:pareto|Pareto}}-Diagramm, Mosaikplot, Wärmekarte, {{term:wahrscheinlichkeitsnetz|Wahrscheinlichkeitsnetz}} oder {{term:streudiagramm|XY-Diagramm}}) im gleichen Phasenbereich an — mit den ausgewählten Spalten bereits vorverknüpft, sodass Du direkt mit Anmerkungen, Referenzlinien, Achsen-Tuning oder Export weiterarbeiten kannst. Für Torte, Streudiagramm-Matrix und die reinen Vorschau-Kombinationen (Haupteffekte, Wechselwirkung, Randverteilungen, CUSUM) gibt es kein Zielmodul — der Button ist dort ausgeblendet."
         },
         {
           "type": "definition",
@@ -40,7 +40,7 @@
         {
           "type": "definition",
           "term": "Regelkarten-Vorschau",
-          "content": "Bei der Kombination „Datum + stetige Spalte\" enthält der Vorschlag eine Regelkarte. Die Vorschau berechnet automatisch eine I-Karte (Individuals-Chart) mit zentralem {{term:mittelwert|Mittelwert}}, ±3σ-Grenzen (σ aus dem mittleren Moving Range, d2=1,128) und der Beobachtung sortiert nach Datum. Für X̄/R, X̄/S oder Phase-I-Ausschlüsse wechselst Du in die ausgewachsene Regelkarte unter „Control\"."
+          "content": "Bei der Kombination „Datum + stetige Spalte“ enthält der Vorschlag eine Regelkarte. Die Vorschau berechnet automatisch eine I-Karte (Individuals-Chart) mit zentralem {{term:mittelwert|Mittelwert}}, ±3σ-Grenzen (σ aus dem mittleren Moving Range, d2=1,128) und der Beobachtung sortiert nach Datum. Über „Im eigenen Modul öffnen“ legst Du die I-MR-Karte an, sofern keine Datumsspalte gewählt ist. Für X̄/R, X̄/S oder Phase-I-Ausschlüsse wechselst Du in die ausgewachsene Regelkarte unter „Control“."
         }
       ]
     }
