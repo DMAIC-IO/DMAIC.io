@@ -399,7 +399,14 @@ export function createAgentRuntime(deps) {
       // Aufruf nicht überholt; die Entscheidung läuft daneben an.
       const decision = decideCancel(input);
       const queued = queue.then(() => decision)
-        .then((d) => (d.cancel ? undefined : runInteract(input, d.decided).catch(surfaceFailure)));
+        .then((d) => {
+          if (d.cancel) return undefined;
+          // Im Platz gilt die Einwilligung von jetzt, nicht die vom Aufruf: war das
+          // Tor offen, prüft `runInteract` selbst erneut (ohne Dialog, solange sie
+          // gilt). Eine Verweigerung wird unverändert zurückgegeben, ohne zweiten Dialog.
+          const decided = d.decided?.gate?.ok ? undefined : d.decided;
+          return runInteract(input, decided).catch(surfaceFailure);
+        });
       queue = queued.then(() => undefined, () => undefined);
       return decision.then((d) => (d.cancel ? runInteract(input, d.decided).catch(surfaceFailure) : queued));
     },

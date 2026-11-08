@@ -99,7 +99,7 @@ function makeRuntime({ denied = false, viewmodel = null, completed = false, slow
     consent: {
       ensure: async () => {
         log.push('consent');
-        return denied ? { ok: false, error: 'consent_denied', message: 'denied' } : { ok: true };
+        return (typeof denied === 'function' ? denied() : denied) ? { ok: false, error: 'consent_denied', message: 'denied' } : { ok: true };
       },
     },
     host: {
@@ -1116,6 +1116,23 @@ suite('agent runtime — Abbruch-Stapel umgehen die Kette', () => {
     assertEqual(out.error, 'consent_denied');
     assertEqual(calls.filter((e) => e === 'consent').length, 1, 'ensure genau einmal');
     assertDeepEqual(log, []);
+  });
+
+  test('Widerruf während des Wartens: ein cancel-förmiger Nicht-Task-Stapel läuft nicht und fragt erneut', async () => {
+    const log = [];
+    let revoked = false;
+    const { runtime, log: calls } = makeRuntime({ registry, denied: () => revoked, viewmodel: makeVm(log, { hang: false }) });
+    const first = runtime.interact(start);
+    await tick(2);
+    const sub = runtime.interact({ op: 'instance.call', instance: 'fw-1', method: 'sub.cancel', args: [] });
+    await tick(1);
+    revoked = true;
+    const out = await sub;
+    await first;
+    assertEqual(out.ok, false);
+    assertEqual(out.error, 'consent_denied');
+    assertTrue(!log.includes('sub-cancel'), 'sub.cancel lief trotz Widerruf');
+    assertEqual(calls.filter((e) => e === 'consent').length, 3, 'start, Entscheidung, erneute Prüfung im Platz');
   });
 
   test('ein echter Abbruch fragt die Einwilligung genau einmal', async () => {
