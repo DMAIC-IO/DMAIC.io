@@ -960,10 +960,9 @@ export const isWidget = (x) => Boolean(x && /** @type {any} */ (x)[WIDGET]);
 
 // ─── Versionen und Migrationen ──────────────────────────────
 
-// Der Build-Gate `tools/build/module-gates.mjs` führt eine Kopie dieser beiden
-// Muster — bei Änderungen synchron halten.
-const VERSION = /^\d+\.\d+$/;
-const MIGRATION_KEY = /^(0|\d+\.\d+)→(\d+\.\d+)$/;
+// Der Build-Gate `tools/build/module-gates.mjs` importiert beide Muster.
+export const VERSION = /^\d+\.\d+$/;
+export const MIGRATION_KEY = /^(0|\d+\.\d+)→(\d+\.\d+)$/;
 /** Gespeicherte Version: `0` (vor dem ersten Schema) oder `MAJOR.MINOR`. */
 const STORED_VERSION = /^(0|\d+\.\d+)$/;
 

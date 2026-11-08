@@ -1087,3 +1087,52 @@ test('computedNamesOf liest die Schlüssel des computed-Objekts im view-Block', 
   assert.deepEqual(computedNamesOf('export default {}'), []);
   assert.deepEqual(computedNamesOf(`const computed = { other() {} }; export default createModule({ view: () => ({ computed: { z() {} } }) });`), ['z']);
 });
+
+test('Schema-Literal: version/migrations in einem Feldobjekt sind kein Schema-Kopf', () => {
+  const src = `import { defineModel, text } from '${MODEL_URL}';
+export const State = defineModel({
+  version: '1.0',
+  fields: { t: text({ version: '2.0', migrations: {} }), version: text() },
+});
+`;
+  assert.deepEqual(checkSchemaLiteral(src), [
+    "schema: domain/model.js: version nur am obersten defineModel-Literal erlaubt (version: '2.0')",
+    'schema: domain/model.js: migrations nur am obersten defineModel-Literal erlaubt (migrations: {})',
+  ]);
+});
+
+test('Schema-Literal: default als Funktion nur in Feldspezifikationen, nicht in Kommandoparametern', () => {
+  const src = `import { defineModel, command, number } from '${MODEL_URL}';
+export const State = defineModel({
+  fields: { a: number({ default: () => 1 }) },
+  commands: { go: command({ params: { default: () => 1 }, run() {} }) },
+});
+`;
+  assert.deepEqual(checkSchemaLiteral(src), [
+    'schema: domain/model.js: Funktion nicht erlaubt (() => 1) — Callbacks nur als run',
+  ]);
+});
+
+test('findViewBlock: trifft den view-Block des createModule-Arguments, nicht ein früheres defineModel', () => {
+  const text = `const State = defineModel({ view: { zoom: number() } });
+export default createModule({ view() { return { computed: { fromModule() { return 1; } } }; } });
+`;
+  assert.deepEqual(computedNamesOf(text), ['fromModule']);
+  const early = `const State = defineModel({ view: { computed: { wrong: 1 } } });
+export default createModule({ view() { return { get x() { return ctx.stateManager; } }; } });
+`;
+  assert.deepEqual(checkViewReads([{ path: 'viewmodel/viewmodel.js', text: early }]), [
+    'view: viewmodel/viewmodel.js: stateManager im view-Block — Arbeitsblätter über ctx.data lesen',
+  ]);
+});
+
+test('checkViewReads: auch asyncTasks.*.run, wie im view-Block', () => {
+  const text = `export default createModule({
+  asyncTasks: { compute: asyncTask({ run(_, ctx) { return ctx.stateManager.get('a'); } }), ok: asyncTask({ run() { return 1; } }) },
+  view() { return {}; },
+});
+`;
+  assert.deepEqual(checkViewReads([{ path: 'viewmodel/viewmodel.js', text }]), [
+    'view: viewmodel/viewmodel.js: stateManager in asyncTasks.compute.run — Arbeitsblätter über ctx.data lesen',
+  ]);
+});

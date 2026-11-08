@@ -15,7 +15,7 @@ import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';
 import { TAG, camel, keyOf, parseJs, bodyEnd } from './template-scan.mjs';
-import { parsePath } from '../../js/core/model.js';
+import { parsePath, VERSION, MIGRATION_KEY } from '../../js/core/model.js';
 import { parseFieldPath, keyFieldsOf } from '../../js/core/field-path.js';
 import { loadModelSchema, loadSettingsSchema, loadFormSchemas, loadStateSchema } from './model-types.mjs';
 import { checkWidgetBindings, loadWidgetSchemas } from './widget-gates.mjs';
@@ -361,16 +361,13 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
   const out = [];
   const src = (n) => n.getText(sf);
   const top = calls[0].arguments[0];
-  // Kopien von VERSION / MIGRATION_KEY in js/core/model.js — synchron halten.
-  const VERSION_LITERAL = /^\d+\.\d+$/;
-  const MIGRATION_KEY = /^(0|\d+\.\d+)→(\d+\.\d+)$/;
   for (const p of top.properties) {
     const key = keyOf(p);
     if (define !== 'defineModel' || (key !== 'version' && key !== 'migrations')) continue;
     // Kurzschreibweise, Methode, Getter: keine Zuweisung — die ganze Eigenschaft zeigen.
     const v = ts.isPropertyAssignment(p) ? p.initializer : p;
     if (key === 'version') {
-      if (!(ts.isStringLiteral(v) && VERSION_LITERAL.test(v.text))) out.push(`${P} version muss ein String-Literal MAJOR.MINOR sein (${src(v)})`);
+      if (!(ts.isStringLiteral(v) && VERSION.test(v.text))) out.push(`${P} version muss ein String-Literal MAJOR.MINOR sein (${src(v)})`);
       continue;
     }
     if (!ts.isObjectLiteralExpression(v)) {
@@ -415,7 +412,7 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
       }
     }
   };
-  const check = (n, cmdName = null) => {
+  const check = (n, cmdName = null, spec = false) => {
     if (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n) || ts.isNumericLiteral(n)) return;
     if ([ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword, ts.SyntaxKind.NullKeyword].includes(n.kind)) return;
     if (ts.isPrefixUnaryExpression(n) && n.operator === ts.SyntaxKind.MinusToken && ts.isNumericLiteral(n.operand)) return;
@@ -438,6 +435,7 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
         const key = p.name && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? p.name.text : null;
         if (define === 'defineModel' && n === top && (key === 'version' || key === 'migrations')) continue;
         if (define === 'defineModel' && n === top && key === 'invariants') { checkInvariants(p); continue; }
+        if (spec && (key === 'version' || key === 'migrations')) { out.push(`${P} ${key} nur am obersten ${define}-Literal erlaubt (${src(p)})`); continue; }
         if (cmdName !== null && HOOKS.includes(key)) {
           if (key === 'run' && isAsyncRun(p)) { out.push(`${P} command ${cmdName}: async run — use asyncTask`); continue; }
           if (ts.isMethodDeclaration(p)) continue;
@@ -448,7 +446,7 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
           continue;
         }
         // Vorgabe aus dem Kontext des Models: (c) => … — reine Funktion, ihr Rumpf bleibt ungeprüft.
-        if (define === 'defineModel' && key === 'default') {
+        if (spec && define === 'defineModel' && key === 'default') {
           if (ts.isMethodDeclaration(p)) continue;
           const v = ts.isPropertyAssignment(p) ? p.initializer : null;
           if (v && (ts.isArrowFunction(v) || ts.isFunctionExpression(v))) continue;
@@ -467,7 +465,7 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
       const isCommand = ctors.get(n.expression.text) === 'command';
       for (const a of n.arguments) {
         if (isCommand && ts.isObjectLiteralExpression(a)) check(a, commandName(n));
-        else check(a);
+        else check(a, null, !isCommand);
       }
       return;
     }
@@ -604,24 +602,56 @@ export function checkWritePath(files) {
 }
 
 /**
- * Der `view`-Block (Methode oder Eigenschaft `view` im createModule-Literal).
- * @param {string} text
- * @returns {import('typescript').Node|null}
+ * Das Objektliteral im Argument von `createModule(…)` bzw. `createTile(…)`.
+ * @param {import('typescript').SourceFile} sf
+ * @returns {import('typescript').ObjectLiteralExpression|null}
  */
-function findViewBlock(text) {
-  const sf = ts.createSourceFile('viewmodel.js', text, ts.ScriptTarget.Latest, true);
-  /** @type {import('typescript').Node|null} */
+function factoryArgument(sf) {
+  /** @type {import('typescript').ObjectLiteralExpression|null} */
   let found = null;
   const visit = (n) => {
     if (found) return;
-    if ((ts.isMethodDeclaration(n) || ts.isPropertyAssignment(n)) && n.name && ts.isIdentifier(n.name) && n.name.text === 'view') {
-      found = n;
+    if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && (n.expression.text === 'createModule' || n.expression.text === 'createTile')
+        && n.arguments[0] && ts.isObjectLiteralExpression(n.arguments[0])) {
+      found = n.arguments[0];
       return;
     }
     ts.forEachChild(n, visit);
   };
   visit(sf);
   return found;
+}
+
+/**
+ * Der `view`-Block (Methode oder Eigenschaft `view` am Literal, das an `createModule` übergeben wird).
+ * @param {string} text
+ * @returns {import('typescript').Node|null}
+ */
+function findViewBlock(text) {
+  const arg = factoryArgument(ts.createSourceFile('viewmodel.js', text, ts.ScriptTarget.Latest, true));
+  if (!arg) return null;
+  return arg.properties.find((p) => (ts.isMethodDeclaration(p) || ts.isPropertyAssignment(p)) && p.name && ts.isIdentifier(p.name) && p.name.text === 'view') ?? null;
+}
+
+/**
+ * Die `run`-Glieder der `asyncTasks`-Deklarationen (Namen aus readViewmodelAsyncTasks).
+ * @param {string} text
+ * @returns {Array<[string, import('typescript').Node]>}
+ */
+function asyncTaskRuns(text) {
+  const names = Object.keys(readViewmodelAsyncTasks(text));
+  const arg = factoryArgument(ts.createSourceFile('viewmodel.js', text, ts.ScriptTarget.Latest, true));
+  const block = arg?.properties.find((p) => ts.isPropertyAssignment(p) && keyOf(p) === 'asyncTasks');
+  if (!block || !ts.isPropertyAssignment(block) || !ts.isObjectLiteralExpression(block.initializer)) return [];
+  const out = [];
+  for (const p of block.initializer.properties) {
+    const name = ts.isPropertyAssignment(p) ? keyOf(p) : null;
+    if (!name || !names.includes(name) || !ts.isCallExpression(p.initializer)) continue;
+    const def = p.initializer.arguments[0];
+    const run = def && ts.isObjectLiteralExpression(def) ? def.properties.find((q) => (ts.isMethodDeclaration(q) || ts.isPropertyAssignment(q)) && keyOf(q) === 'run') : null;
+    if (run) out.push([name, run]);
+  }
+  return out;
 }
 
 const VIEW_FORBIDDEN = ['stateManager', 'getModuleState'];
@@ -637,17 +667,20 @@ export function checkViewReads(files) {
   const out = [];
   for (const { path, text } of files) {
     if (!path.startsWith('viewmodel/') && !path.startsWith('tile/')) continue;
-    const view = findViewBlock(text);
-    if (!view) continue;
-    const seen = new Set();
-    const visit = (n) => {
-      if (ts.isIdentifier(n) && VIEW_FORBIDDEN.includes(n.text)) seen.add(n.text);
-      ts.forEachChild(n, visit);
+    const scan = (root, where) => {
+      const seen = new Set();
+      const visit = (n) => {
+        if (ts.isIdentifier(n) && VIEW_FORBIDDEN.includes(n.text)) seen.add(n.text);
+        ts.forEachChild(n, visit);
+      };
+      visit(root);
+      for (const name of VIEW_FORBIDDEN) {
+        if (seen.has(name)) out.push(`view: ${path}: ${name} ${where} — Arbeitsblätter über ctx.data lesen`);
+      }
     };
-    visit(view);
-    for (const name of VIEW_FORBIDDEN) {
-      if (seen.has(name)) out.push(`view: ${path}: ${name} im view-Block — Arbeitsblätter über ctx.data lesen`);
-    }
+    const view = findViewBlock(text);
+    if (view) scan(view, 'im view-Block');
+    for (const [name, run] of asyncTaskRuns(text)) scan(run, `in asyncTasks.${name}.run`);
   }
   return out;
 }
