@@ -16,8 +16,8 @@ import {
 } from './columns.js';
 
 /**
- * Die Achsentexte der Vorschau (`axis.*`).
- * @typedef {{ frequency: string, observation: string, count: string, proportion: string, mean: string, other: string, otherCategories: string, percentile: string, variable: string, value: string, cumulativeSum: string }} ChartLabels
+ * Die Texte der Vorschau: Achsentitel (`axis.*`) und `previewUnavailable` (mit Platzhalter `{type}`).
+ * @typedef {{ frequency: string, observation: string, count: string, proportion: string, mean: string, other: string, otherCategories: string, percentile: string, variable: string, value: string, cumulativeSum: string, previewUnavailable: string }} ChartLabels
  */
 
 /** Typ des Vorschlags → Diagramm-Widget. */
