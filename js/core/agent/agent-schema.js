@@ -42,7 +42,7 @@ const slotTokens = (slot) => [...ruleTokens(slot),
 
 /**
  * Die Regeln eines Parameters als Tokens: `text` mit `trim`/`nonEmpty`,
- * `date`, `time` (mit `step:<n>`), `phase`, `columnRef` (mit `types:`/`minCount:`;
+ * `date`, `time` (mit `step:<n>`), `phase`, `index` mit `afterRemovalFrom:<pfad>`, `columnRef` (mit `types:`/`minCount:`;
  * auch als Listeneintrag), `list` mit `unique`/`sorted`.
  * @param {object} spec @returns {string[]}
  */
@@ -55,6 +55,7 @@ function ruleTokens(spec) {
     case 'columnRef': return ['columnRef',
       ...(spec.types ? [`types:${spec.types.join(',')}`] : []),
       ...(spec.minCount > 0 ? [`minCount:${spec.minCount}`] : [])];
+    case 'index': return spec.afterRemovalFrom === undefined ? [] : [`afterRemovalFrom:${spec.afterRemovalFrom}`];
     case 'datasets': return ['datasets', ...(spec.multi ? ['multi'] : [])];
     case 'list': return [
       ...(spec.item?.kind === 'columnRef' ? ruleTokens(spec.item) : []),

@@ -62,7 +62,11 @@ export const number = (opts) => spec('number', {}, opts);
 export const boolean = (opts) => spec('boolean', {}, opts);
 /** Aufzählung. @param {readonly (string|number)[]} values @param {object} [opts] @returns {Readonly<object>} */
 export const oneOf = (values, opts) => spec('oneOf', { values: Object.freeze([...values]) }, opts);
-/** Position in der Liste unter `path`. @param {string} path @param {object} [opts] @returns {Readonly<object>} */
+/**
+ * Position in der Liste unter `path`. `afterRemovalFrom`: Pfad der Liste, aus der der Eintrag
+ * zuvor entfernt wird; ist das dieselbe Liste wie unter `path`, gilt nur noch Länge − 1 als Obergrenze.
+ * @param {string} path @param {{ afterRemovalFrom?: string, existing?: boolean } & object} [opts] @returns {Readonly<object>}
+ */
 export const index = (path, opts) => spec('index', { path }, opts);
 /**
  * Eine vorhandene id aus der Liste unter `path`.
@@ -272,13 +276,14 @@ export function activeContext(stateManager) {
  * @param {object} s Feld-Spec
  * @param {ModelContext} [context] Kontext des Models (Zyklus für `phase`, Einstellungen für `default`-Funktionen)
  * @param {string} [name] Feldname für die Meldung
+ * @param {object} [root] das entstehende Model, gegen das Pfade (`index`, `idOf`) einer `default`-Funktion geprüft werden
  * @returns {any}
  * @throws {Error} wenn eine `default`-Funktion einen ungültigen Wert liefert
  */
-export function defaultOf(s, context = DEFAULT_CONTEXT, name = 'default') {
+export function defaultOf(s, context = DEFAULT_CONTEXT, name = 'default', root = undefined) {
   if (Object.hasOwn(s, 'default')) {
     if (typeof s.default !== 'function') return cloneJSON(s.default);
-    return checkValue(s, name, s.default(context), { context });
+    return checkValue(s, name, s.default(context), { context, root });
   }
   if (s.nullable) return null;
   switch (s.kind) {
@@ -291,9 +296,9 @@ export function defaultOf(s, context = DEFAULT_CONTEXT, name = 'default') {
     case 'boolean': return false;
     case 'oneOf': return s.values[0];
     case 'list': return [];
-    case 'record': return Object.fromEntries(s.keys.map(k => [k, defaultOf(s.value, context)]));
+    case 'record': return Object.fromEntries(s.keys.map(k => [k, defaultOf(s.value, context, `${name}.${k}`, root)]));
     case 'object': return Object.fromEntries(Object.entries(s.shape)
-      .filter(([, v]) => v.optional !== true).map(([k, v]) => [k, defaultOf(v, context)]));
+      .filter(([, v]) => v.optional !== true).map(([k, v]) => [k, defaultOf(v, context, `${name}.${k}`, root)]));
     default: throw new Error(`defineModel: unknown kind ${JSON.stringify(s.kind)}`);
   }
 }
@@ -364,7 +369,9 @@ export function checkValue(s, name, value, ctx = {}) {
     case 'oneOf': return requireEnum(name, value, s.values, { numeric: s.values.some(v => typeof v === 'number') });
     case 'index': {
       const target = resolvePath(s.path, ctx);
-      requireIndex(name, value, Array.isArray(target) ? target.length : 0, { existing: s.existing === true });
+      const existing = s.existing === true
+        || (s.afterRemovalFrom !== undefined && target !== undefined && resolvePath(s.afterRemovalFrom, ctx) === target);
+      requireIndex(name, value, Array.isArray(target) ? target.length : 0, { existing });
       return value;
     }
     case 'idOf': {
@@ -1065,7 +1072,11 @@ export function defineModel(schema) {
       Object.defineProperty(this, '_run', { value: 0, writable: true, configurable: true, enumerable: false });
       if (context !== undefined) setModelContext(this, context);
       const ctx = contextOf(this);
-      for (const [k, s] of Object.entries(all)) this._v[k] = defaultOf(s, ctx, k);
+      // Pfadabhängige Vorgaben (index/idOf) erst, wenn die pfadfreien da sind.
+      for (const k of Object.keys(all)) this._v[k] = undefined;
+      for (const dependent of [false, true]) {
+        for (const [k, s] of Object.entries(all)) if (usesPath(s) === dependent) this._v[k] = defaultOf(s, ctx, k, this);
+      }
     }
 
     /**

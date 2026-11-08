@@ -985,3 +985,36 @@ suite('list unique/sorted, Reparatur je Eintrag', () => {
     assertThrows(() => defineState({ x: number({ default: () => 1 }) }), /^state field x: default must not be a function$/);
   });
 });
+
+suite('index — afterRemovalFrom und Vorgaben mit Wurzel', () => {
+  const Cols = defineModel({
+    name: 'Cols', version: '1.0',
+    fields: { columns: record(['a', 'b'], list(text()), { default: { a: ['x', 'y'], b: [] } }) },
+    commands: {
+      move: command({
+        params: { from: oneOf(['a', 'b']), to: oneOf(['a', 'b']), at: index('columns[to]', { afterRemovalFrom: 'columns[from]' }) },
+        run() {},
+      }),
+    },
+  });
+
+  test('gleiche Liste: Obergrenze Länge − 1, andere Liste: Länge', () => {
+    const m = new Cols();
+    assertThrows(() => m.move({ from: 'a', to: 'a', at: 2 }), /^invalid at 2; allowed: 0\.\.1$/);
+    m.move({ from: 'a', to: 'a', at: 1 });
+    m.move({ from: 'a', to: 'b', at: 0 });
+    assertThrows(() => m.move({ from: 'a', to: 'b', at: 1 }), /^invalid at 1; allowed: 0\.\.0$/);
+  });
+
+  test('defaultOf nennt das Feld auch in verschachtelten Vorgaben', () => {
+    assertThrows(() => new (defineModel({ name: 'B', version: '1.0', fields: { box: object({ n: number({ min: 0, default: () => -1 }) }) } }))(),
+      /^invalid box\.n -1/);
+  });
+
+  test('Funktionsvorgabe eines index prüft gegen die Wurzel', () => {
+    const Ok = defineModel({ name: 'R', version: '1.0', fields: { rows: list(number(), { default: [1, 2] }), sel: index('rows', { default: () => 1 }) } });
+    assertEqual(new Ok().sel, 1);
+    assertThrows(() => new (defineModel({ name: 'R2', version: '1.0', fields: { rows: list(number(), { default: [1, 2] }), sel: index('rows', { default: () => 5 }) } }))(),
+      /^invalid sel 5; allowed: 0\.\.2$/);
+  });
+});

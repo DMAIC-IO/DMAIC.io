@@ -9,7 +9,6 @@
  * `setItem.current` liefert den Text zum Bearbeiten (Startwert des Dialogs).
  */
 import { defineModel, record, list, text, oneOf, index, command } from '../../../core/model.js';
-import { requireIndex } from '../../../core/validate.js';
 import { from0 } from './migrations.js';
 
 export const COL_KEYS = ['suppliers', 'inputs', 'process', 'outputs', 'customers'];
@@ -53,10 +52,9 @@ export const State = defineModel({
         fromCol: oneOf(COL_KEYS),
         fromIdx: index('columns[fromCol]', { existing: true }),
         toCol: oneOf(COL_KEYS),
-        toIdx: index('columns[toCol]'),
+        toIdx: index('columns[toCol]', { afterRemovalFrom: 'columns[fromCol]' }),
       },
       run({ fromCol, fromIdx, toCol, toIdx }) {
-        if (fromCol === toCol) requireIndex('toIdx', toIdx, this.columns[toCol].length, { existing: true });
         const [moved] = this.columns[fromCol].splice(fromIdx, 1);
         this.columns[toCol].splice(toIdx, 0, moved);
       },
