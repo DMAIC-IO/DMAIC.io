@@ -356,12 +356,14 @@ function mainResult(a, model, t, tip) {
   const ciNote = a.notes.map((w) => {
     if (w.code === 'ciRatioUndefinedNote') return t(w.code);
     if (w.code === 'ciShiftTooSmall') {
-      // Gleich viele Nachkommastellen, so wenige wie nötig, damit beide Zahlen
-      // verschieden lesbar sind (sonst „100 % – erreicht 100,0 %“ bei sehr kleinem α).
-      const want = (1 - alpha) * 100;
+      // Wie bisher: gefordert ganzzahlig, erreicht mit einer Nachkommastelle. Nur
+      // bei numerischem Gleichstand (sehr kleines α: „100 % – erreicht 100,0 %“)
+      // beide gemeinsam genauer, so wenig wie nötig.
       const got = w.values.achieved * 100;
+      if (Number(level) !== Number(fmt(got, 1))) return t(w.code, { level, achieved: fmt(got, 1) });
+      const want = (1 - alpha) * 100;
       let d = 1;
-      while (d < 6 && fmt(want, d) === fmt(got, d)) d++;
+      while (d < 6 && Number(fmt(want, d)) === Number(fmt(got, d))) d++;
       return t(w.code, { level: fmt(want, d), achieved: fmt(got, d) });
     }
     return t(w.code, { lo: fmt(w.values.lo), hi: fmt(w.values.hi) });
