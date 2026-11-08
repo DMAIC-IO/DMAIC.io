@@ -399,6 +399,7 @@ export async function runBuild(appDir = APP_DIR, { check = false, converted = CO
   }
 
   // 1b8. Typen der Widget-Eingaben (js/widgets/*/schema.js → js/widgets/widget-props.types.js)
+  // Absichtlich ohne Fang: ein kaputtes Widget-Schema bricht den Build hart ab; das Modul-Gate meldet es als Befund.
   const widgetSchemas = await loadWidgetSchemas(appDir);
   if (widgetSchemas.size > 0) emit(join(appDir, 'js', 'widgets', 'widget-props.types.js'), renderWidgetProps(widgetSchemas), check, changed);
 

@@ -1206,8 +1206,9 @@ export function checkHelpFiles(base, refIds) {
 
 /**
  * Gate x-widget über alle Vorlagen eines Moduls: Ansicht und Teilvorlagen gegen den
- * view-Block des Viewmodels, jede Kachel-Vorlage gegen den view-Block ihrer Kachel;
- * beide mit dem State-Schema des Moduls.
+ * view-Block des Viewmodels und das State-Schema, jede Kachel-Vorlage gegen den
+ * view-Block ihrer Kachel. Eine Kachel hat keinen `state`; jeder Pfad `state.…`
+ * in einer Kachel-Vorlage ist ein Befund.
  * @param {{ path: string, text: string }[]} templates
  * @param {{ widgets: Map<string, any>, schema: object, stateSchema: object|null, viewNames: Set<string>, tileText: (p: string) => string }} ctx
  * @returns {string[]}
@@ -1216,7 +1217,10 @@ export function checkWidgetTemplates(templates, { widgets, schema, stateSchema, 
   const out = checkWidgetBindings(templates.filter((f) => !/^resources\/tile(\.|$)/.test(f.path)), { widgets, schema, stateSchema, viewNames });
   for (const f of templates) {
     const m = /^resources\/tile(?:\.([a-z0-9-]+))?\.html$/.exec(f.path);
-    if (m) out.push(...checkWidgetBindings([f], { widgets, schema, stateSchema, viewNames: viewNamesOf(tileText(`tile/${m[1] ?? 'tile'}.js`)) }));
+    if (!m) continue;
+    for (const s of f.text.matchAll(/=\s*"\s*(state(?:\.[\w$]+)+)/g)) out.push(`tile: ${f.path}: ${s[1]} — Kacheln haben keinen state`);
+    out.push(...checkWidgetBindings([f], { widgets, schema, stateSchema: null, viewNames: viewNamesOf(tileText(`tile/${m[1] ?? 'tile'}.js`)) })
+      .filter((x) => !x.includes('="state.')));
   }
   return out;
 }

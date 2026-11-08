@@ -1248,14 +1248,12 @@ test('viewNamesDetailOf: das letzte return der obersten Ebene gewinnt gegen eine
   assert.deepEqual(viewNamesDetailOf(vm), { getters: [], computed: [], data: ['real'] });
 });
 
-test('Kachel-Vorlage: state.<feld> wird mit dem State-Schema des Moduls geprüft', () => {
+test('Kachel-Vorlage: state.<pfad> ist ein Befund, auch wenn das Modul das UI-Feld hat', () => {
   const widgets = new Map([['stats-table', defineWidget({ name: 'stats-table', props: { level: number() } })]]);
   const templates = [{ path: 'resources/tile.html', text: '<div x-widget="stats-table" x-widget-level="state.level"></div>' }];
   const tileText = () => 'export default createTile({ view: () => ({}) });';
-  const base = { widgets, schema: { fields: {}, view: {} }, viewNames: new Set(), tileText };
-  assert.deepEqual(checkWidgetTemplates(templates, { ...base, stateSchema: { fields: { level: number() } } }), []);
-  assert.deepEqual(checkWidgetTemplates(templates, { ...base, stateSchema: { fields: {} } }),
-    ['template: resources/tile.html: x-widget-level="state.level": level ist weder Feld noch Ansichtsfeld']);
+  assert.deepEqual(checkWidgetTemplates(templates, { widgets, schema: { fields: {}, view: {} }, viewNames: new Set(), tileText, stateSchema: { fields: { level: number() } } }),
+    ['tile: resources/tile.html: state.level — Kacheln haben keinen state']);
 });
 
 test('x-field auf list(<forKind>) nur, wo das Widget Listen bindet (columnRef)', () => {
