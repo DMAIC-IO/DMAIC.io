@@ -680,6 +680,16 @@ export function checkViewReads(files) {
     };
     const view = findViewBlock(text);
     if (view) scan(view, 'im view-Block');
+    else {
+      const sf = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true);
+      let called = null;
+      const find = (n) => {
+        if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && /^create(Module|Tile)$/.test(n.expression.text)) called ??= n.expression.text;
+        ts.forEachChild(n, find);
+      };
+      find(sf);
+      if (called && !factoryArgument(sf)) out.push(`view: ${path}: ${called}-Argument ist kein Objektliteral — view-Block nicht prüfbar`);
+    }
     for (const [name, run] of asyncTaskRuns(text)) scan(run, `in asyncTasks.${name}.run`);
   }
   return out;
@@ -723,18 +733,24 @@ function viewReturnObject(view) {
     return ts.isObjectLiteralExpression(body) ? body : null;
   }
   /** @type {import('typescript').ObjectLiteralExpression|null} */
-  let top = null;
+  let direct = null; // letztes return auf oberster Ebene des Rumpfs
+  /** @type {import('typescript').ObjectLiteralExpression|null} */
+  let nested = null; // erstes return in einem Zweig, falls es kein oberstes gibt
+  const body = /** @type {any} */ (fn).body;
   const visit = (n) => {
-    if (top || ts.isFunctionLike(n)) return;
+    if (ts.isFunctionLike(n)) return;
     if (ts.isReturnStatement(n) && n.expression) {
       const e = unwrap(n.expression);
-      if (ts.isObjectLiteralExpression(e)) top = e;
+      if (ts.isObjectLiteralExpression(e)) {
+        if (n.parent === body) direct = e;
+        else nested ??= e;
+      }
       return;
     }
     ts.forEachChild(n, visit);
   };
-  visit(/** @type {any} */ (fn).body);
-  return top;
+  visit(body);
+  return direct ?? nested;
 }
 
 /**

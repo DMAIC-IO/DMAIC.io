@@ -1180,14 +1180,20 @@ test('viewNamesDetailOf: das return des view-Blocks, nicht das erste Objekt davo
   assert.deepEqual(viewNamesDetailOf(arrow), { getters: ['g'], computed: [], data: ['d'] });
 });
 
-test('kein view-Block oder kein Literal am createModule: keine Namen, kein Befund (bewusst)', () => {
+test('kein view-Block: keine Namen, kein Befund; Nicht-Literal am createModule: Befund', () => {
   const empty = { getters: [], computed: [], data: [] };
   assert.deepEqual(viewNamesDetailOf('export default createModule({ commands: {} });'), empty);
   assert.deepEqual(viewNamesDetailOf('export default createModule(config);'), empty);
   assert.deepEqual(viewNamesDetailOf('export default {};'), empty);
   assert.deepEqual(computedNamesOf('export default createModule(config);'), []);
   const hidden = 'export default createModule(config);\nconst config = { view() { return { get x() { return ctx.stateManager; } }; } };';
-  assert.deepEqual(checkViewReads([{ path: 'viewmodel/viewmodel.js', text: hidden }]), []);
+  assert.deepEqual(checkViewReads([{ path: 'viewmodel/viewmodel.js', text: hidden }]), [
+    'view: viewmodel/viewmodel.js: createModule-Argument ist kein Objektliteral — view-Block nicht prüfbar',
+  ]);
+  assert.deepEqual(checkViewReads([{ path: 'tile/tile.js', text: 'export default createTile(config);' }]), [
+    'view: tile/tile.js: createTile-Argument ist kein Objektliteral — view-Block nicht prüfbar',
+  ]);
+  assert.deepEqual(checkViewReads([{ path: 'viewmodel/viewmodel.js', text: 'export const helper = 1;' }]), []);
   assert.deepEqual(checkViewReads([{ path: 'viewmodel/viewmodel.js', text: 'export default createModule({});' }]), []);
 });
 
@@ -1232,4 +1238,12 @@ test('checkConvertedModule: Lesezugriffe im view-Block und in asyncTasks über d
     'view: viewmodel/viewmodel.js: getModuleState im view-Block — Arbeitsblätter über ctx.data lesen',
     'view: viewmodel/viewmodel.js: stateManager in asyncTasks.compute.run — Arbeitsblätter über ctx.data lesen',
   ]);
+});
+
+test('viewNamesDetailOf: das letzte return der obersten Ebene gewinnt gegen einen Guard davor', () => {
+  const vm = `export default createModule({ view(ctx) {
+    if (!ctx) return { guard: 1 };
+    return { real: 1 };
+  } });`;
+  assert.deepEqual(viewNamesDetailOf(vm), { getters: [], computed: [], data: ['real'] });
 });
