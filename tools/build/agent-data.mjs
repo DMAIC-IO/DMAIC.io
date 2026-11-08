@@ -51,6 +51,10 @@
  */
 import { readReturnKeys } from './agent-read-return.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
+import { loadModelSchema } from './model-types.mjs';
+import { computedNamesOf, readViewmodelCommands } from './module-gates.mjs';
+import { readViewmodelAsyncTasks } from './async-task-gates.mjs';
+import { schemaAgentEntry } from '../../js/core/agent/agent-schema.js';
 import ts from 'typescript';
 import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
 import { join, relative, sep, dirname, basename } from 'node:path';
@@ -102,7 +106,7 @@ export const CREATING_VOID_EXEMPT = new Set(['doe-planner.factors.insertLevel', 
  * @param {string} appDir  Wurzel von app/dev
  * @param {{ baseline?: Set<string>, converted?: readonly string[] }} [options]  `baseline`: eingefrorene Zeilen
  *   `<modul> <code>`, Vorgabe ist `agent-write-baseline.txt`; `converted`: umgestellte Module
- *   (Vorgabe `CONVERTED_MODULES`), nur sie bekommen den Schema-Platzhalter
+ *   (Vorgabe `CONVERTED_MODULES`), ihr Eintrag entsteht aus dem Schema (`convertedEntry`)
  * @returns {Promise<{ modules: Record<string, object>, coverage: { total: number, available: number }, writtenFields: Record<string, string[]>, frozen: Record<string, string[]> }>}
  *   `writtenFields` nennt je Modul die Felder, die eine `@agent`-Aktion
  *   zuweist, `frozen` die Befunde aus der Baseline — beides nur für Bericht und
@@ -120,11 +124,12 @@ export async function collectAgentData(appDir, { baseline = loadWriteBaseline(),
   for (const id of readdirSync(root).sort()) {
     const dir = join(root, id);
     if (!statSync(dir).isDirectory()) continue;
-    // Ein umgestelltes Modul (converted-modules.mjs) erzeugt seine Fläche zur
-    // Laufzeit aus dem Schema (core/agent/agent-schema.js). Hier steht nur der
-    // Platzhalter, den core/agent/agent-entries.js beim ersten Bedarf ersetzt.
+    // Ein umgestelltes Modul (converted-modules.mjs): sein Eintrag entsteht aus
+    // dem Schema wie zur Laufzeit (`convertedEntry`), damit Bericht und
+    // Freigabe dieselbe Fläche sehen; core/agent/agent-entries.js ersetzt ihn
+    // beim ersten Bedarf durch den Laufzeiteintrag.
     if (converted.includes(id)) {
-      modules[id] = { tagged: true, available: true, schema: true, violations: [], reported: [], actions: {}, fields: {} };
+      modules[id] = await convertedEntry(appDir, id);
       writtenFields[id] = [];
       continue;
     }
@@ -140,6 +145,81 @@ export async function collectAgentData(appDir, { baseline = loadWriteBaseline(),
   const total = Object.keys(modules).length;
   const available = Object.values(modules).filter(m => m.available).length;
   return { modules, coverage: { total, available }, writtenFields, frozen };
+}
+
+/**
+ * Platzhalter-Parameter: das Viewmodel ist in Node nicht ladbar, statisch
+ * kennt der Build nur die Parameternamen. Jeder bekommt eine regelfreie
+ * Feldart, deren Typ `markUnknownKeys` danach auf `unknown` setzt — eine
+ * eigene Feldart `unknown` gibt es im Kern nicht.
+ * @param {Record<string, { params: Record<string, true> }>} defs
+ * @returns {Record<string, { params: Record<string, { kind: 'boolean' }> }>}
+ */
+function stubParams(defs) {
+  return Object.fromEntries(Object.entries(defs).map(([name, def]) => [name, {
+    ...def, params: Object.fromEntries(Object.keys(def.params).map((k) => [k, { kind: 'boolean' }])),
+  }]));
+}
+
+/**
+ * Setzt an den Aktionen aus `stubParams` den Schlüsseltyp `unknown`.
+ * @param {Record<string, object>} actions
+ * @param {Record<string, { params: Record<string, unknown> }>} defs
+ */
+function markUnknownKeys(actions, defs) {
+  for (const [name, def] of Object.entries(defs)) {
+    const keys = actions[name]?.keys;
+    if (keys) for (const k of Object.keys(def.params)) if (keys[k]) keys[k].type = 'unknown';
+  }
+}
+
+/**
+ * Der Registry-Eintrag eines umgestellten Moduls, aus `domain/model.js`
+ * (geladen) und `viewmodel/viewmodel.js` (statisch gelesen) — dieselbe Form,
+ * die `createModule` zur Laufzeit über `schemaAgentEntry` baut. Viewmodel-
+ * Kommandos und Tasks tragen nur ihre Parameternamen (Typ `unknown`).
+ * @param {string} appDir  Wurzel von app/dev
+ * @param {string} id  Modul-Id
+ * @returns {Promise<object>}
+ */
+async function convertedEntry(appDir, id) {
+  const dir = join(appDir, MODULES_DIR, id);
+  const { schema } = await loadModelSchema(join(dir, 'domain', 'model.js'));
+  const vm = readFileSync(join(dir, 'viewmodel', 'viewmodel.js'), 'utf8');
+  const commands = readViewmodelCommands(vm);
+  const tasks = readViewmodelAsyncTasks(vm);
+  // `schemaAgentEntry` liest das Schema über `schemaOf` an einer Klasse.
+  const Model = Object.assign(function Model() {}, { schema });
+  const entry = schemaAgentEntry(Model, stubParams(commands), {
+    derived: computedNamesOf(vm), bulk: readBulkOf(vm), asyncTasks: stubParams(tasks),
+  });
+  markUnknownKeys(entry.actions, { ...commands, ...tasks });
+  return entry;
+}
+
+/**
+ * `readBulk` als Array-Literal im `createModule({…})`-Argument.
+ * Was kein Literal aus Zeichenketten ist, bleibt außen vor.
+ * @param {string} text  Quelltext von viewmodel/viewmodel.js
+ * @returns {string[]}
+ */
+export function readBulkOf(text) {
+  const sf = ts.createSourceFile('viewmodel.js', text, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
+  let out = [];
+  const visit = (n) => {
+    if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && n.expression.text === 'createModule'
+        && n.arguments[0] && ts.isObjectLiteralExpression(n.arguments[0])) {
+      const p = n.arguments[0].properties.find((q) => ts.isPropertyAssignment(q) && q.name
+        && (ts.isIdentifier(q.name) || ts.isStringLiteral(q.name)) && q.name.text === 'readBulk');
+      if (p && ts.isArrayLiteralExpression(p.initializer)) {
+        out = p.initializer.elements.filter((e) => ts.isStringLiteralLike(e)).map((e) => e.text);
+      }
+      return;
+    }
+    ts.forEachChild(n, visit);
+  };
+  visit(sf);
+  return out;
 }
 
 /** Der eingefrorene Bestand von `unreachable_write`. */

@@ -53,7 +53,8 @@
         "time": "The start as HH:MM on a 5-minute grid; 09:00 when not given. A time off the grid is an error.",
         "duration": "The duration in whole minutes, at least 5; 60 when not given.",
         "desc": "The description; empty when not given.",
-        "phase": "The phase of the appointment; any phase of any cycle is valid, when not given the first phase of the active cycle."
+        "phase": "The phase of the appointment; any phase of any cycle is valid, when not given the first phase of the active cycle.",
+        "command": "The command as one object with title, date, time, duration, desc and phase."
       }
     },
     "updateEvent": {
@@ -65,13 +66,15 @@
         "time": "The new start as HH:MM on a 5-minute grid.",
         "duration": "The new duration in whole minutes, at least 5.",
         "desc": "The new description.",
-        "phase": "The new phase; any phase of any cycle is valid."
+        "phase": "The new phase; any phase of any cycle is valid.",
+        "command": "The command as one object with id, title, date, time, duration, desc and phase."
       }
     },
     "removeEvent": {
       "help": "Removes an appointment. In the interface the calendar asks first.",
       "params": {
-        "id": "The id of the appointment as read() lists it under events. An unknown id is an error."
+        "id": "The id of the appointment as read() lists it under events. An unknown id is an error.",
+        "command": "The command as one object with id."
       }
     }
   },

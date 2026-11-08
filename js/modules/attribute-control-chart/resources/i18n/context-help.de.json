@@ -43,7 +43,8 @@
       "help": "Hakt eine Regel an oder ab; die Liste `enabledRules` bleibt entdoppelt und aufsteigend.",
       "params": {
         "ruleId": "Die Regel: 1, 2, 3, 5 oder 6 (Bedeutung bei `enabledRules`). Ein anderer Wert ist ein Fehler.",
-        "on": "true hakt an, false ab."
+        "on": "true hakt an, false ab.",
+        "command": "Das Kommando als ein Objekt mit ruleId und on."
       }
     }
   },

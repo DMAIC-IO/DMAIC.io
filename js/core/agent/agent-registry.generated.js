@@ -370,8 +370,137 @@ export const AGENT_REGISTRY = {
     "schema": true,
     "violations": [],
     "reported": [],
-    "actions": {},
-    "fields": {}
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "toggleRule": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "toggleRule",
+        "keysHelp": "actions.toggleRule.params",
+        "keys": {
+          "ruleId": {
+            "type": "1|2|3|5|6",
+            "help": ""
+          },
+          "on": {
+            "type": "boolean",
+            "help": ""
+          }
+        }
+      }
+    },
+    "fields": {
+      "chartTypeId": {
+        "type": "'p'|'np'|'c'|'u'",
+        "help": "",
+        "bulk": false
+      },
+      "defectsRef": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
+        "bulk": false,
+        "rules": [
+          "columnRef",
+          "types:numeric",
+          "minCount:2"
+        ]
+      },
+      "sizeRef": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
+        "bulk": false,
+        "rules": [
+          "columnRef",
+          "types:numeric",
+          "minCount:2"
+        ]
+      },
+      "constantN": {
+        "type": "number",
+        "help": "",
+        "bulk": false
+      },
+      "baselineCount": {
+        "type": "number|null",
+        "help": "",
+        "bulk": false
+      },
+      "enabledRules": {
+        "type": "Array<1|2|3|5|6>",
+        "help": "",
+        "bulk": false
+      },
+      "analysis": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "result": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "points": {
+        "type": "object[]",
+        "help": "",
+        "bulk": true,
+        "bulkKind": "table",
+        "derived": true
+      },
+      "activeColumnSlots": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "activeParams": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "pickableColumns": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "exampleWorksheetId",
+      "controlChartEdits"
+    ],
+    "settable": [
+      "chartTypeId",
+      "defectsRef",
+      "sizeRef",
+      "constantN",
+      "baselineCount",
+      "enabledRules"
+    ]
   },
   "attribute-test": {
     "tagged": true,
@@ -4164,8 +4293,183 @@ export const AGENT_REGISTRY = {
     "schema": true,
     "violations": [],
     "reported": [],
-    "actions": {},
-    "fields": {}
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "addEvent": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "string",
+        "help": "",
+        "keysOf": "addEvent",
+        "keysHelp": "actions.addEvent.params",
+        "keys": {
+          "title": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          },
+          "date": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "date"
+            ]
+          },
+          "time": {
+            "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "time",
+              "step:5"
+            ]
+          },
+          "duration": {
+            "type": "number",
+            "help": "",
+            "optional": true
+          },
+          "desc": {
+            "type": "string",
+            "help": "",
+            "optional": true
+          },
+          "phase": {
+            "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "phase"
+            ]
+          }
+        }
+      },
+      "updateEvent": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "updateEvent",
+        "keysHelp": "actions.updateEvent.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
+          },
+          "title": {
+            "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          },
+          "date": {
+            "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "date"
+            ]
+          },
+          "time": {
+            "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "time",
+              "step:5"
+            ]
+          },
+          "duration": {
+            "type": "number",
+            "help": "",
+            "optional": true
+          },
+          "desc": {
+            "type": "string",
+            "help": "",
+            "optional": true
+          },
+          "phase": {
+            "type": "string",
+            "help": "",
+            "optional": true,
+            "rules": [
+              "phase"
+            ]
+          }
+        }
+      },
+      "removeEvent": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeEvent",
+        "keysHelp": "actions.removeEvent.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      }
+    },
+    "fields": {
+      "events": {
+        "type": "{ id: string, title: string, date: string, time: string, duration: number, desc: string, phase: string, source?: 'todo' }[]",
+        "help": "",
+        "bulk": false
+      }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "viewMode",
+      "axisFrom",
+      "axisTo",
+      "dayFrom",
+      "dayTo"
+    ],
+    "settable": [
+      "events"
+    ]
   },
   "doe-advisor": {
     "tagged": true,
@@ -6426,8 +6730,109 @@ export const AGENT_REGISTRY = {
     "schema": true,
     "violations": [],
     "reported": [],
-    "actions": {},
-    "fields": {}
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setBinMode": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setBinMode",
+        "keysHelp": "actions.setBinMode.params",
+        "keys": {
+          "binMode": {
+            "type": "'auto'|'manual'",
+            "help": ""
+          }
+        }
+      }
+    },
+    "fields": {
+      "datasets": {
+        "type": "Array<{ valueRef: { instanceId: string, sheetId?: string, columnId: string }|null, groupRef: { instanceId: string, sheetId?: string, columnId: string }|null }>",
+        "help": "",
+        "bulk": false,
+        "rules": [
+          "datasets",
+          "multi"
+        ],
+        "slots": {
+          "valueRef": [
+            "columnRef",
+            "types:numeric",
+            "minCount:1",
+            "required"
+          ],
+          "groupRef": [
+            "columnRef",
+            "group"
+          ]
+        }
+      },
+      "binMode": {
+        "type": "'auto'|'manual'",
+        "help": "",
+        "bulk": false
+      },
+      "binWidth": {
+        "type": "number|null",
+        "help": "",
+        "bulk": false
+      },
+      "confLevel": {
+        "type": "number",
+        "help": "",
+        "bulk": false
+      },
+      "series": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "shown": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "stats": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "exampleWorksheetId",
+      "showStats",
+      "histogramChart"
+    ],
+    "settable": [
+      "datasets",
+      "binMode",
+      "binWidth",
+      "confLevel"
+    ]
   },
   "hypothesis-test": {
     "tagged": true,
@@ -6435,8 +6840,161 @@ export const AGENT_REGISTRY = {
     "schema": true,
     "violations": [],
     "reported": [],
-    "actions": {},
-    "fields": {}
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setCategory": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setCategory",
+        "keysHelp": "actions.setCategory.params",
+        "keys": {
+          "category": {
+            "type": "'variance'|'mean'",
+            "help": ""
+          }
+        }
+      },
+      "setTestType": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setTestType",
+        "keysHelp": "actions.setTestType.params",
+        "keys": {
+          "testType": {
+            "type": "'one'|'two'|'paired'|'k'",
+            "help": ""
+          }
+        }
+      }
+    },
+    "fields": {
+      "category": {
+        "type": "'variance'|'mean'",
+        "help": "",
+        "bulk": false
+      },
+      "testType": {
+        "type": "'one'|'two'|'paired'|'k'",
+        "help": "",
+        "bulk": false
+      },
+      "direction": {
+        "type": "'two-sided'|'greater'|'less'",
+        "help": "",
+        "bulk": false
+      },
+      "alpha": {
+        "type": "number",
+        "help": "",
+        "bulk": false
+      },
+      "powerGoal": {
+        "type": "number",
+        "help": "",
+        "bulk": false
+      },
+      "targetValue": {
+        "type": "string",
+        "help": "",
+        "bulk": false
+      },
+      "targetType": {
+        "type": "'variance'|'stddev'",
+        "help": "",
+        "bulk": false
+      },
+      "colRef1": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
+        "bulk": false,
+        "rules": [
+          "columnRef",
+          "types:numeric",
+          "minCount:3"
+        ]
+      },
+      "colRef2": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
+        "bulk": false,
+        "rules": [
+          "columnRef",
+          "types:numeric",
+          "minCount:3"
+        ]
+      },
+      "colRefsK": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }[]",
+        "help": "",
+        "bulk": false,
+        "rules": [
+          "columnRef",
+          "types:numeric",
+          "minCount:3"
+        ]
+      },
+      "equalVariances": {
+        "type": "boolean",
+        "help": "",
+        "bulk": false
+      },
+      "result": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "exampleWorksheetId",
+      "residFittedChart",
+      "residProbChart",
+      "residHistChart",
+      "residOrderChart"
+    ],
+    "settable": [
+      "category",
+      "testType",
+      "direction",
+      "alpha",
+      "powerGoal",
+      "targetValue",
+      "targetType",
+      "colRef1",
+      "colRef2",
+      "colRefsK",
+      "equalVariances"
+    ]
   },
   "individual-value-plot": {
     "tagged": true,
@@ -15896,8 +16454,236 @@ export const AGENT_REGISTRY = {
     "schema": true,
     "violations": [],
     "reported": [],
-    "actions": {},
-    "fields": {}
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setMode": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setMode",
+        "keysHelp": "actions.setMode.params",
+        "keys": {
+          "mode": {
+            "type": "'one'|'two'|'paired'|'k'",
+            "help": ""
+          }
+        }
+      },
+      "rollSeed": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "number",
+        "help": "",
+        "keysOf": "rollSeed",
+        "keysHelp": "actions.rollSeed.params",
+        "keys": {}
+      },
+      "compute": {
+        "target": "asyncTask",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "any",
+        "help": "",
+        "keysOf": "compute",
+        "keysHelp": "asyncTasks.compute.params",
+        "keys": {},
+        "task": "compute",
+        "op": "start",
+        "helpKey": "asyncTasks.compute.help"
+      },
+      "compute.cancel": {
+        "target": "asyncTask",
+        "task": "compute",
+        "op": "cancel",
+        "params": [],
+        "returns": "{ cancelled: boolean }",
+        "help": "",
+        "helpKey": "asyncTasks.compute.cancel.help"
+      }
+    },
+    "fields": {
+      "mode": {
+        "type": "'one'|'two'|'paired'|'k'",
+        "help": "",
+        "bulk": false
+      },
+      "statisticId": {
+        "type": "'mean'|'median'|'stddev'|'variance'|'trimmedMean'|'quantile'|'cv'|'ppk'",
+        "help": "",
+        "bulk": false
+      },
+      "statParams": {
+        "type": "{ trim: number, p: number, lsl: string, usl: string }",
+        "help": "",
+        "bulk": false
+      },
+      "contrast": {
+        "type": "'difference'|'ratio'",
+        "help": "",
+        "bulk": false
+      },
+      "direction": {
+        "type": "'two-sided'|'greater'|'less'",
+        "help": "",
+        "bulk": false
+      },
+      "target": {
+        "type": "string",
+        "help": "",
+        "bulk": false
+      },
+      "colRef1": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
+        "bulk": false,
+        "rules": [
+          "columnRef",
+          "types:numeric",
+          "minCount:2"
+        ]
+      },
+      "colRef2": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
+        "bulk": false,
+        "rules": [
+          "columnRef",
+          "types:numeric",
+          "minCount:2"
+        ]
+      },
+      "colRefsK": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }[]",
+        "help": "",
+        "bulk": false,
+        "rules": [
+          "columnRef",
+          "types:numeric",
+          "minCount:2"
+        ]
+      },
+      "B": {
+        "type": "number",
+        "help": "",
+        "bulk": false
+      },
+      "seed": {
+        "type": "number",
+        "help": "",
+        "bulk": false
+      },
+      "confidence": {
+        "type": "number",
+        "help": "",
+        "bulk": false
+      },
+      "ciMethod": {
+        "type": "'bca'|'percentile'",
+        "help": "",
+        "bulk": false
+      },
+      "result": {
+        "type": "{ inputsHash: string, mode: 'one'|'two'|'paired'|'k', statisticId: 'mean'|'median'|'stddev'|'variance'|'trimmedMean'|'quantile'|'cv'|'ppk', contrast: 'difference'|'ratio', direction: 'two-sided'|'greater'|'less', confidence: number, B: number, seed: number, labels: string[], n: number[], boot: { estimate: number|null, se: number|null, bias: number|null, ci: { percentile: Array<number|null>|null, bca: Array<number|null>|null, bcaFallback: boolean }, bins: { x0: number, x1: number, count: number }[] }|null, perm: { observed: number|null, pValue: number|null, exact: boolean, permutations: number, bins: { x0: number, x1: number, count: number }[] }|null, k: { estimate: number|null, observed: number|null, pValue: number|null, exact: boolean, permutations: number, bins: { x0: number, x1: number, count: number }[], groups: Array<{ estimate: number|null, ci: { percentile: Array<number|null>|null, bca: Array<number|null>|null, bcaFallback: boolean } }>, posthoc: Array<{ i: number, j: number, contrast: number|null, ci: { percentile: Array<number|null>|null, bca: Array<number|null>|null, bcaFallback: boolean }, pRaw: number|null, pHolm: number|null, exact: boolean }> }|null }|null",
+        "help": "",
+        "bulk": false
+      },
+      "inputs": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "inputsHash": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "validation": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "labels": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "decision": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "asyncTasks": {
+        "type": "object",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      }
+    },
+    "asyncTasks": [
+      {
+        "name": "compute",
+        "auto": false,
+        "params": []
+      }
+    ],
+    "viewFields": [
+      "exampleWorksheetId",
+      "bootChartEdits",
+      "permChartEdits"
+    ],
+    "settable": [
+      "mode",
+      "statisticId",
+      "statParams",
+      "contrast",
+      "direction",
+      "target",
+      "colRef1",
+      "colRef2",
+      "colRefsK",
+      "B",
+      "seed",
+      "confidence",
+      "ciMethod",
+      "result"
+    ]
   },
   "response-optimization": {
     "tagged": true,
@@ -16895,8 +17681,152 @@ export const AGENT_REGISTRY = {
     "schema": true,
     "violations": [],
     "reported": [],
-    "actions": {},
-    "fields": {}
+    "actions": {
+      "read": {
+        "params": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
+          }
+        ],
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "addItem": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "number",
+        "help": "",
+        "keysOf": "addItem",
+        "keysHelp": "actions.addItem.params",
+        "keys": {
+          "col": {
+            "type": "'suppliers'|'inputs'|'process'|'outputs'|'customers'",
+            "help": ""
+          },
+          "text": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          }
+        }
+      },
+      "setItem": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setItem",
+        "keysHelp": "actions.setItem.params",
+        "keys": {
+          "col": {
+            "type": "'suppliers'|'inputs'|'process'|'outputs'|'customers'",
+            "help": ""
+          },
+          "idx": {
+            "type": "number",
+            "help": ""
+          },
+          "text": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          }
+        }
+      },
+      "removeItem": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeItem",
+        "keysHelp": "actions.removeItem.params",
+        "keys": {
+          "col": {
+            "type": "'suppliers'|'inputs'|'process'|'outputs'|'customers'",
+            "help": ""
+          },
+          "idx": {
+            "type": "number",
+            "help": ""
+          }
+        }
+      },
+      "moveItem": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "moveItem",
+        "keysHelp": "actions.moveItem.params",
+        "keys": {
+          "fromCol": {
+            "type": "'suppliers'|'inputs'|'process'|'outputs'|'customers'",
+            "help": ""
+          },
+          "fromIdx": {
+            "type": "number",
+            "help": ""
+          },
+          "toCol": {
+            "type": "'suppliers'|'inputs'|'process'|'outputs'|'customers'",
+            "help": ""
+          },
+          "toIdx": {
+            "type": "number",
+            "help": ""
+          }
+        }
+      }
+    },
+    "fields": {
+      "columns": {
+        "type": "Record<'suppliers'|'inputs'|'process'|'outputs'|'customers', string[]>",
+        "help": "",
+        "bulk": false
+      }
+    },
+    "asyncTasks": [],
+    "viewFields": [],
+    "settable": [
+      "columns"
+    ]
   },
   "stakeholder-analysis": {
     "tagged": true,

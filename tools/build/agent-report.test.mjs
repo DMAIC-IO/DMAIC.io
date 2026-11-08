@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { collectAgentData } from './agent-data.mjs';
 import { APP_DIR } from './build.mjs';
 import { viaHelpGaps, fieldsWithoutWritePath, countHelpCoverage, lookup, helpExists, helpKeys, STRUCTURE_JARGON, typedefHelpSuffixes, readHelpTables } from './agent-report.mjs';
@@ -404,4 +405,48 @@ test('countHelpCoverage: fehlende context-help-Datei ist eine Lücke, kein Abstu
 test('ohne umgestellte Module: nur i18n/<lang>.json', async () => {
   const out = countHelpCoverage(newFormFixture(), NEU, []);
   assert.equal(out.whenToUse.covered, 0);
+});
+
+/* Ein umgestelltes Modul im Wegwerf-Verzeichnis: das Modell importiert
+   core/model.js über die file://-URL der echten Datei. */
+const CORE_MODEL_URL = pathToFileURL(join(import.meta.dirname, '..', '..', 'js', 'core', 'model.js')).href;
+
+/** @param {object} help context-help-Baum (beide Sprachen) */
+function convertedFixture(help) {
+  const root = i18nFixture({});
+  const dir = join(root, 'js', 'modules', 'demo');
+  mkdirSync(join(dir, 'domain'), { recursive: true });
+  mkdirSync(join(dir, 'viewmodel'), { recursive: true });
+  mkdirSync(join(dir, 'resources', 'i18n'), { recursive: true });
+  writeFileSync(join(dir, 'domain', 'model.js'), `import { defineModel, command, text, boolean } from '${CORE_MODEL_URL}';
+export const State = defineModel({
+  fields: { title: text() },
+  commands: { rename: command({ params: { title: text() }, returns: boolean(), run({ title }) { this.title = title; return true; } }) },
+});
+`);
+  writeFileSync(join(dir, 'viewmodel', 'viewmodel.js'),
+    "export default createModule({ commands: { reset: command({ params: {}, run() {} }) } });\n");
+  for (const lang of ['de', 'en']) {
+    writeFileSync(join(dir, 'resources', 'i18n', `ui.${lang}.json`), JSON.stringify({ whenToUse: 'wann' }));
+    writeFileSync(join(dir, 'resources', 'i18n', `context-help.${lang}.json`), JSON.stringify(help));
+  }
+  return root;
+}
+
+test('countHelpCoverage zählt die Aktionen, Parameter und Schlüssel eines umgestellten Moduls', async () => {
+  const root = convertedFixture({
+    fields: { title: { help: 't' } },
+    actions: {
+      read: { help: 'r', params: { options: 'o' } },
+      rename: { help: 'n', params: { command: 'c', title: 't' } },
+      reset: { params: { command: 'c' } },
+    },
+  });
+  const { modules } = await collectAgentData(root, { converted: ['demo'] });
+  const out = countHelpCoverage(root, modules, ['demo']);
+  assert.deepEqual(out.missingKeys, ['modules.demo.actions.reset.help']);
+  assert.deepEqual(out.actions, { total: 3, covered: 2 });
+  assert.deepEqual(out.params, { total: 3, covered: 3 });
+  assert.deepEqual(out.keys, { total: 1, covered: 1 });
+  assert.deepEqual(out.fields, { total: 1, covered: 1 });
 });

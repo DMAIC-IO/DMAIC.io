@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { pathToFileURL } from 'node:url';
 import { join } from 'node:path';
 import { collectAgentData, loadWriteBaseline } from './agent-data.mjs';
 import { RELEASED_MODULES, VIOLATION_REMEDIES, explainViolation, releaseDiff } from './agent-release.mjs';
@@ -59,4 +61,20 @@ test('kein freigegebenes Modul meldet unreachable_write außerhalb der Baseline'
     .filter(([id]) => RELEASED_MODULES.includes(id))
     .flatMap(([id, entry]) => entry.reported.filter(c => c.startsWith('unreachable_write:')).map(c => `${id} ${c}`));
   assert.deepEqual(open, [], 'Schreibweg bauen oder [via: …] setzen; die Baseline wächst nicht');
+});
+
+test('releaseDiff: ein umgestelltes Modul wird wie ein Altmodul geprüft', async () => {
+  const modelUrl = pathToFileURL(join(APP_DIR, 'js', 'core', 'model.js')).href;
+  const root = mkdtempSync(join(tmpdir(), 'agent-release-'));
+  const dir = join(root, 'js', 'modules', 'demo');
+  mkdirSync(join(dir, 'domain'), { recursive: true });
+  mkdirSync(join(dir, 'viewmodel'), { recursive: true });
+  writeFileSync(join(dir, 'domain', 'model.js'),
+    `import { defineModel, text } from '${modelUrl}';\nexport const State = defineModel({ fields: { title: text() } });\n`);
+  writeFileSync(join(dir, 'viewmodel', 'viewmodel.js'), 'export default createModule({});\n');
+  const { modules } = await collectAgentData(root, { baseline: new Set(), converted: ['demo'] });
+  assert.deepEqual(releaseDiff(modules, ['demo']), []);
+  assert.deepEqual(releaseDiff(modules, []), ['demo: neu freigegeben → in RELEASED_MODULES aufnehmen']);
+  assert.deepEqual(releaseDiff({ demo: { ...modules.demo, available: false, reported: ['unmarked_method:x'] } }, ['demo']),
+    ['demo: unmarked_method:x → @agent oder @noagent setzen']);
 });

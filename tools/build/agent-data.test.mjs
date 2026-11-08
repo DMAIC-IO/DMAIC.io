@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { collectAgentData, renderAgentRegistryModule, collectDomDetours, CREATING_VOID_EXEMPT,
+import { pathToFileURL } from 'node:url';
+import { collectAgentData, renderAgentRegistryModule, collectDomDetours, CREATING_VOID_EXEMPT, readBulkOf,
          readAgentReadTypedef } from './agent-data.mjs';
 import { readHelpTables, lookup, helpExists, STRUCTURE_JARGON, typedefHelpSuffixes } from './agent-report.mjs';
 import { helpKeysInTemplates, helpKeysInScripts, helpKeysInSharedSources,
@@ -1438,11 +1439,14 @@ test('collectAgentData: the released pilot modules are available in the real tre
   assert.ok(coverage.available >= 3);
 });
 
-test('collectAgentData: hypothesis-test ist umgestellt und trägt den Schema-Platzhalter', async () => {
+test('collectAgentData: hypothesis-test ist umgestellt und trägt den Eintrag aus dem Schema', async () => {
   const appDir = join(import.meta.dirname, '..', '..');
   const { modules } = await collectAgentData(appDir);
-  assert.equal(modules['hypothesis-test'].schema, true);
-  assert.deepEqual(modules['hypothesis-test'].fields, {});
+  const e = modules['hypothesis-test'];
+  assert.equal(e.schema, true);
+  assert.equal(e.fields.alpha.type, 'number');
+  assert.equal(e.fields.result.derived, true);
+  assert.ok('read' in e.actions);
 });
 
 test('collectAgentData: worksheet declares its read surface, rows are bulk', async () => {
@@ -1498,8 +1502,9 @@ test('i18n-Tor: jede Aktion, jeder Parameter und jedes Feld eines freigegebenen 
   for (const [id, entry] of released) {
     for (const [action, def] of Object.entries(entry.actions)) {
       for (const [lang, tree] of Object.entries(trees)) {
-        if (!helpExists(tree, id, `actions.${action}.help`)) {
-          missing.push(`${lang}: modules.${id}.actions.${action}.help`);
+        const helpKey = def.helpKey ?? `actions.${action}.help`;
+        if (!helpExists(tree, id, helpKey)) {
+          missing.push(`${lang}: modules.${id}.${helpKey}`);
         }
         for (const param of def.params ?? []) {
           if (!helpExists(tree, id, `actions.${action}.params.${param.name}`)) {
@@ -3755,6 +3760,67 @@ export {};`;
   assert.deepEqual(result.keys, { n: { type: 'number', help: 'die Zahl' } });
 });
 
+/* Ein umgestelltes Modul: das Domänenmodell wird geladen (es importiert
+   core/model.js über die file://-URL der echten Datei — ein Temp-Verzeichnis
+   löst keinen relativen Kernpfad auf), das Viewmodel statisch gelesen. */
+const CORE_MODEL_URL = pathToFileURL(join(import.meta.dirname, '..', '..', 'js', 'core', 'model.js')).href;
+const MODEL_WITH_COMMAND = `import { defineModel, command, text, number, boolean } from '${CORE_MODEL_URL}';
+export const State = defineModel({
+  fields: { title: text() },
+  view: { zoom: number({ default: 1 }) },
+  commands: {
+    rename: command({ params: { title: text() }, returns: boolean(), run({ title }) { this.title = title; return true; } }),
+  },
+});
+`;
+const VM_WITH_COMPUTED = `import { createModule, command, asyncTask } from '../../core/template-module.js';
+import { State } from '../domain/model.js';
+export default createModule({
+  Model: State,
+  readBulk: ['rows'],
+  commands: {
+    reset: command({ params: {}, run() {} }),
+    pick: command({ params: { id: true }, run() {} }),
+  },
+  asyncTasks: {
+    compute: asyncTask({ params: { n: true }, run() {} }),
+    warm: asyncTask({ auto: true, run() {} }),
+  },
+  view: () => ({ computed: { total() { return 1; }, rows() { return []; } } }),
+});
+`;
+
+test('umgestelltes Modul: Kommandos, computed und Tasks im Eintrag', async () => {
+  const root = fixture({}, {
+    'js/modules/demo/module.js': "export default { id: 'demo', load: () => null };",
+    'js/modules/demo/domain/model.js': MODEL_WITH_COMMAND,
+    'js/modules/demo/viewmodel/viewmodel.js': VM_WITH_COMPUTED,
+  });
+  const { modules, writtenFields } = await collectAgentData(root, { converted: ['demo'] });
+  const e = modules.demo;
+  assert.deepEqual(Object.keys(e.actions).sort(), ['compute', 'compute.cancel', 'pick', 'read', 'rename', 'reset']);
+  assert.deepEqual([e.tagged, e.available, e.schema, e.violations, e.reported], [true, true, true, [], []]);
+  assert.equal(e.fields.total.derived, true);
+  assert.deepEqual([e.fields.rows.bulk, e.fields.rows.bulkKind], [true, 'table']);
+  assert.notEqual(e.fields.title.derived, true);
+  assert.equal(e.fields.title.type, 'string');
+  assert.deepEqual(e.viewFields, ['zoom']);
+  assert.deepEqual(e.actions.rename.keys, { title: { type: 'string', help: '' } });
+  assert.equal(e.actions.rename.target, 'model');
+  assert.deepEqual(e.actions.pick.keys, { id: { type: 'unknown', help: '' } });
+  assert.equal(e.actions.pick.target, 'viewmodel');
+  assert.deepEqual(e.actions.compute.keys, { n: { type: 'unknown', help: '' } });
+  assert.deepEqual(e.asyncTasks.map((t) => [t.name, t.auto]), [['compute', false], ['warm', true]]);
+  assert.deepEqual(writtenFields.demo, []);
+});
+
+test('readBulkOf: das Array-Literal readBulk im createModule-Argument', () => {
+  assert.deepEqual(readBulkOf(VM_WITH_COMPUTED), ['rows']);
+  assert.deepEqual(readBulkOf("export default createModule({ readBulk: ['a', 'b'] });"), ['a', 'b']);
+  assert.deepEqual(readBulkOf('export default createModule({ view: () => ({}) });'), []);
+  assert.deepEqual(readBulkOf('export default createModule({ readBulk: NAMES });'), []);
+});
+
 const RECORD_MODEL = `/**
  * Eine Zeile, wie toJSON() sie liefert.
  * @typedef {object} Entry
@@ -4757,15 +4823,13 @@ test('Element-Zeiger: eine Pfad-Hilfe, die nur einen Model-Wert umkopiert, deckt
   assert.deepEqual(modules.foo.reported, ['unreachable_write:params.alpha', 'unreachable_write:params.beta']);
 });
 
-test('ein Modul aus der Liste der umgestellten bekommt den Schema-Platzhalter', async () => {
+test('ein umgestelltes Modul ohne Schema-Export bricht den Lauf mit Dateiname ab', async () => {
   const root = fixture({}, {
     'js/modules/neu/domain/model.js': 'export const State = null;\n',
     'js/modules/neu/viewmodel/viewmodel.js': '',
   });
-  const { modules } = await collectAgentData(root, { baseline: new Set(), converted: ['neu'] });
-  assert.deepEqual(modules.neu, {
-    tagged: true, available: true, schema: true, violations: [], reported: [], actions: {}, fields: {},
-  });
+  await assert.rejects(collectAgentData(root, { baseline: new Set(), converted: ['neu'] }),
+    /neu\/domain\/model\.js: erwartet genau einen Export mit Schema \(defineModel\), gefunden 0/);
 });
 
 test('domain/model.js allein macht kein Schema-Modul', async () => {

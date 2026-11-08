@@ -78,11 +78,20 @@
     "setMode": {
       "help": "Choose the design: one sample, two independent, paired or k samples. A statistic the design does not allow is reset to the mean.",
       "params": {
-        "mode": "'one', 'two', 'paired' or 'k'. Any other value is an error."
+        "mode": "'one', 'two', 'paired' or 'k'. Any other value is an error.",
+        "command": "The command as one object with mode."
       }
     },
     "rollSeed": {
-      "help": "Draws a new random seed between 1 and 2147483647."
+      "help": "Draws a new random seed between 1 and 2147483647.",
+      "params": {
+        "command": "An empty object; the command takes no inputs."
+      }
+    },
+    "compute": {
+      "params": {
+        "command": "An empty object; the task takes no inputs."
+      }
     }
   },
   "asyncTasks": {

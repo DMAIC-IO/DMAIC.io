@@ -42,13 +42,15 @@
     "setCategory": {
       "help": "Chooses what is being tested: the spread (Variances) or the location (Means). The result is recomputed from the new settings.",
       "params": {
-        "category": "'variance' or 'mean'. Any other value is an error."
+        "category": "'variance' or 'mean'. Any other value is an error.",
+        "command": "The command as one object with category."
       }
     },
     "setTestType": {
       "help": "Chooses the sample layout: one sample against a target value, two samples against each other, or k groups. The result is recomputed from the new settings.",
       "params": {
-        "testType": "'one', 'two', 'paired' or 'k'. Any other value is an error."
+        "testType": "'one', 'two', 'paired' or 'k'. Any other value is an error.",
+        "command": "The command as one object with testType."
       }
     }
   },

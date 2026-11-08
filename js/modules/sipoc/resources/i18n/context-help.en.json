@@ -10,7 +10,8 @@
       "help": "Appends an entry to one of the five SIPOC columns and returns its position.",
       "params": {
         "col": "The column: suppliers, inputs, process, outputs or customers. Any other value is an error.",
-        "text": "The entry; surrounding whitespace is dropped. An empty text is an error."
+        "text": "The entry; surrounding whitespace is dropped. An empty text is an error.",
+        "command": "The command as one object with col and text."
       }
     },
     "setItem": {
@@ -18,14 +19,16 @@
       "params": {
         "col": "The column: suppliers, inputs, process, outputs or customers. Any other value is an error.",
         "idx": "The position of the entry in the column, counted from 0. A position where the column holds no entry is an error.",
-        "text": "The new entry; surrounding whitespace is dropped. An empty text is an error and leaves the old entry in place."
+        "text": "The new entry; surrounding whitespace is dropped. An empty text is an error and leaves the old entry in place.",
+        "command": "The command as one object with col, idx and text."
       }
     },
     "removeItem": {
       "help": "Removes the entry at a position of a SIPOC column.",
       "params": {
         "col": "The column: suppliers, inputs, process, outputs or customers. Any other value is an error.",
-        "idx": "The position of the entry in the column, counted from 0. A position without an entry is an error."
+        "idx": "The position of the entry in the column, counted from 0. A position without an entry is an error.",
+        "command": "The command as one object with col and idx."
       }
     },
     "moveItem": {
@@ -34,7 +37,8 @@
         "fromCol": "The column the entry comes from: suppliers, inputs, process, outputs or customers.",
         "fromIdx": "The position of the entry in fromCol, counted from 0. A position without an entry is an error.",
         "toCol": "The column the entry goes to: suppliers, inputs, process, outputs or customers.",
-        "toIdx": "The position the entry has AFTER the move, counted from 0. Within the same column at most length − 1, in another column at most its length (append)."
+        "toIdx": "The position the entry has AFTER the move, counted from 0. Within the same column at most length − 1, in another column at most its length (append).",
+        "command": "The command as one object with fromCol, fromIdx, toCol and toIdx."
       }
     }
   },

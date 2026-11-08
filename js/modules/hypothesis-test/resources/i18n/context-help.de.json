@@ -42,13 +42,15 @@
     "setCategory": {
       "help": "Wählt, was geprüft wird: die Streuung (Varianzen) oder die Lage (Mittelwerte). Das Ergebnis wird aus den neuen Einstellungen neu berechnet.",
       "params": {
-        "category": "'variance' oder 'mean'. Jeder andere Wert ist ein Fehler."
+        "category": "'variance' oder 'mean'. Jeder andere Wert ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit category."
       }
     },
     "setTestType": {
       "help": "Wählt die Stichprobenlage: eine Stichprobe gegen einen Zielwert, zwei Stichproben gegeneinander oder k Gruppen. Das Ergebnis wird aus den neuen Einstellungen neu berechnet.",
       "params": {
-        "testType": "'one', 'two', 'paired' oder 'k'. Jeder andere Wert ist ein Fehler."
+        "testType": "'one', 'two', 'paired' oder 'k'. Jeder andere Wert ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit testType."
       }
     }
   },

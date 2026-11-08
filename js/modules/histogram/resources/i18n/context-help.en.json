@@ -40,7 +40,8 @@
     "setBinMode": {
       "help": "Chooses how the bins are formed: automatic or with a fixed width. With automatic, a set bin width is reset.",
       "params": {
-        "binMode": "'auto' or 'manual'. Any other value is an error."
+        "binMode": "'auto' or 'manual'. Any other value is an error.",
+        "command": "The command as one object with binMode."
       }
     }
   }

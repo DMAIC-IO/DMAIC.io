@@ -53,7 +53,8 @@
         "time": "Der Beginn als HH:MM im 5-Minuten-Raster; ohne Angabe 09:00. Eine Zeit außerhalb des Rasters ist ein Fehler.",
         "duration": "Die Dauer in ganzen Minuten, mindestens 5; ohne Angabe 60.",
         "desc": "Die Beschreibung; ohne Angabe leer.",
-        "phase": "Die Phase des Termins; gültig ist jede Phase eines Zyklus, ohne Angabe die erste Phase des aktiven Zyklus."
+        "phase": "Die Phase des Termins; gültig ist jede Phase eines Zyklus, ohne Angabe die erste Phase des aktiven Zyklus.",
+        "command": "Das Kommando als ein Objekt mit title, date, time, duration, desc und phase."
       }
     },
     "updateEvent": {
@@ -65,13 +66,15 @@
         "time": "Der neue Beginn als HH:MM im 5-Minuten-Raster.",
         "duration": "Die neue Dauer in ganzen Minuten, mindestens 5.",
         "desc": "Die neue Beschreibung.",
-        "phase": "Die neue Phase; gültig ist jede Phase eines Zyklus."
+        "phase": "Die neue Phase; gültig ist jede Phase eines Zyklus.",
+        "command": "Das Kommando als ein Objekt mit id, title, date, time, duration, desc und phase."
       }
     },
     "removeEvent": {
       "help": "Entfernt einen Termin. In der Oberfläche fragt der Kalender vorher nach.",
       "params": {
-        "id": "Die id des Termins, wie read() sie unter events führt. Eine unbekannte id ist ein Fehler."
+        "id": "Die id des Termins, wie read() sie unter events führt. Eine unbekannte id ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit id."
       }
     }
   },

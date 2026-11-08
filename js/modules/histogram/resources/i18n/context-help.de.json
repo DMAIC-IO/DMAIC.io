@@ -40,7 +40,8 @@
     "setBinMode": {
       "help": "Wählt, wie die Klassen gebildet werden: automatisch oder mit fester Breite. Bei automatisch wird eine gesetzte Klassenbreite zurückgesetzt.",
       "params": {
-        "binMode": "'auto' oder 'manual'. Jeder andere Wert ist ein Fehler."
+        "binMode": "'auto' oder 'manual'. Jeder andere Wert ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit binMode."
       }
     }
   }

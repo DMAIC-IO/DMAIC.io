@@ -78,11 +78,20 @@
     "setMode": {
       "help": "Aufbau wählen: eine Stichprobe, zwei unabhängige, gepaart oder k Stichproben. Eine Statistik, die der Aufbau nicht erlaubt, wird auf den Mittelwert zurückgesetzt.",
       "params": {
-        "mode": "'one', 'two', 'paired' oder 'k'. Jeder andere Wert ist ein Fehler."
+        "mode": "'one', 'two', 'paired' oder 'k'. Jeder andere Wert ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit mode."
       }
     },
     "rollSeed": {
-      "help": "Zieht einen neuen Zufalls-Startwert zwischen 1 und 2147483647."
+      "help": "Zieht einen neuen Zufalls-Startwert zwischen 1 und 2147483647.",
+      "params": {
+        "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben."
+      }
+    },
+    "compute": {
+      "params": {
+        "command": "Ein leeres Objekt; der Ablauf nimmt keine Angaben."
+      }
     }
   },
   "asyncTasks": {

@@ -138,8 +138,11 @@ export function typedefHelpSuffixes(entry) {
   const out = new Set();
   const walk = (node) => {
     if (!node?.keys || !node.keysOf) return;
+    // Wie `describeKeys` (agent-catalog.js): `keysHelp` (Schema-Kommandos)
+    // nennt den Hilfepfad ausdrücklich, sonst `types.<Typedef>`.
+    const prefix = node.keysHelp ?? `types.${node.keysOf}`;
     for (const [key, child] of Object.entries(node.keys)) {
-      out.add(`types.${node.keysOf}.${key}`);
+      out.add(`${prefix}.${key}`);
       walk(child);
     }
   };
@@ -222,7 +225,7 @@ export function countHelpCoverage(appDir, modules, converted = CONVERTED_MODULES
     // der Absatz oben: diese Zeile ist absichtlich strenger als die Laufzeit.
     check('whenToUse', [`modules.${id}.whenToUse`]);
     for (const [name, action] of Object.entries(entry.actions ?? {})) {
-      check('actions', helpKeys(id, `actions.${name}.help`));
+      check('actions', helpKeys(id, action.helpKey ?? `actions.${name}.help`));
       for (const param of action.params ?? []) {
         check('params', helpKeys(id, `actions.${name}.params.${param.name}`));
       }

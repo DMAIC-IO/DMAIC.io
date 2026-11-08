@@ -43,7 +43,8 @@
       "help": "Checks or unchecks a rule; `enabledRules` stays free of duplicates and ascending.",
       "params": {
         "ruleId": "The rule: 1, 2, 3, 5 or 6 (meaning under `enabledRules`). Any other value is an error.",
-        "on": "true checks, false unchecks."
+        "on": "true checks, false unchecks.",
+        "command": "The command as one object with ruleId and on."
       }
     }
   },
