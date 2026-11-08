@@ -446,7 +446,7 @@ suite('x-field auf columnRef', () => {
     return w;
   };
 
-  async function mountCols(html) {
+  async function mountCols(html, Model = Cols) {
     mounted.length = 0;
     TEST_WIDGETS['column-picker'] = {
       schema: defineWidget({ name: 'column-picker', value: columnRef(), forKind: 'columnRef' }),
@@ -455,7 +455,7 @@ suite('x-field auf columnRef', () => {
     registerFieldDirective(Alpine, { i18n: I18N_COLS, widgets: TEST_WIDGETS });
     if (!Alpine.version) Alpine.start();
     const name = `colsTest${Math.random().toString(36).slice(2)}`;
-    const model = new Cols();
+    const model = new Model();
     const services = { eventBus: {}, stateManager: {}, i18n: {} };
     Alpine.data(name, () => {
       const comp = { model, moduleId: 'demo', box: { show: true } };
@@ -469,6 +469,21 @@ suite('x-field auf columnRef', () => {
     await flush();
     return { host, services, data: () => Alpine.$data(host.firstElementChild) };
   }
+
+  test('Ablehnung durch eine Invariante im Widget-Zweig zeigt deren Hinweis', async () => {
+    const Pair = defineModel({
+      fields: { a: columnRef({ types: ['numeric'] }), b: columnRef({ types: ['numeric'] }) },
+      invariants: { distinct: { fields: ['a', 'b'], test(m) { return !m.a || !m.b || m.a.columnId !== m.b.columnId; } } },
+    });
+    const { host } = await mountCols('<div class="a" x-field="model.a"></div><div class="b" x-field="model.b"></div>', Pair);
+    assertTrue(mounted[0].value.set(ref('c1')));
+    assertTrue(mounted[1].value.set(ref('c1')) === false);
+    assertEqual(mounted[1].value.rejected.message, 'modules.demo.invariants.distinct');
+    const b = host.querySelector('.b');
+    assertEqual(b.getAttribute('aria-invalid'), 'true');
+    assertEqual(b.title, 'modules.demo.invariants.distinct');
+    host.remove();
+  });
 
   test('Widget eingehängt, Dienste übergeben, Hilfe-Anker gesetzt, vorhandener Anker bleibt', async () => {
     const { host, services } = await mountCols('<div class="pick" x-field="model.colRef1"></div><div class="own" data-help-key="" x-field="model.colRefsK"></div>');

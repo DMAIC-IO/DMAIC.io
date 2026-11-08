@@ -201,4 +201,49 @@ suite('Diagramm-Widgets (chart-mount)', () => {
     assertEqual(cm.log.destroyed, 1);
     root.remove();
   });
+
+  test('eigener Editor-Write löst kein update am Diagramm aus', async () => {
+    const cm = fakeManager();
+    const { root } = await host(HIST, { cm });
+    const chart = cm.log.created[0];
+    const before = cm.log.updated.length;
+    chart.config.title = 'Mein Titel';
+    chart.config.onEditorChange(chart);
+    await flush();
+    await flush();
+    assertEqual(cm.log.updated.length, before);
+    assertEqual(chart.refreshes, 0);
+    root.remove();
+  });
+
+  test('abgelehnter Editor-Write: das Diagramm zeigt danach wieder den Modellwert', async () => {
+    const cm = fakeManager();
+    const { root, data } = await host(HIST, { cm, model: { chartEdits: { showLegend: false } } });
+    const chart = cm.log.created[0];
+    chart.config.showLegend = 'zzz';
+    chart.config.onEditorChange(chart);
+    await flush();
+    assertEqual(data.model.chartEdits.showLegend, false);
+    assertEqual(chart.config.showLegend, false);
+    root.remove();
+  });
+
+  test('fremder Wert bei offenem Editor: Fokus im Editor bleibt erhalten', async () => {
+    const cm = fakeManager({ real: true });
+    const { root, data } = await host(HIST, { cm });
+    const chart = cm.log.created[0];
+    chart._editorOpen = true;
+    chart._buildEditor();
+    const input = chart._editorInner.querySelector('input[type="text"]');
+    assertTrue(input !== null, 'Editor hat ein Textfeld');
+    input.focus();
+    assertTrue(document.activeElement === input, 'Fokus gesetzt');
+    data.model.chartEdits = { showLegend: false };
+    await flush();
+    assertEqual(chart.config.showLegend, false);
+    const now = document.activeElement;
+    assertTrue(now !== null && chart._editorInner.contains(now), 'Fokus liegt weiter im Editor');
+    assertEqual(now.getAttribute('data-field') ?? now.type, input.getAttribute('data-field') ?? input.type);
+    root.remove();
+  });
 });

@@ -1705,7 +1705,18 @@ export default class ChartBase {
    * (series, reference lines), so later edits reach the new objects.
    */
   refreshEditor() {
-    if (this._editorOpen) this._buildEditor();
+    if (!this._editorOpen) return;
+    // Der Neuaufbau ersetzt die Bedienelemente; der Fokus (samt Cursor) wandert auf das entsprechende neue.
+    const FOCUSABLE = 'input, select, textarea, button';
+    const inner = this._editorInner;
+    const active = document.activeElement;
+    const index = active && inner.contains(active) ? [...inner.querySelectorAll(FOCUSABLE)].indexOf(active) : -1;
+    const caret = index >= 0 && typeof active.selectionStart === 'number' ? [active.selectionStart, active.selectionEnd] : null;
+    this._buildEditor();
+    const next = index >= 0 ? inner.querySelectorAll(FOCUSABLE)[index] : null;
+    if (!next) return;
+    next.focus({ preventScroll: true });
+    if (caret && typeof next.setSelectionRange === 'function') { try { next.setSelectionRange(...caret); } catch { /* Feldart ohne Auswahl */ } }
   }
 
   /**

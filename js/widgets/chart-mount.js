@@ -46,8 +46,23 @@ export function chartMount(widget, toChart = (c) => c) {
       const after = pickShown(chart.config, editable);
       const { next, cleared } = diffEdits(value.get(), shown, after, editable, ownedKeys(cfg));
       written = JSON.stringify(next);
-      if (!value.set(next)) { written = null; return; }
+      if (!value.set(next)) { written = null; restore(chart, cfg, after); return; }
       if (cleared.length) cm.update(chart, Object.fromEntries(cleared.map((k) => [k, cfg[k] ?? ''])));
+      shown = pickShown(chart.config, editable);
+    };
+
+    /**
+     * Nach einer abgelehnten Editor-Änderung zeigt das Diagramm wieder, was das Modell hält.
+     * @param {any} chart @param {any} cfg @param {Record<string, any>} after
+     */
+    const restore = (chart, cfg, after) => {
+      const owned = ownedKeys(cfg);
+      const patch = toChart(applyEdits(cfg, value.get() ?? {}, editable, owned));
+      patch.onEditorChange = onEditorChange;
+      const stale = editable.base.filter((/** @type {string} */ k) => after[k] !== undefined && patch[k] === undefined);
+      resetToDefaults(chart, patch, stale, cfg);
+      cm.update(chart, patch);
+      chart.refreshEditor?.();
       shown = pickShown(chart.config, editable);
     };
 
