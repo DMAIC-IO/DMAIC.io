@@ -465,3 +465,12 @@ textarea.sipoc__edit-text {
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
 }
+
+/* Das Fragezeichen der Eingabezeile sitzt über der rechten oberen Ecke des
+   Plus-Knopfs statt auf dessen Mitte: am rechten Zeilenrand (Regel für
+   Formular-Anker) verdeckte es das Plus. Der Innenabstand der Fußzeile
+   darüber nimmt den Kreis auf. */
+.sipoc__add-row.context-help-anchor > .context-help__btn:not(.context-help__btn--field) {
+  top: calc(-1 * var(--spacing-xs));
+  transform: translateY(-50%);
+}
