@@ -32,38 +32,32 @@ function validOrUndefined(spec, k, v) {
 }
 
 /**
- * Reihen-Einstellungen des alten Stands. Wie die alte Laufzeit gilt Eintrag `i`
- * für die Reihe `i`; `names[i]` ist deren Name (fehlt er, gilt der Name im
- * Eintrag). Reihen ohne Namen, unbekannte Schlüssel und ungültige Einzelwerte
- * entfallen; ein Eintrag ohne übrige Schlüssel entfällt ganz. Doppelte Namen
- * (dieselbe Spalte mehrfach) behalten je einen eigenen Eintrag.
+ * Reihen-Einstellungen des alten Stands je Index der Reihe (die alte Laufzeit
+ * ordnete sie über den Index zu). Namen kennt die Migration nicht — sie hängen
+ * an Arbeitsblatt und Sprache. Unbekannte Schlüssel und ungültige Einzelwerte
+ * entfallen; ein Eintrag ohne gültige Schlüssel bleibt als `{}` (Index halten).
  * @param {unknown} old
- * @param {unknown[]} [names] Reihennamen in Reihenfolge der Datensätze
  * @returns {Array<Record<string, any>>}
  */
-export function seriesFrom(old, names = []) {
+export function legacySeriesFrom(old) {
   if (!Array.isArray(old)) return [];
-  const out = [];
-  for (let i = 0; i < old.length; i++) {
-    const o = old[i];
-    if (!o || typeof o !== 'object') continue;
-    const name = typeof names[i] === 'string' && names[i] !== '' ? names[i] : o.name;
-    if (typeof name !== 'string' || name === '') continue;
+  const out = old.map((o) => {
     const entry = {};
+    if (!o || typeof o !== 'object') return entry;
     for (const [k, spec] of Object.entries(SERIES_SHAPE)) {
       if (k === 'name' || !(k in o) || o[k] === null || o[k] === undefined) continue;
       const v = validOrUndefined(spec, k, o[k]);
       if (v !== undefined) entry[k] = v;
     }
-    if (Object.keys(entry).length > 0) out.push({ name, ...entry });
-  }
-  return out;
+    return entry;
+  });
+  return out.some((e) => Object.keys(e).length > 0) ? out : [];
 }
 
 /**
  * '0→2.0': Altstände ohne `_schema` (flache Form, v1 mit `seriesRefs`).
- * Reihen-Einstellungen (`seriesOverrides`) werden nach Reihenname in
- * `histogramChart.series` übernommen (Zuordnung über den Index); Einträge ohne Namen entfallen.
+ * Reihen-Einstellungen (`seriesOverrides`) landen je Index in `legacySeries`;
+ * die Ansicht legt sie beim Rechnen auf die Reihe gleichen Index.
  * @param {Record<string, any>} json
  * @returns {Record<string, any>}
  */
@@ -97,8 +91,8 @@ export function from0(json) {
   }
   if (json.showPareto === false) chart.pareto = false;
   if (json.showBoxplot === false) chart.boxplotStrip = false;
-  const series = seriesFrom(json.seriesOverrides, []);
-  if (series.length > 0) chart.series = series;
+  const legacy = legacySeriesFrom(json.seriesOverrides);
+  if (legacy.length > 0) out.legacySeries = legacy;
   out.histogramChart = chart;
   return out;
 }

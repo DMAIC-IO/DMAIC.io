@@ -5,7 +5,7 @@
  * Kennzahlen rechnet der view-Block aus Model und Arbeitsblatt. Ansicht:
  * Statistik-Schalter und die Editor-Einstellungen des Diagramms.
  */
-import { defineModel, command, text, number, boolean, oneOf, columnRef, datasets } from '../../../core/model.js';
+import { defineModel, command, list, object, text, number, boolean, oneOf, columnRef, datasets } from '../../../core/model.js';
 import { CHART_COLORS_RGBA } from '../../../core/chart/chart-colors.js';
 import histogramChart from '../../../widgets/histogram-chart/schema.js';
 import { from0 } from './migrations.js';
@@ -29,6 +29,12 @@ export const State = defineModel({
     exampleWorksheetId: text({ nullable: true }),
     showStats: boolean({ default: true }),
     histogramChart: histogramChart.edits(),
+    // Einstellungen alter Stände ohne Namen, je Index der Reihe.
+    legacySeries: list(object({
+      fillColor: text({ optional: true }), borderColor: text({ optional: true }), borderWidth: number({ optional: true, min: 0 }),
+      borderStyle: oneOf(['solid', 'dash', 'dot', 'none'], { optional: true }), pattern: text({ optional: true }), patternColor: text({ optional: true }),
+      patternSolidity: number({ optional: true, min: 0, max: 1 }), visible: boolean({ optional: true }), showNormalCurve: boolean({ optional: true }),
+    }), { default: [] }),
   },
   invariants: {
     binWidthOnlyManual: {
@@ -37,6 +43,10 @@ export const State = defineModel({
     },
   },
   commands: {
+    clearLegacySeries: command({
+      params: {},
+      run() { this.legacySeries = []; },
+    }),
     setBinMode: command({
       params: { binMode: oneOf(['auto', 'manual']) },
       run({ binMode }) {

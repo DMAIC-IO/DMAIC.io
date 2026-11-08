@@ -23,6 +23,9 @@
     "confLevel": {
       "help": "The confidence level in percent, greater than 0 and less than 100 (for example 95). It determines the confidence intervals in the statistics table."
     },
+    "legacySeries": {
+      "help": "Display settings carried over from older saved states, one entry per series by position (fill color, border, pattern, visibility). Applied before the chart editor settings; emptied as soon as the data rows change. Not meant to be set by hand."
+    },
     "showStats": {
       "help": "Show or hide the statistics per series below the chart."
     },
@@ -37,6 +40,12 @@
     }
   },
   "actions": {
+    "clearLegacySeries": {
+      "help": "Discards the display settings carried over from older saved states. Runs by itself when the data rows change.",
+      "params": {
+        "command": "The command as one object without parameters."
+      }
+    },
     "setBinMode": {
       "help": "Chooses how the bins are formed: automatic or with a fixed width. With automatic, a set bin width is reset.",
       "params": {

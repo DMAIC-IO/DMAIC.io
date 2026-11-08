@@ -210,6 +210,41 @@ suite('histogram: Viewmodel im Browser', () => {
     assertEqual(vm().histogram.title, 'Histogramm: Spalte 0');
   });
 
+  test('Altstand: umbenannte Reihe behält ihre Füllfarbe über den Index', async () => {
+    const { vm } = await mount({ ...one(), seriesOverrides: [{ name: 'Alter Name', fillColor: 'red' }] }, { ws1: sheetWith([1, 2, 3, 4]) });
+    await flush();
+    assertEqual(vm().series.series[0].name, 'Spalte 0');
+    assertEqual(vm().series.series[0].fillColor, 'red');
+  });
+  test('Altstand: Gruppenreihen und dieselbe Spalte doppelt bekommen je ihren Eintrag', async () => {
+    const g = mount({ datasets: [{ valueRef: ref(0), groupRef: ref(1) }], seriesOverrides: [{ fillColor: 'red' }, { fillColor: 'blue' }] },
+      { ws1: sheetWith([1, 2, 3, 4], ['a', 'a', 'b', 'b']) });
+    const { vm } = await g;
+    await flush();
+    assertDeepEqual(vm().series.series.map((x) => x.fillColor), ['red', 'blue']);
+    const d = await mount({ datasets: [{ valueRef: ref(0), groupRef: null }, { valueRef: ref(0), groupRef: null }], seriesOverrides: [{ fillColor: 'red' }, { fillColor: 'blue' }] },
+      { ws1: sheetWith([1, 2, 3, 4]) });
+    await flush();
+    assertDeepEqual(d.vm().series.series.map((x) => x.fillColor), ['red', 'blue']);
+  });
+  test('Altstand: eine Einstellung des Editors nach Reihenname gewinnt gegen den alten Eintrag', async () => {
+    const { vm } = await mount({ ...one(), seriesOverrides: [{ fillColor: 'red' }] },
+      { ws1: sheetWith([1, 2, 3, 4]) });
+    await flush();
+    vm().model.histogramChart = { series: [{ name: 'Spalte 0', fillColor: 'green' }] };
+    await flush();
+    assertEqual(vm().shown[0].fillColor, 'green');
+  });
+  test('Altstand: andere Datensätze verwerfen die alten Einträge', async () => {
+    const { vm } = await mount({ ...one(), seriesOverrides: [{ fillColor: 'red' }] }, { ws1: sheetWith([1, 2, 3, 4], [5, 6, 7, 8]) });
+    await flush();
+    assertEqual(vm().series.series[0].fillColor, 'red');
+    vm().model.datasets = [{ valueRef: ref(1), groupRef: null }];
+    await flush();
+    assertDeepEqual(vm().model.legacySeries, []);
+    assertEqual(vm().series.series[0].fillColor, CHART_COLORS_RGBA[0]);
+  });
+
   test('read(): Felder und Kennzahlen, keine alten Hilfsfelder', async () => {
     const { vm } = await mount(one(), { ws1: sheetWith([1, 2, 3, 4]) });
     const out = vm().read();

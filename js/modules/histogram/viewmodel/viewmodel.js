@@ -25,6 +25,12 @@ export default createModule({
   /** @type {import('../../../core/template-module.js').ViewFn<import('../domain/model.types.js').StateModel, {}>} */
   view(ctx) {
     return {
+      /** @noagent Lebenszyklus: andere Datensätze verwerfen die Einstellungen alter Stände. */
+      init() {
+        this.$watch(() => JSON.stringify(this.model.datasets), () => {
+          if (this.model.legacySeries.length > 0) this.model.clearLegacySeries();
+        });
+      },
       computed: {
         /** Reihen mit Darstellung, oder `{ error, params }`. */
         series() {
@@ -38,6 +44,7 @@ export default createModule({
               borderColor: BORDER_COLORS[i % BORDER_COLORS.length],
               borderWidth: 1, borderStyle: 'solid', pattern: '', patternColor: '', patternSolidity: 0.4,
               showNormalCurve: true,
+              ...(this.model.legacySeries[i] ?? {}),
             })),
           };
         },

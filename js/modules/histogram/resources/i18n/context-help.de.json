@@ -23,6 +23,9 @@
     "confLevel": {
       "help": "Das Konfidenzniveau in Prozent, größer 0 und kleiner 100 (zum Beispiel 95). Es bestimmt die Konfidenzintervalle in der Statistiktabelle."
     },
+    "legacySeries": {
+      "help": "Darstellungseinstellungen aus älteren gespeicherten Ständen, ein Eintrag je Reihe nach Position (Füllfarbe, Rand, Muster, Sichtbarkeit). Gelten vor den Einstellungen des Diagramm-Editors; werden geleert, sobald sich die Datenzeilen ändern. Nicht zum Setzen von Hand gedacht."
+    },
     "showStats": {
       "help": "Kennzahlen je Reihe unter dem Diagramm ein- oder ausblenden."
     },
@@ -37,6 +40,12 @@
     }
   },
   "actions": {
+    "clearLegacySeries": {
+      "help": "Verwirft die Darstellungseinstellungen aus älteren gespeicherten Ständen. Läuft von selbst, wenn sich die Datenzeilen ändern.",
+      "params": {
+        "command": "Das Kommando als ein Objekt ohne Parameter."
+      }
+    },
     "setBinMode": {
       "help": "Wählt, wie die Klassen gebildet werden: automatisch oder mit fester Breite. Bei automatisch wird eine gesetzte Klassenbreite zurückgesetzt.",
       "params": {

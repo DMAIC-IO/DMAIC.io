@@ -6747,6 +6747,22 @@ export const AGENT_REGISTRY = {
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
+      "clearLegacySeries": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "clearLegacySeries",
+        "keysHelp": "actions.clearLegacySeries.params",
+        "keys": {}
+      },
       "setBinMode": {
         "target": "model",
         "params": [
@@ -6829,7 +6845,8 @@ export const AGENT_REGISTRY = {
     "viewFields": [
       "exampleWorksheetId",
       "showStats",
-      "histogramChart"
+      "histogramChart",
+      "legacySeries"
     ],
     "settable": [
       "datasets",

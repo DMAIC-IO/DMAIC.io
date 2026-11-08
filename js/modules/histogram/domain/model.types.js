@@ -14,6 +14,11 @@
  * @property {string|null} exampleWorksheetId
  * @property {boolean} showStats
  * @property {{ title?: string, showTitle?: boolean, xLabel?: string, yLabel?: string, showXLabel?: boolean, showYLabel?: boolean, showLegend?: boolean, titleSize?: number, labelSize?: number, tickSize?: number, showXTicks?: boolean, showYTicks?: boolean, bgColor?: string|null, refLines?: Array<{ dir: 'h'|'v', value: number, label?: string, showLabel?: boolean, dash?: 'solid'|'dash'|'dot'|'longdash', width?: number, color?: string }>, refAreas?: Array<{ dir: 'x'|'y', min: number, max: number, label?: string, color?: string }>, barGap?: number, pareto?: boolean, boxplotStrip?: boolean, series?: Array<{ name: string, fillColor?: string, borderColor?: string, borderWidth?: number, borderStyle?: 'solid'|'dash'|'dot'|'none', pattern?: string, patternColor?: string, patternSolidity?: number, visible?: boolean, showNormalCurve?: boolean }> }} histogramChart
+ * @property {Array<{ fillColor?: string, borderColor?: string, borderWidth?: number, borderStyle?: 'solid'|'dash'|'dot'|'none', pattern?: string, patternColor?: string, patternSolidity?: number, visible?: boolean, showNormalCurve?: boolean }>} legacySeries
+ */
+
+/**
+ * @typedef {{}} ClearLegacySeriesCommand
  */
 
 /**
@@ -23,8 +28,9 @@
 
 /**
  * @typedef {StateFields & StateView & {
+ *   clearLegacySeries(cmd: ClearLegacySeriesCommand): void,
  *   setBinMode(cmd: SetBinModeCommand): void,
- *   execute(cmd: ({ type: 'setBinMode' } & SetBinModeCommand)): unknown,
+ *   execute(cmd: ({ type: 'clearLegacySeries' } & ClearLegacySeriesCommand) | ({ type: 'setBinMode' } & SetBinModeCommand)): unknown,
  *   toJSON(): object,
  *   hasContent(): boolean,
  *   readonly context: import('../../../core/model.js').ModelContext,
