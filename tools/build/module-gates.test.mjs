@@ -177,9 +177,10 @@ test('Layer: domain ohne Alpine, DOM, UI, Kontext und höhere Schichten', () => 
   const files = [
     { path: 'domain/model.js', text: "import { defineModel } from '@/core/model.js';\nimport { mean } from '@/core/stats.js';\n" },
     { path: 'domain/a.js', text: "import Alpine from '@alpinejs/csp';\nimport { h } from '@/core/dom.js';\nimport { p } from '@/ui/column-picker.js';\nimport { v } from '../viewmodel/viewmodel.js';\n" },
-    { path: 'domain/b.js', text: "export const f = () => document.body;\nexport function g(context) { return this.context; }\nexport const ok = { document: 1 }.document;\n" },
+    { path: 'domain/b.js', text: "export const f = () => document.body;\nexport function g() { return context.i18n; }\nexport const ok = { document: 1 }.document;\n" },
     { path: 'domain/deep/c.js', text: "const m = await import('../../interaction/reorder.js');\n" },
     { path: 'io/export.js', text: "import Alpine from 'alpinejs';\nexport const x = () => Alpine.store('a');\nexport const y = () => document.title;\n" },
+    { path: 'io/free.js', text: "export const x = () => Alpine.store('a');\n" },
     { path: 'viewmodel/viewmodel.js', text: "import Alpine from '@alpinejs/csp';\n" },
   ];
   assert.deepEqual(checkLayers(fx(files)), ex([
@@ -191,7 +192,7 @@ test('Layer: domain ohne Alpine, DOM, UI, Kontext und höhere Schichten', () => 
     'layer: domain/b.js: context in domain/ verboten',
     'layer: domain/deep/c.js: Import ../../interaction/reorder.js in domain/ verboten (höhere Schicht)',
     'layer: io/export.js: Import alpinejs in io/ verboten (Alpine)',
-    'layer: io/export.js: Alpine in io/ verboten',
+    'layer: io/free.js: Alpine in io/ verboten',
   ]));
 });
 
@@ -213,6 +214,36 @@ test('Layer: Viewmodel-Kern-Import, window und Re-Export in domain', () => {
     'layer: domain/w.js: window in domain/ verboten',
     'layer: domain/w.js: Import ../io/export.js in domain/ verboten (höhere Schicht)',
   ]));
+});
+
+test('Layer: lokal deklarierte Namen sind keine Globals, weitere Globals in domain gesperrt', () => {
+  const files = [
+    { path: 'domain/local.js', text: [
+      "import { context } from './ctx.js';",
+      'export function a(window) { return window.x; }',
+      'export function b() { const document = {}; return document.title; }',
+      'export function c() { if (true) { let window = 1; } return window; }',
+      'export const d = ({ Alpine }) => Alpine;',
+      'export function e() { return context; }',
+    ].join('\n') },
+    { path: 'domain/globals.js', text: [
+      'export const g = () => globalThis.document;',
+      'export const n = () => navigator.language;',
+      'export const s = () => [localStorage, sessionStorage, indexedDB];',
+      'export const h = (x) => x instanceof HTMLElement;',
+      "export const f = () => fetch('/x');",
+    ].join('\n') },
+    { path: 'io/local.js', text: 'export function x(Alpine) { return Alpine; }\n' },
+  ];
+  assert.deepEqual(checkLayers(fx(files)), [
+    'layer: domain/globals.js: globalThis in domain/ verboten',
+    'layer: domain/globals.js: navigator in domain/ verboten',
+    'layer: domain/globals.js: localStorage in domain/ verboten',
+    'layer: domain/globals.js: sessionStorage in domain/ verboten',
+    'layer: domain/globals.js: indexedDB in domain/ verboten',
+    'layer: domain/globals.js: HTMLElement in domain/ verboten',
+    'layer: domain/globals.js: fetch in domain/ verboten',
+  ]);
 });
 
 const MODEL_URL = pathToFileURL(join(import.meta.dirname, '..', '..', 'js', 'core', 'model.js')).href;

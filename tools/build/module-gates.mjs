@@ -255,7 +255,7 @@ const LAYER_RULES = {
       { re: /^(\.\.\/)+(viewmodel|interaction|io|tile|resources)\//, why: 'höhere Schicht' },
       { re: /\/widgets\/(?![a-z0-9-]+\/schema\.js$)/, why: 'aus js/widgets/ nur schema.js' },
     ],
-    globals: ['document', 'window', 'Alpine', 'context'],
+    globals: ['document', 'window', 'Alpine', 'context', 'globalThis', 'navigator', 'localStorage', 'sessionStorage', 'indexedDB', 'HTMLElement', 'fetch'],
   },
   io: {
     imports: [{ re: /alpinejs/, why: 'Alpine' }],
@@ -273,10 +273,52 @@ function isFreeIdentifier(id) {
 }
 
 /**
+ * Namen, die in einer Funktion bzw. auf Dateiebene deklariert sind
+ * (Parameter, Variablen, Funktionen, Klassen, Importe, catch-Bindungen).
+ * Keine volle Bindungsanalyse: ein Name gilt in der ganzen umschließenden
+ * Funktion als lokal, auch über Blockgrenzen hinweg (konservativ).
+ * @param {import('typescript').SourceFile} sf
+ * @returns {Map<import('typescript').Node, Set<string>>} Funktion/Datei → Namen
+ */
+function declaredNames(sf) {
+  const byScope = new Map([[sf, new Set()]]);
+  const owner = (n) => {
+    for (let p = n.parent; p; p = p.parent) if (ts.isFunctionLike(p) || ts.isSourceFile(p)) return p;
+    return sf;
+  };
+  const add = (scope, name) => {
+    if (!byScope.has(scope)) byScope.set(scope, new Set());
+    if (ts.isIdentifier(name)) { byScope.get(scope).add(name.text); return; }
+    if (ts.isObjectBindingPattern(name) || ts.isArrayBindingPattern(name)) {
+      for (const el of name.elements) if (!ts.isOmittedExpression(el)) add(scope, el.name);
+    }
+  };
+  const visit = (n) => {
+    if (ts.isParameter(n)) add(owner(n), n.name);
+    else if (ts.isVariableDeclaration(n)) add(owner(n), n.name);
+    else if ((ts.isFunctionDeclaration(n) || ts.isClassDeclaration(n)) && n.name) add(owner(n), n.name);
+    else if (ts.isImportClause(n) && n.name) add(sf, n.name);
+    else if (ts.isImportSpecifier(n) || ts.isNamespaceImport(n)) add(sf, n.name);
+    ts.forEachChild(n, visit);
+  };
+  visit(sf);
+  return byScope;
+}
+
+/** Ist `id` in einer umschließenden Funktion oder auf Dateiebene deklariert? */
+function isDeclaredLocally(id, byScope) {
+  for (let p = id.parent; p; p = p.parent) {
+    if ((ts.isFunctionLike(p) || ts.isSourceFile(p)) && byScope.get(p)?.has(id.text)) return true;
+  }
+  return false;
+}
+
+/**
  * Gate Layer: `domain/` ohne Alpine, DOM, UI, Kontext, höhere Schichten;
  * `io/` ohne Alpine. Ein Befund je Datei und verbotenem Namen. Gemeint ist
  * der Dienst-Kontext des Moduls; `this.context` im Model ist der
- * Modellkontext (schlichte Werte wie der Zyklus) und erlaubt.
+ * Modellkontext (schlichte Werte wie der Zyklus) und erlaubt. Ein Name, der in
+ * der Datei als Parameter, Variable oder Import deklariert ist, ist kein Global.
  * @param {{ path: string, text: string }[]} files
  * @returns {string[]}
  */
@@ -287,6 +329,7 @@ export function checkLayers(files) {
     const rule = LAYER_RULES[layer];
     if (!rule || !path.endsWith('.js')) continue;
     const sf = parseJs(path, text);
+    const declared = declaredNames(sf);
     const seen = new Set();
     const report = (msg) => { if (!seen.has(msg)) { seen.add(msg); out.push(msg); } };
     const visit = (n) => {
@@ -297,7 +340,7 @@ export function checkLayers(files) {
         const hit = rule.imports.find(({ re }) => re.test(spec));
         if (hit) report(`layer: ${path}: Import ${spec} in ${layer}/ verboten (${hit.why})`);
       }
-      if (ts.isIdentifier(n) && rule.globals.includes(n.text) && isFreeIdentifier(n)) {
+      if (ts.isIdentifier(n) && rule.globals.includes(n.text) && isFreeIdentifier(n) && !isDeclaredLocally(n, declared)) {
         const inImport = ts.isImportClause(n.parent) || ts.isImportSpecifier(n.parent) || ts.isNamespaceImport(n.parent);
         if (!inImport) report(`layer: ${path}: ${n.text} in ${layer}/ verboten`);
       }
