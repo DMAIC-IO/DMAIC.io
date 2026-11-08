@@ -1,0 +1,47 @@
+{
+  "$schema": "../../../../../schemas/module-examples.schema.json",
+  "examples": [
+    {
+      "id": "chart-suggestion-bubble-lieferanten",
+      "type": "project",
+      "title": {
+        "de": "Lieferanten-Scorecard (Blasendiagramm)",
+        "en": "Supplier Scorecard (bubble chart)"
+      },
+      "description": {
+        "de": "12 Lieferanten mit Preisindex, Liefertreue und Bestellvolumen. Das Blasendiagramm zeigt den klassischen Trade-off Preis ↔ Liefertreue; die Bubble-Größe verrät, welche Lieferanten strategisch das größte Gewicht haben.",
+        "en": "12 suppliers with price index, on-time delivery rate and annual order volume. The bubble chart visualises the classic price ↔ reliability trade-off; bubble size reveals which suppliers carry the largest strategic weight."
+      },
+      "source": "Qprovement Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/chart-suggestion-bubble-lieferanten.json",
+      "format": "json",
+      "tags": [
+        "chart-suggestion",
+        "bubble",
+        "scorecard"
+      ]
+    },
+    {
+      "id": "chart-suggestion-bubble-maschinenpark",
+      "type": "project",
+      "title": {
+        "de": "Maschinenpark (Blasendiagramm)",
+        "en": "Machine Fleet (bubble chart)"
+      },
+      "description": {
+        "de": "10 Maschinen mit Zykluszeit, Ausschussrate und Tagesausstoß. Das Blasendiagramm priorisiert Six-Sigma-Verbesserungsprojekte: große Bubbles oben rechts (hoher Ausschuss bei hohem Output) sind die teuersten Problemfälle.",
+        "en": "10 machines with cycle time, scrap rate and daily output. The bubble chart prioritises Six Sigma improvement projects: large bubbles in the upper right (high scrap at high output) are the most expensive problem cases."
+      },
+      "source": "Qprovement Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/chart-suggestion-bubble-maschinenpark.json",
+      "format": "json",
+      "tags": [
+        "chart-suggestion",
+        "bubble",
+        "prioritization"
+      ]
+    }
+  ]
+}

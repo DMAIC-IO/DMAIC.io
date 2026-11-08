@@ -1,0 +1,48 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "So funktioniert der Diagramm-Vorschlag",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Die Diagramm-Vorschlag-Werkzeug liest die analytischen Rollen Deiner ausgewählten Spalten und schlägt geeignete Diagrammtypen vor — sortiert nach Eignung. Die Logik orientiert sich an „Show-Me\"-Mustern aus Tableau und dem Minitab Graph Builder."
+        },
+        {
+          "type": "paragraph",
+          "content": "Du erreichst das Werkzeug am schnellsten über den Button „Diagramm vorschlagen\" in der Worksheet-Werkzeugleiste. Wähle vorher eine oder mehrere Spalten aus."
+        },
+        {
+          "type": "definition",
+          "term": "Eingabe: Spaltenauswahl",
+          "content": "Markiere im Worksheet eine oder mehrere Spalten. Aus der Kombination ihrer {{term:skalenniveau|Rollen}} (Stetig, Kategorial, Ordinal, Datum) leiten wir den passenden Visualisierungstyp ab."
+        },
+        {
+          "type": "definition",
+          "term": "Ausgabe: Ranking",
+          "content": "Links siehst Du die Vorschläge in Rangfolge, der am besten passende steht oben. Rechts zeigen wir den gewählten Diagrammtyp als Vorschau. Klick auf einen Vorschlag wechselt die Vorschau."
+        },
+        {
+          "type": "definition",
+          "term": "Einfluss der Stichprobengröße",
+          "content": "Manche Diagramme sind nur sinnvoll ab einer Mindestgröße. Bei n < 20 z.B. wird das Histogramm ausgeblendet, weil Boxplot und Einzelwertdiagramm dort aussagekräftiger sind. Eine Regelkarte braucht mindestens 25 Punkte."
+        },
+        {
+          "type": "definition",
+          "term": "Im eigenen Modul öffnen",
+          "content": "Über der Vorschau gibt es bei vielen Diagrammen den Button „Im eigenen Modul öffnen\". Er legt eine neue Instanz des entsprechenden Vollmoduls ({{term:histogramm|Histogramm}}, {{term:boxplot|Boxplot}}, Einzelwertdiagramm, Verlaufsdiagramm, Balkendiagramm, {{term:pareto|Pareto}}-Diagramm, Mosaikplot, Wärmekarte, {{term:wahrscheinlichkeitsnetz|Wahrscheinlichkeitsnetz}} oder {{term:streudiagramm|XY-Diagramm}}) im gleichen Phasenbereich an — mit den ausgewählten Spalten bereits vorverknüpft, sodass Du direkt mit Anmerkungen, Referenzlinien, Achsen-Tuning oder Export weiterarbeiten kannst. Für Torte, Streudiagramm-Matrix und die reinen Vorschau-Kombinationen (Haupteffekte, Wechselwirkung, Randverteilungen, CUSUM) gibt es kein Zielmodul — der Button ist dort ausgeblendet."
+        },
+        {
+          "type": "definition",
+          "term": "Streudiagramm-Matrix (≥3 stetige Spalten)",
+          "content": "Wählst Du drei oder mehr stetige Spalten aus, schlägt der Vorschlag eine Streudiagramm-Matrix (SPLOM) vor. Die Vorschau rendert ein n×n-Raster aus kleinen Streudiagrammen aller Spaltenpaare; die Diagonale zeigt den jeweiligen Spaltennamen. Bei mehr als sechs Spalten werden nur die ersten sechs gezeigt — Performance- und Lesbarkeitsgrenze."
+        },
+        {
+          "type": "definition",
+          "term": "Regelkarten-Vorschau",
+          "content": "Bei der Kombination „Datum + stetige Spalte\" enthält der Vorschlag eine Regelkarte. Die Vorschau berechnet automatisch eine I-Karte (Individuals-Chart) mit zentralem {{term:mittelwert|Mittelwert}}, ±3σ-Grenzen (σ aus dem mittleren Moving Range, d2=1,128) und der Beobachtung sortiert nach Datum. Für X̄/R, X̄/S oder Phase-I-Ausschlüsse wechselst Du in die ausgewachsene Regelkarte unter „Control\"."
+        }
+      ]
+    }
+  }
+}
