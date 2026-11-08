@@ -43,6 +43,33 @@ export function widgetForKind(widgets, spec) {
 }
 
 /**
+ * Eingabewert tief kopieren (`structuredClone`); vorher prüfen, dass alle Zahlen endlich sind,
+ * damit `NaN`/`Infinity` mit Feldname gemeldet statt still zu `null` werden.
+ * @param {any} Alpine @param {any} raw @param {string} field @returns {any}
+ */
+function cloneInput(Alpine, raw, field) {
+  const seen = new WeakSet();
+  const walk = (v, at) => {
+    if (typeof v === 'number' && !Number.isFinite(v)) throw new Error(`invalid ${at} ${v}; allowed: any finite number`);
+    if (v === null || typeof v !== 'object' || seen.has(v)) return;
+    seen.add(v);
+    if (Array.isArray(v)) v.forEach((x, i) => walk(x, `${at}[${i}]`));
+    else for (const k of Object.keys(v)) walk(v[k], `${at}.${k}`);
+  };
+  walk(raw, field);
+  try { return structuredClone(raw); } catch { /* verschachtelte Proxys: unten ohne Hülle kopieren */ }
+  const bare = (v) => {
+    const r = Alpine.raw(v);
+    if (Array.isArray(r)) return r.map(bare);
+    if (r !== null && typeof r === 'object' && Object.getPrototypeOf(r) === Object.prototype) {
+      return Object.fromEntries(Object.keys(r).map((k) => [k, bare(r[k])]));
+    }
+    return r;
+  };
+  try { return structuredClone(bare(raw)); } catch (err) { throw new Error(`invalid ${field}; allowed: plain data (${err.message})`); }
+}
+
+/**
  * Ein Widget an `el` einhängen. Auch von `x-field` für Widget-Feldarten benutzt.
  * @param {any} Alpine
  * @param {HTMLElement} el Wirtselement
@@ -79,30 +106,70 @@ export function mountWidget(Alpine, el, name, entry, { valuePath, channel, i18n,
   }
   if (valuePath !== null && !schema.value) { fail(`${name} takes no x-widget-value`); return; }
 
+  // Das Widget ist lebendig, bis sein Element abgebaut wird; das Aufräumen steht vor dem Einhängen,
+  // damit ein Abbau während des Mounts nichts zurücklässt.
+  let alive = true;
+  let handle = null;
+  cleanup(() => {
+    alive = false;
+    handle?.destroy?.();
+    handle = null;
+    Alpine.destroyTree(root);
+    root.remove();
+  });
+
   const props = Alpine.reactive({});
-  const errors = Alpine.reactive({});
+  // Bewusst nicht reaktiv: sonst läse jeder Effekt über `showError` die Fehler der anderen Eingaben mit.
+  const errors = {};
   const crashed = new Set();
   let mounted = false;
+  let released = false;
   const showError = () => root.classList.toggle('widget-root--error', Object.keys(errors).length > 0 || crashed.size > 0);
+  /**
+   * Alle Effekte des Widgets (Eingaben und Mount) laufen hier durch: ein werfender Lauf bliebe sonst in Alpines Flush stecken
+   * und hielte die ganze Reaktivität an. Nach Abbau oder Mount-Fehler tut ein Effekt nichts mehr und liest nichts mehr.
+   * `key` benennt den Effekt stabil (Eingabe-Name beziehungsweise ein eigenes Symbol je Mount-Effekt).
+   */
+  const guarded = (key, fn, ...rest) => effect(() => {
+    if (!alive || released) return;
+    try {
+      fn();
+      if (crashed.delete(key) && mounted) showError();
+    } catch (err) {
+      crashed.add(key);
+      console.warn(`${where}: ${err?.message ?? err}`);
+      if (mounted) showError();
+      else root.classList.add('widget-root--error');
+    }
+  }, ...rest);
+  /** Mount fehlgeschlagen: Effekte stilllegen, Fehlerzustand zeigen. */
+  const abort = (message) => {
+    released = true;
+    handle?.destroy?.();
+    handle = null;
+    root.replaceChildren();
+    fail(message);
+  };
+
   for (const [p, path] of bound) {
     const spec = schema.props[p];
-    effect(() => {
+    guarded(`prop:${p}`, () => {
       try {
         const raw = readPath(host, path);
         props[p] = raw === undefined && spec.optional === true
           ? undefined
-          : checkValue(spec, `${name}.${p}`, JSON.parse(JSON.stringify(raw ?? null)));
+          : checkValue(spec, `${name}.${p}`, cloneInput(Alpine, Alpine.raw(raw ?? null), `${name}.${p}`));
         delete errors[p];
       } catch (err) {
         errors[p] = String(err.message);
-        console.warn(`${where}: ${err.message}`);
+        // Beim Einhängen meldet `fail` gesammelt; erst Wiederläufe warnen selbst.
+        if (mounted) console.warn(`${where}: ${err.message}`);
       }
       if (mounted) showError();
     });
   }
-  if (Object.keys(errors).length) { fail(Object.values(errors).join('; ')); return; }
+  if (Object.keys(errors).length) { abort(Object.values(errors).join('; ')); return; }
 
-  let handle = null;
   try {
     let value = null;
     if (valuePath !== null) {
@@ -119,37 +186,17 @@ export function mountWidget(Alpine, el, name, entry, { valuePath, channel, i18n,
     Object.defineProperty(Alpine.raw(data), '_ui', { value: { services }, enumerable: false, configurable: true });
     root._x_dataStack = [data];
     if (entry.template) root.append(...cloneTemplate(entry.template));
-    // Ein werfender Effect-Lauf bliebe in Alpines Flush stecken und hielte die ganze Reaktivität an.
-    let slot = 0;
-    const guardedEffect = (fn, ...rest) => {
-      const id = slot++;
-      return effect(() => {
-        try {
-          fn();
-          if (crashed.delete(id) && mounted) showError();
-        } catch (err) {
-          crashed.add(id);
-          console.warn(`${where}: ${err?.message ?? err}`);
-          if (mounted) showError();
-          else root.classList.add('widget-root--error');
-        }
-      }, ...rest);
-    };
+    const guardedEffect = (fn, ...rest) => guarded(Symbol(name), fn, ...rest);
     handle = entry.mount(root, { props, value, services, effect: guardedEffect });
+    if (!alive) { handle?.destroy?.(); handle = null; return; }
     mounted = true;
+    showError();
     Alpine.initTree(root);
   } catch (err) {
+    released = true;
     if (err instanceof TypeError || err instanceof ReferenceError || err instanceof SyntaxError) throw err;
-    handle?.destroy?.();
-    root.replaceChildren();
-    fail(String(err.message));
-    return;
+    abort(String(err.message));
   }
-  cleanup(() => {
-    handle?.destroy?.();
-    Alpine.destroyTree(root);
-    root.remove();
-  });
 }
 
 /**

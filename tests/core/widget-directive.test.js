@@ -110,6 +110,20 @@ async function withWarnings(fn) {
   return seen;
 }
 
+/**
+ * Test-Widgets nur für die Dauer von `fn` in die gemeinsame Registry legen; danach durch inerte Einträge ersetzen
+ * (passen auf keine Feldart) und die i18n dieser Datei wiederherstellen.
+ * @param {Record<string, any>} extra @param {() => Promise<void>} fn
+ */
+async function withWidgets(extra, fn) {
+  if (!Alpine.version) Alpine.start();
+  registerWidgetDirective(Alpine, { i18n, widgets: extra });
+  try { await fn(); } finally {
+    const inert = { schema: { forKind: null }, mount() {} };
+    registerWidgetDirective(Alpine, { i18n, widgets: Object.fromEntries(Object.keys(extra).map((k) => [k, inert])) });
+  }
+}
+
 const ROWS = '<div x-widget="stat-list" x-widget-rows="rows"></div>';
 
 suite('x-widget', () => {
@@ -296,5 +310,169 @@ suite('x-widget', () => {
     await flush();
     assertTrue(!w.classList.contains('widget-root--error'));
     root.remove();
+  });
+
+  test('Mount-Fehler gibt Eingabe- und Mount-Effekte frei: genau eine Warnung', async () => {
+    const runs = { n: 0 };
+    let ctx;
+    let seen;
+    await withWidgets({
+      mfail: {
+        schema: defineWidget({ name: 'mfail', props: { n: number() } }),
+        mount(root, { props, effect }) {
+          effect(() => { runs.n++; root.textContent = `n${props.n}`; });
+          throw new Error('mount kaputt');
+        },
+      },
+    }, async () => {
+      seen = await withWarnings(async () => {
+        ctx = await host('<div class="m" x-widget="mfail" x-widget-n="n"></div>', { n: 1 });
+        const base = runs.n;
+        ctx.data.n = 2;
+        await flush();
+        ctx.data.n = 'kein Zahl';
+        await flush();
+        ctx.data.n = 3;
+        await flush();
+        assertEqual(runs.n, base);
+      });
+    });
+    assertEqual(seen.length, 1, seen.join(' | '));
+    assertTrue(seen[0].includes('mount kaputt'));
+    assertTrue(ctx.root.querySelector('.m .widget-root--error').textContent.includes('mount kaputt'));
+    ctx.root.remove();
+  });
+
+  test('Fehlbindung beim Einhängen: eine Warnung, danach keine weiteren', async () => {
+    let ctx;
+    const seen = await withWarnings(async () => {
+      ctx = await host('<div class="b" x-widget="boom" x-widget-n="v"></div>', { v: 'x' });
+      ctx.data.v = 'y';
+      await flush();
+      ctx.data.v = 4;
+      await flush();
+    });
+    assertEqual(seen.length, 1, seen.join(' | '));
+    assertTrue(ctx.root.querySelector('.b .widget-root--error') !== null);
+    ctx.root.remove();
+  });
+
+  test('NaN und Infinity als Eingabe: Meldung mit Feldname statt null', async () => {
+    let ctx;
+    await withWarnings(async () => {
+      ctx = await host('<div class="a" x-widget="boom" x-widget-n="nan"></div><div class="b" x-widget="stat-list" x-widget-rows="inf"></div>',
+        { nan: NaN, inf: [{ name: 'a', mean: Infinity }] });
+    });
+    const a = ctx.root.querySelector('.a .widget-root--error').textContent;
+    assertTrue(a.includes('boom.n') && a.includes('NaN') && a.includes('finite'), a);
+    const b = ctx.root.querySelector('.b .widget-root--error').textContent;
+    assertTrue(b.includes('stat-list.rows[0].mean') && b.includes('Infinity'), b);
+    ctx.root.remove();
+  });
+
+  test('Eingabe wird tief geklont, nicht geteilt', async () => {
+    const rows = [{ name: 'a', mean: 1 }];
+    let got;
+    await withWidgets({
+      grab: {
+        schema: defineWidget({ name: 'grab', props: { rows: list(object({ name: text(), mean: number() })) } }),
+        mount(root, { props, effect }) { effect(() => { got = props.rows; }); return { destroy() {} }; },
+      },
+    }, async () => {
+      const ctx = await host('<div x-widget="grab" x-widget-rows="rows"></div>', { rows });
+      assertTrue(Alpine.raw(got) !== Alpine.raw(ctx.data.rows));
+      assertTrue(Alpine.raw(got)[0] !== Alpine.raw(ctx.data.rows)[0]);
+      assertEqual(got[0].mean, 1);
+      ctx.root.remove();
+    });
+  });
+
+  test('Crash-Zustand hängt nicht von der Mount-Reihenfolge ab', async () => {
+    for (const order of [['a', 'b'], ['b', 'a']]) {
+      await withWidgets({
+        order: {
+          schema: defineWidget({ name: 'order', props: { n: number() } }),
+          mount(root, { props, effect }) {
+            for (const k of order) effect(() => { if (k === 'a' && props.n === 13) throw new Error('a kaputt'); });
+            return { destroy() {} };
+          },
+        },
+      }, async () => {
+        const { root, data } = await host('<div class="o" x-widget="order" x-widget-n="n"></div>', { n: 1 });
+        const w = root.querySelector('.o .widget-root');
+        await withWarnings(async () => { data.n = 13; await flush(); });
+        assertTrue(w.classList.contains('widget-root--error'), order.join());
+        data.n = 2;
+        await flush();
+        assertTrue(!w.classList.contains('widget-root--error'), order.join());
+        root.remove();
+      });
+    }
+  });
+
+  test('Fehler einer Eingabe lässt andere Eingaben nicht neu laufen', async () => {
+    const calls = { a: 0 };
+    await withWidgets({
+      two: {
+        schema: defineWidget({ name: 'two', props: { a: number(), b: number() } }),
+        mount(root, { props, effect }) {
+          effect(() => { root.textContent = `a${props.a}`; });
+          return { destroy() {} };
+        },
+      },
+    }, async () => {
+      const { root, data } = await host('<div class="t" x-widget="two" x-widget-a="ctr.a" x-widget-b="b"></div>', {
+        b: 1, ctr: { v: 1, get a() { calls.a++; return this.v; } },
+      });
+      data.ctr.v = 2; // Wiederlauf: ab hier liest der Effekt der Eingabe `a` den Fehlerzustand
+      await flush();
+      const base = calls.a;
+      await withWarnings(async () => { data.b = 'bad'; await flush(); });
+      assertTrue(root.querySelector('.t .widget-root--error') !== null);
+      await withWarnings(async () => { data.b = 2; await flush(); });
+      assertTrue(root.querySelector('.t .widget-root--error') === null);
+      assertEqual(calls.a, base);
+      root.remove();
+    });
+  });
+
+  test('Abbau während des Einhängens: Widget wird trotzdem zerstört', async () => {
+    const before = probe.alive;
+    await withWidgets({
+      selfdestroy: {
+        schema: defineWidget({ name: 'selfdestroy' }),
+        mount(root) {
+          probe.alive++;
+          Alpine.destroyTree(root.parentElement);
+          return { destroy() { probe.alive--; } };
+        },
+      },
+    }, async () => {
+      const { root } = await host('<div x-widget="selfdestroy"></div>');
+      assertEqual(probe.alive, before);
+      root.remove();
+    });
+  });
+
+  test('Crash im Erstlauf, danach Erfolg: Fehlerklasse weg', async () => {
+    await withWidgets({
+      flaky: {
+        schema: defineWidget({ name: 'flaky', props: { n: number() } }),
+        mount(root, { props, effect }) {
+          effect(() => { if (props.n === 13) throw new Error('erst kaputt'); root.textContent = `n${props.n}`; });
+          return { destroy() {} };
+        },
+      },
+    }, async () => {
+      let ctx;
+      await withWarnings(async () => { ctx = await host('<div class="f" x-widget="flaky" x-widget-n="n"></div>', { n: 13 }); });
+      const w = ctx.root.querySelector('.f .widget-root');
+      assertTrue(w.classList.contains('widget-root--error'));
+      ctx.data.n = 2;
+      await flush();
+      assertEqual(w.textContent, 'n2');
+      assertTrue(!w.classList.contains('widget-root--error'));
+      ctx.root.remove();
+    });
   });
 });
