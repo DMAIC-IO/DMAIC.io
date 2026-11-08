@@ -36,30 +36,32 @@ export function installWorksheetRevisions(eventBus) {
 
 /**
  * @typedef {{ instanceId: string, sheetId?: string, columnId: string }} ColumnRef
+ * @typedef {{ name: string, type: string, role: string|null, roleConfirmed: boolean }} WorksheetColumnInfo
  * @typedef {{ values: (ref: ColumnRef|null) => any[]|null,
  *   numeric: (ref: ColumnRef|null) => number[]|null,
  *   name: (ref: ColumnRef|null) => string|null,
+ *   column: (ref: ColumnRef|null) => WorksheetColumnInfo|null,
  *   columns: (filter?: { types?: string[], minCount?: number }) => { key: string, name: string }[] }} WorksheetData
  */
 
 /**
- * Lesezugriff auf Arbeitsblattspalten; `columns(filter)` listet die wählbaren Spalten als `{ key, name }` (reaktiv auf jede Änderung und auf neue Arbeitsblätter); `null`, wenn `ref` fehlt oder Blatt/Spalte nicht auflösbar sind.
+ * Lesezugriff auf Arbeitsblattspalten; `column(ref)` liefert Name, Typ, Rolle und Rollenbestätigung (ohne Werte); `columns(filter)` listet die wählbaren Spalten als `{ key, name }` (reaktiv auf jede Änderung und auf neue Arbeitsblätter); `null`, wenn `ref` fehlt oder Blatt/Spalte nicht auflösbar sind.
  * `numeric` liest wie das Arbeitsblatt (`parseNumeric`): Dezimalkomma zählt, Leerwerte, Text und Wahrheitswerte fallen heraus; `Infinity` bleibt ausgeschlossen.
  * @param {{ getModuleState: (id: string) => any, get: (path: string) => any }} stateManager
  * @returns {Readonly<WorksheetData>}
  */
 export function createWorksheetData(stateManager) {
   /** @param {ColumnRef|null} ref */
-  const column = (ref) => {
+  const resolve = (ref) => {
     void rev['*'];
     if (!ref || typeof ref.instanceId !== 'string') return null;
     void rev[ref.instanceId];
     return resolveColumnRef(stateManager, ref);
   };
   return Object.freeze({
-    values(ref) { const c = column(ref); return c ? [...(c.values ?? [])] : null; },
+    values(ref) { const c = resolve(ref); return c ? [...(c.values ?? [])] : null; },
     numeric(ref) {
-      const c = column(ref);
+      const c = resolve(ref);
       return c ? (c.values ?? []).map((v) => (typeof v === 'boolean' ? null : parseNumeric(v))).filter((v) => v !== null && Number.isFinite(v)) : null;
     },
     columns(filter) {
@@ -67,6 +69,10 @@ export function createWorksheetData(stateManager) {
       void rev['#list'];
       return discoverColumns(stateManager, filter ?? {}).map(columnOption);
     },
-    name(ref) { const c = column(ref); return c ? (c.name || c.shortName || '?') : null; },
+    column(ref) {
+      const c = resolve(ref);
+      return c ? { name: c.name || c.shortName || '?', type: c.type, role: c.role ?? null, roleConfirmed: c.roleManual === true } : null;
+    },
+    name(ref) { const c = resolve(ref); return c ? (c.name || c.shortName || '?') : null; },
   });
 }

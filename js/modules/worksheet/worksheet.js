@@ -1322,9 +1322,7 @@ const mod = createModule({
         }
         this._ensureSheet(sheetId);
         this._grid.setColumnRole(columnId, role);
-        // `column:role-changed` steht nicht in `dataMutationEvents`: ohne
-        // dieses Ablegen sähe chart-suggestion (liest `roleManual` aus dem
-        // StateManager) die Bestätigung nie.
+        // Sofortiges Ablegen für die Agentenfläche.
         this._persistNow();
       },
 
@@ -1721,7 +1719,7 @@ const mod = createModule({
         const dataMutationEvents = [
           'cell:changed', 'data:pasted', 'data:imported',
           'column:added', 'column:removed', 'column:renamed',
-          'column:type-changed', 'column:moved',
+          'column:type-changed', 'column:role-changed', 'column:moved',
           'rows:added', 'rows:removed', 'rows:moved',
           'undo', 'redo',
         ];

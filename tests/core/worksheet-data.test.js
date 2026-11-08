@@ -60,6 +60,34 @@ suite('ctx.data', () => {
     Alpine.release(runner);
   });
 
+  test('column: Name, Typ, Rolle, Bestätigung; ohne Werte; fehlend → null', () => {
+    const data = createWorksheetData(fakeStore({ ws1: { sheets: [{ id: 's1', state: { columns: [
+      { id: 'c1', name: 'Schicht', type: 'text', role: 'categorical', roleManual: true, values: ['A'] },
+      { id: 'c2', name: '', shortName: 'G', type: 'numeric', role: 'continuous', values: [1] }] } }] } }));
+    const r = (columnId) => ({ instanceId: 'ws1', sheetId: 's1', columnId });
+    assertDeepEqual(data.column(r('c1')), { name: 'Schicht', type: 'text', role: 'categorical', roleConfirmed: true });
+    assertDeepEqual(data.column(r('c2')), { name: 'G', type: 'numeric', role: 'continuous', roleConfirmed: false });
+    assertEqual(data.column(r('nope')), null);
+    assertEqual(data.column(null), null);
+  });
+
+  test('column folgt worksheet:dataChanged', async () => {
+    const bus = fakeBus();
+    installWorksheetRevisions(bus);
+    const mk = (role) => ({ sheets: [{ id: 's1', state: { columns: [{ id: 'c1', name: 'X', type: 'numeric', role, values: [1] }] } }] });
+    const states = { ws1: mk('continuous') };
+    const data = createWorksheetData(fakeStore(states));
+    const ref = { instanceId: 'ws1', sheetId: 's1', columnId: 'c1' };
+    let role = null;
+    const runner = Alpine.effect(() => { role = data.column(ref).role; });
+    assertEqual(role, 'continuous');
+    states.ws1 = mk('categorical');
+    bus.emit('worksheet:dataChanged', { instanceId: 'ws1' });
+    await flush();
+    assertEqual(role, 'categorical');
+    Alpine.release(runner);
+  });
+
   test('module:removed und Projektwechsel rechnen neu', async () => {
     const bus = fakeBus();
     installWorksheetRevisions(bus);
