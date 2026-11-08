@@ -133,7 +133,7 @@ export function mountWidget(Alpine, el, name, entry, { valuePath, channel, i18n,
   /**
    * Alle Effekte des Widgets (Eingaben und Mount) laufen hier durch: ein werfender Lauf bliebe sonst in Alpines Flush stecken
    * und hielte die ganze Reaktivität an. Nach Abbau oder Mount-Fehler tut ein Effekt nichts mehr und liest nichts mehr.
-   * `key` benennt den Effekt stabil (Eingabe-Name beziehungsweise `<widget>#<laufende Nummer>` je Mount-Effekt).
+   * `key` benennt den Effekt stabil (`prop:<Eingabe>` beziehungsweise `<widget>#<laufende Nummer>` je Mount-Effekt).
    */
   const guarded = (key, fn, ...rest) => effect(() => {
     if (!alive || released) return;

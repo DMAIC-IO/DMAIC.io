@@ -228,22 +228,71 @@ suite('Diagramm-Widgets (chart-mount)', () => {
     root.remove();
   });
 
-  test('fremder Wert bei offenem Editor: Fokus im Editor bleibt erhalten', async () => {
+  const FOC = 'input, select, textarea, button';
+  async function openEditor() {
     const cm = fakeManager({ real: true });
-    const { root, data } = await host(HIST, { cm });
+    const h = await host(HIST, { cm });
     const chart = cm.log.created[0];
     chart._editorOpen = true;
     chart._buildEditor();
+    return { ...h, chart, all: () => [...chart._editorInner.querySelectorAll(FOC)] };
+  }
+
+  test('fremder Wert bei offenem Editor: Fokus und Cursor bleiben am selben Feld', async () => {
+    const { root, data, chart, all } = await openEditor();
     const input = chart._editorInner.querySelector('input[type="text"]');
     assertTrue(input !== null, 'Editor hat ein Textfeld');
     input.focus();
-    assertTrue(document.activeElement === input, 'Fokus gesetzt');
+    input.value = 'abcdef';
+    input.setSelectionRange(2, 2);
+    const index = all().indexOf(input);
     data.model.chartEdits = { showLegend: false };
     await flush();
     assertEqual(chart.config.showLegend, false);
     const now = document.activeElement;
-    assertTrue(now !== null && chart._editorInner.contains(now), 'Fokus liegt weiter im Editor');
-    assertEqual(now.getAttribute('data-field') ?? now.type, input.getAttribute('data-field') ?? input.type);
+    assertTrue(chart._editorInner.contains(now), 'Fokus liegt weiter im Editor');
+    assertEqual(all().indexOf(now), index);
+    assertEqual(now.selectionStart, 2);
+    root.remove();
+  });
+
+  test('Fokus außerhalb des Editors bleibt, wo er war', async () => {
+    const { root, chart } = await openEditor();
+    const other = document.createElement('input');
+    document.body.append(other);
+    other.focus();
+    chart.refreshEditor();
+    assertTrue(document.activeElement === other);
+    other.remove();
+    root.remove();
+  });
+
+  test('Fokus auf Auswahl oder Kontrollkästchen (ohne Cursor) wandert mit', async () => {
+    const { root, chart, all } = await openEditor();
+    const box = all().find((e) => e.type === 'checkbox' || e.tagName === 'SELECT');
+    assertTrue(box !== undefined, 'Editor hat Kontrollkästchen oder Auswahl');
+    box.focus();
+    const index = all().indexOf(box);
+    chart.refreshEditor();
+    assertEqual(all().indexOf(document.activeElement), index);
+    assertTrue(document.activeElement !== box, 'neues Element');
+    root.remove();
+  });
+
+  test('erscheint vor dem Feld eine Zeile, erhält kein anderes Feld den Fokus', async () => {
+    const { root, chart, all } = await openEditor();
+    const input = chart._editorInner.querySelector('input[type="text"]');
+    input.focus();
+    const build = chart._buildEditor.bind(chart);
+    chart._buildEditor = () => {
+      build();
+      const row = document.createElement('label');
+      row.append('Neu', Object.assign(document.createElement('input'), { type: 'text' }));
+      chart._editorInner.prepend(row);
+    };
+    chart.refreshEditor();
+    const a = document.activeElement;
+    assertTrue(!chart._editorInner.contains(a), 'kein Feld des Editors fokussiert');
     root.remove();
   });
 });

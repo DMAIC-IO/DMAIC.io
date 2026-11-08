@@ -1711,10 +1711,13 @@ export default class ChartBase {
     const inner = this._editorInner;
     const active = document.activeElement;
     const index = active && inner.contains(active) ? [...inner.querySelectorAll(FOCUSABLE)].indexOf(active) : -1;
+    const label = (el) => (el.closest('label') ?? el.parentElement)?.textContent?.trim() ?? '';
+    const was = index >= 0 ? { tag: active.tagName, type: active.type, label: label(active) } : null;
     const caret = index >= 0 && typeof active.selectionStart === 'number' ? [active.selectionStart, active.selectionEnd] : null;
     this._buildEditor();
     const next = index >= 0 ? inner.querySelectorAll(FOCUSABLE)[index] : null;
-    if (!next) return;
+    // Erscheint vor dem Feld eine Zeile, trifft der Index ein anderes Feld: dann lieber keinen Fokus setzen.
+    if (!next || next.tagName !== was.tag || next.type !== was.type || label(next) !== was.label) return;
     next.focus({ preventScroll: true });
     if (caret && typeof next.setSelectionRange === 'function') { try { next.setSelectionRange(...caret); } catch { /* Feldart ohne Auswahl */ } }
   }
