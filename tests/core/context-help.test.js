@@ -7,7 +7,7 @@
  */
 import { suite, test, beforeEach, assertEqual, assertTrue } from '../test-utils.js';
 import {
-  setContextHelpConfig, augmentContextHelp, openContextHelp, closeContextHelp,
+  setContextHelpConfig, augmentContextHelp, openContextHelp, closeContextHelp, startContextHelp,
 } from '../../js/core/context-help.js';
 
 const HELP = {
@@ -46,17 +46,91 @@ suite('context help', () => {
     assertTrue(label.classList.contains('context-help-anchor'));
   });
 
-  test('a form control gets no badge (it cannot render children) but keeps title and description', () => {
+  const KEY = 'modules.five-why.fields.problem.help';
+
+  test('a field without a labelled label gets a sibling badge and keeps title and description', () => {
     for (const tag of ['input', 'textarea', 'select']) {
+      const wrap = document.createElement('div');
       const field = document.createElement(tag);
-      field.setAttribute('data-help-key', 'modules.five-why.fields.problem.help');
-      host.appendChild(field);
+      field.setAttribute('data-help-key', KEY);
+      wrap.appendChild(field);
+      host.appendChild(wrap);
 
       augmentContextHelp(host);
 
       assertEqual(field.querySelector('.context-help__btn'), null);
-      assertEqual(field.getAttribute('title'), HELP['modules.five-why.fields.problem.help']);
+      const badge = field.nextElementSibling;
+      assertTrue(Boolean(badge) && badge.matches('.context-help__btn.context-help__btn--field'));
+      assertEqual(badge.getAttribute('data-help-key'), KEY);
+      assertEqual(field.getAttribute('title'), HELP[KEY]);
+      assertTrue(Boolean(field.getAttribute('aria-describedby')));
       assertEqual(field.dataset.contextHelpAugmented, '1');
+    }
+  });
+
+  test('a field with a preceding labelled label in the same .field-group gets no badge', () => {
+    const group = document.createElement('div');
+    group.className = 'field-group';
+    const label = document.createElement('label');
+    label.setAttribute('data-help-key', KEY);
+    label.textContent = 'Problem';
+    const field = document.createElement('input');
+    field.setAttribute('data-help-key', KEY);
+    group.append(label, field);
+    host.appendChild(group);
+
+    augmentContextHelp(host);
+
+    assertEqual(field.nextElementSibling, null);
+    assertEqual(field.getAttribute('title'), HELP[KEY]);
+  });
+
+  test('a field with a label[for] that has a data-help-key gets no badge', () => {
+    const label = document.createElement('label');
+    label.setAttribute('for', 'ch-field-1');
+    label.setAttribute('data-help-key', KEY);
+    label.textContent = 'Problem';
+    const field = document.createElement('input');
+    field.id = 'ch-field-1';
+    field.setAttribute('data-help-key', KEY);
+    host.append(label, field);
+
+    augmentContextHelp(host);
+
+    assertEqual(field.nextElementSibling, null);
+  });
+
+  test('a second sweep adds no second sibling badge', () => {
+    const wrap = document.createElement('div');
+    const field = document.createElement('textarea');
+    field.setAttribute('data-help-key', KEY);
+    wrap.appendChild(field);
+    host.appendChild(wrap);
+
+    augmentContextHelp(host);
+    augmentContextHelp(host);
+
+    assertEqual(wrap.querySelectorAll('.context-help__btn--field').length, 1);
+  });
+
+  test('arming (Alt down) puts the badge at the right edge and vertical middle of the field', () => {
+    const wrap = document.createElement('div');
+    const field = document.createElement('textarea');
+    field.setAttribute('data-help-key', KEY);
+    wrap.appendChild(field);
+    host.appendChild(wrap);
+    startContextHelp();
+    augmentContextHelp(host);
+    const stub = (name, value) => Object.defineProperty(field, name, { value, configurable: true });
+    stub('offsetLeft', 30); stub('offsetWidth', 200); stub('offsetTop', 10); stub('offsetHeight', 60);
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt' }));
+    try {
+      const badge = field.nextElementSibling;
+      assertEqual(badge.style.left, '230px');
+      assertEqual(badge.style.top, '40px');
+    } finally {
+      window.dispatchEvent(new KeyboardEvent('keyup', { key: 'Alt' }));
     }
   });
 

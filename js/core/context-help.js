@@ -255,6 +255,68 @@ export function describeTarget(key, text) {
 
 // ─── Intern ────────────────────────────────────────────────────────
 
+/**
+ * Das Fragezeichen-Abzeichen, noch ohne Platz im DOM.
+ * @param {string} key Hilfeschlüssel
+ * @returns {HTMLElement}
+ */
+function buildBadge(key) {
+  // Ein `<span role="button">`, KEIN `<button>`: der Anker darf selbst ein
+  // Knopf sein (five-why: „Why hinzufügen"), und ein `<button>` in einem
+  // `<button>` ist ungültiges Markup.
+  const button = document.createElement('span');
+  button.setAttribute('role', 'button');
+  button.className = 'context-help__btn';
+  button.setAttribute('data-help-key', key);
+  // Nicht im Tabulator-Lauf: die Fläche ist ein Zusatz, kein Pflichtweg; über
+  // die Tastatur bleibt der Hilfetext über das Handbuch erreichbar.
+  button.tabIndex = -1;
+  button.appendChild(icon('status.help', { size: 'sm' }));
+  // Der Griff MUSS am Knopf selbst hängen, nicht nur am Dokument: ist der
+  // Anker ein Knopf mit eigenem `@click` (Alpine hängt direkt am Element),
+  // liefe dessen Griff in der Bubble-Phase VOR dem Dokumentgriff — ein
+  // Klick auf das Fragezeichen hätte die Aktion des Ankers ausgelöst.
+  button.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    openContextHelp(button);
+  });
+  return button;
+}
+
+/**
+ * Trägt schon ein beschriftetes Label das Fragezeichen für dieses Feld?
+ * Ja bei `label[for=<id>]` mit `data-help-key` oder einem vorangehenden
+ * Geschwister-`label[data-help-key]` in derselben `.field-group`.
+ * @param {HTMLElement} field
+ * @returns {boolean}
+ */
+function hasLabelledLabel(field) {
+  if (field.id) {
+    const labels = field.ownerDocument.querySelectorAll('label[for][data-help-key]');
+    for (const label of labels) if (label.htmlFor === field.id) return true;
+  }
+  const group = field.closest('.field-group');
+  if (!group || field.parentElement !== group) return false;
+  for (let prev = field.previousElementSibling; prev; prev = prev.previousElementSibling) {
+    if (prev.matches('label[data-help-key]')) return true;
+  }
+  return false;
+}
+
+/**
+ * Setzt die Fragezeichen an Eingabefeldern an den rechten Feldrand, senkrecht
+ * mittig. Nur Bezugspunkt: Einrückung und Zentrierung kommen aus dem CSS.
+ */
+function placeFieldBadges() {
+  for (const badge of document.querySelectorAll('.context-help__btn--field')) {
+    const field = badge.previousElementSibling;
+    if (!field) continue;
+    badge.style.left = `${field.offsetLeft + field.offsetWidth}px`;
+    badge.style.top = `${field.offsetTop + field.offsetHeight / 2}px`;
+  }
+}
+
 function augmentOne(anchor) {
   if (!anchor || anchor.classList.contains('context-help__btn')) return;
   const key = anchor.getAttribute('data-help-key');
@@ -265,11 +327,22 @@ function augmentOne(anchor) {
 
   // Ein Eingabefeld kann kein Kind darstellen: ein eingehängtes Fragezeichen
   // bliebe ohne Box (unsichtbar, nicht anklickbar). Das Feld trägt den Satz
-  // über `title` und `aria-describedby`; das Fragezeichen gehört an sein
-  // Label bzw. an das umschließende Formular.
+  // über `title` und `aria-describedby`; das Fragezeichen hängt als
+  // Geschwister dahinter — außer ein beschriftetes Label trägt es schon.
   if (NO_BADGE_TAGS.has(anchor.tagName)) {
     describeElement(anchor, key);
     anchor.dataset.contextHelpAugmented = '1';
+    if (hasLabelledLabel(anchor)) return;
+    let sibling = anchor.nextElementSibling;
+    if (!sibling?.classList.contains('context-help__btn--field')) {
+      sibling = buildBadge(key);
+      sibling.classList.add('context-help__btn--field');
+      anchor.after(sibling);
+    }
+    sibling.setAttribute(
+      'aria-label',
+      STATE.i18n.t('contextHelp.ariaLabel', { label: anchor.getAttribute('aria-label') || anchor.getAttribute('name') || '' }),
+    );
     return;
   }
 
@@ -279,26 +352,7 @@ function augmentOne(anchor) {
   // überschrieben, für immer ohne Knopf.
   let button = anchor.querySelector(':scope > .context-help__btn');
   if (!button) {
-    // Ein `<span role="button">`, KEIN `<button>`: der Anker darf selbst ein
-    // Knopf sein (five-why: „Why hinzufügen"), und ein `<button>` in einem
-    // `<button>` ist ungültiges Markup.
-    button = document.createElement('span');
-    button.setAttribute('role', 'button');
-    button.className = 'context-help__btn';
-    button.setAttribute('data-help-key', key);
-    // Nicht im Tabulator-Lauf: die Fläche ist ein Zusatz, kein Pflichtweg; über
-    // die Tastatur bleibt der Hilfetext über das Handbuch erreichbar.
-    button.tabIndex = -1;
-    button.appendChild(icon('status.help', { size: 'sm' }));
-    // Der Griff MUSS am Knopf selbst hängen, nicht nur am Dokument: ist der
-    // Anker ein Knopf mit eigenem `@click` (Alpine hängt direkt am Element),
-    // liefe dessen Griff in der Bubble-Phase VOR dem Dokumentgriff — ein
-    // Klick auf das Fragezeichen hätte die Aktion des Ankers ausgelöst.
-    button.addEventListener('click', (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      openContextHelp(button);
-    });
+    button = buildBadge(key);
     anchor.appendChild(button);
   }
 
@@ -363,7 +417,10 @@ function wireGlobalHandlers() {
   let altAlone = false;
   window.addEventListener('keydown', (event) => {
     altAlone = event.key === 'Alt';
-    if (event.key === 'Alt') document.body.classList.add(ARMED_CLASS);
+    if (event.key === 'Alt') {
+      document.body.classList.add(ARMED_CLASS);
+      placeFieldBadges();
+    }
     if (event.key === 'Escape') closeContextHelp();
   });
   const disarm = () => document.body.classList.remove(ARMED_CLASS);

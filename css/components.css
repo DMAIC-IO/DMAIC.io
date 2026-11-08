@@ -1949,6 +1949,16 @@ label.context-help-anchor:not([data-help-anchor="box"]) {
   pointer-events: none;
 }
 
+/* Abzeichen an einem Eingabefeld: Geschwister hinter dem Feld, kein Kind. Das
+   Skript setzt nur den Bezugspunkt (`left` = rechter Feldrand, `top` = Mitte
+   des Felds); hier rückt der Kreis ins Feld hinein und wird zentriert. */
+.context-help__btn.context-help__btn--field {
+  margin-left: 0;
+  transform: translate(calc(-100% - var(--spacing-2xs)), -50%);
+  border-radius: 50%;
+  background: var(--color-bg-secondary);
+}
+
 /* KNOPF-Anker, modulübergreifend. Zwei Unterschiede zum Textlabel:
 
    1. `top: 0` zentriert den Kreis auf der OBERKANTE des Ankers. An einem
