@@ -5,10 +5,10 @@
       "help": "Der Regelkartentyp: p (Anteil fehlerhafter Einheiten je Stichprobe, Stichprobengröße darf wechseln), np (Anzahl fehlerhafter Einheiten bei konstanter Stichprobengröße n), c (Anzahl Fehler je Einheit bei konstanter Inspektionsgelegenheit) oder u (Fehler je Einheit bei wechselnder Inspektionsgelegenheit). Er bestimmt, welche Spalten und Einstellungen es gibt: die Stichprobenspalte nur bei p und u, die konstante Stichprobengröße nur bei np."
     },
     "defectsRef": {
-      "help": "Die Spalte der fehlerhaften Einheiten bzw. Fehler (Slot 'defects'). Wert: eine der für diesen Slot wählbaren Spalten (pickableColumns.defects im Lesestand); leer heißt keine Spalte."
+      "help": "Die Spalte der fehlerhaften Einheiten bzw. Fehler (Feld defectsRef). Der Bezug auf eine Spalte des Arbeitsblatts, ausgewählt aus den wählbaren Spalten dieses Felds (pickableColumns.defectsRef); leer heißt keine Spalte."
     },
     "sizeRef": {
-      "help": "Die Spalte des Stichprobenumfangs (Slot 'size', bei p und u). Wert: eine der für diesen Slot wählbaren Spalten (pickableColumns.size im Lesestand); leer heißt keine Spalte."
+      "help": "Die Spalte des Stichprobenumfangs (Feld sizeRef, bei p und u). Der Bezug auf eine Spalte des Arbeitsblatts, ausgewählt aus den wählbaren Spalten dieses Felds (pickableColumns.sizeRef); leer heißt keine Spalte."
     },
     "constantN": {
       "help": "Die konstante Stichprobengröße n der np-Karte, eine ganze Zahl ab 1; sie geht in Mittellinie n · p̄ und σ = √(n · p̄ · (1 − p̄)) ein. Es gibt sie nur bei der np-Karte; Oberfläche und instance.set nehmen ganze Zahlen ab 1."
@@ -20,13 +20,13 @@
       "help": "Die angehakten Regeln, eine Liste aus 1 (ein Punkt jenseits UCL oder LCL), 2 (9 Punkte in Folge auf derselben Seite der Mittellinie), 3 (6 Punkte in Folge steigend oder fallend), 5 (2 von 3 Punkten jenseits 2σ, gleiche Seite) und 6 (4 von 5 Punkten jenseits 1σ, gleiche Seite). Vorbelegt ist nur Regel 1. Die Regeln 4, 7 und 8 gibt es bei Attributkarten nicht: bei gezählten Daten sind gleiche Nachbarwerte häufig, Regel 4 (abwechselnd steigend und fallend) wäre damit unzuverlässig; 7 und 8 sind nicht vorgesehen. Die Regeln 5 und 6 werden nur bei gleichbleibendem σ geprüft, also nicht bei p und u mit wechselnder Stichprobengröße (dort sind die Grenzen je Punkt verschieden), und nicht bei σ = 0; sie werden dann still übersprungen, auch wenn sie angehakt sind."
     },
     "activeColumnSlots": {
-      "help": "Die Spaltenrollen, die für den aktuellen Kartentyp gelten: `defects` (Feld `defectsRef`) immer, `size` (Feld `sizeRef`) nur bei p und u."
+      "help": "Die Spaltenfelder, die für den aktuellen Kartentyp gelten: defectsRef immer, sizeRef nur bei p und u."
     },
     "activeParams": {
-      "help": "Die Einstellungen, die für den aktuellen Kartentyp gelten: `chartTypeId`, `baselineCount`, `enabledRules`, dazu `constantN` nur bei np."
+      "help": "Die Einstellungen, die für den aktuellen Kartentyp gelten: chartTypeId, baselineCount, enabledRules, dazu constantN nur bei np."
     },
     "pickableColumns": {
-      "help": "Je Slot die Spalten, die die Spaltenfelder annehmen, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId."
+      "help": "Je Spaltenfeld (defectsRef, sizeRef) die Spalten, die es annimmt, jeweils { key, name }; der Schlüssel ist instanceId|sheetId|columnId."
     },
     "result": {
       "help": "Das gerechnete Ergebnis, jede Kennzahl unter keys einzeln beschrieben; null ohne die nötigen Spalten oder mit weniger als 2 verwertbaren Punkten."
@@ -40,9 +40,9 @@
   },
   "actions": {
     "toggleRule": {
-      "help": "Hakt eine Regel an oder ab; die Liste `enabledRules` bleibt entdoppelt und aufsteigend.",
+      "help": "Hakt eine Regel an oder ab; die Liste enabledRules bleibt entdoppelt und aufsteigend.",
       "params": {
-        "ruleId": "Die Regel: 1, 2, 3, 5 oder 6 (Bedeutung bei `enabledRules`). Ein anderer Wert ist ein Fehler.",
+        "ruleId": "Die Regel: 1, 2, 3, 5 oder 6 (Bedeutung bei enabledRules). Ein anderer Wert ist ein Fehler.",
         "on": "true hakt an, false ab.",
         "command": "Das Kommando als ein Objekt mit ruleId und on."
       }

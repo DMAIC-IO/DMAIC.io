@@ -1,4 +1,4 @@
-import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../test-utils.js';
 import { loadModel } from '../../js/core/initial-model.js';
 import { State } from '../../js/modules/attribute-control-chart/domain/model.js';
 import { ATTRIBUTE_CHART_TYPES, ATTRIBUTE_NELSON_RULES, ATTR_DEFAULT_ENABLED_RULES } from '../../js/engines/attribute-control-chart-engine.js';
@@ -45,6 +45,7 @@ suite('attribute-control-chart Model', () => {
     m.toggleRule({ ruleId: 2, on: true });
     assertDeepEqual(m.enabledRules, [1, 2, 5]);
     m.enabledRules = [6, 1, 6];
+    assertDeepEqual(m.enabledRules, [1, 6]);
     m.toggleRule({ ruleId: 3, on: true });
     assertDeepEqual(m.enabledRules, [1, 3, 6]);
     m.toggleRule({ ruleId: 1, on: false });
@@ -96,8 +97,9 @@ suite('attribute-control-chart Model', () => {
     try {
       const m = loadModel(State, { chartTypeId: 'bogus', enabledRules: [5, 1, 1, 99, 3] });
       assertEqual(m.chartTypeId, 'p');
-      assertDeepEqual([...m.enabledRules], [5, 1, 1, 3], 'ungültige Einträge entfallen, der Rest bleibt');
+      assertDeepEqual([...m.enabledRules], [1, 3, 5], 'ungültige Einträge entfallen, der Rest ist entdoppelt und sortiert');
     } finally { console.warn = warn; }
     assertEqual(warnings.length, 1);
+    assertTrue(/enabledRules/.test(warnings[0]) && /chartTypeId/.test(warnings[0]), 'die Warnung nennt beide Felder');
   });
 });

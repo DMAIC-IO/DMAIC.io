@@ -5,10 +5,10 @@
       "help": "The control chart type: p (fraction of defective units per sample, sample size may vary), np (number of defective units at a constant sample size n), c (number of defects per unit at a constant inspection opportunity) or u (defects per unit at a varying inspection opportunity). It determines which columns and settings exist: the sample size column only for p and u, the constant sample size only for np."
     },
     "defectsRef": {
-      "help": "The defectives or defects column (slot 'defects'). Value: one of the columns selectable for this slot (pickableColumns.defects in the read state); empty means no column."
+      "help": "The defectives or defects column (field defectsRef). A reference to a worksheet column, chosen from the columns selectable for this field (pickableColumns.defectsRef); empty means no column."
     },
     "sizeRef": {
-      "help": "The sample size column (slot 'size', used by p and u). Value: one of the columns selectable for this slot (pickableColumns.size in the read state); empty means no column."
+      "help": "The sample size column (field sizeRef, used by p and u). A reference to a worksheet column, chosen from the columns selectable for this field (pickableColumns.sizeRef); empty means no column."
     },
     "constantN": {
       "help": "The constant sample size n of the np chart, a whole number of at least 1; it enters the center line n · p̄ and σ = √(n · p̄ · (1 − p̄)). It exists only for the np chart; the screen and instance.set accept whole numbers from 1."
@@ -20,13 +20,13 @@
       "help": "The checked rules, a list from 1 (one point beyond UCL or LCL), 2 (9 points in a row on the same side of the center line), 3 (6 points in a row rising or falling), 5 (2 of 3 points beyond 2σ, same side) and 6 (4 of 5 points beyond 1σ, same side). Only rule 1 is preselected. Rules 4, 7 and 8 do not exist for attribute charts: counted data often has equal neighbours, so rule 4 (alternating up and down) would be unreliable; 7 and 8 are not provided. Rules 5 and 6 are checked only when σ stays the same, so not for p and u with varying sample sizes (the limits differ per point there), and not when σ = 0; they are then silently skipped even if checked."
     },
     "activeColumnSlots": {
-      "help": "The column roles that apply to the current chart type: `defects` (field `defectsRef`) always, `size` (field `sizeRef`) only for p and u."
+      "help": "The column fields that apply to the current chart type: defectsRef always, sizeRef only for p and u."
     },
     "activeParams": {
-      "help": "The settings that apply to the current chart type: `chartTypeId`, `baselineCount`, `enabledRules`, plus `constantN` for np only."
+      "help": "The settings that apply to the current chart type: chartTypeId, baselineCount, enabledRules, plus constantN for np only."
     },
     "pickableColumns": {
-      "help": "Per slot the columns the column fields accept, each { key, name }; the key is instanceId|sheetId|columnId."
+      "help": "Per column field (defectsRef, sizeRef) the columns it accepts, each { key, name }; the key is instanceId|sheetId|columnId."
     },
     "result": {
       "help": "The computed result, each figure described individually under keys; null without the required columns or with fewer than 2 usable points."
@@ -40,9 +40,9 @@
   },
   "actions": {
     "toggleRule": {
-      "help": "Checks or unchecks a rule; `enabledRules` stays free of duplicates and ascending.",
+      "help": "Checks or unchecks a rule; enabledRules stays free of duplicates and ascending.",
       "params": {
-        "ruleId": "The rule: 1, 2, 3, 5 or 6 (meaning under `enabledRules`). Any other value is an error.",
+        "ruleId": "The rule: 1, 2, 3, 5 or 6 (meaning under enabledRules). Any other value is an error.",
         "on": "true checks, false unchecks.",
         "command": "The command as one object with ruleId and on."
       }

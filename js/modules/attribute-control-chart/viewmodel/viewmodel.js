@@ -6,7 +6,7 @@
  * Marke, Verletzungsliste und die Regelkarte (Widget `control-chart`).
  */
 import { createModule } from '../../../core/template-module.js';
-import { getAttributeChartType, ATTRIBUTE_NELSON_RULES } from '../../../engines/attribute-control-chart-engine.js';
+import { getAttributeChartType, ATTRIBUTE_CHART_TYPES, ATTRIBUTE_NELSON_RULES } from '../../../engines/attribute-control-chart-engine.js';
 import descriptor from '../module.js';
 import { State } from '../domain/model.js';
 import { analyzeState, resultOf, pointsOf } from '../domain/analyze.js';
@@ -33,18 +33,22 @@ export default createModule({
         result() { return resultOf(this.analysis, this.model.chartTypeId); },
         /** Je Punkt eine Zeile (Massenfeld der Lesefläche). */
         points() { return pointsOf(this.analysis); },
-        /** Die Spaltenrollen des Kartentyps. */
-        activeColumnSlots() { return getAttributeChartType(this.model.chartTypeId)?.requiresSampleSize ? ['defects', 'size'] : ['defects']; },
+        /** Die Spaltenfelder des Kartentyps. */
+        activeColumnSlots() { return getAttributeChartType(this.model.chartTypeId)?.requiresSampleSize ? ['defectsRef', 'sizeRef'] : ['defectsRef']; },
         /** Die Einstellungen des Kartentyps. */
         activeParams() {
           const np = Boolean(getAttributeChartType(this.model.chartTypeId)?.requiresConstantN);
           return ['chartTypeId', ...(np ? ['constantN'] : []), 'baselineCount', 'enabledRules'];
         },
-        /** Je Rolle die wählbaren Spalten `{ key, name }`. */
+        /** Je Spaltenfeld die wählbaren Spalten `{ key, name }`. */
         pickableColumns() {
           const f = State.schema.fields;
-          return { defects: ctx.data.columns(filterOf(f.defectsRef)), size: ctx.data.columns(filterOf(f.sizeRef)) };
+          return { defectsRef: ctx.data.columns(filterOf(f.defectsRef)), sizeRef: ctx.data.columns(filterOf(f.sizeRef)) };
         },
+      },
+      /** @noagent Optionen der Kartentyp-Auswahl, eine Quelle mit der Engine. */
+      get chartTypes() {
+        return ATTRIBUTE_CHART_TYPES.map((c) => ({ value: c.id, label: this.t(`type_${c.id}`), selected: c.id === this.model.chartTypeId }));
       },
       get requiresSampleSize() { return Boolean(getAttributeChartType(this.model.chartTypeId)?.requiresSampleSize); },
       get requiresConstantN() { return Boolean(getAttributeChartType(this.model.chartTypeId)?.requiresConstantN); },

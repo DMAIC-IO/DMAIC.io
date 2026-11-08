@@ -46,6 +46,7 @@ export default createTile({
       get variable() { return Boolean(this.analysis?.result.variableLimits); },
       get type() { return this.analysis?.ct.id ?? ''; },
       get badgeModifier() { return `dashboard-attr-spc__badge--${this.stable ? 'ok' : 'bad'}`; },
+      // `badge` urteilt über rohe Regelverletzungen, `metric` zählt Signalpunkte — ein Punkt kann mehrere Regeln verletzen.
       get badge() { return ctx.i18n.t(this.stable ? 'dashboard.attrSpcStable' : 'dashboard.attrSpcUnstable'); },
       get metric() {
         return {

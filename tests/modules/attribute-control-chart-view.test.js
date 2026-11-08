@@ -6,6 +6,7 @@
  */
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
+import { ATTRIBUTE_CHART_TYPES } from '../../js/engines/attribute-control-chart-engine.js';
 import mod from '../../js/modules/attribute-control-chart/viewmodel/viewmodel.js';
 import { installWorksheetRevisions } from '../../js/core/worksheet-data.js';
 import { registerWidgetDirective } from '../../js/core/widget-directive.js';
@@ -138,12 +139,25 @@ suite('attribute-control-chart: Viewmodel im Browser', () => {
     const { vm } = await mount(cState, { ws1: sheetWith([2, 2, 2, 2, 2, 2, 2, 2, 2, 30]) });
     const out = vm().read();
     assertEqual(out.chartTypeId, 'c');
-    assertDeepEqual(out.activeColumnSlots, ['defects']);
+    assertDeepEqual(out.activeColumnSlots, ['defectsRef']);
     assertDeepEqual(out.activeParams, ['chartTypeId', 'baselineCount', 'enabledRules']);
-    assertDeepEqual(out.pickableColumns.defects.map((c) => c.key), ['ws1|s1|c0']);
+    assertDeepEqual(out.pickableColumns.defectsRef.map((c) => c.key), ['ws1|s1|c0']);
     assertEqual(out.result.valid, 10);
     assertDeepEqual(out.points, { $bulk: true, kind: 'table', rowCount: 10, columns: ['value', 'n', 'ucl', 'lcl', 'signal'] });
     assertTrue(!('exampleWorksheetId' in out));
+  });
+
+  test('p: Spaltenrollen defectsRef und sizeRef', async () => {
+    const { vm } = await mount({ chartTypeId: 'p', defectsRef: D }, { ws1: sheetWith([3, 4, 2, 5]) });
+    assertDeepEqual(vm().activeColumnSlots, ['defectsRef', 'sizeRef']);
+    assertDeepEqual(Object.keys(vm().pickableColumns), ['defectsRef', 'sizeRef']);
+  });
+
+  test('chartTypes: Optionen kommen aus der Engine', async () => {
+    const { vm } = await mount(cState, { ws1: sheetWith([3, 4, 2, 5]) });
+    assertDeepEqual(vm().chartTypes.map((o) => o.value), ATTRIBUTE_CHART_TYPES.map((c) => c.id));
+    assertDeepEqual(vm().chartTypes.filter((o) => o.selected).map((o) => o.value), ['c']);
+    assertTrue(vm().chartTypes.every((o) => typeof o.label === 'string' && o.label.length > 0));
   });
 
   test('np: constantN aktiv, size nicht', async () => {

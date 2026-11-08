@@ -18,7 +18,7 @@ export const State = defineModel({
     sizeRef: columnRef({ types: ['numeric'], minCount: 2 }),
     constantN: number({ integer: true, min: 1, default: 50 }),
     baselineCount: number({ integer: true, min: 1, nullable: true }),
-    enabledRules: list(oneOf([1, 2, 3, 5, 6]), { default: [1] }),
+    enabledRules: list(oneOf([1, 2, 3, 5, 6]), { unique: true, sorted: true, default: [1] }),
   },
   view: {
     exampleWorksheetId: text({ nullable: true }),
@@ -28,8 +28,7 @@ export const State = defineModel({
     toggleRule: command({
       params: { ruleId: oneOf([1, 2, 3, 5, 6]), on: boolean() },
       run({ ruleId, on }) {
-        const rest = this.enabledRules.filter((r) => r !== ruleId);
-        this.enabledRules = [...new Set(on ? [...rest, ruleId] : rest)].sort((a, b) => a - b);
+        this.enabledRules = on ? [...this.enabledRules, ruleId] : this.enabledRules.filter((r) => r !== ruleId);
       },
     }),
   },

@@ -448,7 +448,11 @@ export const AGENT_REGISTRY = {
       "enabledRules": {
         "type": "Array<1|2|3|5|6>",
         "help": "",
-        "bulk": false
+        "bulk": false,
+        "rules": [
+          "unique",
+          "sorted"
+        ]
       },
       "analysis": {
         "type": "object|null",
