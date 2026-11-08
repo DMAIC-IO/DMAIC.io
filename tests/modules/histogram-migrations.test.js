@@ -1,6 +1,7 @@
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { State } from '../../js/modules/histogram/domain/model.js';
 import { from0, legacySeriesFrom } from '../../js/modules/histogram/domain/migrations.js';
+import histogramChart from '../../js/widgets/histogram-chart/schema.js';
 import { loadModel } from '../../js/core/initial-model.js';
 
 const r = { instanceId: 'w', sheetId: 's', columnId: 'c' };
@@ -84,5 +85,10 @@ suite('histogram: Migration', () => {
       assertDeepEqual(m.histogramChart.refLines, [{ dir: 'h', value: 2 }]);
       assertDeepEqual(seen, []);
     } finally { console.warn = warn; }
+  });
+  test('legacySeries führt genau die editierbaren Reihenschlüssel des Diagramms (ohne name)', () => {
+    const item = State.schema.fields.legacySeries?.item ?? State.schema.view?.legacySeries?.item;
+    const keys = Object.keys(item.shape).sort();
+    assertDeepEqual(keys, [...histogramChart.editable.series].sort());
   });
 });

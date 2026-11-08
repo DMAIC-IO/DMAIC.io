@@ -28,7 +28,7 @@ export default createModule({
       /** @noagent Lebenszyklus: andere Datensätze verwerfen die Einstellungen alter Stände. */
       init() {
         this.$watch(() => JSON.stringify(this.model.datasets), () => {
-          if (this.model.legacySeries.length > 0) this.model.clearLegacySeries();
+          if (this.model.legacySeries.length > 0) this.model.clearLegacySeries({});
         });
       },
       computed: {
