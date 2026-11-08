@@ -70,7 +70,7 @@ suite('Diagramm-Widgets: Schemas', () => {
 
   test('Balken, Mosaik, Verlauf, Pareto: Konfigurationen des Moduls bestehen', () => {
     const groups = [{ name: 'B1', values: [1, 2], color: 'var(--color-chart-1)' }];
-    const bar = { title: '', xLabel: 'A', yLabel: 'Anzahl', categories: ['x', 'y'], groups, stacked: true, showLegend: true };
+    const bar = { title: '', xLabel: 'A', yLabel: 'Anzahl', categories: ['x', 'y'], groups, stacked: true, showLegend: true, barGap: 2, categoryGap: 8 };
     assertDeepEqual(checkValue(barChart.props.config, 'c', bar), bar);
     const mosaic = { title: '', xLabel: 'A', yLabel: 'Anteil', categories: ['x', 'y'], groups, showLegend: true, columnGap: 2, segmentGap: 1, showCellLabels: true };
     assertDeepEqual(checkValue(mosaicChart.props.config, 'c', mosaic), mosaic);
@@ -79,7 +79,7 @@ suite('Diagramm-Widgets: Schemas', () => {
     const other = { otherBucket: true, otherLabel: 'Sonstige', otherCountTemplate: '{n} weitere' };
     const items = { title: 'T', items: [{ name: 'a', value: 3, color: 'var(--color-chart-1)' }], ...other };
     assertDeepEqual(checkValue(paretoChart.props.config, 'c', items), items);
-    const cross = { categories: ['x', 'y'], groups, showLegend: true, ...other };
+    const cross = { categories: ['x', 'y'], groups, showLegend: true, maxItems: 10, ...other };
     assertDeepEqual(checkValue(paretoChart.props.config, 'c', cross), cross);
   });
 

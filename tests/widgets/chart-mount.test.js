@@ -249,7 +249,8 @@ suite('Diagramm-Widgets (chart-mount)', () => {
       const cm = fakeManager();
       const { root } = await host(`<div x-widget="${name}" x-widget-config="cfg"></div>`, { cm, extra: { cfg } });
       assertEqual(cm.log.created[0].type, type);
-      assertDeepEqual(cm.log.created[0].config.groups, cfg.groups);
+      const made = cm.log.created[0].config;
+      for (const k of Object.keys(cfg)) assertDeepEqual(made[k], cfg[k]);
       root.remove();
     }
   });
