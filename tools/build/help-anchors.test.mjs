@@ -78,3 +78,11 @@ test('helpKeysInTemplates: Start- und Abbrechen-Knopf eines x-async-task tragen 
     ['resources/view.html', 'modules.foo.asyncTasks.compute.cancel.help'],
   ]);
 });
+
+test('helpKeysInTemplates: Knöpfe außerhalb eines x-async-task-Behälters tragen keinen Anker', () => {
+  const root = fixture({});
+  mkdirSync(join(root, 'js', 'modules', 'foo', 'resources'), { recursive: true });
+  writeFileSync(join(root, 'js', 'modules', 'foo', 'resources', 'view.html'),
+    '<button x-async-task-start></button><div x-async-task="compute"></div><button x-async-task-cancel></button>');
+  assert.deepEqual(helpKeysInTemplates(root, 'foo'), []);
+});

@@ -7,18 +7,19 @@
  * bei Widgets mit Wert, Feldart gegen Feldart bei `model.`/`state.` und
  * Getter/`computed` des view-Blocks bei allen übrigen Namen.
  */
-import { readdirSync, existsSync } from 'node:fs';
+import { readdirSync, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import { viewNamesDetailOf } from './module-gates.mjs';
+import { viewNamesDetailOf } from './view-names.mjs';
+import { X_FOR, xForAliases } from './template-scan.mjs';
 import { renderBindingCheck } from './model-types.mjs';
 import { asyncTaskContainers } from './async-task-gates.mjs';
 
 /** Ein Treffer = ein Wirts-Tag mit `x-widget`; das Tag trägt die Eingaben. */
 export const WIDGET_TAG = /<[^>]*\bx-widget\s*=\s*"([^"]*)"[^>]*>/g;
 const ATTR = /\bx-widget-([a-z][a-z0-9-]*)\s*=\s*"([^"]*)"/g;
-const X_FOR = /\bx-for\s*=\s*"\s*\(?\s*([A-Za-z_$][\w$]*)/g;
+/** Alle Schleifenvariablen eines Templates, auch `i` aus `(row, i) in rows`. @param {string} text @returns {Set<string>} */
+const loopAliases = (text) => new Set([...text.matchAll(X_FOR)].flatMap((m) => xForAliases(m[1])));
 const camel = (k) => k.replace(/-([a-z0-9])/g, (_, c) => c.toUpperCase());
 const kebab = (c) => c.replace(/[A-Z]/g, (x) => `-${x.toLowerCase()}`);
 
@@ -62,7 +63,7 @@ export async function loadWidgetSchemas(appDir) {
 export function checkWidgetBindings(templates, { widgets, schema, stateSchema, viewNames }) {
   const out = [];
   for (const { path, text } of templates) {
-    const aliases = new Set([...text.matchAll(X_FOR)].map((m) => m[1]));
+    const aliases = loopAliases(text);
     for (const tag of text.matchAll(WIDGET_TAG)) {
       const name = tag[1].trim();
       const P = `template: ${path}:`;
@@ -95,9 +96,15 @@ function checkPath(P, shown, path, spec, { schema, stateSchema, viewNames, alias
   const [head, field] = parts;
   if (head === 'model' || head === 'state') {
     const all = head === 'model' ? { ...(schema?.fields ?? {}), ...(schema?.view ?? {}) } : (stateSchema?.fields ?? {});
-    const s = all[field];
+    let s = all[field];
     if (!s) return [`${P} ${shown}: ${field} ist weder Feld noch Ansichtsfeld`];
-    if (parts.length === 2 && !sameKind(s, spec)) return [`${P} ${shown}: Feldart ${kindName(s)} passt nicht zu ${kindName(spec)}`];
+    for (const seg of parts.slice(2)) {
+      if (s.kind === 'list') return []; // Elementzugriff: Feldart des Eintrags hier nicht verfolgt
+      if (s.kind !== 'object') return [`${P} ${shown}: ${kindName(s)} hat keine Unterfelder (${seg})`];
+      if (!s.shape?.[seg]) return [`${P} ${shown}: ${seg} ist kein Feld von ${field}`];
+      s = s.shape[seg];
+    }
+    if (!sameKind(s, spec)) return [`${P} ${shown}: Feldart ${kindName(s)} passt nicht zu ${kindName(spec)}`];
     return [];
   }
   if (head === 'props' || aliases.has(head) || viewNames.has(head)) return [];
@@ -116,7 +123,7 @@ export function collectBindings(templates, names) {
   const computed = new Set(names.computed);
   const out = [];
   for (const { path, text } of templates) {
-    const aliases = new Set([...text.matchAll(X_FOR)].map((m) => m[1]));
+    const aliases = loopAliases(text);
     for (const tag of text.matchAll(WIDGET_TAG)) {
       const widget = tag[1].trim();
       for (const m of tag[0].matchAll(ATTR)) {

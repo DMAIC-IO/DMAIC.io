@@ -52,7 +52,8 @@
 import { readReturnKeys } from './agent-read-return.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { loadModelSchema } from './model-types.mjs';
-import { computedNamesOf, readViewmodelCommands } from './module-gates.mjs';
+import { readViewmodelCommands } from './module-gates.mjs';
+import { computedNamesOf } from './view-names.mjs';
 import { readViewmodelAsyncTasks } from './async-task-gates.mjs';
 import { schemaAgentEntry } from '../../js/core/agent/agent-schema.js';
 import ts from 'typescript';

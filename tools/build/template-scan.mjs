@@ -21,14 +21,33 @@ export function parseJs(name, text) {
   return ts.createSourceFile(name, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
 }
 
-/** Ende (exklusiv) des Rumpfs eines Elements, das bei `from` nach seinem Start-Tag beginnt (gleichnamige Tags gezählt). */
+/** Elemente ohne Rumpf. */
+const VOID_TAGS = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr']);
+
+/**
+ * Ende (exklusiv) des Rumpfs eines Elements, das bei `from` nach seinem Start-Tag beginnt
+ * (gleichnamige Tags gezählt, Groß-/Kleinschreibung egal). Void- und selbstschließende
+ * Elemente haben keinen Rumpf: Ergebnis ist `from`.
+ * @param {string} html @param {number} from @param {string} tag @returns {number}
+ */
 export function bodyEnd(html, from, tag) {
-  const re = new RegExp(`<(/?)${tag}\\b[^>]*>`, 'g');
+  if (VOID_TAGS.has(tag.toLowerCase()) || (html[from - 1] === '>' && html[from - 2] === '/')) return from;
+  const re = new RegExp(`<(/?)${tag}\\b[^>]*>`, 'gi');
   re.lastIndex = from;
   let depth = 1;
   for (let m = re.exec(html); m; m = re.exec(html)) {
+    if (m[0].endsWith('/>')) continue;
     depth += m[1] ? -1 : 1;
     if (depth === 0) return m.index;
   }
   return html.length;
 }
+
+/**
+ * `x-for="<kopf> in <quelle>"`: Gruppe 1 der Kopf (`row` oder `(row, i)`), Gruppe 2 die Quelle.
+ * Einzige Definition für module-gates und widget-gates.
+ */
+export const X_FOR = /\bx-for\s*=\s*"\s*(\([^)"]*\)|[A-Za-z_$][\w$]*)\s+in\s+([^"]*?)\s*"/g;
+
+/** Alle Bezeichner im Kopf einer Schleife (`(row, i)` → `row`, `i`). @param {string} head @returns {string[]} */
+export const xForAliases = (head) => head.match(/[A-Za-z_$][\w$]*/g) ?? [];

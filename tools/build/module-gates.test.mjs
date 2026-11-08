@@ -7,10 +7,10 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkViewReads, checkPickerCss, checkChartBindings, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts, viewNamesOf, viewNamesDetailOf, computedNamesOf } from './module-gates.mjs';
+import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkViewReads, checkPickerCss, checkChartBindings, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts, viewNamesOf, viewNamesDetailOf, computedNamesOf, checkWidgetTemplates } from './module-gates.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { APP_DIR } from './build.mjs';
-import { defineModel, command, text, number, oneOf, index, idOf, list, record, object, boolean, date, columnRef } from '../../js/core/model.js';
+import { defineModel, command, text, number, oneOf, index, idOf, list, record, object, boolean, date, columnRef, defineWidget, datasets } from '../../js/core/model.js';
 
 /** Temp-App aus `{ pfad: inhalt }`. */
 function appWith(files) {
@@ -1246,4 +1246,28 @@ test('viewNamesDetailOf: das letzte return der obersten Ebene gewinnt gegen eine
     return { real: 1 };
   } });`;
   assert.deepEqual(viewNamesDetailOf(vm), { getters: [], computed: [], data: ['real'] });
+});
+
+test('Kachel-Vorlage: state.<feld> wird mit dem State-Schema des Moduls geprüft', () => {
+  const widgets = new Map([['stats-table', defineWidget({ name: 'stats-table', props: { level: number() } })]]);
+  const templates = [{ path: 'resources/tile.html', text: '<div x-widget="stats-table" x-widget-level="state.level"></div>' }];
+  const tileText = () => 'export default createTile({ view: () => ({}) });';
+  const base = { widgets, schema: { fields: {}, view: {} }, viewNames: new Set(), tileText };
+  assert.deepEqual(checkWidgetTemplates(templates, { ...base, stateSchema: { fields: { level: number() } } }), []);
+  assert.deepEqual(checkWidgetTemplates(templates, { ...base, stateSchema: { fields: {} } }),
+    ['template: resources/tile.html: x-widget-level="state.level": level ist weder Feld noch Ansichtsfeld']);
+});
+
+test('x-field auf list(<forKind>) nur, wo das Widget Listen bindet (columnRef)', () => {
+  const widgets = new Map([['dataset-picker', defineWidget({ name: 'dataset-picker', value: datasets({}), forKind: 'datasets' })]]);
+  const files = [{ path: 'resources/view.html', text: '<div x-field="model.sets"></div><div x-field="model.many"></div>' }];
+  const schema = defineModel({ fields: { sets: datasets({}), many: list(datasets({})) }, commands: {} }).schema;
+  assert.deepEqual(checkTemplateBindings(files, schema, widgets),
+    ['template: resources/view.html: x-field="model.many": many (list) hat keine Regeln — x-model verwenden']);
+});
+
+test('checkConvertedModule: fehlerhaftes Widget-Schema wird zum Befund statt zum Absturz', async () => {
+  const root = convertedFixture({ 'js/widgets/bad/schema.js': "export default { name: 'other' };\n" });
+  const findings = await checkConvertedModule(root, 'neu');
+  assert.ok(findings.some((f) => f.startsWith('widget: js/widgets: Schemas lassen sich nicht laden (widgets/bad/schema.js')), findings.join('\n'));
 });

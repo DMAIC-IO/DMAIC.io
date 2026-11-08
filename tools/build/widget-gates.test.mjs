@@ -56,3 +56,23 @@ test('collectBindings: nur Getter/computed der obersten Ebene, Zeile des Attribu
     { getters: ['rows'], computed: ['stats'], data: [] });
   assert.deepEqual(out, [{ widget: 'w', prop: 'rows', path: 'stats', computed: true, where: 'resources/view.html:2 x-widget-rows' }]);
 });
+
+test('x-for mit mehreren Aliassen: auch der Index ist bekannt', () => {
+  assert.deepEqual(checkWidgetBindings(tpl('<template x-for="(row, i) in items"><div x-widget="stats-table" x-widget-rows="row.rows" x-widget-conf-level="i"></div></template>'), ctx), []);
+});
+
+test('Pfad tiefer als model.<feld>: Feld ohne Unterfelder, Objektfeld ohne den Schlüssel', () => {
+  const deep = { ...ctx, schema: { ...schema, fields: { ...schema.fields, cfg: object({ level: number() }) } } };
+  assert.deepEqual(checkWidgetBindings(tpl('<div x-widget="stats-table" x-widget-rows="stats" x-widget-conf-level="model.confLevel.x"></div>'), deep),
+    ['template: resources/view.html: x-widget-conf-level="model.confLevel.x": number hat keine Unterfelder (x)']);
+  assert.deepEqual(checkWidgetBindings(tpl('<div x-widget="stats-table" x-widget-rows="stats" x-widget-conf-level="model.cfg.nope"></div>'), deep),
+    ['template: resources/view.html: x-widget-conf-level="model.cfg.nope": nope ist kein Feld von cfg']);
+  assert.deepEqual(checkWidgetBindings(tpl('<div x-widget="stats-table" x-widget-rows="stats" x-widget-conf-level="model.cfg.level"></div>'), deep), []);
+});
+
+test('state.<feld> mit dem State-Schema geprüft', () => {
+  const withState = { ...ctx, stateSchema: { fields: { level: number() } } };
+  assert.deepEqual(checkWidgetBindings(tpl('<div x-widget="stats-table" x-widget-rows="stats" x-widget-conf-level="state.level"></div>'), withState), []);
+  assert.deepEqual(checkWidgetBindings(tpl('<div x-widget="stats-table" x-widget-rows="stats" x-widget-conf-level="state.level"></div>'), ctx),
+    ['template: resources/view.html: x-widget-conf-level="state.level": level ist weder Feld noch Ansichtsfeld']);
+});

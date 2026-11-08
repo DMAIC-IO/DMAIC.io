@@ -14,11 +14,13 @@
 import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import ts from 'typescript';
-import { TAG, camel, keyOf, parseJs, bodyEnd } from './template-scan.mjs';
+import { TAG, camel, keyOf, parseJs, bodyEnd, X_FOR, xForAliases } from './template-scan.mjs';
 import { parsePath, VERSION, MIGRATION_KEY } from '../../js/core/model.js';
 import { parseFieldPath, keyFieldsOf } from '../../js/core/field-path.js';
 import { loadModelSchema, loadSettingsSchema, loadFormSchemas, loadStateSchema } from './model-types.mjs';
 import { checkWidgetBindings, loadWidgetSchemas } from './widget-gates.mjs';
+import { factoryArgument, findViewBlock, viewNamesDetailOf, viewNamesOf, computedNamesOf } from './view-names.mjs';
+export { viewNamesDetailOf, viewNamesOf, computedNamesOf };
 import { BOOKS } from '../../js/core/references-books.js';
 import { readExampleOwners } from './example-catalog.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
@@ -554,7 +556,7 @@ export function checkTemplateBindings(files, schema, widgets = new Map()) {
       const spec = all[name];
       if (!spec) { out.push(`template: ${path}: ${shown}: ${name} ist weder Feld noch Ansichtsfeld`); continue; }
       const bindable = RULE_KINDS.includes(spec.kind) || (spec.kind === 'list' && spec.item?.kind === 'columnRef')
-        || widgetKinds.has(spec.kind) || (spec.kind === 'list' && widgetKinds.has(spec.item?.kind));
+        || widgetKinds.has(spec.kind) || (spec.kind === 'list' && spec.item?.kind === 'columnRef' && widgetKinds.has('columnRef'));
       if (attr === 'x-field' && !bindable) {
         out.push(`template: ${path}: ${shown}: ${name} (${spec.kind}) hat keine Regeln — x-model verwenden`);
       }
@@ -599,38 +601,6 @@ export function checkWritePath(files) {
     visit(sf);
   }
   return out;
-}
-
-/**
- * Das Objektliteral im Argument von `createModule(…)` bzw. `createTile(…)`.
- * @param {import('typescript').SourceFile} sf
- * @returns {import('typescript').ObjectLiteralExpression|null}
- */
-function factoryArgument(sf) {
-  /** @type {import('typescript').ObjectLiteralExpression|null} */
-  let found = null;
-  const visit = (n) => {
-    if (found) return;
-    if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && (n.expression.text === 'createModule' || n.expression.text === 'createTile')
-        && n.arguments[0] && ts.isObjectLiteralExpression(n.arguments[0])) {
-      found = n.arguments[0];
-      return;
-    }
-    ts.forEachChild(n, visit);
-  };
-  visit(sf);
-  return found;
-}
-
-/**
- * Der `view`-Block (Methode oder Eigenschaft `view` am Literal, das an `createModule` übergeben wird).
- * @param {string} text
- * @returns {import('typescript').Node|null}
- */
-function findViewBlock(text) {
-  const arg = factoryArgument(ts.createSourceFile('viewmodel.js', text, ts.ScriptTarget.Latest, true));
-  if (!arg) return null;
-  return arg.properties.find((p) => (ts.isMethodDeclaration(p) || ts.isPropertyAssignment(p)) && p.name && ts.isIdentifier(p.name) && p.name.text === 'view') ?? null;
 }
 
 /**
@@ -711,98 +681,6 @@ export function checkPickerCss(css) {
 }
 
 const CHART_BINDING = /\bx-chart\s*=\s*(?:"([^"]*)"|'([^']*)')/g;
-
-/**
- * Das Objektliteral, das der view-Block liefert: das erste `return { … }` der
- * Funktion (verschachtelte Funktionen zählen nicht), bei Pfeilfunktionen der
- * Ausdruckskörper, bei einem Objektliteral als `view` dieses selbst.
- * @param {import('typescript').Node} view
- * @returns {import('typescript').ObjectLiteralExpression|null}
- */
-function viewReturnObject(view) {
-  const unwrap = (e) => { while (e && ts.isParenthesizedExpression(e)) e = e.expression; return e; };
-  let fn = view;
-  if (ts.isPropertyAssignment(view)) {
-    const init = unwrap(view.initializer);
-    if (init && ts.isObjectLiteralExpression(init)) return init;
-    fn = init;
-  }
-  if (!fn || !(ts.isMethodDeclaration(fn) || ts.isArrowFunction(fn) || ts.isFunctionExpression(fn))) return null;
-  if (ts.isArrowFunction(fn) && !ts.isBlock(fn.body)) {
-    const body = unwrap(fn.body);
-    return ts.isObjectLiteralExpression(body) ? body : null;
-  }
-  /** @type {import('typescript').ObjectLiteralExpression|null} */
-  let direct = null; // letztes return auf oberster Ebene des Rumpfs
-  /** @type {import('typescript').ObjectLiteralExpression|null} */
-  let nested = null; // erstes return in einem Zweig, falls es kein oberstes gibt
-  const body = /** @type {any} */ (fn).body;
-  const visit = (n) => {
-    if (ts.isFunctionLike(n)) return;
-    if (ts.isReturnStatement(n) && n.expression) {
-      const e = unwrap(n.expression);
-      if (ts.isObjectLiteralExpression(e)) {
-        if (n.parent === body) direct = e;
-        else nested ??= e;
-      }
-      return;
-    }
-    ts.forEachChild(n, visit);
-  };
-  visit(body);
-  return direct ?? nested;
-}
-
-/**
- * Die Namen des view-Blocks nach Herkunft, gelesen am zurückgegebenen Objekt:
- * Getter, `computed`-Schlüssel und Datenglieder (Eigenschaften und Kurzschreibweise
- * mit Bezeichner-Schlüssel, ausgenommen `computed`).
- * @param {string} text Quelltext von viewmodel.js oder einer Kachel
- * @returns {{ getters: string[], computed: string[], data: string[] }}
- */
-export function viewNamesDetailOf(text) {
-  const getters = [];
-  const computed = [];
-  const data = [];
-  const view = findViewBlock(text);
-  const top = view ? viewReturnObject(view) : null;
-  for (const p of top?.properties ?? []) {
-    if (!p.name || !ts.isIdentifier(p.name)) continue;
-    const name = p.name.text;
-    if (ts.isGetAccessorDeclaration(p)) getters.push(name);
-    else if (name === 'computed' && ts.isPropertyAssignment(p) && ts.isObjectLiteralExpression(p.initializer)) {
-      for (const c of p.initializer.properties) if (c.name && ts.isIdentifier(c.name)) computed.push(c.name.text);
-    } else if (name !== 'computed' && (ts.isPropertyAssignment(p) || ts.isShorthandPropertyAssignment(p))) data.push(name);
-  }
-  return { getters, computed, data };
-}
-
-/**
- * Die Schlüssel des `computed:`-Objekts im view-Block, statisch gelesen.
- * @param {string} text Quelltext von viewmodel.js
- * @returns {string[]}
- */
-export function computedNamesOf(text) {
-  const view = findViewBlock(text);
-  if (!view) return [];
-  const names = [];
-  const visit = (n) => {
-    if (ts.isPropertyAssignment(n) && ts.isIdentifier(n.name) && n.name.text === 'computed'
-        && ts.isObjectLiteralExpression(n.initializer)) {
-      for (const p of n.initializer.properties) if (p.name && ts.isIdentifier(p.name)) names.push(p.name.text);
-      return;
-    }
-    ts.forEachChild(n, visit);
-  };
-  visit(view);
-  return names;
-}
-
-/** Alle Namen, die ein Template aus dem view-Block lesen darf. @param {string} text @returns {Set<string>} */
-export function viewNamesOf(text) {
-  const { getters, computed, data } = viewNamesDetailOf(text);
-  return new Set([...getters, ...computed, ...data]);
-}
 
 /**
  * Gate x-chart: die Direktive ist abgelöst, Diagramme laufen über Diagramm-Widgets.
@@ -959,7 +837,8 @@ export function checkCommandRefs(files, schema, formSchemas) {
 }
 
 const LIST_BINDING = /\b(x-field|x-set)\s*=\s*"\s*([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*|\[[^\]"]*\])+)\s*"/g;
-const X_FOR = /\bx-for\s*=\s*"\s*\(?\s*([A-Za-z_$][\w$]*)[^"]*?\s+in\s+([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*)\s*"/g;
+/** Quelle einer Schleife, die dieses Gate versteht: ein Pfad aus Namen. */
+const PATH_SOURCE = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*$/;
 
 /**
  * Gate Template ↔ Schema, Teil Listen: `x-field`/`x-set` auf Feldern in
@@ -981,7 +860,9 @@ export function checkListBindings(files, schema) {
     const loops = [];
     /** Nächstliegende vorangehende Schleife mit diesem Eintragsnamen (Dokumentreihenfolge). */
     const aliasAt = (name, pos) => loops.findLast((l) => l.alias === name && l.at < pos);
-    for (const { 1: alias, 2: source, index: at } of text.matchAll(X_FOR)) {
+    for (const { 1: loopHead, 2: source, index: at } of text.matchAll(X_FOR)) {
+      if (!PATH_SOURCE.test(source)) continue;
+      const alias = xForAliases(loopHead)[0];
       const [head, ...rest] = source.split('.');
       let spec;
       let listPath;
@@ -1324,6 +1205,23 @@ export function checkHelpFiles(base, refIds) {
 }
 
 /**
+ * Gate x-widget über alle Vorlagen eines Moduls: Ansicht und Teilvorlagen gegen den
+ * view-Block des Viewmodels, jede Kachel-Vorlage gegen den view-Block ihrer Kachel;
+ * beide mit dem State-Schema des Moduls.
+ * @param {{ path: string, text: string }[]} templates
+ * @param {{ widgets: Map<string, any>, schema: object, stateSchema: object|null, viewNames: Set<string>, tileText: (p: string) => string }} ctx
+ * @returns {string[]}
+ */
+export function checkWidgetTemplates(templates, { widgets, schema, stateSchema, viewNames, tileText }) {
+  const out = checkWidgetBindings(templates.filter((f) => !/^resources\/tile(\.|$)/.test(f.path)), { widgets, schema, stateSchema, viewNames });
+  for (const f of templates) {
+    const m = /^resources\/tile(?:\.([a-z0-9-]+))?\.html$/.exec(f.path);
+    if (m) out.push(...checkWidgetBindings([f], { widgets, schema, stateSchema, viewNames: viewNamesOf(tileText(`tile/${m[1] ?? 'tile'}.js`)) }));
+  }
+  return out;
+}
+
+/**
  * Alle Gates für ein umgestelltes Modul.
  * @param {string} appDir
  * @param {string} id
@@ -1372,7 +1270,15 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
     if (schema) {
       out.push(...checkSchemaPaths(schema));
       const views = paths.filter((p) => p === 'resources/view.html' || /^resources\/[^/]+\.part\.html$/.test(p)).map(read);
-      const widgets = ctx.widgets ?? await loadWidgetSchemas(appDir);
+      let widgets = ctx.widgets;
+      if (!widgets) {
+        try {
+          widgets = await loadWidgetSchemas(appDir);
+        } catch (err) {
+          widgets = new Map();
+          out.push(`widget: js/widgets: Schemas lassen sich nicht laden (${err.message})`);
+        }
+      }
       out.push(...checkTemplateBindings(views, schema, widgets));
       const vmFile = join(base, 'viewmodel', 'viewmodel.js');
       const templates = paths.filter((p) => /^resources\/[^/]+\.html$/.test(p)).map(read);
@@ -1394,11 +1300,7 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
       }
       const tileText = (p) => (paths.includes(p) ? readFileSync(join(base, p), 'utf8') : '');
       const vmNames = paths.includes('viewmodel/viewmodel.js') ? viewNamesOf(tileText('viewmodel/viewmodel.js')) : new Set();
-      out.push(...checkWidgetBindings(templates.filter((f) => !/^resources\/tile(\.|$)/.test(f.path)), { widgets, schema, stateSchema, viewNames: vmNames }));
-      for (const f of templates) {
-        const m = /^resources\/tile(?:\.([a-z0-9-]+))?\.html$/.exec(f.path);
-        if (m) out.push(...checkWidgetBindings([f], { widgets, schema, stateSchema: null, viewNames: viewNamesOf(tileText(`tile/${m[1] ?? 'tile'}.js`)) }));
-      }
+      out.push(...checkWidgetTemplates(templates, { widgets, schema, stateSchema, viewNames: vmNames, tileText }));
       out.push(...checkCommandRefs(templates, schema, formSchemas));
       const asyncTasks = existsSync(vmFile) ? readViewmodelAsyncTasks(readFileSync(vmFile, 'utf8')) : {};
       out.push(...checkAsyncTaskRefs(templates, asyncTasks));
