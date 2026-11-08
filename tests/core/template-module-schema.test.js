@@ -224,13 +224,13 @@ suite('createModule: Standard-loadExample mit sourceWorksheetData', () => {
 // ─── fromExample: fremde Beispielformen vor dem Arbeitsblatt-Zweig ─────
 
 /** Wie `sourcedModule`, aber mit `fromExample` statt `beforeLoadExample`. */
-function fromExampleModule(fromExample) {
+function fromExampleModule(fromExample, ModelClass = Sourced) {
   const log = { notes: [] };
   const store = { phases: { data: [] } };
   const states = {};
   const mod = createModule({
     config: { id: 'schema-from-example', engine: 'alpine', phase: 'analyze' },
-    Model: Sourced,
+    Model: ModelClass,
     data: () => ({}),
     fromExample,
   });
@@ -289,6 +289,22 @@ suite('createModule: fromExample', () => {
     const { mod, store } = fromExampleModule((data) => ({ title: `x${data.n}` }));
     await mod.loadExample({ meta: { id: 'ex' }, data: { n: 1 } });
     assertEqual(mod.getState().title, 'x1');
+    assertEqual(store.phases.data.length, 0);
+  });
+
+  test('Beispiel ohne meta: fromExample bekommt {}', async () => {
+    const seen = [];
+    const { mod } = fromExampleModule((data, meta) => { seen.push(meta); return { title: 'x' }; });
+    await mod.loadExample({ data: { n: 1 } });
+    assertDeepEqual(seen, [{}]);
+    assertEqual(mod.getState().title, 'x');
+  });
+
+  test('Modul ohne Arbeitsblatt-Schema: sourceWorksheetData im Ergebnis löst keinen Arbeitsblatt-Zweig aus', async () => {
+    const Plain = defineModel({ fields: { title: text() } });
+    const { mod, store } = fromExampleModule(() => ({ title: 'plain', sourceWorksheetData: { sheets: [] } }), Plain);
+    await mod.loadExample({ meta: { id: 'ex' }, data: {} });
+    assertEqual(mod.getState().title, 'plain');
     assertEqual(store.phases.data.length, 0);
   });
 

@@ -731,9 +731,10 @@ export function createModule(base) {
       // bezüge aus dem Schema umhängen (examples-registry.js). Dynamisch
       // geladen — examples-registry hängt am Katalog der Module. Die Rückfrage
       // oben gilt auch hier (`confirmed`), der Lader fragt nicht noch einmal.
-      const registry = (typeof fromExample === 'function' || (schema && payload.data.sourceWorksheetData))
+      const hasFromExample = typeof fromExample === 'function';
+      const registry = (hasFromExample || (schema && payload.data.sourceWorksheetData))
         ? await import('./examples-registry.js') : null;
-      if (typeof fromExample === 'function') {
+      if (hasFromExample) {
         try {
           exampleData = fromExample(payload.data, payload.meta ?? {}, { csvToWorksheet: registry.csvPayloadToWorksheetState });
         } catch (err) {
