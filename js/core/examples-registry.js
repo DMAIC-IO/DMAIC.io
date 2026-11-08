@@ -677,17 +677,21 @@ export function rewriteRefArray(field) {
  *   Model: { fromJSON: (json: object) => { hasContent: () => boolean, exampleWorksheetId?: string }, schema?: object },
  *   rewriteRefs?: (data: object, from: string, to: string) => (object | void),
  *   confirmed?: boolean,
- * }} options — `rewriteRefs` is optional for a `defineModel` model (its
+ *   prevId?: string|null,
+ * }} options — `prevId` is the worksheet of the example being replaced, when the caller has
+ *   already loaded the current state; `rewriteRefs` is optional for a `defineModel` model (its
  *   `columnRef` fields are rewritten from the schema); `confirmed` skips the
  *   overwrite question when the caller has already asked it.
  * @returns {Promise<void>}
  */
-export async function loadWorksheetExample(mod, payload, { Model, rewriteRefs, confirmed = false }) {
+export async function loadWorksheetExample(mod, payload, { Model, rewriteRefs, confirmed = false, prevId: knownPrevId }) {
   if (!payload || !payload.data) return;
   const ctx = mod._context;
   const t = (key) => ctx.i18n.t(key);
 
-  const currentModel = currentModelOf(Model, mod.getState(), mod._context?.stateManager);
+  // Hat der Aufrufer den Stand schon geladen, kennt er auch das vorige Arbeitsblatt.
+  const currentModel = knownPrevId === undefined
+    ? currentModelOf(Model, mod.getState(), mod._context?.stateManager) : null;
   if (!confirmed && currentModel?.hasContent?.() && ctx?.dialog) {
     const ok = await ctx.dialog.confirm({ message: t('moduleHelp.confirmOverwrite'), danger: true });
     if (!ok) return;
@@ -699,7 +703,7 @@ export async function loadWorksheetExample(mod, payload, { Model, rewriteRefs, c
     const wsState = data.sourceWorksheetData;
     delete data.sourceWorksheetData;
 
-    const prevId = currentModel?.exampleWorksheetId;
+    const prevId = knownPrevId ?? currentModel?.exampleWorksheetId;
     if (prevId) removeProvisionedWorksheet(ctx, prevId);
 
     const ref = provisionWorksheet(ctx, wsState);

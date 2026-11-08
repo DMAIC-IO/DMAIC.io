@@ -269,6 +269,24 @@ export function assertThrows(fn, messagePattern, message) {
 }
 
 /**
+ * Assert that an async function rejects, optionally with a matching message.
+ * @param {() => Promise<unknown>} fn function returning the promise under test
+ * @param {RegExp} [messagePattern] pattern the rejection message must match
+ * @param {string} [message] failure message
+ * @returns {Promise<void>}
+ */
+export async function assertRejects(fn, messagePattern, message) {
+  let threw = false;
+  try { await fn(); } catch (err) {
+    threw = true;
+    if (messagePattern && !messagePattern.test(err?.message)) {
+      fail(message ?? `Error message "${err?.message}" did not match ${messagePattern}`);
+    }
+  }
+  if (!threw) fail(message ?? 'Expected promise to reject');
+}
+
+/**
  * Assert p-value is significant at alpha level.
  */
 export function assertSignificance(pValue, alpha = 0.05, message) {

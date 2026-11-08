@@ -349,3 +349,98 @@ suite('createModule: fehlende Felder bekommen die Vorgabe des Projektkontexts', 
     container.remove(); mounted.pop();
   });
 });
+
+// ─── Laden mit Kontext, genau einmal; Beispiel-Lader ohne Doppelladen ─────
+
+/** Zählt die Aufrufe von `Model.fromJSON`, solange `fn` läuft. */
+async function countFromJSON(Model, fn) {
+  const orig = Model.fromJSON;
+  let calls = 0;
+  Model.fromJSON = function counted(...args) { calls++; return orig.apply(this, args); };
+  try { await fn(); } finally { Model.fromJSON = orig; }
+  return calls;
+}
+
+/** Eingehängtes Modul mit einem Speicher, der das Gesicherte wirklich zurückgibt. */
+async function mountStateful(Model, saved, events = []) {
+  ensureTemplate();
+  while (mounted.length) mounted.pop().remove();
+  const states = { 'ctx-1': saved };
+  const mod = createModule({ config: { id: ID, engine: 'alpine', phase: 'define',
+    templateUrl: new URL(TPL_KEY, document.baseURI).href }, Model, data: () => ({}) });
+  const container = document.createElement('div');
+  document.body.append(container);
+  mounted.push(container);
+  const context = ctxContext([]);
+  context.eventBus = { on: () => {}, emit: (name, payload) => events.push([name, payload]) };
+  context.stateManager.getModuleState = (id) => states[id] ?? null;
+  context.stateManager.setModuleState = (id, st) => { states[id] = st; };
+  await mod.init(container, context);
+  return { mod, container, data: () => Alpine.$data(container.querySelector('[x-data]')) };
+}
+
+suite('createModule: Laden mit Kontext, genau einmal', () => {
+  test('setState lädt mit Kontext und genau einmal', async () => {
+    const { mod, data } = await mountStateful(Ctx, { title: 'abc' });
+    const calls = await countFromJSON(Ctx, () => mod.setState({ title: 'neu' }));
+    assertEqual(calls, 1);
+    assertEqual(data().model.title, 'neu');
+    assertEqual(data().model.alpha, 0.1);
+  });
+
+  test('setState mit kaputtem Zustand: eine Warnung, Vorgabe aus dem Kontext', async () => {
+    const { mod, data } = await mountStateful(Ctx, { title: 'abc' });
+    const warnings = [];
+    const warn = console.warn; console.warn = (...a) => { if (String(a[0]).startsWith('[createModule]')) warnings.push(a.join(' ')); };
+    try { mod.setState({ title: 'neu', alpha: 7 }); } finally { console.warn = warn; }
+    assertEqual(warnings.length, 1, warnings.join(' | '));
+    assertEqual(data().model.alpha, 0.1);
+  });
+
+  test('applyRemoteState nutzt die Vorgaben aus den Einstellungen', async () => {
+    const { mod, data } = await mountStateful(Ctx, { title: 'abc' });
+    await mod.applyRemoteState({ title: 'remote', alpha: 7 });
+    assertEqual(data().model.title, 'remote');
+    assertEqual(data().model.alpha, 0.1);
+  });
+
+  test('setState im Fenster _loadingExample wird nicht aufgezeichnet', async () => {
+    const events = [];
+    const { mod } = await mountStateful(Ctx, { title: 'abc' }, events);
+    mod._loadingExample = true;
+    try { mod.setState({ title: 'neu' }); } finally { mod._loadingExample = false; }
+    assertEqual(events.filter(([n]) => n === 'command:executed').length, 0);
+  });
+});
+
+suite('createModule: Beispiel laden', () => {
+  test('lädt den Stand mit Arbeitsblatt höchstens zweimal (Rückfrage, setState)', async () => {
+    const { mod } = sourcedModule({ answer: true });
+    const calls = await countFromJSON(Sourced, () => mod.loadExample(sourcedPayload()));
+    assertEqual(calls, 2);
+  });
+
+  test('beim Ersetzen wird das vorige Arbeitsblatt entfernt', async () => {
+    const { mod, store } = sourcedModule({ answer: true });
+    await mod.loadExample(sourcedPayload());
+    await mod.loadExample(sourcedPayload());
+    assertEqual(store.phases.data.length, 1);
+  });
+
+  test('ohne Arbeitsblatt wird der Stand nur einmal gesichert', async () => {
+    const { mod, states } = sourcedModule({ answer: true });
+    let writes = 0;
+    const set = mod._context.stateManager.setModuleState;
+    mod._context.stateManager.setModuleState = (id, st) => { writes++; set(id, st); };
+    await mod.loadExample({ meta: { id: 'ex' }, data: { title: 'x' } });
+    assertEqual(writes, 1);
+    assertEqual(states.me.title, 'Beispiel');
+  });
+
+  test('fromExample wirft → Meldung, kein Absturz', async () => {
+    const { mod, log } = fromExampleModule(() => { throw new Error('kaputt'); });
+    await mod.loadExample({ meta: { id: 'ex' }, data: { n: 1 } });
+    assertDeepEqual(log.notes, ['error']);
+    assertEqual(mod.getState().title, 'alt');
+  });
+});

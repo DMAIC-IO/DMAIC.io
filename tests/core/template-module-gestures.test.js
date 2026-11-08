@@ -151,9 +151,9 @@ suite('createModule mit gestures', () => {
     assertTrue(!container.querySelector('[data-dragging]'), 'nichts mehr aufgenommen');
     altRight(container);
     await flush();
-    // Der Fake-stateManager verwirft setModuleState; der Neuaufbau liest x = 0.
+    // Der Neuaufbau übernimmt den gesetzten Stand (x = 2); die Geste zählt eins weiter.
     assertEqual(executed(events).length, 1);
-    assertEqual(container.querySelector('.gt-x').textContent, '1');
+    assertEqual(container.querySelector('.gt-x').textContent, '3');
   });
 
   test('gestures verlangen die Alpine-Engine', () => {

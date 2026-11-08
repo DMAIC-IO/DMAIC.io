@@ -1,7 +1,7 @@
 /**
  * Beispiel-Lader mit Arbeitsblatt (core/examples-registry.js): Platzhalter-Ersatz.
  */
-import { suite, test, assertEqual, assertTrue, assertThrows } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue, assertRejects } from '../test-utils.js';
 import { loadExampleViaWorksheet, loadWorksheetExample } from '../../js/core/examples-registry.js';
 import { defineModel, columnRef, list } from '../../js/core/model.js';
 
@@ -95,10 +95,7 @@ suite('Beispiel-Lader: rewriteRefs aus dem Schema', () => {
   test('altes Model ohne rewriteRefs: Fehler statt stiller Platzhalter', async () => {
     const Old = { fromJSON: () => ({ hasContent: () => false }) };
     const f = fakeModule();
-    let err = null;
-    try { await loadWorksheetExample(f.mod, payload(), { Model: Old }); } catch (e) { err = e; }
-    assertTrue(err instanceof Error && /rewriteRefs/.test(err.message));
-    assertThrows(() => { if (err) throw err; }, /schema/);
+    await assertRejects(() => loadWorksheetExample(f.mod, payload(), { Model: Old }), /rewriteRefs is required/);
   });
 
   test('kaputter Stand eines Schema-Models: Laden mit Reparatur statt Wurf', async () => {

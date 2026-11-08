@@ -427,7 +427,10 @@ export function createModule(base) {
         const dataDestroy = dataResult.destroy;
 
         Alpine.data(uniqueName, () => {
-          const freshState = initialModel(Model,
+          // Nach `setState` steht das eben geladene Model bereit: nicht erneut laden.
+          const preloaded = module._preloadedModel;
+          module._preloadedModel = null;
+          const freshState = preloaded ?? initialModel(Model,
             context.stateManager.getModuleState(context.instanceId), createDefault, context);
 
           let offCycle = null;
@@ -470,7 +473,6 @@ export function createModule(base) {
                   notify: (...args) => context.notify?.(...args),
                   dialog: context.dialog,
                   i18n: context.i18n,
-                  chartManager: context.chartManager ?? null,
                   services: {
                     eventBus: context.eventBus, stateManager: context.stateManager, i18n: context.i18n,
                     chartManager: storedEditsOff, instanceId: context.instanceId, moduleId: id,
@@ -669,7 +671,8 @@ export function createModule(base) {
         this._gestureDetach.forEach((detach) => detach.cancel());
         Alpine.destroyTree(this._container);
         this._container.replaceChildren(...cloneForInstance(this._alpineName));
-        Alpine.initTree(this._container);
+        this._preloadedModel = model;
+        try { Alpine.initTree(this._container); } finally { this._preloadedModel = null; }
         const root = this._container.querySelector('[x-data]');
         if (root) {
           const alpineData = Alpine.$data(root);
@@ -731,7 +734,13 @@ export function createModule(base) {
       const registry = (typeof fromExample === 'function' || (schema && payload.data.sourceWorksheetData))
         ? await import('./examples-registry.js') : null;
       if (typeof fromExample === 'function') {
-        exampleData = fromExample(payload.data, payload.meta ?? {}, { csvToWorksheet: registry.csvPayloadToWorksheetState });
+        try {
+          exampleData = fromExample(payload.data, payload.meta ?? {}, { csvToWorksheet: registry.csvPayloadToWorksheetState });
+        } catch (err) {
+          console.warn(`[createModule] ${id}: fromExample failed`, err);
+          this._context?.notify?.(this._context.i18n.t('moduleHelp.exampleLoadError'), 'error');
+          return;
+        }
       }
       const loadWorksheetExample = schema && exampleData?.sourceWorksheetData
         ? registry.loadWorksheetExample : null;
@@ -757,10 +766,10 @@ export function createModule(base) {
         if (loadWorksheetExample) {
           // Ohne Rückfrage läuft der Lader bis zum Ende synchron — Arbeits-
           // blatt, setState und Meldung fallen in dieses Fenster.
-          loading = loadWorksheetExample(this, { ...payload, data: exampleData }, { Model, confirmed: true });
+          loading = loadWorksheetExample(this, { ...payload, data: exampleData },
+            { Model, confirmed: true, prevId: model?.exampleWorksheetId ?? null });
         } else {
           this.setState(exampleData);
-          this._context.stateManager.setModuleState(this._context.instanceId, this.getState());
         }
       } finally {
         this._loadingExample = false;
