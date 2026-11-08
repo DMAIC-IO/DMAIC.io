@@ -30,6 +30,7 @@ export function createEntryResolver(registry, loadModule) {
       console.warn(`[agent] ${id}: Modul nicht ladbar`, err);
     }
     if (!entry) return { ...base, available: false };
+    entry = withGeneratedKeys(entry, base);
     resolved.set(id, entry);
     return entry;
   }
@@ -43,6 +44,25 @@ export function createEntryResolver(registry, loadModule) {
       return resolved.size === 0 ? registry : { ...registry, ...Object.fromEntries(resolved) };
     },
   };
+}
+
+/**
+ * Übernimmt den Schlüsselbaum (`keys`/`keysOf`) abgeleiteter Felder aus dem
+ * erzeugten Registereintrag: das Laufzeitschema kennt ihn nicht, der Build
+ * liest ihn aus dem `@returns` der Ableitung. Neue Objekte, nichts wird verändert.
+ * @param {object} entry  der Laufzeiteintrag
+ * @param {object} base  der erzeugte Registereintrag
+ * @returns {object}
+ */
+function withGeneratedKeys(entry, base) {
+  let fields = null;
+  for (const [name, field] of Object.entries(base.fields ?? {})) {
+    const target = entry.fields?.[name];
+    if (!target || !field?.keys || !field.keysOf) continue;
+    fields ??= { ...entry.fields };
+    fields[name] = { ...target, keysOf: field.keysOf, keys: field.keys };
+  }
+  return fields ? { ...entry, fields } : entry;
 }
 
 /**

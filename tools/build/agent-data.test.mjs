@@ -3814,6 +3814,39 @@ test('umgestelltes Modul: Kommandos, computed und Tasks im Eintrag', async () =>
   assert.deepEqual(writtenFields.demo, []);
 });
 
+test('typedefKeys: Vereinigung nennt die Schlüssel aller Glieder, optional wo nicht überall', async () => {
+  const types = `/**
+ * @typedef {object} Ok
+ * @property {'ok'} status der Zustand
+ * @property {number} p der p-Wert
+ */
+/**
+ * @typedef {object} No
+ * @property {'insufficient'} status der Zustand
+ * @property {string} reason der Grund
+ */
+/** @typedef {Ok|No} Both */
+export {};
+`;
+  const vm = VM_WITH_COMPUTED.replace('computed: { total() { return 1; }',
+    "computed: {\n /** @returns {import('./a.js').Both} */\n total() { return 1; }");
+  const root = fixture({}, {
+    'js/modules/demo/module.js': "export default { id: 'demo', load: () => null };",
+    'js/modules/demo/domain/model.js': MODEL_WITH_COMMAND,
+    'js/modules/demo/viewmodel/viewmodel.js': vm,
+    'js/modules/demo/viewmodel/a.js': types,
+  });
+  const { modules } = await collectAgentData(root, { converted: ['demo'] });
+  const total = modules.demo.fields.total;
+  assert.equal(total.derived, true);
+  assert.equal(total.keysOf, 'Both');
+  assert.equal(total.keys.status.optional, undefined);
+  assert.equal(total.keys.status.type, "'ok'|'insufficient'");
+  assert.equal(total.keys.p.optional, true);
+  assert.equal(total.keys.reason.optional, true);
+  assert.equal(modules.demo.fields.rows.keys, undefined);
+});
+
 test('readBulkOf: das Array-Literal readBulk im createModule-Argument', () => {
   assert.deepEqual(readBulkOf(VM_WITH_COMPUTED), ['rows']);
   assert.deepEqual(readBulkOf("export default createModule({ readBulk: ['a', 'b'] });"), ['a', 'b']);

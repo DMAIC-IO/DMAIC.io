@@ -26,6 +26,20 @@ suite('createEntryResolver', () => {
     assertEqual(r.view().neu, REAL);
   });
 
+  test('keys und keysOf des erzeugten Eintrags gehen auf das Laufzeitfeld über, ohne es zu verändern', async () => {
+    const stub = { ...STUB, fields: { result: { keysOf: 'R', keys: { a: { type: 'number', help: '' } } }, other: { type: 'string' } } };
+    const runtime = { ...REAL, fields: { result: { type: 'object|null', derived: true }, other: { type: 'string' }, only: { type: 'number' } } };
+    const r = createEntryResolver({ demo: stub }, async () => ({ agentEntry: runtime }));
+    const got = await r.resolve('demo');
+    assertEqual(got.fields.result.keysOf, 'R');
+    assertDeepEqual(got.fields.result.keys, { a: { type: 'number', help: '' } });
+    assertEqual(got.fields.result.type, 'object|null');
+    assertEqual(got.fields.other.keys, undefined);
+    assertEqual(got.fields.only.keys, undefined);
+    assertEqual(runtime.fields.result.keys, undefined);
+    assertEqual((await r.resolve('demo')), got);
+  });
+
   test('scheitert das Laden, ist das Modul nicht verfügbar (und wird später neu versucht)', async () => {
     let fail = true;
     const warn = console.warn; console.warn = () => {};

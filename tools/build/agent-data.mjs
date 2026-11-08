@@ -194,7 +194,61 @@ async function convertedEntry(appDir, id) {
     derived: computedNamesOf(vm), bulk: readBulkOf(vm), asyncTasks: stubParams(tasks),
   });
   markUnknownKeys(entry.actions, { ...commands, ...tasks });
+  attachComputedKeys(entry, vm, join(dir, 'viewmodel', 'viewmodel.js'));
   return entry;
+}
+
+/**
+ * Hängt den Schlüsselbaum an abgeleitete Felder, deren `computed`-Methode ein
+ * JSDoc-`@returns {T}` trägt. `T` darf eine Typedef der Viewmodel-Datei oder
+ * ein `import('./x.js').T` sein; Vereinigungen werden in `typedefKeys` gelöst.
+ * @param {{ fields: Record<string, object> }} entry
+ * @param {string} text  Quelltext von viewmodel/viewmodel.js
+ * @param {string} file  Pfad dieser Datei (löst relative Importe auf)
+ * @returns {void}
+ */
+function attachComputedKeys(entry, text, file) {
+  const returns = readComputedReturns(text);
+  if (returns.size === 0) return;
+  // Die Rückgabetypen werden als Alias-Typedef an den Quelltext gehängt, so
+  // lösen `typedefKeys` und `findTypedefImport` sie wie jede andere Typedef.
+  const alias = [...returns].map(([name, type], i) => `\n/** @typedef {${type}} __Returns${i} */\nexport {};`).join('');
+  const sf = ts.createSourceFile(file, text + alias, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
+  [...returns].forEach(([name, type], i) => {
+    const field = entry.fields[name];
+    if (!field) return;
+    const importMatch = /^import\(\s*['"][^'"]+['"]\s*\)\.([A-Za-z_$][\w$]*)$/.exec(type.trim());
+    if (importMatch) {
+      const keys = typedefKeys(sf, `__Returns${i}`);
+      if (keys) entry.fields[name] = { ...field, keysOf: importMatch[1], keys };
+      return;
+    }
+    entry.fields[name] = { ...field, ...nestedKeys(sf, type, new Set()) };
+  });
+}
+
+/**
+ * Die `@returns`-Typen der `computed`-Methoden im view-Block.
+ * @param {string} text  Quelltext von viewmodel/viewmodel.js
+ * @returns {Map<string, string>}  Name -> Typtext
+ */
+export function readComputedReturns(text) {
+  const sf = ts.createSourceFile('viewmodel.js', text, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
+  const out = new Map();
+  const visit = (n) => {
+    if (ts.isPropertyAssignment(n) && ts.isIdentifier(n.name) && n.name.text === 'computed'
+        && ts.isObjectLiteralExpression(n.initializer)) {
+      for (const p of n.initializer.properties) {
+        if (!p.name || !ts.isIdentifier(p.name)) continue;
+        const type = ts.getJSDocReturnTag(p)?.typeExpression?.type;
+        if (type) out.set(p.name.text, type.getText(sf));
+      }
+      return;
+    }
+    ts.forEachChild(n, visit);
+  };
+  visit(sf);
+  return out;
 }
 
 /**
@@ -858,6 +912,8 @@ function findTypedefImport(sf, name) {
 function typedefKeys(sf, name, open = new Set()) {
   const literal = findTypedefLiteral(sf, name);
   if (!literal) {
+    const members = findTypedefUnion(sf, name);
+    if (members) return unionKeys(sf, name, members, open);
     const alias = findTypedefImport(sf, name);
     // Alias-Zyklus: derselbe Name in derselben Datei. Gleichnamige Aliase in
     // verschiedenen Dateien sind eine Kette, kein Zyklus.
@@ -881,6 +937,70 @@ function typedefKeys(sf, name, open = new Set()) {
     };
   }
   return keys;
+}
+
+/**
+ * Die Glieder einer Vereinigungs-Typedef `@typedef {A|B} Name` (ohne `null`
+ * und `undefined`) — oder null, wenn `name` keine solche ist.
+ * @param {ts.SourceFile} sf
+ * @param {string} name
+ * @returns {string[]|null}
+ */
+function findTypedefUnion(sf, name) {
+  let found = null;
+  const walk = (node) => {
+    if (node.kind === ts.SyntaxKind.EndOfFileToken) return;
+    for (const doc of node.jsDoc ?? []) {
+      for (const tag of doc.tags ?? []) {
+        if (!ts.isJSDocTypedefTag(tag) || tag.name?.text !== name) continue;
+        const type = tag.typeExpression?.type;
+        if (!type || !ts.isUnionTypeNode(type)) continue;
+        found = type.types.map(t => t.getText(sf).trim()).filter(t => t !== 'null' && t !== 'undefined');
+      }
+    }
+    ts.forEachChild(node, walk);
+  };
+  walk(sf);
+  return found && found.length > 1 ? found : null;
+}
+
+/**
+ * Die Schlüssel einer Vereinigung: alle Schlüssel aller Glieder; der Typ ist
+ * die Vereinigung der Einzeltypen, `optional`, wo ein Glied den Schlüssel
+ * nicht hat oder dort optional ist. Ein Glied, das sich nicht auflösen lässt,
+ * macht die ganze Vereinigung unauflösbar (null).
+ * @param {ts.SourceFile} sf
+ * @param {string} name
+ * @param {string[]} members
+ * @param {Set<string>} open
+ * @returns {Record<string, object>|null}
+ */
+function unionKeys(sf, name, members, open) {
+  const key = typedefKey(sf, name);
+  if (open.has(key)) return null;
+  const inner = new Set([...open, key]);
+  const parts = [];
+  for (const member of members) {
+    const keys = typedefKeys(sf, member, inner);
+    if (!keys) return null;
+    parts.push(keys);
+  }
+  const merged = {};
+  for (const keys of parts) {
+    for (const [prop, spec] of Object.entries(keys)) {
+      const have = merged[prop];
+      if (!have) { merged[prop] = { ...spec }; continue; }
+      const types = new Set([...have.type.split('|'), ...spec.type.split('|')].map(t => t.trim()));
+      have.type = [...types].join('|');
+      if (!have.help) have.help = spec.help;
+      if (spec.optional) have.optional = true;
+      if (!have.keys && spec.keys) { have.keysOf = spec.keysOf; have.keys = spec.keys; }
+    }
+  }
+  for (const [prop, spec] of Object.entries(merged)) {
+    if (parts.some(keys => !(prop in keys))) spec.optional = true;
+  }
+  return merged;
 }
 
 /**
