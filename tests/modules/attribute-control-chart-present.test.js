@@ -1,15 +1,14 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import { analyzeState } from '../../js/modules/attribute-control-chart/domain/analyze.js';
 import { kpisOf, badgeOf, violationRowsOf, controlChartOf, meanOf } from '../../js/modules/attribute-control-chart/viewmodel/present.js';
+import { checkValue } from '../../js/core/model.js';
+import controlChart from '../../js/widgets/control-chart/schema.js';
 
 const D = { instanceId: 'w', sheetId: 's', columnId: 'd' };
 const model = { chartTypeId: 'c', defectsRef: D, sizeRef: null, constantN: 50, baselineCount: null, enabledRules: [1] };
 const t = (k, p) => (p ? `${k}|${JSON.stringify(p)}` : k);
 const unstable = analyzeState(model, () => [2, 2, 2, 2, 2, 2, 2, 2, 2, 30]);
 const stable = analyzeState(model, () => [3, 4, 2, 5, 3, 4, 3, 2, 4, 3]);
-
-import { checkValue } from '../../js/core/model.js';
-import controlChart from '../../js/widgets/control-chart/schema.js';
 
 suite('attribute-control-chart: Anzeige', () => {
   test('meanOf: Mittel einer Liste, Einzelwert unverändert, nicht-endlich bleibt nicht-endlich', () => {

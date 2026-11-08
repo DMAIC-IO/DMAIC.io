@@ -10,7 +10,7 @@ import { WIDGETS } from '../../js/widgets/registry.js';
 import { renderTileSafely, disposeTile } from '../../js/pages/dashboard/tile-render.js';
 
 /** Dieselbe Übersetzung wie in tests/core/widget-directive.test.js: die Direktive übernimmt die erste. */
-const WIDGET_I18N = { t: (k, p) => (p ? `${k}:${p.message ?? JSON.stringify(p)}` : k), getLanguage: () => 'de' };
+import { WIDGET_I18N } from '../widget-i18n.js';
 
 const ID = 'demo-chart-tile';
 const KEY = `js/modules/${ID}/resources/tile.html`;

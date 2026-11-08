@@ -29,7 +29,7 @@ import sipocTile from '../../js/modules/sipoc/tile/tile.js';
 import kanoTile from '../../js/modules/kano/kano.tile.js';
 
 /** Dieselbe Übersetzung wie in tests/core/widget-directive.test.js: die Direktive übernimmt die erste. */
-const WIDGET_I18N = { t: (k, p) => (p ? `${k}:${p.message ?? JSON.stringify(p)}` : k), getLanguage: () => 'de' };
+import { WIDGET_I18N } from '../widget-i18n.js';
 
 const i18n = { t: (k) => k };
 

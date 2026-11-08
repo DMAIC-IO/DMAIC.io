@@ -33,13 +33,16 @@ const Multi = defineModel({ fields: { datasets: datasets(Slots, { multi: true, c
 const Single = defineModel({ fields: { datasets: datasets(Slots) } });
 
 let n = 0;
-async function mountPicker(Model, { texts = {} } = {}) {
-  const i18n = {
-    t: (k) => (k in texts ? texts[k] : k),
-    exists: (k) => k in texts,
-    getLanguage: () => 'de',
-  };
-  registerFieldDirective(Alpine, { i18n, widgets: WIDGETS });
+let texts = {};
+const i18n = {
+  t: (k) => (k in texts ? texts[k] : k),
+  exists: (k) => k in texts,
+  getLanguage: () => 'de',
+};
+let directiveRegistered = false;
+async function mountPicker(Model, { texts: own = {} } = {}) {
+  texts = own;
+  if (!directiveRegistered) { registerFieldDirective(Alpine, { i18n, widgets: WIDGETS }); directiveRegistered = true; }
   if (!Alpine.version) Alpine.start();
   const name = `dsWidget${++n}`;
   const model = new Model();

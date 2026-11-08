@@ -15,7 +15,7 @@ import { checkValue } from '../../js/core/model.js';
 import controlChart from '../../js/widgets/control-chart/schema.js';
 
 /** Dieselbe Übersetzung wie in tests/core/widget-directive.test.js: die Direktive übernimmt die erste. */
-const WIDGET_I18N = { t: (k, p) => (p ? `${k}:${p.message ?? JSON.stringify(p)}` : k), getLanguage: () => 'de' };
+import { WIDGET_I18N } from '../widget-i18n.js';
 
 const ID = 'attribute-control-chart';
 const TPL_KEY = `js/modules/${ID}/resources/view.html`;

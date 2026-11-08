@@ -10,6 +10,8 @@ import { registerWidgetDirective, widgetForKind } from '../../js/core/widget-dir
 const i18n = { t: (k, p) => (p ? `${k}:${p.message ?? JSON.stringify(p)}` : k), getLanguage: () => 'de' };
 const flush = () => new Promise((r) => setTimeout(r, 0));
 const probe = { alive: 0, runs: 0 };
+/** Wurzeln, die `host` angelegt hat: nur Warnungen zu diesen Elementen oder zu `x-widget="…"` gehören den Tests. */
+const hosted = [];
 
 const statList = defineWidget({ name: 'stat-list', props: { rows: list(object({ name: text(), mean: number() })), digits: number({ optional: true }) } });
 const picker = defineWidget({ name: 'pick', value: oneOf(['a', 'b', 'c']) });
@@ -88,6 +90,7 @@ async function host(inner, extra = {}) {
   root.setAttribute('x-data', name);
   root.innerHTML = inner;
   document.body.append(root);
+  hosted.push(root);
   Alpine.initTree(root);
   await flush();
   return { root, data: Alpine.$data(root) };
@@ -96,13 +99,16 @@ async function host(inner, extra = {}) {
 /**
  * Warnungen einsammeln, solange `fn` läuft. Alpine wirft Fehler seiner Ausdrücke
  * zusätzlich per setTimeout nach außen; die erwarteten fängt der Test ab, damit
- * der Lauf sie nicht als unbehandelte Seitenfehler zählt.
+ * der Lauf sie nicht als unbehandelte Seitenfehler zählt. Gesammelt werden nur
+ * Warnungen der Direktive (`x-widget="…"`) und solche, die ein Element der
+ * gehosteten Wurzeln nennen; alles andere geht unverändert weiter.
  */
 async function withWarnings(fn) {
   const seen = [];
   const orig = console.warn;
   const origTimeout = window.setTimeout;
-  console.warn = (...a) => { seen.push(a.map(String).join(' ')); };
+  const mine = (a) => /x-widget="/.test(String(a[0])) || a.some((x) => x instanceof Node && hosted.some((r) => r.contains(x)));
+  console.warn = (...a) => { if (mine(a)) seen.push(a.map(String).join(' ')); else orig.apply(console, a); };
   window.setTimeout = (cb, ...rest) => origTimeout(() => {
     try { cb(); } catch (err) { if (!/^Undefined variable/.test(String(err?.message))) throw err; }
   }, ...rest);

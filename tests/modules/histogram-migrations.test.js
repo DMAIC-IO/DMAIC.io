@@ -1,4 +1,4 @@
-import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import { State } from '../../js/modules/histogram/domain/model.js';
 import { from0, legacySeriesFrom } from '../../js/modules/histogram/domain/migrations.js';
 import histogramChart from '../../js/widgets/histogram-chart/schema.js';
@@ -84,6 +84,16 @@ suite('histogram: Migration', () => {
       assertEqual(m.histogramChart.labelSize, 14);
       assertDeepEqual(m.histogramChart.refLines, [{ dir: 'h', value: 2 }]);
       assertDeepEqual(seen, []);
+    } finally { console.warn = warn; }
+  });
+  test('Kaputter Zustand im aktuellen Format meldet genau eine Reparaturwarnung, der Rest bleibt', () => {
+    const warn = console.warn; const seen = []; console.warn = (...a) => seen.push(a.join(' '));
+    try {
+      const m = loadModel(State, { _schema: { version: '2.0' }, datasets: [{ valueRef: r, groupRef: null }], binMode: 'weird', confLevel: 90 });
+      assertEqual(m.confLevel, 90);
+      assertEqual(m.binMode, 'auto');
+      assertEqual(seen.length, 1, seen.join(' | '));
+      assertTrue(seen[0].includes('binMode'));
     } finally { console.warn = warn; }
   });
   test('legacySeries führt genau die editierbaren Reihenschlüssel des Diagramms (ohne name)', () => {

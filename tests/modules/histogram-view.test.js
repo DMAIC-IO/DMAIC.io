@@ -13,7 +13,7 @@ import { WIDGETS } from '../../js/widgets/registry.js';
 import { CHART_COLORS_RGBA } from '../../js/core/chart/chart-colors.js';
 
 /** Dieselbe Übersetzung wie in tests/core/widget-directive.test.js: die Direktive übernimmt die erste. */
-const WIDGET_I18N = { t: (k, p) => (p ? `${k}:${p.message ?? JSON.stringify(p)}` : k), getLanguage: () => 'de' };
+import { WIDGET_I18N } from '../widget-i18n.js';
 
 const ID = 'histogram';
 const TPL_KEY = `js/modules/${ID}/resources/view.html`;

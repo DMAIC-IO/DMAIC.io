@@ -17,7 +17,7 @@ import histogramChart from '../../js/widgets/histogram-chart/schema.js';
 import { residualCharts } from '../../js/modules/hypothesis-test/viewmodel/present.js';
 
 /** Dieselbe Übersetzung wie in tests/core/widget-directive.test.js: die Direktive übernimmt die erste. */
-const WIDGET_I18N = { t: (k, p) => (p ? `${k}:${p.message ?? JSON.stringify(p)}` : k), getLanguage: () => 'de' };
+import { WIDGET_I18N } from '../widget-i18n.js';
 
 const ID = 'hypothesis-test';
 const TPL_KEY = `js/modules/${ID}/resources/view.html`;

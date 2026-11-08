@@ -11,6 +11,7 @@ import HistogramChart from '../../js/core/chart/types/histogram.js';
 import histogramChart from '../../js/widgets/histogram-chart/schema.js';
 
 const i18n = { t: (k) => k, getLanguage: () => 'de' };
+let directiveRegistered = false;
 const flush = () => new Promise((r) => setTimeout(r, 0));
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -47,7 +48,7 @@ const SERIES = (rev) => {
 
 async function host(inner, { cm, sm = null, extra = {}, model = {} } = {}) {
   if (!Alpine.version) Alpine.start();
-  registerWidgetDirective(Alpine, { i18n, widgets: WIDGETS });
+  if (!directiveRegistered) { registerWidgetDirective(Alpine, { i18n, widgets: WIDGETS }); directiveRegistered = true; }
   const services = { eventBus: null, stateManager: sm, i18n, chartManager: cm, instanceId: 'i1', moduleId: 'demo' };
   const name = `wd${Math.random().toString(36).slice(2)}`;
   Alpine.data(name, () => {
@@ -85,7 +86,7 @@ suite('Diagramm-Widgets (chart-mount)', () => {
     data.n = 2;
     await flush();
     assertEqual(cm.log.created.length, 1);
-    assertTrue(cm.log.updated.length >= 1);
+    assertEqual(cm.log.updated.length, 1);
     data.show = false;
     await flush();
     assertEqual(cm.log.destroyed, 1);
