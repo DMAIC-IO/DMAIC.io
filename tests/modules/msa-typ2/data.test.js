@@ -2,7 +2,7 @@ import { suite, test, assert, assertEqual, assertDeepEqual, assertAlmostEqual } 
 import { buildDataArrays, computeAnalysis } from '../../../js/modules/msa-typ2/domain/data.js';
 
 async function exampleData() {
-  const ws = await (await fetch(new URL('../../../examples/worksheets/msa-typ2-akzeptabel.json', import.meta.url))).json();
+  const ws = await (await fetch(new URL('../../../js/modules/msa-typ2/resources/examples/worksheets/msa-typ2-akzeptabel.json', import.meta.url))).json();
   const col = Object.fromEntries(ws.sheets[0].state.columns.map(c => [c.id, c.values]));
   return { parts: col['c-teil'], operators: col['c-operator'], measurements: col['c-messwert'] };
 }
