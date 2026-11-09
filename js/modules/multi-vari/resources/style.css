@@ -89,49 +89,6 @@
   color: var(--color-text-secondary);
 }
 
-/* Ziehgriff der Faktorzeilen: Gestaltung von .dmike-table__grip. Die Spalte
-   (.dmike-table__grip-col) und die Zeilenzustände des Ziehens bleiben die
-   gemeinsamen der Tabelle. */
-.multi-vari__grip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border: none;
-  border-radius: var(--border-radius-sm);
-  background: transparent;
-  color: var(--color-text-tertiary);
-  cursor: grab;
-  opacity: 0.55;
-  transition: opacity var(--transition-speed), color var(--transition-speed);
-}
-
-/* Sechs-Punkte-Griff in CSS gezeichnet: zwei Spalten mal drei Zeilen. */
-.multi-vari__grip::before {
-  content: "";
-  width: 10px;
-  height: 15px;
-  background-image: radial-gradient(currentcolor 1.4px, transparent 1.5px);
-  background-size: 5px 5px;
-}
-
-.multi-vari__factors tbody tr:hover .multi-vari__grip,
-.multi-vari__grip:focus-visible {
-  opacity: 1;
-}
-
-.multi-vari__grip:focus-visible {
-  outline: none;
-  color: var(--color-accent);
-  box-shadow: 0 0 0 2px var(--color-accent-light);
-}
-
-.multi-vari__grip:active {
-  cursor: grabbing;
-}
-
 /* Quellzeile während des Umsortierens (die Einfügemarke ist die gemeinsame
    .dmike-table__row--drop-target). */
 .multi-vari__factors tr[data-dragging] {

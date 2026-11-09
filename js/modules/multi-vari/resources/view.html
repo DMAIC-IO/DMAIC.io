@@ -16,7 +16,7 @@
           <template x-for="(f, idx) in model.factors" :key="f.id">
             <tr :data-factor="f.id" :data-index="idx" :class="factorRowClass(idx)">
               <td class="dmike-table__grip-col">
-                <button class="multi-vari__grip" type="button" :data-grip="f.id"
+                <button class="dmike-table__grip multi-vari__grip" type="button" :data-grip="f.id"
                         data-help-key="modules.multi-vari.actions.moveFactor.help"
                         :aria-label="t('common.reorder')"></button>
               </td>

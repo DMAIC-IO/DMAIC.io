@@ -34,7 +34,7 @@
 
             <template x-for="(item, i) in model.columns[col.key]" :key="col.key + ':' + i">
               <div class="sipoc__item" :class="itemClass(col.key, i)" :data-col="col.key" :data-idx="i" :data-index="i">
-                <button type="button" class="sipoc__grip" :aria-label="t('gripLabel')" data-help-key="modules.sipoc.actions.moveItem.help"><span class="icon icon--sm" data-icon="action.drag-handle" aria-hidden="true"></span></button>
+                <button type="button" class="dmike-table__grip sipoc__grip" :aria-label="t('gripLabel')" data-help-key="modules.sipoc.actions.moveItem.help"></button>
                 <template x-if="col.key === 'process'">
                   <span class="sipoc__step-num" x-text="i + 1"></span>
                 </template>
