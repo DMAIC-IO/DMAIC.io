@@ -94,6 +94,35 @@ suite('createFieldErrors', () => {
     errors.clear('model.a');
     assertEqual(errors.message('model.a'), '');
   });
+
+  test('Rückkehr zum gemerkten Wert bringt die Meldung nicht zurück (gelesen)', () => {
+    const errors = createFieldErrors(Alpine);
+    const model = Alpine.reactive({ a: 1, b: 2 });
+    errors.set('model.a', { message: 'nein', model, fields: ['a', 'b'] });
+    model.b = 3;
+    assertEqual(errors.message('model.a'), '');
+    model.b = 2;
+    assertEqual(errors.message('model.a'), '', 'gelöscht, nicht nur verborgen');
+  });
+
+  test('Rückkehr zum gemerkten Wert bringt die Meldung nicht zurück (ungelesen)', async () => {
+    const errors = createFieldErrors(Alpine);
+    const model = Alpine.reactive({ a: 1, b: 2 });
+    errors.set('model.a', { message: 'nein', model, fields: ['a', 'b'] });
+    model.b = 3;
+    await flush();
+    model.b = 2;
+    await flush();
+    assertEqual(errors.message('model.a'), '', 'ohne Lesen dazwischen gelöscht');
+  });
+
+  test('dispose: nach dem Abbau keine Meldung mehr', () => {
+    const errors = createFieldErrors(Alpine);
+    const model = Alpine.reactive({ a: 1 });
+    errors.set('model.a', { message: 'nein', model, fields: ['a'] });
+    errors.dispose();
+    assertEqual(errors.message('model.a'), '');
+  });
 });
 
 suite('fieldError(path) — Feldregel', () => {
@@ -155,6 +184,36 @@ suite('fieldError(path) — Invariante', () => {
     assertEqual(vm().fieldError('model.lsl'), '');
     await flush();
     assertEqual(els.msg.textContent, '');
+  });
+
+  test('Partner hin und zurück über x-field: Meldung bleibt weg, auch im Template', async () => {
+    const { vm, els } = await mount();
+    change(els.lsl, '6');
+    change(els.usl, '14');
+    change(els.lsl, '16');
+    await flush();
+    assertEqual(els.msg.textContent, `modules.${ID}.invariants.order`);
+    change(els.usl, '20');
+    await flush();
+    assertEqual(els.msg.textContent, '');
+    change(els.usl, '14');
+    await flush();
+    assertEqual(vm().fieldError('model.lsl'), '');
+    assertEqual(els.msg.textContent, '');
+  });
+
+  test('ungelesene Meldung: Partner hin und zurück löscht sie trotzdem', async () => {
+    // Das Template liest nur fieldError('model.lsl') — wie der zweite Pfad in `a || b`.
+    const { vm, els } = await mount();
+    change(els.lsl, '6');
+    change(els.usl, '14');
+    change(els.usl, '1');
+    assertEqual(vm().model.usl, 14);
+    change(els.lsl, '0');
+    await flush();
+    change(els.lsl, '6');
+    await flush();
+    assertEqual(vm().fieldError('model.usl'), '');
   });
 });
 

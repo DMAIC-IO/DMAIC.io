@@ -577,6 +577,7 @@ export function createModule(base) {
               taskHost?.release(); taskHost = null;
               releaseComputed?.(); releaseComputed = null;
               offCycle?.(); offCycle = null;
+              fieldErrors?.dispose();
               dataDestroy?.call(this);
               freshState.destroy?.();
             }
