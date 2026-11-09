@@ -21,10 +21,10 @@ import GageRunChart from '../../../widgets/gage-run-chart/schema.js';
 import { from0 } from './migrations.js';
 
 /** Zulässige Studienfaktoren (6 = Standard, 5,15 = AIAG 3. Auflage). */
-export const K_OPTIONS = [6, 5.15];
+export const K_OPTIONS = Object.freeze([6, 5.15]);
 
 /** Zulässige Urteilsgrundlagen ('auto' = Toleranz, sobald beide Grenzen gesetzt sind). */
-export const VERDICT_BASES = ['auto', 'tolerance', 'studyVar'];
+export const VERDICT_BASES = Object.freeze(['auto', 'tolerance', 'studyVar']);
 
 export class State extends defineModel({
   version: '1.0',
@@ -40,8 +40,8 @@ export class State extends defineModel({
       // Aus dem Konfidenzniveau; auf den erlaubten Bereich geklemmt.
       default: (c) => Math.min(0.9999, Math.max(0.0001, Number(((100 - c.confidenceLevel) / 100).toFixed(4)))),
     }),
-    k: oneOf([6, 5.15], { default: 6 }),
-    verdictBasis: oneOf(['auto', 'tolerance', 'studyVar'], { default: 'auto' }),
+    k: oneOf(K_OPTIONS, { default: 6 }),
+    verdictBasis: oneOf(VERDICT_BASES, { default: 'auto' }),
     sigmaHist: number({ nullable: true, exclusiveMin: 0 }),
     exampleWorksheetId: text({ nullable: true }),
   },

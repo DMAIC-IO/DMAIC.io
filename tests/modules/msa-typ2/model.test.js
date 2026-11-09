@@ -83,7 +83,10 @@ suite('MSA Typ 2 Model — Auswahlwerte gegen die Engine', () => {
   }
   const data = { parts, operators, measurements };
 
-  test('K_OPTIONS und VERDICT_BASES sind die Schemawerte', () => {
+  test('K_OPTIONS und VERDICT_BASES sind die Werte des Schemas', () => {
+    const { fields } = State.schema;
+    assertEqual(fields.k.values.join(','), K_OPTIONS.join(','));
+    assertEqual(fields.verdictBasis.values.join(','), VERDICT_BASES.join(','));
     assertEqual(K_OPTIONS.join(','), '6,5.15');
     assertEqual(VERDICT_BASES.join(','), 'auto,tolerance,studyVar');
   });

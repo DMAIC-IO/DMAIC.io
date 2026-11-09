@@ -45,6 +45,7 @@ export function from0(json) {
   const p = json.params && typeof json.params === 'object' ? json.params : {};
   const refs = json.columnRefs && typeof json.columnRefs === 'object' ? json.columnRefs : {};
   const alpha = num(p.alpha);
+  const sigma = num(p.sigmaHist);
   const kRaw = num(p.k ?? p.studyVarMultiplier);
   return {
     part: refFrom(refs.part),
@@ -55,7 +56,7 @@ export function from0(json) {
     ...(alpha !== null && alpha > 0 && alpha < 1 ? { alpha } : {}),
     k: kRaw === 6 ? 6 : 5.15,
     verdictBasis: ['auto', 'tolerance', 'studyVar'].includes(p.verdictBasis) ? p.verdictBasis : 'studyVar',
-    sigmaHist: (() => { const s = num(p.sigmaHist); return s !== null && s > 0 ? s : null; })(),
+    sigmaHist: sigma !== null && sigma > 0 ? sigma : null,
     exampleWorksheetId: typeof json.exampleWorksheetId === 'string' ? json.exampleWorksheetId : null,
   };
 }
