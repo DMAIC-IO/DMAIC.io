@@ -1075,6 +1075,10 @@ suite('map', () => {
     assertDeepEqual(m.picks, { p1: 'o1' });
     assertThrows(() => M.fromJSON({ items: [], picks: { p1: 'o1' } }), /picks key/);
   });
+  test('map: Schlüssel __proto__ wird abgelehnt', () => {
+    const s = map(text(), text());
+    assertThrows(() => checkValue(s, 'm', JSON.parse('{"__proto__":"x"}')), /m key/);
+  });
   test('map: Schlüssel-Feldart außer text/idOf/number wirft beim Anlegen', () => {
     assertThrows(() => map(boolean(), text()), /allowed: text, idOf, number/);
     assertThrows(() => map(number(), text()), /integer/);
@@ -1087,5 +1091,46 @@ suite('map', () => {
   test('map: describeType, fromAttr', () => {
     assertEqual(describeType(map(idOf('items'), list(text()))), 'Record<string, string[]>');
     assertThrows(() => fromAttr(map(text(), text()), '{}'));
+  });
+});
+
+suite('repair — rekursiv', () => {
+  const Deep = defineModel({ fields: {
+    rows: list(object({ id: text(), tags: list(text({ nonEmpty: true })) })),
+    mx: list(object({ id: text(), cells: map(text(), number({ min: 0 })) })),
+    sc: list(object({ id: text(), n: number() })),
+  } });
+  test('repair: Liste in Objekt in Liste — nur der kaputte innere Eintrag entfällt', () => {
+    const m = Deep.fromJSON({ rows: [{ id: 'r', tags: ['a', '', 'b'] }] }, { repair: true });
+    assertDeepEqual(m.rows, [{ id: 'r', tags: ['a', 'b'] }]);
+  });
+  test('repair: Map in Objekt in Liste — nur der kaputte Map-Eintrag entfällt, Objekt bleibt', () => {
+    const m = Deep.fromJSON({ mx: [{ id: 'x', cells: { a: 1, b: -1, c: 2 } }] }, { repair: true });
+    assertDeepEqual(m.mx, [{ id: 'x', cells: { a: 1, c: 2 } }]);
+  });
+  test('repair: Skalarfehler im Objekt entfernt das Objekt aus der Liste', () => {
+    const m = Deep.fromJSON({ sc: [{ id: 'a', n: 1 }, { id: 'b', n: 'x' }, { id: 'c', n: 3 }] }, { repair: true });
+    assertDeepEqual(m.sc, [{ id: 'a', n: 1 }, { id: 'c', n: 3 }]);
+  });
+  test('repair: Map-Schlüssel __proto__ entfällt', () => {
+    const m = Deep.fromJSON(JSON.parse('{"mx":[{"id":"x","cells":{"__proto__":1,"a":2}}]}'), { repair: true });
+    assertDeepEqual(Object.keys(m.mx[0].cells), ['a']);
+    assertEqual(Object.getPrototypeOf(m.mx[0].cells), Object.getPrototypeOf({}));
+  });
+  test('repair: idOf-Map nach reparierter Liste — Pick auf verworfenen Parameter entfällt, Konzept bleibt', () => {
+    const M = defineModel({ fields: {
+      items: list(object({ id: text({ nonEmpty: true }) })),
+      concepts: list(object({ id: text(), picks: map(idOf('items'), text()) })),
+    } });
+    const m = M.fromJSON({ items: [{ id: 'p1' }, { id: '' }], concepts: [{ id: 'c1', picks: { p1: 'a', '': 'b' } }] }, { repair: true });
+    assertDeepEqual(m.items, [{ id: 'p1' }]);
+    assertDeepEqual(m.concepts, [{ id: 'c1', picks: { p1: 'a' } }]);
+  });
+  test('repair: onRepair bekommt den ersten Fehler je Feld', () => {
+    const seen = [];
+    Deep.fromJSON({ rows: [{ id: 'r', tags: ['', 'a', ''] }, { id: 5, tags: [] }] }, { repair: true, onRepair: (n, e) => seen.push([n, e.message]) });
+    assertEqual(seen.length, 1);
+    assertEqual(seen[0][0], 'rows');
+    assertTrue(/rows\[0\]\.tags\[0\]/.test(seen[0][1]));
   });
 });

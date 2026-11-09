@@ -111,6 +111,12 @@ suite('resolveTarget: Map-Einträge', () => {
     assertThrows(() => target(el, 'model.byNum[i]').set('x'), /key/);
     assertDeepEqual({ ...model.byNum }, {});
   });
+  test('Schlüssel __proto__ wird abgelehnt, Model unverändert', () => {
+    const { model, el } = mk({ k: '__proto__' });
+    assertThrows(() => target(el, 'model.flat[k]').set(1), /key/);
+    assertEqual(Object.getPrototypeOf(model.flat), Object.getPrototypeOf({}));
+    assertDeepEqual(Object.keys(model.flat), []);
+  });
   test('Hilfe-Anker ist der des Map-Feldes', () => {
     const { el } = mk({ p: 'a' });
     assertEqual(target(el, 'model.concepts[0].picks[p]').helpKey, 'fields.concepts.picks.help');

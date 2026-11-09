@@ -423,8 +423,7 @@ export function checkValue(s, name, value, ctx = {}) {
       requireForm(name, value, isPlainObject(value), 'an object');
       const out = {};
       for (const [k, v] of Object.entries(value)) {
-        if (s.key.kind === 'number') checkValue(s.key, `${name} key`, String(Number(k)) === k ? Number(k) : NaN, ctx);
-        else checkValue(s.key, `${name} key`, k, ctx);
+        checkMapKey(s, name, k, ctx);
         out[k] = checkValue(s.value, `${name}[${k}]`, v, ctx);
       }
       return out;
@@ -476,6 +475,20 @@ export function checkValue(s, name, value, ctx = {}) {
 }
 
 /**
+ * Den Schlüssel eines Map-Eintrags prüfen. Zahlschlüssel werden als Zahl
+ * geprüft, aber als Text gespeichert; `__proto__` ist nie ein Schlüssel.
+ * @param {object} s Map-Spec @param {string} name Name der Map in der Meldung
+ * @param {string} key @param {object} [ctx]
+ * @throws {Error} in der Vertragsform von `core/validate.js`
+ * @returns {void}
+ */
+export function checkMapKey(s, name, key, ctx = {}) {
+  requireForm(`${name} key`, key, key !== '__proto__', 'a key other than __proto__');
+  if (s.key.kind === 'number') checkValue(s.key, `${name} key`, String(Number(key)) === key ? Number(key) : NaN, ctx);
+  else checkValue(s.key, `${name} key`, key, ctx);
+}
+
+/**
  * Normalform einer Liste mit `unique`/`sorted`: ohne Doppelte, Zahlen numerisch, Text per `localeCompare`.
  * @param {object} s Listen-Spec @param {any[]} items @returns {any[]}
  */
@@ -488,19 +501,46 @@ function normalList(s, items) {
 }
 
 /**
- * Reparatur eines gespeicherten Werts: Listen verlieren nur ihre ungültigen
- * Einträge, alles andere wird strikt geprüft.
+ * Reparatur eines gespeicherten Werts: in Listen, Maps und Objekten entfällt nur
+ * der ungültige Eintrag (bei Objekten das umschließende Element), alles andere
+ * wird strikt geprüft.
  * @param {object} s @param {string} name @param {any} value @param {object} ctx
  * @param {(err: Error) => void} dropped wird mit dem ersten verworfenen Eintragsfehler gerufen
  * @returns {any}
  */
 function repairValue(s, name, value, ctx, dropped) {
-  if (s.kind !== 'list' || !Array.isArray(value) || (s.nullable && value === null)) return checkValue(s, name, value, ctx);
-  const kept = [];
-  value.forEach((v, i) => {
-    try { kept.push(checkValue(s.item, `${name}[${i}]`, v, ctx)); } catch (err) { dropped(err); }
-  });
-  return normalList(s, kept);
+  if (s.nullable && value === null) return null;
+  switch (s.kind) {
+    case 'list': {
+      if (!Array.isArray(value)) return checkValue(s, name, value, ctx);
+      const kept = [];
+      value.forEach((v, i) => {
+        try { kept.push(repairValue(s.item, `${name}[${i}]`, v, ctx, dropped)); } catch (err) { dropped(err); }
+      });
+      return normalList(s, kept);
+    }
+    case 'map': {
+      if (!isPlainObject(value)) return checkValue(s, name, value, ctx);
+      const out = {};
+      for (const [k, v] of Object.entries(value)) {
+        try {
+          checkMapKey(s, name, k, ctx);
+          out[k] = repairValue(s.value, `${name}[${k}]`, v, ctx, dropped);
+        } catch (err) { dropped(err); }
+      }
+      return out;
+    }
+    case 'object': {
+      const keys = Object.keys(s.shape);
+      if (!isPlainObject(value)) return checkValue(s, name, value, ctx);
+      for (const k of Object.keys(value)) requireKnownId(`${name} key`, k, keys);
+      requireKeys(name, value, keys.map(k => ({ name: k, optional: s.shape[k].optional === true })), 'key');
+      const out = {};
+      for (const k of keys) if (Object.hasOwn(value, k)) out[k] = repairValue(s.shape[k], `${name}.${k}`, value[k], ctx, dropped);
+      return out;
+    }
+    default: return checkValue(s, name, value, ctx);
+  }
 }
 
 /**

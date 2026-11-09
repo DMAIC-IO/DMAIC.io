@@ -16,7 +16,7 @@
  * Felder in Listeneinträgen prüft `checkValue` gegen die Element-Spec;
  * Schlüsselfelder, auf die ein `idOf` zeigt, sind nicht beschreibbar.
  */
-import { checkValue, contextOf, fieldSpec, parsePath, schemaOf, stateSchemaOf } from './model.js';
+import { checkMapKey, checkValue, contextOf, fieldSpec, parsePath, schemaOf, stateSchemaOf } from './model.js';
 
 const TOKEN = /([A-Za-z_$][\w$]*)|\.([A-Za-z_$][\w$]*)|\[([A-Za-z_$][\w$]*|\d+)\]/y;
 
@@ -145,10 +145,7 @@ function mapEntryTarget(scope, schema, steps, entryStep, where) {
   if (spec?.kind !== 'map') throw new Error(`${where}: [${entryStep.ref ?? entryStep.at}] does not match the schema`);
   const mapSpec = spec;
   const keyOf = (st) => String(st.ref !== undefined ? scope()[st.ref] : st.at);
-  const checkKey = (key, keySpec, name, ctx) => {
-    if (keySpec.kind === 'number') checkValue(keySpec, `${name} key`, String(Number(key)) === key ? Number(key) : NaN, ctx);
-    else checkValue(keySpec, `${name} key`, key, ctx);
-  };
+  const checkKey = (key, keySpec, name, ctx) => checkMapKey({ key: keySpec }, name, key, ctx);
   /** Die Map, die den Eintrag hält; mit `create` werden fehlende Map-Einträge auf dem Weg angelegt. */
   const owner = (create) => {
     let o = scope().model[first.name];
