@@ -2,15 +2,15 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "measurement": {
-      "help": "Die gewählte Messwertspalte als { instanceId, sheetId, columnId }, oder null. Nur numerische, Prozent- und Währungsspalten."
+      "help": "Die gewählte Messwertspalte als Spaltenbezug; leer, solange keine gewählt ist. Nur numerische, Prozent- und Währungsspalten."
     },
     "factors": {
-      "help": "Die Faktorzeilen in Reihenfolge, je { id, ref }; ref ist der Spaltenbezug oder null. Die Reihenfolge ist die Schachtelung: Zeile 0 ist die äußerste (X-Achse).",
+      "help": "Die Faktorzeilen in Reihenfolge, je mit id und Spaltenbezug; der Bezug bleibt leer, solange die Zeile keine Spalte hat. Die Reihenfolge ist die Schachtelung: Zeile 0 ist die äußerste (X-Achse).",
       "id": {
         "help": "Die id der Faktorzeile; Wert für id in removeFactor und setFactorColumn."
       },
       "ref": {
-        "help": "Der Spaltenbezug { instanceId, sheetId, columnId } der Faktorzeile, oder null, solange sie leer ist. Jede Spalte ist erlaubt; eine Spalte darf in mehreren Zeilen stehen."
+        "help": "Der Spaltenbezug der Faktorzeile; leer, solange keine Spalte gewählt ist. Jede Spalte ist erlaubt; eine Spalte darf in mehreren Zeilen stehen."
       }
     },
     "modelForm": {
@@ -33,12 +33,6 @@
     },
     "exampleWorksheetId": {
       "help": "Die id des Beispiel-Arbeitsblatts, aus dem dieses Modul befüllt wurde; null, wenn keines geladen wurde."
-    },
-    "result": {
-      "help": "Gruppen des Multi-Vari-Diagramms und Varianzkomponenten, jede Kennzahl unter keys einzeln beschrieben; null ohne Messwertspalte, mit weniger als zwei Faktoren oder ohne Daten; scheitert nur die Zerlegung, bleibt das Ergebnis mit leeren Varianzkomponenten und errorMsg nennt den Grund."
-    },
-    "errorMsg": {
-      "help": "Der Grund, warum kein Ergebnis vorliegt (weniger als zwei Faktoren, keine verwertbaren Daten, ungültiger Versuchsplan) oder dass die Varianzzerlegung scheiterte; sonst ein leerer Text, auch solange die Messwertspalte fehlt."
     }
   },
   "actions": {

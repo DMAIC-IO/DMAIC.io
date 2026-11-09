@@ -23,7 +23,7 @@
 
 import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertAlmostEqual } from '../test-utils.js';
 import { computeMultiVari } from '../../js/engines/multi-vari-engine.js';
-import { runVarianceDecomposition, pickLargestTerm } from '../../js/modules/multi-vari/multi-vari-analysis.js';
+import { runVarianceDecomposition, pickLargestTerm } from '../../js/modules/multi-vari/domain/analysis.js';
 
 async function fetchJson(relPath) {
   const url = new URL(relPath, import.meta.url);

@@ -41,7 +41,6 @@
   "tablePercent": "Anteil %",
   "tableTotal": "Gesamt",
   "termError": "Rest (Wiederholung)",
-  "exportCsv": "Tabelle als CSV",
   "csvFileName": "multi-vari-varianzkomponenten",
   "interpretation": "{term} trägt mit {percent} % den größten Anteil zur Gesamtstreuung bei.",
   "interpretationError": "Die Wiederholstreuung ist mit {percent} % der größte Anteil — die betrachteten Einflussgrößen erklären die Streuung kaum.",

@@ -1,17 +1,16 @@
 /**
- * D.Mike — Multi-Vari analysis assembly tests (multi-vari-analysis.js).
+ * D.Mike — Multi-Vari analysis tests (domain/analysis.js).
  *
  * `runVarianceDecomposition` is the seam between the two engines the module
  * consumes: `computeMultiVari` groups rows for the chart, then this function
  * hands the decomposition exactly the rows that survived that grouping and
- * unions both engines' warnings. Two defects the Pre-Flight-Scan for Task 16
- * caught and ruled on (F4, F2 in progress.md) are pinned here:
+ * unions both engines' warnings. Two rules are pinned here:
  *
- *   - F4: the decomposition must run on `g.cleaned.response` /
+ *   - The decomposition must run on `g.cleaned.response` /
  *     `g.cleaned.factorValues`, never the module's raw column arrays —
  *     otherwise it silently describes rows the chart never shows (or trips
  *     over a dropped row's NaN/empty level).
- *   - F2: the module's warnings must be the UNION of both engines' lists,
+ *   - The module's warnings must be the UNION of both engines' lists,
  *     deduplicated (`unbalanced` can come from either) — otherwise a
  *     decomposition-only warning (e.g. a non-converged REML fit) never
  *     reaches the UI.
@@ -120,12 +119,10 @@ suite('runVarianceDecomposition — decomposition failure does not break the cha
   });
 });
 
-// ─── Task 18: variance-components table view helpers ──────────────────────
+// ─── Variance-components table helpers ────────────────────────────────────
 //
-// Pure, DOM-free formatting/derivation logic behind the table's view methods
-// (multi-vari.js's vcTerms(), interpretationText(), showUnbalancedNote(),
-// showClampedNote(), exportCsv()) lives here so it is testable without an
-// Alpine/DOM environment — see multi-vari.js for the thin i18n wrapping.
+// Pure, DOM-free derivation logic behind the table in the view; the
+// viewmodel (viewmodel/present.js) only adds the translations.
 
 suite('vcTermRows — table rows, Error row included, empty when the decomposition failed', () => {
   test('returns result.vc.terms unchanged', () => {

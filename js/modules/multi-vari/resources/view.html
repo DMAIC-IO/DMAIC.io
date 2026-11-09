@@ -1,0 +1,186 @@
+<div class="multi-vari dmike-split" x-data="multiVari">
+  <!-- data-help-key="" an Auswahl-Hosts und Auswahlfeldern ist gewollt: die Hilfe hängt an der Beschriftung daneben, der automatische Schlüssel ergäbe doppelte Fragezeichen. -->
+  <div class="multi-vari__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionColumns')"></div>
+
+    <div class="field-group">
+      <label data-help-key="modules.multi-vari.fields.measurement.help" x-text="t('measurementColumn')"></label>
+      <div data-ref="col-measurement-wrap" data-help-key="" x-field="model.measurement"></div>
+    </div>
+
+    <div class="field-group">
+      <label data-help-key="modules.multi-vari.fields.factors.help" x-text="t('factors')"></label>
+      <table class="dmike-table multi-vari__factors" data-ref="factor-table">
+        <tbody data-group="factors" :data-group-label="t('factors')">
+          <template x-for="(f, idx) in model.factors" :key="f.id">
+            <tr :data-factor="f.id" :data-index="idx" :class="factorRowClass(idx)">
+              <td class="dmike-table__grip-col">
+                <button class="multi-vari__grip" type="button" :data-grip="f.id"
+                        data-help-key="modules.multi-vari.actions.moveFactor.help"
+                        :aria-label="t('common.reorder')"></button>
+              </td>
+              <td class="multi-vari__factor-role" x-text="factorRole(idx)"></td>
+              <td class="multi-vari__factor-picker">
+                <div :data-factor-wrap="f.id" x-field="f.ref"></div>
+              </td>
+              <td class="multi-vari__factor-actions">
+                <button class="btn btn--icon btn--ghost" type="button"
+                        data-help-key="modules.multi-vari.actions.removeFactor.help"
+                        :data-remove-factor="f.id" :aria-label="t('removeFactor')"
+                        :disabled="!canRemoveFactor"
+                        x-command="removeFactor" :data-arg-id="f.id">
+                  <span class="icon icon--sm" data-icon="action.delete"></span>
+                </button>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+      <span class="field-hint" x-text="t('factorsHint')"></span>
+      <button class="btn btn--sm" type="button" data-ref="btn-add-factor"
+              data-help-key="modules.multi-vari.actions.addFactor.help"
+              :disabled="!canAddFactor" x-command="addFactor"
+              x-text="t('addFactor')"></button>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionModel')"></div>
+
+    <div class="field-group">
+      <label data-help-key="modules.multi-vari.fields.modelForm.help" x-text="t('modelForm')"></label>
+      <select class="field" data-ref="sel-model-form" data-help-key="" x-field="model.modelForm">
+        <option value="nested" x-text="t('modelForm_nested')"></option>
+        <option value="crossed" x-text="t('modelForm_crossed')"></option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <label data-help-key="modules.multi-vari.fields.estimator.help" x-text="t('estimator')"></label>
+      <select class="field" data-ref="sel-estimator" data-help-key="" x-field="model.estimator">
+        <option value="anova" x-text="t('estimator_anova')"></option>
+        <option value="reml" x-text="t('estimator_reml')"></option>
+      </select>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionDisplay')"></div>
+
+    <div class="field-checks">
+      <label class="field-check" data-help-key="modules.multi-vari.fields.showPoints.help" data-help-anchor="box">
+        <input type="checkbox" data-ref="chk-points" x-model="model.showPoints">
+        <span x-text="t('showPoints')"></span>
+      </label>
+      <label class="field-check" data-help-key="modules.multi-vari.fields.connectMeans.help" data-help-anchor="box">
+        <input type="checkbox" data-ref="chk-connect" x-model="model.connectMeans">
+        <span x-text="t('connectMeans')"></span>
+      </label>
+      <label class="field-check" data-help-key="modules.multi-vari.fields.showGroupMean.help" data-help-anchor="box">
+        <input type="checkbox" data-ref="chk-group-mean" x-model="model.showGroupMean">
+        <span x-text="t('showGroupMean')"></span>
+      </label>
+      <label class="field-check" data-help-key="modules.multi-vari.fields.showRefLine.help" data-help-anchor="box">
+        <input type="checkbox" data-ref="chk-ref-line" x-model="model.showRefLine">
+        <span x-text="t('showRefLine')"></span>
+      </label>
+    </div>
+
+    <div class="field-error" data-ref="error-box" x-text="errorText"></div>
+  </div>
+
+  <div class="multi-vari__output dmike-split__output" x-async-task="analysis">
+    <template x-if="result">
+      <div class="multi-vari__result" data-ref="result">
+
+        <div class="dmike-kpi-strip" data-ref="stats-bar">
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="result.n"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.multi-vari.types.Result.n" x-text="t('statMeasurements')"></div>
+            <div class="dmike-kpi-sub" x-text="statFactorsText"></div>
+          </div>
+          <div class="dmike-kpi">
+            <div class="dmike-kpi-value" x-text="grandMeanText"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.multi-vari.types.Result.grandMean" x-text="t('statGrandMean')"></div>
+            <div class="dmike-kpi-sub" x-text="statSpanText"></div>
+          </div>
+          <div class="dmike-kpi" x-show="vc.largest">
+            <div class="dmike-kpi-value" x-text="vc.largestPercent"></div>
+            <div class="dmike-kpi-label" data-help-key="modules.multi-vari.types.VcTerm.percent" x-text="t('statLargest')"></div>
+            <div class="dmike-kpi-sub" x-text="vc.largestLabel"></div>
+          </div>
+        </div>
+
+        <div class="multi-vari__warnings" data-ref="warnings" data-help-key="modules.multi-vari.types.Result.warnings" x-show="hasWarnings">
+          <template x-for="(code, i) in warningCodes" :key="code + ':' + i">
+            <div class="multi-vari__warning" x-text="warningText(code)"></div>
+          </template>
+        </div>
+
+        <!-- Über einer Größengrenze wird nichts gezeichnet: Kopfzeile
+             und Streifen verschwinden zusammen, die Warnung darüber
+             nennt die verantwortliche Spalte, die Tabelle darunter bleibt. -->
+        <div class="multi-vari__chart-header" x-show="canRender">
+          <span class="multi-vari__chart-title" x-text="chartTitle"></span>
+        </div>
+
+        <div class="multi-vari__strips" data-ref="strips" x-show="canRender">
+          <template x-for="(strip, i) in strips" :key="strip.key">
+            <div class="multi-vari__strip" :data-strip="i"
+                 x-widget="multi-vari-chart"
+                 x-widget-config="strip.config"
+                 x-widget-value="model.stripEdits[i]"
+                 x-widget-legacy-edit-key="strip.legacyEditKey"></div>
+          </template>
+        </div>
+
+        <div class="multi-vari__vc" data-ref="vc" x-show="result.vc">
+          <table class="dmike-table multi-vari__vc-table" data-ref="vc-table">
+            <thead>
+              <tr>
+                <th><span data-help-key="modules.multi-vari.types.VcTerm.label" x-text="t('tableTerm')"></span></th>
+                <th class="num"><span data-help-key="modules.multi-vari.types.VcTerm.df" x-text="t('tableDf')"></span></th>
+                <th class="num"><span data-help-key="modules.multi-vari.types.VcTerm.ss" x-text="t('tableSs')"></span></th>
+                <th class="num"><span data-help-key="modules.multi-vari.types.VcTerm.ms" x-text="t('tableMs')"></span></th>
+                <th class="num"><span data-help-key="modules.multi-vari.types.VcTerm.variance" x-text="t('tableVariance')"></span></th>
+                <th class="num"><span data-help-key="modules.multi-vari.types.VcTerm.sd" x-text="t('tableSd')"></span></th>
+                <th class="num"><span data-help-key="modules.multi-vari.types.VcTerm.percent" x-text="t('tablePercent')"></span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="term in vc.terms" :key="term.id">
+                <tr :data-term="term.id">
+                  <td x-text="termLabel(term)"></td>
+                  <td class="num" x-text="intOrDash(term.df)"></td>
+                  <td class="num" x-text="fmt(term.ss)"></td>
+                  <td class="num" x-text="fmt(term.ms)"></td>
+                  <td class="num" x-text="fmt(term.variance)"></td>
+                  <td class="num" x-text="fmt(term.sd)"></td>
+                  <td class="num" x-text="pct(term.percent)"></td>
+                </tr>
+              </template>
+            </tbody>
+            <tfoot>
+              <tr data-term="__total__">
+                <td x-text="t('tableTotal')"></td>
+                <td class="num"></td>
+                <td class="num"></td>
+                <td class="num"></td>
+                <td class="num" x-text="vc.totalVariance"></td>
+                <td class="num" x-text="vc.totalSd"></td>
+                <td class="num" x-text="vc.totalPercent"></td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <p class="multi-vari__interpretation" data-ref="interpretation"
+             x-text="vc.interpretation"></p>
+
+          <p class="multi-vari__note" data-ref="unbalanced-note"
+             x-show="vc.unbalanced" x-text="t('unbalancedNote')"></p>
+
+          <p class="multi-vari__note" data-ref="clamped-note"
+             x-show="vc.clamped" x-text="t('clampedNote')"></p>
+        </div>
+
+      </div>
+    </template>
+  </div>
+</div>

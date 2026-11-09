@@ -57,6 +57,12 @@
   min-height: 200px;
 }
 
+/* Die Widget-Wurzel erzeugt keine Box; das Diagramm erbt seine Mindesthöhe
+   über sie hinweg vom Streifen. */
+.multi-vari__strip > .widget-root {
+  min-height: inherit;
+}
+
 .multi-vari__vc {
   margin-top: var(--spacing-md);
 }
@@ -124,4 +130,10 @@
 
 .multi-vari__grip:active {
   cursor: grabbing;
+}
+
+/* Quellzeile während des Umsortierens (die Einfügemarke ist die gemeinsame
+   .dmike-table__row--drop-target). */
+.multi-vari__factors tr[data-dragging] {
+  opacity: 0.4;
 }

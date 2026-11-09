@@ -2,15 +2,15 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "measurement": {
-      "help": "The selected measurement column as { instanceId, sheetId, columnId }, or null. Numeric, percent and currency columns only."
+      "help": "The selected measurement column as a column reference; empty while none is chosen. Numeric, percent and currency columns only."
     },
     "factors": {
-      "help": "The factor rows in order, each { id, ref }; ref is the column reference or null. The order is the nesting: row 0 is outermost (X axis).",
+      "help": "The factor rows in order, each with an id and a column reference; the reference stays empty while the row has no column. The order is the nesting: row 0 is outermost (X axis).",
       "id": {
         "help": "The id of the factor row; the value for id in removeFactor and setFactorColumn."
       },
       "ref": {
-        "help": "The column reference { instanceId, sheetId, columnId } of the factor row, or null while it is empty. Any column is allowed; a column may appear in several rows."
+        "help": "The column reference of the factor row; empty while no column is chosen. Any column is allowed; a column may appear in several rows."
       }
     },
     "modelForm": {
@@ -33,12 +33,6 @@
     },
     "exampleWorksheetId": {
       "help": "The id of the example worksheet this module was filled from; null if none was loaded."
-    },
-    "result": {
-      "help": "Groups of the multi-vari chart and variance components, each figure described individually under keys; null without a measurement column, with fewer than two factors or without data; if only the decomposition fails, the result stays with empty variance components and errorMsg gives the reason."
-    },
-    "errorMsg": {
-      "help": "The reason no result exists (fewer than two factors, no usable data, invalid design) or that the variance decomposition failed; an empty string otherwise, including while the measurement column is missing."
     }
   },
   "actions": {

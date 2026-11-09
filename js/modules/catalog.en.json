@@ -30,6 +30,11 @@
     "description": "Combine solution concepts from parameters and options, check incompatibilities",
     "whenToUse": "When a solution consists of several sub-functions and alternative whole concepts should be combined systematically — not for scoring or choosing the concepts, that belongs to solution selection."
   },
+  "multi-vari": {
+    "name": "Multi-Vari Chart",
+    "description": "Stages single measurements across up to four factors and splits the spread into variance components — shows where the variation actually comes from.",
+    "whenToUse": "When the spread of a measured characteristic must be traced to its sources: stages every single measurement by two to four factors (for example shift, cavity, part) and splits the variance into components, nested or crossed, by ANOVA or REML; needs one numeric measurement column and two factor columns."
+  },
   "resampling": {
     "name": "Resampling",
     "description": "Bootstrap confidence intervals and permutation tests for one, two, paired and k samples",

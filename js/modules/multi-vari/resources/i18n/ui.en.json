@@ -41,7 +41,6 @@
   "tablePercent": "Share %",
   "tableTotal": "Total",
   "termError": "Residual (repeat)",
-  "exportCsv": "Table as CSV",
   "csvFileName": "multi-vari-variance-components",
   "interpretation": "{term} contributes the largest share of the total variation at {percent} %.",
   "interpretationError": "Repeat variation is the largest share at {percent} % — the chosen factors barely explain the spread.",

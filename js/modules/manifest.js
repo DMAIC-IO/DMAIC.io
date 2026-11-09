@@ -446,17 +446,6 @@ export default [
     },
   },
   {
-    id: 'multi-vari',
-    phase: 'analyze',
-    group: 'statistics',
-    load: () => import('./multi-vari/multi-vari.js'),
-    cycles: {
-      dmaic:  { phase: 'analyze', allowedPhases: ['measure', 'analyze'] },
-      dmadv:  { phase: 'analyze' },
-      eightd: { phase: 'rootcause' },
-    },
-  },
-  {
     id: 'sample-size',
     phase: 'analyze',
     group: 'statistics',

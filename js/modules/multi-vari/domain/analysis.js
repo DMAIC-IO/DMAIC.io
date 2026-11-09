@@ -1,13 +1,12 @@
 /**
- * D.Mike — Multi-Vari Analysis Assembly (multi-vari-analysis.js)
+ * D.Mike — Multi-Vari: Rechnung (domain/analysis.js)
  *
  * The seam between the two engines the module consumes: `computeMultiVari`
  * (js/engines/multi-vari-engine.js) groups the rows for the chart,
  * `computeVarianceComponents` (js/engines/variance-components-engine.js)
- * decomposes their variance. Kept in its own DOM-free file — unlike the rest
- * of the module's wiring, which lives inline in multi-vari.js's `data()` —
- * so it stays testable without an Alpine/DOM environment, and so the two
- * cross-engine rules below have exactly one place to be correct:
+ * decomposes their variance. DOM-free, so it stays testable without an
+ * Alpine/DOM environment, and so the two cross-engine rules below have
+ * exactly one place to be correct:
  *
  *  - The decomposition MUST see exactly the rows the chart draws. Handed the
  *    module's raw column arrays, it would run over rows `computeMultiVari`
@@ -77,13 +76,10 @@ export function runVarianceDecomposition(g, { factorNames, modelForm, estimator 
   return { result, vcError };
 }
 
-// ─── Task 18: variance-components table view helpers ──────────────────────
+// ─── Variance-components table helpers ────────────────────────────────────
 //
-// Pure formatting/derivation logic behind the table's view methods. Kept
-// here — not inline in multi-vari.js's data() — for the same reason as
-// runVarianceDecomposition() above: testable without an Alpine/DOM
-// environment. What still lives in multi-vari.js is only the thin wrapping
-// that needs `this.result` or the i18n `_t()` translator.
+// Pure derivation logic behind the table in the view. The viewmodel
+// (viewmodel/present.js) only adds the translations.
 
 /**
  * Rows for the variance-components table, Error row included — `[]` when the

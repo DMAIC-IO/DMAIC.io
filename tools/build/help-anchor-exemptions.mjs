@@ -91,6 +91,9 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'fields.pick', reason: 'die Wahl des Nutzers; gesetzt über die Karten, deren Anker an pickChart hängt' },
     { name: 'fields.preview', reason: 'abgeleitet aus dem gewählten Diagramm; der Vorschaukopf ist an fields.selectedChartType verankert' },
   ],
+  'multi-vari': [
+    { name: 'actions.setFactorColumn', reason: 'die Oberfläche schreibt die Spalte per x-field in den Spaltenwähler der Faktorzeile; verankert ist fields.factors.ref' },
+  ],
   'morphological-box': [
     { name: 'actions.setParameterName', reason: 'der Name wird in der Oberfläche direkt ins Feld geschrieben; Kopf und Matrix sind an fields.parameters.name verankert' },
     { name: 'actions.setOptionLabel', reason: 'die Bezeichnung wird in der Oberfläche direkt ins Feld geschrieben; Kopf und Matrix sind an fields.parameters.options.label verankert' },

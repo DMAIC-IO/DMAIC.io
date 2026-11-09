@@ -12379,6 +12379,7 @@ export const AGENT_REGISTRY = {
   "multi-vari": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -12394,420 +12395,178 @@ export const AGENT_REGISTRY = {
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
-      "setParam": {
+      "addFactor": {
+        "target": "model",
         "params": [
           {
-            "name": "key",
-            "type": "'modelForm'|'estimator'|'showPoints'|'connectMeans'|'showGroupMean'|'showRefLine'",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "welcher Parameter"
-          },
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "string",
+        "help": "",
+        "keysOf": "addFactor",
+        "keysHelp": "actions.addFactor.params",
+        "keys": {}
+      },
+      "removeFactor": {
+        "target": "model",
+        "params": [
           {
-            "name": "value",
-            "type": "string|boolean",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "der Wert; Bereich je Schlüssel siehe `Params`"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Einen Parameter setzen; die Analyse läuft danach neu.",
-        "keysOf": "Params",
+        "help": "",
+        "keysOf": "removeFactor",
+        "keysHelp": "actions.removeFactor.params",
         "keys": {
-          "modelForm": {
-            "type": "'nested'|'crossed'",
-            "help": "geschachtelt oder gekreuzt"
-          },
-          "estimator": {
-            "type": "'anova'|'reml'",
-            "help": "Schätzer der Varianzkomponenten"
-          },
-          "showPoints": {
-            "type": "boolean",
-            "help": "Einzelwerte zeigen"
-          },
-          "connectMeans": {
-            "type": "boolean",
-            "help": "Mittelwerte verbinden"
-          },
-          "showGroupMean": {
-            "type": "boolean",
-            "help": "Gruppenmittel zeigen"
-          },
-          "showRefLine": {
-            "type": "boolean",
-            "help": "Gesamtmittel als Linie"
+          "id": {
+            "type": "string",
+            "help": ""
           }
         }
       },
-      "setColumn": {
-        "params": [
-          {
-            "name": "slot",
-            "type": "'measurement'",
-            "optional": false,
-            "help": "der Slot; dieses Modul führt nur `measurement` (die Faktoren setzt `setFactorColumn`)"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
-          }
-        ],
-        "returns": "void",
-        "help": "Die Messwertspalte zuweisen; die Analyse läuft danach neu."
-      },
-      "addFactor": {
-        "params": [],
-        "returns": "string",
-        "help": "Eine leere Faktorzeile anhängen."
-      },
-      "removeFactor": {
-        "params": [
-          {
-            "name": "rowId",
-            "type": "string",
-            "optional": false,
-            "help": "die id einer Zeile aus read().factors"
-          }
-        ],
-        "returns": "void",
-        "help": "Eine Faktorzeile entfernen; die Analyse läuft danach neu."
-      },
       "moveFactor": {
+        "target": "model",
         "params": [
           {
-            "name": "rowId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "die id der zu schiebenden Zeile"
-          },
-          {
-            "name": "beforeRowId",
-            "type": "string",
-            "optional": false,
-            "help": "die id der Zeile, vor der sie landet"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Eine Faktorzeile vor eine andere schieben; die Reihenfolge ist die Schachtelung, die Analyse läuft danach neu."
+        "help": "",
+        "keysOf": "moveFactor",
+        "keysHelp": "actions.moveFactor.params",
+        "keys": {
+          "fromIdx": {
+            "type": "number",
+            "help": ""
+          },
+          "toIdx": {
+            "type": "number",
+            "help": "",
+            "rules": [
+              "afterRemovalFrom:factors"
+            ]
+          }
+        }
       },
       "setFactorColumn": {
+        "target": "model",
         "params": [
           {
-            "name": "rowId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "die id einer Zeile aus read().factors"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte (read().pickableColumns.factor), oder null zum Leeren"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Die Spalte einer Faktorzeile setzen; die Analyse läuft danach neu."
-      },
-      "runAnalysis": {
-        "params": [],
-        "returns": "void",
-        "help": "Die Analyse jetzt rechnen. `result` bleibt null ohne Messwertspalte (`errorMsg` leer), mit weniger als zwei belegten Faktoren, bei einem ungültigen Versuchsplan (die Engine wirft) und wenn keine verwertbaren Daten übrig bleiben; in diesen drei Fällen nennt `errorMsg` den Grund."
+        "help": "",
+        "keysOf": "setFactorColumn",
+        "keysHelp": "actions.setFactorColumn.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
+          },
+          "ref": {
+            "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+            "help": "",
+            "rules": [
+              "columnRef"
+            ]
+          }
+        }
       }
     },
     "fields": {
-      "columnRefs": {
-        "type": "{ measurement: object|null }",
-        "help": "the chosen measurement column, `{ instanceId, sheetId, columnId }`, or null",
+      "measurement": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "rules": [
+          "columnRef",
+          "types:numeric,percent,currency"
+        ]
       },
       "factors": {
-        "type": "Array<{ id: string, ref: object|null }>",
-        "help": "the factor rows in order, each `{ id, ref }`; the order is the nesting (row 0 = outermost, X axis)",
-        "bulk": false,
-        "derived": true
+        "type": "Array<{ id: string, ref: { instanceId: string, sheetId?: string, columnId: string }|null }>",
+        "help": "",
+        "bulk": false
       },
       "modelForm": {
         "type": "'nested'|'crossed'",
-        "help": "nested (A > B(A) > …) or crossed (A, B, A×B, …) variance model",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "estimator": {
         "type": "'anova'|'reml'",
-        "help": "the variance-component estimator",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "showPoints": {
         "type": "boolean",
-        "help": "display switch: draw single measurements; does not change the result",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "connectMeans": {
         "type": "boolean",
-        "help": "display switch: connect the group means; does not change the result",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "showGroupMean": {
         "type": "boolean",
-        "help": "display switch: mark the group means; does not change the result",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "showRefLine": {
         "type": "boolean",
-        "help": "display switch: draw the grand-mean reference line; does not change the result",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
-      "activeParams": {
-        "type": "string[]",
-        "help": "the keys `setParam` accepts in the current state",
-        "bulk": false,
-        "derived": true
+      "exampleWorksheetId": {
+        "type": "string|null",
+        "help": "",
+        "bulk": false
       },
-      "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumn` accepts in the current state",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
+      "asyncTasks": {
         "type": "object",
-        "help": "per slot (`measurement`, `factor`) the columns `setColumn` / `setFactorColumn` accept, each `{ key, name }`",
-        "bulk": false,
-        "derived": true
-      },
-      "result": {
-        "type": "Result|null",
-        "help": "the computed result, or null while measurement or two factor columns are missing or the analysis failed",
-        "bulk": false,
-        "derived": true,
-        "keysOf": "Result",
-        "keys": {
-          "strips": {
-            "type": "Strip[]",
-            "help": "Diagrammzeilen",
-            "keysOf": "Strip",
-            "keys": {
-              "idx": {
-                "type": "number",
-                "help": "Zeilennummer"
-              },
-              "rowLevel": {
-                "type": "string",
-                "help": "Stufe des Panelzeilenfaktors"
-              },
-              "panels": {
-                "type": "Panel[]",
-                "help": "Panels",
-                "keysOf": "Panel",
-                "keys": {
-                  "panelLevel": {
-                    "type": "string",
-                    "help": "Stufe des Panelspaltenfaktors"
-                  },
-                  "groups": {
-                    "type": "Group[]",
-                    "help": "Gruppen auf der X-Achse",
-                    "keysOf": "Group",
-                    "keys": {
-                      "level": {
-                        "type": "string",
-                        "help": "Stufe des X-Faktors"
-                      },
-                      "mean": {
-                        "type": "number|null",
-                        "help": "Gruppenmittel"
-                      },
-                      "series": {
-                        "type": "Series[]",
-                        "help": "Serien",
-                        "keysOf": "Series",
-                        "keys": {
-                          "level": {
-                            "type": "string",
-                            "help": "Stufe des Serienfaktors"
-                          },
-                          "values": {
-                            "type": "number[]",
-                            "help": "Messwerte"
-                          },
-                          "mean": {
-                            "type": "number",
-                            "help": "Mittelwert"
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "seriesLevels": {
-            "type": "string[]",
-            "help": "Stufen des Serienfaktors"
-          },
-          "factorNames": {
-            "type": "string[]",
-            "help": "Faktoren in Rollenreihenfolge"
-          },
-          "grandMean": {
-            "type": "number",
-            "help": "Gesamtmittelwert"
-          },
-          "n": {
-            "type": "number",
-            "help": "verwertete Messwerte"
-          },
-          "droppedRows": {
-            "type": "number",
-            "help": "verworfene Zeilen"
-          },
-          "warnings": {
-            "type": "string[]",
-            "help": "Warnkennungen"
-          },
-          "yMin": {
-            "type": "number",
-            "help": "kleinster Wert"
-          },
-          "yMax": {
-            "type": "number",
-            "help": "größter Wert"
-          },
-          "balanced": {
-            "type": "boolean",
-            "help": "ausgewogener Plan"
-          },
-          "panelCount": {
-            "type": "number",
-            "help": "Panels"
-          },
-          "limits": {
-            "type": "Limit[]",
-            "help": "überschrittene Darstellungsgrenzen",
-            "keysOf": "Limit",
-            "keys": {
-              "code": {
-                "type": "string",
-                "help": "Grenze"
-              },
-              "column": {
-                "type": "string",
-                "help": "Spalte"
-              },
-              "count": {
-                "type": "number",
-                "help": "Stufen"
-              },
-              "max": {
-                "type": "number",
-                "help": "erlaubt"
-              }
-            }
-          },
-          "renderable": {
-            "type": "boolean",
-            "help": "darstellbar"
-          },
-          "vc": {
-            "type": "Vc|null",
-            "help": "Varianzkomponenten",
-            "keysOf": "Vc",
-            "keys": {
-              "modelForm": {
-                "type": "'nested'|'crossed'",
-                "help": "Modellform"
-              },
-              "estimator": {
-                "type": "'anova'|'reml'",
-                "help": "tatsächlicher Schätzer"
-              },
-              "balanced": {
-                "type": "boolean",
-                "help": "ausgewogen"
-              },
-              "n": {
-                "type": "number",
-                "help": "Messwerte"
-              },
-              "terms": {
-                "type": "VcTerm[]",
-                "help": "Terme",
-                "keysOf": "VcTerm",
-                "keys": {
-                  "id": {
-                    "type": "string",
-                    "help": "Kennung"
-                  },
-                  "label": {
-                    "type": "string",
-                    "help": "Term"
-                  },
-                  "df": {
-                    "type": "number|null",
-                    "help": "Freiheitsgrade, nur ANOVA"
-                  },
-                  "ss": {
-                    "type": "number|null",
-                    "help": "Quadratsumme, nur ANOVA"
-                  },
-                  "ms": {
-                    "type": "number|null",
-                    "help": "mittlere Quadratsumme, nur ANOVA"
-                  },
-                  "variance": {
-                    "type": "number",
-                    "help": "Varianzkomponente"
-                  },
-                  "sd": {
-                    "type": "number",
-                    "help": "Standardabweichung"
-                  },
-                  "percent": {
-                    "type": "number",
-                    "help": "Anteil an der Gesamtvarianz"
-                  },
-                  "clamped": {
-                    "type": "boolean",
-                    "help": "auf 0 gesetzt"
-                  }
-                }
-              },
-              "totalVariance": {
-                "type": "number",
-                "help": "Gesamtvarianz"
-              },
-              "converged": {
-                "type": "boolean|null",
-                "help": "konvergiert, nur REML"
-              },
-              "iterations": {
-                "type": "number|null",
-                "help": "Iterationen, nur REML"
-              },
-              "warnings": {
-                "type": "string[]",
-                "help": "Warnkennungen"
-              }
-            }
-          }
-        }
-      },
-      "errorMsg": {
-        "type": "string",
-        "help": "the reason the last analysis produced no result, or an empty string",
+        "help": "",
         "bulk": false,
         "derived": true
       }
-    }
+    },
+    "asyncTasks": [
+      {
+        "name": "analysis",
+        "auto": true,
+        "params": []
+      }
+    ],
+    "viewFields": [
+      "stripEdits"
+    ],
+    "settable": [
+      "measurement",
+      "factors",
+      "modelForm",
+      "estimator",
+      "showPoints",
+      "connectMeans",
+      "showGroupMean",
+      "showRefLine",
+      "exampleWorksheetId"
+    ]
   },
   "multivariate-control-chart": {
     "tagged": true,
