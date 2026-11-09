@@ -31,6 +31,8 @@ import individualValuePlotChart from './individual-value-plot-chart/schema.js';
 import { mount as mountIndividualValuePlotChart } from './individual-value-plot-chart/mount.js';
 import heatmapChart from './heatmap-chart/schema.js';
 import { mount as mountHeatmapChart } from './heatmap-chart/mount.js';
+import multiVariChart from './multi-vari-chart/schema.js';
+import { mount as mountMultiVariChart } from './multi-vari-chart/mount.js';
 import pieChart from './pie-chart/schema.js';
 import { mount as mountPieChart } from './pie-chart/mount.js';
 import statsTable from './stats-table/schema.js';
@@ -51,5 +53,6 @@ export const WIDGETS = Object.freeze({
   'boxplot-chart': { schema: boxplotChart, mount: mountBoxplotChart },
   'individual-value-plot-chart': { schema: individualValuePlotChart, mount: mountIndividualValuePlotChart },
   'heatmap-chart': { schema: heatmapChart, mount: mountHeatmapChart },
+  'multi-vari-chart': { schema: multiVariChart, mount: mountMultiVariChart },
   'pie-chart': { schema: pieChart, mount: mountPieChart },
 });

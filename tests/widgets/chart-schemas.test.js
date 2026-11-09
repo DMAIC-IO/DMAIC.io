@@ -18,7 +18,9 @@ import Bar from '../../js/core/chart/types/bar.js';
 import Mosaic from '../../js/core/chart/types/mosaic.js';
 import RunChart from '../../js/core/chart/types/run-chart.js';
 import Pareto from '../../js/core/chart/types/pareto.js';
+import ChartBase from '../../js/core/chart/chart-base.js';
 import Pie from '../../js/core/chart/types/pie.js';
+import multiVariChart from '../../js/widgets/multi-vari-chart/schema.js';
 import pieChart from '../../js/widgets/pie-chart/schema.js';
 import { chartWidget } from '../../js/widgets/chart-parts.js';
 
@@ -168,5 +170,22 @@ suite('Diagramm-Widgets: Schemas', () => {
     assertDeepEqual(w.editable.base, ['showLegend', 'title']);
     assertThrows(() => checkValue(w.edits(), 'e', { bgColor: 'red' }), /unknown e key "bgColor"/);
     assertThrows(() => chartWidget({ name: 'x', type: 'pie', editable: ['title', 'nope'] }), /nope/);
+  });
+
+  test('Multi-Vari: Name, Typ, Konfiguration des Moduls, Basis bearbeitbar', () => {
+    assertDeepEqual([multiVariChart.name, multiVariChart.chartType], ['multi-vari-chart', 'multi-vari']);
+    const cfg = {
+      title: '', showTitle: false, xLabel: 'A', showXLabel: true, yLabel: 'Y', showLegend: true,
+      panels: [{ panelLevel: '', groups: [
+        { level: 'g1', mean: 2, series: [{ level: 's1', values: [1, 2, 3], mean: 2 }] },
+        { level: 'g2', mean: null, series: [] },
+      ] }],
+      seriesLevels: ['s1'], rowLabel: 'r', refValue: null, refLabel: 'Mittel', sharedYMin: 0, sharedYMax: 4,
+      showPoints: true, connectMeans: false, showGroupMean: true,
+    };
+    assertDeepEqual(checkValue(multiVariChart.props.config, 'c', cfg), cfg);
+    assertThrows(() => checkValue(multiVariChart.props.config, 'c', { legendTitle: 'x' }), /unknown c key "legendTitle"/);
+    assertDeepEqual(multiVariChart.editable.base, ChartBase.editorKeys);
+    assertDeepEqual(multiVariChart.editable.series, []);
   });
 });

@@ -245,6 +245,7 @@ suite('Diagramm-Widgets (chart-mount)', () => {
       ['mosaic-chart', 'mosaic', { categories: ['x', 'y'], groups }],
       ['run-chart', 'run-chart', { values: [1, 2, 3], median: 2 }],
       ['pareto-chart', 'pareto', { categories: ['x', 'y'], groups, otherBucket: true }],
+      ['multi-vari-chart', 'multi-vari', { panels: [{ panelLevel: '', groups: [{ level: 'a', mean: null, series: [] }] }], seriesLevels: ['s'], refValue: null }],
     ];
     for (const [name, type, cfg] of cases) {
       const cm = fakeManager();
