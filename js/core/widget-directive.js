@@ -5,6 +5,8 @@
  * hängt ein Widget aus der Registry ein. Jede Eingabe `x-widget-<prop>`
  * (kebab-case) ist ein Pfad im Scope des Hosts; sie wird in einem Effect
  * gelesen, gegen die Feldart des Widgets geprüft und reaktiv gespiegelt.
+ * Ein Zeichenkettenliteral (`x-widget-algo-id="'grr'"`) ist ein fester Wert:
+ * einmal geprüft, ohne Effect.
  * `x-widget-value` bindet einen Wert über den Wertkanal (prüfender Setter).
  * Das Widget besitzt sein Element allein: eigener Daten-Stack an der
  * Wurzel, kein `x-data` — Namen des Hosts fallen nicht durch. Fehlbindungen
@@ -17,6 +19,8 @@ import { cloneTemplate } from './dom.js';
 import { clearRejection, markRejection } from './param-input.js';
 
 const registered = new WeakMap();
+/** Zeichenkettenliteral als gebundener Wert: `'text'` (ohne Apostroph im Inneren). */
+export const WIDGET_LITERAL = /^'([^']*)'$/;
 const PROP_ATTR = /^x-widget-([a-z][a-z0-9-]*)$/;
 
 /** @param {string} kebab @returns {string} */
@@ -160,6 +164,11 @@ export function mountWidget(Alpine, el, name, entry, { valuePath, channel, i18n,
 
   for (const [p, path] of bound) {
     const spec = schema.props[p];
+    const lit = WIDGET_LITERAL.exec(path);
+    if (lit) {
+      try { props[p] = checkValue(spec, `${name}.${p}`, lit[1]); } catch (err) { errors[p] = String(err.message); }
+      continue;
+    }
     guarded(`prop:${p}`, () => {
       try {
         const raw = readPath(host, path);

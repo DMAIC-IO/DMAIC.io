@@ -13,6 +13,7 @@ import { pathToFileURL } from 'node:url';
 import { viewNamesDetailOf } from './view-names.mjs';
 import { X_FOR, xForAliases } from './template-scan.mjs';
 import { parseFieldPath } from '../../js/core/field-path.js';
+import { WIDGET_LITERAL } from '../../js/core/widget-directive.js';
 import { renderBindingCheck } from './model-types.mjs';
 import { asyncTaskContainers } from './async-task-gates.mjs';
 
@@ -93,6 +94,12 @@ export function checkWidgetBindings(templates, { widgets, schema, stateSchema, v
 
 /** @returns {string[]} */
 function checkPath(P, shown, path, spec, { schema, stateSchema, viewNames, aliases }) {
+  const lit = WIDGET_LITERAL.exec(path);
+  if (lit) {
+    if (spec.kind === 'text') return [];
+    if (spec.kind === 'oneOf') return spec.values.includes(lit[1]) ? [] : [`${P} ${shown}: Literal '${lit[1]}' steht nicht in oneOf`];
+    return [`${P} ${shown}: Literal nur für text/oneOf`];
+  }
   const parts = path.split('.');
   const [head, field] = parts;
   if (head === 'model' || head === 'state') {

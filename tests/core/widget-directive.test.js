@@ -585,4 +585,29 @@ suite('x-widget', () => {
   test('widgetForKind überspringt Einträge ohne Schema', () => {
     assertEqual(widgetForKind({ x: { mount() {} }, y: { schema: { forKind: 'columnRef' } } }, { kind: 'columnRef' }), 'y');
   });
+
+  test('Zeichenkettenliterale in x-widget-<prop>', async () => {
+    await withWidgets({
+      lit: {
+        schema: defineWidget({ name: 'lit', props: { label: text(), mode: oneOf(['a', 'b']) } }),
+        mount(root, { props, effect }) { effect(() => { root.textContent = `${props.label}|${props.mode}`; }); },
+      },
+    }, async () => {
+      let ctx;
+      await withWarnings(async () => {
+        ctx = await host('<div class="l" x-widget="lit" x-widget-label="\'hallo\'" x-widget-mode="\'a\'"></div>'
+          + '<div class="p" x-widget="lit" x-widget-label="name" x-widget-mode="\'b\'"></div>', { name: 'pfad' });
+      });
+      assertEqual(ctx.root.querySelector('.l').textContent, 'hallo|a');
+      assertEqual(ctx.root.querySelector('.p').textContent, 'pfad|b');
+      ctx.root.remove();
+      let bad;
+      const seen = await withWarnings(async () => {
+        bad = await host('<div class="x" x-widget="lit" x-widget-label="\'t\'" x-widget-mode="\'c\'"></div>');
+      });
+      assertTrue(bad.root.querySelector('.x .widget-root--error, .x.widget-root--error') !== null);
+      assertTrue(seen.some((m) => m.includes('allowed')));
+      bad.root.remove();
+    });
+  });
 });

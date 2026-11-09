@@ -39,6 +39,19 @@ test('Feldart gegen Feldart', () => {
   assert.deepEqual(checkWidgetBindings(tpl('<div x-widget="col" x-widget-value="model.ref"></div>'), ctx), []);
 });
 
+test('Zeichenkettenliterale nur für text/oneOf', () => {
+  const lw = new Map([['lit', defineWidget({ name: 'lit', props: { m: oneOf(['a', 'b']), n: number(), t: text() } })]]);
+  const lctx = { ...ctx, widgets: lw };
+  const run = (m, n, t) => checkWidgetBindings(tpl(`<div x-widget="lit" x-widget-m="${m}" x-widget-n="${n}" x-widget-t="${t}"></div>`), lctx);
+  assert.deepEqual(run("'a'", 'model.confLevel', "'x'"), []);
+  const c = run("'c'", 'model.confLevel', "'x'");
+  assert.equal(c.length, 1);
+  assert.match(c[0], /oneOf/);
+  const num = run("'a'", "'1'", "'x'");
+  assert.equal(num.length, 1);
+  assert.match(num[0], /text\/oneOf/);
+});
+
 test('Getter-Pfad unbekannt', () => {
   assert.deepEqual(checkWidgetBindings(tpl('<div x-widget="stats-table" x-widget-rows="missing" x-widget-conf-level="model.confLevel"></div>'), ctx),
     ['template: resources/view.html: x-widget-rows="missing": missing ist weder Getter noch computed des view-Blocks']);
