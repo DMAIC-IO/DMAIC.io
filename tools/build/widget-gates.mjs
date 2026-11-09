@@ -12,6 +12,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { viewNamesDetailOf } from './view-names.mjs';
 import { X_FOR, xForAliases } from './template-scan.mjs';
+import { parseFieldPath } from '../../js/core/field-path.js';
 import { renderBindingCheck } from './model-types.mjs';
 import { asyncTaskContainers } from './async-task-gates.mjs';
 
@@ -96,13 +97,26 @@ function checkPath(P, shown, path, spec, { schema, stateSchema, viewNames, alias
   const [head, field] = parts;
   if (head === 'model' || head === 'state') {
     const all = head === 'model' ? { ...(schema?.fields ?? {}), ...(schema?.view ?? {}) } : (stateSchema?.fields ?? {});
-    let s = all[field];
-    if (!s) return [`${P} ${shown}: ${field} ist weder Feld noch Ansichtsfeld`];
-    for (const seg of parts.slice(2)) {
+    /** Schritte nach der Wurzel; Klammern (`[i]`, `[0]`) nur über den Pfad-Parser. */
+    let steps;
+    try {
+      const p = parseFieldPath(path);
+      steps = [...p.steps, typeof p.field === 'string' ? { kind: 'name', name: p.field } : p.field];
+    } catch { steps = parts.slice(1).map((name) => ({ kind: 'name', name })); }
+    const first = steps[0]?.kind === 'name' ? steps[0].name : field;
+    let s = all[first];
+    if (!s) return [`${P} ${shown}: ${first} ist weder Feld noch Ansichtsfeld`];
+    for (const seg of steps.slice(1)) {
+      if (seg.kind === 'index') {
+        if (s.kind === 'map') s = s.value;
+        else if (s.kind === 'list') s = s.item;
+        else return [`${P} ${shown}: ${kindName(s)} hat keine Einträge ([…])`];
+        continue;
+      }
       if (s.kind === 'list') return []; // Elementzugriff: Feldart des Eintrags hier nicht verfolgt
-      if (s.kind !== 'object') return [`${P} ${shown}: ${kindName(s)} hat keine Unterfelder (${seg})`];
-      if (!s.shape?.[seg]) return [`${P} ${shown}: ${seg} ist kein Feld von ${field}`];
-      s = s.shape[seg];
+      if (s.kind !== 'object') return [`${P} ${shown}: ${kindName(s)} hat keine Unterfelder (${seg.name})`];
+      if (!s.shape?.[seg.name]) return [`${P} ${shown}: ${seg.name} ist kein Feld von ${first}`];
+      s = s.shape[seg.name];
     }
     if (!sameKind(s, spec)) return [`${P} ${shown}: Feldart ${kindName(s)} passt nicht zu ${kindName(spec)}`];
     return [];

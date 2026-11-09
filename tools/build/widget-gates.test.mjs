@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { checkWidgetBindings, loadWidgetSchemas } from './widget-gates.mjs';
-import { defineWidget, list, number, object, text, oneOf, columnRef, boolean } from '../../js/core/model.js';
+import { defineWidget, list, map, number, object, text, oneOf, columnRef, boolean } from '../../js/core/model.js';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -75,4 +75,20 @@ test('state.<feld> mit dem State-Schema geprüft', () => {
   assert.deepEqual(checkWidgetBindings(tpl('<div x-widget="stats-table" x-widget-rows="stats" x-widget-conf-level="state.level"></div>'), withState), []);
   assert.deepEqual(checkWidgetBindings(tpl('<div x-widget="stats-table" x-widget-rows="stats" x-widget-conf-level="state.level"></div>'), ctx),
     ['template: resources/view.html: x-widget-conf-level="state.level": level ist weder Feld noch Ansichtsfeld']);
+});
+
+test('Klammerschritte: Map-Eintrag und Listeneintrag werden aufgelöst', () => {
+  const edits = object({ title: text() });
+  const ws = new Map([['ed', defineWidget({ name: 'ed', value: edits })]]);
+  const sch = (v) => ({ fields: { items: list(edits) }, view: { stripEdits: map(number({ integer: true, min: 0 }), v) } });
+  const html = (p) => tpl(`<template x-for="(s, i) in strips" :key="s.key"><div x-widget="ed" x-widget-value="${p}"></div></template>`);
+  const c = (v) => ({ widgets: ws, schema: sch(v), stateSchema: { fields: {} }, viewNames: new Set(['strips']) });
+  assert.deepEqual(checkWidgetBindings(html('model.stripEdits[i]'), c(edits)), []);
+  assert.deepEqual(checkWidgetBindings(html('model.items[i]'), c(edits)), []);
+  const bad = checkWidgetBindings(html('model.stripEdits[i]'), c(text()));
+  assert.equal(bad.length, 1);
+  assert.match(bad[0], /Feldart/);
+  const nope = checkWidgetBindings(html('model.nope[i]'), c(edits));
+  assert.equal(nope.length, 1);
+  assert.match(nope[0], /weder Feld noch Ansichtsfeld/);
 });

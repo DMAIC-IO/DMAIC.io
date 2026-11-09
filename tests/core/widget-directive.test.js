@@ -4,7 +4,7 @@
  */
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
-import { defineModel, defineWidget, list, number, object, text, oneOf } from '../../js/core/model.js';
+import { defineModel, defineWidget, list, map, number, object, text, oneOf } from '../../js/core/model.js';
 import { registerWidgetDirective, widgetForKind } from '../../js/core/widget-directive.js';
 
 const i18n = { t: (k, p) => (p ? `${k}:${p.message ?? JSON.stringify(p)}` : k), getLanguage: () => 'de' };
@@ -17,6 +17,7 @@ const statList = defineWidget({ name: 'stat-list', props: { rows: list(object({ 
 const picker = defineWidget({ name: 'pick', value: oneOf(['a', 'b', 'c']) });
 const panel = defineWidget({ name: 'panel', props: { rows: list(object({ name: text(), mean: number() })) } });
 const leaky = defineWidget({ name: 'leaky' });
+const editor = defineWidget({ name: 'ed', props: { legacyEditKey: text({ optional: true }) }, value: object({ title: text({ trim: true, nonEmpty: true }) }) });
 const boom = defineWidget({ name: 'boom', props: { n: number() } });
 
 /** Imperativ: schreibt Zeilen als Text. */
@@ -35,6 +36,16 @@ function mountPick(root, { value, effect }) {
   return { destroy() {} };
 }
 
+/** Imperativ mit Objektwert: zeigt Titel und Schlüssel, `.set` über Klick. */
+function mountEd(root, { props, value, effect }) {
+  const b = document.createElement('button');
+  b.className = 'ed';
+  b.addEventListener('click', () => value.set(JSON.parse(b.dataset.next)));
+  root.append(b);
+  effect(() => { const v = value.get(); b.textContent = `${v === undefined ? 'undef' : v.title}|${props.legacyEditKey ?? ''}`; b.dataset.rejected = value.rejected.message; });
+  return { destroy() {} };
+}
+
 /** Imperativ: wirft bei n = 13 (TypeError) beziehungsweise n = 14 (Error). */
 function mountBoom(root, { props, effect }) {
   effect(() => {
@@ -47,12 +58,13 @@ function mountBoom(root, { props, effect }) {
 
 const WIDGETS = {
   boom: { schema: boom, mount: mountBoom },
+  ed: { schema: editor, mount: mountEd },
   'stat-list': { schema: statList, mount: mountStatList },
   pick: { schema: picker, mount: mountPick },
   panel: { schema: panel, mount: () => ({ destroy() {} }), template: 'tests/panel.html', view: () => ({ label: 'panel-label' }) },
   leaky: { schema: leaky, mount: () => ({ destroy() {} }), template: 'tests/leaky.html', view: () => ({ own: 'own' }) },
 };
-const Doc = defineModel({ fields: { choice: oneOf(['a', 'b', 'c'], { default: 'a' }), values: list(number(), { default: [1, 2] }) } });
+const Doc = defineModel({ view: { stripEdits: map(number({ integer: true, min: 0 }), object({ title: text({ trim: true, nonEmpty: true }) })) }, fields: { choice: oneOf(['a', 'b', 'c'], { default: 'a' }), values: list(number(), { default: [1, 2] }) } });
 
 function templates() {
   for (const [key, html] of [['tests/panel.html', '<span class="label" x-text="label"></span><div x-widget="stat-list" x-widget-rows="props.rows"></div>'],
@@ -240,6 +252,27 @@ suite('x-widget', () => {
     await flush();
     assertEqual(data.model.choice, 'b');
     assertTrue(b.dataset.rejected.startsWith('common.inputRejected'));
+    root.remove();
+  });
+
+  test('Map-Eintrag in x-for: lesen, anlegen, ablehnen, Schleifenpfad als Eingabe', async () => {
+    const { root, data } = await host('<template x-for="(s, i) in strips" :key="s.key"><div class="row" x-widget="ed" x-widget-legacy-edit-key="s.legacyEditKey" x-widget-value="model.stripEdits[i]"></div></template>',
+      { strips: [{ key: 'a', legacyEditKey: 'k0' }, { key: 'b', legacyEditKey: 'k1' }] });
+    const [b0, b1] = [...root.querySelectorAll('.ed')];
+    assertEqual(b0.textContent, 'undef|k0');
+    assertEqual(b1.textContent, 'undef|k1');
+    b1.dataset.next = JSON.stringify({ title: 'X' });
+    b1.click();
+    await flush();
+    assertEqual(JSON.stringify(data.model.stripEdits['1']), '{"title":"X"}');
+    assertEqual(data.model.stripEdits['0'], undefined);
+    assertEqual(b1.textContent, 'X|k1');
+    b0.dataset.next = JSON.stringify({ title: '   ' });
+    b0.click();
+    await flush();
+    assertEqual(data.model.stripEdits['0'], undefined);
+    assertEqual(Object.keys(data.model.stripEdits).join(','), '1');
+    assertTrue(b0.dataset.rejected.startsWith('common.inputRejected'));
     root.remove();
   });
 

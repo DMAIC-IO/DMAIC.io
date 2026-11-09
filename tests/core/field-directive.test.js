@@ -533,6 +533,19 @@ suite('x-field auf columnRef', () => {
     host.remove();
   });
 
+  test('Listeneintrag mit columnRef in x-for: Widget, null lesen, Bezug schreiben, Anker', async () => {
+    const Fac = defineModel({ fields: { factors: list(object({ id: text(), ref: columnRef() }), { default: [{ id: 'f1', ref: null }, { id: 'f2', ref: null }] }) } });
+    const { host, data } = await mountCols('<template x-for="f in model.factors" :key="f.id"><div class="fac" x-field="f.ref"></div></template>', Fac);
+    assertEqual(mounted.length, 2);
+    assertEqual(mounted[0].value.spec.kind, 'columnRef');
+    assertEqual(mounted[0].value.get(), null);
+    assertTrue(mounted[1].value.set(ref('c9')) === true);
+    assertDeepEqual(data().model.factors[1].ref, ref('c9'));
+    assertEqual(data().model.factors[0].ref, null);
+    assertEqual(host.querySelectorAll('.fac')[0].getAttribute('data-help-key'), 'modules.demo.fields.factors.ref.help');
+    host.remove();
+  });
+
   test('auf <select> wirft beim Einbau', async () => {
     let caught = null;
     const onErr = (e) => { caught = e.error ?? e.reason; e.preventDefault?.(); };
