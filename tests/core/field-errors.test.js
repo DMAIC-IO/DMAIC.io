@@ -158,6 +158,39 @@ suite('fieldError(path) — Invariante', () => {
   });
 });
 
+suite('x-field — Invariante beim Tippen', () => {
+  test('ein Tastendruck, der die Invariante bricht, lässt Feld und Model stehen', async () => {
+    const { vm, els } = await mount();
+    change(els.lsl, '6');
+    change(els.usl, '14');
+    els.usl.focus();
+    type(els.usl, '1');
+    await flush();
+    assertEqual(els.usl.value, '1', 'die Eingabe bleibt stehen');
+    assertEqual(vm().model.usl, 14);
+    assertEqual(vm().fieldError('model.usl'), '', 'beim Tippen keine Meldung');
+    type(els.usl, '15');
+    await flush();
+    assertEqual(vm().model.usl, 15, 'die gültige Fortsetzung kommt ins Model');
+    assertEqual(els.usl.value, '15');
+    els.usl.blur();
+  });
+
+  test('change mit gebrochener Invariante: Feld springt zurück, Meldung steht', async () => {
+    const { vm, els } = await mount();
+    change(els.lsl, '6');
+    change(els.usl, '14');
+    els.usl.focus();
+    type(els.usl, '1');
+    els.usl.dispatchEvent(new Event('change'));
+    await flush();
+    assertEqual(els.usl.value, '14');
+    assertEqual(vm().model.usl, 14);
+    assertEqual(vm().fieldError('model.usl'), `modules.${ID}.invariants.order`);
+    els.usl.blur();
+  });
+});
+
 suite('fieldError(path) — Lebensdauer', () => {
   test('nach Abbau und Neuaufbau leer', async () => {
     const first = await mount();

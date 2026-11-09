@@ -115,7 +115,15 @@ export function registerFieldDirective(Alpine, { i18n, widgets }) {
     }
     applyAttributes(el, spec);
     anchorHelp(el, data, ch.helpKey);
-    const show = () => writeElement(el, spec, ch.get());
+    // Nach einer Ablehnung beim Tippen bleibt der getippte Text stehen,
+    // solange das Feld den Fokus hat: eine Invariante schreibt und stellt
+    // zurück, das stößt diesen Effect an und überschriebe sonst die Eingabe.
+    let liveRejected = false;
+    const show = () => {
+      const value = ch.get(); // immer lesen: der Effect bleibt so am Feld angemeldet
+      if (liveRejected && el.ownerDocument?.activeElement === el) return;
+      writeElement(el, spec, value);
+    };
     effect(show);
     if (el.tagName === 'SELECT') {
       // Optionen aus x-for entstehen erst nach dieser Direktive. Der
@@ -132,9 +140,13 @@ export function registerFieldDirective(Alpine, { i18n, widgets }) {
     const fieldErrors = () => data._ui?.fieldErrors;
     const commit = (live) => {
       if (ch.set(readElement(el, spec))) {
+        liveRejected = false;
         clearRejection(el);
         fieldErrors()?.clear(expression);
-      } else if (!live) {
+      } else if (live) {
+        liveRejected = true;
+      } else {
+        liveRejected = false;
         show();
         markRejection(el, ch.rejected.message);
         fieldErrors()?.set(expression, {

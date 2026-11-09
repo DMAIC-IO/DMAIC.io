@@ -12,6 +12,7 @@ import { defineComputedSlots, bindComputed } from '../../../js/core/computed.js'
 import { State } from '../../../js/modules/msa-typ2/domain/model.js';
 import {
   readAnalysis, analysisMessage, resultOf, byOperatorChart, interactionChart, runStrips,
+  componentsChart, byPartChart, xbarChart, rChart,
 } from '../../../js/modules/msa-typ2/viewmodel/present.js';
 
 const ref = (col) => ({ instanceId: 'ws1', sheetId: 's1', columnId: col });
@@ -91,7 +92,7 @@ suite('MSA Typ 2 Viewmodel — analysis', () => {
     assertEqual(byOperatorChart(r, t), null);
     assertEqual(interactionChart(r, t), null);
     // Typ 3 hat keine Prüferserien: wie die Altform kein Streifen, also auch keine Legende.
-    assertTrue(runStrips(r, t).every((s) => s.config.showLegend === false));
+    assertEqual(runStrips(r, t).length, 0);
     h.release();
   });
 
@@ -157,14 +158,30 @@ suite('MSA Typ 2 Viewmodel — Streifen', () => {
     h.release();
   });
 
-  test('fehlender Mittelwert und Referenzwert werden null (Widget-Eingabe ohne NaN)', () => {
+  test('Mittelwerte und Referenzwert aus den Zellen; ohne Ergebnis keine Streifen', () => {
     const r = {
       partLabels: ['T1'], operatorLabels: ['A', 'B'],
       cellData: { T1: { A: [1, 2], B: [3, 4] } },
     };
     const [s] = runStrips(r, t);
-    assertTrue(s.config.panels[0].series.every((x) => Number.isFinite(x.mean)));
+    assertDeepEqual(s.config.panels[0].series.map((x) => x.mean), [1.5, 3.5]);
     assertEqual(s.config.refValue, 2.5);
     assertDeepEqual(runStrips(null, t), []);
+  });
+
+  test('NaN in Diagrammwerten wird null bzw. 0 (Widget-Eingaben kennen kein NaN)', () => {
+    const entry = { variance: 0, sigma: 0, studyVar: 0, pctContribution: NaN, pctStudyVar: NaN, pctTolerance: null, pctProcess: null };
+    const r = {
+      mode: 'typ2', o: 2, partLabels: ['T1'], operatorLabels: ['A', 'B'], grandMean: 1,
+      cellData: { T1: { A: [1, 1], B: [1, 1] } }, cellMeans: { T1: { A: NaN, B: 1 } },
+      cellRanges: { T1: { A: NaN, B: 0 } }, partMeans: { T1: NaN },
+      varComp: { grr: entry, repeatability: entry, reproducibility: entry, part: entry },
+      controlChart: { xbarUCL: 1, xbarCL: 1, xbarLCL: 1, rUCL: 0, rCL: 0, rLCL: 0 },
+    };
+    assertDeepEqual(componentsChart(r, t).groups[0].values, [0, 0, 0, 0]);
+    assertDeepEqual(interactionChart(r, t).series[0].y, [null]);
+    assertEqual(byPartChart(r, t).series.at(-1).y[0], null);
+    assertDeepEqual(xbarChart(r).series[0].y, [null, 1]);
+    assertDeepEqual(rChart(r).series[0].y, [null, 0]);
   });
 });
