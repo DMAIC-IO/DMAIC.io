@@ -704,6 +704,35 @@ function withInvariants(root, fn) {
 }
 
 /**
+ * `fn` ausführen, das in das Inhalts- oder Ansichtsfeld `rootField` schreibt (etwa ein
+ * Eintragsfeld per `x-field`), und danach die Invarianten prüfen, die dieses Feld nennen.
+ * Bei Verletzung wird der Wert des Feldes von vorher wiederhergestellt und `invariantError`
+ * geworfen (`param`, `invariant`). Innerhalb eines Kommandos prüft das Kommando selbst.
+ * @param {object} model das Model @param {string} rootField Name des Wurzelfelds @param {() => any} fn
+ * @returns {any}
+ */
+export function checkInvariantsAfter(model, rootField, fn) {
+  const invariants = schemaOf(model)?.invariants;
+  const names = invariants ? Object.keys(invariants).filter((n) => invariants[n].fields.includes(rootField)) : [];
+  if (names.length === 0 || (model._run ?? 0) > 0) return fn();
+  const before = cloneJSON(model._v[rootField]);
+  let result;
+  try {
+    result = fn();
+  } catch (err) {
+    model._v[rootField] = before;
+    throw err;
+  }
+  const broken = brokenInvariant(model, invariants, names);
+  if (broken !== null) {
+    const err = invariantError(rootField, model._v[rootField], broken);
+    model._v[rootField] = before;
+    throw err;
+  }
+  return result;
+}
+
+/**
  * Ein Kommando prüfen, ausführen, melden. Der einzige Weg zu `run`.
  * @param {string} name Kommandoname
  * @param {{ params: object, run: Function }} def aus `command()`
@@ -1127,7 +1156,12 @@ export function readModel(Model, json, context) {
  * @param {{ fields?: Record<string, object>, view?: Record<string, object>,
  *           commands?: Record<string, object>, version?: string,
  *           migrations?: Record<string, Function>,
- *           invariants?: Record<string, { fields: string[], test: (m: any) => boolean }> }} schema
+ *           invariants?: Record<string, { fields: string[], test: (m: any) => boolean, repair?: (m: any) => void }> }} schema
+ *   `invariants.<name>.repair`: heilt beim Laden mit `repair: true` einen verletzten Zustand; läuft in
+ *   Deklarationsreihenfolge, sieht den Ladezustand (inklusive der Heilung früherer Invarianten) und schreibt
+ *   direkt in die Felder. Heilt es nicht (oder wirft es), fallen die Felder der Invariante auf ihre Vorgabewerte
+ *   zurück. Schreiben (Setter, Kommando, `x-field`) ruft `repair` nie. Eine Invariante, die nur Ansichtsfelder
+ *   nennt, wird auch beim strengen Laden damit geheilt.
  * @returns {any} die Klasse (`new`, `fromJSON`, `schema`)
  */
 export function defineModel(schema) {
@@ -1155,7 +1189,8 @@ export function defineModel(schema) {
     const names = Array.isArray(inv.fields) ? inv.fields : [];
     if (names.length === 0) throw new Error(`defineModel: invariant ${name} needs fields`);
     for (const f of names) requireKnownId(`invariant ${name} field`, f, Object.keys(all));
-    return [name, Object.freeze({ fields: Object.freeze([...names]), test: inv.test })];
+    if (inv.repair !== undefined && typeof inv.repair !== 'function') throw new Error(`defineModel: invariant ${name} repair must be a function`);
+    return [name, Object.freeze({ fields: Object.freeze([...names]), test: inv.test, repair: inv.repair })];
   })));
   /** Feld → Namen der Invarianten, die es nennen. */
   const invariantsOf = {};
@@ -1215,10 +1250,15 @@ export function defineModel(schema) {
         const onlyView = inv.fields.every((f) => Object.hasOwn(view, f));
         if (!onlyView && !repair) throw invariantError(inv.fields[0], m._v[inv.fields[0]], name);
         const broken = inv.fields.map((f) => invariantError(f, m._v[f], name));
-        inv.fields.forEach((f, i) => {
-          m._v[f] = defaultOf(all[f], contextOf(m), f);
-          if (!onlyView) onRepair?.(f, broken[i]);
-        });
+        let healed = false;
+        if (inv.repair) {
+          // Ohne Invariantenprüfung beim Schreiben: repair arbeitet auf dem Ladezustand.
+          m._run += 1;
+          try { inv.repair.call(m, m); } catch { /* Rückfall auf die Vorgabewerte */ } finally { m._run -= 1; }
+          healed = inv.test.call(m, m);
+        }
+        if (!healed) inv.fields.forEach((f) => { m._v[f] = defaultOf(all[f], contextOf(m), f); });
+        if (!onlyView) inv.fields.forEach((f, i) => onRepair?.(f, broken[i]));
       }
       return m;
     }

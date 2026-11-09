@@ -16,7 +16,7 @@
  * Felder in Listeneinträgen prüft `checkValue` gegen die Element-Spec;
  * Schlüsselfelder, auf die ein `idOf` zeigt, sind nicht beschreibbar.
  */
-import { checkMapKey, checkValue, contextOf, fieldSpec, parsePath, schemaOf, stateSchemaOf } from './model.js';
+import { checkInvariantsAfter, checkMapKey, checkValue, contextOf, fieldSpec, parsePath, schemaOf, stateSchemaOf } from './model.js';
 
 const TOKEN = /([A-Za-z_$][\w$]*)|\.([A-Za-z_$][\w$]*)|\[([A-Za-z_$][\w$]*|\d+)\]/y;
 
@@ -164,7 +164,7 @@ function mapEntryTarget(scope, schema, steps, entryStep, where) {
     return o;
   };
   /** Der einzige Ort, der in die Map schreibt. */
-  const write = (key, value) => { owner(true)[key] = value; };
+  const write = (key, value) => { checkInvariantsAfter(scope().model, first.name, () => { owner(true)[key] = value; }); };
   return {
     spec: mapSpec.value, name: schemaPath, kind: 'model', helpKey: `fields.${schemaPath.replace(/\[\]/g, '')}.help`,
     get: () => owner(false)?.[keyOf(entryStep)],
@@ -222,6 +222,7 @@ export function resolveTarget(Alpine, el, expr, directive = 'x-field') {
 
   let spec;
   let schemaPath;
+  let rootField;
   /** @type {() => any} */
   let owner;
   if (root === 'model') {
@@ -230,6 +231,7 @@ export function resolveTarget(Alpine, el, expr, directive = 'x-field') {
     spec = schema.fields[first.name] ?? schema.view[first.name];
     if (!spec) throw new Error(`${where}: ${first.name} is neither a field nor a view field`);
     schemaPath = first.name;
+    rootField = first.name;
     for (const st of rest) {
       spec = stepSpec(spec, st, where);
       schemaPath += st.kind === 'index' ? '[]' : `.${st.name}`;
@@ -246,6 +248,7 @@ export function resolveTarget(Alpine, el, expr, directive = 'x-field') {
     spec = hit.spec;
     schemaPath = `${hit.names.join('[].')}[]`;
     owner = () => scope()[root];
+    rootField = hit.names[0];
   }
   if (spec?.kind !== 'object' || !Object.hasOwn(spec.shape, field)) throw new Error(`${where}: ${field} does not match the schema`);
   const listPath = schemaPath.replace(/\[\]$/, '');
@@ -257,7 +260,8 @@ export function resolveTarget(Alpine, el, expr, directive = 'x-field') {
     get: () => owner()?.[field],
     set: (raw) => {
       const model = scope().model;
-      owner()[field] = checkValue(fspec, name, raw, { root: model, context: contextOf(model) });
+      const next = checkValue(fspec, name, raw, { root: model, context: contextOf(model) });
+      checkInvariantsAfter(model, rootField, () => { owner()[field] = next; });
     },
   };
 }

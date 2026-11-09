@@ -134,3 +134,46 @@ suite('resolveTarget: Map-Einträge', () => {
     assertThrows(() => target(el, 'model.items[i].name[i]'), /does not match the schema/);
   });
 });
+
+const Capped = defineModel({
+  fields: {
+    rows: list(object({ id: text(), n: number() })),
+    flat: map(text(), number()),
+  },
+  invariants: {
+    rowsCap: { fields: ['rows'], test(m) { return m.rows.every((r) => r.n <= 10); } },
+    flatCap: { fields: ['flat'], test(m) { return Object.values(m.flat).every((v) => v <= 10); } },
+  },
+});
+
+suite('resolveTarget: Invarianten', () => {
+  test('x-field in Listeneintrag verletzt Invariante → alter Wert, Fehler mit invariant', () => {
+    const model = new Capped();
+    model.rows = [{ id: 'a', n: 1 }];
+    const el = { data: { model, row: model.rows[0] } };
+    const t = target(el, 'row.n');
+    t.set(5);
+    assertEqual(model.rows[0].n, 5);
+    let err = null;
+    try { target(el, 'row.n').set(11); } catch (e) { err = e; }
+    assertEqual(err.invariant, 'rowsCap');
+    assertEqual(model.rows[0].n, 5);
+    let err2 = null;
+    el.data.i = 0;
+    try { target(el, 'model.rows[i].n').set(12); } catch (e) { err2 = e; }
+    assertEqual(err2.invariant, 'rowsCap');
+    assertEqual(model.rows[0].n, 5);
+  });
+  test('x-field auf Map-Eintrag verletzt Invariante → Eintrag wie vorher (auch: neuer Schlüssel wieder entfernt)', () => {
+    const model = new Capped();
+    const el = { data: { model, k: 'a' } };
+    target(el, 'model.flat[k]').set(3);
+    let err = null;
+    try { target(el, 'model.flat[k]').set(50); } catch (e) { err = e; }
+    assertEqual(err.invariant, 'flatCap');
+    assertDeepEqual({ ...model.flat }, { a: 3 });
+    el.data.k = 'neu';
+    assertThrows(() => target(el, 'model.flat[k]').set(50), /flatCap|flat/);
+    assertDeepEqual({ ...model.flat }, { a: 3 });
+  });
+});

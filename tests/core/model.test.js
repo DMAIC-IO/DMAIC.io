@@ -1134,3 +1134,78 @@ suite('repair — rekursiv', () => {
     assertTrue(/rows\[0\]\.tags\[0\]/.test(seen[0][1]));
   });
 });
+
+suite('Invarianten — repair beim Laden', () => {
+  const mkModel = (repairs, extra = {}) => defineModel({
+    fields: { a: number({ default: 1 }), b: number({ default: 5 }), c: text() },
+    invariants: { order: { fields: ['a', 'b'], test(m) { return m.a <= m.b; }, ...repairs }, ...extra },
+  });
+  test('Laden mit repair: Invariante mit repair wird geheilt, übrige Felder bleiben, onRepair gerufen', () => {
+    const M = mkModel({ repair(m) { m.a = m.b; } });
+    const seen = [];
+    const m = M.fromJSON({ a: 9, b: 4, c: 'x' }, { repair: true, onRepair: (n) => seen.push(n) });
+    assertEqual(m.a, 4);
+    assertEqual(m.b, 4);
+    assertEqual(m.c, 'x');
+    assertDeepEqual(seen, ['a', 'b']);
+  });
+  test('Laden mit repair: repair heilt nicht → Rückfall auf Vorgabewerte', () => {
+    const M = mkModel({ repair() {} });
+    const m = M.fromJSON({ a: 9, b: 4, c: 'x' }, { repair: true });
+    assertEqual(m.a, 1);
+    assertEqual(m.b, 5);
+    assertEqual(m.c, 'x');
+  });
+  test('Laden mit repair: repair wirft → Rückfall auf Vorgabewerte, onRepair gerufen', () => {
+    const M = mkModel({ repair() { throw new Error('boom'); } });
+    const seen = [];
+    const m = M.fromJSON({ a: 9, b: 4 }, { repair: true, onRepair: (n) => seen.push(n) });
+    assertEqual(m.a, 1);
+    assertEqual(m.b, 5);
+    assertDeepEqual(seen, ['a', 'b']);
+  });
+  test('Laden streng: verletzte Invariante wirft, auch mit repair-Funktion', () => {
+    const M = mkModel({ repair(m) { m.a = m.b; } });
+    const err = (() => { try { M.fromJSON({ a: 9, b: 4 }); } catch (e) { return e; } return null; })();
+    assertEqual(err.invariant, 'order');
+  });
+  test('Laden streng: Invariante nur über Ansichtsfelder wird mit repair still geheilt', () => {
+    const V = defineModel({
+      fields: { items: list(text()) },
+      view: { active: text() },
+      invariants: {
+        act: {
+          fields: ['active'],
+          test(m) { return m.active === '' || m.items.includes(m.active); },
+          repair(m) { m.active = m.items[0] ?? ''; },
+        },
+      },
+    });
+    const seen = [];
+    const m = V.fromJSON({ items: ['p', 'q'], active: 'zzz' }, { onRepair: (n) => seen.push(n) });
+    assertEqual(m.active, 'p');
+    assertEqual(seen.length, 0);
+  });
+  test('Reihenfolge: zweites repair sieht das Ergebnis des ersten', () => {
+    const M = defineModel({
+      fields: { a: number({ default: 1 }), b: number({ default: 2 }) },
+      invariants: {
+        first: { fields: ['a'], test(m) { return m.a === 1; }, repair(m) { m.a = 1; } },
+        second: { fields: ['b'], test(m) { return m.b === m.a + 1; }, repair(m) { m.b = m.a + 1; } },
+      },
+    });
+    const m = M.fromJSON({ a: 5, b: 5 }, { repair: true });
+    assertEqual(m.a, 1);
+    assertEqual(m.b, 2);
+  });
+  test('Schreiben über Setter/Kommando ruft repair nie', () => {
+    let calls = 0;
+    const M = mkModel({ repair() { calls += 1; } }, {});
+    const m = new M();
+    assertThrows(() => { m.a = 9; }, /order/);
+    assertEqual(calls, 0);
+  });
+  test('defineModel: repair, das keine Funktion ist, wirft', () => {
+    assertThrows(() => mkModel({ repair: 5 }), /repair/);
+  });
+});
