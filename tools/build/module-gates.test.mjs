@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkViewReads, checkPickerCss, checkChartBindings, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts, viewNamesOf, viewNamesDetailOf, computedNamesOf, checkWidgetTemplates, modelMembersOf } from './module-gates.mjs';
+import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkViewReads, checkPickerCss, checkChartBindings, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts, viewNamesOf, viewNamesDetailOf, computedNamesOf, checkWidgetTemplates, modelMembersOf, checkFieldErrorPaths } from './module-gates.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { APP_DIR } from './build.mjs';
 import { defineModel, command, text, number, oneOf, index, idOf, list, record, map, object, boolean, date, columnRef, defineWidget, datasets } from '../../js/core/model.js';
@@ -1470,4 +1470,21 @@ test('Listenpfade: Map-Eintrag gefolgt von einem Namen meldet "nur der letzte Sc
   }).schema;
   const { findings } = checkListBindings([{ path: 'resources/view.html', text: '<input x-field="model.m[k].label">' }], schema);
   assert.deepEqual(findings, ['template: resources/view.html: x-field="model.m[k].label": ein Map-Eintrag darf nur der letzte Schritt sein']);
+});
+
+test('checkFieldErrorPaths: fieldError braucht ein x-field mit demselben Ausdruck', () => {
+  const ok = { path: 'resources/view.html', text: `<input x-field="model.lsl"><span x-text="fieldError('model.lsl')"></span>` };
+  assert.deepEqual(checkFieldErrorPaths([ok]), []);
+  const typo = { path: 'resources/view.html', text: `<input x-field="model.lsl"><span x-text="fieldError('model.lls')"></span>` };
+  assert.deepEqual(checkFieldErrorPaths([typo]), [
+    "template: resources/view.html: fieldError('model.lls'): kein x-field mit diesem Ausdruck",
+  ]);
+});
+
+test('checkFieldErrorPaths: zwei Aufrufe in einem Ausdruck, x-field im anderen Template zählt nicht', () => {
+  const view = { path: 'resources/view.html', text: `<input x-field="model.lsl"><span x-text="fieldError('model.lsl') || fieldError('model.usl')"></span>` };
+  const part = { path: 'resources/limits.part.html', text: '<input x-field="model.usl">' };
+  assert.deepEqual(checkFieldErrorPaths([view, part]), [
+    "template: resources/view.html: fieldError('model.usl'): kein x-field mit diesem Ausdruck",
+  ]);
 });

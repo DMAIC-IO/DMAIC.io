@@ -8,11 +8,16 @@
  */
 import { resolveTarget } from './field-path.js';
 import { describeRange } from './param-input.js';
+import { schemaOf } from './model.js';
 
 /**
- * @typedef {{ spec: object, name: string, helpKey: string, get: () => any,
+ * Ablehnung: `invariant` ist der Name der verletzten Invariante (sonst `null`),
+ * `fields` die Wurzelfelder, an denen sie hängt (Invariante: deren Felder,
+ * Feldregel: das Wurzelfeld des Pfads).
+ * @typedef {{ message: string, invariant: string|null, fields: string[] }} Rejection
+ * @typedef {{ spec: object, name: string, helpKey: string, kind: 'model'|'state'|'item', get: () => any,
  *   set: (value: any) => boolean, rawSet: (value: any) => void,
- *   rejected: { message: string }, hint: (err: any) => string }} ValueChannel
+ *   rejected: Rejection, hint: (err: any) => string }} ValueChannel
  */
 
 /** Programmierfehler, die nicht als Ablehnung einer Eingabe gelten. @param {unknown} err @returns {boolean} */
@@ -56,23 +61,26 @@ export function openChannel(Alpine, el, path, { where, i18n }) {
   const data = Alpine.$data(el);
   // Erst anlegen, wenn ein Hinweis gezeigt wird: die meisten Kanäle erleben nie eine Ablehnung.
   let rejected = null;
-  const rejection = () => (rejected ??= Alpine.reactive({ message: '' }));
+  const rejection = () => (rejected ??= Alpine.reactive({ message: '', invariant: null, fields: [] }));
   const hint = (err) => (typeof err?.invariant === 'string' && data.moduleId
     ? invariantHint(i18n, data.moduleId, err.invariant) : rejectionHint(target.spec, i18n));
   return {
     spec: target.spec,
     name: target.name,
     helpKey: target.helpKey,
+    kind: target.kind,
     get: target.get,
     rawSet: target.set,
     set(value) {
       try {
         target.set(value);
-        if (rejected) rejected.message = '';
+        if (rejected) Object.assign(rejected, { message: '', invariant: null, fields: [] });
         return true;
       } catch (err) {
         if (isBug(err)) throw err;
-        rejection().message = hint(err);
+        const invariant = typeof err?.invariant === 'string' ? err.invariant : null;
+        const fields = invariant ? [...(schemaOf(data.model)?.invariants?.[invariant]?.fields ?? [target.rootField])] : [target.rootField];
+        Object.assign(rejection(), { message: hint(err), invariant, fields });
         return false;
       }
     },

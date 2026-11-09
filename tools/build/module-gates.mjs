@@ -852,6 +852,27 @@ export function checkChartBindings(templates) {
   return out;
 }
 
+const FIELD_ERROR_CALL = /\bfieldError\(\s*'([^']*)'\s*\)/g;
+const X_FIELD_EXPR = /\bx-field\s*=\s*(?:"([^"]*)"|'([^']*)')/g;
+
+/**
+ * Gate fieldError: jedes `fieldError('<pfad>')` braucht ein `x-field="<pfad>"`
+ * im selben Template — sonst bleibt die Meldung immer leer.
+ * @param {{ path: string, text: string }[]} templates
+ * @returns {string[]}
+ */
+export function checkFieldErrorPaths(templates) {
+  const out = [];
+  for (const { path, text } of templates) {
+    const bound = new Set([...text.matchAll(X_FIELD_EXPR)].map(([, dq, sq]) => (dq ?? sq).trim()));
+    const asked = new Set([...text.matchAll(FIELD_ERROR_CALL)].map((m) => m[1].trim()));
+    for (const p of asked) {
+      if (!bound.has(p)) out.push(`template: ${path}: fieldError('${p}'): kein x-field mit diesem Ausdruck`);
+    }
+  }
+  return out;
+}
+
 /** @param {any} obj @param {string} path @returns {any} */
 const at = (obj, path) => path.split('.').reduce((o, k) => (o && typeof o === 'object' ? o[k] : undefined), obj);
 
@@ -1440,6 +1461,7 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
   out.push(...checkPickerCss(paths.includes(cssPath) ? read(cssPath) : null));
   const chartTemplates = paths.filter((p) => /^resources\/[^/]+\.html$/.test(p)).map(read);
   out.push(...checkChartBindings(chartTemplates));
+  out.push(...checkFieldErrorPaths(chartTemplates));
   out.push(...checkUiTexts(base));
   const refs = checkReferenceFile(base);
   out.push(...refs.findings, ...checkHelpFiles(base, refs.ids));

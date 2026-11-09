@@ -199,6 +199,42 @@ suite('x-field — Invarianten', () => {
   });
 });
 
+suite('x-field — Meldung an _ui.fieldErrors', () => {
+  test('Ablehnung bei change setzt, Tippen nicht, gültige Eingabe löscht', async () => {
+    registerFieldDirective(Alpine, { i18n: I18N });
+    if (!Alpine.version) Alpine.start();
+    const Range = defineModel({
+      fields: { from: number({ min: 0, max: 23, default: 6 }), to: number({ min: 1, max: 24, default: 22 }) },
+      invariants: { order: { fields: ['from', 'to'], test(m) { return m.from < m.to; } } },
+    });
+    const model = new Range();
+    const calls = [];
+    const fieldErrors = { set: (p, e) => calls.push(['set', p, e]), clear: (p) => calls.push(['clear', p]) };
+    const name = `fieldErr${Date.now()}`;
+    Alpine.data(name, () => ({ model, moduleId: 'fx', _ui: { fieldErrors } }));
+    const host = document.createElement('div');
+    host.innerHTML = `<div x-data="${name}"><input x-field="model.from"></div>`;
+    document.body.append(host);
+    Alpine.initTree(host);
+    await flush();
+    const input = host.querySelector('input');
+    type(input, '30');
+    assertEqual(calls.length, 0, 'ungültig beim Tippen: nichts');
+    change(input, '23');
+    const [kind, path, entry] = calls.at(-1);
+    assertEqual(kind, 'set');
+    assertEqual(path, 'model.from');
+    assertEqual(entry.message, 'modules.fx.invariants.order');
+    assertDeepEqual(entry.fields, ['from', 'to']);
+    assertEqual(entry.model.from, 6);
+    change(input, '50');
+    assertDeepEqual(calls.at(-1)[2].fields, ['from'], 'Feldregel: das Wurzelfeld');
+    type(input, '7');
+    assertDeepEqual(calls.at(-1), ['clear', 'model.from']);
+    host.remove();
+  });
+});
+
 const Plan = defineModel({
   fields: {
     items: list(object({ id: text(), text: text({ trim: true, nonEmpty: true }), due: date({ empty: true }) })),

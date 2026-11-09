@@ -128,11 +128,20 @@ export function registerFieldDirective(Alpine, { i18n, widgets }) {
       cleanup(() => { alive = false; observer.disconnect(); });
     }
 
+    // Die letzte Ablehnung für `fieldError(path)` der Komponente; beim Tippen entsteht keine.
+    const fieldErrors = () => data._ui?.fieldErrors;
     const commit = (live) => {
-      if (ch.set(readElement(el, spec))) clearRejection(el);
-      else if (!live) {
+      if (ch.set(readElement(el, spec))) {
+        clearRejection(el);
+        fieldErrors()?.clear(expression);
+      } else if (!live) {
         show();
         markRejection(el, ch.rejected.message);
+        fieldErrors()?.set(expression, {
+          message: ch.rejected.message,
+          model: ch.kind === 'state' ? data.state : data.model,
+          fields: ch.rejected.fields,
+        });
       }
     };
     const onInput = () => commit(true);

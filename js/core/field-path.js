@@ -27,6 +27,7 @@ const TOKEN = /([A-Za-z_$][\w$]*)|\.([A-Za-z_$][\w$]*)|\[([A-Za-z_$][\w$]*|\d+)\
  * @property {string} name Name in Meldungen (`alpha`, `items[].text`)
  * @property {'model'|'state'|'item'} kind
  * @property {string} helpKey Anker ohne `modules.<id>.` (`fields.alpha.help`, `state.tab.help`, `fields.items.text.help`)
+ * @property {string} rootField Feld des Models (bzw. des UI-State), unter dem der Pfad liegt
  * @property {() => any} get
  * @property {(raw: any) => void} set prüft und schreibt; wirft bei Ablehnung
  */
@@ -168,7 +169,7 @@ function mapEntryTarget(scope, schema, steps, entryStep, where) {
   /** Der einzige Ort, der in die Map schreibt. */
   const write = (key, value) => { checkInvariantsAfter(scope().model, first.name, () => { owner(true)[key] = value; }); };
   return {
-    spec: mapSpec.value, name: schemaPath, kind: 'model', helpKey: `fields.${schemaPath.replace(/\[\]/g, '')}.help`,
+    spec: mapSpec.value, name: schemaPath, kind: 'model', rootField: first.name, helpKey: `fields.${schemaPath.replace(/\[\]/g, '')}.help`,
     get: () => owner(false)?.[keyOf(entryStep)],
     set: (raw) => {
       const model = scope().model;
@@ -202,7 +203,7 @@ export function resolveTarget(Alpine, el, expr, directive = 'x-field') {
     const spec = data.state && stateSchemaOf(data.state) ? fieldSpec(data.state, field) : undefined;
     if (!spec) throw new Error(`${where}: ${field} is not a field of the UI state (defineState)`);
     return {
-      spec, name: field, kind: 'state', helpKey: `state.${field}.help`,
+      spec, name: field, kind: 'state', rootField: field, helpKey: `state.${field}.help`,
       get: () => scope().state[field],
       set: (raw) => { scope().state[field] = checkValue(spec, field, raw); },
     };
@@ -216,7 +217,7 @@ export function resolveTarget(Alpine, el, expr, directive = 'x-field') {
     const spec = fieldSpec(data.model, field);
     if (!spec) throw new Error(`${where}: ${field} is neither a field nor a view field`);
     return {
-      spec, name: field, kind: 'model', helpKey: `fields.${field}.help`,
+      spec, name: field, kind: 'model', rootField: field, helpKey: `fields.${field}.help`,
       get: () => scope().model[field],
       set: (raw) => { scope().model[field] = raw; },
     };
@@ -259,7 +260,7 @@ export function resolveTarget(Alpine, el, expr, directive = 'x-field') {
   const fspec = spec.shape[field];
   const name = `${schemaPath}.${field}`;
   return {
-    spec: fspec, name, kind: 'item', helpKey: `fields.${listPath.replace(/\[\]/g, '')}.${field}.help`,
+    spec: fspec, name, kind: 'item', rootField, helpKey: `fields.${listPath.replace(/\[\]/g, '')}.${field}.help`,
     get: () => owner()?.[field],
     set: (raw) => {
       const model = scope().model;

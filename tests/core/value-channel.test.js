@@ -45,8 +45,11 @@ suite('value-channel', () => {
     assertEqual(ch.set(99), false);
     assertEqual(data.model.n, 1);
     assertTrue(ch.rejected.message.startsWith('common.inputRejected'));
+    assertEqual(ch.rejected.invariant, null);
+    assertEqual(JSON.stringify(ch.rejected.fields), '["n"]', 'Feldregel: das Wurzelfeld');
     assertTrue(ch.set(3));
     assertEqual(ch.rejected.message, '');
+    assertEqual(ch.rejected.invariant, null);
     root.remove();
   });
 
@@ -55,6 +58,8 @@ suite('value-channel', () => {
     const ch = openChannel(Alpine, el, 'model.n', { where: 'test', i18n });
     assertEqual(ch.set(7), false);
     assertEqual(ch.rejected.message, 'modules.demo.invariants.small');
+    assertEqual(ch.rejected.invariant, 'small');
+    assertEqual(JSON.stringify(ch.rejected.fields), '["n"]', 'Invariante: ihre Felder');
     root.remove();
   });
 

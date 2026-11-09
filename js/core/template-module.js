@@ -14,6 +14,7 @@ import { defineComputedSlots, bindComputed } from './computed.js';
 import { checkAsyncTasks, defineAsyncTaskSlots, createAsyncTasks } from './async-task.js';
 import { createWorksheetData } from './worksheet-data.js';
 import { withoutStoredEdits } from './chart/instance-chart-manager.js';
+import { createFieldErrors } from './field-errors.js';
 
 /**
  * Was `view(ctx)` bekommt: die Kontextdienste und die Kennungen der Instanz.
@@ -27,10 +28,11 @@ import { withoutStoredEdits } from './chart/instance-chart-manager.js';
  */
 /**
  * `this` in den Gliedern eines `view`-Blocks. Die eigenen Glieder des Blocks
- * sind untereinander `any`.
+ * sind untereinander `any`. `fieldError(path)` ist die letzte Ablehnung des
+ * `x-field` mit diesem Ausdruck (sonst `''`).
  * @template M, S
  * @typedef {{ model: M, state: S, t: (key: string, params?: object) => string,
- *   moduleId: string, $refs: Record<string, HTMLElement>, $root: HTMLElement,
+ *   fieldError: (path: string) => string, moduleId: string, $refs: Record<string, HTMLElement>, $root: HTMLElement,
  *   $watch: Function, $nextTick: Function }} ViewThis
  */
 /**
@@ -169,7 +171,7 @@ function executeCommand(vm, vmCommands, name, args) {
 }
 
 /** Glieder, die createModule selbst setzt — kein view-Glied, computed, Feld, Kommando oder Task darf so heißen. */
-const RESERVED_MEMBERS = Object.freeze(['model', 'state', 't', 'moduleId', 'read', 'cssVars', 'changeRoute', '_ui', '_asyncTasks', '_asyncTaskHost', 'asyncTasks']);
+const RESERVED_MEMBERS = Object.freeze(['model', 'state', 't', 'fieldError', 'moduleId', 'read', 'cssVars', 'changeRoute', '_ui', '_asyncTasks', '_asyncTaskHost', 'asyncTasks']);
 /** Lebenszyklus des view-Blocks — als Name eines computed, Felds, Kommandos oder Tasks gesperrt. */
 const LIFECYCLE = Object.freeze(['init', 'destroy']);
 
@@ -457,9 +459,16 @@ export function createModule(base) {
             changeRoute(sub) { this.$route?.go(sub); },
           };
           // Neue Form: UI-State je Komponente, frisch aus dem Schema.
+          // Die Ablehnungen der x-field leben ebenso je Komponente und sterben mit ihr.
+          const fieldErrors = view ? createFieldErrors(Alpine) : null;
           if (view) {
             Object.assign(comp, { state: UiState ? UiState.create() : {}, moduleId: id });
             comp.cssVars = function cssVars(map) { return readCssVars(this.$root, map); };
+            Object.defineProperty(comp, 'fieldError', {
+              enumerable: false,
+              configurable: true,
+              value: (path) => fieldErrors.message(path),
+            });
           }
           if (schema) copyMembers(comp, schemaMembers(id, agentEntry, vmCommands, computedNames, readBulk));
           if (schema || exportsDef) {
@@ -484,6 +493,7 @@ export function createModule(base) {
                   moduleId: id,
                   instanceId: context.instanceId,
                   forms,
+                  fieldErrors,
                   vmCommands,
                   exports: exportsDef ?? null,
                   component: this,
