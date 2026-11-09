@@ -1,0 +1,167 @@
+/* ============================================================
+   D.Mike — MSA Typ 2 Styles (resources/style.css)
+   Gage R&R module — follows MSA Typ 1 layout pattern.
+   All colors via CSS custom properties from variables.css.
+   ============================================================ */
+
+/* ═══ LAYOUT (extends global dmike-split from css/modules.css) ═══ */
+
+/* Section labels: use global .dmike-split__output-section (css/modules.css)
+   as-is — the shared rule now renders the `nav.expand-down` marker icon and
+   is genuinely wired to collapse behaviour (initCollapsibleSections() in
+   js/frame/helpers.js), so this module no longer needs a scoped override.
+   msa-typ2__output-section stays on the template as a hook for future
+   module-specific styling, it just carries no rules today. */
+
+/* Fields use global .field / .field-group (components.css) */
+
+/* ═══ ERROR BOX ═══ */
+
+@keyframes msaFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══ STATUS BAR migriert → generisches .dmike-infobox (css/components.css).
+       __type-badge unten bleibt lokal (Modus-Pill Typ 2 vs. Typ 3). ═══ */
+
+.msa-typ2__type-badge {
+  display: inline-block;
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  border-radius: 10px;
+  background: rgb(var(--color-text-primary-rgb, 30,30,30), 0.12);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.msa-typ2__warning {
+  padding: var(--spacing-m) var(--spacing-m);
+  margin-bottom: var(--spacing-md);
+  border-radius: var(--border-radius);
+  background: rgb(var(--color-warning-rgb, 250,176,5), 0.12);
+  border: 1px solid var(--color-warning);
+  color: var(--color-warning);
+  font-size: var(--font-size-sm);
+}
+
+/* ═══ FELDMELDUNG ═══ */
+
+.msa-typ2__field-error {
+  margin-top: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-error);
+}
+
+/* ═══ STATS / ANOVA TABLE ═══ */
+
+.msa-typ2__stats-panel {
+  margin-bottom: var(--spacing-lg);
+  overflow-x: auto;
+}
+
+.msa-typ2__stats-table th,
+.msa-typ2__stats-table td {
+  white-space: nowrap;
+}
+
+.msa-typ2__stats-table th:not(:first-child),
+.msa-typ2__stats-table td:not(:first-child) {
+  text-align: right;
+}
+
+.msa-typ2__stats-table td {
+  font-family: var(--font-family-mono);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.msa-typ2__stats-table td:first-child {
+  font-family: var(--font-family);
+  color: var(--color-text-secondary);
+}
+
+.msa-typ2__anova-total td {
+  font-weight: var(--font-weight-semibold);
+  border-top: 2px solid var(--color-border-primary);
+}
+
+.msa-typ2__var-note {
+  padding: var(--spacing-xs) 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-family: var(--font-family-mono);
+}
+
+/* ═══ CHARTS ═══ */
+
+/* overflow:hidden verhindert Growing-Loop (siehe msa-typ1 CSS). */
+.msa-typ2__chart-plot {
+  width: 100%;
+  height: 300px;
+  min-height: 300px;
+  overflow: hidden;
+}
+
+/* Messverlaufsdiagramm — eine Zeile je Streifen. Die Höhe muss definit sein,
+   sonst driftet die SVG-Höhe bei jedem Neuzeichnen. */
+.msa-typ2__gage-run {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.msa-typ2__gage-run-row {
+  width: 100%;
+  height: 300px;
+  min-height: 300px;
+  overflow: hidden;
+}
+
+/* Die Widget-Wurzel erzeugt keine Box; das Diagramm erbt seine Mindesthöhe
+   über sie hinweg vom Wirt. */
+.msa-typ2__chart-plot > .widget-root,
+.msa-typ2__gage-run-row > .widget-root {
+  min-height: inherit;
+}
+
+/* ═══ INTERPRETATION ═══ */
+
+.msa-typ2__interpretation {
+  margin-bottom: var(--spacing-lg);
+}
+
+.msa-typ2__interpretation p {
+  margin: 0 0 var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.msa-typ2__tag {
+  display: inline-block;
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  font-family: var(--font-family-mono);
+  text-transform: uppercase;
+  margin-right: var(--spacing-xs);
+  vertical-align: middle;
+}
+
+.msa-typ2__tag--pass { background: rgb(var(--color-success-rgb, 64,192,87), 0.12); color: var(--color-success); }
+.msa-typ2__tag--warn { background: rgb(var(--color-warning-rgb, 250,176,5), 0.12); color: var(--color-warning); }
+.msa-typ2__tag--fail { background: rgb(var(--color-error-rgb, 250,82,82), 0.12); color: var(--color-error); }
+
+.msa-typ2__note {
+  padding: var(--spacing-sm) var(--spacing-m);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-bg-tertiary);
+  border-left: 3px solid var(--color-info);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: var(--spacing-sm);
+}

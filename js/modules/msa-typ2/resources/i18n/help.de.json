@@ -1,0 +1,138 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Die MSA Typ-2-Studie ({{term:gage-rr|Gage R&R}}, Repeatability & Reproducibility) zerlegt die Streuung eines Messsystems in drei Komponenten: {{term:wiederholbarkeit|Wiederholbarkeit}} (dasselbe Teil, derselbe Bediener), {{term:reproduzierbarkeit|Reproduzierbarkeit}} (dasselbe Teil, verschiedene Bediener) und {{term:teile-variation|Teile-zu-Teile-Streuung}}. Sie ist der Standardtest, bevor Prozessfähigkeit oder Regelkarten belastbar sind."
+        },
+        {
+          "type": "definition",
+          "term": "Wiederholbarkeit (EV, Equipment Variation)",
+          "content": "{{term:wiederholbarkeit|Wiederholbarkeit}} ist die Streuung, wenn ein Bediener dasselbe Teil mehrfach misst. Sie kommt rein aus dem Gerät und der Messprozedur — nicht vom Menschen, nicht vom Teil."
+        },
+        {
+          "type": "definition",
+          "term": "Reproduzierbarkeit (AV, Appraiser Variation)",
+          "content": "{{term:reproduzierbarkeit|Reproduzierbarkeit}} ist die Streuung, wenn verschiedene Bediener dasselbe Teil messen. Kommt aus Handhabung, Ablesen, Vorrichtung. Ein hoher AV-Anteil zeigt auf Schulungsbedarf oder unklare Messanweisung."
+        },
+        {
+          "type": "definition",
+          "term": "Teile-zu-Teile (PV, Part Variation)",
+          "content": "{{term:teile-variation|Teile-zu-Teile-Streuung}} zwischen den ausgewählten Teilen selbst. Sollte dominieren — wenn nicht, misst das Messsystem vor allem sich selbst, nicht den Prozess."
+        },
+        {
+          "type": "definition",
+          "term": "GR&R in % (von Streuung oder Toleranz)",
+          "content": "Verhältnis der Messsystem-Streuung (k·σ_GRR) zur Studienstreuung (%Studienstreuung) oder zur Toleranz T = OGW − UGW (%Toleranz). Das Urteil stützt sich auf eine dieser beiden Bezugsgrößen, die Urteilsbasis: < 10 % gilt als akzeptabel, 10–30 % bedingt akzeptabel, ab 30 % nicht akzeptabel."
+        },
+        {
+          "type": "definition",
+          "term": "Number of Distinct Categories (ndc)",
+          "content": "{{term:ndc|ndc}} zeigt, wie viele unterschiedliche Stufen das Messsystem in der beobachteten Teilespanne unterscheiden kann. Faustregel: ndc ≥ 5. Unter 5 wird der Prozess nicht feinfühlig genug wahrgenommen."
+        },
+        {
+          "type": "paragraph",
+          "content": "Gage R&R ist ein statistisches Experiment, kein Zahlenspiel. Die Teileauswahl, die Reihenfolge, die Blindheit der Bediener — all das beeinflusst das Ergebnis. Ein handwerklich sauberes Setup ist wichtiger als die Software."
+        }
+      ]
+    },
+    "typ3": {
+      "title": "Typ 2 vs. Typ 3",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Typ 2 misst mit Prüfern (klassisches Gage R&R). Typ 3 läuft ohne Prüfer — für automatisierte Messsysteme (KMG im Automatikmodus, In-Prozess-Sensoren, Prüfstände), bei denen der Prüfer keinen Einfluss auf das Messergebnis hat."
+        },
+        {
+          "type": "definition",
+          "term": "Wann Typ 3?",
+          "content": "Immer dann, wenn der Prüfer physisch entkoppelt vom Messvorgang ist: automatisiertes Handling, festes Aufnahmesystem, Prüfling wird eingelegt und die Maschine misst selbstständig. Kein Ableseeffekt, keine Handhabung."
+        },
+        {
+          "type": "definition",
+          "term": "Prüfer-Spalte leer lassen",
+          "content": "Im Modul einfach die Prüfer-Spalte nicht setzen — das Modul erkennt Typ 3 automatisch, blendet Reproduzierbarkeit (AV), die Wechselwirkungssektion sowie die „nach Bediener\"-Diagramme aus. %GRR entspricht dann dem reinen Repeatability-Anteil (%EV)."
+        },
+        {
+          "type": "definition",
+          "term": "Versuchsplan (Bosch/VDA-Konvention)",
+          "content": "Typische Anordnungen: 25 Teile × 2 Wiederholungen oder 10 Teile × 3 Wiederholungen. Ohne Prüfer sind mehr Teile pro Studie realistisch. Mit nur 2 Wiederholungen zeigt das Modul einen Hinweis — mehr Wiederholungen erhöhen die Schätzgenauigkeit der Wiederholstreuung."
+        },
+        {
+          "type": "definition",
+          "term": "Auswertung",
+          "content": "One-Way-ANOVA mit Teilen als zufälligem Effekt. σ²_GRR = σ²_Repeat, ndc und %GRR-Grenzen (< 10 % / 10–30 % / > 30 %) bleiben identisch zu Typ 2. Reproduzierbarkeit ist definitionsgemäß 0."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Vorgehen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Typischer Aufbau: 10 Teile × 3 Bediener × 2–3 Wiederholungen = 60–90 Messungen.",
+            "Teile so auswählen, dass sie die Prozessspanne abdecken — nicht alle nahe am {{term:mittelwert|Mittelwert}}.",
+            "Bediener sind in der Produktion tätig, nicht speziell trainiert für den Test.",
+            "Reihenfolge zufallsverteilt, Bediener blind gegenüber dem wahren Teil.",
+            "Gleiche Messprozedur, gleiches Gerät, gleiche Vorrichtung.",
+            "Ergebnisse mit der ANOVA-Methode auswerten (nicht Range-Methode für moderne Studien).",
+            "GR&R-Prozent, ndc und Komponentenanteile bewerten.",
+            "Faktor k: 6 (99,73 %) ist der aktuelle Standard (AIAG MSA 4. Aufl. 2010, Minitab, Bosch Heft 10 Verfahren 2). 5,15 (99 %) ist die Konvention der AIAG 3. Aufl. und bleibt wählbar; früher gespeicherte Studien behalten 5,15.",
+            "Urteilsbasis „Automatisch“: %Toleranz, wenn UGW und OGW gesetzt sind (Bosch: Bezugsgröße T, Grenzen 10 %/30 %), sonst %Studienstreuung. Beide Bezugsgrößen lassen sich auch fest wählen.",
+            "Historisches Prozess-σ (optional): ergänzt die Spalte %Prozess = σ/σ_hist·100. Sie ist rein informativ, darf über 100 % liegen und ändert weder Urteil noch ndc.",
+            "Bei Scheitern Ursache klären (Gerät, Bediener, Vorrichtung, Messverfahren) und nachbessern."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Teile zu ähnlich",
+          "content": "Wenn alle 10 Teile nah beieinander liegen, scheitert die Studie oft an zu wenig Teile-Streuung — GR&R wirkt groß, weil PV klein ist. Die Teile müssen den relevanten Prozessbereich abdecken."
+        },
+        {
+          "type": "definition",
+          "term": "Bediener wissen, welches Teil sie haben",
+          "content": "Ohne Blindheit erinnern sie sich an vorherige Messwerte und „korrigieren\" unbewusst. Ergebnis: Wiederholbarkeit zu gut, echte Streuung versteckt."
+        },
+        {
+          "type": "definition",
+          "term": "Reihenfolge nicht randomisiert",
+          "content": "Systematische Abfolgen (z. B. Bediener 1 zuerst alles, dann Bediener 2) vermischen Drift mit Bedienereinfluss. Zufallsreihenfolge ist Pflicht."
+        },
+        {
+          "type": "definition",
+          "term": "Nur die beste Bedienermannschaft getestet",
+          "content": "Wer die ausgewählten Bediener für den Test vorher extra schult, misst das Potenzial — nicht die Alltagsrealität. Im Ergebnis sieht es gut aus, bis der echte Schichtbetrieb kommt."
+        },
+        {
+          "type": "definition",
+          "term": "ndc ignoriert",
+          "content": "GR&R 20 % kann mit ndc 3 einhergehen — dann sieht das System den Prozess nur in drei Stufen. Beide Kennzahlen gemeinsam lesen."
+        },
+        {
+          "type": "definition",
+          "term": "%Toleranz und %Studienstreuung urteilen verschieden",
+          "content": "Dieselbe Studie kann bezogen auf die Toleranz akzeptabel und bezogen auf die Studienstreuung nicht akzeptabel sein — oder umgekehrt. Die Urteilsbasis nach dem Zweck wählen: Produktabnahme gegen Spezifikation → Toleranz, Prozessverbesserung → Studienstreuung."
+        },
+        {
+          "type": "definition",
+          "term": "Range-Methode statt ANOVA",
+          "content": "Die klassische Range-Methode unterschätzt Interaktionen. Moderne Studien verwenden ANOVA — sie gibt Repeatability, Reproducibility und die Bediener×Teil-Interaktion separat an."
+        },
+        {
+          "type": "definition",
+          "term": "Interpretation „10 % ist gut\"",
+          "content": "Ob 10 % GR&R ausreichen, hängt von der Anwendung ab. Bei sicherheitskritischen Toleranzen kann 10 % schon zu viel sein, bei grober Fertigung sind 20 % in Ordnung. Kontext schlägt Tabelle."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "../../../../../schemas/module-references.schema.json",
+  "references": [
+    {
+      "book": "melzer-2019",
+      "note": {
+        "de": "Abgleich der Typ-2-Studie: Multiplikator 6 statt 5,15, Urteil wahlweise über %Toleranz, optional historisches Prozess-σ.",
+        "en": "Cross-check of the type 2 study: multiplier 6 instead of 5.15, verdict optionally via %tolerance, optional historical process σ."
+      }
+    },
+    {
+      "book": "aiag-msa-4",
+      "note": {
+        "de": "Grundlage für %GRR mit 6·σ, ndc und die Akzeptanzgrenzen 10 % / 30 %.",
+        "en": "Basis for %GRR with 6·σ, ndc and the 10 % / 30 % acceptance limits."
+      }
+    }
+  ]
+}
