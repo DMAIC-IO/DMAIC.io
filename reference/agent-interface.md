@@ -190,6 +190,16 @@ zusätzlich `value`. Das Ergebnis eines manuellen Ablaufs steht dort nicht; es
 liegt, wo das Modul es hinschreibt (bei `resampling` im Feld `result`). Der
 Status gehört zur Anzeige, er wird nicht gespeichert.
 
+Beispiel für einen `auto`-Ablauf: `multi-vari` rechnet den Ablauf `analysis` aus
+Messwert, Faktorzeilen, Modellform und Schätzer sowie dem Arbeitsblatt von selbst,
+entprellt. Es gibt dafür keine Aktion; der Agent setzt die Felder (`instance.set` auf
+`measurement`, `modelForm`, `estimator`, `showPoints`, `connectMeans`, `showGroupMean`,
+`showRefLine`) und die Faktorzeilen über die Kommandos `addFactor` (liefert die neue
+`id`), `removeFactor { id }`, `moveFactor { fromIdx, toIdx }` und
+`setFactorColumn { id, ref }`; die Faktorzeilen sind 2 bis 4. `read()` liefert die Felder
+samt `factors` und unter `asyncTasks.analysis` den Status mit `value` (das Ergebnis);
+die Anzeigeschalter rechnen nicht neu.
+
 `settle` (die interne Ruhe vor einem `read()`) wartet zusätzlich auf laufende
 `auto`-Abläufe, höchstens 20 Sekunden, und geht danach ohne Fehler weiter.
 
