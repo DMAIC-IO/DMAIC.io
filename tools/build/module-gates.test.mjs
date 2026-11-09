@@ -1463,3 +1463,11 @@ test('Listenpfade: x-field auf Map-Einträge, Anker, Nicht-Map scheitert', () =>
   ]);
   assert.deepEqual(helpKeys, ['fields.concepts.picks.help', 'fields.scores.help']);
 });
+
+test('Listenpfade: Map-Eintrag gefolgt von einem Namen meldet "nur der letzte Schritt"', () => {
+  const schema = defineModel({
+    fields: { m: map(text(), object({ label: text() })) },
+  }).schema;
+  const { findings } = checkListBindings([{ path: 'resources/view.html', text: '<input x-field="model.m[k].label">' }], schema);
+  assert.deepEqual(findings, ['template: resources/view.html: x-field="model.m[k].label": ein Map-Eintrag darf nur der letzte Schritt sein']);
+});

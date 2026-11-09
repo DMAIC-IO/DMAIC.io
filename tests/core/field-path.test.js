@@ -135,6 +135,34 @@ suite('resolveTarget: Map-Einträge', () => {
   });
 });
 
+const Nested = defineModel({
+  fields: {
+    m: map(text(), object({ label: text(), sub: map(text(), number()) })),
+    mm: map(text(), map(text(), number())),
+  },
+});
+
+suite('resolveTarget: Map-Zwischenschritte', () => {
+  test('fehlender Eintrag mit object-Wert wird nicht angelegt, klarer Fehler, Model unverändert', () => {
+    const model = new Nested();
+    const el = { data: { model, k: 'x', p: 'q' } };
+    const t = target(el, 'model.m[k].sub[p]');
+    assertThrows(() => t.set(1), /entry \[x\] is missing/);
+    assertDeepEqual({ ...model.m }, {});
+    assertEqual(t.get(), undefined);
+  });
+  test('fehlender Zwischeneintrag einer Map von Maps wird weiter angelegt', () => {
+    const model = new Nested();
+    const el = { data: { model, k: 'x', p: 'q' } };
+    target(el, 'model.mm[k][p]').set(2);
+    assertDeepEqual(JSON.parse(JSON.stringify(model.mm)), { x: { q: 2 } });
+  });
+  test('Map-Eintrag gefolgt von einem Namen wird abgelehnt', () => {
+    assertThrows(() => resolveTarget(Alpine, { data: { model: new Nested(), k: 'a' } }, 'model.m[k].label'),
+      /a map entry can only be the last step/);
+  });
+});
+
 const Capped = defineModel({
   fields: {
     rows: list(object({ id: text(), n: number() })),

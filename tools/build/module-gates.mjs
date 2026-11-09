@@ -1064,11 +1064,14 @@ export function checkListBindings(files, schema) {
         const [first, ...rest] = steps;
         spec = first.kind === 'name' ? all[first.name] : undefined;
         let p = first.kind === 'name' ? first.name : '';
+        let afterMap = false;
         for (const st of rest) {
+          if (st.kind === 'index' && spec?.kind === 'map') { afterMap = true; break; }
           if (st.kind === 'index' && spec?.kind === 'list') { spec = spec.item; p += '[]'; }
           else if (st.kind === 'name' && spec?.kind === 'object' && Object.hasOwn(spec.shape, st.name)) { spec = spec.shape[st.name]; p += `.${st.name}`; }
           else { spec = undefined; break; }
         }
+        if (afterMap) { findings.push(`template: ${path}: ${shown}: ein Map-Eintrag darf nur der letzte Schritt sein`); continue; }
         listPath = p.replace(/\[\]$/, '');
       } else if (steps.length === 0 && aliasAt(root, pos)) {
         const a = aliasAt(root, pos);

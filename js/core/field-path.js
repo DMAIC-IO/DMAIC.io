@@ -154,7 +154,9 @@ function mapEntryTarget(scope, schema, steps, entryStep, where) {
       if (st.kind === 'name') { o = o[st.name]; return; }
       const outer = before[n];
       const k = outer.kind === 'map' ? keyOf(st) : (st.ref !== undefined ? scope()[st.ref] : st.at);
-      if (o[k] === undefined && create && outer.kind === 'map') {
+      if (o[k] === undefined && create) {
+        // Nur ein Map-Eintrag, der selbst eine Map ist, entsteht von selbst; sonst bleibt das Model unberührt.
+        if (outer.kind !== 'map' || outer.value.kind !== 'map') throw new Error(`${where}: entry [${k}] is missing`);
         const model = scope().model;
         checkKey(k, outer.key, schemaPath, { root: model, context: contextOf(model) });
         o[k] = {};
@@ -233,6 +235,7 @@ export function resolveTarget(Alpine, el, expr, directive = 'x-field') {
     schemaPath = first.name;
     rootField = first.name;
     for (const st of rest) {
+      if (st.kind === 'index' && spec?.kind === 'map') throw new Error(`${where}: a map entry can only be the last step`);
       spec = stepSpec(spec, st, where);
       schemaPath += st.kind === 'index' ? '[]' : `.${st.name}`;
     }

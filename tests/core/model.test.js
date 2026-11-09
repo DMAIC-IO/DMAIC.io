@@ -642,6 +642,23 @@ suite('Invarianten', () => {
     assertEqual(m.max, 10);
   });
 
+  test('Laden: wirft der Test nach repair, gilt die Invariante als nicht geheilt (Rückfall)', () => {
+    const Flaky = defineModel({
+      fields: { a: number() },
+      invariants: {
+        positive: {
+          fields: ['a'],
+          test(m) { if (m.a === -1) throw new Error('half repaired'); return m.a >= 0; },
+          repair(m) { m.a = -1; },
+        },
+      },
+    });
+    const seen = [];
+    const m = Flaky.fromJSON({ a: -5 }, { repair: true, onRepair: (n) => seen.push(n) });
+    assertEqual(m.a, 0);
+    assertDeepEqual(seen, ['a']);
+  });
+
   test('Definition: unbekanntes Feld, fehlender Test, verletzte Vorgabe werfen', () => {
     assertThrows(() => defineModel({ fields: { a: number() }, invariants: { x: { fields: ['b'], test() { return true; } } } }),
       /unknown invariant x field "b"; available: a/);

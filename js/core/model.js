@@ -1161,7 +1161,9 @@ export function readModel(Model, json, context) {
  *   Deklarationsreihenfolge, sieht den Ladezustand (inklusive der Heilung früherer Invarianten) und schreibt
  *   direkt in die Felder. Heilt es nicht (oder wirft es), fallen die Felder der Invariante auf ihre Vorgabewerte
  *   zurück. Schreiben (Setter, Kommando, `x-field`) ruft `repair` nie. Eine Invariante, die nur Ansichtsfelder
- *   nennt, wird auch beim strengen Laden damit geheilt.
+ *   nennt, wird auch beim strengen Laden damit geheilt. Wirft der Test nach `repair`, gilt die Invariante als
+ *   nicht geheilt. Invarianten, die Felder teilen: die spätere muss Vorgabewerte vertragen, denn ihr Rückfall
+ *   setzt gemeinsame Felder zurück, ohne die frühere erneut zu prüfen.
  * @returns {any} die Klasse (`new`, `fromJSON`, `schema`)
  */
 export function defineModel(schema) {
@@ -1256,7 +1258,7 @@ export function defineModel(schema) {
           const loading = /** @type {any} */ (m);
           loading._run += 1;
           try { inv.repair.call(m, m); } catch { /* Rückfall auf die Vorgabewerte */ } finally { loading._run -= 1; }
-          healed = inv.test.call(m, m);
+          try { healed = inv.test.call(m, m); } catch { healed = false; }
         }
         if (!healed) inv.fields.forEach((f) => { m._v[f] = defaultOf(all[f], contextOf(m), f); });
         if (!onlyView) inv.fields.forEach((f, i) => onRepair?.(f, broken[i]));
