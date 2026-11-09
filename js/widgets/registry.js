@@ -37,6 +37,8 @@ import pieChart from './pie-chart/schema.js';
 import { mount as mountPieChart } from './pie-chart/mount.js';
 import statsTable from './stats-table/schema.js';
 import { mount as mountStatsTable } from './stats-table/mount.js';
+import algoLabLink from './algo-lab-link/schema.js';
+import { mount as mountAlgoLabLink } from './algo-lab-link/mount.js';
 
 export const WIDGETS = Object.freeze({
   'column-picker': { schema: columnPicker, mount: mountColumnPicker },
@@ -54,5 +56,6 @@ export const WIDGETS = Object.freeze({
   'individual-value-plot-chart': { schema: individualValuePlotChart, mount: mountIndividualValuePlotChart },
   'heatmap-chart': { schema: heatmapChart, mount: mountHeatmapChart },
   'multi-vari-chart': { schema: multiVariChart, mount: mountMultiVariChart },
+  'algo-lab-link': { schema: algoLabLink, mount: mountAlgoLabLink },
   'pie-chart': { schema: pieChart, mount: mountPieChart },
 });

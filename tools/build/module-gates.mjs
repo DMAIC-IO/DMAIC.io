@@ -18,7 +18,7 @@ import { TAG, camel, keyOf, parseJs, bodyEnd, X_FOR, xForAliases } from './templ
 import { parsePath, VERSION, MIGRATION_KEY } from '../../js/core/model.js';
 import { parseFieldPath, keyFieldsOf } from '../../js/core/field-path.js';
 import { loadModelSchema, loadSettingsSchema, loadFormSchemas, loadStateSchema } from './model-types.mjs';
-import { checkWidgetBindings, loadWidgetSchemas } from './widget-gates.mjs';
+import { checkWidgetBindings, checkAlgoLinkLiterals, loadAlgoIds, loadWidgetSchemas } from './widget-gates.mjs';
 import { factoryArgument, findViewBlock, viewNamesDetailOf, viewNamesOf, computedNamesOf } from './view-names.mjs';
 export { viewNamesDetailOf, viewNamesOf, computedNamesOf };
 import { BOOKS } from '../../js/core/references-books.js';
@@ -1391,11 +1391,12 @@ export function checkHelpFiles(base, refIds) {
  * view-Block ihrer Kachel. Eine Kachel hat keinen `state`; jeder Pfad `state.…`
  * in einer Kachel-Vorlage ist ein Befund.
  * @param {{ path: string, text: string }[]} templates
- * @param {{ widgets: Map<string, any>, schema: object, stateSchema: object|null, viewNames: Set<string>, tileText: (p: string) => string }} ctx
+ * @param {{ widgets: Map<string, any>, schema: object, stateSchema: object|null, viewNames: Set<string>, tileText: (p: string) => string, algoIds?: Set<string> }} ctx
  * @returns {string[]}
  */
-export function checkWidgetTemplates(templates, { widgets, schema, stateSchema, viewNames, tileText }) {
+export function checkWidgetTemplates(templates, { widgets, schema, stateSchema, viewNames, tileText, algoIds }) {
   const out = checkWidgetBindings(templates.filter((f) => !/^resources\/tile(\.|$)/.test(f.path)), { widgets, schema, stateSchema, viewNames });
+  if (algoIds) out.push(...checkAlgoLinkLiterals(templates, algoIds));
   for (const f of templates) {
     const m = /^resources\/tile(?:\.([a-z0-9-]+))?\.html$/.exec(f.path);
     if (!m) continue;
@@ -1485,7 +1486,7 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
       }
       const tileText = (p) => (paths.includes(p) ? readFileSync(join(base, p), 'utf8') : '');
       const vmNames = paths.includes('viewmodel/viewmodel.js') ? viewNamesOf(tileText('viewmodel/viewmodel.js')) : new Set();
-      out.push(...checkWidgetTemplates(templates, { widgets, schema, stateSchema, viewNames: vmNames, tileText }));
+      out.push(...checkWidgetTemplates(templates, { widgets, schema, stateSchema, viewNames: vmNames, tileText, algoIds: loadAlgoIds(appDir) }));
       out.push(...checkCommandRefs(templates, schema, formSchemas, existsSync(vmFile) ? readViewmodelCommands(readFileSync(vmFile, 'utf8')) : {}));
       const asyncTasks = existsSync(vmFile) ? readViewmodelAsyncTasks(readFileSync(vmFile, 'utf8')) : {};
       out.push(...checkAsyncTaskRefs(templates, asyncTasks));

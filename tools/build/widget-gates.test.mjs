@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { checkWidgetBindings, loadWidgetSchemas } from './widget-gates.mjs';
+import { checkWidgetBindings, checkAlgoLinkLiterals, loadWidgetSchemas } from './widget-gates.mjs';
 import { defineWidget, list, map, number, object, text, oneOf, columnRef, boolean } from '../../js/core/model.js';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -104,4 +104,13 @@ test('Klammerschritte: Map-Eintrag und Listeneintrag werden aufgelöst', () => {
   const nope = checkWidgetBindings(html('model.nope[i]'), c(edits));
   assert.equal(nope.length, 1);
   assert.match(nope[0], /weder Feld noch Ansichtsfeld/);
+});
+
+test('algo-lab-link: Literal gegen die Algorithmen-ids, Pfade ungeprüft', () => {
+  const ids = new Set(['grr', 'cp']);
+  const run = (v) => checkAlgoLinkLiterals(tpl(`<span x-widget="algo-lab-link" x-widget-algo-id="${v}"></span>`), ids);
+  assert.deepEqual(run("'grr'"), []);
+  assert.deepEqual(run("'gibtsnicht'"), ['template: resources/view.html: x-widget-algo-id="\'gibtsnicht\'": Algorithmus gibtsnicht fehlt in algorithms/index.json']);
+  assert.deepEqual(run('row.algoId'), []);
+  assert.deepEqual(checkAlgoLinkLiterals(tpl(`<span x-widget="other" x-widget-algo-id="'nix'"></span>`), ids), []);
 });

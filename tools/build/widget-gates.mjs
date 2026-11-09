@@ -199,3 +199,34 @@ export function bindingChecks(appDir, id, widgets) {
     return { out, text: bindings.length ? renderBindingCheck({ vmImport, bindings }) : null };
   });
 }
+
+/**
+ * Algorithmen-ids aus js/algorithm-lab/algorithms/index.json.
+ * @param {string} appDir Wurzel von app/dev
+ * @returns {Set<string>|null} null, wenn der Baum kein Algorithm Lab hat (Prüf-Fixtures)
+ */
+export function loadAlgoIds(appDir) {
+  const file = join(appDir, 'js', 'algorithm-lab', 'algorithms', 'index.json');
+  if (!existsSync(file)) return null;
+  return new Set(JSON.parse(readFileSync(file, 'utf8')).algorithms.map((a) => a.id));
+}
+
+/**
+ * Literale in `x-widget-algo-id` am Widget `algo-lab-link` müssen eine id des
+ * Algorithm Lab sein; Pfade bleiben ungeprüft.
+ * @param {{ path: string, text: string }[]} templates
+ * @param {Set<string>} algoIds
+ * @returns {string[]}
+ */
+export function checkAlgoLinkLiterals(templates, algoIds) {
+  const out = [];
+  for (const { path, text } of templates) {
+    for (const tag of text.matchAll(WIDGET_TAG)) {
+      if (tag[1].trim() !== 'algo-lab-link') continue;
+      const attr = /\bx-widget-algo-id\s*=\s*"([^"]*)"/.exec(tag[0]);
+      const lit = attr && WIDGET_LITERAL.exec(attr[1].trim());
+      if (lit && !algoIds.has(lit[1])) out.push(`template: ${path}: x-widget-algo-id="${attr[1].trim()}": Algorithmus ${lit[1]} fehlt in algorithms/index.json`);
+    }
+  }
+  return out;
+}
