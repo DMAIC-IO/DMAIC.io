@@ -12,7 +12,7 @@ import { defineComputedSlots, bindComputed } from '../../../js/core/computed.js'
 import { State } from '../../../js/modules/msa-typ2/domain/model.js';
 import {
   readAnalysis, analysisMessage, resultOf, byOperatorChart, interactionChart, runStrips,
-  componentsChart, byPartChart, xbarChart, rChart,
+  componentsChart, byPartChart, xbarChart, rChart, varCompRows,
 } from '../../../js/modules/msa-typ2/viewmodel/present.js';
 
 const ref = (col) => ({ instanceId: 'ws1', sheetId: 's1', columnId: col });
@@ -183,5 +183,18 @@ suite('MSA Typ 2 Viewmodel — Streifen', () => {
     assertEqual(byPartChart(r, t).series.at(-1).y[0], null);
     assertDeepEqual(xbarChart(r).series[0].y, [null, 1]);
     assertDeepEqual(rChart(r).series[0].y, [null, 0]);
+  });
+
+  test('Varianztabelle: Unterzeilen mit geschützten Leerzeichen eingerückt (normale fielen im HTML weg)', () => {
+    const h = host();
+    const rows = varCompRows(resultOf(h.vm.analysis), t);
+    const label = (key) => rows.find((r) => r.key === key).label;
+    assertEqual(label('grr'), 'gageRR');
+    assertEqual(label('repeatability'), '\u00a0\u00a0repeatability');
+    assertEqual(label('reproducibility'), '\u00a0\u00a0reproducibility');
+    assertEqual(label('operator'), '\u00a0\u00a0\u00a0\u00a0sourceOperator');
+    assertEqual(label('interact'), '\u00a0\u00a0\u00a0\u00a0sourceInteract');
+    assertEqual(label('part'), 'partToPartVar');
+    h.release();
   });
 });

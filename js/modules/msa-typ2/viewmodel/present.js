@@ -120,8 +120,8 @@ export function anovaRows(r, t) {
 export function varCompRows(r, t) {
   if (!r) return [];
   const vc = r.varComp;
-  const i2 = '  ';
-  const i4 = '    ';
+  const i2 = '  ';
+  const i4 = '    ';
   const defs = r.mode === 'typ3' ? [
     ['grr', t('gageRR')],
     ['repeatability', `${i2}${t('repeatability')}`],

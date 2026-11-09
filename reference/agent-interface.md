@@ -201,11 +201,12 @@ samt `factors` und unter `asyncTasks.analysis` den Status mit `value` (`{ result
 die Anzeigeschalter rechnen nicht neu.
 
 Beispiel für ein Schema-Modul ohne eigene Aktion: `msa-typ2` (Messsystemanalyse
-Typ 2). Der Agent setzt die Felder mit den erzeugten Settern, jeweils mit einem
-Objekt-Argument: `setPart`, `setOperator`, `setMeasurement` (Spaltenbezug oder `null`),
-`setLsl`, `setUsl` (Zahl oder `null`), `setAlpha`, `setK` (`6` oder `5.15`),
-`setVerdictBasis` (`auto`, `tolerance` oder `studyVar`) und `setSigmaHist` (Zahl größer 0
-oder `null`), zum Beispiel `setK({ k: 5.15 })` oder `setLsl({ lsl: 6 })`. Eine untere
+Typ 2). `describe` nennt außer `read` keine Aktion; der Agent setzt die Felder über
+`instance.set`: `part`, `operator`, `measurement` (Spaltenbezug oder `null`), `lsl`,
+`usl` (Zahl oder `null`), `alpha`, `k` (`6` oder `5.15`), `verdictBasis` (`auto`,
+`tolerance` oder `studyVar`) und `sigmaHist` (Zahl größer 0 oder `null`), zum Beispiel
+`{ op: 'instance.set', instance, values: { k: 5.15 } }` oder
+`{ op: 'instance.set', instance, values: { lsl: 6, usl: 14 } }`. Eine untere
 Grenze, die nicht unter der oberen liegt, wird abgewiesen (Invariante `limitsOrder`);
 ebenso ein `sigmaHist` kleiner oder gleich 0. `read()` liefert die Felder und unter
 `analysis` das berechnete Ergebnis (Varianzkomponenten, Kennzahlen, Urteil); ohne
