@@ -369,10 +369,6 @@
   background: var(--color-border-strong, var(--color-border-primary));
 }
 
-.hyptest__algo-host {
-  margin-left: var(--spacing-s);
-}
-
 /* Placeholder */
 .hyptest__placeholder {
   display: flex;
