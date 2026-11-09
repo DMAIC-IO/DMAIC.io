@@ -12,6 +12,7 @@ import descriptor from '../module.js';
 import { State, MIN_ROWS, MAX_ROWS } from '../domain/model.js';
 import { reorder } from '../interaction/reorder.js';
 import { vcTable } from '../io/export.js';
+import { fromExample } from '../io/example.js';
 import { UiState } from './state.js';
 import {
   analysisRun, buildStrips, errorTextOf, fmt, pct, intOrDash, termLabel,
@@ -24,6 +25,7 @@ const TABLE_HEAD = ['tableTerm', 'tableDf', 'tableSs', 'tableMs', 'tableVariance
 export default createModule({
   descriptor,
   Model: State,
+  fromExample,
   State: UiState,
   gestures: [reorder],
   asyncTasks: {
