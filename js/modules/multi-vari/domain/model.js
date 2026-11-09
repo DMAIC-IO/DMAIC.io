@@ -19,8 +19,9 @@ import { uid } from '../../../core/uid.js';
 import MultiVariChart from '../../../widgets/multi-vari-chart/schema.js';
 import { from0 } from './migrations.js';
 
-const MIN_ROWS = 2;
-const MAX_ROWS = 4;
+/** Grenzen der Faktorzeilen. */
+export const MIN_ROWS = 2;
+export const MAX_ROWS = 4;
 
 export class State extends defineModel({
   version: '1.0',

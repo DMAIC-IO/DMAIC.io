@@ -9,7 +9,7 @@
 import { createModule } from '../../../core/template-module.js';
 import { asyncTask } from '../../../core/async-task.js';
 import descriptor from '../module.js';
-import { State } from '../domain/model.js';
+import { State, MIN_ROWS, MAX_ROWS } from '../domain/model.js';
 import { reorder } from '../interaction/reorder.js';
 import { vcTable } from '../io/export.js';
 import { UiState } from './state.js';
@@ -17,10 +17,6 @@ import {
   analysisRun, buildStrips, errorTextOf, fmt, pct, intOrDash, termLabel,
   warningCodes, warningText, vcView,
 } from './present.js';
-
-/** Grenzen der Faktorzeilen (wie die Invariante `factorCount`). */
-const MIN_FACTORS = 2;
-const MAX_FACTORS = 4;
 
 /** Spaltenköpfe der Varianztabelle (Textschlüssel). */
 const TABLE_HEAD = ['tableTerm', 'tableDf', 'tableSs', 'tableMs', 'tableVariance', 'tableSd', 'tablePercent'];
@@ -68,9 +64,9 @@ export default createModule({
       get canRender() { return Boolean(this.result) && this.result.renderable !== false; },
 
       /** Noch Platz für eine Faktorzeile. */
-      get canAddFactor() { return this.model.factors.length < MAX_FACTORS; },
+      get canAddFactor() { return this.model.factors.length < MAX_ROWS; },
       /** Eine Faktorzeile lässt sich entfernen. */
-      get canRemoveFactor() { return this.model.factors.length > MIN_FACTORS; },
+      get canRemoveFactor() { return this.model.factors.length > MIN_ROWS; },
       /**
        * Rolle einer Faktorzeile (X-Achse, Serie, Panel-Spalte, Panel-Zeile).
        * @param {number} idx @returns {string}
@@ -107,9 +103,10 @@ export default createModule({
         const r = this.result;
         if (!r) return vcView(null, this.t);
         const hit = shown.get(r);
-        if (hit && hit.t === this.t) return hit.value;
+        const lang = ctx.i18n.getLanguage();
+        if (hit && hit.lang === lang) return hit.value;
         const value = vcView(r, this.t);
-        shown.set(r, { t: this.t, value });
+        shown.set(r, { lang, value });
         return value;
       },
       /**

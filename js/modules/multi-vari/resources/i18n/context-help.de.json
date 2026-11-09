@@ -68,10 +68,7 @@
   },
   "asyncTasks": {
     "analysis": {
-      "help": "Rechnet Diagramm-Gruppen und Varianzkomponenten aus den gewählten Spalten; läuft von selbst nach jeder Änderung an Spalten, Modellform oder Schätzer und nach Änderungen im Arbeitsblatt (zusammengefasst, 120 ms Verzögerung). Ohne Messwertspalte, mit weniger als zwei belegten Faktorzeilen, bei einem ungültigen Versuchsplan oder ohne verwertbare Daten bleibt result null; errorMsg nennt dann den Grund.",
-      "cancel": {
-        "help": "Bricht einen wartenden oder laufenden Lauf ab; result bleibt, wie es war."
-      }
+      "help": "Rechnet Diagramm-Gruppen und Varianzkomponenten aus den gewählten Spalten; läuft von selbst nach jeder Änderung an Spalten, Modellform oder Schätzer und nach Änderungen im Arbeitsblatt (zusammengefasst, 120 ms Verzögerung). Ohne Messwertspalte, mit weniger als zwei belegten Faktorzeilen, bei einem ungültigen Versuchsplan oder ohne verwertbare Daten bleibt result null; errorMsg nennt dann den Grund."
     }
   },
   "types": {

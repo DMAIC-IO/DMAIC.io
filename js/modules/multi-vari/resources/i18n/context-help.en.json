@@ -68,10 +68,7 @@
   },
   "asyncTasks": {
     "analysis": {
-      "help": "Computes chart groups and variance components from the selected columns; it runs on its own after every change to columns, model form or estimator and after changes in the worksheet (coalesced, 120 ms delay). Without a measurement column, with fewer than two filled factor rows, with an invalid design or without usable data result stays null; errorMsg then names the reason.",
-      "cancel": {
-        "help": "Cancels a waiting or running computation; result stays as it was."
-      }
+      "help": "Computes chart groups and variance components from the selected columns; it runs on its own after every change to columns, model form or estimator and after changes in the worksheet (coalesced, 120 ms delay). Without a measurement column, with fewer than two filled factor rows, with an invalid design or without usable data result stays null; errorMsg then names the reason."
     }
   },
   "types": {

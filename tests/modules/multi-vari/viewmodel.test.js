@@ -12,7 +12,7 @@ import { reactive, effect, stop } from '@vue/reactivity';
 import { asyncTask, createAsyncTasks, defineAsyncTaskSlots } from '../../../js/core/async-task.js';
 import { State } from '../../../js/modules/multi-vari/domain/model.js';
 import {
-  analysisRun, buildStrips, errorTextOf, readInputs, RERUN_DELAY,
+  analysisRun, buildStrips, errorTextOf, readInputs, warningText, RERUN_DELAY,
 } from '../../../js/modules/multi-vari/viewmodel/present.js';
 
 const ref = (col) => ({ instanceId: 'ws1', sheetId: 's1', columnId: col });
@@ -169,5 +169,16 @@ suite('Multi-Vari Viewmodel — Fehlertext', () => {
     assertEqual(errorTextOf({ result: resultWith(1), error: 'errCompute', message: 'singulär' }, null, t), 'errCompute{"msg":"singulär"}');
     // Der Lauf selbst wirft.
     assertEqual(errorTextOf(null, 'Absturz', t), 'errCompute{"msg":"Absturz"}');
+  });
+});
+
+suite('Multi-Vari Viewmodel — Warnungstext', () => {
+  test('Größengrenze nennt Spalte, Anzahl und Maximum', () => {
+    const result = { limits: [{ code: 'tooManyAxisLevels', column: 'Nest', count: 40, max: 30 }] };
+    assertEqual(warningText(result, 'tooManyAxisLevels', t), 'warn_tooManyAxisLevels{"col":"Nest","count":40,"max":30}');
+  });
+  test('Warnung ohne Grenze und verworfene Zeilen', () => {
+    assertEqual(warningText({ limits: [] }, 'unbalanced', t), 'warn_unbalanced');
+    assertEqual(warningText({ droppedRows: 3 }, 'droppedRows', t), 'warnDroppedRows{"count":3}');
   });
 });
