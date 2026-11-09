@@ -21,6 +21,7 @@ import Pareto from '../../js/core/chart/types/pareto.js';
 import ChartBase from '../../js/core/chart/chart-base.js';
 import Pie from '../../js/core/chart/types/pie.js';
 import multiVariChart from '../../js/widgets/multi-vari-chart/schema.js';
+import gageRunChart from '../../js/widgets/gage-run-chart/schema.js';
 import pieChart from '../../js/widgets/pie-chart/schema.js';
 import { chartWidget } from '../../js/widgets/chart-parts.js';
 
@@ -187,5 +188,22 @@ suite('Diagramm-Widgets: Schemas', () => {
     assertThrows(() => checkValue(multiVariChart.props.config, 'c', { legendTitle: 'x' }), /unknown c key "legendTitle"/);
     assertDeepEqual(multiVariChart.editable.base, ChartBase.editorKeys);
     assertDeepEqual(multiVariChart.editable.series, []);
+  });
+
+  test('Gage-Run: Name, Typ, Streifenkonfiguration mit leerer Zelle, Basis bearbeitbar', () => {
+    assertDeepEqual([gageRunChart.name, gageRunChart.chartType], ['gage-run-chart', 'gage-run-chart']);
+    const cfg = {
+      title: '', showTitle: false, xLabel: 'Teil', showXLabel: true, yLabel: 'Y', showLegend: true,
+      panels: [{ part: 'P1', series: [
+        { operator: 'A', values: [1, 2], mean: 1.5 },
+        { operator: 'B', values: [], mean: null },
+      ] }],
+      operators: ['A', 'B'], refValue: null, refLabel: 'Mittel', sharedYMin: 0, sharedYMax: 4,
+      showOperatorMean: true, connectWithin: false,
+    };
+    assertDeepEqual(checkValue(gageRunChart.props.config, 'c', cfg), cfg);
+    assertThrows(() => checkValue(gageRunChart.props.config, 'c', { legendTitle: 'x' }), /unknown c key "legendTitle"/);
+    assertDeepEqual(gageRunChart.editable.base, ChartBase.editorKeys);
+    assertDeepEqual(gageRunChart.editable.series, []);
   });
 });

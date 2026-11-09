@@ -257,6 +257,18 @@ suite('Diagramm-Widgets (chart-mount)', () => {
     }
   });
 
+  test('Gage-Run: leerer Mittelwert (null) kommt als NaN beim Typ an', async () => {
+    const cm = fakeManager();
+    const cfg = { panels: [{ part: 'P1', series: [{ operator: 'A', values: [], mean: null }, { operator: 'B', values: [1], mean: 1 }] }], operators: ['A', 'B'], refValue: null };
+    const { root } = await host('<div x-widget="gage-run-chart" x-widget-config="cfg"></div>', { cm, extra: { cfg } });
+    assertEqual(cm.log.created[0].type, 'gage-run-chart');
+    const made = cm.log.created[0].config;
+    assertTrue(Number.isNaN(made.panels[0].series[0].mean));
+    assertEqual(made.panels[0].series[1].mean, 1);
+    assertEqual(made.refValue, null);
+    root.remove();
+  });
+
   test('Boxplot und Einzelwertdiagramm: Gruppenfarben werden zur Farbliste', async () => {
     const groups = [{ name: 'A', values: [1, 2], color: 'var(--color-chart-1)' }, { name: 'B', values: [3, 4], color: 'var(--color-chart-2)' }];
     for (const [name, type, key] of [['boxplot-chart', 'boxplot', 'boxColors'], ['individual-value-plot-chart', 'individual-value-plot', 'pointColors']]) {
