@@ -1,5 +1,5 @@
 import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
-import { vcTable, vcCsvText } from '../../../js/modules/multi-vari/io/export.js';
+import { vcTable } from '../../../js/modules/multi-vari/io/export.js';
 
 const VC = {
   totalVariance: 4,
@@ -21,13 +21,8 @@ suite('Multi-Vari io/export — vcTable', () => {
     assertDeepEqual(rows[3], ['Total', '', '', '', '4', '2', '100']);
   });
 
-  test('vcCsvText setzt dieselben Zellen zusammen (Termnamen in Anführungszeichen)', () => {
-    const csv = vcCsvText(VC, HEAD, 'Total', labels.termLabel);
-    assertEqual(csv, [
-      HEAD.join(','),
-      `"A",1,2,2,3,${Math.sqrt(3)},75`,
-      `"Fehler ""x""",,,,1,1,25`,
-      `"Total",,,,4,2,100`,
-    ].join('\n'));
+  test('REML-Zeilen (null) und Gesamtzeile ohne Varianz ergeben leere Zellen', () => {
+    const rows = vcTable({ totalVariance: 5, terms: [{ id: 'A', df: null, ss: null, ms: null, variance: 3, sd: 1.5, percent: 60 }] }, labels);
+    assertDeepEqual(rows[1], ['A', '', '', '', '3', '1.5', '60']);
   });
 });

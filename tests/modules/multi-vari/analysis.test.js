@@ -24,7 +24,6 @@ import {
   pickLargestTerm, interpretationKey, intOrDash, totalSdValue,
   totalPercentValue,
 } from '../../../js/modules/multi-vari/domain/analysis.js';
-import { vcCsvText } from '../../../js/modules/multi-vari/io/export.js';
 
 const NESTED_OPTS = (factorNames) => ({ factorNames, modelForm: 'nested', estimator: 'anova' });
 
@@ -230,48 +229,6 @@ suite('totalSdValue — total row\'s standard deviation', () => {
     assertTrue(Number.isNaN(totalSdValue({ totalVariance: NaN })));
     assertTrue(Number.isNaN(totalSdValue(null)));
     assertTrue(Number.isNaN(totalSdValue(undefined)));
-  });
-});
-
-suite('vcCsvText — CSV export mirrors the on-screen table', () => {
-  const HEAD = ['Komponente', 'FG', 'SS', 'MS', 'Varianz', 'Std.abw.', 'Anteil %'];
-  const termLabelFn = (t) => (t.id === 'Error' ? 'Rest (Wiederholung)' : t.label);
-
-  test('one row per term plus a totals row, dot as decimal separator', () => {
-    const vc = {
-      totalVariance: 12.5,
-      terms: [
-        { id: 'A', label: 'Schicht', df: 2, ss: 30, ms: 15, variance: 7.5, sd: 2.7386, percent: 60 },
-        { id: 'Error', label: 'Error', df: 9, ss: 20, ms: 2.2222, variance: 5, sd: 2.2361, percent: 40 },
-      ],
-    };
-    const csv = vcCsvText(vc, HEAD, 'Gesamt', termLabelFn);
-    const lines = csv.split('\n');
-    assertEqual(lines.length, 4, 'header + 2 terms + total');
-    assertEqual(lines[0], HEAD.join(','));
-    assertEqual(lines[1], '"Schicht",2,30,15,7.5,2.7386,60');
-    assertEqual(lines[2], '"Rest (Wiederholung)",9,20,2.2222,5,2.2361,40');
-    assertEqual(lines[3], `"Gesamt",,,,${12.5},${Math.sqrt(12.5)},100`);
-  });
-
-  test('REML rows (df/ss/ms null) leave those cells empty, not "null"', () => {
-    const vc = {
-      totalVariance: 5,
-      terms: [
-        { id: 'A', label: 'Schicht', df: null, ss: null, ms: null, variance: 3, sd: 1.7321, percent: 60 },
-      ],
-    };
-    const csv = vcCsvText(vc, HEAD, 'Gesamt', termLabelFn);
-    assertEqual(csv.split('\n')[1], '"Schicht",,,,3,1.7321,60');
-  });
-
-  test('a term label containing a double quote is escaped, not left to break the CSV', () => {
-    const vc = {
-      totalVariance: 1,
-      terms: [{ id: 'A', label: 'Maß "Toleranz"', df: 1, ss: 1, ms: 1, variance: 1, sd: 1, percent: 100 }],
-    };
-    const csv = vcCsvText(vc, HEAD, 'Gesamt', (t) => t.label);
-    assertEqual(csv.split('\n')[1], '"Maß ""Toleranz""",1,1,1,1,1,100');
   });
 });
 

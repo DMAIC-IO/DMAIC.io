@@ -68,7 +68,7 @@
   },
   "asyncTasks": {
     "analysis": {
-      "help": "Computes chart groups and variance components from the selected columns; it runs on its own after every change to columns, model form or estimator and after changes in the worksheet (coalesced, 120 ms delay). Without a measurement column, with fewer than two filled factor rows, with an invalid design or without usable data result stays null; errorMsg then names the reason."
+      "help": "Computes chart groups and variance components from the selected columns; it runs on its own after every change to columns, model form or estimator and after changes in the worksheet (coalesced, 120 ms delay). Without a measurement column, with fewer than two filled factor rows, with an invalid design or without usable data the task yields `{ result, error, message }`: `value.result` is then null, `value.error` names the reason (`errNeedFactors`, `errNoData` or `errCompute`) and `value.message` the translated text; if the computation throws, the failure appears in `asyncTasks.analysis.error`."
     }
   },
   "types": {

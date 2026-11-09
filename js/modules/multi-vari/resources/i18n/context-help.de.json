@@ -68,7 +68,7 @@
   },
   "asyncTasks": {
     "analysis": {
-      "help": "Rechnet Diagramm-Gruppen und Varianzkomponenten aus den gewählten Spalten; läuft von selbst nach jeder Änderung an Spalten, Modellform oder Schätzer und nach Änderungen im Arbeitsblatt (zusammengefasst, 120 ms Verzögerung). Ohne Messwertspalte, mit weniger als zwei belegten Faktorzeilen, bei einem ungültigen Versuchsplan oder ohne verwertbare Daten bleibt result null; errorMsg nennt dann den Grund."
+      "help": "Rechnet Diagramm-Gruppen und Varianzkomponenten aus den gewählten Spalten; läuft von selbst nach jeder Änderung an Spalten, Modellform oder Schätzer und nach Änderungen im Arbeitsblatt (zusammengefasst, 120 ms Verzögerung). Ohne Messwertspalte, mit weniger als zwei belegten Faktorzeilen, bei einem ungültigen Versuchsplan oder ohne verwertbare Daten liefert der Task `{ result, error, message }`: `value.result` ist dann null, `value.error` nennt den Grund (`errNeedFactors`, `errNoData` oder `errCompute`) und `value.message` den übersetzten Text; wirft die Rechnung, steht der Fehler in `asyncTasks.analysis.error`."
     }
   },
   "types": {

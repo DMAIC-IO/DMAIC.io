@@ -63,11 +63,6 @@ suite('Multi-Vari Model — Vorgabe und Kommandos', () => {
 });
 
 suite('Multi-Vari Model — Invarianten', () => {
-  const load = (rows) => {
-    const reports = [];
-    const m = State.fromJSON({ factors: rows }, { repair: true, onRepair: (n) => reports.push(n) });
-    return { m, reports };
-  };
   const strict = (rows) => ({ _schema: { version: '1.0' }, measurement: null, factors: rows, modelForm: 'nested', estimator: 'anova', showPoints: true, connectMeans: true, showGroupMean: true, showRefLine: true, exampleWorksheetId: null });
   const load1 = (rows) => {
     const reports = [];

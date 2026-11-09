@@ -197,7 +197,7 @@ entprellt. Es gibt dafür keine Aktion; der Agent setzt die Felder (`instance.se
 `showRefLine`) und die Faktorzeilen über die Kommandos `addFactor` (liefert die neue
 `id`), `removeFactor { id }`, `moveFactor { fromIdx, toIdx }` und
 `setFactorColumn { id, ref }`; die Faktorzeilen sind 2 bis 4. `read()` liefert die Felder
-samt `factors` und unter `asyncTasks.analysis` den Status mit `value` (das Ergebnis);
+samt `factors` und unter `asyncTasks.analysis` den Status mit `value` (`{ result, error, message }`, das Ergebnis steht in `value.result`);
 die Anzeigeschalter rechnen nicht neu.
 
 `settle` (die interne Ruhe vor einem `read()`) wartet zusätzlich auf laufende

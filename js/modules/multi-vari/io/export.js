@@ -22,18 +22,3 @@ export function vcTable(vc, { head, total, termLabel }) {
     cell(Math.sqrt(vc.totalVariance)), cell(totalPercentValue(vc))]);
   return rows;
 }
-
-/**
- * CSV-Text der Tabelle — dieselben Spalten wie die Bildschirmtabelle, Punkt
- * als Dezimaltrenner, Zeilenbeschriftungen in Anführungszeichen.
- * @param {{terms: Array<object>, totalVariance: number}} vc
- * @param {string[]} head — 7 übersetzte Spaltenköpfe
- * @param {string} totalLabel
- * @param {(term: object) => string} termLabelFn
- * @returns {string}
- */
-export function vcCsvText(vc, head, totalLabel, termLabelFn) {
-  const rows = vcTable(vc, { head, total: totalLabel, termLabel: termLabelFn });
-  const quote = (s) => `"${s.replace(/"/g, '""')}"`;
-  return rows.map((r, i) => (i === 0 ? r : [quote(r[0]), ...r.slice(1)]).join(',')).join('\n');
-}
