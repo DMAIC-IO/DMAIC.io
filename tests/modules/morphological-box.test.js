@@ -279,7 +279,7 @@ suite('Morphological Box Model — persistence', () => {
   });
 
   test('the pizza example loads and saves unchanged apart from _schema', async () => {
-    const url = new URL('../../examples/projects/morphological-box-pizza-lieferung.json', import.meta.url);
+    const url = new URL('../../js/modules/morphological-box/resources/examples/projects/morphological-box-pizza-lieferung.json', import.meta.url);
     const example = await (await fetch(url)).json();
     const m = State.fromJSON(example);
     assertDeepEqual(stored(m), example);

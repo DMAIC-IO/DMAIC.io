@@ -25,6 +25,11 @@
     "description": "Variance and mean tests with automatic normality assessment and power analysis",
     "whenToUse": "When you need to decide whether an observed difference in location or spread goes beyond the noise — one mean against a target value, two samples against each other, or k groups together. Requires metric data in a data collection."
   },
+  "morphological-box": {
+    "name": "Morphological Box",
+    "description": "Combine solution concepts from parameters and options, check incompatibilities",
+    "whenToUse": "When a solution consists of several sub-functions and alternative whole concepts should be combined systematically — not for scoring or choosing the concepts, that belongs to solution selection."
+  },
   "resampling": {
     "name": "Resampling",
     "description": "Bootstrap confidence intervals and permutation tests for one, two, paired and k samples",

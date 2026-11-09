@@ -91,6 +91,13 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'fields.pick', reason: 'die Wahl des Nutzers; gesetzt über die Karten, deren Anker an pickChart hängt' },
     { name: 'fields.preview', reason: 'abgeleitet aus dem gewählten Diagramm; der Vorschaukopf ist an fields.selectedChartType verankert' },
   ],
+  'morphological-box': [
+    { name: 'actions.setParameterName', reason: 'der Name wird in der Oberfläche direkt ins Feld geschrieben; Kopf und Matrix sind an fields.parameters.name verankert' },
+    { name: 'actions.setOptionLabel', reason: 'die Bezeichnung wird in der Oberfläche direkt ins Feld geschrieben; Kopf und Matrix sind an fields.parameters.options.label verankert' },
+    { name: 'actions.setConceptName', reason: 'der Name wird in der Oberfläche direkt ins Feld geschrieben; die Beschriftung ist an fields.concepts.name verankert' },
+    { name: 'fields.optionIds', reason: 'Liste der gültigen ids für die Agentenfläche; die Oberfläche zeigt die Ausprägungen selbst' },
+    { name: 'fields.consistentExact', reason: 'sichtbar nur als „≥“ vor der Kennzahl, die an fields.consistentCount verankert ist' },
+  ],
   'doe-planner': [
     { name: 'actions.factors.removeFactor', reason: 'Entfernen-Knopf je Faktorzeile; ein Fragezeichen je Zeile wäre Rauschen' },
     { name: 'actions.factors.setFactorName', reason: 'Eingabe je Faktorzeile; die Faktorliste ist an fields.factors verankert' },

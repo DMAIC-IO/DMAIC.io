@@ -9175,6 +9175,7 @@ export const AGENT_REGISTRY = {
   "morphological-box": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -9188,222 +9189,329 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "AgentRead",
-        "help": "Return the full read state of this instance, including the counts and the per-concept checks."
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "addParameter": {
-        "params": [],
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
         "returns": "string",
-        "help": "Append a parameter (a row of the box) with one empty option."
+        "help": "",
+        "keysOf": "addParameter",
+        "keysHelp": "actions.addParameter.params",
+        "keys": {}
       },
       "setParameterName": {
+        "target": "model",
         "params": [
           {
-            "name": "parameterId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id of the parameter"
-          },
-          {
-            "name": "name",
-            "type": "string",
-            "optional": false,
-            "help": "the new name; the empty string clears it"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Set the name of a parameter."
+        "help": "",
+        "keysOf": "setParameterName",
+        "keysHelp": "actions.setParameterName.params",
+        "keys": {
+          "parameterId": {
+            "type": "string",
+            "help": ""
+          },
+          "name": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "removeParameter": {
+        "target": "model",
         "params": [
           {
-            "name": "parameterId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id of the parameter"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Remove a parameter with its options, their incompatibilities and the concept picks in it."
+        "help": "",
+        "keysOf": "removeParameter",
+        "keysHelp": "actions.removeParameter.params",
+        "keys": {
+          "parameterId": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "addOption": {
+        "target": "model",
         "params": [
           {
-            "name": "parameterId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id of the parameter"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "string",
-        "help": "Append an empty option to a parameter."
+        "help": "",
+        "keysOf": "addOption",
+        "keysHelp": "actions.addOption.params",
+        "keys": {
+          "parameterId": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "setOptionLabel": {
+        "target": "model",
         "params": [
           {
-            "name": "optionId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id of the option"
-          },
-          {
-            "name": "label",
-            "type": "string",
-            "optional": false,
-            "help": "the new label; the empty string clears it"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Set the label of an option."
+        "help": "",
+        "keysOf": "setOptionLabel",
+        "keysHelp": "actions.setOptionLabel.params",
+        "keys": {
+          "optionId": {
+            "type": "string",
+            "help": ""
+          },
+          "label": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "removeOption": {
+        "target": "model",
         "params": [
           {
-            "name": "optionId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id of the option"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Remove an option with its incompatibilities and the concept picks of it."
+        "help": "",
+        "keysOf": "removeOption",
+        "keysHelp": "actions.removeOption.params",
+        "keys": {
+          "optionId": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "setConflict": {
+        "target": "model",
         "params": [
           {
-            "name": "optionA",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id of the first option"
-          },
-          {
-            "name": "optionB",
-            "type": "string",
-            "optional": false,
-            "help": "id of the second option, from another parameter"
-          },
-          {
-            "name": "incompatible",
-            "type": "boolean",
-            "optional": false,
-            "help": "true marks the pair, false clears it"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Mark two options of different parameters as incompatible, or clear the mark."
+        "help": "",
+        "keysOf": "setConflict",
+        "keysHelp": "actions.setConflict.params",
+        "keys": {
+          "optionA": {
+            "type": "string",
+            "help": ""
+          },
+          "optionB": {
+            "type": "string",
+            "help": ""
+          },
+          "incompatible": {
+            "type": "boolean",
+            "help": ""
+          }
+        }
       },
       "addConcept": {
-        "params": [],
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
         "returns": "string",
-        "help": "Append an empty concept and make it the active one."
+        "help": "",
+        "keysOf": "addConcept",
+        "keysHelp": "actions.addConcept.params",
+        "keys": {}
       },
       "setConceptName": {
+        "target": "model",
         "params": [
           {
-            "name": "conceptId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id of the concept"
-          },
-          {
-            "name": "name",
-            "type": "string",
-            "optional": false,
-            "help": "the new name; the empty string clears it"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Set the name of a concept."
+        "help": "",
+        "keysOf": "setConceptName",
+        "keysHelp": "actions.setConceptName.params",
+        "keys": {
+          "conceptId": {
+            "type": "string",
+            "help": ""
+          },
+          "name": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "removeConcept": {
+        "target": "model",
         "params": [
           {
-            "name": "conceptId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id of the concept"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Remove a concept; if it was active, the first remaining one becomes active."
+        "help": "",
+        "keysOf": "removeConcept",
+        "keysHelp": "actions.removeConcept.params",
+        "keys": {
+          "conceptId": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "setConceptPick": {
+        "target": "model",
         "params": [
           {
-            "name": "conceptId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id of the concept"
-          },
-          {
-            "name": "parameterId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the parameter"
-          },
-          {
-            "name": "optionId",
-            "type": "string",
-            "optional": false,
-            "help": "id of one of the parameter's options; the empty string clears the pick"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Pick the option of a parameter for a concept, or clear the pick."
+        "help": "",
+        "keysOf": "setConceptPick",
+        "keysHelp": "actions.setConceptPick.params",
+        "keys": {
+          "conceptId": {
+            "type": "string",
+            "help": ""
+          },
+          "parameterId": {
+            "type": "string",
+            "help": ""
+          },
+          "optionId": {
+            "type": "string",
+            "help": ""
+          }
+        }
       }
     },
     "fields": {
       "parameters": {
-        "type": "object[]",
-        "help": "the parameters with their options, in box order",
-        "bulk": false,
-        "derived": true
-      },
-      "optionIds": {
-        "type": "string[]",
-        "help": "the ids of all options, in box order",
-        "bulk": false,
-        "derived": true
+        "type": "{ id: string, name: string, options: { id: string, label: string }[] }[]",
+        "help": "",
+        "bulk": false
       },
       "conflicts": {
         "type": "string[][]",
-        "help": "the incompatible option pairs",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "concepts": {
-        "type": "object[]",
-        "help": "the concepts with their picks",
+        "type": "{ id: string, name: string, picks: Record<string, string> }[]",
+        "help": "",
+        "bulk": false
+      },
+      "optionIds": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "combinationCount": {
-        "type": "number",
-        "help": "all combinations of one option per parameter",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "consistentCount": {
-        "type": "number",
-        "help": "combinations without an incompatible pair",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "consistentExact": {
-        "type": "boolean",
-        "help": "false when consistentCount is only a lower bound",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "conceptChecks": {
-        "type": "object[]",
-        "help": "per concept: id, complete, conflicts",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "derived": true,
+        "keysOf": "ConceptCheck",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": "id of the concept"
+          },
+          "complete": {
+            "type": "boolean",
+            "help": "every parameter with options has a pick"
+          },
+          "conflicts": {
+            "type": "string[][]",
+            "help": "the incompatible option pairs inside the concept, in box order"
+          }
+        }
       }
     },
+    "asyncTasks": [],
     "viewFields": [
       "view",
       "activeConceptId"
+    ],
+    "settable": [
+      "parameters",
+      "conflicts",
+      "concepts"
     ]
   },
   "mosaic": {

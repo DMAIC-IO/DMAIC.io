@@ -75,6 +75,9 @@ test('module-context-help: label/title als String nur eine Ebene unter dem Feld,
   assert.equal(validateValue(field({ valueRef: { help: 'x', deep: leaf } }), 'module-context-help').ok, false, 'label in tiefer Ebene');
   assert.equal(validateValue(field({ label: 'V' }), 'module-context-help').ok, false, 'label direkt am Feld');
   assert.deepEqual(validateValue({ ...CTX, fields: { events: { help: 'x', title: { help: 'Feld "title"' } } } }, 'module-context-help'), { ok: true, errors: [] });
+  // Ein Element-Feld namens label/title eine Ebene tiefer (Liste in Liste) ist ein Hilfeknoten.
+  assert.deepEqual(validateValue(field({ options: { help: 'x', label: { help: 'Feld "label"' } } }), 'module-context-help'), { ok: true, errors: [] });
+  assert.equal(validateValue(field({ options: { help: 'x', label: { note: 'x' } } }), 'module-context-help').ok, false, 'Knoten ohne help');
 });
 
 test('module-context-help: alle vorhandenen Dateien bestehen das Schema', () => {

@@ -1,0 +1,163 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "parameters": {
+      "help": "The parameters in box order, each with id, name and options (id, label).",
+      "id": {
+        "help": "The id of the parameter; the key for parameterId and for the picks of the concepts."
+      },
+      "name": {
+        "help": "The name of the parameter, a sub-function or property of the solution; empty is allowed."
+      },
+      "options": {
+        "help": "The options of the parameter in box order, each with id and label.",
+        "id": {
+          "help": "The id of the option, unique across all parameters; the value for optionId, optionA and optionB."
+        },
+        "label": {
+          "help": "The label of the option; empty is allowed."
+        }
+      }
+    },
+    "conflicts": {
+      "help": "The incompatible pairs as sorted pairs of option ids."
+    },
+    "concepts": {
+      "help": "The concepts, each with id, name and picks (parameter id → option id).",
+      "id": {
+        "help": "The id of the concept; the value for conceptId."
+      },
+      "name": {
+        "help": "The name of the concept; empty is allowed."
+      },
+      "picks": {
+        "help": "The pick per parameter: parameter id → id of an option of that parameter. A parameter without an entry is not picked."
+      }
+    },
+    "view": {
+      "help": "The view shown: \"box\" for the box, \"consistency\" for the consistency matrix."
+    },
+    "activeConceptId": {
+      "help": "The concept a click in the box edits. Empty only while there are no concepts."
+    },
+    "optionIds": {
+      "help": "The ids of all options in box order — the valid values for optionId, optionA and optionB."
+    },
+    "combinationCount": {
+      "help": "All combinations of one option per parameter — the product of the option counts."
+    },
+    "consistentCount": {
+      "help": "The combinations without an incompatible pair. For very large boxes only a lower bound; then consistentExact is false and the display reads \"≥ n\"."
+    },
+    "consistentExact": {
+      "help": "false when consistentCount is only a lower bound because the counting budget ran out."
+    },
+    "conceptChecks": {
+      "help": "Per concept: id, complete (every parameter with options is picked) and conflicts (the incompatible pairs inside the concept)."
+    }
+  },
+  "actions": {
+    "read": {
+      "help": "Returns parameters, options, incompatibilities and concepts together with the combination counts and the concept checks."
+    },
+    "addParameter": {
+      "help": "Appends a parameter (a row of the box) with one empty option and returns its id.",
+      "params": {
+        "command": "An empty object; the command takes no arguments."
+      }
+    },
+    "setParameterName": {
+      "help": "Sets the name of a parameter.",
+      "params": {
+        "parameterId": "The id of the parameter. An unknown id is an error.",
+        "name": "The new name; the empty string clears it.",
+        "command": "The command as one object with parameterId and name."
+      }
+    },
+    "removeParameter": {
+      "help": "Removes a parameter with its options, their incompatibilities and the concept picks in it.",
+      "params": {
+        "parameterId": "The id of the parameter. An unknown id is an error.",
+        "command": "The command as one object with parameterId."
+      }
+    },
+    "addOption": {
+      "help": "Appends an empty option to a parameter and returns its id.",
+      "params": {
+        "parameterId": "The id of the parameter. An unknown id is an error.",
+        "command": "The command as one object with parameterId."
+      }
+    },
+    "setOptionLabel": {
+      "help": "Sets the label of an option.",
+      "params": {
+        "optionId": "The id of the option. An unknown id is an error.",
+        "label": "The new label; the empty string clears it.",
+        "command": "The command as one object with optionId and label."
+      }
+    },
+    "removeOption": {
+      "help": "Removes an option with its incompatibilities and the concept picks that point at it.",
+      "params": {
+        "optionId": "The id of the option. An unknown id is an error.",
+        "command": "The command as one object with optionId."
+      }
+    },
+    "setConflict": {
+      "help": "Marks two options of different parameters as incompatible, or clears the mark.",
+      "params": {
+        "optionA": "The id of the first option.",
+        "optionB": "The id of the second option, from another parameter. Two options of the same parameter are an error.",
+        "incompatible": "true marks the pair, false clears the mark.",
+        "command": "The command as one object with optionA, optionB and incompatible."
+      }
+    },
+    "addConcept": {
+      "help": "Appends an empty concept, makes it active and returns its id.",
+      "params": {
+        "command": "An empty object; the command takes no arguments."
+      }
+    },
+    "setConceptName": {
+      "help": "Sets the name of a concept.",
+      "params": {
+        "conceptId": "The id of the concept. An unknown id is an error.",
+        "name": "The new name; the empty string clears it.",
+        "command": "The command as one object with conceptId and name."
+      }
+    },
+    "removeConcept": {
+      "help": "Removes a concept; if it was active, the first remaining one becomes active.",
+      "params": {
+        "conceptId": "The id of the concept. An unknown id is an error.",
+        "command": "The command as one object with conceptId."
+      }
+    },
+    "setConceptPick": {
+      "help": "Picks the option of a parameter for a concept, or clears the pick.",
+      "params": {
+        "conceptId": "The id of the concept.",
+        "parameterId": "The id of the parameter.",
+        "optionId": "The id of one of this parameter's options; the empty string clears the pick. An option of another parameter is an error.",
+        "command": "The command as one object with conceptId, parameterId and optionId."
+      }
+    }
+  },
+  "types": {
+    "ConceptCheck": {
+      "id": "The id of the concept.",
+      "complete": "true when every parameter with options is picked.",
+      "conflicts": "The incompatible pairs inside the concept, in box order."
+    },
+    "AgentRead": {
+      "parameters": "The parameters with their options, in box order.",
+      "optionIds": "The ids of all options, in box order.",
+      "conflicts": "The incompatible option pairs.",
+      "concepts": "The concepts with their picks.",
+      "combinationCount": "All combinations of one option per parameter.",
+      "consistentCount": "Combinations without an incompatible pair.",
+      "consistentExact": "false when consistentCount is only a lower bound.",
+      "conceptChecks": "Per concept: id, complete and conflicts."
+    }
+  }
+}

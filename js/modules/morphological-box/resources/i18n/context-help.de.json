@@ -1,0 +1,163 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "parameters": {
+      "help": "Die Parameter in Kastenreihenfolge, jeder mit id, name und options (id, label).",
+      "id": {
+        "help": "Die id des Parameters; Schlüssel für parameterId und für die picks der Konzepte."
+      },
+      "name": {
+        "help": "Der Name des Parameters, eine Teilfunktion oder Eigenschaft der Lösung; leer ist erlaubt."
+      },
+      "options": {
+        "help": "Die Ausprägungen des Parameters in Kastenreihenfolge, jede mit id und label.",
+        "id": {
+          "help": "Die id der Ausprägung, eindeutig über alle Parameter; Wert für optionId, optionA und optionB."
+        },
+        "label": {
+          "help": "Die Bezeichnung der Ausprägung; leer ist erlaubt."
+        }
+      }
+    },
+    "conflicts": {
+      "help": "Die unverträglichen Paare als sortierte Paare von Ausprägungs-ids."
+    },
+    "concepts": {
+      "help": "Die Konzepte, jedes mit id, name und picks (Parameter-id → Ausprägungs-id).",
+      "id": {
+        "help": "Die id des Konzepts; Wert für conceptId."
+      },
+      "name": {
+        "help": "Der Name des Konzepts; leer ist erlaubt."
+      },
+      "picks": {
+        "help": "Die Wahl je Parameter: Parameter-id → id einer Ausprägung dieses Parameters. Ein Parameter ohne Eintrag ist nicht gewählt."
+      }
+    },
+    "view": {
+      "help": "Die gezeigte Ansicht: „box“ für den Kasten, „consistency“ für die Verträglichkeitsmatrix."
+    },
+    "activeConceptId": {
+      "help": "Das Konzept, das ein Klick im Kasten bearbeitet. Leer nur, solange es keine Konzepte gibt."
+    },
+    "optionIds": {
+      "help": "Die ids aller Ausprägungen in Kastenreihenfolge — die gültigen Werte für optionId, optionA und optionB."
+    },
+    "combinationCount": {
+      "help": "Alle Kombinationen aus je einer Ausprägung pro Parameter — das Produkt der Ausprägungszahlen."
+    },
+    "consistentCount": {
+      "help": "Die Kombinationen ohne unverträgliches Paar. Bei sehr großen Kästen nur eine Untergrenze, dann ist consistentExact false und die Anzeige lautet „≥ n“."
+    },
+    "consistentExact": {
+      "help": "false, wenn consistentCount nur eine Untergrenze ist, weil das Zählbudget erschöpft war."
+    },
+    "conceptChecks": {
+      "help": "Je Konzept: id, complete (jeder Parameter mit Ausprägungen ist gewählt) und conflicts (die unverträglichen Paare im Konzept)."
+    }
+  },
+  "actions": {
+    "read": {
+      "help": "Liefert Parameter, Ausprägungen, Unverträglichkeiten und Konzepte samt Kombinationszahlen und Konzeptprüfung."
+    },
+    "addParameter": {
+      "help": "Hängt einen Parameter (eine Zeile des Kastens) mit einer leeren Ausprägung an und gibt seine id zurück.",
+      "params": {
+        "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben."
+      }
+    },
+    "setParameterName": {
+      "help": "Setzt den Namen eines Parameters.",
+      "params": {
+        "parameterId": "Die id des Parameters. Eine unbekannte id ist ein Fehler.",
+        "name": "Der neue Name; die leere Zeichenkette leert ihn.",
+        "command": "Das Kommando als ein Objekt mit parameterId und name."
+      }
+    },
+    "removeParameter": {
+      "help": "Entfernt einen Parameter samt Ausprägungen, deren Unverträglichkeiten und den Konzeptwahlen darin.",
+      "params": {
+        "parameterId": "Die id des Parameters. Eine unbekannte id ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit parameterId."
+      }
+    },
+    "addOption": {
+      "help": "Hängt an einen Parameter eine leere Ausprägung an und gibt ihre id zurück.",
+      "params": {
+        "parameterId": "Die id des Parameters. Eine unbekannte id ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit parameterId."
+      }
+    },
+    "setOptionLabel": {
+      "help": "Setzt die Bezeichnung einer Ausprägung.",
+      "params": {
+        "optionId": "Die id der Ausprägung. Eine unbekannte id ist ein Fehler.",
+        "label": "Die neue Bezeichnung; die leere Zeichenkette leert sie.",
+        "command": "Das Kommando als ein Objekt mit optionId und label."
+      }
+    },
+    "removeOption": {
+      "help": "Entfernt eine Ausprägung samt ihren Unverträglichkeiten und den Konzeptwahlen, die auf sie zeigen.",
+      "params": {
+        "optionId": "Die id der Ausprägung. Eine unbekannte id ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit optionId."
+      }
+    },
+    "setConflict": {
+      "help": "Markiert zwei Ausprägungen verschiedener Parameter als unverträglich oder hebt die Markierung auf.",
+      "params": {
+        "optionA": "Die id der ersten Ausprägung.",
+        "optionB": "Die id der zweiten Ausprägung, aus einem anderen Parameter. Zwei Ausprägungen desselben Parameters sind ein Fehler.",
+        "incompatible": "true markiert das Paar, false hebt die Markierung auf.",
+        "command": "Das Kommando als ein Objekt mit optionA, optionB und incompatible."
+      }
+    },
+    "addConcept": {
+      "help": "Hängt ein leeres Konzept an, macht es aktiv und gibt seine id zurück.",
+      "params": {
+        "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben."
+      }
+    },
+    "setConceptName": {
+      "help": "Setzt den Namen eines Konzepts.",
+      "params": {
+        "conceptId": "Die id des Konzepts. Eine unbekannte id ist ein Fehler.",
+        "name": "Der neue Name; die leere Zeichenkette leert ihn.",
+        "command": "Das Kommando als ein Objekt mit conceptId und name."
+      }
+    },
+    "removeConcept": {
+      "help": "Entfernt ein Konzept; war es aktiv, wird das erste verbleibende aktiv.",
+      "params": {
+        "conceptId": "Die id des Konzepts. Eine unbekannte id ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit conceptId."
+      }
+    },
+    "setConceptPick": {
+      "help": "Wählt für ein Konzept die Ausprägung eines Parameters oder hebt die Wahl auf.",
+      "params": {
+        "conceptId": "Die id des Konzepts.",
+        "parameterId": "Die id des Parameters.",
+        "optionId": "Die id einer Ausprägung dieses Parameters; die leere Zeichenkette hebt die Wahl auf. Eine Ausprägung eines anderen Parameters ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit conceptId, parameterId und optionId."
+      }
+    }
+  },
+  "types": {
+    "ConceptCheck": {
+      "id": "Die id des Konzepts.",
+      "complete": "true, wenn jeder Parameter mit Ausprägungen gewählt ist.",
+      "conflicts": "Die unverträglichen Paare innerhalb des Konzepts in Kastenreihenfolge."
+    },
+    "AgentRead": {
+      "parameters": "Die Parameter mit ihren Ausprägungen, in Kastenreihenfolge.",
+      "optionIds": "Die ids aller Ausprägungen in Kastenreihenfolge.",
+      "conflicts": "Die unverträglichen Paare von Ausprägungen.",
+      "concepts": "Die Konzepte mit ihren Wahlen.",
+      "combinationCount": "Alle Kombinationen aus je einer Ausprägung pro Parameter.",
+      "consistentCount": "Die Kombinationen ohne unverträgliches Paar.",
+      "consistentExact": "false, wenn consistentCount nur eine Untergrenze ist.",
+      "conceptChecks": "Je Konzept: id, complete und conflicts."
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "methodology": {
+      "title": "Methodik",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Der morphologische Kasten (Zwicky) zerlegt eine Lösung in unabhängige Parameter, sammelt je Parameter alternative Ausprägungen und kombiniert je eine Ausprägung pro Parameter zu einem Gesamtkonzept."
+        },
+        {
+          "type": "definition",
+          "term": "Parameter",
+          "content": "Eine Teilfunktion oder Eigenschaft der Lösung, etwa „Antrieb“ oder „Transportmittel“. Jede Zeile des Kastens ist ein Parameter."
+        },
+        {
+          "type": "definition",
+          "term": "Ausprägung",
+          "content": "Eine konkrete Alternative für einen Parameter. Die Ausprägungen eines Parameters schließen sich gegenseitig aus."
+        },
+        {
+          "type": "definition",
+          "term": "Verträglichkeit",
+          "content": "In der Verträglichkeitsmatrix werden Paare von Ausprägungen verschiedener Parameter als unverträglich markiert (Cross-Consistency-Assessment nach Ritchey). Das Modul zählt alle und alle verträglichen Kombinationen."
+        },
+        {
+          "type": "definition",
+          "term": "Konzept",
+          "content": "Ein Pfad durch den Kasten: je Parameter eine gewählte Ausprägung. Konzepte erscheinen als farbige Punkte in den Zellen; ein Konzept mit unverträglichem Paar wird gewarnt."
+        },
+        {
+          "type": "paragraph",
+          "content": "Die Konzepte sind Kandidaten für die anschließende Lösungsauswahl. Bewertet und gewichtet wird hier nicht."
+        }
+      ]
+    },
+    "example": {
+      "title": "Beispiel",
+      "blocks": [
+        {
+          "type": "steps",
+          "items": [
+            "Legen Sie über „+“ unter dem Kasten die Teilfunktionen der Lösung an und benennen Sie sie.",
+            "Tragen Sie je Parameter die Ausprägungen ein; „+“ am Zeilenende fügt eine weitere hinzu.",
+            "Markieren Sie in der Ansicht „Verträglichkeit“ Paare, die nicht zusammenpassen.",
+            "Legen Sie über „+“ unter der Konzeptliste ein Konzept an und wählen Sie im Kasten je Parameter eine Ausprägung.",
+            "Prüfen Sie in der Konzeptliste, ob jedes Konzept vollständig und widerspruchsfrei ist."
+          ]
+        }
+      ]
+    }
+  }
+}

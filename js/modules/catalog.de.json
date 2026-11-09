@@ -25,6 +25,11 @@
     "description": "Varianz- und Mittelwerttests mit automatischer Normalverteilungsprüfung und Power-Analyse",
     "whenToUse": "Wenn zu entscheiden ist, ob ein beobachteter Unterschied in Lage oder Streuung über das Rauschen hinausgeht — ein Mittelwert gegen einen Zielwert, zwei Stichproben gegeneinander, oder k Gruppen gemeinsam. Setzt metrische Daten in einer Datensammlung voraus."
   },
+  "morphological-box": {
+    "name": "Morphologischer Kasten",
+    "description": "Lösungskonzepte aus Parametern und Ausprägungen kombinieren, Unverträglichkeiten prüfen",
+    "whenToUse": "Wenn eine Lösung aus mehreren Teilfunktionen besteht und systematisch alternative Gesamtkonzepte kombiniert werden sollen — nicht zum Bewerten oder Auswählen der Konzepte, das gehört in die Lösungsauswahl."
+  },
   "resampling": {
     "name": "Resampling",
     "description": "Bootstrap-Konfidenzintervalle und Permutationstests für eine, zwei, gepaarte und k Stichproben",

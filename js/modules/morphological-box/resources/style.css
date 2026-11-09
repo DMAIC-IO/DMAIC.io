@@ -185,6 +185,12 @@
   gap: var(--spacing-xs);
 }
 
+.morphological-box__concept-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
 .morphological-box__concepts-title {
   margin: 0;
   font-size: var(--font-size-md);

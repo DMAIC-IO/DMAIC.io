@@ -79,8 +79,8 @@
       "required": ["help"],
       "properties": {
         "help": { "$ref": "common.schema.json#/$defs/text" },
-        "label": { "$ref": "common.schema.json#/$defs/text" },
-        "title": { "$ref": "common.schema.json#/$defs/text" }
+        "label": { "anyOf": [{ "$ref": "common.schema.json#/$defs/text" }, { "$ref": "#/$defs/fieldDeepHelp" }] },
+        "title": { "anyOf": [{ "$ref": "common.schema.json#/$defs/text" }, { "$ref": "#/$defs/fieldDeepHelp" }] }
       },
       "additionalProperties": { "$ref": "#/$defs/fieldDeepHelp" }
     },

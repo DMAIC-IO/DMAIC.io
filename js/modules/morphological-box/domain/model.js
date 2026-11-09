@@ -203,6 +203,7 @@ export class State extends defineModel({
           && distinctIds(m.concepts.map(c => c.id));
       },
       repair(m) {
+        /** @type {Array<{ id: string, name: string, options: Array<{ id: string, label: string }> }>} */
         const parameters = dedupeIds(m._v.parameters);
         const options = parameters.flatMap(p => p.options);
         const taken = new Set(options.map(o => o.id));

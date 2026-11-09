@@ -431,7 +431,7 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
   /** Name des Kommandos = Schlüssel der umgebenden PropertyAssignment. */
   const commandName = (call) => (ts.isPropertyAssignment(call.parent) && call.parent.name && 'text' in call.parent.name ? call.parent.name.text : '?');
   const HOOKS = ['run', 'current', 'confirm'];
-  /** `invariants: { <name>: { fields: ['…'], test(m) { … } } }` am obersten Literal. */
+  /** `invariants: { <name>: { fields: ['…'], test(m) { … }, repair?(m) { … } } }` am obersten Literal. */
   const checkInvariants = (p) => {
     const v = ts.isPropertyAssignment(p) ? p.initializer : null;
     if (!v || !ts.isObjectLiteralExpression(v)) {
@@ -451,9 +451,15 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
           else if (!(f && ts.isFunctionExpression(f))) out.push(`${P} test von invariants.${name}: Funktion oder Methode erwartet`);
           continue;
         }
+        if (k === 'repair') {
+          if (ts.isMethodDeclaration(q)) continue;
+          const f = ts.isPropertyAssignment(q) ? q.initializer : null;
+          if (!(f && (ts.isFunctionExpression(f) || ts.isArrowFunction(f)))) out.push(`${P} repair von invariants.${name}: Funktion oder Methode erwartet`);
+          continue;
+        }
         if (k === 'fields' && ts.isPropertyAssignment(q) && ts.isArrayLiteralExpression(q.initializer)
           && q.initializer.elements.every((e) => ts.isStringLiteral(e))) continue;
-        out.push(`${P} invariants.${name}: nur fields (String-Literale) und test erlaubt (${src(q)})`);
+        out.push(`${P} invariants.${name}: nur fields (String-Literale), test und repair erlaubt (${src(q)})`);
       }
     }
   };

@@ -1095,15 +1095,19 @@ export const State = defineModel({
     order: { fields: ['a', 'b'], test(m) { return m.a < m.b; } },
     arrow: { fields: ['a'], test: (m) => m.a > 0 },
     extra: { fields: ['a'], test(m) { return true; }, note: 'x' },
+    healed: { fields: ['a'], test(m) { return m.a > 0; }, repair(m) { m._v.a = 1; } },
+    healedArrow: { fields: ['a'], test(m) { return m.a > 0; }, repair: (m) => { m._v.a = 1; } },
+    healedValue: { fields: ['a'], test(m) { return m.a > 0; }, repair: 1 },
   },
   commands: {},
 });
 `;
 
-test('Schema-Literal: invariants mit test als Methode', () => {
+test('Schema-Literal: invariants mit test als Methode, repair als Funktion', () => {
   assert.deepEqual(checkSchemaLiteral(INVARIANT_MODEL), [
     'schema: domain/model.js: test von invariants.arrow ist eine Pfeilfunktion — this muss das Model sein',
-    "schema: domain/model.js: invariants.extra: nur fields (String-Literale) und test erlaubt (note: 'x')",
+    "schema: domain/model.js: invariants.extra: nur fields (String-Literale), test und repair erlaubt (note: 'x')",
+    'schema: domain/model.js: repair von invariants.healedValue: Funktion oder Methode erwartet',
   ]);
 });
 
