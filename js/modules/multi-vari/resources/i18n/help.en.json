@@ -1,0 +1,61 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Multi-Vari Chart",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The multi-vari chart shows **every single measurement**, staged across up to four factors. It answers the question a single summary statistic hides: does the variation arise *between* shifts, *between* mould cavities, or *within* one part?"
+        },
+        {
+          "type": "paragraph",
+          "content": "In Minitab it lives under *Stat → Quality Tools → Multi-Vari Chart*. Qprovement adds the variance-component table underneath — it puts numbers on what the picture shows."
+        },
+        {
+          "type": "definition",
+          "term": "Factor order",
+          "content": "Position 1 sits on the x axis and is also the outermost nesting level, position 2 becomes the series (colour and symbol), position 3 the panel column, position 4 the panel row. Layout and model follow the same order, so the picture and the numbers cannot drift apart."
+        },
+        {
+          "type": "definition",
+          "term": "Nested or crossed",
+          "content": "Nested: the levels of the second factor exist only inside one level of the first (part 1 from cavity 1 has nothing to do with part 1 from cavity 2). Crossed: every level occurs with every other (machine 1 runs on both the early and the late shift)."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Data & operation",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "**Measurement column** — one numeric column holding the single measurements.",
+            "**Factors** — two to four columns of levels. Rows with an empty level or a non-numeric measurement are skipped and reported.",
+            "**Order** — drag by the grip. The role label on the left moves with it.",
+            "**Estimator** — *ANOVA (Henderson I)* decomposes the sequential sums of squares via expected mean squares; *REML* estimates the components directly from the likelihood. On a balanced design the two agree for practical purposes."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Negative variance estimates are clamped to 0 **after** the solve and marked in the table. Such a case usually means there is too little data for that level."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "**Unbalanced design.** With unequally occupied cells the components depend on the estimator. The module says so; REML is the more dependable choice then.",
+            "**Wrong model form.** A nested design computed as crossed produces interaction terms that cannot exist. When in doubt: do the second factor's levels also exist outside the first?",
+            "**Size limits.** Beyond 30 levels in position 1, 12 series in position 2 or 48 panels the chart is not drawn — it would be unreadable anyway. The message names the offending column; the variance-components table stays valid. Move a factor with fewer levels to the front.",
+            "**Share ≠ importance.** A large variance share says where the variation arises — not whether it hurts. Only the comparison with the tolerance turns it into a statement.",
+            "**Order is model.** Reordering the factors changes the computed terms in the nested case, not just the picture."
+          ]
+        }
+      ]
+    }
+  }
+}

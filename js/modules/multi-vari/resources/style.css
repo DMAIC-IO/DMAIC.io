@@ -1,0 +1,127 @@
+/* D.Mike — Multi-Vari-Diagramm. Farben und Abstände ausschließlich über
+   CSS-Custom-Properties, damit der Theme-Wechsel greift. */
+
+.multi-vari {
+  height: 100%;
+}
+
+.multi-vari__factors {
+  width: 100%;
+  margin-bottom: var(--spacing-xs);
+}
+
+.multi-vari__factor-role {
+  white-space: nowrap;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.multi-vari__factor-picker {
+  width: 100%;
+}
+
+.multi-vari__factor-actions {
+  text-align: right;
+}
+
+.multi-vari__warnings {
+  margin-bottom: var(--spacing-sm);
+}
+
+.multi-vari__warning {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+  border-left: 3px solid var(--color-warning);
+  background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.multi-vari__chart-header {
+  margin-bottom: var(--spacing-sm);
+}
+
+.multi-vari__chart-title {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.multi-vari__strips {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.multi-vari__strip {
+  min-height: 200px;
+}
+
+.multi-vari__vc {
+  margin-top: var(--spacing-md);
+}
+
+.multi-vari__vc-table {
+  width: 100%;
+  margin-bottom: var(--spacing-sm);
+}
+
+.multi-vari__vc-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.multi-vari__interpretation {
+  margin: 0 0 var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+.multi-vari__note {
+  margin: 0 0 var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+/* Ziehgriff der Faktorzeilen: Gestaltung von .dmike-table__grip. Die Spalte
+   (.dmike-table__grip-col) und die Zeilenzustände des Ziehens bleiben die
+   gemeinsamen der Tabelle. */
+.multi-vari__grip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: grab;
+  opacity: 0.55;
+  transition: opacity var(--transition-speed), color var(--transition-speed);
+}
+
+/* Sechs-Punkte-Griff in CSS gezeichnet: zwei Spalten mal drei Zeilen. */
+.multi-vari__grip::before {
+  content: "";
+  width: 10px;
+  height: 15px;
+  background-image: radial-gradient(currentcolor 1.4px, transparent 1.5px);
+  background-size: 5px 5px;
+}
+
+.multi-vari__factors tbody tr:hover .multi-vari__grip,
+.multi-vari__grip:focus-visible {
+  opacity: 1;
+}
+
+.multi-vari__grip:focus-visible {
+  outline: none;
+  color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent-light);
+}
+
+.multi-vari__grip:active {
+  cursor: grabbing;
+}

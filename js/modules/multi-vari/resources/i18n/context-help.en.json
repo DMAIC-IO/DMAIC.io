@@ -1,0 +1,148 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "measurement": {
+      "help": "The selected measurement column as { instanceId, sheetId, columnId }, or null. Numeric, percent and currency columns only."
+    },
+    "factors": {
+      "help": "The factor rows in order, each { id, ref }; ref is the column reference or null. The order is the nesting: row 0 is outermost (X axis).",
+      "id": {
+        "help": "The id of the factor row; the value for id in removeFactor and setFactorColumn."
+      },
+      "ref": {
+        "help": "The column reference { instanceId, sheetId, columnId } of the factor row, or null while it is empty. Any column is allowed; a column may appear in several rows."
+      }
+    },
+    "modelForm": {
+      "help": "Variance model: 'nested' (A > B(A) > …) or 'crossed' (A, B, A×B, …)."
+    },
+    "estimator": {
+      "help": "Variance-component estimator: 'anova' or 'reml'."
+    },
+    "showPoints": {
+      "help": "Display switch: draw the single measurements. Changes only the chart, not the result."
+    },
+    "connectMeans": {
+      "help": "Display switch: connect the group means. Changes only the chart, not the result."
+    },
+    "showGroupMean": {
+      "help": "Display switch: mark the group means. Changes only the chart, not the result."
+    },
+    "showRefLine": {
+      "help": "Display switch: draw the grand-mean reference line. Changes only the chart, not the result."
+    },
+    "exampleWorksheetId": {
+      "help": "The id of the example worksheet this module was filled from; null if none was loaded."
+    },
+    "result": {
+      "help": "Groups of the multi-vari chart and variance components, each figure described individually under keys; null without a measurement column, with fewer than two factors or without data; if only the decomposition fails, the result stays with empty variance components and errorMsg gives the reason."
+    },
+    "errorMsg": {
+      "help": "The reason no result exists (fewer than two factors, no usable data, invalid design) or that the variance decomposition failed; an empty string otherwise, including while the measurement column is missing."
+    }
+  },
+  "actions": {
+    "addFactor": {
+      "help": "Appends an empty factor row at the end (innermost nesting level) and returns its id. At four factors that is the limit: a fifth row cannot be added.",
+      "params": {
+        "command": "An empty object; the command takes no arguments."
+      }
+    },
+    "removeFactor": {
+      "help": "Removes a factor row; the analysis re-runs afterwards. An error if only two rows would remain.",
+      "params": {
+        "id": "The id of a row from factors. An unknown id is an error.",
+        "command": "The command as an object with id."
+      }
+    },
+    "moveFactor": {
+      "help": "Moves a factor row to another position; the row order is the nesting, and the analysis re-runs afterwards.",
+      "params": {
+        "fromIdx": "The position of the row to move in factors, from 0.",
+        "toIdx": "The position the row has after the move (end index), from 0.",
+        "command": "The command as an object with fromIdx and toIdx."
+      }
+    },
+    "setFactorColumn": {
+      "help": "Points a factor row at a column of a data collection; the analysis re-runs afterwards.",
+      "params": {
+        "id": "The id of a row from factors. An unknown id is an error.",
+        "ref": "Column reference { instanceId, sheetId, columnId } of a pickable column, or null to clear the row.",
+        "command": "The command as an object with id and ref."
+      }
+    }
+  },
+  "asyncTasks": {
+    "analysis": {
+      "help": "Computes chart groups and variance components from the selected columns; it runs on its own after every change to columns, model form or estimator and after changes in the worksheet (coalesced, 120 ms delay). Without a measurement column, with fewer than two filled factor rows, with an invalid design or without usable data result stays null; errorMsg then names the reason.",
+      "cancel": {
+        "help": "Cancels a waiting or running computation; result stays as it was."
+      }
+    }
+  },
+  "types": {
+    "Result": {
+      "strips": "The rows of the chart: one per level of the fourth factor (panel row), exactly one with fewer than four factors.",
+      "seriesLevels": "The levels of the second factor (series), in legend order; numbers are ordered numerically (3, 4, 10).",
+      "factorNames": "The names of the assigned factors in role order: first X axis, second series, third panel column, fourth panel row.",
+      "grandMean": "The grand mean, tile Grand mean: the arithmetic mean of all usable measurements. The tile subline gives the range from the smallest to the largest measurement.",
+      "n": "Number of usable measurements, tile Measurements: rows with a numeric measurement and an assigned level in every factor. The tile subline gives the number of factors.",
+      "droppedRows": "Number of discarded rows: empty or non-numeric measurement or an empty factor level. Rows are counted up to the longest chosen column.",
+      "warnings": "The warnings of both computations as codes, without duplicates: unbalanced (unequal cell sizes; also for a missing factor combination, provided the variance decomposition was computed), emptyCells (a factor combination is missing), tooManyAxisLevels, tooManySeriesLevels, tooManyPanels (display limit exceeded) and the warnings of the variance decomposition. The interface additionally shows the number of skipped rows when rows were discarded; that message is not in the list.",
+      "yMin": "The smallest usable measurement, lower end of the range under the grand mean and of the y axis.",
+      "yMax": "The largest usable measurement, upper end of the range under the grand mean and of the y axis.",
+      "balanced": "Whether the design is balanced: true when all occupied cells hold the same number of measurements and no expected factor combination is missing; which combinations are expected depends on the model form. When false, the interface shows a note under the table that REML is the more dependable choice.",
+      "panelCount": "Number of panels: levels of the panel row times levels of the panel column, each 1 when the factor is absent.",
+      "limits": "The exceeded display limits, one row each: more than 30 X axis levels, more than 12 series levels or more than 48 panels; empty when everything fits.",
+      "renderable": "Whether the chart is drawn: true when no display limit is exceeded. When false, the warning names the column; the variance component table stays valid.",
+      "vc": "The variance components, table under the chart; empty when the decomposition fails, for example on a design that cannot be estimated. The error message then gives the reason."
+    },
+    "Strip": {
+      "idx": "The running number of the chart row, from 0.",
+      "rowLevel": "The level of the fourth factor (panel row) of this chart row; an empty text with fewer than four factors.",
+      "panels": "The panels of this chart row, one per level of the third factor (panel column), exactly one with fewer than three factors."
+    },
+    "Panel": {
+      "panelLevel": "The level of the third factor (panel column) of this panel; an empty text with fewer than three factors.",
+      "groups": "The groups on the X axis, one per level of the first factor, empty ones included, so that all panels share the same X positions."
+    },
+    "Group": {
+      "level": "The level of the first factor (X axis) of this group.",
+      "mean": "The group mean: the mean of all measurements of the group across all series, drawn as a short horizontal tick (Show group means); empty for an empty group.",
+      "series": "The occupied series of this group, one per level of the second factor that has measurements; none for an empty group."
+    },
+    "Series": {
+      "level": "The level of the second factor (series), also its colour and legend entry.",
+      "values": "All single measurements of this cell in data order, drawn as points (Show single measurements).",
+      "mean": "The arithmetic mean of the cell; Connect means draws the line through these values."
+    },
+    "Limit": {
+      "code": "The exceeded limit: tooManyAxisLevels (X axis), tooManySeriesLevels (series) or tooManyPanels (panels).",
+      "column": "The responsible column; for panels the names of the third and fourth factor, separated by a comma.",
+      "count": "The actual number of levels or panels.",
+      "max": "The allowed number: 30 X axis levels, 12 series levels, 48 panels."
+    },
+    "Vc": {
+      "modelForm": "The model form used for the decomposition, as chosen under Model form: nested or crossed.",
+      "estimator": "The estimator that actually ran: ANOVA for REML with more than 500 measurements, with the warning rowCapExceeded.",
+      "balanced": "Whether the design is balanced from the point of view of the variance decomposition: all cells equally sized and no missing combination.",
+      "n": "Number of measurements in the decomposition, the same usable rows as in the chart.",
+      "terms": "The table rows in model order, the residual (repeat) last. Without replicates the finest term is merged into the residual.",
+      "totalVariance": "The total variance, footer Total: the sum of all variance components including the residual.",
+      "converged": "REML only, empty otherwise: yes when every component last changed by less than 10⁻⁸ relative or by less than 10⁻⁸ times the sum of the components in absolute terms before 100 iterations were reached; no otherwise, and then the warning notConverged applies and the components are approximations.",
+      "iterations": "REML only, empty otherwise: the number of iterations until convergence or up to the limit of 100; 0 for a constant measurement.",
+      "warnings": "The warnings of the variance decomposition as codes: unbalanced, noReplicates (no replicates, finest term merged into the residual), rowCapExceeded (more than 500 measurements, switched to ANOVA), aliasedTerms (term with 0 degrees of freedom removed before REML, reported as 0), notConverged (REML did not converge), negativeComponent (negative ANOVA estimate set to 0)."
+    },
+    "VcTerm": {
+      "id": "The term code with one letter per factor: nested A, B(A), C(AB), D(ABC), crossed A, B, A*B …, plus Error for the residual.",
+      "label": "The component, column Component: the term with column names, nested for example “Cavity (in Tool)”, crossed for example “Shift × Line”; the last row is the residual (repeat), the spread between repeat measurements.",
+      "df": "Degrees of freedom of the term, column DF, from the ANOVA table; ANOVA only, empty for REML (the table shows –).",
+      "ss": "The sum of squares of the term, column SS, from the ANOVA table; ANOVA only, empty for REML (the table shows –).",
+      "ms": "The mean square, column MS: SS divided by DF; ANOVA only, empty for REML (the table shows –).",
+      "variance": "The estimated variance component σ² of the term, column Variance, never negative. ANOVA solves the equations of the expected mean squares and sets a negative solution to 0; REML estimates the components iteratively and also bounds them at 0 or above.",
+      "sd": "The standard deviation of the term, column StDev: √σ², in the unit of the measurements.",
+      "percent": "The share of the total variance, column Share %: σ² of the term divided by the total variance times 100, one decimal; 0 when the total variance is 0. The tile Largest share shows the largest share, residual included, its subline names the term.",
+      "clamped": "Whether the estimate was set to 0: true when ANOVA produced a negative variance; the row then carries “clamped to 0” and a note appears under the table. Always false for REML."
+    }
+  }
+}
