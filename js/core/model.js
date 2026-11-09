@@ -81,6 +81,16 @@ export const idOf = (path, { key = 'id', ...opts } = {}) => spec('idOf', { path,
 export const list = (item, opts) => spec('list', { item }, opts);
 /** Objekt mit festen Schlüsseln, gleicher Werttyp. @param {readonly string[]} keys @param {object} value @param {object} [opts] @returns {Readonly<object>} */
 export const record = (keys, value, opts) => spec('record', { keys: Object.freeze([...keys]), value }, opts);
+/**
+ * Objekt mit freien Schlüsseln, gleicher Werttyp. Schlüssel: `text()`, `idOf(path)`
+ * oder `number({ integer: true })`; gespeichert werden sie immer als Text.
+ * @param {object} key @param {object} value @param {object} [opts] @returns {Readonly<object>}
+ */
+export const map = (key, value, opts) => {
+  const ok = key?.kind === 'text' || key?.kind === 'idOf' || (key?.kind === 'number' && key.integer === true);
+  if (!ok) throw new Error('defineModel: map key must be text(), idOf(path) or number({ integer: true }); allowed: text, idOf, number({ integer: true })');
+  return spec('map', { key, value }, opts);
+};
 /** Objekt mit fester Form. @param {Record<string, object>} shape @param {object} [opts] @returns {Readonly<object>} */
 export const object = (shape, opts) => spec('object', { shape: Object.freeze({ ...shape }) }, opts);
 
@@ -317,6 +327,7 @@ export function defaultOf(s, context = DEFAULT_CONTEXT, name = 'default', root =
     case 'oneOf': return s.values[0];
     case 'list': return [];
     case 'record': return Object.fromEntries(s.keys.map(k => [k, defaultOf(s.value, context, `${name}.${k}`, root)]));
+    case 'map': return {};
     case 'object': return Object.fromEntries(Object.entries(s.shape)
       .filter(([, v]) => v.optional !== true).map(([k, v]) => [k, defaultOf(v, context, `${name}.${k}`, root)]));
     default: throw new Error(`defineModel: unknown kind ${JSON.stringify(s.kind)}`);
@@ -408,6 +419,16 @@ export function checkValue(s, name, value, ctx = {}) {
       requireKeys(name, value, s.keys.map(k => ({ name: k })), 'key');
       return Object.fromEntries(s.keys.map(k => [k, checkValue(s.value, `${name}.${k}`, value[k], ctx)]));
     }
+    case 'map': {
+      requireForm(name, value, isPlainObject(value), 'an object');
+      const out = {};
+      for (const [k, v] of Object.entries(value)) {
+        if (s.key.kind === 'number') checkValue(s.key, `${name} key`, String(Number(k)) === k ? Number(k) : NaN, ctx);
+        else checkValue(s.key, `${name} key`, k, ctx);
+        out[k] = checkValue(s.value, `${name}[${k}]`, v, ctx);
+      }
+      return out;
+    }
     case 'object': {
       const keys = Object.keys(s.shape);
       requireForm(name, value, isPlainObject(value), `an object with keys ${keys.join(', ')}`);
@@ -491,6 +512,7 @@ function usesPath(s) {
     case 'index': case 'idOf': return true;
     case 'list': return usesPath(s.item);
     case 'record': return usesPath(s.value);
+    case 'map': return usesPath(s.key) || usesPath(s.value);
     case 'object': return Object.values(s.shape).some(usesPath);
     default: return false;
   }
@@ -513,6 +535,7 @@ export function describeType(s) {
     case 'oneOf': t = s.values.map(literal).join('|'); break;
     case 'list': { const item = describeType(s.item); t = item.includes('|') ? `Array<${item}>` : `${item}[]`; break; }
     case 'record': t = `Record<${s.keys.map(literal).join('|')}, ${describeType(s.value)}>`; break;
+    case 'map': t = `Record<string, ${describeType(s.value)}>`; break;
     case 'object': t = `{ ${Object.entries(s.shape)
       .map(([k, v]) => `${k}${v.optional ? '?' : ''}: ${describeType(v)}`).join(', ')} }`; break;
     case 'columnRef': t = '{ instanceId: string, sheetId?: string, columnId: string }'; break;
@@ -525,7 +548,7 @@ export function describeType(s) {
 
 /**
  * Spaltenbezüge umhängen: in allen `columnRef`-Werten des Schemas (auch in
- * `list`, `object`, `record`) wird `instanceId === from` durch `to` ersetzt.
+ * `list`, `object`, `record`, `map`) wird `instanceId === from` durch `to` ersetzt.
  * Liefert eine flache Kopie; Werte, die nicht zur Spec passen, bleiben stehen.
  * @param {Function} Model Klasse aus `defineModel`
  * @param {Record<string, any>} data gespeicherter oder geladener Zustand
@@ -544,6 +567,8 @@ export function rewriteColumnRefs(Model, data, from, to) {
         ? Object.fromEntries(Object.entries(row).map(([k, r]) => [k, s.slots[k] ? walk(s.slots[k], r) : r])) : row)) : v;
       case 'list': return Array.isArray(v) ? v.map((x) => walk(s.item, x)) : v;
       case 'record': return isPlainObject(v)
+        ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, walk(s.value, x)])) : v;
+      case 'map': return isPlainObject(v)
         ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, walk(s.value, x)])) : v;
       case 'object': return isPlainObject(v)
         ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, s.shape[k] ? walk(s.shape[k], x) : x])) : v;
@@ -818,7 +843,7 @@ export function defineState(fields) {
 
 // ─── Formulare und Attribute ────────────────────────────────
 
-const FROM_ATTR_FORBIDDEN = new Set(['object', 'list', 'record', 'columnRef', 'datasets']);
+const FROM_ATTR_FORBIDDEN = new Set(['object', 'list', 'record', 'map', 'columnRef', 'datasets']);
 
 /**
  * Den Text eines `data-arg-*`-Attributs in den Wert seiner Feldart wandeln.

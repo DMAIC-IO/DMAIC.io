@@ -78,6 +78,7 @@ export function keyFieldsOf(schema) {
     }
     if (s.kind === 'list') visit(s.item);
     if (s.kind === 'record') visit(s.value);
+    if (s.kind === 'map') { visit(s.key); visit(s.value); }
     if (s.kind === 'object') Object.values(s.shape).forEach(visit);
   };
   for (const s of Object.values({ ...schema.fields, ...schema.view })) visit(s);

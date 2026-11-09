@@ -5,7 +5,7 @@ import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } f
 import { getPhaseIds } from '../../js/core/cycles/cycles.js';
 import { COLUMN_TYPES } from '../../js/core/datagrid/datagrid-utils.js';
 import {
-  defineModel, command, text, number, boolean, oneOf, index, idOf, list, record, object,
+  defineModel, command, text, number, boolean, oneOf, index, idOf, list, record, map, object,
   defaultOf, checkValue, describeType, schemaOf, fieldSpec, defineState, stateSchemaOf,
   currentOf, confirmOf, commandDefOf, fromAttr, defineForm,
   defineSettings, isSettings, readSettings, defineWidget, isWidget,
@@ -1045,5 +1045,47 @@ suite('index — afterRemovalFrom und Vorgaben mit Wurzel', () => {
     assertEqual(new Ok().sel, 1);
     assertThrows(() => new (defineModel({ name: 'R2', version: '1.0', fields: { rows: list(number(), { default: [1, 2] }), sel: index('rows', { default: () => 5 }) } }))(),
       /^invalid sel 5; allowed: 0\.\.2$/);
+  });
+});
+
+suite('map', () => {
+  test('map: Vorgabe {}, Einträge geprüft, Kopie', () => {
+    const s = map(text(), number({ min: 0 }));
+    assertDeepEqual(defaultOf(s), {});
+    const v = { a: 1, b: 2 };
+    const out = checkValue(s, 'm', v);
+    assertDeepEqual(out, { a: 1, b: 2 }); assertTrue(out !== v);
+    assertThrows(() => checkValue(s, 'm', { a: -1 }), /m\[a\]/);
+    assertThrows(() => checkValue(s, 'm', [1]), /m/);
+  });
+  test('map: Zahlschlüssel als Zahl geprüft, als Text gespeichert', () => {
+    const s = map(number({ integer: true, min: 0 }), text());
+    assertDeepEqual(checkValue(s, 'm', { 3: 'x' }), { 3: 'x' });
+    assertDeepEqual(Object.keys(checkValue(s, 'm', { 3: 'x' })), ['3']);
+    assertThrows(() => checkValue(s, 'm', { 'x': 'y' }), /m key/);
+    assertThrows(() => checkValue(s, 'm', { '-1': 'y' }), /m key/);
+    assertThrows(() => checkValue(s, 'm', { '03': 'y' }), /m key/);
+  });
+  test('map: idOf-Schlüssel gegen die Liste; lädt im zweiten Durchgang', () => {
+    const M = defineModel({ fields: {
+      picks: map(idOf('items'), text()),
+      items: list(object({ id: text(), n: text() })),
+    } });
+    const m = M.fromJSON({ items: [{ id: 'p1', n: '' }], picks: { p1: 'o1' } });
+    assertDeepEqual(m.picks, { p1: 'o1' });
+    assertThrows(() => M.fromJSON({ items: [], picks: { p1: 'o1' } }), /picks key/);
+  });
+  test('map: Schlüssel-Feldart außer text/idOf/number wirft beim Anlegen', () => {
+    assertThrows(() => map(boolean(), text()), /allowed: text, idOf, number/);
+    assertThrows(() => map(number(), text()), /integer/);
+  });
+  test('map: rewriteColumnRefs hängt Bezüge in Map-Werten um', () => {
+    const M = defineModel({ fields: { refs: map(text(), columnRef({ nullable: true })) } });
+    const out = rewriteColumnRefs(M, { refs: { a: { instanceId: 'old', columnId: 'c' } } }, 'old', 'new');
+    assertEqual(out.refs.a.instanceId, 'new');
+  });
+  test('map: describeType, fromAttr', () => {
+    assertEqual(describeType(map(idOf('items'), list(text()))), 'Record<string, string[]>');
+    assertThrows(() => fromAttr(map(text(), text()), '{}'));
   });
 });

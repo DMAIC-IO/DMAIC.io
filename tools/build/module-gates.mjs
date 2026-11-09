@@ -535,6 +535,7 @@ function collectPaths(s, at, acc) {
   if (s.kind === 'index' || s.kind === 'idOf') acc.push({ at, path: s.path });
   if (s.kind === 'list') collectPaths(s.item, at, acc);
   if (s.kind === 'record') collectPaths(s.value, at, acc);
+  if (s.kind === 'map') { collectPaths(s.key, at, acc); collectPaths(s.value, at, acc); }
   if (s.kind === 'object') for (const v of Object.values(s.shape)) collectPaths(v, at, acc);
 }
 

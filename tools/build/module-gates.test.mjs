@@ -10,7 +10,7 @@ import { pathToFileURL } from 'node:url';
 import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkViewReads, checkPickerCss, checkChartBindings, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts, viewNamesOf, viewNamesDetailOf, computedNamesOf, checkWidgetTemplates, modelMembersOf } from './module-gates.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { APP_DIR } from './build.mjs';
-import { defineModel, command, text, number, oneOf, index, idOf, list, record, object, boolean, date, columnRef, defineWidget, datasets } from '../../js/core/model.js';
+import { defineModel, command, text, number, oneOf, index, idOf, list, record, map, object, boolean, date, columnRef, defineWidget, datasets } from '../../js/core/model.js';
 
 /** Temp-App aus `{ pfad: inhalt }`. */
 function appWith(files) {
@@ -360,6 +360,15 @@ test('Schema-Pfade: Felder und Parameter', () => {
     `${P} commands.pick.params.i: Pfad cols[col]: Feld cols gibt es nicht`,
     `${P} commands.pick.params.i: Pfad cols[col]: [col] ist weder Parameter noch Feld`,
   ]);
+});
+
+test('Schema-Pfade: map liefert dieselben Pfade wie record', () => {
+  const viaRecord = defineModel({ fields: { r: record(['a'], object({ a: idOf('xs') })) } });
+  const viaMap = defineModel({ fields: { r: map(text(), object({ a: idOf('xs') })) } });
+  assert.deepEqual(checkSchemaPaths(viaMap.schema), checkSchemaPaths(viaRecord.schema));
+  assert.equal(checkSchemaPaths(viaMap.schema).length, 1);
+  const withKey = defineModel({ fields: { m: map(idOf('nope'), text()) } });
+  assert.equal(checkSchemaPaths(withKey.schema).length, 1);
 });
 
 const SCHEMA_FOR_VIEW = defineModel({
