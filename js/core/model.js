@@ -1253,8 +1253,9 @@ export function defineModel(schema) {
         let healed = false;
         if (inv.repair) {
           // Ohne Invariantenprüfung beim Schreiben: repair arbeitet auf dem Ladezustand.
-          m._run += 1;
-          try { inv.repair.call(m, m); } catch { /* Rückfall auf die Vorgabewerte */ } finally { m._run -= 1; }
+          const loading = /** @type {any} */ (m);
+          loading._run += 1;
+          try { inv.repair.call(m, m); } catch { /* Rückfall auf die Vorgabewerte */ } finally { loading._run -= 1; }
           healed = inv.test.call(m, m);
         }
         if (!healed) inv.fields.forEach((f) => { m._v[f] = defaultOf(all[f], contextOf(m), f); });
