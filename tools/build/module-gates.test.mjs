@@ -1425,3 +1425,25 @@ test('checkConvertedModule: fehlerhaftes Widget-Schema wird zum Befund statt zum
   const findings = await checkConvertedModule(root, 'neu');
   assert.ok(findings.some((f) => f.startsWith('widget: js/widgets: Schemas lassen sich nicht laden (widgets/bad/schema.js')), findings.join('\n'));
 });
+
+test('Listenpfade: x-field auf Map-Einträge, Anker, Nicht-Map scheitert', () => {
+  const schema = defineModel({
+    fields: {
+      items: list(object({ id: text(), name: text() })),
+      scores: map(text(), map(text(), number({ min: 0, max: 9 }))),
+      concepts: list(object({ id: text(), picks: map(idOf('items'), text()) })),
+    },
+  }).schema;
+  const html = [
+    '<input x-field="model.scores[r]"><input x-field="model.scores[r][c]">',
+    '<input x-field="model.concepts[i].picks[p]"><input x-field="model.scores[3]">',
+    '<input x-field="model.items[i]"><input x-field="model.items[i].name[k]"><input x-field="model[r]">',
+  ].join('\n');
+  const { findings, helpKeys } = checkListBindings([{ path: 'resources/view.html', text: html }], schema);
+  assert.deepEqual(findings, [
+    'template: resources/view.html: x-field="model.items[i]": [i] passt nicht zum Schema',
+    'template: resources/view.html: x-field="model.items[i].name[k]": [k] passt nicht zum Schema',
+    'template: resources/view.html: x-field="model[r]": [r] passt nicht zum Schema',
+  ]);
+  assert.deepEqual(helpKeys, ['fields.concepts.picks.help', 'fields.scores.help']);
+});

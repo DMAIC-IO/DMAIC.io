@@ -1034,6 +1034,23 @@ export function checkListBindings(files, schema) {
       let parsed;
       try { parsed = parseFieldPath(expr); } catch (err) { findings.push(`template: ${path}: ${shown}: ${err.message}`); continue; }
       const { root, steps, field } = parsed;
+      if (typeof field === 'object') {
+        const shownIndex = `[${field.ref ?? field.at}]`;
+        let mapSpec;
+        let mapPath = '';
+        if (root === 'model' && steps[0]?.kind === 'name') {
+          mapSpec = all[steps[0].name];
+          mapPath = steps[0].name;
+          for (const st of steps.slice(1)) {
+            if (st.kind === 'index' && (mapSpec?.kind === 'list' || mapSpec?.kind === 'map')) { mapSpec = mapSpec.kind === 'list' ? mapSpec.item : mapSpec.value; mapPath += '[]'; }
+            else if (st.kind === 'name' && mapSpec?.kind === 'object' && Object.hasOwn(mapSpec.shape, st.name)) { mapSpec = mapSpec.shape[st.name]; mapPath += `.${st.name}`; }
+            else { mapSpec = undefined; break; }
+          }
+        }
+        if (mapSpec?.kind !== 'map') findings.push(`template: ${path}: ${shown}: ${shownIndex} passt nicht zum Schema`);
+        else helpKeys.add(`fields.${mapPath.replace(/\[\]/g, '')}.help`);
+        continue;
+      }
       if (root === 'state' || (root === 'model' && steps.length === 0)) continue;
       let spec;
       let listPath;
