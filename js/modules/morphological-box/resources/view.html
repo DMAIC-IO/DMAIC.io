@@ -18,9 +18,9 @@
     </div>
   </div>
 
-  <div class="dmike-tabs" role="radiogroup" x-set="model.view" data-help-key="modules.morphological-box.fields.view.help">
+  <div class="dmike-tabs" role="tablist" x-tablist x-set="model.view" data-help-key="modules.morphological-box.fields.view.help">
     <template x-for="v in views" :key="v">
-      <button class="dmike-tab" type="button" role="radio" :value="v" :data-tab="v" :class="tabClass(v)"
+      <button class="dmike-tab" type="button" role="tab" :value="v" :data-tab="v" :class="tabClass(v)"
               x-text="t('view_' + v)"></button>
     </template>
   </div>

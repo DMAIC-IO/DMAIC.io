@@ -4,7 +4,7 @@
  * Inhalt, Kommandos und Invarianten liegen im Model (domain/model.js); die
  * Agentenfläche entsteht aus dessen Schema. Namen und Bezeichnungen binden
  * über `x-field`, Löschknöpfe über `x-command`, Reiter und aktives Konzept
- * über `x-set` (Knopfgruppen). Hier bleiben: die Kennzahlen als `computed`, die
+ * über `x-set` (Reiter und Knopfgruppe). Hier bleiben: die Kennzahlen als `computed`, die
  * Ansichtsfunktionen von Kasten, Konzeptliste und Verträglichkeitsmatrix
  * und die Handler, die nach dem Anlegen fokussieren oder ein Kästchen in ein
  * Kommando übersetzen.

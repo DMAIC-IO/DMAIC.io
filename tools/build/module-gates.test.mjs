@@ -1070,6 +1070,18 @@ test('Knopfgruppen: Optionen brauchen role="radio" (außer input type=radio)', (
   ]);
 });
 
+test('Knopfgruppen: role="tab" nur in einer tablist mit x-set', () => {
+  const text = [
+    '<div role="tablist" x-tablist x-set="model.view"><button type="button" role="tab" :value="v"></button></div>',
+    '<div role="radiogroup" x-set="model.mode"><button type="button" role="tab" value="a"></button></div>',
+    '<div role="tablist" x-param="due"><button type="button" role="tab" value="a"></button></div>',
+  ].join('\n');
+  assert.deepEqual(checkChoiceGroups([{ path: 'resources/view.html', text }]), [
+    'template: resources/view.html: x-set="model.mode": Option <button role="tab" value="a"> ohne role="radio"',
+    'template: resources/view.html: x-param="due": Option <button role="tab" value="a"> ohne role="radio"',
+  ]);
+});
+
 test('readStateBindings: auch x-set="state.<f>"', () => {
   assert.deepEqual(readStateBindings([{ path: 'resources/view.html', text: '<div x-set="state.tab"></div><input x-field="state.level">' }]), ['level', 'tab']);
 });

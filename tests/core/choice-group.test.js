@@ -78,6 +78,24 @@ suite('x-set an einer Knopfgruppe', () => {
     host.remove();
   });
 
+  test('Reiter in einer tablist: aria-selected und roving tabindex statt aria-checked', async () => {
+    const { host, vm, $$ } = await mount(
+      '<div role="tablist" x-set="model.mode"><button type="button" role="tab" value="month">M</button><button type="button" role="tab" value="week">W</button></div>');
+    const tabs = $$('[role="tab"]');
+    assertDeepEqual(tabs.map((t) => t.getAttribute('aria-selected')), ['true', 'false']);
+    assertDeepEqual(tabs.map((t) => t.getAttribute('tabindex')), ['0', '-1']);
+    assertTrue(tabs.every((t) => !t.hasAttribute('aria-checked')), 'kein aria-checked an Reitern');
+    tabs[1].click();
+    assertEqual(vm.model.mode, 'week');
+    await flush();
+    assertDeepEqual(tabs.map((t) => t.getAttribute('aria-selected')), ['false', 'true']);
+    assertDeepEqual(tabs.map((t) => t.getAttribute('tabindex')), ['-1', '0']);
+    vm.model.mode = 'month';
+    await flush();
+    assertDeepEqual(tabs.map((t) => t.getAttribute('aria-selected')), ['true', 'false']);
+    host.remove();
+  });
+
   test('Zahlenwerte aus value, UI-State', async () => {
     const { host, vm, $$ } = await mount(
       '<div x-set="model.size"><button role="radio" value="7"></button><button role="radio" value="30"></button></div>'

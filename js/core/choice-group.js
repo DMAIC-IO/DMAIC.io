@@ -4,7 +4,9 @@
  * Eine Gruppe von Optionen (`<button role="radio" value>` oder
  * `<input type="radio" value>`) an einen Wert binden — wie `<select>` mit
  * `<option>`. Klick bzw. `change` auf eine Option schreibt; der Wert setzt
- * `aria-checked` bzw. `checked`. Elementart, Rollen, Klassen, Aussehen und
+ * `aria-checked` bzw. `checked`. Reiter (`<button role="tab" value>` in einer
+ * `role="tablist"`) bekommen statt `aria-checked` `aria-selected` und einen
+ * roving `tabindex` (0 am gewählten, -1 an den übrigen). Elementart, Rollen, Klassen, Aussehen und
  * Tastatur legt die View fest; hier entstehen nur der Zustand und bei Radios
  * ein gemeinsames `name`. Optionen, die später erscheinen (`x-for`), werden
  * erfasst und geprüft. Ein Klick auf die aktive Option ändert nichts.
@@ -21,6 +23,9 @@ export function isChoiceGroup(el) {
 
 /** @param {Element} o @returns {boolean} */
 const isRadio = (o) => o.tagName === 'INPUT' && /** @type {HTMLInputElement} */ (o).type === 'radio';
+
+/** @param {Element} o @returns {boolean} Reiter (`role="tab"`): Zustand über `aria-selected` und roving `tabindex` */
+const isTab = (o) => o.getAttribute('role') === 'tab';
 
 /**
  * Die Optionen einer Gruppe in Dokumentreihenfolge.
@@ -64,6 +69,7 @@ export function bindChoiceGroup(group, { spec, name, radioName, read, write, hin
       let on = false;
       try { on = same(valueOf(o), current); } catch { on = false; }
       if (isRadio(o)) /** @type {HTMLInputElement} */ (o).checked = on;
+      else if (isTab(o)) { o.setAttribute('aria-selected', String(on)); o.setAttribute('tabindex', on ? '0' : '-1'); }
       else o.setAttribute('aria-checked', String(on));
     }
   };
