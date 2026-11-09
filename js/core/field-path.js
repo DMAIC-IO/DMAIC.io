@@ -32,8 +32,9 @@ const TOKEN = /([A-Za-z_$][\w$]*)|\.([A-Za-z_$][\w$]*)|\[([A-Za-z_$][\w$]*|\d+)\
  */
 
 /**
- * Einen Pfad zerlegen.
- * @param {string} expr @returns {{ root: string, steps: PathStep[], field: string }}
+ * Einen Pfad zerlegen. Endet er auf `[…]`, ist `field` der letzte Index-Schritt
+ * (Eintrag einer Map); ob davor eine Map steht, prüft `resolveTarget`.
+ * @param {string} expr @returns {{ root: string, steps: PathStep[], field: string | { kind: 'index', ref?: string, at?: number } }}
  * @throws {Error} wenn der Pfad nicht in die Grammatik passt
  */
 export function parseFieldPath(expr) {
@@ -51,8 +52,8 @@ export function parseFieldPath(expr) {
     else steps.push(/^\d+$/.test(m[3]) ? { kind: 'index', at: Number(m[3]) } : { kind: 'index', ref: m[3] });
   }
   const last = steps.pop();
-  if (root === null || !last || last.kind !== 'name') throw new Error(`invalid field path ${JSON.stringify(expr)}; expected <root>.<field>`);
-  return { root, steps, field: last.name };
+  if (root === null || !last) throw new Error(`invalid field path ${JSON.stringify(expr)}; expected <root>.<field>`);
+  return { root, steps, field: last.kind === 'name' ? last.name : last };
 }
 
 /** `risks[r].actions` → `risks[].actions`. @param {string} path @returns {string} */
@@ -89,6 +90,7 @@ export function keyFieldsOf(schema) {
 /** @param {object} spec @param {PathStep} step @param {string} where @returns {object} */
 function stepSpec(spec, step, where) {
   if (step.kind === 'index' && spec?.kind === 'list') return spec.item;
+  if (step.kind === 'index' && spec?.kind === 'map') return spec.value;
   if (step.kind === 'name' && spec?.kind === 'object' && Object.hasOwn(spec.shape, step.name)) return spec.shape[step.name];
   if (step.kind === 'name' && spec?.kind === 'record' && spec.keys.includes(step.name)) return spec.value;
   throw new Error(`${where}: ${step.kind === 'name' ? step.name : `[${step.ref ?? step.at}]`} does not match the schema`);
@@ -121,6 +123,65 @@ function findEntry(Alpine, model, schema, target) {
 }
 
 /**
+ * Das Ziel `model.<…>[schlüssel]`: ein Eintrag einer Map. Der Schlüssel wird bei
+ * jedem Zugriff frisch aus dem Scope gelesen und als Text verwendet.
+ * @param {() => any} scope @param {{ fields: object, view: object }} schema
+ * @param {PathStep[]} steps Schritte bis zur Map @param {PathStep} entryStep @param {string} where
+ * @returns {FieldTarget}
+ */
+function mapEntryTarget(scope, schema, steps, entryStep, where) {
+  const [first, ...rest] = steps;
+  if (first?.kind !== 'name') throw new Error(`${where}: a path starts with a field name`);
+  let spec = schema.fields[first.name] ?? schema.view[first.name];
+  if (!spec) throw new Error(`${where}: ${first.name} is neither a field nor a view field`);
+  let schemaPath = first.name;
+  /** @type {object[]} Spec je Schritt von `rest`, vor dem Schritt */
+  const before = [];
+  for (const st of rest) {
+    before.push(spec);
+    spec = stepSpec(spec, st, where);
+    schemaPath += st.kind === 'index' ? '[]' : `.${st.name}`;
+  }
+  if (spec?.kind !== 'map') throw new Error(`${where}: [${entryStep.ref ?? entryStep.at}] does not match the schema`);
+  const mapSpec = spec;
+  const keyOf = (st) => String(st.ref !== undefined ? scope()[st.ref] : st.at);
+  const checkKey = (key, keySpec, name, ctx) => {
+    if (keySpec.kind === 'number') checkValue(keySpec, `${name} key`, String(Number(key)) === key ? Number(key) : NaN, ctx);
+    else checkValue(keySpec, `${name} key`, key, ctx);
+  };
+  /** Die Map, die den Eintrag hält; mit `create` werden fehlende Map-Einträge auf dem Weg angelegt. */
+  const owner = (create) => {
+    let o = scope().model[first.name];
+    rest.forEach((st, n) => {
+      if (o === null || o === undefined) return;
+      if (st.kind === 'name') { o = o[st.name]; return; }
+      const outer = before[n];
+      const k = outer.kind === 'map' ? keyOf(st) : (st.ref !== undefined ? scope()[st.ref] : st.at);
+      if (o[k] === undefined && create && outer.kind === 'map') {
+        const model = scope().model;
+        checkKey(k, outer.key, schemaPath, { root: model, context: contextOf(model) });
+        o[k] = {};
+      }
+      o = o[k];
+    });
+    return o;
+  };
+  /** Der einzige Ort, der in die Map schreibt. */
+  const write = (key, value) => { owner(true)[key] = value; };
+  return {
+    spec: mapSpec.value, name: schemaPath, kind: 'model', helpKey: `fields.${schemaPath.replace(/\[\]/g, '')}.help`,
+    get: () => owner(false)?.[keyOf(entryStep)],
+    set: (raw) => {
+      const model = scope().model;
+      const ctx = { root: model, context: contextOf(model) };
+      const key = keyOf(entryStep);
+      checkKey(key, mapSpec.key, schemaPath, ctx);
+      write(key, checkValue(mapSpec.value, `${schemaPath}[${key}]`, raw, ctx));
+    },
+  };
+}
+
+/**
  * Das Ziel eines Pfads an einem Element auflösen.
  * @param {any} Alpine @param {HTMLElement} el @param {string} expr @param {string} [directive]
  * @returns {FieldTarget}
@@ -131,6 +192,11 @@ export function resolveTarget(Alpine, el, expr, directive = 'x-field') {
   const { root, steps, field } = parseFieldPath(expr);
   const data = Alpine.$data(el);
   const scope = () => Alpine.$data(el);
+  const entryStep = typeof field === 'object' ? field : null;
+  if (entryStep && (root !== 'model' || steps.length === 0)) {
+    if (root !== 'model' && steps.length > 0) throw new Error(`${where}: only ${root}.<field> is supported for an entry`);
+    throw new Error(`${where}: [${entryStep.ref ?? entryStep.at}] does not match the schema`);
+  }
 
   if (root === 'state') {
     if (steps.length > 0) throw new Error(`${where}: only state.<field> is supported`);
@@ -145,6 +211,7 @@ export function resolveTarget(Alpine, el, expr, directive = 'x-field') {
 
   const schema = schemaOf(data.model);
   if (!schema) throw new Error(`${where}: no defineModel model on this component`);
+  if (entryStep) return mapEntryTarget(scope, schema, steps, entryStep, where);
 
   if (root === 'model' && steps.length === 0) {
     const spec = fieldSpec(data.model, field);
