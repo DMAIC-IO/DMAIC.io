@@ -578,6 +578,18 @@ function pairwiseSection(a, t) {
 // ── Einstieg ─────────────────────────────────────────────────
 
 /**
+ * Setzt an jeder Kennzahl `algoId` (leer, wo keine Kennung besteht), damit der
+ * Pfad für das Lab-Link-Widget immer einen Text liefert.
+ * @template {{ metrics?: Metric[]|null }} S
+ * @param {S|null} section  Abschnitt mit Kennzahlen
+ * @returns {S|null}
+ */
+function withAlgoIds(section) {
+  if (!section?.metrics) return section;
+  return { ...section, metrics: section.metrics.map((m) => ({ ...m, algoId: m.algoId ?? '' })) };
+}
+
+/**
  * Das Anzeigemodell einer gelungenen Analyse.
  * @param {AnalysisOk} analysis  Ergebnis von `analyze()` mit `status: 'ok'`
  * @param {Translate} t  Übersetzer des Moduls
@@ -595,10 +607,10 @@ export function presentResult(analysis, t, model) {
     allNormal: a.allNormal,
     normCards: a.samples.map((s, i) => normCard(label(s, i), s, a.alpha, t, tip)),
     route: { name: a.route.name, algoId: a.route.algoId ?? '' },
-    varEquality: varEqualityOf(a, t, tip),
-    main: a.isK ? kMainResult(a, model, t, tip) : mainResult(a, model, t, tip),
+    varEquality: withAlgoIds(varEqualityOf(a, t, tip)),
+    main: withAlgoIds(a.isK ? kMainResult(a, model, t, tip) : mainResult(a, model, t, tip)),
     numeric: a.numeric,
-    secondary: a.secondary ? secondaryResult(a.secondary, a.alpha, t, tip) : null,
+    secondary: a.secondary ? withAlgoIds(secondaryResult(a.secondary, a.alpha, t, tip)) : null,
     power: a.power ? powerInfo(a.power, a.alpha, t, tip) : null,
     pairwise: a.pairwise ? pairwiseSection(a, t) : null,
     residualPlot: a.residualPlot,

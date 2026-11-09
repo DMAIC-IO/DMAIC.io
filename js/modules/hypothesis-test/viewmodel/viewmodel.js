@@ -111,10 +111,6 @@ export default createModule({
       get varDecisionClass() { return this.display?.varEquality?.varsEqual ? 'hyptest__decision--accept' : 'hyptest__decision--reject'; },
       /** Entscheidungstext der Varianzgleichheit. */
       get varDecisionText() { return this.t(this.display?.varEquality?.varsEqual ? 'varEqual' : 'varUnequal'); },
-      /** @noagent Öffnet die Dokumentation des Verfahrens im Algorithm Lab. */
-      algoNavigate(algoId) {
-        if (algoId) ctx.eventBus.emit('lab:navigate', { algoId, tab: 'docs' });
-      },
     };
   },
 });
