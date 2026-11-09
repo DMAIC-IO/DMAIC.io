@@ -1,5 +1,5 @@
 <div class="multi-vari dmike-split" x-data="multiVari">
-  <!-- data-help-key="" an Auswahl-Hosts und Auswahlfeldern ist gewollt: die Hilfe hängt an der Beschriftung daneben, der automatische Schlüssel ergäbe doppelte Fragezeichen. -->
+  <!-- data-help-key="" an Auswahl-Hosts und Auswahlfeldern ist gewollt: die Hilfe hängt an der Beschriftung daneben (in den Faktorzeilen an der Rollenbeschriftung), der automatische Schlüssel ergäbe doppelte Fragezeichen. -->
   <div class="multi-vari__input dmike-split__input">
 
     <div class="dmike-split__section-title" x-text="t('sectionColumns')"></div>
@@ -20,7 +20,7 @@
                         data-help-key="modules.multi-vari.actions.moveFactor.help"
                         :aria-label="t('common.reorder')"></button>
               </td>
-              <td class="multi-vari__factor-role" x-text="factorRole(idx)"></td>
+              <td class="multi-vari__factor-role"><span data-help-key="modules.multi-vari.fields.factors.ref.help" x-text="factorRole(idx)"></span></td>
               <td class="multi-vari__factor-picker">
                 <div :data-factor-wrap="f.id" data-help-key="" x-field="f.ref"></div>
               </td>
