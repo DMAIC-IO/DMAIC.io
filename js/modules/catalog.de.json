@@ -30,6 +30,11 @@
     "description": "Lösungskonzepte aus Parametern und Ausprägungen kombinieren, Unverträglichkeiten prüfen",
     "whenToUse": "Wenn eine Lösung aus mehreren Teilfunktionen besteht und systematisch alternative Gesamtkonzepte kombiniert werden sollen — nicht zum Bewerten oder Auswählen der Konzepte, das gehört in die Lösungsauswahl."
   },
+  "msa-typ2": {
+    "name": "MSA Typ 2/3 (Gage R&R)",
+    "description": "Messmittelanalyse Typ 2 (mit Prüfer, Gage R&R) und Typ 3 (ohne Prüfer, automatisierte Messsysteme)",
+    "whenToUse": "Wenn ein Messsystem mit mehreren Teilen (und meist mehreren Prüfern) bewertet werden soll: eine gekreuzte Studie liefert Wiederholbarkeit und Reproduzierbarkeit (Gage R&R) per ANOVA; ohne Prüferspalte rechnet das Modul als Typ 3 für automatisierte Messsysteme — nicht für die Eignung eines einzelnen Messmittels an einem Normal, dafür ist Typ 1 da. Setzt Teile, optional Prüfer und die Messwerte als Spalten einer Datensammlung voraus."
+  },
   "multi-vari": {
     "name": "Multi-Vari-Diagramm",
     "description": "Zeigt Einzelmessungen nach bis zu vier Einflussgrößen gestaffelt und zerlegt die Streuung in Varianzkomponenten — macht sichtbar, wo die Streuung wirklich entsteht.",

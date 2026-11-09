@@ -60,6 +60,7 @@
   "chartByPartTitle": "Measurements by Part",
   "chartGageRunTitle": "Gage run chart (raw values by part and operator)",
   "chartGageRunMean": "Mean",
+  "chartValues": "Values",
   "chartByOperatorTitle": "Measurements by Operator",
   "chartInteractionTitle": "Part × Operator Interaction",
   "chartXbarTitle": "X-bar Chart by Operator",

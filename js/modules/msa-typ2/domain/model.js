@@ -21,10 +21,10 @@ import GageRunChart from '../../../widgets/gage-run-chart/schema.js';
 import { from0 } from './migrations.js';
 
 /** Zulässige Studienfaktoren (6 = Standard, 5,15 = AIAG 3. Auflage). */
-export const K_OPTIONS = Object.freeze([6, 5.15]);
+export const K_OPTIONS = [6, 5.15];
 
 /** Zulässige Urteilsgrundlagen ('auto' = Toleranz, sobald beide Grenzen gesetzt sind). */
-export const VERDICT_BASES = Object.freeze(['auto', 'tolerance', 'studyVar']);
+export const VERDICT_BASES = ['auto', 'tolerance', 'studyVar'];
 
 export class State extends defineModel({
   version: '1.0',

@@ -30,6 +30,11 @@
     "description": "Combine solution concepts from parameters and options, check incompatibilities",
     "whenToUse": "When a solution consists of several sub-functions and alternative whole concepts should be combined systematically — not for scoring or choosing the concepts, that belongs to solution selection."
   },
+  "msa-typ2": {
+    "name": "MSA Type 2/3 (Gage R&R)",
+    "description": "Measurement System Analysis Type 2 (with operator, Gage R&R) and Type 3 (no operator, automated measurement systems)",
+    "whenToUse": "When a measurement system with several parts (and usually several appraisers) should be assessed: a crossed study gives repeatability and reproducibility (Gage R&R) by ANOVA; without an operator column the module computes as type 3 for automated measurement systems — not for the capability of a single gage on a standard, which type 1 covers. Requires parts, optionally appraisers, and the measurements as columns of a data collection."
+  },
   "multi-vari": {
     "name": "Multi-Vari Chart",
     "description": "Stages single measurements across up to four factors and splits the spread into variance components — shows where the variation actually comes from.",

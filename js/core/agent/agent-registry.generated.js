@@ -9968,6 +9968,7 @@ export const AGENT_REGISTRY = {
   "msa-typ2": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -9982,161 +9983,72 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
-      },
-      "setParam": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'lsl'|'usl'|'alpha'|'k'|'verdictBasis'|'sigmaHist'",
-            "optional": false,
-            "help": "welcher Parameter"
-          },
-          {
-            "name": "value",
-            "type": "string|number",
-            "optional": false,
-            "help": "der Wert als Text oder Zahl (abgelegt als Text); Wertebereich je Schlüssel siehe `Params`"
-          }
-        ],
-        "returns": "void",
-        "help": "Einen Parameter setzen.",
-        "keysOf": "Params",
-        "keys": {
-          "lsl": {
-            "type": "string",
-            "help": "untere Toleranzgrenze, leer für fehlend"
-          },
-          "usl": {
-            "type": "string",
-            "help": "obere Toleranzgrenze, leer für fehlend"
-          },
-          "alpha": {
-            "type": "string",
-            "help": "Signifikanzniveau der ANOVA"
-          },
-          "k": {
-            "type": "'6'|'5.15'",
-            "help": "Streuungsfaktor der Studienstreuung"
-          },
-          "verdictBasis": {
-            "type": "'auto'|'tolerance'|'studyVar'",
-            "help": "Bezug des Urteils"
-          },
-          "sigmaHist": {
-            "type": "string",
-            "help": "historische Prozessstreuung, leer für keine"
-          }
-        }
-      },
-      "setColumn": {
-        "params": [
-          {
-            "name": "slot",
-            "type": "'part'|'operator'|'measurement'",
-            "optional": false,
-            "help": "der Slot"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
-          }
-        ],
-        "returns": "void",
-        "help": "Eine Spalte einem Slot zuweisen."
-      },
-      "runAnalysis": {
-        "params": [
-          {
-            "name": "options",
-            "type": "{ showErrors?: boolean }",
-            "optional": true,
-            "help": ""
-          }
-        ],
-        "returns": "void",
-        "help": "Run analysis if all inputs are valid. Missing columns or no usable data clear the results silently; invalid inputs (validation failure) clear them and show the validation message — unless `showErrors` is false (debounced typing), so the message only appears once the field is committed."
-      },
-      "scheduleAnalysis": {
-        "params": [],
-        "returns": "void",
-        "help": "Die Rechnung nach kurzer Ruhezeit anstoßen."
-      },
-      "clearResults": {
-        "params": [
-          {
-            "name": "msg",
-            "type": "string",
-            "optional": true,
-            "help": "validation message to show ('' clears it)"
-          }
-        ],
-        "returns": "void",
-        "help": "Das Ergebnis und die Diagramme verwerfen, optional mit Meldung."
       }
     },
     "fields": {
-      "params": {
-        "type": "Params",
-        "help": "the entered parameters, values as text as entered",
+      "part": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
         "bulk": false,
-        "derived": true,
-        "keysOf": "Params",
-        "keys": {
-          "lsl": {
-            "type": "string",
-            "help": "untere Toleranzgrenze, leer für fehlend"
-          },
-          "usl": {
-            "type": "string",
-            "help": "obere Toleranzgrenze, leer für fehlend"
-          },
-          "alpha": {
-            "type": "string",
-            "help": "Signifikanzniveau der ANOVA"
-          },
-          "k": {
-            "type": "'6'|'5.15'",
-            "help": "Streuungsfaktor der Studienstreuung"
-          },
-          "verdictBasis": {
-            "type": "'auto'|'tolerance'|'studyVar'",
-            "help": "Bezug des Urteils"
-          },
-          "sigmaHist": {
-            "type": "string",
-            "help": "historische Prozessstreuung, leer für keine"
-          }
-        }
+        "rules": [
+          "columnRef"
+        ]
       },
-      "columnRefs": {
-        "type": "object",
-        "help": "the chosen columns per slot (part, operator, measurement), each `{ instanceId, sheetId, columnId }` or null",
+      "operator": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "rules": [
+          "columnRef"
+        ]
       },
-      "activeParams": {
-        "type": "string[]",
-        "help": "the keys `setParam` accepts in the current state",
+      "measurement": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
         "bulk": false,
-        "derived": true
+        "rules": [
+          "columnRef",
+          "types:numeric"
+        ]
       },
-      "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumn` accepts in the current state",
-        "bulk": false,
-        "derived": true
+      "lsl": {
+        "type": "number|null",
+        "help": "",
+        "bulk": false
       },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
-        "bulk": false,
-        "derived": true
+      "usl": {
+        "type": "number|null",
+        "help": "",
+        "bulk": false
       },
-      "result": {
-        "type": "Result|null",
-        "help": "the computed Gage R&R result, or null while the inputs are incomplete or invalid",
+      "alpha": {
+        "type": "number",
+        "help": "",
+        "bulk": false
+      },
+      "k": {
+        "type": "6|5.15",
+        "help": "",
+        "bulk": false
+      },
+      "verdictBasis": {
+        "type": "'auto'|'tolerance'|'studyVar'",
+        "help": "",
+        "bulk": false
+      },
+      "sigmaHist": {
+        "type": "number|null",
+        "help": "",
+        "bulk": false
+      },
+      "exampleWorksheetId": {
+        "type": "string|null",
+        "help": "",
+        "bulk": false
+      },
+      "analysis": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Result",
@@ -10720,16 +10632,42 @@ export const AGENT_REGISTRY = {
           "warnings": {
             "type": "string[]",
             "help": "Hinweise"
+          },
+          "invalid": {
+            "type": "{ key: string, vars: object|null }",
+            "help": "Ablehnung der Prüfung (Textschlüssel und Werte)",
+            "optional": true
+          },
+          "error": {
+            "type": "string",
+            "help": "Meldung der gescheiterten Rechnung",
+            "optional": true
           }
         }
-      },
-      "errorMsg": {
-        "type": "string",
-        "help": "the rejection of the last computation, empty if none",
-        "bulk": false,
-        "derived": true
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "componentsEdits",
+      "byPartEdits",
+      "byOperatorEdits",
+      "interactionEdits",
+      "xbarEdits",
+      "rEdits",
+      "runStripEdits"
+    ],
+    "settable": [
+      "part",
+      "operator",
+      "measurement",
+      "lsl",
+      "usl",
+      "alpha",
+      "k",
+      "verdictBasis",
+      "sigmaHist",
+      "exampleWorksheetId"
+    ]
   },
   "msa-typ4": {
     "tagged": true,

@@ -165,3 +165,7 @@
   color: var(--color-text-tertiary);
   margin-top: var(--spacing-sm);
 }
+
+.msa-typ2__field-error:empty {
+  display: none;
+}

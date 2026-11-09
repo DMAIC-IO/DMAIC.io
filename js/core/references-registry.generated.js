@@ -4,11 +4,10 @@ import r1 from '../modules/control-chart/control-chart-references.js';
 import r2 from '../modules/doe-planner/doe-planner-references.js';
 import r3 from '../modules/glm-regression/glm-regression-references.js';
 import r4 from '../modules/msa-typ1/msa-typ1-references.js';
-import r5 from '../modules/msa-typ2/msa-typ2-references.js';
-import r6 from '../modules/msa-typ5/msa-typ5-references.js';
-import r7 from '../modules/msa-typ6/msa-typ6-references.js';
-import r8 from '../modules/process-capability/process-capability-references.js';
-import r9 from '../modules/sample-size/sample-size-references.js';
+import r5 from '../modules/msa-typ5/msa-typ5-references.js';
+import r6 from '../modules/msa-typ6/msa-typ6-references.js';
+import r7 from '../modules/process-capability/process-capability-references.js';
+import r8 from '../modules/sample-size/sample-size-references.js';
 
 export const REFS = {
   "attribute-test": r0,
@@ -16,9 +15,8 @@ export const REFS = {
   "doe-planner": r2,
   "glm-regression": r3,
   "msa-typ1": r4,
-  "msa-typ2": r5,
-  "msa-typ5": r6,
-  "msa-typ6": r7,
-  "process-capability": r8,
-  "sample-size": r9,
+  "msa-typ5": r5,
+  "msa-typ6": r6,
+  "process-capability": r7,
+  "sample-size": r8,
 };

@@ -62,7 +62,9 @@
       "operatorMeans": "Mittelwert je Prüfer über alle Teile und Wiederholungen; leer bei Typ 3.",
       "controlChart": "Grenzen der x̄-R-Karte; eine Untergruppe ist eine Zelle Teil × Prüfer, bei Typ 3 ein Teil, mit r Wiederholungen.",
       "params": "Die Parameter, mit denen gerechnet wurde, als Zahlen.",
-      "warnings": "Hinweise zur Studie, etwa wenn bei Typ 3 nur 2 Wiederholungen je Teil vorliegen; empfohlen sind mindestens 3."
+      "warnings": "Hinweise zur Studie, etwa wenn bei Typ 3 nur 2 Wiederholungen je Teil vorliegen; empfohlen sind mindestens 3.",
+      "invalid": "Ablehnung der Prüfung statt eines Ergebnisses: key ist der Textschlüssel der Meldung (etwa zu wenige Teile oder ein unausgeglichenes Design), vars die eingesetzten Werte. Dann fehlen alle übrigen Schlüssel.",
+      "error": "Meldung, wenn die Rechnung selbst gescheitert ist; dann fehlen alle übrigen Schlüssel."
     },
     "Anova": {
       "part": "Quelle Teile: Streuung zwischen den Teilmittelwerten. Ihr F-Test prüft, ob sich die Teile unterscheiden; Vergleichsgröße ist die Wechselwirkung, wenn sie signifikant ist, sonst die Wiederholbarkeit.",

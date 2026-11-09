@@ -60,6 +60,7 @@
   "chartByPartTitle": "Messwerte nach Teil",
   "chartGageRunTitle": "Messverlaufsdiagramm (Rohwerte je Prüfeinheit und Prüfer)",
   "chartGageRunMean": "Mittelwert",
+  "chartValues": "Messwerte",
   "chartByOperatorTitle": "Messwerte nach Bediener",
   "chartInteractionTitle": "Teil × Bediener Wechselwirkung",
   "chartXbarTitle": "x̄-Karte nach Bediener",

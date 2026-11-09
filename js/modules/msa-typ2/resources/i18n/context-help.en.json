@@ -62,7 +62,9 @@
       "operatorMeans": "Mean per operator across all parts and replicates; empty for type 3.",
       "controlChart": "Limits of the x̄-R chart; a subgroup is one part × operator cell, one part for type 3, with r replicates.",
       "params": "The parameters used in the computation, as numbers.",
-      "warnings": "Notes on the study, for example when type 3 has only 2 replicates per part; at least 3 are recommended."
+      "warnings": "Notes on the study, for example when type 3 has only 2 replicates per part; at least 3 are recommended.",
+      "invalid": "Rejection by the check instead of a result: key is the text key of the message (for example too few parts or an unbalanced design), vars the inserted values. All other keys are then missing.",
+      "error": "Message when the computation itself failed; all other keys are then missing."
     },
     "Anova": {
       "part": "Source parts: variation between the part means. Its F test checks whether the parts differ; the reference is the interaction when it is significant, otherwise repeatability.",
