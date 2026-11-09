@@ -200,6 +200,17 @@ entprellt. Es gibt dafür keine Aktion; der Agent setzt die Felder (`instance.se
 samt `factors` und unter `asyncTasks.analysis` den Status mit `value` (`{ result, error, message }`, das Ergebnis steht in `value.result`);
 die Anzeigeschalter rechnen nicht neu.
 
+Beispiel für ein Schema-Modul ohne eigene Aktion: `msa-typ2` (Messsystemanalyse
+Typ 2). Der Agent setzt die Felder mit den erzeugten Settern, jeweils mit einem
+Objekt-Argument: `setPart`, `setOperator`, `setMeasurement` (Spaltenbezug oder `null`),
+`setLsl`, `setUsl` (Zahl oder `null`), `setAlpha`, `setK` (`6` oder `5.15`),
+`setVerdictBasis` (`auto`, `tolerance` oder `studyVar`) und `setSigmaHist` (Zahl größer 0
+oder `null`), zum Beispiel `setK({ k: 5.15 })` oder `setLsl({ lsl: 6 })`. Eine untere
+Grenze, die nicht unter der oberen liegt, wird abgewiesen (Invariante `limitsOrder`);
+ebenso ein `sigmaHist` kleiner oder gleich 0. `read()` liefert die Felder und unter
+`analysis` das berechnete Ergebnis (Varianzkomponenten, Kennzahlen, Urteil); ohne
+Prüferspalte rechnet das Modul als Typ 3.
+
 `settle` (die interne Ruhe vor einem `read()`) wartet zusätzlich auf laufende
 `auto`-Abläufe, höchstens 20 Sekunden, und geht danach ohne Fehler weiter.
 
