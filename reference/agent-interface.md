@@ -220,7 +220,7 @@ Beispiel für ein Schema-Modul mit einem Kommando und Spaltenlisten: `msa-typ5`
 ab 1), die Spaltenbezüge `part`, `appraiser`, `rating`, `reference`, `replicate`
 und die Liste `ratings` (Bewertungsspalten im breiten Layout, doppelte Bezüge
 werden repariert). Das Kommando `swapPositive` hat keine Parameter und vertauscht
-die positive mit der negativen Stufe; hat die Bewertung nicht genau zwei Stufen,
+die positive mit der negativen Stufe; hat die Bewertung keine zweite Stufe,
 wird es mit `positiveLevel` als Parameter abgewiesen. `read()` liefert die Felder,
 unter `levels` die Stufen (`all`, `positive`, `negative`) und unter `analysis`
 das berechnete Ergebnis; es rechnet bei jeder Änderung neu, ohne Entprellung.

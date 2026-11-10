@@ -170,7 +170,7 @@ export function warningEntries(r, t) {
 
 /**
  * Die positive Stufe gegen die wirksame negative tauschen (Rumpf des
- * Viewmodel-Kommandos `swapPositive`). Ohne zwei Stufen abgelehnt.
+ * Viewmodel-Kommandos `swapPositive`). Ohne zweite Stufe abgelehnt.
  * @param {{ model: object, levels: { all: string[], negative: string|null } }} vm
  * @returns {void}
  * @throws {Error & { param: string }} wenn die Daten keine zweite Stufe haben
