@@ -164,6 +164,7 @@ const SKIP = new Set([
   'modules/dmaic-calendar-example.test.js',
   'modules/histogram-view.test.js',
   'modules/hypothesis-test-view.test.js',
+  'modules/msa-typ5-view.test.js',
   'modules/resampling-view.test.js',
   // Imports the module shell for viewData(), which pulls in Alpine CSP and
   // touches MutationObserver on import.

@@ -62,10 +62,10 @@
         <span class="msa-typ5__levels-hint">—</span>
       </template>
       <template x-if="showBinaryLevels">
-        <span class="msa-typ5__level msa-typ5__level--pos" title="i.O.">i.O. = <span x-text="positiveText"></span></span>
+        <span class="msa-typ5__level msa-typ5__level--pos" :title="t('labels.positiveShort')"><span x-text="t('labels.positiveShort')"></span> = <span x-text="positiveText"></span></span>
       </template>
       <template x-if="showBinaryLevels">
-        <span class="msa-typ5__level msa-typ5__level--neg" title="n.i.O.">n.i.O. = <span x-text="negativeText"></span></span>
+        <span class="msa-typ5__level msa-typ5__level--neg" :title="t('labels.negativeShort')"><span x-text="t('labels.negativeShort')"></span> = <span x-text="negativeText"></span></span>
       </template>
       <template x-if="showBinaryLevels">
         <button type="button" class="btn btn--secondary btn--sm msa-typ5__swap"

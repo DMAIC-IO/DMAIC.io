@@ -28,6 +28,8 @@
     "replicateColumn": "Wiederholungs-Spalte (optional)",
     "alpha": "Signifikanzniveau α",
     "positiveSwap": "Positiv tauschen",
+    "positiveShort": "i.O.",
+    "negativeShort": "n.i.O.",
     "detectedLevels": "Erkannte Klassen",
     "referenceSource": "Referenz-Quelle",
     "referenceSourceGiven": "Spalte",

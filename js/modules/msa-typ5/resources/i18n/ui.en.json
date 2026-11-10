@@ -28,6 +28,8 @@
     "replicateColumn": "Replicate column (optional)",
     "alpha": "Significance level α",
     "positiveSwap": "Swap positive",
+    "positiveShort": "OK",
+    "negativeShort": "NOK",
     "detectedLevels": "Detected classes",
     "referenceSource": "Reference source",
     "referenceSourceGiven": "Column",
