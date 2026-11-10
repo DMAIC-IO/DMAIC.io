@@ -10,7 +10,7 @@
  */
 
 import { Papa } from '../../core/vendor/papaparse.js';
-import { detectDelimiter, parseNumeric } from '../../core/datagrid/datagrid-utils.js';
+import { detectDelimiter, parseNumeric, stripSepLine } from '../../core/datagrid/datagrid-utils.js';
 
 /**
  * Resolve with the bundled PapaParse. Kept async for existing
@@ -99,6 +99,8 @@ export async function parseCsv(buffer, opts = {}) {
   const hasHeader = opts.hasHeader !== false;
   const skipRows = Math.max(0, Math.floor(Number(opts.skipRows) || 0));
   let text = stripBom(decode(buffer, encoding));
+  const sepLine = stripSepLine(text);
+  text = sepLine.text;
 
   // CMM presets (Zeiss CALYPSO, Hexagon PC-DMIS …) often prepend metadata
   // lines before the actual column header. Drop them before delimiter-detect.
@@ -116,7 +118,7 @@ export async function parseCsv(buffer, opts = {}) {
   const result = Papa.parse(text, {
     skipEmptyLines: 'greedy',
     dynamicTyping: false,
-    delimiter: resolveDelimiter(opts.delimiter) || detectDelimiter(text),
+    delimiter: resolveDelimiter(opts.delimiter) || sepLine.delim || detectDelimiter(text),
   });
 
   const rows = (result && result.data) || [];

@@ -48,6 +48,17 @@ export function formatGridNumber(val, decimals = null, lang = 'en') {
 
 // ─── CSV Text: Records & Delimiter ─────────────────────────
 
+/**
+ * Split off Excel's leading `sep=<char>` line (the CSV export writes one).
+ * @param {string} text
+ * @returns {{ text: string, delim: string|null }} text without the line, and its delimiter
+ */
+export function stripSepLine(text) {
+  const s = String(text ?? '');
+  const m = /^(\ufeff?)sep=(.)\r?\n/i.exec(s);
+  return m ? { text: m[1] + s.slice(m[0].length), delim: m[2] } : { text: s, delim: null };
+}
+
 /** Candidate delimiters in precedence order (earlier wins a tie). */
 const CSV_DELIMITER_CANDIDATES = ['\t', ';', ',', '|'];
 
@@ -68,7 +79,7 @@ const CSV_DETECT_SAMPLE = 10;
  * @returns {string[][]} records, each an array of raw (untrimmed) fields
  */
 export function parseCSVRecords(text, delim, maxRecords = Infinity) {
-  const s = String(text ?? '');
+  const s = stripSepLine(text).text;
   const records = [];
   let record = [];
   let field = '';
@@ -129,7 +140,9 @@ export function parseCSVRecords(text, delim, maxRecords = Infinity) {
  * @returns {string} single-character delimiter
  */
 export function detectDelimiter(text) {
-  const s = String(text ?? '');
+  const sep = stripSepLine(text);
+  if (sep.delim) return sep.delim;
+  const s = sep.text;
   let best = null;
   let bestConsistency = -1;
   for (const cand of CSV_DELIMITER_CANDIDATES) {
@@ -236,6 +249,19 @@ function formatTime(timeStr, pattern) {
   const mm = match[2];
   const ss = match[3] ?? '00';
   return pattern === 'HH:mm:ss' ? `${hh}:${mm}:${ss}` : `${hh}:${mm}`;
+}
+
+/**
+ * Format a number for the cell editor and CSV export: fixed decimals when the
+ * column has them, otherwise lossless (e-notation kept).
+ * @param {number} val
+ * @param {number|null} decimals
+ * @param {string} [lang] 'de' | 'en'
+ * @returns {string}
+ */
+export function formatGridLossless(val, decimals = null, lang = 'en') {
+  if (val == null) return '';
+  return formatNumber(val, lang, decimals != null ? { profile: 'input', decimals } : { profile: 'input' });
 }
 
 /**

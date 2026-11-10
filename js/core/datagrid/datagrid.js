@@ -8,7 +8,7 @@ import { History } from './datagrid-history.js';
 import { isFormula, evaluateFormula, recalcAllFormulas } from './datagrid-formula.js';
 import { detectPattern, generateFill, shiftFormulaRefs, withCtrlModifier } from './datagrid-fill.js';
 import {
-  uid, clamp, parseNumeric, formatGridNumber,
+  uid, clamp, parseNumeric, formatGridNumber, formatGridLossless,
   COLUMN_TYPES, isNumericType, formatCellValue, renderColTypeBadge,
   parseCellInput, detectInputType, analyzeColumn,
   DATE_FORMATS, TIME_FORMATS, detectDelimiter, parseCSVRecords,
@@ -1223,7 +1223,7 @@ export class DataGrid {
         const v = col.values[r];
         if (v == null) return '';
         if (typeof v === 'number') {
-          return formatGridNumber(v, col.format.decimals, decimal === ',' ? 'de' : 'en');
+          return formatGridLossless(v, col.format.decimals, decimal === ',' ? 'de' : 'en');
         }
         let s = String(v);
         if (s.includes(delim) || s.includes('"') || s.includes('\n')) {
@@ -2473,7 +2473,7 @@ export class DataGrid {
     } else if (formula) {
       input.value = formula;
     } else {
-      input.value = val != null ? (typeof val === 'number' ? formatGridNumber(val, null, this._lang()) : String(val)) : '';
+      input.value = val != null ? (typeof val === 'number' ? formatGridLossless(val, null, this._lang()) : String(val)) : '';
     }
     td.textContent = '';
     td.appendChild(input);

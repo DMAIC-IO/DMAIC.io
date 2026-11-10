@@ -104,6 +104,31 @@ suite('DataGrid — Zahlen nach App-Sprache', () => {
     assertEqual(de[3], '-0,000012');
     assertEqual(make('en').exportToCSV().split('\r\n')[2], '24.5');
   });
+  test('Export -> Import: Kopfzeile und Werte bleiben erhalten (de)', () => {
+    const src = make('de');
+    src.columns[0].name = 'Länge';
+    const csv = src.exportToCSV();
+    const g = make('de', []);
+    g.importCSVText(csv, 't.csv');
+    assertEqual(g.columns.length, 1);
+    assertEqual(g.columns[0].name, 'Länge');
+    assertDeepEqual(g.columns[0].values.slice(0, 2), [24.5, -0.000012]);
+  });
+  test('e-Schreibweise: Editor und Export verlustfrei, Anzeige 6 Stellen', () => {
+    const g = make('de', [{ id: 'a', name: 'a', type: 'numeric', values: [1.23456789e-8], format: {} }]);
+    assertEqual(g.container.querySelector('td.cell-numeric').textContent, '1,23457e-8');
+    g._startEdit(0, 0);
+    assertEqual(g.editorEl.value, '1,23456789e-8');
+    g._cancelEdit();
+    assertEqual(g.exportToCSV().split('\r\n')[2], '1,23456789e-8');
+  });
+  test('Editor-Commit mit Tippen: 1.234 ergibt 1,234', () => {
+    const g = make('de');
+    g._startEdit(0, 1);
+    g.editorEl.value = '1.234';
+    g._commitEdit();
+    assertEqual(g.columns[0].values[1], 1.234);
+  });
   test('ausdrücklich übergebenes Dezimalzeichen gewinnt', () => {
     assertEqual(make('de').exportToCSV({ decimalSeparator: '.' }).split('\r\n')[2], '24.5');
   });

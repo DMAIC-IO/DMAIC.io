@@ -87,3 +87,11 @@ suite('Datentabelle — Zahlen nach App-Sprache anzeigen und lesen', () => {
     assertEqual(parseCellInput({ type: 'currency' }, '2,50 €'), 2.5);
   });
 });
+
+suite('sep=-Zeile', () => {
+  test('detectDelimiter und parseCSVRecords lesen und überspringen sie', () => {
+    const t = 'sep=;\r\na;b\r\n1,5;2\r\n';
+    assertEqual(detectDelimiter(t), ';');
+    assertDeepEqual(parseCSVRecords(t, ';'), [['a', 'b'], ['1,5', '2']]);
+  });
+});
