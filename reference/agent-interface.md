@@ -212,6 +212,19 @@ ebenso ein `sigmaHist` kleiner oder gleich 0. `read()` liefert die Felder und un
 `analysis` das berechnete Ergebnis (Varianzkomponenten, Kennzahlen, Urteil); ohne
 Prüferspalte rechnet das Modul als Typ 3.
 
+Beispiel für ein Schema-Modul mit einem Kommando und Spaltenlisten: `msa-typ5`
+(Attributive Messsystemanalyse). Der Agent setzt die Felder über `instance.set`:
+`type` (`binary`, `nominal` oder `ordinal`), `positiveLevel` (Stufe als Text oder
+`null`), `weights` (`linear` oder `quadratic`), `alpha` (`0.01`, `0.05` oder `0.1`),
+`ruleSet` (`aiag` oder `bosch`), `layout` (`long` oder `wide`), `trials` (ganze Zahl
+ab 1), die Spaltenbezüge `part`, `appraiser`, `rating`, `reference`, `replicate`
+und die Liste `ratings` (Bewertungsspalten im breiten Layout, doppelte Bezüge
+werden repariert). Das Kommando `swapPositive` hat keine Parameter und vertauscht
+die positive mit der negativen Stufe; hat die Bewertung nicht genau zwei Stufen,
+wird es mit `positiveLevel` als Parameter abgewiesen. `read()` liefert die Felder,
+unter `levels` die Stufen (`all`, `positive`, `negative`) und unter `analysis`
+das berechnete Ergebnis; es rechnet bei jeder Änderung neu, ohne Entprellung.
+
 `settle` (die interne Ruhe vor einem `read()`) wartet zusätzlich auf laufende
 `auto`-Abläufe, höchstens 20 Sekunden, und geht danach ohne Fehler weiter.
 
