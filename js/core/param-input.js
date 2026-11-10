@@ -12,6 +12,7 @@
  * Grenzen vom Zustand des Moduls abhängen.
  */
 import { requireNumber } from './agent/agent-argcheck.js';
+import { formatNumber } from './number-format.js';
 
 /**
  * @typedef {object} ParamSpec
@@ -51,7 +52,7 @@ export function numberCheck(spec) {
  * @returns {string}
  */
 export function describeRange(spec, lang, t) {
-  const nf = new Intl.NumberFormat(lang, { maximumFractionDigits: 6 });
+  const nf = { format: (v) => formatNumber(v, lang) };
   const parts = [];
   if (spec.exclusiveMin !== undefined) parts.push(`> ${nf.format(spec.exclusiveMin)}`);
   else if (spec.min !== undefined) parts.push(`≥ ${nf.format(spec.min)}`);

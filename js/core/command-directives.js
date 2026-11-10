@@ -283,7 +283,7 @@ function createFormController(Alpine, formEl, baseCommand) {
     start = cloneJSON(next);
     for (const [name, { el, spec }] of free) {
       clearRejection(el);
-      if (!isChoiceGroup(el)) writeElement(el, spec, values[name]);
+      if (!isChoiceGroup(el)) writeElement(el, spec, values[name], ui().i18n.getLanguage());
     }
   };
 
@@ -604,7 +604,7 @@ export function registerCommandDirectives(Alpine) {
     setHelpKey(el, ctl.helpKeyOf(name, ui().moduleId));
     ctl.register(name, el, spec);
 
-    effect(() => writeElement(el, spec, ctl.values[name]));
+    effect(() => writeElement(el, spec, ctl.values[name], ui().i18n.getLanguage()));
 
     const onInput = () => {
       ctl.values[name] = readElement(el, spec);

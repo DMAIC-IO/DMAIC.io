@@ -1,4 +1,4 @@
-import { suite, test, assertEqual, assertThrows } from '../test-utils.js';
+import { suite, test, assertEqual, assertThrows, assertTrue } from '../test-utils.js';
 import { paramInputMixin, numberCheck, describeRange } from '../../js/core/param-input.js';
 
 const SPECS = { k: { min: 0.1, max: 10, step: 0.1 }, n: { min: 1, integer: true, nullable: true } };
@@ -143,6 +143,8 @@ suite('paramInputMixin', () => {
     assertEqual(describeRange({ min: 0.1, max: 10 }, 'de', t), '≥ 0,1 und ≤ 10');
     assertEqual(describeRange({ exclusiveMin: 0, exclusiveMax: 1 }, 'en', t), '> 0 und < 1');
     assertEqual(describeRange({ min: 1, integer: true }, 'de', t), '≥ 1, ganzzahlig');
+    const big = describeRange({ min: 0.5, max: 1234.5 }, 'de', t);
+    assertTrue(big.includes('≥ 0,5') && big.includes('≤ 1.234,5'), big);
   });
 
   test('live: gültige Eingabe wird übernommen, ungültige bleibt still ohne Marke, Reset und Schreiben', () => {

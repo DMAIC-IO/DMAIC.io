@@ -35,7 +35,7 @@ const Board = defineModel({
     boom: command({ params: { text: text() }, run() { null.x; } }),
     guarded: command({ params: { text: text() }, run() { throw Object.assign(new Error('nein'), { invariant: 'noGo' }); } }),
     limitText: command({ params: { limit: number({ min: 0, max: 9, integer: true }), text: text() }, run() { throw new Error('zu groß'); } }),
-    setLimit: command({ params: { limit: number({ min: 0, max: 9, integer: true }) }, run() {} }),
+    setLimit: command({ params: { limit: number({ min: 0, max: 9, integer: true }), rate: number({ min: 0, max: 1, default: 0.5 }) }, run() {} }),
   },
 });
 
@@ -410,10 +410,14 @@ suite('x-param', () => {
 
   test('Attribute aus der Spec (Zahl)', async () => {
     const { $ } = await mount('<form x-command-form="setLimit"><input x-param="limit"></form>');
-    assertEqual($('input').type, 'number');
-    assertEqual($('input').getAttribute('min'), '0');
-    assertEqual($('input').getAttribute('max'), '9');
-    assertEqual($('input').getAttribute('step'), '1');
+    assertEqual($('input').type, 'text');
+    assertEqual($('input').getAttribute('inputmode'), 'numeric');
+    for (const a of ['min', 'max', 'step']) assertEqual($('input').getAttribute(a), null, a);
+  });
+
+  test('Zahlenfeld zeigt den Wert in der App-Sprache (de: Komma)', async () => {
+    const { $ } = await mount('<form x-command-form="setLimit"><input x-param="rate"></form>');
+    assertEqual($('input').value, '0,5');
   });
 
   test('Prüfung bei change markiert, der Wert bleibt in form', async () => {

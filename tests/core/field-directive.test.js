@@ -4,7 +4,7 @@
  */
 import { suite, test, assertEqual, assertTrue, assertThrows, assertDeepEqual } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
-import { registerFieldDirective } from '../../js/core/field-directive.js';
+import { registerFieldDirective, applyAttributes, writeElement } from '../../js/core/field-directive.js';
 import { WIDGETS } from '../../js/widgets/registry.js';
 import { defineModel, defineWidget, defineState, text, number, oneOf, boolean, list, object, command, idOf, date, time, columnRef } from '../../js/core/model.js';
 
@@ -62,14 +62,20 @@ const change = (el, value) => { el.value = value; el.dispatchEvent(new Event('ch
 const type = (el, value) => { el.value = value; el.dispatchEvent(new Event('input')); };
 
 suite('x-field — Attribute aus dem Schema', () => {
-  test('Zahl: type, min/max (auch offene Grenze als Hinweis), step', async () => {
+  test('Zahl: type="text" mit inputmode, ohne min/max/step', async () => {
     const { els } = await mount();
-    assertEqual(els.alpha.type, 'number');
-    assertEqual(els.alpha.getAttribute('min'), '0');
-    assertEqual(els.alpha.getAttribute('max'), '1');
-    assertEqual(els.alpha.getAttribute('step'), 'any');
-    assertEqual(els.count.getAttribute('step'), '1');
+    assertEqual(els.alpha.type, 'text');
+    assertEqual(els.alpha.getAttribute('inputmode'), 'decimal');
+    for (const a of ['min', 'max', 'step']) assertEqual(els.alpha.getAttribute(a), null, a);
+    assertEqual(els.count.getAttribute('inputmode'), 'numeric');
     assertEqual(els.alphaText.type, 'text', 'ausdrücklicher type bleibt');
+  });
+
+  test('ausdrückliches type="range" bleibt stehen', async () => {
+    const el = document.createElement('input');
+    el.setAttribute('type', 'range');
+    applyAttributes(el, M.schema.fields.alpha);
+    assertEqual(el.type, 'range');
   });
 
   test('data-help-key aus dem Feldnamen, vorhandener bleibt', async () => {
@@ -82,10 +88,10 @@ suite('x-field — Attribute aus dem Schema', () => {
 suite('x-field — Bindung', () => {
   test('Model → Feld', async () => {
     const { model, els } = await mount();
-    assertEqual(els.alpha.value, '0.05');
+    assertEqual(els.alpha.value, '0,05');
     model.alpha = 0.1;
     await flush();
-    assertEqual(els.alpha.value, '0.1');
+    assertEqual(els.alpha.value, '0,1');
   });
 
   test('gültige Eingabe mit Dezimalkomma', async () => {
@@ -98,7 +104,7 @@ suite('x-field — Bindung', () => {
     const { model, els } = await mount();
     change(els.alphaText, '2');
     assertEqual(model.alpha, 0.05);
-    assertEqual(els.alphaText.value, '0.05');
+    assertEqual(els.alphaText.value, '0,05');
     assertEqual(els.alphaText.getAttribute('aria-invalid'), 'true');
     assertTrue(els.alphaText.title.startsWith('common.inputRejected|'), els.alphaText.title);
     change(els.alphaText, '0,3');
@@ -136,10 +142,8 @@ suite('x-field — Bindung', () => {
 suite('x-field — UI-State (state.<name>)', () => {
   test('Attribute und Anker aus der State-Spec', async () => {
     const { els } = await mount();
-    assertEqual(els.level.type, 'number');
-    assertEqual(els.level.getAttribute('min'), '0');
-    assertEqual(els.level.getAttribute('max'), '5');
-    assertEqual(els.level.getAttribute('step'), '1');
+    assertEqual(els.level.type, 'text');
+    assertEqual(els.level.getAttribute('inputmode'), 'numeric');
     assertEqual(els.level.getAttribute('data-help-key'), 'modules.ft.state.level.help');
     assertEqual(els.label.getAttribute('data-help-key'), 'modules.ft.state.label.help');
   });
@@ -589,5 +593,56 @@ suite('x-field auf columnRef', () => {
     try { await mountCols('<select x-field="model.colRef1"></select>'); } catch (err) { caught = err; }
     window.removeEventListener('error', onErr);
     assertTrue(/a columnRef field needs a host element \(div\), not <select>/.test(String(caught?.message ?? caught)), String(caught));
+  });
+});
+
+suite('x-field — Zahlen nach App-Sprache', () => {
+  const numField = () => {
+    const el = document.createElement('input');
+    el.setAttribute('type', 'text');
+    document.body.append(el);
+    return el;
+  };
+  const spec = M.schema.fields.alpha;
+
+  test('Anzeige: de mit Komma, en mit Punkt', () => {
+    const el = numField();
+    writeElement(el, spec, 0.05, 'de');
+    assertEqual(el.value, '0,05');
+    writeElement(el, spec, 0.05, 'en');
+    assertEqual(el.value, '0.05');
+    el.remove();
+  });
+
+  test('Fokus: „0,“ bei Model 0 und „0,50“ bei 0.5 bleiben stehen', () => {
+    const el = numField();
+    el.focus();
+    el.value = '0,';
+    writeElement(el, spec, 0, 'de');
+    assertEqual(el.value, '0,');
+    el.value = '0,50';
+    writeElement(el, spec, 0.5, 'de');
+    assertEqual(el.value, '0,50');
+    el.value = '0.50';
+    writeElement(el, spec, 0.5, 'en');
+    assertEqual(el.value, '0.50');
+    el.remove();
+  });
+
+  test('ohne Fokus wird neu geschrieben', () => {
+    const el = numField();
+    el.value = '0,50';
+    writeElement(el, spec, 0.5, 'de');
+    assertEqual(el.value, '0,5');
+    el.remove();
+  });
+
+  test('Feld in der Direktive zeigt Model-Wert in der App-Sprache', async () => {
+    const { model, els } = await mount();
+    model.alpha = 0.07;
+    await flush();
+    assertEqual(els.alpha.value, '0,07');
+    change(els.alpha, '0,3');
+    assertEqual(model.alpha, 0.3);
   });
 });

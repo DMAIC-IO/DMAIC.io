@@ -2,11 +2,11 @@
  * D.Mike — Direktive x-field (field-directive.js)
  *
  * `x-field="model.alpha"` bindet ein Formularfeld an ein Feld des
- * deklarativen Models (core/model.js): setzt `type`/`min`/`max`/`step` aus
- * dem Schema, schreibt über den prüfenden Setter, zeigt eine Ablehnung
+ * deklarativen Models (core/model.js): setzt bei Zahlen `type="text"` und
+ * `inputmode` aus dem Schema, schreibt über den prüfenden Setter, zeigt eine Ablehnung
  * (`aria-invalid` + Hinweis mit Bereich) und setzt das Feld bei einer
- * abgelehnten Eingabe auf den gültigen Wert zurück. Das Dezimalkomma liest
- * `parseDecimalInput`. Fehlt ein `data-help-key`, entsteht er aus dem
+ * abgelehnten Eingabe auf den gültigen Wert zurück. Zahlen liest `parseNumber` (Komma oder
+ * Punkt) und zeigt `formatNumber` in der App-Sprache (Profil `input`). Fehlt ein `data-help-key`, entsteht er aus dem
  * Feldnamen. Ersetzt für Schema-Module das param-input-Mixin.
  *
  * `x-field="state.name"` bindet ebenso an ein Feld des UI-State
@@ -36,7 +36,7 @@ import { widgetForKind, mountWidget } from './widget-directive.js';
 import { openChannel, anchorHelp, rejectionHint, invariantHint, isNumeric } from './value-channel.js';
 import { bindChoiceGroup, isChoiceGroup } from './choice-group.js';
 import { contextOf } from './model.js';
-import { parseDecimalInput } from './parse-decimal.js';
+import { parseNumber, formatNumber } from './number-format.js';
 import { clearRejection, markRejection } from './param-input.js';
 
 export { rejectionHint, invariantHint };
@@ -55,12 +55,12 @@ export function applyAttributes(el, spec) {
     return;
   }
   if (!isNumeric(spec)) return;
-  if (!el.hasAttribute('type')) el.setAttribute('type', 'number');
-  const min = spec.kind === 'index' ? 0 : (spec.min ?? spec.exclusiveMin);
-  const max = spec.max ?? spec.exclusiveMax;
-  if (min !== undefined && !el.hasAttribute('min')) el.setAttribute('min', String(min));
-  if (max !== undefined && !el.hasAttribute('max')) el.setAttribute('max', String(max));
-  if (!el.hasAttribute('step')) el.setAttribute('step', spec.integer || spec.kind === 'index' ? '1' : 'any');
+  // type="text": die Zahl liest und zeigt der Kern in der App-Sprache; der
+  // Bereich (min/max/step) hätte bei Text keine Wirkung, ihn prüft der Setter.
+  if (!el.hasAttribute('type')) {
+    el.setAttribute('type', 'text');
+    el.setAttribute('inputmode', spec.integer || spec.kind === 'index' ? 'numeric' : 'decimal');
+  }
 }
 
 /** Auch von `x-param` benutzt. @param {HTMLInputElement} el @param {object} spec @returns {any} der Rohwert für den Setter */
@@ -69,14 +69,16 @@ export function readElement(el, spec) {
   const raw = el.value;
   if (!isNumeric(spec)) return raw;
   if (spec.nullable && raw.trim() === '') return null;
-  const n = parseDecimalInput(raw);
+  const n = parseNumber(raw);
   return typeof n === 'number' && Number.isFinite(n) ? n : raw;
 }
 
-/** Auch von `x-param` benutzt. @param {HTMLInputElement} el @param {object} spec @param {any} value */
-export function writeElement(el, spec, value) {
+/** Auch von `x-param` benutzt. @param {HTMLInputElement} el @param {object} spec @param {any} value @param {string} [lang] App-Sprache für Zahlen */
+export function writeElement(el, spec, value, lang = 'en') {
   if (el.type === 'checkbox') { el.checked = value === true; return; }
-  const shown = value === null || value === undefined ? '' : String(value);
+  const shown = value === null || value === undefined ? ''
+    : isNumeric(spec) && typeof value === 'number' ? formatNumber(value, lang, { profile: 'input' })
+      : String(value);
   // Beim Tippen nicht überschreiben, solange das Feld denselben Wert meint
   // („0,“ oder „1.“ würden sonst zu „0“ bzw. „1“ gekürzt).
   if (el.ownerDocument?.activeElement === el && isNumeric(spec) && readElement(el, spec) === value) return;
@@ -122,7 +124,7 @@ export function registerFieldDirective(Alpine, { i18n, widgets }) {
     const show = () => {
       const value = ch.get(); // immer lesen: der Effect bleibt so am Feld angemeldet
       if (liveRejected && el.ownerDocument?.activeElement === el) return;
-      writeElement(el, spec, value);
+      writeElement(el, spec, value, reg.i18n.getLanguage());
     };
     effect(show);
     if (el.tagName === 'SELECT') {
