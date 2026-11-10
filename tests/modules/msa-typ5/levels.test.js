@@ -1,5 +1,5 @@
 import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
-import { effectiveLevels, engineLevels, ratingValues } from '../../../js/modules/msa-typ5/domain/levels.js';
+import { effectiveLevels, engineLevels, ratingValues, mostFrequentLevel } from '../../../js/modules/msa-typ5/domain/levels.js';
 
 const none = { positiveLevel: null };
 
@@ -47,5 +47,22 @@ suite('MSA Typ 5 — engineLevels', () => {
     const r = ['i.O.', 'n.i.O.', 'i.O.'].map((value) => ({ value }));
     assertDeepEqual(engineLevels('binary', r, 'n.i.O.'), ['n.i.O.', 'i.O.']);
     assertDeepEqual(engineLevels('binary', r, 'fehlt'), ['i.O.', 'n.i.O.']);
+  });
+  test('binär ohne positive Stufe und ohne Fallback: schlicht sortiert', () => {
+    const r = ['i.O.', 'n.i.O.'].map((value) => ({ value }));
+    assertDeepEqual(engineLevels('binary', r, null), ['i.O.', 'n.i.O.']);
+    assertDeepEqual(engineLevels('binary', ['b', 'a'].map((value) => ({ value })), null), ['a', 'b']);
+  });
+  test('gespeicherte Stufe nur in verworfenen Zeilen: häufigster Rohwert vorn', () => {
+    const raw = ['gut', 'schlecht', 'schlecht', 'gut', 'gut', 'x'];
+    const r = ['gut', 'schlecht'].map((value) => ({ value }));
+    assertEqual(mostFrequentLevel(raw), 'gut');
+    assertDeepEqual(engineLevels('binary', r, 'x', mostFrequentLevel(raw)), ['gut', 'schlecht']);
+    const raw2 = ['schlecht', 'schlecht', 'gut', 'x'];
+    assertDeepEqual(engineLevels('binary', r, 'x', mostFrequentLevel(raw2)), ['schlecht', 'gut']);
+  });
+  test('mostFrequentLevel: ohne Werte null', () => {
+    assertEqual(mostFrequentLevel(null), null);
+    assertEqual(mostFrequentLevel(['', null]), null);
   });
 });

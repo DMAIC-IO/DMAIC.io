@@ -1,4 +1,4 @@
-import { suite, test, assert, assertEqual, assertDeepEqual } from '../../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { longRows, orderRatings, wideRows } from '../../../js/modules/msa-typ5/domain/rows.js';
 
 suite('MSA Typ 5 — longRows', () => {
@@ -57,6 +57,5 @@ suite('MSA Typ 5 — wideRows', () => {
   test('ohne Teile oder Spalten: null', () => {
     assertEqual(wideRows({ parts: null, columns: [col('a', [])], trials: 1, references: null }), null);
     assertEqual(wideRows({ parts: [1], columns: [], trials: 1, references: null }), null);
-    assert(true);
   });
 });

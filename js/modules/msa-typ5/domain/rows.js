@@ -2,6 +2,7 @@
  * D.Mike — MSA Typ 5: Zeilen der Analyse aus den Spalten (reine Funktionen).
  */
 import { stackWide } from '../../../engines/msa-typ5-engine.js';
+import { blank } from './levels.js';
 import { refToKey } from '../../../core/worksheet-columns.js';
 
 /**
@@ -9,7 +10,6 @@ import { refToKey } from '../../../core/worksheet-columns.js';
  * @typedef {{ part: string, appraiser: string, value: string, rep: number|null }} Row
  */
 
-const blank = (v) => v === null || v === undefined || v === '';
 
 /**
  * Referenz je Teil aus Teile- und Referenzspalte (die letzte nicht leere gewinnt).
