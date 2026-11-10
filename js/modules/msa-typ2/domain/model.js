@@ -19,6 +19,7 @@ import ScatterChart from '../../../widgets/scatter-chart/schema.js';
 import BoxplotChart from '../../../widgets/boxplot-chart/schema.js';
 import GageRunChart from '../../../widgets/gage-run-chart/schema.js';
 import { from0 } from './migrations.js';
+import { roundTo } from '../../../core/number-format.js';
 
 /** Zulässige Studienfaktoren (6 = Standard, 5,15 = AIAG 3. Auflage). */
 export const K_OPTIONS = [6, 5.15];
@@ -38,7 +39,7 @@ export class State extends defineModel({
       exclusiveMin: 0,
       exclusiveMax: 1,
       // Aus dem Konfidenzniveau; auf den erlaubten Bereich geklemmt.
-      default: (c) => Math.min(0.9999, Math.max(0.0001, Number(((100 - c.confidenceLevel) / 100).toFixed(4)))),
+      default: (c) => Math.min(0.9999, Math.max(0.0001, roundTo((100 - c.confidenceLevel) / 100, 4))),
     }),
     k: oneOf(K_OPTIONS, { default: 6 }),
     verdictBasis: oneOf(VERDICT_BASES, { default: 'auto' }),

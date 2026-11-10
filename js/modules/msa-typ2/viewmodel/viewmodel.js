@@ -188,13 +188,13 @@ export default createModule({
         return `${this.t('threshold')}: ≥ 5 · ${badge}`;
       },
       /** %GRR (Studienstreuung), formatiert. */
-      get grrStudyVarText() { return fmt(this.result?.varComp.grr.pctStudyVar); },
+      get grrStudyVarText() { return fmt(this.result?.varComp.grr.pctStudyVar, 4, ctx.context.language); },
       /** %GRR (Toleranz), formatiert. */
-      get grrToleranceText() { return fmt(this.result?.varComp.grr.pctTolerance); },
+      get grrToleranceText() { return fmt(this.result?.varComp.grr.pctTolerance, 4, ctx.context.language); },
       /** %EV, formatiert. */
-      get evText() { return fmt(this.result?.varComp.repeatability.pctStudyVar); },
+      get evText() { return fmt(this.result?.varComp.repeatability.pctStudyVar, 4, ctx.context.language); },
       /** %AV, formatiert. */
-      get avText() { return fmt(this.result?.varComp.reproducibility.pctStudyVar); },
+      get avText() { return fmt(this.result?.varComp.reproducibility.pctStudyVar, 4, ctx.context.language); },
       /** Hinweise der Studie. */
       get warnings() { return this.result?.warnings ?? []; },
 
@@ -203,13 +203,13 @@ export default createModule({
       /** Es gibt eine Toleranz (Spalte und Kachel %Toleranz). */
       get varCompHasTol() { return Boolean(this.result && this.result.varComp.grr.pctTolerance != null); },
       /** Zeilen der ANOVA-Tabelle. */
-      get anovaRows() { return anovaRows(this.result, this.t); },
+      get anovaRows() { return anovaRows(this.result, this.t, ctx.context.language); },
       /** Zeilen der Tabelle der Varianzkomponenten. */
-      get varCompRows() { return varCompRows(this.result, this.t); },
+      get varCompRows() { return varCompRows(this.result, this.t, ctx.context.language); },
       /** @param {number} v @returns {string} */
-      fmt(v) { return fmt(v); },
+      fmt(v) { return fmt(v, 4, ctx.context.language); },
       /** @param {number} p @returns {string} */
-      fmtP(p) { return fmtP(p); },
+      fmtP(p) { return fmtP(p, ctx.context.language); },
 
       /** Variationskomponenten (Balken). */
       get componentsChart() { return componentsChart(this.result, this.t); },

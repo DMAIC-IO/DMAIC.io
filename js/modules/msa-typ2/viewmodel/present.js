@@ -92,32 +92,32 @@ export function statusDetail(r, t) {
 
 /**
  * Zeilen der ANOVA-Tabelle; Prüfer und Wechselwirkung nur, wo es sie gibt.
- * @param {any} r Ergebnis @param {(key: string) => string} t
+ * @param {any} r Ergebnis @param {(key: string) => string} t @param {string} lang App-Sprache
  * @returns {Array<{ key: string, label: string, ss: string, df: number, ms: string, f: string, p: string, totalClass: string }>}
  */
-export function anovaRows(r, t) {
+export function anovaRows(r, t, lang) {
   if (!r) return [];
   const a = r.anova;
   const row = (key, label, s) => ({
-    key, label, ss: fmt(s.ss), df: s.df, ms: fmt(s.ms), f: fmt(s.f), p: fmtP(s.pValue), totalClass: '',
+    key, label, ss: fmt(s.ss, 4, lang), df: s.df, ms: fmt(s.ms, 4, lang), f: fmt(s.f, 4, lang), p: fmtP(s.pValue, lang), totalClass: '',
   });
   const rows = [row('part', t('sourcePart'), a.part)];
   if (a.operator) rows.push(row('operator', t('sourceOperator'), a.operator));
   if (a.interact) rows.push(row('interact', t('sourceInteract'), a.interact));
   rows.push({
     key: 'equip', label: r.interactionPooled ? t('sourceEquipPooled') : t('sourceEquip'),
-    ss: fmt(a.equip.ss), df: a.equip.df, ms: fmt(a.equip.ms), f: '–', p: '–', totalClass: '',
+    ss: fmt(a.equip.ss, 4, lang), df: a.equip.df, ms: fmt(a.equip.ms, 4, lang), f: '–', p: '–', totalClass: '',
   });
-  rows.push({ key: 'total', label: t('sourceTotal'), ss: fmt(a.total.ss), df: a.total.df, ms: '–', f: '–', p: '–', totalClass: 'msa-typ2__anova-total' });
+  rows.push({ key: 'total', label: t('sourceTotal'), ss: fmt(a.total.ss, 4, lang), df: a.total.df, ms: '–', f: '–', p: '–', totalClass: 'msa-typ2__anova-total' });
   return rows;
 }
 
 /**
  * Zeilen der Tabelle der Varianzkomponenten (Typ 3 ohne Reproduzierbarkeit).
- * @param {any} r Ergebnis @param {(key: string) => string} t
+ * @param {any} r Ergebnis @param {(key: string) => string} t @param {string} lang App-Sprache
  * @returns {Array<Record<string, string>>}
  */
-export function varCompRows(r, t) {
+export function varCompRows(r, t, lang) {
   if (!r) return [];
   const vc = r.varComp;
   const i2 = '  ';
@@ -141,13 +141,13 @@ export function varCompRows(r, t) {
     return {
       key,
       label,
-      variance: fmt(v.variance),
-      sigma: fmt(v.sigma),
-      studyVar: fmt(v.studyVar),
-      pctContribution: fmt(v.pctContribution),
-      pctStudyVar: fmt(v.pctStudyVar),
-      pctTolerance: v.pctTolerance != null ? fmt(v.pctTolerance) : '–',
-      pctProcess: v.pctProcess != null ? fmt(v.pctProcess) : '–',
+      variance: fmt(v.variance, 4, lang),
+      sigma: fmt(v.sigma, 4, lang),
+      studyVar: fmt(v.studyVar, 4, lang),
+      pctContribution: fmt(v.pctContribution, 4, lang),
+      pctStudyVar: fmt(v.pctStudyVar, 4, lang),
+      pctTolerance: v.pctTolerance != null ? fmt(v.pctTolerance, 4, lang) : '–',
+      pctProcess: v.pctProcess != null ? fmt(v.pctProcess, 4, lang) : '–',
       totalClass: key === 'total' ? 'msa-typ2__anova-total' : '',
     };
   });

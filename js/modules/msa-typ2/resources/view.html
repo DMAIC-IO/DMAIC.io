@@ -25,12 +25,12 @@
       <div class="field-group">
         <label data-help-key="modules.msa-typ2.fields.lsl.help" x-text="t('lsl')"></label>
         <input class="field field--num" data-ref="inp-lsl" data-help-key=""
-               placeholder="24.900" x-field="model.lsl">
+               :placeholder="num(24.9, 3)" x-field="model.lsl">
       </div>
       <div class="field-group">
         <label data-help-key="modules.msa-typ2.fields.usl.help" x-text="t('usl')"></label>
         <input class="field field--num" data-ref="inp-usl" data-help-key=""
-               placeholder="25.100" x-field="model.usl">
+               :placeholder="num(25.1, 3)" x-field="model.usl">
       </div>
     </div>
     <span class="msa-typ2__field-error msa-typ2__field-error--grid" data-ref="limits-error" x-text="fieldError('model.lsl') || fieldError('model.usl')"></span>

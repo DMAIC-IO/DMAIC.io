@@ -12,7 +12,7 @@ import { defineComputedSlots, bindComputed } from '../../../js/core/computed.js'
 import { State } from '../../../js/modules/msa-typ2/domain/model.js';
 import {
   readAnalysis, analysisMessage, resultOf, byOperatorChart, interactionChart, runStrips,
-  componentsChart, byPartChart, xbarChart, rChart, varCompRows,
+  componentsChart, byPartChart, xbarChart, rChart, varCompRows, anovaRows,
 } from '../../../js/modules/msa-typ2/viewmodel/present.js';
 
 const ref = (col) => ({ instanceId: 'ws1', sheetId: 's1', columnId: col });
@@ -195,6 +195,18 @@ suite('MSA Typ 2 Viewmodel — Streifen', () => {
     assertEqual(label('operator'), '\u00a0\u00a0\u00a0\u00a0sourceOperator');
     assertEqual(label('interact'), '\u00a0\u00a0\u00a0\u00a0sourceInteract');
     assertEqual(label('part'), 'partToPartVar');
+    h.release();
+  });
+
+  test('Varianztabelle und ANOVA: Zahlen nach Sprache', () => {
+    const h = host();
+    const r = resultOf(h.vm.analysis);
+    const grrEn = varCompRows(r, t, 'en').find((x) => x.key === 'grr');
+    const grrDe = varCompRows(r, t, 'de').find((x) => x.key === 'grr');
+    assertTrue(/^\d+\.\d{4}$/.test(grrEn.pctStudyVar), grrEn.pctStudyVar);
+    assertTrue(/^\d+,\d{4}$/.test(grrDe.pctStudyVar), grrDe.pctStudyVar);
+    const anDe = anovaRows(r, t, 'de')[0];
+    assertTrue(anDe.ms.includes(',') && !anDe.ms.includes('.'), anDe.ms);
     h.release();
   });
 });
