@@ -83,23 +83,42 @@ suite('MSA Typ 5 Model — Auswahlwerte gegen Schema und Engine', () => {
     assertEqual(ALPHA_OPTIONS.join(','), '0.01,0.05,0.1');
   });
 
+  // 6 Teile × 2 Prüfer × 2 Wiederholungen über drei geordnete Stufen.
+  const LEVELS = ['a', 'b', 'c'];
   const rows = [];
   for (let p = 1; p <= 6; p++) for (const a of ['A', 'B']) for (let r = 0; r < 2; r++) {
-    rows.push({ part: `P${p}`, appraiser: a, rating: (p + (a === 'B' ? 1 : 0) + r) % 3 === 0 ? 'x' : 'y', reference: undefined });
+    rows.push({ part: `P${p}`, appraiser: a, value: LEVELS[(p + (a === 'B' ? 1 : 0) + r) % 3], rep: r + 1 });
   }
+
+  /**
+   * Engine-Aufruf in der Form des Viewmodels.
+   * @param {string} type @param {object} params @returns {any}
+   */
+  const run = (type, params) => analyze({
+    type, levels: LEVELS, ratings: rows.map((x) => ({ ...x })), references: null, params,
+  });
+
+  /** @param {any} r @param {string} label */
+  const assertResult = (r, label) => {
+    assertEqual(r?.meta?.errors?.length ?? 0, 0, `${label}: ${JSON.stringify(r?.meta?.errors)}`);
+    assert(Boolean(r?.verdict), `${label}: Urteil`);
+  };
 
   test('jeder type wird von der Engine angenommen', () => {
     for (const type of TYPE_OPTIONS) {
-      const levels = type === 'ordinal' ? ['x', 'y'] : ['x', 'y'];
-      const r = analyze({ type, ratings: rows.map((x) => ({ ...x })), levels }, { weights: 'quadratic', alpha: 0.05 });
-      assert(r && !r.error, type);
+      assertResult(run(type, { weights: 'quadratic', ruleSet: 'aiag', alpha: 0.05 }), type);
     }
   });
 
-  test('jedes weights und jedes ruleSet wird von der Engine angenommen', () => {
-    for (const weights of WEIGHTS_OPTIONS) for (const ruleSet of RULESET_OPTIONS) {
-      const r = analyze({ type: 'ordinal', ratings: rows.map((x) => ({ ...x })), levels: ['x', 'y'] }, { weights, alpha: 0.05, ruleSet });
-      assert(r && !r.error, `${weights}/${ruleSet}`);
+  test('jedes weights, ruleSet und alpha wird von der Engine angenommen und wirkt', () => {
+    const pairKappa = (r) => Object.values(r.betweenAppraisers.pairwiseCohenKappa)[0].kappa;
+    const unweighted = pairKappa(run('nominal', { ruleSet: 'aiag', alpha: 0.05 }));
+    for (const weights of WEIGHTS_OPTIONS) for (const ruleSet of RULESET_OPTIONS) for (const alpha of ALPHA_OPTIONS) {
+      const label = `${weights}/${ruleSet}/${alpha}`;
+      const r = run('ordinal', { weights, ruleSet, alpha });
+      assertResult(r, label);
+      assertEqual(r.verdict.ruleSet, ruleSet, label);
+      assert(pairKappa(r) !== unweighted, `${label}: Gewichtung wirkt`);
     }
   });
 });

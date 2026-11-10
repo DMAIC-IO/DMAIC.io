@@ -292,6 +292,8 @@ export default createModule({
       get hasLevels() { return this.levels.all.length > 0; },
       /** Binäres Merkmal mit Stufen. */
       get showBinaryLevels() { return this.model.type === 'binary' && this.hasLevels; },
+      /** Binäres Merkmal mit zwei Stufen: positive und negative lassen sich tauschen. */
+      get canSwap() { return this.showBinaryLevels && this.levels.negative != null; },
       /** Nominales oder ordinales Merkmal mit Stufen. */
       get showLevelList() { return this.model.type !== 'binary' && this.hasLevels; },
       /** Ordinales Merkmal mit Stufen. */

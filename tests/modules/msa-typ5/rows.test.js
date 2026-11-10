@@ -42,9 +42,9 @@ suite('MSA Typ 5 — wideRows', () => {
     assertDeepEqual(wideRows({ parts: [1], columns, trials: 4, references: null }),
       { invalid: { key: 'errWideColumnsNotDivisible', vars: { columns: 6, trials: 4 } } });
   });
-  test('ungültige Versuche', () => {
+  test('ungültige Versuche: dieselbe Meldung, für sie gibt es keinen eigenen Text', () => {
     const out = wideRows({ parts: [1], columns: [col('a', ['x'])], trials: 0, references: null });
-    assertEqual(out.invalid.key, 'errWideInvalidTrials');
+    assertEqual(out.invalid.key, 'errWideColumnsNotDivisible');
   });
   test('Zeilen und Referenzen', () => {
     const out = wideRows({

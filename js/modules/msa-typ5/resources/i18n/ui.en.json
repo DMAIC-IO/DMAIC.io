@@ -2,7 +2,7 @@
   "$schema": "../../../../../schemas/module-ui.schema.json",
   "name": "MSA Type 5 (attribute)",
   "description": "Attribute Measurement System Analysis — multiple appraisers, kappa-based agreement (Cohen, Fleiss, weighted)",
-  "whenToUse": "When an attribute measurement system (good/bad, classes, ordinal levels) is to be assessed: several appraisers rate parts, repeatedly, against an optional reference. The result is kappa agreement, effectiveness and a verdict by AIAG or Bosch rules — not for measured characteristics, which types 1 to 3 cover. Requires a data collection with a part, an appraiser and a rating column; the wide layout (one column per appraiser and trial) cannot be fully operated through the surface.",
+  "whenToUse": "When an attribute measurement system (good/bad, classes, ordinal levels) is to be assessed: several appraisers rate parts, repeatedly, against an optional reference. The result is kappa agreement, effectiveness and a verdict by AIAG or Bosch rules — not for measured characteristics, which types 1 to 3 cover. Requires a data collection with a part column and either an appraiser and a rating column (long layout) or one rating column per appraiser and trial (wide layout).",
   "sections": {
     "feature": "Characteristic",
     "dataSource": "Data sources",

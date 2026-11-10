@@ -40,8 +40,19 @@ const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 // ── Ableitungen aus Model und Arbeitsblatt ─────────────────────
 
 /**
+ * Die gewählten Bewertungsspalten des breiten Layouts, die es im Arbeitsblatt
+ * noch gibt. Eine gelöschte Spalte bleibt im Model stehen, zählt aber nicht mit.
+ * @param {import('../domain/model.types.js').StateModel} m @param {Data} data
+ * @returns {object[]}
+ */
+function liveRatings(m, data) {
+  return m.ratings.filter((r) => data.values(r) != null);
+}
+
+/**
  * Rohwerte der Bewertungsspalte(n); null ohne gewählte Spalte. Eine gewählte,
- * aber verschwundene Spalte zählt als leer.
+ * aber verschwundene Spalte zählt im langen Layout als leer, im breiten als
+ * nicht gewählt.
  * @param {import('../domain/model.types.js').StateModel} m @param {Data} data
  * @returns {Array<*>|null}
  */
@@ -49,7 +60,7 @@ function rawRatings(m, data) {
   return ratingValues(
     m.layout,
     m.rating ? (data.values(m.rating) ?? []) : null,
-    m.ratings.map((r) => data.values(r) ?? []),
+    liveRatings(m, data).map((r) => data.values(r) ?? []),
   );
 }
 
@@ -63,8 +74,8 @@ export function readLevels(m, data) {
 }
 
 /**
- * Zeilen der Analyse aus den Spalten; im breiten Layout die Bewertungsspalten
- * in Blattreihenfolge.
+ * Zeilen der Analyse aus den Spalten; im breiten Layout die noch vorhandenen
+ * Bewertungsspalten in Blattreihenfolge.
  * @param {import('../domain/model.types.js').StateModel} m @param {Data} data
  * @returns {ReturnType<typeof longRows>|ReturnType<typeof wideRows>}
  */
@@ -73,7 +84,7 @@ function buildRows(m, data) {
   const vals = (ref) => (ref ? (data.values(ref) ?? []) : null);
   if (m.layout === 'wide') {
     const keys = data.columns().map((c) => c.key);
-    const columns = orderRatings(m.ratings, keys).map((ref) => ({
+    const columns = orderRatings(liveRatings(m, data), keys).map((ref) => ({
       name: data.name(ref) ?? '?',
       values: data.values(ref) ?? [],
     }));
@@ -113,7 +124,7 @@ export function readAnalysis(m, data, engine = { analyze }) {
       type: m.type,
       levels,
       ratings: rows,
-      references: m.reference ? referenceMap : null,
+      references: m.reference && data.values(m.reference) != null ? referenceMap : null,
       params: { alpha: m.alpha, weights: m.weights, ruleSet: m.ruleSet },
     });
   } catch (err) {

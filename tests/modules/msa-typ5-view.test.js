@@ -15,7 +15,7 @@ const TPL_KEY = `js/modules/${ID}/resources/view.html`;
 const flush = () => new Promise((r) => setTimeout(r, 0));
 const mounted = [];
 
-/** @param {string} path relativ zu app/dev/examples */
+/** @param {string} path relativ zu resources/examples des Moduls */
 async function json(path) {
   return (await fetch(new URL(`../../js/modules/msa-typ5/resources/examples/${path}`, import.meta.url))).json();
 }
@@ -81,6 +81,7 @@ suite('msa-typ5: Viewmodel im Browser', () => {
     assertEqual(vm().heatmaps[1].legacyEditKey, 'heatmap#2');
     assertEqual(vm().runStrips.length, 3);
     assertEqual(vm().levels.positive, 'ok');
+    assertTrue(vm().canSwap, 'Tauschknopf bei zwei Stufen');
   });
 
   test('swapPositive über das Viewmodel-Kommando: positive = vorherige negative', async () => {
@@ -98,6 +99,7 @@ suite('msa-typ5: Viewmodel im Browser', () => {
       col.values = col.values.map(() => 'ok');
     });
     assertEqual(vm().levels.negative, null);
+    assertEqual(vm().canSwap, false);
     assertEqual(vm().runStrips.length, 0);
     let err = null;
     try { vm().swapPositive({}); } catch (e) { err = e; }

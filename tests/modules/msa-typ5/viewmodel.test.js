@@ -19,7 +19,7 @@ import {
 /** Übersetzer, der Schlüssel und Parameter sichtbar zurückgibt. */
 const t = (key, params) => (params ? `${key}${JSON.stringify(params)}` : key);
 
-/** @param {string} path relativ zu app/dev/examples @returns {Promise<any>} */
+/** @param {string} path relativ zu resources/examples des Moduls @returns {Promise<any>} */
 async function json(path) {
   const res = await fetch(new URL(`../../../js/modules/msa-typ5/resources/examples/${path}`, import.meta.url));
   assertTrue(res.ok, path);
@@ -117,6 +117,28 @@ suite('MSA Typ 5 Viewmodel — levels und analysis', () => {
     delete h.sheet['c-rating'];
     assertEqual(h.vm.analysis, null);
     assertDeepEqual(h.vm.levels.all, []);
+    h.release();
+  });
+
+  test('breit: eine von sechs Bewertungsspalten gelöscht → Meldung statt Ergebnis', async () => {
+    const h = await host('msa-typ5-binary-wide');
+    h.vm.model.ratings = ['c-a1', 'c-a2', 'c-b1', 'c-b2', 'c-c1', 'c-c2'].map(h.ref);
+    h.vm.model.trials = 2;
+    assertTrue(resultOf(h.vm.analysis) !== null);
+    delete h.sheet['c-b2'];
+    assertDeepEqual(h.vm.analysis, { invalid: { key: 'errWideColumnsNotDivisible', vars: { columns: 5, trials: 2 } } });
+    assertEqual(h.vm.model.ratings.length, 6);
+    assertDeepEqual(h.vm.levels.all, ['nok', 'ok']);
+    h.release();
+  });
+
+  test('Referenzspalte im Blatt gelöscht: Referenz aus dem Konsens wie ohne Referenz', async () => {
+    const h = await host('msa-typ5-binary-good');
+    assertEqual(resultOf(h.vm.analysis).meta.referenceSource, 'given');
+    delete h.sheet['c-ref'];
+    const r = resultOf(h.vm.analysis);
+    assertTrue(r !== null && Boolean(r.verdict));
+    assertEqual(r.meta.referenceSource, 'consensus');
     h.release();
   });
 

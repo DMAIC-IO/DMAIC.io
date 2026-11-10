@@ -67,7 +67,7 @@
       <template x-if="showBinaryLevels">
         <span class="msa-typ5__level msa-typ5__level--neg" :title="t('labels.negativeShort')"><span x-text="t('labels.negativeShort')"></span> = <span x-text="negativeText"></span></span>
       </template>
-      <template x-if="showBinaryLevels">
+      <template x-if="canSwap">
         <button type="button" class="btn btn--secondary btn--sm msa-typ5__swap"
                 data-ref="btn-swap" data-help-key="modules.msa-typ5.actions.swapPositive.help" x-command="swapPositive"
                 x-text="t('labels.positiveSwap')"></button>

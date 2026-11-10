@@ -10,7 +10,6 @@ import { refToKey } from '../../../core/worksheet-columns.js';
  * @typedef {{ part: string, appraiser: string, value: string, rep: number|null }} Row
  */
 
-
 /**
  * Referenz je Teil aus Teile- und Referenzspalte (die letzte nicht leere gewinnt).
  * @param {Array<*>} parts @param {Array<*>} refs @returns {Record<string,string>}
@@ -67,18 +66,16 @@ export function orderRatings(refs, sheetKeys) {
 /**
  * Breites Layout: je Prüfer und Versuch eine Bewertungsspalte, gruppiert nach
  * Versuchen. Null ohne Teilespalte oder Bewertungsspalten; `invalid` mit
- * Meldungsschlüssel, wenn die Versuche nicht zur Spaltenzahl passen.
+ * Meldungsschlüssel, wenn die Versuche nicht zur Spaltenzahl passen. Ungültige
+ * Versuche lehnt schon das Feld ab; kämen sie doch an, gilt dieselbe Meldung.
  * @param {{ parts: Array<*>|null, columns: Array<{ name: string, values: Array<*> }>,
  *           trials: number, references: Array<*>|null }} input Spalten in Blattreihenfolge
  * @returns {{ rows: Row[], referenceMap: Record<string,string> }
- *   |{ invalid: { key: 'errWideInvalidTrials'|'errWideColumnsNotDivisible', vars: { columns: number, trials: number } } }|null}
+ *   |{ invalid: { key: 'errWideColumnsNotDivisible', vars: { columns: number, trials: number } } }|null}
  */
 export function wideRows({ parts, columns, trials, references }) {
   if (!parts || columns.length === 0) return null;
   const { rows, error } = stackWide({ parts, columns, trials });
-  if (error) {
-    const key = error === 'invalidTrials' ? 'errWideInvalidTrials' : 'errWideColumnsNotDivisible';
-    return { invalid: { key, vars: { columns: columns.length, trials } } };
-  }
+  if (error) return { invalid: { key: 'errWideColumnsNotDivisible', vars: { columns: columns.length, trials } } };
   return { rows, referenceMap: references ? referenceMapOf(parts, references) : {} };
 }

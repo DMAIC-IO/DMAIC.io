@@ -80,7 +80,8 @@ suite('MSA Typ 5 — Migration 0→1.0', () => {
       const m = State.fromJSON(data, { repair: true, onRepair: (r) => reports.push(r), context: CTX });
       assertEqual(reports.length, 0, 'keine Reparatur');
       assertEqual(m.layout, n === 'binary-wide' ? 'wide' : 'long');
-      assert(m.part !== null || data.columns.part == null);
+      const { instanceId, sheetId, columnId } = data.columns.part;
+      assertDeepEqual({ ...m.part }, { instanceId, sheetId, columnId });
     });
   }
 });

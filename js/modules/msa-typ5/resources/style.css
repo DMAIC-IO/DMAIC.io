@@ -16,8 +16,6 @@
   align-items: start;
 }
 
-.msa-typ5__hidden { display: none; }
-
 /* Level-Detection chips */
 .msa-typ5__levels {
   display: flex;
@@ -77,7 +75,7 @@
 
 /* Interpretations-Slot innerhalb .dmike-infobox — bricht als volle Zeile
    um; Farbcodierung + Rahmen kommen bereits vom umschließenden Infobox
-   (verdictClass am Elternknoten, siehe msa-typ5.html). */
+   (verdictClass am Elternknoten, siehe resources/view.html). */
 .dmike-infobox .msa-typ5__interp {
   flex-basis: 100%;
   font-size: var(--font-size-sm);

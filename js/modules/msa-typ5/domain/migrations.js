@@ -31,7 +31,7 @@ function refFrom(d) {
   return { instanceId: String(d.instanceId), sheetId: String(d.sheetId), columnId: String(d.columnId) };
 }
 
-/** @param {unknown} v @param {readonly string[]} allowed @returns {Record<string, string>|null} */
+/** @param {unknown} v @param {readonly string[]} allowed @returns {string|null} */
 function pick(v, allowed) {
   return allowed.includes(/** @type {string} */ (v)) ? /** @type {any} */ (v) : null;
 }
