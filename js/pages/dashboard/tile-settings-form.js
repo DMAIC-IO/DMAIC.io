@@ -8,6 +8,7 @@
 
 import { h } from '../../core/dom.js';
 import { coerceValue } from './tile-settings.js';
+import { formatNumber } from '../../core/number-format.js';
 
 let formSeq = 0;
 
@@ -46,7 +47,10 @@ function labelKey(field, i18n) {
  */
 function createControl(field, i18n) {
   if (field.type === 'number') {
-    return h('input', { type: 'number', class: 'field field--inline', min: field.min, max: field.max, step: field.step ?? 1 });
+    return h('input', {
+      type: 'text', class: 'field field--inline',
+      inputmode: field.step === 1 ? 'numeric' : 'decimal',
+    });
   }
   if (field.type === 'select') {
     return h('select', { class: 'field field--inline' },
@@ -59,9 +63,11 @@ function createControl(field, i18n) {
  * @param {HTMLElement} control
  * @param {object} field
  * @param {*} value
+ * @param {string} lang  app language
  */
-function writeControl(control, field, value) {
+function writeControl(control, field, value, lang) {
   if (field.type === 'boolean') control.checked = value === true;
+  else if (field.type === 'number') control.value = formatNumber(value, lang, { profile: 'input' });
   else control.value = String(value);
 }
 
@@ -78,7 +84,7 @@ function readControl(control, field) {
  * Build the settings form for a tile.
  * @param {object} schema  validated schema (see tile-settings.js)
  * @param {object} values  resolved current values (resolveSettings)
- * @param {{t: function}} i18n
+ * @param {{t: function, getLanguage: function}} i18n
  * @returns {{el: HTMLElement, reset: HTMLElement, read: () => object}}
  *   `reset` restores the defaults; it is not part of `el` so the caller can
  *   place it in the dialog footer.
@@ -86,6 +92,7 @@ function readControl(control, field) {
 export function buildSettingsForm(schema, values, i18n) {
   const prefix = `tile-setting-${++formSeq}`;
   const controls = new Map();
+  const lang = i18n.getLanguage();
 
   const rows = Object.entries(schema).map(([key, field]) => {
     const control = createControl(field, i18n);
@@ -93,7 +100,7 @@ export function buildSettingsForm(schema, values, i18n) {
     control.classList.add('tile-settings__input');
     control.dataset.setting = key;
     if (field.helpKey) control.dataset.helpKey = field.helpKey;
-    writeControl(control, field, values[key]);
+    writeControl(control, field, values[key], lang);
     controls.set(key, control);
     return h('div', { class: `tile-settings__row tile-settings__row--${field.type}` },
       h('label', { class: 'tile-settings__label', for: control.id }, i18n.t(labelKey(field, i18n))),
@@ -103,7 +110,7 @@ export function buildSettingsForm(schema, values, i18n) {
   const reset = h('button', { type: 'button', class: 'btn btn--secondary tile-settings__reset' },
     i18n.t('dashboard.tileSettings.restoreDefaults'));
   reset.addEventListener('click', () => {
-    for (const [key, field] of Object.entries(schema)) writeControl(controls.get(key), field, field.default);
+    for (const [key, field] of Object.entries(schema)) writeControl(controls.get(key), field, field.default, lang);
   });
 
   return {

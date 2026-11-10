@@ -1,7 +1,8 @@
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { buildSettingsForm } from '../../js/pages/dashboard/tile-settings-form.js';
 
-const i18n = { t: (k) => `T:${k}` };
+let lang = 'de';
+const i18n = { t: (k) => `T:${k}`, getLanguage: () => lang };
 const SCHEMA = {
   topN: { type: 'number', min: 1, max: 10, step: 1, default: 5, label: 'l.topN' },
   view: { type: 'select', options: ['bar', 'list'], default: 'bar', label: 'l.view',
@@ -13,13 +14,26 @@ const VALUES = { topN: 3, view: 'list', showLegend: false };
 const input = (form, key) => form.el.querySelector(`[data-setting="${key}"]`);
 
 suite('tile-settings-form', () => {
+  test('decimal number field: inputmode decimal, value in app language', () => {
+    const schema = { x: { type: 'number', min: 0, max: 10, default: 1, label: 'l.x' } };
+    const form = buildSettingsForm(schema, { x: 2.5 }, i18n);
+    assertEqual(input(form, 'x').getAttribute('inputmode'), 'decimal');
+    assertEqual(input(form, 'x').value, '2,5');
+    lang = 'en';
+    try {
+      assertEqual(input(buildSettingsForm(schema, { x: 2.5 }, i18n), 'x').value, '2.5');
+    } finally { lang = 'de'; }
+  });
+
   test('renders one labelled control per field', () => {
     const form = buildSettingsForm(SCHEMA, VALUES, i18n);
     assertEqual(form.el.querySelectorAll('.tile-settings__row').length, 3);
     const top = input(form, 'topN');
-    assertEqual(top.type, 'number');
-    assertEqual(top.min, '1');
-    assertEqual(top.max, '10');
+    assertEqual(top.type, 'text');
+    assertEqual(top.getAttribute('inputmode'), 'numeric');
+    assertEqual(top.hasAttribute('min'), false);
+    assertEqual(top.hasAttribute('max'), false);
+    assertEqual(top.hasAttribute('step'), false);
     assertEqual(top.value, '3');
     const label = form.el.querySelector(`label[for="${top.id}"]`);
     assertEqual(label.textContent, 'T:l.topN');
@@ -98,15 +112,15 @@ suite('tile settings form: Beschriftungsliste und helpKey', () => {
   const field = { type: 'number', min: 1, max: 10, step: 1, default: 3, label: ['m.label', 'g.label'], helpKey: 'm.help' };
 
   test('erster vorhandener Schlüssel gewinnt', () => {
-    const i18nX = { t: (k) => `T:${k}`, exists: (k) => k === 'g.label' };
+    const i18nX = { t: (k) => `T:${k}`, getLanguage: () => lang, exists: (k) => k === 'g.label' };
     assertEqual(labelOf(buildSettingsForm({ topN: field }, { topN: 3 }, i18nX), 'topN'), 'T:g.label');
-    const both = { t: (k) => `T:${k}`, exists: () => true };
+    const both = { t: (k) => `T:${k}`, getLanguage: () => lang, exists: () => true };
     assertEqual(labelOf(buildSettingsForm({ topN: field }, { topN: 3 }, both), 'topN'), 'T:m.label');
   });
 
   test('ohne exists oder ohne Treffer: der letzte Kandidat', () => {
     assertEqual(labelOf(buildSettingsForm({ topN: field }, { topN: 3 }, i18n), 'topN'), 'T:g.label');
-    const none = { t: (k) => `T:${k}`, exists: () => false };
+    const none = { t: (k) => `T:${k}`, getLanguage: () => lang, exists: () => false };
     assertEqual(labelOf(buildSettingsForm({ topN: field }, { topN: 3 }, none), 'topN'), 'T:g.label');
   });
 

@@ -6,6 +6,8 @@
  * sparse storage format of `dashboard.tileSettings`.
  */
 
+import { parseNumber, roundTo } from '../../core/number-format.js';
+
 const TYPES = new Set(['number', 'select', 'boolean']);
 
 /** Validated schema per tile object, so a broken schema warns only once. */
@@ -119,12 +121,13 @@ export function sourceField(choices, defaultId) {
 export function coerceValue(field, raw) {
   if (field.type === 'number') {
     const usable = typeof raw === 'number' || (typeof raw === 'string' && raw.trim() !== '');
-    const n = usable ? Number(raw) : NaN;
+    const n = usable ? parseNumber(raw) : NaN;
     if (!Number.isFinite(n)) return field.default;
-    const step = field.step ?? 1;
-    const stepped = field.min + Math.round((n - field.min) / step) * step;
+    const stepped = field.step === undefined
+      ? n
+      : field.min + Math.round((n - field.min) / field.step) * field.step;
     const clamped = Math.min(field.max, Math.max(field.min, stepped));
-    return Number(clamped.toFixed(10));
+    return roundTo(clamped, 10);
   }
   if (field.type === 'select') return field.options.includes(raw) ? raw : field.default;
   return typeof raw === 'boolean' ? raw : field.default;

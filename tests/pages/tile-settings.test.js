@@ -59,6 +59,16 @@ suite('tile-settings: validateSchema', () => {
   });
 });
 
+suite('tile-settings: coerceValue decimal comma', () => {
+  const F = { type: 'number', min: 0, max: 10, default: 1 };
+  test('reads a decimal comma and keeps it without step', () => {
+    assertEqual(coerceValue(F, '2,5'), 2.5);
+  });
+  test('snaps to the step only when step is set', () => {
+    assertEqual(coerceValue({ ...F, step: 1 }, '2,5'), 3);
+  });
+});
+
 suite('tile-settings: coerceValue', () => {
   test('number: parses strings, clamps, rounds to step', () => {
     assertEqual(coerceValue(TOP_N, '3'), 3);
