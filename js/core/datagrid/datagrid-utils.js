@@ -6,6 +6,7 @@
 import { uid as coreUid } from '../uid.js';
 import { icon } from '../icon.js';
 import { todayISO } from '../local-date.js';
+import { parseNumber, formatNumber } from '../number-format.js';
 
 // ─── ID & Math ─────────────────────────────────────────────
 
@@ -22,35 +23,27 @@ export function clamp(val, min, max) {
 // ─── Number Parsing & Formatting ───────────────────────────
 
 /**
- * Parse a value as a number, supporting comma-as-decimal (German).
+ * Parse a value as a number (decimal comma or point, see `parseNumber`).
  * @param {*} str
- * @returns {number|null}
+ * @returns {number|null} `null` for empty or invalid input
  */
 export function parseNumeric(str) {
-  if (str == null || str === '') return null;
-  if (typeof str === 'number') return isNaN(str) ? null : str;
-  let s = String(str).trim();
-  let n = Number(s);
-  if (!isNaN(n) && s !== '') return n;
-  // Handle comma as decimal separator (German)
-  s = s.replace(/\./g, '').replace(',', '.');
-  n = Number(s);
-  if (!isNaN(n) && s !== '') return n;
-  return null;
+  const n = parseNumber(str);
+  return n === null || Number.isNaN(n) ? null : n;
 }
 
 /**
- * Format a number for display.
+ * Format a number for the grid in the app language (lossless, no grouping).
  * @param {number} val
- * @param {number|null} decimals
+ * @param {number|null} decimals fixed decimals, or null for the shortest form
+ * @param {string} [lang] 'de' | 'en'
  * @returns {string}
  */
-export function formatNumber(val, decimals = null) {
+export function formatGridNumber(val, decimals = null, lang = 'en') {
   if (val == null) return '';
-  if (decimals != null) return val.toFixed(decimals);
-  const s = String(val);
-  if (s.includes('e') || s.includes('E')) return val.toPrecision(6);
-  return s;
+  if (decimals != null) return formatNumber(val, lang, { profile: 'input', decimals });
+  if (/e/i.test(String(val))) return formatNumber(val, lang, { profile: 'input', precision: 6 });
+  return formatNumber(val, lang, { profile: 'input' });
 }
 
 // ─── CSV Text: Records & Delimiter ─────────────────────────
@@ -249,24 +242,25 @@ function formatTime(timeStr, pattern) {
  * Format a cell value for display based on column type & format.
  * @param {{ type: string, format: object }} col
  * @param {*} val
+ * @param {string} [lang] 'de' | 'en'
  * @returns {string}
  */
-export function formatCellValue(col, val) {
+export function formatCellValue(col, val, lang = 'en') {
   if (val == null) return '';
   switch (col.type) {
     case 'numeric':
-      return (typeof val === 'number') ? formatNumber(val, col.format.decimals) : String(val);
+      return (typeof val === 'number') ? formatGridNumber(val, col.format.decimals, lang) : String(val);
     case 'currency':
       if (typeof val === 'number') {
         const d = col.format.decimals ?? 2;
         const sym = col.format.currencySymbol || '\u20AC';
-        return `${formatNumber(val, d)  } ${  sym}`;
+        return `${formatGridNumber(val, d, lang)  } ${  sym}`;
       }
       return String(val);
     case 'percent':
       if (typeof val === 'number') {
         const d = col.format.decimals ?? 1;
-        return `${formatNumber(val, d)  } %`;
+        return `${formatGridNumber(val, d, lang)  } %`;
       }
       return String(val);
     case 'binary':
@@ -359,7 +353,7 @@ export function parseCellInput(col, raw) {
         if (h >= 0 && h <= 23) return `${h}:00`;
       }
       if (/^\d{1,2}[.,]\d+$/.test(s)) {
-        const n = parseFloat(s.replace(',', '.'));
+        const n = parseNumber(s);
         if (n >= 0 && n < 24) {
           const h = Math.floor(n);
           const m = Math.round((n - h) * 60);

@@ -1675,6 +1675,7 @@ const mod = createModule({
         const dropzone = container.querySelector('[data-ref="dropzone"]');
         this._grid = new DataGrid(gridWrap, {
           toast, t: (k, v) => context.i18n.t(k, v), dialog: context.dialog,
+          lang: () => context.i18n.getLanguage(),
         });
         if (context.eventBus) bridgeEmitter(this._grid, context.eventBus, 'datagrid');
         this._grid.setDropzone(dropzone);
@@ -1891,12 +1892,13 @@ function liveData(self) {
   try { return Alpine.$data(root); } catch { return null; }
 }
 
-// Legacy parity: the worksheet's onLanguageChange/onThemeChange were no-ops.
-// The grid content is language-agnostic and the theme is handled by CSS custom
-// properties. The generic Alpine onLanguageChange destroys + reinitialises the
-// component tree, which would unmount the imperatively-mounted DataGrid and lose
-// unsaved live-grid edits — so we keep it a no-op as in the legacy module.
-mod.onLanguageChange = function onLanguageChange() {};
+// Language change re-renders the grid; theme is handled by CSS custom properties.
+// The generic Alpine onLanguageChange destroys + reinitialises the component
+// tree, which would unmount the imperatively-mounted DataGrid and lose unsaved
+// live-grid edits — so we only re-render the grid (numbers follow the language).
+mod.onLanguageChange = function onLanguageChange() {
+  liveData(this)?._grid?.render();
+};
 mod.onThemeChange = function onThemeChange() {};
 
 mod.getState = function getState() {

@@ -60,3 +60,51 @@ suite('DataGrid.importCSVText', () => {
     assertEqual(grid.columns[1].values[0], 2);
   });
 });
+
+suite('DataGrid — Zahlen nach App-Sprache', () => {
+  const make = (lang, cols = [{ id: 'a', name: 'a', type: 'numeric', values: [24.5, -0.000012, null], format: {} }]) => {
+    document.querySelectorAll('.grid-host').forEach((el) => el.remove());
+    const el = document.createElement('div');
+    el.className = 'grid-host';
+    document.body.appendChild(el);
+    const g = new DataGrid(el, { lang: () => lang });
+    g.columns = cols;
+    g.rowCount = 3;
+    g.render();
+    return g;
+  };
+  test('Zellen zeigen das Dezimalzeichen der Sprache', () => {
+    const g = make('de');
+    assertEqual(g.container.querySelector('td.cell-numeric').textContent, '24,5');
+  });
+  test('Der Editor zeigt 24,5 und Commit liest beide Schreibweisen', () => {
+    const g = make('de');
+    g._startEdit(0, 0);
+    assertEqual(g.editorEl.value, '24,5');
+    g._cancelEdit();
+    g.setCellValue('a', 1, '1.234');
+    assertEqual(g.columns[0].values[1], 1.234);
+    g.setCellValue('a', 1, '1,234.5');
+    assertEqual(g.columns[0].values[1], 1234.5);
+  });
+  test('Einfügen: Excel-Zeile mit Tausendergruppen, 1.23,5 bleibt Text', () => {
+    const g = make('de', []);
+    g.importFromClipboard('1.234,5\t1,234.5\t1.23,5');
+    assertDeepEqual(g.columns.map((c) => c.values[0]), [1234.5, 1234.5, '1.23,5']);
+  });
+  test('CSV-Import mit Dezimalkomma', () => {
+    const g = make('de', []);
+    g.importCSVText('a;b\n1,5;2\n', 't.csv');
+    assertDeepEqual([g.columns[0].values[0], g.columns[1].values[0]], [1.5, 2]);
+  });
+  test('Export: Dezimalzeichen der Sprache, sep=-Zeile, verlustfrei', () => {
+    const de = make('de').exportToCSV().split('\r\n');
+    assertEqual(de[0], 'sep=;');
+    assertEqual(de[2], '24,5');
+    assertEqual(de[3], '-0,000012');
+    assertEqual(make('en').exportToCSV().split('\r\n')[2], '24.5');
+  });
+  test('ausdrücklich übergebenes Dezimalzeichen gewinnt', () => {
+    assertEqual(make('de').exportToCSV({ decimalSeparator: '.' }).split('\r\n')[2], '24.5');
+  });
+});

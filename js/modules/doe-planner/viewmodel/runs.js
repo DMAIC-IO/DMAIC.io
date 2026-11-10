@@ -201,6 +201,7 @@ export class RunsViewModel {
     this._previewGrid = new DataGrid(slot, {
       toast: ctx.notify || (() => {}),
       t: (key) => ctx.i18n.t(key),
+      lang: () => ctx.i18n.getLanguage(),
       dialog: ctx.dialog,
       extraRowMenuItems: m.isOptimalType()
         ? (cell) => [{ label: this._t('forbiddenContextAction'), action: () => this._forbidRow(cell.rowIdx) }]

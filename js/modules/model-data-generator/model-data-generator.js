@@ -443,6 +443,7 @@ export default createModule({
         this._grid = new DataGrid(wrap, {
           toast: ctx.notify || (() => {}),
           t: (key) => ctx.i18n.t(key),
+          lang: () => ctx.i18n.getLanguage(),
           dialog: ctx.dialog,
           openInWorksheet: (grid) => { this._openInWorksheet(grid); },
         });

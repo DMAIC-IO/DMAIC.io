@@ -8,7 +8,7 @@ import { History } from './datagrid-history.js';
 import { isFormula, evaluateFormula, recalcAllFormulas } from './datagrid-formula.js';
 import { detectPattern, generateFill, shiftFormulaRefs, withCtrlModifier } from './datagrid-fill.js';
 import {
-  uid, clamp, parseNumeric, formatNumber,
+  uid, clamp, parseNumeric, formatGridNumber,
   COLUMN_TYPES, isNumericType, formatCellValue, renderColTypeBadge,
   parseCellInput, detectInputType, analyzeColumn,
   DATE_FORMATS, TIME_FORMATS, detectDelimiter, parseCSVRecords,
@@ -18,6 +18,7 @@ import {
 } from './datagrid-roles.js';
 import { shortcutRegistry } from '../shortcut-registry.js';
 import { h } from '../dom.js';
+import { decimalSeparator } from '../number-format.js';
 import { nonReactive } from '../non-reactive.js';
 import { icon } from '../icon.js';
 import { isReadOnly } from '../readonly-lock.js';
@@ -40,6 +41,7 @@ export class DataGrid {
     this.container = container;
     this.options = options;
     this._t = options.t || ((key) => key.split('.').pop());
+    this._lang = options.lang || (() => 'en');
 
     // Data model (column-oriented)
     this.columns = [];
@@ -1209,9 +1211,9 @@ export class DataGrid {
 
   exportToCSV(options = {}) {
     const delim = options.delimiter || ';';
-    const decimal = options.decimalSeparator || '.';
+    const decimal = options.decimalSeparator || decimalSeparator(this._lang());
     const lineEnd = '\r\n';
-    const lines = [];
+    const lines = [`sep=${delim}`];
 
     const headers = this.columns.map(c => c.name || c.shortName);
     lines.push(headers.join(delim));
@@ -1221,9 +1223,7 @@ export class DataGrid {
         const v = col.values[r];
         if (v == null) return '';
         if (typeof v === 'number') {
-          let s = formatNumber(v, col.format.decimals);
-          if (decimal === ',') s = s.replace('.', ',');
-          return s;
+          return formatGridNumber(v, col.format.decimals, decimal === ',' ? 'de' : 'en');
         }
         let s = String(v);
         if (s.includes(delim) || s.includes('"') || s.includes('\n')) {
@@ -1461,7 +1461,7 @@ export class DataGrid {
         if (formula) {
           if (val != null) {
             cls += ' cell-formula';
-            td.textContent = formatCellValue(col, val);
+            td.textContent = formatCellValue(col, val, this._lang());
             td.title = formula;
           } else {
             const { result, error } = evaluateFormula(formula, this);
@@ -1471,12 +1471,12 @@ export class DataGrid {
               td.title = `${formula  } \u2192 ${  error}`;
             } else {
               cls += ' cell-formula';
-              td.textContent = formatCellValue(col, result);
+              td.textContent = formatCellValue(col, result, this._lang());
               td.title = formula;
             }
           }
         } else if (val != null) {
-          td.textContent = formatCellValue(col, val);
+          td.textContent = formatCellValue(col, val, this._lang());
         }
 
         td.className = cls;
@@ -2473,7 +2473,7 @@ export class DataGrid {
     } else if (formula) {
       input.value = formula;
     } else {
-      input.value = val != null ? String(val) : '';
+      input.value = val != null ? (typeof val === 'number' ? formatGridNumber(val, null, this._lang()) : String(val)) : '';
     }
     td.textContent = '';
     td.appendChild(input);
@@ -2528,7 +2528,7 @@ export class DataGrid {
     if (td) {
       td.classList.remove('cell-editing');
       const val = col.values[rowIdx];
-      td.textContent = val != null ? formatCellValue(col, val) : '';
+      td.textContent = val != null ? formatCellValue(col, val, this._lang()) : '';
     }
     this.editingCell = null;
     this.editorEl = null;
@@ -3169,16 +3169,18 @@ export class DataGrid {
         const variance = nums.length > 1 ? nums.reduce((a, v) => a + (v - mean) ** 2, 0) / (nums.length - 1) : 0;
         const stddev = Math.sqrt(variance);
 
+        const lang = this._lang();
+        const fmt = (v, d) => formatGridNumber(v, d ?? null, lang);
         const rows = [
           ['n', nums.length],
           [t('statsEmpty'), this.rowCount - vals.length],
           null,
-          [`\u0078\u0304 (${  t('statsMean')  })`, mean.toFixed(4)],
-          [`s (${  t('statsStddev')  })`, stddev.toFixed(4)],
-          ['Min', min],
-          ['Median', median.toFixed(4)],
-          ['Max', max],
-          [`\u03A3 (${  t('statsSum')  })`, sum.toFixed(4)],
+          [`\u0078\u0304 (${  t('statsMean')  })`, fmt(mean, 4)],
+          [`s (${  t('statsStddev')  })`, fmt(stddev, 4)],
+          ['Min', fmt(min)],
+          ['Median', fmt(median, 4)],
+          ['Max', fmt(max)],
+          [`\u03A3 (${  t('statsSum')  })`, fmt(sum, 4)],
         ];
         bodyNode = statsTable(rows);
       } else {
@@ -3273,7 +3275,7 @@ export class DataGrid {
         const pct = (info.count / filled * 100).toFixed(1);
         bar.append(h('div', {
           class: `column-scan__bar-seg column-scan__bar-seg--${type}`,
-          title: `${type}: ${info.count} (${pct}%)`,
+          title: `${type}: ${info.count} (${formatGridNumber(Number(pct), 1, this._lang())}%)`,
           style: `width:${pct}%`,
         }, typeBadge(type)));
       }
@@ -3289,7 +3291,7 @@ export class DataGrid {
           h('span', { class: `column-scan__type-badge column-scan__type-badge--${type}` }, typeBadge(type)),
           h('span', { class: 'column-scan__type-label' }, this._typeLabel(type)),
           h('span', { class: 'column-scan__type-count' }, info.count),
-          h('span', { class: 'column-scan__type-pct' }, `${pct}%`),
+          h('span', { class: 'column-scan__type-pct' }, `${formatGridNumber(Number(pct), 1, this._lang())}%`),
         ));
       }
       frag.append(types);

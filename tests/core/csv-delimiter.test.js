@@ -4,7 +4,7 @@
  * Worksheet und im Datenimport. DOM-frei, läuft auch im node-Runner.
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
-import { detectDelimiter, parseCSVRecords } from '../../js/core/datagrid/datagrid-utils.js';
+import { detectDelimiter, parseCSVRecords, formatCellValue, formatGridNumber, parseNumeric, parseCellInput } from '../../js/core/datagrid/datagrid-utils.js';
 
 suite('detectDelimiter', () => {
   const cases = [
@@ -61,5 +61,29 @@ suite('parseCSVRecords', () => {
 
   test('ein Zoll-Zeichen verhindert die Erkennung von ; nicht', () => {
     assertEqual(detectDelimiter('A;B\n12" Rohr;3\nx;4\n'), ';');
+  });
+});
+
+suite('Datentabelle — Zahlen nach App-Sprache anzeigen und lesen', () => {
+  test('Anzeige in de mit Komma, in en mit Punkt', () => {
+    assertEqual(formatCellValue({ type: 'numeric', format: {} }, 24.5, 'de'), '24,5');
+    assertEqual(formatCellValue({ type: 'numeric', format: {} }, 24.5, 'en'), '24.5');
+    assertEqual(formatCellValue({ type: 'currency', format: { decimals: 2 } }, 24.5, 'de'), '24,50 €');
+    assertEqual(formatCellValue({ type: 'percent', format: {} }, 24.5, 'de'), '24,5 %');
+  });
+  test('e-Schreibweise bleibt bei sechs gültigen Stellen', () => {
+    assertEqual(formatGridNumber(1e-7, null, 'de'), '1,00000e-7');
+    assertEqual(formatGridNumber(1e-7, null, 'en'), '1.00000e-7');
+  });
+  test('parseNumeric: Komma oder Punkt, ungültig ergibt null', () => {
+    assertEqual(parseNumeric('1.234'), 1.234);
+    assertEqual(parseNumeric('1,234.5'), 1234.5);
+    assertEqual(parseNumeric('1.234,5'), 1234.5);
+    assertEqual(parseNumeric('1.23,5'), null);
+    assertEqual(parseNumeric(''), null);
+  });
+  test('parseCellInput liest beide Schreibweisen', () => {
+    assertEqual(parseCellInput({ type: 'numeric' }, '1,5'), 1.5);
+    assertEqual(parseCellInput({ type: 'currency' }, '2,50 €'), 2.5);
   });
 });
