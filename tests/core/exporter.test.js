@@ -11,7 +11,13 @@ suite('exporter: toCsvText', () => {
   });
 
   test('null und undefined leer, Zahlen über String', () => {
-    assertEqual(toCsvText([[null, undefined, 0, 1.5, '']]), 'sep=;\n"";"";"0";"1.5";""\n');
+    assertEqual(toCsvText([[null, undefined, '', 'x']], 'en'), 'sep=;\n"";"";"";"x"\n');
+  });
+
+  test('Zahlen im Eingabeprofil, ohne Anführungszeichen, Dezimalzeichen der Sprache', () => {
+    assertEqual(toCsvText([['a', 1.5]], 'de'), 'sep=;\n"a";1,5\n');
+    assertEqual(toCsvText([['a', 1.5]], 'en'), 'sep=;\n"a";1.5\n');
+    assertEqual(toCsvText([[0.1 + 0.2, -2]], 'de'), 'sep=;\n0,30000000000000004;-2\n');
   });
 
   test('byte-gleich zur bisherigen SIPOC-Ausgabe', () => {

@@ -6,7 +6,7 @@ import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-u
 import { runExport } from '../../js/core/exporter.js';
 
 /** Fake-Umgebung; `log` hält jede Aktion in Reihenfolge. */
-function setup(exportsDef, { failRaster = false, failXlsx = false } = {}) {
+function setup(exportsDef, { failRaster = false, failXlsx = false, lang = 'en' } = {}) {
   const log = [];
   const files = {};
   const component = { model: { rows: [['K'], ['a"b']] }, label: 'X' };
@@ -14,7 +14,7 @@ function setup(exportsDef, { failRaster = false, failXlsx = false } = {}) {
     exports: exportsDef,
     component,
     moduleId: 'demo',
-    i18n: { t: (k, p) => (p ? `${k}|${JSON.stringify(p)}` : k) },
+    i18n: { getLanguage: () => lang, t: (k, p) => (p ? `${k}|${JSON.stringify(p)}` : k) },
     notify: (...a) => log.push(['notify', ...a]),
   };
   const io = {
@@ -51,6 +51,20 @@ suite('runExport', () => {
     assertEqual(files['demo.csv'].content, 'sep=;\n"K"\n"a""b"\n');
     assertEqual(files['demo.csv'].mime, 'text/csv;charset=utf-8');
     assertDeepEqual(log.at(-1), ['notify', 'CSV', 'success', 'status.ok']);
+  });
+
+  test('csv: Dezimalzeichen der App-Sprache', async () => {
+    const { ui, io, files } = setup({ table() { return [['a', 1.5]]; } }, { lang: 'de' });
+    await runExport(ui, 'csv', io);
+    assertEqual(files['demo.csv'].content, 'sep=;\n"a";1,5\n');
+  });
+
+  test('xlsx: Zahl bleibt Zahlzelle', async () => {
+    const { ui, io, files } = setup({ table() { return [['a', 1.5]]; } }, { lang: 'de' });
+    await runExport(ui, 'xlsx', io);
+    const cell = files['demo.xlsx'].sheets[0][1][0][1];
+    assertEqual(typeof cell, 'number');
+    assertEqual(cell, 1.5);
   });
 
   test('json: ohne BOM als application/json, fileName als Text', async () => {

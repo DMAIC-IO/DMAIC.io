@@ -10,6 +10,7 @@
  * und meldet; es wirft nie.
  */
 
+import { formatNumber } from './number-format.js';
 import { downloadFile, downloadBlob, ensureXLSX, svgStringToPngBlob } from './export-utils.js';
 
 /** Alle Formate in Menüreihenfolge. */
@@ -34,16 +35,19 @@ export function formatsOf(exportsDef) {
 }
 
 /** @param {unknown} v @returns {string} */
-const csvCell = (v) => `"${(v === null || v === undefined ? '' : String(v)).replace(/"/g, '""')}"`;
+const csvText = (v) => `"${(v === null || v === undefined ? '' : String(v)).replace(/"/g, '""')}"`;
 
 /**
- * CSV-Text: `sep=;`-Zeile, jede Zelle in Anführungszeichen, Trenner `;`,
+ * CSV-Text: `sep=;`-Zeile, Texte in Anführungszeichen, Zahlen ohne und im
+ * Eingabeprofil mit dem Dezimalzeichen der App-Sprache, Trenner `;`,
  * `\n` auch nach der letzten Zeile.
  * @param {(string|number|null|undefined)[][]} rows erste Zeile = Kopf
+ * @param {string} [lang] App-Sprache (`de` | `en`)
  * @returns {string}
  */
-export function toCsvText(rows) {
-  return `sep=;\n${rows.map((row) => row.map(csvCell).join(';')).join('\n')}\n`;
+export function toCsvText(rows, lang = 'en') {
+  const cell = (v) => (typeof v === 'number' ? formatNumber(v, lang, { profile: 'input' }) : csvText(v));
+  return `sep=;\n${rows.map((row) => row.map(cell).join(';')).join('\n')}\n`;
 }
 
 /**
@@ -143,7 +147,7 @@ const DEFAULT_IO = { downloadFile, downloadBlob, ensureXLSX, svgStringToPngBlob,
  * Eine Datei aus den Mappern eines Moduls bauen und herunterladen. Wirft
  * nie: Erfolg und Fehler gehen per `ui.notify`.
  * @param {{ exports: Record<string, any>, component: object, moduleId: string,
- *   i18n: { t: (key: string, params?: object) => string },
+ *   i18n: { t: (key: string, params?: object) => string, getLanguage: () => string },
  *   notify: (message: string, type?: string, titleKey?: string) => void }} ui
  * @param {string} fmt `xlsx`, `csv`, `json`, `png` oder `svg`
  * @param {ExportIo} [io] Ein-/Ausgabe (Tests)
@@ -157,7 +161,7 @@ export async function runExport(ui, fmt, io = DEFAULT_IO) {
     const base = typeof def.fileName === 'function' ? def.fileName.call(component) : (def.fileName ?? moduleId);
     const name = `${base}.${fmt}`;
     if (fmt === 'csv') {
-      io.downloadFile(toCsvText(await call('table')), name, 'text/csv;charset=utf-8');
+      io.downloadFile(toCsvText(await call('table'), i18n.getLanguage()), name, 'text/csv;charset=utf-8');
     } else if (fmt === 'json') {
       const tree = await call('tree');
       if (tree === undefined) throw new Error('tree() returned undefined');

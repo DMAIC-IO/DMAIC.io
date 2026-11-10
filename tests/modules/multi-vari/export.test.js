@@ -16,13 +16,18 @@ suite('Multi-Vari io/export — vcTable', () => {
     const rows = vcTable(VC, labels);
     assertEqual(rows.length, 4);
     assertDeepEqual(rows[0], HEAD);
-    assertDeepEqual(rows[1], ['A', '1', '2', '2', '3', String(Math.sqrt(3)), '75']);
-    assertDeepEqual(rows[2], ['Fehler "x"', '', '', '', '1', '1', '25']);
-    assertDeepEqual(rows[3], ['Total', '', '', '', '4', '2', '100']);
+    assertDeepEqual(rows[1], ['A', 1, 2, 2, 3, Math.sqrt(3), 75]);
+    assertDeepEqual(rows[2], ['Fehler "x"', '', '', '', 1, 1, 25]);
+    assertDeepEqual(rows[3], ['Total', '', '', '', 4, 2, 100]);
+  });
+
+  test('Zahlenzellen sind number (ss, ms, df, percent)', () => {
+    const r = vcTable(VC, labels)[1];
+    for (const i of [1, 2, 3, 6]) assertEqual(typeof r[i], 'number');
   });
 
   test('REML-Zeilen (null) und Gesamtzeile ohne Varianz ergeben leere Zellen', () => {
     const rows = vcTable({ totalVariance: 5, terms: [{ id: 'A', df: null, ss: null, ms: null, variance: 3, sd: 1.5, percent: 60 }] }, labels);
-    assertDeepEqual(rows[1], ['A', '', '', '', '3', '1.5', '60']);
+    assertDeepEqual(rows[1], ['A', '', '', '', 3, 1.5, 60]);
   });
 });
