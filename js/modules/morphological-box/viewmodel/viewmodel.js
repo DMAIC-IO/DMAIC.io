@@ -10,6 +10,7 @@
  * Kommando übersetzen.
  */
 import { createModule } from '../../../core/template-module.js';
+import { formatNumber } from '../../../core/number-format.js';
 import descriptor from '../module.js';
 import { State, VIEWS } from '../domain/model.js';
 
@@ -95,7 +96,7 @@ export default createModule({
       /** Die Ansichten in Reiterreihenfolge. */
       get views() { return VIEWS; },
       /** @param {number} n @returns {string} Zahl in der aktiven Sprache */
-      formatCount(n) { return n.toLocaleString(ctx.i18n.getLanguage()); },
+      formatCount(n) { return formatNumber(n, ctx.i18n.getLanguage()); },
       /** Kennzahl der verträglichen Kombinationen, „≥ n“ bei einer Untergrenze. */
       get consistentText() {
         const n = this.formatCount(this.consistentCount);

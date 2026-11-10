@@ -6,6 +6,7 @@
  * `labels`; Farben sind CSS-Variablen aus der Diagrammpalette.
  */
 import { CHART_COLORS } from '../../../core/chart/chart-colors.js';
+import { formatNumber } from '../../../core/number-format.js';
 import { computeIMR } from '../../../engines/control-chart-engine.js';
 import { computeTransformedIMR } from '../../../engines/transformed-chart-engine.js';
 import { computeEWMA, estimateSigma } from '../../../engines/time-weighted-chart-engine.js';
@@ -71,15 +72,16 @@ function dateLineConfig({ groups, xLabel, yLabel }) {
  * @param {string} type Diagrammtyp des Vorschlags
  * @param {Array<{ name: string, role: string, values: any[] }>} cols die gewählten Spalten
  * @param {ChartLabels} labels Achsentexte
+ * @param {string} [lang] App-Sprache für Zahlen in Titeln
  * @returns {{ widget: string, config: object }|null} null, wenn Typ oder Spalten nicht reichen
  */
-export function buildChartConfig(type, cols, labels) {
-  const config = configFor(type, cols, labels);
+export function buildChartConfig(type, cols, labels, lang = 'en') {
+  const config = configFor(type, cols, labels, lang);
   return config ? { widget: WIDGET_OF[type], config } : null;
 }
 
 /** @returns {object|null} */
-function configFor(type, columns, labels) {
+function configFor(type, columns, labels, lang) {
   const cont = columns.filter((c) => c.role === 'continuous');
   const cat = columns.filter((c) => c.role === 'categorical' || c.role === 'ordinal');
   const date = columns.filter((c) => c.role === 'date');
@@ -230,7 +232,7 @@ function configFor(type, columns, labels) {
       const lim = r.iLimitsOriginal;
       if (![lim.cl, lim.ucl, lim.lcl].every(Number.isFinite)) return null;
       return {
-        title: `${prep.valueName} (λ = ${r.lambda.toFixed(2)})`, xLabel: prep.xLabel || labels.observation, yLabel: prep.valueName,
+        title: `${prep.valueName} (λ = ${formatNumber(r.lambda, lang, { decimals: 2 })})`, xLabel: prep.xLabel || labels.observation, yLabel: prep.valueName,
         values: prep.values, cl: [lim.cl], ucl: [lim.ucl], lcl: [lim.lcl], sigma: [0], showZones: false,
         violationIndices: [...new Set(r.signalsI)].sort((a, b) => a - b),
       };

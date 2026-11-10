@@ -22,6 +22,9 @@ suite('chart-suggestion domain — Zahlen und Daten', () => {
     assertEqual(toNum(4), 4);
     assertEqual(Number.isNaN(toNum('')), true);
     assertEqual(Number.isNaN(toNum(null)), true);
+    assertEqual(toNum('1.234,5'), 1234.5);
+    assertEqual(toNum('1,234.5'), 1234.5);
+    assertEqual(Number.isNaN(toNum('abc')), true);
   });
   test('parseDateValue', () => {
     assertEqual(parseDateValue(''), null);

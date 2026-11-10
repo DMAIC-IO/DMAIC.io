@@ -175,6 +175,15 @@ suite('chart-suggestion domain — buildChartConfig', () => {
     }
   });
 
+  test('transformierte IMR: λ im Titel nach App-Sprache', () => {
+    const base = Array.from({ length: 20 }, (_, i) => 10 + ((i * 7) % 5) * 0.1);
+    const vals = [...base.slice(0, 10), 13, ...base.slice(10)];
+    const en = buildChartConfig('transformed-imr-chart', [num(vals)], L, 'en').config.title;
+    const de = buildChartConfig('transformed-imr-chart', [num(vals)], L, 'de').config.title;
+    assertEqual(/\(λ = -?\d+\.\d{2}\)$/.test(en), true, en);
+    assertEqual(/\(λ = -?\d+,\d{2}\)$/.test(de), true, de);
+  });
+
   test('zu kurze oder nicht positive Reihen ergeben null', () => {
     assertEqual(buildChartConfig('control-chart', [num([1])], L), null);
     assertEqual(buildChartConfig('transformed-imr-chart', [num([1, 2, -3, 4])], L), null);

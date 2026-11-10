@@ -6,6 +6,7 @@
  */
 import { CHART_COLORS } from '../../../core/chart/chart-colors.js';
 import { refToKey } from '../../../core/worksheet-columns.js';
+import { parseNumber } from '../../../core/number-format.js';
 import { requireKnownId } from '../../../core/agent/agent-argcheck.js';
 
 /**
@@ -201,9 +202,8 @@ export function crossTabCategorical(colA, colB) {
  */
 export function toNum(v) {
   if (v == null || v === '') return NaN;
-  if (typeof v === 'number') return v;
-  const s = String(v).trim().replace(',', '.');
-  return Number(s);
+  const n = parseNumber(v);
+  return n === null ? NaN : n;
 }
 
 

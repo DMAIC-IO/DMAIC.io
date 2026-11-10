@@ -249,9 +249,10 @@ function cusumStacked(cols, labels) {
  * @param {string} type Diagrammtyp des Vorschlags
  * @param {Array<{ id?: string, name: string, role: string, values: any[] }>} cols die gewählten Spalten
  * @param {import('./charts.js').ChartLabels} labels Texte der Vorschau
+ * @param {string} [lang] App-Sprache für Zahlen in Titeln
  * @returns {Preview} `none`, wenn Typ oder Spalten nicht reichen
  */
-export function buildPreview(type, cols, labels) {
+export function buildPreview(type, cols, labels, lang = 'en') {
   switch (type) {
     case 'scatter-matrix': return scatterMatrix(cols);
     case 'main-effects': return mainEffects(cols, labels);
@@ -264,6 +265,6 @@ export function buildPreview(type, cols, labels) {
     case 'cusum': return cusumStacked(cols, labels);
     default:
   }
-  const built = buildChartConfig(type, cols, labels);
+  const built = buildChartConfig(type, cols, labels, lang);
   return built ? { kind: /** @type {const} */ ('single'), widget: built.widget, config: built.config } : NONE;
 }

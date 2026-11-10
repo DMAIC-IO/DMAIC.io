@@ -176,7 +176,7 @@ export default createModule({
         preview() {
           const type = this.selectedChartType;
           if (typeof type !== 'string') return NO_PREVIEW;
-          return buildPreview(type, this.liveColumns, this.labels);
+          return buildPreview(type, this.liveColumns, this.labels, ctx.i18n.getLanguage());
         },
       },
 
