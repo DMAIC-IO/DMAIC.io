@@ -1,0 +1,248 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "goal": {
+      "title": "Purpose of the Study",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "MSA Type 5 (Attribute Measurement System Analysis) evaluates inspection processes that do not produce continuous readings but a *categorical decision* — binary (OK/NOK), nominal (defect classes A/B/C without order) or ordinal (grades 1–5, ordered). The module uses {{term:kappa|kappa}}-based statistics to assess how reliably and reproducibly multiple appraisers assign the same category to the same parts."
+        },
+        {
+          "type": "definition",
+          "term": "Agreement",
+          "content": "Fraction of ratings where two or more appraisers assign the same category. Raw agreement overstates reliability because it counts chance-level agreement — hence the {{term:kappa|kappa}} statistics correct for the chance component."
+        },
+        {
+          "type": "definition",
+          "term": "Repeatability",
+          "content": "Ability of a single appraiser to assign the same part to the same category on repeated ratings. Computed as the fraction of (part × appraiser) combinations in which all replicates match exactly."
+        },
+        {
+          "type": "definition",
+          "term": "Effectiveness (with reference)",
+          "content": "Fraction of an appraiser’s individual ratings that agree with the reference. Requires traceable reference calls — without a reference column the {{term:konsens-fallback|consensus fallback}} kicks in and only the between-appraiser metrics remain fully informative."
+        },
+        {
+          "type": "paragraph",
+          "content": "Boundary: MSA Type 1/2/4 handle variable measurements (mm, N, °C) and yield Cg/Cgk, Gage R&R or linearity metrics. Type 5 in contrast evaluates *attribute* inspection processes — visual checks, classification, sorting — and delivers {{term:kappa|κ}}, {{term:effektivitaet|effectiveness}} and — for binary characteristics with a reference — {{term:signal-detection|signal-detection}} metrics."
+        }
+      ]
+    },
+    "data": {
+      "title": "Data Requirements",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Long layout (default) with three required columns: **Part ID**, **Appraiser ID**, **Rating**. Each row is one individual rating.",
+            "Optional **reference column** with the true category for each part. If missing, the {{term:konsens-fallback|consensus fallback}} kicks in.",
+            "Optional **replicate column**. If missing, the engine auto-numbers replicates per (part × appraiser) starting at 1.",
+            "At least 2 distinct parts, 2 distinct appraisers and 2 distinct rating classes present in the data.",
+            "For repeatability: at least 2 replicates per (part × appraiser) — otherwise the engine emits **W_LOW_REP_COUNT**.",
+            "AIAG recommendation for release studies: 50 parts · 3 appraisers · 3 replicates, with roughly 50 % borderline parts in the sample."
+          ]
+        },
+        {
+          "type": "definition",
+          "term": "Long or wide data layout",
+          "content": "Long layout: one rating per row (part, appraiser, rating, optionally replicate). Wide layout as in Minitab's \"multiple columns\": choose \"Wide\" under **Data layout**, tick the part column and all rating columns and enter the **trials per appraiser**. Columns count in worksheet order — all trials of appraiser 1 first, then appraiser 2 —, the appraiser name is the common start of the column names (A-1, A-2 → A). Example: \"binary, wide data layout\"."
+        },
+        {
+          "type": "definition",
+          "term": "Characteristic type",
+          "content": "Binary (2 classes, positive first) → Cohen κ + miss/false-alarm rate + signal detection. Nominal (≥ 3 classes, unordered) → Cohen κ + Fleiss κ. Ordinal (ordered grades) → additionally {{term:weighted-kappa|weighted κ}} (linear or quadratic) so that small misclassifications weigh less than large ones. For binary data the most frequent rating counts as OK (positive); if that is wrong, use \"Swap positive\" — otherwise miss and false-alarm rate are swapped."
+        },
+        {
+          "type": "definition",
+          "term": "Reference vs. consensus",
+          "content": "Traceable reference calls (expert set, master sample) give the most reliable {{term:effektivitaet|effectiveness}}. Without a reference the {{term:konsens-fallback|consensus fallback}} derives a majority vote per part; ties push the part into **meta.ambiguousParts and exclude it from all vs-reference metrics. κ between appraisers is not affected."
+        }
+      ]
+    },
+    "formulas": {
+      "title": "Formulas",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The core of Type 5 are the {{term:kappa|kappa}} statistics. They measure the share of agreement that exceeds chance — from 1 (perfect) through 0 (chance level) to negative (systematic disagreement)."
+        },
+        {
+          "type": "heading",
+          "content": "Cohen κ (two appraisers)"
+        },
+        {
+          "type": "definition",
+          "term": "Observed agreement",
+          "content": "$p_{o} = Σ_{i} n_{ii}$ / N — diagonal sum of the cross tab divided by the total number of rating pairs."
+        },
+        {
+          "type": "definition",
+          "term": "Chance agreement",
+          "content": "$p_{e} = Σ_{i} (n_{i·} · n_{·i}$) / N² — expected agreement from the marginal distributions of both appraisers."
+        },
+        {
+          "type": "definition",
+          "term": "{{term:cohen-kappa|Cohen κ}}",
+          "content": "$κ = (p_o − p_e) / (1 − p_e)$. SE(κ) after Fleiss/Cohen/Everitt (1969); 95 % CI $= κ ± z_{1−α/2} · SE(κ)$. The test against chance uses $SE_0$, computed under $H_0$: κ = 0 (Fleiss/Cohen/Everitt 1969)."
+        },
+        {
+          "type": "heading",
+          "content": "Fleiss κ (≥ 2 appraisers)"
+        },
+        {
+          "type": "definition",
+          "term": "{{term:fleiss-kappa|Fleiss κ}}",
+          "content": "$P_i = (Σ_j n_{ij}^2 − n_{i·}) / (n_{i·}(n_{i·} − 1))$ per part $i$, $P̄$ = mean. $p̄_j$ = class marginal. $κ = (P̄ − P_e) / (1 − P_e)$ with $P_e = Σ_j p̄_j^2$. Under unbalanced rater counts the engine switches to the Randolph variant and records this in the method field."
+        },
+        {
+          "type": "definition",
+          "term": "z and p per κ",
+          "content": "$z = κ / SE_0$, one-sided p value $p = 1 − Φ(z)$ for $H_0$: κ = 0. A small p only says the agreement is better than chance — not that it is good enough. Fleiss κ has **no confidence interval**: the closed-form variance holds only under $H_0$ and serves the test, not an interval (Fleiss, Levin & Paik 2003). Minitab reports none either. p below 0.001 shows as \"< 0.001\"."
+        },
+        {
+          "type": "definition",
+          "term": "κ within appraiser",
+          "content": "Fleiss κ per appraiser across his or her own trials: the trials act as raters. Measures how well an appraiser agrees with themselves — chance-corrected, unlike repeatability. Only parts with at least two trials count; unequal trial counts use the Randolph variant."
+        },
+        {
+          "type": "heading",
+          "content": "Weighted κ (ordinal)"
+        },
+        {
+          "type": "definition",
+          "term": "{{term:weighted-kappa|Weighted κ}}",
+          "content": "Weight matrix $W$: linear $w_{ij} = 1 − |i − j|/(k − 1)$ or quadratic $w_{ij} = 1 − ((i − j)/(k − 1))^2$. Near misclassifications (grade 3 ⟷ 4) are penalised more mildly than distant ones (1 ⟷ 5). $κ_w = (p_o^w − p_e^w) / (1 − p_e^w)$."
+        },
+        {
+          "type": "heading",
+          "content": "Effectiveness + Wilson score CI"
+        },
+        {
+          "type": "definition",
+          "term": "{{term:effektivitaet|Effectiveness}}",
+          "content": "eff = #{(part, rep) with rating = reference} / #{(part, rep) : part ∉ ambiguous}. Fraction of individual ratings that agree with the reference — per appraiser."
+        },
+        {
+          "type": "definition",
+          "term": "{{term:wilson-konfidenzintervall|Wilson score CI}}",
+          "content": "For a proportion p̂ = x/n: (p̂ + z²/(2n) ± z·√(p̂(1−p̂)/n + z²/(4n²))) / (1 + z²/n). Better coverage than the Wald interval for small n and proportions near 0 or 1."
+        },
+        {
+          "type": "paragraph",
+          "content": "The significance level α affects the Cohen κ confidence intervals and the Wilson intervals. The p values of the κ tests are reported independently of α."
+        },
+        {
+          "type": "heading",
+          "content": "Miss rate, false-alarm rate, bias (binary with reference only)"
+        },
+        {
+          "type": "definition",
+          "term": "{{term:miss-rate|Miss rate}}",
+          "content": "miss = P(rating = positive | reference = negative). Escape — a truly NOK part was rated OK."
+        },
+        {
+          "type": "definition",
+          "term": "{{term:false-alarm-rate|False-alarm rate}}",
+          "content": "fa = P(rating = negative | reference = positive). False alarm — a truly OK part was rated NOK."
+        },
+        {
+          "type": "definition",
+          "term": "Bias rate",
+          "content": "bias = miss − fa. Greater than 0: the appraiser is too lenient; less than 0: too strict."
+        },
+        {
+          "type": "heading",
+          "content": "Signal detection (binary with reference only)"
+        },
+        {
+          "type": "definition",
+          "term": "{{term:d-prime|d′}} (sensitivity)",
+          "content": "d′ = z(hit) − z(fa) with hit = P(rating=pos | reference=pos) and fa as above. Discrimination between OK and NOK; higher = better."
+        },
+        {
+          "type": "definition",
+          "term": "{{term:criterion-c|Criterion c}} (decision threshold)",
+          "content": "c = −½ · (z(hit) + z(fa)). c > 0: appraiser is conservative (tends to \"NOK\"), c < 0: liberal (tends to \"OK\"). c ≈ 0: neutral threshold."
+        },
+        {
+          "type": "paragraph",
+          "content": "Hautus (1995) edge correction: at hit ∈ {0, 1} or fa ∈ {0, 1} the values are adjusted by ± 0.5/N (log-linear correction) so that z(·) does not diverge."
+        }
+      ]
+    },
+    "details": {
+      "title": "Error Details",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The key figures tell you *how good* the gage is. The two detail tables tell you *what is causing it* — and only that lets you improve anything. Both exclude parts without a known reference from the error counts while still listing them."
+        },
+        {
+          "type": "definition",
+          "term": "Ratings per part",
+          "content": "One row per part with the reference, each appraiser's ratings, the number of deviations from the reference and the number of self-inconsistent appraisers. **Individual ratings** are counted, not appraisers: a consistently wrong appraiser therefore weighs more than a one-off slip. Rows are sorted by severity; the filter hides the undisputed parts. When deviations cluster on a few parts, what is usually missing there is a boundary sample — not training."
+        },
+        {
+          "type": "definition",
+          "term": "Misclassifications per appraiser",
+          "content": "One row per appraiser and kind of misclassification (\"NOK → OK\" means: reference NOK, rated OK), plus the parts affected. The **mixed** row counts the (part, appraiser) pairs whose repeats did not all come out the same — that is disagreement with oneself and needs no reference. One-sided misclassifications indicate a systematic bias (too strict or too lax), two-sided ones rather an unclear inspection instruction."
+        },
+        {
+          "type": "definition",
+          "term": "All appraisers agree",
+          "content": "Share of parts where **all** appraisers rated the same across **all** repeats. Needs no reference and is stricter than any single figure: one dissenting appraiser drops the part."
+        },
+        {
+          "type": "definition",
+          "term": "All agree and correct",
+          "content": "The same condition, plus the unanimous rating must match the reference. The gap to the tile next to it is the most interesting number in the whole analysis: it counts the parts where the team was **unanimous and still wrong**. No agreement measure finds those — κ included, because κ measures agreement, not correctness."
+        }
+      ]
+    },
+    "verdict": {
+      "title": "Verdict & Traffic Lights",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The verdict follows the selected **verdict rule**: AIAG MSA 4th Ed. ch. III-C (attribute study) by default, Bosch Heft 10 as an option. The **verdict criteria** table shows every rated criterion with value, appraiser, limits and status. The decisive row is highlighted and is also named next to the verdict."
+        },
+        {
+          "type": "heading",
+          "content": "AIAG MSA (4th ed.), ch. III-C"
+        },
+        {
+          "type": "list",
+          "items": [
+            "**Fleiss κ:** good ≥ 0.75 · marginal ≥ 0.40 · below unacceptable",
+            "**Effectiveness (lowest):** good ≥ 90 % · marginal ≥ 80 % · below unacceptable",
+            "**Miss rate (highest):** good ≤ 2 % · marginal ≤ 5 % · above unacceptable",
+            "**False-alarm rate (highest):** good ≤ 5 % · marginal ≤ 10 % · above unacceptable"
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "The worst criterion decides. {{term:miss-rate|Miss rate}} and {{term:false-alarm-rate|false-alarm rate}} count only for binary data **with a reference column**. When the reference is the appraisers' {{term:konsens-fallback|consensus}}, an error shared by the majority stays invisible. Both rates are then shown in the appraiser table for information only, and a note below the verdict criteria says so. An appraiser without NOK reference parts has no miss rate, one without OK parts no false-alarm rate; that appraiser is skipped for the criterion."
+        },
+        {
+          "type": "heading",
+          "content": "Bosch Heft 10"
+        },
+        {
+          "type": "paragraph",
+          "content": "As in Heft 10 (2019, Verfahren 7, p. 29), the **smallest** of four Fleiss κ is rated: between appraisers, within each appraiser, each appraiser vs. reference and all appraisers together vs. reference. Against the reference, the reference counts as one more rater beside the trials. Limits: ≥ 0.9 capable, ≥ 0.7 conditionally capable, below that not capable. Under Bosch, the \"κ vs. reference\" table and the \"Avg. κ vs. reference\" tile show this Fleiss κ per appraiser, under AIAG Cohen's κ. Fleiss κ comes with a z test only, not a confidence interval. The κ dots in the result tables follow the limits of the selected rule."
+        },
+        {
+          "type": "definition",
+          "term": "Ambiguous parts without reference",
+          "content": "When the {{term:konsens-fallback|consensus fallback}} finds no majority vote for a part (tie for binary/nominal, no unique median for ordinal), the part lands in **meta.ambiguousParts** and is excluded only from effectiveness, miss/false-alarm and {{term:signal-detection|SDT}}. Kappa between appraisers is retained."
+        },
+        {
+          "type": "definition",
+          "term": "Interpretation text",
+          "content": "Next to the verdict stand Fleiss κ with z and p and the decisive criterion; the interpretation paragraph names, where applicable, the warnings **W_UNBALANCED_REPS**, **W_AMBIGUOUS_CONSENSUS** and **W_LOW_REP_COUNT**."
+        }
+      ]
+    }
+  }
+}

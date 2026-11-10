@@ -1,0 +1,240 @@
+/* MSA Typ 5 — BEM-light styles (resources/style.css). Farben nur über Variablen. */
+
+.module-msa-typ5 { display: grid; gap: var(--spacing-md); }
+
+.module-msa-typ5__empty {
+  padding: var(--spacing-xl);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+/* Split panel geometry — 360 px input / rest output. */
+.module-msa-typ5.dmike-split {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: var(--spacing-lg);
+  align-items: start;
+}
+
+.msa-typ5__hidden { display: none; }
+
+/* Level-Detection chips */
+.msa-typ5__levels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+
+.msa-typ5__level {
+  padding: var(--spacing-2xs) var(--spacing-sm);
+  border-radius: 4px;
+  background: var(--color-bg-secondary);
+  font-size: 0.9em;
+  color: var(--color-text-primary);
+}
+
+.msa-typ5__level--pos {
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+  color: var(--color-success);
+}
+
+.msa-typ5__level--neg {
+  background: color-mix(in srgb, var(--color-error) 12%, transparent);
+  color: var(--color-error);
+}
+
+.msa-typ5__levels-hint {
+  flex-basis: 100%;
+  font-size: 0.8em;
+  color: var(--color-text-secondary);
+  margin-top: var(--spacing-xs);
+}
+
+.msa-typ5__swap {
+  margin-left: auto;
+  font-size: 0.85em;
+}
+
+.msa-typ5__ref-source {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-bg-secondary);
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+/* Verdikt-Header migriert → generisches .dmike-infobox (css/components.css). */
+
+/* Warnings */
+.msa-typ5__warn {
+  padding: var(--spacing-sm);
+  background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+  color: var(--color-warning);
+  border-radius: var(--border-radius-sm);
+  margin: var(--spacing-xs) 0;
+  font-size: 0.9em;
+}
+
+/* Interpretations-Slot innerhalb .dmike-infobox — bricht als volle Zeile
+   um; Farbcodierung + Rahmen kommen bereits vom umschließenden Infobox
+   (verdictClass am Elternknoten, siehe msa-typ5.html). */
+.dmike-infobox .msa-typ5__interp {
+  flex-basis: 100%;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+/* Tables. The criteria table shares the look but not the class, so
+   index-based lookups of the result tables stay stable. */
+.msa-typ5__table,
+.msa-typ5__criteria {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: var(--spacing-md);
+}
+
+.msa-typ5__table th,
+.msa-typ5__table td,
+.msa-typ5__criteria th,
+.msa-typ5__criteria td {
+  padding: var(--spacing-s) var(--spacing-m);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Ampel-Kreise in Tabellen */
+.msa-typ5__ampel {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-text-secondary);
+}
+.msa-typ5__ampel.dmike-kpi--good { background: var(--color-success); }
+.msa-typ5__ampel.dmike-kpi--warn { background: var(--color-warning); }
+.msa-typ5__ampel.dmike-kpi--bad  { background: var(--color-error); }
+
+/* Chart-Container.
+   overflow:hidden verhindert Growing-Loop (siehe msa-typ1 CSS). */
+
+/* Messverlaufsdiagramm — eine Zeile je Streifen. Definite Höhe nötig, sonst
+   driftet die SVG-Höhe bei jedem Neuzeichnen. */
+.msa-typ5__gage-run {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.msa-typ5__gage-run-row {
+  width: 100%;
+  height: 300px;
+  min-height: 300px;
+  overflow: hidden;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+}
+
+.msa-typ5__chart {
+  width: 100%;
+  height: 300px;
+  min-height: 300px;
+  margin-bottom: var(--spacing-md);
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.msa-typ5__heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.msa-typ5__heatmap-cell {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-xs);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xs);
+}
+
+.msa-typ5__heatmap-title {
+  font-size: 0.85em;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.msa-typ5__heatmap-body {
+  /* Compact fixed height — squareCells:true inside the plot centers a
+     square grid in whatever width the grid column gives us; the cell
+     stays a predictable size regardless of viewport width so wide viewports
+     just pack more heatmaps per row instead of stretching each one.
+     overflow:hidden clips any residual chart card that a stale render
+     might slip in — grid rows below the cell stay clean. */
+  height: 140px;
+  min-height: 140px;
+  overflow: hidden;
+}
+
+/* Die Widget-Wurzel erzeugt keine Box; das Diagramm erbt seine Mindesthöhe
+   über sie hinweg vom Wirt (Widgets in x-for). */
+.msa-typ5__chart > .widget-root,
+.msa-typ5__gage-run-row > .widget-root,
+.msa-typ5__heatmap-body > .widget-root {
+  min-height: inherit;
+}
+
+/* ── Fehlerdetails: Teile- und Prüfer-Tabelle ─────────────────────
+   Farbe trägt hier keine Information allein: die Zellklassen markieren,
+   was die Zahlenspalten „Abweichungen" und „uneinheitliche Prüfer"
+   ohnehin ausweisen. Daher reine Flächen-Tönung, kein Rahmen-Signal. */
+
+.msa-typ5__filter {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.msa-typ5__hint {
+  margin-bottom: var(--spacing-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.msa-typ5__cell--wrong {
+  background: color-mix(in srgb, var(--color-error) 14%, transparent);
+}
+
+.msa-typ5__cell--mixed {
+  background: color-mix(in srgb, var(--color-warning) 18%, transparent);
+}
+
+.msa-typ5__row--mixed td {
+  background: color-mix(in srgb, var(--color-warning) 8%, transparent);
+}
+
+/* Criteria table: the row that decided the verdict. */
+.msa-typ5__row--driver td {
+  font-weight: 600;
+  background: var(--color-bg-secondary);
+}
+
+/* Feldmeldung (abgelehnte Eingabe, etwa Durchgänge je Prüfer). */
+.msa-typ5__field-error {
+  font-size: var(--font-size-xs);
+  color: var(--color-error);
+}
+
+.msa-typ5__field-error:empty {
+  display: none;
+}
