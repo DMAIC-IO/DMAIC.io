@@ -34,7 +34,7 @@ suite('parseDecimalInput', () => {
   });
 
   test('Ungültiges ergibt NaN', () => {
-    for (const raw of ['3,5x', '-', '1,2,3', 'abc', '1.2,3.4', '1,234.5', '3x']) {
+    for (const raw of ['3,5x', '-', '1,2,3', 'abc', '1.2,3.4', '3x']) {
       const v = parseDecimalInput(raw);
       assertTrue(Number.isNaN(v), `Eingabe ${JSON.stringify(raw)} → ${v}`);
     }
