@@ -14,9 +14,10 @@ import { analyzeState, signalIndices, baselineEndOf } from '../domain/analyze.js
 import { meanOf } from '../viewmodel/present.js';
 import { asList } from '../domain/limits.js';
 import { Settings } from './settings.js';
+import { formatNumber } from '../../../core/number-format.js';
 
-/** Vier Nachkommastellen, `—` ohne Wert. @param {number|null|undefined} v @returns {string} */
-const fmt = (v) => (Number.isFinite(v) ? /** @type {number} */ (v).toFixed(4) : '—');
+/** Vier Nachkommastellen, `—` ohne Wert. @param {number|null|undefined} v @param {string} lang @returns {string} */
+const fmt = (v, lang) => (Number.isFinite(v) ? formatNumber(/** @type {number} */ (v), lang, { decimals: 4 }) : '—');
 
 export default createTile({
   descriptor,
@@ -56,11 +57,11 @@ export default createTile({
           sub: ctx.i18n.t('dashboard.spcOf', { total: this.analysis?.valid ?? 0 }),
         };
       },
-      get clText() { return fmt(meanOf(this.analysis?.result.cl)); },
+      get clText() { return fmt(meanOf(this.analysis?.result.cl), ctx.i18n.getLanguage()); },
       get uclLabel() { return this.variable ? 'UCL̄' : 'UCL'; },
-      get uclText() { return fmt(meanOf(this.analysis?.result.ucl)); },
+      get uclText() { return fmt(meanOf(this.analysis?.result.ucl), ctx.i18n.getLanguage()); },
       get lclLabel() { return this.variable ? 'LCL̄' : 'LCL'; },
-      get lclText() { return fmt(meanOf(this.analysis?.result.lcl)); },
+      get lclText() { return fmt(meanOf(this.analysis?.result.lcl), ctx.i18n.getLanguage()); },
       /** Die Regelkarte der letzten `lastN` Punkte; null ohne Daten oder ausgeblendet. */
       get chart() {
         const a = this.analysis;

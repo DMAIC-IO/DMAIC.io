@@ -20,13 +20,19 @@ suite('attribute-control-chart: Anzeige', () => {
   });
 
   test('kpisOf wie die alte Kennzahlenleiste', () => {
-    const k = kpisOf(unstable);
+    const k = kpisOf(unstable, 'en');
     assertEqual(k.cl, unstable.result.cl.toFixed(4));
     assertEqual(k.uclMean, unstable.result.ucl.toFixed(3));
     assertEqual(k.limitsLabel, 'UCL / LCL');
     assertEqual(k.violationCount, 1);
     assertEqual(k.valid, 10);
     assertEqual(kpisOf(null), null);
+  });
+
+  test('kpisOf: Zahlen nach App-Sprache', () => {
+    const k = kpisOf(unstable, 'de');
+    assertEqual(k.cl, unstable.result.cl.toFixed(4).replace('.', ','));
+    assertEqual(kpisOf(unstable, 'en').cl, unstable.result.cl.toFixed(4));
   });
 
   test('badgeOf: rohe Verletzungen zählen', () => {

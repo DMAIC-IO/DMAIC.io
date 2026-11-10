@@ -86,9 +86,9 @@ export default createModule({
       /** Unterzeile der Kachel Messungen. */
       get statFactorsText() { return this.t('statFactors', { count: this.result?.factorNames.length ?? 0 }); },
       /** Gesamtmittel, formatiert. */
-      get grandMeanText() { return fmt(this.result?.grandMean); },
+      get grandMeanText() { return fmt(this.result?.grandMean, ctx.i18n.getLanguage()); },
       /** Unterzeile der Kachel Gesamtmittel. */
-      get statSpanText() { return this.t('statSpan', { min: fmt(this.result?.yMin), max: fmt(this.result?.yMax) }); },
+      get statSpanText() { return this.t('statSpan', { min: fmt(this.result?.yMin, ctx.i18n.getLanguage()), max: fmt(this.result?.yMax, ctx.i18n.getLanguage()) }); },
 
       /** Warnkennungen samt übersprungener Zeilen. */
       get warningCodes() { return warningCodes(this.result); },
@@ -103,11 +103,11 @@ export default createModule({
       /** Tabelle, Summenzeile, größter Anteil und Hinweise der Varianzkomponenten. */
       get vc() {
         const r = this.result;
-        if (!r) return vcView(null, this.t);
+        if (!r) return vcView(null, this.t, ctx.i18n.getLanguage());
         const hit = shown.get(r);
         const lang = ctx.i18n.getLanguage();
         if (hit && hit.lang === lang) return hit.value;
-        const value = vcView(r, this.t);
+        const value = vcView(r, this.t, lang);
         shown.set(r, { lang, value });
         return value;
       },
@@ -117,9 +117,9 @@ export default createModule({
        */
       termLabel(term) { return termLabel(term, this.t); },
       /** @param {number} v @returns {string} */
-      fmt(v) { return fmt(v); },
+      fmt(v) { return fmt(v, ctx.i18n.getLanguage()); },
       /** @param {number} v @returns {string} */
-      pct(v) { return pct(v); },
+      pct(v) { return pct(v, ctx.i18n.getLanguage()); },
       /** @param {number} v @returns {string} */
       intOrDash(v) { return intOrDash(v); },
     };

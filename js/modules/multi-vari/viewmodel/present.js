@@ -10,6 +10,7 @@ import {
   analyze, vcTermRows, pickLargestTerm, interpretationKey, intOrDash as dashInt,
   totalSdValue, totalPercentValue, isUnbalanced, hasClampedTerm,
 } from '../domain/analysis.js';
+import { formatNumber } from '../../../core/number-format.js';
 
 /** Wartezeit vor dem Rechnen: eine schnelle Folge von Änderungen rechnet einmal. */
 export const RERUN_DELAY = 120;
@@ -159,11 +160,11 @@ export function errorTextOf(value, runError, t) {
   return value.result ? t('errCompute', { msg: value.message ?? '' }) : (value.message ?? '');
 }
 
-/** @param {number} v @returns {string} vier Nachkommastellen oder Gedankenstrich */
-export const fmt = (v) => (Number.isFinite(v) ? v.toFixed(4) : '–');
+/** @param {number} v @param {string} lang @returns {string} vier Nachkommastellen oder Gedankenstrich */
+export const fmt = (v, lang) => (Number.isFinite(v) ? formatNumber(v, lang, { decimals: 4 }) : '–');
 
-/** @param {number} v @returns {string} eine Nachkommastelle oder Gedankenstrich */
-export const pct = (v) => (Number.isFinite(v) ? v.toFixed(1) : '–');
+/** @param {number} v @param {string} lang @returns {string} eine Nachkommastelle oder Gedankenstrich */
+export const pct = (v, lang) => (Number.isFinite(v) ? formatNumber(v, lang, { decimals: 1 }) : '–');
 
 /** @param {number} v @returns {string} Ganzzahl oder Gedankenstrich */
 export const intOrDash = (v) => dashInt(v);
@@ -193,12 +194,12 @@ export function warningText(result, code, t) {
 
 /**
  * Kennzahlen und Tabelle der Varianzkomponenten für die Ansicht.
- * @param {Result|null} result @param {Translate} t
+ * @param {Result|null} result @param {Translate} t @param {string} lang Sprache der Zahlen
  * @returns {{ terms: object[], largest: object|null, largestPercent: string, largestLabel: string,
  *   interpretation: string, totalVariance: string, totalSd: string, totalPercent: string,
  *   unbalanced: boolean, clamped: boolean }}
  */
-export function vcView(result, t) {
+export function vcView(result, t, lang) {
   const terms = vcTermRows(result);
   const vc = result?.vc;
   const largest = pickLargestTerm(vc?.terms);
@@ -206,12 +207,12 @@ export function vcView(result, t) {
   return {
     terms,
     largest,
-    largestPercent: largest ? `${pct(largest.percent)} %` : '–',
+    largestPercent: largest ? `${pct(largest.percent, lang)} %` : '–',
     largestLabel,
-    interpretation: largest ? t(interpretationKey(largest), { term: largestLabel, percent: pct(largest.percent) }) : '',
-    totalVariance: fmt(vc?.totalVariance),
-    totalSd: fmt(totalSdValue(vc)),
-    totalPercent: pct(totalPercentValue(vc)),
+    interpretation: largest ? t(interpretationKey(largest), { term: largestLabel, percent: pct(largest.percent, lang) }) : '',
+    totalVariance: fmt(vc?.totalVariance, lang),
+    totalSd: fmt(totalSdValue(vc), lang),
+    totalPercent: pct(totalPercentValue(vc), lang),
     unbalanced: isUnbalanced(result),
     clamped: hasClampedTerm(terms),
   };

@@ -54,7 +54,7 @@ export default createModule({
       get requiresConstantN() { return Boolean(getAttributeChartType(this.model.chartTypeId)?.requiresConstantN); },
       get typeHint() { return this.t(`typeHint_${this.model.chartTypeId}`); },
       get centerFor() { return this.t(`statCenterFor_${this.model.chartTypeId}`); },
-      get kpis() { return kpisOf(this.analysis); },
+      get kpis() { return kpisOf(this.analysis, ctx.i18n.getLanguage()); },
       get validText() { return this.t('statOf', { total: this.kpis?.valid ?? 0 }); },
       get violationKpiClass() { return this.kpis?.violationCount === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad'; },
       get badge() { return badgeOf(this.analysis, this.t); },

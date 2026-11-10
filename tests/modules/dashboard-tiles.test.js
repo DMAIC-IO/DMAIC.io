@@ -29,7 +29,7 @@ import sipocTile from '../../js/modules/sipoc/tile/tile.js';
 import kanoTile from '../../js/modules/kano/kano.tile.js';
 import { WIDGET_I18N } from '../widget-i18n.js';
 
-const i18n = { t: (k) => k };
+const i18n = { t: (k) => k, getLanguage: () => 'en' };
 
 const FMEA_STATE = {
   risks: [

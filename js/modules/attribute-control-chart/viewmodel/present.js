@@ -6,11 +6,12 @@
  */
 import { uniqueViolations, signalIndices, baselineEndOf } from '../domain/analyze.js';
 import { asList } from '../domain/limits.js';
+import { formatNumber } from '../../../core/number-format.js';
 
 /**
  * Mittel einer Grenze (Liste bei je Punkt wechselnden Grenzen), ein Einzelwert
  * bleibt unverändert. Nicht-endliche Werte werden nicht herausgefiltert: sie
- * machen das Mittel nicht-endlich, wie bisher (`toFixed` zeigt dann `NaN`).
+ * machen das Mittel nicht-endlich, wie bisher (die Anzeige zeigt dann `NaN`).
  * @param {number|number[]} v
  * @returns {number}
  */
@@ -21,16 +22,17 @@ export function meanOf(v) {
 /**
  * Kennzahlenleiste: Mittellinie, gemittelte Grenzen, verletzende Punkte, verwertete Punkte.
  * @param {any} analysis Ergebnis von analyzeState, oder null
+ * @param {string} lang Sprache der Zahlen
  * @returns {{ cl: string, uclMean: string, lclMean: string, limitsLabel: string, variableLimits: boolean,
  *   violationCount: number, valid: number }|null}
  */
-export function kpisOf(analysis) {
+export function kpisOf(analysis, lang) {
   if (!analysis?.result) return null;
   const r = analysis.result;
   return {
-    cl: Number.isFinite(r.cl) ? r.cl.toFixed(4) : '–',
-    uclMean: meanOf(r.ucl).toFixed(3),
-    lclMean: meanOf(r.lcl).toFixed(3),
+    cl: Number.isFinite(r.cl) ? formatNumber(r.cl, lang, { decimals: 4 }) : '–',
+    uclMean: formatNumber(meanOf(r.ucl), lang, { decimals: 3 }),
+    lclMean: formatNumber(meanOf(r.lcl), lang, { decimals: 3 }),
     limitsLabel: r.variableLimits ? 'UCL̄ / LCL̄' : 'UCL / LCL',
     variableLimits: Boolean(r.variableLimits),
     violationCount: signalIndices(analysis.violations).length,
