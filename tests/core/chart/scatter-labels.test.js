@@ -52,3 +52,20 @@ suite('Scatter type — point labels', () => {
     host.remove();
   });
 });
+
+suite('Scatter type — Fehlerbalken', () => {
+  test('Fehlerbalken-Linien tragen die Klasse chart-error-bar', () => {
+    const eb = { show: true, yMode: 'relative', yPlus: [1, 1], yMinus: [1, 1] };
+    const { host, chart } = mount([{ name: 'S', x: [1, 2], y: [3, 4], errorBars: eb }]);
+    assertEqual(host.querySelectorAll('.chart-error-bar').length, 8);
+    chart.destroy();
+    host.remove();
+  });
+
+  test('ohne errorBars gibt es keine', () => {
+    const { host, chart } = mount([{ name: 'S', x: [1, 2], y: [3, 4] }]);
+    assertEqual(host.querySelectorAll('.chart-error-bar').length, 0);
+    chart.destroy();
+    host.remove();
+  });
+});

@@ -140,6 +140,22 @@ suite('Diagramm-Widgets: Schemas', () => {
     assertDeepEqual(checkValue(heatmapChart.props.config, 'c', heat), heat);
   });
 
+  test('Streudiagramm: errorBars nimmt die Form an und ist nicht bearbeitbar', () => {
+    const eb = { show: true, yMode: 'relative', yPlus: [0.1, null], yMinus: [0.2, null] };
+    const cfg = { series: [{ name: 'R', x: [1, 2], y: [1, 2], errorBars: eb }] };
+    assertDeepEqual(checkValue(scatterChart.props.config, 'c', cfg), cfg);
+    const band = { series: [{ name: 'R', x: [1], y: [1], errorBars: { show: true, bandShow: true, bandColor: 'red' } }] };
+    assertDeepEqual(checkValue(scatterChart.props.config, 'c', band), band);
+    assertThrows(() => checkValue(scatterChart.props.config, 'c', { series: [{ name: 'R', x: [1], y: [1], errorBars: { ...eb, yMode: 'log' } }] }), /yMode/);
+    assertTrue(!scatterChart.editable.series.includes('errorBars'));
+  });
+
+  test('Heatmap: squareCells und plotMargins', () => {
+    const cfg = { squareCells: true, plotMargins: { top: 6, right: 10, bottom: 22, left: 42 } };
+    assertDeepEqual(checkValue(heatmapChart.props.config, 'c', cfg), cfg);
+    assertThrows(() => checkValue(heatmapChart.props.config, 'c', { plotMargins: { top: 1 } }), /plotMargins/);
+  });
+
   test('Boxplot: Ausrichtung nur horizontal oder vertical', () => {
     assertThrows(() => checkValue(boxplotChart.props.config, 'c', { orientation: 'diagonal' }), /orientation/);
     assertThrows(() => checkValue(heatmapChart.props.config, 'c', { cells: [['x']] }), /cells/);

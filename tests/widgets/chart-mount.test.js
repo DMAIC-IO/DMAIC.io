@@ -443,6 +443,11 @@ suite('Diagramm-Widgets: Streudiagramm toChart', () => {
     assertEqual(c.series[0].y[0], 1);
     assertEqual(cfg.series[0].y[1], null);
   });
+  test('errorBars kommt unverändert beim Typ an', () => {
+    const eb = { show: true, yMode: 'relative', yPlus: [0.1, null], yMinus: [0.2, null] };
+    const c = scatterToChart({ series: [{ name: 'R', x: [1, 2], y: [1, 2], errorBars: eb }] });
+    assertDeepEqual(c.series[0].errorBars, eb);
+  });
   test('ohne Besonderheiten bleibt die Konfiguration gleich', () => {
     const c = scatterToChart({ title: 'T', series: [{ name: 'R', x: [1], y: [2] }] });
     assertEqual(c.title, 'T');
