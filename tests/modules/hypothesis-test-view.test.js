@@ -272,6 +272,13 @@ suite('hypothesis-test: reine Getter des Viewmodels', () => {
     assertEqual(v.varDecisionText, 'varUnequal');
   });
 
+  test('Anzeige in der App-Sprache: Komma und Intervall mit Semikolon', async () => {
+    const { vm } = await mount({ ...twoSamples() }, { ws1: sheetWith(A, C) });
+    const shown = vm().display.main.metrics.map((x) => x.value).join(' ');
+    assertTrue(/\d,\d{4}/.test(shown), shown);
+    assertTrue(/\[[^\]]*\d,\d{4}; [^\]]*\]/.test(shown), shown);
+  });
+
   test('normale Zwei-Stichproben-Daten: Normalitäts-Getter bejahen, Varianzweg nach Annahme', async () => {
     const { vm } = await mount({ ...twoSamples(), equalVariances: true }, { ws1: sheetWith(A, C) });
     const v = vm();

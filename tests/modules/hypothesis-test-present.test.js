@@ -89,7 +89,7 @@ suite('presentResult — k-Gruppen-Anzeige', () => {
     const main = runK(NORMAL_GROUPS, { alpha: 0.1 }).main;
     assertEqual(main.ciHeader, t('groupCi', { level: 90 }));
     assertEqual(main.showCi, true);
-    assertTrue(/^\[\d+\.\d{4}, \d+\.\d{4}\]$/.test(main.groupRows[0].ci), main.groupRows[0].ci);
+    assertTrue(/^\[\d+\.\d{4}; \d+\.\d{4}\]$/.test(main.groupRows[0].ci), main.groupRows[0].ci);
   });
 
   test('Rangweg: Bonferroni-Hinweis, keine Modellzusammenfassung', () => {
@@ -231,6 +231,21 @@ suite('present — ciNote je Code', () => {
     assertEqual(r.main.ciNote, 'Samples too small for 95% – achieved 93.1%.');
   });
 
+  test('ciShiftTooSmall: dasselbe Urteil in de und en (gleiche Stellenwahl)', () => {
+    const mk = (alpha, achieved) => {
+      const a = analyze({ ...base, testType: 'two', alpha, samples: [{ name: 'A', values: HEAVY_X }, { name: 'B', values: HEAVY_Y }] });
+      a.notes = [{ code: 'ciShiftTooSmall', values: { achieved, level: 1 - alpha } }];
+      return a;
+    };
+    const model = { category: 'mean', testType: 'two', direction: 'two-sided', targetType: base.targetType };
+    const digits = (s) => s.replace(/[^0-9]/g, '');
+    for (const [alpha, achieved] of [[0.0001, 0.99984], [0.05, 0.931]]) {
+      const en = presentResult(mk(alpha, achieved), tr, model, 'en').main.ciNote;
+      const de = presentResult(mk(alpha, achieved), tr, model, 'de').main.ciNote;
+      assertEqual(digits(de), digits(en));
+    }
+  });
+
   test('Rangweg mit Ablehnung und ausreichender Konfidenz: kein Hinweis', () => {
     const r = two(HEAVY_X, [3, 3.5, 4, 12, 13, 14, 15, 16].map((v) => v + 20000));
     assertEqual(r.numeric.decision, 'reject');
@@ -254,7 +269,7 @@ suite('present — Hodges-Lehmann im Hauptergebnis', () => {
     assertEqual(metric(r.main.metrics, tr('hlEstimateLabel')) !== undefined, true);
     assertTrue(Math.abs(Number(metric(r.main.metrics, tr('hlEstimateLabel'))) - (-1)) < 0.5, metric(r.main.metrics, tr('hlEstimateLabel')));
     const shift = r.main.metrics.find((m) => m.label.includes('η₁−η₂') && m.label.includes('CI'));
-    assertEqual(shift.value, `[${fmt(hl[0])}, ${fmt(hl[1])}]`);
+    assertEqual(shift.value, `[${fmt(hl[0])}; ${fmt(hl[1])}]`);
     assertTrue(shift.label.startsWith('95'), shift.label);
     assertTrue(shift.title.includes(tr('pMethodExact')), shift.title);
   });
@@ -262,5 +277,25 @@ suite('present — Hodges-Lehmann im Hauptergebnis', () => {
   test('Parametrische Wege haben keine HL-Zeile', () => {
     const r = showR({ testType: 'two', samples: [{ name: 'A', values: A }, { name: 'B', values: B }] });
     assertEqual(metric(r.main.metrics, tr('hlEstimateLabel')), undefined);
+  });
+});
+
+suite('present — Zahlen in der App-Sprache', () => {
+  const m2 = { category: 'mean', testType: 'two', direction: 'two-sided', targetType: base.targetType };
+  const run = (lang) => presentResult(analyze({ ...base, testType: 'two', samples: [{ name: 'A', values: A }, { name: 'B', values: B }] }), t, m2, lang);
+  test('de: Dezimalkomma, Intervall [a; b]', () => {
+    const r = run('de');
+    const ci = r.main.metrics.find((x) => x.value.startsWith('['));
+    assertTrue(/^\[-?\d+,\d{4}; -?\d+,\d{4}\]$/.test(ci.value), ci.value);
+    assertTrue(/^\d+,\d{4}$/.test(metric(r.main.metrics, t('statistic')).replace('-', '')), metric(r.main.metrics, t('statistic')));
+  });
+  test('en: Punkt, Intervall ebenfalls [a; b]', () => {
+    const r = run('en');
+    const ci = r.main.metrics.find((x) => x.value.startsWith('['));
+    assertTrue(/^\[-?\d+\.\d{4}; -?\d+\.\d{4}\]$/.test(ci.value), ci.value);
+  });
+  test('Teststärke in de mit Komma', () => {
+    const r = run('de');
+    assertTrue(/^\d+,\d%$/.test(r.power.metrics[0].value), r.power.metrics[0].value);
   });
 });

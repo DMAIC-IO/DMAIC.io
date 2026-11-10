@@ -33,7 +33,7 @@
   "pairedTooFew": "Nur {n} vollständige Paare – der gepaarte Test braucht mindestens 3.",
   "pairedTooFew_one": "Nur {n} vollständiges Paar – der gepaarte Test braucht mindestens 3.",
   "pairedNoVariation": "Alle Differenzen sind gleich – ohne Streuung ist kein Test möglich. Zwei verschiedene Spalten wählen?",
-  "targetVarPh": "z.B. 2.5",
+  "targetVarPh": "z. B. 2,5",
   "inputAs": "Eingabe als",
   "asVariance": "Varianz (σ²)",
   "asStddev": "Standardabweichung (σ)",

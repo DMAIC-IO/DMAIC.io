@@ -5,6 +5,7 @@
  * view-Block (`computed result`) aus Model und Arbeitsblatt.
  */
 import { defineModel, command, text, number, boolean, oneOf, list, columnRef } from '../../../core/model.js';
+import { parseNumber, roundTo } from '../../../core/number-format.js';
 import { from0 } from './migrations.js';
 import histogramChart from '../../../widgets/histogram-chart/schema.js';
 import probabilityPlotChart from '../../../widgets/probability-plot-chart/schema.js';
@@ -29,7 +30,7 @@ export const State = defineModel({
     alpha: number({
       exclusiveMin: 0, exclusiveMax: 1,
       // Aus dem Konfidenzniveau; auf den erlaubten Bereich geklemmt (Kontext erlaubt 0 < Wert < 100).
-      default: (c) => Math.min(0.9999, Math.max(0.0001, Number((1 - c.confidenceLevel / 100).toFixed(4)))),
+      default: (c) => Math.min(0.9999, Math.max(0.0001, roundTo(1 - c.confidenceLevel / 100, 4))),
     }),
     powerGoal: number({
       min: 0.5, max: 0.99,
@@ -82,11 +83,11 @@ export const State = defineModel({
  */
 export function resolveTarget(m) {
   if (m.testType === 'paired' && m.targetValue.trim() === '') return 0;
-  const tv = parseFloat(m.targetValue);
+  const tv = parseNumber(m.targetValue);
   if (m.category === 'variance') {
-    if (isNaN(tv) || tv <= 0) return null;
+    if (tv === null || isNaN(tv) || tv <= 0) return null;
     return m.targetType === 'stddev' ? tv * tv : tv;
   }
-  if (isNaN(tv)) return null;
+  if (tv === null || isNaN(tv)) return null;
   return tv;
 }

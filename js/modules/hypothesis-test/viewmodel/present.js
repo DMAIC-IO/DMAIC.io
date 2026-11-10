@@ -4,6 +4,7 @@
  * Oberfläche zeigt: übersetzte Beschriftungen,
  * formatierte Zahlen, Darstellungsklassen und Tooltips. Rechnet nichts.
  */
+import { formatNumber, roundTo } from '../../../core/number-format.js';
 import { algoIdOf } from '../domain/analyze.js';
 
 /** @typedef {import('../domain/analyze.js').AnalysisOk} AnalysisOk */
@@ -175,12 +176,20 @@ import { algoIdOf } from '../domain/analyze.js';
  * Eine Zahl als Text mit festen Nachkommastellen, „–“ für nicht endliche Werte.
  * @param {number|null|undefined} v
  * @param {number} [d]
+ * @param {string} [lang]  App-Sprache (`de` | `en`)
  * @returns {string}
  */
-export function fmt(v, d = 4) { return v != null && isFinite(v) ? v.toFixed(d) : '–'; }
+export function fmt(v, d = 4, lang = 'en') { return v != null && isFinite(v) ? formatNumber(v, lang, { decimals: d }) : '–'; }
 
-/** Intervall als Text `[unten, oben]`. */
-const fmtCi = (ci) => `[${fmt(ci[0])}, ${fmt(ci[1])}]`;
+/**
+ * Formatierer für eine Sprache: Zahl mit festen Nachkommastellen (`f`) und
+ * Intervall als Text `[unten; oben]` (`fCi`), in beiden Sprachen gleich.
+ * @param {string} lang
+ */
+function formatters(lang) {
+  const f = (v, d) => fmt(v, d, lang);
+  return { f, fCi: (ci) => `[${f(ci[0])}; ${f(ci[1])}]` };
+}
 
 /** Lab-Kennung oder leer. */
 const labId = (name) => algoIdOf(name) ?? '';
@@ -242,7 +251,8 @@ function tipper(t) {
 // ── Normalitätskarte ─────────────────────────────────────────
 
 /** @param {SampleStats} s @returns {NormCard} */
-function normCard(label, s, alpha, t, tip) {
+function normCard(label, s, alpha, t, tip, lang) {
+  const { f, fCi } = formatters(lang);
   const ciSd = s.ciVariance ? [Math.sqrt(s.ciVariance[0]), Math.sqrt(s.ciVariance[1])] : null;
   // Normalitätsannahme je Test: Ablehnen von H₀ (✗) heißt, die Annahme
   // ist verletzt, Nicht-Ablehnen (✓), sie hält — status.warning/status.ok,
@@ -256,14 +266,14 @@ function normCard(label, s, alpha, t, tip) {
     badgeClass: s.normal ? 'hyptest__badge--pass' : 'hyptest__badge--fail',
     badgeText: s.normal ? t('normal') : t('notNormal'),
     rows: [
-      { name: 'Shapiro-Wilk', algoId: labId('Shapiro-Wilk'), stat: fmt(s.sw.w), p: fmt(s.sw.p), pClass: pCls(s.sw.p), decisionIcon: decisionIcon(s.sw.p), decisionText: decisionText(s.sw.p) },
-      { name: 'Anderson-Darling', algoId: labId('Anderson-Darling'), stat: fmt(s.ad.a2), p: fmt(s.ad.p), pClass: pCls(s.ad.p), decisionIcon: decisionIcon(s.ad.p), decisionText: decisionText(s.ad.p) },
+      { name: 'Shapiro-Wilk', algoId: labId('Shapiro-Wilk'), stat: f(s.sw.w), p: f(s.sw.p), pClass: pCls(s.sw.p), decisionIcon: decisionIcon(s.sw.p), decisionText: decisionText(s.sw.p) },
+      { name: 'Anderson-Darling', algoId: labId('Anderson-Darling'), stat: f(s.ad.a2), p: f(s.ad.p), pClass: pCls(s.ad.p), decisionIcon: decisionIcon(s.ad.p), decisionText: decisionText(s.ad.p) },
     ],
     metrics: [
       { label: t('common.sym.n'), value: String(s.n), title: tip('n') },
-      { label: t('common.sym.xbar'), value: fmt(s.mean), ci: s.ciMean ? fmtCi(s.ciMean) : null, title: tip('x̄') },
-      { label: t('symS'), value: fmt(s.sd), ci: ciSd ? fmtCi(ciSd) : null, title: tip('s') },
-      { label: t('common.sym.s2'), value: fmt(s.variance), ci: s.ciVariance ? fmtCi(s.ciVariance) : null, title: tip('s²') },
+      { label: t('common.sym.xbar'), value: f(s.mean), ci: s.ciMean ? fCi(s.ciMean) : null, title: tip('x̄') },
+      { label: t('symS'), value: f(s.sd), ci: ciSd ? fCi(ciSd) : null, title: tip('s') },
+      { label: t('common.sym.s2'), value: f(s.variance), ci: s.ciVariance ? fCi(s.ciVariance) : null, title: tip('s²') },
     ],
   };
 }
@@ -271,7 +281,8 @@ function normCard(label, s, alpha, t, tip) {
 // ── Haupttest (eine, zwei, gepaarte Stichproben) ─────────────
 
 /** @param {AnalysisOk} a @param {PresentModel} model @returns {MainResult} */
-function mainResult(a, model, t, tip) {
+function mainResult(a, model, t, tip, lang) {
+  const { f, fCi } = formatters(lang);
   const { main: r, alpha, target } = a;
   const x = r.extra || {};
   const s0 = sym0(model.direction);
@@ -281,29 +292,29 @@ function mainResult(a, model, t, tip) {
   const isPaired = model.testType === 'paired';
   let h0, h1;
   if (isVariance) {
-    h0 = isTwo ? `σ²₁ ${s0} σ²₂` : `σ² ${s0} ${fmt(target)}`;
-    h1 = isTwo ? `σ²₁ ${s1} σ²₂` : `σ² ${s1} ${fmt(target)}`;
+    h0 = isTwo ? `σ²₁ ${s0} σ²₂` : `σ² ${s0} ${f(target)}`;
+    h1 = isTwo ? `σ²₁ ${s1} σ²₂` : `σ² ${s1} ${f(target)}`;
   } else if (isPaired) {
-    h0 = `μ_d ${s0} ${fmt(target)}`;
-    h1 = `μ_d ${s1} ${fmt(target)}`;
+    h0 = `μ_d ${s0} ${f(target)}`;
+    h1 = `μ_d ${s1} ${f(target)}`;
   } else {
-    h0 = isTwo ? `μ₁ ${s0} μ₂` : `μ ${s0} ${fmt(target)}`;
-    h1 = isTwo ? `μ₁ ${s1} μ₂` : `μ ${s1} ${fmt(target)}`;
+    h0 = isTwo ? `μ₁ ${s0} μ₂` : `μ ${s0} ${f(target)}`;
+    h1 = isTwo ? `μ₁ ${s1} μ₂` : `μ ${s1} ${f(target)}`;
   }
 
   const pCls = r.p < alpha ? 'hyptest__metric-value--danger' : 'hyptest__metric-value--success';
   const metrics = [
     { label: t('testMethod'), value: r.name, algoId: labId(r.name), valueClass: 'hyptest__metric-value--sm', title: tip(t('testMethod')) },
-    { label: t('statistic'), value: fmt(r.statistic), valueClass: '', title: tip(t('statistic')) },
-    { label: t('common.sym.p'), value: fmt(r.p), valueClass: pCls, title: r.pMethod ? `${tip('p')} (${r.pMethod === 'exact' ? t('pMethodExact') : t('pMethodNormal')})` : tip('p') },
+    { label: t('statistic'), value: f(r.statistic), valueClass: '', title: tip(t('statistic')) },
+    { label: t('common.sym.p'), value: f(r.p), valueClass: pCls, title: r.pMethod ? `${tip('p')} (${r.pMethod === 'exact' ? t('pMethodExact') : t('pMethodNormal')})` : tip('p') },
   ];
   if (r.df != null) {
-    metrics.push({ label: t('common.sym.df'), value: (typeof r.df === 'number' && r.df % 1) ? fmt(r.df, 1) : String(r.df), valueClass: '', title: tip('df') });
+    metrics.push({ label: t('common.sym.df'), value: (typeof r.df === 'number' && r.df % 1) ? f(r.df, 1) : String(r.df), valueClass: '', title: tip('df') });
   }
   const level = Math.round((1 - alpha) * 100);
   const isMeanDiff = !isVariance && isTwo && r.ci != null;
   if (isVariance && isTwo && x.ratio != null) {
-    metrics.push({ label: t('varianceRatio'), value: fmt(x.ratio), valueClass: '', title: tip(t('varianceRatio')) });
+    metrics.push({ label: t('varianceRatio'), value: f(x.ratio), valueClass: '', title: tip(t('varianceRatio')) });
   }
   if (r.ci) {
     const ciLabel = isPaired ? t('ciPairedDiffLabel', { level })
@@ -311,44 +322,44 @@ function mainResult(a, model, t, tip) {
       : isVariance && isTwo ? t('ciRatioLabel', { level })
       : t('ciLabel', { level });
     // Bonett: ein in Stücke zerfallenes Konfidenzgebiet hat kein Intervall (Minitab: „(*; *)“)
-    metrics.push({ label: ciLabel, value: r.ciUndefined ? '–' : fmtCi(r.ci), valueClass: 'hyptest__metric-value--sm', title: tip('KI') });
+    metrics.push({ label: ciLabel, value: r.ciUndefined ? '–' : fCi(r.ci), valueClass: 'hyptest__metric-value--sm', title: tip('KI') });
   }
   if (r.ciSigma) {
-    metrics.push({ label: t('ciSigmaLabel', { level }), value: fmtCi(r.ciSigma), valueClass: 'hyptest__metric-value--sm', title: tip('KI') });
+    metrics.push({ label: t('ciSigmaLabel', { level }), value: fCi(r.ciSigma), valueClass: 'hyptest__metric-value--sm', title: tip('KI') });
   }
   if (r.hl) {
-    const achieved = fmt(r.hl.achievedConfidence * 100, 1);
+    const achieved = f(r.hl.achievedConfidence * 100, 1);
     const methodText = r.hl.method === 'exact' ? t('pMethodExact') : t('pMethodNormal');
-    metrics.push({ label: t('hlEstimateLabel'), value: fmt(r.hl.estimate), valueClass: '', title: t('tipHlEstimate'), algoId: labId('Hodges-Lehmann') });
+    metrics.push({ label: t('hlEstimateLabel'), value: f(r.hl.estimate), valueClass: '', title: t('tipHlEstimate'), algoId: labId('Hodges-Lehmann') });
     metrics.push({
       label: t('ciShiftLabel', { level: achieved }),
-      value: `[${fmt(r.hl.lower)}, ${fmt(r.hl.upper)}]`,
+      value: fCi([r.hl.lower, r.hl.upper]),
       valueClass: 'hyptest__metric-value--sm',
       title: t('ciShiftTip', { level, achieved, method: methodText }),
     });
   }
   if (x.meanDiff != null) {
-    metrics.push({ label: t('symXbar1'), value: fmt(x.mean1), valueClass: '', title: tip('x̄₁') });
-    metrics.push({ label: t('symXbar2'), value: fmt(x.mean2), valueClass: '', title: tip('x̄₂') });
-    metrics.push({ label: t('symDbar'), value: fmt(x.meanDiff), valueClass: '', title: tip('d̄') });
+    metrics.push({ label: t('symXbar1'), value: f(x.mean1), valueClass: '', title: tip('x̄₁') });
+    metrics.push({ label: t('symXbar2'), value: f(x.mean2), valueClass: '', title: tip('x̄₂') });
+    metrics.push({ label: t('symDbar'), value: f(x.meanDiff), valueClass: '', title: tip('d̄') });
   } else if (x.mean != null) {
-    metrics.push({ label: t('common.sym.xbar'), value: fmt(x.mean), valueClass: '', title: tip('x̄') });
+    metrics.push({ label: t('common.sym.xbar'), value: f(x.mean), valueClass: '', title: tip('x̄') });
   }
   if (x.meanDiff == null && x.mean1 != null) {
-    metrics.push({ label: t('symXbar1'), value: fmt(x.mean1), valueClass: '', title: tip('x̄₁') });
-    metrics.push({ label: t('symXbar2'), value: fmt(x.mean2), valueClass: '', title: tip('x̄₂') });
+    metrics.push({ label: t('symXbar1'), value: f(x.mean1), valueClass: '', title: tip('x̄₁') });
+    metrics.push({ label: t('symXbar2'), value: f(x.mean2), valueClass: '', title: tip('x̄₂') });
   }
   if (x.sampleVariance != null) {
-    metrics.push({ label: t('common.sym.s2'), value: fmt(x.sampleVariance), valueClass: '', title: tip('s²') });
+    metrics.push({ label: t('common.sym.s2'), value: f(x.sampleVariance), valueClass: '', title: tip('s²') });
   }
   if (x.variance1 != null && !x.pooledVariance) {
-    metrics.push({ label: t('symS21'), value: fmt(x.variance1), valueClass: '', title: tip('s²₁') });
-    metrics.push({ label: t('symS22'), value: fmt(x.variance2), valueClass: '', title: tip('s²₂') });
+    metrics.push({ label: t('symS21'), value: f(x.variance1), valueClass: '', title: tip('s²₁') });
+    metrics.push({ label: t('symS22'), value: f(x.variance2), valueClass: '', title: tip('s²₂') });
   }
 
   const h0Tip = r.reject
-    ? `${t('h0Rejected')}: p (${fmt(r.p)}) < α (${alpha})`
-    : `${t('h0NotRejected')}: p (${fmt(r.p)}) ≥ α (${alpha})`;
+    ? `${t('h0Rejected')}: p (${f(r.p)}) < α (${formatNumber(alpha, lang)})`
+    : `${t('h0NotRejected')}: p (${f(r.p)}) ≥ α (${formatNumber(alpha, lang)})`;
   const h1Tip = r.reject
     ? `${t('significant')}: ${t('h0Rejected')}`
     : `${t('notSignificant')}: ${t('h0NotRejected')}`;
@@ -360,13 +371,13 @@ function mainResult(a, model, t, tip) {
       // bei numerischem Gleichstand (sehr kleines α: „100 % – erreicht 100,0 %“)
       // beide gemeinsam genauer, so wenig wie nötig.
       const got = w.values.achieved * 100;
-      if (Number(level) !== Number(fmt(got, 1))) return t(w.code, { level, achieved: fmt(got, 1) });
+      if (level !== roundTo(got, 1)) return t(w.code, { level, achieved: f(got, 1) });
       const want = (1 - alpha) * 100;
       let d = 1;
-      while (d < 6 && Number(fmt(want, d)) === Number(fmt(got, d))) d++;
-      return t(w.code, { level: fmt(want, d), achieved: fmt(got, d) });
+      while (d < 6 && roundTo(want, d) === roundTo(got, d)) d++;
+      return t(w.code, { level: f(want, d), achieved: f(got, d) });
     }
-    return t(w.code, { lo: fmt(w.values.lo), hi: fmt(w.values.hi) });
+    return t(w.code, { lo: f(w.values.lo), hi: f(w.values.hi) });
   }).join(' ');
 
   return {
@@ -386,11 +397,12 @@ function mainResult(a, model, t, tip) {
  * bei 0 % abgeschnitten; R²(prog) fehlt, wenn eine Gruppe nur einen Wert hat.
  * @returns {Metric[]}
  */
-function modelSummary(summary, t, tip) {
-  const pct = (v) => (v != null && isFinite(v) ? `${(Math.max(0, v) * 100).toFixed(2)} %` : '–');
+function modelSummary(summary, t, tip, lang) {
+  const { f, fCi } = formatters(lang);
+  const pct = (v) => (v != null && isFinite(v) ? `${f(Math.max(0, v) * 100, 2)} %` : '–');
   const row = (label, value) => ({ label, value, title: tip(label) });
   return [
-    row('S', fmt(summary.s)),
+    row('S', f(summary.s)),
     row('R²', pct(summary.r2)),
     row(t('labelR2adj'), pct(summary.r2adj)),
     row(t('labelR2pred'), pct(summary.r2pred)),
@@ -398,7 +410,8 @@ function modelSummary(summary, t, tip) {
 }
 
 /** @param {AnalysisOk} a @param {PresentModel} model @returns {MainResult} */
-function kMainResult(a, model, t, tip) {
+function kMainResult(a, model, t, tip, lang) {
+  const { f, fCi } = formatters(lang);
   const { main: r, alpha, anova } = a;
   const x = r.extra || {};
   const isVariance = model.category === 'variance';
@@ -406,28 +419,28 @@ function kMainResult(a, model, t, tip) {
   const h0 = isVariance ? 'σ²₁ = σ²₂ = … = σ²ₖ' : 'μ₁ = μ₂ = … = μₖ';
   const h1 = isVariance ? t('kSampleVarH1') : t('kSampleH1');
   // Die df2 der Welch-ANOVA sind gebrochen (Satterthwaite)
-  const df2Display = has2Df && r.name === 'Welch ANOVA' ? fmt(r.df2, 2) : String(r.df2);
+  const df2Display = has2Df && r.name === 'Welch ANOVA' ? f(r.df2, 2) : String(r.df2);
   const dfDisplay = has2Df ? `${x.df1} / ${df2Display}` : String(r.df);
   const pCls = r.p < alpha ? 'hyptest__metric-value--danger' : 'hyptest__metric-value--success';
 
   const metrics = [
     { label: t('testMethod'), value: r.name, algoId: labId(r.name), valueClass: 'hyptest__metric-value--sm', title: tip(t('testMethod')) },
-    { label: t('statistic'), value: fmt(r.statistic), valueClass: '', title: tip(t('statistic')) },
+    { label: t('statistic'), value: f(r.statistic), valueClass: '', title: tip(t('statistic')) },
     { label: t('common.sym.df'), value: dfDisplay, valueClass: '', title: tip('df') },
-    { label: t('common.sym.p'), value: fmt(r.p), valueClass: pCls, title: tip('p') },
+    { label: t('common.sym.p'), value: f(r.p), valueClass: pCls, title: tip('p') },
     { label: t('symK'), value: String(x.k), valueClass: '', title: tip('k') },
   ];
   if (x.N != null) metrics.push({ label: t('symBigN'), value: String(x.N), valueClass: '', title: tip('N') });
-  if (x.pooledVariance != null) metrics.push({ label: t('symS2p'), value: fmt(x.pooledVariance), valueClass: '', title: tip('s²ₚ') });
+  if (x.pooledVariance != null) metrics.push({ label: t('symS2p'), value: f(x.pooledVariance), valueClass: '', title: tip('s²ₚ') });
 
   let anovaRows = null;
   if (anova.rows) {
     const dCls = r.p < alpha ? 'hyptest__text-danger' : 'hyptest__text-success';
     const SRC = { factor: 'between', error: 'within', total: 'total' };
-    const dash = (v) => (v == null ? '—' : fmt(v));
+    const dash = (v) => (v == null ? '—' : f(v));
     anovaRows = anova.rows.map(row => ({
       src: t(SRC[row.source]),
-      ss: fmt(row.ss),
+      ss: f(row.ss),
       df: String(row.df),
       ms: dash(row.ms),
       f: dash(row.f),
@@ -440,8 +453,8 @@ function kMainResult(a, model, t, tip) {
   const showCld = a.pairwise != null && a.pairwise.letters.length > 0;
   const showCi = anova.groups.some(g => g.ci);
   const groupRows = anova.groups.map(g => ({
-    name: g.name, n: String(g.n), mean: fmt(g.mean), variance: fmt(g.variance),
-    ci: g.ci ? fmtCi(g.ci) : '', letters: g.letters,
+    name: g.name, n: String(g.n), mean: f(g.mean), variance: f(g.variance),
+    ci: g.ci ? fCi(g.ci) : '', letters: g.letters,
   }));
 
   return {
@@ -451,7 +464,7 @@ function kMainResult(a, model, t, tip) {
     h0Tip: '', h1Tip: '',
     metrics,
     anovaRows,
-    modelSummary: anova.summary ? modelSummary(anova.summary, t, tip) : null,
+    modelSummary: anova.summary ? modelSummary(anova.summary, t, tip, lang) : null,
     groupRows,
     showCi,
     ciHeader: t('groupCi', { level: Math.round((1 - alpha) * 100) }),
@@ -462,15 +475,16 @@ function kMainResult(a, model, t, tip) {
 // ── Vergleichstest, Varianzgleichheit, Teststärke ────────────
 
 /** @returns {SecondaryResult} */
-function secondaryResult(sec, alpha, t, tip) {
+function secondaryResult(sec, alpha, t, tip, lang) {
+  const { f, fCi } = formatters(lang);
   const r = sec.test;
   const pCls = r.p < alpha ? 'hyptest__metric-value--danger' : 'hyptest__metric-value--success';
   const methodLabel = sec.twoSidedSuffix ? `${t('testMethod')} (${t('twoSidedSuffix')})` : t('testMethod');
   return {
     metrics: [
       { label: methodLabel, value: r.name, algoId: labId(r.name), valueClass: 'hyptest__metric-value--sm', title: tip(t('testMethod')) },
-      { label: t('statistic'), value: fmt(r.statistic), valueClass: '', title: tip(t('statistic')) },
-      { label: t('common.sym.p'), value: fmt(r.p), valueClass: pCls, title: tip('p') },
+      { label: t('statistic'), value: f(r.statistic), valueClass: '', title: tip(t('statistic')) },
+      { label: t('common.sym.p'), value: f(r.p), valueClass: pCls, title: tip('p') },
     ],
     title: t(sec.titleKey),
     note: t(sec.noteKey),
@@ -482,24 +496,25 @@ function secondaryResult(sec, alpha, t, tip) {
  * @param {TestOutcome} ve
  * @returns {Metric[]}
  */
-function varEqualityMetrics(ve, alpha, t, tip) {
+function varEqualityMetrics(ve, alpha, t, tip, lang) {
+  const { f, fCi } = formatters(lang);
   const x = ve.extra || {};
   const pCls = ve.p < alpha ? 'hyptest__metric-value--danger' : 'hyptest__metric-value--success';
   return [
     { label: t('testMethod'), value: ve.name, algoId: labId(ve.name), valueClass: 'hyptest__metric-value--sm', title: tip(t('testMethod')) },
-    { label: t('statistic'), value: fmt(ve.statistic), valueClass: '', title: tip(t('statistic')) },
+    { label: t('statistic'), value: f(ve.statistic), valueClass: '', title: tip(t('statistic')) },
     { label: t('common.sym.df'), value: `${x.df1} / ${ve.df2}`, valueClass: '', title: tip('df') },
-    { label: t('common.sym.p'), value: fmt(ve.p), valueClass: pCls, title: tip('p') },
+    { label: t('common.sym.p'), value: f(ve.p), valueClass: pCls, title: tip('p') },
   ];
 }
 
 /** @param {AnalysisOk} a @returns {VarEquality|null} */
-function varEqualityOf(a, t, tip) {
+function varEqualityOf(a, t, tip, lang) {
   const ve = a.varEquality;
   if (!ve) return null;
   if (ve.test) {
     return {
-      metrics: varEqualityMetrics(ve.test, a.alpha, t, tip),
+      metrics: varEqualityMetrics(ve.test, a.alpha, t, tip, lang),
       varsEqual: ve.varsEqual,
       trailLabelKey: ve.trailLabelKey, trailYes: ve.trailYes,
     };
@@ -508,11 +523,12 @@ function varEqualityOf(a, t, tip) {
 }
 
 /** @param {NonNullable<AnalysisOk['power']>} pw @returns {PowerInfo} */
-function powerInfo(pw, alpha, t, tip) {
+function powerInfo(pw, alpha, t, tip, lang) {
+  const { f, fCi } = formatters(lang);
   const effLabel = pw.effectKind === 'varianceRatio' ? t('varianceRatio')
     : pw.effectKind === 'cohenDz' ? "Cohen's d_z" : "Cohen's d";
   const two = pw.n.length > 1;
-  const goalPct = (pw.goal * 100).toFixed(0);
+  const goalPct = f(pw.goal * 100, 0);
   const goalReached = pw.power >= pw.goal;
   const nDisplay = pw.requiredN >= 5000 ? '> 5000' : String(pw.requiredN);
   const requiredLine = `${t('requiredN')}${two ? ` (${t('perGroup')})` : ''}: ${nDisplay}`
@@ -524,10 +540,10 @@ function powerInfo(pw, alpha, t, tip) {
     requiredLine,
     note: pw.approx ? t('powerNormalApprox') : '',
     metrics: [
-      { label: t('currentPower'), value: `${(pw.power * 100).toFixed(1)}%`, valueClass: goalReached ? 'hyptest__metric-value--success' : 'hyptest__metric-value--warning', title: tip(t('currentPower')) },
+      { label: t('currentPower'), value: `${f(pw.power * 100, 1)}%`, valueClass: goalReached ? 'hyptest__metric-value--success' : 'hyptest__metric-value--warning', title: tip(t('currentPower')) },
       { label: t('common.sym.n'), value: pw.n.join(' / '), valueClass: '', title: tip('n') },
-      { label: effLabel, value: fmt(pw.effect, 3), valueClass: '', title: tip(effLabel) },
-      { label: t('symAlpha'), value: String(alpha), valueClass: '', title: tip('α') },
+      { label: effLabel, value: f(pw.effect, 3), valueClass: '', title: tip(effLabel) },
+      { label: t('symAlpha'), value: formatNumber(alpha, lang), valueClass: '', title: tip('α') },
     ],
   };
 }
@@ -535,7 +551,8 @@ function powerInfo(pw, alpha, t, tip) {
 // ── Paarvergleiche ───────────────────────────────────────────
 
 /** @param {AnalysisOk} a @returns {PairwiseSection} */
-function pairwiseSection(a, t) {
+function pairwiseSection(a, t, lang) {
+  const { f, fCi } = formatters(lang);
   const { comparisons, m, methodName, letters, isRank, simultaneous } = a.pairwise;
   const names = a.samples.map(s => s.name);
   const k = names.length;
@@ -552,10 +569,10 @@ function pairwiseSection(a, t) {
         const verdict = c.equal ? t('pairwiseEqual') : t('pairwiseDifferent');
         // Tukey / Games-Howell liefern nur angepasste p-Werte
         const title = c.p != null
-          ? `p=${fmt(c.p)}  ·  p_adj=${fmt(c.pAdj)}  ·  ${verdict}`
-          : `p_adj=${fmt(c.pAdj)}  ·  ${verdict}`;
-        const ci = c.ci ? fmtCi(c.ci) : '';
-        cells.push({ cls, title, text: fmt(c.pAdj), ci, key: `${i}-${j}` });
+          ? `p=${f(c.p)}  ·  p_adj=${f(c.pAdj)}  ·  ${verdict}`
+          : `p_adj=${f(c.pAdj)}  ·  ${verdict}`;
+        const ci = c.ci ? fCi(c.ci) : '';
+        cells.push({ cls, title, text: f(c.pAdj), ci, key: `${i}-${j}` });
       }
     }
     rows.push({ head: names[i], cells });
@@ -594,9 +611,10 @@ function withAlgoIds(section) {
  * @param {AnalysisOk} analysis  Ergebnis von `analyze()` mit `status: 'ok'`
  * @param {Translate} t  Übersetzer des Moduls
  * @param {PresentModel} model  Konfiguration (Kategorie, Testart, Richtung)
+ * @param {string} [lang]  App-Sprache für die Zahlen (`de` | `en`)
  * @returns {Result}
  */
-export function presentResult(analysis, t, model) {
+export function presentResult(analysis, t, model, lang = 'en') {
   const a = analysis;
   const tip = tipper(t);
   const isPaired = model.testType === 'paired';
@@ -605,14 +623,14 @@ export function presentResult(analysis, t, model) {
   const result = {
     isK: a.isK,
     allNormal: a.allNormal,
-    normCards: a.samples.map((s, i) => normCard(label(s, i), s, a.alpha, t, tip)),
+    normCards: a.samples.map((s, i) => normCard(label(s, i), s, a.alpha, t, tip, lang)),
     route: { name: a.route.name, algoId: a.route.algoId ?? '' },
-    varEquality: withAlgoIds(varEqualityOf(a, t, tip)),
-    main: withAlgoIds(a.isK ? kMainResult(a, model, t, tip) : mainResult(a, model, t, tip)),
+    varEquality: withAlgoIds(varEqualityOf(a, t, tip, lang)),
+    main: withAlgoIds(a.isK ? kMainResult(a, model, t, tip, lang) : mainResult(a, model, t, tip, lang)),
     numeric: a.numeric,
-    secondary: a.secondary ? withAlgoIds(secondaryResult(a.secondary, a.alpha, t, tip)) : null,
-    power: a.power ? powerInfo(a.power, a.alpha, t, tip) : null,
-    pairwise: a.pairwise ? pairwiseSection(a, t) : null,
+    secondary: a.secondary ? withAlgoIds(secondaryResult(a.secondary, a.alpha, t, tip, lang)) : null,
+    power: a.power ? powerInfo(a.power, a.alpha, t, tip, lang) : null,
+    pairwise: a.pairwise ? pairwiseSection(a, t, lang) : null,
     residualPlot: a.residualPlot,
   };
   if (a.pairInfo) result.pairInfo = a.pairInfo;

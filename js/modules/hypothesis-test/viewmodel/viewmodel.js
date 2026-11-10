@@ -48,7 +48,7 @@ export default createModule({
         if (!r || r.status !== 'ok') return null;
         const hit = shown.get(r);
         if (hit && hit.t === this.t) return hit.value;
-        const value = presentResult(r, this.t, this.model);
+        const value = presentResult(r, this.t, this.model, ctx.context.language);
         shown.set(r, { t: this.t, value });
         return value;
       },

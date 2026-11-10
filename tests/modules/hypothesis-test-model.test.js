@@ -94,6 +94,12 @@ suite('hypothesis-test Model', () => {
     assertEqual(b.hasContent(), true);
   });
 
+  test('resolveTarget liest Dezimalkomma', () => {
+    const m = { category: 'mean', testType: 'one', targetType: 'variance', targetValue: '3,5' };
+    assertEqual(resolveTarget(m), 3.5);
+    assertEqual(resolveTarget({ ...m, category: 'variance', targetType: 'stddev', targetValue: '1,5' }), 2.25);
+  });
+
   test('resolveTarget wie bisher', () => {
     const m = new State();
     assertEqual(resolveTarget(m), null);

@@ -80,7 +80,7 @@
             </div>
             <div class="hyptest__field field-group field-group--minor">
               <label data-help-key="modules.hypothesis-test.fields.targetValue.help">σ²₀</label>
-              <input type="number" data-ref="target" class="field field--num"
+              <input type="text" inputmode="decimal" data-ref="target" class="field field--num"
                 x-model="model.targetValue" :placeholder="t('targetVarPh')">
             </div>
           </div>
@@ -90,7 +90,7 @@
           <div class="field-grid field-grid--3">
             <div class="field-group">
               <label data-help-key="modules.hypothesis-test.fields.targetValue.help">μ₀</label>
-              <input type="number" data-ref="target" class="field field--num"
+              <input type="text" inputmode="decimal" data-ref="target" class="field field--num"
                 x-model="model.targetValue" :placeholder="t('targetMeanPh')">
             </div>
           </div>
@@ -105,7 +105,7 @@
         <div class="field-grid field-grid--3">
           <div class="field-group">
             <label data-help-key="modules.hypothesis-test.fields.targetValue.help">μ_d₀</label>
-            <input type="number" data-ref="target" class="field field--num"
+            <input type="text" inputmode="decimal" data-ref="target" class="field field--num"
               x-model="model.targetValue" :placeholder="t('targetDiffPh')">
           </div>
         </div>
@@ -127,15 +127,15 @@
       </template>
       <div class="hyptest__field field-group field-group--minor">
         <label data-help-key="modules.hypothesis-test.fields.alpha.help">α</label>
-        <input type="number" data-ref="alpha" class="field field--num"
-          x-field="model.alpha" step="0.01">
+        <input data-ref="alpha" class="field field--num"
+          x-field="model.alpha">
       </div>
       <template x-if="model.testType !== 'k'">
         <div class="hyptest__field field-group field-group--minor">
           <label data-help-key="modules.hypothesis-test.fields.powerGoal.help"
                  x-text="t('powerGoal')"></label>
-          <input type="number" data-ref="power-goal" class="field field--num"
-            x-field="model.powerGoal" step="0.05">
+          <input data-ref="power-goal" class="field field--num"
+            x-field="model.powerGoal">
         </div>
       </template>
     </div>
@@ -445,9 +445,9 @@
                 </table>
                 <div class="hyptest__pairwise-legend">
                   <span class="hyptest__pairwise-swatch hyptest__pairwise-equal"></span>
-                  <span x-text="t('pairwiseEqual')"></span> (p_adj ≥ <span x-text="model.alpha"></span>)
+                  <span x-text="t('pairwiseEqual')"></span> (p_adj ≥ <span x-text="num(model.alpha)"></span>)
                   <span class="hyptest__pairwise-swatch hyptest__pairwise-diff"></span>
-                  <span x-text="t('pairwiseDifferent')"></span> (p_adj &lt; <span x-text="model.alpha"></span>)
+                  <span x-text="t('pairwiseDifferent')"></span> (p_adj &lt; <span x-text="num(model.alpha)"></span>)
                 </div>
                 <div class="hyptest__cld-hint">
                   <span x-text="t('groupingHint')"></span> (<span x-text="t('groupingLabel')"></span>:
