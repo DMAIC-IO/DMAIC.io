@@ -88,7 +88,10 @@ export default createModule({
       /** Gesamtmittel, formatiert. */
       get grandMeanText() { return fmt(this.result?.grandMean, ctx.i18n.getLanguage()); },
       /** Unterzeile der Kachel Gesamtmittel. */
-      get statSpanText() { return this.t('statSpan', { min: fmt(this.result?.yMin, ctx.i18n.getLanguage()), max: fmt(this.result?.yMax, ctx.i18n.getLanguage()) }); },
+      get statSpanText() {
+        const lang = ctx.i18n.getLanguage();
+        return this.t('statSpan', { min: fmt(this.result?.yMin, lang), max: fmt(this.result?.yMax, lang) });
+      },
 
       /** Warnkennungen samt übersprungener Zeilen. */
       get warningCodes() { return warningCodes(this.result); },
@@ -103,9 +106,9 @@ export default createModule({
       /** Tabelle, Summenzeile, größter Anteil und Hinweise der Varianzkomponenten. */
       get vc() {
         const r = this.result;
-        if (!r) return vcView(null, this.t, ctx.i18n.getLanguage());
-        const hit = shown.get(r);
         const lang = ctx.i18n.getLanguage();
+        if (!r) return vcView(null, this.t, lang);
+        const hit = shown.get(r);
         if (hit && hit.lang === lang) return hit.value;
         const value = vcView(r, this.t, lang);
         shown.set(r, { lang, value });

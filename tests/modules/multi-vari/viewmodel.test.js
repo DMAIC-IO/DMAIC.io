@@ -12,7 +12,7 @@ import { reactive, effect, stop } from '@vue/reactivity';
 import { asyncTask, createAsyncTasks, defineAsyncTaskSlots } from '../../../js/core/async-task.js';
 import { State } from '../../../js/modules/multi-vari/domain/model.js';
 import {
-  analysisRun, buildStrips, errorTextOf, readInputs, warningText, RERUN_DELAY,
+  analysisRun, buildStrips, errorTextOf, fmt, pct, vcView, readInputs, warningText, RERUN_DELAY,
 } from '../../../js/modules/multi-vari/viewmodel/present.js';
 
 const ref = (col) => ({ instanceId: 'ws1', sheetId: 's1', columnId: col });
@@ -180,5 +180,41 @@ suite('Multi-Vari Viewmodel — Warnungstext', () => {
   test('Warnung ohne Grenze und verworfene Zeilen', () => {
     assertEqual(warningText({ limits: [] }, 'unbalanced', t), 'warn_unbalanced');
     assertEqual(warningText({ droppedRows: 3 }, 'droppedRows', t), 'warnDroppedRows{"count":3}');
+  });
+});
+
+suite('multi-vari: Zahlen nach App-Sprache', () => {
+  const result = {
+    vc: {
+      totalVariance: 4,
+      terms: [
+        { id: 'A', label: 'A', percent: 12.34, variance: 0.5 },
+        { id: 'Error', label: 'Error', percent: 87.66, variance: 3.5 },
+      ],
+    },
+  };
+
+  test('fmt: vier Stellen, Komma in de, Punkt in en, Strich ohne Wert', () => {
+    assertEqual(fmt(1.23456, 'de'), '1,2346');
+    assertEqual(fmt(1.23456, 'en'), '1.2346');
+    assertEqual(fmt(NaN, 'de'), '–');
+  });
+
+  test('pct: eine Stelle, Komma in de, Punkt in en', () => {
+    assertEqual(pct(12.34, 'de'), '12,3');
+    assertEqual(pct(12.34, 'en'), '12.3');
+    assertEqual(pct(undefined, 'en'), '–');
+  });
+
+  test('vcView: Summenzeile und größter Anteil in der Sprache', () => {
+    const de = vcView(result, t, 'de');
+    assertEqual(de.totalVariance, '4,0000');
+    assertEqual(de.totalSd, '2,0000');
+    assertEqual(de.totalPercent, '100,0');
+    assertEqual(de.largestPercent, '87,7 %');
+    const en = vcView(result, t, 'en');
+    assertEqual(en.totalVariance, '4.0000');
+    assertEqual(en.largestPercent, '87.7 %');
+    assertTrue(en.interpretation.includes('87.7'));
   });
 });
