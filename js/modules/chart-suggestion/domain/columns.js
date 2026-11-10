@@ -202,7 +202,7 @@ export function crossTabCategorical(colA, colB) {
  */
 export function toNum(v) {
   if (v == null || v === '') return NaN;
-  const n = parseNumber(v);
+  const n = parseNumber(/** @type {string|number} */ (v));
   return n === null ? NaN : n;
 }
 
