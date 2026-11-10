@@ -16,6 +16,7 @@ import { refToKey } from '../../../core/worksheet-columns.js';
  * @param {Array<*>} parts @param {Array<*>} refs @returns {Record<string,string>}
  */
 function referenceMapOf(parts, refs) {
+  /** @type {Record<string,string>} */
   const map = {};
   for (let i = 0; i < parts.length; i++) {
     if (blank(parts[i]) || blank(refs[i])) continue;
@@ -35,6 +36,7 @@ export function longRows({ parts, appraisers, ratings, references, replicates })
   if (!parts || !appraisers || !ratings) return null;
   const n = Math.min(parts.length, appraisers.length, ratings.length);
   const rows = [];
+  /** @type {Record<string,string>} */
   const referenceMap = {};
   for (let i = 0; i < n; i++) {
     if (blank(parts[i]) || blank(appraisers[i]) || blank(ratings[i])) continue;
@@ -52,7 +54,7 @@ export function longRows({ parts, appraisers, ratings, references, replicates })
 /**
  * Bezüge in der Reihenfolge der Spalten des Blatts (die Mehrfachauswahl liefert
  * die Klickreihenfolge).
- * @template {{ instanceId: string, sheetId: string, columnId: string }} R
+ * @template {{ instanceId: string, sheetId?: string, columnId: string }} R
  * @param {R[]} refs
  * @param {string[]} sheetKeys Schlüssel (`refToKey`) der Blattspalten in Blattreihenfolge
  * @returns {R[]}

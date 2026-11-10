@@ -11063,6 +11063,7 @@ export const AGENT_REGISTRY = {
   "msa-typ5": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -11078,132 +11079,136 @@ export const AGENT_REGISTRY = {
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
-      "setParam": {
+      "swapPositive": {
+        "target": "viewmodel",
         "params": [
           {
-            "name": "key",
-            "type": "'type'|'weights'|'layout'|'trials'|'ruleSet'|'alpha'|'positiveLevel'",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "welcher Parameter; die im Zustand zulässigen nennt `activeParams`"
-          },
-          {
-            "name": "value",
-            "type": "string|number",
-            "optional": false,
-            "help": "der Wert als Text oder Zahl (abgelegt als Text); Wertebereich je Schlüssel siehe `Params`, positiveLevel eine der Stufen aus `detectedLevels`"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Einen Parameter setzen. Ein neuer Merkmalstyp setzt die positive Stufe zurück.",
-        "keysOf": "Params",
-        "keys": {
-          "type": {
-            "type": "'binary'|'nominal'|'ordinal'",
-            "help": "Merkmalstyp"
-          },
-          "weights": {
-            "type": "'linear'|'quadratic'",
-            "help": "Gewichtung, nur ordinal",
-            "optional": true
-          },
-          "layout": {
-            "type": "'long'|'wide'",
-            "help": "Datenlayout"
-          },
-          "trials": {
-            "type": "string",
-            "help": "Versuche je Prüfer, nur breites Layout",
-            "optional": true
-          },
-          "ruleSet": {
-            "type": "'aiag'|'bosch'",
-            "help": "Urteilsregel"
-          },
-          "alpha": {
-            "type": "'0.01'|'0.05'|'0.10'",
-            "help": "Signifikanzniveau"
-          },
-          "positiveLevel": {
-            "type": "string",
-            "help": "positive Stufe, nur binär",
-            "optional": true
-          }
-        }
-      },
-      "setColumn": {
-        "params": [
-          {
-            "name": "slot",
-            "type": "'part'|'appraiser'|'rating'|'reference'|'replicate'",
-            "optional": false,
-            "help": "der Slot; `appraiser`, `rating` und `replicate` nur beim Layout long"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
-          }
-        ],
-        "returns": "void",
-        "help": "Eine Spalte einem Slot zuweisen."
-      },
-      "scheduleAnalysis": {
-        "params": [],
-        "returns": "void",
-        "help": "Die Rechnung nach kurzer Ruhezeit anstoßen."
-      },
-      "runAnalysis": {
-        "params": [],
-        "returns": "void",
-        "help": "Baut das Long-Format-Ratings-Array (aus dem langen oder breiten Datenlayout) und ruft die Engine. Aktualisiert `this.result` und triggert das Chart-Rendering."
-      },
-      "clearResults": {
-        "params": [],
-        "returns": "void",
-        "help": "Das Ergebnis und die Diagramme verwerfen; die Eingaben bleiben."
+        "help": "",
+        "keysOf": "swapPositive",
+        "keysHelp": "actions.swapPositive.params",
+        "keys": {}
       }
     },
     "fields": {
-      "params": {
-        "type": "object",
-        "help": "the entered parameters (type, positiveLevel, weights, alpha, ordinalOrder, ruleSet, layout, trials); ordinalOrder cannot be set through the surface",
-        "bulk": false,
-        "derived": true
+      "type": {
+        "type": "'binary'|'nominal'|'ordinal'",
+        "help": "",
+        "bulk": false
       },
-      "columns": {
-        "type": "object",
-        "help": "the chosen columns `{ part, appraiser, rating, reference, replicate, ratings }`, each a `{ instanceId, sheetId, columnId }` or null; `ratings` is a list",
-        "bulk": false,
-        "derived": true
+      "positiveLevel": {
+        "type": "string|null",
+        "help": "",
+        "bulk": false
       },
-      "detectedLevels": {
-        "type": "string[]",
-        "help": "the rating levels found in the chosen rating column(s); the values `setParam('positiveLevel', …)` accepts",
-        "bulk": false,
-        "derived": true
+      "weights": {
+        "type": "'linear'|'quadratic'",
+        "help": "",
+        "bulk": false
       },
-      "activeParams": {
-        "type": "string[]",
-        "help": "the keys `setParam` accepts in the current state (`weights` only for the ordinal type, `trials` only for the wide layout, `positiveLevel` only for the binary type with detected levels)",
-        "bulk": false,
-        "derived": true
+      "alpha": {
+        "type": "0.01|0.05|0.1",
+        "help": "",
+        "bulk": false
       },
-      "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumn` accepts in the current state; the matrix slot `ratings` of the wide layout is not among them, so the module cannot be fully operated through the surface in the wide layout",
-        "bulk": false,
-        "derived": true
+      "ruleSet": {
+        "type": "'aiag'|'bosch'",
+        "help": "",
+        "bulk": false
       },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
-        "bulk": false,
-        "derived": true
+      "layout": {
+        "type": "'long'|'wide'",
+        "help": "",
+        "bulk": false
       },
-      "result": {
-        "type": "Result|null",
-        "help": "the computed result; null while no rows can be evaluated; with invalid inputs only meta, the reason under meta.errors",
+      "trials": {
+        "type": "number",
+        "help": "",
+        "bulk": false
+      },
+      "part": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
+        "bulk": false,
+        "rules": [
+          "columnRef"
+        ]
+      },
+      "appraiser": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
+        "bulk": false,
+        "rules": [
+          "columnRef"
+        ]
+      },
+      "rating": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
+        "bulk": false,
+        "rules": [
+          "columnRef"
+        ]
+      },
+      "reference": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
+        "bulk": false,
+        "rules": [
+          "columnRef"
+        ]
+      },
+      "replicate": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }|null",
+        "help": "",
+        "bulk": false,
+        "rules": [
+          "columnRef"
+        ]
+      },
+      "ratings": {
+        "type": "{ instanceId: string, sheetId?: string, columnId: string }[]",
+        "help": "",
+        "bulk": false,
+        "rules": [
+          "columnRef"
+        ]
+      },
+      "exampleWorksheetId": {
+        "type": "string|null",
+        "help": "",
+        "bulk": false
+      },
+      "levels": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "Levels",
+        "keys": {
+          "all": {
+            "type": "string[]",
+            "help": "vorkommende Stufen, zahlenbewusst sortiert"
+          },
+          "positive": {
+            "type": "string|null",
+            "help": "wirksame positive Stufe (i. O.)"
+          },
+          "negative": {
+            "type": "string|null",
+            "help": "wirksame negative Stufe (n. i. O.), null bei nur einer Stufe"
+          }
+        }
+      },
+      "analysis": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Result",
@@ -11211,6 +11216,7 @@ export const AGENT_REGISTRY = {
           "meta": {
             "type": "Meta",
             "help": "Rahmendaten, Warnungen, Fehler",
+            "optional": true,
             "keysOf": "Meta",
             "keys": {
               "type": {
@@ -11891,10 +11897,44 @@ export const AGENT_REGISTRY = {
                 }
               }
             }
+          },
+          "invalid": {
+            "type": "{ key: string, vars: object|null }",
+            "help": "Ablehnung der Eingaben (Textschlüssel und Werte)",
+            "optional": true
+          },
+          "error": {
+            "type": "string",
+            "help": "Meldung der gescheiterten Rechnung",
+            "optional": true
           }
         }
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "kappaEdits",
+      "effectivenessEdits",
+      "sdtEdits",
+      "runStripEdits",
+      "heatmapEdits"
+    ],
+    "settable": [
+      "type",
+      "positiveLevel",
+      "weights",
+      "alpha",
+      "ruleSet",
+      "layout",
+      "trials",
+      "part",
+      "appraiser",
+      "rating",
+      "reference",
+      "replicate",
+      "ratings",
+      "exampleWorksheetId"
+    ]
   },
   "msa-typ6": {
     "tagged": true,

@@ -35,6 +35,11 @@
     "description": "Messmittelanalyse Typ 2 (mit Prüfer, Gage R&R) und Typ 3 (ohne Prüfer, automatisierte Messsysteme)",
     "whenToUse": "Wenn ein Messsystem mit mehreren Teilen (und meist mehreren Prüfern) bewertet werden soll: eine gekreuzte Studie liefert Wiederholbarkeit und Reproduzierbarkeit (Gage R&R) per ANOVA; ohne Prüferspalte rechnet das Modul als Typ 3 für automatisierte Messsysteme — nicht für die Eignung eines einzelnen Messmittels an einem Normal, dafür ist Typ 1 da. Setzt Teile, optional Prüfer und die Messwerte als Spalten einer Datensammlung voraus."
   },
+  "msa-typ5": {
+    "name": "MSA Typ 5 (attributiv)",
+    "description": "Attributive Prüfmittel-Fähigkeit — mehrere Prüfer, Kappa-basierte Übereinstimmung (Cohen, Fleiss, weighted)",
+    "whenToUse": "Wenn ein attributives Prüfmittel (gut/schlecht, Klassen, Ordnungsstufen) bewertet werden soll: mehrere Prüfer bewerten Teile, auch wiederholt, gegen einen optionalen Referenzwert. Ergebnis sind Kappa-Übereinstimmung, Effektivität und ein Urteil nach AIAG oder Bosch — nicht für messende Merkmale, dafür gelten die Typen 1 bis 3. Braucht eine Datensammlung mit Teile-, Prüfer- und Bewertungsspalte; das breite Layout (eine Spalte je Prüfer und Versuch) ist über die Fläche nicht vollständig bedienbar."
+  },
   "multi-vari": {
     "name": "Multi-Vari-Diagramm",
     "description": "Zeigt Einzelmessungen nach bis zu vier Einflussgrößen gestaffelt und zerlegt die Streuung in Varianzkomponenten — macht sichtbar, wo die Streuung wirklich entsteht.",

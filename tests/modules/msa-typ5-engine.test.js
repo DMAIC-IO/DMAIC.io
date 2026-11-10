@@ -969,10 +969,10 @@ suite('msa-typ5-engine — verdict Bosch', () => {
   });
 });
 
-const loadI18n = async (lang) => (await fetch(new URL(`../../i18n/${lang}.json`, import.meta.url))).json();
+const loadUi = async (lang) => (await fetch(new URL(`../../js/modules/msa-typ5/resources/i18n/ui.${lang}.json`, import.meta.url))).json();
 const i18nCriteria = {
-  de: (await loadI18n('de')).modules['msa-typ5'].criteria,
-  en: (await loadI18n('en')).modules['msa-typ5'].criteria,
+  de: (await loadUi('de')).criteria,
+  en: (await loadUi('en')).criteria,
 };
 
 suite('msa-typ5 — labels of the Bosch κ sources', () => {

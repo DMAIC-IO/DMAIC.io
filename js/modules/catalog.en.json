@@ -35,6 +35,11 @@
     "description": "Measurement System Analysis Type 2 (with operator, Gage R&R) and Type 3 (no operator, automated measurement systems)",
     "whenToUse": "When a measurement system with several parts (and usually several appraisers) should be assessed: a crossed study gives repeatability and reproducibility (Gage R&R) by ANOVA; without an operator column the module computes as type 3 for automated measurement systems — not for the capability of a single gage on a standard, which type 1 covers. Requires parts, optionally appraisers, and the measurements as columns of a data collection."
   },
+  "msa-typ5": {
+    "name": "MSA Type 5 (attribute)",
+    "description": "Attribute Measurement System Analysis — multiple appraisers, kappa-based agreement (Cohen, Fleiss, weighted)",
+    "whenToUse": "When an attribute measurement system (good/bad, classes, ordinal levels) is to be assessed: several appraisers rate parts, repeatedly, against an optional reference. The result is kappa agreement, effectiveness and a verdict by AIAG or Bosch rules — not for measured characteristics, which types 1 to 3 cover. Requires a data collection with a part, an appraiser and a rating column; the wide layout (one column per appraiser and trial) cannot be fully operated through the surface."
+  },
   "multi-vari": {
     "name": "Multi-Vari Chart",
     "description": "Stages single measurements across up to four factors and splits the spread into variance components — shows where the variation actually comes from.",

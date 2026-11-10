@@ -70,9 +70,7 @@ export const ANCHOR_EXEMPTIONS = {
     { match: "t('violations.description')", reason: 'Klartext der Regeln derselben Zeile; der Satz steht an der Spalte Regeln', count: 1 },
   ],
   'msa-typ5': [
-    { match: 'name="msa5-type"', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 1 },
-    { match: 'name="msa5-weights"', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 1 },
-    { match: "t('labels.ratingColumns')", reason: 'Matrix-Slot des breiten Layouts, über die Agentenfläche noch nicht setzbar (Roadmap: setRatingColumns); ohne Agentenaktion kein gemeinsamer Satz', count: 1 },
+    { match: 'class="msa-typ5__choice"', reason: 'Wahlmöglichkeit einer Gruppe; der Satz steht am Gruppentitel', count: 5 },
     { match: "t('table.verdict')", reason: 'Ampel aus κ nach den Richtwerten derselben Zeile, kein eigener Wert; der Satz steht an der κ-Spalte', count: 2 },
     { match: '<th x-text="a">', reason: 'eine Spalte je Prüfer, Kopf ist der Prüfername (Daten, keine Beschriftung)', count: 1 },
   ],

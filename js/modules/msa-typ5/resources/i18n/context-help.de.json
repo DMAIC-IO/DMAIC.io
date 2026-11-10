@@ -57,7 +57,10 @@
   },
   "actions": {
     "swapPositive": {
-      "help": "Tauscht die positive und die negative Stufe bei binären Daten: die bisher negative Stufe gilt danach als positiv (i.O.). Ohne zwei Stufen in den Daten wird der Tausch abgelehnt."
+      "help": "Tauscht die positive und die negative Stufe bei binären Daten: die bisher negative Stufe gilt danach als positiv (i.O.). Ohne zwei Stufen in den Daten wird der Tausch abgelehnt.",
+      "params": {
+        "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben."
+      }
     }
   },
   "types": {

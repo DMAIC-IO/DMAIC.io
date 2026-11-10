@@ -5,12 +5,14 @@ import { REFS } from '../../js/core/references-registry.generated.js';
 import attributeControlChartRefs from '../../js/modules/attribute-control-chart/resources/data/references.json' with { type: 'json' };
 import hypothesisTestRefs from '../../js/modules/hypothesis-test/resources/data/references.json' with { type: 'json' };
 import msaTyp2Refs from '../../js/modules/msa-typ2/resources/data/references.json' with { type: 'json' };
+import msaTyp5Refs from '../../js/modules/msa-typ5/resources/data/references.json' with { type: 'json' };
 
 /** Umgestellte Module führen ihre Quellen in resources/data/references.json, nicht in REFS. */
 const JSON_REFS = {
   'attribute-control-chart': resolveReferences(attributeControlChartRefs.references ?? []),
   'hypothesis-test': resolveReferences(hypothesisTestRefs.references ?? []),
   'msa-typ2': resolveReferences(msaTyp2Refs.references ?? []),
+  'msa-typ5': resolveReferences(msaTyp5Refs.references ?? []),
 };
 
 suite('references-registry', () => {

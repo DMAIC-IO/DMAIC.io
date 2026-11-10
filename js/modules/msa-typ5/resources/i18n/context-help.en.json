@@ -57,7 +57,10 @@
   },
   "actions": {
     "swapPositive": {
-      "help": "Swaps the positive and the negative level for binary data: the formerly negative level then counts as positive (OK). Rejected when the data does not have two levels."
+      "help": "Swaps the positive and the negative level for binary data: the formerly negative level then counts as positive (OK). Rejected when the data does not have two levels.",
+      "params": {
+        "command": "An empty object; the command takes no arguments."
+      }
     }
   },
   "types": {
