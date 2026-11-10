@@ -109,7 +109,8 @@ export function formatNumber(value, lang, opts = {}) {
       fmt = new Intl.NumberFormat(lang, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
       _fixedFormatters.set(key, fmt);
     }
-    return fmt.format(value);
+    // Erst nach toFixed-Regeln runden (Binärfälle wie 1.005 → "1.00"), dann gruppieren.
+    return fmt.format(Math.abs(value) >= 1e21 ? value : Number(value.toFixed(decimals)));
   }
 
   let s;

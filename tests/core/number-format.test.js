@@ -114,3 +114,21 @@ suite('formatPercent, decimalSeparator, roundTo', () => {
     assertEqual(roundTo(0.123456, 4), 0.1235);
   });
 });
+
+suite('formatNumber — decimals entspricht toFixed (Binär-Halbfälle)', () => {
+  test('1.005, 2.675, 8.345 mit 2 Stellen, de/en, beide Profile', () => {
+    for (const v of [1.005, 2.675, 8.345]) {
+      for (const lang of ['de', 'en']) {
+        const sep = lang === 'de' ? ',' : '.';
+        const want = v.toFixed(2).replace('.', sep);
+        assertEqual(formatNumber(v, lang, { decimals: 2 }), want, `output ${v} ${lang}`);
+        assertEqual(formatNumber(v, lang, { profile: 'input', decimals: 2 }), want, `input ${v} ${lang}`);
+      }
+    }
+  });
+  test('precision entspricht toPrecision', () => {
+    assertEqual(formatNumber(1.005, 'en', { profile: 'input', precision: 3 }), (1.005).toPrecision(3));
+    assertEqual(formatNumber(1234.5678, 'de', { profile: 'input', precision: 4 }), (1234.5678).toPrecision(4).replace('.', ','));
+  });
+});
+
