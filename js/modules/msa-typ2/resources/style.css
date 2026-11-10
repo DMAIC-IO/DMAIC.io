@@ -50,9 +50,17 @@
 /* ═══ FELDMELDUNG ═══ */
 
 .msa-typ2__field-error {
-  margin-top: var(--spacing-xs);
   font-size: var(--font-size-xs);
   color: var(--color-error);
+}
+
+/* Meldung unter einem .field-grid: zieht sich über den unteren Abstand der
+   Feldgruppen und den gap von .dmike-split__input hoch, sitzt also so dicht
+   an den Eingaben wie eine Meldung innerhalb einer Feldgruppe; nach unten
+   bleibt der übliche Zeilenabstand. */
+.msa-typ2__field-error--grid {
+  display: block;
+  margin: calc(var(--spacing-xs) - var(--spacing-sm) - var(--spacing-m)) 0 var(--spacing-sm);
 }
 
 /* ═══ STATS / ANOVA TABLE ═══ */

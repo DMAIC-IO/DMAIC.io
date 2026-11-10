@@ -26,7 +26,7 @@
         {
           "type": "definition",
           "term": "GR&R in % (von Streuung oder Toleranz)",
-          "content": "Verhältnis der Messsystem-Streuung (k·σ_GRR) zur Studienstreuung (%Studienstreuung) oder zur Toleranz T = OGW − UGW (%Toleranz). Das Urteil stützt sich auf eine dieser beiden Bezugsgrößen, die Urteilsbasis: < 10 % gilt als akzeptabel, 10–30 % bedingt akzeptabel, ab 30 % nicht akzeptabel."
+          "content": "Verhältnis der Messsystem-Streuung (k·σ_GRR) zur Studienstreuung (%Studienstreuung) oder zur Toleranz T = OSG − USG (%Toleranz). Das Urteil stützt sich auf eine dieser beiden Bezugsgrößen, die Urteilsbasis: < 10 % gilt als akzeptabel, 10–30 % bedingt akzeptabel, ab 30 % nicht akzeptabel."
         },
         {
           "type": "definition",
@@ -82,7 +82,7 @@
             "Ergebnisse mit der ANOVA-Methode auswerten (nicht Range-Methode für moderne Studien).",
             "GR&R-Prozent, ndc und Komponentenanteile bewerten.",
             "Faktor k: 6 (99,73 %) ist der aktuelle Standard (AIAG MSA 4. Aufl. 2010, Minitab, Bosch Heft 10 Verfahren 2). 5,15 (99 %) ist die Konvention der AIAG 3. Aufl. und bleibt wählbar; früher gespeicherte Studien behalten 5,15.",
-            "Urteilsbasis „Automatisch“: %Toleranz, wenn UGW und OGW gesetzt sind (Bosch: Bezugsgröße T, Grenzen 10 %/30 %), sonst %Studienstreuung. Beide Bezugsgrößen lassen sich auch fest wählen.",
+            "Urteilsbasis „Automatisch“: %Toleranz, wenn USG und OSG gesetzt sind (Bosch: Bezugsgröße T, Grenzen 10 %/30 %), sonst %Studienstreuung. Beide Bezugsgrößen lassen sich auch fest wählen.",
             "Historisches Prozess-σ (optional): ergänzt die Spalte %Prozess = σ/σ_hist·100. Sie ist rein informativ, darf über 100 % liegen und ändert weder Urteil noch ndc.",
             "Bei Scheitern Ursache klären (Gerät, Bediener, Vorrichtung, Messverfahren) und nachbessern."
           ]

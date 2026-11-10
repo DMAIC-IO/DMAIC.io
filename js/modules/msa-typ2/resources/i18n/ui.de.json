@@ -19,7 +19,7 @@
   "kOption6": "6 (99,73 %)",
   "kOption515": "5,15 (99 %, AIAG 3. Aufl.)",
   "verdictBasisLabel": "Urteilsbasis",
-  "verdictBasisAuto": "Automatisch (Toleranz, falls UGW/OGW)",
+  "verdictBasisAuto": "Automatisch (Toleranz, falls USG/OSG)",
   "verdictBasisTolerance": "Toleranz",
   "verdictBasisStudyVar": "Studienstreuung",
   "basisPrefix": "Bezug",
@@ -85,6 +85,6 @@
   "errHistSigmaInvalid": "Historisches Prozess-σ muss eine positive Zahl sein.",
   "errCompute": "Gage R&R konnte nicht berechnet werden: {msg}",
   "invariants": {
-    "limitsOrder": "LSL muss kleiner als USL sein"
+    "limitsOrder": "USG muss kleiner als OSG sein"
   }
 }
