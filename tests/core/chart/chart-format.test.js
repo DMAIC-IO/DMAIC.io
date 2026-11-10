@@ -58,3 +58,50 @@ suite('chart-core formatPct — share 0…1, locale-aware', () => {
     assertTrue(threw, 'formatPct without locale must throw a TypeError');
   });
 });
+
+suite('chart-core formatNum — Ausgabe-Pins (de/en unverändert)', () => {
+  const PINS = {
+  "0.012345|null|de": "0,0123",
+  "0.012345|null|en": "0.0123",
+  "0.012345|0|de": "0",
+  "0.012345|0|en": "0",
+  "0.012345|2|de": "0,01",
+  "0.012345|2|en": "0.01",
+  "1.23456|null|de": "1,235",
+  "1.23456|null|en": "1.235",
+  "1.23456|0|de": "1",
+  "1.23456|0|en": "1",
+  "1.23456|2|de": "1,23",
+  "1.23456|2|en": "1.23",
+  "999.95|null|de": "1.000",
+  "999.95|null|en": "1,000",
+  "999.95|0|de": "1.000",
+  "999.95|0|en": "1,000",
+  "999.95|2|de": "999,95",
+  "999.95|2|en": "999.95",
+  "1234.5|null|de": "1.235",
+  "1234.5|null|en": "1,235",
+  "1234.5|0|de": "1.235",
+  "1234.5|0|en": "1,235",
+  "1234.5|2|de": "1.234,50",
+  "1234.5|2|en": "1,234.50",
+  "-98765.4|null|de": "-98.765",
+  "-98765.4|null|en": "-98,765",
+  "-98765.4|0|de": "-98.765",
+  "-98765.4|0|en": "-98,765",
+  "-98765.4|2|de": "-98.765,40",
+  "-98765.4|2|en": "-98,765.40",
+  };
+  for (const [key, expected] of Object.entries(PINS)) {
+    const [v, d, l] = key.split('|');
+    test(`formatNum(${v}, ${d}, ${l}) = ${expected}`, () => {
+      assertEqual(formatNum(Number(v), d === 'null' ? null : Number(d), l), expected);
+    });
+  }
+  test('NaN bleibt "NaN"', () => {
+    assertEqual(formatNum(NaN, 2, 'de'), 'NaN');
+  });
+  test('unbekannte Sprache wirft nicht', () => {
+    assertEqual(typeof formatNum(1234.5, 1, 'fr'), 'string');
+  });
+});

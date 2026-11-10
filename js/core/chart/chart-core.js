@@ -3,6 +3,8 @@
  * No DOM state, no side effects. All functions are stateless and testable in isolation.
  */
 
+import { formatNumber, formatPercent } from '../number-format.js';
+
 // ── Axis Ticks ───────────────────────────────────────────────────────
 
 /**
@@ -90,36 +92,18 @@ function requireLocale(fn, locale) {
  */
 export function formatNum(val, decimals = null, locale) {
   requireLocale('formatNum', locale);
-  let str;
-  if (decimals === null || decimals === undefined) {
-    if (Math.abs(val) >= 1000) str = val.toFixed(0);
-    else if (Math.abs(val) >= 1) str = parseFloat(val.toPrecision(4)).toString();
-    else str = parseFloat(val.toPrecision(3)).toString();
-  } else {
-    str = val.toFixed(decimals);
+  if (!Number.isFinite(val)) return String(val);
+  if (decimals !== null && decimals !== undefined) {
+    return formatNumber(val, locale, { decimals });
   }
-  if (locale === 'de') {
-    // Swap . and , for German locale
-    // First replace . with placeholder, then handle
-    const parts = str.split('.');
-    if (parts.length === 2) {
-      str = `${parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.')  },${  parts[1]}`;
-    } else {
-      str = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    }
-  } else {
-    const parts = str.split('.');
-    if (parts.length === 2) {
-      str = `${parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')  }.${  parts[1]}`;
-    } else {
-      str = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    }
-  }
-  return str;
+  // Auto precision: 0 decimals from 1000 up, else 4 (≥ 1) or 3 significant digits.
+  const rounded = Math.abs(val) >= 1000
+    ? Number(val.toFixed(0))
+    : parseFloat(val.toPrecision(Math.abs(val) >= 1 ? 4 : 3));
+  if (/e/i.test(String(rounded))) return formatNumber(rounded, locale);
+  const d = (String(rounded).split('.')[1] || '').length;
+  return formatNumber(rounded, locale, { decimals: d });
 }
-
-/** Cache of Intl percent formatters, keyed by `${locale}|${decimals}`. */
-const _pctFormatters = new Map();
 
 /**
  * Format a share as a percentage in the given locale.
@@ -138,15 +122,7 @@ const _pctFormatters = new Map();
 export function formatPct(share, decimals, locale) {
   requireLocale('formatPct', locale);
   if (!Number.isFinite(share)) return '—';
-  const key = `${locale}|${decimals}`;
-  let nf = _pctFormatters.get(key);
-  if (!nf) {
-    nf = new Intl.NumberFormat(locale, {
-      style: 'percent', minimumFractionDigits: decimals, maximumFractionDigits: decimals,
-    });
-    _pctFormatters.set(key, nf);
-  }
-  return nf.format(share);
+  return formatPercent(share, locale, decimals);
 }
 
 // ── SVG Helpers ──────────────────────────────────────────────────────

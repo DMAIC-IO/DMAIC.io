@@ -69,12 +69,12 @@ function fixtureConfig(mode, extra) {
 }
 
 /** Mount a CumulativeCost chart in a sized, attached container; force render. */
-function mount(cfg) {
+function mount(cfg, ctx = { language: 'de' }) {
   const host = document.createElement('div');
   host.style.width = '900px';
   host.style.height = '200px';
   document.body.appendChild(host);
-  const chart = new CumulativeCost(host, cfg, { language: 'de' });
+  const chart = new CumulativeCost(host, cfg, ctx);
   chart.render();
   return { host, chart, svg: host.querySelector('svg') };
 }
@@ -224,6 +224,15 @@ suite('Cumulative-Cost type — geometry parity', () => {
     const y = parseFloat(peakLbl.getAttribute('y'));
     // Label baseline sits a few px below the plot top (y = pa.y + 4).
     assertTrue(Math.abs(y - (pa.y + 4)) <= 2, `peak label y ${y.toFixed(2)} ≈ plot top ${pa.y + 4}`);
+    chart.destroy();
+  });
+});
+
+suite('Cumulative-Cost type — Sprache aus chart.locale', () => {
+  test('locale en schlägt cfg.lang de bei den Achsenbeschriftungen', () => {
+    const { chart, svg } = mount(fixtureConfig('cumulative', { peakMoney: 1234567, lang: 'de' }), { language: 'en' });
+    const texts = Array.from(svg.querySelectorAll('text')).map((t) => t.textContent);
+    assertTrue(texts.some((x) => x.startsWith('1,234,567')), `en-Beschriftung erwartet, war: ${texts.join(' | ')}`);
     chart.destroy();
   });
 });

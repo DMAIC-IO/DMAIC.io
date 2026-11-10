@@ -142,3 +142,14 @@ suite('Stats panel — Intervallgrenzen ab 1e6 mit lang', () => {
     assertEqual(b, a.replaceAll('.', ','));
   });
 });
+
+suite('Stats panel — Sprache aus i18n', () => {
+  test('ohne lang, aber mit i18n.getLanguage() "de": Komma', () => {
+    const stats = computeStats([1, 2, 3, 4]);
+    const rows = [{ name: 'A', color: 'red', stats, ci: computeCI(stats, 0.95) }];
+    const host = document.createElement('div');
+    const i18n = { t: (k) => k, getLanguage: () => 'de' };
+    renderStatsTable(host, rows, { confLevel: 95, i18n });
+    assertEqual(host.querySelector('td[data-stat="mean"]').textContent.startsWith('2,5000'), true, 'Mittelwert');
+  });
+});

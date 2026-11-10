@@ -35,7 +35,7 @@
 import ChartBase from '../chart-base.js';
 import { h } from '../../dom.js';
 import { icon } from '../../icon.js';
-import { svgEl, svgText, resolveColor } from '../chart-core.js';
+import { svgEl, svgText, resolveColor, formatNum } from '../chart-core.js';
 
 const FONT_MAIN = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
 const FONT_MONO = "'SF Mono', 'Cascadia Code', Consolas, 'Liberation Mono', monospace";
@@ -178,7 +178,7 @@ export default class TrendChart extends ChartBase {
         const py = yPos(p.y);
         svgEl('circle', { cx: px, cy: py, r: 4.5, fill: '#fff' }, plotGroup);
         svgEl('circle', { cx: px, cy: py, r: 3, fill: col }, plotGroup);
-        svgText(p.y.toFixed(1), {
+        svgText(formatNum(p.y, 1, this.locale), {
           x: px, y: py - 7,
           'text-anchor': 'middle', 'font-size': '10', 'font-weight': 'bold',
           fill: col, 'font-family': FONT_MONO,
@@ -293,7 +293,7 @@ export default class TrendChart extends ChartBase {
     const node = h('div', null,
       dot,
       ` ${p.name} `,
-      h('b', null, p.val.toFixed(1)),
+      h('b', null, formatNum(p.val, 1, this.locale)),
     );
     return [{ node, px: p.px, py: p.py, color: p.color }];
   }

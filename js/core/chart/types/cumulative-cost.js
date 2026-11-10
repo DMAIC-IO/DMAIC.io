@@ -40,6 +40,7 @@
 
 import ChartBase from '../chart-base.js';
 import { svgEl, svgText, resolveColor } from '../chart-core.js';
+import { formatNumber } from '../../number-format.js';
 
 const FONT_MAIN = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
 const FONT_MONO = "'SF Mono', 'Cascadia Code', Consolas, 'Liberation Mono', monospace";
@@ -206,8 +207,8 @@ export default class CumulativeCost extends ChartBase {
     }
 
     // ── LEFT axis labels (money) ───────────────────────────────────
-    const fmtMoney = (v) => v.toLocaleString(cfg.lang === 'de' ? 'de-DE' : 'en-GB', { maximumFractionDigits: 0 });
-    const fmtHours = (v) => v.toLocaleString(cfg.lang === 'de' ? 'de-DE' : 'en-GB', { maximumFractionDigits: 1 });
+    const fmtMoney = (v) => formatNumber(Math.round(v), this.locale, { decimals: 0 });
+    const fmtHours = (v) => formatNumber(Math.round(v * 10) / 10, this.locale);
     svgText(`${fmtMoney(cfg.peakMoney || 0)} ${cfg.moneyUnit}`, {
       x: pa.x - 4, y: pa.y + 4,
       'font-size': '10', 'text-anchor': 'end', fill: moneyColor, 'font-family': FONT_MONO,

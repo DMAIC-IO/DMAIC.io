@@ -24,6 +24,7 @@
 import { descriptiveStats } from '../engines/normality-test-engine.js';
 import { tInv, chi2Inv } from '../engines/math-utils.js';
 import { h } from './dom.js';
+import { formatNumber } from './number-format.js';
 
 // ─── Helpers ────────────────────────────────────────────────
 
@@ -43,16 +44,14 @@ function percentile(sorted, p) {
 }
 
 /**
- * Feste Nachkommastellen, Dezimalzeichen nach Sprache; ohne `lang` wie toFixed.
+ * Feste Nachkommastellen, Dezimalzeichen nach Sprache; ohne `lang` mit Punkt.
  * @param {number} v
  * @param {number} digits
  * @param {string} [lang]
  * @returns {string}
  */
 function fixed(v, digits, lang) {
-  return lang
-    ? v.toLocaleString(lang, { minimumFractionDigits: digits, maximumFractionDigits: digits, useGrouping: false })
-    : v.toFixed(digits);
+  return formatNumber(v, lang || 'en', { profile: 'input', decimals: digits });
 }
 
 /**
@@ -66,10 +65,7 @@ function fmtCI(v, lang) {
   const abs = Math.abs(v);
   if (abs === 0) return '0';
   if (abs < 0.001 || abs >= 1e6) {
-    const text = v.toPrecision(4);
-    if (!lang) return text;
-    const sep = new Intl.NumberFormat(lang).formatToParts(1.1).find((p) => p.type === 'decimal')?.value ?? '.';
-    return text.replace('.', sep);
+    return formatNumber(v, lang || 'en', { profile: 'input', precision: 4 });
   }
   return fixed(v, 4, lang);
 }
@@ -209,7 +205,7 @@ const DEFAULT_COLUMNS = [
  * @param {number} [options.confLevel=95] - Confidence level as percentage (for label)
  * @param {Array}  [options.columns] - Column subset (default: all 10 columns)
  * @param {string} [options.cssPrefix='dmike'] - CSS class prefix for BEM overrides
- * @param {string} [options.lang] - Sprache für das Dezimalzeichen (z. B. 'de' → Komma); ohne: Punkt wie toFixed
+ * @param {string} [options.lang] - Sprache für das Dezimalzeichen (z. B. 'de' → Komma); ohne: `i18n.getLanguage()`, sonst Punkt
  */
 export function renderStatsTable(container, seriesStats, options = {}) {
   if (!container) return;
@@ -226,7 +222,7 @@ export function renderStatsTable(container, seriesStats, options = {}) {
   const confPct = options.confLevel ?? 95;
   const cols = options.columns || DEFAULT_COLUMNS;
   const prefix = options.cssPrefix || 'dmike';
-  const lang = options.lang;
+  const lang = options.lang ?? options.i18n?.getLanguage?.();
 
   const ciTitle = t('ciTitle', { n: confPct });
 
