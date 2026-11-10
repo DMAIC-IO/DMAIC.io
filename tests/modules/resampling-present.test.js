@@ -44,16 +44,34 @@ function kSummary() {
 
 suite('resampling-present — formatting', () => {
   test('fmt, fmtP, fmtInterval', () => {
-    assertEqual(fmt(1.23456), '1.2346');
-    assertEqual(fmt(2, 1), '2.0');
-    assertEqual(fmt(null), '–');
-    assertEqual(fmt(NaN), '–');
-    assertEqual(fmt(Infinity), '–');
-    assertEqual(fmtP(0.03125), '0.0313');
-    assertEqual(fmtP(0.00001), '< 0.0001');
-    assertEqual(fmtP(null), '–');
-    assertEqual(fmtInterval([1, 2.5]), '[1.0000; 2.5000]');
-    assertEqual(fmtInterval(null), '–');
+    assertEqual(fmt(1.23456, 'en'), '1.2346');
+    assertEqual(fmt(2, 'en', 1), '2.0');
+    assertEqual(fmt(null, 'en'), '–');
+    assertEqual(fmt(NaN, 'en'), '–');
+    assertEqual(fmt(Infinity, 'en'), '–');
+    assertEqual(fmtP(0.03125, 'en'), '0.0313');
+    assertEqual(fmtP(0.00001, 'en'), '< 0.0001');
+    assertEqual(fmtP(null, 'en'), '–');
+    assertEqual(fmtInterval([1, 2.5], 'en'), '[1.0000; 2.5000]');
+    assertEqual(fmtInterval(null, 'en'), '–');
+  });
+  test('de: Dezimalkomma, Gruppierung, Grenzfall p', () => {
+    assertEqual(fmt(1.23456, 'de'), '1,2346');
+    assertEqual(fmt(1234.5, 'de', 1), '1.234,5');
+    assertEqual(fmtP(0.03125, 'de'), '0,0313');
+    assertEqual(fmtP(0.00001, 'de'), '< 0,0001');
+    assertEqual(fmtInterval([1, 2.5], 'de'), '[1,0000; 2,5000]');
+    assertEqual(fmt(null, 'de'), '–');
+  });
+  test('en: Wert >= 1000 wird gruppiert', () => {
+    assertEqual(fmt(1234.5, 'en'), '1,234.5000');
+  });
+  test('resultView in de', () => {
+    const v = resultView(two(), { ciMethod: 'bca', target: '', lang: 'de' });
+    assertEqual(v.estimate, '1,5000');
+    assertEqual(v.interval, '[1,1000; 2,2000]');
+    assertEqual(v.test.pValue, '0,0312');
+    assertEqual(resultView(kSummary(), { ciMethod: 'percentile', target: '', lang: 'de' }).test.pValue, '< 0,0001');
   });
   test('statisticKey', () => {
     assertEqual(statisticKey('mean'), 'statMean');
@@ -64,10 +82,10 @@ suite('resampling-present — formatting', () => {
 
 suite('resampling-present — resultView', () => {
   test('null summary → null', () => {
-    assertEqual(resultView(null, { ciMethod: 'bca', target: '' }), null);
+    assertEqual(resultView(null, { ciMethod: 'bca', target: '', lang: 'en' }), null);
   });
   test('one sample: estimate rows, chosen interval, decision against the target', () => {
-    const v = resultView(one(), { ciMethod: 'bca', target: '' });
+    const v = resultView(one(), { ciMethod: 'bca', target: '', lang: 'en' });
     assertEqual(v.hasBoot, true);
     assertEqual(v.hasTest, false);
     assertEqual(v.estimate, '1.5000');
@@ -75,32 +93,32 @@ suite('resampling-present — resultView', () => {
     assertEqual(v.bias, '-0.0100');
     assertEqual(v.interval, '[1.1000; 2.2000]');
     assertEqual(v.decisionKey, null);
-    assertEqual(resultView(one(), { ciMethod: 'percentile', target: '' }).interval, '[1.0000; 2.0000]');
-    assertEqual(resultView(one(), { ciMethod: 'bca', target: '3' }).decisionKey, 'decisionReject');
-    assertEqual(resultView(one(), { ciMethod: 'bca', target: '1,5' }).decisionKey, 'decisionRetain');
-    assertEqual(resultView(one(), { ciMethod: 'bca', target: 'abc' }).decisionKey, null);
+    assertEqual(resultView(one(), { ciMethod: 'percentile', target: '', lang: 'en' }).interval, '[1.0000; 2.0000]');
+    assertEqual(resultView(one(), { ciMethod: 'bca', target: '3', lang: 'en' }).decisionKey, 'decisionReject');
+    assertEqual(resultView(one(), { ciMethod: 'bca', target: '1,5', lang: 'en' }).decisionKey, 'decisionRetain');
+    assertEqual(resultView(one(), { ciMethod: 'bca', target: 'abc', lang: 'en' }).decisionKey, null);
   });
   test('BCa fallback flag only shows for the BCa method', () => {
     const s = one({ boot: { estimate: 1, se: 0, bias: 0, ci: { percentile: [1, 1], bca: [1, 1], bcaFallback: true }, bins: BINS } });
-    assertEqual(resultView(s, { ciMethod: 'bca', target: '' }).bcaFallback, true);
-    assertEqual(resultView(s, { ciMethod: 'percentile', target: '' }).bcaFallback, false);
+    assertEqual(resultView(s, { ciMethod: 'bca', target: '', lang: 'en' }).bcaFallback, true);
+    assertEqual(resultView(s, { ciMethod: 'percentile', target: '', lang: 'en' }).bcaFallback, false);
   });
   test('two samples: permutation test block with α = 1 − confidence', () => {
-    const v = resultView(two(), { ciMethod: 'bca', target: '' });
+    const v = resultView(two(), { ciMethod: 'bca', target: '', lang: 'en' });
     assertEqual(v.hasTest, true);
     assertEqual(v.test.observed, '0.8000');
     assertEqual(v.test.pValue, '0.0312');
     assertEqual(v.test.methodKey, 'monteCarlo');
     assertEqual(v.test.permutations, '1000');
     assertEqual('decisionKey' in v.test, false, 'the test block carries no decision (unused)');
-    const exact = resultView(two({ perm: { observed: 1, pValue: 0.5, exact: true, permutations: 252, bins: BINS } }), { ciMethod: 'bca', target: '' });
+    const exact = resultView(two({ perm: { observed: 1, pValue: 0.5, exact: true, permutations: 252, bins: BINS } }), { ciMethod: 'bca', target: '', lang: 'en' });
     assertEqual(exact.test.methodKey, 'exact');
   });
   test('the target only decides in mode one (one-sample decision)', () => {
-    assertEqual(resultView(two(), { ciMethod: 'bca', target: '3' }).decisionKey, null);
+    assertEqual(resultView(two(), { ciMethod: 'bca', target: '3', lang: 'en' }).decisionKey, null);
   });
   test('k samples: groups and Holm-adjusted pairs, no bootstrap block', () => {
-    const v = resultView(kSummary(), { ciMethod: 'percentile', target: '5' });
+    const v = resultView(kSummary(), { ciMethod: 'percentile', target: '5', lang: 'en' });
     assertEqual(v.isK, true);
     assertEqual(v.hasBoot, false);
     assertEqual(v.decisionKey, null);

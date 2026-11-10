@@ -13,10 +13,10 @@ const DECISION_KEYS = { reject: 'decisionReject', retain: 'decisionRetain' };
 /**
  * Display data for the result panel.
  * @param {object|null} summary persisted `state.result`
- * @param {{ciMethod: 'bca'|'percentile', target: string}} opts
+ * @param {{ciMethod: 'bca'|'percentile', target: string, lang: string}} opts
  * @returns {object|null}
  */
-export function resultView(summary, { ciMethod, target }) {
+export function resultView(summary, { ciMethod, target, lang }) {
   if (!summary) return null;
   const boot = summary.boot;
   const test = summary.perm || summary.k;
@@ -31,26 +31,26 @@ export function resultView(summary, { ciMethod, target }) {
     hasBoot: Boolean(boot),
     hasTest: Boolean(test),
     isK: summary.mode === 'k',
-    estimate: fmt(estimate),
-    se: fmt(boot ? boot.se : null),
-    bias: fmt(boot ? boot.bias : null),
-    interval: fmtInterval(interval),
+    estimate: fmt(estimate, lang),
+    se: fmt(boot ? boot.se : null, lang),
+    bias: fmt(boot ? boot.bias : null, lang),
+    interval: fmtInterval(interval, lang),
     bcaFallback: Boolean(boot && ciMethod === 'bca' && boot.ci.bcaFallback),
     decisionKey: verdict ? DECISION_KEYS[verdict] : null,
     test: test ? {
-      observed: fmt(test.observed),
-      pValue: fmtP(test.pValue),
+      observed: fmt(test.observed, lang),
+      pValue: fmtP(test.pValue, lang),
       methodKey: test.exact ? 'exact' : 'monteCarlo',
       permutations: String(test.permutations),
     } : null,
     groups: summary.k ? summary.k.groups.map((g, i) => ({
-      label: label(i), n: String(summary.n[i]), estimate: fmt(g.estimate),
-      interval: fmtInterval(pickCI(g.ci, ciMethod)),
+      label: label(i), n: String(summary.n[i]), estimate: fmt(g.estimate, lang),
+      interval: fmtInterval(pickCI(g.ci, ciMethod), lang),
     })) : [],
     posthoc: summary.k ? summary.k.posthoc.map((h) => ({
-      pair: `${label(h.i)} – ${label(h.j)}`, contrast: fmt(h.contrast),
-      interval: fmtInterval(pickCI(h.ci, ciMethod)),
-      pRaw: fmtP(h.pRaw), pHolm: fmtP(h.pHolm), methodKey: h.exact ? 'exact' : 'monteCarlo',
+      pair: `${label(h.i)} – ${label(h.j)}`, contrast: fmt(h.contrast, lang),
+      interval: fmtInterval(pickCI(h.ci, ciMethod), lang),
+      pRaw: fmtP(h.pRaw, lang), pHolm: fmtP(h.pHolm, lang), methodKey: h.exact ? 'exact' : 'monteCarlo',
     })) : [],
   };
 }

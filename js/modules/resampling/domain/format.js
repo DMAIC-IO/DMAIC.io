@@ -3,33 +3,37 @@
  */
 
 import { pickCI, decision, parseOptionalNumber } from './analyze.js';
+import { formatNumber } from '../../../core/number-format.js';
 
 /**
- * Fixed-decimal number, '–' when not finite.
+ * Fixed-decimal number in the app language, '–' when not finite.
  * @param {number|null} v
+ * @param {string} lang 'de' | 'en'
  * @param {number} [d]
  * @returns {string}
  */
-export function fmt(v, d = 4) {
-  return Number.isFinite(v) ? v.toFixed(d) : '–';
+export function fmt(v, lang, d = 4) {
+  return Number.isFinite(v) ? formatNumber(v, lang, { decimals: d }) : '–';
 }
 
 /**
- * p-value with four decimals, '< 0.0001' below that.
+ * p-value with four decimals, '< 0.0001' (in the app language) below that.
  * @param {number|null} p
+ * @param {string} lang
  * @returns {string}
  */
-export function fmtP(p) {
+export function fmtP(p, lang) {
   if (!Number.isFinite(p)) return '–';
-  return p < 1e-4 ? '< 0.0001' : p.toFixed(4);
+  return p < 1e-4 ? `< ${formatNumber(1e-4, lang, { decimals: 4 })}` : formatNumber(p, lang, { decimals: 4 });
 }
 
 /**
  * @param {number[]|null} iv
+ * @param {string} lang
  * @returns {string}
  */
-export function fmtInterval(iv) {
-  return iv ? `[${fmt(iv[0])}; ${fmt(iv[1])}]` : '–';
+export function fmtInterval(iv, lang) {
+  return iv ? `[${fmt(iv[0], lang)}; ${fmt(iv[1], lang)}]` : '–';
 }
 
 /**

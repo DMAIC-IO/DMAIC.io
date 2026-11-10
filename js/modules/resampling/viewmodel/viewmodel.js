@@ -75,7 +75,7 @@ const mod = createModule({
         decision() { return bootDecision(this.model.result, { ciMethod: this.model.ciMethod, target: this.model.target }); },
       },
       get stale() { return !!this.model.result && this.model.result.inputsHash !== this.inputsHash; },
-      get resultView() { return resultView(this.model.result, { ciMethod: this.model.ciMethod, target: this.model.target }); },
+      get resultView() { return resultView(this.model.result, { ciMethod: this.model.ciMethod, target: this.model.target, lang: ctx.context.language }); },
       /** Ergebnisansicht für die Vorlage: nie null, damit ein beim Abbau noch laufender Ausdruck nicht ins Leere greift. */
       get view() { return this.resultView ?? EMPTY_VIEW; },
       get hasResult() { return this.resultView !== null; },
@@ -84,7 +84,7 @@ const mod = createModule({
       get showValidation() { return !!this.validation && refsOf(this.model).some(Boolean); },
       get validationText() { return this.validation ? this.t(this.validation) : ''; },
       get statementText() {
-        return renderStatement(statementParts(this.model.result, { ciMethod: this.model.ciMethod, target: this.model.target }), this.t);
+        return renderStatement(statementParts(this.model.result, { ciMethod: this.model.ciMethod, target: this.model.target, lang: ctx.context.language }), this.t);
       },
       get hasStatement() { return this.statementText !== ''; },
       get showDecision() { return !!this.resultView?.decisionKey; },

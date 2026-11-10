@@ -63,7 +63,7 @@ function ensureTemplate() {
     + '<button type="button" class="rs-start" x-async-task-start></button>'
     + '<progress class="rs-progress" x-async-task-progress></progress>'
     + '<p class="rs-error" x-async-task-error></p>'
-    + '</div></div>';
+    + '</div><input class="field" data-ref="confidence" x-field="model.confidence"></div>';
   document.body.append(tpl);
 }
 
@@ -152,6 +152,21 @@ suite('resampling: Viewmodel im Browser', () => {
     assertEqual(vm().hasResult, true);
     assertTrue(vm().resultView !== null, 'Ergebnisansicht');
     assertTrue(vm().bootChart !== null && vm().permChart !== null, 'beide Diagramme');
+  });
+
+  test('de: Feld liest Komma und zeigt Ergebnis mit Dezimalkomma, kein Zahlenspinner', async () => {
+    const { container, vm } = await mount(twoSamples(), { ws1: sheetWith(A, B) });
+    const conf = /** @type {HTMLInputElement} */ (container.querySelector('input[data-ref="confidence"]'));
+    assertEqual(conf.type, 'text');
+    assertEqual(conf.value, '0,95');
+    conf.value = '0,9';
+    conf.dispatchEvent(new Event('change', { bubbles: true }));
+    await flush();
+    assertEqual(vm().model.confidence, 0.9);
+    assertEqual(conf.value, '0,9');
+    await runToEnd(vm);
+    assertTrue(/^-?\d+,\d{4}$/.test(vm().resultView.estimate), `Schätzwert mit Komma: ${vm().resultView.estimate}`);
+    assertTrue(vm().resultView.interval.startsWith('[') && vm().resultView.interval.includes(','), 'Intervall mit Komma');
   });
 
   test('Eingabe ändern: veraltet, Ergebnis bleibt', async () => {

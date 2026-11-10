@@ -46,13 +46,13 @@
     <div class="field-grid field-grid--2" x-show="showTrim">
       <div class="field-group">
         <label data-help-key="modules.resampling.fields.statParams.trim.help" x-text="t('trim')"></label>
-        <input type="number" class="field field--num" data-ref="trim" step="0.01" x-field="model.statParams.trim">
+        <input class="field field--num" data-ref="trim" x-field="model.statParams.trim">
       </div>
     </div>
     <div class="field-grid field-grid--2" x-show="showQuantileP">
       <div class="field-group">
         <label data-help-key="modules.resampling.fields.statParams.p.help" x-text="t('quantileP')"></label>
-        <input type="number" class="field field--num" data-ref="quantile-p" step="0.01" x-field="model.statParams.p">
+        <input class="field field--num" data-ref="quantile-p" x-field="model.statParams.p">
       </div>
     </div>
     <div class="field-grid field-grid--2" x-show="showLimits">
@@ -92,17 +92,17 @@
     <div class="field-grid field-grid--2">
       <div class="field-group">
         <label data-help-key="modules.resampling.fields.B.help" x-text="t('B')"></label>
-        <input type="number" class="field field--num" data-ref="b" step="1000" x-field="model.B">
+        <input class="field field--num" data-ref="b" x-field="model.B">
       </div>
       <div class="field-group">
         <label data-help-key="modules.resampling.fields.confidence.help" x-text="t('confidence')"></label>
-        <input type="number" class="field field--num" data-ref="confidence" step="0.01" x-field="model.confidence">
+        <input class="field field--num" data-ref="confidence" x-field="model.confidence">
       </div>
     </div>
     <div class="field-row">
       <div class="field-group">
         <label data-help-key="modules.resampling.fields.seed.help" x-text="t('seed')"></label>
-        <input type="number" class="field field--num" data-ref="seed" x-field="model.seed">
+        <input class="field field--num" data-ref="seed" x-field="model.seed">
       </div>
       <button type="button" class="btn resampling__seed-roll" data-ref="seed-roll" x-command="rollSeed" :title="t('rollSeed')" :aria-label="t('rollSeed')">
         <span class="icon" data-icon="action.roll-seed" aria-hidden="true"></span>

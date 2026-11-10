@@ -6,7 +6,8 @@ import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { statementParts, renderStatement } from '../../js/modules/resampling/domain/statement.js';
 
 const CI = { percentile: [-3.69, 2.15], bca: [-3.5, 2.3], bcaFallback: false };
-const OPTS = { ciMethod: 'percentile', target: '' };
+const OPTS = { ciMethod: 'percentile', target: '', lang: 'en' };
+const OPTS_DE = { ...OPTS, lang: 'de' };
 
 function base(over = {}) {
   return {
@@ -59,6 +60,23 @@ suite('resampling-statement — two samples', () => {
     assertEqual(parts[2].params.conf, '90');
   });
 
+  test('de: Komma in Alpha, p, Differenz und Intervall', () => {
+    const s = two({ confidence: 0.9, boot: { estimate: 4.2, se: 1, bias: 0, ci: { percentile: [2, 6], bca: [2, 6], bcaFallback: false }, bins: [] } },
+      { pValue: 0.07 });
+    const parts = statementParts(s, OPTS_DE);
+    assertEqual(parts[0].params.alpha, '0,1');
+    assertEqual(parts[0].params.p, 'p = 0,0700');
+    assertEqual(parts[1].params.diff, '4,2000');
+    assertEqual(parts[2].params.lo, '2,0000');
+    assertEqual(parts[2].params.conf, '90');
+    assertEqual(statementParts(two({}, { pValue: 0.00001 }), OPTS_DE)[0].params.p, 'p < 0,0001');
+  });
+
+  test('de: Sollwert im Satz mit Komma', () => {
+    const parts = statementParts(base(), { ciMethod: 'percentile', target: '22,5', lang: 'de' });
+    assertEqual(parts[1].params.target, '22,5');
+  });
+
   test('tiny p-values read "p < 0.0001"', () => {
     assertEqual(statementParts(two({}, { pValue: 0.00001 }), OPTS)[0].params.p, 'p < 0.0001');
   });
@@ -78,7 +96,7 @@ suite('resampling-statement — two samples', () => {
   });
 
   test('the chosen interval method is used', () => {
-    const parts = statementParts(two(), { ciMethod: 'bca', target: '' });
+    const parts = statementParts(two(), { ciMethod: 'bca', target: '', lang: 'en' });
     assertEqual(parts[2].params.lo, '-3.5000');
   });
 
@@ -113,12 +131,12 @@ suite('resampling-statement — one sample', () => {
   });
 
   test('target outside the interval is a significant deviation', () => {
-    const parts = statementParts(base(), { ciMethod: 'percentile', target: '20' });
+    const parts = statementParts(base(), { ciMethod: 'percentile', target: '20', lang: 'en' });
     assertDeepEqual(parts[1], { key: 'stmtOneReject', params: { target: '20' } });
   });
 
   test('target inside the interval is retained', () => {
-    const parts = statementParts(base(), { ciMethod: 'percentile', target: '22' });
+    const parts = statementParts(base(), { ciMethod: 'percentile', target: '22', lang: 'en' });
     assertDeepEqual(parts[1], { key: 'stmtOneRetain', params: { target: '22' } });
   });
 });
