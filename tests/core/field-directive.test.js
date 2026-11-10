@@ -629,6 +629,26 @@ suite('x-field — Zahlen nach App-Sprache', () => {
     el.remove();
   });
 
+  test('Fokus: „24," und „24." bei Model 24 bleiben stehen (de)', () => {
+    const el = numField();
+    el.focus();
+    for (const typed of ['24,', '24.']) {
+      el.value = typed;
+      writeElement(el, spec, 24, 'de');
+      assertEqual(el.value, typed);
+    }
+    el.remove();
+  });
+
+  test('ausdrückliches type="number" zeigt auch in de String(value)', () => {
+    const el = document.createElement('input');
+    el.setAttribute('type', 'number');
+    document.body.append(el);
+    writeElement(el, spec, 0.05, 'de');
+    assertEqual(el.value, '0.05');
+    el.remove();
+  });
+
   test('ohne Fokus wird neu geschrieben', () => {
     const el = numField();
     el.value = '0,50';

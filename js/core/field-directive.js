@@ -3,10 +3,13 @@
  *
  * `x-field="model.alpha"` bindet ein Formularfeld an ein Feld des
  * deklarativen Models (core/model.js): setzt bei Zahlen `type="text"` und
- * `inputmode` aus dem Schema, schreibt über den prüfenden Setter, zeigt eine Ablehnung
+ * `inputmode` aus dem Schema, schreibt über den prüfenden Setter, zeigt eine
+ * Ablehnung
  * (`aria-invalid` + Hinweis mit Bereich) und setzt das Feld bei einer
- * abgelehnten Eingabe auf den gültigen Wert zurück. Zahlen liest `parseNumber` (Komma oder
- * Punkt) und zeigt `formatNumber` in der App-Sprache (Profil `input`). Fehlt ein `data-help-key`, entsteht er aus dem
+ * abgelehnten Eingabe auf den gültigen Wert zurück. Zahlen liest `parseNumber`
+ * (Komma oder Punkt) und zeigt `formatNumber` in der App-Sprache (Profil
+ * `input`); ein ausdrückliches `type="number"`/`"range"` bekommt `String(value)`.
+ * Fehlt ein `data-help-key`, entsteht er aus dem
  * Feldnamen. Ersetzt für Schema-Module das param-input-Mixin.
  *
  * `x-field="state.name"` bindet ebenso an ein Feld des UI-State
@@ -77,7 +80,7 @@ export function readElement(el, spec) {
 export function writeElement(el, spec, value, lang = 'en') {
   if (el.type === 'checkbox') { el.checked = value === true; return; }
   const shown = value === null || value === undefined ? ''
-    : isNumeric(spec) && typeof value === 'number' ? formatNumber(value, lang, { profile: 'input' })
+    : isNumeric(spec) && typeof value === 'number' && el.type !== 'number' && el.type !== 'range' ? formatNumber(value, lang, { profile: 'input' })
       : String(value);
   // Beim Tippen nicht überschreiben, solange das Feld denselben Wert meint
   // („0,“ oder „1.“ würden sonst zu „0“ bzw. „1“ gekürzt).
