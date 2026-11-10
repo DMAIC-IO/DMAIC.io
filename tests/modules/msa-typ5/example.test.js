@@ -2,7 +2,7 @@ import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../tes
 import { fromExample } from '../../../js/modules/msa-typ5/io/example.js';
 
 async function project(name) {
-  const res = await fetch(new URL(`../../../examples/projects/${name}.json`, import.meta.url));
+  const res = await fetch(new URL(`../../../js/modules/msa-typ5/resources/examples/projects/${name}.json`, import.meta.url));
   assertTrue(res.ok, name);
   return res.json();
 }

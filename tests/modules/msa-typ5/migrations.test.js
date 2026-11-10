@@ -72,7 +72,7 @@ suite('MSA Typ 5 — Migration 0→1.0', () => {
   const NAMES = ['binary-good', 'binary-marginal', 'binary-wide', 'nominal-3classes', 'ordinal-scale5', 'zaehltest'];
   for (const n of NAMES) {
     test(`Beispielprojekt ${n} lädt ohne Reparatur`, async () => {
-      const url = new URL(`../../../examples/projects/msa-typ5-${n}.json`, import.meta.url);
+      const url = new URL(`../../../js/modules/msa-typ5/resources/examples/projects/msa-typ5-${n}.json`, import.meta.url);
       const res = await fetch(url, { cache: 'no-cache' });
       assert(res.ok, `fetch ${n}`);
       const data = await res.json();

@@ -21,7 +21,7 @@ const t = (key, params) => (params ? `${key}${JSON.stringify(params)}` : key);
 
 /** @param {string} path relativ zu app/dev/examples @returns {Promise<any>} */
 async function json(path) {
-  const res = await fetch(new URL(`../../../examples/${path}`, import.meta.url));
+  const res = await fetch(new URL(`../../../js/modules/msa-typ5/resources/examples/${path}`, import.meta.url));
   assertTrue(res.ok, path);
   return res.json();
 }

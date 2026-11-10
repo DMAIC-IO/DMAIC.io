@@ -17,7 +17,7 @@ const mounted = [];
 
 /** @param {string} path relativ zu app/dev/examples */
 async function json(path) {
-  return (await fetch(new URL(`../../examples/${path}`, import.meta.url))).json();
+  return (await fetch(new URL(`../../js/modules/msa-typ5/resources/examples/${path}`, import.meta.url))).json();
 }
 
 function ensureTemplate() {
