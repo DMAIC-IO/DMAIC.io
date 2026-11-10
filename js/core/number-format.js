@@ -60,7 +60,11 @@ const _pctFormatters = new Map();
 /** @type {Map<string, {decimal: string, group: string}>} */
 const _symbols = new Map();
 
+/** Missing language means `'en'`, never the browser locale. */
+const langOf = (lang) => lang ?? 'en';
+
 function symbols(lang) {
+  lang = langOf(lang);
   let s = _symbols.get(lang);
   if (!s) {
     const parts = new Intl.NumberFormat(lang).formatToParts(1234.5);
@@ -99,6 +103,7 @@ export function decimalSeparator(lang) {
 export function formatNumber(value, lang, opts = {}) {
   if (value === null || value === undefined) return '';
   if (!Number.isFinite(value)) return String(value);
+  lang = langOf(lang);
   const { profile = 'output', decimals, precision } = opts;
   const { decimal, group } = symbols(lang);
 
@@ -133,6 +138,7 @@ export function formatNumber(value, lang, opts = {}) {
  * @returns {string}
  */
 export function formatPercent(share, lang, decimals) {
+  lang = langOf(lang);
   const key = `${lang}|${decimals}`;
   let fmt = _pctFormatters.get(key);
   if (!fmt) {

@@ -1,6 +1,6 @@
 /**
  * D.Mike — Multi-Vari Export: Tabelle der Varianzkomponenten als Zeilen
- * (für `exports.table()`) und als CSV-Text.
+ * (für `exports.table()`); der Exporter macht daraus CSV und XLSX.
  */
 
 import { totalPercentValue } from '../domain/analysis.js';

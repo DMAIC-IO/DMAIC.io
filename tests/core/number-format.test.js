@@ -132,3 +132,12 @@ suite('formatNumber — decimals entspricht toFixed (Binär-Halbfälle)', () => 
   });
 });
 
+
+suite('formatNumber — fehlende Sprache', () => {
+  test('ohne Sprache wie en, nie Browser-Locale', () => {
+    assertEqual(formatNumber(1234.5, undefined), '1,234.5');
+    assertEqual(formatNumber(1234.5, undefined, { decimals: 2 }), '1,234.50');
+    assertEqual(formatNumber(1234.5, null, { profile: 'input' }), '1234.5');
+    assertEqual(decimalSeparator(undefined), '.');
+  });
+});

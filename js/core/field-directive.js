@@ -164,10 +164,15 @@ export function registerFieldDirective(Alpine, { i18n, widgets }) {
     const onInput = () => commit(true);
     const onChange = () => commit(false);
     const live = el.type !== 'checkbox' && el.tagName !== 'SELECT';
+    // Beim Verlassen zeigt das Feld den Model-Wert in der Sprache der App:
+    // „1.234“ in de ergibt 1,234 im Model, der Effect läuft bei gleichem Wert nicht erneut.
+    const onBlur = () => show();
     if (live) el.addEventListener('input', onInput);
+    if (live) el.addEventListener('blur', onBlur);
     el.addEventListener('change', onChange);
     cleanup(() => {
       if (live) el.removeEventListener('input', onInput);
+      if (live) el.removeEventListener('blur', onBlur);
       el.removeEventListener('change', onChange);
     });
   });

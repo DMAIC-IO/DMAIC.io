@@ -621,11 +621,15 @@ export function registerCommandDirectives(Alpine) {
         markRejection(el, rejectionHint(spec, ui().i18n));
       }
     };
+    // Beim Verlassen zeigt das Feld den Wert in der Sprache der App.
+    const onBlur = () => writeElement(el, spec, ctl.values[name], ui().i18n.getLanguage());
     const live = el.type !== 'checkbox' && el.tagName !== 'SELECT';
     if (live) el.addEventListener('input', onInput);
+    if (live) el.addEventListener('blur', onBlur);
     el.addEventListener('change', onChange);
     cleanup(() => {
       if (live) el.removeEventListener('input', onInput);
+      if (live) el.removeEventListener('blur', onBlur);
       el.removeEventListener('change', onChange);
       ctl.unregister(name);
     });

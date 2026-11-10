@@ -398,7 +398,7 @@ function mainResult(a, model, t, tip, lang) {
  * @returns {Metric[]}
  */
 function modelSummary(summary, t, tip, lang) {
-  const { f, fCi } = formatters(lang);
+  const { f } = formatters(lang);
   const pct = (v) => (v != null && isFinite(v) ? `${f(Math.max(0, v) * 100, 2)} %` : '–');
   const row = (label, value) => ({ label, value, title: tip(label) });
   return [
@@ -476,7 +476,7 @@ function kMainResult(a, model, t, tip, lang) {
 
 /** @returns {SecondaryResult} */
 function secondaryResult(sec, alpha, t, tip, lang) {
-  const { f, fCi } = formatters(lang);
+  const { f } = formatters(lang);
   const r = sec.test;
   const pCls = r.p < alpha ? 'hyptest__metric-value--danger' : 'hyptest__metric-value--success';
   const methodLabel = sec.twoSidedSuffix ? `${t('testMethod')} (${t('twoSidedSuffix')})` : t('testMethod');
@@ -497,7 +497,7 @@ function secondaryResult(sec, alpha, t, tip, lang) {
  * @returns {Metric[]}
  */
 function varEqualityMetrics(ve, alpha, t, tip, lang) {
-  const { f, fCi } = formatters(lang);
+  const { f } = formatters(lang);
   const x = ve.extra || {};
   const pCls = ve.p < alpha ? 'hyptest__metric-value--danger' : 'hyptest__metric-value--success';
   return [
@@ -524,7 +524,7 @@ function varEqualityOf(a, t, tip, lang) {
 
 /** @param {NonNullable<AnalysisOk['power']>} pw @returns {PowerInfo} */
 function powerInfo(pw, alpha, t, tip, lang) {
-  const { f, fCi } = formatters(lang);
+  const { f } = formatters(lang);
   const effLabel = pw.effectKind === 'varianceRatio' ? t('varianceRatio')
     : pw.effectKind === 'cohenDz' ? "Cohen's d_z" : "Cohen's d";
   const two = pw.n.length > 1;

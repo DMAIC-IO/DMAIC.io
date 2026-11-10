@@ -20,6 +20,7 @@ function ensureTemplate() {
   const tpl = document.createElement('template');
   tpl.setAttribute('data-tpl', TPL_KEY);
   tpl.innerHTML = '<div x-data="numTest"><span class="nt-out" x-text="num(model.v, 2)"></span>'
+    + '<span class="nt-raw" x-text="num(model.v)"></span>'
     + '<span class="nt-nul" x-text="num(null, 2)"></span></div>';
   document.body.append(tpl);
 }
@@ -50,10 +51,12 @@ suite('template-module: num()', () => {
       await flush();
       assertEqual(container.querySelector('.nt-out').textContent, '1.234,50');
       assertEqual(container.querySelector('.nt-nul').textContent, '');
+      assertEqual(container.querySelector('.nt-raw').textContent, '1.234,5');
       lang = 'en';
       mod.onLanguageChange('en');
       await flush();
       assertEqual(container.querySelector('.nt-out').textContent, '1,234.50');
+      assertEqual(container.querySelector('.nt-raw').textContent, '1,234.5');
     } finally {
       mod.destroy?.();
       container.remove();

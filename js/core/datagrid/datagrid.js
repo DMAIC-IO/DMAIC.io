@@ -1223,7 +1223,8 @@ export class DataGrid {
         const v = col.values[r];
         if (v == null) return '';
         if (typeof v === 'number') {
-          return formatGridLossless(v, col.format.decimals, decimal === ',' ? 'de' : 'en');
+          const num = formatGridLossless(v, col.format.decimals, decimal === ',' ? 'de' : 'en');
+          return decimal === delim ? `"${num}"` : num;
         }
         let s = String(v);
         if (s.includes(delim) || s.includes('"') || s.includes('\n')) {
@@ -1250,7 +1251,7 @@ export class DataGrid {
       for (let c = c1; c <= c2; c++) {
         const col = this.columns[c];
         const v = col ? col.values[r] : '';
-        cells.push(v != null ? String(v) : '');
+        cells.push(typeof v === 'number' ? formatGridLossless(v, null, this._lang()) : v != null ? String(v) : '');
       }
       lines.push(cells.join('\t'));
     }

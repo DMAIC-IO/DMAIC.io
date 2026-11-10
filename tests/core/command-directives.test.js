@@ -272,6 +272,32 @@ const typeIn = (el, v) => { el.value = v; el.dispatchEvent(new Event('input')); 
 const changeTo = (el, v) => { typeIn(el, v); el.dispatchEvent(new Event('change')); };
 const submitForm = async (form) => { form.requestSubmit(); await flush(); };
 
+suite('x-param — Neuformatierung beim Verlassen', () => {
+  test('de: 0.5 getippt → nach change und blur „0,5“', async () => {
+    const { $ } = await mount('<form x-command-form="setLimit" data-arg-limit="1"><input x-param="rate"></form>');
+    const input = $('input');
+    typeIn(input, '0.5');
+    assertEqual(input.value, '0.5', 'beim Tippen bleibt der Text stehen');
+    input.dispatchEvent(new Event('change'));
+    input.dispatchEvent(new Event('blur'));
+    assertEqual(input.value, '0,5');
+  });
+
+  test('en: 0,5 getippt → nach change und blur „0.5“', async () => {
+    I18N.getLanguage = () => 'en';
+    try {
+      const { $ } = await mount('<form x-command-form="setLimit" data-arg-limit="1"><input x-param="rate"></form>');
+      const input = $('input');
+      typeIn(input, '0,5');
+      input.dispatchEvent(new Event('change'));
+      input.dispatchEvent(new Event('blur'));
+      assertEqual(input.value, '0.5');
+    } finally {
+      I18N.getLanguage = () => 'de';
+    }
+  });
+});
+
 suite('x-command-form', () => {
   test('Startwerte aus current', async () => {
     const { $ } = await mount('<form x-command-form="setItem" data-arg-col="a" data-arg-idx="1"><input x-param="text"></form>', { columns: { a: ['eins', 'zwei'] } });

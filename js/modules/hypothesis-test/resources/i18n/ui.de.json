@@ -24,7 +24,7 @@
   "pairedDiffHint": "Differenz d = Spalte 1 − Spalte 2, Paare zeilenweise",
   "targetMean": "Zielwert Mittelwert",
   "targetVariance": "Zielwert Varianz",
-  "targetMeanPh": "z.B. 100",
+  "targetMeanPh": "z. B. 100",
   "targetDiff": "Hypothetische Differenz μ_d₀",
   "targetDiffPh": "0",
   "differences": "Differenzen",

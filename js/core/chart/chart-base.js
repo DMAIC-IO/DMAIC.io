@@ -20,6 +20,7 @@ import {
 } from './chart-editor.js';
 import { ensureXLSX as _ensureXLSX } from '../export-utils.js';
 import { icon } from '../icon.js';
+import { formatNumber } from '../number-format.js';
 import { h } from '../dom.js';
 import { debounce } from '../debounce.js';
 
@@ -1460,14 +1461,14 @@ export default class ChartBase {
 
     const escapeCSV = (v) => {
       if (v == null) return '';
-      const s = String(v);
+      const s = typeof v === 'number' ? formatNumber(v, this.locale, { profile: 'input' }) : String(v);
       if (s.includes(';') || s.includes('"') || s.includes('\n')) {
         return `"${  s.replace(/"/g, '""')  }"`;
       }
       return s;
     };
 
-    const lines = [headers.map(escapeCSV).join(';')];
+    const lines = ['sep=;', headers.map(escapeCSV).join(';')];
     for (const row of rows) {
       lines.push(row.map(escapeCSV).join(';'));
     }

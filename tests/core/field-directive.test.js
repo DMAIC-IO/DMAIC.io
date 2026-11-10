@@ -120,6 +120,30 @@ suite('x-field — Bindung', () => {
     assertEqual(els.alphaText.value, '0,', 'halbe Eingabe bleibt stehen');
   });
 
+  test('beim Verlassen formatiert das Feld neu (de: 1.234 → 1,234)', async () => {
+    const { model, els } = await mount();
+    type(els.beta, '1.234');
+    assertEqual(model.beta, 1.234);
+    assertEqual(els.beta.value, '1.234', 'beim Tippen bleibt der Text stehen');
+    els.beta.dispatchEvent(new Event('change'));
+    els.beta.dispatchEvent(new Event('blur'));
+    assertEqual(els.beta.value, '1,234');
+  });
+
+  test('beim Verlassen formatiert das Feld neu (en: 5,5 → 5.5)', async () => {
+    I18N.getLanguage = () => 'en';
+    try {
+      const { model, els } = await mount();
+      type(els.beta, '5,5');
+      assertEqual(model.beta, 5.5);
+      els.beta.dispatchEvent(new Event('change'));
+      els.beta.dispatchEvent(new Event('blur'));
+      assertEqual(els.beta.value, '5.5');
+    } finally {
+      I18N.getLanguage = () => 'de';
+    }
+  });
+
   test('leeres Feld bei nullable → null', async () => {
     const { model, els } = await mount();
     change(els.beta, '5');

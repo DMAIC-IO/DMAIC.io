@@ -104,6 +104,21 @@ suite('DataGrid — Zahlen nach App-Sprache', () => {
     assertEqual(de[3], '-0,000012');
     assertEqual(make('en').exportToCSV().split('\r\n')[2], '24.5');
   });
+  test('Kopieren/Ausschneiden (TSV): Dezimalzeichen der Sprache', () => {
+    const de = make('de');
+    de.selection = { startRow: 0, endRow: 1, startCol: 0, endCol: 0 };
+    assertEqual(de.exportToTSV(), '24,5\n-0,000012');
+    const en = make('en');
+    en.selection = { startRow: 0, endRow: 1, startCol: 0, endCol: 0 };
+    assertEqual(en.exportToTSV(), '24.5\n-0.000012');
+  });
+  test('Export mit Trenner "," und Dezimalkomma: Zahlen in Anführungszeichen', () => {
+    const lines = make('de').exportToCSV({ delimiter: ',' }).split('\r\n');
+    assertEqual(lines[0], 'sep=,');
+    assertEqual(lines[2], '"24,5"');
+    assertEqual(lines[3], '"-0,000012"');
+    assertEqual(make('en').exportToCSV({ delimiter: ',' }).split('\r\n')[2], '24.5');
+  });
   test('Export -> Import: Kopfzeile und Werte bleiben erhalten (de)', () => {
     const src = make('de');
     src.columns[0].name = 'Länge';
