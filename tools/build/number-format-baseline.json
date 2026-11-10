@@ -1,0 +1,275 @@
+{
+  "js/core/chart/chart-core.js": {
+    "count": 7
+  },
+  "js/core/chart/histogram-series-draw.js": {
+    "count": 6
+  },
+  "js/core/color-picker.js": {
+    "count": 1
+  },
+  "js/core/datagrid/datagrid.js": {
+    "count": 2
+  },
+  "js/core/flowchart/flowchart-view.js": {
+    "count": 2
+  },
+  "js/modules/attribute-test/attribute-test-report.js": {
+    "count": 5
+  },
+  "js/modules/attribute-test/attribute-test.js": {
+    "count": 1
+  },
+  "js/modules/calculator/calculator-model.js": {
+    "count": 5
+  },
+  "js/modules/calculator/calculator.html": {
+    "count": 2
+  },
+  "js/modules/calculator/calculator.js": {
+    "count": 2
+  },
+  "js/modules/ce-matrix/ce-matrix.html": {
+    "count": 1
+  },
+  "js/modules/contour-plot/contour-plot-legend.js": {
+    "count": 1
+  },
+  "js/modules/contour-plot/contour-plot-model.js": {
+    "count": 1
+  },
+  "js/modules/contour-plot/contour-plot-render.js": {
+    "count": 7
+  },
+  "js/modules/contour-plot/contour-plot.html": {
+    "count": 10
+  },
+  "js/modules/contour-plot/contour-plot.js": {
+    "count": 4
+  },
+  "js/modules/control-chart/control-chart.html": {
+    "count": 4
+  },
+  "js/modules/control-chart/control-chart.js": {
+    "count": 7
+  },
+  "js/modules/control-chart/control-chart.tile.js": {
+    "count": 3
+  },
+  "js/modules/correlation/correlation-model.js": {
+    "count": 1
+  },
+  "js/modules/correlation/correlation.html": {
+    "count": 2
+  },
+  "js/modules/correlation/correlation.js": {
+    "count": 8
+  },
+  "js/modules/data-import/data-import.html": {
+    "count": 1
+  },
+  "js/modules/data-import/data-import.js": {
+    "count": 2
+  },
+  "js/modules/data-transformation/data-transformation.html": {
+    "count": 1
+  },
+  "js/modules/data-transformation/data-transformation.js": {
+    "count": 5
+  },
+  "js/modules/distribution-fit/distribution-fit.js": {
+    "count": 1
+  },
+  "js/modules/doe-planner/doe-planner-analysis.js": {
+    "count": 3
+  },
+  "js/modules/doe-planner/doe-planner-worksheet.js": {
+    "count": 1
+  },
+  "js/modules/doe-planner/doe-planner.html": {
+    "count": 5
+  },
+  "js/modules/doe-planner/doe-planner.js": {
+    "count": 3
+  },
+  "js/modules/doe-planner/viewmodel/analysis.js": {
+    "count": 7
+  },
+  "js/modules/doe-planner/viewmodel/evaluation.js": {
+    "count": 2
+  },
+  "js/modules/doe-planner/viewmodel/evop.js": {
+    "count": 2
+  },
+  "js/modules/doe-planner/viewmodel/optimal.js": {
+    "count": 1
+  },
+  "js/modules/gage-run-chart/gage-run-chart.html": {
+    "count": 1
+  },
+  "js/modules/gage-run-chart/gage-run-chart.js": {
+    "count": 1
+  },
+  "js/modules/glm-regression/glm-regression.js": {
+    "count": 11
+  },
+  "js/modules/ishikawa/ishikawa-charts.js": {
+    "count": 4
+  },
+  "js/modules/ishikawa/ishikawa.html": {
+    "count": 4
+  },
+  "js/modules/ishikawa/ishikawa.tile.js": {
+    "count": 1
+  },
+  "js/modules/ishikawa/viewmodel/causes.js": {
+    "count": 4
+  },
+  "js/modules/ishikawa/viewmodel/experiments.js": {
+    "count": 1
+  },
+  "js/modules/ishikawa/viewmodel/problem.js": {
+    "count": 1
+  },
+  "js/modules/kano/kano.js": {
+    "count": 3
+  },
+  "js/modules/makigami/makigami-duration.js": {
+    "count": 3
+  },
+  "js/modules/makigami/makigami.html": {
+    "count": 1
+  },
+  "js/modules/makigami/makigami.js": {
+    "count": 1
+  },
+  "js/modules/model-data-generator/model-data-generator.html": {
+    "count": 7
+  },
+  "js/modules/model-data-generator/model-data-generator.js": {
+    "count": 1
+  },
+  "js/modules/msa-typ1/msa-typ1.js": {
+    "count": 7
+  },
+  "js/modules/msa-typ4/msa-typ4-model.js": {
+    "count": 2
+  },
+  "js/modules/msa-typ4/msa-typ4.js": {
+    "count": 2
+  },
+  "js/modules/msa-typ5/msa-typ5-model.js": {
+    "count": 3
+  },
+  "js/modules/msa-typ5/msa-typ5.html": {
+    "count": 1
+  },
+  "js/modules/msa-typ5/msa-typ5.js": {
+    "count": 1
+  },
+  "js/modules/msa-typ6/msa-typ6-model.js": {
+    "count": 1
+  },
+  "js/modules/msa-typ6/msa-typ6.html": {
+    "count": 3
+  },
+  "js/modules/msa-typ6/msa-typ6.js": {
+    "count": 2
+  },
+  "js/modules/multivariate-control-chart/multivariate-control-chart.html": {
+    "count": 2
+  },
+  "js/modules/multivariate-control-chart/multivariate-control-chart.js": {
+    "count": 1
+  },
+  "js/modules/outlier-test/outlier-test.html": {
+    "count": 6
+  },
+  "js/modules/outlier-test/outlier-test.js": {
+    "count": 2
+  },
+  "js/modules/pairwise-comparison/pairwise-comparison.js": {
+    "count": 3
+  },
+  "js/modules/process-capability/process-capability-format.js": {
+    "count": 1
+  },
+  "js/modules/process-capability/process-capability-model.js": {
+    "count": 2
+  },
+  "js/modules/process-capability/process-capability.js": {
+    "count": 3
+  },
+  "js/modules/project-charter/project-charter.html": {
+    "count": 2
+  },
+  "js/modules/random-generator/random-generator.html": {
+    "count": 6
+  },
+  "js/modules/random-generator/random-generator.js": {
+    "count": 6
+  },
+  "js/modules/rare-event-chart/rare-event-chart.js": {
+    "count": 1
+  },
+  "js/modules/regression/regression-model.js": {
+    "count": 1
+  },
+  "js/modules/regression/regression.html": {
+    "count": 2
+  },
+  "js/modules/regression/regression.js": {
+    "count": 12
+  },
+  "js/modules/response-optimization/response-optimization.html": {
+    "count": 4
+  },
+  "js/modules/response-optimization/response-optimization.js": {
+    "count": 19
+  },
+  "js/modules/rest-api/rest-api.html": {
+    "count": 1
+  },
+  "js/modules/run-chart/run-chart.html": {
+    "count": 1
+  },
+  "js/modules/run-chart/run-chart.js": {
+    "count": 2
+  },
+  "js/modules/sample-size/sample-size.html": {
+    "count": 7
+  },
+  "js/modules/sample-size/sample-size.js": {
+    "count": 10
+  },
+  "js/modules/short-run-chart/short-run-chart.js": {
+    "count": 2
+  },
+  "js/modules/survey-builder/survey-labels.js": {
+    "count": 2
+  },
+  "js/modules/survey-builder/survey-report.js": {
+    "count": 1
+  },
+  "js/modules/time-weighted-chart/time-weighted-chart.html": {
+    "count": 7
+  },
+  "js/modules/time-weighted-chart/time-weighted-chart.js": {
+    "count": 2
+  },
+  "js/modules/transformed-imr-chart/transformed-imr-chart.html": {
+    "count": 1
+  },
+  "js/modules/transformed-imr-chart/transformed-imr-chart.js": {
+    "count": 2
+  },
+  "js/modules/triz-function-analysis/triz-function-analysis.html": {
+    "count": 1
+  },
+  "js/modules/triz-function-analysis/triz-function-analysis.js": {
+    "count": 3
+  },
+  "js/modules/unit-converter/unit-converter-model.js": {
+    "count": 4
+  }
+}
