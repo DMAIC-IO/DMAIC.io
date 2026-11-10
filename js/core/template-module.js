@@ -15,6 +15,7 @@ import { checkAsyncTasks, defineAsyncTaskSlots, createAsyncTasks } from './async
 import { createWorksheetData } from './worksheet-data.js';
 import { withoutStoredEdits } from './chart/instance-chart-manager.js';
 import { createFieldErrors } from './field-errors.js';
+import { formatNumber } from './number-format.js';
 
 /**
  * Was `view(ctx)` bekommt: die Kontextdienste und die Kennungen der Instanz.
@@ -455,6 +456,16 @@ export function createModule(base) {
           const comp = {
             model: freshState,
             t: _t,
+            /**
+             * Zahl für die Anzeige im Format der App-Sprache (`x-text="num(model.mean, 3)"`).
+             * Liest die Sprache bei jedem Aufruf; `onLanguageChange` baut den Baum neu auf.
+             * @param {number|null|undefined} value
+             * @param {number} [decimals]
+             * @returns {string}
+             */
+            num(value, decimals) {
+              return formatNumber(value, context.language, decimals === undefined ? {} : { decimals });
+            },
             /** Navigate the active module to a sub-path. Modules may override this. */
             changeRoute(sub) { this.$route?.go(sub); },
           };

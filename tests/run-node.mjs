@@ -147,6 +147,7 @@ const SKIP = new Set([
   'core/template-tile-chart.test.js',
   'core/template-module-exports.test.js',
   'core/template-module-gestures.test.js',
+  'core/template-module-num.test.js',
   'core/template-module.test.js',
   'core/value-channel.test.js',
   'core/widget-directive.test.js',
