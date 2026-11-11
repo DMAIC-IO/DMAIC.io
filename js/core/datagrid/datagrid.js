@@ -16,6 +16,7 @@ import {
 import {
   ROLE, ALL_ROLES, inferRole, defaultRoleForType, isRoleValidForType, validRolesForType,
 } from './datagrid-roles.js';
+import { detectColumnType } from '../parser/column-types.js';
 import { shortcutRegistry } from '../shortcut-registry.js';
 import { h } from '../dom.js';
 import { decimalSeparator } from '../number-format.js';
@@ -1154,55 +1155,11 @@ export class DataGrid {
   }
 
   _autoDetectType(col) {
-    const vals = col.values.filter(v => v != null);
-    if (vals.length === 0) return;
-
-    const counts = { numeric: 0, currency: 0, percent: 0, date: 0, time: 0, text: 0 };
-
-    for (const v of vals) {
-      const detected = detectInputType(String(v));
-      if (detected) counts[detected.type]++;
-      else counts.text++;
-    }
-
-    const total = vals.length;
-    let bestType = 'text';
-    let bestRatio = 0;
-
-    for (const [type, count] of Object.entries(counts)) {
-      if (type === 'text') continue;
-      const ratio = count / total;
-      if (ratio > bestRatio && ratio >= 0.7) {
-        bestType = type;
-        bestRatio = ratio;
-      }
-    }
-
-    if (bestType === 'text') {
-      const numericCount = vals.filter(v => typeof v === 'number' || parseNumeric(v) !== null).length;
-      if (numericCount / total >= 0.7) bestType = 'numeric';
-    }
-
-    col.type = bestType;
-
-    if (isNumericType(bestType)) {
-      col.values = col.values.map(v => {
-        if (v == null) return null;
-        const d = detectInputType(String(v));
-        if (d && typeof d.value === 'number') return d.value;
-        const n = parseNumeric(v);
-        return n !== null ? n : null;
-      });
-      if (bestType === 'currency' && !col.format.decimals) col.format.decimals = 2;
-      if (bestType === 'percent' && !col.format.decimals) col.format.decimals = 1;
-    } else if (bestType === 'date' || bestType === 'time') {
-      col.values = col.values.map(v => {
-        if (v == null) return null;
-        return parseCellInput({ type: bestType }, String(v));
-      });
-    } else {
-      col.values = col.values.map(v => v == null ? null : String(v));
-    }
+    const detected = detectColumnType(col.values, { format: col.format });
+    if (!detected) return;
+    col.type = detected.type;
+    col.values = detected.values;
+    col.format = detected.format;
 
     // Paste path: type changed silently above. Re-infer role from the
     // now-populated values so a freshly pasted column gets a meaningful role.
