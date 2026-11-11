@@ -34,6 +34,11 @@ suite('Opportunity-Flowchart Migration 0→1.0', () => {
     assertEqual(State.fromJSON({ steps: [{ title: 'A' }, { title: 'B' }] }).steps.length, 2);
   });
 
+  test('from0: eine vorhandene id gleich dem Ersatzmuster bleibt unverändert', () => {
+    const out = from0({ steps: [{ id: 'a', substeps: [{ id: 'ss0m0_0', title: '' }, { title: '' }] }] });
+    assertDeepEqual(out.steps[0].substeps.map((x) => x.id), ['ss0m0_0', 'ss0m0_1']);
+  });
+
   test('fromJSON hebt den Altstand: _schema, expanded, strikt geladen', () => {
     const m = State.fromJSON(legacy());
     const json = m.toJSON();

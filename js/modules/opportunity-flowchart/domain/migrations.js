@@ -14,12 +14,14 @@ function str(v) {
 }
 
 /**
- * Die id, sonst `fallback`, bei Kollision mit `taken` um `_` ergänzt; wird in `taken` eingetragen.
+ * Eine vorhandene id bleibt unverändert; fehlt sie, gilt `fallback`, bei Kollision mit `taken` um `_` ergänzt
+ * und in `taken` eingetragen.
  * @param {unknown} id @param {string} fallback @param {Set<string>} taken @returns {string}
  */
 function idOrFallback(id, fallback, taken) {
-  let out = typeof id === 'string' && id !== '' ? id : fallback;
-  if (out === fallback) while (taken.has(out)) out += '_';
+  if (typeof id === 'string' && id !== '') return id;
+  let out = fallback;
+  while (taken.has(out)) out += '_';
   taken.add(out);
   return out;
 }
@@ -27,7 +29,8 @@ function idOrFallback(id, fallback, taken) {
 /**
  * '0→1.0': Altstände ohne `_schema`. Die Schritte behalten `id`, `title`,
  * `description`, `side` (sonst `'va'`) und `substeps` (`id`, `title`); alle
- * anderen Schrittfelder fallen weg. `expanded: true` am Schritt wandert als id
+ * anderen Schrittfelder fallen weg. Fehlende ids werden ersetzt: `s0m<Schrittindex>` und
+ * `ss0m<Schrittindex>_<Unterschrittindex>`, bei Kollision mit `_` ergänzt. `expanded: true` am Schritt wandert als id
  * nach `expanded` (Ansichtsfeld).
  * @param {object} json Kopie des gespeicherten Zustands
  * @returns {{ steps: object[], expanded: string[] }}
@@ -46,7 +49,7 @@ export function from0(json) {
   for (const raw of source) {
     if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) continue;
     at += 1;
-    const id = typeof raw.id === 'string' && raw.id !== '' ? raw.id : idOrFallback('', `s0m${at}`, taken);
+    const id = idOrFallback(raw.id, `s0m${at}`, taken);
     const substeps = Array.isArray(raw.substeps)
       ? raw.substeps
         .filter((s) => s !== null && typeof s === 'object' && !Array.isArray(s))
