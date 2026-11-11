@@ -237,7 +237,7 @@ suite('x-field — Meldung an _ui.fieldErrors', () => {
     });
     const model = new Range();
     const calls = [];
-    const fieldErrors = { set: (p, e) => calls.push(['set', p, e]), clear: (p) => calls.push(['clear', p]) };
+    const fieldErrors = { set: (p, e) => calls.push(['set', p, e]), clear: (p) => calls.push(['clear', p]), message: () => '' };
     const name = `fieldErr${Date.now()}`;
     Alpine.data(name, () => ({ model, moduleId: 'fx', _ui: { fieldErrors } }));
     const host = document.createElement('div');

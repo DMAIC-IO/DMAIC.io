@@ -3,7 +3,7 @@
  * letzte Ablehnung eines `x-field`; jede gültige Änderung des Felds oder
  * eines Invariantenpartners löscht sie.
  */
-import { suite, test, assertEqual } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { createModule } from '../../js/core/template-module.js';
 import { createFieldErrors } from '../../js/core/field-errors.js';
@@ -200,6 +200,30 @@ suite('fieldError(path) — Invariante', () => {
     await flush();
     assertEqual(vm().fieldError('model.lsl'), '');
     assertEqual(els.msg.textContent, '');
+  });
+
+  test('Partner über x-field gültig gemacht: auch die Markierung am abgelehnten Feld fällt', async () => {
+    const { vm, els } = await mount();
+    change(els.usl, '3');
+    change(els.lsl, '5');
+    await flush();
+    assertEqual(els.lsl.getAttribute('aria-invalid'), 'true');
+    assertTrue(els.lsl.classList.contains('field--error'));
+    change(els.usl, '9');
+    await flush();
+    assertEqual(vm().fieldError('model.lsl'), '');
+    assertEqual(els.lsl.getAttribute('aria-invalid'), null, 'aria-invalid folgt der Meldung');
+    assertTrue(!els.lsl.classList.contains('field--error'), 'field--error folgt der Meldung');
+  });
+
+  test('Partner direkt ins Model geschrieben: Markierung fällt mit der Meldung', async () => {
+    const { els, vm } = await mount();
+    change(els.usl, '3');
+    change(els.lsl, '5');
+    await flush();
+    vm().model.usl = 9;
+    await flush();
+    assertEqual(els.lsl.getAttribute('aria-invalid'), null);
   });
 
   test('ungelesene Meldung: Partner hin und zurück löscht sie trotzdem', async () => {

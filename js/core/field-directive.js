@@ -143,6 +143,12 @@ export function registerFieldDirective(Alpine, { i18n, widgets }) {
 
     // Die letzte Ablehnung für `fieldError(path)` der Komponente; beim Tippen entsteht keine.
     const fieldErrors = () => data._ui?.fieldErrors;
+    // Die Markierung lebt so lange wie die Meldung: fällt sie weg, weil ein
+    // Invariantenpartner den Wert gültig gemacht hat, fällt auch die Markierung.
+    effect(() => {
+      const errors = fieldErrors();
+      if (errors && !errors.message(expression)) clearRejection(el);
+    });
     const commit = (live) => {
       if (ch.set(readElement(el, spec))) {
         liveRejected = false;
