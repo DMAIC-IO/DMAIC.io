@@ -7,6 +7,7 @@ import { suite, test, assert, assertEqual, assertDeepEqual } from '../test-utils
 import { parseCsv } from '../../js/core/parser/csv.js';
 import { parseJson } from '../../js/core/parser/json.js';
 import { parseXlsx } from '../../js/core/parser/xlsx.js';
+import { parseMpx } from '../../js/core/parser/mpx.js';
 import { parseAqdef } from '../../js/core/parser/aqdef.js';
 import { FORMATS, ACCEPT, TEXT_FORMATS, formatForFilename } from '../../js/core/parser/index.js';
 import { ensureXLSX } from '../../js/core/export-utils.js';
@@ -112,6 +113,67 @@ suite('Parser — XLSX', () => {
   });
 });
 
+/** ZIP ohne Kompression (Methode 0); die Prüfsumme liest der Leser nicht. */
+function storedZip(files) {
+  const enc = new TextEncoder();
+  const chunks = [];
+  const cd = [];
+  let offset = 0;
+  for (const [name, data] of Object.entries(files)) {
+    const nm = enc.encode(name);
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true);
+    lh.setUint32(18, data.length, true);
+    lh.setUint32(22, data.length, true);
+    lh.setUint16(26, nm.length, true);
+    chunks.push(new Uint8Array(lh.buffer), nm, data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true);
+    ch.setUint32(20, data.length, true);
+    ch.setUint32(24, data.length, true);
+    ch.setUint16(28, nm.length, true);
+    ch.setUint32(42, offset, true);
+    cd.push(new Uint8Array(ch.buffer), nm);
+    offset += 30 + nm.length + data.length;
+  }
+  const cdSize = cd.reduce((n, c) => n + c.length, 0);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true);
+  end.setUint16(8, Object.keys(files).length, true);
+  end.setUint16(10, Object.keys(files).length, true);
+  end.setUint32(12, cdSize, true);
+  end.setUint32(16, offset, true);
+  const all = [...chunks, ...cd, new Uint8Array(end.buffer)];
+  const out = new Uint8Array(all.reduce((n, c) => n + c.length, 0));
+  let p = 0;
+  for (const c of all) { out.set(c, p); p += c.length; }
+  return out.buffer;
+}
+
+const utf16Blob = (cells) => {
+  const u = new Uint16Array(1 + cells.reduce((n, c) => n + c.length + 1, 0));
+  let p = 0;
+  u[p++] = 0xfeff;
+  for (const c of cells) { for (const ch of c) u[p++] = ch.charCodeAt(0); u[p++] = 0; }
+  return new Uint8Array(u.buffer);
+};
+
+suite('Parser — MPX', () => {
+  test('Textspalte mit Zahlenwerten behält den Typ aus der Datei', async () => {
+    const sheet = { Data: { Name: 'Blatt', Columns: [{ WorksheetVarBody: {
+      Name: 'Charge',
+      VarData: { VarDataBody: { CellCt: 3, HasTextData: true, TextData: '/blobs/blob1?size=3' } },
+    } }] } };
+    const zip = storedZip({
+      'sheets/1/sheet.json': new TextEncoder().encode(JSON.stringify(sheet)),
+      'blobs/blob1': utf16Blob(['1', '2', '3']),
+    });
+    const col = (await parseMpx(zip)).sheets[0].columns[0];
+    assertEqual(col.type, 'text');
+    assertDeepEqual(col.values, ['1', '2', '3']);
+  });
+});
+
 suite('Parser — AQDEF', () => {
   test('Merkmalswerte bleiben numerisch', async () => {
     const txt = 'K0100 1\nK2002/1 Länge\nK0001/1 1,5\nK0001/1 2,5\nK0001/1 3,5\n';
@@ -138,8 +200,9 @@ suite('Parser — Formatregister', () => {
   test('ACCEPT enthält alle 14 Endungen', () => {
     const exts = ACCEPT.split(',');
     assertEqual(exts.length, 14);
-    assert(exts.every(e => e.startsWith('.')));
-    assert(exts.includes('.dfx') && exts.includes('.ods') && exts.includes('.mpx'));
+    assertDeepEqual(exts, ['.mpx', '.csv', '.tsv', '.txt', '.xlsx', '.xlsm', '.xls', '.ods',
+      '.json', '.ndjson', '.jsonl', '.dfq', '.dfd', '.dfx']);
+    assert(exts.includes('.dfq'));
   });
 
   test('TEXT_FORMATS', () => {

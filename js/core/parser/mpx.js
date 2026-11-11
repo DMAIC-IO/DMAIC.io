@@ -19,17 +19,8 @@
  * The parser auto-detects the format: if any `sheets/N/sheet.json` entry is
  * present it takes the JSON path, otherwise it falls back to the XML strategies.
  *
- * Output schema:
- * {
- *   format: 'mpx',
- *   sheets: [
- *     {
- *       name: string,
- *       columns: [{ name, shortName, type: 'numeric'|'text', values: any[] }],
- *       rowCount: number,
- *     }
- *   ],
- * }
+ * Output: see `ParseResult` in index.js. Column types come from the file
+ * (`numeric` or `text`); they are not re-detected.
  */
 
 import { readZip, bytesToText } from './zip.js';
@@ -37,7 +28,7 @@ import { readZip, bytesToText } from './zip.js';
 /**
  * Parse a Minitab .mpx file from an ArrayBuffer.
  * @param {ArrayBuffer} buffer
- * @returns {Promise<{format:string, sheets:Array<object>}>}
+ * @returns {Promise<import('./index.js').ParseResult>}
  */
 export async function parseMpx(buffer) {
   let entries;
