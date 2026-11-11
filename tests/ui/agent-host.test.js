@@ -326,8 +326,12 @@ suite('agent host — Toast für Änderungen im Hintergrund', () => {
   });
 
   test('mehrere: many mit Anzahl', () => {
-    const { host, toasts } = withToast();
-    host.notifyBackgroundChange(['fw-1', 'x', 'y']);
+    const { host, toasts } = withToast({ define: [
+      { instanceId: 'a', moduleId: 'five-why', order: 0 },
+      { instanceId: 'b', moduleId: 'five-why', order: 1 },
+      { instanceId: 'c', moduleId: 'five-why', order: 2 },
+    ] });
+    host.notifyBackgroundChange(['a', 'b', 'c']);
     assertEqual(toasts[0].msg, 'agent.backgroundChange.many|{"n":3}');
   });
 
