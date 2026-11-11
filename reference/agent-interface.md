@@ -234,6 +234,19 @@ wird es mit `positiveLevel` als Parameter abgewiesen. `read()` liefert die Felde
 unter `levels` die Stufen (`all`, `positive`, `negative`) und unter `analysis`
 das berechnete Ergebnis; es rechnet bei jeder Änderung neu, ohne Entprellung.
 
+Beispiel für ein Schema-Modul mit Kommandos auf einer Schrittliste:
+`opportunity-flowchart` (Wertschöpfungskette mit Unterschritten). Jedes Kommando
+nimmt genau ein Objekt. `addStep` (`side`: `va` oder `nva`, optional `index`) und
+`addSubstep` (`stepId`) liefern die neue id zurück. `removeStep`, `moveStep`
+(`id`, `index` als Endposition, optional `side` zum Wechsel der Seite), `setSide`,
+`removeSubstep`, `moveSubstep` (`stepId`, `substepId`, `index`) und `setExpanded`
+(`id`, `expanded`) nehmen die ids aus `read()`. `appendSteps` hängt mehrere
+Schritte (`title`, `description`, `side`) an und liefert deren Anzahl. Titel und
+Beschreibung eines Schritts setzt der Agent über `instance.set` auf `steps`; das
+Aufklappen steht nicht in `steps`, sondern nur im Kommando `setExpanded`. Der
+Import aus anderen Modulen läuft über `ctx.instances` und ist für den Agenten
+nicht sichtbar.
+
 `settle` (die interne Ruhe vor einem `read()`) wartet zusätzlich auf laufende
 `auto`-Abläufe, höchstens 20 Sekunden, und geht danach ohne Fehler weiter.
 
