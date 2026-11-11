@@ -103,9 +103,9 @@
       }
     },
     "sendToWorksheet": {
-      "help": "Sends the columns of the shown sheet with type and format to a new worksheet, all or nothing. Without data nothing is sent; without columns a notice appears. The value is the new worksheet; without data or columns none is created. While parse is running the task does not start and names the reason; otherwise it first waits until parse has finished and sends its result. If that takes longer than 20 seconds it fails without sending.",
+      "help": "Sends the columns of the shown sheet with type and format to a new worksheet, all or nothing. Without data nothing is sent; without columns a notice appears. The value is the new worksheet; without data or columns none is created. It first waits until parse has finished and sends its result, so a start right after an option change already sends the new result. If that takes longer than 20 seconds it fails without sending.",
       "cancel": {
-        "help": "Stops waiting for the new worksheet."
+        "help": "Cancels the task. While it is still waiting for parse, nothing is sent; a send already under way runs to its end."
       }
     }
   }

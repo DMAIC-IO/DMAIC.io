@@ -1477,6 +1477,7 @@
       "defaultSheetName": "Tabelle",
       "appendTargetUnknown": "Die Zielspalte gibt es im Worksheet nicht (mehr).",
       "openTimeout": "Das neue Worksheet wurde nicht rechtzeitig geöffnet.",
+      "writeFailed": "Das Worksheet konnte die Spalten nicht schreiben.",
       "sheetCopy": "Kopie",
       "addSheet": "Neues Blatt hinzufügen",
       "renameSheet": "Umbenennen",

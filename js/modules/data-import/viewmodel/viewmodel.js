@@ -104,10 +104,10 @@ export default createModule({
       },
     }),
     sendToWorksheet: asyncTask({
-      blocked() { return this._asyncTasks.parse.running ? this.t('parsing') : null; },
-      async run() {
+      async run(_args, { signal }) {
         // Erst das Parsen abwarten: eine eben geänderte Option darf kein altes Ergebnis senden.
         if (!(await this._asyncTaskHost.settle(SETTLE_MS))) throw new Error(this.t('parseTimeout'));
+        signal.throwIfAborted();
         const sheet = this.shownSheet;
         if (!sheet) return null;
         if (sheet.columns.length === 0) {

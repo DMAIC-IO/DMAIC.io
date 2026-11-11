@@ -184,17 +184,34 @@ suite('data-import: Viewmodel im Browser', () => {
     assertEqual(cols[0].name, 'A;B;C');
   });
 
-  test('sendToWorksheet startet nicht, solange parse läuft', async () => {
+  test('sendToWorksheet während parse läuft: wartet und sendet das neue Ergebnis', async () => {
+    const h = await mount();
+    await h.run('importText', { text: CSV, format: 'csv' });
+    const vm = h.vm();
+    assertEqual(vm.shownSheet.columns.length, 2);
+    setFields(vm.model, { options: csvOptions(vm, { delimiter: 'comma' }) });
+    await flush();
+    assertEqual(vm.read().asyncTasks.parse.running, true);
+    const out = await h.run('sendToWorksheet');
+    assertEqual(out.status, 'done');
+    const cols = h.states[out.value.instanceId].sheets[0].state.columns.filter((c) => c.name);
+    assertEqual(cols.length, 1);
+    assertEqual(cols[0].name, 'A;B');
+  });
+
+  test('sendToWorksheet abgebrochen, während er auf parse wartet: nichts gesendet', async () => {
     const h = await mount();
     await h.run('importText', { text: CSV, format: 'csv' });
     const vm = h.vm();
     setFields(vm.model, { options: csvOptions(vm, { delimiter: 'comma' }) });
     await flush();
-    assertEqual(vm.read().asyncTasks.parse.running, true);
-    const out = await h.run('sendToWorksheet');
-    assertEqual(out.status, 'rejected');
-    assertEqual(out.reason, vm.t('parsing'));
+    const before = h.phases.data.length;
+    const pending = h.run('sendToWorksheet');
+    vm._asyncTaskHost.cancel('sendToWorksheet');
+    assertEqual((await pending).status, 'cancelled');
     await h.settle();
+    await flush();
+    assertEqual(h.phases.data.length, before, 'trotz Abbruch ein Worksheet angelegt');
   });
 
   test('sendToWorksheet ohne Daten liefert null', async () => {

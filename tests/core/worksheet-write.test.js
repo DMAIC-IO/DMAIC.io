@@ -7,6 +7,7 @@ import {
   worksheetWrite, commitWorksheetWrite, applyWriteColumn, WriteError, START_SLOTS,
 } from '../../js/core/worksheet-write.js';
 import { COLUMN_TYPES } from '../../js/core/datagrid/datagrid-utils.js';
+import { validRolesForType } from '../../js/core/datagrid/datagrid-roles.js';
 
 function col(id, name, values, extra = {}) {
   return { id, name, shortName: id, type: 'numeric', unit: '', values, formulas: values.map(() => null), format: { decimals: 6 }, ...extra };
@@ -126,6 +127,30 @@ suite('core/worksheet-write — applyWriteColumn', () => {
     assertEqual(c.name, 'Preis');
     assertEqual(c.type, 'currency');
     assertDeepEqual(c.format, { decimals: 2 });
+  });
+
+  test('Datum in einen leeren Startslot: Rolle passt zum neuen Typ', () => {
+    const state = wsState();
+    state.sheets[0].state.columns[0].role = 'continuous';
+    const res = applyWriteColumn(state, { sheetId: 'sheet_1', to: { kind: 'slot', slot: 0 }, name: 'Tag', type: 'date', values: ['2026-01-01', '2026-01-02'] });
+    const c = res.state.sheets[0].state.columns[0];
+    assertEqual(c.type, 'date');
+    assertEqual(c.role, 'date');
+    assert(validRolesForType('date').includes(c.role), 'Rolle ungültig für date');
+  });
+
+  test('Typwechsel: eine passende Hand-Rolle bleibt, eine unpassende fällt', () => {
+    const state = wsState();
+    Object.assign(state.sheets[0].state.columns[0], { role: 'identifier', roleManual: true });
+    Object.assign(state.sheets[0].state.columns[1], { role: 'freeText', roleManual: true });
+    let res = applyWriteColumn(state, { sheetId: 'sheet_1', to: { kind: 'column', colId: 'c1' }, name: '', type: 'currency', values: [1, 2], format: { decimals: 2 } });
+    const kept = res.state.sheets[0].state.columns[0];
+    assertEqual(kept.role, 'identifier');
+    assertEqual(kept.roleManual, true);
+    res = applyWriteColumn(state, { sheetId: 'sheet_1', to: { kind: 'column', colId: 'c2' }, name: '', type: 'date', values: ['2026-01-01'] });
+    const dropped = res.state.sheets[0].state.columns[1];
+    assertEqual(dropped.role, 'date');
+    assertEqual(dropped.roleManual, false);
   });
 
   test('numeric ohne Format in eine Textspalte lässt text', () => {
@@ -287,6 +312,18 @@ suite('core/worksheet-write — commitWorksheetWrite', () => {
     const plan = worksheetWrite().worksheet('ws1').sheet('sheet_9').column({ name: 'A', values: [1] }).build();
     const err = await caught(() => commitWorksheetWrite(ctx, plan));
     assertEqual(err?.reason, 'unknown_sheet');
+  });
+
+  test('eingehängt, Schreiben gescheitert: write_failed, kein Store-Ersatz', async () => {
+    const ctx = fakeContext({ mounted: { ok: false, reason: 'write_failed' } });
+    const before = ctx.moduleStates.ws1;
+    const plan = worksheetWrite().worksheet('ws1').sheet('sheet_1').column({ name: 'A', values: [1] }).build();
+    const err = await caught(() => commitWorksheetWrite(ctx, plan));
+    assert(err instanceof WriteError, 'kein WriteError');
+    assertEqual(err.reason, 'write_failed');
+    assertEqual(err.message, 'modules.worksheet.writeFailed');
+    assertEqual(ctx.moduleStates.ws1, before);
+    assertEqual(ctx.calls.setModuleState, 0);
   });
 
   test('neues Arbeitsblatt: added, activated, dann das Ereignis; created true', async () => {

@@ -103,9 +103,9 @@
       }
     },
     "sendToWorksheet": {
-      "help": "Sendet die Spalten des gezeigten Blatts mit Typ und Format an ein neues Worksheet, ganz oder gar nicht. Gibt es keine Daten, wird nichts gesendet; ohne Spalten erscheint ein Hinweis. Der Wert ist das neue Worksheet; ohne Daten oder Spalten entsteht keines. Läuft gerade parse, startet der Ablauf nicht und nennt den Grund; sonst wartet er zuerst, bis parse fertig ist, und sendet dessen Ergebnis. Dauert das länger als 20 Sekunden, scheitert er, ohne zu senden.",
+      "help": "Sendet die Spalten des gezeigten Blatts mit Typ und Format an ein neues Worksheet, ganz oder gar nicht. Gibt es keine Daten, wird nichts gesendet; ohne Spalten erscheint ein Hinweis. Der Wert ist das neue Worksheet; ohne Daten oder Spalten entsteht keines. Zuerst wartet er, bis parse fertig ist, und sendet dessen Ergebnis; ein Start direkt nach einer Optionsänderung sendet also schon das neue Ergebnis. Dauert das länger als 20 Sekunden, scheitert er, ohne zu senden.",
       "cancel": {
-        "help": "Bricht das Warten auf das neue Worksheet ab."
+        "help": "Bricht den Ablauf ab. Solange er noch auf parse wartet, wird nichts gesendet; ein schon begonnenes Senden läuft zu Ende."
       }
     }
   }

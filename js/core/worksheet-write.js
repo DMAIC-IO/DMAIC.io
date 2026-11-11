@@ -26,7 +26,7 @@
  * Rein bzw. DOM-frei: kein DOM, kein `window`.
  */
 import { uid } from './uid.js';
-import { inferRole } from './datagrid/datagrid-roles.js';
+import { inferRole, isRoleValidForType } from './datagrid/datagrid-roles.js';
 import { recalcAllFormulas } from './datagrid/datagrid-formula.js';
 import { COLUMN_TYPES } from './datagrid/datagrid-utils.js';
 import { findOwnPhase } from './instance-handoff.js';
@@ -50,12 +50,14 @@ const REASON_MESSAGES = {
   unknown_sheet: ['modules.worksheet.appendTargetUnknown', 'Target column not found in the worksheet'],
   unknown_column: ['modules.worksheet.appendTargetUnknown', 'Target column not found in the worksheet'],
   open_timeout: ['modules.worksheet.openTimeout', 'The new worksheet did not open in time'],
+  write_failed: ['modules.worksheet.writeFailed', 'The worksheet could not write the columns'],
 };
 
 /**
  * Fehler beim Bauen oder Schreiben eines Plans. `reason` ist einer von
  * `missing_target`, `missing_sheet`, `empty_plan`, `unknown_type`,
- * `unknown_instance`, `unknown_sheet`, `unknown_column`, `open_timeout`.
+ * `unknown_instance`, `unknown_sheet`, `unknown_column`, `open_timeout`,
+ * `write_failed`.
  */
 export class WriteError extends Error {
   /**
@@ -198,6 +200,20 @@ export function retypeForWrite(op) {
   return null;
 }
 
+/**
+ * Die Rolle einer Spalte nach einem Typwechsel neu bestimmen: Eine von Hand
+ * gesetzte Rolle bleibt, solange sie zum neuen Typ passt; sonst entscheidet
+ * `inferRole` über die Werte, und die Hand-Markierung fällt weg. Dieselbe
+ * Regel wie `DataGrid._reinferRoleAfterTypeChange`. Verändert `col`.
+ * @param {{ type: string, values?: any[], role?: string, roleManual?: boolean }} col
+ * @returns {void}
+ */
+export function reinferRoleAfterRetype(col) {
+  if (col.roleManual && isRoleValidForType(col.role, col.type)) return;
+  if (col.roleManual) col.roleManual = false;
+  col.role = inferRole(col);
+}
+
 /** Leerer Blattzustand, wie ihn der Worksheet für ein neues Blatt anlegt. */
 function emptySheetState() {
   return { columns: [], rowCount: 0, colWidths: {}, sortCol: null, sortDir: null, selection: null };
@@ -279,6 +295,7 @@ export function applyWriteColumn(wsState, op) {
     if (next) { col.type = next.type; col.format = next.format; }
     col.values = vals;
     col.formulas = new Array(vals.length).fill(null);
+    if (next) reinferRoleAfterRetype(col);
     cols[idx] = col;
     colId = col.id;
   }

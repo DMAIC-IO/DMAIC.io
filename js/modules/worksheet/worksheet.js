@@ -1826,24 +1826,20 @@ const mod = createModule({
 
       // ── writeColumns handler ─────────────────────────────────
       /**
-       * Einen Schreibplan (`core/worksheet-write.js`) ganz oder gar nicht
-       * schreiben. Erst werden alle Schritte geprüft, dann geschrieben,
-       * dann einmal gespeichert und `worksheet:dataChanged` gemeldet.
-       * `reply` quittiert synchron mit `{ ok: true, columnIds }` oder
-       * `{ ok: false, reason }`.
-       * @noagent event handler; agents write through the worksheet's own actions
-       * @param {{ instanceId: string, sheetId: string, ops: object[], reply?: Function }} payload
+       * Die Schritte eines Schreibplans prüfen und schreiben (aktives Blatt
+       * ins Grid, inaktives in den Model-Zustand).
+       * @noagent internal helper of the writeColumns handler
+       * @param {string} sheetId Zielblatt
+       * @param {object[]} ops Schritte des Plans
+       * @returns {string[]|{ ok: false, reason: string }} die Spalten-ids oder die Absage
        */
-      _handleWriteColumns({ instanceId, sheetId, ops, reply }) {
-        const context = module._context;
-        if (instanceId !== context.instanceId) return;
-
+      _writeColumnsLive(sheetId, ops) {
         const sheet = this.model.sheets.find(s => s.id === sheetId);
-        if (!sheet) { reply?.({ ok: false, reason: 'unknown_sheet' }); return; }
+        if (!sheet) return { ok: false, reason: 'unknown_sheet' };
         const isActive = sheetId === this.model.activeSheetId;
         const columns = isActive ? this._grid.columns : (sheet.state?.columns ?? []);
         const missing = ops.some(op => op.to?.kind === 'column' && !columns.some(c => c.id === op.to.colId));
-        if (missing) { reply?.({ ok: false, reason: 'unknown_column' }); return; }
+        if (missing) return { ok: false, reason: 'unknown_column' };
 
         const columnIds = [];
         if (isActive) {
@@ -1859,6 +1855,8 @@ const mod = createModule({
               col = this._grid.addColumn({ name, type, format: op.format ?? defaultColumnFormat(type, op.discrete) });
               if (needed > 0) this._grid.addRows(needed);
               for (let i = 0; i < values.length; i++) col.values[i] = values[i];
+              // Rolle aus den Werten, wie der Store-Weg sie anlegt.
+              this._grid._reinferRoleAfterTypeChange(col);
             } else {
               if (to.kind === 'slot' && name) col.name = name;
               const next = retypeForWrite(op);
@@ -1867,6 +1865,7 @@ const mod = createModule({
               for (let i = 0; i < this._grid.rowCount; i++) {
                 col.values[i] = i < values.length ? values[i] : null;
               }
+              if (next) this._grid._reinferRoleAfterTypeChange(col);
             }
             columnIds.push(col.id);
           }
@@ -1876,12 +1875,40 @@ const mod = createModule({
           let state = this.model.toJSON();
           for (const op of ops) {
             const res = applyWriteColumn(state, { ...op, sheetId });
-            if (!res.ok) { reply?.(res); return; }
+            if (!res.ok) return res;
             state = res.state;
             columnIds.push(res.colId);
           }
           sheet.state = state.sheets.find(s => s.id === sheetId).state;
         }
+        return columnIds;
+      },
+
+      /**
+       * Einen Schreibplan (`core/worksheet-write.js`) ganz oder gar nicht
+       * schreiben. Erst werden alle Schritte geprüft, dann geschrieben,
+       * dann einmal gespeichert und `worksheet:dataChanged` gemeldet.
+       * `reply` quittiert synchron mit `{ ok: true, columnIds }` oder
+       * `{ ok: false, reason }`.
+       * @noagent event handler; agents write through the worksheet's own actions
+       * @param {{ instanceId: string, sheetId: string, ops: object[], reply?: Function }} payload
+       */
+      _handleWriteColumns({ instanceId, sheetId, ops, reply }) {
+        const context = module._context;
+        if (instanceId !== context.instanceId) return;
+
+        // Ein Wurf beim Schreiben darf nicht als „nicht eingehängt“ gelten:
+        // Der Sender schriebe sonst über den Store auf veraltetem Stand und
+        // meldete Erfolg.
+        let columnIds;
+        try {
+          columnIds = this._writeColumnsLive(sheetId, ops);
+        } catch (err) {
+          console.error('[worksheet] writeColumns:', err);
+          reply?.({ ok: false, reason: 'write_failed' });
+          return;
+        }
+        if (!Array.isArray(columnIds)) { reply?.(columnIds); return; }
         reply?.({ ok: true, columnIds });
 
         try {

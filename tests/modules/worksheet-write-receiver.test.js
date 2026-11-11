@@ -5,6 +5,8 @@
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import worksheetMod from '../../js/modules/worksheet/worksheet.js';
+import { applyWriteColumn, commitWorksheetWrite, worksheetWrite } from '../../js/core/worksheet-write.js';
+import { validRolesForType } from '../../js/core/datagrid/datagrid-roles.js';
 
 // ─── Empfänger worksheet:writeColumns (eingehängtes Grid) ────────
 
@@ -64,7 +66,7 @@ async function mountWorksheet() {
   vm._grid.history.clear();
   const sheetId = vm.model.activeSheetId;
   return {
-    vm, bus, emitted, sheetId,
+    vm, bus, emitted, sheetId, context,
     async unmount() { await instance.destroy(); container.remove(); },
   };
 }
@@ -133,5 +135,57 @@ suite('Worksheet — Empfänger worksheet:writeColumns', () => {
       assertDeepEqual(answer, { ok: false, reason: 'unknown_sheet' });
       assertEqual(w.vm._grid.columns.length, 5);
     } finally { await w.unmount(); }
+  });
+  test('Datum in einen Startslot: Rolle passt zum Typ', async () => {
+    const w = await mountWorksheet();
+    try {
+      assertEqual(w.vm._grid.columns[0].role, 'continuous');
+      let answer = null;
+      w.bus.emit('worksheet:writeColumns', {
+        instanceId: 'ws-w', sheetId: w.sheetId,
+        ops: [{ to: { kind: 'slot', slot: 0 }, name: 'Tag', type: 'date', values: ['2026-01-01', '2026-01-02'] }],
+        reply: (r) => { answer = r; },
+      });
+      assertEqual(answer?.ok, true);
+      const c = w.vm._grid.columns[0];
+      assertEqual(c.type, 'date');
+      assertEqual(c.role, 'date');
+      assertEqual(validRolesForType('date').includes(c.role), true);
+    } finally { await w.unmount(); }
+  });
+
+  test('angehängte Textspalte: eingehängt und Store vergeben dieselbe Rolle', async () => {
+    const values = ['a', 'b', 'a', 'b', 'a', 'b'];
+    const op = { to: { kind: 'append' }, name: 'Gruppe', type: 'text', values };
+    const w = await mountWorksheet();
+    try {
+      let answer = null;
+      w.bus.emit('worksheet:writeColumns', { instanceId: 'ws-w', sheetId: w.sheetId, ops: [op], reply: (r) => { answer = r; } });
+      assertEqual(answer?.ok, true);
+      const live = w.vm._grid.columns.at(-1);
+      const stored = applyWriteColumn(
+        { sheets: [{ id: 's', name: 'S', state: { columns: [], rowCount: 0 } }] },
+        { ...op, sheetId: 's' },
+      ).state.sheets[0].state.columns[0];
+      assertEqual(stored.role, 'categorical');
+      assertEqual(live.role, stored.role);
+    } finally { await w.unmount(); }
+  });
+
+  test('wirft der Empfänger beim Schreiben: commit scheitert mit write_failed', async () => {
+    const w = await mountWorksheet();
+    const errors = console.error;
+    console.error = () => {};
+    try {
+      w.vm._grid.addColumn = () => { throw new Error('kaputt'); };
+      const changedBefore = w.emitted.filter(([n]) => n === 'worksheet:dataChanged').length;
+      const plan = worksheetWrite().worksheet('ws-w').sheet(w.sheetId).column({ name: 'A', values: [1, 2] }).build();
+      let err = null;
+      let res = null;
+      try { res = await commitWorksheetWrite(w.context, plan); } catch (e) { err = e; }
+      assertEqual(res, null, 'Erfolg gemeldet');
+      assertEqual(err?.reason, 'write_failed');
+      assertEqual(w.emitted.filter(([n]) => n === 'worksheet:dataChanged').length, changedBefore, 'dataChanged trotz Fehler');
+    } finally { console.error = errors; await w.unmount(); }
   });
 });
