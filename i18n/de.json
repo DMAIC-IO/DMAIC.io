@@ -13078,6 +13078,12 @@
     }
   },
   "agent": {
+    "backgroundChange": {
+      "one": "Agent hat {module} „{name}“ geändert",
+      "oneUnnamed": "Agent hat {module} geändert",
+      "many": "Agent hat {n} Instanzen geändert",
+      "show": "Anzeigen"
+    },
     "errors": {
       "notAnAction": "Eintrag {index} ist kein Aktionsobjekt.",
       "missingOp": "Eintrag {index} hat kein Feld \"op\".",

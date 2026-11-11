@@ -13074,6 +13074,12 @@
     }
   },
   "agent": {
+    "backgroundChange": {
+      "one": "Agent changed {module} “{name}”",
+      "oneUnnamed": "Agent changed {module}",
+      "many": "Agent changed {n} instances",
+      "show": "Show"
+    },
     "errors": {
       "notAnAction": "Entry {index} is not an action object.",
       "missingOp": "Entry {index} has no \"op\" field.",

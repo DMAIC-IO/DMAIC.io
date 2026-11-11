@@ -64,7 +64,9 @@ async function tick(times = 3) {
 function makeRuntime({ denied = false, viewmodel = null, completed = false, slowAdd = false,
                       getHelp = async () => null, stateManager: stateManagerOverrides,
                       registry: registryOverrides, primed = true, instances = [], defaultRevisions = false,
-                      onSettle = () => {}, instancesService, isMounted = () => true } = {}) {
+                      onSettle = () => {}, instancesService, isMounted = () => true,
+                      displayed = () => false } = {}) {
+  const notified = [];
   const log = [];
   const settles = [];
   const phases = { data: [...instances], define: [{ instanceId: 'fw-1', moduleId: 'five-why', order: 0 }], extras: [] };
@@ -133,9 +135,11 @@ function makeRuntime({ denied = false, viewmodel = null, completed = false, slow
       // Eigenes Protokoll: `log` bleibt das der Seiteneffekte.
       settle: async (id) => { settles.push(id ?? null); onSettle(id); },
       isMounted: (id) => isMounted(id),
+      isDisplayed: (id) => displayed(id),
+      notifyBackgroundChange: (ids) => { notified.push(ids); },
     },
   });
-  return { runtime, log, settles, phases, revs, bumpStructure: () => { structureRev += 1; } };
+  return { runtime, log, settles, notified, phases, revs, bumpStructure: () => { structureRev += 1; } };
 }
 
 suite('agent runtime — consent gate', () => {
@@ -1500,5 +1504,67 @@ suite('agent runtime — Lesen ohne gespeicherten Zustand', () => {
     const set = await runtime.interact([{ op: 'instance.set', instance: 'd-1', values: { title: 'Neu' } }]);
     assertEqual(set.ok, true, JSON.stringify(set));
     assertEqual(sm.getModuleState('d-1').title, 'Neu');
+  });
+});
+
+suite('agent runtime — Toast für Änderungen im Hintergrund', () => {
+  const ws = (n) => ({ instanceId: `ws-${n}`, moduleId: 'worksheet', order: n });
+  const write = (instance) => ({ op: 'instance.call', instance, method: 'importCsv', args: ['a;b'] });
+  const read = (instance) => ({ op: 'instance.call', instance, method: 'read' });
+  const make = (opts = {}) => makeRuntime({
+    instances: [ws(1), ws(2), ws(3)],
+    viewmodel: { read: () => ({}), importCsv: () => true },
+    ...opts,
+  });
+
+  test('ein Stapel auf eine nicht angezeigte Instanz meldet genau einmal', async () => {
+    const { runtime, notified } = make();
+    await runtime.interact([write('ws-1')]);
+    assertDeepEqual(notified, [['ws-1']]);
+  });
+
+  test('drei Instanzen: ein Aufruf mit drei ids in der Reihenfolge der ersten Änderung', async () => {
+    const { runtime, notified } = make();
+    await runtime.interact([write('ws-2'), write('ws-1'), write('ws-3')]);
+    assertDeepEqual(notified, [['ws-2', 'ws-1', 'ws-3']]);
+  });
+
+  test('die angezeigte Instanz meldet nichts, entschieden am Ende des Aufrufs', async () => {
+    const { runtime, notified } = make({ displayed: (id) => id === 'ws-1' });
+    await runtime.interact([write('ws-1')]);
+    assertDeepEqual(notified, []);
+  });
+
+  test('angezeigte und andere gemischt: nur die anderen', async () => {
+    const { runtime, notified } = make({ displayed: (id) => id === 'ws-1' });
+    await runtime.interact([write('ws-1'), write('ws-2')]);
+    assertDeepEqual(notified, [['ws-2']]);
+  });
+
+  test('nur lesen meldet nichts', async () => {
+    const { runtime, notified } = make();
+    await runtime.interact([read('ws-1')]);
+    assertDeepEqual(notified, []);
+  });
+
+  test('scheitert die zweite Aktion nach wirksamer erster, zählt die erste', async () => {
+    const { runtime, notified } = make({
+      viewmodel: (id) => ({ read: () => ({}), importCsv: () => { if (id === 'ws-2') throw new Error('kaputt'); return true; } }),
+    });
+    const out = await runtime.interact([write('ws-1'), write('ws-2')]);
+    assertEqual(out.ok, false);
+    assertDeepEqual(notified, [['ws-1']]);
+  });
+
+  test('eine Instanz zweimal geändert steht einmal in der Liste', async () => {
+    const { runtime, notified } = make();
+    await runtime.interact([write('ws-1'), write('ws-1')]);
+    assertDeepEqual(notified, [['ws-1']]);
+  });
+
+  test('abgeschlossenes Projekt: keine Änderung, kein Toast', async () => {
+    const { runtime, notified } = make({ completed: true });
+    await runtime.interact([write('ws-1')]);
+    assertDeepEqual(notified, []);
   });
 });

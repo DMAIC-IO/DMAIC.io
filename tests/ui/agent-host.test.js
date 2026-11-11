@@ -12,7 +12,7 @@ const DEFS = {
   'worksheet': { id: 'worksheet', phase: 'data' },
 };
 
-function makeHost({ phases, activeInstance = null, completed = false, ready = null, route = null,
+function makeHost({ notify = () => {}, i18n = null, phases, activeInstance = null, completed = false, ready = null, route = null,
                    activeId = null, pending = [] } = {}) {
   const state = structuredClone(phases ?? {
     data: [],
@@ -56,7 +56,8 @@ function makeHost({ phases, activeInstance = null, completed = false, ready = nu
   };
   return {
     host: createAgentHost({
-      stateManager, moduleRegistry, eventBus, router, workspace,
+      stateManager, moduleRegistry, eventBus, router, workspace, notify,
+      i18n: i18n ?? { t: (key, params) => `${key}|${JSON.stringify(params ?? {})}` },
       nextTick: (cb) => { calls.push(['tick']); cb(); },
     }),
     calls, state, mounted, stateManager, moduleStates,
@@ -296,5 +297,50 @@ suite('agent host — gemountet und angezeigt', () => {
     const { host } = makeHost({ route: { kind: 'dashboard' }, activeId: 'fw-1' });
     assertEqual(host.isDisplayed('fw-1'), false);
     assertEqual(makeHost({ activeId: 'fw-1' }).host.isDisplayed('fw-1'), false);
+  });
+});
+
+suite('agent host — Toast für Änderungen im Hintergrund', () => {
+  function withToast(phases, customName) {
+    const toasts = [];
+    const made = makeHost({
+      phases,
+      notify: (msg, type, icon, opts) => toasts.push({ msg, type, icon, opts }),
+    });
+    return { ...made, toasts };
+  }
+
+  test('eine Instanz mit Namen: one mit Modul und Name', () => {
+    const { host, toasts } = withToast({ define: [{ instanceId: 'fw-1', moduleId: 'five-why', order: 0, customName: 'Linie 3' }] });
+    host.notifyBackgroundChange(['fw-1']);
+    assertEqual(toasts.length, 1);
+    assertEqual(toasts[0].msg, 'agent.backgroundChange.one|{"module":"modules.five-why.name|{}","name":"Linie 3"}');
+    assertEqual(toasts[0].type, 'info');
+  });
+
+  test('ohne customName: oneUnnamed', () => {
+    const { host, toasts } = withToast();
+    host.notifyBackgroundChange(['fw-1']);
+    assertEqual(toasts[0].msg, 'agent.backgroundChange.oneUnnamed|{"module":"modules.five-why.name|{}"}');
+  });
+
+  test('mehrere: many mit Anzahl', () => {
+    const { host, toasts } = withToast();
+    host.notifyBackgroundChange(['fw-1', 'x', 'y']);
+    assertEqual(toasts[0].msg, 'agent.backgroundChange.many|{"n":3}');
+  });
+
+  test('keine ids: kein Toast', () => {
+    const { host, toasts } = withToast();
+    host.notifyBackgroundChange([]);
+    assertEqual(toasts.length, 0);
+  });
+
+  test('der Knopf Anzeigen öffnet die erste Instanz', async () => {
+    const { host, toasts, calls } = withToast();
+    host.notifyBackgroundChange(['fw-1', 'x']);
+    assertEqual(toasts[0].opts.action.label, 'agent.backgroundChange.show|{}');
+    await toasts[0].opts.action.onClick();
+    assertTrue(calls.some(c => c[0] === 'navigate'), JSON.stringify(calls));
   });
 });

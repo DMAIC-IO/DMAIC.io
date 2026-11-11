@@ -205,6 +205,16 @@ export function createAgentRuntime(deps) {
   }
 
   /**
+   * Meldet geänderte Instanzen, die am Ende des Aufrufs nicht angezeigt
+   * werden — ein Toast je Aufruf. Der Host kann fehlen (Tests, Teil-Hosts).
+   * @param {string[]} ids
+   */
+  function notifyBackground(ids) {
+    const hidden = ids.filter(id => !host.isDisplayed?.(id));
+    if (hidden.length > 0) host.notifyBackgroundChange?.(hidden);
+  }
+
+  /**
    * Der eigentliche Durchlauf. Serialisiert aufgerufen, siehe unten.
    * @param {object|object[]} [input]
    * @param {{ gate: object }|null} [decided]  Einwilligung und Laden hat
@@ -236,6 +246,9 @@ export function createAgentRuntime(deps) {
     // Ein Stapel, der geschrieben hat, flusht EINMAL am Ende — nicht je
     // Aktion: der Preis ist ein Plattenzugriff pro Stapel.
     let wrote = false;
+    // Ids der Instanzen, die dieser Aufruf wirksam geändert hat, in der
+    // Reihenfolge der ersten Änderung; auch bei späterem Abbruch gefüllt.
+    const changed = [];
 
     for (const action of checked.actions) {
       const resolved = resolveRefs(action, byId);
@@ -293,6 +306,10 @@ export function createAgentRuntime(deps) {
         allOk = false;
         break;                               // Abbruch, Teilergebnisse bleiben
       }
+      if (isWritingAction(action) && (action.op === 'instance.set' || action.op === 'instance.call')
+          && !changed.includes(resolved.value.instance)) {
+        changed.push(resolved.value.instance);
+      }
       results.push({ ok: true, id: action.id ?? null, result: outcome });
       if (action.id !== undefined) byId.set(action.id, outcome);
       await noteSeen(action.op, resolved.value, outcome);
@@ -324,6 +341,7 @@ export function createAgentRuntime(deps) {
         await stateManager.flushNow();
       } catch (err) {
         const detail = err?.message ?? String(err);
+        notifyBackground(changed);
         return {
           ok: false,
           contract: CONTRACT_VERSION,
@@ -333,6 +351,7 @@ export function createAgentRuntime(deps) {
         };
       }
     }
+    notifyBackground(changed);
     return { ok: allOk, contract: CONTRACT_VERSION, results };
   }
 

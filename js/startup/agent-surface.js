@@ -53,7 +53,7 @@ export default createStartup({
     });
 
     const host = createAgentHost({
-      stateManager, moduleRegistry, eventBus, router, workspace,
+      stateManager, moduleRegistry, eventBus, router, workspace, notify, i18n,
       nextTick: (cb) => Alpine.nextTick(cb),
     });
 

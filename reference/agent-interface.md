@@ -492,6 +492,13 @@ Aktion. Ein nur lesender Stapel spült nicht. Was ein Schreibzugriff ist, entsch
 (`isWritingAction` in `agent-validate.js`), siehe die Spalte „schreibt"
 unter „Aktionen".
 
+**Hinweis an den Nutzer.** Hat ein Aufruf Instanzen geändert (`instance.set`,
+`instance.call` außer `read`), die am Ende des Aufrufs nicht angezeigt werden
+(nicht das aktive Modul des sichtbaren Reiters), zeigt die App **einen** Toast
+je Aufruf mit Knopf „Anzeigen“ (öffnet die erste geänderte Instanz). Auch
+wirksame Änderungen eines abgebrochenen Stapels zählen. Der Agent muss dafür
+nichts tun und erhält keinen zusätzlichen Antwortinhalt.
+
 Scheitert das Speichern, wirft `interact()` nicht: es antwortet
 `{ ok: false, contract, error: 'flush_failed', message, results }`. Die
 `results` des Stapels bleiben erhalten — der Agent soll wissen, **was**

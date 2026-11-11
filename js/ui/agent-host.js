@@ -27,6 +27,8 @@ const SETTLE_TASKS_TIMEOUT_MS = 20000;
  * @param {object} deps.eventBus
  * @param {object} deps.router
  * @param {object} deps.workspace
+ * @param {(message: string, type?: string, icon?: string|null, options?: object) => void} deps.notify
+ * @param {{ t: (key: string, params?: object) => string }} deps.i18n
  * @param {(callback: () => void) => void} deps.nextTick  `Alpine.nextTick` — von
  *   außen, weil der Host in der Node-Spur getestet wird und Alpine dort nicht
  *   geladen werden kann
@@ -37,12 +39,13 @@ const SETTLE_TASKS_TIMEOUT_MS = 20000;
  *   getViewmodel: (instanceId: string) => Promise<object|null>,
  *   isMounted: (instanceId: string) => boolean,
  *   isDisplayed: (instanceId: string) => boolean,
+ *   notifyBackgroundChange: (instanceIds: string[]) => void,
  *   addInstance: (moduleId: string, phase?: string) => Promise<{ instanceId: string, module: string, phase: string }|null>,
  *   removeInstance: (instanceId: string) => Promise<boolean>,
  *   settle: (instanceId?: string) => Promise<void>,
  * }}
  */
-export function createAgentHost({ stateManager, moduleRegistry, eventBus, router, workspace, nextTick }) {
+export function createAgentHost({ stateManager, moduleRegistry, eventBus, router, workspace, nextTick, notify, i18n }) {
   /** Der Datensatz einer Instanz samt Phase, oder null. */
   function locate(instanceId) {
     const phase = findInstancePhase(stateManager, instanceId);
@@ -112,6 +115,30 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
      */
     isDisplayed(instanceId) {
       return router.getCurrentRoute()?.kind === 'module' && workspace.getActiveInstanceId() === instanceId;
+    },
+
+    /**
+     * Ein Toast für Instanzen, die der Agent im Hintergrund geändert hat.
+     * Der Knopf öffnet die erste.
+     * @param {string[]} instanceIds
+     */
+    notifyBackgroundChange(instanceIds) {
+      if (!instanceIds?.length) return;
+      const first = instanceIds[0];
+      let message;
+      if (instanceIds.length === 1) {
+        const found = locate(first);
+        const record = (stateManager.get(`phases.${found?.phase}`) ?? []).find(i => i.instanceId === first);
+        const module = i18n.t(`modules.${found?.module}.name`);
+        message = record?.customName
+          ? i18n.t('agent.backgroundChange.one', { module, name: record.customName })
+          : i18n.t('agent.backgroundChange.oneUnnamed', { module });
+      } else {
+        message = i18n.t('agent.backgroundChange.many', { n: instanceIds.length });
+      }
+      notify(message, 'info', null, {
+        action: { label: i18n.t('agent.backgroundChange.show'), onClick: () => this.openInstance(first) },
+      });
     },
 
     async getViewmodel(instanceId) {
