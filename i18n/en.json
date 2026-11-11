@@ -1123,6 +1123,26 @@
         "schemeGreen": "Green gradient",
         "schemeGray": "Grayscale"
       },
+      "contour": {
+        "appearance": "Display",
+        "colorScheme": "Color scheme",
+        "schemeGreen": "Green gradient",
+        "schemeGray": "Grayscale",
+        "numLevels": "Contour levels",
+        "gridRes": "Grid resolution",
+        "showLines": "Show contour lines",
+        "showLabels": "Line labels",
+        "showDataPoints": "Show data points",
+        "dataPoints": "Data Points",
+        "markerStrokeDash": "Border style",
+        "dash": {
+          "solid": "Solid",
+          "dash": "Dash",
+          "dot": "Dot",
+          "dashdot": "Dash-Dot",
+          "longdash": "Long dash"
+        }
+      },
       "pie": {
         "labels": "Labels",
         "showLabels": "Show labels",

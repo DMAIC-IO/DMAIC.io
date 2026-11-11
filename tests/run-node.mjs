@@ -79,6 +79,7 @@ const SKIP = new Set([
   'core/chart/chart-manager-destroy.test.js',
   'core/chart/chart-manager-errors.test.js',
   'core/chart/chart-manager-export.test.js',
+  'core/chart/contour-type.test.js',
   'core/chart/control-chart.test.js',
   'core/chart/chart-margins.test.js',
   'core/chart/chart-module-base.test.js',

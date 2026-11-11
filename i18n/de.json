@@ -1123,6 +1123,26 @@
         "schemeGreen": "Grün-Verlauf",
         "schemeGray": "Graustufen"
       },
+      "contour": {
+        "appearance": "Darstellung",
+        "colorScheme": "Farbschema",
+        "schemeGreen": "Grün-Verlauf",
+        "schemeGray": "Graustufen",
+        "numLevels": "Konturstufen",
+        "gridRes": "Rasterauflösung",
+        "showLines": "Konturlinien anzeigen",
+        "showLabels": "Linienbeschriftung",
+        "showDataPoints": "Datenpunkte anzeigen",
+        "dataPoints": "Datenpunkte",
+        "markerStrokeDash": "Rahmenart",
+        "dash": {
+          "solid": "Durchgezogen",
+          "dash": "Gestrichelt",
+          "dot": "Gepunktet",
+          "dashdot": "Strich-Punkt",
+          "longdash": "Lang gestrichelt"
+        }
+      },
       "pie": {
         "labels": "Beschriftung",
         "showLabels": "Segmentbeschriftung",

@@ -1031,6 +1031,12 @@ export default class ChartBase {
       }
     });
 
+    // Chart-type underlay (e.g. a raster image) below reference areas, grid
+    // and reference lines. Dropped again when the type draws nothing.
+    const underlayGroup = svgEl('g', { 'clip-path': `url(#${clipId})` }, svg);
+    this._renderUnderlay(underlayGroup, xScale, yScale, pa, defs);
+    if (!underlayGroup.hasChildNodes()) underlayGroup.remove();
+
     // Reference areas (behind grid)
     const areaGroup = svgEl('g', { 'clip-path': `url(#${clipId})` }, svg);
     (this.config.refAreas || []).forEach((area, i) => {
@@ -1777,6 +1783,17 @@ export default class ChartBase {
    * @abstract
    */
   _renderData(svg, plotGroup, xScale, yScale, xTick, yTick, plotArea, defs) {} // eslint-disable-line no-unused-vars
+
+  /**
+   * Draw chart-type content below reference areas, grid lines and reference
+   * lines (clipped to the plot area). Default: nothing.
+   * @param {SVGGElement} group - clipped group to draw into
+   * @param {function(number): number} xScale
+   * @param {function(number): number} yScale
+   * @param {{x: number, y: number, w: number, h: number}} plotArea
+   * @param {SVGDefsElement} defs
+   */
+  _renderUnderlay(group, xScale, yScale, plotArea, defs) {} // eslint-disable-line no-unused-vars
 
   /**
    * Return legend items.

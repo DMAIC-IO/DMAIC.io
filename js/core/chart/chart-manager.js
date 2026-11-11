@@ -28,6 +28,7 @@ const TYPE_MAP = {
   pie:                () => import('./types/pie.js'),
   mosaic:             () => import('./types/mosaic.js'),
   heatmap:            () => import('./types/heatmap.js'),
+  contour:            () => import('./types/contour.js'),
   'node-diagram':     () => import('./types/node-diagram.js'),
 };
 
