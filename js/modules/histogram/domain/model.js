@@ -1,9 +1,10 @@
 /**
  * D.Mike — Histogramm: Model.
  *
- * Gespeichert werden Datensätze, Klassen und Konfidenzniveau; Reihen
- * rechnet der view-Block, die Kennzahlen die Ableitung `stats`, beide aus Model und Arbeitsblatt. Ansicht:
- * Statistik-Schalter und die Editor-Einstellungen des Diagramms.
+ * Gespeichert werden Datensätze, Klassen und Konfidenzniveau. Die Reihen
+ * baut der view-Block, die Kennzahlen die Ableitung `stats`, beide aus
+ * Model und Arbeitsblatt. Ansicht: Statistik-Schalter und die
+ * Editor-Einstellungen des Diagramms.
  */
 import { defineModel, command, list, object, text, number, boolean, oneOf, columnRef, datasets } from '../../../core/model.js';
 import { CHART_COLORS_RGBA } from '../../../core/chart/chart-colors.js';

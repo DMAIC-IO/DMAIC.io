@@ -2,8 +2,8 @@
  * D.Mike — Histogramm: Viewmodel.
  *
  * `computed series` baut aus Datensätzen und Arbeitsblatt (`ctx.data`) die
- * Reihen, die Ableitung `stats` des Models die Kennzahlen; der Getter `histogram` ist die
- * Konfiguration des Diagramm-Widgets.
+ * Reihen; die Kennzahlen kommen aus der Ableitung `stats` des Models. Der
+ * Getter `histogram` ist die Konfiguration des Diagramm-Widgets.
  */
 import { createModule } from '../../../core/template-module.js';
 import { applyEdits } from '../../../widgets/chart-edits.js';
