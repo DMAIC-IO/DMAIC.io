@@ -6879,6 +6879,12 @@ export const AGENT_REGISTRY = {
         "help": "",
         "bulk": false
       },
+      "stats": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
       "series": {
         "type": "object|null",
         "help": "",
@@ -6886,12 +6892,6 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "shown": {
-        "type": "object|null",
-        "help": "",
-        "bulk": false,
-        "derived": true
-      },
-      "stats": {
         "type": "object|null",
         "help": "",
         "bulk": false,
@@ -16743,6 +16743,18 @@ export const AGENT_REGISTRY = {
         "help": "",
         "bulk": false
       },
+      "validation": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "decision": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
       "inputs": {
         "type": "object|null",
         "help": "",
@@ -16755,19 +16767,7 @@ export const AGENT_REGISTRY = {
         "bulk": false,
         "derived": true
       },
-      "validation": {
-        "type": "object|null",
-        "help": "",
-        "bulk": false,
-        "derived": true
-      },
       "labels": {
-        "type": "object|null",
-        "help": "",
-        "bulk": false,
-        "derived": true
-      },
-      "decision": {
         "type": "object|null",
         "help": "",
         "bulk": false,

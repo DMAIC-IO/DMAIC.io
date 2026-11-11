@@ -4,6 +4,7 @@ import { STATISTIC_IDS as ENGINE_IDS } from '../../js/engines/resampling-engine.
 import { readInputs, buildJobs, computeInputsHash, summarize } from '../../js/modules/resampling/domain/analyze.js';
 import { fmt, fmtP, fmtInterval, statisticKey, bootDecision } from '../../js/modules/resampling/domain/format.js';
 import { statementParts, renderStatement } from '../../js/modules/resampling/domain/statement.js';
+import { evaluateDerived } from '../../js/core/derived.js';
 import { runJobSync } from '../../js/engines/resampling-engine.js';
 
 const ref = (c) => ({ instanceId: 'w', sheetId: 's', columnId: c });
@@ -117,5 +118,32 @@ suite('resampling: Formatierung und Aussagesatz', () => {
     assertTrue(parts.length > 0 && parts.every((p) => typeof p.key === 'string'));
     const text = renderStatement([{ key: 'k', params: { stat: 'stmtStatMedian' } }], (k, p) => (p ? `${k}:${p.stat}` : k));
     assertEqual(text, 'k:stmtStatMedian');
+  });
+});
+
+suite('resampling: Model — derived', () => {
+  const data = { values, name: (r) => r.columnId.toUpperCase() };
+  const boot = { estimate: 22.5, se: 0.5, bias: 0, ci: { percentile: [21, 24], bca: [21, 24], bcaFallback: false }, bins: [] };
+  const stored = { inputsHash: 'h', mode: 'one', statisticId: 'median', contrast: 'difference', direction: 'two-sided', confidence: 0.95, B: 10000, seed: 42, labels: ['X'], n: [15], boot, perm: null, k: null };
+
+  test('validation: null bei gültigen Eingaben, sonst der erste Grund als Textschlüssel', () => {
+    assertEqual(evaluateDerived(State.fromJSON({ mode: 'one', colRef1: ref('a') }), data).validation, null);
+    assertEqual(evaluateDerived(State.fromJSON({ mode: 'one' }), data).validation, 'errMinValues');
+    assertEqual(evaluateDerived(State.fromJSON({ mode: 'two', colRef1: ref('a') }), data).validation, 'errMinValues');
+    assertEqual(evaluateDerived(State.fromJSON({ mode: 'one', statisticId: 'ppk', colRef1: ref('a') }), data).validation, 'errLimitsMissing');
+    assertEqual(evaluateDerived(State.fromJSON({ mode: 'k', colRefsK: [ref('a'), ref('b')] }), data).validation, 'errMinGroups');
+    assertEqual(evaluateDerived(State.fromJSON({ mode: 'one', colRef1: ref('a'), B: 500 }), data).validation, 'errB');
+  });
+
+  test('decision: Urteil des Bootstraps gegen den Sollwert aus dem gespeicherten Ergebnis', () => {
+    const base = { mode: 'one', ciMethod: 'bca', result: stored };
+    assertEqual(evaluateDerived(State.fromJSON({ ...base, target: '30' }), data).decision, 'reject');
+    assertEqual(evaluateDerived(State.fromJSON({ ...base, target: '22' }), data).decision, 'retain');
+    assertEqual(evaluateDerived(State.fromJSON({ ...base, target: '' }), data).decision, null);
+    assertEqual(evaluateDerived(State.fromJSON({ mode: 'one', target: '22' }), data).decision, null);
+  });
+
+  test('nur validation und decision sind Ableitungen', () => {
+    assertDeepEqual(Object.keys(evaluateDerived(new State(), data)), ['validation', 'decision']);
   });
 });

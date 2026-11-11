@@ -1,7 +1,7 @@
 /**
  * D.Mike — Attributive Regelkarte: Viewmodel.
  *
- * `computed analysis` rechnet aus Model und Arbeitsblatt (`ctx.data`);
+ * Die Ableitung `analysis` des Models rechnet aus Model und Arbeitsblatt;
  * daraus entstehen die Lesefelder (Zahlen) und über Getter Kennzahlen,
  * Marke, Verletzungsliste und die Regelkarte (Widget `control-chart`).
  */
@@ -9,7 +9,6 @@ import { createModule } from '../../../core/template-module.js';
 import { getAttributeChartType, ATTRIBUTE_CHART_TYPES, ATTRIBUTE_NELSON_RULES } from '../../../engines/attribute-control-chart-engine.js';
 import descriptor from '../module.js';
 import { State } from '../domain/model.js';
-import { analyzeState, resultOf, pointsOf } from '../domain/analyze.js';
 import { UiState } from './state.js';
 import { kpisOf, badgeOf, violationRowsOf, controlChartOf } from './present.js';
 
@@ -20,26 +19,12 @@ export default createModule({
   descriptor,
   Model: State,
   State: UiState,
-  readBulk: ['points'],
   /** @type {import('./state.types.js').AttributeControlChartViewFn} */
   view(ctx) {
     /** Globale Texte (Regeln, Punkt- und Regelbeschriftung). */
     const gt = (key, params) => ctx.i18n.t(key, params);
     return {
       computed: {
-        /** Grenzen und Verletzungen; null ohne die nötigen Spalten oder mit weniger als 2 Punkten. */
-        analysis() { return analyzeState(this.model, (ref) => ctx.data.values(ref) ?? []); },
-        /** Das Ergebnis als Zahlen (Lesefläche). */
-        result() { return resultOf(this.analysis, this.model.chartTypeId); },
-        /** Je Punkt eine Zeile (Massenfeld der Lesefläche). */
-        points() { return pointsOf(this.analysis); },
-        /** Die Spaltenfelder des Kartentyps. */
-        activeColumnSlots() { return getAttributeChartType(this.model.chartTypeId)?.requiresSampleSize ? ['defectsRef', 'sizeRef'] : ['defectsRef']; },
-        /** Die Einstellungen des Kartentyps. */
-        activeParams() {
-          const np = Boolean(getAttributeChartType(this.model.chartTypeId)?.requiresConstantN);
-          return ['chartTypeId', ...(np ? ['constantN'] : []), 'baselineCount', 'enabledRules'];
-        },
         /** Je Spaltenfeld die wählbaren Spalten `{ key, name }`. */
         pickableColumns() {
           const f = State.schema.fields;

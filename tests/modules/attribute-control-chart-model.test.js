@@ -1,5 +1,6 @@
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../test-utils.js';
 import { loadModel } from '../../js/core/initial-model.js';
+import { evaluateDerived } from '../../js/core/derived.js';
 import { State } from '../../js/modules/attribute-control-chart/domain/model.js';
 import { ATTRIBUTE_CHART_TYPES, ATTRIBUTE_NELSON_RULES, ATTR_DEFAULT_ENABLED_RULES } from '../../js/engines/attribute-control-chart-engine.js';
 
@@ -101,5 +102,44 @@ suite('attribute-control-chart Model', () => {
     } finally { console.warn = warn; }
     assertEqual(warnings.length, 1);
     assertTrue(/enabledRules/.test(warnings[0]) && /chartTypeId/.test(warnings[0]), 'die Warnung nennt beide Felder');
+  });
+});
+
+suite('attribute-control-chart Model — derived', () => {
+  const cols = { c0: [4, 6, 5, 9, 3, 7, 5, 20] };
+  const data = { values: (r) => cols[r.columnId] ?? null, name: (r) => r.columnId };
+
+  test('c-Karte: Grenzen, Ergebnis und Punkte mit festen Erwartungen', () => {
+    const m = State.fromJSON({ chartTypeId: 'c', defectsRef: ref('c0') });
+    const d = evaluateDerived(m, data);
+    assertEqual(d.analysis.valid, 8);
+    assertEqual(d.result.cl, 7.375);
+    assertEqual(d.result.ucl.toFixed(3), '15.522');
+    assertEqual(d.result.lcl, 0);
+    assertDeepEqual(d.result.violations, [{ index: 7, ruleId: 1 }]);
+    assertDeepEqual(d.result.signals, [7]);
+    assertEqual(d.points.length, 8);
+    assertDeepEqual(d.points[7], { value: 20, n: null, ucl: d.result.ucl, lcl: 0, signal: true });
+    assertEqual(d.points[0].signal, false);
+  });
+
+  test('ohne Spalte: analysis und result null, points leer', () => {
+    const d = evaluateDerived(State.fromJSON({ chartTypeId: 'c' }), data);
+    assertEqual(d.analysis, null);
+    assertEqual(d.result, null);
+    assertDeepEqual(d.points, []);
+  });
+
+  test('Spaltenfelder und Einstellungen folgen dem Kartentyp', () => {
+    const p = evaluateDerived(State.fromJSON({ chartTypeId: 'p' }), data);
+    assertDeepEqual(p.activeColumnSlots, ['defectsRef', 'sizeRef']);
+    assertDeepEqual(p.activeParams, ['chartTypeId', 'baselineCount', 'enabledRules']);
+    const np = evaluateDerived(State.fromJSON({ chartTypeId: 'np' }), data);
+    assertDeepEqual(np.activeColumnSlots, ['defectsRef']);
+    assertDeepEqual(np.activeParams, ['chartTypeId', 'constantN', 'baselineCount', 'enabledRules']);
+  });
+
+  test('points steht in derivedBulk', () => {
+    assertDeepEqual([...State.schema.derivedBulk], ['points']);
   });
 });

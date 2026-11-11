@@ -9,7 +9,7 @@
 
 import { coerceNumeric } from '../../../core/worksheet-columns.js';
 import { summarizeBins } from '../../../engines/resampling-engine.js';
-import { STATS_BY_MODE, SEED_MAX } from './model.js';
+import { STATS_BY_MODE, SEED_MAX } from './constants.js';
 import { parseDecimalInput } from '../../../core/parse-decimal.js';
 
 const B_MIN = 1000;

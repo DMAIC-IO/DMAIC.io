@@ -6,7 +6,6 @@
   "sectionData": "Datenquelle",
   "sectionBinning": "Binning",
   "sectionOptions": "Optionen",
-  "groupSeriesName": "{col} — {level}",
   "errNoGroupLevels": "Datensatz {n}: Die Gruppierungsspalte enthält keine gültigen Werte.",
   "binMode": "Modus",
   "binAuto": "Automatisch (Sturges)",

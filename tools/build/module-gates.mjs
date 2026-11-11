@@ -1558,7 +1558,11 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
         }
       }
       const tileText = (p) => (paths.includes(p) ? readFileSync(join(base, p), 'utf8') : '');
-      const vmNames = paths.includes('viewmodel/viewmodel.js') ? viewNamesOf(tileText('viewmodel/viewmodel.js')) : new Set();
+      // Ableitungen des Models sind im Viewmodel Zellen unter ihrem Namen.
+      const vmNames = new Set([
+        ...(paths.includes('viewmodel/viewmodel.js') ? viewNamesOf(tileText('viewmodel/viewmodel.js')) : []),
+        ...Object.keys(schema?.derived ?? {}),
+      ]);
       out.push(...checkWidgetTemplates(templates, { widgets, schema, stateSchema, viewNames: vmNames, tileText, algoIds: loadAlgoIds(appDir) }));
       out.push(...checkCommandRefs(templates, schema, formSchemas, existsSync(vmFile) ? readViewmodelCommands(readFileSync(vmFile, 'utf8')) : {}));
       const asyncTasks = existsSync(vmFile) ? readViewmodelAsyncTasks(readFileSync(vmFile, 'utf8')) : {};

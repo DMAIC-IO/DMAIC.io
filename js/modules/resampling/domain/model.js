@@ -2,30 +2,17 @@
  * D.Mike — Resampling: Model.
  *
  * Gespeichert werden Einstellungen und das zuletzt gerechnete Ergebnis;
- * gerechnet wird im Viewmodel über einen asynchronen Ablauf.
+ * gerechnet wird im Viewmodel über einen asynchronen Ablauf. Die Ableitungen
+ * `validation` und `decision` prüfen die Eingaben und urteilen über das Ergebnis.
  */
 import { defineModel, command, text, number, boolean, oneOf, list, object, columnRef } from '../../../core/model.js';
 import histogramChart from '../../../widgets/histogram-chart/schema.js';
 import { from0 } from './migrations.js';
+import { MODES, CONTRASTS, DIRECTIONS, CI_METHODS, SEED_MAX, STATISTIC_IDS, STATS_BY_MODE } from './constants.js';
+import { readInputs, validateInputs } from './analyze.js';
+import { bootDecision } from './format.js';
 
-/** @type {readonly ('one'|'two'|'paired'|'k')[]} */
-export const MODES = Object.freeze(['one', 'two', 'paired', 'k']);
-/** @type {readonly ('difference'|'ratio')[]} */
-export const CONTRASTS = Object.freeze(['difference', 'ratio']);
-/** @type {readonly ('two-sided'|'greater'|'less')[]} */
-export const DIRECTIONS = Object.freeze(['two-sided', 'greater', 'less']);
-/** @type {readonly ('bca'|'percentile')[]} */
-export const CI_METHODS = Object.freeze(['bca', 'percentile']);
-export const SEED_MAX = 2147483647;
-/** Alle Statistiken (gleich der Engine). */
-export const STATISTIC_IDS = Object.freeze(['mean', 'median', 'stddev', 'variance', 'trimmedMean', 'quantile', 'cv', 'ppk']);
-/** Erlaubte Statistiken je Aufbau. */
-export const STATS_BY_MODE = Object.freeze({
-  one: STATISTIC_IDS,
-  two: STATISTIC_IDS,
-  paired: Object.freeze(['mean', 'median', 'trimmedMean']),
-  k: Object.freeze(STATISTIC_IDS.filter((id) => id !== 'ppk')),
-});
+export { MODES, CONTRASTS, DIRECTIONS, CI_METHODS, SEED_MAX, STATISTIC_IDS, STATS_BY_MODE };
 
 export const State = defineModel({
   version: '1.0',
@@ -90,6 +77,23 @@ export const State = defineModel({
     exampleWorksheetId: text({ nullable: true }),
     bootChartEdits: histogramChart.edits(),
     permChartEdits: histogramChart.edits(),
+  },
+  derived: {
+    /**
+     * Erster Grund, warum nicht gerechnet werden kann (Textschlüssel), sonst null.
+     *
+     * @param {any} data Arbeitsblattsicht
+     * @this {import('./model.types.js').StateModel}
+     * @returns {string|null}
+     */
+    validation(data) { return validateInputs(this, readInputs(this, (ref) => data.values(ref))); },
+    /**
+     * Urteil des Einstichproben-Bootstraps gegen den Sollwert, sonst null.
+     *
+     * @this {import('./model.types.js').StateModel}
+     * @returns {'reject'|'retain'|null}
+     */
+    decision() { return bootDecision(this.result, { ciMethod: this.ciMethod, target: this.target }); },
   },
   invariants: {
     statisticForMode: {

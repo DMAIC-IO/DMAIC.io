@@ -1,7 +1,7 @@
 /**
  * D.Mike — Resampling: Viewmodel.
  *
- * `computed` liest Stichproben (`ctx.data`), Fingerabdruck und Prüfung;
+ * `computed` liest Stichproben (`ctx.data`) und Fingerabdruck für den Lauf;
  * `asyncTasks.compute` rechnet Bootstrap und Permutationstest mit
  * Fortschritt und Abbruch und schreibt das Ergebnis ins Model.
  */
@@ -11,9 +11,9 @@ import { asyncTask } from '../../../core/async-task.js';
 import { createInlineRunner } from '../../../engines/resampling-runner.js';
 import descriptor from '../module.js';
 import { State, MODES, CONTRASTS, DIRECTIONS, CI_METHODS, STATS_BY_MODE } from '../domain/model.js';
-import { readInputs, validateInputs, errorKeyForCode, buildJobs, computeInputsHash, summarize } from '../domain/analyze.js';
+import { readInputs, errorKeyForCode, buildJobs, computeInputsHash, summarize } from '../domain/analyze.js';
 import { statementParts, renderStatement } from '../domain/statement.js';
-import { bootDecision, statisticKey } from '../domain/format.js';
+import { statisticKey } from '../domain/format.js';
 import { resultView, bootChartConfig, permChartConfig } from './present.js';
 
 /** @param {any} m @returns {any[]} Spaltenbezüge je Aufbau */
@@ -67,12 +67,8 @@ const mod = createModule({
         inputs() { return readInputs(this.model, (ref) => ctx.data.values(ref)); },
         /** Fingerabdruck der Eingaben, gegen den ein gespeichertes Ergebnis veraltet. */
         inputsHash() { return computeInputsHash(this.model, this.inputs); },
-        /** Erster Grund, warum nicht gerechnet werden kann (Textschlüssel), sonst null. */
-        validation() { return validateInputs(this.model, this.inputs); },
         /** Spaltennamen je Stichprobe. */
         labels() { return refsOf(this.model).map((r) => (r ? ctx.data.name(r) ?? '' : '')); },
-        /** Urteil des Einstichproben-Bootstraps gegen den Sollwert, sonst null. */
-        decision() { return bootDecision(this.model.result, { ciMethod: this.model.ciMethod, target: this.model.target }); },
       },
       get stale() { return !!this.model.result && this.model.result.inputsHash !== this.inputsHash; },
       get resultView() { return resultView(this.model.result, { ciMethod: this.model.ciMethod, target: this.model.target, lang: ctx.context.language }); },

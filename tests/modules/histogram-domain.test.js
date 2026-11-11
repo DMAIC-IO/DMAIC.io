@@ -1,6 +1,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../test-utils.js';
 import { State } from '../../js/modules/histogram/domain/model.js';
 import { buildGroups } from '../../js/modules/histogram/domain/analyze.js';
+import { evaluateDerived } from '../../js/core/derived.js';
 import { CHART_COLORS_RGBA } from '../../js/core/chart/chart-colors.js';
 
 const ref = (c) => ({ instanceId: 'w', sheetId: 's', columnId: c });
@@ -53,5 +54,51 @@ suite('histogram: buildGroups', () => {
   });
   test('Gruppe ohne Stufen', () => {
     assertDeepEqual(buildGroups([{ valueRef: ref('a'), groupRef: ref('e') }], read), { error: 'errNoGroupLevels', params: { n: 1 } });
+  });
+});
+
+suite('histogram: Model — derived stats', () => {
+  const cols = { v: [1, 2, 3, 4, 5, 6], g: ['a', 'b', 'a', 'b', 'a', 'b'], w: [10, 11, 12, 13] };
+  const data = { values: (r) => cols[r.columnId] ?? null, name: (r) => r.columnId.toUpperCase() };
+
+  test('zwei Gruppen: n, Mittel, Standardabweichung, Quartile und Konfidenzintervall je Stufe', () => {
+    const m = State.fromJSON({ datasets: [{ valueRef: ref('v'), groupRef: ref('g') }] });
+    const { stats } = evaluateDerived(m, data);
+    assertEqual(stats.length, 2);
+    assertEqual(stats[0].name, 'V — a');
+    assertEqual(stats[1].name, 'V — b');
+    const [a, b] = stats.map((r) => r.stats);
+    assertEqual(a.n, 3); assertEqual(b.n, 3);
+    assertEqual(a.mean, 3); assertEqual(b.mean, 4);
+    assertEqual(a.stddev, 2); assertEqual(b.stddev, 2);
+    assertEqual(a.median, 3); assertEqual(a.q1, 2); assertEqual(a.q3, 4);
+    assertEqual(stats[0].ci.mean[0].toFixed(4), '-1.9683');
+    assertEqual(stats[0].ci.mean[1].toFixed(4), '7.9683');
+  });
+
+  test('confLevel geht in das Intervall ein', () => {
+    const wide = State.fromJSON({ datasets: [{ valueRef: ref('w'), groupRef: null }], confLevel: 99 });
+    const narrow = State.fromJSON({ datasets: [{ valueRef: ref('w'), groupRef: null }], confLevel: 90 });
+    const w = evaluateDerived(wide, data).stats[0].ci.mean;
+    const n = evaluateDerived(narrow, data).stats[0].ci.mean;
+    assertEqual(w[1] - w[0] > n[1] - n[0], true);
+  });
+
+  test('im Editor ausgeblendete Reihe fehlt, auch eine Gruppenreihe unter ihrem Namen', () => {
+    const m = State.fromJSON({ datasets: [{ valueRef: ref('v'), groupRef: ref('g') }] });
+    m.histogramChart = { series: [{ name: 'V — b', visible: false }] };
+    assertDeepEqual(evaluateDerived(m, data).stats.map((r) => r.name), ['V — a']);
+  });
+
+  test('Einstellungen alter Stände (legacySeries) blenden nach Index aus', () => {
+    const m = State.fromJSON({ datasets: [{ valueRef: ref('w'), groupRef: null }] });
+    m.legacySeries = [{ visible: false }];
+    assertDeepEqual(evaluateDerived(m, data).stats, []);
+  });
+
+  test('ohne Datensatz oder mit zu wenig Werten: leer; kein Zugriff auf i18n nötig', () => {
+    assertDeepEqual(evaluateDerived(new State(), data).stats, []);
+    const m = State.fromJSON({ datasets: [{ valueRef: ref('e'), groupRef: null }] });
+    assertDeepEqual(evaluateDerived(m, { values: () => [7], name: () => 'E' }).stats, []);
   });
 });

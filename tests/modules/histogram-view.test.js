@@ -21,7 +21,6 @@ const TEXTS = {
   chartTitle: 'Histogramm',
   xLabel: 'Messwert',
   yLabel: 'Häufigkeit',
-  groupSeriesName: '{col} — {level}',
   errTooFew: 'Zu wenig Werte für Spalte "{col}".',
 };
 const fill = (s, p) => (p ? s.replace(/\{(\w+)\}/g, (_, k) => String(p[k])) : s);

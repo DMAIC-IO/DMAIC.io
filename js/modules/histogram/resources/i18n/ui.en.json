@@ -6,7 +6,6 @@
   "sectionData": "Data Source",
   "sectionBinning": "Binning",
   "sectionOptions": "Options",
-  "groupSeriesName": "{col} — {level}",
   "errNoGroupLevels": "Dataset {n}: the grouping column has no valid values.",
   "binMode": "Mode",
   "binAuto": "Automatic (Sturges)",
