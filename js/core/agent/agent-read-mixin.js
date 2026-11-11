@@ -44,7 +44,6 @@ export const MIXIN_READ_MODULES = Object.freeze([
   'ishikawa',
   'lessons-learned',
   'makigami',
-  'opportunity-flowchart',
   'process-map',
   'raci-matrix',
   'todo',

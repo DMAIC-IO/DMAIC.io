@@ -26,5 +26,10 @@
   "importEmptyHint": "Keine passende Quelle (SIPOC / Process Map) im Projekt gefunden.",
   "importDone": "{n} Schritt(e) übernommen",
   "stepGrip": "Schritt verschieben",
-  "substepGrip": "Unter-Schritt verschieben"
+  "substepGrip": "Unter-Schritt verschieben",
+  "invariants": {
+    "uniqueStepIds": "Jeder Schritt braucht eine eigene id.",
+    "uniqueSubstepIds": "Jeder Unter-Schritt braucht innerhalb seines Schritts eine eigene id.",
+    "validExpanded": "Aufgeklappt sein können nur vorhandene Schritte."
+  }
 }

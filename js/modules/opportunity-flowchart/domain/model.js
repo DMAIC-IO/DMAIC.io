@@ -16,6 +16,11 @@ import {
 } from '../../../core/flowchart/chain.js';
 import { from0 } from './migrations.js';
 
+/** @typedef {import('./model.types.js').StateFields['steps']} Steps */
+
+/** Tiefe Kopie der Schrittliste, mit ihrem Typ. @param {Steps} steps @returns {Steps} */
+const copySteps = (steps) => cloneJSON(steps);
+
 /** @param {string[]} ids @returns {boolean} keine id kommt doppelt vor */
 function distinct(ids) {
   return new Set(ids).size === ids.length;
@@ -53,12 +58,12 @@ export class State extends defineModel({
   invariants: {
     uniqueStepIds: {
       fields: ['steps'],
-      test: (m) => distinct(m.steps.map((s) => s.id)),
+      test(m) { return distinct(m.steps.map((s) => s.id)); },
       repair(m) { m._v.steps = firstById(m._v.steps); },
     },
     uniqueSubstepIds: {
       fields: ['steps'],
-      test: (m) => m.steps.every((s) => distinct(s.substeps.map((x) => x.id))),
+      test(m) { return m.steps.every((s) => distinct(s.substeps.map((x) => x.id))); },
       repair(m) {
         for (const s of m._v.steps) s.substeps = firstById(s.substeps);
       },
@@ -81,14 +86,14 @@ export class State extends defineModel({
       returns: text(),
       run({ side, index: at }) {
         const id = `s${uid()}`;
-        this.steps = insertStep(cloneJSON(this.steps), { id, title: '', description: '', side, substeps: [] }, at);
+        this.steps = insertStep(copySteps(this.steps), { id, title: '', description: '', side, substeps: [] }, at);
         return id;
       },
     }),
     removeStep: command({
       params: { id: idOf('steps') },
       run({ id }) {
-        this.steps = removeStep(cloneJSON(this.steps), id);
+        this.steps = removeStep(copySteps(this.steps), id);
         this.expanded = this.expanded.filter((e) => e !== id);
       },
     }),
@@ -99,7 +104,7 @@ export class State extends defineModel({
         side: oneOf(['va', 'nva'], { optional: true }),
       },
       run({ id, index: at, side }) {
-        const steps = moveStep(cloneJSON(this.steps), id, at);
+        const steps = moveStep(copySteps(this.steps), id, at);
         if (side !== undefined) steps[at].side = side;
         this.steps = steps;
       },
@@ -107,7 +112,7 @@ export class State extends defineModel({
     setSide: command({
       params: { id: idOf('steps'), side: oneOf(['va', 'nva']) },
       run({ id, side }) {
-        this.steps = cloneJSON(this.steps).map((s) => (s.id === id ? { ...s, side } : s));
+        this.steps = copySteps(this.steps).map((s) => (s.id === id ? { ...s, side } : s));
       },
     }),
     addSubstep: command({
@@ -115,20 +120,21 @@ export class State extends defineModel({
       returns: text(),
       run({ stepId }) {
         const id = `ss${uid()}`;
-        this.steps = addSubstep(cloneJSON(this.steps), stepId, { id, title: '' });
+        const substep = { id, title: '' };
+        this.steps = addSubstep(copySteps(this.steps), stepId, substep);
         return id;
       },
     }),
     removeSubstep: command({
       params: { stepId: idOf('steps'), substepId: text() },
       run({ stepId, substepId }) {
-        this.steps = removeSubstep(cloneJSON(this.steps), stepId, substepId);
+        this.steps = removeSubstep(copySteps(this.steps), stepId, substepId);
       },
     }),
     moveSubstep: command({
       params: { stepId: idOf('steps'), substepId: text(), index: number({ integer: true, min: 0 }) },
       run({ stepId, substepId, index: at }) {
-        this.steps = moveSubstep(cloneJSON(this.steps), stepId, substepId, at);
+        this.steps = moveSubstep(copySteps(this.steps), stepId, substepId, at);
       },
     }),
     setExpanded: command({
@@ -147,7 +153,7 @@ export class State extends defineModel({
         const added = steps.map((s) => ({
           id: `s${uid()}`, title: s.title, description: s.description, side: s.side, substeps: [],
         }));
-        this.steps = [...cloneJSON(this.steps), ...added];
+        this.steps = [...copySteps(this.steps), ...added];
         return added.length;
       },
     }),

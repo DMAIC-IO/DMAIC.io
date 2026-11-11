@@ -1,0 +1,110 @@
+<div class="module-container of" x-data="opportunityFlowchart" data-ref="root">
+  <div class="module-container__body">
+
+    <template x-if="model.steps.length === 0">
+      <p class="of__empty-hint" x-text="t('emptyHint')"></p>
+    </template>
+
+    <!-- Swimlanes: the chain runs left to right; the band (value-added on
+         top, rework below) is only the vertical position of a card. Columns
+         must be direct children of .fc-swimlanes. -->
+    <div class="of__canvas fc-swimlanes" data-ref="flow">
+
+      <div class="fc-swimlane-labels">
+        <div class="fc-swimlane-label of__label--va">
+          <span data-help-key="modules.opportunity-flowchart.fields.steps.side.va.help" x-text="t('headerVA')"></span>
+        </div>
+        <div class="fc-swimlane-label of__label--nva">
+          <span data-help-key="modules.opportunity-flowchart.fields.steps.side.nva.help" x-text="t('headerNVA')"></span>
+        </div>
+      </div>
+
+      <template x-for="(step, i) in model.steps" :key="step.id">
+        <div class="of__col fc-swimlane-col" :data-step-id="step.id" :data-step-index="i" :data-id="step.id">
+
+          <template x-for="band in bands" :key="band">
+            <div class="of__slot fc-swimlane-slot" :class="slotClass(band)" :data-band="band">
+
+              <!-- Gap 0: rail in front of the first card, only while a step is moved. -->
+              <template x-if="showStartRail(i, band)">
+                <div class="of__connector fc-connector fc-connector--rail" :class="gapClass(0)" data-gap="0">
+                  <span class="fc-connector__arrow">&raquo;</span>
+                </div>
+              </template>
+
+              <!-- Gap i, left of the card in its band: click opens the insert menu. -->
+              <template x-if="showGap(i, band)">
+                <div class="of__connector fc-connector fc-connector--clickable" :class="gapClass(i)"
+                     data-action="insert-step" :data-idx="i" :data-gap="i"
+                     :title="t('insertHere')" @click="toggleInsertMenu(i)">
+                  <span class="fc-connector__arrow">&raquo;</span>
+                  <template x-if="isInsertOpen(i)">
+                    <div class="of__insert-menu">
+                      <button type="button" x-command="addStep" :data-arg-index="i" data-arg-side="va"
+                              @click.stop="closeInsertMenu()" x-text="t('insertVA')"></button>
+                      <button type="button" x-command="addStep" :data-arg-index="i" data-arg-side="nva" data-help-key=""
+                              @click.stop="closeInsertMenu()" x-text="t('insertNVA')"></button>
+                    </div>
+                  </template>
+                </div>
+              </template>
+
+              <template x-if="step.side === band">
+                <div class="of__card fc-card fc-card--accent" :class="cardClass(step)">
+                  <div class="of__card-header fc-card__header">
+                    <button type="button" class="dmike-table__grip of__grip context-help-anchor--overlay" :aria-label="t('stepGrip')"
+                            data-help-key="modules.opportunity-flowchart.actions.moveStep.help"></button>
+                    <span class="of__step-number fc-step-number" x-text="stepNum(i)"></span>
+                    <textarea class="of__step-title fc-card__title" rows="1" x-field="step.title"
+                              :placeholder="t('titlePlaceholder')"></textarea>
+                    <div class="of__card-actions fc-card__actions">
+                      <button type="button" class="of__side-toggle fc-card__delete" x-command="setSide"
+                              :data-arg-id="step.id" :data-arg-side="otherSide(step)"
+                              :title="sideToggleTitle(step)" :aria-label="sideToggleTitle(step)">
+                        <span class="icon" x-show="isVA(step)" data-icon="nav.arrow-down" aria-hidden="true"></span>
+                        <span class="icon" x-show="!isVA(step)" data-icon="nav.arrow-up" aria-hidden="true"></span>
+                      </button>
+                      <button type="button" class="of__delete fc-card__delete" x-command="removeStep"
+                              :data-arg-id="step.id" :title="t('deleteStep')" :aria-label="t('deleteStep')">
+                        <span class="icon" data-icon="action.delete" aria-hidden="true"></span>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="of__card-body fc-card__body">
+                    <textarea class="field field--ghost of__step-description fc-card__description" rows="1"
+                              data-field="description" :data-step-id="step.id" x-field="step.description"
+                              :placeholder="t('descriptionPlaceholder')"></textarea>
+                  </div>
+                  <!-- @include js/core/flowchart/substeps.view.part.html -->
+                </div>
+              </template>
+
+              <!-- Gap n: rail behind the last card, only while a step is moved. -->
+              <template x-if="showEndRail(i, band)">
+                <div class="of__connector of__connector--end fc-connector fc-connector--rail fc-connector--end"
+                     :class="gapClassAfter(i)" :data-gap="i + 1">
+                  <span class="fc-connector__arrow">&raquo;</span>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- Import picker, borrowed into the shared dialog by openImport(); hidden
+       here via CSS. The choice is read at the list (one delegated listener). -->
+  <div x-ref="importForm" class="of__import-form" :data-selected="state.importPick">
+    <p class="of__import-hint" x-text="t('importHint')"></p>
+    <div class="of__import-list" @change="pickImport($event)">
+      <template x-for="opt in state.importOptions" :key="opt.instanceId">
+        <label class="of__import-option" :class="importOptionClass(opt)" :data-instance-id="opt.instanceId">
+          <input type="radio" name="of-import-pick" :value="opt.instanceId" :checked="isImportPicked(opt)">
+          <span class="of__import-option-source" x-text="sourceName(opt)"></span>
+          <span class="of__import-option-title" x-text="opt.label"></span>
+        </label>
+      </template>
+    </div>
+  </div>
+</div>

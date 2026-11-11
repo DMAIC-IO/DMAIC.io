@@ -124,3 +124,6 @@
   font-size: var(--font-size-sm);
   color: var(--color-text-primary);
 }
+
+/* Griff der Kettengeste: gedämpft in Ruhe, voll beim Überfahren der Karte. */
+.of__card:hover .of__grip { opacity: 1; }

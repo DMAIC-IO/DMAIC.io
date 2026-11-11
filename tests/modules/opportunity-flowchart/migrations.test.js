@@ -42,7 +42,8 @@ suite('Opportunity-Flowchart Migration 0→1.0', () => {
   test('fromJSON hebt den Altstand: _schema, expanded, strikt geladen', () => {
     const m = State.fromJSON(legacy());
     const json = m.toJSON();
-    assertDeepEqual(json._schema, { version: '1.0' });
+    // `name` kommt dazu, sobald das Modul sein Model registriert hat (Browser-Runner)
+    assertEqual(json._schema.version, '1.0');
     assertDeepEqual(json.expanded, ['o1']);
     assertEqual(json.steps[1].side, 'va');
     assertEqual('extra' in json.steps[1], false);

@@ -23,6 +23,8 @@
     ariaExpanded(id)       — 'true' bzw. 'false' für aria-expanded
     substepsBarLabel(step) — "Detail-Schritte (2)", ohne Unterschritte ohne Zahl
     substepNum(i, j)       — Nummer des Unterschritts ("2.3")
+    substepItemClass(step, j) — Zielmarke der Geste am Zielplatz (Linie
+                             darüber oder darunter, liest state.substepPreview)
   Dazu t() mit den Schlüsseln des Moduls substepsLabel (für die Leiste),
   substepPlaceholder, addSubstep, substepGrip.
 
@@ -48,7 +50,7 @@
   <div class="fc-substeps" :data-step-id="step.id">
     <div class="fc-substeps-list" :data-group="step.id">
       <template x-for="(sub, j) in step.substeps" :key="sub.id">
-        <div class="fc-substep-item" :data-id="sub.id" :data-substep-id="sub.id" :data-index="j">
+        <div class="fc-substep-item" :class="substepItemClass(step, j)" :data-id="sub.id" :data-substep-id="sub.id" :data-index="j">
           <button type="button" class="dmike-table__grip fc-substep-grip" :aria-label="t('substepGrip')"></button>
           <span class="fc-substep-number" x-text="substepNum(i, j)"></span>
           <input class="fc-substep-title" type="text" x-field="sub.title" :placeholder="t('substepPlaceholder')">

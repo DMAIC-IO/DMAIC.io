@@ -26,5 +26,10 @@
   "importEmptyHint": "No matching source (SIPOC / Process Map) found in this project.",
   "importDone": "{n} step(s) imported",
   "stepGrip": "Move step",
-  "substepGrip": "Move sub-step"
+  "substepGrip": "Move sub-step",
+  "invariants": {
+    "uniqueStepIds": "Every step needs an id of its own.",
+    "uniqueSubstepIds": "Every sub-step needs an id of its own within its step.",
+    "validExpanded": "Only existing steps can be expanded."
+  }
 }

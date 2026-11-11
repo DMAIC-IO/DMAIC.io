@@ -45,6 +45,11 @@
     "description": "Stages single measurements across up to four factors and splits the spread into variance components — shows where the variation actually comes from.",
     "whenToUse": "When the spread of a measured characteristic must be traced to its sources: stages every single measurement by two to four factors (for example shift, cavity, part) and splits the variance into components, nested or crossed, by ANOVA or REML; needs one numeric measurement column and two factor columns."
   },
+  "opportunity-flowchart": {
+    "name": "Opportunity Flowchart",
+    "description": "Two-column flow: value-added steps versus rework",
+    "whenToUse": "When an existing chain needs sorting into value-added work versus rework — not for capturing a new process without that distinction yet."
+  },
   "resampling": {
     "name": "Resampling",
     "description": "Bootstrap confidence intervals and permutation tests for one, two, paired and k samples",

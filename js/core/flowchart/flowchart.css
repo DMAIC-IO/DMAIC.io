@@ -358,6 +358,7 @@ textarea.fc-card__description {
 .fc-substep-item:hover { background: var(--color-bg-primary); }
 .fc-substep-item.is-dragging { opacity: 0.4; }
 .fc-substep-item.is-drop-target { box-shadow: 0 -2px 0 0 var(--color-accent); }
+.fc-substep-item.fc-substep-item--drop-after { box-shadow: 0 2px 0 0 var(--color-accent); }
 
 .fc-substep-number {
   font-family: var(--font-family-mono);

@@ -6,10 +6,11 @@ import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { substepsView } from '../../../js/core/flowchart/substeps-view.js';
 
 /** Ein Host wie `this` im view-Block: Model mit `expanded`, Modul-`t`. */
-function host(expanded = ['s1']) {
+function host(expanded = ['s1'], substepPreview = null) {
   const block = substepsView();
   const h = Object.defineProperties({
     model: { expanded },
+    state: { substepPreview },
     t: (key) => ({ substepsLabel: 'Detail-Schritte' })[key] ?? key,
   }, Object.getOwnPropertyDescriptors(block));
   return h;
@@ -19,7 +20,7 @@ const step = (id, n) => ({ id, substeps: Array.from({ length: n }, (_, i) => ({ 
 suite('flowchart/substeps-view', () => {
   test('liefert genau die Glieder des Vertrags', () => {
     assertDeepEqual(Object.keys(substepsView()).sort(),
-      ['ariaExpanded', 'expandArg', 'isExpanded', 'substepNum', 'substepsBarClass', 'substepsBarLabel']);
+      ['ariaExpanded', 'expandArg', 'isExpanded', 'substepItemClass', 'substepNum', 'substepsBarClass', 'substepsBarLabel']);
   });
 
   test('aufgeklappt: isExpanded, Argument zum Zuklappen, aria-expanded', () => {
@@ -55,5 +56,16 @@ suite('flowchart/substeps-view', () => {
     const h = host();
     assertEqual(h.substepNum(0, 0), '1.1');
     assertEqual(h.substepNum(1, 2), '2.3');
+  });
+
+  test('Zielmarke der Geste: nur am Zielindex im eigenen Schritt, Linie in Zugrichtung', () => {
+    const s = step('s1', 3);
+    assertEqual(host(['s1'], null).substepItemClass(s, 1), '');
+    const down = host(['s1'], { group: 's1', index: 2, id: 'ss0' });
+    assertEqual(down.substepItemClass(s, 2), 'fc-substep-item--drop-after');
+    assertEqual(down.substepItemClass(s, 1), '');
+    assertEqual(down.substepItemClass(step('s2', 3), 2), '');
+    assertEqual(host(['s1'], { group: 's1', index: 0, id: 'ss2' }).substepItemClass(s, 0), 'is-drop-target');
+    assertEqual(host(['s1'], { group: 's1', index: 0, id: 'ss0' }).substepItemClass(s, 0), '');
   });
 });

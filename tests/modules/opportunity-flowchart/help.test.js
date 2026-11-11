@@ -7,19 +7,12 @@
  */
 import { suite, test, assertEqual, assertTrue } from '../../test-utils.js';
 import { helpDefFromFiles } from '../../../js/core/module-help-files.js';
+import { State } from '../../../js/modules/opportunity-flowchart/domain/model.js';
 
 const SECTION_IDS = ['overview', 'whenToUse', 'howToUse', 'valueClassification'];
-const COMMANDS = {
-  addStep: ['side', 'index'],
-  removeStep: ['id'],
-  moveStep: ['id', 'index', 'side'],
-  setSide: ['id', 'side'],
-  addSubstep: ['stepId'],
-  removeSubstep: ['stepId', 'substepId'],
-  moveSubstep: ['stepId', 'substepId', 'index'],
-  setExpanded: ['id', 'expanded'],
-  appendSteps: ['steps'],
-};
+/** Kommandos des Models mit ihren Parametern, aus dem Schema. */
+const COMMANDS = Object.fromEntries(Object.entries(State.schema.commands)
+  .map(([name, def]) => [name, Object.keys(def.params ?? {})]));
 const DEAD_ACTIONS = ['appendStep', 'insertAt', 'setStepTitle', 'setStepDescription',
   'setSubstepsExpanded', 'setSubstepTitle'];
 const BASE = '../../../js/modules/opportunity-flowchart/resources/';
@@ -84,7 +77,8 @@ suite('Opportunity-Flowchart: Oberflächentexte und Kontexthilfe', () => {
     }
   });
 
-  test('context-help: Felder und alle neun Kommandos mit Parametern, ohne tote Schlüssel', async () => {
+  test('context-help: Felder und alle Kommandos des Models mit Parametern, ohne tote Schlüssel', async () => {
+    assertEqual(Object.keys(COMMANDS).length, 9);
     for (const lang of ['de', 'en']) {
       const ch = await loadJson(`i18n/context-help.${lang}.json`);
       for (const k of ['steps', 'steps.title', 'steps.description', 'steps.side', 'steps.side.va',
