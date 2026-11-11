@@ -14,7 +14,7 @@ const FILES = [
   'js/core/flowchart/flowchart-model.js',
   'js/core/state-manager.js',
   'js/core/storage/local-adapter.js',
-  'js/modules/data-import/data-import.js',
+  'js/modules/data-import/viewmodel/viewmodel.js',
   'js/modules/data-transformation/data-transformation.js',
   'js/modules/deployment-flowchart/deployment-flowchart-model.js',
   'js/modules/dmaic-calendar/domain/model.js',

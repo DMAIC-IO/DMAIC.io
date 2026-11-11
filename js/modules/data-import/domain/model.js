@@ -16,7 +16,7 @@ const PRESETS = {
 };
 
 /** Formate, die als Text (ohne Datei) eingelesen werden können. */
-const TEXT_FORMATS = ['csv', 'json', 'aqdef'];
+const TEXT_FORMATS = ['csv', 'json'];
 
 export const State = defineModel({
   version: '1.0',

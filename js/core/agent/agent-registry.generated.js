@@ -3252,6 +3252,7 @@ export const AGENT_REGISTRY = {
   "data-import": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -3267,179 +3268,175 @@ export const AGENT_REGISTRY = {
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
-      "importText": {
+      "applyPreset": {
+        "target": "model",
         "params": [
           {
-            "name": "text",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "der Inhalt; ein leerer Text ergibt einen Parse-Fehler in errorMsg"
-          },
-          {
-            "name": "format",
-            "type": "string",
-            "optional": false,
-            "help": "eines der Formate aus textFormats"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "Promise<{ sheets: number }|null>",
-        "help": "CSV- oder JSON-Text wie eine Datei einlesen und die Vorschau aufbauen."
-      },
-      "setParam": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'csvOptions.preset'|'csvOptions.delimiter'|'csvOptions.encoding'|'csvOptions.hasHeader'|'csvOptions.skipRows'|'xlsxOptions.hasHeader'|'aqdefOptions.encoding'",
-            "optional": false,
-            "help": "welche Option; die im aktuellen Format zulässigen nennt `activeParams`"
-          },
-          {
-            "name": "value",
-            "type": "string|number|boolean",
-            "optional": false,
-            "help": "der Wert; Bereich je Schlüssel siehe `Params`"
-          }
-        ],
-        "returns": "Promise<void>",
-        "help": "Eine Parser-Option setzen und die Daten neu einlesen.",
-        "keysOf": "Params",
+        "returns": "void",
+        "help": "",
+        "keysOf": "applyPreset",
+        "keysHelp": "actions.applyPreset.params",
         "keys": {
-          "csvOptions.preset": {
+          "preset": {
             "type": "'generic'|'zeiss-calypso'|'hexagon-pcdmis'|'mitutoyo-measurlink'",
-            "help": "Exportprofil, nur CSV",
-            "optional": true
-          },
-          "csvOptions.delimiter": {
-            "type": "'auto'|'comma'|'semicolon'|'tab'|'pipe'",
-            "help": "Trennzeichen, nur CSV",
-            "optional": true
-          },
-          "csvOptions.encoding": {
-            "type": "'utf-8'|'windows-1252'|'iso-8859-1'",
-            "help": "Zeichenkodierung, nur CSV aus Datei",
-            "optional": true
-          },
-          "csvOptions.hasHeader": {
-            "type": "boolean",
-            "help": "erste Zeile als Spaltennamen, nur CSV",
-            "optional": true
-          },
-          "csvOptions.skipRows": {
-            "type": "number",
-            "help": "verworfene Zeilen am Anfang, nur CSV",
-            "optional": true
-          },
-          "xlsxOptions.hasHeader": {
-            "type": "boolean",
-            "help": "erste Zeile als Spaltennamen, nur XLSX",
-            "optional": true
-          },
-          "aqdefOptions.encoding": {
-            "type": "'windows-1252'|'iso-8859-1'|'utf-8'",
-            "help": "Zeichenkodierung, nur AQDEF",
-            "optional": true
+            "help": ""
           }
         }
       },
       "selectSheet": {
+        "target": "viewmodel",
         "params": [
           {
-            "name": "index",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "Nummer des Blatts in sheets, ab 0"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Das Blatt wählen, das die Vorschau zeigt und `sendToWorksheet` sendet."
+        "help": "",
+        "keysOf": "selectSheet",
+        "keysHelp": "actions.selectSheet.params",
+        "keys": {
+          "index": {
+            "type": "unknown",
+            "help": ""
+          }
+        }
+      },
+      "importText": {
+        "target": "asyncTask",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "any",
+        "help": "",
+        "keysOf": "importText",
+        "keysHelp": "asyncTasks.importText.params",
+        "keys": {
+          "text": {
+            "type": "unknown",
+            "help": ""
+          },
+          "format": {
+            "type": "unknown",
+            "help": ""
+          }
+        },
+        "task": "importText",
+        "op": "start",
+        "helpKey": "asyncTasks.importText.help"
+      },
+      "importText.cancel": {
+        "target": "asyncTask",
+        "task": "importText",
+        "op": "cancel",
+        "params": [],
+        "returns": "{ cancelled: boolean }",
+        "help": "",
+        "helpKey": "asyncTasks.importText.cancel.help"
       },
       "sendToWorksheet": {
+        "target": "asyncTask",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "any",
+        "help": "",
+        "keysOf": "sendToWorksheet",
+        "keysHelp": "asyncTasks.sendToWorksheet.params",
+        "keys": {},
+        "task": "sendToWorksheet",
+        "op": "start",
+        "helpKey": "asyncTasks.sendToWorksheet.help"
+      },
+      "sendToWorksheet.cancel": {
+        "target": "asyncTask",
+        "task": "sendToWorksheet",
+        "op": "cancel",
         "params": [],
-        "returns": "Promise<{ instanceId: string }|null>",
-        "help": "Das gewählte Blatt an einen neuen Worksheet senden."
+        "returns": "{ cancelled: boolean }",
+        "help": "",
+        "helpKey": "asyncTasks.sendToWorksheet.cancel.help"
       }
     },
     "fields": {
       "file": {
-        "type": "ImportFile|null",
-        "help": "what was imported last, each item described under keys; null before the first import",
-        "bulk": false,
-        "derived": true,
-        "keysOf": "ImportFile",
-        "keys": {
-          "name": {
-            "type": "string",
-            "help": "Dateiname bzw. Name der Texteingabe"
-          },
-          "size": {
-            "type": "number",
-            "help": "Größe in Byte"
-          },
-          "formatId": {
-            "type": "string|null",
-            "help": "erkanntes Format"
-          },
-          "source": {
-            "type": "'file'|'text'",
-            "help": "Herkunft"
-          }
-        }
+        "type": "{ name: string, size: number, formatId: 'mpx'|'csv'|'xlsx'|'json'|'aqdef'|null, source: 'file'|'text' }|null",
+        "help": "",
+        "bulk": false
       },
-      "csvOptions": {
-        "type": "object",
-        "help": "`{ preset, delimiter, encoding, hasHeader, skipRows }`",
-        "bulk": false,
-        "derived": true
+      "options": {
+        "type": "{ csv: { preset: 'generic'|'zeiss-calypso'|'hexagon-pcdmis'|'mitutoyo-measurlink', delimiter: 'auto'|'comma'|'semicolon'|'tab'|'pipe', encoding: 'utf-8'|'windows-1252'|'iso-8859-1', hasHeader: boolean, skipRows: number }, xlsx: { hasHeader: boolean }, aqdef: { encoding: 'windows-1252'|'iso-8859-1'|'utf-8' } }",
+        "help": "",
+        "bulk": false
       },
-      "xlsxOptions": {
-        "type": "object",
-        "help": "`{ hasHeader }`",
-        "bulk": false,
-        "derived": true
-      },
-      "aqdefOptions": {
-        "type": "object",
-        "help": "`{ encoding }`",
-        "bulk": false,
-        "derived": true
+      "activeSheet": {
+        "type": "number",
+        "help": "",
+        "bulk": false
       },
       "activeParams": {
-        "type": "string[]",
-        "help": "the keys `setParam` accepts for the current format",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "textFormats": {
-        "type": "string[]",
-        "help": "the formats `importText` accepts",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
-      "sheets": {
-        "type": "Array<{ name: string, rowCount: number, columns: Array<{ name: string, type: string }> }>",
-        "help": "the parsed sheets, [] without data",
-        "bulk": false,
-        "derived": true
-      },
-      "activeSheetIdx": {
-        "type": "number",
-        "help": "the sheet `sendToWorksheet` sends",
-        "bulk": false,
-        "derived": true
-      },
-      "busy": {
-        "type": "boolean",
-        "help": "a parse is running",
-        "bulk": false,
-        "derived": true
-      },
-      "errorMsg": {
-        "type": "string|null",
-        "help": "the message the module shows, null without error",
+      "asyncTasks": {
+        "type": "object",
+        "help": "",
         "bulk": false,
         "derived": true
       }
-    }
+    },
+    "asyncTasks": [
+      {
+        "name": "parse",
+        "auto": true,
+        "params": []
+      },
+      {
+        "name": "importText",
+        "auto": false,
+        "params": [
+          "text",
+          "format"
+        ]
+      },
+      {
+        "name": "sendToWorksheet",
+        "auto": false,
+        "params": []
+      }
+    ],
+    "viewFields": [],
+    "settable": [
+      "file",
+      "options",
+      "activeSheet"
+    ]
   },
   "data-transformation": {
     "tagged": true,

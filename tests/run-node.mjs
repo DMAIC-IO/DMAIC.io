@@ -167,6 +167,7 @@ const SKIP = new Set([
   'modules/histogram-view.test.js',
   'modules/hypothesis-test-view.test.js',
   'modules/msa-typ5-view.test.js',
+  'modules/data-import/viewmodel.test.js',
   'modules/opportunity-flowchart/viewmodel.test.js',
   'modules/resampling-view.test.js',
   // Imports the module shell for viewData(), which pulls in Alpine CSP and

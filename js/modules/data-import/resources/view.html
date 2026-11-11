@@ -1,0 +1,185 @@
+<div class="module-container data-import" x-data="dataImport" x-file-drop="handleFile" :data-accept="accept">
+  <!-- data-help-key="" an Auswahlfeldern, Eingaben und Reitern ist gewollt: die Hilfe hängt an der Beschriftung daneben bzw. an der Reiterleiste, der automatische Schlüssel ergäbe doppelte Fragezeichen. -->
+  <!-- ── Empty state ───────────────────────────────────────────── -->
+  <template x-if="!model.file">
+    <div class="data-import__empty">
+      <div class="data-import__dropzone" data-ref="dropzone" data-file-open tabindex="0" role="button">
+        <div class="data-import__dropzone-icon" aria-hidden="true">
+          <span class="icon icon--lg icon--empty-state" data-icon="action.upload" aria-hidden="true"></span>
+        </div>
+        <div class="data-import__dropzone-title" x-text="t('dropHere')"></div>
+        <div class="data-import__dropzone-hint" x-text="t('dropHint')"></div>
+        <div class="data-import__dropzone-formats" x-text="t('supportedFormats')"></div>
+      </div>
+    </div>
+  </template>
+
+  <!-- ── Loaded state ──────────────────────────────────────────── -->
+  <template x-if="model.file">
+    <div class="data-import__loaded">
+      <div class="data-import__file-card">
+        <div class="data-import__file-info">
+          <div class="data-import__file-row">
+            <span class="data-import__file-label" data-help-key="modules.data-import.fields.file.name.help" x-text="t('fileName') + ':'"></span>
+            <span class="data-import__file-value" x-text="model.file.name"></span>
+          </div>
+          <div class="data-import__file-row">
+            <span class="data-import__file-label" data-help-key="modules.data-import.fields.file.formatId.help" x-text="t('fileType') + ':'"></span>
+            <span class="data-import__file-value" x-text="formatLabel"></span>
+          </div>
+          <div class="data-import__file-row">
+            <span class="data-import__file-label" data-help-key="modules.data-import.fields.file.size.help" x-text="t('fileSize') + ':'"></span>
+            <span class="data-import__file-value" x-text="fileSizeText"></span>
+          </div>
+        </div>
+        <div class="data-import__file-actions">
+          <button class="data-import__btn-secondary" data-action="replace" data-file-open type="button"
+            x-text="t('replaceFile')"></button>
+        </div>
+      </div>
+
+      <!-- Optionen des Formats -->
+      <div class="data-import__options" x-show="activeParams.length > 0">
+        <template x-if="shows('options.csv.preset')">
+          <label class="data-import__option">
+            <span class="data-import__option-label" data-help-key="modules.data-import.actions.applyPreset.help" x-text="t('csv_preset')"></span>
+            <select data-csv-opt="preset" @change="presetChanged($event)">
+              <template x-for="o in choices('options.csv.preset')" :key="o.value">
+                <option :value="o.value" :selected="model.options.csv.preset === o.value" x-text="o.label"></option>
+              </template>
+            </select>
+          </label>
+        </template>
+        <template x-if="shows('options.csv.delimiter')">
+          <label class="data-import__option">
+            <span class="data-import__option-label" data-help-key="modules.data-import.fields.options.csv.delimiter.help" x-text="t('delimiter')"></span>
+            <select data-csv-opt="delimiter" data-help-key="" x-field="model.options.csv.delimiter">
+              <template x-for="o in choices('options.csv.delimiter')" :key="o.value">
+                <option :value="o.value" x-text="o.label"></option>
+              </template>
+            </select>
+          </label>
+        </template>
+        <template x-if="shows('options.csv.encoding')">
+          <label class="data-import__option">
+            <span class="data-import__option-label" data-help-key="modules.data-import.fields.options.csv.encoding.help" x-text="t('encoding')"></span>
+            <select data-csv-opt="encoding" data-help-key="" x-field="model.options.csv.encoding">
+              <template x-for="o in choices('options.csv.encoding')" :key="o.value">
+                <option :value="o.value" x-text="o.label"></option>
+              </template>
+            </select>
+          </label>
+        </template>
+        <template x-if="shows('options.csv.skipRows')">
+          <label class="data-import__option">
+            <span class="data-import__option-label" data-help-key="modules.data-import.fields.options.csv.skipRows.help" x-text="t('csv_skipRows')"></span>
+            <input type="number" min="0" step="1" data-csv-opt="skipRows" class="data-import__num-input" data-help-key=""
+              x-field="model.options.csv.skipRows">
+          </label>
+        </template>
+        <template x-if="shows('options.csv.hasHeader')">
+          <label class="data-import__option data-import__option--check" data-help-anchor="box" data-help-key="modules.data-import.fields.options.csv.hasHeader.help">
+            <input type="checkbox" data-csv-opt="hasHeader" x-model="model.options.csv.hasHeader">
+            <span class="data-import__option-label" x-text="t('useFirstRowAsHeader')"></span>
+          </label>
+        </template>
+        <template x-if="shows('options.xlsx.hasHeader')">
+          <label class="data-import__option data-import__option--check" data-help-anchor="box" data-help-key="modules.data-import.fields.options.xlsx.hasHeader.help">
+            <input type="checkbox" data-xlsx-opt="hasHeader" x-model="model.options.xlsx.hasHeader">
+            <span class="data-import__option-label" x-text="t('useFirstRowAsHeader')"></span>
+          </label>
+        </template>
+        <template x-if="shows('options.aqdef.encoding')">
+          <label class="data-import__option">
+            <span class="data-import__option-label" data-help-key="modules.data-import.fields.options.aqdef.encoding.help" x-text="t('encoding')"></span>
+            <select data-aqdef-opt="encoding" data-help-key="" x-field="model.options.aqdef.encoding">
+              <template x-for="o in choices('options.aqdef.encoding')" :key="o.value">
+                <option :value="o.value" x-text="o.label"></option>
+              </template>
+            </select>
+          </label>
+        </template>
+      </div>
+
+      <!-- Ergebnis: Lauf / Fehler / keine Datei / Vorschau -->
+      <div class="data-import__result" x-async-task="parse">
+        <template x-if="asyncTasks.parse.running">
+          <div class="data-import__status" x-text="t('parsing')"></div>
+        </template>
+
+        <template x-if="!asyncTasks.parse.running && asyncTasks.parse.error">
+          <div class="data-import__error">
+            <strong x-text="t('parseError')"></strong>
+            <div class="data-import__error-detail" x-text="asyncTasks.parse.error"></div>
+          </div>
+        </template>
+
+        <template x-if="!asyncTasks.parse.running && !asyncTasks.parse.error && !parse">
+          <div class="data-import__status" x-text="t('noFile')"></div>
+        </template>
+
+        <template x-if="!asyncTasks.parse.running && !asyncTasks.parse.error && parse">
+          <div class="data-import__preview-block">
+            <div class="data-import__preview-header">
+              <span class="data-import__preview-title" x-text="t('preview')"></span>
+              <span class="data-import__preview-meta" x-text="previewMeta"></span>
+            </div>
+
+            <template x-if="hasMultipleSheets">
+              <div class="data-import__sheet-tabs" data-help-key="modules.data-import.actions.selectSheet.help">
+                <template x-for="(tab, i) in sheetTabs" :key="i">
+                  <button class="data-import__sheet-tab" type="button" data-help-key=""
+                    :class="sheetTabClass(i)" :data-sheet-idx="i" x-command="selectSheet" :data-arg-index="i">
+                    <span x-text="tab.name"></span>
+                    <span class="data-import__sheet-tab-meta" x-text="tab.meta"></span>
+                  </button>
+                </template>
+              </div>
+            </template>
+
+            <template x-if="hasColumns">
+              <div class="data-import__preview-table-wrap">
+                <table class="data-import__preview-table">
+                  <thead>
+                    <tr>
+                      <template x-for="(col, ci) in previewColumns" :key="ci">
+                        <th>
+                          <div class="data-import__col-name" x-text="col.name"></div>
+                          <div class="data-import__col-type" x-text="col.typeLabel"></div>
+                        </th>
+                      </template>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <template x-for="(row, ri) in previewRows" :key="ri">
+                      <tr>
+                        <template x-for="(cell, ci) in row" :key="ci">
+                          <td :class="cell.cls" x-text="cell.text"></td>
+                        </template>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+            </template>
+
+            <template x-if="!hasColumns">
+              <div class="data-import__status" x-text="t('noColumns')"></div>
+            </template>
+
+            <template x-if="hasColumns && moreRowsCount > 0">
+              <div class="data-import__more" x-text="moreRowsText"></div>
+            </template>
+
+            <div class="data-import__send-row" x-async-task="sendToWorksheet">
+              <button class="dmike-btn-run" data-action="send" type="button" x-async-task-start>
+                <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span>
+                <span x-text="t('sendToWorksheet')"></span>
+              </button>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+  </template>
+</div>

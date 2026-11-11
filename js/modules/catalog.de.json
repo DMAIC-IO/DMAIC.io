@@ -10,6 +10,11 @@
     "description": "Schlägt passende Diagrammtypen für die ausgewählten Spalten vor",
     "whenToUse": "Spalten einer Datensammlung liegen vor und es ist offen, welches Diagramm zu ihren Rollen passt — eine Rangliste mit Vorschau, aus der das gewählte Diagramm als eigenes Modul geöffnet wird."
   },
+  "data-import": {
+    "name": "Datenimport",
+    "description": "Daten aus Fremdformaten einlesen (Minitab .mpx, CSV/TSV/TXT, Excel/ODS, JSON/NDJSON, Q-DAS AQDEF) und ins Worksheet übernehmen",
+    "whenToUse": "Wenn Daten aus einer Fremdquelle in eine Datensammlung übernommen werden sollen; für einen Agenten aus CSV- oder JSON-Text, mit Profilen für gängige Messmaschinen-Exporte."
+  },
   "dmaic-calendar": {
     "name": "Kalender",
     "description": "Projektkalender: Termine je Phase in Monats- und Wochenansicht",

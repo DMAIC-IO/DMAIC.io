@@ -5,9 +5,13 @@ import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { checkValue } from '../../../js/core/model.js';
 import { State } from '../../../js/modules/data-import/domain/model.js';
 import { from0 } from '../../../js/modules/data-import/domain/migrations.js';
-import { FORMATS } from '../../../js/core/parser/index.js';
+import { FORMATS, TEXT_FORMATS } from '../../../js/core/parser/index.js';
 import { CSV_PRESETS } from '../../../js/core/parser/csv.js';
-import { DEFAULT_CSV_OPTIONS, DEFAULT_XLSX_OPTIONS, DEFAULT_AQDEF_OPTIONS } from '../../../js/modules/data-import/data-import-model.js';
+
+/** Die Vorgaben der Altform (data-import-model.js), als Literal festgehalten. */
+const DEFAULT_CSV_OPTIONS = { delimiter: 'auto', encoding: 'utf-8', hasHeader: true, skipRows: 0, preset: 'generic' };
+const DEFAULT_XLSX_OPTIONS = { hasHeader: true };
+const DEFAULT_AQDEF_OPTIONS = { encoding: 'windows-1252' };
 
 const errOf = (fn) => { try { fn(); } catch (e) { return e; } return null; };
 const derive = (m, name) => State.schema.derived[name].call(m);
@@ -86,7 +90,7 @@ suite('data-import Model: Kommandos und Ableitungen', () => {
     assertDeepEqual(derive(new State(), 'activeParams'), []);
   });
   test('textFormats', () => {
-    assertDeepEqual(derive(new State(), 'textFormats'), ['csv', 'json', 'aqdef']);
+    assertDeepEqual(derive(new State(), 'textFormats'), TEXT_FORMATS);
   });
   test('negatives skipRows wird abgewiesen', () => {
     const m = new State();

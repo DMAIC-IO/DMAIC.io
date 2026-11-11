@@ -1,6 +1,6 @@
 /* ============================================================
-   Data Import Module Styles (data-import.css)
-   All colors via CSS custom properties (see css/variables.css)
+   Datenimport. Farben und Abstände ausschließlich über
+   CSS-Custom-Properties (siehe css/variables.css).
    ============================================================ */
 
 .module-container.data-import {
@@ -43,7 +43,7 @@
 
 .data-import__dropzone:hover,
 .data-import__dropzone:focus-visible,
-.data-import__dropzone--over {
+.data-import[data-dragover] .data-import__dropzone {
   border-color: var(--color-accent);
   background: var(--color-accent-light);
   color: var(--color-text-primary);
@@ -78,6 +78,11 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
+}
+
+/* Behälter des Laufs: nur für den Laufstatus, ohne eigenes Layout. */
+.data-import__result {
+  display: contents;
 }
 
 .data-import__file-card {

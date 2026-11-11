@@ -95,12 +95,6 @@ export default [
     load: () => import('./probability-plot/probability-plot.js'),
   },
   {
-    id: 'data-import',
-    phase: 'data',
-    group: 'collect',
-    load: () => import('./data-import/data-import.js'),
-  },
-  {
     id: 'rest-api',
     phase: 'data',
     group: 'collect',

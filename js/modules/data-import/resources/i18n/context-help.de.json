@@ -1,0 +1,112 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "file": {
+      "help": "Die zuletzt eingelesene Quelle; null, solange nichts eingelesen ist. Die Bytes selbst werden nicht gespeichert: nach einem Neuladen steht hier die Beschreibung, eingelesen ist nichts, bis erneut gewählt wird.",
+      "name": {
+        "help": "Der Dateiname, bei eingefügtem Text der Name der Texteingabe."
+      },
+      "size": {
+        "help": "Die Größe, wie die Dateikarte sie zeigt: Byte als ganze Zahl mit B, Kilobyte mit einer Nachkommastelle und KB, Megabyte mit zwei Nachkommastellen und MB."
+      },
+      "formatId": {
+        "help": "Das erkannte Format, wie die Dateikarte es nennt, zum Beispiel Textdatei (CSV / TSV / TXT); fehlt, wenn das Format nicht erkannt wurde."
+      },
+      "source": {
+        "help": "Woher die Quelle stammt: aus einer gewählten oder abgelegten Datei oder aus eingefügtem Text."
+      }
+    },
+    "options": {
+      "help": "Die Parser-Optionen je Format: csv, xlsx und aqdef. Welche im aktuellen Format gelten, nennt activeParams; eine Änderung liest die Quelle neu ein.",
+      "csv": {
+        "help": "Die Optionen für CSV, TSV und TXT.",
+        "preset": {
+          "help": "Das Exportprofil, also ein Satz Vorgaben für den CSV-Export einer Messsoftware. Generisch lässt alles auf den Vorgaben (automatisches Trennzeichen, UTF-8, Spaltenüberschriften, keine übersprungenen Zeilen). Zeiss CALYPSO nimmt Semikolon, Windows-1252 und überspringt 4 Zeilen, Hexagon PC-DMIS Komma, UTF-8 und 4 Zeilen, Mitutoyo MeasurLink Komma, UTF-8 und keine Zeilen; alle drei lesen die erste verbleibende Zeile als Zeile mit den Spaltenüberschriften. Ein Profil setzt Trennzeichen, Zeichensatz, übersprungene Zeilen und Spaltenüberschriften auf einmal; die Einzeloptionen lassen sich danach noch ändern. Setzen über applyPreset; ein Schreiben des Felds allein setzt die übrigen Optionen nicht."
+        },
+        "delimiter": {
+          "help": "Das Zeichen, das die Spalten trennt: automatisch (wird aus dem Inhalt erkannt), Komma, Semikolon, Tabulator oder Senkrechtstrich."
+        },
+        "encoding": {
+          "help": "Der Zeichensatz der Datei: UTF-8, Windows-1252 (Excel) oder Latin-1 (ISO-8859-1); er entscheidet, ob Umlaute richtig erscheinen. Bei eingefügtem Text entfällt die Option, weil der Text schon als Zeichen vorliegt; das Feld ist dann ausgeblendet."
+        },
+        "hasHeader": {
+          "help": "Ob die erste Zeile (nach den übersprungenen) die Spaltenüberschriften enthält. Ohne Spaltenüberschriften zählt sie als Messwerte, und die Spalten heißen C1, C2 und so weiter."
+        },
+        "skipRows": {
+          "help": "Kopfzeilen überspringen: wie viele Zeilen am Dateianfang verworfen werden, bevor gelesen wird; eine ganze Zahl ab 0. Gedacht für Metadaten, die manche Messmaschinen vor die Tabelle schreiben. Ein negativer Wert wird abgewiesen; der bisherige Wert bleibt stehen."
+        }
+      },
+      "xlsx": {
+        "help": "Die Optionen für Excel und ODS.",
+        "hasHeader": {
+          "help": "Ob die erste Zeile jedes Blatts die Spaltenüberschriften enthält. Ohne Spaltenüberschriften zählt sie als Messwerte, und die Spalten heißen C1, C2 und so weiter."
+        }
+      },
+      "aqdef": {
+        "help": "Die Optionen für Q-DAS AQDEF.",
+        "encoding": {
+          "help": "Der Zeichensatz der Q-DAS-Datei. Vorgabe ist Windows-1252, weil Q-DAS-Dateien im DACH-Raum meist so gespeichert sind; zur Wahl stehen außerdem Latin-1 (ISO-8859-1) und UTF-8."
+        }
+      }
+    },
+    "activeSheet": {
+      "help": "Die Nummer des Blatts, das die Vorschau zeigt und sendToWorksheet sendet, ab 0. Eine neue Quelle setzt sie auf 0; liegt sie über der Blattzahl, gilt das letzte Blatt."
+    },
+    "activeParams": {
+      "help": "Die Optionspfade, die im aktuellen Format gelten, etwa options.csv.delimiter; bei eingefügtem Text ohne Zeichensatz, ohne Quelle sowie bei JSON und MPX leer."
+    },
+    "textFormats": {
+      "help": "Die Formate, die importText annimmt."
+    }
+  },
+  "actions": {
+    "applyPreset": {
+      "help": "Wählt ein Exportprofil: setzt Trennzeichen, Zeichensatz, übersprungene Zeilen und Spaltenüberschriften der CSV-Optionen auf einmal; die Quelle wird neu eingelesen.",
+      "params": {
+        "preset": "Das Exportprofil, also ein Satz Vorgaben für den CSV-Export einer Messsoftware. Generisch lässt alles auf den Vorgaben (automatisches Trennzeichen, UTF-8, Spaltenüberschriften, keine übersprungenen Zeilen). Zeiss CALYPSO nimmt Semikolon, Windows-1252 und überspringt 4 Zeilen, Hexagon PC-DMIS Komma, UTF-8 und 4 Zeilen, Mitutoyo MeasurLink Komma, UTF-8 und keine Zeilen; alle drei lesen die erste verbleibende Zeile als Zeile mit den Spaltenüberschriften. Ein Profil setzt Trennzeichen, Zeichensatz, übersprungene Zeilen und Spaltenüberschriften auf einmal; die Einzeloptionen lassen sich danach noch ändern.",
+        "command": "Das Kommando als ein Objekt mit preset."
+      }
+    },
+    "selectSheet": {
+      "help": "Wählt das Blatt der Datei, dessen Spalten an das Worksheet gesendet werden; das gewählte ist hervorgehoben.",
+      "params": {
+        "index": "Die Nummer des Blatts in asyncTasks.parse.value.sheets, ab 0; jede andere Zahl ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit index."
+      }
+    },
+    "importText": {
+      "params": {
+        "command": "Der Ablauf als ein Objekt mit text und format."
+      }
+    },
+    "sendToWorksheet": {
+      "params": {
+        "command": "Ein leeres Objekt; der Ablauf nimmt keine Angaben."
+      }
+    }
+  },
+  "asyncTasks": {
+    "parse": {
+      "help": "Liest die gewählte Quelle mit den Optionen ihres Formats; läuft von selbst nach einer neuen Quelle und nach jeder Änderung dieser Optionen (zusammengefasst, 120 ms Verzögerung). Der Wert nennt Format und Blätter mit Name, Zeilenzahl und Spalten (Name, Typ), ohne die Werte; ohne Quelle, auch nach einem Neuladen, ist er null ohne Fehler. Scheitert das Lesen, ist der Wert null und der Fehler nennt den Grund.",
+      "cancel": {
+        "help": "Bricht das laufende Lesen ab; die Vorschau bleibt, wie sie war."
+      }
+    },
+    "importText": {
+      "help": "Liest CSV- oder JSON-Text wie eine Datei ein und wartet, bis parse fertig ist. Gibt die Zahl der Blätter zurück, bei einem Parse-Fehler null; der Grund steht dann in asyncTasks.parse.error. Ein leerer Text ist ein Parse-Fehler, keine Absage.",
+      "params": {
+        "text": "Der Inhalt als Text; bei CSV gilt immer UTF-8.",
+        "format": "Eines der Formate in textFormats, csv oder json; jeder andere Wert ist ein Fehler."
+      },
+      "cancel": {
+        "help": "Bricht das Warten ab; die Quelle ist dann schon übernommen, parse läuft weiter."
+      }
+    },
+    "sendToWorksheet": {
+      "help": "Sendet die Spalten des gezeigten Blatts mit Typ und Format an ein neues Worksheet, ganz oder gar nicht. Gibt es keine Daten, wird nichts gesendet; ohne Spalten erscheint ein Hinweis. Der Wert ist das neue Worksheet; ohne Daten oder Spalten entsteht keines.",
+      "cancel": {
+        "help": "Bricht das Warten auf das neue Worksheet ab."
+      }
+    }
+  }
+}

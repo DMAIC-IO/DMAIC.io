@@ -1,0 +1,103 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Overview",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The data-import module reads datasets from third-party formats and transfers them as a new worksheet table into Qprovement. It lets you keep working with data produced by other statistics tools without having to retype or roundtrip through CSV."
+        },
+        {
+          "type": "definition",
+          "term": "Supported formats",
+          "content": "The Minitab project format .mpx, delimited text files (CSV / TSV / TXT), spreadsheets (.xlsx, .xlsm, .xls, .ods), JSON / NDJSON, and the Q-DAS AQDEF format (.dfq / .dfd / .dfx) are supported today. The module architecture is open — additional formats (JMP, SPSS, …) can be added as further parsers."
+        },
+        {
+          "type": "definition",
+          "term": "Minitab .mpx",
+          "content": "An .mpx file is a ZIP archive of XML files that holds a complete Minitab project including all worksheets. Qprovement unpacks the archive locally in the browser, reads column names, data types, and values, and makes them available for transfer."
+        },
+        {
+          "type": "definition",
+          "term": "CSV / TSV / TXT",
+          "content": "Delimited text files (comma, semicolon, tab, pipe). After loading, delimiter and encoding (UTF-8, Windows-1252, Latin-1) can be switched at any time — the preview is recomputed immediately. Column types (numeric / text) are detected from the values; both period and comma are accepted as decimal separators. For CMM exports (Zeiss CALYPSO, Hexagon PC-DMIS, Mitutoyo MeasurLink) one-click profiles set delimiter, encoding, and the number of metadata rows to skip together — every value remains tweakable afterwards."
+        },
+        {
+          "type": "definition",
+          "term": "Excel / ODS",
+          "content": "Spreadsheets from Microsoft Excel (.xlsx, .xlsm, .xls) and LibreOffice / OpenOffice (.ods). All sheets are loaded — use the tabs in the preview to choose which one to transfer. Date cells are converted to ISO format (YYYY-MM-DD); formulas are read as their evaluated values."
+        },
+        {
+          "type": "definition",
+          "term": "JSON / NDJSON",
+          "content": "JSON files can appear in three shapes and all of them are auto-detected: a records array (`[{a:1, b:2}, …]` — the worksheet's own export format), a column-oriented object (`{a:[1,2,…], b:[3,4,…]}`), and NDJSON / JSONL with one JSON record per line. Wrapper objects with a `data`, `rows`, or `records` field are unwrapped automatically."
+        },
+        {
+          "type": "definition",
+          "term": "Q-DAS AQDEF",
+          "content": "The de-facto SPC / measurement standard in DACH industry (Bosch, Daimler, VW, ZF, Continental). The module reads .dfq, .dfd, and .dfx files and parses the K-keys: K0100 = number of characteristics, K2002/n = characteristic description (column name), K2001/n = characteristic number (fallback name), K0001/n / K0002/n = measurement / attribute values, K1002/n = part description (sheet name). Values may come verbose as individual K0001/n lines or compact with one row per measurement — the row delimiter is detected automatically. Windows-1252 is pre-selected (typical for Q-DAS); UTF-8 with BOM is detected automatically."
+        },
+        {
+          "type": "definition",
+          "term": "Local & offline",
+          "content": "The file is unpacked and inspected entirely in the browser — nothing is uploaded to a server. The same holds for sensitive process data."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Operation",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Drag a file onto the drop area or use \"Choose file\" to pick one through the file dialog.",
+            "The module detects the format from the file extension and unpacks the file immediately.",
+            "The preview shows column names, data types, and the first 20 rows.",
+            "If the file contains several worksheets, switch between the tabs to inspect each one.",
+            "Click \"→ Worksheet\" to create a new worksheet in the data section from the currently shown table."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Typical use cases: continue working with existing Minitab training datasets in Qprovement, load example data from textbooks, reproduce audit reports from third-party systems."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Missing values",
+          "content": "Minitab marks missing values with an asterisk (*). On import these are converted to real empty cells so that statistics modules ignore them correctly."
+        },
+        {
+          "type": "definition",
+          "term": "Date and time columns",
+          "content": "Date / time columns are currently imported as text, not as native date values. For time-series analyses you may want to add a helper numeric column."
+        },
+        {
+          "type": "definition",
+          "term": "Pick the right sheet first",
+          "content": "For files with multiple sheets, only the currently active sheet is transferred. If you need other sheets, run the module again or import the file repeatedly with a different tab selected each time."
+        },
+        {
+          "type": "definition",
+          "term": "Very large files",
+          "content": "Because unpacking happens in the browser, files in the hundreds of megabytes range can take a moment. The module shows \"Reading file…\" during that time — please wait."
+        },
+        {
+          "type": "definition",
+          "term": "Re-pick after reload",
+          "content": "After a browser reload the file name is kept, but the content is not — browsers do not allow persisting file handles. The file has to be picked again in that case."
+        },
+        {
+          "type": "definition",
+          "term": "CSV: check encoding & delimiter",
+          "content": "If umlauts or accented characters look garbled in the preview, \"Windows-1252 (Excel)\" is usually the right encoding. In Germany, Excel often exports with a semicolon instead of a comma — if columns look wrong, switch the delimiter. Either change triggers an immediate re-parse."
+        }
+      ]
+    }
+  }
+}

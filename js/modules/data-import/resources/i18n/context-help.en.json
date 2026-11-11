@@ -1,0 +1,112 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "file": {
+      "help": "The source imported last; null before anything is imported. The bytes themselves are not stored: after a reload this holds the description, but nothing is read until a file is chosen again.",
+      "name": {
+        "help": "The file name; for pasted text, the name of the text input."
+      },
+      "size": {
+        "help": "The size as the file card shows it: bytes as a whole number with B, kilobytes with one decimal and KB, megabytes with two decimals and MB."
+      },
+      "formatId": {
+        "help": "The detected format as the file card names it, for example Text file (CSV / TSV / TXT); missing if the format was not recognised."
+      },
+      "source": {
+        "help": "Where the source comes from: a chosen or dropped file, or pasted text."
+      }
+    },
+    "options": {
+      "help": "The parser options per format: csv, xlsx and aqdef. Which apply in the current format is listed in activeParams; a change reads the source again.",
+      "csv": {
+        "help": "The options for CSV, TSV and TXT.",
+        "preset": {
+          "help": "The export profile, a set of defaults for the CSV export of a measuring software. Generic leaves everything at the defaults (automatic delimiter, UTF-8, column header row, no skipped rows). Zeiss CALYPSO uses semicolon, Windows-1252 and skips 4 rows, Hexagon PC-DMIS comma, UTF-8 and 4 rows, Mitutoyo MeasurLink comma, UTF-8 and no rows; all three read the first remaining row as header. A profile sets delimiter, encoding, skipped rows and column header row at once; the individual options can still be changed afterwards. Set via applyPreset; writing the field alone does not set the other options."
+        },
+        "delimiter": {
+          "help": "The character that separates the columns: automatic (detected from the content), comma, semicolon, tab or pipe."
+        },
+        "encoding": {
+          "help": "The encoding of the file: UTF-8, Windows-1252 (Excel) or Latin-1 (ISO-8859-1); it decides whether umlauts appear correctly. It does not apply to pasted text, which is already characters; the field is hidden then."
+        },
+        "hasHeader": {
+          "help": "Whether the first row (after the skipped ones) holds the column headers. Without column headers it counts as data, and the columns are named C1, C2 and so on."
+        },
+        "skipRows": {
+          "help": "Skip header rows: how many rows at the start of the file are discarded before reading; a whole number of at least 0. Meant for metadata that some measuring machines write above the table. A negative value is rejected; the previous value stays."
+        }
+      },
+      "xlsx": {
+        "help": "The options for Excel and ODS.",
+        "hasHeader": {
+          "help": "Whether the first row of each sheet holds the column headers. Without column headers it counts as data, and the columns are named C1, C2 and so on."
+        }
+      },
+      "aqdef": {
+        "help": "The options for Q-DAS AQDEF.",
+        "encoding": {
+          "help": "The encoding of the Q-DAS file. The default is Windows-1252 because Q-DAS files in the DACH region are mostly saved that way; Latin-1 (ISO-8859-1) and UTF-8 are also available."
+        }
+      }
+    },
+    "activeSheet": {
+      "help": "The number of the sheet the preview shows and sendToWorksheet sends, from 0. A new source resets it to 0; above the number of sheets, the last sheet applies."
+    },
+    "activeParams": {
+      "help": "The option paths that apply in the current format, such as options.csv.delimiter; for pasted text without encoding, empty without a source and for JSON and MPX."
+    },
+    "textFormats": {
+      "help": "The formats importText accepts."
+    }
+  },
+  "actions": {
+    "applyPreset": {
+      "help": "Chooses an export profile: sets delimiter, encoding, skipped rows and header row of the CSV options at once; the source is read again.",
+      "params": {
+        "preset": "The export profile, a set of defaults for the CSV export of a measuring software. Generic leaves everything at the defaults (automatic delimiter, UTF-8, column header row, no skipped rows). Zeiss CALYPSO uses semicolon, Windows-1252 and skips 4 rows, Hexagon PC-DMIS comma, UTF-8 and 4 rows, Mitutoyo MeasurLink comma, UTF-8 and no rows; all three read the first remaining row as header. A profile sets delimiter, encoding, skipped rows and column header row at once; the individual options can still be changed afterwards.",
+        "command": "The command as an object with preset."
+      }
+    },
+    "selectSheet": {
+      "help": "Chooses the sheet of the file whose columns are sent to the worksheet; the chosen one is highlighted.",
+      "params": {
+        "index": "The number of the sheet in asyncTasks.parse.value.sheets, from 0; any other number is an error.",
+        "command": "The command as an object with index."
+      }
+    },
+    "importText": {
+      "params": {
+        "command": "The task as an object with text and format."
+      }
+    },
+    "sendToWorksheet": {
+      "params": {
+        "command": "An empty object; the task takes no arguments."
+      }
+    }
+  },
+  "asyncTasks": {
+    "parse": {
+      "help": "Reads the chosen source with the options of its format; runs by itself after a new source and after every change of those options (combined, 120 ms delay). The value names format and sheets with name, row count and columns (name, type), without the values; without a source, also after a reload, it is null without error. If reading fails, the value is null and the error names the reason.",
+      "cancel": {
+        "help": "Cancels the running read; the preview stays as it was."
+      }
+    },
+    "importText": {
+      "help": "Reads CSV or JSON text like a file and waits until parse has finished. Returns the number of sheets, or null when the parse failed; the reason is then in asyncTasks.parse.error. An empty text is a parse failure, not a rejection.",
+      "params": {
+        "text": "The content as text; CSV is always read as UTF-8.",
+        "format": "One of the formats in textFormats, csv or json; any other value is an error."
+      },
+      "cancel": {
+        "help": "Stops waiting; the source is already taken over, parse keeps running."
+      }
+    },
+    "sendToWorksheet": {
+      "help": "Sends the columns of the shown sheet with type and format to a new worksheet, all or nothing. Without data nothing is sent; without columns a notice appears. The value is the new worksheet; without data or columns none is created.",
+      "cancel": {
+        "help": "Stops waiting for the new worksheet."
+      }
+    }
+  }
+}

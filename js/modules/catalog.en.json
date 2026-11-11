@@ -10,6 +10,11 @@
     "description": "Proposes suitable chart types for the selected columns",
     "whenToUse": "You have columns of a worksheet and need to know which chart fits their roles — a ranked list with a preview, from which the chosen chart opens as a module of its own."
   },
+  "data-import": {
+    "name": "Data Import",
+    "description": "Read data from third-party formats (Minitab .mpx, CSV/TSV/TXT, Excel/ODS, JSON/NDJSON, Q-DAS AQDEF) into a worksheet",
+    "whenToUse": "When data from a third-party source is to be brought into a data collection; for an agent from CSV or JSON text, with profiles for common measuring-machine exports."
+  },
   "dmaic-calendar": {
     "name": "Calendar",
     "description": "Project calendar: appointments per phase in a month and a week view",

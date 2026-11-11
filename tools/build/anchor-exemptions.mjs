@@ -38,7 +38,7 @@ export const ANCHOR_EXEMPTIONS = {
     { match: ':class="headClass(r)" x-text="r.name"', reason: 'Zeilenkopf je Komponente der Interaktionsmatrix (Name aus den Daten)', count: 1 },
   ],
   'data-import': [
-    { match: 'data-import__col-name', reason: 'Kopf je Spalte (Name und Typ aus den Daten); die Spalten beschreibt der Agent unter sheets', count: 1 },
+    { match: 'data-import__col-name', reason: 'Kopf je Spalte (Name und Typ aus den Daten); die Spalten beschreibt der Agent unter asyncTasks.parse.value.sheets', count: 1 },
   ],
   'contour-plot': [
     { match: 'betaLabel(', reason: 'je Koeffizient ein Feld; der Satz steht am Abschnittstitel', count: 6 },

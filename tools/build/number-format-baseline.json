@@ -65,11 +65,13 @@
   "js/modules/correlation/correlation.js": {
     "count": 8
   },
-  "js/modules/data-import/data-import.html": {
-    "count": 1
+  "js/modules/data-import/resources/view.html": {
+    "count": 1,
+    "reason": "Eingabe Kopfzeilen überspringen bleibt ein Zahlenfeld mit Pfeiltasten (Ganzzahl ab 0), wie bisher; der Wert läuft über x-field"
   },
-  "js/modules/data-import/data-import.js": {
-    "count": 2
+  "js/modules/data-import/viewmodel/present.js": {
+    "count": 2,
+    "reason": "Dateigröße auf der Dateikarte (KB mit einer, MB mit zwei Nachkommastellen) unverändert in der bisherigen Schreibweise"
   },
   "js/modules/data-transformation/data-transformation.html": {
     "count": 1
