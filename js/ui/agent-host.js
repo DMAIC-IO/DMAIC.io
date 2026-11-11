@@ -130,16 +130,19 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
      */
     notifyBackgroundChange(instanceIds) {
       if (!instanceIds?.length) return;
-      const first = instanceIds[0];
+      // Entfernte Instanzen gibt es nicht mehr: nichts zu melden, nichts zu öffnen.
+      const present = instanceIds.map(id => locate(id)).filter(Boolean);
+      if (present.length === 0) return;
+      const first = present[0].instanceId;
       let message;
-      const found = instanceIds.length === 1 ? locate(first) : null;
+      const found = present.length === 1 ? present[0] : null;
       if (found) {
         const module = i18n.t(`modules.${found.module}.name`);
         message = found.record.customName
           ? i18n.t('agent.backgroundChange.one', { module, name: found.record.customName })
           : i18n.t('agent.backgroundChange.oneUnnamed', { module });
       } else {
-        message = i18n.t('agent.backgroundChange.many', { n: instanceIds.length });
+        message = i18n.t('agent.backgroundChange.many', { n: present.length });
       }
       notify(message, 'info', null, {
         action: { label: i18n.t('agent.backgroundChange.show'), onClick: () => this.openInstance(first) },
@@ -175,7 +178,7 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
       // KEIN Rückfall auf ein zusammengesetztes Ergebnis: findet `locate()`
       // die Instanz nicht, existiert sie nicht, und eine erfundene Id wäre
       // die schlechteste mögliche Antwort (Review-Befund I2).
-      const found = locate(instanceId);
+      const found = locatePublic(instanceId);
       if (!found) return null;
       // Den Ausgangszustand einmal ablegen — nach dem Einhängen, denn erst
       // `init()` des Moduls bringt sein Model in Form. Ohne ihn hätte die

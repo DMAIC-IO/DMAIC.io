@@ -79,6 +79,7 @@ suite('agent host — add', () => {
   test('legt über createInstance an und liefert Id und Phase', async () => {
     const { host, state } = makeHost();
     const r = await host.addInstance('five-why');
+    assertDeepEqual(Object.keys(r).sort(), ['instanceId', 'module', 'phase']);
     assertEqual(r.phase, 'define');
     assertEqual(r.module, 'five-why');
     assertTrue(typeof r.instanceId === 'string' && r.instanceId.length > 0);
@@ -345,9 +346,15 @@ suite('agent host — Toast für Änderungen im Hintergrund', () => {
       ['navigate', { kind: 'module', projectId: 'p-1', instanceId: 'fw-1' }]);
   });
 
-  test('eine entfernte Instanz: many statt Abfrage auf phases.undefined', () => {
+  test('nur entfernte Instanzen: kein Toast', () => {
     const { host, toasts } = withToast();
     host.notifyBackgroundChange(['weg']);
-    assertEqual(toasts[0].msg, 'agent.backgroundChange.many|{"n":1}');
+    assertEqual(toasts.length, 0);
+  });
+
+  test('entfernte ids zählen nicht mit: eine übrige Instanz ergibt oneUnnamed', () => {
+    const { host, toasts } = withToast();
+    host.notifyBackgroundChange(['weg', 'fw-1']);
+    assertEqual(toasts[0].msg, 'agent.backgroundChange.oneUnnamed|{"module":"modules.five-why.name|{}"}');
   });
 });
