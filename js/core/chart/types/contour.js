@@ -31,7 +31,7 @@ import { getColor } from '../color-schemes.js';
 import {
   contourLevels, contourSegments, labelSegment, bilinear, rasterRGBA, lineColor,
 } from '../contour-geometry.js';
-import { CONTOUR_DEFAULTS } from '../../../widgets/contour-chart/schema.js';
+import { CONTOUR_DEFAULTS } from '../contour-defaults.js';
 
 const DASH_STYLES = ['solid', 'dash', 'dot', 'dashdot', 'longdash'];
 

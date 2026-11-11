@@ -12,7 +12,7 @@ import ScatterChart from '../../../js/core/chart/types/scatter.js';
 import ChartBase from '../../../js/core/chart/chart-base.js';
 import { bilinear } from '../../../js/core/chart/contour-geometry.js';
 import { formatNum } from '../../../js/core/chart/chart-core.js';
-import { CONTOUR_DEFAULTS } from '../../../js/widgets/contour-chart/schema.js';
+import { CONTOUR_DEFAULTS } from '../../../js/core/chart/contour-defaults.js';
 
 const RES = 20;
 
