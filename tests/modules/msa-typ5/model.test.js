@@ -3,6 +3,8 @@ import {
   State, TYPE_OPTIONS, WEIGHTS_OPTIONS, RULESET_OPTIONS, LAYOUT_OPTIONS, ALPHA_OPTIONS,
 } from '../../../js/modules/msa-typ5/domain/model.js';
 import { analyze } from '../../../js/engines/msa-typ5-engine.js';
+import { evaluateDerived } from '../../../js/core/derived.js';
+import { readLevels, readAnalysis } from '../../../js/modules/msa-typ5/domain/read.js';
 
 const CTX = { cycle: 'dmaic', confidenceLevel: 95, power: 90 };
 const ref = (col) => ({ instanceId: 'ws1', sheetId: 's1', columnId: col });
@@ -120,5 +122,43 @@ suite('MSA Typ 5 Model — Auswahlwerte gegen Schema und Engine', () => {
       assertEqual(r.verdict.ruleSet, ruleSet, label);
       assert(pairKappa(r) !== unweighted, `${label}: Gewichtung wirkt`);
     }
+  });
+});
+
+suite('MSA Typ 5 Model — derived levels und analysis', () => {
+  const part = [], appraiser = [], rating = [];
+  for (let p = 1; p <= 6; p++) {
+    for (const a of ['A', 'B']) {
+      for (let t = 0; t < 2; t++) {
+        part.push(`T${p}`); appraiser.push(a);
+        rating.push((p + (a === 'B' ? t : 0)) % 3 === 0 ? 'nok' : 'ok');
+      }
+    }
+  }
+  const cols = { part, appraiser, rating };
+  const data = {
+    values: (r) => (r && cols[r.columnId] ? [...cols[r.columnId]] : null),
+    name: (r) => (r && cols[r.columnId] ? r.columnId : null),
+    columns: () => Object.keys(cols).map((id) => ({ key: id, name: id })),
+  };
+  const model = () => {
+    const m = new State(CTX);
+    m.part = ref('part'); m.appraiser = ref('appraiser'); m.rating = ref('rating');
+    return m;
+  };
+
+  test('ohne Bewertungsspalte: keine Stufen, keine Analyse', () => {
+    const d = evaluateDerived(new State(CTX), data);
+    assertEqual(d.levels.all.length, 0);
+    assertEqual(d.analysis, null);
+  });
+
+  test('mit Spalten: Stufen und Analyse gleichen den Lesefunktionen', () => {
+    const m = model();
+    const d = evaluateDerived(m, data);
+    assertEqual(JSON.stringify(d.levels.all), JSON.stringify(['nok', 'ok']));
+    assertEqual(JSON.stringify(d.levels), JSON.stringify(readLevels(m, data)));
+    assert(d.analysis && d.analysis.verdict, 'Urteil vorhanden');
+    assertEqual(JSON.stringify(d.analysis), JSON.stringify(readAnalysis(m, data)));
   });
 });

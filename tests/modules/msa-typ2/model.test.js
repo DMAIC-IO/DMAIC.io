@@ -1,6 +1,7 @@
 import { suite, test, assert, assertEqual, assertThrows } from '../../test-utils.js';
 import { State, K_OPTIONS, VERDICT_BASES } from '../../../js/modules/msa-typ2/domain/model.js';
 import { analyze, validate } from '../../../js/engines/msa-typ2-engine.js';
+import { evaluateDerived } from '../../../js/core/derived.js';
 
 const CTX = { cycle: 'dmaic', confidenceLevel: 95, power: 90 };
 const ref = (col) => ({ instanceId: 'ws1', sheetId: 's1', columnId: col });
@@ -104,5 +105,41 @@ suite('MSA Typ 2 Model — Auswahlwerte gegen die Engine', () => {
       const r = analyze(data, opts);
       assert(['tolerance', 'studyVar'].includes(r.verdictBasis), b);
     }
+  });
+});
+
+suite('MSA Typ 2 Model — derived analysis', () => {
+  const parts = [], ops = [], meas = [];
+  for (let i = 0; i < 4; i++) {
+    for (const [oi, op] of ['A', 'B'].entries()) {
+      for (let r = 0; r < 2; r++) {
+        parts.push(`T${i + 1}`); ops.push(op);
+        meas.push(10 + i * 0.5 + oi * 0.03 + (r ? 0.02 : -0.01) + ((i * 7 + r * 3 + oi) % 5) * 0.004);
+      }
+    }
+  }
+  const cols = { part: parts, op: ops, meas };
+  const data = { values: (r) => (cols[r.columnId] ? [...cols[r.columnId]] : null) };
+
+  test('ohne Messwertspalte: null', () => {
+    const m = new State(CTX); m.part = ref('part');
+    assertEqual(evaluateDerived(m, data).analysis, null);
+  });
+
+  test('mit drei Spalten: Typ 2, gleich dem Ergebnis der Engine auf denselben Daten', () => {
+    const m = new State(CTX);
+    m.part = ref('part'); m.operator = ref('op'); m.measurement = ref('meas');
+    const { analysis } = evaluateDerived(m, data);
+    assertEqual(analysis.mode, 'typ2');
+    assertEqual(analysis.p, 4);
+    const opts = { alpha: m.alpha, studyVarMultiplier: m.k, lsl: NaN, usl: NaN };
+    const arrays = { parts, operators: ops, measurements: meas };
+    assertEqual(JSON.stringify(analysis), JSON.stringify(analyze(arrays, opts)));
+  });
+
+  test('ohne Prüferspalte: Typ 3', () => {
+    const m = new State(CTX);
+    m.part = ref('part'); m.measurement = ref('meas');
+    assertEqual(evaluateDerived(m, data).analysis.mode, 'typ3');
   });
 });

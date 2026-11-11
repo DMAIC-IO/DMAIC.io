@@ -1,5 +1,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../test-utils.js';
 import { State, resolveTarget } from '../../js/modules/hypothesis-test/domain/model.js';
+import { analyze } from '../../js/modules/hypothesis-test/domain/analyze.js';
+import { evaluateDerived } from '../../js/core/derived.js';
 
 const ref = (c) => ({ instanceId: 'ws1', sheetId: 's1', columnId: c });
 
@@ -178,5 +180,45 @@ suite('hypothesis-test Model', () => {
       assertEqual(m.exampleWorksheetId, '12');
       assertDeepEqual(seen, []);
     } finally { console.warn = warn; }
+  });
+});
+
+suite('hypothesis-test Model — derived result', () => {
+  const A = [10.1, 10.4, 9.8, 10.2, 10.0, 10.3];
+  const B = [12.9, 13.2, 12.7, 13.0, 12.8, 13.4];
+  const cols = { c0: A, c1: B };
+  const data = {
+    name: (r) => (cols[r.columnId] ? `Spalte ${r.columnId}` : null),
+    values: (r) => (cols[r.columnId] ? [...cols[r.columnId]] : null),
+    numeric: (r) => (cols[r.columnId] ? [...cols[r.columnId]] : null),
+  };
+
+  test('ohne Spalten: insufficient, dieselbe Analyse wie der Rechenkern', () => {
+    const m = State.fromJSON({ category: 'mean', testType: 'two' });
+    const { result } = evaluateDerived(m, data);
+    assertEqual(result.status, 'insufficient');
+    assertDeepEqual(result, analyze({
+      category: 'mean', testType: 'two', direction: m.direction, alpha: m.alpha, powerGoal: m.powerGoal,
+      target: null, targetType: m.targetType, equalVariances: m.equalVariances,
+      samples: [{ name: '', values: null }, { name: '', values: null }],
+    }));
+  });
+
+  test('zwei Stichproben: result ist ok und gleicht dem Rechenkern auf denselben Spalten', () => {
+    const m = State.fromJSON({ category: 'mean', testType: 'two', colRef1: ref('c0'), colRef2: ref('c1') });
+    const { result } = evaluateDerived(m, data);
+    assertEqual(result.status, 'ok');
+    assertDeepEqual(result, analyze({
+      category: m.category, testType: m.testType, direction: m.direction, alpha: m.alpha, powerGoal: m.powerGoal,
+      target: resolveTarget(m), targetType: m.targetType, equalVariances: m.equalVariances,
+      samples: [{ name: 'Spalte c0', values: A }, { name: 'Spalte c1', values: B }],
+    }));
+  });
+
+  test('nur result steht in den Ableitungen; ein Fehler wird zu { error }', () => {
+    const m = State.fromJSON({ category: 'mean', testType: 'one', colRef1: ref('c0') });
+    const out = evaluateDerived(m, { ...data, numeric: () => { throw new Error('kaputt'); } });
+    assertDeepEqual(Object.keys(out), ['result']);
+    assertDeepEqual(out.result, { error: 'kaputt' });
   });
 });

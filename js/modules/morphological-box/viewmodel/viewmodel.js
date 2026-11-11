@@ -4,7 +4,7 @@
  * Inhalt, Kommandos und Invarianten liegen im Model (domain/model.js); die
  * Agentenfläche entsteht aus dessen Schema. Namen und Bezeichnungen binden
  * über `x-field`, Löschknöpfe über `x-command`, Reiter und aktives Konzept
- * über `x-set` (Reiter und Knopfgruppe). Hier bleiben: die Kennzahlen als `computed`, die
+ * über `x-set` (Reiter und Knopfgruppe). Die Kennzahlen liefern die Ableitungen des Models; hier bleiben die
  * Ansichtsfunktionen von Kasten, Konzeptliste und Verträglichkeitsmatrix
  * und die Handler, die nach dem Anlegen fokussieren oder ein Kästchen in ein
  * Kommando übersetzen.
@@ -28,16 +28,7 @@ const PALETTE_SIZE = 8;
  * @property {number} combinationCount  all combinations of one option per parameter
  * @property {number} consistentCount  combinations without an incompatible pair
  * @property {boolean} consistentExact  false when consistentCount is only a lower bound
- * @property {ConceptCheck[]} conceptChecks  per concept: id, complete, conflicts
- */
-
-/**
- * Die Prüfung eines Konzepts.
- *
- * @typedef {object} ConceptCheck
- * @property {string} id  id of the concept
- * @property {boolean} complete  every parameter with options has a pick
- * @property {string[][]} conflicts  the incompatible option pairs inside the concept, in box order
+ * @property {import('../domain/model.js').ConceptCheck[]} conceptChecks  per concept: id, complete, conflicts
  */
 
 /**
@@ -58,40 +49,6 @@ export default createModule({
   /** @type {import('../../../core/template-module.js').ViewFn<BoxModel, {}>} */
   view(ctx) {
     return {
-      computed: {
-        /**
-         * Die ids aller Ausprägungen in Kastenreihenfolge.
-         * @returns {string[]}
-         */
-        optionIds() { return this.model.optionIds(); },
-        /**
-         * Alle Kombinationen aus je einer Ausprägung pro Parameter.
-         * @returns {number}
-         */
-        combinationCount() { return this.model.combinationCount(); },
-        /**
-         * Die Kombinationen ohne unverträgliches Paar (bei erschöpftem Budget eine Untergrenze).
-         * @returns {number}
-         */
-        consistentCount() { return this.model.consistentCount().count; },
-        /**
-         * false, wenn consistentCount nur eine Untergrenze ist.
-         * @returns {boolean}
-         */
-        consistentExact() { return this.model.consistentCount().exact; },
-        /**
-         * Je Konzept: vollständig und die unverträglichen Paare darin.
-         * @returns {ConceptCheck[]}
-         */
-        conceptChecks() {
-          return this.model.concepts.map((/** @type {Concept} */ c) => ({
-            id: c.id,
-            complete: this.model.isConceptComplete(c.id),
-            conflicts: this.model.conceptConflicts(c.id),
-          }));
-        },
-      },
-
       // ─── Kennzahlen und Reiter ────────────────────────────
       /** Die Ansichten in Reiterreihenfolge. */
       get views() { return VIEWS; },

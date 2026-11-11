@@ -78,6 +78,15 @@ function validPair(pair, owners) {
   return pa !== undefined && pb !== undefined && pa !== pb;
 }
 
+/**
+ * Die Prüfung eines Konzepts.
+ *
+ * @typedef {object} ConceptCheck
+ * @property {string} id  id of the concept
+ * @property {boolean} complete  every parameter with options has a pick
+ * @property {string[][]} conflicts  the incompatible option pairs inside the concept, in box order
+ */
+
 export class State extends defineModel({
   version: '1.0',
   fields: {
@@ -193,6 +202,44 @@ export class State extends defineModel({
         picks[parameterId] = optionId;
       },
     }),
+  },
+  derived: {
+    /**
+     * Die ids aller Ausprägungen in Kastenreihenfolge.
+     * @this {State}
+     * @returns {string[]}
+     */
+    optionIds() { return this.optionIds(); },
+    /**
+     * Alle Kombinationen aus je einer Ausprägung pro Parameter.
+     * @this {State}
+     * @returns {number}
+     */
+    combinationCount() { return this.combinationCount(); },
+    /**
+     * Die Kombinationen ohne unverträgliches Paar (bei erschöpftem Budget eine Untergrenze).
+     * @this {State}
+     * @returns {number}
+     */
+    consistentCount() { return this.consistentCount().count; },
+    /**
+     * false, wenn consistentCount nur eine Untergrenze ist.
+     * @this {State}
+     * @returns {boolean}
+     */
+    consistentExact() { return this.consistentCount().exact; },
+    /**
+     * Je Konzept: vollständig und die unverträglichen Paare darin.
+     * @this {State}
+     * @returns {ConceptCheck[]}
+     */
+    conceptChecks() {
+      return this.concepts.map((/** @type {{ id: string }} */ c) => ({
+        id: c.id,
+        complete: this.isConceptComplete(c.id),
+        conflicts: this.conceptConflicts(c.id),
+      }));
+    },
   },
   invariants: {
     uniqueIds: {

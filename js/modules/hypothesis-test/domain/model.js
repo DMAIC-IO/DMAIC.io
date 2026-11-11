@@ -1,12 +1,13 @@
 /**
  * D.Mike — Hypothesentest: Model.
  *
- * Gespeichert wird nur die Konfiguration; das Ergebnis rechnet der
- * view-Block (`computed result`) aus Model und Arbeitsblatt.
+ * Gespeichert wird nur die Konfiguration; das Ergebnis rechnet die Ableitung
+ * `result` aus Model und Arbeitsblatt.
  */
 import { defineModel, command, text, number, boolean, oneOf, list, columnRef } from '../../../core/model.js';
 import { parseNumber, roundTo } from '../../../core/number-format.js';
 import { from0 } from './migrations.js';
+import { analyze } from './analyze.js';
 import histogramChart from '../../../widgets/histogram-chart/schema.js';
 import probabilityPlotChart from '../../../widgets/probability-plot-chart/schema.js';
 import scatterChart from '../../../widgets/scatter-chart/schema.js';
@@ -50,6 +51,31 @@ export const State = defineModel({
     residProbChart: probabilityPlotChart.edits(),
     residHistChart: histogramChart.edits(),
     residOrderChart: scatterChart.edits(),
+  },
+  derived: {
+    /**
+     * Die Analyse als Zahlen; `{ status: 'insufficient', reason }`, solange Eingaben fehlen.
+     * Gepaart kommen die Spalten ungefiltert (die Paarbildung dünnt sie aus), sonst nur Zahlen.
+     *
+     * @param {any} data Arbeitsblattsicht
+     * @this {import('./model.types.js').StateModel}
+     * @returns {import('./analyze.js').Analysis}
+     */
+    result(data) {
+      const m = this;
+      const refs = m.testType === 'k' ? m.colRefsK
+        : (m.testType === 'one' ? [m.colRef1] : [m.colRef1, m.colRef2]);
+      const samples = refs.map((/** @type {any} */ ref) => {
+        if (!ref) return { name: '', values: null };
+        if (m.testType === 'paired') return { name: data.name(ref) ?? '', values: data.values(ref) };
+        return { name: data.name(ref) ?? '', values: data.numeric(ref) };
+      });
+      return analyze({
+        category: m.category, testType: m.testType, direction: m.direction,
+        alpha: m.alpha, powerGoal: m.powerGoal, target: resolveTarget(m), targetType: m.targetType,
+        equalVariances: m.equalVariances, samples,
+      });
+    },
   },
   invariants: {
     pairedMeansOnly: {

@@ -1,14 +1,13 @@
 /**
  * D.Mike — Hypothesentest: Viewmodel.
  *
- * Ein `computed result` rechnet aus Model und Arbeitsblatt (`ctx.data`);
+ * Die Ableitung `result` (Model) rechnet aus Model und Arbeitsblatt;
  * Getter machen daraus Anzeige, Fehlertext, die vier Residuendiagramme und
  * die Hypothesenvorschau.
  */
 import { createModule } from '../../../core/template-module.js';
 import descriptor from '../module.js';
-import { State, resolveTarget } from '../domain/model.js';
-import { analyze } from '../domain/analyze.js';
+import { State } from '../domain/model.js';
 import { presentResult, insufficientText, residualCharts, previewHypotheses } from './present.js';
 
 export default createModule({
@@ -19,29 +18,6 @@ export default createModule({
     /** Anzeigemodell je Ergebnisobjekt, einmal gebaut. */
     const shown = new WeakMap();
     return {
-      computed: {
-        /**
-         * Die Analyse als Zahlen; `{ status: 'insufficient', reason }`, solange Eingaben fehlen.
-         * Gepaart kommen die Spalten ungefiltert (die Paarbildung dünnt sie aus), sonst nur Zahlen.
-         *
-         * @returns {import('../domain/analyze.js').Analysis}
-         */
-        result() {
-          const m = this.model;
-          const refs = m.testType === 'k' ? m.colRefsK
-            : (m.testType === 'one' ? [m.colRef1] : [m.colRef1, m.colRef2]);
-          const samples = refs.map((ref) => {
-            if (!ref) return { name: '', values: null };
-            if (m.testType === 'paired') return { name: ctx.data.name(ref) ?? '', values: ctx.data.values(ref) };
-            return { name: ctx.data.name(ref) ?? '', values: ctx.data.numeric(ref) };
-          });
-          return analyze({
-            category: m.category, testType: m.testType, direction: m.direction,
-            alpha: m.alpha, powerGoal: m.powerGoal, target: resolveTarget(m), targetType: m.targetType,
-            equalVariances: m.equalVariances, samples,
-          });
-        },
-      },
       /** Anzeigemodell (Texte, Klassen, Tooltips) oder null. */
       get display() {
         const r = this.result;

@@ -5,9 +5,12 @@
  * zeilen und die Konfiguration der Diagramm-Widgets. Alles rein: Eingaben
  * sind das Ergebnis der Engine und der Übersetzer `t`.
  */
-import { buildDataArrays, computeAnalysis } from '../domain/data.js';
+import { readAnalysis } from '../domain/data.js';
 import { fmt, fmtP } from '../domain/format.js';
 import { panelsFromCells, splitPanelRows } from '../../../engines/gage-run-chart-engine.js';
+
+/** Die Ableitung aus Model und Arbeitsblatt liegt in `domain/data.js`; hier nur durchgereicht. */
+export { readAnalysis };
 
 /** Prüfeinheiten je Streifen des Messverlaufsdiagramms. */
 export const PER_ROW = 10;
@@ -31,29 +34,6 @@ export function operatorColors(n) {
 const orNull = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
 /** @param {number} v @returns {number} endliche Zahl, sonst 0 (Balken ohne Wert) */
 const orZero = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
-
-/**
- * Die Analyse aus Model und Arbeitsblatt. Die Spalten kommen über
- * `data.values` (Zeilenzuordnung); ohne Prüferspalte rechnet die Engine Typ 3.
- * @param {import('../domain/model.types.js').StateModel} m
- * @param {{ values: (ref: object) => any[]|null }} data `ctx.data`
- * @param {{ validate: Function, analyze: Function }} [engine] austauschbar für Tests
- * @returns {any} null, `{ invalid }`, `{ error }` oder das Ergebnis der Engine
- */
-export function readAnalysis(m, data, engine) {
-  if (!m.part || !m.measurement) return null;
-  const cols = {
-    parts: data.values(m.part),
-    // Eine gewählte, aber verschwundene Prüferspalte bleibt Typ 2 (ohne Zeilen).
-    operators: m.operator ? (data.values(m.operator) ?? []) : null,
-    measurements: data.values(m.measurement),
-  };
-  const opts = {
-    alpha: m.alpha, studyVarMultiplier: m.k, lsl: m.lsl, usl: m.usl,
-    verdictBasis: m.verdictBasis, historicalSigma: m.sigmaHist,
-  };
-  return computeAnalysis(buildDataArrays(cols), opts, engine);
-}
 
 /**
  * Das Ergebnis, wenn die Analyse eines hat.

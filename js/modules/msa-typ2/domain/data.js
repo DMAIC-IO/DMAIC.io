@@ -56,3 +56,26 @@ export function computeAnalysis(data, opts, engine = { validate, analyze }) {
     return { error: err.message };
   }
 }
+
+/**
+ * Die Analyse aus Model und Arbeitsblatt. Die Spalten kommen über
+ * `data.values` (Zeilenzuordnung); ohne Prüferspalte rechnet die Engine Typ 3.
+ * @param {import('../domain/model.types.js').StateModel} m
+ * @param {{ values: (ref: object) => any[]|null }} data `ctx.data`
+ * @param {{ validate: Function, analyze: Function }} [engine] austauschbar für Tests
+ * @returns {any} null, `{ invalid }`, `{ error }` oder das Ergebnis der Engine
+ */
+export function readAnalysis(m, data, engine) {
+  if (!m.part || !m.measurement) return null;
+  const cols = {
+    parts: data.values(m.part),
+    // Eine gewählte, aber verschwundene Prüferspalte bleibt Typ 2 (ohne Zeilen).
+    operators: m.operator ? (data.values(m.operator) ?? []) : null,
+    measurements: data.values(m.measurement),
+  };
+  const opts = {
+    alpha: m.alpha, studyVarMultiplier: m.k, lsl: m.lsl, usl: m.usl,
+    verdictBasis: m.verdictBasis, historicalSigma: m.sigmaHist,
+  };
+  return computeAnalysis(buildDataArrays(cols), opts, engine);
+}

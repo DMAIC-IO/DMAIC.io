@@ -1,5 +1,6 @@
 import { suite, test, assert, assertEqual, assertDeepEqual, assertThrows } from '../test-utils.js';
 import { readModel, setFields } from '../../js/core/model.js';
+import { evaluateDerived } from '../../js/core/derived.js';
 import { State, VIEWS } from '../../js/modules/morphological-box/domain/model.js';
 import { countConsistent, pairKey, COUNT_BUDGET } from '../../js/modules/morphological-box/domain/counting.js';
 import { listMorphologicalConcepts } from '../../js/modules/morphological-box/domain/concepts.js';
@@ -442,5 +443,33 @@ suite('Morphological Box — concept source for solution selection', () => {
       complete: false,
       conflictCount: 1,
     }]);
+  });
+});
+
+suite('Morphological Box Model — derived', () => {
+  test('leerer Kasten: alle Kennzahlen null beziehungsweise leer', () => {
+    assertDeepEqual(evaluateDerived(new State(), {}), {
+      optionIds: [], combinationCount: 0, consistentCount: 0, consistentExact: true, conceptChecks: [],
+    });
+  });
+
+  test('Kasten mit Konflikt und Konzepten gleicht den lesenden Hilfen des Models', () => {
+    const s = State.fromJSON({
+      parameters: sampleBox().parameters,
+      conflicts: [['a1', 'b3']],
+      concepts: [
+        { id: 'k1', name: 'Voll', picks: { p1: 'a1', p2: 'b3', p3: 'c1' } },
+        { id: 'k2', name: 'Teil', picks: { p1: 'a2' } },
+      ],
+    });
+    const d = evaluateDerived(s, {});
+    assertDeepEqual(d.optionIds, ['a1', 'a2', 'b1', 'b2', 'b3', 'c1', 'c2']);
+    assertEqual(d.combinationCount, 12);
+    assertEqual(d.consistentCount, 10);
+    assertEqual(d.consistentExact, true);
+    assertDeepEqual(d.conceptChecks, [
+      { id: 'k1', complete: true, conflicts: [['a1', 'b3']] },
+      { id: 'k2', complete: false, conflicts: [] },
+    ]);
   });
 });
