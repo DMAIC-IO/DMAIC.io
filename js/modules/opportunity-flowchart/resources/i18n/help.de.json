@@ -1,0 +1,41 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Aufbau",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Das Opportunity Flowchart teilt einen Ablauf in zwei Bahnen: oben die {{term:wertschoepfung|wertschöpfenden}} Schritte (VA), unten die nicht wertschöpfenden — Nacharbeit, Warten, Prüfen, Korrigieren (NVA). Die Kette läuft wie in allen Flowcharts von links nach rechts; die Bahn ist ausschließlich die vertikale Position. Je mehr Karten in der unteren Bahn liegen, desto mehr Aufwand steckt im Prozess, der für den Kunden keinen Wert erzeugt."
+        }
+      ]
+    },
+    "whenToUse": {
+      "title": "Wann verwenden?",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Das Opportunity Flowchart eignet sich in der Analyze-Phase, wenn die {{term:muda|Verschwendung}} in einem bereits erfassten Ablauf sichtbar gemacht werden soll. Es beantwortet die Frage „Welcher Anteil unserer Schritte erzeugt tatsächlich Wert?\" und liefert damit die Kandidaten für die Improve-Phase. Im Unterschied zur {{term:process-map|Prozesskarte}} verzichtet es auf Input/Output-Klassifikation und Swim Lanes; im Unterschied zum Activity Flowchart bildet es keine Verzweigungen ab, sondern eine Bewertung pro Schritt."
+        }
+      ]
+    },
+    "howToUse": {
+      "title": "Bedienung",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Über „Schritt links (VA) hinzufügen\" bzw. „Schritt rechts (NVA) hinzufügen\" wird ein neuer Schritt am Ende der Kette in der jeweiligen Bahn angelegt. Der Pfeil-Knopf auf einer Karte (↓ bzw. ↑) schiebt sie in die andere Bahn, ohne ihre Position in der Kette zu ändern. Der `»`-Knopf zwischen zwei Spalten öffnet ein kleines Menü und fügt an dieser Stelle einen Schritt oben (VA) oder unten (NVA) ein. Karten werden am Griff, der blauen Nummer, gezogen: Das Ablegen setzt die Karte an die Stelle der Kette, auf die der Zeiger zeigt, und in die Bahn, in der sie landet. Mit der Tastatur geht dasselbe am Griff: Enter nimmt die Karte auf, ←/→ ändern die Position in der Kette, ↑/↓ wechseln die Bahn, Enter legt ab, Escape bricht ab. Über „Detail-Schritte\" lässt sich jede Karte in Unter-Schritte aufklappen. Über „Importieren aus …\" werden Schritte aus einer bestehenden Process-Map- oder SIPOC-Instanz übernommen."
+        }
+      ]
+    },
+    "valueClassification": {
+      "title": "Import und Wert-Einstufung",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Beim Import aus einer Process Map wird deren dreistufige Wert-Einstufung auf die zwei Spalten abgebildet: „wertschöpfend\" bleibt oben, „nicht wertschöpfend\" wandert nach unten, und „notwendig, aber nicht wertschöpfend\" (BNVA) landet ebenfalls unten — es ist Aufwand, den der Kunde nicht bezahlt, auch wenn er heute nicht entfallen kann. Schritte ohne Einstufung landen oben. Aus SIPOC kommen alle Schritte oben an, weil dort keine Wert-Information hinterlegt ist; die Einstufung erfolgt danach von Hand über den Pfeil-Knopf."
+        }
+      ]
+    }
+  }
+}

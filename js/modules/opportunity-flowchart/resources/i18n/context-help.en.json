@@ -1,0 +1,93 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "steps": {
+      "help": "The chain in order, each entry described individually under keys. The side (va or nva) is the vertical position of the card; it does not affect the position in the chain.",
+      "title": {
+        "help": "The title of the step, a short name for the activity."
+      },
+      "description": {
+        "help": "The description of the step, free text."
+      },
+      "side": {
+        "help": "The band of the step: va for value-added (upper band), nva for non-value-added (lower band: rework, waiting, inspecting).",
+        "va": {
+          "help": "Upper band: value-added steps (VA) the customer pays for."
+        },
+        "nva": {
+          "help": "Lower band: non-value-added steps (NVA) — rework, waiting, inspecting, correcting."
+        }
+      },
+      "substeps": {
+        "help": "The sub-steps of the step in order, each entry described under keys.",
+        "title": {
+          "help": "The title of the sub-step."
+        }
+      }
+    }
+  },
+  "actions": {
+    "addStep": {
+      "help": "Inserts an empty step into the chain and returns its id.",
+      "params": {
+        "side": "Column the new step lands in: 'va' value-added or 'nva' rework.",
+        "index": "Position of the new step in the chain after insertion (0 = very front, the number of steps = at the end). Omit to append at the end. A value outside this range or a non-integer is an error."
+      }
+    },
+    "removeStep": {
+      "help": "Removes a step together with its sub-steps from the chain.",
+      "params": {
+        "id": "The id of the step to remove. An unknown id is an error."
+      }
+    },
+    "moveStep": {
+      "help": "Moves a step to another place in the chain and, if wanted, sets its column at the same time.",
+      "params": {
+        "id": "The id of the step to move. An unknown id is an error.",
+        "index": "The position of the step after the move, an integer from 0 (very front) to the number of steps minus one.",
+        "side": "Optional: the step's new column, 'va' value-added or 'nva' rework. Omit to keep the column."
+      }
+    },
+    "setSide": {
+      "help": "Sets a step's column; its position in the chain stays.",
+      "params": {
+        "id": "The id of the step. An unknown id is an error.",
+        "side": "Column of the step: 'va' value-added or 'nva' rework. A value outside this set is an error."
+      }
+    },
+    "addSubstep": {
+      "help": "Adds an empty sub-step to a step. Returns the id of the new sub-step.",
+      "params": {
+        "stepId": "The id of the step that receives the new sub-step. An unknown id is an error."
+      }
+    },
+    "removeSubstep": {
+      "help": "Removes a sub-step from its parent step.",
+      "params": {
+        "stepId": "The id of the parent step. An unknown id is an error.",
+        "substepId": "The id of the sub-step to remove. An unknown id is an error."
+      }
+    },
+    "moveSubstep": {
+      "help": "Moves a sub-step to another position within its step.",
+      "params": {
+        "stepId": "The id of the step the sub-step belongs to. An unknown id is an error.",
+        "substepId": "The id of the sub-step to move. An unknown id is an error.",
+        "index": "The position of the sub-step after the move, an integer from 0."
+      }
+    },
+    "setExpanded": {
+      "help": "Shows or hides a step's sub-steps; presentation only, the content stays.",
+      "params": {
+        "id": "The id of the step whose sub-steps are shown or hidden. An unknown id is an error.",
+        "expanded": "true shows the sub-steps, false hides them."
+      }
+    },
+    "appendSteps": {
+      "help": "Appends several steps to the end of the chain, for example taken over from another instance. Returns the number of appended steps.",
+      "params": {
+        "steps": "The steps to append as a list; each entry has title, description and side ('va' or 'nva')."
+      }
+    }
+  }
+}
