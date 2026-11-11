@@ -19,7 +19,7 @@ import { parsePath, VERSION, MIGRATION_KEY } from '../../js/core/model.js';
 import { parseFieldPath, keyFieldsOf } from '../../js/core/field-path.js';
 import { loadModelSchema, loadSettingsSchema, loadFormSchemas, loadStateSchema } from './model-types.mjs';
 import { checkWidgetBindings, checkAlgoLinkLiterals, loadAlgoIds, loadWidgetSchemas } from './widget-gates.mjs';
-import { factoryArgument, findViewBlock, viewNamesDetailOf, viewNamesOf, computedNamesOf } from './view-names.mjs';
+import { factoryArgument, findViewBlock, viewNamesDetailOf, viewNamesOf, viewMemberNamesOf, computedNamesOf } from './view-names.mjs';
 export { viewNamesDetailOf, viewNamesOf, computedNamesOf };
 import { BOOKS } from '../../js/core/references-books.js';
 import { readExampleOwners } from './example-catalog.mjs';
@@ -1004,6 +1004,23 @@ export function checkTileSettings(fields, { help, ui, global }) {
   return out;
 }
 
+/**
+ * Gate Dateiablage: `x-file-drop="<methode>"` nennt ein Glied des view-Blocks.
+ * @param {{ path: string, text: string }[]} files Templates unter resources/
+ * @param {Set<string>|string[]} viewNames Namen des view-Blocks (`viewNamesOf`)
+ * @returns {string[]}
+ */
+export function checkFileDropRefs(files, viewNames) {
+  const known = new Set(viewNames);
+  const out = [];
+  for (const { path, text } of files) {
+    for (const m of text.matchAll(/\sx-file-drop="\s*([^"]*?)\s*"/g)) {
+      if (!known.has(m[1])) out.push(`file-drop: ${path}: x-file-drop="${m[1]}": kein Glied des view-Blocks`);
+    }
+  }
+  return out;
+}
+
 const FORM_BLOCK = /<form\b([^>]*)>([\s\S]*?)<\/form>/g;
 /** Wörtliches Attribut (nicht `:gebunden`) aus einem Attributtext. */
 const plainAttr = (attrs, name) => attrs.match(new RegExp(`(?:^|\\s)${name}="\\s*([^"]*?)\\s*"`))?.[1] ?? null;
@@ -1567,6 +1584,7 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
       out.push(...checkCommandRefs(templates, schema, formSchemas, existsSync(vmFile) ? readViewmodelCommands(readFileSync(vmFile, 'utf8')) : {}));
       const asyncTasks = existsSync(vmFile) ? readViewmodelAsyncTasks(readFileSync(vmFile, 'utf8')) : {};
       out.push(...checkAsyncTaskRefs(templates, asyncTasks));
+      out.push(...checkFileDropRefs(templates, existsSync(vmFile) ? viewMemberNamesOf(tileText('viewmodel/viewmodel.js')) : []));
       const lists = checkListBindings(templates, schema);
       out.push(...lists.findings, ...checkDefaultArgRefs(templates, schema), ...checkChoiceGroups(templates));
       out.push(...checkConfirmKeys(readConfirmKeys(readFileSync(file, 'utf8')), {

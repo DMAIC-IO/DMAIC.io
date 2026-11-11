@@ -119,3 +119,16 @@ export function viewNamesOf(text) {
   const { getters, computed, data } = viewNamesDetailOf(text);
   return new Set([...getters, ...computed, ...data]);
 }
+
+/**
+ * Alle Glieder des view-Blocks, auch Methoden (für Bezüge, die eine Methode nennen).
+ * @param {string} text Quelltext von viewmodel.js
+ * @returns {Set<string>}
+ */
+export function viewMemberNamesOf(text) {
+  const view = findViewBlock(text);
+  const top = view ? viewReturnObject(view) : null;
+  const out = new Set(viewNamesOf(text));
+  for (const p of top?.properties ?? []) if (p.name && ts.isIdentifier(p.name)) out.add(p.name.text);
+  return out;
+}

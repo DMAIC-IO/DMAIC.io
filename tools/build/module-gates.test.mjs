@@ -7,7 +7,8 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkViewReads, checkPickerCss, checkChartBindings, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts, viewNamesOf, viewNamesDetailOf, computedNamesOf, checkWidgetTemplates, modelMembersOf, checkFieldErrorPaths } from './module-gates.mjs';
+import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkViewReads, checkPickerCss, checkChartBindings, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, checkFileDropRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts, viewNamesOf, viewNamesDetailOf, computedNamesOf, checkWidgetTemplates, modelMembersOf, checkFieldErrorPaths } from './module-gates.mjs';
+import { viewMemberNamesOf } from './view-names.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { APP_DIR } from './build.mjs';
 import { defineModel, command, text, number, oneOf, index, idOf, list, record, map, object, boolean, date, columnRef, defineWidget, datasets } from '../../js/core/model.js';
@@ -1533,4 +1534,13 @@ test('Schema-Literal: async oder Generator unter derived sind Befunde', () => {
     'schema: domain/model.js: derived.b: async oder Generator nicht erlaubt — eine Ableitung ist synchron',
     'schema: domain/model.js: derived.c: async oder Generator nicht erlaubt — eine Ableitung ist synchron',
   ]);
+});
+
+test('Dateiablage: x-file-drop nennt ein Glied des view-Blocks', () => {
+  const vm = 'export default createModule({ view() { return { handleFile(f) {}, other: 1 }; } });';
+  const files = [{ path: 'resources/view.html', text: '<div x-file-drop="handleFile"></div><div x-file-drop="fehlt"></div>' }];
+  assert.deepEqual(checkFileDropRefs(files, viewMemberNamesOf(vm)), [
+    'file-drop: resources/view.html: x-file-drop="fehlt": kein Glied des view-Blocks',
+  ]);
+  assert.deepEqual(checkFileDropRefs([files[0]], new Set(['handleFile', 'fehlt'])), []);
 });

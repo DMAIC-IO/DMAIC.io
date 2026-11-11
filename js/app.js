@@ -23,6 +23,7 @@ import { startupTasks } from './startup/index.js';
 import { initRouteDirectives, initRouter, createAppActionVerbs } from './core/router/index.js';
 import { setCreatePageRouter } from './core/create-page.js';
 import { registerTablistDirective } from './core/tablist.js';
+import { registerFileDropDirective } from './core/file-drop-directive.js';
 import { registerFieldDirective } from './core/field-directive.js';
 import { registerCommandDirectives } from './core/command-directives.js';
 import { registerAsyncTaskDirectives } from './core/async-task-directives.js';
@@ -48,6 +49,7 @@ async function init() {
   // ─── Alpine.js Bootstrap ─────────────────────────────────
   const routeDirectives = initRouteDirectives(Alpine);
   registerTablistDirective(Alpine);
+  registerFileDropDirective(Alpine);
   registerFieldDirective(Alpine, { i18n, widgets: WIDGETS });
   registerWidgetDirective(Alpine, { i18n, widgets: WIDGETS });
   registerCommandDirectives(Alpine);
