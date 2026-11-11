@@ -1,0 +1,57 @@
+<!--
+  D.Mike — Flowchart: Unterschritte in der Zielform (substeps.view.part.html)
+
+  Aufklappleiste und Liste der Unterschritte eines Schritts für Module mit
+  deklarativem Model. Einbinden mit einer `@include`-Direktive auf diese Datei
+  in einem eigenen HTML-Kommentar; der Template-Build setzt sie ein.
+
+  NOTE: never write a literal comment-close marker inside this header — it
+  would end the comment early and the rest would render as visible text.
+
+  Erwartet im Scope:
+    step, i          — Schritt und sein Index aus dem x-for der Kette
+    model            — Model mit den Kommandos setExpanded, addSubstep, removeSubstep
+    isExpanded(id)   — steht die id im Ansichtsfeld expanded?
+    stepNum(i)       — Nummer des Schritts ("2")
+    t()              — Übersetzungen des Moduls: substepsLabel,
+                       substepPlaceholder, addSubstep, substepGrip
+
+  Hilfe-Anker setzen die Direktiven aus der Modul-id der Komponente:
+  x-command an der Leiste und am Anlegen-Knopf
+  (modules.<id>.actions.setExpanded.help, ….addSubstep.help), x-field am
+  Titel (modules.<id>.fields.steps.substeps.title.help).
+
+  Geste: substepGesture aus core/flowchart/interaction/substeps.js mit dem
+  Griff .fc-substep-grip; Gruppe = Schritt-id, Vorschau in state.substepPreview.
+-->
+<button type="button" class="fc-substeps-bar" :class="step.substeps.length > 0 ? 'fc-substeps-bar--has' : ''"
+        x-command="setExpanded" :data-arg-id="step.id"
+        :data-arg-expanded="isExpanded(step.id) ? 'false' : 'true'"
+        :aria-expanded="isExpanded(step.id) ? 'true' : 'false'">
+  <span class="fc-substeps-bar-icon">
+    <span class="icon icon--sm" x-show="isExpanded(step.id)" data-icon="nav.expand-down" aria-hidden="true"></span>
+    <span class="icon icon--sm" x-show="!isExpanded(step.id)" data-icon="nav.expand-right" aria-hidden="true"></span>
+  </span>
+  <span class="fc-substeps-bar-label" x-text="step.substeps.length > 0 ? t('substepsLabel') + ' (' + step.substeps.length + ')' : t('substepsLabel')"></span>
+</button>
+<template x-if="isExpanded(step.id)">
+  <div class="fc-substeps" :data-step-id="step.id">
+    <div class="fc-substeps-list" :data-group="step.id">
+      <template x-for="(sub, j) in step.substeps" :key="sub.id">
+        <div class="fc-substep-item" :data-id="sub.id" :data-substep-id="sub.id" :data-index="j">
+          <button type="button" class="dmike-table__grip fc-substep-grip" :aria-label="t('substepGrip')"></button>
+          <span class="fc-substep-number" x-text="stepNum(i) + '.' + (j + 1)"></span>
+          <input class="fc-substep-title" type="text" x-field="sub.title" :placeholder="t('substepPlaceholder')">
+          <button type="button" class="fc-substep-remove" x-command="removeSubstep"
+                  :data-arg-step-id="step.id" :data-arg-substep-id="sub.id" :title="t('common.delete')" :aria-label="t('common.delete')">
+            <span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span>
+          </button>
+        </div>
+      </template>
+    </div>
+    <button type="button" class="fc-substep-add" x-command="addSubstep" :data-arg-step-id="step.id">
+      <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
+      <span x-text="t('addSubstep')"></span>
+    </button>
+  </div>
+</template>

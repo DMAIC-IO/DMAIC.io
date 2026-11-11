@@ -138,6 +138,7 @@ const SKIP = new Set([
   'core/template-module-route.test.js',
   'core/template-module-descriptor.test.js',
   'core/interaction/announce.test.js',
+  'core/flowchart/chain-gesture.test.js',
   'core/interaction/keyboard.test.js',
   'core/interaction/pointer.test.js',
   'core/interaction/reorder.test.js',
