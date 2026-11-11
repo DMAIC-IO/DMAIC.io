@@ -32,21 +32,6 @@
   "js/modules/ce-matrix/ce-matrix.html": {
     "count": 1
   },
-  "js/modules/contour-plot/domain/legend.js": {
-    "count": 1
-  },
-  "js/modules/contour-plot/contour-plot-model.js": {
-    "count": 1
-  },
-  "js/modules/contour-plot/contour-plot-render.js": {
-    "count": 7
-  },
-  "js/modules/contour-plot/contour-plot.html": {
-    "count": 10
-  },
-  "js/modules/contour-plot/contour-plot.js": {
-    "count": 4
-  },
   "js/modules/control-chart/control-chart.html": {
     "count": 4
   },

@@ -41,7 +41,7 @@ export const ANCHOR_EXEMPTIONS = {
     { match: 'data-import__col-name', reason: 'Kopf je Spalte (Name und Typ aus den Daten); die Spalten beschreibt der Agent unter asyncTasks.parse.value.sheets', count: 1 },
   ],
   'contour-plot': [
-    { match: 'betaLabel(', reason: 'je Koeffizient ein Feld; der Satz steht am Abschnittstitel', count: 6 },
+    { match: 'betaLabel(', reason: 'je Koeffizient ein Feld; der Satz steht am Abschnittstitel', count: 1 },
   ],
   heatmap: [
     { match: '<th x-text="h">', reason: 'Kopf je Kategorie (Name aus den Daten); der Satz steht an der Ecke der Tabelle', count: 1 },

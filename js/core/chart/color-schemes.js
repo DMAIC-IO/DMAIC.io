@@ -6,7 +6,7 @@
  *
  * Used by:
  *   - js/core/chart/types/heatmap.js
- *   - js/modules/contour-plot/contour-plot-render.js
+ *   - js/core/chart/types/contour.js, js/modules/contour-plot (legend)
  */
 
 export const COLOR_SCHEMES = {

@@ -1,5 +1,5 @@
 import { suite, test, assert, assertEqual, assertDeepEqual, assertClose } from '../../test-utils.js';
-import { State } from '../../../js/modules/contour-plot/domain/model.js';
+import { State, MODEL_TYPES } from '../../../js/modules/contour-plot/domain/model.js';
 import { from0 } from '../../../js/modules/contour-plot/domain/migrations.js';
 import { scanSurface, evalModel } from '../../../js/modules/contour-plot/domain/surface.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
@@ -42,6 +42,10 @@ suite('contour-plot Model — Vorgaben', () => {
     assertEqual(m.exampleWorksheetId, null);
     assertEqual(m.hasContent(), true);
   });
+
+  test('die Modellformen im Schema sind MODEL_TYPES', () => {
+    assertDeepEqual([...State.schema.fields.modelType.values], [...MODEL_TYPES]);
+  });
 });
 
 suite('contour-plot Model — Invarianten', () => {
@@ -82,7 +86,7 @@ suite('contour-plot Model — Invarianten', () => {
 
 suite('contour-plot Migration', () => {
   test('Beispiel contour-rsm-yield: Modell, b, Beschriftung, keine Diagrammeinstellungen', async () => {
-    const res = await fetch(new URL('../../../examples/projects/contour-rsm-yield.json', import.meta.url));
+    const res = await fetch(new URL('../../../js/modules/contour-plot/resources/examples/projects/contour-rsm-yield.json', import.meta.url));
     const old = await res.json();
     const m = State.fromJSON(old);
     assertEqual(m.modelType, 'quadratic');
@@ -144,8 +148,7 @@ suite('contour-plot Migration', () => {
   test('gespeicherter Stand mit xMin ≥ xMax lädt mit Reparatur ohne Wurf', () => {
     const reports = [];
     const m = State.fromJSON({ xMin: 5, xMax: 1, yMin: 0, yMax: 2 }, { repair: true, onRepair: (n) => reports.push(n) });
-    assert(m.xMin < m.xMax, 'xMin < xMax');
-    assert(m.yMin < m.yMax, 'yMin < yMax');
+    assertDeepEqual([m.xMin, m.xMax, m.yMin, m.yMax], [-3, 3, -3, 3]);
     assert(reports.length > 0, 'onRepair gemeldet');
   });
 

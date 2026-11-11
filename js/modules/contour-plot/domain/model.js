@@ -47,7 +47,7 @@ export class State extends defineModel({
   version: '1.0',
   migrations: { '0→1.0': from0 },
   fields: {
-    modelType: oneOf(MODEL_TYPES, { default: 'quadratic' }),
+    modelType: oneOf(['quadratic', 'interaction', 'custom'], { default: 'quadratic' }),
     b: list(number(), { default: [50, 8, 5, -3, -2, 1.5] }),
     customFormula: text({ default: '50 + 8*x + 5*y - 3*x*x - 2*y*y + 1.5*x*y' }),
     xLabel: text(),
@@ -79,7 +79,8 @@ export class State extends defineModel({
       if (this.modelType !== 'custom') return null;
       const r = validateFormula(this.customFormula);
       if (r.ok) return null;
-      return r.token === undefined ? { code: r.code } : { code: r.code, token: r.token };
+      const { code, token } = /** @type {{ code: string, token?: string }} */ (r);
+      return token === undefined ? { code } : { code, token };
     },
     /**
      * Die Felder, die für die gewählte Modellform gelten.

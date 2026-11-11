@@ -65,12 +65,6 @@ export default [
     load: () => import('./heatmap/heatmap.js'),
   },
   {
-    id: 'contour-plot',
-    phase: 'data',
-    group: 'visualize',
-    load: () => import('./contour-plot/contour-plot.js'),
-  },
-  {
     id: 'boxplot',
     phase: 'data',
     group: 'visualize',

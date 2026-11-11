@@ -1,0 +1,99 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "modelType": {
+      "help": "Die Form der Antwortfläche. Quadratisch und „Linear + Interaktion“ rechnen beide mit z = β₀ + β₁·x + β₂·y + β₃·x² + β₄·y² + β₅·x·y und allen sechs Koeffizienten; der Unterschied liegt nur in der Bezeichnung der Auswahl. Bei „Eigene Formel“ gilt statt der Koeffizienten die Formel in x und y."
+    },
+    "b": {
+      "help": "Die sechs Koeffizienten β₀…β₅ des Modells, bei eigener Formel ohne Wirkung; die Reihenfolge der Felder ist β₀ bis β₅. Es sind immer genau sechs Zahlen."
+    },
+    "customFormula": {
+      "help": "Die eigene Formel für z in den Variablen x und y. Erlaubt sind Zahlen, die Operatoren + − * / ^ und **, Klammern, Konstanten wie PI und E sowie Funktionen wie sin, cos, tan, exp, sqrt, abs, log (Basis 10), ln (natürlich), min, max und pow; ein Math.-Präfix ist optional, Winkel zählen im Bogenmaß. Eine ungültige Formel wird angenommen und unter der Formel gemeldet. Es gilt nur bei eigener Formel."
+    },
+    "xLabel": {
+      "help": "Der Name des X-Faktors; er steht als Achsentitel und im Hinweis am Mauszeiger. Leer heißt „Faktor X“. Ein Achsentitel aus dem Diagramm-Editor geht vor."
+    },
+    "yLabel": {
+      "help": "Der Name des Y-Faktors; er steht als Achsentitel und im Hinweis am Mauszeiger. Leer heißt „Faktor Y“. Ein Achsentitel aus dem Diagramm-Editor geht vor."
+    },
+    "zLabel": {
+      "help": "Der Name der Antwort (Z); er steht im Diagrammtitel und im Hinweis am Mauszeiger. Leer heißt „Antwort Z“."
+    },
+    "xMin": {
+      "help": "Die untere Grenze der X-Achse. Über dem Bereich von X min bis X max wird die Fläche gezeichnet und abgetastet. X min muss kleiner als X max sein, sonst wird der Wert abgewiesen. Soll der Bereich nach oben wandern, zuerst X max setzen, dann X min; nach unten umgekehrt."
+    },
+    "xMax": {
+      "help": "Die obere Grenze der X-Achse. Über dem Bereich von X min bis X max wird die Fläche gezeichnet und abgetastet. X max muss größer als X min sein, sonst wird der Wert abgewiesen. Soll der Bereich nach oben wandern, zuerst X max setzen, dann X min; nach unten umgekehrt."
+    },
+    "yMin": {
+      "help": "Die untere Grenze der Y-Achse. Über dem Bereich von Y min bis Y max wird die Fläche gezeichnet und abgetastet. Y min muss kleiner als Y max sein, sonst wird der Wert abgewiesen. Soll der Bereich nach oben wandern, zuerst Y max setzen, dann Y min; nach unten umgekehrt."
+    },
+    "yMax": {
+      "help": "Die obere Grenze der Y-Achse. Über dem Bereich von Y min bis Y max wird die Fläche gezeichnet und abgetastet. Y max muss größer als Y min sein, sonst wird der Wert abgewiesen. Soll der Bereich nach oben wandern, zuerst Y max setzen, dann Y min; nach unten umgekehrt."
+    },
+    "datasets": {
+      "help": "Die drei Spalten der Messpunkte, jede unter keys einzeln beschrieben. Sind alle drei gesetzt, zeigt das Diagramm die Messpunkte über der Fläche.",
+      "x": {
+        "label": "X",
+        "title": "Die Spalte der X-Werte (Slot x), numerisch, optional",
+        "help": "Die Spalte der X-Werte (Slot x), optional: Messpunkte über der Fläche, sobald alle drei Slots gewählt sind. Leer, solange keine gewählt ist."
+      },
+      "y": {
+        "label": "Y",
+        "title": "Die Spalte der Y-Werte (Slot y), numerisch, optional",
+        "help": "Die Spalte der Y-Werte (Slot y), optional: Messpunkte über der Fläche, sobald alle drei Slots gewählt sind. Leer, solange keine gewählt ist."
+      },
+      "z": {
+        "label": "Z",
+        "title": "Die Spalte der gemessenen Antwort (Slot z), numerisch, optional",
+        "help": "Die Spalte der gemessenen Antwort (Slot z), optional: Messpunkte über der Fläche, sobald alle drei Slots gewählt sind. Leer, solange keine gewählt ist."
+      }
+    },
+    "exampleWorksheetId": {
+      "help": "Die Kennung des Arbeitsblatts, das ein geladenes Beispiel angelegt hat; null ohne Beispielblatt. Nicht zum Setzen von Hand gedacht."
+    },
+    "chartEdits": {
+      "help": "Die Einstellungen aus dem Diagramm-Editor: Titel, Achsentitel, Schriftgrößen, Hintergrund, Bezugslinien und -bereiche, Farbschema, Konturstufen, Rasterauflösung, Linien, Beschriftung, Messpunkte und ihre Marker. Nur Abweichungen von den Vorgaben stehen darin."
+    },
+    "formulaError": {
+      "help": "Die Absage zur eigenen Formel, jede Angabe unter keys einzeln beschrieben; null, solange die Formel gültig ist oder keine eigene Formel gilt."
+    },
+    "activeParams": {
+      "help": "Die Felder, die bei der gewählten Modellform gelten: bei eigener Formel customFormula statt b."
+    },
+    "surface": {
+      "help": "Die ausgewertete Fläche über dem Achsenbereich: das Raster, kleinster und größter Wert und das Optimum, jede Angabe unter keys einzeln beschrieben; leer bei einem Fehler der eigenen Formel. Die Karte „Z-Spannweite“ zeigt Z max − Z min und darunter die Zahl der Konturstufen."
+    },
+    "dataPoints": {
+      "help": "Die Messpunkte aus den drei Spalten, Zeile für Zeile gepaart; Zeilen ohne drei Zahlen fallen heraus. Leer, solange eine Spalte fehlt."
+    },
+    "surfaceGrid": {
+      "help": "Die abgetastete Fläche, aus der Diagramm, Infokarten, Legende und Tabellen-Export entstehen: dieselben Angaben wie surface; leer bei einem Fehler der eigenen Formel."
+    },
+    "chart": {
+      "help": "Die Konfiguration des Konturdiagramms: Raster, Achsenbereiche, Messpunkte und die Vorgaben für Titel und Achsentitel, die der Diagramm-Editor überschreiben kann. Leer bei einem Fehler der eigenen Formel."
+    }
+  },
+  "types": {
+    "Surface": {
+      "grid": "Die abgetasteten Werte der Fläche, eine Zeile je y-Wert von oben (y = Y max) nach unten, in jeder Zeile von X min bis X max. Ungültige Formelwerte zählen als 0.",
+      "zMin": "Der kleinste Wert der Fläche. Die Fläche wird auf einem Raster aus 100 × 100 Punkten (Vorgabe; einstellbar im Diagrammeditor unter „Rasterauflösung“) über dem Achsenbereich ausgewertet; die Karte „Z Min“ zeigt den Wert.",
+      "zMax": "Der größte Wert der Fläche auf demselben Raster; die Karte „Z Max“ zeigt den Wert.",
+      "optimum": "Der höchste Punkt des Rasters. Die Karte „Optimum (Max)“ zeigt seinen Wert und darunter sein x und y; bei gleich hohen Punkten zählt der erste in Rasterreihenfolge."
+    },
+    "SurfacePoint": {
+      "x": "Der X-Wert des Punkts auf dem Raster.",
+      "y": "Der Y-Wert des Punkts auf dem Raster.",
+      "z": "Der Wert der Fläche an diesem Punkt."
+    },
+    "FormulaError": {
+      "code": "Die Art des Fehlers: unerlaubtes Zeichen, ungültige Zahl, leere Formel, Syntaxfehler, überzählige Zeichen am Ende, unbekannte Variable (erlaubt sind nur x und y) oder unbekannte Funktion. Die Oberfläche zeigt dazu den übersetzten Text unter der Formel.",
+      "token": "Das beanstandete Zeichen, die ungültige Zahl, die unbekannte Variable oder Funktion; er steht im Text unter der Formel. Bei leerer Formel, Syntaxfehler und überzähligen Zeichen fehlt die Angabe."
+    },
+    "DataPoint": {
+      "x": "Der Wert der x-Spalte in dieser Zeile.",
+      "y": "Der Wert der y-Spalte in dieser Zeile.",
+      "z": "Der Wert der z-Spalte in dieser Zeile."
+    }
+  }
+}

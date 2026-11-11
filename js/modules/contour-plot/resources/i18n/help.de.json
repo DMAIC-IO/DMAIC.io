@@ -1,0 +1,141 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "methodology": {
+      "title": "Methodik",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Ein Konturdiagramm (Contour Plot) visualisiert eine Antwortfläche z = f(x, y) als farbige 2D-Karte. Es zeigt, wie eine Zielgröße (z. B. Ausbeute, Rauheit) von zwei Einflussfaktoren abhängt — typisch für Ergebnisse aus DoE-Regressionsmodellen."
+        },
+        {
+          "type": "heading",
+          "content": "Modelltypen"
+        },
+        {
+          "type": "table",
+          "headers": [
+            "Modell",
+            "Formel",
+            "Anwendung"
+          ],
+          "rows": [
+            [
+              "Quadratisch",
+              "β₀ + β₁x + β₂y + β₃x² + β₄y² + β₅xy",
+              "{{term:response-surface|Response Surface Methodology}} (RSM), CCD, {{term:box-behnken|Box-Behnken}}"
+            ],
+            [
+              "Linear + Interaktion",
+              "β₀ + β₁x + β₂y + β₅xy",
+              "Faktorielle Versuchspläne (2k)"
+            ],
+            [
+              "Eigene Formel",
+              "Beliebiger JS-Ausdruck: Math.*-Aufrufe und arithmetische Ausdrücke werden voll unterstützt",
+              "Komplexe oder nicht-polynomiale Modelle"
+            ]
+          ]
+        },
+        {
+          "type": "heading",
+          "content": "Darstellung"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Farbfläche: Jeder Pixel wird gemäß z-Wert eingefärbt (Farbschema wählbar)",
+            "{{term:isolinie|Konturlinien}}: Marching-Squares-Algorithmus berechnet Isolinien für gleichmäßig verteilte z-Stufen",
+            "Datenpunkte: Optionale Überlagerung tatsächlicher Messpunkte (x; y; z)",
+            "Tooltip: Hover zeigt exakte x/y/z-Werte an jeder Position"
+          ]
+        }
+      ]
+    },
+    "example": {
+      "title": "Beispiel",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Ein CCD-Versuchsplan untersucht den Einfluss von Temperatur und Druck auf die Ausbeute. Das quadratische {{term:regression|Regressionsmodell}} lautet:"
+        },
+        {
+          "type": "paragraph",
+          "content": "z = 50 + 8x + 5y − 3x² − 2y² + 1.5xy"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Koeffizienten β₀=50, β₁=8, β₂=5, β₃=−3, β₄=−2, β₅=1.5 eingeben",
+            "«Konturdiagramm zeichnen» klicken",
+            "Optimum bei ca. x=1.6, y=1.8 (Ausbeute ≈ 59%)",
+            "Datenpunkte aus einer Datentabelle zuordnen, um Modellqualität zu prüfen"
+          ]
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "Interpretation",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Enge Konturlinien = steiler Gradient (starker Einfluss des Faktors)",
+            "Weite Konturlinien = flacher Gradient (geringer Einfluss)",
+            "Geschlossene Konturen = lokales Optimum (Maximum oder Minimum)",
+            "Sattelpunkt: Konturen kreuzen sich — kein echtes Extremum",
+            "Das Optimum wird aus dem Raster abgelesen und als «Optimum (Max)» angezeigt"
+          ]
+        },
+        {
+          "type": "heading",
+          "content": "Farbschemata"
+        },
+        {
+          "type": "table",
+          "headers": [
+            "Schema",
+            "Empfehlung"
+          ],
+          "rows": [
+            [
+              "Viridis",
+              "Standard — perceptuell gleichmäßig, druckfreundlich"
+            ],
+            [
+              "Plasma",
+              "Hoher Kontrast für feine Unterschiede"
+            ],
+            [
+              "Thermal",
+              "Intuitiv: blau=kalt/niedrig, rot=heiß/hoch"
+            ],
+            [
+              "Grün-Verlauf",
+              "Für Berichte mit Firmenfarben"
+            ],
+            [
+              "Graustufen",
+              "Für Schwarz-Weiß-Druck"
+            ]
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Häufige Fehler",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Achsengrenzen zu eng: Wichtige Bereiche der Antwortfläche werden abgeschnitten.",
+            "Modell-Extrapolation: Das Konturdiagramm zeigt die Modellantwort, nicht die Realität. Außerhalb des Versuchsbereichs kann das Modell stark abweichen.",
+            "Zu wenige Konturstufen: Feine Strukturen gehen verloren. Mindestens 8–10 Stufen empfohlen.",
+            "Datenpunkte nicht prüfen: Immer die tatsächlichen Messpunkte einblenden, um die Modellqualität visuell zu beurteilen.",
+            "Rasterauflösung zu niedrig: Bei komplexen Modellen können Artefakte auftreten. Auf mindestens 80–100 setzen."
+          ]
+        }
+      ]
+    }
+  }
+}

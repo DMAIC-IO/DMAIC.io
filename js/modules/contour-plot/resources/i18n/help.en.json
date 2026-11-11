@@ -1,0 +1,141 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "methodology": {
+      "title": "Methodology",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "A contour plot visualizes a response surface z = f(x, y) as a color-coded 2D map. It shows how a {{term:zielgroesse|response variable}} (e.g., yield, roughness) depends on two input factors — typical for results from DoE regression models."
+        },
+        {
+          "type": "heading",
+          "content": "Model Types"
+        },
+        {
+          "type": "table",
+          "headers": [
+            "Model",
+            "Formula",
+            "Application"
+          ],
+          "rows": [
+            [
+              "Quadratic",
+              "β₀ + β₁x + β₂y + β₃x² + β₄y² + β₅xy",
+              "Response Surface Methodology (RSM), CCD, Box-Behnken"
+            ],
+            [
+              "Linear + {{term:wechselwirkung|Interaction}}",
+              "β₀ + β₁x + β₂y + β₅xy",
+              "Factorial designs (2k)"
+            ],
+            [
+              "Custom Formula",
+              "Any JS expression: Math.* calls and arithmetic expressions are fully supported",
+              "Complex or non-polynomial models"
+            ]
+          ]
+        },
+        {
+          "type": "heading",
+          "content": "Visualization"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Color fill: Each pixel is colored according to its z-value (color scheme selectable)",
+            "{{term:isolinie|Contour lines}}: Marching squares algorithm computes isolines at evenly spaced z-levels",
+            "Data points: Optional overlay of actual measurement points (x; y; z)",
+            "Tooltip: Hover shows exact x/y/z values at any position"
+          ]
+        }
+      ]
+    },
+    "example": {
+      "title": "Example",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "A CCD experiment investigates the effect of temperature and pressure on yield. The quadratic regression model is:"
+        },
+        {
+          "type": "paragraph",
+          "content": "z = 50 + 8x + 5y − 3x² − 2y² + 1.5xy"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Enter coefficients β₀=50, β₁=8, β₂=5, β₃=−3, β₄=−2, β₅=1.5",
+            "Click \"Draw Contour Plot\"",
+            "Optimum at approximately x=1.6, y=1.8 (yield ≈ 59%)",
+            "Assign data points from a worksheet to visually assess model quality"
+          ]
+        }
+      ]
+    },
+    "interpretation": {
+      "title": "Interpretation",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Closely spaced contour lines = steep gradient (strong factor influence)",
+            "Widely spaced contour lines = flat gradient (weak influence)",
+            "Closed contours = local optimum (maximum or minimum)",
+            "Saddle point: Contours cross — no true extremum",
+            "The optimum is read from the grid and shown as \"Optimum (Max)\""
+          ]
+        },
+        {
+          "type": "heading",
+          "content": "Color Schemes"
+        },
+        {
+          "type": "table",
+          "headers": [
+            "Scheme",
+            "Recommendation"
+          ],
+          "rows": [
+            [
+              "Viridis",
+              "Default — perceptually uniform, print-friendly"
+            ],
+            [
+              "Plasma",
+              "High contrast for subtle differences"
+            ],
+            [
+              "Thermal",
+              "Intuitive: blue=cold/low, red=hot/high"
+            ],
+            [
+              "Green Gradient",
+              "For reports with corporate colors"
+            ],
+            [
+              "Grayscale",
+              "For black-and-white printing"
+            ]
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Common Pitfalls",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Axis limits too narrow: Important regions of the response surface are cut off.",
+            "Model extrapolation: The contour plot shows the model response, not reality. Outside the experimental region, the model may deviate significantly.",
+            "Too few contour levels: Fine structures are lost. At least 8–10 levels recommended.",
+            "Not checking data points: Always overlay actual measurement points to visually assess model quality.",
+            "Grid resolution too low: Complex models may show artifacts. Set to at least 80–100."
+          ]
+        }
+      ]
+    }
+  }
+}

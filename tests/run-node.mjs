@@ -164,6 +164,7 @@ const SKIP = new Set([
   // (tests/runner.html) — dort ist die Suite seit jeher registriert.
   'modules/activity-flowchart.test.js',
   'modules/attribute-control-chart-view.test.js',
+  'modules/contour-plot/viewmodel.test.js',
   'modules/dashboard-tiles.test.js',
   'modules/dmaic-calendar-example.test.js',
   'modules/histogram-view.test.js',

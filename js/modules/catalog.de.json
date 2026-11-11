@@ -10,6 +10,11 @@
     "description": "Schlägt passende Diagrammtypen für die ausgewählten Spalten vor",
     "whenToUse": "Spalten einer Datensammlung liegen vor und es ist offen, welches Diagramm zu ihren Rollen passt — eine Rangliste mit Vorschau, aus der das gewählte Diagramm als eigenes Modul geöffnet wird."
   },
+  "contour-plot": {
+    "name": "Konturdiagramm",
+    "description": "Antwortflächen z = f(x, y) als Konturdiagramm visualisieren",
+    "whenToUse": "Die Antwortfläche eines Zwei-Faktor-Modells als Höhenlinien zeichnen — aus Polynomkoeffizienten oder einer eigenen Formel in x und y —, optional mit Messpunkten."
+  },
   "data-import": {
     "name": "Datenimport",
     "description": "Daten aus Fremdformaten einlesen (Minitab .mpx, CSV/TSV/TXT, Excel/ODS, JSON/NDJSON, Q-DAS AQDEF) und ins Worksheet übernehmen",

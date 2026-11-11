@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../../../schemas/module-examples.schema.json",
+  "examples": [
+    {
+      "id": "contour-rsm-yield",
+      "type": "project",
+      "title": {
+        "de": "Ausbeute-Optimum (Response-Surface)",
+        "en": "Yield Optimum (response surface)"
+      },
+      "description": {
+        "de": "Quadratisches Modell für Ausbeute = f(Temperatur, Druck) mit Optimum bei 180 °C und 3 bar. Zeigt eine klassische Höhenlinien-Karte mit ausgeprägtem Maximum.",
+        "en": "Quadratic model for yield = f(temperature, pressure) with optimum at 180 °C and 3 bar. Shows a classic contour map with a pronounced maximum."
+      },
+      "source": "Qprovement Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/contour-rsm-yield.json",
+      "format": "json",
+      "tags": [
+        "contour",
+        "rsm",
+        "quadratic"
+      ]
+    }
+  ]
+}

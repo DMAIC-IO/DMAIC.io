@@ -2123,6 +2123,7 @@ export const AGENT_REGISTRY = {
   "contour-plot": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -2137,258 +2138,190 @@ export const AGENT_REGISTRY = {
         ],
         "returns": "AgentRead",
         "help": "Den vollständigen Lesezustand dieser Instanz liefern."
-      },
-      "setParam": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'modelType'|'customFormula'|'xLabel'|'yLabel'|'zLabel'|'xMin'|'xMax'|'yMin'|'yMax'",
-            "optional": false,
-            "help": "welche Option; read().activeParams nennt die im aktuellen Zustand gültigen"
-          },
-          {
-            "name": "value",
-            "type": "string|number",
-            "optional": false,
-            "help": "der Wert; Typ und Bereich je Schlüssel unter Params"
-          }
-        ],
-        "returns": "void",
-        "help": "Eine Option der Antwortfläche setzen.",
-        "keysOf": "Params",
-        "keys": {
-          "modelType": {
-            "type": "'quadratic'|'interaction'|'custom'",
-            "help": "Modellform"
-          },
-          "customFormula": {
-            "type": "string",
-            "help": "eigene Formel in x und y, nur bei custom",
-            "optional": true
-          },
-          "xLabel": {
-            "type": "string",
-            "help": "Name des X-Faktors"
-          },
-          "yLabel": {
-            "type": "string",
-            "help": "Name des Y-Faktors"
-          },
-          "zLabel": {
-            "type": "string",
-            "help": "Name der Zielgröße"
-          },
-          "xMin": {
-            "type": "number",
-            "help": "untere Grenze von X"
-          },
-          "xMax": {
-            "type": "number",
-            "help": "obere Grenze von X"
-          },
-          "yMin": {
-            "type": "number",
-            "help": "untere Grenze von Y"
-          },
-          "yMax": {
-            "type": "number",
-            "help": "obere Grenze von Y"
-          }
-        }
-      },
-      "setCoefficient": {
-        "params": [
-          {
-            "name": "index",
-            "type": "number",
-            "optional": false,
-            "help": "welcher Koeffizient, 0 bis 5 (b0…b5)"
-          },
-          {
-            "name": "value",
-            "type": "number",
-            "optional": false,
-            "help": "der Wert"
-          }
-        ],
-        "returns": "void",
-        "help": "Einen Polynomkoeffizienten setzen (nicht bei eigener Formel)."
-      },
-      "setColumn": {
-        "params": [
-          {
-            "name": "slot",
-            "type": "'x'|'y'|'z'",
-            "optional": false,
-            "help": "der Slot"
-          },
-          {
-            "name": "ref",
-            "type": "{ instanceId: string, sheetId: string, columnId: string }|null",
-            "optional": false,
-            "help": "der Spaltenbezug einer wählbaren Spalte, oder null zum Leeren"
-          }
-        ],
-        "returns": "void",
-        "help": "Eine Spalte einem Slot zuweisen; die übrigen Slots bleiben."
       }
     },
     "fields": {
       "modelType": {
-        "type": "string",
-        "help": "`quadratic`, `interaction` or `custom`",
-        "bulk": false,
-        "derived": true
+        "type": "'quadratic'|'interaction'|'custom'",
+        "help": "",
+        "bulk": false
       },
       "b": {
         "type": "number[]",
-        "help": "the six polynomial coefficients b0…b5 (used unless `modelType` is `custom`)",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "customFormula": {
         "type": "string",
-        "help": "the formula in x and y (used with `modelType` `custom`)",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "xLabel": {
         "type": "string",
-        "help": "the label of the x factor",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "yLabel": {
         "type": "string",
-        "help": "the label of the y factor",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "zLabel": {
         "type": "string",
-        "help": "the label of the response",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "xMin": {
         "type": "number",
-        "help": "lower end of the x range",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "xMax": {
         "type": "number",
-        "help": "upper end of the x range",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "yMin": {
         "type": "number",
-        "help": "lower end of the y range",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "yMax": {
         "type": "number",
-        "help": "upper end of the y range",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
-      "colRefX": {
-        "type": "object|null",
-        "help": "the optional x data column (slot `x`), or null",
+      "datasets": {
+        "type": "Array<{ x: { instanceId: string, sheetId?: string, columnId: string }|null, y: { instanceId: string, sheetId?: string, columnId: string }|null, z: { instanceId: string, sheetId?: string, columnId: string }|null }>",
+        "help": "",
         "bulk": false,
-        "derived": true
-      },
-      "colRefY": {
-        "type": "object|null",
-        "help": "the optional y data column (slot `y`), or null",
-        "bulk": false,
-        "derived": true
-      },
-      "colRefZ": {
-        "type": "object|null",
-        "help": "the optional response data column (slot `z`), or null",
-        "bulk": false,
-        "derived": true
+        "rules": [
+          "datasets"
+        ],
+        "slots": {
+          "x": [
+            "columnRef",
+            "types:numeric"
+          ],
+          "y": [
+            "columnRef",
+            "types:numeric"
+          ],
+          "z": [
+            "columnRef",
+            "types:numeric"
+          ]
+        }
       },
       "formulaError": {
-        "type": "FormulaError|null",
-        "help": "the rejection of the custom formula, described under keys; null while the formula is valid or no custom formula is in use",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "FormulaError",
         "keys": {
           "code": {
-            "type": "'UNEXPECTED_CHAR'|'INVALID_NUMBER'|'EMPTY'|'SYNTAX'|'TRAILING'|'UNKNOWN_IDENTIFIER'|'UNKNOWN_FUNCTION'",
-            "help": "Fehlerart"
+            "type": "string",
+            "help": "Fehlerart der Formel (z. B. UNKNOWN_FUNCTION, SYNTAX)"
           },
           "token": {
             "type": "string",
-            "help": "das beanstandete Zeichen oder Wort, nur bei Zeichen, Zahl, Variable und Funktion",
+            "help": "das beanstandete Wort",
             "optional": true
           }
         }
       },
       "activeParams": {
-        "type": "string[]",
-        "help": "the options `setParam` accepts in the current state",
-        "bulk": false,
-        "derived": true
-      },
-      "activeColumnSlots": {
-        "type": "string[]",
-        "help": "the slots `setColumn` accepts",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object",
-        "help": "per slot the columns `setColumn` accepts, each `{ key, name }`",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "surface": {
-        "type": "Surface|null",
-        "help": "the evaluated surface over the axis range, each figure described under keys; null if the model cannot be evaluated",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "Surface",
         "keys": {
+          "grid": {
+            "type": "number[][]",
+            "help": "abgetastete Werte, Zeile 0 oben (y = yMax)"
+          },
           "zMin": {
             "type": "number",
-            "help": "kleinster Wert auf dem Raster"
+            "help": "kleinster Wert"
           },
           "zMax": {
             "type": "number",
-            "help": "größter Wert auf dem Raster"
-          },
-          "range": {
-            "type": "number",
-            "help": "Spannweite zMax − zMin"
+            "help": "größter Wert"
           },
           "optimum": {
             "type": "SurfacePoint",
-            "help": "höchster Rasterpunkt",
+            "help": "Lage des größten Werts",
             "keysOf": "SurfacePoint",
             "keys": {
               "x": {
                 "type": "number",
-                "help": "X des Punkts"
+                "help": "Lage in x"
               },
               "y": {
                 "type": "number",
-                "help": "Y des Punkts"
+                "help": "Lage in y"
               },
               "z": {
                 "type": "number",
-                "help": "Wert der Fläche dort"
+                "help": "Wert der Fläche"
               }
             }
           }
         }
+      },
+      "dataPoints": {
+        "type": "object[]",
+        "help": "",
+        "bulk": true,
+        "bulkKind": "table",
+        "derived": true,
+        "keysOf": "DataPoint",
+        "keys": {
+          "x": {
+            "type": "number",
+            "help": "Wert der x-Spalte"
+          },
+          "y": {
+            "type": "number",
+            "help": "Wert der y-Spalte"
+          },
+          "z": {
+            "type": "number",
+            "help": "Wert der z-Spalte"
+          }
+        }
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "exampleWorksheetId",
+      "chartEdits"
+    ],
+    "settable": [
+      "modelType",
+      "b",
+      "customFormula",
+      "xLabel",
+      "yLabel",
+      "zLabel",
+      "xMin",
+      "xMax",
+      "yMin",
+      "yMax",
+      "datasets"
+    ],
+    "invariants": [
+      "coefficientCount",
+      "axisOrder"
+    ]
   },
   "control-chart": {
     "tagged": true,

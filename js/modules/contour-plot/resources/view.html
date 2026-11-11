@@ -1,0 +1,103 @@
+<div class="contour dmike-split" x-data="contourPlot">
+  <aside class="contour__input dmike-split__input">
+
+    <div class="dmike-split__section-title" x-text="t('sectionModel')"></div>
+    <div class="field-group">
+      <label data-help-key="modules.contour-plot.fields.modelType.help" x-text="t('modelType')"></label>
+      <select data-ref="modelType" class="field" data-help-key="" x-field="model.modelType">
+        <template x-for="o in modelTypeOptions" :key="o.value">
+          <option :value="o.value" :selected="o.selected" x-text="o.label"></option>
+        </template>
+      </select>
+    </div>
+
+    <div data-ref="coeffSection" x-show="!isCustomModel">
+      <label class="contour__coeff-label" data-help-key="modules.contour-plot.fields.b.help" x-text="t('coeffLabel')"></label>
+      <div class="field-grid field-grid--2">
+        <template x-for="(v, i) in model.b" :key="i">
+          <div class="field-group contour__field-sm">
+            <label x-text="betaLabel(i)"></label>
+            <input type="text" inputmode="decimal" class="field field--num" :data-ref="'b' + i" :value="coefficientText(i)" @change="coefficientChanged(i, $event)">
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <div data-ref="customSection" x-show="isCustomModel">
+      <div class="field-group">
+        <label data-help-key="modules.contour-plot.fields.customFormula.help" x-text="t('customFormula')"></label>
+        <textarea data-ref="customFormula" class="field contour__textarea" rows="2" x-model="model.customFormula"></textarea>
+        <p class="contour__formula-hint" x-text="t('formulaHint')"></p>
+        <p class="contour__formula-error" data-ref="formula-error" role="alert" x-show="formulaErrorText" x-text="formulaErrorText"></p>
+      </div>
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionAxes')"></div>
+    <div class="field-grid field-grid--2">
+      <div class="field-group contour__field-sm">
+        <label data-help-key="modules.contour-plot.fields.xMin.help" x-text="t('axisXMin')"></label>
+        <input class="field field--num" data-ref="xMin" data-help-key="" x-field="model.xMin">
+      </div>
+      <div class="field-group contour__field-sm">
+        <label data-help-key="modules.contour-plot.fields.xMax.help" x-text="t('axisXMax')"></label>
+        <input class="field field--num" data-ref="xMax" data-help-key="" x-field="model.xMax">
+      </div>
+    </div>
+    <div class="field-grid field-grid--2">
+      <div class="field-group contour__field-sm">
+        <label data-help-key="modules.contour-plot.fields.yMin.help" x-text="t('axisYMin')"></label>
+        <input class="field field--num" data-ref="yMin" data-help-key="" x-field="model.yMin">
+      </div>
+      <div class="field-group contour__field-sm">
+        <label data-help-key="modules.contour-plot.fields.yMax.help" x-text="t('axisYMax')"></label>
+        <input class="field field--num" data-ref="yMax" data-help-key="" x-field="model.yMax">
+      </div>
+    </div>
+    <span class="contour__field-error" data-ref="axis-error" x-text="fieldError('model.xMin') || fieldError('model.xMax') || fieldError('model.yMin') || fieldError('model.yMax')"></span>
+    <div class="field-group">
+      <label data-help-key="modules.contour-plot.fields.zLabel.help" x-text="t('zName')"></label>
+      <input type="text" class="field" data-ref="zLabel" x-model="model.zLabel">
+    </div>
+
+    <div class="dmike-split__section-title" x-text="t('sectionDataSource')"></div>
+    <!-- data-help-key="" am Auswahl-Host ist gewollt: die Hilfe hängt an den Slots des Pickers (fields.datasets.*). -->
+    <div class="contour__picker" data-ref="picker-wrap" data-help-key="" x-field="model.datasets"></div>
+  </aside>
+
+  <main class="contour__output dmike-split__output">
+    <div class="contour__placeholder" data-ref="placeholder" x-show="!hasSurface" x-text="t('emptyText')"></div>
+
+    <div class="contour__info-row" data-ref="infoRow" x-show="hasSurface">
+      <div class="contour__info-card">
+        <div class="contour__info-label" data-help-key="modules.contour-plot.types.Surface.zMin" x-text="t('cardZMin')"></div>
+        <div class="contour__info-value" data-ref="infoZmin" x-text="info.zMin"></div>
+      </div>
+      <div class="contour__info-card">
+        <div class="contour__info-label" data-help-key="modules.contour-plot.types.Surface.zMax" x-text="t('cardZMax')"></div>
+        <div class="contour__info-value" data-ref="infoZmax" x-text="info.zMax"></div>
+      </div>
+      <div class="contour__info-card">
+        <div class="contour__info-label" data-help-key="modules.contour-plot.fields.surface.help" x-text="t('range')"></div>
+        <div class="contour__info-value" data-ref="infoRange" x-text="info.range"></div>
+        <div class="contour__info-sub" data-ref="infoRangeSub" x-text="info.rangeSub"></div>
+      </div>
+      <div class="contour__info-card">
+        <div class="contour__info-label" data-help-key="modules.contour-plot.types.Surface.optimum" x-text="t('optimum')"></div>
+        <div class="contour__info-value contour__info-value--opt" data-ref="infoOpt" x-text="info.opt"></div>
+        <div class="contour__info-sub" data-ref="infoOptPos" x-text="info.optPos"></div>
+      </div>
+    </div>
+
+    <div class="contour__chart-area" data-ref="chart-area" x-show="hasSurface">
+      <div class="contour__chart-wrap" data-ref="chart-wrap">
+        <div class="contour__chart" x-widget="contour-chart" x-widget-config="chart" x-widget-value="model.chartEdits"></div>
+      </div>
+      <div class="contour__legend" data-ref="legend" x-show="hasSurface">
+        <span class="contour__legend-title" x-text="legend.title"></span>
+        <template x-for="(it, i) in legend.items" :key="i">
+          <span class="contour__legend-item"><span class="contour__legend-swatch" :style="swatchStyle(it)"></span><span x-text="it.value"></span></span>
+        </template>
+      </div>
+    </div>
+  </main>
+</div>

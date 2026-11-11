@@ -1,0 +1,99 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "modelType": {
+      "help": "The form of the response surface. Quadratic and \"Linear + interaction\" both compute z = β₀ + β₁·x + β₂·y + β₃·x² + β₄·y² + β₅·x·y with all six coefficients; the only difference is the name of the choice. With \"Custom formula\" the formula in x and y applies instead of the coefficients."
+    },
+    "b": {
+      "help": "The six coefficients β₀…β₅ of the model, without effect with a custom formula; the fields run from β₀ to β₅. There are always exactly six numbers."
+    },
+    "customFormula": {
+      "help": "The own formula for z in the variables x and y. Allowed are numbers, the operators + − * / ^ and **, parentheses, constants such as PI and E, and functions such as sin, cos, tan, exp, sqrt, abs, log (base 10), ln (natural), min, max and pow; a Math. prefix is optional, angles are in radians. An invalid formula is accepted and reported below the formula. It applies only with a custom formula."
+    },
+    "xLabel": {
+      "help": "The name of the X factor; it appears as the axis title and in the hint at the pointer. Empty means \"Factor X\". An axis title from the chart editor takes precedence."
+    },
+    "yLabel": {
+      "help": "The name of the Y factor; it appears as the axis title and in the hint at the pointer. Empty means \"Factor Y\". An axis title from the chart editor takes precedence."
+    },
+    "zLabel": {
+      "help": "The name of the response (Z); it appears in the chart title and in the hint at the pointer. Empty means \"Response Z\"."
+    },
+    "xMin": {
+      "help": "The lower end of the X axis. The surface is drawn and sampled over the range from X min to X max. X min must be smaller than X max, otherwise the value is rejected. To move the range upward, set X max first and then X min; to move it downward, the other way round."
+    },
+    "xMax": {
+      "help": "The upper end of the X axis. The surface is drawn and sampled over the range from X min to X max. X max must be greater than X min, otherwise the value is rejected. To move the range upward, set X max first and then X min; to move it downward, the other way round."
+    },
+    "yMin": {
+      "help": "The lower end of the Y axis. The surface is drawn and sampled over the range from Y min to Y max. Y min must be smaller than Y max, otherwise the value is rejected. To move the range upward, set Y max first and then Y min; to move it downward, the other way round."
+    },
+    "yMax": {
+      "help": "The upper end of the Y axis. The surface is drawn and sampled over the range from Y min to Y max. Y max must be greater than Y min, otherwise the value is rejected. To move the range upward, set Y max first and then Y min; to move it downward, the other way round."
+    },
+    "datasets": {
+      "help": "The three columns of the measured points, each described individually under keys. With all three set, the chart shows the measured points over the surface.",
+      "x": {
+        "label": "X",
+        "title": "The column of the X values (slot x), numeric, optional",
+        "help": "The column of the X values (slot x), optional: measured points over the surface once all three slots are chosen. Empty while none is chosen."
+      },
+      "y": {
+        "label": "Y",
+        "title": "The column of the Y values (slot y), numeric, optional",
+        "help": "The column of the Y values (slot y), optional: measured points over the surface once all three slots are chosen. Empty while none is chosen."
+      },
+      "z": {
+        "label": "Z",
+        "title": "The column of the measured response (slot z), numeric, optional",
+        "help": "The column of the measured response (slot z), optional: measured points over the surface once all three slots are chosen. Empty while none is chosen."
+      }
+    },
+    "exampleWorksheetId": {
+      "help": "The id of the worksheet a loaded example created; null without an example sheet. Not meant to be set by hand."
+    },
+    "chartEdits": {
+      "help": "The settings from the chart editor: title, axis titles, font sizes, background, reference lines and areas, color scheme, contour levels, grid resolution, lines, labels, measured points and their markers. Only deviations from the defaults are stored."
+    },
+    "formulaError": {
+      "help": "The rejection of the custom formula, each entry described individually under keys; null while the formula is valid or no custom formula is in use."
+    },
+    "activeParams": {
+      "help": "The fields that apply to the chosen model form: with a custom formula customFormula instead of b."
+    },
+    "surface": {
+      "help": "The evaluated surface over the axis range: the grid, the smallest and largest value and the optimum, each described individually under keys; empty with an error in the custom formula. The \"Z Range\" card shows Z max − Z min and below it the number of contour levels."
+    },
+    "dataPoints": {
+      "help": "The measured points from the three columns, paired row by row; rows without three numbers are left out. Empty while a column is missing."
+    },
+    "surfaceGrid": {
+      "help": "The sampled surface the chart, the cards, the legend and the table export are built from: the same figures as surface; empty with an error in the custom formula."
+    },
+    "chart": {
+      "help": "The configuration of the contour chart: grid, axis ranges, measured points and the defaults for the title and axis titles, which the chart editor can override. Empty with an error in the custom formula."
+    }
+  },
+  "types": {
+    "Surface": {
+      "grid": "The sampled values of the surface, one row per y value from the top (y = Y max) down, each row from X min to X max. Invalid formula values count as 0.",
+      "zMin": "The smallest value of the surface. The surface is evaluated on a grid of 100 × 100 points (default; adjustable in the chart editor under \"Grid resolution\") over the axis range; the \"Z Min\" card shows the value.",
+      "zMax": "The largest value of the surface on the same grid; the \"Z Max\" card shows the value.",
+      "optimum": "The highest point of the grid. The \"Optimum (Max)\" card shows its value and below it its x and y; with equally high points the first in grid order counts."
+    },
+    "SurfacePoint": {
+      "x": "The X value of the point on the grid.",
+      "y": "The Y value of the point on the grid.",
+      "z": "The value of the surface at this point."
+    },
+    "FormulaError": {
+      "code": "The kind of error: illegal character, invalid number, empty formula, syntax error, surplus characters at the end, unknown variable (only x and y are allowed) or unknown function. The interface shows the translated text for it below the formula.",
+      "token": "The offending character, the invalid number, or the unknown variable or function; it appears in the text below the formula. With an empty formula, a syntax error and surplus characters it is missing."
+    },
+    "DataPoint": {
+      "x": "The value of the x column in this row.",
+      "y": "The value of the y column in this row.",
+      "z": "The value of the z column in this row."
+    }
+  }
+}

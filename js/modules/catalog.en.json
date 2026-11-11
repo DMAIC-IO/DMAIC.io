@@ -10,6 +10,11 @@
     "description": "Proposes suitable chart types for the selected columns",
     "whenToUse": "You have columns of a worksheet and need to know which chart fits their roles — a ranked list with a preview, from which the chosen chart opens as a module of its own."
   },
+  "contour-plot": {
+    "name": "Contour Plot",
+    "description": "Visualize response surfaces z = f(x, y) as contour diagrams",
+    "whenToUse": "Draw the response surface of a two-factor model as contour lines — from polynomial coefficients or an own formula in x and y — optionally with measured points."
+  },
   "data-import": {
     "name": "Data Import",
     "description": "Read data from third-party formats (Minitab .mpx, CSV/TSV/TXT, Excel/ODS, JSON/NDJSON, Q-DAS AQDEF) into a worksheet",
