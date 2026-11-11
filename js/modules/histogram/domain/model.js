@@ -10,6 +10,7 @@ import { defineModel, command, list, object, text, number, boolean, oneOf, colum
 import { CHART_COLORS_RGBA } from '../../../core/chart/chart-colors.js';
 import { computeSeriesStats } from '../../../core/stats-panel.js';
 import histogramChart from '../../../widgets/histogram-chart/schema.js';
+import { applyEdits } from '../../../core/chart-edits.js';
 import { buildSeries } from './analyze.js';
 import { from0 } from './migrations.js';
 
@@ -52,13 +53,7 @@ export const State = defineModel({
     stats(data) {
       const built = buildSeries(this, data);
       if (!('series' in built)) return [];
-      const edits = this.histogramChart?.series ?? [];
-      const shown = built.series.map((/** @type {any} */ s) => {
-        const e = edits.find((/** @type {any} */ x) => x.name === s.name);
-        const merged = { ...s };
-        if (e) for (const k of histogramChart.editable.series) if (e[k] !== undefined) merged[k] = e[k];
-        return merged;
-      });
+      const shown = applyEdits({ series: built.series }, this.histogramChart ?? {}, histogramChart.editable, new Set()).series;
       return computeSeriesStats(
         shown.map((/** @type {any} */ r) => ({ name: r.name, values: r.values, color: r.fillColor, visible: r.visible })),
         this.confLevel / 100,
