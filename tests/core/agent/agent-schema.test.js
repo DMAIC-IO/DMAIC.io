@@ -146,11 +146,24 @@ suite('agent-schema: Regeln der Datums-, Zeit- und Phasenfelder', () => {
 });
 
 suite('schemaAgentEntry: derived', () => {
-  test('derived-Namen werden Lesefelder', () => {
+  test('computed-Namen werden Lesefelder', () => {
     const M = defineModel({ fields: { title: text() } });
-    const entry = schemaAgentEntry(M, {}, { derived: ['result'] });
+    const entry = schemaAgentEntry(M, {}, { computed: ['result'] });
     assertDeepEqual(entry.fields.result, { type: 'object|null', help: '', bulk: false, derived: true });
     assertEqual(entry.fields.title.derived, undefined);
+    assertDeepEqual(entry.settable, ['title']);
+  });
+
+  test('derived aus dem Model werden Lesefelder, derivedBulk als Tabelle, vor den computed', () => {
+    const M = defineModel({
+      fields: { title: text() },
+      derived: { stats() { return 1; }, rows() { return []; } },
+      derivedBulk: ['rows'],
+    });
+    const entry = schemaAgentEntry(M, {}, { computed: ['label'] });
+    assertDeepEqual(entry.fields.stats, { type: 'object|null', help: '', bulk: false, derived: true });
+    assertDeepEqual(entry.fields.rows, { type: 'object[]', help: '', bulk: true, bulkKind: 'table', derived: true });
+    assertDeepEqual(Object.keys(entry.fields), ['title', 'stats', 'rows', 'label']);
     assertDeepEqual(entry.settable, ['title']);
   });
 

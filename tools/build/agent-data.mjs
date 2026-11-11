@@ -185,31 +185,35 @@ function markUnknownKeys(actions, defs) {
  */
 async function convertedEntry(appDir, id) {
   const dir = join(appDir, MODULES_DIR, id);
-  const { schema } = await loadModelSchema(join(dir, 'domain', 'model.js'));
+  const modelFile = join(dir, 'domain', 'model.js');
+  const { schema } = await loadModelSchema(modelFile);
   const vm = readFileSync(join(dir, 'viewmodel', 'viewmodel.js'), 'utf8');
   const commands = readViewmodelCommands(vm);
   const tasks = readViewmodelAsyncTasks(vm);
   // `schemaAgentEntry` liest das Schema über `schemaOf` an einer Klasse.
   const Model = Object.assign(function Model() {}, { schema });
   const entry = schemaAgentEntry(Model, stubParams(commands), {
-    derived: computedNamesOf(vm), bulk: readBulkOf(vm), asyncTasks: stubParams(tasks),
+    computed: computedNamesOf(vm), bulk: readBulkOf(vm), asyncTasks: stubParams(tasks),
   });
   markUnknownKeys(entry.actions, { ...commands, ...tasks });
-  attachComputedKeys(entry, vm, join(dir, 'viewmodel', 'viewmodel.js'));
+  const modelText = readFileSync(modelFile, 'utf8');
+  attachComputedKeys(entry, modelText, modelFile, readDerivedReturns(modelText));
+  attachComputedKeys(entry, vm, join(dir, 'viewmodel', 'viewmodel.js'), readComputedReturns(vm));
   return entry;
 }
 
 /**
- * Hängt den Schlüsselbaum an abgeleitete Felder, deren `computed`-Methode ein
- * JSDoc-`@returns {T}` trägt. `T` darf eine Typedef der Viewmodel-Datei oder
- * ein `import('./x.js').T` sein; Vereinigungen werden in `typedefKeys` gelöst.
+ * Hängt den Schlüsselbaum an abgeleitete Felder, deren Methode (`derived` im
+ * Model oder `computed` im view-Block) ein JSDoc-`@returns {T}` trägt. `T` darf
+ * eine Typedef derselben Datei oder ein `import('./x.js').T` sein;
+ * Vereinigungen werden in `typedefKeys` gelöst.
  * @param {{ fields: Record<string, object> }} entry
- * @param {string} text  Quelltext von viewmodel/viewmodel.js
+ * @param {string} text  Quelltext der Datei mit den Methoden
  * @param {string} file  Pfad dieser Datei (löst relative Importe auf)
+ * @param {Map<string, string>} returns  Name -> Typtext
  * @returns {void}
  */
-function attachComputedKeys(entry, text, file) {
-  const returns = readComputedReturns(text);
+function attachComputedKeys(entry, text, file, returns) {
   if (returns.size === 0) return;
   // Die Rückgabetypen werden als Alias-Typedef an den Quelltext gehängt, so
   // lösen `typedefKeys` und `findTypedefImport` sie wie jede andere Typedef.
@@ -234,10 +238,29 @@ function attachComputedKeys(entry, text, file) {
  * @returns {Map<string, string>}  Name -> Typtext
  */
 export function readComputedReturns(text) {
-  const sf = ts.createSourceFile('viewmodel.js', text, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
+  return readMethodReturns(text, 'computed');
+}
+
+/**
+ * Die `@returns`-Typen der Methoden unter `derived:` in domain/model.js.
+ * @param {string} text  Quelltext von domain/model.js
+ * @returns {Map<string, string>}  Name -> Typtext
+ */
+export function readDerivedReturns(text) {
+  return readMethodReturns(text, 'derived');
+}
+
+/**
+ * Die `@returns`-Typen der Glieder des ersten Objektliterals unter `<key>:`.
+ * @param {string} text  Quelltext
+ * @param {string} key  `computed` oder `derived`
+ * @returns {Map<string, string>}  Name -> Typtext
+ */
+function readMethodReturns(text, key) {
+  const sf = ts.createSourceFile('source.js', text, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
   const out = new Map();
   const visit = (n) => {
-    if (ts.isPropertyAssignment(n) && ts.isIdentifier(n.name) && n.name.text === 'computed'
+    if (ts.isPropertyAssignment(n) && ts.isIdentifier(n.name) && n.name.text === key
         && ts.isObjectLiteralExpression(n.initializer)) {
       for (const p of n.initializer.properties) {
         if (!p.name || !ts.isIdentifier(p.name)) continue;

@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { collectAgentData, renderAgentRegistryModule, collectDomDetours, CREATING_VOID_EXEMPT, readBulkOf,
-         readAgentReadTypedef } from './agent-data.mjs';
+         readAgentReadTypedef, readDerivedReturns } from './agent-data.mjs';
 import { readHelpTables, lookup, helpExists, STRUCTURE_JARGON, typedefHelpSuffixes } from './agent-report.mjs';
 import { helpKeysInTemplates, helpKeysInScripts, helpKeysInSharedSources,
   BOUND_HELP_KEY_FAMILIES } from './help-anchors.mjs';
@@ -3852,6 +3852,50 @@ test('readBulkOf: das Array-Literal readBulk im createModule-Argument', () => {
   assert.deepEqual(readBulkOf("export default createModule({ readBulk: ['a', 'b'] });"), ['a', 'b']);
   assert.deepEqual(readBulkOf('export default createModule({ view: () => ({}) });'), []);
   assert.deepEqual(readBulkOf('export default createModule({ readBulk: NAMES });'), []);
+});
+
+const MODEL_WITH_DERIVED = `import { defineModel, number } from '${CORE_MODEL_URL}';
+/**
+ * @typedef {object} Foo
+ * @property {number} mean der Mittelwert
+ * @property {Bar} spread die Streuung
+ */
+/**
+ * @typedef {object} Bar
+ * @property {number|null} sd die Standardabweichung
+ */
+export const State = defineModel({
+  fields: { n: number({ default: 1 }) },
+  derived: {
+    /** @returns {Foo} die Kennzahlen */
+    stats() { return { mean: this.n, spread: { sd: null } }; },
+    rows() { return []; },
+  },
+  derivedBulk: ['rows'],
+});
+`;
+
+test('readDerivedReturns: die @returns-Typen der Methoden unter derived', () => {
+  assert.deepEqual([...readDerivedReturns(MODEL_WITH_DERIVED)], [['stats', 'Foo']]);
+  assert.deepEqual([...readDerivedReturns('export const S = defineModel({ fields: {} });')], []);
+});
+
+test('umgestelltes Modul: derived aus dem Model mit Schlüsselbaum aus seiner Typedef', async () => {
+  const root = fixture({}, {
+    'js/modules/demo/module.js': "export default { id: 'demo', load: () => null };",
+    'js/modules/demo/domain/model.js': MODEL_WITH_DERIVED,
+    'js/modules/demo/viewmodel/viewmodel.js': VM_WITH_COMPUTED,
+  });
+  const { modules } = await collectAgentData(root, { converted: ['demo'] });
+  const { stats, rows, total } = modules.demo.fields;
+  assert.equal(stats.derived, true);
+  assert.equal(stats.keysOf, 'Foo');
+  assert.deepEqual(Object.keys(stats.keys), ['mean', 'spread']);
+  assert.deepEqual(stats.keys.mean, { type: 'number', help: 'der Mittelwert' });
+  assert.equal(stats.keys.spread.keysOf, 'Bar');
+  assert.deepEqual(stats.keys.spread.keys, { sd: { type: 'number|null', help: 'die Standardabweichung' } });
+  assert.deepEqual([rows.bulk, rows.bulkKind, rows.derived], [true, 'table', true]);
+  assert.equal(total.derived, true, 'computed bleiben übergangsweise Lesefelder');
 });
 
 const RECORD_MODEL = `/**

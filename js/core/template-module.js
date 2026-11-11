@@ -11,6 +11,7 @@ import { requireKnownId } from './validate.js';
 import { formatsOf } from './exporter.js';
 import { openDialogSafely } from './command-directives.js';
 import { defineComputedSlots, bindComputed } from './computed.js';
+import { derivedAccessor, evaluateDerived } from './derived.js';
 import { checkAsyncTasks, defineAsyncTaskSlots, createAsyncTasks } from './async-task.js';
 import { createWorksheetData } from './worksheet-data.js';
 import { withoutStoredEdits } from './chart/instance-chart-manager.js';
@@ -119,34 +120,99 @@ function checkExports(id, def, hasView) {
 }
 
 /**
+ * Der Lesezustand eines Schema-Models: die Felder ohne Ansichtsfelder, darüber
+ * die Ableitungen und `asyncTasks`. Massenfelder kommen als Deskriptor, die
+ * Zeilen nur, wenn `options.fields` sie nennt. Gemountet und ohne Mount gleich.
+ * @param {object} entry aus `schemaAgentEntry` @param {object} model
+ * @param {object|undefined} options `{ fields?, rows? }`
+ * @param {Record<string, any>} values Werte der Ableitungen nach Name
+ * @param {string[]} bulk davon die Massenfelder
+ * @param {object} [asyncTasks] Status der asynchronen Abläufe
+ * @returns {object}
+ * @throws {Error} wenn `options.rows` kaputt ist
+ */
+function assembleRead(entry, model, options, values, bulk, asyncTasks) {
+  /** @type {Record<string, any>} */
+  const extra = {};
+  for (const [name, value] of Object.entries(values)) {
+    if (bulk.includes(name)) {
+      const rows = Array.isArray(value) ? value : [];
+      const wanted = Array.isArray(options?.fields) && options.fields.includes(name);
+      // Ohne angeforderte Zeilen genügt der Deskriptor: kein Klon der Zeilen.
+      extra[name] = wanted ? cloneJSON(rows) : rows;
+      extra[`${name}Columns`] = [...new Set(rows.flatMap((row) => Object.keys(row ?? {})))];
+      continue;
+    }
+    extra[name] = value === undefined ? null : cloneJSON(value);
+  }
+  if (asyncTasks) extra.asyncTasks = asyncTasks;
+  return readSchemaModel(entry, model, options, extra);
+}
+
+/**
+ * Der Status der asynchronen Abläufe im Ruhezustand, wie `readStatus()` ihn vor dem ersten Lauf liefert.
+ * @param {Record<string, { auto?: boolean }>} defs
+ * @returns {Record<string, object>}
+ */
+function idleTaskStatus(defs) {
+  return Object.fromEntries(Object.entries(defs).map(([name, def]) => {
+    const base = { running: false, progress: null, error: null };
+    return [name, def.auto ? { ...base, value: null } : base];
+  }));
+}
+
+/**
+ * Die Zellfunktionen der `derived`-Einträge eines Viewmodels. Jeder Eintrag
+ * rechnet auf `vm.model`; `d.<name>` liest die Zelle eines anderen. Ein Zyklus
+ * und der Fehler eines gelesenen Eintrags werfen wie ohne Mount (`evaluateDerived`).
+ * @param {any} vm reaktive Komponente
+ * @param {Record<string, Function>} defs `Model.schema.derived`
+ * @param {any} data Arbeitsblattsicht
+ * @returns {Record<string, () => any>}
+ */
+function derivedCells(vm, defs, data) {
+  const names = Object.keys(defs);
+  /** @type {string[]} */
+  const evaluating = [];
+  const failed = new Set();
+  const d = derivedAccessor(names, (name) => {
+    const at = evaluating.indexOf(name);
+    if (at !== -1) throw new Error(`derived cycle: ${[...evaluating.slice(at), name].join(' → ')}`);
+    const value = vm[name];
+    if (failed.has(name)) throw new Error(value.error);
+    return value;
+  });
+  return Object.fromEntries(names.map((name) => [name, () => {
+    evaluating.push(name);
+    try {
+      const value = defs[name].call(vm.model, data, d);
+      failed.delete(name);
+      return value;
+    } catch (err) {
+      failed.add(name);
+      throw err;
+    } finally {
+      evaluating.pop();
+    }
+  }]));
+}
+
+/**
  * Die Mitglieder, die ein Schema-Modul zusätzlich bekommt: `moduleId` (für
  * `x-field`), `read()` und je Viewmodel-Kommando eine geprüfte Methode.
  * @param {string} moduleId @param {object} entry @param {Record<string, object>} vmCommands
- * @param {string[]} [computedNames] alle `computed` des view-Blocks — `read()` liefert jedes
- * @param {string[]} [readBulk] davon die Massenfelder
+ * @param {string[]} [readNames] die `derived` des Models und die `computed` des view-Blocks — `read()` liefert jedes
+ * @param {string[]} [bulk] davon die Massenfelder
  * @returns {object}
  */
-function schemaMembers(moduleId, entry, vmCommands, computedNames = [], readBulk = []) {
+function schemaMembers(moduleId, entry, vmCommands, readNames = [], bulk = []) {
   const members = {
     moduleId,
     /** @noagent Lesefläche aus dem Schema (agent-schema.js) */
     read(options) {
-      /** @type {Record<string, any>} */
-      const extra = {};
-      for (const name of computedNames) {
-        const value = this[name];
-        if (readBulk.includes(name)) {
-          const rows = Array.isArray(value) ? value : [];
-          const wanted = Array.isArray(options?.fields) && options.fields.includes(name);
-          // Ohne angeforderte Zeilen genügt der Deskriptor: kein Klon der Zeilen.
-          extra[name] = wanted ? cloneJSON(rows) : rows;
-          extra[`${name}Columns`] = [...new Set(rows.flatMap((row) => Object.keys(row ?? {})))];
-          continue;
-        }
-        extra[name] = value === undefined ? null : cloneJSON(value);
-      }
-      if (this._asyncTaskHost) extra.asyncTasks = this._asyncTaskHost.readStatus();
-      return readSchemaModel(entry, this.model, options, extra);
+      const values = Object.fromEntries(readNames.map((name) => [name, this[name]]));
+      return assembleRead(entry, this.model, options, values, bulk,
+        this._asyncTaskHost ? this._asyncTaskHost.readStatus() : undefined);
     },
   };
   for (const [name, def] of Object.entries(vmCommands)) {
@@ -181,22 +247,25 @@ const LIFECYCLE = Object.freeze(['init', 'destroy']);
  * `computed` lesen, ohne dass ein Getter läuft. Liest der Block `ctx` außerhalb
  * seiner Glieder, wirft die Probe.
  * @param {string} id @param {(ctx: any) => object} view
+ * @param {string[]} [derived] die `derived`-Namen des Models
  * @returns {{ members: string[], computed: Record<string, Function> }}
  * @throws {Error} reservierter Name, `computed` ohne Funktion, Kollision, Zugriff auf ctx
  */
-function computedDefsOf(id, view) {
+function computedDefsOf(id, view, derived = []) {
   const probe = new Proxy({}, {
     get: (_t, prop) => { throw new Error(`createModule(${id}): view(ctx) reads ctx.${String(prop)} while the module is created — read ctx only inside members`); },
   });
   const block = view(probe);
   for (const name of Object.keys(block)) {
     if (RESERVED_MEMBERS.includes(name)) throw new Error(`createModule(${id}): view member ${name} is reserved`);
+    if (name !== 'computed' && derived.includes(name)) throw new Error(`createModule(${id}): view member ${name} collides with derived`);
   }
   const desc = Object.getOwnPropertyDescriptor(block, 'computed');
   /** @type {Record<string, Function>} */
   const defs = desc ? (desc.value ?? {}) : {};
   for (const [name, fn] of Object.entries(defs)) {
     if (typeof fn !== 'function') throw new Error(`createModule(${id}): computed ${name} must be a function`);
+    if (derived.includes(name)) throw new Error(`createModule(${id}): computed ${name} collides with derived`);
     if (Object.hasOwn(block, name) || RESERVED_MEMBERS.includes(name) || LIFECYCLE.includes(name)) {
       throw new Error(`createModule(${id}): computed ${name} collides with a member of the view block`);
     }
@@ -227,6 +296,8 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
 // base.view(ctx) — neue Form statt base.data(module, t): liefert Getter und
 // Handler; `this` ist die Komponente mit model, state, t. base.State — UI-State
 // aus defineState, nur zusammen mit view.
+// Model.schema.derived — Ableitungen des Models, im Viewmodel als Zellen `this.<name>`, in read()
+// wie die computed; derivedBulk sind ihre Massenfelder. Ohne Mount: loadDetached/readDetached.
 // base.readBulk — Massenfelder unter den computed (Zeilenlisten): read() liefert sie
 // als Deskriptor, voll mit fields/rows.
 // base.asyncTasks — asynchrone Abläufe (core/async-task.js), nur mit view und defineModel; Wert unter dem Namen, Status unter _asyncTasks.
@@ -256,7 +327,11 @@ export function createModule(base) {
   if (Object.hasOwn(base, 'readComputed')) throw new Error(`createModule(${id}): readComputed is gone — every computed is readable`);
   const taskNames = Object.keys(taskDefs);
   if (taskNames.length > 0 && !view) throw new Error(`createModule(${id}): asyncTasks needs view`);
-  const probed = view ? computedDefsOf(id, view) : { members: [], computed: {} };
+  const schema = schemaOf(Model);
+  const derivedDefs = schema?.derived ?? {};
+  const derivedList = Object.keys(derivedDefs);
+  const derivedBulk = [...(schema?.derivedBulk ?? [])];
+  const probed = view ? computedDefsOf(id, view, derivedList) : { members: [], computed: {} };
   const computedNames = Object.keys(probed.computed);
   for (const name of readBulk) {
     if (!computedNames.includes(name)) throw new Error(`createModule(${id}): readBulk ${name} is not a computed`);
@@ -277,7 +352,6 @@ export function createModule(base) {
   const placement = descriptor
     ? { engine: 'alpine', ...Object.fromEntries(FROM_DESCRIPTOR.filter((k) => descriptor[k] !== undefined).map((k) => [k, descriptor[k]])) }
     : {};
-  const schema = schemaOf(Model);
   if (schema && descriptor) setModelName(Model, id);
   const vmCommands = base.commands ?? {};
   if (!schema && Object.keys(vmCommands).length > 0) {
@@ -287,14 +361,17 @@ export function createModule(base) {
     const fieldNames = [...Object.keys(schema.fields), ...Object.keys(schema.view)];
     checkReserved(id, 'field', fieldNames);
     checkReserved(id, 'command', [...Object.keys(schema.commands), ...Object.keys(vmCommands)]);
+    checkReserved(id, 'derived', derivedList);
     // Oberfläche und Agentenfläche lösten einen gemeinsamen Namen verschieden auf.
     for (const name of Object.keys(vmCommands)) {
       if (Object.hasOwn(schema.commands, name)) throw new Error(`createModule(${id}): command ${name} is both a model and a viewmodel command`);
+      if (derivedList.includes(name)) throw new Error(`createModule(${id}): command ${name} collides with derived`);
     }
     for (const name of fieldNames) {
       if (computedNames.includes(name)) throw new Error(`createModule(${id}): field ${name} collides with computed`);
-      if (name.endsWith('Columns') && readBulk.includes(name.slice(0, -'Columns'.length))) {
-        throw new Error(`createModule(${id}): field ${name} collides with readBulk ${name.slice(0, -'Columns'.length)}`);
+      const base = name.endsWith('Columns') ? name.slice(0, -'Columns'.length) : null;
+      if (base !== null && (readBulk.includes(base) || derivedBulk.includes(base))) {
+        throw new Error(`createModule(${id}): field ${name} collides with ${readBulk.includes(base) ? 'readBulk' : 'derivedBulk'} ${base}`);
       }
     }
   }
@@ -307,10 +384,13 @@ export function createModule(base) {
       ...Object.fromEntries(Object.keys(vmCommands).map((n) => [n, 'command'])),
       ...Object.fromEntries(probed.members.map((n) => [n, 'view member'])),
       ...Object.fromEntries(computedNames.map((n) => [n, 'computed'])),
+      ...Object.fromEntries(derivedList.map((n) => [n, 'derived'])),
       ...Object.fromEntries([...RESERVED_MEMBERS, ...LIFECYCLE].map((n) => [n, 'view member'])),
     });
   }
-  const agentEntry = schema ? schemaAgentEntry(Model, vmCommands, { derived: computedNames, bulk: readBulk, asyncTasks: taskDefs }) : undefined;
+  const agentEntry = schema ? schemaAgentEntry(Model, vmCommands, { computed: computedNames, bulk: readBulk, asyncTasks: taskDefs }) : undefined;
+  // Zellen im Viewmodel: erst die Ableitungen des Models, dann die computed des view-Blocks.
+  const cellNames = [...derivedList, ...computedNames];
   const i18nKey = `modules.${  id}`;
   // Derive the template URL from document.baseURI so the key is stable whether
   // the app runs unbundled or from app.min.js (where import.meta.url → bundle path).
@@ -357,6 +437,38 @@ export function createModule(base) {
     ...placement,
     ...config,
     agentEntry,
+    Model,
+    /**
+     * Ein Model ohne Mount laden: gespeicherter Zustand oder die Vorgabe
+     * (`createDefault`), im Kontext des Projekts. Kommandos melden
+     * `command:executed` mit `instanceId` wie im Mount.
+     * @param {object|null|undefined} json gespeicherter Zustand
+     * @param {{ instanceId: string, eventBus?: any, stateManager?: any }} services
+     * @returns {object} das Model
+     */
+    loadDetached(json, { instanceId, eventBus, stateManager } = /** @type {any} */ ({})) {
+      const model = initialModel(Model, json, createDefault, { instanceId, eventBus, stateManager });
+      if (schema) {
+        setModelContext(model, activeContext(stateManager));
+        setCommandObserver(model, (command, args, result) => eventBus?.emit?.(
+          'command:executed', { instanceId, command, args, result }));
+      }
+      return model;
+    },
+    /**
+     * Der Lesezustand eines Models ohne Mount, gleich dem gemounteten `read()`:
+     * Felder ohne Ansichtsfelder, die Ableitungen des Models, `asyncTasks` im Ruhezustand.
+     * @param {object} model aus `loadDetached`
+     * @param {any} data Arbeitsblattsicht
+     * @param {object} [options] `{ fields?, rows? }`
+     * @returns {object}
+     * @throws {Error} ohne Schema-Model oder wenn `options.rows` kaputt ist
+     */
+    readDetached(model, data, options) {
+      if (!agentEntry) throw new Error(`createModule(${id}): readDetached needs a defineModel Model`);
+      return assembleRead(agentEntry, model, options, evaluateDerived(model, data), derivedBulk,
+        taskNames.length > 0 ? idleTaskStatus(taskDefs) : undefined);
+    },
     // Methode, nicht Pfeil: die neue Form braucht die aktive Sprache der Instanz.
     // hasModuleHelp/hasModuleReferences: einmal beim Erzeugen ausgewertet. Das
     // genügt — der Katalog (#module-resources, HELP/REFS) ist statisch und vor
@@ -392,6 +504,7 @@ export function createModule(base) {
       const dataCtxTarget = {};
       let dataResult;
       let computedDefs = null;
+      const worksheetData = view || derivedList.length > 0 ? createWorksheetData(context.stateManager) : null;
       if (view) {
         // Neue Form: kein `module`, nur die Dienste und Kennungen.
         dataResult = view({
@@ -402,7 +515,7 @@ export function createModule(base) {
           eventBus: context.eventBus,
           instanceId: context.instanceId,
           moduleId: id,
-          data: createWorksheetData(context.stateManager),
+          data: worksheetData,
           cssVars: (map) => readCssVars(container.querySelector('[x-data]'), map),
           openDialog: (ref, opts) => openDialogSafely(Alpine, container.querySelector('[x-data]'), ref, opts),
         });
@@ -481,7 +594,7 @@ export function createModule(base) {
               value: (path) => fieldErrors.message(path),
             });
           }
-          if (schema) copyMembers(comp, schemaMembers(id, agentEntry, vmCommands, computedNames, readBulk));
+          if (schema) copyMembers(comp, schemaMembers(id, agentEntry, vmCommands, cellNames, [...derivedBulk, ...readBulk]));
           if (schema || exportsDef) {
             // Griff der Kommando-Primitive (core/command-directives.js) und, für
             // exports/component, von runExport (core/exporter.js). Nicht
@@ -513,7 +626,7 @@ export function createModule(base) {
             });
           }
           copyMembers(comp, dataResult);
-          if (computedDefs) defineComputedSlots(comp, Object.keys(computedDefs));
+          if (cellNames.length > 0) defineComputedSlots(comp, cellNames);
           if (taskNames.length > 0) defineAsyncTaskSlots(comp, taskNames);
           // Der Griff gehört zur Komponente, nicht zum Alpine-Proxy: im Getter lesen, nicht nachträglich setzen.
           if (taskNames.length > 0) Object.defineProperty(comp, '_asyncTaskHost', { get: () => taskHost, enumerable: false, configurable: true });
@@ -539,7 +652,11 @@ export function createModule(base) {
                     'state:changed', { instanceId: context.instanceId, key, value: cloneJSON(value) }));
                 }
               }
-              if (computedDefs) releaseComputed = bindComputed(Alpine, this, computedDefs);
+              if (cellNames.length > 0) {
+                releaseComputed = bindComputed(Alpine, this, {
+                  ...derivedCells(this, derivedDefs, worksheetData), ...(computedDefs ?? {}),
+                });
+              }
               // Der Task-Host steht vor view().init() — init darf Tasks starten und lesen.
               if (taskNames.length > 0) {
                 const vm = this;
