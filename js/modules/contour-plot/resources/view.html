@@ -56,7 +56,7 @@
     <span class="contour__field-error" data-ref="axis-error" x-text="fieldError('model.xMin') || fieldError('model.xMax') || fieldError('model.yMin') || fieldError('model.yMax')"></span>
     <div class="field-group">
       <label data-help-key="modules.contour-plot.fields.zLabel.help" x-text="t('zName')"></label>
-      <input type="text" class="field" data-ref="zLabel" x-model="model.zLabel">
+      <input type="text" class="field" data-ref="zLabel" x-model="model.zLabel" :placeholder="t('zLabelDefault')">
     </div>
 
     <div class="dmike-split__section-title" x-text="t('sectionDataSource')"></div>

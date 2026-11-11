@@ -41,6 +41,7 @@ function ensureTemplate() {
   tpl.setAttribute('data-tpl', TPL_KEY);
   tpl.innerHTML = '<div class="contour" x-data="contourPlot">'
     + '<template x-for="(v, i) in model.b" :key="i"><input :data-ref="\'b\' + i" :value="coefficientText(i)" @change="coefficientChanged(i, $event)"></template>'
+    + '<input data-ref="zLabel" x-model="model.zLabel" :placeholder="t(\'zLabelDefault\')">'
     + '<p data-ref="formula-error" x-show="formulaErrorText" x-text="formulaErrorText"></p>'
     + '<div data-ref="infoRangeSub" x-text="info.rangeSub"></div>'
     + '<div data-ref="infoZmax" x-text="info.zMax"></div>'
@@ -103,6 +104,7 @@ async function mount(model, sheets = {}) {
     lines: () => host().querySelectorAll('path.chart-contour-line').length,
     points: () => host().querySelectorAll('.chart-contour-point').length,
     image: () => host().querySelector('svg image')?.getAttribute('href') ?? null,
+    placeholder: (ref) => container.querySelector(`[data-ref="${ref}"]`)?.getAttribute('placeholder') ?? null,
     text: (ref) => container.querySelector(`[data-ref="${ref}"]`)?.textContent ?? '',
   };
 }
@@ -227,5 +229,16 @@ suite('contour-plot: Viewmodel im Browser', () => {
     assertEqual(h.vm().read().surface, null);
     assertEqual(h.vm().info.zMax, '0,00');
     assertEqual(h.vm().legend.items.length, 10);
+  });
+
+  test('leerer z-Name: Platzhalter ist der übersetzte Rückfall und folgt der Sprache', async () => {
+    const h = await mount(null);
+    assertEqual(h.vm().model.zLabel, '');
+    assertEqual(h.placeholder('zLabel'), 'Antwort Z');
+    h.lang.current = 'en';
+    mod.onLanguageChange();
+    await settle();
+    assertEqual(h.placeholder('zLabel'), 'Response Z');
+    assertEqual(h.vm().model.zLabel, '');
   });
 });
