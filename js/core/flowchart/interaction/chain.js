@@ -57,7 +57,9 @@ export function chainGesture({ handle, bands = [] }) {
     step(pos, dir) {
       if (dir.x) return { ...pos, index: pos.index + dir.x };
       if (!dir.y || !order.length) return null;
-      const i = order.indexOf(pos.band) + dir.y;
+      const at = order.indexOf(pos.band);
+      if (at < 0) return null;
+      const i = at + dir.y;
       return i >= 0 && i < order.length ? { ...pos, band: order[i] } : null;
     },
 

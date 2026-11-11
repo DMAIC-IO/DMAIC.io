@@ -130,6 +130,13 @@ suite('flowchart/interaction — Kettengeste', () => {
     assertDeepEqual(calls, [['moveStep', { id: 's2', index: 0 }]]);
   });
 
+  test('↑/↓ aus einem Band, das nicht in bands steht, ändern nichts', () => {
+    const def = chainGesture({ handle: '.grip', bands: ['va', 'nva'] });
+    const pos = { id: 's1', index: 0, band: 'x' };
+    assertEqual(def.step(pos, { x: 0, y: 1 }), null);
+    assertEqual(def.step(pos, { x: 0, y: -1 }), null);
+  });
+
   test('Zeiger: Ablegen über Spalte 0 im anderen Band → index 0 und side', () => {
     const { calls, grip } = setupChain();
     drag(grip('s2'), 110, 60, 20, 20);
