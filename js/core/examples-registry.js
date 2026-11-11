@@ -17,6 +17,7 @@
  */
 
 import { uid } from './uid.js';
+import { parseCsvText, readCsvRecords } from './parser/csv.js';
 import { withoutSchema } from './json-file.js';
 import { rewriteColumnRefs, activeContext } from './model.js';
 import { loadModel } from './initial-model.js';
@@ -722,9 +723,8 @@ export async function loadWorksheetExample(mod, payload, { Model, rewriteRefs, c
 // ─── CSV parsing ───────────────────────────────────────────────
 
 /**
- * Minimal CSV parser for the controlled example datasets shipped with the app.
- * Supports: comma separator, double-quoted fields with escaped quotes,
- * one header row, numeric auto-coercion.
+ * Adapter for the example datasets shipped with the app: reads comma-separated
+ * text with one header row through the central CSV parser.
  *
  * Returns an object: { columns: [{name, type, values:[]}, ...], rows: [[...]] }
  *
@@ -732,50 +732,18 @@ export async function loadWorksheetExample(mod, payload, { Model, rewriteRefs, c
  * @returns {{ columns: object[], rows: any[][] }}
  */
 export function parseCsv(text) {
-  const rows = [];
-  let row = [];
-  let field = '';
-  let inQuotes = false;
-  let i = 0;
-
-  while (i < text.length) {
-    const ch = text[i];
-    if (inQuotes) {
-      if (ch === '"') {
-        if (text[i + 1] === '"') { field += '"'; i += 2; continue; }
-        inQuotes = false; i++; continue;
-      }
-      field += ch; i++; continue;
-    }
-    if (ch === '"') { inQuotes = true; i++; continue; }
-    if (ch === ',') { row.push(field); field = ''; i++; continue; }
-    if (ch === '\r') { i++; continue; }
-    if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ''; i++; continue; }
-    field += ch; i++;
+  const rows = readCsvRecords(text, { delimiter: 'comma' })
+    .slice(1)
+    .filter(r => r.some(c => c.length > 0));
+  let sheet;
+  try {
+    sheet = parseCsvText(text, { delimiter: 'comma', hasHeader: true }).sheets[0];
+  } catch (err) {
+    if (err?.code === 'errCsvEmpty') return { columns: [], rows: [] };
+    throw err;
   }
-  if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row); }
-
-  if (rows.length === 0) return { columns: [], rows: [] };
-
-  const headers = rows[0].map(h => h.trim());
-  const dataRows = rows.slice(1).filter(r => r.some(c => c.length > 0));
-
-  const columns = headers.map((name, idx) => {
-    const values = dataRows.map(r => coerce(r[idx]));
-    const type = values.every(v => v == null || typeof v === 'number') ? 'numeric' : 'text';
-    return { name, type, values };
-  });
-
-  return { columns, rows: dataRows };
-}
-
-function coerce(s) {
-  if (s == null) return null;
-  const trimmed = String(s).trim();
-  if (trimmed === '') return null;
-  const num = Number(trimmed.replace(',', '.'));
-  if (!Number.isNaN(num) && /^-?\d+([.,]\d+)?([eE][-+]?\d+)?$/.test(trimmed)) return num;
-  return trimmed;
+  const columns = sheet.columns.map(({ name, type, values }) => ({ name, type, values }));
+  return { columns, rows };
 }
 
 // ─── Seeded PRNG + Normal distribution ─────────────────────────
