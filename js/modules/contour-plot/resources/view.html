@@ -65,9 +65,7 @@
   </aside>
 
   <main class="contour__output dmike-split__output">
-    <div class="contour__placeholder" data-ref="placeholder" x-show="!hasSurface" x-text="t('emptyText')"></div>
-
-    <div class="contour__info-row" data-ref="infoRow" x-show="hasSurface">
+    <div class="contour__info-row" data-ref="infoRow">
       <div class="contour__info-card">
         <div class="contour__info-label" data-help-key="modules.contour-plot.types.Surface.zMin" x-text="t('cardZMin')"></div>
         <div class="contour__info-value" data-ref="infoZmin" x-text="info.zMin"></div>
@@ -77,7 +75,7 @@
         <div class="contour__info-value" data-ref="infoZmax" x-text="info.zMax"></div>
       </div>
       <div class="contour__info-card">
-        <div class="contour__info-label" data-help-key="modules.contour-plot.fields.surface.help" x-text="t('range')"></div>
+        <div class="contour__info-label" data-help-key="modules.contour-plot.types.Surface.range" x-text="t('range')"></div>
         <div class="contour__info-value" data-ref="infoRange" x-text="info.range"></div>
         <div class="contour__info-sub" data-ref="infoRangeSub" x-text="info.rangeSub"></div>
       </div>
@@ -88,11 +86,11 @@
       </div>
     </div>
 
-    <div class="contour__chart-area" data-ref="chart-area" x-show="hasSurface">
+    <div class="contour__chart-area" data-ref="chart-area">
       <div class="contour__chart-wrap" data-ref="chart-wrap">
         <div class="contour__chart" x-widget="contour-chart" x-widget-config="chart" x-widget-value="model.chartEdits"></div>
       </div>
-      <div class="contour__legend" data-ref="legend" x-show="hasSurface">
+      <div class="contour__legend" data-ref="legend">
         <span class="contour__legend-title" x-text="legend.title"></span>
         <template x-for="(it, i) in legend.items" :key="i">
           <span class="contour__legend-item"><span class="contour__legend-swatch" :style="swatchStyle(it)"></span><span x-text="it.value"></span></span>

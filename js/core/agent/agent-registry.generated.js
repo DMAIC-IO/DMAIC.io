@@ -2244,10 +2244,6 @@ export const AGENT_REGISTRY = {
         "derived": true,
         "keysOf": "Surface",
         "keys": {
-          "grid": {
-            "type": "number[][]",
-            "help": "abgetastete Werte, Zeile 0 oben (y = yMax)"
-          },
           "zMin": {
             "type": "number",
             "help": "kleinster Wert"
@@ -2255,6 +2251,10 @@ export const AGENT_REGISTRY = {
           "zMax": {
             "type": "number",
             "help": "größter Wert"
+          },
+          "range": {
+            "type": "number",
+            "help": "Spannweite zMax − zMin"
           },
           "optimum": {
             "type": "SurfacePoint",

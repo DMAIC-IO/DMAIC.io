@@ -1,10 +1,12 @@
 /**
  * D.Mike — Konturdiagramm: Viewmodel.
  *
- * Die Ableitung `surface` des Models tastet die Fläche ab; `computed
- * surfaceGrid` ist diese eine Abtastung für Diagramm, Infokarten, Legende und
- * Export. `computed chart` ist die Konfiguration des Diagramm-Widgets
- * `contour-chart`, die Messpunkte kommen aus der Ableitung `dataPoints`.
+ * `computed surfaceGrid` tastet die Fläche einmal ab, für Diagramm,
+ * Infokarten, Legende und Export — auch bei einem Fehler der eigenen Formel
+ * (flache Fläche 0, der Fehlertext steht daneben). Die Ableitung `surface`
+ * des Models liefert dem Agenten nur die Kennzahlen. `computed chart` ist die
+ * Konfiguration des Diagramm-Widgets `contour-chart`, die Messpunkte kommen
+ * aus der Ableitung `dataPoints`.
  */
 import { createModule } from '../../../core/template-module.js';
 import { setFields } from '../../../core/model.js';
@@ -12,6 +14,7 @@ import { formatNumber, parseNumber } from '../../../core/number-format.js';
 import { markRejection, clearRejection } from '../../../core/param-input.js';
 import descriptor from '../module.js';
 import { State, MODEL_TYPES } from '../domain/model.js';
+import { sampleSurface } from '../domain/surface.js';
 import {
   betaLabel, formulaErrorText, levelCount, surfaceInfo, legendView, chartConfig, surfaceTable,
 } from './present.js';
@@ -26,19 +29,17 @@ export default createModule({
   view(ctx) {
     return {
       computed: {
-        /** Die abgetastete Fläche, oder null bei einem Fehler der eigenen Formel. */
+        /** Die abgetastete Fläche in der Rasterauflösung der Editor-Einstellungen. */
         surfaceGrid() {
-          return this.surface ?? null;
+          return sampleSurface(this.model);
         },
-        /** Konfiguration des Diagramms; null ohne Fläche. */
+        /** Konfiguration des Diagramms. */
         chart() {
           return chartConfig(this.surfaceGrid, this.model, this.dataPoints ?? [], this.t);
         },
       },
       /** Die Fläche aus einer eigenen Formel. */
       get isCustomModel() { return this.model.modelType === 'custom'; },
-      /** Es gibt eine Fläche zum Zeichnen. */
-      get hasSurface() { return this.surfaceGrid !== null; },
       /** Die Optionen der Modellform. */
       get modelTypeOptions() {
         return MODEL_TYPES.map((value) => ({ value, label: this.t(MODEL_TYPE_LABEL[value]), selected: value === this.model.modelType }));
@@ -54,13 +55,13 @@ export default createModule({
         return legendView(this.surfaceGrid, this.model.chartEdits, this.t, ctx.context.language);
       },
       /**
-       * Bezeichnung eines Koeffizienten.
+       * @noagent Bezeichnung eines Koeffizienten.
        * @param {number} i 0 bis 5
        * @returns {string}
        */
       betaLabel(i) { return betaLabel(i); },
       /**
-       * Ein Koeffizient im Eingabefeld, in der App-Sprache ohne Gruppierung.
+       * @noagent Ein Koeffizient im Eingabefeld, in der App-Sprache ohne Gruppierung.
        * @param {number} i 0 bis 5
        * @returns {string}
        */
@@ -68,8 +69,9 @@ export default createModule({
         return formatNumber(this.model.b[i], ctx.context.language, { profile: 'input' });
       },
       /**
-       * Übernimmt einen getippten Koeffizienten. Eine Eingabe, die keine Zahl
-       * ist, wird abgewiesen; das Feld zeigt wieder den alten Wert.
+       * @noagent Übernimmt einen getippten Koeffizienten; der Agent setzt b mit
+       * instance.set. Eine Eingabe, die keine Zahl ist, wird abgewiesen; das
+       * Feld zeigt wieder den alten Wert.
        * @param {number} i 0 bis 5
        * @param {Event} event
        */
@@ -85,7 +87,7 @@ export default createModule({
         setFields(this.model, { b: this.model.b.map((x, k) => (k === i ? v : x)) });
       },
       /**
-       * Hintergrund eines Legendenfelds.
+       * @noagent Hintergrund eines Legendenfelds.
        * @param {{ color: string }} it
        * @returns {string}
        */

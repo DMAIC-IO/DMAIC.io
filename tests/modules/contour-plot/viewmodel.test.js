@@ -41,6 +41,7 @@ function ensureTemplate() {
   tpl.setAttribute('data-tpl', TPL_KEY);
   tpl.innerHTML = '<div class="contour" x-data="contourPlot">'
     + '<template x-for="(v, i) in model.b" :key="i"><input :data-ref="\'b\' + i" :value="coefficientText(i)" @change="coefficientChanged(i, $event)"></template>'
+    + '<p data-ref="formula-error" x-show="formulaErrorText" x-text="formulaErrorText"></p>'
     + '<div data-ref="infoRangeSub" x-text="info.rangeSub"></div>'
     + '<div data-ref="infoZmax" x-text="info.zMax"></div>'
     + '<div data-ref="legend"><template x-for="(it, i) in legend.items" :key="i"><span class="contour__legend-item" x-text="it.value"></span></template></div>'
@@ -216,14 +217,15 @@ suite('contour-plot: Viewmodel im Browser', () => {
     assertEqual(input.value, '2,5');
   });
 
-  test('Formelfehler: Text, kein Diagramm, keine Infokarten', async () => {
+  test('Formelfehler foo(x): Diagramm bleibt (flache Fläche), Fehlertext sichtbar, read().surface null', async () => {
     const h = await mount(null);
     setFields(h.vm().model, { modelType: 'custom', customFormula: 'foo(x)' });
     await settle();
-    assertEqual(h.vm().formulaErrorText, 'formulaErrFn');
-    assertEqual(h.vm().chart, null);
-    assertEqual(h.vm().hasSurface, false);
-    assertEqual(h.vm().info.zMax, '–');
-    assertEqual(h.vm().legend.items.length, 0);
+    assertTrue(h.host().querySelector('svg') !== null, 'kein SVG');
+    assertTrue(h.image() !== null, 'kein Rasterbild');
+    assertEqual(h.text('formula-error'), 'formulaErrFn');
+    assertEqual(h.vm().read().surface, null);
+    assertEqual(h.vm().info.zMax, '0,00');
+    assertEqual(h.vm().legend.items.length, 10);
   });
 });

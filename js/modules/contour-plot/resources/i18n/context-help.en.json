@@ -62,23 +62,23 @@
       "help": "The fields that apply to the chosen model form: with a custom formula customFormula instead of b."
     },
     "surface": {
-      "help": "The evaluated surface over the axis range: the grid, the smallest and largest value and the optimum, each described individually under keys; empty with an error in the custom formula. The \"Z Range\" card shows Z max − Z min and below it the number of contour levels."
+      "help": "The figures of the evaluated surface over the axis range: smallest and largest value, range and optimum, each described individually under keys; null with an error in the custom formula."
     },
     "dataPoints": {
       "help": "The measured points from the three columns, paired row by row; rows without three numbers are left out. Empty while a column is missing."
     },
     "surfaceGrid": {
-      "help": "The sampled surface the chart, the cards, the legend and the table export are built from: the same figures as surface; empty with an error in the custom formula."
+      "help": "The sampled surface the chart, the cards, the legend and the table export are built from: the grid with the smallest and largest value and the optimum. With an error in the custom formula the values count as 0 (a flat surface)."
     },
     "chart": {
-      "help": "The configuration of the contour chart: grid, axis ranges, measured points and the defaults for the title and axis titles, which the chart editor can override. Empty with an error in the custom formula."
+      "help": "The configuration of the contour chart: grid, axis ranges, measured points and the defaults for the title and axis titles, which the chart editor can override."
     }
   },
   "types": {
     "Surface": {
-      "grid": "The sampled values of the surface, one row per y value from the top (y = Y max) down, each row from X min to X max. Invalid formula values count as 0.",
       "zMin": "The smallest value of the surface. The surface is evaluated on a grid of 100 × 100 points (default; adjustable in the chart editor under \"Grid resolution\") over the axis range; the \"Z Min\" card shows the value.",
       "zMax": "The largest value of the surface on the same grid; the \"Z Max\" card shows the value.",
+      "range": "The range of the surface, largest minus smallest value (Z max − Z min); the \"Z Range\" card shows it and below it the number of contour levels.",
       "optimum": "The highest point of the grid. The \"Optimum (Max)\" card shows its value and below it its x and y; with equally high points the first in grid order counts."
     },
     "SurfacePoint": {

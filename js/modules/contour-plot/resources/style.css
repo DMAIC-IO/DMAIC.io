@@ -98,17 +98,6 @@
   margin-top: var(--spacing-2xs);
 }
 
-.contour__placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  min-height: 400px;
-  color: var(--color-text-tertiary);
-  font-size: var(--font-size-sm);
-  text-align: center;
-}
-
 .contour__chart-area {
   display: flex;
   flex-direction: column;

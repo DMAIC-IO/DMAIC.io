@@ -57,15 +57,14 @@ export function levelCount(edits) {
 }
 
 /**
- * Texte der vier Infokarten; Striche ohne Fläche.
- * @param {SurfaceGrid|null} s
+ * Texte der vier Infokarten.
+ * @param {SurfaceGrid} s
  * @param {number} levels Zahl der Konturstufen
  * @param {T} t
  * @param {string} lang
  * @returns {{ zMin: string, zMax: string, range: string, rangeSub: string, opt: string, optPos: string }}
  */
 export function surfaceInfo(s, levels, t, lang) {
-  if (!s) return { zMin: '–', zMax: '–', range: '–', rangeSub: '', opt: '–', optPos: '' };
   const f = (/** @type {number} */ v) => formatNumber(v, lang, { decimals: 2 });
   return {
     zMin: f(s.zMin),
@@ -78,15 +77,14 @@ export function surfaceInfo(s, levels, t, lang) {
 }
 
 /**
- * Die Farblegende; ohne Fläche ohne Felder.
- * @param {SurfaceGrid|null} s
+ * Die Farblegende.
+ * @param {SurfaceGrid} s
  * @param {{ numLevels?: number, colorScheme?: string }|undefined} edits
  * @param {T} t
  * @param {string} lang
  * @returns {{ title: string, items: { color: string, value: string }[] }}
  */
 export function legendView(s, edits, t, lang) {
-  if (!s) return { title: t('legend'), items: [] };
   const scheme = edits?.colorScheme ?? CONTOUR_DEFAULTS.colorScheme;
   return legendModel(s.zMin, s.zMax, levelCount(edits), scheme, getColor, t('legend'),
     (v) => formatNumber(v, lang, { decimals: 1 }));
@@ -96,15 +94,14 @@ export function legendView(s, edits, t, lang) {
  * Konfiguration des Diagramms. Titel und Achsentitel sind Vorgaben, die die
  * Editor-Einstellungen überschreiben; Messpunkte zeigt das Diagramm, sobald
  * alle drei Spalten gesetzt sind. Nicht endliche Werte gehen als Lücke ein.
- * @param {SurfaceGrid|null} s
+ * @param {SurfaceGrid} s
  * @param {{ xLabel: string, yLabel: string, zLabel: string, xMin: number, xMax: number, yMin: number, yMax: number,
  *   datasets: Array<{ x: object|null, y: object|null, z: object|null }> }} m
  * @param {{ x: number, y: number, z: number }[]} points
  * @param {T} t
- * @returns {object|null}
+ * @returns {object}
  */
 export function chartConfig(s, m, points, t) {
-  if (!s) return null;
   const zLabel = m.zLabel || t('zLabelDefault');
   const row = m.datasets[0];
   const allColumns = Boolean(row?.x && row?.y && row?.z);
@@ -125,14 +122,13 @@ export function chartConfig(s, m, points, t) {
 /**
  * Zeilen des Tabellen-Exports: Kopf x, y, z, dann je Rasterpunkt eine Zeile
  * mit vier Nachkommastellen, Zeile für Zeile von oben (y = yMax).
- * @param {SurfaceGrid|null} s
+ * @param {SurfaceGrid} s
  * @param {{ xMin: number, xMax: number, yMin: number, yMax: number }} range
  * @returns {(string|number)[][]}
  */
 export function surfaceTable(s, range) {
   /** @type {(string|number)[][]} */
   const rows = [['x', 'y', 'z']];
-  if (!s) return rows;
   const { xMin, xMax, yMin, yMax } = range;
   const res = s.grid.length;
   const r4 = (/** @type {number} */ v) => (Number.isFinite(v) ? roundTo(v, 4) : v);

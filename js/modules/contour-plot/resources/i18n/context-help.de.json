@@ -62,23 +62,23 @@
       "help": "Die Felder, die bei der gewählten Modellform gelten: bei eigener Formel customFormula statt b."
     },
     "surface": {
-      "help": "Die ausgewertete Fläche über dem Achsenbereich: das Raster, kleinster und größter Wert und das Optimum, jede Angabe unter keys einzeln beschrieben; leer bei einem Fehler der eigenen Formel. Die Karte „Z-Spannweite“ zeigt Z max − Z min und darunter die Zahl der Konturstufen."
+      "help": "Die Kennzahlen der ausgewerteten Fläche über dem Achsenbereich: kleinster und größter Wert, Spannweite und Optimum, jede Angabe unter keys einzeln beschrieben; null bei einem Fehler der eigenen Formel."
     },
     "dataPoints": {
       "help": "Die Messpunkte aus den drei Spalten, Zeile für Zeile gepaart; Zeilen ohne drei Zahlen fallen heraus. Leer, solange eine Spalte fehlt."
     },
     "surfaceGrid": {
-      "help": "Die abgetastete Fläche, aus der Diagramm, Infokarten, Legende und Tabellen-Export entstehen: dieselben Angaben wie surface; leer bei einem Fehler der eigenen Formel."
+      "help": "Die abgetastete Fläche, aus der Diagramm, Infokarten, Legende und Tabellen-Export entstehen: das Raster mit kleinstem und größtem Wert und dem Optimum. Bei einem Fehler der eigenen Formel zählen die Werte als 0 (flache Fläche)."
     },
     "chart": {
-      "help": "Die Konfiguration des Konturdiagramms: Raster, Achsenbereiche, Messpunkte und die Vorgaben für Titel und Achsentitel, die der Diagramm-Editor überschreiben kann. Leer bei einem Fehler der eigenen Formel."
+      "help": "Die Konfiguration des Konturdiagramms: Raster, Achsenbereiche, Messpunkte und die Vorgaben für Titel und Achsentitel, die der Diagramm-Editor überschreiben kann."
     }
   },
   "types": {
     "Surface": {
-      "grid": "Die abgetasteten Werte der Fläche, eine Zeile je y-Wert von oben (y = Y max) nach unten, in jeder Zeile von X min bis X max. Ungültige Formelwerte zählen als 0.",
       "zMin": "Der kleinste Wert der Fläche. Die Fläche wird auf einem Raster aus 100 × 100 Punkten (Vorgabe; einstellbar im Diagrammeditor unter „Rasterauflösung“) über dem Achsenbereich ausgewertet; die Karte „Z Min“ zeigt den Wert.",
       "zMax": "Der größte Wert der Fläche auf demselben Raster; die Karte „Z Max“ zeigt den Wert.",
+      "range": "Die Spannweite der Fläche, größter minus kleinster Wert (Z max − Z min); die Karte „Z-Spannweite“ zeigt sie und darunter die Zahl der Konturstufen.",
       "optimum": "Der höchste Punkt des Rasters. Die Karte „Optimum (Max)“ zeigt seinen Wert und darunter sein x und y; bei gleich hohen Punkten zählt der erste in Rasterreihenfolge."
     },
     "SurfacePoint": {

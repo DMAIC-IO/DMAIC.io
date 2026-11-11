@@ -47,7 +47,7 @@
             "Farbfläche: Jeder Pixel wird gemäß z-Wert eingefärbt (Farbschema wählbar)",
             "{{term:isolinie|Konturlinien}}: Marching-Squares-Algorithmus berechnet Isolinien für gleichmäßig verteilte z-Stufen",
             "Datenpunkte: Optionale Überlagerung tatsächlicher Messpunkte (x; y; z)",
-            "Tooltip: Hover zeigt exakte x/y/z-Werte an jeder Position"
+            "Tooltip: Hover zeigt x, y und den aus dem Raster interpolierten z-Wert an jeder Position"
           ]
         }
       ]
@@ -67,7 +67,6 @@
           "type": "list",
           "items": [
             "Koeffizienten β₀=50, β₁=8, β₂=5, β₃=−3, β₄=−2, β₅=1.5 eingeben",
-            "«Konturdiagramm zeichnen» klicken",
             "Optimum bei ca. x=1.6, y=1.8 (Ausbeute ≈ 59%)",
             "Datenpunkte aus einer Datentabelle zuordnen, um Modellqualität zu prüfen"
           ]

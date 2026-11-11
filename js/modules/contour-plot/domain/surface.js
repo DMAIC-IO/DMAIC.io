@@ -5,6 +5,7 @@
  * Ableitung `surface` im Model.
  */
 import { evalFormula } from './formula.js';
+import { CONTOUR_DEFAULTS } from '../../../core/chart/contour-defaults.js';
 
 /**
  * Die Modellfunktion an einem Punkt. `quadratic` und `interaction` rechnen
@@ -45,4 +46,18 @@ export function scanSurface(evalAt, range, res) {
     }
   }
   return { grid, zMin: zMinG, zMax: zMaxG, optimum: { x: optX, y: optY, z: zMaxG } };
+}
+
+/**
+ * Die Fläche eines Models abtasten: über seinem Achsenbereich, in der
+ * Rasterauflösung seiner Editor-Einstellungen. Auch bei einem Fehler der
+ * eigenen Formel (ungültige Werte zählen als 0).
+ * @param {{ modelType: string, b: number[], customFormula: string, xMin: number, xMax: number,
+ *   yMin: number, yMax: number, chartEdits?: { gridRes?: number } }} model
+ * @returns {{ grid: number[][], zMin: number, zMax: number, optimum: { x: number, y: number, z: number } }}
+ */
+export function sampleSurface(model) {
+  const res = model.chartEdits?.gridRes ?? CONTOUR_DEFAULTS.gridRes;
+  const { xMin, xMax, yMin, yMax } = model;
+  return scanSurface((x, y) => evalModel(model, x, y), { xMin, xMax, yMin, yMax }, res);
 }

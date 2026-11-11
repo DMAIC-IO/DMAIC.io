@@ -1,7 +1,7 @@
 import { suite, test, assert, assertEqual, assertDeepEqual, assertClose } from '../../test-utils.js';
 import { State, MODEL_TYPES } from '../../../js/modules/contour-plot/domain/model.js';
 import { from0 } from '../../../js/modules/contour-plot/domain/migrations.js';
-import { scanSurface, evalModel } from '../../../js/modules/contour-plot/domain/surface.js';
+import { scanSurface, evalModel, sampleSurface } from '../../../js/modules/contour-plot/domain/surface.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
 import contourChart from '../../../js/widgets/contour-chart/schema.js';
 import { COLOR_SCHEMES } from '../../../js/core/chart/color-schemes.js';
@@ -189,7 +189,8 @@ suite('contour-plot Model — Ableitungen', () => {
     assertClose(s.zMax, want.zMax, 1e-12);
     assertClose(s.zMin, want.zMin, 1e-12);
     assertDeepEqual(s.optimum, want.optimum);
-    assertEqual(s.grid.length, 100);
+    assertClose(s.range, want.zMax - want.zMin, 1e-12);
+    assertDeepEqual(Object.keys(s).sort(), ['optimum', 'range', 'zMax', 'zMin']);
   });
 
   test('surface folgt chartEdits.gridRes', () => {
@@ -197,8 +198,7 @@ suite('contour-plot Model — Ableitungen', () => {
     m.chartEdits = { gridRes: 40 };
     const s = evaluateDerived(m, null, ['surface']).surface;
     const want = scanSurface((x, y) => evalModel(m, x, y), { xMin: -3, xMax: 3, yMin: -3, yMax: 3 }, 40);
-    assertEqual(s.grid.length, 40);
-    assertDeepEqual(s, want);
+    assertDeepEqual(s, { zMin: want.zMin, zMax: want.zMax, range: want.zMax - want.zMin, optimum: want.optimum });
   });
 
   test('surface ist null bei Formelfehler', () => {
@@ -206,6 +206,17 @@ suite('contour-plot Model — Ableitungen', () => {
     m.modelType = 'custom';
     m.customFormula = 'foo(x)';
     assertEqual(evaluateDerived(m, null, ['surface']).surface, null);
+  });
+
+  test('sampleSurface tastet auch bei Formelfehler ab (Fläche 0), in der Auflösung der Einstellungen', () => {
+    const m = new State();
+    m.modelType = 'custom';
+    m.customFormula = 'foo(x)';
+    m.chartEdits = { gridRes: 40 };
+    const g = sampleSurface(m);
+    assertEqual(g.grid.length, 40);
+    assertEqual(g.zMin, 0);
+    assertEqual(g.zMax, 0);
   });
 
   test('evalModel: interaction rechnet wie quadratic, custom über die Formel', () => {

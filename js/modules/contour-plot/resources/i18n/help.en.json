@@ -47,7 +47,7 @@
             "Color fill: Each pixel is colored according to its z-value (color scheme selectable)",
             "{{term:isolinie|Contour lines}}: Marching squares algorithm computes isolines at evenly spaced z-levels",
             "Data points: Optional overlay of actual measurement points (x; y; z)",
-            "Tooltip: Hover shows exact x/y/z values at any position"
+            "Tooltip: Hover shows x, y and the z value interpolated from the grid at any position"
           ]
         }
       ]
@@ -67,7 +67,6 @@
           "type": "list",
           "items": [
             "Enter coefficients β₀=50, β₁=8, β₂=5, β₃=−3, β₄=−2, β₅=1.5",
-            "Click \"Draw Contour Plot\"",
             "Optimum at approximately x=1.6, y=1.8 (yield ≈ 59%)",
             "Assign data points from a worksheet to visually assess model quality"
           ]

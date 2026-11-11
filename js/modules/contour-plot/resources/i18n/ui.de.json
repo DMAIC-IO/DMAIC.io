@@ -4,7 +4,6 @@
   "description": "Antwortflächen z = f(x, y) als Konturdiagramm visualisieren",
   "whenToUse": "Die Antwortfläche eines Zwei-Faktor-Modells als Höhenlinien zeichnen — aus Polynomkoeffizienten oder einer eigenen Formel in x und y —, optional mit Messpunkten.",
   "title": "Konturdiagramm",
-  "emptyText": "Modell und Achsen konfigurieren — Diagramm wird automatisch gezeichnet",
   "sectionModel": "Modell",
   "modelType": "Regressionsmodell z = f(x, y)",
   "modelQuadratic": "Quadratisch (2. Ordnung)",

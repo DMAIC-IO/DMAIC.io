@@ -7,9 +7,9 @@
  * und Arbeitsblatt. Ansicht: die Editor-Einstellungen des Diagramms.
  */
 import { defineModel, list, number, text, oneOf, columnRef, datasets } from '../../../core/model.js';
-import contourChart, { CONTOUR_DEFAULTS } from '../../../widgets/contour-chart/schema.js';
+import contourChart from '../../../widgets/contour-chart/schema.js';
 import { validateFormula } from './formula.js';
-import { scanSurface, evalModel } from './surface.js';
+import { sampleSurface } from './surface.js';
 import { from0 } from './migrations.js';
 
 /** @type {readonly ('quadratic'|'interaction'|'custom')[]} */
@@ -24,9 +24,9 @@ export const MODEL_TYPES = Object.freeze(['quadratic', 'interaction', 'custom'])
 
 /**
  * @typedef {object} Surface
- * @property {number[][]} grid  abgetastete Werte, Zeile 0 oben (y = yMax)
  * @property {number} zMin  kleinster Wert
  * @property {number} zMax  größter Wert
+ * @property {number} range  Spannweite zMax − zMin
  * @property {SurfacePoint} optimum  Lage des größten Werts
  */
 
@@ -93,8 +93,9 @@ export class State extends defineModel({
         'xLabel', 'yLabel', 'zLabel', 'xMin', 'xMax', 'yMin', 'yMax', 'datasets'];
     },
     /**
-     * Die abgetastete Fläche in der Rasterauflösung der Editor-Einstellungen;
-     * null bei einem Fehler der eigenen Formel.
+     * Kennzahlen der abgetasteten Fläche (Rasterauflösung der
+     * Editor-Einstellungen); null bei einem Fehler der eigenen Formel oder
+     * wenn die Fläche keine endlichen Grenzen hat.
      *
      * @param {any} _data Arbeitsblattsicht
      * @param {{ formulaError: FormulaError|null }} d
@@ -103,9 +104,9 @@ export class State extends defineModel({
      */
     surface(_data, d) {
       if (d.formulaError) return null;
-      const res = this.chartEdits?.gridRes ?? CONTOUR_DEFAULTS.gridRes;
-      const { xMin, xMax, yMin, yMax } = this;
-      return scanSurface((x, y) => evalModel(this, x, y), { xMin, xMax, yMin, yMax }, res);
+      const { zMin, zMax, optimum } = sampleSurface(this);
+      if (!Number.isFinite(zMin) || !Number.isFinite(zMax)) return null;
+      return { zMin, zMax, range: zMax - zMin, optimum };
     },
     /**
      * Die Messpunkte aus den drei Spalten: nur Zeilen mit drei endlichen

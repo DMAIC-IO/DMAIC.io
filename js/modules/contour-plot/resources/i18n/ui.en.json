@@ -4,7 +4,6 @@
   "description": "Visualize response surfaces z = f(x, y) as contour diagrams",
   "whenToUse": "Draw the response surface of a two-factor model as contour lines — from polynomial coefficients or an own formula in x and y — optionally with measured points.",
   "title": "Contour Plot",
-  "emptyText": "Configure model and axes — diagram is drawn automatically",
   "sectionModel": "Model",
   "modelType": "Regression model z = f(x, y)",
   "modelQuadratic": "Quadratic (2nd order)",
