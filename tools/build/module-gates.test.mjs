@@ -1488,3 +1488,41 @@ test('checkFieldErrorPaths: zwei Aufrufe in einem Ausdruck, x-field im anderen T
     "template: resources/view.html: fieldError('model.usl'): kein x-field mit diesem Ausdruck",
   ]);
 });
+
+const DERIVED_MODEL = (derived, bulk = "['a']") => `import { defineModel, number } from '@/core/model.js';
+export const State = defineModel({
+  fields: { n: number({ default: 1 }) },
+  derived: { ${derived} },
+  derivedBulk: ${bulk},
+});
+`;
+
+test('Schema-Literal: derived mit Methoden, derivedBulk als Textliterale', () => {
+  assert.deepEqual(checkSchemaLiteral(DERIVED_MODEL('a(data) { return data.numeric("c"); }, b: function (data, d) { return d.a; }')), []);
+});
+
+test('Schema-Literal: derived als Pfeilfunktion, Zahl oder Spread und derivedBulk mit Bezeichner sind Befunde', () => {
+  assert.deepEqual(checkSchemaLiteral(DERIVED_MODEL('a: (data) => 1, b: 2, ...rest', '[x]')), [
+    'schema: domain/model.js: derived.a ist eine Pfeilfunktion — this muss das Model sein',
+    'schema: domain/model.js: derived.b: Funktion oder Methode erwartet (b: 2)',
+    'schema: domain/model.js: derived: Spread nicht erlaubt (...rest)',
+    'schema: domain/model.js: derivedBulk muss ein Array aus Textliteralen sein ([x])',
+  ]);
+});
+
+test('Schreibweg: derived in domain/model.js schreibt nicht ins Model, Lesen ist frei', () => {
+  const text = [
+    'export const State = defineModel({',
+    '  derived: {',
+    '    a() { this.n = 1; return 1; },',
+    '    b() { this.list.push(1); return 1; },',
+    '    c(data) { const x = this.list.map((i) => i + 1); return this.n + x.length + data.numeric("c").length; },',
+    '  },',
+    '  commands: { go: command({ run() { this.n = 2; } }) },',
+    '});',
+  ].join('\n');
+  assert.deepEqual(checkWritePath([{ path: 'domain/model.js', text }]), [
+    'write: domain/model.js: this.n = … — über ein Kommando, instance.set oder x-model/x-field schreiben',
+    'write: domain/model.js: this.list.push(…) — über ein Kommando, instance.set oder x-model/x-field schreiben',
+  ]);
+});

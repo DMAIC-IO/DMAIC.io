@@ -850,7 +850,7 @@ const RESERVED = new Set(['constructor', 'toJSON', 'fromJSON', 'hasContent', 'ex
 /**
  * Das Schema eines Models oder einer Model-Klasse.
  * @param {object|Function|null|undefined} x
- * @returns {{ fields: object, view: object, commands: object, invariants?: object }|null}
+ * @returns {{ fields: object, view: object, commands: object, invariants?: object, derived?: Record<string, Function>, derivedBulk?: readonly string[] }|null}
  */
 export function schemaOf(x) {
   const cls = typeof x === 'function' ? x : x?.constructor;
@@ -1156,7 +1156,10 @@ export function readModel(Model, json, context) {
  * @param {{ fields?: Record<string, object>, view?: Record<string, object>,
  *           commands?: Record<string, object>, version?: string,
  *           migrations?: Record<string, Function>,
- *           invariants?: Record<string, { fields: string[], test: (m: any) => boolean, repair?: (m: any) => void }> }} schema
+ *           invariants?: Record<string, { fields: string[], test: (m: any) => boolean, repair?: (m: any) => void }>,
+ *           derived?: Record<string, (data: any, d: Record<string, any>) => any>, derivedBulk?: string[] }} schema
+ *   `derived.<name>(data, d)`: fachliche Ableitung; `this` ist das Model, `data` die Arbeitsblattsicht, `d` liest andere
+ *   Ableitungen. `derivedBulk`: Namen, die als Ganzes (nicht einzeln) abgefragt werden.
  *   `invariants.<name>.repair`: heilt beim Laden mit `repair: true` einen verletzten Zustand; läuft in
  *   Deklarationsreihenfolge, sieht den Ladezustand (inklusive der Heilung früherer Invarianten) und schreibt
  *   direkt in die Felder. Heilt es nicht (oder wirft es), fallen die Felder der Invariante auf ihre Vorgabewerte
@@ -1184,6 +1187,18 @@ export function defineModel(schema) {
   }
   for (const name of Object.keys(commands)) {
     if (Object.hasOwn(fields, name) || Object.hasOwn(view, name)) throw new Error(`defineModel: ${name} is both a field and a command`);
+  }
+  const derived = Object.freeze({ ...(schema.derived ?? {}) });
+  const derivedBulk = Object.freeze([...(schema.derivedBulk ?? [])]);
+  for (const [name, fn] of Object.entries(derived)) {
+    if (RESERVED.has(name)) throw new Error(`defineModel: ${name} is a reserved name`);
+    if (Object.hasOwn(fields, name)) throw new Error(`defineModel: ${name} is both a field and a derived`);
+    if (Object.hasOwn(view, name)) throw new Error(`defineModel: ${name} is both a view field and a derived`);
+    if (Object.hasOwn(commands, name)) throw new Error(`defineModel: ${name} is both a command and a derived`);
+    if (typeof fn !== 'function') throw new Error(`defineModel: derived ${name} must be a function`);
+  }
+  for (const name of derivedBulk) {
+    if (!Object.hasOwn(derived, name)) throw new Error(`defineModel: derivedBulk ${name} names no derived entry`);
   }
   const all = { ...fields, ...view };
   const invariants = Object.freeze(Object.fromEntries(Object.entries(schema.invariants ?? {}).map(([name, inv]) => {
@@ -1292,7 +1307,7 @@ export function defineModel(schema) {
     }
   }
 
-  Model.schema = Object.freeze({ fields, view, commands, version, migrations, invariants });
+  Model.schema = Object.freeze({ fields, view, commands, version, migrations, invariants, derived, derivedBulk });
   for (const [k, s] of Object.entries(all)) {
     Object.defineProperty(Model.prototype, k, {
       get() { return this._v[k]; },

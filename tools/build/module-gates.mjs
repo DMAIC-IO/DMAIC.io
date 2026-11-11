@@ -463,6 +463,29 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
       }
     }
   };
+  /** `derived: { <name>(data, d) { … } }` am obersten Literal: Methoden oder `function`-Ausdrücke, `this` ist das Model. */
+  const checkDerived = (p) => {
+    const v = ts.isPropertyAssignment(p) ? p.initializer : null;
+    if (!v || !ts.isObjectLiteralExpression(v)) {
+      out.push(`${P} derived muss ein Objekt-Literal { name(data, d) { … } } sein (${src(p)})`);
+      return;
+    }
+    for (const e of v.properties) {
+      if (ts.isSpreadAssignment(e)) { out.push(`${P} derived: Spread nicht erlaubt (${src(e)})`); continue; }
+      const name = keyOf(e) ?? '?';
+      if (ts.isMethodDeclaration(e)) continue;
+      const f = ts.isPropertyAssignment(e) ? e.initializer : null;
+      if (f && ts.isArrowFunction(f)) out.push(`${P} derived.${name} ist eine Pfeilfunktion — this muss das Model sein`);
+      else if (!(f && ts.isFunctionExpression(f))) out.push(`${P} derived.${name}: Funktion oder Methode erwartet (${src(e)})`);
+    }
+  };
+  /** `derivedBulk: ['a', …]` am obersten Literal. */
+  const checkDerivedBulk = (p) => {
+    const v = ts.isPropertyAssignment(p) ? p.initializer : null;
+    if (!(v && ts.isArrayLiteralExpression(v) && v.elements.every((e) => ts.isStringLiteral(e) || ts.isNoSubstitutionTemplateLiteral(e)))) {
+      out.push(`${P} derivedBulk muss ein Array aus Textliteralen sein (${v ? src(v) : src(p)})`);
+    }
+  };
   const check = (n, cmdName = null, spec = false) => {
     if (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n) || ts.isNumericLiteral(n)) return;
     if ([ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword, ts.SyntaxKind.NullKeyword].includes(n.kind)) return;
@@ -486,6 +509,8 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
         const key = p.name && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? p.name.text : null;
         if (define === 'defineModel' && n === top && (key === 'version' || key === 'migrations')) continue;
         if (define === 'defineModel' && n === top && key === 'invariants') { checkInvariants(p); continue; }
+        if (define === 'defineModel' && n === top && key === 'derived') { checkDerived(p); continue; }
+        if (define === 'defineModel' && n === top && key === 'derivedBulk') { checkDerivedBulk(p); continue; }
         if (spec && (key === 'version' || key === 'migrations')) { out.push(`${P} ${key} nur am obersten ${define}-Literal erlaubt (${src(p)})`); continue; }
         if (cmdName !== null && HOOKS.includes(key)) {
           if (key === 'run' && isAsyncRun(p)) { out.push(`${P} command ${cmdName}: async run — use asyncTask`); continue; }
@@ -688,6 +713,7 @@ function refersToModel(n, isAlias, root = false) {
     n = n.expression;
   }
   if (callsOnModel(n, ELEMENT_METHODS, isAlias)) return true;
+  if (n.kind === ts.SyntaxKind.ThisKeyword) return isAlias('this') && (root || depth > 0);
   return ts.isIdentifier(n) && isAlias(n.text) && (root || depth > 0);
 }
 
@@ -706,7 +732,8 @@ export function checkWritePath(files) {
   const out = [];
   const HINT = '— über ein Kommando, instance.set oder x-model/x-field schreiben';
   for (const { path, text } of files) {
-    if (!(path.startsWith('viewmodel/') || path.startsWith('tile/')) || !path.endsWith('.js')) continue;
+    const inDerived = path === 'domain/model.js';
+    if (!(path.startsWith('viewmodel/') || path.startsWith('tile/') || inDerived) || !path.endsWith('.js')) continue;
     const sf = parseJs(path, text);
     /** Je Gültigkeitsbereich: Name → ist Alias auf das Model. */
     const scopes = [new Map()];
@@ -727,6 +754,18 @@ export function checkWritePath(files) {
       const fn = param.parent;
       return fn.parameters[0] === param && ts.isCallExpression(fn.parent) && fn.parent.arguments[0] === fn
         && callsOnModel(fn.parent, CALLBACK_METHODS, isAlias);
+    };
+    /** Die Funktionen unter `derived: { … }` im `defineModel`-Literal: dort ist `this` das Model. */
+    const derivedFns = [];
+    const findDerived = (n) => {
+      if (ts.isPropertyAssignment(n) && keyOf(n) === 'derived' && ts.isObjectLiteralExpression(n.initializer)) {
+        for (const e of n.initializer.properties) {
+          const f = ts.isPropertyAssignment(e) ? e.initializer : e;
+          if (ts.isMethodDeclaration(f) || ts.isFunctionExpression(f)) derivedFns.push(f);
+        }
+        return;
+      }
+      ts.forEachChild(n, findDerived);
     };
     const visit = (n) => {
       const scoped = isScope(n);
@@ -752,7 +791,14 @@ export function checkWritePath(files) {
       ts.forEachChild(n, visit);
       if (scoped) scopes.pop();
     };
-    visit(sf);
+    if (inDerived) {
+      findDerived(sf);
+      for (const fn of derivedFns) {
+        scopes.length = 0;
+        scopes.push(new Map([['this', true]]));
+        visit(fn);
+      }
+    } else visit(sf);
   }
   return out;
 }
