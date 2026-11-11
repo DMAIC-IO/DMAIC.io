@@ -24,7 +24,7 @@
           </template>
         </div>
         <ul class="chart-suggestion__cards" data-ref="cards" role="radiogroup" :aria-label="t('sectionSuggestions')">
-          <template x-for="s in suggestions" :key="s.type">
+          <template x-for="s in suggestionCards" :key="s.type">
             <li role="none">
               <button type="button" class="chart-suggestion__card" role="radio"
                       :class="isActive(s) ? 'chart-suggestion__card--active' : ''" :aria-checked="isActive(s) ? 'true' : 'false'"

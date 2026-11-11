@@ -2075,19 +2075,27 @@ export const AGENT_REGISTRY = {
         "help": "",
         "bulk": false,
         "derived": true,
-        "keysOf": "Suggestion",
+        "keysOf": "SuggestionEntry",
         "keys": {
-          "type": {
+          "chartType": {
             "type": "string",
             "help": "chart type, the value pickChart accepts"
           },
-          "title": {
-            "type": "string",
-            "help": "translated title"
+          "score": {
+            "type": "number",
+            "help": "rank score, higher first"
           },
-          "notes": {
+          "titleKey": {
             "type": "string",
-            "help": "translated note, or '' without one"
+            "help": "translation key of the title"
+          },
+          "noteKey": {
+            "type": "string|null",
+            "help": "translation key of the note, or null without one"
+          },
+          "vars": {
+            "type": "object",
+            "help": "placeholder values for the translation keys"
           }
         }
       },

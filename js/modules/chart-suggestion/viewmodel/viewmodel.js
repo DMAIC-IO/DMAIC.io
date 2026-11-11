@@ -2,8 +2,8 @@
  * D.Mike — Diagramm-Vorschlag: Viewmodel.
  *
  * Die gewählten Spalten sind Bezüge im Model; Namen, Rollen und Werte kommen
- * live über `ctx.data`. Rangliste, gezeigte Wahl, Zielmodul und Vorschau sind
- * `computed`; die Vorschau zeichnen Diagramm-Widgets.
+ * live über `ctx.data`. Auswahl, Rangliste, gezeigte Wahl und Zielmodul
+ * sind Ableitungen des Models, die Vorschau ist `computed`; die Vorschau zeichnen Diagramm-Widgets.
  *
  * Eingang: `chart-suggestion:load` { instanceId, selection } von der
  * Datensammlung. Ausgang: `module:added` beim Öffnen im eigenen Modul.
@@ -17,7 +17,7 @@ import descriptor from '../module.js';
 import { State } from '../domain/model.js';
 import { refsFromSelection } from '../domain/migrations.js';
 import { liveColumns, checkRefs, shownType } from '../domain/columns.js';
-import { buildPrefill } from '../domain/prefill.js';
+import { prefillFor } from '../domain/prefill.js';
 import { buildPreview } from '../domain/panels.js';
 import { fromExample } from '../io/example.js';
 import { thumbIcon, thumbRaw } from './thumbs.js';
@@ -27,34 +27,17 @@ import { thumbIcon, thumbRaw } from './thumbs.js';
  *
  * @typedef {object} AgentRead
  * @property {Selection|null} selection  the selected columns and their source sheet, or null without a selection
- * @property {Suggestion[]} suggestions  the matching charts in rank order
+ * @property {import('../domain/model.js').SuggestionEntry[]} suggestions  the matching charts in rank order, with translation keys instead of texts
  * @property {string|null} selectedChartType  the picked chart type, or null without suggestions
  * @property {string|null} openTarget  module id openInModule would create, or null for a preview-only type
  * @property {object[]} pickableColumns  the columns setColumns accepts, each `{ key, name }`
  * @property {import('../domain/panels.js').Preview} preview  the chart data of the shown preview: one chart, a panel set or none
  */
 
-/**
- * Die Auswahl, wie `read().selection` sie liefert — ohne Werte, die stehen im Worksheet.
- *
- * @typedef {object} Selection
- * @property {string} sourceInstanceId  worksheet instance the columns come from
- * @property {string} sourceSheetId  sheet of that worksheet
- * @property {SelectedColumn[]} columns  the selected columns in selection order
- */
+/** @typedef {import('../domain/model.js').Selection} Selection */
 
 /**
- * Eine gewählte Spalte.
- *
- * @typedef {object} SelectedColumn
- * @property {string} id  column id in the sheet
- * @property {string} name  display name of the column
- * @property {string} role  role that drives the ranking: continuous, categorical, ordinal or date
- * @property {boolean} roleConfirmed  true when the role was set or confirmed by hand in the worksheet
- */
-
-/**
- * Ein Diagrammvorschlag.
+ * Ein Diagrammvorschlag als Karte der Galerie, mit übersetzten Texten.
  *
  * @typedef {object} Suggestion
  * @property {string} type  chart type, the value pickChart accepts
@@ -95,7 +78,7 @@ export default createModule({
       returns: object({ instanceId: text(), moduleId: text() }, { nullable: true }),
       run() {
         const { cols, shown } = this.snapshot(this.model.columns);
-        const prefill = this.prefillFor(shown, cols);
+        const prefill = prefillFor(this.model.columns, shown, cols);
         if (!prefill) return null;
         return openInstance(this._ui.services, { moduleId: prefill.target, state: prefill.state });
       },
@@ -123,45 +106,6 @@ export default createModule({
       },
 
       computed: {
-        /**
-         * Die gewählten Spalten mit Rolle und Quelle; null ohne auflösbare Spalte.
-         * @returns {Selection|null}
-         */
-        selection() {
-          const cols = this.liveColumns;
-          if (cols.length === 0) return null;
-          const first = this.model.columns[0];
-          return {
-            sourceInstanceId: first.instanceId,
-            sourceSheetId: first.sheetId ?? '',
-            columns: cols.map((/** @type {any} */ c) => ({ id: c.id, name: c.name, role: c.role, roleConfirmed: c.roleConfirmed })),
-          };
-        },
-        /**
-         * Die passenden Diagramme in Rangfolge, übersetzt.
-         * @returns {Suggestion[]}
-         */
-        suggestions() {
-          return getSuggestionsFor(this.liveColumns).map((s) => ({
-            type: s.type,
-            title: this.t(`charts.${s.i18nKey}`),
-            notes: s.notesKey ? this.t(`notes.${s.notesKey}`) : '',
-          }));
-        },
-        /**
-         * Die gezeigte Wahl: die des Nutzers, wenn vorgeschlagen, sonst der Spitzenreiter.
-         * @returns {string|null}
-         */
-        selectedChartType() {
-          return Array.isArray(this.suggestions) ? shownType(this.suggestions, this.model.pick) : null;
-        },
-        /**
-         * Das Modul, das openInModule anlegt, oder null.
-         * @returns {string|null}
-         */
-        openTarget() {
-          return this.prefillFor(this.selectedChartType, this.liveColumns)?.target ?? null;
-        },
         /**
          * Die Spalten, die setColumns annimmt.
          * @returns {{ key: string, name: string }[]}
@@ -196,16 +140,6 @@ export default createModule({
       },
       /** Schlüssel der wählbaren Spalten. @returns {string[]} */
       pickableKeys() { return ctx.data.columns().map((c) => c.key); },
-      /**
-       * Vorbelegung des Zielmoduls für einen Typ und die gewählten Spalten, oder null.
-       * @param {string|null} type @param {import('../domain/columns.js').LiveColumn[]} cols
-       * @returns {{ target: string, state: object }|null}
-       */
-      prefillFor(type, cols) {
-        const first = this.model.columns[0];
-        if (!first) return null;
-        return buildPrefill(type, cols, first.instanceId, first.sheetId ?? '');
-      },
       /** Texte der Vorschau; `previewUnavailable` behält `{type}` (die Domäne setzt ihn ein). */
       get labels() {
         return {
@@ -218,7 +152,19 @@ export default createModule({
       },
 
       // ─── Galerie ──────────────────────────────────────────
-      get hasSuggestions() { return Array.isArray(this.suggestions) && this.suggestions.length > 0; },
+      /**
+       * Die Vorschläge mit übersetztem Titel und Hinweis, in Rangfolge.
+       * @returns {Suggestion[]}
+       */
+      get suggestionCards() {
+        if (!Array.isArray(this.suggestions)) return [];
+        return this.suggestions.map((/** @type {{ chartType: string, titleKey: string, noteKey: string|null, vars: Record<string, string|number> }} */ s) => ({
+          type: s.chartType,
+          title: this.t(s.titleKey, s.vars),
+          notes: s.noteKey ? this.t(s.noteKey, s.vars) : '',
+        }));
+      },
+      get hasSuggestions() { return this.suggestionCards.length > 0; },
       get emptyText() { return this.t(this.selection ? 'emptyStateNoMatch' : 'emptyStateNoSelection'); },
       get selectionColumns() { return this.selection && Array.isArray(this.selection.columns) ? this.selection.columns : []; },
       get selectionLabel() { return this.t('selectionLabel', { n: this.selectionColumns.length }); },
@@ -234,7 +180,7 @@ export default createModule({
       // ─── Vorschau ─────────────────────────────────────────
       /** Der gezeigte Vorschlag, oder null. */
       get shownSuggestion() {
-        return this.hasSuggestions ? (this.suggestions.find((/** @type {Suggestion} */ s) => s.type === this.selectedChartType) ?? null) : null;
+        return this.suggestionCards.find((s) => s.type === this.selectedChartType) ?? null;
       },
       get previewTitle() { return this.shownSuggestion?.title ?? ''; },
       get previewNotes() { return this.shownSuggestion?.notes ?? ''; },

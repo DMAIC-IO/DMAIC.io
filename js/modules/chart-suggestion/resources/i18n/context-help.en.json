@@ -63,10 +63,12 @@
       "role": "The role that drives the ranking: continuous, categorical, ordinal or date.",
       "roleConfirmed": "true when the role was set or confirmed in the worksheet, by hand or through its setColumnRole; false for an automatically detected role."
     },
-    "Suggestion": {
-      "type": "The chart type; the same value goes to pickChart.",
-      "title": "The title of the suggestion in the active language.",
-      "notes": "The note on the suggestion in the active language, or '' without one."
+    "SuggestionEntry": {
+      "chartType": "The chart type; the same value goes to pickChart.",
+      "score": "The rank score of the suggestion; higher ranks first.",
+      "titleKey": "The translation key of the title; the user interface shows it in the active language.",
+      "noteKey": "The translation key of the note, or null without one.",
+      "vars": "The values for the placeholders in the title and the note."
     },
     "AgentRead": {
       "selection": "The selected columns with their roles and the sheet they come from. The values stay in the worksheet.",

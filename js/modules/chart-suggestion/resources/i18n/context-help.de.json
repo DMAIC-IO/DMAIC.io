@@ -63,10 +63,12 @@
       "role": "Die Rolle, die die Rangliste steuert: continuous (stetig), categorical (kategorial), ordinal oder date (Datum).",
       "roleConfirmed": "true, wenn die Rolle in der Datensammlung von Hand oder über deren setColumnRole gesetzt oder bestätigt ist; false bei einer automatisch erkannten Rolle."
     },
-    "Suggestion": {
-      "type": "Der Diagrammtyp; derselbe Wert geht an pickChart.",
-      "title": "Der Titel des Vorschlags in der aktiven Sprache.",
-      "notes": "Der Hinweis zum Vorschlag in der aktiven Sprache, oder '' ohne Hinweis."
+    "SuggestionEntry": {
+      "chartType": "Der Diagrammtyp; derselbe Wert geht an pickChart.",
+      "score": "Die Rangzahl des Vorschlags; höher steht weiter oben.",
+      "titleKey": "Der Übersetzungsschlüssel des Titels; die Oberfläche zeigt ihn in der aktiven Sprache.",
+      "noteKey": "Der Übersetzungsschlüssel des Hinweises, oder null ohne Hinweis.",
+      "vars": "Die Werte für die Platzhalter in Titel und Hinweis."
     },
     "AgentRead": {
       "selection": "Die gewählten Spalten mit ihrer Rolle und das Blatt, aus dem sie stammen.",

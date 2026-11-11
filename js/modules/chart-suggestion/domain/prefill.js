@@ -194,3 +194,16 @@ export function buildPrefill(type, cols, sourceInstanceId, sourceSheetId) {
   if (!sourceInstanceId || !sourceSheetId) return null;
   return fn(cols || [], sourceInstanceId, sourceSheetId);
 }
+
+/**
+ * Vorbelegung des Zielmoduls für einen Typ und die gewählten Bezüge, oder null ohne Bezug.
+ * @param {Array<{ instanceId: string, sheetId?: string, columnId: string }>} refs die gewählten Spaltenbezüge (der erste gibt die Quelle)
+ * @param {string|null} type
+ * @param {Array<{ id: string, role: string }>} cols
+ * @returns {{ target: string, state: object }|null}
+ */
+export function prefillFor(refs, type, cols) {
+  const first = refs[0];
+  if (!first) return null;
+  return buildPrefill(type, cols, first.instanceId, first.sheetId ?? '');
+}
