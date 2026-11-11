@@ -10,7 +10,11 @@
 
   Erwartet im Scope:
     step, i          — Schritt und sein Index aus dem x-for der Kette
-    model            — Model mit den Kommandos setExpanded, addSubstep, removeSubstep
+    model            — Model mit view.expanded und den Kommandos setExpanded,
+                       addSubstep, removeSubstep
+  Die folgenden Glieder liefert substepsView() aus
+  core/flowchart/substeps-view.js; das Modul breitet sie in seinem
+  view-Block aus (...substepsView()):
     isExpanded(id)         — steht die id im Ansichtsfeld expanded? (x-if, x-show)
     substepsBarClass(step) — Klasse der Leiste: 'fc-substeps-bar--has', wenn der
                              Schritt Unterschritte hat, sonst ''
@@ -19,8 +23,8 @@
     ariaExpanded(id)       — 'true' bzw. 'false' für aria-expanded
     substepsBarLabel(step) — "Detail-Schritte (2)", ohne Unterschritte ohne Zahl
     substepNum(i, j)       — Nummer des Unterschritts ("2.3")
-    t()                    — Übersetzungen des Moduls: substepPlaceholder,
-                             addSubstep, substepGrip
+  Dazu t() mit den Schlüsseln des Moduls substepsLabel (für die Leiste),
+  substepPlaceholder, addSubstep, substepGrip.
 
   Hilfe-Anker setzen die Direktiven aus der Modul-id der Komponente:
   x-command an der Leiste und am Anlegen-Knopf
