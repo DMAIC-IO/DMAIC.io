@@ -11,12 +11,13 @@ import {
   uid, clamp, parseNumeric, formatGridNumber, formatGridLossless,
   COLUMN_TYPES, isNumericType, formatCellValue, renderColTypeBadge,
   parseCellInput, detectInputType, analyzeColumn,
-  DATE_FORMATS, TIME_FORMATS, detectDelimiter, parseCSVRecords,
+  DATE_FORMATS, TIME_FORMATS,
 } from './datagrid-utils.js';
 import {
   ROLE, ALL_ROLES, inferRole, defaultRoleForType, isRoleValidForType, validRolesForType,
 } from './datagrid-roles.js';
 import { detectColumnType } from '../parser/column-types.js';
+import { parseCsvText } from '../parser/csv.js';
 import { shortcutRegistry } from '../shortcut-registry.js';
 import { h } from '../dom.js';
 import { decimalSeparator } from '../number-format.js';
@@ -3451,44 +3452,21 @@ export class DataGrid {
    * @returns {{ columns: number, rows: number }} was importiert wurde
    */
   importCSVText(text, label = 'CSV') {
-    const rows = parseCSVRecords(text, this._detectDelimiter(text));
-    if (rows.length === 0) return { columns: 0, rows: 0 };
-
-    const first = rows[0];
-    const rest = rows.slice(1);
-    let hasHeader = false;
-    if (rest.length > 0) {
-      const firstNumeric = first.every(v => parseNumeric(v) !== null);
-      if (!firstNumeric) hasHeader = true;
+    let sheet;
+    try {
+      sheet = parseCsvText(text, { hasHeader: 'auto' }).sheets[0];
+    } catch (e) {
+      if (e && e.code === 'errCsvEmpty') return { columns: 0, rows: 0 };
+      throw e;
     }
-
-    // Direct import (no preview modal in module context — use context.dialog for that)
-    const header = hasHeader ? rows[0] : null;
-    const data = hasHeader ? rows.slice(1) : rows;
-    const numCols = Math.max(...rows.map(r => r.length));
 
     const oldColumns = this.columns.map(c => ({ ...c, values: [...c.values] }));
     const oldRowCount = this.rowCount;
 
-    const columns = [];
-    for (let c = 0; c < numCols; c++) {
-      const col = {
-        id: uid(),
-        name: header ? (header[c] || '').trim() : '',
-        shortName: `C${c + 1}`,
-        type: 'numeric',
-        unit: null,
-        values: data.map(row => {
-          const raw = (row[c] || '').trim();
-          if (raw === '') return null;
-          const n = parseNumeric(raw);
-          return n !== null ? n : raw;
-        }),
-        format: {},
-      };
-      this._autoDetectType(col);
-      columns.push(col);
-    }
+    const columns = sheet.columns.map(c => ({
+      id: uid(), name: c.name, shortName: c.shortName, type: c.type, unit: null, values: c.values, format: c.format,
+    }));
+    for (const col of columns) this._reinferRoleAfterTypeChange(col);
 
     this.setData(columns);
     // setData() clears the history stack unconditionally (it is also used to
@@ -3498,17 +3476,8 @@ export class DataGrid {
     // before setData() touched this.columns.
     this.history.push({ type: 'import', oldColumns, oldRowCount });
     this.metadata.source = 'csv-import';
-    this._toast(`${label}: ${columns.length} cols \u00D7 ${data.length} rows`, 'success');
-    return { columns: columns.length, rows: data.length };
-  }
-
-  /**
-   * Trennzeichen des CSV-Texts — delegiert an {@link detectDelimiter}.
-   * @param {string} text
-   * @returns {string}
-   */
-  _detectDelimiter(text) {
-    return detectDelimiter(text);
+    this._toast(`${label}: ${columns.length} cols \u00D7 ${sheet.rowCount} rows`, 'success');
+    return { columns: columns.length, rows: sheet.rowCount };
   }
 
   // ═══════════════════════════════════════════════════════════

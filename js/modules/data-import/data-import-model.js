@@ -11,6 +11,7 @@
  */
 
 import { ChunkLoadError } from '../../core/chunks.js';
+import { CSV_PRESETS } from '../../core/parser/csv.js';
 
 /** Default CSV/TSV parser options. */
 export const DEFAULT_CSV_OPTIONS = {
@@ -45,19 +46,7 @@ export const OPTION_LABEL_KEYS = {
   'utf-8': 'enc_utf8', 'windows-1252': 'enc_windows1252', 'iso-8859-1': 'enc_latin1',
 };
 
-/**
- * CMM preset profiles. Each preset is a one-click set of default CSV options
- * tuned to a common metrology export format. The values are best-guess
- * starting points — exact metadata-row counts and delimiters vary between
- * software versions and customer templates, so users can always tweak the
- * individual options afterwards (delimiter, encoding, skipRows, hasHeader).
- */
-export const CSV_PRESETS = {
-  generic:               { delimiter: 'auto',      encoding: 'utf-8',        skipRows: 0, hasHeader: true },
-  'zeiss-calypso':       { delimiter: 'semicolon', encoding: 'windows-1252', skipRows: 4, hasHeader: true },
-  'hexagon-pcdmis':      { delimiter: 'comma',     encoding: 'utf-8',        skipRows: 4, hasHeader: true },
-  'mitutoyo-measurlink': { delimiter: 'comma',     encoding: 'utf-8',        skipRows: 0, hasHeader: true },
-};
+export { CSV_PRESETS };
 
 /** Clamp a skipRows value to a non-negative integer (NaN → 0). */
 export function clampSkipRows(value) {

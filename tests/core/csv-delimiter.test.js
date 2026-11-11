@@ -1,10 +1,11 @@
 /**
- * Tests für detectDelimiter und parseCSVRecords (datagrid-utils.js) —
+ * Tests für detectDelimiter und readCsvRecords (core/parser/csv.js) —
  * Trennzeichenerkennung und quote-aware Zerlegung für den CSV-Import im
  * Worksheet und im Datenimport. DOM-frei, läuft auch im node-Runner.
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
-import { detectDelimiter, parseCSVRecords, formatCellValue, formatGridNumber, parseNumeric, parseCellInput } from '../../js/core/datagrid/datagrid-utils.js';
+import { detectDelimiter, readCsvRecords } from '../../js/core/parser/csv.js';
+import { formatCellValue, formatGridNumber, parseNumeric, parseCellInput } from '../../js/core/datagrid/datagrid-utils.js';
 
 suite('detectDelimiter', () => {
   const cases = [
@@ -27,7 +28,7 @@ suite('detectDelimiter', () => {
   test('eine Spalte mit Dezimalkomma ergibt eine Spalte', () => {
     const text = 'Wert\n1,5\n2,5\n3,5\n';
     const delim = detectDelimiter(text);
-    const rows = parseCSVRecords(text, delim);
+    const rows = readCsvRecords(text, { delimiter: delim });
     assertEqual(rows.every(r => r.length === 1), true);
   });
 
@@ -38,24 +39,24 @@ suite('detectDelimiter', () => {
   });
 });
 
-suite('parseCSVRecords', () => {
+suite('readCsvRecords', () => {
   test('Mehrzeilen-Feld in Anführungszeichen bleibt ein Feld', () => {
-    const rows = parseCSVRecords('A;B\n"Zeile 1\nZeile 2";2\n', ';');
+    const rows = readCsvRecords('A;B\n"Zeile 1\nZeile 2";2\n', { delimiter: ';' });
     assertDeepEqual(rows, [['A', 'B'], ['Zeile 1\nZeile 2', '2']]);
   });
 
   test('CRLF und CR trennen Datensätze, "" ist ein escaptes Anführungszeichen', () => {
-    const rows = parseCSVRecords('A,B\r\n"x ""y""",1\r2,3', ',');
+    const rows = readCsvRecords('A,B\r\n"x ""y""",1\r2,3', { delimiter: ',' });
     assertDeepEqual(rows, [['A', 'B'], ['x "y"', '1'], ['2', '3']]);
   });
 
   test('leere Zeilen werden übersprungen, BOM entfernt', () => {
-    const rows = parseCSVRecords('﻿A\n\n  \n1\n', ',');
+    const rows = readCsvRecords('﻿A\n\n  \n1\n', { delimiter: ',' });
     assertDeepEqual(rows, [['A'], ['1']]);
   });
 
   test('ein " mitten im Feld ist ein Literalzeichen (RFC 4180)', () => {
-    const rows = parseCSVRecords('A;B\n12" Rohr;3\nx;4', ';');
+    const rows = readCsvRecords('A;B\n12" Rohr;3\nx;4', { delimiter: ';' });
     assertDeepEqual(rows, [['A', 'B'], ['12" Rohr', '3'], ['x', '4']]);
   });
 
@@ -89,9 +90,9 @@ suite('Datentabelle — Zahlen nach App-Sprache anzeigen und lesen', () => {
 });
 
 suite('sep=-Zeile', () => {
-  test('detectDelimiter und parseCSVRecords lesen und überspringen sie', () => {
+  test('detectDelimiter und readCsvRecords lesen und überspringen sie', () => {
     const t = 'sep=;\r\na;b\r\n1,5;2\r\n';
     assertEqual(detectDelimiter(t), ';');
-    assertDeepEqual(parseCSVRecords(t, ';'), [['a', 'b'], ['1,5', '2']]);
+    assertDeepEqual(readCsvRecords(t, { delimiter: ';' }), [['a', 'b'], ['1,5', '2']]);
   });
 });
