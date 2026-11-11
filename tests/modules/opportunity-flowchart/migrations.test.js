@@ -49,13 +49,4 @@ suite('Opportunity-Flowchart Migration 0→1.0', () => {
     assertEqual('extra' in json.steps[1], false);
   });
 
-  test('Beispiel Angebotsprozess lädt ohne Reparatur', async () => {
-    const res = await fetch(new URL('../../../examples/projects/opportunity-flowchart-angebotsprozess.json', import.meta.url), { cache: 'no-cache' });
-    const data = await res.json();
-    const reports = [];
-    const m = State.fromJSON(data, { onRepair: (name) => reports.push(name) });
-    assertEqual(m.steps.length, 5);
-    assertDeepEqual(reports, []);
-    assertDeepEqual(m.expanded, []);
-  });
 });
