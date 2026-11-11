@@ -53,7 +53,13 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
     const items = stateManager.get(`phases.${phase}`) ?? [];
     const record = items.find(i => i.instanceId === instanceId);
     if (!record) return null;
-    return { instanceId, module: record.moduleId, phase };
+    return { instanceId, module: record.moduleId, phase, record };
+  }
+
+  /** `locate` ohne den Datensatz — die Form, die der Host nach außen gibt. */
+  function locatePublic(instanceId) {
+    const found = locate(instanceId);
+    return found ? { instanceId: found.instanceId, module: found.module, phase: found.phase } : null;
   }
 
   /**
@@ -84,11 +90,11 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
     getCurrentView() {
       const info = workspace.getActiveModuleInfo();
       if (!info) return null;
-      return locate(info.instanceId);
+      return locatePublic(info.instanceId);
     },
 
     async openInstance(instanceId) {
-      const found = locate(instanceId);
+      const found = locatePublic(instanceId);
       if (!found) return null;
       await router.navigate({
         kind: 'module',
@@ -126,12 +132,11 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
       if (!instanceIds?.length) return;
       const first = instanceIds[0];
       let message;
-      if (instanceIds.length === 1) {
-        const found = locate(first);
-        const record = (stateManager.get(`phases.${found?.phase}`) ?? []).find(i => i.instanceId === first);
-        const module = i18n.t(`modules.${found?.module}.name`);
-        message = record?.customName
-          ? i18n.t('agent.backgroundChange.one', { module, name: record.customName })
+      const found = instanceIds.length === 1 ? locate(first) : null;
+      if (found) {
+        const module = i18n.t(`modules.${found.module}.name`);
+        message = found.record.customName
+          ? i18n.t('agent.backgroundChange.one', { module, name: found.record.customName })
           : i18n.t('agent.backgroundChange.oneUnnamed', { module });
       } else {
         message = i18n.t('agent.backgroundChange.many', { n: instanceIds.length });

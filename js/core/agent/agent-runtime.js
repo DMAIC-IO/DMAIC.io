@@ -210,8 +210,13 @@ export function createAgentRuntime(deps) {
    * @param {string[]} ids
    */
   function notifyBackground(ids) {
-    const hidden = ids.filter(id => !host.isDisplayed?.(id));
-    if (hidden.length > 0) host.notifyBackgroundChange?.(hidden);
+    // Ein Toast darf das Ergebnis eines schon angewandten Stapels nie kippen.
+    try {
+      const hidden = ids.filter(id => !host.isDisplayed?.(id));
+      if (hidden.length > 0) host.notifyBackgroundChange?.(hidden);
+    } catch (err) {
+      console.warn('[agent] background-change toast failed', err);
+    }
   }
 
   /**

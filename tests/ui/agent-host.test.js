@@ -301,7 +301,7 @@ suite('agent host — gemountet und angezeigt', () => {
 });
 
 suite('agent host — Toast für Änderungen im Hintergrund', () => {
-  function withToast(phases, customName) {
+  function withToast(phases) {
     const toasts = [];
     const made = makeHost({
       phases,
@@ -341,6 +341,13 @@ suite('agent host — Toast für Änderungen im Hintergrund', () => {
     host.notifyBackgroundChange(['fw-1', 'x']);
     assertEqual(toasts[0].opts.action.label, 'agent.backgroundChange.show|{}');
     await toasts[0].opts.action.onClick();
-    assertTrue(calls.some(c => c[0] === 'navigate'), JSON.stringify(calls));
+    assertDeepEqual(calls.filter(c => c[0] === 'navigate').at(-1),
+      ['navigate', { kind: 'module', projectId: 'p-1', instanceId: 'fw-1' }]);
+  });
+
+  test('eine entfernte Instanz: many statt Abfrage auf phases.undefined', () => {
+    const { host, toasts } = withToast();
+    host.notifyBackgroundChange(['weg']);
+    assertEqual(toasts[0].msg, 'agent.backgroundChange.many|{"n":1}');
   });
 });

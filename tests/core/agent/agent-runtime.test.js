@@ -65,7 +65,7 @@ function makeRuntime({ denied = false, viewmodel = null, completed = false, slow
                       getHelp = async () => null, stateManager: stateManagerOverrides,
                       registry: registryOverrides, primed = true, instances = [], defaultRevisions = false,
                       onSettle = () => {}, instancesService, isMounted = () => true,
-                      displayed = () => false } = {}) {
+                      displayed = () => false, notifyThrows = false } = {}) {
   const notified = [];
   const log = [];
   const settles = [];
@@ -136,7 +136,7 @@ function makeRuntime({ denied = false, viewmodel = null, completed = false, slow
       settle: async (id) => { settles.push(id ?? null); onSettle(id); },
       isMounted: (id) => isMounted(id),
       isDisplayed: (id) => displayed(id),
-      notifyBackgroundChange: (ids) => { notified.push(ids); },
+      notifyBackgroundChange: (ids) => { if (notifyThrows) throw new Error('toast'); notified.push(ids); },
     },
   });
   return { runtime, log, settles, notified, phases, revs, bumpStructure: () => { structureRev += 1; } };
@@ -1566,5 +1566,25 @@ suite('agent runtime — Toast für Änderungen im Hintergrund', () => {
     const { runtime, notified } = make({ completed: true });
     await runtime.interact([write('ws-1')]);
     assertDeepEqual(notified, []);
+  });
+
+  test('ein werfender Toast lässt das Ergebnis des Stapels unberührt', async () => {
+    const { runtime } = makeRuntime({
+      instances: [ws(1)], viewmodel: { read: () => ({}), importCsv: () => true },
+      notifyThrows: true,
+    });
+    const origWarn = console.warn;
+    console.warn = () => {};
+    let out;
+    try { out = await runtime.interact([write('ws-1')]); } finally { console.warn = origWarn; }
+    assertEqual(out.ok, true);
+    assertEqual(out.results.length, 1);
+  });
+
+  test('flush_failed meldet die schon geänderten Instanzen trotzdem', async () => {
+    const { runtime, notified } = make({ stateManager: { flushNow: async () => { throw new Error('quota'); } } });
+    const out = await runtime.interact([write('ws-1')]);
+    assertEqual(out.error, 'flush_failed');
+    assertDeepEqual(notified, [['ws-1']]);
   });
 });
