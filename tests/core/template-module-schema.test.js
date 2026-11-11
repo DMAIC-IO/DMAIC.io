@@ -527,4 +527,32 @@ suite('createModule mit Schema-Model — gelöste Hülle', () => {
     assertEqual(container.querySelector('.st-title').textContent, 'neu');
     assertEqual(persisted.slice(before).some(([, s]) => s?.title === 'alt'), false, 'der alte Stand wird nie gespeichert');
   });
+
+  test('nie eingehängt (Einhängung ohne Dokument): setState bleibt lebendig, getState liefert den neuen Stand', async () => {
+    ensureTemplate();
+    const store = new Map([['hl-1', { title: 'alt', columns: { a: [], b: [] }, mode: 'week' }]]);
+    const ctx = {
+      instanceId: 'hl-1',
+      stateManager: {
+        getModuleState: (id) => store.get(id) ?? null,
+        setModuleState: (id, s) => { store.set(id, s); },
+      },
+      i18n: { t: k => k, tf: () => k => k, getLanguage: () => 'de' },
+      eventBus: { on: () => {}, off: () => {}, emit: () => {} },
+      theme: 'light',
+      language: 'de',
+    };
+    const mod = makeModule();
+    const container = document.createElement('div');   // nie im Dokument
+    await mod.init(container, ctx);
+    await flush();
+    assertEqual(mod.getState().title, 'alt');
+    mod.setState({ title: 'gesetzt', columns: { a: [], b: [] }, mode: 'week' });
+    // Altmodule speichern nach setState noch einmal `getState()` — ein null
+    // hier löschte den eben gesetzten Stand.
+    assertEqual(mod.getState()?.title, 'gesetzt', 'getState liefert den gesetzten Stand');
+    mod._context.stateManager.setModuleState('hl-1', mod.getState());
+    assertEqual(store.get('hl-1')?.title, 'gesetzt', 'der Stand bleibt gespeichert');
+    await mod.destroy();
+  });
 });

@@ -163,6 +163,22 @@ function idleTaskStatus(defs) {
 }
 
 /**
+ * Wird die Hülle nach einem Neuaufbau wieder belebt? Ja, wenn sie im Dokument
+ * hängt oder ihre Komponente noch lebt — eine Einhängung ohne Dokument (etwa
+ * beim Laden von Beispielen im Hintergrund) war nie eingehängt und behält ihr
+ * Model. Nein für eine gelöste Hülle (Instanz einer anderen Phase): Alpine hat
+ * ihre Komponente beim Lösen abgeräumt.
+ * @param {HTMLElement} container
+ * @returns {boolean}
+ */
+function keepsAlive(container) {
+  if (container.isConnected) return true;
+  const root = container.querySelector('[x-data]');
+  if (!root) return false;
+  try { return Boolean(Alpine.$data(root)?.model); } catch { return false; }
+}
+
+/**
  * Die Zellfunktionen der `derived`-Einträge eines Viewmodels. Jeder Eintrag
  * rechnet auf `vm.model`; `d.<name>` liest die Zelle eines anderen. Ein Zyklus
  * und der Fehler eines gelesenen Eintrags werfen wie ohne Mount (`evaluateDerived`).
@@ -759,13 +775,14 @@ export function createModule(base) {
       if (alpine) {
         // Eine laufende Geste verlöre mit dem DOM ihren Griff und hielte die Sperre.
         this._gestureDetach.forEach((detach) => detach.cancel());
+        const revive = keepsAlive(this._container);
         Alpine.destroyTree(this._container);
         this._container.replaceChildren(...cloneForInstance(this._alpineName));
         // Eine gelöste Hülle (Instanz einer anderen Phase) bleibt unbelebt:
         // beim Wiedereinhängen baut Alpine sie aus dem gespeicherten Stand neu
         // auf. Belebt hielte sie ein altes Model, das beim nächsten Speichern
         // aller Instanzen einen inzwischen gespeicherten Stand überschriebe.
-        if (this._container.isConnected) Alpine.initTree(this._container);
+        if (revive) Alpine.initTree(this._container);
       }
     },
 
@@ -815,10 +832,11 @@ export function createModule(base) {
           return;
         }
         this._gestureDetach.forEach((detach) => detach.cancel());
+        const revive = keepsAlive(this._container);
         Alpine.destroyTree(this._container);
         this._container.replaceChildren(...cloneForInstance(this._alpineName));
         // Gelöste Hülle: gespeichert ist schon, das Wiedereinhängen lädt neu (wie onLanguageChange).
-        if (!this._container.isConnected) {
+        if (!revive) {
           if (this._tmpl) this._tmpl._state = model;
           return;
         }
