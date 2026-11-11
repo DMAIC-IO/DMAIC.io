@@ -28,7 +28,6 @@ export const K_OPTIONS = [6, 5.15];
 /** Zulässige Urteilsgrundlagen ('auto' = Toleranz, sobald beide Grenzen gesetzt sind). */
 export const VERDICT_BASES = ['auto', 'tolerance', 'studyVar'];
 
-
 /**
  * Das gerechnete Ergebnis (`analyze()` aus `engines/msa-typ2-engine.js`);
  * ohne Prüferspalte die Typ-3-Form mit derselben Schlüsselmenge. Lehnt die

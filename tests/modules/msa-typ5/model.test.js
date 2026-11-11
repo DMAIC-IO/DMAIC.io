@@ -4,7 +4,6 @@ import {
 } from '../../../js/modules/msa-typ5/domain/model.js';
 import { analyze } from '../../../js/engines/msa-typ5-engine.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
-import { readLevels, readAnalysis } from '../../../js/modules/msa-typ5/domain/read.js';
 
 const CTX = { cycle: 'dmaic', confidenceLevel: 95, power: 90 };
 const ref = (col) => ({ instanceId: 'ws1', sheetId: 's1', columnId: col });
@@ -153,12 +152,13 @@ suite('MSA Typ 5 Model — derived levels und analysis', () => {
     assertEqual(d.analysis, null);
   });
 
-  test('mit Spalten: Stufen und Analyse gleichen den Lesefunktionen', () => {
-    const m = model();
-    const d = evaluateDerived(m, data);
-    assertEqual(JSON.stringify(d.levels.all), JSON.stringify(['nok', 'ok']));
-    assertEqual(JSON.stringify(d.levels), JSON.stringify(readLevels(m, data)));
-    assert(d.analysis && d.analysis.verdict, 'Urteil vorhanden');
-    assertEqual(JSON.stringify(d.analysis), JSON.stringify(readAnalysis(m, data)));
+  test('mit Spalten: feste Stufen, Fleiss-κ 0,25 und Urteil „unacceptable“', () => {
+    const d = evaluateDerived(model(), data);
+    assertEqual(JSON.stringify(d.levels), JSON.stringify({ all: ['nok', 'ok'], positive: 'ok', negative: 'nok' }));
+    assertEqual(d.analysis.meta.parts, 6);
+    assertEqual(d.analysis.meta.appraisers, 2);
+    assert(Math.abs(d.analysis.betweenAppraisers.fleissKappa.kappa - 0.25) < 1e-9, 'κ = 0,25');
+    assertEqual(d.analysis.overall.betweenAppraisers.rate.toFixed(4), '0.3333');
+    assertEqual(d.analysis.verdict.level, 'unacceptable');
   });
 });

@@ -1,8 +1,7 @@
 /**
  * D.Mike — MSA Typ 5: Bausteine des Viewmodels ohne DOM.
  *
- * Die Ableitungen aus Model und Arbeitsblatt (Stufen, Zeilen, Analyse), die
- * Meldungs- und Tabellentexte, die Konfiguration der Diagramm-Widgets und das
+ * Die Meldungs- und Tabellentexte, die Konfiguration der Diagramm-Widgets und das
  * Kommando zum Tausch der positiven Stufe. Alles rein: Eingaben sind Model,
  * `ctx.data`, das Ergebnis der Engine, der Übersetzer `t` und die App-Sprache.
  */
@@ -37,7 +36,7 @@ const orNull = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
 /** @param {string} s @returns {string} erster Buchstabe groß */
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
-// ── Ableitungen aus Model und Arbeitsblatt ─────────────────────
+// ── Ergebnis und Meldungen ─────────────────────────────────────
 
 /**
  * Das Ergebnis, wenn die Analyse eines hat.

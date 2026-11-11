@@ -35,7 +35,6 @@ export const ALPHA_OPTIONS = [0.01, 0.05, 0.1];
 /** @param {{ instanceId: string, sheetId: string, columnId: string }} r @returns {string} */
 const key = (r) => `${r.instanceId}|${r.sheetId}|${r.columnId}`;
 
-
 /**
  * Die Stufen der Bewertungen aus den Rohwerten der Bewertungsspalte(n).
  *
