@@ -19,6 +19,21 @@ suite('Opportunity-Flowchart Migration 0→1.0', () => {
     assertDeepEqual(out.steps[1], { id: 'o2', title: '', description: '', side: 'va', substeps: [] });
   });
 
+  test('from0: Schritte und Unterschritte ohne id bekommen eindeutige Ersatz-ids', () => {
+    const out = from0({ steps: [
+      { title: 'A', substeps: [{ title: 'x' }, { title: 'y' }] },
+      { title: 'B' },
+      { id: 's0m0', title: 'C' },
+    ] });
+    const ids = out.steps.map((x) => x.id);
+    assertEqual(new Set(ids).size, 3);
+    assertEqual(out.steps[2].id, 's0m0');
+    assertEqual(State.fromJSON({ steps: out.steps, expanded: [] }).steps.length, 3);
+    const subs = out.steps[0].substeps.map((x) => x.id);
+    assertEqual(new Set(subs).size, 2);
+    assertEqual(State.fromJSON({ steps: [{ title: 'A' }, { title: 'B' }] }).steps.length, 2);
+  });
+
   test('fromJSON hebt den Altstand: _schema, expanded, strikt geladen', () => {
     const m = State.fromJSON(legacy());
     const json = m.toJSON();

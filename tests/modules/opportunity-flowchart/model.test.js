@@ -135,3 +135,9 @@ suite('Opportunity-Flowchart Model — Reparatur beim Laden', () => {
     assertDeepEqual(m.expanded, ['a']);
   });
 });
+
+suite('Opportunity-Flowchart Model — Invariantennamen', () => {
+  test('die drei Invarianten heißen uniqueStepIds, uniqueSubstepIds, validExpanded', () => {
+    assertDeepEqual(Object.keys(State.schema.invariants), ['uniqueStepIds', 'uniqueSubstepIds', 'validExpanded']);
+  });
+});

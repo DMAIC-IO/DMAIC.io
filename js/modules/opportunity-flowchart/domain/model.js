@@ -63,7 +63,7 @@ export class State extends defineModel({
         for (const s of m._v.steps) s.substeps = firstById(s.substeps);
       },
     },
-    knownExpanded: {
+    validExpanded: {
       fields: ['expanded'],
       test(m) {
         const ids = new Set(m.steps.map((s) => s.id));
