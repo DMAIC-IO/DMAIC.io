@@ -14,7 +14,8 @@
  *
  * 🔴 EVENT CONTRACT IS FROZEN. Emits `worksheet:dataChanged` (debounced ~150ms),
  *    `chart-suggestion:load`, `module:added`, `module:activated`. Listens to
- *    `worksheet:appendColumn`. Same payload shapes as the legacy module.
+ *    `worksheet:writeColumns` (the write plan of `core/worksheet-write.js`) and
+ *    still `worksheet:appendColumn` (one column, legacy payload).
  *
  * @agent  Vollständig über das Viewmodel steuerbar: CSV-Import, Zellblöcke
  *   und Formeln schreiben, Spalten anlegen, umbenennen und entfernen,
@@ -42,6 +43,7 @@ import { icon } from '../../core/icon.js';
 import { uid } from '../../core/uid.js';
 import { debounce } from '../../core/debounce.js';
 import { applyAppendColumn } from '../../core/worksheet-append.js';
+import { applyWriteColumn, defaultColumnFormat, retypeForWrite } from '../../core/worksheet-write.js';
 
 /**
  * Format-Schlüssel, die die Oberfläche setzt — genau die Auswahl des
@@ -503,6 +505,7 @@ const mod = createModule({
       _boundKeyDown: null,
       _onDocClick: null,
       _onAppendColumn: null,
+      _onWriteColumns: null,
       _autoSave: null,
       _persistAndNotify: null,
       /** Ein Grid-Ereignis wartet im Entpreller `_persistAndNotify`. */
@@ -1795,6 +1798,11 @@ const mod = createModule({
         context.eventBus.on('worksheet:appendColumn', this._onAppendColumn);
         this._unsubs.push(() => context.eventBus.off('worksheet:appendColumn', this._onAppendColumn));
 
+        // ── External write plans ──
+        this._onWriteColumns = (payload) => this._handleWriteColumns(payload);
+        context.eventBus.on('worksheet:writeColumns', this._onWriteColumns);
+        this._unsubs.push(() => context.eventBus.off('worksheet:writeColumns', this._onWriteColumns));
+
         // ── Formula-editor expand hint on "=" / formula edit start ──
         this._grid.on('edit:start', ({ colIdx, rowIdx, initialChar, formula }) => {
           if (initialChar === '=' || formula) {
@@ -1822,6 +1830,73 @@ const mod = createModule({
         this._formulaEditor = null;
         module._grid = null;
         module._formulaEditor = null;
+      },
+
+      // ── writeColumns handler ─────────────────────────────────
+      /**
+       * Einen Schreibplan (`core/worksheet-write.js`) ganz oder gar nicht
+       * schreiben. Erst werden alle Schritte geprüft, dann geschrieben,
+       * dann einmal gespeichert und `worksheet:dataChanged` gemeldet.
+       * `reply` quittiert synchron mit `{ ok: true, columnIds }` oder
+       * `{ ok: false, reason }`.
+       * @noagent event handler; agents write through the worksheet's own actions
+       * @param {{ instanceId: string, sheetId: string, ops: object[], reply?: Function }} payload
+       */
+      _handleWriteColumns({ instanceId, sheetId, ops, reply }) {
+        const context = module._context;
+        if (instanceId !== context.instanceId) return;
+
+        const sheet = this.model.sheets.find(s => s.id === sheetId);
+        if (!sheet) { reply?.({ ok: false, reason: 'unknown_sheet' }); return; }
+        const isActive = sheetId === this.model.activeSheetId;
+        const columns = isActive ? this._grid.columns : (sheet.state?.columns ?? []);
+        const missing = ops.some(op => op.to?.kind === 'column' && !columns.some(c => c.id === op.to.colId));
+        if (missing) { reply?.({ ok: false, reason: 'unknown_column' }); return; }
+
+        const columnIds = [];
+        if (isActive) {
+          for (const op of ops) {
+            const { to, name, values } = op;
+            const type = op.type ?? 'numeric';
+            let col = null;
+            if (to.kind === 'slot') col = this._grid.columns[to.slot] ?? null;
+            else if (to.kind === 'column') col = this._grid.columns.find(c => c.id === to.colId);
+            const needed = values.length - this._grid.rowCount;
+            if (!col) {
+              // `addColumn` legt den Undo-Eintrag `column-add` an.
+              col = this._grid.addColumn({ name, type, format: op.format ?? defaultColumnFormat(type, op.discrete) });
+              if (needed > 0) this._grid.addRows(needed);
+              for (let i = 0; i < values.length; i++) col.values[i] = values[i];
+            } else {
+              if (to.kind === 'slot' && name) col.name = name;
+              const next = retypeForWrite(op);
+              if (next) { col.type = next.type; col.format = next.format; }
+              if (needed > 0) this._grid.addRows(needed);
+              for (let i = 0; i < this._grid.rowCount; i++) {
+                col.values[i] = i < values.length ? values[i] : null;
+              }
+            }
+            columnIds.push(col.id);
+          }
+          this._grid.render();
+        } else {
+          this._syncActiveSheet();
+          let state = this.model.toJSON();
+          for (const op of ops) {
+            const res = applyWriteColumn(state, { ...op, sheetId });
+            if (!res.ok) { reply?.(res); return; }
+            state = res.state;
+            columnIds.push(res.colId);
+          }
+          sheet.state = state.sheets.find(s => s.id === sheetId).state;
+        }
+        reply?.({ ok: true, columnIds });
+
+        try {
+          this._syncActiveSheet();
+          context.stateManager.setModuleState(instanceId, this.model.toJSON());
+        } catch { /* ignore */ }
+        context.eventBus.emit('worksheet:dataChanged', { instanceId });
       },
 
       // ── appendColumn handler (FROZEN behaviour) ──────────────

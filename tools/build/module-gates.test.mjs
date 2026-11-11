@@ -161,7 +161,7 @@ const ex = (lines) => lines.map((l) => l.replaceAll('@/', ['..', '..', '..', '']
 test('uses: Worksheet-Nutzung verlangt uses worksheet', () => {
   const files = [
     { path: 'viewmodel/viewmodel.js', text: "import { createColumnPicker } from '@/ui/column-picker.js';\n" },
-    { path: 'io/handoff.js', text: "import { appendRows } from '@/core/worksheet-append.js';\n" },
+    { path: 'io/handoff.js', text: "import { worksheetWrite } from '@/core/worksheet-write.js';\n" },
     { path: 'viewmodel/events.js', text: "bus.on('worksheet:changed', f);\n" },
     { path: 'domain/model.js', text: "export const x = 'worksheets';\n" },
   ];

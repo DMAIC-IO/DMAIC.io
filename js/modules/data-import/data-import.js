@@ -13,13 +13,11 @@
  * parser receives the raw ArrayBuffer plus an opts object (filename and
  * format-specific options like delimiter / encoding).
  *
- * 🔴 CROSS-MODULE CONTRACT: `sendToWorksheet()` registers a new worksheet
- * instance in the host phase and emits `module:added` then, on the worksheet's
- * `module:activated`, one `worksheet:appendColumn` per imported column. The
- * event names, payload shapes and their order are preserved from the legacy
- * implementation; the column events now follow the awaited worksheet handoff
- * (`openNewWorksheet`) and so fire one microtask later than before — the E2E
- * asserts the worksheet receives the data.
+ * 🔴 CROSS-MODULE CONTRACT: `sendToWorksheet()` writes the chosen sheet as one
+ * write plan (`core/worksheet-write.js`) into a new worksheet: `module:added`,
+ * then on the worksheet's `module:activated` one `worksheet:writeColumns` with
+ * every column (type and format included). All or nothing — if the write
+ * fails, the new worksheet is removed again.
  *
  * @agent  Steuerbar über das Viewmodel: CSV- oder JSON-Text importieren
  *   (importText), Parser-Optionen setzen (setParam), ein Blatt wählen
@@ -31,7 +29,7 @@
  * XLSX / XLSM / XLS / ODS, JSON / NDJSON / JSONL, Q-DAS AQDEF (.dfq/.dfd/.dfx).
  */
 
-import { openNewWorksheet } from '../../core/worksheet-handoff.js';
+import { worksheetWrite, commitWorksheetWrite } from '../../core/worksheet-write.js';
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import {
@@ -544,24 +542,19 @@ export default createModule({
 
         const ctx = module._context;
         // Pre-name the sheet using the imported sheet's name, deduplicated.
-        const baseName = sheet.name || ctx.i18n.t('modules.worksheet.defaultSheetName');
+        // The first columns fill the worksheet's empty start columns, the rest append.
         const cols = sheet.columns;
-        const wsId = await openNewWorksheet(ctx, { sheetName: baseName });
-        // Map imported columns 0..N-1 onto the worksheet's default empty slots
-        // (C1..C5 from _initEmptyGrid). Any imports past slot 5 simply append.
-        for (let i = 0; i < cols.length; i++) {
-          const c = cols[i];
-          ctx.eventBus.emit('worksheet:appendColumn', {
-            instanceId: wsId,
-            sheetId: 'sheet_1',
-            colId: '__slot__',
-            slot: i,
+        let write = worksheetWrite()
+          .newWorksheet({ name: sheet.name || ctx.i18n.t('modules.worksheet.defaultSheetName') });
+        cols.forEach((c, i) => {
+          write = write.column({
             name: c.name || c.shortName || `C${i + 1}`,
+            type: c.type,
             values: c.values,
-            discrete: false,
-            type: c.type === 'text' ? 'text' : 'numeric',
+            format: c.format,
           });
-        }
+        });
+        const { instanceId: wsId } = await commitWorksheetWrite(ctx, write.build());
         ctx.notify(_t('sentToWorksheet', { count: cols.length }), 'success');
         return { instanceId: wsId };
       },

@@ -179,6 +179,7 @@ const SKIP = new Set([
   'modules/project-charter-richtext.test.js',
   'modules/project-charter.test.js',
   'modules/survey-runner-dom.test.js',
+  'modules/worksheet-write-receiver.test.js',
   'pages/cycle.test.js',
   'pages/settings.test.js',
   'pages/tile-render.test.js',

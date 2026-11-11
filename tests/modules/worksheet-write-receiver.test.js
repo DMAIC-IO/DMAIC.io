@@ -1,0 +1,137 @@
+/**
+ * Worksheet im Browser: der Empfänger von `worksheet:writeColumns` mit
+ * eingehängtem Grid (echtes Modul, Fake-Dienste, schlankes Template).
+ */
+import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
+import Alpine from '../../vendor/alpinejs/csp.js';
+import worksheetMod from '../../js/modules/worksheet/worksheet.js';
+
+// ─── Empfänger worksheet:writeColumns (eingehängtes Grid) ────────
+
+const WS_TPL_KEY = 'js/modules/worksheet/worksheet.html';
+const flush = () => new Promise((r) => setTimeout(r, 0));
+
+function ensureWorksheetTemplate() {
+  if (!Alpine.version) Alpine.start();
+  if (document.querySelector(`template[data-tpl="${WS_TPL_KEY}"]`)) return;
+  // Schlankes Gerüst mit den Ankern, die init() einhängt
+  const tpl = document.createElement('template');
+  tpl.setAttribute('data-tpl', WS_TPL_KEY);
+  tpl.innerHTML = '<section x-data="worksheet">'
+    + '<div class="datagrid" data-ref="grid-wrap"><div data-ref="dropzone"></div></div>'
+    + '<div data-ref="fe-holder"></div>'
+    + '</section>';
+  document.body.append(tpl);
+}
+
+/** Einen Worksheet `ws-w` mit einem Blatt aus fünf leeren Spalten einhängen. */
+async function mountWorksheet() {
+  ensureWorksheetTemplate();
+  const states = {};
+  const handlers = [];
+  const emitted = [];
+  const bus = {
+    on: (n, fn) => handlers.push([n, fn]),
+    off: (n, fn) => { const i = handlers.findIndex(([a, f]) => a === n && f === fn); if (i >= 0) handlers.splice(i, 1); },
+    emit: (n, p) => { emitted.push([n, p]); for (const [a, f] of [...handlers]) if (a === n) f(p); },
+  };
+  const context = {
+    instanceId: 'ws-w',
+    stateManager: {
+      getModuleState: (id) => states[id] ?? null,
+      setModuleState: (id, s) => { states[id] = s; },
+      getProjectCycle: () => 'dmaic',
+      get: (k) => ({ phases: { data: [] }, 'phases.data': [{ instanceId: 'ws-w', moduleId: 'worksheet' }] })[k],
+    },
+    i18n: { t: (k) => k, tf: () => (k) => k, getLanguage: () => 'de' },
+    eventBus: bus,
+    chartManager: { create: async () => ({}), update: () => {}, destroy: () => {} },
+    notify: () => {},
+    dialog: { confirm: async () => true, form: () => ({ close() {} }) },
+    theme: 'light',
+    language: 'de',
+  };
+  const container = document.createElement('div');
+  document.body.append(container);
+  const instance = Object.create(worksheetMod);
+  await instance.init(container, context);
+  await flush();
+  const vm = Alpine.$data(container.querySelector('[x-data]'));
+  vm._grid.setState({
+    columns: [0, 1, 2, 3, 4].map((i) => ({ id: `e${i}`, name: '', type: 'numeric', values: [null, null, null], format: { decimals: 6 } })),
+    rowCount: 3,
+  });
+  vm._grid.history.clear();
+  const sheetId = vm.model.activeSheetId;
+  return {
+    vm, bus, emitted, sheetId,
+    async unmount() { await instance.destroy(); container.remove(); },
+  };
+}
+
+suite('Worksheet — Empfänger worksheet:writeColumns', () => {
+  test('Datum, Währung und Anhang: Typen kommen an, genau ein column-add', async () => {
+    const w = await mountWorksheet();
+    try {
+      let answer = null;
+      const changedBefore = w.emitted.filter(([n]) => n === 'worksheet:dataChanged').length;
+      w.bus.emit('worksheet:writeColumns', {
+        instanceId: 'ws-w',
+        sheetId: w.sheetId,
+        ops: [
+          { to: { kind: 'slot', slot: 0 }, name: 'Tag', type: 'date', values: ['2026-01-01', '2026-01-02'] },
+          { to: { kind: 'slot', slot: 1 }, name: 'Preis', type: 'currency', values: [1.5, 2.25], format: { decimals: 2 } },
+          { to: { kind: 'append' }, name: 'Menge', type: 'numeric', values: [1, 2, 3, 4] },
+        ],
+        reply: (r) => { answer = r; },
+      });
+      assertEqual(answer?.ok, true);
+      const cols = w.vm._grid.columns;
+      assertEqual(cols.length, 6);
+      assertEqual(cols[0].type, 'date');
+      assertEqual(cols[0].name, 'Tag');
+      assertEqual(cols[1].type, 'currency');
+      assertDeepEqual(cols[1].format, { decimals: 2 });
+      assertEqual(cols[5].type, 'numeric');
+      assertEqual(cols[5].name, 'Menge');
+      assertDeepEqual(answer.columnIds, [cols[0].id, cols[1].id, cols[5].id]);
+      assertEqual(w.vm._grid.rowCount, 4);
+      const adds = w.vm._grid.history._stack.filter(a => a.type === 'column-add');
+      assertEqual(adds.length, 1);
+      assertEqual(w.emitted.filter(([n]) => n === 'worksheet:dataChanged').length - changedBefore, 1, 'genau ein dataChanged');
+    } finally { await w.unmount(); }
+  });
+
+  test('ein Plan mit unbekannter Spalte schreibt nichts', async () => {
+    const w = await mountWorksheet();
+    try {
+      const before = JSON.stringify(w.vm._grid.columns.map(c => [c.id, c.name, c.type, [...c.values]]));
+      let answer = null;
+      w.bus.emit('worksheet:writeColumns', {
+        instanceId: 'ws-w',
+        sheetId: w.sheetId,
+        ops: [
+          { to: { kind: 'slot', slot: 0 }, name: 'A', type: 'numeric', values: [9, 9] },
+          { to: { kind: 'column', colId: 'gibt-es-nicht' }, name: 'B', type: 'numeric', values: [1] },
+        ],
+        reply: (r) => { answer = r; },
+      });
+      assertDeepEqual(answer, { ok: false, reason: 'unknown_column' });
+      assertEqual(w.vm._grid.columns.length, 5);
+      assertEqual(JSON.stringify(w.vm._grid.columns.map(c => [c.id, c.name, c.type, [...c.values]])), before);
+    } finally { await w.unmount(); }
+  });
+
+  test('ein unbekanntes Blatt wird abgelehnt', async () => {
+    const w = await mountWorksheet();
+    try {
+      let answer = null;
+      w.bus.emit('worksheet:writeColumns', {
+        instanceId: 'ws-w', sheetId: 'weg', ops: [{ to: { kind: 'append' }, name: 'A', type: 'numeric', values: [1] }],
+        reply: (r) => { answer = r; },
+      });
+      assertDeepEqual(answer, { ok: false, reason: 'unknown_sheet' });
+      assertEqual(w.vm._grid.columns.length, 5);
+    } finally { await w.unmount(); }
+  });
+});
