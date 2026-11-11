@@ -120,7 +120,10 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
      * @returns {boolean}
      */
     isDisplayed(instanceId) {
-      return router.getCurrentRoute()?.kind === 'module' && workspace.getActiveInstanceId() === instanceId;
+      // Sichtbar ist der Workspace, solange keine Seite darüber liegt. Die Route
+      // kann nicht entscheiden, welches Modul aktiv ist: Hinzufügen und
+      // Phasenwechsel schalten den Workspace um, ohne sie zu setzen.
+      return router.getCurrentRoute()?.kind !== 'page' && workspace.getActiveInstanceId() === instanceId;
     },
 
     /**

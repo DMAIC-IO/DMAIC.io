@@ -294,10 +294,16 @@ suite('agent host — gemountet und angezeigt', () => {
     assertEqual(makeHost({ route, activeId: 'fw-2' }).host.isDisplayed('fw-1'), false);
   });
 
-  test('isDisplayed: auf einer anderen Route ist auch die aktive Instanz nicht angezeigt', () => {
-    const { host } = makeHost({ route: { kind: 'dashboard' }, activeId: 'fw-1' });
+  test('isDisplayed: nach module.add steht die Route nicht auf dem Modul — die aktive Instanz ist trotzdem sichtbar', () => {
+    // Der Workspace schaltet auf die neue Instanz, ohne die Route zu setzen.
+    for (const route of [null, { kind: 'project', projectId: 'p-1' }, { kind: 'phase', projectId: 'p-1', phaseId: 'define' }]) {
+      assertEqual(makeHost({ route, activeId: 'fw-1' }).host.isDisplayed('fw-1'), true, JSON.stringify(route));
+    }
+  });
+
+  test('isDisplayed: unter einer geöffneten Seite ist auch die aktive Instanz nicht angezeigt', () => {
+    const { host } = makeHost({ route: { kind: 'page', pageId: 'settings' }, activeId: 'fw-1' });
     assertEqual(host.isDisplayed('fw-1'), false);
-    assertEqual(makeHost({ activeId: 'fw-1' }).host.isDisplayed('fw-1'), false);
   });
 });
 
