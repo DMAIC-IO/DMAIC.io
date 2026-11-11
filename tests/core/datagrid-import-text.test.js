@@ -31,6 +31,18 @@ suite('DataGrid.importCSVText', () => {
     assertEqual(grid.rowCount, 2);
   });
 
+  test('Textspalte behält Zahlenschreibweise: 1,5 und 0012 bleiben Text', () => {
+    grid.importCSVText('A\n1,5\nx\ny\n0012\n', 'test.csv');
+    assertEqual(grid.columns[0].type, 'text');
+    assertDeepEqual(grid.columns[0].values, ['1,5', 'x', 'y', '0012']);
+  });
+
+  test('Spalte ganz ohne Werte bleibt Zahl', () => {
+    grid.importCSVText('A;B\n1;\n2;\n', 'test.csv');
+    assertEqual(grid.columns[1].type, 'numeric');
+    assertDeepEqual(grid.columns[1].values, [null, null]);
+  });
+
   test('the import is undoable — the same history path as the file import', () => {
     grid.importCSVText('A;B\n1;2\n', 'test.csv');
     grid.undo();

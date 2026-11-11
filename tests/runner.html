@@ -80,10 +80,12 @@
      vendored ESM build, xlsx/katex from their node_modules ESM builds (present
      under ddev/CI). Without this, any suite importing such a module fails to load
      and is counted as a real failure by the loader below. -->
+<script src="../node_modules/papaparse/papaparse.min.js"></script>
 <script type="importmap">
 {
   "imports": {
     "@alpinejs/csp": "../vendor/alpinejs/csp.js",
+    "papaparse": "./shims/papaparse.js",
     "xlsx": "../node_modules/xlsx/xlsx.mjs",
     "katex": "../node_modules/katex/dist/katex.mjs",
     "opentype.js": "../node_modules/opentype.js/dist/opentype.module.js",
@@ -636,7 +638,7 @@
   // can't run unbundled — tracked in ROADMAP for E2E migration. Only THESE are
   // allowed to fail to load silently; any other import error is a real
   // regression and must surface as a failure instead of vanishing from counts.
-  const BUNDLER_ONLY = ['papaparse', 'tiny-inflate'];
+  const BUNDLER_ONLY = ['tiny-inflate'];
 
   async function loadTests() {
     for (const file of testFiles) {

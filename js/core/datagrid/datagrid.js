@@ -3464,7 +3464,10 @@ export class DataGrid {
     const oldRowCount = this.rowCount;
 
     const columns = sheet.columns.map(c => ({
-      id: uid(), name: c.name, shortName: c.shortName, type: c.type, unit: null, values: c.values, format: c.format,
+      id: uid(), name: c.name, shortName: c.shortName,
+      // Spalte ganz ohne Werte: bleibt Zahl, wie vor der zentralen Typerkennung.
+      type: c.values.every(v => v === null) ? 'numeric' : c.type,
+      unit: null, values: c.values, format: c.format,
     }));
     for (const col of columns) this._reinferRoleAfterTypeChange(col);
 

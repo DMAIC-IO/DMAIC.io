@@ -50,7 +50,7 @@ const isBlank = (r) => r.length === 1 && r[0].trim() === '';
  */
 export function stripSepLine(text) {
   const s = String(text ?? '');
-  const m = /^(﻿?)sep=(.)\r?\n/i.exec(s);
+  const m = /^(\ufeff?)sep=(.)\r?\n/i.exec(s);
   return m ? { text: m[1] + s.slice(m[0].length), delim: m[2] } : { text: s, delim: null };
 }
 
