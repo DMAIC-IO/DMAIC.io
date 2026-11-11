@@ -4,6 +4,13 @@
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { State } from '../../js/modules/chart-suggestion/domain/model.js';
 import { evaluateDerived } from '../../js/core/derived.js';
+import { RULES } from '../../js/core/chart-suggestions/chart-suggestions.js';
+import uiDe from '../../js/modules/chart-suggestion/resources/i18n/ui.de.json' with { type: 'json' };
+import uiEn from '../../js/modules/chart-suggestion/resources/i18n/ui.en.json' with { type: 'json' };
+
+/** Übersetzt einen Schlüssel wie `t` des Viewmodels: Pfad in der Sprachdatei, `{x}` aus vars. */
+const translate = (ui, key, vars = {}) => String(key.split('.').reduce((o, k) => o?.[k], ui)).replace(/\{(\w+)\}/g, (_, k) => vars[k]);
+const hasKey = (ui, key) => typeof key.split('.').reduce((o, k) => o?.[k], ui) === 'string';
 
 const ref = (id) => ({ instanceId: 'ws', sheetId: 's', columnId: id });
 function fakeData(cols) {
@@ -60,7 +67,33 @@ suite('chart-suggestion Model — derived', () => {
     assertEqual(evaluateDerived(m, twoNumeric).selection.columns.length, 1);
   });
 
-  test('ein Fehler beim Lesen wird zu { error }; Texte werden nie übersetzt', () => {
+  test('t(titleKey, vars) ergibt die bisherigen Titel (de und en)', () => {
+    const m = State.fromJSON({ columns: [ref('a'), ref('b')] });
+    const { suggestions } = evaluateDerived(m, twoNumeric);
+    assertDeepEqual(suggestions.map((s) => translate(uiEn, s.titleKey, s.vars)),
+      ['Scatter plot', 'Scatter plot with marginal boxplots', 'Scatter plot with marginal histograms']);
+    assertDeepEqual(suggestions.map((s) => translate(uiDe, s.titleKey, s.vars)),
+      ['Streudiagramm', 'Streudiagramm mit Boxplot-Randverteilungen', 'Streudiagramm mit Histogramm-Randverteilungen']);
+  });
+
+  test('Vorschläge enthalten nur Schlüssel, die es in beiden Sprachdateien gibt, keine übersetzten Sätze', () => {
+    const keyShape = /^(charts|notes)\.[A-Za-z0-9]+$/;
+    for (const rule of RULES.rules ?? RULES) {
+      for (const c of rule.charts) {
+        assertEqual(hasKey(uiEn, `charts.${c.i18nKey}`) && hasKey(uiDe, `charts.${c.i18nKey}`), true);
+        if (c.notesKey) assertEqual(hasKey(uiEn, `notes.${c.notesKey}`) && hasKey(uiDe, `notes.${c.notesKey}`), true);
+      }
+    }
+    const m = State.fromJSON({ columns: [ref('a'), ref('b')] });
+    for (const s of evaluateDerived(m, twoNumeric).suggestions) {
+      assertEqual(keyShape.test(s.titleKey), true);
+      assertEqual(s.noteKey === null || keyShape.test(s.noteKey), true);
+      assertEqual(hasKey(uiEn, s.titleKey) && hasKey(uiDe, s.titleKey), true);
+      assertEqual(/\s/.test(s.chartType), false);
+    }
+  });
+
+  test('ein Fehler beim Lesen wird zu { error }', () => {
     const m = State.fromJSON({ columns: [ref('a')] });
     const out = evaluateDerived(m, { ...twoNumeric, column: () => { throw new Error('kaputt'); } });
     assertDeepEqual(out.suggestions, { error: 'kaputt' });
