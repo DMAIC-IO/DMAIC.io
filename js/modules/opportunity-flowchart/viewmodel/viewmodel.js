@@ -183,7 +183,7 @@ export default createModule({
        * @returns {void}
        */
       openImport() {
-        const options = importOptionsOf(ctx.instances?.list({ modules: [...IMPORT_SOURCES] }) ?? []);
+        const options = importOptionsOf(ctx.instances.list({ modules: [...IMPORT_SOURCES] }));
         if (options.length === 0) {
           ctx.notify(this.t('importEmptyHint'), 'info');
           return;
@@ -218,7 +218,8 @@ export default createModule({
           ctx.notify(this.t('importDone', { n }), 'success');
           return n;
         } catch (err) {
-          ctx.notify(err?.message ?? String(err), 'error');
+          console.warn('opportunity-flowchart: Import fehlgeschlagen', err);
+          ctx.notify(this.t('importFailed'), 'error');
           return 0;
         }
       },

@@ -40,9 +40,9 @@ const step = (id, title, side = 'va') => ({ id, title, description: '', side, su
 /**
  * Modul einhängen.
  * @param {object|null} model gespeicherter Zustand der Instanz
- * @param {{ list?: any[], reads?: Record<string, any> }} [sources] Instanzen für `ctx.instances`
+ * @param {{ list?: any[], reads?: Record<string, any>, readError?: Error|null }} [sources] Instanzen für `ctx.instances`
  */
-async function mount(model, { list = [], reads = {} } = {}) {
+async function mount(model, { list = [], reads = {}, readError = null } = {}) {
   ensureTemplate();
   while (mounted.length) mounted.pop().remove();
   const notes = [];
@@ -62,7 +62,7 @@ async function mount(model, { list = [], reads = {} } = {}) {
     dialog: { form: (opts) => { forms.push(opts); return Promise.resolve(true); } },
     instances: {
       list: (opts) => { listCalls.push(opts); return list; },
-      read: async (id) => reads[id],
+      read: async (id) => { if (readError) throw readError; return reads[id]; },
     },
   };
   const container = document.createElement('div');
@@ -143,6 +143,20 @@ suite('opportunity-flowchart: Viewmodel im Browser', () => {
     assertDeepEqual(steps.map((s) => [s.title, s.description, s.side]),
       [['Prüfen', 'Sicht', 'nva'], ['Montieren', '', 'va']]);
     assertDeepEqual(h.notes.at(-1), ['importDone{"n":2}', 'success']);
+  });
+
+  test('runImport meldet ein Lesefehler übersetzt und hängt nichts an', async () => {
+    const list = [{ instanceId: 's1', moduleId: 'sipoc', phase: 'define', title: 'Pizza' }];
+    const h = await mount({ _schema: { version: '1.0' }, steps: [step('a', 'A')], expanded: [] }, { list, readError: new Error('unknown_instance') });
+    h.vm().openImport();
+    await settle();
+    const warn = console.warn;
+    console.warn = () => {};
+    let n;
+    try { n = await h.vm().runImport(); } finally { console.warn = warn; }
+    assertEqual(n, 0);
+    assertEqual(h.vm().model.steps.length, 1);
+    assertDeepEqual(h.notes.at(-1), ['importFailed', 'error']);
   });
 
   test('exports.tree() ist toJsonTree des Models', async () => {

@@ -25,6 +25,7 @@
   "importConfirm": "Import",
   "importEmptyHint": "No matching source (SIPOC / Process Map) found in this project.",
   "importDone": "{n} step(s) imported",
+  "importFailed": "Import failed: the source is no longer available.",
   "stepGrip": "Move step",
   "substepGrip": "Move sub-step",
   "invariants": {

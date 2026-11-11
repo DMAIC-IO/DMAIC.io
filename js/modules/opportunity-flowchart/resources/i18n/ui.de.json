@@ -25,6 +25,7 @@
   "importConfirm": "Übernehmen",
   "importEmptyHint": "Keine passende Quelle (SIPOC / Process Map) im Projekt gefunden.",
   "importDone": "{n} Schritt(e) übernommen",
+  "importFailed": "Import fehlgeschlagen: Die Quelle ist nicht mehr verfügbar.",
   "stepGrip": "Schritt verschieben",
   "substepGrip": "Unter-Schritt verschieben",
   "invariants": {
