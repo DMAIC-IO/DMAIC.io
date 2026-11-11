@@ -150,7 +150,9 @@ Felder setzt `instance.set`:
     { op: 'instance.set', instance, values: { alpha: 0.1, mode: 'less' } }
 
 Alles wird geprüft, dann alles geschrieben; scheitert ein Wert, ist nichts
-geschrieben (`call_failed`).
+geschrieben (`call_failed`). Setzbar sind die Felder aus `describe` — keine
+Ansichtsfelder (`unknown field "<x>"; available: …`). Ein Modul alter Form
+antwortet auf `instance.set` mit `call_failed`.
 
 Regeln über mehrere Felder (Invarianten des Models) nennt `module.describe`
 unter `notes`, je Regel ein Satz in der UI-Sprache, z. B. für `msa-typ2`
@@ -160,9 +162,7 @@ Regel, trägt die Ablehnung `invariant` mit dem Namen der Regel, und die Meldung
 nennt hinter `allowed:` ihren Satz:
 
     { ok: false, error: 'call_failed', invariant: 'limitsOrder',
-      message: 'Aufruf von "instance.set" ist fehlgeschlagen: invalid usl 1; allowed: USG muss kleiner als OSG sein' } Setzbar sind die Felder aus `describe` — keine
-Ansichtsfelder (`unknown field "<x>"; available: …`). Ein Modul alter Form
-antwortet auf `instance.set` mit `call_failed`.
+      message: 'Aufruf von "instance.set" ist fehlgeschlagen: invalid usl 1; allowed: USG muss kleiner als OSG sein' }
 
 Spaltenfelder (`columnRef`) nennen eine Arbeitsblattspalte als
 `{ instanceId, sheetId?, columnId }`; eine Liste von Spalten ist
