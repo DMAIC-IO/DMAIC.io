@@ -313,6 +313,15 @@ suite('Diagramm-Widgets (chart-mount)', () => {
     root.remove();
   });
 
+  test('Kontur: Typ contour, null im Gitter kommt als null an', async () => {
+    const cm = fakeManager();
+    const cfg = { grid: [[1, null], [null, 4]], xRange: [0, 1], yRange: [0, 1] };
+    const { root } = await host('<div x-widget="contour-chart" x-widget-config="cfg"></div>', { cm, extra: { cfg } });
+    assertEqual(cm.log.created[0].type, 'contour');
+    assertDeepEqual(cm.log.created[0].config.grid, [[1, null], [null, 4]]);
+    root.remove();
+  });
+
   test('config null: kein Diagramm, dann gültig, dann wieder abgebaut', async () => {
     const cm = fakeManager();
     const { root, data } = await host('<div x-widget="histogram-chart" x-widget-config="nothing"></div>', { cm, extra: { none: true } });

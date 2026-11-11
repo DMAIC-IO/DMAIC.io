@@ -19,6 +19,9 @@ import Mosaic from '../../js/core/chart/types/mosaic.js';
 import RunChart from '../../js/core/chart/types/run-chart.js';
 import Pareto from '../../js/core/chart/types/pareto.js';
 import ChartBase from '../../js/core/chart/chart-base.js';
+import contourChart, { CONTOUR_DEFAULTS } from '../../js/widgets/contour-chart/schema.js';
+import ContourChart from '../../js/core/chart/types/contour.js';
+import { COLOR_SCHEMES } from '../../js/core/chart/color-schemes.js';
 import Pie from '../../js/core/chart/types/pie.js';
 import multiVariChart from '../../js/widgets/multi-vari-chart/schema.js';
 import gageRunChart from '../../js/widgets/gage-run-chart/schema.js';
@@ -221,5 +224,37 @@ suite('Diagramm-Widgets: Schemas', () => {
     assertThrows(() => checkValue(gageRunChart.props.config, 'c', { legendTitle: 'x' }), /unknown c key "legendTitle"/);
     assertDeepEqual(gageRunChart.editable.base, ChartBase.editorKeys);
     assertDeepEqual(gageRunChart.editable.series, []);
+  });
+  test('Kontur: Name und Typ, Konfiguration des Moduls besteht', () => {
+    assertEqual(contourChart.name, 'contour-chart');
+    assertEqual(contourChart.chartType, 'contour');
+    const cfg = {
+      title: 'T', xLabel: 'x', yLabel: 'y', grid: [[1, null], [3, 4]], xRange: [0, 1], yRange: [0, 2], zLabel: 'z',
+      points: [{ x: 0.5, y: 1, z: 2 }], ...CONTOUR_DEFAULTS,
+    };
+    assertDeepEqual(checkValue(contourChart.props.config, 'c', cfg), cfg);
+  });
+
+  test('Kontur: Stufen und Auflösung begrenzt, Farbschemata aus dem Framework', () => {
+    assertThrows(() => checkValue(contourChart.props.config, 'c', { numLevels: 3 }), /numLevels/);
+    assertThrows(() => checkValue(contourChart.props.config, 'c', { gridRes: 45 }), /gridRes/);
+    assertThrows(() => checkValue(contourChart.props.config, 'c', { colorScheme: 'nope' }), /colorScheme/);
+    for (const k of Object.keys(COLOR_SCHEMES)) checkValue(contourChart.props.config, 'c', { colorScheme: k });
+  });
+
+  test('Kontur: bearbeitbar ist die Basis ohne Legende, dann die eigenen Schlüssel', () => {
+    assertTrue(!contourChart.editable.base.includes('showLegend'));
+    assertDeepEqual(contourChart.editable.base, ContourChart.editorKeys.filter((k) => k !== 'showLegend'));
+    assertDeepEqual(contourChart.editable.base.slice(0, 14), ChartBase.editorKeys.filter((k) => k !== 'showLegend'));
+    assertDeepEqual(contourChart.editable.series, []);
+  });
+
+  test('Kontur: CONTOUR_DEFAULTS eingefroren mit den festgelegten Werten', () => {
+    assertTrue(Object.isFrozen(CONTOUR_DEFAULTS));
+    assertDeepEqual({ ...CONTOUR_DEFAULTS }, {
+      numLevels: 10, gridRes: 100, colorScheme: 'viridis', showLines: true, showLabels: true, showDataPoints: false,
+      markerSymbol: 'circle', markerSize: 10, markerColor: 'var(--color-text-primary)', markerStroke: 'var(--color-bg-primary)',
+      markerStrokeWidth: 2, markerStrokeDash: 'solid',
+    });
   });
 });

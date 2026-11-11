@@ -37,6 +37,8 @@ import gageRunChart from './gage-run-chart/schema.js';
 import { mount as mountGageRunChart } from './gage-run-chart/mount.js';
 import pieChart from './pie-chart/schema.js';
 import { mount as mountPieChart } from './pie-chart/mount.js';
+import contourChart from './contour-chart/schema.js';
+import { mount as mountContourChart } from './contour-chart/mount.js';
 import statsTable from './stats-table/schema.js';
 import { mount as mountStatsTable } from './stats-table/mount.js';
 import algoLabLink from './algo-lab-link/schema.js';
@@ -57,6 +59,7 @@ export const WIDGETS = Object.freeze({
   'boxplot-chart': { schema: boxplotChart, mount: mountBoxplotChart },
   'individual-value-plot-chart': { schema: individualValuePlotChart, mount: mountIndividualValuePlotChart },
   'heatmap-chart': { schema: heatmapChart, mount: mountHeatmapChart },
+  'contour-chart': { schema: contourChart, mount: mountContourChart },
   'multi-vari-chart': { schema: multiVariChart, mount: mountMultiVariChart },
   'gage-run-chart': { schema: gageRunChart, mount: mountGageRunChart },
   'algo-lab-link': { schema: algoLabLink, mount: mountAlgoLabLink },
