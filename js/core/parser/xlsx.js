@@ -1,28 +1,16 @@
 /**
- * D.Mike — XLSX / XLSM / XLS / ODS Parser (xlsx-parser.js)
+ * D.Mike — XLSX / XLSM / XLS / ODS Parser (core/parser/xlsx.js)
  *
- * Reads spreadsheet files via SheetJS (bundled from node_modules via core/vendor/xlsx.js).
+ * Reads spreadsheet files via SheetJS (core/vendor/xlsx.js).
  * Each sheet in the workbook becomes one entry in the output `sheets[]`,
  * preserving the sheet name from the source file. Column types (numeric/text)
- * are detected from the raw JS types SheetJS produces.
+ * come from `detectColumnType`; cells SheetJS reads as numbers enter it as numbers.
  *
- * Output schema matches mpx-parser.js / csv-parser.js — see data-import.js.
+ * Output: see `ParseResult` in index.js.
  */
 
-import { ensureXLSX } from '../../core/export-utils.js';
-
-/** ≥80% non-empty cells with finite numeric value → numeric column. */
-function detectColumnType(values) {
-  let numeric = 0;
-  let nonEmpty = 0;
-  for (const v of values) {
-    if (v === null || v === undefined || v === '') continue;
-    nonEmpty++;
-    if (typeof v === 'number' && Number.isFinite(v)) numeric++;
-  }
-  if (nonEmpty === 0) return 'text';
-  return (numeric / nonEmpty) >= 0.8 ? 'numeric' : 'text';
-}
+import { detectColumnType } from './column-types.js';
+import { ensureXLSX } from '../export-utils.js';
 
 /** Format a JS Date in compact ISO; drop trailing midnight time. */
 function formatDate(d) {
@@ -43,31 +31,12 @@ function normalize(v) {
   return String(v);
 }
 
-/** Force every cell to numeric or null. */
-function coerceNumeric(values) {
-  return values.map((v) => {
-    if (v === null || v === undefined || v === '') return null;
-    if (typeof v === 'number') return Number.isFinite(v) ? v : null;
-    const s = String(v).trim().replace(',', '.');
-    const n = Number(s);
-    return Number.isFinite(n) ? n : null;
-  });
-}
-
-/** Force every cell to string or null (preserving null for empties). */
-function toText(values) {
-  return values.map((v) => {
-    if (v === null || v === undefined) return null;
-    return typeof v === 'string' ? v : String(v);
-  });
-}
-
 /**
  * Parse an XLSX/XLSM/XLS/ODS file from an ArrayBuffer.
  *
  * @param {ArrayBuffer} buffer
  * @param {{hasHeader?:boolean}} [opts]
- * @returns {Promise<{format:string, sheets:Array<object>}>}
+ * @returns {Promise<import('./index.js').ParseResult>}
  */
 export async function parseXlsx(buffer, opts = {}) {
   const XLSX = await ensureXLSX();
@@ -119,12 +88,13 @@ export async function parseXlsx(buffer, opts = {}) {
       const rawValues = dataRows.map((r) =>
         normalize(c < r.length ? r[c] : null)
       );
-      const type = detectColumnType(rawValues);
+      const detected = detectColumnType(rawValues) ?? { type: 'text', values: rawValues, format: {} };
       columns.push({
         name: colName,
         shortName: `C${c + 1}`,
-        type,
-        values: type === 'numeric' ? coerceNumeric(rawValues) : toText(rawValues),
+        type: detected.type,
+        values: detected.values,
+        format: detected.format,
       });
     }
 

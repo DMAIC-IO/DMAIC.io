@@ -1,5 +1,5 @@
 /**
- * D.Mike — Minitab .mpx Parser (mpx-parser.js)
+ * D.Mike — Minitab .mpx Parser (core/parser/mpx.js)
  *
  * .mpx is a ZIP archive (OPC packaging, like .xlsx) containing one of two
  * worksheet representations, depending on the Minitab version that wrote it:
@@ -32,7 +32,7 @@
  * }
  */
 
-import { readZip, bytesToText } from './zip-reader.js';
+import { readZip, bytesToText } from './zip.js';
 
 /**
  * Parse a Minitab .mpx file from an ArrayBuffer.

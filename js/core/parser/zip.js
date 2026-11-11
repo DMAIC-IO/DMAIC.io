@@ -1,5 +1,5 @@
 /**
- * D.Mike — Minimal ZIP reader (zip-reader.js)
+ * D.Mike — Minimal ZIP reader (core/parser/zip.js)
  *
  * Browser-native ZIP archive reader. Uses DecompressionStream('deflate-raw')
  * for compressed entries (Method 8, the only widely used method besides STORED).

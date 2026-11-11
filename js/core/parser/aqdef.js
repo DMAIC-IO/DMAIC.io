@@ -1,5 +1,5 @@
 /**
- * D.Mike — Q-DAS AQDEF Parser (aqdef-parser.js)
+ * D.Mike — Q-DAS AQDEF Parser (core/parser/aqdef.js)
  *
  * AQDEF (Advanced Quality Data Exchange Format, Q-DAS) is the de-facto
  * standard for SPC and measurement data in DACH industry (Bosch, Daimler,
@@ -27,8 +27,10 @@
  * `|`, or `,`. We auto-detect the delimiter against the known number of
  * characteristics and distribute values left-to-right.
  *
- * Output schema matches the other parsers — see data-import.js.
+ * Output: see `ParseResult` in index.js.
  */
+
+import { detectColumnType } from './column-types.js';
 
 /** Decode buffer with fallback. */
 function decode(buffer, encoding) {
@@ -53,19 +55,6 @@ const KEY_RE = /^K(\d{4})(?:\/(\d+))?\s+(.*)$/;
 
 const DATA_DELIMITER_CANDIDATES = ['\t', ';', '|', ',', /\s+/];
 
-/** ≥80% non-empty values are finite numbers → numeric column. */
-function detectColumnType(values) {
-  let numeric = 0;
-  let nonEmpty = 0;
-  for (const v of values) {
-    if (v === null || v === undefined || v === '') continue;
-    nonEmpty++;
-    if (typeof v === 'number' && Number.isFinite(v)) numeric++;
-  }
-  if (nonEmpty === 0) return 'text';
-  return numeric / nonEmpty >= 0.8 ? 'numeric' : 'text';
-}
-
 /** German decimal comma is common in AQDEF — accept both. */
 function parseNumber(s) {
   if (s == null) return null;
@@ -74,22 +63,6 @@ function parseNumber(s) {
   const norm = trimmed.replace(',', '.');
   const n = Number(norm);
   return Number.isFinite(n) ? n : null;
-}
-
-function coerceNumeric(values) {
-  return values.map((v) => {
-    if (v === null || v === undefined || v === '') return null;
-    if (typeof v === 'number') return Number.isFinite(v) ? v : null;
-    return parseNumber(v);
-  });
-}
-
-function toText(values) {
-  return values.map((v) => {
-    if (v === null || v === undefined) return null;
-    if (typeof v === 'string') return v === '' ? null : v;
-    return String(v);
-  });
 }
 
 /** Find the row delimiter that splits the most lines into exactly `expected` tokens. */
@@ -116,7 +89,7 @@ function splitRow(line, delim) {
 /**
  * @param {ArrayBuffer} buffer
  * @param {{filename?:string, encoding?:string}} [opts]
- * @returns {Promise<{format:string, sheets:Array<object>}>}
+ * @returns {Promise<import('./index.js').ParseResult>}
  */
 export async function parseAqdef(buffer, opts = {}) {
   // AQDEF is conventionally Windows-1252; allow override and handle UTF-8 BOM.
@@ -236,12 +209,13 @@ export async function parseAqdef(buffer, opts = {}) {
     const padded = c.values.length === maxLen
       ? c.values
       : c.values.concat(new Array(maxLen - c.values.length).fill(null));
-    const type = detectColumnType(padded);
+    const detected = detectColumnType(padded) ?? { type: 'text', values: padded, format: {} };
     return {
       name,
       shortName: `C${colPos + 1}`,
-      type,
-      values: type === 'numeric' ? coerceNumeric(padded) : toText(padded),
+      type: detected.type,
+      values: detected.values,
+      format: detected.format,
     };
   });
 

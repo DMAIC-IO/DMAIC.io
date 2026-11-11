@@ -1,5 +1,5 @@
 /**
- * D.Mike — JSON / NDJSON Parser (json-parser.js)
+ * D.Mike — JSON / NDJSON Parser (core/parser/json.js)
  *
  * Supports the three JSON flavors that appear in practice for tabular data:
  *
@@ -19,8 +19,10 @@
  * Wrapper objects (`{"data": [...]}`, `{"rows": [...]}`, `{"records": [...]}`)
  * are unwrapped automatically when the wrapped value is a records array.
  *
- * Output schema matches the other parsers — see data-import.js.
+ * Output: see `ParseResult` in index.js.
  */
+
+import { detectColumnType } from './column-types.js';
 
 const NDJSON_EXTS = new Set(['ndjson', 'jsonl']);
 
@@ -39,29 +41,6 @@ function extOf(filename) {
 function decodeUtf8(buffer) {
   const s = new TextDecoder('utf-8', { fatal: false }).decode(buffer);
   return s.charCodeAt(0) === 0xfeff ? s.slice(1) : s;
-}
-
-/** ≥80% non-empty values are finite numbers → numeric column. */
-function detectColumnType(values) {
-  let numeric = 0;
-  let nonEmpty = 0;
-  for (const v of values) {
-    if (v === null || v === undefined || v === '') continue;
-    nonEmpty++;
-    if (typeof v === 'number' && Number.isFinite(v)) numeric++;
-  }
-  if (nonEmpty === 0) return 'text';
-  return numeric / nonEmpty >= 0.8 ? 'numeric' : 'text';
-}
-
-function coerceNumeric(values) {
-  return values.map((v) => {
-    if (v === null || v === undefined || v === '') return null;
-    if (typeof v === 'number') return Number.isFinite(v) ? v : null;
-    const s = String(v).trim().replace(',', '.');
-    const n = Number(s);
-    return Number.isFinite(n) ? n : null;
-  });
 }
 
 /** Stringify everything except null/undefined; booleans become "true"/"false". */
@@ -159,12 +138,14 @@ function finalize(rawColumns) {
       if (typeof v === 'string') return v === '' ? null : v;
       return v;
     });
-    const type = detectColumnType(norm);
+    const prepared = norm.map(v => (typeof v === 'number' || v === null ? v : toText([v])[0]));
+    const detected = detectColumnType(prepared) ?? { type: 'text', values: prepared, format: {} };
     return {
       name: col.name || `C${i + 1}`,
       shortName: `C${i + 1}`,
-      type,
-      values: type === 'numeric' ? coerceNumeric(norm) : toText(norm),
+      type: detected.type,
+      values: detected.values,
+      format: detected.format,
     };
   });
 }
@@ -172,7 +153,7 @@ function finalize(rawColumns) {
 /**
  * @param {ArrayBuffer} buffer
  * @param {{filename?:string}} [opts]
- * @returns {Promise<{format:string, sheets:Array<object>}>}
+ * @returns {Promise<import('./index.js').ParseResult>}
  */
 export async function parseJson(buffer, opts = {}) {
   const text = decodeUtf8(buffer).trim();

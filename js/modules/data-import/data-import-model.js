@@ -32,8 +32,6 @@ export const DEFAULT_AQDEF_OPTIONS = {
   encoding: 'windows-1252',  // 'utf-8' | 'windows-1252' | 'iso-8859-1'
 };
 
-/** Formats `importText` accepts — the binary and encoding-bound ones stay file routes. */
-export const TEXT_FORMATS = ['csv', 'json'];
 export const CSV_PRESET_IDS = ['generic', 'zeiss-calypso', 'hexagon-pcdmis', 'mitutoyo-measurlink'];
 export const CSV_DELIMITERS = ['auto', 'comma', 'semicolon', 'tab', 'pipe'];
 export const CSV_ENCODINGS = ['utf-8', 'windows-1252', 'iso-8859-1'];

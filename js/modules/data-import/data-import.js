@@ -9,11 +9,9 @@
  * flags and the preview matrix are derived transiently in the view (data-fn).
  *
  * The format registry is open so additional formats can be added by
- * registering more parsers in the FORMATS array. Each parser receives the
- * raw ArrayBuffer plus an opts object (filename and format-specific options
- * like delimiter / encoding). Parsing itself stays in the dedicated parser
- * subfiles (csv-parser.js, xlsx-parser.js, json-parser.js, mpx-parser.js,
- * aqdef-parser.js, zip-reader.js) — they are imported unchanged below.
+ * registering more parsers in the FORMATS array of core/parser/index.js. Each
+ * parser receives the raw ArrayBuffer plus an opts object (filename and
+ * format-specific options like delimiter / encoding).
  *
  * 🔴 CROSS-MODULE CONTRACT: `sendToWorksheet()` registers a new worksheet
  * instance in the host phase and emits `module:added` then, on the worksheet's
@@ -41,38 +39,12 @@ import {
 } from '../../core/agent/agent-argcheck.js';
 import { setAtPath } from '../../core/agent/agent-path.js';
 import {
-  State, clampSkipRows, parseErrorMessage, TEXT_FORMATS, CSV_PRESETS, CSV_PRESET_IDS,
+  State, clampSkipRows, parseErrorMessage, CSV_PRESETS, CSV_PRESET_IDS,
   CSV_DELIMITERS, CSV_ENCODINGS, AQDEF_ENCODINGS, OPTION_LABEL_KEYS,
 } from './data-import-model.js';
-import { parseMpx } from './mpx-parser.js';
-import { parseCsv } from './csv-parser.js';
-import { parseXlsx } from './xlsx-parser.js';
-import { parseJson } from './json-parser.js';
-import { parseAqdef } from './aqdef-parser.js';
-
-// ── Format registry ───────────────────────────────────────────────
-
-/** @typedef {{id:string, extensions:string[], i18nKey:string, parse:(buf:ArrayBuffer, opts?:object)=>Promise<object>}} Format */
-
-/** @type {Format[]} */
-const FORMATS = [
-  { id: 'mpx', extensions: ['mpx'], i18nKey: 'format_mpx', parse: parseMpx },
-  { id: 'csv', extensions: ['csv', 'tsv', 'txt'], i18nKey: 'format_csv', parse: parseCsv },
-  { id: 'xlsx', extensions: ['xlsx', 'xlsm', 'xls', 'ods'], i18nKey: 'format_xlsx', parse: parseXlsx },
-  { id: 'json', extensions: ['json', 'ndjson', 'jsonl'], i18nKey: 'format_json', parse: parseJson },
-  { id: 'aqdef', extensions: ['dfq', 'dfd', 'dfx'], i18nKey: 'format_aqdef', parse: parseAqdef },
-];
-
-const ACCEPT_ATTR = `.${  FORMATS.flatMap(f => f.extensions).join(',.')}`;
+import { FORMATS, ACCEPT, TEXT_FORMATS, formatForFilename } from '../../core/parser/index.js';
 
 const PREVIEW_ROWS = 20;
-
-function detectFormat(filename) {
-  const m = /\.([^.]+)$/.exec(filename || '');
-  if (!m) return null;
-  const ext = m[1].toLowerCase();
-  return FORMATS.find(f => f.extensions.includes(ext)) || null;
-}
 
 function fmtBytes(n) {
   if (n == null) return '';
@@ -163,7 +135,7 @@ export default createModule({
   data(module, _t) {
     return {
       // ── Static template data ──────────────────────────────────
-      acceptAttr: ACCEPT_ATTR,
+      acceptAttr: ACCEPT,
 
       // ── Transient view state (not persisted) ──────────────────
       /** @type {{format:string, sheets:Array<object>}|null} */
@@ -189,7 +161,7 @@ export default createModule({
       formatLabel() {
         const f = this.model.file;
         const fmt = f ? FORMATS.find(x => x.id === f.formatId) : null;
-        return fmt ? _t(fmt.i18nKey) : _t('format_unknown');
+        return fmt ? _t(`format_${fmt.id}`) : _t('format_unknown');
       },
 
       /** @noagent view transform */
@@ -504,7 +476,7 @@ export default createModule({
 
       /** @noagent DOM event handler; reads a File, the agent uses importText() */
       async handleFile(file) {
-        const fmt = detectFormat(file.name);
+        const fmt = formatForFilename(file.name);
         try {
           const buffer = fmt ? await file.arrayBuffer() : null;
           await this._load(buffer, { name: file.name, size: file.size, source: 'file' }, fmt);
