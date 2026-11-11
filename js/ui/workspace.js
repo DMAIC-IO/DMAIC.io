@@ -785,7 +785,9 @@ export class Workspace {
    */
   getLiveViewmodel(instanceId) {
     if (this._containers.get(instanceId)?.isConnected !== true) return null;
-    return this._instances.get(instanceId)?.getActionData?.() ?? null;
+    // Wieder eingehängt, aber von Alpine noch nicht neu aufgebaut: ohne Model kein Besitzer.
+    const vm = this._instances.get(instanceId)?.getActionData?.();
+    return vm?.model ? vm : null;
   }
 
   /**

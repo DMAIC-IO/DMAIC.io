@@ -504,6 +504,40 @@ suite('agent ops — Lesen und Schreiben ohne Ansichtswechsel', () => {
     assertEqual(navigated(log), false);
   });
 
+  test('Model-Kommando, das das Model nicht hat → unknown_method mit den Katalogaktionen, nichts geschrieben', async () => {
+    const { ops, log, instances } = setup();
+    let applied = null;
+    instances.write = async (id, fn) => {
+      log.push(`instances.write:${id}`);
+      try { return { mounted: false, result: fn({ title: 'T' }) }; } catch (e) { applied = 'nein'; throw e; }
+    };
+    const out = await ops['instance.call']({ instance: 'b-1', method: 'rename', args: [{ title: 'X' }] });
+    assertEqual(out.error, 'unknown_method', JSON.stringify(out));
+    assertEqual(out.message, 'agent.errors.unknownMethod|board,rename');
+    assertDeepEqual(out.available, ['compute', 'compute.cancel', 'label', 'read', 'rename']);
+    assertEqual(applied, 'nein');
+    assertEqual(navigated(log), false);
+  });
+
+  test('Einhängen reißt die Frist (unknown_instance vom Dienst) → unknown_instance mit viewmodelNotAlive', async () => {
+    const { ops, instances } = setup();
+    const timeout = () => { throw Object.assign(new Error('unknown_instance'), { code: 'unknown_instance' }); };
+    instances.read = async () => timeout();
+    instances.write = async () => timeout();
+    for (const action of [
+      { instance: 'b-1', method: 'read' },
+      { instance: 'b-1', method: 'rename', args: [{ title: 'X' }] },
+    ]) {
+      const out = await ops['instance.call'](action);
+      assertEqual(out.error, 'unknown_instance', action.method);
+      assertEqual(out.message, 'agent.errors.viewmodelNotAlive|b-1', action.method);
+      assertDeepEqual(out.available, [], action.method);
+    }
+    const set = await ops['instance.set']({ instance: 'b-1', values: { title: 'Neu' } });
+    assertEqual(set.error, 'unknown_instance');
+    assertEqual(set.message, 'agent.errors.viewmodelNotAlive|b-1');
+  });
+
   test('Viewmodel-Kommando bleibt beim Ansichtswechsel', async () => {
     const { ops, log } = setup();
     const out = await ops['instance.call']({ instance: 'b-1', method: 'label', args: [] });

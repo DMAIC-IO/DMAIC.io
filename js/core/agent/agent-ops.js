@@ -208,11 +208,21 @@ export function createOps(deps) {
             value = await instancesService.read(action.instance, args[0]);
           } else {
             requireForm('args', args, args.length <= 1, `one command object for ${action.method}`);
-            ({ result: value } = await instancesService.write(action.instance,
-              (model) => model[action.method](args[0])));
+            ({ result: value } = await instancesService.write(action.instance, (model) => {
+              if (typeof model?.[action.method] !== 'function') {
+                throw Object.assign(new Error('unknown_method'), { code: 'unknown_method' });
+              }
+              return model[action.method](args[0]);
+            }));
           }
           return callResult(action, value);
         } catch (err) {
+          if (err?.code === 'unknown_method') {
+            // Ohne lebendes Viewmodel nennt `available` die Katalogaktionen.
+            return axiError(ERRORS.UNKNOWN_METHOD,
+              t('agent.errors.unknownMethod', { module: found.module, method: action.method }),
+              { available: Object.keys(entry.actions ?? {}).sort() });
+          }
           if (err?.code !== 'needs_mount') return serviceError(t, action, action.method, err);
         }
       }

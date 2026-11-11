@@ -63,6 +63,10 @@ suite('workspace live viewmodels', () => {
     ws._instances.set('i1', { getActionData: () => vm });
     ws._instances.set('i2', {});
     assertEqual(ws.getLiveViewmodel('i1'), vm);
+    // Wieder eingehängt, aber Alpine hat noch nicht neu aufgebaut: `$data` ist ein leerer Proxy.
+    ws._containers.set('i3', { isConnected: true });
+    ws._instances.set('i3', { getActionData: () => ({}) });
+    assertEqual(ws.getLiveViewmodel('i3'), null);
     assertEqual(ws.getLiveViewmodel('i2'), null);
     assertEqual(ws.getLiveViewmodel('fehlt'), null);
   });
