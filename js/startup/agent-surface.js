@@ -34,7 +34,7 @@ import { VERSION } from '../core/version.js';
 export default createStartup({
   id: 'agent-surface',
 
-  run({ stateManager, moduleRegistry, eventBus, i18n, dialog, notify, workspace, router }) {
+  run({ stateManager, moduleRegistry, eventBus, i18n, dialog, notify, workspace, router, instances }) {
     const consentDialog = buildAgentConsentDialog({ i18n, eventBus });
 
     const consent = createConsentGate({
@@ -65,6 +65,8 @@ export default createStartup({
       getHelp: (id) => getModuleHelp(id, i18n.getLanguage()),
       consent,
       host,
+      // Lesen und Schreiben ohne Ansichtswechsel (core/instances.js).
+      instances,
       appVersion: VERSION,
     });
 

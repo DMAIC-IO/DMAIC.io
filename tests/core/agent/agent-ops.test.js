@@ -382,3 +382,149 @@ suite('agent ops — asynchrone Abläufe', () => {
     assertDeepEqual(out.available, ['read']);
   });
 });
+
+suite('agent ops — Lesen und Schreiben ohne Ansichtswechsel', () => {
+  const Board = defineModel({
+    fields: { title: text() },
+    view: { mode: oneOf(['month', 'week']) },
+    commands: {
+      rename: command({ params: { title: text() }, run({ title }) { this.title = title; return title; } }),
+    },
+  });
+  const VM_COMMANDS = { label: command({ params: {}, run() { return `#${this.model.title}`; } }) };
+  const ENTRY = schemaAgentEntry(Board, VM_COMMANDS,
+    { asyncTasks: { compute: asyncTask({ params: {}, run() { return 1; } }) } });
+  const STUB = { tagged: true, available: true, schema: true, violations: [], reported: [], actions: {}, fields: {} };
+
+  /**
+   * Ein Host, der jede Navigation protokolliert, und ein `instances`-Dienst,
+   * der ein nicht gemountetes Model hält. `legacy: true` lässt den Dienst wie
+   * für ein Altmodul mit eigenem `read()` `needs_mount` werfen.
+   */
+  function setup({ legacy = false, registry = { board: STUB }, moduleId = 'board' } = {}) {
+    const log = [];
+    const model = Board.fromJSON({ title: 'T', mode: 'week' });
+    const viewmodel = {
+      model,
+      label() { return `#${this.model.title}`; },
+      read() { log.push('vm.read'); return { ...model.toJSON(), from: 'vm' }; },
+      doIt() { log.push('vm.doIt'); return 'done'; },
+      _asyncTaskHost: { start: async () => ({ status: 'done', value: 7 }), cancel: () => true },
+    };
+    const needsMount = () => Object.assign(new Error('needs_mount'), { code: 'needs_mount' });
+    const instances = {
+      read: async (id, options) => {
+        log.push(`instances.read:${id}:${JSON.stringify(options ?? null)}`);
+        if (legacy) throw needsMount();
+        return { title: model.title, from: 'instances' };
+      },
+      write: async (id, fn) => {
+        log.push(`instances.write:${id}`);
+        if (legacy) throw needsMount();
+        return { mounted: false, result: fn(model) };
+      },
+    };
+    const defs = [{ id: moduleId, phase: 'define', cycles: { dmaic: { phase: 'define' } } }];
+    const phases = { define: [{ instanceId: 'b-1', moduleId, order: 0 }] };
+    const ops = createOps({
+      stateManager: { get: (p) => (p === 'phases' ? phases : p.startsWith('phases.') ? phases[p.slice(7)] : undefined) },
+      moduleRegistry: { getAll: () => defs, get: (id) => defs.find(d => d.id === id), getActiveCycle: () => 'dmaic' },
+      i18n: I18N,
+      registry,
+      loadModule: async () => ({ agentEntry: ENTRY }),
+      getHelp: async () => null,
+      appVersion: '1.2.3',
+      instances,
+      host: {
+        isCompleted: () => false,
+        getCurrentView: () => null,
+        openInstance: async (id) => { log.push(`open:${id}`); return { instanceId: id }; },
+        getViewmodel: async (id) => { log.push(`getViewmodel:${id}`); return viewmodel; },
+      },
+    });
+    return { ops, log, model, instances };
+  }
+  const navigated = (log) => log.some(e => e.startsWith('open:') || e.startsWith('getViewmodel:'));
+
+  test('read geht über instances.read und navigiert nicht', async () => {
+    const { ops, log } = setup();
+    const out = await ops['instance.call']({ instance: 'b-1', method: 'read', args: [{ fields: ['title'] }] });
+    assertDeepEqual(out.value, { title: 'T', from: 'instances' });
+    assertDeepEqual(log, ['instances.read:b-1:{"fields":["title"]}']);
+    assertEqual(navigated(log), false);
+  });
+
+  test('read eines Altmoduls mit eigenem read() fällt auf den Ansichtswechsel zurück', async () => {
+    const { ops, log } = setup({ legacy: true });
+    const out = await ops['instance.call']({ instance: 'b-1', method: 'read' });
+    assertEqual(out.value.from, 'vm');
+    assertEqual('mode' in out.value, false, 'Ansichtsfelder fallen auch auf dem alten Weg');
+    assertDeepEqual(log, ['instances.read:b-1:null', 'getViewmodel:b-1', 'vm.read']);
+  });
+
+  test('instance.set auf eine Zielform geht über instances.write, nicht über getViewmodel', async () => {
+    const { ops, log, model } = setup();
+    const out = await ops['instance.set']({ instance: 'b-1', values: { title: 'Neu' } });
+    assertDeepEqual(out, { instanceId: 'b-1', values: { title: 'Neu' } });
+    assertEqual(model.title, 'Neu');
+    assertDeepEqual(log, ['instances.write:b-1']);
+  });
+
+  test('instance.set mit ungültigem Feld → call_failed, nichts geschrieben, keine Navigation', async () => {
+    const { ops, log, model } = setup();
+    const out = await ops['instance.set']({ instance: 'b-1', values: { title: 'Neu', mode: 'month' } });
+    assertEqual(out.error, 'call_failed');
+    assertTrue(out.message.startsWith('agent.errors.callFailed|instance.set'), out.message);
+    assertEqual(model.title, 'T');
+    assertEqual(navigated(log), false);
+  });
+
+  test('Model-Kommando der Zielform geht über instances.write, nicht über getViewmodel', async () => {
+    const { ops, log, model } = setup();
+    const out = await ops['instance.call']({ instance: 'b-1', method: 'rename', args: [{ title: 'X' }] });
+    assertEqual(out.value, 'X');
+    assertEqual(model.title, 'X');
+    assertDeepEqual(log, ['instances.write:b-1']);
+  });
+
+  test('Model-Kommando mit zwei Argumenten → call_failed vor dem Schreiben', async () => {
+    const { ops, log } = setup();
+    const out = await ops['instance.call']({ instance: 'b-1', method: 'rename', args: [{}, {}] });
+    assertEqual(out.error, 'call_failed');
+    assertDeepEqual(log, []);
+  });
+
+  test('instances.write meldet project_completed → project_completed, ohne Navigation', async () => {
+    const { ops, log, instances } = setup();
+    // Der Prüfer fängt das abgeschlossene Projekt sonst vorher ab; hier weiß es nur der Dienst.
+    instances.write = async () => { throw Object.assign(new Error('project_completed'), { code: 'project_completed' }); };
+    assertEqual((await ops['instance.set']({ instance: 'b-1', values: { title: 'Neu' } })).error, 'project_completed');
+    assertEqual((await ops['instance.call']({ instance: 'b-1', method: 'rename', args: [{ title: 'X' }] })).error,
+      'project_completed');
+    assertEqual(navigated(log), false);
+  });
+
+  test('Viewmodel-Kommando bleibt beim Ansichtswechsel', async () => {
+    const { ops, log } = setup();
+    const out = await ops['instance.call']({ instance: 'b-1', method: 'label', args: [] });
+    assertEqual(out.value, '#T');
+    assertDeepEqual(log, ['getViewmodel:b-1']);
+  });
+
+  test('asyncTask-Aktion und ihr .cancel bleiben beim Ansichtswechsel', async () => {
+    const { ops, log } = setup();
+    assertEqual((await ops['instance.call']({ instance: 'b-1', method: 'compute', args: [{}] })).value, 7);
+    assertDeepEqual((await ops['instance.call']({ instance: 'b-1', method: 'compute.cancel', args: [] })).value,
+      { cancelled: true });
+    assertDeepEqual(log, ['getViewmodel:b-1', 'getViewmodel:b-1']);
+  });
+
+  test('Aktion eines Altmoduls bleibt beim Ansichtswechsel', async () => {
+    const legacyEntry = { tagged: true, available: true, violations: [], fields: {},
+      actions: { read: { params: [] }, doIt: { params: [] } } };
+    const { ops, log } = setup({ registry: { 'old-mod': legacyEntry }, moduleId: 'old-mod' });
+    const out = await ops['instance.call']({ instance: 'b-1', method: 'doIt', args: [] });
+    assertEqual(out.value, 'done');
+    assertDeepEqual(log, ['getViewmodel:b-1', 'vm.doIt']);
+  });
+});

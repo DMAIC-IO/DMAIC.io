@@ -52,6 +52,8 @@ function opShapes() {
  * @param {{ ensure: () => Promise<object> }} deps.consent
  * @param {object} deps.host  siehe ui/agent-host.js
  * @param {string} deps.appVersion
+ * @param {object} [deps.instances]  Dienst aus core/instances.js; ohne ihn
+ *   laufen Lesen und Schreiben über den Ansichtswechsel
  * @param {object} [deps.entries]  Auflöser aus agent-entries.js (Naht für Tests)
  * @param {object} [deps.revisions]  Merker aus agent-revisions.js; ohne Angabe
  *   ein frischer (Naht für Unit-Tests)
@@ -101,8 +103,8 @@ export function createAgentRuntime(deps) {
 
   /**
    * Vermerkt nach einer gelungenen Aktion, was der Agent jetzt kennt. Vorher
-   * wartet `host.settle()` die Persistenz ab: der persist-`$watch` läuft erst
-   * im nächsten Alpine-Tick, und eine eigene Änderung, die danach landet,
+   * wartet `host.settle()` bei einer eingehängten Instanz die Persistenz ab:
+   * der persist-`$watch` läuft erst im nächsten Alpine-Tick, und eine eigene Änderung, die danach landet,
    * sähe beim nächsten Schreiben wie eine fremde aus. Auch nach `read`: das
    * Einhängen einer Instanz kann ihr Model im `init()` normalisieren. Mit der
    * Instanz-Id legt der Host zudem einen noch fehlenden Zustand ab — sonst
@@ -119,7 +121,9 @@ export function createAgentRuntime(deps) {
       if (op === 'project.read') {
         revisions.markStructure();
       } else if (op === 'instance.call' || op === 'instance.set') {
-        await host.settle(params.instance);
+        // Ohne Mount ist der gespeicherte Stand der Stand: der Dienst
+        // `instances` hat synchron geschrieben, es gibt nichts abzuwarten.
+        if (host.isMounted(params.instance)) await host.settle(params.instance);
         revisions.markInstance(params.instance);
       } else if (op === 'module.add') {
         // `host.addInstance` hat das Einhängen schon abgewartet; erst danach

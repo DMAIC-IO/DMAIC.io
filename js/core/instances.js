@@ -3,11 +3,12 @@
  *
  * Eine Instanz hat zu jedem Zeitpunkt genau einen Besitzer ihres Zustands:
  *
- * - gemountet (die Workspace hält ein lebendes Viewmodel, auch für eine Instanz
- *   einer anderen Phase): das lebende Model. Lesen und Schreiben gehen dorthin;
+ * - gemountet (die Workspace hält ein lebendes Viewmodel, die Hülle hängt im
+ *   Dokument): das lebende Model. Lesen und Schreiben gehen dorthin;
  *   der persist-`$watch` des Moduls speichert.
  * - im Mount: erst `whenInstanceReady`, dann wie gemountet.
- * - nicht gemountet: der gespeicherte Zustand. Schreiben heißt laden →
+ * - nicht gemountet (nie geöffnet oder in einer anderen Phase): der
+ *   gespeicherte Zustand. Schreiben heißt laden →
  *   anwenden → `setModuleState`, ohne `await` dazwischen, damit kein Mount
  *   dazwischenkommt und den Wert mit seinem ersten Speichern überschreibt.
  *

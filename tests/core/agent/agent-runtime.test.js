@@ -59,7 +59,7 @@ async function tick(times = 3) {
 function makeRuntime({ denied = false, viewmodel = null, completed = false, slowAdd = false,
                       getHelp = async () => null, stateManager: stateManagerOverrides,
                       registry: registryOverrides, primed = true, instances = [], defaultRevisions = false,
-                      onSettle = () => {} } = {}) {
+                      onSettle = () => {}, instancesService, isMounted = () => true } = {}) {
   const log = [];
   const settles = [];
   const phases = { data: [...instances], define: [{ instanceId: 'fw-1', moduleId: 'five-why', order: 0 }], extras: [] };
@@ -96,6 +96,7 @@ function makeRuntime({ denied = false, viewmodel = null, completed = false, slow
     revisions: defaultRevisions ? undefined : revisions,
     getHelp,
     appVersion: '1.2.3',
+    instances: instancesService,
     consent: {
       ensure: async () => {
         log.push('consent');
@@ -126,6 +127,7 @@ function makeRuntime({ denied = false, viewmodel = null, completed = false, slow
       removeInstance: async (id) => { log.push(`remove:${id}`); structureRev += 1; return true; },
       // Eigenes Protokoll: `log` bleibt das der Seiteneffekte.
       settle: async (id) => { settles.push(id ?? null); onSettle(id); },
+      isMounted: (id) => isMounted(id),
     },
   });
   return { runtime, log, settles, phases, revs, bumpStructure: () => { structureRev += 1; } };
@@ -903,6 +905,7 @@ suite('agent runtime — the singleton rule applies to the agent path (I1)', () 
         },
         removeInstance: async () => true,
         settle: async () => {},
+        isMounted: () => true,
       },
     });
     return { runtime, log };
@@ -1007,6 +1010,7 @@ suite('agent runtime — the completed project is an honest error (I2 / I3c)', (
         addInstance: async () => null,          // locate() found nothing
         removeInstance: async () => true,
         settle: async () => {},
+        isMounted: () => true,
       },
     });
     const out2 = await broken.interact({ op: 'module.add', module: 'worksheet', phase: 'data' });
@@ -1396,5 +1400,46 @@ suite('agent runtime — ok heißt „angewandt und gespeichert"', () => {
     assertTrue(res.message.includes('Speichern fehlgeschlagen'), res.message);
     assertEqual(res.results?.length, 1);
     assertEqual(res.results[0].ok, true);
+  });
+});
+
+suite('agent runtime — Vermerk ohne Mount', () => {
+  const WS = { instanceId: 'ws-1', moduleId: 'worksheet', order: 0 };
+  const settable = { worksheet: { ...REGISTRY.worksheet, settable: ['x'] } };
+
+  /**
+   * Ein Dienst, der ohne Mount schreibt: `setModuleState` dreht die Revision
+   * sofort, ein `settle` hätte nichts mehr zu tun.
+   */
+  function setup({ mounted }) {
+    let made;
+    const service = {
+      read: async () => ({ x: 0 }),
+      write: async (id) => {
+        made.revs.set(id, (made.revs.get(id) ?? 0) + 1);
+        return { mounted, result: { x: 1 } };
+      },
+    };
+    made = makeRuntime({ primed: false, instances: [WS], registry: settable,
+      instancesService: service, isMounted: () => mounted });
+    return made;
+  }
+
+  test('nicht gemountet: kein settle, der Merker steht direkt; das nächste instance.set ist nicht veraltet', async () => {
+    const { runtime, settles } = setup({ mounted: false });
+    assertEqual((await runtime.interact([{ op: 'instance.call', instance: 'ws-1', method: 'read' }])).ok, true);
+    const first = await runtime.interact([{ op: 'instance.set', instance: 'ws-1', values: { x: 1 } }]);
+    assertEqual(first.ok, true, JSON.stringify(first));
+    const second = await runtime.interact([{ op: 'instance.set', instance: 'ws-1', values: { x: 2 } }]);
+    assertEqual(second.ok, true, JSON.stringify(second));
+    assertDeepEqual(settles, []);
+  });
+
+  test('gemountet: settle(id) vor jedem Vermerk wie bisher', async () => {
+    const { runtime, settles } = setup({ mounted: true });
+    await runtime.interact([{ op: 'instance.call', instance: 'ws-1', method: 'read' }]);
+    const out = await runtime.interact([{ op: 'instance.set', instance: 'ws-1', values: { x: 1 } }]);
+    assertEqual(out.ok, true, JSON.stringify(out));
+    assertDeepEqual(settles, ['ws-1', 'ws-1']);
   });
 });

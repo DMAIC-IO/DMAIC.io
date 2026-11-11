@@ -78,6 +78,15 @@ eindeutig sein (`duplicate_id`).
 | `instance.call` | `instance`, `method`, `args?` | `{ instanceId, method, value }` | ja, außer `method: 'read'` |
 | `instance.set` | `instance`, `values` | `{ instanceId, values }` | ja |
 
+**Ansichtswechsel.** `instance.call` mit `method: 'read'`, `instance.set` und
+die Model-Kommandos eines Moduls mit deklarativem Model wechseln die Ansicht
+nicht: sie gehen über den Kerndienst `instances` und wirken in jeder Phase,
+auch auf eine Instanz, die in dieser Sitzung nie eingehängt war. Mit
+Ansichtswechsel (Anzeigen und Einhängen der Zielinstanz) laufen weiter:
+Kommandos des Viewmodels, `asyncTask`-Aktionen samt `.cancel`, alle Aktionen
+eines Altmoduls und das `read()` eines Altmoduls mit eigenem `read()`.
+`instance.open` ist der ausdrückliche Weg, eine Instanz anzuzeigen.
+
 `module.describe` liefert je Aktion `{ name, help, returns, params, keys }`
 und je Lesefeld `{ name, type, help, bulk, bulkKind?, derived, rules?, keys }`. `bulkKind`
 (`'table'` oder `'tree'`) steht nur an einem Massenfeld und nennt die Art seines
@@ -515,8 +524,11 @@ Endpunkt, ein Schreiben auf ein Blatt macht es sichtbar.
 | eigenes `module.add`, erfolgreich | der Projektstruktur und der neuen Instanz |
 | eigenes `module.remove`, erfolgreich | der Projektstruktur; der Merker der Instanz entfällt |
 
-Vor dem Merken wartet die Fläche, bis die Persistenz der Aktion gelaufen ist
-(auch nach `read`), damit eigene Änderungen nicht als fremde zählen.
+Vor dem Merken wartet die Fläche bei einer eingehängten Instanz, bis die
+Persistenz der Aktion gelaufen ist (auch nach `read`), damit eigene Änderungen
+nicht als fremde zählen. Bei einer nicht eingehängten Instanz setzt sie den
+Merker direkt: der Dienst `instances` hat den Zustand schon synchron
+gespeichert, der gespeicherte Stand ist der Stand.
 `catalog.read`, `module.describe` und `instance.open` setzen nichts.
 
 Geprüft wird zur Ausführungszeit, Aktion für Aktion: `instance.call` mit
@@ -573,11 +585,13 @@ Fragebogen-Baukasten (`draft.buildSurveyFile`, `recipients.buildRecipientFile`,
   antwortet `instance.call` mit `module_not_agent_ready`. Der Katalog ist
   dennoch vollständig — der Agent kann beraten, welches Werkzeug jetzt
   richtig ist, und den Nutzer es bedienen lassen.
-- `instance.call` **wechselt die Ansicht**: es zeigt die Zielinstanz an,
-  bevor es ihre Methode aufruft, weil das Viewmodel nur in der aktiven
-  Ansicht lebt. Ein Stapel über mehrere Instanzen wechselt entsprechend oft.
-  Das ist beabsichtigt und steht im Briefing, Abschnitt „Der Vertrag" →
-  Ansichtswechsel — ein Agent darf sich nicht darauf verlassen,
+- `instance.call` auf ein Viewmodel-Kommando, eine `asyncTask`-Aktion oder
+  eine Aktion eines Altmoduls **wechselt die Ansicht**: es zeigt die
+  Zielinstanz an, bevor es die Methode aufruft, weil das Viewmodel nur
+  eingehängt lebt. Ein Stapel über mehrere solcher Instanzen wechselt
+  entsprechend oft. Lesen, `instance.set` und Model-Kommandos wechseln die
+  Ansicht nicht (siehe „Aktionen"). Das steht im Briefing, Abschnitt „Der
+  Vertrag" → Ansichtswechsel — ein Agent darf sich nicht darauf verlassen,
   dass die sichtbare Ansicht nach einem Aufruf dieselbe ist wie davor.
 
 ## Vertragsversion

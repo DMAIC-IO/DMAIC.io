@@ -12,7 +12,8 @@ const DEFS = {
   'worksheet': { id: 'worksheet', phase: 'data' },
 };
 
-function makeHost({ phases, activeInstance = null, completed = false, ready = null } = {}) {
+function makeHost({ phases, activeInstance = null, completed = false, ready = null, route = null,
+                   activeId = null, pending = [] } = {}) {
   const state = structuredClone(phases ?? {
     data: [],
     define: [{ instanceId: 'fw-1', moduleId: 'five-why', order: 0 }],
@@ -40,6 +41,9 @@ function makeHost({ phases, activeInstance = null, completed = false, ready = nu
   const mounted = new Map();
   const workspace = {
     getActiveModuleInfo: () => activeInstance,
+    getActiveInstanceId: () => activeId,
+    getLiveViewmodel: (id) => mounted.get(id)?.getActionData?.() ?? null,
+    isPending: (id) => pending.includes(id),
     getInstance: (id) => mounted.get(id) ?? null,
     // Wie der echte Workspace: der Griff auf das Viewmodel wartet das
     // Einhängen ab (ui/workspace.js:whenInstanceReady).
@@ -47,7 +51,8 @@ function makeHost({ phases, activeInstance = null, completed = false, ready = nu
     removeInstance: async (id) => { calls.push(['removeInstance', id]); return !completed; },
   };
   const router = {
-    navigate: async (route) => { calls.push(['navigate', route]); },
+    navigate: async (r) => { calls.push(['navigate', r]); },
+    getCurrentRoute: () => route,
   };
   return {
     host: createAgentHost({
@@ -265,5 +270,31 @@ suite('agent host — Persistenz abwarten (Lesen vor Schreiben)', () => {
     // Der Ansichtswechsel (`_persistAllModuleStates`) schreibt denselben Inhalt.
     stateManager.setModuleState('fw-1', { problem: 'x' });
     assertTrue(revisions.isInstanceCurrent('fw-1'), 'ein unveränderter Inhalt ist keine fremde Änderung');
+  });
+});
+
+suite('agent host — gemountet und angezeigt', () => {
+  test('isMounted: ein lebendes Viewmodel heißt gemountet', () => {
+    const { host, mounted } = makeHost();
+    assertEqual(host.isMounted('fw-1'), false);
+    mounted.set('fw-1', { getActionData: () => ({ model: {} }) });
+    assertEqual(host.isMounted('fw-1'), true);
+  });
+
+  test('isMounted: ein laufendes Einhängen zählt als gemountet', () => {
+    const { host } = makeHost({ pending: ['fw-1'] });
+    assertEqual(host.isMounted('fw-1'), true);
+  });
+
+  test('isDisplayed: aktive Instanz auf der Modulroute', () => {
+    const route = { kind: 'module', projectId: 'p-1', instanceId: 'fw-1' };
+    assertEqual(makeHost({ route, activeId: 'fw-1' }).host.isDisplayed('fw-1'), true);
+    assertEqual(makeHost({ route, activeId: 'fw-2' }).host.isDisplayed('fw-1'), false);
+  });
+
+  test('isDisplayed: auf einer anderen Route ist auch die aktive Instanz nicht angezeigt', () => {
+    const { host } = makeHost({ route: { kind: 'dashboard' }, activeId: 'fw-1' });
+    assertEqual(host.isDisplayed('fw-1'), false);
+    assertEqual(makeHost({ activeId: 'fw-1' }).host.isDisplayed('fw-1'), false);
   });
 });

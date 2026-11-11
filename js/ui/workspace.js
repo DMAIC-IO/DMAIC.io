@@ -773,14 +773,18 @@ export class Workspace {
 
   /**
    * Das lebende Viewmodel einer Instanz, oder null, wenn sie nicht gemountet
-   * ist. Auch eine Instanz einer anderen Phase ist gemountet: `_showPhase`
-   * hängt nur ihre Hülle ab, das Viewmodel lebt weiter. Synchron, ohne
-   * Warten — wer eine laufende Einhängung abwarten will, fragt `isPending`
-   * und nimmt `whenInstanceReady()`.
+   * ist. Gemountet heißt: ihre Hülle hängt im Dokument. Eine Instanz einer
+   * anderen Phase ist es nicht — `_showPhase` löst ihre Hülle, und Alpine
+   * räumt die Komponente dabei ab (`$data` bliebe ein leerer Proxy). Beim
+   * Wiedereinhängen lädt das Modul den gespeicherten Stand neu; bis dahin ist
+   * der gespeicherte Stand der Besitzer. Synchron, ohne Warten — wer eine
+   * laufende Einhängung abwarten will, fragt `isPending` und nimmt
+   * `whenInstanceReady()`.
    * @param {string} instanceId
    * @returns {object|null}
    */
   getLiveViewmodel(instanceId) {
+    if (this._containers.get(instanceId)?.isConnected !== true) return null;
     return this._instances.get(instanceId)?.getActionData?.() ?? null;
   }
 

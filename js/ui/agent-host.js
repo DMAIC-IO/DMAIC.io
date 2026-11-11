@@ -3,8 +3,8 @@
  *
  * Die Werkzeugschicht in `core/agent/` kennt weder `window` noch das DOM.
  * Alles, was sie an der laufenden UI braucht, kommt durch dieses Objekt:
- * Anzeigen, Öffnen, Anlegen, Entfernen, und der Griff auf das lebende
- * Viewmodel.
+ * Anzeigen, Öffnen, Anlegen, Entfernen, der Griff auf das lebende
+ * Viewmodel, und die Fragen, ob eine Instanz eingehängt oder angezeigt ist.
  *
  * Derselbe Weg wie die UI. `addInstance` ruft dieselbe
  * `createInstance`-Funktion wie der Router, `removeInstance` denselben
@@ -35,6 +35,8 @@ const SETTLE_TASKS_TIMEOUT_MS = 20000;
  *   getCurrentView: () => ({ instanceId: string, module: string, phase: string }|null),
  *   openInstance: (instanceId: string) => Promise<{ instanceId: string, module: string, phase: string }|null>,
  *   getViewmodel: (instanceId: string) => Promise<object|null>,
+ *   isMounted: (instanceId: string) => boolean,
+ *   isDisplayed: (instanceId: string) => boolean,
  *   addInstance: (moduleId: string, phase?: string) => Promise<{ instanceId: string, module: string, phase: string }|null>,
  *   removeInstance: (instanceId: string) => Promise<boolean>,
  *   settle: (instanceId?: string) => Promise<void>,
@@ -93,11 +95,32 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
       return found;
     },
 
+    /**
+     * Ob die Instanz ein lebendes Viewmodel hat oder gerade eingehängt wird.
+     * Eine Instanz einer anderen Phase ist es nicht (workspace.getLiveViewmodel).
+     * @param {string} instanceId
+     * @returns {boolean}
+     */
+    isMounted(instanceId) {
+      return workspace.getLiveViewmodel(instanceId) !== null || workspace.isPending(instanceId);
+    },
+
+    /**
+     * Ob die Instanz das aktive Modul des sichtbaren Reiters ist.
+     * @param {string} instanceId
+     * @returns {boolean}
+     */
+    isDisplayed(instanceId) {
+      return router.getCurrentRoute()?.kind === 'module' && workspace.getActiveInstanceId() === instanceId;
+    },
+
     async getViewmodel(instanceId) {
+      // Der Weg mit Ansichtswechsel: für Viewmodel-Kommandos, Abläufe und
+      // Aktionen von Altmodulen, die das lebende Viewmodel brauchen. Lesen und
+      // Model-Kommandos gehen ohne ihn über den Dienst `instances`.
       // Eingehängt wird eine Instanz erst, wenn ihre Phase angezeigt wird
-      // (workspace._instantiateModule); danach lebt ihr Viewmodel auch über
-      // Phasenwechsel weiter (workspace.getLiveViewmodel). Eine nie geöffnete
-      // Instanz hat keins. Öffnen ist daher Teil des Zugriffs, nicht eine
+      // (workspace._instantiateModule), und nur solange ihre Phase angezeigt
+      // wird, lebt ihr Viewmodel. Eine nie geöffnete Instanz hat keins. Öffnen ist daher Teil des Zugriffs, nicht eine
       // Vorbedingung, die der Agent selbst erfüllen müsste.
       const opened = await this.openInstance(instanceId);
       if (!opened) return null;

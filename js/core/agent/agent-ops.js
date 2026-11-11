@@ -27,13 +27,25 @@ import { stripPaths } from '../view-fields.js';
 import { setFields } from '../model.js';
 
 /**
+ * Ein Dienst, der jede Instanz an den Ansichtswechsel verweist — für Aufrufer
+ * ohne `instances` (Tests, die nur den Host fälschen).
+ * @type {Pick<import('../instances.js').InstancesService, 'read' | 'write'>}
+ */
+const MOUNT_ONLY = Object.freeze({
+  read: async () => { throw Object.assign(new Error('needs_mount'), { code: 'needs_mount' }); },
+  write: async () => { throw Object.assign(new Error('needs_mount'), { code: 'needs_mount' }); },
+});
+
+/**
  * @param {object} deps  { stateManager, moduleRegistry, i18n, registry, getHelp, host, appVersion }
- *   plus optional `entries` (Auflöser, agent-entries.js) and `loadModule` (for the default resolver)
+ *   plus optional `entries` (Auflöser, agent-entries.js), `loadModule` (for the default resolver)
+ *   and `instances` (core/instances.js: Lesen und Schreiben ohne Mount)
  * @returns {Record<string, (action: object) => Promise<any>>}
  */
 export function createOps(deps) {
   const { stateManager, moduleRegistry, i18n, registry, getHelp, host, appVersion } = deps;
   const entries = deps.entries ?? createEntryResolver(registry, deps.loadModule);
+  const instancesService = deps.instances ?? MOUNT_ONLY;
   const t = (key, params) => i18n.t(key, params);
 
   return {
@@ -183,6 +195,27 @@ export function createOps(deps) {
           t('agent.errors.methodNotAgentAction', { module: found.module, method: action.method }),
           { available: Object.keys(entry.actions ?? {}).sort() });
       }
+      const args = action.args ?? [];
+      // Ohne Ansichtswechsel: `read` jeder Instanz und die Model-Kommandos
+      // eines Schema-Moduls. Der Dienst verweist mit `needs_mount` an den
+      // alten Weg (Altmodul mit eigenem `read()`). Viewmodel-Kommandos,
+      // Abläufe und Aktionen von Altmodulen brauchen das lebende Viewmodel.
+      if (action.method === 'read' || spec.target === 'model') {
+        try {
+          let value;
+          if (action.method === 'read') {
+            requireArity(action.method, args, spec.params ?? []);
+            value = await instancesService.read(action.instance, args[0]);
+          } else {
+            requireForm('args', args, args.length <= 1, `one command object for ${action.method}`);
+            ({ result: value } = await instancesService.write(action.instance,
+              (model) => model[action.method](args[0])));
+          }
+          return callResult(action, value);
+        } catch (err) {
+          if (err?.code !== 'needs_mount') return serviceError(t, action, action.method, err);
+        }
+      }
       const viewmodel = await host.getViewmodel(action.instance);
       if (!viewmodel) {
         // Derselbe Vertragscode wie „Instanz unbekannt" (ERRORS.UNKNOWN_INSTANCE) —
@@ -208,7 +241,6 @@ export function createOps(deps) {
         // soll der Agent sehen.
         return unknownMethodError(t, found.module, action.method, viewmodel, entry);
       }
-      const args = action.args ?? [];
       try {
         // Die Argumentzahl gegen den Parametersatz der Registry — dieselbe
         // Quelle, aus der der Agent die Signatur liest. Ohne sie kam ein
@@ -227,8 +259,8 @@ export function createOps(deps) {
           requireArity(action.method, args, spec.params ?? []);
           value = await target.object[target.name](...args);
         }
-        // Die eine Stelle, an der Ansichtsfelder aus jedem `read()` fallen — auch
-        // aus einem handgeschriebenen, das nicht durch `projectReadState` läuft.
+        // Auf dem alten Weg fallen die Ansichtsfelder hier aus jedem `read()` —
+        // auch aus einem handgeschriebenen; der Dienst streicht sie selbst.
         const shown = action.method === 'read' ? stripPaths(value, entry.viewFields) : value;
         return callResult(action, shown);
       } catch (err) {
@@ -250,6 +282,15 @@ export function createOps(deps) {
       if (!Array.isArray(entry.settable)) {
         return axiError(ERRORS.CALL_FAILED, t('agent.errors.setNotSupported', { module: found.module }));
       }
+      // Alles prüfen, dann alles schreiben — ohne Ansichtswechsel, auf dem
+      // lebenden Model oder dem gespeicherten Stand (Besitzer-Regel im Dienst).
+      try {
+        const { result: values } = await instancesService.write(action.instance,
+          (model) => setFields(model, action.values));
+        return { instanceId: action.instance, values };
+      } catch (err) {
+        if (err?.code !== 'needs_mount') return serviceError(t, action, 'instance.set', err);
+      }
       const viewmodel = await host.getViewmodel(action.instance);
       if (!viewmodel) {
         return axiError(ERRORS.UNKNOWN_INSTANCE,
@@ -260,8 +301,7 @@ export function createOps(deps) {
         const values = setFields(viewmodel.model, action.values);
         return { instanceId: action.instance, values };
       } catch (err) {
-        return axiError(ERRORS.CALL_FAILED,
-          t('agent.errors.callFailed', { method: 'instance.set', detail: err?.message ?? String(err) }));
+        return callFailedError(t, 'instance.set', err);
       }
     },
   };
@@ -370,6 +410,22 @@ function callResult(action, value) {
 function callFailedError(t, method, err) {
   return axiError(ERRORS.CALL_FAILED,
     t('agent.errors.callFailed', { method, detail: err?.message ?? String(err) }));
+}
+
+/**
+ * Ein Fehler des Dienstes `instances` als AXI-Fehler. Was keinen Code trägt,
+ * kommt aus dem Modul (Argumentprüfung, Kommando) und wird `call_failed`.
+ * @param {Function} t @param {{ instance: string }} action @param {string} method @param {any} err
+ * @returns {object}
+ */
+function serviceError(t, action, method, err) {
+  if (err?.code === 'project_completed') return axiError(ERRORS.PROJECT_COMPLETED, t('app.projectReadOnly'));
+  if (err?.code === 'unknown_instance') {
+    // Die Instanz stand eben noch in der Liste: ihr Einhängen hat die Frist gerissen.
+    return axiError(ERRORS.UNKNOWN_INSTANCE,
+      t('agent.errors.viewmodelNotAlive', { instance: action.instance }), { available: [] });
+  }
+  return callFailedError(t, method, err);
 }
 
 /**

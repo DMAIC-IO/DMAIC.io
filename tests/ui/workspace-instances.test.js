@@ -59,6 +59,7 @@ suite('workspace live viewmodels', () => {
   test('getLiveViewmodel liefert das Viewmodel einer Instanz oder null', () => {
     const ws = makeWorkspace();
     const vm = { model: {} };
+    ws._containers = new Map([['i1', { isConnected: true }], ['i2', { isConnected: true }]]);
     ws._instances.set('i1', { getActionData: () => vm });
     ws._instances.set('i2', {});
     assertEqual(ws.getLiveViewmodel('i1'), vm);
@@ -73,7 +74,10 @@ suite('workspace live viewmodels', () => {
     assertEqual(ws.isPending('i2'), false);
   });
 
-  test('nach einem Phasenwechsel bleibt die Instanz der alten Phase gemountet', () => {
+  test('nach einem Phasenwechsel ist die Instanz der alten Phase nicht mehr gemountet', () => {
+    // Alpine räumt eine aus dem Dokument gelöste Komponente ab (x-data-Cleanup):
+    // `$data` liefert danach einen leeren Proxy. Beim Wiedereinhängen lädt das
+    // Modul den gespeicherten Stand neu — der ist bis dahin der Besitzer.
     const phases = {
       define: [{ instanceId: 'd1', moduleId: 'sipoc' }],
       measure: [{ instanceId: 'm1', moduleId: 'sipoc' }],
@@ -81,11 +85,14 @@ suite('workspace live viewmodels', () => {
     const ws = makePhaseWorkspace(phases);
     const vm = { model: { n: 1 } };
     ws._instances.set('d1', { getActionData: () => vm, getState: () => null });
-    ws._containers.set('d1', { style: {}, dataset: {} });
+    const container = { style: {}, dataset: {}, isConnected: true };
+    ws._containers.set('d1', container);
     ws._showPhase('define');
+    assertEqual(ws.getLiveViewmodel('d1'), vm);
+    container.isConnected = false;            // `_moduleArea.replaceChildren()` löst die Hülle
     ws._showPhase('measure');
     assertEqual(ws._activePhase, 'measure');
-    assertEqual(ws.getLiveViewmodel('d1'), vm);
+    assertEqual(ws.getLiveViewmodel('d1'), null);
   });
 
   test('setInstances reicht list und read in den Modulkontext, nicht write', () => {

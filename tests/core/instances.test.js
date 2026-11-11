@@ -271,6 +271,7 @@ suite('instances.write', () => {
     const sm = makeState({ phases: PHASES(), states: { d1: { n: 1 } }, bus });
     const ws = Object.create(Workspace.prototype);
     ws._instances = new Map();
+    ws._containers = new Map();
     ws._pending = new Map();
     ws._stateManager = sm;
     const vm = { model: Doc.fromJSON({ n: 1 }) };
@@ -278,6 +279,7 @@ suite('instances.write', () => {
     ws._pending.set('d1', new Promise((resolve) => {
       finish = () => {
         ws._instances.set('d1', { getActionData: () => vm, getState: () => vm.model.toJSON() });
+        ws._containers.set('d1', { isConnected: true });
         ws._pending.delete('d1');
         resolve();
       };

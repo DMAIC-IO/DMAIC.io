@@ -196,4 +196,22 @@ suite('agent-briefing — der echte Agententext', () => {
       assertEqual(/\busage\b/.test(text), false, text);
     }
   });
+
+  test('Ansichtswechsel nur noch, wo das lebende Viewmodel gebraucht wird, in beiden Sprachen', () => {
+    const de = flattenBriefing(agentText, 'de');
+    const en = flattenBriefing(agentText, 'en');
+    assertEqual(de.includes('instance.call wechselt die Ansicht'), false, de);
+    assertEqual(en.includes('instance.call switches the view'), false, en);
+    assertEqual(de.includes('ohne Ansichtswechsel'), true, de);
+    assertEqual(en.includes('without switching the view'), true, en);
+    for (const text of [de, en]) {
+      for (const word of ["method: 'read'", 'instance.set', 'Model', 'Viewmodel', 'instance.open']) {
+        assertEqual(text.includes(word), true, `${word}: ${text}`);
+      }
+    }
+    assertEqual(de.includes('Altmodul'), true, de);
+    assertEqual(de.includes('Abläufe'), true, de);
+    assertEqual(en.includes('legacy module'), true, en);
+    assertEqual(en.includes('async tasks'), true, en);
+  });
 });
