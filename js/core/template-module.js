@@ -201,7 +201,7 @@ function derivedCells(vm, defs, data) {
  * Die Mitglieder, die ein Schema-Modul zusätzlich bekommt: `moduleId` (für
  * `x-field`), `read()` und je Viewmodel-Kommando eine geprüfte Methode.
  * @param {string} moduleId @param {object} entry @param {Record<string, object>} vmCommands
- * @param {string[]} [readNames] die `derived` des Models und die `computed` des view-Blocks — `read()` liefert jedes
+ * @param {string[]} [readNames] die `derived` des Models — `read()` liefert jedes; die `computed` des view-Blocks bleiben Ansichtshilfen
  * @param {string[]} [bulk] davon die Massenfelder
  * @returns {object}
  */
@@ -297,9 +297,8 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
 // Handler; `this` ist die Komponente mit model, state, t. base.State — UI-State
 // aus defineState, nur zusammen mit view.
 // Model.schema.derived — Ableitungen des Models, im Viewmodel als Zellen `this.<name>`, in read()
-// wie die computed; derivedBulk sind ihre Massenfelder. Ohne Mount: loadDetached/readDetached.
-// base.readBulk — Massenfelder unter den computed (Zeilenlisten): read() liefert sie
-// als Deskriptor, voll mit fields/rows.
+// als Lesefelder; derivedBulk sind ihre Massenfelder. Ohne Mount: loadDetached/readDetached.
+// computed im view-Block sind Ansichtshilfen und stehen nicht in read().
 // base.asyncTasks — asynchrone Abläufe (core/async-task.js), nur mit view und defineModel; Wert unter dem Namen, Status unter _asyncTasks.
 // base.exports — Mapper nach Datenform (table/tables/tree/image, fileName),
 // nur mit view; daraus entstehen Export-Menü und Dateien (core/exporter.js).
@@ -313,7 +312,7 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
  * @returns {Record<string, any> & { readonly __view?: V, readonly __asyncTasks?: T }}
  */
 export function createModule(base) {
-  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, fromExample, createDefault, gestures = [], forms = {}, exports: exportsDef, readBulk = [], asyncTasks: taskDefs = {} } = base;
+  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, fromExample, createDefault, gestures = [], forms = {}, exports: exportsDef, asyncTasks: taskDefs = {} } = base;
   if (descriptor) {
     for (const key of NOT_IN_CONFIG) {
       if (Object.hasOwn(config, key)) {
@@ -324,7 +323,8 @@ export function createModule(base) {
   const id = descriptor ? descriptor.id : config.id;
   if (data && view) throw new Error(`createModule(${id}): data and view are mutually exclusive`);
   if (UiState && !view) throw new Error(`createModule(${id}): State requires view`);
-  if (Object.hasOwn(base, 'readComputed')) throw new Error(`createModule(${id}): readComputed is gone — every computed is readable`);
+  if (Object.hasOwn(base, 'readComputed')) throw new Error(`createModule(${id}): readComputed is gone — computed is not readable`);
+  if (Object.hasOwn(base, 'readBulk')) throw new Error(`createModule(${id}): readBulk is gone — use derivedBulk in the Model`);
   const taskNames = Object.keys(taskDefs);
   if (taskNames.length > 0 && !view) throw new Error(`createModule(${id}): asyncTasks needs view`);
   const schema = schemaOf(Model);
@@ -333,9 +333,6 @@ export function createModule(base) {
   const derivedBulk = [...(schema?.derivedBulk ?? [])];
   const probed = view ? computedDefsOf(id, view, derivedList) : { members: [], computed: {} };
   const computedNames = Object.keys(probed.computed);
-  for (const name of readBulk) {
-    if (!computedNames.includes(name)) throw new Error(`createModule(${id}): readBulk ${name} is not a computed`);
-  }
   if (fromExample !== undefined && typeof fromExample !== 'function') throw new Error(`createModule(${id}): fromExample must be a function`);
   if (fromExample && beforeLoadExample) throw new Error(`createModule(${id}): fromExample and beforeLoadExample are exclusive`);
   if (exportsDef !== undefined) checkExports(id, exportsDef, Boolean(view));
@@ -370,8 +367,8 @@ export function createModule(base) {
     for (const name of fieldNames) {
       if (computedNames.includes(name)) throw new Error(`createModule(${id}): field ${name} collides with computed`);
       const base = name.endsWith('Columns') ? name.slice(0, -'Columns'.length) : null;
-      if (base !== null && (readBulk.includes(base) || derivedBulk.includes(base))) {
-        throw new Error(`createModule(${id}): field ${name} collides with ${readBulk.includes(base) ? 'readBulk' : 'derivedBulk'} ${base}`);
+      if (base !== null && derivedBulk.includes(base)) {
+        throw new Error(`createModule(${id}): field ${name} collides with derivedBulk ${base}`);
       }
     }
   }
@@ -388,7 +385,7 @@ export function createModule(base) {
       ...Object.fromEntries([...RESERVED_MEMBERS, ...LIFECYCLE].map((n) => [n, 'view member'])),
     });
   }
-  const agentEntry = schema ? schemaAgentEntry(Model, vmCommands, { computed: computedNames, bulk: readBulk, asyncTasks: taskDefs }) : undefined;
+  const agentEntry = schema ? schemaAgentEntry(Model, vmCommands, { asyncTasks: taskDefs }) : undefined;
   // Zellen im Viewmodel: erst die Ableitungen des Models, dann die computed des view-Blocks.
   const cellNames = [...derivedList, ...computedNames];
   const i18nKey = `modules.${  id}`;
@@ -594,7 +591,7 @@ export function createModule(base) {
               value: (path) => fieldErrors.message(path),
             });
           }
-          if (schema) copyMembers(comp, schemaMembers(id, agentEntry, vmCommands, cellNames, [...derivedBulk, ...readBulk]));
+          if (schema) copyMembers(comp, schemaMembers(id, agentEntry, vmCommands, derivedList, derivedBulk));
           if (schema || exportsDef) {
             // Griff der Kommando-Primitive (core/command-directives.js) und, für
             // exports/component, von runExport (core/exporter.js). Nicht

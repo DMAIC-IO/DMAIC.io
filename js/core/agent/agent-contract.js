@@ -22,9 +22,11 @@
 /**
  * Version der Fläche. Bump nur bei Bruch der Hülle. 2 seit 2026-10-28:
  * `usage` fiel aus der Beschreibungsantwort (`ops` und `errors` stehen jetzt
- * oben), und `ok: true` heißt „angewandt und gespeichert".
+ * oben), und `ok: true` heißt „angewandt und gespeichert". 3 seit 2026-11-11:
+ * `read()` liefert keine Ansichtshilfen (`computed` des view-Blocks) mehr,
+ * sondern die `derived` des Models; `readBulk` entfällt.
  */
-export const CONTRACT_VERSION = 2;
+export const CONTRACT_VERSION = 3;
 
 /**
  * Alle Fehlercodes der Fläche. Werte sind Teil des Vertrags.

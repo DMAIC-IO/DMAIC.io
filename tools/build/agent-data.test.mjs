@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { collectAgentData, renderAgentRegistryModule, collectDomDetours, CREATING_VOID_EXEMPT, readBulkOf,
+import { collectAgentData, renderAgentRegistryModule, collectDomDetours, CREATING_VOID_EXEMPT,
          readAgentReadTypedef, readDerivedReturns } from './agent-data.mjs';
 import { readHelpTables, lookup, helpExists, STRUCTURE_JARGON, typedefHelpSuffixes } from './agent-report.mjs';
 import { helpKeysInTemplates, helpKeysInScripts, helpKeysInSharedSources,
@@ -3777,7 +3777,6 @@ const VM_WITH_COMPUTED = `import { createModule, command, asyncTask } from '../.
 import { State } from '../domain/model.js';
 export default createModule({
   Model: State,
-  readBulk: ['rows'],
   commands: {
     reset: command({ params: {}, run() {} }),
     pick: command({ params: { id: true }, run() {} }),
@@ -3800,8 +3799,8 @@ test('umgestelltes Modul: Kommandos, computed und Tasks im Eintrag', async () =>
   const e = modules.demo;
   assert.deepEqual(Object.keys(e.actions).sort(), ['compute', 'compute.cancel', 'pick', 'read', 'rename', 'reset']);
   assert.deepEqual([e.tagged, e.available, e.schema, e.violations, e.reported], [true, true, true, [], []]);
-  assert.equal(e.fields.total.derived, true);
-  assert.deepEqual([e.fields.rows.bulk, e.fields.rows.bulkKind], [true, 'table']);
+  assert.equal(e.fields.total, undefined, 'ein computed ist kein Lesefeld');
+  assert.equal(e.fields.rows, undefined);
   assert.notEqual(e.fields.title.derived, true);
   assert.equal(e.fields.title.type, 'string');
   assert.deepEqual(e.viewFields, ['zoom']);
@@ -3828,13 +3827,13 @@ test('typedefKeys: Vereinigung nennt die Schlüssel aller Glieder, optional wo n
 /** @typedef {Ok|No} Both */
 export {};
 `;
-  const vm = VM_WITH_COMPUTED.replace('computed: { total() { return 1; }',
-    "computed: {\n /** @returns {import('./a.js').Both} */\n total() { return 1; }");
+  const model = MODEL_WITH_COMMAND.replace('export const State = defineModel({',
+    "export const State = defineModel({\n  derived: {\n    /** @returns {import('./a.js').Both} */\n    total() { return 1; },\n    rows() { return []; },\n  },\n  derivedBulk: ['rows'],")
   const root = fixture({}, {
     'js/modules/demo/module.js': "export default { id: 'demo', load: () => null };",
-    'js/modules/demo/domain/model.js': MODEL_WITH_COMMAND,
-    'js/modules/demo/viewmodel/viewmodel.js': vm,
-    'js/modules/demo/viewmodel/a.js': types,
+    'js/modules/demo/domain/model.js': model,
+    'js/modules/demo/viewmodel/viewmodel.js': VM_WITH_COMPUTED,
+    'js/modules/demo/domain/a.js': types,
   });
   const { modules } = await collectAgentData(root, { converted: ['demo'] });
   const total = modules.demo.fields.total;
@@ -3845,13 +3844,6 @@ export {};
   assert.equal(total.keys.p.optional, true);
   assert.equal(total.keys.reason.optional, true);
   assert.equal(modules.demo.fields.rows.keys, undefined);
-});
-
-test('readBulkOf: das Array-Literal readBulk im createModule-Argument', () => {
-  assert.deepEqual(readBulkOf(VM_WITH_COMPUTED), ['rows']);
-  assert.deepEqual(readBulkOf("export default createModule({ readBulk: ['a', 'b'] });"), ['a', 'b']);
-  assert.deepEqual(readBulkOf('export default createModule({ view: () => ({}) });'), []);
-  assert.deepEqual(readBulkOf('export default createModule({ readBulk: NAMES });'), []);
 });
 
 const MODEL_WITH_DERIVED = `import { defineModel, number } from '${CORE_MODEL_URL}';
@@ -3895,7 +3887,7 @@ test('umgestelltes Modul: derived aus dem Model mit Schlüsselbaum aus seiner Ty
   assert.equal(stats.keys.spread.keysOf, 'Bar');
   assert.deepEqual(stats.keys.spread.keys, { sd: { type: 'number|null', help: 'die Standardabweichung' } });
   assert.deepEqual([rows.bulk, rows.bulkKind, rows.derived], [true, 'table', true]);
-  assert.equal(total.derived, true, 'computed bleiben übergangsweise Lesefelder');
+  assert.equal(total, undefined, 'ein computed ist kein Lesefeld');
 });
 
 const RECORD_MODEL = `/**

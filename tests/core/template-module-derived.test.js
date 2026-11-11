@@ -97,12 +97,12 @@ suite('createModule mit derived', () => {
     await mod.destroy(); container.remove();
   });
 
-  test('read() liefert derived, Massenfelder als Deskriptor, computed übergangsweise', async () => {
+  test('read() liefert derived, Massenfelder als Deskriptor, kein computed', async () => {
     const { mod, container, vm } = await mount();
     const r = vm().read();
     assertEqual(r.double, 6);
     assertEqual(r.quad, 12);
-    assertEqual(r.label, 'n=3');
+    assertEqual('label' in r, false);
     assertDeepEqual(r.rows, { $bulk: true, kind: 'table', rowCount: 1, columns: ['i'] });
     assertDeepEqual(vm().read({ fields: ['rows'] }).rows, [{ i: 3 }]);
     await mod.destroy(); container.remove();
@@ -114,8 +114,7 @@ suite('createModule mit derived', () => {
     const model = mod.loadDetached({ n: 3, zoom: 4 }, { instanceId: 'dt-2', eventBus: null, stateManager: sm });
     const data = {};
     const mounted = stripPaths(vm().read(), Object.keys(Doc.schema.view));
-    const { label: _label, ...mountedDerived } = mounted;
-    assertDeepEqual(mod.readDetached(model, data), mountedDerived);
+    assertDeepEqual(mod.readDetached(model, data), mounted);
     assertEqual('zoom' in mod.readDetached(model, data), false, 'Ansichtsfelder fehlen');
     assertDeepEqual(mod.readDetached(model, data, { fields: ['rows'] }).rows, [{ i: 3 }]);
     await mod.destroy(); container.remove();
@@ -188,6 +187,6 @@ suite('createModule mit derived', () => {
     const { fields } = makeModule().agentEntry;
     assertEqual(fields.double.derived, true);
     assertDeepEqual([fields.rows.bulk, fields.rows.bulkKind], [true, 'table']);
-    assertTrue(fields.label.derived);
+    assertEqual(fields.label, undefined);
   });
 });

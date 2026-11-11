@@ -433,7 +433,7 @@ leer sein — eine falsche Spaltenliste wäre schlechter als keine.
 ausgelassen" unterscheidbar bleibt. Ausgelassene Werte sind über `read()`
 nicht abrufbar.
 
-**Abgeleitete Ergebnisse.** Jedes `computed` des view-Blocks erscheint
+**Abgeleitete Ergebnisse.** Jede Ableitung des Models (`derived`) erscheint
 in `read()` — als Zahlen, nicht als Anzeigetexte. In `module.describe` steht ein
 solches Feld mit `derived: true`; es ist nur lesbar, `instance.set` lehnt es
 ab. Beispiel `hypothesis-test`, Feld `result`:
@@ -582,7 +582,7 @@ Fragebogen-Baukasten (`draft.buildSurveyFile`, `recipients.buildRecipientFile`,
 
 ## Vertragsversion
 
-Jede Antwort trägt `contract` (derzeit `2`), die Beschreibungsantwort
+Jede Antwort trägt `contract` (derzeit `3`), die Beschreibungsantwort
 zusätzlich `appVersion`. `contract` wird nur bei einem Bruch der Hülle
 erhöht — Aktionsform, Referenzsyntax, Fehler*form*, Ergebnis-Hülle. Neue
 `op`s, neue Fehler*codes*, neue Antwortfelder oder neu freigegebene Module
@@ -624,6 +624,14 @@ Deskriptor), `describe` nennt den Schlüsselbaum aus dem `@returns` der
 `afterRemovalFrom:<pfad>`, `unique`, `sorted`, `maxCount:<n>`. Aktionen
 `….cancel` laufen an der Warteschlange vorbei. Neue Antwortfelder und
 Tokens, gleiche Hülle, keine neuen Fehlercodes — kein Bruch.
+
+Lesevertrag ohne Ansichtshilfen (2026-11-11, `contract` 3): `read()` liefert die
+Felder und die `derived` des Models, dazu `asyncTasks` — nicht mehr die `computed`
+des view-Blocks (Auswahllisten, Vorschauen, Anzeigereihen); sie sind Ansichtshilfen
+und keine Daten. `readBulk` entfällt, Massenfelder stehen in `derivedBulk` des
+Models. Damit ändert sich die Form der Antwort von `read()`; ein Agent, der eine
+Ansichtshilfe las, bekommt sie nicht mehr. Eine gespeicherte Einwilligung mit
+`contract: 2` bleibt gültig — `agent-consent.js` vergleicht die Version nicht.
 
 Aktionsnamen mit Punkt (`draft.addQuestion`) sind ebenfalls kein Bruch: die
 Aktionsform `{ op: 'instance.call', instance, method, args }` bleibt,

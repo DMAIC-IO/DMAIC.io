@@ -222,29 +222,27 @@ suite('createModule: computed im view-Block', () => {
       /computed label collides/);
   });
 
-  test('read() liefert jedes computed als Kopie, ohne Liste', async () => {
+  test('read() enthält kein computed, das Viewmodel liest es weiter', async () => {
     const { data } = await mount({
       view() { return { computed: { shout() { return { text: String(this.model.title) }; } } }; },
     });
-    const out = data().read();
-    assertDeepEqual(out.shout, { text: 'abc' });
-    out.shout.text = 'zz';
-    assertEqual(data().shout.text, 'abc');
+    assertDeepEqual(data().shout, { text: 'abc' });
+    assertEqual('shout' in data().read(), false);
   });
 
-  test('read() liefert mehrere computed, agentEntry kennt sie als derived', async () => {
-    const extra = { view() { return { computed: { a() { return 1; }, b() { return { x: 2 }; } } }; } };
-    const { data } = await mount(extra);
-    const r = data().read();
-    assertEqual(r.a, 1);
-    assertDeepEqual(r.b, { x: 2 });
-    const entry = makeModule(extra).agentEntry;
-    assertTrue(entry.fields.a.derived === true && entry.fields.b.derived === true);
+  test('agentEntry kennt ein computed nicht als Lesefeld', () => {
+    const entry = makeModule({ view() { return { computed: { a() { return 1; } } }; } }).agentEntry;
+    assertEqual(entry.fields.a, undefined);
   });
 
   test('readComputed als Option wirft', () => {
     assertThrows(() => makeModule({ readComputed: ['a'], view() { return { computed: { a() { return 1; } } }; } }),
-      /createModule\(view-test\): readComputed is gone — every computed is readable$/);
+      /createModule\(view-test\): readComputed is gone — computed is not readable$/);
+  });
+
+  test('readBulk als Option wirft', () => {
+    assertThrows(() => makeModule({ readBulk: [], view() { return {}; } }),
+      /createModule\(view-test\): readBulk is gone — use derivedBulk in the Model$/);
   });
 
   test('computed muss eine Funktion sein — beim Anlegen', () => {
@@ -280,62 +278,5 @@ suite('createModule: computed im view-Block', () => {
     vm.model.title = 'neu';
     await flush();
     assertEqual(runs, 1);
-  });
-});
-
-suite('createModule: readBulk', () => {
-  test('Massenfeld als Deskriptor, voll mit fields, zugeschnitten mit rows', async () => {
-    const { data } = await mount({
-      readBulk: ['rows'],
-      view() {
-        return { computed: {
-          rows() { return [{ v: 1, s: false }, { v: 2, s: true }, { v: 3, s: false }]; },
-          sum() { return { total: 6 }; },
-        } };
-      },
-    });
-    const out = data().read();
-    assertDeepEqual(out.rows, { $bulk: true, kind: 'table', rowCount: 3, columns: ['v', 's'] });
-    assertDeepEqual(out.sum, { total: 6 });
-    assertEqual(data().read({ fields: ['rows'] }).rows.length, 3);
-    const cut = data().read({ fields: ['rows'], rows: { from: 1, to: 2 } });
-    assertDeepEqual(cut.rows, [{ v: 2, s: true }]);
-    assertDeepEqual(cut['rows$range'], { from: 1, to: 2, rowCount: 3 });
-  });
-
-  const bulkView = (rows) => () => ({ computed: { rows() { return rows; } } });
-
-  test('readBulk: Spalten aus allen Zeilen', async () => {
-    const { data } = await mount({ readBulk: ['rows'], view: bulkView([{ a: 1 }, { a: 2, b: 3 }, { c: 4, a: 5 }]) });
-    assertDeepEqual(data().read().rows.columns, ['a', 'b', 'c']);
-  });
-
-  test('readBulk: leerer Massenwert', async () => {
-    const { data } = await mount({ readBulk: ['rows'], view: bulkView([]) });
-    assertDeepEqual(data().read().rows, { $bulk: true, kind: 'table', rowCount: 0, columns: [] });
-  });
-
-  test('readBulk: describe trägt bulk und derived', () => {
-    const f = makeModule({ readBulk: ['rows'], view: bulkView([]) }).agentEntry.fields.rows;
-    assertTrue(f.bulk === true && f.derived === true && f.bulkKind === 'table');
-  });
-
-  test('readBulk: Zeilen werden nur geklont, wenn sie angefordert sind', async () => {
-    const rows = [{ a: 1 }];
-    const { data } = await mount({ readBulk: ['rows'], view: bulkView(rows) });
-    assertTrue(data().read().rows.$bulk === true);
-    const got = data().read({ fields: ['rows'] }).rows;
-    assertDeepEqual(got, [{ a: 1 }]);
-    assertTrue(got !== rows && got[0] !== rows[0]);
-  });
-
-  test('readBulk: Feld rowsColumns kollidiert', () => {
-    const Bad = defineModel({ fields: { title: text(), rowsColumns: text() } });
-    assertThrows(() => makeModule({ Model: Bad, readBulk: ['rows'], view: bulkView([]) }),
-      /createModule\(view-test\): field rowsColumns collides with readBulk rows$/);
-  });
-
-  test('readBulk muss auf ein computed zeigen', () => {
-    assertThrows(() => makeModule({ readBulk: ['rows'], view() { return { computed: {} }; } }), /createModule\(view-test\): readBulk rows is not a computed$/);
   });
 });

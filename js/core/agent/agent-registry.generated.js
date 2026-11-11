@@ -484,12 +484,6 @@ export const AGENT_REGISTRY = {
         "help": "",
         "bulk": false,
         "derived": true
-      },
-      "pickableColumns": {
-        "type": "object|null",
-        "help": "",
-        "bulk": false,
-        "derived": true
       }
     },
     "asyncTasks": [],
@@ -2106,18 +2100,6 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "openTarget": {
-        "type": "object|null",
-        "help": "",
-        "bulk": false,
-        "derived": true
-      },
-      "pickableColumns": {
-        "type": "object|null",
-        "help": "",
-        "bulk": false,
-        "derived": true
-      },
-      "preview": {
         "type": "object|null",
         "help": "",
         "bulk": false,
@@ -6888,18 +6870,6 @@ export const AGENT_REGISTRY = {
         "bulk": false
       },
       "stats": {
-        "type": "object|null",
-        "help": "",
-        "bulk": false,
-        "derived": true
-      },
-      "series": {
-        "type": "object|null",
-        "help": "",
-        "bulk": false,
-        "derived": true
-      },
-      "shown": {
         "type": "object|null",
         "help": "",
         "bulk": false,
@@ -16758,24 +16728,6 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "decision": {
-        "type": "object|null",
-        "help": "",
-        "bulk": false,
-        "derived": true
-      },
-      "inputs": {
-        "type": "object|null",
-        "help": "",
-        "bulk": false,
-        "derived": true
-      },
-      "inputsHash": {
-        "type": "object|null",
-        "help": "",
-        "bulk": false,
-        "derived": true
-      },
-      "labels": {
         "type": "object|null",
         "help": "",
         "bulk": false,

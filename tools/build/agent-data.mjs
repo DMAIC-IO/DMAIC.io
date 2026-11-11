@@ -53,7 +53,6 @@ import { readReturnKeys } from './agent-read-return.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { loadModelSchema } from './model-types.mjs';
 import { readViewmodelCommands } from './module-gates.mjs';
-import { computedNamesOf } from './view-names.mjs';
 import { readViewmodelAsyncTasks } from './async-task-gates.mjs';
 import { schemaAgentEntry } from '../../js/core/agent/agent-schema.js';
 import ts from 'typescript';
@@ -192,19 +191,16 @@ async function convertedEntry(appDir, id) {
   const tasks = readViewmodelAsyncTasks(vm);
   // `schemaAgentEntry` liest das Schema über `schemaOf` an einer Klasse.
   const Model = Object.assign(function Model() {}, { schema });
-  const entry = schemaAgentEntry(Model, stubParams(commands), {
-    computed: computedNamesOf(vm), bulk: readBulkOf(vm), asyncTasks: stubParams(tasks),
-  });
+  const entry = schemaAgentEntry(Model, stubParams(commands), { asyncTasks: stubParams(tasks) });
   markUnknownKeys(entry.actions, { ...commands, ...tasks });
   const modelText = readFileSync(modelFile, 'utf8');
   attachComputedKeys(entry, modelText, modelFile, readDerivedReturns(modelText));
-  attachComputedKeys(entry, vm, join(dir, 'viewmodel', 'viewmodel.js'), readComputedReturns(vm));
   return entry;
 }
 
 /**
  * Hängt den Schlüsselbaum an abgeleitete Felder, deren Methode (`derived` im
- * Model oder `computed` im view-Block) ein JSDoc-`@returns {T}` trägt. `T` darf
+ * Model) ein JSDoc-`@returns {T}` trägt. `T` darf
  * eine Typedef derselben Datei oder ein `import('./x.js').T` sein;
  * Vereinigungen werden in `typedefKeys` gelöst.
  * @param {{ fields: Record<string, object> }} entry
@@ -233,15 +229,6 @@ function attachComputedKeys(entry, text, file, returns) {
 }
 
 /**
- * Die `@returns`-Typen der `computed`-Methoden im view-Block.
- * @param {string} text  Quelltext von viewmodel/viewmodel.js
- * @returns {Map<string, string>}  Name -> Typtext
- */
-export function readComputedReturns(text) {
-  return readMethodReturns(text, 'computed');
-}
-
-/**
  * Die `@returns`-Typen der Methoden unter `derived:` in domain/model.js.
  * @param {string} text  Quelltext von domain/model.js
  * @returns {Map<string, string>}  Name -> Typtext
@@ -253,7 +240,7 @@ export function readDerivedReturns(text) {
 /**
  * Die `@returns`-Typen der Glieder des ersten Objektliterals unter `<key>:`.
  * @param {string} text  Quelltext
- * @param {string} key  `computed` oder `derived`
+ * @param {string} key  `derived`
  * @returns {Map<string, string>}  Name -> Typtext
  */
 function readMethodReturns(text, key) {
@@ -266,31 +253,6 @@ function readMethodReturns(text, key) {
         if (!p.name || !ts.isIdentifier(p.name)) continue;
         const type = ts.getJSDocReturnTag(p)?.typeExpression?.type;
         if (type) out.set(p.name.text, type.getText(sf));
-      }
-      return;
-    }
-    ts.forEachChild(n, visit);
-  };
-  visit(sf);
-  return out;
-}
-
-/**
- * `readBulk` als Array-Literal im `createModule({…})`-Argument.
- * Was kein Literal aus Zeichenketten ist, bleibt außen vor.
- * @param {string} text  Quelltext von viewmodel/viewmodel.js
- * @returns {string[]}
- */
-export function readBulkOf(text) {
-  const sf = ts.createSourceFile('viewmodel.js', text, ts.ScriptTarget.Latest, true, ts.ScriptKind.JS);
-  let out = [];
-  const visit = (n) => {
-    if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && n.expression.text === 'createModule'
-        && n.arguments[0] && ts.isObjectLiteralExpression(n.arguments[0])) {
-      const p = n.arguments[0].properties.find((q) => ts.isPropertyAssignment(q) && q.name
-        && (ts.isIdentifier(q.name) || ts.isStringLiteral(q.name)) && q.name.text === 'readBulk');
-      if (p && ts.isArrayLiteralExpression(p.initializer)) {
-        out = p.initializer.elements.filter((e) => ts.isStringLiteralLike(e)).map((e) => e.text);
       }
       return;
     }

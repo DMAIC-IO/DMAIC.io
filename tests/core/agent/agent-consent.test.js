@@ -123,7 +123,7 @@ suite('agent consent — gate', () => {
     assertDeepEqual(calls, ['dialog', 'dialog']);
   });
 
-  test('stored consent short-circuits: no dialog, no export prompt', async () => {
+  test('stored consent short-circuits, whatever contract version it carries: no dialog, no export prompt', async () => {
     const { gate, calls } = makeGate({
       stored: { settings: { agent: { consent: { granted: true, at: '2026-10-08T00:00:00.000Z', contract: 1 } } } },
     });

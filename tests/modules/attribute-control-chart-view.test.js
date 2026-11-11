@@ -139,7 +139,7 @@ suite('attribute-control-chart: Viewmodel im Browser', () => {
     assertEqual(out.chartTypeId, 'c');
     assertDeepEqual(out.activeColumnSlots, ['defectsRef']);
     assertDeepEqual(out.activeParams, ['chartTypeId', 'baselineCount', 'enabledRules']);
-    assertDeepEqual(out.pickableColumns.defectsRef.map((c) => c.key), ['ws1|s1|c0']);
+    assertEqual('pickableColumns' in out, false);
     assertEqual(out.result.valid, 10);
     assertDeepEqual(out.points, { $bulk: true, kind: 'table', rowCount: 10, columns: ['value', 'n', 'ucl', 'lcl', 'signal'] });
     assertTrue(!('exampleWorksheetId' in out));

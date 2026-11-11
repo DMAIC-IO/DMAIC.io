@@ -114,12 +114,11 @@ function taskActions(name, def) {
  * @param {Function} Model Klasse aus `defineModel`
  * @param {Record<string, object>} [vmCommands] Viewmodel-Kommandos aus `createModule({ commands })`
  * Die Ableitungen des Models (`Model.schema.derived`, Massenfelder aus `derivedBulk`) erscheinen
- * als Lesefelder, danach die `computed` des view-Blocks.
- * @param {{ computed?: string[], bulk?: string[], asyncTasks?: Record<string, object> }} [opts] `computed`: Namen der
- *   `computed` des view-Blocks, die als Lesefelder erscheinen; `bulk`: davon die Massenfelder (Zeilenlisten)
+ * als Lesefelder; `computed` des view-Blocks sind Ansichtshilfen und erscheinen nicht.
+ * @param {{ asyncTasks?: Record<string, object> }} [opts]
  * @returns {object} `AgentModuleEntry` mit `schema: true`, `settable`, `viewFields`
  */
-export function schemaAgentEntry(Model, vmCommands = {}, { computed = [], bulk = [], asyncTasks = {} } = {}) {
+export function schemaAgentEntry(Model, vmCommands = {}, { asyncTasks = {} } = {}) {
   const schema = schemaOf(Model);
   if (!schema) throw new Error('schemaAgentEntry: Model has no schema (defineModel)');
   const actions = { read: READ_ACTION };
@@ -141,8 +140,8 @@ export function schemaAgentEntry(Model, vmCommands = {}, { computed = [], bulk =
         ? { slots: Object.fromEntries(Object.entries(spec.slots).map(([k, v]) => [k, slotTokens(v)])) } : {}),
     };
   }
-  const derived = [...Object.keys(schema.derived ?? {}), ...computed];
-  const bulkNames = [...(schema.derivedBulk ?? []), ...bulk];
+  const derived = Object.keys(schema.derived ?? {});
+  const bulkNames = schema.derivedBulk ?? [];
   for (const name of derived) {
     fields[name] = bulkNames.includes(name)
       ? { type: 'object[]', help: '', bulk: true, bulkKind: 'table', derived: true }
