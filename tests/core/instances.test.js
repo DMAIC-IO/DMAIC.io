@@ -41,8 +41,10 @@ function makeState({ phases, states = {}, completed = false, bus }) {
     getProjectCycle: () => 'dmaic',
     getModuleState: (id) => cache.get(id) ?? null,
     setModuleState(id, state) {
-      if (completed) return;
+      // Jeder Versuch zählt, auch im abgeschlossenen Projekt: so prüfen die
+      // Tests den Riegel des Dienstes, nicht den des StateManagers.
       writes.push([id, state]);
+      if (completed) return;
       cache.set(id, structuredClone(state));
       bus.emit('data:changed', `module:${id}`);
     },
@@ -164,6 +166,15 @@ suite('instances.read', () => {
     assertDeepEqual(sm.getModuleState('d1'), { old: 7 });
   });
 
+  test('ohne gespeicherten Zustand: Lesen schreibt nichts zurück', async () => {
+    const { svc, sm, bus } = setup();
+    const out = await svc.read('d2');
+    assertEqual(out.n, 1, 'Vorgabe des Models');
+    assertEqual(sm.writes.length, 0);
+    assertEqual(sm.getModuleState('d2'), null);
+    assertEqual(bus.emitted.some(([n]) => n === 'data:changed'), false, 'Lesen löst kein data:changed aus');
+  });
+
   test('Altform mit Mixin: readAgentState über den gespeicherten Stand', async () => {
     const saved = { problem: 'P', whys: [] };
     const { svc, sm } = setup({ states: { dx: saved } });
@@ -224,11 +235,25 @@ suite('instances.write', () => {
     assertEqual(sm.getModuleState('d2').n, 43);
   });
 
-  test('abgeschlossenes Projekt: nichts gespeichert', async () => {
+  test('abgeschlossenes Projekt: project_completed, nichts angewandt oder gespeichert', async () => {
     const { svc, sm } = setup({ states: { d1: { n: 1 } }, completed: true });
-    await svc.write('d1', (m) => m.setN({ n: 5 }));
+    let called = false;
+    let err = null;
+    try { await svc.write('d1', () => { called = true; }); } catch (e) { err = e; }
+    assertEqual(err?.message, 'project_completed');
+    assertEqual(err?.code, 'project_completed');
+    assertEqual(called, false);
     assertEqual(sm.writes.length, 0);
     assertDeepEqual(sm.getModuleState('d1'), { n: 1 });
+  });
+
+  test('abgeschlossenes Projekt, gemountet: project_completed, das lebende Model bleibt', async () => {
+    const vm = { model: Doc.fromJSON({ _schema: { version: '1.0' }, n: 1 }) };
+    const { svc } = setup({ live: new Map([['d1', vm]]), completed: true });
+    let err = null;
+    try { await svc.write('d1', (m) => m.setN({ n: 5 })); } catch (e) { err = e; }
+    assertEqual(err?.code, 'project_completed');
+    assertEqual(vm.model.n, 1);
   });
 
   test('gemountet: fn bekommt vm.model, der Dienst speichert nicht selbst', async () => {

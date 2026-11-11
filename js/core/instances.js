@@ -141,7 +141,8 @@ export function createInstances({ stateManager, moduleRegistry, workspace, event
    * Ansichtsfelder. Eine nicht gemountete Instanz in Zielform, deren
    * normalisierte Form (Migration, Reparatur) vom gespeicherten Stand
    * abweicht, wird dabei zurückgeschrieben — sonst änderte erst das spätere
-   * Einhängen die Revision. Im abgeschlossenen Projekt unterbleibt das.
+   * Einhängen die Revision. Ohne gespeicherten Stand und im abgeschlossenen
+   * Projekt unterbleibt das.
    * @param {string} instanceId
    * @param {object} [options] `{ fields?, rows? }`
    * @returns {Promise<object>}
@@ -154,12 +155,13 @@ export function createInstances({ stateManager, moduleRegistry, workspace, event
     await settle(instanceId);
     const viewFields = viewFieldsOf(moduleId, m);
     const vm = workspace.getLiveViewmodel(instanceId);
-    if (vm && typeof vm.read === 'function') return stripPaths(await vm.read(options), viewFields);
+    if (vm) return stripPaths(await vm.read(options), viewFields);
     const saved = stateManager.getModuleState(instanceId);
     if (isTargetForm(m)) {
       const model = m.loadDetached(saved, { instanceId, eventBus, stateManager });
       const json = model.toJSON();
-      if (!stateManager.isCompleted() && JSON.stringify(json) !== JSON.stringify(saved)) {
+      // Ohne gespeicherten Stand nichts zurückschreiben: auch ein Mount speichert die Vorgabe nicht.
+      if (saved && !stateManager.isCompleted() && JSON.stringify(json) !== JSON.stringify(saved)) {
         stateManager.setModuleState(instanceId, json);
       }
       return stripPaths(m.readDetached(model, createData(), options), viewFields);
@@ -174,13 +176,14 @@ export function createInstances({ stateManager, moduleRegistry, workspace, event
    * `fn(model)` nach der Besitzer-Regel anwenden. `fn` ist synchron und ruft
    * `setFields` oder ein Model-Kommando; wirft es, bleibt der gespeicherte
    * Stand unberührt. Gemountet speichert der persist-`$watch` des Moduls,
-   * sonst der Dienst.
+   * sonst der Dienst. Im abgeschlossenen Projekt wird nichts angewandt.
    * @param {string} instanceId
    * @param {(model: any) => any} fn
    * @returns {Promise<{ mounted: boolean, result: any }>}
-   * @throws {Error} `unknown_instance`; `needs_mount` für ein Altmodul
+   * @throws {Error} `project_completed`; `unknown_instance`; `needs_mount` für ein Altmodul
    */
   async function write(instanceId, fn) {
+    if (stateManager.isCompleted()) throw codeError('project_completed');
     const { record } = locate(instanceId);
     const m = await moduleRegistry.loadModule(record.moduleId);
     if (!isTargetForm(m)) throw codeError('needs_mount');
@@ -190,7 +193,7 @@ export function createInstances({ stateManager, moduleRegistry, workspace, event
     // Ab hier kein `await`: Laden, Anwenden und Speichern in einem Zug.
     const model = m.loadDetached(stateManager.getModuleState(instanceId), { instanceId, eventBus, stateManager });
     const result = fn(model);
-    if (!stateManager.isCompleted()) stateManager.setModuleState(instanceId, model.toJSON());
+    stateManager.setModuleState(instanceId, model.toJSON());
     return { mounted: false, result };
   }
 

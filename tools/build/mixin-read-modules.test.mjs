@@ -24,8 +24,11 @@ function jsFiles(dir) {
   });
 }
 
+/** Der Spread im Viewmodel, nicht eine Erwähnung im Kommentar. */
+const SPREAD = /\.\.\.\s*agentReadMixin\(/;
+
 /**
- * Die Module unter `js/modules/`, deren Quelltext `agentReadMixin(` aufruft.
+ * Die Module unter `js/modules/`, deren Quelltext `...agentReadMixin(` spreizt.
  * @param {string} root App-Verzeichnis
  * @returns {string[]} sortiert
  */
@@ -33,7 +36,7 @@ function modulesSpreadingMixin(root) {
   const modulesDir = join(root, 'js', 'modules');
   return readdirSync(modulesDir)
     .filter((id) => statSync(join(modulesDir, id)).isDirectory())
-    .filter((id) => jsFiles(join(modulesDir, id)).some((f) => readFileSync(f, 'utf8').includes('agentReadMixin(')))
+    .filter((id) => jsFiles(join(modulesDir, id)).some((f) => SPREAD.test(readFileSync(f, 'utf8'))))
     .sort();
 }
 
