@@ -9,7 +9,7 @@ import {
   defaultOf, checkValue, describeType, schemaOf, fieldSpec, defineState, stateSchemaOf,
   currentOf, confirmOf, commandDefOf, fromAttr, defineForm,
   defineSettings, isSettings, readSettings, defineWidget, isWidget,
-  columnRef, datasets, rewriteColumnRefs, readModel, date, time, phase, activeContext, setCommandObserver, setModelContext, contextOf, checkContext, DEFAULT_CONTEXT,
+  columnRef, datasets, rewriteColumnRefs, readModel, setFields, date, time, phase, activeContext, setCommandObserver, setModelContext, contextOf, checkContext, DEFAULT_CONTEXT,
 } from '../../js/core/model.js';
 
 const COLS = ['suppliers', 'inputs'];
@@ -665,6 +665,31 @@ suite('Invarianten', () => {
     assertThrows(() => defineModel({ fields: { a: number() }, invariants: { x: { fields: ['a'] } } }), /invariant x needs a test function/);
     assertThrows(() => defineModel({ fields: { a: number() }, invariants: { x: { fields: ['a'], test(m) { return m.a > 0; } } } }),
       /invariant x fails on the defaults/);
+  });
+
+  test('setFields: Zwischenstand erlaubt, Endstand geprüft', () => {
+    const m = new Budget();
+    setFields(m, { min: 20, max: 30 });
+    assertEqual(m.min, 20);
+    assertEqual(m.max, 30);
+  });
+
+  test('setFields mit Verletzung schreibt kein Feld, auch kein unbeteiligtes', () => {
+    const Tagged = defineModel({
+      fields: { label: text(), min: number(), max: number({ default: 10 }) },
+      invariants: { minMax: { fields: ['min', 'max'], test(m) { return m.min <= m.max; } } },
+    });
+    const m = new Tagged();
+    const err = errOf(() => setFields(m, { label: 'L', min: 5, max: 1 }));
+    assertEqual(err.param, 'min');
+    assertEqual(err.invariant, 'minMax');
+    assertTrue(/^invalid min 5; allowed: a value that keeps minMax$/.test(err.message));
+    assertEqual(m.label, '');
+    assertEqual(m.min, 0);
+    assertEqual(m.max, 10);
+    m.min = 3;
+    assertEqual(m.min, 3, 'Einzelsetter prüft danach wieder');
+    assertThrows(() => { m.min = 11; }, /keeps minMax/);
   });
 
   test('Schema nennt die Invarianten', () => {

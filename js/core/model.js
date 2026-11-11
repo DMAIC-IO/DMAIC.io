@@ -810,9 +810,12 @@ export function setCommandObserver(model, fn) {
 
 /**
  * Mehrere Inhaltsfelder setzen: alles prüfen, dann alles schreiben
- * (`instance.set`). Ansichtsfelder sind nicht setzbar.
+ * (`instance.set`). Ansichtsfelder sind nicht setzbar. Die Invarianten gelten
+ * für den Endstand, nicht für Zwischenstände: `{ xMin, xMax }` darf beide
+ * Grenzen über die alten hinweg verschieben.
  * @param {object} model @param {any} values
- * @throws {Error} beim ersten ungültigen Namen oder Wert; dann ist nichts geschrieben
+ * @throws {Error} beim ersten ungültigen Namen oder Wert oder bei verletzter
+ *   Invariante (mit `param` und `invariant`); dann ist nichts geschrieben
  * @returns {object} die normalisierten Werte
  */
 export function setFields(model, values) {
@@ -828,8 +831,40 @@ export function setFields(model, values) {
     out[k] = checkValue(fields[k], k, values[k], { root: staged, context: contextOf(model) });
     staged[k] = out[k];
   }
-  for (const k of Object.keys(out)) model[k] = out[k];
+  writeAtomically(model, out);
   return cloneJSON(out);
+}
+
+/**
+ * Geprüfte Werte schreiben; die Invarianten der geschriebenen Felder erst am
+ * Ende prüfen. Bei Verletzung oder Fehler stehen alle Felder wieder wie vorher.
+ * Innerhalb eines Kommandos prüft das Kommando selbst.
+ * @param {object} model @param {Record<string, any>} out geprüfte Werte je Feld
+ * @returns {void}
+ */
+function writeAtomically(model, out) {
+  const written = Object.keys(out);
+  const before = Object.fromEntries(written.map((k) => [k, model._v[k]]));
+  const restore = () => { for (const k of written) model._v[k] = before[k]; };
+  const outer = (model._run ?? 0) > 0;
+  model._run = (model._run ?? 0) + 1;
+  try {
+    for (const k of written) model[k] = out[k];
+  } catch (err) {
+    restore();
+    throw err;
+  } finally {
+    model._run -= 1;
+  }
+  if (outer) return;
+  const invariants = schemaOf(model)?.invariants ?? {};
+  const affected = Object.keys(invariants).filter((n) => invariants[n].fields.some((f) => written.includes(f)));
+  const broken = brokenInvariant(model, invariants, affected);
+  if (broken === null) return;
+  const field = invariants[broken].fields.find((f) => written.includes(f));
+  const err = invariantError(field, model._v[field], broken);
+  restore();
+  throw err;
 }
 
 /**

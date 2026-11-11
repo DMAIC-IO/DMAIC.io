@@ -621,6 +621,46 @@ suite('agent ops — Ablehnung wegen einer Invariante', () => {
     });
   }
 
+  for (const mounted of [false, true]) {
+    test(`instance.set prüft die Regel am Endstand und schreibt bei Ablehnung nichts (${mounted ? 'eingehängt' : 'nicht eingehängt'})`, async () => {
+      const { ops, model } = setup({ mounted });
+      model.lsl = 1;
+      model.usl = 2;
+      const ok = await ops['instance.set']({ instance: 'm-1', values: { lsl: 10, usl: 20 } });
+      assertDeepEqual(ok.values, { lsl: 10, usl: 20 }, JSON.stringify(ok));
+      const bad = await ops['instance.set']({ instance: 'm-1', values: { lsl: 30, usl: 25, k: 5.15 } });
+      assertEqual(bad.invariant, 'limitsOrder', JSON.stringify(bad));
+      assertEqual(model.lsl, 10);
+      assertEqual(model.usl, 20);
+      assertEqual(model.k, 6);
+    });
+  }
+
+  test('module.describe lädt das Modul vor dem Beschreiben: notes auch ohne geöffnetes Modul', async () => {
+    const texts = { 'agent.errors.callFailed': TABLE['agent.errors.callFailed'] };
+    const lazy = {
+      getLanguage: () => 'de',
+      exists: (key) => key in texts,
+      t: (key) => texts[key] ?? key,
+    };
+    const defs = [{ id: 'msa-typ2', phase: 'measure', cycles: { dmaic: { phase: 'measure' } } }];
+    const ops = createOps({
+      stateManager: { get: () => ({}) },
+      moduleRegistry: { getAll: () => defs, get: (id) => defs.find(d => d.id === id), getActiveCycle: () => 'dmaic' },
+      i18n: lazy,
+      registry: { 'msa-typ2': { tagged: true, available: true, schema: true, violations: [], reported: [], actions: {}, fields: {} } },
+      loadModule: async () => {
+        texts['modules.msa-typ2.invariants.limitsOrder'] = TABLE['modules.msa-typ2.invariants.limitsOrder'];
+        return { agentEntry: schemaAgentEntry(MsaTyp2State) };
+      },
+      getHelp: async () => null,
+      appVersion: '1.2.3',
+      host: { isCompleted: () => false, getCurrentView: () => null },
+    });
+    const out = await ops['module.describe']({ module: 'msa-typ2' });
+    assertDeepEqual(out.notes, ['USG muss kleiner als OSG sein'], JSON.stringify(out.notes));
+  });
+
   test('ein Fehler ohne Invariante bleibt wörtlich wie bisher, ohne Feld invariant', async () => {
     const { ops } = setup();
     const out = await ops['instance.set']({ instance: 'm-1', values: { k: 7 } });

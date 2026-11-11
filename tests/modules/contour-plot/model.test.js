@@ -1,5 +1,6 @@
 import { suite, test, assert, assertEqual, assertDeepEqual, assertClose } from '../../test-utils.js';
 import { State, MODEL_TYPES } from '../../../js/modules/contour-plot/domain/model.js';
+import { setFields } from '../../../js/core/model.js';
 import { from0 } from '../../../js/modules/contour-plot/domain/migrations.js';
 import { scanSurface, evalModel, sampleSurface } from '../../../js/modules/contour-plot/domain/surface.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
@@ -81,6 +82,24 @@ suite('contour-plot Model — Invarianten', () => {
     const m = new State();
     m.b = [1, 2, 3, 4, 5, 6];
     assertDeepEqual(m.b, [1, 2, 3, 4, 5, 6]);
+  });
+
+  test('setFields: xMin und xMax zusammen verschoben, in einem Aufruf angenommen', () => {
+    const m = new State();
+    const out = setFields(m, { xMin: 150, xMax: 210 });
+    assertDeepEqual(out, { xMin: 150, xMax: 210 });
+    assertEqual(m.xMin, 150);
+    assertEqual(m.xMax, 210);
+  });
+
+  test('setFields: abgewiesener Aufruf schreibt nichts, auch kein anderes Feld', () => {
+    const m = new State();
+    const err = thrown(() => setFields(m, { xMin: 1, xMax: 0.5, zLabel: 'Q' }));
+    assertEqual(err?.invariant, 'axisOrder');
+    assert(/^invalid xMin 1; allowed: a value that keeps axisOrder$/.test(err.message), err?.message);
+    assertEqual(m.xMin, -3);
+    assertEqual(m.xMax, 3);
+    assertEqual(m.zLabel, '');
   });
 });
 

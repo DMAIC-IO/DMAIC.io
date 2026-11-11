@@ -28,6 +28,15 @@ export default createModule({
   /** @type {import('../../../core/template-module.js').ViewFn<import('../domain/model.types.js').StateModel, {}>} */
   view(ctx) {
     return {
+      /**
+       * @noagent Lebenszyklus: wird b anders gesetzt (Agent, Rückgängig),
+       * verlieren die Koeffizientenfelder ihre Abweisungsmarke.
+       */
+      init() {
+        this.$watch(() => JSON.stringify(this.model.b), () => {
+          this.$root.querySelectorAll('input[data-ref^="b"]').forEach((/** @type {HTMLElement} */ el) => clearRejection(el));
+        });
+      },
       computed: {
         /** Die abgetastete Fläche in der Rasterauflösung der Editor-Einstellungen. */
         surfaceGrid() {

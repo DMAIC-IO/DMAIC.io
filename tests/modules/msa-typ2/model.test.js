@@ -2,6 +2,7 @@ import { suite, test, assert, assertEqual, assertThrows } from '../../test-utils
 import { State, K_OPTIONS, VERDICT_BASES } from '../../../js/modules/msa-typ2/domain/model.js';
 import { analyze, validate } from '../../../js/engines/msa-typ2-engine.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
+import { setFields } from '../../../js/core/model.js';
 
 const CTX = { cycle: 'dmaic', confidenceLevel: 95, power: 90 };
 const ref = (col) => ({ instanceId: 'ws1', sheetId: 's1', columnId: col });
@@ -61,6 +62,25 @@ suite('MSA Typ 2 Model — Grenzen und Feldbereiche', () => {
     assertEqual(m.lsl, 9);
     assertEqual(m.usl, null);
     assert(reports.length > 0, 'onRepair gemeldet');
+  });
+
+  test('setFields: lsl und usl zusammen über die alten Grenzen hinweg, in einem Aufruf', () => {
+    const m = new State(CTX);
+    setFields(m, { lsl: 1, usl: 2 });
+    setFields(m, { lsl: 10, usl: 20 });
+    assertEqual(m.lsl, 10);
+    assertEqual(m.usl, 20);
+  });
+
+  test('setFields: vertauschte Grenzen schreiben nichts', () => {
+    const m = new State(CTX);
+    setFields(m, { lsl: 1, usl: 2 });
+    let err;
+    try { setFields(m, { lsl: 20, usl: 10, k: 5.15 }); } catch (e) { err = e; }
+    assertEqual(err?.invariant, 'limitsOrder');
+    assertEqual(m.lsl, 1);
+    assertEqual(m.usl, 2);
+    assertEqual(m.k, 6);
   });
 
   test('sigmaHist = 0 und alpha = 1 werden abgelehnt', () => {

@@ -219,6 +219,35 @@ suite('contour-plot: Viewmodel im Browser', () => {
     assertEqual(input.value, '2,5');
   });
 
+  test('Abweisungsmarke am Koeffizienten verschwindet, sobald b anders gesetzt wird', async () => {
+    const h = await mount(null);
+    const input = /** @type {HTMLInputElement} */ (h.container.querySelector('[data-ref="b1"]'));
+    input.value = 'abc';
+    input.dispatchEvent(new Event('change'));
+    await settle();
+    assertTrue(input.classList.contains('field--error'), 'keine Marke nach Texteingabe');
+    assertEqual(input.getAttribute('aria-invalid'), 'true');
+    setFields(h.vm().model, { b: [1, 2, 3, 4, 5, 6] });
+    await settle();
+    const now = /** @type {HTMLInputElement} */ (h.container.querySelector('[data-ref="b1"]'));
+    assertEqual(now.classList.contains('field--error'), false, 'Marke bleibt nach anderem Schreiben');
+    assertEqual(now.hasAttribute('aria-invalid'), false);
+    assertEqual(now.value, '2');
+  });
+
+  test('konstante Fläche: Spannweite 0, keine NaN in Infokarten und Legende', async () => {
+    const h = await mount(null);
+    setFields(h.vm().model, { modelType: 'custom', customFormula: '5' });
+    await settle();
+    const info = h.vm().info;
+    assertEqual(info.zMin, '5,00');
+    assertEqual(info.zMax, '5,00');
+    assertEqual(info.range, '0,00');
+    assertTrue(Object.values(info).every((v) => !/NaN/.test(v)), JSON.stringify(info));
+    assertEqual(h.text('infoRangeSub').includes('NaN'), false);
+    assertTrue(h.vm().legend.items.every((it) => !/NaN/.test(it.value)), JSON.stringify(h.vm().legend.items));
+  });
+
   test('Formelfehler foo(x): Diagramm bleibt (flache Fläche), Fehlertext sichtbar, read().surface null', async () => {
     const h = await mount(null);
     setFields(h.vm().model, { modelType: 'custom', customFormula: 'foo(x)' });
