@@ -12,8 +12,8 @@
  * imperatively (they are not pure-template concerns) following the msa-typ1
  * pattern.
  *
- * 🔴 CROSS-MODULE CONTRACT: emits `worksheet:appendColumn` to push transformed
- * columns into the Worksheet module — preserved byte-identically below.
+ * 🔴 CROSS-MODULE CONTRACT: `toWorksheet()` writes the transformed column into
+ * the Worksheet module via `worksheetWrite()`.
  *
  * @agent  Steuerbar über das Viewmodel: Transformation wählen (selectTF),
  *   Quellspalte setzen (setColumn), Parameter setzen (setParam), rechnen
@@ -22,8 +22,7 @@
  *   der Oberfläche vorbehalten; gelesen wird über read() (AgentRead).
  */
 
-import { openNewWorksheet } from '../../core/worksheet-handoff.js';
-import { sendColumnToWorksheet } from '../../core/worksheet-append.js';
+import { worksheetWrite, commitWorksheetWrite } from '../../core/worksheet-write.js';
 import { toNum } from '../../core/chart/chart-data-prep.js';
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
@@ -553,19 +552,22 @@ const mod = createModule({
         if (!this.transData.length) return null;
         const name = this._colName();
         const values = [...this.transData];
+        const ctx = module._context;
+        let write = worksheetWrite();
         if (target == null) {
-          return { instanceId: await this._createWorksheetAndSend(name, values) };
+          write = write.newWorksheet({ name: ctx.i18n.t('modules.worksheet.defaultSheetName') })
+            .column({ name, values });
+        } else {
+          const clean = keyToRef(refToKey(target));
+          write = write.worksheet(clean.instanceId).sheet(clean.sheetId);
+          write = clean.columnId === '__new__'
+            ? write.column({ name, values })
+            : write.overwrite(clean.columnId, { values });
         }
-        const clean = keyToRef(refToKey(target));
-        // Auch ein nicht eingehängter Worksheet bekommt die Spalte (Bug 13);
-        // ein unbekanntes Ziel wirft, und dann gibt es keine Erfolgsmeldung.
-        sendColumnToWorksheet(module._context, clean.instanceId, {
-          sheetId: clean.sheetId,
-          colId: clean.columnId,
-          name, values,
-        });
-        module._context.notify?.(_t('sentToWorksheet'), 'success');
-        return { instanceId: clean.instanceId };
+        // Erst nach dem bestätigten Schreiben erscheint die Erfolgsmeldung.
+        const { instanceId } = await commitWorksheetWrite(ctx, write.build());
+        ctx.notify?.(_t('sentToWorksheet'), 'success');
+        return { instanceId };
       },
 
       /** @noagent DOM event handler; the agent uses toWorksheet() */
@@ -580,20 +582,6 @@ const mod = createModule({
         } catch (err) {
           module._context.notify?.(err?.message ?? String(err), 'error');
         }
-      },
-
-      async _createWorksheetAndSend(name, values) {
-        const ctx = module._context;
-        const wsId = await openNewWorksheet(ctx, {
-          sheetName: ctx.i18n.t('modules.worksheet.defaultSheetName'),
-        });
-        sendColumnToWorksheet(ctx, wsId, {
-          sheetId: 'sheet_1',
-          colId: '__first__',
-          name, values,
-        });
-        ctx.notify?.(_t('sentToWorksheet'), 'success');
-        return wsId;
       },
 
       // ── ColumnPickers (imperative widgets) ────────────────────

@@ -14,8 +14,7 @@
  *
  * 🔴 EVENT CONTRACT IS FROZEN. Emits `worksheet:dataChanged` (debounced ~150ms),
  *    `chart-suggestion:load`, `module:added`, `module:activated`. Listens to
- *    `worksheet:writeColumns` (the write plan of `core/worksheet-write.js`) and
- *    still `worksheet:appendColumn` (one column, legacy payload).
+ *    `worksheet:writeColumns` (the write plan of `core/worksheet-write.js`).
  *
  * @agent  Vollständig über das Viewmodel steuerbar: CSV-Import, Zellblöcke
  *   und Formeln schreiben, Spalten anlegen, umbenennen und entfernen,
@@ -42,7 +41,6 @@ import { h } from '../../core/dom.js';
 import { icon } from '../../core/icon.js';
 import { uid } from '../../core/uid.js';
 import { debounce } from '../../core/debounce.js';
-import { applyAppendColumn } from '../../core/worksheet-append.js';
 import { applyWriteColumn, defaultColumnFormat, retypeForWrite } from '../../core/worksheet-write.js';
 
 /**
@@ -504,7 +502,6 @@ const mod = createModule({
       _unsubs: [],
       _boundKeyDown: null,
       _onDocClick: null,
-      _onAppendColumn: null,
       _onWriteColumns: null,
       _autoSave: null,
       _persistAndNotify: null,
@@ -1793,11 +1790,6 @@ const mod = createModule({
         document.addEventListener('click', this._onDocClick);
         this._unsubs.push(() => document.removeEventListener('click', this._onDocClick));
 
-        // ── External appendColumn requests ──
-        this._onAppendColumn = (payload) => this._handleAppendColumn(payload);
-        context.eventBus.on('worksheet:appendColumn', this._onAppendColumn);
-        this._unsubs.push(() => context.eventBus.off('worksheet:appendColumn', this._onAppendColumn));
-
         // ── External write plans ──
         this._onWriteColumns = (payload) => this._handleWriteColumns(payload);
         context.eventBus.on('worksheet:writeColumns', this._onWriteColumns);
@@ -1891,58 +1883,6 @@ const mod = createModule({
           sheet.state = state.sheets.find(s => s.id === sheetId).state;
         }
         reply?.({ ok: true, columnIds });
-
-        try {
-          this._syncActiveSheet();
-          context.stateManager.setModuleState(instanceId, this.model.toJSON());
-        } catch { /* ignore */ }
-        context.eventBus.emit('worksheet:dataChanged', { instanceId });
-      },
-
-      // ── appendColumn handler (FROZEN behaviour) ──────────────
-      // `reply` (optional) quittiert synchron, ob die Spalte geschrieben
-      // wurde — `core/worksheet-append.js` schreibt sonst in den Store.
-      _handleAppendColumn(payload) {
-        const { instanceId, sheetId, colId, slot, name, values, discrete, type, reply } = payload;
-        const context = module._context;
-        if (instanceId !== context.instanceId) return;
-
-        const colType = type === 'text' ? 'text' : 'numeric';
-        const isText = colType === 'text';
-        const format = isText ? {} : { decimals: discrete ? 0 : 6 };
-
-        if (sheetId === this.model.activeSheetId) {
-          let resolvedColId = colId;
-          if (colId === '__first__') resolvedColId = this._grid.columns[0]?.id;
-          else if (colId === '__slot__' && Number.isInteger(slot) && slot >= 0) resolvedColId = this._grid.columns[slot]?.id;
-          const overwriteName = colId === '__first__' || colId === '__slot__';
-          if (!resolvedColId || resolvedColId === '__new__') {
-            const col = this._grid.addColumn({ name, type: colType, format });
-            const needed = values.length - this._grid.rowCount;
-            if (needed > 0) this._grid.addRows(needed);
-            for (let i = 0; i < values.length; i++) col.values[i] = values[i];
-          } else {
-            const col = this._grid.columns.find(c => c.id === resolvedColId);
-            if (!col) { reply?.({ ok: false, reason: 'unknown_column' }); return; }
-            if (overwriteName && name) col.name = name;
-            if (isText && col.type !== 'text') { col.type = 'text'; col.format = {}; }
-            const needed = values.length - this._grid.rowCount;
-            if (needed > 0) this._grid.addRows(needed);
-            for (let i = 0; i < this._grid.rowCount; i++) {
-              col.values[i] = i < values.length ? values[i] : null;
-            }
-          }
-          this._grid.render();
-        } else {
-          // Inaktives Blatt: dieselbe Regel wie für einen nicht eingehängten
-          // Worksheet (`applyAppendColumn`), hier auf dem Modell.
-          this._syncActiveSheet();
-          const res = applyAppendColumn(this.model.toJSON(), payload);
-          if (!res.ok) { reply?.(res); return; }
-          const sheet = this.model.sheets.find(s => s.id === sheetId);
-          sheet.state = res.state.sheets.find(s => s.id === sheetId).state;
-        }
-        reply?.({ ok: true });
 
         try {
           this._syncActiveSheet();

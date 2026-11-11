@@ -22,8 +22,7 @@
  *   (AgentRead).
  */
 
-import { openNewWorksheet } from '../../core/worksheet-handoff.js';
-import { sendColumnToWorksheet } from '../../core/worksheet-append.js';
+import { worksheetWrite, commitWorksheetWrite } from '../../core/worksheet-write.js';
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import {
@@ -686,20 +685,23 @@ export default createModule({
         const type = isAttr ? 'text' : 'numeric';
         const values = [...this.genData];
 
+        const ctx = module._context;
+        let write = worksheetWrite();
+        let clean = null;
         if (target == null) {
-          return { instanceId: await this._createWorksheetAndSend(name, values, type, discrete) };
+          write = write.newWorksheet({ name: ctx.i18n.t('modules.worksheet.defaultSheetName') })
+            .column({ name, values, type, discrete });
+        } else {
+          clean = keyToRef(refToKey(target));
+          write = write.worksheet(clean.instanceId).sheet(clean.sheetId);
+          write = clean.columnId === '__new__'
+            ? write.column({ name, values, type, discrete })
+            : write.overwrite(clean.columnId, { values, type, discrete });
         }
-
-        const clean = keyToRef(refToKey(target));
-        // Auch ein nicht eingehängter Worksheet bekommt die Spalte (Bug 13);
-        // ein unbekanntes Ziel wirft, und dann gibt es keine Erfolgsmeldung.
-        sendColumnToWorksheet(module._context, clean.instanceId, {
-          sheetId: clean.sheetId,
-          colId: clean.columnId,
-          name, values, discrete, type,
-        });
-        module._context.notify(_t('sentToWorksheet'));
-        return { instanceId: clean.instanceId };
+        // Erst nach dem bestätigten Schreiben erscheint die Erfolgsmeldung.
+        const { instanceId } = await commitWorksheetWrite(ctx, write.build());
+        ctx.notify(_t('sentToWorksheet'));
+        return { instanceId };
       },
 
       /** @noagent DOM event handler; the agent uses toWorksheet() */
@@ -714,20 +716,6 @@ export default createModule({
         } catch (err) {
           module._context.notify(err?.message ?? String(err), 'error');
         }
-      },
-
-      async _createWorksheetAndSend(name, values, type, discrete) {
-        const ctx = module._context;
-        const wsId = await openNewWorksheet(ctx, {
-          sheetName: ctx.i18n.t('modules.worksheet.defaultSheetName'),
-        });
-        sendColumnToWorksheet(ctx, wsId, {
-          sheetId: 'sheet_1',
-          colId: '__first__',
-          name, values, discrete, type,
-        });
-        ctx.notify(_t('sentToWorksheet'));
-        return wsId;
       },
 
       // ── Input synchronisation (model → raw string inputs) ─────
