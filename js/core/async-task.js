@@ -74,6 +74,12 @@ export function defineAsyncTaskSlots(comp, names) {
     configurable: true,
     writable: false,
   });
+  Object.defineProperty(comp, 'asyncTasks', {
+    get() { return this._asyncTasks; },
+    set() { throw new TypeError('asyncTasks is read-only'); },
+    enumerable: true,
+    configurable: true,
+  });
   for (const name of names) {
     Object.defineProperty(comp, name, {
       get() { return this._asyncTasks[name].value; },

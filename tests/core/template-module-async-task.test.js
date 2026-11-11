@@ -90,6 +90,27 @@ suite('createModule mit asyncTasks', () => {
     await mod.destroy(); container.remove();
   });
 
+  test('asyncTasks im Template lesbar, nur lesbar', async () => {
+    gates.length = 0;
+    const { mod, container, vm } = await mount();
+    assertEqual(vm().asyncTasks.twice.running, true);
+    assertEqual(vm().asyncTasks.calc.running, false);
+    gates.splice(0).forEach((r) => r()); await flush();
+    assertEqual(vm().asyncTasks.twice.running, false);
+    const pending = vm()._asyncTaskHost.start('calc', { n: 1 });
+    assertEqual(vm().asyncTasks.calc.running, true);
+    await pending;
+    assertEqual(vm().asyncTasks.calc.running, false);
+    assertThrows(() => { vm().asyncTasks = {}; });
+    await mod.destroy(); container.remove();
+  });
+
+  test('ohne asyncTasks fehlt das Glied', async () => {
+    const { mod, container, vm } = await mount({ asyncTasks: undefined });
+    assertEqual(Object.hasOwn(vm(), 'asyncTasks'), false);
+    await mod.destroy(); container.remove();
+  });
+
   test('read() liefert asyncTasks', async () => {
     gates.length = 0;
     const { mod, container, vm } = await mount();

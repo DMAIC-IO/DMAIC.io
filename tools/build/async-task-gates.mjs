@@ -15,6 +15,9 @@ import { TAG, camel, keyOf, parseJs, bodyEnd } from './template-scan.mjs';
 const CONTAINER = /(?:^|\s)x-async-task="\s*([^"]*?)\s*"/;
 const CHILD = /(?:^|\s)x-async-task-(start|cancel|progress|error)(?=[\s=/]|$)/g;
 const DATA_ARG = /(?:^|\s):?data-arg-([\w-]+)=/g;
+/** Lesezugriff auf den Laufstatus in einem Ausdruck: `asyncTasks.<name>[.<prop>]`. */
+const STATUS_READ = /(?<![\w$.])asyncTasks\.([\w$]+)(?:\.([\w$]+))?/g;
+const STATUS_PROPS = ['running', 'progress', 'error'];
 /** Element, auf das ein Kind gehört (`error` darf überall stehen). */
 const CHILD_TAG = { start: 'button', cancel: 'button', progress: 'progress' };
 
@@ -122,6 +125,11 @@ export function checkAsyncTaskRefs(templates, tasks) {
   for (const { path, text } of templates) {
     const P = `template: ${path}:`;
     const { boxes, children } = scan(text);
+    for (const m of text.matchAll(STATUS_READ)) {
+      const [, name, prop] = m;
+      if (!Object.hasOwn(tasks, name)) out.push(`${P} asyncTasks.${name}${prop ? `.${prop}` : ''}: unknown asyncTask ${name}`);
+      else if (prop && !STATUS_PROPS.includes(prop)) out.push(`${P} asyncTasks.${name}.${prop}: allowed ${STATUS_PROPS.join(', ')}`);
+    }
     for (const c of children) if (c.box < 0) out.push(`${P} x-async-task-${c.kind}: ohne umgebendes x-async-task`);
     boxes.forEach((b, i) => {
       const task = Object.hasOwn(tasks, b.name) ? tasks[b.name] : null;

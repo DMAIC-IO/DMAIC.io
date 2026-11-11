@@ -113,3 +113,11 @@ test('Behälter endet an seinem Schluss-Tag in anderer Schreibweise', () => {
   const html = '<div x-async-task="compute"><button x-async-task-start></button></DIV><button x-async-task-cancel></button>';
   assert.deepEqual(asyncTaskAnchors(html), [{ name: 'compute', start: true, cancel: false }]);
 });
+
+test('Laufstatus im Template: bekannter Task grün, unbekannter und fremde Eigenschaft rot', () => {
+  const tpl = (expr) => [{ path: 'resources/view.html', text: `<p x-show="${expr}"></p>` }];
+  assert.deepEqual(checkAsyncTaskRefs(tpl('asyncTasks.compute.running'), TASKS), []);
+  assert.deepEqual(checkAsyncTaskRefs(tpl('asyncTasks.compute.progress'), TASKS), []);
+  assert.deepEqual(checkAsyncTaskRefs(tpl('asyncTasks.ghost.running'), TASKS), ['template: resources/view.html: asyncTasks.ghost.running: unknown asyncTask ghost']);
+  assert.deepEqual(checkAsyncTaskRefs(tpl('asyncTasks.compute.value'), TASKS), ['template: resources/view.html: asyncTasks.compute.value: allowed running, progress, error']);
+});
