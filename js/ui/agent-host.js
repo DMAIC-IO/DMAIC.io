@@ -148,7 +148,8 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
         message = i18n.t('agent.backgroundChange.many', { n: present.length });
       }
       notify(message, 'info', null, {
-        action: { label: i18n.t('agent.backgroundChange.show'), onClick: () => this.openInstance(first) },
+        action: { label: i18n.t('agent.backgroundChange.show'), onClick: () => this.openInstance(first)
+          .catch((err) => console.warn('[agent-host] opening the changed instance failed', err)) },
       });
     },
 

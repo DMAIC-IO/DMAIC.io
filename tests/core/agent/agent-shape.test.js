@@ -122,7 +122,7 @@ suite('agent runtime path access', () => {
 });
 
 suite('agent contract', () => {
-  test('contract version is 2', () => {
+  test('contract version is 3', () => {
     assertEqual(CONTRACT_VERSION, 3);
   });
 

@@ -84,7 +84,9 @@ nicht: sie gehen über den Kerndienst `instances` und wirken in jeder Phase,
 auch auf eine Instanz, die in dieser Sitzung nie eingehängt war. Mit
 Ansichtswechsel (Anzeigen und Einhängen der Zielinstanz) laufen weiter:
 Kommandos des Viewmodels, `asyncTask`-Aktionen samt `.cancel`, alle Aktionen
-eines Altmoduls und das `read()` eines Altmoduls mit eigenem `read()`.
+eines Altmoduls und das `read()` eines Altmoduls mit eigenem `read()`, dieses
+aber nur, wenn die Instanz nicht eingehängt ist (andere Phase oder nie
+geöffnet); eine Instanz der angezeigten Phase liest es ohne Ansichtswechsel.
 `instance.open` ist der ausdrückliche Weg, eine Instanz anzuzeigen.
 
 `module.describe` liefert je Aktion `{ name, help, returns, params, keys }`

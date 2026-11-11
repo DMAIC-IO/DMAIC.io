@@ -356,6 +356,22 @@ suite('agent host — Toast für Änderungen im Hintergrund', () => {
       ['navigate', { kind: 'module', projectId: 'p-1', instanceId: 'fw-1' }]);
   });
 
+  test('der Knopf Anzeigen: ein scheiterndes Öffnen wird gemeldet, nicht verworfen', async () => {
+    const { host, toasts } = withToast();
+    host.notifyBackgroundChange(['fw-1']);
+    host.openInstance = async () => { throw new Error('kaputt'); };
+    const warned = [];
+    const warn = console.warn;
+    console.warn = (...args) => warned.push(args);
+    try {
+      await toasts[0].opts.action.onClick();
+    } finally {
+      console.warn = warn;
+    }
+    assertEqual(warned.length, 1);
+    assertEqual(warned[0][1].message, 'kaputt');
+  });
+
   test('nur entfernte Instanzen: kein Toast', () => {
     const { host, toasts } = withToast();
     host.notifyBackgroundChange(['weg']);
