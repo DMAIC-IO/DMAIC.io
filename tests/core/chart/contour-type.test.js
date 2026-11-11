@@ -245,4 +245,69 @@ suite('Chart type contour', () => {
     assertEqual(clipGroups.length, 5, 'area, grid, reference lines, data, highlight');
     done(m);
   });
+  test('wide container: the chart keeps height : width = 0.78, the rest stays empty', () => {
+    const m = mount(BASE);
+    const size = m.chart._getSize();
+    const free = size.w - Math.round(size.h / 0.78);
+    assertTrue(free > 0, `container ${size.w}×${size.h} is wider than the aspect`);
+    const pa = m.chart._plotArea;
+    const base = ChartBase.prototype._getPlotArea.call(m.chart);
+    assertClose(pa.w, base.w - free, 0.5);
+    assertEqual(pa.x, base.x);
+    assertEqual(pa.h, base.h);
+    done(m);
+  });
+
+  test('container not wider than the aspect: the plot area is the base one', () => {
+    const m = mount(BASE);
+    const size = m.chart._getSize();
+    m.host.style.width = `${Math.floor(size.h / 0.78) - 2}px`;
+    m.chart.render();
+    const s2 = m.chart._getSize();
+    assertTrue(s2.w <= Math.round(s2.h / 0.78), `container ${s2.w}×${s2.h}`);
+    const base = ChartBase.prototype._getPlotArea.call(m.chart);
+    assertEqual(m.chart._plotArea.w, base.w);
+    done(m);
+  });
+
+  test('grid lines are faint and dotted; the base grid stays solid', () => {
+    const m = mount(BASE);
+    const lines = [...m.svg.querySelectorAll('g[clip-path] > line')];
+    assertTrue(lines.length > 0, 'grid lines exist');
+    for (const l of lines) {
+      assertEqual(l.getAttribute('stroke-dasharray'), '2 3');
+      assertEqual(l.getAttribute('stroke-opacity'), '0.15');
+    }
+    const base = ChartBase.prototype._gridLineAttrs.call({}, 'red');
+    assertEqual(JSON.stringify(base), JSON.stringify({ stroke: 'red', 'stroke-width': 1 }));
+    done(m);
+  });
+
+  test('raster image is scaled smoothly (no pixelated rendering)', () => {
+    const m = mount(BASE);
+    const img = m.svg.querySelector('image');
+    assertTrue(!(img.getAttribute('style') || '').includes('pixelated'), img.getAttribute('style') || '');
+    done(m);
+  });
+
+  test('export data: x, y, z per grid point, row 0 at yRange[1], 4 decimals, null for gaps', () => {
+    const grid = productGrid();
+    grid[0][1] = null;
+    const m = mount({ ...BASE, grid });
+    const { headers, rows } = m.chart._getExportData();
+    assertEqual(JSON.stringify(headers), JSON.stringify(['x', 'y', 'z']));
+    assertEqual(rows.length, RES * RES);
+    assertEqual(JSON.stringify(rows[0]), JSON.stringify([-3, 3, -9]));
+    assertEqual(rows[1][0], Math.round((-3 + 6 / (RES - 1)) * 1e4) / 1e4);
+    assertEqual(rows[1][2], null);
+    assertEqual(JSON.stringify(rows[RES * RES - 1]), JSON.stringify([3, -3, -9]));
+    assertEqual(rows[RES][1], Math.round((3 - 6 / (RES - 1)) * 1e4) / 1e4);
+    done(m);
+  });
+
+  test('export data is empty without a surface', () => {
+    const m = mount({ grid: [], xRange: [0, 1], yRange: [0, 1] });
+    assertEqual(m.chart._getExportData().rows.length, 0);
+    done(m);
+  });
 });

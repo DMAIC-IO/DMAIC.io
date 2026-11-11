@@ -28,6 +28,7 @@ import { h } from '../../dom.js';
 import { svgEl, drawMarker, dashArray, resolveColor, formatNum } from '../chart-core.js';
 import { edSection, edCheckboxRow, edRangeRow, edSelectRow, edMarkerSection } from '../chart-editor.js';
 import { getColor } from '../color-schemes.js';
+import { roundTo } from '../../number-format.js';
 import {
   contourLevels, contourSegments, labelSegment, bilinear, rasterRGBA, lineColor,
 } from '../contour-geometry.js';
@@ -38,6 +39,9 @@ const DASH_STYLES = ['solid', 'dash', 'dot', 'dashdot', 'longdash'];
 const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
 const validRange = (r) => Array.isArray(r) && isNum(r[0]) && isNum(r[1]) && r[1] > r[0];
 const fix = (v) => Math.round(v * 100) / 100;
+
+/** Height : width of the chart; wider containers leave the rest empty. */
+const ASPECT = 0.78;
 
 export default class ContourChart extends ChartBase {
   /** Base editor keys plus this type's own editor settings. */
@@ -87,6 +91,51 @@ export default class ContourChart extends ChartBase {
       patch.yMax ??= patch.yRange[1];
     }
     super.update(patch);
+  }
+
+  /**
+   * @override — the chart keeps the aspect height : width = 0.78; in a wider
+   * container the plot area stays at the left and the rest stays empty.
+   */
+  _getPlotArea() {
+    const pa = super._getPlotArea();
+    const maxW = Math.round(pa.totalH / ASPECT);
+    if (pa.totalW <= maxW) return pa;
+    return { ...pa, w: Math.max(1, pa.w - (pa.totalW - maxW)) };
+  }
+
+  /** @override — a faint dotted grid that stays subtle above the surface. */
+  _gridLineAttrs(_gridColor) {
+    return {
+      stroke: resolveColor('var(--color-text-primary)'),
+      'stroke-width': 1,
+      'stroke-opacity': 0.15,
+      'stroke-dasharray': '2 3',
+    };
+  }
+
+  /**
+   * @override — the sampled grid as rows x, y, z (row 0 at yRange[1]),
+   * rounded to 4 decimals.
+   * @returns {{ headers: string[], rows: (number|null)[][] }}
+   */
+  _getExportData() {
+    const s = this._surface();
+    if (!s) return { headers: [], rows: [] };
+    const [x0, x1] = this.config.xRange;
+    const [y0, y1] = this.config.yRange;
+    const r4 = (v) => (isNum(v) ? roundTo(v, 4) : null);
+    const rows = [];
+    for (let j = 0; j < s.rows; j++) {
+      for (let i = 0; i < s.cols; i++) {
+        rows.push([
+          r4(x0 + (x1 - x0) * i / (s.cols - 1)),
+          r4(y1 - (y1 - y0) * j / (s.rows - 1)),
+          r4(s.grid[j][i]),
+        ]);
+      }
+    }
+    return { headers: ['x', 'y', 'z'], rows };
   }
 
   /** @override */
@@ -156,7 +205,6 @@ export default class ContourChart extends ChartBase {
       width: (px(s.cols - 1) - x) * s.cols / (s.cols - 1),
       height: (py(s.rows - 1) - y) * s.rows / (s.rows - 1),
       preserveAspectRatio: 'none',
-      style: 'image-rendering: pixelated',
     }, group);
   }
 

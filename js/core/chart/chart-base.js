@@ -1050,16 +1050,17 @@ export default class ChartBase {
     //   2. `showXGrid/showYGrid: false` (explicit caller override, also
     //      surfaced as a checkbox in the standard editor).
     const gridGroup = svgEl('g', { 'clip-path': `url(#${clipId})` }, svg);
+    const gridAttrs = this._gridLineAttrs(gridColor);
     if (this.config.categoricalX !== true && this.config.showXGrid !== false) {
       xTick.ticks.forEach((v) => {
         const x = Math.round(xScale(v)) + 0.5;
-        svgEl('line', { x1: x, y1: pa.y, x2: x, y2: pa.y + pa.h, stroke: gridColor, 'stroke-width': 1 }, gridGroup);
+        svgEl('line', { x1: x, y1: pa.y, x2: x, y2: pa.y + pa.h, ...gridAttrs }, gridGroup);
       });
     }
     if (this.config.categoricalY !== true && this.config.showYGrid !== false) {
       yTick.ticks.forEach((v) => {
         const y = Math.round(yScale(v)) + 0.5;
-        svgEl('line', { x1: pa.x, y1: y, x2: pa.x + pa.w, y2: y, stroke: gridColor, 'stroke-width': 1 }, gridGroup);
+        svgEl('line', { x1: pa.x, y1: y, x2: pa.x + pa.w, y2: y, ...gridAttrs }, gridGroup);
       });
     }
 
@@ -1794,6 +1795,17 @@ export default class ChartBase {
    * @param {SVGDefsElement} defs
    */
   _renderUnderlay(group, xScale, yScale, plotArea, defs) {} // eslint-disable-line no-unused-vars
+
+  /**
+   * Attributes of a grid line. Chart types that draw a filled surface below
+   * the grid override this to keep the grid subtle.
+   * @param {string} gridColor  resolved grid colour of the theme
+   * @returns {Object<string, string|number>}
+   * @protected
+   */
+  _gridLineAttrs(gridColor) {
+    return { stroke: gridColor, 'stroke-width': 1 };
+  }
 
   /**
    * Return legend items.

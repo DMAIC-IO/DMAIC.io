@@ -103,9 +103,11 @@
   flex-direction: column;
 }
 
-/* Wirt des Diagramms — das Framework füllt ihn. */
+/* Wirt des Diagramms — das Framework füllt ihn. Höhe wie im Altmodul:
+   60 % der Fensterhöhe, mindestens 312 px; die Breite des Diagramms folgt
+   aus der Höhe (Typ contour), rechts bleibt die Karte frei. */
 .contour__chart {
-  height: 520px;
+  height: max(312px, 60vh);
 }
 
 /* ── Legende ── */
