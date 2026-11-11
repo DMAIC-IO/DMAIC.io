@@ -72,5 +72,6 @@
   "typeTime": "Time",
   "typeCurrency": "Currency",
   "typePercent": "Percent",
-  "typeBinary": "Binary"
+  "typeBinary": "Binary",
+  "parseTimeout": "Reading the source takes too long; please try again."
 }

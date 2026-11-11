@@ -93,7 +93,7 @@
       }
     },
     "importText": {
-      "help": "Reads CSV or JSON text like a file and waits until parse has finished. Returns the number of sheets, or null when the parse failed; the reason is then in asyncTasks.parse.error. An empty text is a parse failure, not a rejection.",
+      "help": "Reads CSV or JSON text like a file and waits until parse has finished. Returns the number of sheets, or null when the parse failed; the reason is then in asyncTasks.parse.error. An empty text is a parse failure, not a rejection. If parsing takes longer than 20 seconds, the task fails.",
       "params": {
         "text": "The content as text; CSV is always read as UTF-8.",
         "format": "One of the formats in textFormats, csv or json; any other value is an error."
@@ -103,7 +103,7 @@
       }
     },
     "sendToWorksheet": {
-      "help": "Sends the columns of the shown sheet with type and format to a new worksheet, all or nothing. Without data nothing is sent; without columns a notice appears. The value is the new worksheet; without data or columns none is created.",
+      "help": "Sends the columns of the shown sheet with type and format to a new worksheet, all or nothing. Without data nothing is sent; without columns a notice appears. The value is the new worksheet; without data or columns none is created. While parse is running the task does not start and names the reason; otherwise it first waits until parse has finished and sends its result. If that takes longer than 20 seconds it fails without sending.",
       "cancel": {
         "help": "Stops waiting for the new worksheet."
       }

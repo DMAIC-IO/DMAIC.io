@@ -26,7 +26,7 @@ import {
   previewColumns, previewRows, moreRows,
 } from './present.js';
 
-/** Frist, in der `importText` auf das Ende des Parsens wartet. */
+/** Frist, in der `importText` und `sendToWorksheet` auf das Ende des Parsens warten. */
 const SETTLE_MS = 20000;
 
 /**
@@ -98,14 +98,16 @@ export default createModule({
       async run({ text: content, format }) {
         const buffer = new TextEncoder().encode(content).buffer;
         this.loadSource({ buffer }, { name: this.t('textInputName'), size: buffer.byteLength, formatId: format, source: 'text' });
-        await this._asyncTaskHost.settle(SETTLE_MS);
+        if (!(await this._asyncTaskHost.settle(SETTLE_MS))) throw new Error(this.t('parseTimeout'));
         const summary = this.parse;
         return summary ? { sheets: summary.sheets.length } : null;
       },
     }),
     sendToWorksheet: asyncTask({
+      blocked() { return this._asyncTasks.parse.running ? this.t('parsing') : null; },
       async run() {
-        // Stand vor dem ersten await: das gezeigte Blatt mit seinen Werten.
+        // Erst das Parsen abwarten: eine eben geänderte Option darf kein altes Ergebnis senden.
+        if (!(await this._asyncTaskHost.settle(SETTLE_MS))) throw new Error(this.t('parseTimeout'));
         const sheet = this.shownSheet;
         if (!sheet) return null;
         if (sheet.columns.length === 0) {

@@ -72,5 +72,6 @@
   "typeTime": "Uhrzeit",
   "typeCurrency": "Währung",
   "typePercent": "Prozent",
-  "typeBinary": "Binär"
+  "typeBinary": "Binär",
+  "parseTimeout": "Das Einlesen dauert zu lange; bitte erneut versuchen."
 }

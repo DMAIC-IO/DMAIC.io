@@ -93,7 +93,7 @@
       }
     },
     "importText": {
-      "help": "Liest CSV- oder JSON-Text wie eine Datei ein und wartet, bis parse fertig ist. Gibt die Zahl der Blätter zurück, bei einem Parse-Fehler null; der Grund steht dann in asyncTasks.parse.error. Ein leerer Text ist ein Parse-Fehler, keine Absage.",
+      "help": "Liest CSV- oder JSON-Text wie eine Datei ein und wartet, bis parse fertig ist. Gibt die Zahl der Blätter zurück, bei einem Parse-Fehler null; der Grund steht dann in asyncTasks.parse.error. Ein leerer Text ist ein Parse-Fehler, keine Absage. Dauert das Parsen länger als 20 Sekunden, scheitert der Ablauf.",
       "params": {
         "text": "Der Inhalt als Text; bei CSV gilt immer UTF-8.",
         "format": "Eines der Formate in textFormats, csv oder json; jeder andere Wert ist ein Fehler."
@@ -103,7 +103,7 @@
       }
     },
     "sendToWorksheet": {
-      "help": "Sendet die Spalten des gezeigten Blatts mit Typ und Format an ein neues Worksheet, ganz oder gar nicht. Gibt es keine Daten, wird nichts gesendet; ohne Spalten erscheint ein Hinweis. Der Wert ist das neue Worksheet; ohne Daten oder Spalten entsteht keines.",
+      "help": "Sendet die Spalten des gezeigten Blatts mit Typ und Format an ein neues Worksheet, ganz oder gar nicht. Gibt es keine Daten, wird nichts gesendet; ohne Spalten erscheint ein Hinweis. Der Wert ist das neue Worksheet; ohne Daten oder Spalten entsteht keines. Läuft gerade parse, startet der Ablauf nicht und nennt den Grund; sonst wartet er zuerst, bis parse fertig ist, und sendet dessen Ergebnis. Dauert das länger als 20 Sekunden, scheitert er, ohne zu senden.",
       "cancel": {
         "help": "Bricht das Warten auf das neue Worksheet ab."
       }

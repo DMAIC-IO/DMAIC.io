@@ -171,6 +171,32 @@ suite('data-import: Viewmodel im Browser', () => {
     assertDeepEqual(h.notes.at(-1), [tf('sentToWorksheet', { count: 2 }), 'success']);
   });
 
+  test('sendToWorksheet direkt nach einer Optionsänderung sendet das neue Ergebnis', async () => {
+    const h = await mount();
+    await h.run('importText', { text: 'A;B;C\n1;2;3\n4;5;6\n', format: 'csv' });
+    const vm = h.vm();
+    assertEqual(vm.shownSheet.columns.length, 3);
+    setFields(vm.model, { options: csvOptions(vm, { delimiter: 'comma' }) });
+    const out = await h.run('sendToWorksheet');
+    assertEqual(out.status, 'done');
+    const cols = h.states[out.value.instanceId].sheets[0].state.columns.filter((c) => c.name);
+    assertEqual(cols.length, 1);
+    assertEqual(cols[0].name, 'A;B;C');
+  });
+
+  test('sendToWorksheet startet nicht, solange parse läuft', async () => {
+    const h = await mount();
+    await h.run('importText', { text: CSV, format: 'csv' });
+    const vm = h.vm();
+    setFields(vm.model, { options: csvOptions(vm, { delimiter: 'comma' }) });
+    await flush();
+    assertEqual(vm.read().asyncTasks.parse.running, true);
+    const out = await h.run('sendToWorksheet');
+    assertEqual(out.status, 'rejected');
+    assertEqual(out.reason, vm.t('parsing'));
+    await h.settle();
+  });
+
   test('sendToWorksheet ohne Daten liefert null', async () => {
     const h = await mount();
     const out = await h.run('sendToWorksheet');
