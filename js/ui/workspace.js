@@ -122,6 +122,8 @@ export class Workspace {
     this._pending = new Map();
     /** @type {object|null} router instance (set via setRouter) */
     this._router = null;
+    /** @type {import('../core/instances.js').InstancesService|null} (set via setInstances) */
+    this._instanceService = null;
   }
 
   /**
@@ -129,6 +131,13 @@ export class Workspace {
    * @param {object} router
    */
   setRouter(router) { this._router = router; }
+
+  /**
+   * Den Dienst `instances` verdrahten; Module bekommen davon `list` und `read`
+   * als `ctx.instances`.
+   * @param {import('../core/instances.js').InstancesService} svc
+   */
+  setInstances(svc) { this._instanceService = svc; }
 
   /**
    * Render the workspace shell.
@@ -763,6 +772,28 @@ export class Workspace {
   }
 
   /**
+   * Das lebende Viewmodel einer Instanz, oder null, wenn sie nicht gemountet
+   * ist. Auch eine Instanz einer anderen Phase ist gemountet: `_showPhase`
+   * hängt nur ihre Hülle ab, das Viewmodel lebt weiter. Synchron, ohne
+   * Warten — wer eine laufende Einhängung abwarten will, fragt `isPending`
+   * und nimmt `whenInstanceReady()`.
+   * @param {string} instanceId
+   * @returns {object|null}
+   */
+  getLiveViewmodel(instanceId) {
+    return this._instances.get(instanceId)?.getActionData?.() ?? null;
+  }
+
+  /**
+   * Läuft für die Instanz gerade eine Einhängung?
+   * @param {string} instanceId
+   * @returns {boolean}
+   */
+  isPending(instanceId) {
+    return this._pending.has(instanceId);
+  }
+
+  /**
    * Eine Instanz entfernen — OHNE Rückfrage.
    *
    * Herausgezogen aus `_removeModule`, das jetzt nur noch bestätigt und
@@ -800,8 +831,11 @@ export class Workspace {
 
   _buildContext(instanceId, container) {
     const i18n = this._i18n;
+    const svc = this._instanceService;
     return {
       instanceId,
+      // Nur lesend: Module schreiben andere Instanzen nicht über diesen Weg.
+      instances: svc ? Object.freeze({ list: svc.list, read: svc.read }) : undefined,
       eventBus: this._eventBus,
       stateManager: this._stateManager,
       i18n: this._i18n,

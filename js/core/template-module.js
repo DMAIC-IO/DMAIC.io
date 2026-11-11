@@ -26,6 +26,7 @@ import { formatNumber } from './number-format.js';
  *   dialog: any, i18n: any, eventBus: any, instanceId: string, moduleId: string,
  *   cssVars: (map: Record<string, string>) => Record<string, string>,
  *   data: import('./worksheet-data.js').WorksheetData,
+ *   instances?: import('./instances.js').InstancesReader,
  *   openDialog: (ref: string, opts?: import('./command-directives.js').DialogOptions) => Promise<void> }} ViewContext
  */
 /**
@@ -513,6 +514,7 @@ export function createModule(base) {
           instanceId: context.instanceId,
           moduleId: id,
           data: worksheetData,
+          instances: context.instances,
           cssVars: (map) => readCssVars(container.querySelector('[x-data]'), map),
           openDialog: (ref, opts) => openDialogSafely(Alpine, container.querySelector('[x-data]'), ref, opts),
         });

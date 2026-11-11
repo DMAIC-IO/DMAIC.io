@@ -47,6 +47,12 @@ export class Router {
   }
 
   /**
+   * Die zuletzt angewandte Route (jede Art), oder null vor der ersten.
+   * @returns {Route|null}
+   */
+  getCurrentRoute() { return this._currentRoute; }
+
+  /**
    * Wire the action verb registry after construction (the verbs need a router
    * reference themselves, so they cannot be built before it exists).
    * @param {Map<string, object>} verbs

@@ -29,6 +29,35 @@ import { projectReadState } from './agent-read.js';
 import { AGENT_REGISTRY } from './agent-registry.generated.js';
 
 /**
+ * Die Module, die `agentReadMixin(` in ihr Viewmodel spreizen: ihr `read()` ist
+ * die Projektion des gespeicherten Zustands und lässt sich darum auch ohne
+ * Mount bilden (`core/instances.js`). Am Modulobjekt ist das nicht sicher
+ * erkennbar; ein Build-Test (`tools/build/mixin-read-modules.test.mjs`) hält
+ * die Liste mit den Quelltexten gleich.
+ * @type {readonly string[]}
+ */
+export const MIXIN_READ_MODULES = Object.freeze([
+  'calculator',
+  'deployment-flowchart',
+  'five-why',
+  'fmea',
+  'ishikawa',
+  'lessons-learned',
+  'makigami',
+  'opportunity-flowchart',
+  'process-map',
+  'raci-matrix',
+  'todo',
+  'triz-9-windows',
+  'triz-contradiction-matrix',
+  'triz-evolution-trends',
+  'triz-ifr',
+  'triz-physical-contradiction',
+  'triz-resources',
+  'voc-ctx-tree',
+]);
+
+/**
  * Projiziere eine Zustands-Momentaufnahme durch das Feldschema eines Moduls.
  *
  * @param {string} moduleId  Modul-Id, Schlüssel in der generierten Registry

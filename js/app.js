@@ -28,7 +28,8 @@ import { registerCommandDirectives } from './core/command-directives.js';
 import { registerAsyncTaskDirectives } from './core/async-task-directives.js';
 import { registerWidgetDirective } from './core/widget-directive.js';
 import { WIDGETS } from './widgets/registry.js';
-import { installWorksheetRevisions } from './core/worksheet-data.js';
+import { installWorksheetRevisions, createWorksheetData } from './core/worksheet-data.js';
+import { createInstances } from './core/instances.js';
 
 async function init() {
   // ─── Core Services ───────────────────────────────────────
@@ -77,6 +78,12 @@ async function init() {
     document.getElementById('app-workspace'),
     { moduleRegistry, eventBus, stateManager, i18n, dialog, notify, helpPanel, chartManager, examples: examplesRegistry, glossary: glossaryRegistry }
   );
+  // Vor render(): schon die ersten Mounts bekommen ctx.instances.
+  const instances = createInstances({
+    stateManager, moduleRegistry, workspace, eventBus,
+    createData: () => createWorksheetData(stateManager),
+  });
+  workspace.setInstances(instances);
   workspace.render();
 
   // Wire workspace into DMAIC tiles for cross-phase tab drag & drop
@@ -119,7 +126,7 @@ async function init() {
   setCreatePageRouter(router);
 
   // ─── Startup concerns (deeplink, prompts, viewport, auto-save, e2e, agent) ───
-  const startupCtx = { ...kernel, dialog, notify, workspace, exportReminder, router };
+  const startupCtx = { ...kernel, dialog, notify, workspace, exportReminder, router, instances };
   for (const task of startupTasks) await task.init(startupCtx);
 
   // ─── Update title ────────────────────────────────────────

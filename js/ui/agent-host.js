@@ -94,9 +94,11 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
     },
 
     async getViewmodel(instanceId) {
-      // Nur Instanzen der aktiven Phase sind gemountet (siehe
-      // workspace._instantiateModule). Öffnen ist daher Teil des Zugriffs,
-      // nicht eine Vorbedingung, die der Agent selbst erfüllen müsste.
+      // Eingehängt wird eine Instanz erst, wenn ihre Phase angezeigt wird
+      // (workspace._instantiateModule); danach lebt ihr Viewmodel auch über
+      // Phasenwechsel weiter (workspace.getLiveViewmodel). Eine nie geöffnete
+      // Instanz hat keins. Öffnen ist daher Teil des Zugriffs, nicht eine
+      // Vorbedingung, die der Agent selbst erfüllen müsste.
       const opened = await this.openInstance(instanceId);
       if (!opened) return null;
       // Und auf das Ende des Einhängens warten. `router.navigate()` kommt

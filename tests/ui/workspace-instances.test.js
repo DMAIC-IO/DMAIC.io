@@ -29,3 +29,80 @@ suite('workspace instances', () => {
     assertEqual(ws.getInstancesByModuleId('worksheet').length, 0);
   });
 });
+
+/**
+ * Workspace ohne DOM, die durch `_showPhase` laufen kann: Tab-Leiste und
+ * Modulfläche sind Attrappen, Tabs und Aktionen werden nicht gezeichnet.
+ */
+function makePhaseWorkspace(phases) {
+  const ws = Object.create(Workspace.prototype);
+  const node = () => ({ replaceChildren() {}, append() {}, querySelectorAll: () => [] });
+  ws._instances = new Map();
+  ws._containers = new Map();
+  ws._pending = new Map();
+  ws._lastActiveByPhase = new Map();
+  ws._actionEffectDisposers = [];
+  ws._tabsEl = node();
+  ws._moduleArea = node();
+  ws._eventBus = { emit() {}, on() {} };
+  ws._stateManager = {
+    get: (path) => (path === 'phases' ? phases : phases[path.slice('phases.'.length)]),
+    setModuleState() {},
+  };
+  ws._renderTab = () => {};
+  ws._renderActions = () => {};
+  ws._ensureInstantiated = async () => {};
+  return ws;
+}
+
+suite('workspace live viewmodels', () => {
+  test('getLiveViewmodel liefert das Viewmodel einer Instanz oder null', () => {
+    const ws = makeWorkspace();
+    const vm = { model: {} };
+    ws._instances.set('i1', { getActionData: () => vm });
+    ws._instances.set('i2', {});
+    assertEqual(ws.getLiveViewmodel('i1'), vm);
+    assertEqual(ws.getLiveViewmodel('i2'), null);
+    assertEqual(ws.getLiveViewmodel('fehlt'), null);
+  });
+
+  test('isPending meldet eine laufende Einhängung', () => {
+    const ws = makeWorkspace();
+    ws._pending = new Map([['i1', Promise.resolve()]]);
+    assertEqual(ws.isPending('i1'), true);
+    assertEqual(ws.isPending('i2'), false);
+  });
+
+  test('nach einem Phasenwechsel bleibt die Instanz der alten Phase gemountet', () => {
+    const phases = {
+      define: [{ instanceId: 'd1', moduleId: 'sipoc' }],
+      measure: [{ instanceId: 'm1', moduleId: 'sipoc' }],
+    };
+    const ws = makePhaseWorkspace(phases);
+    const vm = { model: { n: 1 } };
+    ws._instances.set('d1', { getActionData: () => vm, getState: () => null });
+    ws._containers.set('d1', { style: {}, dataset: {} });
+    ws._showPhase('define');
+    ws._showPhase('measure');
+    assertEqual(ws._activePhase, 'measure');
+    assertEqual(ws.getLiveViewmodel('d1'), vm);
+  });
+
+  test('setInstances reicht list und read in den Modulkontext, nicht write', () => {
+    const ws = Object.create(Workspace.prototype);
+    ws._context = {};
+    ws._i18n = { getLanguage: () => 'de' };
+    const svc = { list: () => [], read: async () => ({}), write: async () => ({}) };
+    ws.setInstances(svc);
+    const globalDoc = globalThis.document;
+    if (!globalDoc) globalThis.document = /** @type {any} */ ({ documentElement: { dataset: {} } });
+    try {
+      const ctx = ws._buildContext('i1', null);
+      assertEqual(ctx.instances.list, svc.list);
+      assertEqual(ctx.instances.read, svc.read);
+      assertEqual('write' in ctx.instances, false);
+    } finally {
+      if (!globalDoc) delete globalThis.document;
+    }
+  });
+});
