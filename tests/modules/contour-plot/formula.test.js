@@ -1,11 +1,11 @@
 /**
- * Unit tests for contour-plot-formula.js — the whitelisted custom-formula scope
+ * Unit tests for contour-plot domain/formula.js — the whitelisted custom-formula scope
  * (evalFormula) and validation (validateFormula) over the expression engine.
  */
-import { suite, test, assertEqual, assertAlmostEqual } from '../test-utils.js';
-import { evalFormula, validateFormula } from '../../js/modules/contour-plot/contour-plot-formula.js';
+import { suite, test, assertEqual, assertAlmostEqual } from '../../test-utils.js';
+import { evalFormula, validateFormula } from '../../../js/modules/contour-plot/domain/formula.js';
 
-suite('contour-plot-formula — evalFormula', () => {
+suite('contour-plot formula — evalFormula', () => {
   test('arithmetic x+y', () => assertEqual(evalFormula('x+y', 2, 3), 5));
   test('** power: x**2 + y**2', () => assertEqual(evalFormula('x**2 + y**2', 3, 4), 25));
   test('^ power: x^2 + y^2', () => assertEqual(evalFormula('x^2 + y^2', 3, 4), 25));
@@ -31,7 +31,7 @@ suite('contour-plot-formula — evalFormula', () => {
     assertEqual(evalFormula('1/0', 1, 1), Infinity));
 });
 
-suite('contour-plot-formula — validateFormula', () => {
+suite('contour-plot formula — validateFormula', () => {
   test('valid arithmetic', () => assertEqual(validateFormula('x*x + y*y').ok, true));
   test('valid Math.* call', () => assertEqual(validateFormula('Math.exp(-x*x - y*y)').ok, true));
   test('valid **', () => assertEqual(validateFormula('x**2').ok, true));

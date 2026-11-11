@@ -1,9 +1,25 @@
 /**
- * D.Mike — Antwortfläche abtasten (contour-plot-surface.js)
+ * D.Mike — Konturdiagramm: Antwortfläche auswerten und abtasten. Rein.
  *
- * Rein: das Raster und seine Kennzahlen, eine Quelle für das Zeichnen
- * (`_drawContour`) und die Agenten-Lesefläche (`surface`).
+ * Das Raster und seine Kennzahlen, eine Quelle für das Zeichnen und die
+ * Ableitung `surface` im Model.
  */
+import { evalFormula } from './formula.js';
+
+/**
+ * Die Modellfunktion an einem Punkt. `quadratic` und `interaction` rechnen
+ * dasselbe Polynom b0 + b1·x + b2·y + b3·x² + b4·y² + b5·x·y; `custom`
+ * wertet die eigene Formel aus (ungültig → 0).
+ * @param {{ modelType: string, b: number[], customFormula: string }} model
+ * @param {number} x
+ * @param {number} y
+ * @returns {number}
+ */
+export function evalModel(model, x, y) {
+  if (model.modelType === 'custom') return evalFormula(model.customFormula, x, y);
+  const b = model.b;
+  return b[0] + b[1] * x + b[2] * y + b[3] * x * x + b[4] * y * y + b[5] * x * y;
+}
 
 /**
  * Die Fläche auf einem res×res-Raster auswerten.

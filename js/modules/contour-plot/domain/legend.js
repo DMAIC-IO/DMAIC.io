@@ -1,8 +1,5 @@
 /**
- * D.Mike — Contour Plot: Legend model
- *
- * Pure colorbar-legend builder, extracted from contour-plot.js to break the
- * import cycle with contour-plot-render.js (which consumes it via _buildLegend).
+ * D.Mike — Konturdiagramm: Farblegende. Rein; die Farbe kommt über `getColor`.
  */
 
 /**

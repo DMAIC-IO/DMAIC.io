@@ -1,11 +1,11 @@
 /**
  * CHARACTERIZATION suite — pins the contour _evalModel contract: the custom
- * branch evaluates via contour-plot-formula.evalFormula (whitelisted Math.* +
+ * branch evaluates via domain/formula.evalFormula (whitelisted Math.* +
  * bare names, bad formula → 0); the polynomial branch is the b[] expansion.
  */
 
-import { suite, test, assertEqual, assertAlmostEqual } from '../test-utils.js';
-import { evalFormula } from '../../js/modules/contour-plot/contour-plot-formula.js';
+import { suite, test, assertEqual, assertAlmostEqual } from '../../test-utils.js';
+import { evalFormula } from '../../../js/modules/contour-plot/domain/formula.js';
 
 function evalPoly(b, x, y) {
   return b[0] + b[1] * x + b[2] * y + b[3] * x * x + b[4] * y * y + b[5] * x * y;

@@ -1,5 +1,5 @@
 /**
- * D.Mike — Contour custom-formula scope + evaluation (contour-plot-formula.js)
+ * D.Mike — Konturdiagramm: eigene Formel z = f(x, y) auswerten und prüfen
  *
  * Builds the whitelisted scope for user-authored contour formulas z = f(x, y)
  * and exposes pure eval/validate helpers over the shared expression engine.
@@ -8,8 +8,8 @@
  * faithful JS semantics (`Math.log` = natural). No DOM, no i18n, no Alpine.
  */
 
-import { evalExpr } from '../../engines/expression-eval.js';
-import { factorial } from '../../engines/factorial.js';
+import { evalExpr } from '../../../engines/expression-eval.js';
+import { factorial } from '../../../engines/factorial.js';
 
 // Bare-name vocabulary — mirrors the calculator (trig in RADIANS).
 const BARE_FNS = {

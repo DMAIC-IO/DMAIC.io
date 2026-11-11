@@ -8,8 +8,8 @@
 
 export { getColor } from '../../core/chart/color-schemes.js';
 import { getColor } from '../../core/chart/color-schemes.js';
-import { legendModel } from './contour-plot-legend.js';
-import { scanSurface } from './contour-plot-surface.js';
+import { legendModel } from './domain/legend.js';
+import { scanSurface } from './domain/surface.js';
 
 // ═══════════════════════════════════════════════════════════════
 // Axis tick generation

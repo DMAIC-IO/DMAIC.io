@@ -1,5 +1,5 @@
-import { suite, test, assertEqual } from '../test-utils.js';
-import { legendModel } from '../../js/modules/contour-plot/contour-plot-legend.js';
+import { suite, test, assertEqual } from '../../test-utils.js';
+import { legendModel } from '../../../js/modules/contour-plot/domain/legend.js';
 
 suite('contour-plot: legendModel', () => {
   test('produces N≤10 swatch items with rgb colors and fixed-1 values', () => {

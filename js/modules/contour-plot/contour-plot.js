@@ -39,8 +39,8 @@ import { DatasetPicker, getColumnValues, refToKey, keyToRef } from '../../ui/dat
 
 import { editorMethods } from './contour-plot-editor.js';
 import { renderMethods } from './contour-plot-render.js';
-import { evalFormula, validateFormula } from './contour-plot-formula.js';
-import { scanSurface } from './contour-plot-surface.js';
+import { evalFormula, validateFormula } from './domain/formula.js';
+import { scanSurface } from './domain/surface.js';
 
 /** Map a legacy `_val(id)` reference to its Model property. */
 const VAL_FIELD = {

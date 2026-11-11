@@ -32,7 +32,7 @@
   "js/modules/ce-matrix/ce-matrix.html": {
     "count": 1
   },
-  "js/modules/contour-plot/contour-plot-legend.js": {
+  "js/modules/contour-plot/domain/legend.js": {
     "count": 1
   },
   "js/modules/contour-plot/contour-plot-model.js": {

@@ -1,5 +1,5 @@
-import { suite, test, assertEqual, assertClose } from '../test-utils.js';
-import { scanSurface } from '../../js/modules/contour-plot/contour-plot-surface.js';
+import { suite, test, assertEqual, assertClose } from '../../test-utils.js';
+import { scanSurface } from '../../../js/modules/contour-plot/domain/surface.js';
 
 suite('contour-plot scanSurface', () => {
   test('findet das Maximum einer nach unten offenen Parabel', () => {
