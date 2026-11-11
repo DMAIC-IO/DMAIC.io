@@ -1526,3 +1526,11 @@ test('Schreibweg: derived in domain/model.js schreibt nicht ins Model, Lesen ist
     'write: domain/model.js: this.list.push(…) — über ein Kommando, instance.set oder x-model/x-field schreiben',
   ]);
 });
+
+test('Schema-Literal: async oder Generator unter derived sind Befunde', () => {
+  assert.deepEqual(checkSchemaLiteral(DERIVED_MODEL('async a() { return 1; }, *b() { yield 1; }, c: async function () { return 1; }', "['a']")), [
+    'schema: domain/model.js: derived.a: async oder Generator nicht erlaubt — eine Ableitung ist synchron',
+    'schema: domain/model.js: derived.b: async oder Generator nicht erlaubt — eine Ableitung ist synchron',
+    'schema: domain/model.js: derived.c: async oder Generator nicht erlaubt — eine Ableitung ist synchron',
+  ]);
+});

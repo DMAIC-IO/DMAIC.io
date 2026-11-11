@@ -33,6 +33,7 @@ export function derivedAccessor(names, get) {
  * @param {any} data Arbeitsblattsicht
  * @param {string[]} [names] nur diese Einträge (Verkettungen werden bei Bedarf mit ausgewertet)
  * @returns {Record<string, any>}
+ * @throws {Error} `unknown derived: <name>`, wenn `names` einen Namen ohne Eintrag nennt
  */
 export function evaluateDerived(model, data, names = derivedNames(model.constructor)) {
   const defs = schemaOf(model)?.derived ?? {};
@@ -64,6 +65,7 @@ export function evaluateDerived(model, data, names = derivedNames(model.construc
   };
   const d = derivedAccessor(Object.keys(defs), read);
   const out = {};
+  for (const name of names) if (!Object.hasOwn(defs, name)) throw new Error(`unknown derived: ${name}`);
   for (const name of names) {
     try { out[name] = read(name); } catch (err) { out[name] = { error: /** @type {Error} */ (err).message }; }
   }

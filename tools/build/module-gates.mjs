@@ -473,6 +473,11 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
     for (const e of v.properties) {
       if (ts.isSpreadAssignment(e)) { out.push(`${P} derived: Spread nicht erlaubt (${src(e)})`); continue; }
       const name = keyOf(e) ?? '?';
+      const fn = ts.isMethodDeclaration(e) ? e : (ts.isPropertyAssignment(e) ? e.initializer : null);
+      if (fn && (ts.isMethodDeclaration(fn) || ts.isFunctionExpression(fn)) && (fn.asteriskToken || fn.modifiers?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword))) {
+        out.push(`${P} derived.${name}: async oder Generator nicht erlaubt — eine Ableitung ist synchron`);
+        continue;
+      }
       if (ts.isMethodDeclaration(e)) continue;
       const f = ts.isPropertyAssignment(e) ? e.initializer : null;
       if (f && ts.isArrowFunction(f)) out.push(`${P} derived.${name} ist eine Pfeilfunktion — this muss das Model sein`);

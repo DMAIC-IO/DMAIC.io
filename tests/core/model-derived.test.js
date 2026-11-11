@@ -21,26 +21,26 @@ suite('defineModel derived', () => {
   });
 
   test('Name wie ein Feld wirft', () => {
-    assertThrows(() => defineModel({ fields: { n: number({ default: 1 }) }, derived: { n() { return 1; } } }), /n/);
+    assertThrows(() => defineModel({ fields: { n: number({ default: 1 }) }, derived: { n() { return 1; } } }), /n is both a field and a derived/);
   });
 
   test('Name wie ein Ansichtsfeld wirft', () => {
-    assertThrows(() => defineModel({ view: { v: text() }, derived: { v() { return 1; } } }), /v/);
+    assertThrows(() => defineModel({ view: { v: text() }, derived: { v() { return 1; } } }), /v is both a view field and a derived/);
   });
 
   test('Name wie ein Kommando wirft', () => {
-    assertThrows(() => defineModel({ commands: { go: command({ run() {} }) }, derived: { go() { return 1; } } }), /go/);
+    assertThrows(() => defineModel({ commands: { go: command({ run() {} }) }, derived: { go() { return 1; } } }), /go is both a command and a derived/);
   });
 
   test('reservierter Name wirft', () => {
-    assertThrows(() => defineModel({ derived: { toJSON() { return 1; } } }), /toJSON/);
+    assertThrows(() => defineModel({ derived: { toJSON() { return 1; } } }), /toJSON is a reserved name/);
   });
 
   test('derived-Eintrag muss eine Funktion sein', () => {
-    assertThrows(() => defineModel({ derived: { a: 1 } }), /a/);
+    assertThrows(() => defineModel({ derived: { a: 1 } }), /derived a must be a function/);
   });
 
   test('derivedBulk ohne gleichnamigen Eintrag wirft', () => {
-    assertThrows(() => defineModel({ derived: { a() { return 1; } }, derivedBulk: ['nope'] }), /nope/);
+    assertThrows(() => defineModel({ derived: { a() { return 1; } }, derivedBulk: ['nope'] }), /derivedBulk nope names no derived entry/);
   });
 });

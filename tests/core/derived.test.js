@@ -8,6 +8,11 @@ import { derivedNames, derivedAccessor, evaluateDerived } from '../../js/core/de
 const stub = { numeric: () => [1, 2, 3] };
 
 suite('derived', () => {
+  test('unbekannter Name in names wirft', () => {
+    const M = defineModel({ derived: { a() { return 1; } } });
+    assertThrows(() => evaluateDerived(new M(), stub, ['nope']), /unknown derived: nope/);
+  });
+
   test('derivedNames: Namen in Deklarationsreihenfolge', () => {
     const M = defineModel({ derived: { b() { return 1; }, a() { return 2; } } });
     assertDeepEqual(derivedNames(M), ['b', 'a']);
