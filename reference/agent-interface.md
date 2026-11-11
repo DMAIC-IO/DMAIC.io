@@ -71,7 +71,7 @@ eindeutig sein (`duplicate_id`).
 |---|---|---|---|
 | `project.read` | — | `{ contract, appVersion, language, view, instances: [{ id, module, name, phase }] }` | nein |
 | `catalog.read` | — | `{ contract, modules: [{ id, name, whenToUse, available, phase }] }` | nein |
-| `module.describe` | `module`, `sections?` | `{ module, name, whenToUse, available, phase, actions, fields, sections, prose }` | nein |
+| `module.describe` | `module`, `sections?` | `{ module, name, whenToUse, available, phase, actions, fields, asyncTasks, notes, sections, prose }` | nein |
 | `module.add` | `module`, `phase?` | `{ instanceId, module, phase }` | ja |
 | `module.remove` | `instance` | `{ instanceId, removed }` | ja |
 | `instance.open` | `instance` | `{ instanceId, module, phase }` | nein |
@@ -150,7 +150,17 @@ Felder setzt `instance.set`:
     { op: 'instance.set', instance, values: { alpha: 0.1, mode: 'less' } }
 
 Alles wird geprüft, dann alles geschrieben; scheitert ein Wert, ist nichts
-geschrieben (`call_failed`). Setzbar sind die Felder aus `describe` — keine
+geschrieben (`call_failed`).
+
+Regeln über mehrere Felder (Invarianten des Models) nennt `module.describe`
+unter `notes`, je Regel ein Satz in der UI-Sprache, z. B. für `msa-typ2`
+`notes: ['USG muss kleiner als OSG sein']`; ohne solche Regeln ist `notes`
+leer. Verletzt ein Schreiben (`instance.set` oder ein Kommando) eine solche
+Regel, trägt die Ablehnung `invariant` mit dem Namen der Regel, und die Meldung
+nennt hinter `allowed:` ihren Satz:
+
+    { ok: false, error: 'call_failed', invariant: 'limitsOrder',
+      message: 'Aufruf von "instance.set" ist fehlgeschlagen: invalid usl 1; allowed: USG muss kleiner als OSG sein' } Setzbar sind die Felder aus `describe` — keine
 Ansichtsfelder (`unknown field "<x>"; available: …`). Ein Modul alter Form
 antwortet auf `instance.set` mit `call_failed`.
 
@@ -306,12 +316,14 @@ Ein Stapel antwortet mit
 
 ```js
 { ok, contract, results: [ { ok: true, id, result }
-                         | { ok: false, id, error, message, available? } ] }
+                         | { ok: false, id, error, message, available?, invariant? } ] }
 ```
 
 `ok` ist `true`, wenn jeder Eintrag gelungen ist. `available` nennt, wo
 sinnvoll, die gültigen Möglichkeiten (Modul-ids, Instanzen, Methoden,
-Phasen, Pfadschlüssel). Ein Fehler sagt, **was** das Problem ist, und nennt
+Phasen, Pfadschlüssel). `invariant` steht nur an einem `call_failed`, das eine
+Regel über mehrere Felder verletzt hat, und nennt deren Namen (siehe
+„Module mit deklarativem Model“). Ein Fehler sagt, **was** das Problem ist, und nennt
 die Möglichkeiten; einen Lösungsvorschlag gibt er nicht — das ist Sache des
 Agenten. Meldungen stehen in der UI-Sprache.
 
@@ -668,6 +680,12 @@ und keine Daten. `readBulk` entfällt, Massenfelder stehen in `derivedBulk` des
 Models. Damit ändert sich die Form der Antwort von `read()`; ein Agent, der eine
 Ansichtshilfe las, bekommt sie nicht mehr. Eine gespeicherte Einwilligung mit
 `contract: 2` bleibt gültig — `agent-consent.js` vergleicht die Version nicht.
+
+Invariantentexte (2026-11-11, `contract` bleibt `3`): `module.describe` trägt
+`notes` mit den Sätzen der Regeln über mehrere Felder; eine Ablehnung wegen
+einer solchen Regel trägt `invariant` und nennt den Satz hinter `allowed:` statt
+`a value that keeps <name>`. Neues Antwort- und Fehlerfeld, gleiche Hülle,
+keine neuen Fehlercodes — kein Bruch.
 
 Aktionsnamen mit Punkt (`draft.addQuestion`) sind ebenfalls kein Bruch: die
 Aktionsform `{ op: 'instance.call', instance, method, args }` bleibt,

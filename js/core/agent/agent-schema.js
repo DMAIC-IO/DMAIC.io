@@ -116,7 +116,7 @@ function taskActions(name, def) {
  * Die Ableitungen des Models (`Model.schema.derived`, Massenfelder aus `derivedBulk`) erscheinen
  * als Lesefelder; `computed` des view-Blocks sind Ansichtshilfen und erscheinen nicht.
  * @param {{ asyncTasks?: Record<string, object> }} [opts]
- * @returns {object} `AgentModuleEntry` mit `schema: true`, `settable`, `viewFields`
+ * @returns {object} `AgentModuleEntry` mit `schema: true`, `settable`, `viewFields`, `invariants`
  */
 export function schemaAgentEntry(Model, vmCommands = {}, { asyncTasks = {} } = {}) {
   const schema = schemaOf(Model);
@@ -161,6 +161,9 @@ export function schemaAgentEntry(Model, vmCommands = {}, { asyncTasks = {} } = {
     })),
     viewFields: Object.keys(schema.view),
     settable: Object.keys(schema.fields),
+    // Die Namen der Regeln über mehrere Felder; ihren Text liest `describe`
+    // unter `modules.<id>.invariants.<name>`.
+    invariants: Object.keys(schema.invariants ?? {}),
   };
 }
 

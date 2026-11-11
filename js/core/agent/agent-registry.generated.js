@@ -498,7 +498,8 @@ export const AGENT_REGISTRY = {
       "constantN",
       "baselineCount",
       "enabledRules"
-    ]
+    ],
+    "invariants": []
   },
   "attribute-test": {
     "tagged": true,
@@ -2113,6 +2114,10 @@ export const AGENT_REGISTRY = {
     "settable": [
       "columns",
       "pick"
+    ],
+    "invariants": [
+      "oneSheet",
+      "distinct"
     ]
   },
   "contour-plot": {
@@ -3436,7 +3441,8 @@ export const AGENT_REGISTRY = {
       "file",
       "options",
       "activeSheet"
-    ]
+    ],
+    "invariants": []
   },
   "data-transformation": {
     "tagged": true,
@@ -4517,6 +4523,10 @@ export const AGENT_REGISTRY = {
     ],
     "settable": [
       "events"
+    ],
+    "invariants": [
+      "axisOrder",
+      "dayOrder"
     ]
   },
   "doe-advisor": {
@@ -6885,6 +6895,9 @@ export const AGENT_REGISTRY = {
       "binMode",
       "binWidth",
       "confLevel"
+    ],
+    "invariants": [
+      "binWidthOnlyManual"
     ]
   },
   "hypothesis-test": {
@@ -7248,6 +7261,9 @@ export const AGENT_REGISTRY = {
       "colRef2",
       "colRefsK",
       "equalVariances"
+    ],
+    "invariants": [
+      "pairedMeansOnly"
     ]
   },
   "individual-value-plot": {
@@ -9487,6 +9503,12 @@ export const AGENT_REGISTRY = {
       "parameters",
       "conflicts",
       "concepts"
+    ],
+    "invariants": [
+      "uniqueIds",
+      "validConflicts",
+      "validPicks",
+      "activeConcept"
     ]
   },
   "mosaic": {
@@ -10642,6 +10664,9 @@ export const AGENT_REGISTRY = {
       "verdictBasis",
       "sigmaHist",
       "exampleWorksheetId"
+    ],
+    "invariants": [
+      "limitsOrder"
     ]
   },
   "msa-typ4": {
@@ -11909,6 +11934,9 @@ export const AGENT_REGISTRY = {
       "replicate",
       "ratings",
       "exampleWorksheetId"
+    ],
+    "invariants": [
+      "uniqueRatings"
     ]
   },
   "msa-typ6": {
@@ -12519,6 +12547,10 @@ export const AGENT_REGISTRY = {
       "showGroupMean",
       "showRefLine",
       "exampleWorksheetId"
+    ],
+    "invariants": [
+      "factorIds",
+      "factorCount"
     ]
   },
   "multivariate-control-chart": {
@@ -12941,6 +12973,11 @@ export const AGENT_REGISTRY = {
     ],
     "settable": [
       "steps"
+    ],
+    "invariants": [
+      "uniqueStepIds",
+      "uniqueSubstepIds",
+      "validExpanded"
     ]
   },
   "outlier-test": {
@@ -16747,6 +16784,9 @@ export const AGENT_REGISTRY = {
       "confidence",
       "ciMethod",
       "result"
+    ],
+    "invariants": [
+      "statisticForMode"
     ]
   },
   "response-optimization": {
@@ -17893,7 +17933,8 @@ export const AGENT_REGISTRY = {
     "viewFields": [],
     "settable": [
       "columns"
-    ]
+    ],
+    "invariants": []
   },
   "stakeholder-analysis": {
     "tagged": true,

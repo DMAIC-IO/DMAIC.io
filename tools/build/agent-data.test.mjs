@@ -1449,6 +1449,13 @@ test('collectAgentData: hypothesis-test ist umgestellt und trägt den Eintrag au
   assert.ok('read' in e.actions);
 });
 
+test('collectAgentData: morphological-box nennt seine Invarianten in Deklarationsreihenfolge', async () => {
+  const appDir = join(import.meta.dirname, '..', '..');
+  const { modules } = await collectAgentData(appDir);
+  assert.deepEqual(modules['morphological-box'].invariants,
+    ['uniqueIds', 'validConflicts', 'validPicks', 'activeConcept']);
+});
+
 test('collectAgentData: worksheet declares its read surface, rows are bulk', async () => {
   const appDir = join(import.meta.dirname, '..', '..');
   const { modules } = await collectAgentData(appDir);

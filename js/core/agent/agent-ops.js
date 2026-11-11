@@ -18,7 +18,7 @@
  */
 import { CONTRACT_VERSION, ERRORS } from './agent-contract.js';
 import { axiError } from './agent-errors.js';
-import { buildCatalog, buildInstanceList, describeModule } from './agent-catalog.js';
+import { buildCatalog, buildInstanceList, describeModule, invariantText } from './agent-catalog.js';
 import { canAddInstance, defaultPhaseFor, instanceWorld } from '../router/instance-ops.js';
 import { getAllPhaseIds } from '../cycles/cycles.js';
 import { requireArity, requireForm } from './agent-argcheck.js';
@@ -223,7 +223,7 @@ export function createOps(deps) {
               t('agent.errors.unknownMethod', { module: found.module, method: action.method }),
               { available: Object.keys(entry.actions ?? {}).sort() });
           }
-          if (err?.code !== 'needs_mount') return serviceError(t, action, action.method, err);
+          if (err?.code !== 'needs_mount') return serviceError(t, action, action.method, err, { moduleId: found.module, i18n });
         }
       }
       const viewmodel = await host.getViewmodel(action.instance);
@@ -241,7 +241,7 @@ export function createOps(deps) {
       // Schema-Kommandos (agent-schema.js) tragen `target`: das Model, das
       // Viewmodel oder `asyncTask` (Ablauf-Host, eigener Zweig darunter).
       // Die Fläche ruft das REAKTIVE Model des Viewmodels.
-      if (spec.target === 'asyncTask') return callAsyncTask(viewmodel, spec, action, found.module, entry, t);
+      if (spec.target === 'asyncTask') return callAsyncTask(viewmodel, spec, action, found.module, entry, t, i18n);
       const target = spec.target === 'model'
         ? { object: viewmodel.model, name: action.method }
         : callTarget(viewmodel, action.method);
@@ -274,7 +274,7 @@ export function createOps(deps) {
         const shown = action.method === 'read' ? stripPaths(value, entry.viewFields) : value;
         return callResult(action, shown);
       } catch (err) {
-        return callFailedError(t, action.method, err);
+        return callFailedError(t, action.method, err, { moduleId: found.module, i18n });
       }
     },
 
@@ -299,7 +299,7 @@ export function createOps(deps) {
           (model) => setFields(model, action.values));
         return { instanceId: action.instance, values };
       } catch (err) {
-        if (err?.code !== 'needs_mount') return serviceError(t, action, 'instance.set', err);
+        if (err?.code !== 'needs_mount') return serviceError(t, action, 'instance.set', err, { moduleId: found.module, i18n });
       }
       const viewmodel = await host.getViewmodel(action.instance);
       if (!viewmodel) {
@@ -311,7 +311,7 @@ export function createOps(deps) {
         const values = setFields(viewmodel.model, action.values);
         return { instanceId: action.instance, values };
       } catch (err) {
-        return callFailedError(t, 'instance.set', err);
+        return callFailedError(t, 'instance.set', err, { moduleId: found.module, i18n });
       }
     },
   };
@@ -413,39 +413,50 @@ function callResult(action, value) {
 }
 
 /**
- * Der Fehler eines geworfenen Aufrufs.
+ * Der Fehler eines geworfenen Aufrufs. Verletzt der Aufruf eine Invariante
+ * (`err.invariant`), nennt die Meldung hinter `allowed: ` den Text der Regel
+ * statt des Namens, und die Antwort trägt `invariant: <name>`.
  * @param {Function} t @param {string} method @param {any} err
+ * @param {{ moduleId?: string, i18n?: object }} [context] Modul und i18n für den Regeltext
  * @returns {object}
  */
-function callFailedError(t, method, err) {
-  return axiError(ERRORS.CALL_FAILED,
-    t('agent.errors.callFailed', { method, detail: err?.message ?? String(err) }));
+function callFailedError(t, method, err, { moduleId, i18n } = {}) {
+  let detail = err?.message ?? String(err);
+  const invariant = typeof err?.invariant === 'string' ? err.invariant : null;
+  if (invariant !== null && moduleId && i18n) {
+    const text = invariantText(i18n, moduleId, invariant);
+    const at = detail.indexOf('allowed: ');
+    if (text !== null && at >= 0) detail = `${detail.slice(0, at)}allowed: ${text}`;
+  }
+  return axiError(ERRORS.CALL_FAILED, t('agent.errors.callFailed', { method, detail }),
+    invariant !== null ? { invariant } : {});
 }
 
 /**
  * Ein Fehler des Dienstes `instances` als AXI-Fehler. Was keinen Code trägt,
  * kommt aus dem Modul (Argumentprüfung, Kommando) und wird `call_failed`.
  * @param {Function} t @param {{ instance: string }} action @param {string} method @param {any} err
+ * @param {{ moduleId?: string, i18n?: object }} [context] wie bei `callFailedError`
  * @returns {object}
  */
-function serviceError(t, action, method, err) {
+function serviceError(t, action, method, err, context) {
   if (err?.code === 'project_completed') return axiError(ERRORS.PROJECT_COMPLETED, t('app.projectReadOnly'));
   if (err?.code === 'unknown_instance') {
     // Die Instanz stand eben noch in der Liste: ihr Einhängen hat die Frist gerissen.
     return axiError(ERRORS.UNKNOWN_INSTANCE,
       t('agent.errors.viewmodelNotAlive', { instance: action.instance }), { available: [] });
   }
-  return callFailedError(t, method, err);
+  return callFailedError(t, method, err, context);
 }
 
 /**
  * Ruft eine Aufgabenaktion (Start oder Abbrechen) am Ablauf-Host des Viewmodels.
  * Der Start wartet bis zum Ende: Wert, `{ cancelled: true }` oder `call_failed`.
  * @param {object} viewmodel @param {object} spec Katalogaktion @param {{ instance: string, method: string, args?: any[] }} action
- * @param {string} moduleId @param {object} entry @param {Function} t
+ * @param {string} moduleId @param {object} entry @param {Function} t @param {object} i18n
  * @returns {Promise<object>}
  */
-async function callAsyncTask(viewmodel, spec, action, moduleId, entry, t) {
+async function callAsyncTask(viewmodel, spec, action, moduleId, entry, t, i18n) {
   const host = viewmodel._asyncTaskHost;
   if (!host) {
     return unknownMethodError(t, moduleId, action.method, viewmodel, entry);
@@ -465,6 +476,6 @@ async function callAsyncTask(viewmodel, spec, action, moduleId, entry, t) {
     }
     return callResult(action, value);
   } catch (err) {
-    return callFailedError(t, action.method, err);
+    return callFailedError(t, action.method, err, { moduleId, i18n });
   }
 }

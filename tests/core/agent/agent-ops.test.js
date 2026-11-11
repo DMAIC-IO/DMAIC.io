@@ -13,6 +13,7 @@ import { defineModel, command, oneOf, index, list, record, text } from '../../..
 import { I18n } from '../../../js/core/i18n.js';
 import { asyncTask } from '../../../js/core/async-task.js';
 import { schemaAgentEntry } from '../../../js/core/agent/agent-schema.js';
+import { State as MsaTyp2State } from '../../../js/modules/msa-typ2/domain/model.js';
 
 const DEFS = [
   { id: 'five-why', phase: 'define', cycles: { dmaic: { phase: 'define' } } },
@@ -560,5 +561,71 @@ suite('agent ops — Lesen und Schreiben ohne Ansichtswechsel', () => {
     const out = await ops['instance.call']({ instance: 'b-1', method: 'doIt', args: [] });
     assertEqual(out.value, 'done');
     assertDeepEqual(log, ['getViewmodel:b-1', 'vm.doIt']);
+  });
+});
+
+suite('agent ops — Ablehnung wegen einer Invariante', () => {
+  const CTX = { cycle: 'dmaic', confidenceLevel: 95, power: 90 };
+  const TABLE = {
+    'agent.errors.callFailed': 'Aufruf von "{method}" ist fehlgeschlagen: {detail}',
+    'modules.msa-typ2.invariants.limitsOrder': 'USG muss kleiner als OSG sein',
+  };
+  const i18n = {
+    getLanguage: () => 'de',
+    exists: (key) => key in TABLE,
+    t: (key, params) => {
+      let out = TABLE[key] ?? key;
+      for (const [k, v] of Object.entries(params ?? {})) out = out.replace(`{${k}}`, String(v));
+      return out;
+    },
+  };
+
+  /** `mounted: true` lässt den Dienst `needs_mount` werfen: dann schreibt die Fläche ins lebende Model. */
+  function setup({ mounted = false } = {}) {
+    const model = new MsaTyp2State(CTX);
+    const defs = [{ id: 'msa-typ2', phase: 'measure', cycles: { dmaic: { phase: 'measure' } } }];
+    const phases = { measure: [{ instanceId: 'm-1', moduleId: 'msa-typ2', order: 0 }] };
+    const ops = createOps({
+      stateManager: { get: (p) => (p === 'phases' ? phases : p.startsWith('phases.') ? phases[p.slice(7)] : undefined) },
+      moduleRegistry: { getAll: () => defs, get: (id) => defs.find(d => d.id === id), getActiveCycle: () => 'dmaic' },
+      i18n,
+      registry: { 'msa-typ2': { tagged: true, available: true, schema: true, violations: [], reported: [], actions: {}, fields: {} } },
+      loadModule: async () => ({ agentEntry: schemaAgentEntry(MsaTyp2State) }),
+      getHelp: async () => null,
+      appVersion: '1.2.3',
+      instances: {
+        read: async () => ({}),
+        write: async (id, fn) => {
+          if (mounted) throw Object.assign(new Error('needs_mount'), { code: 'needs_mount' });
+          return { mounted: false, result: fn(model) };
+        },
+      },
+      host: {
+        isCompleted: () => false,
+        getCurrentView: () => null,
+        openInstance: async (id) => ({ instanceId: id }),
+        getViewmodel: async () => ({ model }),
+      },
+    });
+    return { ops, model };
+  }
+
+  for (const mounted of [false, true]) {
+    test(`instance.set mit lsl über usl nennt die Regel (${mounted ? 'eingehängt' : 'nicht eingehängt'})`, async () => {
+      const { ops } = setup({ mounted });
+      const out = await ops['instance.set']({ instance: 'm-1', values: { lsl: 5, usl: 1 } });
+      assertEqual(out.error, 'call_failed', JSON.stringify(out));
+      assertEqual(out.invariant, 'limitsOrder');
+      assertTrue(out.message.includes('allowed: USG muss kleiner als OSG sein'), out.message);
+      assertTrue(!out.message.includes('a value that keeps'), out.message);
+    });
+  }
+
+  test('ein Fehler ohne Invariante bleibt wörtlich wie bisher, ohne Feld invariant', async () => {
+    const { ops } = setup();
+    const out = await ops['instance.set']({ instance: 'm-1', values: { k: 7 } });
+    assertEqual(out.error, 'call_failed');
+    assertEqual('invariant' in out, false);
+    assertTrue(out.message.startsWith('Aufruf von "instance.set" ist fehlgeschlagen: invalid k 7; allowed:'), out.message);
   });
 });

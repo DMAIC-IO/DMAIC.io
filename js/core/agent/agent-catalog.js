@@ -263,9 +263,32 @@ export async function describeModule({ moduleRegistry, i18n, registry, getHelp }
       help: contextHelp(i18n, moduleId, `asyncTasks.${task.name}.help`, ''),
       params: [...task.params],
     })),
+    notes: invariantNotes(i18n, moduleId, entry.invariants),
     sections: sectionList,
     prose,
   };
+}
+
+/**
+ * Die Texte der Invarianten eines Moduls (Regeln über mehrere Felder) in der
+ * aktiven Sprache. Ein Name ohne Text fällt weg.
+ * @param {object} i18n @param {string} moduleId @param {string[]} [names]
+ * @returns {string[]}
+ */
+function invariantNotes(i18n, moduleId, names = []) {
+  return names.map((name) => invariantText(i18n, moduleId, name)).filter((text) => text !== null);
+}
+
+/**
+ * Der Text einer Invariante, `null` ohne Eintrag.
+ * @param {object} i18n @param {string} moduleId @param {string} name
+ * @returns {string|null}
+ */
+export function invariantText(i18n, moduleId, name) {
+  const key = `modules.${moduleId}.invariants.${name}`;
+  if (!i18n.exists?.(key)) return null;
+  const text = i18n.t(key);
+  return typeof text === 'string' && text.trim() !== '' ? text : null;
 }
 
 /**

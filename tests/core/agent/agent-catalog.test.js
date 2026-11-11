@@ -451,6 +451,36 @@ suite('agent catalog — module.describe', () => {
   });
 });
 
+suite('agent catalog — module.describe nennt die Invarianten als notes', () => {
+  const TEXTS = {
+    de: { 'modules.five-why.invariants.limitsOrder': 'USG muss kleiner als OSG sein' },
+    en: { 'modules.five-why.invariants.limitsOrder': 'LSL must be less than USL' },
+  };
+  function i18nIn(lang) {
+    return { ...I18N,
+      getLanguage: () => lang,
+      exists: (key) => key in TEXTS[lang] || I18N.exists(key),
+      t: (key, params) => (key in TEXTS[lang] ? TEXTS[lang][key] : I18N.t(key, params)) };
+  }
+  const registry = { ...REGISTRY, 'five-why': { ...REGISTRY['five-why'], invariants: ['limitsOrder', 'ohneText'] } };
+  const deps = { moduleRegistry: makeRegistry(), registry, getHelp: async () => null };
+
+  test('notes trägt den Text je Invariante; ein Name ohne Text fällt weg', async () => {
+    const out = await describeModule({ ...deps, i18n: i18nIn('de') }, 'five-why');
+    assertDeepEqual(out.notes, ['USG muss kleiner als OSG sein']);
+  });
+
+  test('notes folgt der Sprache', async () => {
+    const out = await describeModule({ ...deps, i18n: i18nIn('en') }, 'five-why');
+    assertDeepEqual(out.notes, ['LSL must be less than USL']);
+  });
+
+  test('ohne Invarianten ist notes leer', async () => {
+    const out = await describeModule({ ...deps, i18n: I18N }, 'worksheet');
+    assertDeepEqual(out.notes, []);
+  });
+});
+
 suite('agent catalog — isSingleton', () => {
   test('true only for an explicit singleton flag', () => {
     assertEqual(isSingleton({ id: 'project-charter', singleton: true }), true);

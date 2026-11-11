@@ -236,3 +236,19 @@ suite('schemaAgentEntry: asyncTasks', () => {
     assertEqual(entry.fields.asyncTasks.derived, true);
   });
 });
+
+suite('schemaAgentEntry — Invarianten', () => {
+  test('nennt die Namen der Invarianten in Deklarationsreihenfolge; ohne Invarianten leer', () => {
+    const Range = defineModel({
+      fields: { lo: number({ default: 0 }), hi: number({ default: 1 }) },
+      view: {},
+      commands: {},
+      invariants: {
+        b: { fields: ['lo', 'hi'], test(m) { return m.lo < m.hi; } },
+        a: { fields: ['hi'], test(m) { return m.hi > -100; } },
+      },
+    });
+    assertDeepEqual(schemaAgentEntry(Range).invariants, ['b', 'a']);
+    assertDeepEqual(schemaAgentEntry(Board).invariants, []);
+  });
+});

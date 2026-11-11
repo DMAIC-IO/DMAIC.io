@@ -134,6 +134,7 @@ export const OPS = deepFreeze({
       fields:  [{ name: 'string', type: 'string', help: 'string', bulk: 'boolean', bulkKind: 'string',
                   derived: 'boolean', rules: ['string'], slots: { '*': ['string'] }, keys: [DESCRIBED_KEY] }],
       asyncTasks: [{ name: 'string', auto: 'boolean', help: 'string', params: ['string'] }],
+      notes: ['string'],
       sections: [{ id: 'string', title: 'string' }],
       prose: 'any',
     },
@@ -203,6 +204,9 @@ export const OPS = deepFreeze({
  *   im generierten Registry steht dafür nur ein Platzhalter, den
  *   `agent-entries.js` beim ersten Bedarf durch den echten Eintrag ersetzt
  * @property {string[]} [settable]  über `instance.set` setzbare Felder (nur Schema-Module)
+ * @property {string[]} [invariants]  Namen der Regeln über mehrere Felder (nur Schema-Module),
+ *   in Deklarationsreihenfolge; ihr Text steht unter `modules.<id>.invariants.<name>`
+ *   und erscheint in `describe()` als `notes`
  * @property {string[]} [viewFields]  gespeicherte Ansichtspfade (`static VIEW_FIELDS` am Model):
  *   zählen nicht zur Revision, erscheinen nicht in `read()`. Fehlt, wenn das Modul keine führt.
  * @property {Record<string, { type: string, help: string, bulk: boolean,
