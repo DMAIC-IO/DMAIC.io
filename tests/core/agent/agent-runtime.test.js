@@ -8,6 +8,11 @@ import { createAgentRuntime } from '../../../js/core/agent/agent-runtime.js';
 import { CONTRACT_VERSION, ERRORS, OPS } from '../../../js/core/agent/agent-contract.js';
 import { createRevisionTracker } from '../../../js/core/agent/agent-revisions.js';
 import { buildInstanceList } from '../../../js/core/agent/agent-catalog.js';
+import { schemaAgentEntry } from '../../../js/core/agent/agent-schema.js';
+import { createInstances } from '../../../js/core/instances.js';
+import { defineModel, text, number } from '../../../js/core/model.js';
+import { initialModel } from '../../../js/core/initial-model.js';
+import { StateManager } from '../../../js/core/state-manager.js';
 
 const DEFS = [
   { id: 'worksheet', phase: 'data' },
@@ -1441,5 +1446,59 @@ suite('agent runtime — Vermerk ohne Mount', () => {
     const out = await runtime.interact([{ op: 'instance.set', instance: 'ws-1', values: { x: 1 } }]);
     assertEqual(out.ok, true, JSON.stringify(out));
     assertDeepEqual(settles, ['ws-1', 'ws-1']);
+  });
+});
+
+suite('agent runtime — Lesen ohne gespeicherten Zustand', () => {
+  test('read ohne Stand → Öffnen und Verlassen legen die Vorgabe ab → instance.set ohne neues read ist nicht veraltet', async () => {
+    const Doc = defineModel({ fields: { title: text() }, view: { zoom: number({ default: 1 }) } });
+    const entry = schemaAgentEntry(Doc, {});
+    const mod = {
+      Model: Doc,
+      agentEntry: entry,
+      loadDetached: (json, ctx) => initialModel(Doc, json, undefined, ctx),
+      readDetached: (model) => model.toJSON(),
+    };
+    const defs = [{ id: 'doc', phase: 'define', cycles: { dmaic: { phase: 'define' } } }];
+    const phases = { define: [{ instanceId: 'd-1', moduleId: 'doc', order: 0 }] };
+    const sm = {
+      _moduleCache: new Map(),
+      _state: { phases },
+      get: (p) => (p === 'phases' ? phases : p.startsWith('phases.') ? phases[p.slice(7)] : undefined),
+      getModuleState(id) { return this._moduleCache.get(id) ?? null; },
+      setModuleState(id, s) { this._moduleCache.set(id, structuredClone(s)); },
+      isCompleted: () => false,
+      getProjectCycle: () => 'dmaic',
+      getModuleRevision: StateManager.prototype.getModuleRevision,
+      getStructureRevision: StateManager.prototype.getStructureRevision,
+      saveNow: () => {},
+      flushNow: async () => {},
+    };
+    const moduleRegistry = {
+      getAll: () => defs, get: (id) => defs.find((d) => d.id === id), getActiveCycle: () => 'dmaic',
+      loadModule: async () => mod,
+    };
+    const instances = createInstances({
+      stateManager: sm, moduleRegistry, eventBus: { emit() {} }, createData: () => ({}),
+      workspace: { getLiveViewmodel: () => null, isPending: () => false, whenInstanceReady: async () => null },
+    });
+    const runtime = createAgentRuntime({
+      stateManager: sm, moduleRegistry, i18n: I18N, getHelp: async () => null, appVersion: '1.2.3',
+      registry: { doc: { tagged: true, available: true, schema: true, violations: [], reported: [], actions: {}, fields: {} } },
+      instances,
+      consent: { ensure: async () => ({ ok: true }) },
+      host: {
+        isCompleted: () => false, getCurrentView: () => null,
+        getViewmodel: async () => { throw new Error('kein Ansichtswechsel erwartet'); },
+        isMounted: () => false, settle: async () => { throw new Error('kein settle erwartet'); },
+      },
+    });
+    const read = await runtime.interact([{ op: 'instance.call', instance: 'd-1', method: 'read' }]);
+    assertEqual(read.ok, true, JSON.stringify(read));
+    // Der Nutzer öffnet die Instanz und verlässt sie: der Mount lädt die Vorgabe, das Verlassen speichert sie.
+    sm.setModuleState('d-1', initialModel(Doc, null, undefined, { stateManager: sm }).toJSON());
+    const set = await runtime.interact([{ op: 'instance.set', instance: 'd-1', values: { title: 'Neu' } }]);
+    assertEqual(set.ok, true, JSON.stringify(set));
+    assertEqual(sm.getModuleState('d-1').title, 'Neu');
   });
 });

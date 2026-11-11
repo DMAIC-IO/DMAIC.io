@@ -166,13 +166,23 @@ suite('instances.read', () => {
     assertDeepEqual(sm.getModuleState('d1'), { old: 7 });
   });
 
-  test('ohne gespeicherten Zustand: Lesen schreibt nichts zurück', async () => {
+  test('ohne gespeicherten Zustand: Lesen legt die Vorgabe ab, Revision wie nach Öffnen und Verlassen', async () => {
     const { svc, sm, bus } = setup();
     const out = await svc.read('d2');
     assertEqual(out.n, 1, 'Vorgabe des Models');
+    assertEqual(sm.writes.length, 1, 'die Vorgabe einmal gespeichert');
+    assertEqual(sm.getModuleState('d2').n, 1);
+    const afterRead = sm.getModuleRevision('d2');
+    // Öffnen lädt die Vorgabe (kein Stand gespeichert), Verlassen speichert ihr toJSON().
+    sm.setModuleState('d2', initialModel(Doc, null, undefined, {}).toJSON());
+    assertEqual(sm.getModuleRevision('d2'), afterRead, 'Öffnen und Verlassen ändern die Revision nicht');
+    noRemote(bus);
+  });
+
+  test('ohne gespeicherten Zustand im abgeschlossenen Projekt: nichts abgelegt', async () => {
+    const { svc, sm } = setup({ completed: true });
+    assertEqual((await svc.read('d2')).n, 1);
     assertEqual(sm.writes.length, 0);
-    assertEqual(sm.getModuleState('d2'), null);
-    assertEqual(bus.emitted.some(([n]) => n === 'data:changed'), false, 'Lesen löst kein data:changed aus');
   });
 
   test('Altform mit Mixin: readAgentState über den gespeicherten Stand', async () => {
@@ -297,6 +307,27 @@ suite('instances.write', () => {
     assertEqual(vm.model.n, 8);
     ws._persistAllModuleStates();
     assertEqual(sm.getModuleState('d1').n, 8);
+    noRemote(bus);
+  });
+
+  test('Instanz einer anderen Phase: Schreiben speichert, ein späteres Speichern aller Instanzen überschreibt nicht', async () => {
+    const bus = makeBus();
+    const sm = makeState({ phases: PHASES(), states: { d1: { _schema: { version: '1.0' }, n: 1, zoom: 1 } }, bus });
+    const ws = Object.create(Workspace.prototype);
+    ws._stateManager = sm;
+    ws._pending = new Map();
+    // Wie nach `_showPhase`: die Hülle ist gelöst, Alpine hat die Komponente
+    // abgeräumt — `$data` ist leer, `getState()` liefert null.
+    ws._containers = new Map([['d1', { isConnected: false }]]);
+    ws._instances = new Map([['d1', { getActionData: () => ({}), getState: () => null }]]);
+    const svc = createInstances({
+      stateManager: sm, moduleRegistry: { loadModule: async () => targetModule() },
+      workspace: ws, eventBus: bus, createData: () => ({}),
+    });
+    const res = await svc.write('d1', (m) => m.setN({ n: 9 }));
+    assertEqual(res.mounted, false);
+    ws._persistAllModuleStates();
+    assertEqual(sm.getModuleState('d1').n, 9);
     noRemote(bus);
   });
 

@@ -761,8 +761,11 @@ export function createModule(base) {
         this._gestureDetach.forEach((detach) => detach.cancel());
         Alpine.destroyTree(this._container);
         this._container.replaceChildren(...cloneForInstance(this._alpineName));
-        Alpine.initTree(this._container);
-
+        // Eine gelöste Hülle (Instanz einer anderen Phase) bleibt unbelebt:
+        // beim Wiedereinhängen baut Alpine sie aus dem gespeicherten Stand neu
+        // auf. Belebt hielte sie ein altes Model, das beim nächsten Speichern
+        // aller Instanzen einen inzwischen gespeicherten Stand überschriebe.
+        if (this._container.isConnected) Alpine.initTree(this._container);
       }
     },
 
@@ -814,6 +817,11 @@ export function createModule(base) {
         this._gestureDetach.forEach((detach) => detach.cancel());
         Alpine.destroyTree(this._container);
         this._container.replaceChildren(...cloneForInstance(this._alpineName));
+        // Gelöste Hülle: gespeichert ist schon, das Wiedereinhängen lädt neu (wie onLanguageChange).
+        if (!this._container.isConnected) {
+          if (this._tmpl) this._tmpl._state = model;
+          return;
+        }
         this._preloadedModel = model;
         try { Alpine.initTree(this._container); } finally { this._preloadedModel = null; }
         const root = this._container.querySelector('[x-data]');

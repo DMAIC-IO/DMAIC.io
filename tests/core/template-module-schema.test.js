@@ -472,3 +472,59 @@ suite('createModule: Beispiel laden', () => {
     assertEqual(mod.getState().title, 'alt');
   });
 });
+
+suite('createModule mit Schema-Model — gelöste Hülle', () => {
+  test('gelöst: kein Zustand, kein Speichern; wieder eingehängt: der gespeicherte Stand wird neu geladen', async () => {
+    ensureTemplate();
+    while (mounted.length) mounted.pop().remove();
+    const store = new Map([['st-1', { title: 'alt', columns: { a: [], b: [] }, mode: 'week' }]]);
+    const persisted = [];
+    const ctx = {
+      instanceId: 'st-1',
+      stateManager: {
+        getModuleState: (id) => store.get(id) ?? null,
+        setModuleState: (id, s) => { persisted.push([id, s]); store.set(id, s); },
+      },
+      i18n: { t: k => k, tf: () => k => k, getLanguage: () => 'de' },
+      eventBus: { on: () => {}, off: () => {}, emit: () => {} },
+      theme: 'light',
+      language: 'de',
+    };
+    const mod = makeModule();
+    const host = document.createElement('div');
+    const container = document.createElement('div');
+    host.append(container);
+    document.body.append(host);
+    mounted.push(host);
+    await mod.init(container, ctx);
+    await flush();
+    assertEqual(mod.getActionData().model.title, 'alt');
+
+    // Wie `_moduleArea.replaceChildren()` beim Phasenwechsel. Die App startet
+    // Alpine, dessen MutationObserver eine gelöste Komponente mit destroyTree
+    // abräumt und eine wieder eingehängte mit initTree neu aufbaut; der
+    // Testläufer startet Alpine nicht, darum hier ausdrücklich.
+    container.remove();
+    Alpine.destroyTree(container);
+    await flush();
+    assertEqual(mod.getActionData()?.model, undefined, 'Alpine hat die Komponente abgeräumt');
+    assertEqual(mod.getState(), null, 'eine gelöste Instanz liefert keinen Zustand zum Speichern');
+    // Sprachwechsel und setState erreichen auch gelöste Instanzen; sie dürfen
+    // die Komponente nicht in der gelösten Hülle wiederbeleben.
+    mod.onLanguageChange('en');
+    assertEqual(mod.getState(), null, 'Sprachwechsel belebt die gelöste Instanz nicht');
+    mod.setState({ title: 'gesetzt', columns: { a: [], b: [] }, mode: 'week' });
+    assertEqual(store.get('st-1').title, 'gesetzt', 'setState speichert');
+    assertEqual(mod.getState(), null, 'setState belebt die gelöste Instanz nicht');
+
+    // Ein Schreiben ohne Mount (Dienst instances) legt den neuen Stand ab.
+    store.set('st-1', { title: 'neu', columns: { a: [], b: [] }, mode: 'week' });
+    const before = persisted.length;
+    host.append(container);                        // Zurück in die Phase
+    Alpine.initTree(container);
+    await flush();
+    assertEqual(mod.getActionData().model.title, 'neu', 'beim Wiedereinhängen aus dem Speicher geladen');
+    assertEqual(container.querySelector('.st-title').textContent, 'neu');
+    assertEqual(persisted.slice(before).some(([, s]) => s?.title === 'alt'), false, 'der alte Stand wird nie gespeichert');
+  });
+});

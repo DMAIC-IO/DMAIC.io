@@ -142,8 +142,9 @@ export function createInstances({ stateManager, moduleRegistry, workspace, event
    * Ansichtsfelder. Eine nicht gemountete Instanz in Zielform, deren
    * normalisierte Form (Migration, Reparatur) vom gespeicherten Stand
    * abweicht, wird dabei zurückgeschrieben — sonst änderte erst das spätere
-   * Einhängen die Revision. Ohne gespeicherten Stand und im abgeschlossenen
-   * Projekt unterbleibt das.
+   * Einhängen die Revision. Das gilt auch ohne gespeicherten Stand: dann wird
+   * die Vorgabe abgelegt, so wie das erste Verlassen einer geöffneten Instanz
+   * sie ablegt. Im abgeschlossenen Projekt unterbleibt das.
    * @param {string} instanceId
    * @param {object} [options] `{ fields?, rows? }`
    * @returns {Promise<object>}
@@ -161,8 +162,7 @@ export function createInstances({ stateManager, moduleRegistry, workspace, event
     if (isTargetForm(m)) {
       const model = m.loadDetached(saved, { instanceId, eventBus, stateManager });
       const json = model.toJSON();
-      // Ohne gespeicherten Stand nichts zurückschreiben: auch ein Mount speichert die Vorgabe nicht.
-      if (saved && !stateManager.isCompleted() && JSON.stringify(json) !== JSON.stringify(saved)) {
+      if (!stateManager.isCompleted() && JSON.stringify(json) !== JSON.stringify(saved)) {
         stateManager.setModuleState(instanceId, json);
       }
       return stripPaths(m.readDetached(model, createData(), options), viewFields);
