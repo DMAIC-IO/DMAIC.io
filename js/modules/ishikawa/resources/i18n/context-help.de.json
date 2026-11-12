@@ -1,0 +1,451 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "problem": {
+      "help": "Die Problemaussage: was wo in welchem Ausmaß abweicht."
+    },
+    "images": {
+      "help": "Bilder zur Abgrenzung: was zum Problem gehört und was nicht, je mit Bildunterschrift. Die Bilddaten stehen nur als Größe da.",
+      "inScope": {
+        "help": "Die Fehlerbilder, die das Problem zeigen."
+      },
+      "outScope": {
+        "help": "Die Bilder, die ausdrücklich nicht zum Problem gehören."
+      }
+    },
+    "experts": {
+      "help": "Das Expertenteam: jedes Mitglied bewertet jede Ursache von 0 bis 9.",
+      "id": {
+        "help": "Die id des Mitglieds; Wert für expertId und Schlüssel der Bewertungen."
+      },
+      "name": {
+        "help": "Der Name des Mitglieds; er muss sich von den anderen unterscheiden, ohne Rücksicht auf Groß- und Kleinschreibung."
+      },
+      "color": {
+        "help": "Die Farbe des Mitglieds als Hexwert; sie wird beim Anlegen reihum vergeben."
+      }
+    },
+    "catLabels": {
+      "help": "Eigene Namen der sechs Kategorien, je Kategorie unter ihrem Schlüssel; leer gilt der Standardname.",
+      "man": {
+        "help": "Name der Kategorie Mensch."
+      },
+      "machine": {
+        "help": "Name der Kategorie Maschine."
+      },
+      "environment": {
+        "help": "Name der Kategorie Mitwelt."
+      },
+      "material": {
+        "help": "Name der Kategorie Material."
+      },
+      "measurement": {
+        "help": "Name der Kategorie Messung."
+      },
+      "method": {
+        "help": "Name der Kategorie Methode."
+      }
+    },
+    "rows": {
+      "help": "Der Ursachenbaum: Haupt- und Unterursachen mit Kennung, Kategorie, Name, Beschreibung, Status und den Bewertungen je Mitglied des Expertenteams.",
+      "id": {
+        "help": "Die id der Ursache; Wert für rowId, parentId und targetRowId."
+      },
+      "stableId": {
+        "help": "Die Kennung der Ursache (H-001 …); sie bleibt über Snapshots hinweg gleich und verknüpft Ursachen mit Experimenten."
+      },
+      "parentId": {
+        "help": "Die id der übergeordneten Ursache; null bei einer Hauptursache."
+      },
+      "category": {
+        "help": "Die 6M-Kategorie einer Hauptursache: man, machine, environment, material, measurement, method; leer bei einer Unterursache, sie erbt die Kategorie ihrer Hauptursache."
+      },
+      "name": {
+        "help": "Kurzname der Ursache."
+      },
+      "description": {
+        "help": "Was die Ursache ist und warum sie vermutet wird."
+      },
+      "ratings": {
+        "help": "Die Bewertungen: id des Mitglieds → ganze Zahl von 0 (unwahrscheinlich) bis 9 (sehr wahrscheinlich). Ein Mitglied ohne Eintrag hat nicht bewertet."
+      },
+      "status": {
+        "help": "Wie weit die Prüfung ist: open (offen), testing (in Prüfung), confirmed (bestätigt) oder rejected (verworfen)."
+      },
+      "avgScore": {
+        "help": "Mittelwert der Bewertungen aller Mitglieder des Expertenteams, von 0 bis 9; im Vergleich mit einem Snapshot steht die Änderung daneben."
+      }
+    },
+    "snapshots": {
+      "help": "Festgehaltene Stände mit Name und Zeitpunkt. Ihr Inhalt steht nur als Größe da; was sich geändert hat, zeigt der Vergleich.",
+      "id": {
+        "help": "Die id des Snapshots; Wert für snapshotId."
+      },
+      "name": {
+        "help": "Der Name des Snapshots."
+      },
+      "date": {
+        "help": "Der Zeitpunkt, zu dem der Snapshot gespeichert wurde."
+      },
+      "data": {
+        "help": "Der festgehaltene Stand von Problemaussage, Expertenteam und Ursachenbaum; beim Lesen nur als Größe."
+      }
+    },
+    "experiments": {
+      "help": "Die Experimente mit Titel, Beschreibung, Verantwortlich, Status, Zeitraum, Kosten und den Ursachen, die sie prüfen.",
+      "id": {
+        "help": "Die id des Experiments; Wert für experimentId."
+      },
+      "title": {
+        "help": "Kurztitel des Experiments."
+      },
+      "description": {
+        "help": "Was ausprobiert und wie das Ergebnis gemessen wird."
+      },
+      "responsible": {
+        "help": "Wer das Experiment durchführt."
+      },
+      "status": {
+        "help": "Wo das Experiment steht: planned (geplant), running (läuft), done (abgeschlossen) oder cancelled (abgebrochen)."
+      },
+      "startDate": {
+        "help": "Erster Tag des Experiments als JJJJ-MM-TT oder leer."
+      },
+      "endDate": {
+        "help": "Letzter Tag des Experiments als JJJJ-MM-TT oder leer."
+      },
+      "costMoney": {
+        "help": "Ausgegebenes Geld in Euro; null ohne Angabe."
+      },
+      "costHours": {
+        "help": "Aufwand in Stunden; null ohne Angabe."
+      },
+      "hypothesisIds": {
+        "help": "Die Kennungen (stableId) der Ursachen, die das Experiment prüft, etwa H-001."
+      },
+      "gantt": {
+        "help": "Zeitplan der Experimente von Start bis Ende; die Linie markiert heute."
+      },
+      "cost": {
+        "help": "Kosten in Euro und Aufwand in Stunden aller Experimente, über die Zeit aufsummiert."
+      },
+      "costRate": {
+        "help": "Kosten in Euro und Aufwand in Stunden je Tag, über die Laufzeit der Experimente verteilt."
+      }
+    },
+    "facts": {
+      "help": "Die Fakten: Beobachtungen mit Name, Beschreibung, Datum und wer sie gemeldet hat.",
+      "id": {
+        "help": "Die id des Fakts; Wert für factId."
+      },
+      "name": {
+        "help": "Was beobachtet wurde."
+      },
+      "description": {
+        "help": "Einzelheiten und Quelle der Beobachtung."
+      },
+      "date": {
+        "help": "Wann es beobachtet wurde, als JJJJ-MM-TT oder leer."
+      },
+      "owner": {
+        "help": "Wer die Beobachtung gemeldet hat."
+      }
+    },
+    "paretoEdits": {
+      "help": "Die Editor-Einstellungen des Pareto-Diagramms (Achsen, Schwellenwert, Balken, Linie); sie werden mit dem Modul gespeichert."
+    },
+    "scores": {
+      "help": "Der Score je Ursache unter ihrer Kennung: Mittel der abgegebenen Bewertungen von 0 bis 9; null, solange niemand bewertet hat."
+    },
+    "paretoItems": {
+      "help": "Die bewerteten Ursachen absteigend nach Score, je mit Kennung, Name, wirksamer Kategorie und Score; Unterursachen stehen in der Kategorie ihrer Hauptursache."
+    }
+  },
+  "actions": {
+    "read": {
+      "help": "Problemaussage, Bilder, Expertenteam, Ursachenbaum mit Bewertungen, Snapshots, Experimente und Fakten lesen. Bilddaten und Snapshot-Inhalte stehen nur als Größe da."
+    },
+    "addExpert": {
+      "help": "Ein Mitglied ins Expertenteam aufnehmen. Jedes Mitglied bewertet jede Ursache von 0 bis 9. Liefert die id.",
+      "params": {
+        "name": "Der Name; muss sich von den anderen unterscheiden, ohne Rücksicht auf Groß- und Kleinschreibung. Ein leerer Name ist ein Fehler."
+      }
+    },
+    "renameExpert": {
+      "help": "Ein Mitglied des Expertenteams umbenennen; seine Bewertungen bleiben.",
+      "params": {
+        "expertId": "Das Mitglied.",
+        "name": "Der neue Name; muss sich von den anderen unterscheiden. Ein vergebener Name ist ein Fehler."
+      }
+    },
+    "removeExpert": {
+      "help": "Ein Mitglied aus dem Expertenteam entfernen, samt seinen Bewertungen.",
+      "params": {
+        "expertId": "Das Mitglied."
+      }
+    },
+    "addRow": {
+      "help": "Eine Hauptursache ans Ende des Ursachenbaums anhängen. Liefert id und Kennung."
+    },
+    "addSubRow": {
+      "help": "Unter einer Ursache eine Unterursache anlegen; sie erbt deren Kategorie. Liefert id und Kennung.",
+      "params": {
+        "parentId": "Die Ursache darüber."
+      }
+    },
+    "setRowField": {
+      "help": "Felder einer Ursache setzen: Name, Kategorie, Beschreibung, Status. Nur genannte Felder ändern sich. Nur Hauptursachen tragen eine Kategorie; für eine Unterursache ist nur die leere Kategorie erlaubt.",
+      "params": {
+        "rowId": "Die Ursache.",
+        "name": "Optional: der Kurzname.",
+        "category": "Optional: man, machine, environment, material, measurement, method oder leer.",
+        "description": "Optional: die Beschreibung.",
+        "status": "Optional: open (offen), testing (in Prüfung), confirmed (bestätigt) oder rejected (verworfen)."
+      }
+    },
+    "removeRow": {
+      "help": "Eine Ursache samt Unterursachen löschen. Verknüpfungen aus Experimenten entfallen.",
+      "params": {
+        "rowId": "Die Ursache."
+      }
+    },
+    "duplicateRow": {
+      "help": "Eine Ursache samt Unterursachen und Bewertungen kopieren; die Kopie steht direkt dahinter. Liefert die id der Kopie.",
+      "params": {
+        "rowId": "Die Ursache."
+      }
+    },
+    "moveRowBefore": {
+      "help": "Eine Ursache samt Unterursachen vor eine andere schieben; sie bekommt deren übergeordnete Ursache. Ohne Ziel rückt sie hinter die letzte Geschwisterzeile. Liegt das Ziel im verschobenen Teilbaum, ist das ein Fehler.",
+      "params": {
+        "rowId": "Die zu verschiebende Ursache.",
+        "targetRowId": "Die Ursache, vor die sie kommt; null hängt sie ans Ende."
+      }
+    },
+    "setRating": {
+      "help": "Die Bewertung einer Ursache durch ein Mitglied setzen, von 0 (unwahrscheinlich) bis 9 (sehr wahrscheinlich). Mittelwert und Pareto folgen.",
+      "params": {
+        "rowId": "Die Ursache.",
+        "expertId": "Das Mitglied.",
+        "value": "Ganze Zahl von 0 bis 9; null löscht die Bewertung."
+      }
+    },
+    "setCategoryLabels": {
+      "help": "Den sechs Kategorien eigene Namen geben, etwa für 6P statt 6M. Nicht genannte Kategorien behalten ihren Namen.",
+      "params": {
+        "labels": "Neuer Name je Kategorie: man, machine, environment, material, measurement, method. Leer stellt den Standardnamen wieder her; zwei Kategorien dürfen nicht gleich heißen."
+      }
+    },
+    "setFilter": {
+      "help": "Nur die Ursachen einer Kategorie zeigen, oder alle.",
+      "params": {
+        "category": "all oder eine Kategorie: man, machine, environment, material, measurement, method."
+      }
+    },
+    "setParetoSource": {
+      "help": "Im Pareto die aktuellen Bewertungen oder die eines Snapshots zeigen.",
+      "params": {
+        "snapshotId": "Ein Snapshot; null zeigt den aktuellen Stand."
+      }
+    },
+    "saveSnapshot": {
+      "help": "Den aktuellen Stand von Problemaussage, Expertenteam und Ursachenbaum als Snapshot festhalten.",
+      "params": {
+        "name": "Der Name; leer ergibt „Snapshot“ mit dem heutigen Datum."
+      }
+    },
+    "loadSnapshot": {
+      "help": "Einen Snapshot wiederherstellen: Problemaussage, Expertenteam und Ursachenbaum werden ersetzt. Verknüpfungen von Experimenten zu Ursachen, die der Snapshot nicht kennt, entfallen.",
+      "params": {
+        "snapshotId": "Der Snapshot."
+      }
+    },
+    "removeSnapshot": {
+      "help": "Einen Snapshot löschen.",
+      "params": {
+        "snapshotId": "Der Snapshot."
+      }
+    },
+    "compareSnapshot": {
+      "help": "Den aktuellen Stand mit einem Snapshot vergleichen. Die Tabelle markiert neue und geänderte Ursachen; die Rückgabe nennt neue, entfernte und geänderte Ursachen mit altem und neuem Mittelwert.",
+      "params": {
+        "snapshotId": "Der Snapshot."
+      }
+    },
+    "closeCompare": {
+      "help": "Den Vergleich mit einem Snapshot beenden."
+    },
+    "addExperiment": {
+      "help": "Ein Experiment anlegen, das Ursachen prüft. Liefert die id."
+    },
+    "setExperimentField": {
+      "help": "Felder eines Experiments setzen: Titel, Beschreibung, Verantwortlich, Status, Start, Ende, Kosten in Euro oder Aufwand in Stunden. Nur genannte Felder ändern sich.",
+      "params": {
+        "experimentId": "Das Experiment.",
+        "title": "Optional: der Titel.",
+        "description": "Optional: die Beschreibung.",
+        "responsible": "Optional: wer es durchführt.",
+        "status": "Optional: planned (geplant), running (läuft), done (abgeschlossen) oder cancelled (abgebrochen).",
+        "startDate": "Optional: Start als JJJJ-MM-TT oder leer.",
+        "endDate": "Optional: Ende als JJJJ-MM-TT oder leer.",
+        "costMoney": "Optional: Kosten in Euro, nicht negativ; null löscht.",
+        "costHours": "Optional: Aufwand in Stunden, nicht negativ; null löscht."
+      }
+    },
+    "removeExperiment": {
+      "help": "Ein Experiment löschen.",
+      "params": {
+        "experimentId": "Das Experiment."
+      }
+    },
+    "moveExperimentBefore": {
+      "help": "Ein Experiment vor ein anderes schieben.",
+      "params": {
+        "experimentId": "Das zu verschiebende Experiment.",
+        "targetExperimentId": "Das Experiment, vor das es kommt; null hängt es ans Ende."
+      }
+    },
+    "setExperimentHypotheses": {
+      "help": "Festlegen, welche Ursachen ein Experiment prüft.",
+      "params": {
+        "experimentId": "Das Experiment.",
+        "hypothesisIds": "Die Kennung jeder Ursache, etwa H-001; eine leere Liste löst alle."
+      }
+    },
+    "setCauseExperiments": {
+      "help": "Festlegen, welche Experimente eine Ursache prüfen; die Verknüpfungen aller Experimente werden entsprechend gesetzt oder gelöst.",
+      "params": {
+        "stableId": "Die Kennung der Ursache, etwa H-001.",
+        "experimentIds": "Die ids der Experimente; eine leere Liste löst alle."
+      }
+    },
+    "addFact": {
+      "help": "Einen Fakt anlegen: eine gesicherte Beobachtung, die die Ursachensuche stützt. Liefert die id."
+    },
+    "setFactField": {
+      "help": "Felder eines Fakts setzen: Name, Beschreibung, Datum oder Verantwortlich. Nur genannte Felder ändern sich.",
+      "params": {
+        "factId": "Der Fakt.",
+        "name": "Optional: der Name.",
+        "description": "Optional: die Beschreibung.",
+        "date": "Optional: das Datum als JJJJ-MM-TT oder leer.",
+        "owner": "Optional: wer die Beobachtung gemeldet hat."
+      }
+    },
+    "removeFact": {
+      "help": "Einen Fakt löschen.",
+      "params": {
+        "factId": "Der Fakt."
+      }
+    },
+    "moveFactBefore": {
+      "help": "Einen Fakt vor einen anderen schieben.",
+      "params": {
+        "factId": "Der zu verschiebende Fakt.",
+        "targetFactId": "Der Fakt, vor den er kommt; null hängt ihn ans Ende."
+      }
+    },
+    "addImage": {
+      "help": "Ein Bild in eine der beiden Galerien legen. Liefert die id.",
+      "params": {
+        "scope": "Die Galerie: inScope (Fehlerbilder) oder outScope (abgegrenzt).",
+        "dataUrl": "Das Bild als Daten-URL (JPEG, PNG, GIF oder WebP).",
+        "caption": "Die Bildunterschrift; leer ist erlaubt."
+      }
+    },
+    "removeImage": {
+      "help": "Ein Bild aus einer Galerie löschen.",
+      "params": {
+        "scope": "Die Galerie: inScope oder outScope.",
+        "id": "Die id des Bildes in dieser Galerie."
+      }
+    },
+    "setImageCaption": {
+      "help": "Die Bildunterschrift eines Bildes setzen.",
+      "params": {
+        "scope": "Die Galerie: inScope oder outScope.",
+        "id": "Die id des Bildes in dieser Galerie.",
+        "caption": "Die neue Bildunterschrift; leer löscht sie."
+      }
+    }
+  },
+  "state": {
+    "tab": {
+      "help": "Der gezeigte Reiter: problem, hypotheses, experiments oder facts. Rein eine Ansicht; sie wird nicht gespeichert."
+    },
+    "collapsed": {
+      "help": "Die ids der zugeklappten Ursachen; ihre Unterursachen sind verborgen. Rein eine Ansicht; sie wird nicht gespeichert."
+    },
+    "filter": {
+      "help": "Welche Kategorie die Tabelle zeigt: all oder man, machine, environment, material, measurement, method. Rein eine Ansicht; sie ändert keine Daten."
+    },
+    "compareSnapId": {
+      "help": "Der Snapshot, mit dem die Tabelle verglichen wird; null ohne Vergleich. Zeigt er auf einen gelöschten Snapshot, gilt null."
+    },
+    "paretoSnapId": {
+      "help": "Der Snapshot, dessen Bewertungen das Pareto zeigt; null für den aktuellen Stand. Zeigt er auf einen gelöschten Snapshot, gilt null."
+    },
+    "trendVisible": {
+      "help": "Ob der Trend der Scores über die Snapshots gezeigt wird. Rein eine Ansicht."
+    },
+    "trendEdits": {
+      "help": "Die Editor-Einstellungen des Trend-Diagramms, etwa welche Reihen ausgeblendet sind. Rein eine Ansicht; sie wird nicht gespeichert."
+    },
+    "lightbox": {
+      "help": "Das Bild, das groß gezeigt wird (Galerie und id); null, wenn keines offen ist. Rein eine Ansicht."
+    },
+    "dragPreview": {
+      "help": "Die Vorschau beim Ziehen einer Zeile: wohin sie fiele. Rein eine Ansicht; sie wird nicht gespeichert."
+    }
+  },
+  "forms": {
+    "catRename": {
+      "man": {
+        "help": "Eigener Name der Kategorie Mensch; leer stellt den Standardnamen wieder her."
+      },
+      "machine": {
+        "help": "Eigener Name der Kategorie Maschine; leer stellt den Standardnamen wieder her."
+      },
+      "environment": {
+        "help": "Eigener Name der Kategorie Mitwelt; leer stellt den Standardnamen wieder her."
+      },
+      "material": {
+        "help": "Eigener Name der Kategorie Material; leer stellt den Standardnamen wieder her."
+      },
+      "measurement": {
+        "help": "Eigener Name der Kategorie Messung; leer stellt den Standardnamen wieder her."
+      },
+      "method": {
+        "help": "Eigener Name der Kategorie Methode; leer stellt den Standardnamen wieder her."
+      }
+    },
+    "expLink": {
+      "experimentIds": {
+        "help": "Die Experimente, die zur Prüfung dieser Ursache beitragen."
+      }
+    },
+    "hypLink": {
+      "hypothesisIds": {
+        "help": "Die Ursachen, die dieses Experiment prüft."
+      }
+    }
+  },
+  "tile": {
+    "settings": {
+      "topN": {
+        "help": "Wie viele der höchstbewerteten Ursachen die Kachel höchstens zeigt."
+      },
+      "showLegend": {
+        "help": "Zeigt unter den Balken die Legende der Kategorien und Status."
+      }
+    }
+  },
+  "types": {
+    "ParetoItem": {
+      "stableId": "Die Kennung der Ursache (H-001 …).",
+      "name": "Der Name der Ursache ohne Randleerzeichen; ist er leer, die Kennung.",
+      "category": "Die wirksame Kategorie: die eigene oder die der Hauptursache; leer ohne beide.",
+      "score": "Der Mittelwert der abgegebenen Bewertungen, von 0 bis 9."
+    }
+  }
+}

@@ -1,0 +1,451 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "problem": {
+      "help": "The problem statement: what deviates, where, and by how much."
+    },
+    "images": {
+      "help": "Images that delimit the problem: what belongs to it and what does not, each with a caption. The image data appears only as a size.",
+      "inScope": {
+        "help": "The defect images that show the problem."
+      },
+      "outScope": {
+        "help": "The images that explicitly do not belong to the problem."
+      }
+    },
+    "experts": {
+      "help": "The expert team: every member rates every cause from 0 to 9.",
+      "id": {
+        "help": "The id of the member; value for expertId and key of the ratings."
+      },
+      "name": {
+        "help": "The name of the member; it must differ from the others, ignoring case."
+      },
+      "color": {
+        "help": "The colour of the member as a hex value; it is assigned in turn when the member is added."
+      }
+    },
+    "catLabels": {
+      "help": "Custom names of the six categories, each under its key; empty means the default name.",
+      "man": {
+        "help": "Name of the category Man."
+      },
+      "machine": {
+        "help": "Name of the category Machine."
+      },
+      "environment": {
+        "help": "Name of the category Environment."
+      },
+      "material": {
+        "help": "Name of the category Material."
+      },
+      "measurement": {
+        "help": "Name of the category Measurement."
+      },
+      "method": {
+        "help": "Name of the category Method."
+      }
+    },
+    "rows": {
+      "help": "The cause tree: main and sub-causes with identifier, category, name, description, status and the ratings of each member of the expert team.",
+      "id": {
+        "help": "The id of the cause; value for rowId, parentId and targetRowId."
+      },
+      "stableId": {
+        "help": "The identifier of the cause (H-001 …); it stays the same across snapshots and links causes to experiments."
+      },
+      "parentId": {
+        "help": "The id of the parent cause; null for a main cause."
+      },
+      "category": {
+        "help": "The 6M category of a main cause: man, machine, environment, material, measurement, method; empty for a sub-cause, which inherits the category of its main cause."
+      },
+      "name": {
+        "help": "Short name of the cause."
+      },
+      "description": {
+        "help": "What the cause is and why it is suspected."
+      },
+      "ratings": {
+        "help": "The ratings: member id → integer from 0 (unlikely) to 9 (very likely). A member without an entry has not rated."
+      },
+      "status": {
+        "help": "How far the check has come: open, testing, confirmed or rejected."
+      },
+      "avgScore": {
+        "help": "Mean of the ratings of all members of the expert team, from 0 to 9; while comparing with a snapshot, the change stands beside it."
+      }
+    },
+    "snapshots": {
+      "help": "Saved states with name and time. Their content appears only as a size; the comparison shows what has changed.",
+      "id": {
+        "help": "The id of the snapshot; value for snapshotId."
+      },
+      "name": {
+        "help": "The name of the snapshot."
+      },
+      "date": {
+        "help": "The time at which the snapshot was saved."
+      },
+      "data": {
+        "help": "The saved state of problem statement, expert team and cause tree; read only as a size."
+      }
+    },
+    "experiments": {
+      "help": "The experiments with title, description, responsible, status, period, cost and the causes they check.",
+      "id": {
+        "help": "The id of the experiment; value for experimentId."
+      },
+      "title": {
+        "help": "Short title of the experiment."
+      },
+      "description": {
+        "help": "What is tried and how the result is measured."
+      },
+      "responsible": {
+        "help": "Who carries out the experiment."
+      },
+      "status": {
+        "help": "Where the experiment stands: planned, running, done or cancelled."
+      },
+      "startDate": {
+        "help": "First day of the experiment as YYYY-MM-DD or empty."
+      },
+      "endDate": {
+        "help": "Last day of the experiment as YYYY-MM-DD or empty."
+      },
+      "costMoney": {
+        "help": "Money spent in euros; null if not given."
+      },
+      "costHours": {
+        "help": "Effort in hours; null if not given."
+      },
+      "hypothesisIds": {
+        "help": "The identifiers (stableId) of the causes the experiment checks, such as H-001."
+      },
+      "gantt": {
+        "help": "Schedule of the experiments from start to end; the line marks today."
+      },
+      "cost": {
+        "help": "Cost in euros and effort in hours of all experiments, summed up over time."
+      },
+      "costRate": {
+        "help": "Cost in euros and effort in hours per day, spread over the duration of the experiments."
+      }
+    },
+    "facts": {
+      "help": "The facts: observations with name, description, date and who reported them.",
+      "id": {
+        "help": "The id of the fact; value for factId."
+      },
+      "name": {
+        "help": "What was observed."
+      },
+      "description": {
+        "help": "Details and source of the observation."
+      },
+      "date": {
+        "help": "When it was observed, as YYYY-MM-DD or empty."
+      },
+      "owner": {
+        "help": "Who reported the observation."
+      }
+    },
+    "paretoEdits": {
+      "help": "The editor settings of the Pareto chart (axes, threshold, bars, line); they are saved with the module."
+    },
+    "scores": {
+      "help": "The score of each cause under its identifier: mean of the ratings given, from 0 to 9; null while nobody has rated."
+    },
+    "paretoItems": {
+      "help": "The rated causes in descending order of score, each with identifier, name, effective category and score; sub-causes appear in the category of their main cause."
+    }
+  },
+  "actions": {
+    "read": {
+      "help": "Read problem statement, images, expert team, cause tree with ratings, snapshots, experiments and facts. Image data and snapshot content appear only as a size."
+    },
+    "addExpert": {
+      "help": "Add a member to the expert team. Every member rates every cause from 0 to 9. Returns the id.",
+      "params": {
+        "name": "The name; it must differ from the others, ignoring case. An empty name is an error."
+      }
+    },
+    "renameExpert": {
+      "help": "Rename a member of the expert team; their ratings stay.",
+      "params": {
+        "expertId": "The member.",
+        "name": "The new name; it must differ from the others. A name already taken is an error."
+      }
+    },
+    "removeExpert": {
+      "help": "Remove a member from the expert team, together with their ratings.",
+      "params": {
+        "expertId": "The member."
+      }
+    },
+    "addRow": {
+      "help": "Append a main cause to the end of the cause tree. Returns id and identifier."
+    },
+    "addSubRow": {
+      "help": "Create a sub-cause under a cause; it inherits its category. Returns id and identifier.",
+      "params": {
+        "parentId": "The cause above."
+      }
+    },
+    "setRowField": {
+      "help": "Set fields of a cause: name, category, description, status. Only the fields given change. Only main causes carry a category; for a sub-cause only the empty category is allowed.",
+      "params": {
+        "rowId": "The cause.",
+        "name": "Optional: the short name.",
+        "category": "Optional: man, machine, environment, material, measurement, method or empty.",
+        "description": "Optional: the description.",
+        "status": "Optional: open, testing, confirmed or rejected."
+      }
+    },
+    "removeRow": {
+      "help": "Delete a cause together with its sub-causes. Links from experiments are removed.",
+      "params": {
+        "rowId": "The cause."
+      }
+    },
+    "duplicateRow": {
+      "help": "Copy a cause together with its sub-causes and ratings; the copy stands right behind it. Returns the id of the copy.",
+      "params": {
+        "rowId": "The cause."
+      }
+    },
+    "moveRowBefore": {
+      "help": "Move a cause together with its sub-causes before another; it takes its parent. Without a target it goes behind the last sibling. A target inside the moved subtree is an error.",
+      "params": {
+        "rowId": "The cause to move.",
+        "targetRowId": "The cause before which it goes; null puts it at the end."
+      }
+    },
+    "setRating": {
+      "help": "Set the rating of a cause by a member, from 0 (unlikely) to 9 (very likely). Mean and Pareto follow.",
+      "params": {
+        "rowId": "The cause.",
+        "expertId": "The member.",
+        "value": "Integer from 0 to 9; null deletes the rating."
+      }
+    },
+    "setCategoryLabels": {
+      "help": "Give the six categories names of their own, for example for 6P instead of 6M. Categories not mentioned keep their name.",
+      "params": {
+        "labels": "New name per category: man, machine, environment, material, measurement, method. Empty restores the default name; two categories must not have the same name."
+      }
+    },
+    "setFilter": {
+      "help": "Show only the causes of one category, or all.",
+      "params": {
+        "category": "all or a category: man, machine, environment, material, measurement, method."
+      }
+    },
+    "setParetoSource": {
+      "help": "Show the current ratings or those of a snapshot in the Pareto chart.",
+      "params": {
+        "snapshotId": "A snapshot; null shows the current state."
+      }
+    },
+    "saveSnapshot": {
+      "help": "Save the current state of problem statement, expert team and cause tree as a snapshot.",
+      "params": {
+        "name": "The name; empty gives “Snapshot” with today’s date."
+      }
+    },
+    "loadSnapshot": {
+      "help": "Restore a snapshot: problem statement, expert team and cause tree are replaced. Links from experiments to causes the snapshot does not know are removed.",
+      "params": {
+        "snapshotId": "The snapshot."
+      }
+    },
+    "removeSnapshot": {
+      "help": "Delete a snapshot.",
+      "params": {
+        "snapshotId": "The snapshot."
+      }
+    },
+    "compareSnapshot": {
+      "help": "Compare the current state with a snapshot. The table marks new and changed causes; the return value names new, removed and changed causes with old and new mean.",
+      "params": {
+        "snapshotId": "The snapshot."
+      }
+    },
+    "closeCompare": {
+      "help": "End the comparison with a snapshot."
+    },
+    "addExperiment": {
+      "help": "Create an experiment that checks causes. Returns the id."
+    },
+    "setExperimentField": {
+      "help": "Set fields of an experiment: title, description, responsible, status, start, end, cost in euros or effort in hours. Only the fields given change.",
+      "params": {
+        "experimentId": "The experiment.",
+        "title": "Optional: the title.",
+        "description": "Optional: the description.",
+        "responsible": "Optional: who carries it out.",
+        "status": "Optional: planned, running, done or cancelled.",
+        "startDate": "Optional: start as YYYY-MM-DD or empty.",
+        "endDate": "Optional: end as YYYY-MM-DD or empty.",
+        "costMoney": "Optional: cost in euros, not negative; null deletes.",
+        "costHours": "Optional: effort in hours, not negative; null deletes."
+      }
+    },
+    "removeExperiment": {
+      "help": "Delete an experiment.",
+      "params": {
+        "experimentId": "The experiment."
+      }
+    },
+    "moveExperimentBefore": {
+      "help": "Move an experiment before another.",
+      "params": {
+        "experimentId": "The experiment to move.",
+        "targetExperimentId": "The experiment before which it goes; null puts it at the end."
+      }
+    },
+    "setExperimentHypotheses": {
+      "help": "Define which causes an experiment checks.",
+      "params": {
+        "experimentId": "The experiment.",
+        "hypothesisIds": "The identifier of each cause, such as H-001; an empty list releases all."
+      }
+    },
+    "setCauseExperiments": {
+      "help": "Define which experiments check a cause; the links of all experiments are set or released accordingly.",
+      "params": {
+        "stableId": "The identifier of the cause, such as H-001.",
+        "experimentIds": "The ids of the experiments; an empty list releases all."
+      }
+    },
+    "addFact": {
+      "help": "Create a fact: a verified observation that supports the search for causes. Returns the id."
+    },
+    "setFactField": {
+      "help": "Set fields of a fact: name, description, date or owner. Only the fields given change.",
+      "params": {
+        "factId": "The fact.",
+        "name": "Optional: the name.",
+        "description": "Optional: the description.",
+        "date": "Optional: the date as YYYY-MM-DD or empty.",
+        "owner": "Optional: who reported the observation."
+      }
+    },
+    "removeFact": {
+      "help": "Delete a fact.",
+      "params": {
+        "factId": "The fact."
+      }
+    },
+    "moveFactBefore": {
+      "help": "Move a fact before another.",
+      "params": {
+        "factId": "The fact to move.",
+        "targetFactId": "The fact before which it goes; null puts it at the end."
+      }
+    },
+    "addImage": {
+      "help": "Put an image into one of the two galleries. Returns the id.",
+      "params": {
+        "scope": "The gallery: inScope (typical defect images) or outScope (explicitly excluded).",
+        "dataUrl": "The image as a data URL (JPEG, PNG, GIF or WebP).",
+        "caption": "The caption; empty is allowed."
+      }
+    },
+    "removeImage": {
+      "help": "Delete an image from a gallery.",
+      "params": {
+        "scope": "The gallery: inScope or outScope.",
+        "id": "The id of the image in this gallery."
+      }
+    },
+    "setImageCaption": {
+      "help": "Set the caption of an image.",
+      "params": {
+        "scope": "The gallery: inScope or outScope.",
+        "id": "The id of the image in this gallery.",
+        "caption": "The new caption; empty deletes it."
+      }
+    }
+  },
+  "state": {
+    "tab": {
+      "help": "The tab shown: problem, hypotheses, experiments or facts. A view only; it is not saved."
+    },
+    "collapsed": {
+      "help": "The ids of the collapsed causes; their sub-causes are hidden. A view only; it is not saved."
+    },
+    "filter": {
+      "help": "Which category the table shows: all or man, machine, environment, material, measurement, method. A view only; it changes no data."
+    },
+    "compareSnapId": {
+      "help": "The snapshot the table is compared with; null without comparison. If it points to a deleted snapshot, null applies."
+    },
+    "paretoSnapId": {
+      "help": "The snapshot whose ratings the Pareto chart shows; null for the current state. If it points to a deleted snapshot, null applies."
+    },
+    "trendVisible": {
+      "help": "Whether the trend of the scores over the snapshots is shown. A view only."
+    },
+    "trendEdits": {
+      "help": "The editor settings of the trend chart, such as which series are hidden. A view only; it is not saved."
+    },
+    "lightbox": {
+      "help": "The image shown enlarged (gallery and id); null when none is open. A view only."
+    },
+    "dragPreview": {
+      "help": "The preview while dragging a row: where it would land. A view only; it is not saved."
+    }
+  },
+  "forms": {
+    "catRename": {
+      "man": {
+        "help": "Custom name of the category Man; empty restores the default name."
+      },
+      "machine": {
+        "help": "Custom name of the category Machine; empty restores the default name."
+      },
+      "environment": {
+        "help": "Custom name of the category Environment; empty restores the default name."
+      },
+      "material": {
+        "help": "Custom name of the category Material; empty restores the default name."
+      },
+      "measurement": {
+        "help": "Custom name of the category Measurement; empty restores the default name."
+      },
+      "method": {
+        "help": "Custom name of the category Method; empty restores the default name."
+      }
+    },
+    "expLink": {
+      "experimentIds": {
+        "help": "The experiments that contribute to checking this cause."
+      }
+    },
+    "hypLink": {
+      "hypothesisIds": {
+        "help": "The causes this experiment checks."
+      }
+    }
+  },
+  "tile": {
+    "settings": {
+      "topN": {
+        "help": "How many of the highest-rated causes the tile shows at most."
+      },
+      "showLegend": {
+        "help": "Shows the legend of categories and statuses below the bars."
+      }
+    }
+  },
+  "types": {
+    "ParetoItem": {
+      "stableId": "The identifier of the cause (H-001 …).",
+      "name": "The name of the cause without surrounding spaces; if it is empty, the identifier.",
+      "category": "The effective category: its own or that of the main cause; empty without either.",
+      "score": "The mean of the ratings given, from 0 to 9."
+    }
+  }
+}

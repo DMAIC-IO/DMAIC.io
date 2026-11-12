@@ -1,0 +1,118 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Anatomy of an Ishikawa Diagram",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The Ishikawa diagram (also called {{term:ishikawa|fishbone}} or cause-and-effect diagram) collects possible causes of a defined problem, structured by main categories. It is one of the standard tools of the Analyze phase and is typically developed in a team workshop."
+        },
+        {
+          "type": "definition",
+          "term": "Effect (head of the fish)",
+          "content": "The problem or deviation whose causes are sought — e.g. \"Dimensional deviation > 0.1 mm\", \"Delivery delay > 2 days\". Written on the far right as the \"head\"."
+        },
+        {
+          "type": "definition",
+          "term": "Main bones (categories)",
+          "content": "The large diagonal lines — the classic 6M are: Man, Machine, Method, Material, Mother Nature (environment), Measurement. In services, 6P are often used (People, Process, Place, Product, Procedures, Policies)."
+        },
+        {
+          "type": "definition",
+          "term": "Causes (sub-bones)",
+          "content": "Specific potential causes attached to each main bone. A cause can be broken down further into tertiary bones."
+        },
+        {
+          "type": "definition",
+          "term": "Depth (level of detail)",
+          "content": "Multi-level bones allow you to dig deeper by repeated \"why?\". Three levels are usually enough — anything beyond becomes confusing. For deeper root-cause analysis, use the 5-Why module."
+        },
+        {
+          "type": "paragraph",
+          "content": "The Ishikawa is not a proof tool — it is a structured collection of hypotheses. Which causes are actually relevant is verified afterwards with data (C&E matrix, hypothesis tests, DOE)."
+        }
+      ]
+    },
+    "workflow": {
+      "title": "Working with the module",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Problem",
+          "content": "The problem statement records what deviates, where, by how much. Two image galleries draw the line between what belongs to the problem and what does not."
+        },
+        {
+          "type": "definition",
+          "term": "Facts",
+          "content": "Established observations with a date and who reported them. They support the search for causes before anything is rated."
+        },
+        {
+          "type": "definition",
+          "term": "Hypotheses",
+          "content": "The cause tree: main causes carry one of the six categories, sub-causes inherit it. Every member of the expert team rates every cause from 0 (unlikely) to 9 (very likely); the mean orders the Pareto. A snapshot keeps the state, the comparison marks new and changed causes, the trend shows the means across several snapshots."
+        },
+        {
+          "type": "definition",
+          "term": "Experiments",
+          "content": "Each experiment tests one or more causes, with a person responsible, a period and cost. The Gantt chart and the cost charts show plan and effort."
+        },
+        {
+          "type": "paragraph",
+          "content": "Hold Alt to show question marks at headings, column heads and buttons; a click explains the element."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Approach",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Phrase the effect precisely — a concrete, measurable deviation, not a vague goal.",
+            "Pick main categories: 6M for manufacturing, 6P for services, or your own fitting categories.",
+            "In the workshop, give everyone a voice — brainstorming without judgment.",
+            "Collect causes per category — first volume, then order.",
+            "For important causes, drill down with \"why?\" until a concrete root becomes visible.",
+            "Move the prioritized causes into the C&E matrix or directly into hypothesis tests."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Effect too vague",
+          "content": "\"Quality is bad\" cannot be analyzed. Formulate a measurable, bounded effect — then the causes also become concrete."
+        },
+        {
+          "type": "definition",
+          "term": "Symptoms instead of causes",
+          "content": "\"Machine fails\" is an effect, not a cause. Drill down with \"why does it fail?\" until a technically or organizationally actionable cause becomes visible."
+        },
+        {
+          "type": "definition",
+          "term": "6M as compulsory exercise",
+          "content": "If every category is forced full of causes, meaningless entries appear. Leave categories empty deliberately rather than inventing artificial \"Man\" material."
+        },
+        {
+          "type": "definition",
+          "term": "Hypotheses become facts",
+          "content": "Whatever sits in the Ishikawa is a guess. Before deriving improvement actions, verify with data — otherwise lots of money and time go into phantom causes."
+        },
+        {
+          "type": "definition",
+          "term": "Built alone",
+          "content": "Ishikawa lives from different perspectives. Operators, maintenance, quality, and engineering in the same workshop often surface causes nobody would have thought of alone."
+        },
+        {
+          "type": "definition",
+          "term": "Excessive depth",
+          "content": "More than three levels become confusing. Anyone who wants to drill deeper should open a dedicated 5-Why module for the important branches."
+        }
+      ]
+    }
+  }
+}

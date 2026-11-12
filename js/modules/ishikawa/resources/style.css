@@ -1,0 +1,1347 @@
+/* ============================================================
+   Ishikawa 6M Module Styles
+   BEM: .ishikawa__ prefix
+   ============================================================ */
+
+/* Festfarben des Moduls. Dieselben Werte in beiden Themes: die Farben
+   tragen Bedeutung (Kategorie, Status, Score) und bleiben gleich. */
+.ishikawa,
+.ishikawa-tile {
+  --ishikawa-cat-man: #2563eb;
+  --ishikawa-cat-machine: #7c3aed;
+  --ishikawa-cat-environment: #059669;
+  --ishikawa-cat-material: #d97706;
+  --ishikawa-cat-measurement: #dc2626;
+  --ishikawa-cat-method: #0891b2;
+  --ishikawa-line-1: #2563eb;
+  --ishikawa-line-2: #dc2626;
+  --ishikawa-line-3: #059669;
+  --ishikawa-line-4: #d97706;
+  --ishikawa-line-5: #7c3aed;
+  --ishikawa-line-6: #0891b2;
+  --ishikawa-line-7: #db2777;
+  --ishikawa-line-8: #84cc16;
+  --ishikawa-line-9: #f97316;
+  --ishikawa-line-10: #6366f1;
+  --ishikawa-line-11: #14b8a6;
+  --ishikawa-line-12: #f43f5e;
+  --ishikawa-line-13: #a855f7;
+  --ishikawa-line-14: #eab308;
+  --ishikawa-line-15: #22d3ee;
+  --ishikawa-line-16: #fb7185;
+  --ishikawa-status-planned: #94a3b8;
+  --ishikawa-status-running: #2563eb;
+  --ishikawa-status-done: #16a34a;
+  --ishikawa-status-cancelled: #dc2626;
+  --ishikawa-score-low: #16a34a;
+  --ishikawa-score-mid: #d97706;
+  --ishikawa-score-high: #dc2626;
+  --ishikawa-rating-0: 134 239 172;
+  --ishikawa-rating-1: 160 236 150;
+  --ishikawa-rating-2: 187 232 127;
+  --ishikawa-rating-3: 213 229 105;
+  --ishikawa-rating-4: 240 226 82;
+  --ishikawa-rating-5: 253 217 81;
+  --ishikawa-rating-6: 253 204 102;
+  --ishikawa-rating-7: 252 191 123;
+  --ishikawa-rating-8: 252 178 144;
+  --ishikawa-rating-9: 252 165 165;
+  --ishikawa-red: #dc2626;
+  --ishikawa-green: #16a34a;
+  --ishikawa-amber-dark: #b45309;
+  --ishikawa-on-color: #fff;
+}
+
+[data-theme="dark"] .ishikawa,
+[data-theme="dark"] .ishikawa-tile {
+  --ishikawa-cat-man: #2563eb;
+  --ishikawa-cat-machine: #7c3aed;
+  --ishikawa-cat-environment: #059669;
+  --ishikawa-cat-material: #d97706;
+  --ishikawa-cat-measurement: #dc2626;
+  --ishikawa-cat-method: #0891b2;
+  --ishikawa-line-1: #2563eb;
+  --ishikawa-line-2: #dc2626;
+  --ishikawa-line-3: #059669;
+  --ishikawa-line-4: #d97706;
+  --ishikawa-line-5: #7c3aed;
+  --ishikawa-line-6: #0891b2;
+  --ishikawa-line-7: #db2777;
+  --ishikawa-line-8: #84cc16;
+  --ishikawa-line-9: #f97316;
+  --ishikawa-line-10: #6366f1;
+  --ishikawa-line-11: #14b8a6;
+  --ishikawa-line-12: #f43f5e;
+  --ishikawa-line-13: #a855f7;
+  --ishikawa-line-14: #eab308;
+  --ishikawa-line-15: #22d3ee;
+  --ishikawa-line-16: #fb7185;
+  --ishikawa-status-planned: #94a3b8;
+  --ishikawa-status-running: #2563eb;
+  --ishikawa-status-done: #16a34a;
+  --ishikawa-status-cancelled: #dc2626;
+  --ishikawa-score-low: #16a34a;
+  --ishikawa-score-mid: #d97706;
+  --ishikawa-score-high: #dc2626;
+  --ishikawa-rating-0: 134 239 172;
+  --ishikawa-rating-1: 160 236 150;
+  --ishikawa-rating-2: 187 232 127;
+  --ishikawa-rating-3: 213 229 105;
+  --ishikawa-rating-4: 240 226 82;
+  --ishikawa-rating-5: 253 217 81;
+  --ishikawa-rating-6: 253 204 102;
+  --ishikawa-rating-7: 252 191 123;
+  --ishikawa-rating-8: 252 178 144;
+  --ishikawa-rating-9: 252 165 165;
+  --ishikawa-red: #dc2626;
+  --ishikawa-green: #16a34a;
+  --ishikawa-amber-dark: #b45309;
+  --ishikawa-on-color: #fff;
+}
+
+/* Bewertungszellen: Verlauf grün → gelb → rot, Stufe 0–9. */
+.ishikawa__rating--0 {
+  background: rgb(var(--ishikawa-rating-0) / 35%);
+  border-color: rgb(var(--ishikawa-rating-0) / 50%);
+  color: var(--color-text-primary);
+}
+
+.ishikawa__rating--1 {
+  background: rgb(var(--ishikawa-rating-1) / 35%);
+  border-color: rgb(var(--ishikawa-rating-1) / 50%);
+  color: var(--color-text-primary);
+}
+
+.ishikawa__rating--2 {
+  background: rgb(var(--ishikawa-rating-2) / 35%);
+  border-color: rgb(var(--ishikawa-rating-2) / 50%);
+  color: var(--color-text-primary);
+}
+
+.ishikawa__rating--3 {
+  background: rgb(var(--ishikawa-rating-3) / 35%);
+  border-color: rgb(var(--ishikawa-rating-3) / 50%);
+  color: var(--color-text-primary);
+}
+
+.ishikawa__rating--4 {
+  background: rgb(var(--ishikawa-rating-4) / 35%);
+  border-color: rgb(var(--ishikawa-rating-4) / 50%);
+  color: var(--color-text-primary);
+}
+
+.ishikawa__rating--5 {
+  background: rgb(var(--ishikawa-rating-5) / 35%);
+  border-color: rgb(var(--ishikawa-rating-5) / 50%);
+  color: var(--color-text-primary);
+}
+
+.ishikawa__rating--6 {
+  background: rgb(var(--ishikawa-rating-6) / 35%);
+  border-color: rgb(var(--ishikawa-rating-6) / 50%);
+  color: var(--color-text-primary);
+}
+
+.ishikawa__rating--7 {
+  background: rgb(var(--ishikawa-rating-7) / 35%);
+  border-color: rgb(var(--ishikawa-rating-7) / 50%);
+  color: var(--color-text-primary);
+}
+
+.ishikawa__rating--8 {
+  background: rgb(var(--ishikawa-rating-8) / 35%);
+  border-color: rgb(var(--ishikawa-rating-8) / 50%);
+  color: var(--color-text-primary);
+}
+
+.ishikawa__rating--9 {
+  background: rgb(var(--ishikawa-rating-9) / 35%);
+  border-color: rgb(var(--ishikawa-rating-9) / 50%);
+  color: var(--color-text-primary);
+}
+
+/* Score-Balken: die Breite kommt aus dem Template. */
+.ishikawa__score-bar--low {
+  background: var(--ishikawa-score-low);
+}
+
+.ishikawa__score-bar--mid {
+  background: var(--ishikawa-score-mid);
+}
+
+.ishikawa__score-bar--high {
+  background: var(--ishikawa-score-high);
+}
+
+/* Keep tab content (esp. the bordered blocks in the Experiments tab) from
+   butting against the module's own vertical scrollbar, which lives on
+   .module-container__body. */
+.ishikawa .module-container__body {
+  padding-right: var(--spacing-sm);
+}
+
+/* ===== Filter chips ===== */
+.ishikawa__filter-group {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.ishikawa__filter-chip {
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  padding: var(--spacing-xs) var(--spacing-m);
+  border-radius: 99px;
+  border: var(--border-width) solid var(--color-border-secondary);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: all var(--transition-speed);
+}
+
+.ishikawa__filter-chip:hover {
+  border-color: var(--color-text-tertiary);
+}
+
+.ishikawa__filter-chip--active {
+  background: var(--color-text-primary);
+  color: var(--color-bg-primary);
+  border-color: var(--color-text-primary);
+}
+
+.ishikawa__filter-chip-count {
+  opacity: 0.65;
+  margin-left: var(--spacing-2xs);
+}
+
+.ishikawa__cat-rename-btn {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  margin-left: var(--spacing-xs);
+  border-radius: 50%;
+  border: var(--border-width) solid var(--color-border-secondary);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-speed);
+}
+
+.ishikawa__cat-rename-btn:hover {
+  border-color: var(--color-text-tertiary);
+  color: var(--color-text-primary);
+  background: var(--color-bg-tertiary);
+}
+
+/* ===== Experts row (hypotheses tab) ===== */
+.ishikawa__experts-row {
+  margin-bottom: var(--spacing-md);
+}
+
+/* ===== Problem tab ===== */
+.ishikawa__problem-tab {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.ishikawa__problem-statement {
+  padding: var(--spacing-md);
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  display: flex;
+  flex-direction: column;
+}
+
+.ishikawa__problem-textarea {
+  width: 100%;
+  border: 1px solid var(--color-border-secondary);
+  outline: none;
+  font-size: var(--font-size-md);
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  background: var(--color-bg-primary);
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  resize: vertical;
+  min-height: 3.5rem;
+}
+
+.ishikawa__problem-textarea:focus {
+  border-color: var(--color-accent);
+}
+
+.ishikawa__problem-textarea::placeholder {
+  color: var(--color-text-tertiary);
+  font-weight: 400;
+}
+
+/* Image galleries (in-scope / out-of-scope) */
+.ishikawa__img-gallery {
+  padding: var(--spacing-md);
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  border-left: 4px solid var(--color-border-secondary);
+}
+
+.ishikawa__img-gallery-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+}
+
+.ishikawa__img-gallery-header > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.ishikawa__img-hint {
+  margin: var(--spacing-xs) 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
+.ishikawa__img-upload-btn {
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ishikawa__img-upload-input {
+  display: none;
+}
+
+.ishikawa__img-empty {
+  padding: var(--spacing-lg);
+  text-align: center;
+  color: var(--color-text-tertiary);
+  border: 1px dashed var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  background: var(--color-bg-primary);
+  font-size: var(--font-size-sm);
+}
+
+.ishikawa__img-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--spacing-sm);
+}
+
+.ishikawa__img-card {
+  margin: 0;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.ishikawa__img-thumb {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: var(--color-bg-tertiary);
+  border: none;
+  padding: 0;
+  cursor: zoom-in;
+  overflow: hidden;
+}
+
+.ishikawa__img-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ishikawa__img-caption {
+  width: 100%;
+  padding: var(--spacing-s) var(--spacing-sm);
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--color-border-secondary);
+  font-size: var(--font-size-xs);
+  font-family: inherit;
+  color: var(--color-text-primary);
+  outline: none;
+}
+
+.ishikawa__img-caption:focus {
+  background: var(--color-bg-secondary);
+}
+
+.ishikawa__img-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-xs) var(--spacing-s) var(--spacing-xs) var(--spacing-sm);
+  border-top: 1px solid var(--color-border-secondary);
+  background: var(--color-bg-secondary);
+}
+
+.ishikawa__img-size {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.ishikawa__img-del {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.ishikawa__img-del:hover {
+  background: var(--ishikawa-red);
+  color: var(--ishikawa-on-color);
+}
+
+/* Lightbox content */
+.ishikawa__img-lightbox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.ishikawa__img-lightbox img {
+  display: block;
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: var(--border-radius-sm);
+}
+
+.ishikawa__img-lightbox-caption {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+
+.ishikawa__panel-label {
+  display: block;
+  font-size: var(--font-size-xs);
+  font-family: var(--font-family-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--spacing-xs);
+}
+
+/* ===== Expert panel ===== */
+.ishikawa__expert-panel {
+  padding: var(--spacing-md);
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ishikawa__expert-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.ishikawa__expert-add-form {
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+
+.ishikawa__expert-name-input { width: 180px; }
+
+.ishikawa__expert-tags {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.ishikawa__expert-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-s);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-xs) var(--spacing-m) var(--spacing-xs) var(--spacing-s);
+  border-radius: 99px;
+  background: var(--color-bg-tertiary);
+}
+
+.ishikawa__expert-ini {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--ishikawa-on-color);
+  flex-shrink: 0;
+}
+
+.ishikawa__expert-name-edit {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-family: inherit;
+  font-size: inherit;
+  padding: var(--spacing-2xs) var(--spacing-s);
+  border-radius: var(--border-radius-sm);
+  width: 11ch;
+  min-width: 60px;
+  outline: none;
+  transition: border-color var(--transition-speed), background var(--transition-speed);
+}
+
+.ishikawa__expert-name-edit:hover {
+  border-color: var(--color-border-primary);
+}
+
+.ishikawa__expert-name-edit:focus {
+  border-color: var(--color-accent);
+  background: var(--color-bg-primary);
+}
+
+.ishikawa__expert-rm {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-tertiary);
+  transition: all var(--transition-speed);
+  font-size: 11px;
+}
+
+.ishikawa__expert-rm:hover {
+  background: rgb(0 0 0 / 10%);
+  color: var(--color-error);
+}
+
+.ishikawa__no-items {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+  padding: var(--spacing-xs) 0;
+}
+
+/* ===== Category rename modal ===== */
+.ishikawa__cat-rename {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.ishikawa__cat-rename-hint {
+  margin: 0 0 var(--spacing-xs) 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.ishikawa__cat-rename-row {
+  display: grid;
+  grid-template-columns: 16px 110px 1fr;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.ishikawa__cat-rename-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+}
+
+.ishikawa__cat-rename-default {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ===== Snapshot panel ===== */
+.ishikawa__snapshot-panel {
+  padding: var(--spacing-md);
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  margin-top: var(--spacing-md);
+}
+
+.ishikawa__snapshot-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+.ishikawa__snapshot-save {
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.ishikawa__snapshot-name-input { width: 200px; }
+
+.ishikawa__snapshot-list {
+  flex: 1;
+  min-width: 260px;
+}
+
+.ishikawa__snap-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.ishikawa__snap-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-m);
+  border-radius: var(--border-radius);
+  border: var(--border-width) solid var(--color-border-secondary);
+  background: var(--color-bg-primary);
+  font-size: var(--font-size-sm);
+  transition: all var(--transition-speed);
+  cursor: pointer;
+}
+
+.ishikawa__snap-item:hover {
+  border-color: var(--color-accent);
+}
+
+.ishikawa__snap-item--active {
+  border-color: var(--color-accent);
+  background: rgb(0 102 204 / 6%);
+}
+
+.ishikawa__snap-date {
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+}
+
+.ishikawa__snap-name {
+  flex: 1;
+  font-weight: var(--font-weight-medium);
+}
+
+.ishikawa__snap-badge {
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  padding: var(--spacing-2xs) var(--spacing-s);
+  border-radius: 99px;
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-tertiary);
+}
+
+.ishikawa__snap-del {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--border-radius-sm);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-tertiary);
+  font-size: 11px;
+  transition: all var(--transition-speed);
+}
+
+.ishikawa__snap-del:hover {
+  color: var(--color-error);
+  background: var(--color-bg-tertiary);
+}
+
+/* ===== Diff banner ===== */
+.ishikawa__diff-banner {
+  background: rgb(0 102 204 / 6%);
+  border: var(--border-width) solid var(--color-accent);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm) var(--spacing-md);
+  display: none;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  margin-bottom: var(--spacing-md);
+}
+
+.ishikawa__diff-banner--visible { display: flex; }
+
+.ishikawa__diff-title {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-accent);
+}
+
+.ishikawa__diff-stats {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.ishikawa__diff-stat {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.ishikawa__diff-val {
+  font-weight: var(--font-weight-semibold);
+  padding: var(--spacing-2xs) var(--spacing-s);
+  border-radius: var(--border-radius-sm);
+}
+
+.ishikawa__diff-val--new { background: rgb(34 197 94 / 15%); color: var(--ishikawa-green); }
+.ishikawa__diff-val--del { background: rgb(239 68 68 / 15%); color: var(--ishikawa-red); }
+.ishikawa__diff-val--chg { background: rgb(0 102 204 / 10%); color: var(--color-accent); }
+
+.ishikawa__diff-close {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--color-accent);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  text-decoration: underline;
+}
+
+/* ===== Trend panel ===== */
+.ishikawa__trend-panel { display: none; margin-bottom: var(--spacing-md); }
+.ishikawa__trend-panel--visible { display: block; }
+
+.ishikawa__trend-inner {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.ishikawa__trend-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+  background: var(--color-bg-tertiary);
+}
+
+.ishikawa__trend-header h3 {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.ishikawa__trend-close {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-lg);
+  padding: var(--spacing-2xs);
+}
+
+.ishikawa__trend-close:hover { color: var(--color-accent); }
+
+.ishikawa__trend-body {
+  padding: var(--spacing-md);
+
+  /* Constrain the framework trend chart to legacy proportions: the bespoke
+     canvas was a fixed 340px tall (ch=340) with responsive width. The host
+     drives the framework chart's height via ResizeObserver, so a 340px floor
+     here reproduces the legacy height. min-height (not height) keeps growth
+     uncapped and survives the surrounding flex context without clipping. */
+  min-height: 340px;
+}
+
+.ishikawa__trend-empty {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+}
+
+/* ===== Table =====
+   Base look comes from the shared .dmike-table-wrap / .dmike-table /
+   .dmike-table--sticky in css/components.css. Only the column geometry and
+   the Ishikawa-specific cell content are styled here. */
+
+.ishikawa__table thead th.ishikawa__col-nr {
+  width: 4.5rem;
+  text-align: left;
+  padding-left: calc(var(--ishikawa-nr-indent) + var(--ishikawa-toggle-slot));
+}
+.ishikawa__table thead th.ishikawa__col-cat { width: 8.5rem; }
+.ishikawa__table thead th.ishikawa__col-name { width: 11rem; }
+.ishikawa__table thead th.ishikawa__col-status { width: 7rem; }
+.ishikawa__table thead th.ishikawa__col-actions { width: 6.5rem; text-align: center; }
+.ishikawa__table thead th.ishikawa__col-expert { width: 4.5rem; text-align: center; }
+.ishikawa__table thead th.ishikawa__col-score { width: 5rem; text-align: center; }
+
+.ishikawa__exp-col-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-2xs);
+}
+
+.ishikawa__exp-ini {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--ishikawa-on-color);
+}
+
+.ishikawa__exp-nm {
+  font-size: 9px;
+  max-width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* Geometry of the number column, in one place: header, body cells and tree
+   indent all derive from these. --ishikawa-depth is set per row by the
+   template.
+
+   --ishikawa-toggle-slot is the width the collapse toggle occupies in front
+   of the number, gap included. It is 0 by default — only the cause tree has
+   toggles. Header and body both add it, so they cannot drift apart, and a
+   future flat table cannot inherit an offset it has no toggle for. */
+.ishikawa__table {
+  --ishikawa-nr-indent: 12px;
+  --ishikawa-nr-step: 16px;
+  --ishikawa-nr-gap: var(--spacing-xs);
+  --ishikawa-toggle-size: 22px;   /* matches .btn--icon-sm */
+  --ishikawa-toggle-slot: 0px;
+}
+
+.ishikawa__table--tree {
+  --ishikawa-toggle-slot: calc(var(--ishikawa-toggle-size) + var(--ishikawa-nr-gap));
+}
+
+.ishikawa__table td.ishikawa__col-nr {
+  text-align: left;
+  padding-left: calc(var(--ishikawa-nr-indent) + var(--ishikawa-depth, 0) * var(--ishikawa-nr-step));
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+}
+
+/* Grid, not flex: the first track reserves the toggle slot whether or not a
+   toggle is rendered, so childless rows line up with their siblings without
+   needing a spacer element in the markup. */
+.ishikawa__nr-cell {
+  display: grid;
+  grid-template-columns: var(--ishikawa-toggle-size) auto;
+  align-items: center;
+  gap: var(--ishikawa-nr-gap);
+}
+
+.ishikawa__nr-text { grid-column: 2; }
+
+/* Depth indentation backgrounds */
+.ishikawa__depth-1 { background: var(--color-bg-primary); }
+.ishikawa__depth-2 { background: var(--color-bg-primary); }
+.ishikawa__depth-3 { background: var(--color-bg-primary); }
+
+/* Diff row highlighting */
+.ishikawa__diff-new { background: rgb(34 197 94 / 8%) !important; }
+.ishikawa__diff-new td:first-child { box-shadow: inset 3px 0 0 var(--ishikawa-green); }
+.ishikawa__diff-chg { background: rgb(0 102 204 / 6%) !important; }
+.ishikawa__diff-chg td:first-child { box-shadow: inset 3px 0 0 var(--color-accent); }
+
+/* Hypothesis cell with indentation */
+.ishikawa__hypo-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+/* Category select — .field base; mono label plus the inline category colour
+   stripe set per row via :style. */
+.ishikawa__cat-select {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+}
+
+.ishikawa__cat-inherited {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-s) var(--spacing-sm);
+  border-radius: var(--border-radius);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Name input — .field--ghost base, mono + bold to read as the row's title. */
+.ishikawa__name-input {
+  font-family: var(--font-family-mono);
+  font-weight: var(--font-weight-semibold);
+}
+
+.ishikawa__name-input::placeholder {
+  font-weight: var(--font-weight-normal);
+}
+
+.ishikawa__name-input--dup {
+  color: var(--color-error);
+}
+
+/* Description input — .field--ghost base; fills the rest of .ishikawa__hypo-cell. */
+.ishikawa__desc-input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Rating input — .field base, narrowed to a single digit and centred. */
+.ishikawa__rating-input {
+  width: 38px;
+  font-family: var(--font-family-mono);
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  appearance: textfield;
+}
+
+.ishikawa__rating-input::-webkit-inner-spin-button,
+.ishikawa__rating-input::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.ishikawa__table td.ishikawa__col-expert { text-align: center; }
+.ishikawa__table td.ishikawa__col-score { text-align: center; }
+
+/* Score badge */
+.ishikawa__score-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius);
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-tertiary);
+}
+
+.ishikawa__score-high { background: rgb(239 68 68 / 15%); color: var(--ishikawa-red); }
+.ishikawa__score-mid { background: rgb(234 179 8 / 15%); color: var(--ishikawa-amber-dark); }
+.ishikawa__score-low { background: rgb(34 197 94 / 15%); color: var(--ishikawa-green); }
+
+.ishikawa__score-bar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.ishikawa__score-bar-track {
+  width: 38px;
+  height: 4px;
+  background: var(--color-bg-tertiary);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.ishikawa__score-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+.ishikawa__score-delta {
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  margin-top: var(--spacing-2xs);
+}
+
+.ishikawa__delta-up { color: var(--ishikawa-red); }
+.ishikawa__delta-down { color: var(--ishikawa-green); }
+
+/* Status select — .field base, reshaped into a pill; the per-status classes
+   below override background/color/border-color. */
+.ishikawa__status-select {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  border-radius: 99px;
+  color: var(--color-text-tertiary);
+}
+
+.ishikawa__status-open { background: rgb(234 179 8 / 15%); color: var(--ishikawa-amber-dark); border-color: rgb(234 179 8 / 30%); }
+.ishikawa__status-test { background: rgb(0 102 204 / 10%); color: var(--color-accent); border-color: rgb(0 102 204 / 20%); }
+.ishikawa__status-confirmed { background: rgb(34 197 94 / 15%); color: var(--ishikawa-green); border-color: rgb(34 197 94 / 30%); }
+.ishikawa__status-rejected { background: rgb(239 68 68 / 15%); color: var(--ishikawa-red); border-color: rgb(239 68 68 / 30%); }
+
+/* Row actions */
+.ishikawa__row-actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-2xs);
+}
+
+/* Row action buttons use .btn--icon-sm; only the experiment-link badge
+   anchor and its "linked" tint are Ishikawa-specific. */
+.ishikawa__icon-btn--exp {
+  position: relative;
+}
+
+.ishikawa__icon-btn--linked {
+  color: var(--color-accent);
+}
+
+.ishikawa__exp-link-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 var(--spacing-xs);
+  border-radius: 7px;
+  background: var(--color-accent);
+  color: var(--ishikawa-on-color);
+  font-size: 9px;
+  line-height: 14px;
+  text-align: center;
+  font-weight: 600;
+  font-family: var(--font-family);
+  pointer-events: none;
+  box-shadow: 0 0 0 1.5px var(--color-bg-primary);
+}
+
+.ishikawa__exp-link-status {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  padding: var(--spacing-2xs) var(--spacing-s);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-bg-secondary);
+}
+
+/* Summary bar */
+.ishikawa__summary-bar {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  margin-top: var(--spacing-md);
+}
+
+.ishikawa__summary-card {
+  flex: 1;
+  min-width: 120px;
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.ishikawa__s-label {
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-text-tertiary);
+}
+
+.ishikawa__s-value {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  margin-top: var(--spacing-2xs);
+}
+
+.ishikawa__cat-bar {
+  display: flex;
+  gap: var(--spacing-2xs);
+  margin-top: var(--spacing-xs);
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.ishikawa__cat-bar div {
+  height: 100%;
+  border-radius: 3px;
+}
+
+/* Empty row */
+.ishikawa__empty-row td {
+  text-align: center;
+  padding: var(--spacing-xl) var(--spacing-md);
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+}
+
+/* ===== Pareto panel ===== */
+.ishikawa__pareto-panel {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  margin-top: var(--spacing-md);
+  overflow: hidden;
+}
+
+.ishikawa__pareto-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: var(--border-width) solid var(--color-border-secondary);
+  background: var(--color-bg-tertiary);
+}
+
+.ishikawa__pareto-header .ishikawa__panel-label {
+  margin-bottom: 0;
+}
+
+.ishikawa__pareto-select {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius);
+  border: var(--border-width) solid var(--color-border-secondary);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  outline: none;
+}
+
+.ishikawa__pareto-select:focus { border-color: var(--color-accent); }
+
+.ishikawa__pareto-body {
+  display: flex;
+}
+
+.ishikawa__pareto-canvas-wrap {
+  flex: 1;
+  min-width: 0;
+  padding: var(--spacing-md);
+  height: 380px;
+}
+
+/* Hidden row */
+.ishikawa__row-hidden { display: none; }
+
+/* ──────────────────────────────────────────────────────────
+   Experiments tab
+   ────────────────────────────────────────────────────────── */
+.ishikawa__experiments {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.ishikawa__exp-empty {
+  padding: var(--spacing-lg);
+  text-align: center;
+  color: var(--color-text-tertiary);
+  border: 1px dashed var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  background: var(--color-bg-secondary);
+}
+
+/* Columns with variable-width text content shrink to their input's content
+   width (via field-sizing on the input). width:1% + nowrap is the table-
+   layout trick that says "be as small as possible". */
+.ishikawa__exp-table thead th.ishikawa__col-exp-title,
+.ishikawa__exp-table thead th.ishikawa__col-resp,
+.ishikawa__exp-table thead th.ishikawa__col-fact-name {
+  width: 1%;
+  white-space: nowrap;
+}
+
+/* Fixed-width controls (selects, dates, numbers, buttons): min-width so
+   labels and options aren't truncated even when the table is crowded. */
+.ishikawa__exp-table thead th.ishikawa__col-exp-status { width: 9.5rem; min-width: 9.5rem; }
+.ishikawa__exp-table thead th.ishikawa__col-date { width: 8rem; min-width: 8rem; }
+.ishikawa__exp-table thead th.ishikawa__col-money { width: 6rem; min-width: 6rem; }
+.ishikawa__exp-table thead th.ishikawa__col-hours { width: 6rem; min-width: 6rem; }
+.ishikawa__exp-table thead th.ishikawa__col-hyp-link { width: 9rem; min-width: 9rem; }
+
+/* Description column claims all leftover space; min-width keeps it usable
+   even when the row has many other columns. */
+.ishikawa__exp-table thead th.ishikawa__col-desc {
+  width: 100%;
+  min-width: 16rem;
+}
+
+/* Cell editors below are .field .field--sm .field--ghost — only the sizing
+   behaviour that the column layout above depends on is set here.
+   Title + Owner: hug their content. */
+.ishikawa__exp-title-input,
+.ishikawa__exp-resp-input {
+  width: auto;
+  min-width: 8rem;
+  field-sizing: content;
+}
+
+.ishikawa__exp-title-input { font-weight: var(--font-weight-medium); }
+
+/* Description: textarea that fills the remaining column space, wraps text
+   and auto-grows in height with content (overriding the 56px min-height
+   that textarea.field carries for standalone form use). */
+.ishikawa__exp-desc-input {
+  display: block;
+  min-height: calc(var(--font-size-sm) + 12px);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  field-sizing: content;
+}
+
+.ishikawa__exp-date-input { font-family: var(--font-family-mono); }
+
+/* Coloured left edge per experiment status. */
+.ishikawa__expstatus-planned   { border-left: 3px solid var(--color-text-tertiary); }
+.ishikawa__expstatus-running   { border-left: 3px solid var(--color-accent); }
+.ishikawa__expstatus-done      { border-left: 3px solid var(--color-success); }
+.ishikawa__expstatus-cancelled { border-left: 3px solid var(--color-error); }
+
+.ishikawa__exp-link-btn {
+  width: 100%;
+  white-space: nowrap;
+}
+
+/* ──────────────────────────────────────────────────────────
+   Gantt chart
+   ────────────────────────────────────────────────────────── */
+.ishikawa__gantt-panel {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius);
+}
+
+.ishikawa__gantt-canvas {
+  margin-top: var(--spacing-sm);
+  overflow-x: auto;
+  min-height: 80px;
+}
+
+.ishikawa__gantt-empty {
+  padding: var(--spacing-lg);
+  text-align: center;
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
+.ishikawa__gantt-svg {
+  display: block;
+}
+
+/* ──────────────────────────────────────────────────────────
+   Hypothesis picker modal
+   ────────────────────────────────────────────────────────── */
+.ishikawa__hyp-pick {
+  min-width: 480px;
+  max-width: 640px;
+}
+
+.ishikawa__hyp-pick-hint {
+  margin: 0 0 var(--spacing-md) 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.ishikawa__hyp-pick-list {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-bg-primary);
+}
+
+.ishikawa__hyp-pick-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--color-border-secondary);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.ishikawa__hyp-pick-row:last-child {
+  border-bottom: none;
+}
+
+.ishikawa__hyp-pick-row:hover {
+  background: var(--color-bg-secondary);
+}
+
+.ishikawa__hyp-pick-row input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.ishikawa__hyp-pick-num {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  min-width: 2.5rem;
+}
+
+.ishikawa__hyp-pick-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.ishikawa__hyp-pick-name {
+  flex: 1;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.ishikawa__hyp-pick-cat {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-xs);
+  font-style: italic;
+}
