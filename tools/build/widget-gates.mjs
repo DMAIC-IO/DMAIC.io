@@ -187,7 +187,7 @@ export function bindingChecks(appDir, id, widgets) {
   }
   return jobs.map(({ out, vmImport, js, templates }) => {
     const tpls = templates.map((f) => ({ path: `resources/${f}`, text: read(`resources/${f}`) }));
-    const bindings = widgets.size === 0 ? [] : collectBindings(tpls, viewNamesDetailOf(read(js)));
+    const bindings = widgets.size === 0 ? [] : collectBindings(tpls, viewNamesDetailOf(read(js), join(base, js)));
     if (js === 'viewmodel/viewmodel.js') {
       for (const { path, text } of tpls) {
         for (const b of asyncTaskContainers(text)) {

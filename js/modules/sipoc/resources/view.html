@@ -13,7 +13,7 @@
     </div>
 
     <div class="sipoc__grid" data-ref="sipocGrid">
-      <template x-for="col in columns" :key="col.key">
+      <template x-for="col in columnDefs" :key="col.key">
         <div class="sipoc__column" :data-col="col.key">
           <div class="sipoc__col-header">
             <div class="sipoc__col-title">

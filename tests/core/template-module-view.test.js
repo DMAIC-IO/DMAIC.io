@@ -5,7 +5,7 @@
 import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertThrows } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { createModule } from '../../js/core/template-module.js';
-import { defineModel, defineState, text, oneOf, record } from '../../js/core/model.js';
+import { defineModel, defineState, command, text, oneOf, record } from '../../js/core/model.js';
 
 const Doc = defineModel({ fields: { title: text() } });
 const Ui = defineState({ tab: oneOf(['a', 'b']), drafts: record(['x', 'y'], text()) });
@@ -279,5 +279,108 @@ suite('createModule: computed im view-Block', () => {
     vm.model.title = 'neu';
     await flush();
     assertEqual(runs, 1);
+  });
+});
+
+const DocCmd = defineModel({
+  fields: { title: text() },
+  view: { zoom: text() },
+  commands: { addItem: command({ run() {} }) },
+});
+
+suite('createModule: view-Block aus Teilen', () => {
+  test('view: [a, b] — Glieder und computed beider Teile in der Komponente', async () => {
+    const a = () => ({ x() { return 'x'; }, computed: { upper() { return String(this.model.title).toUpperCase(); } } });
+    const b = () => ({ get y() { return `${this.upper}!`; }, computed: { len() { return String(this.model.title).length; } } });
+    const { data } = await mount({ view: [a, b] });
+    assertEqual(data().x(), 'x');
+    assertEqual(data().y, 'ABC!');
+    assertEqual(data().len, 3);
+    data().model.title = 'wxyz';
+    await flush();
+    assertEqual(data().upper, 'WXYZ');
+    assertEqual(data().len, 4);
+  });
+
+  test('Teile bekommen denselben ctx', async () => {
+    const seen = [];
+    await mount({ view: [(ctx) => { seen.push(ctx); return {}; }, (ctx) => { seen.push(ctx); return {}; }] });
+    // je zwei Aufrufe: Probe beim Anlegen (wirft bei Zugriff) und Mount
+    assertEqual(seen.length, 4);
+    assertEqual(seen[2].instanceId, 'vt-1');
+    assertEqual(seen[3].moduleId, ID);
+  });
+
+  test('doppeltes Glied über Teile wirft, nennt beide Teile', () => {
+    assertThrows(() => makeModule({ view: [() => ({ x() {} }), () => ({ get x() { return 1; } })] }),
+      /createModule\(view-test\): view\[1\] member x collides with view\[0\] member$/);
+  });
+
+  test('doppeltes computed über Teile wirft, nennt beide Teile', () => {
+    assertThrows(() => makeModule({ view: [() => ({ computed: { c() { return 1; } } }), () => ({ computed: { c() { return 2; } } })] }),
+      /createModule\(view-test\): view\[1\] computed c collides with view\[0\] computed$/);
+  });
+
+  test('Glied gegen computed eines anderen Teils wirft, in beide Richtungen', () => {
+    assertThrows(() => makeModule({ view: [() => ({ computed: { c() { return 1; } } }), () => ({ c() {} })] }),
+      /createModule\(view-test\): view\[1\] member c collides with view\[0\] computed$/);
+    assertThrows(() => makeModule({ view: [() => ({ c() {} }), () => ({ computed: { c() { return 1; } } })] }),
+      /createModule\(view-test\): view\[1\] computed c collides with view\[0\] member$/);
+  });
+
+  test('init und destroy je Teil: init in Reihenfolge, destroy umgekehrt', async () => {
+    const calls = [];
+    const part = (n) => () => ({ init() { calls.push(`init ${n}`); }, destroy() { calls.push(`destroy ${n}`); } });
+    const { container } = await mount({ view: [part('a'), part('b')] });
+    assertDeepEqual(calls, ['init a', 'init b']);
+    Alpine.destroyTree(container.querySelector('[x-data]'));
+    assertDeepEqual(calls, ['init a', 'init b', 'destroy b', 'destroy a']);
+  });
+
+  test('Einzelfunktion verhält sich wie bisher', async () => {
+    const { data } = await mount();
+    assertEqual(data().label, 'abc:a');
+    assertEqual(data().inited, true);
+  });
+
+  test('leere Liste und Teil ohne Funktion werfen', () => {
+    assertThrows(() => makeModule({ view: [] }), /createModule\(view-test\): view must not be an empty list$/);
+    assertThrows(() => makeModule({ view: [() => ({}), 1] }), /createModule\(view-test\): view\[1\] must be a function$/);
+  });
+});
+
+suite('createModule: Kollisionen des view-Blocks, auch ohne Tasks', () => {
+  const make = (view, extra = {}) => createModule({
+    config: { id: ID, engine: 'alpine', phase: 'define', templateUrl: new URL(TPL_KEY, document.baseURI).href },
+    Model: DocCmd,
+    view,
+    ...extra,
+  });
+
+  test('Glied mit dem Namen eines Model-Kommandos wirft', () => {
+    assertThrows(() => make(() => ({ addItem() {} })), /createModule\(view-test\): view member addItem collides with model command$/);
+  });
+
+  test('Glied mit dem Namen eines Felds wirft', () => {
+    assertThrows(() => make(() => ({ get title() { return 1; } })), /createModule\(view-test\): view member title collides with field$/);
+  });
+
+  test('Glied mit dem Namen eines Ansichtsfelds wirft', () => {
+    assertThrows(() => make(() => ({ zoom() {} })), /createModule\(view-test\): view member zoom collides with view field$/);
+  });
+
+  test('Glied mit dem Namen eines Viewmodel-Kommandos wirft (statt still zu überschreiben)', () => {
+    assertThrows(() => make(() => ({ rename() {} }), { commands: { rename: command({ run() {} }) } }),
+      /createModule\(view-test\): view member rename collides with viewmodel command$/);
+  });
+
+  test('computed mit dem Namen eines Kommandos wirft', () => {
+    assertThrows(() => make(() => ({ computed: { addItem() { return 1; } } })),
+      /createModule\(view-test\): computed addItem collides with model command$/);
+  });
+
+  test('Kollision in einem späteren Teil nennt den Teil', () => {
+    assertThrows(() => make([() => ({}), () => ({ addItem() {} })]),
+      /createModule\(view-test\): view\[1\] member addItem collides with model command$/);
   });
 });

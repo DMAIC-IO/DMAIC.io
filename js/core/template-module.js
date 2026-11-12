@@ -44,6 +44,17 @@ import { formatNumber } from './number-format.js';
  * @template M, S
  * @typedef {(ctx: ViewContext) => Record<string, any> & ThisType<Record<string, any> & ViewThis<M, S>>} ViewFn
  */
+/**
+ * Die Glieder eines view-Blocks: die Rückgabe der Funktion, bei einer Liste
+ * von Teilen die Schnittmenge ihrer Rückgaben.
+ * @template P
+ * @typedef {P extends (ctx: any) => infer R ? R
+ *   : P extends readonly ((ctx: any) => any)[] ? UnionToIntersection<ReturnType<P[number]>> : never} ViewMembersOf
+ */
+/**
+ * @template U
+ * @typedef {(U extends any ? (x: U) => void : never) extends (x: infer I) => void ? I : never} UnionToIntersection
+ */
 /** Zeilen eines Tabellen-Exports; die erste Zeile ist der Kopf. @typedef {(string|number|null)[][]} ExportRows */
 /**
  * `this` in den Mappern eines `exports`-Blocks: die Komponente wie im
@@ -260,34 +271,86 @@ const RESERVED_MEMBERS = Object.freeze(['model', 'state', 't', 'fieldError', 'mo
 const LIFECYCLE = Object.freeze(['init', 'destroy']);
 
 /**
- * Den view-Block einmal mit einem Probe-Kontext bauen und seine Glieder und
- * `computed` lesen, ohne dass ein Getter läuft. Liest der Block `ctx` außerhalb
- * seiner Glieder, wirft die Probe.
- * @param {string} id @param {(ctx: any) => object} view
- * @param {string[]} [derived] die `derived`-Namen des Models
+ * Die Teile des view-Blocks als Liste: eine Funktion oder eine Liste von Funktionen.
+ * @param {string} id @param {unknown} view
+ * @returns {Function[]}
+ * @throws {Error} leere Liste oder ein Teil, der keine Funktion ist
+ */
+function viewParts(id, view) {
+  if (view === undefined || view === null) return [];
+  if (!Array.isArray(view)) {
+    if (typeof view !== 'function') throw new Error(`createModule(${id}): view must be a function or a list of functions`);
+    return [view];
+  }
+  if (view.length === 0) throw new Error(`createModule(${id}): view must not be an empty list`);
+  view.forEach((part, i) => {
+    if (typeof part !== 'function') throw new Error(`createModule(${id}): view[${i}] must be a function`);
+  });
+  return view;
+}
+
+/**
+ * Den view-Block einmal mit einem Probe-Kontext bauen, Teil für Teil, und
+ * seine Glieder und `computed` lesen, ohne dass ein Getter läuft. Liest ein
+ * Teil `ctx` außerhalb seiner Glieder, wirft die Probe. Jeder Name gehört
+ * genau einer Herkunft: Feld, Ansichtsfeld, Kommando, `derived`, reserviertes
+ * Glied oder ein Teil des Blocks; `init` und `destroy` darf jeder Teil haben.
+ * @param {string} id @param {Function[]} views die Teile (`viewParts`)
+ * @param {{ derived?: string[], fields?: string[], viewFields?: string[], modelCommands?: string[], vmCommands?: string[] }} [names]
  * @returns {{ members: string[], computed: Record<string, Function> }}
  * @throws {Error} reservierter Name, `computed` ohne Funktion, Kollision, Zugriff auf ctx
  */
-function computedDefsOf(id, view, derived = []) {
+function computedDefsOf(id, views, names = {}) {
+  const { derived = [], fields = [], viewFields = [], modelCommands = [], vmCommands = [] } = names;
   const probe = new Proxy({}, {
     get: (_t, prop) => { throw new Error(`createModule(${id}): view(ctx) reads ctx.${String(prop)} while the module is created — read ctx only inside members`); },
   });
-  const block = view(probe);
-  for (const name of Object.keys(block)) {
-    if (RESERVED_MEMBERS.includes(name)) throw new Error(`createModule(${id}): view member ${name} is reserved`);
-    if (name !== 'computed' && derived.includes(name)) throw new Error(`createModule(${id}): view member ${name} collides with derived`);
-  }
-  const desc = Object.getOwnPropertyDescriptor(block, 'computed');
+  /** @type {Map<string, string>} Name → Herkunft */
+  const taken = new Map([
+    ...fields.map((n) => [n, 'field']),
+    ...viewFields.map((n) => [n, 'view field']),
+    ...modelCommands.map((n) => [n, 'model command']),
+    ...vmCommands.map((n) => [n, 'viewmodel command']),
+  ]);
+  /** @type {Map<string, string>} Name → Teil des Blocks, der ihn trägt */
+  const own = new Map();
   /** @type {Record<string, Function>} */
-  const defs = desc ? (desc.value ?? {}) : {};
-  for (const [name, fn] of Object.entries(defs)) {
-    if (typeof fn !== 'function') throw new Error(`createModule(${id}): computed ${name} must be a function`);
-    if (derived.includes(name)) throw new Error(`createModule(${id}): computed ${name} collides with derived`);
-    if (Object.hasOwn(block, name) || RESERVED_MEMBERS.includes(name) || LIFECYCLE.includes(name)) {
-      throw new Error(`createModule(${id}): computed ${name} collides with a member of the view block`);
+  const defs = {};
+  /** @param {string} msg @returns {never} */
+  const fail = (msg) => { throw new Error(`createModule(${id}): ${msg}`); };
+  views.forEach((view, i) => {
+    // Im Text der Teil, aus dem der Name stammt: `view[1] member x`; ein einzelner Block wie bisher.
+    const member = views.length > 1 ? `view[${i}] member` : 'view member';
+    const computed = views.length > 1 ? `view[${i}] computed` : 'computed';
+    const block = view(probe);
+    if (block === null || typeof block !== 'object') fail(`${views.length > 1 ? `view[${i}]` : 'view'} must return an object`);
+    const memberNames = Object.keys(block).filter((n) => n !== 'computed' && !LIFECYCLE.includes(n));
+    for (const name of memberNames) {
+      if (RESERVED_MEMBERS.includes(name)) fail(`${member} ${name} is reserved`);
+      if (derived.includes(name)) fail(`${member} ${name} collides with derived`);
+      if (taken.has(name)) fail(`${member} ${name} collides with ${taken.get(name)}`);
+      if (own.has(name)) fail(`${member} ${name} collides with ${own.get(name)}`);
     }
-  }
-  return { members: Object.keys(block).filter((n) => n !== 'computed'), computed: defs };
+    const desc = Object.getOwnPropertyDescriptor(block, 'computed');
+    /** @type {Record<string, Function>} */
+    const partDefs = desc ? (desc.value ?? {}) : {};
+    for (const [name, fn] of Object.entries(partDefs)) {
+      if (typeof fn !== 'function') fail(`${computed} ${name} must be a function`);
+      if (derived.includes(name)) fail(`${computed} ${name} collides with derived`);
+      if (Object.hasOwn(block, name) || RESERVED_MEMBERS.includes(name) || LIFECYCLE.includes(name)) {
+        fail(`${computed} ${name} collides with a member of the view block`);
+      }
+      const origin = taken.get(name);
+      if (origin === 'field' || origin === 'view field') fail(`field ${name} collides with computed`);
+      if (origin) fail(`${computed} ${name} collides with ${origin}`);
+      if (own.has(name)) fail(`${computed} ${name} collides with ${own.get(name)}`);
+    }
+    for (const name of memberNames) own.set(name, member);
+    for (const name of Object.keys(partDefs)) own.set(name, computed);
+    Object.assign(defs, partDefs);
+  });
+  const members = [...own].filter(([name]) => !Object.hasOwn(defs, name)).map(([name]) => name);
+  return { members, computed: defs };
 }
 
 /**
@@ -311,8 +374,10 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
 // id/version/icon/phase/allowedPhases; Template unter resources/view.html;
 // immer Alpine. Ohne descriptor gilt die alte Form (alles in config).
 // base.view(ctx) — neue Form statt base.data(module, t): liefert Getter und
-// Handler; `this` ist die Komponente mit model, state, t. base.State — UI-State
-// aus defineState, nur zusammen mit view.
+// Handler; `this` ist die Komponente mit model, state, t. Auch eine Liste von
+// Teilen `[a, b]`: Glieder und computed werden zusammengeführt, ein Name darf
+// nur einmal vorkommen; init läuft je Teil in Reihenfolge, destroy umgekehrt.
+// base.State — UI-State aus defineState, nur zusammen mit view.
 // Model.schema.derived — Ableitungen des Models, im Viewmodel als Zellen `this.<name>`, in read()
 // als Lesefelder; derivedBulk sind ihre Massenfelder. Ohne Mount: loadDetached/readDetached.
 // computed im view-Block sind Ansichtshilfen und stehen nicht in read().
@@ -323,10 +388,10 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
 // x-command-form mit data-form; Vorgabe {}.
 /**
  * Ein Modul aus Model, Viewmodel und Template bauen.
- * @template V
+ * @template {((ctx: any) => any) | ((ctx: any) => any)[]} P
  * @template [T={}]
- * @param {{ view?: (ctx: any) => V, asyncTasks?: T } & Record<string, any>} base
- * @returns {Record<string, any> & { readonly __view?: V, readonly __asyncTasks?: T }}
+ * @param {{ view?: P, asyncTasks?: T } & Record<string, any>} base
+ * @returns {Record<string, any> & { readonly __view?: ViewMembersOf<P>, readonly __asyncTasks?: T }}
  */
 export function createModule(base) {
   const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, fromExample, createDefault, gestures = [], forms = {}, exports: exportsDef, asyncTasks: taskDefs = {} } = base;
@@ -338,6 +403,7 @@ export function createModule(base) {
     }
   }
   const id = descriptor ? descriptor.id : config.id;
+  const views = viewParts(id, view);
   if (data && view) throw new Error(`createModule(${id}): data and view are mutually exclusive`);
   if (UiState && !view) throw new Error(`createModule(${id}): State requires view`);
   if (Object.hasOwn(base, 'readComputed')) throw new Error(`createModule(${id}): readComputed is gone — computed is not readable`);
@@ -348,8 +414,6 @@ export function createModule(base) {
   const derivedDefs = schema?.derived ?? {};
   const derivedList = Object.keys(derivedDefs);
   const derivedBulk = [...(schema?.derivedBulk ?? [])];
-  const probed = view ? computedDefsOf(id, view, derivedList) : { members: [], computed: {} };
-  const computedNames = Object.keys(probed.computed);
   if (fromExample !== undefined && typeof fromExample !== 'function') throw new Error(`createModule(${id}): fromExample must be a function`);
   if (fromExample && beforeLoadExample) throw new Error(`createModule(${id}): fromExample and beforeLoadExample are exclusive`);
   if (exportsDef !== undefined) checkExports(id, exportsDef, Boolean(view));
@@ -371,6 +435,16 @@ export function createModule(base) {
   if (!schema && Object.keys(vmCommands).length > 0) {
     throw new Error(`createModule ${id}: commands need a defineModel Model`);
   }
+  // Kollisionen des view-Blocks gelten immer, nicht erst mit Tasks: ein Glied
+  // überschriebe sonst still ein gleichnamiges Viewmodel-Kommando.
+  const probed = computedDefsOf(id, views, {
+    derived: derivedList,
+    fields: Object.keys(schema?.fields ?? {}),
+    viewFields: Object.keys(schema?.view ?? {}),
+    modelCommands: Object.keys(schema?.commands ?? {}),
+    vmCommands: Object.keys(vmCommands),
+  });
+  const computedNames = Object.keys(probed.computed);
   if (schema) {
     const fieldNames = [...Object.keys(schema.fields), ...Object.keys(schema.view)];
     checkReserved(id, 'field', fieldNames);
@@ -382,7 +456,6 @@ export function createModule(base) {
       if (derivedList.includes(name)) throw new Error(`createModule(${id}): command ${name} collides with derived`);
     }
     for (const name of fieldNames) {
-      if (computedNames.includes(name)) throw new Error(`createModule(${id}): field ${name} collides with computed`);
       const base = name.endsWith('Columns') ? name.slice(0, -'Columns'.length) : null;
       if (base !== null && derivedBulk.includes(base)) {
         throw new Error(`createModule(${id}): field ${name} collides with derivedBulk ${base}`);
@@ -519,9 +592,13 @@ export function createModule(base) {
       let dataResult;
       let computedDefs = null;
       const worksheetData = view || derivedList.length > 0 ? createWorksheetData(context.stateManager) : null;
+      /** @type {Function[]} */
+      const partInits = [];
+      /** @type {Function[]} */
+      const partDestroys = [];
       if (view) {
         // Neue Form: kein `module`, nur die Dienste und Kennungen.
-        dataResult = view({
+        const viewCtx = {
           context,
           notify: (...args) => context.notify(...args),
           dialog: context.dialog,
@@ -533,14 +610,25 @@ export function createModule(base) {
           instances: context.instances,
           cssVars: (map) => readCssVars(container.querySelector('[x-data]'), map),
           openDialog: (ref, opts) => openDialogSafely(Alpine, container.querySelector('[x-data]'), ref, opts),
-        });
-        // `computed` ist kein Glied, sondern die Liste der Ableitungen — vor
-        // dem Kopieren herausnehmen (der Deskriptor, nicht der Wert: Getter
-        // des Blocks dürfen hier noch nicht laufen). Namen und Kollisionen
-        // sind beim Anlegen geprüft (computedDefsOf).
-        const computedDesc = Object.getOwnPropertyDescriptor(dataResult, 'computed');
-        computedDefs = computedDesc ? computedDesc.value : null;
-        if (computedDesc) delete dataResult.computed;
+        };
+        // Teile nacheinander bauen und zusammenführen. `computed` ist kein
+        // Glied, sondern die Liste der Ableitungen — vor dem Kopieren
+        // herausnehmen (der Deskriptor, nicht der Wert: Getter des Blocks
+        // dürfen hier noch nicht laufen); `init`/`destroy` je Teil sammeln.
+        // Namen und Kollisionen sind beim Anlegen geprüft (computedDefsOf).
+        dataResult = {};
+        computedDefs = {};
+        for (const part of views) {
+          const block = part(viewCtx);
+          const computedDesc = Object.getOwnPropertyDescriptor(block, 'computed');
+          if (computedDesc) Object.assign(computedDefs, computedDesc.value ?? {});
+          const init = Object.getOwnPropertyDescriptor(block, 'init')?.value;
+          const destroy = Object.getOwnPropertyDescriptor(block, 'destroy')?.value;
+          if (typeof init === 'function') partInits.push(init);
+          if (typeof destroy === 'function') partDestroys.unshift(destroy);
+          for (const key of ['computed', ...LIFECYCLE]) delete block[key];
+          copyMembers(dataResult, block);
+        }
       } else {
         const dataCtx = new Proxy(dataCtxTarget, {
           get: (t, prop) => t[prop],
@@ -558,8 +646,9 @@ export function createModule(base) {
         // data loading). The object literal below redefines init/destroy after the
         // ...dataResult spread, which would shadow them — so capture and invoke them
         // explicitly. (Mirrors the legacy engine, whose component init ran the data-fn init.)
-        const dataInit = dataResult.init;
-        const dataDestroy = dataResult.destroy;
+        // In der neuen Form: init je Teil in Reihenfolge, destroy umgekehrt.
+        const dataInit = view ? function initParts() { for (const fn of partInits) fn.call(this); } : dataResult.init;
+        const dataDestroy = view ? function destroyParts() { for (const fn of partDestroys) fn.call(this); } : dataResult.destroy;
 
         Alpine.data(uniqueName, () => {
           // Nach `setState` steht das eben geladene Model bereit: nicht erneut laden.

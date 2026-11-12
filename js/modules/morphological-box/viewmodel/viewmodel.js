@@ -186,17 +186,17 @@ export default createModule({
         this.$nextTick(() => { /** @type {HTMLElement|null} */ (this.$root.querySelector(selector))?.focus(); });
       },
       /** Parameter anhängen und seinen Namen fokussieren. */
-      addParameter() {
+      addParameterAndFocus() {
         const id = this.model.addParameter({});
         this.focusLater(`[data-parameter-name="${id}"]`);
       },
       /** @param {string} parameterId Ausprägung anhängen und ihre Bezeichnung fokussieren */
-      addOption(parameterId) {
+      addOptionAndFocus(parameterId) {
         const id = this.model.addOption({ parameterId });
         this.focusLater(`[data-option-label="${id}"]`);
       },
       /** Konzept anhängen (wird aktiv) und seinen Namen fokussieren. */
-      addConcept() {
+      addConceptAndFocus() {
         const id = this.model.addConcept({});
         this.focusLater(`[data-concept-name="${id}"]`);
       },

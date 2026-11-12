@@ -3,9 +3,13 @@
  *
  * Statische Lesung des `view`-Blocks von `createModule`/`createTile`: das
  * Objektliteral der Fabrik, der Block selbst, das zurückgegebene Objekt und
- * die Namen darin. Genutzt von module-gates.mjs, widget-gates.mjs und
- * agent-data.mjs; hängt von keinem von ihnen ab.
+ * die Namen darin. Ein view-Block aus Teilen (`view: [a, b]`) liefert die
+ * Glieder aller Teile; ein Bezeichner wird in der Datei selbst oder über ihren
+ * relativen Import aufgelöst (dafür der Pfad der Datei). Genutzt von
+ * module-gates.mjs und widget-gates.mjs; hängt von keinem von ihnen ab.
  */
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 import ts from 'typescript';
 
 /**
@@ -55,7 +59,7 @@ export function viewReturnObject(view) {
     if (init && ts.isObjectLiteralExpression(init)) return init;
     fn = init;
   }
-  if (!fn || !(ts.isMethodDeclaration(fn) || ts.isArrowFunction(fn) || ts.isFunctionExpression(fn))) return null;
+  if (!fn || !(ts.isMethodDeclaration(fn) || ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) || ts.isFunctionDeclaration(fn))) return null;
   if (ts.isArrowFunction(fn) && !ts.isBlock(fn.body)) {
     const body = unwrap(fn.body);
     return ts.isObjectLiteralExpression(body) ? body : null;
@@ -81,54 +85,140 @@ export function viewReturnObject(view) {
   return direct ?? nested;
 }
 
+const unwrapExpr = (e) => {
+  while (e && (ts.isParenthesizedExpression(e) || ts.isAsExpression(e) || ts.isSatisfiesExpression?.(e))) e = e.expression;
+  return e;
+};
+
 /**
- * Die Namen des view-Blocks nach Herkunft, gelesen am zurückgegebenen Objekt:
- * Getter, `computed`-Schlüssel und Datenglieder (Eigenschaften und Kurzschreibweise
- * mit Bezeichner-Schlüssel, ausgenommen `computed`).
+ * Die Funktion hinter einem Bezeichner der Datei: Funktionsdeklaration oder
+ * `const name = (ctx) => …` auf oberster Ebene, bei `export` auch so.
+ * @param {import('typescript').SourceFile} sf @param {string} name
+ * @returns {import('typescript').Node|null}
+ */
+function localFunction(sf, name) {
+  for (const st of sf.statements) {
+    if (ts.isFunctionDeclaration(st) && st.name?.text === name) return st;
+    if (ts.isVariableStatement(st)) {
+      for (const d of st.declarationList.declarations) {
+        if (ts.isIdentifier(d.name) && d.name.text === name && d.initializer) return unwrapExpr(d.initializer);
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Die Funktion hinter einem Bezeichner: lokal oder über einen relativen Import
+ * (`import { a as b } from './a.js'`) die exportierte Funktion der Zieldatei.
+ * @param {import('typescript').SourceFile} sf @param {string} name @param {string|undefined} file Pfad von `sf`
+ * @returns {import('typescript').Node|null}
+ */
+function resolvePart(sf, name, file) {
+  const local = localFunction(sf, name);
+  if (local) return local;
+  if (!file) return null;
+  for (const st of sf.statements) {
+    if (!ts.isImportDeclaration(st) || !ts.isStringLiteral(st.moduleSpecifier)) continue;
+    const spec = st.moduleSpecifier.text;
+    if (!spec.startsWith('.')) continue;
+    const named = st.importClause?.namedBindings;
+    if (!named || !ts.isNamedImports(named)) continue;
+    const el = named.elements.find((e) => e.name.text === name);
+    if (!el) continue;
+    const target = resolve(dirname(file), spec);
+    if (!existsSync(target)) return null;
+    const tsf = ts.createSourceFile(target, readFileSync(target, 'utf8'), ts.ScriptTarget.Latest, true);
+    return localFunction(tsf, (el.propertyName ?? el.name).text);
+  }
+  return null;
+}
+
+/**
+ * Die Funktionen der Teile des view-Blocks: der Block selbst oder, bei
+ * `view: [a, (ctx) => ({ … })]`, jedes Element der Liste. Bezeichner werden
+ * in der Datei oder über den Import aufgelöst; unauflösbare fallen weg.
  * @param {string} text Quelltext von viewmodel.js oder einer Kachel
+ * @param {string} [file] Pfad der Datei, für Importe
+ * @returns {import('typescript').Node[]}
+ */
+export function viewPartNodes(text, file) {
+  const sf = ts.createSourceFile(file ?? 'viewmodel.js', text, ts.ScriptTarget.Latest, true);
+  const arg = factoryArgument(sf);
+  const view = arg?.properties.find((p) => (ts.isMethodDeclaration(p) || ts.isPropertyAssignment(p)) && p.name && ts.isIdentifier(p.name) && p.name.text === 'view');
+  if (!view) return [];
+  const init = ts.isPropertyAssignment(view) ? unwrapExpr(view.initializer) : null;
+  if (init && ts.isArrayLiteralExpression(init)) {
+    return init.elements.map((el) => {
+      const e = unwrapExpr(el);
+      return ts.isIdentifier(e) ? resolvePart(sf, e.text, file) : e;
+    }).filter(Boolean);
+  }
+  if (init && ts.isIdentifier(init)) {
+    const fn = resolvePart(sf, init.text, file);
+    return fn ? [fn] : [];
+  }
+  return [view];
+}
+
+/**
+ * Die Objektliterale, die die Teile des view-Blocks liefern.
+ * @param {string} text @param {string} [file]
+ * @returns {import('typescript').ObjectLiteralExpression[]}
+ */
+function viewReturnObjects(text, file) {
+  return viewPartNodes(text, file).map(viewReturnObject).filter(Boolean);
+}
+
+/**
+ * Die Namen des view-Blocks nach Herkunft, gelesen am zurückgegebenen Objekt
+ * jedes Teils: Getter, `computed`-Schlüssel und Datenglieder (Eigenschaften
+ * und Kurzschreibweise mit Bezeichner-Schlüssel, ausgenommen `computed`).
+ * @param {string} text Quelltext von viewmodel.js oder einer Kachel
+ * @param {string} [file] Pfad der Datei, für Teile aus Importen
  * @returns {{ getters: string[], computed: string[], data: string[] }}
  */
-export function viewNamesDetailOf(text) {
+export function viewNamesDetailOf(text, file) {
   const getters = [];
   const computed = [];
   const data = [];
-  const view = findViewBlock(text);
-  const top = view ? viewReturnObject(view) : null;
-  for (const p of top?.properties ?? []) {
-    if (!p.name || !ts.isIdentifier(p.name)) continue;
-    const name = p.name.text;
-    if (ts.isGetAccessorDeclaration(p)) getters.push(name);
-    else if (name === 'computed' && ts.isPropertyAssignment(p) && ts.isObjectLiteralExpression(p.initializer)) {
-      for (const c of p.initializer.properties) if (c.name && ts.isIdentifier(c.name)) computed.push(c.name.text);
-    } else if (name !== 'computed' && (ts.isPropertyAssignment(p) || ts.isShorthandPropertyAssignment(p))) data.push(name);
+  for (const top of viewReturnObjects(text, file)) {
+    for (const p of top.properties) {
+      if (!p.name || !ts.isIdentifier(p.name)) continue;
+      const name = p.name.text;
+      if (ts.isGetAccessorDeclaration(p)) getters.push(name);
+      else if (name === 'computed' && ts.isPropertyAssignment(p) && ts.isObjectLiteralExpression(p.initializer)) {
+        for (const c of p.initializer.properties) if (c.name && ts.isIdentifier(c.name)) computed.push(c.name.text);
+      } else if (name !== 'computed' && (ts.isPropertyAssignment(p) || ts.isShorthandPropertyAssignment(p))) data.push(name);
+    }
   }
   return { getters, computed, data };
 }
 
 /**
- * Die Schlüssel des obersten `computed:`-Objekts im view-Block, statisch gelesen wie zur Laufzeit.
- * @param {string} text Quelltext von viewmodel.js
+ * Die Schlüssel der obersten `computed:`-Objekte im view-Block, statisch gelesen wie zur Laufzeit.
+ * @param {string} text Quelltext von viewmodel.js @param {string} [file] Pfad der Datei
  * @returns {string[]}
  */
-export function computedNamesOf(text) {
-  return viewNamesDetailOf(text).computed;
+export function computedNamesOf(text, file) {
+  return viewNamesDetailOf(text, file).computed;
 }
 
-/** Alle Namen, die ein Template aus dem view-Block lesen darf. @param {string} text @returns {Set<string>} */
-export function viewNamesOf(text) {
-  const { getters, computed, data } = viewNamesDetailOf(text);
+/** Alle Namen, die ein Template aus dem view-Block lesen darf. @param {string} text @param {string} [file] @returns {Set<string>} */
+export function viewNamesOf(text, file) {
+  const { getters, computed, data } = viewNamesDetailOf(text, file);
   return new Set([...getters, ...computed, ...data]);
 }
 
 /**
  * Alle Glieder des view-Blocks, auch Methoden (für Bezüge, die eine Methode nennen).
- * @param {string} text Quelltext von viewmodel.js
+ * @param {string} text Quelltext von viewmodel.js @param {string} [file] Pfad der Datei
  * @returns {Set<string>}
  */
-export function viewMemberNamesOf(text) {
-  const view = findViewBlock(text);
-  const top = view ? viewReturnObject(view) : null;
-  const out = new Set(viewNamesOf(text));
-  for (const p of top?.properties ?? []) if (p.name && ts.isIdentifier(p.name)) out.add(p.name.text);
+export function viewMemberNamesOf(text, file) {
+  const out = new Set(viewNamesOf(text, file));
+  for (const top of viewReturnObjects(text, file)) {
+    for (const p of top.properties) if (p.name && ts.isIdentifier(p.name)) out.add(p.name.text);
+  }
   return out;
 }

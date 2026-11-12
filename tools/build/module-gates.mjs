@@ -19,7 +19,7 @@ import { parsePath, VERSION, MIGRATION_KEY } from '../../js/core/model.js';
 import { parseFieldPath, keyFieldsOf } from '../../js/core/field-path.js';
 import { loadModelSchema, loadSettingsSchema, loadFormSchemas, loadStateSchema } from './model-types.mjs';
 import { checkWidgetBindings, checkAlgoLinkLiterals, loadAlgoIds, loadWidgetSchemas } from './widget-gates.mjs';
-import { factoryArgument, findViewBlock, viewNamesDetailOf, viewNamesOf, viewMemberNamesOf, computedNamesOf } from './view-names.mjs';
+import { factoryArgument, findViewBlock, viewPartNodes, viewNamesDetailOf, viewNamesOf, viewMemberNamesOf, computedNamesOf } from './view-names.mjs';
 export { viewNamesDetailOf, viewNamesOf, computedNamesOf };
 import { BOOKS } from '../../js/core/references-books.js';
 import { readExampleOwners } from './example-catalog.mjs';
@@ -834,11 +834,13 @@ const VIEW_FORBIDDEN = ['stateManager', 'getModuleState'];
 /**
  * Gate Lesezugriff: im view-Block des Viewmodels und der Kachel (auch in `computed`) kein `stateManager`
  * und kein `getModuleState` — Arbeitsblätter nur über `ctx.data`, sonst
- * fehlt die Abhängigkeit und das Ergebnis veraltet.
+ * fehlt die Abhängigkeit und das Ergebnis veraltet. Ein view-Block aus
+ * Teilen wird Teil für Teil geprüft, auch Teile aus anderen Dateien des Moduls.
  * @param {{ path: string, text: string }[]} files
+ * @param {string} [base] Modulordner, um Teile aus Importen zu lesen
  * @returns {string[]}
  */
-export function checkViewReads(files) {
+export function checkViewReads(files, base) {
   const out = [];
   for (const { path, text } of files) {
     if (!path.startsWith('viewmodel/') && !path.startsWith('tile/')) continue;
@@ -854,8 +856,10 @@ export function checkViewReads(files) {
       }
     };
     const view = findViewBlock(text);
-    if (view) scan(view, 'im view-Block');
-    else {
+    if (view) {
+      const parts = viewPartNodes(text, base ? join(base, path) : undefined);
+      for (const part of parts.length > 0 ? parts : [view]) scan(part, 'im view-Block');
+    } else {
       const sf = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true);
       let called = null;
       const find = (n) => {
@@ -1480,17 +1484,19 @@ export function checkHelpFiles(base, refIds) {
  * view-Block ihrer Kachel. Eine Kachel hat keinen `state`; jeder Pfad `state.…`
  * in einer Kachel-Vorlage ist ein Befund.
  * @param {{ path: string, text: string }[]} templates
- * @param {{ widgets: Map<string, any>, schema: object, stateSchema: object|null, viewNames: Set<string>, tileText: (p: string) => string, algoIds?: Set<string> }} ctx
+ * @param {{ widgets: Map<string, any>, schema: object, stateSchema: object|null, viewNames: Set<string>, tileText: (p: string) => string, tileFile?: (p: string) => string, algoIds?: Set<string> }} ctx
+ *   `tileFile`: Pfad einer Moduldatei, für view-Teile aus Importen
  * @returns {string[]}
  */
-export function checkWidgetTemplates(templates, { widgets, schema, stateSchema, viewNames, tileText, algoIds }) {
+export function checkWidgetTemplates(templates, { widgets, schema, stateSchema, viewNames, tileText, tileFile, algoIds }) {
   const out = checkWidgetBindings(templates.filter((f) => !/^resources\/tile(\.|$)/.test(f.path)), { widgets, schema, stateSchema, viewNames });
   if (algoIds) out.push(...checkAlgoLinkLiterals(templates, algoIds));
   for (const f of templates) {
     const m = /^resources\/tile(?:\.([a-z0-9-]+))?\.html$/.exec(f.path);
     if (!m) continue;
     for (const s of f.text.matchAll(/=\s*"\s*(state(?:\.[\w$]+)+)/g)) out.push(`tile: ${f.path}: ${s[1]} — Kacheln haben keinen state`);
-    out.push(...checkWidgetBindings([f], { widgets, schema, stateSchema: null, viewNames: viewNamesOf(tileText(`tile/${m[1] ?? 'tile'}.js`)) })
+    const tileJs = `tile/${m[1] ?? 'tile'}.js`;
+    out.push(...checkWidgetBindings([f], { widgets, schema, stateSchema: null, viewNames: viewNamesOf(tileText(tileJs), tileFile?.(tileJs)) })
       .filter((x) => !x.includes('="state.')));
   }
   return out;
@@ -1523,7 +1529,7 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
   }
   out.push(...checkLayers(js));
   out.push(...checkWritePath(js));
-  out.push(...checkViewReads(js));
+  out.push(...checkViewReads(js, base));
   out.push(...checkAsyncTaskDecls(js));
   const cssPath = 'resources/style.css';
   out.push(...checkPickerCss(paths.includes(cssPath) ? read(cssPath) : null));
@@ -1577,14 +1583,14 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
       const tileText = (p) => (paths.includes(p) ? readFileSync(join(base, p), 'utf8') : '');
       // Ableitungen des Models sind im Viewmodel Zellen unter ihrem Namen.
       const vmNames = new Set([
-        ...(paths.includes('viewmodel/viewmodel.js') ? viewNamesOf(tileText('viewmodel/viewmodel.js')) : []),
+        ...(paths.includes('viewmodel/viewmodel.js') ? viewNamesOf(tileText('viewmodel/viewmodel.js'), vmFile) : []),
         ...Object.keys(schema?.derived ?? {}),
       ]);
-      out.push(...checkWidgetTemplates(templates, { widgets, schema, stateSchema, viewNames: vmNames, tileText, algoIds: loadAlgoIds(appDir) }));
+      out.push(...checkWidgetTemplates(templates, { widgets, schema, stateSchema, viewNames: vmNames, tileText, tileFile: (p) => join(base, p), algoIds: loadAlgoIds(appDir) }));
       out.push(...checkCommandRefs(templates, schema, formSchemas, existsSync(vmFile) ? readViewmodelCommands(readFileSync(vmFile, 'utf8')) : {}));
       const asyncTasks = existsSync(vmFile) ? readViewmodelAsyncTasks(readFileSync(vmFile, 'utf8')) : {};
       out.push(...checkAsyncTaskRefs(templates, asyncTasks));
-      out.push(...checkFileDropRefs(templates, existsSync(vmFile) ? viewMemberNamesOf(tileText('viewmodel/viewmodel.js')) : []));
+      out.push(...checkFileDropRefs(templates, existsSync(vmFile) ? viewMemberNamesOf(tileText('viewmodel/viewmodel.js'), vmFile) : []));
       const lists = checkListBindings(templates, schema);
       out.push(...lists.findings, ...checkDefaultArgRefs(templates, schema), ...checkChoiceGroups(templates));
       out.push(...checkConfirmKeys(readConfirmKeys(readFileSync(file, 'utf8')), {
@@ -1600,7 +1606,7 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
         en: readJson(join(base, 'resources', 'i18n', 'context-help.en.json')),
       }, existsSync(vmFile) ? readViewmodelCommands(readFileSync(vmFile, 'utf8')) : {}, readStateBindings(templates),
       [...formHelpKeys(readCommandForms(templates), schema, formSchemas), ...lists.helpKeys, ...asyncTaskHelpKeys(asyncTasks)],
-      existsSync(vmFile) ? computedNamesOf(readFileSync(vmFile, 'utf8')) : []));
+      existsSync(vmFile) ? computedNamesOf(readFileSync(vmFile, 'utf8'), vmFile) : []));
       if (existsSync(vmFile)) {
         for (const [name, c] of Object.entries(readViewmodelCommands(readFileSync(vmFile, 'utf8')))) {
           if (c.asyncRun) out.push(`viewmodel: viewmodel/viewmodel.js: command ${name}: async run — use asyncTask`);

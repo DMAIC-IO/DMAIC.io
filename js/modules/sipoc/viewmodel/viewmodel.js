@@ -30,7 +30,7 @@ export default createModule({
   view() {
     return {
       /** Spalten in Anzeigereihenfolge. */
-      get columns() { return COLUMNS; },
+      get columnDefs() { return COLUMNS; },
 
       /**
        * Ansichtsklasse für die Einfügemarke der Geste.

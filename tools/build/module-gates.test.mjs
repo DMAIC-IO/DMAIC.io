@@ -1177,6 +1177,14 @@ test('x-chart ist verboten', () => {
   assert.deepEqual(checkChartBindings([{ path: 'resources/tile.html', text: '<div x-widget="control-chart" x-widget-config="chart"></div>' }]), []);
 });
 
+test('checkViewReads: view-Teile aus importierten Dateien des Moduls', () => {
+  const base = appWith({
+    'viewmodel/causes.js': 'export function causesView(ctx) { return { get x() { return ctx.stateManager.get("a"); } }; }\n',
+  });
+  const vm = { path: 'viewmodel/viewmodel.js', text: "import { causesView } from './causes.js';\nexport default createModule({ view: [causesView, (ctx) => ({ y: 1 })] });\n" };
+  assert.deepEqual(checkViewReads([vm], base), ['view: viewmodel/viewmodel.js: stateManager im view-Block — Arbeitsblätter über ctx.data lesen']);
+});
+
 test('checkViewReads: auch tile/*.js', () => {
   const tile = { path: 'tile/tile.js', text: 'export default createTile({ view(ctx) { return { get x() { return ctx.stateManager.get("a"); } }; } });' };
   assert.deepEqual(checkViewReads([tile]), ['view: tile/tile.js: stateManager im view-Block — Arbeitsblätter über ctx.data lesen']);

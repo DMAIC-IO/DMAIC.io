@@ -9,6 +9,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { collectModelFiles, loadModelSchema, renderModelTypes, collectStateFiles, loadStateSchema, renderStateTypes, collectFormFiles, loadFormSchemas, renderFormTypes, collectSettingsFiles, loadSettingsSchema, renderSettingsTypes, renderWidgetProps, renderBindingCheck } from './model-types.mjs';
 import { defineWidget, list, text, number } from '../../js/core/model.js';
+import { typecheck } from './typecheck.mjs';
 
 const MODEL_URL = pathToFileURL(join(import.meta.dirname, '..', '..', 'js', 'core', 'model.js')).href;
 
@@ -249,4 +250,33 @@ test('renderBindingCheck: eine Zuweisung je Bindung, computed als Aufruf', () =>
   ] });
   assert.match(out, /\/\*\* @type \{WidgetProps\['stats-table'\]\['rows'\]\} \*\/ export const b0 = vm\.computed\.stats\(\); \/\/ resources\/view\.html:12 x-widget-rows/);
   assert.match(out, /export const b1 = vm\.histogram;/);
+});
+
+/** Temporärer App-Baum: Modul mit `view: [a, b]`, b liefert den Getter `rows`, Prüfdatei der Bindung `rows`. */
+function partsApp(getter) {
+  const tm = join(import.meta.dirname, '..', '..', 'js', 'core', 'template-module.js');
+  const w = defineWidget({ name: 'w', props: { rows: list(text()) } });
+  const check = renderBindingCheck({ vmImport: './viewmodel.js', bindings: [
+    { widget: 'w', prop: 'rows', path: 'rows', computed: false, where: 'resources/view.html:1 x-widget-rows' },
+    { widget: 'w', prop: 'rows', path: 'names', computed: false, where: 'resources/view.html:2 x-widget-rows' },
+  ] });
+  return appWith({
+    'js/widgets/widget-props.types.js': renderWidgetProps(new Map([['w', w]])),
+    'js/modules/m/viewmodel/viewmodel.js': `import { createModule } from '${tm}';
+/** @typedef {{ title: string }} M */
+/** @type {import('${tm}').ViewFn<M, {}>} */
+const a = () => ({ get names() { return [this.model.title]; } });
+export default createModule({ view: [a, () => ({ get rows() { ${getter} } })] });
+`,
+    'js/modules/m/viewmodel/view.bindings.js': check,
+  });
+}
+
+test('Parametertyp ViewFn | ViewFn[]: Glieder aller Teile im Viewmodel-Typ', () => {
+  const ok = partsApp("return ['x'];");
+  assert.deepEqual(typecheck([join(ok, 'js/modules/m/viewmodel/viewmodel.js'), join(ok, 'js/modules/m/viewmodel/view.bindings.js')]), []);
+  const bad = partsApp("return 'x';");
+  const findings = typecheck([join(bad, 'js/modules/m/viewmodel/view.bindings.js')]);
+  assert.equal(findings.length, 1, findings.join('\n'));
+  assert.match(findings[0], /view\.bindings\.js\(4,\d+\): TS2322: .*Type 'string' is not assignable to type 'string\[\]'/);
 });

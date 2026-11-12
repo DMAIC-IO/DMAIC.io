@@ -2,9 +2,9 @@
  * D.Mike — Flowchart: Glieder für den Unterschritt-Teil (substeps-view.js)
  *
  * Die Methoden, die `substeps.view.part.html` im Scope erwartet, einmal für
- * alle Flowchart-Module. Das Modul breitet sie in seinem view-Block aus:
+ * alle Flowchart-Module — ein Teil des view-Blocks:
  *
- *   view() { return { ...substepsView(), stepNum(i) { … } }; }
+ *   view: [substepsView, (ctx) => ({ stepNum(i) { … } })]
  *
  * `this` ist die Komponente wie in jedem view-Glied: gelesen werden
  * `this.model.expanded` (ids der aufgeklappten Schritte), `this.t`
@@ -13,6 +13,7 @@
  */
 
 /**
+ * @param {unknown} _ctx Kontext des view-Blocks (hier ungenutzt)
  * @returns {{
  *   isExpanded: (id: string) => boolean,
  *   expandArg: (id: string) => 'true'|'false',
@@ -23,7 +24,7 @@
  *   substepItemClass: (step: { id: string, substeps: Array<{ id: string }> }, j: number) => string,
  * }} Glieder für den view-Block
  */
-export function substepsView() {
+export function substepsView(_ctx) {
   return {
     /**
      * Steht der Schritt in `expanded`?
