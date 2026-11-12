@@ -26,6 +26,7 @@ import Pie from '../../js/core/chart/types/pie.js';
 import multiVariChart from '../../js/widgets/multi-vari-chart/schema.js';
 import gageRunChart from '../../js/widgets/gage-run-chart/schema.js';
 import trendChart from '../../js/widgets/trend-chart/schema.js';
+import ganttChart from '../../js/widgets/gantt-chart/schema.js';
 import pieChart from '../../js/widgets/pie-chart/schema.js';
 import { chartWidget } from '../../js/widgets/chart-parts.js';
 
@@ -272,5 +273,17 @@ suite('Diagramm-Widgets: Schemas', () => {
     assertTrue(trendChart.editable.base.includes('hiddenSeries'));
     assertThrows(() => checkValue(trendChart.props.config, 'c', { ...cfg, onToggle: () => {} }), /onToggle/);
     assertThrows(() => checkValue(trendChart.props.config, 'c', { hiddenSeries: [() => 1] }), /hiddenSeries/);
+  });
+
+  test('Gantt: Name, Typ, volle Konfiguration, nichts bearbeitbar außer der Basis, Funktion abgelehnt', () => {
+    assertDeepEqual([ganttChart.name, ganttChart.chartType], ['gantt-chart', 'gantt']);
+    const cfg = {
+      tasks: [{ start: 1, end: 2, label: 'A', status: 'done', color: 'var(--ishikawa-status-done)', responsible: 'x', startDate: '01.01.', endDate: '02.01.' }],
+      xDomain: { minT: 1, maxT: 2 }, ticks: [1, 2], tickLabels: ['a', 'b'], stepDays: 1, now: 1, showToday: true, todayLabel: 'Heute',
+      layout: { labelW: 220, padL: 8, padR: 16, padT: 30, padB: 24, rowH: 26 },
+    };
+    assertDeepEqual(checkValue(ganttChart.props.config, 'c', cfg), cfg);
+    assertThrows(() => checkValue(ganttChart.props.config, 'c', { ...cfg, onToggle: () => {} }), /onToggle/);
+    assertThrows(() => checkValue(ganttChart.props.config, 'c', { tasks: [{ start: 'x', end: 2, label: 'A' }] }), /tasks/);
   });
 });

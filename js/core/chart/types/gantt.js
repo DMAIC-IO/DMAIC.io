@@ -1,20 +1,19 @@
 /**
  * gantt.js — Gantt timeline chart type for the D.Mike chart framework.
  *
- * Behaviour-preserving port of the Ishikawa module's former bespoke
- * `renderGantt()` SVG builder. One horizontal bar per task, laid out on a
+ * One horizontal bar per task, laid out on a
  * TIME x-axis (ms) with a fixed-height row grid; a wide left gutter holds the
  * row labels. Adaptive date ticks across the top, an optional dashed "today"
  * line, and per-bar tooltips (label · responsible / start → end).
  *
- * The whole geometry is precomputed by `computeGanttConfig()` in the ishikawa
- * module (pure, unit-tested) and handed in as config:
+ * The whole geometry is precomputed by the caller and handed in as config
+ * (colours as literals or `var(--…)`, resolved by the type):
  *   {
  *     tasks: [{ start, end, label, status, color, responsible, startDate, endDate }],
  *     xDomain: { minT, maxT },
  *     ticks: number[],        // ms positions
  *     tickLabels: string[],   // preformatted date labels (locale-aware)
- *     stepDays, now, showToday,
+ *     stepDays, now, showToday, todayLabel,
  *     layout: { labelW, padL, padR, padT, padB, rowH },
  *   }
  *
@@ -23,8 +22,7 @@
  * (xScale(minT) ≠ pa.x, xScale(maxT) ≠ pa.x+pa.w) — bars/ticks would shift and
  * compress. `_renderData` therefore draws bars, date ticks and the today line
  * with a LOCAL x scale pinned exactly to the raw `[minT,maxT] → [pa.x,
- * pa.x+pa.w]`, mirroring the legacy `xScale(t) = labelW + padL +
- * ((t-minT)/span) * innerW`. Date tick labels and row labels are drawn by hand
+ * pa.x+pa.w]`, i.e. `xScale(t) = labelW + padL + ((t-minT)/span) * innerW`. Date tick labels and row labels are drawn by hand
  * (like pareto draws its rotated labels) because they sit in the top/left
  * gutters, not on the standard tick bands. The same local mapping is reused by
  * `_findNearby` so the tooltip ring lands on the bar.
@@ -56,7 +54,7 @@ export default class GanttChart extends ChartBase {
       tickLabels: [],
       layout: { labelW: 220, padL: 8, padR: 16, padT: 30, padB: 24, rowH: 26 },
       // Pin the time domain — no auto-padding, so xScale lines up with the
-      // legacy module-owned geometry exactly.
+      // caller-owned geometry exactly.
       xMin: xDomain.minT,
       xMax: xDomain.maxT,
       // Suppress every standard decoration; the gantt draws its own labels,
@@ -123,23 +121,21 @@ export default class GanttChart extends ChartBase {
     const ticks = cfg.ticks || [];
     const tickLabels = cfg.tickLabels || [];
 
-    // ── Local x scale pinned to the RAW time domain (legacy parity) ──
+    // ── Local x scale pinned to the RAW time domain (caller parity) ──
     // The framework's primary xScale is built from generateTicks-NICED bounds,
     // so xScale(minT) ≠ pa.x and xScale(maxT) ≠ pa.x+pa.w — bars and ticks would
-    // be shifted/compressed. Mirror the bespoke `xScale(t) = labelW + padL +
-    // ((t-minT)/span)*innerW` exactly: [minT,maxT] → [pa.x, pa.x+pa.w].
+    // be shifted/compressed. Use `xScale(t) = labelW + padL +
+    // ((t-minT)/span)*innerW`, i.e. [minT,maxT] → [pa.x, pa.x+pa.w].
     const dom = cfg.xDomain || { minT: 0, maxT: 1 };
     const minT = dom.minT;
     const maxT = dom.maxT;
     const span = Math.max(maxT - minT, 86400000);
     const localX = (t) => pa.x + ((t - minT) / span) * pa.w;
 
-    const styles = getComputedStyle(document.documentElement);
-    const get = (p, fb) => styles.getPropertyValue(p).trim() || fb;
-    const borderSecondary = get('--color-border-secondary', '#e8ebef');
-    const textTertiary = get('--color-text-tertiary', '#9aa0a8');
-    const textPrimary = get('--color-text-primary', '#1a1a2e');
-    const accent = get('--color-accent', '#2563eb');
+    const borderSecondary = resolveColor('var(--color-border-secondary)');
+    const textTertiary = resolveColor('var(--color-text-tertiary)');
+    const textPrimary = resolveColor('var(--color-text-primary)');
+    const accent = resolveColor('var(--color-accent)');
 
     const rowsBottom = padT + tasks.length * rowH;
 
@@ -180,7 +176,7 @@ export default class GanttChart extends ChartBase {
       const w = Math.max(2, x2 - x1);
 
       // Row label in the left gutter.
-      svgText(truncate(it.label, 30), {
+      svgText(truncate(String(it.label ?? ''), 30), {
         x: labelW - 8, y: y + barH / 2 + 4,
         'text-anchor': 'end', 'font-size': '11', fill: textPrimary,
         'font-family': FONT_MAIN,
@@ -189,7 +185,7 @@ export default class GanttChart extends ChartBase {
       // Bar.
       svgEl('rect', {
         x: x1, y, width: w, height: barH,
-        rx: 3, ry: 3, fill: resolveColor(it.color || '#94a3b8'), opacity: 0.85,
+        rx: 3, ry: 3, fill: resolveColor(it.color || 'var(--color-text-tertiary)'), opacity: 0.85,
       }, plotGroup);
 
       barPositions.push({ x: x1 + w / 2, y: y + barH / 2 });
@@ -232,10 +228,10 @@ export default class GanttChart extends ChartBase {
     // label + responsible are USER INPUT → DOM textContent escapes them natively.
     const resp = it.responsible ? ` · ${it.responsible}` : '';
     const node = h('div', null,
-      h('b', { style: `color:${resolveColor(it.color)}` }, `${it.label}${resp}`),
+      h('b', { style: `color:${resolveColor(it.color || 'var(--color-text-tertiary)')}` }, `${it.label}${resp}`),
       h('br'),
       `${it.startDate} → ${it.endDate}`,
     );
-    return [{ node, px: pos[best].x, py: pos[best].y, color: resolveColor(it.color) }];
+    return [{ node, px: pos[best].x, py: pos[best].y, color: resolveColor(it.color || 'var(--color-text-tertiary)') }];
   }
 }

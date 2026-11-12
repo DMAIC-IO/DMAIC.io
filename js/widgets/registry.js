@@ -37,6 +37,8 @@ import gageRunChart from './gage-run-chart/schema.js';
 import { mount as mountGageRunChart } from './gage-run-chart/mount.js';
 import trendChart from './trend-chart/schema.js';
 import { mount as mountTrendChart } from './trend-chart/mount.js';
+import ganttChart from './gantt-chart/schema.js';
+import { mount as mountGanttChart } from './gantt-chart/mount.js';
 import pieChart from './pie-chart/schema.js';
 import { mount as mountPieChart } from './pie-chart/mount.js';
 import contourChart from './contour-chart/schema.js';
@@ -66,5 +68,6 @@ export const WIDGETS = Object.freeze({
   'gage-run-chart': { schema: gageRunChart, mount: mountGageRunChart },
   'algo-lab-link': { schema: algoLabLink, mount: mountAlgoLabLink },
   'trend-chart': { schema: trendChart, mount: mountTrendChart },
+  'gantt-chart': { schema: ganttChart, mount: mountGanttChart },
   'pie-chart': { schema: pieChart, mount: mountPieChart },
 });

@@ -247,6 +247,7 @@ suite('Diagramm-Widgets (chart-mount)', () => {
       ['mosaic-chart', 'mosaic', { categories: ['x', 'y'], groups }],
       ['run-chart', 'run-chart', { values: [1, 2, 3], median: 2 }],
       ['pareto-chart', 'pareto', { categories: ['x', 'y'], groups, otherBucket: true }],
+      ['gantt-chart', 'gantt', { tasks: [{ start: 1, end: 2, label: 'A', color: 'var(--ishikawa-status-done)' }], xDomain: { minT: 1, maxT: 2 }, showToday: false }],
       ['multi-vari-chart', 'multi-vari', { panels: [{ panelLevel: '', groups: [{ level: 'a', mean: null, series: [] }] }], seriesLevels: ['s'], refValue: null }],
     ];
     for (const [name, type, cfg] of cases) {

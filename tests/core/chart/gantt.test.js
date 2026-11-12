@@ -238,3 +238,36 @@ suite('Gantt type — tooltip escaping', () => {
     chart.destroy();
   });
 });
+
+suite('Gantt type — Farben, leere Aufgaben, Neuzeichnen', () => {
+  test('bar colour var(--…) resolves to a computed colour; no hex literals in the type', async () => {
+    document.documentElement.style.setProperty('--ishikawa-status-done', 'rgb(1, 2, 3)');
+    const cfg = fixtureConfig();
+    cfg.tasks[0].color = 'var(--ishikawa-status-done)';
+    const { chart, svg } = mount(cfg);
+    const bar = Array.from(svg.querySelectorAll('rect')).find((r) => r.getAttribute('rx') === '3');
+    assertEqual(bar.getAttribute('fill'), 'rgb(1, 2, 3)');
+    chart.destroy();
+    document.documentElement.style.removeProperty('--ishikawa-status-done');
+    const src = await (await fetch(new URL('../../../js/core/chart/types/gantt.js', import.meta.url))).text();
+    assertTrue(!/#[0-9a-fA-F]{3,6}\b/.test(src), 'no hex colour in gantt.js');
+  });
+
+  test('tasks: [] draws no bars and no NaN', () => {
+    const { chart, svg } = mount(fixtureConfig({ tasks: [] }));
+    assertTrue(!svg.outerHTML.includes('NaN'), 'no NaN');
+    assertEqual(Array.from(svg.querySelectorAll('rect')).filter((r) => r.getAttribute('rx') === '3').length, 0);
+    chart.destroy();
+  });
+
+  test('changing only a label redraws the text', () => {
+    const cfg = fixtureConfig();
+    const { chart, svg } = mount(cfg);
+    const tasks = cfg.tasks.map((t, i) => (i === 0 ? { ...t, label: 'Omega' } : t));
+    chart.update({ tasks });
+    const texts = Array.from(chart._svg.querySelectorAll('text')).map((t) => t.textContent);
+    assertTrue(texts.includes('Omega') && !texts.includes('Alpha'), 'label redrawn');
+    assertTrue(!!svg);
+    chart.destroy();
+  });
+});
