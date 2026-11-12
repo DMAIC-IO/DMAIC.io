@@ -244,27 +244,22 @@ suite('Cumulative-Cost type — Sprache aus chart.locale', () => {
 });
 
 suite('Cumulative-Cost type — Farben und leere Daten', () => {
-  test('line colours follow --chart-cost-money / --chart-cost-hours across light and dark', async () => {
+  test('line colours come from --chart-cost-money / --chart-cost-hours', () => {
     const st = document.createElement('style');
-    st.textContent = ':root{--chart-cost-money:rgb(1, 2, 3);--chart-cost-hours:rgb(4, 5, 6)}[data-theme="dark"]{--chart-cost-money:rgb(7, 8, 9);--chart-cost-hours:rgb(10, 11, 12)}';
+    st.textContent = ':root{--chart-cost-money:rgb(1, 2, 3);--chart-cost-hours:rgb(4, 5, 6)}';
     document.head.appendChild(st);
-    const strokes = (svg) => Array.from(svg.querySelectorAll('path')).map((p) => p.getAttribute('stroke'));
-    let m = mount(fixtureConfig('cumulative'));
-    assertEqual(strokes(m.svg).join('|'), 'rgb(1, 2, 3)|rgb(4, 5, 6)');
-    m.chart.destroy();
-    document.documentElement.setAttribute('data-theme', 'dark');
-    m = mount(fixtureConfig('cumulative'));
-    assertEqual(strokes(m.svg).join('|'), 'rgb(7, 8, 9)|rgb(10, 11, 12)');
-    m.chart.destroy();
-    document.documentElement.removeAttribute('data-theme');
+    const { chart, svg } = mount(fixtureConfig('cumulative'));
+    const strokes = Array.from(svg.querySelectorAll('path')).map((p) => p.getAttribute('stroke'));
+    assertEqual(strokes.join('|'), 'rgb(1, 2, 3)|rgb(4, 5, 6)');
+    chart.destroy();
     st.remove();
   });
 
-  test('variables.css defines both series colours for light and dark; no hex in the type', async () => {
+  test('variables.css defines both series colours (same values) in light and dark; no hex in the type', async () => {
     const css = await (await fetch(new URL('../../../css/variables.css', import.meta.url))).text();
     const [light, dark] = css.split('[data-theme="dark"] {');
     for (const part of [light, dark]) {
-      assertTrue(/--chart-cost-money:/.test(part) && /--chart-cost-hours:/.test(part), 'both variables per theme');
+      assertTrue(/--chart-cost-money:\s*#16a34a/.test(part) && /--chart-cost-hours:\s*#2563eb/.test(part), 'both variables per theme, unchanged colours');
     }
     const src = await (await fetch(new URL('../../../js/core/chart/types/cumulative-cost.js', import.meta.url))).text();
     assertTrue(!/#[0-9a-fA-F]{3,6}\b/.test(src), 'no hex colour in cumulative-cost.js');

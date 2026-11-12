@@ -185,7 +185,7 @@ export default class GanttChart extends ChartBase {
       // Bar.
       svgEl('rect', {
         x: x1, y, width: w, height: barH,
-        rx: 3, ry: 3, fill: resolveColor(it.color || 'var(--color-text-tertiary)'), opacity: 0.85,
+        rx: 3, ry: 3, fill: resolveColor(it.color || 'var(--chart-bar-default)'), opacity: 0.85,
       }, plotGroup);
 
       barPositions.push({ x: x1 + w / 2, y: y + barH / 2 });
@@ -228,10 +228,10 @@ export default class GanttChart extends ChartBase {
     // label + responsible are USER INPUT → DOM textContent escapes them natively.
     const resp = it.responsible ? ` · ${it.responsible}` : '';
     const node = h('div', null,
-      h('b', { style: `color:${resolveColor(it.color || 'var(--color-text-tertiary)')}` }, `${it.label}${resp}`),
+      h('b', { style: `color:${resolveColor(it.color || 'var(--chart-bar-default)')}` }, `${it.label}${resp}`),
       h('br'),
       `${it.startDate} → ${it.endDate}`,
     );
-    return [{ node, px: pos[best].x, py: pos[best].y, color: resolveColor(it.color || 'var(--color-text-tertiary)') }];
+    return [{ node, px: pos[best].x, py: pos[best].y, color: resolveColor(it.color || 'var(--chart-bar-default)') }];
   }
 }

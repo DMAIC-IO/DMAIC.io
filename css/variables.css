@@ -300,6 +300,7 @@
   /* Cost chart series (money left axis, hours right axis) */
   --chart-cost-money: #16a34a;
   --chart-cost-hours: #2563eb;
+  --chart-bar-default: #94a3b8;
 }
 
 /* ===== Dark Theme ===== */
@@ -320,8 +321,9 @@
   --color-success-text: #a5d6a7;
   --color-readonly-bg: #3d3200;
   --color-readonly-text: #ffc107;
-  --chart-cost-money: #4ade80;
-  --chart-cost-hours: #60a5fa;
+  --chart-cost-money: #16a34a;
+  --chart-cost-hours: #2563eb;
+  --chart-bar-default: #94a3b8;
 
   /* Column-role palette (dark theme — brighter fg, low-luminance bg). */
   --color-role-continuous-fg:  #60a5fa;  /* blue-400  */

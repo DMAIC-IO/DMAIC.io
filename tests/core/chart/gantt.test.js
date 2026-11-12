@@ -262,12 +262,11 @@ suite('Gantt type — Farben, leere Aufgaben, Neuzeichnen', () => {
 
   test('changing only a label redraws the text', () => {
     const cfg = fixtureConfig();
-    const { chart, svg } = mount(cfg);
-    const tasks = cfg.tasks.map((t, i) => (i === 0 ? { ...t, label: 'Omega' } : t));
-    chart.update({ tasks });
-    const texts = Array.from(chart._svg.querySelectorAll('text')).map((t) => t.textContent);
-    assertTrue(texts.includes('Omega') && !texts.includes('Alpha'), 'label redrawn');
-    assertTrue(!!svg);
+    const { chart, host } = mount(cfg);
+    chart.update({ tasks: cfg.tasks.map((t, i) => (i === 0 ? { ...t, label: 'Omega' } : t)) });
+    const texts = Array.from(host.querySelectorAll('svg text')).map((t) => t.textContent);
+    assertTrue(texts.includes('Omega'), 'new label in the SVG');
+    assertTrue(!texts.includes('Alpha'), 'old label gone');
     chart.destroy();
   });
 });
