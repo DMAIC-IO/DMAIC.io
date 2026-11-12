@@ -121,8 +121,19 @@ export function sourceChoices(phases, moduleId, i18n) {
 }
 
 /**
+ * Title prefix of a tile: the translation of `titlePrefixKey`, else `titlePrefix`.
+ * @param {{titlePrefix?: string, titlePrefixKey?: string}} tile
+ * @param {{t: function}} i18n
+ * @returns {string|undefined}
+ */
+function prefixOf(tile, i18n) {
+  return tile.titlePrefixKey ? i18n.t(tile.titlePrefixKey) : tile.titlePrefix;
+}
+
+/**
  * Default title of a tile bound to `inst` (re-bound base tiles and copies):
- * a fixed `titleKey` wins, else "<titlePrefix> — <label>" or the label.
+ * a fixed `titleKey` wins, else "<titlePrefix> — <label>" or the label;
+ * `titlePrefixKey` (i18n key) replaces a literal `titlePrefix`.
  * @param {object} tile
  * @param {string} moduleId
  * @param {{customName: string}} inst
@@ -132,7 +143,8 @@ export function sourceChoices(phases, moduleId, i18n) {
 function sourceTitle(tile, moduleId, inst, i18n) {
   if (tile.titleKey) return i18n.t(tile.titleKey);
   const label = instanceLabel(inst, moduleId, i18n);
-  return tile.titlePrefix ? `${tile.titlePrefix} — ${label}` : label;
+  const prefix = prefixOf(tile, i18n);
+  return prefix ? `${prefix} — ${label}` : label;
 }
 
 /**
@@ -284,7 +296,7 @@ function defaultEntries(moduleId, tile, ctx) {
     return {
       tileId: `${moduleId}:${inst.instanceId}`,
       instanceId: inst.instanceId,
-      title: tile.titlePrefix ? `${tile.titlePrefix} — ${label}` : label,
+      title: prefixOf(tile, ctx.i18n) ? `${prefixOf(tile, ctx.i18n)} — ${label}` : label,
     };
   });
 }

@@ -56,6 +56,11 @@
   --ishikawa-on-color: #fff;
 }
 
+/* Kachel: der Wurzelknoten trägt nur die Variablen und nimmt am Layout der Kachel nicht teil. */
+.ishikawa-tile {
+  display: contents;
+}
+
 [data-theme="dark"] .ishikawa,
 [data-theme="dark"] .ishikawa-tile,
 [data-theme="dark"] .ishikawa__hyp-pick,

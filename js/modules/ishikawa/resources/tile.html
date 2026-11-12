@@ -1,43 +1,44 @@
-<template x-if="vm.empty">
-  <p class="dashboard-area__empty" x-text="vm.empty"></p>
+<div class="ishikawa-tile">
+<template x-if="empty">
+  <p class="dashboard-area__empty" x-text="t('tileEmpty')"></p>
 </template>
-<template x-if="vm.problem">
-  <div class="dashboard-charter__problem" style="margin-bottom:8px;font-size:var(--font-size-sm);opacity:0.8" x-text="vm.problem"></div>
+<template x-if="problem">
+  <div class="dashboard-charter__problem" style="margin-bottom:8px;font-size:var(--font-size-sm);opacity:0.8" x-text="problem"></div>
 </template>
-<template x-if="!vm.empty">
+<template x-if="!empty">
   <div class="dashboard-fmea__summary">
-    <template x-for="s in vm.summary">
+    <template x-for="s in summary">
       <span><span x-text="s.label"></span><strong x-text="s.value"></strong></span>
     </template>
   </div>
 </template>
-<template x-if="vm.segments.length">
+<template x-if="segments.length">
   <div class="dashboard-fmea__bar">
-    <template x-for="seg in vm.segments">
+    <template x-for="seg in segments">
       <div class="dashboard-fmea__bar-seg" :style="seg.style" :title="seg.title"></div>
     </template>
   </div>
 </template>
-<template x-if="vm.legend">
+<template x-if="legend">
   <div class="dashboard-fmea__legend">
-    <template x-for="l in vm.legend">
+    <template x-for="l in legend">
       <span class="dashboard-fmea__legend-item"><span class="dashboard-fmea__legend-dot" :style="l.dot"></span><span x-text="l.text"></span></span>
     </template>
   </div>
 </template>
-<template x-if="vm.statusLegend">
+<template x-if="statusLegend">
   <div class="dashboard-fmea__legend" style="margin-top:4px">
-    <template x-for="l in vm.statusLegend">
+    <template x-for="l in statusLegend">
       <span class="dashboard-fmea__legend-item"><span class="dashboard-fmea__legend-dot" :style="l.dot"></span><span x-text="l.text"></span></span>
     </template>
   </div>
 </template>
-<template x-if="vm.topLabel">
-  <div class="dashboard-fmea__top-label" x-text="vm.topLabel"></div>
+<template x-if="topLabel">
+  <div class="dashboard-fmea__top-label" x-text="topLabel"></div>
 </template>
-<template x-if="vm.topLabel">
+<template x-if="topLabel">
   <ol class="dashboard-fmea__top-list">
-    <template x-for="t in vm.top">
+    <template x-for="t in top">
       <li class="dashboard-fmea__top-item">
         <span class="dashboard-fmea__top-desc" x-text="t.name"></span>
         <span class="dashboard-fmea__top-rpn" :style="t.style" x-text="t.score"></span>
@@ -45,3 +46,4 @@
     </template>
   </ol>
 </template>
+</div>

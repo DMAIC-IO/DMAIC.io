@@ -153,5 +153,10 @@
     "validParents": "Die übergeordnete Ursache einer Unterursache muss vorhanden sein; die Ursachen dürfen sich nicht im Kreis verweisen.",
     "subRowsWithoutCategory": "Nur Hauptursachen tragen eine Kategorie; Unterursachen haben keine und erben die ihrer Hauptursache.",
     "uniqueItemIds": "Jeder Experte, jeder Snapshot, jedes Experiment, jeder Fakt und jedes Bild braucht eine eigene id; die Bilder beider Galerien teilen sich die ids."
-  }
+  },
+  "tileTitlePrefix": "Ishikawa",
+  "tileEmpty": "Noch keine Hypothesen erfasst.",
+  "tileHypotheses": "Hypothesen",
+  "tileExperts": "Experten",
+  "tileTopScored": "Top-bewertet"
 }

@@ -1,102 +1,91 @@
 /**
- * D.Mike — Ishikawa dashboard tile (tile/tile.js)
+ * D.Mike — Ishikawa-Kachel
  *
- * Loaded by the dashboard via the descriptor's `tile`. Imports nothing of the
- * module; the markup lives in resources/tile.html. Tile contract: the
- * lifecycle in js/pages/dashboard/tile-render.js.
+ * Problemzeile, Zahl der Hypothesen und Experten, Verteilung nach Kategorie
+ * und Status und die am höchsten bewerteten Ursachen. Eine Kachel je Instanz.
+ * Form: createTile (core/template-tile.js); Einstellungen in settings.js,
+ * Markup in resources/tile.html. Kategoriefarben kommen als `--ishikawa-cat-*`
+ * vom Wurzelelement `.ishikawa-tile`.
  */
 
-import { CAT_KEYS } from '../domain/constants.js';
-import { topN, showLegend, distribution } from '../../../ui/tile-kit.js';
+import { createTile } from '../../../core/template-tile.js';
+import { distribution } from '../../../ui/tile-kit.js';
+import descriptor from '../module.js';
+import { State } from '../domain/model.js';
+import { CAT_KEYS, STATUS_KEYS } from '../domain/constants.js';
+import { effCat } from '../domain/tree.js';
+import { paretoItems } from '../domain/scores.js';
+import { Settings } from './settings.js';
 
-/** Farbe je Kategorie wie im Modul (`--ishikawa-cat-*` in resources/style.css). */
-const CAT_COLORS = {
-  man: '#2563eb', machine: '#7c3aed', environment: '#059669',
-  material: '#d97706', measurement: '#dc2626', method: '#0891b2',
-};
-const CATS = CAT_KEYS.map((key) => ({ key, color: CAT_COLORS[key] }));
-
-const STATUS_ORDER = ['open', 'testing', 'confirmed', 'rejected'];
 const STATUS_COLORS = {
   open: 'var(--color-text-tertiary)', testing: 'var(--color-info)',
   confirmed: 'var(--color-success)', rejected: 'var(--color-error)',
 };
 
-export default {
+/** @param {string} key @returns {string} */
+const catColor = (key) => `var(--ishikawa-cat-${key})`;
+
+export default createTile({
+  descriptor,
+  Model: State,
+  Settings,
   size: { defaultW: 3, defaultH: 10, minW: 2, minH: 6 },
-  titlePrefix: 'Ishikawa',
-  settings: {
-    topN: topN(),
-    showLegend: showLegend(),
-  },
+  titlePrefixKey: 'modules.ishikawa.tileTitlePrefix',
 
-  template: 'js/modules/ishikawa/resources/tile.html',
-
-  /**
-   * Problem line, hypothesis/expert counts, category and status legends,
-   * and the hypotheses with the highest mean expert rating.
-   * @param {{state: object, settings: {topN: number, showLegend: boolean}, i18n: object}} args
-   * @returns {object} view model for resources/tile.html
-   */
-  viewModel({ state, settings, i18n }) {
-    const rows    = (state && Array.isArray(state.rows)) ? state.rows : [];
-    const experts = (state && Array.isArray(state.experts)) ? state.experts : [];
-    const problem = (state && state.problem) || '';
-    const catLabels = (state && state.catLabels) || {};
-    const catLabel = (key) => {
-      const c = catLabels[key];
-      return (c && c.trim()) ? c.trim() : i18n.t(`modules.ishikawa.cat.${key}`);
-    };
-
-    if (rows.length === 0) {
-      return { empty: i18n.t('dashboard.ishikawaEmpty'), problem: null, summary: [], segments: [],
-        legend: null, statusLegend: null, topLabel: null, top: [] };
-    }
-
-    const effCat = (r) => {
-      if (r.category) return r.category;
-      if (r.parentId !== null) {
-        const p = rows.find(x => x.id === r.parentId);
-        if (p) return effCat(p);
-      }
-      return '';
-    };
-
-    const catCounts = {};
-    CATS.forEach(c => catCounts[c.key] = 0);
-    rows.forEach(r => { const ec = effCat(r); if (ec && Object.hasOwn(catCounts, ec)) catCounts[ec]++; });
-
-    const statusCounts = { open: 0, testing: 0, confirmed: 0, rejected: 0 };
-    rows.forEach(r => { const s = r.status || 'open'; if (Object.hasOwn(statusCounts, s)) statusCounts[s]++; });
-
-    const scored = rows
-      .filter(r => experts.length && experts.map(e => r.ratings?.[e.id]).filter(x => x != null && x !== '').length > 0)
-      .map(r => {
-        const vals = experts.map(e => r.ratings?.[e.id]).filter(x => x != null && x !== '');
-        return { name: r.name, score: vals.reduce((a, b) => a + b, 0) / vals.length, cat: effCat(r) };
-      })
-      .sort((a, b) => b.score - a.score)
-      .slice(0, settings.topN);
-
-    const cats = distribution(CATS.map(c => ({ key: c.key, label: catLabel(c.key), count: catCounts[c.key], color: c.color })));
-    const statusLegend = distribution(STATUS_ORDER.map(s => ({ key: s, label: i18n.t(`modules.ishikawa.status.${s}`),
-      count: statusCounts[s], color: STATUS_COLORS[s] }))).legend;
+  /** @type {import('./settings.types.js').IshikawaTileViewFn} */
+  view() {
     return {
-      empty: null,
-      problem: problem || null,
-      summary: [
-        { label: `${i18n.t('dashboard.ishikawaHypotheses')}: `, value: String(rows.length) },
-        { label: `${i18n.t('dashboard.ishikawaExperts')}: `, value: String(experts.length) },
-      ],
-      segments: cats.segments,
-      legend: settings.showLegend ? cats.legend : null,
-      statusLegend: settings.showLegend && statusLegend.length ? statusLegend : null,
-      topLabel: scored.length ? i18n.t('dashboard.ishikawaTopScored') : null,
-      top: scored.map(t => {
-        const catObj = CATS.find(c => c.key === t.cat);
-        return { name: t.name || '—', score: t.score.toFixed(1),
-          style: `color:${catObj ? catObj.color : 'var(--color-text-secondary)'}` };
-      }),
+      /** Keine Ursache erfasst. */
+      get empty() { return this.model.rows.length === 0; },
+      /** Problemtext oder leer. */
+      get problem() { return this.empty ? '' : this.model.problem; },
+      /** Zahl der Hypothesen und der Experten. */
+      get summary() {
+        return [
+          { label: `${this.t('tileHypotheses')}: `, value: String(this.model.rows.length) },
+          { label: `${this.t('tileExperts')}: `, value: String(this.model.experts.length) },
+        ];
+      },
+      /** Anzeigename einer Kategorie: eigener Name, sonst der Vorgabetext. @param {string} key @returns {string} */
+      catLabel(key) {
+        const own = (this.model.catLabels[key] ?? '').trim();
+        return own || this.t(`cat.${key}`);
+      },
+      /** Zahl der Ursachen je Kategorie und je Status, Verteilung für Balken und Legenden. */
+      get cats() {
+        const counts = Object.fromEntries(CAT_KEYS.map((k) => [k, 0]));
+        const status = Object.fromEntries(STATUS_KEYS.map((k) => [k, 0]));
+        for (const r of this.model.rows) {
+          const cat = effCat(this.model.rows, r);
+          if (Object.hasOwn(counts, cat)) counts[cat]++;
+          status[r.status]++;
+        }
+        return {
+          cats: distribution(CAT_KEYS.map((key) => ({ key, label: this.catLabel(key), count: counts[key], color: catColor(key) }))),
+          status: distribution(STATUS_KEYS.map((key) => ({
+            key, label: this.t(`status.${key}`), count: status[key], color: STATUS_COLORS[key],
+          }))).legend,
+        };
+      },
+      /** Balkensegmente je Kategorie. */
+      get segments() { return this.cats.cats.segments; },
+      /** Legende der Kategorien oder `null`. */
+      get legend() { return this.settings.showLegend ? this.cats.cats.legend : null; },
+      /** Legende der Status oder `null`. */
+      get statusLegend() {
+        const l = this.cats.status;
+        return this.settings.showLegend && l.length ? l : null;
+      },
+      /** Die topN am höchsten bewerteten Ursachen. */
+      get top() {
+        return paretoItems(this.model.rows).slice(0, this.settings.topN).map((p) => ({
+          name: p.name,
+          score: p.score.toFixed(1),
+          style: `color:${p.category ? catColor(p.category) : 'var(--color-text-secondary)'}`,
+        }));
+      },
+      /** Überschrift der Liste oder leer. */
+      get topLabel() { return this.top.length ? this.t('tileTopScored') : ''; },
     };
   },
-};
+});

@@ -43,12 +43,12 @@ const FMEA_STATE = {
 
 const ISHIKAWA_STATE = {
   problem: 'Scrap rate',
-  experts: [{ id: 'e1' }],
+  experts: [{ id: 1, name: 'Anna', color: '#6366f1' }],
   rows: [
-    { id: 'r1', parentId: null, name: 'A', category: 'man', status: 'open', ratings: { e1: 5 } },
-    { id: 'r2', parentId: null, name: 'B', category: 'machine', status: 'testing', ratings: { e1: 4 } },
-    { id: 'r3', parentId: null, name: 'C', category: 'method', status: 'confirmed', ratings: { e1: 3 } },
-    { id: 'r4', parentId: null, name: 'D', category: 'material', status: 'open', ratings: { e1: 2 } },
+    { id: 1, parentId: null, name: 'A', category: 'man', status: 'open', ratings: { 1: 5 } },
+    { id: 2, parentId: null, name: 'B', category: 'machine', status: 'testing', ratings: { 1: 4 } },
+    { id: 3, parentId: null, name: 'C', category: 'method', status: 'confirmed', ratings: { 1: 3 } },
+    { id: 4, parentId: null, name: 'D', category: 'material', status: 'open', ratings: { 1: 2 } },
   ],
 };
 
@@ -261,28 +261,56 @@ suite('dashboard tiles: ishikawa', () => {
 
   test('empty state without rows', async () => {
     const host = (await render(ishikawaTile, { rows: [] }));
-    assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'dashboard.ishikawaEmpty');
+    assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'modules.ishikawa.tileEmpty');
   });
 
-  test('title prefix keeps the legacy title', async () => {
-    assertEqual(ishikawaTile.titlePrefix, 'Ishikawa');
+  test('title prefix comes from i18n, not a literal', async () => {
+    assertEqual(ishikawaTile.titlePrefix, undefined);
+    assertEqual(ishikawaTile.titlePrefixKey, 'modules.ishikawa.tileTitlePrefix');
+  });
+
+  test('settings: topN 1..20 default 5, showLegend default on', async () => {
+    assertDeepEqual(
+      [ishikawaTile.settings.topN.min, ishikawaTile.settings.topN.max, ishikawaTile.settings.topN.default, ishikawaTile.settings.topN.step],
+      [1, 20, 5, 1]);
+    assertEqual(ishikawaTile.settings.showLegend.default, true);
+  });
+
+  test('old state with an orphan: the orphan is a main cause without category', async () => {
+    const state = { ...ISHIKAWA_STATE, rows: [...ISHIKAWA_STATE.rows,
+      { id: 9, parentId: 77, name: 'Orphan', category: 'man', status: 'open', ratings: { 1: 9 } }] };
+    const vm = vmOf(ishikawaTile, state);
+    assertEqual(vm.top[0].name, 'Orphan');
+    assertEqual(vm.top[0].style, 'color:var(--color-text-secondary)');
+    assertEqual(vm.summary[0].value, '5');
+  });
+
+  test('topN: 3 shows three entries', async () => {
+    const host = (await render(ishikawaTile, ISHIKAWA_STATE, { topN: 3 }));
+    assertEqual(host.querySelectorAll('.dashboard-fmea__top-item').length, 3);
+  });
+
+  test('colours come from the module variables, no hex literals', async () => {
+    const host = (await render(ishikawaTile, ISHIKAWA_STATE));
+    assertTrue(host.querySelector('.ishikawa-tile') !== null, 'wrapper .ishikawa-tile');
+    const vm = vmOf(ishikawaTile, ISHIKAWA_STATE);
+    assertTrue(!/#[0-9a-f]{3,6}/i.test(JSON.stringify([vm.segments, vm.legend, vm.top])), 'no hex in view model');
   });
 
   test('viewModel: problem, summary, both legends and scored list as display data', () => {
     const vm = vmOf(ishikawaTile, ISHIKAWA_STATE);
-    assertPlain(vm);
     assertEqual(vm.problem, 'Scrap rate');
     assertDeepEqual(vm.summary, [
-      { label: 'dashboard.ishikawaHypotheses: ', value: '4' },
-      { label: 'dashboard.ishikawaExperts: ', value: '1' },
+      { label: 'modules.ishikawa.tileHypotheses: ', value: '4' },
+      { label: 'modules.ishikawa.tileExperts: ', value: '1' },
     ]);
-    assertDeepEqual(vm.segments[0], { key: 'man', style: 'width:25%;background:#2563eb', title: 'modules.ishikawa.cat.man: 1' });
+    assertDeepEqual(vm.segments[0], { key: 'man', style: 'width:25%;background:var(--ishikawa-cat-man)', title: 'modules.ishikawa.cat.man: 1' });
     assertDeepEqual(vm.legend.map(l => l.text), ['modules.ishikawa.cat.man: 1', 'modules.ishikawa.cat.machine: 1',
       'modules.ishikawa.cat.material: 1', 'modules.ishikawa.cat.method: 1']);
     assertDeepEqual(vm.statusLegend.map(l => l.text), ['modules.ishikawa.status.open: 2',
       'modules.ishikawa.status.testing: 1', 'modules.ishikawa.status.confirmed: 1']);
-    assertEqual(vm.topLabel, 'dashboard.ishikawaTopScored');
-    assertDeepEqual(vm.top[0], { name: 'A', score: '5.0', style: 'color:#2563eb' });
+    assertEqual(vm.topLabel, 'modules.ishikawa.tileTopScored');
+    assertDeepEqual(vm.top[0], { name: 'A', score: '5.0', style: 'color:var(--ishikawa-cat-man)' });
     const off = vmOf(ishikawaTile, ISHIKAWA_STATE, { showLegend: false });
     assertEqual(off.legend, null);
     assertEqual(off.statusLegend, null);

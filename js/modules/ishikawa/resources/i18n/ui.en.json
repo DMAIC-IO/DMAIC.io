@@ -153,5 +153,10 @@
     "validParents": "The parent cause of a sub-cause must exist; causes must not refer to each other in a loop.",
     "subRowsWithoutCategory": "Only main causes carry a category; sub-causes have none and inherit that of their main cause.",
     "uniqueItemIds": "Every expert, snapshot, experiment, fact and image needs an id of its own; the images of both galleries share their ids."
-  }
+  },
+  "tileTitlePrefix": "Ishikawa",
+  "tileEmpty": "No hypotheses recorded yet.",
+  "tileHypotheses": "Hypotheses",
+  "tileExperts": "Experts",
+  "tileTopScored": "Top Scored"
 }
