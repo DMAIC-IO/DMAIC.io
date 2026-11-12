@@ -79,12 +79,16 @@ function nameKey(name) {
  * Lehnt einen Expertennamen ab, den ein anderer Experte schon trägt (ohne Groß/Klein).
  * @param {ReadonlyArray<{ id: number, name: string }>} experts @param {string} name
  * @param {number|null} [exceptId] der umbenannte Experte
- * @throws {Error} mit `param` `name`
+ * @throws {Error} mit `param` `name` und dem Hinweis `hintKey` für die Oberfläche
  */
 function requireFreeName(experts, name, exceptId = null) {
   const key = nameKey(name);
-  requireForm('name', name, !experts.some((e) => e.id !== exceptId && nameKey(e.name) === key),
-    'a name no other expert has, case-insensitive');
+  try {
+    requireForm('name', name, !experts.some((e) => e.id !== exceptId && nameKey(e.name) === key),
+      'a name no other expert has, case-insensitive');
+  } catch (err) {
+    throw Object.assign(err, { hintKey: 'expertDuplicate' });
+  }
 }
 
 /**

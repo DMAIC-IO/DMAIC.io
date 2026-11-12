@@ -490,6 +490,9 @@ suite('ishikawa causes: Kategorien', () => {
     assertEqual(vm.model.catLabels.man, 'Personal');
     assertEqual(vm.catLabel('machine'), 'Maschine');
     assertThrows(() => vm.setCategoryLabels({ labels: { man: 'maschine' } }), /labels/);
+    let clash = null;
+    try { vm.setCategoryLabels({ labels: { man: 'maschine' } }); } catch (err) { clash = err; }
+    assertEqual(clash?.hintKey, 'renameCatsDuplicate');
     assertThrows(() => vm.setCategoryLabels({ labels: { money: 'Geld' } }), /labels/);
     assertEqual(vm.model.catLabels.man, 'Personal');
   });

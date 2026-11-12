@@ -60,6 +60,7 @@
   "delRowConfirmWithSubs_other": "Really delete hypothesis \"{name}\"? This will also delete {count} sub-hypotheses.",
   "renameCatsTitle": "Rename 6M categories",
   "renameCatsHint": "Optionally provide a case-specific term for each category. Leave empty to use the default name.",
+  "renameCatsDuplicate": "Category names must be unique.",
   "cat": {
     "man": "Man",
     "machine": "Machine",

@@ -95,8 +95,12 @@ export const commands = {
         next[key] = name.trim();
       }
       const shown = CAT_KEYS.map((key) => effectiveLabel(next, key, this.t));
-      requireForm('labels', labels, new Set(shown).size === shown.length,
-        'names that differ between the categories, case-insensitive; an empty name shows the standard name');
+      try {
+        requireForm('labels', labels, new Set(shown).size === shown.length,
+          'names that differ between the categories, case-insensitive; an empty name shows the standard name');
+      } catch (err) {
+        throw Object.assign(err, { hintKey: 'renameCatsDuplicate' });
+      }
       setFields(this.model, { catLabels: next });
     },
   }),

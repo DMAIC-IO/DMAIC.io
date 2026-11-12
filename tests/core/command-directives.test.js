@@ -36,6 +36,8 @@ const Board = defineModel({
     guarded: command({ params: { text: text() }, run() { throw Object.assign(new Error('nein'), { invariant: 'noGo' }); } }),
     limitText: command({ params: { limit: number({ min: 0, max: 9, integer: true }), text: text() }, run() { throw new Error('zu groß'); } }),
     setLimit: command({ params: { limit: number({ min: 0, max: 9, integer: true }), rate: number({ min: 0, max: 1, default: 0.5 }) }, run() {} }),
+    taken: command({ params: { text: text() }, run() { throw Object.assign(new Error('vergeben'), { param: 'text', hintKey: 'nameTaken' }); } }),
+    clash: command({ params: { text: text() }, run() { throw Object.assign(new Error('Doppel'), { param: 'labels', hintKey: 'labelsClash' }); } }),
   },
 });
 
@@ -370,6 +372,27 @@ suite('x-command-form', () => {
     typeIn($('input'), 'x');
     await submitForm($('form'));
     assertEqual(notified[0][0], 'modules.ct.invariants.noGo');
+  });
+
+  test('eigener Hinweis (hintKey) am freien Feld statt des allgemeinen', async () => {
+    const { $, notified } = await mount('<form x-command-form="taken"><input x-param="text"></form>');
+    typeIn($('input'), 'x');
+    await submitForm($('form'));
+    assertEqual($('input').getAttribute('aria-invalid'), 'true');
+    assertEqual($('input').title, 'modules.ct.nameTaken');
+    assertEqual(notified.length, 0);
+  });
+
+  test('eigener Hinweis (hintKey) ohne passendes Feld: als Meldung, ohne console.error', async () => {
+    const { $, notified } = await mount('<form x-command-form="clash"><input x-param="text"></form>');
+    typeIn($('input'), 'x');
+    const orig = console.error;
+    let count = 0;
+    console.error = () => { count++; };
+    try { await submitForm($('form')); } finally { console.error = orig; }
+    assertEqual(count, 0);
+    assertEqual(notified[0][0], 'modules.ct.labelsClash');
+    assertEqual(notified[0][1], 'error');
   });
 
   test('fester Parameter in der Ablehnung: einfacher Hinweis ohne Bereich', async () => {

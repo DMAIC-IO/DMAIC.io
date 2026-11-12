@@ -171,6 +171,7 @@ suite('ishikawa Kommandos — Experten und Bewertungen', () => {
       { id: 2, name: 'Bert', color: EXP_COLS[1] },
     ]);
     assertEqual(thrown(() => m.addExpert({ name: 'anna' }))?.param, 'name');
+    assertEqual(thrown(() => m.addExpert({ name: 'anna' }))?.hintKey, 'expertDuplicate');
     assertEqual(thrown(() => m.addExpert({ name: '  ' }))?.param, 'name');
     assertEqual(m.experts.length, 2);
   });
@@ -178,6 +179,7 @@ suite('ishikawa Kommandos — Experten und Bewertungen', () => {
   test('renameExpert auf vergebenen Namen → wirft; eigener Name in anderer Schreibung geht', () => {
     const m = load({ experts: [{ id: 1, name: 'Anna', color: '#000000' }, { id: 2, name: 'Bert', color: '#111111' }] });
     assertEqual(thrown(() => m.renameExpert({ expertId: 2, name: 'ANNA' }))?.param, 'name');
+    assertEqual(thrown(() => m.renameExpert({ expertId: 2, name: 'ANNA' }))?.hintKey, 'expertDuplicate');
     assertEqual(m.experts[1].name, 'Bert');
     m.renameExpert({ expertId: 1, name: 'anna' });
     assertEqual(m.experts[0].name, 'anna');

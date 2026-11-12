@@ -96,6 +96,17 @@ function buttonCommandDef(ui, name) {
   return commandDef(ui, name);
 }
 
+/**
+ * Der eigene Hinweis einer Ablehnung: Ein Kommando kann am Fehler
+ * `hintKey` setzen, einen Schlüssel unter `modules.<id>` (wie `confirm`).
+ * Das Formular zeigt dann diesen Text statt des allgemeinen Hinweises.
+ * @param {{ i18n: { t: (key: string) => string }, moduleId: string }} ui @param {any} error
+ * @returns {string|null}
+ */
+function ownHint(ui, error) {
+  return typeof error?.hintKey === 'string' ? ui.i18n.t(`modules.${ui.moduleId}.${error.hintKey}`) : null;
+}
+
 /** Setzt den Hilfeanker, sofern das Element keinen trägt. @param {HTMLElement} el @param {string} key */
 export function setHelpKey(el, key) {
   if (!el.hasAttribute('data-help-key')) el.setAttribute('data-help-key', key);
@@ -312,15 +323,16 @@ function createFormController(Alpine, formEl, baseCommand) {
 
   const reject = (u, error) => {
     const hit = typeof error?.param === 'string' ? free.get(error.param) : undefined;
+    const own = ownHint(u, error);
     if (!hit) {
-      const hint = typeof error?.invariant === 'string'
+      const hint = own ?? (typeof error?.invariant === 'string'
         ? invariantHint(u.i18n, u.moduleId, error.invariant)
-        : rejectionHint({}, u.i18n);
-      if (typeof error?.param !== 'string' && typeof error?.invariant !== 'string') console.error(error);
+        : rejectionHint({}, u.i18n));
+      if (typeof error?.param !== 'string' && typeof error?.invariant !== 'string' && own === null) console.error(error);
       u.notify(hint, 'error');
       return;
     }
-    markRejection(hit.el, rejectionHint(hit.spec, u.i18n));
+    markRejection(hit.el, own ?? rejectionHint(hit.spec, u.i18n));
     focusField(hit.el);
   };
 

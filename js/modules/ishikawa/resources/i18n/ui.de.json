@@ -60,6 +60,7 @@
   "delRowConfirmWithSubs_other": "Hypothese „{name}\" wirklich löschen? Dabei werden auch {count} Sub-Hypothesen mitgelöscht.",
   "renameCatsTitle": "6M-Kategorien umbenennen",
   "renameCatsHint": "Optional pro Kategorie einen fall-spezifischen Begriff vergeben. Leer lassen, um den Standardnamen zu verwenden.",
+  "renameCatsDuplicate": "Kategoriennamen müssen eindeutig sein.",
   "cat": {
     "man": "Mensch",
     "machine": "Maschine",
