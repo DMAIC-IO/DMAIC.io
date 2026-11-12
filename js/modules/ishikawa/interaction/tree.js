@@ -13,6 +13,7 @@
  * Tastatur: ↑/↓ bleibt unter den Geschwistern — ↑ vor die vorige
  * Geschwisterzeile, ↓ hinter die nächste samt deren Teilbaum. Hinter der
  * letzten Geschwisterzeile ist `beforeId` `null` (Elternknoten bleibt).
+ * Die Ansage nennt die Position unter den Geschwistern am Ziel.
  *
  * Position `{ group, index, id, beforeId }`: `id` ist die gezogene Zeile,
  * `beforeId` die Zielzeile (`null` hinter der letzten Geschwisterzeile, die
@@ -98,6 +99,25 @@ export function treeGesture({ handle }) {
       this.state.dragPreview = pos
         ? { kind: 'tree', index: pos.index, ids: [pos.id, ...subtreeIds(this.model.rows, pos.id)] }
         : null;
+    },
+
+    /**
+     * „Position {pos} von {total}“ unter den Geschwistern am Ziel: am
+     * Ausgangsplatz die eigenen, sonst die Kinder des neuen Elternknotens
+     * samt der gezogenen Zeile. Ohne Ziel (`clamp` `null`) ruft der Kern
+     * `announce` nicht auf.
+     * @param {{ beforeId: number|null }} pos @param {(key: string, params?: object) => string} t
+     * @param {object} ctx @param {{ id: number }} from @returns {string}
+     */
+    announce(pos, t, ctx, from) {
+      const rows = this.model.rows;
+      if (pos.beforeId === from.id) {
+        const own = siblingsOf(rows, from.id);
+        return t('common.gesture.position', { pos: own.indexOf(from.id) + 1, total: own.length });
+      }
+      const others = siblingsOf(rows, pos.beforeId ?? from.id).filter((id) => id !== from.id);
+      const at = pos.beforeId === null ? others.length : others.indexOf(pos.beforeId);
+      return t('common.gesture.position', { pos: at + 1, total: others.length + 1 });
     },
 
     toCommand(from, to) {

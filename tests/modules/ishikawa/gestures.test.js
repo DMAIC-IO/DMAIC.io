@@ -270,6 +270,55 @@ suite('ishikawa gestures — Ursachenbaum', () => {
     assertEqual(calls.length, 0);
   });
 
+  test('Ansage nennt die Position unter den Geschwistern', () => {
+    const { grip } = setupTree();
+    keys(grip(1), ['Enter']);
+    assertEqual(live(), 'common.gesture.picked(position=common.gesture.position(pos=1,total=3))');
+    key(grip(1), 'ArrowDown');
+    // Wurzeln ohne 1: 2, 7 — hinter 2 ist Platz 2 von 3.
+    assertEqual(live(), 'common.gesture.position(pos=2,total=3)');
+    key(grip(1), 'ArrowDown');
+    assertEqual(live(), 'common.gesture.position(pos=3,total=3)');
+    key(grip(1), 'Enter');
+    assertEqual(live(), 'common.gesture.dropped(position=common.gesture.position(pos=3,total=3))');
+  });
+
+  test('Ansage Alt+↓ unter Unterursachen: Geschwisterzahl des Elternknotens', () => {
+    const { grip } = setupTree();
+    altKey(grip(3), 'ArrowDown');
+    assertEqual(live(), 'common.gesture.dropped(position=common.gesture.position(pos=2,total=2))');
+  });
+
+  test('announce direkt: Zeigerziel unter anderem Elternknoten zählt dessen Kinder', () => {
+    const { root, host } = setupTree();
+    const def = treeGesture({ handle: '.grip' });
+    const from = { group: 'causes', index: 3, id: 4, beforeId: 4 };
+    // 4 vor 6: Kinder von 2 sind dann 4, 6.
+    assertEqual(def.announce.call(host, { group: 'causes', index: 4, id: 4, beforeId: 6 }, tt, { root, axis: 'y' }, from),
+      'common.gesture.position(pos=1,total=2)');
+  });
+
+  test('Ziel im eigenen Teilbaum: Ansage nennt keine Position', () => {
+    const { grip } = setupTree();
+    drag(grip(1), 10, rowY(0), 10, rowY(3, 0, -5));
+    assertEqual(live(), 'common.gesture.cancelled()');
+    assertTrue(!live().includes('position'));
+  });
+
+  test('Zeiger über dem eigenen Teilbaum: Vorschau null, über gültigem Ziel wieder gesetzt', () => {
+    const { host, calls, grip } = setupTree();
+    const g = grip(1);
+    pointer(g, 'pointerdown', 10, rowY(0));
+    pointer(g, 'pointermove', 10, rowY(0, 0, 6));
+    assertEqual(host.state.dragPreview.kind, 'tree');
+    pointer(g, 'pointermove', 10, rowY(3, 0, -5));
+    assertEqual(host.state.dragPreview, null);
+    pointer(g, 'pointermove', 10, rowY(6, 0, -5));
+    assertDeepEqual(host.state.dragPreview, { kind: 'tree', index: 5, ids: [1, 3, 5, 4] });
+    pointer(g, 'pointerup', 10, rowY(6, 0, -5));
+    assertDeepEqual(calls, [['moveRowBefore', { rowId: 1, targetRowId: 7 }]]);
+  });
+
   test('Vorschau enthält alle ids des Teilbaums', () => {
     const { host, grip } = setupTree();
     keys(grip(1), ['Enter']);
