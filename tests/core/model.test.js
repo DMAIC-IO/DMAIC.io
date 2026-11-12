@@ -7,7 +7,7 @@ import { COLUMN_TYPES } from '../../js/core/datagrid/datagrid-utils.js';
 import {
   defineModel, command, text, number, boolean, oneOf, index, idOf, list, record, map, object,
   defaultOf, checkValue, describeType, schemaOf, fieldSpec, defineState, stateSchemaOf,
-  currentOf, confirmOf, commandDefOf, fromAttr, defineForm,
+  currentOf, confirmOf, commandDefOf, fromAttr, idsFromAttr, defineForm,
   defineSettings, isSettings, readSettings, defineWidget, isWidget,
   columnRef, datasets, image, rewriteColumnRefs, readModel, setFields, date, time, phase, activeContext, setCommandObserver, setModelContext, contextOf, checkContext, DEFAULT_CONTEXT,
 } from '../../js/core/model.js';
@@ -423,6 +423,33 @@ suite('fromAttr', () => {
     assertThrows(() => fromAttr(list(text()), '[]'), /^fromAttr: list cannot come from an attribute$/);
     assertThrows(() => fromAttr(record(['a'], text()), '{}'), /^fromAttr: record cannot come from an attribute$/);
     assertThrows(() => fromAttr(object({ a: text() }), '{}'), /^fromAttr: object cannot come from an attribute$/);
+  });
+});
+
+suite('idsFromAttr', () => {
+  const root = {
+    items: [{ id: 1 }, { id: 12 }],
+    picks: [{ id: '7' }, { id: 'a' }],
+    images: { inScope: [{ id: 3 }], outScope: [{ id: 4 }] },
+  };
+
+  test('Zahl-ids: kanonischer Ganzzahl-Text wird zur Zahl, auch über einen Pfad mit Parameter', () => {
+    const params = { id: idOf('items'), scope: oneOf(['inScope', 'outScope']), img: idOf('images[scope]') };
+    assertDeepEqual(idsFromAttr(params, { id: '12', scope: 'outScope', img: '4' }, root), { id: 12, scope: 'outScope', img: 4 });
+  });
+
+  test('Text-ids bleiben Text, auch wenn der Text eine Zahl ist', () => {
+    const params = { pick: idOf('picks') };
+    assertDeepEqual(idsFromAttr(params, { pick: '7' }, root), { pick: '7' });
+    assertDeepEqual(idsFromAttr(params, { pick: 'a' }, root), { pick: 'a' });
+  });
+
+  test('nicht kanonisch, unbekannt, ohne Model oder keine idOf-Art: unverändert', () => {
+    const params = { id: idOf('items'), n: text() };
+    assertDeepEqual(idsFromAttr(params, { id: '012' }, root), { id: '012' });
+    assertDeepEqual(idsFromAttr(params, { id: '99' }, root), { id: '99' });
+    assertDeepEqual(idsFromAttr(params, { id: '1' }, null), { id: '1' });
+    assertDeepEqual(idsFromAttr(params, { n: '1' }, root), { n: '1' });
   });
 });
 

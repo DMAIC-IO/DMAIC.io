@@ -85,7 +85,7 @@ export function registerAsyncTaskDirectives(Alpine, { i18n }) {
     const onClick = async () => {
       const live = data._asyncTaskHost;
       if (!live) return;
-      const out = await live.start(name, readFixedArgs(el, params));
+      const out = await live.start(name, readFixedArgs(el, params, data.model));
       if (out.status === 'rejected') ui.notify(i18n.t('common.asyncTask.rejected', { reason: out.reason }), 'error');
     };
     el.addEventListener('click', onClick);

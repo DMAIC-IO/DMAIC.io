@@ -64,6 +64,7 @@ async function mount(model = null) {
   const states = { 'ish-1': model };
   const notes = [];
   const shows = [];
+  const confirms = [];
   const handlers = [];
   const bus = {
     on: (n, fn) => handlers.push([n, fn]),
@@ -83,7 +84,7 @@ async function mount(model = null) {
     eventBus: bus,
     notify: (msg, type) => notes.push([msg, type]),
     dialog: {
-      confirm: async () => true,
+      confirm: async (opts) => { confirms.push(opts); return true; },
       show(opts) {
         shows.push(opts);
         return { close: () => opts.onClose?.(), setTitle() {} };
@@ -98,7 +99,7 @@ async function mount(model = null) {
   await mod.init(container, context);
   await settle();
   const vm = () => Alpine.$data(container.querySelector('[x-data]'));
-  return { container, vm, notes, shows, states, lang, $: (s) => container.querySelector(s), $$: (s) => [...container.querySelectorAll(s)] };
+  return { container, vm, notes, shows, confirms, states, lang, $: (s) => container.querySelector(s), $$: (s) => [...container.querySelectorAll(s)] };
 }
 
 /**
@@ -231,6 +232,19 @@ suite('ishikawa view: Gerüst, Reiter, Problem', () => {
     h.$('.ishikawa__img-gallery--out .ishikawa__img-thumb').click();
     await settle();
     assertDeepEqual(h.vm().state.lightbox, { scope: 'outScope', id: 2 });
+  });
+
+  test('Löschen über x-command: die Zahl-id erreicht die Rückfrage, danach ist das Bild weg', async () => {
+    const h = await mount({
+      _schema: { version: '1.0' },
+      images: { inScope: [{ id: 1, dataUrl: 'data:image/png;base64,AAAA', caption: 'Riss' }], outScope: [] },
+    });
+    h.$('.ishikawa__img-gallery--in .ishikawa__img-del').click();
+    await until(() => h.vm().model.images.inScope.length === 0);
+    assertEqual(h.confirms.length, 1);
+    assertTrue(JSON.stringify(h.confirms[0]).includes('delImageConfirm'), JSON.stringify(h.confirms[0]));
+    assertEqual(h.vm().model.images.inScope.length, 0);
+    assertDeepEqual(h.notes.filter(([, type]) => type === 'error'), []);
   });
 
   test('Bild über 1 MB übersteht den Neuaufbau der Komponente', async () => {

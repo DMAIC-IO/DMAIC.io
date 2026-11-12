@@ -32,7 +32,7 @@
  * Dialog verschoben wird. CSP-tauglich: kein Ausdruck wird ausgewertet, der
  * Direktivenwert ist ein Name.
  */
-import { commandDefOf, confirmOf, fromAttr, currentOf, defaultOf, checkValue, cloneJSON, contextOf, schemaOf, checkParams } from './model.js';
+import { commandDefOf, confirmOf, fromAttr, idsFromAttr, currentOf, defaultOf, checkValue, cloneJSON, contextOf, schemaOf, checkParams } from './model.js';
 import { requireKnownId } from './validate.js';
 import { applyAttributes, readElement, writeElement, rejectionHint, invariantHint } from './field-directive.js';
 import { isBug } from './value-channel.js';
@@ -102,18 +102,19 @@ export function setHelpKey(el, key) {
  * Die festen Argumente aus den `data-arg-*` eines Elements, gewandelt nach
  * der Spec des Parameters. Ein unbekannter Name bleibt Text — das Kommando
  * lehnt ihn ab.
- * @param {HTMLElement} el @param {Record<string, object>} params
+ * Mit `root` (Model) werden Zahl-ids aus `idOf`-Listen zu Zahlen (`idsFromAttr`).
+ * @param {HTMLElement} el @param {Record<string, object>} params @param {object} [root]
  * @returns {Record<string, any>}
  * @throws {Error} für Parameter der Art object, list, record
  */
-export function readFixedArgs(el, params) {
+export function readFixedArgs(el, params, root) {
   const out = {};
   for (const [key, text] of Object.entries(el.dataset)) {
     if (!key.startsWith('arg') || key.length === 3) continue;
     const name = key.charAt(3).toLowerCase() + key.slice(4);
     out[name] = Object.hasOwn(params, name) ? fromAttr(params[name], text) : text;
   }
-  return out;
+  return idsFromAttr(params, out, root);
 }
 
 /** `fromCol` → `from-col`. @param {string} name @returns {string} */
@@ -242,7 +243,7 @@ function createFormController(Alpine, formEl, baseCommand) {
   let start = {};
 
   const params = () => commandDef(ui(), command).params;
-  const fixed = () => readFixedArgs(formEl, params());
+  const fixed = () => readFixedArgs(formEl, params(), ui().model);
   const specOf = (name) => (formDef ? formDef.schema.fields[name] : params()[name]);
 
   /**
@@ -477,8 +478,8 @@ export async function openDialogAt(Alpine, anchor, ref, opts = {}) {
   const del = opts.delete;
   const deleteArgs = () => {
     const params = commandDef(ui, del).params;
-    return Object.fromEntries(Object.entries(opts.args ?? {})
-      .map(([k, v]) => [k, typeof v === 'string' && Object.hasOwn(params, k) ? fromAttr(params[k], v) : v]));
+    return idsFromAttr(params, Object.fromEntries(Object.entries(opts.args ?? {})
+      .map(([k, v]) => [k, typeof v === 'string' && Object.hasOwn(params, k) ? fromAttr(params[k], v) : v])), ui.model);
   };
   try {
     await ui.dialog.form({
@@ -545,7 +546,7 @@ export function registerCommandDirectives(Alpine) {
     setHelpKey(el, `modules.${ui.moduleId}.actions.${name}.help`);
     const onClick = async () => {
       const current = data._ui;
-      const r = await runUiCommand(current, name, readFixedArgs(el, params));
+      const r = await runUiCommand(current, name, readFixedArgs(el, params, current.model));
       if (r.ok) closeDialogAround(el);
       else if ('error' in r) current.notify(r.error?.message ?? String(r.error), 'error');
     };

@@ -989,6 +989,32 @@ export function fromAttr(s, text) {
 }
 
 /**
+ * Ids aus Attributen nachschärfen: ein Attribut ist immer Text, die ids einer
+ * Liste sind aber oft Zahlen. Für jeden `idOf`-Parameter, dessen Wert ein
+ * kanonischer Ganzzahl-Text ist (`"12"`, nicht `"012"`), wird die Liste unter
+ * seinem Pfad gelesen (Pfadteile aus den übrigen Argumenten oder dem Model);
+ * trägt ein Element genau diese Zahl als id und keines den Text, wird der
+ * Wert zur Zahl. Text-ids bleiben unberührt.
+ * @param {Record<string, object>} params Parameter-Specs des Kommandos
+ * @param {Record<string, any>} args Argumente (aus `fromAttr`)
+ * @param {object|null|undefined} root das Model
+ * @returns {Record<string, any>} neue Argumente
+ */
+export function idsFromAttr(params, args, root) {
+  if (!root) return args;
+  const out = { ...args };
+  for (const [name, value] of Object.entries(args)) {
+    const s = params[name];
+    if (!s || s.kind !== 'idOf' || typeof value !== 'string' || !/^(0|-?[1-9]\d*)$/.test(value)) continue;
+    const list = resolvePath(s.path, { root, params: out });
+    if (!Array.isArray(list)) continue;
+    const ids = list.map((e) => e?.[s.key]);
+    if (!ids.includes(value) && ids.includes(Number(value))) out[name] = Number(value);
+  }
+  return out;
+}
+
+/**
  * Formular-Schema für Formulare, deren Felder nicht die Parameter eines
  * Kommandos sind. Dieselben Feldkonstruktoren wie `defineState`, ohne
  * `index`/`idOf`. `fromParams(params)` macht aus Parametern Formularwerte,
