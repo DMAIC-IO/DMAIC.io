@@ -154,7 +154,7 @@ suite('flowchart/interaction — Kettengeste', () => {
 function setupSubsteps() {
   const root = document.createElement('div');
   for (const [stepId, subs] of [['s1', ['x', 'y', 'z']], ['s2', ['w']]]) {
-    const list = el('div', { 'data-reorder-group': stepId }, 'width:100px;min-height:100px;');
+    const list = el('div', { 'data-reorder-group': stepId, 'data-reorder-closed': '' }, 'width:100px;min-height:100px;');
     subs.forEach((id, i) => {
       const item = el('div', { 'data-reorder-index': String(i), 'data-id': id, 'data-substep-id': id }, 'height:20px;');
       item.append(el('button', { type: 'button', class: 'fc-substep-grip' }, 'display:block;width:20px;height:20px;padding:0;border:0;'));
@@ -192,6 +192,15 @@ suite('flowchart/interaction — Unterschritt-Geste', () => {
     keys(grip('x'), ['Enter', 'ArrowRight', 'Enter']);
     assertEqual(calls.length, 0);
     assertEqual(host.state.substepPreview, null);
+  });
+
+  test('Unterschritt-Gruppen sind abgeschlossen, toCommand nimmt substepId aus from.id', () => {
+    const def = substepGesture({ handle: '.fc-substep-grip' });
+    const { grip } = setupSubsteps();
+    const root = grip('x').closest('[data-reorder-group]').parentElement;
+    assertTrue([...root.querySelectorAll('[data-reorder-group]')].every((g) => g.hasAttribute('data-reorder-closed')));
+    assertDeepEqual(def.toCommand({ group: 's1', index: 0, id: 'x' }, { group: 's1', index: 2 }),
+      ['moveSubstep', { stepId: 's1', substepId: 'x', index: 2 }]);
   });
 
   test('Zeiger: ein Ziel im anderen Schritt ergibt kein Kommando', () => {

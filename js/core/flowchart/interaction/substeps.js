@@ -3,8 +3,8 @@
  *
  * Eine Gruppe je Schritt (`data-reorder-group` = Schritt-id), darin die Unterschritte
  * mit `data-reorder-index` und `data-substep-id`. Verschoben wird nur innerhalb des
- * eigenen Schritts: ein Ziel in einem anderen Schritt begrenzt `clamp` zu
- * `null` — kein Kommando. Die Position trägt neben `{ group, index }` die id
+ * eigenen Schritts: die Gruppe trägt `data-reorder-closed`, ein Ziel in einem
+ * anderen Schritt ergibt also kein Kommando. Die Position trägt neben `{ group, index }` die id
  * des gezogenen Unterschritts für das Kommando.
  */
 import { defineGesture } from '../../interaction/define.js';
@@ -24,12 +24,6 @@ export function substepGesture({ handle }) {
     start(el) {
       const item = /** @type {HTMLElement} */ (el.closest('[data-substep-id]'));
       return { ...reorder.start(el), id: item.dataset.substepId };
-    },
-
-    clamp(pos, ctx, from) {
-      if (pos.group !== from.group) return null;
-      const out = reorder.clamp(pos, ctx, from);
-      return out && { ...out, id: from.id };
     },
 
     /** @param {{ group: string, index: number }|null} pos Vorschau, `null` räumt auf */

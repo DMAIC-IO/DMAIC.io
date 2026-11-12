@@ -4,7 +4,7 @@
  * Ende), Gruppenwechsel, Begrenzung des Index, Ansagetext.
  */
 import { suite, test, assertEqual, assertDeepEqual, afterEach } from '../../test-utils.js';
-import { reorder, groupsOf, itemsOf, maxIndex } from '../../../js/core/interaction/gestures/reorder.js';
+import { reorder, groupsOf, itemsOf, maxIndex, isClosed } from '../../../js/core/interaction/gestures/reorder.js';
 import { makeContext } from '../../../js/core/interaction/helpers.js';
 
 let root = null;
@@ -94,5 +94,60 @@ suite('interaction/gestures/reorder', () => {
     assertEqual(reorder.announce({ group: 'a', index: 1 }, t, ctx, A0), 'common.gesture.position(pos=2,total=3)');
     assertEqual(reorder.announce({ group: 'b', index: 0 }, t, ctx, A0),
       'common.gesture.positionInGroup(group=Liste B,pos=1,total=2)');
+  });
+
+  test('isClosed liest data-reorder-closed', () => {
+    fixture();
+    const [a, b] = groupsOf(root);
+    assertEqual(isClosed(a), false);
+    b.setAttribute('data-reorder-closed', '');
+    assertEqual(isClosed(b), true);
+  });
+
+  test('abgeschlossene Gruppe: locate in fremder Gruppe ergibt null, in der eigenen nicht', () => {
+    fixture();
+    const [a, b] = groupsOf(root);
+    const ctx = makeContext(root);
+    const inB = { x: 130, y: 5 };
+    assertDeepEqual(reorder.locate(inB, ctx, A0), { group: 'b', index: 0 });
+    a.setAttribute('data-reorder-closed', '');
+    assertEqual(reorder.locate(inB, ctx, A0), null);
+    assertDeepEqual(reorder.locate({ x: 50, y: 2 }, ctx, A0), { group: 'a', index: 0 });
+    a.removeAttribute('data-reorder-closed');
+    b.setAttribute('data-reorder-closed', '');
+    assertEqual(reorder.locate(inB, ctx, A0), null);
+    assertEqual(reorder.locate({ x: 50, y: 2 }, ctx, { group: 'b', index: 0 }), null);
+  });
+
+  test('abgeschlossene Gruppe: clamp in die andere Gruppe ergibt null', () => {
+    fixture();
+    const [a, b] = groupsOf(root);
+    const ctx = makeContext(root);
+    assertDeepEqual(reorder.clamp({ group: 'b', index: 0 }, ctx, A0), { group: 'b', index: 0 });
+    a.setAttribute('data-reorder-closed', '');
+    assertEqual(reorder.clamp({ group: 'b', index: 0 }, ctx, A0), null);
+    assertDeepEqual(reorder.clamp({ group: 'a', index: 5 }, ctx, A0), { group: 'a', index: 2 });
+    a.removeAttribute('data-reorder-closed');
+    b.setAttribute('data-reorder-closed', '');
+    assertEqual(reorder.clamp({ group: 'b', index: 0 }, ctx, A0), null);
+  });
+
+  test('step nach Achse: y → ↑↓ Index, ←→ Gruppe; x → ←→ Index, ↑↓ Gruppe', () => {
+    fixture();
+    const cy = makeContext(root, null, 'y');
+    assertDeepEqual(reorder.step(A0, { x: 0, y: 1 }, cy, A0), { group: 'a', index: 1 });
+    assertDeepEqual(reorder.step(A0, { x: 1, y: 0 }, cy, A0), { group: 'b', index: 0 });
+    const cx = makeContext(root, null, 'x');
+    assertDeepEqual(reorder.step(A0, { x: 1, y: 0 }, cx, A0), { group: 'a', index: 1 });
+    assertDeepEqual(reorder.step(A0, { x: 0, y: 1 }, cx, A0), { group: 'b', index: 0 });
+    assertEqual(reorder.step(A0, { x: 0, y: -1 }, cx, A0), null);
+  });
+
+  test('step: Gruppenwechsel aus oder in eine abgeschlossene Gruppe ergibt null', () => {
+    fixture();
+    const ctx = makeContext(root);
+    groupsOf(root)[1].setAttribute('data-reorder-closed', '');
+    assertEqual(reorder.step(A0, { x: 1, y: 0 }, ctx, A0), null);
+    assertDeepEqual(reorder.step(A0, { x: 0, y: 1 }, ctx, A0), { group: 'a', index: 1 });
   });
 });
