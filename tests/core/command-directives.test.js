@@ -412,7 +412,7 @@ suite('x-command-form', () => {
 
   test('Formular-Schema: fromParams für Startwerte, toParams beim Absenden', async () => {
     const { $, model } = await mount(
-      '<form x-command-form="setItem" data-form="ItemForm" data-arg-col="a" data-arg-idx="0"><input class="f" x-param="first"><input class="l" x-param="last"></form>',
+      '<form x-command-form="setItem" data-command-form-schema="ItemForm" data-arg-col="a" data-arg-idx="0"><input class="f" x-param="first"><input class="l" x-param="last"></form>',
       { columns: { a: ['Ada Lovelace'] } },
     );
     assertEqual($('.f').value, 'Ada');
@@ -424,7 +424,7 @@ suite('x-command-form', () => {
 
   test('Fehler aus toParams mit param markiert das Formularfeld', async () => {
     const { $, model } = await mount(
-      '<form x-command-form="setItem" data-form="ItemForm" data-arg-col="a" data-arg-idx="0"><input class="f" x-param="first"><input class="l" x-param="last"></form>',
+      '<form x-command-form="setItem" data-command-form-schema="ItemForm" data-arg-col="a" data-arg-idx="0"><input class="f" x-param="first"><input class="l" x-param="last"></form>',
       { columns: { a: ['Ada Lovelace'] } },
     );
     typeIn($('.f'), '');
@@ -443,8 +443,8 @@ suite('x-command-form', () => {
       /x-param="text": text is also a fixed argument/);
   });
 
-  test('unbekanntes data-form wirft beim Einbau', () => {
-    assertThrows(() => mountDetached('<form x-command-form="addItem" data-form="Nope"></form>'), /unknown form "Nope"; available: ItemForm/);
+  test('unbekanntes data-command-form-schema wirft beim Einbau', () => {
+    assertThrows(() => mountDetached('<form x-command-form="addItem" data-command-form-schema="Nope"></form>'), /unknown form "Nope"; available: ItemForm/);
   });
 
   test('x-command-form nur an einem <form>', () => {
@@ -496,7 +496,7 @@ suite('x-param', () => {
   test('Anker: Parameter des Kommandos, Feld nur im Formular-Schema, vorhandener bleibt', async () => {
     const { $ } = await mount(
       '<form class="p" x-command-form="addItem" data-arg-col="a"><input x-param="text"></form>'
-      + '<form class="q" x-command-form="setItem" data-form="ItemForm" data-arg-col="a" data-arg-idx="0"><input class="f" x-param="first"><input class="own" x-param="last" data-help-key="eigen"></form>',
+      + '<form class="q" x-command-form="setItem" data-command-form-schema="ItemForm" data-arg-col="a" data-arg-idx="0"><input class="f" x-param="first"><input class="own" x-param="last" data-help-key="eigen"></form>',
       { columns: { a: ['x y'] } },
     );
     assertEqual($('.p input').getAttribute('data-help-key'), 'modules.ct.actions.addItem.params.text');
@@ -526,7 +526,7 @@ suite('x-param', () => {
   test('ohne umschließendes Formular oder mit unbekanntem Namen wirft', () => {
     assertThrows(() => mountDetached('<input x-param="text">'), /x-param="text" needs an enclosing <form x-command-form>/);
     assertThrows(() => mountDetached('<form x-command-form="addItem"><input x-param="nope"></form>'), /x-param="nope": not a parameter of addItem/);
-    assertThrows(() => mountDetached('<form x-command-form="setItem" data-form="ItemForm"><input x-param="nope"></form>'), /x-param="nope": not a field of ItemForm/);
+    assertThrows(() => mountDetached('<form x-command-form="setItem" data-command-form-schema="ItemForm"><input x-param="nope"></form>'), /x-param="nope": not a field of ItemForm/);
   });
 });
 

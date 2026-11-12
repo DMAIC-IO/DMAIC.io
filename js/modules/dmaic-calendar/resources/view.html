@@ -169,7 +169,7 @@
 
   <!-- Termin-Formular: versteckt hier, beim Öffnen in den Dialog ausgeliehen. -->
   <div class="module-calendar__modal-forms" hidden>
-    <form class="module-calendar__event-form" x-ref="eventForm" x-command-form="addEvent" data-form="EventForm">
+    <form class="module-calendar__event-form" x-ref="eventForm" x-command-form="addEvent" data-command-form-schema="EventForm">
       <div class="field-group">
         <label data-help-key="modules.dmaic-calendar.fields.events.title.help" x-text="t('title')"></label>
         <input type="text" class="field" data-ref="evTitle" x-param="title" :placeholder="t('titlePlaceholder')">

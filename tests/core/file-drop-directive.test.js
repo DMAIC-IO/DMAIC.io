@@ -19,9 +19,9 @@ async function mount(extra = '') {
   got.length = 0;
   gotArgs.length = 0;
   const root = document.createElement('div');
-  root.innerHTML = `<div class="zone" x-data="fileDropTest" x-file-drop="handleFile" data-accept=".csv,.txt" ${extra}>
-    <span class="open" role="button" tabindex="0" data-file-open>wählen</span>
-    <button class="btn" data-file-open>wählen</button>
+  root.innerHTML = `<div class="zone" x-data="fileDropTest" x-file-drop="handleFile" data-file-drop-accept=".csv,.txt" ${extra}>
+    <span class="open" role="button" tabindex="0" data-file-drop-open>wählen</span>
+    <button class="btn" data-file-drop-open>wählen</button>
   </div>`;
   document.body.append(root);
   await flush();
@@ -55,7 +55,7 @@ suite('x-file-drop', () => {
     root.remove();
   });
 
-  test('Klick auf data-file-open öffnet die Auswahl', async () => {
+  test('Klick auf data-file-drop-open öffnet die Auswahl', async () => {
     const { root, zone, clicks } = await mount();
     zone.querySelector('.open').click();
     assertEqual(clicks(), 1);
@@ -77,15 +77,15 @@ suite('x-file-drop', () => {
     root.remove();
   });
 
-  test('Ziehen setzt data-dragover, Verlassen und Ablegen entfernen es', async () => {
+  test('Ziehen setzt data-file-drop-over, Verlassen und Ablegen entfernen es', async () => {
     const { root, zone } = await mount();
     assertTrue(drag(zone, 'dragover', []).defaultPrevented);
-    assertTrue(zone.hasAttribute('data-dragover'));
+    assertTrue(zone.hasAttribute('data-file-drop-over'));
     drag(zone, 'dragleave', []);
-    assertEqual(zone.hasAttribute('data-dragover'), false);
+    assertEqual(zone.hasAttribute('data-file-drop-over'), false);
     drag(zone, 'dragover', []);
     drag(zone, 'drop', []);
-    assertEqual(zone.hasAttribute('data-dragover'), false);
+    assertEqual(zone.hasAttribute('data-file-drop-over'), false);
     root.remove();
   });
 
@@ -113,7 +113,7 @@ suite('x-file-drop', () => {
     root.remove();
   });
 
-  test('ohne data-multiple: einzelne Auswahl, nur die erste Datei', async () => {
+  test('ohne data-file-drop-multiple: einzelne Auswahl, nur die erste Datei', async () => {
     const { root, zone, input } = await mount();
     assertEqual(input.multiple, false);
     const a = new File(['a'], 'a.csv');
@@ -123,8 +123,8 @@ suite('x-file-drop', () => {
     root.remove();
   });
 
-  test('data-multiple: Mehrfachauswahl, die Methode bekommt alle Dateien als Liste', async () => {
-    const { root, zone, input } = await mount('data-multiple');
+  test('data-file-drop-multiple: Mehrfachauswahl, die Methode bekommt alle Dateien als Liste', async () => {
+    const { root, zone, input } = await mount('data-file-drop-multiple');
     assertTrue(input.multiple);
     const a = new File(['a'], 'a.csv');
     const b = new File(['b'], 'b.csv');

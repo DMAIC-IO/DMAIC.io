@@ -43,7 +43,7 @@
 
 .data-import__dropzone:hover,
 .data-import__dropzone:focus-visible,
-.data-import[data-dragover] .data-import__dropzone {
+.data-import[data-file-drop-over] .data-import__dropzone {
   border-color: var(--color-accent);
   background: var(--color-accent-light);
   color: var(--color-text-primary);

@@ -1,9 +1,9 @@
-<div class="module-container data-import" x-data="dataImport" x-file-drop="handleFile" :data-accept="accept">
+<div class="module-container data-import" x-data="dataImport" x-file-drop="handleFile" :data-file-drop-accept="accept">
   <!-- data-help-key="" an Auswahlfeldern, Eingaben und Reitern ist gewollt: die Hilfe hängt an der Beschriftung daneben bzw. an der Reiterleiste, der automatische Schlüssel ergäbe doppelte Fragezeichen. -->
   <!-- ── Empty state ───────────────────────────────────────────── -->
   <template x-if="!model.file">
     <div class="data-import__empty">
-      <div class="data-import__dropzone" data-ref="dropzone" data-file-open tabindex="0" role="button">
+      <div class="data-import__dropzone" data-ref="dropzone" data-file-drop-open tabindex="0" role="button">
         <div class="data-import__dropzone-icon" aria-hidden="true">
           <span class="icon icon--lg icon--empty-state" data-icon="action.upload" aria-hidden="true"></span>
         </div>
@@ -33,7 +33,7 @@
           </div>
         </div>
         <div class="data-import__file-actions">
-          <button class="data-import__btn-secondary" data-action="replace" data-file-open type="button"
+          <button class="data-import__btn-secondary" data-action="replace" data-file-drop-open type="button"
             x-text="t('replaceFile')"></button>
         </div>
       </div>

@@ -258,12 +258,12 @@ class StartStateError extends Error {
 /**
  * Die Steuerung eines `<form x-command-form>`: Werte, Startwerte, Absenden,
  * Markieren. Fest ist ein Parameter mit `data-arg-*`, frei einer mit
- * `x-param`; mit `data-form` sind die freien Felder die des Formular-Schemas.
+ * `x-param`; mit `data-command-form-schema` sind die freien Felder die des Formular-Schemas.
  * @param {any} Alpine @param {HTMLFormElement} formEl @param {string} baseCommand
  */
 function createFormController(Alpine, formEl, baseCommand) {
   const ui = () => uiOf(Alpine, formEl, 'x-command-form');
-  const formName = formEl.dataset.form ?? null;
+  const formName = formEl.dataset.commandFormSchema ?? null;
   const forms = ui().forms ?? {};
   if (formName !== null) requireKnownId('form', formName, Object.keys(forms));
   const formDef = formName !== null ? forms[formName] : null;

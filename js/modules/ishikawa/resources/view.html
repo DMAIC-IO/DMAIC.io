@@ -18,13 +18,13 @@
 
       <template x-for="scope in scopes" :key="scope">
         <div class="ishikawa__img-gallery" :class="'ishikawa__img-gallery--' + galleryModifier(scope)"
-             x-file-drop="addImages" data-multiple data-accept="image/*" :data-arg-scope="scope" :data-img-gallery="scope">
+             x-file-drop="addImages" data-file-drop-multiple data-file-drop-accept="image/*" :data-arg-scope="scope" :data-img-gallery="scope">
           <div class="ishikawa__img-gallery-header">
             <div>
               <label data-help-key="modules.ishikawa.fields.images.help" class="ishikawa__panel-label" x-text="galleryLabel(scope)"></label>
               <p class="ishikawa__img-hint" x-text="galleryHint(scope)"></p>
             </div>
-            <button type="button" class="btn btn--sm btn--primary ishikawa__img-upload-btn" data-file-open :data-img-upload="scope" x-text="'+ ' + t('uploadImages')"></button>
+            <button type="button" class="btn btn--sm btn--primary ishikawa__img-upload-btn" data-file-drop-open :data-img-upload="scope" x-text="'+ ' + t('uploadImages')"></button>
           </div>
           <div class="ishikawa__img-grid">
             <template x-if="galleryEmpty(scope)">
@@ -458,7 +458,7 @@
     </div>
 
     <!-- Category rename form (lent to the shared dialog by x-dialog) -->
-    <form class="ishikawa__cat-rename" x-ref="catRename" x-command-form="setCategoryLabels" data-form="catRename">
+    <form class="ishikawa__cat-rename" x-ref="catRename" x-command-form="setCategoryLabels" data-command-form-schema="catRename">
       <p class="ishikawa__cat-rename-hint" x-text="t('renameCatsHint')"></p>
       <div class="ishikawa__cat-rename-row">
         <span class="ishikawa__cat-rename-swatch" style="background:var(--ishikawa-cat-man)"></span>

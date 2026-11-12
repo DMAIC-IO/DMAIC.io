@@ -2,7 +2,7 @@
  * D.Mike — Direktiven der asynchronen Abläufe (async-task-directives.js)
  *
  * `<div x-async-task="name">` bindet einen Task aus `asyncTasks` des Moduls
- * und trägt während des Laufs `aria-busy="true"` und `data-running`. Die
+ * und trägt während des Laufs `aria-busy="true"` und `data-async-task-running`. Die
  * Kinder holen sich den Task vom nächsten Behälter darüber:
  * `x-async-task-start` (`<button>`, feste Argumente aus `data-arg-*`),
  * `x-async-task-cancel` (`<button>`, nur im Lauf sichtbar),
@@ -61,8 +61,8 @@ export function registerAsyncTaskDirectives(Alpine, { i18n }) {
     const { host, data } = hostOf(Alpine, el, 'x-async-task');
     host.params(name);
     effect(() => {
-      if (statusOf(data, name).running) { el.setAttribute('aria-busy', 'true'); el.setAttribute('data-running', ''); }
-      else { el.removeAttribute('aria-busy'); el.removeAttribute('data-running'); }
+      if (statusOf(data, name).running) { el.setAttribute('aria-busy', 'true'); el.setAttribute('data-async-task-running', ''); }
+      else { el.removeAttribute('aria-busy'); el.removeAttribute('data-async-task-running'); }
     });
   });
 

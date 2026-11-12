@@ -2,10 +2,10 @@
  * D.Mike — Direktive `x-file-drop="<methode>"`: Dateiauswahl und Ablegen.
  *
  * Das Element bekommt ein verstecktes `<input type="file" data-ref="file-input">`
- * (`accept` aus `data-accept`). Nachfahren mit `data-file-open` öffnen die Auswahl
+ * (`accept` aus `data-file-drop-accept`). Nachfahren mit `data-file-drop-open` öffnen die Auswahl
  * per Klick, Nicht-Schaltflächen auch per Enter und Leertaste. Beim Ziehen steht
- * `data-dragover` am Element. Die erste Datei geht an `$data[<methode>](file, args)`;
- * mit `data-multiple` wählt das Feld mehrere Dateien, und die Methode bekommt
+ * `data-file-drop-over` am Element. Die erste Datei geht an `$data[<methode>](file, args)`;
+ * mit `data-file-drop-multiple` wählt das Feld mehrere Dateien, und die Methode bekommt
  * alle als Liste (`files`). `args` sind die `data-arg-<kebab>`-Attribute des
  * Elements als Texte (`data-arg-scope` → `{ scope }`), beim Ereignis gelesen.
  * Die Methode wird beim Ereignis gelesen, ein Ausdruck wird nie ausgewertet (CSP).
@@ -27,9 +27,9 @@ export function registerFileDropDirective(Alpine) {
     input.type = 'file';
     input.hidden = true;
     input.setAttribute('data-ref', 'file-input');
-    const multiple = () => el.hasAttribute('data-multiple');
+    const multiple = () => el.hasAttribute('data-file-drop-multiple');
     const syncAccept = () => {
-      const accept = el.getAttribute('data-accept');
+      const accept = el.getAttribute('data-file-drop-accept');
       if (accept) input.setAttribute('accept', accept);
       else input.removeAttribute('accept');
       input.multiple = multiple();
@@ -51,7 +51,7 @@ export function registerFileDropDirective(Alpine) {
     const open = () => { syncAccept(); input.click(); };
     const opener = (event) => {
       if (event.target === input) return null;
-      return event.target instanceof Element ? event.target.closest('[data-file-open]') : null;
+      return event.target instanceof Element ? event.target.closest('[data-file-drop-open]') : null;
     };
 
     const onClick = (event) => { if (opener(event) && el.contains(opener(event))) open(); };
@@ -64,12 +64,12 @@ export function registerFileDropDirective(Alpine) {
     };
     const onDragOver = (event) => {
       event.preventDefault();
-      el.setAttribute('data-dragover', '');
+      el.setAttribute('data-file-drop-over', '');
     };
-    const onDragLeave = () => el.removeAttribute('data-dragover');
+    const onDragLeave = () => el.removeAttribute('data-file-drop-over');
     const onDrop = (event) => {
       event.preventDefault();
-      el.removeAttribute('data-dragover');
+      el.removeAttribute('data-file-drop-over');
       deliver(event.dataTransfer?.files);
     };
     const onChange = () => {

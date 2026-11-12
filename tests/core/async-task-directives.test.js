@@ -74,20 +74,20 @@ suite('x-async-task', () => {
     assertEqual($('.cancel').hidden, true);
     assertEqual($('.prog').hidden, true);
     assertEqual($('.err').hidden, true);
-    assertEqual($('.box').hasAttribute('data-running'), false);
+    assertEqual($('.box').hasAttribute('data-async-task-running'), false);
     assertEqual($('.start').disabled, false);
     assertEqual($('.start').getAttribute('data-help-key'), `modules.${ID}.asyncTasks.calc.help`);
     assertEqual($('.cancel').getAttribute('data-help-key'), `modules.${ID}.asyncTasks.calc.cancel.help`);
     await mod.destroy(); container.remove();
   });
 
-  test('Lauf: gesperrt, aria-busy, data-running, unbestimmter Fortschritt, dann Wert', async () => {
+  test('Lauf: gesperrt, aria-busy, data-async-task-running, unbestimmter Fortschritt, dann Wert', async () => {
     control.fail = false;
     const { $, vm, mod, container } = await mount();
     $('.start').click(); await flush();
     assertEqual($('.start').disabled, true);
     assertEqual($('.box').getAttribute('aria-busy'), 'true');
-    assertTrue($('.box').hasAttribute('data-running'));
+    assertTrue($('.box').hasAttribute('data-async-task-running'));
     assertEqual($('.cancel').hidden, false);
     assertEqual($('.prog').hidden, false);
     assertEqual($('.prog').hasAttribute('value'), false, 'unbestimmt ohne value');

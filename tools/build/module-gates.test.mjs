@@ -892,27 +892,27 @@ const CMD_SCHEMA = defineModel({
 }).schema;
 const FORM_SCHEMAS = { NoteForm: { fields: { text: text(), note: text() } } };
 
-test('readCommandForms: Formulare mit Kommando, data-form und x-param', () => {
-  const files = [{ path: 'resources/view.html', text: '<form class="x" x-command-form="addItem" :data-arg-col="c"><input x-param="text"></form><form><input x-param="nope"></form><form x-command-form="addItem" data-form="NoteForm"><textarea x-param="note"></textarea></form>' }];
+test('readCommandForms: Formulare mit Kommando, data-command-form-schema und x-param', () => {
+  const files = [{ path: 'resources/view.html', text: '<form class="x" x-command-form="addItem" :data-arg-col="c"><input x-param="text"></form><form><input x-param="nope"></form><form x-command-form="addItem" data-command-form-schema="NoteForm"><textarea x-param="note"></textarea></form>' }];
   assert.deepEqual(readCommandForms(files), [
     { path: 'resources/view.html', command: 'addItem', form: null, params: ['text'] },
     { path: 'resources/view.html', command: 'addItem', form: 'NoteForm', params: ['note'] },
   ]);
 });
 
-test('Kommando-Bezüge: Kommandos, data-form, x-param', () => {
+test('Kommando-Bezüge: Kommandos, data-command-form-schema, x-param', () => {
   const files = [{ path: 'resources/view.html', text: [
     '<button x-command="removeItem"></button><button x-command="ghost"></button>',
     '<form x-command-form="addItem"><input x-param="text"><input x-param="col2"></form>',
-    '<form x-command-form="addItem" data-form="NoteForm"><input x-param="note"><input x-param="zzz"></form>',
-    '<form x-command-form="nope"></form><form x-command-form="addItem" data-form="Gone"></form>',
+    '<form x-command-form="addItem" data-command-form-schema="NoteForm"><input x-param="note"><input x-param="zzz"></form>',
+    '<form x-command-form="nope"></form><form x-command-form="addItem" data-command-form-schema="Gone"></form>',
     '<button x-dialog="f" data-dialog-command="addItem" data-dialog-delete="drop"></button>',
   ].join('') }];
   assert.deepEqual(checkCommandRefs(files, CMD_SCHEMA, FORM_SCHEMAS), [
     'command: resources/view.html: x-command="ghost": kein Kommando des Models oder Viewmodels',
     'command: resources/view.html: x-command-form="nope": kein Kommando des Models oder Viewmodels',
     'command: resources/view.html: data-dialog-delete="drop": kein Kommando des Models',
-    'command: resources/view.html: data-form="Gone": kein Export aus viewmodel/forms.js',
+    'command: resources/view.html: data-command-form-schema="Gone": kein Export aus viewmodel/forms.js',
     'command: resources/view.html: x-param="col2": kein Parameter von addItem',
     'command: resources/view.html: x-param="zzz": kein Feld von NoteForm',
   ]);
@@ -932,7 +932,7 @@ test('Kommando-Bezüge: x-command und x-command-form nennen auch ein Viewmodel-K
 });
 
 test('Formularhilfe: nur Felder, die kein Parameter des Kommandos sind', () => {
-  const forms = readCommandForms([{ path: 'resources/view.html', text: '<form x-command-form="addItem" data-form="NoteForm"><input x-param="text"><input x-param="note"></form><form x-command-form="addItem"><input x-param="text"></form>' }]);
+  const forms = readCommandForms([{ path: 'resources/view.html', text: '<form x-command-form="addItem" data-command-form-schema="NoteForm"><input x-param="text"><input x-param="note"></form><form x-command-form="addItem"><input x-param="text"></form>' }]);
   assert.deepEqual(formHelpKeys(forms, CMD_SCHEMA, FORM_SCHEMAS), ['forms.NoteForm.note.help']);
   const help = { fields: { columns: { help: 'C' } }, actions: { addItem: { help: 'A', params: { col: 'c', text: 't' } }, removeItem: { help: 'R', params: { col: 'c', idx: 'i' } } } };
   assert.deepEqual(checkContextHelp(CMD_SCHEMA, { de: help, en: help }, {}, [], ['forms.NoteForm.note.help']), [
@@ -968,8 +968,8 @@ const FORMS_FIXTURE = `import { defineForm, text } from '${MODEL_URL}';
 export const MoveForm = defineForm({ fields: { to: text(), note: text() } });
 `;
 
-test('checkConvertedModule: Kommando-Formular mit data-form verlangt Formularhilfe', async () => {
-  const view = '<form x-command-form="moveItem" data-form="MoveForm" data-arg-from="a" data-arg-idx="0"><input x-param="to"><input x-param="note"></form>';
+test('checkConvertedModule: Kommando-Formular mit data-command-form-schema verlangt Formularhilfe', async () => {
+  const view = '<form x-command-form="moveItem" data-command-form-schema="MoveForm" data-arg-from="a" data-arg-idx="0"><input x-param="to"><input x-param="note"></form>';
   const base = { 'js/modules/neu/viewmodel/forms.js': FORMS_FIXTURE, 'js/modules/neu/resources/view.html': view };
   assert.deepEqual(await checkConvertedModule(convertedFixture(base), 'neu'), [
     'help: resources/i18n/context-help.de.json: forms.MoveForm.note.help fehlt',

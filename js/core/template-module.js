@@ -385,7 +385,7 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
 // base.exports — Mapper nach Datenform (table/tables/tree/image, fileName),
 // nur mit view; daraus entstehen Export-Menü und Dateien (core/exporter.js).
 // base.forms — Namensraum von viewmodel/forms.js (defineForm), für
-// x-command-form mit data-form; Vorgabe {}.
+// x-command-form mit data-command-form-schema; Vorgabe {}.
 /**
  * Ein Modul aus Model, Viewmodel und Template bauen.
  * @template {((ctx: any) => any) | ((ctx: any) => any)[]} P

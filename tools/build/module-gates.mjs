@@ -1034,7 +1034,7 @@ const X_PARAM = /\sx-param="\s*([^"]*?)\s*"/g;
 const COMMAND_ATTRS = ['x-command', 'x-command-form', 'data-dialog-command', 'data-dialog-delete'];
 
 /**
- * Die Kommando-Formulare der Templates: `<form … x-command-form="cmd" [data-form="Name"]>`
+ * Die Kommando-Formulare der Templates: `<form … x-command-form="cmd" [data-command-form-schema="Name"]>`
  * mit den `x-param`-Namen darin. Formulare sind in HTML nie verschachtelt.
  * @param {{ path: string, text: string }[]} files Templates unter resources/
  * @returns {{ path: string, command: string, form: string|null, params: string[] }[]}
@@ -1045,7 +1045,7 @@ export function readCommandForms(files) {
     for (const m of text.matchAll(FORM_BLOCK)) {
       const command = plainAttr(m[1], 'x-command-form');
       if (command === null) continue;
-      out.push({ path, command, form: plainAttr(m[1], 'data-form'), params: [...m[2].matchAll(X_PARAM)].map((p) => p[1]) });
+      out.push({ path, command, form: plainAttr(m[1], 'data-command-form-schema'), params: [...m[2].matchAll(X_PARAM)].map((p) => p[1]) });
     }
   }
   return out;
@@ -1054,7 +1054,7 @@ export function readCommandForms(files) {
 /**
  * Gate Kommando-Bezüge: `x-command`, `x-command-form`, `data-dialog-command`,
  * `data-dialog-delete` nennen ein Kommando des Models (`x-command` und
- * `x-command-form` auch ein Viewmodel-Kommando); `data-form` einen
+ * `x-command-form` auch ein Viewmodel-Kommando); `data-command-form-schema` einen
  * Export aus viewmodel/forms.js; `x-param` einen Parameter des Kommandos
  * bzw. ein Feld des Formulars.
  * @param {{ path: string, text: string }[]} files
@@ -1074,8 +1074,8 @@ export function checkCommandRefs(files, schema, formSchemas, vmCommands = {}) {
         if (!known.includes(m[1])) out.push(`command: ${path}: ${attr}="${m[1]}": kein Kommando des Models${withVm ? ' oder Viewmodels' : ''}`);
       }
     }
-    for (const m of text.matchAll(/\sdata-form="\s*([^"]*?)\s*"/g)) {
-      if (!Object.hasOwn(formSchemas, m[1])) out.push(`command: ${path}: data-form="${m[1]}": kein Export aus viewmodel/forms.js`);
+    for (const m of text.matchAll(/\sdata-command-form-schema="\s*([^"]*?)\s*"/g)) {
+      if (!Object.hasOwn(formSchemas, m[1])) out.push(`command: ${path}: data-command-form-schema="${m[1]}": kein Export aus viewmodel/forms.js`);
     }
   }
   for (const { path, command, form, params } of readCommandForms(files)) {
@@ -1262,7 +1262,7 @@ export function checkChoiceGroups(files) {
 }
 
 /**
- * Hilfeschlüssel der Formularfelder: ein Feld mit `data-form`, das kein
+ * Hilfeschlüssel der Formularfelder: ein Feld mit `data-command-form-schema`, das kein
  * Parameter des Kommandos ist, braucht `forms.<Name>.<feld>.help`.
  * @param {ReturnType<typeof readCommandForms>} commandForms
  * @param {{ commands: Record<string, { params: object }> }} schema
