@@ -13,8 +13,8 @@
     model            — Model mit view.expanded und den Kommandos setExpanded,
                        addSubstep, removeSubstep
   Die folgenden Glieder liefert substepsView() aus
-  core/flowchart/substeps-view.js; das Modul breitet sie in seinem
-  view-Block aus (...substepsView()):
+  core/flowchart/substeps-view.js; das Modul nimmt es als Teil in die Liste
+  seines view-Blocks auf (view: [eigenerTeil, substepsView]):
     isExpanded(id)         — steht die id im Ansichtsfeld expanded? (x-if, x-show)
     substepsBarClass(step) — Klasse der Leiste: 'fc-substeps-bar--has', wenn der
                              Schritt Unterschritte hat, sonst ''

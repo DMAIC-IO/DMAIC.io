@@ -313,6 +313,15 @@ suite('agent ops — Schema-Module', () => {
     assertTrue(out.message.includes('unknown field "mode"'), out.message);
   });
 
+  test('instance.set: unbekannter Schlüssel bleibt Sache von setFields (unknown field)', async () => {
+    const { deps, model } = schemaDeps();
+    deps.loadModule = async () => ({ agentEntry: { ...ENTRY, settable: ['title'] } });
+    const out = await createOps(deps)['instance.set']({ instance: 'b-1', values: { 'title[2]': 'x' } });
+    assertEqual(out.error, 'call_failed');
+    assertTrue(out.message.includes('unknown field "title[2]"'), out.message);
+    assertEqual(model.title, 'T');
+  });
+
   test('instance.call auf ein ausgeblendetes Kommando → unknown_method', async () => {
     const { deps } = schemaDeps();
     const entry = { ...ENTRY, actions: { ...ENTRY.actions } };

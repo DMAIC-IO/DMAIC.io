@@ -19,7 +19,7 @@ import { parsePath, VERSION, MIGRATION_KEY } from '../../js/core/model.js';
 import { parseFieldPath, keyFieldsOf } from '../../js/core/field-path.js';
 import { loadModelSchema, loadSettingsSchema, loadFormSchemas, loadStateSchema } from './model-types.mjs';
 import { checkWidgetBindings, checkAlgoLinkLiterals, loadAlgoIds, loadWidgetSchemas } from './widget-gates.mjs';
-import { factoryArgument, findViewBlock, viewPartNodes, viewNamesDetailOf, viewNamesOf, viewMemberNamesOf, computedNamesOf, resolvePart } from './view-names.mjs';
+import { factoryArgument, findViewBlock, viewPartNodes, unresolvedViewParts, viewNamesDetailOf, viewNamesOf, viewMemberNamesOf, computedNamesOf, resolvePart } from './view-names.mjs';
 export { viewNamesDetailOf, viewNamesOf, computedNamesOf };
 import { BOOKS } from '../../js/core/references-books.js';
 import { readExampleOwners } from './example-catalog.mjs';
@@ -857,7 +857,9 @@ export function checkViewReads(files, base) {
     };
     const view = findViewBlock(text);
     if (view) {
-      const parts = viewPartNodes(text, base ? join(base, path) : undefined);
+      const file = base ? join(base, path) : undefined;
+      for (const part of unresolvedViewParts(text, file)) out.push(`view: ${path}: ${part} nicht auflösbar — view-Block nicht prüfbar`);
+      const parts = viewPartNodes(text, file);
       for (const part of parts.length > 0 ? parts : [view]) scan(part, 'im view-Block');
     } else {
       const sf = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true);
@@ -1345,12 +1347,42 @@ function isAsyncRun(p) {
  * Alpine und DOM). Steht dort `commands` als Bezeichner (`commands,` oder
  * `commands: vmCommands`), wird er in der Datei oder über ihren relativen
  * Import aufgelöst (dafür der Pfad). Was kein erkennbares Literal ist,
- * bleibt außen vor.
+ * bleibt außen vor; einen unauflösbaren Bezeichner meldet `checkCommandsRef`.
  * @param {string} text Inhalt von viewmodel/viewmodel.js
  * @param {string} [file] Pfad der Datei, für Kommandos aus Importen
  * @returns {Record<string, { params: Record<string, true> }>}
  */
 export function readViewmodelCommands(text, file) {
+  return readViewmodelCommandsDetail(text, file).commands;
+}
+
+/**
+ * Gate Viewmodel-Kommandos: ein `commands`-Bezeichner, der sich nicht zu einem
+ * Objektliteral auflösen lässt, ist gemeldet — sonst fehlen seine Kommandos
+ * stillschweigend in jedem Gate, das `readViewmodelCommands` liest.
+ * @param {{ path: string, text: string }[]} files
+ * @param {string} [base] Modulordner, um Importe zu lesen
+ * @returns {string[]}
+ */
+export function checkCommandsRef(files, base) {
+  const out = [];
+  for (const { path, text } of files) {
+    if (path !== 'viewmodel/viewmodel.js') continue;
+    for (const name of readViewmodelCommandsDetail(text, base ? join(base, path) : undefined).unresolved) {
+      out.push(`command: ${path}: commands (${name}) nicht auflösbar — Viewmodel-Kommandos nicht prüfbar`);
+    }
+  }
+  return out;
+}
+
+/**
+ * Wie `readViewmodelCommands`, dazu die `commands`-Bezeichner, die sich nicht
+ * zu einem Objektliteral auflösen lassen.
+ * @param {string} text @param {string} [file]
+ * @returns {{ commands: Record<string, { params: Record<string, true>, asyncRun?: true }>, unresolved: string[] }}
+ */
+function readViewmodelCommandsDetail(text, file) {
+  const unresolved = [];
   const sf = parseJs('viewmodel.js', text);
   const key = (p) => (p.name && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? p.name.text : null);
   const prop = (obj, name) => obj.properties.find((p) => ts.isPropertyAssignment(p) && key(p) === name)?.initializer;
@@ -1386,12 +1418,13 @@ export function readViewmodelCommands(text, file) {
     if (ref) {
       const target = resolvePart(sf, ref, file);
       if (target && ts.isObjectLiteralExpression(target)) readBlock(target);
+      else unresolved.push(ref);
       return;
     }
     ts.forEachChild(n, visit);
   };
   visit(sf);
-  return out;
+  return { commands: out, unresolved };
 }
 
 /** @param {string} file @returns {object|null} */
@@ -1552,6 +1585,7 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
   out.push(...checkLayers(js));
   out.push(...checkWritePath(js));
   out.push(...checkViewReads(js, base));
+  out.push(...checkCommandsRef(js, base));
   out.push(...checkAsyncTaskDecls(js));
   const cssPath = 'resources/style.css';
   out.push(...checkPickerCss(paths.includes(cssPath) ? read(cssPath) : null));

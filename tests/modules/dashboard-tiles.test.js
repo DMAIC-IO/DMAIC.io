@@ -259,6 +259,12 @@ suite('dashboard tiles: ishikawa', () => {
     assertEqual(host.querySelectorAll('.dashboard-fmea__legend').length, 0);
   });
 
+  test('an unnamed cause shows — instead of its stableId', async () => {
+    const state = { ...ISHIKAWA_STATE, rows: [{ id: 1, parentId: null, name: '', category: 'man', status: 'open', ratings: { 1: 5 } }] };
+    const host = (await render(ishikawaTile, state));
+    assertEqual(host.querySelector('.dashboard-fmea__top-desc').textContent, '—');
+  });
+
   test('empty state without rows', async () => {
     const host = (await render(ishikawaTile, { rows: [] }));
     assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'modules.ishikawa.tileEmpty');

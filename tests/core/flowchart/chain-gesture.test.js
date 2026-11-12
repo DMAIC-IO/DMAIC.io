@@ -181,7 +181,7 @@ suite('flowchart/interaction — Unterschritt-Geste', () => {
   test('↓ Enter verschiebt um eins: moveSubstep mit Schritt, Unterschritt, Endindex', () => {
     const { host, calls, grip } = setupSubsteps();
     keys(grip('x'), ['Enter', 'ArrowDown']);
-    assertEqual(host.state.substepPreview.index, 1);
+    assertDeepEqual(host.state.substepPreview, { group: 's1', index: 1, id: 'x' });
     key(grip('x'), 'Enter');
     assertDeepEqual(calls, [['moveSubstep', { stepId: 's1', substepId: 'x', index: 1 }]]);
     assertEqual(host.state.substepPreview, null);

@@ -314,8 +314,8 @@ function clone(value) {
  * verletzt. Segmente: ein Schlüssel oder `[]` (jedes Element eines Arrays);
  * `[]` hängt ohne Punkt an, ein Schlüssel nach `[]` mit Punkt
  * (`inScope[].dataUrl`, `[][].image`). Der leere Pfad ist gültig und meint das
- * ganze Feld. Sonst endet der Pfad mit einem Schlüssel oder `{}` — ein `[]` am
- * Ende meinte jedes Element und damit das ganze Feld.
+ * ganze Feld. Ein `[]` am Ende trifft jedes Element einzeln: jedes wird zu
+ * seiner eigenen Auslassung, die Liste selbst und ihre Länge bleiben.
  *
  * Dieselbe Grammatik prüft der Generator und MELDET Verstöße
  * (`invalid_omit_path:<feld>:<pfad>`, `tools/build/agent-data.mjs`); hier

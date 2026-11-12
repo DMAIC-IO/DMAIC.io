@@ -123,6 +123,20 @@ suite('ishikawa Migration — from0', () => {
     assertEqual(out.experiments[0].costHours, null);
   });
 
+  test('hypothesisIds ohne Ursache (alter loadSnapshot) entfallen, geladen wird ohne Reparatur', () => {
+    const x = {
+      id: 1, title: '', description: '', responsible: '', status: 'planned',
+      startDate: '', endDate: '', costMoney: null, costHours: null, hypothesisIds: ['H-001', 'H-009', 'H-002'],
+    };
+    const out = from0({ rows: [oldRow(1), oldRow(2)], experiments: [x] });
+    assertDeepEqual(out.experiments[0].hypothesisIds, ['H-001', 'H-002']);
+    const reports = [];
+    const m = State.fromJSON({ problem: 'p', experts: [], catLabels: {}, rows: [oldRow(1)], experiments: [x] },
+      { onRepair: (n) => reports.push(n) });
+    assertDeepEqual(reports, []);
+    assertDeepEqual(m.experiments[0].hypothesisIds, ['H-001']);
+  });
+
   test('Altstand mit Waise und ohne stableId lädt über die Kette ohne Reparatur', () => {
     const reports = [];
     const m = State.fromJSON({

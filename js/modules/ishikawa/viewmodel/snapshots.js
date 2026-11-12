@@ -68,9 +68,10 @@ export const snapshotsView = (ctx) => {
       else this.compareSnapshot({ snapshotId: /** @type {any} */ (id) });
     },
 
-    /** Doppelklick: den Snapshot nach Rückfrage laden. @param {number} id @returns {Promise<void>} */
+    /** Doppelklick: den Snapshot nach Rückfrage laden; ein Fehler geht an notify. @param {number} id @returns {Promise<void>} */
     async loadFromList(id) {
-      await runUiCommand(this._ui, 'loadSnapshot', { snapshotId: id });
+      const r = await runUiCommand(this._ui, 'loadSnapshot', { snapshotId: id });
+      if (!r.ok && 'error' in r) this._ui.notify(r.error?.message ?? String(r.error), 'error');
     },
 
     // ── Vergleich ─────────────────────────────────────────────

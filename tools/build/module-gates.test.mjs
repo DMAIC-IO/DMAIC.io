@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkViewReads, checkPickerCss, checkChartBindings, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, checkFileDropRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts, viewNamesOf, viewNamesDetailOf, computedNamesOf, checkWidgetTemplates, modelMembersOf, checkFieldErrorPaths } from './module-gates.mjs';
+import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkViewReads, checkCommandsRef, checkPickerCss, checkChartBindings, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, checkFileDropRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts, viewNamesOf, viewNamesDetailOf, computedNamesOf, checkWidgetTemplates, modelMembersOf, checkFieldErrorPaths } from './module-gates.mjs';
 import { viewMemberNamesOf } from './view-names.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { APP_DIR } from './build.mjs';
@@ -1208,6 +1208,23 @@ test('checkViewReads: view-Teile aus importierten Dateien des Moduls', () => {
   });
   const vm = { path: 'viewmodel/viewmodel.js', text: "import { causesView } from './causes.js';\nexport default createModule({ view: [causesView, (ctx) => ({ y: 1 })] });\n" };
   assert.deepEqual(checkViewReads([vm], base), ['view: viewmodel/viewmodel.js: stateManager im view-Block — Arbeitsblätter über ctx.data lesen']);
+});
+
+test('checkViewReads: nicht auflösbarer view-Teil wird gemeldet', () => {
+  const base = appWith({ 'viewmodel/causes.js': 'export function causesView(ctx) { return { y: 1 }; }\n' });
+  const vm = { path: 'viewmodel/viewmodel.js', text: "import { causesView } from './causes.js';\nimport { goneView } from './gone.js';\nexport default createModule({ view: [causesView, goneView] });\n" };
+  assert.deepEqual(checkViewReads([vm], base), ['view: viewmodel/viewmodel.js: view[1] nicht auflösbar — view-Block nicht prüfbar']);
+});
+
+test('checkCommandsRef: nicht auflösbarer commands-Bezeichner wird gemeldet', () => {
+  const base = appWith({ 'viewmodel/commands.js': 'export const commands = { go: command({ run() {} }) };\n' });
+  const ok = { path: 'viewmodel/viewmodel.js', text: "import { commands } from './commands.js';\nexport default createModule({ commands });\n" };
+  const gone = { path: 'viewmodel/viewmodel.js', text: "import { vmc } from './gone.js';\nexport default createModule({ commands: vmc });\n" };
+  const notLiteral = { path: 'viewmodel/viewmodel.js', text: "const vmc = make();\nexport default createModule({ commands: vmc });\n" };
+  assert.deepEqual(checkCommandsRef([ok], base), []);
+  assert.deepEqual(checkCommandsRef([gone], base), ['command: viewmodel/viewmodel.js: commands (vmc) nicht auflösbar — Viewmodel-Kommandos nicht prüfbar']);
+  assert.deepEqual(checkCommandsRef([notLiteral], base), ['command: viewmodel/viewmodel.js: commands (vmc) nicht auflösbar — Viewmodel-Kommandos nicht prüfbar']);
+  assert.deepEqual(checkCommandsRef([{ path: 'viewmodel/viewmodel.js', text: 'export default createModule({ commands: { a: command({ run() {} }) } });' }], base), []);
 });
 
 test('checkViewReads: auch tile/*.js', () => {

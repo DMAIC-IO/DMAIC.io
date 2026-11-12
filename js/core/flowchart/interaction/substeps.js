@@ -26,7 +26,18 @@ export function substepGesture({ handle }) {
       return { ...reorder.start(el), id: item.dataset.substepId };
     },
 
-    /** @param {{ group: string, index: number }|null} pos Vorschau, `null` räumt auf */
+    /**
+     * Begrenzt wie `reorder.clamp` und trägt die id des gezogenen Unterschritts
+     * weiter — `substepItemClass` braucht sie für die Zielmarke.
+     * @param {{ group: string, index: number }} pos @param {object} ctx @param {{ group: string, index: number, id: string }} from
+     * @returns {{ group: string, index: number, id: string }|null}
+     */
+    clamp(pos, ctx, from) {
+      const out = reorder.clamp(pos, ctx, from);
+      return out && { ...out, id: from.id };
+    },
+
+    /** @param {{ group: string, index: number, id: string }|null} pos Vorschau, `null` räumt auf */
     preview(pos) {
       this.state.substepPreview = pos;
     },

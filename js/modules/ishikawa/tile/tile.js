@@ -78,8 +78,9 @@ export default createTile({
       },
       /** Die topN am höchsten bewerteten Ursachen. */
       get top() {
+        const byStable = new Map(this.model.rows.map((r) => [r.stableId, r]));
         return paretoItems(this.model.rows).slice(0, this.settings.topN).map((p) => ({
-          name: p.name,
+          name: byStable.get(p.stableId)?.name || '—',
           score: p.score.toFixed(1),
           style: `color:${p.category ? catColor(p.category) : 'var(--color-text-secondary)'}`,
         }));

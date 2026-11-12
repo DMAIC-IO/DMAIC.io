@@ -138,7 +138,8 @@ export function resolvePart(sf, name, file) {
 /**
  * Die Funktionen der Teile des view-Blocks: der Block selbst oder, bei
  * `view: [a, (ctx) => ({ … })]`, jedes Element der Liste. Bezeichner werden
- * in der Datei oder über den Import aufgelöst; unauflösbare fallen weg.
+ * in der Datei oder über den Import aufgelöst; unauflösbare fallen weg
+ * (`unresolvedViewParts` benennt sie).
  * @param {string} text Quelltext von viewmodel.js oder einer Kachel
  * @param {string} [file] Pfad der Datei, für Importe
  * @returns {import('typescript').Node[]}
@@ -160,6 +161,28 @@ export function viewPartNodes(text, file) {
     return fn ? [fn] : [];
   }
   return [view];
+}
+
+/**
+ * Die Teile des view-Blocks, deren Bezeichner sich weder in der Datei noch
+ * über einen relativen Import auflösen lässt — `viewPartNodes` lässt sie
+ * weg, ihre Glieder kennt kein Gate.
+ * @param {string} text Quelltext von viewmodel.js oder einer Kachel
+ * @param {string} [file] Pfad der Datei, für Importe
+ * @returns {string[]} `view[i]` je Listenelement, `view` beim Bezeichner als Block
+ */
+export function unresolvedViewParts(text, file) {
+  const sf = ts.createSourceFile(file ?? 'viewmodel.js', text, ts.ScriptTarget.Latest, true);
+  const view = factoryArgument(sf)?.properties.find((p) => ts.isPropertyAssignment(p) && p.name && ts.isIdentifier(p.name) && p.name.text === 'view');
+  const init = view ? unwrapExpr(view.initializer) : null;
+  if (init && ts.isArrayLiteralExpression(init)) {
+    return init.elements.flatMap((el, i) => {
+      const e = unwrapExpr(el);
+      return ts.isIdentifier(e) && !resolvePart(sf, e.text, file) ? [`view[${i}]`] : [];
+    });
+  }
+  if (init && ts.isIdentifier(init) && !resolvePart(sf, init.text, file)) return ['view'];
+  return [];
 }
 
 /**

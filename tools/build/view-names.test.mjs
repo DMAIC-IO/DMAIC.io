@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { viewNamesDetailOf, viewMemberNamesOf, computedNamesOf, viewPartNodes } from './view-names.mjs';
+import { viewNamesDetailOf, viewMemberNamesOf, computedNamesOf, viewPartNodes, unresolvedViewParts } from './view-names.mjs';
 
 function appWith(files) {
   const root = mkdtempSync(join(tmpdir(), 'view-names-'));
@@ -73,4 +73,17 @@ test('Einzelfunktion wie bisher', () => {
   const text = 'export default createModule({ view(ctx) { return { get g() { return 1; }, d: 2 }; } });';
   assert.deepEqual(viewNamesDetailOf(text), { getters: ['g'], computed: [], data: ['d'] });
   assert.equal(viewPartNodes(text).length, 1);
+});
+
+test('unresolvedViewParts: nicht auflösbare Teile werden benannt', () => {
+  const root = appWith({ 'm/viewmodel/problem.js': PROBLEM });
+  const file = join(root, 'm/viewmodel/viewmodel.js');
+  const list = `import { problemView } from './problem.js';
+import { missingView } from './missing.js';
+export default createModule({ view: [problemView, (ctx) => ({ a: 1 }), missingView, ghost] });
+`;
+  assert.deepEqual(unresolvedViewParts(list, file), ['view[2]', 'view[3]']);
+  assert.deepEqual(unresolvedViewParts('export default createModule({ view: ghost });', file), ['view']);
+  assert.deepEqual(unresolvedViewParts(VM.replace(', causes', ''), file), []);
+  assert.deepEqual(unresolvedViewParts('export default createModule({ view(ctx) { return {}; } });'), []);
 });

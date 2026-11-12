@@ -279,6 +279,15 @@ suite('ishikawa snapshots: Liste', () => {
     assertDeepEqual([...h.vm().state.collapsed], []);
   });
 
+  test('Doppelklick auf einen nicht mehr vorhandenen Snapshot meldet den Fehler', async () => {
+    const h = await mount(withSnapshot());
+    await h.vm().loadFromList(99);
+    await settle();
+    assertEqual(h.notes.length, 1);
+    assertEqual(h.notes[0][1], 'error');
+    assertEqual(h.vm().model.rows.length, 5);
+  });
+
   test('loadSnapshot ohne Oberfläche (wie der Agent) leert die eingeklappten Zeilen ebenso', async () => {
     const h = await mount(withSnapshot());
     h.vm().state.collapsed = [1, 2];

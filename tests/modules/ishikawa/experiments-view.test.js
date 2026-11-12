@@ -403,6 +403,18 @@ suite('ishikawa experiments: Verknüpfen', () => {
     assertEqual(h.dialog.open, null);
     assertDeepEqual(commandsSince(h, from), ['setCauseExperiments']);
     assertDeepEqual(h.vm().model.experiments.map((x) => x.hypothesisIds), [['H-001', 'H-003'], ['H-001']]);
+    assertEqual(h.vm().state.linkCause, null, 'nach dem Schließen keine verknüpfte Ursache mehr');
+  });
+
+  test('Abbrechen des Dialogs „Versuche verknüpfen“ setzt die Ursache zurück', async () => {
+    const h = await mount(dated(), { tab: 'hypotheses' });
+    h.$('[data-link-exp="3"]').click();
+    await settle();
+    assertEqual(h.vm().state.linkCause, 'H-003');
+    h.dialog.open.api.cancel();
+    await settle();
+    assertEqual(h.dialog.open, null);
+    assertEqual(h.vm().state.linkCause, null);
   });
 
   test('Ursache ohne Experimente: Hinweis im Dialog; unverändert schließt ohne Kommando', async () => {

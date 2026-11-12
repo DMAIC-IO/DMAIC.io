@@ -292,9 +292,10 @@ export function createOps(deps) {
       if (!Array.isArray(entry.settable)) {
         return axiError(ERRORS.CALL_FAILED, t('agent.errors.setNotSupported', { module: found.module }));
       }
-      // Nur setzbare Felder; Ansichtsfelder prüft weiter `setFields`.
+      // Gesperrt sind nur echte Felder außerhalb von `settable`; unbekannte
+      // Schlüssel und Ansichtsfelder prüft weiter `setFields` (unknown field).
       const closed = Object.keys(action.values ?? {})
-        .filter((k) => !entry.settable.includes(k) && !(entry.viewFields ?? []).includes(k));
+        .filter((k) => Object.hasOwn(entry.fields ?? {}, k) && !entry.settable.includes(k));
       if (closed.length > 0) {
         return axiError(ERRORS.CALL_FAILED, t('agent.errors.setNotSettable',
           { fields: closed.join(', '), settable: entry.settable.join(', ') }));

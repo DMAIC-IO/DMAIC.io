@@ -107,7 +107,9 @@ function fillStable(groups) {
  * - Snapshots: `data` wie Problem, Experten und Zeilen oben.
  * - `catLabels` nur mit den sechs Kategorien (fehlend `''`), `images` mit
  *   `inScope`/`outScope` (fehlend oder als Array: leer).
- * - Kosten der Experimente als Text werden Zahl, leer `null`.
+ * - Kosten der Experimente als Text werden Zahl, leer `null`; Verweise
+ *   `hypothesisIds` auf stableIds, die es unter den Zeilen nicht gibt,
+ *   entfallen (der alte `loadSnapshot` ließ sie stehen).
  * @param {Record<string, any>} json Kopie des gespeicherten Zustands
  * @returns {object}
  */
@@ -126,8 +128,14 @@ export function from0(json) {
   const images = isObj(json.images) ? json.images : {};
   out.images = { inScope: arr(images.inScope), outScope: arr(images.outScope) };
   if (Object.hasOwn(json, 'experiments')) {
+    const known = new Set(out.rows.map((r) => r.stableId));
     out.experiments = arr(json.experiments).map((x) => (isObj(x)
-      ? { ...x, costMoney: cost(x.costMoney), costHours: cost(x.costHours) }
+      ? {
+        ...x,
+        costMoney: cost(x.costMoney),
+        costHours: cost(x.costHours),
+        ...(Array.isArray(x.hypothesisIds) ? { hypothesisIds: x.hypothesisIds.filter((sid) => known.has(sid)) } : {}),
+      }
       : x));
   }
   return out;

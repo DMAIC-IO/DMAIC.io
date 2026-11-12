@@ -20,5 +20,3 @@
 #   nicht dazu: Ein neuer Befund wird behoben, nicht eingefroren.
 
 calculator unreachable_write:lastResult
-# Gate-Lücke, kein fehlender Setter: Der Schreibweg existiert (setCategoryLabels),
-# das Gate erkennt den Sammelwert (next[key] = …; model.catLabels = next) noch nicht.

@@ -64,14 +64,19 @@ export const experimentsView = (ctx) => ({
   // ── Verknüpfen ────────────────────────────────────────────
 
   /**
-   * Dialog „Versuche verknüpfen“ für eine Ursache öffnen.
+   * Dialog „Versuche verknüpfen“ für eine Ursache öffnen; nach dem Schließen
+   * ist keine Ursache mehr gewählt.
    * @param {number} rowId Zeile des Baums @returns {Promise<void>}
    */
   async openExpLink(rowId) {
     const row = this.model.rows.find((r) => r.id === rowId);
     if (!row) return;
     this.state.linkCause = row.stableId;
-    await ctx.openDialog('expLink', { args: { stableId: row.stableId }, title: this.t('linkExperimentsTitle') });
+    try {
+      await ctx.openDialog('expLink', { args: { stableId: row.stableId }, title: this.t('linkExperimentsTitle') });
+    } finally {
+      this.state.linkCause = null;
+    }
   },
 
   /** Hinweis im Dialog „Versuche verknüpfen“ mit dem Namen der Ursache. @returns {string} */
