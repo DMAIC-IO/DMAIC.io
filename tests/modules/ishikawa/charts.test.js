@@ -92,7 +92,7 @@ suite('ishikawa charts: trendConfig', () => {
     assertTrue(de.xLabels[0].name.length <= 13, 'gekürzt');
     assertTrue(de.xLabels[0].name.endsWith('…'), 'Auslassungszeichen');
     assertEqual(de.xLabels[1].name, 'Short');
-    assertEqual(trendConfig([s1, s2], { lang: 'en' }).xLabels[0].date, '09/03');
+    assertEqual(trendConfig([s1, s2], { lang: 'en' }).xLabels[0].date, '03/09');
     assertEqual(trendConfig([state('X', 'kein Datum', s1.data.rows), s2], { lang: 'de' }).xLabels[0].date, '');
   });
 
@@ -122,20 +122,21 @@ const C = { now: ms('2020-06-15'), lang: 'de', moneyUnit: '€', hoursUnit: 'h',
 const CR = { ...C, moneyUnit: '€/Tag', hoursUnit: 'h/Tag' };
 
 suite('ishikawa charts: Datumsregel des Moduls', () => {
-  test('de → de-DE, sonst en-GB (Tag vor Monat)', () => {
+  test('de → de-DE (Tag vor Monat), sonst en-US (Monat vor Tag)', () => {
     assertEqual(localeOf('de'), 'de-DE');
-    assertEqual(localeOf('en'), 'en-GB');
-    assertEqual(localeOf('fr'), 'en-GB');
+    assertEqual(localeOf('en'), 'en-US');
+    assertEqual(localeOf('fr'), 'en-US');
   });
 
   test('Tag und Monat, Datum, Datum mit Uhrzeit', () => {
     const d = new Date(2026, 2, 9, 14, 5);
     assertEqual(dayMonth(d.getTime(), 'de'), '09.03.');
-    assertEqual(dayMonth(d.getTime(), 'en'), '09/03');
+    assertEqual(dayMonth(d.getTime(), 'en'), '03/09');
     assertEqual(dateText(d, 'de'), '9.3.2026');
-    assertEqual(dateText(d, 'en'), '09/03/2026');
+    assertEqual(dateText(d, 'en'), '3/9/2026');
     assertEqual(dateTimeText(d.toISOString(), 'de'), '9.3.2026 14:05');
-    assertEqual(dateTimeText(d.toISOString(), 'en'), '09/03/2026 14:05');
+    assertEqual(dateTimeText(d.toISOString(), 'en'), `3/9/2026 ${d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`);
+    assertTrue(dateTimeText(d.toISOString(), 'en').includes('PM'), '12-Stunden-Uhr');
     assertEqual(dayMonth(Number.NaN, 'de'), '');
     assertEqual(dateTimeText('kein Datum', 'de'), '');
   });

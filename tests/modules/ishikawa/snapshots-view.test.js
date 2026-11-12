@@ -244,7 +244,7 @@ suite('ishikawa snapshots: Liste', () => {
     assertEqual(h.vm().model.snapshots[0].name, `Snapshot ${new Date().toLocaleDateString('de-DE')}`);
     h.lang.current = 'en';
     h.vm().saveSnapshot({ name: '' });
-    assertEqual(h.vm().model.snapshots[0].name, `Snapshot ${new Date().toLocaleDateString('en-GB')}`, 'Tag vor Monat wie im Trend');
+    assertEqual(h.vm().model.snapshots[0].name, `Snapshot ${new Date().toLocaleDateString('en-US')}`, 'Monat vor Tag wie im Trend');
     assertTrue(h.vm().model.snapshots[0].name !== h.vm().model.snapshots[1].name, 'en ≠ de');
     assertDeepEqual(h.vm().model.snapshots[0].data.rows.map((r) => r.stableId), h.vm().model.rows.map((r) => r.stableId));
   });
@@ -256,8 +256,8 @@ suite('ishikawa snapshots: Liste', () => {
     const fmt = (lang) => `${d.toLocaleDateString(lang)} ${d.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' })}`;
     assertEqual(h.vm().snapDate(s), fmt('de-DE'));
     h.lang.current = 'en';
-    assertEqual(h.vm().snapDate(s), fmt('en-GB'), 'Tag vor Monat wie im Trend');
-    assertTrue(fmt('de-DE') !== fmt('en-GB'), 'en ≠ de');
+    assertEqual(h.vm().snapDate(s), fmt('en-US'), 'Monat vor Tag wie im Trend');
+    assertTrue(fmt('de-DE') !== fmt('en-US'), 'en ≠ de');
   });
 
   test('Doppelklick lädt nach Rückfrage; danach ist nichts eingeklappt', async () => {
