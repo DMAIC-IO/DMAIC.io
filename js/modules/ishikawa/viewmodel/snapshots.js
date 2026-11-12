@@ -259,13 +259,13 @@ export class SnapshotsViewModel {
     }
     this.trendEmptyMsg = '';
     // Re-apply the user's per-series toggles (survive data-driven re-renders).
-    config.series.forEach(s => { if (this.hiddenLines[s.sid]) s.visible = false; });
     container.replaceChildren();
     const gen = ++this._trendGen;
     const chart = await this._context.chartManager.create(container, 'trend', {
       ...config,
-      onToggle: (sid, hidden) => {
-        if (hidden) this.hiddenLines[sid] = true; else delete this.hiddenLines[sid];
+      hiddenSeries: Object.keys(this.hiddenLines),
+      onEditorChange: (c) => {
+        this.hiddenLines = Object.fromEntries((c.config.hiddenSeries || []).map(sid => [sid, true]));
       },
     });
     if (gen !== this._trendGen) { this._context.chartManager.destroy(chart); return; }

@@ -9,6 +9,7 @@ import { registerWidgetDirective } from '../../js/core/widget-directive.js';
 import { WIDGETS } from '../../js/widgets/registry.js';
 import HistogramChart from '../../js/core/chart/types/histogram.js';
 import { toChart as scatterToChart } from '../../js/widgets/scatter-chart/mount.js';
+import trendChart from '../../js/widgets/trend-chart/schema.js';
 import histogramChart from '../../js/widgets/histogram-chart/schema.js';
 
 const i18n = { t: (k) => k, getLanguage: () => 'de' };
@@ -42,19 +43,20 @@ function fakeState(old = null) {
 }
 
 const Doc = defineModel({ fields: { n: number({ default: 1 }) }, view: { chartEdits: histogramChart.edits() } });
+const TrendDoc = defineModel({ fields: { n: number({ default: 1 }) }, view: { chartEdits: trendChart.edits() } });
 const SERIES = (rev) => {
   const s = [{ name: 'A', values: [1, 2, 3], fillColor: 'red' }, { name: 'B', values: [4, 5], fillColor: 'blue' }];
   return rev ? s.reverse() : s;
 };
 
-async function host(inner, { cm, sm = null, extra = {}, model = {} } = {}) {
+async function host(inner, { cm, sm = null, extra = {}, model = {}, Model = null } = {}) {
   if (!Alpine.version) Alpine.start();
   if (!directiveRegistered) { registerWidgetDirective(Alpine, { i18n, widgets: WIDGETS }); directiveRegistered = true; }
   const services = { eventBus: null, stateManager: sm, i18n, chartManager: cm, instanceId: 'i1', moduleId: 'demo' };
   const name = `wd${Math.random().toString(36).slice(2)}`;
   Alpine.data(name, () => {
     const comp = {
-      model: Object.assign(new Doc(), model), show: true, n: 1, rev: false, legacy: 'hist:old', ctrl: null, none: false,
+      model: Object.assign(new (Model || Doc)(), model), show: true, n: 1, rev: false, legacy: 'hist:old', ctrl: null, none: false,
       get histogram() { return { title: 'auto', series: SERIES(this.rev), data: [this.n] }; },
       get nothing() { return this.none ? null : { title: 'x', series: SERIES(false), data: [1] }; },
       ...extra,
@@ -266,6 +268,19 @@ suite('Diagramm-Widgets (chart-mount)', () => {
     assertTrue(Number.isNaN(made.panels[0].series[0].mean));
     assertEqual(made.panels[0].series[1].mean, 1);
     assertEqual(made.refValue, null);
+    root.remove();
+  });
+
+  test('Trend: Klick auf die Legende schreibt hiddenSeries in den Wert und die Konfiguration trägt ihn', async () => {
+    const cm = fakeManager();
+    const cfg = { series: [{ sid: 'H-001', name: 'A', color: 'var(--ishikawa-line-1)', points: [{ x: 0, y: 1 }, { x: 1, y: null }] }], xLabels: [{ date: 'd', name: 'n' }, { date: 'e', name: 'm' }], xCount: 2 };
+    const { root, data } = await host('<div x-widget="trend-chart" x-widget-config="cfg" x-widget-value="model.chartEdits"></div>', { cm, Model: TrendDoc, extra: { cfg } });
+    const chart = cm.log.created[0];
+    assertEqual(chart.type, 'trend');
+    chart.config.hiddenSeries = ['H-001'];
+    chart.config.onEditorChange(chart);
+    await flush();
+    assertDeepEqual(JSON.parse(JSON.stringify(data.model.chartEdits)), { hiddenSeries: ['H-001'] });
     root.remove();
   });
 

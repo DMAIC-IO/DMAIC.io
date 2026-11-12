@@ -1,9 +1,8 @@
 /**
- * trend.js — Hypothesis-score trend chart for the D.Mike chart framework.
+ * trend.js — Score trend chart for the D.Mike chart framework.
  *
- * Behaviour-preserving port of the Ishikawa module's former bespoke
- * `renderTrend()` *canvas* render (CANVAS → SVG). One polyline per hypothesis
- * across an ordered list of snapshot "states" (oldest → current). The x-axis is
+ * One polyline per series across an ordered list of "states" (oldest → current).
+ * Points with `y: null` are gaps: no dot, and the line breaks there. The x-axis is
  * a CATEGORICAL state index (0 … xCount-1), the y-axis a FIXED 0…9 score domain.
  * Per state a vertical grid line + a two-line x label (date / truncated name);
  * per integer score a horizontal grid line + a right-aligned mono label. Each
@@ -22,10 +21,10 @@
  * The same local mapping is reused by `_findNearby` so the tooltip ring lands on
  * the data point.
  *
- * Config (precomputed by `computeTrendConfig()` in the ishikawa module — pure,
- * unit-tested):
+ * Config:
  *   {
- *     series: [{ sid, name, color, points:[{x,y}], visible }],
+ *     series: [{ sid, name, color: 'var(--…)', points:[{x,y|null}] }],
+ *     hiddenSeries: [sid, …],
  *     xLabels: [{ date, name }],   // one per state
  *     xCount, yDomain: [0,9],
  *     layout: { padT, padR, padB, padL },
@@ -52,6 +51,7 @@ export default class TrendChart extends ChartBase {
   constructor(container, config, context) {
     const defaults = {
       series: [],
+      hiddenSeries: [],
       xLabels: [],
       xCount: 0,
       yDomain: [0, 9],
@@ -159,14 +159,22 @@ export default class TrendChart extends ChartBase {
 
     // ── Series: polyline + halo/coloured dots + bold value labels ───
     const hitPoints = [];
+    const hidden = this._hiddenSet();
+    const halo = resolveColor('var(--color-bg-primary)');
     series.forEach((s) => {
-      if (s.visible === false) return;
+      if (hidden.has(s.sid)) return;
       const col = resolveColor(s.color);
-      const pts = s.points || [];
+      const pts = (s.points || []).filter((p) => p && Number.isFinite(p.y));
       if (!pts.length) return;
 
-      // Polyline.
-      const d = pts.map((p, pi) => `${pi === 0 ? 'M' : 'L'}${xPos(p.x)},${yPos(p.y)}`).join(' ');
+      // Polyline — breaks where a point is missing.
+      let d = '';
+      let prev = null;
+      (s.points || []).forEach((p) => {
+        if (!p || !Number.isFinite(p.y)) { prev = null; return; }
+        d += `${prev === null ? (d ? ' M' : 'M') : ' L'}${xPos(p.x)},${yPos(p.y)}`;
+        prev = p;
+      });
       svgEl('path', {
         d, fill: 'none', stroke: col, 'stroke-width': 2.5,
         'stroke-linejoin': 'round', 'stroke-linecap': 'round',
@@ -176,7 +184,7 @@ export default class TrendChart extends ChartBase {
       pts.forEach((p) => {
         const px = xPos(p.x);
         const py = yPos(p.y);
-        svgEl('circle', { cx: px, cy: py, r: 4.5, fill: '#fff' }, plotGroup);
+        svgEl('circle', { cx: px, cy: py, r: 4.5, fill: halo }, plotGroup);
         svgEl('circle', { cx: px, cy: py, r: 3, fill: col }, plotGroup);
         svgText(formatNum(p.y, 1, this.locale), {
           x: px, y: py - 7,
@@ -192,19 +200,38 @@ export default class TrendChart extends ChartBase {
     this._drawInteractiveLegend(svg, pa);
   }
 
+  /** @returns {Set<string>} `sid`s of the hidden series */
+  _hiddenSet() {
+    return new Set(Array.isArray(this.config.hiddenSeries) ? this.config.hiddenSeries : []);
+  }
+
+  /**
+   * Hides or shows one series and reports the change to the editor host.
+   * @param {string} sid
+   * @param {boolean} visible
+   * @private
+   */
+  _setSeriesVisible(sid, visible) {
+    const set = this._hiddenSet();
+    if (visible) set.delete(sid); else set.add(sid);
+    this.config.hiddenSeries = [...set];
+    this._notifyEditorChange();
+    this.render();
+  }
+
   /**
    * Hand-drawn, clickable legend. The framework's built-in `_drawLegend` is a
    * static SVG decoration (no click-to-toggle), so — to preserve the bespoke
    * interactive show/hide — the legend is drawn here with per-item click
-   * handlers that flip `series[i].visible` and re-render.
+   * handlers that rewrite `config.hiddenSeries` and re-render.
    * @private
    */
   _drawInteractiveLegend(svg, pa) {
     const series = this.config.series || [];
     if (!series.length) return;
 
-    const styles = getComputedStyle(document.documentElement);
-    const textSecondary = (styles.getPropertyValue('--color-text-secondary').trim()) || '#5a6270';
+    const textSecondary = resolveColor('var(--color-text-secondary)');
+    const hidden = this._hiddenSet();
 
     // Flow legend items across the bottom gutter (below the x labels).
     const baseY = pa.y + pa.h + 44;
@@ -227,18 +254,14 @@ export default class TrendChart extends ChartBase {
       svgEl('rect', {
         x: 0, y: -10, width: itemW - 8, height: 16, fill: 'transparent',
       }, g);
-      const dim = s.visible === false ? 0.35 : 1;
+      const dim = hidden.has(s.sid) ? 0.35 : 1;
       svgEl('circle', { cx: 5, cy: 0, r: 5, fill: resolveColor(s.color), opacity: dim }, g);
       svgText(label, {
         x: 16, y: 4, 'font-size': '11', fill: textSecondary,
         'font-family': FONT_MAIN, opacity: dim,
       }, g);
 
-      g.addEventListener('click', () => {
-        s.visible = s.visible === false;
-        if (typeof this.config.onToggle === 'function') this.config.onToggle(s.sid, s.visible === false);
-        this.render();
-      });
+      g.addEventListener('click', () => this._setSeriesVisible(s.sid, hidden.has(s.sid)));
 
       x += itemW;
     });
@@ -262,8 +285,8 @@ export default class TrendChart extends ChartBase {
       setName: (v) => { s.name = v; },
       getColor: () => resolveColor(s.color),
       setColor: (c) => { s.color = c; },
-      isVisible: () => s.visible !== false,
-      setVisible: (v) => { s.visible = v; },
+      isVisible: () => !this._hiddenSet().has(s.sid),
+      setVisible: (v) => this._setSeriesVisible(s.sid, v),
     }));
   }
 

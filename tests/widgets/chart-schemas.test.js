@@ -25,6 +25,7 @@ import { COLOR_SCHEMES } from '../../js/core/chart/color-schemes.js';
 import Pie from '../../js/core/chart/types/pie.js';
 import multiVariChart from '../../js/widgets/multi-vari-chart/schema.js';
 import gageRunChart from '../../js/widgets/gage-run-chart/schema.js';
+import trendChart from '../../js/widgets/trend-chart/schema.js';
 import pieChart from '../../js/widgets/pie-chart/schema.js';
 import { chartWidget } from '../../js/widgets/chart-parts.js';
 
@@ -256,5 +257,20 @@ suite('Diagramm-Widgets: Schemas', () => {
       markerSymbol: 'circle', markerSize: 10, markerColor: 'var(--color-text-primary)', markerStroke: 'var(--color-bg-primary)',
       markerStrokeWidth: 2, markerStrokeDash: 'solid',
     });
+  });
+
+  test('Trend: Name, Typ, volle Konfiguration, hiddenSeries bearbeitbar, Funktion abgelehnt', () => {
+    assertDeepEqual([trendChart.name, trendChart.chartType], ['trend-chart', 'trend']);
+    const cfg = {
+      series: [
+        { sid: 'H-001', name: 'A', color: 'var(--ishikawa-line-1)', points: [{ x: 0, y: 2 }, { x: 1, y: null }] },
+      ],
+      xLabels: [{ date: '01.01.', name: 'S1' }, { date: '02.01.', name: 'S2' }],
+      xCount: 2, layout: { padT: 30, padR: 30, padB: 55, padL: 45 }, hiddenSeries: ['H-002'],
+    };
+    assertDeepEqual(checkValue(trendChart.props.config, 'c', cfg), cfg);
+    assertTrue(trendChart.editable.base.includes('hiddenSeries'));
+    assertThrows(() => checkValue(trendChart.props.config, 'c', { ...cfg, onToggle: () => {} }), /onToggle/);
+    assertThrows(() => checkValue(trendChart.props.config, 'c', { hiddenSeries: [() => 1] }), /hiddenSeries/);
   });
 });

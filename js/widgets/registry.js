@@ -35,6 +35,8 @@ import multiVariChart from './multi-vari-chart/schema.js';
 import { mount as mountMultiVariChart } from './multi-vari-chart/mount.js';
 import gageRunChart from './gage-run-chart/schema.js';
 import { mount as mountGageRunChart } from './gage-run-chart/mount.js';
+import trendChart from './trend-chart/schema.js';
+import { mount as mountTrendChart } from './trend-chart/mount.js';
 import pieChart from './pie-chart/schema.js';
 import { mount as mountPieChart } from './pie-chart/mount.js';
 import contourChart from './contour-chart/schema.js';
@@ -63,5 +65,6 @@ export const WIDGETS = Object.freeze({
   'multi-vari-chart': { schema: multiVariChart, mount: mountMultiVariChart },
   'gage-run-chart': { schema: gageRunChart, mount: mountGageRunChart },
   'algo-lab-link': { schema: algoLabLink, mount: mountAlgoLabLink },
+  'trend-chart': { schema: trendChart, mount: mountTrendChart },
   'pie-chart': { schema: pieChart, mount: mountPieChart },
 });

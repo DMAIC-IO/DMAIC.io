@@ -23,8 +23,8 @@ function fixtureConfig(extra) {
   return Object.assign({
     isEmpty: false,
     series: [
-      { sid: 'a', name: 'Hyp A', color: '#2563eb', visible: true, points: [{ x: 0, y: 2 }, { x: 1, y: 5 }, { x: 2, y: 9 }] },
-      { sid: 'b', name: 'Hyp B', color: '#dc2626', visible: true, points: [{ x: 0, y: 0 }, { x: 1, y: 3 }, { x: 2, y: 6 }] },
+      { sid: 'H-001', name: 'Hyp A', color: 'var(--ishikawa-line-1)', points: [{ x: 0, y: 2 }, { x: 1, y: 5 }, { x: 2, y: 9 }] },
+      { sid: 'H-002', name: 'Hyp B', color: 'var(--ishikawa-line-2)', points: [{ x: 0, y: 0 }, { x: 1, y: 3 }, { x: 2, y: 6 }] },
     ],
     xLabels: [
       { date: '01.01.', name: 'S1' },
@@ -98,9 +98,8 @@ suite('Trend type — structure', () => {
     chart.destroy();
   });
 
-  test('skips hidden series (visible:false)', () => {
-    const cfg = fixtureConfig();
-    cfg.series[1].visible = false;
+  test('skips hidden series (hiddenSeries)', () => {
+    const cfg = fixtureConfig({ hiddenSeries: ['H-002'] });
     const { chart, svg } = mount(cfg);
     assertEqual(polylines(svg).length, 1, 'only the visible series draws a polyline');
     chart.destroy();
@@ -119,6 +118,40 @@ suite('Trend type — structure', () => {
     assertTrue(d[0].isVisible(), 'series 0 visible');
     d[0].setVisible(false);
     assertTrue(!d[0].isVisible(), 'series 0 toggled hidden');
+    assertEqual(chart.config.hiddenSeries.join(), 'H-001');
+    chart.destroy();
+  });
+
+  test('hidden series: legend entry dimmed, click on a legend entry writes hiddenSeries and notifies', () => {
+    let notified = 0;
+    const { chart, host } = mount(fixtureConfig({ hiddenSeries: ['H-002'], onEditorChange: () => { notified++; } }));
+    const dim = (sid) => host.querySelector(`[data-trend-toggle="${sid}"] text`).getAttribute('opacity');
+    assertEqual(dim('H-002'), '0.35');
+    assertEqual(dim('H-001'), '1');
+    host.querySelector('[data-trend-toggle="H-001"]').dispatchEvent(new Event('click'));
+    assertEqual(chart.config.hiddenSeries.slice().sort().join(), 'H-001,H-002');
+    assertEqual(notified, 1);
+    assertEqual(polylines(host.querySelector('svg')).length, 0);
+    chart.destroy();
+  });
+
+  test('colours: var(--…) resolves to a computed colour; no hex literals in the type', async () => {
+    document.documentElement.style.setProperty('--ishikawa-line-1', 'rgb(1, 2, 3)');
+    const { chart, svg } = mount(fixtureConfig());
+    assertEqual(polylines(svg)[0].getAttribute('stroke'), 'rgb(1, 2, 3)');
+    chart.destroy();
+    document.documentElement.style.removeProperty('--ishikawa-line-1');
+    const src = await (await fetch(new URL('../../../js/core/chart/types/trend.js', import.meta.url))).text();
+    assertTrue(!/#[0-9a-fA-F]{3,6}\b/.test(src), 'no hex colour in trend.js');
+  });
+
+  test('missing points (y: null): the line breaks, no NaN', () => {
+    const cfg = fixtureConfig();
+    cfg.series[0].points = [{ x: 0, y: 2 }, { x: 1, y: null }, { x: 2, y: 9 }];
+    const { chart, svg } = mount(cfg);
+    const d = polylines(svg)[0].getAttribute('d');
+    assertEqual((d.match(/M/g) || []).length, 2, 'two segments');
+    assertTrue(!d.includes('NaN') && !svg.outerHTML.includes('NaN'), 'no NaN');
     chart.destroy();
   });
 
