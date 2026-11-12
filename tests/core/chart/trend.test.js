@@ -145,6 +145,21 @@ suite('Trend type — structure', () => {
     assertTrue(!/#[0-9a-fA-F]{3,6}\b/.test(src), 'no hex colour in trend.js');
   });
 
+  test('colours: a variable set only on an ancestor of the host (module container) resolves', () => {
+    const scope = document.createElement('div');
+    scope.style.setProperty('--ishikawa-line-1', 'rgb(4, 5, 6)');
+    document.body.appendChild(scope);
+    const host = document.createElement('div');
+    host.style.width = '800px';
+    host.style.height = '340px';
+    scope.appendChild(host);
+    const chart = new TrendChart(host, fixtureConfig(), { language: 'de' });
+    chart.render();
+    assertEqual(polylines(host.querySelector('svg'))[0].getAttribute('stroke'), 'rgb(4, 5, 6)');
+    chart.destroy();
+    scope.remove();
+  });
+
   test('missing points (y: null): the line breaks, no NaN', () => {
     const cfg = fixtureConfig();
     cfg.series[0].points = [{ x: 0, y: 2 }, { x: 1, y: null }, { x: 2, y: 9 }];

@@ -282,7 +282,7 @@ export default class ParetoChart extends ChartBase {
       const barH = yBase - yTop;
       if (barH <= 0) return;
 
-      const color = d.color ? resolveColor(d.color) : resolveColor('var(--color-chart-1)');
+      const color = d.color ? resolveColor(d.color, this.container) : resolveColor('var(--color-chart-1)');
       const opacity = d.opacity ?? defaultOpacity;
       const bx = cx - barWidth / 2;
 
@@ -290,7 +290,7 @@ export default class ParetoChart extends ChartBase {
         // Stacked segments — bottom-up, each segment owns its [yBot, yTop) band.
         let cum = 0;
         d.segments.forEach((seg) => {
-          const segColor = resolveColor(seg.color);
+          const segColor = resolveColor(seg.color, this.container);
           const segYTop = yScale(cum + seg.value);
           const segYBot = yScale(cum);
           const segH = segYBot - segYTop;

@@ -163,7 +163,7 @@ export default class TrendChart extends ChartBase {
     const halo = resolveColor('var(--color-bg-primary)');
     series.forEach((s) => {
       if (hidden.has(s.sid)) return;
-      const col = resolveColor(s.color);
+      const col = resolveColor(s.color, this.container);
       const pts = (s.points || []).filter((p) => p && Number.isFinite(p.y));
       if (!pts.length) return;
 
@@ -255,7 +255,7 @@ export default class TrendChart extends ChartBase {
         x: 0, y: -10, width: itemW - 8, height: 16, fill: 'transparent',
       }, g);
       const dim = hidden.has(s.sid) ? 0.35 : 1;
-      svgEl('circle', { cx: 5, cy: 0, r: 5, fill: resolveColor(s.color), opacity: dim }, g);
+      svgEl('circle', { cx: 5, cy: 0, r: 5, fill: resolveColor(s.color, this.container), opacity: dim }, g);
       svgText(label, {
         x: 16, y: 4, 'font-size': '11', fill: textSecondary,
         'font-family': FONT_MAIN, opacity: dim,
@@ -283,7 +283,7 @@ export default class TrendChart extends ChartBase {
       index,
       getName: () => s.name,
       setName: (v) => { s.name = v; },
-      getColor: () => resolveColor(s.color),
+      getColor: () => resolveColor(s.color, this.container),
       setColor: (c) => { s.color = c; },
       isVisible: () => !this._hiddenSet().has(s.sid),
       setVisible: (v) => this._setSeriesVisible(s.sid, v),

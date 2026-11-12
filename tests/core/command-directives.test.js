@@ -65,6 +65,8 @@ const VM_COMMANDS = {
     current() { return { note: this.note }; },
     run({ note }) { this.note = note; },
   }),
+  markDone: command({ current() { return {}; }, run() { this.picked.push('done'); } }),
+  markWith: command({ current() { return { x: 1 }; }, run() {} }),
 };
 
 const I18N = { t: (k, p) => (p ? `${k}|${JSON.stringify(p)}` : k), getLanguage: () => 'de' };
@@ -458,6 +460,12 @@ suite('x-command-form mit Viewmodel-Kommando', () => {
     await flush();
     assertEqual(vm.note, 'nachher');
     assertEqual(dialog.open, null);
+  });
+
+  test('current ohne params: leer baut das Formular, ein Rückgabewert wird verständlich abgelehnt', async () => {
+    const { $ } = await mount('<form x-command-form="markDone"><button type="submit">ok</button></form>');
+    assertEqual($('form').getAttribute('data-help-key'), 'modules.ct.actions.markDone.help');
+    assertThrows(() => mountDetached('<form x-command-form="markWith"></form>'), /markWith: current returns values, but the command takes no parameters/);
   });
 });
 

@@ -9,7 +9,7 @@ import { command, text, number, idOf, map, oneOf, object, list, cloneJSON, setFi
 import { requireEnum, requireForm } from '../../../core/validate.js';
 import { CAT_KEYS } from '../domain/constants.js';
 import { nextId, nextStableId, subtreeIds } from '../domain/tree.js';
-import { diffRows } from '../domain/scores.js';
+import { compareRows } from '../domain/scores.js';
 
 /**
  * Eine Zeile samt Teilbaum kopieren; die Kopie steht hinter dem Teilbaum des
@@ -120,15 +120,11 @@ export const commands = {
     }),
     run({ snapshotId }) {
       this.state.compareSnapId = snapshotId;
-      const before = this.model.snapshots.find((s) => s.id === snapshotId).data.rows;
-      const now = new Set(this.model.rows.map((r) => r.stableId));
-      const then = new Set(before.map((r) => r.stableId));
+      const { added, removed, changed } = compareRows(this.model.rows, this.model.snapshots.find((s) => s.id === snapshotId).data.rows);
       return {
-        added: this.model.rows.filter((r) => !then.has(r.stableId)).map((r) => r.stableId),
-        removed: before.filter((r) => !now.has(r.stableId)).map((r) => r.stableId),
-        changed: diffRows(this.model.rows, before).map((d) => ({
-          stableId: d.stableId, oldScore: d.before, newScore: d.after, delta: d.delta,
-        })),
+        added,
+        removed,
+        changed: changed.map((d) => ({ stableId: d.stableId, oldScore: d.before, newScore: d.after, delta: d.delta })),
       };
     },
   }),

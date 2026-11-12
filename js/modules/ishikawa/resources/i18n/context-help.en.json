@@ -154,6 +154,12 @@
     "paretoChart": {
       "help": "The Pareto chart of the rated causes, current or from a snapshot: one bar per cause in descending order of score, coloured by its category, plus the cumulative sum in percent."
     },
+    "diff": {
+      "help": "The comparison of the current state with the chosen snapshot: new and removed causes and every cause whose score changed. Empty without a comparison."
+    },
+    "trendChart": {
+      "help": "The trend of each cause's score across all snapshots up to the current state, one line per cause. Only while the trend is open."
+    },
     "paretoEdits": {
       "help": "The editor settings of the Pareto chart (axes, threshold, bars, line); they are saved with the module."
     },

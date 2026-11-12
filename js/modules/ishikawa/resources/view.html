@@ -88,6 +88,25 @@
         </div>
       </div>
 
+      <!-- Diff banner -->
+      <div class="ishikawa__diff-banner" :class="diffBannerClass" data-ref="diffBanner">
+        <template x-if="diff">
+          <div style="display:contents">
+            <div class="ishikawa__diff-title" x-text="t('compareWith')"></div>
+            <div class="ishikawa__diff-stats">
+              <span class="ishikawa__diff-stat"><span class="ishikawa__diff-val ishikawa__diff-val--new" x-text="diffNewText"></span></span>
+              <span class="ishikawa__diff-stat"><span class="ishikawa__diff-val ishikawa__diff-val--del" x-text="diffRemovedText"></span></span>
+              <span class="ishikawa__diff-stat"><span class="ishikawa__diff-val ishikawa__diff-val--chg" x-text="diffChangedText"></span></span>
+              <span class="ishikawa__diff-stat ishikawa__diff-label" style="color:var(--color-text-tertiary)" x-text="compareLabel"></span>
+            </div>
+            <button type="button" data-help-key="modules.ishikawa.actions.closeCompare.help" class="ishikawa__diff-close" data-ref="diffCloseBtn" x-command="closeCompare">
+              <span x-text="t('endCompare')"></span>
+              <span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span>
+            </button>
+          </div>
+        </template>
+      </div>
+
       <!-- Toolbar -->
       <div class="ishikawa__toolbar" style="margin-bottom:var(--spacing-sm)">
         <button type="button" data-help-key="modules.ishikawa.actions.addRow.help" class="btn btn--sm btn--primary" data-ref="addRowBtn" @click="addRowAndFocus()" x-text="'+ ' + t('hypothesis')"></button>
@@ -189,6 +208,9 @@
                     <div class="ishikawa__score-bar-wrap">
                       <span class="ishikawa__score-badge" :class="scoreClass(vr.score)" x-text="num(vr.score, 1)"></span>
                       <div class="ishikawa__score-bar-track"><div class="ishikawa__score-bar-fill" :class="scoreBarClass(vr.score)" :style="scoreBarStyle(vr.score)"></div></div>
+                      <template x-if="scoreDelta(vr)">
+                        <span class="ishikawa__score-delta" :class="deltaClass(scoreDelta(vr))" x-text="deltaText(scoreDelta(vr))"></span>
+                      </template>
                     </div>
                   </template>
                 </td>
@@ -248,6 +270,49 @@
         <div class="ishikawa__summary-card"><div class="ishikawa__s-label" x-text="t('highestAvg')"></div><div class="ishikawa__s-value" style="color:var(--color-accent)" x-text="topScore"></div></div>
         <div class="ishikawa__summary-card"><div class="ishikawa__s-label" x-text="t('status.confirmed')"></div><div class="ishikawa__s-value" style="color:var(--ishikawa-green)" x-text="confirmedCount"></div></div>
         <div class="ishikawa__summary-card"><div class="ishikawa__s-label" x-text="t('snapshots')"></div><div class="ishikawa__s-value" x-text="model.snapshots.length"></div></div>
+      </div>
+
+      <!-- Snapshots -->
+      <div class="ishikawa__snapshot-panel">
+        <label data-help-key="modules.ishikawa.fields.snapshots.help" class="ishikawa__panel-label" x-text="t('snapshots')"></label>
+        <div class="ishikawa__snapshot-inner">
+          <form class="ishikawa__snapshot-save" x-command-form="saveSnapshot" data-help-key="">
+            <input type="text" class="field field--inline ishikawa__snapshot-name-input" data-ref="snapNameInput" data-help-key=""
+                   :placeholder="t('snapNamePlaceholder')" x-param="name" />
+            <button type="submit" data-help-key="modules.ishikawa.actions.saveSnapshot.help" class="btn btn--sm btn--primary" data-ref="saveSnapBtn" x-text="t('saveSnapshot')"></button>
+            <button type="button" class="btn btn--sm" data-ref="trendBtn" @click="toggleTrend()" x-text="t('trend')"></button>
+          </form>
+          <div class="ishikawa__snapshot-list">
+            <div class="ishikawa__snap-items">
+              <template x-if="model.snapshots.length === 0">
+                <span class="ishikawa__no-items" x-text="t('noSnapshots')"></span>
+              </template>
+              <template x-for="s in model.snapshots" :key="s.id">
+                <div class="ishikawa__snap-item" :class="snapClass(s)"
+                     :data-snap-id="s.id" :title="t('snapClickHint')"
+                     @click="snapClick(s.id, $event)" @dblclick="loadFromList(s.id)">
+                  <span class="ishikawa__snap-date" x-text="snapDate(s)"></span>
+                  <span class="ishikawa__snap-name" x-text="s.name"></span>
+                  <span class="ishikawa__snap-badge" x-text="snapBadge(s)"></span>
+                  <button type="button" class="ishikawa__snap-del" :data-snap-del="s.id" :title="t('common.delete')" data-help-key=""
+                          x-command="removeSnapshot" :data-arg-snapshot-id="s.id"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trend panel -->
+      <div class="ishikawa__trend-panel" :class="state.trendVisible ? 'ishikawa__trend-panel--visible' : ''" data-ref="trendPanel">
+        <div class="ishikawa__trend-inner">
+          <div class="ishikawa__trend-header">
+            <h3 x-text="t('trendTitle')"></h3>
+            <button type="button" class="ishikawa__trend-close" data-ref="trendCloseBtn" :title="t('common.close')" @click="closeTrend()"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
+          </div>
+          <template x-if="trendEmptyMsg"><div class="ishikawa__trend-empty" x-text="trendEmptyMsg"></div></template>
+          <div class="ishikawa__trend-body" data-ref="trendContent" x-widget="trend-chart" x-widget-config="trendChart" x-widget-value="state.trendEdits"></div>
+        </div>
       </div>
     </div>
     </template>

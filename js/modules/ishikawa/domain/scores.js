@@ -82,3 +82,27 @@ export function diffRows(rows, snapRows) {
   }
   return out;
 }
+
+/**
+ * Vergleich der aktuellen Zeilen mit den Zeilen eines Snapshots.
+ * @typedef {object} SnapshotDiff
+ * @property {string[]} added stableIds, die im Snapshot fehlen
+ * @property {string[]} removed stableIds, die es nicht mehr gibt
+ * @property {RowDiff[]} changed Zeilen mit geändertem Score (`diffRows`)
+ */
+
+/**
+ * Neue, entfernte und im Score geänderte Zeilen gegenüber einem Snapshot.
+ * @param {ReadonlyArray<ScoredRow>} rows aktuelle Zeilen
+ * @param {ReadonlyArray<ScoredRow>} snapRows Zeilen des Snapshots
+ * @returns {SnapshotDiff}
+ */
+export function compareRows(rows, snapRows) {
+  const now = new Set(rows.map((r) => r.stableId));
+  const then = new Set(snapRows.map((r) => r.stableId));
+  return {
+    added: rows.filter((r) => !then.has(r.stableId)).map((r) => r.stableId),
+    removed: snapRows.filter((r) => !now.has(r.stableId)).map((r) => r.stableId),
+    changed: diffRows(rows, snapRows),
+  };
+}

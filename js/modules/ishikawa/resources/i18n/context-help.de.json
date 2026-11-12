@@ -154,6 +154,12 @@
     "paretoChart": {
       "help": "Das Pareto-Diagramm der bewerteten Ursachen, aktuell oder aus einem Snapshot: Balken je Ursache absteigend nach Score in der Farbe ihrer Kategorie, dazu die kumulierte Summe in Prozent."
     },
+    "diff": {
+      "help": "Der Vergleich des aktuellen Stands mit dem gewählten Snapshot: neue und entfernte Ursachen und jede Ursache, deren Score sich geändert hat. Ohne Vergleich leer."
+    },
+    "trendChart": {
+      "help": "Der Trend der Scores je Ursache über alle Snapshots bis zum aktuellen Stand, eine Linie je Ursache. Nur bei geöffnetem Trend."
+    },
     "paretoEdits": {
       "help": "Die Editor-Einstellungen des Pareto-Diagramms (Achsen, Schwellenwert, Balken, Linie); sie werden mit dem Modul gespeichert."
     },

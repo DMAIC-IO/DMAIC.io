@@ -3,7 +3,7 @@
  * domain/tree.js (effCat, nextId, nextStableId).
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
-import { scoreOf, paretoItems, diffRows } from '../../../js/modules/ishikawa/domain/scores.js';
+import { scoreOf, paretoItems, diffRows, compareRows } from '../../../js/modules/ishikawa/domain/scores.js';
 import { effCat, nextId, nextStableId } from '../../../js/modules/ishikawa/domain/tree.js';
 
 const row = (id, over = {}) => ({
@@ -66,6 +66,16 @@ suite('ishikawa/domain/scores', () => {
     assertDeepEqual(diffRows([row(1, { ratings: { ...zeros, 1: 1 } })], snap), []);
     assertDeepEqual(diffRows([row(1, { ratings: { ...zeros, 1: 1, 2: 1 } })], snap),
       [{ stableId: 'H-001', name: 'R1', before: 0, after: 0.02, delta: 0.02 }]);
+  });
+
+  test('compareRows: neue und entfernte stableIds, dazu die Score-Änderungen', () => {
+    const snap = [row(1, { ratings: { 1: 8 } }), row(2), row(9)];
+    const now = [row(1, { ratings: { 1: 7 } }), row(2), row(5)];
+    assertDeepEqual(compareRows(now, snap), {
+      added: ['H-005'],
+      removed: ['H-009'],
+      changed: [{ stableId: 'H-001', name: 'R1', before: 8, after: 7, delta: -1 }],
+    });
   });
 });
 

@@ -157,3 +157,21 @@ suite('Pareto type — right axis title', () => {
     unmount(m);
   });
 });
+
+suite('Pareto type — colours', () => {
+  test('a bar colour set only on an ancestor of the host (module container) resolves', () => {
+    const scope = document.createElement('div');
+    scope.style.setProperty('--test-pareto-cat', 'rgb(7, 8, 9)');
+    document.body.appendChild(scope);
+    const host = document.createElement('div');
+    host.style.width = '900px';
+    host.style.height = '400px';
+    scope.appendChild(host);
+    const chart = new ParetoChart(host, { items: [{ name: 'A', value: 5, color: 'var(--test-pareto-cat)' }, { name: 'B', value: 3 }] }, { language: 'de' });
+    chart.render();
+    const fills = Array.from(host.querySelectorAll('rect')).map((r) => r.getAttribute('fill'));
+    assertTrue(fills.includes('rgb(7, 8, 9)'), JSON.stringify(fills));
+    chart.destroy();
+    scope.remove();
+  });
+});

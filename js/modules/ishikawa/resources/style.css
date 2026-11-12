@@ -787,6 +787,12 @@
   min-height: 340px;
 }
 
+/* Die Widget-Wurzel erzeugt keine Box; das Trend-Diagramm erbt seine
+   Mindesthöhe über sie hinweg vom Wirt. */
+.ishikawa__trend-body > .widget-root {
+  min-height: inherit;
+}
+
 .ishikawa__trend-empty {
   text-align: center;
   padding: var(--spacing-xl);

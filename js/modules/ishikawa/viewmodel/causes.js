@@ -224,12 +224,15 @@ export const causesView = (ctx) => {
     toggleIcon(vr) { return vr.collapsed ? 'nav.expand-right' : 'nav.expand-down'; },
 
     /**
-     * Klassen einer Zeile: Tiefe und Vorschau der Geste (gezogener Teilbaum,
-     * Einfügemarke an der Zielzeile).
+     * Klassen einer Zeile: Tiefe, Vergleich mit einem Snapshot (view-Teil
+     * Snapshots) und Vorschau der Geste (gezogener Teilbaum, Einfügemarke an
+     * der Zielzeile).
      * @param {VisibleRow} vr @returns {string}
      */
     rowClass(vr) {
       const out = [`ishikawa__depth-${Math.min(vr.depth, MAX_DEPTH_CLASS)}`];
+      const diff = this.diffClass(vr);
+      if (diff) out.push(diff);
       const p = this.state.dragPreview;
       if (p && p.kind === 'tree') {
         if (p.ids.includes(vr.row.id)) out.push('dmike-table__row--dragging');

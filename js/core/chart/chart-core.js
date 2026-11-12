@@ -186,19 +186,24 @@ export function rgbaStr(c) {
 
 /**
  * Resolve a CSS value (including custom properties) to a computed color.
- * Reads from the document at call time — never cached.
+ * Reads from the document at call time — never cached. With `host` (the
+ * chart's container, in the document), the value resolves in its scope, so
+ * variables a module sets on its own container apply.
  * @param {string} value - CSS color or custom property like 'var(--color-chart-1)'
+ * @param {HTMLElement|null} [host] - element whose scope the variables come from
  * @returns {string} Computed color string
  */
-export function resolveColor(value) {
+export function resolveColor(value, host = null) {
   if (!value || typeof value !== 'string') return 'rgb(100,100,100)';
   // If it doesn't contain var(, treat as literal
   if (!value.includes('var(')) return value;
   const temp = document.createElement('div');
   temp.style.color = value;
-  document.body.appendChild(temp);
+  // No box: the probe never shifts the host's layout.
+  temp.style.display = 'none';
+  (host?.isConnected ? host : document.body).appendChild(temp);
   const resolved = getComputedStyle(temp).color;
-  document.body.removeChild(temp);
+  temp.remove();
   return resolved;
 }
 

@@ -211,6 +211,7 @@ function currentFor(ui, name, fixed) {
   if (!vmDef.current) return {};
   const out = vmDef.current.call(ui.component, fixed) ?? {};
   const names = Object.keys(vmDef.params);
+  if (!names.length && Object.keys(out).length) throw new Error(`${name}: current returns values, but the command takes no parameters`);
   for (const k of Object.keys(out)) requireKnownId(`${name} current key`, k, names);
   return out;
 }
