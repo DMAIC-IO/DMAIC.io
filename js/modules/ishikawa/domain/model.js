@@ -387,12 +387,18 @@ export class State extends defineModel({
     }),
     setExperimentHypotheses: command({
       params: { experimentId: idOf('experiments'), hypothesisIds: list(idOf('rows', { key: 'stableId' })) },
+      current({ experimentId }) {
+        return { hypothesisIds: [...this.experiments.find((x) => x.id === experimentId).hypothesisIds] };
+      },
       run({ experimentId, hypothesisIds }) {
         this.experiments.find((x) => x.id === experimentId).hypothesisIds = [...new Set(hypothesisIds)];
       },
     }),
     setCauseExperiments: command({
       params: { stableId: idOf('rows', { key: 'stableId' }), experimentIds: list(idOf('experiments')) },
+      current({ stableId }) {
+        return { experimentIds: this.experiments.filter((x) => x.hypothesisIds.includes(stableId)).map((x) => x.id) };
+      },
       run({ stableId, experimentIds }) {
         const linked = new Set(experimentIds);
         for (const x of this.experiments) {

@@ -10,6 +10,7 @@ import { requireEnum, requireForm } from '../../../core/validate.js';
 import { CAT_KEYS } from '../domain/constants.js';
 import { nextId, nextStableId, subtreeIds } from '../domain/tree.js';
 import { compareRows } from '../domain/scores.js';
+import { dateText } from './dates.js';
 
 /**
  * Eine Zeile samt Teilbaum kopieren; die Kopie steht hinter dem Teilbaum des
@@ -74,7 +75,7 @@ export const commands = {
       const id = nextId(this.model.snapshots);
       const snap = {
         id,
-        name: name || this.t('snapshotDefaultName', { date: new Date().toLocaleDateString(lang) }),
+        name: name || this.t('snapshotDefaultName', { date: dateText(new Date(), lang) }),
         date: new Date().toISOString(),
         data: cloneJSON({ problem: this.model.problem, experts: this.model.experts, rows: this.model.rows }),
       };

@@ -253,6 +253,35 @@ suite('Gantt type — Farben, leere Aufgaben, Neuzeichnen', () => {
     assertTrue(!/#[0-9a-fA-F]{3,6}\b/.test(src), 'no hex colour in gantt.js');
   });
 
+  test('a bar colour set only on an ancestor of the host (module container) resolves', () => {
+    const scope = document.createElement('div');
+    scope.style.setProperty('--ishikawa-status-done', 'rgb(7, 8, 9)');
+    document.body.appendChild(scope);
+    const host = document.createElement('div');
+    host.style.width = '900px';
+    host.style.height = '300px';
+    scope.appendChild(host);
+    const cfg = fixtureConfig();
+    cfg.tasks[0].color = 'var(--ishikawa-status-done)';
+    const chart = new GanttChart(host, cfg, { language: 'de' });
+    chart.render();
+    const bar = Array.from(host.querySelectorAll('svg rect')).find((r) => r.getAttribute('rx') === '3');
+    assertEqual(bar.getAttribute('fill'), 'rgb(7, 8, 9)');
+    chart.destroy();
+    scope.remove();
+  });
+
+  test('update with a new xDomain re-pins the time domain', () => {
+    const cfg = fixtureConfig();
+    const { chart } = mount(cfg);
+    const minT = ms('2020-02-01');
+    const maxT = ms('2020-02-20');
+    chart.update({ xDomain: { minT, maxT } });
+    assertEqual(chart.config.xMin, minT);
+    assertEqual(chart.config.xMax, maxT);
+    chart.destroy();
+  });
+
   test('tasks: [] draws no bars and no NaN', () => {
     const { chart, svg } = mount(fixtureConfig({ tasks: [] }));
     assertTrue(!svg.outerHTML.includes('NaN'), 'no NaN');

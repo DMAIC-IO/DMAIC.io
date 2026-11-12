@@ -237,27 +237,27 @@ suite('ishikawa snapshots: Liste', () => {
     assertEqual(h.$('.ishikawa__snap-items .ishikawa__no-items'), null);
   });
 
-  test('saveSnapshot ohne Namen: „Snapshot <Datum>“ im Datumsformat der Sprache', async () => {
+  test('saveSnapshot ohne Namen: „Snapshot <Datum>“ nach der Datumsregel des Moduls', async () => {
     const h = await mount(tree());
     const de = h.vm().saveSnapshot({});
     assertEqual(de, 1);
-    assertEqual(h.vm().model.snapshots[0].name, `Snapshot ${new Date().toLocaleDateString('de')}`);
+    assertEqual(h.vm().model.snapshots[0].name, `Snapshot ${new Date().toLocaleDateString('de-DE')}`);
     h.lang.current = 'en';
     h.vm().saveSnapshot({ name: '' });
-    assertEqual(h.vm().model.snapshots[0].name, `Snapshot ${new Date().toLocaleDateString('en')}`);
+    assertEqual(h.vm().model.snapshots[0].name, `Snapshot ${new Date().toLocaleDateString('en-GB')}`, 'Tag vor Monat wie im Trend');
     assertTrue(h.vm().model.snapshots[0].name !== h.vm().model.snapshots[1].name, 'en ≠ de');
     assertDeepEqual(h.vm().model.snapshots[0].data.rows.map((r) => r.stableId), h.vm().model.rows.map((r) => r.stableId));
   });
 
-  test('snapDate: Datum und Uhrzeit im Format der Sprache', async () => {
+  test('snapDate: Datum und Uhrzeit nach der Datumsregel des Moduls', async () => {
     const h = await mount(withSnapshot());
     const s = h.vm().model.snapshots[0];
     const d = new Date(s.date);
     const fmt = (lang) => `${d.toLocaleDateString(lang)} ${d.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' })}`;
-    assertEqual(h.vm().snapDate(s), fmt('de'));
+    assertEqual(h.vm().snapDate(s), fmt('de-DE'));
     h.lang.current = 'en';
-    assertEqual(h.vm().snapDate(s), fmt('en'));
-    assertTrue(fmt('de') !== fmt('en'), 'en ≠ de');
+    assertEqual(h.vm().snapDate(s), fmt('en-GB'), 'Tag vor Monat wie im Trend');
+    assertTrue(fmt('de-DE') !== fmt('en-GB'), 'en ≠ de');
   });
 
   test('Doppelklick lädt nach Rückfrage; danach ist nichts eingeklappt', async () => {

@@ -4,9 +4,13 @@
    ============================================================ */
 
 /* Festfarben des Moduls. Dieselben Werte in beiden Themes: die Farben
-   tragen Bedeutung (Kategorie, Status, Score) und bleiben gleich. */
+   tragen Bedeutung (Kategorie, Status, Score) und bleiben gleich. Die
+   Formulare der Dialoge stehen im offenen Dialog außerhalb von .ishikawa
+   und tragen die Farben deshalb selbst. */
 .ishikawa,
-.ishikawa-tile {
+.ishikawa-tile,
+.ishikawa__hyp-pick,
+.ishikawa__cat-rename {
   --ishikawa-cat-man: #2563eb;
   --ishikawa-cat-machine: #7c3aed;
   --ishikawa-cat-environment: #059669;
@@ -53,7 +57,9 @@
 }
 
 [data-theme="dark"] .ishikawa,
-[data-theme="dark"] .ishikawa-tile {
+[data-theme="dark"] .ishikawa-tile,
+[data-theme="dark"] .ishikawa__hyp-pick,
+[data-theme="dark"] .ishikawa__cat-rename {
   --ishikawa-cat-man: #2563eb;
   --ishikawa-cat-machine: #7c3aed;
   --ishikawa-cat-environment: #059669;

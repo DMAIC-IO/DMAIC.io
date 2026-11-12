@@ -13,6 +13,7 @@
 import { runUiCommand } from '../../../core/command-directives.js';
 import { compareRows } from '../domain/scores.js';
 import { trendConfig } from './charts.js';
+import { dateTimeText } from './dates.js';
 
 /** @type {import('./state.types.js').IshikawaViewFn} */
 export const snapshotsView = (ctx) => {
@@ -46,12 +47,8 @@ export const snapshotsView = (ctx) => {
 
     // ── Liste ─────────────────────────────────────────────────
 
-    /** Datum und Uhrzeit eines Snapshots im Format der Sprache. @param {{ date: string }} s @returns {string} */
-    snapDate(s) {
-      const lang = ctx.i18n.getLanguage();
-      const d = new Date(s.date);
-      return `${d.toLocaleDateString(lang)} ${d.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' })}`;
-    },
+    /** Datum und Uhrzeit eines Snapshots nach der Datumsregel des Moduls. @param {{ date: string }} s @returns {string} */
+    snapDate(s) { return dateTimeText(s.date, ctx.i18n.getLanguage()); },
 
     /** „5 Hyp.“ @param {{ data: { rows: any[] } }} s @returns {string} */
     snapBadge(s) { return `${s.data.rows.length} ${this.t('hyp')}`; },

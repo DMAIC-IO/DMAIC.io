@@ -176,6 +176,7 @@ const SKIP = new Set([
   'modules/ishikawa/view.test.js',
   'modules/ishikawa/causes-view.test.js',
   'modules/ishikawa/snapshots-view.test.js',
+  'modules/ishikawa/experiments-view.test.js',
   'modules/msa-typ6.test.js',
   'modules/process-map-export.test.js',
   'modules/project-charter-richtext.test.js',

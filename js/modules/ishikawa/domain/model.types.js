@@ -210,6 +210,14 @@
  */
 
 /**
+ * @typedef {(this: StateModel, fixed: Partial<SetExperimentHypothesesCommand>) => Partial<SetExperimentHypothesesCommand>} SetExperimentHypothesesCurrent
+ */
+
+/**
+ * @typedef {(this: StateModel, fixed: Partial<SetCauseExperimentsCommand>) => Partial<SetCauseExperimentsCommand>} SetCauseExperimentsCurrent
+ */
+
+/**
  * @typedef {(this: StateModel, args: RemoveFactCommand) => ({ key: string, params?: Record<string, unknown> }|null)} RemoveFactConfirm
  */
 

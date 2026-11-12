@@ -53,7 +53,54 @@
 
     <!-- ─── FACTS TAB ───────────────────────────────────────── -->
     <template x-if="state.tab === 'facts'">
-    <div class="ishikawa__experiments"></div>
+    <div class="ishikawa__experiments">
+      <div class="ishikawa__toolbar" style="margin-bottom:var(--spacing-sm)">
+        <button type="button" data-help-key="modules.ishikawa.actions.addFact.help" class="btn btn--sm btn--primary" data-ref="addFactBtn" x-command="addFact" x-text="'+ ' + t('fact')"></button>
+        <div class="ishikawa__toolbar-spacer"></div>
+      </div>
+      <template x-if="model.facts.length === 0">
+        <div class="ishikawa__exp-empty" x-text="t('noFacts')"></div>
+      </template>
+      <template x-if="model.facts.length > 0">
+        <div class="dmike-table-wrap">
+          <datalist id="ishikawa-fact-owner-list">
+            <template x-for="n in ownerNames" :key="n"><option :value="n"></option></template>
+          </datalist>
+          <table class="dmike-table dmike-table--sticky dmike-table--head-mono dmike-table--draggable ishikawa__table ishikawa__exp-table">
+            <thead>
+              <tr>
+                <th class="dmike-table__grip-col"></th>
+                <th class="ishikawa__col-nr">#</th>
+                <th class="ishikawa__col-fact-name"><span data-help-key="modules.ishikawa.fields.facts.name.help" x-text="t('factName')"></span></th>
+                <th class="ishikawa__col-desc"><span data-help-key="modules.ishikawa.fields.facts.description.help" x-text="t('factDescription')"></span></th>
+                <th class="ishikawa__col-date"><span data-help-key="modules.ishikawa.fields.facts.date.help" x-text="t('factDate')"></span></th>
+                <th class="ishikawa__col-resp"><span data-help-key="modules.ishikawa.fields.facts.owner.help" x-text="t('factOwner')"></span></th>
+                <th class="ishikawa__col-actions"></th>
+              </tr>
+            </thead>
+            <tbody data-reorder-group="facts" data-reorder-closed :data-reorder-group-label="t('tabFacts')">
+              <template x-for="(f, idx) in model.facts" :key="f.id">
+                <tr :data-fid="f.id" :data-id="f.id" :data-reorder-index="idx" :class="previewClass('facts', f.id)">
+                  <td class="dmike-table__grip-col">
+                    <button class="dmike-table__grip ishikawa__grip--fact" type="button" :data-grip="f.id"
+                            :aria-label="t('common.reorder')"></button>
+                  </td>
+                  <td class="ishikawa__col-nr"><span class="ishikawa__nr-text" x-text="idx + 1"></span></td>
+                  <td><input class="field field--sm field--ghost ishikawa__exp-title-input" type="text" :placeholder="t('factNamePlaceholder')" :data-fact-name="f.id" x-model="f.name" /></td>
+                  <td><textarea class="field field--sm field--ghost ishikawa__exp-desc-input" rows="1" :placeholder="t('factDescPlaceholder')" :data-fact-desc="f.id" x-model="f.description"></textarea></td>
+                  <td><input class="field field--sm field--ghost ishikawa__exp-date-input" :data-fact-date="f.id" data-help-key="" x-field="f.date" /></td>
+                  <td><input class="field field--sm field--ghost ishikawa__exp-resp-input" type="text" :placeholder="t('factOwnerPlaceholder')" list="ishikawa-fact-owner-list" :data-fact-owner="f.id" x-model="f.owner" /></td>
+                  <td><div class="ishikawa__row-actions">
+                    <button type="button" class="btn btn--icon-sm btn--danger" :title="t('common.delete')" :data-fact-del="f.id" data-help-key=""
+                            x-command="removeFact" :data-arg-fact-id="f.id"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                  </div></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </template>
+    </div>
     </template>
 
     <!-- ─── HYPOTHESES TAB ──────────────────────────────────── -->
@@ -224,8 +271,8 @@
                   <button type="button" class="btn btn--icon-sm" :title="t('addSub')" :data-add-sub="vr.row.id" @click="addSubAndFocus(vr.row.id)">+</button>
                   <button type="button" class="btn btn--icon-sm" :title="t('duplicate')" :data-dupe="vr.row.id" data-help-key=""
                           x-command="duplicateRow" :data-arg-row-id="vr.row.id">⎘</button>
-                  <button type="button" class="btn btn--icon-sm" :class="linkExpClass(vr.row)"
-                          :title="linkExpTitle(vr.row)" :aria-label="linkExpTitle(vr.row)" :data-link-exp="vr.row.id">
+                  <button type="button" class="btn btn--icon-sm" :class="linkExpClass(vr.row)" data-help-key="modules.ishikawa.actions.setCauseExperiments.help"
+                          :title="linkExpTitle(vr.row)" :aria-label="linkExpTitle(vr.row)" :data-link-exp="vr.row.id" @click="openExpLink(vr.row.id)">
                     <span class="icon icon--sm" data-icon="action.experiment" aria-hidden="true"></span>
                     <template x-if="linkedExpCount(vr.row) > 0">
                       <span class="ishikawa__exp-link-badge" x-text="linkedExpCount(vr.row)"></span>
@@ -319,12 +366,90 @@
 
     <!-- ─── EXPERIMENTS TAB ─────────────────────────────────── -->
     <template x-if="state.tab === 'experiments'">
-    <div class="ishikawa__experiments"></div>
+    <div class="ishikawa__experiments">
+      <div class="ishikawa__toolbar" style="margin-bottom:var(--spacing-sm)">
+        <button type="button" data-help-key="modules.ishikawa.actions.addExperiment.help" class="btn btn--sm btn--primary" data-ref="addExperimentBtn" x-command="addExperiment" x-text="'+ ' + t('experiment')"></button>
+        <div class="ishikawa__toolbar-spacer"></div>
+      </div>
+      <template x-if="model.experiments.length === 0">
+        <div class="ishikawa__exp-empty" x-text="t('noExperiments')"></div>
+      </template>
+      <template x-if="model.experiments.length > 0">
+        <div class="dmike-table-wrap">
+          <datalist id="ishikawa-resp-list">
+            <template x-for="n in ownerNames" :key="n"><option :value="n"></option></template>
+          </datalist>
+          <table class="dmike-table dmike-table--sticky dmike-table--head-mono dmike-table--draggable ishikawa__table ishikawa__exp-table">
+            <thead>
+              <tr>
+                <th class="dmike-table__grip-col"></th>
+                <th class="ishikawa__col-nr">#</th>
+                <th class="ishikawa__col-exp-title"><span data-help-key="modules.ishikawa.fields.experiments.title.help" x-text="t('experimentTitle')"></span></th>
+                <th class="ishikawa__col-desc"><span data-help-key="modules.ishikawa.fields.experiments.description.help" x-text="t('experimentDescription')"></span></th>
+                <th class="ishikawa__col-resp"><span data-help-key="modules.ishikawa.fields.experiments.responsible.help" x-text="t('responsible')"></span></th>
+                <th class="ishikawa__col-exp-status"><span data-help-key="modules.ishikawa.fields.experiments.status.help" x-text="t('statusHeader')"></span></th>
+                <th class="ishikawa__col-date"><span data-help-key="modules.ishikawa.fields.experiments.startDate.help" x-text="t('startDate')"></span></th>
+                <th class="ishikawa__col-date"><span data-help-key="modules.ishikawa.fields.experiments.endDate.help" x-text="t('endDate')"></span></th>
+                <th class="ishikawa__col-money"><span class="context-help-anchor--overlay" data-help-key="modules.ishikawa.fields.experiments.costMoney.help" x-text="t('costMoney')"></span></th>
+                <th class="ishikawa__col-hours"><span class="context-help-anchor--overlay" data-help-key="modules.ishikawa.fields.experiments.costHours.help" x-text="t('costHours')"></span></th>
+                <th class="ishikawa__col-hyp-link"><span data-help-key="modules.ishikawa.actions.setExperimentHypotheses.help" x-text="t('linkedHypotheses')"></span></th>
+                <th class="ishikawa__col-actions"></th>
+              </tr>
+            </thead>
+            <tbody data-reorder-group="experiments" data-reorder-closed :data-reorder-group-label="t('tabExperiments')">
+              <template x-for="(x, idx) in model.experiments" :key="x.id">
+                <tr :data-xid="x.id" :data-id="x.id" :data-reorder-index="idx" :class="previewClass('experiments', x.id)">
+                  <td class="dmike-table__grip-col">
+                    <button class="dmike-table__grip ishikawa__grip--exp" type="button" :data-grip="x.id"
+                            :aria-label="t('common.reorder')"></button>
+                  </td>
+                  <td class="ishikawa__col-nr"><span class="ishikawa__nr-text" x-text="idx + 1"></span></td>
+                  <td><input class="field field--sm field--ghost ishikawa__exp-title-input" type="text" :placeholder="t('experimentTitlePlaceholder')" :data-xp-title="x.id" x-model="x.title" /></td>
+                  <td><textarea class="field field--sm field--ghost ishikawa__exp-desc-input" rows="1" :placeholder="t('experimentDescPlaceholder')" :data-xp-desc="x.id" x-model="x.description"></textarea></td>
+                  <td><input class="field field--sm field--ghost ishikawa__exp-resp-input" type="text" :placeholder="t('responsiblePlaceholder')" list="ishikawa-resp-list" :data-xp-resp="x.id" x-model="x.responsible" /></td>
+                  <td><select class="field field--sm ishikawa__exp-status-select" :class="expStatusClass(x)" :data-xp-status="x.id" data-help-key="" x-field="x.status">
+                    <option value="planned" x-text="t('expStatus.planned')"></option>
+                    <option value="running" x-text="t('expStatus.running')"></option>
+                    <option value="done" x-text="t('expStatus.done')"></option>
+                    <option value="cancelled" x-text="t('expStatus.cancelled')"></option>
+                  </select></td>
+                  <td><input class="field field--sm field--ghost ishikawa__exp-date-input" :data-xp-start="x.id" data-help-key="" x-field="x.startDate" /></td>
+                  <td><input class="field field--sm field--ghost ishikawa__exp-date-input" :data-xp-end="x.id" data-help-key="" x-field="x.endDate" /></td>
+                  <td><input class="field field--sm field--ghost field--num ishikawa__exp-num-input" placeholder="0" :data-xp-money="x.id" data-help-key="" x-field="x.costMoney" /></td>
+                  <td><input class="field field--sm field--ghost field--num ishikawa__exp-num-input" placeholder="0" :data-xp-hours="x.id" data-help-key="" x-field="x.costHours" /></td>
+                  <td><button type="button" class="btn btn--sm ishikawa__exp-link-btn" :data-xp-link="x.id" data-help-key=""
+                              x-dialog="hypLink" :data-arg-experiment-id="x.id" :data-dialog-title="t('chooseHypotheses')" x-text="expLinkText(x)"></button></td>
+                  <td><div class="ishikawa__row-actions">
+                    <button type="button" class="btn btn--icon-sm btn--danger" :title="t('common.delete')" :data-xp-del="x.id" data-help-key=""
+                            x-command="removeExperiment" :data-arg-experiment-id="x.id"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
+                  </div></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </template>
+      <div class="ishikawa__gantt-panel">
+        <label class="ishikawa__panel-label" data-help-key="modules.ishikawa.fields.ganttChart.help" x-text="t('ganttTitle')"></label>
+        <template x-if="ganttEmptyMsg"><div class="ishikawa__gantt-empty" x-text="ganttEmptyMsg"></div></template>
+        <div class="ishikawa__gantt-canvas" data-ref="ganttCanvas" :style="ganttHostStyle" x-widget="gantt-chart" x-widget-config="ganttChart"></div>
+      </div>
+      <div class="ishikawa__gantt-panel">
+        <label class="ishikawa__panel-label" data-help-key="modules.ishikawa.fields.costChart.help" x-text="t('costChartTitle')"></label>
+        <template x-if="costEmptyMsg"><div class="ishikawa__gantt-empty" x-text="costEmptyMsg"></div></template>
+        <div class="ishikawa__gantt-canvas" data-ref="costChartCanvas" :style="costHostStyle" x-widget="cumulative-cost-chart" x-widget-config="costChart"></div>
+      </div>
+      <div class="ishikawa__gantt-panel">
+        <label class="ishikawa__panel-label" data-help-key="modules.ishikawa.fields.costRateChart.help" x-text="t('costRateChartTitle')"></label>
+        <template x-if="costRateEmptyMsg"><div class="ishikawa__gantt-empty" x-text="costRateEmptyMsg"></div></template>
+        <div class="ishikawa__gantt-canvas" data-ref="costRateChartCanvas" :style="costHostStyle" x-widget="cumulative-cost-chart" x-widget-config="costRateChart"></div>
+      </div>
+    </div>
     </template>
 
   </div>
 
-  <!-- ─── LIGHTBOX (hidden home; lent to the shared dialog, restored on close) ─── -->
+  <!-- ─── LIGHTBOX AND FORMS (hidden home; lent to the shared dialog, restored on close) ─── -->
   <div class="ishikawa__modal-forms" hidden>
     <div class="ishikawa__img-lightbox" x-ref="lightbox">
       <img :src="lightboxImage.dataUrl" :alt="lightboxImage.caption" />
@@ -364,6 +489,42 @@
         <span class="ishikawa__cat-rename-swatch" style="background:var(--ishikawa-cat-method)"></span>
         <span class="ishikawa__cat-rename-default" x-text="t('cat.method')"></span>
         <input type="text" class="field" data-cat-key="method" x-param="method" data-help-key="" :placeholder="t('cat.method')" maxlength="40" />
+      </div>
+    </form>
+
+    <!-- Link experiments to one cause (opened from a cause row) -->
+    <form class="ishikawa__hyp-pick" x-ref="expLink" x-command-form="setCauseExperiments">
+      <p class="ishikawa__hyp-pick-hint" x-text="expLinkHint"></p>
+      <div class="ishikawa__hyp-pick-list" x-param="experimentIds">
+        <!-- x-show, not x-if: this node is lent to the dialog, where an x-if clone would never initialise -->
+        <div class="ishikawa__no-items" x-show="expLinkItems.length === 0" x-text="t('noExperimentsToLink')"></div>
+        <template x-for="it in expLinkItems" :key="it.id">
+          <label class="ishikawa__hyp-pick-row">
+            <input type="checkbox" :value="it.id" :data-exp-id="it.id" />
+            <span class="ishikawa__hyp-pick-num" x-text="'#' + it.num"></span>
+            <span class="ishikawa__hyp-pick-name" x-text="it.label"></span>
+            <span class="ishikawa__hyp-pick-cat" x-show="it.dateRange" x-text="it.dateRange"></span>
+            <span class="ishikawa__exp-link-status" :class="'ishikawa__expstatus-' + it.status" x-text="it.statusLabel"></span>
+          </label>
+        </template>
+      </div>
+    </form>
+
+    <!-- Choose the causes of one experiment (opened from an experiment row) -->
+    <form class="ishikawa__hyp-pick" x-ref="hypLink" x-command-form="setExperimentHypotheses">
+      <p class="ishikawa__hyp-pick-hint" x-text="t('chooseHypothesesHint')"></p>
+      <div class="ishikawa__hyp-pick-list" x-param="hypothesisIds">
+        <!-- x-show, not x-if: this node is lent to the dialog, where an x-if clone would never initialise -->
+        <div class="ishikawa__no-items" x-show="hypLinkItems.length === 0" x-text="t('noCategoryHyp')"></div>
+        <template x-for="r in hypLinkItems" :key="r.stableId">
+          <label class="ishikawa__hyp-pick-row">
+            <input type="checkbox" :value="r.stableId" :data-stable-id="r.stableId" />
+            <span class="ishikawa__hyp-pick-num" x-text="r.num"></span>
+            <span class="ishikawa__hyp-pick-swatch" x-show="r.cat" :style="'background:' + catColor(r.cat)"></span>
+            <span class="ishikawa__hyp-pick-name" x-text="r.name"></span>
+            <span class="ishikawa__hyp-pick-cat" x-show="r.cat" x-text="r.cat ? catLabel(r.cat) : ''"></span>
+          </label>
+        </template>
       </div>
     </form>
   </div>

@@ -61,6 +61,8 @@ export const HELP_ANCHOR_EXEMPTIONS = {
     { name: 'actions.loadSnapshot', reason: 'Doppelklick je Snapshot; die Liste ist an ihrer Überschrift verankert' },
     { name: 'actions.removeSnapshot', reason: 'Löschknopf je Snapshot; ein Fragezeichen je Eintrag wäre Rauschen' },
     { name: 'actions.compareSnapshot', reason: 'Klick je Snapshot; die Liste ist an ihrer Überschrift verankert' },
+    { name: 'actions.setExperimentField', reason: 'die Oberfläche tippt bzw. wählt direkt in den Zellen des Experiments; die Spaltenköpfe sind an fields.experiments.* verankert' },
+    { name: 'actions.setFactField', reason: 'die Oberfläche tippt direkt in den Zellen des Fakts; die Spaltenköpfe sind an fields.facts.* verankert' },
     { name: 'actions.removeExperiment', reason: 'Löschknopf je Experiment; ein Fragezeichen je Zeile wäre Rauschen' },
     { name: 'actions.moveExperimentBefore', reason: 'Ziehgriff je Experiment, keine Beschriftung' },
     { name: 'actions.removeFact', reason: 'Löschknopf je Fakt; ein Fragezeichen je Zeile wäre Rauschen' },

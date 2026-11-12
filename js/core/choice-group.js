@@ -10,8 +10,13 @@
  * Tastatur legt die View fest; hier entstehen nur der Zustand und bei Radios
  * ein gemeinsames `name`. Optionen, die später erscheinen (`x-for`), werden
  * erfasst und geprüft. Ein Klick auf die aktive Option ändert nichts.
+ *
+ * Ist der Wert eine Liste (`list(…)`), sind die Optionen Kästchen
+ * (`<input type="checkbox" value>`): jedes `value` ist ein Eintrag, der Wert
+ * die gewählten Einträge in Dokumentreihenfolge. Zahl-ids einer `idOf`-Liste
+ * werden wie bei `data-arg-*` zu Zahlen.
  */
-import { checkValue, fromAttr } from './model.js';
+import { checkValue, fromAttr, idsFromAttr } from './model.js';
 import { clearRejection, markRejection } from './param-input.js';
 
 const FORM_TAGS = new Set(['INPUT', 'SELECT', 'TEXTAREA']);
@@ -24,15 +29,20 @@ export function isChoiceGroup(el) {
 /** @param {Element} o @returns {boolean} */
 const isRadio = (o) => o.tagName === 'INPUT' && /** @type {HTMLInputElement} */ (o).type === 'radio';
 
+/** @param {Element} o @returns {boolean} */
+const isCheckbox = (o) => o.tagName === 'INPUT' && /** @type {HTMLInputElement} */ (o).type === 'checkbox';
+
 /** @param {Element} o @returns {boolean} Reiter (`role="tab"`): Zustand über `aria-selected` und roving `tabindex` */
 const isTab = (o) => o.getAttribute('role') === 'tab';
 
 /**
  * Die Optionen einer Gruppe in Dokumentreihenfolge.
- * @param {HTMLElement} group @returns {HTMLElement[]}
+ * @param {HTMLElement} group @param {boolean} [boxes] Kästchen einer Listengruppe statt Knöpfen und Radios
+ * @returns {HTMLElement[]}
  */
-export function optionsOf(group) {
-  return /** @type {HTMLElement[]} */ ([...group.querySelectorAll('[value]')].filter((o) => o.tagName === 'BUTTON' || isRadio(o)));
+export function optionsOf(group, boxes = false) {
+  return /** @type {HTMLElement[]} */ ([...group.querySelectorAll('[value]')]
+    .filter((o) => (boxes ? isCheckbox(o) : o.tagName === 'BUTTON' || isRadio(o))));
 }
 
 /**
@@ -40,8 +50,9 @@ export function optionsOf(group) {
  * @param {HTMLElement} group @returns {void}
  */
 export function focusChoice(group) {
-  const opts = optionsOf(group);
-  const on = opts.find((o) => (isRadio(o) ? /** @type {HTMLInputElement} */ (o).checked : o.getAttribute('aria-checked') === 'true'));
+  const boxes = optionsOf(group, true);
+  const opts = boxes.length ? boxes : optionsOf(group);
+  const on = opts.find((o) => (isRadio(o) || isCheckbox(o) ? /** @type {HTMLInputElement} */ (o).checked : o.getAttribute('aria-checked') === 'true'));
   (on ?? opts[0])?.focus();
 }
 
@@ -55,27 +66,36 @@ export function focusChoice(group) {
  * @throws {Error} beim Einbau, wenn ein `value` nicht zur Spec passt
  */
 export function bindChoiceGroup(group, { spec, name, radioName, read, write, hint, effect, cleanup, checkCtx = () => ({}) }) {
-  const valueOf = (o) => checkValue(spec, name, fromAttr(spec, o.getAttribute('value') ?? ''), checkCtx());
+  const many = spec.kind === 'list';
+  const options = () => optionsOf(group, many);
+  const itemOf = (o) => {
+    const ctx = checkCtx();
+    const raw = fromAttr(spec.item, o.getAttribute('value') ?? '');
+    return checkValue(spec.item, name, idsFromAttr({ [name]: spec.item }, { [name]: raw }, ctx.root)[name], ctx);
+  };
+  const valueOf = (o) => (many ? itemOf(o) : checkValue(spec, name, fromAttr(spec, o.getAttribute('value') ?? ''), checkCtx()));
   const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const isOn = (v, current) => (many ? (Array.isArray(current) && current.some((c) => same(c, v))) : same(v, current));
   const prepare = () => {
-    for (const o of optionsOf(group)) {
+    for (const o of options()) {
       valueOf(o);
       if (isRadio(o) && !/** @type {HTMLInputElement} */ (o).name) /** @type {HTMLInputElement} */ (o).name = radioName;
     }
   };
   const render = () => {
     const current = read();
-    for (const o of optionsOf(group)) {
+    for (const o of options()) {
       let on = false;
-      try { on = same(valueOf(o), current); } catch { on = false; }
-      if (isRadio(o)) /** @type {HTMLInputElement} */ (o).checked = on;
+      try { on = isOn(valueOf(o), current); } catch { on = false; }
+      if (isRadio(o) || isCheckbox(o)) /** @type {HTMLInputElement} */ (o).checked = on;
       else if (isTab(o)) { o.setAttribute('aria-selected', String(on)); o.setAttribute('tabindex', on ? '0' : '-1'); }
       else o.setAttribute('aria-checked', String(on));
     }
   };
-  const choose = (o) => {
+  /** @param {() => any} next liefert den neuen Wert (wirft bei ungültiger Option) */
+  const apply = (next) => {
     try {
-      const v = valueOf(o);
+      const v = next();
       if (same(v, read())) return;
       write(v);
       clearRejection(group);
@@ -85,12 +105,18 @@ export function bindChoiceGroup(group, { spec, name, radioName, read, write, hin
     }
     render();
   };
+  const choose = (o) => apply(() => valueOf(o));
+  const chosen = () => options().filter((o) => /** @type {HTMLInputElement} */ (o).checked).map(valueOf);
   const optionAt = (target) => {
     const o = target?.closest?.('[value]');
-    return o && group.contains(o) && optionsOf(group).includes(o) ? o : null;
+    return o && group.contains(o) && options().includes(o) ? o : null;
   };
-  const onClick = (e) => { const o = optionAt(e.target); if (o && !isRadio(o)) choose(o); };
-  const onChange = (e) => { const o = optionAt(e.target); if (o && isRadio(o) && o.checked) choose(o); };
+  const onClick = (e) => { const o = optionAt(e.target); if (o && !isRadio(o) && !isCheckbox(o)) choose(o); };
+  const onChange = (e) => {
+    const o = optionAt(e.target);
+    if (o && isCheckbox(o)) apply(chosen);
+    else if (o && isRadio(o) && o.checked) choose(o);
+  };
 
   prepare();
   effect(render);

@@ -255,6 +255,31 @@ suite('Cumulative-Cost type — Farben und leere Daten', () => {
     st.remove();
   });
 
+  test('series colours set only on an ancestor of the host (module container) resolve', () => {
+    const scope = document.createElement('div');
+    scope.style.setProperty('--chart-cost-money', 'rgb(7, 8, 9)');
+    scope.style.setProperty('--chart-cost-hours', 'rgb(10, 11, 12)');
+    document.body.appendChild(scope);
+    const host = document.createElement('div');
+    host.style.width = '900px';
+    host.style.height = '200px';
+    scope.appendChild(host);
+    const chart = new CumulativeCost(host, fixtureConfig('cumulative'), { language: 'de' });
+    chart.render();
+    const strokes = Array.from(host.querySelectorAll('svg path')).map((p) => p.getAttribute('stroke'));
+    assertEqual(strokes.join('|'), 'rgb(7, 8, 9)|rgb(10, 11, 12)');
+    chart.destroy();
+    scope.remove();
+  });
+
+  test('update with a new xDomain re-pins the time domain', () => {
+    const { chart } = mount(fixtureConfig('cumulative'));
+    chart.update({ xDomain: { min: 1000, max: 5000 } });
+    assertEqual(chart.config.xMin, 1000);
+    assertEqual(chart.config.xMax, 5000);
+    chart.destroy();
+  });
+
   test('variables.css defines both series colours (same values) in light and dark; no hex in the type', async () => {
     const css = await (await fetch(new URL('../../../css/variables.css', import.meta.url))).text();
     const [light, dark] = css.split('[data-theme="dark"] {');

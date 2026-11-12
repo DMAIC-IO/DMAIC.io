@@ -129,8 +129,9 @@ export const ANCHOR_EXEMPTIONS = {
     { match: 'class="df__import-option"', reason: 'Auswahlzeile je Quelle im Importdialog; keine Agentenaktion', count: 1 },
   ],
   ishikawa: [
-    { match: 'class="ishikawa__col-nr">#</th>', reason: 'Spaltenkopf der laufenden Nummer, nur das Zeichen #; kein eigenes Feld', count: 1 },
+    { match: 'class="ishikawa__col-nr">#</th>', reason: 'Spaltenkopf der laufenden Nummer (Ursachen, Fakten, Experimente), nur das Zeichen #; kein eigenes Feld', count: 3 },
     { match: 'ishikawa__exp-col-head', reason: 'Spaltenkopf je Mitglied des Expertenteams, Name aus den Daten; das Team ist an seiner Überschrift verankert', count: 1 },
+    { match: '<label class="ishikawa__hyp-pick-row">', reason: 'Eintrag je Experiment bzw. Ursache in den Verknüpfungsdialogen, Text aus den Daten; die Liste ist über ihren Parameter verankert', count: 2 },
   ],
   'opportunity-flowchart': [
     { match: 'class="of__import-option"', reason: 'Auswahlzeile je Quelle im Importdialog; keine Agentenaktion', count: 1 },

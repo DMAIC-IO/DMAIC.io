@@ -6,7 +6,7 @@
 import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { State } from '../../../js/modules/ishikawa/domain/model.js';
 import { CAT_KEYS, EXP_COLS } from '../../../js/modules/ishikawa/domain/constants.js';
-import { confirmOf } from '../../../js/core/model.js';
+import { confirmOf, currentOf } from '../../../js/core/model.js';
 import { todayISO } from '../../../js/core/local-date.js';
 
 /** @param {() => void} fn @returns {any} der geworfene Fehler */
@@ -322,6 +322,16 @@ suite('ishikawa Kommandos — Experimente', () => {
     assertDeepEqual(m.experiments.map((x) => x.hypothesisIds), [['H-002'], ['H-002', 'H-001'], ['H-001'], []]);
     assertEqual(thrown(() => m.setCauseExperiments({ stableId: 'H-009', experimentIds: [] }))?.param, 'stableId');
     assertEqual(thrown(() => m.setCauseExperiments({ stableId: 'H-001', experimentIds: [9] }))?.param, 'experimentIds');
+  });
+
+  test('Startwerte der Verknüpfungsdialoge (current): Ursachen eines Experiments, Experimente einer Ursache', () => {
+    const m = load({
+      rows: [row(1), row(2)],
+      experiments: [exp(1, { hypothesisIds: ['H-002', 'H-001'] }), exp(2, { hypothesisIds: ['H-002'] }), exp(3)],
+    });
+    assertDeepEqual(currentOf(m, 'setExperimentHypotheses', { experimentId: 1 }), { hypothesisIds: ['H-002', 'H-001'] });
+    assertDeepEqual(currentOf(m, 'setCauseExperiments', { stableId: 'H-002' }), { experimentIds: [1, 2] });
+    assertDeepEqual(currentOf(m, 'setCauseExperiments', { stableId: 'H-001' }), { experimentIds: [1] });
   });
 });
 

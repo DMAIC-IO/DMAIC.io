@@ -115,22 +115,13 @@
         "help": "Letzter Tag des Experiments als JJJJ-MM-TT oder leer."
       },
       "costMoney": {
-        "help": "Ausgegebenes Geld in Euro; null ohne Angabe."
+        "help": "Ausgegebenes Geld in Euro; leer ohne Angabe."
       },
       "costHours": {
-        "help": "Aufwand in Stunden; null ohne Angabe."
+        "help": "Aufwand in Stunden; leer ohne Angabe."
       },
       "hypothesisIds": {
         "help": "Die Kennungen (stableId) der Ursachen, die das Experiment prüft, etwa H-001."
-      },
-      "gantt": {
-        "help": "Zeitplan der Experimente von Start bis Ende; die Linie markiert heute."
-      },
-      "cost": {
-        "help": "Kosten in Euro und Aufwand in Stunden aller Experimente, über die Zeit aufsummiert."
-      },
-      "costRate": {
-        "help": "Kosten in Euro und Aufwand in Stunden je Tag, über die Laufzeit der Experimente verteilt."
       }
     },
     "facts": {
@@ -159,6 +150,15 @@
     },
     "trendChart": {
       "help": "Der Trend der Scores je Ursache über alle Snapshots bis zum aktuellen Stand, eine Linie je Ursache. Nur bei geöffnetem Trend."
+    },
+    "ganttChart": {
+      "help": "Zeitplan der Experimente von Start bis Ende; die Linie markiert heute."
+    },
+    "costChart": {
+      "help": "Kosten in Euro und Aufwand in Stunden aller Experimente, über die Zeit aufsummiert."
+    },
+    "costRateChart": {
+      "help": "Kosten in Euro und Aufwand in Stunden je Tag, über die Laufzeit der Experimente verteilt."
     },
     "paretoEdits": {
       "help": "Die Editor-Einstellungen des Pareto-Diagramms (Achsen, Schwellenwert, Balken, Linie); sie werden mit dem Modul gespeichert."

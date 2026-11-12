@@ -159,3 +159,21 @@ export function nextStableId(rows, snapshots) {
   for (const s of snapshots) for (const r of s.data?.rows ?? []) max = Math.max(max, stableNumber(r.stableId));
   return `H-${String(max + 1).padStart(3, '0')}`;
 }
+
+/**
+ * Nummern im Baum: Hauptursachen 1, 2, …; Kinder `<Eltern>.<n>`.
+ * @param {ReadonlyArray<{ id: number, parentId: number|null }>} ord Zeilen in Baumreihenfolge
+ * @returns {Map<number, string>}
+ */
+export function numbering(ord) {
+  const ids = new Set(ord.map((r) => r.id));
+  const nums = new Map();
+  const count = new Map();
+  for (const r of ord) {
+    const parent = r.parentId !== null && ids.has(r.parentId) ? r.parentId : null;
+    const n = (count.get(parent) ?? 0) + 1;
+    count.set(parent, n);
+    nums.set(r.id, parent === null ? String(n) : `${nums.get(parent)}.${n}`);
+  }
+  return nums;
+}

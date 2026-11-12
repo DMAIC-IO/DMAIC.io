@@ -9,7 +9,7 @@
  * Expertenname), über die Handler hier. Nach `addSubRow` (Oberfläche oder
  * Agent) klappt der Elternknoten auf.
  */
-import { ordered, subtreeIds, depthOf, effCat } from '../domain/tree.js';
+import { ordered, subtreeIds, depthOf, effCat, numbering } from '../domain/tree.js';
 import { scoreOf, paretoItems } from '../domain/scores.js';
 import { CAT_KEYS } from '../domain/constants.js';
 
@@ -27,24 +27,6 @@ const MAX_DEPTH_CLASS = 3;
  * @property {string} effCat wirksame Kategorie, `''` ohne
  * @property {number|null} score Mittel der Bewertungen
  */
-
-/**
- * Nummern im Baum: Hauptursachen 1, 2, …; Kinder `<Eltern>.<n>`.
- * @param {ReadonlyArray<{ id: number, parentId: number|null }>} ord Zeilen in Baumreihenfolge
- * @returns {Map<number, string>}
- */
-function numbering(ord) {
-  const ids = new Set(ord.map((r) => r.id));
-  const nums = new Map();
-  const count = new Map();
-  for (const r of ord) {
-    const parent = r.parentId !== null && ids.has(r.parentId) ? r.parentId : null;
-    const n = (count.get(parent) ?? 0) + 1;
-    count.set(parent, n);
-    nums.set(r.id, parent === null ? String(n) : `${nums.get(parent)}.${n}`);
-  }
-  return nums;
-}
 
 /**
  * Initialen eines Namens: erste Buchstaben der ersten zwei Wörter, sonst die

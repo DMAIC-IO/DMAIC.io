@@ -89,6 +89,17 @@ export default class CumulativeCost extends ChartBase {
     this.config.xMax = dom.max;
   }
 
+  /**
+   * Merge new config values and re-render; a new `xDomain` re-pins the time
+   * domain like the constructor does.
+   * @override
+   * @param {Object} configPatch
+   */
+  update(configPatch) {
+    const d = configPatch && configPatch.xDomain;
+    super.update(d ? { ...configPatch, xMin: d.min, xMax: d.max } : configPatch);
+  }
+
   // ── Layout override — wide left gutter (legend + money axis), right axis ──
 
   /** @override */
@@ -148,14 +159,14 @@ export default class CumulativeCost extends ChartBase {
     const yMoney = (v) => pa.y + pa.h - (v / maxMoney) * pa.h;
     const yHours = (v) => pa.y + pa.h - (v / maxHours) * pa.h;
 
-    const borderSecondary = resolveColor('var(--color-border-secondary)');
-    const borderPrimary = resolveColor('var(--color-border-primary)');
-    const textTertiary = resolveColor('var(--color-text-tertiary)');
-    const textSecondary = resolveColor('var(--color-text-secondary)');
-    const accent = resolveColor('var(--color-accent)');
+    const borderSecondary = resolveColor('var(--color-border-secondary)', this.container);
+    const borderPrimary = resolveColor('var(--color-border-primary)', this.container);
+    const textTertiary = resolveColor('var(--color-text-tertiary)', this.container);
+    const textSecondary = resolveColor('var(--color-text-secondary)', this.container);
+    const accent = resolveColor('var(--color-accent)', this.container);
 
-    const moneyColor = resolveColor(MONEY_COLOR);
-    const hoursColor = resolveColor(HOURS_COLOR);
+    const moneyColor = resolveColor(MONEY_COLOR, this.container);
+    const hoursColor = resolveColor(HOURS_COLOR, this.container);
 
     // ── Baseline (x-axis) ──────────────────────────────────────────
     svgEl('line', {

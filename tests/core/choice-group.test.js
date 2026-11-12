@@ -6,7 +6,7 @@ import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } f
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { registerFieldDirective } from '../../js/core/field-directive.js';
 import { registerCommandDirectives } from '../../js/core/command-directives.js';
-import { defineModel, defineState, command, oneOf, number, text, index, list, record } from '../../js/core/model.js';
+import { defineModel, defineState, command, oneOf, number, text, index, list, record, object, idOf } from '../../js/core/model.js';
 
 const Doc = defineModel({
   fields: { size: oneOf([7, 14, 30], { default: 14 }) },
@@ -30,6 +30,23 @@ const Pick = defineModel({
       params: { col: oneOf(['a', 'b']), idx: index('rows[col]', { existing: true }) },
       run() {},
     }),
+  },
+});
+
+/** Kästchen-Gruppe: eine Liste von ids als Parameter, Startwerte aus `current`. */
+const Links = defineModel({
+  fields: {
+    items: list(object({ id: number({ integer: true }) }), { default: [{ id: 1 }, { id: 3 }, { id: 5 }] }),
+    picked: list(number({ integer: true }), { default: [3] }),
+    tags: list(object({ key: text() }), { default: [{ key: 'a' }, { key: 'b' }] }),
+  },
+  commands: {
+    link: command({
+      params: { ids: list(idOf('items')) },
+      current() { return { ids: [...this.picked] }; },
+      run({ ids }) { this.picked = ids; },
+    }),
+    tag: command({ params: { keys: list(idOf('tags', { key: 'key' })) }, run() {} }),
   },
 });
 
@@ -182,6 +199,64 @@ suite('x-param an einer Knopfgruppe', () => {
     assertDeepEqual(checked([zero, one]), ['true', 'false']);
     assertEqual($('.g').getAttribute('aria-invalid'), 'true');
     host.remove();
+  });
+});
+
+suite('x-param an einer Gruppe von Kästchen (Listenparameter)', () => {
+  const BOXES = '<form x-command-form="link"><div class="g" x-param="ids">'
+    + '<input type="checkbox" value="1"><input type="checkbox" value="3"><input type="checkbox" value="5"></div>'
+    + '<button type="submit">ok</button></form>';
+  const submit = async ($) => { $('form').requestSubmit(); for (let i = 0; i < 3; i++) await flush(); };
+
+  test('Startwert aus current, Kästchen sammeln die gewählten ids als Zahlen in Dokumentreihenfolge', async () => {
+    const { host, vm, $, $$ } = await mount(BOXES, { useModel: Links });
+    const boxes = $$('input[type="checkbox"]');
+    assertDeepEqual(boxes.map((b) => b.checked), [false, true, false]);
+    assertEqual($('.g').getAttribute('data-help-key'), 'modules.gt.actions.link.params.ids');
+    boxes[2].click();
+    boxes[0].click();
+    await flush();
+    await submit($);
+    assertDeepEqual(vm.model.picked, [1, 3, 5]);
+    boxes[1].click();
+    await flush();
+    await submit($);
+    assertDeepEqual(vm.model.picked, [1, 5]);
+    assertDeepEqual(boxes.map((b) => b.checked), [true, false, true]);
+    host.remove();
+  });
+
+  test('alle abgewählt: leere Liste; Text-ids bleiben Text', async () => {
+    const a = await mount(BOXES, { useModel: Links });
+    a.$$('input[type="checkbox"]')[1].click();
+    await flush();
+    await submit(a.$);
+    assertDeepEqual(a.vm.model.picked, []);
+    a.host.remove();
+    const b = await mount('<form x-command-form="tag"><div class="g" x-param="keys"><input type="checkbox" value="a"><input type="checkbox" value="b"></div></form>', { useModel: Links });
+    const boxes = b.$$('input[type="checkbox"]');
+    boxes[1].click();
+    await flush();
+    assertDeepEqual(boxes.map((x) => x.checked), [false, true]);
+    assertEqual(b.$('.g').getAttribute('aria-invalid'), null);
+    b.host.remove();
+  });
+
+  test('Option aus x-for wird erfasst; unbekannte id wirft beim Einbau', async () => {
+    const { host, $$ } = await mount('<form x-command-form="link"><div class="g" x-param="ids">'
+      + '<template x-for="it in model.items" :key="it.id"><label><input type="checkbox" :value="it.id"></label></template></div></form>', { useModel: Links });
+    await flush();
+    assertDeepEqual($$('input[type="checkbox"]').map((x) => x.checked), [false, true, false]);
+    host.remove();
+    const name = `groupTestBad${++n}`;
+    Alpine.data(name, () => {
+      const comp = { model: new Links(), moduleId: 'gt' };
+      Object.defineProperty(comp, '_ui', { enumerable: false, get() { return { model: this.model, notify: () => {}, dialog: null, i18n: I18N, moduleId: 'gt', instanceId: 'i1', forms: {} }; } });
+      return comp;
+    });
+    const bad = document.createElement('div');
+    bad.innerHTML = `<div x-data="${name}"><form x-command-form="link"><div x-param="ids"><input type="checkbox" value="9"></div></form></div>`;
+    assertThrows(() => Alpine.initTree(bad), /unknown ids "9"/);
   });
 });
 

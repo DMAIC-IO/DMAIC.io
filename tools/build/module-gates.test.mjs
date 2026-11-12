@@ -1086,6 +1086,16 @@ test('Knopfgruppen: Optionen brauchen role="radio" (außer input type=radio)', (
   ]);
 });
 
+test('Knopfgruppen: Kästchen einer x-param-Gruppe (Listenparameter) brauchen keine Rolle', () => {
+  const text = [
+    '<div x-param="ids"><label><input type="checkbox" :value="x.id"></label><input type="checkbox" value="3"></div>',
+    '<div role="radiogroup" x-set="model.mode"><input type="checkbox" value="a"></div>',
+  ].join('\n');
+  assert.deepEqual(checkChoiceGroups([{ path: 'resources/view.html', text }]), [
+    'template: resources/view.html: x-set="model.mode": Option <input type="checkbox" value="a"> ohne role="radio"',
+  ]);
+});
+
 test('Knopfgruppen: role="tab" nur in einer tablist mit x-set', () => {
   const text = [
     '<div role="tablist" x-tablist x-set="model.view"><button type="button" role="tab" :value="v"></button></div>',

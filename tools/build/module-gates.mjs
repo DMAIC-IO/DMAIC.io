@@ -1232,8 +1232,9 @@ function elementBody(html, from, tag) {
 /**
  * Gate Knopfgruppen: in einer Gruppe (`x-set`/`x-param` an einem Element,
  * das kein Eingabefeld ist) trägt jede Option (`<button>` mit `value` oder
- * `:value`) `role="radio"`; `<input type="radio">` braucht keine Rolle. In einer
- * `role="tablist"` mit `x-set` sind die Optionen Reiter (`role="tab"`).
+ * `:value`) `role="radio"`; `<input type="radio">` braucht keine Rolle, in einer
+ * `x-param`-Gruppe auch `<input type="checkbox">` nicht (Listenparameter). In
+ * einer `role="tablist"` mit `x-set` sind die Optionen Reiter (`role="tab"`).
  * @param {{ path: string, text: string }[]} files @returns {string[]}
  */
 export function checkChoiceGroups(files) {
@@ -1247,6 +1248,7 @@ export function checkChoiceGroups(files) {
       for (const [, optTag, optAttrs] of body.matchAll(/<(button|input)\b((?:[^>"']|"[^"]*"|'[^']*')*)>/g)) {
         if (!/(?:^|\s):?value=/.test(optAttrs)) continue;
         if (optTag === 'input' && /(?:^|\s)type="radio"/.test(optAttrs)) continue;
+        if (optTag === 'input' && attr === 'x-param' && /(?:^|\s)type="checkbox"/.test(optAttrs)) continue;
         if (/(?:^|\s)role="radio"/.test(optAttrs)) continue;
         if (tablist && /(?:^|\s)role="tab"/.test(optAttrs)) continue;
         const shownOpt = `<${optTag}${optAttrs.replace(/\s*type="button"/, '')}>`;

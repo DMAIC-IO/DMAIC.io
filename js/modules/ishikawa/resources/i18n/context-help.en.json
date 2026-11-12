@@ -115,22 +115,13 @@
         "help": "Last day of the experiment as YYYY-MM-DD or empty."
       },
       "costMoney": {
-        "help": "Money spent in euros; null if not given."
+        "help": "Money spent in euros; empty if not given."
       },
       "costHours": {
-        "help": "Effort in hours; null if not given."
+        "help": "Effort in hours; empty if not given."
       },
       "hypothesisIds": {
         "help": "The identifiers (stableId) of the causes the experiment checks, such as H-001."
-      },
-      "gantt": {
-        "help": "Schedule of the experiments from start to end; the line marks today."
-      },
-      "cost": {
-        "help": "Cost in euros and effort in hours of all experiments, summed up over time."
-      },
-      "costRate": {
-        "help": "Cost in euros and effort in hours per day, spread over the duration of the experiments."
       }
     },
     "facts": {
@@ -159,6 +150,15 @@
     },
     "trendChart": {
       "help": "The trend of each cause's score across all snapshots up to the current state, one line per cause. Only while the trend is open."
+    },
+    "ganttChart": {
+      "help": "Schedule of the experiments from start to end; the line marks today."
+    },
+    "costChart": {
+      "help": "Cost in euros and effort in hours of all experiments, summed up over time."
+    },
+    "costRateChart": {
+      "help": "Cost in euros and effort in hours per day, spread over the duration of the experiments."
     },
     "paretoEdits": {
       "help": "The editor settings of the Pareto chart (axes, threshold, bars, line); they are saved with the module."

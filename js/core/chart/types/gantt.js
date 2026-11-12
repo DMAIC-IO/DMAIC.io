@@ -75,6 +75,17 @@ export default class GanttChart extends ChartBase {
     this.config.xMax = xDomain.maxT;
   }
 
+  /**
+   * Merge new config values and re-render; a new `xDomain` re-pins the time
+   * domain like the constructor does.
+   * @override
+   * @param {Object} configPatch
+   */
+  update(configPatch) {
+    const d = configPatch && configPatch.xDomain;
+    super.update(d ? { ...configPatch, xMin: d.minT, xMax: d.maxT } : configPatch);
+  }
+
   // ── Layout override — wide left gutter for row labels ────────────
 
   /** @override */
@@ -132,10 +143,10 @@ export default class GanttChart extends ChartBase {
     const span = Math.max(maxT - minT, 86400000);
     const localX = (t) => pa.x + ((t - minT) / span) * pa.w;
 
-    const borderSecondary = resolveColor('var(--color-border-secondary)');
-    const textTertiary = resolveColor('var(--color-text-tertiary)');
-    const textPrimary = resolveColor('var(--color-text-primary)');
-    const accent = resolveColor('var(--color-accent)');
+    const borderSecondary = resolveColor('var(--color-border-secondary)', this.container);
+    const textTertiary = resolveColor('var(--color-text-tertiary)', this.container);
+    const textPrimary = resolveColor('var(--color-text-primary)', this.container);
+    const accent = resolveColor('var(--color-accent)', this.container);
 
     const rowsBottom = padT + tasks.length * rowH;
 
@@ -185,7 +196,7 @@ export default class GanttChart extends ChartBase {
       // Bar.
       svgEl('rect', {
         x: x1, y, width: w, height: barH,
-        rx: 3, ry: 3, fill: resolveColor(it.color || 'var(--chart-bar-default)'), opacity: 0.85,
+        rx: 3, ry: 3, fill: resolveColor(it.color || 'var(--chart-bar-default)', this.container), opacity: 0.85,
       }, plotGroup);
 
       barPositions.push({ x: x1 + w / 2, y: y + barH / 2 });
@@ -228,10 +239,10 @@ export default class GanttChart extends ChartBase {
     // label + responsible are USER INPUT → DOM textContent escapes them natively.
     const resp = it.responsible ? ` · ${it.responsible}` : '';
     const node = h('div', null,
-      h('b', { style: `color:${resolveColor(it.color || 'var(--chart-bar-default)')}` }, `${it.label}${resp}`),
+      h('b', { style: `color:${resolveColor(it.color || 'var(--chart-bar-default)', this.container)}` }, `${it.label}${resp}`),
       h('br'),
       `${it.startDate} → ${it.endDate}`,
     );
-    return [{ node, px: pos[best].x, py: pos[best].y, color: resolveColor(it.color || 'var(--chart-bar-default)') }];
+    return [{ node, px: pos[best].x, py: pos[best].y, color: resolveColor(it.color || 'var(--chart-bar-default)', this.container) }];
   }
 }
