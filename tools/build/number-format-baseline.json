@@ -106,7 +106,7 @@
   },
   "js/modules/ishikawa/tile/tile.js": {
     "count": 1,
-    "reason": "Score der Top-Hypothesen in der Altkachel (toFixed(1)), unverändert verschoben; die Kachel wird noch auf createTile umgestellt"
+    "reason": "Score der Top-Ursachen in der Kachel (toFixed(1)): bleibt mit Punkt als Dezimalzeichen wie bisher, damit das Kachelbild gleich bleibt; Umstellung auf formatNumber ist eine sichtbare Änderung"
   },
   "js/modules/kano/kano.js": {
     "count": 3
