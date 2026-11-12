@@ -187,6 +187,10 @@ suite('ishikawa Model — Invarianten', () => {
     assertDeepEqual(m.experiments[0].hypothesisIds, ['H-001']);
   });
 
+  test('uniqueRowIds nennt beide Felder, die seine Reparatur schreibt', () => {
+    assertDeepEqual([...State.schema.invariants.uniqueRowIds.fields], ['rows', 'experiments']);
+  });
+
   test('doppelte ids in Experten, Snapshots, Experimenten, Fakten und Bildern: spätere entfallen', () => {
     const exp = (id) => ({
       id, title: `X${id}`, description: '', responsible: '', status: 'planned',

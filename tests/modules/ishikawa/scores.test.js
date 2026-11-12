@@ -59,6 +59,14 @@ suite('ishikawa/domain/scores', () => {
     const now = [row(1, { ratings: { 1: 4, 2: 5 } })];
     assertDeepEqual(diffRows(now, snap), []);
   });
+
+  test('diffRows: Grenze — genau 0,01 zählt nicht, 0,02 zählt', () => {
+    const zeros = Object.fromEntries(Array.from({ length: 100 }, (_, i) => [i + 1, 0]));
+    const snap = [row(1, { ratings: zeros })];
+    assertDeepEqual(diffRows([row(1, { ratings: { ...zeros, 1: 1 } })], snap), []);
+    assertDeepEqual(diffRows([row(1, { ratings: { ...zeros, 1: 1, 2: 1 } })], snap),
+      [{ stableId: 'H-001', name: 'R1', before: 0, after: 0.02, delta: 0.02 }]);
+  });
 });
 
 suite('ishikawa/domain/tree — Ergänzungen', () => {

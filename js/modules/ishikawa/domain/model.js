@@ -9,13 +9,21 @@
  * experiments, facts, images, paretoEdits }`. Neue ids sind `max + 1` über die
  * jeweilige Liste (`domain/tree.js`). Dass Baum und ids stimmig sind, sichern
  * die Invarianten — beim Laden repariert, beim Schreiben abgelehnt.
+ *
+ * `move…Before` setzt vor das Ziel; Ziel `null` heißt „ans Ende“, bei Zeilen
+ * „hinter die letzte Geschwisterzeile“ (der Elternknoten bleibt). Fachliche
+ * Ablehnungen werfen mit `param`. `confirm` liefert die Rückfrage als
+ * Schlüssel unter `modules.ishikawa`.
  */
 import {
-  defineModel, list, object, record, map, text, number, oneOf, idOf, date, image,
+  defineModel, command, cloneJSON, list, object, record, map, text, number, oneOf, idOf, date, image,
 } from '../../../core/model.js';
+import { requireForm } from '../../../core/validate.js';
+import { todayISO } from '../../../core/local-date.js';
 import paretoChart from '../../../widgets/pareto-chart/schema.js';
 import { from0 } from './migrations.js';
-import { nextStableId } from './tree.js';
+import { EXP_COLS } from './constants.js';
+import { nextId, nextStableId, subtreeIds, siblingsOf } from './tree.js';
 import { scoreOf, paretoItems } from './scores.js';
 
 /**
@@ -65,6 +73,54 @@ function dedupe(items, seen = new Set()) {
 /** @param {string} name @returns {string} Vergleichsform eines Expertennamens */
 function nameKey(name) {
   return name.trim().toLowerCase();
+}
+
+/**
+ * Lehnt einen Expertennamen ab, den ein anderer Experte schon trägt (ohne Groß/Klein).
+ * @param {ReadonlyArray<{ id: number, name: string }>} experts @param {string} name
+ * @param {number|null} [exceptId] der umbenannte Experte
+ * @throws {Error} mit `param` `name`
+ */
+function requireFreeName(experts, name, exceptId = null) {
+  const key = nameKey(name);
+  requireForm('name', name, !experts.some((e) => e.id !== exceptId && nameKey(e.name) === key),
+    'a name no other expert has, case-insensitive');
+}
+
+/**
+ * Anzeigename in einer Rückfrage: der getrimmte Text, sonst `#<Position>`.
+ * @param {ReadonlyArray<object>} items @param {object} item @param {string} label
+ * @returns {string}
+ */
+function confirmName(items, item, label) {
+  return label.trim() || `#${items.indexOf(item) + 1}`;
+}
+
+/**
+ * Ein Element einer flachen Liste vor ein anderes setzen; `targetId` `null`
+ * hängt es ans Ende, auf sich selbst bleibt alles.
+ * @template {{ id: number }} T
+ * @param {T[]} items @param {number} id @param {number|null} targetId
+ * @returns {T[]} neue Liste
+ */
+function moveBefore(items, id, targetId) {
+  if (id === targetId) return items;
+  const moved = items.find((x) => x.id === id);
+  const rest = items.filter((x) => x.id !== id);
+  const at = targetId === null ? rest.length : rest.findIndex((x) => x.id === targetId);
+  rest.splice(at, 0, moved);
+  return rest;
+}
+
+/**
+ * Index hinter dem letzten Listeneintrag aus `ids`; ohne Treffer `fallback`.
+ * @param {ReadonlyArray<{ id: number }>} rows @param {Set<number>} ids @param {number} fallback
+ * @returns {number}
+ */
+function afterLast(rows, ids, fallback) {
+  let at = -1;
+  rows.forEach((r, i) => { if (ids.has(r.id)) at = i; });
+  return at < 0 ? fallback : at + 1;
 }
 
 /**
@@ -149,6 +205,266 @@ export class State extends defineModel({
   view: {
     paretoEdits: paretoChart.edits(),
   },
+  commands: {
+    addExpert: command({
+      params: { name: text({ trim: true, nonEmpty: true }) },
+      returns: number({ integer: true }),
+      run({ name }) {
+        requireFreeName(this.experts, name);
+        const id = nextId(this.experts);
+        this.experts.push({ id, name, color: EXP_COLS[this.experts.length % EXP_COLS.length] });
+        return id;
+      },
+    }),
+    renameExpert: command({
+      params: { expertId: idOf('experts'), name: text({ trim: true, nonEmpty: true }) },
+      run({ expertId, name }) {
+        requireFreeName(this.experts, name, expertId);
+        this.experts.find((e) => e.id === expertId).name = name;
+      },
+    }),
+    removeExpert: command({
+      params: { expertId: idOf('experts') },
+      run({ expertId }) {
+        for (const r of this.rows) delete r.ratings[String(expertId)];
+        this.experts = this.experts.filter((e) => e.id !== expertId);
+      },
+    }),
+    addRow: command({
+      returns: object({ id: number({ integer: true }), stableId: text() }),
+      run() {
+        const created = { id: nextId(this.rows), stableId: nextStableId(this.rows, this.snapshots) };
+        this.rows.push({ ...created, parentId: null, category: '', name: '', description: '', ratings: {}, status: 'open' });
+        return created;
+      },
+    }),
+    addSubRow: command({
+      params: { parentId: idOf('rows') },
+      returns: object({ id: number({ integer: true }), stableId: text() }),
+      run({ parentId }) {
+        const created = { id: nextId(this.rows), stableId: nextStableId(this.rows, this.snapshots) };
+        const at = afterLast(this.rows, new Set([parentId, ...subtreeIds(this.rows, parentId)]), this.rows.length);
+        this.rows.splice(at, 0, { ...created, parentId, category: '', name: '', description: '', ratings: {}, status: 'open' });
+        return created;
+      },
+    }),
+    setRowField: command({
+      params: {
+        rowId: idOf('rows'),
+        name: text({ optional: true }),
+        category: oneOf(['', 'man', 'machine', 'environment', 'material', 'measurement', 'method'], { optional: true }),
+        description: text({ optional: true }),
+        status: oneOf(['open', 'testing', 'confirmed', 'rejected'], { optional: true }),
+      },
+      run({ rowId, ...changes }) {
+        const row = this.rows.find((r) => r.id === rowId);
+        if (changes.category !== undefined) {
+          requireForm('category', changes.category, row.parentId === null || changes.category === '',
+            '"" for a sub-cause; it inherits the category of its main cause');
+        }
+        Object.assign(row, changes);
+      },
+    }),
+    removeRow: command({
+      params: { rowId: idOf('rows') },
+      confirm({ rowId }) {
+        const row = this.rows.find((r) => r.id === rowId);
+        const name = row.name.trim() || row.stableId;
+        const count = subtreeIds(this.rows, rowId).length;
+        return count > 0
+          ? { key: 'delRowConfirmWithSubs', params: { name, count } }
+          : { key: 'delRowConfirm', params: { name } };
+      },
+      run({ rowId }) {
+        const gone = new Set([rowId, ...subtreeIds(this.rows, rowId)]);
+        const goneStable = new Set(this.rows.filter((r) => gone.has(r.id)).map((r) => r.stableId));
+        this.rows = this.rows.filter((r) => !gone.has(r.id));
+        for (const x of this.experiments) x.hypothesisIds = x.hypothesisIds.filter((sid) => !goneStable.has(sid));
+      },
+    }),
+    moveRowBefore: command({
+      params: { rowId: idOf('rows'), targetRowId: idOf('rows', { nullable: true }) },
+      run({ rowId, targetRowId }) {
+        if (rowId === targetRowId) return;
+        const sub = subtreeIds(this.rows, rowId);
+        requireForm('targetRowId', targetRowId, !sub.includes(targetRowId), 'a cause outside the moved subtree, or null');
+        const group = new Set([rowId, ...sub]);
+        const moved = this.rows.filter((r) => group.has(r.id));
+        const rest = this.rows.filter((r) => !group.has(r.id));
+        const row = moved.find((r) => r.id === rowId);
+        let at;
+        if (targetRowId === null) {
+          const others = siblingsOf(this.rows, rowId).filter((id) => id !== rowId);
+          if (others.length === 0) return;
+          const after = new Set(others.flatMap((id) => [id, ...subtreeIds(this.rows, id)]));
+          at = afterLast(rest, after, rest.length);
+        } else {
+          const target = rest.find((r) => r.id === targetRowId);
+          at = rest.indexOf(target);
+          row.parentId = target.parentId;
+          if (row.parentId !== null) row.category = '';
+        }
+        rest.splice(at, 0, ...moved);
+        this.rows = rest;
+      },
+    }),
+    setRating: command({
+      params: {
+        rowId: idOf('rows'),
+        expertId: idOf('experts'),
+        value: number({ integer: true, min: 0, max: 9, nullable: true }),
+      },
+      run({ rowId, expertId, value }) {
+        const ratings = this.rows.find((r) => r.id === rowId).ratings;
+        if (value === null) delete ratings[String(expertId)];
+        else ratings[String(expertId)] = value;
+      },
+    }),
+    loadSnapshot: command({
+      params: { snapshotId: idOf('snapshots') },
+      confirm() { return { key: 'loadSnapConfirm' }; },
+      run({ snapshotId }) {
+        const data = cloneJSON(this.snapshots.find((s) => s.id === snapshotId).data);
+        const experts = new Set(data.experts.map((e) => String(e.id)));
+        for (const r of data.rows) {
+          for (const k of Object.keys(r.ratings)) if (!experts.has(k)) delete r.ratings[k];
+        }
+        const known = new Set(data.rows.map((r) => r.stableId));
+        for (const x of this.experiments) x.hypothesisIds = x.hypothesisIds.filter((sid) => known.has(sid));
+        this.problem = data.problem;
+        this.experts = data.experts;
+        this.rows = data.rows;
+      },
+    }),
+    removeSnapshot: command({
+      params: { snapshotId: idOf('snapshots') },
+      run({ snapshotId }) {
+        this.snapshots = this.snapshots.filter((s) => s.id !== snapshotId);
+      },
+    }),
+    addExperiment: command({
+      returns: number({ integer: true }),
+      run() {
+        const id = nextId(this.experiments);
+        this.experiments.push({
+          id, title: '', description: '', responsible: '', status: 'planned',
+          startDate: '', endDate: '', costMoney: null, costHours: null, hypothesisIds: [],
+        });
+        return id;
+      },
+    }),
+    setExperimentField: command({
+      params: {
+        experimentId: idOf('experiments'),
+        title: text({ optional: true }),
+        description: text({ optional: true }),
+        responsible: text({ optional: true }),
+        status: oneOf(['planned', 'running', 'done', 'cancelled'], { optional: true }),
+        startDate: date({ empty: true, optional: true }),
+        endDate: date({ empty: true, optional: true }),
+        costMoney: number({ nullable: true, min: 0, optional: true }),
+        costHours: number({ nullable: true, min: 0, optional: true }),
+      },
+      run({ experimentId, ...changes }) {
+        Object.assign(this.experiments.find((x) => x.id === experimentId), changes);
+      },
+    }),
+    removeExperiment: command({
+      params: { experimentId: idOf('experiments') },
+      confirm({ experimentId }) {
+        const x = this.experiments.find((e) => e.id === experimentId);
+        return { key: 'delExperimentConfirm', params: { name: confirmName(this.experiments, x, x.title) } };
+      },
+      run({ experimentId }) {
+        this.experiments = this.experiments.filter((x) => x.id !== experimentId);
+      },
+    }),
+    moveExperimentBefore: command({
+      params: { experimentId: idOf('experiments'), targetExperimentId: idOf('experiments', { nullable: true }) },
+      run({ experimentId, targetExperimentId }) {
+        this.experiments = moveBefore(this.experiments, experimentId, targetExperimentId);
+      },
+    }),
+    setExperimentHypotheses: command({
+      params: { experimentId: idOf('experiments'), hypothesisIds: list(idOf('rows', { key: 'stableId' })) },
+      run({ experimentId, hypothesisIds }) {
+        this.experiments.find((x) => x.id === experimentId).hypothesisIds = [...new Set(hypothesisIds)];
+      },
+    }),
+    setCauseExperiments: command({
+      params: { stableId: idOf('rows', { key: 'stableId' }), experimentIds: list(idOf('experiments')) },
+      run({ stableId, experimentIds }) {
+        const linked = new Set(experimentIds);
+        for (const x of this.experiments) {
+          const has = x.hypothesisIds.includes(stableId);
+          if (linked.has(x.id) && !has) x.hypothesisIds.push(stableId);
+          else if (!linked.has(x.id) && has) x.hypothesisIds = x.hypothesisIds.filter((sid) => sid !== stableId);
+        }
+      },
+    }),
+    addFact: command({
+      returns: number({ integer: true }),
+      run() {
+        const id = nextId(this.facts);
+        this.facts.push({ id, name: '', description: '', date: todayISO(), owner: '' });
+        return id;
+      },
+    }),
+    setFactField: command({
+      params: {
+        factId: idOf('facts'),
+        name: text({ optional: true }),
+        description: text({ optional: true }),
+        date: date({ empty: true, optional: true }),
+        owner: text({ optional: true }),
+      },
+      run({ factId, ...changes }) {
+        Object.assign(this.facts.find((f) => f.id === factId), changes);
+      },
+    }),
+    removeFact: command({
+      params: { factId: idOf('facts') },
+      confirm({ factId }) {
+        const f = this.facts.find((x) => x.id === factId);
+        return { key: 'delFactConfirm', params: { name: confirmName(this.facts, f, f.name) } };
+      },
+      run({ factId }) {
+        this.facts = this.facts.filter((f) => f.id !== factId);
+      },
+    }),
+    moveFactBefore: command({
+      params: { factId: idOf('facts'), targetFactId: idOf('facts', { nullable: true }) },
+      run({ factId, targetFactId }) {
+        this.facts = moveBefore(this.facts, factId, targetFactId);
+      },
+    }),
+    addImage: command({
+      params: { scope: oneOf(['inScope', 'outScope']), dataUrl: image(), caption: text() },
+      returns: number({ integer: true }),
+      run({ scope, dataUrl, caption }) {
+        const id = nextId([...this.images.inScope, ...this.images.outScope]);
+        this.images[scope].push({ id, dataUrl, caption });
+        return id;
+      },
+    }),
+    removeImage: command({
+      params: { scope: oneOf(['inScope', 'outScope']), id: idOf('images[scope]') },
+      confirm({ scope, id }) {
+        const list = this.images[scope];
+        const img = list.find((i) => i.id === id);
+        return { key: 'delImageConfirm', params: { name: confirmName(list, img, img.caption) } };
+      },
+      run({ scope, id }) {
+        this.images[scope] = this.images[scope].filter((i) => i.id !== id);
+      },
+    }),
+    setImageCaption: command({
+      params: { scope: oneOf(['inScope', 'outScope']), id: idOf('images[scope]'), caption: text() },
+      run({ scope, id, caption }) {
+        this.images[scope].find((i) => i.id === id).caption = caption;
+      },
+    }),
+  },
   derived: {
     /**
      * Score je Ursache (stableId): Mittel der abgegebenen Bewertungen, ohne Bewertung null.
@@ -185,7 +501,7 @@ export class State extends defineModel({
       },
     },
     uniqueRowIds: {
-      fields: ['rows'],
+      fields: ['rows', 'experiments'],
       test(m) {
         return distinct(m.rows.map((r) => r.id))
           && m.rows.every((r) => r.stableId !== '')

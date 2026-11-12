@@ -19,12 +19,202 @@
  */
 
 /**
+ * @typedef {object} AddExpertCommand
+ * @property {string} name
+ */
+
+/**
+ * @typedef {object} RenameExpertCommand
+ * @property {string} expertId
+ * @property {string} name
+ */
+
+/**
+ * @typedef {object} RemoveExpertCommand
+ * @property {string} expertId
+ */
+
+/**
+ * @typedef {{}} AddRowCommand
+ */
+
+/**
+ * @typedef {object} AddSubRowCommand
+ * @property {string} parentId
+ */
+
+/**
+ * @typedef {object} SetRowFieldCommand
+ * @property {string} rowId
+ * @property {string} [name]
+ * @property {''|'man'|'machine'|'environment'|'material'|'measurement'|'method'} [category]
+ * @property {string} [description]
+ * @property {'open'|'testing'|'confirmed'|'rejected'} [status]
+ */
+
+/**
+ * @typedef {object} RemoveRowCommand
+ * @property {string} rowId
+ */
+
+/**
+ * @typedef {object} MoveRowBeforeCommand
+ * @property {string} rowId
+ * @property {string|null} targetRowId
+ */
+
+/**
+ * @typedef {object} SetRatingCommand
+ * @property {string} rowId
+ * @property {string} expertId
+ * @property {number|null} value
+ */
+
+/**
+ * @typedef {object} LoadSnapshotCommand
+ * @property {string} snapshotId
+ */
+
+/**
+ * @typedef {object} RemoveSnapshotCommand
+ * @property {string} snapshotId
+ */
+
+/**
+ * @typedef {{}} AddExperimentCommand
+ */
+
+/**
+ * @typedef {object} SetExperimentFieldCommand
+ * @property {string} experimentId
+ * @property {string} [title]
+ * @property {string} [description]
+ * @property {string} [responsible]
+ * @property {'planned'|'running'|'done'|'cancelled'} [status]
+ * @property {string} [startDate]
+ * @property {string} [endDate]
+ * @property {number|null} [costMoney]
+ * @property {number|null} [costHours]
+ */
+
+/**
+ * @typedef {object} RemoveExperimentCommand
+ * @property {string} experimentId
+ */
+
+/**
+ * @typedef {object} MoveExperimentBeforeCommand
+ * @property {string} experimentId
+ * @property {string|null} targetExperimentId
+ */
+
+/**
+ * @typedef {object} SetExperimentHypothesesCommand
+ * @property {string} experimentId
+ * @property {string[]} hypothesisIds
+ */
+
+/**
+ * @typedef {object} SetCauseExperimentsCommand
+ * @property {string} stableId
+ * @property {string[]} experimentIds
+ */
+
+/**
+ * @typedef {{}} AddFactCommand
+ */
+
+/**
+ * @typedef {object} SetFactFieldCommand
+ * @property {string} factId
+ * @property {string} [name]
+ * @property {string} [description]
+ * @property {string} [date]
+ * @property {string} [owner]
+ */
+
+/**
+ * @typedef {object} RemoveFactCommand
+ * @property {string} factId
+ */
+
+/**
+ * @typedef {object} MoveFactBeforeCommand
+ * @property {string} factId
+ * @property {string|null} targetFactId
+ */
+
+/**
+ * @typedef {object} AddImageCommand
+ * @property {'inScope'|'outScope'} scope
+ * @property {string} dataUrl
+ * @property {string} caption
+ */
+
+/**
+ * @typedef {object} RemoveImageCommand
+ * @property {'inScope'|'outScope'} scope
+ * @property {string} id
+ */
+
+/**
+ * @typedef {object} SetImageCaptionCommand
+ * @property {'inScope'|'outScope'} scope
+ * @property {string} id
+ * @property {string} caption
+ */
+
+/**
  * @typedef {StateFields & StateView & {
- *   execute(cmd: never): unknown,
+ *   addExpert(cmd: AddExpertCommand): number,
+ *   renameExpert(cmd: RenameExpertCommand): void,
+ *   removeExpert(cmd: RemoveExpertCommand): void,
+ *   addRow(cmd: AddRowCommand): { id: number, stableId: string },
+ *   addSubRow(cmd: AddSubRowCommand): { id: number, stableId: string },
+ *   setRowField(cmd: SetRowFieldCommand): void,
+ *   removeRow(cmd: RemoveRowCommand): void,
+ *   moveRowBefore(cmd: MoveRowBeforeCommand): void,
+ *   setRating(cmd: SetRatingCommand): void,
+ *   loadSnapshot(cmd: LoadSnapshotCommand): void,
+ *   removeSnapshot(cmd: RemoveSnapshotCommand): void,
+ *   addExperiment(cmd: AddExperimentCommand): number,
+ *   setExperimentField(cmd: SetExperimentFieldCommand): void,
+ *   removeExperiment(cmd: RemoveExperimentCommand): void,
+ *   moveExperimentBefore(cmd: MoveExperimentBeforeCommand): void,
+ *   setExperimentHypotheses(cmd: SetExperimentHypothesesCommand): void,
+ *   setCauseExperiments(cmd: SetCauseExperimentsCommand): void,
+ *   addFact(cmd: AddFactCommand): number,
+ *   setFactField(cmd: SetFactFieldCommand): void,
+ *   removeFact(cmd: RemoveFactCommand): void,
+ *   moveFactBefore(cmd: MoveFactBeforeCommand): void,
+ *   addImage(cmd: AddImageCommand): number,
+ *   removeImage(cmd: RemoveImageCommand): void,
+ *   setImageCaption(cmd: SetImageCaptionCommand): void,
+ *   execute(cmd: ({ type: 'addExpert' } & AddExpertCommand) | ({ type: 'renameExpert' } & RenameExpertCommand) | ({ type: 'removeExpert' } & RemoveExpertCommand) | ({ type: 'addRow' } & AddRowCommand) | ({ type: 'addSubRow' } & AddSubRowCommand) | ({ type: 'setRowField' } & SetRowFieldCommand) | ({ type: 'removeRow' } & RemoveRowCommand) | ({ type: 'moveRowBefore' } & MoveRowBeforeCommand) | ({ type: 'setRating' } & SetRatingCommand) | ({ type: 'loadSnapshot' } & LoadSnapshotCommand) | ({ type: 'removeSnapshot' } & RemoveSnapshotCommand) | ({ type: 'addExperiment' } & AddExperimentCommand) | ({ type: 'setExperimentField' } & SetExperimentFieldCommand) | ({ type: 'removeExperiment' } & RemoveExperimentCommand) | ({ type: 'moveExperimentBefore' } & MoveExperimentBeforeCommand) | ({ type: 'setExperimentHypotheses' } & SetExperimentHypothesesCommand) | ({ type: 'setCauseExperiments' } & SetCauseExperimentsCommand) | ({ type: 'addFact' } & AddFactCommand) | ({ type: 'setFactField' } & SetFactFieldCommand) | ({ type: 'removeFact' } & RemoveFactCommand) | ({ type: 'moveFactBefore' } & MoveFactBeforeCommand) | ({ type: 'addImage' } & AddImageCommand) | ({ type: 'removeImage' } & RemoveImageCommand) | ({ type: 'setImageCaption' } & SetImageCaptionCommand)): unknown,
  *   toJSON(): object,
  *   hasContent(): boolean,
  *   readonly context: import('../../../core/model.js').ModelContext,
  * }} StateModel
+ */
+
+/**
+ * @typedef {(this: StateModel, args: RemoveRowCommand) => ({ key: string, params?: Record<string, unknown> }|null)} RemoveRowConfirm
+ */
+
+/**
+ * @typedef {(this: StateModel, args: LoadSnapshotCommand) => ({ key: string, params?: Record<string, unknown> }|null)} LoadSnapshotConfirm
+ */
+
+/**
+ * @typedef {(this: StateModel, args: RemoveExperimentCommand) => ({ key: string, params?: Record<string, unknown> }|null)} RemoveExperimentConfirm
+ */
+
+/**
+ * @typedef {(this: StateModel, args: RemoveFactCommand) => ({ key: string, params?: Record<string, unknown> }|null)} RemoveFactConfirm
+ */
+
+/**
+ * @typedef {(this: StateModel, args: RemoveImageCommand) => ({ key: string, params?: Record<string, unknown> }|null)} RemoveImageConfirm
  */
 
 export {};
