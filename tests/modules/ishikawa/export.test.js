@@ -47,8 +47,8 @@ suite('ishikawa/io/export', () => {
     const rows = exportTable(m, { t });
     assertDeepEqual(rows[0], ['«problemStatement»', 'Pizza-Lieferzeit übersteigt 30 min in Stoßzeiten']);
     assertDeepEqual(rows[1], []);
-    assertDeepEqual(rows[2], ['#', '«level»', '«category»', '«effCat»', '«name»', '«description»',
-      'M. Müller (Filialleiter)', 'G. Rossi (Pizzabäcker)', 'K. Schmidt (Fahrer)', '«avgScore»', '«status»']);
+    assertDeepEqual(rows[2], ['#', '«level»', '«category»', '«effCat»', '«colName»', '«colDescription»',
+      'M. Müller (Filialleiter)', 'G. Rossi (Pizzabäcker)', 'K. Schmidt (Fahrer)', '«avgScore»', '«statusHeader»']);
     for (let i = 0; i < OLD_CAUSES.length; i++) assertDeepEqual(rows[3 + i], OLD_CAUSES[i]);
     const at = 3 + OLD_CAUSES.length;
     assertDeepEqual(rows[at], []);
@@ -81,4 +81,26 @@ suite('ishikawa/io/export', () => {
     assertDeepEqual(rows[4], ['1.1', '«sub»', '', 'Mensch', 'y', '  ', '', '', '«status.confirmed»']);
     assertEqual(rows.length, 5);
   });
+});
+
+suite('ishikawa export: echte Modultexte', () => {
+  for (const lang of ['de', 'en']) {
+    test(`${lang}: Kopfzeile besteht nur aus Textzellen, Statuskopf ist das Statuslabel`, async () => {
+      const ui = await (await fetch(new URL(`../../../js/modules/ishikawa/resources/i18n/ui.${lang}.json`, import.meta.url), { cache: 'no-cache' })).json();
+      /** Wie der Kern: Punktpfad im Textbaum, unbekannt liefert den Schlüssel. */
+      const real = (k) => k.split('.').reduce((o, p) => (o == null ? undefined : o[p]), ui) ?? k;
+      const model = State.fromJSON(await lieferzeitRaw(), { onRepair: () => {} });
+      const rows = exportTable(model, { t: real });
+      for (const row of rows) {
+        for (const cell of row) {
+          assertEqual(typeof cell === 'object', false, `Zelle ist ein Objekt: ${JSON.stringify(cell)}`);
+          assertEqual(String(cell).includes('[object Object]'), false);
+        }
+      }
+      const head = rows[2];
+      assertEqual(head[head.length - 1], ui.statusHeader);
+      assertEqual(head[4], ui.colName);
+      assertEqual(head[5], ui.colDescription);
+    });
+  }
 });

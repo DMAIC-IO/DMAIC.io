@@ -28,8 +28,8 @@ function catName(catLabels, key, t) {
  */
 export function exportTable(model, { t }) {
   const rows = [[t('problemStatement'), model.problem ?? ''], []];
-  rows.push(['#', t('level'), t('category'), t('effCat'), t('name'), t('description'),
-    ...model.experts.map((e) => e.name), t('avgScore'), t('status')]);
+  rows.push(['#', t('level'), t('category'), t('effCat'), t('colName'), t('colDescription'),
+    ...model.experts.map((e) => e.name), t('avgScore'), t('statusHeader')]);
   const nums = {};
   const counters = {};
   for (const r of ordered(model.rows)) {
