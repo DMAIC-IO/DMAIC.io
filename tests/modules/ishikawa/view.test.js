@@ -165,7 +165,7 @@ suite('ishikawa view: Gerüst, Reiter, Problem', () => {
     assertEqual(h.vm().state.tab, 'experiments');
   });
 
-  test('Problemtext über x-field', async () => {
+  test('Problemtext über x-model', async () => {
     const h = await mount();
     const ta = h.$('.ishikawa__problem-textarea');
     ta.value = 'Ausschuss steigt';
@@ -221,6 +221,15 @@ suite('ishikawa view: Gerüst, Reiter, Problem', () => {
     assertEqual(content.querySelector('img').getAttribute('src'), 'data:image/png;base64,AAAA');
     assertEqual(content.querySelector('.ishikawa__img-lightbox-caption').textContent, 'Riss');
     h.shows[0].onClose();
+    assertEqual(h.vm().state.lightbox, null);
+  });
+
+  test('openLightbox mit unbekanntem Bild öffnet nichts', async () => {
+    const h = await mount();
+    h.vm().openLightbox('inScope', 99);
+    h.vm().openLightbox('nope', 1);
+    await settle();
+    assertEqual(h.shows.length, 0);
     assertEqual(h.vm().state.lightbox, null);
   });
 

@@ -151,6 +151,9 @@
         "help": "Who reported the observation."
       }
     },
+    "paretoChart": {
+      "help": "The Pareto chart of the rated causes, current or from a snapshot: one bar per cause in descending order of score, coloured by its category, plus the cumulative sum in percent."
+    },
     "paretoEdits": {
       "help": "The editor settings of the Pareto chart (axes, threshold, bars, line); they are saved with the module."
     },

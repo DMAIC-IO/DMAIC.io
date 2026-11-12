@@ -1051,14 +1051,14 @@ export function readCommandForms(files) {
 
 /**
  * Gate Kommando-Bezüge: `x-command`, `x-command-form`, `data-dialog-command`,
- * `data-dialog-delete` nennen ein Kommando des Models (`x-command` auch ein
- * Viewmodel-Kommando); `data-form` einen
+ * `data-dialog-delete` nennen ein Kommando des Models (`x-command` und
+ * `x-command-form` auch ein Viewmodel-Kommando); `data-form` einen
  * Export aus viewmodel/forms.js; `x-param` einen Parameter des Kommandos
  * bzw. ein Feld des Formulars.
  * @param {{ path: string, text: string }[]} files
  * @param {{ commands: Record<string, { params: object }> }} schema
  * @param {Record<string, { fields: object }>} formSchemas Name → Schema
- * @param {Record<string, object>} [vmCommands] Viewmodel-Kommandos (`readViewmodelCommands`); nur `x-command` darf sie nennen
+ * @param {Record<string, { params?: object }>} [vmCommands] Viewmodel-Kommandos (`readViewmodelCommands`); nur `x-command` und `x-command-form` dürfen sie nennen
  * @returns {string[]}
  */
 export function checkCommandRefs(files, schema, formSchemas, vmCommands = {}) {
@@ -1066,9 +1066,10 @@ export function checkCommandRefs(files, schema, formSchemas, vmCommands = {}) {
   const commands = Object.keys(schema.commands);
   for (const { path, text } of files) {
     for (const attr of COMMAND_ATTRS) {
-      const known = attr === 'x-command' ? [...commands, ...Object.keys(vmCommands)] : commands;
+      const withVm = attr === 'x-command' || attr === 'x-command-form';
+      const known = withVm ? [...commands, ...Object.keys(vmCommands)] : commands;
       for (const m of text.matchAll(new RegExp(`\\s${attr}="\\s*([^"]*?)\\s*"`, 'g'))) {
-        if (!known.includes(m[1])) out.push(`command: ${path}: ${attr}="${m[1]}": kein Kommando des Models${attr === 'x-command' ? ' oder Viewmodels' : ''}`);
+        if (!known.includes(m[1])) out.push(`command: ${path}: ${attr}="${m[1]}": kein Kommando des Models${withVm ? ' oder Viewmodels' : ''}`);
       }
     }
     for (const m of text.matchAll(/\sdata-form="\s*([^"]*?)\s*"/g)) {
@@ -1076,7 +1077,7 @@ export function checkCommandRefs(files, schema, formSchemas, vmCommands = {}) {
     }
   }
   for (const { path, command, form, params } of readCommandForms(files)) {
-    const cmdParams = schema.commands[command]?.params;
+    const cmdParams = schema.commands[command]?.params ?? vmCommands[command]?.params;
     const fields = form !== null ? formSchemas[form]?.fields : cmdParams;
     if (!cmdParams || !fields) continue;
     for (const p of params) {

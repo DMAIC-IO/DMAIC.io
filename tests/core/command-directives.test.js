@@ -60,6 +60,11 @@ const VM_COMMANDS = {
     confirm() { return { key: 'confirm.dropAll' }; },
     run() { this.picked.push('dropped'); },
   }),
+  setNote: command({
+    params: { note: text({ trim: true, nonEmpty: true }) },
+    current() { return { note: this.note }; },
+    run({ note }) { this.note = note; },
+  }),
 };
 
 const I18N = { t: (k, p) => (p ? `${k}|${JSON.stringify(p)}` : k), getLanguage: () => 'de' };
@@ -116,7 +121,7 @@ function build(html, { confirmAnswer = true, columns = {} } = {}) {
   const name = `cmdTest${++n}`;
   const model = Board.fromJSON({ columns: { a: [], b: [], ...columns } });
   Alpine.data(name, () => {
-    const comp = { model, moduleId: 'ct', picked: [] };
+    const comp = { model, moduleId: 'ct', picked: [], note: 'alt' };
     for (const [cmd, def] of Object.entries(VM_COMMANDS)) {
       comp[cmd] = function viewmodelCommand(args) { return runCommand(cmd, def, this, this.model, args); };
     }
@@ -419,6 +424,40 @@ suite('x-command-form', () => {
 
   test('x-command-form nur an einem <form>', () => {
     assertThrows(() => mountDetached('<div x-command-form="addItem"></div>'), /x-command-form must sit on a <form>/);
+  });
+});
+
+suite('x-command-form mit Viewmodel-Kommando', () => {
+  test('Startwerte aus current der Komponente, Absenden ruft die Methode', async () => {
+    const { $, vm } = await mount('<form x-command-form="setNote"><input x-param="note"></form>');
+    assertEqual($('form').getAttribute('data-help-key'), 'modules.ct.actions.setNote.help');
+    assertEqual($('input').value, 'alt');
+    typeIn($('input'), 'neu');
+    await submitForm($('form'));
+    assertEqual(vm.note, 'neu');
+  });
+
+  test('Ablehnung markiert das freie Feld', async () => {
+    const { $, vm } = await mount('<form x-command-form="setNote"><input x-param="note"></form>');
+    typeIn($('input'), '  ');
+    await submitForm($('form'));
+    assertEqual(vm.note, 'alt');
+    assertEqual($('input').getAttribute('aria-invalid'), 'true');
+  });
+
+  test('x-dialog öffnet das Formular mit current und schließt bei Erfolg', async () => {
+    const { $, vm, dialog } = await mount('<button class="open" x-dialog="noteForm">n</button><div hidden><form x-ref="noteForm" x-command-form="setNote"><input x-param="note"></form></div>');
+    assertEqual($('.open').getAttribute('data-help-key'), 'modules.ct.actions.setNote.help');
+    vm.note = 'vorher';
+    $('.open').click();
+    await flush();
+    assertEqual(dialog.open.body.querySelector('input').value, 'vorher');
+    typeIn(dialog.open.body.querySelector('input'), 'nachher');
+    dialog.open.api.confirm();
+    await flush();
+    await flush();
+    assertEqual(vm.note, 'nachher');
+    assertEqual(dialog.open, null);
   });
 });
 

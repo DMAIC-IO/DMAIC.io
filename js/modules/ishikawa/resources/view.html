@@ -58,7 +58,198 @@
 
     <!-- ─── HYPOTHESES TAB ──────────────────────────────────── -->
     <template x-if="state.tab === 'hypotheses'">
-    <div></div>
+    <div>
+      <!-- Experts -->
+      <div class="ishikawa__experts-row">
+        <div class="ishikawa__expert-panel">
+          <div class="ishikawa__expert-header">
+            <label data-help-key="modules.ishikawa.fields.experts.help" class="ishikawa__panel-label" style="margin:0" x-text="t('expertTeam')"></label>
+            <form class="ishikawa__expert-add-form" x-command-form="addExpert" data-help-key="">
+              <input type="text" class="field field--inline ishikawa__expert-name-input" data-ref="expertNameInput" data-help-key=""
+                     :placeholder="t('expertPlaceholder')" x-param="name" />
+              <button type="submit" data-help-key="modules.ishikawa.actions.addExpert.help" class="btn btn--sm btn--primary" data-ref="addExpertBtn" x-text="'+ ' + t('addExpert')"></button>
+            </form>
+          </div>
+          <div class="ishikawa__expert-tags">
+            <template x-if="model.experts.length === 0">
+              <span class="ishikawa__no-items" x-text="t('noExperts')"></span>
+            </template>
+            <template x-for="e in model.experts" :key="e.id">
+              <span class="ishikawa__expert-tag">
+                <span class="ishikawa__expert-ini" :data-expert-ini-for="e.id" :style="'background:' + e.color" x-text="ini(e.name)"></span>
+                <input type="text" class="ishikawa__expert-name-edit" :data-expert-name-id="e.id"
+                       :value="e.name" spellcheck="false"
+                       @keydown="expertEditKey(e.id, $event)" @blur="commitExpertRename(e.id, $event)" />
+                <button type="button" class="ishikawa__expert-rm" :data-expert-id="e.id" :title="t('common.remove')" data-help-key=""
+                        x-command="removeExpert" :data-arg-expert-id="e.id"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
+              </span>
+            </template>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="ishikawa__toolbar" style="margin-bottom:var(--spacing-sm)">
+        <button type="button" data-help-key="modules.ishikawa.actions.addRow.help" class="btn btn--sm btn--primary" data-ref="addRowBtn" @click="addRowAndFocus()" x-text="'+ ' + t('hypothesis')"></button>
+        <button type="button" class="btn btn--sm" data-ref="expandAllBtn" @click="expandAll()" x-text="t('expandAll')"></button>
+        <button type="button" class="btn btn--sm" data-ref="collapseAllBtn" @click="collapseAll()" x-text="t('collapseAll')"></button>
+        <div class="ishikawa__toolbar-spacer"></div>
+        <div class="ishikawa__filter-group" role="radiogroup" x-set="state.filter" data-help-key="">
+          <button type="button" role="radio" value="" data-help-key="modules.ishikawa.actions.setFilter.help" class="ishikawa__filter-chip" :class="state.filter === '' ? 'ishikawa__filter-chip--active' : ''"
+                  data-filter="all">
+            <span x-text="t('filterAll')"></span> <span class="ishikawa__filter-chip-count" x-text="'(' + model.rows.length + ')'"></span>
+          </button>
+          <template x-for="c in cats" :key="c">
+            <button type="button" role="radio" :value="c" class="ishikawa__filter-chip" :class="state.filter === c ? 'ishikawa__filter-chip--active' : ''"
+                    :data-filter="c" :style="catStripe(c)">
+              <span x-text="catLabel(c)"></span> <span class="ishikawa__filter-chip-count" x-text="'(' + catCount(c) + ')'"></span>
+            </button>
+          </template>
+          <button type="button" data-help-key="modules.ishikawa.actions.setCategoryLabels.help" class="ishikawa__cat-rename-btn" data-ref="renameCatsBtn"
+                  :title="t('renameCatsTitle')" :aria-label="t('renameCatsTitle')" x-dialog="catRename" :data-dialog-title="t('renameCatsTitle')">
+            <span class="icon icon--sm" data-icon="action.edit" aria-hidden="true"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="dmike-table-wrap">
+        <table class="dmike-table dmike-table--sticky dmike-table--head-mono dmike-table--draggable ishikawa__table ishikawa__table--tree">
+          <thead>
+            <tr>
+              <th class="dmike-table__grip-col"></th>
+              <th class="ishikawa__col-nr">#</th>
+              <th class="ishikawa__col-cat"><span data-help-key="modules.ishikawa.fields.rows.category.help" x-text="t('category')"></span></th>
+              <th class="ishikawa__col-name"><span data-help-key="modules.ishikawa.fields.rows.name.help" x-text="t('colName')"></span></th>
+              <th><span data-help-key="modules.ishikawa.fields.rows.description.help" x-text="t('colDescription')"></span></th>
+              <template x-for="e in model.experts" :key="e.id">
+                <th class="ishikawa__col-expert">
+                  <div class="ishikawa__exp-col-head">
+                    <div class="ishikawa__exp-ini" :style="'background:' + e.color" x-text="ini(e.name)"></div>
+                    <div class="ishikawa__exp-nm" :title="e.name" x-text="e.name"></div>
+                  </div>
+                </th>
+              </template>
+              <th class="ishikawa__col-score"><span data-help-key="modules.ishikawa.fields.rows.avgScore.help" x-text="t('avgScore')"></span></th>
+              <th class="ishikawa__col-status"><span data-help-key="modules.ishikawa.fields.rows.status.help" x-text="t('statusHeader')"></span></th>
+              <th class="ishikawa__col-actions"></th>
+            </tr>
+          </thead>
+          <tbody data-reorder-group="causes" data-reorder-closed :data-reorder-group-label="t('hypotheses')">
+            <template x-if="visibleRows.length === 0">
+              <tr class="ishikawa__empty-row"><td :colspan="emptyColspan" x-text="emptyMessage"></td></tr>
+            </template>
+            <template x-for="(vr, idx) in visibleRows" :key="vr.row.id">
+              <tr :data-id="vr.row.id" :data-reorder-index="idx" :class="rowClass(vr)">
+                <td class="dmike-table__grip-col">
+                  <button class="dmike-table__grip ishikawa__grip--tree" type="button" :data-grip="vr.row.id"
+                          :aria-label="t('common.reorder')"></button>
+                </td>
+                <td class="ishikawa__col-nr" :style="'--ishikawa-depth:' + vr.depth">
+                  <div class="ishikawa__nr-cell">
+                    <template x-if="vr.hasKids">
+                      <button type="button" class="btn btn--icon-sm ishikawa__toggle-btn" :data-toggle="vr.row.id" @click="toggleCollapse(vr.row.id)" :title="toggleTitle(vr)" :aria-label="toggleTitle(vr)"><span class="icon icon--sm" :data-icon="toggleIcon(vr)" aria-hidden="true"></span></button>
+                    </template>
+                    <span class="ishikawa__nr-text" x-text="vr.num"></span>
+                  </div>
+                </td>
+                <!-- Category cell: inherited (depth>0) or selectable (root) -->
+                <template x-if="vr.depth > 0">
+                  <td>
+                    <div class="ishikawa__cat-inherited" :style="catStripe(vr.effCat)" x-text="vr.effCat ? catLabel(vr.effCat) : ''"></div>
+                  </td>
+                </template>
+                <template x-if="vr.depth === 0">
+                  <td>
+                    <select class="field field--sm ishikawa__cat-select" :data-row-cat="vr.row.id" :style="catStripe(vr.effCat)" x-model="vr.row.category">
+                      <option value="" x-text="categoryPlaceholder(vr)" :selected="!vr.row.category"></option>
+                      <template x-for="c in cats" :key="c"><option :value="c" x-text="catLabel(c)" :selected="c === vr.row.category"></option></template>
+                    </select>
+                  </td>
+                </template>
+                <td><input class="field field--sm field--ghost ishikawa__name-input" :class="isNameDup(vr.row) ? 'ishikawa__name-input--dup' : ''" type="text"
+                           :placeholder="t('namePlaceholder')" :data-row-name="vr.row.id" x-model="vr.row.name" /></td>
+                <td><div class="ishikawa__hypo-cell">
+                  <input class="field field--sm field--ghost ishikawa__desc-input" type="text" :placeholder="descPlaceholder(vr)" :data-row-desc="vr.row.id" x-model="vr.row.description" />
+                </div></td>
+                <template x-for="e in model.experts" :key="e.id">
+                  <td class="ishikawa__col-expert">
+                    <input type="number" class="field field--sm ishikawa__rating-input" min="0" max="9"
+                           :class="ratingClass(vr.row.ratings[e.id])"
+                           :value="ratingVal(vr.row, e.id)" placeholder="–"
+                           :data-rating-row="vr.row.id" :data-rating-exp="e.id"
+                           @focus="$event.target.select()" @keydown="ratingKeydown($event)" @change="ratingChanged(vr.row.id, e.id, $event)" />
+                  </td>
+                </template>
+                <td class="ishikawa__col-score">
+                  <template x-if="vr.score === null">
+                    <span class="ishikawa__score-badge">–</span>
+                  </template>
+                  <template x-if="vr.score !== null">
+                    <div class="ishikawa__score-bar-wrap">
+                      <span class="ishikawa__score-badge" :class="scoreClass(vr.score)" x-text="num(vr.score, 1)"></span>
+                      <div class="ishikawa__score-bar-track"><div class="ishikawa__score-bar-fill" :class="scoreBarClass(vr.score)" :style="scoreBarStyle(vr.score)"></div></div>
+                    </div>
+                  </template>
+                </td>
+                <td><select class="field field--sm ishikawa__status-select" :class="statusClass(vr.row.status)" :data-row-status="vr.row.id" x-model="vr.row.status">
+                  <option value="open" x-text="t('status.open')"></option>
+                  <option value="testing" x-text="t('status.testing')"></option>
+                  <option value="confirmed" x-text="t('status.confirmed')"></option>
+                  <option value="rejected" x-text="t('status.rejected')"></option>
+                </select></td>
+                <td><div class="ishikawa__row-actions">
+                  <button type="button" class="btn btn--icon-sm" :title="t('addSub')" :data-add-sub="vr.row.id" @click="addSubAndFocus(vr.row.id)">+</button>
+                  <button type="button" class="btn btn--icon-sm" :title="t('duplicate')" :data-dupe="vr.row.id" data-help-key=""
+                          x-command="duplicateRow" :data-arg-row-id="vr.row.id">⎘</button>
+                  <button type="button" class="btn btn--icon-sm" :class="linkExpClass(vr.row)"
+                          :title="linkExpTitle(vr.row)" :aria-label="linkExpTitle(vr.row)" :data-link-exp="vr.row.id">
+                    <span class="icon icon--sm" data-icon="action.experiment" aria-hidden="true"></span>
+                    <template x-if="linkedExpCount(vr.row) > 0">
+                      <span class="ishikawa__exp-link-badge" x-text="linkedExpCount(vr.row)"></span>
+                    </template>
+                  </button>
+                  <button type="button" class="btn btn--icon-sm btn--danger" :title="t('common.delete')" :data-del-row="vr.row.id" data-help-key=""
+                          x-command="removeRow" :data-arg-row-id="vr.row.id"><span class="icon icon--sm" data-icon="action.close" aria-hidden="true"></span></button>
+                </div></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pareto -->
+      <div class="ishikawa__pareto-panel">
+        <div class="ishikawa__pareto-header">
+          <label data-help-key="modules.ishikawa.actions.setParetoSource.help" class="ishikawa__panel-label" x-text="t('paretoTitle')"></label>
+          <select class="ishikawa__pareto-select" data-ref="paretoSelect" :value="paretoSourceValue" @change="paretoSourceChanged($event)">
+            <option value="current" x-text="t('paretoCurrent')" :selected="paretoSourceValue === 'current'"></option>
+            <template x-for="s in model.snapshots" :key="s.id"><option :value="'snap-' + s.id" x-text="s.name" :selected="paretoSourceValue === 'snap-' + s.id"></option></template>
+          </select>
+        </div>
+        <div class="ishikawa__pareto-body">
+          <template x-if="paretoEmpty"><div class="ishikawa__trend-empty" x-text="t('paretoNoData')"></div></template>
+          <div class="ishikawa__pareto-canvas-wrap" data-ref="paretoContent" x-widget="pareto-chart" x-widget-config="paretoChart" x-widget-value="model.paretoEdits"></div>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="ishikawa__summary-bar">
+        <div class="ishikawa__summary-card">
+          <div data-help-key="modules.ishikawa.fields.rows.help" class="ishikawa__s-label" x-text="t('hypotheses')"></div>
+          <div class="ishikawa__s-value"><span x-text="model.rows.length"></span> <span style="font-size:var(--font-size-xs);font-weight:400;color:var(--color-text-tertiary)" x-text="summaryBreakdown"></span></div>
+          <div class="ishikawa__cat-bar">
+            <template x-for="c in cats" :key="c">
+              <template x-if="catBarPct(c) > 0"><div :style="catBarStyle(c)"></div></template>
+            </template>
+          </div>
+        </div>
+        <div class="ishikawa__summary-card"><div class="ishikawa__s-label" x-text="t('expertTeam')"></div><div class="ishikawa__s-value" x-text="model.experts.length"></div></div>
+        <div class="ishikawa__summary-card"><div class="ishikawa__s-label" x-text="t('highestAvg')"></div><div class="ishikawa__s-value" style="color:var(--color-accent)" x-text="topScore"></div></div>
+        <div class="ishikawa__summary-card"><div class="ishikawa__s-label" x-text="t('status.confirmed')"></div><div class="ishikawa__s-value" style="color:var(--ishikawa-green)" x-text="confirmedCount"></div></div>
+        <div class="ishikawa__summary-card"><div class="ishikawa__s-label" x-text="t('snapshots')"></div><div class="ishikawa__s-value" x-text="model.snapshots.length"></div></div>
+      </div>
+    </div>
     </template>
 
     <!-- ─── EXPERIMENTS TAB ─────────────────────────────────── -->
@@ -75,5 +266,40 @@
       <!-- x-show, not x-if: the node lives in the dialog while open, outside the Alpine root, where a fresh x-if clone is never initialised -->
       <p class="ishikawa__img-lightbox-caption" x-show="lightboxImage.caption" x-text="lightboxImage.caption"></p>
     </div>
+
+    <!-- Category rename form (lent to the shared dialog by x-dialog) -->
+    <form class="ishikawa__cat-rename" x-ref="catRename" x-command-form="setCategoryLabels" data-form="catRename">
+      <p class="ishikawa__cat-rename-hint" x-text="t('renameCatsHint')"></p>
+      <div class="ishikawa__cat-rename-row">
+        <span class="ishikawa__cat-rename-swatch" style="background:var(--ishikawa-cat-man)"></span>
+        <span class="ishikawa__cat-rename-default" x-text="t('cat.man')"></span>
+        <input type="text" class="field" data-cat-key="man" x-param="man" data-help-key="" :placeholder="t('cat.man')" maxlength="40" />
+      </div>
+      <div class="ishikawa__cat-rename-row">
+        <span class="ishikawa__cat-rename-swatch" style="background:var(--ishikawa-cat-machine)"></span>
+        <span class="ishikawa__cat-rename-default" x-text="t('cat.machine')"></span>
+        <input type="text" class="field" data-cat-key="machine" x-param="machine" data-help-key="" :placeholder="t('cat.machine')" maxlength="40" />
+      </div>
+      <div class="ishikawa__cat-rename-row">
+        <span class="ishikawa__cat-rename-swatch" style="background:var(--ishikawa-cat-environment)"></span>
+        <span class="ishikawa__cat-rename-default" x-text="t('cat.environment')"></span>
+        <input type="text" class="field" data-cat-key="environment" x-param="environment" data-help-key="" :placeholder="t('cat.environment')" maxlength="40" />
+      </div>
+      <div class="ishikawa__cat-rename-row">
+        <span class="ishikawa__cat-rename-swatch" style="background:var(--ishikawa-cat-material)"></span>
+        <span class="ishikawa__cat-rename-default" x-text="t('cat.material')"></span>
+        <input type="text" class="field" data-cat-key="material" x-param="material" data-help-key="" :placeholder="t('cat.material')" maxlength="40" />
+      </div>
+      <div class="ishikawa__cat-rename-row">
+        <span class="ishikawa__cat-rename-swatch" style="background:var(--ishikawa-cat-measurement)"></span>
+        <span class="ishikawa__cat-rename-default" x-text="t('cat.measurement')"></span>
+        <input type="text" class="field" data-cat-key="measurement" x-param="measurement" data-help-key="" :placeholder="t('cat.measurement')" maxlength="40" />
+      </div>
+      <div class="ishikawa__cat-rename-row">
+        <span class="ishikawa__cat-rename-swatch" style="background:var(--ishikawa-cat-method)"></span>
+        <span class="ishikawa__cat-rename-default" x-text="t('cat.method')"></span>
+        <input type="text" class="field" data-cat-key="method" x-param="method" data-help-key="" :placeholder="t('cat.method')" maxlength="40" />
+      </div>
+    </form>
   </div>
 </section>

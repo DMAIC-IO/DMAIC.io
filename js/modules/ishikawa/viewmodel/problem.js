@@ -3,8 +3,8 @@
  *
  * Reiterwahl aus der Route, die zwei Bildgalerien (Hinzufügen über
  * `x-file-drop`, Größe je Bild) und die Lightbox über den Dialogdienst.
- * Problemtext, Bildunterschrift und Löschen laufen im Template über
- * `x-field` und `x-command`.
+ * Problemtext und Bildunterschrift laufen im Template über `x-model`,
+ * Löschen über `x-command`.
  */
 import { compressImageToBudget } from '../../../core/image-upload.js';
 
@@ -102,10 +102,12 @@ export const problemView = (ctx) => ({
 
   /**
    * Ein Bild groß zeigen: die Vorlage der Lightbox geht als Inhalt an den
-   * Dialogdienst und kommt beim Schließen zurück.
+   * Dialogdienst und kommt beim Schließen zurück. Ein unbekanntes Bild
+   * öffnet nichts.
    * @param {string} scope @param {number} id
    */
   openLightbox(scope, id) {
+    if (!SCOPES.includes(scope) || !this.model.images[scope].some((i) => i.id === id)) return;
     this.state.lightbox = { scope, id };
     const content = this.$refs.lightbox;
     if (!content) return;

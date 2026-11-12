@@ -7,7 +7,9 @@
  * - `x-command="cmd"` am Knopf: Klick führt das Kommando aus — ein Kommando
  *   des Models oder, wenn das Model keins dieses Namens hat, ein
  *   Viewmodel-Kommando aus `createModule({ commands })` (`_ui.vmCommands`).
- * - `x-command-form="cmd"` am `<form>` mit `x-param="name"` an den freien Feldern.
+ * - `x-command-form="cmd"` am `<form>` mit `x-param="name"` an den freien Feldern;
+ *   auch hier Model- oder Viewmodel-Kommando (bei diesem läuft `current` mit
+ *   der Komponente als `this`).
  *
  * `x-param` an einer Gruppe (`role="radiogroup"` mit `role="radio"`-Optionen)
  * setzt das Formularfeld wie ein Eingabefeld.
@@ -80,7 +82,8 @@ function vmCommandDef(ui, name) {
 }
 
 /**
- * Die Definition für `x-command`: Model-Kommando, sonst Viewmodel-Kommando.
+ * Die Definition für `x-command`, `x-command-form` und das Formular eines
+ * `x-dialog`: Model-Kommando, sonst Viewmodel-Kommando.
  * @param {{ model: any, vmCommands?: Record<string, any> }} ui @param {string} name
  * @returns {any}
  * @throws {Error} weder Model- noch Viewmodel-Kommando
@@ -195,6 +198,24 @@ async function runVmCommand(ui, name, def, args) {
 }
 
 /**
+ * Startwerte aus `current` der Definition: beim Model-Kommando über
+ * `currentOf`, beim Viewmodel-Kommando mit der Komponente als `this`.
+ * @param {{ model: any, vmCommands?: Record<string, any>, component?: any }} ui
+ * @param {string} name @param {object} fixed feste Argumente
+ * @returns {object}
+ * @throws {Error} Rückgabeschlüssel, der kein Parameter ist
+ */
+function currentFor(ui, name, fixed) {
+  const vmDef = vmCommandDef(ui, name);
+  if (!vmDef) return currentOf(ui.model, name, fixed);
+  if (!vmDef.current) return {};
+  const out = vmDef.current.call(ui.component, fixed) ?? {};
+  const names = Object.keys(vmDef.params);
+  for (const k of Object.keys(out)) requireKnownId(`${name} current key`, k, names);
+  return out;
+}
+
+/**
  * Liegt `el` im Inhalt eines offenen Dialogs, diesen als erfolgreich schließen.
  * @param {HTMLElement} el
  */
@@ -242,7 +263,7 @@ function createFormController(Alpine, formEl, baseCommand) {
   let dialog = null;
   let start = {};
 
-  const params = () => commandDef(ui(), command).params;
+  const params = () => buttonCommandDef(ui(), command).params;
   const fixed = () => readFixedArgs(formEl, params(), ui().model);
   const specOf = (name) => (formDef ? formDef.schema.fields[name] : params()[name]);
 
@@ -270,7 +291,7 @@ function createFormController(Alpine, formEl, baseCommand) {
       if (Object.hasOwn(fx, k)) throw new Error(`data-default-arg-${kebab(k)}: ${k} is also a fixed argument (data-arg-*)`);
       dflt[k] = checkValue(ps[k], k, v, { root: model, params: fx, context });
     }
-    Object.assign(p, dflt, withCurrent ? currentOf(model, command, fx) : {}, fx);
+    Object.assign(p, dflt, withCurrent ? currentFor(ui(), command, fx) : {}, fx);
     if (!formDef) return Object.fromEntries(Object.keys(ps).filter((k) => !Object.hasOwn(fx, k)).map((k) => [k, p[k]]));
     const mapped = formDef.fromParams(p) ?? {};
     return Object.fromEntries(Object.entries(formDef.schema.fields)
@@ -353,7 +374,7 @@ function createFormController(Alpine, formEl, baseCommand) {
      */
     open({ command: cmd, onSuccess, onUnchanged }) {
       command = cmd ?? baseCommand;
-      commandDef(ui(), command);
+      buttonCommandDef(ui(), command);
       const fx = fixed();
       for (const name of free.keys()) {
         if (Object.hasOwn(fx, name)) throw new Error(`x-param="${name}": ${name} is also a fixed argument (data-arg-*)`);
@@ -558,7 +579,7 @@ export function registerCommandDirectives(Alpine) {
     if (el.tagName !== 'FORM') throw new Error(`x-command-form must sit on a <form>, got <${el.tagName.toLowerCase()}>`);
     const name = expression.trim();
     const ui = uiOf(Alpine, el, 'x-command-form');
-    checkDefaultArgs(el, commandDef(ui, name).params);
+    checkDefaultArgs(el, buttonCommandDef(ui, name).params);
     const ctl = createFormController(Alpine, el, name);
     FORMS.set(el, ctl);
     Alpine.addScopeToNode(el, { form: ctl.values });
@@ -643,7 +664,7 @@ export function registerCommandDirectives(Alpine) {
     if (!target) throw new Error(`x-dialog="${ref}": no element with x-ref="${ref}"`);
     for (const cmd of [el.dataset.dialogCommand, el.dataset.dialogDelete]) if (cmd) commandDef(ui, cmd);
     const cmd = el.dataset.dialogCommand ?? formIn(target)?.getAttribute('x-command-form')?.trim();
-    if (cmd) checkDefaultArgs(el, commandDef(ui, cmd).params);
+    if (cmd) checkDefaultArgs(el, buttonCommandDef(ui, cmd).params);
     if (cmd) setHelpKey(el, `modules.${ui.moduleId}.actions.${cmd}.help`);
     const event = modifiers.includes('dblclick') ? 'dblclick' : 'click';
     const onOpen = () => { openDialogSafely(Alpine, el, ref, optionsFromButton(el)); };

@@ -151,6 +151,9 @@
         "help": "Wer die Beobachtung gemeldet hat."
       }
     },
+    "paretoChart": {
+      "help": "Das Pareto-Diagramm der bewerteten Ursachen, aktuell oder aus einem Snapshot: Balken je Ursache absteigend nach Score in der Farbe ihrer Kategorie, dazu die kumulierte Summe in Prozent."
+    },
     "paretoEdits": {
       "help": "Die Editor-Einstellungen des Pareto-Diagramms (Achsen, Schwellenwert, Balken, Linie); sie werden mit dem Modul gespeichert."
     },

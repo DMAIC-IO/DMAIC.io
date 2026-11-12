@@ -84,6 +84,9 @@ export const commands = {
   }),
   setCategoryLabels: command({
     params: { labels: map(text(), text()) },
+    current() {
+      return { labels: { ...this.model.catLabels } };
+    },
     run({ labels }) {
       const next = { ...this.model.catLabels };
       for (const [key, name] of Object.entries(labels)) {

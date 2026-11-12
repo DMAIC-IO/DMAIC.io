@@ -100,6 +100,10 @@
   "js/modules/glm-regression/glm-regression.js": {
     "count": 11
   },
+  "js/modules/ishikawa/resources/view.html": {
+    "count": 1,
+    "reason": "Bewertungsfeld je Ursache und Experte bleibt ein Zahlenfeld mit Pfeiltasten (Ganzzahl 0 bis 9, Trennzeichen gesperrt), wie bisher; der Handler begrenzt und schreibt über setRating"
+  },
   "js/modules/ishikawa/tile/tile.js": {
     "count": 1,
     "reason": "Score der Top-Hypothesen in der Altkachel (toFixed(1)), unverändert verschoben; die Kachel wird noch auf createTile umgestellt"
