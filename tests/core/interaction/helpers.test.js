@@ -52,14 +52,18 @@ suite('interaction/helpers — deepEqual', () => {
 });
 
 suite('interaction/helpers — makeContext', () => {
-  test('columnAt sucht im Container mit Vorgabe-Selektor', () => {
+  test('columnAt ohne Selektor wirft', () => {
+    const ctx = makeContext({ querySelectorAll: () => cols(2) });
+    let threw = false;
+    try { ctx.columnAt(70); } catch { threw = true; }
+    assertTrue(threw, 'wirft ohne Selektor');
+  });
+  test('columnAt sucht im Container mit dem übergebenen Selektor', () => {
     const seen = [];
     const root = { querySelectorAll: (sel) => { seen.push(sel); return cols(2); } };
     const ctx = makeContext(root, { x: 1, y: 2 }, 'y');
-    assertEqual(ctx.columnAt(70), 1);
-    assertEqual(seen[0], '[data-column]');
-    ctx.columnAt(70, '.pg-col');
-    assertEqual(seen[1], '.pg-col');
+    assertEqual(ctx.columnAt(70, '.pg-col'), 1);
+    assertEqual(seen[0], '.pg-col');
     assertEqual(ctx.origin.y, 2);
     assertEqual(ctx.axis, 'y');
     assertTrue(Object.isFrozen(ctx));

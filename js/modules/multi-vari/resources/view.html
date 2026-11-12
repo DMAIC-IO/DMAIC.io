@@ -12,9 +12,9 @@
     <div class="field-group">
       <label data-help-key="modules.multi-vari.fields.factors.help" x-text="t('factors')"></label>
       <table class="dmike-table multi-vari__factors" data-ref="factor-table">
-        <tbody data-group="factors" :data-group-label="t('factors')">
+        <tbody data-reorder-group="factors" :data-reorder-group-label="t('factors')">
           <template x-for="(f, idx) in model.factors" :key="f.id">
-            <tr :data-factor="f.id" :data-index="idx" :class="factorRowClass(idx)">
+            <tr :data-factor="f.id" :data-reorder-index="idx" :class="factorRowClass(idx)">
               <td class="dmike-table__grip-col">
                 <button class="dmike-table__grip multi-vari__grip" type="button" :data-grip="f.id"
                         data-help-key="modules.multi-vari.actions.moveFactor.help"

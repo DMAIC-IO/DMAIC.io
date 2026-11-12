@@ -77,7 +77,7 @@ suite('dmaic-calendar: move', () => {
 suite('dmaic-calendar: resize', () => {
   test('untere Kante: Dauer, Kommando mit Zeit und Dauer', () => {
     const h = host();
-    const from = resize.start.call(h, handle({ edge: 'end' }));
+    const from = resize.start.call(h, handle({ resizeEdge: 'end' }));
     assertDeepEqual(from, { id: 'e1', start: 540, end: 600, edge: 'end' });
     const to = resize.clamp.call(h, resize.locate.call(h, { x: 10, y: 445 }, ctx(), from), ctx(), from);
     assertEqual(to.end, 645);
@@ -85,7 +85,7 @@ suite('dmaic-calendar: resize', () => {
   });
   test('obere Kante: nie hinter das Ende minus 5 Minuten', () => {
     const h = host();
-    const from = resize.start.call(h, handle({ edge: 'start' }));
+    const from = resize.start.call(h, handle({ resizeEdge: 'start' }));
     const to = resize.clamp.call(h, resize.locate.call(h, { x: 10, y: 520 }, ctx(), from), ctx(), from);
     assertEqual(to.start, 595);
     assertDeepEqual(resize.toCommand.call(h, from, to), ['updateEvent', { id: 'e1', time: '09:55', duration: 5 }]);

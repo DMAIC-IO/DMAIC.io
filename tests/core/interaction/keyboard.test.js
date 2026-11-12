@@ -16,12 +16,12 @@ function renderLists(root, groups) {
   root.replaceChildren();
   for (const [key, ids] of Object.entries(groups)) {
     const ul = document.createElement('ul');
-    ul.dataset.group = key;
-    ul.dataset.groupLabel = `Liste ${key.toUpperCase()}`;
+    ul.dataset.reorderGroup = key;
+    ul.dataset.reorderGroupLabel = `Liste ${key.toUpperCase()}`;
     ul.style.cssText = 'margin:0;padding:0;list-style:none;width:100px;min-height:100px;';
     ids.forEach((id, i) => {
       const li = document.createElement('li');
-      li.dataset.index = String(i);
+      li.dataset.reorderIndex = String(i);
       li.dataset.id = id;
       li.style.height = '20px';
       const b = document.createElement('button');
@@ -75,7 +75,7 @@ suite('interaction/keyboard — Aufnahme-Modus', () => {
     const e = key(btn('x'), ' ');
     assertTrue(e.defaultPrevented);
     assertDeepEqual(host.previews, [{ group: 'a', index: 0 }]);
-    assertEqual(root.querySelector('[data-id="x"]').getAttribute('data-dragging'), 'reorder');
+    assertEqual(root.querySelector('[data-id="x"]').getAttribute('data-gesture-dragging'), 'reorder');
     assertEqual(live(), 'common.gesture.picked(position=common.gesture.position(pos=1,total=3))');
   });
 
@@ -213,7 +213,7 @@ suite('interaction/keyboard — Ein-Schritt-Kürzel', () => {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'edge';
-      b.dataset.edge = edge;
+      b.dataset.resizeEdge = edge;
       block.append(b);
     }
     root.append(block);
@@ -233,7 +233,7 @@ suite('interaction/keyboard — Ein-Schritt-Kürzel', () => {
     });
     const detach = attachGesture(root, def, {}, { execute: (n, a) => calls.push([n, a]), t: tt });
     cleanup.push(() => { detach(); root.remove(); });
-    const startEdge = root.querySelector('[data-edge="start"]');
+    const startEdge = root.querySelector('[data-resize-edge="start"]');
     const plain = key(startEdge, 'ArrowDown', { altKey: true });
     assertTrue(plain.defaultPrevented, 'Alt+Pfeil ohne Shift: kein Kommando, aber preventDefault');
     assertEqual(calls.length, 0);
@@ -285,23 +285,23 @@ function ptr(el, type, x, y) {
 suite('interaction/keyboard — Esc bei Zeiger-Gesten (Ende zu Ende)', () => {
   afterEach(() => { while (cleanup.length) cleanup.pop()(); });
 
-  test('Esc nach der Schwelle: weitere pointermove ohne Vorschau, kein data-dragging, idle', () => {
+  test('Esc nach der Schwelle: weitere pointermove ohne Vorschau, kein data-gesture-dragging, idle', () => {
     const { root, host, calls, btn } = setup();
     const el = btn('x');
     ptr(el, 'pointerdown', 50, 10);
     ptr(el, 'pointermove', 50, 40);
-    assertEqual(root.querySelector('[data-id="x"]').getAttribute('data-dragging'), 'reorder');
+    assertEqual(root.querySelector('[data-id="x"]').getAttribute('data-gesture-dragging'), 'reorder');
     key(el, 'Escape');
     assertEqual(host.previews.at(-1), null);
     const n = host.previews.length;
     ptr(el, 'pointermove', 50, 50);
     assertEqual(host.previews.length, n, 'keine weitere Vorschau');
-    assertTrue(!root.querySelector('[data-dragging]'), 'kein data-dragging');
+    assertTrue(!root.querySelector('[data-gesture-dragging]'), 'kein data-gesture-dragging');
     ptr(el, 'pointerup', 50, 50);
     assertEqual(calls.length, 0);
     // idle: eine neue Tastaturaufnahme ist wieder möglich
     key(btn('y'), ' ');
-    assertEqual(root.querySelector('[data-id="y"]').getAttribute('data-dragging'), 'reorder');
+    assertEqual(root.querySelector('[data-id="y"]').getAttribute('data-gesture-dragging'), 'reorder');
   });
 
   test('Esc außerhalb des Containers bricht eine laufende Zeiger-Geste ab', () => {
@@ -312,7 +312,7 @@ suite('interaction/keyboard — Esc bei Zeiger-Gesten (Ende zu Ende)', () => {
     const e = key(document.body, 'Escape');
     assertTrue(e.defaultPrevented, 'Esc verbraucht');
     assertEqual(host.previews.at(-1), null);
-    assertTrue(!root.querySelector('[data-dragging]'), 'kein data-dragging');
+    assertTrue(!root.querySelector('[data-gesture-dragging]'), 'kein data-gesture-dragging');
     ptr(el, 'pointerup', 50, 50);
     assertEqual(calls.length, 0);
   });
@@ -333,9 +333,9 @@ suite('interaction/keyboard — Esc bei Zeiger-Gesten (Ende zu Ende)', () => {
     assertEqual(host.previews.filter((p) => p).length, 0, 'nie eine Vorschau');
     ptr(el, 'pointerup', 50, 60);
     assertEqual(calls.length, 0);
-    assertTrue(!root.querySelector('[data-dragging]'));
+    assertTrue(!root.querySelector('[data-gesture-dragging]'));
     key(btn('y'), ' ');
-    assertEqual(root.querySelector('[data-id="y"]').getAttribute('data-dragging'), 'reorder');
+    assertEqual(root.querySelector('[data-id="y"]').getAttribute('data-gesture-dragging'), 'reorder');
   });
 });
 
@@ -367,10 +367,10 @@ suite('interaction/keyboard — Fehler im Callback', () => {
     cleanup.push(() => { detach(); root.remove(); });
     const errors = catchErrors(() => key(b, ' '));
     assertDeepEqual(errors.map((m) => m.replace(/^Uncaught (Error: )?/, '')), ['start kaputt']);
-    assertTrue(!root.querySelector('[data-dragging]'));
+    assertTrue(!root.querySelector('[data-gesture-dragging]'));
     const { root: other, btn } = setup();
     key(btn('x'), ' ');
-    assertEqual(other.querySelector('[data-id="x"]').getAttribute('data-dragging'), 'reorder');
+    assertEqual(other.querySelector('[data-id="x"]').getAttribute('data-gesture-dragging'), 'reorder');
   });
 
   test('ein verlorenes keyup verschluckt keinen späteren Tastendruck', () => {

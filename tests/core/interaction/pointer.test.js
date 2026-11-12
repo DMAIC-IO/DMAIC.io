@@ -11,12 +11,12 @@ const cleanup = [];
 
 function list(root, key, ids) {
   const ul = document.createElement('ul');
-  ul.dataset.group = key;
-  ul.dataset.groupLabel = `Liste ${key.toUpperCase()}`;
+  ul.dataset.reorderGroup = key;
+  ul.dataset.reorderGroupLabel = `Liste ${key.toUpperCase()}`;
   ul.style.cssText = 'margin:0;padding:0;list-style:none;width:100px;min-height:100px;';
   ids.forEach((id, i) => {
     const li = document.createElement('li');
-    li.dataset.index = String(i);
+    li.dataset.reorderIndex = String(i);
     li.dataset.id = id;
     li.style.height = '20px';
     const b = document.createElement('button');
@@ -99,12 +99,12 @@ suite('interaction/attach — Zeiger', () => {
     pointer(el, 'pointerdown', 50, 10);
     pointer(el, 'pointermove', 50, 30);
     assertDeepEqual(host.previews[0], { group: 'a', index: 0 });
-    assertEqual(root.querySelector('[data-id="x"]').getAttribute('data-dragging'), 'reorder');
+    assertEqual(root.querySelector('[data-id="x"]').getAttribute('data-gesture-dragging'), 'reorder');
     pointer(el, 'pointermove', 170, 15);
-    assertTrue(root.querySelector('[data-group="b"]').hasAttribute('data-drop-target'));
+    assertTrue(root.querySelector('[data-reorder-group="b"]').hasAttribute('data-gesture-drop-target'));
     pointer(el, 'pointerup', 170, 15);
     assertEqual(host.previews.at(-1), null);
-    assertEqual(root.querySelectorAll('[data-dragging], [data-drop-target]').length, 0);
+    assertEqual(root.querySelectorAll('[data-gesture-dragging], [data-gesture-drop-target]').length, 0);
   });
 
   test('unter 4 px: kein Kommando, keine Vorschau, Klick bleibt Klick', () => {
@@ -281,7 +281,7 @@ suite('interaction/attach — Zeiger', () => {
     let clicks = 0;
     root.addEventListener('click', () => { clicks += 1; });
     drag(btn('x'), 50, 10, 50, 45);
-    root.querySelector('[data-group="b"]').click();
+    root.querySelector('[data-reorder-group="b"]').click();
     assertEqual(clicks, 1, 'fremder Klick läuft durch');
     btn('x').click();
     assertEqual(clicks, 2, 'Griff-Klick wird nicht mehr verschluckt');

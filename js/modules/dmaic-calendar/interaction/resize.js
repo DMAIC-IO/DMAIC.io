@@ -1,7 +1,7 @@
 /**
  * D.Mike — Projektkalender: Beginn oder Ende eines Termins ziehen.
  *
- * Griffe: obere Kante (`data-edge="start"`), untere Kante (`data-edge="end"`).
+ * Griffe: obere Kante (`data-resize-edge="start"`), untere Kante (`data-resize-edge="end"`).
  * Raster 5 Minuten, kürzeste Dauer 5 Minuten, innerhalb der Achse.
  */
 import { defineGesture } from '../../../core/interaction/define.js';

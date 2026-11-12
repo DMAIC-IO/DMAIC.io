@@ -44,10 +44,10 @@ suite('interaction/define — gültige Definitionen', () => {
     assertEqual(g.clamp(pos), pos);
   });
 
-  test('resize ergänzt edge aus data-edge, this = Host', () => {
+  test('resize ergänzt edge aus data-resize-edge, this = Host', () => {
     const g = defineGesture({ ...moveDef(), kind: 'resize', start(el) { return { id: el.dataset.id, who: this.name }; } });
     const host = { name: 'host' };
-    assertEqual(g.start.call(host, { dataset: { id: 'k', edge: 'start' } }).edge, 'start');
+    assertEqual(g.start.call(host, { dataset: { id: 'k', resizeEdge: 'start' } }).edge, 'start');
     const end = g.start.call(host, { dataset: { id: 'k' } });
     assertEqual(end.edge, 'end');
     assertEqual(end.who, 'host');

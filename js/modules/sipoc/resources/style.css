@@ -101,11 +101,11 @@
   border-color: var(--color-border-primary);
 }
 
-.sipoc__column:has(.sipoc__items-list[data-drop-target]) {
+.sipoc__column:has(.sipoc__items-list[data-gesture-drop-target]) {
   border-color: var(--color-text-tertiary);
 }
 
-.sipoc__items-list[data-drop-target] {
+.sipoc__items-list[data-gesture-drop-target] {
   background: var(--color-bg-tertiary);
 }
 
@@ -215,7 +215,7 @@ textarea.sipoc__edit-text {
   border-color: var(--color-border-primary);
 }
 
-.sipoc__item[data-dragging] {
+.sipoc__item[data-gesture-dragging] {
   opacity: 0.3;
 }
 

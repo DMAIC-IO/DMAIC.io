@@ -15,12 +15,12 @@ function fixture() {
   root.style.cssText = 'position:fixed;left:0;top:0;display:flex;gap:20px;';
   for (const [key, ids] of [['a', ['x', 'y', 'z']], ['b', ['w']]]) {
     const ul = document.createElement('ul');
-    ul.dataset.group = key;
-    ul.dataset.groupLabel = `Liste ${key.toUpperCase()}`;
+    ul.dataset.reorderGroup = key;
+    ul.dataset.reorderGroupLabel = `Liste ${key.toUpperCase()}`;
     ul.style.cssText = 'margin:0;padding:0;list-style:none;width:100px;min-height:100px;';
     ids.forEach((id, i) => {
       const li = document.createElement('li');
-      li.dataset.index = String(i);
+      li.dataset.reorderIndex = String(i);
       li.dataset.id = id;
       li.style.height = '20px';
       const b = document.createElement('button');
@@ -43,7 +43,7 @@ suite('interaction/gestures/reorder', () => {
 
   test('groupsOf/itemsOf in DOM-Reihenfolge', () => {
     fixture();
-    assertDeepEqual(groupsOf(root).map(g => g.dataset.group), ['a', 'b']);
+    assertDeepEqual(groupsOf(root).map(g => g.dataset.reorderGroup), ['a', 'b']);
     assertEqual(itemsOf(groupsOf(root)[0]).length, 3);
   });
 

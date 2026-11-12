@@ -707,7 +707,7 @@
   background: var(--color-accent-light);
 }
 
-.module-calendar__week-ev[data-dragging] {
+.module-calendar__week-ev[data-gesture-dragging] {
   z-index: 3;
   opacity: 0.85;
 }

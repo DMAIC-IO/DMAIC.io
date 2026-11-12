@@ -69,9 +69,9 @@ function el(tag, attrs = {}, label = '') {
 
 function renderLists() {
   const lists = [...GROUPS, 'c'].map((key) => {
-    const ul = el('ul', { class: 'pg-list', 'data-group': key, 'data-group-label': LABELS[key], 'data-testid': `list-${key}` });
+    const ul = el('ul', { class: 'pg-list', 'data-reorder-group': key, 'data-reorder-group-label': LABELS[key], 'data-testid': `list-${key}` });
     (model.lists[key] ?? []).forEach((it, i) => {
-      const li = el('li', { class: 'pg-item', 'data-index': String(i), 'data-id': it.id, 'data-testid': `item-${it.id}` });
+      const li = el('li', { class: 'pg-item', 'data-reorder-index': String(i), 'data-id': it.id, 'data-testid': `item-${it.id}` });
       li.append(el('button', { type: 'button', class: 'pg-item__grip', 'data-testid': `grip-${it.id}` }, it.label));
       ul.append(li);
     });
@@ -91,9 +91,9 @@ function renderGrid() {
       block.style.top = `${b.start}px`;
       block.style.height = `${b.end - b.start}px`;
       block.append(
-        el('button', { type: 'button', class: 'pg-block__edge', 'data-edge': 'start', 'data-id': b.id, 'data-testid': `edge-start-${b.id}` }),
+        el('button', { type: 'button', class: 'pg-block__edge', 'data-resize-edge': 'start', 'data-id': b.id, 'data-testid': `edge-start-${b.id}` }),
         el('button', { type: 'button', class: 'pg-block__body', 'data-id': b.id, 'data-testid': `body-${b.id}` }, b.id),
-        el('button', { type: 'button', class: 'pg-block__edge', 'data-edge': 'end', 'data-id': b.id, 'data-testid': `edge-end-${b.id}` }),
+        el('button', { type: 'button', class: 'pg-block__edge', 'data-resize-edge': 'end', 'data-id': b.id, 'data-testid': `edge-end-${b.id}` }),
       );
       col.append(block);
     }

@@ -5,10 +5,10 @@ import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-u
 import { isGesture } from '../../js/core/interaction/define.js';
 import { reorder } from '../../js/modules/sipoc/interaction/reorder.js';
 
-/** Minimale DOM-freie Attrappe: Gruppen mit `data-group`, `data-group-label` und n Elementen. */
+/** Minimale DOM-freie Attrappe: Gruppen mit `data-reorder-group`, `data-reorder-group-label` und n Elementen. */
 function fakeRoot(groups) {
   const els = groups.map(({ key, label, count }) => {
-    const group = { dataset: { group: key, groupLabel: label } };
+    const group = { dataset: { reorderGroup: key, reorderGroupLabel: label } };
     const items = Array.from({ length: count }, () => ({ closest: () => group }));
     group.querySelectorAll = () => items;
     return group;

@@ -1,8 +1,8 @@
 /**
  * D.Mike — Flowchart: Unterschritte umsortieren (Geste reorder).
  *
- * Eine Gruppe je Schritt (`data-group` = Schritt-id), darin die Unterschritte
- * mit `data-index` und `data-substep-id`. Verschoben wird nur innerhalb des
+ * Eine Gruppe je Schritt (`data-reorder-group` = Schritt-id), darin die Unterschritte
+ * mit `data-reorder-index` und `data-substep-id`. Verschoben wird nur innerhalb des
  * eigenen Schritts: ein Ziel in einem anderen Schritt begrenzt `clamp` zu
  * `null` — kein Kommando. Die Position trägt neben `{ group, index }` die id
  * des gezogenen Unterschritts für das Kommando.

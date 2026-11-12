@@ -6,9 +6,11 @@
  * `createModule` das Viewmodel bei Sprachwechsel und `setState` neu baut,
  * den Container aber behält. `env` führt aus, meldet und übersetzt.
  *
- * Der Kern schreibt nur `data-dragging` (am Quellelement), `data-drop-target`
- * (Zielgruppe bei `reorder`) und `aria-describedby` am Griff; alles Weitere
- * zeichnet das Modul aus `preview(pos)`.
+ * Markup-Vertrag: der Kern liest und schreibt nur `data-id` und Attribute mit
+ * dem Präfix der Geste (`data-reorder-*`, `data-resize-*`, `data-gesture-*`).
+ * Er schreibt `data-gesture-dragging` (am Quellelement),
+ * `data-gesture-drop-target` (Zielgruppe bei `reorder`) und `aria-describedby`
+ * am Griff; alles Weitere zeichnet das Modul aus `preview(pos)`.
  */
 import { IDLE, next, claim, release } from './machine.js';
 import { deepEqual, makeContext } from './helpers.js';
@@ -67,9 +69,9 @@ function createController(root, def, host, env) {
   const say = (key, params = {}) => announce(doc, t(`common.gesture.${key}`, params).trim());
 
   function markTarget(pos) {
-    for (const n of root.querySelectorAll('[data-drop-target]')) n.removeAttribute('data-drop-target');
+    for (const n of root.querySelectorAll('[data-gesture-drop-target]')) n.removeAttribute('data-gesture-drop-target');
     if (def.kind !== 'reorder' || !pos) return;
-    groupsOf(root).find((gr) => gr.dataset.group === String(pos.group))?.setAttribute('data-drop-target', '');
+    groupsOf(root).find((gr) => gr.dataset.reorderGroup === String(pos.group))?.setAttribute('data-gesture-drop-target', '');
   }
 
   function show(pos) {
@@ -89,7 +91,7 @@ function createController(root, def, host, env) {
       marked: own ?? el,
       ctx: makeContext(root, origin, def.axis),
       sourceId: own ? own.dataset.id : null,
-      edge: el.dataset.edge ?? null,
+      edge: el.dataset.resizeEdge ?? null,
     };
   }
 
@@ -102,10 +104,10 @@ function createController(root, def, host, env) {
   function begin(el, source, origin) {
     try {
       g = makeRun(el, source, origin);
-      g.marked.setAttribute('data-dragging', def.kind);
+      g.marked.setAttribute('data-gesture-dragging', def.kind);
       show(g.from);
     } catch (err) {
-      g?.marked.removeAttribute('data-dragging');
+      g?.marked.removeAttribute('data-gesture-dragging');
       markTarget(null);
       reset();
       throw err;
@@ -131,7 +133,7 @@ function createController(root, def, host, env) {
   function end() {
     const run = g;
     reset();
-    run.marked.removeAttribute('data-dragging');
+    run.marked.removeAttribute('data-gesture-dragging');
     markTarget(null);
     def.preview.call(run.h, null);
     return run;
@@ -287,14 +289,14 @@ function restoreFocus(root, def, run, to) {
       scope = [...root.querySelectorAll('[data-id]')].find((n) => n.dataset.id === run.sourceId) ?? null;
     }
     if (!scope && to && to.group !== undefined) {
-      const group = groupsOf(root).find((gr) => gr.dataset.group === String(to.group));
+      const group = groupsOf(root).find((gr) => gr.dataset.reorderGroup === String(to.group));
       scope = group
-        ? [...group.querySelectorAll('[data-index]')].find((n) => n.dataset.index === String(to.index)) ?? null
+        ? [...group.querySelectorAll('[data-reorder-index]')].find((n) => n.dataset.reorderIndex === String(to.index)) ?? null
         : null;
     }
     if (!scope) return;
     const handles = [scope, ...scope.querySelectorAll(def.handle)].filter((n) => n.matches(def.handle));
-    const handle = handles.find((n) => (n.dataset.edge ?? null) === run.edge) ?? handles[0];
+    const handle = handles.find((n) => (n.dataset.resizeEdge ?? null) === run.edge) ?? handles[0];
     handle?.focus();
   };
   Promise.resolve().then(() => requestAnimationFrame(find));

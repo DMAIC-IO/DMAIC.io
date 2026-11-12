@@ -444,7 +444,7 @@ button.fc-substeps-bar {
 
 .fc-substep-grip + .fc-substep-number { cursor: default; }
 .fc-substep-item:hover .fc-substep-grip { opacity: 1; }
-.fc-substep-item[data-dragging] { opacity: 0.4; }
+.fc-substep-item[data-gesture-dragging] { opacity: 0.4; }
 
 @keyframes fc-fade-in {
   from { opacity: 0; transform: translateY(4px); }

@@ -136,7 +136,7 @@ suite('createModule mit gestures', () => {
   test('laufende Tastaturaufnahme: onLanguageChange bricht sie ab, die nächste Geste läuft', async () => {
     const { mod, container, events } = await mount();
     space(container);
-    assertTrue(container.querySelector('[data-dragging]') !== null, 'aufgenommen');
+    assertTrue(container.querySelector('[data-gesture-dragging]') !== null, 'aufgenommen');
     mod.onLanguageChange();
     altRight(container);
     await flush();
@@ -148,7 +148,7 @@ suite('createModule mit gestures', () => {
     const { mod, container, events } = await mount();
     space(container);
     mod.setState({ x: 2 });
-    assertTrue(!container.querySelector('[data-dragging]'), 'nichts mehr aufgenommen');
+    assertTrue(!container.querySelector('[data-gesture-dragging]'), 'nichts mehr aufgenommen');
     altRight(container);
     await flush();
     // Der Neuaufbau übernimmt den gesetzten Stand (x = 2); die Geste zählt eins weiter.

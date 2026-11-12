@@ -71,7 +71,7 @@ export function columnAt(columns, x) {
  * @param {{ x: number, y: number }|null} [origin] Druckpunkt; `null` bei Tastatur
  * @param {'x'|'y'} [axis='y'] Achse der Liste (`reorder`)
  * @returns {Readonly<{ root: Element, origin: {x:number,y:number}|null, axis: 'x'|'y',
- *   columnAt: (x: number, selector?: string) => number|null, snap: typeof snap,
+ *   columnAt: (x: number, selector: string) => number|null, snap: typeof snap,
  *   listIndexAt: (items: ArrayLike<Element>, point: {x:number,y:number}, axis?: 'x'|'y') => number }>}
  */
 export function makeContext(root, origin = null, axis = 'y') {
@@ -79,7 +79,10 @@ export function makeContext(root, origin = null, axis = 'y') {
     root,
     origin,
     axis,
-    columnAt: (x, selector = '[data-column]') => columnAt([...root.querySelectorAll(selector)], x),
+    columnAt: (x, selector) => {
+      if (!selector) throw new TypeError('columnAt: selector is required');
+      return columnAt([...root.querySelectorAll(selector)], x);
+    },
     snap,
     listIndexAt: (items, point, ax = axis) => listIndexAt(items, point, ax),
   });

@@ -151,10 +151,10 @@
                       <div class="module-calendar__we-title" x-text="ev.title"></div>
                     </div>
                     <div class="module-calendar__we-dur" x-show="showResizeDur(ev)" x-text="resizeDurText"></div>
-                    <button type="button" class="module-calendar__ev-handle module-calendar__ev-handle--top" data-edge="start" :aria-label="t('resizeStart')">
+                    <button type="button" class="module-calendar__ev-handle module-calendar__ev-handle--top" data-resize-edge="start" :aria-label="t('resizeStart')">
                       <span class="module-calendar__ev-handle-pip"></span>
                     </button>
-                    <button type="button" class="module-calendar__ev-handle module-calendar__ev-handle--bot" data-edge="end" :aria-label="t('resizeEnd')">
+                    <button type="button" class="module-calendar__ev-handle module-calendar__ev-handle--bot" data-resize-edge="end" :aria-label="t('resizeEnd')">
                       <span class="module-calendar__ev-handle-pip"></span>
                     </button>
                   </div>

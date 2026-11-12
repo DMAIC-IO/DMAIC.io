@@ -91,6 +91,6 @@
 
 /* Quellzeile während des Umsortierens (die Einfügemarke ist die gemeinsame
    .dmike-table__row--drop-target). */
-.multi-vari__factors tr[data-dragging] {
+.multi-vari__factors tr[data-gesture-dragging] {
   opacity: 0.4;
 }
