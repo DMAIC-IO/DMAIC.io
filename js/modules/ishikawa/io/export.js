@@ -17,16 +17,16 @@ function catName(catLabels, key, t) {
 
 /**
  * Problem, Ursachenbaum mit Bewertungen je Experte und Score, Fakten.
- * Kopfzeile ist die Problemzeile; danach folgen Leerzeile, Baumkopf,
+ * Zeile 0 ist die Problemzeile; danach folgen Leerzeile, Baumkopf,
  * Baumzeilen und, falls vorhanden, Leerzeile, Faktentitel, Faktenkopf, Fakten.
+ * Der Score ist auf eine Dezimale gerundet (als Zahl).
  * @param {{ problem: string, experts: Array<{id: number, name: string}>, catLabels: Record<string, string>,
  *   rows: Array<any>, facts: Array<any> }} model
- * @param {{ t: (key: string) => string, lang?: string }} opts
- * @returns {{ headers: string[], rows: Array<Array<string|number>> }}
+ * @param {{ t: (key: string) => string }} opts
+ * @returns {Array<Array<string|number>>}
  */
 export function exportTable(model, { t }) {
-  const headers = [t('problemStatement'), model.problem ?? ''];
-  const rows = [[]];
+  const rows = [[t('problemStatement'), model.problem ?? ''], []];
   rows.push(['#', t('level'), t('category'), t('effCat'), t('name'), t('description'),
     ...model.experts.map((e) => e.name), t('avgScore'), t('status')]);
   const nums = {};
@@ -46,7 +46,7 @@ export function exportTable(model, { t }) {
       r.name || '',
       `${'  '.repeat(d)}${r.description || ''}`,
       ...model.experts.map((e) => r.ratings[e.id] ?? ''),
-      score ?? '',
+      score === null ? '' : Math.round(score * 10) / 10,
       r.status ? t(`status.${r.status}`) : '',
     ]);
   }
@@ -56,5 +56,5 @@ export function exportTable(model, { t }) {
     rows.push(['#', t('factName'), t('factDescription'), t('factDate'), t('factOwner')]);
     model.facts.forEach((f, i) => rows.push([i + 1, f.name ?? '', f.description ?? '', f.date ?? '', f.owner ?? '']));
   }
-  return { headers, rows };
+  return rows;
 }
