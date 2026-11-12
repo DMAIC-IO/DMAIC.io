@@ -4,8 +4,11 @@
  * Das Element bekommt ein verstecktes `<input type="file" data-ref="file-input">`
  * (`accept` aus `data-accept`). Nachfahren mit `data-file-open` öffnen die Auswahl
  * per Klick, Nicht-Schaltflächen auch per Enter und Leertaste. Beim Ziehen steht
- * `data-dragover` am Element. Die erste Datei geht an `$data[<methode>](file)`;
- * die Methode wird beim Ereignis gelesen, ein Ausdruck wird nie ausgewertet (CSP).
+ * `data-dragover` am Element. Die erste Datei geht an `$data[<methode>](file, args)`;
+ * mit `data-multiple` wählt das Feld mehrere Dateien, und die Methode bekommt
+ * alle als Liste (`files`). `args` sind die `data-arg-<kebab>`-Attribute des
+ * Elements als Texte (`data-arg-scope` → `{ scope }`), beim Ereignis gelesen.
+ * Die Methode wird beim Ereignis gelesen, ein Ausdruck wird nie ausgewertet (CSP).
  */
 
 const registered = new WeakSet();
@@ -24,18 +27,26 @@ export function registerFileDropDirective(Alpine) {
     input.type = 'file';
     input.hidden = true;
     input.setAttribute('data-ref', 'file-input');
+    const multiple = () => el.hasAttribute('data-multiple');
     const syncAccept = () => {
       const accept = el.getAttribute('data-accept');
       if (accept) input.setAttribute('accept', accept);
       else input.removeAttribute('accept');
+      input.multiple = multiple();
     };
     syncAccept();
     el.append(input);
 
-    const deliver = (file) => {
-      if (!file) return;
+    /** @returns {Record<string, string>} die `data-arg-*` des Elements */
+    const args = () => Object.fromEntries(Object.entries(el.dataset)
+      .filter(([k]) => /^arg[A-Z]/.test(k))
+      .map(([k, v]) => [k[3].toLowerCase() + k.slice(4), v ?? '']));
+    /** @param {FileList|File[]|null|undefined} list */
+    const deliver = (list) => {
+      const files = Array.from(list ?? []);
+      if (files.length === 0) return;
       const handler = Alpine.$data(el)?.[method];
-      if (typeof handler === 'function') handler.call(Alpine.$data(el), file);
+      if (typeof handler === 'function') handler.call(Alpine.$data(el), multiple() ? files : files[0], args());
     };
     const open = () => { syncAccept(); input.click(); };
     const opener = (event) => {
@@ -59,12 +70,12 @@ export function registerFileDropDirective(Alpine) {
     const onDrop = (event) => {
       event.preventDefault();
       el.removeAttribute('data-dragover');
-      deliver(event.dataTransfer?.files?.[0]);
+      deliver(event.dataTransfer?.files);
     };
     const onChange = () => {
-      const file = input.files?.[0];
+      const files = Array.from(input.files ?? []);
       input.value = '';
-      deliver(file);
+      deliver(files);
     };
 
     el.addEventListener('click', onClick);

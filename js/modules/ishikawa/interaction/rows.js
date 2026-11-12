@@ -54,7 +54,7 @@ export function rowGesture({ handle, command }) {
     /**
      * Gruppe und Bereich wie `reorder`; dazu die Zeile am Endindex in der
      * Liste ohne die gezogene Zeile.
-     * @param {{ group: string, index: number }} pos @param {object} ctx @param {{ group: string, index: number, id: number }} from
+     * @param {{ group: string, index: number }} pos @param {object} ctx @param {{ group: string, index: number, id: number, beforeId: number|null }} from
      * @returns {{ group: string, index: number, id: number, beforeId: number|null }|null}
      */
     clamp(pos, ctx, from) {

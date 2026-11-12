@@ -70,7 +70,7 @@ export const oneOf = (values, opts) => spec('oneOf', { values: Object.freeze([..
 export const index = (path, opts) => spec('index', { path }, opts);
 /**
  * Eine vorhandene id aus der Liste unter `path`.
- * @param {string} path @param {{ key?: string }} [opts] @returns {Readonly<object>}
+ * @param {string} path @param {{ key?: string } & object} [opts] @returns {Readonly<object>}
  */
 export const idOf = (path, { key = 'id', ...opts } = {}) => spec('idOf', { path, key }, opts);
 /**

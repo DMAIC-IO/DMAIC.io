@@ -1,13 +1,20 @@
 /**
- * D.Mike — Ishikawa dashboard tile (ishikawa.tile.js)
+ * D.Mike — Ishikawa dashboard tile (tile/tile.js)
  *
- * Loaded by the dashboard via the manifest's `loadTile`. Imports only the
- * shared Ishikawa constants, never the module shell; the markup lives in
- * ishikawa.tile.html. Tile contract: the lifecycle in js/pages/dashboard/tile-render.js.
+ * Loaded by the dashboard via the descriptor's `tile`. Imports nothing of the
+ * module; the markup lives in resources/tile.html. Tile contract: the
+ * lifecycle in js/pages/dashboard/tile-render.js.
  */
 
-import { CATS } from './ishikawa-constants.js';
-import { topN, showLegend, distribution } from '../../ui/tile-kit.js';
+import { CAT_KEYS } from '../domain/constants.js';
+import { topN, showLegend, distribution } from '../../../ui/tile-kit.js';
+
+/** Farbe je Kategorie wie im Modul (`--ishikawa-cat-*` in resources/style.css). */
+const CAT_COLORS = {
+  man: '#2563eb', machine: '#7c3aed', environment: '#059669',
+  material: '#d97706', measurement: '#dc2626', method: '#0891b2',
+};
+const CATS = CAT_KEYS.map((key) => ({ key, color: CAT_COLORS[key] }));
 
 const STATUS_ORDER = ['open', 'testing', 'confirmed', 'rejected'];
 const STATUS_COLORS = {
@@ -23,13 +30,13 @@ export default {
     showLegend: showLegend(),
   },
 
-  template: 'js/modules/ishikawa/ishikawa.tile.html',
+  template: 'js/modules/ishikawa/resources/tile.html',
 
   /**
    * Problem line, hypothesis/expert counts, category and status legends,
    * and the hypotheses with the highest mean expert rating.
    * @param {{state: object, settings: {topN: number, showLegend: boolean}, i18n: object}} args
-   * @returns {object} view model for ishikawa.tile.html
+   * @returns {object} view model for resources/tile.html
    */
   viewModel({ state, settings, i18n }) {
     const rows    = (state && Array.isArray(state.rows)) ? state.rows : [];

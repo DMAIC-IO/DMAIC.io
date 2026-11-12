@@ -7391,6 +7391,7 @@ export const AGENT_REGISTRY = {
   "ishikawa": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
@@ -7400,528 +7401,865 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[], rows?: { from: number, to: number } }` — `fields` nennt die Massenfelder, die vollständig geliefert werden sollen; `rows` schneidet jedes davon auf `[from, to)` zu."
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
-        "returns": "object",
-        "help": "Den vollständigen Lesezustand dieser Instanz liefern. Ohne Parameter bleiben Massendaten draußen und erscheinen als Umfangs-Deskriptor — für eine Tabelle `{ $bulk: true, kind: 'table', rowCount, columns }`, für einen Baum `{ $bulk: true, kind: 'tree', nodeCount, depth }` —, damit ein Agent gezielt nachfragen kann statt 5000 Zeilen durch sein Kontextfenster zu schieben."
+        "returns": "AgentRead",
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
-      "problem.setProblem": {
+      "addExpert": {
+        "target": "model",
         "params": [
           {
-            "name": "text",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "the statement; \"\" clears it"
-          }
-        ],
-        "returns": "void",
-        "help": "Set the problem statement every cause refers to."
-      },
-      "causes.addExpert": {
-        "params": [
-          {
-            "name": "name",
-            "type": "string",
-            "optional": false,
-            "help": "the name; must differ from the others, case-insensitive"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "number",
-        "help": "Add a member to the expert team. Every member rates every cause 0..9."
-      },
-      "causes.renameExpert": {
-        "params": [
-          {
-            "name": "expertId",
-            "type": "number",
-            "optional": false,
-            "help": "the expert"
-          },
-          {
-            "name": "name",
-            "type": "string",
-            "optional": false,
-            "help": "the new name; must differ from the others"
-          }
-        ],
-        "returns": "void",
-        "help": "Rename a member of the expert team; their ratings stay."
-      },
-      "causes.removeExpert": {
-        "params": [
-          {
-            "name": "expertId",
-            "type": "number",
-            "optional": false,
-            "help": "the expert"
-          }
-        ],
-        "returns": "void",
-        "help": "Remove a member from the expert team, with their ratings."
-      },
-      "causes.addRow": {
-        "params": [],
-        "returns": "number",
-        "help": "Add a main cause at the end of the tree."
-      },
-      "causes.addSubRow": {
-        "params": [
-          {
-            "name": "parentId",
-            "type": "number",
-            "optional": false,
-            "help": "the cause above it"
-          }
-        ],
-        "returns": "number",
-        "help": "Add a sub-cause under a cause; it inherits the category."
-      },
-      "causes.setRowField": {
-        "params": [
-          {
-            "name": "rowId",
-            "type": "number",
-            "optional": false,
-            "help": "the cause"
-          },
-          {
-            "name": "key",
-            "type": "'name'|'category'|'description'|'status'",
-            "optional": false,
-            "help": "which field"
-          },
-          {
-            "name": "value",
-            "type": "string",
-            "optional": false,
-            "help": "the new value"
-          }
-        ],
-        "returns": "void",
-        "help": "Set one field of a cause. Only main causes carry a category.",
-        "keysOf": "RowFields",
+        "help": "",
+        "keysOf": "addExpert",
+        "keysHelp": "actions.addExpert.params",
         "keys": {
           "name": {
             "type": "string",
-            "help": "short name of the cause"
+            "help": "",
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          }
+        }
+      },
+      "renameExpert": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "renameExpert",
+        "keysHelp": "actions.renameExpert.params",
+        "keys": {
+          "expertId": {
+            "type": "string",
+            "help": ""
+          },
+          "name": {
+            "type": "string",
+            "help": "",
+            "rules": [
+              "trim",
+              "nonEmpty"
+            ]
+          }
+        }
+      },
+      "removeExpert": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeExpert",
+        "keysHelp": "actions.removeExpert.params",
+        "keys": {
+          "expertId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "addRow": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "{ id: number, stableId: string }",
+        "help": "",
+        "keysOf": "addRow",
+        "keysHelp": "actions.addRow.params",
+        "keys": {}
+      },
+      "addSubRow": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "{ id: number, stableId: string }",
+        "help": "",
+        "keysOf": "addSubRow",
+        "keysHelp": "actions.addSubRow.params",
+        "keys": {
+          "parentId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "setRowField": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setRowField",
+        "keysHelp": "actions.setRowField.params",
+        "keys": {
+          "rowId": {
+            "type": "string",
+            "help": ""
+          },
+          "name": {
+            "type": "string",
+            "help": "",
+            "optional": true
           },
           "category": {
             "type": "''|'man'|'machine'|'environment'|'material'|'measurement'|'method'",
-            "help": "6M category of a main cause, \"\" for none; sub-causes inherit it"
+            "help": "",
+            "optional": true
           },
           "description": {
             "type": "string",
-            "help": "what the cause is and why it is suspected"
+            "help": "",
+            "optional": true
           },
           "status": {
             "type": "'open'|'testing'|'confirmed'|'rejected'",
-            "help": "how far the check of the cause has got"
+            "help": "",
+            "optional": true
           }
         }
       },
-      "causes.removeRow": {
+      "removeRow": {
+        "target": "model",
         "params": [
           {
-            "name": "rowId",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "the cause"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Delete a cause and its sub-causes, without asking. Links from experiments go."
-      },
-      "causes.duplicateRow": {
-        "params": [
-          {
-            "name": "rowId",
-            "type": "number",
-            "optional": false,
-            "help": "the cause"
-          }
-        ],
-        "returns": "number",
-        "help": "Copy a cause with its sub-causes and ratings, right after it."
-      },
-      "causes.moveRowBefore": {
-        "params": [
-          {
-            "name": "rowId",
-            "type": "number",
-            "optional": false,
-            "help": "the cause to move"
-          },
-          {
-            "name": "targetRowId",
-            "type": "number",
-            "optional": false,
-            "help": "the cause it goes before"
-          }
-        ],
-        "returns": "boolean",
-        "help": "Move a cause with its sub-causes before another; it takes that cause's parent."
-      },
-      "causes.setFilter": {
-        "params": [
-          {
-            "name": "category",
-            "type": "'all'|'man'|'machine'|'environment'|'material'|'measurement'|'method'",
-            "optional": false,
-            "help": "the filter"
-          }
-        ],
-        "returns": "void",
-        "help": "Show only the causes of one category, or all."
-      },
-      "causes.setRating": {
-        "params": [
-          {
-            "name": "rowId",
-            "type": "number",
-            "optional": false,
-            "help": "the cause"
-          },
-          {
-            "name": "expertId",
-            "type": "number",
-            "optional": false,
-            "help": "the expert"
-          },
-          {
-            "name": "value",
-            "type": "number|null",
-            "optional": false,
-            "help": "a whole number 0..9; null clears the rating"
-          }
-        ],
-        "returns": "void",
-        "help": "Rate a cause by one expert, 0 (unlikely) to 9 (very likely)."
-      },
-      "causes.setCategoryLabels": {
-        "params": [
-          {
-            "name": "labels",
-            "type": "Object<string, string>",
-            "optional": false,
-            "help": "new name per category key (man, machine, environment, material, measurement, method); \"\" restores the default name"
-          }
-        ],
-        "returns": "void",
-        "help": "Give the six categories own names. Categories not named keep theirs."
-      },
-      "causes.exportCSV": {
-        "params": [],
-        "returns": "string",
-        "help": "Download problem statement, cause tree with ratings and facts as CSV."
-      },
-      "causes.setParetoSource": {
-        "params": [
-          {
-            "name": "snapshotId",
-            "type": "?number",
-            "optional": false,
-            "help": "a snapshot; null shows the current state"
-          }
-        ],
-        "returns": "void",
-        "help": "Show the current ratings or those of a snapshot in the Pareto chart."
-      },
-      "snapshots.saveSnapshot": {
-        "params": [
-          {
-            "name": "name",
-            "type": "string",
-            "optional": false,
-            "help": "the name; \"\" gives \"Snapshot <today>\""
-          }
-        ],
-        "returns": "number",
-        "help": "Save problem statement, experts and cause tree as a snapshot (newest first)."
-      },
-      "snapshots.loadSnapshot": {
-        "params": [
-          {
-            "name": "snapshotId",
-            "type": "number",
-            "optional": false,
-            "help": "the snapshot"
-          }
-        ],
-        "returns": "void",
-        "help": "Replace problem statement, experts and cause tree by a snapshot, without asking."
-      },
-      "snapshots.removeSnapshot": {
-        "params": [
-          {
-            "name": "snapshotId",
-            "type": "number",
-            "optional": false,
-            "help": "the snapshot"
-          }
-        ],
-        "returns": "void",
-        "help": "Delete a snapshot, without asking. A comparison with it ends."
-      },
-      "snapshots.compareSnapshot": {
-        "params": [
-          {
-            "name": "snapshotId",
-            "type": "number",
-            "optional": false,
-            "help": "the snapshot"
-          }
-        ],
-        "returns": "{added: string[], removed: string[], changed: Array<{stableId: string, oldScore: number, newScore: number, delta: number}>}",
-        "help": "Compare the cause tree with a snapshot; the tree marks the differences until the comparison ends."
-      },
-      "snapshots.closeCompare": {
-        "params": [],
-        "returns": "void",
-        "help": "End the comparison with a snapshot."
-      },
-      "experiments.addExperiment": {
-        "params": [],
-        "returns": "number",
-        "help": "Add an empty experiment (status planned) at the end."
-      },
-      "experiments.setExperimentField": {
-        "params": [
-          {
-            "name": "experimentId",
-            "type": "number",
-            "optional": false,
-            "help": "the experiment"
-          },
-          {
-            "name": "key",
-            "type": "'title'|'description'|'responsible'|'status'|'startDate'|'endDate'|'costMoney'|'costHours'",
-            "optional": false,
-            "help": "which field"
-          },
-          {
-            "name": "value",
-            "type": "string|number|null",
-            "optional": false,
-            "help": "the new value, as described per field"
-          }
-        ],
-        "returns": "void",
-        "help": "Set one field of an experiment.",
-        "keysOf": "ExperimentFields",
+        "help": "",
+        "keysOf": "removeRow",
+        "keysHelp": "actions.removeRow.params",
         "keys": {
+          "rowId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "moveRowBefore": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "moveRowBefore",
+        "keysHelp": "actions.moveRowBefore.params",
+        "keys": {
+          "rowId": {
+            "type": "string",
+            "help": ""
+          },
+          "targetRowId": {
+            "type": "string|null",
+            "help": ""
+          }
+        }
+      },
+      "setRating": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setRating",
+        "keysHelp": "actions.setRating.params",
+        "keys": {
+          "rowId": {
+            "type": "string",
+            "help": ""
+          },
+          "expertId": {
+            "type": "string",
+            "help": ""
+          },
+          "value": {
+            "type": "number|null",
+            "help": ""
+          }
+        }
+      },
+      "loadSnapshot": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "loadSnapshot",
+        "keysHelp": "actions.loadSnapshot.params",
+        "keys": {
+          "snapshotId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "removeSnapshot": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeSnapshot",
+        "keysHelp": "actions.removeSnapshot.params",
+        "keys": {
+          "snapshotId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "addExperiment": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "number",
+        "help": "",
+        "keysOf": "addExperiment",
+        "keysHelp": "actions.addExperiment.params",
+        "keys": {}
+      },
+      "setExperimentField": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setExperimentField",
+        "keysHelp": "actions.setExperimentField.params",
+        "keys": {
+          "experimentId": {
+            "type": "string",
+            "help": ""
+          },
           "title": {
             "type": "string",
-            "help": "short title of the experiment"
+            "help": "",
+            "optional": true
           },
           "description": {
             "type": "string",
-            "help": "what is tried and how the result is measured"
+            "help": "",
+            "optional": true
           },
           "responsible": {
             "type": "string",
-            "help": "who runs the experiment"
+            "help": "",
+            "optional": true
           },
           "status": {
             "type": "'planned'|'running'|'done'|'cancelled'",
-            "help": "where the experiment stands"
+            "help": "",
+            "optional": true
           },
           "startDate": {
             "type": "string",
-            "help": "first day as YYYY-MM-DD, \"\" for none"
+            "help": "",
+            "optional": true,
+            "rules": [
+              "date"
+            ]
           },
           "endDate": {
             "type": "string",
-            "help": "last day as YYYY-MM-DD, \"\" for none"
+            "help": "",
+            "optional": true,
+            "rules": [
+              "date"
+            ]
           },
           "costMoney": {
             "type": "number|null",
-            "help": "money spent in euros, null for none"
+            "help": "",
+            "optional": true
           },
           "costHours": {
             "type": "number|null",
-            "help": "effort in hours, null for none"
+            "help": "",
+            "optional": true
           }
         }
       },
-      "experiments.removeExperiment": {
+      "removeExperiment": {
+        "target": "model",
         "params": [
           {
-            "name": "experimentId",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "the experiment"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Delete an experiment, without asking."
-      },
-      "experiments.moveExperimentBefore": {
-        "params": [
-          {
-            "name": "experimentId",
-            "type": "number",
-            "optional": false,
-            "help": "the experiment to move"
-          },
-          {
-            "name": "targetExperimentId",
-            "type": "number",
-            "optional": false,
-            "help": "the experiment it goes before"
-          }
-        ],
-        "returns": "void",
-        "help": "Move an experiment directly before another one."
-      },
-      "experiments.setExperimentHypotheses": {
-        "params": [
-          {
-            "name": "experimentId",
-            "type": "number",
-            "optional": false,
-            "help": "the experiment"
-          },
-          {
-            "name": "hypothesisIds",
-            "type": "string[]",
-            "optional": false,
-            "help": "stableId of each cause (rows[].stableId, e.g. H-001); [] unlinks all"
-          }
-        ],
-        "returns": "void",
-        "help": "Set which causes an experiment checks."
-      },
-      "experiments.addFact": {
-        "params": [],
-        "returns": "number",
-        "help": "Add an empty fact dated today, at the end."
-      },
-      "experiments.setFactField": {
-        "params": [
-          {
-            "name": "factId",
-            "type": "number",
-            "optional": false,
-            "help": "the fact"
-          },
-          {
-            "name": "key",
-            "type": "'name'|'description'|'date'|'owner'",
-            "optional": false,
-            "help": "which field"
-          },
-          {
-            "name": "value",
-            "type": "string",
-            "optional": false,
-            "help": "the new text; for date YYYY-MM-DD or \"\""
-          }
-        ],
-        "returns": "void",
-        "help": "Set one field of a fact.",
-        "keysOf": "FactFields",
+        "help": "",
+        "keysOf": "removeExperiment",
+        "keysHelp": "actions.removeExperiment.params",
         "keys": {
+          "experimentId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "moveExperimentBefore": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "moveExperimentBefore",
+        "keysHelp": "actions.moveExperimentBefore.params",
+        "keys": {
+          "experimentId": {
+            "type": "string",
+            "help": ""
+          },
+          "targetExperimentId": {
+            "type": "string|null",
+            "help": ""
+          }
+        }
+      },
+      "setExperimentHypotheses": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setExperimentHypotheses",
+        "keysHelp": "actions.setExperimentHypotheses.params",
+        "keys": {
+          "experimentId": {
+            "type": "string",
+            "help": ""
+          },
+          "hypothesisIds": {
+            "type": "string[]",
+            "help": ""
+          }
+        }
+      },
+      "setCauseExperiments": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setCauseExperiments",
+        "keysHelp": "actions.setCauseExperiments.params",
+        "keys": {
+          "stableId": {
+            "type": "string",
+            "help": ""
+          },
+          "experimentIds": {
+            "type": "string[]",
+            "help": ""
+          }
+        }
+      },
+      "addFact": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "number",
+        "help": "",
+        "keysOf": "addFact",
+        "keysHelp": "actions.addFact.params",
+        "keys": {}
+      },
+      "setFactField": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setFactField",
+        "keysHelp": "actions.setFactField.params",
+        "keys": {
+          "factId": {
+            "type": "string",
+            "help": ""
+          },
           "name": {
             "type": "string",
-            "help": "what was observed"
+            "help": "",
+            "optional": true
           },
           "description": {
             "type": "string",
-            "help": "details and source of the observation"
+            "help": "",
+            "optional": true
           },
           "date": {
             "type": "string",
-            "help": "when it was observed, YYYY-MM-DD, \"\" for none"
+            "help": "",
+            "optional": true,
+            "rules": [
+              "date"
+            ]
           },
           "owner": {
             "type": "string",
-            "help": "who reported it"
+            "help": "",
+            "optional": true
           }
         }
       },
-      "experiments.removeFact": {
+      "removeFact": {
+        "target": "model",
         "params": [
           {
-            "name": "factId",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "the fact"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Delete a fact, without asking."
+        "help": "",
+        "keysOf": "removeFact",
+        "keysHelp": "actions.removeFact.params",
+        "keys": {
+          "factId": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
-      "experiments.moveFactBefore": {
+      "moveFactBefore": {
+        "target": "model",
         "params": [
           {
-            "name": "factId",
-            "type": "number",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "the fact to move"
-          },
-          {
-            "name": "targetFactId",
-            "type": "number",
-            "optional": false,
-            "help": "the fact it goes before"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Move a fact directly before another one."
+        "help": "",
+        "keysOf": "moveFactBefore",
+        "keysHelp": "actions.moveFactBefore.params",
+        "keys": {
+          "factId": {
+            "type": "string",
+            "help": ""
+          },
+          "targetFactId": {
+            "type": "string|null",
+            "help": ""
+          }
+        }
+      },
+      "removeImage": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeImage",
+        "keysHelp": "actions.removeImage.params",
+        "keys": {
+          "scope": {
+            "type": "'inScope'|'outScope'",
+            "help": ""
+          },
+          "id": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "setImageCaption": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setImageCaption",
+        "keysHelp": "actions.setImageCaption.params",
+        "keys": {
+          "scope": {
+            "type": "'inScope'|'outScope'",
+            "help": ""
+          },
+          "id": {
+            "type": "string",
+            "help": ""
+          },
+          "caption": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "duplicateRow": {
+        "target": "viewmodel",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "duplicateRow",
+        "keysHelp": "actions.duplicateRow.params",
+        "keys": {
+          "rowId": {
+            "type": "unknown",
+            "help": ""
+          }
+        }
+      },
+      "saveSnapshot": {
+        "target": "viewmodel",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "saveSnapshot",
+        "keysHelp": "actions.saveSnapshot.params",
+        "keys": {
+          "name": {
+            "type": "unknown",
+            "help": ""
+          }
+        }
+      },
+      "setCategoryLabels": {
+        "target": "viewmodel",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setCategoryLabels",
+        "keysHelp": "actions.setCategoryLabels.params",
+        "keys": {
+          "labels": {
+            "type": "unknown",
+            "help": ""
+          }
+        }
+      },
+      "setFilter": {
+        "target": "viewmodel",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setFilter",
+        "keysHelp": "actions.setFilter.params",
+        "keys": {
+          "category": {
+            "type": "unknown",
+            "help": ""
+          }
+        }
+      },
+      "setParetoSource": {
+        "target": "viewmodel",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setParetoSource",
+        "keysHelp": "actions.setParetoSource.params",
+        "keys": {
+          "snapshotId": {
+            "type": "unknown",
+            "help": ""
+          }
+        }
+      },
+      "compareSnapshot": {
+        "target": "viewmodel",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "compareSnapshot",
+        "keysHelp": "actions.compareSnapshot.params",
+        "keys": {
+          "snapshotId": {
+            "type": "unknown",
+            "help": ""
+          }
+        }
+      },
+      "closeCompare": {
+        "target": "viewmodel",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "closeCompare",
+        "keysHelp": "actions.closeCompare.params",
+        "keys": {}
       }
     },
     "fields": {
       "problem": {
         "type": "string",
-        "help": "the problem statement: what deviates, where, by how much",
+        "help": "",
         "bulk": false
       },
       "experts": {
-        "type": "Array<{id:number,name:string,color:string}>",
-        "help": "the expert team; every member rates every cause 0..9",
+        "type": "{ id: number, name: string, color: string }[]",
+        "help": "",
         "bulk": false
       },
       "catLabels": {
-        "type": "Object<string,string>",
-        "help": "own names of the six categories by key; a missing key shows the default name",
+        "type": "Record<'man'|'machine'|'environment'|'material'|'measurement'|'method', string>",
+        "help": "",
         "bulk": false
       },
       "rows": {
-        "type": "Array<object>",
-        "help": "flat cause tree: each row has id, stableId (H-001 …), parentId (null for a main cause), name, category, description, status and ratings by expert id",
+        "type": "Array<{ id: number, stableId: string, parentId: number|null, category: ''|'man'|'machine'|'environment'|'material'|'measurement'|'method', name: string, description: string, ratings: Record<string, number>, status: 'open'|'testing'|'confirmed'|'rejected' }>",
+        "help": "",
         "bulk": true,
         "bulkKind": "tree"
       },
       "snapshots": {
-        "type": "Array<{id:number,name:string,date:string,data:object}>",
-        "help": "saved states; data holds problem, experts and rows as they were and is omitted on read — snapshots.compareSnapshot gives the difference",
+        "type": "Array<{ id: number, name: string, date: string, data: { problem: string, experts: { id: number, name: string, color: string }[], rows: Array<{ id: number, stableId: string, parentId: number|null, category: ''|'man'|'machine'|'environment'|'material'|'measurement'|'method', name: string, description: string, ratings: Record<string, number>, status: 'open'|'testing'|'confirmed'|'rejected' }> } }>",
+        "help": "",
         "bulk": true,
-        "bulkKind": "table",
         "omit": [
           "[].data"
         ]
       },
       "experiments": {
-        "type": "Array<object>",
-        "help": "experiments: id, title, description, responsible, status, startDate, endDate, costMoney, costHours, hypothesisIds",
+        "type": "Array<{ id: number, title: string, description: string, responsible: string, status: 'planned'|'running'|'done'|'cancelled', startDate: string, endDate: string, costMoney: number|null, costHours: number|null, hypothesisIds: string[] }>",
+        "help": "",
         "bulk": false
       },
       "facts": {
-        "type": "Array<object>",
-        "help": "facts: id, name, description, date, owner",
+        "type": "{ id: number, name: string, description: string, date: string, owner: string }[]",
+        "help": "",
         "bulk": false
       },
       "images": {
-        "type": "{inScope:Array<object>, outScope:Array<object>}",
-        "help": "images per scope, each with id, caption and dataUrl; dataUrl is omitted on read",
+        "type": "{ inScope: { id: number, dataUrl: string, caption: string }[], outScope: { id: number, dataUrl: string, caption: string }[] }",
+        "help": "",
         "bulk": false,
         "omit": [
-          "inScope[].dataUrl",
-          "outScope[].dataUrl"
+          ".inScope[].dataUrl",
+          ".outScope[].dataUrl"
         ]
+      },
+      "scores": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "paretoItems": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "ParetoItem",
+        "keys": {
+          "stableId": {
+            "type": "string",
+            "help": "stableId of the cause (H-001 …)"
+          },
+          "name": {
+            "type": "string",
+            "help": "the trimmed name, or the stableId when the name is empty"
+          },
+          "category": {
+            "type": "string",
+            "help": "effective category key: own, or inherited from the main cause; '' without one"
+          },
+          "score": {
+            "type": "number",
+            "help": "mean of the given ratings"
+          }
+        }
       }
-    }
+    },
+    "asyncTasks": [],
+    "viewFields": [
+      "paretoEdits"
+    ],
+    "settable": [
+      "problem",
+      "experts",
+      "catLabels",
+      "rows",
+      "snapshots",
+      "experiments",
+      "facts"
+    ],
+    "invariants": [
+      "uniqueExpertNames",
+      "uniqueRowIds",
+      "validParents",
+      "subRowsWithoutCategory",
+      "uniqueItemIds"
+    ]
   },
   "kano": {
     "tagged": true,

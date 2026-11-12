@@ -1,0 +1,79 @@
+<section class="module-container ishikawa" x-data="ishikawa">
+  <div class="module-container__body">
+    <div class="dmike-tabs" role="tablist" x-tablist x-set="state.tab">
+      <button class="dmike-tab" type="button" role="tab" value="problem" data-tab="problem" :class="tabClass('problem')" x-text="t('tabProblem')"></button>
+      <button class="dmike-tab" type="button" role="tab" value="facts" data-tab="facts" :class="tabClass('facts')" x-text="t('tabFacts')"></button>
+      <button class="dmike-tab" type="button" role="tab" value="hypotheses" data-tab="hypotheses" :class="tabClass('hypotheses')" x-text="t('tabHypotheses')"></button>
+      <button class="dmike-tab" type="button" role="tab" value="experiments" data-tab="experiments" :class="tabClass('experiments')" x-text="t('tabExperiments')"></button>
+    </div>
+
+    <!-- ─── PROBLEM TAB ─────────────────────────────────────── -->
+    <template x-if="state.tab === 'problem'">
+    <div class="ishikawa__problem-tab">
+      <div class="ishikawa__problem-statement">
+        <label data-help-key="modules.ishikawa.fields.problem.help" class="ishikawa__panel-label" x-text="t('problemStatement')"></label>
+        <textarea class="ishikawa__problem-textarea" data-ref="problemInput"
+                  rows="3" :placeholder="t('problemPlaceholder')" x-model="model.problem"></textarea>
+      </div>
+
+      <template x-for="scope in scopes" :key="scope">
+        <div class="ishikawa__img-gallery" :class="'ishikawa__img-gallery--' + galleryModifier(scope)"
+             x-file-drop="addImages" data-multiple data-accept="image/*" :data-arg-scope="scope" :data-img-gallery="scope">
+          <div class="ishikawa__img-gallery-header">
+            <div>
+              <label data-help-key="modules.ishikawa.fields.images.help" class="ishikawa__panel-label" x-text="galleryLabel(scope)"></label>
+              <p class="ishikawa__img-hint" x-text="galleryHint(scope)"></p>
+            </div>
+            <button type="button" class="btn btn--sm btn--primary ishikawa__img-upload-btn" data-file-open :data-img-upload="scope" x-text="'+ ' + t('uploadImages')"></button>
+          </div>
+          <div class="ishikawa__img-grid">
+            <template x-if="galleryEmpty(scope)">
+              <div class="ishikawa__img-empty" x-text="t('noImages')"></div>
+            </template>
+            <template x-for="img in model.images[scope]" :key="img.id">
+              <figure class="ishikawa__img-card" :data-img-id="img.id" :data-img-kind="scope">
+                <button class="ishikawa__img-thumb" type="button" :data-img-open="img.id" :data-img-kind="scope"
+                        :aria-label="t('openImage')" @click="openLightbox(scope, img.id)">
+                  <img :src="img.dataUrl" :alt="img.caption" />
+                </button>
+                <input type="text" class="ishikawa__img-caption" :placeholder="t('captionPlaceholder')"
+                       :data-img-caption="img.id" :data-img-kind="scope" x-model="img.caption" />
+                <div class="ishikawa__img-meta">
+                  <span class="ishikawa__img-size" x-text="imageSize(img)"></span>
+                  <button class="ishikawa__img-del" type="button" :data-img-del="img.id" :data-img-kind="scope" data-help-key=""
+                          :title="t('common.delete')" x-command="removeImage" :data-arg-scope="scope" :data-arg-id="img.id"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                </div>
+              </figure>
+            </template>
+          </div>
+        </div>
+      </template>
+    </div>
+    </template>
+
+    <!-- ─── FACTS TAB ───────────────────────────────────────── -->
+    <template x-if="state.tab === 'facts'">
+    <div class="ishikawa__experiments"></div>
+    </template>
+
+    <!-- ─── HYPOTHESES TAB ──────────────────────────────────── -->
+    <template x-if="state.tab === 'hypotheses'">
+    <div></div>
+    </template>
+
+    <!-- ─── EXPERIMENTS TAB ─────────────────────────────────── -->
+    <template x-if="state.tab === 'experiments'">
+    <div class="ishikawa__experiments"></div>
+    </template>
+
+  </div>
+
+  <!-- ─── LIGHTBOX (hidden home; lent to the shared dialog, restored on close) ─── -->
+  <div class="ishikawa__modal-forms" hidden>
+    <div class="ishikawa__img-lightbox" x-ref="lightbox">
+      <img :src="lightboxImage.dataUrl" :alt="lightboxImage.caption" />
+      <!-- x-show, not x-if: the node lives in the dialog while open, outside the Alpine root, where a fresh x-if clone is never initialised -->
+      <p class="ishikawa__img-lightbox-caption" x-show="lightboxImage.caption" x-text="lightboxImage.caption"></p>
+    </div>
+  </div>
+</section>

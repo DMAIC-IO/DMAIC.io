@@ -163,34 +163,42 @@
   },
   "actions": {
     "read": {
-      "help": "Read problem statement, images, expert team, cause tree with ratings, snapshots, experiments and facts. Image data and snapshot content appear only as a size."
+      "help": "Read problem statement, images, expert team, cause tree with ratings, snapshots, experiments and facts. Image data and snapshot content appear only as a size.",
+      "params": {}
     },
     "addExpert": {
       "help": "Add a member to the expert team. Every member rates every cause from 0 to 9. Returns the id.",
       "params": {
-        "name": "The name; it must differ from the others, ignoring case. An empty name is an error."
+        "name": "The name; it must differ from the others, ignoring case. An empty name is an error.",
+        "command": "The command as one object with name."
       }
     },
     "renameExpert": {
       "help": "Rename a member of the expert team; their ratings stay.",
       "params": {
         "expertId": "The member.",
-        "name": "The new name; it must differ from the others. A name already taken is an error."
+        "name": "The new name; it must differ from the others. A name already taken is an error.",
+        "command": "The command as one object with expertId and name."
       }
     },
     "removeExpert": {
       "help": "Remove a member from the expert team, together with their ratings.",
       "params": {
-        "expertId": "The member."
+        "expertId": "The member.",
+        "command": "The command as one object with expertId."
       }
     },
     "addRow": {
-      "help": "Append a main cause to the end of the cause tree. Returns id and identifier."
+      "help": "Append a main cause to the end of the cause tree. Returns id and identifier.",
+      "params": {
+        "command": "An empty object; the command takes no arguments."
+      }
     },
     "addSubRow": {
       "help": "Create a sub-cause under a cause; it inherits its category. Returns id and identifier.",
       "params": {
-        "parentId": "The cause above."
+        "parentId": "The cause above.",
+        "command": "The command as one object with parentId."
       }
     },
     "setRowField": {
@@ -200,26 +208,30 @@
         "name": "Optional: the short name.",
         "category": "Optional: man, machine, environment, material, measurement, method or empty.",
         "description": "Optional: the description.",
-        "status": "Optional: open, testing, confirmed or rejected."
+        "status": "Optional: open, testing, confirmed or rejected.",
+        "command": "The command as one object with rowId and optionally name, category, description and status."
       }
     },
     "removeRow": {
       "help": "Delete a cause together with its sub-causes. Links from experiments are removed.",
       "params": {
-        "rowId": "The cause."
+        "rowId": "The cause.",
+        "command": "The command as one object with rowId."
       }
     },
     "duplicateRow": {
       "help": "Copy a cause together with its sub-causes and ratings; the copy stands right behind it. Returns the id of the copy.",
       "params": {
-        "rowId": "The cause."
+        "rowId": "The cause.",
+        "command": "The command as one object with rowId."
       }
     },
     "moveRowBefore": {
       "help": "Move a cause together with its sub-causes before another; it takes its parent. Without a target it goes behind the last sibling. A target inside the moved subtree is an error.",
       "params": {
         "rowId": "The cause to move.",
-        "targetRowId": "The cause before which it goes; null puts it at the end."
+        "targetRowId": "The cause before which it goes; null puts it at the end.",
+        "command": "The command as one object with rowId and targetRowId."
       }
     },
     "setRating": {
@@ -227,56 +239,70 @@
       "params": {
         "rowId": "The cause.",
         "expertId": "The member.",
-        "value": "Integer from 0 to 9; null deletes the rating."
+        "value": "Integer from 0 to 9; null deletes the rating.",
+        "command": "The command as one object with rowId, expertId and value."
       }
     },
     "setCategoryLabels": {
       "help": "Give the six categories names of their own, for example for 6P instead of 6M. Categories not mentioned keep their name.",
       "params": {
-        "labels": "New name per category: man, machine, environment, material, measurement, method. Empty restores the default name; two categories must not have the same name."
+        "labels": "New name per category: man, machine, environment, material, measurement, method. Empty restores the default name; two categories must not have the same name.",
+        "command": "The command as one object with labels."
       }
     },
     "setFilter": {
       "help": "Show only the causes of one category, or all.",
       "params": {
-        "category": "all or a category: man, machine, environment, material, measurement, method."
+        "category": "Empty for all, or a category: man, machine, environment, material, measurement, method.",
+        "command": "The command as one object with category."
       }
     },
     "setParetoSource": {
       "help": "Show the current ratings or those of a snapshot in the Pareto chart.",
       "params": {
-        "snapshotId": "A snapshot; null shows the current state."
+        "snapshotId": "A snapshot; null shows the current state.",
+        "command": "The command as one object with snapshotId."
       }
     },
     "saveSnapshot": {
       "help": "Save the current state of problem statement, expert team and cause tree as a snapshot.",
       "params": {
-        "name": "The name; empty gives “Snapshot” with today’s date."
+        "name": "The name; empty gives “Snapshot” with today’s date.",
+        "command": "The command as one object with optionally name."
       }
     },
     "loadSnapshot": {
       "help": "Restore a snapshot: problem statement, expert team and cause tree are replaced. Links from experiments to causes the snapshot does not know are removed.",
       "params": {
-        "snapshotId": "The snapshot."
+        "snapshotId": "The snapshot.",
+        "command": "The command as one object with snapshotId."
       }
     },
     "removeSnapshot": {
       "help": "Delete a snapshot.",
       "params": {
-        "snapshotId": "The snapshot."
+        "snapshotId": "The snapshot.",
+        "command": "The command as one object with snapshotId."
       }
     },
     "compareSnapshot": {
       "help": "Compare the current state with a snapshot. The table marks new and changed causes; the return value names new, removed and changed causes with old and new mean.",
       "params": {
-        "snapshotId": "The snapshot."
+        "snapshotId": "The snapshot.",
+        "command": "The command as one object with snapshotId."
       }
     },
     "closeCompare": {
-      "help": "End the comparison with a snapshot."
+      "help": "End the comparison with a snapshot.",
+      "params": {
+        "command": "An empty object; the command takes no arguments."
+      }
     },
     "addExperiment": {
-      "help": "Create an experiment that checks causes. Returns the id."
+      "help": "Create an experiment that checks causes. Returns the id.",
+      "params": {
+        "command": "An empty object; the command takes no arguments."
+      }
     },
     "setExperimentField": {
       "help": "Set fields of an experiment: title, description, responsible, status, start, end, cost in euros or effort in hours. Only the fields given change.",
@@ -289,38 +315,46 @@
         "startDate": "Optional: start as YYYY-MM-DD or empty.",
         "endDate": "Optional: end as YYYY-MM-DD or empty.",
         "costMoney": "Optional: cost in euros, not negative; null deletes.",
-        "costHours": "Optional: effort in hours, not negative; null deletes."
+        "costHours": "Optional: effort in hours, not negative; null deletes.",
+        "command": "The command as one object with experimentId and optionally title, description, responsible, status, startDate, endDate, costMoney and costHours."
       }
     },
     "removeExperiment": {
       "help": "Delete an experiment.",
       "params": {
-        "experimentId": "The experiment."
+        "experimentId": "The experiment.",
+        "command": "The command as one object with experimentId."
       }
     },
     "moveExperimentBefore": {
       "help": "Move an experiment before another.",
       "params": {
         "experimentId": "The experiment to move.",
-        "targetExperimentId": "The experiment before which it goes; null puts it at the end."
+        "targetExperimentId": "The experiment before which it goes; null puts it at the end.",
+        "command": "The command as one object with experimentId and targetExperimentId."
       }
     },
     "setExperimentHypotheses": {
       "help": "Define which causes an experiment checks.",
       "params": {
         "experimentId": "The experiment.",
-        "hypothesisIds": "The identifier of each cause, such as H-001; an empty list releases all."
+        "hypothesisIds": "The identifier of each cause, such as H-001; an empty list releases all.",
+        "command": "The command as one object with experimentId and hypothesisIds."
       }
     },
     "setCauseExperiments": {
       "help": "Define which experiments check a cause; the links of all experiments are set or released accordingly.",
       "params": {
         "stableId": "The identifier of the cause, such as H-001.",
-        "experimentIds": "The ids of the experiments; an empty list releases all."
+        "experimentIds": "The ids of the experiments; an empty list releases all.",
+        "command": "The command as one object with stableId and experimentIds."
       }
     },
     "addFact": {
-      "help": "Create a fact: a verified observation that supports the search for causes. Returns the id."
+      "help": "Create a fact: a verified observation that supports the search for causes. Returns the id.",
+      "params": {
+        "command": "An empty object; the command takes no arguments."
+      }
     },
     "setFactField": {
       "help": "Set fields of a fact: name, description, date or owner. Only the fields given change.",
@@ -329,20 +363,23 @@
         "name": "Optional: the name.",
         "description": "Optional: the description.",
         "date": "Optional: the date as YYYY-MM-DD or empty.",
-        "owner": "Optional: who reported the observation."
+        "owner": "Optional: who reported the observation.",
+        "command": "The command as one object with factId and optionally name, description, date and owner."
       }
     },
     "removeFact": {
       "help": "Delete a fact.",
       "params": {
-        "factId": "The fact."
+        "factId": "The fact.",
+        "command": "The command as one object with factId."
       }
     },
     "moveFactBefore": {
       "help": "Move a fact before another.",
       "params": {
         "factId": "The fact to move.",
-        "targetFactId": "The fact before which it goes; null puts it at the end."
+        "targetFactId": "The fact before which it goes; null puts it at the end.",
+        "command": "The command as one object with factId and targetFactId."
       }
     },
     "addImage": {
@@ -357,7 +394,8 @@
       "help": "Delete an image from a gallery.",
       "params": {
         "scope": "The gallery: inScope or outScope.",
-        "id": "The id of the image in this gallery."
+        "id": "The id of the image in this gallery.",
+        "command": "The command as one object with scope and id."
       }
     },
     "setImageCaption": {
@@ -365,7 +403,8 @@
       "params": {
         "scope": "The gallery: inScope or outScope.",
         "id": "The id of the image in this gallery.",
-        "caption": "The new caption; empty deletes it."
+        "caption": "The new caption; empty deletes it.",
+        "command": "The command as one object with scope, id and caption."
       }
     }
   },

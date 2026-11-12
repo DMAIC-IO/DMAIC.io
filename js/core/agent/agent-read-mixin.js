@@ -41,7 +41,6 @@ export const MIXIN_READ_MODULES = Object.freeze([
   'deployment-flowchart',
   'five-why',
   'fmea',
-  'ishikawa',
   'lessons-learned',
   'makigami',
   'process-map',

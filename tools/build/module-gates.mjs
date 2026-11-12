@@ -19,7 +19,7 @@ import { parsePath, VERSION, MIGRATION_KEY } from '../../js/core/model.js';
 import { parseFieldPath, keyFieldsOf } from '../../js/core/field-path.js';
 import { loadModelSchema, loadSettingsSchema, loadFormSchemas, loadStateSchema } from './model-types.mjs';
 import { checkWidgetBindings, checkAlgoLinkLiterals, loadAlgoIds, loadWidgetSchemas } from './widget-gates.mjs';
-import { factoryArgument, findViewBlock, viewPartNodes, viewNamesDetailOf, viewNamesOf, viewMemberNamesOf, computedNamesOf } from './view-names.mjs';
+import { factoryArgument, findViewBlock, viewPartNodes, viewNamesDetailOf, viewNamesOf, viewMemberNamesOf, computedNamesOf, resolvePart } from './view-names.mjs';
 export { viewNamesDetailOf, viewNamesOf, computedNamesOf };
 import { BOOKS } from '../../js/core/references-books.js';
 import { readExampleOwners } from './example-catalog.mjs';
@@ -1339,31 +1339,50 @@ function isAsyncRun(p) {
 /**
  * Viewmodel-Kommandos aus `commands: { name: command({ params: { … } }) }`
  * in viewmodel/viewmodel.js, ohne das Viewmodel zu laden (es hängt an
- * Alpine und DOM). Was kein erkennbares Literal ist, bleibt außen vor.
+ * Alpine und DOM). Steht dort `commands` als Bezeichner (`commands,` oder
+ * `commands: vmCommands`), wird er in der Datei oder über ihren relativen
+ * Import aufgelöst (dafür der Pfad). Was kein erkennbares Literal ist,
+ * bleibt außen vor.
  * @param {string} text Inhalt von viewmodel/viewmodel.js
+ * @param {string} [file] Pfad der Datei, für Kommandos aus Importen
  * @returns {Record<string, { params: Record<string, true> }>}
  */
-export function readViewmodelCommands(text) {
+export function readViewmodelCommands(text, file) {
   const sf = parseJs('viewmodel.js', text);
   const key = (p) => (p.name && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? p.name.text : null);
   const prop = (obj, name) => obj.properties.find((p) => ts.isPropertyAssignment(p) && key(p) === name)?.initializer;
   const out = {};
+  const readBlock = (block) => {
+    for (const p of block.properties) {
+      const name = ts.isPropertyAssignment(p) ? key(p) : null;
+      const call = ts.isPropertyAssignment(p) ? p.initializer : null;
+      if (!name || !ts.isCallExpression(call) || !ts.isIdentifier(call.expression) || call.expression.text !== 'command') continue;
+      const arg = call.arguments[0];
+      const params = arg && ts.isObjectLiteralExpression(arg) ? prop(arg, 'params') : null;
+      out[name] = { params: {} };
+      const run = arg && ts.isObjectLiteralExpression(arg) ? arg.properties.find((q) => key(q) === 'run') : null;
+      if (run && isAsyncRun(run)) out[name].asyncRun = true;
+      if (params && ts.isObjectLiteralExpression(params)) {
+        for (const q of params.properties) { const k = ts.isPropertyAssignment(q) || ts.isShorthandPropertyAssignment(q) ? key(q) : null; if (k) out[name].params[k] = true; }
+      }
+    }
+  };
+  /** Der Bezeichner hinter `commands` (Kurzform oder `commands: x`), sonst null. */
+  const identifierOf = (n) => {
+    if (ts.isShorthandPropertyAssignment(n) && n.name.text === 'commands') return n.name.text;
+    if (ts.isPropertyAssignment(n) && key(n) === 'commands' && ts.isIdentifier(n.initializer)) return n.initializer.text;
+    return null;
+  };
   const visit = (n) => {
     const block = ts.isPropertyAssignment(n) && key(n) === 'commands' && ts.isObjectLiteralExpression(n.initializer) ? n.initializer : null;
     if (block) {
-      for (const p of block.properties) {
-        const name = ts.isPropertyAssignment(p) ? key(p) : null;
-        const call = ts.isPropertyAssignment(p) ? p.initializer : null;
-        if (!name || !ts.isCallExpression(call) || !ts.isIdentifier(call.expression) || call.expression.text !== 'command') continue;
-        const arg = call.arguments[0];
-        const params = arg && ts.isObjectLiteralExpression(arg) ? prop(arg, 'params') : null;
-        out[name] = { params: {} };
-        const run = arg && ts.isObjectLiteralExpression(arg) ? arg.properties.find((q) => key(q) === 'run') : null;
-        if (run && isAsyncRun(run)) out[name].asyncRun = true;
-        if (params && ts.isObjectLiteralExpression(params)) {
-          for (const q of params.properties) { const k = ts.isPropertyAssignment(q) || ts.isShorthandPropertyAssignment(q) ? key(q) : null; if (k) out[name].params[k] = true; }
-        }
-      }
+      readBlock(block);
+      return;
+    }
+    const ref = identifierOf(n);
+    if (ref) {
+      const target = resolvePart(sf, ref, file);
+      if (target && ts.isObjectLiteralExpression(target)) readBlock(target);
       return;
     }
     ts.forEachChild(n, visit);
@@ -1587,7 +1606,7 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
         ...Object.keys(schema?.derived ?? {}),
       ]);
       out.push(...checkWidgetTemplates(templates, { widgets, schema, stateSchema, viewNames: vmNames, tileText, tileFile: (p) => join(base, p), algoIds: loadAlgoIds(appDir) }));
-      out.push(...checkCommandRefs(templates, schema, formSchemas, existsSync(vmFile) ? readViewmodelCommands(readFileSync(vmFile, 'utf8')) : {}));
+      out.push(...checkCommandRefs(templates, schema, formSchemas, existsSync(vmFile) ? readViewmodelCommands(readFileSync(vmFile, 'utf8'), vmFile) : {}));
       const asyncTasks = existsSync(vmFile) ? readViewmodelAsyncTasks(readFileSync(vmFile, 'utf8')) : {};
       out.push(...checkAsyncTaskRefs(templates, asyncTasks));
       out.push(...checkFileDropRefs(templates, existsSync(vmFile) ? viewMemberNamesOf(tileText('viewmodel/viewmodel.js'), vmFile) : []));
@@ -1604,11 +1623,11 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
       out.push(...checkContextHelp(schema, {
         de: readJson(join(base, 'resources', 'i18n', 'context-help.de.json')),
         en: readJson(join(base, 'resources', 'i18n', 'context-help.en.json')),
-      }, existsSync(vmFile) ? readViewmodelCommands(readFileSync(vmFile, 'utf8')) : {}, readStateBindings(templates),
+      }, existsSync(vmFile) ? readViewmodelCommands(readFileSync(vmFile, 'utf8'), vmFile) : {}, readStateBindings(templates),
       [...formHelpKeys(readCommandForms(templates), schema, formSchemas), ...lists.helpKeys, ...asyncTaskHelpKeys(asyncTasks)],
       existsSync(vmFile) ? computedNamesOf(readFileSync(vmFile, 'utf8'), vmFile) : []));
       if (existsSync(vmFile)) {
-        for (const [name, c] of Object.entries(readViewmodelCommands(readFileSync(vmFile, 'utf8')))) {
+        for (const [name, c] of Object.entries(readViewmodelCommands(readFileSync(vmFile, 'utf8'), vmFile))) {
           if (c.asyncRun) out.push(`viewmodel: viewmodel/viewmodel.js: command ${name}: async run — use asyncTask`);
         }
       }

@@ -44,9 +44,5 @@ js/core/cycles/cycles.js:⊞:data:   { id: 'data',   letter: '⊞', i18nKey: 'ph
 js/core/migrations.js:→:const [from, to] = step.split('→');
 js/modules/control-chart/control-chart-help.js:✕:content: 'Click a violation row to open a dialog: record the cause as free text and option
 js/modules/control-chart/control-chart-help.js:✕:content: 'Klick auf eine Regelverletzung in der Tabelle öffnet einen Dialog: Ursache als F
-js/modules/ishikawa/viewmodel/causes.js:▼:{ value: 'triangle-down', label: '▼ Triangle ▼' }, { value: 'cross', label: '✚ Cross' },
-js/modules/ishikawa/viewmodel/causes.js:◆:{ value: 'diamond', label: '◆ Diamond' }, { value: 'triangle', label: '▲ Triangle' },
-js/modules/ishikawa/viewmodel/causes.js:●:{ value: 'circle', label: '● Circle' }, { value: 'square', label: '■ Square' },
-js/modules/ishikawa/viewmodel/causes.js:★:{ value: 'star', label: '★ Star' },
 js/modules/kano/kano-link.js:▸:const SEP = ' ▸ ';
 js/modules/process-map/process-map.js:→:if (ti !== -1) parts.push(`→ ${_t('csvStep')} ${String(ti + 1).padStart(2, '0')}`);

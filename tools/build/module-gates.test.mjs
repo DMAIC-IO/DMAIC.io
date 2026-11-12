@@ -724,6 +724,19 @@ test('readViewmodelCommands: Kommandos und Parameter aus dem Literal, Unerkennba
   assert.deepEqual(readViewmodelCommands('export default createModule({ commands: shared });\n'), {});
 });
 
+test('readViewmodelCommands: commands als Bezeichner, über den relativen Import aufgelöst', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'vm-commands-'));
+  writeFileSync(join(dir, 'commands.js'), "export const commands = {\n  pick: command({ params: { id: number() }, run() {} }),\n};\n");
+  const vmFile = join(dir, 'viewmodel.js');
+  const short = "import { commands } from './commands.js';\nexport default createModule({ commands });\n";
+  const named = "import { commands as vmc } from './commands.js';\nexport default createModule({ commands: vmc });\n";
+  const local = "const vmc = { go: command({ run() {} }) };\nexport default createModule({ commands: vmc });\n";
+  assert.deepEqual(readViewmodelCommands(short, vmFile), { pick: { params: { id: true } } });
+  assert.deepEqual(readViewmodelCommands(named, vmFile), { pick: { params: { id: true } } });
+  assert.deepEqual(readViewmodelCommands(local, vmFile), { go: { params: {} } });
+  assert.deepEqual(readViewmodelCommands(short), {});
+});
+
 test('Hilfe: Viewmodel-Kommandos brauchen Hilfetexte', () => {
   const schema = { fields: {}, commands: {} };
   const vm = readViewmodelCommands(VM_WITH_COMMANDS);

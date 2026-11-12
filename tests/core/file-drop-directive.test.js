@@ -7,17 +7,19 @@ import { registerFileDropDirective } from '../../js/core/file-drop-directive.js'
 
 const flush = () => new Promise((r) => setTimeout(r, 0));
 const got = [];
+const gotArgs = [];
 
 function ensure() {
-  Alpine.data('fileDropTest', () => ({ handleFile(f) { got.push(f); } }));
+  Alpine.data('fileDropTest', () => ({ handleFile(f, a) { got.push(f); gotArgs.push(a); } }));
   registerFileDropDirective(Alpine);
 }
 
-async function mount() {
+async function mount(extra = '') {
   ensure();
   got.length = 0;
+  gotArgs.length = 0;
   const root = document.createElement('div');
-  root.innerHTML = `<div class="zone" x-data="fileDropTest" x-file-drop="handleFile" data-accept=".csv,.txt">
+  root.innerHTML = `<div class="zone" x-data="fileDropTest" x-file-drop="handleFile" data-accept=".csv,.txt" ${extra}>
     <span class="open" role="button" tabindex="0" data-file-open>wählen</span>
     <button class="btn" data-file-open>wählen</button>
   </div>`;
@@ -108,6 +110,44 @@ suite('x-file-drop', () => {
     assertEqual(got.length, 1);
     assertEqual(got[0].name, 'b.csv');
     assertEqual(input.value, '');
+    root.remove();
+  });
+
+  test('ohne data-multiple: einzelne Auswahl, nur die erste Datei', async () => {
+    const { root, zone, input } = await mount();
+    assertEqual(input.multiple, false);
+    const a = new File(['a'], 'a.csv');
+    drag(zone, 'drop', [a, new File(['b'], 'b.csv')]);
+    assertTrue(got[0] === a);
+    assertEqual(JSON.stringify(gotArgs[0]), '{}');
+    root.remove();
+  });
+
+  test('data-multiple: Mehrfachauswahl, die Methode bekommt alle Dateien als Liste', async () => {
+    const { root, zone, input } = await mount('data-multiple');
+    assertTrue(input.multiple);
+    const a = new File(['a'], 'a.csv');
+    const b = new File(['b'], 'b.csv');
+    drag(zone, 'drop', [a, b]);
+    assertEqual(got.length, 1);
+    assertTrue(Array.isArray(got[0]));
+    assertTrue(got[0][0] === a && got[0][1] === b);
+    const dt = new DataTransfer();
+    dt.items.add(a);
+    input.files = dt.files;
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    assertEqual(got[1].length, 1);
+    assertEqual(got[1][0].name, 'a.csv');
+    root.remove();
+  });
+
+  test('data-arg-* kommen als zweites Argument, beim Ereignis gelesen', async () => {
+    const { root, zone } = await mount('data-arg-scope="inScope" data-arg-gallery-name="x"');
+    drag(zone, 'drop', [new File(['a'], 'a.csv')]);
+    assertEqual(JSON.stringify(gotArgs[0]), JSON.stringify({ scope: 'inScope', galleryName: 'x' }));
+    zone.setAttribute('data-arg-scope', 'outScope');
+    drag(zone, 'drop', [new File(['a'], 'a.csv')]);
+    assertEqual(gotArgs[1].scope, 'outScope');
     root.remove();
   });
 

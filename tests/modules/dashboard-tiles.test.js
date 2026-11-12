@@ -2,7 +2,7 @@ import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-u
 import { mountTile, waitFor } from './tile-test-utils.js';
 import { MODULES as manifest } from '../../js/modules/catalog.generated.js';
 import fmeaTile from '../../js/modules/fmea/fmea.tile.js';
-import ishikawaTile from '../../js/modules/ishikawa/ishikawa.tile.js';
+import ishikawaTile from '../../js/modules/ishikawa/tile/tile.js';
 import charterTiles, { charterTile, goalsTile, orgTile } from '../../js/modules/project-charter/project-charter.tile.js';
 import vocTile from '../../js/modules/voc-ctx-tree/voc-ctx-tree.tile.js';
 import raciTile from '../../js/modules/raci-matrix/raci-matrix.tile.js';

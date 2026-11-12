@@ -173,11 +173,7 @@ const SKIP = new Set([
   'modules/opportunity-flowchart/viewmodel.test.js',
   'modules/resampling-view.test.js',
   'modules/ishikawa/gestures.test.js',
-  // Imports the module shell for viewData(), which pulls in Alpine CSP and
-  // touches MutationObserver on import.
-  'modules/ishikawa-cost.test.js',
-  'modules/ishikawa-gantt.test.js',
-  'modules/ishikawa-trend.test.js',
+  'modules/ishikawa/view.test.js',
   'modules/msa-typ6.test.js',
   'modules/process-map-export.test.js',
   'modules/project-charter-richtext.test.js',

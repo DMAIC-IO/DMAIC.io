@@ -109,12 +109,13 @@ function localFunction(sf, name) {
 }
 
 /**
- * Die Funktion hinter einem Bezeichner: lokal oder über einen relativen Import
- * (`import { a as b } from './a.js'`) die exportierte Funktion der Zieldatei.
+ * Der Wert hinter einem Bezeichner (Funktion oder Objektliteral): lokal oder
+ * über einen relativen Import (`import { a as b } from './a.js'`) der
+ * exportierte Wert der Zieldatei.
  * @param {import('typescript').SourceFile} sf @param {string} name @param {string|undefined} file Pfad von `sf`
  * @returns {import('typescript').Node|null}
  */
-function resolvePart(sf, name, file) {
+export function resolvePart(sf, name, file) {
   const local = localFunction(sf, name);
   if (local) return local;
   if (!file) return null;

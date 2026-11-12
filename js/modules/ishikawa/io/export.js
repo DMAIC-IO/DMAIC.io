@@ -1,6 +1,7 @@
 /**
- * D.Mike — Ishikawa: Export als Tabellen-Mapper. Liefert die Rohform
- * `{ headers, rows }`; Zahlen bleiben Zahlen, das Format setzt der Kern.
+ * D.Mike — Ishikawa: Export als Tabellen-Mapper. Liefert die Zeilen als
+ * Rohform (`any[][]`), Zeile 0 ist die Problemzeile; Zahlen bleiben Zahlen,
+ * das Format setzt der Kern.
  */
 import { ordered, depthOf, effCat } from '../domain/tree.js';
 import { scoreOf } from '../domain/scores.js';

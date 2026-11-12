@@ -1,12 +1,11 @@
 /**
  * Tests for modules/ishikawa/io/export.js — Tabellen-Mapper, Zelle für Zelle
- * mit der bisherigen CSV (viewmodel/causes.js `causesCsv`) verglichen.
+ * mit dem Inhalt der bisherigen CSV (dieselben Abschnitte und Zellen; Zahlen
+ * jetzt als Zahlen).
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { exportTable } from '../../../js/modules/ishikawa/io/export.js';
 import { State } from '../../../js/modules/ishikawa/domain/model.js';
-import { State as OldState } from '../../../js/modules/ishikawa/ishikawa-model.js';
-import { causesCsv } from '../../../js/modules/ishikawa/viewmodel/causes.js';
 import { resolveDateOffset } from '../../../js/core/date-offset.js';
 
 const BASE = new URL('../../../js/modules/ishikawa/resources/examples/projects/', import.meta.url);
@@ -20,51 +19,45 @@ async function lieferzeitRaw() {
   return raw;
 }
 
-/**
- * Zerlegt die alte CSV (BOM, "…"-Zellen, "" als Anführungszeichen) in Zeilen.
- * @param {string} csv @returns {string[][]}
- */
-function parseCsv(csv) {
-  const lines = [];
-  let row = [];
-  let cell = '';
-  let q = false;
-  const s = csv.replace(/^\uFEFF/, '');
-  for (let i = 0; i < s.length; i++) {
-    const c = s[i];
-    if (q) {
-      if (c === '"' && s[i + 1] === '"') { cell += '"'; i++; } else if (c === '"') q = false; else cell += c;
-    } else if (c === '"') q = true;
-    else if (c === ',') { row.push(cell); cell = ''; } else if (c === '\n') { row.push(cell); lines.push(row); row = []; cell = ''; } else cell += c;
-  }
-  if (cell || row.length) { row.push(cell); lines.push(row); }
-  return lines;
-}
+/** Ursachenzeilen der bisherigen CSV (Bewertungen und Score als Zahlen). */
+const OLD_CAUSES = [
+  ['1', '«main»', '«cat.man»', '«cat.man»', 'Fahrer-Erfahrung gering', 'Neue Fahrer kennen Berliner Innenstadt schlecht', 6, 4, 5, 5, '«status.open»'],
+  ['2', '«main»', '«cat.method»', '«cat.method»', 'Suboptimale Routenplanung', 'Fahrer fahren nach eigenem Gefühl, keine Optimierung', 8, 5, 9, 7.3, '«status.confirmed»'],
+  ['3', '«main»', '«cat.machine»', '«cat.machine»', 'Ofen-Kapazität in Spitzen', 'Nur ein Holzofen, max. 4 Pizzen parallel', 7, 9, 4, 6.7, '«status.confirmed»'],
+  ['4', '«main»', '«cat.material»', '«cat.material»', 'Thermo-Boxen veraltet', 'Dichtungen porös, Wärmeverlust hoch', 5, 3, 8, 5.3, '«status.confirmed»'],
+  ['5', '«main»', '«cat.environment»', '«cat.environment»', 'Verkehr Berlin-Mitte zur Hauptverkehrszeit', 'Rush Hour 17–19 Uhr', 8, 4, 9, 7, '«status.open»'],
+  ['6', '«main»', '«cat.measurement»', '«cat.measurement»', 'Keine kontinuierliche Zeitmessung', 'Lieferzeiten nur stichprobenartig erfasst', 6, 5, 5, 5.3, '«status.open»'],
+];
 
-/** Alt-Zellen in die Zahlenform des neuen Mappers bringen (nur A1: Zahlen als Zahlen). */
-const asNumbers = (row, from, to) => row.map((c, i) => (i >= from && i <= to && c !== '' ? Number(c) : c));
+/** Faktenzeilen der bisherigen CSV ohne Datum (das Beispiel rechnet es relativ zu heute). */
+const OLD_FACTS = [
+  [1, 'Lieferzeit-Median 32 min', 'Median der gemessenen Lieferzeit der letzten 4 Wochen liegt bei 32 min (Sollwert ≤ 30 min)', 'M. Müller (Filialleiter)'],
+  [2, '44 % > 30 min in Rush Hour', 'Zwischen 17:00 und 20:00 Uhr überschreiten 44 % aller Lieferungen die 30-Minuten-Grenze', 'M. Müller (Filialleiter)'],
+  [3, '11 Reklamationen „Pizza kalt“ / Monat', 'Im März 2026 wurden 11 Reklamationen wegen kalter Pizza erfasst, gegenüber 4 im Vorjahresmonat', 'M. Müller (Filialleiter)'],
+  [4, 'Bestell-Peak 18:30–19:15', 'Höchste Bestelldichte mit > 9 Pizzen / 15 min — Ofen läuft an der Kapazitätsgrenze', 'G. Rossi (Pizzabäcker)'],
+  [5, 'Neue Fahrer: +6,2 min ggü. Stammfahrern', 'Lieferzeit-Vergleich Fahrer < 3 Monate Erfahrung vs. Stammfahrer (> 12 Monate): ø +6,2 min', 'K. Schmidt (Fahrer)'],
+  [6, 'Thermo-Box-Audit: 5 von 8 defekt', 'Sichtprüfung Dichtungen: 5 von 8 Boxen mit sichtbar porösen Dichtungen, 3 davon kritisch', 'M. Müller (Filialleiter)'],
+  [7, 'Datenlücke: 35 % ohne Zeit-Datensatz', 'Lieferzeit wird nur händisch in der Bestell-App eingetragen, ca. 35 % aller Bestellungen ohne erfassten Zeitstempel', 'K. Schmidt (Fahrer)'],
+];
 
 suite('ishikawa/io/export', () => {
   test('Lieferzeit: Zelle für Zelle wie die bisherige CSV', async () => {
     const raw = await lieferzeitRaw();
     const m = State.fromJSON(raw, { onRepair: () => {} });
-    const old = parseCsv(causesCsv(OldState.fromJSON(JSON.parse(JSON.stringify(raw))), t));
     const rows = exportTable(m, { t });
-    const n = m.experts.length;
-    const at = 3 + m.rows.length;
-    assertDeepEqual(rows[0], old[0]);
+    assertDeepEqual(rows[0], ['«problemStatement»', 'Pizza-Lieferzeit übersteigt 30 min in Stoßzeiten']);
     assertDeepEqual(rows[1], []);
-    assertDeepEqual(old[1], ['']);
-    assertDeepEqual(rows[2], old[2]);
-    for (let i = 3; i < at; i++) {
-      assertDeepEqual(rows[i], asNumbers(old[i], 6, 6 + n));
-      assertEqual(typeof rows[i][6 + n], 'number');
-    }
+    assertDeepEqual(rows[2], ['#', '«level»', '«category»', '«effCat»', '«name»', '«description»',
+      'M. Müller (Filialleiter)', 'G. Rossi (Pizzabäcker)', 'K. Schmidt (Fahrer)', '«avgScore»', '«status»']);
+    for (let i = 0; i < OLD_CAUSES.length; i++) assertDeepEqual(rows[3 + i], OLD_CAUSES[i]);
+    const at = 3 + OLD_CAUSES.length;
     assertDeepEqual(rows[at], []);
-    assertDeepEqual(rows[at + 1], old[at + 1]);
-    assertDeepEqual(rows[at + 2], old[at + 2]);
-    assertEqual(rows.length, at + 3 + m.facts.length);
-    for (let i = at + 3; i < rows.length; i++) assertDeepEqual(rows[i], asNumbers(old[i], 0, 0));
+    assertDeepEqual(rows[at + 1], ['«tabFacts»']);
+    assertDeepEqual(rows[at + 2], ['#', '«factName»', '«factDescription»', '«factDate»', '«factOwner»']);
+    assertEqual(rows.length, at + 3 + OLD_FACTS.length);
+    OLD_FACTS.forEach(([n, name, desc, owner], i) => {
+      assertDeepEqual(rows[at + 3 + i], [n, name, desc, raw.facts[i].date, owner]);
+    });
   });
 
   test('Score auf eine Dezimale gerundet, als Zahl', () => {

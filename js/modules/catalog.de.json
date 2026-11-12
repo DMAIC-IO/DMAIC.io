@@ -35,6 +35,11 @@
     "description": "Varianz- und Mittelwerttests mit automatischer Normalverteilungsprüfung und Power-Analyse",
     "whenToUse": "Wenn zu entscheiden ist, ob ein beobachteter Unterschied in Lage oder Streuung über das Rauschen hinausgeht — ein Mittelwert gegen einen Zielwert, zwei Stichproben gegeneinander, oder k Gruppen gemeinsam. Setzt metrische Daten in einer Datensammlung voraus."
   },
+  "ishikawa": {
+    "name": "Ishikawa 6M",
+    "description": "Ursachenanalyse mit 6M-Kategorien und Expertenbewertung",
+    "whenToUse": "Wenn mögliche Ursachen eines Problems gesammelt, nach 6M geordnet und vom Team bewertet werden sollen, um die wahrscheinlichsten mit Experimenten zu prüfen; Stände lassen sich als Snapshot festhalten und vergleichen. Für eine einzelne Ursachenkette per Warum-Fragen ist 5-Why da."
+  },
   "morphological-box": {
     "name": "Morphologischer Kasten",
     "description": "Lösungskonzepte aus Parametern und Ausprägungen kombinieren, Unverträglichkeiten prüfen",

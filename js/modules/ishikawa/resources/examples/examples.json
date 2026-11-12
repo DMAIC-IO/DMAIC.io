@@ -1,0 +1,48 @@
+{
+  "$schema": "../../../../../schemas/module-examples.schema.json",
+  "examples": [
+    {
+      "id": "ishikawa-lieferzeit-zu-lang",
+      "type": "project",
+      "title": {
+        "de": "Ishikawa: Lieferzeit zu lang",
+        "en": "Ishikawa: Delivery Time Too Long"
+      },
+      "description": {
+        "de": "Vollständiges 6-M-Beispiel: 6 Hypothesen quer durch Mensch, Methode, Maschine, Material, Milieu, Messung — bewertet von drei Experten — plus 7 belegende Fakten und 6 Versuche (mit Status, Zeitplan, Kosten und Verknüpfung zu den Hypothesen).",
+        "en": "Full 6-M example: 6 hypotheses across Man, Method, Machine, Material, Environment, Measurement — rated by three experts — plus 7 supporting facts and 6 experiments (with status, schedule, cost, linked to hypotheses)."
+      },
+      "source": "Qprovement Lehrkonfiguration",
+      "license": "public-domain",
+      "file": "projects/ishikawa-lieferzeit-zu-lang.json",
+      "format": "json",
+      "tags": [
+        "analyze",
+        "ishikawa",
+        "6m",
+        "pizza-lehrcase"
+      ]
+    },
+    {
+      "id": "ishikawa-hubschrauber-flyer",
+      "type": "project",
+      "title": {
+        "de": "Papier-Hubschrauber — Ursachenanalyse (Ishikawa 6M)",
+        "en": "Paper Helicopter — Root Cause Analysis (Ishikawa 6M)"
+      },
+      "description": {
+        "de": "6M-Fischgräten-Diagramm zur Streuung der Flugzeit: Wurftechnik, Klammer-Sitz, Papier, Faltpräzision, Windzüge und Stoppuhr-Reaktionszeit als mögliche Ursachen — Wurftechnik als bestätigte Hauptursache.",
+        "en": "6M fishbone diagram for flight-time variation: throwing technique, clip fit, paper, folding precision, drafts and stopwatch reaction time as candidate causes — throwing technique confirmed as the main driver."
+      },
+      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
+      "license": "public-domain",
+      "file": "projects/ishikawa-hubschrauber-flyer.json",
+      "format": "json",
+      "tags": [
+        "helicopter",
+        "doe-training",
+        "sequential-blocks"
+      ]
+    }
+  ]
+}

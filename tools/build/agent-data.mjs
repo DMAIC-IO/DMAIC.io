@@ -186,8 +186,9 @@ async function convertedEntry(appDir, id) {
   const dir = join(appDir, MODULES_DIR, id);
   const modelFile = join(dir, 'domain', 'model.js');
   const { schema } = await loadModelSchema(modelFile);
-  const vm = readFileSync(join(dir, 'viewmodel', 'viewmodel.js'), 'utf8');
-  const commands = readViewmodelCommands(vm);
+  const vmFile = join(dir, 'viewmodel', 'viewmodel.js');
+  const vm = readFileSync(vmFile, 'utf8');
+  const commands = readViewmodelCommands(vm, vmFile);
   const tasks = readViewmodelAsyncTasks(vm);
   // `schemaAgentEntry` liest das Schema über `schemaOf` an einer Klasse.
   const Model = Object.assign(function Model() {}, { schema });

@@ -310,19 +310,6 @@ export default [
     },
   },
   {
-    id: 'ishikawa',
-    phase: 'analyze',
-    group: 'causes',
-    allowedPhases: ['measure', 'analyze', 'improve'],
-    load: () => import('./ishikawa/ishikawa.js'),
-    loadTile: () => import('./ishikawa/ishikawa.tile.js'),
-    cycles: {
-      dmaic:  { phase: 'analyze',   allowedPhases: ['measure', 'analyze', 'improve'] },
-      dmadv:  { phase: 'analyze',   allowedPhases: ['measure', 'analyze', 'design']  },
-      eightd: { phase: 'rootcause', allowedPhases: ['problem', 'rootcause', 'corrective'] },
-    },
-  },
-  {
     id: 'makigami',
     phase: 'analyze',
     group: 'flowcharts',

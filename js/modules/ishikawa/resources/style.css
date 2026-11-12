@@ -312,10 +312,7 @@
 .ishikawa__img-upload-btn {
   white-space: nowrap;
   cursor: pointer;
-}
-
-.ishikawa__img-upload-input {
-  display: none;
+  line-height: inherit;
 }
 
 .ishikawa__img-empty {

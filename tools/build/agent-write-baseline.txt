@@ -22,5 +22,3 @@
 calculator unreachable_write:lastResult
 # Gate-Lücke, kein fehlender Setter: Der Schreibweg existiert (setCategoryLabels),
 # das Gate erkennt den Sammelwert (next[key] = …; model.catLabels = next) noch nicht.
-ishikawa unreachable_write:catLabels
-ishikawa unreachable_write:images

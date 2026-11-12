@@ -100,23 +100,9 @@
   "js/modules/glm-regression/glm-regression.js": {
     "count": 11
   },
-  "js/modules/ishikawa/ishikawa-charts.js": {
-    "count": 4
-  },
-  "js/modules/ishikawa/ishikawa.html": {
-    "count": 4
-  },
-  "js/modules/ishikawa/ishikawa.tile.js": {
-    "count": 1
-  },
-  "js/modules/ishikawa/viewmodel/causes.js": {
-    "count": 4
-  },
-  "js/modules/ishikawa/viewmodel/experiments.js": {
-    "count": 1
-  },
-  "js/modules/ishikawa/viewmodel/problem.js": {
-    "count": 1
+  "js/modules/ishikawa/tile/tile.js": {
+    "count": 1,
+    "reason": "Score der Top-Hypothesen in der Altkachel (toFixed(1)), unverändert verschoben; die Kachel wird noch auf createTile umgestellt"
   },
   "js/modules/kano/kano.js": {
     "count": 3

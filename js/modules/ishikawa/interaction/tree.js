@@ -55,7 +55,7 @@ export function treeGesture({ handle }) {
     /**
      * ↑/↓ zur vorigen bzw. hinter die nächste Geschwisterzeile; → und ← nichts.
      * @param {{ group: string, index: number, id: number, beforeId: number|null }} pos
-     * @param {{ x: number, y: number }} dir @param {object} ctx @param {{ index: number, id: number }} from
+     * @param {{ x: number, y: number }} dir @param {object} ctx @param {{ group: string, index: number, id: number }} from
      */
     step(pos, dir, ctx, from) {
       if (!dir.y) return null;
