@@ -295,6 +295,34 @@ suite('agent ops — Schema-Module', () => {
     assertEqual(model.title, 'T');
   });
 
+  test('instance.set: Schlüssel außerhalb von settable → call_failed mit den setzbaren Feldern', async () => {
+    const { deps, model } = schemaDeps();
+    const entry = { ...ENTRY, settable: ['title'] };
+    deps.loadModule = async () => ({ agentEntry: entry });
+    const out = await createOps(deps)['instance.set']({ instance: 'b-1', values: { title: 'Neu', columns: { a: [], b: [] } } });
+    assertEqual(out.error, 'call_failed');
+    assertTrue(out.message.includes('columns') && out.message.includes('title'), out.message);
+    assertEqual(model.title, 'T');
+  });
+
+  test('instance.set: Ansichtsfeld bleibt wie bisher Sache von setFields', async () => {
+    const { deps } = schemaDeps();
+    deps.loadModule = async () => ({ agentEntry: { ...ENTRY, settable: ['title'] } });
+    const out = await createOps(deps)['instance.set']({ instance: 'b-1', values: { mode: 'month' } });
+    assertEqual(out.error, 'call_failed');
+    assertTrue(out.message.includes('unknown field "mode"'), out.message);
+  });
+
+  test('instance.call auf ein ausgeblendetes Kommando → unknown_method', async () => {
+    const { deps } = schemaDeps();
+    const entry = { ...ENTRY, actions: { ...ENTRY.actions } };
+    delete entry.actions.moveItem;
+    deps.loadModule = async () => ({ agentEntry: entry });
+    deps.registry = { board: entry };
+    const out = await createOps(deps)['instance.call']({ instance: 'b-1', method: 'moveItem', args: [{ from: 'a', idx: 0, to: 'b' }] });
+    assertEqual(out.error, 'unknown_method');
+  });
+
   test('instance.set auf einem Modul ohne Schema → call_failed setNotSupported', async () => {
     const deps = makeDeps({ completed: false });
     // Vor createOps setzen: createOps liest deps.registry beim Erzeugen.

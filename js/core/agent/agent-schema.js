@@ -63,6 +63,24 @@ export function omitPathsOf(spec, prefix = '') {
 }
 
 /**
+ * Ob der Agent ein Feld oder einen Parameter schreiben darf: `false`, wenn er
+ * oder ein Teil davon `agentWrite: false` trägt. Gefragt wird allein das
+ * Merkmal, nie die Feldart.
+ * @param {object} spec
+ * @returns {boolean}
+ */
+export function writableByAgent(spec) {
+  if (!spec || typeof spec !== 'object') return true;
+  if (spec.agentWrite === false) return false;
+  switch (spec.kind) {
+    case 'list': return writableByAgent(spec.item);
+    case 'map': case 'record': return writableByAgent(spec.value);
+    case 'object': return Object.values(spec.shape).every(writableByAgent);
+    default: return true;
+  }
+}
+
+/**
  * Die Regeln eines Parameters als Tokens: `text` mit `trim`/`nonEmpty`,
  * `date`, `time` (mit `step:<n>`), `phase`, `index` mit `afterRemovalFrom:<pfad>`, `columnRef` (mit `types:`/`minCount:`/`maxCount:`;
  * auch als Listeneintrag), `list` mit `unique`/`sorted`.
@@ -144,10 +162,15 @@ export function schemaAgentEntry(Model, vmCommands = {}, { asyncTasks = {} } = {
   const schema = schemaOf(Model);
   if (!schema) throw new Error('schemaAgentEntry: Model has no schema (defineModel)');
   const actions = { read: READ_ACTION };
-  for (const [name, def] of Object.entries(schema.commands)) actions[name] = commandAction(name, def, 'model');
-  for (const [name, def] of Object.entries(vmCommands)) actions[name] = commandAction(name, def, 'viewmodel');
+  const callable = (def) => Object.values(def.params ?? {}).every(writableByAgent);
+  for (const [name, def] of Object.entries(schema.commands)) {
+    if (callable(def)) actions[name] = commandAction(name, def, 'model');
+  }
+  for (const [name, def] of Object.entries(vmCommands)) {
+    if (callable(def)) actions[name] = commandAction(name, def, 'viewmodel');
+  }
   for (const [name, def] of Object.entries(asyncTasks)) {
-    if (!def.auto) Object.assign(actions, taskActions(name, def));
+    if (!def.auto && callable(def)) Object.assign(actions, taskActions(name, def));
   }
   const fields = {};
   for (const [name, spec] of Object.entries(schema.fields)) {
@@ -184,7 +207,7 @@ export function schemaAgentEntry(Model, vmCommands = {}, { asyncTasks = {} } = {
       name, auto: def.auto === true, params: Object.keys(def.params ?? {}),
     })),
     viewFields: Object.keys(schema.view),
-    settable: Object.keys(schema.fields),
+    settable: Object.entries(schema.fields).filter(([, spec]) => writableByAgent(spec)).map(([name]) => name),
     // Die Namen der Regeln über mehrere Felder; ihren Text liest `describe`
     // unter `modules.<id>.invariants.<name>`.
     invariants: Object.keys(schema.invariants ?? {}),

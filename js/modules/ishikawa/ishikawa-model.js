@@ -542,28 +542,6 @@ export class State {
     }));
   }
 
-  /**
-   * Return the JSON-path token arrays for every base64 image slot in a
-   * serialised State object (as returned by toJSON / getState).
-   * Used by storage adapters to swap dataUrl values for asset references.
-   *
-   * Images live exclusively in `json.images.inScope[i].dataUrl` and
-   * `json.images.outScope[i].dataUrl`.  Snapshots carry no images.
-   *
-   * @param {object} json - plain object (toJSON output)
-   * @returns {Array<Array<string|number>>} one path per image slot that has a
-   *   truthy dataUrl, e.g. ['images','inScope',0,'dataUrl']
-   */
-  static imagePaths(json) {
-    const out = [];
-    for (const kind of ['inScope', 'outScope']) {
-      (json.images?.[kind] || []).forEach((img, i) => {
-        if (img && img.dataUrl) out.push(['images', kind, i, 'dataUrl']);
-      });
-    }
-    return out;
-  }
-
   /** @param {*} d @returns {State} always a valid State, even for malformed input */
   static fromJSON(d) {
     const s = new State();

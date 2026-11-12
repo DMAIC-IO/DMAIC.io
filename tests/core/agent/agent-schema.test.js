@@ -5,7 +5,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../../test-utils.js';
 import { defineModel, command, text, number, oneOf, index, list, record, map, object, image, boolean, date, time, phase, columnRef, datasets } from '../../../js/core/model.js';
 import { asyncTask } from '../../../js/core/async-task.js';
-import { schemaAgentEntry, readSchemaModel, omitPathsOf } from '../../../js/core/agent/agent-schema.js';
+import { schemaAgentEntry, readSchemaModel, omitPathsOf, writableByAgent } from '../../../js/core/agent/agent-schema.js';
 import { describeModule } from '../../../js/core/agent/agent-catalog.js';
 
 const COLS = ['a', 'b'];
@@ -313,5 +313,68 @@ suite('read() lässt Felder mit omitOnRead aus', () => {
     assertEqual(out.cover.$omitted, true);
     assertEqual(out.cover.bytes, JSON.stringify(big).length);
     assertTrue(JSON.stringify(out).length < 1024);
+  });
+});
+
+suite('agentWrite: false sperrt Felder und Kommandos', () => {
+  const URL_ = 'data:image/png;base64,AAAA';
+  const Doc = defineModel({
+    fields: {
+      note: text(),
+      cover: image({ nullable: true }),
+      shots: list(object({ id: text(), dataUrl: image() })),
+      byKey: map(text(), image()),
+      locked: text({ agentWrite: false }),
+      fixed: object({ a: text(), b: text({ agentWrite: false }) }),
+    },
+    commands: {
+      rename: command({ params: { to: text() }, returns: boolean(), run() { return true; } }),
+      upload: command({ params: { name: text(), pic: image() }, returns: boolean(), run() { return true; } }),
+      uploadMany: command({ params: { pics: list(image()) }, returns: boolean(), run() { return true; } }),
+    },
+  });
+  const VM = {
+    pick: command({ params: { pic: image() }, returns: boolean(), run() { return true; } }),
+    plain: command({ params: { x: text() }, returns: boolean(), run() { return true; } }),
+  };
+  const TASKS = {
+    manual: asyncTask({ params: { pic: image() }, run() { return 1; } }),
+    open: asyncTask({ params: { x: text() }, run() { return 1; } }),
+  };
+  const entry = schemaAgentEntry(Doc, VM, { asyncTasks: TASKS });
+
+  test('writableByAgent folgt dem Merkmal, nie der Feldart', () => {
+    assertEqual(writableByAgent(text()), true);
+    assertEqual(writableByAgent(image()), false);
+    assertEqual(writableByAgent(text({ agentWrite: false })), false);
+    assertEqual(writableByAgent(list(object({ u: image() }))), false);
+    assertEqual(writableByAgent(object({ a: text(), b: map(text(), image()) })), false);
+    assertEqual(writableByAgent(record(['a'], text({ agentWrite: false }))), false);
+    assertEqual(writableByAgent(list(text())), true);
+    assertEqual(writableByAgent(image({ agentWrite: true })), true);
+  });
+
+  test('settable lässt Felder mit oder über agentWrite: false aus, auch verschachtelt', () => {
+    assertDeepEqual(entry.settable, ['note']);
+  });
+
+  test('die Felder bleiben lesbar', () => {
+    assertDeepEqual(Object.keys(entry.fields).filter((k) => !['asyncTasks'].includes(k)),
+      ['note', 'cover', 'shots', 'byKey', 'locked', 'fixed']);
+  });
+
+  test('Kommandos mit gesperrtem Parameter fehlen in actions, auch verschachtelt', () => {
+    assertTrue('rename' in entry.actions);
+    assertTrue('plain' in entry.actions);
+    assertEqual('upload' in entry.actions, false);
+    assertEqual('uploadMany' in entry.actions, false);
+    assertEqual('pick' in entry.actions, false);
+  });
+
+  test('manueller Ablauf mit gesperrtem Parameter fehlt samt Abbrechen', () => {
+    assertEqual('manual' in entry.actions, false);
+    assertEqual('manual.cancel' in entry.actions, false);
+    assertTrue('open' in entry.actions);
+    assertTrue('open.cancel' in entry.actions);
   });
 });

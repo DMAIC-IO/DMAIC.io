@@ -292,6 +292,13 @@ export function createOps(deps) {
       if (!Array.isArray(entry.settable)) {
         return axiError(ERRORS.CALL_FAILED, t('agent.errors.setNotSupported', { module: found.module }));
       }
+      // Nur setzbare Felder; Ansichtsfelder prüft weiter `setFields`.
+      const closed = Object.keys(action.values ?? {})
+        .filter((k) => !entry.settable.includes(k) && !(entry.viewFields ?? []).includes(k));
+      if (closed.length > 0) {
+        return axiError(ERRORS.CALL_FAILED, t('agent.errors.setNotSettable',
+          { fields: closed.join(', '), settable: entry.settable.join(', ') }));
+      }
       // Alles prüfen, dann alles schreiben — ohne Ansichtswechsel, auf dem
       // lebenden Model oder dem gespeicherten Stand (Besitzer-Regel im Dienst).
       try {

@@ -12684,6 +12684,7 @@
       "validationFailed": "Eintrag {index} ({id}) ist ungültig.",
       "validationFailedNoId": "Eintrag {index} ist ungültig.",
       "setNotSupported": "Modul \"{module}\" hat keine setzbaren Felder; seine Felder ändert eine Aktion über instance.call.",
+      "setNotSettable": "Felder nicht setzbar: {fields}; setzbar sind: {settable}.",
       "callFailed": "Aufruf von \"{method}\" ist fehlgeschlagen: {detail}",
       "opFailed": "Aktion \"{op}\" ist unerwartet fehlgeschlagen: {detail}",
       "flushFailed": "Der Stapel hat geschrieben, aber der Zustand konnte nicht gespeichert werden: {detail}",

@@ -492,9 +492,10 @@ function invalidBulkKinds(fields) {
 const OMIT_PATH = /^(?:[A-Za-z_$][\w$]*|\[\]|\{\}|\.[A-Za-z_$][\w$]*)?(?:\[\]|\{\}|\.[A-Za-z_$][\w$]*)*$/;
 
 /**
- * Ein Auslassungspfad als Segmentliste, oder `null` bei Verstoß: leer, gegen
- * die Grammatik, oder mit `[]` am Ende (das meinte jedes Element, also das
- * ganze Feld — dafür gibt es `@noagent`-Felder bzw. das `_`-Präfix).
+ * Ein Auslassungspfad als Segmentliste, oder `null` bei Verstoß: gegen die
+ * Grammatik oder mit `[]` am Ende (das meinte jedes Element, also das
+ * ganze Feld — dafür gibt es `@noagent`-Felder bzw. das `_`-Präfix). Der leere
+ * Pfad ist gültig und meint das ganze Feld (leere Segmentliste).
  * @param {string} path
  * @returns {string[]|null}
  */
@@ -509,7 +510,7 @@ function omitTokens(path) {
  * Typ des Feldes passen.
  * @param {Record<string, { type: string, omit?: string[] }>} fields
  * @returns {string[]} Codes `invalid_omit_path:<feld>:<pfad>` und
- *   `omit_path_mismatch:<feld>:<pfad>`; ein leerer Pfad steht als leerer Rest
+ *   `omit_path_mismatch:<feld>:<pfad>`; ein leerer Pfad ist gültig
  */
 function invalidOmitPaths(fields) {
   const out = [];

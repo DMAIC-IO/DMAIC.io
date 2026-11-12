@@ -95,16 +95,6 @@ export class State {
     }
   }
 
-  static imagePaths(json) {
-    const out = [];
-    (json.cells || []).forEach((row, r) => {
-      (row || []).forEach((cell, c) => {
-        if (cell && cell.image) out.push(['cells', r, c, 'image']);
-      });
-    });
-    return out;
-  }
-
   static fromJSON(d) {
     const s = new State()
     if (!d) return s

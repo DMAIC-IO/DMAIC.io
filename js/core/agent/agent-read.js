@@ -313,8 +313,9 @@ function clone(value) {
  * Ein Auslassungspfad als Segmentliste, oder `null`, wenn er die Grammatik
  * verletzt. Segmente: ein Schlüssel oder `[]` (jedes Element eines Arrays);
  * `[]` hängt ohne Punkt an, ein Schlüssel nach `[]` mit Punkt
- * (`inScope[].dataUrl`, `[][].image`). Der Pfad endet mit einem Schlüssel —
- * ein `[]` am Ende meinte jedes Element und damit das ganze Feld.
+ * (`inScope[].dataUrl`, `[][].image`). Der leere Pfad ist gültig und meint das
+ * ganze Feld. Sonst endet der Pfad mit einem Schlüssel oder `{}` — ein `[]` am
+ * Ende meinte jedes Element und damit das ganze Feld.
  *
  * Dieselbe Grammatik prüft der Generator und MELDET Verstöße
  * (`invalid_omit_path:<feld>:<pfad>`, `tools/build/agent-data.mjs`); hier

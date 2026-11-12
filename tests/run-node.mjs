@@ -136,7 +136,6 @@ const SKIP = new Set([
   'core/stats-panel.test.js',
   'core/state-manager-idb.test.js',
   'core/storage/local-adapter-idb.test.js',
-  'core/template-module-imagepaths.test.js',
   'core/template-module-route.test.js',
   'core/template-module-descriptor.test.js',
   'core/interaction/announce.test.js',

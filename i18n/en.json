@@ -12680,6 +12680,7 @@
       "validationFailed": "Entry {index} ({id}) is invalid.",
       "validationFailedNoId": "Entry {index} is invalid.",
       "setNotSupported": "Module \"{module}\" has no settable fields; change its fields through an action with instance.call.",
+      "setNotSettable": "Fields not settable: {fields}; settable are: {settable}.",
       "callFailed": "Call to \"{method}\" failed: {detail}",
       "opFailed": "Action \"{op}\" failed unexpectedly: {detail}",
       "flushFailed": "The batch wrote successfully, but the state could not be saved: {detail}",

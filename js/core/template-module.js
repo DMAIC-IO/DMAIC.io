@@ -520,7 +520,6 @@ export function createModule(base) {
 
   const m = {
     i18nKey,
-    imagePaths(json) { return Model.imagePaths?.(json) ?? []; },
     ...placement,
     ...config,
     agentEntry,
