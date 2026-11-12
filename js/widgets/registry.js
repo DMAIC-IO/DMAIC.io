@@ -39,6 +39,8 @@ import trendChart from './trend-chart/schema.js';
 import { mount as mountTrendChart } from './trend-chart/mount.js';
 import ganttChart from './gantt-chart/schema.js';
 import { mount as mountGanttChart } from './gantt-chart/mount.js';
+import cumulativeCostChart from './cumulative-cost-chart/schema.js';
+import { mount as mountCumulativeCostChart } from './cumulative-cost-chart/mount.js';
 import pieChart from './pie-chart/schema.js';
 import { mount as mountPieChart } from './pie-chart/mount.js';
 import contourChart from './contour-chart/schema.js';
@@ -69,5 +71,6 @@ export const WIDGETS = Object.freeze({
   'algo-lab-link': { schema: algoLabLink, mount: mountAlgoLabLink },
   'trend-chart': { schema: trendChart, mount: mountTrendChart },
   'gantt-chart': { schema: ganttChart, mount: mountGanttChart },
+  'cumulative-cost-chart': { schema: cumulativeCostChart, mount: mountCumulativeCostChart },
   'pie-chart': { schema: pieChart, mount: mountPieChart },
 });

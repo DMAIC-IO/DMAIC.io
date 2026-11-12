@@ -1,8 +1,7 @@
 /**
  * cumulative-cost.js — Dual-axis cost timeline chart for the D.Mike framework.
  *
- * Behaviour-preserving port of the Ishikawa module's former bespoke
- * `renderCostChart(mode)` SVG builder. Two money/hours series over a TIME x-axis
+ * Two money/hours series over a TIME x-axis
  * (ms), drawn against TWO independent y-scales: money on the LEFT, hours on the
  * RIGHT. Rendered as TWO instances — `mode='cumulative'` (running totals, units
  * € / h) and `mode='rate'` (per-day step shape, units €/d / h/d).
@@ -16,18 +15,16 @@
  *     (xScale(minT) ≠ pa.x, yScale(0) ≠ baseline) — the curves would float off
  *     the hand-drawn axis labels. `_renderData` defines `localX`
  *     `[minT,maxT]→[pa.x,pa.x+pa.w]`, `yMoney` `[0,peakMoney]→[baseline,top]`
- *     and `yHours` `[0,peakHours]→[baseline,top]`, matching the bespoke
- *     scales exactly so money 0→baseline / peak→top and time spans full width.
+ *     and `yHours` `[0,peakHours]→[baseline,top]`, so money 0→baseline / peak→top and time spans full width.
  *   - The legend, axis labels and date ticks are written onto the unclipped
  *     `svg` arg (they live in the gutters, not inside the clipped plot group).
  *
- * Geometry is precomputed by `computeCostConfig()` in the ishikawa module
- * (pure, unit-tested) and handed in as config:
+ * Geometry is precomputed by the caller and handed in as config:
  *   {
  *     mode, moneyPts: [{t,v}], hoursPts: [{t,v}],
  *     peakMoney, peakHours, xDomain: { min, max },
  *     ticks: number[], tickLabels: string[], stepDays,
- *     moneyUnit, hoursUnit, now, showToday, lang,
+ *     moneyUnit, hoursUnit, moneyLabel, hoursLabel, now, showToday, lang,
  *     layout: { labelW, padL, padR, padT, padB, innerH },
  *   }
  *
@@ -35,7 +32,8 @@
  * tooltip hit-testing), but the DRAWING uses the local `localX` above so the
  * time axis lands exactly on `[pa.x, pa.x+pa.w]`.
  *
- * The cost chart has NO hover tooltip in the original → `_findNearby()` → [].
+ * Series colours are the theme variables `--chart-cost-money` / `--chart-cost-hours`.
+ * The cost chart has no hover tooltip → `_findNearby()` → [].
  */
 
 import ChartBase from '../chart-base.js';
@@ -45,9 +43,9 @@ import { formatNumber } from '../../number-format.js';
 const FONT_MAIN = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
 const FONT_MONO = "'SF Mono', 'Cascadia Code', Consolas, 'Liberation Mono', monospace";
 
-/** Literal series colours — kept for visual parity with the legacy SVG. */
-const MONEY_COLOR = '#16a34a';
-const HOURS_COLOR = '#2563eb';
+/** Series colours: theme variables (light and dark defined in variables.css). */
+const MONEY_COLOR = 'var(--chart-cost-money)';
+const HOURS_COLOR = 'var(--chart-cost-hours)';
 
 export default class CumulativeCost extends ChartBase {
   /**
@@ -69,7 +67,7 @@ export default class CumulativeCost extends ChartBase {
       hoursUnit: 'h',
       layout: { labelW: 220, padL: 8, padR: 48, padT: 16, padB: 28, innerH: 140 },
       // Pin the time domain — no auto-padding, so xScale lines up with the
-      // legacy module-owned geometry exactly.
+      // caller-owned geometry exactly.
       xMin: dom.min,
       xMax: dom.max,
       // Suppress every standard decoration; this type draws its own axis
@@ -136,12 +134,12 @@ export default class CumulativeCost extends ChartBase {
     const maxMoney = Math.max(cfg.peakMoney || 0, 1);
     const maxHours = Math.max(cfg.peakHours || 0, 1);
 
-    // ── Local scales pinned to the RAW extents (legacy parity) ──────
+    // ── Local scales pinned to the RAW extents (caller parity) ──────
     // The framework's primary xScale/yScale are built from generateTicks-NICED
     // bounds, so they DON'T land on the true plot edges (xScale(minT) ≠ pa.x,
     // yScale(0) ≠ baseline). Draw every datum + hand-drawn axis with local
     // scales pinned exactly to [minT,maxT]→[pa.x,pa.x+pa.w] and
-    // [0,peak]→[baseline,top], mirroring the bespoke `xScale`/`yMoney`/`yHours`.
+    // [0,peak]→[baseline,top], i.e. `xScale`/`yMoney`/`yHours`.
     const dom = cfg.xDomain || { min: 0, max: 1 };
     const minT = dom.min;
     const maxT = dom.max;
@@ -150,13 +148,11 @@ export default class CumulativeCost extends ChartBase {
     const yMoney = (v) => pa.y + pa.h - (v / maxMoney) * pa.h;
     const yHours = (v) => pa.y + pa.h - (v / maxHours) * pa.h;
 
-    const styles = getComputedStyle(document.documentElement);
-    const get = (p, fb) => styles.getPropertyValue(p).trim() || fb;
-    const borderSecondary = get('--color-border-secondary', '#e8ebef');
-    const borderPrimary = get('--color-border-primary', '#c8cdd3');
-    const textTertiary = get('--color-text-tertiary', '#9aa0a8');
-    const textSecondary = get('--color-text-secondary', '#5a6270');
-    const accent = get('--color-accent', '#2563eb');
+    const borderSecondary = resolveColor('var(--color-border-secondary)');
+    const borderPrimary = resolveColor('var(--color-border-primary)');
+    const textTertiary = resolveColor('var(--color-text-tertiary)');
+    const textSecondary = resolveColor('var(--color-text-secondary)');
+    const accent = resolveColor('var(--color-accent)');
 
     const moneyColor = resolveColor(MONEY_COLOR);
     const hoursColor = resolveColor(HOURS_COLOR);
@@ -232,7 +228,7 @@ export default class CumulativeCost extends ChartBase {
     // Hand-drawn (like pareto's decorations): the original legend sits in the
     // LEFT gutter at translate(labelW-8, padT+innerH/2), which the framework's
     // right-side legend cannot reproduce. Lines at gutter-relative x and the
-    // green-solid / blue-dashed swatches match the bespoke geometry.
+    // green-solid / blue-dashed swatches match the layout.
     const gx = (cfg.layout.labelW || 220) - 8;
     const gy = pa.y + pa.h / 2;
     const g = svgEl('g', { transform: `translate(${gx}, ${gy})` }, svg);
@@ -253,7 +249,7 @@ export default class CumulativeCost extends ChartBase {
     return [];
   }
 
-  // ── Abstract: no tooltip (the bespoke cost chart had none) ──
+  // ── Abstract: no tooltip (none by design) ──
 
   /** @override */
   _findNearby() {

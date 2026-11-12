@@ -3,7 +3,7 @@
  *
  * Renders the framework `cumulative-cost` type into a detached, sized container
  * and asserts the produced SVG node structure for a small fixed config:
- *   - exactly two <path>s: solid money (#16a34a) + dashed hours (#2563eb 4,2)
+ *   - exactly two <path>s: solid money (money colour) + dashed hours (hours colour, 4,2)
  *   - the right-axis (hours) labels present (blue, start-anchored)
  *   - the left-axis (money) labels present (green, end-anchored)
  *   - a baseline line + one tick line/label per supplied tick
@@ -20,6 +20,12 @@ import { suite, test, assertEqual, assertTrue } from '../../test-utils.js';
 import CumulativeCost from '../../../js/core/chart/types/cumulative-cost.js';
 
 const DAY = 86400000;
+// Series colours come from the theme variables; the test host defines them.
+const MONEY = 'rgb(22, 163, 74)';
+const HOURS = 'rgb(37, 99, 235)';
+const hostVars = document.createElement('style');
+hostVars.textContent = `:root{--chart-cost-money:${MONEY};--chart-cost-hours:${HOURS}}`;
+document.head.appendChild(hostVars);
 const ms = (s) => new Date(s + 'T00:00:00').getTime();
 
 /** Build a fixed, DOM-free cost config (mirrors computeCostConfig output). */
@@ -84,8 +90,8 @@ suite('Cumulative-Cost type — structure', () => {
     const { chart, svg } = mount(fixtureConfig('cumulative'));
     const paths = Array.from(svg.querySelectorAll('path'));
     assertEqual(paths.length, 2);
-    const money = paths.find((p) => p.getAttribute('stroke') === '#16a34a');
-    const hours = paths.find((p) => p.getAttribute('stroke') === '#2563eb');
+    const money = paths.find((p) => p.getAttribute('stroke') === MONEY);
+    const hours = paths.find((p) => p.getAttribute('stroke') === HOURS);
     assertTrue(!!money, 'money path present');
     assertTrue(!!hours, 'hours path present');
     assertEqual(money.getAttribute('stroke-dasharray'), null);
@@ -96,7 +102,7 @@ suite('Cumulative-Cost type — structure', () => {
   test('renders the right (hours) axis labels start-anchored in blue', () => {
     const { chart, svg } = mount(fixtureConfig('cumulative'));
     const blue = Array.from(svg.querySelectorAll('text')).filter(
-      (t) => t.getAttribute('fill') === '#2563eb' && t.getAttribute('text-anchor') === 'start',
+      (t) => t.getAttribute('fill') === HOURS && t.getAttribute('text-anchor') === 'start',
     );
     // top label (peak + unit) and bottom "0"
     assertEqual(blue.length, 2);
@@ -108,7 +114,7 @@ suite('Cumulative-Cost type — structure', () => {
   test('renders the left (money) axis labels end-anchored in green', () => {
     const { chart, svg } = mount(fixtureConfig('cumulative'));
     const green = Array.from(svg.querySelectorAll('text')).filter(
-      (t) => t.getAttribute('fill') === '#16a34a' && t.getAttribute('text-anchor') === 'end',
+      (t) => t.getAttribute('fill') === MONEY && t.getAttribute('text-anchor') === 'end',
     );
     assertEqual(green.length, 2);
     assertTrue(green.some((t) => /€$/.test(t.textContent)), 'left axis money unit');
@@ -184,7 +190,7 @@ suite('Cumulative-Cost type — geometry parity', () => {
     const cfg = fixtureConfig('cumulative');
     const { chart, svg } = mount(cfg);
     const pa = chart._plotArea;
-    const pts = pathByStroke(svg, '#16a34a');
+    const pts = pathByStroke(svg, MONEY);
     const first = pts[0];
     const last = pts[pts.length - 1];
     // x: first point (minT) at plot-left, last point (maxT) at plot-right.
@@ -200,7 +206,7 @@ suite('Cumulative-Cost type — geometry parity', () => {
     const cfg = fixtureConfig('cumulative');
     const { chart, svg } = mount(cfg);
     const pa = chart._plotArea;
-    const pts = pathByStroke(svg, '#2563eb');
+    const pts = pathByStroke(svg, HOURS);
     const first = pts[0];
     const last = pts[pts.length - 1];
     assertTrue(Math.abs(first.x - pa.x) <= 1.5, `hours first x ${first.x.toFixed(2)} ≈ left ${pa.x}`);
@@ -216,7 +222,7 @@ suite('Cumulative-Cost type — geometry parity', () => {
     const pa = chart._plotArea;
     // The peak hours label is blue, start-anchored, ends with the hours unit.
     const peakLbl = Array.from(svg.querySelectorAll('text')).find(
-      (t) => t.getAttribute('fill') === '#2563eb'
+      (t) => t.getAttribute('fill') === HOURS
         && t.getAttribute('text-anchor') === 'start'
         && /h$/.test(t.textContent),
     );
@@ -234,5 +240,49 @@ suite('Cumulative-Cost type — Sprache aus chart.locale', () => {
     const texts = Array.from(svg.querySelectorAll('text')).map((t) => t.textContent);
     assertTrue(texts.some((x) => x.startsWith('1,234,567')), `en-Beschriftung erwartet, war: ${texts.join(' | ')}`);
     chart.destroy();
+  });
+});
+
+suite('Cumulative-Cost type — Farben und leere Daten', () => {
+  test('line colours follow --chart-cost-money / --chart-cost-hours across light and dark', async () => {
+    const st = document.createElement('style');
+    st.textContent = ':root{--chart-cost-money:rgb(1, 2, 3);--chart-cost-hours:rgb(4, 5, 6)}[data-theme="dark"]{--chart-cost-money:rgb(7, 8, 9);--chart-cost-hours:rgb(10, 11, 12)}';
+    document.head.appendChild(st);
+    const strokes = (svg) => Array.from(svg.querySelectorAll('path')).map((p) => p.getAttribute('stroke'));
+    let m = mount(fixtureConfig('cumulative'));
+    assertEqual(strokes(m.svg).join('|'), 'rgb(1, 2, 3)|rgb(4, 5, 6)');
+    m.chart.destroy();
+    document.documentElement.setAttribute('data-theme', 'dark');
+    m = mount(fixtureConfig('cumulative'));
+    assertEqual(strokes(m.svg).join('|'), 'rgb(7, 8, 9)|rgb(10, 11, 12)');
+    m.chart.destroy();
+    document.documentElement.removeAttribute('data-theme');
+    st.remove();
+  });
+
+  test('variables.css defines both series colours for light and dark; no hex in the type', async () => {
+    const css = await (await fetch(new URL('../../../css/variables.css', import.meta.url))).text();
+    const [light, dark] = css.split('[data-theme="dark"] {');
+    for (const part of [light, dark]) {
+      assertTrue(/--chart-cost-money:/.test(part) && /--chart-cost-hours:/.test(part), 'both variables per theme');
+    }
+    const src = await (await fetch(new URL('../../../js/core/chart/types/cumulative-cost.js', import.meta.url))).text();
+    assertTrue(!/#[0-9a-fA-F]{3,6}\b/.test(src), 'no hex colour in cumulative-cost.js');
+  });
+
+  test('moneyUnit shows in the left axis label, hoursUnit in the right', () => {
+    const { chart, svg } = mount(fixtureConfig('cumulative', { moneyUnit: 'CHF', hoursUnit: 'Std' }));
+    const texts = Array.from(svg.querySelectorAll('text')).map((t) => t.textContent);
+    assertTrue(texts.some((t) => /CHF$/.test(t)), 'money unit');
+    assertTrue(texts.some((t) => /Std$/.test(t)), 'hours unit');
+    chart.destroy();
+  });
+
+  test('empty points and peakMoney 0: no throw, no NaN', () => {
+    for (const extra of [{ moneyPts: [], hoursPts: [] }, { peakMoney: 0, peakHours: 0 }, { moneyPts: [], hoursPts: [], peakMoney: 0, peakHours: 0 }]) {
+      const { chart, svg } = mount(fixtureConfig('cumulative', extra));
+      assertTrue(!svg.outerHTML.includes('NaN'), 'no NaN');
+      chart.destroy();
+    }
   });
 });

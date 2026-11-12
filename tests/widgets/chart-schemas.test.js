@@ -27,6 +27,7 @@ import multiVariChart from '../../js/widgets/multi-vari-chart/schema.js';
 import gageRunChart from '../../js/widgets/gage-run-chart/schema.js';
 import trendChart from '../../js/widgets/trend-chart/schema.js';
 import ganttChart from '../../js/widgets/gantt-chart/schema.js';
+import cumulativeCostChart from '../../js/widgets/cumulative-cost-chart/schema.js';
 import pieChart from '../../js/widgets/pie-chart/schema.js';
 import { chartWidget } from '../../js/widgets/chart-parts.js';
 
@@ -285,5 +286,18 @@ suite('Diagramm-Widgets: Schemas', () => {
     assertDeepEqual(checkValue(ganttChart.props.config, 'c', cfg), cfg);
     assertThrows(() => checkValue(ganttChart.props.config, 'c', { ...cfg, onToggle: () => {} }), /onToggle/);
     assertThrows(() => checkValue(ganttChart.props.config, 'c', { tasks: [{ start: 'x', end: 2, label: 'A' }] }), /tasks/);
+  });
+
+  test('Kostenverlauf: Name, Typ, volle Konfiguration, Modus geprüft', () => {
+    assertDeepEqual([cumulativeCostChart.name, cumulativeCostChart.chartType], ['cumulative-cost-chart', 'cumulative-cost']);
+    const cfg = {
+      mode: 'rate', moneyPts: [{ t: 1, v: 2 }], hoursPts: [{ t: 1, v: 3 }], peakMoney: 2, peakHours: 3,
+      xDomain: { min: 1, max: 2 }, ticks: [1], tickLabels: ['a'], stepDays: 1, moneyUnit: '€/d', hoursUnit: 'h/d',
+      moneyLabel: 'Geld', hoursLabel: 'Stunden', now: 1, showToday: false, lang: 'de',
+      layout: { labelW: 220, padL: 8, padR: 48, padT: 16, padB: 28, innerH: 140 },
+    };
+    assertDeepEqual(checkValue(cumulativeCostChart.props.config, 'c', cfg), cfg);
+    assertThrows(() => checkValue(cumulativeCostChart.props.config, 'c', { ...cfg, mode: 'x' }), /mode/);
+    assertThrows(() => checkValue(cumulativeCostChart.props.config, 'c', { ...cfg, moneyPts: [{ t: 1 }] }), /moneyPts/);
   });
 });
