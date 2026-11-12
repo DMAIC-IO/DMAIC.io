@@ -16,6 +16,7 @@ import { CAT_KEYS, STATUS_KEYS } from '../domain/constants.js';
 import { effCat } from '../domain/tree.js';
 import { paretoItems } from '../domain/scores.js';
 import { Settings } from './settings.js';
+import { formatNumber } from '../../../core/number-format.js';
 
 const STATUS_COLORS = {
   open: 'var(--color-text-tertiary)', testing: 'var(--color-info)',
@@ -33,7 +34,7 @@ export default createTile({
   titlePrefixKey: 'modules.ishikawa.tileTitlePrefix',
 
   /** @type {import('./settings.types.js').IshikawaTileViewFn} */
-  view() {
+  view(ctx) {
     return {
       /** Keine Ursache erfasst. */
       get empty() { return this.model.rows.length === 0; },
@@ -76,12 +77,12 @@ export default createTile({
         const l = this.cats.status;
         return this.settings.showLegend && l.length ? l : null;
       },
-      /** Die topN am höchsten bewerteten Ursachen. */
+      /** Die topN am höchsten bewerteten Ursachen; Score mit einer Nachkommastelle in der App-Sprache. */
       get top() {
         const byStable = new Map(this.model.rows.map((r) => [r.stableId, r]));
         return paretoItems(this.model.rows).slice(0, this.settings.topN).map((p) => ({
           name: byStable.get(p.stableId)?.name || '—',
-          score: p.score.toFixed(1),
+          score: formatNumber(p.score, ctx.i18n.getLanguage(), { decimals: 1 }),
           style: `color:${p.category ? catColor(p.category) : 'var(--color-text-secondary)'}`,
         }));
       },

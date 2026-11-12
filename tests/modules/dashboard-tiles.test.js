@@ -259,6 +259,15 @@ suite('dashboard tiles: ishikawa', () => {
     assertEqual(host.querySelectorAll('.dashboard-fmea__legend').length, 0);
   });
 
+  test('score: one decimal in the app language (de 5,0, en 5.0)', async () => {
+    const en = await render(ishikawaTile, ISHIKAWA_STATE);
+    assertEqual(en.querySelector('.dashboard-fmea__top-rpn').textContent, '5.0');
+    const settings = resolveSettings(validateSchema(ishikawaTile.settings), {});
+    const de = await mountTile(ishikawaTile, { tileId: 't', instanceId: 'i', state: ISHIKAWA_STATE, settings,
+      i18n: { t: (k) => k, getLanguage: () => 'de' }, theme: 'light', chartManager: null, stateManager: null });
+    assertEqual(de.querySelector('.dashboard-fmea__top-rpn').textContent, '5,0');
+  });
+
   test('an unnamed cause shows — instead of its stableId', async () => {
     const state = { ...ISHIKAWA_STATE, rows: [{ id: 1, parentId: null, name: '', category: 'man', status: 'open', ratings: { 1: 5 } }] };
     const host = (await render(ishikawaTile, state));
