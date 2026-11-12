@@ -5,10 +5,12 @@
  * directives: `data-arg-*`, `data-default-arg-*`, `data-help-key`,
  * `data-ref`, `data-id`. Also checked as `dataset.<name>`.
  * The gesture core has its own guard (interaction-attrs.test.mjs).
+ * Limit: names built at runtime (`data-${name}`, `dataset[key]`) are
+ * reported as findings, not resolved — write attribute names out literally.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -24,6 +26,7 @@ export const PREFIXES = {
   'widget-directive.js': ['widget'],
   'choice-group.js': ['param'],
   'param-input.js': ['param'],
+  'router/route-store.js': ['route'],
 };
 
 const SHARED = ['arg', 'default-arg', 'help-key', 'ref', 'id'];
@@ -45,6 +48,7 @@ export function foreignAttrs(src, prefixes) {
   const hits = [];
   for (const m of src.matchAll(/data-([a-z][a-z0-9-]*)/g)) if (!owned(m[1])) hits.push(`data-${m[1]}`);
   for (const m of src.matchAll(/dataset\.([A-Za-z][A-Za-z0-9]*)/g)) if (!ownedCamel(m[1])) hits.push(`dataset.${m[1]}`);
+  for (const m of src.matchAll(/data-\$\{|dataset\[/g)) hits.push(m[0]);
   return hits;
 }
 
@@ -54,6 +58,14 @@ test('a foreign data attribute is a finding, prefixed and shared ones are not', 
   assert.deepEqual(foreignAttrs("'data-file-drop-over'; el.dataset.fileDropAccept", ['file-drop']), []);
   assert.deepEqual(foreignAttrs("'data-arg-col'; 'data-default-arg-x'; 'data-help-key'; 'data-ref'; el.dataset.id", ['x']), []);
   assert.deepEqual(foreignAttrs('el.dataset.paramTitle; el.dataset.params', ['param']), ['dataset.params']);
+  assert.deepEqual(foreignAttrs('el.getAttribute(`data-${name}`); el.dataset[key]', ['x']), ['data-${', 'dataset[']);
+});
+
+test('every file that registers an Alpine directive is listed in PREFIXES', () => {
+  const files = readdirSync(CORE, { recursive: true })
+    .map(String).filter((f) => f.endsWith('.js'))
+    .filter((f) => readFileSync(join(CORE, f), 'utf8').includes('Alpine.directive('));
+  assert.deepEqual(files.filter((f) => !Object.hasOwn(PREFIXES, f)).sort(), []);
 });
 
 test('core directives touch only prefixed and shared data attributes', () => {
