@@ -9,7 +9,7 @@ import {
   defaultOf, checkValue, describeType, schemaOf, fieldSpec, defineState, stateSchemaOf,
   currentOf, confirmOf, commandDefOf, fromAttr, defineForm,
   defineSettings, isSettings, readSettings, defineWidget, isWidget,
-  columnRef, datasets, rewriteColumnRefs, readModel, setFields, date, time, phase, activeContext, setCommandObserver, setModelContext, contextOf, checkContext, DEFAULT_CONTEXT,
+  columnRef, datasets, image, rewriteColumnRefs, readModel, setFields, date, time, phase, activeContext, setCommandObserver, setModelContext, contextOf, checkContext, DEFAULT_CONTEXT,
 } from '../../js/core/model.js';
 
 const COLS = ['suppliers', 'inputs'];
@@ -1249,5 +1249,30 @@ suite('Invarianten — repair beim Laden', () => {
   });
   test('defineModel: repair, das keine Funktion ist, wirft', () => {
     assertThrows(() => mkModel({ repair: 5 }), /repair/);
+  });
+});
+
+suite('image — Feldart mit Merkmalen', () => {
+  test('gültige Daten-URLs', () => {
+    assertEqual(checkValue(image(), 'f', 'data:image/png;base64,AAAA'), 'data:image/png;base64,AAAA');
+    assertEqual(checkValue(image(), 'f', 'data:image/svg+xml;base64,AA'), 'data:image/svg+xml;base64,AA');
+  });
+  test('ungültige Werte', () => {
+    assertThrows(() => checkValue(image(), 'f', 'http://x'), /f/);
+    assertThrows(() => checkValue(image(), 'f', 'data:text/plain;base64,AA'), /f/);
+    assertThrows(() => checkValue(image(), 'f', 5), /f/);
+  });
+  test('Vorgabe und Typtext', () => {
+    assertEqual(defaultOf(image()), '');
+    assertEqual(defaultOf(image({ nullable: true })), null);
+    assertEqual(describeType(image()), 'string');
+    assertEqual(describeType(image({ nullable: true })), 'string|null');
+  });
+  test('Merkmale: gesetzt, mit nullable erhalten, überschreibbar', () => {
+    assertEqual(image().omitOnRead, true);
+    assertEqual(image().agentWrite, false);
+    assertEqual(image({ nullable: true }).omitOnRead, true);
+    assertEqual(image({ nullable: true }).agentWrite, false);
+    assertEqual(image({ agentWrite: true }).agentWrite, true);
   });
 });

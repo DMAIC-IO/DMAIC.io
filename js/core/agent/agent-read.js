@@ -325,49 +325,49 @@ function clone(value) {
  */
 function omitTokens(path) {
   if (typeof path !== 'string' || !OMIT_PATH.test(path)) return null;
-  const tokens = path.match(/\[\]|[A-Za-z_$][\w$]*/g);
-  return tokens[tokens.length - 1] === '[]' ? null : tokens;
+  return path.match(/\[\]|\{\}|[A-Za-z_$][\w$]*/g) ?? [];
 }
 
 /** Ein Auslassungspfad als Ganzes; siehe `omitTokens`. */
-const OMIT_PATH = /^(?:[A-Za-z_$][\w$]*|\[\])(?:\[\]|\.[A-Za-z_$][\w$]*)*$/;
+const OMIT_PATH = /^(?:[A-Za-z_$][\w$]*|\[\]|\{\}|\.[A-Za-z_$][\w$]*)?(?:\[\]|\{\}|\.[A-Za-z_$][\w$]*)*$/;
 
 /**
  * Ersetze in einem (bereits geklonten) Wert jeden Teilwert, den einer der
  * Pfade trifft, durch `{ $omitted: true, bytes }`. `null` und `undefined`
  * bleiben, damit „kein Bild“ von „Bild ausgelassen“ unterscheidbar bleibt.
- * Ein Pfad, der nicht zur Form der Daten passt, trifft nichts.
+ * Ein Pfad, der nicht zur Form der Daten passt, trifft nichts. Der leere
+ * Pfad trifft den ganzen Wert.
  *
  * @param {any} value  ein Klon — wird an Ort und Stelle verändert
  * @param {string[]|undefined} paths
- * @returns {any} derselbe Wert
+ * @returns {any} derselbe Wert, oder die Auslassung, wenn der leere Pfad ihn trifft
  */
 function omitPaths(value, paths) {
   if (!Array.isArray(paths) || paths.length === 0) return value;
+  let out = value;
   for (const path of paths) {
     const tokens = omitTokens(path);
-    if (tokens) omitAt(value, tokens, 0);
+    if (tokens) out = omitAt(out, tokens, 0);
   }
-  return value;
+  return out;
 }
 
-/** Ein Schritt von `omitPaths`. */
+/** Ein Schritt von `omitPaths`; liefert den Wert, der an die Stelle von `node` tritt. */
 function omitAt(node, tokens, i) {
-  if (node === null || typeof node !== 'object') return;
+  if (node === null || node === undefined) return node;
+  if (i === tokens.length) return { $omitted: true, bytes: jsonLength(node) };
+  if (typeof node !== 'object') return node;
   const token = tokens[i];
   if (token === '[]') {
-    if (!Array.isArray(node)) return;
-    for (const item of node) omitAt(item, tokens, i + 1);
-    return;
+    if (!Array.isArray(node)) return node;
+    for (let k = 0; k < node.length; k++) node[k] = omitAt(node[k], tokens, i + 1);
+  } else if (token === '{}') {
+    if (Array.isArray(node)) return node;
+    for (const k of Object.keys(node)) node[k] = omitAt(node[k], tokens, i + 1);
+  } else if (!Array.isArray(node) && Object.prototype.hasOwnProperty.call(node, token)) {
+    node[token] = omitAt(node[token], tokens, i + 1);
   }
-  if (Array.isArray(node) || !Object.prototype.hasOwnProperty.call(node, token)) return;
-  if (i < tokens.length - 1) {
-    omitAt(node[token], tokens, i + 1);
-    return;
-  }
-  const hit = node[token];
-  if (hit === null || hit === undefined) return;
-  node[token] = { $omitted: true, bytes: jsonLength(hit) };
+  return node;
 }
 
 /** Länge der JSON-Serialisierung; 0, wo es keine gibt. */

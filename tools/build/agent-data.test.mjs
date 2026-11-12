@@ -1172,6 +1172,16 @@ test('collectAgentData: ein Auslassungspfad gegen die Grammatik ist invalid_omit
   }
 });
 
+test('collectAgentData: Auslassungspfade mit {} und führendem Punkt sind gültig, eine offene Klammer nicht', async () => {
+  for (const tag of ['@agentOmit {}', '@agentOmit .a{}', '@agentOmit []{}', '@agentOmit .a[].b{}']) {
+    const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': omitModel(tag, 'object') } });
+    const { modules } = await collectAgentData(root);
+    assert.deepEqual(modules.foo.violations.filter(v => v.includes('omit')), [], tag);
+  }
+  const root = fixture({ foo: { 'foo.js': TAGGED_VM, 'foo-model.js': omitModel('@agentOmit {', 'object') } });
+  assert.ok((await collectAgentData(root)).modules.foo.violations.includes('invalid_omit_path:images:{'));
+});
+
 test('collectAgentData: ein Pfad, der nicht zum Typ passt, ist omit_path_mismatch', async () => {
   const cases = [
     [omitModel('@agentOmit inScope.dataUrl'), 'omit_path_mismatch:images:inScope.dataUrl'],

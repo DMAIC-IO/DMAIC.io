@@ -2,10 +2,10 @@
  * Tests for core/agent/agent-schema.js — die Agentenfläche eines
  * Schema-Moduls in der Form von AGENT_REGISTRY.
  */
-import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../../test-utils.js';
-import { defineModel, command, text, number, oneOf, index, list, record, boolean, date, time, phase, columnRef, datasets } from '../../../js/core/model.js';
+import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../../test-utils.js';
+import { defineModel, command, text, number, oneOf, index, list, record, map, object, image, boolean, date, time, phase, columnRef, datasets } from '../../../js/core/model.js';
 import { asyncTask } from '../../../js/core/async-task.js';
-import { schemaAgentEntry, readSchemaModel } from '../../../js/core/agent/agent-schema.js';
+import { schemaAgentEntry, readSchemaModel, omitPathsOf } from '../../../js/core/agent/agent-schema.js';
 import { describeModule } from '../../../js/core/agent/agent-catalog.js';
 
 const COLS = ['a', 'b'];
@@ -250,5 +250,68 @@ suite('schemaAgentEntry — Invarianten', () => {
     });
     assertDeepEqual(schemaAgentEntry(Range).invariants, ['b', 'a']);
     assertDeepEqual(schemaAgentEntry(Board).invariants, []);
+  });
+});
+
+const URL_ = 'data:image/png;base64,AAAA';
+
+suite('omitPathsOf — nur das Merkmal omitOnRead zählt', () => {
+  test('Pfade je Form', () => {
+    assertDeepEqual(omitPathsOf(image()), ['']);
+    assertDeepEqual(omitPathsOf(list(object({ dataUrl: image() }))), ['[].dataUrl']);
+    assertDeepEqual(omitPathsOf(object({ in: list(object({ u: image() })) })), ['.in[].u']);
+    assertDeepEqual(omitPathsOf(record(['a'], image())), ['.a']);
+    assertDeepEqual(omitPathsOf(map(text(), image())), ['{}']);
+    assertDeepEqual(omitPathsOf(list(object({ data: text(), n: number() }, { omitOnRead: true }))), ['[]']);
+    assertDeepEqual(omitPathsOf(list(object({ a: text() }))), []);
+  });
+  test('ein Feld mit Merkmal zählt als Ganzes, auch ohne image()', () => {
+    assertDeepEqual(omitPathsOf(list(object({ data: object({ x: image() }, { omitOnRead: true }) }))), ['[].data']);
+  });
+});
+
+suite('read() lässt Felder mit omitOnRead aus', () => {
+  const Doc = defineModel({
+    fields: {
+      cover: image({ nullable: true }),
+      shots: list(object({ id: text(), dataUrl: image() })),
+      byKey: map(text(), image()),
+      snaps: list(object({ id: text(), data: object({ a: text() }, { omitOnRead: true }) })),
+      note: text(),
+    },
+  });
+  const entry = schemaAgentEntry(Doc);
+
+  test('omit steht nur am Feld mit Auslassung', () => {
+    assertDeepEqual(entry.fields.cover.omit, ['']);
+    assertDeepEqual(entry.fields.shots.omit, ['[].dataUrl']);
+    assertDeepEqual(entry.fields.byKey.omit, ['{}']);
+    assertDeepEqual(entry.fields.snaps.omit, ['[].data']);
+    assertEqual('omit' in entry.fields.note, false);
+  });
+
+  test('bytes ist die JSON-Länge, an jeder Stelle', () => {
+    const m = Doc.fromJSON({
+      cover: URL_, shots: [{ id: 'a', dataUrl: URL_ }], byKey: { k: URL_ },
+      snaps: [{ id: 's', data: { a: 'zz' } }], note: 'n',
+    });
+    const out = readSchemaModel(entry, m);
+    assertDeepEqual(out.cover, { $omitted: true, bytes: JSON.stringify(URL_).length });
+    assertDeepEqual(out.shots[0], { id: 'a', dataUrl: { $omitted: true, bytes: JSON.stringify(URL_).length } });
+    assertDeepEqual(out.byKey.k, { $omitted: true, bytes: JSON.stringify(URL_).length });
+    assertDeepEqual(out.snaps[0].data, { $omitted: true, bytes: JSON.stringify({ a: 'zz' }).length });
+    assertEqual(out.note, 'n');
+  });
+
+  test('null bleibt null', () => {
+    assertEqual(readSchemaModel(entry, Doc.fromJSON({})).cover, null);
+  });
+
+  test('1,2 MB Daten-URL: die Antwort bleibt unter 1 KB', () => {
+    const big = 'data:image/png;base64,' + 'A'.repeat(1_200_000);
+    const out = readSchemaModel(entry, Doc.fromJSON({ cover: big, shots: [{ id: 'a', dataUrl: big }] }));
+    assertEqual(out.cover.$omitted, true);
+    assertEqual(out.cover.bytes, JSON.stringify(big).length);
+    assertTrue(JSON.stringify(out).length < 1024);
   });
 });

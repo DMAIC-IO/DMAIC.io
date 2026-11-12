@@ -489,7 +489,7 @@ function invalidBulkKinds(fields) {
  * Build nicht aus `js/` importiert. Die Laufzeit übergeht einen kaputten
  * Pfad still; gemeldet wird er hier, beim Bauen, wo der Autor ihn beheben kann.
  */
-const OMIT_PATH = /^(?:[A-Za-z_$][\w$]*|\[\])(?:\[\]|\.[A-Za-z_$][\w$]*)*$/;
+const OMIT_PATH = /^(?:[A-Za-z_$][\w$]*|\[\]|\{\}|\.[A-Za-z_$][\w$]*)?(?:\[\]|\{\}|\.[A-Za-z_$][\w$]*)*$/;
 
 /**
  * Ein Auslassungspfad als Segmentliste, oder `null` bei Verstoß: leer, gegen
@@ -500,7 +500,7 @@ const OMIT_PATH = /^(?:[A-Za-z_$][\w$]*|\[\])(?:\[\]|\.[A-Za-z_$][\w$]*)*$/;
  */
 function omitTokens(path) {
   if (!OMIT_PATH.test(path)) return null;
-  const tokens = path.match(/\[\]|[A-Za-z_$][\w$]*/g);
+  const tokens = path.match(/\[\]|\{\}|[A-Za-z_$][\w$]*/g) ?? [];
   return tokens[tokens.length - 1] === '[]' ? null : tokens;
 }
 
@@ -545,6 +545,11 @@ function omitPathFitsType(typeText, tokens) {
     node = withoutNullish(node);
     if (!node) return true;
     const element = arrayElementType(node);
+    if (token === '{}') {
+      const index = ts.isTypeLiteralNode(node) ? node.members.find(ts.isIndexSignatureDeclaration) : null;
+      if (index?.type) { node = index.type; continue; }
+      return !(element || isPrimitiveType(node) || (ts.isTypeLiteralNode(node) && node.members.length > 0));
+    }
     if (token === '[]') {
       if (element) { node = element; continue; }
       return !(ts.isTypeLiteralNode(node) || isPrimitiveType(node));

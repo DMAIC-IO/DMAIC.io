@@ -471,7 +471,7 @@ suite('agent read projection — omit marks', () => {
   });
 
   test('an invalid path is ignored at runtime (the build reports it)', () => {
-    const schema = { cells: { type: 'array', help: '', bulk: false, omit: ['', '[]', 'a..b', 'x[]'] } };
+    const schema = { cells: { type: 'array', help: '', bulk: false, omit: ['a..b', '{', 'x.', '.'] } };
     const out = projectReadState({ cells: [{ x: [1] }] }, schema, {});
     assertDeepEqual(out.cells, [{ x: [1] }]);
   });
@@ -508,5 +508,28 @@ suite('agent read projection — flat tree', () => {
   test('an unknown parent counts as a root', () => {
     const out = projectReadState({ rows: [{ id: 1, parentId: 99 }] }, schema, {});
     assertEqual(out.rows.depth, 1);
+  });
+});
+
+suite('agent read projection — omit path grammar', () => {
+  const url = 'data:image/png;base64,AAAA';
+  const size = JSON.stringify(url).length;
+  const run = (omit, value) => projectReadState({ f: value }, { f: { type: 'object', help: '', bulk: false, omit } }, {}).f;
+
+  test('the empty path omits the whole field', () => {
+    assertDeepEqual(run([''], url), { $omitted: true, bytes: size });
+    assertEqual(run([''], null), null);
+  });
+  test('{} reaches every entry of a map, .key a fixed key', () => {
+    assertDeepEqual(run(['{}'], { a: url, b: null }), { a: { $omitted: true, bytes: size }, b: null });
+    assertDeepEqual(run(['.a{}'], { a: { x: url } }), { a: { x: { $omitted: true, bytes: size } } });
+    assertDeepEqual(run(['.a'], { a: url, b: url }), { a: { $omitted: true, bytes: size }, b: url });
+  });
+  test('[] at the end omits each element', () => {
+    assertDeepEqual(run(['[]'], [url]), [{ $omitted: true, bytes: size }]);
+  });
+  test('[]{} nests, a broken path hits nothing', () => {
+    assertDeepEqual(run(['[]{}'], [{ a: url }]), [{ a: { $omitted: true, bytes: size } }]);
+    assertDeepEqual(run(['{'], { a: url }), { a: url });
   });
 });

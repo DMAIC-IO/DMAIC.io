@@ -41,6 +41,28 @@ const slotTokens = (slot) => [...ruleTokens(slot),
   ...(slot.required ? ['required'] : []), ...(slot.group ? ['group'] : [])];
 
 /**
+ * Die Auslassungspfade eines Feldes, relativ zu seinem Wert: wo `read()` nur
+ * `{ $omitted: true, bytes }` liefert. Gefragt wird allein das Merkmal
+ * `omitOnRead`, nie die Feldart. `list` → `[]`, `object`/`record` →
+ * `.<schlüssel>`, `map` → `{}`; ein Feld mit dem Merkmal zählt als Ganzes
+ * (leerer Pfad), darunter wird nicht weitergesucht.
+ * @param {object} spec
+ * @param {string} [prefix] bereits durchlaufener Pfad
+ * @returns {string[]}
+ */
+export function omitPathsOf(spec, prefix = '') {
+  if (!spec || typeof spec !== 'object') return [];
+  if (spec.omitOnRead === true) return [prefix];
+  switch (spec.kind) {
+    case 'list': return omitPathsOf(spec.item, `${prefix}[]`);
+    case 'map': return omitPathsOf(spec.value, `${prefix}{}`);
+    case 'record': return spec.keys.flatMap((k) => omitPathsOf(spec.value, `${prefix}.${k}`));
+    case 'object': return Object.entries(spec.shape).flatMap(([k, v]) => omitPathsOf(v, `${prefix}.${k}`));
+    default: return [];
+  }
+}
+
+/**
  * Die Regeln eines Parameters als Tokens: `text` mit `trim`/`nonEmpty`,
  * `date`, `time` (mit `step:<n>`), `phase`, `index` mit `afterRemovalFrom:<pfad>`, `columnRef` (mit `types:`/`minCount:`/`maxCount:`;
  * auch als Listeneintrag), `list` mit `unique`/`sorted`.
@@ -130,12 +152,14 @@ export function schemaAgentEntry(Model, vmCommands = {}, { asyncTasks = {} } = {
   const fields = {};
   for (const [name, spec] of Object.entries(schema.fields)) {
     const rules = ruleTokens(spec);
+    const omit = omitPathsOf(spec);
     fields[name] = {
       type: describeType(spec),
       help: '',
       bulk: spec.bulk === true,
       ...(spec.bulk === true && spec.bulkKind ? { bulkKind: spec.bulkKind } : {}),
       ...(rules.length > 0 ? { rules } : {}),
+      ...(omit.length > 0 ? { omit } : {}),
       ...(spec.kind === 'datasets'
         ? { slots: Object.fromEntries(Object.entries(spec.slots).map(([k, v]) => [k, slotTokens(v)])) } : {}),
     };

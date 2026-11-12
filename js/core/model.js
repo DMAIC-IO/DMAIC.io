@@ -159,6 +159,17 @@ export const datasets = (slots, { multi = false, colors = null, ...opts } = {}) 
   }, opts);
 };
 
+/**
+ * Bild als Daten-URL (`data:image/<art>;base64,…`). Trägt die Merkmale
+ * `omitOnRead` (`read()` liefert dort nur `{ $omitted: true, bytes }`) und
+ * `agentWrite: false` (der Agent schreibt das Feld nicht); beide lassen sich
+ * über die Optionen überschreiben. Vorgabe `''`, mit `nullable` `null`.
+ * @param {object} [opts] @returns {Readonly<object>}
+ */
+export const image = (opts) => spec('image', {}, { omitOnRead: true, agentWrite: false, ...opts });
+
+const IMAGE_DATA_URL = /^data:image\/[\w.+-]+;base64,/;
+
 const COLUMN_REF_KEYS = Object.freeze(['instanceId', 'sheetId', 'columnId']);
 
 /** @param {unknown} v @returns {boolean} */
@@ -317,7 +328,7 @@ export function defaultOf(s, context = DEFAULT_CONTEXT, name = 'default', root =
   }
   if (s.nullable) return null;
   switch (s.kind) {
-    case 'text': case 'idOf': case 'date': return '';
+    case 'text': case 'idOf': case 'date': case 'image': return '';
     case 'time': return '00:00';
     case 'phase': return getPhaseIds(context.cycle)[0];
     case 'columnRef': return null;
@@ -449,6 +460,10 @@ export function checkValue(s, name, value, ctx = {}) {
       return requireForm(name, value, onGrid, s.step === undefined ? 'a time HH:MM' : `a time HH:MM on a ${s.step}-minute grid`);
     }
     case 'phase': return requireEnum(name, value, ALL_PHASE_IDS);
+    case 'image': {
+      const v = requireText(name, value);
+      return requireForm(name, value, IMAGE_DATA_URL.test(v), 'an image data URL data:image/<type>;base64,…');
+    }
     case 'columnRef': {
       requireForm(name, value, isColumnRef(value), 'a column reference { instanceId, sheetId?, columnId }');
       return {
@@ -569,7 +584,7 @@ const literal = (v) => (typeof v === 'string' ? `'${v}'` : String(v));
 export function describeType(s) {
   let t;
   switch (s.kind) {
-    case 'text': case 'idOf': case 'date': case 'time': case 'phase': t = 'string'; break;
+    case 'text': case 'idOf': case 'date': case 'time': case 'phase': case 'image': t = 'string'; break;
     case 'number': case 'index': t = 'number'; break;
     case 'boolean': t = 'boolean'; break;
     case 'oneOf': t = s.values.map(literal).join('|'); break;
