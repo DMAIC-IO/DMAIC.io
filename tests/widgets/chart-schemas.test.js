@@ -300,4 +300,10 @@ suite('Diagramm-Widgets: Schemas', () => {
     assertThrows(() => checkValue(cumulativeCostChart.props.config, 'c', { ...cfg, mode: 'x' }), /mode/);
     assertThrows(() => checkValue(cumulativeCostChart.props.config, 'c', { ...cfg, moneyPts: [{ t: 1 }] }), /moneyPts/);
   });
+
+  test('Pareto: rightYLabel ist Text, aber nicht im Editor bearbeitbar', () => {
+    assertDeepEqual(checkValue(paretoChart.props.config, 'c', { rightYLabel: 'Kumuliert %' }), { rightYLabel: 'Kumuliert %' });
+    assertThrows(() => checkValue(paretoChart.props.config, 'c', { rightYLabel: 5 }), /rightYLabel/);
+    assertTrue(!paretoChart.editable.base.includes('rightYLabel'));
+  });
 });

@@ -12,6 +12,7 @@ export default chartWidget({
   keys: {
     items: list(object({ name: text(), value: number(), color: text(opt) }), opt),
     categories: list(text(), opt), groups,
+    rightYLabel: text(opt),
     otherLabel: text(opt), otherCountTemplate: text(opt),
     refLineValue: number({ ...ed, min: 0 }), maxItems: number({ ...ed, integer: true, min: 1 }), otherBucket: boolean(ed),
     cumDotSymbol: text(ed), cumDotSize: number({ ...ed, min: 0 }), cumDotFill: text(ed),

@@ -249,6 +249,7 @@ suite('Diagramm-Widgets (chart-mount)', () => {
       ['pareto-chart', 'pareto', { categories: ['x', 'y'], groups, otherBucket: true }],
       ['gantt-chart', 'gantt', { tasks: [{ start: 1, end: 2, label: 'A', color: 'var(--ishikawa-status-done)' }], xDomain: { minT: 1, maxT: 2 }, showToday: false }],
       ['cumulative-cost-chart', 'cumulative-cost', { mode: 'rate', moneyPts: [{ t: 1, v: 2 }], hoursPts: [], xDomain: { min: 1, max: 2 }, moneyUnit: '€/d' }],
+      ['pareto-chart', 'pareto', { categories: ['x', 'y'], groups, rightYLabel: 'Kumuliert %' }],
       ['multi-vari-chart', 'multi-vari', { panels: [{ panelLevel: '', groups: [{ level: 'a', mean: null, series: [] }] }], seriesLevels: ['s'], refValue: null }],
     ];
     for (const [name, type, cfg] of cases) {

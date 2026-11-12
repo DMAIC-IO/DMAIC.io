@@ -7,7 +7,7 @@
  * German default.
  */
 
-import { suite, test, assertEqual, assertAlmostEqual } from '../../test-utils.js';
+import { suite, test, assertEqual, assertAlmostEqual, assertTrue } from '../../test-utils.js';
 import ParetoChart from '../../../js/core/chart/types/pareto.js';
 
 /** 30 flat items 100, 99, …, 71 — grand total 2565. */
@@ -144,6 +144,16 @@ suite('Pareto type — right-axis ticks and threshold label follow the locale (B
       assertEqual(all.includes(`${p}%`), true, `${p}% fehlt: ${all.join(' | ')}`);
     }
     assertEqual(all.filter(t => t === '80%').length, 1, 'threshold 80%');
+    unmount(m);
+  });
+});
+
+suite('Pareto type — right axis title', () => {
+  test('rightYLabel appears as the rotated title of the right axis', () => {
+    const m = mount({ items: flatItems(), rightYLabel: 'Kumuliert %' });
+    const t = Array.from(m.host.querySelectorAll('svg text')).find((x) => x.textContent === 'Kumuliert %');
+    assertTrue(!!t, 'rightYLabel drawn');
+    assertTrue((t.getAttribute('transform') || '').startsWith('rotate(90'), 'rotated');
     unmount(m);
   });
 });
