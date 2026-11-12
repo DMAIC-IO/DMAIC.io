@@ -35,8 +35,7 @@ const CAUSES = `export function causesView(ctx) {
   };
 }
 `;
-const VM = `import { createModule } from '../../../core/template-module.js';
-import { problemView } from './problem.js';
+const VM = `import { problemView } from './problem.js';
 import { causesView as causes } from './causes.js';
 export default createModule({ view: [problemView, causes] });
 `;
@@ -54,8 +53,7 @@ test('view: [problemView, causesView] — Glieder beider importierten Teile', ()
 });
 
 test('Liste mit Inline-Funktion und lokal deklariertem Teil', () => {
-  const text = `import { createModule } from '../../../core/template-module.js';
-function local(ctx) { return { get a() { return 1; }, b() {} }; }
+  const text = `function local(ctx) { return { get a() { return 1; }, b() {} }; }
 export default createModule({ view: [local, (ctx) => ({ c: 1, computed: { d() { return 2; } } }), function (ctx) { return { e() {} }; }] });
 `;
   assert.deepEqual(viewNamesDetailOf(text), { getters: ['a'], computed: ['d'], data: ['c'] });
