@@ -111,6 +111,9 @@ der Oberfläche an der Beschriftung, wenn der Mensch Alt hält.
 **Aktionsnamen mit Punkt.** Ein Modul kann Teil-Viewmodels haben; ihre
 Methoden heißen `<teil>.<methode>` (`draft.addQuestion`) und werden wie
 jede andere über `instance.call` mit `method: 'draft.addQuestion'` gerufen.
+Das gilt nur für Module in der Altform; Module mit deklarativem Model gliedern
+ihren `view`-Block in Teile (`view: [teilA, teilB]`), deren Kommandos und
+Methoden flach unter ihrem Namen stehen, ohne Punkt.
 
 ### Module mit deklarativem Model: Kommandos und `instance.set`
 
@@ -151,8 +154,11 @@ Felder setzt `instance.set`:
 
 Alles wird geprüft, dann alles geschrieben; scheitert ein Wert, ist nichts
 geschrieben (`call_failed`). Setzbar sind die Felder aus `describe` — keine
-Ansichtsfelder (`unknown field "<x>"; available: …`). Ein Modul alter Form
-antwortet auf `instance.set` mit `call_failed`.
+Ansichtsfelder (`unknown field "<x>"; available: …`) und keine Felder, die das
+Model mit `agentWrite: false` sperrt (Bild-Felder, `image()`): `describe` führt
+sie nicht unter `settable`, `instance.set` darauf antwortet mit `call_failed`.
+Kommandos, deren Parameter ein gesperrtes Feld enthält, stehen nicht im
+Katalog. Ein Modul alter Form antwortet auf `instance.set` mit `call_failed`.
 
 Regeln über mehrere Felder (Invarianten des Models) nennt `module.describe`
 unter `notes`, je Regel ein Satz in der UI-Sprache, z. B. für `msa-typ2`
@@ -467,7 +473,11 @@ leer sein — eine falsche Spaltenliste wäre schlechter als keine.
 `{ $omitted: true, bytes }` (Länge der JSON-Serialisierung) — auch bei
 `options.fields`. `null` bleibt `null`, damit „kein Bild" von „Bild
 ausgelassen" unterscheidbar bleibt. Ausgelassene Werte sind über `read()`
-nicht abrufbar.
+nicht abrufbar. Bei Modulen mit deklarativem Model erklärt das Model die
+Auslassung am Feld selbst: das Merkmal `omitOnRead: true` (die Feldart
+`image()` trägt es), die Pfade leitet der Kern aus dem Schema ab
+(`[]` je Liste, `.<schlüssel>` je Objekt, `{}` je Map, der leere Pfad für das
+Feld selbst); eine Marke `@agentOmit` ist dort nicht nötig.
 
 **Abgeleitete Ergebnisse.** Jede Ableitung des Models (`derived`) erscheint
 in `read()` — als Zahlen, nicht als Anzeigetexte. In `module.describe` steht ein
