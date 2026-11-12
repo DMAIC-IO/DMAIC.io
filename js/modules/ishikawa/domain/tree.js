@@ -109,3 +109,53 @@ export function depthOf(rows, id) {
   }
   return depth;
 }
+
+/**
+ * Wirksame Kategorie einer Zeile: die eigene, sonst die des nächsten
+ * Vorfahren mit Kategorie; Waisen und Zyklen ohne Kategorie liefern `''`.
+ * @param {Array<TreeRow & { category: string }>} rows
+ * @param {(TreeRow & { category: string })|undefined|null} row
+ * @returns {string}
+ */
+export function effCat(rows, row) {
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  const seen = new Set();
+  let r = row;
+  while (r && !seen.has(r.id)) {
+    if (r.category) return r.category;
+    seen.add(r.id);
+    r = r.parentId === null ? undefined : byId.get(r.parentId);
+  }
+  return '';
+}
+
+/**
+ * Die nächste freie Zahl-id einer Liste: größte id + 1, leer 1.
+ * @param {ReadonlyArray<{ id: number }>} items @returns {number}
+ */
+export function nextId(items) {
+  return items.reduce((max, x) => Math.max(max, Number.isFinite(x.id) ? x.id : 0), 0) + 1;
+}
+
+/**
+ * Die laufende Nummer einer stableId (`H-007` → 7); fremde Formen 0.
+ * @param {unknown} stableId @returns {number}
+ */
+function stableNumber(stableId) {
+  const n = parseInt(String(stableId ?? '').split('-')[1], 10);
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+
+/**
+ * Die nächste freie stableId (`H-001` …) über die Zeilen und die Zeilen
+ * aller Snapshots: größte Nummer + 1, dreistellig aufgefüllt.
+ * @param {ReadonlyArray<{ stableId?: string }>} rows
+ * @param {ReadonlyArray<{ data?: { rows?: ReadonlyArray<{ stableId?: string }> } }>} snapshots
+ * @returns {string}
+ */
+export function nextStableId(rows, snapshots) {
+  let max = 0;
+  for (const r of rows) max = Math.max(max, stableNumber(r.stableId));
+  for (const s of snapshots) for (const r of s.data?.rows ?? []) max = Math.max(max, stableNumber(r.stableId));
+  return `H-${String(max + 1).padStart(3, '0')}`;
+}

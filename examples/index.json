@@ -1942,7 +1942,7 @@
       },
       "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
-      "file": "projects/ishikawa-lieferzeit-zu-lang.json",
+      "file": "../js/modules/ishikawa/resources/examples/projects/ishikawa-lieferzeit-zu-lang.json",
       "format": "json",
       "modules": [
         "ishikawa"
@@ -2886,7 +2886,7 @@
       },
       "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
       "license": "public-domain",
-      "file": "projects/ishikawa-hubschrauber-flyer.json",
+      "file": "../js/modules/ishikawa/resources/examples/projects/ishikawa-hubschrauber-flyer.json",
       "format": "json",
       "modules": [
         "ishikawa"

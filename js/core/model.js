@@ -500,7 +500,11 @@ export function checkValue(s, name, value, ctx = {}) {
 export function checkMapKey(s, name, key, ctx = {}) {
   requireForm(`${name} key`, key, key !== '__proto__', 'a key other than __proto__');
   if (s.key.kind === 'number') checkValue(s.key, `${name} key`, String(Number(key)) === key ? Number(key) : NaN, ctx);
-  else checkValue(s.key, `${name} key`, key, ctx);
+  else if (s.key.kind === 'idOf') {
+    // Schlüssel sind Text: eine Zahl-id passt über ihren Text.
+    const target = resolvePath(s.key.path, ctx);
+    requireKnownId(`${name} key`, key, Array.isArray(target) ? target.map(e => String(e?.[s.key.key])) : []);
+  } else checkValue(s.key, `${name} key`, key, ctx);
 }
 
 /**

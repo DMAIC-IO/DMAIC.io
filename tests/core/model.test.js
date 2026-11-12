@@ -1117,6 +1117,16 @@ suite('map', () => {
     assertDeepEqual(m.picks, { p1: 'o1' });
     assertThrows(() => M.fromJSON({ items: [], picks: { p1: 'o1' } }), /picks key/);
   });
+  test('map: idOf-Schlüssel auf Zahl-ids — der Text der Zahl passt', () => {
+    const M = defineModel({ fields: {
+      items: list(object({ id: number({ integer: true }) })),
+      scores: map(idOf('items'), number()),
+    } });
+    const m = M.fromJSON({ items: [{ id: 1 }, { id: 2 }], scores: { 1: 5, 2: 7 } });
+    assertDeepEqual(m.scores, { 1: 5, 2: 7 });
+    assertThrows(() => M.fromJSON({ items: [{ id: 1 }], scores: { 3: 1 } }), /scores key/);
+    assertDeepEqual(M.fromJSON({ items: [{ id: 1 }], scores: { 1: 1, 3: 1 } }, { repair: true }).scores, { 1: 1 });
+  });
   test('map: Schlüssel __proto__ wird abgelehnt', () => {
     const s = map(text(), text());
     assertThrows(() => checkValue(s, 'm', JSON.parse('{"__proto__":"x"}')), /m key/);
