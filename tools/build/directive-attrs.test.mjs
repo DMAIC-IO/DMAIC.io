@@ -21,6 +21,7 @@ export const PREFIXES = {
   'async-task-directives.js': ['async-task'],
   'command-directives.js': ['command', 'command-form', 'param', 'dialog'],
   'file-drop-directive.js': ['file-drop'],
+  'fit-directive.js': ['fit'],
   'field-directive.js': ['field', 'set'],
   'rich-text-directive.js': ['rich-text'],
   'tablist.js': ['tablist'],

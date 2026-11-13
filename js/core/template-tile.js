@@ -3,7 +3,8 @@
  *
  * `createTile({ descriptor, Model, Settings, view, size, titlePrefix })`
  * liefert ein Objekt im Kachel-Vertrag des Dashboards (template, settings,
- * viewModel, size, titlePrefix oder titlePrefixKey (i18n-Schlüssel); enumerate/refreshOn/mount/dispose werden
+ * viewModel, size, titlePrefix oder titlePrefixKey (i18n-Schlüssel), kind, titleKey;
+ * `template` nennt die Datei unter resources/ (Vorgabe tile.html), `kind` die Art bei mehreren Kacheln je Modul; enumerate/refreshOn/mount/dispose werden
  * durchgereicht). `viewModel(args)` baut je Rendern einen Scope: einen
  * eingefrorenen Schnappschuss des Models (`readModel`), die geprüften
  * Einstellungen (`readSettings`), `t` mit dem Präfix `modules.<id>` und die
@@ -87,12 +88,12 @@ export function tileSettingsOf(id, Settings) {
  * Eine Kachel in der Form des Moduls.
  * @template V
  * @param {{ descriptor: { id: string }, Model: any, Settings?: any, view?: (ctx: TileContext) => V,
- *   size?: object, titlePrefix?: string, titlePrefixKey?: string, enumerate?: Function, refreshOn?: any,
+ *   size?: object, titlePrefix?: string, titlePrefixKey?: string, kind?: string, titleKey?: string, template?: string, enumerate?: Function, refreshOn?: any,
  *   mount?: Function, dispose?: Function }} base
  * @returns {Record<string, any> & { readonly __view?: V }} Objekt im Kachel-Vertrag des Dashboards
  */
 export function createTile(base) {
-  const { descriptor, Model, Settings, view, size, titlePrefix, titlePrefixKey } = base;
+  const { descriptor, Model, Settings, view, size, titlePrefix, titlePrefixKey, kind, titleKey, template } = base;
   if (!descriptor?.id) throw new Error('createTile: descriptor with id required');
   const id = descriptor.id;
   if (!Model) throw new Error(`createTile(${id}): Model required`);
@@ -102,7 +103,7 @@ export function createTile(base) {
 
   /** @type {Record<string, any>} */
   const tile = {
-    template: `js/modules/${id}/resources/tile.html`,
+    template: `js/modules/${id}/resources/${template ?? 'tile.html'}`,
     /**
      * Scope der Kachel für dieses Rendern.
      * @param {{ state: unknown, settings: unknown, i18n: any, theme?: string, instanceId?: string|null, data?: object, chartManager?: object, stateManager?: { getProjectCycle?: () => string } }} args
@@ -133,6 +134,8 @@ export function createTile(base) {
   if (size !== undefined) tile.size = size;
   if (titlePrefix !== undefined) tile.titlePrefix = titlePrefix;
   if (titlePrefixKey !== undefined) tile.titlePrefixKey = titlePrefixKey;
+  if (kind !== undefined) tile.kind = kind;
+  if (titleKey !== undefined) tile.titleKey = titleKey;
   if (Settings) tile.settings = tileSettingsOf(id, Settings);
   for (const key of PASS_THROUGH) if (base[key] !== undefined) tile[key] = base[key];
   return tile;

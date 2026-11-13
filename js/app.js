@@ -25,6 +25,7 @@ import { setCreatePageRouter } from './core/create-page.js';
 import { registerTablistDirective } from './core/tablist.js';
 import { registerFileDropDirective } from './core/file-drop-directive.js';
 import { registerRichTextDirective } from './core/rich-text-directive.js';
+import { registerFitDirective } from './core/fit-directive.js';
 import { registerFieldDirective } from './core/field-directive.js';
 import { registerCommandDirectives } from './core/command-directives.js';
 import { registerAsyncTaskDirectives } from './core/async-task-directives.js';
@@ -52,6 +53,7 @@ async function init() {
   registerTablistDirective(Alpine);
   registerFileDropDirective(Alpine);
   registerRichTextDirective(Alpine);
+  registerFitDirective(Alpine);
   registerFieldDirective(Alpine, { i18n, widgets: WIDGETS });
   registerWidgetDirective(Alpine, { i18n, widgets: WIDGETS });
   registerCommandDirectives(Alpine);

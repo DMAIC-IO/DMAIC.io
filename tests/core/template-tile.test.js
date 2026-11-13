@@ -26,6 +26,18 @@ suite('createTile: Vertrag', () => {
     assertEqual(tile.settings, undefined);
   });
 
+  test('kind, titleKey und template: drei Kacheln aus einem Modul', () => {
+    const tiles = ['a', 'b', 'c'].map((k) => createTile({
+      descriptor, Model: Doc, kind: k, titleKey: `demo.title.${k}`, template: `tile-${k}.html`,
+    }));
+    assertDeepEqual(tiles.map((t) => t.kind), ['a', 'b', 'c']);
+    assertDeepEqual(tiles.map((t) => t.titleKey), ['demo.title.a', 'demo.title.b', 'demo.title.c']);
+    assertEqual(tiles[1].template, 'js/modules/demo-tile/resources/tile-b.html');
+    const plain = createTile({ descriptor, Model: Doc });
+    assertTrue(!('kind' in plain) && !('titleKey' in plain));
+    assertEqual(plain.template, 'js/modules/demo-tile/resources/tile.html');
+  });
+
   test('Prüfungen', () => {
     assertThrows(() => createTile({ Model: Doc }), /^createTile: descriptor with id required$/);
     assertThrows(() => createTile({ descriptor }), /^createTile\(demo-tile\): Model required$/);

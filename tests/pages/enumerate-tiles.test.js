@@ -346,3 +346,19 @@ suite('enumerate-tiles: copies', () => {
     assertEqual(copyDescriptor(FMEA_TM, 'fmea~new', 'gone', ctx), null);
   });
 });
+
+suite('enumerate-tiles: mehrere Kacheln je Modul', () => {
+  test('ein Array aus drei Kacheln mit kind und enumerate liefert drei Einträge mit den Ids', async () => {
+    const mk = (kind) => ({
+      kind, size: SIZE, titleKey: `modules.project-charter.tiles.${kind}`,
+      enumerate: (ctx) => ctx.findInstances('project-charter').map((i) => ({ tileId: `${kind}:${i.instanceId}`, instanceId: i.instanceId, title: kind })),
+    });
+    const registry = { hasTile: (id) => id === 'project-charter', loadTile: async () => [mk('a'), mk('b'), mk('c')] };
+    const phases = { define: [{ moduleId: 'project-charter', instanceId: 'p1' }] };
+    const { tileModules } = await loadTileModules(registry, phases, []);
+    assertDeepEqual(tileModules.map((tm) => tm.kind), ['a', 'b', 'c']);
+    const tiles = enumerateTiles(tileModules, makeCtx(phases));
+    assertDeepEqual(tiles.map((t) => t.id), ['a:p1', 'b:p1', 'c:p1']);
+    assertDeepEqual(tiles.map((t) => t.kind), ['a', 'b', 'c']);
+  });
+});
