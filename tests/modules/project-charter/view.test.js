@@ -118,13 +118,30 @@ suite('project-charter view: Gerüst und Problembeschreibung', () => {
 });
 
 suite('project-charter view: Ziele', () => {
-  test('x-command="addGoal" legt eine Zeile an', async () => {
+  test('Ziel hinzufügen legt eine Zeile an und fokussiert ihre Beschreibung', async () => {
     const h = await mount();
     h.$('.pc__add-btn').click();
     await settle();
     assertEqual(h.vm().model.goals.length, 1);
     assertEqual(h.$$('.pc__goal-row').length, 1);
     assertEqual(h.$('.pc__no-goals'), null);
+    assertEqual(document.activeElement, goalField(h, 0, 'description'));
+    h.$('.pc__add-btn').click();
+    await settle();
+    assertEqual(document.activeElement, goalField(h, 1, 'description'));
+  });
+
+  test('Zielerreichung ist ein Zahlfeld 0..100 (Pfeiltasten, Spinner)', async () => {
+    const h = await mount();
+    h.$('.pc__add-btn').click();
+    await settle();
+    const input = goalField(h, 0, 'achievementLevel');
+    assertEqual(input.type, 'number');
+    assertEqual(input.min, '0');
+    assertEqual(input.max, '100');
+    type(input, '55');
+    await settle();
+    assertEqual(h.vm().model.goals[0].achievementLevel, 55);
   });
 
   test('Zielerreichung 150 wird beim Verlassen auf 100 geklemmt, ohne Ablehnung', async () => {

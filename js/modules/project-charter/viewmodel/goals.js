@@ -3,10 +3,9 @@
  *
  * Farbstufe und Balken der Zielerreichung, Markierung vergangener Zieldaten,
  * das Klemmen der Zielerreichung auf 0..100 beim Verlassen des Felds, Löschen
- * mit zwei Klicks und die Vorschau beim Umsortieren. Anlegen läuft im
- * Template über `x-command`, Texte über `x-model`.
+ * mit zwei Klicks, Anlegen mit Fokus auf der neuen Beschreibung und die
+ * Vorschau beim Umsortieren. Texte laufen im Template über `x-model`.
  */
-import { setFields } from '../../../core/model.js';
 import { parseNumber } from '../../../core/number-format.js';
 import { zegLevel, isDateInPast } from '../domain/goals.js';
 
@@ -39,16 +38,22 @@ export const goalsView = (_ctx) => ({
 
   /**
    * Zielerreichung beim Verlassen des Felds auf 0..100 klemmen (150 → 100).
-   * Läuft vor `x-field`, das danach den geklemmten Wert im Feld vorfindet.
-   * @param {Goal} g @param {Event} ev
+   * Läuft vor `x-field`, das den geklemmten Wert danach übernimmt.
+   * @param {Event} ev
    */
-  clampLevel(g, ev) {
+  clampLevel(ev) {
     const input = /** @type {HTMLInputElement} */ (ev.target);
-    const level = clampPercent(input.value);
-    input.value = String(level);
-    if (level === g.achievementLevel) return;
-    const goals = this.model.goals.map((x) => ({ ...x, achievementLevel: x.id === g.id ? level : x.achievementLevel }));
-    setFields(this.model, { goals });
+    input.value = String(clampPercent(input.value));
+  },
+
+  /** Ein Ziel anlegen und seine Beschreibung fokussieren. */
+  addGoalAndFocus() {
+    const id = this.model.addGoal({});
+    this.$nextTick(() => {
+      /** @type {HTMLTextAreaElement|null} */
+      const input = this.$root.querySelector(`.pc__goal-row[data-id="${id}"] [data-field="description"]`);
+      input?.focus();
+    });
   },
 
   /** Wartet das Ziel auf den zweiten Klick zum Löschen? @param {string} id @returns {boolean} */

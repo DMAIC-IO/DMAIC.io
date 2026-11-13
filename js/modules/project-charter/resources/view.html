@@ -62,9 +62,9 @@
                   </td>
                   <td class="pc__col-zeg">
                     <div class="pc__zeg-wrap" :class="zegClass(g)">
-                      <input class="field field--sm field--ghost pc__zeg-input" data-field="achievementLevel" data-help-key=""
+                      <input class="field field--sm field--ghost pc__zeg-input" type="number" min="0" max="100" data-field="achievementLevel" data-help-key=""
                         :aria-label="t('goalAchievementFull')" :title="t('goalAchievementTooltip')"
-                        @change="clampLevel(g, $event)" x-field="g.achievementLevel">
+                        @change="clampLevel($event)" x-field="g.achievementLevel">
                       <div class="pc__zeg-bar-track">
                         <div class="pc__zeg-bar-fill" :style="zegWidth(g)"></div>
                       </div>
@@ -88,7 +88,7 @@
       </template>
 
       <button class="btn btn--secondary btn--sm pc__add-btn" type="button" data-help-key="modules.project-charter.actions.addGoal.help"
-        x-command="addGoal" x-text="t('addGoalLabel')"></button>
+        @click="addGoalAndFocus()" x-text="t('addGoalLabel')"></button>
     </section>
 
     <!-- Organigramm -->
