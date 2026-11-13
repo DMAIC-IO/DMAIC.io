@@ -38,7 +38,9 @@
     "dashed": "Gestrichelt",
     "dotted": "Gepunktet",
     "toggle": "Darstellung",
-    "title": "Darstellung des Organigramms"
+    "title": "Darstellung des Organigramms",
+    "inheritGlobal": "Global ({value})",
+    "themeColor": "Farbschema"
   },
   "reorder": "Reihenfolge",
   "addGoalLabel": "+ Ziel hinzufügen",

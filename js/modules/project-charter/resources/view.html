@@ -233,7 +233,7 @@
         <div class="pc__color-field">
           <button class="dmike-chart-ed-color-swatch" type="button" data-field="bg-swatch" :style="nodeSwatchStyle(form.bg, 'bg')"
             :title="t('colorPick')" :aria-label="t('colorPick')" @click="pickNodeColor('bg', $event)"></button>
-          <input type="text" class="field field--sm" data-field="bg" data-help-key="" x-param="bg" :aria-label="t('editor.bgColor')">
+          <input type="text" class="field field--sm" data-field="bg" data-help-key="" x-param="bg" :aria-label="t('editor.bgColor')" :placeholder="inheritLabel('nodeBg')">
         </div>
       </div>
       <div class="field-group field-group--inline">
@@ -241,20 +241,23 @@
         <div class="pc__color-field">
           <button class="dmike-chart-ed-color-swatch" type="button" data-field="borderColor-swatch" :style="nodeSwatchStyle(form.borderColor, 'borderColor')"
             :title="t('colorPick')" :aria-label="t('colorPick')" @click="pickNodeColor('borderColor', $event)"></button>
-          <input type="text" class="field field--sm" data-field="borderColor" data-help-key="" x-param="borderColor" :aria-label="t('editor.borderColor')">
+          <input type="text" class="field field--sm" data-field="borderColor" data-help-key="" x-param="borderColor" :aria-label="t('editor.borderColor')" :placeholder="inheritLabel('nodeBorderColor')">
         </div>
       </div>
       <div class="field-group field-group--inline">
         <label class="pc__form-label" data-help-key="modules.project-charter.actions.updateOrgNode.params.borderStyle" x-text="t('editor.borderStyle')"></label>
         <select class="field" data-field="borderStyle" data-help-key="" x-param="borderStyle" :aria-label="t('editor.borderStyle')">
-          <option value="" x-text="t('editor.solid')"></option>
+          <option value="" x-text="inheritLabel('nodeBorderStyle')"></option>
           <option value="dashed" x-text="t('editor.dashed')"></option>
           <option value="dotted" x-text="t('editor.dotted')"></option>
         </select>
       </div>
       <div class="field-group field-group--inline">
         <label class="pc__form-label" data-help-key="modules.project-charter.actions.updateOrgNode.params.borderWidth" x-text="t('editor.borderWidth')"></label>
-        <input type="number" class="field field--num" data-field="borderWidth" data-help-key="" x-param="borderWidth" :aria-label="t('editor.borderWidth')">
+        <div class="pc__width-field">
+          <input type="number" class="field field--num" data-field="borderWidth" data-help-key="" min="0" max="8" step="1" x-param="borderWidth" :aria-label="t('editor.borderWidth')">
+          <span class="pc__inherit-hint" data-field="borderWidth-hint" x-show="inheritsWidth(form.borderWidth)" x-text="inheritLabel('nodeBorderWidth')"></span>
+        </div>
       </div>
     </form>
   </div>

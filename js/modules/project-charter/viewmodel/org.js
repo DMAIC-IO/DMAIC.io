@@ -61,9 +61,11 @@ export const orgView = (ctx) => {
     init() {
       onCommand = (e) => this.afterCommand(e);
       ctx.eventBus?.on?.('command:executed', onCommand);
-      // Neue oder geänderte Knoten: nach dem Rendern die Höhen messen.
-      this.$watch(() => (this.layout.nodes ?? []).map((n) => `${n.id}\u0001${n.title}\u0001${n.desc}`).join('\u0002'),
-        () => this.$nextTick(() => this.measureHeights()));
+      // Alles, was die Höhe eines Knotens ändern kann (sichtbare Knoten, Texte,
+      // eigener und globaler Rahmen): nach dem Rendern die Höhen messen.
+      this.$watch(() => JSON.stringify([
+        (this.layout.nodes ?? []).map((n) => n.id), this.model.orgChart, this.model.orgStyle,
+      ]), () => this.$nextTick(() => this.measureHeights()));
       this.$nextTick(() => {
         this.measureHeights();
         this.pinY();
@@ -225,8 +227,8 @@ export const orgView = (ctx) => {
 
     /**
      * Drücken: auf einem Knoten wählen (die Knoten-Geste zieht), auf der
-     * Fläche verschieben und die Auswahl aufheben. Ein Knopf im Knoten wählt
-     * nicht; die Werkzeugleiste tut hier nichts.
+     * Fläche verschieben und die Auswahl aufheben. Knöpfe im Knoten halten
+     * ihr pointerdown selbst zurück; die Werkzeugleiste tut hier nichts.
      * @param {PointerEvent} e
      */
     onPointerDown(e) {
@@ -236,7 +238,7 @@ export const orgView = (ctx) => {
       const el = /** @type {HTMLElement|null} */ (target.closest('.pc__org-node'));
       if (el) {
         const n = (this.layout.nodes ?? []).find((x) => x.id === el.dataset.id);
-        if (!target.closest('.pc__org-node-btn')) this.state.selectedId = el.dataset.id;
+        this.state.selectedId = el.dataset.id;
         pressed = n ? { id: n.id, cx: e.clientX, cy: e.clientY, x: n.x, y: n.y } : null;
         return;
       }

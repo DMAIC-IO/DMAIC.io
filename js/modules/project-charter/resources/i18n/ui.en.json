@@ -38,7 +38,9 @@
     "dashed": "Dashed",
     "dotted": "Dotted",
     "toggle": "Appearance",
-    "title": "Org chart appearance"
+    "title": "Org chart appearance",
+    "inheritGlobal": "Global ({value})",
+    "themeColor": "Color scheme"
   },
   "reorder": "Order",
   "addGoalLabel": "+ Add Goal",

@@ -9,6 +9,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import Alpine from '../../../vendor/alpinejs/csp.js';
 import mod from '../../../js/modules/project-charter/viewmodel/viewmodel.js';
+import { setFields } from '../../../js/core/model.js';
 import { registerFieldDirective } from '../../../js/core/field-directive.js';
 import { registerCommandDirectives } from '../../../js/core/command-directives.js';
 import { registerWidgetDirective } from '../../../js/core/widget-directive.js';
@@ -28,6 +29,15 @@ async function until(ok) {
 }
 const mounted = [];
 let ready = false;
+/** Deutsche Texte des Moduls. */
+let UI = null;
+
+/** Text unter einem Punkt-Pfad, Parameter `{name}` eingesetzt; sonst der Schlüssel. */
+function tr(key, params) {
+  const v = key.split('.').reduce((o, k) => (o && typeof o === 'object' ? o[k] : undefined), UI);
+  if (typeof v !== 'string') return key;
+  return v.replace(/\{(\w+)\}/g, (_, k) => (params && k in params ? String(params[k]) : `{${k}}`));
+}
 
 async function ensureTemplate() {
   if (ready) return;
@@ -35,6 +45,14 @@ async function ensureTemplate() {
   registerWidgetDirective(Alpine, { i18n: WIDGET_I18N, widgets: WIDGETS });
   registerCommandDirectives(Alpine);
   if (!Alpine.version) Alpine.start();
+  UI = await (await fetch(new URL(`../../../js/modules/${ID}/resources/i18n/ui.de.json`, import.meta.url), { cache: 'no-cache' })).json();
+  // Modul-CSS: Rahmenbreiten wirken auf die gemessenen Knotenhöhen.
+  if (!document.querySelector('style[data-test-css="project-charter"]')) {
+    const css = document.createElement('style');
+    css.dataset.testCss = 'project-charter';
+    css.textContent = await (await fetch(new URL(`../../../js/modules/${ID}/resources/style.css`, import.meta.url), { cache: 'no-cache' })).text();
+    document.head.append(css);
+  }
   if (!document.querySelector(`template[data-tpl="${TPL_KEY}"]`)) {
     const html = await (await fetch(new URL(`../../../${TPL_KEY}`, import.meta.url), { cache: 'no-cache' })).text();
     const tpl = document.createElement('template');
@@ -107,7 +125,7 @@ async function mount(model = null) {
       setModuleState: (id, s) => { states[id] = s; },
       getProjectCycle: () => 'dmaic',
     },
-    i18n: { t: (k) => k, tf: () => (k) => k, getLanguage: () => 'de' },
+    i18n: { t: (k) => k, tf: () => tr, getLanguage: () => 'de' },
     eventBus: bus,
     notify: () => {},
     dialog,
@@ -224,6 +242,27 @@ suite('project-charter org: Knoten', () => {
     const measured = h.vm().state.heights.r;
     assertEqual(measured, nodeEl(h, 'r').offsetHeight);
     assertTrue(measured > 0, 'gemessene Höhe');
+  });
+});
+
+suite('project-charter org: Höhen nach Stiländerung', () => {
+  test('globale Rahmenbreite 1 → 8 misst die Knoten neu', async () => {
+    const h = await mount(TREE);
+    await until(() => Object.keys(h.vm().state.heights).length === 4);
+    const before = h.vm().state.heights.r;
+    setFields(h.vm().model, { orgStyle: { ...STYLE, nodeBorderWidth: 8 } });
+    await until(() => h.vm().state.heights.r !== before);
+    assertEqual(h.vm().state.heights.r, before + 14, 'zweimal 7 px mehr Rahmen');
+    assertEqual(h.vm().state.heights.r, nodeEl(h, 'r').offsetHeight);
+  });
+
+  test('eigene Rahmenbreite eines Knotens misst ihn neu', async () => {
+    const h = await mount(TREE);
+    await until(() => Object.keys(h.vm().state.heights).length === 4);
+    const before = h.vm().state.heights.b;
+    h.vm().model.setOrgNodeBorderWidth({ id: 'b', value: 6 });
+    await until(() => h.vm().state.heights.b !== before);
+    assertEqual(h.vm().state.heights.b, before + 10);
   });
 });
 
@@ -357,6 +396,15 @@ suite('project-charter org: Stil', () => {
     assertEqual(body.querySelector('[data-field="title"]').value, 'PL');
     assertEqual(body.querySelector('[data-field="bg"]').value, '');
     assertEqual(body.querySelector('[data-field="borderStyle"]').value, '');
+    // Geerbt wird angezeigt, was gilt: der globale Stil.
+    const style = body.querySelector('[data-field="borderStyle"]');
+    assertEqual(style.options[style.selectedIndex].textContent, 'Global (Gestrichelt)');
+    assertEqual(body.querySelector('[data-field="borderWidth"]').value, '0');
+    const hint = body.querySelector('[data-field="borderWidth-hint"]');
+    assertEqual(hint.textContent, 'Global (3)');
+    assertTrue(hint.style.display !== 'none', 'Hinweis sichtbar');
+    assertEqual(body.querySelector('[data-field="bg"]').placeholder, 'Global (rgb(1, 2, 3))');
+    assertEqual(body.querySelector('[data-field="borderColor"]').placeholder, 'Global (Farbschema)');
     h.dialog.open.api.confirm();
     await settle();
     assertEqual(h.dialog.open, null, 'Dialog zu');

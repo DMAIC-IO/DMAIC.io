@@ -92,6 +92,29 @@ export const styleView = (_ctx) => ({
   },
 
   /**
+   * Beschriftung „erbt vom globalen Stil“ mit dem wirksamen Wert, für den
+   * Bearbeiten-Dialog (Option „leer“, Hinweis, Platzhalter).
+   * @param {'nodeBorderStyle'|'nodeBorderWidth'|'nodeBg'|'nodeBorderColor'} key
+   * @returns {string}
+   */
+  inheritLabel(key) {
+    const s = this.model.orgStyle;
+    let value;
+    if (key === 'nodeBorderStyle') value = this.t(`editor.${s.nodeBorderStyle}`);
+    else if (key === 'nodeBorderWidth') value = String(s.nodeBorderWidth);
+    else value = s[key] || this.t('editor.themeColor');
+    return this.t('editor.inheritGlobal', { value });
+  },
+
+  /**
+   * Erbt die Rahmenbreite im Dialog (0 oder 1 übernimmt den globalen Stil)?
+   * @param {unknown} v Wert des Formularfelds @returns {boolean}
+   */
+  inheritsWidth(v) {
+    return v === 0 || v === 1 || v === '' || v === undefined || v === null;
+  },
+
+  /**
    * Farbwähler im Bearbeiten-Dialog: schreibt in das Formularfeld `name`
    * neben dem Farbfeld.
    * @param {keyof typeof NODE_COLOR_INHERITS} name @param {MouseEvent} ev

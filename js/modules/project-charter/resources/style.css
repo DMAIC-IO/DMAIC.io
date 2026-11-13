@@ -440,6 +440,19 @@
   gap: var(--spacing-s);
 }
 
+/* Rahmenbreite im Bearbeiten-Dialog: Feld und Hinweis auf den geerbten Wert */
+.pc__width-field {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+}
+
+.pc__inherit-hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
 .pc__color-field .dmike-chart-ed-color-swatch,
 .pc__org-editor .dmike-chart-ed-color-swatch {
   padding: 0;
