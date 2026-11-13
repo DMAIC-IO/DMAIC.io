@@ -11,6 +11,7 @@ import { runUiCommand } from '../core/command-directives.js';
 import { runExport } from '../core/exporter.js';
 import { describeElement } from '../core/context-help.js';
 import { findInstancePhase } from '../core/router/instance-ops.js';
+import { shortcutRegistry } from '../core/shortcut-registry.js';
 
 /**
  * Obergrenze für `whenInstanceReady`. Großzügig: ein Einhängen lädt einen
@@ -170,6 +171,10 @@ export class Workspace {
     this._moduleArea = content.querySelector('.workspace__module-area');
     this._actionEffectDisposers = [];
 
+    if (this._boundHistoryKey) document.removeEventListener('keydown', this._boundHistoryKey);
+    this._boundHistoryKey = (e) => this._onHistoryKey(e);
+    document.addEventListener('keydown', this._boundHistoryKey);
+
     this._subscribeEvents();
     this._showPhase('define');
   }
@@ -286,7 +291,8 @@ export class Workspace {
         const key = `${inst.i18nKey}.actions.${name}.help`;
         return this._i18n.exists?.(key) ? this._i18n.t(key) : null;
       };
-      const vms = resolveActions(actions, tf, helpFor);
+      const frozen = this._stateManager?.isCompleted?.() === true;
+      const vms = resolveActions(actions, tf, helpFor).filter((vm) => !(vm.history && frozen));
       vms.forEach((vm) => {
         const el = vm.isDropdown
           ? this._buildActionDropdown(vm, inst)
@@ -351,7 +357,57 @@ export class Workspace {
     return btn;
   }
 
+  /**
+   * Knopf für Rückgängig/Wiederholen: nur das Symbol, Name und Hilfe über
+   * `title` und `aria-describedby`; gesperrt, solange der Verlauf der
+   * Instanz in dieser Richtung leer ist.
+   * @param {{history: 'undo'|'redo', iconId: string, text: string, variant: string}} vm
+   * @param {object} inst
+   * @returns {HTMLButtonElement}
+   */
+  _buildHistoryButton(vm, inst) {
+    const dir = vm.history;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `workspace__action workspace__action--${vm.variant} workspace__action--history`;
+    btn.dataset.history = dir;
+    btn.title = vm.text;
+    btn.setAttribute('aria-label', vm.text);
+    btn.append(icon(vm.iconId, { size: 'sm' }));
+    describeElement(btn, `history.${dir}Help`);
+    btn.addEventListener('click', () => { inst.historyStep?.(dir); });
+    if (typeof inst.bindEffect === 'function') {
+      const dispose = inst.bindEffect(() => { btn.disabled = !inst.historyCan?.(dir); });
+      this._actionEffectDisposers.push(dispose);
+    } else {
+      btn.disabled = true;
+    }
+    return btn;
+  }
+
+  /**
+   * Strg+Z / Strg+Y am Dokument: Verlauf des aktiven Tabs. Greift nicht in
+   * Eingabefeldern und bearbeitbaren Flächen — dort gilt das Rückgängig des
+   * Browsers — und nicht in Tabs ohne Verlauf.
+   * @param {KeyboardEvent} e
+   */
+  _onHistoryKey(e) {
+    if (e.defaultPrevented) return;
+    const dir = shortcutRegistry.matches(e, 'module.undo') ? 'undo'
+      : shortcutRegistry.matches(e, 'module.redo') ? 'redo' : null;
+    if (!dir) return;
+    const t = e.target;
+    if (t instanceof Element && (t.closest('input, textarea, select') || t.isContentEditable
+      || t.closest('[contenteditable]:not([contenteditable="false"])'))) return;
+    if (this._stateManager?.isCompleted?.() === true) return;
+    const inst = this._instances?.get(this._activeInstanceId);
+    if (!inst?.getActions?.()?.some((a) => a.history)) return;
+    e.preventDefault();
+    inst.historyStep?.(dir);
+  }
+
   _buildActionButton(vm, inst) {
+    if (vm.history) return this._buildHistoryButton(vm, inst);
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = `workspace__action workspace__action--${vm.variant}`;

@@ -36,6 +36,21 @@ const DEFINITIONS = [
     aliasCombos: ['Ctrl+Shift+Z'],
   },
   {
+    id: 'module.undo',
+    category: 'module',
+    scope: 'module',
+    descriptionKey: 'settings.shortcutsLabel.moduleUndo',
+    defaultCombo: 'Ctrl+Z',
+  },
+  {
+    id: 'module.redo',
+    category: 'module',
+    scope: 'module',
+    descriptionKey: 'settings.shortcutsLabel.moduleRedo',
+    defaultCombo: 'Ctrl+Y',
+    aliasCombos: ['Ctrl+Shift+Z'],
+  },
+  {
     id: 'datagrid.selectAll',
     category: 'datagrid',
     scope: 'datagrid',

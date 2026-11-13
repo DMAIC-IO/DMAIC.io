@@ -192,6 +192,7 @@
     "shortcutsGroup": {
       "general": "Allgemein",
       "datagrid": "Tabelle",
+      "module": "Modul: Verlauf",
       "worksheet": "Modul: Datentabelle",
       "vocCtxTree": "Modul: VoC-CTX-Baum"
     },
@@ -199,6 +200,8 @@
       "exportProject": "Projekt exportieren",
       "undo": "Rückgängig",
       "redo": "Wiederholen",
+      "moduleUndo": "Modul: Rückgängig",
+      "moduleRedo": "Modul: Wiederholen",
       "selectAll": "Alles markieren",
       "editCell": "Aktive Zelle bearbeiten",
       "openFormulaEditor": "Formel-Editor öffnen",
@@ -1171,6 +1174,12 @@
         "strokeWidth": "Rahmendicke"
       }
     }
+  },
+  "history": {
+    "undo": "Rückgängig",
+    "redo": "Wiederholen",
+    "undoHelp": "Nimmt die letzte Änderung an diesem Modul zurück.",
+    "redoHelp": "Stellt die zuletzt zurückgenommene Änderung wieder her."
   },
   "export": {
     "label": "Export",

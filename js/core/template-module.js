@@ -421,11 +421,19 @@ export function createModule(base) {
   if (history !== undefined && history !== true && !(history && typeof history === 'object' && Number.isInteger(history.depth ?? 50) && (history.depth ?? 50) >= 1)) {
     throw new Error(`createModule(${id}): history must be true or { depth: integer >= 1 }`);
   }
-  const actions = exportsDef === undefined ? (config.actions ?? []) : [...(config.actions ?? []), {
-    icon: 'action.download',
-    title: 'export.label',
-    children: formatsOf(exportsDef).map((fmt) => ({ icon: `format.${fmt}`, title: `export.${fmt}`, export: fmt })),
-  }];
+  const historyActions = history ? [
+    { icon: 'action.undo', title: 'history.undo', history: 'undo' },
+    { icon: 'action.redo', title: 'history.redo', history: 'redo' },
+  ] : [];
+  const actions = (exportsDef === undefined && !history) ? (config.actions ?? []) : [
+    ...(config.actions ?? []),
+    ...historyActions,
+    ...(exportsDef === undefined ? [] : [{
+      icon: 'action.download',
+      title: 'export.label',
+      children: formatsOf(exportsDef).map((fmt) => ({ icon: `format.${fmt}`, title: `export.${fmt}`, export: fmt })),
+    }]),
+  ];
   gestures.forEach((g, i) => {
     if (!isGesture(g)) throw new Error(`createModule ${id}: gestures[${i}] is not a defineGesture result`);
   });

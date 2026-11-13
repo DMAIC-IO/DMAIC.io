@@ -31,7 +31,7 @@ export const STAT_DEFAULTS = { confidenceLevel: 95, power: 80 };
 const pick = (v, allowed) => (allowed.includes(v) ? v : allowed[0]);
 
 /** Shortcut group display order (identical to legacy groupOrder). */
-export const SHORTCUT_GROUP_ORDER = ['general', 'datagrid', 'worksheet', 'vocCtxTree'];
+export const SHORTCUT_GROUP_ORDER = ['general', 'datagrid', 'module', 'worksheet', 'vocCtxTree'];
 
 /** Font-slider bounds + defaults, keyed by state key (mirrors index.html). */
 export const FONT_SLIDERS = [

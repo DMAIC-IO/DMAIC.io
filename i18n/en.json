@@ -192,6 +192,7 @@
     "shortcutsGroup": {
       "general": "General",
       "datagrid": "Table",
+      "module": "Module: history",
       "worksheet": "Module: Worksheet",
       "vocCtxTree": "Module: VoC-CTX Tree"
     },
@@ -199,6 +200,8 @@
       "exportProject": "Export project",
       "undo": "Undo",
       "redo": "Redo",
+      "moduleUndo": "Module: undo",
+      "moduleRedo": "Module: redo",
       "selectAll": "Select all",
       "editCell": "Edit active cell",
       "openFormulaEditor": "Open formula editor",
@@ -1171,6 +1174,12 @@
         "strokeWidth": "Border width"
       }
     }
+  },
+  "history": {
+    "undo": "Undo",
+    "redo": "Redo",
+    "undoHelp": "Reverts the last change made in this module.",
+    "redoHelp": "Restores the change that was last reverted."
   },
   "export": {
     "label": "Export",

@@ -2311,6 +2311,9 @@ export class DataGrid {
     if (active && active !== document.body && !this.container.contains(active) && active.tagName !== 'BODY') {
       return; // Don't intercept keys meant for other UI
     }
+    // Ohne Fokus im Gitter gehören die Tasten nur einem sichtbaren Gitter —
+    // ein Gitter in einem verdeckten Tab bleibt stumm.
+    if (!(active && this.container.contains(active)) && this.container.offsetParent === null) return;
 
     if (this._fillDrag && e.key === 'Escape') {
       e.preventDefault();

@@ -5,6 +5,7 @@
  * Ein Eintrag mit `command` (und optional `args`) führt ein Kommando des
  * Models aus; `agentAction` ist dann das Kommando. Ein Eintrag mit `export`
  * (Format) baut eine Datei aus den Mappern des Moduls (`core/exporter.js`).
+ * Ein Eintrag mit `history` (`'undo'`/`'redo'`) bedient den Verlauf der Instanz.
  *
  * @param {Array<object>|null|undefined} actions - descriptor list from config.actions
  * @param {(key: string, params?: object) => string} tf - module translation fn (i18n.tf(i18nKey))
@@ -16,7 +17,7 @@
  *   would surface as a tooltip reading "actions.foo.help".
  * @returns {Array<{iconId:string, text:string, tooltip:string|null, help:string|null,
  *   agentAction:string|null, variant:'primary'|'secondary', isDropdown:boolean,
- *   onClick:?function, command:?string, export:?string, args:object, dynamicText:?function, children:Array<object>}>}
+ *   onClick:?function, command:?string, export:?string, history:?('undo'|'redo'), args:object, dynamicText:?function, children:Array<object>}>}
  */
 export function resolveActions(actions, tf, helpFor) {
   if (!Array.isArray(actions)) return [];
@@ -40,6 +41,7 @@ export function resolveActions(actions, tf, helpFor) {
       command: a.command ?? null,
       args: a.args ?? {},
       export: a.export ?? null,
+      history: a.history === 'undo' || a.history === 'redo' ? a.history : null,
       // Bind the module tf so a reactive label can pick its own i18n key.
       dynamicText: a.dynamicText ? (data) => a.dynamicText(data, tf) : null,
       children,
