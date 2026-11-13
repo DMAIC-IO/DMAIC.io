@@ -19,7 +19,7 @@ import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { listModuleFiles } from './module-gates.mjs';
 
 /** Kerndateien, die immer geprüft werden. */
-export const TYPED_CORE = Object.freeze(['js/core/model.js', 'js/core/validate.js', 'js/core/module-descriptor.js', 'js/core/async-task.js']);
+export const TYPED_CORE = Object.freeze(['js/core/model.js', 'js/core/validate.js', 'js/core/module-descriptor.js', 'js/core/async-task.js', 'js/core/worksheet-write.js']);
 
 const OPTIONS = {
   allowJs: true,

@@ -20,6 +20,7 @@ import { collectLabData, renderLabDataModule } from './lab-data.mjs';
 import { collectHelpIds, renderHelpRegistryModule } from './help-data.mjs';
 import { collectReferenceIds, renderReferencesRegistryModule } from './references-data.mjs';
 import { collectAgentData, renderAgentRegistryModule } from './agent-data.mjs';
+import { renderAgentTypes } from './agent-types.mjs';
 import { collectModelFiles, loadModelSchema, renderModelTypes, collectStateFiles, loadStateSchema, renderStateTypes, collectFormFiles, loadFormSchemas, renderFormTypes, collectSettingsFiles, loadSettingsSchema, renderSettingsTypes, renderWidgetProps } from './model-types.mjs';
 import { loadWidgetSchemas, bindingChecks } from './widget-gates.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
@@ -373,8 +374,14 @@ export async function runBuild(appDir = APP_DIR, { check = false, converted = CO
   emit(join(appDir, 'js', 'core', 'references-registry.generated.js'), referencesRegistry, check, changed);
 
   // 1b3. agent registry (JSDoc-derived action/field schema per module)
-  const agentRegistry = renderAgentRegistryModule(await collectAgentData(appDir));
+  const agentData = await collectAgentData(appDir);
+  const agentRegistry = renderAgentRegistryModule(agentData);
   emit(join(appDir, 'js', 'core', 'agent', 'agent-registry.generated.js'), agentRegistry, check, changed);
+
+  // 1b3a. Typkarte der Agentenfläche (Stapel für ctx.instances.interact, geprüft von `npm run typecheck`)
+  const modelNames = {};
+  for (const { id, file } of collectModelFiles(appDir)) modelNames[id] = (await loadModelSchema(file)).name;
+  emit(join(appDir, 'js', 'core', 'agent', 'agent-types.generated.js'), renderAgentTypes(agentData.modules, { modelNames }), check, changed);
 
   // 1b4. Typen je Modul mit deklarativem Model (domain/model.js → domain/model.types.js)
   for (const { file } of collectModelFiles(appDir)) {

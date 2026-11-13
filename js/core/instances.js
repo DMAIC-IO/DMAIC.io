@@ -38,7 +38,7 @@ import { stripPaths } from './view-fields.js';
 /**
  * Was Module davon bekommen: Lesen und Stapel an andere Instanzen.
  * @typedef {Pick<InstancesService, 'list' | 'read'> & {
- *   interact: (stack: object[]) => Promise<object>,
+ *   interact: (stack: import('./agent/agent-types.generated.js').ModuleStack) => Promise<object>,
  * }} ModuleInstances
  */
 /** Alias der früheren, nur lesenden Form. @typedef {ModuleInstances} InstancesReader */

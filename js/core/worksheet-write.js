@@ -228,11 +228,13 @@ function emptySheetState() {
  */
 function recalcSheetState(state) {
   state.columns = state.columns.map(c => (c?.formulas?.some(Boolean) ? { ...c, values: [...(c.values ?? [])] } : c));
-  recalcAllFormulas({
+  // Die Formeln lesen Nachbarspalten über `getColumnByIndex`.
+  const grid = {
     columns: state.columns,
     rowCount: state.rowCount,
     getColumnByIndex: (i) => state.columns[i],
-  });
+  };
+  recalcAllFormulas(grid);
 }
 
 /**
@@ -368,6 +370,7 @@ function writeOps(ctx, instanceId, plan) {
   const eb = ctx.eventBus;
   const { sheetId, ops } = plan;
 
+  /** @type {{ ok: boolean, reason?: string, columnIds?: string[] }|null} */
   let answer = null;
   eb.emit('worksheet:writeColumns', { instanceId, sheetId, ops, reply: (res) => { answer = res; } });
   if (answer) {
@@ -379,7 +382,7 @@ function writeOps(ctx, instanceId, plan) {
   const columnIds = [];
   for (const op of ops) {
     const res = applyWriteColumn(state, { ...op, sheetId });
-    if (!res.ok) throw writeError(ctx, res.reason);
+    if (res.ok === false) throw writeError(ctx, res.reason);
     state = res.state;
     columnIds.push(res.colId);
   }
