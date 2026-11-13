@@ -24,8 +24,6 @@
   "nodeTitle": "Titel",
   "nodeDescription": "Beschreibung",
   "orgNew": "Neu",
-  "orgFit": "Einpassen",
-  "orgLayout": "Anordnen",
   "editor": {
     "nodeAppearance": "Knotendarstellung",
     "bgColor": "Hintergrund",
@@ -49,12 +47,9 @@
   "editNode": "Position bearbeiten",
   "collapse": "Zuklappen",
   "expand": "Aufklappen",
-  "childCount": "{count} untergeordnete Positionen",
   "zoomIn": "Hineinzoomen",
   "fit": "Einpassen",
-  "orgStyleReset": "Zurücksetzen",
   "colorPick": "Farbe wählen",
-  "colorDefault": "Farbschema",
   "exportFileName": "organigramm",
   "invariants": {
     "uniqueIds": "Jedes Ziel und jede Position braucht eine eigene id.",

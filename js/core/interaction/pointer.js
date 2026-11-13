@@ -56,10 +56,17 @@ export function bindPointer(root, def, gesture) {
     }
   };
 
+  // Ein neues Drücken heißt: der Klick nach der letzten Geste kam nie (etwa
+  // weil das Element beim Ablegen wanderte) — nichts mehr verschlucken. In der
+  // Einfangphase, damit auch ein Knopf im Griff mit eigenem stopPropagation zählt.
+  const onAnyDown = () => { if (gesture.idle()) gesture.consumeClick(); };
+
+  root.addEventListener('pointerdown', onAnyDown, true);
   root.addEventListener('pointerdown', onDown);
   root.addEventListener('click', onClick, true);
   return () => {
     stopActive?.();
+    root.removeEventListener('pointerdown', onAnyDown, true);
     root.removeEventListener('pointerdown', onDown);
     root.removeEventListener('click', onClick, true);
   };

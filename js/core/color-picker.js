@@ -76,9 +76,11 @@ import { createSliderInput } from './slider.js';
  * @param {MouseEvent} e
  * @param {string} currentColor - rgba() string
  * @param {function} onChange - Called with new rgba() string on each slider change
+ * @param {{ onClose?: () => void }} [opts] - `onClose` runs once when the picker closes
+ *   (overlay click, Escape or `close()`), e.g. to commit the last chosen colour
  * @returns {{ close: function }} - Call close() to remove the popup
  */
-export function openColorPicker(e, currentColor, onChange) {
+export function openColorPicker(e, currentColor, onChange, opts = {}) {
   const c = parseRGBA(currentColor);
   const overlay = document.createElement('div');
   overlay.className = 'dmike-chart-ed-cp-overlay';
@@ -194,10 +196,14 @@ export function openColorPicker(e, currentColor, onChange) {
     close();
   };
 
+  let closed = false;
   const close = () => {
+    if (closed) return;
+    closed = true;
     window.removeEventListener('keydown', onKeydown, true);
     overlay.remove();
     popup.remove();
+    opts.onClose?.();
   };
 
   overlay.setAttribute('data-dialog-owns-escape', '');

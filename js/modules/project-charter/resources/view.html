@@ -92,16 +92,170 @@
     </section>
 
     <!-- Organigramm -->
-    <section class="pc__section pc__org-section">
+    <section class="pc__section pc__org-section" :style="styleVars">
       <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.project-charter.fields.orgChart.help" x-text="t('orgChart')"></span></div>
-      <div class="pc__org-card">
-        <div class="pc__org-wrap">
-          <div class="pc__org-empty">
+      <div class="pc__org-toolbar">
+        <button class="btn btn--primary btn--sm pc__org-add-btn" type="button" data-help-key="modules.project-charter.actions.addOrgNode.help"
+          x-dialog="addNodeForm" :data-dialog-title="t('orgNew')" x-text="t('orgNewLabel')"></button>
+      </div>
+      <div class="pc__org-card" data-ref="orgCard">
+        <div class="pc__org-wrap" data-ref="orgWrap" :class="wrapClass" :style="wrapStyle"
+          @pointerdown="onPointerDown($event)" @pointermove="onPointerMove($event)" @pointerup="onPointerUp()"
+          @pointercancel="onPointerUp()" @pointerleave="onPointerUp()" @wheel="onWheel($event)">
+          <div class="pc__org-canvas" data-ref="orgCanvas" data-org-root :style="canvasStyle">
+            <div class="pc__org-lines" data-ref="orgLines" x-widget="node-links" x-widget-config="orgLinks"></div>
+            <template x-for="n in layout.nodes" :key="n.id">
+              <div class="pc__org-node" tabindex="0" :data-id="n.id" :data-parent-id="n.pid" :data-child-count="n.childCount"
+                :class="nodeClass(n)" :style="nodeStyle(n)" :aria-label="n.title">
+                <div class="pc__org-dot-t"></div>
+                <div class="pc__org-node-title" x-text="n.title"></div>
+                <template x-if="n.desc">
+                  <div class="pc__org-node-desc" x-text="n.desc"></div>
+                </template>
+                <div class="pc__org-node-bar">
+                  <button class="pc__org-node-btn" type="button" data-action="add" data-help-key=""
+                    @pointerdown.stop @keydown.enter.stop @keydown.space.stop
+                    x-dialog="addNodeForm" :data-arg-parent-id="n.id" :data-dialog-title="t('addChildTo', { name: n.title })"
+                    :title="t('addChild')" :aria-label="t('addChild')"><span class="icon pc__org-node-ico" data-icon="action.add" aria-hidden="true"></span></button>
+                  <button class="pc__org-node-btn" type="button" data-action="edit" data-help-key=""
+                    @pointerdown.stop @keydown.enter.stop @keydown.space.stop
+                    x-dialog="editNodeForm" :data-arg-id="n.id" :data-dialog-title="t('editNode')"
+                    :title="t('editNode')" :aria-label="t('editNode')"><span class="icon pc__org-node-ico" data-icon="action.edit" aria-hidden="true"></span></button>
+                  <template x-if="n.childCount > 0">
+                    <button class="pc__org-node-btn" type="button" data-action="toggle"
+                      @pointerdown.stop @keydown.enter.stop @keydown.space.stop @click="toggleCollapse(n.id)"
+                      :title="collapseTitle(n)" :aria-label="collapseTitle(n)" :aria-expanded="n.collapsed ? 'false' : 'true'"><span class="icon pc__org-node-ico" :data-icon="n.collapsed ? 'nav.expand-down' : 'nav.collapse-up'" aria-hidden="true"></span><span x-show="n.collapsed" x-text="n.childCount"></span></button>
+                  </template>
+                  <button class="pc__org-node-btn pc__org-node-btn--del" type="button" data-action="del" data-help-key=""
+                    @pointerdown.stop @keydown.enter.stop @keydown.space.stop
+                    x-command="removeOrgNode" :data-arg-id="n.id"
+                    :title="t('common.delete')" :aria-label="t('common.delete')"><span class="icon pc__org-node-ico" data-icon="action.delete" aria-hidden="true"></span></button>
+                </div>
+                <div class="pc__org-dot-b"></div>
+              </div>
+            </template>
+            <div class="pc__org-drop-line" :style="dropStyle"></div>
+          </div>
+          <div class="pc__org-empty" data-ref="orgEmpty" :class="model.orgChart.length ? 'pc__org-empty--hidden' : ''">
             <p x-text="t('noOrgChart')"></p>
+          </div>
+          <div class="dmike-chart-modebar pc__org-modebar">
+            <button class="dmike-chart-modebar-btn" type="button" data-action="zoom"
+              :title="t('zoomIn')" :aria-label="t('zoomIn')" @click="zoomIn()"><span class="icon" data-icon="action.zoom-in" aria-hidden="true"></span></button>
+            <button class="dmike-chart-modebar-btn" type="button" data-action="reset"
+              :title="t('fit')" :aria-label="t('fit')" @click="fit()"><span class="icon" data-icon="action.reset" aria-hidden="true"></span></button>
+            <div class="dmike-chart-modebar-sep"></div>
+            <button class="dmike-chart-modebar-btn" type="button" data-action="editor" :class="state.editorOpen ? 'active' : ''"
+              :title="t('editor.toggle')" :aria-label="t('editor.toggle')" :aria-pressed="state.editorOpen ? 'true' : 'false'"
+              @click="toggleEditor()"><span class="icon" data-icon="action.edit" aria-hidden="true"></span></button>
+          </div>
+        </div>
+        <div class="pc__org-editor" data-ref="orgEditor" :class="state.editorOpen ? 'pc__org-editor--open' : ''">
+          <div class="pc__org-editor-inner" data-ref="orgEditorInner">
+            <div class="pc__org-editor-title"><span data-help-key="modules.project-charter.fields.orgStyle.help" x-text="t('editor.title')"></span></div>
+            <div class="dmike-chart-ed-section">
+              <div class="dmike-chart-ed-section-title" x-text="t('editor.nodeAppearance')"></div>
+              <div class="dmike-chart-ed-color-pair">
+                <label data-help-key="modules.project-charter.fields.orgStyle.nodeBg.help" x-text="t('editor.bgColor')"></label>
+                <button class="dmike-chart-ed-color-swatch" type="button" data-style-key="nodeBg" :style="swatchStyle('nodeBg')"
+                  :title="t('colorPick')" :aria-label="t('editor.bgColor')" @click="openColor('nodeBg', $event)"></button>
+              </div>
+              <div class="dmike-chart-ed-color-pair">
+                <label data-help-key="modules.project-charter.fields.orgStyle.nodeBorderColor.help" x-text="t('editor.borderColor')"></label>
+                <button class="dmike-chart-ed-color-swatch" type="button" data-style-key="nodeBorderColor" :style="swatchStyle('nodeBorderColor')"
+                  :title="t('colorPick')" :aria-label="t('editor.borderColor')" @click="openColor('nodeBorderColor', $event)"></button>
+              </div>
+              <div class="dmike-chart-ed-inline-row">
+                <label data-help-key="modules.project-charter.fields.orgStyle.nodeBorderStyle.help" x-text="t('editor.borderStyle')"></label>
+                <select data-style-key="nodeBorderStyle" data-help-key="" :aria-label="t('editor.borderStyle')" x-field="model.orgStyle.nodeBorderStyle">
+                  <option value="solid" x-text="t('editor.solid')"></option>
+                  <option value="dashed" x-text="t('editor.dashed')"></option>
+                  <option value="dotted" x-text="t('editor.dotted')"></option>
+                </select>
+              </div>
+              <div class="dmike-chart-ed-inline-row">
+                <label data-help-key="modules.project-charter.fields.orgStyle.nodeBorderWidth.help" x-text="t('editor.borderWidth')"></label>
+                <input type="number" data-style-key="nodeBorderWidth" data-help-key="" :aria-label="t('editor.borderWidth')" x-field="model.orgStyle.nodeBorderWidth">
+              </div>
+            </div>
+            <div class="dmike-chart-ed-section">
+              <div class="dmike-chart-ed-section-title" x-text="t('editor.connectorLines')"></div>
+              <div class="dmike-chart-ed-color-pair">
+                <label data-help-key="modules.project-charter.fields.orgStyle.lineColor.help" x-text="t('editor.lineColor')"></label>
+                <button class="dmike-chart-ed-color-swatch" type="button" data-style-key="lineColor" :style="swatchStyle('lineColor')"
+                  :title="t('colorPick')" :aria-label="t('editor.lineColor')" @click="openColor('lineColor', $event)"></button>
+              </div>
+              <div class="dmike-chart-ed-inline-row">
+                <label data-help-key="modules.project-charter.fields.orgStyle.lineStyle.help" x-text="t('editor.lineStyle')"></label>
+                <select data-style-key="lineStyle" data-help-key="" :aria-label="t('editor.lineStyle')" x-field="model.orgStyle.lineStyle">
+                  <option value="solid" x-text="t('editor.solid')"></option>
+                  <option value="dashed" x-text="t('editor.dashed')"></option>
+                  <option value="dotted" x-text="t('editor.dotted')"></option>
+                </select>
+              </div>
+              <div class="dmike-chart-ed-inline-row">
+                <label data-help-key="modules.project-charter.fields.orgStyle.lineWidth.help" x-text="t('editor.lineWidth')"></label>
+                <input type="number" data-style-key="lineWidth" data-help-key="" :aria-label="t('editor.lineWidth')" x-field="model.orgStyle.lineWidth">
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
+  </div>
+
+  <!-- Formulare der Dialoge: liegen versteckt hier, der Dialog leiht sie aus und gibt sie beim Schließen zurück -->
+  <div class="pc__modal-forms" hidden>
+    <form class="pc__node-form" x-ref="addNodeForm" x-command-form="addOrgNode">
+      <div class="field-group">
+        <label class="pc__form-label" data-help-key="modules.project-charter.actions.addOrgNode.params.title" x-text="t('nodeTitle') + ' *'"></label>
+        <input type="text" class="field" data-field="title" data-help-key="" maxlength="100" x-param="title" :placeholder="t('nodeTitle')">
+      </div>
+      <div class="field-group">
+        <label class="pc__form-label" data-help-key="modules.project-charter.actions.addOrgNode.params.desc" x-text="t('nodeDescription')"></label>
+        <textarea class="field" data-field="desc" data-help-key="" maxlength="300" x-param="desc" :placeholder="t('nodeDescription')"></textarea>
+      </div>
+    </form>
+
+    <form class="pc__node-form" x-ref="editNodeForm" x-command-form="updateOrgNode">
+      <div class="field-group">
+        <label class="pc__form-label" data-help-key="modules.project-charter.actions.updateOrgNode.params.title" x-text="t('nodeTitle') + ' *'"></label>
+        <input type="text" class="field" data-field="title" data-help-key="" maxlength="100" x-param="title">
+      </div>
+      <div class="field-group">
+        <label class="pc__form-label" data-help-key="modules.project-charter.actions.updateOrgNode.params.desc" x-text="t('nodeDescription')"></label>
+        <textarea class="field" data-field="desc" data-help-key="" maxlength="300" x-param="desc"></textarea>
+      </div>
+      <hr class="pc__org-form-sep">
+      <div class="field-group field-group--inline">
+        <label class="pc__form-label" data-help-key="modules.project-charter.actions.updateOrgNode.params.bg" x-text="t('editor.bgColor')"></label>
+        <div class="pc__color-field">
+          <button class="dmike-chart-ed-color-swatch" type="button" data-field="bg-swatch" :style="nodeSwatchStyle(form.bg, 'bg')"
+            :title="t('colorPick')" :aria-label="t('colorPick')" @click="pickNodeColor('bg', $event)"></button>
+          <input type="text" class="field field--sm" data-field="bg" data-help-key="" x-param="bg" :aria-label="t('editor.bgColor')">
+        </div>
+      </div>
+      <div class="field-group field-group--inline">
+        <label class="pc__form-label" data-help-key="modules.project-charter.actions.updateOrgNode.params.borderColor" x-text="t('editor.borderColor')"></label>
+        <div class="pc__color-field">
+          <button class="dmike-chart-ed-color-swatch" type="button" data-field="borderColor-swatch" :style="nodeSwatchStyle(form.borderColor, 'borderColor')"
+            :title="t('colorPick')" :aria-label="t('colorPick')" @click="pickNodeColor('borderColor', $event)"></button>
+          <input type="text" class="field field--sm" data-field="borderColor" data-help-key="" x-param="borderColor" :aria-label="t('editor.borderColor')">
+        </div>
+      </div>
+      <div class="field-group field-group--inline">
+        <label class="pc__form-label" data-help-key="modules.project-charter.actions.updateOrgNode.params.borderStyle" x-text="t('editor.borderStyle')"></label>
+        <select class="field" data-field="borderStyle" data-help-key="" x-param="borderStyle" :aria-label="t('editor.borderStyle')">
+          <option value="" x-text="t('editor.solid')"></option>
+          <option value="dashed" x-text="t('editor.dashed')"></option>
+          <option value="dotted" x-text="t('editor.dotted')"></option>
+        </select>
+      </div>
+      <div class="field-group field-group--inline">
+        <label class="pc__form-label" data-help-key="modules.project-charter.actions.updateOrgNode.params.borderWidth" x-text="t('editor.borderWidth')"></label>
+        <input type="number" class="field field--num" data-field="borderWidth" data-help-key="" x-param="borderWidth" :aria-label="t('editor.borderWidth')">
+      </div>
+    </form>
   </div>
 </section>

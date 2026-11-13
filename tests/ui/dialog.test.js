@@ -190,6 +190,25 @@ suite('dialog service — confirm / alert / show', () => {
     }
   });
 
+  test('a colour picker calls onClose once, after Escape or an overlay click', async () => {
+    const swatch = document.createElement('button');
+    document.body.append(swatch);
+    let closes = 0;
+    try {
+      const p = openColorPicker({ target: swatch }, 'rgba(0,0,0,1)', () => {}, { onClose: () => { closes++; } });
+      escapeOnWindow();
+      assertEqual(closes, 1, 'Escape');
+      p.close();
+      assertEqual(closes, 1, 'a second close does not call again');
+      openColorPicker({ target: swatch }, 'rgba(0,0,0,1)', () => {}, { onClose: () => { closes++; } });
+      document.querySelector('.dmike-chart-ed-cp-overlay').click();
+      assertEqual(closes, 2, 'overlay click');
+    } finally {
+      document.querySelectorAll('.dmike-chart-ed-cp-overlay, .dmike-chart-ed-cp-popup').forEach((el) => el.remove());
+      swatch.remove();
+    }
+  });
+
   test('a colour picker without a dialog closes on Escape', async () => {
     const swatch = document.createElement('button');
     document.body.append(swatch);

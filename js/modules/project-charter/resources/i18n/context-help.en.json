@@ -75,6 +75,9 @@
       "lineWidth": {
         "help": "Width of the connector lines, whole number 1 to 8."
       }
+    },
+    "layout": {
+      "help": "The layout of the org chart: where each visible position sits and its connecting lines, from the tree, the collapsed positions and the measured heights. A view only."
     }
   },
   "state": {

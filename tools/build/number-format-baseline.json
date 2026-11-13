@@ -168,6 +168,10 @@
   "js/modules/process-capability/process-capability.js": {
     "count": 3
   },
+  "js/modules/project-charter/resources/view.html": {
+    "count": 4,
+    "reason": "Zielerreichung, Rahmen- und Linienbreite (Stil-Panel, Bearbeiten-Dialog) bleiben Zahlenfelder mit Pfeiltasten (Ganzzahlen), wie bisher; die Werte laufen über x-field bzw. x-param"
+  },
   "js/modules/random-generator/random-generator.html": {
     "count": 6
   },

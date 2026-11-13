@@ -47,3 +47,24 @@ export function siblingsOf(nodes, id) {
   const node = nodes.find((n) => n.id === id);
   return node ? childrenOf(nodes, node.pid ?? null) : [];
 }
+
+/**
+ * Die Liste nach dem Umhängen eines Knotens: `id` wird Kind von `parentId`
+ * an der Stelle `index` unter dessen Kindern (ohne den Knoten selbst),
+ * `null` = ans Ende. Prüft weder Zyklus noch Bereich.
+ * @template {{id: string, pid: string|null}} T
+ * @param {T[]} nodes @param {string} id @param {string|null} parentId @param {number|null} index
+ * @returns {T[]} neue Liste; der verschobene Knoten ist eine Kopie mit neuem `pid`
+ */
+export function moveNode(nodes, id, parentId, index) {
+  const node = nodes.find((n) => n.id === id);
+  if (!node) return nodes.slice();
+  const rest = nodes.filter((n) => n.id !== id);
+  const siblings = rest.filter((n) => (n.pid ?? null) === parentId);
+  let at;
+  if (index !== null && index < siblings.length) at = rest.indexOf(siblings[Math.max(0, index)]);
+  else if (siblings.length) at = rest.indexOf(siblings[siblings.length - 1]) + 1;
+  else at = rest.length;
+  rest.splice(at, 0, { ...node, pid: parentId });
+  return rest;
+}

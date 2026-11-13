@@ -153,8 +153,8 @@
   flex: 1;
   min-width: 0;
 
-  /* Base height; JS grows this to fit the org-chart content (see
-     _orgUpdateWrapHeight) so deep charts are not clipped. */
+  /* Grundhöhe; die Ansicht lässt das Fenster mit dem Inhalt wachsen
+     (wrapStyle), damit tiefe Organigramme nicht abgeschnitten werden. */
   min-height: 420px;
   overflow: hidden;
   cursor: grab;
@@ -419,7 +419,31 @@
   border-radius: 3px;
 }
 
+/* Werkzeugleiste im Fenster: sichtbar, sobald der Zeiger über dem Organigramm ist */
+.pc__org-wrap:hover .pc__org-modebar {
+  opacity: 1;
+}
+
+.pc__org-editor-title {
+  margin-bottom: var(--spacing-m);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
 /* Form groups use global .field-group / .field-group--inline (components.css) */
+
+/* Farbfeld im Bearbeiten-Dialog: Wähler und Textfeld nebeneinander */
+.pc__color-field {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+}
+
+.pc__color-field .dmike-chart-ed-color-swatch,
+.pc__org-editor .dmike-chart-ed-color-swatch {
+  padding: 0;
+}
 
 .pc__org-form-sep {
   border: none;

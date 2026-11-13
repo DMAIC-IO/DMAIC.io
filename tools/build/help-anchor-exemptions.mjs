@@ -21,12 +21,10 @@ export const HELP_ANCHOR_EXEMPTIONS = {
   'project-charter': [
     { name: 'actions.removeGoal', reason: 'Löschknopf je Zielzeile; ein Fragezeichen je Zeile wäre Rauschen' },
     { name: 'actions.moveGoal', reason: 'Ziehgriff je Zielzeile, keine Beschriftung' },
-    { name: 'actions.updateOrgNode', reason: 'Bearbeiten-Knopf je Position im Organigramm; die Dialogfelder sind verankert' },
     { name: 'actions.removeOrgNode', reason: 'Löschknopf je Position im Organigramm; ein Fragezeichen je Knoten wäre Rauschen' },
     { name: 'actions.moveOrgNode', reason: 'Ziehen im Organigramm, keine Eingabe' },
     { name: 'actions.setOrgNodeStyle', reason: 'nur für den Agenten; die Oberfläche ändert den Knotenstil im Bearbeiten-Dialog (updateOrgNode)' },
     { name: 'actions.setOrgNodeBorderWidth', reason: 'nur für den Agenten; die Oberfläche ändert die Rahmenbreite im Bearbeiten-Dialog (updateOrgNode)' },
-    { name: 'fields.orgStyle', reason: 'Stil-Panel wird imperativ aus chart-editor.js gebaut, außerhalb der Vorlage' },
   ],
   'survey-builder': [
     { name: 'actions.draft.addQuestion', reason: 'Typauswahl je Abschnitt; ein Fragezeichen je Abschnitt wäre Rauschen, verankert ist die Gliederung' },

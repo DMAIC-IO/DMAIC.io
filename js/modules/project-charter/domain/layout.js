@@ -11,6 +11,9 @@ export const MODULE_LAYOUT = Object.freeze({ nodeW: 220, hGap: 44, vGap: 36, roo
 /** Kachel: feste Höhe, Wurzel bei y = 0, Abstand Eltern/Kinder 28. */
 export const TILE_LAYOUT = Object.freeze({ nodeW: 220, hGap: 44, vGap: 28, rootY: 0, fallbackH: 64 });
 
+/** Linienart → `stroke-dasharray`; durchgezogen hat keinen Eintrag. */
+export const DASH = Object.freeze({ dashed: '8 4', dotted: '2 4' });
+
 /**
  * @typedef {object} OrgLink Verbindung für `node-links` (Mitte unten → Mitte oben)
  * @property {string} from @property {string} to @property {'curve'} shape

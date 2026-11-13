@@ -10,7 +10,12 @@
 
 import { svg, s } from '../../core/dom.js';
 import { markdownToFragment } from '../../core/rich-text.js';
-import { ORG_NW, ORG_NH, orgPositions } from './project-charter-org-layout.js';
+import { layoutOrg, TILE_LAYOUT } from './domain/layout.js';
+
+const ORG_NW = TILE_LAYOUT.nodeW;
+const ORG_NH = TILE_LAYOUT.fallbackH;
+/** @param {Array<{id: string, pid: string|null}>} nodes @returns {Record<string, {x: number, y: number}>} */
+const orgPositions = (nodes) => layoutOrg(nodes, TILE_LAYOUT).positions;
 
 /**
  * ZEG colour token for an achievement percentage.

@@ -50,6 +50,7 @@ export default createModule({
     image() {
       return this.chartSVG('node-diagram', orgExportConfig(this.model, {
         heights: this.state.heights,
+        collapsed: this.state.collapsed,
         cssVars: (vars) => this.cssVars(vars),
       }));
     },

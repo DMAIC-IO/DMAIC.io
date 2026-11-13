@@ -17,7 +17,7 @@ import { requireForm } from '../../../core/validate.js';
 import { uid } from '../../../core/uid.js';
 import { isIsoDate } from '../../../core/local-date.js';
 import { from0 } from './migrations.js';
-import { childrenOf, isDescendant, subtreeIds } from './tree.js';
+import { childrenOf, isDescendant, moveNode, subtreeIds } from './tree.js';
 
 /** Eine Zielzeile. @typedef {{ id: string, description: string, targetDate: string, metric: string, targetValue: string, achievementLevel: number }} Goal */
 
@@ -273,18 +273,9 @@ export class State extends defineModel({
       run({ id, parentId, index }) {
         requireForm('parentId', parentId, parentId === null || (parentId !== id && !isDescendant(this.orgChart, parentId, id)),
           'null or a node that is neither the moved node nor one of its descendants');
-        const node = this.orgChart.find((n) => n.id === id);
-        const rest = this.orgChart.filter((n) => n.id !== id);
-        const siblings = childrenOf(rest, parentId);
-        requireForm('index', index, index === null || index <= siblings.length,
-          `null or a number from 0 to ${siblings.length}`);
-        node.pid = parentId;
-        let at;
-        if (index !== null && index < siblings.length) at = rest.indexOf(siblings[index]);
-        else if (siblings.length) at = rest.indexOf(siblings[siblings.length - 1]) + 1;
-        else at = rest.length;
-        rest.splice(at, 0, node);
-        this.orgChart = rest;
+        const count = childrenOf(this.orgChart.filter((n) => n.id !== id), parentId).length;
+        requireForm('index', index, index === null || index <= count, `null or a number from 0 to ${count}`);
+        this.orgChart = moveNode(this.orgChart, id, parentId, index);
       },
     }),
   },

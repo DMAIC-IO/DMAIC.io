@@ -287,6 +287,22 @@ suite('interaction/attach — Zeiger', () => {
     assertEqual(clicks, 2, 'Griff-Klick wird nicht mehr verschluckt');
   });
 
+  test('Klick-Verschlucken überlebt kein neues Drücken, auch wenn es den Container nicht erreicht', () => {
+    const { root, btn } = setup();
+    let clicks = 0;
+    root.addEventListener('click', () => { clicks += 1; });
+    drag(btn('x'), 50, 10, 50, 45);
+    // Der Klick nach dem Ablegen kam nie (das Element wanderte); ein Knopf im
+    // Griff hält sein pointerdown vom Container fern.
+    const inner = document.createElement('span');
+    btn('y').append(inner);
+    inner.addEventListener('pointerdown', (e) => e.stopPropagation());
+    pointer(inner, 'pointerdown', 50, 30);
+    pointer(inner, 'pointerup', 50, 30);
+    inner.click();
+    assertEqual(clicks, 1, 'der Klick nach dem neuen Drücken läuft durch');
+  });
+
   test('Zeiger-Listener werden gelöst, wenn die Geste ohne Adapter endet', () => {
     const root = document.createElement('div');
     const h = document.createElement('button');

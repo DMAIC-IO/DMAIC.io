@@ -179,6 +179,7 @@ const SKIP = new Set([
   'modules/project-charter/gestures.test.js',
   'modules/project-charter/export.test.js',
   'modules/project-charter/view.test.js',
+  'modules/project-charter/org-view.test.js',
   'modules/ishikawa/view.test.js',
   'modules/ishikawa/causes-view.test.js',
   'modules/ishikawa/snapshots-view.test.js',

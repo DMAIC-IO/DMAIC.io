@@ -5,10 +5,7 @@
  * Themenfarben kommen vom Aufrufer. Positionen und Verbindungen stammen aus
  * `layoutOrg`. Schlüssel ohne Wert fehlen im Ergebnis (kein `undefined`).
  */
-import { layoutOrg } from '../domain/layout.js';
-
-/** Linienart → `stroke-dasharray`; durchgezogen = kein Schlüssel. */
-const DASH = { dashed: '8 4', dotted: '2 4' };
+import { layoutOrg, DASH } from '../domain/layout.js';
 
 /** Themenvariablen, die der Export für ungesetzte Farben auflöst. */
 export const EXPORT_CSS_VARS = Object.freeze({
@@ -29,13 +26,14 @@ function setIf(target, key, value) {
  * @param {{ orgChart: Array<object>, orgStyle: object }} model Modell oder gelesener Stand
  * @param {object} opts
  * @param {Record<string, number>|Map<string, number>} opts.heights gemessene Knotenhöhen; fehlend → Vorgabehöhe
+ * @param {Iterable<string>} [opts.collapsed] eingeklappte Knoten; ihre Nachfahren fehlen im Bild
  * @param {(map: Record<string, string>) => Record<string, string>} opts.cssVars löst Themenvariablen auf
  * @returns {{ nodes: object[], links: object[], padding: number }}
  */
-export function orgExportConfig(model, { heights, cssVars }) {
+export function orgExportConfig(model, { heights, cssVars, collapsed = [] }) {
   const style = model.orgStyle ?? {};
   const theme = cssVars(EXPORT_CSS_VARS);
-  const { positions, links } = layoutOrg(model.orgChart, { heights });
+  const { positions, links } = layoutOrg(model.orgChart, { heights, collapsed });
   const dashFor = (s) => DASH[s];
 
   const nodes = [];

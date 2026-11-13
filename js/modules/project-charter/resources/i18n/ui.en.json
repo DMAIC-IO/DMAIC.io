@@ -24,8 +24,6 @@
   "nodeTitle": "Title",
   "nodeDescription": "Description",
   "orgNew": "New",
-  "orgFit": "Fit",
-  "orgLayout": "Layout",
   "editor": {
     "nodeAppearance": "Node Appearance",
     "bgColor": "Background",
@@ -49,12 +47,9 @@
   "editNode": "Edit position",
   "collapse": "Collapse",
   "expand": "Expand",
-  "childCount": "{count} subordinate positions",
   "zoomIn": "Zoom in",
   "fit": "Fit",
-  "orgStyleReset": "Reset",
   "colorPick": "Pick colour",
-  "colorDefault": "Colour scheme",
   "exportFileName": "org-chart",
   "invariants": {
     "uniqueIds": "Every goal and every position needs its own id.",

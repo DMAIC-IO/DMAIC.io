@@ -75,6 +75,9 @@
       "lineWidth": {
         "help": "Breite der Verbindungslinien, ganze Zahl 1 bis 8."
       }
+    },
+    "layout": {
+      "help": "Die Anordnung des Organigramms: Position jeder sichtbaren Position und ihre Verbindungslinien, aus Baum, eingeklappten Positionen und gemessenen Höhen. Rein eine Ansicht."
     }
   },
   "state": {

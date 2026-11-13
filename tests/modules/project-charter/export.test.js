@@ -27,6 +27,12 @@ suite('project-charter export', () => {
     assertDeepEqual(cfg.nodes.map((x) => x.id), PIZZA.map((x) => x.id));
   });
 
+  test('eingeklappte Knoten: Nachfahren fehlen im Bild', () => {
+    const cfg = orgExportConfig({ orgChart: PIZZA, orgStyle: STYLE }, { heights: {}, cssVars, collapsed: ['n3'] });
+    assertDeepEqual(cfg.nodes.map((x) => x.id), ['n1', 'n2', 'n3', 'n7']);
+    assertEqual(cfg.links.length, 3);
+  });
+
   test('Stil: Knoten überschreibt globalen Stil; ungesetzte Schlüssel fehlen', () => {
     const nodes = [n('a', 'A', null, { bg: 'rgb(1, 2, 3)', borderWidth: 4, borderStyle: 'dashed' }), n('b', 'B', 'a')];
     const style = { ...STYLE, nodeBg: 'rgb(9, 9, 9)', lineStyle: 'dotted', lineWidth: 3 };
