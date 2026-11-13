@@ -160,6 +160,14 @@ sie nicht unter `settable`, `instance.set` darauf antwortet mit `call_failed`.
 Kommandos, deren Parameter ein gesperrtes Feld enthält, stehen nicht im
 Katalog. Ein Modul alter Form antwortet auf `instance.set` mit `call_failed`.
 
+Formatierter Text (Feldart `richText`, z. B. `problemStatement` im `project-charter`) ist
+eine Zeichenkette in einer Markdown-Teilmenge: `**fett**`, `*kursiv*`, `\n` als
+Zeilenumbruch, `\` maskiert. In `module.describe` trägt das Feld die Regel-Tokens
+`richText` und `format:…` (die Schreibweise) sowie bei gesetzter Grenze `maxLength:<n>`;
+die Grenze gilt für den **Klartext** ohne die Markierungen. Ein längerer Text wird mit
+`invalid <feld> …; allowed: a text of at most <n> plain characters (without ** and * marks)`
+abgelehnt, nichts wird geschrieben. `read()` liefert den Text unverändert mit Markierungen.
+
 Regeln über mehrere Felder (Invarianten des Models) nennt `module.describe`
 unter `notes`, je Regel ein Satz in der UI-Sprache, z. B. für `msa-typ2`
 `notes: ['USG muss kleiner als OSG sein']`; ohne solche Regeln ist `notes`
