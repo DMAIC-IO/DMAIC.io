@@ -820,6 +820,18 @@ suite('agent runtime — a resolved reference is type-checked (C1)', () => {
     assertTrue(!log.some(e => e.startsWith('add-start:')), 'no instance was created');
   });
 
+  test('module on a $from instance is checked after resolve', async () => {
+    const { runtime, log } = makeRuntime({ viewmodel: { read: () => 'ok' } });
+    const out = await runtime.interact([
+      { id: 'r1', op: 'project.read' },
+      { id: 'c1', op: 'instance.call', module: 'worksheet', instance: { $from: 'r1', path: 'instances.0.id' }, method: 'read' },
+    ]);
+    assertEqual(out.ok, false, JSON.stringify(out));
+    assertEqual(out.results[1].ok, false);
+    assertEqual(out.results[1].error, 'instance_module_mismatch');
+    assertTrue(!log.some(e => e.startsWith('call:')), 'nothing was called: ' + JSON.stringify(log));
+  });
+
   test('ein Abstieg nach view.phase wird jetzt STATISCH abgelehnt, nicht erst zur Laufzeit', async () => {
     // Dieser Fall ging früher durch, weil `view` als sicheres Objekt
     // deklariert war. `view` ist zur Laufzeit aber null, wenn kein Modul offen

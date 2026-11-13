@@ -267,6 +267,11 @@ export function validateBatch(input, world) {
       // Zeigt es in ein Leseergebnis hinein, bleibt nur die Laufzeitprüfung.
       const moduleId = staticTargetModule(a, actions, idToIndex, world);
       if (moduleId !== null) {
+        if (typeof a.module === 'string' && a.module !== moduleId) {
+          return fail(i, axiError(ERRORS.INSTANCE_MODULE_MISMATCH,
+            world.t('agent.errors.instanceModuleMismatch',
+              { instance: String(a.instance), actual: moduleId, module: a.module })));
+        }
         const entry = world.modules.get(moduleId);
         if (!entry.available || entry.methods === null) {
           return fail(i, axiError(ERRORS.MODULE_NOT_AGENT_READY,

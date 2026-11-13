@@ -12076,6 +12076,7 @@
       "unknownPhase": "Unknown phase \"{phase}\" for module \"{module}\".",
       "unknownPhaseInCycle": "Unknown phase \"{phase}\" in the active cycle.",
       "unknownInstance": "Unknown instance \"{instance}\".",
+      "instanceModuleMismatch": "Instance {instance} belongs to module {actual}, not {module}.",
       "viewmodelNotAlive": "Instance \"{instance}\" is not active (view not open).",
       "unknownMethod": "Module \"{module}\" has no method \"{method}\".",
       "methodNotAgentAction": "Module \"{module}\" does not release \"{method}\" as an action \u2014 whether the method exists internally makes no difference. Only what \"available\" lists is callable; a different spelling of the same name changes nothing.",

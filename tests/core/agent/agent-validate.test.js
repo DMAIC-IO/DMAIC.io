@@ -271,6 +271,32 @@ suite('agent validate — Stufe 5: literale Bezeichner', () => {
     assertDeepEqual(r.cause.available, ['read', 'draft.addQuestion']);
   });
 
+  test('instance.call with matching module validates', () => {
+    const world = makeWorld({ instances: new Map([['ws1', { module: 'worksheet', phase: 'data' }]]) });
+    const r = validateBatch([{ op: 'instance.call', module: 'worksheet', instance: 'ws1', method: 'read' }], world);
+    assertTrue(r.ok, JSON.stringify(r));
+  });
+
+  test('instance.call with wrong module fails', () => {
+    const base = makeWorld();
+    const world = makeWorld({
+      modules: new Map([...base.modules, ['histogram', { available: true, methods: ['read'], allowedPhases: ['analyze'] }]]),
+      instances: new Map([['ws1', { module: 'worksheet', phase: 'data' }]]),
+    });
+    const r = validateBatch([{ op: 'instance.call', module: 'histogram', instance: 'ws1', method: 'read' }], world);
+    assertEqual(r.ok, false);
+    assertEqual(r.error, 'validation_failed');
+    assertEqual(r.index, 0);
+    assertEqual(r.cause.error, 'instance_module_mismatch');
+  });
+
+  test('instance.set accepts module', () => {
+    const r = validateBatch([{ op: 'instance.set', module: 'five-why', instance: 'fw-1', values: {} }], makeWorld());
+    assertTrue(r.ok, JSON.stringify(r));
+    const bad = validateBatch([{ op: 'instance.set', module: 'worksheet', instance: 'fw-1', values: {} }], makeWorld());
+    assertEqual(bad.cause.error, 'instance_module_mismatch');
+  });
+
   test('method is NOT checked when the module identity only exists at runtime', () => {
     const r = validateBatch([
       { id: 'r1', op: 'project.read' },

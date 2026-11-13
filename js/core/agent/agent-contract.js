@@ -42,6 +42,7 @@ export const ERRORS = Object.freeze({
   UNKNOWN_MODULE:         'unknown_module',
   UNKNOWN_PHASE:          'unknown_phase',
   UNKNOWN_INSTANCE:       'unknown_instance',
+  INSTANCE_MODULE_MISMATCH: 'instance_module_mismatch',
   UNKNOWN_METHOD:         'unknown_method',
   UNKNOWN_SECTION:        'unknown_section',
   MISSING_PARAM:          'missing_param',
@@ -156,6 +157,7 @@ export const OPS = deepFreeze({
   },
   'instance.call': {
     params: {
+      module:   { type: 'string', required: false },
       instance: { type: 'string', required: true },
       method:   { type: 'string', required: true },
       args:     { type: 'array',  required: false },
@@ -164,6 +166,7 @@ export const OPS = deepFreeze({
   },
   'instance.set': {
     params: {
+      module:   { type: 'string', required: false },
       instance: { type: 'string', required: true },
       values:   { type: 'object', required: true },
     },

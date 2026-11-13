@@ -24,7 +24,7 @@
 import { CONTRACT_VERSION, ERRORS, OPS } from './agent-contract.js';
 import { axiError } from './agent-errors.js';
 import { validateBatch, checkResolvedParamTypes, isWritingAction } from './agent-validate.js';
-import { resolveRefs } from './agent-refs.js';
+import { resolveRefs, isRef } from './agent-refs.js';
 import { buildWorld, buildCatalog, buildInstanceList } from './agent-catalog.js';
 import { flattenBriefing } from './agent-briefing.js';
 import { createOps } from './agent-ops.js';
@@ -285,6 +285,24 @@ export function createAgentRuntime(deps) {
         results.push({ ...typeError, id: action.id ?? null });
         allOk = false;
         break;
+      }
+
+      // Das Feld `module` einer aufgelösten Instanzreferenz: erst jetzt
+      // ist die Instanz bekannt. Ein Literal hat Stufe 5 schon geprüft.
+      if ((action.op === 'instance.call' || action.op === 'instance.set')
+          && typeof resolved.value.module === 'string' && isRef(action.instance)) {
+        const actual = buildInstanceList({ stateManager, i18n })
+          .find((e) => e.id === resolved.value.instance)?.module;
+        if (actual !== undefined && actual !== resolved.value.module) {
+          results.push({
+            ...axiError(ERRORS.INSTANCE_MODULE_MISMATCH,
+              i18n.t('agent.errors.instanceModuleMismatch',
+                { instance: String(resolved.value.instance), actual, module: resolved.value.module })),
+            id: action.id ?? null,
+          });
+          allOk = false;
+          break;
+        }
       }
 
       // Eine Op wirft im Regelfall nicht (siehe agent-ops.js), aber ein

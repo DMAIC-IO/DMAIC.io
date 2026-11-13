@@ -75,8 +75,8 @@ eindeutig sein (`duplicate_id`).
 | `module.add` | `module`, `phase?` | `{ instanceId, module, phase }` | ja |
 | `module.remove` | `instance` | `{ instanceId, removed }` | ja |
 | `instance.open` | `instance` | `{ instanceId, module, phase }` | nein |
-| `instance.call` | `instance`, `method`, `args?` | `{ instanceId, method, value }` | ja, außer `method: 'read'` |
-| `instance.set` | `instance`, `values` | `{ instanceId, values }` | ja |
+| `instance.call` | `instance`, `method`, `args?`, `module?` | `{ instanceId, method, value }` | ja, außer `method: 'read'` |
+| `instance.set` | `instance`, `values`, `module?` | `{ instanceId, values }` | ja |
 
 **Ansichtswechsel.** `instance.call` mit `method: 'read'`, `instance.set` und
 die Model-Kommandos eines Moduls mit deklarativem Model wechseln die Ansicht
