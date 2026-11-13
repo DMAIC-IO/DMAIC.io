@@ -1693,6 +1693,40 @@ suite('agent runtime — interactAsModule (Modulweg)', () => {
     assertTrue(nested.log.includes('importCsv:ws1'), 'das innere Schreiben lief');
   });
 
+  test('an inline call the op does not await finishes before the outer run flushes', async () => {
+    const protocol = [];
+    let pending = null;
+    const registry = {
+      worksheet: { ...REGISTRY.worksheet,
+        actions: { ...REGISTRY.worksheet.actions,
+          toWorksheet: { params: [], returns: 'boolean', help: '' } } },
+    };
+    let made;
+    const viewmodel = (id) => ({
+      read: () => ({}),
+      importCsv: async () => {
+        await tick(10);
+        protocol.push(`importCsv:${id}`);
+        return true;
+      },
+      toWorksheet: () => {
+        // Fire and forget: die Op kehrt zurück, bevor der innere Stapel schreibt.
+        pending = made.runtime.interactAsModule([write('ws1')], CALLER);
+        protocol.push('outer-op-end');
+        return true;
+      },
+    });
+    made = makeRuntime({
+      primed: true, registry, viewmodel, instances: [WS1, RG1],
+      stateManager: { flushNow: async () => { protocol.push('flush'); } },
+    });
+    const out = await made.runtime.interact([{ op: 'instance.call', instance: 'rg1', method: 'toWorksheet' }]);
+    assertEqual(out.ok, true, JSON.stringify(out));
+    assertEqual((await pending).ok, true);
+    assertDeepEqual(protocol, ['outer-op-end', 'importCsv:ws1', 'flush']);
+    assertDeepEqual(made.notified, [['ws1', 'rg1']]);
+  });
+
   test('unrelated module call during agent op is queued', async () => {
     const protocol = [];
     let pending = null;

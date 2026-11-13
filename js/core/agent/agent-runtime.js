@@ -310,11 +310,13 @@ export function createAgentRuntime(deps) {
   /**
    * Ein Lauf: was Aktionen eines Stapels — und Stapel, die im Lauf
    * wiedereintreten — gemeinsam fortschreiben.
-   * @returns {{ inOp: { instanceId: string|null }|null, wrote: boolean, changed: string[] }}
+   * @returns {{ inOp: { instanceId: string|null, pending: Promise<any>[] }|null, wrote: boolean, changed: string[] }}
    */
   function newRun() {
     return {
       // Ziel der Aktion, deren Op gerade läuft; sonst null.
+      // `pending`: die darin wiedereingetretenen Stapel; die Op endet erst,
+      // wenn sie fertig sind — auch wenn die Op selbst sie nicht abwartet.
       inOp: null,
       // Ein Stapel, der geschrieben hat, flusht EINMAL am Ende des Laufs.
       wrote: false,
@@ -458,10 +460,13 @@ export function createAgentRuntime(deps) {
           // arbeitet, wiedereintreten (siehe `interactAsModule`).
           const outer = run.inOp;
           const target = resolved.value.instance;
-          run.inOp = { instanceId: typeof target === 'string' ? target : null };
+          const inOp = { instanceId: typeof target === 'string' ? target : null, pending: [] };
+          run.inOp = inOp;
           try {
             outcome = await ops[action.op](resolved.value);
           } finally {
+            // Schleife: ein innerer Stapel kann selbst weitere anstoßen.
+            while (inOp.pending.length > 0) await Promise.allSettled(inOp.pending.splice(0));
             run.inOp = outer;
           }
         }
@@ -643,8 +648,12 @@ export function createAgentRuntime(deps) {
      */
     interactAsModule(input, caller) {
       const opts = { consent: false, revisions: false, caller };
+      // Der Wiedereintritt hängt allein an der Ziel-Instanz der laufenden Op:
+      // solange sie läuft, läuft jeder Aufruf aus dieser Instanz im Lauf mit.
       if (current?.inOp && current.inOp.instanceId === caller?.instanceId) {
-        return runInteract(input, { ...opts, run: current, inline: true }).catch(surfaceFailure);
+        const nested = runInteract(input, { ...opts, run: current, inline: true }).catch(surfaceFailure);
+        current.inOp.pending.push(nested);
+        return nested;
       }
       return enqueue(input, opts);
     },
