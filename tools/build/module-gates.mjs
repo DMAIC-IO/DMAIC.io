@@ -829,6 +829,22 @@ function asyncTaskRuns(text) {
   return out;
 }
 
+/**
+ * Gate Verlauf: `history` in `createModule({ … })` ist `true` oder `{ depth: <ganze Zahl ≥ 1> }`.
+ * @param {string} text Text des Viewmodels
+ * @param {string} [file]
+ * @returns {string[]}
+ */
+export function checkHistoryOption(text, file = 'viewmodel/viewmodel.js') {
+  const arg = factoryArgument(ts.createSourceFile('viewmodel.js', text, ts.ScriptTarget.Latest, true));
+  const prop = arg?.properties.find((p) => ts.isPropertyAssignment(p) && keyOf(p) === 'history');
+  if (!prop || !ts.isPropertyAssignment(prop)) return [];
+  const value = literalValue(prop.initializer);
+  const ok = value === true
+    || (value && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).join() === 'depth' && Number.isInteger(value.depth) && value.depth >= 1);
+  return ok ? [] : [`history: ${file}: history ist true oder { depth: ganze Zahl ≥ 1 }`];
+}
+
 const VIEW_FORBIDDEN = ['stateManager', 'getModuleState'];
 
 /**
@@ -1646,6 +1662,7 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
       out.push(...checkCommandRefs(templates, schema, formSchemas, existsSync(vmFile) ? readViewmodelCommands(readFileSync(vmFile, 'utf8'), vmFile) : {}));
       const asyncTasks = existsSync(vmFile) ? readViewmodelAsyncTasks(readFileSync(vmFile, 'utf8')) : {};
       out.push(...checkAsyncTaskRefs(templates, asyncTasks));
+      if (existsSync(vmFile)) out.push(...checkHistoryOption(readFileSync(vmFile, 'utf8')));
       out.push(...checkFileDropRefs(templates, existsSync(vmFile) ? viewMemberNamesOf(tileText('viewmodel/viewmodel.js'), vmFile) : []));
       const lists = checkListBindings(templates, schema);
       out.push(...lists.findings, ...checkDefaultArgRefs(templates, schema), ...checkChoiceGroups(templates));

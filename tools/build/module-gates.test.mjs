@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkViewReads, checkCommandsRef, checkPickerCss, checkChartBindings, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, checkFileDropRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts, viewNamesOf, viewNamesDetailOf, computedNamesOf, checkWidgetTemplates, modelMembersOf, checkFieldErrorPaths } from './module-gates.mjs';
+import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkViewReads, checkCommandsRef, checkPickerCss, checkChartBindings, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, checkFileDropRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts, viewNamesOf, viewNamesDetailOf, computedNamesOf, checkWidgetTemplates, modelMembersOf, checkFieldErrorPaths, checkHistoryOption } from './module-gates.mjs';
 import { viewMemberNamesOf } from './view-names.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { APP_DIR } from './build.mjs';
@@ -1593,4 +1593,14 @@ test('Dateiablage: x-file-drop nennt ein Glied des view-Blocks', () => {
     'file-drop: resources/view.html: x-file-drop="fehlt": kein Glied des view-Blocks',
   ]);
   assert.deepEqual(checkFileDropRefs([files[0]], new Set(['handleFile', 'fehlt'])), []);
+});
+
+test('Verlauf: history ist true oder { depth: ganze Zahl ≥ 1 }', () => {
+  const vm = (h) => `export default createModule({ view() { return {}; }, history: ${h} });`;
+  assert.deepEqual(checkHistoryOption(vm('true')), []);
+  assert.deepEqual(checkHistoryOption(vm('{ depth: 10 }')), []);
+  assert.deepEqual(checkHistoryOption('export default createModule({ view() { return {}; } });'), []);
+  assert.equal(checkHistoryOption(vm('{ depth: 0 }')).length, 1);
+  assert.equal(checkHistoryOption(vm("'yes'")).length, 1);
+  assert.match(checkHistoryOption(vm("'yes'"))[0], /^history: viewmodel\/viewmodel\.js: /);
 });

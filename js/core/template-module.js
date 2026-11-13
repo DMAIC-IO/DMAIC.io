@@ -3,6 +3,7 @@ import { cloneTemplate, templateKey } from './dom.js';
 import { getModuleHelp, hasModuleHelp } from './help-registry.js';
 import { getModuleReferences, hasModuleReferences } from './references-registry.js';
 import { initialModel, loadModel } from './initial-model.js';
+import { ModuleHistory } from './module-history.js';
 import { schemaOf, checkParams, setModelName, setCommandObserver, replaceFields, runCommand, cloneJSON, setModelContext, activeContext } from './model.js';
 import { schemaAgentEntry, readSchemaModel } from './agent/agent-schema.js';
 import { attachGesture } from './interaction/attach.js';
@@ -394,7 +395,7 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
  * @returns {Record<string, any> & { readonly __view?: ViewMembersOf<P>, readonly __asyncTasks?: T }}
  */
 export function createModule(base) {
-  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, fromExample, createDefault, gestures = [], forms = {}, exports: exportsDef, asyncTasks: taskDefs = {} } = base;
+  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, fromExample, createDefault, gestures = [], forms = {}, exports: exportsDef, asyncTasks: taskDefs = {}, history } = base;
   if (descriptor) {
     for (const key of NOT_IN_CONFIG) {
       if (Object.hasOwn(config, key)) {
@@ -417,6 +418,9 @@ export function createModule(base) {
   if (fromExample !== undefined && typeof fromExample !== 'function') throw new Error(`createModule(${id}): fromExample must be a function`);
   if (fromExample && beforeLoadExample) throw new Error(`createModule(${id}): fromExample and beforeLoadExample are exclusive`);
   if (exportsDef !== undefined) checkExports(id, exportsDef, Boolean(view));
+  if (history !== undefined && history !== true && !(history && typeof history === 'object' && Number.isInteger(history.depth ?? 50) && (history.depth ?? 50) >= 1)) {
+    throw new Error(`createModule(${id}): history must be true or { depth: integer >= 1 }`);
+  }
   const actions = exportsDef === undefined ? (config.actions ?? []) : [...(config.actions ?? []), {
     icon: 'action.download',
     title: 'export.label',
@@ -567,10 +571,20 @@ export function createModule(base) {
     _tmpl: null,
     _gestureDetach: [],
     _applyingRemote: false,
+    _restoringHistory: false,
+    /** @type {ModuleHistory|null} */
+    _history: null,
+    /** @type {{ canUndo: boolean, canRedo: boolean }|null} */
+    _historyFlags: null,
+    _historyDetach: null,
 
     async init(container, context) {
       this._container = container;
       this._context = context;
+      if (history && alpine) {
+        this._history = new ModuleHistory({ depth: history === true ? undefined : history.depth });
+        this._historyFlags = Alpine.reactive({ canUndo: false, canRedo: false });
+      }
 
       // Per-instance Alpine component name — see cloneForInstance() for why the
       // shared module-level name causes multi-instance cross-contamination.
@@ -785,7 +799,10 @@ export function createModule(base) {
               if (config.manualPersist !== true) {
                 this.$watch(
                   () => this.model.toJSON(),
-                  () => module._persist(this.model)
+                  () => {
+                    module._persist(this.model);
+                    module._recordHistory(this.model);
+                  }
                 );
               }
               // Generic sub-route binding: if the module's data-fn defines
@@ -833,11 +850,15 @@ export function createModule(base) {
           getState() { return { model: this._state }; }
         };
         afterMount?.(module);
-        
+        module._attachHistory();
       }
     },
 
     async destroy() {
+      this._historyDetach?.();
+      this._historyDetach = null;
+      this._history = null;
+      if (this._historyFlags) { this._historyFlags.canUndo = false; this._historyFlags.canRedo = false; }
       // Guard: a detached/aborted instance (init threw or never ran to
       // completion) can reach destroy() with no mounted container — nothing
       // to tear down.
@@ -907,6 +928,7 @@ export function createModule(base) {
       if (alpine) {
         const model = loadModel(Model, state, schema ? activeContext(this._context?.stateManager) : undefined);
         this._persist(model);
+        this._resetHistory(model);
         // Guard: a detached/aborted instance (init threw or never ran to
         // completion) has no mounted container. Still persist the state —
         // it will be read fresh the next time the instance is mounted —
@@ -940,16 +962,29 @@ export function createModule(base) {
         } else {
           this._tmpl._state = model;
         }
-        
+        this._resetHistory(this._tmpl._state);
       }
     },
 
     applyRemoteState(state) {
       if (!alpine) return;
+      const live = this._restoreState(state, '_applyingRemote');
+      if (live) this._resetHistory(live);
+    },
+
+    /**
+     * Schreibt einen Stand in das lebende Model zurück (kein Remount: Fokus
+     * und UI-State bleiben). `flag` hält den Persist-Watcher in Schach, bis
+     * Alpine die angestoßenen Effekte durchgelaufen hat.
+     * @param {object} state
+     * @param {'_applyingRemote'|'_restoringHistory'} flag
+     * @returns {object|null} das lebende Model
+     */
+    _restoreState(state, flag) {
       const root = this._container?.querySelector('[x-data]');
-      if (!root) return;
+      if (!root) return null;
       const fresh = loadModel(Model, state, schema ? activeContext(this._context?.stateManager) : undefined);
-      this._applyingRemote = true;
+      this[flag] = true;
       const live = Alpine.$data(root).model;
       // Accessoren am Prototyp: Object.assign träfe nur `_v` und ersetzte das
       // reaktive Werteobjekt am Proxy vorbei.
@@ -958,7 +993,73 @@ export function createModule(base) {
       // Reset after Alpine flushes the reactive effects this mutation queued —
       // the persist-$watch runs in that flush and must see the guard still set.
       // queueMicrotask can resolve before the scheduler flush, leaking a persist.
-      Alpine.nextTick(() => { this._applyingRemote = false; });
+      Alpine.nextTick(() => { this[flag] = false; });
+      return live;
+    },
+
+    /**
+     * Ein Schritt im Verlauf zurück oder vor.
+     * @param {'undo'|'redo'} dir
+     * @returns {boolean} ob ein Stand zurückgeschrieben wurde
+     */
+    historyStep(dir) {
+      const h = this._history;
+      if (!h || !this._container?.querySelector('[x-data]')) return false;
+      const json = dir === 'undo' ? h.undo() : h.redo();
+      this._syncHistoryFlags();
+      if (json === null) return false;
+      const live = this._restoreState(JSON.parse(json), '_restoringHistory');
+      if (!live) return false;
+      this._persist(live);
+      return true;
+    },
+
+    /**
+     * @param {'undo'|'redo'} dir
+     * @returns {boolean}
+     */
+    historyCan(dir) {
+      const f = this._historyFlags;
+      return Boolean(f && (dir === 'undo' ? f.canUndo : f.canRedo));
+    },
+
+    _syncHistoryFlags() {
+      const h = this._history;
+      if (!h || !this._historyFlags) return;
+      this._historyFlags.canUndo = h.canUndo;
+      this._historyFlags.canRedo = h.canRedo;
+    },
+
+    _recordHistory(model) {
+      if (!this._history || this._restoringHistory || this._applyingRemote) return;
+      this._history.record(JSON.stringify(model.toJSON()));
+      this._syncHistoryFlags();
+    },
+
+    _resetHistory(model) {
+      if (!this._history || typeof model?.toJSON !== 'function') return;
+      this._history.reset(JSON.stringify(model.toJSON()));
+      this._syncHistoryFlags();
+    },
+
+    /**
+     * Grundlage setzen und Fokusbündelung am Container: solange ein
+     * bearbeitbares Element den Fokus hat, ist alles ein Schritt.
+     */
+    _attachHistory() {
+      if (!this._history) return;
+      this._historyDetach?.();
+      this._resetHistory(this.getActionData()?.model ?? this._tmpl?._state);
+      const container = this._container;
+      const editable = (e) => e.target instanceof Element && e.target.matches('input, textarea, select, [contenteditable]');
+      const onIn = (e) => { if (editable(e)) this._history?.begin(); };
+      const onOut = (e) => { if (editable(e)) { this._history?.end(); this._syncHistoryFlags(); } };
+      container.addEventListener('focusin', onIn);
+      container.addEventListener('focusout', onOut);
+      this._historyDetach = () => {
+        container.removeEventListener('focusin', onIn);
+        container.removeEventListener('focusout', onOut);
+      };
     },
 
     _persist(model) {
