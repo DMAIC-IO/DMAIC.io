@@ -20,7 +20,7 @@ export function mount(root, { value, services, effect }) {
   const button = (cmd, key, glyphKey, glyph) => h('button', {
     type: 'button', class: 'rich-text__btn', 'data-cmd': cmd, title: t(key), 'aria-label': t(key),
   }, h(glyph, {}, t(glyphKey)));
-  const toolbar = h('div', { class: 'rich-text__toolbar' },
+  const toolbar = h('div', { class: 'rich-text__toolbar', role: 'toolbar', 'aria-label': t('richText.toolbar') },
     button('bold', 'richText.bold', 'richText.boldShort', 'strong'),
     button('italic', 'richText.italic', 'richText.italicShort', 'em'));
   const editor = h('div', {
@@ -71,25 +71,40 @@ export function mount(root, { value, services, effect }) {
   const onPaste = (event) => {
     event.preventDefault();
     const text = event.clipboardData?.getData('text/plain');
-    if (text) document.execCommand('insertText', false, text);
+    if (text) editor.ownerDocument.execCommand('insertText', false, text);
+  };
+  /** Befehl auf diesen Editor anwenden; gesperrt tut er nichts, die Auswahl liegt sonst erst im Editor. */
+  const format = (cmd) => {
+    if (editor.getAttribute('contenteditable') !== 'true') return;
+    const doc = editor.ownerDocument;
+    const anchor = doc.getSelection()?.anchorNode;
+    if (!anchor || !editor.contains(anchor)) {
+      // Die Auswahl liegt anderswo: der Befehl gilt diesem Editor, nicht dem Element mit der Auswahl.
+      editor.focus();
+      const sel = doc.getSelection();
+      if (sel && !editor.contains(sel.anchorNode)) { sel.selectAllChildren(editor); sel.collapseToEnd(); }
+    } else if (doc.activeElement !== editor) editor.focus();
+    doc.execCommand(cmd, false, null);
   };
   const onKeydown = (event) => {
     if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey) return;
     const cmd = event.key.toLowerCase() === 'b' ? 'bold' : event.key.toLowerCase() === 'i' ? 'italic' : null;
     if (!cmd) return;
     event.preventDefault();
-    document.execCommand(cmd, false, null);
+    format(cmd);
   };
-  const onToolbarMousedown = (event) => {
+  const commandOf = (event) => {
     const btn = event.target instanceof Element ? event.target.closest('[data-cmd]') : null;
-    if (!btn) return;
-    event.preventDefault();
-    document.execCommand(btn.getAttribute('data-cmd'), false, null);
+    return btn ? btn.getAttribute('data-cmd') : null;
   };
+  // mousedown hält die Auswahl im Editor; ausgeführt wird beim Klick, so auch per Enter/Leertaste.
+  const onToolbarMousedown = (event) => { if (commandOf(event)) event.preventDefault(); };
+  const onToolbarClick = (event) => { const cmd = commandOf(event); if (cmd) format(cmd); };
   editor.addEventListener('input', onInput);
   editor.addEventListener('paste', onPaste);
   editor.addEventListener('keydown', onKeydown);
   toolbar.addEventListener('mousedown', onToolbarMousedown);
+  toolbar.addEventListener('click', onToolbarClick);
   return {
     destroy() {
       observer?.disconnect();
@@ -97,6 +112,7 @@ export function mount(root, { value, services, effect }) {
       editor.removeEventListener('paste', onPaste);
       editor.removeEventListener('keydown', onKeydown);
       toolbar.removeEventListener('mousedown', onToolbarMousedown);
+      toolbar.removeEventListener('click', onToolbarClick);
     },
   };
 }

@@ -141,6 +141,7 @@ suite('Widget rich-text', () => {
     const down = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
     btn.dispatchEvent(down);
     assertTrue(down.defaultPrevented);
+    btn.click();
     assertEqual(model().body, '*ab*');
     host.remove();
   });
@@ -185,5 +186,48 @@ suite('Widget rich-text', () => {
     setReadonlyLock(host, false);
     assertEqual(editor.getAttribute('contenteditable'), 'true');
     host.remove();
+  });
+
+  test('Werkzeugleiste: role toolbar mit Beschriftung; Knopf wirkt auch per Tastatur (Klick durch Enter)', async () => {
+    const { host, editor, model } = await mountEditor(Limited, { initial: 'ab' });
+    assertEqual(host.querySelector('[role="toolbar"]').getAttribute('aria-label'), 'richText.toolbar');
+    editor.focus();
+    document.getSelection().selectAllChildren(editor);
+    const btn = host.querySelector('[data-cmd="bold"]');
+    btn.focus();
+    btn.click();
+    assertEqual(model().body, '**ab**');
+    assertTrue(document.activeElement === editor, 'Fokus zurück im Editor');
+    host.remove();
+  });
+
+  test('gesperrter Editor: Klick auf die Werkzeugleiste ändert nichts, auch nicht andere Editoren', async () => {
+    const a = await mountEditor(Limited, { initial: 'aa' });
+    const b = await mountEditor(Limited, { initial: 'bb' });
+    a.editor.focus();
+    document.getSelection().selectAllChildren(a.editor);
+    setReadonlyLock(b.host, true);
+    b.host.querySelector('[data-cmd="bold"]').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    assertEqual(a.model().body, 'aa');
+    assertEqual(b.model().body, 'bb');
+    setReadonlyLock(b.host, false);
+    a.host.remove(); b.host.remove();
+  });
+
+  test('zwei Editoren: die Werkzeugleiste von B ändert A nicht, auch wenn die Auswahl in A liegt', async () => {
+    const a = await mountEditor(Limited, { initial: 'aa' });
+    const b = await mountEditor(Limited, { initial: 'bb' });
+    a.editor.focus();
+    document.getSelection().selectAllChildren(a.editor);
+    b.host.querySelector('[data-cmd="bold"]').click();
+    assertEqual(a.model().body, 'aa');
+    assertTrue(a.editor.querySelector('strong') === null);
+    assertTrue(document.activeElement === b.editor, 'B hat den Fokus');
+    b.editor.focus();
+    document.getSelection().selectAllChildren(b.editor);
+    b.host.querySelector('[data-cmd="bold"]').click();
+    assertEqual(b.model().body, '**bb**');
+    assertEqual(a.model().body, 'aa');
+    a.host.remove(); b.host.remove();
   });
 });

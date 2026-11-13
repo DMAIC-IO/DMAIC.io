@@ -1176,6 +1176,7 @@
     }
   },
   "richText": {
+    "toolbar": "Formatierung",
     "bold": "Fett (Strg+B)",
     "italic": "Kursiv (Strg+I)",
     "boldShort": "F",
