@@ -179,6 +179,37 @@ suite('createModule history', () => {
     assertEqual(data().model.name, 'neu');
   });
 
+  test('historyBegin/historyEnd: zwei Kommandos sind ein Schritt', async () => {
+    const { mod, data } = await mount(true);
+    mod.historyBegin();
+    data().model.inc({}); await flush();
+    data().model.inc({}); await flush();
+    mod.historyEnd();
+    assertTrue(mod.historyCan('undo'), 'die Flags folgen dem Schließen');
+    assertTrue(mod.historyStep('undo'));
+    await flush();
+    assertEqual(data().model.n, 0);
+    assertEqual(mod.historyCan('undo'), false);
+  });
+
+  test('historyEnd schließt keinen Schritt, den der Fokus geöffnet hat', async () => {
+    const { mod, container, data } = await mount(true);
+    const input = container.querySelector('.f');
+    input.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    mod.historyBegin();
+    data().model.inc({}); await flush();
+    mod.historyEnd();
+    assertEqual(mod._history.isOpen, true, 'der Schritt des Feldes bleibt offen');
+    input.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+    assertEqual(mod._history.isOpen, false);
+  });
+
+  test('ohne history: keine Haken historyBegin/historyEnd', async () => {
+    const { mod } = await mount(undefined);
+    assertEqual(typeof mod.historyBegin, 'undefined');
+    assertEqual(typeof mod.historyEnd, 'undefined');
+  });
+
   test('history mit manualPersist wird abgelehnt', () => {
     let err = null;
     try {

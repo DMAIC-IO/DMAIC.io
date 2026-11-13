@@ -77,6 +77,9 @@ export class ModuleHistory {
     return this._current;
   }
 
+  /** @returns {boolean} ob ein Schritt offen ist */
+  get isOpen() { return this._open; }
+
   /** @returns {boolean} */
   get canUndo() { return this._undo.length > 0; }
 

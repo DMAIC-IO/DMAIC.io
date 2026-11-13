@@ -45,6 +45,8 @@ const SETTLE_TASKS_TIMEOUT_MS = 20000;
  *   restoreInstance: (entry: { instanceId: string, module: string, phase: string, state: object|null,
  *     record?: object, index?: number }) => Promise<void>,
  *   applyLiveState: (instanceId: string, state: object|null) => void,
+ *   historyBegin: (instanceId: string) => void,
+ *   historyEnd: (instanceId: string) => void,
  *   settle: (instanceId?: string) => Promise<void>,
  * }}
  */
@@ -79,6 +81,22 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
     const stored = stateManager.getModuleState(instanceId);
     if (stored && JSON.stringify(stored) === JSON.stringify(state)) return;
     stateManager.setModuleState(instanceId, state);
+  }
+
+  /**
+   * Ruft einen Verlaufshaken der eingehängten Instanz auf, falls sie einen hat.
+   * @param {string} instanceId
+   * @param {'historyBegin'|'historyEnd'} hook
+   */
+  function callHistoryHook(instanceId, hook) {
+    if (workspace.getLiveViewmodel(instanceId) === null) return;
+    try {
+      const instance = workspace.getInstance(instanceId);
+      if (typeof instance?.[hook] === 'function') instance[hook]();
+    } catch (err) {
+      // Ohne Gruppe bleibt jeder Schritt einzeln rückgängig; der Lauf geht weiter.
+      console.warn(`[agent-host] ${hook} failed`, err);
+    }
   }
 
   return {
@@ -235,6 +253,24 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
         // Der gespeicherte Stand ist schon zurück; die Rücknahme geht weiter.
         console.warn('[agent-host] applying the rolled-back state failed', err);
       }
+    },
+
+    /**
+     * Öffnet in einer eingehängten Instanz eine Verlaufsgruppe: alles, was
+     * bis `historyEnd` geschieht, nimmt ein Rückgängig zurück. Eine nicht
+     * eingehängte Instanz hat keinen Verlauf; für sie ist nichts zu tun.
+     * @param {string} instanceId
+     */
+    historyBegin(instanceId) {
+      callHistoryHook(instanceId, 'historyBegin');
+    },
+
+    /**
+     * Schließt die Verlaufsgruppe der eingehängten Instanz.
+     * @param {string} instanceId
+     */
+    historyEnd(instanceId) {
+      callHistoryHook(instanceId, 'historyEnd');
     },
 
     /**

@@ -587,6 +587,8 @@ export function createModule(base) {
     /** @type {{ canUndo: boolean, canRedo: boolean }|null} */
     _historyFlags: null,
     _historyDetach: null,
+    /** Ob `historyBegin` den offenen Schritt geöffnet hat. */
+    _historyGroup: false,
 
     async init(container, context) {
       this._container = container;
@@ -870,6 +872,7 @@ export function createModule(base) {
       this._historyDetach?.();
       this._historyDetach = null;
       this._history = null;
+      this._historyGroup = false;
       if (this._historyFlags) { this._historyFlags.canUndo = false; this._historyFlags.canRedo = false; }
       // Guard: a detached/aborted instance (init threw or never ran to
       // completion) can reach destroy() with no mounted container — nothing
@@ -1018,6 +1021,8 @@ export function createModule(base) {
       const h = this._history;
       if (!h || !this._container?.querySelector('[x-data]')) return false;
       if (this._context?.stateManager?.isCompleted?.() === true) return false;
+      // undo/redo schließen einen offenen Schritt, auch den von historyBegin.
+      this._historyGroup = false;
       const json = dir === 'undo' ? h.undo() : h.redo();
       this._syncHistoryFlags();
       if (json === null) return false;
@@ -1036,6 +1041,27 @@ export function createModule(base) {
       return Boolean(f && (dir === 'undo' ? f.canUndo : f.canRedo));
     },
 
+    /**
+     * Öffnet einen Schritt, in den alle folgenden Änderungen laufen, bis
+     * `historyEnd` ihn schließt. Ist schon einer offen (Fokus in einem Feld),
+     * laufen die Änderungen in diesen, und `historyEnd` lässt ihn offen.
+     * Nur mit `history`.
+     */
+    historyBegin: history ? function historyBegin() {
+      const h = this._history;
+      if (!h || h.isOpen) return;
+      h.begin();
+      this._historyGroup = true;
+    } : undefined,
+
+    /** Schließt den Schritt, den `historyBegin` geöffnet hat. Nur mit `history`. */
+    historyEnd: history ? function historyEnd() {
+      if (!this._historyGroup) return;
+      this._historyGroup = false;
+      this._history?.end();
+      this._syncHistoryFlags();
+    } : undefined,
+
     _syncHistoryFlags() {
       const h = this._history;
       if (!h || !this._historyFlags) return;
@@ -1052,6 +1078,7 @@ export function createModule(base) {
     _resetHistory(model) {
       if (!this._history || typeof model?.toJSON !== 'function') return;
       this._history.reset(JSON.stringify(model.toJSON()));
+      this._historyGroup = false;
       this._syncHistoryFlags();
     },
 

@@ -1980,6 +1980,23 @@ mod.applyRemoteState = function applyRemoteState(state) {
   if (state) this.setState(state);
 };
 
+// Undo for a mounted worksheet lives in its DataGrid, not in a module history.
+// Between the two hooks every grid action joins one undo step; the grid
+// history counts nested begin/end. A sheet switch or setState replaces the
+// grid history, which drops the open group with it.
+mod.historyBegin = function historyBegin() {
+  liveData(this)?._grid?.history.begin();
+};
+mod.historyEnd = function historyEnd() {
+  const d = liveData(this);
+  const grid = d?._grid;
+  if (!grid) return;
+  grid.history.end();
+  // The toolbar flags follow `render`; closing a group renders nothing.
+  d.canUndo = grid.history.canUndo();
+  d.canRedo = grid.history.canRedo();
+};
+
 mod.loadExample = async function loadExample(payload) {
   if (!payload || !payload.data) return;
   const current = this.getState();

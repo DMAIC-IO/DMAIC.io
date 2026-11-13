@@ -441,3 +441,54 @@ suite('agent host — Rücknahme', () => {
     assertEqual(warned.length, 1);
   });
 });
+
+suite('agent host — Verlaufsgruppen', () => {
+  function hooked(got, { alive = true, hooks = true } = {}) {
+    return {
+      getActionData: () => (alive ? { model: {} } : null),
+      ...(hooks ? {
+        historyBegin: () => got.push('begin'),
+        historyEnd: () => got.push('end'),
+      } : {}),
+    };
+  }
+
+  test('historyBegin und historyEnd gehen an die eingehängte Instanz', () => {
+    const got = [];
+    const { host, mounted } = makeHost();
+    mounted.set('ws1', hooked(got));
+    host.historyBegin('ws1');
+    host.historyEnd('ws1');
+    assertDeepEqual(got, ['begin', 'end']);
+  });
+
+  test('nicht eingehängt, unbekannt oder ohne Haken: nichts', () => {
+    const got = [];
+    const { host, mounted } = makeHost();
+    mounted.set('ws1', hooked(got, { alive: false }));
+    mounted.set('ws2', hooked(got, { hooks: false }));
+    host.historyBegin('ws1');
+    host.historyEnd('ws1');
+    host.historyBegin('ws2');
+    host.historyEnd('ws2');
+    host.historyBegin('nope');
+    host.historyEnd('nope');
+    assertDeepEqual(got, []);
+  });
+
+  test('ein werfender Haken hält den Lauf nicht auf', () => {
+    const { host, mounted } = makeHost();
+    mounted.set('ws1', { getActionData: () => ({ model: {} }),
+      historyBegin: () => { throw new Error('boom'); }, historyEnd: () => { throw new Error('boom'); } });
+    const warn = console.warn;
+    const warned = [];
+    console.warn = (...args) => warned.push(args);
+    try {
+      host.historyBegin('ws1');
+      host.historyEnd('ws1');
+    } finally {
+      console.warn = warn;
+    }
+    assertEqual(warned.length, 2);
+  });
+});

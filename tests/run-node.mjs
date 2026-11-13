@@ -213,6 +213,7 @@ const SKIP = new Set([
   'ui/split-layout.test.js',
   'ui/workspace-action-help.test.js',
   'ui/workspace-history.test.js',
+  'core/datagrid/datagrid-history-group.test.js',
   'core/datagrid/datagrid-keyboard.test.js',
   'ui/workspace-action-command.test.js',
   'ui/workspace-context.test.js',

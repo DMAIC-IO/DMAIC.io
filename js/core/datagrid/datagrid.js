@@ -870,6 +870,11 @@ export class DataGrid {
   canRedo() { return this.history.canRedo(); }
 
   _applyUndo(action) {
+    if (action.type === 'group') {
+      // Last action first: each one undoes onto the state its successor left.
+      for (let i = action.actions.length - 1; i >= 0; i--) this._applyUndo(action.actions[i]);
+      return;
+    }
     switch (action.type) {
       case 'cell-edit': {
         const col = this.getColumn(action.columnId);
@@ -1000,6 +1005,10 @@ export class DataGrid {
   }
 
   _applyRedo(action) {
+    if (action.type === 'group') {
+      for (const a of action.actions) this._applyRedo(a);
+      return;
+    }
     switch (action.type) {
       case 'cell-edit': {
         const col = this.getColumn(action.columnId);

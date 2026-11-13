@@ -66,10 +66,28 @@ async function mountWorksheet() {
   vm._grid.history.clear();
   const sheetId = vm.model.activeSheetId;
   return {
-    vm, bus, emitted, sheetId, context,
+    vm, bus, emitted, sheetId, context, instance,
     async unmount() { await instance.destroy(); container.remove(); },
   };
 }
+
+suite('Worksheet — Verlaufshaken', () => {
+  test('historyBegin/historyEnd bündeln Grid-Aktionen zu einem Rückgängig-Schritt', async () => {
+    const w = await mountWorksheet();
+    try {
+      const before = w.vm._grid.columns.length;
+      w.instance.historyBegin();
+      w.vm._grid.addColumn();
+      w.vm._grid.setCellValue('e0', 0, 4);
+      w.instance.historyEnd();
+      assertEqual(w.vm._grid.history.peek()?.type, 'group');
+      w.vm._grid.undo();
+      assertEqual(w.vm._grid.columns.length, before);
+      assertEqual(w.vm._grid.getColumn('e0').values[0], null);
+      assertEqual(w.vm._grid.canUndo(), false);
+    } finally { await w.unmount(); }
+  });
+});
 
 suite('Worksheet — Empfänger worksheet:writeColumns', () => {
   test('Datum, Währung und Anhang: Typen kommen an, genau ein column-add', async () => {

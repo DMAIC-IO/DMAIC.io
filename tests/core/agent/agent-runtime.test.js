@@ -65,7 +65,7 @@ function makeRuntime({ denied = false, viewmodel = null, completed = false, slow
                       getHelp = async () => null, stateManager: stateManagerOverrides,
                       registry: registryOverrides, primed = true, instances = [], defaultRevisions = false,
                       onSettle = () => {}, instancesService, isMounted = () => true,
-                      displayed = () => false, notifyThrows = false } = {}) {
+                      displayed = () => false, notifyThrows = false, historyThrows = false } = {}) {
   const notified = [];
   const log = [];
   const settles = [];
@@ -79,6 +79,8 @@ function makeRuntime({ denied = false, viewmodel = null, completed = false, slow
   // sie vor dem ersten Schreiben fest und spielt sie bei der Rücknahme zurück.
   const moduleStates = new Map();
   const live = [];
+  // Verlaufsgruppen am Host, mit der Rücknahme in derselben Reihenfolge.
+  const history = [];
   const stateManager = {
     getActiveProjectId: () => 'p-1',
     get: (path) => (path === 'phases' ? phases : path.startsWith('phases.') ? phases[path.slice(7)] : undefined),
@@ -153,7 +155,9 @@ function makeRuntime({ denied = false, viewmodel = null, completed = false, slow
           entry.record ?? { instanceId: entry.instanceId, moduleId: entry.module, order: 0 }];
         if (entry.state != null) moduleStates.set(entry.instanceId, structuredClone(entry.state));
       },
-      applyLiveState: (id, value) => { live.push([id, value]); },
+      applyLiveState: (id, value) => { live.push([id, value]); history.push(`live:${id}`); },
+      historyBegin: (id) => { if (historyThrows) throw new Error('begin'); history.push(`begin:${id}`); },
+      historyEnd: (id) => { if (historyThrows) throw new Error('end'); history.push(`end:${id}`); },
       // Eigenes Protokoll: `log` bleibt das der Seiteneffekte.
       settle: async (id) => { settles.push(id ?? null); onSettle(id); },
       isMounted: (id) => isMounted(id),
@@ -161,7 +165,7 @@ function makeRuntime({ denied = false, viewmodel = null, completed = false, slow
       notifyBackgroundChange: (ids) => { if (notifyThrows) throw new Error('toast'); notified.push(ids); },
     },
   });
-  return { runtime, log, settles, notified, phases, revs, moduleStates, live, bumpStructure: () => { structureRev += 1; } };
+  return { runtime, log, settles, notified, phases, revs, moduleStates, live, history, bumpStructure: () => { structureRev += 1; } };
 }
 
 suite('agent runtime — consent gate', () => {
@@ -1826,12 +1830,13 @@ suite('agent runtime — interactAsModule (Modulweg)', () => {
   });
 
   test('completed project', async () => {
-    const { runtime, log } = setup({ runtime: { completed: true } });
+    const { runtime, log, history } = setup({ runtime: { completed: true } });
     const out = await runtime.interactAsModule([write('ws1')], CALLER);
     assertEqual(out.ok, false);
     assertEqual(out.cause.error, 'project_completed');
     assertEqual(out.results, undefined);
     assertDeepEqual(log, [], 'kein Schreibaufruf am Host, keine Einwilligung');
+    assertDeepEqual(history, [], 'keine Verlaufsgruppe');
   });
 
   test('der Toast für nicht angezeigte Instanzen gilt auch für Modulaufrufe', async () => {
@@ -1968,6 +1973,66 @@ suite('agent runtime — ganz oder gar nicht', () => {
     assertEqual(out.results[0].cause?.error, ERRORS.CALL_FAILED, JSON.stringify(out.results[0]));
     assertEqual(out.rolledBack, true);
     assertDeepEqual(moduleStates.get('ws1'), { rows: 1 });
+  });
+
+  test('stack writes produce one history group per instance', async () => {
+    const { runtime, history, log } = setup({ extra: (id, get) => ({
+      importCsv: () => { get().history.push(`write:${id}`); return true; },
+    }) });
+    const out = await runtime.interact([write('ws1'), write('rg1'), write('ws1')]);
+    assertEqual(out.ok, true, JSON.stringify(out));
+    assertDeepEqual(history,
+      ['begin:ws1', 'write:ws1', 'begin:rg1', 'write:rg1', 'write:ws1', 'end:ws1', 'end:rg1'], JSON.stringify(log));
+  });
+
+  test('a stack that only reads opens no history group', async () => {
+    const { runtime, history } = setup();
+    const out = await runtime.interact([{ op: 'instance.call', instance: 'ws1', method: 'read' }]);
+    assertEqual(out.ok, true, JSON.stringify(out));
+    assertDeepEqual(history, []);
+  });
+
+  test('history groups close after the rollback', async () => {
+    const { runtime, history } = setup();
+    const out = await runtime.interact([write('ws1'), write('ws2')]);
+    assertEqual(out.rolledBack, true, JSON.stringify(out));
+    assertDeepEqual(history, ['begin:ws1', 'begin:ws2', 'live:ws1', 'end:ws1', 'end:ws2']);
+  });
+
+  test('a module stack inside an agent op uses the outer history groups', async () => {
+    const { runtime, history } = setup({
+      extra: (id, get) => ({
+        toWorksheet: async () => {
+          const inner = await get().runtime.interactAsModule([write('ws1', { module: 'worksheet' })], CALLER);
+          get().history.push(`inner-done:${inner.ok}`);
+          return inner.ok;
+        },
+      }),
+    });
+    const out = await runtime.interact([
+      { op: 'instance.call', instance: 'rg1', method: 'toWorksheet' },
+      write('ws1'),
+    ]);
+    assertEqual(out.ok, true, JSON.stringify(out));
+    assertDeepEqual(history, ['begin:rg1', 'begin:ws1', 'inner-done:true', 'end:rg1', 'end:ws1']);
+  });
+
+  test('a module stack of its own opens and closes its own groups', async () => {
+    const { runtime, history } = setup();
+    const out = await runtime.interactAsModule([write('ws1', { module: 'worksheet' })], CALLER);
+    assertEqual(out.ok, true, JSON.stringify(out));
+    assertDeepEqual(history, ['begin:ws1', 'end:ws1']);
+  });
+
+  test('a throwing history hook does not change the answer', async () => {
+    const made = setup({ runtime: { historyThrows: true } });
+    const warn = console.warn;
+    console.warn = () => {};
+    let out;
+    try {
+      out = await made.runtime.interact([write('ws1')]);
+    } finally { console.warn = warn; }
+    assertEqual(out.ok, true, JSON.stringify(out));
   });
 
   test('a mounted instance settles before its state is journaled', async () => {

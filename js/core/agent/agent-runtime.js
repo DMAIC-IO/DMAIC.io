@@ -318,7 +318,7 @@ export function createAgentRuntime(deps) {
    *   Task-Abbruch neben der Kette: er schreibt keinen Zustand, und eine
    *   Rücknahme spielte einen alten Stand über den Lauf, der gerade schreibt
    * @returns {{ inOp: { instanceId: string|null, pending: Promise<any>[], failed: object|null }|null,
-   *   wrote: boolean, changed: string[], journal: ReturnType<typeof createJournal>|null }}
+   *   wrote: boolean, changed: string[], grouped: string[], journal: ReturnType<typeof createJournal>|null }}
    */
   function newRun({ journal = true } = {}) {
     return {
@@ -334,7 +334,47 @@ export function createAgentRuntime(deps) {
       // Ids der wirksam geänderten Instanzen, in der Reihenfolge der ersten
       // Änderung; auch bei späterem Abbruch gefüllt.
       changed: [],
+      // Ids der Instanzen mit offener Verlaufsgruppe, in der Reihenfolge des
+      // ersten Schreibens. Ein Lauf ist je Instanz ein Rückgängig-Schritt.
+      grouped: [],
     };
+  }
+
+  /**
+   * Öffnet beim ersten Schreiben an einer Instanz deren Verlaufsgruppe.
+   * Danach, damit eine Nutzereingabe, die `journalBefore` noch abgelegt hat,
+   * ihr eigener Schritt bleibt.
+   * @param {object} run  der Lauf
+   * @param {string} op
+   * @param {object} params  die Aktion mit aufgelösten Referenzen
+   */
+  function openHistory(run, op, params) {
+    if (op !== 'instance.call' && op !== 'instance.set') return;
+    const id = params.instance;
+    if (typeof id !== 'string' || run.grouped.includes(id)) return;
+    run.grouped.push(id);
+    try {
+      host.historyBegin?.(id);
+    } catch (err) {
+      console.warn('[agent] historyBegin failed', err);
+    }
+  }
+
+  /**
+   * Schließt am Ende des Laufs jede Gruppe, die er geöffnet hat — auch nach
+   * einer Rücknahme. Die hat den alten Stand per `applyLiveState` in die
+   * Instanz geschrieben und dabei ihren Verlauf verworfen; die Gruppe
+   * hinterlässt dann keinen Eintrag.
+   * @param {object} run  der Lauf
+   */
+  function closeHistory(run) {
+    for (const id of run.grouped.splice(0)) {
+      try {
+        host.historyEnd?.(id);
+      } catch (err) {
+        console.warn('[agent] historyEnd failed', err);
+      }
+    }
   }
 
   /**
@@ -409,12 +449,28 @@ export function createAgentRuntime(deps) {
    *   aufrufende Modul (Modulweg)
    * @param {object} [opts.run]  der Lauf aus `newRun()`; ohne Angabe ein frischer
    * @param {boolean} [opts.inline]  im laufenden Stapel wiedereingetreten:
-   *   Speichern und Toast übernimmt der äußere Lauf
+   *   Speichern, Toast und Verlaufsgruppen übernimmt der äußere Lauf
+   * @returns {Promise<object>}
    */
   async function runInteract(input, opts = AGENT) {
-    const { decided = null, caller = null, inline = false } = opts;
-    const track = opts.revisions === true;
     const run = opts.run ?? newRun();
+    try {
+      return await runStack(input, { ...opts, run });
+    } finally {
+      if (!opts.inline) closeHistory(run);
+    }
+  }
+
+  /**
+   * Der Durchlauf ohne das Schließen der Verlaufsgruppen; Optionen wie
+   * `runInteract`, `opts.run` ist gesetzt.
+   * @param {object|object[]} [input]
+   * @param {object} opts
+   * @returns {Promise<object>}
+   */
+  async function runStack(input, opts) {
+    const { decided = null, caller = null, inline = false, run } = opts;
+    const track = opts.revisions === true;
     if (opts.consent) {
       const gate = decided ? decided.gate : await consent.ensure();
       if (!gate.ok) return { ...gate, contract: CONTRACT_VERSION };
@@ -525,6 +581,7 @@ export function createAgentRuntime(deps) {
           if (isWritingAction(action)) {
             run.wrote = true;
             if (run.journal) await journalBefore(run.journal, action.op, resolved.value);
+            openHistory(run, action.op, resolved.value);
           }
           // Solange die Op läuft, darf ein Modul, das an dieser Instanz
           // arbeitet, wiedereintreten (siehe `interactAsModule`).

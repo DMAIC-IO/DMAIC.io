@@ -60,6 +60,26 @@ suite('ModuleHistory', () => {
     assertEqual(h.redo(), 'bc');
   });
 
+  test('begin/end around two records gives one undo step', () => {
+    const h = fresh();
+    h.begin();
+    h.record('b');
+    h.record('c');
+    h.end();
+    assertEqual(h.undo(), 'a');
+    assertEqual(h.canUndo, false);
+    assertEqual(h.redo(), 'c');
+  });
+
+  test('isOpen zeigt einen offenen Schritt', () => {
+    const h = fresh();
+    assertEqual(h.isOpen, false);
+    h.begin();
+    assertEqual(h.isOpen, true);
+    h.end();
+    assertEqual(h.isOpen, false);
+  });
+
   test('begin und end ohne record: kein Schritt', () => {
     const h = fresh();
     h.begin();
