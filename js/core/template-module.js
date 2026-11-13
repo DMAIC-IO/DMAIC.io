@@ -59,9 +59,10 @@ import { formatNumber } from './number-format.js';
 /** Zeilen eines Tabellen-Exports; die erste Zeile ist der Kopf. @typedef {(string|number|null)[][]} ExportRows */
 /**
  * `this` in den Mappern eines `exports`-Blocks: die Komponente wie im
- * `view`-Block, dazu `cssVars`.
+ * `view`-Block, dazu `cssVars` und `chartSVG` (Typ + Konfiguration → SVG-Text).
  * @template M, S
- * @typedef {ViewThis<M, S> & { cssVars: (map: Record<string, string>) => Record<string, string> }} ExportThis
+ * @typedef {ViewThis<M, S> & { cssVars: (map: Record<string, string>) => Record<string, string>,
+ *   chartSVG: (type: string, config: object) => Promise<string> }} ExportThis
  */
 /**
  * Der `exports`-Block eines Moduls: Mapper nach Datenform. Die Formate
@@ -267,7 +268,7 @@ function executeCommand(vm, vmCommands, name, args) {
 }
 
 /** Glieder, die createModule selbst setzt — kein view-Glied, computed, Feld, Kommando oder Task darf so heißen. */
-const RESERVED_MEMBERS = Object.freeze(['model', 'state', 't', 'fieldError', 'moduleId', 'read', 'cssVars', 'changeRoute', '_ui', '_asyncTasks', '_asyncTaskHost', 'asyncTasks']);
+const RESERVED_MEMBERS = Object.freeze(['model', 'state', 't', 'fieldError', 'moduleId', 'read', 'cssVars', 'chartSVG', 'changeRoute', '_ui', '_asyncTasks', '_asyncTaskHost', 'asyncTasks']);
 /** Lebenszyklus des view-Blocks — als Name eines computed, Felds, Kommandos oder Tasks gesperrt. */
 const LIFECYCLE = Object.freeze(['init', 'destroy']);
 
@@ -713,6 +714,7 @@ export function createModule(base) {
           if (view) {
             Object.assign(comp, { state: UiState ? UiState.create() : {}, moduleId: id });
             comp.cssVars = function cssVars(map) { return readCssVars(this.$root, map); };
+            comp.chartSVG = (type, config) => context.chartManager.renderSVG(type, config);
             Object.defineProperty(comp, 'fieldError', {
               enumerable: false,
               configurable: true,

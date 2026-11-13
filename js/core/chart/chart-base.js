@@ -1382,6 +1382,20 @@ export default class ChartBase {
    * Export chart as SVG file.
    */
   async exportSVG() {
+    const svgData = this.toSVGString();
+    const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const a = document.createElement('a');
+    a.download = `${this._getFileName()  }.svg`;
+    a.href = URL.createObjectURL(blob);
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  /**
+   * The chart as SVG text: background rect in front, hit areas removed.
+   * @returns {string}
+   */
+  toSVGString() {
     const clone = this._svg.cloneNode(true);
     // Add background rect
     const bgColor = this.config.bgColor
@@ -1398,13 +1412,7 @@ export default class ChartBase {
         el.remove();
       }
     });
-    const svgData = new XMLSerializer().serializeToString(clone);
-    const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-    const a = document.createElement('a');
-    a.download = `${this._getFileName()  }.svg`;
-    a.href = URL.createObjectURL(blob);
-    a.click();
-    URL.revokeObjectURL(a.href);
+    return new XMLSerializer().serializeToString(clone);
   }
 
   // ── Data Export (CSV / XLSX) ──────────────────────────────────────

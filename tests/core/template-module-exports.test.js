@@ -31,7 +31,7 @@ const mounted = [];
 let seenCtx = null;
 /** Alle eingehängten Container entfernen. */
 function unmountAll() { while (mounted.length) mounted.pop().remove(); }
-async function mount(exportsDef) {
+async function mount(exportsDef, extraCtx = {}) {
   ensureTemplate();
   unmountAll();
   const context = {
@@ -41,6 +41,7 @@ async function mount(exportsDef) {
     eventBus: { on: () => {}, emit: () => {} },
     notify: () => {},
     dialog: {},
+    ...extraCtx,
   };
   const mod = make(exportsDef, { view(ctx) { seenCtx = ctx; return {}; } });
   const container = document.createElement('div');
@@ -102,6 +103,14 @@ suite('createModule mit exports: cssVars und _ui', () => {
     const map = { a: '--x-test-a', b: '--x-test-b', c: '--x-test-missing' };
     assertDeepEqual(seenCtx.cssVars(map), { a: '12px', b: 'red', c: '' });
     assertDeepEqual(data().cssVars(map), { a: '12px', b: 'red', c: '' });
+  });
+  test('this.chartSVG reicht Typ und Konfiguration an den chartManager', async () => {
+    const calls = [];
+    const { data } = await mount({ image() { return this.chartSVG('node-diagram', { padding: 3 }); } },
+      { chartManager: { renderSVG: async (t, c) => { calls.push([t, c]); return '<svg/>'; } } });
+    const ui = data()._ui;
+    assertEqual(await ui.exports.image.call(ui.component), '<svg/>');
+    assertDeepEqual(calls, [['node-diagram', { padding: 3 }]]);
   });
   test('_ui trägt exports und die Komponente', async () => {
     const def = { table() { return [[this.model.title]]; } };

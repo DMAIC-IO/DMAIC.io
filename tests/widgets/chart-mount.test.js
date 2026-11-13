@@ -480,4 +480,25 @@ suite('Diagramm-Widgets: Streudiagramm toChart', () => {
     assertEqual(c.title, 'T');
     assertTrue(!('xTickFormat' in c));
   });
+  test('Knotenlinien: zwei Links zeichnen zwei Pfade, highlight trägt die Klasse, Wechsel zeichnet neu', async () => {
+    const { default: ChartManager } = await import('../../js/core/chart/chart-manager.js');
+    const cm = new ChartManager({ on() {} }, i18n);
+    const mk = (links) => ({ links, highlightClass: 'hl', padding: 0, origin: 'zero' });
+    const two = mk([
+      { from: 'a', to: 'b', shape: 'curve', x1: 10, y1: 0, x2: 50, y2: 40 },
+      { from: 'a', to: 'c', shape: 'curve', x1: 10, y1: 0, x2: 90, y2: 40, highlight: true },
+    ]);
+    const { root, data } = await host('<div x-widget="node-links" x-widget-config="cfg"></div>', { cm, extra: { cfg: two } });
+    await wait(60);
+    const paths = () => [...root.querySelectorAll('svg path')].filter((p) => p.getAttribute('d')?.startsWith('M'));
+    assertEqual(paths().length, 2);
+    assertEqual(root.querySelectorAll('svg .hl').length, 1);
+    assertEqual(root.querySelectorAll('.modebar, [data-ref="modebar"]').length, 0);
+    data.cfg = mk([{ from: 'a', to: 'b', shape: 'elbow', x1: 10, y1: 0, x2: 50, y2: 40 }]);
+    await wait(60);
+    assertEqual(paths().length, 1);
+    assertEqual(root.querySelectorAll('svg .hl').length, 0);
+    root.remove();
+    cm.destroyAll();
+  });
 });

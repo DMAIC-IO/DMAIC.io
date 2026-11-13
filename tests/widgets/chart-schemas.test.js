@@ -26,6 +26,7 @@ import Pie from '../../js/core/chart/types/pie.js';
 import multiVariChart from '../../js/widgets/multi-vari-chart/schema.js';
 import gageRunChart from '../../js/widgets/gage-run-chart/schema.js';
 import trendChart from '../../js/widgets/trend-chart/schema.js';
+import nodeLinks from '../../js/widgets/node-links/schema.js';
 import ganttChart from '../../js/widgets/gantt-chart/schema.js';
 import cumulativeCostChart from '../../js/widgets/cumulative-cost-chart/schema.js';
 import pieChart from '../../js/widgets/pie-chart/schema.js';
@@ -305,5 +306,19 @@ suite('Diagramm-Widgets: Schemas', () => {
     assertDeepEqual(checkValue(paretoChart.props.config, 'c', { rightYLabel: 'Kumuliert %' }), { rightYLabel: 'Kumuliert %' });
     assertThrows(() => checkValue(paretoChart.props.config, 'c', { rightYLabel: 5 }), /rightYLabel/);
     assertTrue(!paretoChart.editable.base.includes('rightYLabel'));
+  });
+  test('Knotenlinien: Name, Typ, volle Überlagerungs-Konfiguration, Knoten abgelehnt', () => {
+    assertDeepEqual([nodeLinks.name, nodeLinks.chartType], ['node-links', 'node-diagram']);
+    const cfg = {
+      links: [
+        { from: 'a', to: 'b', shape: 'curve', x1: 10, y1: 20, x2: 30, y2: 40, color: 'var(--color-border)', width: 2, dash: '6 4', highlight: true },
+        { from: 'a', to: 'c', shape: 'elbow', x1: 10, y1: 20, x2: 50, y2: 60 },
+      ],
+      highlightClass: 'pc__org-line--hl', padding: 0, origin: 'zero',
+    };
+    assertDeepEqual(checkValue(nodeLinks.props.config, 'c', cfg), cfg);
+    assertThrows(() => checkValue(nodeLinks.props.config, 'c', { ...cfg, nodes: [] }), /nodes/);
+    assertThrows(() => checkValue(nodeLinks.props.config, 'c', { origin: 'middle' }), /origin/);
+    assertThrows(() => checkValue(nodeLinks.props.config, 'c', { links: [{ from: 'a', to: 'b', shape: 'zigzag' }] }), /shape/);
   });
 });

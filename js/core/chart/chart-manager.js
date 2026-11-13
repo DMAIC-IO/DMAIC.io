@@ -187,6 +187,40 @@ export default class ChartManager {
    * @returns {Promise<void>}
    */
   async exportOffscreen(type, config, format, filename) {
+    await this._withOffscreen(type, { ...config, fileName: filename }, async (chart) => {
+      if (!chart) {
+        this._notify(this._i18n.t('chart.exportError'), 'error');
+        return;
+      }
+      await this.exportImage(chart, format);
+    });
+  }
+
+  /**
+   * A chart as SVG text, rendered into a hidden host that is removed again.
+   * Rejects when the type fails to load or to construct.
+   * @param {string} type - Chart type key, e.g. 'node-diagram'
+   * @param {Object} config - Chart configuration
+   * @returns {Promise<string>}
+   */
+  async renderSVG(type, config) {
+    let svg = '';
+    await this._withOffscreen(type, config, (chart) => {
+      if (!chart) throw new Error(`[ChartManager] renderSVG(${type}) failed`);
+      svg = chart.toSVGString();
+    });
+    return svg;
+  }
+
+  /**
+   * Run `fn` with a chart rendered into a hidden host; chart and host are
+   * removed afterwards. `fn` gets null when the type failed to load or construct.
+   * @private
+   * @param {string} type @param {Object} config
+   * @param {(chart: import('./chart-base.js').default|null) => any} fn
+   * @returns {Promise<void>}
+   */
+  async _withOffscreen(type, config, fn) {
     const host = document.createElement('div');
     Object.assign(host.style, { position: 'fixed', left: '-100000px', top: '0', visibility: 'hidden' });
     document.body.appendChild(host);
@@ -198,13 +232,9 @@ export default class ChartManager {
         host.style.width = `${size.w}px`;
         host.style.height = `${size.h}px`;
       }
-      chart = await this.create(host, type, { ...config, showModebar: false, fileName: filename });
-      if (!chart) {
-        this._notify(this._i18n.t('chart.exportError'), 'error');
-        return;
-      }
-      chart.render();
-      await this.exportImage(chart, format);
+      chart = await this.create(host, type, { ...config, showModebar: false });
+      chart?.render();
+      await fn(chart);
     } finally {
       this.destroy(chart);
       host.remove();
