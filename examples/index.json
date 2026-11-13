@@ -1870,7 +1870,7 @@
       },
       "source": "Qprovement Lehrkonfiguration",
       "license": "public-domain",
-      "file": "projects/charter-pizza-lieferzeit.json",
+      "file": "../js/modules/project-charter/resources/examples/projects/charter-pizza-lieferzeit.json",
       "format": "json",
       "modules": [
         "project-charter"
@@ -2693,7 +2693,7 @@
       },
       "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
       "license": "public-domain",
-      "file": "projects/project-charter-hubschrauber-flyer.json",
+      "file": "../js/modules/project-charter/resources/examples/projects/project-charter-hubschrauber-flyer.json",
       "format": "json",
       "modules": [
         "project-charter"
