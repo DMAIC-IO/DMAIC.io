@@ -622,6 +622,10 @@ button.pc__org-add-btn.btn--primary.context-help-anchor > .context-help__btn {
   box-sizing: border-box;
   overflow: hidden;
   padding: var(--spacing-xs) var(--spacing-s);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--spacing-xs);
   text-align: center;
   background: var(--pc-org-node-bg, var(--color-bg-primary));
   border-width: var(--pc-org-node-border-width, var(--border-width));

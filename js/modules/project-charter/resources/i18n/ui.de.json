@@ -45,6 +45,7 @@
   "reorder": "Reihenfolge",
   "addGoalLabel": "+ Ziel hinzufügen",
   "orgNewLabel": "+ Neu",
+  "orgLayout": "Anordnen",
   "addChildTo": "Untergeordnete Position — {name}",
   "editNode": "Position bearbeiten",
   "collapse": "Zuklappen",

@@ -141,6 +141,9 @@
         "command": "Das Kommando als ein Objekt mit id und beforeId."
       }
     },
+    "fitOrg": {
+      "help": "Das Organigramm einpassen: Verschiebung und Zoom werden zurückgesetzt, die Ansicht folgt wieder automatisch dem Fenster."
+    },
     "addOrgNode": {
       "help": "Eine neue Position im Organigramm anlegen, als oberste Ebene oder unter einer bestehenden Position.",
       "params": {

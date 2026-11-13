@@ -45,6 +45,7 @@
   "reorder": "Order",
   "addGoalLabel": "+ Add Goal",
   "orgNewLabel": "+ New",
+  "orgLayout": "Arrange",
   "addChildTo": "Add Subordinate — {name}",
   "editNode": "Edit position",
   "collapse": "Collapse",

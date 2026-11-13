@@ -141,6 +141,9 @@
         "command": "The command as one object with id and beforeId."
       }
     },
+    "fitOrg": {
+      "help": "Fit the org chart: pan and zoom are reset and the view follows the window automatically again."
+    },
     "addOrgNode": {
       "help": "Add a new position to the org chart, at the top level or below an existing position.",
       "params": {
