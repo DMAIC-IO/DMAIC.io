@@ -1175,6 +1175,13 @@
       }
     }
   },
+  "richText": {
+    "bold": "Fett (Strg+B)",
+    "italic": "Kursiv (Strg+I)",
+    "boldShort": "F",
+    "italicShort": "K",
+    "count": "{n} / {max}"
+  },
   "history": {
     "undo": "Rückgängig",
     "redo": "Wiederholen",

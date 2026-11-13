@@ -659,7 +659,7 @@ export function checkTemplateBindings(files, schema, widgets = new Map(), member
       ...[...text.matchAll(BINDING)].map((m) => ({ index: m.index, attr: m[1], name: m[2] })),
       ...[...text.matchAll(FIELD_BINDING)].map((m) => ({ index: m.index, attr: m[1], name: m[3] })),
     ].sort((a, b) => a.index - b.index);
-    for (const { attr, name } of hits) {
+    for (const { index, attr, name } of hits) {
       const shown = `${attr}="model.${name}"`;
       const spec = all[name];
       if (!spec && members.has(name)) {
@@ -671,6 +671,12 @@ export function checkTemplateBindings(files, schema, widgets = new Map(), member
         || widgetKinds.has(spec.kind) || (spec.kind === 'list' && spec.item?.kind === 'columnRef' && widgetKinds.has('columnRef'));
       if (attr === 'x-field' && !bindable) {
         out.push(`template: ${path}: ${shown}: ${name} (${spec.kind}) hat keine Regeln — x-model verwenden`);
+      } else if (attr === 'x-field' && widgetKinds.has(spec.kind)) {
+        // Ein Widget besitzt sein Wirtselement; auf einem Eingabefeld wirft x-field zur Laufzeit.
+        const tag = /^<([a-z][a-z0-9-]*)/i.exec(text.slice(text.lastIndexOf('<', index)))?.[1]?.toLowerCase();
+        if (tag === 'input' || tag === 'select' || tag === 'textarea') {
+          out.push(`template: ${path}: ${shown}: ${name} (${spec.kind}) braucht ein Wirtselement (div), kein <${tag}>`);
+        }
       }
     }
   }

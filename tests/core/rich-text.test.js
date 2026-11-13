@@ -15,7 +15,7 @@ function el(md) {
   return d;
 }
 
-suite('project-charter-richtext: pure helpers', () => {
+suite('rich-text: pure helpers', () => {
   test('isLegacyHtml detects tags, ignores plain text', () => {
     assertEqual(isLegacyHtml('<b>x</b>'), true, 'tag');
     assertEqual(isLegacyHtml('plain * text'), false, 'plain');
@@ -48,7 +48,7 @@ suite('project-charter-richtext: pure helpers', () => {
   });
 });
 
-suite('project-charter-richtext: parse + serialize round-trip', () => {
+suite('rich-text: parse + serialize round-trip', () => {
   test('markdownToFragment builds one <strong> and one <em>', () => {
     const d = el('**b** and *i*');
     const strong = d.querySelectorAll('strong');

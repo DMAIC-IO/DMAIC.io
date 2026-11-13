@@ -181,6 +181,7 @@ const SKIP = new Set([
   'modules/msa-typ6.test.js',
   'modules/process-map-export.test.js',
   'core/rich-text.test.js',
+  'core/rich-text-directive.test.js',
   'modules/project-charter.test.js',
   'modules/survey-runner-dom.test.js',
   'modules/worksheet-write-receiver.test.js',
@@ -215,6 +216,7 @@ const SKIP = new Set([
   'widgets/algo-lab-link.test.js',
   'widgets/chart-mount.test.js',
   'widgets/dataset-picker.test.js',
+  'widgets/rich-text.test.js',
   'widgets/stats-table.test.js',
 ]);
 

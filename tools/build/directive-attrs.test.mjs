@@ -22,6 +22,7 @@ export const PREFIXES = {
   'command-directives.js': ['command', 'command-form', 'param', 'dialog'],
   'file-drop-directive.js': ['file-drop'],
   'field-directive.js': ['field', 'set'],
+  'rich-text-directive.js': ['rich-text'],
   'tablist.js': ['tablist'],
   'widget-directive.js': ['widget'],
   'choice-group.js': ['param'],

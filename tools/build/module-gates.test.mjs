@@ -11,7 +11,7 @@ import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, chec
 import { viewMemberNamesOf } from './view-names.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { APP_DIR } from './build.mjs';
-import { defineModel, command, text, number, oneOf, index, idOf, list, record, map, object, boolean, date, columnRef, defineWidget, datasets } from '../../js/core/model.js';
+import { defineModel, command, text, number, oneOf, index, idOf, list, record, map, object, boolean, date, columnRef, defineWidget, datasets, richText } from '../../js/core/model.js';
 
 /** Temp-App aus `{ pfad: inhalt }`. */
 function appWith(files) {
@@ -1485,6 +1485,20 @@ test('x-field auf list(<forKind>) nur, wo das Widget Listen bindet (columnRef)',
   const schema = defineModel({ fields: { sets: datasets({}), many: list(datasets({})) }, commands: {} }).schema;
   assert.deepEqual(checkTemplateBindings(files, schema, widgets),
     ['template: resources/view.html: x-field="model.many": many (list) hat keine Regeln — x-model verwenden']);
+});
+
+test('x-field auf richText: am Wirtselement (div) ohne Befund, an input/textarea mit Befund', () => {
+  const widgets = new Map([['rich-text', defineWidget({ name: 'rich-text', value: richText(), forKind: 'richText' })]]);
+  const schema = defineModel({ fields: { body: richText() }, commands: {} }).schema;
+  const ok = [{ path: 'resources/view.html', text: '<div x-field="model.body" aria-label="x"></div>' }];
+  assert.deepEqual(checkTemplateBindings(ok, schema, widgets), []);
+  const bad = [{ path: 'resources/view.html', text: '<input x-field="model.body"><textarea class="a" x-field="model.body"></textarea>' }];
+  assert.deepEqual(checkTemplateBindings(bad, schema, widgets), [
+    'template: resources/view.html: x-field="model.body": body (richText) braucht ein Wirtselement (div), kein <input>',
+    'template: resources/view.html: x-field="model.body": body (richText) braucht ein Wirtselement (div), kein <textarea>',
+  ]);
+  assert.deepEqual(checkTemplateBindings(ok, schema, new Map()),
+    ['template: resources/view.html: x-field="model.body": body (richText) hat keine Regeln — x-model verwenden']);
 });
 
 test('checkConvertedModule: fehlerhaftes Widget-Schema wird zum Befund statt zum Absturz', async () => {

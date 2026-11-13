@@ -47,11 +47,14 @@ import contourChart from './contour-chart/schema.js';
 import { mount as mountContourChart } from './contour-chart/mount.js';
 import statsTable from './stats-table/schema.js';
 import { mount as mountStatsTable } from './stats-table/mount.js';
+import richText from './rich-text/schema.js';
+import { mount as mountRichText } from './rich-text/mount.js';
 import algoLabLink from './algo-lab-link/schema.js';
 import { mount as mountAlgoLabLink } from './algo-lab-link/mount.js';
 
 export const WIDGETS = Object.freeze({
   'column-picker': { schema: columnPicker, mount: mountColumnPicker },
+  'rich-text': { schema: richText, mount: mountRichText },
   'dataset-picker': { schema: datasetPicker, mount: mountDatasetPicker },
   'stats-table': { schema: statsTable, mount: mountStatsTable },
   'histogram-chart': { schema: histogramChart, mount: mountHistogramChart },
