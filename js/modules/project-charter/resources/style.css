@@ -7,7 +7,7 @@
    Modulbaums; was es braucht, trägt es selbst (siehe unten). */
 .project-charter,
 .project-charter-tile {
-  --pc-org-node-shadow: var(--shadow-lg);
+  --pc-org-node-shadow: 0 2px 8px rgb(0 0 0 / 15%);
   --pc-org-node-hover-border: color-mix(in srgb, var(--color-accent) 35%, transparent);
   --pc-org-del-hover-bg: color-mix(in srgb, var(--color-error) 8%, transparent);
 }
@@ -460,10 +460,10 @@ button.pc__org-add-btn.btn--primary.context-help-anchor > .context-help__btn {
 /* ===== ZEG-Stufen =====
    Eine Stufe setzt `--pc-zeg`; Balken (Modul und Kachel) und Prozentzahl
    der Kachel lesen sie. Schwellen: 100 / ab 75 / ab 25 / darunter. */
-.pc__zeg--done { --pc-zeg: var(--color-success); }
-.pc__zeg--high { --pc-zeg: var(--color-info); }
-.pc__zeg--mid  { --pc-zeg: var(--color-warning); }
-.pc__zeg--low  { --pc-zeg: var(--color-error); }
+.pc__zeg-level--done { --pc-zeg: var(--color-success); }
+.pc__zeg-level--high { --pc-zeg: var(--color-info); }
+.pc__zeg-level--mid  { --pc-zeg: var(--color-warning); }
+.pc__zeg-level--low  { --pc-zeg: var(--color-error); }
 
 /* ===== Kacheln ===== */
 .pc-tile__goals {
