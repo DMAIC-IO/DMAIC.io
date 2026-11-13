@@ -1,0 +1,204 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "problemStatement": {
+      "help": "What the problem is, since when, what its impact is, and what is out of scope."
+    },
+    "goals": {
+      "help": "The measurable project goals with target date, metric, target value and goal achievement.",
+      "id": {
+        "help": "The goal id."
+      },
+      "description": {
+        "help": "What the goal is."
+      },
+      "targetDate": {
+        "help": "When it should be reached, \"\" or YYYY-MM-DD."
+      },
+      "metric": {
+        "help": "How it is measured."
+      },
+      "targetValue": {
+        "help": "The value to reach."
+      },
+      "achievementLevel": {
+        "help": "Goal achievement from 0 to 100."
+      }
+    },
+    "orgChart": {
+      "help": "The project organisation as a tree of positions; dragging reorders or re-parents.",
+      "id": {
+        "help": "The position id."
+      },
+      "title": {
+        "help": "The name of the position."
+      },
+      "desc": {
+        "help": "The subtitle, for example the person."
+      },
+      "pid": {
+        "help": "The id of the parent position, null for the top level."
+      },
+      "bg": {
+        "help": "Own background colour; absent when the org chart style applies."
+      },
+      "borderColor": {
+        "help": "Own border colour; absent when the org chart style applies."
+      },
+      "borderStyle": {
+        "help": "Own border style; absent when the org chart style applies."
+      },
+      "borderWidth": {
+        "help": "Own border width; absent when the org chart style applies."
+      }
+    },
+    "orgStyle": {
+      "help": "The style of the whole org chart: background, border and connector lines. Empty colours follow the colour theme.",
+      "nodeBg": {
+        "help": "Background colour of all positions; \"\" follows the colour theme."
+      },
+      "nodeBorderColor": {
+        "help": "Border colour of all positions; \"\" follows the colour theme."
+      },
+      "nodeBorderStyle": {
+        "help": "Border style of all positions: solid, dashed or dotted."
+      },
+      "nodeBorderWidth": {
+        "help": "Border width of all positions, whole number 1 to 8."
+      },
+      "lineColor": {
+        "help": "Colour of the connector lines; \"\" follows the colour theme."
+      },
+      "lineStyle": {
+        "help": "Style of the connector lines: solid, dashed or dotted."
+      },
+      "lineWidth": {
+        "help": "Width of the connector lines, whole number 1 to 8."
+      }
+    }
+  },
+  "state": {
+    "selectedId": {
+      "help": "The selected position in the org chart, or none. A view only; it is not saved."
+    },
+    "pan": {
+      "help": "The offset of the org chart in the view. A view only; it is not saved."
+    },
+    "zoom": {
+      "help": "The zoom factor of the org chart from 0.1 to 3. A view only; it is not saved."
+    },
+    "userAdjusted": {
+      "help": "Whether pan or zoom were changed by hand; the view then no longer fits the org chart by itself."
+    },
+    "editorOpen": {
+      "help": "Whether the style panel of the org chart is open. A view only; it is not saved."
+    },
+    "collapsed": {
+      "help": "The ids of the collapsed positions; their subordinates are hidden. A view only; it is not saved."
+    },
+    "heights": {
+      "help": "The measured heights of the positions, by id. A view only; it is not saved."
+    },
+    "confirmGoalId": {
+      "help": "The goal whose deletion waits for the second confirmation, or none."
+    },
+    "styleDraft": {
+      "help": "The colour value currently being dragged in the colour picker, with its style key. It reaches the org chart only when the picker closes."
+    },
+    "dragPreview": {
+      "help": "The preview while dragging a position: where it would land. A view only; it is not saved."
+    },
+    "goalDragPreview": {
+      "help": "The preview while dragging a goal: where it would land. A view only; it is not saved."
+    }
+  },
+  "actions": {
+    "read": {
+      "help": "Read the state of the project charter: problem statement, goals, org chart and its style.",
+      "params": {}
+    },
+    "addGoal": {
+      "help": "Add a new, empty project goal at the end of the list.",
+      "params": {
+        "command": "An empty object; the command takes no arguments."
+      }
+    },
+    "removeGoal": {
+      "help": "Delete a project goal without asking; can be undone.",
+      "params": {
+        "id": "The goal id from read().goals.",
+        "command": "The command as one object with id."
+      }
+    },
+    "moveGoal": {
+      "help": "Move a project goal in the list, before another one or to the end.",
+      "params": {
+        "id": "The id of the goal to move.",
+        "beforeId": "The id of the goal it goes before, or null for the end.",
+        "command": "The command as one object with id and beforeId."
+      }
+    },
+    "addOrgNode": {
+      "help": "Add a new position to the org chart, at the top level or below an existing position.",
+      "params": {
+        "title": "Name of the position, 1 to 100 characters.",
+        "desc": "Subtitle, for example the person; at most 300 characters, \"\" for none.",
+        "parentId": "The id of the parent position from read().orgChart, or null for the top level.",
+        "command": "The command as one object with title, desc and parentId."
+      }
+    },
+    "updateOrgNode": {
+      "help": "Change a position's title, subtitle and own style; style values not given inherit the org chart style.",
+      "params": {
+        "id": "The position id from read().orgChart.",
+        "title": "The name of the position, for example project lead or quality assurance.",
+        "desc": "The subtitle below the name, for example the name of the person.",
+        "bg": "The position's own background colour; empty inherits the org chart style.",
+        "borderColor": "The position's own border colour; empty inherits the org chart style.",
+        "borderStyle": "The position's own border style: dashed or dotted; empty or solid inherits the org chart style.",
+        "borderWidth": "The position's own border width from 2 to 8; 0 or 1 inherits the org chart style.",
+        "command": "The command as one object with id, title and the other values."
+      }
+    },
+    "setOrgNodeStyle": {
+      "help": "Set one style value of a single position; empty takes over the style of the whole org chart.",
+      "params": {
+        "id": "The position id from read().orgChart.",
+        "key": "Which style value: bg, borderColor or borderStyle.",
+        "value": "The value, form per key see types.OrgNodeStyle.",
+        "command": "The command as one object with id, key and value."
+      }
+    },
+    "setOrgNodeBorderWidth": {
+      "help": "Set the border width of a single position; 0 or 1 inherits the width of the whole org chart.",
+      "params": {
+        "id": "The id of the position from read().orgChart.",
+        "value": "The border width as a whole number from 0 to 8; 0 and 1 inherit the org chart style, otherwise the value applies.",
+        "command": "The command as one object with id and value."
+      }
+    },
+    "removeOrgNode": {
+      "help": "Delete a position with all positions below it, without asking; can be undone. Returns the number of deleted positions.",
+      "params": {
+        "id": "The position id from read().orgChart.",
+        "command": "The command as one object with id."
+      }
+    },
+    "moveOrgNode": {
+      "help": "Place a position below another one and order it among its new siblings. The positions below it move along.",
+      "params": {
+        "id": "The position id from read().orgChart.",
+        "parentId": "The new parent position, or null for the top level; not the position itself and none below it.",
+        "index": "Place among the new siblings, 0 for first, or null for the end.",
+        "command": "The command as one object with id, parentId and index."
+      }
+    }
+  },
+  "types": {
+    "OrgNodeStyle": {
+      "bg": "Background colour of this position; empty takes over the org chart style.",
+      "borderColor": "Border colour of this position; empty takes over the org chart style.",
+      "borderStyle": "Border style of this position: dashed or dotted; empty, shown as solid in the list, takes over the org chart style."
+    }
+  }
+}

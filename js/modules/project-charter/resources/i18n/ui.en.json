@@ -1,0 +1,75 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Project Charter",
+  "description": "Project mandate: problem statement and measurable goals",
+  "whenToUse": "At the start of a project, to record the problem, measurable goals and the project organisation — the basis every later phase refers to.",
+  "problemStatement": "Problem Statement",
+  "problemPlaceholder": "What is the problem? Since when? What is the impact? What is NOT in scope?",
+  "goals": "Project Goals",
+  "addGoal": "Add Goal",
+  "goalDescription": "Description",
+  "goalTargetDate": "Target Date",
+  "goalMetric": "Metric",
+  "goalTargetValue": "Target Value",
+  "goalAchievement": "GAL",
+  "goalAchievementFull": "Goal Achievement Level",
+  "goalAchievementTooltip": "Goal Achievement Level: 0 = not started, 100 = fully achieved",
+  "goalAchieved": "Achieved",
+  "deleteGoal": "Delete goal",
+  "deleteGoalConfirm": "Really delete?",
+  "dateInPast": "Target date is in the past",
+  "charCount": "{current} / {max}",
+  "fmtBold": "Bold (Ctrl+B)",
+  "fmtItalic": "Italic (Ctrl+I)",
+  "noGoals": "No goals defined yet. Click \"+ Add Goal\" to begin.",
+  "orgChart": "Org Chart",
+  "noOrgChart": "No org chart created yet.",
+  "addChild": "Add Subordinate",
+  "nodeTitle": "Title",
+  "nodeDescription": "Description",
+  "orgNew": "New",
+  "orgFit": "Fit",
+  "orgLayout": "Layout",
+  "editor": "Appearance",
+  "reorder": "Order",
+  "addGoalLabel": "+ Add Goal",
+  "orgNewLabel": "+ New",
+  "addChildTo": "Add Subordinate — {name}",
+  "editNode": "Edit position",
+  "collapse": "Collapse",
+  "expand": "Expand",
+  "childCount": "{count} subordinate positions",
+  "zoomIn": "Zoom in",
+  "fit": "Fit",
+  "editorTitle": "Org chart appearance",
+  "orgStyleReset": "Reset",
+  "colorPick": "Pick colour",
+  "colorDefault": "Colour scheme",
+  "exportFileName": "org-chart",
+  "invariants": {
+    "uniqueIds": "Every goal and every position needs its own id.",
+    "validParents": "The superior position must exist in the org chart; without one, a position is top level.",
+    "noCycles": "Positions must not report to each other in a loop: no position sits below itself or below one of its own subordinates.",
+    "goalDates": "The target date is empty or a valid date of the form YYYY-MM-DD."
+  },
+  "confirm": {
+    "orgDeleteConfirm": "Really delete \"{name}\"? All subordinate positions will also be removed."
+  },
+  "tiles": {
+    "charter": {
+      "title": "Project Charter",
+      "empty": "No project charter module created.",
+      "noProblem": "No problem statement recorded.",
+      "problemLabel": "Problem Statement"
+    },
+    "goals": {
+      "title": "Project Goals",
+      "empty": "No goals defined.",
+      "unnamed": "Goal {n}"
+    },
+    "org": {
+      "title": "Org Chart",
+      "empty": "No org chart recorded."
+    }
+  }
+}

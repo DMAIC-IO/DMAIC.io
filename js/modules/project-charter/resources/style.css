@@ -1,0 +1,555 @@
+/* ============================================================
+   Project Charter Module Styles
+   BEM: .pc__ prefix (Modul), .pc-tile__ prefix (Kacheln)
+   ============================================================ */
+
+/* Modulvariablen. Im offenen Dialog steht das Formular außerhalb des
+   Modulbaums; was es braucht, trägt es selbst (siehe unten). */
+.project-charter,
+.project-charter-tile {
+  --pc-org-node-shadow: var(--shadow-lg);
+  --pc-org-node-hover-border: color-mix(in srgb, var(--color-accent) 35%, transparent);
+  --pc-org-del-hover-bg: color-mix(in srgb, var(--color-error) 8%, transparent);
+}
+
+/* ===== Sections ===== */
+
+/* Der Body scrollt (overflow: auto): das Fragezeichen der ersten Überschrift
+   ragt über deren Oberkante und würde dort abgeschnitten. */
+.project-charter > .module-container__body {
+  padding-top: var(--spacing-m);
+}
+
+/* Section labels use global .dmike-split__output-section */
+.pc__section {
+  margin-bottom: var(--spacing-xl);
+}
+
+/* ===== Goals Table ===== */
+.pc__no-goals {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.pc__goals-table-wrap {
+  overflow-x: auto;
+  margin-bottom: var(--spacing-sm);
+}
+
+.pc__goals-table th {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.pc__goals-table td {
+  padding: var(--spacing-xs);
+  vertical-align: top;
+}
+
+/* Column widths */
+.pc__col-nr    { width: 28px; text-align: center; color: var(--color-text-tertiary); font-size: var(--font-size-xs); }
+
+/* Reorder grip — column, glyph, hover and drag states come from
+   .dmike-table--draggable in components.css. */
+
+/* Description is the only flexible column — fills the remaining space.
+   All other columns shrink to their content via width:1%; the inputs
+   inside them get min-width:1px so they don't force the column wider. */
+.pc__col-date,
+.pc__col-target { width: 1%; white-space: nowrap; }
+.pc__col-metric { width: 250px; }
+.pc__col-zeg   { width: 110px; }
+.pc__col-del   { width: 36px; text-align: center; }
+
+.pc__goals-table .pc__cell-input { min-width: 1px; }
+
+/* Cell inputs use global .field .field--sm .field--ghost; class is kept as JS hook */
+.pc__date--past {
+  color: var(--color-warning);
+}
+
+/* Description cell: multi-line textarea that auto-grows with content.
+   `field-sizing: content` removes the need for JS auto-resize in modern Chromium. */
+.pc__cell-textarea {
+  min-height: 0;
+  resize: none;
+  overflow: hidden;
+  field-sizing: content;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  line-height: 1.4;
+}
+
+/* ===== ZEG (Goal Achievement Level) ===== */
+.pc__zeg-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  position: relative;
+}
+
+/* ZEG numeric input: global .field .field--sm .field--ghost + local overrides */
+.pc__zeg-input {
+  width: 56px;
+  text-align: center;
+}
+
+.pc__zeg-bar-track {
+  height: 4px;
+  background: var(--color-bg-tertiary);
+  border-radius: 2px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.pc__zeg-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--pc-zeg, var(--color-error));
+  transition: width var(--transition-speed), background var(--transition-speed);
+}
+
+.pc__zeg-done {
+  position: absolute;
+  right: 4px;
+  top: 2px;
+  color: var(--color-success);
+  line-height: 0;
+}
+
+/* ===== Add button ===== */
+.pc__add-btn {
+  margin-top: var(--spacing-sm);
+}
+
+/* ===== Org Chart (Canvas-based) ===== */
+
+.pc__org-section {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
+}
+
+/* Toolbar */
+.pc__org-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) 0;
+  margin-bottom: var(--spacing-xs);
+}
+
+/* Card: flex row housing org chart + editor side-by-side */
+.pc__org-card {
+  display: flex;
+  width: 100%;
+}
+
+/* Canvas wrapper (viewport) */
+.pc__org-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+
+  /* Base height; JS grows this to fit the org-chart content (see
+     _orgUpdateWrapHeight) so deep charts are not clipped. */
+  min-height: 420px;
+  overflow: hidden;
+  cursor: grab;
+  border: var(--border-width) solid var(--color-border-secondary);
+  border-radius: var(--border-radius);
+  background: var(--color-bg-primary);
+}
+
+.pc__org-wrap:active { cursor: grabbing; }
+
+/* Dot grid background */
+.pc__org-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, var(--color-border-secondary) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* Canvas (transformed) */
+.pc__org-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+}
+
+/* SVG connector lines */
+.pc__org-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.pc__org-lines path {
+  fill: none;
+  stroke: var(--pc-org-line-color, var(--color-border-secondary));
+  stroke-width: var(--pc-org-line-width, 2);
+  stroke-dasharray: var(--pc-org-line-dasharray, none);
+  stroke-linecap: round;
+}
+
+.pc__org-lines path.pc__org-line--hl {
+  stroke: var(--color-accent);
+  filter: drop-shadow(0 0 4px var(--color-accent-light));
+}
+
+/* The connector overlay is a node-diagram chart: no frame, no background,
+   no clipping — content coordinates map 1:1 onto the node canvas. */
+.pc__org-lines .dmike-chart-card,
+.pc__org-lines .dmike-chart-wrap,
+.pc__org-lines .dmike-chart-svg-wrap {
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
+.pc__org-lines .dmike-chart-svg-wrap svg {
+  overflow: visible;
+}
+
+/* Nodes */
+.pc__org-node {
+  position: absolute;
+  background: var(--pc-org-node-bg, var(--color-bg-secondary));
+  border-width: var(--pc-org-node-border-width, var(--border-width));
+  border-style: var(--pc-org-node-border-style, solid);
+  border-color: var(--pc-org-node-border-color, var(--color-border-secondary));
+  border-radius: var(--border-radius);
+  box-shadow: var(--pc-org-node-shadow);
+  user-select: none;
+  cursor: default;
+  transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+.pc__org-node:hover {
+  border-color: var(--pc-org-node-hover-border);
+}
+
+.pc__org-node--sel {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent), var(--pc-org-node-shadow);
+}
+
+.pc__org-node--drag {
+  opacity: 0.8;
+  z-index: var(--z-drag);
+}
+
+/* Smooth transition for sibling nodes during reorder drag */
+.pc__org-wrap--reordering .pc__org-node:not(.pc__org-node--drag) {
+  transition: left 0.2s ease, top 0.2s ease;
+}
+
+/* Drop indicator line between siblings */
+.pc__org-drop-line {
+  position: absolute;
+  width: 3px;
+  background: var(--color-accent);
+  border-radius: 1.5px;
+  pointer-events: none;
+  z-index: calc(var(--z-drag) - 1);
+  display: none;
+  box-shadow: 0 0 6px var(--color-accent-light);
+}
+
+.pc__org-node-title {
+  padding: var(--spacing-m) var(--spacing-m) var(--spacing-xs);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.3;
+  overflow-wrap: break-word;
+}
+
+.pc__org-node-desc {
+  padding: 0 var(--spacing-m) var(--spacing-m);
+  font-size: var(--font-size-xs);
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+  overflow-wrap: break-word;
+}
+
+/* Node action bar */
+.pc__org-node-bar {
+  display: flex;
+  border-top: var(--border-width) solid var(--color-border-secondary);
+  border-radius: 0 0 var(--border-radius) var(--border-radius);
+  overflow: hidden;
+}
+
+.pc__org-node-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2xs);
+  padding: var(--spacing-s) var(--spacing-2xs);
+  font-size: 0.7rem;
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background var(--transition-speed), color var(--transition-speed);
+}
+
+.pc__org-node-btn:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+.pc__org-node-btn--del:hover {
+  color: var(--color-error);
+  background: var(--pc-org-del-hover-bg);
+}
+
+.pc__org-node-btn + .pc__org-node-btn {
+  border-left: var(--border-width) solid var(--color-border-secondary);
+}
+
+.pc__org-node-btn svg {
+  width: 13px;
+  height: 13px;
+}
+
+.pc__org-node-ico {
+  width: 13px;
+  height: 13px;
+}
+
+/* Connection dots */
+.pc__org-dot-t,
+.pc__org-dot-b {
+  position: absolute;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-border-secondary);
+  pointer-events: none;
+  transition: background var(--transition-speed), transform var(--transition-speed);
+}
+
+.pc__org-dot-t {
+  top: 0;
+  transform: translate(-50%, -50%);
+}
+
+.pc__org-dot-b {
+  bottom: 0;
+  transform: translate(-50%, 50%);
+}
+
+.pc__org-node:hover .pc__org-dot-t,
+.pc__org-node:hover .pc__org-dot-b,
+.pc__org-node--sel .pc__org-dot-t,
+.pc__org-node--sel .pc__org-dot-b {
+  background: var(--color-accent);
+  transform: translate(-50%, -50%) scale(1.3);
+}
+
+.pc__org-node:hover .pc__org-dot-b,
+.pc__org-node--sel .pc__org-dot-b {
+  transform: translate(-50%, 50%) scale(1.3);
+}
+
+/* Empty state */
+.pc__org-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.pc__org-empty p {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  text-align: center;
+}
+
+.pc__org-empty--hidden {
+  display: none;
+}
+
+/* Editor side-panel (mirrors dmike-chart-editor pattern) */
+.pc__org-editor {
+  width: 0;
+  overflow: hidden;
+  background: var(--color-bg-primary);
+  border-left: var(--border-width) solid var(--color-border-secondary);
+  transition: width 0.32s ease;
+  flex-shrink: 0;
+}
+
+.pc__org-editor--open {
+  width: 336px;
+}
+
+.pc__org-editor-inner {
+  width: 336px;
+  max-height: 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding: var(--spacing-md);
+}
+
+.pc__org-editor-inner::-webkit-scrollbar {
+  width: 5px;
+}
+
+.pc__org-editor-inner::-webkit-scrollbar-thumb {
+  background: var(--color-border-secondary);
+  border-radius: 3px;
+}
+
+/* Form groups use global .field-group / .field-group--inline (components.css) */
+
+.pc__org-form-sep {
+  border: none;
+  border-top: var(--border-width) solid var(--color-border-secondary);
+  margin: var(--spacing-md) 0 var(--spacing-xs);
+}
+
+.pc__org-editor .dmike-chart-ed-color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--border-radius-sm);
+  border: var(--border-width) solid var(--color-border-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Hilfe-Anker (Alt): absolut positioniert, daher ohne Layoutwirkung. */
+
+/* „+ Neu“: der Kreis sitzt an der rechten oberen Knopfecke, nicht auf dem
+   Label „Neu“. */
+button.pc__org-add-btn.btn--primary.context-help-anchor > .context-help__btn {
+  top: 0;
+  right: calc(-1 * var(--spacing-s));
+}
+
+/* Formularlabels im Dialog: der Kreis steht mittig neben dem Text statt auf
+   der Oberkante des Labels (dort würde ihn der Dialogkörper anschneiden). */
+.pc__form-label.context-help-anchor > .context-help__btn {
+  top: 50%;
+}
+
+/* „Zielwert“: zwischen Spaltenende und „ZEG“ bleiben nur wenige Pixel, der
+   Kreis rückt deshalb bis an den Text heran statt den Nachbarkopf zu berühren. */
+.pc__col-target .context-help-anchor > .context-help__btn {
+  margin-left: 0;
+}
+
+/* ===== ZEG-Stufen =====
+   Eine Stufe setzt `--pc-zeg`; Balken (Modul und Kachel) und Prozentzahl
+   der Kachel lesen sie. Schwellen: 100 / ab 75 / ab 25 / darunter. */
+.pc__zeg--done { --pc-zeg: var(--color-success); }
+.pc__zeg--high { --pc-zeg: var(--color-info); }
+.pc__zeg--mid  { --pc-zeg: var(--color-warning); }
+.pc__zeg--low  { --pc-zeg: var(--color-error); }
+
+/* ===== Kacheln ===== */
+.pc-tile__goals {
+  list-style: decimal;
+  padding-left: var(--spacing-md);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.pc-tile__goal {
+  padding-left: var(--spacing-xs);
+}
+
+.pc-tile__goal-head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  align-items: baseline;
+  margin-bottom: var(--spacing-2xs);
+}
+
+.pc-tile__goal-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+.pc-tile__goal-zeg {
+  font-family: var(--font-family-mono, monospace);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  flex-shrink: 0;
+  color: var(--pc-zeg, var(--color-error));
+}
+
+.pc-tile__goal-bar {
+  height: 4px;
+  background: var(--color-bg-tertiary, var(--color-border-primary));
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.pc-tile__goal-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--pc-zeg, var(--color-error));
+  transition: width var(--transition-speed);
+}
+
+/* Organigramm: Knoten fester Höhe, wie das Modul gestaltet; die Linien
+   zeichnet das Widget node-links. */
+.pc-tile__org {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.pc-tile__org-node {
+  position: absolute;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: var(--spacing-xs) var(--spacing-s);
+  text-align: center;
+  background: var(--pc-org-node-bg, var(--color-bg-primary));
+  border-width: var(--pc-org-node-border-width, var(--border-width));
+  border-style: var(--pc-org-node-border-style, solid);
+  border-color: var(--pc-org-node-border-color, var(--color-border-primary));
+  border-radius: var(--border-radius);
+}
+
+.pc-tile__org-node-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  overflow-wrap: break-word;
+}
+
+.pc-tile__org-node-desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  overflow-wrap: break-word;
+}

@@ -1,0 +1,85 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "Der {{term:project-charter|Project Charter}} ist das Gründungsdokument eines Six-Sigma-Projekts. Er beschreibt knapp und nachvollziehbar, warum das Projekt nötig ist, was es erreichen soll, wer beteiligt ist und in welchem Rahmen gearbeitet wird. Er ist das erste Tool der Define-Phase und wird im Tollgate-Review als Referenz herangezogen."
+        },
+        {
+          "type": "definition",
+          "term": "Problemstellung (Problem Statement)",
+          "content": "Beschreibt knapp das aktuelle Problem mit Fakten: Was passiert? Wo, wann, wie oft? Welche Auswirkung hat es? Bewusst ohne Ursachen und ohne Lösungen — die werden später in Analyze und Improve erarbeitet."
+        },
+        {
+          "type": "definition",
+          "term": "Projektziele",
+          "content": "Was soll am Ende erreicht werden? Jedes Ziel bekommt eine Zeile mit Beschreibung, Zieldatum, Messgröße und Zielwert. „Ausschuss von 4,2 % auf 1,5 % senken bis 31.12.\" ist ein gutes Ziel; „Qualität verbessern\" ist keins."
+        },
+        {
+          "type": "definition",
+          "term": "ZEG (Zielerreichungsgrad)",
+          "content": "Wie weit ist das Ziel erreicht? 0 = nicht begonnen, 100 = vollständig erreicht. Den Wert im Lauf des Projekts nachführen — so zeigt der Projektauftrag jederzeit den Stand."
+        },
+        {
+          "type": "definition",
+          "term": "Abgrenzung (Scope)",
+          "content": "Was ist Teil des Projekts und was nicht? Halten Sie das in der Problembeschreibung fest. Eine klare Abgrenzung verhindert {{term:projektumfang|Scope Creep}} — z. B. „Nur Produktionslinie 3, nicht die Endmontage\"."
+        },
+        {
+          "type": "definition",
+          "term": "Organigramm (Team und Rollen)",
+          "content": "Sponsor, Projektleiter (Black/Green Belt), Kernteam. Klar dokumentierte Rollen vermeiden später Zuständigkeitslücken. Zuständigkeiten im Detail regelt die RACI-Matrix, Interessen und Einfluss die Stakeholder-Analyse."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Vorgehen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "{{term:problembeschreibung|Problemstellung}} in 2–4 Sätzen formulieren — mit Fakten, ohne Vermutungen.",
+            "In der Problembeschreibung auch festhalten, was NICHT Teil des Projekts ist.",
+            "Ziele anlegen, jeweils mit Messgröße, Zielwert und Zieldatum.",
+            "Im Organigramm Team und Rollen eintragen, mindestens Sponsor und Projektleiter.",
+            "Den ZEG der Ziele im Projektverlauf nachführen.",
+            "Charter mit Sponsor abstimmen und freigeben — er ist die Basis für alles, was folgt."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Lösung in der Problemstellung",
+          "content": "Sätze wie „Wir brauchen eine neue Maschine\" sind keine Problemstellung — sie nehmen die Lösung vorweg. Beim Verfassen prüfen: Beschreibt der Satz das Symptom oder schon die Antwort?"
+        },
+        {
+          "type": "definition",
+          "term": "Unmessbare Ziele",
+          "content": "„Effizienz steigern\", „Mitarbeiter motivieren\" sind keine Ziele. Jedes Ziel braucht eine Zahl, eine Einheit und ein Datum — sonst lässt es sich am Ende des Projekts nicht prüfen."
+        },
+        {
+          "type": "definition",
+          "term": "Zu großer Scope",
+          "content": "Six-Sigma-Projekte sollten typischerweise in 3–6 Monaten abgeschlossen sein. Wer „den gesamten Werksprozess optimieren\" will, scheitert. Lieber das Projekt klein schneiden und nachschärfen."
+        },
+        {
+          "type": "definition",
+          "term": "Kein Sponsor-Commitment",
+          "content": "Ohne aktiven Sponsor (Ressourcen, Eskalationsweg, politischer Rückhalt) kommen Projekte spätestens in Improve ins Stocken. Der Sponsor im Organigramm ist nicht symbolisch — der Sponsor muss informiert und eingebunden sein."
+        },
+        {
+          "type": "definition",
+          "term": "Charter wird nie aktualisiert",
+          "content": "Im Lauf des Projekts ändern sich Ziele, Scope und Beteiligte. Der Charter sollte ein lebendes Dokument sein — Änderungen mit Datum festhalten, statt veralteten Stand zu konservieren."
+        }
+      ]
+    }
+  }
+}

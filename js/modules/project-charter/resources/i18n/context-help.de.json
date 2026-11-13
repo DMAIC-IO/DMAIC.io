@@ -1,0 +1,204 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "problemStatement": {
+      "help": "Was ist das Problem, seit wann, welche Auswirkungen hat es, und was gehört nicht zum Projekt."
+    },
+    "goals": {
+      "help": "Die messbaren Projektziele mit Zieldatum, Messgröße, Zielwert und Zielerreichungsgrad.",
+      "id": {
+        "help": "Die id des Ziels."
+      },
+      "description": {
+        "help": "Was das Ziel ist."
+      },
+      "targetDate": {
+        "help": "Bis wann es erreicht sein soll, \"\" oder YYYY-MM-DD."
+      },
+      "metric": {
+        "help": "Woran es gemessen wird."
+      },
+      "targetValue": {
+        "help": "Der Wert, der erreicht werden soll."
+      },
+      "achievementLevel": {
+        "help": "Zielerreichungsgrad (ZEG) von 0 bis 100."
+      }
+    },
+    "orgChart": {
+      "help": "Die Projektorganisation als Baum von Positionen; ziehen ordnet um oder hängt um.",
+      "id": {
+        "help": "Die id der Position."
+      },
+      "title": {
+        "help": "Die Bezeichnung der Position."
+      },
+      "desc": {
+        "help": "Der Untertitel, zum Beispiel die Person."
+      },
+      "pid": {
+        "help": "Die id der übergeordneten Position, null für die oberste Ebene."
+      },
+      "bg": {
+        "help": "Eigene Hintergrundfarbe; fehlt, wenn der Stil des Organigramms gilt."
+      },
+      "borderColor": {
+        "help": "Eigene Rahmenfarbe; fehlt, wenn der Stil des Organigramms gilt."
+      },
+      "borderStyle": {
+        "help": "Eigener Rahmenstil; fehlt, wenn der Stil des Organigramms gilt."
+      },
+      "borderWidth": {
+        "help": "Eigene Rahmenbreite; fehlt, wenn der Stil des Organigramms gilt."
+      }
+    },
+    "orgStyle": {
+      "help": "Der Stil des ganzen Organigramms: Hintergrund, Rahmen und Verbindungslinien. Leere Farben folgen dem Farbschema.",
+      "nodeBg": {
+        "help": "Hintergrundfarbe aller Positionen; \"\" folgt dem Farbschema."
+      },
+      "nodeBorderColor": {
+        "help": "Rahmenfarbe aller Positionen; \"\" folgt dem Farbschema."
+      },
+      "nodeBorderStyle": {
+        "help": "Rahmenstil aller Positionen: solid, dashed oder dotted."
+      },
+      "nodeBorderWidth": {
+        "help": "Rahmenbreite aller Positionen, ganze Zahl 1 bis 8."
+      },
+      "lineColor": {
+        "help": "Farbe der Verbindungslinien; \"\" folgt dem Farbschema."
+      },
+      "lineStyle": {
+        "help": "Stil der Verbindungslinien: solid, dashed oder dotted."
+      },
+      "lineWidth": {
+        "help": "Breite der Verbindungslinien, ganze Zahl 1 bis 8."
+      }
+    }
+  },
+  "state": {
+    "selectedId": {
+      "help": "Die gewählte Position im Organigramm, oder keine. Rein eine Ansicht; sie wird nicht gespeichert."
+    },
+    "pan": {
+      "help": "Die Verschiebung des Organigramms in der Ansicht. Rein eine Ansicht; sie wird nicht gespeichert."
+    },
+    "zoom": {
+      "help": "Der Zoomfaktor des Organigramms von 0,1 bis 3. Rein eine Ansicht; er wird nicht gespeichert."
+    },
+    "userAdjusted": {
+      "help": "Ob Verschiebung oder Zoom von Hand geändert wurden; dann passt die Ansicht das Organigramm nicht mehr von selbst ein."
+    },
+    "editorOpen": {
+      "help": "Ob das Stil-Panel des Organigramms offen ist. Rein eine Ansicht; sie wird nicht gespeichert."
+    },
+    "collapsed": {
+      "help": "Die ids der eingeklappten Positionen; ihre untergeordneten Positionen sind ausgeblendet. Rein eine Ansicht; sie wird nicht gespeichert."
+    },
+    "heights": {
+      "help": "Die gemessenen Höhen der Positionen, nach id. Rein eine Ansicht; sie wird nicht gespeichert."
+    },
+    "confirmGoalId": {
+      "help": "Das Ziel, dessen Löschen auf die zweite Bestätigung wartet, oder keines."
+    },
+    "styleDraft": {
+      "help": "Der Farbwert, der im Farbwähler gerade gezogen wird, mit Stilschlüssel. Erst beim Schließen geht er ins Organigramm."
+    },
+    "dragPreview": {
+      "help": "Die Vorschau beim Ziehen einer Position: wohin sie fiele. Rein eine Ansicht; sie wird nicht gespeichert."
+    },
+    "goalDragPreview": {
+      "help": "Die Vorschau beim Ziehen eines Ziels: wohin es fiele. Rein eine Ansicht; sie wird nicht gespeichert."
+    }
+  },
+  "actions": {
+    "read": {
+      "help": "Der Stand des Projektauftrags: Problembeschreibung, Ziele, Organigramm und dessen Stil lesen.",
+      "params": {}
+    },
+    "addGoal": {
+      "help": "Ein neues, leeres Projektziel am Ende der Liste anlegen.",
+      "params": {
+        "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben."
+      }
+    },
+    "removeGoal": {
+      "help": "Ein Projektziel ohne Rückfrage löschen; rückgängig machbar.",
+      "params": {
+        "id": "Die id des Ziels aus read().goals.",
+        "command": "Das Kommando als ein Objekt mit id."
+      }
+    },
+    "moveGoal": {
+      "help": "Ein Projektziel in der Liste verschieben, vor ein anderes oder ans Ende.",
+      "params": {
+        "id": "Die id des zu verschiebenden Ziels.",
+        "beforeId": "Die id des Ziels, vor das es kommt, oder null für das Ende.",
+        "command": "Das Kommando als ein Objekt mit id und beforeId."
+      }
+    },
+    "addOrgNode": {
+      "help": "Eine neue Position im Organigramm anlegen, als oberste Ebene oder unter einer bestehenden Position.",
+      "params": {
+        "title": "Bezeichnung der Position, 1 bis 100 Zeichen.",
+        "desc": "Untertitel, zum Beispiel die Person; höchstens 300 Zeichen, \"\" für keinen.",
+        "parentId": "Die id der übergeordneten Position aus read().orgChart, oder null für die oberste Ebene.",
+        "command": "Das Kommando als ein Objekt mit title, desc und parentId."
+      }
+    },
+    "updateOrgNode": {
+      "help": "Bezeichnung, Untertitel und eigenen Stil einer Position ändern; nicht genannte Stilwerte übernehmen den Stil des Organigramms.",
+      "params": {
+        "id": "Die id der Position aus read().orgChart.",
+        "title": "Die Bezeichnung der Position, zum Beispiel Projektleitung oder Qualitätssicherung.",
+        "desc": "Der Untertitel unter der Bezeichnung, zum Beispiel der Name der Person.",
+        "bg": "Eigene Hintergrundfarbe der Position; leer übernimmt den Stil des Organigramms.",
+        "borderColor": "Eigene Rahmenfarbe der Position; leer übernimmt den Stil des Organigramms.",
+        "borderStyle": "Eigener Rahmenstil der Position: dashed oder dotted; leer oder solid übernimmt den Stil des Organigramms.",
+        "borderWidth": "Eigene Rahmenbreite der Position von 2 bis 8; 0 oder 1 übernimmt den Stil des Organigramms.",
+        "command": "Das Kommando als ein Objekt mit id, title und den übrigen Angaben."
+      }
+    },
+    "setOrgNodeStyle": {
+      "help": "Einen Stilwert einer einzelnen Position setzen; leer übernimmt den Stil des ganzen Organigramms.",
+      "params": {
+        "id": "Die id der Position aus read().orgChart.",
+        "key": "Welcher Stilwert: bg, borderColor oder borderStyle.",
+        "value": "Der Wert, Form je Schlüssel siehe types.OrgNodeStyle.",
+        "command": "Das Kommando als ein Objekt mit id, key und value."
+      }
+    },
+    "setOrgNodeBorderWidth": {
+      "help": "Die Rahmenbreite einer einzelnen Position setzen; 0 oder 1 übernimmt die Breite des ganzen Organigramms.",
+      "params": {
+        "id": "Die id der Position aus read().orgChart.",
+        "value": "Die Rahmenbreite als ganze Zahl von 0 bis 8; 0 und 1 übernehmen den Stil des Organigramms, sonst gilt der Wert.",
+        "command": "Das Kommando als ein Objekt mit id und value."
+      }
+    },
+    "removeOrgNode": {
+      "help": "Eine Position samt allen untergeordneten Positionen ohne Rückfrage löschen; rückgängig machbar. Liefert die Zahl der gelöschten Positionen.",
+      "params": {
+        "id": "Die id der Position aus read().orgChart.",
+        "command": "Das Kommando als ein Objekt mit id."
+      }
+    },
+    "moveOrgNode": {
+      "help": "Eine Position unter eine andere hängen und unter ihren neuen Geschwistern einordnen. Die untergeordneten Positionen wandern mit.",
+      "params": {
+        "id": "Die id der Position aus read().orgChart.",
+        "parentId": "Die neue übergeordnete Position, oder null für die oberste Ebene; nicht die Position selbst und keine ihrer untergeordneten.",
+        "index": "Stelle unter den neuen Geschwistern, 0 für zuerst, oder null für das Ende.",
+        "command": "Das Kommando als ein Objekt mit id, parentId und index."
+      }
+    }
+  },
+  "types": {
+    "OrgNodeStyle": {
+      "bg": "Hintergrundfarbe dieser Position; leer übernimmt den Stil des Organigramms.",
+      "borderColor": "Rahmenfarbe dieser Position; leer übernimmt den Stil des Organigramms.",
+      "borderStyle": "Rahmenstil dieser Position: gestrichelt oder gepunktet; leer, in der Auswahl durchgezogen, übernimmt den Stil des Organigramms."
+    }
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Overview",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The {{term:project-charter|project charter}} is the founding document of a {{term:six-sigma|Six Sigma}} project. It describes briefly and traceably why the project is needed, what it should achieve, who is involved, and within which boundaries the work happens. It is the first tool of the Define phase and is used as a reference in tollgate reviews."
+        },
+        {
+          "type": "definition",
+          "term": "Problem statement",
+          "content": "Briefly describes the current problem with facts: what is happening, where, when, how often, and with what impact? Deliberately without causes and without solutions — those come later in Analyze and Improve."
+        },
+        {
+          "type": "definition",
+          "term": "Project goals",
+          "content": "What should be achieved at the end? Each goal gets a row with description, target date, metric, and target value. \"Reduce scrap from 4.2 % to 1.5 % by Dec 31\" is a good goal; \"improve quality\" is not."
+        },
+        {
+          "type": "definition",
+          "term": "GAL (goal achievement level)",
+          "content": "How far has the goal been reached? 0 = not started, 100 = fully achieved. Keep the value up to date during the project — that way the charter always shows the current state."
+        },
+        {
+          "type": "definition",
+          "term": "Scope",
+          "content": "What is part of the project and what is not? Record this in the problem statement. A clear boundary prevents scope creep — e.g. \"Only production line 3, not final assembly\"."
+        },
+        {
+          "type": "definition",
+          "term": "Org chart (team and roles)",
+          "content": "Sponsor, project leader (Black/Green Belt), core team. Clearly documented roles avoid responsibility gaps later. The RACI matrix covers responsibilities in detail, the stakeholder analysis covers interests and influence."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Approach",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Write the problem statement in 2–4 sentences — with facts, no speculation.",
+            "In the problem statement, also record what is NOT part of the project.",
+            "Create goals, each with metric, target value, and target date.",
+            "Add team and roles in the org chart, at minimum sponsor and project leader.",
+            "Keep the GAL of each goal up to date as the project progresses.",
+            "Align the charter with the sponsor and get sign-off — it is the basis for everything that follows."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Solution in the problem statement",
+          "content": "Sentences like \"We need a new machine\" are not problem statements — they jump to a solution. While writing, ask: does the sentence describe the symptom or the answer?"
+        },
+        {
+          "type": "definition",
+          "term": "Immeasurable goals",
+          "content": "\"Increase efficiency\", \"motivate employees\" are not goals. Every goal needs a number, a unit, and a date — otherwise it cannot be verified at the end of the project."
+        },
+        {
+          "type": "definition",
+          "term": "Scope too large",
+          "content": "Six Sigma projects should typically finish in 3–6 months. Wanting to \"optimize the entire plant process\" leads to failure. Cut the project small and refine later."
+        },
+        {
+          "type": "definition",
+          "term": "No sponsor commitment",
+          "content": "Without an active sponsor (resources, escalation path, political backing), projects stall at the latest in Improve. The sponsor in the org chart is not symbolic — the sponsor must be informed and engaged."
+        },
+        {
+          "type": "definition",
+          "term": "Charter is never updated",
+          "content": "During the project, goals, scope, and participants change. The charter should be a living document — record changes with a date instead of preserving an outdated state."
+        }
+      ]
+    }
+  }
+}

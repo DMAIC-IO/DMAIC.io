@@ -1,0 +1,75 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Projektauftrag",
+  "description": "Projektauftrag: Problembeschreibung und messbare Ziele",
+  "whenToUse": "Zu Beginn eines Projekts, um Problem, messbare Ziele und die Projektorganisation festzuhalten — die Grundlage, auf die sich alle späteren Phasen beziehen.",
+  "problemStatement": "Problembeschreibung",
+  "problemPlaceholder": "Was ist das Problem? Seit wann? Welche Auswirkungen hat es? Was ist NICHT Teil des Projekts?",
+  "goals": "Projektziele",
+  "addGoal": "Ziel hinzufügen",
+  "goalDescription": "Beschreibung",
+  "goalTargetDate": "Zieldatum",
+  "goalMetric": "Messgröße",
+  "goalTargetValue": "Zielwert",
+  "goalAchievement": "ZEG",
+  "goalAchievementFull": "Zielerreichungsgrad",
+  "goalAchievementTooltip": "Zielerreichungsgrad: 0 = nicht begonnen, 100 = vollständig erreicht",
+  "goalAchieved": "Erreicht",
+  "deleteGoal": "Ziel löschen",
+  "deleteGoalConfirm": "Wirklich löschen?",
+  "dateInPast": "Zieldatum liegt in der Vergangenheit",
+  "charCount": "{current} / {max}",
+  "fmtBold": "Fett (Strg+B)",
+  "fmtItalic": "Kursiv (Strg+I)",
+  "noGoals": "Noch keine Ziele definiert. Klicken Sie auf \"+ Ziel hinzufügen\".",
+  "orgChart": "Organigramm",
+  "noOrgChart": "Noch kein Organigramm erstellt.",
+  "addChild": "Untergeordnete Position",
+  "nodeTitle": "Titel",
+  "nodeDescription": "Beschreibung",
+  "orgNew": "Neu",
+  "orgFit": "Einpassen",
+  "orgLayout": "Anordnen",
+  "editor": "Darstellung",
+  "reorder": "Reihenfolge",
+  "addGoalLabel": "+ Ziel hinzufügen",
+  "orgNewLabel": "+ Neu",
+  "addChildTo": "Untergeordnete Position — {name}",
+  "editNode": "Position bearbeiten",
+  "collapse": "Zuklappen",
+  "expand": "Aufklappen",
+  "childCount": "{count} untergeordnete Positionen",
+  "zoomIn": "Hineinzoomen",
+  "fit": "Einpassen",
+  "editorTitle": "Darstellung des Organigramms",
+  "orgStyleReset": "Zurücksetzen",
+  "colorPick": "Farbe wählen",
+  "colorDefault": "Farbschema",
+  "exportFileName": "organigramm",
+  "invariants": {
+    "uniqueIds": "Jedes Ziel und jede Position braucht eine eigene id.",
+    "validParents": "Die übergeordnete Position muss im Organigramm vorhanden sein; ohne sie ist eine Position oberste Ebene.",
+    "noCycles": "Positionen dürfen sich nicht im Kreis unterordnen: keine Position steht unter sich selbst oder unter einer ihrer untergeordneten.",
+    "goalDates": "Das Zieldatum ist leer oder ein gültiges Datum der Form JJJJ-MM-TT."
+  },
+  "confirm": {
+    "orgDeleteConfirm": "„{name}“ wirklich löschen? Alle untergeordneten Positionen werden ebenfalls entfernt."
+  },
+  "tiles": {
+    "charter": {
+      "title": "Projektauftrag",
+      "empty": "Kein Projektauftrag-Modul angelegt.",
+      "noProblem": "Keine Problembeschreibung hinterlegt.",
+      "problemLabel": "Problembeschreibung"
+    },
+    "goals": {
+      "title": "Projektziele",
+      "empty": "Keine Ziele definiert.",
+      "unnamed": "Ziel {n}"
+    },
+    "org": {
+      "title": "Organigramm",
+      "empty": "Kein Organigramm hinterlegt."
+    }
+  }
+}
