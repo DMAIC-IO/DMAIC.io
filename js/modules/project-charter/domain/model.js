@@ -11,12 +11,13 @@
  * Invarianten — beim Laden repariert, beim Schreiben abgelehnt.
  */
 import {
-  defineModel, list, object, text, number, oneOf, richText,
+  defineModel, command, list, object, text, number, oneOf, idOf, richText,
 } from '../../../core/model.js';
+import { requireForm } from '../../../core/validate.js';
 import { uid } from '../../../core/uid.js';
 import { isIsoDate } from '../../../core/local-date.js';
 import { from0 } from './migrations.js';
-import { childrenOf, isDescendant } from './tree.js';
+import { childrenOf, isDescendant, subtreeIds } from './tree.js';
 
 /** Eine Zielzeile. @typedef {{ id: string, description: string, targetDate: string, metric: string, targetValue: string, achievementLevel: number }} Goal */
 
@@ -55,6 +56,30 @@ function renewDuplicateIds(items) {
     if (seen.has(it.id)) it.id = uid();
     seen.add(it.id);
   }
+}
+
+const TITLE_MAX = 100;
+const DESC_MAX = 300;
+const NODE_STYLE_KEYS = ['bg', 'borderColor', 'borderStyle', 'borderWidth'];
+const BORDER_STYLES = ['', 'solid', 'dashed', 'dotted'];
+
+/**
+ * Titel und Beschreibung eines Knotens gegen ihre Längen prüfen.
+ * @param {string|undefined} title getrimmt @param {string|undefined} desc getrimmt
+ * @throws {Error} mit `param` `title` bzw. `desc`
+ */
+function requireNodeText(title, desc) {
+  if (title !== undefined) requireForm('title', title, title.length >= 1 && title.length <= TITLE_MAX, `a text of 1 to ${TITLE_MAX} characters`);
+  if (desc !== undefined) requireForm('desc', desc, desc.length <= DESC_MAX, `a text of at most ${DESC_MAX} characters`);
+}
+
+/** @param {string|undefined} v @returns {''|'dashed'|'dotted'} `'solid'` und leer erben den globalen Stil (`''`) */
+const nodeBorderStyle = (v) => (v === 'dashed' || v === 'dotted' ? v : '');
+
+/** @param {number|string|undefined} v @returns {number} 1 oder ungültig erbt (`0`), sonst 2..8 */
+function nodeBorderWidth(v) {
+  const bw = parseInt(String(v), 10);
+  return bw && bw !== 1 ? Math.max(1, Math.min(8, bw)) : 0;
 }
 
 /** @param {string[]} ids @returns {boolean} */
@@ -140,6 +165,126 @@ export class State extends defineModel({
         for (const g of m._v.goals) if (g.targetDate !== '' && !isIsoDate(g.targetDate)) g.targetDate = '';
       },
     },
+  },
+  commands: {
+    addGoal: command({
+      returns: text(),
+      run() {
+        const id = uid();
+        this.goals.push({ id, description: '', targetDate: '', metric: '', targetValue: '', achievementLevel: 0 });
+        return id;
+      },
+    }),
+    removeGoal: command({
+      params: { id: idOf('goals') },
+      run({ id }) {
+        this.goals = this.goals.filter((g) => g.id !== id);
+      },
+    }),
+    moveGoal: command({
+      params: { id: idOf('goals'), beforeId: idOf('goals', { nullable: true }) },
+      run({ id, beforeId }) {
+        if (id === beforeId) return;
+        const goal = this.goals.find((g) => g.id === id);
+        const rest = this.goals.filter((g) => g.id !== id);
+        const at = beforeId === null ? rest.length : rest.findIndex((g) => g.id === beforeId);
+        rest.splice(at, 0, goal);
+        this.goals = rest;
+      },
+    }),
+    addOrgNode: command({
+      params: {
+        title: text({ trim: true, nonEmpty: true }),
+        desc: text({ trim: true, optional: true }),
+        parentId: idOf('orgChart', { nullable: true, optional: true }),
+      },
+      returns: text(),
+      run({ title, desc = '', parentId = null }) {
+        requireNodeText(title, desc);
+        const id = uid();
+        this.orgChart.push({ id, title, desc, pid: parentId });
+        return id;
+      },
+    }),
+    updateOrgNode: command({
+      params: {
+        id: idOf('orgChart'),
+        title: text({ trim: true, nonEmpty: true }),
+        desc: text({ trim: true, optional: true }),
+        bg: text({ optional: true }),
+        borderColor: text({ optional: true }),
+        borderStyle: oneOf(BORDER_STYLES, { optional: true }),
+        borderWidth: number({ integer: true, min: 0, max: 8, optional: true }),
+      },
+      current({ id }) {
+        const n = this.orgChart.find((x) => x.id === id);
+        return {
+          title: n.title,
+          desc: n.desc,
+          bg: n.bg ?? '',
+          borderColor: n.borderColor ?? '',
+          borderStyle: n.borderStyle ?? '',
+          borderWidth: n.borderWidth ?? 0,
+        };
+      },
+      run({ id, title, desc, bg, borderColor, borderStyle, borderWidth }) {
+        requireNodeText(title, desc);
+        const n = this.orgChart.find((x) => x.id === id);
+        n.title = title;
+        if (desc !== undefined) n.desc = desc;
+        n.bg = bg ?? '';
+        n.borderColor = borderColor ?? '';
+        n.borderStyle = nodeBorderStyle(borderStyle);
+        n.borderWidth = nodeBorderWidth(borderWidth);
+      },
+    }),
+    setOrgNodeStyle: command({
+      params: { id: idOf('orgChart'), key: oneOf(NODE_STYLE_KEYS), value: text() },
+      run({ id, key, value }) {
+        const n = this.orgChart.find((x) => x.id === id);
+        if (key === 'borderWidth') n.borderWidth = nodeBorderWidth(value);
+        else if (key === 'borderStyle') {
+          requireForm('value', value, BORDER_STYLES.includes(value), BORDER_STYLES.map((v) => `"${v}"`).join(', '));
+          n.borderStyle = nodeBorderStyle(value);
+        } else n[key] = value;
+      },
+    }),
+    removeOrgNode: command({
+      params: { id: idOf('orgChart') },
+      returns: number({ integer: true }),
+      confirm({ id }) {
+        const n = this.orgChart.find((x) => x.id === id);
+        return { key: 'orgDeleteConfirm', params: { name: n.title } };
+      },
+      run({ id }) {
+        const gone = new Set(subtreeIds(this.orgChart, id));
+        this.orgChart = this.orgChart.filter((n) => !gone.has(n.id));
+        return gone.size;
+      },
+    }),
+    moveOrgNode: command({
+      params: {
+        id: idOf('orgChart'),
+        parentId: idOf('orgChart', { nullable: true }),
+        index: number({ integer: true, min: 0, nullable: true }),
+      },
+      run({ id, parentId, index }) {
+        requireForm('parentId', parentId, parentId === null || (parentId !== id && !isDescendant(this.orgChart, parentId, id)),
+          'null or a node that is neither the moved node nor one of its descendants');
+        const node = this.orgChart.find((n) => n.id === id);
+        const rest = this.orgChart.filter((n) => n.id !== id);
+        const siblings = childrenOf(rest, parentId);
+        requireForm('index', index, index === null || index <= siblings.length,
+          `null or a number from 0 to ${siblings.length}`);
+        node.pid = parentId;
+        let at;
+        if (index !== null && index < siblings.length) at = rest.indexOf(siblings[index]);
+        else if (siblings.length) at = rest.indexOf(siblings[siblings.length - 1]) + 1;
+        else at = rest.length;
+        rest.splice(at, 0, node);
+        this.orgChart = rest;
+      },
+    }),
   },
 }) {
   /**
