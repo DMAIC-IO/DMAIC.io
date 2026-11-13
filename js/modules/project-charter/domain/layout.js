@@ -43,6 +43,7 @@ export function layoutOrg(nodes, opts = {}) {
     return w;
   };
 
+  /** @type {Record<string, { x: number, y: number, w: number, h: number }>} */
   const positions = {};
   const links = [];
   const place = (id, x, y) => {

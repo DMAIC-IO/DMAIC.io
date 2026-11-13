@@ -60,6 +60,7 @@ function layoutSubtree(nodes, id, x, y, out) {
  * @returns {Record<string, {x: number, y: number}>}
  */
 export function orgPositions(nodes) {
+  /** @type {Record<string, {x: number, y: number}>} */
   const positions = {};
   let ox = 0;
   nodes.filter(n => n.pid == null).forEach(r => {

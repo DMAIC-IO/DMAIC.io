@@ -127,20 +127,6 @@ export default [
 
   // ─── Define ───────────────────────────────────────────────────
   {
-    id: 'project-charter',
-    phase: 'define',
-    group: 'scope',
-    singleton: true,
-    allowedPhases: ['define'],
-    load: () => import('./project-charter/project-charter.js'),
-    loadTile: () => import('./project-charter/project-charter.tile.js'),
-    cycles: {
-      dmaic:  { phase: 'define',  allowedPhases: ['define']  },
-      dmadv:  { phase: 'define',  allowedPhases: ['define']  },
-      eightd: { phase: 'problem', allowedPhases: ['problem'] },
-    },
-  },
-  {
     id: 'todo',
     phase: 'define',
     group: 'team',

@@ -65,6 +65,11 @@
     "description": "Two-column flow: value-added steps versus rework",
     "whenToUse": "When an existing chain needs sorting into value-added work versus rework — not for capturing a new process without that distinction yet."
   },
+  "project-charter": {
+    "name": "Project Charter",
+    "description": "Project mandate: problem statement and measurable goals",
+    "whenToUse": "At the start of a project, to record the problem, measurable goals and the project organisation — the basis every later phase refers to."
+  },
   "resampling": {
     "name": "Resampling",
     "description": "Bootstrap confidence intervals and permutation tests for one, two, paired and k samples",

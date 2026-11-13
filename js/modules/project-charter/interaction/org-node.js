@@ -26,7 +26,7 @@ import { MODULE_LAYOUT } from '../domain/layout.js';
  * @returns {Array<{ id: string, el: HTMLElement, parentId: string|null, kids: number }>}
  */
 function nodesOf(root, handle) {
-  return [...root.querySelectorAll(handle)].map((el) => ({
+  return Array.from(root.querySelectorAll(handle), (/** @type {HTMLElement} */ el) => ({
     id: el.dataset.id, el, parentId: el.dataset.parentId || null, kids: Number(el.dataset.childCount) || 0,
   }));
 }

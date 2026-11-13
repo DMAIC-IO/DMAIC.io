@@ -171,7 +171,7 @@ suite('project-charter Kommandos — removeOrgNode', () => {
 
   test('confirm fragt mit dem Titel; unbekannte id wirft vor der Frage', () => {
     const m = load({ orgChart: [node('a', null, { title: 'Chef' })] });
-    assertDeepEqual(confirmOf(m, 'removeOrgNode', { id: 'a' }), { key: 'orgDeleteConfirm', params: { name: 'Chef' } });
+    assertDeepEqual(confirmOf(m, 'removeOrgNode', { id: 'a' }), { key: 'confirm.orgDeleteConfirm', params: { name: 'Chef' } });
     assertEqual(thrown(() => confirmOf(m, 'removeOrgNode', { id: 'x' }))?.param, 'id');
   });
 });

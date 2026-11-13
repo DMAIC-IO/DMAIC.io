@@ -29,7 +29,7 @@ export function goalRowGesture({ handle }) {
      * Begrenzt wie `reorder.clamp`; dazu die Zeile am Endindex in der Liste
      * ohne die gezogene Zeile.
      * @param {{ group: string, index: number }} pos @param {{ root: Element }} ctx
-     * @param {{ group: string, index: number, id: string }} from
+     * @param {{ group: string, index: number, id: string, beforeId: string|null }} from
      * @returns {{ group: string, index: number, id: string, beforeId: string|null }|null}
      */
     clamp(pos, ctx, from) {

@@ -34,33 +34,32 @@ import h31 from '../modules/pie-chart/pie-chart-help.js';
 import h32 from '../modules/probability-plot/probability-plot-help.js';
 import h33 from '../modules/process-capability/process-capability-help.js';
 import h34 from '../modules/process-map/process-map-help.js';
-import h35 from '../modules/project-charter/project-charter-help.js';
-import h36 from '../modules/raci-matrix/raci-matrix-help.js';
-import h37 from '../modules/random-generator/random-generator-help.js';
-import h38 from '../modules/rare-event-chart/rare-event-chart-help.js';
-import h39 from '../modules/regression/regression-help.js';
-import h40 from '../modules/response-optimization/response-optimization-help.js';
-import h41 from '../modules/rest-api/rest-api-help.js';
-import h42 from '../modules/run-chart/run-chart-help.js';
-import h43 from '../modules/sample-size/sample-size-help.js';
-import h44 from '../modules/short-run-chart/short-run-chart-help.js';
-import h45 from '../modules/stakeholder-analysis/stakeholder-analysis-help.js';
-import h46 from '../modules/survey-builder/survey-builder-help.js';
-import h47 from '../modules/time-weighted-chart/time-weighted-chart-help.js';
-import h48 from '../modules/todo/todo-help.js';
-import h49 from '../modules/transformed-imr-chart/transformed-imr-chart-help.js';
-import h50 from '../modules/triz-9-windows/triz-9-windows-help.js';
-import h51 from '../modules/triz-contradiction-matrix/triz-contradiction-matrix-help.js';
-import h52 from '../modules/triz-evolution-trends/triz-evolution-trends-help.js';
-import h53 from '../modules/triz-function-analysis/triz-function-analysis-help.js';
-import h54 from '../modules/triz-ifr/triz-ifr-help.js';
-import h55 from '../modules/triz-physical-contradiction/triz-physical-contradiction-help.js';
-import h56 from '../modules/triz-resources/triz-resources-help.js';
-import h57 from '../modules/triz-sufield/triz-sufield-help.js';
-import h58 from '../modules/unit-converter/unit-converter-help.js';
-import h59 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
-import h60 from '../modules/worksheet/worksheet-help.js';
-import h61 from '../modules/xy-plot/xy-plot-help.js';
+import h35 from '../modules/raci-matrix/raci-matrix-help.js';
+import h36 from '../modules/random-generator/random-generator-help.js';
+import h37 from '../modules/rare-event-chart/rare-event-chart-help.js';
+import h38 from '../modules/regression/regression-help.js';
+import h39 from '../modules/response-optimization/response-optimization-help.js';
+import h40 from '../modules/rest-api/rest-api-help.js';
+import h41 from '../modules/run-chart/run-chart-help.js';
+import h42 from '../modules/sample-size/sample-size-help.js';
+import h43 from '../modules/short-run-chart/short-run-chart-help.js';
+import h44 from '../modules/stakeholder-analysis/stakeholder-analysis-help.js';
+import h45 from '../modules/survey-builder/survey-builder-help.js';
+import h46 from '../modules/time-weighted-chart/time-weighted-chart-help.js';
+import h47 from '../modules/todo/todo-help.js';
+import h48 from '../modules/transformed-imr-chart/transformed-imr-chart-help.js';
+import h49 from '../modules/triz-9-windows/triz-9-windows-help.js';
+import h50 from '../modules/triz-contradiction-matrix/triz-contradiction-matrix-help.js';
+import h51 from '../modules/triz-evolution-trends/triz-evolution-trends-help.js';
+import h52 from '../modules/triz-function-analysis/triz-function-analysis-help.js';
+import h53 from '../modules/triz-ifr/triz-ifr-help.js';
+import h54 from '../modules/triz-physical-contradiction/triz-physical-contradiction-help.js';
+import h55 from '../modules/triz-resources/triz-resources-help.js';
+import h56 from '../modules/triz-sufield/triz-sufield-help.js';
+import h57 from '../modules/unit-converter/unit-converter-help.js';
+import h58 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
+import h59 from '../modules/worksheet/worksheet-help.js';
+import h60 from '../modules/xy-plot/xy-plot-help.js';
 
 export const HELP = {
   "activity-flowchart": h0,
@@ -98,31 +97,30 @@ export const HELP = {
   "probability-plot": h32,
   "process-capability": h33,
   "process-map": h34,
-  "project-charter": h35,
-  "raci-matrix": h36,
-  "random-generator": h37,
-  "rare-event-chart": h38,
-  "regression": h39,
-  "response-optimization": h40,
-  "rest-api": h41,
-  "run-chart": h42,
-  "sample-size": h43,
-  "short-run-chart": h44,
-  "stakeholder-analysis": h45,
-  "survey-builder": h46,
-  "time-weighted-chart": h47,
-  "todo": h48,
-  "transformed-imr-chart": h49,
-  "triz-9-windows": h50,
-  "triz-contradiction-matrix": h51,
-  "triz-evolution-trends": h52,
-  "triz-function-analysis": h53,
-  "triz-ifr": h54,
-  "triz-physical-contradiction": h55,
-  "triz-resources": h56,
-  "triz-sufield": h57,
-  "unit-converter": h58,
-  "voc-ctx-tree": h59,
-  "worksheet": h60,
-  "xy-plot": h61,
+  "raci-matrix": h35,
+  "random-generator": h36,
+  "rare-event-chart": h37,
+  "regression": h38,
+  "response-optimization": h39,
+  "rest-api": h40,
+  "run-chart": h41,
+  "sample-size": h42,
+  "short-run-chart": h43,
+  "stakeholder-analysis": h44,
+  "survey-builder": h45,
+  "time-weighted-chart": h46,
+  "todo": h47,
+  "transformed-imr-chart": h48,
+  "triz-9-windows": h49,
+  "triz-contradiction-matrix": h50,
+  "triz-evolution-trends": h51,
+  "triz-function-analysis": h52,
+  "triz-ifr": h53,
+  "triz-physical-contradiction": h54,
+  "triz-resources": h55,
+  "triz-sufield": h56,
+  "unit-converter": h57,
+  "voc-ctx-tree": h58,
+  "worksheet": h59,
+  "xy-plot": h60,
 };

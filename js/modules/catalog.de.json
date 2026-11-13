@@ -65,6 +65,11 @@
     "description": "Zwei-Spalten-Ablauf: wertschöpfende Schritte gegen Nacharbeit",
     "whenToUse": "Wenn eine bestehende Kette danach sortiert werden soll, was wertschöpfend ist und was Nacharbeit — nicht für eine neue Prozessaufnahme ohne diese Unterscheidung."
   },
+  "project-charter": {
+    "name": "Projektauftrag",
+    "description": "Projektauftrag: Problembeschreibung und messbare Ziele",
+    "whenToUse": "Zu Beginn eines Projekts, um Problem, messbare Ziele und die Projektorganisation festzuhalten — die Grundlage, auf die sich alle späteren Phasen beziehen."
+  },
   "resampling": {
     "name": "Resampling",
     "description": "Bootstrap-Konfidenzintervalle und Permutationstests für eine, zwei, gepaarte und k Stichproben",

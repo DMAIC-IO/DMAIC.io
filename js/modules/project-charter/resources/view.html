@@ -1,0 +1,107 @@
+<section class="module-container project-charter" x-data="projectCharter">
+  <div class="module-container__body">
+
+    <!-- Problembeschreibung -->
+    <section class="pc__section pc__problem-section">
+      <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.project-charter.fields.problemStatement.help" x-text="t('problemStatement')"></span></div>
+      <div class="pc__problem" data-help-key="" x-field="model.problemStatement"
+        :aria-label="t('problemStatement')" :placeholder="t('problemPlaceholder')"></div>
+    </section>
+
+    <!-- Ziele -->
+    <section class="pc__section pc__goals-section">
+      <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.project-charter.fields.goals.help" x-text="t('goals')"></span></div>
+
+      <template x-if="model.goals.length === 0">
+        <p class="pc__no-goals" x-text="t('noGoals')"></p>
+      </template>
+
+      <template x-if="model.goals.length > 0">
+        <div class="pc__goals-table-wrap">
+          <table class="dmike-table dmike-table--draggable pc__goals-table">
+            <thead>
+              <tr>
+                <th class="dmike-table__grip-col"></th>
+                <th class="pc__col-nr" :aria-label="t('reorder')">#</th>
+                <th class="pc__col-description"><span data-help-key="modules.project-charter.fields.goals.description.help" x-text="t('goalDescription')"></span></th>
+                <th class="pc__col-date"><span data-help-key="modules.project-charter.fields.goals.targetDate.help" x-text="t('goalTargetDate')"></span></th>
+                <th class="pc__col-metric"><span data-help-key="modules.project-charter.fields.goals.metric.help" x-text="t('goalMetric')"></span></th>
+                <th class="pc__col-target"><span data-help-key="modules.project-charter.fields.goals.targetValue.help" x-text="t('goalTargetValue')"></span></th>
+                <th class="pc__col-zeg" :title="t('goalAchievementFull')"><span data-help-key="modules.project-charter.fields.goals.achievementLevel.help" x-text="t('goalAchievement')"></span></th>
+                <th class="pc__col-del" :aria-label="t('deleteGoal')"></th>
+              </tr>
+            </thead>
+            <tbody data-reorder-group="goals" data-reorder-closed :data-reorder-group-label="t('goals')">
+              <template x-for="(g, gi) in model.goals" :key="g.id">
+                <tr class="pc__goal-row" :data-id="g.id" :data-reorder-index="gi" :class="goalPreviewClass(g.id)"
+                  @click.outside="cancelRemoveGoal(g.id)">
+                  <td class="dmike-table__grip-col">
+                    <button class="dmike-table__grip pc__goal-grip" type="button" :aria-label="t('common.reorder')"></button>
+                  </td>
+                  <td class="pc__col-nr" x-text="gi + 1"></td>
+                  <td class="pc__col-description">
+                    <textarea class="field field--sm field--ghost pc__cell-input pc__cell-textarea" rows="1"
+                      data-field="description" :placeholder="t('goalDescription')" :aria-label="t('goalDescription')"
+                      x-model="g.description"></textarea>
+                  </td>
+                  <td class="pc__col-date">
+                    <input class="field field--sm field--ghost pc__cell-input" type="date"
+                      data-field="targetDate" :class="isPast(g) ? 'pc__date--past' : ''"
+                      :aria-label="t('goalTargetDate')" :title="isPast(g) ? t('dateInPast') : ''"
+                      x-model="g.targetDate">
+                  </td>
+                  <td class="pc__col-metric">
+                    <input class="field field--sm field--ghost pc__cell-input" type="text"
+                      data-field="metric" :placeholder="t('goalMetric')" :aria-label="t('goalMetric')"
+                      x-model="g.metric">
+                  </td>
+                  <td class="pc__col-target">
+                    <input class="field field--sm field--ghost pc__cell-input" type="text"
+                      data-field="targetValue" :placeholder="t('goalTargetValue')" :aria-label="t('goalTargetValue')"
+                      x-model="g.targetValue">
+                  </td>
+                  <td class="pc__col-zeg">
+                    <div class="pc__zeg-wrap" :class="zegClass(g)">
+                      <input class="field field--sm field--ghost pc__zeg-input" data-field="achievementLevel" data-help-key=""
+                        :aria-label="t('goalAchievementFull')" :title="t('goalAchievementTooltip')"
+                        @change="clampLevel(g, $event)" x-field="g.achievementLevel">
+                      <div class="pc__zeg-bar-track">
+                        <div class="pc__zeg-bar-fill" :style="zegWidth(g)"></div>
+                      </div>
+                      <template x-if="isDone(g)">
+                        <span class="pc__zeg-done" :aria-label="t('goalAchieved')" role="img"><span class="icon icon--sm" data-icon="status.ok" aria-hidden="true"></span></span>
+                      </template>
+                    </div>
+                  </td>
+                  <td class="pc__col-del">
+                    <button class="btn btn--icon pc__del-btn" type="button"
+                      :class="isConfirming(g.id) ? 'btn--danger' : 'btn--ghost'"
+                      :title="isConfirming(g.id) ? t('deleteGoalConfirm') : t('deleteGoal')"
+                      :aria-label="isConfirming(g.id) ? t('deleteGoalConfirm') : t('deleteGoal')"
+                      @click="askRemoveGoal(g.id)"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true" x-show="!isConfirming(g.id)"></span><span x-show="isConfirming(g.id)" x-text="t('deleteGoalConfirm')"></span></button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </template>
+
+      <button class="btn btn--secondary btn--sm pc__add-btn" type="button" data-help-key="modules.project-charter.actions.addGoal.help"
+        x-command="addGoal" x-text="t('addGoalLabel')"></button>
+    </section>
+
+    <!-- Organigramm -->
+    <section class="pc__section pc__org-section">
+      <div class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span data-help-key="modules.project-charter.fields.orgChart.help" x-text="t('orgChart')"></span></div>
+      <div class="pc__org-card">
+        <div class="pc__org-wrap">
+          <div class="pc__org-empty">
+            <p x-text="t('noOrgChart')"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</section>

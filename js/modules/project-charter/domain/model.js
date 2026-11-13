@@ -256,7 +256,7 @@ export class State extends defineModel({
       returns: number({ integer: true }),
       confirm({ id }) {
         const n = this.orgChart.find((x) => x.id === id);
-        return { key: 'orgDeleteConfirm', params: { name: n.title } };
+        return { key: 'confirm.orgDeleteConfirm', params: { name: n.title } };
       },
       run({ id }) {
         const gone = new Set(subtreeIds(this.orgChart, id));

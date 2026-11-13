@@ -1858,30 +1858,6 @@
       ]
     },
     {
-      "id": "charter-pizza-lieferzeit",
-      "type": "project",
-      "title": {
-        "de": "Pizza-Lieferzeit (Project Charter)",
-        "en": "Pizza Delivery Time (Project Charter)"
-      },
-      "description": {
-        "de": "Lehrcase „Bella Margherita\": Lieferzeiten zu lang, Reklamationen wegen kalter Pizza steigend. Vorbefüllt mit Problemstellung, drei messbaren Zielen und Org-Chart des Projektteams.",
-        "en": "Teaching case 'Bella Margherita': delivery times too long, cold-pizza complaints rising. Pre-filled with problem statement, three measurable goals, and the project-team org chart."
-      },
-      "source": "Qprovement Lehrkonfiguration",
-      "license": "public-domain",
-      "file": "../js/modules/project-charter/resources/examples/projects/charter-pizza-lieferzeit.json",
-      "format": "json",
-      "modules": [
-        "project-charter"
-      ],
-      "tags": [
-        "define",
-        "charter",
-        "pizza-lehrcase"
-      ]
-    },
-    {
       "id": "ce-matrix-pizza-lieferzeit",
       "type": "project",
       "title": {
@@ -2678,30 +2654,6 @@
         "regression",
         "optimization",
         "desirability"
-      ]
-    },
-    {
-      "id": "project-charter-hubschrauber-flyer",
-      "type": "project",
-      "title": {
-        "de": "Papier-Hubschrauber — Charter",
-        "en": "Paper Helicopter — Charter"
-      },
-      "description": {
-        "de": "Charter für „Papier-Hubschrauber vom Messestand — Flugzeit-Maximierung mit einem Prototypen“. IN-Scope: Rotorlänge und Büroklammern. OUT-Scope: Rotorbreite (irreversibel, nur 1 Prototyp), Wurftechnik, Papierart, Fallhöhe. Ziel-Y: mittlere Flugzeit ≥ 3,0 s bei σ ≤ 0,15 s.",
-        "en": "Charter for \"Paper Helicopter from the trade-show booth — maximizing flight time with a single prototype\". In scope: rotor length and paperclips. Out of scope: rotor width (irreversible, only 1 prototype), throwing technique, paper type, drop height. Target Y: mean flight time ≥ 3.0 s at σ ≤ 0.15 s."
-      },
-      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
-      "license": "public-domain",
-      "file": "../js/modules/project-charter/resources/examples/projects/project-charter-hubschrauber-flyer.json",
-      "format": "json",
-      "modules": [
-        "project-charter"
-      ],
-      "tags": [
-        "helicopter",
-        "doe-training",
-        "sequential-blocks"
       ]
     },
     {
