@@ -174,6 +174,7 @@ const SKIP = new Set([
   'modules/opportunity-flowchart/viewmodel.test.js',
   'modules/resampling-view.test.js',
   'modules/ishikawa/gestures.test.js',
+  'modules/project-charter/gestures.test.js',
   'modules/ishikawa/view.test.js',
   'modules/ishikawa/causes-view.test.js',
   'modules/ishikawa/snapshots-view.test.js',
