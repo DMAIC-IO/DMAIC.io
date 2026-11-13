@@ -15,7 +15,6 @@ import {
 } from '../../../core/model.js';
 import { requireForm } from '../../../core/validate.js';
 import { uid } from '../../../core/uid.js';
-import { isIsoDate } from '../../../core/local-date.js';
 import { from0 } from './migrations.js';
 import { childrenOf, isDescendant, moveNode, subtreeIds } from './tree.js';
 
@@ -153,15 +152,6 @@ export class State extends defineModel({
           if (!first) return;
           first.pid = null;
         }
-      },
-    },
-    goalDates: {
-      fields: ['goals'],
-      test(m) {
-        return m.goals.every((g) => g.targetDate === '' || isIsoDate(g.targetDate));
-      },
-      repair(m) {
-        for (const g of m._v.goals) if (g.targetDate !== '' && !isIsoDate(g.targetDate)) g.targetDate = '';
       },
     },
   },

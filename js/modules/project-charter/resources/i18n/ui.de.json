@@ -57,8 +57,7 @@
   "invariants": {
     "uniqueIds": "Jedes Ziel und jede Position braucht eine eigene id.",
     "validParents": "Die übergeordnete Position muss im Organigramm vorhanden sein; ohne sie ist eine Position oberste Ebene.",
-    "noCycles": "Positionen dürfen sich nicht im Kreis unterordnen: keine Position steht unter sich selbst oder unter einer ihrer untergeordneten.",
-    "goalDates": "Das Zieldatum ist leer oder ein gültiges Datum der Form JJJJ-MM-TT."
+    "noCycles": "Positionen dürfen sich nicht im Kreis unterordnen: keine Position steht unter sich selbst oder unter einer ihrer untergeordneten."
   },
   "confirm": {
     "orgDeleteConfirm": "„{name}“ wirklich löschen? Alle untergeordneten Positionen werden ebenfalls entfernt."

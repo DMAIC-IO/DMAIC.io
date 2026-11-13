@@ -15509,8 +15509,7 @@ export const AGENT_REGISTRY = {
     "invariants": [
       "uniqueIds",
       "validParents",
-      "noCycles",
-      "goalDates"
+      "noCycles"
     ]
   },
   "raci-matrix": {

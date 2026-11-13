@@ -188,14 +188,23 @@ suite('project-charter Migration — Altformen', () => {
     State.fromJSON({ problemStatement: esc });
   });
 
-  test('Zieldatum: DD.MM.YYYY → ISO, Unlesbares → leer', () => {
+  test('Zieldatum: DD.MM.YYYY → ISO, alles andere bleibt unverändert', () => {
     const out = from0({ goals: [
       { id: 'a', targetDate: '31.12.2026' }, { id: 'b', targetDate: '1.2.2027' },
       { id: 'c', targetDate: '31.02.2026' }, { id: 'd', targetDate: 'bald' }, { id: 'e', targetDate: '2026-05-06' },
     ] });
-    assertDeepEqual(out.goals.map((g) => g.targetDate), ['2026-12-31', '2027-02-01', '', '', '2026-05-06']);
+    assertDeepEqual(out.goals.map((g) => g.targetDate), ['2026-12-31', '2027-02-01', '31.02.2026', 'bald', '2026-05-06']);
     const reports = [];
     State.fromJSON(out, { onRepair: (n) => reports.push(n) });
     assertDeepEqual(reports, []);
+  });
+  test('Zieldatum: Freitext lädt ohne Reparatur und bleibt erhalten', () => {
+    const reports = [];
+    const s = State.fromJSON(from0({ goals: [{ id: 'a', targetDate: 'KW 23' }] }), { onRepair: (n) => reports.push(n) });
+    assertDeepEqual(reports, []);
+    assertEqual(s.goals[0].targetDate, 'KW 23');
+    const direct = State.fromJSON({ ...s.toJSON() }, { onRepair: (n) => reports.push(n) });
+    assertDeepEqual(reports, []);
+    assertEqual(direct.goals[0].targetDate, 'KW 23');
   });
 });

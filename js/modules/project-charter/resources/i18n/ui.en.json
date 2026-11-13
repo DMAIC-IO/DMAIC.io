@@ -57,8 +57,7 @@
   "invariants": {
     "uniqueIds": "Every goal and every position needs its own id.",
     "validParents": "The superior position must exist in the org chart; without one, a position is top level.",
-    "noCycles": "Positions must not report to each other in a loop: no position sits below itself or below one of its own subordinates.",
-    "goalDates": "The target date is empty or a valid date of the form YYYY-MM-DD."
+    "noCycles": "Positions must not report to each other in a loop: no position sits below itself or below one of its own subordinates."
   },
   "confirm": {
     "orgDeleteConfirm": "Really delete \"{name}\"? All subordinate positions will also be removed."

@@ -141,13 +141,11 @@ suite('project-charter Model — Invarianten', () => {
     assertEqual(new Set(l.goals.map((g) => g.id)).size, 2);
     assertEqual(new Set(l.orgChart.map((n) => n.id)).size, 2);
   });
-  test('goalDates: leer oder YYYY-MM-DD gültig, anderes abgelehnt, beim Laden geleert', () => {
+  test('Zieldatum: auch Freitext ist setzbar und bleibt beim Laden erhalten', () => {
     const s = new State();
-    setFields(s, { goals: [goal('g', { targetDate: '2026-11-13' })] });
-    setFields(s, { goals: [goal('g', { targetDate: '' })] });
-    assert(thrown(() => setFields(s, { goals: [goal('g', { targetDate: 'bald' })] })));
-    assert(thrown(() => setFields(s, { goals: [goal('g', { targetDate: '2026-02-30' })] })));
-    const l = State.fromJSON(saved({ goals: [goal('g', { targetDate: 'bald' })] }), { repair: true });
-    assertEqual(l.goals[0].targetDate, '');
+    setFields(s, { goals: [goal('g', { targetDate: 'KW 23' })] });
+    assertEqual(s.goals[0].targetDate, 'KW 23');
+    const l = State.fromJSON(saved({ goals: [goal('g', { targetDate: 'bald' })] }), { onRepair: () => { throw new Error('repair'); } });
+    assertEqual(l.goals[0].targetDate, 'bald');
   });
 });

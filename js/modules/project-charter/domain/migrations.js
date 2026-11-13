@@ -78,17 +78,18 @@ function clipProblem(md) {
 }
 
 /**
- * Zieldatum: `YYYY-MM-DD` bleibt, `DD.MM.YYYY` wird umgeschrieben, alles
- * andere (auch ein nicht existierendes Datum) wird leer.
+ * Zieldatum: `YYYY-MM-DD` bleibt, ein gültiges `D.M.YYYY` wird nach ISO
+ * umgeschrieben, alles andere (Freitext wie „KW 23“, auch ein nicht
+ * existierendes Datum) bleibt unverändert (getrimmt); Nicht-Strings werden leer.
  * @param {unknown} v @returns {string}
  */
 function targetDate(v) {
   const s = typeof v === 'string' ? v.trim() : '';
   if (isIsoDate(s)) return s;
   const m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(s);
-  if (!m) return '';
+  if (!m) return s;
   const iso = `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
-  return isIsoDate(iso) ? iso : '';
+  return isIsoDate(iso) ? iso : s;
 }
 
 /**

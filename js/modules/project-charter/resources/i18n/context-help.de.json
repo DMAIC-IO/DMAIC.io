@@ -13,7 +13,7 @@
         "help": "Was das Ziel ist."
       },
       "targetDate": {
-        "help": "Bis wann es erreicht sein soll, \"\" oder YYYY-MM-DD."
+        "help": "Bis wann es erreicht sein soll: YYYY-MM-DD oder \"\"; aus Altdaten kann hier auch Freitext (z. B. KW 23) stehen."
       },
       "metric": {
         "help": "Woran es gemessen wird."

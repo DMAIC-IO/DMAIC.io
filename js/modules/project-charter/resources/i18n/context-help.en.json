@@ -13,7 +13,7 @@
         "help": "What the goal is."
       },
       "targetDate": {
-        "help": "When it should be reached, \"\" or YYYY-MM-DD."
+        "help": "When it should be reached: YYYY-MM-DD or \"\"; legacy data may hold free text here (e.g. KW 23)."
       },
       "metric": {
         "help": "How it is measured."
