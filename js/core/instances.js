@@ -17,8 +17,9 @@
  * `module:<id>` (aus `setModuleState`) und bei Model-Kommandos
  * `command:executed`.
  *
- * Module bekommen nur `list` und `read` (`ctx.instances`); `write` bleibt dem
- * Kern vorbehalten.
+ * Module bekommen `list`, `read` und `interact` (`ctx.instances`); `write`
+ * bleibt dem Kern vorbehalten. `interact` schickt einen Stapel der
+ * Agentenfläche an andere Instanzen; die Workspace bindet den Aufrufer.
  */
 import { readAgentState, MIXIN_READ_MODULES } from './agent/agent-read-mixin.js';
 import { AGENT_REGISTRY } from './agent/agent-registry.generated.js';
@@ -34,7 +35,13 @@ import { stripPaths } from './view-fields.js';
  *   write: (instanceId: string, fn: (model: any) => any) => Promise<{ mounted: boolean, result: any }>,
  * }} InstancesService
  */
-/** Was Module davon bekommen: nur lesend. @typedef {Pick<InstancesService, 'list' | 'read'>} InstancesReader */
+/**
+ * Was Module davon bekommen: Lesen und Stapel an andere Instanzen.
+ * @typedef {Pick<InstancesService, 'list' | 'read'> & {
+ *   interact: (stack: object[]) => Promise<object>,
+ * }} ModuleInstances
+ */
+/** Alias der früheren, nur lesenden Form. @typedef {ModuleInstances} InstancesReader */
 
 /**
  * Ein Fehler mit Code (`err.code`), den die Agentenfläche übersetzt.

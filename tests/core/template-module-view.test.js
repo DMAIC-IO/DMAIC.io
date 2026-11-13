@@ -48,6 +48,7 @@ function makeModule(extra = {}) {
 function fakeContext({ events, notified }) {
   return {
     instanceId: 'vt-1',
+    instances: Object.freeze({ list: () => [], read: async () => ({}), interact: async () => ({ ok: true }) }),
     stateManager: { getModuleState: () => ({ title: 'abc' }), setModuleState: () => {}, getProjectCycle: () => projectCycle, get: (k) => projectSettings[k] },
     i18n: { t: k => k, tf: () => k => k, getLanguage: () => 'de' },
     eventBus: {
@@ -158,6 +159,11 @@ suite('createModule mit view(ctx) und State', () => {
     ui.model.title = 'neu';
     await flush();
     assertEqual(container.querySelector('.vt-label').textContent, 'neu:a');
+  });
+
+  test('services.instances is ctx.instances', async () => {
+    const { data, context } = await mount();
+    assertEqual(Alpine.raw(data()._ui.services).instances, context.instances);
   });
 
   test('_ui: ohne forms ein leeres Objekt', async () => {

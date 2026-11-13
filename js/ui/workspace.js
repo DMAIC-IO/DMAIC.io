@@ -125,6 +125,8 @@ export class Workspace {
     this._router = null;
     /** @type {import('../core/instances.js').InstancesService|null} (set via setInstances) */
     this._instanceService = null;
+    /** @type {((stack: object[], caller: { instanceId: string, moduleId: string }) => Promise<object>)|null} (set via setModuleInteract) */
+    this._moduleInteract = null;
   }
 
   /**
@@ -135,10 +137,17 @@ export class Workspace {
 
   /**
    * Den Dienst `instances` verdrahten; Module bekommen davon `list` und `read`
-   * als `ctx.instances`.
+   * und `interact` als `ctx.instances`.
    * @param {import('../core/instances.js').InstancesService} svc
    */
   setInstances(svc) { this._instanceService = svc; }
+
+  /**
+   * Den Stapelweg der Agentenfläche für Module verdrahten
+   * (`ctx.instances.interact`). Vor dem Setzen meldet `interact` `surface_failed`.
+   * @param {(stack: object[], caller: { instanceId: string, moduleId: string }) => Promise<object>} fn
+   */
+  setModuleInteract(fn) { this._moduleInteract = fn; }
 
   /**
    * Render the workspace shell.
@@ -740,7 +749,7 @@ export class Workspace {
     this._moduleArea.append(moduleContainer);
     this._containers.set(instanceId, moduleContainer);
 
-    const context = this._buildContext(instanceId, moduleContainer);
+    const context = this._buildContext(instanceId, moduleContainer, record.moduleId);
 
     try {
       const instance = await this._moduleRegistry.instantiate(record.moduleId, moduleContainer, context);
@@ -897,13 +906,20 @@ export class Workspace {
     return true;
   }
 
-  _buildContext(instanceId, container) {
+  _buildContext(instanceId, container, moduleId) {
     const i18n = this._i18n;
     const svc = this._instanceService;
+    // Lesen direkt; Schreiben nur als Stapel über die Agentenfläche, mit
+    // gebundenem Aufrufer. Das Verdrahten kann später erfolgen als der Mount.
+    const interact = async (stack) => {
+      if (!this._moduleInteract) {
+        return { ok: false, error: 'surface_failed', message: 'Agent surface not ready' };
+      }
+      return this._moduleInteract(stack, { instanceId, moduleId });
+    };
     return {
       instanceId,
-      // Nur lesend: Module schreiben andere Instanzen nicht über diesen Weg.
-      instances: svc ? Object.freeze({ list: svc.list, read: svc.read }) : undefined,
+      instances: svc ? Object.freeze({ list: svc.list, read: svc.read, interact }) : undefined,
       eventBus: this._eventBus,
       stateManager: this._stateManager,
       i18n: this._i18n,
@@ -946,7 +962,7 @@ export class Workspace {
     //    two hooks above: its modal would survive the seed and block the page.
     //    Such modules check this flag and stay silent.
     const context = {
-      ...this._buildContext(instanceId, container),
+      ...this._buildContext(instanceId, container, moduleId),
       notify: () => {},
       dialog: { ...this._dialog, confirm: async () => true },
       detached: true,

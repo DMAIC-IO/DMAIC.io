@@ -70,6 +70,9 @@ export default createStartup({
       appVersion: VERSION,
     });
 
+    // Module schicken Stapel über `ctx.instances.interact` mit gebundenem Aufrufer.
+    workspace.setModuleInteract((stack, caller) => runtime.interactAsModule(stack, caller));
+
     // Eingefroren: `window.qprovement.foo = …` soll kein zweiter Weg werden.
     window.qprovement = Object.freeze({
       interact: (actions) => runtime.interact(actions),

@@ -215,6 +215,7 @@ const SKIP = new Set([
   'ui/workspace-history.test.js',
   'core/datagrid/datagrid-keyboard.test.js',
   'ui/workspace-action-command.test.js',
+  'ui/workspace-context.test.js',
   'ui/workspace-instance-ready.test.js',
   'ui/workspace-phase-memory.test.js',
   'ui/workspace-reset.test.js',

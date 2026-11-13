@@ -27,7 +27,7 @@ import { formatNumber } from './number-format.js';
  *   dialog: any, i18n: any, eventBus: any, instanceId: string, moduleId: string,
  *   cssVars: (map: Record<string, string>) => Record<string, string>,
  *   data: import('./worksheet-data.js').WorksheetData,
- *   instances?: import('./instances.js').InstancesReader,
+ *   instances?: import('./instances.js').ModuleInstances,
  *   openDialog: (ref: string, opts?: import('./command-directives.js').DialogOptions) => Promise<void> }} ViewContext
  */
 /**
@@ -740,7 +740,8 @@ export function createModule(base) {
                   i18n: context.i18n,
                   services: {
                     eventBus: context.eventBus, stateManager: context.stateManager, i18n: context.i18n,
-                    chartManager: storedEditsOff, instanceId: context.instanceId, moduleId: id,
+                    chartManager: storedEditsOff, instances: context.instances,
+                    instanceId: context.instanceId, moduleId: id,
                   },
                   moduleId: id,
                   instanceId: context.instanceId,
