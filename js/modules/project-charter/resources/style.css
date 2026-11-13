@@ -503,6 +503,10 @@ button.pc__org-add-btn.btn--primary.context-help-anchor > .context-help__btn {
 .pc__zeg-level--low  { --pc-zeg: var(--color-error); }
 
 /* ===== Kacheln ===== */
+
+.project-charter-tile {
+  display: contents;
+}
 .pc-tile__goals {
   list-style: decimal;
   padding-left: var(--spacing-md);
@@ -554,15 +558,63 @@ button.pc__org-add-btn.btn--primary.context-help-anchor > .context-help__btn {
   transition: width var(--transition-speed);
 }
 
+/* Problembeschreibung */
+.pc-tile__problem-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: var(--spacing-xs);
+}
+
+.pc-tile__problem {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  line-height: 1.45;
+  overflow-wrap: break-word;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
 /* Organigramm: Knoten fester Höhe, wie das Modul gestaltet; die Linien
    zeichnet das Widget node-links. */
 .pc-tile__org {
   flex: 1;
   min-height: 0;
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
   overflow: hidden;
+}
+
+/* Fläche in natürlicher Größe; x-fit skaliert sie in die Kachel. */
+.pc-tile__org-canvas {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.pc-tile__org-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.pc-tile__org-lines path {
+  stroke-linecap: round;
+}
+
+.pc-tile__org-lines .dmike-chart-card,
+.pc-tile__org-lines .dmike-chart-wrap,
+.pc-tile__org-lines .dmike-chart-svg-wrap {
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
+.pc-tile__org-lines .dmike-chart-svg-wrap svg {
+  overflow: visible;
 }
 
 .pc-tile__org-node {
@@ -574,7 +626,7 @@ button.pc__org-add-btn.btn--primary.context-help-anchor > .context-help__btn {
   background: var(--pc-org-node-bg, var(--color-bg-primary));
   border-width: var(--pc-org-node-border-width, var(--border-width));
   border-style: var(--pc-org-node-border-style, solid);
-  border-color: var(--pc-org-node-border-color, var(--color-border-primary));
+  border-color: var(--pc-org-node-border-color, var(--color-border-secondary));
   border-radius: var(--border-radius);
 }
 

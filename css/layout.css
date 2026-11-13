@@ -1400,18 +1400,6 @@ body.dev-area-open .dmaic-tiles {
   font-style: italic;
 }
 
-.dashboard-charter__problem-label {
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-top: var(--spacing-sm);
-  margin-bottom: var(--spacing-xs);
-}
-
-.dashboard-charter__problem-label:first-of-type { margin-top: 0; }
-
 .dashboard-charter__problem {
   font-size: var(--font-size-sm);
   color: var(--color-text-primary);
@@ -1421,55 +1409,6 @@ body.dev-area-open .dmaic-tiles {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-}
-
-.dashboard-charter__goals {
-  list-style: decimal;
-  padding-left: var(--spacing-md);
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.dashboard-charter__goal {
-  padding-left: var(--spacing-xs);
-}
-
-.dashboard-charter__goal-head {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--spacing-sm);
-  align-items: baseline;
-  margin-bottom: var(--spacing-2xs);
-}
-
-.dashboard-charter__goal-desc {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-primary);
-  flex: 1;
-  min-width: 0;
-  overflow-wrap: break-word;
-}
-
-.dashboard-charter__goal-zeg {
-  font-family: var(--font-family-mono, monospace);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  flex-shrink: 0;
-}
-
-.dashboard-charter__goal-bar {
-  height: 4px;
-  background: var(--color-bg-tertiary, var(--color-border-primary));
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.dashboard-charter__goal-bar-fill {
-  height: 100%;
-  border-radius: 2px;
-  transition: width 0.2s;
 }
 
 /* FMEA tiles on dashboard */
@@ -1961,47 +1900,6 @@ body.dev-area-open .dmaic-tiles {
   color: var(--color-warning);
 }
 
-
-/* Org chart on dashboard */
-.dashboard-area__org {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.dashboard-org__svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.dashboard-org__edges path {
-  fill: none;
-  stroke: var(--color-border-primary);
-  stroke-width: 1.5;
-}
-
-.dashboard-org__node-rect {
-  fill: var(--color-bg-primary);
-  stroke: var(--color-border-primary);
-  stroke-width: 1;
-}
-
-.dashboard-org__node-title {
-  fill: var(--color-text-primary);
-  font-size: 13px;
-  font-weight: 600;
-  font-family: inherit;
-}
-
-.dashboard-org__node-desc {
-  fill: var(--color-text-secondary);
-  font-size: 11px;
-  font-family: inherit;
-}
 
 .dashboard-area__title {
   font-size: var(--font-size-xl);

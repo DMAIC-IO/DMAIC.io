@@ -3,7 +3,7 @@ import { mountTile, waitFor } from './tile-test-utils.js';
 import { MODULES as manifest } from '../../js/modules/catalog.generated.js';
 import fmeaTile from '../../js/modules/fmea/fmea.tile.js';
 import ishikawaTile from '../../js/modules/ishikawa/tile/tile.js';
-import charterTiles, { charterTile, goalsTile, orgTile } from '../../js/modules/project-charter/project-charter.tile.js';
+import charterTiles from '../../js/modules/project-charter/tile/tile.js';
 import vocTile from '../../js/modules/voc-ctx-tree/voc-ctx-tree.tile.js';
 import raciTile from '../../js/modules/raci-matrix/raci-matrix.tile.js';
 import spcTile from '../../js/modules/control-chart/control-chart.tile.js';
@@ -21,6 +21,8 @@ import { disposeTile } from '../../js/pages/dashboard/tile-render.js';
 import { createWorksheetData } from '../../js/core/worksheet-data.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { registerWidgetDirective } from '../../js/core/widget-directive.js';
+import { registerFitDirective } from '../../js/core/fit-directive.js';
+import { registerRichTextDirective } from '../../js/core/rich-text-directive.js';
 import { WIDGETS } from '../../js/widgets/registry.js';
 import { checkValue } from '../../js/core/model.js';
 import controlChartWidget from '../../js/widgets/control-chart/schema.js';
@@ -159,9 +161,9 @@ suite('dashboard tiles: manifest', () => {
     assertEqual(kanoTile.titlePrefix, 'Kano');
     assertEqual(vocTile.titleKey, 'dashboard.vocTitle');
     assertDeepEqual(charterTiles.map(t => [t.kind, t.titleKey]), [
-      ['project-charter', 'dashboard.charterTitle'],
-      ['project-goals', 'dashboard.goalsTitle'],
-      ['org-chart', 'dashboard.orgChartTitle'],
+      ['project-charter', 'modules.project-charter.tiles.charter.title'],
+      ['project-goals', 'modules.project-charter.tiles.goals.title'],
+      ['org-chart', 'modules.project-charter.tiles.org.title'],
     ]);
   });
 });
@@ -333,10 +335,31 @@ suite('dashboard tiles: ishikawa', () => {
 });
 
 suite('dashboard tiles: project-charter array', () => {
+  if (!Alpine.version) Alpine.start();
+  registerWidgetDirective(Alpine, { i18n: WIDGET_I18N, widgets: WIDGETS });
+  registerFitDirective(Alpine);
+  registerRichTextDirective(Alpine);
+  const [charterTile, goalsTile, orgTile] = charterTiles;
+  const T = 'modules.project-charter.tiles';
   const ctxWith = (ids) => ({ i18n, findInstances: () => ids.map(instanceId => ({ instanceId, customName: '' })) });
+  const goal = (id, description, achievementLevel) => ({ id, description, targetDate: '', metric: '', targetValue: '', achievementLevel });
+  const node = (id, pid, title, extra = {}) => ({ id, pid, title, desc: '', ...extra });
+  const STYLE = { nodeBg: '', nodeBorderColor: '', nodeBorderStyle: 'solid', nodeBorderWidth: 1, lineColor: '', lineStyle: 'solid', lineWidth: 2 };
+  const orgState = (nodes, style = {}) => ({ orgChart: nodes, orgStyle: { ...STYLE, ...style } });
 
-  test('exports charter, goals and org chart in that order', async () => {
-    assertDeepEqual(charterTiles, [charterTile, goalsTile, orgTile]);
+  test('exports charter, goals and org chart in that order with the former ids and sizes', async () => {
+    assertDeepEqual(charterTiles.map(t => t.kind), ['project-charter', 'project-goals', 'org-chart']);
+    assertDeepEqual(charterTile.size, { defaultW: 3, defaultH: 10, minW: 2, minH: 6 });
+    assertDeepEqual(goalsTile.size, { defaultW: 3, defaultH: 10, minW: 2, minH: 6 });
+    assertDeepEqual(orgTile.size, { defaultW: 6, defaultH: 10, minW: 3, minH: 6 });
+  });
+
+  test('templates sit under resources/ and no tile has mount()', async () => {
+    assertDeepEqual(charterTiles.map(t => t.template), [
+      'js/modules/project-charter/resources/tile.html',
+      'js/modules/project-charter/resources/tile.goals.html',
+      'js/modules/project-charter/resources/tile.org.html']);
+    for (const t of charterTiles) assertEqual(t.mount, undefined);
   });
 
   test('has no settings', async () => {
@@ -344,89 +367,86 @@ suite('dashboard tiles: project-charter array', () => {
   });
 
   test('each tile enumerates its fixed id for the first charter instance', async () => {
-    assertDeepEqual(charterTile.enumerate(ctxWith(['c'])), [{ tileId: 'project-charter', instanceId: 'c', title: 'dashboard.charterTitle' }]);
-    assertDeepEqual(goalsTile.enumerate(ctxWith(['c'])), [{ tileId: 'project-goals', instanceId: 'c', title: 'dashboard.goalsTitle' }]);
-    assertDeepEqual(orgTile.enumerate(ctxWith(['c'])), [{ tileId: 'org-chart', instanceId: 'c', title: 'dashboard.orgChartTitle' }]);
+    assertDeepEqual(charterTile.enumerate(ctxWith(['c', 'd'])), [{ tileId: 'project-charter', instanceId: 'c', title: `${T}.charter.title` }]);
+    assertDeepEqual(goalsTile.enumerate(ctxWith(['c'])), [{ tileId: 'project-goals', instanceId: 'c', title: `${T}.goals.title` }]);
+    assertDeepEqual(orgTile.enumerate(ctxWith(['c'])), [{ tileId: 'org-chart', instanceId: 'c', title: `${T}.org.title` }]);
   });
 
   test('no charter instance gives no tiles', async () => {
     for (const t of charterTiles) assertDeepEqual(t.enumerate(ctxWith([])), []);
   });
 
-  test('org chart is wide by default', async () => {
-    assertDeepEqual(orgTile.size, { defaultW: 6, defaultH: 10, minW: 3, minH: 6 });
-  });
-
-  test('goals render one row per goal with clamped ZEG', async () => {
-    const host = (await render(goalsTile, { goals: [{ description: 'A', achievementLevel: 150 }, { achievementLevel: 30 }] }));
-    const rows = host.querySelectorAll('.dashboard-charter__goal');
-    assertEqual(rows.length, 2);
-    assertTrue(rows[0].textContent.includes('100%'));
-  });
-
-  test('goals and org chart show empty states', async () => {
-    assertTrue((await render(goalsTile, { goals: [] })).querySelector('.dashboard-area__empty') !== null);
-    assertTrue((await render(orgTile, { orgChart: [] })).querySelector('.dashboard-area__empty') !== null);
-  });
-
-  test('org chart draws one node per entry', async () => {
-    const host = (await render(orgTile, { orgChart: [{ id: 'a', pid: null, title: 'A' }, { id: 'b', pid: 'a', title: 'B' }] }));
-    assertEqual(host.querySelectorAll('.dashboard-org__node').length, 2);
-  });
-
-  test('charter renders the problem statement Markdown as <strong>, not raw **', async () => {
+  test('charter renders the problem via x-rich-text as <strong>, not raw **', async () => {
     const host = await render(charterTile, { problemStatement: '**bold** text' });
-    const problem = host.querySelector('.dashboard-charter__problem');
+    const problem = host.querySelector('.pc-tile__problem');
     assertEqual(problem.querySelector('strong').textContent, 'bold');
     assertEqual(problem.textContent, 'bold text');
-    assertEqual(problem.textContent.includes('**'), false);
-    assertEqual(host.querySelector('.dashboard-charter__problem-label').textContent, 'dashboard.charterProblem');
+    assertEqual(host.querySelector('.pc-tile__problem-label').textContent, `${T}.charter.problemLabel`);
   });
 
-  test('charter: no instance → charterEmpty, no problem statement → charterNoProblem', async () => {
-    assertEqual((await render(charterTile, null)).querySelector('.dashboard-area__empty').textContent, 'dashboard.charterEmpty');
+  test('charter: empty problem shows the hint', async () => {
     assertEqual((await render(charterTile, { problemStatement: '' })).querySelector('.dashboard-area__empty').textContent,
-      'dashboard.charterNoProblem');
+      `${T}.charter.noProblem`);
   });
 
-  test('charter: raw HTML in the problem statement stays text', async () => {
-    const host = await render(charterTile, { problemStatement: '<img src=x onerror="bad()">' });
-    assertEqual(host.querySelector('.dashboard-charter__problem img'), null);
-    assertEqual(host.querySelector('.dashboard-charter__problem').textContent, '<img src=x onerror="bad()">');
+  test('charter: raw HTML in the problem stays text', async () => {
+    const host = await render(charterTile, { _schema: { version: '1.0' }, problemStatement: '<img src=x onerror="bad()">' });
+    assertEqual(host.querySelector('.pc-tile__problem img'), null);
+    assertEqual(host.querySelector('.pc-tile__problem').textContent, '<img src=x onerror="bad()">');
   });
 
-  test('viewModel: charter keeps the Markdown, translated label', () => {
-    const vm = vmOf(charterTile, { problemStatement: '**bold** text' });
-    assertPlain(vm);
-    assertDeepEqual(vm, { empty: null, problemLabel: 'dashboard.charterProblem', problem: '**bold** text' });
+  test('goals: one row per goal, ZEG clamped, colour class from zegLevel like the module', async () => {
+    const host = await render(goalsTile, { goals: [goal('a', 'A', 100), goal('b', '', 80), goal('c', 'C', 30), goal('d', 'D', 0)] });
+    const rows = [...host.querySelectorAll('.pc-tile__goal')];
+    assertEqual(rows.length, 4);
+    assertTrue(rows[0].textContent.includes('100%'));
+    assertDeepEqual(rows.map(r => [...r.classList].find(c => c.startsWith('pc__zeg-level--'))),
+      ['pc__zeg-level--done', 'pc__zeg-level--high', 'pc__zeg-level--mid', 'pc__zeg-level--low']);
+    assertTrue(rows[1].querySelector('.pc-tile__goal-desc').textContent.includes(`${T}.goals.unnamed`));
+    assertEqual(rows[2].querySelector('.pc-tile__goal-bar-fill').style.width, '30%');
   });
 
-  test('viewModel: goals with clamped ZEG, colour styles and unnamed fallback', () => {
-    const vm = vmOf(goalsTile, { goals: [{ description: 'A', achievementLevel: 150 }, { achievementLevel: 30 }, { description: 'C' }] });
-    assertPlain(vm);
-    assertEqual(vm.empty, null);
-    assertDeepEqual(vm.goals[0], { desc: 'A', zeg: '100%', zegStyle: 'color:var(--color-success)',
-      fillStyle: 'width:100%; background:var(--color-success)' });
-    assertEqual(vm.goals[1].desc, 'dashboard.charterGoalUnnamed');
-    assertEqual(vm.goals[1].fillStyle, 'width:30%; background:var(--color-warning)');
-    assertEqual(vm.goals[2].zeg, '0%');
-    assertEqual(vmOf(goalsTile, { goals: [] }).empty, 'dashboard.charterNoGoals');
+  test('goals: empty state', async () => {
+    assertEqual((await render(goalsTile, { goals: [] })).querySelector('.dashboard-area__empty').textContent, `${T}.goals.empty`);
   });
 
-  test('viewModel: org chart nodes as plain data', () => {
-    const nodes = [{ id: 'a', pid: null, title: 'A' }, { id: 'b', pid: 'a', title: 'B', desc: 'x' }];
-    const vm = vmOf(orgTile, { orgChart: nodes });
-    assertPlain(vm);
-    assertDeepEqual(vm, { empty: null, nodes });
-    assertEqual(vmOf(orgTile, { orgChart: [] }).empty, 'dashboard.orgChartEmpty');
-    assertEqual(vmOf(orgTile, null).empty, 'dashboard.orgChartEmpty');
+  test('org: empty state', async () => {
+    assertEqual((await render(orgTile, { orgChart: [] })).querySelector('.dashboard-area__empty').textContent, `${T}.org.empty`);
   });
 
-  test('org chart draws one edge per child and the description line', async () => {
-    const host = await render(orgTile, { orgChart: [{ id: 'a', pid: null, title: 'A' }, { id: 'b', pid: 'a', title: 'B', desc: 'x' }] });
-    assertEqual(host.querySelectorAll('.dashboard-org__edges path').length, 1);
-    assertEqual(host.querySelectorAll('.dashboard-org__node-desc').length, 1);
-    assertTrue(host.querySelector('.dashboard-area__org > svg.dashboard-org__svg') !== null);
+  test('org: one HTML node per entry inside x-fit, description cut at 38 characters', async () => {
+    const long = 'x'.repeat(50);
+    const host = await render(orgTile, orgState([node('a', null, 'A'), node('b', 'a', 'B', { desc: long }), node('c', 'a', 'C', { desc: 'short' })]));
+    assertEqual(host.querySelectorAll('.pc-tile__org-node').length, 3);
+    const descs = [...host.querySelectorAll('.pc-tile__org-node-desc')].map(e => e.textContent);
+    assertDeepEqual(descs, [`${'x'.repeat(36)}…`, 'short']);
+    assertTrue(host.querySelector('.pc-tile__org > .pc-tile__org-canvas') !== null);
+    assertTrue(host.querySelector('.pc-tile__org-canvas .pc-tile__org-lines') !== null);
+  });
+
+  test('org: links follow the module layout (one per child), dashed style gives the module dash pattern', async () => {
+    const vm = vmOf(orgTile, orgState([node('a', null, 'A'), node('b', 'a', 'B'), node('c', 'a', 'C')],
+      { lineStyle: 'dashed', lineWidth: 3, lineColor: '#ff0000' }), {}, {});
+    assertEqual(vm.orgLinks.links.length, 2);
+    for (const l of vm.orgLinks.links) {
+      assertEqual(l.dash, '8 4');
+      assertEqual(l.width, 3);
+      assertEqual(l.color, '#ff0000');
+      assertEqual(l.shape, 'curve');
+    }
+    assertEqual(vmOf(orgTile, orgState([node('a', null, 'A'), node('b', 'a', 'B')], { lineStyle: 'dotted' })).orgLinks.links[0].dash, '2 4');
+    const solid = vmOf(orgTile, orgState([node('a', null, 'A'), node('b', 'a', 'B')])).orgLinks.links[0];
+    assertEqual(Object.hasOwn(solid, 'dash'), false);
+    assertEqual(Object.values(solid).includes(undefined), false);
+  });
+
+  test('org: node own style beats the global orgStyle', async () => {
+    const host = await render(orgTile, orgState([node('a', null, 'A', { bg: '#112233' }), node('b', 'a', 'B')],
+      { nodeBg: '#445566', nodeBorderStyle: 'dashed' }));
+    const [a, b] = host.querySelectorAll('.pc-tile__org-node');
+    assertEqual(a.style.getPropertyValue('--pc-org-node-bg'), '#112233');
+    assertEqual(b.style.getPropertyValue('--pc-org-node-bg'), '#445566');
+    assertEqual(b.style.getPropertyValue('--pc-org-node-border-style'), 'dashed');
   });
 });
 

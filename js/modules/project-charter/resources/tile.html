@@ -1,0 +1,11 @@
+<div class="project-charter-tile pc-tile">
+<template x-if="empty">
+  <p class="dashboard-area__empty" x-text="t('tiles.charter.noProblem')"></p>
+</template>
+<template x-if="!empty">
+  <div class="pc-tile__problem-label" x-text="t('tiles.charter.problemLabel')"></div>
+</template>
+<template x-if="!empty">
+  <div class="pc-tile__problem" x-rich-text="problem"></div>
+</template>
+</div>

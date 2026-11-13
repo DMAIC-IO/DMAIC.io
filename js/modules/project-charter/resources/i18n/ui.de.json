@@ -65,7 +65,6 @@
   "tiles": {
     "charter": {
       "title": "Projektauftrag",
-      "empty": "Kein Projektauftrag-Modul angelegt.",
       "noProblem": "Keine Problembeschreibung hinterlegt.",
       "problemLabel": "Problembeschreibung"
     },

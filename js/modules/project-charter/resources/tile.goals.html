@@ -1,0 +1,20 @@
+<div class="project-charter-tile pc-tile">
+<template x-if="empty">
+  <p class="dashboard-area__empty" x-text="t('tiles.goals.empty')"></p>
+</template>
+<template x-if="!empty">
+  <ol class="pc-tile__goals">
+    <template x-for="g in goals">
+      <li class="pc-tile__goal" :class="g.zegClass">
+        <div class="pc-tile__goal-head">
+          <span class="pc-tile__goal-desc" x-text="g.desc"></span>
+          <span class="pc-tile__goal-zeg" x-text="g.zeg"></span>
+        </div>
+        <div class="pc-tile__goal-bar">
+          <div class="pc-tile__goal-bar-fill" :style="g.fillStyle"></div>
+        </div>
+      </li>
+    </template>
+  </ol>
+</template>
+</div>

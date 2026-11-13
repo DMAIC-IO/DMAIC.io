@@ -65,7 +65,6 @@
   "tiles": {
     "charter": {
       "title": "Project Charter",
-      "empty": "No project charter module created.",
       "noProblem": "No problem statement recorded.",
       "problemLabel": "Problem Statement"
     },

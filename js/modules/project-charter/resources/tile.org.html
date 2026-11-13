@@ -1,0 +1,20 @@
+<div class="project-charter-tile pc-tile">
+<template x-if="empty">
+  <p class="dashboard-area__empty" x-text="t('tiles.org.empty')"></p>
+</template>
+<template x-if="!empty">
+  <div class="pc-tile__org">
+    <div class="pc-tile__org-canvas" x-fit :style="canvasStyle">
+      <div class="pc-tile__org-lines" x-widget="node-links" x-widget-config="orgLinks"></div>
+      <template x-for="n in nodes" :key="n.id">
+        <div class="pc-tile__org-node" :style="n.style">
+          <div class="pc-tile__org-node-title" x-text="n.title"></div>
+          <template x-if="n.desc">
+            <div class="pc-tile__org-node-desc" x-text="n.desc"></div>
+          </template>
+        </div>
+      </template>
+    </div>
+  </div>
+</template>
+</div>
