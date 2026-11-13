@@ -19,7 +19,7 @@ import {
 import { detectColumnType } from '../parser/column-types.js';
 import { parseCsvText } from '../parser/csv.js';
 import { shortcutRegistry } from '../shortcut-registry.js';
-import { h } from '../dom.js';
+import { h, isShown } from '../dom.js';
 import { decimalSeparator } from '../number-format.js';
 import { nonReactive } from '../non-reactive.js';
 import { icon } from '../icon.js';
@@ -2313,7 +2313,7 @@ export class DataGrid {
     }
     // Ohne Fokus im Gitter gehören die Tasten nur einem sichtbaren Gitter —
     // ein Gitter in einem verdeckten Tab bleibt stumm.
-    if (!(active && this.container.contains(active)) && this.container.offsetParent === null) return;
+    if (!(active && this.container.contains(active)) && !isShown(this.container)) return;
 
     if (this._fillDrag && e.key === 'Escape') {
       e.preventDefault();

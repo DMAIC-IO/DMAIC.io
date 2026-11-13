@@ -72,7 +72,7 @@ import { formatNumber } from './number-format.js';
  *   table?: () => ExportRows|Promise<ExportRows>,
  *   tables?: () => Record<string, ExportRows>|Promise<Record<string, ExportRows>>,
  *   tree?: () => unknown,
- *   image?: () => string|Promise<string> } & ThisType<Record<string, any> & ExportThis<M, S>>} ExportsDef
+ *   image?: () => string|null|undefined|Promise<string|null|undefined> } & ThisType<Record<string, any> & ExportThis<M, S>>} ExportsDef
  */
 
 /**
@@ -422,6 +422,7 @@ export function createModule(base) {
   if (history !== undefined && history !== true && !(history && typeof history === 'object' && Number.isInteger(history.depth ?? 50) && (history.depth ?? 50) >= 1)) {
     throw new Error(`createModule(${id}): history must be true or { depth: integer >= 1 }`);
   }
+  if (history && config.manualPersist === true) throw new Error(`createModule(${id}): history cannot be combined with manualPersist (the history records through the automatic persist)`);
   const historyActions = history ? [
     { icon: 'action.undo', title: 'history.undo', history: 'undo' },
     { icon: 'action.redo', title: 'history.redo', history: 'redo' },
@@ -1015,6 +1016,7 @@ export function createModule(base) {
     historyStep(dir) {
       const h = this._history;
       if (!h || !this._container?.querySelector('[x-data]')) return false;
+      if (this._context?.stateManager?.isCompleted?.() === true) return false;
       const json = dir === 'undo' ? h.undo() : h.redo();
       this._syncHistoryFlags();
       if (json === null) return false;

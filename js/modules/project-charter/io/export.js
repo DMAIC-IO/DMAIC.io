@@ -6,12 +6,13 @@
  * `layoutOrg`. Schlüssel ohne Wert fehlen im Ergebnis (kein `undefined`).
  */
 import { layoutOrg, DASH } from '../domain/layout.js';
+import { THEME_VAR } from '../domain/theme-colors.js';
 
 /** Themenvariablen, die der Export für ungesetzte Farben auflöst. */
 export const EXPORT_CSS_VARS = Object.freeze({
-  nodeFill: '--color-bg-secondary',
-  nodeStroke: '--color-border-secondary',
-  link: '--color-border-primary',
+  nodeFill: THEME_VAR.nodeBg,
+  nodeStroke: THEME_VAR.nodeBorderColor,
+  link: THEME_VAR.lineColor,
 });
 
 /**

@@ -163,4 +163,49 @@ suite('Workspace — Verlaufskürzel', () => {
     press(document.body);
     assertEqual(inst.steps.length, 0);
   });
+
+  /** Der Container der aktiven Instanz, am Dokument; `style` verdeckt ihn. */
+  const withContainer = (style) => {
+    const el = document.createElement('div');
+    el.style.cssText = style;
+    document.body.append(el);
+    ws._containers = new Map([['i1', el]]);
+    return el;
+  };
+
+  test('verdeckter Arbeitsbereich (visibility: hidden, Dashboard): Kürzel greift nicht', () => {
+    setup();
+    const el = withContainer('visibility: hidden');
+    press(document.body);
+    assertEqual(inst.steps.length, 0);
+    el.remove();
+  });
+
+  test('sichtbarer Arbeitsbereich: Kürzel greift', () => {
+    setup();
+    const el = withContainer('');
+    press(document.body);
+    assertEqual(inst.steps.join(','), 'undo');
+    el.remove();
+  });
+
+  test('Fokus in einem offenen Dialog: Kürzel greift nicht', () => {
+    setup();
+    const el = withContainer('');
+    const dlg = document.createElement('div');
+    dlg.setAttribute('role', 'dialog');
+    const ok = document.createElement('button');
+    dlg.append(ok);
+    document.body.append(dlg);
+    press(ok);
+    assertEqual(inst.steps.length, 0);
+    const modal = document.createElement('div');
+    modal.setAttribute('aria-modal', 'true');
+    const b2 = document.createElement('button');
+    modal.append(b2);
+    document.body.append(modal);
+    press(b2);
+    assertEqual(inst.steps.length, 0);
+    dlg.remove(); modal.remove(); el.remove();
+  });
 });

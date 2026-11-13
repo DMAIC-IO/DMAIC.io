@@ -97,6 +97,12 @@ suite('project-charter view: Gerüst und Problembeschreibung', () => {
     assertTrue(h.$('.pc__no-goals') !== null, 'Hinweis ohne Ziele fehlt');
   });
 
+  test('Bildexport ohne Organigramm liefert kein Bild (keine leere Datei)', async () => {
+    const h = await mount();
+    const { exports: ex, component } = h.vm()._ui;
+    assertEqual(ex.image.call(component), null);
+  });
+
   test('x-field auf model.problemStatement rendert das Widget rich-text', async () => {
     const h = await mount({ problemStatement: 'Lieferzeit **zu lang**' });
     const editor = h.$('.pc__problem .rich-text__editor');

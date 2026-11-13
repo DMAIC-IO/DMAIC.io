@@ -178,9 +178,12 @@ export async function runExport(ui, fmt, io = DEFAULT_IO) {
       }
       XLSX.writeFile(wb, name);
     } else if (fmt === 'svg') {
-      io.downloadBlob(new Blob([await call('image')], { type: 'image/svg+xml' }), name);
+      const svg = await call('image');
+      if (svg == null) return; // nichts zu zeichnen: keine Datei, keine Meldung
+      io.downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), name);
     } else if (fmt === 'png') {
       const svg = await call('image');
+      if (svg == null) return;
       const size = svgSize(svg);
       const css = await io.fontFaces();
       io.downloadBlob(await io.svgStringToPngBlob(css ? withStyle(svg, css) : svg, { ...size, scale: 2 }), name);

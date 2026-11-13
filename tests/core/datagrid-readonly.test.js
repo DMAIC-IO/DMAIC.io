@@ -125,3 +125,17 @@ suite('DataGrid — nicht reaktiv (Bug 14)', () => {
     dispose();
   });
 });
+
+suite('DataGrid Tastatur — verdecktes Gitter', () => {
+  test('visibility: hidden (Dashboard): Strg+Z rührt das Gitter nicht an', () => {
+    const { grid, dispose } = newGrid({ readOnly: false });
+    let undone = 0;
+    grid.undo = () => { undone += 1; };
+    key('z', { ctrlKey: true });
+    assertEqual(undone, 1, 'sichtbar: Strg+Z greift');
+    grid.container.parentElement.style.visibility = 'hidden';
+    key('z', { ctrlKey: true });
+    assertEqual(undone, 1, 'verdeckt: Strg+Z greift nicht');
+    dispose();
+  });
+});

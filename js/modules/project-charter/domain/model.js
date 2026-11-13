@@ -77,6 +77,8 @@ function requireNodeText(title, desc) {
 const nodeBorderStyle = (v) => (v === 'dashed' || v === 'dotted' ? v : '');
 
 /** @param {number|undefined} v @returns {number} 0 und 1 erben (`0`), sonst 2..8 */
+/** Setzt `key`; ein leerer Wert (`''`, 0) entfernt ihn — der Knoten erbt dann. */
+const setOrDrop = (n, key, value) => { if (value === '' || value === 0) delete n[key]; else n[key] = value; };
 const nodeBorderWidth = (v) => (v && v !== 1 ? v : 0);
 
 /** @param {string[]} ids @returns {boolean} */
@@ -229,10 +231,11 @@ export class State extends defineModel({
         const n = this.orgChart.find((x) => x.id === id);
         n.title = title;
         if (desc !== undefined) n.desc = desc;
-        n.bg = bg ?? '';
-        n.borderColor = borderColor ?? '';
-        n.borderStyle = nodeBorderStyle(borderStyle);
-        n.borderWidth = nodeBorderWidth(borderWidth);
+        // Leer heißt erben: der Schlüssel fehlt dann, statt leer zu stehen.
+        setOrDrop(n, 'bg', bg || '');
+        setOrDrop(n, 'borderColor', borderColor || '');
+        setOrDrop(n, 'borderStyle', nodeBorderStyle(borderStyle));
+        setOrDrop(n, 'borderWidth', nodeBorderWidth(borderWidth));
       },
     }),
     setOrgNodeStyle: command({

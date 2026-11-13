@@ -85,9 +85,11 @@ suite('project-charter Kommandos — updateOrgNode, setOrgNodeStyle', () => {
     m.updateOrgNode({ id: 'a', title: 'Neu', desc: 'D' });
     assertEqual(m.orgChart[0].title, 'Neu');
     assertEqual(m.orgChart[0].desc, 'D');
-    assertEqual(m.orgChart[0].borderStyle, '');
-    assertEqual(m.orgChart[0].borderWidth, 0);
-    assertEqual(m.orgChart[0].bg, '');
+    assertEqual(m.orgChart[0].borderStyle ?? '', '');
+    assertEqual(m.orgChart[0].borderWidth ?? 0, 0);
+    assertEqual(m.orgChart[0].bg ?? '', '');
+    const keys = Object.keys(m.toJSON().orgChart[0]);
+    for (const k of ['bg', 'borderColor', 'borderStyle', 'borderWidth']) assertEqual(keys.includes(k), false, `${k} fehlt statt leer`);
   });
 
   test('setzt Stil; solid → "", Breite 1 → 0; fehlender Schlüssel setzt zurück', () => {
@@ -99,9 +101,11 @@ suite('project-charter Kommandos — updateOrgNode, setOrgNodeStyle', () => {
     );
     m.updateOrgNode({ id: 'a', title: 'A', borderStyle: 'solid', borderWidth: 1 });
     assertDeepEqual(
-      [m.orgChart[0].bg, m.orgChart[0].borderStyle, m.orgChart[0].borderWidth],
+      [m.orgChart[0].bg ?? '', m.orgChart[0].borderStyle ?? '', m.orgChart[0].borderWidth ?? 0],
       ['', '', 0],
     );
+    const keys = Object.keys(m.toJSON().orgChart[0]);
+    for (const k of ['bg', 'borderColor', 'borderStyle', 'borderWidth']) assertEqual(keys.includes(k), false, `${k} fehlt statt leer`);
   });
 
   test('Ablehnungen: unbekannte id, leerer Titel, zu lang, ungültiger Stil', () => {

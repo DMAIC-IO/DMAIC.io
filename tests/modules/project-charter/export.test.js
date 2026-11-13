@@ -53,6 +53,13 @@ suite('project-charter export', () => {
     assertTrue(cfg.links.every((x) => Object.values(x).every((v) => v !== undefined)));
   });
 
+  test('Linienfarbe ohne eigenen Wert folgt dem Bildschirm (--color-border-secondary)', () => {
+    const seen = [];
+    orgExportConfig({ orgChart: PIZZA, orgStyle: STYLE }, { heights: {}, cssVars: (map) => { seen.push(map); return {}; } });
+    assertEqual(seen[0].link, '--color-border-secondary');
+    assertEqual(seen[0].nodeStroke, '--color-border-secondary');
+  });
+
   test('chartSVG enthält jeden Titel, keine var(', async () => {
     const cfg = orgExportConfig({ orgChart: PIZZA, orgStyle: STYLE }, { heights: new Map(), cssVars });
     const svg = await new ChartManager({ on() {} }, i18n).renderSVG('node-diagram', cfg);

@@ -12,12 +12,13 @@
 import { setFields } from '../../../core/model.js';
 import { openColorPicker } from '../../../core/color-picker.js';
 import { DASH } from '../domain/layout.js';
+import { THEME_VAR } from '../domain/theme-colors.js';
 
 /** Farbschlüssel des globalen Stils → Variable des Bereichs und Themenfarbe ohne eigenen Wert. */
 const COLOR_VARS = Object.freeze({
-  nodeBg: { css: '--pc-org-node-bg', theme: 'var(--color-bg-secondary)' },
-  nodeBorderColor: { css: '--pc-org-node-border-color', theme: 'var(--color-border-secondary)' },
-  lineColor: { css: '--pc-org-line-color', theme: 'var(--color-border-secondary)' },
+  nodeBg: { css: '--pc-org-node-bg', theme: `var(${THEME_VAR.nodeBg})` },
+  nodeBorderColor: { css: '--pc-org-node-border-color', theme: `var(${THEME_VAR.nodeBorderColor})` },
+  lineColor: { css: '--pc-org-line-color', theme: `var(${THEME_VAR.lineColor})` },
 });
 
 /** Farbfelder eines Knotens → Farbschlüssel des globalen Stils, von dem sie erben. */

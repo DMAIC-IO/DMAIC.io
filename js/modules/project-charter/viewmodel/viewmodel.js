@@ -48,6 +48,8 @@ export default createModule({
   exports: {
     fileName() { return this.t('exportFileName'); },
     image() {
+      // Ohne Knoten gibt es nichts zu zeichnen: keine Datei (wie im alten Modul).
+      if (!this.model.orgChart.length) return null;
       return this.chartSVG('node-diagram', orgExportConfig(this.model, {
         heights: this.state.heights,
         collapsed: this.state.collapsed,

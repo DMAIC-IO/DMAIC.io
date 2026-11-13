@@ -4,7 +4,7 @@
  * Handles tab switching, module activation, and empty state.
  */
 
-import { h } from '../core/dom.js';
+import { h, isShown } from '../core/dom.js';
 import { icon } from '../core/icon.js';
 import { resolveActions } from './resolve-actions.js';
 import { runUiCommand } from '../core/command-directives.js';
@@ -399,8 +399,14 @@ export class Workspace {
     const t = e.target;
     if (t instanceof Element && (t.closest('input, textarea, select') || t.isContentEditable
       || t.closest('[contenteditable]:not([contenteditable="false"])'))) return;
+    // Ein Dialog über dem Modul hat Vorrang: das Kürzel gilt nicht dahinter.
+    if (t instanceof Element && t.closest('dialog[open], [role="dialog"], [aria-modal="true"]')) return;
     if (this._stateManager?.isCompleted?.() === true) return;
     const inst = this._instances?.get(this._activeInstanceId);
+    // Dashboard, Lab und Training verdecken den Arbeitsbereich nur
+    // (`visibility: hidden`); die aktive Instanz bleibt gesetzt.
+    const el = this._containers?.get(this._activeInstanceId);
+    if (el && !isShown(el)) return;
     if (!inst?.getActions?.()?.some((a) => a.history)) return;
     e.preventDefault();
     inst.historyStep?.(dir);

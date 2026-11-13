@@ -170,4 +170,23 @@ suite('createModule history', () => {
     await mod.destroy();
     assertEqual(mod.historyCan('undo'), false);
   });
+
+  test('abgeschlossenes Projekt: historyStep schreibt nichts zurück', async () => {
+    const { mod, context, data } = await mount(true);
+    data().model.name = 'neu'; await flush();
+    context.stateManager.isCompleted = () => true;
+    assertEqual(mod.historyStep('undo'), false);
+    assertEqual(data().model.name, 'neu');
+  });
+
+  test('history mit manualPersist wird abgelehnt', () => {
+    let err = null;
+    try {
+      createModule({
+        config: { id: 'hist-mp', engine: 'alpine', phase: 'define', templateUrl: 'x.html', manualPersist: true },
+        Model: Doc, view() { return {}; }, history: true,
+      });
+    } catch (e) { err = e; }
+    assertTrue(err !== null && /manualPersist/.test(err.message));
+  });
 });

@@ -98,3 +98,16 @@ export function stripBlankText(node) {
     }
   }
 }
+
+/**
+ * Ob ein Element sichtbar ist — auch `visibility: hidden` (Dashboard, Lab und
+ * Training verdecken den Arbeitsbereich so) und `display: none` irgendwo
+ * darüber zählen als verborgen. Ein abgehängtes Element ist verborgen.
+ * @param {Element} el
+ * @returns {boolean}
+ */
+export function isShown(el) {
+  if (!el.isConnected) return false;
+  if (typeof el.checkVisibility === 'function') return el.checkVisibility({ visibilityProperty: true });
+  return el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden';
+}

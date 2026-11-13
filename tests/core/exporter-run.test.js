@@ -107,6 +107,15 @@ suite('runExport', () => {
     assertEqual(await files['demo.svg'].blob.text(), SVG);
   });
 
+  test('image() ohne Bild (null): keine Datei, keine Meldung', async () => {
+    for (const fmt of ['svg', 'png']) {
+      const { ui, io, log, files } = setup({ image() { return null; } });
+      await runExport(ui, fmt, io);
+      assertEqual(Object.keys(files).length, 0);
+      assertEqual(log.filter(([k]) => k === 'notify').length, 0);
+    }
+  });
+
   test('png: Größe aus dem SVG, Schriften eingebettet, Meldung erst nach fertigem Bild', async () => {
     const { ui, io, log, files } = setup({ async image() { return SVG; } });
     await runExport(ui, 'png', io);
