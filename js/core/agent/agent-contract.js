@@ -43,6 +43,7 @@ export const ERRORS = Object.freeze({
   UNKNOWN_PHASE:          'unknown_phase',
   UNKNOWN_INSTANCE:       'unknown_instance',
   INSTANCE_MODULE_MISMATCH: 'instance_module_mismatch',
+  NOT_MODULE_SURFACE:     'not_module_surface',
   UNKNOWN_METHOD:         'unknown_method',
   UNKNOWN_SECTION:        'unknown_section',
   MISSING_PARAM:          'missing_param',

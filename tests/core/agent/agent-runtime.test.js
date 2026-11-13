@@ -1600,3 +1600,182 @@ suite('agent runtime — Toast für Änderungen im Hintergrund', () => {
     assertDeepEqual(notified, [['ws-1']]);
   });
 });
+
+suite('agent runtime — interactAsModule (Modulweg)', () => {
+  const WS1 = { instanceId: 'ws1', moduleId: 'worksheet', order: 0 };
+  const RG1 = { instanceId: 'rg1', moduleId: 'worksheet', order: 1 };
+  const CALLER = { instanceId: 'rg1', moduleId: 'random-generator' };
+  const write = (instance) => ({ op: 'instance.call', module: 'worksheet', instance, method: 'importCsv', args: ['a;b'] });
+  const read = (instance) => ({ op: 'instance.call', instance, method: 'read' });
+
+  /** Ein Arbeitsblatt-Viewmodel, dessen Schreiben die Revision dreht. */
+  function setup(opts = {}) {
+    let made;
+    const viewmodel = (id) => ({
+      read: () => ({}),
+      importCsv: () => {
+        made.log.push(`importCsv:${id}`);
+        made.revs.set(id, (made.revs.get(id) ?? 0) + 1);
+        return true;
+      },
+      ...(opts.extra?.(id, () => made) ?? {}),
+    });
+    made = makeRuntime({ primed: false, viewmodel, instances: [WS1, RG1], ...opts.runtime });
+    return made;
+  }
+
+  test('interactAsModule skips consent', async () => {
+    const { runtime, log } = setup();
+    const out = await runtime.interactAsModule([write('ws1')], CALLER);
+    assertEqual(out.ok, true, JSON.stringify(out));
+    assertEqual(out.contract, CONTRACT_VERSION);
+    assertEqual(log.includes('consent'), false, 'das Einwilligungstor wurde nicht gefragt');
+  });
+
+  test('interactAsModule skips revision check', async () => {
+    const { runtime } = setup();
+    const out = await runtime.interactAsModule([write('ws1')], CALLER);
+    assertEqual(out.ok, true, JSON.stringify(out));
+    // Derselbe Aufbau auf dem Agentenweg: Lesen vor Schreiben gilt.
+    const agent = await setup().runtime.interact([write('ws1')]);
+    assertEqual(agent.results[0].error, 'stale_revision');
+  });
+
+  test('module write marks instance stale for agent', async () => {
+    const { runtime, settles } = setup();
+    assertEqual((await runtime.interact([read('ws1')])).ok, true);
+    assertEqual((await runtime.interactAsModule([write('ws1')], CALLER)).ok, true);
+    assertTrue(settles.includes('ws1'), 'settle läuft auch auf dem Modulweg');
+    const out = await runtime.interact([write('ws1')]);
+    assertEqual(out.results[0].error, 'stale_revision');
+  });
+
+  test('module call without module field fails', async () => {
+    const { runtime, log } = setup();
+    const out = await runtime.interactAsModule(
+      [{ op: 'instance.call', instance: 'ws1', method: 'importCsv', args: ['a;b'] }], CALLER);
+    assertEqual(out.ok, false);
+    assertEqual(out.error, 'validation_failed');
+    assertEqual(out.index, 0);
+    assertEqual(out.cause.error, ERRORS.MISSING_PARAM);
+    assertEqual(log.some(e => e.startsWith('vm:')), false, 'nichts lief');
+    const set = await runtime.interactAsModule([{ op: 'instance.set', instance: 'ws1', values: {} }], CALLER);
+    assertEqual(set.cause.error, ERRORS.MISSING_PARAM);
+    // Agentenweg: das Feld bleibt optional.
+    await runtime.interact([read('ws1')]);
+    const agent = await runtime.interact([{ op: 'instance.call', instance: 'ws1', method: 'importCsv', args: ['a;b'] }]);
+    assertEqual(agent.ok, true, JSON.stringify(agent));
+  });
+
+  test('nested call from running op runs inline', async () => {
+    let inner = null;
+    const registry = {
+      worksheet: { ...REGISTRY.worksheet,
+        actions: { ...REGISTRY.worksheet.actions,
+          toWorksheet: { params: [], returns: 'boolean', help: '' } } },
+    };
+    const nested = setup({
+      runtime: { primed: true, registry },
+      extra: (id, get) => ({
+        toWorksheet: async () => {
+          inner = await get().runtime.interactAsModule([write('ws1')], CALLER);
+          return inner.ok;
+        },
+      }),
+    });
+    const outer = nested.runtime.interact([{ op: 'instance.call', instance: 'rg1', method: 'toWorksheet' }]);
+    const timeout = new Promise((resolve) => setTimeout(() => resolve('timeout'), 1000));
+    const out = await Promise.race([outer, timeout]);
+    assertTrue(out !== 'timeout', 'der äußere Lauf wartet nicht auf sich selbst');
+    assertEqual(out.ok, true, JSON.stringify(out));
+    assertEqual(out.results[0].result.value, true);
+    assertEqual(inner?.ok, true, JSON.stringify(inner));
+    assertTrue(nested.log.includes('importCsv:ws1'), 'das innere Schreiben lief');
+  });
+
+  test('unrelated module call during agent op is queued', async () => {
+    const protocol = [];
+    let pending = null;
+    const registry = {
+      worksheet: { ...REGISTRY.worksheet,
+        actions: { ...REGISTRY.worksheet.actions,
+          toWorksheet: { params: [], returns: 'boolean', help: '' } } },
+    };
+    const made = setup({
+      runtime: {
+        primed: true, registry,
+        stateManager: { flushNow: async () => { protocol.push('flush'); } },
+      },
+      extra: (id, get) => ({
+        toWorksheet: async () => {
+          protocol.push('outer-op-start');
+          // Ein Nutzerklick in einer anderen Instanz, während die Op läuft.
+          pending = get().runtime.interactAsModule([
+            { op: 'instance.call', module: 'worksheet', instance: 'ws1', method: 'read' },
+          ], { instanceId: 'other', moduleId: 'random-generator' }).then((r) => { protocol.push('inner-done'); return r; });
+          await tick(10);
+          protocol.push('outer-op-end');
+          return true;
+        },
+      }),
+    });
+    const out = await made.runtime.interact([{ op: 'instance.call', instance: 'rg1', method: 'toWorksheet' }]);
+    assertEqual(out.ok, true, JSON.stringify(out));
+    const inner = await pending;
+    assertEqual(inner.ok, true, JSON.stringify(inner));
+    assertDeepEqual(protocol, ['outer-op-start', 'outer-op-end', 'flush', 'inner-done']);
+  });
+
+  test('module may not call viewmodel command of converted target', async () => {
+    const registry = {
+      worksheet: { ...REGISTRY.worksheet,
+        actions: { ...REGISTRY.worksheet.actions,
+          sortRows: { params: [], returns: 'boolean', help: '', target: 'viewmodel' },
+          run: { params: [], returns: 'object', help: '', target: 'asyncTask', op: 'start' } } },
+    };
+    const make = () => setup({
+      runtime: { primed: true, registry },
+      extra: () => ({ sortRows: () => true }),
+    });
+    for (const method of ['sortRows', 'run']) {
+      const { runtime, log } = make();
+      const out = await runtime.interactAsModule(
+        [{ op: 'instance.call', module: 'worksheet', instance: 'ws1', method }], CALLER);
+      assertEqual(out.ok, false, method);
+      assertEqual(out.cause?.error, ERRORS.NOT_MODULE_SURFACE, `${method}: ${JSON.stringify(out)}`);
+      assertEqual(log.some(e => e.startsWith('vm:')), false, `${method}: nichts lief`);
+    }
+    // `module` als Referenz: das Zielmodul ist erst zur Laufzeit bekannt,
+    // dieselbe Ablehnung kommt dann aus der Ausführung.
+    const { runtime } = make();
+    const viaRef = await runtime.interactAsModule([
+      { op: 'module.add', id: 'w', module: 'worksheet' },
+      { op: 'instance.call', module: { $from: 'w', path: 'module' },
+        instance: { $from: 'w', path: 'instanceId' }, method: 'sortRows' },
+    ], CALLER);
+    assertEqual(viaRef.ok, false, JSON.stringify(viaRef));
+    assertEqual(viaRef.results?.[1]?.error, ERRORS.NOT_MODULE_SURFACE, JSON.stringify(viaRef));
+    // Der Agentenweg lässt beides zu.
+    const agent = make();
+    const vm = await agent.runtime.interact([{ op: 'instance.call', instance: 'ws1', method: 'sortRows' }]);
+    assertEqual(vm.ok, true, JSON.stringify(vm));
+    const task = await agent.runtime.interact([{ op: 'instance.call', instance: 'ws1', method: 'run' }]);
+    assertTrue(task.cause?.error !== ERRORS.NOT_MODULE_SURFACE
+      && task.results?.[0]?.error !== ERRORS.NOT_MODULE_SURFACE, JSON.stringify(task));
+  });
+
+  test('completed project', async () => {
+    const { runtime, log } = setup({ runtime: { completed: true } });
+    const out = await runtime.interactAsModule([write('ws1')], CALLER);
+    assertEqual(out.ok, false);
+    assertEqual(out.cause.error, 'project_completed');
+    assertEqual(out.results, undefined);
+    assertDeepEqual(log, [], 'kein Schreibaufruf am Host, keine Einwilligung');
+  });
+
+  test('der Toast für nicht angezeigte Instanzen gilt auch für Modulaufrufe', async () => {
+    const { runtime, notified } = setup();
+    await runtime.interactAsModule([write('ws1')], CALLER);
+    assertDeepEqual(notified, [['ws1']]);
+  });
+});

@@ -12077,6 +12077,7 @@
       "unknownPhaseInCycle": "Unknown phase \"{phase}\" in the active cycle.",
       "unknownInstance": "Unknown instance \"{instance}\".",
       "instanceModuleMismatch": "Instance {instance} belongs to module {actual}, not {module}.",
+      "notModuleSurface": "A module may not call {method} of {module}: viewmodel commands and asyncTask actions are reserved for the UI and the agent. Write through model commands or instance.set.",
       "viewmodelNotAlive": "Instance \"{instance}\" is not active (view not open).",
       "unknownMethod": "Module \"{module}\" has no method \"{method}\".",
       "methodNotAgentAction": "Module \"{module}\" does not release \"{method}\" as an action \u2014 whether the method exists internally makes no difference. Only what \"available\" lists is callable; a different spelling of the same name changes nothing.",

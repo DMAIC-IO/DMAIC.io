@@ -17,6 +17,16 @@
  * Und sie liefert NIE eine rohe Ausnahme nach außen — der äußere Fang-Punkt
  * umschließt den ganzen Körper, nicht nur den Op-Aufruf.
  *
+ * Zwei Einstiege, eine Kette: `interact` für den Agenten, `interactAsModule`
+ * für Module (`ctx.instances.interact`). Der Modulweg fragt keine
+ * Einwilligung, prüft keine gelesene Revision, verlangt an `instance.call`
+ * und `instance.set` das Feld `module` und lässt an einem umgestellten Ziel
+ * keine Viewmodel-Kommandos und keine `asyncTask`-Aktionen zu — die gehören
+ * der Oberfläche und dem Agenten. Ruft eine laufende Aktion selbst
+ * `interactAsModule` auf (die Instanz, an der sie gerade arbeitet), läuft der
+ * innere Stapel im äußeren Lauf statt hinten in der Kette — dort warteten
+ * beide aufeinander.
+ *
  * `window` kommt hier nicht vor: Stufe 1 ist ein dünner `window`-Adapter
  * (`startup/agent-surface.js`), Stufe 2 bindet denselben Runtime an einen
  * HTTP-Client.
@@ -57,7 +67,10 @@ function opShapes() {
  * @param {object} [deps.entries]  Auflöser aus agent-entries.js (Naht für Tests)
  * @param {object} [deps.revisions]  Merker aus agent-revisions.js; ohne Angabe
  *   ein frischer (Naht für Unit-Tests)
- * @returns {{ interact: (input?: object|object[]) => Promise<object> }}
+ * @returns {{
+ *   interact: (input?: object|object[]) => Promise<object>,
+ *   interactAsModule: (input: object|object[], caller: { instanceId: string, moduleId: string }) => Promise<object>,
+ * }}
  */
 export function createAgentRuntime(deps) {
   const { stateManager, moduleRegistry, i18n, registry, consent, host, appVersion } = deps;
@@ -111,12 +124,31 @@ export function createAgentRuntime(deps) {
    * schriebe ihn erst der nächste Ansichtswechsel, und die Revision drehte
    * sich ohne Änderung. `catalog.read`, `module.describe` und
    * `instance.open` zeigen keinen Inhalt und vermerken nichts.
+   * Ohne `track` (Modulweg) wartet die Laufzeit nur `settle` ab und vermerkt
+   * nichts: ein Modul liest nicht für den Agenten, und sein Schreiben soll
+   * die Instanz für den Agenten veralten lassen wie jede fremde Änderung —
+   * auch eine, die erst im persist-`$watch` landet.
    * @param {string} op
    * @param {object} params
    * @param {any} outcome  das Ergebnis der Op
+   * @param {boolean} [track]  Merker des Agenten fortschreiben
    * @returns {Promise<void>}
    */
-  async function noteSeen(op, params, outcome) {
+  async function noteSeen(op, params, outcome, track = true) {
+    if (!track) {
+      try {
+        if (op === 'instance.call' || op === 'instance.set') {
+          if (host.isMounted(params.instance)) await host.settle(params.instance);
+        } else if (op === 'module.add') {
+          await host.settle(outcome.instanceId);
+        } else if (op === 'module.remove') {
+          await host.settle();
+        }
+      } catch {
+        // Wie unten: die Aktion ist gelungen, ihr Ergebnis bleibt.
+      }
+      return;
+    }
     try {
       if (op === 'project.read') {
         revisions.markStructure();
@@ -220,19 +252,109 @@ export function createAgentRuntime(deps) {
   }
 
   /**
+   * Ob ein Modul diese Aktion an diesem Modul aufrufen darf. Viewmodel-
+   * Kommandos und `asyncTask`-Aktionen eines umgestellten Moduls sind der
+   * Oberfläche und dem Agenten vorbehalten; ein Modul schreibt über
+   * Model-Kommandos, `instance.set` oder die Aktionen eines Moduls alter Form.
+   * @param {string} moduleId
+   * @param {string} method
+   * @returns {object|null} ein AXI-Fehler `not_module_surface` oder null
+   */
+  function moduleSurfaceError(moduleId, method) {
+    const actions = entries.view()[moduleId]?.actions;
+    const spec = actions && Object.hasOwn(actions, method) ? actions[method] : null;
+    if (spec?.target !== 'viewmodel' && spec?.target !== 'asyncTask') return null;
+    return axiError(ERRORS.NOT_MODULE_SURFACE,
+      i18n.t('agent.errors.notModuleSurface', { module: moduleId, method }));
+  }
+
+  /**
+   * Die Prüfungen, die nur für Module gelten, in der Hülle des Prüfers:
+   * `module` ist an `instance.call` und `instance.set` Pflicht, und eine
+   * Aktion mit literalem `module` darf kein Viewmodel-Kommando und keine
+   * `asyncTask`-Aktion sein. Läuft nach `validateBatch`, vor jedem
+   * Seiteneffekt.
+   * @param {object[]} actions  der geprüfte Stapel
+   * @returns {object|null} `validation_failed` mit `cause` oder null
+   */
+  function moduleBatchError(actions) {
+    for (let index = 0; index < actions.length; index++) {
+      const a = actions[index];
+      if (a.op !== 'instance.call' && a.op !== 'instance.set') continue;
+      let cause = null;
+      if (a.module === undefined) {
+        cause = axiError(ERRORS.MISSING_PARAM,
+          i18n.t('agent.errors.missingParam', { op: a.op, param: 'module' }),
+          { available: Object.keys(OPS[a.op].params) });
+      } else if (a.op === 'instance.call' && typeof a.module === 'string' && typeof a.method === 'string') {
+        cause = moduleSurfaceError(a.module, a.method);
+      }
+      if (cause) {
+        const id = a.id ?? null;
+        return {
+          ok: false,
+          contract: CONTRACT_VERSION,
+          error: ERRORS.VALIDATION_FAILED,
+          message: id
+            ? i18n.t('agent.errors.validationFailed', { index, id })
+            : i18n.t('agent.errors.validationFailedNoId', { index }),
+          index,
+          id,
+          cause,
+        };
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Ein Lauf: was Aktionen eines Stapels — und Stapel, die im Lauf
+   * wiedereintreten — gemeinsam fortschreiben.
+   * @returns {{ inOp: { instanceId: string|null }|null, wrote: boolean, changed: string[] }}
+   */
+  function newRun() {
+    return {
+      // Ziel der Aktion, deren Op gerade läuft; sonst null.
+      inOp: null,
+      // Ein Stapel, der geschrieben hat, flusht EINMAL am Ende des Laufs.
+      wrote: false,
+      // Ids der wirksam geänderten Instanzen, in der Reihenfolge der ersten
+      // Änderung; auch bei späterem Abbruch gefüllt.
+      changed: [],
+    };
+  }
+
+  /** Optionen des Agentenwegs. */
+  const AGENT = Object.freeze({ consent: true, revisions: true });
+
+  /**
    * Der eigentliche Durchlauf. Serialisiert aufgerufen, siehe unten.
    * @param {object|object[]} [input]
-   * @param {{ gate: object }|null} [decided]  Einwilligung und Laden hat
+   * @param {object} [opts]
+   * @param {{ gate: object }|null} [opts.decided]  Einwilligung und Laden hat
    *   `decideCancel` schon erledigt; der Lauf überspringt beides.
+   * @param {boolean} [opts.consent]  Einwilligungstor fragen (Agent)
+   * @param {boolean} [opts.revisions]  Lesen vor Schreiben prüfen und
+   *   vermerken (Agent)
+   * @param {{ instanceId: string, moduleId: string }} [opts.caller]  das
+   *   aufrufende Modul (Modulweg)
+   * @param {object} [opts.run]  der Lauf aus `newRun()`; ohne Angabe ein frischer
+   * @param {boolean} [opts.inline]  im laufenden Stapel wiedereingetreten:
+   *   Speichern und Toast übernimmt der äußere Lauf
    */
-  async function runInteract(input, decided = null) {
-    const gate = decided ? decided.gate : await consent.ensure();
-    if (!gate.ok) return { ...gate, contract: CONTRACT_VERSION };
+  async function runInteract(input, opts = AGENT) {
+    const { decided = null, caller = null, inline = false } = opts;
+    const track = opts.revisions === true;
+    const run = opts.run ?? newRun();
+    if (opts.consent) {
+      const gate = decided ? decided.gate : await consent.ensure();
+      if (!gate.ok) return { ...gate, contract: CONTRACT_VERSION };
+    }
 
     if (input === undefined || input === null) {
       const surface = await describeSurface();
       // Die Beschreibung zeigt die Instanzliste — ein Lesen der Struktur.
-      revisions.markStructure();
+      if (track) revisions.markStructure();
       return surface;
     }
 
@@ -244,16 +366,17 @@ export function createAgentRuntime(deps) {
     const world = buildWorld({ stateManager, moduleRegistry, i18n, registry: entries.view(), completed: host.isCompleted() });
     const checked = validateBatch(input, world);
     if (!checked.ok) return { ...checked, contract: CONTRACT_VERSION };
+    if (caller) {
+      const refused = moduleBatchError(checked.actions);
+      if (refused) return refused;
+    }
 
     const results = [];
     const byId = new Map();
     let allOk = true;
     // Ein Stapel, der geschrieben hat, flusht EINMAL am Ende — nicht je
     // Aktion: der Preis ist ein Plattenzugriff pro Stapel.
-    let wrote = false;
-    // Ids der Instanzen, die dieser Aufruf wirksam geändert hat, in der
-    // Reihenfolge der ersten Änderung; auch bei späterem Abbruch gefüllt.
-    const changed = [];
+    const changed = run.changed;
 
     for (const action of checked.actions) {
       const resolved = resolveRefs(action, byId);
@@ -305,6 +428,19 @@ export function createAgentRuntime(deps) {
         }
       }
 
+      // Regel für Module an einer aufgelösten Instanzreferenz; ein literales
+      // `module` hat `moduleBatchError` schon geprüft.
+      if (caller && action.op === 'instance.call') {
+        const actual = buildInstanceList({ stateManager, i18n })
+          .find((e) => e.id === resolved.value.instance)?.module;
+        const refused = actual !== undefined ? moduleSurfaceError(actual, resolved.value.method) : null;
+        if (refused) {
+          results.push({ ...refused, id: action.id ?? null });
+          allOk = false;
+          break;
+        }
+      }
+
       // Eine Op wirft im Regelfall nicht (siehe agent-ops.js), aber ein
       // Host-Port (`router.navigate`, IndexedDB, …) kann es trotzdem tun —
       // und die Revisionsprüfung hasht Modulzustand. Dieser Fang-Punkt
@@ -313,12 +449,21 @@ export function createAgentRuntime(deps) {
       // `interact` ist das Netz für alles davor und danach.
       let outcome;
       try {
-        const stale = staleRevision(action.op, resolved.value);
+        const stale = track ? staleRevision(action.op, resolved.value) : null;
         if (stale) {
           outcome = stale;
         } else {
-          if (isWritingAction(action)) wrote = true;
-          outcome = await ops[action.op](resolved.value);
+          if (isWritingAction(action)) run.wrote = true;
+          // Solange die Op läuft, darf ein Modul, das an dieser Instanz
+          // arbeitet, wiedereintreten (siehe `interactAsModule`).
+          const outer = run.inOp;
+          const target = resolved.value.instance;
+          run.inOp = { instanceId: typeof target === 'string' ? target : null };
+          try {
+            outcome = await ops[action.op](resolved.value);
+          } finally {
+            run.inOp = outer;
+          }
         }
       } catch (err) {
         outcome = axiError(ERRORS.OP_FAILED,
@@ -335,8 +480,11 @@ export function createAgentRuntime(deps) {
       }
       results.push({ ok: true, id: action.id ?? null, result: outcome });
       if (action.id !== undefined) byId.set(action.id, outcome);
-      await noteSeen(action.op, resolved.value, outcome);
+      await noteSeen(action.op, resolved.value, outcome, track);
     }
+
+    // Wiedereingetreten: Speichern und Toast macht der äußere Lauf, einmal.
+    if (inline) return { ok: allOk, contract: CONTRACT_VERSION, results };
 
     // `ok: true` heißt angewandt und gespeichert — der `stateManager` schreibt
     // hinter zwei Debounces (2 s localStorage, 500 ms IndexedDB); beide werden
@@ -355,7 +503,7 @@ export function createAgentRuntime(deps) {
     // (`FLUSH_FAILED`), `results` bleiben erhalten. `ok` bleibt `false` —
     // es bleibt dabei: ein fehlgeschlagener Flush IST ein
     // Misserfolg des Stapels, nur kein unspezifischer.
-    if (wrote) {
+    if (run.wrote) {
       try {
         // Beide Hälften: der `save()`-Debounce (localStorage: phases,
         // models, chartEdits, …) und die IndexedDB-Warteschlange. Erst dann
@@ -426,12 +574,35 @@ export function createAgentRuntime(deps) {
   }
 
   /**
-   * Reiht die Eingabe in die Kette ein.
+   * Der Lauf, der gerade an der Spitze der Kette steht; sonst null. Nur über
+   * ihn erkennt `interactAsModule` einen Wiedereintritt.
+   * @type {object|null}
+   */
+  let current = null;
+
+  /**
+   * Führt einen Stapel an der Spitze der Kette aus und hält ihn solange als
+   * `current`.
    * @param {object|object[]} [input]
+   * @param {object} opts  Optionen von `runInteract`
    * @returns {Promise<object>}
    */
-  function enqueue(input) {
-    const run = queue.then(() => runInteract(input).catch(surfaceFailure));
+  function runChained(input, opts) {
+    const run = newRun();
+    current = run;
+    return runInteract(input, { ...opts, run })
+      .catch(surfaceFailure)
+      .finally(() => { if (current === run) current = null; });
+  }
+
+  /**
+   * Reiht die Eingabe in die Kette ein.
+   * @param {object|object[]} [input]
+   * @param {object} [opts]  Optionen von `runInteract`
+   * @returns {Promise<object>}
+   */
+  function enqueue(input, opts = AGENT) {
+    const run = queue.then(() => runChained(input, opts));
     // Die Kette darf nie in einen abgelehnten Zustand geraten, sonst
     // schlüge der Fehler von Stapel A auf Stapel B durch.
     queue = run.then(() => undefined, () => undefined);
@@ -450,11 +621,32 @@ export function createAgentRuntime(deps) {
           // Im Platz gilt die Einwilligung von jetzt, nicht die vom Aufruf: war das
           // Tor offen, prüft `runInteract` selbst erneut (ohne Dialog, solange sie
           // gilt). Eine Verweigerung wird unverändert zurückgegeben, ohne zweiten Dialog.
-          const decided = d.decided?.gate?.ok ? undefined : d.decided;
-          return runInteract(input, decided).catch(surfaceFailure);
+          const decided = d.decided?.gate?.ok ? null : d.decided;
+          return runChained(input, { ...AGENT, decided });
         });
       queue = queued.then(() => undefined, () => undefined);
-      return decision.then((d) => (d.cancel ? runInteract(input, d.decided).catch(surfaceFailure) : queued));
+      return decision.then((d) => (d.cancel
+        ? runInteract(input, { ...AGENT, decided: d.decided }).catch(surfaceFailure)
+        : queued));
+    },
+
+    /**
+     * Der Einstieg für Module (`ctx.instances.interact`): dieselben Ops,
+     * dieselbe Antwortform, dieselbe Kette — ohne Einwilligung und ohne
+     * Lesen vor Schreiben. Arbeitet die laufende Aktion gerade an der
+     * Instanz des Aufrufers, läuft der Stapel sofort in diesem Lauf (mit
+     * eigener Prüfung, Speichern am Ende des äußeren); jeder andere
+     * Aufruf reiht sich hinten ein.
+     * @param {object|object[]} input
+     * @param {{ instanceId: string, moduleId: string }} caller
+     * @returns {Promise<object>}
+     */
+    interactAsModule(input, caller) {
+      const opts = { consent: false, revisions: false, caller };
+      if (current?.inOp && current.inOp.instanceId === caller?.instanceId) {
+        return runInteract(input, { ...opts, run: current, inline: true }).catch(surfaceFailure);
+      }
+      return enqueue(input, opts);
     },
   };
 }

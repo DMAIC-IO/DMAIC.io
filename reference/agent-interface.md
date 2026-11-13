@@ -365,6 +365,8 @@ Sonderformen ohne `results`-Liste: `consent_denied` und `surface_failed`
 | `unknown_module` | Modul-id unbekannt |
 | `unknown_phase` | Phase unbekannt im Zyklus oder für das Modul (siehe „Phasenprüfung") |
 | `unknown_instance` | Instanz-id unbekannt |
+| `instance_module_mismatch` | das Feld `module` an `instance.call`/`instance.set` nennt ein anderes Modul als das der Instanz |
+| `not_module_surface` | ein Modul ruft ein Viewmodel-Kommando oder eine `asyncTask`-Aktion eines umgestellten Moduls auf; nur bei Modulaufrufen, nie für den Agenten |
 | `unknown_method` | das Modul gibt diese Methode nicht als Aktion frei |
 | `unknown_section` | `module.describe` kennt diesen Handbuchabschnitt nicht |
 | `missing_param` | Pflichtfeld der Aktion fehlt |
@@ -652,7 +654,7 @@ Jede Antwort trägt `contract` (derzeit `3`), die Beschreibungsantwort
 zusätzlich `appVersion`. `contract` wird nur bei einem Bruch der Hülle
 erhöht — Aktionsform, Referenzsyntax, Fehler*form*, Ergebnis-Hülle. Neue
 `op`s, neue Fehler*codes*, neue Antwortfelder oder neu freigegebene Module
-sind **kein** Bruch: die Fläche kennt heute 24
+sind **kein** Bruch: die Fläche kennt heute 26
 Fehlercodes (`ERRORS` in `agent-contract.js`). Diese Regel entscheidet
 künftige Änderungen: ein neuer Code löst keinen Bump aus, eine neue Form
 schon. Invariante, von einem Test gehalten: `ERRORS[k] === k.toLowerCase()`.

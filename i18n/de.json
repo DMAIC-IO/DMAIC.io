@@ -12081,6 +12081,7 @@
       "unknownPhaseInCycle": "Unbekannte Phase \"{phase}\" im aktiven Zyklus.",
       "unknownInstance": "Unbekannte Instanz \"{instance}\".",
       "instanceModuleMismatch": "Die Instanz {instance} gehört zum Modul {actual}, nicht zu {module}.",
+      "notModuleSurface": "Ein Modul darf {method} von {module} nicht aufrufen: Viewmodel-Kommandos und asyncTask-Aktionen sind der Oberfläche und dem Agenten vorbehalten. Schreibe über Model-Kommandos oder instance.set.",
       "viewmodelNotAlive": "Instanz \"{instance}\" ist nicht aktiv (Ansicht nicht geöffnet).",
       "unknownMethod": "Modul \"{module}\" hat keine Methode \"{method}\".",
       "methodNotAgentAction": "Modul \"{module}\" gibt \"{method}\" nicht als Aktion frei \u2014 ob es die Methode intern gibt, ist dafür unerheblich. Aufrufbar ist nur, was \"available\" nennt; eine andere Schreibweise desselben Namens ändert daran nichts.",
