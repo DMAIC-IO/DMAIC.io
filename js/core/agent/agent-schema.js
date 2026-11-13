@@ -89,6 +89,8 @@ export function writableByAgent(spec) {
 function ruleTokens(spec) {
   switch (spec.kind) {
     case 'text': return TEXT_RULES.filter((r) => spec[r] === true);
+    case 'richText': return ['richText', 'format:**fett**,*kursiv*,\\n=Zeilenumbruch,\\\\ maskiert',
+      ...(spec.maxLength !== undefined ? [`maxLength:${spec.maxLength}`] : [])];
     case 'date': return ['date'];
     case 'time': return spec.step === undefined ? ['time'] : ['time', `step:${spec.step}`];
     case 'phase': return ['phase'];

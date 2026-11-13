@@ -12,7 +12,7 @@
  * getState() exactly: { problemStatement, goals, orgChart, orgStyle }.
  */
 
-import { normalizeProblemStatement } from './project-charter-richtext.js';
+import { normalizeProblemStatement } from '../../core/rich-text.js';
 import { uid } from '../../core/uid.js';
 
 /** Default org chart style values */

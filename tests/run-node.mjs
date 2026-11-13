@@ -180,7 +180,7 @@ const SKIP = new Set([
   'modules/ishikawa/experiments-view.test.js',
   'modules/msa-typ6.test.js',
   'modules/process-map-export.test.js',
-  'modules/project-charter-richtext.test.js',
+  'core/rich-text.test.js',
   'modules/project-charter.test.js',
   'modules/survey-runner-dom.test.js',
   'modules/worksheet-write-receiver.test.js',

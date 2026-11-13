@@ -3,7 +3,7 @@
  * Schema-Moduls in der Form von AGENT_REGISTRY.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../../test-utils.js';
-import { defineModel, command, text, number, oneOf, index, list, record, map, object, image, boolean, date, time, phase, columnRef, datasets } from '../../../js/core/model.js';
+import { defineModel, command, text, number, oneOf, index, list, record, map, object, image, richText, boolean, date, time, phase, columnRef, datasets } from '../../../js/core/model.js';
 import { asyncTask } from '../../../js/core/async-task.js';
 import { schemaAgentEntry, readSchemaModel, omitPathsOf, writableByAgent } from '../../../js/core/agent/agent-schema.js';
 import { describeModule } from '../../../js/core/agent/agent-catalog.js';
@@ -376,5 +376,17 @@ suite('agentWrite: false sperrt Felder und Kommandos', () => {
     assertEqual('manual.cancel' in entry.actions, false);
     assertTrue('open' in entry.actions);
     assertTrue('open.cancel' in entry.actions);
+  });
+});
+
+suite('agent-schema: richText', () => {
+  test('Feld nennt Format und Klartextgrenze', () => {
+    const M = defineModel({ fields: { problem: richText({ maxLength: 10000 }), note: richText() } });
+    const f = schemaAgentEntry(M).fields;
+    assertEqual(f.problem.type, 'string');
+    assertEqual(f.problem.rules[0], 'richText');
+    assertTrue(f.problem.rules[1].includes('**fett**') && f.problem.rules[1].includes('*kursiv*'));
+    assertEqual(f.problem.rules[2], 'maxLength:10000');
+    assertEqual(f.note.rules.length, 2);
   });
 });

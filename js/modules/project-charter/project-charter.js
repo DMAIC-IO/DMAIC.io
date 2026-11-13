@@ -26,7 +26,7 @@ import { createModebar } from '../../core/chart/modebar.js';
 import { DASH_MAP, buildOrgDiagram } from './project-charter-org-diagram.js';
 import { edSection, edInlineNum, edSelectRow, edColorPair, openColorPicker } from '../../core/chart/chart-editor.js';
 import { h } from '../../core/dom.js';
-import { markdownToFragment, domToMarkdown, normalizeProblemStatement } from './project-charter-richtext.js';
+import { markdownToFragment, domToMarkdown, normalizeProblemStatement } from '../../core/rich-text.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireEnum, requireKnownId, requireText, requireNumber } from '../../core/agent/agent-argcheck.js';
 import { icon } from '../../core/icon.js';

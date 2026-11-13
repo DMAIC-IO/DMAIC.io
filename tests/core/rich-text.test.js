@@ -5,7 +5,8 @@ import {
   normalizeProblemStatement,
   markdownToFragment,
   domToMarkdown,
-} from '../../js/modules/project-charter/project-charter-richtext.js';
+  plainLength,
+} from '../../js/core/rich-text.js';
 
 /** Build a div holding the fragment parsed from `md`. */
 function el(md) {
@@ -116,5 +117,18 @@ suite('project-charter-richtext: parse + serialize round-trip', () => {
     b.textContent = 'b';
     ed.append(a, b);
     assertEqual(domToMarkdown(ed), 'a\nb', 'two sibling divs');
+  });
+});
+
+suite('plainLength', () => {
+  test('Markierungen und Maskierung zählen nicht, Zeilenumbruch einmal', () => {
+    assertEqual(plainLength('**ab** *c*\\*'), 4 + 1, 'ab, Leerzeichen, c, maskierter Stern');
+    assertEqual(plainLength('a\nb'), 3);
+    assertEqual(plainLength(''), 0);
+    assertEqual(plainLength('**a *b* c**'), 5);
+  });
+  test('ein nicht geschlossener Stern zählt als Zeichen, wie er dargestellt wird', () => {
+    assertEqual(plainLength('a*b'), 3);
+    assertEqual(plainLength('\\\\x'), 2);
   });
 });

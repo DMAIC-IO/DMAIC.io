@@ -9,7 +9,7 @@ import {
   defaultOf, checkValue, describeType, schemaOf, fieldSpec, defineState, stateSchemaOf,
   currentOf, confirmOf, commandDefOf, fromAttr, idsFromAttr, defineForm,
   defineSettings, isSettings, readSettings, defineWidget, isWidget,
-  columnRef, datasets, image, rewriteColumnRefs, readModel, setFields, date, time, phase, activeContext, setCommandObserver, setModelContext, contextOf, checkContext, DEFAULT_CONTEXT,
+  columnRef, datasets, image, richText, rewriteColumnRefs, readModel, setFields, date, time, phase, activeContext, setCommandObserver, setModelContext, contextOf, checkContext, DEFAULT_CONTEXT,
 } from '../../js/core/model.js';
 
 const COLS = ['suppliers', 'inputs'];
@@ -1311,5 +1311,25 @@ suite('image — Feldart mit Merkmalen', () => {
     assertEqual(image({ nullable: true }).omitOnRead, true);
     assertEqual(image({ nullable: true }).agentWrite, false);
     assertEqual(image({ agentWrite: true }).agentWrite, true);
+  });
+});
+
+suite('richText — Feldart mit Klartextlänge', () => {
+  test('maxLength zählt den Klartext ohne Markierungen', () => {
+    assertEqual(checkValue(richText({ maxLength: 5 }), 'f', '**abcde**'), '**abcde**');
+    assertThrows(() => checkValue(richText({ maxLength: 5 }), 'f', 'abcdef'), /^invalid f "abcdef"; allowed: a text of at most 5 plain characters/);
+    assertThrows(() => checkValue(richText({ maxLength: 5 }), 'f', 7), /^invalid f 7; allowed: /);
+  });
+  test('Grenze: 10 000 Klartextzeichen mit Fettdruck gültig, 10 001 ungültig', () => {
+    const f = richText({ maxLength: 10000 });
+    assertEqual(checkValue(f, 'f', `**${'a'.repeat(10000)}**`).length, 10004);
+    assertThrows(() => checkValue(f, 'f', `**${'a'.repeat(10001)}**`), /^invalid f /);
+  });
+  test('ohne maxLength unbegrenzt; Vorgabe und Typtext', () => {
+    assertEqual(checkValue(richText(), 'f', 'x'.repeat(50000)).length, 50000);
+    assertEqual(defaultOf(richText()), '');
+    assertEqual(defaultOf(richText({ nullable: true })), null);
+    assertEqual(describeType(richText()), 'string');
+    assertEqual(describeType(richText({ nullable: true })), 'string|null');
   });
 });

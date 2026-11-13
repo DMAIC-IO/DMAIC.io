@@ -41,6 +41,7 @@ import {
 } from './validate.js';
 import { CYCLES, DEFAULT_CYCLE, getPhaseIds } from './cycles/cycles.js';
 import { isIsoDate } from './local-date.js';
+import { plainLength } from './rich-text.js';
 
 // ─── Feld-Konstruktoren ─────────────────────────────────────
 
@@ -167,6 +168,14 @@ export const datasets = (slots, { multi = false, colors = null, ...opts } = {}) 
  * @param {object} [opts] @returns {Readonly<object>}
  */
 export const image = (opts) => spec('image', {}, { omitOnRead: true, agentWrite: false, ...opts });
+
+/**
+ * Text in der Markdown-Teilmenge `**fett**`, `*kursiv*`, `\n` als Zeilenumbruch,
+ * `\` maskiert. `maxLength` zählt den Klartext ohne Markierungen. Vorgabe `''`,
+ * mit `nullable` `null`.
+ * @param {{ maxLength?: number } & object} [opts] @returns {Readonly<object>}
+ */
+export const richText = (opts) => spec('richText', {}, opts);
 
 const IMAGE_DATA_URL = /^data:image\/[\w.+-]+;base64,/;
 
@@ -328,7 +337,7 @@ export function defaultOf(s, context = DEFAULT_CONTEXT, name = 'default', root =
   }
   if (s.nullable) return null;
   switch (s.kind) {
-    case 'text': case 'idOf': case 'date': case 'image': return '';
+    case 'text': case 'idOf': case 'date': case 'image': case 'richText': return '';
     case 'time': return '00:00';
     case 'phase': return getPhaseIds(context.cycle)[0];
     case 'columnRef': return null;
@@ -464,6 +473,13 @@ export function checkValue(s, name, value, ctx = {}) {
       const v = requireText(name, value);
       return requireForm(name, value, IMAGE_DATA_URL.test(v), 'an image data URL data:image/<type>;base64,…');
     }
+    case 'richText': {
+      const v = requireText(name, value);
+      if (s.maxLength !== undefined) {
+        requireForm(name, value, plainLength(v) <= s.maxLength, `a text of at most ${s.maxLength} plain characters (without ** and * marks)`);
+      }
+      return v;
+    }
     case 'columnRef': {
       requireForm(name, value, isColumnRef(value), 'a column reference { instanceId, sheetId?, columnId }');
       return {
@@ -588,7 +604,7 @@ const literal = (v) => (typeof v === 'string' ? `'${v}'` : String(v));
 export function describeType(s) {
   let t;
   switch (s.kind) {
-    case 'text': case 'idOf': case 'date': case 'time': case 'phase': case 'image': t = 'string'; break;
+    case 'text': case 'idOf': case 'date': case 'time': case 'phase': case 'image': case 'richText': t = 'string'; break;
     case 'number': case 'index': t = 'number'; break;
     case 'boolean': t = 'boolean'; break;
     case 'oneOf': t = s.values.map(literal).join('|'); break;

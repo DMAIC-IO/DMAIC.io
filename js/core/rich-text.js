@@ -1,6 +1,5 @@
 /**
- * project-charter-richtext.js — sink-free rich-text for the Project Charter
- * problem statement. Storage format is a strict 2-mark Markdown subset
+ * rich-text.js — sink-free rich text for richText fields. Storage format is a strict 2-mark Markdown subset
  * (**bold**, *italic*, \n = line break). Only `*` and `\` are special.
  *
  * No HTML strings are ever assigned and DOMParser is never used: load builds
@@ -133,4 +132,35 @@ export function domToMarkdown(root) {
     return out;
   };
   return walk(root).replace(/\n{3,}/g, '\n\n').replace(/^\n+|\n+$/g, '');
+}
+
+/**
+ * Length of the plain text of RTE Markdown: what the reader sees, without the
+ * `**`/`*` marks and escape backslashes; a line break counts one. Mirrors the
+ * parser, so an unmatched `*` counts as the literal character it renders as.
+ * @param {string} md  @returns {number}
+ */
+export function plainLength(md) {
+  return String(md ?? '').split('\n').reduce((sum, line, idx) => sum + (idx > 0 ? 1 : 0) + lineLength(line), 0);
+}
+
+/** Plain length of one line, following the grammar of `parseLine`. */
+function lineLength(src) {
+  let n = 0;
+  let i = 0;
+  while (i < src.length) {
+    const ch = src[i];
+    if (ch === '\\' && i + 1 < src.length) { n += 1; i += 2; continue; }
+    if (ch === '*') {
+      const mark = src.startsWith('**', i) ? '**' : '*';
+      const end = findClose(src, i + mark.length, mark);
+      if (end !== -1) {
+        n += lineLength(src.slice(i + mark.length, end));
+        i = end + mark.length;
+        continue;
+      }
+    }
+    n += 1; i += 1;
+  }
+  return n;
 }

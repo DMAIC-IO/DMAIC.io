@@ -280,3 +280,10 @@ test('Parametertyp ViewFn | ViewFn[]: Glieder aller Teile im Viewmodel-Typ', () 
   assert.equal(findings.length, 1, findings.join('\n'));
   assert.match(findings[0], /view\.bindings\.js\(4,\d+\): TS2322: .*Type 'string' is not assignable to type 'string\[\]'/);
 });
+
+test('richText() wird zu string', async () => {
+  const src = MODEL_SRC.replace("import { defineModel,", "import { richText, defineModel,").replace('title: text(),', 'title: richText({ maxLength: 5 }),');
+  const root = appWith({ 'js/modules/neu/domain/model.js': src });
+  const out = renderModelTypes(await loadModelSchema(collectModelFiles(root)[0].file));
+  assert.match(out, / \* @property \{string\} title\n/);
+});

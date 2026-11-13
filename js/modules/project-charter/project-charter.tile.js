@@ -9,7 +9,7 @@
  */
 
 import { svg, s } from '../../core/dom.js';
-import { markdownToFragment } from './project-charter-richtext.js';
+import { markdownToFragment } from '../../core/rich-text.js';
 import { ORG_NW, ORG_NH, orgPositions } from './project-charter-org-layout.js';
 
 /**
