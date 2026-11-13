@@ -125,17 +125,23 @@ suite('project-charter Kommandos — updateOrgNode, setOrgNodeStyle', () => {
     });
   });
 
-  test('setOrgNodeStyle: Breite 1 oder ungültig → 0, sonst 2..8 begrenzt', () => {
+  test('setOrgNodeBorderWidth: Zahl 3 gilt, 0 und 1 erben, 9 und Text abgelehnt', () => {
     const m = load({ orgChart: [node('a')] });
-    m.setOrgNodeStyle({ id: 'a', key: 'borderWidth', value: '3' });
+    m.setOrgNodeBorderWidth({ id: 'a', value: 3 });
     assertEqual(m.orgChart[0].borderWidth, 3);
-    m.setOrgNodeStyle({ id: 'a', key: 'borderWidth', value: '1' });
+    m.setOrgNodeBorderWidth({ id: 'a', value: 1 });
     assertEqual(m.orgChart[0].borderWidth, 0);
-    m.setOrgNodeStyle({ id: 'a', key: 'borderWidth', value: '5' });
-    m.setOrgNodeStyle({ id: 'a', key: 'borderWidth', value: 'breit' });
+    m.setOrgNodeBorderWidth({ id: 'a', value: 8 });
+    m.setOrgNodeBorderWidth({ id: 'a', value: 0 });
     assertEqual(m.orgChart[0].borderWidth, 0);
-    m.setOrgNodeStyle({ id: 'a', key: 'borderWidth', value: '99' });
-    assertEqual(m.orgChart[0].borderWidth, 8);
+    assertEqual(thrown(() => m.setOrgNodeBorderWidth({ id: 'a', value: 9 }))?.param, 'value');
+    assertEqual(thrown(() => m.setOrgNodeBorderWidth({ id: 'a', value: 'drei' }))?.param, 'value');
+    assertEqual(thrown(() => m.setOrgNodeBorderWidth({ id: 'x', value: 3 }))?.param, 'id');
+  });
+
+  test('setOrgNodeStyle lehnt borderWidth ab (param key)', () => {
+    const m = load({ orgChart: [node('a')] });
+    assertEqual(thrown(() => m.setOrgNodeStyle({ id: 'a', key: 'borderWidth', value: '3' }))?.param, 'key');
   });
 
   test('setOrgNodeStyle: Linienart solid → "", Farben, Ablehnungen', () => {

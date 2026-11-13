@@ -60,7 +60,7 @@ function renewDuplicateIds(items) {
 
 const TITLE_MAX = 100;
 const DESC_MAX = 300;
-const NODE_STYLE_KEYS = ['bg', 'borderColor', 'borderStyle', 'borderWidth'];
+const NODE_STYLE_KEYS = ['bg', 'borderColor', 'borderStyle'];
 const BORDER_STYLES = ['', 'solid', 'dashed', 'dotted'];
 
 /**
@@ -76,11 +76,8 @@ function requireNodeText(title, desc) {
 /** @param {string|undefined} v @returns {''|'dashed'|'dotted'} `'solid'` und leer erben den globalen Stil (`''`) */
 const nodeBorderStyle = (v) => (v === 'dashed' || v === 'dotted' ? v : '');
 
-/** @param {number|string|undefined} v @returns {number} 1 oder ungültig erbt (`0`), sonst 2..8 */
-function nodeBorderWidth(v) {
-  const bw = parseInt(String(v), 10);
-  return bw && bw !== 1 ? Math.max(1, Math.min(8, bw)) : 0;
-}
+/** @param {number|undefined} v @returns {number} 0 und 1 erben (`0`), sonst 2..8 */
+const nodeBorderWidth = (v) => (v && v !== 1 ? v : 0);
 
 /** @param {string[]} ids @returns {boolean} */
 const distinct = (ids) => new Set(ids).size === ids.length;
@@ -242,11 +239,16 @@ export class State extends defineModel({
       params: { id: idOf('orgChart'), key: oneOf(NODE_STYLE_KEYS), value: text() },
       run({ id, key, value }) {
         const n = this.orgChart.find((x) => x.id === id);
-        if (key === 'borderWidth') n.borderWidth = nodeBorderWidth(value);
-        else if (key === 'borderStyle') {
+        if (key === 'borderStyle') {
           requireForm('value', value, BORDER_STYLES.includes(value), BORDER_STYLES.map((v) => `"${v}"`).join(', '));
           n.borderStyle = nodeBorderStyle(value);
         } else n[key] = value;
+      },
+    }),
+    setOrgNodeBorderWidth: command({
+      params: { id: idOf('orgChart'), value: number({ integer: true, min: 0, max: 8 }) },
+      run({ id, value }) {
+        this.orgChart.find((x) => x.id === id).borderWidth = nodeBorderWidth(value);
       },
     }),
     removeOrgNode: command({
