@@ -4,7 +4,8 @@
  * Reine Funktionen; jede beschreibt einen FESTEN Formatstand und importiert
  * darum nichts aus model.js (das Schema darf sich ändern, die Migration nicht).
  */
-import { normalizeProblemStatement } from '../../../core/rich-text.js';
+import { normalizeProblemStatement, plainLength } from '../../../core/rich-text.js';
+import { isIsoDate } from '../../../core/local-date.js';
 import { uid } from '../../../core/uid.js';
 
 /** Vorgaben des globalen Organigrammstils im Formatstand 1.0. */
@@ -17,6 +18,9 @@ const ORG_STYLE_1_0 = Object.freeze({
   lineStyle: 'solid',
   lineWidth: 2,
 });
+
+/** Höchstzahl Klartextzeichen der Problembeschreibung im Formatstand 1.0. */
+const PROBLEM_MAX = 10000;
 
 const LINE_STYLES = ['solid', 'dashed', 'dotted'];
 
@@ -46,6 +50,48 @@ function width(v, fallback) {
 }
 
 /**
+ * Problembeschreibung auf höchstens PROBLEM_MAX Klartextzeichen kürzen; eine
+ * dabei offene `**`/`*`-Markierung wird geschlossen, ein einzelner
+ * Rückstrich am Ende entfällt.
+ * @param {string} md @returns {string}
+ */
+function clipProblem(md) {
+  if (plainLength(md) <= PROBLEM_MAX) return md;
+  let lo = 0;
+  let hi = md.length;
+  while (lo < hi) {
+    const mid = Math.ceil((lo + hi) / 2);
+    if (plainLength(md.slice(0, mid)) <= PROBLEM_MAX) lo = mid; else hi = mid - 1;
+  }
+  for (let k = Math.min(md.length, lo + 3); k >= 0; k--) {
+    let p = md.slice(0, k);
+    if (/(^|[^\\])(\\\\)*\\$/.test(p)) p = p.slice(0, -1);
+    const here = plainLength(p);
+    for (const mark of ['**', '*']) {
+      const closed = p + mark;
+      const len = plainLength(closed);
+      if (len <= PROBLEM_MAX && len < here) return closed;
+    }
+    if (here <= PROBLEM_MAX) return p;
+  }
+  return '';
+}
+
+/**
+ * Zieldatum: `YYYY-MM-DD` bleibt, `DD.MM.YYYY` wird umgeschrieben, alles
+ * andere (auch ein nicht existierendes Datum) wird leer.
+ * @param {unknown} v @returns {string}
+ */
+function targetDate(v) {
+  const s = typeof v === 'string' ? v.trim() : '';
+  if (isIsoDate(s)) return s;
+  const m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(s);
+  if (!m) return '';
+  const iso = `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+  return isIsoDate(iso) ? iso : '';
+}
+
+/**
  * Ziele: nur Objekte, fremde Schlüssel entfallen; `text` der Altform wird
  * `description`; fehlende id → neue; Erreichung auf 0..100.
  * @param {unknown} list @returns {object[]}
@@ -57,7 +103,7 @@ function goals(list) {
     return {
       id: idOrNew(g.id),
       description: str(g.description ?? g.text),
-      targetDate: str(g.targetDate),
+      targetDate: targetDate(g.targetDate),
       metric: str(g.metric),
       targetValue: str(g.targetValue),
       achievementLevel: Number.isFinite(lvl) ? Math.max(0, Math.min(100, Math.round(lvl))) : 0,
@@ -133,7 +179,7 @@ function orgStyle(s) {
 export function from0(old) {
   const o = isObj(old) ? old : {};
   return {
-    problemStatement: normalizeProblemStatement(o.problemStatement),
+    problemStatement: clipProblem(normalizeProblemStatement(o.problemStatement)),
     goals: goals(o.goals),
     orgChart: orgChart(o.orgChart),
     orgStyle: orgStyle(o.orgStyle),

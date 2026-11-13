@@ -5,6 +5,7 @@
  */
 import { suite, test, assert, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { from0 } from '../../../js/modules/project-charter/domain/migrations.js';
+import { plainLength } from '../../../js/core/rich-text.js';
 import { State } from '../../../js/modules/project-charter/domain/model.js';
 import { resolveDateOffset } from '../../../js/core/date-offset.js';
 
@@ -59,7 +60,9 @@ suite('project-charter Migration — goldene Fixtures', () => {
     test(`${file}: alle Charter-Zustände laden ohne Wurf`, async () => {
       const states = charterStates(await fetchJSON(FIXTURES, file));
       for (const s of states) {
-        const m = State.fromJSON(s);
+        const reports = [];
+        const m = State.fromJSON(s, { onRepair: (n) => reports.push(n) });
+        assertDeepEqual(reports, []);
         assertEqual(m.goals.length, s.goals.length);
         assertEqual(m.orgChart.length, s.orgChart.length);
         for (const g of m.goals) assertEqual(typeof g.id, 'string');
@@ -162,5 +165,37 @@ suite('project-charter Migration — Altformen', () => {
     assertEqual(out.goals.length, 1);
     assert(!('foo' in out.goals[0]));
     assertEqual(out.goals[0].metric, '');
+  });
+
+  test('Problembeschreibung über 10 000 Zeichen wird gekürzt und lädt streng', () => {
+    const long = 'a'.repeat(10500);
+    const out = from0({ problemStatement: long });
+    assertEqual(plainLength(out.problemStatement), 10000);
+    assertEqual(out.problemStatement, long.slice(0, 10000));
+    State.fromJSON(out);
+    State.fromJSON({ problemStatement: long });
+  });
+
+  test('Kürzen mitten in Fettdruck schließt die Markierung, Rückstrich am Ende entfällt', () => {
+    const bold = `**${'b'.repeat(10500)}**`;
+    const out = from0({ problemStatement: bold });
+    assertEqual(plainLength(out.problemStatement), 10000);
+    assert(out.problemStatement.endsWith('**') && out.problemStatement.startsWith('**'));
+    State.fromJSON({ problemStatement: bold });
+    const esc = `${'a'.repeat(9999)}\\*${'c'.repeat(600)}`;
+    const o2 = from0({ problemStatement: esc });
+    assert(plainLength(o2.problemStatement) <= 10000);
+    State.fromJSON({ problemStatement: esc });
+  });
+
+  test('Zieldatum: DD.MM.YYYY → ISO, Unlesbares → leer', () => {
+    const out = from0({ goals: [
+      { id: 'a', targetDate: '31.12.2026' }, { id: 'b', targetDate: '1.2.2027' },
+      { id: 'c', targetDate: '31.02.2026' }, { id: 'd', targetDate: 'bald' }, { id: 'e', targetDate: '2026-05-06' },
+    ] });
+    assertDeepEqual(out.goals.map((g) => g.targetDate), ['2026-12-31', '2027-02-01', '', '', '2026-05-06']);
+    const reports = [];
+    State.fromJSON(out, { onRepair: (n) => reports.push(n) });
+    assertDeepEqual(reports, []);
   });
 });
