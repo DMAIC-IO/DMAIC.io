@@ -84,12 +84,21 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
   }
 
   /**
+   * Verlaufsgruppen, die die Laufzeit geöffnet hat: Id → ob `historyBegin`
+   * schon an der Instanz ankam. Eine noch nicht eingehängte Instanz bekommt
+   * es, sobald sie eingehängt ist — vor der Op, die sie einhängen ließ.
+   * @type {Map<string, boolean>}
+   */
+  const historyGroups = new Map();
+
+  /**
    * Ruft einen Verlaufshaken der eingehängten Instanz auf, falls sie einen hat.
    * @param {string} instanceId
    * @param {'historyBegin'|'historyEnd'} hook
+   * @returns {boolean} ob die Instanz eingehängt war
    */
   function callHistoryHook(instanceId, hook) {
-    if (workspace.getLiveViewmodel(instanceId) === null) return;
+    if (workspace.getLiveViewmodel(instanceId) === null) return false;
     try {
       const instance = workspace.getInstance(instanceId);
       if (typeof instance?.[hook] === 'function') instance[hook]();
@@ -97,6 +106,17 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
       // Ohne Gruppe bleibt jeder Schritt einzeln rückgängig; der Lauf geht weiter.
       console.warn(`[agent-host] ${hook} failed`, err);
     }
+    return true;
+  }
+
+  /**
+   * Holt ein aufgeschobenes `historyBegin` nach, wenn die Instanz jetzt
+   * eingehängt ist.
+   * @param {string} instanceId
+   */
+  function applyPendingBegin(instanceId) {
+    if (historyGroups.get(instanceId) !== false) return;
+    if (callHistoryHook(instanceId, 'historyBegin')) historyGroups.set(instanceId, true);
   }
 
   return {
@@ -191,6 +211,7 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
       // direkt nach `module.add` reproduzierbar `unknown_instance`
       // („Ansicht nicht geöffnet"), obwohl die Ansicht längst im DOM stand.
       const instance = await workspace.whenInstanceReady(instanceId);
+      applyPendingBegin(instanceId);
       return instance?.getActionData?.() ?? null;
     },
 
@@ -212,6 +233,7 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
       // Revisionsänderung, und der erste Schreibzugriff des Agenten nach
       // `module.add` scheiterte mit `stale_revision`.
       persistLive(instanceId, await workspace.whenInstanceReady(instanceId));
+      applyPendingBegin(instanceId);
       return found;
     },
 
@@ -256,21 +278,27 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
     },
 
     /**
-     * Öffnet in einer eingehängten Instanz eine Verlaufsgruppe: alles, was
-     * bis `historyEnd` geschieht, nimmt ein Rückgängig zurück. Eine nicht
-     * eingehängte Instanz hat keinen Verlauf; für sie ist nichts zu tun.
+     * Öffnet eine Verlaufsgruppe: alles, was bis `historyEnd` geschieht,
+     * nimmt ein Rückgängig zurück. Ist die Instanz nicht eingehängt, kommt
+     * der Haken an, sobald `getViewmodel` oder `addInstance` sie eingehängt
+     * hat. Ein zweiter Aufruf für dieselbe Id öffnet nichts Zweites.
      * @param {string} instanceId
      */
     historyBegin(instanceId) {
-      callHistoryHook(instanceId, 'historyBegin');
+      if (historyGroups.has(instanceId)) return;
+      historyGroups.set(instanceId, false);
+      applyPendingBegin(instanceId);
     },
 
     /**
-     * Schließt die Verlaufsgruppe der eingehängten Instanz.
+     * Schließt die Verlaufsgruppe — nur, wenn ihr `historyBegin` an der
+     * Instanz ankam.
      * @param {string} instanceId
      */
     historyEnd(instanceId) {
-      callHistoryHook(instanceId, 'historyEnd');
+      const applied = historyGroups.get(instanceId) === true;
+      historyGroups.delete(instanceId);
+      if (applied) callHistoryHook(instanceId, 'historyEnd');
     },
 
     /**

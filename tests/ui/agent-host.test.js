@@ -492,3 +492,59 @@ suite('agent host — Verlaufsgruppen', () => {
     assertEqual(warned.length, 2);
   });
 });
+
+suite('agent host — Verlaufsgruppe einer erst eingehängten Instanz', () => {
+  function hookedLive(got) {
+    return {
+      getActionData: () => ({ model: {}, write: () => got.push('write') }),
+      historyBegin: () => got.push('begin'),
+      historyEnd: () => got.push('end'),
+    };
+  }
+
+  test('begin while not mounted is applied when getViewmodel mounts, before the op writes', async () => {
+    const got = [];
+    let made;
+    made = makeHost({ ready: (id) => { const inst = hookedLive(got); made.mounted.set(id, inst); return inst; } });
+    const { host } = made;
+    host.historyBegin('fw-1');
+    assertDeepEqual(got, [], 'nicht eingehängt: noch nichts');
+    const vm = await host.getViewmodel('fw-1');
+    assertDeepEqual(got, ['begin']);
+    vm.write();
+    host.historyEnd('fw-1');
+    host.historyEnd('fw-1');
+    assertDeepEqual(got, ['begin', 'write', 'end'], 'end genau einmal');
+  });
+
+  test('a later begin for the same id does not open a second group', async () => {
+    const got = [];
+    const { host, mounted } = makeHost();
+    mounted.set('fw-1', hookedLive(got));
+    host.historyBegin('fw-1');
+    host.historyBegin('fw-1');
+    await host.getViewmodel('fw-1');
+    host.historyEnd('fw-1');
+    assertDeepEqual(got, ['begin', 'end']);
+  });
+
+  test('never mounted: end calls nothing', async () => {
+    const got = [];
+    const { host, mounted } = makeHost();
+    host.historyBegin('fw-1');
+    mounted.set('fw-1', hookedLive(got));
+    host.historyEnd('fw-1');
+    assertDeepEqual(got, [], 'kein end ohne begin');
+  });
+
+  test('addInstance applies a pending begin once the new instance is mounted', async () => {
+    const got = [];
+    let made;
+    made = makeHost({ ready: (id) => { const inst = hookedLive(got); made.mounted.set(id, inst); return inst; } });
+    const { host } = made;
+    const added = await host.addInstance('worksheet');
+    host.historyBegin(added.instanceId);
+    host.historyEnd(added.instanceId);
+    assertDeepEqual(got, ['begin', 'end']);
+  });
+});
