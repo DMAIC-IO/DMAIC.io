@@ -41,8 +41,10 @@ export function goalRowGesture({ handle }) {
       return { ...p, id: from.id, beforeId: rest[p.index] ?? null };
     },
 
-    /** Die Zielmarke der Gruppe setzt der Gestenkern; kein eigener Zustand. */
-    preview() {},
+    /** @param {{ id: string, index: number }|null} pos Vorschau für die Zeilenmarke, `null` räumt auf */
+    preview(pos) {
+      this.state.goalDragPreview = pos ? { id: pos.id, index: pos.index } : null;
+    },
 
     toCommand(from, to) {
       return ['moveGoal', { id: from.id, beforeId: to.beforeId }];

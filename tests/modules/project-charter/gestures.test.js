@@ -272,6 +272,17 @@ suite('project-charter gestures — Ziele', () => {
     assertDeepEqual(calls, [['moveGoal', { id: 'g3', beforeId: 'g2' }]]);
   });
 
+  test('Vorschau setzt goalDragPreview { id, index } und räumt nach dem Ablegen auf', () => {
+    const { host, grip } = goals(['g1', 'g2', 'g3']);
+    host.state.goalDragPreview = null;
+    pointer(grip('g3'), 'pointerdown', 10, 50);
+    pointer(grip('g3'), 'pointermove', 10, 30);
+    pointer(grip('g3'), 'pointermove', 10, 5);
+    assertDeepEqual(host.state.goalDragPreview, { id: 'g3', index: 0 });
+    pointer(grip('g3'), 'pointerup', 10, 5);
+    assertEqual(host.state.goalDragPreview, null);
+  });
+
   test('Zeiger: Zeile nach oben ziehen', () => {
     const { calls, grip } = goals(['g1', 'g2', 'g3']);
     drag(grip('g3'), 10, 50, 10, 5);

@@ -141,7 +141,11 @@ export function orgNodeGesture({ handle, nodeW = MODULE_LAYOUT.nodeW, vGap = MOD
       return { ...pos, index };
     },
 
-    /** @param {{ id: string, parentId: string|null, index: number, x?: number, y?: number }|null} pos Vorschau, `null` räumt auf */
+    /**
+     * `x`/`y` sind Client-Koordinaten des Zeigers und bei Tastaturschritten 0 —
+     * die Ansicht darf dafür kein Geisterbild bei 0,0 zeichnen.
+     * @param {{ id: string, parentId: string|null, index: number, x?: number, y?: number }|null} pos Vorschau, `null` räumt auf
+     */
     preview(pos) {
       this.state.dragPreview = pos ? { id: pos.id, parentId: pos.parentId, index: pos.index, x: pos.x ?? 0, y: pos.y ?? 0 } : null;
     },
