@@ -341,19 +341,37 @@ export function createAgentRuntime(deps) {
    * Hält vor einer schreibenden Aktion fest, was sie ändern kann: den
    * Zustand der Zielinstanz oder die Projektstruktur. Vor `module.remove`
    * auch Modul, Phase und Zustand der Instanz, die gleich verschwindet.
+   * Eine eingehängte Instanz legt vorher ab, was ihr lebendes Model schon
+   * hat (`host.settle`): eine Eingabe des Nutzers, die noch im Entpreller
+   * steckt, gehört zum Stand von vor dem Stapel, und eine Instanz ohne
+   * gespeicherten Stand bekommt einen, auf den die Rücknahme zurück kann.
    * @param {object} journal  das Journal des Laufs
    * @param {string} op
    * @param {object} params  die Aktion mit aufgelösten Referenzen
+   * @returns {Promise<void>}
    */
-  function journalBefore(journal, op, params) {
+  async function journalBefore(journal, op, params) {
+    const settleLive = async (id) => {
+      if (!host.isMounted(id)) return;
+      try {
+        await host.settle(id);
+      } catch (err) {
+        // Dann gilt der gespeicherte Stand; die Aktion selbst läuft weiter.
+        console.warn('[agent] settle before journaling failed', err);
+      }
+    };
     if (op === 'instance.call' || op === 'instance.set') {
-      if (typeof params.instance === 'string') journal.touchInstance(params.instance);
+      const id = params.instance;
+      if (typeof id !== 'string' || journal.touches(id)) return;
+      await settleLive(id);
+      journal.touchInstance(id);
       return;
     }
     journal.touchStructure();
     if (op !== 'module.remove') return;
     const found = buildInstanceList({ stateManager, i18n }).find((i) => i.id === params.instance);
     if (!found) return;
+    await settleLive(found.id);
     journal.noteRemoved({
       instanceId: found.id, module: found.module, phase: found.phase,
       state: stateManager.getModuleState(found.id),
@@ -506,7 +524,7 @@ export function createAgentRuntime(deps) {
         } else {
           if (isWritingAction(action)) {
             run.wrote = true;
-            if (run.journal) journalBefore(run.journal, action.op, resolved.value);
+            if (run.journal) await journalBefore(run.journal, action.op, resolved.value);
           }
           // Solange die Op läuft, darf ein Modul, das an dieser Instanz
           // arbeitet, wiedereintreten (siehe `interactAsModule`).

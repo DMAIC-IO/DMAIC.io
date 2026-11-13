@@ -725,7 +725,8 @@ suite('agent runtime — Lesen vor Schreiben (stale_revision)', () => {
       { id: 'a', op: 'module.add', module: 'worksheet' },
       { op: 'module.remove', instance: 'ws-2' },
     ]);
-    assertDeepEqual(settles, ['ws-1', 'worksheet-new', null]);
+    // `ws-2` vor dem Entfernen: der Stand für die Rücknahme.
+    assertDeepEqual(settles, ['ws-1', 'worksheet-new', 'ws-2', null]);
   });
 
   test('ein werfendes settle behält die Ergebnisse, speichert trotzdem und lässt die Instanz unvermerkt', async () => {
@@ -1483,7 +1484,8 @@ suite('agent runtime — Vermerk ohne Mount', () => {
     await runtime.interact([{ op: 'instance.call', instance: 'ws-1', method: 'read' }]);
     const out = await runtime.interact([{ op: 'instance.set', instance: 'ws-1', values: { x: 1 } }]);
     assertEqual(out.ok, true, JSON.stringify(out));
-    assertDeepEqual(settles, ['ws-1', 'ws-1']);
+    // read; vor dem ersten Schreiben (Journal); nach dem Schreiben (Vermerk).
+    assertDeepEqual(settles, ['ws-1', 'ws-1', 'ws-1']);
   });
 });
 
@@ -1966,6 +1968,65 @@ suite('agent runtime — ganz oder gar nicht', () => {
     assertEqual(out.results[0].cause?.error, ERRORS.CALL_FAILED, JSON.stringify(out.results[0]));
     assertEqual(out.rolledBack, true);
     assertDeepEqual(moduleStates.get('ws1'), { rows: 1 });
+  });
+
+  test('a mounted instance settles before its state is journaled', async () => {
+    // Das lebende Model ist dem gespeicherten Stand voraus (eine Eingabe im
+    // Entpreller): sie gehört zum Stand von vor dem Stapel und übersteht die
+    // Rücknahme.
+    const pendingLive = { ws1: { rows: 7 } };
+    let made;
+    made = setup({
+      runtime: {
+        onSettle: (id) => {
+          if (id && Object.hasOwn(pendingLive, id)) {
+            made.moduleStates.set(id, pendingLive[id]);
+            delete pendingLive[id];
+          }
+        },
+      },
+    });
+    const out = await made.runtime.interact([write('ws1'), write('ws2')]);
+    assertEqual(out.rolledBack, true, JSON.stringify(out));
+    assertDeepEqual(made.moduleStates.get('ws1'), { rows: 7 });
+  });
+
+  test('a mounted instance without stored state gets one before the snapshot', async () => {
+    // Ohne Ablage vor dem Festhalten wäre der Schnappschuss null, die
+    // Rücknahme entfernte nur den gespeicherten Stand, und das lebende
+    // Model schriebe den verworfenen zurück.
+    let made;
+    made = setup({
+      runtime: {
+        onSettle: (id) => {
+          if (id === 'rg1' && !made.moduleStates.has('rg1')) made.moduleStates.set('rg1', { rows: 0 });
+        },
+      },
+    });
+    const out = await made.runtime.interact([write('rg1'), write('ws2')]);
+    assertEqual(out.rolledBack, true, JSON.stringify(out));
+    assertDeepEqual(made.moduleStates.get('rg1'), { rows: 0 });
+    assertDeepEqual(made.live.find(([id]) => id === 'rg1'), ['rg1', { rows: 0 }]);
+  });
+
+  test('a removed mounted instance comes back with its live state', async () => {
+    const pendingLive = { ws1: { rows: 4 } };
+    let made;
+    made = setup({
+      runtime: {
+        onSettle: (id) => {
+          if (id && Object.hasOwn(pendingLive, id)) {
+            made.moduleStates.set(id, pendingLive[id]);
+            delete pendingLive[id];
+          }
+        },
+      },
+    });
+    const out = await made.runtime.interact([{ op: 'module.remove', instance: 'ws1' }, write('ws2')]);
+    assertEqual(out.rolledBack, true, JSON.stringify(out));
+    // Der Eintrag kommt mit dem abgelegten lebenden Stand zurück.
+    assertDeepEqual(made.moduleStates.get('ws1'), { rows: 4 });
+    assertTrue(made.log.includes('restore:ws1'), JSON.stringify(made.log));
   });
 
   test('asyncTask action is rolled back like any write', async () => {

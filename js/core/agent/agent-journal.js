@@ -34,6 +34,7 @@
  *   applyLiveState: (id: string, state: object|null) => void,
  *   isMounted: (id: string) => boolean, settle: (id: string) => Promise<void> }} deps.host
  * @returns {{
+ *   touches: (instanceId: string) => boolean,
  *   touchInstance: (instanceId: string) => void,
  *   touchStructure: () => void,
  *   noteAdded: (instanceId: string) => void,
@@ -62,6 +63,11 @@ export function createJournal({ stateManager, host }) {
   }
 
   return {
+    /** Ob der Zustand der Instanz schon festgehalten ist. */
+    touches(instanceId) {
+      return touched.has(instanceId);
+    },
+
     touchInstance(instanceId) {
       if (touched.has(instanceId)) return;
       touched.set(instanceId, structuredClone(stateManager.getModuleState(instanceId) ?? null));
