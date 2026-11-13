@@ -75,10 +75,24 @@ function makeRuntime({ denied = false, viewmodel = null, completed = false, slow
   // zugriffe drehen die Revision in der Viewmodel-Methode selbst.
   const revs = new Map();
   let structureRev = 1;
+  // Modulzustände wie im Cache des echten stateManager — das Journal hält
+  // sie vor dem ersten Schreiben fest und spielt sie bei der Rücknahme zurück.
+  const moduleStates = new Map();
+  const live = [];
   const stateManager = {
     getActiveProjectId: () => 'p-1',
     get: (path) => (path === 'phases' ? phases : path.startsWith('phases.') ? phases[path.slice(7)] : undefined),
-    set: (path, value) => { phases[path.slice(7)] = value; },
+    set: (path, value) => {
+      if (path === 'phases') {
+        for (const key of Object.keys(phases)) delete phases[key];
+        Object.assign(phases, value);
+      } else {
+        phases[path.slice(7)] = value;
+      }
+    },
+    getModuleState: (id) => moduleStates.get(id) ?? null,
+    setModuleState: (id, value) => { moduleStates.set(id, structuredClone(value)); },
+    removeModuleState: (id) => { moduleStates.delete(id); },
     getModuleRevision: (id) => revs.get(id),
     getStructureRevision: () => structureRev,
     saveNow: () => {},
@@ -131,7 +145,15 @@ function makeRuntime({ denied = false, viewmodel = null, completed = false, slow
         structureRev += 1;
         return { instanceId, module: moduleId, phase: target };
       },
+      // Entfernt nicht aus `phases` (siehe „nach module.remove ist die Instanz vergessen").
       removeInstance: async (id) => { log.push(`remove:${id}`); structureRev += 1; return true; },
+      restoreInstance: async (entry) => {
+        log.push(`restore:${entry.instanceId}`);
+        phases[entry.phase] = [...(phases[entry.phase] ?? []),
+          entry.record ?? { instanceId: entry.instanceId, moduleId: entry.module, order: 0 }];
+        if (entry.state != null) moduleStates.set(entry.instanceId, structuredClone(entry.state));
+      },
+      applyLiveState: (id, value) => { live.push([id, value]); },
       // Eigenes Protokoll: `log` bleibt das der Seiteneffekte.
       settle: async (id) => { settles.push(id ?? null); onSettle(id); },
       isMounted: (id) => isMounted(id),
@@ -139,7 +161,7 @@ function makeRuntime({ denied = false, viewmodel = null, completed = false, slow
       notifyBackgroundChange: (ids) => { if (notifyThrows) throw new Error('toast'); notified.push(ids); },
     },
   });
-  return { runtime, log, settles, notified, phases, revs, bumpStructure: () => { structureRev += 1; } };
+  return { runtime, log, settles, notified, phases, revs, moduleStates, live, bumpStructure: () => { structureRev += 1; } };
 }
 
 suite('agent runtime — consent gate', () => {
@@ -1559,13 +1581,16 @@ suite('agent runtime — Toast für Änderungen im Hintergrund', () => {
     assertDeepEqual(notified, []);
   });
 
-  test('scheitert die zweite Aktion nach wirksamer erster, zählt die erste', async () => {
+  test('no toast after rollback', async () => {
+    // Scheitert die zweite Aktion, ist die wirksame erste zurückgenommen:
+    // es gibt keine Änderung, die zu melden wäre.
     const { runtime, notified } = make({
       viewmodel: (id) => ({ read: () => ({}), importCsv: () => { if (id === 'ws-2') throw new Error('kaputt'); return true; } }),
     });
     const out = await runtime.interact([write('ws-1'), write('ws-2')]);
     assertEqual(out.ok, false);
-    assertDeepEqual(notified, [['ws-1']]);
+    assertEqual(out.rolledBack, true);
+    assertDeepEqual(notified, []);
   });
 
   test('eine Instanz zweimal geändert steht einmal in der Liste', async () => {
@@ -1811,5 +1836,157 @@ suite('agent runtime — interactAsModule (Modulweg)', () => {
     const { runtime, notified } = setup();
     await runtime.interactAsModule([write('ws1')], CALLER);
     assertDeepEqual(notified, [['ws1']]);
+  });
+});
+
+suite('agent runtime — ganz oder gar nicht', () => {
+  const WS1 = { instanceId: 'ws1', moduleId: 'worksheet', order: 0 };
+  const WS2 = { instanceId: 'ws2', moduleId: 'worksheet', order: 1 };
+  const RG1 = { instanceId: 'rg1', moduleId: 'worksheet', order: 2 };
+  const CALLER = { instanceId: 'rg1', moduleId: 'random-generator' };
+  const write = (instance, extra = {}) => ({ op: 'instance.call', instance, method: 'importCsv', args: ['a;b'], ...extra });
+  const registry = {
+    worksheet: { ...REGISTRY.worksheet,
+      actions: { ...REGISTRY.worksheet.actions,
+        toWorksheet: { params: [], returns: 'boolean', help: '' },
+        compute: { target: 'asyncTask', task: 'compute', op: 'start',
+                   params: [{ name: 'command', type: 'object', optional: false, help: '' }], returns: 'any', help: '' } } },
+  };
+
+  /**
+   * Arbeitsblätter, deren `importCsv` den gespeicherten Zustand schreibt;
+   * an `ws2` wirft es. `extra(id, get)` ergänzt das Viewmodel.
+   */
+  function setup({ extra = () => ({}), runtime: opts = {} } = {}) {
+    let made;
+    const viewmodel = (id) => ({
+      read: () => ({}),
+      importCsv: () => {
+        if (id === 'ws2') throw new Error('kaputt');
+        made.moduleStates.set(id, { rows: (made.moduleStates.get(id)?.rows ?? 0) + 1 });
+        return true;
+      },
+      ...extra(id, () => made),
+    });
+    made = makeRuntime({ viewmodel, registry, instances: [WS1, WS2, RG1], ...opts });
+    made.moduleStates.set('ws1', { rows: 1 });
+    return made;
+  }
+
+  test('runtime failure rolls back earlier writes', async () => {
+    const { runtime, moduleStates, live } = setup();
+    const out = await runtime.interact([write('ws1'), write('ws2')]);
+    assertEqual(out.ok, false, JSON.stringify(out));
+    assertEqual(out.rolledBack, true);
+    assertEqual(out.contract, CONTRACT_VERSION);
+    assertEqual(out.results.length, 2);
+    assertEqual(out.results[1].error, ERRORS.CALL_FAILED);
+    assertDeepEqual(moduleStates.get('ws1'), { rows: 1 });
+    // Eine eingehängte Instanz bekommt den alten Stand auch ins lebende Model.
+    assertDeepEqual(live, [['ws1', { rows: 1 }]]);
+  });
+
+  test('a module stack is rolled back the same way', async () => {
+    const { runtime, moduleStates } = setup();
+    const out = await runtime.interactAsModule([
+      write('ws1', { module: 'worksheet' }), write('ws2', { module: 'worksheet' }),
+    ], CALLER);
+    assertEqual(out.ok, false, JSON.stringify(out));
+    assertEqual(out.rolledBack, true);
+    assertDeepEqual(moduleStates.get('ws1'), { rows: 1 });
+  });
+
+  test('a successful stack keeps its writes and has no rolledBack', async () => {
+    const { runtime, moduleStates, live } = setup();
+    const out = await runtime.interact([write('ws1')]);
+    assertEqual(out.ok, true, JSON.stringify(out));
+    assertEqual(out.rolledBack, undefined);
+    assertDeepEqual(moduleStates.get('ws1'), { rows: 2 });
+    assertDeepEqual(live, []);
+  });
+
+  test('rollback removes the instance added by module.add', async () => {
+    const { runtime, log, phases } = setup();
+    const before = structuredClone(phases);
+    const out = await runtime.interact([{ op: 'module.add', module: 'worksheet' }, write('ws2')]);
+    assertEqual(out.rolledBack, true, JSON.stringify(out));
+    assertTrue(log.includes('remove:worksheet-new'), JSON.stringify(log));
+    assertDeepEqual(phases, before);
+  });
+
+  test('rollback brings back the instance removed by module.remove', async () => {
+    const { runtime, log, phases } = setup();
+    const before = structuredClone(phases);
+    const out = await runtime.interact([{ op: 'module.remove', instance: 'ws1' }, write('ws2')]);
+    assertEqual(out.rolledBack, true, JSON.stringify(out));
+    assertTrue(log.indexOf('restore:ws1') > log.indexOf('remove:ws1'), JSON.stringify(log));
+    assertDeepEqual(phases, before);
+  });
+
+  test('a rolled-back stack is still flushed', async () => {
+    let flushes = 0;
+    const { runtime } = setup({ runtime: { stateManager: { flushNow: async () => { flushes += 1; } } } });
+    await runtime.interact([write('ws1'), write('ws2')]);
+    assertEqual(flushes, 1);
+  });
+
+  test('nested stack is rolled back with outer', async () => {
+    const { runtime, moduleStates } = setup({
+      extra: (id, get) => ({
+        toWorksheet: async () => (await get().runtime.interactAsModule(
+          [write('ws1', { module: 'worksheet' })], CALLER)).ok,
+      }),
+    });
+    const out = await runtime.interact([
+      { op: 'instance.call', instance: 'rg1', method: 'toWorksheet' },
+      write('ws2'),
+    ]);
+    assertEqual(out.ok, false, JSON.stringify(out));
+    assertEqual(out.results[0].ok, true, 'die äußere Aktion mit innerem Stapel gelang');
+    assertEqual(out.rolledBack, true);
+    assertDeepEqual(moduleStates.get('ws1'), { rows: 1 });
+  });
+
+  test('a failing nested stack fails the outer action', async () => {
+    let inner = null;
+    const { runtime, moduleStates } = setup({
+      extra: (id, get) => ({
+        // Der Aufrufer übergeht das Scheitern: die äußere Aktion scheitert trotzdem.
+        toWorksheet: async () => {
+          inner = await get().runtime.interactAsModule(
+            [write('ws1', { module: 'worksheet' }), write('ws2', { module: 'worksheet' })], CALLER);
+          return true;
+        },
+      }),
+    });
+    const out = await runtime.interact([{ op: 'instance.call', instance: 'rg1', method: 'toWorksheet' }]);
+    assertEqual(inner?.ok, false, JSON.stringify(inner));
+    assertEqual(out.ok, false, JSON.stringify(out));
+    assertEqual(out.results[0].error, ERRORS.OP_FAILED);
+    assertEqual(out.results[0].cause?.error, ERRORS.CALL_FAILED, JSON.stringify(out.results[0]));
+    assertEqual(out.rolledBack, true);
+    assertDeepEqual(moduleStates.get('ws1'), { rows: 1 });
+  });
+
+  test('asyncTask action is rolled back like any write', async () => {
+    const { runtime, moduleStates } = setup({
+      extra: (id, get) => ({
+        _asyncTaskHost: {
+          start: async () => {
+            await tick();
+            get().moduleStates.set(id, { rows: 99 });
+            return { status: 'done', value: 1 };
+          },
+          cancel: () => false,
+        },
+      }),
+    });
+    const out = await runtime.interact([
+      { op: 'instance.call', instance: 'ws1', method: 'compute', args: [{}] },
+      write('ws2'),
+    ]);
+    assertEqual(out.results[0].ok, true, JSON.stringify(out));
+    assertEqual(out.rolledBack, true);
+    assertDeepEqual(moduleStates.get('ws1'), { rows: 1 });
   });
 });

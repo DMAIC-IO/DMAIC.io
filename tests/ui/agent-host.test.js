@@ -49,6 +49,7 @@ function makeHost({ notify = () => {}, i18n = null, phases, activeInstance = nul
     // Einhängen ab (ui/workspace.js:whenInstanceReady).
     whenInstanceReady: async (id) => mounted.get(id) ?? ready?.(id) ?? null,
     removeInstance: async (id) => { calls.push(['removeInstance', id]); return !completed; },
+    restoreInstance: (entry) => { calls.push(['restoreInstance', entry]); return !completed; },
   };
   const router = {
     navigate: async (r) => { calls.push(['navigate', r]); },
@@ -382,5 +383,61 @@ suite('agent host — Toast für Änderungen im Hintergrund', () => {
     const { host, toasts } = withToast();
     host.notifyBackgroundChange(['weg', 'fw-1']);
     assertEqual(toasts[0].msg, 'agent.backgroundChange.oneUnnamed|{"module":"modules.five-why.name|{}"}');
+  });
+});
+
+suite('agent host — Rücknahme', () => {
+  /** Eine eingehängte Instanz, die mitschreibt, was sie bekommt. */
+  function liveInstance(got, { alive = true } = {}) {
+    return {
+      getActionData: () => (alive ? { model: {} } : null),
+      applyRemoteState: (state) => got.push(state),
+    };
+  }
+
+  test('restoreInstance delegiert an den Workspace', async () => {
+    const { host, calls } = makeHost();
+    const entry = { instanceId: 'fw-9', module: 'five-why', phase: 'define', state: { a: 1 } };
+    await host.restoreInstance(entry);
+    assertDeepEqual(calls, [['restoreInstance', entry]]);
+  });
+
+  test('applyLiveState schreibt den Stand in eine eingehängte Instanz', () => {
+    const got = [];
+    const { host, mounted } = makeHost();
+    mounted.set('ws1', liveInstance(got));
+    host.applyLiveState('ws1', { rows: 1 });
+    assertDeepEqual(got, [{ rows: 1 }]);
+  });
+
+  test('applyLiveState lässt eine nicht eingehängte Instanz in Ruhe', () => {
+    const got = [];
+    const { host, mounted } = makeHost();
+    mounted.set('ws1', liveInstance(got, { alive: false }));
+    host.applyLiveState('ws1', { rows: 1 });
+    host.applyLiveState('nope', { rows: 1 });
+    assertDeepEqual(got, []);
+  });
+
+  test('applyLiveState ohne Stand tut nichts', () => {
+    const got = [];
+    const { host, mounted } = makeHost();
+    mounted.set('ws1', liveInstance(got));
+    host.applyLiveState('ws1', null);
+    assertDeepEqual(got, []);
+  });
+
+  test('ein werfendes applyRemoteState hält die Rücknahme nicht auf', () => {
+    const { host, mounted } = makeHost();
+    mounted.set('ws1', { getActionData: () => ({ model: {} }), applyRemoteState: () => { throw new Error('boom'); } });
+    const warn = console.warn;
+    const warned = [];
+    console.warn = (...args) => warned.push(args);
+    try {
+      host.applyLiveState('ws1', { rows: 1 });
+    } finally {
+      console.warn = warn;
+    }
+    assertEqual(warned.length, 1);
   });
 });

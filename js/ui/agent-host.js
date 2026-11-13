@@ -42,6 +42,9 @@ const SETTLE_TASKS_TIMEOUT_MS = 20000;
  *   notifyBackgroundChange: (instanceIds: string[]) => void,
  *   addInstance: (moduleId: string, phase?: string) => Promise<{ instanceId: string, module: string, phase: string }|null>,
  *   removeInstance: (instanceId: string) => Promise<boolean>,
+ *   restoreInstance: (entry: { instanceId: string, module: string, phase: string, state: object|null,
+ *     record?: object, index?: number }) => Promise<void>,
+ *   applyLiveState: (instanceId: string, state: object|null) => void,
  *   settle: (instanceId?: string) => Promise<void>,
  * }}
  */
@@ -197,6 +200,41 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
     removeInstance(instanceId) {
       if (this.isCompleted()) return Promise.resolve(false);
       return workspace.removeInstance(instanceId);
+    },
+
+    /**
+     * Bringt eine im Stapel entfernte Instanz zurück: dieselbe Id, derselbe
+     * Eintrag an derselben Stelle (wenn bekannt), der Zustand von vor dem
+     * Entfernen. Die Ansicht springt nicht hin.
+     * @param {{ instanceId: string, module: string, phase: string, state: object|null,
+     *   record?: object, index?: number }} entry
+     * @returns {Promise<void>}
+     */
+    async restoreInstance(entry) {
+      await workspace.restoreInstance(entry);
+    },
+
+    /**
+     * Schreibt einen zurückgenommenen Stand in eine eingehängte Instanz,
+     * damit sie ihn zeigt und ihr persist-Weg nicht den verworfenen
+     * zurückschreibt. Der Weg ist `applyRemoteState` der Instanz — derselbe
+     * wie bei einer Fernänderung: bei einem Modul in Zielform setzt er die
+     * Felder des lebenden Models, ein Modul alter Form wie das Arbeitsblatt
+     * bringt damit auch sein Grid auf den Stand. Eine nicht eingehängte
+     * Instanz lädt beim Einhängen den gespeicherten Stand; für sie ist
+     * nichts zu tun.
+     * @param {string} instanceId
+     * @param {object|null} state
+     */
+    applyLiveState(instanceId, state) {
+      if (state === null || state === undefined) return;
+      if (workspace.getLiveViewmodel(instanceId) === null) return;
+      try {
+        workspace.getInstance(instanceId)?.applyRemoteState?.(state);
+      } catch (err) {
+        // Der gespeicherte Stand ist schon zurück; die Rücknahme geht weiter.
+        console.warn('[agent-host] applying the rolled-back state failed', err);
+      }
     },
 
     /**

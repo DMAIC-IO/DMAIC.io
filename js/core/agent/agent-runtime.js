@@ -7,8 +7,10 @@
  *   2. Prüfung des GANZEN Stapels — schlägt sie fehl, passiert
  *      kein Seiteneffekt, und die Rückgabe enthält keine Teilergebnisse.
  *   3. Ausführung, der Reihe nach, mit Referenzauflösung gegen die bereits
- *      erzielten Ergebnisse. Beim ersten Laufzeitfehler Abbruch mit
- *      Teilergebnissen.
+ *      erzielten Ergebnisse. Beim ersten Laufzeitfehler Abbruch: das Journal
+ *      des Laufs (agent-journal.js) nimmt alles zurück, was der Stapel bis
+ *      dahin geschrieben hat; `results` zeigt, wie weit er kam
+ *      (`rolledBack: true`).
  *
  * Aufrufe werden SERIALISIERT (eine Promise-Kette, unten): die Prüfung gilt
  * gegen den Zustand zum Beginn der Ausführung, und zwei nebenläufige
@@ -25,7 +27,8 @@
  * der Oberfläche und dem Agenten. Ruft eine laufende Aktion selbst
  * `interactAsModule` auf (die Instanz, an der sie gerade arbeitet), läuft der
  * innere Stapel im äußeren Lauf statt hinten in der Kette — dort warteten
- * beide aufeinander.
+ * beide aufeinander. Er schreibt in das Journal des äußeren; scheitert er,
+ * scheitert die Aktion, die ihn angestoßen hat.
  *
  * `window` kommt hier nicht vor: Stufe 1 ist ein dünner `window`-Adapter
  * (`startup/agent-surface.js`), Stufe 2 bindet denselben Runtime an einen
@@ -40,6 +43,7 @@ import { flattenBriefing } from './agent-briefing.js';
 import { createOps } from './agent-ops.js';
 import { createEntryResolver, referencedModules } from './agent-entries.js';
 import { createRevisionTracker } from './agent-revisions.js';
+import { createJournal } from './agent-journal.js';
 
 /**
  * Die Aktionsformen, wie der Agent sie liest: je op `params` und `result`,
@@ -310,20 +314,65 @@ export function createAgentRuntime(deps) {
   /**
    * Ein Lauf: was Aktionen eines Stapels — und Stapel, die im Lauf
    * wiedereintreten — gemeinsam fortschreiben.
-   * @returns {{ inOp: { instanceId: string|null, pending: Promise<any>[] }|null, wrote: boolean, changed: string[] }}
+   * @param {{ journal?: boolean }} [options]  `journal: false` für einen reinen
+   *   Task-Abbruch neben der Kette: er schreibt keinen Zustand, und eine
+   *   Rücknahme spielte einen alten Stand über den Lauf, der gerade schreibt
+   * @returns {{ inOp: { instanceId: string|null, pending: Promise<any>[], failed: object|null }|null,
+   *   wrote: boolean, changed: string[], journal: ReturnType<typeof createJournal>|null }}
    */
-  function newRun() {
+  function newRun({ journal = true } = {}) {
     return {
       // Ziel der Aktion, deren Op gerade läuft; sonst null.
       // `pending`: die darin wiedereingetretenen Stapel; die Op endet erst,
       // wenn sie fertig sind — auch wenn die Op selbst sie nicht abwartet.
+      // `failed`: die Antwort des ersten davon, der scheiterte.
       inOp: null,
+      // Was der Lauf geschrieben hat, für die Rücknahme.
+      journal: journal ? createJournal({ stateManager, host }) : null,
       // Ein Stapel, der geschrieben hat, flusht EINMAL am Ende des Laufs.
       wrote: false,
       // Ids der wirksam geänderten Instanzen, in der Reihenfolge der ersten
       // Änderung; auch bei späterem Abbruch gefüllt.
       changed: [],
     };
+  }
+
+  /**
+   * Hält vor einer schreibenden Aktion fest, was sie ändern kann: den
+   * Zustand der Zielinstanz oder die Projektstruktur. Vor `module.remove`
+   * auch Modul, Phase und Zustand der Instanz, die gleich verschwindet.
+   * @param {object} journal  das Journal des Laufs
+   * @param {string} op
+   * @param {object} params  die Aktion mit aufgelösten Referenzen
+   */
+  function journalBefore(journal, op, params) {
+    if (op === 'instance.call' || op === 'instance.set') {
+      if (typeof params.instance === 'string') journal.touchInstance(params.instance);
+      return;
+    }
+    journal.touchStructure();
+    if (op !== 'module.remove') return;
+    const found = buildInstanceList({ stateManager, i18n }).find((i) => i.id === params.instance);
+    if (!found) return;
+    journal.noteRemoved({
+      instanceId: found.id, module: found.module, phase: found.phase,
+      state: stateManager.getModuleState(found.id),
+    });
+  }
+
+  /**
+   * Die Fehlerantwort einer Aktion, deren wiedereingetretener Stapel
+   * scheiterte. `cause` ist dessen Fehler: der Stapelfehler selbst oder das
+   * erste gescheiterte Ergebnis.
+   * @param {string} op
+   * @param {object} nested  die Antwort des inneren Stapels
+   * @returns {object}
+   */
+  function nestedFailure(op, nested) {
+    const failed = nested.error ? nested : nested.results?.find((r) => r?.ok === false) ?? {};
+    const cause = { error: failed.error ?? ERRORS.OP_FAILED, message: failed.message ?? '' };
+    return axiError(ERRORS.OP_FAILED,
+      i18n.t('agent.errors.opFailed', { op, detail: cause.message || cause.error }), { cause });
   }
 
   /** Optionen des Agentenwegs. */
@@ -455,12 +504,15 @@ export function createAgentRuntime(deps) {
         if (stale) {
           outcome = stale;
         } else {
-          if (isWritingAction(action)) run.wrote = true;
+          if (isWritingAction(action)) {
+            run.wrote = true;
+            if (run.journal) journalBefore(run.journal, action.op, resolved.value);
+          }
           // Solange die Op läuft, darf ein Modul, das an dieser Instanz
           // arbeitet, wiedereintreten (siehe `interactAsModule`).
           const outer = run.inOp;
           const target = resolved.value.instance;
-          const inOp = { instanceId: typeof target === 'string' ? target : null, pending: [] };
+          const inOp = { instanceId: typeof target === 'string' ? target : null, pending: [], failed: null };
           run.inOp = inOp;
           try {
             outcome = await ops[action.op](resolved.value);
@@ -468,6 +520,12 @@ export function createAgentRuntime(deps) {
             // Schleife: ein innerer Stapel kann selbst weitere anstoßen.
             while (inOp.pending.length > 0) await Promise.allSettled(inOp.pending.splice(0));
             run.inOp = outer;
+          }
+          // Ein gescheiterter innerer Stapel lässt die Aktion scheitern,
+          // auch wenn die Op darüber hinweggeht.
+          if (inOp.failed && !(outcome && outcome.ok === false)) outcome = nestedFailure(action.op, inOp.failed);
+          if (action.op === 'module.add' && outcome && outcome.ok !== false && typeof outcome.instanceId === 'string') {
+            run.journal?.noteAdded(outcome.instanceId);
           }
         }
       } catch (err) {
@@ -477,7 +535,7 @@ export function createAgentRuntime(deps) {
       if (outcome && outcome.ok === false) {
         results.push({ ...outcome, id: action.id ?? null });
         allOk = false;
-        break;                               // Abbruch, Teilergebnisse bleiben
+        break;                               // Abbruch; die Rücknahme folgt unten
       }
       if (isWritingAction(action) && (action.op === 'instance.set' || action.op === 'instance.call')
           && !changed.includes(resolved.value.instance)) {
@@ -488,15 +546,35 @@ export function createAgentRuntime(deps) {
       await noteSeen(action.op, resolved.value, outcome, track);
     }
 
-    // Wiedereingetreten: Speichern und Toast macht der äußere Lauf, einmal.
-    if (inline) return { ok: allOk, contract: CONTRACT_VERSION, results };
+    // Wiedereingetreten: Rücknahme, Speichern und Toast macht der äußere
+    // Lauf, einmal. Ein gescheiterter innerer Stapel lässt die äußere Aktion
+    // scheitern (`interactAsModule`), zurückgenommen wird er also sicher.
+    if (inline) {
+      return allOk
+        ? { ok: true, contract: CONTRACT_VERSION, results }
+        : { ok: false, contract: CONTRACT_VERSION, results, rolledBack: true };
+    }
+
+    // Ganz oder gar nicht: nach einem Laufzeitfehler alles zurück, was der
+    // Stapel geschrieben hat — auch das innerer Stapel. Danach gibt es keine
+    // wirksame Änderung mehr, also keinen Toast; gespeichert wird trotzdem,
+    // damit der alte Stand auch auf Platte wieder steht.
+    let rolledBack = false;
+    if (!allOk && run.journal) {
+      try {
+        await run.journal.rollback();
+        rolledBack = true;
+      } catch (err) {
+        console.warn('[agent] rollback failed', err);
+      }
+    }
 
     // `ok: true` heißt angewandt und gespeichert — der `stateManager` schreibt
     // hinter zwei Debounces (2 s localStorage, 500 ms IndexedDB); beide werden
     // hier vorgezogen. Ohne sie verliert ein Agent, der schreibt und danach
     // neu lädt oder exportiert, seinen bestätigten Schreibzugriff. Auch im
     // Fehlerfall gibt der Stapel Teilergebnisse zurück, und was passiert ist,
-    // muss auch auf Platte sein.
+    // muss auch auf Platte sein — nach einer Rücknahme der alte Stand.
     //
     // Review-Befund (Important, Fixrunde 1): ein ungeschütztes `await
     // flushNow()` hier liegt in der Serialisierungskette unter
@@ -517,18 +595,22 @@ export function createAgentRuntime(deps) {
         await stateManager.flushNow();
       } catch (err) {
         const detail = err?.message ?? String(err);
-        notifyBackground(changed);
+        if (allOk) notifyBackground(changed);
         return {
           ok: false,
           contract: CONTRACT_VERSION,
           error: ERRORS.FLUSH_FAILED,
           message: i18n.t('agent.errors.flushFailed', { detail }),
           results,
+          ...(allOk ? {} : { rolledBack }),
         };
       }
     }
-    notifyBackground(changed);
-    return { ok: allOk, contract: CONTRACT_VERSION, results };
+    if (allOk) {
+      notifyBackground(changed);
+      return { ok: true, contract: CONTRACT_VERSION, results };
+    }
+    return { ok: false, contract: CONTRACT_VERSION, results, rolledBack };
   }
 
   /**
@@ -631,7 +713,7 @@ export function createAgentRuntime(deps) {
         });
       queue = queued.then(() => undefined, () => undefined);
       return decision.then((d) => (d.cancel
-        ? runInteract(input, { ...AGENT, decided: d.decided }).catch(surfaceFailure)
+        ? runInteract(input, { ...AGENT, decided: d.decided, run: newRun({ journal: false }) }).catch(surfaceFailure)
         : queued));
     },
 
@@ -651,8 +733,14 @@ export function createAgentRuntime(deps) {
       // Der Wiedereintritt hängt allein an der Ziel-Instanz der laufenden Op:
       // solange sie läuft, läuft jeder Aufruf aus dieser Instanz im Lauf mit.
       if (current?.inOp && current.inOp.instanceId === caller?.instanceId) {
-        const nested = runInteract(input, { ...opts, run: current, inline: true }).catch(surfaceFailure);
-        current.inOp.pending.push(nested);
+        const inOp = current.inOp;
+        const nested = runInteract(input, { ...opts, run: current, inline: true })
+          .catch(surfaceFailure)
+          .then((out) => {
+            if (out?.ok !== true && !inOp.failed) inOp.failed = out;
+            return out;
+          });
+        inOp.pending.push(nested);
         return nested;
       }
       return enqueue(input, opts);

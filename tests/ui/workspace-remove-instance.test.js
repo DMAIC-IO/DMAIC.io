@@ -11,6 +11,7 @@ function makeWorkspace(phases = { define: [{ instanceId: 'fw-1', moduleId: 'five
   const ws = Object.create(Workspace.prototype);
   const events = [];
   const removedStates = [];
+  const savedStates = [];
   const shown = [];
   const state = structuredClone(phases);
   ws._instances = new Map();
@@ -23,9 +24,10 @@ function makeWorkspace(phases = { define: [{ instanceId: 'fw-1', moduleId: 'five
     get: (path) => (path === 'phases' ? state : path.startsWith('phases.') ? state[path.slice(7)] : undefined),
     set: (path, value) => { state[path.slice(7)] = value; },
     removeModuleState: (id) => removedStates.push(id),
+    setModuleState: (id, value) => savedStates.push([id, value]),
   };
   ws._showPhase = (phase) => { shown.push(phase); };
-  return { ws, events, removedStates, shown, state };
+  return { ws, events, removedStates, savedStates, shown, state };
 }
 
 suite('workspace getInstance', () => {
@@ -81,6 +83,52 @@ suite('workspace removeInstance', () => {
     const { ws, state } = makeWorkspace();
     ws._instances.set('fw-1', { destroy: async () => { throw new Error('boom'); } });
     assertEqual(await ws.removeInstance('fw-1'), true);
+    assertDeepEqual(state.define, []);
+  });
+});
+
+suite('workspace restoreInstance', () => {
+  const two = {
+    define: [
+      { instanceId: 'fw-1', moduleId: 'five-why', order: 0 },
+      { instanceId: 'fw-2', moduleId: 'five-why', order: 1, customName: 'Zwei' },
+    ],
+  };
+
+  test('bringt eine entfernte Instanz mit derselben Id an ihre Stelle zurück', async () => {
+    const { ws, events, savedStates, state } = makeWorkspace(two);
+    const before = structuredClone(state.define);
+    const record = structuredClone(state.define[0]);
+    await ws.removeInstance('fw-1');
+    events.length = 0;
+    const ok = await ws.restoreInstance({
+      instanceId: 'fw-1', module: 'five-why', phase: 'define', state: { why: ['a'] }, record, index: 0,
+    });
+    assertEqual(ok, true);
+    assertDeepEqual(state.define, before);
+    assertDeepEqual(savedStates, [['fw-1', { why: ['a'] }]]);
+    // Ohne Sprung: die Ansicht bleibt, wo sie ist.
+    assertDeepEqual(events, [['module:added', { moduleId: 'five-why', phase: 'define', instanceId: 'fw-1', silent: true }]]);
+  });
+
+  test('ohne Eintrag hängt sie einen neuen ans Ende', async () => {
+    const { ws, state, savedStates } = makeWorkspace();
+    await ws.restoreInstance({ instanceId: 'fw-9', module: 'five-why', phase: 'define', state: null });
+    assertDeepEqual(state.define.at(-1), { instanceId: 'fw-9', moduleId: 'five-why', order: 1 });
+    assertDeepEqual(savedStates, []);
+  });
+
+  test('eine vorhandene Id wird nicht verdoppelt', async () => {
+    const { ws, events, state } = makeWorkspace();
+    assertEqual(await ws.restoreInstance({ instanceId: 'fw-1', module: 'five-why', phase: 'define', state: {} }), false);
+    assertEqual(state.define.length, 1);
+    assertDeepEqual(events, []);
+  });
+
+  test('verweigert im abgeschlossenen Projekt', async () => {
+    const { ws, state } = makeWorkspace({ define: [] });
+    ws._stateManager.isCompleted = () => true;
+    assertEqual(await ws.restoreInstance({ instanceId: 'fw-1', module: 'five-why', phase: 'define', state: {} }), false);
     assertDeepEqual(state.define, []);
   });
 });

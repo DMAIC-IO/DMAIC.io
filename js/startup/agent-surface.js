@@ -46,9 +46,10 @@ export default createStartup({
       openDialog: () => openAgentConsent(dialog, i18n, consentDialog, {
         projectName: stateManager.get('projectMeta.name') ?? '',
       }),
-      // Beim Erteilen wird der Nutzer zum Projekt-Export
-      // aufgefordert. Das ist die vereinbarte Sicherung — ein eigener
-      // Schnappschuss- oder Undo-Mechanismus wird nicht gebaut.
+      // Beim Erteilen wird der Nutzer zum Projekt-Export aufgefordert. Das
+      // ist die Sicherung über einzelne Stapel hinaus; einen gescheiterten
+      // Stapel nimmt die Laufzeit selbst zurück (core/agent/agent-journal.js),
+      // einen gelungenen nicht.
       promptExport: () => exportAllProjects({ stateManager, eventBus, i18n, notify }),
     });
 

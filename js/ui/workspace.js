@@ -828,13 +828,13 @@ export class Workspace {
    * Die lebende Modulinstanz zu einer instanceId, oder null wenn sie nicht
    * gemountet ist.
    *
-   * ACHTUNG — SYNCHRONER GRIFF, OHNE WARTEN. Seit 2026-10-09 hat diese
-   * Methode keinen Produktionsaufrufer mehr; sie bleibt für Diagnose und
-   * Tests („lebte das Viewmodel zu diesem Zeitpunkt schon?"). Die
-   * Agentenfläche benutzte sie und meldete deshalb `unknown_instance` für
-   * eine Instanz, deren Einhängen noch lief. Wer an ein Viewmodel will,
-   * nimmt `whenInstanceReady()` — nicht diese Methode zurück in den
-   * Agentenpfad.
+   * ACHTUNG — SYNCHRONER GRIFF, OHNE WARTEN. Sie dient Diagnose und Tests
+   * („lebte das Viewmodel zu diesem Zeitpunkt schon?") und der Rücknahme
+   * der Agentenfläche (`agent-host.js:applyLiveState`), die vorher mit
+   * `getLiveViewmodel` prüft, dass die Instanz eingehängt ist. Die
+   * Agentenfläche griff früher für Aufrufe so zu und meldete deshalb
+   * `unknown_instance` für eine Instanz, deren Einhängen noch lief. Wer an
+   * ein Viewmodel will, nimmt `whenInstanceReady()`.
    * @param {string} instanceId
    * @returns {object|null}
    */
@@ -903,6 +903,31 @@ export class Workspace {
 
     this._eventBus.emit('module:removed', { moduleId: record.moduleId, phase, instanceId });
     this._showPhase(phase);
+    return true;
+  }
+
+  /**
+   * Eine entfernte Instanz mit derselben Id wiederherstellen — die
+   * Rücknahme eines gescheiterten Stapels der Agentenfläche. Der Eintrag
+   * kommt an seine alte Stelle (`record`, `index`), sonst ans Ende; der
+   * Zustand wird vor dem Eintrag abgelegt, damit ein Einhängen ihn findet.
+   * `module:added` geht still hinaus: die Reiter stimmen wieder, die Ansicht
+   * springt nicht.
+   * @param {{ instanceId: string, module: string, phase: string, state: object|null,
+   *   record?: object, index?: number }} entry
+   * @returns {Promise<boolean>} false, wenn es die Id schon gibt oder das
+   *   Projekt abgeschlossen ist
+   */
+  async restoreInstance({ instanceId, module, phase, state, record, index }) {
+    if (this._stateManager.isCompleted()) return false;
+    if (findInstancePhase(this._stateManager, instanceId)) return false;
+    const items = [...(this._stateManager.get(`phases.${phase}`) ?? [])];
+    const entry = record ? structuredClone(record) : { instanceId, moduleId: module, order: items.length };
+    const at = Number.isInteger(index) ? Math.min(Math.max(index, 0), items.length) : items.length;
+    items.splice(at, 0, entry);
+    if (state !== null && state !== undefined) this._stateManager.setModuleState(instanceId, state);
+    this._stateManager.set(`phases.${phase}`, items);
+    this._eventBus.emit('module:added', { moduleId: entry.moduleId, phase, instanceId, silent: true });
     return true;
   }
 
