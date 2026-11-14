@@ -1,0 +1,154 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Überblick",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "{{term:doe|Design of Experiments}} (DoE, Statistische Versuchsplanung) plant Experimente so, dass mit möglichst wenigen Versuchen maximale Erkenntnis über den Einfluss mehrerer Faktoren entsteht. Während man bei der klassischen „ein Faktor nach dem anderen\"-Methode viele Versuche braucht und Wechselwirkungen verpasst, liefert DoE strukturierte Designs, die {{term:haupteffekt|Haupt-}} und {{term:wechselwirkung|Wechselwirkungen}} effizient trennen."
+        },
+        {
+          "type": "definition",
+          "term": "Faktor",
+          "content": "Ein {{term:faktor|Faktor}} ist eine Einflussgröße, die bewusst variiert wird — z. B. Temperatur, Druck, Zeit, Materialtyp. Faktoren können stetig (Temperatur in °C) oder kategorial (Lieferant A/B) sein."
+        },
+        {
+          "type": "definition",
+          "term": "Stufe (Level)",
+          "content": "Die {{term:stufe|Stufen}} sind die konkreten Werte, auf die ein Faktor im Experiment gesetzt wird. 2 Stufen (−1 / +1) sind Standard für {{term:screening-design|Screening}}, 3+ Stufen für Optimierung (z. B. Response Surface)."
+        },
+        {
+          "type": "definition",
+          "term": "Zielgröße (Response)",
+          "content": "Die {{term:zielgroesse|Zielgröße}} ist die zu optimierende oder zu verstehende Ausgangsgröße — z. B. Ausbeute, Festigkeit, Zykluszeit. Pro Versuch wird sie gemessen."
+        },
+        {
+          "type": "definition",
+          "term": "Vollfaktoriell",
+          "content": "Im {{term:vollfaktoriell|Vollplan}} werden alle Kombinationen aller Stufen untersucht. Bei k Faktoren mit 2 Stufen: 2ᵏ Versuche. Genau, aber schnell teuer (6 Faktoren = 64 Versuche)."
+        },
+        {
+          "type": "definition",
+          "term": "Teilfaktoriell (Fractional)",
+          "content": "Ein {{term:teilfaktoriell|teilfaktorieller Plan}} ist ein bewusst gewählter Anteil des vollfaktoriellen Plans — z. B. ein Halber (2ᵏ⁻¹) oder Viertel. Effizient fürs Screening vieler Faktoren, aber bestimmte Wechselwirkungen werden verwechselt ({{term:konfundierung|Konfundierung}})."
+        },
+        {
+          "type": "definition",
+          "term": "Wechselwirkung",
+          "content": "Bei einer {{term:wechselwirkung|Wechselwirkung}} wirken zwei Faktoren nicht unabhängig — der Effekt von A hängt vom Stand von B ab. Wechselwirkungen zu erkennen ist einer der Hauptnutzen von DoE; sie werden in der „ein Faktor nach dem anderen\"-Welt komplett übersehen."
+        },
+        {
+          "type": "definition",
+          "term": "Zentralpunkt",
+          "content": "{{term:zentralpunkt|Zentralpunkte}} sind Versuch(e) in der Mitte des Designbereichs (alle Faktoren auf 0). Dient zur Prüfung von Krümmung und zur Schätzung der reinen Streuung."
+        },
+        {
+          "type": "definition",
+          "term": "Streuungs-DoE (Dual Response)",
+          "content": "Beim {{term:streuungs-doe|Streuungs-DoE}} — Designs mit mindestens zwei Replikaten pro Versuchspunkt — schätzt der Planner zusätzlich ein Modell für ln(s²). Damit lassen sich Faktoreinstellungen identifizieren, die die Prozessstreuung unabhängig vom {{term:mittelwert|Mittelwert}} reduzieren — sichtbar im Auswertebereich unterhalb der Designqualität."
+        },
+        {
+          "type": "paragraph",
+          "content": "DoE ist die härteste Waffe der Improve-Phase — wenn man nicht weiß, welche Faktoren wichtig sind, liefert ein Screening-Plan in wenigen Versuchen die Antwort. Wer dagegen seine Faktoren schon kennt und optimieren will, greift zu Response-Surface-Designs."
+        }
+      ]
+    },
+    "workflow": {
+      "title": "Arbeiten mit dem Modul",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Faktoren und Zielgrößen",
+          "content": "Links stehen die Faktoren mit Einheit, Art und Stufen und darunter die Zielgrößen. Stetige Faktoren haben Zahlen als Stufen, kategoriale Namen. Sobald Faktoren, Zielgrößen und Plantyp vollständig sind, entsteht der Plan nach etwa einer Sekunde von selbst."
+        },
+        {
+          "type": "definition",
+          "term": "Plantyp",
+          "content": "Die Empfehlung schlägt einen Typ nach Faktorzahl und Stufen vor. Teilfaktorielle Pläne wählen eine Zelle der Auflösungstabelle, Plackett-Burman einen Plan, Taguchi ein Array; optimale Pläne (D, A, G) wählen Modellterme und Laufzahl und können Faktorkombinationen verbieten oder auf schon gemessenen Läufen eines Worksheets aufbauen."
+        },
+        {
+          "type": "definition",
+          "term": "Lauftabelle und Datenblatt",
+          "content": "Rechts steht die Vorschau des Plans; Werte darin gehen beim Erstellen ins Datenblatt. Danach werden die Ergebnisse im Datenblatt eingetragen, der Planer zeigt den Füllstand. Ändert sich der Plan, ist das Datenblatt veraltet und lässt sich neu erstellen. Nur echte Konfigurationsänderungen verwerfen den Plan; erneutes Anklicken des aktiven Plantyps oder dieselbe Laufzahl ändert nichts."
+        },
+        {
+          "type": "definition",
+          "term": "Auswertung",
+          "content": "Effizienz, VIF, Aliasstruktur und Trennschärfe bewerten den Plan vor dem Versuch. Mit Wiederholungen zeigt die Dispersionsanalyse, welche Faktoren die Streuung beeinflussen; sind alle Ergebnisse da, übergibt ein Knopf das Datenblatt an eine Regression."
+        },
+        {
+          "type": "definition",
+          "term": "EVOP-Projekt",
+          "content": "Im Projektmodus wird der Plan zur ersten Phase. Sind ihre Ergebnisse da, entscheidet man: neu zentrieren (um den besten Versuchspunkt), wiederholen oder beenden. Die Zeitleiste zeigt alle Phasen; ein Klick holt eine Phase mit Plan und Datenblatt zurück."
+        },
+        {
+          "type": "paragraph",
+          "content": "Mit gedrückter Alt-Taste erscheinen an Überschriften, Spaltenköpfen und Knöpfen Fragezeichen; ein Klick erklärt das Element."
+        },
+        {
+          "type": "paragraph",
+          "content": "„Neu würfeln“: Der Plan wird mit festem Startwert erzeugt — dieselbe Konfiguration ergibt immer denselben Plan, auch die Reihenfolge der Versuche. „Neu würfeln“ zieht eine neue Versuchsreihenfolge (neuer Startwert), ohne die Konfiguration zu ändern."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Vorgehen",
+      "blocks": [
+        {
+          "type": "list",
+          "items": [
+            "Zielgröße eindeutig festlegen — was soll optimiert oder verstanden werden?",
+            "Faktoren und sinnvolle Stufen bestimmen — mit Prozessfachleuten, nicht am Schreibtisch.",
+            "Störgrößen identifizieren, die konstant gehalten oder randomisiert werden müssen.",
+            "Designtyp wählen: Screening ({{term:plackett-burman|Plackett-Burman}}, fractional 2ᵏ⁻ᵖ), Optimierung (Response Surface, Central Composite), Mischungen (Mixture Designs).",
+            "Plan randomisieren — Reihenfolge der Versuche zufällig, nicht systematisch.",
+            "Versuche durchführen, Zielgröße messen, Daten sorgfältig aufzeichnen.",
+            "Modell anpassen, Hauptwirkungen und Wechselwirkungen bewerten.",
+            "Bestätigungsversuche auf den vorhergesagten besten Einstellungen."
+          ]
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Stolperfallen",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Ohne Randomisierung",
+          "content": "Wer die Versuche in der Reihenfolge der Standardtabelle fährt, vermischt Faktoreffekte mit Drift über die Zeit (Werkzeugverschleiß, Temperaturänderung). {{term:randomisierung|Randomisierung}} ist Pflicht, nicht optional."
+        },
+        {
+          "type": "definition",
+          "term": "Zu enge Stufenwahl",
+          "content": "Wenn die Stufen nah beieinander liegen, ist der Effekt im Rauschen versteckt. Lieber mutig breite Stufen wählen — sie müssen nur noch sinnvoll bleiben, nicht „sicher\"."
+        },
+        {
+          "type": "definition",
+          "term": "Zu viele Faktoren, zu wenig Wissen",
+          "content": "Wer 10 Faktoren gleichzeitig untersucht, bekommt ein riesiges Design und wenig Zeit für jeden Effekt. Faustregel: erst Vorwissen und Priorisierung, dann DoE — nicht umgekehrt."
+        },
+        {
+          "type": "definition",
+          "term": "Wechselwirkungen ignoriert",
+          "content": "Ein Halbfaktorieller Plan verwechselt bestimmte Hauptwirkungen mit Wechselwirkungen. Vor der Auswertung die {{term:konfundierung|Konfundierungsstruktur}} und {{term:aufloesung|Auflösung}} anschauen, sonst werden falsche Schlüsse gezogen."
+        },
+        {
+          "type": "definition",
+          "term": "Ein Datenpunkt statt mehrerer",
+          "content": "Ein einzelner Wert pro Versuchsbedingung liefert keinen Rausch-Schätzer. Entweder mindestens zwei {{term:replikat|Replikate}} oder Zentralpunkte, sonst bleibt die reine Streuung unbekannt."
+        },
+        {
+          "type": "definition",
+          "term": "Modell ohne Bestätigung",
+          "content": "Das gefundene Optimum ist eine Vorhersage — bis es am echten Prozess gefahren wurde, ist es nur eine Gleichung. Bestätigungsversuche sind der entscheidende letzte Schritt."
+        },
+        {
+          "type": "definition",
+          "term": "Extrapolation",
+          "content": "Das Modell gilt innerhalb des untersuchten Bereichs. Vorhersagen außerhalb (z. B. noch höhere Temperatur als je getestet) sind reine Spekulation."
+        }
+      ]
+    }
+  }
+}
