@@ -155,7 +155,6 @@
   "regenerateWorksheet": "Arbeitsblatt neu anlegen",
   "generated": "Versuchsplan mit {runs} Runs generiert.",
   "worksheetCreated": "Arbeitsblatt angelegt",
-  "worksheetMissing": "Arbeitsblatt nicht gefunden",
   "moreRuns": "weitere Runs",
   "colRunOrder": "Laufreihenfolge",
   "colStdOrder": "Standardreihenfolge",

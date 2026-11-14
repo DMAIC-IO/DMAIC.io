@@ -213,6 +213,57 @@ suite('doe-planner runs: every edit path reaches the model', () => {
   });
 });
 
+suite('doe-planner runs: structural grid actions send no edits', () => {
+  /** Opens a context menu on `el` and clicks the entry with this text. */
+  async function menu(el, label) {
+    el.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 5, clientY: 5 }));
+    const item = [...document.querySelectorAll('.context-menu .context-menu__item')].find((x) => x.textContent === label);
+    assert(item !== undefined, `menu entry ${label}`);
+    item.click();
+    document.querySelectorAll('.context-menu').forEach((m) => m.remove());
+    await settle();
+  }
+
+  /** Mounts with one preview edit; returns the harness and a check that nothing changed. */
+  async function edited() {
+    const h = await ready(plan());
+    await edit(h.container, 0, 6, '5');
+    await edit(h.container, 1, 6, '9');
+    const before = JSON.stringify(h.vm().model.previewEdits);
+    const sent = h.calls('setPreviewCell').length + h.calls('setPreviewCells').length;
+    const unchanged = () => {
+      assertEqual(JSON.stringify(h.vm().model.previewEdits), before, 'previewEdits unchanged');
+      assertEqual(h.calls('setPreviewCell').length + h.calls('setPreviewCells').length, sent, 'no edit sent');
+      // Back in the order of the input: run column as drawn, the edit in its row, no extra row or column.
+      const runs = [0, 1, 2, 3].map((r) => td(h.container, r, 0).textContent);
+      assertDeepEqual(runs, h.vm().previewGrid.rows.map((row) => row[0]));
+      assertEqual(rowsOf(h.container), 4);
+      assertEqual(h.$$('.doe__preview-grid thead th[data-col-idx]').length, 7);
+      assertEqual(td(h.container, 0, 6).textContent, '5,0000');
+      assertEqual(td(h.container, 1, 6).textContent, '9,0000');
+    };
+    return { h, unchanged };
+  }
+
+  test('sort by a response column', async () => {
+    const { h, unchanged } = await edited();
+    await menu(h.$('.doe__preview-grid th[data-col-idx="6"]'), 'ui.datagrid.sortDesc');
+    unchanged();
+  });
+
+  test('insert a column', async () => {
+    const { h, unchanged } = await edited();
+    await menu(h.$('.doe__preview-grid th[data-col-idx="5"]'), 'ui.datagrid.insertColLeft');
+    unchanged();
+  });
+
+  test('delete a row', async () => {
+    const { h, unchanged } = await edited();
+    await menu(h.$('.doe__preview-grid td.datagrid__row-header[data-row-idx="0"]'), 'ui.datagrid.deleteRow');
+    unchanged();
+  });
+});
+
 suite('doe-planner runs: create and open', () => {
   test('create starts the run and opens the new datasheet', async () => {
     const h = await ready(plan());

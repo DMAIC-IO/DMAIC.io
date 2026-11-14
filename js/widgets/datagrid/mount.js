@@ -4,7 +4,9 @@
  * Zeilenmenü als Kommandos des Moduls hinaus. Eigener Datenstand: nur die
  * zuletzt gezeichnete `config`. Jede Änderung im Grid (Tippen, Einfügen,
  * Löschen, Ausschneiden, Ausfüllen, Rückgängig) wird mit der Eingabe abgeglichen
- * und als Kommando hinausgegeben. Nach jedem Kommando zeigt die Tabelle wieder
+ * (Spalten nach Schlüssel) und als Kommando hinausgegeben; Sortieren und das
+ * Einfügen, Löschen oder Verschieben von Zeilen und Spalten sendet nichts, die
+ * Tabelle zeigt danach wieder die Eingabe. Nach jedem Kommando zeigt die Tabelle wieder
  * deren Werte; bei gleicher Form (Spalten und Zeilenzahl) bleibt die Auswahl.
  */
 import { DataGrid, isNumericType } from '../../core/datagrid/datagrid.js';
@@ -100,6 +102,8 @@ export function mount(root, { props, services, effect, command }) {
   let drawing = false;
   /** Ein Kommando ist unterwegs; danach zeichnet das Widget ohnehin neu. */
   let busy = false;
+  /** Seit dem letzten Zeichnen hat eine Aktion Zeilen oder Spalten verschoben. */
+  let structural = false;
   /** Ein Abgleich ist für die nächste Mikroaufgabe eingeplant. */
   let scheduled = false;
   const render = () => {
@@ -109,6 +113,7 @@ export function mount(root, { props, services, effect, command }) {
     // setData verwirft die Auswahl; dieselbe Tabelle mit neuen Werten behält sie, gekappt auf die Tabelle.
     const keep = next === shape && grid.selection ? clampRange(grid.selection, config.rows.length, config.columns.length) : null;
     drawing = true;
+    structural = false;
     try {
       grid.setData(gridColumns(config, moduleId));
     } finally {
@@ -143,8 +148,16 @@ export function mount(root, { props, services, effect, command }) {
     scheduled = false;
     if (!config || drawing || busy) return;
     const cols = config.columns;
+    // Sortieren, Zeilen einfügen/löschen/verschieben, Spalten löschen/verschieben verschieben
+    // die Zellen gegen die Eingabe: nichts senden, die Eingabe neu zeichnen (macht es rückgängig).
+    const byKey = cols.map((c) => grid.columns.find((g) => g.id === c.key) ?? null);
+    if (structural || grid.sortCol !== null || byKey.some((g) => g === null)) {
+      structural = false;
+      render();
+      return;
+    }
     const rows = Math.max(config.rows.length, grid.rowCount);
-    const now = (c, r) => toCommand(cols[c].type, grid.columns[c]?.values[r] ?? null);
+    const now = (c, r) => toCommand(cols[c].type, byKey[c].values[r] ?? null);
     const was = (c, r) => (r < config.rows.length ? toCommand(cols[c].type, toGrid(cols[c].type, config.rows[r][c] ?? null)) : null);
     let r1 = Infinity; let r2 = -1; let c1 = Infinity; let c2 = -1;
     for (let c = 0; c < cols.length; c++) {
@@ -154,7 +167,11 @@ export function mount(root, { props, services, effect, command }) {
         r1 = Math.min(r1, r); r2 = Math.max(r2, r); c1 = Math.min(c1, c); c2 = Math.max(c2, c);
       }
     }
-    if (r2 < 0) return;
+    // Keine Abweichung: eine eingefügte leere Spalte oder Zeile verschwindet wieder.
+    if (r2 < 0) {
+      if (grid.columns.length !== cols.length || grid.rowCount !== config.rows.length) render();
+      return;
+    }
     if (config.readOnly) { render(); return; }
     if (r1 === r2 && c1 === c2) {
       if (!props.onCell) { render(); return; }
@@ -176,6 +193,10 @@ export function mount(root, { props, services, effect, command }) {
     queueMicrotask(reconcile);
   };
   for (const ev of ['render', 'cell:changed', 'data:pasted', 'data:filled', 'undo', 'redo']) grid.on(ev, schedule);
+  // Strukturelle Aktionen: Zeilen nur am Ende anhängen (Einfügen über den Rand) lässt die Zellen an ihrem Platz.
+  const shifted = () => { structural = true; schedule(); };
+  for (const ev of ['rows:removed', 'rows:moved', 'column:removed', 'column:moved']) grid.on(ev, shifted);
+  grid.on('rows:added', ({ startIndex }) => { if (startIndex < (config?.rows.length ?? 0)) shifted(); });
 
   effect(() => {
     config = props.config;
