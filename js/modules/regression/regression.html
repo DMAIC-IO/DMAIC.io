@@ -3,15 +3,20 @@
   <div class="reg__input dmike-split__input">
     <div class="dmike-split__section-title" x-text="t('sectionData')"></div>
 
-    <template x-if="importOptions().length > 0">
+    <template x-if="importOptions().length > 0 || importMissing()">
       <div class="field-group">
         <label data-help-key="modules.regression.actions.importExperiment.help" x-text="t('importFromExperiment')"></label>
-        <select class="field" data-ref="doe-import" @change="onImportChange($event)">
-          <option value="" x-text="t('importPlaceholder')"></option>
-          <template x-for="o in importOptions()" :key="o.key">
-            <option :value="o.key" x-text="o.label"></option>
-          </template>
-        </select>
+        <template x-if="importOptions().length > 0">
+          <select class="field" data-ref="doe-import" @change="onImportChange($event)">
+            <option value="" x-text="t('importPlaceholder')"></option>
+            <template x-for="o in importOptions()" :key="o.key">
+              <option :value="o.key" x-text="o.label"></option>
+            </template>
+          </select>
+        </template>
+        <template x-if="importMissing()">
+          <p class="reg__hint" data-ref="import-missing" x-text="t('importSourceMissing')"></p>
+        </template>
       </div>
     </template>
 

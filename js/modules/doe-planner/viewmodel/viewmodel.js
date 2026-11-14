@@ -325,6 +325,10 @@ export default createModule({
         const plannerId = this._ui.instanceId;
         const phase = services.instances.list({ modules: ['doe-planner'] }).find((i) => i.instanceId === plannerId)?.phase;
         if (!phase) throw failure(this.t('transferFailed'), 'transferToRegression', new Error('the planner is in no phase'));
+        // The datasheet may predate a response added later (stale sheet, no sync).
+        if (response >= (this.experiment?.responseColumns.length ?? 0)) {
+          throw failure(this.t('transferResponseMissing'), 'transferToRegression', new Error(`response ${response} is not in the datasheet`));
+        }
         /** @type {any} */
         const stack = [
           { op: 'module.add', id: 'reg', module: 'regression', phase },

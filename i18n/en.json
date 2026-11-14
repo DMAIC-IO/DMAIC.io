@@ -8825,10 +8825,10 @@
           "help": "The term ids setTerm accepts now; empty without a polynomial fit or aliasing."
         },
         "experimentImports": {
-          "help": "The DoE responses importExperiment accepts, each { key, label }."
+          "help": "The DoE responses importExperiment accepts, each { key, label }; the key is <planner instance id>|raw|<i> (|mean|, |lnvar| for mean and ln variance). The list is reloaded after the instance is added and on changes, and can still be empty right after module.add; importExperiment reads fresh itself and already accepts the key then."
         },
         "activeImportSource": {
-          "help": "The DoE response the inputs came from, { experimentId, sourceColumn, transform }, or null."
+          "help": "The DoE response the inputs came from, { experimentId, sourceColumn, transform }, or null. experimentId is the instance id of the DoE planner; when it or its experiment no longer exists, the entry stays and the module shows “no longer available”."
         },
         "designNotice": {
           "help": "Notes on the term set of an experimental design, each figure described individually under keys; null without a term set from an experimental design."
@@ -8929,6 +8929,7 @@
       "description": "Polynomial regression (degree 1–3, interactions), Exponential, Logarithmic, Power",
       "importFromExperiment": "Import from experiment",
       "importPlaceholder": "— Choose experiment —",
+      "importSourceMissing": "The experimental design this model came from is no longer available.",
       "saveAsModel": "Save as model",
       "updateModel": "Update model",
       "modelSaved": "Model saved",

@@ -8829,10 +8829,10 @@
           "help": "Die Term-ids, die setTerm jetzt annimmt; leer ohne Polynom-Fit und ohne Aliasing."
         },
         "experimentImports": {
-          "help": "Die DoE-Antworten, die importExperiment annimmt, je { key, label }."
+          "help": "Die DoE-Antworten, die importExperiment annimmt, je { key, label }; der Schlüssel ist <Planer-Instanz-id>|raw|<i> (|mean|, |lnvar| für Mittelwert und ln-Varianz). Die Liste wird nach dem Anlegen der Instanz und bei Änderungen nachgeladen und kann direkt nach module.add noch leer sein; importExperiment liest selbst frisch und nimmt den Schlüssel dann schon an."
         },
         "activeImportSource": {
-          "help": "Die DoE-Antwort, aus der die Eingaben stammen, { experimentId, sourceColumn, transform }, oder null."
+          "help": "Die DoE-Antwort, aus der die Eingaben stammen, { experimentId, sourceColumn, transform }, oder null. experimentId ist die Instanz-id des Versuchsplaners; gibt es ihn oder seinen Versuch nicht mehr, bleibt die Angabe stehen und das Modul zeigt „nicht mehr vorhanden“."
         },
         "designNotice": {
           "help": "Hinweise zur Termvorgabe eines Versuchsplans, jede Kennzahl unter keys einzeln beschrieben; null, ohne Vorgabe aus einem Versuchsplan."
@@ -8933,6 +8933,7 @@
       "description": "Polynom-Regression (Grad 1–3, Wechselwirkungen), Exponentiell, Logarithmisch, Potenz",
       "importFromExperiment": "Aus Versuchsplan importieren",
       "importPlaceholder": "— Versuchsplan wählen —",
+      "importSourceMissing": "Der Versuchsplan, aus dem dieses Modell stammt, ist nicht mehr vorhanden.",
       "saveAsModel": "Als Modell speichern",
       "updateModel": "Modell aktualisieren",
       "modelSaved": "Modell gespeichert",

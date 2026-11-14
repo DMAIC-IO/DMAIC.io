@@ -232,6 +232,7 @@
   "datasheetFailed": "The datasheet could not be created.",
   "augmentFailed": "The design could not be augmented.",
   "transferFailed": "The data could not be handed to the regression.",
+  "transferResponseMissing": "The selected response is not in the datasheet. Recreate the datasheet, then hand it over.",
   "syncFailed": "The responses could not be carried into the datasheet.",
   "syncSkipped": "The datasheet was not adjusted: several responses changed at once. Create the datasheet anew so that it fits the responses.",
   "needsDatasheet": "Create the datasheet first.",

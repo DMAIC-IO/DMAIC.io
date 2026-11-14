@@ -44,6 +44,7 @@ import { provisionWorksheet as _provisionWorksheet, removeProvisionedWorksheet a
 import { saveModel, buildDataSnapshot, computeDataHash } from '../../core/models-store.js';
 import { getChartColors } from '../../core/chart/chart-core.js';
 import { decimalOr } from '../../core/parse-decimal.js';
+import { createExperimentLoader, importFromPlanners, importSourceMissing } from './experiment-loader.js';
 
 // ── Glyphs carried over from the legacy innerHTML (kept out of x-text literals
 // — Alpine CSP would emit \u-escapes verbatim). ───────────────────────
@@ -252,10 +253,12 @@ const mod = createModule({
       ssPieItems: [],
       /** SS-pie transient render context (chart instances + rebuild closures). */
       _ssPie: null,
-      /** The experiments of the planner instances, as last read (`loadExperiments`). */
+      /** The experiments of the planner instances, as last read (`_loader`). */
       _experiments: [],
-      /** Counts the loads; only the latest one is kept. */
-      _experimentsGen: 0,
+      /** A read of the experiments has finished; before it a missing source is unknown. */
+      _experimentsLoaded: false,
+      /** Reads the experiments, one read at a time (created in init). */
+      _loader: null,
 
       /** @noagent helper */
       sm() { return module._context?.stateManager; },
@@ -452,9 +455,7 @@ const mod = createModule({
           this.model.clearDesignPreset();
           return;
         }
-        await this.loadExperiments();
-        requireKnownId('key', key, this.experimentImports().map(o => o.key));
-        if (this.model.applyExperimentImport(this._experiments, key)) {
+        if (await importFromPlanners(this.model, this._experimentLoader(), key)) {
           if (this._picker) this._picker.value = this.model.colRefs;
           this.refreshDegree();
           this.autoRun();
@@ -482,26 +483,23 @@ const mod = createModule({
       },
 
       /**
-       * Die Versuche aller Planer-Instanzen neu lesen; ein Planer, der nicht
-       * gelesen werden kann, zählt ohne Versuch.
-       * @noagent helper; der Agent liest das Ergebnis über read().experimentImports
-       * @returns {Promise<Array<{ plannerId: string, experiment: object|null }>>}
+       * The loader of the planners' experiments; created on first use.
+       * @noagent helper
+       * @returns {import('./experiment-loader.js').ExperimentLoader}
        */
-      async loadExperiments() {
-        const svc = module._context?.instances;
-        if (!svc) return this._experiments;
-        const gen = ++this._experimentsGen;
-        const planners = svc.list({ modules: ['doe-planner'] });
-        const out = await Promise.all(planners.map(async (p) => {
-          try {
-            const r = await svc.read(p.instanceId, { fields: ['experiment'] });
-            return { plannerId: p.instanceId, experiment: r?.experiment ?? null };
-          } catch {
-            return { plannerId: p.instanceId, experiment: null };
-          }
-        }));
-        if (gen === this._experimentsGen) this._experiments = out;
-        return this._experiments;
+      _experimentLoader() {
+        if (!this._loader) {
+          this._loader = createExperimentLoader(module._context?.instances, (out) => {
+            this._experiments = out;
+            this._experimentsLoaded = true;
+          });
+        }
+        return this._loader;
+      },
+
+      /** @noagent view state: the model's planner no longer exists or has no experiment */
+      importMissing() {
+        return importSourceMissing(this.model, this._experiments, this._experimentsLoaded);
       },
 
       // ── Column option lists (Y dropdown; not x-model-bound) ──
@@ -912,8 +910,13 @@ const mod = createModule({
       /** @noagent DOM event handler; the agent uses importExperiment() */
       onImportChange(event) {
         const key = event.target.value;
-        // A planner removed meanwhile drops its option; nothing to import then.
-        if (key) this.importExperiment(key).catch(() => {});
+        if (!key) return;
+        this.importExperiment(key).catch((err) => {
+          // A planner removed meanwhile drops its option: nothing to import, no message.
+          if (!this.importOptions().some(o => o.key === key)) return;
+          console.warn('[regression] importExperiment failed', err);
+          module._context.notify(err?.message ?? String(err), 'error');
+        });
       },
       /** @noagent DOM event handler; the agent uses setColumn() */
       onYChange(event) {
@@ -1534,12 +1537,10 @@ const mod = createModule({
         const eb = ctx.eventBus;
         // Die Versuche der Planer: sofort laden, neu bei jeder Änderung der
         // Instanzen oder der Arbeitsblätter.
-        this.loadExperiments();
-        const onExperiments = () => { this.loadExperiments(); };
-        for (const ev of ['module:added', 'module:removed', 'state:remote-changed', 'worksheet:dataChanged']) {
-          eb.on(ev, onExperiments);
-          this._unsubs.push(() => eb.off(ev, onExperiments));
-        }
+        const loader = this._experimentLoader();
+        loader.load().catch((err) => console.warn('[regression] reading the experiments failed', err));
+        loader.watch(eb, ['module:added', 'module:removed', 'state:remote-changed', 'worksheet:dataChanged']);
+        this._unsubs.push(() => loader.dispose());
         const onAct = ({ instanceId }) => {
           if (instanceId === ctx.instanceId && this._picker) this._picker.refresh();
         };

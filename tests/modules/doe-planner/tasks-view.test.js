@@ -519,6 +519,21 @@ suite('doe-planner tasks: transferToRegression', () => {
     assertEqual(h.layer.stacks.length, stacks);
   });
 
+  test('a response added after a stale datasheet: the reason is named, nothing sent', async () => {
+    const h = await bound(plan());
+    const vm = h.vm();
+    setFields(vm.model, { factors: [vm.model.factors[0], { ...vm.model.factors[1], levels: ['2', '8'] }] });
+    await h.settle();
+    assertEqual(vm.staleness, 'stale');
+    setFields(vm.model, { responses: [...vm.model.responses, { name: 'Kosten', unit: '' }] });
+    await h.settle();
+    const stacks = h.layer.stacks.length;
+    const out = await h.run('transferToRegression', { response: 1 });
+    assertEqual(out.status, 'failed', JSON.stringify(out));
+    assertDeepEqual(h.notes.at(-1), ['transferResponseMissing', 'error']);
+    assertEqual(h.layer.stacks.length, stacks);
+  });
+
   test('a planner in no phase: transferFailed, nothing sent', async () => {
     const h = await bound(plan());
     const stacks = h.layer.stacks.length;
