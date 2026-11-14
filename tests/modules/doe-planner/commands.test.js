@@ -218,6 +218,47 @@ suite('doe-planner commands — optimal design', () => {
     assertDeepEqual(s.options.forbiddenVertices, []);
   });
 
+  test('choosing dopt on a 2-row source gives the old default run count', () => {
+    const s = optimalPlan({ designType: 'full', options: { ...new State().options, optimalRuns: 0 } });
+    s.setSourceWorksheet({ ref: { instanceId: 'ws-src', sheetId: 's-src' }, sourceRowCount: 2 });
+    s.selectDesignType({ type: 'dopt', sourceRowCount: 2 });
+    assertEqual(s.options.optimalRuns, optimal.minNewRuns(s, { sourceRowCount: 2 }) + 2);
+    const t = optimalPlan({ designType: 'full', options: { ...new State().options, optimalRuns: 0 },
+      sourceWorksheet: { instanceId: 'ws-src', sheetId: 's-src' } });
+    t.selectDesignType({ type: 'dopt' });
+    assertEqual(t.options.optimalRuns, optimal.minNewRuns(t, { sourceRowCount: 0 }) + 2, 'without rows: none');
+  });
+
+  test('adding squares on a 2-row source raises the runs like before', () => {
+    const s = optimalPlan({ sourceWorksheet: { instanceId: 'ws-src', sheetId: 's-src' } });
+    s.options = { ...s.options, optimalRuns: 1 };
+    s.setTermGroup({ group: 1, on: true, sourceRowCount: 2 });
+    assertEqual(s.options.optimalRuns, Math.max(1, optimal.minRuns(s) - 2));
+    assert(s.options.optimalRuns > 1, 'raised');
+  });
+
+  test('without sourceRowCount the rows of a design built on the same source count', () => {
+    const s = optimalPlan({ sourceWorksheet: { instanceId: 'ws-src', sheetId: 's-src' } });
+    s.regenerate({ source: {
+      codedMatrix: [[-1, -1, -1], [1, 1, 1], [1, -1, 1]], actualRows: [['0', '0', '0'], ['10', '10', '10'], ['10', '0', '10']],
+      responseValues: [[1, 2, 3]], rowCount: 3, sheetRowCount: 3,
+    } });
+    s.options = { ...s.options, optimalRuns: 1 };
+    s.setTermGroup({ group: 1, on: true });
+    assertEqual(s.options.optimalRuns, Math.max(1, optimal.minRuns(s) - 3));
+    s.setSourceWorksheet({ ref: { instanceId: 'ws-other', sheetId: 's-1' } });
+    assertEqual(s.options.optimalRuns, optimal.minRuns(s), 'another source: its rows are unknown');
+  });
+
+  test('a source sheet that is gone: invalidReason source-not-found, no design', () => {
+    const s = optimalPlan();
+    s.setSourceWorksheet({ ref: { instanceId: 'ws-gone', sheetId: 's-1' } });
+    const data = { sheet: () => null, sheets: () => null, values: () => null };
+    assertEqual(read(s, data).valid, false);
+    assertEqual(read(s, data).invalidReason, 'source-not-found');
+    assertEqual(read(s, data).pending, false);
+  });
+
   test('setSourceWorksheet sets and clears; the own datasheet is no source', () => {
     const s = optimalPlan();
     s.setSourceWorksheet({ ref: { instanceId: 'ws-src', sheetId: 's-src' } });
@@ -262,9 +303,18 @@ suite('doe-planner commands — regenerate and reshuffle', () => {
     ] });
     s.regenerate();
     const before = [...s.design.stdOrder];
-    const seed = s.seed;
-    s.reshuffle();
-    assert(s.seed !== seed && s.seed >= 1, 'new seed');
+    const random = Math.random;
+    const draws = [0, 0, 0.5];
+    Math.random = () => draws.shift();
+    try {
+      s.reshuffle();
+      assertEqual(s.seed, 1);
+      // The same seed again is drawn anew.
+      s.reshuffle();
+      assertEqual(s.seed, 1 + Math.floor(0.5 * 2147483647));
+    } finally {
+      Math.random = random;
+    }
     assertEqual(read(s).pending, true);
     s.regenerate();
     assertEqual(read(s).pending, false);
@@ -292,6 +342,7 @@ suite('doe-planner commands — regenerate and reshuffle', () => {
       actualRows: [['0', '0', '0'], ['10', '10', '20']],
       responseValues: [[3, 5]],
       rowCount: 2,
+      sheetRowCount: 2,
     };
     s.regenerate({ source });
     assertEqual(s.design.sourceRowCount, 2);
@@ -304,9 +355,23 @@ suite('doe-planner commands — regenerate and reshuffle', () => {
     assertEqual(JSON.stringify(s.design), first);
   });
 
+  test('a source with invalid rows still builds; validity counts every sheet row', () => {
+    const s = optimalPlan({ sourceWorksheet: { instanceId: 'ws-src', sheetId: 's-src' } });
+    s.options = { ...s.options, optimalRuns: 1 };
+    // Five sheet rows, two of them valid.
+    s.regenerate({ source: {
+      codedMatrix: [[-1, -1, -1], [1, 1, 1]], actualRows: [['0', '0', '0'], ['10', '10', '10']],
+      responseValues: [[3, 5]], rowCount: 2, sheetRowCount: 5,
+    } });
+    assert(s.design !== null, 'design built');
+    assertEqual(s.options.optimalRuns, optimal.minOptimalRuns(s, { sourceRowCount: 5 }));
+    assertEqual(s.design.sourceRowCount, 2);
+    assertEqual(s.design.codedMatrix.length, 2 + Math.max(s.options.optimalRuns, optimal.minRuns(s) - 2));
+  });
+
   test('a source without a source worksheet is refused', () => {
     const s = optimalPlan();
-    const source = { codedMatrix: [], actualRows: [], responseValues: [], rowCount: 0 };
+    const source = { codedMatrix: [], actualRows: [], responseValues: [], rowCount: 0, sheetRowCount: 0 };
     assertEqual(errorOf(() => s.regenerate({ source })).param, 'source');
   });
 
@@ -427,7 +492,6 @@ suite('doe-planner commands — EVOP', () => {
     const ph = s.projectPhases[0];
     assertEqual(ph.decision, 'repeat');
     assertDeepEqual(ph.yValues, y);
-    assertDeepEqual(ph.selectedRes, s.projectPhases[0].selectedRes);
     assertEqual(ph.selectedRes.k, 2);
     assertEqual(ph.selectedPBIdx, null);
     assertDeepEqual(ph.sourceWorksheet, { instanceId: 'ws-src', sheetId: 's-src' });
@@ -437,11 +501,11 @@ suite('doe-planner commands — EVOP', () => {
     assertEqual(errorOf(() => s.completePhase({ decision: 'pause' })).param, 'decision');
   });
 
-  test('completePhase without yValues stores []; stop opens no phase; a decided phase is not closed again', () => {
+  test('completePhase without yValues stores null; stop opens no phase; a decided phase is not closed again', () => {
     const s = planned();
     s.setProjectMode({ on: true });
     s.completePhase({ decision: 'stop' });
-    assertDeepEqual(s.projectPhases[0].yValues, []);
+    assertEqual(s.projectPhases[0].yValues, null);
     assertEqual(s.projectPhases.length, 1);
     assertEqual(errorOf(() => s.completePhase({ decision: 'repeat' })).param, 'decision');
     assertEqual(confirmOf(s, 'completePhase', { decision: 'repeat' }), null);
@@ -486,6 +550,15 @@ suite('doe-planner commands — EVOP', () => {
     assertDeepEqual(s.sourceWorksheet, { instanceId: 'ws-src', sheetId: 's-src' });
     assertEqual(JSON.stringify(s.design), design);
     assertEqual(read(s).pending, false);
+  });
+
+  test('recenter without values keeps the levels', () => {
+    const s = planned();
+    s.setProjectMode({ on: true });
+    s.regenerate();
+    s.completePhase({ decision: 'recenter' });
+    assertDeepEqual(s.factors[0].levels, ['20', '40']);
+    assertEqual(s.projectPhases.length, 2);
   });
 
   test('a recentered phase moves the levels to the best run', () => {

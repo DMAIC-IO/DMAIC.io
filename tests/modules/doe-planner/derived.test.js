@@ -122,7 +122,7 @@ suite('doe-planner derived — Plan', () => {
     const noRows = read(s, fakeData({ src: { rowCount: 0, columns: {} } }));
     const rows = read(s, fakeData({ src: { rowCount: 20, columns: {} } }));
     assertEqual(noRows.invalidReason, 'tooFewOptimalRuns');
-    assertEqual(read(s, fakeData()).invalidReason, 'tooFewOptimalRuns');
+    assertEqual(read(s, fakeData()).invalidReason, 'source-not-found');
     assertEqual(rows.valid, true);
   });
 });

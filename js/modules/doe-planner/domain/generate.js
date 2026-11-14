@@ -19,6 +19,7 @@ import { codedToActualRows } from './runtable.js';
  * @property {string[][]} actualRows actual values per valid row, as text
  * @property {Array<Array<number|null>>} responseValues per response, one value per valid row
  * @property {number} rowCount valid rows
+ * @property {number} [sheetRowCount] all rows of the source sheet
  */
 
 /**

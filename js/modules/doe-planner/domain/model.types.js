@@ -64,6 +64,7 @@
 /**
  * @typedef {object} SelectDesignTypeCommand
  * @property {'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt'} type
+ * @property {number} [sourceRowCount]
  */
 
 /**
@@ -90,12 +91,14 @@
  * @typedef {object} SetTermCommand
  * @property {string} id
  * @property {boolean} on
+ * @property {number} [sourceRowCount]
  */
 
 /**
  * @typedef {object} SetTermGroupCommand
  * @property {number} group
  * @property {boolean} on
+ * @property {number} [sourceRowCount]
  */
 
 /**
@@ -111,11 +114,12 @@
 /**
  * @typedef {object} SetSourceWorksheetCommand
  * @property {{ instanceId: string, sheetId: string }|null} ref
+ * @property {number} [sourceRowCount]
  */
 
 /**
  * @typedef {object} RegenerateCommand
- * @property {{ codedMatrix: number[][], actualRows: string[][], responseValues: Array<Array<number|null>>, rowCount: number }|null} [source]
+ * @property {{ codedMatrix: number[][], actualRows: string[][], responseValues: Array<Array<number|null>>, rowCount: number, sheetRowCount: number }|null} [source]
  */
 
 /**
@@ -162,7 +166,7 @@
 /**
  * @typedef {object} CompletePhaseCommand
  * @property {'recenter'|'repeat'|'stop'} decision
- * @property {Array<Array<number|null>>} [yValues]
+ * @property {Array<Array<number|null>>|null} [yValues]
  */
 
 /**

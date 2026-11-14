@@ -28,14 +28,15 @@ import taguchiType from './designs/taguchi.js';
 import optimalType from './designs/optimal.js';
 import { PB_DESIGNS } from './tables.js';
 
-/** The design-type modules with their own helpers (the registry type knows only the common ones). */
-const frac = /** @type {any} */ (fracType);
-const taguchi = /** @type {any} */ (taguchiType);
-const optimal = /** @type {any} */ (optimalType);
 import {
   configCheck, configCheckWith, recommendation, summaryOf, evaluationOf, stalenessOf, progressOf, dispersionOf,
   evopOf, evopCycles, runsOf,
 } from './read.js';
+
+/** The design-type modules with their own helpers (the registry type knows only the common ones). */
+const frac = /** @type {any} */ (fracType);
+const taguchi = /** @type {any} */ (taguchiType);
+const optimal = /** @type {any} */ (optimalType);
 
 /** Fewest levels of a factor. */
 export const MIN_LEVELS = 2;
@@ -89,31 +90,50 @@ function clampAnalysis(m) {
 }
 
 /**
- * Fewest new runs of an optimal design. With a source worksheet the rows
- * of the last design built on it count; before one exists, one new run.
+ * The source sheet the current design was built on, as `instanceId::sheetId`; null without.
  * @param {any} m
- * @returns {number}
+ * @returns {string|null}
  */
-function minOptimalRunsOf(m) {
-  if (!m.sourceWorksheet) return optimal.minOptimalRuns(m, { sourceRowCount: 0 });
-  const rows = m.design && typeof m.design.sourceRowCount === 'number' ? m.design.sourceRowCount : null;
-  return rows === null ? 1 : optimal.minOptimalRuns(m, { sourceRowCount: rows });
+function designSource(m) {
+  if (!m.design) return null;
+  try { return JSON.parse(m.design.configSignature).source ?? null; } catch { return null; }
 }
 
-/** @param {any} m @returns {void} raises the requested optimal runs to the minimum; never lowers them */
-function raiseOptimalRuns(m) {
-  const min = minOptimalRunsOf(m);
+/**
+ * Fewest new runs of an optimal design. The rows of the source sheet count:
+ * the given ones, else those of the current design when it was built on the
+ * same source sheet, else none.
+ * @param {any} m
+ * @param {number} [sourceRowCount] rows of the source sheet
+ * @returns {number}
+ */
+function minOptimalRunsOf(m, sourceRowCount) {
+  const src = m.sourceWorksheet;
+  let rows = 0;
+  if (src && sourceRowCount !== undefined) rows = sourceRowCount;
+  else if (src && designSource(m) === `${src.instanceId}::${src.sheetId}`
+    && typeof m.design.sourceRowCount === 'number') rows = m.design.sourceRowCount;
+  return optimal.minOptimalRuns(m, { sourceRowCount: rows });
+}
+
+/**
+ * Raises the requested optimal runs to the minimum; never lowers them.
+ * @param {any} m @param {number} [sourceRowCount] rows of the source sheet
+ * @returns {void}
+ */
+function raiseOptimalRuns(m, sourceRowCount) {
+  const min = minOptimalRunsOf(m, sourceRowCount);
   if ((m.options.optimalRuns || 0) < min) m.options.optimalRuns = min;
 }
 
 /**
  * Stores the active terms sorted and raises the runs to the new minimum.
- * @param {any} m @param {Set<string>} active
+ * @param {any} m @param {Set<string>} active @param {number} [sourceRowCount] rows of the source sheet
  * @returns {void}
  */
-function applyActiveTerms(m, active) {
+function applyActiveTerms(m, active, sourceRowCount) {
   m.options.optimalActiveTerms = [...active].sort((a, b) => termSortKey(a).localeCompare(termSortKey(b)));
-  raiseOptimalRuns(m);
+  raiseOptimalRuns(m, sourceRowCount);
 }
 
 /**
@@ -213,8 +233,9 @@ function startPhase(m, recenter) {
   const prev = m.projectPhases[m.activePhaseIdx];
   const n = m.projectPhases.length + 1;
   let factors = plain(m.factors);
-  if (recenter && prev && prev.yValues && m.design) {
-    factors = plain(recenteredFactors(m.factors, computeEVOPEffects(evopCycles(m)).bestPointCoded));
+  const cycles = evopCycles(m);
+  if (recenter && prev && prev.yValues && prev.yValues.length && m.design && cycles.length) {
+    factors = plain(recenteredFactors(m.factors, computeEVOPEffects(cycles).bestPointCoded));
   }
   m.doeName = `${m.projectName} - Phase ${n}`;
   m.factors = factors;
@@ -572,14 +593,17 @@ export class State extends defineModel({
       run({ index: ri }) { this.analysisResponseIdx = ri; },
     }),
     selectDesignType: command({
-      params: { type: oneOf(['full', 'frac', 'pb', 'ccd', 'bb', 'taguchi', 'dopt', 'aopt', 'gopt']) },
-      run({ type }) {
+      params: {
+        type: oneOf(['full', 'frac', 'pb', 'ccd', 'bb', 'taguchi', 'dopt', 'aopt', 'gopt']),
+        sourceRowCount: number({ integer: true, min: 0, optional: true }),
+      },
+      run({ type, sourceRowCount }) {
         requireForm('type', type, !(DESIGNS[type].twoLevelOnly && hasMultiLevel(this)),
           'a design type for factors with more than two levels: not frac or pb');
         this.designType = type;
         this.selectedRes = null;
         this.selectedPBIdx = null;
-        if (isOptimal(this) && !this.options.optimalRuns) this.options.optimalRuns = minOptimalRunsOf(this) + 2;
+        if (isOptimal(this) && !this.options.optimalRuns) this.options.optimalRuns = minOptimalRunsOf(this, sourceRowCount) + 2;
       },
     }),
     applyRecommendation: command({
@@ -621,8 +645,8 @@ export class State extends defineModel({
       },
     }),
     setTerm: command({
-      params: { id: text(), on: boolean() },
-      run({ id, on }) {
+      params: { id: text(), on: boolean(), sourceRowCount: number({ integer: true, min: 0, optional: true }) },
+      run({ id, on, sourceRowCount }) {
         const groups = enumerateTerms(this.factors.length);
         const ids = groups.flatMap((g) => g.ids);
         requireForm('id', id, ids.includes(id), ids.join(', '));
@@ -630,12 +654,12 @@ export class State extends defineModel({
         const active = new Set(activeTerms(this));
         if (on) activateTerm(active, id);
         else deactivateTerm(active, id);
-        applyActiveTerms(this, active);
+        applyActiveTerms(this, active, sourceRowCount);
       },
     }),
     setTermGroup: command({
-      params: { group: number({ integer: true, min: 0 }), on: boolean() },
-      run({ group, on }) {
+      params: { group: number({ integer: true, min: 0 }), on: boolean(), sourceRowCount: number({ integer: true, min: 0, optional: true }) },
+      run({ group, on, sourceRowCount }) {
         const groups = enumerateTerms(this.factors.length);
         requireIndex('group', group, groups.length, { existing: true });
         const g = groups[group];
@@ -645,7 +669,7 @@ export class State extends defineModel({
           if (on) activateTerm(active, id);
           else deactivateTerm(active, id);
         }
-        applyActiveTerms(this, active);
+        applyActiveTerms(this, active, sourceRowCount);
       },
     }),
     addForbiddenVertex: command({
@@ -670,13 +694,16 @@ export class State extends defineModel({
       },
     }),
     setSourceWorksheet: command({
-      params: { ref: object({ instanceId: text({ nonEmpty: true }), sheetId: text({ nonEmpty: true }) }, { nullable: true }) },
-      run({ ref }) {
+      params: {
+        ref: object({ instanceId: text({ nonEmpty: true }), sheetId: text({ nonEmpty: true }) }, { nullable: true }),
+        sourceRowCount: number({ integer: true, min: 0, optional: true }),
+      },
+      run({ ref, sourceRowCount }) {
         const own = this.worksheetRef;
         requireForm('ref', ref, !(ref && own && own.instanceId === ref.instanceId && own.sheetId === ref.sheetId),
           "a sheet other than the planner's own datasheet, or null");
         this.sourceWorksheet = ref ? { instanceId: ref.instanceId, sheetId: ref.sheetId } : null;
-        if (isOptimal(this)) raiseOptimalRuns(this);
+        if (isOptimal(this)) raiseOptimalRuns(this, sourceRowCount);
       },
     }),
     regenerate: command({
@@ -686,14 +713,16 @@ export class State extends defineModel({
           actualRows: list(list(text())),
           responseValues: list(list(number({ nullable: true }))),
           rowCount: number({ integer: true, min: 0 }),
+          sheetRowCount: number({ integer: true, min: 0 }),
         }, { nullable: true, optional: true }),
       },
       run({ source = null }) {
         const withSource = isOptimal(this) && Boolean(this.sourceWorksheet);
         requireForm('source', source, withSource === (source !== null), withSource
-          ? 'the rows of the source worksheet (codedMatrix, actualRows, responseValues, rowCount)'
+          ? 'the rows of the source worksheet (codedMatrix, actualRows, responseValues, rowCount, sheetRowCount)'
           : 'null; a source belongs to an optimal design with a source worksheet');
-        const check = configCheckWith(this, source ? source.rowCount : 0);
+        if (source) raiseOptimalRuns(this, source.sheetRowCount);
+        const check = configCheckWith(this, source ? source.sheetRowCount : 0);
         if (!check.ok || (source && source.rowCount === 0)) {
           this.design = null;
           this.previewEdits = null;
@@ -796,19 +825,19 @@ export class State extends defineModel({
     completePhase: command({
       params: {
         decision: oneOf(['recenter', 'repeat', 'stop']),
-        yValues: list(list(number({ nullable: true })), { optional: true }),
+        yValues: list(list(number({ nullable: true })), { nullable: true, optional: true }),
       },
       confirm({ decision }) {
         const ph = this.projectPhases[this.activePhaseIdx];
         return ph && !ph.decision ? { key: 'confirm.completePhase', params: { decision } } : null;
       },
-      run({ decision, yValues = [] }) {
+      run({ decision, yValues = null }) {
         const ph = this.projectPhases[this.activePhaseIdx];
         requireForm('decision', decision, Boolean(ph && !ph.decision), 'a decision for the open active phase of a project');
         this.syncActivePhase();
         ph.decision = decision;
         ph.completedAt = new Date().toISOString();
-        ph.yValues = plain(yValues);
+        ph.yValues = yValues === null ? null : plain(yValues);
         if (decision !== 'stop') startPhase(this, decision === 'recenter');
       },
     }),
@@ -824,7 +853,7 @@ export class State extends defineModel({
     /**
      * Why the configuration yields no design: 'tooFewFactors', 'duplicateFactorNames', 'incompleteFactor',
      * 'noResponse', 'unnamedResponse', 'noDesignType', 'twoLevelOnly', 'noResolution', 'noPBDesign',
-     * 'bbUnavailable', 'noTaguchiArray', 'tooFewOptimalRuns' or a source reason; null while valid.
+     * 'bbUnavailable', 'noTaguchiArray', 'tooFewOptimalRuns' or 'source-not-found'; null while valid.
      * @param {any} data worksheet data access
      * @this {import('./model.types.js').StateModel}
      * @returns {string|null}

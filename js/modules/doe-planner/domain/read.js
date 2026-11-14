@@ -48,6 +48,8 @@ function sheetOf(data, ref) {
  */
 export function configCheck(m, data) {
   const source = sheetOf(data, m.sourceWorksheet);
+  // An optimal design on a source sheet that is gone has nothing to build on.
+  if (data && isOptimal(m) && m.sourceWorksheet && !source) return { ok: false, reason: 'source-not-found' };
   return configCheckWith(m, source ? source.rowCount : 0);
 }
 
