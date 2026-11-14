@@ -13,13 +13,28 @@
  * analysisResponseIdx, activePhaseIdx }`. The actual matrix of a design is
  * stored as text; readers take its rows from `actualRows` (design.js).
  */
-import { defineModel, list, object, text, number, boolean, oneOf } from '../../../core/model.js';
+import { defineModel, command, index, list, object, text, number, boolean, oneOf } from '../../../core/model.js';
+import { requireKnownId, requireIndex, requireForm } from '../../../core/validate.js';
+import { enumerateTerms, activateTerm, deactivateTerm, termSortKey } from '../../../engines/doe-terms.js';
 import { from0 } from './migrations.js';
-import { activeTerms } from './design.js';
-import { configSignature } from './signatures.js';
+import { activeTerms, isOptimal, modelTerms } from './design.js';
+import { configSignature, designSignature } from './signatures.js';
 import { experimentOf } from './experiment.js';
+import { designFor } from './generate.js';
+import { evaluateDesign, computeEVOPEffects, recenteredFactors } from './analysis.js';
+import { DESIGNS } from './designs/index.js';
+import fracType from './designs/frac.js';
+import taguchiType from './designs/taguchi.js';
+import optimalType from './designs/optimal.js';
+import { PB_DESIGNS } from './tables.js';
+
+/** The design-type modules with their own helpers (the registry type knows only the common ones). */
+const frac = /** @type {any} */ (fracType);
+const taguchi = /** @type {any} */ (taguchiType);
+const optimal = /** @type {any} */ (optimalType);
 import {
-  configCheck, recommendation, summaryOf, evaluationOf, stalenessOf, progressOf, dispersionOf, evopOf, runsOf,
+  configCheck, configCheckWith, recommendation, summaryOf, evaluationOf, stalenessOf, progressOf, dispersionOf,
+  evopOf, evopCycles, runsOf,
 } from './read.js';
 
 /** Fewest levels of a factor. */
@@ -44,6 +59,170 @@ const hasMultiLevel = (m) => m.factors.some((f) => f.levels.length > 2);
 function selectionFits(m) {
   if (m.selectedRes && m.selectedRes.k !== m.factors.length) return false;
   return !(hasMultiLevel(m) && (m.designType === 'frac' || m.designType === 'pb'));
+}
+
+/** @param {any} v @returns {any} a plain deep copy */
+const plain = (v) => (v === undefined ? undefined : JSON.parse(JSON.stringify(v)));
+
+/** Fixed columns of the preview, in their order; they take no edits. */
+const LOCKED_COLUMNS = Object.freeze(['run', 'std', 'block', 'rep']);
+
+/**
+ * Clears a selection that no longer fits the factors: a fractional cell
+ * of another factor count; frac and pb fall back to full with a
+ * multi-level factor.
+ * @param {any} m
+ * @returns {void}
+ */
+function fitSelection(m) {
+  if (m.selectedRes && m.selectedRes.k !== m.factors.length) m.selectedRes = null;
+  if (hasMultiLevel(m) && (m.designType === 'frac' || m.designType === 'pb')) {
+    m.designType = 'full';
+    m.selectedRes = null;
+    m.selectedPBIdx = null;
+  }
+}
+
+/** @param {any} m @returns {void} the analysed response stays one of the responses */
+function clampAnalysis(m) {
+  if (m.analysisResponseIdx > m.responses.length - 1) m.analysisResponseIdx = Math.max(0, m.responses.length - 1);
+}
+
+/**
+ * Fewest new runs of an optimal design. With a source worksheet the rows
+ * of the last design built on it count; before one exists, one new run.
+ * @param {any} m
+ * @returns {number}
+ */
+function minOptimalRunsOf(m) {
+  if (!m.sourceWorksheet) return optimal.minOptimalRuns(m, { sourceRowCount: 0 });
+  const rows = m.design && typeof m.design.sourceRowCount === 'number' ? m.design.sourceRowCount : null;
+  return rows === null ? 1 : optimal.minOptimalRuns(m, { sourceRowCount: rows });
+}
+
+/** @param {any} m @returns {void} raises the requested optimal runs to the minimum; never lowers them */
+function raiseOptimalRuns(m) {
+  const min = minOptimalRunsOf(m);
+  if ((m.options.optimalRuns || 0) < min) m.options.optimalRuns = min;
+}
+
+/**
+ * Stores the active terms sorted and raises the runs to the new minimum.
+ * @param {any} m @param {Set<string>} active
+ * @returns {void}
+ */
+function applyActiveTerms(m, active) {
+  m.options.optimalActiveTerms = [...active].sort((a, b) => termSortKey(a).localeCompare(termSortKey(b)));
+  raiseOptimalRuns(m);
+}
+
+/**
+ * @param {{ levels: string[] }} f
+ * @returns {number[]} the coded value of each level
+ */
+const codedLevels = (f) => f.levels.map((_, li) => (f.levels.length === 1 ? 0 : -1 + (2 * li) / (f.levels.length - 1)));
+
+/**
+ * Adds a forbidden combination unless it is already forbidden.
+ * @param {any} m @param {Array<number|null>} pattern
+ * @returns {boolean} false when it was already forbidden
+ */
+function forbid(m, pattern) {
+  const list = m.options.forbiddenVertices;
+  const same = (p) => p.length === pattern.length && p.every((v, i) => v === pattern[i]);
+  if (list.some(same)) return false;
+  m.options.forbiddenVertices = [...plain(list), [...pattern]];
+  return true;
+}
+
+/**
+ * Where a preview column takes its edits: a continuous factor or a response; null for locked
+ * columns and categorical factors; undefined for an unknown key.
+ * @param {any} m @param {string} key
+ * @returns {{ kind: 'factors'|'responses', index: number }|null|undefined}
+ */
+function editTarget(m, key) {
+  if (LOCKED_COLUMNS.includes(key)) return null;
+  const f = /^f:(-?\d+)$/.exec(key);
+  if (f) {
+    const fi = m.factors.findIndex((x) => x.id === Number(f[1]));
+    if (fi < 0) return undefined;
+    return m.factors[fi].kind === 'categorical' ? null : { kind: 'factors', index: fi };
+  }
+  const r = /^r:(\d+)$/.exec(key);
+  if (r && Number(r[1]) < m.responses.length) return { kind: 'responses', index: Number(r[1]) };
+  return undefined;
+}
+
+/** @param {any} m @returns {string[]} the preview's column keys in order */
+const previewColumns = (m) => [...LOCKED_COLUMNS, ...m.factors.map((f) => `f:${f.id}`), ...m.responses.map((_, i) => `r:${i}`)];
+
+/**
+ * Writes cells into the preview edits; all-null edits are none.
+ * @param {any} m a model with a design
+ * @param {Array<{ row: number, target: { kind: 'factors'|'responses', index: number }, value: number|null }>} cells
+ * @returns {void}
+ */
+function writeEdits(m, cells) {
+  const n = m.design.actualMatrix.length;
+  const base = m.previewEdits || { factors: [], responses: [] };
+  const copy = (lists, count) => Array.from({ length: count }, (_, i) => {
+    const col = Array.isArray(lists[i]) ? [...lists[i]] : [];
+    while (col.length < n) col.push(null);
+    return col.slice(0, n);
+  });
+  const edits = { factors: copy(base.factors, m.factors.length), responses: copy(base.responses, m.responses.length) };
+  for (const { row, target, value } of cells) edits[target.kind][target.index][row] = value;
+  const any = [...edits.factors, ...edits.responses].some((col) => col.some((v) => v !== null));
+  m.previewEdits = any ? edits : null;
+}
+
+/**
+ * @param {any} m @param {number} row the row asked for
+ * @returns {number} rows of the design, rejection when there is none
+ */
+function designRows(m, row) {
+  requireForm('row', row, Boolean(m.design), 'a row of a generated design; there is none yet');
+  return m.design.actualMatrix.length;
+}
+
+/**
+ * A new, open phase from the current plan.
+ * @param {any} m @param {number} cycleNumber @param {string} doeName
+ * @returns {object}
+ */
+function openPhase(m, cycleNumber, doeName) {
+  return {
+    ...m.phaseState(),
+    cycleNumber,
+    doeName,
+    design: null,
+    worksheetRef: null,
+    decision: null,
+    completedAt: null,
+    yValues: null,
+  };
+}
+
+/**
+ * Opens the next phase: re-centered on the best run of all closed cycles, or with the same levels.
+ * @param {any} m @param {boolean} recenter
+ * @returns {void}
+ */
+function startPhase(m, recenter) {
+  const prev = m.projectPhases[m.activePhaseIdx];
+  const n = m.projectPhases.length + 1;
+  let factors = plain(m.factors);
+  if (recenter && prev && prev.yValues && m.design) {
+    factors = plain(recenteredFactors(m.factors, computeEVOPEffects(evopCycles(m)).bestPointCoded));
+  }
+  m.doeName = `${m.projectName} - Phase ${n}`;
+  m.factors = factors;
+  m.design = null;
+  m.worksheetRef = null;
+  m.previewEdits = null;
+  m.projectPhases.push(openPhase(m, n, m.doeName));
+  m.activePhaseIdx = m.projectPhases.length - 1;
 }
 
 /**
@@ -278,6 +457,7 @@ export class State extends defineModel({
       }, { nullable: true, optional: true }),
       selectedPBIdx: number({ integer: true, min: 0, nullable: true, optional: true }),
       sourceWorksheet: object({ instanceId: text(), sheetId: text() }, { nullable: true, optional: true }),
+      seed: number({ integer: true, min: 0, max: 2147483647, optional: true }),
     })),
   },
   view: {
@@ -325,6 +505,313 @@ export class State extends defineModel({
       test(m) { return m.activePhaseIdx === -1 || m.activePhaseIdx < m.projectPhases.length; },
       repair(m) { m._v.activePhaseIdx = Math.min(m._v.activePhaseIdx, m._v.projectPhases.length - 1); },
     },
+  },
+  commands: {
+    addFactor: command({
+      returns: number({ integer: true }),
+      run() {
+        const id = Math.max(0, ...this.factors.map((f) => f.id)) + 1;
+        this.factors.push({ id, name: '', unit: '', kind: 'continuous', levels: ['', ''] });
+        // A forbidden combination lists one value per factor.
+        this.options.forbiddenVertices = [];
+        fitSelection(this);
+        return id;
+      },
+    }),
+    removeFactor: command({
+      params: { id: number({ integer: true }) },
+      run({ id }) {
+        requireKnownId('id', id, this.factors.map((f) => f.id));
+        const fi = this.factors.findIndex((f) => f.id === id);
+        this.factors.splice(fi, 1);
+        // Term ids name factor positions, forbidden combinations one value per factor.
+        this.options.optimalActiveTerms = null;
+        this.options.forbiddenVertices = [];
+        if (this.previewEdits) this.previewEdits.factors.splice(fi, 1);
+        fitSelection(this);
+      },
+    }),
+    insertLevel: command({
+      params: { id: number({ integer: true }), at: number({ integer: true }) },
+      run({ id, at }) {
+        requireKnownId('id', id, this.factors.map((f) => f.id));
+        const f = this.factors.find((x) => x.id === id);
+        requireIndex('at', at, f.levels.length);
+        f.levels.splice(at, 0, '');
+        fitSelection(this);
+      },
+    }),
+    removeLevel: command({
+      params: { id: number({ integer: true }), index: number({ integer: true }) },
+      run({ id, index: li }) {
+        requireKnownId('id', id, this.factors.map((f) => f.id));
+        const f = this.factors.find((x) => x.id === id);
+        requireIndex('index', li, f.levels.length, { existing: true });
+        requireForm('index', li, f.levels.length > MIN_LEVELS, `a level of a factor with more than ${MIN_LEVELS} levels`);
+        f.levels.splice(li, 1);
+        fitSelection(this);
+      },
+    }),
+    addResponse: command({
+      returns: index('responses'),
+      run() {
+        this.responses.push({ name: '', unit: '' });
+        return this.responses.length - 1;
+      },
+    }),
+    removeResponse: command({
+      params: { index: index('responses', { existing: true }) },
+      run({ index: ri }) {
+        this.responses.splice(ri, 1);
+        if (this.previewEdits) this.previewEdits.responses.splice(ri, 1);
+        clampAnalysis(this);
+      },
+    }),
+    setAnalysisResponse: command({
+      params: { index: index('responses', { existing: true }) },
+      run({ index: ri }) { this.analysisResponseIdx = ri; },
+    }),
+    selectDesignType: command({
+      params: { type: oneOf(['full', 'frac', 'pb', 'ccd', 'bb', 'taguchi', 'dopt', 'aopt', 'gopt']) },
+      run({ type }) {
+        requireForm('type', type, !(DESIGNS[type].twoLevelOnly && hasMultiLevel(this)),
+          'a design type for factors with more than two levels: not frac or pb');
+        this.designType = type;
+        this.selectedRes = null;
+        this.selectedPBIdx = null;
+        if (isOptimal(this) && !this.options.optimalRuns) this.options.optimalRuns = minOptimalRunsOf(this) + 2;
+      },
+    }),
+    applyRecommendation: command({
+      returns: text({ nullable: true }),
+      run() {
+        const rec = recommendation(this);
+        if (!rec) return null;
+        this.designType = rec;
+        this.selectedRes = null;
+        this.selectedPBIdx = null;
+        return rec;
+      },
+    }),
+    selectResolution: command({
+      params: { k: number({ integer: true, min: 2 }), runs: number({ integer: true, min: 4 }) },
+      run({ k, runs }) {
+        requireForm('k', k, this.designType === 'frac', 'a resolution of the fractional factorial; select design type frac first');
+        requireForm('k', k, k === this.factors.length, `the factor count ${this.factors.length}`);
+        const d = frac.def(k, runs);
+        requireForm('runs', runs, Boolean(d), `a run count of a fractional factorial with ${k} factors`);
+        this.selectedRes = { k, runs, res: d.res, p: d.p };
+      },
+    }),
+    selectPB: command({
+      params: { index: number({ integer: true, min: 0 }) },
+      run({ index: i }) {
+        requireIndex('index', i, PB_DESIGNS.length, { existing: true });
+        requireForm('index', i, this.designType === 'pb', 'a Plackett-Burman row; select design type pb first');
+        this.selectedPBIdx = i;
+      },
+    }),
+    selectTaguchi: command({
+      params: { name: text() },
+      run({ name }) {
+        requireForm('name', name, this.designType === 'taguchi', 'an orthogonal array; select design type taguchi first');
+        const names = taguchi.candidates(this).map((c) => c.name);
+        requireForm('name', name, names.includes(name), names.join(', '));
+        this.options.taguchiArray = name;
+      },
+    }),
+    setTerm: command({
+      params: { id: text(), on: boolean() },
+      run({ id, on }) {
+        const groups = enumerateTerms(this.factors.length);
+        const ids = groups.flatMap((g) => g.ids);
+        requireForm('id', id, ids.includes(id), ids.join(', '));
+        requireForm('id', id, on || !groups[0].ids.includes(id), 'a term that is no main effect; main effects stay in the model');
+        const active = new Set(activeTerms(this));
+        if (on) activateTerm(active, id);
+        else deactivateTerm(active, id);
+        applyActiveTerms(this, active);
+      },
+    }),
+    setTermGroup: command({
+      params: { group: number({ integer: true, min: 0 }), on: boolean() },
+      run({ group, on }) {
+        const groups = enumerateTerms(this.factors.length);
+        requireIndex('group', group, groups.length, { existing: true });
+        const g = groups[group];
+        requireForm('group', group, g.kind !== 'main', 'a group other than 0; the main effects stay in the model');
+        const active = new Set(activeTerms(this));
+        for (const id of g.ids) {
+          if (on) activateTerm(active, id);
+          else deactivateTerm(active, id);
+        }
+        applyActiveTerms(this, active);
+      },
+    }),
+    addForbiddenVertex: command({
+      params: { pattern: list(number({ nullable: true })) },
+      returns: boolean(),
+      run({ pattern }) {
+        const k = this.factors.length;
+        requireForm('pattern', pattern, pattern.length === k, `one coded level or null per factor (${k})`);
+        pattern.forEach((v, fi) => {
+          const allowed = codedLevels(this.factors[fi]);
+          requireForm('pattern', pattern, v === null || allowed.includes(v),
+            `at position ${fi} a coded level ${allowed.join(', ')} or null`);
+        });
+        requireForm('pattern', pattern, pattern.some((v) => v !== null), 'at least one coded level; null everywhere forbids every run');
+        return forbid(this, pattern);
+      },
+    }),
+    removeForbiddenVertex: command({
+      params: { index: index('options.forbiddenVertices', { existing: true }) },
+      run({ index: i }) {
+        this.options.forbiddenVertices = plain(this.options.forbiddenVertices).filter((_, j) => j !== i);
+      },
+    }),
+    setSourceWorksheet: command({
+      params: { ref: object({ instanceId: text({ nonEmpty: true }), sheetId: text({ nonEmpty: true }) }, { nullable: true }) },
+      run({ ref }) {
+        const own = this.worksheetRef;
+        requireForm('ref', ref, !(ref && own && own.instanceId === ref.instanceId && own.sheetId === ref.sheetId),
+          "a sheet other than the planner's own datasheet, or null");
+        this.sourceWorksheet = ref ? { instanceId: ref.instanceId, sheetId: ref.sheetId } : null;
+        if (isOptimal(this)) raiseOptimalRuns(this);
+      },
+    }),
+    regenerate: command({
+      params: {
+        source: object({
+          codedMatrix: list(list(number())),
+          actualRows: list(list(text())),
+          responseValues: list(list(number({ nullable: true }))),
+          rowCount: number({ integer: true, min: 0 }),
+        }, { nullable: true, optional: true }),
+      },
+      run({ source = null }) {
+        const withSource = isOptimal(this) && Boolean(this.sourceWorksheet);
+        requireForm('source', source, withSource === (source !== null), withSource
+          ? 'the rows of the source worksheet (codedMatrix, actualRows, responseValues, rowCount)'
+          : 'null; a source belongs to an optimal design with a source worksheet');
+        const check = configCheckWith(this, source ? source.rowCount : 0);
+        if (!check.ok || (source && source.rowCount === 0)) {
+          this.design = null;
+          this.previewEdits = null;
+          return;
+        }
+        const next = designFor(this, source);
+        this.evaluateFor(next);
+        this.design = { ...next, configSignature: configSignature(this) };
+        this.previewEdits = null;
+        if (this.worksheetRef && !this.worksheetRef.designSignature) this.worksheetRef.designSignature = designSignature(this);
+        this.syncActivePhase();
+      },
+    }),
+    reshuffle: command({
+      run() {
+        let seed = this.seed;
+        while (seed === this.seed) seed = 1 + Math.floor(Math.random() * 2147483647);
+        this.seed = seed;
+      },
+    }),
+    setPreviewCell: command({
+      params: { row: number({ integer: true, min: 0 }), column: text(), value: number({ nullable: true }) },
+      run({ row, column, value }) {
+        requireIndex('row', row, designRows(this, row), { existing: true });
+        const target = editTarget(this, column);
+        const keys = previewColumns(this).filter((key) => editTarget(this, key));
+        requireForm('column', column, Boolean(target), keys.join(', '));
+        writeEdits(this, [{ row, target, value }]);
+      },
+    }),
+    setPreviewCells: command({
+      params: { row: number({ integer: true, min: 0 }), column: text(), values: list(list(number({ nullable: true }))) },
+      run({ row, column, values }) {
+        const n = designRows(this, row);
+        requireIndex('row', row, n, { existing: true });
+        const keys = previewColumns(this);
+        const start = keys.indexOf(column);
+        requireForm('column', column, start >= 0, keys.join(', '));
+        const cells = [];
+        values.forEach((line, r) => line.forEach((value, c) => {
+          const key = keys[start + c];
+          const target = key === undefined ? null : editTarget(this, key);
+          if (row + r < n && target) cells.push({ row: row + r, target, value });
+        }));
+        writeEdits(this, cells);
+      },
+    }),
+    forbidRun: command({
+      params: { row: number({ integer: true, min: 0 }) },
+      returns: boolean(),
+      run({ row }) {
+        requireForm('row', row, isOptimal(this), 'a row of an optimal design (dopt, aopt, gopt)');
+        requireIndex('row', row, designRows(this, row), { existing: true });
+        return forbid(this, [...this.design.codedMatrix[row]]);
+      },
+    }),
+    discardPreviewEdits: command({
+      run() { this.previewEdits = null; },
+    }),
+    setProjectMode: command({
+      params: { on: boolean() },
+      run({ on }) {
+        this.projectMode = on;
+        if (on && this.projectPhases.length === 0) {
+          this.projectPhases.push(openPhase(this, 1, this.doeName || `${this.projectName || 'Projekt'} - Phase 1`));
+          this.activePhaseIdx = 0;
+        }
+      },
+    }),
+    viewPhase: command({
+      params: { index: index('projectPhases', { existing: true }) },
+      run({ index: pi }) {
+        const ph = plain(this.projectPhases[pi]);
+        this.activePhaseIdx = pi;
+        this.doeName = ph.doeName;
+        this.factors = ph.factors;
+        this.responses = ph.responses.length ? ph.responses : [{ name: '', unit: '' }];
+        this.designType = ph.designType;
+        this.options = { ...plain(this.options), ...ph.options };
+        // Phases saved before they kept their selection and seed keep the current ones.
+        for (const key of ['seed', 'selectedRes', 'selectedPBIdx', 'sourceWorksheet']) {
+          if (ph[key] !== undefined) this[key] = ph[key];
+        }
+        this.design = ph.design;
+        this.worksheetRef = ph.worksheetRef;
+        this.previewEdits = null;
+        fitSelection(this);
+        clampAnalysis(this);
+      },
+    }),
+    newPhase: command({
+      returns: number({ integer: true }),
+      run() {
+        requireForm('activePhaseIdx', this.activePhaseIdx, this.canStartNewPhase(),
+          'a decided active phase in a project that was not stopped');
+        startPhase(this, false);
+        return this.activePhaseIdx;
+      },
+    }),
+    completePhase: command({
+      params: {
+        decision: oneOf(['recenter', 'repeat', 'stop']),
+        yValues: list(list(number({ nullable: true })), { optional: true }),
+      },
+      confirm({ decision }) {
+        const ph = this.projectPhases[this.activePhaseIdx];
+        return ph && !ph.decision ? { key: 'confirm.completePhase', params: { decision } } : null;
+      },
+      run({ decision, yValues = [] }) {
+        const ph = this.projectPhases[this.activePhaseIdx];
+        requireForm('decision', decision, Boolean(ph && !ph.decision), 'a decision for the open active phase of a project');
+        this.syncActivePhase();
+        ph.decision = decision;
+        ph.completedAt = new Date().toISOString();
+        ph.yValues = plain(yValues);
+        if (decision !== 'stop') startPhase(this, decision === 'recenter');
+      },
+    }),
   },
   derived: {
     /**
@@ -444,5 +931,59 @@ export class State extends defineModel({
    */
   getActiveTerms() {
     return activeTerms(/** @type {any} */ (this));
+  }
+
+  /**
+   * The evaluation of a design for these factors; throws when the design cannot be evaluated.
+   * @param {{ codedMatrix: number[][], p: number, designType: string }} design
+   * @returns {object}
+   */
+  evaluateFor(design) {
+    return evaluateDesign(design.codedMatrix, this.factors.length, design.p, design.designType, 0.05,
+      { terms: modelTerms(/** @type {any} */ (this), design) });
+  }
+
+  /**
+   * The plan as a phase keeps it: name, factors, responses, type, options, seed, selection, source,
+   * design and datasheet.
+   * @returns {any}
+   */
+  phaseState() {
+    const m = /** @type {any} */ (this);
+    return plain({
+      doeName: m.doeName,
+      factors: m.factors,
+      responses: m.responses,
+      designType: m.designType,
+      options: m.options,
+      seed: m.seed,
+      selectedRes: m.selectedRes,
+      selectedPBIdx: m.selectedPBIdx,
+      sourceWorksheet: m.sourceWorksheet,
+      design: m.design,
+      worksheetRef: m.worksheetRef,
+    });
+  }
+
+  /**
+   * Copies the plan into the active phase of a project.
+   * @returns {void}
+   */
+  syncActivePhase() {
+    const m = /** @type {any} */ (this);
+    if (!m.projectMode) return;
+    const ph = m.projectPhases[m.activePhaseIdx];
+    if (ph) Object.assign(ph, this.phaseState());
+  }
+
+  /**
+   * A new phase may start: no phase stopped the project, and the active one is decided.
+   * @returns {boolean}
+   */
+  canStartNewPhase() {
+    const m = /** @type {any} */ (this);
+    if (m.projectPhases.some((ph) => ph.decision === 'stop')) return false;
+    const active = m.projectPhases[m.activePhaseIdx];
+    return m.activePhaseIdx === -1 || Boolean(active && active.decision);
   }
 }

@@ -48,7 +48,17 @@ function sheetOf(data, ref) {
  */
 export function configCheck(m, data) {
   const source = sheetOf(data, m.sourceWorksheet);
-  const check = checkConfig(m, { sourceRowCount: source ? source.rowCount : 0 });
+  return configCheckWith(m, source ? source.rowCount : 0);
+}
+
+/**
+ * Validity of the configuration for a known row count of the source sheet.
+ * @param {any} m planner model
+ * @param {number} sourceRowCount rows of the source sheet, 0 without
+ * @returns {{ ok: boolean, reason: string|null }}
+ */
+export function configCheckWith(m, sourceRowCount) {
+  const check = checkConfig(m, { sourceRowCount });
   // A fractional cell chosen for another factor count is no resolution for these factors.
   if (check.ok && m.designType === 'frac' && m.selectedRes && m.selectedRes.k !== m.factors.length) {
     return { ok: false, reason: 'noResolution' };
@@ -200,13 +210,12 @@ export function dispersionOf(m, data, staleness, progress) {
 }
 
 /**
- * The EVOP project.
+ * The closed phases with a design and values of the first response, as cycles of the EVOP effects.
  * @param {any} m planner model
- * @returns {object|null} null outside project mode
+ * @returns {Array<{ cycleNumber: number, codedMatrix: number[][], y: Array<number|null>, factorNames: string[] }>}
  */
-export function evopOf(m) {
-  if (!m.projectMode) return null;
-  const cycles = m.projectPhases
+export function evopCycles(m) {
+  return m.projectPhases
     .filter((ph) => ph.yValues && ph.yValues.length && ph.design)
     .map((ph) => ({
       cycleNumber: ph.cycleNumber,
@@ -215,6 +224,16 @@ export function evopOf(m) {
       factorNames: (ph.factors || []).map((f, i) => f.name || letter(i)),
     }))
     .filter((c) => c.y.length > 0);
+}
+
+/**
+ * The EVOP project.
+ * @param {any} m planner model
+ * @returns {object|null} null outside project mode
+ */
+export function evopOf(m) {
+  if (!m.projectMode) return null;
+  const cycles = evopCycles(m);
   let summary = null;
   if (cycles.length) {
     const evop = computeEVOPEffects(cycles);

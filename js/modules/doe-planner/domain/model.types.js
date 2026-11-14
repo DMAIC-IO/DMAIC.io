@@ -17,7 +17,7 @@
  * @property {{ instanceId: string, sheetId: string }|null} sourceWorksheet
  * @property {boolean} projectMode
  * @property {string} projectName
- * @property {Array<{ cycleNumber: number, doeName: string, factors: Array<{ id: number, name: string, unit: string, kind: 'continuous'|'categorical', levels: string[] }>, responses: { name: string, unit: string }[], designType: 'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt', options: { randomize: boolean, centerPoints: boolean, replicates: number, alphaType: 'rotatable'|'face-centered'|'spherical', ccdCenterPoints: number, bbCenterPoints: number, taguchiArray: string, optimalRuns: number, optimalActiveTerms: string[]|null, forbiddenVertices: Array<Array<number|null>> }, design: { codedMatrix: number[][], actualMatrix: string[][], stdOrder: number[], runOrder: number[], replicateIds: number[], resolution: string, p: number, designType: 'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt', sourceResponseSeeds?: Array<Array<number|null>>, sourceRowCount?: number, configSignature: string }|null, worksheetRef: { instanceId: string, sheetId: string, factorColumnIds: string[], responseColumnIds: string[], meanColumnIds: string[], lnVarColumnIds: string[], runOrderColumnId: string|null, stdOrderColumnId: string|null, designSignature: string|null, snapshot: { name: string, designType: 'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt'|null, factors: Array<{ name: string, kind: 'continuous'|'categorical', unit: string|null, levels: string[]|null }>, plannedTerms: { linear: boolean, terms: string[], blockColumn: boolean }, aliasing: { aliases: { term: string, aliasedWith: string[] }[], generatorStrings: string[], definingRelation: string[] }|null, centerPointRows: number[], replicateGroups: number[][], responses: Array<{ name: string, unit: string|null }> }|null }|null, decision: 'recenter'|'repeat'|'stop'|null, completedAt: string|null, yValues: Array<Array<number|null>>|null, selectedRes?: { k: number, runs: number, res: string, p: number }|null, selectedPBIdx?: number|null, sourceWorksheet?: { instanceId: string, sheetId: string }|null }>} projectPhases
+ * @property {Array<{ cycleNumber: number, doeName: string, factors: Array<{ id: number, name: string, unit: string, kind: 'continuous'|'categorical', levels: string[] }>, responses: { name: string, unit: string }[], designType: 'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt', options: { randomize: boolean, centerPoints: boolean, replicates: number, alphaType: 'rotatable'|'face-centered'|'spherical', ccdCenterPoints: number, bbCenterPoints: number, taguchiArray: string, optimalRuns: number, optimalActiveTerms: string[]|null, forbiddenVertices: Array<Array<number|null>> }, design: { codedMatrix: number[][], actualMatrix: string[][], stdOrder: number[], runOrder: number[], replicateIds: number[], resolution: string, p: number, designType: 'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt', sourceResponseSeeds?: Array<Array<number|null>>, sourceRowCount?: number, configSignature: string }|null, worksheetRef: { instanceId: string, sheetId: string, factorColumnIds: string[], responseColumnIds: string[], meanColumnIds: string[], lnVarColumnIds: string[], runOrderColumnId: string|null, stdOrderColumnId: string|null, designSignature: string|null, snapshot: { name: string, designType: 'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt'|null, factors: Array<{ name: string, kind: 'continuous'|'categorical', unit: string|null, levels: string[]|null }>, plannedTerms: { linear: boolean, terms: string[], blockColumn: boolean }, aliasing: { aliases: { term: string, aliasedWith: string[] }[], generatorStrings: string[], definingRelation: string[] }|null, centerPointRows: number[], replicateGroups: number[][], responses: Array<{ name: string, unit: string|null }> }|null }|null, decision: 'recenter'|'repeat'|'stop'|null, completedAt: string|null, yValues: Array<Array<number|null>>|null, selectedRes?: { k: number, runs: number, res: string, p: number }|null, selectedPBIdx?: number|null, sourceWorksheet?: { instanceId: string, sheetId: string }|null, seed?: number }>} projectPhases
  */
 
 /**
@@ -27,12 +27,182 @@
  */
 
 /**
+ * @typedef {{}} AddFactorCommand
+ */
+
+/**
+ * @typedef {object} RemoveFactorCommand
+ * @property {number} id
+ */
+
+/**
+ * @typedef {object} InsertLevelCommand
+ * @property {number} id
+ * @property {number} at
+ */
+
+/**
+ * @typedef {object} RemoveLevelCommand
+ * @property {number} id
+ * @property {number} index
+ */
+
+/**
+ * @typedef {{}} AddResponseCommand
+ */
+
+/**
+ * @typedef {object} RemoveResponseCommand
+ * @property {number} index
+ */
+
+/**
+ * @typedef {object} SetAnalysisResponseCommand
+ * @property {number} index
+ */
+
+/**
+ * @typedef {object} SelectDesignTypeCommand
+ * @property {'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt'} type
+ */
+
+/**
+ * @typedef {{}} ApplyRecommendationCommand
+ */
+
+/**
+ * @typedef {object} SelectResolutionCommand
+ * @property {number} k
+ * @property {number} runs
+ */
+
+/**
+ * @typedef {object} SelectPBCommand
+ * @property {number} index
+ */
+
+/**
+ * @typedef {object} SelectTaguchiCommand
+ * @property {string} name
+ */
+
+/**
+ * @typedef {object} SetTermCommand
+ * @property {string} id
+ * @property {boolean} on
+ */
+
+/**
+ * @typedef {object} SetTermGroupCommand
+ * @property {number} group
+ * @property {boolean} on
+ */
+
+/**
+ * @typedef {object} AddForbiddenVertexCommand
+ * @property {Array<number|null>} pattern
+ */
+
+/**
+ * @typedef {object} RemoveForbiddenVertexCommand
+ * @property {number} index
+ */
+
+/**
+ * @typedef {object} SetSourceWorksheetCommand
+ * @property {{ instanceId: string, sheetId: string }|null} ref
+ */
+
+/**
+ * @typedef {object} RegenerateCommand
+ * @property {{ codedMatrix: number[][], actualRows: string[][], responseValues: Array<Array<number|null>>, rowCount: number }|null} [source]
+ */
+
+/**
+ * @typedef {{}} ReshuffleCommand
+ */
+
+/**
+ * @typedef {object} SetPreviewCellCommand
+ * @property {number} row
+ * @property {string} column
+ * @property {number|null} value
+ */
+
+/**
+ * @typedef {object} SetPreviewCellsCommand
+ * @property {number} row
+ * @property {string} column
+ * @property {Array<Array<number|null>>} values
+ */
+
+/**
+ * @typedef {object} ForbidRunCommand
+ * @property {number} row
+ */
+
+/**
+ * @typedef {{}} DiscardPreviewEditsCommand
+ */
+
+/**
+ * @typedef {object} SetProjectModeCommand
+ * @property {boolean} on
+ */
+
+/**
+ * @typedef {object} ViewPhaseCommand
+ * @property {number} index
+ */
+
+/**
+ * @typedef {{}} NewPhaseCommand
+ */
+
+/**
+ * @typedef {object} CompletePhaseCommand
+ * @property {'recenter'|'repeat'|'stop'} decision
+ * @property {Array<Array<number|null>>} [yValues]
+ */
+
+/**
  * @typedef {StateFields & StateView & {
- *   execute(cmd: never): unknown,
+ *   addFactor(cmd: AddFactorCommand): number,
+ *   removeFactor(cmd: RemoveFactorCommand): void,
+ *   insertLevel(cmd: InsertLevelCommand): void,
+ *   removeLevel(cmd: RemoveLevelCommand): void,
+ *   addResponse(cmd: AddResponseCommand): number,
+ *   removeResponse(cmd: RemoveResponseCommand): void,
+ *   setAnalysisResponse(cmd: SetAnalysisResponseCommand): void,
+ *   selectDesignType(cmd: SelectDesignTypeCommand): void,
+ *   applyRecommendation(cmd: ApplyRecommendationCommand): string|null,
+ *   selectResolution(cmd: SelectResolutionCommand): void,
+ *   selectPB(cmd: SelectPBCommand): void,
+ *   selectTaguchi(cmd: SelectTaguchiCommand): void,
+ *   setTerm(cmd: SetTermCommand): void,
+ *   setTermGroup(cmd: SetTermGroupCommand): void,
+ *   addForbiddenVertex(cmd: AddForbiddenVertexCommand): boolean,
+ *   removeForbiddenVertex(cmd: RemoveForbiddenVertexCommand): void,
+ *   setSourceWorksheet(cmd: SetSourceWorksheetCommand): void,
+ *   regenerate(cmd: RegenerateCommand): void,
+ *   reshuffle(cmd: ReshuffleCommand): void,
+ *   setPreviewCell(cmd: SetPreviewCellCommand): void,
+ *   setPreviewCells(cmd: SetPreviewCellsCommand): void,
+ *   forbidRun(cmd: ForbidRunCommand): boolean,
+ *   discardPreviewEdits(cmd: DiscardPreviewEditsCommand): void,
+ *   setProjectMode(cmd: SetProjectModeCommand): void,
+ *   viewPhase(cmd: ViewPhaseCommand): void,
+ *   newPhase(cmd: NewPhaseCommand): number,
+ *   completePhase(cmd: CompletePhaseCommand): void,
+ *   execute(cmd: ({ type: 'addFactor' } & AddFactorCommand) | ({ type: 'removeFactor' } & RemoveFactorCommand) | ({ type: 'insertLevel' } & InsertLevelCommand) | ({ type: 'removeLevel' } & RemoveLevelCommand) | ({ type: 'addResponse' } & AddResponseCommand) | ({ type: 'removeResponse' } & RemoveResponseCommand) | ({ type: 'setAnalysisResponse' } & SetAnalysisResponseCommand) | ({ type: 'selectDesignType' } & SelectDesignTypeCommand) | ({ type: 'applyRecommendation' } & ApplyRecommendationCommand) | ({ type: 'selectResolution' } & SelectResolutionCommand) | ({ type: 'selectPB' } & SelectPBCommand) | ({ type: 'selectTaguchi' } & SelectTaguchiCommand) | ({ type: 'setTerm' } & SetTermCommand) | ({ type: 'setTermGroup' } & SetTermGroupCommand) | ({ type: 'addForbiddenVertex' } & AddForbiddenVertexCommand) | ({ type: 'removeForbiddenVertex' } & RemoveForbiddenVertexCommand) | ({ type: 'setSourceWorksheet' } & SetSourceWorksheetCommand) | ({ type: 'regenerate' } & RegenerateCommand) | ({ type: 'reshuffle' } & ReshuffleCommand) | ({ type: 'setPreviewCell' } & SetPreviewCellCommand) | ({ type: 'setPreviewCells' } & SetPreviewCellsCommand) | ({ type: 'forbidRun' } & ForbidRunCommand) | ({ type: 'discardPreviewEdits' } & DiscardPreviewEditsCommand) | ({ type: 'setProjectMode' } & SetProjectModeCommand) | ({ type: 'viewPhase' } & ViewPhaseCommand) | ({ type: 'newPhase' } & NewPhaseCommand) | ({ type: 'completePhase' } & CompletePhaseCommand)): unknown,
  *   toJSON(): object,
  *   hasContent(): boolean,
  *   readonly context: import('../../../core/model.js').ModelContext,
  * }} StateModel
+ */
+
+/**
+ * @typedef {(this: StateModel, args: CompletePhaseCommand) => ({ key: string, params?: Record<string, unknown> }|null)} CompletePhaseConfirm
  */
 
 export {};
