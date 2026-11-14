@@ -216,9 +216,6 @@
   "decisionRepeat": "Repeat (more data)",
   "decisionRecenter": "Re-center (new operating point)",
   "decisionStop": "Complete (process stable)",
-  "decisionConfirm_repeat": "Repeat this phase? A new cycle with the same factor settings will be created.",
-  "decisionConfirm_recenter": "Re-center? The best point becomes the new center. Factor levels will be adjusted automatically.",
-  "decisionConfirm_stop": "Complete the project? No further phases will be created.",
   "evopEffectTable": "EVOP Effect Table (cumulative)",
   "evopCycles": "{n} cycles",
   "evopTotalRuns": "{n} total runs",
@@ -273,7 +270,11 @@
     "activePhase": "The active phase must be an existing phase, or −1 outside project mode."
   },
   "confirm": {
-    "completePhase": "Complete the active phase with the decision “{decision}”? The decision cannot be changed afterwards."
+    "completePhase": {
+      "recenter": "Re-center? The best point becomes the new center. Factor levels will be adjusted automatically.",
+      "repeat": "Repeat this phase? A new cycle with the same factor settings will be created.",
+      "stop": "Complete the project? No further phases will be created."
+    }
   },
   "generateFailed": "The design could not be generated.",
   "datasheetFailed": "The datasheet could not be created.",
@@ -285,5 +286,7 @@
   "needsCurrentDatasheet": "The datasheet no longer fits the plan: new runs would belong to another plan than the existing ones. Create the datasheet anew first.",
   "needsOptimal": "Only optimal designs (D, A, G) can be extended.",
   "reshuffle": "Reshuffle",
-  "reshuffleTitle": "Draw a new run order: otherwise the same configuration always gives the same plan."
+  "reshuffleTitle": "Draw a new run order: otherwise the same configuration always gives the same plan.",
+  "responseColumnMissing": "The datasheet is missing the column of the response {names}. Nothing can be analysed without it.",
+  "phaseLabel": "Phase {n}"
 }

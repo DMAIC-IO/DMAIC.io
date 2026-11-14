@@ -550,7 +550,7 @@
             </template>
             <template x-if="progressMissing">
               <div class="doe__results-status">
-                <span class="doe__results-missing" data-help-key="modules.doe-planner.types.Progress.missing" x-text="t('worksheetMissing')"></span>
+                <span class="doe__results-missing" data-help-key="modules.doe-planner.types.Progress.missing" x-text="missingColumnsText"></span>
               </div>
             </template>
             <div class="doe__datasheet-link-row">
@@ -583,8 +583,8 @@
                 <div class="doe__augment-title" x-text="t('augmentSectionTitle')"></div>
                 <div class="doe__augment-hint" x-text="t('augmentHint')"></div>
                 <div class="doe__augment-row">
-                  <label class="doe__input-label" data-help-key="modules.doe-planner.asyncTasks.augment.help" x-text="t('augmentLabel')"></label>
-                  <input class="field doe__augment-runs-input" data-help-key="" x-field="state.augmentRuns" />
+                  <label class="doe__input-label" data-help-key="modules.doe-planner.asyncTasks.augment.help" :for="augmentFieldId" x-text="t('augmentLabel')"></label>
+                  <input class="field doe__augment-runs-input" data-help-key="" :id="augmentFieldId" x-field="state.augmentRuns" />
                   <button class="btn btn--primary doe__augment-btn" type="button" data-help-key="" :disabled="isRunning('augment')" @click="runAugment()" x-text="t('augmentButton')"></button>
                 </div>
               </div>

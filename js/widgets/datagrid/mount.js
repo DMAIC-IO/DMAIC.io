@@ -2,7 +2,9 @@
  * Tabelle über core/datagrid/datagrid.js: zeichnet `config` neu, sobald sie sich
  * ändert (eine DataGrid-Instanz je Widget), und gibt Zelländerung, Einfügen und
  * Zeilenmenü als Kommandos des Moduls hinaus. Eigener Datenstand: nur die
- * zuletzt gezeichnete `config`. Nach jedem Kommando zeigt die Tabelle wieder
+ * zuletzt gezeichnete `config`. Jede Änderung im Grid (Tippen, Einfügen,
+ * Löschen, Ausschneiden, Ausfüllen, Rückgängig) wird mit der Eingabe abgeglichen
+ * und als Kommando hinausgegeben. Nach jedem Kommando zeigt die Tabelle wieder
  * deren Werte; bei gleicher Form (Spalten und Zeilenzahl) bleibt die Auswahl.
  */
 import { DataGrid, isNumericType } from '../../core/datagrid/datagrid.js';
@@ -32,6 +34,22 @@ function toCommand(type, v) {
   if (!isNumericType(type)) return String(v);
   const n = parseNumber(v);
   return Number.isFinite(n) ? n : String(v);
+}
+
+/**
+ * Auswahl auf die Tabelle gekappt: keine Zeile und keine Spalte jenseits des Endes.
+ * @param {any} sel @param {number} rows @param {number} cols
+ * @returns {any|null} null, wenn die Tabelle leer ist
+ */
+function clampRange(sel, rows, cols) {
+  if (rows < 1 || cols < 1) return null;
+  const r = (v) => Math.max(0, Math.min(rows - 1, v));
+  const c = (v) => Math.max(0, Math.min(cols - 1, v));
+  return {
+    ...sel,
+    startRow: r(sel.startRow), endRow: r(sel.endRow), activeRow: r(sel.activeRow ?? sel.startRow),
+    startCol: c(sel.startCol), endCol: c(sel.endCol), activeCol: c(sel.activeCol ?? sel.startCol),
+  };
 }
 
 /**
@@ -78,13 +96,24 @@ export function mount(root, { props, services, effect, command }) {
       }));
     },
   });
+  /** Zeichnet das Widget gerade selbst (setData), statt dass der Nutzer ändert? */
+  let drawing = false;
+  /** Ein Kommando ist unterwegs; danach zeichnet das Widget ohnehin neu. */
+  let busy = false;
+  /** Ein Abgleich ist für die nächste Mikroaufgabe eingeplant. */
+  let scheduled = false;
   const render = () => {
     if (!config) return;
     slot.classList.toggle(READONLY, config.readOnly);
     const next = JSON.stringify([config.columns.map((c) => c.key), config.rows.length]);
-    // setData verwirft die Auswahl; dieselbe Tabelle mit neuen Werten behält sie.
-    const keep = next === shape && grid.selection ? { ...grid.selection } : null;
-    grid.setData(gridColumns(config, moduleId));
+    // setData verwirft die Auswahl; dieselbe Tabelle mit neuen Werten behält sie, gekappt auf die Tabelle.
+    const keep = next === shape && grid.selection ? clampRange(grid.selection, config.rows.length, config.columns.length) : null;
+    drawing = true;
+    try {
+      grid.setData(gridColumns(config, moduleId));
+    } finally {
+      drawing = false;
+    }
     shape = next;
     if (keep) grid.setSelection(keep);
   };
@@ -93,24 +122,60 @@ export function mount(root, { props, services, effect, command }) {
    * Änderung oder gekappt steht sonst die getippte Eingabe im Grid.
    */
   const send = async (name, args) => {
-    const res = await command(name, args);
-    render();
-    return res;
+    busy = true;
+    try {
+      return await command(name, args);
+    } finally {
+      busy = false;
+      render();
+    }
   };
-  const column = (key) => config?.columns.find((c) => c.key === key) ?? null;
 
-  grid.on('cell:changed', ({ columnId, rowIndex, newValue }) => {
-    const col = column(columnId);
-    if (!col || config.readOnly || !props.onCell) { render(); return; }
-    send(props.onCell, { row: rowIndex, column: col.key, value: toCommand(col.type, newValue) });
-  });
-  grid.on('data:pasted', ({ range, data }) => {
-    const cols = config ? config.columns.slice(range.startCol, range.startCol + range.cols) : [];
-    if (!cols.length || config.readOnly || !props.onPaste) { render(); return; }
-    // Zeilen und Spalten, die DataGrid beim Einfügen angehängt hat, verschwinden mit dem Neuzeichnen nach dem Kommando.
-    const values = Array.from({ length: range.rows }, (_, r) => cols.map((c, ci) => toCommand(c.type, data[ci][r])));
-    send(props.onPaste, { row: range.startRow, column: cols[0].key, values });
-  });
+  /**
+   * Gleicht die Zellen des Grids mit der gezeichneten Eingabe ab und schickt jede
+   * Abweichung als Kommando: eine Zelle über `onCell`, mehrere als Block über
+   * `onPaste` (Rechteck um alle Abweichungen; gesperrte Spalten darin `null`).
+   * So erreicht jeder Bearbeitungsweg von DataGrid das Modul: Tippen, Einfügen,
+   * Löschen, Ausschneiden, Ausfüllen, Rückgängig. Ohne passendes Kommando oder
+   * im Nur-Lese-Zustand zeigt die Tabelle wieder die Eingabe.
+   */
+  const reconcile = () => {
+    scheduled = false;
+    if (!config || drawing || busy) return;
+    const cols = config.columns;
+    const rows = Math.max(config.rows.length, grid.rowCount);
+    const now = (c, r) => toCommand(cols[c].type, grid.columns[c]?.values[r] ?? null);
+    const was = (c, r) => (r < config.rows.length ? toCommand(cols[c].type, toGrid(cols[c].type, config.rows[r][c] ?? null)) : null);
+    let r1 = Infinity; let r2 = -1; let c1 = Infinity; let c2 = -1;
+    for (let c = 0; c < cols.length; c++) {
+      if (cols[c].lock) continue;
+      for (let r = 0; r < rows; r++) {
+        if (now(c, r) === was(c, r)) continue;
+        r1 = Math.min(r1, r); r2 = Math.max(r2, r); c1 = Math.min(c1, c); c2 = Math.max(c2, c);
+      }
+    }
+    if (r2 < 0) return;
+    if (config.readOnly) { render(); return; }
+    if (r1 === r2 && c1 === c2) {
+      if (!props.onCell) { render(); return; }
+      send(props.onCell, { row: r1, column: cols[c1].key, value: now(c1, r1) });
+      return;
+    }
+    if (!props.onPaste) { render(); return; }
+    const values = [];
+    for (let r = r1; r <= r2; r++) {
+      const line = [];
+      for (let c = c1; c <= c2; c++) line.push(cols[c].lock ? null : now(c, r));
+      values.push(line);
+    }
+    send(props.onPaste, { row: r1, column: cols[c1].key, values });
+  };
+  const schedule = () => {
+    if (drawing || scheduled) return;
+    scheduled = true;
+    queueMicrotask(reconcile);
+  };
+  for (const ev of ['render', 'cell:changed', 'data:pasted', 'data:filled', 'undo', 'redo']) grid.on(ev, schedule);
 
   effect(() => {
     config = props.config;

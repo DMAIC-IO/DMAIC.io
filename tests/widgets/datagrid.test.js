@@ -231,6 +231,72 @@ suite('datagrid widget', () => {
     root.remove();
   });
 
+  test('Löschen, Ausschneiden, Ausfüllen, Tippen: jede Änderung geht als Kommando hinaus', async () => {
+    const { root } = await host();
+    const sel = (r, c, shift = false) => {
+      td(root, r, c).dispatchEvent(new MouseEvent('mousedown', { bubbles: true, shiftKey: shift }));
+      document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    };
+    const key = (k, opts = {}) => document.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true, ...opts }));
+    document.activeElement?.blur?.();
+    // Entf auf zwei Zellen → ein Block (setBlock ändert nichts, die Werte kommen zurück).
+    sel(0, 1); sel(1, 1, true);
+    key('Delete');
+    await settle();
+    assertDeepEqual(calls, [['setBlock', { row: 0, column: 'f:a', values: [[null], [null]] }]]);
+    assertEqual(td(root, 0, 1).textContent, '1,50');
+    // Entf auf einer Zelle → onCell mit null.
+    calls.length = 0;
+    sel(0, 1);
+    key('Delete');
+    await settle();
+    assertDeepEqual(calls, [['setX', { row: 0, column: 'f:a', value: null }]]);
+    // Ausschneiden leert wie Entf.
+    calls.length = 0;
+    sel(1, 1);
+    document.dispatchEvent(new ClipboardEvent('cut', { clipboardData: new DataTransfer(), bubbles: true, cancelable: true }));
+    await settle();
+    assertDeepEqual(calls, [['setX', { row: 1, column: 'f:a', value: null }]]);
+    // Tippen auf einer gewählten Zelle, Enter übernimmt.
+    calls.length = 0;
+    sel(2, 1);
+    key('8');
+    const input = root.querySelector('input.cell-editor');
+    assertTrue(input !== null, 'Editor durch Tippen');
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+    await settle();
+    assertDeepEqual(calls, [['setX', { row: 2, column: 'f:a', value: 8 }]]);
+    // Ausfüllen mit dem Griff von Zeile 1 nach unten.
+    calls.length = 0;
+    sel(1, 1);
+    root.querySelector('.datagrid__fill-handle').dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+    td(root, 2, 1).dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    await settle();
+    assertEqual(calls.length, 1, JSON.stringify(calls));
+    assertEqual(calls[0][1].row, 2);
+    assertEqual(calls[0][1].column, 'f:a');
+    root.remove();
+  });
+
+  test('gehaltene Auswahl wird auf die Tabelle gekappt', async () => {
+    const { root } = await host('x-widget-on-cell="\'keep\'" x-widget-on-paste="\'setBlock\'"');
+    td(root, 2, 1).dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    document.activeElement?.blur?.();
+    const dt = new DataTransfer();
+    dt.setData('text/plain', '5\n6\n7');
+    document.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+    await settle();
+    assertEqual(root.querySelectorAll('tbody tr').length, 3);
+    assertEqual(root.querySelectorAll('td.cell-selected[data-row-idx="3"], td.cell-selected[data-row-idx="4"]').length, 0);
+    calls.length = 0;
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true, cancelable: true }));
+    await settle();
+    assertTrue(calls.every(([, a]) => a.row <= 2 && (!a.values || a.row + a.values.length <= 3)), JSON.stringify(calls));
+    root.remove();
+  });
+
   test('readOnly: kein Editor, kein Zeilenmenü, keine Aufrufe', async () => {
     const { root, data } = await host();
     data.ro = true;

@@ -59,7 +59,7 @@ export const evopView = (ctx) => ({
   },
 
   /** @param {PhaseLike} ph @returns {string} */
-  phaseLabel(ph) { return ph.doeName || `Phase ${ph.cycleNumber}`; },
+  phaseLabel(ph) { return ph.doeName || this.t('phaseLabel', { n: ph.cycleNumber }); },
 
   /** @param {PhaseLike} ph @returns {string} icon of the decision, '' while open */
   phaseDecIcon(ph) { return (ph.decision && DECISION_ICONS[ph.decision]) || ''; },

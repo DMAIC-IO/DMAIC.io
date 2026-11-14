@@ -486,7 +486,9 @@ suite('doe-planner commands — EVOP', () => {
     s.setProjectMode({ on: true });
     s.regenerate();
     assertDeepEqual(confirmOf(s, 'completePhase', { decision: 'repeat' }),
-      { key: 'confirm.completePhase', params: { decision: 'repeat' } });
+      { key: 'confirm.completePhase.repeat' });
+    assertDeepEqual(confirmOf(s, 'completePhase', { decision: 'recenter' }), { key: 'confirm.completePhase.recenter' });
+    assertDeepEqual(confirmOf(s, 'completePhase', { decision: 'stop' }), { key: 'confirm.completePhase.stop' });
     const y = [[1, 2, 3, 4], [5, 6, null, 8]];
     s.completePhase({ decision: 'repeat', yValues: y });
     const ph = s.projectPhases[0];

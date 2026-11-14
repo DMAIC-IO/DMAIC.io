@@ -27,6 +27,7 @@ import fracType from './designs/frac.js';
 import taguchiType from './designs/taguchi.js';
 import optimalType from './designs/optimal.js';
 import { PB_DESIGNS } from './tables.js';
+import { LOCKED_COLUMNS, previewColumns } from './runtable.js';
 
 import {
   configCheck, configCheckWith, recommendation, summaryOf, evaluationOf, stalenessOf, progressOf, dispersionOf,
@@ -65,8 +66,6 @@ function selectionFits(m) {
 /** @param {any} v @returns {any} a plain deep copy */
 const plain = (v) => (v === undefined ? undefined : JSON.parse(JSON.stringify(v)));
 
-/** Fixed columns of the preview, in their order; they take no edits. */
-const LOCKED_COLUMNS = Object.freeze(['run', 'std', 'block', 'rep']);
 
 /**
  * Clears a selection that no longer fits the factors: a fractional cell
@@ -174,8 +173,6 @@ function editTarget(m, key) {
   return undefined;
 }
 
-/** @param {any} m @returns {string[]} the preview's column keys in order */
-const previewColumns = (m) => [...LOCKED_COLUMNS, ...m.factors.map((f) => `f:${f.id}`), ...m.responses.map((_, i) => `r:${i}`)];
 
 /**
  * Writes cells into the preview edits; all-null edits are none.
@@ -829,7 +826,13 @@ export class State extends defineModel({
       },
       confirm({ decision }) {
         const ph = this.projectPhases[this.activePhaseIdx];
-        return ph && !ph.decision ? { key: 'confirm.completePhase', params: { decision } } : null;
+        // One question per decision: what follows differs (new phase re-centred, repeated, none).
+        const ask = {
+          recenter: { key: 'confirm.completePhase.recenter' },
+          repeat: { key: 'confirm.completePhase.repeat' },
+          stop: { key: 'confirm.completePhase.stop' },
+        };
+        return ph && !ph.decision ? ask[decision] : null;
       },
       run({ decision, yValues = null }) {
         const ph = this.projectPhases[this.activePhaseIdx];

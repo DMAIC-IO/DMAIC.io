@@ -216,9 +216,6 @@
   "decisionRepeat": "Wiederholen (mehr Daten)",
   "decisionRecenter": "Re-zentrieren (neuer Betriebspunkt)",
   "decisionStop": "Abschließen (Prozess stabil)",
-  "decisionConfirm_repeat": "Phase wiederholen? Es wird ein neuer Zyklus mit den gleichen Faktoreinstellungen erstellt.",
-  "decisionConfirm_recenter": "Re-zentrieren? Der beste Punkt wird zum neuen Mittelpunkt. Die Faktor-Stufen werden automatisch angepasst.",
-  "decisionConfirm_stop": "Projekt abschließen? Es werden keine weiteren Phasen erstellt.",
   "evopEffectTable": "EVOP-Effekttafel (kumulativ)",
   "evopCycles": "{n} Zyklen",
   "evopTotalRuns": "{n} Runs gesamt",
@@ -273,7 +270,11 @@
     "activePhase": "Die aktive Phase muss eine vorhandene Phase sein, oder −1 außerhalb des Projektmodus."
   },
   "confirm": {
-    "completePhase": "Die aktive Phase mit der Entscheidung „{decision}“ abschließen? Danach lässt sich die Entscheidung nicht mehr ändern."
+    "completePhase": {
+      "recenter": "Re-zentrieren? Der beste Punkt wird zum neuen Mittelpunkt. Die Faktor-Stufen werden automatisch angepasst.",
+      "repeat": "Phase wiederholen? Es wird ein neuer Zyklus mit den gleichen Faktoreinstellungen erstellt.",
+      "stop": "Projekt abschließen? Es werden keine weiteren Phasen erstellt."
+    }
   },
   "generateFailed": "Der Plan konnte nicht erzeugt werden.",
   "datasheetFailed": "Das Datenblatt konnte nicht angelegt werden.",
@@ -285,5 +286,7 @@
   "needsCurrentDatasheet": "Das Datenblatt passt nicht mehr zum Plan: neue Läufe gehörten zu einem anderen Plan als die vorhandenen. Das Datenblatt zuerst neu anlegen.",
   "needsOptimal": "Nur optimale Pläne (D, A, G) lassen sich erweitern.",
   "reshuffle": "Neu würfeln",
-  "reshuffleTitle": "Neue Laufreihenfolge ziehen: dieselbe Konfiguration ergibt sonst immer denselben Plan."
+  "reshuffleTitle": "Neue Laufreihenfolge ziehen: dieselbe Konfiguration ergibt sonst immer denselben Plan.",
+  "responseColumnMissing": "Im Datenblatt fehlt die Spalte der Zielgröße {names}. Ohne sie lässt sich nichts auswerten.",
+  "phaseLabel": "Phase {n}"
 }

@@ -11,6 +11,16 @@ import { parseDecimalInput, decimalOr } from '../../../core/parse-decimal.js';
 import { formatValue, codedToActual } from '../../../engines/doe-planner-engine.js';
 import { letter } from './design.js';
 
+/** Keys of the fixed columns of the preview, in their order; they take no edits. */
+export const LOCKED_COLUMNS = Object.freeze(['run', 'std', 'block', 'rep']);
+
+/**
+ * Column keys of the preview in order: the fixed columns, `f:<factor id>`, `r:<response index>`.
+ * @param {{ factors: Array<{ id: number }>, responses: any[] }} m
+ * @returns {string[]}
+ */
+export const previewColumns = (m) => [...LOCKED_COLUMNS, ...m.factors.map((f) => `f:${f.id}`), ...m.responses.map((_, i) => `r:${i}`)];
+
 /** Index of the first factor column (after run, std, block, replicate). */
 export const FACTOR_OFFSET = 4;
 

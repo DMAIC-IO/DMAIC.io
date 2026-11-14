@@ -11,11 +11,8 @@
  * regression afterwards.
  */
 import { formatNumber } from '../../../core/number-format.js';
-import { buildRunTable, editsDirty } from '../domain/runtable.js';
+import { buildRunTable, editsDirty, previewColumns } from '../domain/runtable.js';
 import { actualRows, isOptimal } from '../domain/design.js';
-
-/** Keys of the fixed, locked columns of the preview, in order. */
-const ORDER_KEYS = ['run', 'std', 'block', 'rep'];
 
 /**
  * The input of the datagrid widget.
@@ -61,6 +58,13 @@ export const runsView = (ctx) => ({
   /** @returns {boolean} a response column of the bound sheet is gone */
   get progressMissing() { return Boolean(this.progress && this.progress.missing.length > 0); },
 
+  /** @returns {string} which response columns are gone from the bound sheet */
+  get missingColumnsText() {
+    const missing = this.progress ? this.progress.missing : [];
+    const names = missing.map((i) => this.model.responses[i]?.name || `Y${i + 1}`).join(', ');
+    return this.t('responseColumnMissing', { names });
+  },
+
   /** @returns {boolean} the fill state can be shown in numbers */
   get showProgress() { return Boolean(this.progress) && !this.progressMissing; },
 
@@ -77,6 +81,9 @@ export const runsView = (ctx) => ({
 
   /** @returns {boolean} every response cell of the bound sheet holds a number */
   get progressComplete() { return Boolean(this.progress && this.progress.complete); },
+
+  /** @returns {string} id of the augment field, unique per instance (its label points to it) */
+  get augmentFieldId() { return `doe-augment-runs-${ctx.instanceId}`; },
 
   /** @returns {boolean} an optimal design: it can grow by new runs */
   get canAugment() { return isOptimal(this.model); },
@@ -110,7 +117,7 @@ export const runsView = (ctx) => ({
       const m = this.model;
       if (!m.design || !m.design.actualMatrix.length) return null;
       const cols = /** @type {any[]} */ (buildRunTable(tableView(m), (/** @type {string} */ key) => this.t(key)));
-      const keys = [...ORDER_KEYS, ...m.factors.map((f) => `f:${f.id}`), ...m.responses.map((_, i) => `r:${i}`)];
+      const keys = previewColumns(m);
       const n = m.design.actualMatrix.length;
       return {
         columns: cols.map((c, i) => ({

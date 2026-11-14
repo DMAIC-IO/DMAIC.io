@@ -135,6 +135,84 @@ suite('doe-planner runs: preview', () => {
   });
 });
 
+suite('doe-planner runs: every edit path reaches the model', () => {
+  const sel = (root, r, c, shift = false) => {
+    td(root, r, c).dispatchEvent(new MouseEvent('mousedown', { bubbles: true, shiftKey: shift }));
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+  };
+  const key = (k, opts = {}) => document.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true, ...opts }));
+  /** Selects a cell, types a value and takes it with Enter. */
+  async function typeAt(root, r, c, text) {
+    // A click on the one active cell clears the selection (DataGrid); after Enter the next cell is already active.
+    if (!td(root, r, c).classList.contains('cell-active')) sel(root, r, c);
+    document.activeElement?.blur?.();
+    key(text[0]);
+    const input = root.querySelector('.doe__preview-grid input.cell-editor');
+    assert(input !== null, 'editor opened by typing');
+    input.value = text;
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+    await settle();
+  }
+
+  test('type to edit, then Enter', async () => {
+    const h = await ready(plan());
+    await typeAt(h.container, 0, 6, '7,5');
+    assertEqual(h.vm().model.previewEdits.responses[0][0], 7.5);
+    assertEqual(td(h.container, 0, 6).textContent, '7,5000');
+  });
+
+  test('Delete on a selection clears the edits in the model', async () => {
+    const h = await ready(plan());
+    await typeAt(h.container, 0, 6, '1');
+    await typeAt(h.container, 1, 6, '2');
+    await typeAt(h.container, 2, 6, '3');
+    sel(h.container, 0, 6); sel(h.container, 1, 6, true);
+    key('Delete');
+    await settle();
+    const r = h.vm().model.previewEdits.responses[0];
+    assertDeepEqual([r[0], r[1], r[2]], [null, null, 3]);
+    assertEqual(td(h.container, 0, 6).textContent, '');
+    assertEqual(td(h.container, 2, 6).textContent, '3,0000');
+  });
+
+  test('cut clears the cell in the model', async () => {
+    const h = await ready(plan());
+    await typeAt(h.container, 1, 6, '4');
+    sel(h.container, 1, 6);
+    document.dispatchEvent(new ClipboardEvent('cut', { clipboardData: new DataTransfer(), bubbles: true, cancelable: true }));
+    await settle();
+    assertEqual(h.vm().model.previewEdits, null);
+    assertEqual(td(h.container, 1, 6).textContent, '');
+  });
+
+  test('the fill handle writes the filled cells into the model', async () => {
+    const h = await ready(plan());
+    await typeAt(h.container, 0, 6, '9');
+    sel(h.container, 0, 6);
+    h.$('.doe__preview-grid .datagrid__fill-handle').dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+    td(h.container, 2, 6).dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    await settle();
+    const r = h.vm().model.previewEdits.responses[0];
+    assert(h.calls('setPreviewCells').length + h.calls('setPreviewCell').length >= 2, 'the fill went out as a command');
+    for (const i of [1, 2]) {
+      assert(r[i] !== null, `row ${i} filled in the model`);
+      assertEqual(h.vm().previewGrid.rows[i][6], String(r[i]), `row ${i}: grid input from the model`);
+    }
+  });
+
+  test('undo in the grid leaves grid and model in step', async () => {
+    const h = await ready(plan());
+    await typeAt(h.container, 0, 6, '5');
+    sel(h.container, 0, 6);
+    key('z', { ctrlKey: true });
+    await settle();
+    const edit = h.vm().model.previewEdits?.responses[0][0] ?? null;
+    assertEqual(td(h.container, 0, 6).textContent, edit === null ? '' : '5,0000');
+    assertEqual(h.vm().previewGrid.rows[0][6], edit === null ? null : '5');
+  });
+});
+
 suite('doe-planner runs: create and open', () => {
   test('create starts the run and opens the new datasheet', async () => {
     const h = await ready(plan());
@@ -216,6 +294,9 @@ suite('doe-planner runs: bound datasheet', () => {
     assertEqual(h.vm().staleness, 'bound');
     const field = h.$('.doe__augment-runs-input');
     assertEqual(field.value, '4');
+    const label = h.$('.doe__augment-row label');
+    assert(field.id !== '' && label.htmlFor === field.id, 'the label points to the field');
+    assertEqual(field.id, 'doe-augment-runs-doe-1');
     typeIn(field, '6');
     await settle();
     assertEqual(h.vm().state.augmentRuns, 6);

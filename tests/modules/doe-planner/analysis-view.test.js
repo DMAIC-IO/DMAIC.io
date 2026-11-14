@@ -64,7 +64,7 @@ suite('doe-planner analysis: dispersion', () => {
 });
 
 suite('doe-planner analysis: referenced column removed', () => {
-  test('the response column is gone: binding unchanged, worksheetMissing, no numbers', async () => {
+  test('the response column is gone: binding unchanged, the missing column named, no numbers', async () => {
     const { h, b } = await filled();
     const vm = h.vm();
     const before = JSON.stringify(vm.model.worksheetRef);
@@ -75,7 +75,7 @@ suite('doe-planner analysis: referenced column removed', () => {
     await h.done();
     assertEqual(JSON.stringify(vm.model.worksheetRef), before);
     assertDeepEqual([...vm.progress.missing], [0]);
-    assertEqual(h.$('.doe__results-missing').textContent, de('worksheetMissing'));
+    assertEqual(h.$('.doe__results-missing').textContent, de('responseColumnMissing', { names: 'Yield' }));
     assertEqual(h.$$('.doe__results-text').length, 0);
     assertEqual(h.$$('.doe__results-bar').length, 0);
     assertEqual(h.$$('.doe__dispersion-region').length, 0);

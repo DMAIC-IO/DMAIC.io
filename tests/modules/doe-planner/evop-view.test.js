@@ -38,6 +38,15 @@ suite('doe-planner evop: project', () => {
   });
 });
 
+suite('doe-planner evop: phase label', () => {
+  test('a phase without a name is labelled with its number from the texts', async () => {
+    const stored = project(designed(plan()));
+    stored.projectPhases[0].doeName = '';
+    const h = await mount(stored);
+    assertEqual(h.$('.doe__timeline-label').textContent, de('phaseLabel', { n: 1 }));
+  });
+});
+
 suite('doe-planner evop: complete a phase', () => {
   /** Project with a bound, filled datasheet of two responses. */
   async function decidable() {
@@ -56,7 +65,7 @@ suite('doe-planner evop: complete a phase', () => {
     h.$('.doe__phase-decision-btn[data-decision="repeat"]').click();
     await settle();
     assertEqual(asked.length, 1);
-    assertEqual(asked[0].message, 'modules.doe-planner.confirm.completePhase{"decision":"repeat"}');
+    assertEqual(asked[0].message, 'modules.doe-planner.confirm.completePhase.repeat');
     const args = h.calls('completePhase').at(-1);
     assertEqual(args.decision, 'repeat');
     assertDeepEqual(args.yValues, [[1, 2, 3, 4], [5, 6, 7, 8]]);
@@ -66,6 +75,24 @@ suite('doe-planner evop: complete a phase', () => {
     assertDeepEqual(phases[0].yValues.map((c) => [...c]), [[1, 2, 3, 4], [5, 6, 7, 8]]);
     assertEqual(h.vm().model.activePhaseIdx, 1);
     assertEqual(h.$$('.doe__timeline-dec').length, 1, 'the decided phase carries its icon');
+  });
+
+  test('each decision asks with its own text, the one of the earlier planner', async () => {
+    const legacy = await (await fetch(new URL('../../../i18n/de.json', import.meta.url), { cache: 'no-cache' })).json();
+    const texts = new Set();
+    for (const decision of ['recenter', 'repeat', 'stop']) {
+      const h = await decidable();
+      const asked = [];
+      h.context.dialog.confirm = async (opts) => { asked.push(opts); return false; };
+      h.$(`.doe__phase-decision-btn[data-decision="${decision}"]`).click();
+      await settle();
+      assertEqual(asked.length, 1, decision);
+      assertEqual(asked[0].message, `modules.doe-planner.confirm.completePhase.${decision}`);
+      const text = de(`confirm.completePhase.${decision}`);
+      assertEqual(text, legacy.modules['doe-planner'][`decisionConfirm_${decision}`]);
+      texts.add(text);
+    }
+    assertEqual(texts.size, 3);
   });
 
   test('a declined confirm closes nothing', async () => {
