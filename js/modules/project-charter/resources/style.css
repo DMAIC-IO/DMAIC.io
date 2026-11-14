@@ -408,6 +408,14 @@
   height: 100%;
   overflow-y: auto;
   padding: var(--spacing-md);
+  /* Zugeklappt nicht erreichbar (Tab, Kontexthilfe); erst nach dem Einklappen verbergen. */
+  visibility: hidden;
+  transition: visibility 0s linear 0.32s;
+}
+
+.pc__org-editor--open .pc__org-editor-inner {
+  visibility: visible;
+  transition-delay: 0s;
 }
 
 .pc__org-editor-inner::-webkit-scrollbar {
