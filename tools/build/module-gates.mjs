@@ -1561,12 +1561,13 @@ export function checkHelpFiles(base, refIds) {
  * view-Block ihrer Kachel. Eine Kachel hat keinen `state`; jeder Pfad `state.…`
  * in einer Kachel-Vorlage ist ein Befund.
  * @param {{ path: string, text: string }[]} templates
- * @param {{ widgets: Map<string, any>, schema: object, stateSchema: object|null, viewNames: Set<string>, tileText: (p: string) => string, tileFile?: (p: string) => string, algoIds?: Set<string> }} ctx
- *   `tileFile`: Pfad einer Moduldatei, für view-Teile aus Importen
+ * @param {{ widgets: Map<string, any>, schema: object, stateSchema: object|null, viewNames: Set<string>, tileText: (p: string) => string, tileFile?: (p: string) => string, algoIds?: Set<string>, commands?: Set<string> }} ctx
+ *   `tileFile`: Pfad einer Moduldatei, für view-Teile aus Importen; `commands`: Kommandos des Moduls (Model und
+ *   Viewmodel) für die `on*`-Eingaben der Ansicht — Kachel-Vorlagen haben keine
  * @returns {string[]}
  */
-export function checkWidgetTemplates(templates, { widgets, schema, stateSchema, viewNames, tileText, tileFile, algoIds }) {
-  const out = checkWidgetBindings(templates.filter((f) => !/^resources\/tile(\.|$)/.test(f.path)), { widgets, schema, stateSchema, viewNames });
+export function checkWidgetTemplates(templates, { widgets, schema, stateSchema, viewNames, tileText, tileFile, algoIds, commands }) {
+  const out = checkWidgetBindings(templates.filter((f) => !/^resources\/tile(\.|$)/.test(f.path)), { widgets, schema, stateSchema, viewNames, commands });
   if (algoIds) out.push(...checkAlgoLinkLiterals(templates, algoIds));
   for (const f of templates) {
     const m = /^resources\/tile(?:\.([a-z0-9-]+))?\.html$/.exec(f.path);
@@ -1664,8 +1665,10 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
         ...(paths.includes('viewmodel/viewmodel.js') ? viewNamesOf(tileText('viewmodel/viewmodel.js'), vmFile) : []),
         ...Object.keys(schema?.derived ?? {}),
       ]);
-      out.push(...checkWidgetTemplates(templates, { widgets, schema, stateSchema, viewNames: vmNames, tileText, tileFile: (p) => join(base, p), algoIds: loadAlgoIds(appDir) }));
-      out.push(...checkCommandRefs(templates, schema, formSchemas, existsSync(vmFile) ? readViewmodelCommands(readFileSync(vmFile, 'utf8'), vmFile) : {}));
+      const vmCommands = existsSync(vmFile) ? readViewmodelCommands(readFileSync(vmFile, 'utf8'), vmFile) : {};
+      const commands = new Set([...Object.keys(schema?.commands ?? {}), ...Object.keys(vmCommands)]);
+      out.push(...checkWidgetTemplates(templates, { widgets, schema, stateSchema, viewNames: vmNames, tileText, tileFile: (p) => join(base, p), algoIds: loadAlgoIds(appDir), commands }));
+      out.push(...checkCommandRefs(templates, schema, formSchemas, vmCommands));
       const asyncTasks = existsSync(vmFile) ? readViewmodelAsyncTasks(readFileSync(vmFile, 'utf8')) : {};
       out.push(...checkAsyncTaskRefs(templates, asyncTasks));
       if (existsSync(vmFile)) out.push(...checkHistoryOption(readFileSync(vmFile, 'utf8')));

@@ -8,6 +8,9 @@
  * Ein Zeichenkettenliteral (`x-widget-algo-id="'grr'"`) ist ein fester Wert:
  * einmal geprüft, ohne Effect.
  * `x-widget-value` bindet einen Wert über den Wertkanal (prüfender Setter).
+ * Ausgang: `command(name, args)` in den Mount-Optionen führt ein Kommando des
+ * Hosts aus (Model vor Viewmodel, wie `x-command`) und liefert dessen Ergebnis;
+ * einen unbekannten Namen meldet es per console.warn und gibt `{ ok: false }`.
  * Das Widget besitzt sein Element allein: eigener Daten-Stack an der
  * Wurzel, kein `x-data` — Namen des Hosts fallen nicht durch. Fehlbindungen
  * werfen nicht (Alpine initialisierte sonst die Geschwister nicht), sie
@@ -17,6 +20,7 @@ import { checkValue } from './model.js';
 import { openChannel } from './value-channel.js';
 import { cloneTemplate } from './dom.js';
 import { clearRejection, markRejection } from './param-input.js';
+import { isUiCommand, runUiCommand } from './command-directives.js';
 
 const registered = new WeakMap();
 /** Zeichenkettenliteral als gebundener Wert: `'text'` (ohne Apostroph im Inneren). */
@@ -204,7 +208,17 @@ export function mountWidget(Alpine, el, name, entry, { valuePath, channel, i18n,
     if (entry.template) root.append(...cloneTemplate(entry.template));
     let mountEffects = 0;
     const guardedEffect = (fn, ...rest) => guarded(`${name}#${mountEffects++}`, fn, ...rest);
-    handle = entry.mount(root, { props, value, services, effect: guardedEffect });
+    /** Kommando des Hosts; `_ui` erst beim Aufruf gelesen. Wirft nie. */
+    const command = async (cmd, args = {}) => {
+      const ui = host._ui;
+      if (!isUiCommand(ui, cmd)) {
+        const error = new Error(`unknown command ${cmd}`);
+        console.warn(`${where}: ${error.message}`);
+        return { ok: false, error };
+      }
+      return runUiCommand(ui, cmd, args);
+    };
+    handle = entry.mount(root, { props, value, services, effect: guardedEffect, command });
     if (!alive) { handle?.destroy?.(); handle = null; return; }
     mounted = true;
     showError();

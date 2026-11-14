@@ -47,6 +47,8 @@ import contourChart from './contour-chart/schema.js';
 import { mount as mountContourChart } from './contour-chart/mount.js';
 import nodeLinks from './node-links/schema.js';
 import { mount as mountNodeLinks } from './node-links/mount.js';
+import datagrid from './datagrid/schema.js';
+import { mount as mountDatagrid } from './datagrid/mount.js';
 import statsTable from './stats-table/schema.js';
 import { mount as mountStatsTable } from './stats-table/mount.js';
 import richText from './rich-text/schema.js';
@@ -59,6 +61,7 @@ export const WIDGETS = Object.freeze({
   'rich-text': { schema: richText, mount: mountRichText },
   'dataset-picker': { schema: datasetPicker, mount: mountDatasetPicker },
   'stats-table': { schema: statsTable, mount: mountStatsTable },
+  datagrid: { schema: datagrid, mount: mountDatagrid },
   'histogram-chart': { schema: histogramChart, mount: mountHistogramChart },
   'control-chart': { schema: controlChart, mount: mountControlChart },
   'probability-plot-chart': { schema: probabilityPlotChart, mount: mountProbabilityPlotChart },

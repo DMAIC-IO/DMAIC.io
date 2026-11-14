@@ -744,6 +744,7 @@ export function createModule(base) {
                     eventBus: context.eventBus, stateManager: context.stateManager, i18n: context.i18n,
                     chartManager: storedEditsOff, instances: context.instances,
                     instanceId: context.instanceId, moduleId: id,
+                    dialog: context.dialog, notify: (...args) => context.notify?.(...args),
                   },
                   moduleId: id,
                   instanceId: context.instanceId,

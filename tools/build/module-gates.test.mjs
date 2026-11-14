@@ -1479,6 +1479,15 @@ test('Kachel-Vorlage: state.<pfad> ist ein Befund, auch wenn das Modul das UI-Fe
     ['tile: resources/tile.html: state.level — Kacheln haben keinen state']);
 });
 
+test('checkWidgetTemplates: on*-Literal gegen die Kommandos des Moduls, in Kacheln nie', () => {
+  const widgets = new Map([['grid', defineWidget({ name: 'grid', props: { onCell: text({ optional: true }) } })]]);
+  const tileText = () => 'export default createTile({ view: () => ({}) });';
+  const html = '<div x-widget="grid" x-widget-on-cell="\'setX\'"></div>';
+  const run = (path) => checkWidgetTemplates([{ path, text: html }], { widgets, schema: { fields: {}, view: {} }, viewNames: new Set(), tileText, stateSchema: null, commands: new Set(['setX']) });
+  assert.deepEqual(run('resources/view.html'), []);
+  assert.deepEqual(run('resources/tile.html'), ['template: resources/tile.html: x-widget-on-cell="\'setX\'": setX ist kein Kommando des Moduls']);
+});
+
 test('x-field auf list(<forKind>) nur, wo das Widget Listen bindet (columnRef)', () => {
   const widgets = new Map([['dataset-picker', defineWidget({ name: 'dataset-picker', value: datasets({}), forKind: 'datasets' })]]);
   const files = [{ path: 'resources/view.html', text: '<div x-field="model.sets"></div><div x-field="model.many"></div>' }];

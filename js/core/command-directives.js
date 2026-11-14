@@ -165,6 +165,18 @@ function checkDefaultArgs(el, params) {
 }
 
 /**
+ * Ist `name` ein Kommando der Komponente — des Models oder des Viewmodels?
+ * Andere Glieder des Models (`toJSON`, Getter, …) zählen nicht.
+ * @param {{ model?: any, vmCommands?: Record<string, any> }|null|undefined} ui @param {string} name
+ * @returns {boolean}
+ */
+export function isUiCommand(ui, name) {
+  if (!ui || typeof name !== 'string') return false;
+  const modelCommands = ui.model ? schemaOf(ui.model)?.commands ?? {} : {};
+  return Object.hasOwn(modelCommands, name) || Object.hasOwn(ui.vmCommands ?? {}, name);
+}
+
+/**
  * Ein Kommando aus der Oberfläche: Rückfrage (`confirm` der Definition,
  * immer als `danger`), dann das Kommando. Wirft nie. Hat das Model kein
  * Kommando `name`, läuft das gleichnamige Viewmodel-Kommando aus `ui.vmCommands`

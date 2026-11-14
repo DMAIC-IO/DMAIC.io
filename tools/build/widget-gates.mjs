@@ -5,7 +5,9 @@
  * `template: <pfad>: <attr="wert">: <text>` ohne Zeile. Geprüft werden das
  * registrierte Widget, erklärte und gebundene Eingaben, `x-widget-value` nur
  * bei Widgets mit Wert, Feldart gegen Feldart bei `model.`/`state.` und
- * Getter/`computed` des view-Blocks bei allen übrigen Namen.
+ * Getter/`computed` des view-Blocks bei allen übrigen Namen. Eingaben `on<Name>`
+ * (Feldart text) nennen ein Kommando: nur als Literal, und der Name muss ein
+ * Kommando des Moduls sein (Model oder Viewmodel).
  */
 import { readdirSync, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -56,13 +58,17 @@ export async function loadWidgetSchemas(appDir) {
   return out;
 }
 
+/** Eingabe, die ein Kommando des Moduls nennt: `on<Name>` mit Feldart text. @param {string} prop @param {object} spec @returns {boolean} */
+const isCommandProp = (prop, spec) => /^on[A-Z]/.test(prop) && spec.kind === 'text';
+
 /**
  * Gate x-widget.
  * @param {{ path: string, text: string }[]} templates
- * @param {{ widgets: Map<string, any>, schema: { fields: object, view: object }|null, stateSchema: { fields: object }|null, viewNames: Set<string> }} ctx
+ * @param {{ widgets: Map<string, any>, schema: { fields: object, view: object }|null, stateSchema: { fields: object }|null, viewNames: Set<string>, commands?: Set<string> }} ctx
+ *   `commands`: Kommandos des Moduls (Model und Viewmodel); fehlt er, nennt kein `on*`-Literal ein Kommando (Kachel)
  * @returns {string[]}
  */
-export function checkWidgetBindings(templates, { widgets, schema, stateSchema, viewNames }) {
+export function checkWidgetBindings(templates, { widgets, schema, stateSchema, viewNames, commands }) {
   const out = [];
   for (const { path, text } of templates) {
     const aliases = loopAliases(text);
@@ -81,6 +87,7 @@ export function checkWidgetBindings(templates, { widgets, schema, stateSchema, v
         } else {
           spec = w.props[camel(attr)];
           if (!spec) { out.push(`${P} ${shown}: ${name} hat keine Eingabe ${camel(attr)}`); continue; }
+          if (isCommandProp(camel(attr), spec)) { out.push(...checkCommandLiteral(P, shown, p, commands)); continue; }
         }
         out.push(...checkPath(P, shown, p, spec, { schema, stateSchema, viewNames, aliases }));
       }
@@ -90,6 +97,13 @@ export function checkWidgetBindings(templates, { widgets, schema, stateSchema, v
     }
   }
   return out;
+}
+
+/** @returns {string[]} */
+function checkCommandLiteral(P, shown, path, commands) {
+  const lit = WIDGET_LITERAL.exec(path);
+  if (!lit) return [`${P} ${shown}: Kommandoname nur als Literal`];
+  return commands?.has(lit[1]) ? [] : [`${P} ${shown}: ${lit[1]} ist kein Kommando des Moduls`];
 }
 
 /** @returns {string[]} */

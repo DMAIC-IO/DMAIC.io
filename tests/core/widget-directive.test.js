@@ -4,7 +4,7 @@
  */
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
-import { defineModel, defineWidget, list, map, number, object, text, oneOf } from '../../js/core/model.js';
+import { defineModel, defineWidget, command, list, map, number, object, text, oneOf } from '../../js/core/model.js';
 import { registerWidgetDirective, widgetForKind } from '../../js/core/widget-directive.js';
 
 const i18n = { t: (k, p) => (p ? `${k}:${p.message ?? JSON.stringify(p)}` : k), getLanguage: () => 'de' };
@@ -608,6 +608,71 @@ suite('x-widget', () => {
       assertTrue(bad.root.querySelector('.x .widget-root--error, .x.widget-root--error') !== null);
       assertTrue(seen.some((m) => m.includes('allowed')));
       bad.root.remove();
+    });
+  });
+  test('command: nur Kommandos des Hosts, unbekannter Name → { ok: false } ohne Ausnahme', async () => {
+    let cmd = null;
+    const Counter = defineModel({
+      fields: { n: number({ integer: true, default: 0 }) },
+      commands: { bump: command({ params: { by: number({ integer: true }) }, run({ by }) { this.n += by; return this.n; } }) },
+    });
+    const vmCalls = [];
+    await withWidgets({
+      cmdw: { schema: defineWidget({ name: 'cmdw' }), mount(root, { command: c }) { cmd = c; return { destroy() {} }; } },
+    }, async () => {
+      if (!Alpine.version) Alpine.start();
+      const name = `wc${Math.random().toString(36).slice(2)}`;
+      Alpine.data(name, () => {
+        const comp = { model: new Counter(), ping(args) { vmCalls.push(args); return 'pong'; } };
+        Object.defineProperty(comp, '_ui', {
+          enumerable: false,
+          get() {
+            return { model: this.model, i18n, dialog: null, moduleId: 'demo', component: this, services: SERVICES, vmCommands: { ping: { params: {} } } };
+          },
+        });
+        return comp;
+      });
+      const root = document.createElement('div');
+      root.setAttribute('x-data', name);
+      root.innerHTML = '<div x-widget="cmdw"></div>';
+      document.body.append(root);
+      hosted.push(root);
+      Alpine.initTree(root);
+      await flush();
+      assertEqual(typeof cmd, 'function');
+      const data = Alpine.$data(root);
+      const r1 = await cmd('bump', { by: 2 });
+      assertEqual(r1.ok, true);
+      assertEqual(r1.result, 2);
+      assertEqual(data.model.n, 2);
+      const r2 = await cmd('ping', {});
+      assertEqual(r2.ok, true);
+      assertEqual(vmCalls.length, 1);
+      let r3; let r4;
+      const seen = await withWarnings(async () => {
+        r3 = await cmd('nope', {});
+        r4 = await cmd('toJSON', {});
+      });
+      assertEqual(r3.ok, false);
+      assertEqual(r4.ok, false);
+      assertEqual(seen.filter((m) => m.includes('unknown command')).length, 2);
+      const r5 = await cmd('bump', { by: 'x' });
+      assertEqual(r5.ok, false, 'ungültige Argumente: abgelehnt, keine Ausnahme');
+      assertEqual(data.model.n, 2);
+      root.remove();
+    });
+  });
+
+  test('command ohne Model im Host (Kachel): { ok: false }', async () => {
+    let cmd = null;
+    await withWidgets({
+      cmdt: { schema: defineWidget({ name: 'cmdt' }), mount(root, { command: c }) { cmd = c; return { destroy() {} }; } },
+    }, async () => {
+      const { root } = await host('<div x-widget="cmdt"></div>');
+      let r;
+      await withWarnings(async () => { r = await cmd('bump', { by: 1 }); });
+      assertEqual(r.ok, false);
+      root.remove();
     });
   });
 });

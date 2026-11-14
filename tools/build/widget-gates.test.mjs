@@ -114,3 +114,13 @@ test('algo-lab-link: Literal gegen die Algorithmen-ids, Pfade ungeprüft', () =>
   assert.deepEqual(run('row.algoId'), []);
   assert.deepEqual(checkAlgoLinkLiterals(tpl(`<span x-widget="other" x-widget-algo-id="'nix'"></span>`), ids), []);
 });
+
+test('on*-Eingaben: Literal mit einem Kommando des Moduls', () => {
+  const gw = new Map([['grid', defineWidget({ name: 'grid', props: { config: object({ n: number() }), onCell: text({ optional: true }) } })]]);
+  const gctx = { ...ctx, widgets: gw, commands: new Set(['setX']) };
+  const run = (v, c = gctx) => checkWidgetBindings(tpl(`<div x-widget="grid" x-widget-config="stats" x-widget-on-cell="${v}"></div>`), c);
+  assert.deepEqual(run("'setX'"), []);
+  assert.deepEqual(run("'nope'"), ['template: resources/view.html: x-widget-on-cell="\'nope\'": nope ist kein Kommando des Moduls']);
+  assert.deepEqual(run('helper'), ['template: resources/view.html: x-widget-on-cell="helper": Kommandoname nur als Literal']);
+  assert.deepEqual(run("'setX'", { ...gctx, commands: undefined }), ['template: resources/view.html: x-widget-on-cell="\'setX\'": setX ist kein Kommando des Moduls']);
+});
