@@ -44,6 +44,16 @@ suite('doe-planner evaluation: output', () => {
     assert(h.$$('.doe__vif-table td').some((td) => /^\d+,\d{2}$/.test(td.textContent)), 'VIF in German');
     assert(h.$$('.doe__power-table tbody tr').length > 0, 'power rows');
     assertEqual(h.$('.doe__eval-pending'), null);
+    // Each efficiency card, the condition number and the leverage have their own help text.
+    const keys = h.$$('.doe__eval-compact .dmike-kpi-label').map((el) => (el.matches('[data-help-key]') ? el : el.querySelector('[data-help-key]')).getAttribute('data-help-key'));
+    assertEqual(keys.length, 5);
+    assertEqual(new Set(keys).size, 5, keys.join(', '));
+    assertEqual(keys[0], 'modules.doe-planner.fields.assessment.dEfficiency.help');
+    assertEqual(keys[4], 'modules.doe-planner.fields.assessment.maxLeverage.help');
+    const help = await (await fetch(new URL('../../../js/modules/doe-planner/resources/i18n/context-help.de.json', import.meta.url), { cache: 'no-cache' })).json();
+    const texts = ['dEfficiency', 'aEfficiency', 'gEfficiency', 'conditionNumber', 'maxLeverage'].map((k) => help.fields.assessment[k].help);
+    assertEqual(new Set(texts).size, 5);
+    assert(texts[3].includes('Kollinearität') && texts[4].includes('p/n'), 'legacy texts');
     // Help badges as before: efficiency 6, VIF 1, power 3; a full design has no aliases.
     assertEqual(outputBadges(h.container), 6 + 1 + 3);
   });
@@ -66,7 +76,8 @@ suite('doe-planner evaluation: output', () => {
     assertEqual(vm.pending, true);
     assertEqual(h.$('.doe__eval-pending').textContent, de('evaluationPending'));
     assertEqual(h.$$('.doe__eval-compact').length, 0);
-    assertEqual(h.$('.doe__summary-item--pending').textContent, de('configReady'));
+    assert(h.$('.doe__generated-badge'), 'the generated badge stays while a new design is pending');
+    assertEqual(h.$$('.doe__summary-item--pending').length, 0);
     await h.done();
     assertEqual(h.$$('.doe__eval-pending').length, 0);
     assertEqual(h.$$('.doe__eval-compact').length, 1);

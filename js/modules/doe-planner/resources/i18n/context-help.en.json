@@ -284,7 +284,22 @@
       "help": "What the source worksheet gives: runs taken over and responses found, or why it cannot be read. Display only."
     },
     "assessment": {
-      "help": "The evaluation of the current design for display: efficiencies, condition number, leverage, VIF, aliases and power. Display only."
+      "help": "The evaluation of the current design for display: efficiencies, condition number, leverage, VIF, aliases and power. Display only.",
+      "dEfficiency": {
+        "help": "D-Efficiency: Measures precision of parameter estimation. 100% = optimal design. Based on the determinant of X'X."
+      },
+      "aEfficiency": {
+        "help": "A-Efficiency: Measures average estimation accuracy of all parameters. Based on the trace of (X'X)^-1."
+      },
+      "gEfficiency": {
+        "help": "G-Efficiency: Ratio of average to maximum prediction variance. 100% = uniform prediction quality."
+      },
+      "conditionNumber": {
+        "help": "Condition number: Measure of numerical stability. Ideally close to 1. Values >1000 indicate collinearity."
+      },
+      "maxLeverage": {
+        "help": "Maximum leverage: Largest influence of any single design point on the estimate. Ideal: p/n."
+      }
     }
   },
   "actions": {

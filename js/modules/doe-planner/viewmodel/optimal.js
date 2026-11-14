@@ -11,6 +11,9 @@
  * count of the source sheet.
  */
 import { enumerateTerms, termDisplay } from '../../../engines/doe-terms.js';
+import { setFields } from '../../../core/model.js';
+import { parseNumber, formatNumber } from '../../../core/number-format.js';
+import { markRejection, clearRejection } from '../../../core/param-input.js';
 import optimalType from '../domain/designs/optimal.js';
 import { sourceData } from '../domain/source.js';
 import { letter, activeTerms } from '../domain/design.js';
@@ -43,6 +46,29 @@ export const optimalView = (ctx) => ({
 
   /** @returns {number} new runs the active terms need on top of the source */
   get optimalMinNew() { return optimal.minNewRuns(this.model, { sourceRowCount: this.sourceRows }); },
+
+  /** The run count in the field; the minimum while none is set (0), as before. @returns {string} */
+  get optimalRunsText() {
+    return formatNumber(this.model.options.optimalRuns || this.optimalMinNew, ctx.context.language, { profile: 'input' });
+  },
+
+  /**
+   * Takes a typed run count: a whole number from 0; anything else is rejected and the field shows
+   * the stored count again.
+   * @param {Event} event change of the field
+   * @returns {void}
+   */
+  optimalRunsChanged(event) {
+    const el = /** @type {HTMLInputElement} */ (event.target);
+    const n = parseNumber(el.value);
+    if (n === null || !Number.isInteger(n) || n < 0) {
+      el.value = this.optimalRunsText;
+      markRejection(el, ctx.i18n.t('common.inputRejectedPlain'));
+      return;
+    }
+    clearRejection(el);
+    setFields(this.model, { options: { ...JSON.parse(JSON.stringify(this.model.options)), optimalRuns: n } });
+  },
 
   /** @returns {boolean} */
   get optimalRunsValid() { return (this.model.options.optimalRuns || 0) >= this.optimalMinNew; },

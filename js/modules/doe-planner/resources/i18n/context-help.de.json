@@ -284,7 +284,22 @@
       "help": "Was das Quell-Worksheet liefert: übernommene Versuche und erkannte Zielgrößen, oder warum es sich nicht lesen lässt. Reine Darstellung."
     },
     "assessment": {
-      "help": "Die Bewertung des aktuellen Plans in Anzeigeform: Effizienzen, Konditionszahl, Hebelwirkung, VIF, Vermengungen und Power. Reine Darstellung."
+      "help": "Die Bewertung des aktuellen Plans in Anzeigeform: Effizienzen, Konditionszahl, Hebelwirkung, VIF, Vermengungen und Power. Reine Darstellung.",
+      "dEfficiency": {
+        "help": "D-Effizienz: Misst die Präzision der Parameterschätzung. 100% = optimales Design. Basiert auf der Determinante von X'X."
+      },
+      "aEfficiency": {
+        "help": "A-Effizienz: Misst die durchschnittliche Schätzgenauigkeit aller Parameter. Basiert auf der Spur von (X'X)^-1."
+      },
+      "gEfficiency": {
+        "help": "G-Effizienz: Verhältnis der durchschnittlichen zur maximalen Vorhersagevarianz. 100% = gleichmäßige Vorhersagequalität."
+      },
+      "conditionNumber": {
+        "help": "Konditionszahl: Maß für die numerische Stabilität. Ideal nahe 1. Werte >1000 deuten auf Kollinearität hin."
+      },
+      "maxLeverage": {
+        "help": "Maximaler Leverage: Größter Einfluss eines einzelnen Versuchspunkts auf die Schätzung. Ideal: p/n."
+      }
     }
   },
   "actions": {

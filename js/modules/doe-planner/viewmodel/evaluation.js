@@ -16,6 +16,7 @@ import { powerDisplay } from '../domain/analysis.js';
 /**
  * One efficiency card.
  * @typedef {object} EffCard
+ * @property {string} key which efficiency: dEff, aEff or gEff
  * @property {string} label
  * @property {string} value percent, rounded
  * @property {string} cls rating class
@@ -70,11 +71,11 @@ export const evaluationView = (ctx) => ({
   /** @returns {string} */
   get summaryRes() { return this.summary.resolution; },
 
-  /** @returns {boolean} the design belongs to the configuration */
-  get hasCurrentDesign() { return Boolean(this.model.design) && !this.pending; },
+  /** @returns {boolean} a design exists (also while a new one is pending, as before) */
+  get hasDesign() { return Boolean(this.model.design); },
 
   /** @returns {string} */
-  get generatedText() { return this.t('generated', { runs: this.summary.generatedRuns }); },
+  get generatedText() { return this.t('generated', { runs: this.model.design ? this.model.design.actualMatrix.length : 0 }); },
 
   /** @returns {string} */
   get configStateText() { return this.valid ? this.t('configReady') : this.t('configIncomplete'); },
@@ -118,6 +119,9 @@ export const evaluationView = (ctx) => ({
   /** @returns {string} */
   get generatorsLabel() { return `${this.t('generators')}:`; },
 
+  /** @param {EffCard} c @param {string} key @returns {boolean} the card shows this efficiency */
+  isCard(c, key) { return c.key === key; },
+
   /** @param {number} w @returns {string} inline width of a bar */
   barStyle(w) { return `width:${w}%`; },
 
@@ -133,7 +137,7 @@ export const evaluationView = (ctx) => ({
       const num = (/** @type {number} */ v, /** @type {number} */ d) => formatNumber(v, lang, { decimals: d });
       const eff = ev.efficiency;
       const card = (/** @type {string} */ key, /** @type {number} */ v) => ({
-        label: this.t(key), value: `${num(Math.round(v), 0)}%`, cls: effClass(v), barWidth: Math.min(100, v),
+        key, label: this.t(key), value: `${num(Math.round(v), 0)}%`, cls: effClass(v), barWidth: Math.min(100, v),
       });
       const vifRow = (/** @type {{ term: string, vif: number }} */ v) => ({ term: v.term, vif: num(v.vif, 2), rating: vifClass(v.vif) });
       const al = ev.alias;

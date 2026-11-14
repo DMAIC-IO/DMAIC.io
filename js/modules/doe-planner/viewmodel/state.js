@@ -9,6 +9,6 @@ import { defineState, list, number } from '../../../core/model.js';
 
 export const UiState = defineState({
   termGroupExpanded: list(number({ integer: true })),
-  forbiddenDraft: list(number()),
+  forbiddenDraft: list(number({ nullable: true })),
   augmentRuns: number({ integer: true, min: 1, max: 200, default: 4 }),
 });

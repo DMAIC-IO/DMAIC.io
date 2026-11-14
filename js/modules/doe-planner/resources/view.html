@@ -275,7 +275,8 @@
         <div class="doe__optimal-info" x-text="optimalInfo"></div>
         <div class="field-group">
           <label class="doe__input-label" data-help-key="modules.doe-planner.fields.options.optimalRuns.help" x-text="optimalRunsLabel"></label>
-          <input class="field doe__optimal-runs-input" data-help-key="" x-field="model.options.optimalRuns" />
+          <input type="text" inputmode="numeric" class="field doe__optimal-runs-input" data-help-key=""
+                 :value="optimalRunsText" @change="optimalRunsChanged($event)" />
           <span class="doe__optimal-hint" x-text="optimalRunsHint"></span>
         </div>
 
@@ -418,10 +419,10 @@
       <div class="doe__summary-item"><span data-help-key="modules.doe-planner.types.Summary.runs" x-text="runsLabel"></span><strong x-text="summaryRuns"></strong></div>
       <div class="doe__summary-item"><span data-help-key="modules.doe-planner.types.Summary.resolution" x-text="resolutionLabel"></span><strong x-text="summaryRes"></strong></div>
       <div class="doe__summary-item"><span x-text="responsesLabel"></span><strong x-text="model.responses.length"></strong></div>
-      <template x-if="hasCurrentDesign">
+      <template x-if="hasDesign">
         <div class="doe__summary-item"><span class="doe__generated-badge" data-help-key="modules.doe-planner.types.Summary.generatedRuns"><span class="icon icon--sm" data-icon="status.ok" aria-hidden="true"></span> <span x-text="generatedText"></span></span></div>
       </template>
-      <template x-if="!hasCurrentDesign">
+      <template x-if="!hasDesign">
         <div class="doe__summary-item doe__summary-item--pending" data-help-key="modules.doe-planner.fields.valid.help" x-text="configStateText"></div>
       </template>
     </div>
@@ -462,7 +463,15 @@
                     <template x-for="(c, ci) in shownAssessment.cards" :key="ci">
                       <div class="dmike-kpi" :class="c.cls">
                         <div class="dmike-kpi-label">
-                          <span data-help-key="modules.doe-planner.types.Evaluation.efficiency" x-text="c.label"></span>
+                          <template x-if="isCard(c, 'dEff')">
+                            <span data-help-key="modules.doe-planner.fields.assessment.dEfficiency.help" x-text="c.label"></span>
+                          </template>
+                          <template x-if="isCard(c, 'aEff')">
+                            <span data-help-key="modules.doe-planner.fields.assessment.aEfficiency.help" x-text="c.label"></span>
+                          </template>
+                          <template x-if="isCard(c, 'gEff')">
+                            <span data-help-key="modules.doe-planner.fields.assessment.gEfficiency.help" x-text="c.label"></span>
+                          </template>
                           <span x-widget="algo-lab-link" x-widget-algo-id="'d-efficiency'"></span>
                         </div>
                         <div class="dmike-kpi-value" x-text="c.value"></div>
@@ -470,11 +479,11 @@
                       </div>
                     </template>
                     <div class="dmike-kpi">
-                      <div class="dmike-kpi-label" data-help-key="modules.doe-planner.types.Evaluation.efficiency" x-text="t('condNum')"></div>
+                      <div class="dmike-kpi-label" data-help-key="modules.doe-planner.fields.assessment.conditionNumber.help" x-text="t('condNum')"></div>
                       <div class="dmike-kpi-value" x-text="shownAssessment.condNum"></div>
                     </div>
                     <div class="dmike-kpi">
-                      <div class="dmike-kpi-label" data-help-key="modules.doe-planner.types.Evaluation.efficiency" x-text="t('maxLeverage')"></div>
+                      <div class="dmike-kpi-label" data-help-key="modules.doe-planner.fields.assessment.maxLeverage.help" x-text="t('maxLeverage')"></div>
                       <div class="dmike-kpi-value" x-text="shownAssessment.maxLeverage"></div>
                     </div>
                   </div>

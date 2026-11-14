@@ -4,7 +4,7 @@
 /**
  * @typedef {object} UiState
  * @property {number[]} termGroupExpanded
- * @property {number[]} forbiddenDraft
+ * @property {Array<number|null>} forbiddenDraft
  * @property {number} augmentRuns
  */
 

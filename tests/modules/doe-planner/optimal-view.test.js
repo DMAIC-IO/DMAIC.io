@@ -6,6 +6,7 @@
  */
 import { suite, test, assert, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { State } from '../../../js/modules/doe-planner/domain/model.js';
+import { UiState } from '../../../js/modules/doe-planner/viewmodel/state.js';
 import { mount, plan, threeFactors, worksheet, typeIn, pick, settle, inputBadges, de } from './view-harness.js';
 
 const optimalPlan = (over = {}) => plan({
@@ -29,6 +30,7 @@ suite('doe-planner optimal: forbidden combinations', () => {
     pick(selects[2], '-1');
     await settle();
     assertDeepEqual([...h.vm().state.forbiddenDraft], [1, null, -1]);
+    assertEqual(UiState.schema.fields.forbiddenDraft.item.nullable, true, 'the draft schema allows any level');
     h.$('.doe__forbidden-add-btn').click();
     await settle();
     assertDeepEqual(h.vm().model.options.forbiddenVertices.map((p) => [...p]), [[1, null, -1]]);
@@ -101,6 +103,17 @@ suite('doe-planner optimal: runs and terms', () => {
     assertEqual(h.vm().model.options.optimalRuns, 12);
     assertEqual(h.$('.doe__optimal-hint').textContent, de('optimalMinRuns', { min: h.vm().optimalMinNew }));
     assertEqual(h.$('.doe__optimal-info').textContent, de('optimalInfo_dopt'));
+    typeIn(input, 'abc');
+    await settle();
+    assertEqual(h.vm().model.options.optimalRuns, 12);
+    assertEqual(input.getAttribute('aria-invalid'), 'true');
+    assertEqual(input.value, '12');
+  });
+
+  test('a stored run count 0 shows the minimum, as before', async () => {
+    const h = await mount(optimalPlan({ options: { ...new State().options, optimalRuns: 0 } }));
+    assertEqual(h.$('.doe__optimal-runs-input').value, String(h.vm().optimalMinNew));
+    assert(h.vm().optimalMinNew > 0, 'a minimum');
   });
 
   test('a term box switches the term; groups fold in the UI state, high orders start closed', async () => {
