@@ -44,9 +44,10 @@ function gridColumns(config, moduleId) {
     id: c.key,
     name: c.name,
     type: c.type,
+    unit: c.unit || null,
     values: config.rows.map((row) => toGrid(c.type, row[ci] ?? null)),
     format: c.format ? { ...c.format } : {},
-    meta: c.lock ? { lock: c.lock, managedBy: moduleId } : null,
+    meta: c.lock ? { lock: c.lock, managedBy: moduleId, reason: c.reason ?? null } : null,
   }));
 }
 

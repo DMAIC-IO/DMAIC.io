@@ -2,7 +2,8 @@
  * Tabelle aus dem Model eines Moduls (DataGrid). Zellwerte kommen als Text, Zahlen
  * wandelt das Widget nach `type`; Änderungen gehen als Kommandos an das Modul:
  * `onCell` bekommt `{ row, column, value }`, `onPaste` `{ row, column, values }`,
- * ein Eintrag aus `contextMenu` sein Kommando `id` mit `{ row }`.
+ * ein Eintrag aus `contextMenu` sein Kommando `id` mit `{ row }`. `reason` ist der
+ * Sperrgrund wie im Arbeitsblatt (`ui.datagrid.lockReason.<reason>`), `unit` steht im Kopf.
  */
 import { defineWidget, list, object, text, oneOf, number, boolean } from '../../core/model.js';
 
@@ -16,6 +17,8 @@ export default defineWidget({
         type: text(),
         lock: oneOf(['hard', 'soft'], { nullable: true }),
         format: object({ decimals: number({ integer: true, nullable: true }) }, { nullable: true }),
+        reason: text({ nullable: true, optional: true }),
+        unit: text({ nullable: true, optional: true }),
       })),
       rows: list(list(text({ nullable: true }))),
       readOnly: boolean(),

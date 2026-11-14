@@ -36,8 +36,8 @@ const Doc = defineModel({
 });
 
 const COLUMNS = [
-  { key: 'run', name: 'Lauf', type: 'numeric', lock: 'hard', format: { decimals: 0 } },
-  { key: 'f:a', name: 'A', type: 'numeric', lock: null, format: { decimals: 2 } },
+  { key: 'run', name: 'Lauf', type: 'numeric', lock: 'hard', format: { decimals: 0 }, reason: 'run-order' },
+  { key: 'f:a', name: 'A', type: 'numeric', lock: null, format: { decimals: 2 }, unit: 'mm' },
 ];
 
 /**
@@ -111,10 +111,18 @@ suite('datagrid widget', () => {
     const ref = document.createElement('div');
     document.body.append(ref);
     const g = new DataGrid(ref, { t: (k) => k });
-    g.setData([{ id: 'run', name: 'Lauf', type: 'numeric', values: [1], meta: { lock: 'hard', managedBy: 'demo' } }]);
+    g.setData([{ id: 'run', name: 'Lauf', type: 'numeric', values: [1], meta: { lock: 'hard', managedBy: 'demo', reason: 'run-order' } }]);
     assertEqual(locked.title, ref.querySelector('td[data-col-idx="0"]').title);
-    assertTrue(locked.title.length > 0);
+    assertTrue(locked.title.includes('ui.datagrid.lockReason.run-order'), 'Sperrgrund in der Kurzinfo');
+    assertEqual(root.querySelector('th .col-lock-icon').title, locked.title, 'dieselbe Kurzinfo am Schloss');
     g.destroy(); ref.remove();
+    root.remove();
+  });
+
+  test('Einheit im Spaltenkopf wie im Arbeitsblatt', async () => {
+    const { root } = await host();
+    const units = [...root.querySelectorAll('th .col-name')].map((x) => x.querySelector('.col-unit')?.textContent ?? null);
+    assertDeepEqual(units, [null, '[mm]']);
     root.remove();
   });
 
