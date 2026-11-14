@@ -28,6 +28,10 @@ const Doc = defineModel({
       params: { row: number({ integer: true, min: 0 }), column: text(), values: cell },
       run(args) { calls.push(['setBlock', args]); },
     }),
+    keep: command({
+      params: { row: number({ integer: true, min: 0 }), column: text(), value: number({ nullable: true }) },
+      run(args) { calls.push(['keep', args]); },
+    }),
     forbidRun: command({
       params: { row: number({ integer: true, min: 0 }) },
       run(args) { calls.push(['forbidRun', args]); },
@@ -142,6 +146,28 @@ suite('datagrid widget', () => {
     await edit(root, 1, 1, '500');
     assertEqual(calls.length, 0, 'Kommando abgelehnt (max 100)');
     assertEqual(td(root, 1, 1).textContent, '3,00');
+    root.remove();
+  });
+
+  test('Kommando erfolgreich, Model unverändert: Zelle zeigt den Wert aus config', async () => {
+    const { root } = await host('x-widget-on-cell="\'keep\'"');
+    await edit(root, 1, 1, '42');
+    assertDeepEqual(calls, [['keep', { row: 1, column: 'f:a', value: 42 }]]);
+    assertEqual(td(root, 1, 1).textContent, '3,00');
+    root.remove();
+  });
+
+  test('Einfügen über den Rand: angehängte Zeilen verschwinden nach dem Kommando', async () => {
+    const { root } = await host();
+    td(root, 2, 1).dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    document.activeElement?.blur?.();
+    const dt = new DataTransfer();
+    dt.setData('text/plain', '5\n6\n7');
+    document.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+    await settle();
+    assertDeepEqual(calls, [['setBlock', { row: 2, column: 'f:a', values: [[5], [6], [7]] }]]);
+    assertEqual(root.querySelectorAll('tbody tr').length, 3);
     root.remove();
   });
 

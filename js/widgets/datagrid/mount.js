@@ -2,7 +2,7 @@
  * Tabelle über core/datagrid/datagrid.js: zeichnet `config` neu, sobald sie sich
  * ändert (eine DataGrid-Instanz je Widget), und gibt Zelländerung, Einfügen und
  * Zeilenmenü als Kommandos des Moduls hinaus. Eigener Datenstand: nur die
- * zuletzt gezeichnete `config`. Lehnt das Modul ab, zeigt die Tabelle wieder
+ * zuletzt gezeichnete `config`. Nach jedem Kommando zeigt die Tabelle wieder
  * deren Werte.
  */
 import { DataGrid, isNumericType } from '../../core/datagrid/datagrid.js';
@@ -81,10 +81,13 @@ export function mount(root, { props, services, effect, command }) {
     slot.classList.toggle(READONLY, config.readOnly);
     grid.setData(gridColumns(config, moduleId));
   };
-  /** Kommando senden; abgelehnt → wieder die Werte der Eingabe zeigen. */
+  /**
+   * Kommando senden, danach immer die Werte der Eingabe zeigen: abgelehnt, ohne
+   * Änderung oder gekappt steht sonst die getippte Eingabe im Grid.
+   */
   const send = async (name, args) => {
     const res = await command(name, args);
-    if (!res?.ok) render();
+    render();
     return res;
   };
   const column = (key) => config?.columns.find((c) => c.key === key) ?? null;
@@ -97,8 +100,7 @@ export function mount(root, { props, services, effect, command }) {
   grid.on('data:pasted', ({ range, data }) => {
     const cols = config ? config.columns.slice(range.startCol, range.startCol + range.cols) : [];
     if (!cols.length || config.readOnly || !props.onPaste) { render(); return; }
-    // Spalten, die DataGrid beim Einfügen angehängt hat, gehören nicht zur Eingabe.
-    if (cols.length < range.cols) render();
+    // Zeilen und Spalten, die DataGrid beim Einfügen angehängt hat, verschwinden mit dem Neuzeichnen nach dem Kommando.
     const values = Array.from({ length: range.rows }, (_, r) => cols.map((c, ci) => toCommand(c.type, data[ci][r])));
     send(props.onPaste, { row: range.startRow, column: cols[0].key, values });
   });
