@@ -40,7 +40,7 @@ const norm = (s) => String(s ?? '').trim().toLowerCase();
  * @param {any} v
  * @returns {number|null}
  */
-function numberOf(v) {
+export function numberOf(v) {
   if (typeof v === 'boolean') return null;
   const n = parseDecimalInput(v);
   return Number.isFinite(n) ? n : null;

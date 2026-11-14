@@ -134,8 +134,10 @@ suite('doe-planner derived — aktueller Plan', () => {
     assertEqual(d.pending, false);
     assertEqual(d.summary.generatedRuns, 4);
     assert(d.evaluation !== null, 'Bewertung');
+    assertDeepEqual(Object.keys(d.evaluation), ['efficiency', 'vif', 'alias', 'power']);
     assertEqual(d.evaluation.efficiency.dEfficiency > 99, true);
-    assertDeepEqual(d.evaluation.aliasStructure.aliases, []);
+    assertDeepEqual(d.evaluation.alias, { generators: [], aliases: [] });
+    assertEqual(d.evaluation.power.length > 0, true);
     assertEqual(d.runs.length, 4);
     assertDeepEqual(d.runs[1].factors, { Temp: 40, Druck: 1 });
     assertDeepEqual(d.runs[1].responses, { Yield: null });
@@ -168,6 +170,25 @@ suite('doe-planner derived — aktueller Plan', () => {
     const s = withDesign(planned());
     s.doeName = 'Neu';
     assertEqual(read(s).pending, false);
+    s.factors = [...s.factors, { id: 3, name: '', unit: '', kind: 'continuous', levels: ['', ''] }];
+    assertEqual(read(s).pending, false);
+  });
+
+  test('Bewertung eines Teilfaktorplans in der Leseform mit Generatoren und Aliasen', () => {
+    const s = planned({
+      designType: 'frac',
+      factors: ['A', 'B', 'C'].map((name, i) => ({ id: i + 1, name, unit: '', kind: 'continuous', levels: ['1', '2'] })),
+      selectedRes: { k: 3, runs: 4, res: 'III', p: 1 },
+    });
+    s.design = {
+      designType: 'frac', codedMatrix: [[-1, -1, 1], [1, -1, -1], [-1, 1, -1], [1, 1, 1]],
+      actualMatrix: [['1', '1', '2'], ['2', '1', '1'], ['1', '2', '1'], ['2', '2', '2']],
+      runOrder: [1, 2, 3, 4], stdOrder: [1, 2, 3, 4], replicateIds: [1, 1, 1, 1], resolution: 'III', p: 1, configSignature: '',
+    };
+    s.design = { ...s.design, configSignature: configSignature(s) };
+    const ev = read(s).evaluation;
+    assertEqual(ev.alias.generators.length, 1);
+    assert(ev.alias.aliases.every((a) => typeof a.term === 'string' && Array.isArray(a.aliasedWith)), 'Aliase');
   });
 });
 
@@ -281,5 +302,13 @@ suite('doe-planner derived — EVOP', () => {
     assert(sum !== null, 'Zusammenfassung');
     assertEqual(sum.effects.length > 0, true);
     assertEqual(Number.isFinite(sum.effects[0].errorLimit), true);
+  });
+
+  test('die gelesene Phase liegt immer in den Phasen', () => {
+    const s = withDesign(planned());
+    s.projectPhases = [phaseOf(s, null)];
+    s.projectMode = true;
+    s._v.activePhaseIdx = 3;
+    assertEqual(read(s).evop.activePhaseIdx, 0);
   });
 });

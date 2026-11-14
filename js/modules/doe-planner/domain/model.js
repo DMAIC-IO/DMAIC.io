@@ -47,17 +47,15 @@ function selectionFits(m) {
 }
 
 /**
- * The evaluation of a design: efficiency, VIF, alias structure, power and
- * the model terms the design cannot estimate.
+ * The evaluation of a design.
  * @typedef {object} Evaluation
- * @property {{ aliases: Array<{ term: string, aliasedWith: string[] }>, generatorStrings: string[],
- *   definingRelation: string[] }} aliasStructure aliasing of a fractional design, empty otherwise
- * @property {Array<{ term: string, vif: number }>} vif per model term
  * @property {{ dEfficiency: number, aEfficiency: number, gEfficiency: number, conditionNumber: number,
- *   maxLeverage: number }} efficiency efficiencies in percent
+ *   maxLeverage: number }|null} efficiency efficiencies in percent
+ * @property {Array<{ term: string, vif: number }>} vif per model term
+ * @property {{ generators: string[], aliases: Array<{ term: string, aliasedWith: string[] }> }|null} alias
+ *   generators and aliases of a fractional design, null without aliasing
  * @property {Array<{ effectSize: number, power: number|null, dfError: number }>} power per effect size,
  *   power null without error degrees of freedom
- * @property {Array<{ id: string, with: string[] }>} aliasedTerms model terms the design cannot estimate
  */
 
 /**
@@ -293,7 +291,7 @@ export class State extends defineModel({
       repair(m) { m._v.responses = [{ name: '', unit: '' }]; },
     },
     validSelection: {
-      fields: ['selectedRes', 'selectedPBIdx', 'designType', 'factors'],
+      fields: ['selectedRes', 'selectedPBIdx', 'designType'],
       test(m) { return selectionFits(m); },
       repair(m) {
         if (m._v.selectedRes && m._v.selectedRes.k !== m._v.factors.length) m._v.selectedRes = null;

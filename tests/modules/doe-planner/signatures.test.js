@@ -2,7 +2,7 @@
  * Tests for js/modules/doe-planner/domain/signatures.js.
  */
 import { suite, test, assertEqual, assertTrue } from '../../test-utils.js';
-import { configSignature, designSignature, legacyDesignSignature } from '../../../js/modules/doe-planner/domain/signatures.js';
+import { configSignature, designSignature } from '../../../js/modules/doe-planner/domain/signatures.js';
 
 /** @returns {any} a planner model with a design */
 function model(over = {}) {
@@ -70,12 +70,5 @@ suite('doe-planner domain — signatures', () => {
 
   test('seed ändert configSignature', () => {
     assertTrue(configSignature(model({ seed: 7 })) !== configSignature(model()));
-  });
-
-  test('legacyDesignSignature ist die bisherige Formel samt Zielgrößen', () => {
-    const m = model();
-    assertEqual(legacyDesignSignature(m), 'full#4#1#Y|%#-1,-1;1,-1;-1,1;1,1');
-    assertTrue(legacyDesignSignature(renamed(m)) !== legacyDesignSignature(m));
-    assertEqual(legacyDesignSignature(model({ design: null })), null);
   });
 });

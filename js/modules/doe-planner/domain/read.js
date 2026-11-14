@@ -8,9 +8,9 @@
 import { checkConfig, designOf, plannedRuns } from './designs/index.js';
 import { evaluateDesign, computeDispersionAnalysis, computeEVOPEffects } from './analysis.js';
 import { designSignature } from './signatures.js';
-import { actualRows, activeTerms, modelTerms, isOptimal } from './design.js';
+import { actualRows, activeTerms, modelTerms, isOptimal, letter } from './design.js';
 import { runRows } from './runtable.js';
-import { parseDecimalInput } from '../../../core/parse-decimal.js';
+import { numberOf } from './source.js';
 
 /**
  * The part of `ctx.data` the planner reads.
@@ -30,21 +30,6 @@ import { parseDecimalInput } from '../../../core/parse-decimal.js';
  * @property {number[]} missing responses whose column is gone from the sheet
  */
 
-/** @param {number} i @returns {string} factor letter: 0 → A, 1 → B, … */
-const letter = (i) => String.fromCharCode(65 + i);
-
-/**
- * A cell as a measured value: decimal comma counts; blanks, text and
- * booleans do not.
- * @param {any} v
- * @returns {number|null}
- */
-export function measured(v) {
-  if (typeof v === 'boolean' || v === null || v === undefined) return null;
-  const n = typeof v === 'number' ? v : parseDecimalInput(v);
-  return Number.isFinite(n) ? n : null;
-}
-
 /**
  * @param {PlannerData|null|undefined} data
  * @param {{ instanceId: string, sheetId: string }|null} ref
@@ -63,7 +48,12 @@ function sheetOf(data, ref) {
  */
 export function configCheck(m, data) {
   const source = sheetOf(data, m.sourceWorksheet);
-  return checkConfig(m, { sourceRowCount: source ? source.rowCount : 0 });
+  const check = checkConfig(m, { sourceRowCount: source ? source.rowCount : 0 });
+  // A fractional cell chosen for another factor count is no resolution for these factors.
+  if (check.ok && m.designType === 'frac' && m.selectedRes && m.selectedRes.k !== m.factors.length) {
+    return { ok: false, reason: 'noResolution' };
+  }
+  return check;
 }
 
 /**
@@ -98,15 +88,26 @@ export function summaryOf(m, pending) {
 }
 
 /**
- * Evaluation of the design: efficiency, VIF, aliasing, power.
+ * Evaluation of the design in its read form: efficiency, VIF, aliasing, power.
  * @param {any} m planner model
  * @param {boolean} pending
- * @returns {ReturnType<typeof evaluateDesign>|null} null without a current design
+ * @returns {{ efficiency: object|null, vif: object[], alias: { generators: string[],
+ *   aliases: Array<{ term: string, aliasedWith: string[] }> }|null, power: object[] }|null} null without a current design
  */
 export function evaluationOf(m, pending) {
   if (pending || !m.design) return null;
   const d = m.design;
-  return evaluateDesign(d.codedMatrix, m.factors.length, d.p, d.designType, 0.05, { terms: modelTerms(m, d) });
+  const ev = evaluateDesign(d.codedMatrix, m.factors.length, d.p, d.designType, 0.05, { terms: modelTerms(m, d) });
+  const al = ev.aliasStructure;
+  return {
+    efficiency: ev.efficiency ?? null,
+    vif: ev.vif ?? [],
+    alias: al ? {
+      generators: [...(al.generatorStrings || [])],
+      aliases: (al.aliases || []).map((a) => ({ term: a.term, aliasedWith: [...a.aliasedWith] })),
+    } : null,
+    power: ev.power ?? [],
+  };
 }
 
 /**
@@ -137,7 +138,7 @@ export function responseValues(m, data) {
   if (!sheet) return null;
   return ref.responseColumnIds.map((columnId) => {
     const vals = data.values({ instanceId: ref.instanceId, sheetId: ref.sheetId, columnId });
-    return vals === null ? null : vals.map(measured);
+    return vals === null ? null : vals.map(numberOf);
   });
 }
 
@@ -222,7 +223,7 @@ export function evopOf(m) {
   return {
     projectMode: true,
     projectName: m.projectName,
-    activePhaseIdx: m.activePhaseIdx,
+    activePhaseIdx: Math.max(-1, Math.min(m.activePhaseIdx, m.projectPhases.length - 1)),
     phases: m.projectPhases.map((ph) => ({
       cycleNumber: ph.cycleNumber,
       doeName: ph.doeName,

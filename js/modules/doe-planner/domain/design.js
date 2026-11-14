@@ -8,6 +8,12 @@
  */
 import { defaultActiveTerms, parseTermId, designModelTerms } from '../../../engines/doe-terms.js';
 
+/** Factor letter by index: 0 → A, 1 → B, … @param {number} i @returns {string} */
+export const letter = (i) => String.fromCharCode(65 + i);
+
+/** The three ways to close an EVOP phase. */
+export const PHASE_DECISIONS = Object.freeze(['recenter', 'repeat', 'stop']);
+
 /** Design types whose runs come from an optimality criterion. */
 export const OPTIMAL_TYPES = Object.freeze(['dopt', 'aopt', 'gopt']);
 

@@ -16,11 +16,9 @@ import { computeEVOPEffects, recenteredFactors } from './domain/analysis.js';
 
 const OPTIMAL_TYPES = ['dopt', 'aopt', 'gopt'];
 
-/** Factor letter by index: 0 → A, 1 → B, … */
-export const letter = (i) => String.fromCharCode(65 + i);
+import { letter, PHASE_DECISIONS } from './domain/design.js';
 
-/** The three ways to close an EVOP phase. */
-export const PHASE_DECISIONS = Object.freeze(['recenter', 'repeat', 'stop']);
+export { letter, PHASE_DECISIONS };
 
 /** Deep clone helper that strips any Alpine reactive Proxy down to plain data. */
 function plain(v) {

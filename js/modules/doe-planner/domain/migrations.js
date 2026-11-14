@@ -6,9 +6,27 @@
  * are; the model then decides (never stricter than the earlier planner).
  */
 import { termsFromLegacyOptions } from '../../../engines/doe-terms.js';
-import { configSignature, designSignature, legacyDesignSignature } from './signatures.js';
+import { configSignature, designSignature } from './signatures.js';
 import { snapshotOf } from './experiment.js';
 import { parseDecimalInput } from '../../../core/parse-decimal.js';
+
+/**
+ * The design signature of the earlier planner, responses included. Only
+ * for migrating stored bindings: a stored value equal to this one for the
+ * stored design is replaced by `designSignature`.
+ * @param {any} m planner model
+ * @returns {string|null} null without a design
+ */
+function legacyDesignSignature(m) {
+  if (!m.design) return null;
+  return [
+    m.design.designType,
+    m.design.codedMatrix.length,
+    m.responses.length,
+    m.responses.map((r) => `${r.name}|${r.unit}`).join('||'),
+    m.design.codedMatrix.map((r) => r.join(',')).join(';'),
+  ].join('#');
+}
 
 /** Option defaults of format 1.0. */
 const OPTIONS_1_0 = Object.freeze({

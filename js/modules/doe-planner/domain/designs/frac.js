@@ -4,7 +4,7 @@
  */
 import { FRAC } from '../tables.js';
 import { computeAliasStructure } from '../analysis.js';
-import { letter } from '../../doe-planner-model.js';
+import { letter } from '../design.js';
 import { OK, fail, hasMultiLevel } from './check.js';
 
 const RES_CLASS = {

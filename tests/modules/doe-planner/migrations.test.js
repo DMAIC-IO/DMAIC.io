@@ -7,10 +7,21 @@ import { suite, test, assert, assertEqual, assertDeepEqual } from '../../test-ut
 import { from0 } from '../../../js/modules/doe-planner/domain/migrations.js';
 import { State } from '../../../js/modules/doe-planner/domain/model.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
-import { configSignature, designSignature, legacyDesignSignature } from '../../../js/modules/doe-planner/domain/signatures.js';
+import { configSignature, designSignature } from '../../../js/modules/doe-planner/domain/signatures.js';
 import { snapshotOf } from '../../../js/modules/doe-planner/domain/experiment.js';
 import { generateDesign } from '../../../js/engines/doe-planner-engine.js';
 import { EXAMPLES } from './cases.js';
+
+/** The design signature the earlier planner stored (responses included). @param {any} m @returns {string} */
+function legacyDesignSignature(m) {
+  return [
+    m.design.designType,
+    m.design.codedMatrix.length,
+    m.responses.length,
+    m.responses.map((r) => `${r.name}|${r.unit}`).join('||'),
+    m.design.codedMatrix.map((r) => r.join(',')).join(';'),
+  ].join('#');
+}
 
 const FIXTURES = new URL('../../fixtures/exports/', import.meta.url);
 const PROJECTS = new URL('../../../examples/projects/', import.meta.url);
@@ -264,6 +275,14 @@ suite('doe-planner Migration — Bindung und Momentaufnahme', () => {
     assertEqual(m.worksheetRef.designSignature, designSignature(m));
     const data = sheetData('ws-1', 's-1', { y1: [1, 2, 3, 4] });
     assertEqual(derived(m, data).staleness, 'bound');
+  });
+
+  test('die eingefrorene Altformel: wörtlich gespeicherte Signatur wird umgeschrieben', () => {
+    const plan = legacyPlan();
+    plan.worksheetRef = binding('full#4#1#Yield|%#-1,-1;-1,1;1,-1;1,1');
+    assertEqual(State.fromJSON(plan).worksheetRef.designSignature, designSignature(State.fromJSON(plan)));
+    plan.worksheetRef = binding('full#4#1#Yield|kg#-1,-1;-1,1;1,-1;1,1');
+    assertEqual(State.fromJSON(plan).worksheetRef.designSignature, 'full#4#1#Yield|kg#-1,-1;-1,1;1,-1;1,1');
   });
 
   test('eine abweichende Signatur bleibt, das Blatt bleibt veraltet', () => {

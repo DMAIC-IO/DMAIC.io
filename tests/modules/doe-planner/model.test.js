@@ -6,8 +6,9 @@
 import { suite, test, assert, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { State, MIN_LEVELS, MIN_RESPONSES, MAX_REPLICATES } from '../../../js/modules/doe-planner/domain/model.js';
 import { setFields } from '../../../js/core/model.js';
+import { evaluateDerived } from '../../../js/core/derived.js';
 import { DESIGN_KEYS } from '../../../js/modules/doe-planner/domain/designs/index.js';
-import { PHASE_DECISIONS } from '../../../js/modules/doe-planner/doe-planner-model.js';
+import { PHASE_DECISIONS } from '../../../js/modules/doe-planner/domain/design.js';
 
 const V1 = { version: '1.0' };
 
@@ -89,7 +90,7 @@ suite('doe-planner Model — Felder und Vorgaben', () => {
     assertDeepEqual([...fields.projectPhases.item.shape.designType.values], [...DESIGN_KEYS]);
   });
 
-  test('Entscheidungen der Phasen gleich der Altform', () => {
+  test('Entscheidungen der Phasen gleich der Liste der Domäne', () => {
     assertDeepEqual([...fields.projectPhases.item.shape.decision.values], [...PHASE_DECISIONS]);
   });
 
@@ -156,11 +157,23 @@ suite('doe-planner Model — Invarianten', () => {
     assertEqual(s.selectedRes, null);
   });
 
-  test('validSelection: Schreiben, das die Auswahl bricht, wird abgelehnt', () => {
+  test('validSelection: ein dritter Faktor unter frac wird angenommen, der Plan ist ungültig, Laden repariert', () => {
     const s = State.fromJSON(stored({ designType: 'frac', selectedRes: { k: 2, runs: 4, res: 'Full', p: 0 } }));
-    const err = errorOf(() => setFields(s, { factors: [...s.factors, { id: 3, name: 'C', unit: '', kind: 'continuous', levels: ['1', '2'] }] }));
-    assertEqual(err.invariant, 'validSelection');
-    assertEqual(s.factors.length, 2);
+    setFields(s, { factors: [...s.factors, { id: 3, name: 'C', unit: '', kind: 'continuous', levels: ['1', '2'] }] });
+    assertEqual(s.factors.length, 3);
+    const d = evaluateDerived(s, { sheet: () => null, values: () => null });
+    assertEqual(d.valid, false);
+    assertEqual(d.invalidReason, 'noResolution');
+    const again = State.fromJSON(s.toJSON(), { repair: true });
+    assertEqual(again.selectedRes, null);
+    assertEqual(again.factors.length, 3);
+  });
+
+  test('validSelection: drei Stufen unter pb per setFields angenommen, der Plan ist ungültig', () => {
+    const s = State.fromJSON(stored({ designType: 'pb', selectedPBIdx: 0 }));
+    setFields(s, { factors: [{ ...s.factors[0], levels: ['1', '2', '3'] }, s.factors[1]] });
+    assertEqual(evaluateDerived(s, { sheet: () => null, values: () => null }).invalidReason, 'twoLevelOnly');
+    assertEqual(State.fromJSON(s.toJSON(), { repair: true }).designType, 'full');
   });
 
   test('uniqueFactorIds: doppelte id bekommt beim Laden die nächste freie, kein Faktor entfällt', () => {

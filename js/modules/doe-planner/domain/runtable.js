@@ -9,7 +9,7 @@
  */
 import { parseDecimalInput, decimalOr } from '../../../core/parse-decimal.js';
 import { formatValue, codedToActual } from '../../../engines/doe-planner-engine.js';
-import { letter } from '../doe-planner-model.js';
+import { letter } from './design.js';
 
 /** Index of the first factor column (after run, std, block, replicate). */
 export const FACTOR_OFFSET = 4;
