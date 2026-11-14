@@ -24,7 +24,7 @@ function legacyDesignSignature(m) {
 }
 
 const FIXTURES = new URL('../../fixtures/exports/', import.meta.url);
-const PROJECTS = new URL('../../../examples/projects/', import.meta.url);
+const PROJECTS = new URL('../../../js/modules/doe-planner/resources/examples/projects/', import.meta.url);
 const FILES = [
   'v0.2.0_all_projects.json', 'v0.2.0_single_project.json', 'v0.3.0_all_projects.json', 'v0.3.0_single_project.json',
   'v0.5.0_8d_project.json', 'v0.9.0_single_project.json', 'v1.0.0_single_project.json', 'v1.1.0_single_project.json',
@@ -256,6 +256,19 @@ suite('doe-planner Migration — Altformen', () => {
     const m = State.fromJSON(plan, { repair: true });
     assertDeepEqual(m.factors.map((f) => f.name), ['Temp', 'Druck']);
     assertEqual(m.doeName, 'Ofen');
+  });
+
+  test('Quellblatt eines Beispiels: der Platzhalter wird das bereitgestellte Blatt, exampleWorksheetId entfällt', async () => {
+    const [example] = plannerStates(await fetchJSON(PROJECTS, 'doe-optimal-augment-3f.json'));
+    const { sourceWorksheetData, ...stored } = example;
+    assertEqual(sourceWorksheetData.activeSheetId, stored.sourceWorksheet.sheetId);
+    const { m, reports } = load({ ...stored, exampleWorksheetId: 'ws-1' });
+    assertDeepEqual(reports, []);
+    assertDeepEqual(m.sourceWorksheet, { instanceId: 'ws-1', sheetId: 'sheet-augment-data' });
+    assertEqual('exampleWorksheetId' in m.toJSON(), false);
+    const plain = legacyPlan();
+    plain.sourceWorksheet = { instanceId: 'ws-9', sheetId: 's1' };
+    assertDeepEqual(load({ ...plain, exampleWorksheetId: 'ws-1' }).m.sourceWorksheet, { instanceId: 'ws-9', sheetId: 's1' });
   });
 
   test('seed ist 0; design.configSignature ist die Signatur des migrierten Plans', () => {

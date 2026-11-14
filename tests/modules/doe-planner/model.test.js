@@ -7,8 +7,8 @@ import { suite, test, assert, assertEqual, assertDeepEqual } from '../../test-ut
 import { State, MIN_LEVELS, MIN_RESPONSES, MAX_REPLICATES } from '../../../js/modules/doe-planner/domain/model.js';
 import { setFields } from '../../../js/core/model.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
-import { DESIGN_KEYS } from '../../../js/modules/doe-planner/domain/designs/index.js';
-import { PHASE_DECISIONS } from '../../../js/modules/doe-planner/domain/design.js';
+import { DESIGN_KEYS } from '../../../js/modules/doe-planner/domain/designs/registry.js';
+import { PHASE_DECISIONS, isOptimal, activeTerms, modelTerms } from '../../../js/modules/doe-planner/domain/design.js';
 
 const V1 = { version: '1.0' };
 
@@ -63,6 +63,14 @@ suite('doe-planner Model — Felder und Vorgaben', () => {
     const r = new State();
     r.responses = [{ name: 'Yield', unit: '' }];
     assertEqual(r.hasContent(), true);
+  });
+
+  test('mit einem Plan hat der Plan Inhalt, auch ohne Namen', () => {
+    const planned = State.fromJSON(stored());
+    planned.regenerate();
+    const s = new State();
+    s.design = planned.toJSON().design;
+    assertEqual(s.hasContent(), true);
   });
 
   test('Grenzen', () => {
@@ -219,5 +227,22 @@ suite('doe-planner Model — Hilfen für die Plantypen', () => {
     assertDeepEqual(s.getActiveTerms(), ['M0', 'M1', 'I0_1']);
     s.options = { ...s.options, optimalActiveTerms: ['M0', 'M1', 'M2', 'I0_2', 'M1'] };
     assertDeepEqual(s.getActiveTerms(), ['M0', 'M1']);
+  });
+});
+
+suite('doe-planner Model — Plantyp und Modellterme', () => {
+  test('isOptimal: dopt, aopt und gopt sind optimal, full nicht', () => {
+    for (const designType of ['dopt', 'aopt', 'gopt']) assertEqual(isOptimal({ designType }), true);
+    assertEqual(isOptimal({ designType: 'full' }), false);
+  });
+
+  test('activeTerms ohne Faktoren ist leer', () => {
+    assertDeepEqual(activeTerms({ factors: [], options: { optimalActiveTerms: null } }), []);
+  });
+
+  test('modelTerms eines 2²-Plans enthält die Wechselwirkung', () => {
+    const model = { designType: 'full', factors: [{ kind: 'continuous' }, { kind: 'continuous' }], options: {} };
+    const terms = modelTerms(model, { codedMatrix: [[-1, -1], [1, -1], [-1, 1], [1, 1]] });
+    assert(terms.includes('I0_1'), `Wechselwirkung fehlt: ${terms.join(', ')}`);
   });
 });

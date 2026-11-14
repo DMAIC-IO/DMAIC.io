@@ -169,7 +169,7 @@ export { computeDesignEfficiency };
  *
  * @param {number} n - Number of runs
  * @param {number} k - Number of factors
- * @param {number} effectSizes - Array of effect sizes (delta/sigma) to evaluate
+ * @param {number[]} effectSizes - Array of effect sizes (delta/sigma) to evaluate
  * @param {number} [alpha=0.05] - Significance level
  * @param {Array<[number, number]>|{terms: string[]}} [excludedOrOpts] - Legacy: 2FI pairs
  *   to omit from the mains + 2FI model. Options form: `{ terms }` — canonical
@@ -183,9 +183,9 @@ export function computePowerAnalysis(n, k, effectSizes = [0.5, 1.0, 1.5, 2.0], a
   // df_error = n - p (where p = number of model terms)
   // F = MS_effect / MS_error
 
-  const opts = (excludedOrOpts && !Array.isArray(excludedOrOpts))
+  const opts = /** @type {{ terms?: string[], excludedInteractions?: Array<[number, number]> }} */ ((excludedOrOpts && !Array.isArray(excludedOrOpts))
     ? excludedOrOpts
-    : { excludedInteractions: excludedOrOpts };
+    : { excludedInteractions: excludedOrOpts });
   const p = Array.isArray(opts.terms)
     ? opts.terms.length + 1
     : buildModelMatrix(
@@ -234,7 +234,7 @@ export function powerDisplay(power) {
  * @typedef {object} DesignEvaluation
  * @property {{ aliases: object[], generatorStrings: string[], definingRelation: string[] }} aliasStructure
  * @property {{ term: string, vif: number }[]} vif
- * @property {DesignEfficiency} efficiency
+ * @property {import('../../../engines/design-efficiency-engine.js').DesignEfficiency} efficiency
  * @property {PowerResult[]} power
  * @property {Array<{ id: string, with: string[] }>} aliasedTerms - Model terms the design cannot estimate
  */
@@ -722,6 +722,7 @@ export function computeDispersionAnalysis(design, y, factorNames, alpha = 0.05, 
       if (!c.significant || c.term === 'Intercept') continue;
       // Negative coefficient on ln(s²) means raising that term reduces variance.
       // For a single coded factor (term contains no '×'), the sign maps to a level.
+      /** @type {'low'|'high'|'mid'} */
       let prefer = 'mid';
       if (!c.term.includes('×')) {
         prefer = c.coefficient < 0 ? 'high' : 'low';

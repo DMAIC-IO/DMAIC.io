@@ -43,6 +43,7 @@ import {
  *
  * @param {number[][]} codedMatrix - n×k coded design matrix (values: −1, 0, +1)
  * @param {object} [opts]
+ * @param {string[]} [opts.terms] - Term ids (M<f>, Q<f>, I<f>_<g>) instead of main + 2FI
  * @param {Array<[number, number]>} [opts.excludedInteractions] - 2FI pairs to omit
  * @returns {DesignEfficiency}
  */

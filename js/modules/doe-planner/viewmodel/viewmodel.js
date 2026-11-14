@@ -224,7 +224,7 @@ export default createModule({
         const { columns, ids } = designColumns(design, factors, responses, {
           names: this.columnNames, managedRef: `doe:${this._ui.instanceId}`,
         });
-        let write = worksheetWrite().newWorksheet({ name: m.doeName ? `DoE: ${m.doeName}` : `DoE ${new Date().toLocaleDateString()}` });
+        let write = worksheetWrite().newWorksheet({ name: m.doeName ? `DoE: ${m.doeName}` : `DoE ${new Date().toLocaleDateString()}`, fitRows: true });
         for (const c of columns) {
           /** @type {any} */
           const input = { name: c.name, type: c.type, unit: c.unit, values: c.values, formulas: c.formulas, role: c.role };

@@ -1,5 +1,5 @@
 /**
- * D.Mike — DoE Planner: design-type registry (designs/index.js)
+ * D.Mike — DoE Planner: design-type registry (designs/registry.js)
  *
  * One pure module per design type describes what makes the type: its
  * validity rule, its run count, its resolution label and its own helpers.

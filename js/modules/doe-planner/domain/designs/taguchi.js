@@ -5,7 +5,7 @@ import { TAGUCHI } from '../tables.js';
 import { taguchiCandidates } from '../../../../engines/doe-planner-engine.js';
 import { OK, fail } from './check.js';
 
-/** @type {import('./index.js').DesignType} */
+/** @type {import('./registry.js').DesignType & Record<string, any>} */
 const taguchi = {
   id: 'taguchi',
   centerPoints: false,

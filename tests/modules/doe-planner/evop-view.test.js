@@ -78,7 +78,11 @@ suite('doe-planner evop: complete a phase', () => {
   });
 
   test('each decision asks with its own text, the one of the earlier planner', async () => {
-    const legacy = await (await fetch(new URL('../../../i18n/de.json', import.meta.url), { cache: 'no-cache' })).json();
+    const legacy = {
+      recenter: 'Re-zentrieren? Der beste Punkt wird zum neuen Mittelpunkt. Die Faktor-Stufen werden automatisch angepasst.',
+      repeat: 'Phase wiederholen? Es wird ein neuer Zyklus mit den gleichen Faktoreinstellungen erstellt.',
+      stop: 'Projekt abschließen? Es werden keine weiteren Phasen erstellt.',
+    };
     const texts = new Set();
     for (const decision of ['recenter', 'repeat', 'stop']) {
       const h = await decidable();
@@ -89,7 +93,7 @@ suite('doe-planner evop: complete a phase', () => {
       assertEqual(asked.length, 1, decision);
       assertEqual(asked[0].message, `modules.doe-planner.confirm.completePhase.${decision}`);
       const text = de(`confirm.completePhase.${decision}`);
-      assertEqual(text, legacy.modules['doe-planner'][`decisionConfirm_${decision}`]);
+      assertEqual(text, legacy[decision]);
       texts.add(text);
     }
     assertEqual(texts.size, 3);

@@ -25,6 +25,11 @@
     "description": "Project calendar: appointments per phase in a month and a week view",
     "whenToUse": "When the appointments of a project should be kept — meetings, measurement windows, deadlines —, each assigned to a phase and shown in a month or week view; not for tasks without a fixed point in time, that is what the todo list is for, and not for planning activity durations and dependencies."
   },
+  "doe-planner": {
+    "name": "DoE Planner",
+    "description": "Design of Experiments: Full Factorial, Fractional, Plackett-Burman, CCD, Box-Behnken, Taguchi",
+    "whenToUse": "When the effect of several factors on one or more responses is to be studied in a planned experiment: full or fractional factorial, Plackett-Burman, response surface (CCD, Box-Behnken), Taguchi or optimal (D, A, G), also as an EVOP project over several phases. Which design type fits is settled beforehand in the DoE advisor (doe-advisor)."
+  },
   "histogram": {
     "name": "Histogram",
     "description": "Frequency distribution with boxplot and statistics",

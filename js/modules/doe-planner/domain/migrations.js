@@ -182,6 +182,24 @@ function refOf(source) {
   return { instanceId: r.instanceId, sheetId: r.sheetId };
 }
 
+/** Instance id an example file gives its own source worksheet; the example loader provisions the sheet. */
+const EXAMPLE_SOURCE = '__source__';
+
+/**
+ * The source worksheet of a stored state. An example names its own sheet
+ * with the placeholder id; the example loader passes the provisioned id as
+ * `exampleWorksheetId`, which replaces it.
+ * @param {any} s stored state
+ * @returns {object|null|unknown}
+ */
+function sourceOf(s) {
+  const ref = refOf(s.sourceWorksheet);
+  if (isObject(ref) && /** @type {any} */ (ref).instanceId === EXAMPLE_SOURCE && typeof s.exampleWorksheetId === 'string') {
+    return { .../** @type {any} */ (ref), instanceId: s.exampleWorksheetId };
+  }
+  return ref;
+}
+
 /**
  * The datasheet binding of a plan: the old signature with responses is
  * rewritten when it belongs to the stored design; a binding without a
@@ -281,6 +299,8 @@ function phaseOf(ph, top) {
  * stored design keeps its runs and gets the signature of the migrated plan,
  * so it counts as current. Without factors two blank ones, without
  * responses a blank one, as a fresh planner shows them.
+ * An example's placeholder source becomes the provisioned worksheet
+ * (`exampleWorksheetId`, then dropped).
  * @param {any} json copy of the stored state
  * @returns {object}
  */
@@ -292,7 +312,7 @@ export function from0(json) {
       ? { k: s.selectedRes.k, runs: s.selectedRes.runs, res: s.selectedRes.res, p: s.selectedRes.p }
       : (s.selectedRes || null),
     selectedPBIdx: s.selectedPBIdx ?? null,
-    sourceWorksheet: refOf(s.sourceWorksheet),
+    sourceWorksheet: sourceOf(s),
   };
   const plan = planOf(s, top, true);
   const phaseTop = { ...top, options: plan.options };

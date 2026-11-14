@@ -59,13 +59,11 @@
  * — mit denselben reinen `mean()`/`stddev()`-Funktionen, die
  * msa-typ1-engine.js für sein eigenes Ergebnis nutzt (kein Logik-Duplikat,
  * derselbe Code, nur erneut aufgerufen). Cross-Modul-Zugriffsmuster
- * (`stateManager.get('phases')` + `getModuleState(instanceId)`) folgt dem
- * bereits etablierten Vorbild in `doe-planner-worksheet.js`
- * (`listProjectWorksheets()`). Das `<select>` bindet bewusst NICHT über
+ * (`stateManager.get('phases')` + `getModuleState(instanceId)`). Das `<select>` bindet bewusst NICHT über
  * `x-model` an `_typ1Instances` (Alpine-CSP-Stolperstein: `x-for`-generierte
  * `<option>`s kollidieren mit der
  * initialen `x-model`-Reflexion) — stattdessen `@change` + `:selected` je
- * Option, analog zu `doe-planner.html`s `sourceWorksheetChanged()`-Muster.
+ * Option.
  *
  * @agent  Steuerbar über das Viewmodel: die neun Parameter (setParam) und die
  *   drei Einzel-Spalten (setColumn); die Analyse läuft nach jeder Eingabe von
@@ -796,8 +794,7 @@ const mod = createModule({
        * msa-typ1-engine.js für sein eigenes `xbar`/`sg` nutzt (kein
        * Logik-Duplikat).
        *
-       * Cross-Modul-Enumeration folgt dem in `doe-planner-worksheet.js`
-       * (`listProjectWorksheets()`) etablierten Muster:
+       * Cross-Modul-Enumeration:
        * `stateManager.get('phases')` (Map phaseId → Instanz-Liste) + je
        * Instanz `stateManager.getModuleState(instanceId)` für den
        * persistierten Modul-State.

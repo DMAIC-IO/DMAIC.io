@@ -16,7 +16,7 @@
  *      column, lands at the level that improves the response.
  *
  * The worksheet column-label translation (text vs numeric) is exercised by
- * the doe-planner-worksheet unit tests; here we focus on the pipeline math.
+ * the doe-planner column unit tests; here we focus on the pipeline math.
  */
 
 import { suite, test, assertAlmostEqual, assertEqual } from '../test-utils.js';

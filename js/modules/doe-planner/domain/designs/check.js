@@ -1,6 +1,6 @@
 /**
  * D.Mike — DoE Planner: check results shared by the design-type modules (designs/check.js)
- * Pure. Lives apart from designs/index.js so the type modules never import the registry.
+ * Pure. Lives apart from designs/registry.js so the type modules never import the registry.
  */
 
 /** A passed check. */

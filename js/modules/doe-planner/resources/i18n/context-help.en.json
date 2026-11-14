@@ -37,13 +37,13 @@
     "options": {
       "help": "The design options: random run order, center points, replicates, for the central composite design the star point distance and center points, for Box-Behnken the center points, for Taguchi the array, for the optimal design the run count, model terms and forbidden factor combinations.",
       "randomize": {
-        "help": "Shuffle the run order randomly (true) or leave it in standard order (false)."
+        "help": "Randomization protects against systematic nuisance variables (e.g. fatigue, temperature drift, material batches). RECOMMENDED in most cases.\n\nDo NOT randomize when:\n• Changeover between factor levels is very costly or time-consuming (e.g. furnace temperature)\n• Split-plot designs are intentionally used\n• EVOP is running and sequence must be fixed\n\nRule of thumb: when in doubt, always randomize.\n\nShuffle the run order randomly (true) or leave it in standard order (false)."
       },
       "centerPoints": {
-        "help": "Append three center points in the middle of the continuous factors; they show curvature. Only where the design type provides them."
+        "help": "Center points are replicates at the midpoint of all factors (all levels set to their center value).\n\nBenefits:\n• Estimate pure experimental error (Replicate Error) — without them, unreplicated 2^k designs have no independent error estimate\n• Curvature check — if the center mean deviates significantly from the model prediction, quadratic effects are present\n• Efficient: only 3 extra runs for both benefits\n\nWhen to use:\n• RECOMMENDED for 2^k and fractional factorial designs without other replicates\n• Not needed for CCD (has its own center points) or Box-Behnken\n\nAppend three center points in the middle of the continuous factors; they show curvature. Only where the design type provides them."
       },
       "replicates": {
-        "help": "How often each run is repeated, integer from 1 to 10. Replicates estimate the experimental variation and make the dispersion analysis possible."
+        "help": "Replication repeats the entire design 1:1. Each factor combination is run multiple times under identical conditions.\n\nBenefits:\n• Provides an independent estimate of pure error (repeatability)\n• Increases statistical power for detecting effects\n• Enables lack-of-fit testing for the regression model\n\nRule of thumb:\n• 1 replicate = no replication (screening phase, limited budget)\n• 2 replicates = standard for confirmatory experiments\n• 3+ replicates = high-precision studies or noisy processes\n\nHow often each run is repeated, integer from 1 to 10. Replicates estimate the experimental variation and make the dispersion analysis possible."
       },
       "alphaType": {
         "help": "The axial distance α of the central composite design: rotatable (equal prediction quality in all directions), face-centered (α = 1, three levels per factor) or spherical (α = √k)."
@@ -316,70 +316,88 @@
       "help": "Read plan, factors, responses, validity, summary, evaluation, linked datasheet and EVOP project. The run table comes on request only: read({ fields: ['runs'] })."
     },
     "addFactor": {
-      "help": "Append an empty continuous factor with two empty levels. Returns its id, the factorId of the other factor actions. The plan is invalid until name and levels are set. Clears the forbidden combinations of the optimal design."
+      "help": "Append an empty continuous factor with two empty levels. Returns its id, the factorId of the other factor actions. The plan is invalid until name and levels are set. Clears the forbidden combinations of the optimal design.",
+      "params": {
+        "command": "An empty object; the command takes no inputs."
+      }
     },
     "removeFactor": {
       "help": "Remove a factor; model terms with it go too.",
       "params": {
-        "id": "The factor, id from read().factors."
+        "id": "The factor, id from read().factors.",
+        "command": "The command as one object with id."
       }
     },
     "insertLevel": {
       "help": "Insert an empty level. More than two levels rule out the two-level design types (fractional factorial, Plackett-Burman).",
       "params": {
         "id": "The factor, id from read().factors.",
-        "at": "The position, from 0; the levels behind move up."
+        "at": "The position, from 0; the levels behind move up.",
+        "command": "The command as one object with id and at."
       }
     },
     "removeLevel": {
       "help": "Remove a level; at least two stay.",
       "params": {
         "id": "The factor, id from read().factors.",
-        "index": "The level, from 0."
+        "index": "The level, from 0.",
+        "command": "The command as one object with id and index."
       }
     },
     "addResponse": {
-      "help": "Append an empty response. Returns its index (0 = Y1). The plan is invalid until it is named."
+      "help": "Append an empty response. Returns its index (0 = Y1). The plan is invalid until it is named.",
+      "params": {
+        "command": "An empty object; the command takes no inputs."
+      }
     },
     "removeResponse": {
       "help": "Remove a response; at least one stays.",
       "params": {
-        "index": "The response, 0 = Y1."
+        "index": "The response, 0 = Y1.",
+        "command": "The command as one object with index."
       }
     },
     "setAnalysisResponse": {
       "help": "Choose the response the dispersion analysis evaluates and the regression handover passes on.",
       "params": {
-        "index": "The response, 0 = Y1."
+        "index": "The response, 0 = Y1.",
+        "command": "The command as one object with index."
       }
     },
     "selectDesignType": {
       "help": "Choose the design type; the type's own selection (resolution, Plackett-Burman design) starts over. Fractional factorial, Plackett-Burman and Taguchi need their selection before a design is built.",
       "params": {
         "type": "full (full factorial), frac (fractional factorial), pb (Plackett-Burman), ccd (central composite), bb (Box-Behnken), taguchi, dopt, aopt or gopt (D-, A-, G-optimal). frac and pb require exactly two levels per factor.",
-        "sourceRowCount": "Number of rows of the source worksheet when one is chosen; it raises the minimum run count of the optimal design. The UI fills it in, an agent leaves it out."
+        "sourceRowCount": "Number of rows of the source worksheet when one is chosen; it raises the minimum run count of the optimal design. The UI fills it in, an agent leaves it out.",
+        "command": "The command as one object with type and optionally sourceRowCount."
       }
     },
     "applyRecommendation": {
-      "help": "Adopt the recommended design type: up to 4 two-level factors full factorial, up to 6 fractional factorial, from 7 Plackett-Burman; with multi-level factors Box-Behnken (3 to 7 factors), otherwise Taguchi. Returns the chosen type; without a recommendation the design type stays as it is."
+      "help": "Adopt the recommended design type: up to 4 two-level factors full factorial, up to 6 fractional factorial, from 7 Plackett-Burman; with multi-level factors Box-Behnken (3 to 7 factors), otherwise Taguchi. Returns the chosen type; without a recommendation the design type stays as it is.",
+      "params": {
+        "command": "An empty object; the command takes no inputs."
+      }
     },
     "selectResolution": {
       "help": "Choose the fractional factorial by factor count and run count; the resolution (III, IV, V …) follows from the table. Design type frac only.",
       "params": {
         "k": "The factor count; must equal the number of factors.",
-        "runs": "The run count: 4, 8, 16, 32, 64 or 128; not every combination exists."
+        "runs": "The run count: 4, 8, 16, 32, 64 or 128; not every combination exists.",
+        "command": "The command as one object with k and runs."
       }
     },
     "selectPB": {
       "help": "Choose a Plackett-Burman design. Design type pb only.",
       "params": {
-        "index": "The design, from 0, in table order."
+        "index": "The design, from 0, in table order.",
+        "command": "The command as one object with index."
       }
     },
     "selectTaguchi": {
       "help": "Choose an orthogonal Taguchi array. Design type taguchi only; the arrays that fit the factor count and levels are available.",
       "params": {
-        "name": "The name, e.g. L4, L8 or L9."
+        "name": "The name, e.g. L4, L8 or L9.",
+        "command": "The command as one object with name."
       }
     },
     "setTerm": {
@@ -387,7 +405,8 @@
       "params": {
         "id": "The term id: M0, M1 … main effects, Q0 … quadratic, I0_1 … interactions; the numbers are factor indices from 0.",
         "on": "true switches on, false off.",
-        "sourceRowCount": "Number of rows of the source worksheet when one is chosen; it raises the minimum run count of the optimal design. The UI fills it in, an agent leaves it out."
+        "sourceRowCount": "Number of rows of the source worksheet when one is chosen; it raises the minimum run count of the optimal design. The UI fills it in, an agent leaves it out.",
+        "command": "The command as one object with id, on and optionally sourceRowCount."
       }
     },
     "setTermGroup": {
@@ -395,43 +414,52 @@
       "params": {
         "group": "The group, from 1.",
         "on": "true switches on, false off.",
-        "sourceRowCount": "Number of rows of the source worksheet when one is chosen; it raises the minimum run count of the optimal design. The UI fills it in, an agent leaves it out."
+        "sourceRowCount": "Number of rows of the source worksheet when one is chosen; it raises the minimum run count of the optimal design. The UI fills it in, an agent leaves it out.",
+        "command": "The command as one object with group, on and optionally sourceRowCount."
       }
     },
     "addForbiddenVertex": {
       "help": "Forbid a factor combination in the optimal design, such as a corner the plant cannot run. Returns false when it is already forbidden.",
       "params": {
-        "pattern": "One coded level per factor (-1 lowest, 1 highest, intermediate levels in between) or null for any level; at least one level is set."
+        "pattern": "One coded level per factor (-1 lowest, 1 highest, intermediate levels in between) or null for any level; at least one level is set.",
+        "command": "The command as one object with pattern."
       }
     },
     "removeForbiddenVertex": {
       "help": "Allow a forbidden combination again.",
       "params": {
-        "index": "The rule, from 0, as in read().options.forbiddenVertices."
+        "index": "The rule, from 0, as in read().options.forbiddenVertices.",
+        "command": "The command as one object with index."
       }
     },
     "setSourceWorksheet": {
       "help": "Choose a project worksheet with runs already measured as the starting point; the optimal design adds new runs only. Columns are matched by factor and response names; the planner's own datasheet is no source.",
       "params": {
         "ref": "The source sheet { instanceId, sheetId }; null removes the link. The planner's own datasheet is rejected as a source.",
-        "sourceRowCount": "Number of rows of the source worksheet when one is chosen; it raises the minimum run count of the optimal design. The UI fills it in, an agent leaves it out."
+        "sourceRowCount": "Number of rows of the source worksheet when one is chosen; it raises the minimum run count of the optimal design. The UI fills it in, an agent leaves it out.",
+        "command": "The command as one object with ref and optionally sourceRowCount."
       }
     },
     "regenerate": {
       "help": "Recompute the design from the current configuration and store it as design; preview edits are dropped. A valid design appears by itself after a short time; with a source worksheet the planner must be open — use the action generate, which reads the source worksheet.",
       "params": {
-        "source": "The rows of the source worksheet { codedMatrix, actualRows, responseValues, rowCount, sheetRowCount } for an optimal design with a source worksheet, otherwise null or omitted."
+        "source": "The rows of the source worksheet { codedMatrix, actualRows, responseValues, rowCount, sheetRowCount } for an optimal design with a source worksheet, otherwise null or omitted.",
+        "command": "The command as one object, optionally with source."
       }
     },
     "reshuffle": {
-      "help": "Draw a new run order: a new seed gives a different order for the same configuration. Without this action the same configuration always gives the same plan."
+      "help": "Draw a new run order: a new seed gives a different order for the same configuration. Without this action the same configuration always gives the same plan.",
+      "params": {
+        "command": "An empty object; the command takes no inputs."
+      }
     },
     "setPreviewCell": {
       "help": "Set a value of the preview while no current datasheet is linked: a result of a response or an adjusted setting of a continuous factor. The value goes into the datasheet when it is created. With a current datasheet linked, the values are entered there, in the datasheet's worksheet.",
       "params": {
         "row": "The run from read().runs, from 0.",
         "column": "A factor or response name as in read().runs; not a categorical factor.",
-        "value": "The number; null reverts the change."
+        "value": "The number; null reverts the change.",
+        "command": "The command as one object with row, column and value."
       }
     },
     "setPreviewCells": {
@@ -439,38 +467,64 @@
       "params": {
         "row": "The run of the first row, from 0.",
         "column": "The factor or response name of the first column as in read().runs; the further values run to the right.",
-        "values": "The values as rows of numbers; null clears a cell."
+        "values": "The values as rows of numbers; null clears a cell.",
+        "command": "The command as one object with row, column and values."
       }
     },
     "forbidRun": {
       "help": "Forbid the factor combination of a run of the optimal design (like addForbiddenVertex with the settings of this row). Returns false when it is already forbidden.",
       "params": {
-        "row": "The run from read().runs, from 0."
+        "row": "The run from read().runs, from 0.",
+        "command": "The command as one object with row."
       }
     },
     "discardPreviewEdits": {
-      "help": "Discard all edits to the preview; the run values are back as the design produced them."
+      "help": "Discard all edits to the preview; the run values are back as the design produced them.",
+      "params": {
+        "command": "An empty object; the command takes no inputs."
+      }
     },
     "setProjectMode": {
       "help": "Switch the EVOP project mode on or off. The first switch-on starts phase 1 with the current plan.",
       "params": {
-        "on": "true switches on, false off."
+        "on": "true switches on, false off.",
+        "command": "The command as one object with on."
       }
     },
     "viewPhase": {
       "help": "Show a phase: its plan, design and datasheet come back without regenerating the design.",
       "params": {
-        "index": "The phase, 0 = phase 1."
+        "index": "The phase, 0 = phase 1.",
+        "command": "The command as one object with index."
       }
     },
     "newPhase": {
-      "help": "Start a new phase with the current factor levels; only when the active phase is decided and the project not stopped. Returns the index of the new phase."
+      "help": "Start a new phase with the current factor levels; only when the active phase is decided and the project not stopped. Returns the index of the new phase.",
+      "params": {
+        "command": "An empty object; the command takes no inputs."
+      }
     },
     "completePhase": {
       "help": "Complete the active phase: the plan and the values of the first response are stored in the phase, then, depending on the decision, a new phase starts or the project ends. The UI asks first; an agent calls the action without confirmation. A phase that is already decided rejects the action.",
       "params": {
         "decision": "recenter (new phase around the best run, step sizes kept), repeat (new phase with the same factor levels) or stop (complete the project, no further phase).",
-        "yValues": "The values per response and run at closing, for the EVOP evaluation; null or omitted stores none."
+        "yValues": "The values per response and run at closing, for the EVOP evaluation; null or omitted stores none.",
+        "command": "The command as one object with decision and optionally yValues."
+      }
+    },
+    "createDatasheet": {
+      "params": {
+        "command": "An empty object; the task takes no inputs."
+      }
+    },
+    "augment": {
+      "params": {
+        "command": "The task as one object with runs."
+      }
+    },
+    "transferToRegression": {
+      "params": {
+        "command": "The task as one object with response."
       }
     }
   },
@@ -526,9 +580,9 @@
   "types": {
     "Evaluation": {
       "efficiency": "D-, A- and G-efficiency in percent, condition number and largest leverage.",
-      "vif": "Variance inflation factor per model term; 1 means independent, above 10 strongly confounded.",
-      "alias": "Generators and, per term, the terms it is confounded with; absent without confounding.",
-      "power": "Power per effect size; empty without error degrees of freedom."
+      "vif": "VIF measures how much a coefficient's variance is inflated due to correlation with other predictors. VIF=1 = perfectly orthogonal. VIF>5 = concerning → adjust the design (add more runs or choose a higher resolution). VIF>10 = severe multicollinearity → fundamentally change the design, or drop the confounded terms from the model during regression analysis.\n\nVariance inflation factor per model term; 1 means independent, above 10 strongly confounded.",
+      "alias": "Shows which effects are confounded (aliased) in a fractional factorial design. Aliased effects cannot be estimated independently.\n\nGenerators and, per term, the terms it is confounded with; absent without confounding.",
+      "power": "Statistical power: probability of detecting an effect of a given size. Power ≥ 80% is generally considered adequate.\n\nPower per effect size; empty without error degrees of freedom."
     },
     "Summary": {
       "runs": "Planned runs including replicates; the number is missing while the design type gives none.",

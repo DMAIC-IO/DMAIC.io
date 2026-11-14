@@ -3,7 +3,7 @@
  */
 import { OK, fail, hasMultiLevel } from './check.js';
 
-/** @type {import('./index.js').DesignType} */
+/** @type {import('./registry.js').DesignType & Record<string, any>} */
 const pb = {
   id: 'pb',
   centerPoints: true,

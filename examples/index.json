@@ -127,84 +127,6 @@
       }
     },
     {
-      "id": "doe-optimal-rsm-3f",
-      "type": "project",
-      "title": {
-        "de": "D-optimal RSM: 3 Faktoren, quadratisch",
-        "en": "D-optimal RSM: 3 factors, quadratic"
-      },
-      "description": {
-        "de": "Response-Surface-Modell mit drei kontinuierlichen Faktoren und vollem quadratischem Polynom in 12 Versuchsläufen. Klassischer Anwendungsfall für D-optimale Designs.",
-        "en": "Response-surface model with three continuous factors and a full quadratic polynomial in 12 runs. Classic D-optimal use case."
-      },
-      "source": "Qprovement Lehrkonfiguration",
-      "license": "public-domain",
-      "file": "projects/doe-optimal-rsm-3f.json",
-      "format": "json",
-      "modules": [
-        "doe-planner"
-      ],
-      "tags": [
-        "doe",
-        "optimal",
-        "d-optimal",
-        "rsm",
-        "quadratic"
-      ]
-    },
-    {
-      "id": "doe-optimal-screening-5f",
-      "type": "project",
-      "title": {
-        "de": "D-optimal Screening: 5 Faktoren, linear + 2FI",
-        "en": "D-optimal screening: 5 factors, linear + 2FI"
-      },
-      "description": {
-        "de": "Fünf kontinuierliche Faktoren mit Hauptwirkungen und Zweifach-Wechselwirkungen in 18 Versuchsläufen. Optimaler Ersatz für Plackett-Burman, wenn 2FI mit ins Modell sollen.",
-        "en": "Five continuous factors with main effects and two-factor interactions in 18 runs. D-optimal alternative to Plackett-Burman when 2FI must stay in the model."
-      },
-      "source": "Qprovement Lehrkonfiguration",
-      "license": "public-domain",
-      "file": "projects/doe-optimal-screening-5f.json",
-      "format": "json",
-      "modules": [
-        "doe-planner"
-      ],
-      "tags": [
-        "doe",
-        "optimal",
-        "d-optimal",
-        "screening",
-        "2fi"
-      ]
-    },
-    {
-      "id": "doe-optimal-mixed-4f",
-      "type": "project",
-      "title": {
-        "de": "D-optimal mixed: 3 cont. + 1 kategorisch",
-        "en": "D-optimal mixed: 3 cont. + 1 categorical"
-      },
-      "description": {
-        "de": "Drei kontinuierliche Faktoren und ein kategorischer Faktor mit drei Stufen (Material). Gemischt-stufige Optimal-Designs sind klassische Schemata vorbehalten — ein typischer D-optimaler Anwendungsfall.",
-        "en": "Three continuous factors plus one three-level categorical factor (material). Mixed-level optimal designs are a textbook D-optimal use case — classic schemes cannot handle this."
-      },
-      "source": "Qprovement Lehrkonfiguration",
-      "license": "public-domain",
-      "file": "projects/doe-optimal-mixed-4f.json",
-      "format": "json",
-      "modules": [
-        "doe-planner"
-      ],
-      "tags": [
-        "doe",
-        "optimal",
-        "d-optimal",
-        "mixed-level",
-        "categorical"
-      ]
-    },
-    {
       "id": "regression-pizza-delivery",
       "type": "project",
       "title": {
@@ -863,32 +785,6 @@
         "bubble",
         "define",
         "pareto"
-      ]
-    },
-    {
-      "id": "doe-optimal-augment-3f",
-      "type": "project",
-      "title": {
-        "de": "D-optimal Augment: auf bestehender Datensammlung",
-        "en": "D-optimal augment: on existing data set"
-      },
-      "description": {
-        "de": "Drei kontinuierliche Faktoren, quadratisches Modell, 12 Versuchsläufe gesamt — sechs davon bereits gemessen. Das Beispiel legt eine Datensammlung mit den bestehenden Messwerten an und ergänzt sie um sechs weitere D-optimale Versuchsläufe.",
-        "en": "Three continuous factors, quadratic model, 12 runs total — six already measured. The example creates a data sheet with the existing measurements and augments it with six additional D-optimal runs."
-      },
-      "source": "Qprovement Lehrkonfiguration",
-      "license": "public-domain",
-      "file": "projects/doe-optimal-augment-3f.json",
-      "format": "json",
-      "modules": [
-        "doe-planner"
-      ],
-      "tags": [
-        "doe",
-        "optimal",
-        "d-optimal",
-        "augment",
-        "rsm"
       ]
     },
     {
@@ -2582,30 +2478,6 @@
         "xbar-r",
         "control-chart",
         "shift"
-      ]
-    },
-    {
-      "id": "doe-planner-hubschrauber-flyer",
-      "type": "project",
-      "title": {
-        "de": "Papier-Hubschrauber — DoE (Rotorlänge × Klammern)",
-        "en": "Paper Helicopter — DoE (Rotor Length × Paperclips)"
-      },
-      "description": {
-        "de": "3² Voll-Faktoriell mit 2 Replikaten (18 Läufe), blockweise nach Rotorlänge (L = 8 → 6 → 4 cm, physikalisch erzwungen). Klammern-Reihenfolge innerhalb Block randomisiert. Ergebnis: wahres Optimum bei (L ≈ 7 cm, C = 1) liegt zwischen den getesteten Längen — perfektes RSM-Beispiel.",
-        "en": "3² full factorial with 2 replicates (18 runs), blocked by rotor length (L = 8 → 6 → 4 cm, physically forced). Paperclip order randomized within block. True optimum at (L ≈ 7 cm, C = 1) lies between tested lengths — a textbook RSM case."
-      },
-      "source": "Qprovement synthetisch, Physik-Modell, Seed=1305",
-      "license": "public-domain",
-      "file": "projects/doe-planner-hubschrauber-flyer.json",
-      "format": "json",
-      "modules": [
-        "doe-planner"
-      ],
-      "tags": [
-        "helicopter",
-        "doe-training",
-        "sequential-blocks"
       ]
     },
     {

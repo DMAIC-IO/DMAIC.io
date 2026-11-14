@@ -22,7 +22,7 @@ import { configSignature, designSignature } from './signatures.js';
 import { experimentOf } from './experiment.js';
 import { designFor } from './generate.js';
 import { evaluateDesign, computeEVOPEffects, recenteredFactors } from './analysis.js';
-import { DESIGNS } from './designs/index.js';
+import { DESIGNS } from './designs/registry.js';
 import fracType from './designs/frac.js';
 import taguchiType from './designs/taguchi.js';
 import optimalType from './designs/optimal.js';

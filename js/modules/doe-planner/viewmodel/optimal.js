@@ -54,7 +54,7 @@ export const optimalView = (ctx) => ({
 
   /**
    * Takes a typed run count: a whole number from 0; anything else is rejected and the field shows
-   * the stored count again.
+   * the stored count again. A count below the minimum is raised to the minimum, as before.
    * @param {Event} event change of the field
    * @returns {void}
    */
@@ -67,7 +67,7 @@ export const optimalView = (ctx) => ({
       return;
     }
     clearRejection(el);
-    setFields(this.model, { options: { ...JSON.parse(JSON.stringify(this.model.options)), optimalRuns: n } });
+    setFields(this.model, { options: { ...JSON.parse(JSON.stringify(this.model.options)), optimalRuns: Math.max(this.optimalMinNew, n) } });
   },
 
   /** @returns {boolean} */

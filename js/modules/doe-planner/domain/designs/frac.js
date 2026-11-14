@@ -12,7 +12,7 @@ const RES_CLASS = {
   VI: 'doe__res-vi', V: 'doe__res-v', IV: 'doe__res-iv', III: 'doe__res-iii',
 };
 
-/** @type {import('./index.js').DesignType} */
+/** @type {import('./registry.js').DesignType & Record<string, any>} */
 const frac = {
   id: 'frac',
   centerPoints: true,

@@ -28,7 +28,7 @@
   "previewEdits": null,
   "previewDirty": false,
   "worksheetRef": null,
-  "sourceWorksheet": null,
+  "sourceWorksheet": { "instanceId": "__source__", "sheetId": "sheet-augment-data" },
   "evaluation": null,
   "analysisResponseIdx": 0,
   "fid": 3,

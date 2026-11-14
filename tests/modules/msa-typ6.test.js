@@ -595,7 +595,7 @@ suite('msa-typ6 module — Events + Typ-1-Cross-Modul-Anbindung (Task 14)', () =
 
     assertTrue(body.includes("sm.get('phases')"),
       'must enumerate instances via stateManager.get(\'phases\') (all-phases cross-module lookup, ' +
-      'same pattern as doe-planner-worksheet.js listProjectWorksheets())');
+      'the shared cross-module pattern)');
     assertTrue(body.includes("inst.moduleId !== 'msa-typ1'"),
       'must filter phase entries down to moduleId === \'msa-typ1\'');
     assertTrue(body.includes('sm.getModuleState(inst.instanceId)'),

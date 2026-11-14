@@ -1,5 +1,5 @@
 /**
- * D.Mike — DoE Planner: Static Design Data (doe-planner-designs.js)
+ * D.Mike — DoE Planner: Static Design Data
  *
  * Contains all lookup tables, generator definitions, seed rows,
  * and design databases used by the DoE engine.
@@ -12,7 +12,7 @@
  * Each entry: { k: factorCount, runs: runCount, p: generators, res: resolution }
  * @type {{ k: number, runs: number, p: number, res: string }[]}
  */
-export const FRAC = [
+export const FRAC = /** @type {Array<[number, number, number, string]>} */ ([
   [2,4,0,'Full'],[3,8,0,'Full'],[3,4,1,'III'],
   [4,16,0,'Full'],[4,8,1,'IV'],
   [5,32,0,'Full'],[5,16,1,'V'],[5,8,2,'III'],
@@ -26,7 +26,7 @@ export const FRAC = [
   [13,128,6,'IV'],[13,64,7,'IV'],
   [14,128,7,'IV'],[14,64,8,'III'],
   [15,128,8,'IV'],[15,64,9,'III'],
-].map(([k, runs, p, res]) => ({ k, runs, p, res }));
+]).map(([k, runs, p, res]) => ({ k, runs, p, res }));
 
 // ─── Plackett-Burman ───────────────────────────────────────────────
 
@@ -155,7 +155,7 @@ export const BOX_BEHNKEN = {
  * Each array: { name, levels, maxFactors, runs, matrix }.
  * Matrix values are 0-indexed level numbers (0, 1, 2, …).
  *
- * @type {Record<string, { name: string, levels: number, maxFactors: number, runs: number, matrix: number[][] }>}
+ * @type {Record<string, { name: string, levels: number|'mixed', levelStructure?: number[], maxFactors: number, runs: number, matrix: number[][] }>}
  */
 export const TAGUCHI = {
   L4: {

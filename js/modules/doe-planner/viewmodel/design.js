@@ -9,7 +9,7 @@
  * command that raises the optimal runs gets the row count of the source
  * sheet. The tables are `computed` from the factors.
  */
-import { DESIGNS, designOf } from '../domain/designs/index.js';
+import { DESIGNS, designOf } from '../domain/designs/registry.js';
 import { hasMultiLevel } from '../domain/designs/check.js';
 import { PB_DESIGNS, ALL_RUNS, K_RANGE, BOX_BEHNKEN } from '../domain/tables.js';
 import fracType from '../domain/designs/frac.js';

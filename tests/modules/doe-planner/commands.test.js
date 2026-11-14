@@ -63,6 +63,14 @@ suite('doe-planner commands — factors and levels', () => {
     assertDeepEqual(s.options.forbiddenVertices, []);
   });
 
+  test('a new factor takes kind and levels through setFields', () => {
+    const s = planned();
+    const id = s.addFactor();
+    const factors = s.factors.map((f) => (f.id === id ? { ...f, name: 'Material', kind: 'categorical', levels: ['x', 'y'] } : f));
+    setFields(s, { factors });
+    assertDeepEqual(s.factors[2], { id, name: 'Material', unit: '', kind: 'categorical', levels: ['x', 'y'] });
+  });
+
   test('addFactor clears a fractional cell for the old factor count', () => {
     const s = planned({ designType: 'frac' });
     s.selectResolution({ k: 2, runs: 4 });
@@ -477,6 +485,14 @@ suite('doe-planner commands — EVOP', () => {
     s.setProjectMode({ on: false });
     s.setProjectMode({ on: true });
     assertEqual(s.projectPhases.length, 1);
+  });
+
+  test('regenerate copies the design into the active phase', () => {
+    const s = planned();
+    s.setProjectMode({ on: true });
+    s.regenerate();
+    assertEqual(s.projectPhases[0].design.codedMatrix.length, 4);
+    assertEqual(s.projectPhases[0].doeName, s.doeName);
   });
 
   test('completePhase asks first and stores every response and the selection', () => {

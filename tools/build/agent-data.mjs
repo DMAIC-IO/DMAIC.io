@@ -93,13 +93,12 @@ const VOID_RETURNS = new Set(['void', 'undefined', 'Promise<void>', 'Promise<und
 /**
  * Index- oder anzahlbasierte Anlegeaktionen ohne eigene id — begründete Ausnahmen
  * als `"<modul>.<aktion>"`; bei Teil-Viewmodels trägt die Aktion den
- * Teil-Präfix (`"<modul>.<teil>.<aktion>"`, z. B. `doe-planner.factors.insertLevel`).
+ * Teil-Präfix (`"<modul>.<teil>.<aktion>"`).
  * Geprüft wird das letzte Namenssegment.
- * `doe-planner.factors.insertLevel`: Stufen sind Zeichenketten ohne id, nur eine Position.
  * `attribute-test.addRow/addCol`: Tabellenzeile/-spalte ist eine Position, keine Entität.
  * `worksheet.addRows`: legt `count` Zeilen an, Zeilen haben keine id.
  */
-export const CREATING_VOID_EXEMPT = new Set(['doe-planner.factors.insertLevel', 'attribute-test.addRow', 'attribute-test.addCol', 'worksheet.addRows']);
+export const CREATING_VOID_EXEMPT = new Set(['attribute-test.addRow', 'attribute-test.addCol', 'worksheet.addRows']);
 
 /**
  * Sammle die Agenten-Registry über alle Module.

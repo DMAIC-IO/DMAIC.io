@@ -7,7 +7,7 @@ import { OK, fail } from './check.js';
 
 const LABELS = { dopt: 'D-Opt', aopt: 'A-Opt', gopt: 'G-Opt' };
 
-/** @type {import('./index.js').DesignType} */
+/** @type {import('./registry.js').DesignType & Record<string, any>} */
 const optimal = {
   id: 'optimal',
   centerPoints: false,

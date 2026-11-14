@@ -90,10 +90,10 @@ function designOf(m) {
 export async function loadCases() {
   const out = [];
   for (const file of EXAMPLES) {
-    const model = modelOf(await loadJson(`../../../examples/projects/${file}.json`));
+    const model = modelOf(await loadJson(`../../../js/modules/doe-planner/resources/examples/projects/${file}.json`));
     out.push({ name: file, model, design: designOf(model) });
   }
-  const model = modelOf(await loadJson('../../../examples/projects/doe-optimal-augment-3f.json'));
+  const model = modelOf(await loadJson('../../../js/modules/doe-planner/resources/examples/projects/doe-optimal-augment-3f.json'));
   const design = designOf(model);
   design.sourceRowCount = 4;
   design.sourceResponseSeeds = [[1.5, null, 3, 4.25, 9, 9]];

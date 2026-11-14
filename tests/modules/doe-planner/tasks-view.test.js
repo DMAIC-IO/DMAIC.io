@@ -142,6 +142,12 @@ function agentLayer(store) {
             case 'setFormula': { const c = column(st, rest[0]); c.formulas[rest[1]] = rest[2]; break; }
             case 'setColumnMeta': column(st, rest[0]).meta = rest[1]; break;
             case 'addRows': st.rowCount += rest[0]; st.columns.forEach(pad); break;
+            case 'removeRows': {
+              const n = Math.max(0, Math.min(rest[1], st.rowCount - rest[0]));
+              st.columns.forEach((c) => c.values.splice(rest[0], n));
+              st.rowCount -= n;
+              break;
+            }
             case 'setCells': { const c = column(st, rest[0]); rest[2].forEach((v, i) => { c.values[rest[1] + i] = v; }); break; }
             case 'renameColumn': column(st, rest[0]).name = rest[1]; break;
             case 'removeColumn': column(st, rest[0]); st.columns = st.columns.filter((c) => c.id !== rest[0]); break;
@@ -294,16 +300,16 @@ suite('doe-planner tasks: generate', () => {
 });
 
 suite('doe-planner tasks: createDatasheet', () => {
-  test('one stack: module.add, renameSheet, writeColumns, roles, formulas, metas last; the experiment follows', async () => {
+  test('one stack: module.add, renameSheet, writeColumns, removeRows, roles, formulas, metas last; the experiment follows', async () => {
     const h = await ready(plan({ options: { ...new State().options, replicates: 2 } }));
     const out = await h.run('createDatasheet');
     assertEqual(out.status, 'done', JSON.stringify(out));
     const stack = h.layer.stacks.at(-1);
     const kinds = stack.map((a) => (a.op === 'module.add' ? 'module.add' : a.method));
-    assertDeepEqual(kinds.slice(0, 3), ['module.add', 'renameSheet', 'writeColumns']);
+    assertDeepEqual(kinds.slice(0, 4), ['module.add', 'renameSheet', 'writeColumns', 'removeRows']);
     const lastOf = (k) => kinds.lastIndexOf(k);
     const firstOf = (k) => kinds.indexOf(k);
-    assert(firstOf('setColumnRole') > 2 && lastOf('setColumnRole') < firstOf('setFormula'), 'roles before formulas');
+    assert(firstOf('setColumnRole') > 3 && lastOf('setColumnRole') < firstOf('setFormula'), 'roles before formulas');
     assert(lastOf('setFormula') < firstOf('setColumnMeta'), 'formulas before metas');
     assertEqual(lastOf('setColumnMeta'), kinds.length - 1);
     const metas = stack.filter((a) => a.method === 'setColumnMeta').map((a) => a.args[2]);

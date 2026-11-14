@@ -1,13 +1,32 @@
 /**
  * D.Mike — test helper for the doe-planner design-type modules.
  * Not a test file itself: the node runner only imports *.test.js.
+ *
+ * Builds a plain planner state with the members the design types read:
+ * the stored fields, `getActiveTerms()` and `hasDuplicateFactorNames()`.
  */
-import { State } from '../../../js/modules/doe-planner/doe-planner-model.js';
+import { activeTerms } from '../../../js/modules/doe-planner/domain/design.js';
+
+/** @returns {object} the option defaults of a fresh planner */
+function defaultOptions() {
+  return {
+    randomize: true,
+    centerPoints: false,
+    replicates: 1,
+    alphaType: 'rotatable',
+    ccdCenterPoints: 3,
+    bbCenterPoints: 3,
+    taguchiArray: '',
+    optimalRuns: 0,
+    optimalActiveTerms: null,
+    forbiddenVertices: [],
+  };
+}
 
 /**
- * Builds a State with named factors and responses.
+ * Builds a planner state with named factors and responses.
  * @param {{factors?: Array<[string, string[], string?]>, responses?: string[], designType?: string, options?: object, selectedRes?: object, selectedPBIdx?: ?number}} [spec]
- * @returns {State}
+ * @returns {any}
  */
 export function stateWith(spec = {}) {
   const {
@@ -17,14 +36,30 @@ export function stateWith(spec = {}) {
     options = {},
     ...rest
   } = spec;
-  const s = new State();
-  for (const [name, levels, kind] of factors) s.addFactor(name, '', levels, kind);
-  for (const name of responses) {
-    s.addResponse();
-    s.responses[s.responses.length - 1].name = name;
-  }
-  s.designType = designType;
-  Object.assign(s.options, options);
+  const s = {
+    doeName: '',
+    designType,
+    factors: factors.map(([name, levels, kind], i) => ({
+      id: i + 1,
+      name: name || '',
+      unit: '',
+      kind: kind === 'categorical' ? 'categorical' : 'continuous',
+      levels: Array.isArray(levels) && levels.length >= 2 ? [...levels] : ['', ''],
+    })),
+    responses: responses.map((name) => ({ name, unit: '' })),
+    options: { ...defaultOptions(), ...options },
+    selectedRes: null,
+    selectedPBIdx: null,
+    design: null,
+    previewEdits: null,
+    worksheetRef: null,
+    sourceWorksheet: null,
+    getActiveTerms() { return activeTerms(this); },
+    hasDuplicateFactorNames() {
+      const names = this.factors.map((f) => f.name.trim().toLowerCase()).filter((n) => n !== '');
+      return new Set(names).size !== names.length;
+    },
+  };
   Object.assign(s, rest);
   return s;
 }

@@ -110,6 +110,14 @@ suite('doe-planner optimal: runs and terms', () => {
     assertEqual(input.value, '12');
   });
 
+  test('a run count below the minimum is raised to the minimum, as before', async () => {
+    const h = await mount(optimalPlan());
+    typeIn(h.$('.doe__optimal-runs-input'), '2');
+    await settle();
+    assertEqual(h.vm().model.options.optimalRuns, h.vm().optimalMinNew);
+    assert(h.vm().optimalMinNew > 2, 'the minimum lies above 2');
+  });
+
   test('a stored run count 0 shows the minimum, as before', async () => {
     const h = await mount(optimalPlan({ options: { ...new State().options, optimalRuns: 0 } }));
     assertEqual(h.$('.doe__optimal-runs-input').value, String(h.vm().optimalMinNew));

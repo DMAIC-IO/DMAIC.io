@@ -5,7 +5,7 @@
  * access (`ctx.data`); the model's `derived` entries call these. The
  * worksheet is only read through `data.sheet` and `data.values`.
  */
-import { checkConfig, designOf, plannedRuns } from './designs/index.js';
+import { checkConfig, designOf, plannedRuns } from './designs/registry.js';
 import { evaluateDesign, computeDispersionAnalysis, computeEVOPEffects } from './analysis.js';
 import { designSignature } from './signatures.js';
 import { actualRows, activeTerms, modelTerms, isOptimal, letter } from './design.js';

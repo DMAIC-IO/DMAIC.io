@@ -4570,650 +4570,828 @@ export const AGENT_REGISTRY = {
   "doe-planner": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
-      "factors.addFactor": {
-        "params": [],
-        "returns": "number",
-        "help": "Add an empty continuous factor with two empty levels. Forbidden factor combinations of an optimal design are cleared: they list one value per factor."
-      },
-      "factors.removeFactor": {
-        "params": [
-          {
-            "name": "factorId",
-            "type": "number",
-            "optional": false,
-            "help": "the factor"
-          }
-        ],
-        "returns": "void",
-        "help": "Remove a factor. The model terms and forbidden combinations of an optimal design are reset."
-      },
-      "factors.setFactorName": {
-        "params": [
-          {
-            "name": "factorId",
-            "type": "number",
-            "optional": false,
-            "help": "the factor"
-          },
-          {
-            "name": "name",
-            "type": "string",
-            "optional": false,
-            "help": "the name; \"\" clears it"
-          }
-        ],
-        "returns": "void",
-        "help": "Set a factor's name; names must differ, regardless of case."
-      },
-      "factors.setFactorUnit": {
-        "params": [
-          {
-            "name": "factorId",
-            "type": "number",
-            "optional": false,
-            "help": "the factor"
-          },
-          {
-            "name": "unit",
-            "type": "string",
-            "optional": false,
-            "help": "the unit; \"\" clears it"
-          }
-        ],
-        "returns": "void",
-        "help": "Set a continuous factor's unit."
-      },
-      "factors.setFactorKind": {
-        "params": [
-          {
-            "name": "factorId",
-            "type": "number",
-            "optional": false,
-            "help": "the factor"
-          },
-          {
-            "name": "kind",
-            "type": "'continuous'|'categorical'",
-            "optional": false,
-            "help": ""
-          }
-        ],
-        "returns": "void",
-        "help": "Make a factor continuous (numeric levels) or categorical (named levels, no unit)."
-      },
-      "factors.setLevel": {
-        "params": [
-          {
-            "name": "factorId",
-            "type": "number",
-            "optional": false,
-            "help": "the factor"
-          },
-          {
-            "name": "levelIdx",
-            "type": "number",
-            "optional": false,
-            "help": "0 = lowest level"
-          },
-          {
-            "name": "value",
-            "type": "string|number",
-            "optional": false,
-            "help": "the level as text or number (stored as text)"
-          }
-        ],
-        "returns": "void",
-        "help": "Set one level of a factor: a number for a continuous factor, a label for a categorical one."
-      },
-      "factors.insertLevel": {
-        "params": [
-          {
-            "name": "factorId",
-            "type": "number",
-            "optional": false,
-            "help": "the factor"
-          },
-          {
-            "name": "at",
-            "type": "number",
-            "optional": false,
-            "help": "position of the new level, 0 = before the first"
-          }
-        ],
-        "returns": "void",
-        "help": "Insert an empty level; more than two levels exclude the fractional and Plackett-Burman designs."
-      },
-      "factors.removeLevel": {
-        "params": [
-          {
-            "name": "factorId",
-            "type": "number",
-            "optional": false,
-            "help": "the factor"
-          },
-          {
-            "name": "levelIdx",
-            "type": "number",
-            "optional": false,
-            "help": "the level"
-          }
-        ],
-        "returns": "void",
-        "help": "Remove a level; a factor keeps at least two."
-      },
-      "factors.addResponse": {
-        "params": [],
-        "returns": "number",
-        "help": "Add an empty response."
-      },
-      "factors.removeResponse": {
-        "params": [
-          {
-            "name": "index",
-            "type": "number",
-            "optional": false,
-            "help": "the response, 0 = Y1"
-          }
-        ],
-        "returns": "void",
-        "help": "Remove a response; the plan keeps at least one."
-      },
-      "factors.setResponseName": {
-        "params": [
-          {
-            "name": "index",
-            "type": "number",
-            "optional": false,
-            "help": "the response, 0 = Y1"
-          },
-          {
-            "name": "name",
-            "type": "string",
-            "optional": false,
-            "help": "the name; \"\" clears it"
-          }
-        ],
-        "returns": "void",
-        "help": "Set a response's name."
-      },
-      "factors.setResponseUnit": {
-        "params": [
-          {
-            "name": "index",
-            "type": "number",
-            "optional": false,
-            "help": "the response, 0 = Y1"
-          },
-          {
-            "name": "unit",
-            "type": "string",
-            "optional": false,
-            "help": "the unit; \"\" clears it"
-          }
-        ],
-        "returns": "void",
-        "help": "Set a response's unit."
-      },
-      "design.selectDesignType": {
-        "params": [
-          {
-            "name": "type",
-            "type": "'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt'",
-            "optional": false,
-            "help": ""
-          }
-        ],
-        "returns": "void",
-        "help": "Choose the design type. Fractional factorial and Plackett-Burman need two levels per factor; an optimal type gets a default run count."
-      },
-      "design.applyRecommendation": {
-        "params": [],
-        "returns": "?string",
-        "help": "Take the recommended design type for the current factors."
-      },
-      "design.selectResolution": {
-        "params": [
-          {
-            "name": "k",
-            "type": "number",
-            "optional": false,
-            "help": "the factor count; must equal the number of factors"
-          },
-          {
-            "name": "runs",
-            "type": "number",
-            "optional": false,
-            "help": "the run count of the fraction"
-          }
-        ],
-        "returns": "void",
-        "help": "Choose the fractional factorial by run count; the factor count is the current one."
-      },
-      "design.selectPB": {
-        "params": [
-          {
-            "name": "index",
-            "type": "number",
-            "optional": false,
-            "help": "row of the table, 0 = 2–7 factors"
-          }
-        ],
-        "returns": "void",
-        "help": "Choose a Plackett-Burman row by factor range."
-      },
-      "design.selectTaguchi": {
-        "params": [
-          {
-            "name": "name",
-            "type": "string",
-            "optional": false,
-            "help": "array name such as L4, L8 or L9"
-          }
-        ],
-        "returns": "void",
-        "help": "Choose the Taguchi orthogonal array; only arrays that fit the factors are offered."
-      },
-      "design.setRandomize": {
-        "params": [
-          {
-            "name": "on",
-            "type": "boolean",
-            "optional": false,
-            "help": "true randomises"
-          }
-        ],
-        "returns": "void",
-        "help": "Randomise the run order or keep the standard order."
-      },
-      "design.setCenterPoints": {
-        "params": [
-          {
-            "name": "on",
-            "type": "boolean",
-            "optional": false,
-            "help": ""
-          }
-        ],
-        "returns": "void",
-        "help": "Add three center points (full, fractional and Plackett-Burman designs)."
-      },
-      "design.setReplicates": {
-        "params": [
-          {
-            "name": "n",
-            "type": "number",
-            "optional": false,
-            "help": "replicates, a whole number from 1 to 10"
-          }
-        ],
-        "returns": "void",
-        "help": "Repeat every run."
-      },
-      "design.setAlphaType": {
-        "params": [
-          {
-            "name": "type",
-            "type": "'rotatable'|'face-centered'|'spherical'",
-            "optional": false,
-            "help": ""
-          }
-        ],
-        "returns": "void",
-        "help": "Choose the axial distance of the central composite design."
-      },
-      "design.setCcdCenterPoints": {
-        "params": [
-          {
-            "name": "n",
-            "type": "number",
-            "optional": false,
-            "help": "a whole number from 1 to 100"
-          }
-        ],
-        "returns": "void",
-        "help": "Center points of the central composite design."
-      },
-      "design.setBbCenterPoints": {
-        "params": [
-          {
-            "name": "n",
-            "type": "number",
-            "optional": false,
-            "help": "a whole number from 1 to 100"
-          }
-        ],
-        "returns": "void",
-        "help": "Center points of the Box-Behnken design."
-      },
-      "optimal.setOptimalRuns": {
-        "params": [
-          {
-            "name": "n",
-            "type": "number",
-            "optional": false,
-            "help": "a whole number, at least what the active model terms need"
-          }
-        ],
-        "returns": "void",
-        "help": "Set the number of new runs of the optimal design."
-      },
-      "optimal.setTerm": {
-        "params": [
-          {
-            "name": "termId",
-            "type": "string",
-            "optional": false,
-            "help": "M0 (main effect of factor A), Q0 (its square), I0_1 (interaction A·B), …"
-          },
-          {
-            "name": "on",
-            "type": "boolean",
-            "optional": false,
-            "help": ""
-          }
-        ],
-        "returns": "void",
-        "help": "Switch one model term. On takes its lower terms along, off its higher ones; main effects stay. Raises the runs to the new minimum."
-      },
-      "optimal.setTermGroup": {
-        "params": [
-          {
-            "name": "groupIdx",
-            "type": "number",
-            "optional": false,
-            "help": "the group; 0 holds the main effects"
-          },
-          {
-            "name": "on",
-            "type": "boolean",
-            "optional": false,
-            "help": ""
-          }
-        ],
-        "returns": "void",
-        "help": "Switch every term of a group: 1 = squares, 2 = two-factor interactions, … The main effects stay."
-      },
-      "optimal.addForbiddenVertex": {
-        "params": [
-          {
-            "name": "pattern",
-            "type": "Array<?number>",
-            "optional": false,
-            "help": "one coded level per factor (-1 = lowest, 1 = highest, in between for more levels), null for any level"
-          }
-        ],
-        "returns": "boolean",
-        "help": "Forbid a combination of factor levels in the optimal design."
-      },
-      "optimal.removeForbiddenVertex": {
-        "params": [
-          {
-            "name": "index",
-            "type": "number",
-            "optional": false,
-            "help": "position in the list of forbidden combinations"
-          }
-        ],
-        "returns": "void",
-        "help": "Allow a forbidden combination again."
-      },
-      "optimal.setSourceWorksheet": {
-        "params": [
-          {
-            "name": "instanceId",
-            "type": "?string",
-            "optional": false,
-            "help": "the worksheet; null removes the source"
-          },
-          {
-            "name": "sheetId",
-            "type": "?string",
-            "optional": true,
-            "help": "the sheet of that worksheet"
-          }
-        ],
-        "returns": "void",
-        "help": "Build the optimal design on top of measured data from a project worksheet; columns are matched to factors and responses by name."
-      },
-      "optimal.augment": {
-        "params": [
-          {
-            "name": "n",
-            "type": "number",
-            "optional": false,
-            "help": "new runs, a whole number of at least 1"
-          }
-        ],
-        "returns": "number",
-        "help": "Add optimal runs to the linked datasheet; the existing runs and their values stay, the new rows are appended."
-      },
-      "analysis.setAnalysisResponse": {
-        "params": [
-          {
-            "name": "index",
-            "type": "number",
-            "optional": false,
-            "help": "the response, 0 = Y1"
-          }
-        ],
-        "returns": "void",
-        "help": "Choose the response the dispersion analysis and the regression handover use."
-      },
-      "analysis.transferToRegression": {
-        "params": [],
-        "returns": "string",
-        "help": "Hand the linked datasheet to a new regression in the planner's phase, with the design's model terms."
-      },
-      "evop.setProjectMode": {
-        "params": [
-          {
-            "name": "on",
-            "type": "boolean",
-            "optional": false,
-            "help": ""
-          }
-        ],
-        "returns": "void",
-        "help": "Switch the EVOP project mode. The first switch-on opens phase 1 with the current plan."
-      },
-      "evop.setProjectName": {
-        "params": [
-          {
-            "name": "name",
-            "type": "string",
-            "optional": false,
-            "help": "the name; \"\" clears it"
-          }
-        ],
-        "returns": "void",
-        "help": "Set the project name; new phases are named after it."
-      },
-      "evop.newPhase": {
-        "params": [],
-        "returns": "number",
-        "help": "Start a new phase with the current factor levels. Only on a decided active phase, and never after the project was stopped."
-      },
-      "evop.completePhase": {
-        "params": [
-          {
-            "name": "decision",
-            "type": "'recenter'|'repeat'|'stop'",
-            "optional": false,
-            "help": ""
-          }
-        ],
-        "returns": "boolean",
-        "help": "Close the active phase without asking: store its design and the first response's values, then re-center or repeat in a new phase, or stop."
-      },
-      "evop.viewPhase": {
-        "params": [
-          {
-            "name": "idx",
-            "type": "number",
-            "optional": false,
-            "help": "the phase, 0 = phase 1"
-          }
-        ],
-        "returns": "void",
-        "help": "Show a phase: its plan, design and datasheet come back; the design is not regenerated."
-      },
-      "runs.createDatasheet": {
-        "params": [],
-        "returns": "string",
-        "help": "Create the datasheet of the design, with the preview's values; a datasheet created before is replaced. The planner opens it."
-      },
-      "runs.setRunValue": {
-        "params": [
-          {
-            "name": "run",
-            "type": "number",
-            "optional": false,
-            "help": "the run number (run order) from read().runs"
-          },
-          {
-            "name": "column",
-            "type": "string",
-            "optional": false,
-            "help": "a factor or response name as in read().runs"
-          },
-          {
-            "name": "value",
-            "type": "?number",
-            "optional": false,
-            "help": "the value; null reverts the cell"
-          }
-        ],
-        "returns": "void",
-        "help": "Set one value of the run table before a datasheet exists (or while it is outdated): a response result or an adjusted continuous factor setting. The preview grid follows; the value goes into the datasheet when it is created."
-      },
       "read": {
         "params": [
           {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ fields?: string[] }`; runs kommt nur mit fields: ['runs']"
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
         "returns": "AgentRead",
-        "help": "Den Lesezustand dieser Instanz liefern."
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
-      "setDoeName": {
+      "addFactor": {
+        "target": "model",
         "params": [
           {
-            "name": "name",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "the name; \"\" clears it"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "number",
+        "help": "",
+        "keysOf": "addFactor",
+        "keysHelp": "actions.addFactor.params",
+        "keys": {}
+      },
+      "removeFactor": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Name the plan (in project mode: the active phase)."
+        "help": "",
+        "keysOf": "removeFactor",
+        "keysHelp": "actions.removeFactor.params",
+        "keys": {
+          "id": {
+            "type": "number",
+            "help": ""
+          }
+        }
+      },
+      "insertLevel": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "insertLevel",
+        "keysHelp": "actions.insertLevel.params",
+        "keys": {
+          "id": {
+            "type": "number",
+            "help": ""
+          },
+          "at": {
+            "type": "number",
+            "help": ""
+          }
+        }
+      },
+      "removeLevel": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeLevel",
+        "keysHelp": "actions.removeLevel.params",
+        "keys": {
+          "id": {
+            "type": "number",
+            "help": ""
+          },
+          "index": {
+            "type": "number",
+            "help": ""
+          }
+        }
+      },
+      "addResponse": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "number",
+        "help": "",
+        "keysOf": "addResponse",
+        "keysHelp": "actions.addResponse.params",
+        "keys": {}
+      },
+      "removeResponse": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeResponse",
+        "keysHelp": "actions.removeResponse.params",
+        "keys": {
+          "index": {
+            "type": "number",
+            "help": ""
+          }
+        }
+      },
+      "setAnalysisResponse": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setAnalysisResponse",
+        "keysHelp": "actions.setAnalysisResponse.params",
+        "keys": {
+          "index": {
+            "type": "number",
+            "help": ""
+          }
+        }
+      },
+      "selectDesignType": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "selectDesignType",
+        "keysHelp": "actions.selectDesignType.params",
+        "keys": {
+          "type": {
+            "type": "'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt'",
+            "help": ""
+          },
+          "sourceRowCount": {
+            "type": "number",
+            "help": "",
+            "optional": true
+          }
+        }
+      },
+      "applyRecommendation": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "string|null",
+        "help": "",
+        "keysOf": "applyRecommendation",
+        "keysHelp": "actions.applyRecommendation.params",
+        "keys": {}
+      },
+      "selectResolution": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "selectResolution",
+        "keysHelp": "actions.selectResolution.params",
+        "keys": {
+          "k": {
+            "type": "number",
+            "help": ""
+          },
+          "runs": {
+            "type": "number",
+            "help": ""
+          }
+        }
+      },
+      "selectPB": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "selectPB",
+        "keysHelp": "actions.selectPB.params",
+        "keys": {
+          "index": {
+            "type": "number",
+            "help": ""
+          }
+        }
+      },
+      "selectTaguchi": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "selectTaguchi",
+        "keysHelp": "actions.selectTaguchi.params",
+        "keys": {
+          "name": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "setTerm": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setTerm",
+        "keysHelp": "actions.setTerm.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
+          },
+          "on": {
+            "type": "boolean",
+            "help": ""
+          },
+          "sourceRowCount": {
+            "type": "number",
+            "help": "",
+            "optional": true
+          }
+        }
+      },
+      "setTermGroup": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setTermGroup",
+        "keysHelp": "actions.setTermGroup.params",
+        "keys": {
+          "group": {
+            "type": "number",
+            "help": ""
+          },
+          "on": {
+            "type": "boolean",
+            "help": ""
+          },
+          "sourceRowCount": {
+            "type": "number",
+            "help": "",
+            "optional": true
+          }
+        }
+      },
+      "addForbiddenVertex": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "boolean",
+        "help": "",
+        "keysOf": "addForbiddenVertex",
+        "keysHelp": "actions.addForbiddenVertex.params",
+        "keys": {
+          "pattern": {
+            "type": "Array<number|null>",
+            "help": ""
+          }
+        }
+      },
+      "removeForbiddenVertex": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeForbiddenVertex",
+        "keysHelp": "actions.removeForbiddenVertex.params",
+        "keys": {
+          "index": {
+            "type": "number",
+            "help": ""
+          }
+        }
+      },
+      "setSourceWorksheet": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setSourceWorksheet",
+        "keysHelp": "actions.setSourceWorksheet.params",
+        "keys": {
+          "ref": {
+            "type": "{ instanceId: string, sheetId: string }|null",
+            "help": ""
+          },
+          "sourceRowCount": {
+            "type": "number",
+            "help": "",
+            "optional": true
+          }
+        }
+      },
+      "regenerate": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "regenerate",
+        "keysHelp": "actions.regenerate.params",
+        "keys": {
+          "source": {
+            "type": "{ codedMatrix: number[][], actualRows: string[][], responseValues: Array<Array<number|null>>, rowCount: number, sheetRowCount: number }|null",
+            "help": "",
+            "optional": true
+          }
+        }
+      },
+      "reshuffle": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "reshuffle",
+        "keysHelp": "actions.reshuffle.params",
+        "keys": {}
+      },
+      "setPreviewCell": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setPreviewCell",
+        "keysHelp": "actions.setPreviewCell.params",
+        "keys": {
+          "row": {
+            "type": "number",
+            "help": ""
+          },
+          "column": {
+            "type": "string",
+            "help": ""
+          },
+          "value": {
+            "type": "number|null",
+            "help": ""
+          }
+        }
+      },
+      "setPreviewCells": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setPreviewCells",
+        "keysHelp": "actions.setPreviewCells.params",
+        "keys": {
+          "row": {
+            "type": "number",
+            "help": ""
+          },
+          "column": {
+            "type": "string",
+            "help": ""
+          },
+          "values": {
+            "type": "Array<Array<number|null>>",
+            "help": ""
+          }
+        }
+      },
+      "forbidRun": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "boolean",
+        "help": "",
+        "keysOf": "forbidRun",
+        "keysHelp": "actions.forbidRun.params",
+        "keys": {
+          "row": {
+            "type": "number",
+            "help": ""
+          }
+        }
+      },
+      "discardPreviewEdits": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "discardPreviewEdits",
+        "keysHelp": "actions.discardPreviewEdits.params",
+        "keys": {}
+      },
+      "setProjectMode": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setProjectMode",
+        "keysHelp": "actions.setProjectMode.params",
+        "keys": {
+          "on": {
+            "type": "boolean",
+            "help": ""
+          }
+        }
+      },
+      "viewPhase": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "viewPhase",
+        "keysHelp": "actions.viewPhase.params",
+        "keys": {
+          "index": {
+            "type": "number",
+            "help": ""
+          }
+        }
+      },
+      "newPhase": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "number",
+        "help": "",
+        "keysOf": "newPhase",
+        "keysHelp": "actions.newPhase.params",
+        "keys": {}
+      },
+      "completePhase": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "completePhase",
+        "keysHelp": "actions.completePhase.params",
+        "keys": {
+          "decision": {
+            "type": "'recenter'|'repeat'|'stop'",
+            "help": ""
+          },
+          "yValues": {
+            "type": "Array<Array<number|null>>|null",
+            "help": "",
+            "optional": true
+          }
+        }
+      },
+      "createDatasheet": {
+        "target": "asyncTask",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "any",
+        "help": "",
+        "keysOf": "createDatasheet",
+        "keysHelp": "asyncTasks.createDatasheet.params",
+        "keys": {},
+        "task": "createDatasheet",
+        "op": "start",
+        "helpKey": "asyncTasks.createDatasheet.help"
+      },
+      "createDatasheet.cancel": {
+        "target": "asyncTask",
+        "task": "createDatasheet",
+        "op": "cancel",
+        "params": [],
+        "returns": "{ cancelled: boolean }",
+        "help": "",
+        "helpKey": "asyncTasks.createDatasheet.cancel.help"
+      },
+      "augment": {
+        "target": "asyncTask",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "any",
+        "help": "",
+        "keysOf": "augment",
+        "keysHelp": "asyncTasks.augment.params",
+        "keys": {
+          "runs": {
+            "type": "unknown",
+            "help": ""
+          }
+        },
+        "task": "augment",
+        "op": "start",
+        "helpKey": "asyncTasks.augment.help"
+      },
+      "augment.cancel": {
+        "target": "asyncTask",
+        "task": "augment",
+        "op": "cancel",
+        "params": [],
+        "returns": "{ cancelled: boolean }",
+        "help": "",
+        "helpKey": "asyncTasks.augment.cancel.help"
+      },
+      "transferToRegression": {
+        "target": "asyncTask",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "any",
+        "help": "",
+        "keysOf": "transferToRegression",
+        "keysHelp": "asyncTasks.transferToRegression.params",
+        "keys": {
+          "response": {
+            "type": "unknown",
+            "help": ""
+          }
+        },
+        "task": "transferToRegression",
+        "op": "start",
+        "helpKey": "asyncTasks.transferToRegression.help"
+      },
+      "transferToRegression.cancel": {
+        "target": "asyncTask",
+        "task": "transferToRegression",
+        "op": "cancel",
+        "params": [],
+        "returns": "{ cancelled: boolean }",
+        "help": "",
+        "helpKey": "asyncTasks.transferToRegression.cancel.help"
       }
     },
     "fields": {
       "doeName": {
         "type": "string",
-        "help": "name of the plan, in project mode of the active phase",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "designType": {
-        "type": "''|'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt'",
-        "help": "the design type",
-        "bulk": false,
-        "derived": true
+        "type": "'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt'",
+        "help": "",
+        "bulk": false
       },
       "factors": {
-        "type": "DoeFactor[]",
-        "help": "the factors in order",
-        "bulk": false,
-        "derived": true,
-        "keysOf": "DoeFactor",
-        "keys": {
-          "id": {
-            "type": "number",
-            "help": "stable id, the factorId of the factors.* actions"
-          },
-          "name": {
-            "type": "string",
-            "help": "the name, also the column name of the run table"
-          },
-          "unit": {
-            "type": "string",
-            "help": "the unit, '' without"
-          },
-          "kind": {
-            "type": "'continuous'|'categorical'",
-            "help": "numeric or named levels"
-          },
-          "levels": {
-            "type": "string[]",
-            "help": "the levels as typed, lowest first"
-          }
-        }
+        "type": "Array<{ id: number, name: string, unit: string, kind: 'continuous'|'categorical', levels: string[] }>",
+        "help": "",
+        "bulk": false
       },
       "responses": {
-        "type": "DoeResponse[]",
-        "help": "the responses in order, index = position",
-        "bulk": false,
-        "derived": true,
-        "keysOf": "DoeResponse",
-        "keys": {
-          "name": {
-            "type": "string",
-            "help": "the name, also the column name of the run table"
-          },
-          "unit": {
-            "type": "string",
-            "help": "the unit, '' without"
-          }
-        }
+        "type": "{ name: string, unit: string }[]",
+        "help": "",
+        "bulk": false
       },
       "options": {
-        "type": "object",
-        "help": "randomize, centerPoints, replicates, alphaType, ccdCenterPoints, bbCenterPoints, taguchiArray, optimalRuns, optimalActiveTerms, forbiddenVertices",
-        "bulk": false,
-        "derived": true
+        "type": "{ randomize: boolean, centerPoints: boolean, replicates: number, alphaType: 'rotatable'|'face-centered'|'spherical', ccdCenterPoints: number, bbCenterPoints: number, taguchiArray: string, optimalRuns: number, optimalActiveTerms: string[]|null, forbiddenVertices: Array<Array<number|null>> }",
+        "help": "",
+        "bulk": false
       },
-      "typeParams": {
-        "type": "DoeTypeParams",
-        "help": "the type's own selection",
+      "seed": {
+        "type": "number",
+        "help": "",
+        "bulk": false
+      },
+      "selectedRes": {
+        "type": "{ k: number, runs: number, res: string, p: number }|null",
+        "help": "",
+        "bulk": false
+      },
+      "selectedPBIdx": {
+        "type": "number|null",
+        "help": "",
+        "bulk": false
+      },
+      "design": {
+        "type": "{ codedMatrix: number[][], actualMatrix: string[][], stdOrder: number[], runOrder: number[], replicateIds: number[], resolution: string, p: number, designType: 'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt', sourceResponseSeeds?: Array<Array<number|null>>, sourceRowCount?: number, configSignature: string }|null",
+        "help": "",
         "bulk": false,
-        "derived": true,
-        "keysOf": "DoeTypeParams",
-        "keys": {
-          "selectedRes": {
-            "type": "object|null",
-            "help": "the fractional factorial cell `{ k, runs, res, p }`, null without"
-          },
-          "selectedPBIdx": {
-            "type": "number|null",
-            "help": "the Plackett-Burman design, index into the table, null without"
-          }
-        }
+        "omit": [
+          ""
+        ]
+      },
+      "previewEdits": {
+        "type": "{ factors: Array<Array<number|null>>, responses: Array<Array<number|null>> }|null",
+        "help": "",
+        "bulk": false
+      },
+      "worksheetRef": {
+        "type": "{ instanceId: string, sheetId: string, factorColumnIds: string[], responseColumnIds: string[], meanColumnIds: string[], lnVarColumnIds: string[], runOrderColumnId: string|null, stdOrderColumnId: string|null, designSignature: string|null, snapshot: { name: string, designType: 'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt'|null, factors: Array<{ name: string, kind: 'continuous'|'categorical', unit: string|null, levels: string[]|null }>, plannedTerms: { linear: boolean, terms: string[], blockColumn: boolean }, aliasing: { aliases: { term: string, aliasedWith: string[] }[], generatorStrings: string[], definingRelation: string[] }|null, centerPointRows: number[], replicateGroups: number[][], responses: Array<{ name: string, unit: string|null }> }|null }|null",
+        "help": "",
+        "bulk": false
+      },
+      "sourceWorksheet": {
+        "type": "{ instanceId: string, sheetId: string }|null",
+        "help": "",
+        "bulk": false
+      },
+      "projectMode": {
+        "type": "boolean",
+        "help": "",
+        "bulk": false
+      },
+      "projectName": {
+        "type": "string",
+        "help": "",
+        "bulk": false
+      },
+      "projectPhases": {
+        "type": "Array<{ cycleNumber: number, doeName: string, factors: Array<{ id: number, name: string, unit: string, kind: 'continuous'|'categorical', levels: string[] }>, responses: { name: string, unit: string }[], designType: 'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt', options: { randomize: boolean, centerPoints: boolean, replicates: number, alphaType: 'rotatable'|'face-centered'|'spherical', ccdCenterPoints: number, bbCenterPoints: number, taguchiArray: string, optimalRuns: number, optimalActiveTerms: string[]|null, forbiddenVertices: Array<Array<number|null>> }, design: { codedMatrix: number[][], actualMatrix: string[][], stdOrder: number[], runOrder: number[], replicateIds: number[], resolution: string, p: number, designType: 'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt', sourceResponseSeeds?: Array<Array<number|null>>, sourceRowCount?: number, configSignature: string }|null, worksheetRef: { instanceId: string, sheetId: string, factorColumnIds: string[], responseColumnIds: string[], meanColumnIds: string[], lnVarColumnIds: string[], runOrderColumnId: string|null, stdOrderColumnId: string|null, designSignature: string|null, snapshot: { name: string, designType: 'full'|'frac'|'pb'|'ccd'|'bb'|'taguchi'|'dopt'|'aopt'|'gopt'|null, factors: Array<{ name: string, kind: 'continuous'|'categorical', unit: string|null, levels: string[]|null }>, plannedTerms: { linear: boolean, terms: string[], blockColumn: boolean }, aliasing: { aliases: { term: string, aliasedWith: string[] }[], generatorStrings: string[], definingRelation: string[] }|null, centerPointRows: number[], replicateGroups: number[][], responses: Array<{ name: string, unit: string|null }> }|null }|null, decision: 'recenter'|'repeat'|'stop'|null, completedAt: string|null, yValues: Array<Array<number|null>>|null, selectedRes?: { k: number, runs: number, res: string, p: number }|null, selectedPBIdx?: number|null, sourceWorksheet?: { instanceId: string, sheetId: string }|null, seed?: number }>",
+        "help": "",
+        "bulk": false,
+        "omit": [
+          "[].design"
+        ]
       },
       "valid": {
-        "type": "boolean",
-        "help": "the configuration yields a design",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "invalidReason": {
-        "type": "string|null",
-        "help": "reason code while invalid ('tooFewFactors', 'duplicateFactorNames', 'incompleteFactor', 'noResponse', 'unnamedResponse', 'noDesignType', 'twoLevelOnly', 'noResolution', 'noPBDesign', 'bbUnavailable', 'noTaguchiArray', 'tooFewOptimalRuns'), null when valid",
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "pending": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "recommendation": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "summary": {
-        "type": "DoeSummary",
-        "help": "planned and generated runs, resolution",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
-        "keysOf": "DoeSummary",
+        "keysOf": "Summary",
         "keys": {
           "runs": {
             "type": "number|null",
@@ -5225,33 +5403,155 @@ export const AGENT_REGISTRY = {
           },
           "generatedRuns": {
             "type": "number",
-            "help": "runs of the generated design, 0 without"
+            "help": "runs of the current design, 0 without"
           }
         }
       },
-      "analysisResponseIdx": {
-        "type": "number",
-        "help": "response of the dispersion analysis and the regression handover",
+      "evaluation": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "Evaluation",
+        "keys": {
+          "efficiency": {
+            "type": "{ dEfficiency: number, aEfficiency: number, gEfficiency: number, conditionNumber: number,\n *   maxLeverage: number }|null",
+            "help": "efficiencies in percent"
+          },
+          "vif": {
+            "type": "Array<{ term: string, vif: number }>",
+            "help": "per model term"
+          },
+          "alias": {
+            "type": "{ generators: string[], aliases: Array<{ term: string, aliasedWith: string[] }> }|null",
+            "help": "generators and aliases of a fractional design, null without aliasing"
+          },
+          "power": {
+            "type": "Array<{ effectSize: number, power: number|null, dfError: number }>",
+            "help": "per effect size, power null without error degrees of freedom"
+          }
+        }
+      },
+      "staleness": {
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true
       },
-      "sourceWorksheet": {
+      "progress": {
         "type": "object|null",
-        "help": "`{ instanceId, sheetId }` of the source worksheet of an optimal design, or null",
+        "help": "",
         "bulk": false,
         "derived": true
+      },
+      "dispersion": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "Dispersion",
+        "keys": {
+          "ok": {
+            "type": "boolean",
+            "help": "the analysis ran",
+            "optional": true
+          },
+          "noReplicates": {
+            "type": "boolean",
+            "help": "replicates are missing",
+            "optional": true
+          },
+          "responseName": {
+            "type": "string",
+            "help": "the analysed response",
+            "optional": true
+          },
+          "meanModel": {
+            "type": "object|null",
+            "help": "model of the mean",
+            "optional": true
+          },
+          "dispersionModel": {
+            "type": "object|null",
+            "help": "model of ln(s²)",
+            "optional": true
+          },
+          "significantDispersion": {
+            "type": "Array<{ term: string, coefficient: number, effect: number, p: number, prefer: 'low'|'high'|'mid' }>",
+            "help": "factors that affect the spread",
+            "optional": true
+          }
+        }
+      },
+      "experiment": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true
+      },
+      "evop": {
+        "type": "object|null",
+        "help": "",
+        "bulk": false,
+        "derived": true,
+        "keysOf": "Evop",
+        "keys": {
+          "projectMode": {
+            "type": "boolean",
+            "help": "always true; evop is null outside project mode"
+          },
+          "projectName": {
+            "type": "string",
+            "help": ""
+          },
+          "activePhaseIdx": {
+            "type": "number",
+            "help": "the phase shown, 0 = phase 1"
+          },
+          "phases": {
+            "type": "EvopPhase[]",
+            "help": "all phases in order",
+            "keysOf": "EvopPhase",
+            "keys": {
+              "cycleNumber": {
+                "type": "number",
+                "help": "phase number, from 1"
+              },
+              "doeName": {
+                "type": "string",
+                "help": "the phase name"
+              },
+              "decision": {
+                "type": "'recenter'|'repeat'|'stop'|null",
+                "help": "null while open"
+              },
+              "completedAt": {
+                "type": "string|null",
+                "help": "ISO time of the decision, null while open"
+              },
+              "yValues": {
+                "type": "Array<Array<number|null>>|null",
+                "help": "per response the value of each run at closing, null without"
+              }
+            }
+          },
+          "summary": {
+            "type": "object|null",
+            "help": "cumulative EVOP effects of the first response, null before the first closed phase with values"
+          }
+        }
       },
       "runs": {
-        "type": "DoeRun[]",
-        "help": "the run table in run order; only with read({ fields: ['runs'] }); preview values come from runs.setRunValue",
+        "type": "object[]",
+        "help": "",
         "bulk": true,
         "bulkKind": "table",
         "derived": true,
-        "keysOf": "DoeRun",
+        "keysOf": "Run",
         "keys": {
           "run": {
             "type": "number",
-            "help": "run number in run order, the run of setRunValue"
+            "help": "run number in run order"
           },
           "std": {
             "type": "number",
@@ -5266,122 +5566,78 @@ export const AGENT_REGISTRY = {
             "help": "replicate"
           },
           "factors": {
-            "type": "object",
+            "type": "Record<string, number|string|null>",
             "help": "setting per factor name"
           },
           "responses": {
-            "type": "object",
+            "type": "Record<string, number|null>",
             "help": "value per response name, null while empty"
           }
         }
       },
-      "worksheet": {
-        "type": "DoeWorksheet|null",
-        "help": "the linked datasheet, null without",
+      "asyncTasks": {
+        "type": "object",
+        "help": "",
         "bulk": false,
-        "derived": true,
-        "keysOf": "DoeWorksheet",
-        "keys": {
-          "instanceId": {
-            "type": "string",
-            "help": "the worksheet instance; write its values with worksheet.setCells"
-          },
-          "sheetId": {
-            "type": "string",
-            "help": "the sheet"
-          },
-          "stale": {
-            "type": "boolean",
-            "help": "the plan changed since the datasheet was created"
-          },
-          "filled": {
-            "type": "number",
-            "help": "filled response cells"
-          },
-          "total": {
-            "type": "number",
-            "help": "response cells"
-          }
-        }
-      },
-      "evaluation": {
-        "type": "DoeEvaluation|null",
-        "help": "evaluation of the generated design, null without",
-        "bulk": false,
-        "derived": true,
-        "keysOf": "DoeEvaluation",
-        "keys": {
-          "efficiency": {
-            "type": "object|null",
-            "help": "`{ dEfficiency, aEfficiency, gEfficiency, conditionNumber, maxLeverage }`, efficiencies in percent"
-          },
-          "vif": {
-            "type": "object[]",
-            "help": "`{ term, vif }` per model term"
-          },
-          "alias": {
-            "type": "object|null",
-            "help": "`{ generators, aliases: [{ term, aliasedWith }] }`, null without aliasing"
-          },
-          "power": {
-            "type": "object[]",
-            "help": "`{ effectSize, power, dfError }` per effect size, power null without error degrees of freedom"
-          }
-        }
-      },
-      "evop": {
-        "type": "DoeEvop|null",
-        "help": "the EVOP project, null outside project mode",
-        "bulk": false,
-        "derived": true,
-        "keysOf": "DoeEvop",
-        "keys": {
-          "projectMode": {
-            "type": "boolean",
-            "help": "always true; evop is null outside project mode"
-          },
-          "projectName": {
-            "type": "string",
-            "help": "the project name"
-          },
-          "activePhaseIdx": {
-            "type": "number",
-            "help": "the phase shown, 0 = phase 1"
-          },
-          "phases": {
-            "type": "DoePhase[]",
-            "help": "all phases in order",
-            "keysOf": "DoePhase",
-            "keys": {
-              "cycleNumber": {
-                "type": "number",
-                "help": "phase number, from 1"
-              },
-              "doeName": {
-                "type": "string",
-                "help": "the phase name"
-              },
-              "decision": {
-                "type": "string|null",
-                "help": "'recenter', 'repeat', 'stop' or null while open"
-              },
-              "completedAt": {
-                "type": "string|null",
-                "help": "ISO time of the decision, null while open"
-              },
-              "yValues": {
-                "type": "Array<number|null>|null",
-                "help": "first response per run at closing, null without"
-              }
-            }
-          },
-          "summary": {
-            "type": "object|null",
-            "help": "cumulative EVOP effects, null before the first closed phase with values; the errorLimit of an effect is Infinity (not null) without a variance estimate"
-          }
-        }
+        "derived": true
       }
-    }
+    },
+    "asyncTasks": [
+      {
+        "name": "generate",
+        "auto": true,
+        "params": []
+      },
+      {
+        "name": "createDatasheet",
+        "auto": false,
+        "params": []
+      },
+      {
+        "name": "augment",
+        "auto": false,
+        "params": [
+          "runs"
+        ]
+      },
+      {
+        "name": "transferToRegression",
+        "auto": false,
+        "params": [
+          "response"
+        ]
+      },
+      {
+        "name": "syncResponses",
+        "auto": true,
+        "params": []
+      }
+    ],
+    "viewFields": [
+      "analysisResponseIdx",
+      "activePhaseIdx"
+    ],
+    "settable": [
+      "doeName",
+      "designType",
+      "factors",
+      "responses",
+      "options",
+      "seed",
+      "selectedRes",
+      "selectedPBIdx",
+      "previewEdits",
+      "sourceWorksheet",
+      "projectMode",
+      "projectName"
+    ],
+    "invariants": [
+      "minResponses",
+      "validSelection",
+      "uniqueFactorIds",
+      "analysisResponse",
+      "activePhase"
+    ]
   },
   "five-why": {
     "tagged": true,

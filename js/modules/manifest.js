@@ -420,17 +420,6 @@ export default [
     },
   },
   {
-    id: 'doe-planner',
-    phase: 'improve',
-    group: 'plan',
-    load: () => import('./doe-planner/doe-planner.js'),
-    cycles: {
-      dmaic:  { phase: 'improve' },
-      dmadv:  { phase: 'design'  },
-      eightd: { phase: 'corrective' },
-    },
-  },
-  {
     id: 'regression',
     phase: 'improve',
     group: 'evaluate',
