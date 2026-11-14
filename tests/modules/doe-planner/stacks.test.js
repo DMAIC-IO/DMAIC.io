@@ -162,12 +162,20 @@ suite('doe-planner domain — responseSyncStack', () => {
     ]);
   });
 
-  test('erste von zwei unbenannten Zielgrößen entfernt → Spalte der Position 0', () => {
+  test('eine von zwei gleichen Zielgrößen entfernt → null (unklar welche)', () => {
     const blank = [{ name: '', unit: '' }, { name: '', unit: '' }];
-    assertDeepEqual(responseSyncStack(REF, blank, [{ name: '', unit: '' }], SHEET), [
-      call('removeColumn', ['sheet_1', 'y1']),
-      call('removeColumn', ['sheet_1', 'm1']),
-      call('removeColumn', ['sheet_1', 'v1']),
+    assertEqual(responseSyncStack(REF, blank, [{ name: '', unit: '' }], SHEET), null);
+    assertEqual(responseSyncPlan(REF, blank, [{ name: '', unit: '' }], SHEET), null);
+    const twins = [{ name: 'A', unit: '' }, { name: 'A', unit: '' }];
+    assertEqual(responseSyncStack(REF, twins, [{ name: 'A', unit: '' }], SHEET), null);
+  });
+
+  test('zweite Zielgröße entfernt → Spalte der Position 1', () => {
+    const ab = [{ name: 'A', unit: '' }, { name: 'B', unit: '' }];
+    assertDeepEqual(responseSyncStack(REF, ab, [{ name: 'A', unit: '' }], SHEET), [
+      call('removeColumn', ['sheet_1', 'y2']),
+      call('removeColumn', ['sheet_1', 'm2']),
+      call('removeColumn', ['sheet_1', 'v2']),
     ]);
   });
 

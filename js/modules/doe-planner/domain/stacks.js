@@ -159,8 +159,9 @@ function cleanMeta(meta) {
  *   is lifted around the rename);
  * - one more and `before` is the start of `after`: the new column is
  *   appended (without meta and without helper columns);
- * - one fewer and `after` is `before` without one position: that column
- *   and its helper columns are removed;
+ * - one fewer and `after` is `before` without exactly one position: that
+ *   column and its helper columns are removed (fits more than one position,
+ *   nothing);
  * - anything else (reordered, several changes at once): nothing.
  *
  * @param {WorksheetBinding} ref the binding of the datasheet
@@ -232,8 +233,10 @@ export function responseSyncPlan(ref, before, after, { columns, names }) {
   }
 
   if (after.length === before.length - 1) {
-    const i = positions.find((k) => sameList(before.filter((_, x) => x !== k), after));
-    if (i === undefined) return null;
+    const fits = positions.filter((k) => sameList(before.filter((_, x) => x !== k), after));
+    // Two equal responses: which one went is unknown — no guess at measured data.
+    if (fits.length !== 1) return null;
+    const i = fits[0];
     for (const id of [ref.responseColumnIds[i], mean(i), lnVar(i)]) {
       if (id) stack.push(call('removeColumn', [sheet, id]));
     }
