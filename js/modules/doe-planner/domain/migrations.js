@@ -188,13 +188,16 @@ const EXAMPLE_SOURCE = '__source__';
 /**
  * The source worksheet of a stored state. An example names its own sheet
  * with the placeholder id; the example loader passes the provisioned id as
- * `exampleWorksheetId`, which replaces it.
+ * `exampleWorksheetId`, which replaces it; when provisioning failed there is
+ * no source (the plain optimal plan shows).
  * @param {any} s stored state
  * @returns {object|null|unknown}
  */
 function sourceOf(s) {
   const ref = refOf(s.sourceWorksheet);
-  if (isObject(ref) && /** @type {any} */ (ref).instanceId === EXAMPLE_SOURCE && typeof s.exampleWorksheetId === 'string') {
+  if (isObject(ref) && /** @type {any} */ (ref).instanceId === EXAMPLE_SOURCE) {
+    // Without a provisioned sheet the placeholder points nowhere: no source.
+    if (typeof s.exampleWorksheetId !== 'string') return null;
     return { .../** @type {any} */ (ref), instanceId: s.exampleWorksheetId };
   }
   return ref;

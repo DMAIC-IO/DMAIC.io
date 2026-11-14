@@ -6,6 +6,7 @@
 import { suite, test, assert, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { snapshotOf, experimentOf, appendedRuns } from '../../../js/modules/doe-planner/domain/experiment.js';
 import { designSignature } from '../../../js/modules/doe-planner/domain/signatures.js';
+import { generateDesign } from '../../../js/engines/doe-planner-engine.js';
 import { loadCases, legacyExperiments } from './cases.js';
 
 suite('doe-planner domain — experimentOf', () => {
@@ -44,6 +45,66 @@ suite('doe-planner domain — experimentOf', () => {
     const snap = snapshotOf(heli.model, heli.design);
     assertEqual(snap.replicateGroups.length, 9);
     for (const g of snap.replicateGroups) assertEqual(g.length, 2);
+  });
+
+  /** A plain plan model and its CCD design (no randomization). */
+  function ccdPlan(factors) {
+    const options = { alphaType: 'rotatable', ccdCenterPoints: 3, randomize: false, seed: 1, optimalActiveTerms: null };
+    const design = generateDesign(factors, { designType: 'ccd', ...options });
+    const model = { doeName: 'CCD', designType: 'ccd', factors, responses: [{ name: 'Y', unit: '' }], options };
+    return { model, design };
+  }
+
+  test('CCD: die Zentrumspunkte bilden eine Wiederholungsgruppe', () => {
+    const { model, design } = ccdPlan([
+      { id: 1, name: 'X1', kind: 'continuous', levels: ['-1', '1'] },
+      { id: 2, name: 'X2', kind: 'continuous', levels: ['-1', '1'] },
+    ]);
+    const groups = snapshotOf(model, design).replicateGroups;
+    assertEqual(groups.length, 1);
+    assertEqual(groups[0].length, 3);
+    for (const i of groups[0]) {
+      assertEqual(design.codedMatrix[i][0], 0);
+      assertEqual(design.codedMatrix[i][1], 0);
+    }
+  });
+
+  test('gemischtes CCD: Zentrumspunkte je Kategorie gruppiert, nicht übergreifend', () => {
+    const { model, design } = ccdPlan([
+      { id: 1, name: 'X1', kind: 'continuous', levels: ['-1', '1'] },
+      { id: 2, name: 'X2', kind: 'continuous', levels: ['-1', '1'] },
+      { id: 3, name: 'Tool', kind: 'categorical', levels: ['A', 'B', 'C'] },
+    ]);
+    const groups = snapshotOf(model, design).replicateGroups;
+    // 3 categorical combinations, one center-point group each.
+    assertEqual(groups.length, 3);
+    for (const g of groups) {
+      assertEqual(g.length, 3);
+      const first = design.codedMatrix[g[0]];
+      for (const i of g) {
+        const row = design.codedMatrix[i];
+        assertEqual(row[0], 0);
+        assertEqual(row[1], 0);
+        assertEqual(row[2], first[2]);
+      }
+    }
+    assertEqual(new Set(groups.map((g) => design.codedMatrix[g[0]][2])).size, 3);
+  });
+
+  test('Dezimalkomma: „2,5“/„7,5“ wird 2.5/7.5, Stufe 0 bleibt 0', () => {
+    const { model, design } = ccdPlan([
+      { id: 1, name: 'X1', kind: 'continuous', unit: 'mm', levels: ['2,5', '7,5'] },
+      { id: 2, name: 'X2', kind: 'continuous', unit: 's', levels: ['0', '10'] },
+    ]);
+    const ref = {
+      instanceId: 'ws', sheetId: 's', factorColumnIds: ['a', 'b'], responseColumnIds: ['y'], meanColumnIds: [], lnVarColumnIds: [],
+      runOrderColumnId: 'run', stdOrderColumnId: 'std', snapshot: snapshotOf(model, design),
+    };
+    const exp = experimentOf(ref);
+    assertEqual(exp.factors[0].low, 2.5);
+    assertEqual(exp.factors[0].high, 7.5);
+    assertEqual(exp.factors[1].low, 0);
+    assertEqual(exp.factors[1].high, 10);
   });
 
   test('ohne kodierte Matrix keine Wiederholungsgruppen', async () => {

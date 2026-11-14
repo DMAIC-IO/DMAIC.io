@@ -4,7 +4,9 @@
 import { BOX_BEHNKEN } from '../tables.js';
 import { OK, fail } from './check.js';
 
-/** @type {import('./registry.js').DesignType & Record<string, any>} */
+/** @typedef {import('./registry.js').DesignType & {available: function(object): boolean}} BbDesign */
+
+/** @type {BbDesign} */
 const bb = {
   id: 'bb',
   centerPoints: false,

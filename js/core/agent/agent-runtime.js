@@ -462,13 +462,6 @@ export function createAgentRuntime(deps) {
   }
 
   /**
-   * Der Durchlauf ohne das Schließen der Verlaufsgruppen; Optionen wie
-   * `runInteract`, `opts.run` ist gesetzt.
-   * @param {object|object[]} [input]
-   * @param {object} opts
-   * @returns {Promise<object>}
-   */
-  /**
    * Die Phase, in der eine Instanz liegt.
    * @param {string} instanceId
    * @returns {string|null} null, wenn keine Phase sie führt
@@ -480,6 +473,13 @@ export function createAgentRuntime(deps) {
     return null;
   }
 
+  /**
+   * Der Durchlauf ohne das Schließen der Verlaufsgruppen; Optionen wie
+   * `runInteract`, `opts.run` ist gesetzt.
+   * @param {object|object[]} [input]
+   * @param {object} opts
+   * @returns {Promise<object>}
+   */
   async function runStack(input, opts) {
     const { decided = null, caller = null, inline = false, run } = opts;
     const track = opts.revisions === true;

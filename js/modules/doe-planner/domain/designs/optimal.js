@@ -7,7 +7,15 @@ import { OK, fail } from './check.js';
 
 const LABELS = { dopt: 'D-Opt', aopt: 'A-Opt', gopt: 'G-Opt' };
 
-/** @type {import('./registry.js').DesignType & Record<string, any>} */
+/**
+ * @typedef {import('./registry.js').DesignType & {
+ *   minRuns: function(object): number,
+ *   minNewRuns: function(object, {sourceRowCount: number}): number,
+ *   minOptimalRuns: function(object, {sourceRowCount: number}): number,
+ * }} OptimalDesign
+ */
+
+/** @type {OptimalDesign} */
 const optimal = {
   id: 'optimal',
   centerPoints: false,

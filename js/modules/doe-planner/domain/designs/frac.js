@@ -12,7 +12,17 @@ const RES_CLASS = {
   VI: 'doe__res-vi', V: 'doe__res-v', IV: 'doe__res-iv', III: 'doe__res-iii',
 };
 
-/** @type {import('./registry.js').DesignType & Record<string, any>} */
+/**
+ * @typedef {import('./registry.js').DesignType & {
+ *   def: function(number, number): ?{k: number, runs: number, p: number, res: string},
+ *   cellClass: function(number, number, object): string,
+ *   cellData: function(number, number, ('k'|'runs'|'res'|'p'), object): ?(number|string),
+ *   cellLabel: function(number, number, function(string): string): string,
+ *   aliasDetail: function(object): ?{generators: string[], defining: string[], aliases: Array<{term: string, aliasedWith: string}>},
+ * }} FracDesign
+ */
+
+/** @type {FracDesign} */
 const frac = {
   id: 'frac',
   centerPoints: true,

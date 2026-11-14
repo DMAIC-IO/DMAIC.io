@@ -271,6 +271,14 @@ suite('doe-planner Migration — Altformen', () => {
     assertDeepEqual(load({ ...plain, exampleWorksheetId: 'ws-1' }).m.sourceWorksheet, { instanceId: 'ws-9', sheetId: 's1' });
   });
 
+  test('Quellblatt eines Beispiels ohne bereitgestelltes Blatt: kein Quellblatt', async () => {
+    const [example] = plannerStates(await fetchJSON(PROJECTS, 'doe-optimal-augment-3f.json'));
+    const { sourceWorksheetData, ...stored } = example;
+    assertEqual(stored.sourceWorksheet.instanceId, '__source__');
+    const { m } = load({ ...stored });
+    assertEqual(m.sourceWorksheet, null);
+  });
+
   test('seed ist 0; design.configSignature ist die Signatur des migrierten Plans', () => {
     const m = State.fromJSON(legacyPlan());
     assertEqual(m.seed, 0);

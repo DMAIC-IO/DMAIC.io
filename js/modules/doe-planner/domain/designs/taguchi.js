@@ -5,7 +5,16 @@ import { TAGUCHI } from '../tables.js';
 import { taguchiCandidates } from '../../../../engines/doe-planner-engine.js';
 import { OK, fail } from './check.js';
 
-/** @type {import('./registry.js').DesignType & Record<string, any>} */
+/**
+ * @typedef {import('./registry.js').DesignType & {
+ *   levelCounts: function(object): number[],
+ *   candidates: function(object): Array<{name: string, runs: number, maxFactors: number}>,
+ *   selected: function(object): string,
+ *   levelsKey: function(object): ('taguchiLevels2'|'taguchiLevels3'|'taguchiLevelsMixed'),
+ * }} TaguchiDesign
+ */
+
+/** @type {TaguchiDesign} */
 const taguchi = {
   id: 'taguchi',
   centerPoints: false,

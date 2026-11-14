@@ -4,7 +4,7 @@
  */
 import { OK } from './check.js';
 
-/** @type {import('./registry.js').DesignType & Record<string, any>} */
+/** @type {import('./registry.js').DesignType} */
 const full = {
   id: 'full',
   centerPoints: true,

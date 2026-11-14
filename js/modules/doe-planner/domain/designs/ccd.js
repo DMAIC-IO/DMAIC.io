@@ -3,7 +3,7 @@
  */
 import { OK } from './check.js';
 
-/** @type {import('./registry.js').DesignType & Record<string, any>} */
+/** @type {import('./registry.js').DesignType} */
 const ccd = {
   id: 'ccd',
   centerPoints: false,
