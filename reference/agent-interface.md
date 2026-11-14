@@ -349,8 +349,18 @@ die Prüfung durch, läuft nichts, und die Antwort ist
 ```
 
 mit `cause` als dem eigentlichen Fehler (`{ ok: false, error, message, available? }`).
-Beim ersten Laufzeitfehler bricht die Ausführung ab; die bis dahin erzielten
-Teilergebnisse stehen in `results`.
+Beim ersten Laufzeitfehler bricht die Ausführung ab, und alles, was der
+Stapel bis dahin bewirkt hat, wird zurückgenommen (siehe „Ganz oder gar
+nicht"). Die Antwort ist dann
+
+```js
+{ ok: false, contract, results, rolledBack }
+```
+
+`results` zeigt, wie weit der Stapel kam; die Einträge davor sind
+**zurückgenommen**, keine wirksamen Teilergebnisse. `rolledBack` ist `true`,
+wenn die Rücknahme gelang, und `false`, wenn sie selbst gescheitert ist — dann
+ist der Stand unbestimmt, und der Agent liest die betroffenen Instanzen neu.
 
 Sonderformen ohne `results`-Liste: `consent_denied` und `surface_failed`
 (`{ ok: false, contract, error, message }`). `flush_failed` trägt
@@ -365,8 +375,8 @@ Sonderformen ohne `results`-Liste: `consent_denied` und `surface_failed`
 | `unknown_module` | Modul-id unbekannt |
 | `unknown_phase` | Phase unbekannt im Zyklus oder für das Modul (siehe „Phasenprüfung") |
 | `unknown_instance` | Instanz-id unbekannt |
-| `instance_module_mismatch` | das Feld `module` an `instance.call`/`instance.set` nennt ein anderes Modul als das der Instanz |
-| `not_module_surface` | ein Modul ruft ein Viewmodel-Kommando oder eine `asyncTask`-Aktion eines umgestellten Moduls auf; nur bei Modulaufrufen, nie für den Agenten |
+| `instance_module_mismatch` | das Feld `module` an `instance.call`/`instance.set` nennt ein anderes Modul als das der Instanz; der Agent darf das Feld weglassen, ein Modul muss es angeben |
+| `not_module_surface` | ein Modul ruft ein Viewmodel-Kommando oder eine `asyncTask`-Aktion eines umgestellten Moduls auf (nur die Model-Seite ist für Module erreichbar); nur bei Modulaufrufen, nie für den Agenten |
 | `unknown_method` | das Modul gibt diese Methode nicht als Aktion frei |
 | `unknown_section` | `module.describe` kennt diesen Handbuchabschnitt nicht |
 | `missing_param` | Pflichtfeld der Aktion fehlt |
@@ -555,6 +565,56 @@ Schreibvorgänge nicht für nicht passiert halten und wiederholen.
 `interact()` gibt **nie** eine rohe Ausnahme nach außen. Ein Wurf aus einer
 Aktion wird `op_failed`, jeder andere `surface_failed`.
 
+### Ganz oder gar nicht
+
+Ein Stapel schreibt ganz oder gar nicht. Scheitert eine Aktion zur Laufzeit,
+nimmt die Fläche alles zurück, was der Stapel bis dahin bewirkt hat:
+
+- die Zustände der Instanzen, an denen der Stapel Aktionen hatte, auch wenn
+  sie dafür eingehängt waren (ein angezeigtes Arbeitsblatt zeigt danach den
+  alten Stand);
+- die Projektstruktur: mit `module.add` angelegte Instanzen verschwinden
+  wieder, mit `module.remove` entfernte kommen zurück.
+
+Nicht zurückgenommen werden rohe Nebenwirkungen von Aktionen eines Altmoduls
+in dritten Instanzen oder in projektweiten Schlüsseln, ebenso Ansicht und
+Navigation. Die Antwort ist `{ ok: false, contract, results, rolledBack }`
+(siehe „Antwort- und Fehlerform"). Nach einer Rücknahme gibt es keinen Toast
+„Anzeigen"; gespeichert wird trotzdem, damit der alte Stand auch auf der
+Platte steht. Ist `rolledBack` `false`, ist die Rücknahme gescheitert.
+
+Der Stapel ergibt je berührter Instanz **einen** Rückgängig-Schritt: der
+Nutzer nimmt ihn mit Strg+Z in dieser Instanz zurück, auch für Instanzen, die
+erst während des Stapels eingehängt wurden. Zwei Grenzen: ein Schreiben in ein
+nicht angezeigtes Blatt des Arbeitsblatts lässt sich nach einem Blattwechsel
+nicht mehr zurücknehmen, und eine Rücknahme nach einem Fehler leert den
+Rückgängig-Verlauf dieser Instanz davor.
+
+Ruft eine laufende Aktion selbst einen Modulstapel auf derselben Instanz auf,
+läuft dieser im äußeren Stapel mit (gemeinsame Rücknahme, gleicher
+Rückgängig-Schritt); alle anderen Aufrufe warten in der Kette.
+
+### Modulzugang: `ctx.instances.interact`
+
+Module erreichen andere Module nur über `ctx.instances.read` und
+`ctx.instances.interact(stapel)`. Der Stapel hat dieselben `op`s, Referenzen,
+Fehlercodes und dieselbe Kette wie `interact()` des Agenten; Unterschiede:
+
+- Das Feld `module` an `instance.call` und `instance.set` ist für Module
+  **Pflicht** (fehlt es: `validation_failed`, `cause.error` `missing_param`);
+  für den Agenten bleibt es optional. Gehört die Instanz zu einem anderen
+  Modul, antwortet die Fläche `instance_module_mismatch`.
+- Kein Einwilligungstor und keine Revisionsprüfung. Ein Schreiben eines Moduls
+  macht die Instanz für den Agenten veraltet (`stale_revision` bis zum
+  nächsten `read`), wie jede fremde Änderung.
+- An einem umgestellten Ziel ist nur die Model-Seite erreichbar: `read`,
+  `instance.set`, Model-Kommandos. Ein Viewmodel-Kommando oder eine
+  `asyncTask`-Aktion antwortet `not_module_surface`. Bei einem Altmodul sind
+  dessen Aktionen übergangsweise erlaubt.
+- Ein abgeschlossenes Projekt antwortet wie beim Agenten
+  (`validation_failed` mit `cause.error` `project_completed`); es entsteht
+  keine Rückgängig-Gruppe.
+
 ### Lesen vor Schreiben
 
 Die Fläche führt, nur im Speicher, je Instanz und für die Projektstruktur
@@ -632,8 +692,10 @@ Fragebogen-Baukasten (`draft.buildSurveyFile`, `recipients.buildRecipientFile`,
 ## Grenzen
 
 - Der Agent bekommt **Zahlen, keine Bilder**: ein Diagramm sieht er nicht.
-- Es gibt **kein Rückgängig**. Die Absicherung ist der Projekt-Export, zu
-  dem beim Erteilen der Einwilligung aufgefordert wird.
+- Der Agent hat **kein Rückgängig-Werkzeug**. Ein Stapel ergibt je Instanz
+  einen Rückgängig-Schritt, den der Nutzer nimmt (siehe „Ganz oder gar
+  nicht"). Die weitere Absicherung ist der Projekt-Export, zu dem beim
+  Erteilen der Einwilligung aufgefordert wird.
 - Nicht jedes Modul ist freigegeben. Welche es sind, sagt der Katalog
   (`available` in `catalog.read` bzw. `interact()`); bei den anderen
   antwortet `instance.call` mit `module_not_agent_ready`. Der Katalog ist
@@ -650,7 +712,7 @@ Fragebogen-Baukasten (`draft.buildSurveyFile`, `recipients.buildRecipientFile`,
 
 ## Vertragsversion
 
-Jede Antwort trägt `contract` (derzeit `3`), die Beschreibungsantwort
+Jede Antwort trägt `contract` (derzeit `4`), die Beschreibungsantwort
 zusätzlich `appVersion`. `contract` wird nur bei einem Bruch der Hülle
 erhöht — Aktionsform, Referenzsyntax, Fehler*form*, Ergebnis-Hülle. Neue
 `op`s, neue Fehler*codes*, neue Antwortfelder oder neu freigegebene Module
@@ -711,3 +773,12 @@ Aktionsnamen mit Punkt (`draft.addQuestion`) sind ebenfalls kein Bruch: die
 Aktionsform `{ op: 'instance.call', instance, method, args }` bleibt,
 `method` bleibt ein String, neu ist nur die Menge seiner Werte. Ein Bump
 würde zudem jede gespeicherte Einwilligung als veraltet markieren.
+
+Ganz oder gar nicht (`contract` 4): ein Stapel, dessen Ausführung scheitert,
+nimmt alles zurück, was er bis dahin bewirkt hat; die Antwort trägt
+`rolledBack`, und die Einträge in `results` sind keine wirksamen
+Teilergebnisse mehr. Das ändert die Bedeutung der Ergebnis-Hülle eines
+gescheiterten Stapels — ein Agent, der aus `results` auf bereits Geschriebenes
+schloss, muss das anpassen. Neu sind außerdem das Feld `module` an
+`instance.call`/`instance.set` und die Fehlercodes `instance_module_mismatch`
+und `not_module_surface`.

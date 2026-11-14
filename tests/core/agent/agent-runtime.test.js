@@ -198,7 +198,7 @@ suite('agent runtime — the surface description', () => {
   test('carries ops, errors, full catalog, instances and the current view — no usage', async () => {
     const out = await makeRuntime().runtime.interact();
     assertEqual(out.contract, CONTRACT_VERSION);
-    assertEqual(CONTRACT_VERSION, 3);
+    assertEqual(CONTRACT_VERSION, 4);
     assertDeepEqual(Object.keys(out).sort(), [
       'appVersion', 'briefing', 'catalog', 'contract', 'errors', 'instances',
       'language', 'ok', 'ops', 'view',

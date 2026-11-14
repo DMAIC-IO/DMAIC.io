@@ -24,9 +24,10 @@
  * `usage` fiel aus der Beschreibungsantwort (`ops` und `errors` stehen jetzt
  * oben), und `ok: true` heißt „angewandt und gespeichert". 3 seit 2026-11-11:
  * `read()` liefert keine Ansichtshilfen (`computed` des view-Blocks) mehr,
- * sondern die `derived` des Models; `readBulk` entfällt.
+ * sondern die `derived` des Models; `readBulk` entfällt. 4: ein Stapel gilt ganz oder gar nicht — nach einem
+ * Laufzeitfehler ist alles zurückgenommen, die Antwort trägt `rolledBack`.
  */
-export const CONTRACT_VERSION = 3;
+export const CONTRACT_VERSION = 4;
 
 /**
  * Alle Fehlercodes der Fläche. Werte sind Teil des Vertrags.
