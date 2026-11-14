@@ -24,9 +24,7 @@
  *
  * Rein bzw. DOM-frei: kein DOM, kein `window`.
  */
-import { uid } from './uid.js';
 import { inferRole, isRoleValidForType } from './datagrid/datagrid-roles.js';
-import { recalcAllFormulas } from './datagrid/datagrid-formula.js';
 import { COLUMN_TYPES } from './datagrid/datagrid-utils.js';
 import { findOwnPhase } from './instance-handoff.js';
 import { uniqueSheetName } from './worksheet-sheets.js';
@@ -239,102 +237,6 @@ export function reinferRoleAfterRetype(col) {
   if (col.roleManual && isRoleValidForType(col.role, col.type)) return;
   if (col.roleManual) col.roleManual = false;
   col.role = inferRole(col);
-}
-
-/** Leerer Blattzustand, wie ihn der Worksheet für ein neues Blatt anlegt. */
-function emptySheetState() {
-  return { columns: [], rowCount: 0, colWidths: {}, sortCol: null, sortDir: null, selection: null };
-}
-
-/**
- * Formelspalten kopieren und neu rechnen, wie es das Grid beim Rendern täte —
- * ein inaktives Blatt zeigte sonst bis zum Öffnen veraltete Werte. Kopiert,
- * weil `recalcAllFormulas` in `col.values` schreibt.
- * @param {{ columns: object[], rowCount: number }} state
- * @returns {void}
- */
-function recalcSheetState(state) {
-  state.columns = state.columns.map(c => (c?.formulas?.some(Boolean) ? { ...c, values: [...(c.values ?? [])] } : c));
-  // Die Formeln lesen Nachbarspalten über `getColumnByIndex`.
-  const grid = {
-    columns: state.columns,
-    rowCount: state.rowCount,
-    getColumnByIndex: (i) => state.columns[i],
-  };
-  recalcAllFormulas(grid);
-}
-
-/**
- * Einen Schritt eines Plans in ein Blatt eines gespeicherten
- * Worksheet-Zustands schreiben.
- *
- * Verändert die Eingabe nicht: Blattliste, Zielblatt, Spaltenliste und
- * Zielspalte werden neu angelegt, alles andere geteilt.
- *
- * @param {{ sheets: Array<{ id: string, name: string, state: object|null }> }|null} wsState
- *   der Worksheet-Zustand (`toJSON()` bzw. `stateManager.getModuleState`)
- * @param {{ sheetId: string, to: { kind: 'append' } | { kind: 'slot', slot: number }
- *   | { kind: 'column', colId: string }, name: string, type?: string,
- *   values: any[], format?: object, discrete?: boolean }} op
- * @returns {{ ok: true, state: object, colId: string }
- *   | { ok: false, reason: 'unknown_sheet'|'unknown_column' }}
- */
-export function applyWriteColumn(wsState, op) {
-  const { sheetId, to, name, values, discrete } = op;
-  const sheets = Array.isArray(wsState?.sheets) ? wsState.sheets : [];
-  const sheetIdx = sheets.findIndex(s => s?.id === sheetId);
-  if (sheetIdx < 0) return { ok: false, reason: 'unknown_sheet' };
-
-  const vals = [...(values ?? [])];
-  const sheet = sheets[sheetIdx];
-  const state = { ...(sheet.state ?? emptySheetState()) };
-  const cols = [...(state.columns ?? [])];
-
-  let idx = -1;
-  if (to?.kind === 'slot' && Number.isInteger(to.slot) && to.slot >= 0) {
-    idx = cols[to.slot] ? to.slot : -1;
-  } else if (to?.kind === 'column') {
-    idx = cols.findIndex(c => c?.id === to.colId);
-    if (idx < 0) return { ok: false, reason: 'unknown_column' };
-  }
-
-  let colId;
-  if (idx < 0) {
-    const type = op.type ?? 'numeric';
-    colId = uid();
-    // `role` und `roleManual` wie `DataGrid.setState` sie beim Einhängen setzt,
-    // damit ein späterer Tab-Klick die Revision nicht dreht.
-    const fresh = {
-      id: colId,
-      name,
-      shortName: `C${cols.length + 1}`,
-      type,
-      unit: '',
-      values: vals,
-      formulas: new Array(vals.length).fill(null),
-      format: op.format !== undefined ? cloneFormat(op.format) : defaultColumnFormat(type, discrete),
-      roleManual: false,
-    };
-    fresh.role = inferRole(fresh);
-    cols.push(fresh);
-  } else {
-    const col = { ...cols[idx] };
-    if (to.kind === 'slot' && name) col.name = name;
-    const next = retypeForWrite(op);
-    if (next) { col.type = next.type; col.format = next.format; }
-    col.values = vals;
-    col.formulas = new Array(vals.length).fill(null);
-    if (next) reinferRoleAfterRetype(col);
-    cols[idx] = col;
-    colId = col.id;
-  }
-
-  state.columns = cols;
-  state.rowCount = Math.max(state.rowCount || 0, vals.length);
-  recalcSheetState(state);
-  const nextSheets = [...sheets];
-  nextSheets[sheetIdx] = { ...sheet, state };
-  return { ok: true, state: { ...wsState, sheets: nextSheets }, colId };
 }
 
 // ─── Commit ──────────────────────────────────────────────────────

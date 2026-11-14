@@ -291,4 +291,21 @@ suite('Worksheet — Agentenaktion writeColumns', () => {
       assertDeepEqual(ids, [cols[5].id, 'e2', 'e0']);
     } finally { await w.unmount(); }
   });
+
+  test('Rollen: Datum in einen Startslot, angehängte Textspalte', async () => {
+    const w = await mountWorksheet();
+    try {
+      assertEqual(w.vm._grid.columns[0].role, 'continuous');
+      w.vm.writeColumns(w.sheetId, [
+        { to: 'start', name: 'Tag', type: 'date', values: ['2026-01-01', '2026-01-02'] },
+        { to: 'append', name: 'Gruppe', type: 'text', values: ['a', 'b', 'a', 'b', 'a', 'b'] },
+      ]);
+      const cols = w.vm._grid.columns;
+      assertEqual(cols[0].type, 'date');
+      assertEqual(cols[0].role, 'date');
+      assertEqual(cols.at(-1).role, 'categorical');
+      const stored = w.states['ws-c'].sheets.find(s => s.id === w.sheetId).state.columns.at(-1);
+      assertEqual(stored.role, 'categorical');
+    } finally { await w.unmount(); }
+  });
 });

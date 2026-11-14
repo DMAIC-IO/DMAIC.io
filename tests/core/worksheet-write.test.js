@@ -4,13 +4,11 @@
  */
 import { suite, test, assertEqual, assertDeepEqual, assert } from '../test-utils.js';
 import {
-  worksheetWrite, commitWorksheetWrite, completeStack, applyWriteColumn, WriteError,
+  worksheetWrite, commitWorksheetWrite, completeStack, WriteError,
 } from '../../js/core/worksheet-write.js';
 import { validateBatch } from '../../js/core/agent/agent-validate.js';
 import { buildWorld } from '../../js/core/agent/agent-catalog.js';
 import { AGENT_REGISTRY } from '../../js/core/agent/agent-registry.generated.js';
-import { COLUMN_TYPES } from '../../js/core/datagrid/datagrid-utils.js';
-import { validRolesForType } from '../../js/core/datagrid/datagrid-roles.js';
 
 function col(id, name, values, extra = {}) {
   return { id, name, shortName: id, type: 'numeric', unit: '', values, formulas: values.map(() => null), format: { decimals: 6 }, ...extra };
@@ -163,118 +161,6 @@ suite('core/worksheet-write — worksheetWrite', () => {
     const bad = completeStack(ctx, worksheetWrite().worksheet('ws1').sheet('sheet_1').column({ name: 'A', values: [1] }).build());
     bad[0] = { ...bad[0], method: 'writeColumnz' };
     assertEqual(validateBatch(bad, world).ok, false);
-  });
-});
-
-// ─── applyWriteColumn ────────────────────────────────────────────
-
-suite('core/worksheet-write — applyWriteColumn', () => {
-  test('append hängt eine Spalte an und hebt die Zeilenzahl an; discrete → decimals 0', () => {
-    const res = applyWriteColumn(wsState(), { sheetId: 'sheet_1', to: { kind: 'append' }, name: 'N', type: 'numeric', values: [7, 8, 9], discrete: true });
-    assertEqual(res.ok, true);
-    const st = res.state.sheets[0].state;
-    assertEqual(st.columns.length, 3);
-    assertEqual(st.columns[2].name, 'N');
-    assertEqual(st.columns[2].shortName, 'C3');
-    assertEqual(st.columns[2].type, 'numeric');
-    assertDeepEqual(st.columns[2].values, [7, 8, 9]);
-    assertDeepEqual(st.columns[2].format, { decimals: 0 });
-    assertEqual(res.colId, st.columns[2].id);
-    assertEqual(st.rowCount, 3);
-  });
-
-  test('jeder Typ aus COLUMN_TYPES kommt mit Format an', () => {
-    for (const type of Object.keys(COLUMN_TYPES)) {
-      const format = { decimals: 3, marker: type };
-      const res = applyWriteColumn(wsState(), { sheetId: 'sheet_1', to: { kind: 'append' }, name: type, type, values: [1], format });
-      const c = res.state.sheets[0].state.columns[2];
-      assertEqual(c.type, type, `append ${type}`);
-      assertDeepEqual(c.format, format, `append ${type}`);
-      const res2 = applyWriteColumn(wsState(), { sheetId: 'sheet_1', to: { kind: 'slot', slot: 0 }, name: type, type, values: [1], format });
-      const c2 = res2.state.sheets[0].state.columns[0];
-      assertEqual(c2.type, type, `slot ${type}`);
-      assertDeepEqual(c2.format, format, `slot ${type}`);
-    }
-  });
-
-  test('currency mit decimals 2 in einen Slot setzt Typ und Format', () => {
-    const res = applyWriteColumn(wsState(), { sheetId: 'sheet_1', to: { kind: 'slot', slot: 0 }, name: 'Preis', type: 'currency', values: [1.5], format: { decimals: 2 } });
-    const c = res.state.sheets[0].state.columns[0];
-    assertEqual(c.name, 'Preis');
-    assertEqual(c.type, 'currency');
-    assertDeepEqual(c.format, { decimals: 2 });
-  });
-
-  test('Datum in einen leeren Startslot: Rolle passt zum neuen Typ', () => {
-    const state = wsState();
-    state.sheets[0].state.columns[0].role = 'continuous';
-    const res = applyWriteColumn(state, { sheetId: 'sheet_1', to: { kind: 'slot', slot: 0 }, name: 'Tag', type: 'date', values: ['2026-01-01', '2026-01-02'] });
-    const c = res.state.sheets[0].state.columns[0];
-    assertEqual(c.type, 'date');
-    assertEqual(c.role, 'date');
-    assert(validRolesForType('date').includes(c.role), 'Rolle ungültig für date');
-  });
-
-  test('Typwechsel: eine passende Hand-Rolle bleibt, eine unpassende fällt', () => {
-    const state = wsState();
-    Object.assign(state.sheets[0].state.columns[0], { role: 'identifier', roleManual: true });
-    Object.assign(state.sheets[0].state.columns[1], { role: 'freeText', roleManual: true });
-    let res = applyWriteColumn(state, { sheetId: 'sheet_1', to: { kind: 'column', colId: 'c1' }, name: '', type: 'currency', values: [1, 2], format: { decimals: 2 } });
-    const kept = res.state.sheets[0].state.columns[0];
-    assertEqual(kept.role, 'identifier');
-    assertEqual(kept.roleManual, true);
-    res = applyWriteColumn(state, { sheetId: 'sheet_1', to: { kind: 'column', colId: 'c2' }, name: '', type: 'date', values: ['2026-01-01'] });
-    const dropped = res.state.sheets[0].state.columns[1];
-    assertEqual(dropped.role, 'date');
-    assertEqual(dropped.roleManual, false);
-  });
-
-  test('numeric ohne Format in eine Textspalte lässt text', () => {
-    const res = applyWriteColumn(wsState(), { sheetId: 'sheet_1', to: { kind: 'slot', slot: 1 }, name: 'Z', type: 'numeric', values: [4] });
-    const c = res.state.sheets[0].state.columns[1];
-    assertEqual(c.type, 'text');
-    assertDeepEqual(c.format, {});
-    assertDeepEqual(c.values, [4]);
-  });
-
-  test('text setzt text und {}', () => {
-    const res = applyWriteColumn(wsState(), { sheetId: 'sheet_1', to: { kind: 'column', colId: 'c1' }, name: 'T', type: 'text', values: ['a'] });
-    const c = res.state.sheets[0].state.columns[0];
-    assertEqual(c.type, 'text');
-    assertDeepEqual(c.format, {});
-    assertEqual(c.name, 'X', 'column überschreibt den Namen nicht');
-  });
-
-  test('Slot ohne Spalte wird append', () => {
-    const res = applyWriteColumn(wsState(), { sheetId: 'sheet_2', to: { kind: 'slot', slot: 0 }, name: 'F', type: 'numeric', values: [1, 2, 3, 4] });
-    assertEqual(res.ok, true);
-    const st = res.state.sheets[1].state;
-    assertEqual(st.columns.length, 1);
-    assertEqual(st.columns[0].shortName, 'C1');
-    assertEqual(st.rowCount, 4);
-  });
-
-  test('ist rein: die Eingabe bleibt unverändert', () => {
-    const before = wsState();
-    const snapshot = JSON.stringify(before);
-    applyWriteColumn(before, { sheetId: 'sheet_1', to: { kind: 'column', colId: 'c2' }, name: 'N', type: 'numeric', values: [5, 6] });
-    applyWriteColumn(before, { sheetId: 'sheet_1', to: { kind: 'append' }, name: 'N', type: 'numeric', values: [5] });
-    assertEqual(JSON.stringify(before), snapshot);
-  });
-
-  test('unbekanntes Blatt und unbekannte Spalte werden gemeldet', () => {
-    assertDeepEqual(applyWriteColumn(wsState(), { sheetId: 'nope', to: { kind: 'append' }, name: 'N', values: [] }), { ok: false, reason: 'unknown_sheet' });
-    assertDeepEqual(applyWriteColumn(wsState(), { sheetId: 'sheet_1', to: { kind: 'column', colId: 'nope' }, name: 'N', values: [] }), { ok: false, reason: 'unknown_column' });
-    assertDeepEqual(applyWriteColumn(null, { sheetId: 'sheet_1', to: { kind: 'append' }, name: 'N', values: [] }), { ok: false, reason: 'unknown_sheet' });
-  });
-
-  test('eine Formel auf dem Zielblatt rechnet nach dem Schreiben neu', () => {
-    const dep = { id: 'b', name: 'B', shortName: 'C2', type: 'numeric', values: [99], formulas: ['=C1[1]*2'] };
-    const src = { id: 'a', name: 'A', shortName: 'C1', type: 'numeric', values: [1], formulas: [null] };
-    const ws = { sheets: [{ id: 's', name: 'S', state: { columns: [src, dep], rowCount: 1 } }] };
-    const res = applyWriteColumn(ws, { sheetId: 's', to: { kind: 'column', colId: 'a' }, name: 'A', type: 'numeric', values: [21] });
-    assertEqual(res.state.sheets[0].state.columns[1].values[0], 42);
-    assertEqual(dep.values[0], 99);
   });
 });
 

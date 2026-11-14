@@ -9,7 +9,7 @@ import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../tes
 import Alpine from '../../../vendor/alpinejs/csp.js';
 import mod from '../../../js/modules/data-import/viewmodel/viewmodel.js';
 import { setFields } from '../../../js/core/model.js';
-import { applyWriteColumn } from '../../../js/core/worksheet-write.js';
+import { uid } from '../../../js/core/uid.js';
 import { buildInitialWorksheetState } from '../../../js/core/worksheet-sheets.js';
 
 const ID = 'data-import';
@@ -68,12 +68,18 @@ async function mount(model = null) {
       } else {
         const [sheetId, columns] = action.args;
         const ids = [];
-        for (const { to, ...col } of columns) {
-          const res = applyWriteColumn(states[target], {
-            ...col, sheetId, to: to === 'start' || to === 'append' ? { kind: 'append' } : { kind: 'column', colId: to },
+        for (const { to, name, type, values } of columns) {
+          const sheets = states[target].sheets.map((sh) => {
+            if (sh.id !== sheetId) return sh;
+            const st = sh.state ?? { columns: [], rowCount: 0 };
+            const cols = [...st.columns];
+            const at = to === 'start' || to === 'append' ? -1 : cols.findIndex((c) => c.id === to);
+            const next = { ...(at >= 0 ? cols[at] : { id: uid(), format: {} }), name, type: type ?? 'numeric', values: [...values] };
+            if (at >= 0) cols[at] = next; else cols.push(next);
+            ids.push(next.id);
+            return { ...sh, state: { ...st, columns: cols, rowCount: Math.max(st.rowCount ?? 0, values.length) } };
           });
-          states[target] = res.state;
-          ids.push(res.colId);
+          states[target] = { ...states[target], sheets };
         }
         result = { instanceId: target, method: 'writeColumns', value: ids };
       }

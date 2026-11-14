@@ -13,8 +13,7 @@
  *    formula-expand hint.
  *
  * 🔴 EVENT CONTRACT IS FROZEN. Emits `worksheet:dataChanged` (debounced ~150ms),
- *    `chart-suggestion:load`, `module:added`, `module:activated`. Listens to
- *    `worksheet:writeColumns` (the write plan of `core/worksheet-write.js`).
+ *    `chart-suggestion:load`, `module:added`, `module:activated`.
  *
  * @agent  Vollständig über das Viewmodel steuerbar: CSV-Import, Zellblöcke
  *   und Formeln schreiben, Spalten anlegen, umbenennen und entfernen,
@@ -2041,11 +2040,6 @@ const mod = createModule({
         document.addEventListener('click', this._onDocClick);
         this._unsubs.push(() => document.removeEventListener('click', this._onDocClick));
 
-        // ── External write plans ──
-        this._onWriteColumns = (payload) => this._handleWriteColumns(payload);
-        context.eventBus.on('worksheet:writeColumns', this._onWriteColumns);
-        this._unsubs.push(() => context.eventBus.off('worksheet:writeColumns', this._onWriteColumns));
-
         // ── Formula-editor expand hint on "=" / formula edit start ──
         this._grid.on('edit:start', ({ colIdx, rowIdx, initialChar, formula }) => {
           if (initialChar === '=' || formula) {
@@ -2073,34 +2067,6 @@ const mod = createModule({
         this._formulaEditor = null;
         module._grid = null;
         module._formulaEditor = null;
-      },
-
-      // ── writeColumns handler ─────────────────────────────────
-      /**
-       * Einen Schreibplan (`core/worksheet-write.js`) ganz oder gar nicht
-       * über `writeColumns` schreiben. `reply` quittiert synchron mit
-       * `{ ok: true, columnIds }` oder `{ ok: false, reason }`.
-       * @noagent event handler; agents write through writeColumns
-       * @param {{ instanceId: string, sheetId: string, ops: object[], reply?: Function }} payload
-       */
-      _handleWriteColumns({ instanceId, sheetId, ops, reply }) {
-        if (instanceId !== module._context.instanceId) return;
-        const columns = ops.map(({ to, ...rest }) => ({
-          ...rest,
-          to: to?.kind === 'column' ? to.colId : (to?.kind === 'slot' ? 'start' : 'append'),
-        }));
-        let columnIds;
-        try {
-          columnIds = this.writeColumns(sheetId, columns);
-        } catch (err) {
-          // Ein Wurf beim Schreiben darf nicht als „nicht eingehängt“ gelten:
-          // Der Sender schriebe sonst über den Store auf veraltetem Stand.
-          const reason = /^(unknown_sheet|unknown_column|unknown_type): /.exec(String(err?.message))?.[1];
-          if (!reason) console.error('[worksheet] writeColumns:', err);
-          reply?.({ ok: false, reason: reason ?? 'write_failed' });
-          return;
-        }
-        reply?.({ ok: true, columnIds });
       },
     };
   },
