@@ -61,14 +61,12 @@ import { modelTerms } from './design.js';
  * Rows of equal coded factor values — the pure-error replicates of any
  * design type, center points included; a center point of one categorical
  * level is no replicate of one of another level.
- * @param {{ codedMatrix?: number[][], actualMatrix?: Array<Array<number|string>> }} design
- * @returns {number[][]}
+ * @param {{ codedMatrix?: number[][] }} design
+ * @returns {number[][]} [] without a coded matrix
  */
 function replicateGroupsOf(design) {
-  const source = Array.isArray(design.codedMatrix)
-    ? design.codedMatrix
-    : (Array.isArray(design.actualMatrix) ? design.actualMatrix : null);
-  if (!source) return [];
+  const source = design.codedMatrix;
+  if (!Array.isArray(source)) return [];
   /** @type {Map<string, number[]>} */
   const groups = new Map();
   source.forEach((row, idx) => {

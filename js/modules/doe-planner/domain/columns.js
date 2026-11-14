@@ -28,7 +28,7 @@ import { actualRows } from './design.js';
 
 /**
  * Lock and management data of a column.
- * @typedef {{ lock: 'hard'|'soft', managedBy: string, managedRef: string|null, reason: string,
+ * @typedef {{ lock: 'hard'|'soft', managedBy: string, managedRef?: string, reason: string,
  *   categoricalCoding?: Record<string, number> }} ColumnMeta
  */
 
@@ -83,7 +83,8 @@ const filled = (n, v) => new Array(n).fill(v);
  * @param {Array<{ name: string, unit?: string, kind?: string, levels: string[] }>} factors
  * @param {Array<{ name: string, unit?: string }>} responses
  * @param {{ names: ColumnNames, managedRef: string|null }} options column names and the
- *   `managedRef` every meta carries
+ *   `managedRef` every meta carries; null leaves the key out (the worksheet
+ *   takes no null values in a meta)
  * @returns {{ columns: DesignColumn[], ids: ColumnTags }}
  */
 export function designColumns(design, factors, responses, { names, managedRef }) {
@@ -91,7 +92,9 @@ export function designColumns(design, factors, responses, { names, managedRef })
   const hasReplicates = nRuns > 0 && Array.isArray(design.replicateIds)
     && design.replicateIds.some((v) => v > 1);
   /** @type {(lock: 'hard'|'soft', reason: string) => ColumnMeta} */
-  const lockMeta = (lock, reason) => ({ lock, managedBy: 'doe-planner', managedRef, reason });
+  const lockMeta = (lock, reason) => (managedRef === null || managedRef === undefined
+    ? { lock, managedBy: 'doe-planner', reason }
+    : { lock, managedBy: 'doe-planner', managedRef, reason });
 
   /** @type {DesignColumn[]} */
   const columns = [];

@@ -45,7 +45,11 @@ suite('doe-planner domain — designColumns', () => {
       }
     }
     const none = designColumns(c.design, c.model.factors, c.model.responses, { names: NAMES, managedRef: null });
-    assertEqual(none.columns[0].meta.managedRef, null);
+    for (const col of none.columns) {
+      if (!col.meta) continue;
+      assertEqual('managedRef' in col.meta, false);
+      for (const v of Object.values(col.meta)) assertEqual(v === null || v === undefined, false);
+    }
   });
 
   test('ids nennen die Positionen der Spalten', async () => {

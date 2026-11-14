@@ -6,8 +6,9 @@
  * - `augmentStack` appends the runs of an augmented design. Writing into
  *   locked columns lifts their lock first and sets the old meta again at
  *   the end — the worksheet rejects every write into a locked column.
- * - `responseSyncStack` carries renamed, added and removed responses into
+ * - `responseSyncStack` carries a renamed, added or removed response into
  *   the sheet.
+ * Metas go out without null values; the worksheet rejects them.
  */
 import { aggregateFormula } from './columns.js';
 
@@ -74,7 +75,7 @@ export function augmentStack(ref, columns, newRows, rowCount) {
   const locked = columns.filter((c) => c.meta && c.meta.lock);
   /** @type {WorksheetCall[]} */
   const stack = locked.map((c) => {
-    const { lock, ...rest } = copy(c.meta);
+    const { lock, ...rest } = cleanMeta(/** @type {object} */ (c.meta));
     return call('setColumnMeta', [sheet, c.id, rest]);
   });
   stack.push(call('addRows', [sheet, n]));
@@ -98,7 +99,7 @@ export function augmentStack(ref, columns, newRows, rowCount) {
     if (values) stack.push(call('setCells', [sheet, col.id, rowCount, [...values]]));
   }
   stack.push(...formulas);
-  stack.push(...locked.map((c) => call('setColumnMeta', [sheet, c.id, copy(/** @type {object} */ (c.meta))])));
+  stack.push(...locked.map((c) => call('setColumnMeta', [sheet, c.id, cleanMeta(/** @type {object} */ (c.meta))])));
   return stack;
 }
 
@@ -109,7 +110,7 @@ export function augmentStack(ref, columns, newRows, rowCount) {
 
 /**
  * @typedef {object} ResponseSyncPlan
- * @property {WorksheetCall[]} stack the actions, [] when nothing changed
+ * @property {WorksheetCall[]} stack the actions, [] when nothing is to do
  * @property {Array<string|StackRef>} responseColumnIds response columns afterwards, in
  *   response order; an added one as a reference to its `writeColumns` entry
  *   (`id` `response:<index>`, the written id is `value.0` of its result)
@@ -125,84 +126,133 @@ export function augmentStack(ref, columns, newRows, rowCount) {
 const columnName = (r, i) => r.name || `Y${i + 1}`;
 
 /**
+ * @param {{ name: string, unit?: string|null }} a
+ * @param {{ name: string, unit?: string|null }} b
+ * @returns {boolean} same name and unit
+ */
+const sameResponse = (a, b) => a.name === b.name && (a.unit || '') === (b.unit || '');
+
+/**
+ * @param {any[]} a
+ * @param {any[]} b
+ * @returns {boolean} the lists hold the same responses, in order
+ */
+const sameList = (a, b) => a.length === b.length && a.every((r, i) => sameResponse(r, b[i]));
+
+/**
+ * A meta as the worksheet takes it: keys with a null value left out.
+ * @param {object} meta
+ * @returns {any}
+ */
+function cleanMeta(meta) {
+  return Object.fromEntries(Object.entries(copy(meta)).filter(([, v]) => v !== null && v !== undefined));
+}
+
+/**
  * What it takes to bring the response columns of a bound datasheet from
  * `before` (the responses the sheet was written with) to `after` (the
- * planner's responses). The lists are walked together: a response with
- * the same name stays. Otherwise the `before` one was removed (its column
- * and its helper columns go) when the `after` one comes later in `before`,
- * or else when `before` has more left; the `after` one was added (a column
- * is appended, without meta and without helper columns) when the `before`
- * one comes later in `after`, or else when `after` has more left; with as
- * many left on both sides it was renamed.
+ * planner's responses). Only one edit at a time is carried over, compared
+ * by position:
+ * - same length: every position whose name differs is renamed (unless the
+ *   new name is one another position had — that is a reorder), its helper
+ *   columns too (`<name> <meanSuffix>`, `<name> <lnVarSuffix>`; their lock
+ *   is lifted around the rename);
+ * - one more and `before` is the start of `after`: the new column is
+ *   appended (without meta and without helper columns);
+ * - one fewer and `after` is `before` without one position: that column
+ *   and its helper columns are removed;
+ * - anything else (reordered, several changes at once): nothing.
  *
  * @param {WorksheetBinding} ref the binding of the datasheet
- * @param {Array<{ name: string }>} before responses of the sheet
- * @param {Array<{ name: string, unit?: string }>} after responses of the planner
- * @returns {ResponseSyncPlan}
+ * @param {Array<{ name: string, unit?: string|null }>} before responses of the sheet
+ * @param {Array<{ name: string, unit?: string|null }>} after responses of the planner
+ * @param {{ columns: SheetColumn[], names: { meanSuffix: string, lnVarSuffix: string } }} sheet the
+ *   sheet's columns (for the meta of locked helper columns) and the helper suffixes
+ * @returns {ResponseSyncPlan|null} null when the change cannot be carried over
  */
-export function responseSyncPlan(ref, before, after) {
+export function responseSyncPlan(ref, before, after, { columns, names }) {
   const call = caller(ref.instanceId);
   const sheet = ref.sheetId;
+  const metaOf = new Map(columns.map((c) => [c.id, c.meta]));
   /** @type {WorksheetCall[]} */
   const stack = [];
-  /** @type {Array<string|StackRef>} */
-  const responseColumnIds = [];
-  /** @type {Array<string|null>} */
-  const meanColumnIds = [];
-  /** @type {Array<string|null>} */
-  const lnVarColumnIds = [];
-  const keep = (/** @type {number} */ i) => {
-    responseColumnIds.push(ref.responseColumnIds[i]);
-    meanColumnIds.push(ref.meanColumnIds?.[i] ?? null);
-    lnVarColumnIds.push(ref.lnVarColumnIds?.[i] ?? null);
-  };
-
-  let i = 0;
-  let j = 0;
-  while (i < before.length || j < after.length) {
-    const leftBefore = before.length - i;
-    const leftAfter = after.length - j;
-    const nameBefore = leftBefore > 0 ? columnName(before[i], i) : null;
-    const nameAfter = leftAfter > 0 ? columnName(after[j], j) : null;
-    const removed = nameAfter !== null && before.slice(i + 1).some((r, k) => columnName(r, i + 1 + k) === nameAfter);
-    const added = !removed && nameBefore !== null && after.slice(j + 1).some((r, k) => columnName(r, j + 1 + k) === nameBefore);
-    if (nameBefore !== null && nameBefore === nameAfter) {
-      keep(i); i++; j++;
-    } else if (removed || (!added && leftBefore > leftAfter)) {
-      stack.push(call('removeColumn', [sheet, ref.responseColumnIds[i]]));
-      for (const id of [ref.meanColumnIds?.[i], ref.lnVarColumnIds?.[i]]) {
-        if (id) stack.push(call('removeColumn', [sheet, id]));
-      }
-      i++;
-    } else if (added || leftBefore < leftAfter) {
-      const r = after[j];
-      const id = `response:${j}`;
-      /** @type {{ to: 'append', name: string, type: 'numeric', values: any[], format: object, unit?: string }} */
-      const entry = { to: 'append', name: columnName(r, j), type: 'numeric', values: [], format: { decimals: 4 } };
-      if (r.unit) entry.unit = r.unit;
-      stack.push(call('writeColumns', [sheet, [entry]], id));
-      const written = { $from: id, path: 'value.0' };
-      stack.push(call('setColumnRole', [sheet, written, 'continuous']));
-      responseColumnIds.push(written);
-      meanColumnIds.push(null);
-      lnVarColumnIds.push(null);
-      j++;
+  const mean = (/** @type {number} */ i) => ref.meanColumnIds?.[i] ?? null;
+  const lnVar = (/** @type {number} */ i) => ref.lnVarColumnIds?.[i] ?? null;
+  /** @param {number[]} keep positions of `before` that stay, in order */
+  const plan = (keep) => ({
+    stack,
+    responseColumnIds: /** @type {Array<string|StackRef>} */ (keep.map((i) => ref.responseColumnIds[i])),
+    meanColumnIds: keep.map(mean),
+    lnVarColumnIds: keep.map(lnVar),
+  });
+  /** @param {string|null} id @param {string} name */
+  const rename = (id, name) => {
+    if (!id) return;
+    const meta = metaOf.get(id);
+    if (meta && meta.lock) {
+      const { lock, ...rest } = cleanMeta(meta);
+      stack.push(call('setColumnMeta', [sheet, id, rest]));
+      stack.push(call('renameColumn', [sheet, id, name]));
+      stack.push(call('setColumnMeta', [sheet, id, cleanMeta(meta)]));
     } else {
-      stack.push(call('renameColumn', [sheet, ref.responseColumnIds[i], columnName(after[j], j)]));
-      keep(i); i++; j++;
+      stack.push(call('renameColumn', [sheet, id, name]));
     }
+  };
+  const positions = before.map((_, i) => i);
+
+  if (after.length === before.length) {
+    const changed = positions.filter((i) => columnName(after[i], i) !== columnName(before[i], i));
+    // A new name that another position had before: reordered, not renamed.
+    if (changed.some((i) => before.some((b, k) => k !== i && columnName(b, k) === columnName(after[i], i)))) return null;
+    after.forEach((r, i) => {
+      const name = columnName(r, i);
+      if (name === columnName(before[i], i)) return;
+      rename(ref.responseColumnIds[i], name);
+      rename(mean(i), `${name} ${names.meanSuffix}`);
+      rename(lnVar(i), `${name} ${names.lnVarSuffix}`);
+    });
+    return plan(positions);
   }
-  return { stack, responseColumnIds, meanColumnIds, lnVarColumnIds };
+
+  if (after.length === before.length + 1 && sameList(before, after.slice(0, before.length))) {
+    const j = before.length;
+    const r = after[j];
+    const id = `response:${j}`;
+    /** @type {{ to: 'append', name: string, type: 'numeric', values: any[], format: object, unit?: string }} */
+    const entry = { to: 'append', name: columnName(r, j), type: 'numeric', values: [], format: { decimals: 4 } };
+    if (r.unit) entry.unit = r.unit;
+    stack.push(call('writeColumns', [sheet, [entry]], id));
+    const written = { $from: id, path: 'value.0' };
+    stack.push(call('setColumnRole', [sheet, written, 'continuous']));
+    const out = plan(positions);
+    out.responseColumnIds.push(written);
+    out.meanColumnIds.push(null);
+    out.lnVarColumnIds.push(null);
+    return out;
+  }
+
+  if (after.length === before.length - 1) {
+    const i = positions.find((k) => sameList(before.filter((_, x) => x !== k), after));
+    if (i === undefined) return null;
+    for (const id of [ref.responseColumnIds[i], mean(i), lnVar(i)]) {
+      if (id) stack.push(call('removeColumn', [sheet, id]));
+    }
+    return plan(positions.filter((k) => k !== i));
+  }
+
+  return null;
 }
 
 /**
  * The stack of `responseSyncPlan`.
  * @param {WorksheetBinding} ref the binding of the datasheet
- * @param {Array<{ name: string }>} before responses of the sheet
- * @param {Array<{ name: string, unit?: string }>} after responses of the planner
- * @returns {WorksheetCall[]|null} null when the response columns already match
+ * @param {Array<{ name: string, unit?: string|null }>} before responses of the sheet
+ * @param {Array<{ name: string, unit?: string|null }>} after responses of the planner
+ * @param {{ columns: SheetColumn[], names: { meanSuffix: string, lnVarSuffix: string } }} sheet the
+ *   sheet's columns and the helper suffixes
+ * @returns {WorksheetCall[]|null} null when nothing is to do or the change cannot be carried over
  */
-export function responseSyncStack(ref, before, after) {
-  const { stack } = responseSyncPlan(ref, before, after);
-  return stack.length ? stack : null;
+export function responseSyncStack(ref, before, after, sheet) {
+  const res = responseSyncPlan(ref, before, after, sheet);
+  return res && res.stack.length ? res.stack : null;
 }

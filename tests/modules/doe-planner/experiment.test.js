@@ -44,4 +44,10 @@ suite('doe-planner domain — experimentOf', () => {
     assertEqual(snap.replicateGroups.length, 9);
     for (const g of snap.replicateGroups) assertEqual(g.length, 2);
   });
+
+  test('ohne kodierte Matrix keine Wiederholungsgruppen', async () => {
+    const [c] = await loadCases();
+    const design = { ...c.design, codedMatrix: undefined, actualMatrix: [[1, 2], [1, 2]] };
+    assertDeepEqual(snapshotOf(c.model, design).replicateGroups, []);
+  });
 });
