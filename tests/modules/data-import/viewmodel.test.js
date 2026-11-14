@@ -9,6 +9,8 @@ import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../tes
 import Alpine from '../../../vendor/alpinejs/csp.js';
 import mod from '../../../js/modules/data-import/viewmodel/viewmodel.js';
 import { setFields } from '../../../js/core/model.js';
+import { applyWriteColumn } from '../../../js/core/worksheet-write.js';
+import { buildInitialWorksheetState } from '../../../js/core/worksheet-sheets.js';
 
 const ID = 'data-import';
 const TPL_KEY = `js/modules/${ID}/resources/view.html`;
@@ -29,9 +31,9 @@ function ensureTemplate() {
 }
 
 /**
- * Modul einhängen. Der Store kennt die Phase `data` mit dieser Instanz; ein
- * neu angelegter Worksheet meldet sich sofort als aktiv (nicht eingehängt:
- * der Schreibplan läuft über den Store).
+ * Modul einhängen. Der Store kennt die Phase `data` mit dieser Instanz;
+ * `instances.interact` spielt den Stapel des Schreibwegs (`module.add`,
+ * `renameSheet`, `writeColumns`) direkt auf dem Store nach.
  * @param {object|null} [model] gespeicherter Zustand der Instanz
  */
 async function mount(model = null) {
@@ -46,8 +48,42 @@ async function mount(model = null) {
     off: (n, fn) => { const i = handlers.findIndex(([a, f]) => a === n && f === fn); if (i >= 0) handlers.splice(i, 1); },
     emit: (n, p) => { for (const [a, f] of [...handlers]) if (a === n) f(p); },
   };
-  bus.on('module:added', ({ instanceId }) => queueMicrotask(() => bus.emit('module:activated', { instanceId })));
+  /** Stellvertreter der Agentenschicht für die drei Aktionen des Schreibwegs. */
+  const interact = async (stack) => {
+    const byId = new Map();
+    const results = [];
+    for (const action of stack) {
+      const target = typeof action.instance === 'object' && action.instance
+        ? byId.get(action.instance.$from)?.instanceId : action.instance;
+      let result;
+      if (action.op === 'module.add') {
+        const instanceId = `ws-${phases.data.length}`;
+        phases.data = [...phases.data, { instanceId, moduleId: 'worksheet', order: phases.data.length }];
+        states[instanceId] = buildInitialWorksheetState('Sheet');
+        result = { instanceId, module: 'worksheet', phase: 'data' };
+      } else if (action.method === 'renameSheet') {
+        const [sheetId, name] = action.args;
+        states[target] = { ...states[target], sheets: states[target].sheets.map((sh) => (sh.id === sheetId ? { ...sh, name } : sh)) };
+        result = { instanceId: target, method: 'renameSheet', value: null };
+      } else {
+        const [sheetId, columns] = action.args;
+        const ids = [];
+        for (const { to, ...col } of columns) {
+          const res = applyWriteColumn(states[target], {
+            ...col, sheetId, to: to === 'start' || to === 'append' ? { kind: 'append' } : { kind: 'column', colId: to },
+          });
+          states[target] = res.state;
+          ids.push(res.colId);
+        }
+        result = { instanceId: target, method: 'writeColumns', value: ids };
+      }
+      if (action.id) byId.set(action.id, result);
+      results.push({ ok: true, id: action.id ?? null, result });
+    }
+    return { ok: true, results };
+  };
   const context = {
+    instances: { interact },
     instanceId: 'di-1',
     stateManager: {
       get(path) {

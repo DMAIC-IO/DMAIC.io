@@ -1,11 +1,14 @@
 /**
- * Tests for core/worksheet-write.js — Schreibplan bauen, ganz oder gar nicht
- * in einen Worksheet schreiben, Schreibregel je Schritt.
+ * Tests for core/worksheet-write.js — Stapel der Agentenfläche bauen, über
+ * `ctx.instances.interact` schreiben, Schreibregel je Schritt.
  */
 import { suite, test, assertEqual, assertDeepEqual, assert } from '../test-utils.js';
 import {
-  worksheetWrite, commitWorksheetWrite, applyWriteColumn, WriteError, START_SLOTS,
+  worksheetWrite, commitWorksheetWrite, applyWriteColumn, WriteError,
 } from '../../js/core/worksheet-write.js';
+import { validateBatch } from '../../js/core/agent/agent-validate.js';
+import { buildWorld } from '../../js/core/agent/agent-catalog.js';
+import { AGENT_REGISTRY } from '../../js/core/agent/agent-registry.generated.js';
 import { COLUMN_TYPES } from '../../js/core/datagrid/datagrid-utils.js';
 import { validRolesForType } from '../../js/core/datagrid/datagrid-roles.js';
 
@@ -32,61 +35,114 @@ async function caught(fn) {
 
 // ─── Builder ─────────────────────────────────────────────────────
 
+/** Store-Attrappe: ein Worksheet `ws1` (Blätter „A“, „B“) und der Aufrufer `tool` in `data`. */
+function fakeStore() {
+  const phases = { data: [{ instanceId: 'ws1', moduleId: 'worksheet', order: 0 }, { instanceId: 'tool', moduleId: 'random-generator', order: 1 }] };
+  return {
+    get(path) {
+      if (path === 'phases') return phases;
+      if (path.startsWith('phases.')) return phases[path.slice(7)];
+      return undefined;
+    },
+    getModuleState(id) { return id === 'ws1' ? wsState() : null; },
+  };
+}
+
+const WS_REF = { $from: 'ws', path: 'instanceId' };
+
 suite('core/worksheet-write — worksheetWrite', () => {
-  test('START_SLOTS ist 5', () => {
-    assertEqual(START_SLOTS, 5);
+  test('new worksheet builds add+rename+writeColumns stack', () => {
+    const plan = worksheetWrite()
+      .newWorksheet({ name: 'A' })
+      .column({ name: 'P', type: 'currency', values: [1, 2], format: { decimals: 2 } })
+      .column({ name: 'Q', values: [3], discrete: true })
+      .build({ stateManager: fakeStore(), instanceId: 'tool' });
+    assertEqual(plan.created, true);
+    assertEqual(plan.sheetId, 'sheet_1');
+    assertDeepEqual(plan.stack, [
+      { op: 'module.add', id: 'ws', module: 'worksheet', phase: 'data' },
+      { op: 'instance.call', module: 'worksheet', instance: WS_REF, method: 'renameSheet', args: ['sheet_1', 'A 1'] },
+      { op: 'instance.call', id: 'write', module: 'worksheet', instance: WS_REF, method: 'writeColumns', args: ['sheet_1', [
+        { to: 'start', name: 'P', type: 'currency', values: [1, 2], format: { decimals: 2 } },
+        { to: 'start', name: 'Q', type: 'numeric', values: [3], discrete: true },
+      ]] },
+    ]);
+    assertDeepEqual(JSON.parse(JSON.stringify(plan)), plan);
   });
 
-  test('build() liefert reines JSON', () => {
-    const plan = worksheetWrite()
-      .newWorksheet({ name: 'Import' })
-      .column({ name: 'A', type: 'currency', values: [1, 2], format: { decimals: 2 } })
-      .column({ name: 'B', values: [3], discrete: true })
+  test('existing worksheet builds single writeColumns call', () => {
+    const plan = worksheetWrite().worksheet('ws1').sheet('sheet_2')
+      .column({ name: 'A', values: [1] })
       .build();
-    assertDeepEqual(JSON.parse(JSON.stringify(plan)), plan);
-    assertDeepEqual(plan.target, { kind: 'new', name: 'Import' });
-    assertEqual(plan.sheetId, 'sheet_1');
+    assertEqual(plan.created, false);
+    assertEqual(plan.sheetId, 'sheet_2');
+    assertDeepEqual(plan.stack, [
+      { op: 'instance.call', id: 'write', module: 'worksheet', instance: 'ws1', method: 'writeColumns', args: ['sheet_2', [
+        { to: 'append', name: 'A', type: 'numeric', values: [1] },
+      ]] },
+    ]);
+  });
+
+  test('overwrite maps to column id', () => {
+    const plan = worksheetWrite().worksheet('ws1').sheet('sheet_1')
+      .overwrite('c9', { type: 'text', values: ['x'] })
+      .column({ name: 'A', values: [1] })
+      .build();
+    assertDeepEqual(plan.stack[0].args[1].map(c => c.to), ['c9', 'append']);
+    assertEqual(plan.stack[0].args[1][0].type, 'text');
+  });
+
+  test('neues Arbeitsblatt ohne Namen: kein renameSheet', () => {
+    const plan = worksheetWrite().newWorksheet().column({ name: 'A', values: [1] }).build();
+    assertDeepEqual(plan.stack.map(a => a.method ?? a.op), ['module.add', 'writeColumns']);
   });
 
   test('build() kopiert reaktive Proxys (Format, Werte) als reines JSON', () => {
     const format = new Proxy({ decimals: 2 }, {});
     const values = new Proxy([1, 2], {});
     const plan = worksheetWrite().newWorksheet({ name: 'N' }).column({ name: 'A', type: 'currency', values, format }).build();
-    assertDeepEqual(plan.ops[0].format, { decimals: 2 });
-    assertDeepEqual(plan.ops[0].values, [1, 2]);
+    const [column] = plan.stack[2].args[1];
+    assertDeepEqual(column.format, { decimals: 2 });
+    assertDeepEqual(column.values, [1, 2]);
     assertDeepEqual(JSON.parse(JSON.stringify(plan)), plan);
   });
 
-  test('neues Arbeitsblatt: 7 Spalten werden Slots 0–4 plus 2 × append', () => {
-    let b = worksheetWrite().newWorksheet({ name: 'N' });
-    for (let i = 0; i < 7; i++) b = b.column({ name: `S${i}`, values: [i] });
-    const plan = b.build();
-    assertDeepEqual(plan.ops.map(o => o.to), [
-      { kind: 'slot', slot: 0 }, { kind: 'slot', slot: 1 }, { kind: 'slot', slot: 2 },
-      { kind: 'slot', slot: 3 }, { kind: 'slot', slot: 4 },
-      { kind: 'append' }, { kind: 'append' },
-    ]);
-    assertEqual(plan.ops[0].type, 'numeric');
-  });
-
-  test('bestehendes Arbeitsblatt: column hängt an, overwrite zielt auf die Spalte', () => {
-    const plan = worksheetWrite().worksheet('w').sheet('s')
-      .column({ name: 'A', values: [1] })
-      .overwrite('c9', { type: 'text', values: ['x'] })
-      .build();
-    assertDeepEqual(plan.target, { kind: 'existing', instanceId: 'w' });
-    assertEqual(plan.sheetId, 's');
-    assertDeepEqual(plan.ops.map(o => o.to), [{ kind: 'append' }, { kind: 'column', colId: 'c9' }]);
-  });
-
-  test('build() wirft missing_sheet, unknown_type und empty_plan', async () => {
-    let err = await caught(() => worksheetWrite().worksheet('w').column({ name: 'A', values: [] }).build());
+  test('build() wirft missing_target, missing_sheet, unknown_type und empty_plan', async () => {
+    let err = await caught(() => worksheetWrite().column({ name: 'A', values: [] }).build());
     assert(err instanceof WriteError, 'kein WriteError');
-    assertEqual(err.reason, 'missing_sheet');
+    assertEqual(err.reason, 'missing_target');
+    err = await caught(() => worksheetWrite().worksheet('w').column({ name: 'A', values: [] }).build());
+    assertEqual(err?.reason, 'missing_sheet');
     err = await caught(() => worksheetWrite().newWorksheet({ name: 'N' }).column({ name: 'A', type: 'foo', values: [] }).build());
     assertEqual(err?.reason, 'unknown_type');
     err = await caught(() => worksheetWrite().newWorksheet({ name: 'N' }).build());
     assertEqual(err?.reason, 'empty_plan');
+  });
+
+  test('every builder stack passes the real validator', () => {
+    const stateManager = fakeStore();
+    const moduleRegistry = {
+      getAll: () => [{ id: 'worksheet', phase: 'data' }, { id: 'random-generator', phase: 'data' }],
+      get: (id) => moduleRegistry.getAll().find(d => d.id === id),
+      getActiveCycle: () => 'dmaic',
+    };
+    const i18n = { t: (k) => k, exists: () => false, getLanguage: () => 'de' };
+    const world = buildWorld({ moduleRegistry, stateManager, i18n, registry: AGENT_REGISTRY });
+    const ctx = { stateManager, instanceId: 'tool' };
+    const plans = {
+      'neu × column': worksheetWrite().newWorksheet({ name: 'N' }).column({ name: 'A', values: [1] }),
+      'neu × overwrite': worksheetWrite().newWorksheet({ name: 'N' }).overwrite('c1', { values: [1] }),
+      'vorhanden × column': worksheetWrite().worksheet('ws1').sheet('sheet_1').column({ name: 'A', values: [1] }),
+      'vorhanden × overwrite': worksheetWrite().worksheet('ws1').sheet('sheet_1').overwrite('c1', { values: [1] }),
+    };
+    for (const [label, builder] of Object.entries(plans)) {
+      const checked = validateBatch(builder.build(ctx).stack, world);
+      assert(checked.ok === true, `${label}: ${JSON.stringify(checked)}`);
+    }
+    // Gegenprobe: dieselbe Prüfung lehnt eine falsche Aktion ab.
+    const bad = worksheetWrite().worksheet('ws1').sheet('sheet_1').column({ name: 'A', values: [1] }).build(ctx);
+    bad.stack[0].method = 'writeColumnz';
+    assertEqual(validateBatch(bad.stack, world).ok, false);
   });
 });
 
@@ -205,160 +261,85 @@ suite('core/worksheet-write — applyWriteColumn', () => {
 // ─── commitWorksheetWrite ────────────────────────────────────────
 
 /**
- * Context-Attrappe: Store mit einem Worksheet `ws1` in Phase `data`, EventBus
- * synchron. `mounted` legt einen Empfänger für `ws1` an, der mit `reply`
- * antwortet; `activateNew` meldet einen neu angelegten Worksheet als aktiv
- * und lässt ihn mit `newReply` antworten.
+ * Context-Attrappe: `instances.interact` hält den Stapel fest und antwortet
+ * mit `answer`; `i18n.t` liefert den Schlüssel.
  */
-function fakeContext({ mounted = null, activateNew = false, newReply = null } = {}) {
-  const moduleStates = { ws1: wsState() };
-  const phases = { data: [{ instanceId: 'ws1', moduleId: 'worksheet', order: 0 }, { instanceId: 'tool', moduleId: 'data-import', order: 1 }] };
-  const handlers = {};
-  const emitted = [];
-  const calls = { setModuleState: 0 };
-  const stateManager = {
-    get(path) {
-      if (path === 'phases') return phases;
-      if (path.startsWith('phases.')) return phases[path.slice(7)];
-      return undefined;
-    },
-    set(path, value) { phases[path.slice(7)] = value; },
-    getModuleState(id) { return moduleStates[id] ?? null; },
-    setModuleState(id, s) { calls.setModuleState++; moduleStates[id] = s; },
-    removeModuleState(id) { delete moduleStates[id]; },
+function fakeContext(answer) {
+  const stacks = [];
+  return {
+    stacks,
+    i18n: { t: k => k },
+    instances: { interact: async (stack) => { stacks.push(stack); return answer; } },
   };
-  const eventBus = {
-    on(evt, fn) { (handlers[evt] ??= []).push(fn); },
-    off(evt, fn) { handlers[evt] = (handlers[evt] ?? []).filter(h => h !== fn); },
-    emit(evt, payload) {
-      emitted.push({ evt, payload });
-      for (const h of [...(handlers[evt] ?? [])]) h(payload);
-    },
-  };
-  if (mounted) {
-    eventBus.on('worksheet:writeColumns', (p) => { if (p.instanceId === 'ws1') p.reply(mounted); });
-  }
-  if (activateNew) {
-    eventBus.on('module:added', ({ instanceId }) => {
-      eventBus.on('worksheet:writeColumns', (p) => { if (p.instanceId === instanceId) p.reply(newReply); });
-      queueMicrotask(() => eventBus.emit('module:activated', { instanceId }));
-    });
-  }
-  const i18n = { t: k => k };
-  return { instanceId: 'tool', stateManager, eventBus, i18n, moduleStates, phases, emitted, calls };
+}
+
+/** `console.warn` für die Dauer von `fn` stummschalten und Aufrufe zählen. */
+async function quietWarn(fn) {
+  const orig = console.warn;
+  const warned = [];
+  console.warn = (...a) => { warned.push(a); };
+  try { return { value: await fn(), warned }; } finally { console.warn = orig; }
 }
 
 suite('core/worksheet-write — commitWorksheetWrite', () => {
-  test('ein Ziel, das kein Worksheet ist: unknown_instance, nichts geschrieben', async () => {
-    const ctx = fakeContext();
-    const plan = worksheetWrite().worksheet('tool').sheet('sheet_1').column({ name: 'A', values: [1] }).build();
-    const err = await caught(() => commitWorksheetWrite(ctx, plan));
+  test('commit returns ids from write result', async () => {
+    const ctx = fakeContext({ ok: true, contract: 1, results: [
+      { ok: true, id: 'ws', result: { instanceId: 'w9', module: 'worksheet', phase: 'data' } },
+      { ok: true, id: null, result: { instanceId: 'w9', method: 'renameSheet', value: null } },
+      { ok: true, id: 'write', result: { instanceId: 'w9', method: 'writeColumns', value: ['c1', 'c2'] } },
+    ] });
+    const plan = worksheetWrite().newWorksheet({ name: 'N' }).column({ name: 'A', values: [1] }).column({ name: 'B', values: [2] }).build();
+    const out = await commitWorksheetWrite(ctx, plan);
+    assertDeepEqual(out, { instanceId: 'w9', sheetId: 'sheet_1', columnIds: ['c1', 'c2'], created: true });
+    assertEqual(ctx.stacks.length, 1);
+    assertEqual(ctx.stacks[0], plan.stack);
+  });
+
+  test('vorhandener Worksheet: instanceId aus dem Ergebnis von write', async () => {
+    const ctx = fakeContext({ ok: true, contract: 1, results: [
+      { ok: true, id: 'write', result: { instanceId: 'ws1', method: 'writeColumns', value: ['c7'] } },
+    ] });
+    const plan = worksheetWrite().worksheet('ws1').sheet('sheet_2').column({ name: 'A', values: [1] }).build();
+    assertDeepEqual(await commitWorksheetWrite(ctx, plan), { instanceId: 'ws1', sheetId: 'sheet_2', columnIds: ['c7'], created: false });
+  });
+
+  test('commit maps unknown column to WriteError unknown_column', async () => {
+    const ctx = fakeContext({ ok: false, contract: 1, rolledBack: true, results: [
+      { ok: false, id: 'write', error: 'call_failed', message: 'Call to "writeColumns" failed: unknown_column: c9' },
+    ] });
+    const plan = worksheetWrite().worksheet('ws1').sheet('sheet_1').overwrite('c9', { values: [1] }).build();
+    const { value: err, warned } = await quietWarn(() => caught(() => commitWorksheetWrite(ctx, plan)));
     assert(err instanceof WriteError, 'kein WriteError');
-    assertEqual(err.reason, 'unknown_instance');
-    assertEqual(err.message, 'modules.worksheet.appendTargetUnknown');
-    assertEqual(ctx.calls.setModuleState, 0);
-    assertEqual(ctx.emitted.length, 0);
+    assertEqual(err.reason, 'unknown_column');
+    assertEqual(warned.length, 1);
   });
 
-  test('nicht eingehängt, zweiter Schritt mit unbekannter Spalte: nichts geschrieben', async () => {
-    const ctx = fakeContext();
-    const before = JSON.stringify(ctx.moduleStates.ws1);
-    const plan = worksheetWrite().worksheet('ws1').sheet('sheet_1')
-      .column({ name: 'A', values: [1] })
-      .overwrite('weg', { values: [2] })
-      .build();
-    const err = await caught(() => commitWorksheetWrite(ctx, plan));
-    assertEqual(err?.reason, 'unknown_column');
-    assertEqual(JSON.stringify(ctx.moduleStates.ws1), before);
-    assertEqual(ctx.calls.setModuleState, 0);
-    assert(!ctx.emitted.some(e => e.evt === 'worksheet:dataChanged'), 'dataChanged trotz Fehler');
-  });
-
-  test('nicht eingehängt, gültig: genau ein setModuleState und ein dataChanged', async () => {
-    const ctx = fakeContext();
-    const plan = worksheetWrite().worksheet('ws1').sheet('sheet_1')
-      .column({ name: 'A', values: [1, 2, 3] })
-      .overwrite('c1', { type: 'currency', values: [5, 6], format: { decimals: 2 } })
-      .build();
-    const res = await commitWorksheetWrite(ctx, plan);
-    assertEqual(ctx.calls.setModuleState, 1);
-    assertEqual(ctx.emitted.filter(e => e.evt === 'worksheet:dataChanged').length, 1);
-    const cols = ctx.moduleStates.ws1.sheets[0].state.columns;
-    assertEqual(cols.length, 3);
-    assertDeepEqual(cols[2].values, [1, 2, 3]);
-    assertEqual(cols[0].type, 'currency');
-    assertDeepEqual(res, { instanceId: 'ws1', sheetId: 'sheet_1', columnIds: [cols[2].id, 'c1'], created: false });
-  });
-
-  test('eingehängt: ein Ereignis mit allen Schritten, columnIds aus der Quittung', async () => {
-    const ctx = fakeContext({ mounted: { ok: true, columnIds: ['x1', 'x2'] } });
-    const before = ctx.moduleStates.ws1;
-    const plan = worksheetWrite().worksheet('ws1').sheet('sheet_1')
-      .column({ name: 'A', values: [1] })
-      .column({ name: 'B', values: [2] })
-      .build();
-    const res = await commitWorksheetWrite(ctx, plan);
-    const ev = ctx.emitted.filter(e => e.evt === 'worksheet:writeColumns');
-    assertEqual(ev.length, 1);
-    assertEqual(ev[0].payload.sheetId, 'sheet_1');
-    assertDeepEqual(ev[0].payload.ops, plan.ops);
-    assertDeepEqual(res.columnIds, ['x1', 'x2']);
-    assertEqual(ctx.moduleStates.ws1, before);
-    assertEqual(ctx.calls.setModuleState, 0);
-  });
-
-  test('eingehängt, abgelehnt: Fehler mit dem Grund der Quittung', async () => {
-    const ctx = fakeContext({ mounted: { ok: false, reason: 'unknown_sheet' } });
+  test('Fehlerzuordnung: unknown_sheet, Prüffehler, Laufzeitfehler, abgeschlossenes Projekt', async () => {
     const plan = worksheetWrite().worksheet('ws1').sheet('sheet_9').column({ name: 'A', values: [1] }).build();
-    const err = await caught(() => commitWorksheetWrite(ctx, plan));
-    assertEqual(err?.reason, 'unknown_sheet');
+    const cases = [
+      [{ ok: false, results: [{ ok: false, error: 'call_failed', message: 'x: unknown_sheet: sheet_9' }] }, 'unknown_sheet'],
+      [{ ok: false, error: 'validation_failed', index: 0, cause: { error: 'unknown_instance' } }, 'unknown_instance'],
+      [{ ok: false, error: 'validation_failed', index: 0, cause: { error: 'instance_module_mismatch' } }, 'unknown_instance'],
+      [{ ok: false, results: [{ ok: false, error: 'instance_module_mismatch', message: 'm' }] }, 'unknown_instance'],
+      [{ ok: false, error: 'validation_failed', index: 0, cause: { error: 'project_completed' } }, 'write_failed'],
+      [{ ok: false, results: [{ ok: false, error: 'call_failed', message: 'columns[0].values must be an array' }] }, 'write_failed'],
+      [{ ok: false, error: 'surface_failed', message: 'boom' }, 'write_failed'],
+    ];
+    for (const [answer, reason] of cases) {
+      const { value: err } = await quietWarn(() => caught(() => commitWorksheetWrite(fakeContext(answer), plan)));
+      assertEqual(err?.reason, reason, JSON.stringify(answer));
+    }
   });
 
-  test('eingehängt, Schreiben gescheitert: write_failed, kein Store-Ersatz', async () => {
-    const ctx = fakeContext({ mounted: { ok: false, reason: 'write_failed' } });
-    const before = ctx.moduleStates.ws1;
+  test('commit message comes from i18n, not from the agent message', async () => {
     const plan = worksheetWrite().worksheet('ws1').sheet('sheet_1').column({ name: 'A', values: [1] }).build();
-    const err = await caught(() => commitWorksheetWrite(ctx, plan));
-    assert(err instanceof WriteError, 'kein WriteError');
-    assertEqual(err.reason, 'write_failed');
-    assertEqual(err.message, 'modules.worksheet.writeFailed');
-    assertEqual(ctx.moduleStates.ws1, before);
-    assertEqual(ctx.calls.setModuleState, 0);
-  });
-
-  test('neues Arbeitsblatt: added, activated, dann das Ereignis; created true', async () => {
-    const ctx = fakeContext({ activateNew: true, newReply: { ok: true, columnIds: ['n1'] } });
-    const plan = worksheetWrite().newWorksheet({ name: 'Import' }).column({ name: 'A', values: [1] }).build();
-    const res = await commitWorksheetWrite(ctx, plan);
-    const names = ctx.emitted.map(e => e.evt);
-    assertDeepEqual(names, ['module:added', 'module:activated', 'worksheet:writeColumns']);
-    const wsId = ctx.emitted[0].payload.instanceId;
-    assertDeepEqual(res, { instanceId: wsId, sheetId: 'sheet_1', columnIds: ['n1'], created: true });
-    assertEqual(ctx.phases.data.length, 3);
-    assertEqual(ctx.moduleStates[wsId].sheets[0].name, 'Import');
-  });
-
-  test('neues Arbeitsblatt, Schreiben abgelehnt: Blatt wieder entfernt, Versprechen abgelehnt', async () => {
-    const ctx = fakeContext({ activateNew: true, newReply: { ok: false, reason: 'unknown_column' } });
-    const plan = worksheetWrite().newWorksheet({ name: 'Import' }).column({ name: 'A', values: [1] }).build();
-    const err = await caught(() => commitWorksheetWrite(ctx, plan));
-    assertEqual(err?.reason, 'unknown_column');
-    const wsId = ctx.emitted[0].payload.instanceId;
-    assert(ctx.emitted.some(e => e.evt === 'module:removed' && e.payload.instanceId === wsId), 'module:removed fehlt');
-    assert(!ctx.phases.data.some(i => i.instanceId === wsId), 'Phase enthält das Blatt noch');
-    assertEqual(ctx.moduleStates[wsId], undefined);
-  });
-
-  test('neues Arbeitsblatt ohne Aktivierung: open_timeout, Blatt entfernt', async () => {
-    const ctx = fakeContext();
-    const plan = worksheetWrite().newWorksheet({ name: 'Import' }).column({ name: 'A', values: [1] }).build();
-    const err = await caught(() => commitWorksheetWrite(ctx, plan, { timeoutMs: 10 }));
-    assert(err instanceof WriteError, 'kein WriteError');
-    assertEqual(err.reason, 'open_timeout');
-    assertEqual(err.message, 'modules.worksheet.openTimeout');
-    const wsId = ctx.emitted[0].payload.instanceId;
-    assert(ctx.emitted.some(e => e.evt === 'module:removed' && e.payload.instanceId === wsId), 'module:removed fehlt');
-    assert(!ctx.phases.data.some(i => i.instanceId === wsId), 'Phase enthält das Blatt noch');
-    assert(!ctx.emitted.some(e => e.evt === 'worksheet:writeColumns'), 'trotz Frist geschrieben');
+    const answers = [
+      [{ ok: false, results: [{ ok: false, error: 'call_failed', message: 'Call failed: unknown_column: c9' }] }, 'modules.worksheet.appendTargetUnknown'],
+      [{ ok: false, results: [{ ok: false, error: 'call_failed', message: 'Call failed: kaputt' }] }, 'modules.worksheet.writeFailed'],
+    ];
+    for (const [answer, key] of answers) {
+      const { value: err } = await quietWarn(() => caught(() => commitWorksheetWrite(fakeContext(answer), plan)));
+      assertEqual(err.message, key);
+    }
   });
 });

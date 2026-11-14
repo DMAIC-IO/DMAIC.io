@@ -1,27 +1,24 @@
 /**
  * D.Mike — Spalten in einen Worksheet schreiben (worksheet-write.js)
  *
- * Ein Werkzeug beschreibt, was es schreiben will, als Plan (reines JSON) und
- * übergibt ihn `commitWorksheetWrite`. Der Plan wird ganz oder gar nicht
- * geschrieben: Ein Schritt mit unbekanntem Blatt oder unbekannter Spalte
- * verhindert jede Schreibung, und ein dafür eigens angelegter Worksheet wird
- * wieder entfernt.
+ * Ein Werkzeug beschreibt mit `worksheetWrite()`, was es schreiben will; der
+ * Builder macht daraus einen Stapel der Agentenfläche, `commitWorksheetWrite`
+ * schickt ihn über `ctx.instances.interact`. Der Stapel wird ganz oder gar
+ * nicht geschrieben: scheitert eine Aktion, nimmt die Agentenschicht alles
+ * zurück, auch einen eigens angelegten Worksheet. Ein Strg+Z im Worksheet
+ * nimmt das ganze Schreiben zurück.
  *
  *   const plan = worksheetWrite()
  *     .newWorksheet({ name: 'Import' })
  *     .column({ name: 'Preis', type: 'currency', values, format: { decimals: 2 } })
- *     .build();
+ *     .build(ctx);
  *   const { instanceId, columnIds } = await commitWorksheetWrite(ctx, plan);
  *
- * Plan:
- *   { target: { kind: 'new', name } | { kind: 'existing', instanceId },
- *     sheetId,
- *     ops: [{ to: { kind: 'append' } | { kind: 'slot', slot } | { kind: 'column', colId },
- *             name, type, values, format?, discrete? }] }
- *
- * Ein eingehängter Worksheet empfängt den Plan über `worksheet:writeColumns`
- * und quittiert per `reply`. Ein nicht eingehängter wird über den Store
- * geschrieben (`applyWriteColumn` je Schritt, dann einmal speichern).
+ * Plan: `{ stack, created, sheetId }`. Der Stapel ist
+ *   - neu: `module.add` (`id: 'ws'`), `renameSheet` auf den Wunschnamen,
+ *     `writeColumns` (`id: 'write'`) — Spalten mit `to: 'start'`;
+ *   - vorhanden: ein `writeColumns` (`id: 'write'`) — `column()` mit
+ *     `to: 'append'`, `overwrite(colId)` mit `to: colId`.
  *
  * Rein bzw. DOM-frei: kein DOM, kein `window`.
  */
@@ -30,34 +27,23 @@ import { inferRole, isRoleValidForType } from './datagrid/datagrid-roles.js';
 import { recalcAllFormulas } from './datagrid/datagrid-formula.js';
 import { COLUMN_TYPES } from './datagrid/datagrid-utils.js';
 import { findOwnPhase } from './instance-handoff.js';
-import { uniqueSheetName, buildInitialWorksheetState } from './worksheet-sheets.js';
-import { removeProvisionedWorksheet } from './examples-registry.js';
+import { uniqueSheetName } from './worksheet-sheets.js';
 
-/** Zahl der leeren Spalten, die ein neuer Worksheet mitbringt. */
-export const START_SLOTS = 5;
-
-/**
- * Obergrenze für das Warten auf `module:activated`. Wechselt der Nutzer
- * während des Einhängens den Tab, meldet die Workspace die Aktivierung nie —
- * ohne Frist hinge das Versprechen und mit ihm jede wartende `@agent`-Aktion.
- * 20 s wie `MOUNT_TIMEOUT_MS` in `ui/workspace.js`.
- */
-const OPEN_TIMEOUT_MS = 20000;
+/** Blatt eines neu angelegten Worksheets. */
+const NEW_SHEET_ID = 'sheet_1';
 
 /** Meldungstexte je Grund; Planfehler tragen den Grund als Text. */
 const REASON_MESSAGES = {
   unknown_instance: ['modules.worksheet.appendTargetUnknown', 'Target column not found in the worksheet'],
   unknown_sheet: ['modules.worksheet.appendTargetUnknown', 'Target column not found in the worksheet'],
   unknown_column: ['modules.worksheet.appendTargetUnknown', 'Target column not found in the worksheet'],
-  open_timeout: ['modules.worksheet.openTimeout', 'The new worksheet did not open in time'],
   write_failed: ['modules.worksheet.writeFailed', 'The worksheet could not write the columns'],
 };
 
 /**
  * Fehler beim Bauen oder Schreiben eines Plans. `reason` ist einer von
  * `missing_target`, `missing_sheet`, `empty_plan`, `unknown_type`,
- * `unknown_instance`, `unknown_sheet`, `unknown_column`, `open_timeout`,
- * `write_failed`.
+ * `unknown_instance`, `unknown_sheet`, `unknown_column`, `write_failed`.
  */
 export class WriteError extends Error {
   /**
@@ -71,6 +57,11 @@ export class WriteError extends Error {
   }
 }
 
+/**
+ * @param {{ i18n?: { t?: (key: string) => string } }|null|undefined} ctx
+ * @param {string} reason
+ * @returns {WriteError}
+ */
 function writeError(ctx, reason) {
   const [key, fallback] = REASON_MESSAGES[reason] ?? [null, reason];
   const msg = (key && ctx?.i18n?.t?.(key)) || fallback;
@@ -90,82 +81,123 @@ function cloneFormat(format) {
 }
 
 /**
- * Einen Schritt als reines JSON festhalten; fehlende Angaben entfallen.
- * @returns {object}
+ * Einen Eintrag für `worksheet.writeColumns` als reines JSON festhalten;
+ * fehlende Angaben entfallen.
+ * @param {string} to `'start'`, `'append'` oder eine Spalten-id
+ * @param {{ name?: string, type?: string, values?: any[], format?: object, discrete?: boolean }} spec
+ * @returns {{ to: string, name: string, type: string, values: any[], format?: object, discrete?: boolean }}
  */
-function makeOp(to, { name, type, values, format, discrete }) {
-  const op = { to, name: name ?? '', type: type ?? 'numeric', values: [...(values ?? [])] };
-  if (format !== undefined) op.format = cloneFormat(format);
-  if (discrete !== undefined) op.discrete = !!discrete;
-  return op;
+function makeColumn(to, { name, type, values, format, discrete }) {
+  /** @type {{ to: string, name: string, type: string, values: any[], format?: object, discrete?: boolean }} */
+  const column = { to, name: name ?? '', type: type ?? 'numeric', values: [...(values ?? [])] };
+  if (format !== undefined) column.format = cloneFormat(format);
+  if (discrete !== undefined) column.discrete = !!discrete;
+  return column;
 }
+
+/**
+ * @typedef {{ stack: import('./agent/agent-types.generated.js').ModuleStack,
+ *   created: boolean, sheetId: string }} WorksheetWritePlan
+ */
+
+/**
+ * @typedef {{ name?: string, type?: string, values: any[], format?: object, discrete?: boolean }} ColumnInput
+ */
+
+/**
+ * @typedef {object} WorksheetWriteBuilder
+ * @property {(opts?: { name?: string }) => WorksheetWriteBuilder} newWorksheet
+ * @property {(instanceId: string) => WorksheetWriteBuilder} worksheet
+ * @property {(id: string) => WorksheetWriteBuilder} sheet
+ * @property {(input: ColumnInput) => WorksheetWriteBuilder} column
+ * @property {(colId: string, input: ColumnInput) => WorksheetWriteBuilder} overwrite
+ * @property {(ctx?: { stateManager?: object, instanceId?: string }) => WorksheetWritePlan} build
+ */
 
 /**
  * Einen Schreibplan bauen.
  *
- * - `.newWorksheet({ name })`: ein neuer Worksheet, Blatt `sheet_1`; die
- *   ersten `START_SLOTS` Spalten füllen die leeren Startspalten, weitere
- *   werden angehängt.
+ * - `.newWorksheet({ name })`: ein neuer Worksheet in der Phase des
+ *   Aufrufers, Blatt `sheet_1` mit dem Wunschnamen (eindeutig gemacht);
+ *   die Spalten füllen erst die leeren Startspalten, weitere werden
+ *   angehängt.
  * - `.worksheet(instanceId).sheet(sheetId)`: ein bestehender Worksheet;
  *   `.column()` hängt immer an.
  * - `.overwrite(colId, …)`: eine bestehende Spalte überschreiben.
- * - `.build()` liefert den Plan und wirft `WriteError` mit `missing_target`,
- *   `missing_sheet`, `empty_plan` oder `unknown_type`.
+ * - `.build(ctx)` liefert den Plan und wirft `WriteError` mit
+ *   `missing_target`, `missing_sheet`, `empty_plan` oder `unknown_type`.
+ *   `ctx` (`stateManager`, `instanceId` des Aufrufers) bestimmt Phase und
+ *   eindeutigen Blattnamen eines neuen Worksheets; ohne ihn entfällt die
+ *   Phase und der Name bleibt, wie er ist.
  *
- * @returns {{ newWorksheet: Function, worksheet: Function, sheet: Function,
- *   column: Function, overwrite: Function, build: () => object }}
+ * @returns {WorksheetWriteBuilder}
  */
 export function worksheetWrite() {
+  /** @type {{ kind: 'new', name: string } | { kind: 'existing', instanceId: string } | null} */
   let target = null;
+  /** @type {string|null} */
   let sheetId = null;
-  /** @type {Array<{ kind: 'column'|'overwrite', colId?: string, spec: object }>} */
+  /** @type {Array<{ kind: 'column'|'overwrite', colId?: string, spec: ColumnInput }>} */
   const steps = [];
 
+  /** @type {WorksheetWriteBuilder} */
   const api = {
-    /** @param {{ name?: string }} [opts] gewünschter Blattname (wird eindeutig gemacht) */
     newWorksheet({ name } = {}) {
       target = { kind: 'new', name: name ?? '' };
-      sheetId = 'sheet_1';
+      sheetId = NEW_SHEET_ID;
       return api;
     },
-    /** @param {string} instanceId ein bestehender Worksheet */
     worksheet(instanceId) {
       target = { kind: 'existing', instanceId };
       return api;
     },
-    /** @param {string} id Blatt des Worksheets */
     sheet(id) {
       sheetId = id;
       return api;
     },
-    /** @param {{ name: string, type?: string, values: any[], format?: object, discrete?: boolean }} spec */
     column(spec) {
-      steps.push({ kind: 'column', spec: spec ?? {} });
+      steps.push({ kind: 'column', spec: spec ?? { values: [] } });
       return api;
     },
-    /**
-     * @param {string} colId die Zielspalte
-     * @param {{ type?: string, values: any[], format?: object, discrete?: boolean }} spec
-     */
     overwrite(colId, spec) {
-      steps.push({ kind: 'overwrite', colId, spec: spec ?? {} });
+      steps.push({ kind: 'overwrite', colId, spec: spec ?? { values: [] } });
       return api;
     },
-    /** @returns {object} der Plan als reines JSON */
-    build() {
+    build(ctx) {
       if (!target) throw new WriteError('missing_target');
       if (!sheetId) throw new WriteError('missing_sheet');
       if (steps.length === 0) throw new WriteError('empty_plan');
-      let colIndex = 0;
-      const ops = steps.map((step) => {
+      const created = target.kind === 'new';
+      const columns = steps.map((step) => {
         const { type } = step.spec;
         if (type !== undefined && !Object.hasOwn(COLUMN_TYPES, type)) throw new WriteError('unknown_type');
-        if (step.kind === 'overwrite') return makeOp({ kind: 'column', colId: step.colId }, step.spec);
-        const i = colIndex++;
-        const to = target.kind === 'new' && i < START_SLOTS ? { kind: 'slot', slot: i } : { kind: 'append' };
-        return makeOp(to, step.spec);
+        if (step.kind === 'overwrite') return makeColumn(String(step.colId), step.spec);
+        return makeColumn(created ? 'start' : 'append', step.spec);
       });
-      return { target: { ...target }, sheetId, ops };
+
+      if (target.kind === 'existing') {
+        return {
+          created: false,
+          sheetId,
+          stack: [{
+            op: 'instance.call', id: 'write', module: 'worksheet', instance: target.instanceId,
+            method: 'writeColumns', args: [sheetId, columns],
+          }],
+        };
+      }
+
+      const sm = /** @type {any} */ (ctx?.stateManager);
+      /** @type {import('./agent/agent-types.generated.js').ModuleStack} */
+      const stack = [sm && ctx?.instanceId
+        ? { op: 'module.add', id: 'ws', module: 'worksheet', phase: findOwnPhase(sm, ctx.instanceId) }
+        : { op: 'module.add', id: 'ws', module: 'worksheet' }];
+      const ws = { $from: 'ws', path: 'instanceId' };
+      if (target.name.trim() !== '') {
+        const name = sm ? uniqueSheetName(sm, target.name) : target.name;
+        stack.push({ op: 'instance.call', module: 'worksheet', instance: ws, method: 'renameSheet', args: [NEW_SHEET_ID, name] });
+      }
+      stack.push({ op: 'instance.call', id: 'write', module: 'worksheet', instance: ws, method: 'writeColumns', args: [NEW_SHEET_ID, columns] });
+      return { created: true, sheetId: NEW_SHEET_ID, stack };
     },
   };
   return api;
@@ -312,117 +344,55 @@ export function applyWriteColumn(wsState, op) {
 
 // ─── Commit ──────────────────────────────────────────────────────
 
-/** Ist `instanceId` ein Worksheet des Projekts? */
-function isWorksheetInstance(stateManager, instanceId) {
-  for (const phase of Object.keys(stateManager.get('phases') || {})) {
-    const items = stateManager.get(`phases.${phase}`) ?? [];
-    if (items.some(i => i.instanceId === instanceId && i.moduleId === 'worksheet')) return true;
-  }
-  return false;
-}
+/** Fehlercodes der Agentenschicht, die ein unbekanntes Ziel bedeuten. */
+const TARGET_ERRORS = new Set(['unknown_instance', 'instance_module_mismatch']);
+
+/** Präfixe der Wurfmeldungen von `worksheet.writeColumns`. */
+const WRITE_PREFIX = /\b(unknown_sheet|unknown_column): /;
 
 /**
- * Einen neuen Worksheet in der Phase der aufrufenden Instanz anlegen und auf
- * seine Aktivierung warten. Bleibt sie innerhalb der Frist aus, wird er
- * wieder entfernt.
- * @returns {Promise<string>} die id des aktiven Worksheets
+ * Die Fehlerantwort eines Stapels auf einen `reason` abbilden.
+ * @param {any} res die Antwort von `interact`
+ * @returns {string}
  */
-function openNewWorksheet(ctx, sheetName, timeoutMs) {
-  const sm = ctx.stateManager;
-  const eb = ctx.eventBus;
-  const phase = findOwnPhase(sm, ctx.instanceId);
-  const wsId = `worksheet_${uid()}`;
-
-  const existing = sm.get(`phases.${phase}`) ?? [];
-  sm.set(`phases.${phase}`, [
-    ...existing,
-    { instanceId: wsId, moduleId: 'worksheet', order: existing.length, state: {} },
-  ]);
-  sm.setModuleState(wsId, buildInitialWorksheetState(uniqueSheetName(sm, sheetName)));
-
-  const active = new Promise((resolve, reject) => {
-    let timer = null;
-    const onActivated = ({ instanceId }) => {
-      if (instanceId !== wsId) return;
-      eb.off('module:activated', onActivated);
-      clearTimeout(timer);
-      resolve(wsId);
-    };
-    eb.on('module:activated', onActivated);
-    timer = setTimeout(() => {
-      eb.off('module:activated', onActivated);
-      removeProvisionedWorksheet(ctx, wsId);
-      reject(writeError(ctx, 'open_timeout'));
-    }, timeoutMs);
-  });
-  eb.emit('module:added', { moduleId: 'worksheet', phase, instanceId: wsId });
-  return active;
+function reasonOf(res) {
+  if (res?.error === 'validation_failed') {
+    return TARGET_ERRORS.has(res.cause?.error) ? 'unknown_instance' : 'write_failed';
+  }
+  const failed = Array.isArray(res?.results) ? res.results.find((r) => r?.ok === false) : null;
+  if (!failed) return 'write_failed';
+  if (failed.error === 'instance_module_mismatch') return 'unknown_instance';
+  const prefix = WRITE_PREFIX.exec(String(failed.message ?? ''));
+  return prefix ? prefix[1] : 'write_failed';
 }
 
 /**
- * Alle Schritte in einen bestehenden Worksheet schreiben — eingehängt per
- * Ereignis, sonst über den Store.
- * @returns {string[]} die ids der geschriebenen Spalten, in Schrittfolge
- * @throws {WriteError} ohne etwas geschrieben zu haben
- */
-function writeOps(ctx, instanceId, plan) {
-  const sm = ctx.stateManager;
-  const eb = ctx.eventBus;
-  const { sheetId, ops } = plan;
-
-  /** @type {{ ok: boolean, reason?: string, columnIds?: string[] }|null} */
-  let answer = null;
-  eb.emit('worksheet:writeColumns', { instanceId, sheetId, ops, reply: (res) => { answer = res; } });
-  if (answer) {
-    if (!answer.ok) throw writeError(ctx, answer.reason ?? 'unknown_column');
-    return [...(answer.columnIds ?? [])];
-  }
-
-  let state = sm.getModuleState(instanceId);
-  const columnIds = [];
-  for (const op of ops) {
-    const res = applyWriteColumn(state, { ...op, sheetId });
-    if (res.ok === false) throw writeError(ctx, res.reason);
-    state = res.state;
-    columnIds.push(res.colId);
-  }
-  sm.setModuleState(instanceId, state);
-  eb.emit('worksheet:dataChanged', { instanceId });
-  return columnIds;
-}
-
-/**
- * Einen Plan aus `worksheetWrite().build()` ganz oder gar nicht schreiben.
+ * Einen Plan aus `worksheetWrite().build()` ganz oder gar nicht schreiben:
+ * der Stapel läuft über `ctx.instances.interact`. Scheitert er, hat die
+ * Agentenschicht alles zurückgenommen, auch einen eben angelegten
+ * Worksheet. Die Meldung des Fehlers kommt aus den eigenen Texten, nie aus
+ * der Antwort der Agentenschicht; deren Ursache steht in der Konsole.
  *
- * - Bestehender Worksheet: eingehängt über `worksheet:writeColumns`
- *   (`{ instanceId, sheetId, ops, reply }`, der Worksheet prüft alle Schritte
- *   vor dem ersten Schreiben), sonst `applyWriteColumn` je Schritt auf einer
- *   Kopie des Zustands, dann ein `setModuleState` und ein
- *   `worksheet:dataChanged`.
- * - Neuer Worksheet: anlegen, auf `module:activated` warten, dann wie oben.
- *   Scheitert danach etwas, wird er wieder entfernt.
- *
- * @param {{ stateManager: object, eventBus: object, instanceId: string, i18n?: object }} ctx
- *   `module._context` der aufrufenden Instanz
- * @param {object} plan der Plan
- * @param {{ timeoutMs?: number }} [opts] Frist für die Aktivierung eines neuen Worksheets
+ * @param {{ instances: { interact: (stack: import('./agent/agent-types.generated.js').ModuleStack) => Promise<any> },
+ *   i18n?: object }} ctx der Kontext (bzw. `services`) der aufrufenden Instanz
+ * @param {WorksheetWritePlan} plan der Plan
  * @returns {Promise<{ instanceId: string, sheetId: string, columnIds: string[], created: boolean }>}
- * @throws {WriteError} (abgelehnt) mit `reason`
+ * @throws {WriteError} (abgelehnt) mit `reason` `unknown_instance`,
+ *   `unknown_sheet`, `unknown_column` oder `write_failed`
  */
-export async function commitWorksheetWrite(ctx, plan, { timeoutMs = OPEN_TIMEOUT_MS } = {}) {
-  const sm = ctx.stateManager;
-  if (plan?.target?.kind === 'new') {
-    const instanceId = await openNewWorksheet(ctx, plan.target.name, timeoutMs);
-    try {
-      const columnIds = writeOps(ctx, instanceId, plan);
-      return { instanceId, sheetId: plan.sheetId, columnIds, created: true };
-    } catch (err) {
-      removeProvisionedWorksheet(ctx, instanceId);
-      throw err;
-    }
+export async function commitWorksheetWrite(ctx, plan) {
+  const res = await ctx.instances.interact(plan.stack);
+  if (res?.ok !== true) {
+    console.warn('[worksheet-write] stack failed', res);
+    throw writeError(ctx, reasonOf(res));
   }
-  const instanceId = plan?.target?.instanceId;
-  if (!instanceId || !isWorksheetInstance(sm, instanceId)) throw writeError(ctx, 'unknown_instance');
-  const columnIds = writeOps(ctx, instanceId, plan);
-  return { instanceId, sheetId: plan.sheetId, columnIds, created: false };
+  const byId = new Map(res.results.map((r) => [r.id, r.result]));
+  const write = byId.get('write');
+  const instanceId = plan.created ? byId.get('ws')?.instanceId : write?.instanceId;
+  return {
+    instanceId,
+    sheetId: plan.sheetId,
+    columnIds: [...(write?.value ?? [])],
+    created: plan.created,
+  };
 }

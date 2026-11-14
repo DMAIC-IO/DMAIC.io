@@ -1507,7 +1507,6 @@
       "statusSelection": "{rows}×{cols} selected",
       "defaultSheetName": "Sheet",
       "appendTargetUnknown": "The target column no longer exists in the worksheet.",
-      "openTimeout": "The new worksheet did not open in time.",
       "writeFailed": "The worksheet could not write the columns.",
       "sheetCopy": "Copy",
       "addSheet": "Add new sheet",

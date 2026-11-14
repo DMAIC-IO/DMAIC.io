@@ -197,9 +197,24 @@ suite('Worksheet — Empfänger worksheet:writeColumns', () => {
       w.vm.writeColumns = () => { throw new Error('kaputt'); };
       const changedBefore = w.emitted.filter(([n]) => n === 'worksheet:dataChanged').length;
       const plan = worksheetWrite().worksheet('ws-w').sheet(w.sheetId).column({ name: 'A', values: [1, 2] }).build();
+      // Stellvertreter der Agentenschicht: führt den Aufruf am eingehängten
+      // Worksheet aus und meldet einen Wurf wie `call_failed`.
+      const instances = {
+        interact: async (stack) => {
+          const [call] = stack;
+          try {
+            const value = w.vm[call.method](...call.args);
+            return { ok: true, results: [{ ok: true, id: call.id, result: { instanceId: 'ws-w', method: call.method, value } }] };
+          } catch (e) {
+            return { ok: false, rolledBack: true, results: [{ ok: false, id: call.id, error: 'call_failed', message: e.message }] };
+          }
+        },
+      };
       let err = null;
       let res = null;
-      try { res = await commitWorksheetWrite(w.context, plan); } catch (e) { err = e; }
+      const warn = console.warn;
+      console.warn = () => {};
+      try { res = await commitWorksheetWrite({ ...w.context, instances }, plan); } catch (e) { err = e; } finally { console.warn = warn; }
       assertEqual(res, null, 'Erfolg gemeldet');
       assertEqual(err?.reason, 'write_failed');
       assertEqual(w.emitted.filter(([n]) => n === 'worksheet:dataChanged').length, changedBefore, 'dataChanged trotz Fehler');
