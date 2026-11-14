@@ -1,0 +1,2291 @@
+{
+ "doe-optimal-augment-3f": {
+  "sheetName": "DoE: D-optimal Augment — auf bestehender Datensammlung",
+  "rowCount": 6,
+  "columns": [
+   {
+    "name": "RunOrder",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 0
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "run-order"
+    },
+    "role": "identifier"
+   },
+   {
+    "name": "StdOrder",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     1,
+     3,
+     6,
+     2,
+     5,
+     4
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 0
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "group-id"
+    },
+    "role": "identifier"
+   },
+   {
+    "name": "Block",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     1,
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 0
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "block-column"
+    },
+    "role": "categorical"
+   },
+   {
+    "name": "Replicate",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     1,
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 0
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "replicate-id"
+    },
+    "role": "categorical"
+   },
+   {
+    "name": "Temperatur",
+    "type": "numeric",
+    "unit": "°C",
+    "values": [
+     187.5,
+     200,
+     200,
+     175,
+     162.5,
+     187.5
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 2
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "design-factor"
+    },
+    "role": "continuous"
+   },
+   {
+    "name": "Druck",
+    "type": "numeric",
+    "unit": "bar",
+    "values": [
+     5,
+     4,
+     5,
+     5,
+     2,
+     2
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 2
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "design-factor"
+    },
+    "role": "continuous"
+   },
+   {
+    "name": "Zeit",
+    "type": "numeric",
+    "unit": "min",
+    "values": [
+     15,
+     15,
+     10,
+     30,
+     20,
+     30
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 2
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "design-factor"
+    },
+    "role": "continuous"
+   },
+   {
+    "name": "Ausbeute",
+    "type": "numeric",
+    "unit": "%",
+    "values": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 4
+    },
+    "meta": null,
+    "role": "continuous"
+   }
+  ]
+ },
+ "doe-optimal-mixed-4f": {
+  "sheetName": "DoE: D-optimal mixed — 3 cont. + 1 kategorisch (3 Stufen)",
+  "rowCount": 15,
+  "columns": [
+   {
+    "name": "RunOrder",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 0
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "run-order"
+    },
+    "role": "identifier"
+   },
+   {
+    "name": "StdOrder",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     5,
+     9,
+     3,
+     1,
+     14,
+     13,
+     15,
+     7,
+     6,
+     2,
+     4,
+     11,
+     10,
+     8,
+     12
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 0
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "group-id"
+    },
+    "role": "identifier"
+   },
+   {
+    "name": "Block",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 0
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "block-column"
+    },
+    "role": "categorical"
+   },
+   {
+    "name": "Replicate",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 0
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "replicate-id"
+    },
+    "role": "categorical"
+   },
+   {
+    "name": "Temperatur",
+    "type": "numeric",
+    "unit": "°C",
+    "values": [
+     150,
+     220,
+     220,
+     150,
+     150,
+     150,
+     220,
+     220,
+     220,
+     150,
+     220,
+     150,
+     220,
+     220,
+     150
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 2
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "design-factor"
+    },
+    "role": "continuous"
+   },
+   {
+    "name": "Zeit",
+    "type": "numeric",
+    "unit": "min",
+    "values": [
+     10,
+     10,
+     10,
+     40,
+     40,
+     10,
+     40,
+     40,
+     10,
+     40,
+     10,
+     10,
+     40,
+     40,
+     40
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 2
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "design-factor"
+    },
+    "role": "continuous"
+   },
+   {
+    "name": "Druck",
+    "type": "numeric",
+    "unit": "bar",
+    "values": [
+     5,
+     5,
+     1,
+     1,
+     5,
+     1,
+     1,
+     5,
+     5,
+     1,
+     1,
+     5,
+     5,
+     1,
+     5
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 2
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "design-factor"
+    },
+    "role": "continuous"
+   },
+   {
+    "name": "Material",
+    "type": "text",
+    "unit": "",
+    "values": [
+     "Stahl",
+     "Stahl",
+     "Kupfer",
+     "Stahl",
+     "Stahl",
+     "Stahl",
+     "Kupfer",
+     "Kupfer",
+     "Kupfer",
+     "Kupfer",
+     "Stahl",
+     "Kupfer",
+     "Stahl",
+     "Stahl",
+     "Kupfer"
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": null,
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "design-factor",
+     "categoricalCoding": {
+      "Stahl": -1,
+      "Aluminium": 0,
+      "Kupfer": 1
+     }
+    },
+    "role": "categorical"
+   },
+   {
+    "name": "Ausbeute",
+    "type": "numeric",
+    "unit": "%",
+    "values": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 4
+    },
+    "meta": null,
+    "role": "continuous"
+   }
+  ]
+ },
+ "doe-optimal-rsm-3f": {
+  "sheetName": "DoE: D-optimal RSM — 3 Faktoren, quadratisch",
+  "rowCount": 12,
+  "columns": [
+   {
+    "name": "RunOrder",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 0
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "run-order"
+    },
+    "role": "identifier"
+   },
+   {
+    "name": "StdOrder",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     9,
+     12,
+     2,
+     3,
+     6,
+     7,
+     10,
+     5,
+     8,
+     4,
+     1,
+     11
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 0
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "group-id"
+    },
+    "role": "identifier"
+   },
+   {
+    "name": "Block",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 0
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "block-column"
+    },
+    "role": "categorical"
+   },
+   {
+    "name": "Replicate",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 0
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "replicate-id"
+    },
+    "role": "categorical"
+   },
+   {
+    "name": "Temperatur",
+    "type": "numeric",
+    "unit": "°C",
+    "values": [
+     200,
+     200,
+     200,
+     200,
+     162.5,
+     150,
+     187.5,
+     150,
+     150,
+     200,
+     175,
+     150
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 2
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "design-factor"
+    },
+    "role": "continuous"
+   },
+   {
+    "name": "Druck",
+    "type": "numeric",
+    "unit": "bar",
+    "values": [
+     5,
+     2,
+     2,
+     5,
+     2,
+     5,
+     1,
+     2,
+     2,
+     3,
+     4,
+     5
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 2
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "design-factor"
+    },
+    "role": "continuous"
+   },
+   {
+    "name": "Zeit",
+    "type": "numeric",
+    "unit": "min",
+    "values": [
+     30,
+     10,
+     30,
+     10,
+     25,
+     15,
+     15,
+     10,
+     30,
+     20,
+     10,
+     30
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 2
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "design-factor"
+    },
+    "role": "continuous"
+   },
+   {
+    "name": "Ausbeute",
+    "type": "numeric",
+    "unit": "%",
+    "values": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 4
+    },
+    "meta": null,
+    "role": "continuous"
+   }
+  ]
+ },
+ "doe-optimal-screening-5f": {
+  "sheetName": "DoE: D-optimal Screening — 5 Faktoren, linear + 2FI",
+  "rowCount": 18,
+  "columns": [
+   {
+    "name": "RunOrder",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     16,
+     17,
+     18
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 0
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "run-order"
+    },
+    "role": "identifier"
+   },
+   {
+    "name": "StdOrder",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     12,
+     10,
+     2,
+     5,
+     3,
+     11,
+     4,
+     9,
+     15,
+     8,
+     6,
+     16,
+     14,
+     17,
+     18,
+     1,
+     13,
+     7
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 0
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "group-id"
+    },
+    "role": "identifier"
+   },
+   {
+    "name": "Block",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 0
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "block-column"
+    },
+    "role": "categorical"
+   },
+   {
+    "name": "Replicate",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 0
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "replicate-id"
+    },
+    "role": "categorical"
+   },
+   {
+    "name": "Temperatur",
+    "type": "numeric",
+    "unit": "°C",
+    "values": [
+     140,
+     140,
+     200,
+     200,
+     200,
+     200,
+     200,
+     140,
+     200,
+     140,
+     140,
+     200,
+     140,
+     140,
+     140,
+     140,
+     140,
+     200
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 2
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "design-factor"
+    },
+    "role": "continuous"
+   },
+   {
+    "name": "Vorschub",
+    "type": "numeric",
+    "unit": "mm/s",
+    "values": [
+     20,
+     80,
+     80,
+     80,
+     80,
+     20,
+     20,
+     20,
+     20,
+     20,
+     80,
+     80,
+     80,
+     20,
+     80,
+     80,
+     20,
+     20
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 2
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "design-factor"
+    },
+    "role": "continuous"
+   },
+   {
+    "name": "Druck",
+    "type": "numeric",
+    "unit": "bar",
+    "values": [
+     8,
+     1,
+     1,
+     1,
+     8,
+     8,
+     1,
+     8,
+     8,
+     1,
+     1,
+     8,
+     8,
+     1,
+     1,
+     8,
+     1,
+     1
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 2
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "design-factor"
+    },
+    "role": "continuous"
+   },
+   {
+    "name": "Konzentration",
+    "type": "numeric",
+    "unit": "%",
+    "values": [
+     5,
+     20,
+     5,
+     20,
+     20,
+     5,
+     5,
+     20,
+     20,
+     20,
+     5,
+     5,
+     20,
+     5,
+     20,
+     5,
+     5,
+     20
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 2
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "design-factor"
+    },
+    "role": "continuous"
+   },
+   {
+    "name": "Mischzeit",
+    "type": "numeric",
+    "unit": "s",
+    "values": [
+     10,
+     60,
+     60,
+     10,
+     60,
+     60,
+     10,
+     60,
+     10,
+     10,
+     10,
+     10,
+     10,
+     10,
+     10,
+     60,
+     60,
+     60
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 2
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "design-factor"
+    },
+    "role": "continuous"
+   },
+   {
+    "name": "Ausbeute",
+    "type": "numeric",
+    "unit": "%",
+    "values": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 4
+    },
+    "meta": null,
+    "role": "continuous"
+   }
+  ]
+ },
+ "doe-planner-hubschrauber-flyer": {
+  "sheetName": "DoE: Papier-Hubschrauber — Rotorlänge × Klammern (3², 2 Rep., geblockt L=8→6→4)",
+  "rowCount": 18,
+  "columns": [
+   {
+    "name": "RunOrder",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     16,
+     17,
+     18
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 0
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "run-order"
+    },
+    "role": "identifier"
+   },
+   {
+    "name": "StdOrder",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 0
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "group-id"
+    },
+    "role": "identifier"
+   },
+   {
+    "name": "Block",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 0
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "block-column"
+    },
+    "role": "categorical"
+   },
+   {
+    "name": "Replicate",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     1,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2,
+     2
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 0
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "replicate-id"
+    },
+    "role": "categorical"
+   },
+   {
+    "name": "Rotorlänge",
+    "type": "numeric",
+    "unit": "cm",
+    "values": [
+     4,
+     4,
+     4,
+     6,
+     6,
+     6,
+     8,
+     8,
+     8,
+     4,
+     4,
+     4,
+     6,
+     6,
+     6,
+     8,
+     8,
+     8
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 2
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "design-factor"
+    },
+    "role": "continuous"
+   },
+   {
+    "name": "Klammern",
+    "type": "numeric",
+    "unit": "Stück",
+    "values": [
+     0,
+     1,
+     2,
+     0,
+     1,
+     2,
+     0,
+     1,
+     2,
+     0,
+     1,
+     2,
+     0,
+     1,
+     2,
+     0,
+     1,
+     2
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 2
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "design-factor"
+    },
+    "role": "continuous"
+   },
+   {
+    "name": "Flugzeit",
+    "type": "numeric",
+    "unit": "s",
+    "values": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 4
+    },
+    "meta": null,
+    "role": "continuous"
+   },
+   {
+    "name": "Flugzeit Mean",
+    "type": "numeric",
+    "unit": "s",
+    "values": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "formulas": [
+     "=AVERAGEIF('StdOrder'; 'StdOrder'[1]; 'Flugzeit')",
+     "=AVERAGEIF('StdOrder'; 'StdOrder'[2]; 'Flugzeit')",
+     "=AVERAGEIF('StdOrder'; 'StdOrder'[3]; 'Flugzeit')",
+     "=AVERAGEIF('StdOrder'; 'StdOrder'[4]; 'Flugzeit')",
+     "=AVERAGEIF('StdOrder'; 'StdOrder'[5]; 'Flugzeit')",
+     "=AVERAGEIF('StdOrder'; 'StdOrder'[6]; 'Flugzeit')",
+     "=AVERAGEIF('StdOrder'; 'StdOrder'[7]; 'Flugzeit')",
+     "=AVERAGEIF('StdOrder'; 'StdOrder'[8]; 'Flugzeit')",
+     "=AVERAGEIF('StdOrder'; 'StdOrder'[9]; 'Flugzeit')",
+     "=AVERAGEIF('StdOrder'; 'StdOrder'[10]; 'Flugzeit')",
+     "=AVERAGEIF('StdOrder'; 'StdOrder'[11]; 'Flugzeit')",
+     "=AVERAGEIF('StdOrder'; 'StdOrder'[12]; 'Flugzeit')",
+     "=AVERAGEIF('StdOrder'; 'StdOrder'[13]; 'Flugzeit')",
+     "=AVERAGEIF('StdOrder'; 'StdOrder'[14]; 'Flugzeit')",
+     "=AVERAGEIF('StdOrder'; 'StdOrder'[15]; 'Flugzeit')",
+     "=AVERAGEIF('StdOrder'; 'StdOrder'[16]; 'Flugzeit')",
+     "=AVERAGEIF('StdOrder'; 'StdOrder'[17]; 'Flugzeit')",
+     "=AVERAGEIF('StdOrder'; 'StdOrder'[18]; 'Flugzeit')"
+    ],
+    "format": {
+     "decimals": 4
+    },
+    "meta": {
+     "lock": "soft",
+     "managedBy": "doe-planner",
+     "reason": "replicate-aggregate"
+    },
+    "role": "continuous"
+   },
+   {
+    "name": "Flugzeit lnVar",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "formulas": [
+     "=LN(VARIF('StdOrder'; 'StdOrder'[1]; 'Flugzeit'))",
+     "=LN(VARIF('StdOrder'; 'StdOrder'[2]; 'Flugzeit'))",
+     "=LN(VARIF('StdOrder'; 'StdOrder'[3]; 'Flugzeit'))",
+     "=LN(VARIF('StdOrder'; 'StdOrder'[4]; 'Flugzeit'))",
+     "=LN(VARIF('StdOrder'; 'StdOrder'[5]; 'Flugzeit'))",
+     "=LN(VARIF('StdOrder'; 'StdOrder'[6]; 'Flugzeit'))",
+     "=LN(VARIF('StdOrder'; 'StdOrder'[7]; 'Flugzeit'))",
+     "=LN(VARIF('StdOrder'; 'StdOrder'[8]; 'Flugzeit'))",
+     "=LN(VARIF('StdOrder'; 'StdOrder'[9]; 'Flugzeit'))",
+     "=LN(VARIF('StdOrder'; 'StdOrder'[10]; 'Flugzeit'))",
+     "=LN(VARIF('StdOrder'; 'StdOrder'[11]; 'Flugzeit'))",
+     "=LN(VARIF('StdOrder'; 'StdOrder'[12]; 'Flugzeit'))",
+     "=LN(VARIF('StdOrder'; 'StdOrder'[13]; 'Flugzeit'))",
+     "=LN(VARIF('StdOrder'; 'StdOrder'[14]; 'Flugzeit'))",
+     "=LN(VARIF('StdOrder'; 'StdOrder'[15]; 'Flugzeit'))",
+     "=LN(VARIF('StdOrder'; 'StdOrder'[16]; 'Flugzeit'))",
+     "=LN(VARIF('StdOrder'; 'StdOrder'[17]; 'Flugzeit'))",
+     "=LN(VARIF('StdOrder'; 'StdOrder'[18]; 'Flugzeit'))"
+    ],
+    "format": {
+     "decimals": 4
+    },
+    "meta": {
+     "lock": "soft",
+     "managedBy": "doe-planner",
+     "reason": "replicate-aggregate"
+    },
+    "role": "continuous"
+   }
+  ]
+ },
+ "seeded": {
+  "sheetName": "DoE: D-optimal Augment — auf bestehender Datensammlung",
+  "rowCount": 6,
+  "columns": [
+   {
+    "name": "RunOrder",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 0
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "run-order"
+    },
+    "role": "identifier"
+   },
+   {
+    "name": "StdOrder",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     1,
+     3,
+     6,
+     2,
+     5,
+     4
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 0
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "group-id"
+    },
+    "role": "identifier"
+   },
+   {
+    "name": "Block",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     1,
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 0
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "block-column"
+    },
+    "role": "categorical"
+   },
+   {
+    "name": "Replicate",
+    "type": "numeric",
+    "unit": "",
+    "values": [
+     1,
+     1,
+     1,
+     1,
+     1,
+     1
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 0
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "replicate-id"
+    },
+    "role": "categorical"
+   },
+   {
+    "name": "Temperatur",
+    "type": "numeric",
+    "unit": "°C",
+    "values": [
+     187.5,
+     200,
+     200,
+     175,
+     162.5,
+     187.5
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 2
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "design-factor"
+    },
+    "role": "continuous"
+   },
+   {
+    "name": "Druck",
+    "type": "numeric",
+    "unit": "bar",
+    "values": [
+     5,
+     4,
+     5,
+     5,
+     2,
+     2
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 2
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "design-factor"
+    },
+    "role": "continuous"
+   },
+   {
+    "name": "Zeit",
+    "type": "numeric",
+    "unit": "min",
+    "values": [
+     15,
+     15,
+     10,
+     30,
+     20,
+     30
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 2
+    },
+    "meta": {
+     "lock": "hard",
+     "managedBy": "doe-planner",
+     "reason": "design-factor"
+    },
+    "role": "continuous"
+   },
+   {
+    "name": "Ausbeute",
+    "type": "numeric",
+    "unit": "%",
+    "values": [
+     1.5,
+     null,
+     3,
+     4.25,
+     null,
+     null
+    ],
+    "formulas": [
+     null,
+     null,
+     null,
+     null,
+     null,
+     null
+    ],
+    "format": {
+     "decimals": 4
+    },
+    "meta": null,
+    "role": "continuous"
+   }
+  ]
+ }
+}

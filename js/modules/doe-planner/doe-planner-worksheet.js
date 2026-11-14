@@ -8,9 +8,9 @@
  */
 
 import { coerceNumeric } from '../../core/worksheet-columns.js';
-import { ROLE } from '../../core/datagrid/datagrid-roles.js';
 import { parseDecimalInput, decimalOr } from '../../core/parse-decimal.js';
 import { uid } from '../../core/uid.js';
+import { designColumns } from './domain/columns.js';
 
 // ─── Create Worksheet ──────────────────────────────────────────────
 
@@ -55,219 +55,40 @@ export function createDesignWorksheet(context, design, factors, responses, doeNa
   const wsInstanceId = uid();
   const sheetId = 'sheet_1';
   const managedRef = experimentId ? `experiment:${experimentId}` : null;
-
-  // Helper to build a `meta` block — keeps each column definition compact.
-  const lockMeta = (lock, reason) => ({
-    lock, managedBy: 'doe-planner', managedRef, reason,
-  });
-
-  // Build columns
-  const columns = [];
-  const factorColumnIds = [];
-  const responseColumnIds = [];
-  const meanColumnIds = [];
-  const lnVarColumnIds = [];
   const nRuns = design.actualMatrix.length;
-  const hasReplicates = nRuns > 0 && Array.isArray(design.replicateIds)
-    && design.replicateIds.some(v => v > 1);
 
-  // Localized name for the std-order column — needed to build replicate-aggregate formulas
-  // that reference it by name.
-  const stdOrderName = i18n.t('modules.doe-planner.colStdOrder');
-
-  // RunOrder column
-  const runOrderColId = uid();
-  columns.push({
-    id: runOrderColId,
-    name: i18n.t('modules.doe-planner.colRunOrder'),
-    shortName: 'C1',
-    type: 'numeric',
-    unit: '',
-    values: design.runOrder.map(v => v),
-    formulas: new Array(nRuns).fill(null),
-    format: { decimals: 0 },
-    meta: lockMeta('hard', 'run-order'),
-    role: ROLE.IDENTIFIER,
-    roleManual: true,
+  const built = designColumns(design, factors, responses, {
+    names: {
+      runOrder: i18n.t('modules.doe-planner.colRunOrder'),
+      stdOrder: i18n.t('modules.doe-planner.colStdOrder'),
+      block: i18n.t('modules.doe-planner.colBlock'),
+      replicate: i18n.t('modules.doe-planner.colReplicate'),
+      factor: i18n.t('modules.doe-planner.factor'),
+      meanSuffix: i18n.t('modules.doe-planner.colMeanSuffix'),
+      lnVarSuffix: i18n.t('modules.doe-planner.colLnVarSuffix'),
+    },
+    managedRef,
   });
-
-  // StdOrder column — also serves as group id for replicate aggregates,
-  // so it stays hard-locked even though aggregates depend on it.
-  const stdOrderColId = uid();
-  columns.push({
-    id: stdOrderColId,
-    name: stdOrderName,
-    shortName: 'C2',
-    type: 'numeric',
-    unit: '',
-    values: design.stdOrder.map(v => v),
-    formulas: new Array(nRuns).fill(null),
-    format: { decimals: 0 },
-    meta: lockMeta('hard', 'group-id'),
-    role: ROLE.IDENTIFIER,
-    roleManual: true,
-  });
-
-  // Block column (always 1 for now — multi-block support in Phase E)
-  columns.push({
+  const columns = built.columns.map((col, i) => ({
     id: uid(),
-    name: i18n.t('modules.doe-planner.colBlock'),
-    shortName: `C${columns.length + 1}`,
-    type: 'numeric',
-    unit: '',
-    values: new Array(nRuns).fill(1),
-    formulas: new Array(nRuns).fill(null),
-    format: { decimals: 0 },
-    meta: lockMeta('hard', 'block-column'),
-    role: ROLE.CATEGORICAL,
+    name: col.name,
+    shortName: `C${i + 1}`,
+    type: col.type,
+    unit: col.unit,
+    values: col.values,
+    formulas: col.formulas,
+    format: col.format,
+    meta: col.meta,
+    role: col.role,
     roleManual: true,
-  });
-
-  // Replicate column
-  columns.push({
-    id: uid(),
-    name: i18n.t('modules.doe-planner.colReplicate'),
-    shortName: `C${columns.length + 1}`,
-    type: 'numeric',
-    unit: '',
-    values: (design.replicateIds || new Array(nRuns).fill(1)).map(v => v),
-    formulas: new Array(nRuns).fill(null),
-    format: { decimals: 0 },
-    meta: lockMeta('hard', 'replicate-id'),
-    role: ROLE.CATEGORICAL,
-    roleManual: true,
-  });
-
-  // Factor columns. For categorical factors the natural-units column carries
-  // the level *labels* (strings); a `categoricalCoding` map on the column meta
-  // tells consumers (regression, correlation, plots) how to translate each
-  // label back to ±1 for numerical work. For continuous factors the column
-  // stays numeric and the meta has no coding.
-  factors.forEach((f, fi) => {
-    const colId = uid();
-    factorColumnIds.push(colId);
-    const letter = String.fromCharCode(65 + fi);
-    const isCategorical = f.kind === 'categorical';
-    let values;
-    let coding = null;
-    if (isCategorical) {
-      const nLevels = f.levels.length;
-      coding = Object.fromEntries(
-        f.levels.map((label, li) => [label, nLevels === 1 ? 0 : -1 + (2 * li) / (nLevels - 1)])
-      );
-      values = design.codedMatrix.map((row) => {
-        const c = row[fi];
-        const idx = Math.round((c + 1) * (nLevels - 1) / 2);
-        const clamped = Math.max(0, Math.min(nLevels - 1, idx));
-        return f.levels[clamped] ?? '';
-      });
-    } else {
-      values = design.actualMatrix.map(row => row[fi]);
-    }
-    const baseMeta = lockMeta('hard', 'design-factor');
-    columns.push({
-      id: colId,
-      name: f.name || `${i18n.t('modules.doe-planner.factor')} ${letter}`,
-      shortName: `C${columns.length + 1}`,
-      type: isCategorical ? 'text' : 'numeric',
-      unit: isCategorical ? '' : (f.unit || ''),
-      values,
-      formulas: new Array(nRuns).fill(null),
-      format: isCategorical ? null : { decimals: 2 },
-      meta: coding ? { ...baseMeta, categoricalCoding: coding } : baseMeta,
-      role: isCategorical ? ROLE.CATEGORICAL : ROLE.CONTINUOUS,
-      roleManual: true,
-    });
-  });
-
-  // Response columns. Seeded from `design.sourceResponseSeeds` when the design
-  // was built on top of an existing Datensammlung: the first `sourceRowCount`
-  // response values are copied verbatim from the source so the user doesn't
-  // need to re-enter measurements that already exist. The new (augmented) rows
-  // stay null and wait for fresh measurements.
-  const seedRows = Number.isFinite(design.sourceRowCount) ? design.sourceRowCount : 0;
-  const seeds = Array.isArray(design.sourceResponseSeeds) ? design.sourceResponseSeeds : null;
-  responses.forEach((r, ri) => {
-    const colId = uid();
-    responseColumnIds.push(colId);
-    const values = new Array(nRuns).fill(null);
-    if (seeds && seeds[ri]) {
-      const limit = Math.min(seedRows, seeds[ri].length, nRuns);
-      for (let i = 0; i < limit; i++) {
-        const v = seeds[ri][i];
-        if (v != null && Number.isFinite(v)) values[i] = v;
-      }
-    }
-    columns.push({
-      id: colId,
-      name: r.name || `Y${ri + 1}`,
-      shortName: `C${columns.length + 1}`,
-      type: 'numeric',
-      unit: r.unit || '',
-      values,
-      formulas: new Array(nRuns).fill(null),
-      format: { decimals: 4 },
-      meta: null,    // explicit null — user fills these in, no lock.
-      role: ROLE.CONTINUOUS,
-      roleManual: true,
-    });
-  });
-
-  // Replicate-aggregate helper columns: mean + ln(variance) per response.
-  // Only added if the design actually contains replicates (otherwise the formulas
-  // would always be #N/A — single observation per group can't have a sample variance).
-  if (hasReplicates) {
-    const meanSuffix  = i18n.t('modules.doe-planner.colMeanSuffix');
-    const lnVarSuffix = i18n.t('modules.doe-planner.colLnVarSuffix');
-    responses.forEach((r, ri) => {
-      const respName = r.name || `Y${ri + 1}`;
-      // The formula references columns by name; quote them with single quotes.
-      const buildFormulas = (template) => {
-        const out = new Array(nRuns).fill(null);
-        for (let row = 1; row <= nRuns; row++) {
-          out[row - 1] = template
-            .replaceAll('{STD}',  `'${stdOrderName}'`)
-            .replaceAll('{ROW}',  String(row))
-            .replaceAll('{RESP}', `'${respName}'`);
-        }
-        return out;
-      };
-      const meanFormulas  = buildFormulas('=AVERAGEIF({STD}; {STD}[{ROW}]; {RESP})');
-      const lnVarFormulas = buildFormulas('=LN(VARIF({STD}; {STD}[{ROW}]; {RESP}))');
-
-      const meanId  = uid();
-      const lnVarId = uid();
-      meanColumnIds.push(meanId);
-      lnVarColumnIds.push(lnVarId);
-
-      columns.push({
-        id: meanId,
-        name: `${respName} ${meanSuffix}`,
-        shortName: `C${columns.length + 1}`,
-        type: 'numeric',
-        unit: r.unit || '',
-        values: new Array(nRuns).fill(null),
-        formulas: meanFormulas,
-        format: { decimals: 4 },
-        meta: lockMeta('soft', 'replicate-aggregate'),
-        role: ROLE.CONTINUOUS,
-        roleManual: true,
-      });
-      columns.push({
-        id: lnVarId,
-        name: `${respName} ${lnVarSuffix}`,
-        shortName: `C${columns.length + 1}`,
-        type: 'numeric',
-        unit: '',
-        values: new Array(nRuns).fill(null),
-        formulas: lnVarFormulas,
-        format: { decimals: 4 },
-        meta: lockMeta('soft', 'replicate-aggregate'),
-        role: ROLE.CONTINUOUS,
-        roleManual: true,
-      });
-    });
-  }
+  }));
+  const idAt = (/** @type {number} */ i) => columns[i].id;
+  const factorColumnIds = built.ids.factors.map(idAt);
+  const responseColumnIds = built.ids.responses.map(idAt);
+  const meanColumnIds = built.ids.means.map(idAt);
+  const lnVarColumnIds = built.ids.lnVars.map(idAt);
+  const runOrderColId = idAt(built.ids.runOrder);
+  const stdOrderColId = idAt(built.ids.stdOrder);
 
   // Build sheet state (DataGrid format)
   const sheetState = {

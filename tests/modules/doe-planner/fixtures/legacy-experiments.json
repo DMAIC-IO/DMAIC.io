@@ -1,0 +1,702 @@
+{
+ "doe-optimal-augment-3f": {
+  "worksheetRef": {
+   "instanceId": "89c7ccf5-0dbc-4c27-b514-27d46d33f8eb",
+   "sheetId": "sheet_1",
+   "factorColumnIds": [
+    "6a43b755-f7a9-4d16-aa82-e4a57f8fa8b6",
+    "25c9edfb-5df3-46bb-86f8-d88ade629592",
+    "fef51d46-6b3b-4f10-aa22-c9d576d2e59d"
+   ],
+   "responseColumnIds": [
+    "25aa5861-3659-49f6-a39a-2b075c35c674"
+   ],
+   "meanColumnIds": [],
+   "lnVarColumnIds": [],
+   "runOrderColumnId": "c7656928-c003-4a62-b90f-15f9fbd1fd83",
+   "stdOrderColumnId": "9f5a18c4-1d67-4cf3-809f-7001b93e86b8"
+  },
+  "record": {
+   "name": "D-optimal Augment — auf bestehender Datensammlung",
+   "designType": "dopt",
+   "factors": [
+    {
+     "name": "Temperatur",
+     "kind": "continuous",
+     "unit": "°C",
+     "levels": [
+      "150",
+      "200"
+     ],
+     "low": 150,
+     "high": 200
+    },
+    {
+     "name": "Druck",
+     "kind": "continuous",
+     "unit": "bar",
+     "levels": [
+      "1",
+      "5"
+     ],
+     "low": 1,
+     "high": 5
+    },
+    {
+     "name": "Zeit",
+     "kind": "continuous",
+     "unit": "min",
+     "levels": [
+      "10",
+      "30"
+     ],
+     "low": 10,
+     "high": 30
+    }
+   ],
+   "plannedTerms": {
+    "linear": true,
+    "terms": [
+     "M0",
+     "M1",
+     "M2",
+     "Q0",
+     "Q1",
+     "Q2",
+     "I0_1",
+     "I0_2",
+     "I1_2"
+    ],
+    "blockColumn": false
+   },
+   "aliasing": null,
+   "runMatrix": {
+    "worksheetRef": {
+     "instanceId": "89c7ccf5-0dbc-4c27-b514-27d46d33f8eb",
+     "sheetId": "sheet_1"
+    },
+    "columnTags": {
+     "runOrder": "c7656928-c003-4a62-b90f-15f9fbd1fd83",
+     "stdOrder": "9f5a18c4-1d67-4cf3-809f-7001b93e86b8",
+     "factors": [
+      "6a43b755-f7a9-4d16-aa82-e4a57f8fa8b6",
+      "25c9edfb-5df3-46bb-86f8-d88ade629592",
+      "fef51d46-6b3b-4f10-aa22-c9d576d2e59d"
+     ],
+     "responses": [
+      "25aa5861-3659-49f6-a39a-2b075c35c674"
+     ],
+     "means": [],
+     "lnVars": []
+    }
+   },
+   "centerPointRows": [],
+   "replicateGroups": [],
+   "responseColumns": [
+    {
+     "name": "Ausbeute",
+     "unit": "%",
+     "columnId": "25aa5861-3659-49f6-a39a-2b075c35c674",
+     "meanColumnId": null,
+     "lnVarColumnId": null
+    }
+   ]
+  }
+ },
+ "doe-optimal-mixed-4f": {
+  "worksheetRef": {
+   "instanceId": "eb9c2cd9-e93e-4507-bc90-99accd06feba",
+   "sheetId": "sheet_1",
+   "factorColumnIds": [
+    "b3390193-4f10-4829-8823-edb34b2fe440",
+    "443cc8e3-5cea-482d-815e-32567aaebe66",
+    "55f24d07-c3fe-425b-9e83-7e1d0430d881",
+    "9890e4d5-2e3b-484d-99d9-9164c1bf17ab"
+   ],
+   "responseColumnIds": [
+    "f0a5583b-7860-432a-98b0-1a2fb6173198"
+   ],
+   "meanColumnIds": [],
+   "lnVarColumnIds": [],
+   "runOrderColumnId": "b98a3456-8f87-4c25-a2fe-729a2469fa65",
+   "stdOrderColumnId": "8d7d86f1-da8f-4c5d-b5cb-4a88524fc207"
+  },
+  "record": {
+   "name": "D-optimal mixed — 3 cont. + 1 kategorisch (3 Stufen)",
+   "designType": "dopt",
+   "factors": [
+    {
+     "name": "Temperatur",
+     "kind": "continuous",
+     "unit": "°C",
+     "levels": [
+      "150",
+      "220"
+     ],
+     "low": 150,
+     "high": 220
+    },
+    {
+     "name": "Zeit",
+     "kind": "continuous",
+     "unit": "min",
+     "levels": [
+      "10",
+      "40"
+     ],
+     "low": 10,
+     "high": 40
+    },
+    {
+     "name": "Druck",
+     "kind": "continuous",
+     "unit": "bar",
+     "levels": [
+      "1",
+      "5"
+     ],
+     "low": 1,
+     "high": 5
+    },
+    {
+     "name": "Material",
+     "kind": "categorical",
+     "unit": null,
+     "levels": [
+      "Stahl",
+      "Aluminium",
+      "Kupfer"
+     ],
+     "reference": "Stahl"
+    }
+   ],
+   "plannedTerms": {
+    "linear": true,
+    "terms": [
+     "M0",
+     "M1",
+     "M2",
+     "M3",
+     "I0_1",
+     "I0_2",
+     "I0_3",
+     "I1_2",
+     "I1_3",
+     "I2_3"
+    ],
+    "blockColumn": false
+   },
+   "aliasing": null,
+   "runMatrix": {
+    "worksheetRef": {
+     "instanceId": "eb9c2cd9-e93e-4507-bc90-99accd06feba",
+     "sheetId": "sheet_1"
+    },
+    "columnTags": {
+     "runOrder": "b98a3456-8f87-4c25-a2fe-729a2469fa65",
+     "stdOrder": "8d7d86f1-da8f-4c5d-b5cb-4a88524fc207",
+     "factors": [
+      "b3390193-4f10-4829-8823-edb34b2fe440",
+      "443cc8e3-5cea-482d-815e-32567aaebe66",
+      "55f24d07-c3fe-425b-9e83-7e1d0430d881",
+      "9890e4d5-2e3b-484d-99d9-9164c1bf17ab"
+     ],
+     "responses": [
+      "f0a5583b-7860-432a-98b0-1a2fb6173198"
+     ],
+     "means": [],
+     "lnVars": []
+    }
+   },
+   "centerPointRows": [],
+   "replicateGroups": [],
+   "responseColumns": [
+    {
+     "name": "Ausbeute",
+     "unit": "%",
+     "columnId": "f0a5583b-7860-432a-98b0-1a2fb6173198",
+     "meanColumnId": null,
+     "lnVarColumnId": null
+    }
+   ]
+  }
+ },
+ "doe-optimal-rsm-3f": {
+  "worksheetRef": {
+   "instanceId": "27647e79-dad5-4f5c-adf0-434a5256b2b1",
+   "sheetId": "sheet_1",
+   "factorColumnIds": [
+    "c9ec44e2-8262-4e39-852d-db489060fdce",
+    "a66b340f-4fc2-4672-afab-fc5014e1496f",
+    "40c44269-d4ad-458b-9ecf-414c97b63e51"
+   ],
+   "responseColumnIds": [
+    "c912885f-cf2d-4a16-a704-79852ed5b097"
+   ],
+   "meanColumnIds": [],
+   "lnVarColumnIds": [],
+   "runOrderColumnId": "22adaead-8b6c-44f8-939a-d487bc99db86",
+   "stdOrderColumnId": "6ba8cbf5-7ece-41a7-86d6-80803b3c8d4e"
+  },
+  "record": {
+   "name": "D-optimal RSM — 3 Faktoren, quadratisch",
+   "designType": "dopt",
+   "factors": [
+    {
+     "name": "Temperatur",
+     "kind": "continuous",
+     "unit": "°C",
+     "levels": [
+      "150",
+      "200"
+     ],
+     "low": 150,
+     "high": 200
+    },
+    {
+     "name": "Druck",
+     "kind": "continuous",
+     "unit": "bar",
+     "levels": [
+      "1",
+      "5"
+     ],
+     "low": 1,
+     "high": 5
+    },
+    {
+     "name": "Zeit",
+     "kind": "continuous",
+     "unit": "min",
+     "levels": [
+      "10",
+      "30"
+     ],
+     "low": 10,
+     "high": 30
+    }
+   ],
+   "plannedTerms": {
+    "linear": true,
+    "terms": [
+     "M0",
+     "M1",
+     "M2",
+     "Q0",
+     "Q1",
+     "Q2",
+     "I0_1",
+     "I0_2",
+     "I1_2"
+    ],
+    "blockColumn": false
+   },
+   "aliasing": null,
+   "runMatrix": {
+    "worksheetRef": {
+     "instanceId": "27647e79-dad5-4f5c-adf0-434a5256b2b1",
+     "sheetId": "sheet_1"
+    },
+    "columnTags": {
+     "runOrder": "22adaead-8b6c-44f8-939a-d487bc99db86",
+     "stdOrder": "6ba8cbf5-7ece-41a7-86d6-80803b3c8d4e",
+     "factors": [
+      "c9ec44e2-8262-4e39-852d-db489060fdce",
+      "a66b340f-4fc2-4672-afab-fc5014e1496f",
+      "40c44269-d4ad-458b-9ecf-414c97b63e51"
+     ],
+     "responses": [
+      "c912885f-cf2d-4a16-a704-79852ed5b097"
+     ],
+     "means": [],
+     "lnVars": []
+    }
+   },
+   "centerPointRows": [],
+   "replicateGroups": [],
+   "responseColumns": [
+    {
+     "name": "Ausbeute",
+     "unit": "%",
+     "columnId": "c912885f-cf2d-4a16-a704-79852ed5b097",
+     "meanColumnId": null,
+     "lnVarColumnId": null
+    }
+   ]
+  }
+ },
+ "doe-optimal-screening-5f": {
+  "worksheetRef": {
+   "instanceId": "10b5ffb5-a6de-4328-8231-0449b30a49f5",
+   "sheetId": "sheet_1",
+   "factorColumnIds": [
+    "f946b795-4f72-4f4d-9e33-d513eac9a5e6",
+    "bad1fcaa-12d2-4718-b0fe-e86bd483f87b",
+    "c1409c5c-1dc1-43cc-ac0e-dc1e841915b7",
+    "ec51809d-f6ea-4a62-9456-3826c0d661c8",
+    "1f9c846c-e63d-4dce-badb-9bb967caf317"
+   ],
+   "responseColumnIds": [
+    "2c066807-4cd0-444c-83a5-0460e3e9b22b"
+   ],
+   "meanColumnIds": [],
+   "lnVarColumnIds": [],
+   "runOrderColumnId": "c4b1a06b-13b9-4f12-a395-b4dec9cb86ab",
+   "stdOrderColumnId": "afc2ae31-0284-4050-a91a-dda71e30f824"
+  },
+  "record": {
+   "name": "D-optimal Screening — 5 Faktoren, linear + 2FI",
+   "designType": "dopt",
+   "factors": [
+    {
+     "name": "Temperatur",
+     "kind": "continuous",
+     "unit": "°C",
+     "levels": [
+      "140",
+      "200"
+     ],
+     "low": 140,
+     "high": 200
+    },
+    {
+     "name": "Vorschub",
+     "kind": "continuous",
+     "unit": "mm/s",
+     "levels": [
+      "20",
+      "80"
+     ],
+     "low": 20,
+     "high": 80
+    },
+    {
+     "name": "Druck",
+     "kind": "continuous",
+     "unit": "bar",
+     "levels": [
+      "1",
+      "8"
+     ],
+     "low": 1,
+     "high": 8
+    },
+    {
+     "name": "Konzentration",
+     "kind": "continuous",
+     "unit": "%",
+     "levels": [
+      "5",
+      "20"
+     ],
+     "low": 5,
+     "high": 20
+    },
+    {
+     "name": "Mischzeit",
+     "kind": "continuous",
+     "unit": "s",
+     "levels": [
+      "10",
+      "60"
+     ],
+     "low": 10,
+     "high": 60
+    }
+   ],
+   "plannedTerms": {
+    "linear": true,
+    "terms": [
+     "M0",
+     "M1",
+     "M2",
+     "M3",
+     "M4",
+     "I0_1",
+     "I0_2",
+     "I0_3",
+     "I0_4",
+     "I1_2",
+     "I1_3",
+     "I1_4",
+     "I2_3",
+     "I2_4",
+     "I3_4"
+    ],
+    "blockColumn": false
+   },
+   "aliasing": null,
+   "runMatrix": {
+    "worksheetRef": {
+     "instanceId": "10b5ffb5-a6de-4328-8231-0449b30a49f5",
+     "sheetId": "sheet_1"
+    },
+    "columnTags": {
+     "runOrder": "c4b1a06b-13b9-4f12-a395-b4dec9cb86ab",
+     "stdOrder": "afc2ae31-0284-4050-a91a-dda71e30f824",
+     "factors": [
+      "f946b795-4f72-4f4d-9e33-d513eac9a5e6",
+      "bad1fcaa-12d2-4718-b0fe-e86bd483f87b",
+      "c1409c5c-1dc1-43cc-ac0e-dc1e841915b7",
+      "ec51809d-f6ea-4a62-9456-3826c0d661c8",
+      "1f9c846c-e63d-4dce-badb-9bb967caf317"
+     ],
+     "responses": [
+      "2c066807-4cd0-444c-83a5-0460e3e9b22b"
+     ],
+     "means": [],
+     "lnVars": []
+    }
+   },
+   "centerPointRows": [],
+   "replicateGroups": [],
+   "responseColumns": [
+    {
+     "name": "Ausbeute",
+     "unit": "%",
+     "columnId": "2c066807-4cd0-444c-83a5-0460e3e9b22b",
+     "meanColumnId": null,
+     "lnVarColumnId": null
+    }
+   ]
+  }
+ },
+ "doe-planner-hubschrauber-flyer": {
+  "worksheetRef": {
+   "instanceId": "080126bc-c98a-4717-8d7e-00b225e6ba39",
+   "sheetId": "sheet_1",
+   "factorColumnIds": [
+    "9170b23c-e4b3-4aca-a917-7cc1c0b9b589",
+    "3c48487b-9180-4d12-b0f0-886db26983fc"
+   ],
+   "responseColumnIds": [
+    "33f52e48-154d-4d0e-a158-feecb7d673fa"
+   ],
+   "meanColumnIds": [
+    "6294606c-1d7e-4b28-9107-988b306afd83"
+   ],
+   "lnVarColumnIds": [
+    "3d9a7355-8f4f-4842-b47e-8d6380a1a502"
+   ],
+   "runOrderColumnId": "0d3194da-ce0c-4991-bd47-6d38ec3a760f",
+   "stdOrderColumnId": "fd88a119-911e-4f43-9f89-7ec87bfdccae"
+  },
+  "record": {
+   "name": "Papier-Hubschrauber — Rotorlänge × Klammern (3², 2 Rep., geblockt L=8→6→4)",
+   "designType": "full",
+   "factors": [
+    {
+     "name": "Rotorlänge",
+     "kind": "continuous",
+     "unit": "cm",
+     "levels": [
+      "4",
+      "6",
+      "8"
+     ],
+     "low": 4,
+     "high": 8
+    },
+    {
+     "name": "Klammern",
+     "kind": "continuous",
+     "unit": "Stück",
+     "levels": [
+      "0",
+      "1",
+      "2"
+     ],
+     "low": 0,
+     "high": 2
+    }
+   ],
+   "plannedTerms": {
+    "linear": true,
+    "terms": [
+     "M0",
+     "M1",
+     "Q0",
+     "Q1",
+     "I0_1"
+    ],
+    "blockColumn": false
+   },
+   "aliasing": null,
+   "runMatrix": {
+    "worksheetRef": {
+     "instanceId": "080126bc-c98a-4717-8d7e-00b225e6ba39",
+     "sheetId": "sheet_1"
+    },
+    "columnTags": {
+     "runOrder": "0d3194da-ce0c-4991-bd47-6d38ec3a760f",
+     "stdOrder": "fd88a119-911e-4f43-9f89-7ec87bfdccae",
+     "factors": [
+      "9170b23c-e4b3-4aca-a917-7cc1c0b9b589",
+      "3c48487b-9180-4d12-b0f0-886db26983fc"
+     ],
+     "responses": [
+      "33f52e48-154d-4d0e-a158-feecb7d673fa"
+     ],
+     "means": [
+      "6294606c-1d7e-4b28-9107-988b306afd83"
+     ],
+     "lnVars": [
+      "3d9a7355-8f4f-4842-b47e-8d6380a1a502"
+     ]
+    }
+   },
+   "centerPointRows": [],
+   "replicateGroups": [
+    [
+     0,
+     9
+    ],
+    [
+     1,
+     10
+    ],
+    [
+     2,
+     11
+    ],
+    [
+     3,
+     12
+    ],
+    [
+     4,
+     13
+    ],
+    [
+     5,
+     14
+    ],
+    [
+     6,
+     15
+    ],
+    [
+     7,
+     16
+    ],
+    [
+     8,
+     17
+    ]
+   ],
+   "responseColumns": [
+    {
+     "name": "Flugzeit",
+     "unit": "s",
+     "columnId": "33f52e48-154d-4d0e-a158-feecb7d673fa",
+     "meanColumnId": "6294606c-1d7e-4b28-9107-988b306afd83",
+     "lnVarColumnId": "3d9a7355-8f4f-4842-b47e-8d6380a1a502"
+    }
+   ]
+  }
+ },
+ "seeded": {
+  "worksheetRef": {
+   "instanceId": "276546d1-9dd4-418e-bf87-663499181976",
+   "sheetId": "sheet_1",
+   "factorColumnIds": [
+    "2674a047-64ff-45eb-8adb-5cb4dcb805f3",
+    "24aaa45e-3a7d-4a0e-9d93-520909d913e3",
+    "f3a2b7f8-4c80-4f79-973c-21cefe889145"
+   ],
+   "responseColumnIds": [
+    "797c1ce7-6098-40d5-a73c-870402186e2f"
+   ],
+   "meanColumnIds": [],
+   "lnVarColumnIds": [],
+   "runOrderColumnId": "55ecbbc5-bd55-4ed7-b39d-8b70c61a8b7e",
+   "stdOrderColumnId": "c62a18b9-0adf-4c48-8437-720b3846dc5d"
+  },
+  "record": {
+   "name": "D-optimal Augment — auf bestehender Datensammlung",
+   "designType": "dopt",
+   "factors": [
+    {
+     "name": "Temperatur",
+     "kind": "continuous",
+     "unit": "°C",
+     "levels": [
+      "150",
+      "200"
+     ],
+     "low": 150,
+     "high": 200
+    },
+    {
+     "name": "Druck",
+     "kind": "continuous",
+     "unit": "bar",
+     "levels": [
+      "1",
+      "5"
+     ],
+     "low": 1,
+     "high": 5
+    },
+    {
+     "name": "Zeit",
+     "kind": "continuous",
+     "unit": "min",
+     "levels": [
+      "10",
+      "30"
+     ],
+     "low": 10,
+     "high": 30
+    }
+   ],
+   "plannedTerms": {
+    "linear": true,
+    "terms": [
+     "M0",
+     "M1",
+     "M2",
+     "Q0",
+     "Q1",
+     "Q2",
+     "I0_1",
+     "I0_2",
+     "I1_2"
+    ],
+    "blockColumn": false
+   },
+   "aliasing": null,
+   "runMatrix": {
+    "worksheetRef": {
+     "instanceId": "276546d1-9dd4-418e-bf87-663499181976",
+     "sheetId": "sheet_1"
+    },
+    "columnTags": {
+     "runOrder": "55ecbbc5-bd55-4ed7-b39d-8b70c61a8b7e",
+     "stdOrder": "c62a18b9-0adf-4c48-8437-720b3846dc5d",
+     "factors": [
+      "2674a047-64ff-45eb-8adb-5cb4dcb805f3",
+      "24aaa45e-3a7d-4a0e-9d93-520909d913e3",
+      "f3a2b7f8-4c80-4f79-973c-21cefe889145"
+     ],
+     "responses": [
+      "797c1ce7-6098-40d5-a73c-870402186e2f"
+     ],
+     "means": [],
+     "lnVars": []
+    }
+   },
+   "centerPointRows": [],
+   "replicateGroups": [],
+   "responseColumns": [
+    {
+     "name": "Ausbeute",
+     "unit": "%",
+     "columnId": "797c1ce7-6098-40d5-a73c-870402186e2f",
+     "meanColumnId": null,
+     "lnVarColumnId": null
+    }
+   ]
+  }
+ }
+}
