@@ -14,6 +14,8 @@ const i18n = { t: (k) => k, getLanguage: () => 'de' };
 const flush = () => new Promise((r) => setTimeout(r, 0));
 const settle = async () => { for (let i = 0; i < 4; i++) await flush(); };
 
+/** Wirte der bisherigen Tests; der nächste baut sie ab. */
+const hosts = [];
 /** Aufrufe der Kommandos, je Test geleert. */
 const calls = [];
 const cell = list(list(number({ nullable: true })));
@@ -51,6 +53,8 @@ const COLUMNS = [
  */
 async function host(attrs = 'x-widget-on-cell="\'setX\'" x-widget-on-paste="\'setBlock\'"', extra = {}) {
   if (!Alpine.version) Alpine.start();
+  // Grids of earlier tests go for good: a grid keeps its selection and would take a paste meant for this one.
+  while (hosts.length) { const old = hosts.pop(); Alpine.destroyTree(old); old.remove(); }
   registerWidgetDirective(Alpine, { i18n, widgets: WIDGETS });
   const services = { eventBus: null, stateManager: null, i18n, chartManager: null, instanceId: 'i1', moduleId: 'demo' };
   const name = `dg${Math.random().toString(36).slice(2)}`;
@@ -75,6 +79,7 @@ async function host(attrs = 'x-widget-on-cell="\'setX\'" x-widget-on-paste="\'se
   root.setAttribute('x-data', name);
   root.innerHTML = `<div class="g" x-widget="datagrid" x-widget-config="grid" ${attrs}></div>`;
   document.body.append(root);
+  hosts.push(root);
   const ow = console.warn; const seen = []; console.warn = (...a) => seen.push(a.join(' '));
   try {
     Alpine.initTree(root);
@@ -207,6 +212,22 @@ suite('datagrid widget', () => {
     assertDeepEqual(texts(root), [['1', '9,00'], ['2', '8,00']]);
     assertEqual(root.querySelectorAll('.datagrid__table').length, 1);
     assertTrue(root.querySelector('.datagrid__table') === table, 'dieselbe Tabelle');
+    root.remove();
+  });
+
+  test('Auswahl bleibt beim Neuzeichnen gleicher Form, sonst nicht', async () => {
+    const { root, data } = await host();
+    td(root, 1, 1).dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    assertTrue(td(root, 1, 1).classList.contains('cell-active'), 'gewählt');
+    await edit(root, 1, 1, '4');
+    assertTrue(td(root, 1, 1).classList.contains('cell-active'), 'nach dem Kommando noch gewählt');
+    data.model.rows = [['1', '9'], ['2', '8'], ['3', '7']];
+    await settle();
+    assertTrue(td(root, 1, 1).classList.contains('cell-active'), 'neue Werte, gleiche Form');
+    data.model.rows = [['1', '9'], ['2', '8']];
+    await settle();
+    assertEqual(root.querySelectorAll('td.cell-active').length, 0, 'andere Form: keine Auswahl');
     root.remove();
   });
 

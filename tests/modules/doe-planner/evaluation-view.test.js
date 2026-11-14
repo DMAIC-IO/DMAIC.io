@@ -55,7 +55,8 @@ suite('doe-planner evaluation: output', () => {
     assertEqual(new Set(texts).size, 5);
     assert(texts[3].includes('Kollinearität') && texts[4].includes('p/n'), 'legacy texts');
     // Help badges as before: efficiency 6, VIF 1, power 3; a full design has no aliases.
-    assertEqual(outputBadges(h.container), 6 + 1 + 3);
+    // Without a datasheet the create button and the preview label and hint carry 3 more.
+    assertEqual(outputBadges(h.container), 6 + 1 + 3 + 3);
   });
 
   test('lab links: three for the efficiencies, one for VIF; a click opens the lab', async () => {
@@ -99,6 +100,9 @@ suite('doe-planner evaluation: output', () => {
   });
 });
 
+/** Create button, preview label and hint of a plan without a datasheet. */
+const RUNS_BADGES = 3;
+
 suite('doe-planner evaluation: help badges', () => {
   // The legacy output side: efficiency heading, three cards, condition number, leverage (6);
   // VIF heading (1); alias heading and its two column headers (3); power heading and its two
@@ -107,6 +111,6 @@ suite('doe-planner evaluation: help badges', () => {
     const frac = await ready(plan({ designType: 'frac', factors: threeFactors(), selectedRes: { k: 3, runs: 4, res: 'III', p: 1 } }));
     const vm = frac.vm();
     assert(vm.shownAssessment.hasAlias && vm.shownAssessment.aliasRows.length > 0, 'frac has aliases');
-    assertEqual(outputBadges(frac.container), 6 + (vm.hasVif ? 1 : 0) + 3 + (vm.hasPower ? 3 : 0));
+    assertEqual(outputBadges(frac.container), 6 + (vm.hasVif ? 1 : 0) + 3 + (vm.hasPower ? 3 : 0) + RUNS_BADGES);
   });
 });

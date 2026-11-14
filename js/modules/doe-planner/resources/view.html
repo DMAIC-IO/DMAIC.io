@@ -1,6 +1,89 @@
 <div class="doe dmike-split dmike-split--input-lg" x-data="doePlanner">
   <div class="doe__input dmike-split__input">
 
+    <!-- ── EVOP project ────────────────────────────────────────── -->
+    <label class="doe__project-toggle" data-help-key="modules.doe-planner.actions.setProjectMode.help">
+      <input type="checkbox" class="doe__project-check" data-help-key="" :checked="model.projectMode" @change="projectModeChanged($event)" />
+      <span x-text="t('projectMode')"></span>
+    </label>
+
+    <template x-if="model.projectMode">
+      <div class="doe__project-bar">
+        <div class="doe__project-name-row">
+          <label class="doe__name-label" data-help-key="modules.doe-planner.fields.projectName.help" x-text="t('projectName')"></label>
+          <input type="text" class="field doe__project-name-input" data-help-key="" x-model="model.projectName" :placeholder="t('projectNamePlaceholder')" />
+        </div>
+
+        <template x-if="hasPhases">
+          <div class="doe__timeline">
+            <h4 class="doe__timeline-title" data-help-key="modules.doe-planner.types.Evop.phases" x-text="t('phaseHistory')"></h4>
+            <div class="doe__timeline-track">
+              <template x-for="(ph, idx) in model.projectPhases" :key="idx">
+                <button class="doe__timeline-item" type="button" data-help-key="" :class="timelineItemClass(idx)" :data-phase-idx="idx"
+                        x-command="viewPhase" :data-arg-index="idx">
+                  <span class="doe__timeline-num" x-text="ph.cycleNumber"></span>
+                  <span class="doe__timeline-label" x-text="phaseLabel(ph)"></span>
+                  <template x-if="hasDecIcon(ph)">
+                    <span class="doe__timeline-dec icon icon--sm" :data-icon="phaseDecIcon(ph)" aria-hidden="true"></span>
+                  </template>
+                </button>
+              </template>
+              <template x-if="canNewPhase">
+                <button class="doe__timeline-item doe__timeline-item--new doe__new-phase-btn" type="button"
+                        data-help-key="modules.doe-planner.actions.newPhase.help" x-command="newPhase">
+                  <span class="doe__timeline-num">+</span>
+                  <span class="doe__timeline-label" x-text="t('newPhase')"></span>
+                </button>
+              </template>
+            </div>
+          </div>
+        </template>
+
+        <template x-if="shownEvop">
+          <div class="doe__evop-summary">
+            <h4 class="doe__evop-title" data-help-key="modules.doe-planner.types.Evop.summary" x-text="t('evopEffectTable')"></h4>
+            <div class="doe__evop-meta">
+              <span x-text="shownEvop.cyclesText"></span>
+              <span x-text="shownEvop.totalRunsText"></span>
+              <span x-text="shownEvop.meanText"></span>
+            </div>
+            <table class="doe__evop-table">
+              <thead><tr>
+                <th data-help-key="modules.doe-planner.types.DoeColumns.term" x-text="t('term')"></th>
+                <th data-help-key="modules.doe-planner.types.DoeColumns.effect" x-text="t('effect')"></th>
+                <th data-help-key="modules.doe-planner.types.DoeColumns.evopErrorLimit" x-text="t('evopErrorLimit')"></th>
+                <th data-help-key="modules.doe-planner.types.DoeColumns.evopSignificant" x-text="t('evopSignificant')"></th>
+              </tr></thead>
+              <tbody>
+                <template x-for="(e, ei) in shownEvop.effects" :key="ei">
+                  <tr :class="e.cls">
+                    <td x-text="e.term"></td>
+                    <td x-text="e.effect"></td>
+                    <td x-text="e.errorLimit"></td>
+                    <td>
+                      <template x-if="e.significant">
+                        <span class="icon icon--sm" data-icon="status.ok" aria-hidden="true"></span>
+                      </template>
+                      <template x-if="!e.significant">
+                        <span>—</span>
+                      </template>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+            <template x-if="shownEvop.bestPoint">
+              <div class="doe__evop-best">
+                <span class="doe__evop-best-label" x-text="bestPointLabel"></span>
+                <code x-text="shownEvop.bestPoint"></code>
+              </div>
+            </template>
+            <div :class="shownEvop.recommendationClass" x-text="shownEvop.recommendationText"></div>
+          </div>
+        </template>
+      </div>
+    </template>
+
     <!-- Name bar -->
     <div class="doe__name-bar">
       <label class="doe__name-label" data-help-key="modules.doe-planner.fields.doeName.help" x-text="nameLabel"></label>
@@ -443,6 +526,93 @@
           <span class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('stepResults')"></span></span>
         </div>
 
+        <!-- Stale datasheet -->
+        <template x-if="isStale">
+          <div class="doe__stale-banner" x-async-task="createDatasheet">
+            <div class="doe__stale-text" data-help-key="modules.doe-planner.fields.staleness.help" x-text="t('worksheetStaleWarning')"></div>
+            <div class="doe__stale-actions">
+              <button class="btn btn--primary doe__datasheet-recreate-btn" type="button" data-help-key="" :disabled="isRunning('createDatasheet')" @click="recreate()" x-text="t('worksheetRecreate')"></button>
+              <button class="btn btn--secondary doe__open-old-worksheet-btn" type="button" data-help-key="" @click="openWorksheet()" x-text="t('worksheetOpenOld')"></button>
+            </div>
+          </div>
+        </template>
+
+        <!-- Bound datasheet -->
+        <template x-if="isBound">
+          <div class="doe__bound-region">
+            <template x-if="showProgress">
+              <div class="doe__results-status">
+                <div class="doe__results-bar">
+                  <div class="doe__results-bar-fill" :style="progressBarStyle"></div>
+                </div>
+                <span class="doe__results-text" data-help-key="modules.doe-planner.types.Progress.filled" x-text="progressText"></span>
+              </div>
+            </template>
+            <template x-if="progressMissing">
+              <div class="doe__results-status">
+                <span class="doe__results-missing" data-help-key="modules.doe-planner.types.Progress.missing" x-text="t('worksheetMissing')"></span>
+              </div>
+            </template>
+            <div class="doe__datasheet-link-row">
+              <button class="btn btn--secondary doe__open-worksheet-btn" type="button" data-help-key="modules.doe-planner.fields.worksheetRef.instanceId.help" @click="openWorksheet()">
+                <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span>
+                <span x-text="t('worksheetOpen')"></span>
+              </button>
+            </div>
+            <template x-if="progressComplete">
+              <div class="doe__transfer-section" x-async-task="transferToRegression">
+                <button class="btn btn--primary doe__transfer-regression-btn" type="button" data-help-key="modules.doe-planner.asyncTasks.transferToRegression.help" :disabled="isRunning('transferToRegression')" @click="handOver()">
+                  <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span>
+                  <span x-text="t('transferToRegression')"></span>
+                </button>
+              </div>
+            </template>
+            <template x-if="showPhaseDecision">
+              <div class="doe__phase-decision">
+                <div class="doe__phase-decision-title" data-help-key="modules.doe-planner.actions.completePhase.help" x-text="t('decisionTitle')"></div>
+                <div class="doe__phase-decision-hint" x-text="t('decisionDesc')"></div>
+                <div class="doe__phase-decision-actions">
+                  <button class="btn btn--primary doe__phase-decision-btn" type="button" data-help-key="" data-decision="recenter" @click="decide('recenter')" x-text="t('decisionRecenter')"></button>
+                  <button class="btn btn--secondary doe__phase-decision-btn" type="button" data-help-key="" data-decision="repeat" @click="decide('repeat')" x-text="t('decisionRepeat')"></button>
+                  <button class="btn btn--secondary doe__phase-decision-btn" type="button" data-help-key="" data-decision="stop" @click="decide('stop')" x-text="t('decisionStop')"></button>
+                </div>
+              </div>
+            </template>
+            <template x-if="canAugment">
+              <div class="doe__augment-section" x-async-task="augment">
+                <div class="doe__augment-title" x-text="t('augmentSectionTitle')"></div>
+                <div class="doe__augment-hint" x-text="t('augmentHint')"></div>
+                <div class="doe__augment-row">
+                  <label class="doe__input-label" data-help-key="modules.doe-planner.asyncTasks.augment.help" x-text="t('augmentLabel')"></label>
+                  <input class="field doe__augment-runs-input" data-help-key="" x-field="state.augmentRuns" />
+                  <button class="btn btn--primary doe__augment-btn" type="button" data-help-key="" :disabled="isRunning('augment')" @click="runAugment()" x-text="t('augmentButton')"></button>
+                </div>
+              </div>
+            </template>
+          </div>
+        </template>
+
+        <!-- No datasheet -->
+        <template x-if="isUnbound">
+          <div class="doe__datasheet-create-row" x-async-task="createDatasheet">
+            <button class="btn btn--primary doe__datasheet-create-btn" type="button" data-help-key="modules.doe-planner.asyncTasks.createDatasheet.help" :disabled="isRunning('createDatasheet')" @click="recreate()" x-text="t('worksheetCreate')"></button>
+            <span class="doe__datasheet-create-hint" x-text="t('worksheetCreateHint')"></span>
+          </div>
+        </template>
+
+        <!-- Preview (no datasheet or a stale one) -->
+        <template x-if="showPreview">
+          <div class="doe__preview-wrap">
+            <div class="doe__preview-label"><span data-help-key="modules.doe-planner.actions.setPreviewCell.help" x-text="t('previewLabel')"></span></div>
+            <div class="doe__preview-hint"><span data-help-key="modules.doe-planner.fields.runs.help" x-text="t('previewHint')"></span></div>
+            <template x-if="previewSettingsChanged">
+              <div class="doe__preview-stale-note" x-text="t('previewStaleNote')"></div>
+            </template>
+            <div class="doe__preview-grid" x-widget="datagrid" x-widget-config="previewConfig"
+                 x-widget-on-cell="'setPreviewCell'" x-widget-on-paste="'setPreviewCells'"></div>
+          </div>
+        </template>
+
         <!-- Evaluation -->
         <div class="doe__eval-region">
           <div class="dmike-split__output-section-header">
@@ -580,9 +750,106 @@
           </template>
         </div>
 
-        <div class="dmike-split__output-section-header">
-          <span class="dmike-split__output-section"><span x-text="t('stepAnalysis')"></span></span>
-        </div>
+        <!-- Dispersion analysis -->
+        <template x-if="showDispersion">
+          <div class="doe__dispersion-region">
+            <div class="dmike-split__output-section-header">
+              <span class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('dispersionSection')"></span></span>
+            </div>
+            <div class="doe__eval-detail">
+              <div class="doe__eval-section">
+                <h4 class="doe__eval-heading">
+                  <span data-help-key="modules.doe-planner.fields.dispersionView.help" x-text="t('dispersionTitle')"></span>
+                </h4>
+                <template x-if="dispersionNoReplicates">
+                  <p class="doe__eval-note" x-text="t('dispersionNoReplicates')"></p>
+                </template>
+                <template x-if="shownDispersion">
+                  <div class="doe__dispersion-body">
+                    <p class="doe__eval-note" x-text="shownDispersion.lead"></p>
+                    <table class="doe__alias-table doe__dispersion-table">
+                      <thead>
+                        <tr>
+                          <th data-help-key="modules.doe-planner.types.DoeColumns.dispersionPoint" x-text="t('dispersionPoint')"></th>
+                          <th data-help-key="modules.doe-planner.types.DoeColumns.dispersionN">n</th>
+                          <th data-help-key="modules.doe-planner.types.DoeColumns.dispersionMean" x-text="t('dispersionMean')"></th>
+                          <th data-help-key="modules.doe-planner.types.DoeColumns.dispersionS">s</th>
+                          <th data-help-key="modules.doe-planner.types.DoeColumns.dispersionVar">s&sup2;</th>
+                          <th data-help-key="modules.doe-planner.types.DoeColumns.dispersionLnVar">ln(s&sup2;)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <template x-for="(g, gi) in shownDispersion.groups" :key="gi">
+                          <tr>
+                            <td x-text="g.point"></td>
+                            <td x-text="g.n"></td>
+                            <td x-text="g.mean"></td>
+                            <td x-text="g.sd"></td>
+                            <td x-text="g.variance"></td>
+                            <td x-text="g.lnVariance"></td>
+                          </tr>
+                        </template>
+                      </tbody>
+                    </table>
+                    <template x-if="shownDispersion.zeroVarText">
+                      <p class="doe__eval-note" x-text="shownDispersion.zeroVarText"></p>
+                    </template>
+                    <div class="doe__dispersion-models">
+                      <template x-for="(dm, mi) in shownDispersion.models" :key="mi">
+                        <div class="doe__dispersion-model">
+                          <h5 class="doe__dispersion-model-title" x-text="dm.title"></h5>
+                          <template x-if="!dm.fitted">
+                            <p class="doe__eval-note" x-text="t('dispersionModelNotFitted')"></p>
+                          </template>
+                          <template x-if="dm.fitted">
+                            <div class="doe__dispersion-model-body">
+                              <p class="doe__eval-note" x-text="dm.r2Text"></p>
+                              <table class="doe__alias-table doe__dispersion-coef-table">
+                                <thead>
+                                  <tr>
+                                    <th data-help-key="modules.doe-planner.types.DoeColumns.term" x-text="t('term')"></th>
+                                    <th data-help-key="modules.doe-planner.types.DoeColumns.coefficient" x-text="t('coefficient')"></th>
+                                    <th data-help-key="modules.doe-planner.types.DoeColumns.effect" x-text="t('effect')"></th>
+                                    <th data-help-key="modules.doe-planner.types.DoeColumns.pValue">p</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <template x-for="(c, ci) in dm.rows" :key="ci">
+                                    <tr :class="c.cls">
+                                      <td x-text="c.term"></td>
+                                      <td x-text="c.coefficient"></td>
+                                      <td x-text="c.effect"></td>
+                                      <td x-text="c.p"></td>
+                                    </tr>
+                                  </template>
+                                </tbody>
+                              </table>
+                            </div>
+                          </template>
+                        </div>
+                      </template>
+                    </div>
+                    <template x-if="shownDispersion.conclusion">
+                      <div class="doe__dispersion-conclusion" :class="shownDispersion.conclusion.cls">
+                        <strong x-text="conclusionLabel"></strong>
+                        <template x-if="shownDispersion.conclusion.none">
+                          <span x-text="conclusionNoneText"></span>
+                        </template>
+                        <template x-if="!shownDispersion.conclusion.none">
+                          <ul>
+                            <template x-for="(item, ii) in shownDispersion.conclusion.items" :key="ii">
+                              <li x-text="item"></li>
+                            </template>
+                          </ul>
+                        </template>
+                      </div>
+                    </template>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+        </template>
       </div>
     </template>
   </div>

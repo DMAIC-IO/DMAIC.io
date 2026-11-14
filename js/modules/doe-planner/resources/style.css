@@ -1162,6 +1162,11 @@
   color: var(--color-text-tertiary);
 }
 
+.doe__results-missing {
+  font-size: var(--font-size-xs);
+  color: var(--color-warning);
+}
+
 /* ===== Datasheet create / link / stale states ===== */
 .doe__datasheet-create-row {
   display: flex;

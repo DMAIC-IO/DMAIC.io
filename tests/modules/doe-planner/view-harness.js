@@ -8,6 +8,8 @@
 import Alpine from '../../../vendor/alpinejs/csp.js';
 import mod from '../../../js/modules/doe-planner/viewmodel/viewmodel.js';
 import { State } from '../../../js/modules/doe-planner/domain/model.js';
+import { designSignature } from '../../../js/modules/doe-planner/domain/signatures.js';
+import { snapshotOf } from '../../../js/modules/doe-planner/domain/experiment.js';
 import { registerFieldDirective } from '../../../js/core/field-directive.js';
 import { registerCommandDirectives } from '../../../js/core/command-directives.js';
 import { registerWidgetDirective } from '../../../js/core/widget-directive.js';
@@ -104,7 +106,12 @@ export const threeFactors = () => [
  */
 export async function mount(model = null, worksheets = {}) {
   await prepare();
-  while (mounted.length) mounted.pop().remove();
+  // Earlier mounts go for good: a preview grid keeps its selection and would take a later paste.
+  while (mounted.length) {
+    const old = mounted.pop();
+    Alpine.destroyTree(old);
+    old.remove();
+  }
   const handlers = [];
   const events = [];
   const bus = {
@@ -154,13 +161,29 @@ export async function mount(model = null, worksheets = {}) {
   await settle();
   const vm = () => Alpine.$data(container.querySelector('[x-data]'));
   return {
-    container, vm, notes, store, events, bus,
+    container, vm, notes, store, events, bus, context,
     $: (s) => container.querySelector(s),
     $$: (s) => [...container.querySelectorAll(s)],
     /** Calls of a command so far, with their arguments. @param {string} name */
     calls: (name) => events.filter(([n, p]) => n === 'command:executed' && p.command === name).map(([, p]) => p.args),
     /** Lets the automatic runs finish. */
     done: async () => { await settle(); await vm()._asyncTaskHost.settle(5000); await settle(); },
+    /** The column state of a sheet of a worksheet instance. @param {string} id @returns {any} */
+    sheet: (id) => store.states[id].sheets[0].state,
+    /** Tells the readers that a worksheet changed, as the worksheet does. @param {string} id */
+    changed: (id) => bus.emit('worksheet:dataChanged', { instanceId: id }),
+    /** `module:activated` events so far, their instance ids. */
+    activated: () => events.filter(([n]) => n === 'module:activated').map(([, p]) => p.instanceId),
+    /**
+     * Replaces the start of the runs with a stand-in that records the calls.
+     * @param {Record<string, any>} outcomes run name → outcome
+     * @returns {Array<[string, any]>} the calls
+     */
+    stubRuns(outcomes) {
+      const started = [];
+      vm()._asyncTaskHost.start = async (name, args) => { started.push([name, args]); return outcomes[name] ?? { status: 'done', value: null }; };
+      return started;
+    },
     /** Adds a worksheet instance as the app does: state, phase entry, `module:added`. */
     addWorksheet(id, state) {
       store.states[id] = state;
@@ -189,6 +212,43 @@ export async function ready(model, worksheets) {
   return h;
 }
 
+/** Instance id of the bound datasheet `bound` makes. */
+export const DATASHEET = 'ws-doe';
+
+/**
+ * A stored state with its design and a bound datasheet of it: order
+ * columns, one column per factor and per response. The response columns
+ * hold `values` (per response, per row; empty without).
+ * @param {object} model stored state without a source worksheet
+ * @param {Array<Array<number|null>>|null} [values]
+ * @returns {{ model: object, worksheets: Record<string, any> }}
+ */
+export function bound(model, values = null) {
+  const json = designed(model);
+  const d = json.design;
+  const n = d.actualMatrix.length;
+  /** @type {Record<string, any[]>} */
+  const cols = { Lauf: [...d.runOrder], Std: [...d.stdOrder] };
+  json.factors.forEach((f, fi) => { cols[f.name] = d.actualMatrix.map((row) => (f.kind === 'categorical' ? row[fi] : Number(row[fi]))); });
+  json.responses.forEach((r, ri) => { cols[r.name] = values?.[ri] ? [...values[ri]] : new Array(n).fill(null); });
+  const ws = worksheet('DoE', cols);
+  const id = (i) => `DoE-c${i}`;
+  const k = json.factors.length;
+  json.worksheetRef = {
+    instanceId: DATASHEET,
+    sheetId: ws.sheets[0].id,
+    factorColumnIds: json.factors.map((_, fi) => id(2 + fi)),
+    responseColumnIds: json.responses.map((_, ri) => id(2 + k + ri)),
+    meanColumnIds: [],
+    lnVarColumnIds: [],
+    runOrderColumnId: id(0),
+    stdOrderColumnId: id(1),
+    designSignature: designSignature({ design: d, factors: json.factors }),
+    snapshot: snapshotOf({ doeName: json.doeName, designType: json.designType, factors: json.factors, responses: json.responses, options: json.options }, d),
+  };
+  return { model: json, worksheets: { [DATASHEET]: ws } };
+}
+
 /** Types into a field and fires `input` and `change`. */
 export function typeIn(el, v) {
   el.value = v;
@@ -214,6 +274,11 @@ export function inputBadges(container) {
   const out = { name: 0 };
   let section = 'name';
   for (const el of input.querySelectorAll('*')) {
+    // The EVOP project (toggle and bar) above the name counts on its own.
+    if (el.closest('.doe__project-toggle, .doe__project-bar')) {
+      if (el.getAttribute('data-help-key')) out.evop = (out.evop ?? 0) + 1;
+      continue;
+    }
     if (el.parentElement === input && el.classList.contains('dmike-split__section-title')) {
       section = el.getAttribute('data-help-key').replace('modules.doe-planner.', '').replace(/\.help$/, '');
       out[section] = 0;

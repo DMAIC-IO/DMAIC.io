@@ -3,7 +3,7 @@
  * ändert (eine DataGrid-Instanz je Widget), und gibt Zelländerung, Einfügen und
  * Zeilenmenü als Kommandos des Moduls hinaus. Eigener Datenstand: nur die
  * zuletzt gezeichnete `config`. Nach jedem Kommando zeigt die Tabelle wieder
- * deren Werte.
+ * deren Werte; bei gleicher Form (Spalten und Zeilenzahl) bleibt die Auswahl.
  */
 import { DataGrid, isNumericType } from '../../core/datagrid/datagrid.js';
 import { parseNumber } from '../../core/number-format.js';
@@ -63,6 +63,8 @@ export function mount(root, { props, services, effect, command }) {
   root.append(slot);
   /** @type {any} zuletzt gezeichnete Eingabe */
   let config = null;
+  /** Form der zuletzt gezeichneten Eingabe: Spaltenschlüssel und Zeilenzahl. */
+  let shape = '';
   const grid = new DataGrid(slot, {
     t: (key) => i18n.t(key),
     lang: () => i18n.getLanguage(),
@@ -79,7 +81,12 @@ export function mount(root, { props, services, effect, command }) {
   const render = () => {
     if (!config) return;
     slot.classList.toggle(READONLY, config.readOnly);
+    const next = JSON.stringify([config.columns.map((c) => c.key), config.rows.length]);
+    // setData verwirft die Auswahl; dieselbe Tabelle mit neuen Werten behält sie.
+    const keep = next === shape && grid.selection ? { ...grid.selection } : null;
     grid.setData(gridColumns(config, moduleId));
+    shape = next;
+    if (keep) grid.setSelection(keep);
   };
   /**
    * Kommando senden, danach immer die Werte der Eingabe zeigen: abgelehnt, ohne

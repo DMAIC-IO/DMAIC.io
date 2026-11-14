@@ -300,6 +300,15 @@
       "maxLeverage": {
         "help": "Maximaler Leverage: Größter Einfluss eines einzelnen Versuchspunkts auf die Schätzung. Ideal: p/n."
       }
+    },
+    "previewGrid": {
+      "help": "Die Vorschau der Läufe als Tabelle: feste Spalten für Lauf, Standardreihenfolge, Block und Wiederholung, dann je Faktor und je Zielgröße eine Spalte, mit den Änderungen von Hand. Nur Lesen, solange ein neuer Plan entsteht. Reine Darstellung."
+    },
+    "dispersionView": {
+      "help": "Modelliert Mittelwert und ln(s²) als zwei getrennte Antworten — identifiziert Faktoreinstellungen, die die Prozessstreuung unabhängig vom Mittelwert reduzieren (Dual-Response-Ansatz nach Vining & Myers). Erfordert mindestens 2 Replikate pro Versuchspunkt."
+    },
+    "evopSummaryView": {
+      "help": "Die kumulierten EVOP-Effekte in Anzeigeform: Zyklen, Läufe, Gesamtmittel, je Term Effekt und Fehlergrenze, bester Betriebspunkt und Empfehlung. Reine Darstellung."
     }
   },
   "actions": {

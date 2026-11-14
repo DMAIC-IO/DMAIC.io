@@ -111,7 +111,7 @@ suite('doe-planner factors: factors and responses', () => {
     await settle();
     assertEqual(h.vm().model.doeName, 'Spritzguss');
     const p = await mount(plan({ projectMode: true }));
-    assertEqual(p.$('.doe__name-label').textContent, de('phaseName'));
+    assertEqual(p.$('.doe__name-bar .doe__name-label').textContent, de('phaseName'));
   });
 });
 

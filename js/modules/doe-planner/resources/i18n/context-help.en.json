@@ -300,6 +300,15 @@
       "maxLeverage": {
         "help": "Maximum leverage: Largest influence of any single design point on the estimate. Ideal: p/n."
       }
+    },
+    "previewGrid": {
+      "help": "The preview of the runs as a table: fixed columns for run, standard order, block and replicate, then one column per factor and per response, with the changes made by hand. Read only while a new design is being made. Display only."
+    },
+    "dispersionView": {
+      "help": "Models the mean and ln(s²) as two separate responses — identifies factor settings that reduce process variability independently of the mean (dual-response approach after Vining & Myers). Requires at least 2 replicates per design point."
+    },
+    "evopSummaryView": {
+      "help": "The cumulative EVOP effects for display: cycles, runs, grand mean, effect and error limit per term, best operating point and recommendation. Display only."
     }
   },
   "actions": {

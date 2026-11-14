@@ -251,7 +251,7 @@
   "dispersionSection": "Dispersion analysis",
   "dispersionTitle": "Dispersion DoE (mean & log s²)",
   "tipDispersion": "Models the mean and ln(s²) as two separate responses — identifies factor settings that reduce process variability independently of the mean (dual-response approach after Vining & Myers). Requires at least 2 replicates per design point.",
-  "dispersionLead": "Response: <strong>{response}</strong>. {points} design points with {min}–{max} replicates.",
+  "dispersionLead": "Response: {response}. {points} design points with {min}–{max} replicates.",
   "dispersionPoint": "Point #",
   "dispersionMean": "ȳ",
   "dispersionNoReplicates": "Dispersion analysis requires at least 2 replicates per design point. Increase the replicates option in the left panel or add repeat runs in the worksheet.",
