@@ -139,7 +139,7 @@ const moveBlock = defineGesture({
   handle: '.pg-block__body',
   start(el) { return this.blockPos(el.dataset.id); },
   locate(point, ctx, from) {
-    const col = ctx.columnAt(point.x);
+    const col = ctx.columnAt(point.x, '.pg-col');
     if (col === null) return null;
     const delta = ctx.snap(point.y - ctx.origin.y, STEP);
     return { ...from, col, start: from.start + delta, end: from.end + delta };
