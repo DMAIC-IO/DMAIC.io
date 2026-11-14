@@ -120,7 +120,7 @@ export default createModule({
         sheet.columns.forEach((c, i) => {
           write = write.column({ name: c.name || c.shortName || `C${i + 1}`, type: c.type, values: c.values, format: c.format });
         });
-        const { instanceId } = await commitWorksheetWrite(services, write.build(services));
+        const { instanceId } = await commitWorksheetWrite(services, write.build());
         this._ui.notify(this.t('sentToWorksheet', { count: sheet.columns.length }), 'success');
         return { instanceId };
       },

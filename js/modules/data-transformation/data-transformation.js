@@ -565,7 +565,7 @@ const mod = createModule({
             : write.overwrite(clean.columnId, { values });
         }
         // Erst nach dem bestätigten Schreiben erscheint die Erfolgsmeldung.
-        const { instanceId } = await commitWorksheetWrite(ctx, write.build(ctx));
+        const { instanceId } = await commitWorksheetWrite(ctx, write.build());
         ctx.notify?.(_t('sentToWorksheet'), 'success');
         return { instanceId };
       },

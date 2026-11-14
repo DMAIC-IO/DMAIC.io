@@ -11,12 +11,14 @@
  *   const plan = worksheetWrite()
  *     .newWorksheet({ name: 'Import' })
  *     .column({ name: 'Preis', type: 'currency', values, format: { decimals: 2 } })
- *     .build(ctx);
+ *     .build();
  *   const { instanceId, columnIds } = await commitWorksheetWrite(ctx, plan);
  *
  * Plan: `{ stack, created, sheetId }`. Der Stapel ist
  *   - neu: `module.add` (`id: 'ws'`), `renameSheet` auf den Wunschnamen,
- *     `writeColumns` (`id: 'write'`) — Spalten mit `to: 'start'`;
+ *     `writeColumns` (`id: 'write'`) — Spalten mit `to: 'start'`. Phase
+ *     und eindeutigen Blattnamen setzt erst `commitWorksheetWrite` aus dem
+ *     Kontext des Aufrufers;
  *   - vorhanden: ein `writeColumns` (`id: 'write'`) — `column()` mit
  *     `to: 'append'`, `overwrite(colId)` mit `to: colId`.
  *
@@ -111,24 +113,21 @@ function makeColumn(to, { name, type, values, format, discrete }) {
  * @property {(id: string) => WorksheetWriteBuilder} sheet
  * @property {(input: ColumnInput) => WorksheetWriteBuilder} column
  * @property {(colId: string, input: ColumnInput) => WorksheetWriteBuilder} overwrite
- * @property {(ctx?: { stateManager?: object, instanceId?: string }) => WorksheetWritePlan} build
+ * @property {() => WorksheetWritePlan} build
  */
 
 /**
  * Einen Schreibplan bauen.
  *
- * - `.newWorksheet({ name })`: ein neuer Worksheet in der Phase des
- *   Aufrufers, Blatt `sheet_1` mit dem Wunschnamen (eindeutig gemacht);
+ * - `.newWorksheet({ name })`: ein neuer Worksheet, Blatt `sheet_1` mit dem
+ *   Wunschnamen (Phase und Eindeutigkeit ergänzt `commitWorksheetWrite`);
  *   die Spalten füllen erst die leeren Startspalten, weitere werden
  *   angehängt.
  * - `.worksheet(instanceId).sheet(sheetId)`: ein bestehender Worksheet;
  *   `.column()` hängt immer an.
  * - `.overwrite(colId, …)`: eine bestehende Spalte überschreiben.
- * - `.build(ctx)` liefert den Plan und wirft `WriteError` mit
+ * - `.build()` liefert den Plan und wirft `WriteError` mit
  *   `missing_target`, `missing_sheet`, `empty_plan` oder `unknown_type`.
- *   `ctx` (`stateManager`, `instanceId` des Aufrufers) bestimmt Phase und
- *   eindeutigen Blattnamen eines neuen Worksheets; ohne ihn entfällt die
- *   Phase und der Name bleibt, wie er ist.
  *
  * @returns {WorksheetWriteBuilder}
  */
@@ -163,7 +162,7 @@ export function worksheetWrite() {
       steps.push({ kind: 'overwrite', colId, spec: spec ?? { values: [] } });
       return api;
     },
-    build(ctx) {
+    build() {
       if (!target) throw new WriteError('missing_target');
       if (!sheetId) throw new WriteError('missing_sheet');
       if (steps.length === 0) throw new WriteError('empty_plan');
@@ -186,15 +185,11 @@ export function worksheetWrite() {
         };
       }
 
-      const sm = /** @type {any} */ (ctx?.stateManager);
       /** @type {import('./agent/agent-types.generated.js').ModuleStack} */
-      const stack = [sm && ctx?.instanceId
-        ? { op: 'module.add', id: 'ws', module: 'worksheet', phase: findOwnPhase(sm, ctx.instanceId) }
-        : { op: 'module.add', id: 'ws', module: 'worksheet' }];
+      const stack = [{ op: 'module.add', id: 'ws', module: 'worksheet' }];
       const ws = { $from: 'ws', path: 'instanceId' };
       if (target.name.trim() !== '') {
-        const name = sm ? uniqueSheetName(sm, target.name) : target.name;
-        stack.push({ op: 'instance.call', module: 'worksheet', instance: ws, method: 'renameSheet', args: [NEW_SHEET_ID, name] });
+        stack.push({ op: 'instance.call', module: 'worksheet', instance: ws, method: 'renameSheet', args: [NEW_SHEET_ID, target.name] });
       }
       stack.push({ op: 'instance.call', id: 'write', module: 'worksheet', instance: ws, method: 'writeColumns', args: [NEW_SHEET_ID, columns] });
       return { created: true, sheetId: NEW_SHEET_ID, stack };
@@ -367,21 +362,46 @@ function reasonOf(res) {
 }
 
 /**
+ * Den Stapel eines Plans für den Aufrufer vervollständigen: ein neuer
+ * Worksheet kommt in die Phase der aufrufenden Instanz, sein Blattname wird
+ * im Projekt eindeutig. Kopiert; der Plan bleibt unverändert.
+ * @param {{ stateManager: object, instanceId: string }} ctx
+ * @param {WorksheetWritePlan} plan
+ * @returns {import('./agent/agent-types.generated.js').ModuleStack}
+ */
+export function completeStack(ctx, plan) {
+  const sm = /** @type {any} */ (ctx.stateManager);
+  return plan.stack.map((action) => {
+    if (action.op === 'module.add' && action.id === 'ws') {
+      return { ...action, phase: findOwnPhase(sm, ctx.instanceId) };
+    }
+    if (action.op === 'instance.call' && action.method === 'renameSheet') {
+      const [sheetId, name] = action.args ?? [];
+      return { ...action, args: [sheetId, uniqueSheetName(sm, name)] };
+    }
+    return action;
+  });
+}
+
+/**
  * Einen Plan aus `worksheetWrite().build()` ganz oder gar nicht schreiben:
  * der Stapel läuft über `ctx.instances.interact`. Scheitert er, hat die
  * Agentenschicht alles zurückgenommen, auch einen eben angelegten
  * Worksheet. Die Meldung des Fehlers kommt aus den eigenen Texten, nie aus
  * der Antwort der Agentenschicht; deren Ursache steht in der Konsole.
  *
+ * Vorher ergänzt `completeStack` Phase und eindeutigen Blattnamen eines
+ * neuen Worksheets.
+ *
  * @param {{ instances: { interact: (stack: import('./agent/agent-types.generated.js').ModuleStack) => Promise<any> },
- *   i18n?: object }} ctx der Kontext (bzw. `services`) der aufrufenden Instanz
+ *   stateManager: object, instanceId: string, i18n?: object }} ctx der Kontext (bzw. `services`) der aufrufenden Instanz
  * @param {WorksheetWritePlan} plan der Plan
  * @returns {Promise<{ instanceId: string, sheetId: string, columnIds: string[], created: boolean }>}
  * @throws {WriteError} (abgelehnt) mit `reason` `unknown_instance`,
  *   `unknown_sheet`, `unknown_column` oder `write_failed`
  */
 export async function commitWorksheetWrite(ctx, plan) {
-  const res = await ctx.instances.interact(plan.stack);
+  const res = await ctx.instances.interact(completeStack(ctx, plan));
   if (res?.ok !== true) {
     console.warn('[worksheet-write] stack failed', res);
     throw writeError(ctx, reasonOf(res));

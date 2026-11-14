@@ -4,7 +4,7 @@
  */
 import { suite, test, assertEqual, assertDeepEqual, assert } from '../test-utils.js';
 import {
-  worksheetWrite, commitWorksheetWrite, applyWriteColumn, WriteError,
+  worksheetWrite, commitWorksheetWrite, completeStack, applyWriteColumn, WriteError,
 } from '../../js/core/worksheet-write.js';
 import { validateBatch } from '../../js/core/agent/agent-validate.js';
 import { buildWorld } from '../../js/core/agent/agent-catalog.js';
@@ -51,15 +51,26 @@ function fakeStore() {
 const WS_REF = { $from: 'ws', path: 'instanceId' };
 
 suite('core/worksheet-write — worksheetWrite', () => {
-  test('new worksheet builds add+rename+writeColumns stack', () => {
+  test('new worksheet builds add+rename+writeColumns stack', async () => {
     const plan = worksheetWrite()
       .newWorksheet({ name: 'A' })
       .column({ name: 'P', type: 'currency', values: [1, 2], format: { decimals: 2 } })
       .column({ name: 'Q', values: [3], discrete: true })
-      .build({ stateManager: fakeStore(), instanceId: 'tool' });
+      .build();
     assertEqual(plan.created, true);
     assertEqual(plan.sheetId, 'sheet_1');
-    assertDeepEqual(plan.stack, [
+    const planBefore = JSON.parse(JSON.stringify(plan));
+    // Der Stapel, den commit an interact gibt: Phase des Aufrufers, Blattname eindeutig („A“ gibt es in ws1).
+    const ctx = fakeContext({ ok: true, results: [
+      { ok: true, id: 'ws', result: { instanceId: 'w9' } },
+      { ok: true, id: null, result: { value: null } },
+      { ok: true, id: 'write', result: { instanceId: 'w9', value: ['c1', 'c2'] } },
+    ] });
+    ctx.stateManager = fakeStore();
+    ctx.instanceId = 'tool';
+    await commitWorksheetWrite(ctx, plan);
+    assertDeepEqual(plan, planBefore, 'Plan des Aufrufers verändert');
+    assertDeepEqual(ctx.stacks[0], [
       { op: 'module.add', id: 'ws', module: 'worksheet', phase: 'data' },
       { op: 'instance.call', module: 'worksheet', instance: WS_REF, method: 'renameSheet', args: ['sheet_1', 'A 1'] },
       { op: 'instance.call', id: 'write', module: 'worksheet', instance: WS_REF, method: 'writeColumns', args: ['sheet_1', [
@@ -67,7 +78,16 @@ suite('core/worksheet-write — worksheetWrite', () => {
         { to: 'start', name: 'Q', type: 'numeric', values: [3], discrete: true },
       ]] },
     ]);
+    assertDeepEqual(plan.stack[0], { op: 'module.add', id: 'ws', module: 'worksheet' });
+    assertDeepEqual(plan.stack[1].args, ['sheet_1', 'A']);
     assertDeepEqual(JSON.parse(JSON.stringify(plan)), plan);
+  });
+
+  test('ohne Phase im Projekt landet ein neuer Worksheet in data, freier Name bleibt', () => {
+    const plan = worksheetWrite().newWorksheet({ name: 'Frei' }).column({ name: 'A', values: [1] }).build();
+    const stack = completeStack({ stateManager: fakeStore(), instanceId: 'unbekannt' }, plan);
+    assertEqual(stack[0].phase, 'data');
+    assertDeepEqual(stack[1].args, ['sheet_1', 'Frei']);
   });
 
   test('existing worksheet builds single writeColumns call', () => {
@@ -129,20 +149,20 @@ suite('core/worksheet-write — worksheetWrite', () => {
     const i18n = { t: (k) => k, exists: () => false, getLanguage: () => 'de' };
     const world = buildWorld({ moduleRegistry, stateManager, i18n, registry: AGENT_REGISTRY });
     const ctx = { stateManager, instanceId: 'tool' };
-    const plans = {
+    const plans = /** @type {Record<string, any>} */ ({
       'neu × column': worksheetWrite().newWorksheet({ name: 'N' }).column({ name: 'A', values: [1] }),
       'neu × overwrite': worksheetWrite().newWorksheet({ name: 'N' }).overwrite('c1', { values: [1] }),
       'vorhanden × column': worksheetWrite().worksheet('ws1').sheet('sheet_1').column({ name: 'A', values: [1] }),
       'vorhanden × overwrite': worksheetWrite().worksheet('ws1').sheet('sheet_1').overwrite('c1', { values: [1] }),
-    };
+    });
     for (const [label, builder] of Object.entries(plans)) {
-      const checked = validateBatch(builder.build(ctx).stack, world);
+      const checked = validateBatch(completeStack(ctx, builder.build()), world);
       assert(checked.ok === true, `${label}: ${JSON.stringify(checked)}`);
     }
     // Gegenprobe: dieselbe Prüfung lehnt eine falsche Aktion ab.
-    const bad = worksheetWrite().worksheet('ws1').sheet('sheet_1').column({ name: 'A', values: [1] }).build(ctx);
-    bad.stack[0].method = 'writeColumnz';
-    assertEqual(validateBatch(bad.stack, world).ok, false);
+    const bad = completeStack(ctx, worksheetWrite().worksheet('ws1').sheet('sheet_1').column({ name: 'A', values: [1] }).build());
+    bad[0] = { ...bad[0], method: 'writeColumnz' };
+    assertEqual(validateBatch(bad, world).ok, false);
   });
 });
 
@@ -268,6 +288,8 @@ function fakeContext(answer) {
   const stacks = [];
   return {
     stacks,
+    stateManager: fakeStore(),
+    instanceId: 'tool',
     i18n: { t: k => k },
     instances: { interact: async (stack) => { stacks.push(stack); return answer; } },
   };
@@ -292,7 +314,7 @@ suite('core/worksheet-write — commitWorksheetWrite', () => {
     const out = await commitWorksheetWrite(ctx, plan);
     assertDeepEqual(out, { instanceId: 'w9', sheetId: 'sheet_1', columnIds: ['c1', 'c2'], created: true });
     assertEqual(ctx.stacks.length, 1);
-    assertEqual(ctx.stacks[0], plan.stack);
+    assertEqual(ctx.stacks[0].length, plan.stack.length);
   });
 
   test('vorhandener Worksheet: instanceId aus dem Ergebnis von write', async () => {
