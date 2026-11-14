@@ -252,6 +252,10 @@ const mod = createModule({
       ssPieItems: [],
       /** SS-pie transient render context (chart instances + rebuild closures). */
       _ssPie: null,
+      /** The experiments of the planner instances, as last read (`loadExperiments`). */
+      _experiments: [],
+      /** Counts the loads; only the latest one is kept. */
+      _experimentsGen: 0,
 
       /** @noagent helper */
       sm() { return module._context?.stateManager; },
@@ -434,20 +438,23 @@ const mod = createModule({
 
       /**
        * Faktoren und Antwort eines DoE-Versuchs als X und Y übernehmen und
-       * rechnen; null löst die Übernahme und lässt die Spalten stehen.
+       * rechnen; null löst die Übernahme und lässt die Spalten stehen. Liest
+       * die Versuche der Planer vorher frisch, damit ein eben angelegter
+       * Versuch gefunden wird.
        * @agent
        * @param {string|null} key ein Schlüssel aus `experimentImports`, oder null
-       * @returns {void}
+       * @returns {Promise<void>}
        * @throws {Error} wenn `key` nicht in `experimentImports` steht
        */
-      importExperiment(key) {
+      async importExperiment(key) {
         if (key == null) {
           this.model.activeImportSource = null;
           this.model.clearDesignPreset();
           return;
         }
+        await this.loadExperiments();
         requireKnownId('key', key, this.experimentImports().map(o => o.key));
-        if (this.model.applyExperimentImport(this.sm(), key)) {
+        if (this.model.applyExperimentImport(this._experiments, key)) {
           if (this._picker) this._picker.value = this.model.colRefs;
           this.refreshDegree();
           this.autoRun();
@@ -471,8 +478,30 @@ const mod = createModule({
       // ── DoE import options ───────────────────────────────────
       /** @noagent derived set; der Agent liest sie über read().experimentImports */
       importOptions() {
-        const sm = this.sm();
-        return sm ? this.model.listExperimentImports(sm) : [];
+        return this.model.listExperimentImports(this._experiments);
+      },
+
+      /**
+       * Die Versuche aller Planer-Instanzen neu lesen; ein Planer, der nicht
+       * gelesen werden kann, zählt ohne Versuch.
+       * @noagent helper; der Agent liest das Ergebnis über read().experimentImports
+       * @returns {Promise<Array<{ plannerId: string, experiment: object|null }>>}
+       */
+      async loadExperiments() {
+        const svc = module._context?.instances;
+        if (!svc) return this._experiments;
+        const gen = ++this._experimentsGen;
+        const planners = svc.list({ modules: ['doe-planner'] });
+        const out = await Promise.all(planners.map(async (p) => {
+          try {
+            const r = await svc.read(p.instanceId, { fields: ['experiment'] });
+            return { plannerId: p.instanceId, experiment: r?.experiment ?? null };
+          } catch {
+            return { plannerId: p.instanceId, experiment: null };
+          }
+        }));
+        if (gen === this._experimentsGen) this._experiments = out;
+        return this._experiments;
       },
 
       // ── Column option lists (Y dropdown; not x-model-bound) ──
@@ -883,7 +912,8 @@ const mod = createModule({
       /** @noagent DOM event handler; the agent uses importExperiment() */
       onImportChange(event) {
         const key = event.target.value;
-        if (key) this.importExperiment(key);
+        // A planner removed meanwhile drops its option; nothing to import then.
+        if (key) this.importExperiment(key).catch(() => {});
       },
       /** @noagent DOM event handler; the agent uses setColumn() */
       onYChange(event) {
@@ -1055,7 +1085,7 @@ const mod = createModule({
           responseColumn: m.activeImportSource?.sourceColumn ?? m.yKey,
         });
 
-        const lofPValue = m.computeLoFPValue(sm, r, y, originalToFiltered);
+        const lofPValue = m.computeLoFPValue(this._experiments, r, y, originalToFiltered);
         const specSnapshot = r.spec ? JSON.parse(JSON.stringify(r.spec)) : null;
 
         const record = {
@@ -1502,6 +1532,14 @@ const mod = createModule({
         });
 
         const eb = ctx.eventBus;
+        // Die Versuche der Planer: sofort laden, neu bei jeder Änderung der
+        // Instanzen oder der Arbeitsblätter.
+        this.loadExperiments();
+        const onExperiments = () => { this.loadExperiments(); };
+        for (const ev of ['module:added', 'module:removed', 'state:remote-changed', 'worksheet:dataChanged']) {
+          eb.on(ev, onExperiments);
+          this._unsubs.push(() => eb.off(ev, onExperiments));
+        }
         const onAct = ({ instanceId }) => {
           if (instanceId === ctx.instanceId && this._picker) this._picker.refresh();
         };

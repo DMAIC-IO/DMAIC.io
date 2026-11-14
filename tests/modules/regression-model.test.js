@@ -16,13 +16,13 @@ import {
 
 // ── Stub stateManager with a synthetic worksheet ───────────────────
 
-function makeSM({ columns, experiments = null }) {
+function makeSM({ columns }) {
   const wsInstanceId = 'ws-1';
   const sheetId = 'sheet-1';
   const moduleStates = new Map();
   moduleStates.set(wsInstanceId, { sheets: [{ id: sheetId, state: { columns } }] });
   const sm = {
-    get(key) { return key === 'experiments' ? experiments : null; },
+    get() { return null; },
     getModuleState: (id) => moduleStates.get(id) ?? null,
     setModuleState() {},
   };
@@ -541,34 +541,75 @@ suite('Regression Model — design terms from the DOE planner', () => {
 });
 
 suite('Regression Model — experiment import carries design terms', () => {
-  function expSM(plannedTerms, factors) {
-    const columns = [numCol('f0', 'A', [-1, 1]), numCol('f1', 'B', [-1, 1]), numCol('r', 'Y', [1, 2])];
-    return makeSM({
-      columns,
-      experiments: {
-        e1: {
-          name: 'E', plannedTerms, factors,
-          runMatrix: { worksheetRef: { instanceId: 'ws-1', sheetId: 'sheet-1' }, columnTags: { factors: ['f0', 'f1'] } },
-          responseColumns: [{ name: 'Y', columnId: 'r' }],
-        },
-      },
-    }).sm;
+  function experiment(plannedTerms, factors, extra = {}) {
+    return {
+      name: 'E', plannedTerms, factors,
+      runMatrix: { worksheetRef: { instanceId: 'ws-1', sheetId: 'sheet-1' }, columnTags: { factors: ['f0', 'f1'] } },
+      responseColumns: [{ name: 'Y', columnId: 'r' }],
+      ...extra,
+    };
   }
 
   test('new record: plannedTerms.terms passed through', () => {
-    const sm = expSM({ linear: true, terms: ['M0', 'M1', 'I0_1'] }, [{ kind: 'continuous' }, { kind: 'continuous' }]);
+    const experiments = [{ plannerId: 'p1', experiment: experiment({ linear: true, terms: ['M0', 'M1', 'I0_1'] }, [{ kind: 'continuous' }, { kind: 'continuous' }]) }];
     const s = new State();
-    const opt = s.listExperimentImports(sm)[0];
+    const opt = s.listExperimentImports(experiments)[0];
     assertDeepEqual(opt.designTerms, ['M0', 'M1', 'I0_1']);
-    assertEqual(s.applyExperimentImport(sm, opt.key), true);
+    assertEqual(s.applyExperimentImport(experiments, opt.key), true);
     assertDeepEqual(s.designTerms, ['M0', 'M1', 'I0_1']);
     assertEqual(s.designNotice, null);
   });
 
   test('old record without terms: mains + 2FI + Q for continuous factors', () => {
-    const sm = expSM({ linear: true, twoFactor: false, quadratic: false }, [{ kind: 'continuous' }, { kind: 'categorical' }]);
-    const opt = new State().listExperimentImports(sm)[0];
+    const experiments = [{ plannerId: 'p1', experiment: experiment({ linear: true, twoFactor: false, quadratic: false }, [{ kind: 'continuous' }, { kind: 'categorical' }]) }];
+    const opt = new State().listExperimentImports(experiments)[0];
     assertDeepEqual(opt.designTerms, ['M0', 'M1', 'Q0', 'I0_1']);
+  });
+
+  test('keys carry the planner instance id; the source names the planner', () => {
+    const exp = experiment({ linear: true, terms: ['M0', 'M1'] }, [{ kind: 'continuous' }, { kind: 'continuous' }], {
+      responseColumns: [{ name: 'Y', columnId: 'r', meanColumnId: 'rm', lnVarColumnId: 'rl' }],
+    });
+    const s = new State();
+    const opts = s.listExperimentImports([{ plannerId: 'p1', experiment: exp }]);
+    assertDeepEqual(opts.map(o => o.key), ['p1|raw|0', 'p1|mean|0', 'p1|lnvar|0']);
+    assertEqual(s.applyExperimentImport([{ plannerId: 'p1', experiment: exp }], 'p1|mean|0'), true);
+    assertDeepEqual(s.activeImportSource, { experimentId: 'p1', sourceColumn: 'rm', transform: 'mean' });
+    assertEqual(s.yKey, 'ws-1|sheet-1|rm');
+  });
+
+  test('two planners, one without experiment: only the options of the other', () => {
+    const exp = experiment({ linear: true, terms: ['M0', 'M1'] }, [{ kind: 'continuous' }, { kind: 'continuous' }]);
+    const opts = new State().listExperimentImports([
+      { plannerId: 'p1', experiment: null },
+      { plannerId: 'p2', experiment: exp },
+    ]);
+    assertDeepEqual(opts.map(o => o.key), ['p2|raw|0']);
+  });
+
+  test('unknown experimentId: no option, applyExperimentImport false, the source stays', () => {
+    const exp = experiment({ linear: true, terms: ['M0', 'M1'] }, [{ kind: 'continuous' }, { kind: 'continuous' }]);
+    const s = new State();
+    s.activeImportSource = { experimentId: 'gone', sourceColumn: 'r', transform: 'identity' };
+    const experiments = [{ plannerId: 'p2', experiment: exp }];
+    assertEqual(s.listExperimentImports(experiments).some(o => o.key.startsWith('gone|')), false);
+    assertEqual(s.applyExperimentImport(experiments, 'gone|raw|0'), false);
+    assertDeepEqual(s.activeImportSource, { experimentId: 'gone', sourceColumn: 'r', transform: 'identity' });
+  });
+
+  test('computeLoFPValue reads replicateGroups of the linked planner, null for an unknown one', () => {
+    const exp = experiment({ linear: true, terms: ['M0'] }, [{ kind: 'continuous' }], { replicateGroups: [[0, 1], [2, 3]] });
+    const r = { yHat: [1, 1, 3, 3, 5], dfRes: 3 };
+    const y = [0.9, 1.2, 2.8, 3.1, 5];
+    const map = new Map([[0, 0], [1, 1], [2, 2], [3, 3], [4, 4]]);
+    const s = new State();
+    s.activeImportSource = { experimentId: 'p1', sourceColumn: 'r', transform: 'identity' };
+    const p = s.computeLoFPValue([{ plannerId: 'p1', experiment: exp }], r, y, map);
+    assertEqual(typeof p, 'number');
+    s.activeImportSource = { experimentId: 'gone', sourceColumn: 'r', transform: 'identity' };
+    assertEqual(s.computeLoFPValue([{ plannerId: 'p1', experiment: exp }], r, y, map), null);
+    s.activeImportSource = { experimentId: 'p1', sourceColumn: 'r', transform: 'identity' };
+    assertEqual(s.computeLoFPValue([{ plannerId: 'p1', experiment: null }], r, y, map), null);
   });
 });
 

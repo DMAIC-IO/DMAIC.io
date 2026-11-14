@@ -16541,8 +16541,8 @@ export const AGENT_REGISTRY = {
             "help": "ein Schlüssel aus `experimentImports`, oder null"
           }
         ],
-        "returns": "void",
-        "help": "Faktoren und Antwort eines DoE-Versuchs als X und Y übernehmen und rechnen; null löst die Übernahme und lässt die Spalten stehen."
+        "returns": "Promise<void>",
+        "help": "Faktoren und Antwort eines DoE-Versuchs als X und Y übernehmen und rechnen; null löst die Übernahme und lässt die Spalten stehen. Liest die Versuche der Planer vorher frisch, damit ein eben angelegter Versuch gefunden wird."
       },
       "setActiveX": {
         "params": [

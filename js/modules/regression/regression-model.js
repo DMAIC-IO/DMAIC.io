@@ -112,6 +112,12 @@ export function predictAt(r, values) {
   return { yHat: pred.yHat, piLow: pred.piLow ?? null, piHigh: pred.piHigh ?? null };
 }
 
+/**
+ * The experiment of one planner instance; `experiment` is null while the
+ * planner has no datasheet.
+ * @typedef {{ plannerId: string, experiment: object|null }} PlannerExperiment
+ */
+
 export class State {
   /** Gespeichert, aber keine Aussage über den Inhalt: zählt nicht zur Revision, erscheint nicht in `read()`. */
   static VIEW_FIELDS = ['activeTab', 'coefSortByP', 'showCI', 'showPI'];
@@ -319,13 +325,18 @@ export class State {
 
   // ── DoE Import ────────────────────────────────────────────────
   // Builds a flat list of "import this experiment as model X" presets, one per
-  // (experiment × response × variant) combination.
+  // (planner × response × variant) combination.
 
-  /** @returns {Array<object>} */
-  listExperimentImports(sm) {
-    const experiments = sm.get('experiments') ?? {};
+  /**
+   * The import presets of the planners' experiments; a planner without an
+   * experiment offers none.
+   * @param {PlannerExperiment[]} experiments the experiments of the planner instances
+   * @returns {Array<object>}
+   */
+  listExperimentImports(experiments) {
     const out = [];
-    for (const [expId, exp] of Object.entries(experiments)) {
+    for (const { plannerId: expId, experiment: exp } of experiments ?? []) {
+      if (!exp) continue;
       const wsRef = exp?.runMatrix?.worksheetRef;
       const tags = exp?.runMatrix?.columnTags;
       if (!wsRef || !tags) continue;
@@ -363,9 +374,14 @@ export class State {
     return out;
   }
 
-  /** Apply a preset from listExperimentImports() onto the model (no re-run). */
-  applyExperimentImport(sm, key) {
-    const opt = this.listExperimentImports(sm).find(o => o.key === key);
+  /**
+   * Apply a preset from listExperimentImports() onto the model (no re-run).
+   * @param {PlannerExperiment[]} experiments the experiments of the planner instances
+   * @param {string} key an option key
+   * @returns {boolean} false when no option has the key
+   */
+  applyExperimentImport(experiments, key) {
+    const opt = this.listExperimentImports(experiments).find(o => o.key === key);
     if (!opt) return false;
     this.colRefs = opt.factorRefs.map(r => ({ ...r }));
     this.yKey = refToKey(opt.yRef);
@@ -734,12 +750,17 @@ export class State {
   /**
    * Compute the lack-of-fit p-value for the just-fitted polynomial model. Uses
    * `replicateGroups` from the source experiment; null when no experiment is
-   * linked or the design has no usable replicates.
+   * linked, the planner is gone, or the design has no usable replicates.
+   * @param {PlannerExperiment[]} experiments the experiments of the planner instances
+   * @param {object} r the fit
+   * @param {number[]} y the fitted responses
+   * @param {Map<number, number>} originalToFiltered sheet row → fitted row
+   * @returns {number|null}
    */
-  computeLoFPValue(sm, r, y, originalToFiltered) {
+  computeLoFPValue(experiments, r, y, originalToFiltered) {
     const expId = this.activeImportSource?.experimentId;
     if (!expId) return null;
-    const exp = sm.get('experiments')?.[expId];
+    const exp = (experiments ?? []).find(e => e.plannerId === expId)?.experiment;
     const groups = exp?.replicateGroups;
     if (!Array.isArray(groups) || groups.length === 0) return null;
     if (!r || !Array.isArray(r.yHat) || !Number.isFinite(r.dfRes)) return null;
