@@ -2,8 +2,8 @@
  * D.Mike — design registry and type-independent checks (designs/index.js)
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
-import { DESIGNS, DESIGN_KEYS, designOf, checkConfig, plannedRuns } from '../../../js/modules/doe-planner/designs/index.js';
-import optimal from '../../../js/modules/doe-planner/designs/optimal.js';
+import { DESIGNS, DESIGN_KEYS, designOf, checkConfig, plannedRuns } from '../../../js/modules/doe-planner/domain/designs/index.js';
+import optimal from '../../../js/modules/doe-planner/domain/designs/optimal.js';
 import { stateWith, NO_SOURCE } from './state.js';
 
 suite('doe-planner designs — registry', () => {

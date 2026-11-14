@@ -8,10 +8,10 @@
  * response state. factors, responses, options and sourceWorksheet are
  * the persisted form, so the read example compares them one to one.
  */
-import { checkConfig, designOf, plannedRuns } from './designs/index.js';
+import { checkConfig, designOf, plannedRuns } from './domain/designs/index.js';
 import { sourceRowCount } from './doe-planner-worksheet.js';
 import { readResponses, staleness } from './doe-planner-responses.js';
-import { runRows } from './doe-planner-runtable.js';
+import { runRows } from './domain/runtable.js';
 
 /** @param {*} v @returns {*} a plain deep copy */
 const clone = (v) => (v == null ? v : JSON.parse(JSON.stringify(v)));

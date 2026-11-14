@@ -7,7 +7,7 @@
  * logic: factor/response CRUD, EVOP phases, forbidden vertices, the
  * design signature for worksheet staleness and the config/schedule
  * signatures that drive the auto-generation. One pure module per design
- * type lives under designs/; the run table (doe-planner-runtable.js) and
+ * type lives under domain/designs/; the run table (domain/runtable.js) and
  * the response state (doe-planner-responses.js) are pure too. The UI lives
  * in seven encapsulated sub-viewmodels under viewmodel/ — factors, design,
  * optimal, evaluation, analysis, evop, runs — that know neither each other
@@ -31,24 +31,24 @@ import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { agentSnapshot } from './doe-planner-read.js';
 import { State } from './doe-planner-model.js';
-import { FactorsViewModel } from './viewmodel/factors.js';
-import { DesignViewModel, CENTER_POINTS_SPEC, REPLICATES_SPEC } from './viewmodel/design.js';
-import { OptimalViewModel } from './viewmodel/optimal.js';
-import { EvaluationViewModel } from './viewmodel/evaluation.js';
-import { AnalysisViewModel } from './viewmodel/analysis.js';
-import { EvopViewModel } from './viewmodel/evop.js';
-import { RunsViewModel } from './viewmodel/runs.js';
-import { codedToActualRows } from './doe-planner-runtable.js';
+import { FactorsViewModel } from './legacy/factors.js';
+import { DesignViewModel, CENTER_POINTS_SPEC, REPLICATES_SPEC } from './legacy/design.js';
+import { OptimalViewModel } from './legacy/optimal.js';
+import { EvaluationViewModel } from './legacy/evaluation.js';
+import { AnalysisViewModel } from './legacy/analysis.js';
+import { EvopViewModel } from './legacy/evop.js';
+import { RunsViewModel } from './legacy/runs.js';
+import { codedToActualRows } from './domain/runtable.js';
 import {
   generateDesign, minRunsForTerms,
   augmentOptimalDesign,
 } from '../../engines/doe-planner-engine.js';
-import { checkConfig } from './designs/index.js';
-import optimalType from './designs/optimal.js';
+import { checkConfig } from './domain/designs/index.js';
+import optimalType from './domain/designs/optimal.js';
 import { sourceRowCount, readSourceData } from './doe-planner-worksheet.js';
 import {
   evaluateDesign,
-} from './doe-planner-analysis.js';
+} from './domain/analysis.js';
 import { provisionWorksheet } from '../../core/examples-registry.js';
 import { requireText } from '../../core/agent/agent-argcheck.js';
 import { paramInputMixin, numberCheck } from '../../core/param-input.js';

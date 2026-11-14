@@ -1,8 +1,8 @@
 /**
  * D.Mike — DoE Planner: Taguchi orthogonal arrays (designs/taguchi.js)
  */
-import { TAGUCHI } from '../doe-planner-designs.js';
-import { taguchiCandidates } from '../../../engines/doe-planner-engine.js';
+import { TAGUCHI } from '../tables.js';
+import { taguchiCandidates } from '../../../../engines/doe-planner-engine.js';
 import { OK, fail } from './check.js';
 
 /** @type {import('./index.js').DesignType} */

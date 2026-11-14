@@ -5,7 +5,7 @@ import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import {
   FACTOR_OFFSET, codedToActualRows, buildRunTable, captureEdits, applyEdits,
   columnNames, resolveColumn, runRows, withEdit, editsDirty,
-} from '../../js/modules/doe-planner/doe-planner-runtable.js';
+} from '../../js/modules/doe-planner/domain/runtable.js';
 import { stateWith } from './doe-planner-designs/state.js';
 
 const t = (key) => `t:${key}`;
@@ -81,10 +81,22 @@ suite('doe-planner runtable — edits', () => {
   test('applyEdits writes factor edits into the design and response edits as seeds', () => {
     const s = designed();
     s.previewEdits = { factors: [[25, null, null, null], [null, null, null, null]], responses: [[null, 9, null, null]] };
-    applyEdits(s);
-    assertDeepEqual(s.design.actualMatrix[0], [25, 1]);
-    assertDeepEqual(s.design.sourceResponseSeeds, [[null, 9, null, null]]);
-    assertEqual(s.design.sourceRowCount, 4);
+    const out = applyEdits(s.design, s.previewEdits, s.factors, s.responses.length);
+    assertDeepEqual(out.actualMatrix[0], [25, 1]);
+    assertDeepEqual(out.sourceResponseSeeds, [[null, 9, null, null]]);
+    assertEqual(out.sourceRowCount, 4);
+  });
+
+  test('applyEdits does not modify its arguments', () => {
+    const s = designed();
+    s.previewEdits = { factors: [[25, null, null, null], [null, null, null, null]], responses: [[null, 9, null, null]] };
+    const frozen = JSON.stringify([s.design, s.previewEdits, s.factors]);
+    const deep = (o) => { Object.freeze(o); Object.values(o).forEach((v) => { if (v && typeof v === 'object' && !Object.isFrozen(v)) deep(v); }); return o; };
+    deep(s.design); deep(s.previewEdits); deep(s.factors);
+    const out = applyEdits(s.design, s.previewEdits, s.factors);
+    assertEqual(JSON.stringify([s.design, s.previewEdits, s.factors]), frozen);
+    assertDeepEqual(out.actualMatrix[0], [25, 1]);
+    assertEqual(out === s.design, false);
   });
 
   test('withEdit sets one cell and recomputes dirty', () => {

@@ -2,7 +2,7 @@
  * D.Mike — design type "taguchi" (designs/taguchi.js)
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
-import taguchi from '../../../js/modules/doe-planner/designs/taguchi.js';
+import taguchi from '../../../js/modules/doe-planner/domain/designs/taguchi.js';
 import { stateWith, NO_SOURCE } from './state.js';
 
 suite('doe-planner designs — taguchi', () => {

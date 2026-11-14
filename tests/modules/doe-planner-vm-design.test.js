@@ -2,7 +2,7 @@
  * D.Mike — DesignViewModel (viewmodel/design.js)
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../test-utils.js';
-import { DesignViewModel } from '../../js/modules/doe-planner/viewmodel/design.js';
+import { DesignViewModel } from '../../js/modules/doe-planner/legacy/design.js';
 import { t, fakeContext, attach, plannedState } from './doe-planner-vm-fakes.js';
 
 function setup(model = plannedState()) {

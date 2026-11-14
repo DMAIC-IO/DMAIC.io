@@ -4,7 +4,7 @@
  */
 import { suite, test, assertDeepEqual } from '../test-utils.js';
 
-const DIR = 'js/modules/doe-planner/viewmodel/';
+const DIR = 'js/modules/doe-planner/legacy/';
 /** Every sub-viewmodel file; grows with each one that lands. */
 const FILES = ['factors.js', 'design.js', 'optimal.js', 'evaluation.js', 'analysis.js', 'evop.js', 'runs.js'];
 

@@ -2,7 +2,7 @@
  * D.Mike — EvaluationViewModel (viewmodel/evaluation.js)
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
-import { EvaluationViewModel } from '../../js/modules/doe-planner/viewmodel/evaluation.js';
+import { EvaluationViewModel } from '../../js/modules/doe-planner/legacy/evaluation.js';
 import { t, fakeContext, attach, plannedState, withDesign } from './doe-planner-vm-fakes.js';
 
 function setup(model = plannedState()) {

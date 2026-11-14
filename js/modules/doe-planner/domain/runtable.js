@@ -7,9 +7,9 @@
  * edits read back from it, the edits applied to the design before a
  * datasheet is created, and the runs as plain rows for the agent.
  */
-import { parseDecimalInput, decimalOr } from '../../core/parse-decimal.js';
-import { formatValue, codedToActual } from '../../engines/doe-planner-engine.js';
-import { letter } from './doe-planner-model.js';
+import { parseDecimalInput, decimalOr } from '../../../core/parse-decimal.js';
+import { formatValue, codedToActual } from '../../../engines/doe-planner-engine.js';
+import { letter } from '../doe-planner-model.js';
 
 /** Index of the first factor column (after run, std, block, replicate). */
 export const FACTOR_OFFSET = 4;
@@ -153,43 +153,52 @@ export function captureEdits(model, gridColumns) {
 }
 
 /**
- * Applies model.previewEdits to the design: factor edits into actualMatrix,
- * response edits into sourceResponseSeeds. Mutates model.design.
- * @param {object} model a State
- * @returns {void}
+ * Applies preview edits to a design: factor edits into actualMatrix, response
+ * edits into sourceResponseSeeds. Pure — neither argument is modified; the
+ * edited design is returned (the input itself when there is nothing to apply).
+ * @param {object} design the design (actualMatrix, sourceResponseSeeds, …)
+ * @param {{factors?: Array<Array<number|null>>, responses?: Array<Array<number|null>>}|null|undefined} edits
+ * @param {Array<{kind?: string}>} factors the model's factors (categorical ones take no edits)
+ * @param {number} [responseCount] number of responses; defaults to the larger of the existing seed columns and the response edit columns
+ * @returns {object} the edited design
  */
-export function applyEdits(model) {
-  const m = model;
-  const edits = m.previewEdits;
-  if (!edits || !m.design || !m.design.actualMatrix || !m.design.actualMatrix.length) return;
-  const nRuns = m.design.actualMatrix.length;
+export function applyEdits(design, edits, factors, responseCount) {
+  if (!edits || !design || !design.actualMatrix || !design.actualMatrix.length) return design;
+  const nRuns = design.actualMatrix.length;
+  const out = { ...design, actualMatrix: design.actualMatrix.map((row) => [...row]) };
   if (Array.isArray(edits.factors)) {
-    m.factors.forEach((f, fi) => {
+    factors.forEach((f, fi) => {
       if (f.kind === 'categorical') return;
       const colEdits = edits.factors[fi];
       if (!Array.isArray(colEdits)) return;
       for (let i = 0; i < nRuns; i++) {
         const v = colEdits[i];
-        if (v != null && Number.isFinite(v)) m.design.actualMatrix[i][fi] = v;
+        if (v != null && Number.isFinite(v)) out.actualMatrix[i][fi] = v;
       }
     });
   }
   if (Array.isArray(edits.responses)) {
-    const seeds = Array.isArray(m.design.sourceResponseSeeds)
-      ? m.design.sourceResponseSeeds.map((col) => (Array.isArray(col) ? [...col] : new Array(nRuns).fill(null)))
-      : m.responses.map(() => new Array(nRuns).fill(null));
+    const nResp = responseCount ?? Math.max(
+      Array.isArray(design.sourceResponseSeeds) ? design.sourceResponseSeeds.length : 0,
+      edits.responses.length,
+    );
+    const seeds = Array.isArray(design.sourceResponseSeeds)
+      ? design.sourceResponseSeeds.map((col) => (Array.isArray(col) ? [...col] : new Array(nRuns).fill(null)))
+      : Array.from({ length: nResp }, () => new Array(nRuns).fill(null));
     let touched = false;
-    m.responses.forEach((_, ri) => {
+    for (let ri = 0; ri < nResp; ri++) {
+      if (!seeds[ri]) seeds[ri] = new Array(nRuns).fill(null);
       while (seeds[ri].length < nRuns) seeds[ri].push(null);
       const colEdits = edits.responses[ri];
-      if (!Array.isArray(colEdits)) return;
+      if (!Array.isArray(colEdits)) continue;
       for (let i = 0; i < nRuns; i++) {
         const v = colEdits[i];
         if (v != null && Number.isFinite(v)) { seeds[ri][i] = v; touched = true; }
       }
-    });
-    if (touched) { m.design.sourceResponseSeeds = seeds; m.design.sourceRowCount = nRuns; }
+    }
+    if (touched) { out.sourceResponseSeeds = seeds; out.sourceRowCount = nRuns; }
   }
+  return out;
 }
 
 /**

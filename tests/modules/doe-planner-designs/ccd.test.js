@@ -2,7 +2,7 @@
  * D.Mike — design type "ccd" (designs/ccd.js)
  */
 import { suite, test, assertEqual } from '../../test-utils.js';
-import ccd from '../../../js/modules/doe-planner/designs/ccd.js';
+import ccd from '../../../js/modules/doe-planner/domain/designs/ccd.js';
 import { stateWith, NO_SOURCE } from './state.js';
 
 suite('doe-planner designs — ccd', () => {

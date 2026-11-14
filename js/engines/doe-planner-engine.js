@@ -17,7 +17,7 @@
  */
 
 import { parseDecimalInput, decimalOr } from '../core/parse-decimal.js';
-import { GENERATORS, PB_SEEDS, BOX_BEHNKEN, TAGUCHI } from '../modules/doe-planner/doe-planner-designs.js';
+import { GENERATORS, PB_SEEDS, BOX_BEHNKEN, TAGUCHI } from '../modules/doe-planner/domain/tables.js';
 import {
   matTranspose, matMul, matInverse, matDeterminant,
   matTrace, buildModelMatrix,

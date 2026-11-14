@@ -23,11 +23,14 @@ import {
   olsRegression, typeIIISS,
   normalOrderStatistics,
   estimableTerms,
-} from '../../engines/regression-engine.js';
-import { noncentralFCDF } from '../../engines/math-utils.js';
-import { defaultActiveTerms, termValue, compareTermIds } from '../../engines/doe-terms.js';
+} from '../../../engines/regression-engine.js';
+import { noncentralFCDF } from '../../../engines/math-utils.js';
+import { defaultActiveTerms, termValue, compareTermIds } from '../../../engines/doe-terms.js';
 
-import { GENERATORS } from './doe-planner-designs.js';
+import { decimalOr } from '../../../core/parse-decimal.js';
+import { computeVIF } from '../../../engines/vif-engine.js';
+import { computeDesignEfficiency } from '../../../engines/design-efficiency-engine.js';
+import { GENERATORS } from './tables.js';
 
 // ─── Alias Structure ────────────────────────────────────────────────
 
@@ -135,15 +138,12 @@ export function computeAliasStructure(k, p, designType) {
 // Delegated to the shared engine (js/engines/vif-engine.js).
 // Re-exported here for backwards compatibility.
 
-import { decimalOr } from '../../core/parse-decimal.js';
-import { computeVIF } from '../../engines/vif-engine.js';
 export { computeVIF };
 
 // ─── Design Efficiency Metrics ──────────────────────────────────────
 // Delegated to the shared engine (js/engines/design-efficiency-engine.js).
 // Re-exported here for backwards compatibility.
 
-import { computeDesignEfficiency } from '../../engines/design-efficiency-engine.js';
 export { computeDesignEfficiency };
 
 // ─── Power Analysis ─────────────────────────────────────────────────
@@ -430,77 +430,6 @@ export function analyzeResponse(codedMatrix, y, factorNames, alpha = 0.05, opts 
     stdResiduals,
     termNames: termsFit.map(resolveTermName),
   };
-}
-
-// ─── Main Effect Means ────────────────────────────────────────────────
-
-/**
- * Compute mean response at each level of each factor.
- * Used for main-effect plots.
- *
- * @param {number[][]} codedMatrix - n×k coded design matrix
- * @param {number[]} y - Response values
- * @returns {{ factor: number, levels: { coded: number, mean: number, count: number }[] }[]}
- */
-export function mainEffectMeans(codedMatrix, y) {
-  const k = codedMatrix[0].length;
-  const results = [];
-
-  for (let j = 0; j < k; j++) {
-    // Collect unique levels for this factor
-    const levelMap = new Map();
-    for (let i = 0; i < codedMatrix.length; i++) {
-      const lv = codedMatrix[i][j];
-      const key = Math.round(lv * 1000) / 1000; // avoid float issues
-      if (!levelMap.has(key)) levelMap.set(key, { sum: 0, count: 0 });
-      levelMap.get(key).sum += y[i];
-      levelMap.get(key).count++;
-    }
-
-    const levels = [...levelMap.entries()]
-      .sort((a, b) => a[0] - b[0])
-      .map(([coded, { sum, count }]) => ({
-        coded,
-        mean: sum / count,
-        count,
-      }));
-
-    results.push({ factor: j, levels });
-  }
-
-  return results;
-}
-
-// ─── Interaction Means ────────────────────────────────────────────────
-
-/**
- * Compute mean response at each level combination for a pair of factors.
- * Used for interaction plots.
- *
- * @param {number[][]} codedMatrix - n×k coded design matrix
- * @param {number[]} y - Response values
- * @param {number} fa - Factor A index
- * @param {number} fb - Factor B index
- * @returns {{ levelA: number, levelB: number, mean: number, count: number }[]}
- */
-export function interactionMeans(codedMatrix, y, fa, fb) {
-  const map = new Map();
-
-  for (let i = 0; i < codedMatrix.length; i++) {
-    const a = Math.round(codedMatrix[i][fa] * 1000) / 1000;
-    const b = Math.round(codedMatrix[i][fb] * 1000) / 1000;
-    const key = `${a}|${b}`;
-    if (!map.has(key)) map.set(key, { a, b, sum: 0, count: 0 });
-    const entry = map.get(key);
-    entry.sum += y[i];
-    entry.count++;
-  }
-
-  return [...map.values()]
-    .map(({ a, b, sum, count }) => ({
-      levelA: a, levelB: b, mean: sum / count, count,
-    }))
-    .sort((m1, m2) => m1.levelA - m2.levelA || m1.levelB - m2.levelB);
 }
 
 // ─── Normal Order Statistics ──────────────────────────────────────────

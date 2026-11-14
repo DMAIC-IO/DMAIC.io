@@ -2,7 +2,7 @@
  * D.Mike — EvopViewModel (viewmodel/evop.js)
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../test-utils.js';
-import { EvopViewModel } from '../../js/modules/doe-planner/viewmodel/evop.js';
+import { EvopViewModel } from '../../js/modules/doe-planner/legacy/evop.js';
 import { t, fakeContext, attach, plannedState, withDesign, linkWorksheet } from './doe-planner-vm-fakes.js';
 
 function setup() {

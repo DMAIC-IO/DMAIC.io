@@ -3,7 +3,7 @@
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { agentSnapshot } from '../../js/modules/doe-planner/doe-planner-read.js';
-import { withEdit } from '../../js/modules/doe-planner/doe-planner-runtable.js';
+import { withEdit } from '../../js/modules/doe-planner/domain/runtable.js';
 import { fakeContext, plannedState, withDesign, linkWorksheet } from './doe-planner-vm-fakes.js';
 
 suite('doe-planner read — plan', () => {

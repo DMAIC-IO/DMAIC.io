@@ -2,7 +2,7 @@
  * D.Mike — AnalysisViewModel (viewmodel/analysis.js)
  */
 import { suite, test, assertEqual, assertTrue, assertThrows } from '../test-utils.js';
-import { AnalysisViewModel } from '../../js/modules/doe-planner/viewmodel/analysis.js';
+import { AnalysisViewModel } from '../../js/modules/doe-planner/legacy/analysis.js';
 import { t, fakeContext, attach, plannedState, withDesign, linkWorksheet } from './doe-planner-vm-fakes.js';
 
 function setup() {

@@ -1,7 +1,7 @@
 /**
  * D.Mike — DoE Planner: Box-Behnken (designs/bb.js)
  */
-import { BOX_BEHNKEN } from '../doe-planner-designs.js';
+import { BOX_BEHNKEN } from '../tables.js';
 import { OK, fail } from './check.js';
 
 /** @type {import('./index.js').DesignType} */

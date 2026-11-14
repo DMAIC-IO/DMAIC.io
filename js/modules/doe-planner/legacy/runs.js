@@ -15,7 +15,7 @@ import {
 } from '../doe-planner-worksheet.js';
 import {
   buildRunTable, captureEdits, applyEdits, runRows, columnNames, resolveColumn, withEdit,
-} from '../doe-planner-runtable.js';
+} from '../domain/runtable.js';
 import {
   readResponses, staleness as stalenessOf, boundPct as boundPctOf, boundComplete as boundCompleteOf,
 } from '../doe-planner-responses.js';
@@ -117,7 +117,7 @@ export class RunsViewModel {
     const ctx = this._context;
     if (!m.design) throw new Error('no design yet: configure factors, responses and a design type first');
     if (this._previewGrid) this.capturePreviewEdits();
-    applyEdits(m);
+    m.design = applyEdits(m.design, m.previewEdits, m.factors, m.responses.length);
     if (m.worksheetRef) { this._removeOldWorksheet(m.worksheetRef); m.worksheetRef = null; }
     const expId = uid();
     const ref = createDesignWorksheet(ctx, m.design, m.factors, m.responses, m.doeName, 'improve', expId);

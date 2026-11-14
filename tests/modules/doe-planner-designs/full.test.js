@@ -2,7 +2,7 @@
  * D.Mike — design type "full" (designs/full.js)
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
-import full from '../../../js/modules/doe-planner/designs/full.js';
+import full from '../../../js/modules/doe-planner/domain/designs/full.js';
 import { stateWith, NO_SOURCE } from './state.js';
 
 suite('doe-planner designs — full', () => {

@@ -10,14 +10,14 @@ import {
   enumerateTerms, termDisplay, activateTerm, deactivateTerm, termSortKey,
 } from '../../../engines/doe-terms.js';
 import { augmentOptimalDesign } from '../../../engines/doe-planner-engine.js';
-import { evaluateDesign } from '../doe-planner-analysis.js';
+import { evaluateDesign } from '../domain/analysis.js';
 import {
   listProjectWorksheets, readSourceData, isWorksheetValid, appendDoERowsToWorksheet,
   createExperimentRecord, sourceRowCount,
 } from '../doe-planner-worksheet.js';
-import { codedToActualRows } from '../doe-planner-runtable.js';
+import { codedToActualRows } from '../domain/runtable.js';
 import { letter } from '../doe-planner-model.js';
-import optimal from '../designs/optimal.js';
+import optimal from '../domain/designs/optimal.js';
 import { requireBoolean, requireEnum, requireIndex, requireNumber } from '../../../core/agent/agent-argcheck.js';
 
 export class OptimalViewModel {
@@ -147,11 +147,17 @@ export class OptimalViewModel {
     return (`doe__term-chip${on}${locked}`).trim();
   }
 
+  /** Raises the requested optimal runs to the minimum; never lowers them. */
+  _raiseRunsToMinimum(m) {
+    const minRuns = optimal.minOptimalRuns(m, this._env());
+    if ((m.options.optimalRuns || 0) < minRuns) m.options.optimalRuns = minRuns;
+  }
+
   /** Stores the active terms sorted and raises the runs to the new minimum. */
   _applyActiveTerms(active) {
     const m = this.model;
     m.options.optimalActiveTerms = [...active].sort((a, b) => termSortKey(a).localeCompare(termSortKey(b)));
-    optimal.raiseRunsToMinimum(m, this._env());
+    this._raiseRunsToMinimum(m);
     this._save();
   }
 
@@ -361,7 +367,7 @@ export class OptimalViewModel {
       if (!known) throw new Error(`unknown worksheet ${JSON.stringify(instanceId)} / sheet ${JSON.stringify(sheetId)}; the planner's own datasheet is no source`);
       m.sourceWorksheet = { instanceId, sheetId };
     }
-    if (m.isOptimalType()) optimal.raiseRunsToMinimum(m, this._env());
+    if (m.isOptimalType()) this._raiseRunsToMinimum(m);
     this._save();
   }
 

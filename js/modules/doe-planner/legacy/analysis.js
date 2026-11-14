@@ -7,10 +7,10 @@
  * linked datasheet (another module's state); rev() makes the view
  * recompute when it changes.
  */
-import { computeDispersionAnalysis } from '../doe-planner-analysis.js';
+import { computeDispersionAnalysis } from '../domain/analysis.js';
 import { isWorksheetValid } from '../doe-planner-worksheet.js';
 import { readResponses, staleness } from '../doe-planner-responses.js';
-import { designOf } from '../designs/index.js';
+import { designOf } from '../domain/designs/index.js';
 import { letter } from '../doe-planner-model.js';
 import { uid } from '../../../core/uid.js';
 import { requireIndex } from '../../../core/agent/agent-argcheck.js';

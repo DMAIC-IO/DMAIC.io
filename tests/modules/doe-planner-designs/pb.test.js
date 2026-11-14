@@ -2,7 +2,7 @@
  * D.Mike — design type "pb" (designs/pb.js)
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
-import pb from '../../../js/modules/doe-planner/designs/pb.js';
+import pb from '../../../js/modules/doe-planner/domain/designs/pb.js';
 import { stateWith, NO_SOURCE } from './state.js';
 
 suite('doe-planner designs — pb', () => {

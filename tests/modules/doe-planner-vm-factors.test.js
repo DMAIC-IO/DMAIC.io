@@ -3,7 +3,7 @@
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertThrows } from '../test-utils.js';
 import { State } from '../../js/modules/doe-planner/doe-planner-model.js';
-import { FactorsViewModel } from '../../js/modules/doe-planner/viewmodel/factors.js';
+import { FactorsViewModel } from '../../js/modules/doe-planner/legacy/factors.js';
 import { t, fakeContext, attach, plannedState } from './doe-planner-vm-fakes.js';
 
 function setup(model = plannedState()) {

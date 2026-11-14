@@ -2,7 +2,7 @@
  * D.Mike — design type "bb" (designs/bb.js)
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
-import bb from '../../../js/modules/doe-planner/designs/bb.js';
+import bb from '../../../js/modules/doe-planner/domain/designs/bb.js';
 import { stateWith, NO_SOURCE } from './state.js';
 
 const three = (extra = {}) => stateWith({

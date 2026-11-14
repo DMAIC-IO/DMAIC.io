@@ -2,7 +2,7 @@
  * D.Mike — design types "dopt"/"aopt"/"gopt" (designs/optimal.js)
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
-import optimal from '../../../js/modules/doe-planner/designs/optimal.js';
+import optimal from '../../../js/modules/doe-planner/domain/designs/optimal.js';
 import { stateWith, NO_SOURCE } from './state.js';
 
 suite('doe-planner designs — optimal', () => {
@@ -21,16 +21,11 @@ suite('doe-planner designs — optimal', () => {
     assertEqual(optimal.minNewRuns(s, { sourceRowCount: 10 }), 1);
   });
 
-  test('raiseRunsToMinimum raises too few runs and never lowers', () => {
+  test('minOptimalRuns returns the minimum for the active terms and the source and leaves the model alone', () => {
     const s = stateWith({ designType: 'dopt', options: { optimalRuns: 2 } });
-    optimal.raiseRunsToMinimum(s, NO_SOURCE);
-    assertEqual(s.options.optimalRuns, 4);
-    s.options.optimalRuns = 9;
-    optimal.raiseRunsToMinimum(s, NO_SOURCE);
-    assertEqual(s.options.optimalRuns, 9);
-    s.options.optimalRuns = 0;
-    optimal.raiseRunsToMinimum(s, { sourceRowCount: 2 });
+    assertEqual(optimal.minOptimalRuns(s, NO_SOURCE), 4);
     assertEqual(s.options.optimalRuns, 2);
+    assertEqual(optimal.minOptimalRuns(s, { sourceRowCount: 2 }), 2);
   });
 
   test('too few runs is invalid', () => {

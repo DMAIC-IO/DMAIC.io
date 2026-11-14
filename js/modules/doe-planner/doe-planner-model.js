@@ -12,7 +12,7 @@
  */
 
 import { defaultActiveTerms, parseTermId, termsFromLegacyOptions, designModelTerms } from '../../engines/doe-terms.js';
-import { computeEVOPEffects, recenteredFactors } from './doe-planner-analysis.js';
+import { computeEVOPEffects, recenteredFactors } from './domain/analysis.js';
 
 const OPTIMAL_TYPES = ['dopt', 'aopt', 'gopt'];
 

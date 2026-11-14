@@ -2,7 +2,7 @@
  * D.Mike — design type "frac" (designs/frac.js)
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
-import frac from '../../../js/modules/doe-planner/designs/frac.js';
+import frac from '../../../js/modules/doe-planner/domain/designs/frac.js';
 import { stateWith, NO_SOURCE } from './state.js';
 
 const t = (key) => `t:${key}`;

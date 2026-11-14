@@ -2,7 +2,7 @@
  * D.Mike — OptimalViewModel (viewmodel/optimal.js)
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertThrows } from '../test-utils.js';
-import { OptimalViewModel } from '../../js/modules/doe-planner/viewmodel/optimal.js';
+import { OptimalViewModel } from '../../js/modules/doe-planner/legacy/optimal.js';
 import { t, fakeContext, attach, plannedState } from './doe-planner-vm-fakes.js';
 
 function setup(ctxOverrides = {}) {

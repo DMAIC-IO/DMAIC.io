@@ -2,7 +2,7 @@
  * D.Mike — RunsViewModel (viewmodel/runs.js)
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../test-utils.js';
-import { RunsViewModel } from '../../js/modules/doe-planner/viewmodel/runs.js';
+import { RunsViewModel } from '../../js/modules/doe-planner/legacy/runs.js';
 import { t, fakeContext, attach, plannedState, withDesign, linkWorksheet } from './doe-planner-vm-fakes.js';
 
 function setup(model = withDesign(plannedState())) {

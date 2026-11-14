@@ -6,9 +6,9 @@
  * condition number, leverage, VIF, alias structure and power. Read-only: it
  * writes nothing.
  */
-import { powerDisplay } from '../doe-planner-analysis.js';
+import { powerDisplay } from '../domain/analysis.js';
 import { sourceRowCount } from '../doe-planner-worksheet.js';
-import { designOf, checkConfig, plannedRuns } from '../designs/index.js';
+import { designOf, checkConfig, plannedRuns } from '../domain/designs/index.js';
 
 /** Algorithm Lab entry of the efficiency cards. */
 const ALGO_ID_DEFF = 'd-efficiency';

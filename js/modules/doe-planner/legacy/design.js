@@ -8,14 +8,14 @@
  * Box-Behnken center points). What a type is lives in designs/; this class
  * only writes the model and saves.
  */
-import { PB_DESIGNS, ALL_RUNS, K_RANGE, BOX_BEHNKEN } from '../doe-planner-designs.js';
+import { PB_DESIGNS, ALL_RUNS, K_RANGE, BOX_BEHNKEN } from '../domain/tables.js';
 import { sourceRowCount } from '../doe-planner-worksheet.js';
-import { DESIGNS, DESIGN_KEYS, designOf } from '../designs/index.js';
-import { hasMultiLevel } from '../designs/check.js';
-import frac from '../designs/frac.js';
-import bb from '../designs/bb.js';
-import taguchi from '../designs/taguchi.js';
-import optimal from '../designs/optimal.js';
+import { DESIGNS, DESIGN_KEYS, designOf } from '../domain/designs/index.js';
+import { hasMultiLevel } from '../domain/designs/check.js';
+import frac from '../domain/designs/frac.js';
+import bb from '../domain/designs/bb.js';
+import taguchi from '../domain/designs/taguchi.js';
+import optimal from '../domain/designs/optimal.js';
 import { requireBoolean, requireEnum, requireIndex, requireNumber } from '../../../core/agent/agent-argcheck.js';
 
 /** Type picker entries with their formula. */

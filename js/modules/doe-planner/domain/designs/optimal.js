@@ -2,7 +2,7 @@
  * D.Mike — DoE Planner: D-/A-/G-optimal designs (designs/optimal.js)
  * One module for all three criteria; the criterion is model.designType.
  */
-import { minRunsForTerms } from '../../../engines/doe-planner-engine.js';
+import { minRunsForTerms } from '../../../../engines/doe-planner-engine.js';
 import { OK, fail } from './check.js';
 
 const LABELS = { dopt: 'D-Opt', aopt: 'A-Opt', gopt: 'G-Opt' };
@@ -39,15 +39,13 @@ const optimal = {
     return m > 0 ? Math.max(1, minRuns - m) : minRuns;
   },
   /**
-   * Raise the requested runs to the minimum the active terms and the source
-   * need; never lowers them.
+   * The minimum number of runs the active terms and the source need.
    * @param {object} model
    * @param {{sourceRowCount: number}} env
-   * @returns {void}
+   * @returns {number}
    */
-  raiseRunsToMinimum(model, env) {
-    const minNew = optimal.minNewRuns(model, env);
-    if ((model.options.optimalRuns || 0) < minNew) model.options.optimalRuns = minNew;
+  minOptimalRuns(model, env) {
+    return optimal.minNewRuns(model, env);
   },
 };
 

@@ -32,11 +32,10 @@ import {
   fDistCDF,
   tDistPValue,
   olsRegression,
-} from '../../js/modules/doe-planner/doe-planner-math.js';
+} from '../../js/engines/regression-engine.js';
 
 import {
   analyzeResponse,
-  mainEffectMeans,
   normalOrderStatistics,
   computeEVOPEffects,
   recenteredFactors,
@@ -44,7 +43,7 @@ import {
   computePowerAnalysis,
   powerDisplay,
   evaluateDesign,
-} from '../../js/modules/doe-planner/doe-planner-analysis.js';
+} from '../../js/modules/doe-planner/domain/analysis.js';
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -535,18 +534,6 @@ suite('DoE Analysis: analyzeResponse', () => {
         }
       }
     }
-  });
-});
-
-suite('DoE Analysis: mainEffectMeans', () => {
-  test('Computes correct means for 2^2', () => {
-    const coded = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
-    const y = [10, 20, 15, 25];
-    const means = mainEffectMeans(coded, y);
-    assertEqual(means.length, 2);
-    // Factor 0: low mean = (10+15)/2=12.5, high mean = (20+25)/2=22.5
-    assertAlmostEqual(means[0].levels[0].mean, 12.5, 1e-6);
-    assertAlmostEqual(means[0].levels[1].mean, 22.5, 1e-6);
   });
 });
 
