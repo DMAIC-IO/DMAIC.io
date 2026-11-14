@@ -270,6 +270,21 @@
     },
     "experiment": {
       "help": "Das Experiment des Datenblatts, wie es mit ihm geschrieben wurde (nicht der aktuelle Plan); null ohne Datenblatt oder Momentaufnahme."
+    },
+    "resRows": {
+      "help": "Die Zeilen der Auflösungstabelle: je Laufzahl die Zellen je Faktorzahl mit Auflösung; wählbar sind die Zellen der aktuellen Faktorzahl. Reine Darstellung."
+    },
+    "resAlias": {
+      "help": "Generatoren, definierende Relation und Vermengungen des gewählten teilfaktoriellen Plans, mit den Faktornamen. Reine Darstellung."
+    },
+    "taguchiCandidates": {
+      "help": "Die Taguchi-Arrays, die zu den Faktoren und ihren Stufen passen. Reine Darstellung."
+    },
+    "sourceMapping": {
+      "help": "Was das Quell-Worksheet liefert: übernommene Versuche und erkannte Zielgrößen, oder warum es sich nicht lesen lässt. Reine Darstellung."
+    },
+    "assessment": {
+      "help": "Die Bewertung des aktuellen Plans in Anzeigeform: Effizienzen, Konditionszahl, Hebelwirkung, VIF, Vermengungen und Power. Reine Darstellung."
     }
   },
   "actions": {
@@ -475,7 +490,7 @@
   },
   "state": {
     "termGroupExpanded": {
-      "help": "Die ids der aufgeklappten Termgruppen des optimalen Plans; die Terme der Gruppe sind dann sichtbar. Rein eine Ansicht; sie wird nicht gespeichert."
+      "help": "Die Indizes der Termgruppen des optimalen Plans, die gegenüber der Vorgabe auf- oder zugeklappt wurden; offen sind zu Beginn alle Gruppen bis zu den Zweifach-Wechselwirkungen. Rein eine Ansicht; sie wird nicht gespeichert."
     },
     "forbiddenDraft": {
       "help": "Der Entwurf einer neuen verbotenen Faktorkombination: je Faktor eine Stufe oder leer für jede. addForbiddenVertex übernimmt ihn. Rein eine Ansicht; sie wird nicht gespeichert."
@@ -488,8 +503,8 @@
     "Evaluation": {
       "efficiency": "D-, A- und G-Effizienz in Prozent, Konditionszahl und größte Hebelwirkung.",
       "vif": "Varianzinflationsfaktor je Modellterm; 1 heißt unabhängig, über 10 stark vermengt.",
-      "alias": "Generatoren und je Term die Terme, mit denen er vermengt ist; null ohne Vermengung.",
-      "power": "Trennschärfe je Effektgröße; null ohne Freiheitsgrade für den Fehler."
+      "alias": "Generatoren und je Term die Terme, mit denen er vermengt ist; fehlt ohne Vermengung.",
+      "power": "Trennschärfe je Effektgröße; ohne Freiheitsgrade für den Fehler bleibt sie leer."
     },
     "Summary": {
       "runs": "Geplante Läufe mit Wiederholungen; die Zahl fehlt, solange der Plantyp keine liefert.",

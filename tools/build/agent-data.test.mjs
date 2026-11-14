@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, readdirSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -10,6 +10,24 @@ import { readHelpTables, lookup, helpExists, STRUCTURE_JARGON, typedefHelpSuffix
 import { helpKeysInTemplates, helpKeysInScripts, helpKeysInSharedSources,
   BOUND_HELP_KEY_FAMILIES } from './help-anchors.mjs';
 import ts from 'typescript';
+import { CONVERTED_MODULES } from './converted-modules.mjs';
+
+/**
+ * Die Hilfetabellen, in denen ein Anker nachschlägt: Vorlagen unter
+ * `resources/` lesen auch die Texte unter `resources/i18n` ihres Moduls —
+ * ein Modul, das seine neue Form neben der alten aufbaut, bringt sie dort
+ * mit, bevor es in CONVERTED_MODULES steht. Die übrigen Vorlagen lesen wie
+ * die Laufzeit.
+ * @param {string} appDir
+ * @returns {(file: string) => Record<string, object>}
+ */
+function helpTablesFor(appDir) {
+  const base = readHelpTables(appDir);
+  const dir = join(appDir, 'js', 'modules');
+  const own = readdirSync(dir).filter((id) => !CONVERTED_MODULES.includes(id) && existsSync(join(dir, id, 'resources', 'i18n')));
+  const withResources = own.length ? readHelpTables(appDir, [...CONVERTED_MODULES, ...own]) : base;
+  return (file) => (file.startsWith('resources/') ? withResources : base);
+}
 
 /**
  * Build a throwaway app dir.
@@ -1551,6 +1569,7 @@ test('i18n-Tor: jeder Anker-Schlüssel (Vorlage, Modul-JS, geteilter Baustein) l
   const appDir = join(import.meta.dirname, '..', '..');
   const { modules } = await collectAgentData(appDir);
   const trees = readHelpTables(appDir);
+  const tablesOf = helpTablesFor(appDir);
   const broken = [];
   let checked = 0;
   for (const [id, entry] of Object.entries(modules)) {
@@ -1559,7 +1578,7 @@ test('i18n-Tor: jeder Anker-Schlüssel (Vorlage, Modul-JS, geteilter Baustein) l
       checked += 1;
       // `context-help.js` fragt NUR dieses Literal (`i18n.exists(key)`) und
       // kennt keinen geteilten Rückfall — ein Tippfehler heißt: kein Knopf.
-      for (const [lang, tree] of Object.entries(trees)) {
+      for (const [lang, tree] of Object.entries(tablesOf(file))) {
         if (lookup(tree, key) === undefined) broken.push(`${lang}: ${file} → ${key}`);
       }
     }
@@ -1581,11 +1600,12 @@ test('i18n-Tor: ein verankerter Satz (Vorlage, Modul-JS, geteilter Baustein) ent
   const appDir = join(import.meta.dirname, '..', '..');
   const { modules } = await collectAgentData(appDir);
   const trees = readHelpTables(appDir);
+  const tablesOf = helpTablesFor(appDir);
   const jargon = [];
   for (const [id, entry] of Object.entries(modules)) {
     if (entry.available !== true) continue;
     for (const [file, key] of [...helpKeysInTemplates(appDir, id), ...helpKeysInScripts(appDir, id)]) {
-      for (const [lang, tree] of Object.entries(trees)) {
+      for (const [lang, tree] of Object.entries(tablesOf(file))) {
         const text = lookup(tree, key);
         const hit = text && STRUCTURE_JARGON.exec(text);
         if (hit) jargon.push(`${lang}: ${file} → ${key} („${hit[0]}")`);

@@ -1,21 +1,580 @@
 <div class="doe dmike-split dmike-split--input-lg" x-data="doePlanner">
   <div class="doe__input dmike-split__input">
+
+    <!-- Name bar -->
+    <div class="doe__name-bar">
+      <label class="doe__name-label" data-help-key="modules.doe-planner.fields.doeName.help" x-text="nameLabel"></label>
+      <input type="text" class="field doe__name-input" x-model="model.doeName" :placeholder="t('doeNamePlaceholder')" />
+    </div>
+
+    <!-- ── Factors ─────────────────────────────────────────────── -->
     <div class="dmike-split__section-title" data-help-key="modules.doe-planner.fields.factors.help" x-text="t('stepFactors')"></div>
+    <div class="doe__factors-list">
+      <template x-for="(f, fi) in model.factors" :key="f.id">
+        <div class="doe__factor-row" :data-factor-id="f.id" :data-factor-kind="factorKind(f)">
+          <div class="doe__factor-top">
+            <span class="doe__factor-letter" x-text="factorLetter(fi)"></span>
+            <input type="text" class="field doe__factor-name" :data-factor-id="f.id"
+                   :class="factorNameClass(f)" :title="factorNameTitle(f)"
+                   x-model.lazy="f.name" :placeholder="t('factorNamePlaceholder')" />
+            <input type="text" class="field doe__factor-unit doe__factor-unit--narrow" :data-factor-id="f.id"
+                   x-model.lazy="f.unit" :placeholder="t('factorUnitPlaceholder')"
+                   :disabled="isCategorical(f)" :title="factorUnitTitle(f)" />
+            <select class="field doe__factor-kind" :data-factor-id="f.id" :title="t('factorKindLabel')"
+                    @change="kindChanged(f, $event)">
+              <option value="continuous" :selected="isKind(f, 'continuous')" x-text="t('factorKindContinuous')"></option>
+              <option value="categorical" :selected="isKind(f, 'categorical')" x-text="t('factorKindCategorical')"></option>
+            </select>
+            <button class="doe__factor-remove-btn" type="button" :data-factor-id="f.id" data-help-key=""
+                    :title="t('removeFactor')" x-command="removeFactor" :data-arg-id="f.id">&#10005;</button>
+          </div>
+          <div class="doe__levels-row">
+            <button class="doe__insert-level-btn" type="button" :data-factor-id="f.id" data-insert-at="0" data-help-key=""
+                    :title="t('insertLevel')" x-command="insertLevel" :data-arg-id="f.id" data-arg-at="0">+</button>
+            <template x-for="(val, li) in f.levels" :key="li">
+              <div class="doe__level-frag">
+                <div class="doe__level-chip">
+                  <span class="doe__level-num" x-text="levelNumber(li)"></span>
+                  <input type="text" inputmode="decimal" class="field doe__factor-level-input"
+                         :data-factor-id="f.id" :data-level-idx="li"
+                         :value="val" @change="levelChanged(f, li, $event)"
+                         :placeholder="levelPlaceholder(f)" />
+                  <template x-if="canRemoveLevel(f)">
+                    <button class="doe__remove-level-btn" type="button" :data-factor-id="f.id" :data-level-idx="li" data-help-key=""
+                            :title="t('removeLevel')" x-command="removeLevel" :data-arg-id="f.id" :data-arg-index="li">&#10005;</button>
+                  </template>
+                </div>
+                <button class="doe__insert-level-btn" type="button" :data-factor-id="f.id" :data-insert-at="afterLevel(li)" data-help-key=""
+                        :title="t('insertLevel')" x-command="insertLevel" :data-arg-id="f.id" :data-arg-at="afterLevel(li)">+</button>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+    </div>
+    <button class="btn btn--sm doe__add-factor-btn" type="button" x-command="addFactor"><span x-text="addFactorLabel"></span></button>
+
+    <!-- ── Responses ───────────────────────────────────────────── -->
     <div class="dmike-split__section-title" data-help-key="modules.doe-planner.fields.responses.help" x-text="t('stepResponses')"></div>
+    <div class="doe__responses-list">
+      <template x-for="(r, ri) in model.responses" :key="ri">
+        <div class="doe__response-row" :data-response-idx="ri">
+          <div class="doe__response-top">
+            <span class="doe__response-letter" x-text="responseLetter(ri)"></span>
+            <input type="text" class="field doe__response-name" :data-idx="ri"
+                   x-model.lazy="r.name" :placeholder="t('responseNamePlaceholder')" />
+            <input type="text" class="field doe__response-unit doe__factor-unit--narrow" :data-idx="ri"
+                   x-model.lazy="r.unit" :placeholder="t('responseUnitPlaceholder')" />
+            <template x-if="canRemoveResponse">
+              <button class="doe__response-remove-btn" type="button" :data-idx="ri" data-help-key=""
+                      :title="t('removeResponse')" x-command="removeResponse" :data-arg-index="ri">&#10005;</button>
+            </template>
+          </div>
+        </div>
+      </template>
+    </div>
+    <button class="btn btn--sm doe__add-response-btn" type="button" x-command="addResponse"><span x-text="addResponseLabel"></span></button>
+
+    <!-- ── Design type ─────────────────────────────────────────── -->
     <div class="dmike-split__section-title" data-help-key="modules.doe-planner.fields.designType.help" x-text="t('stepDesignType')"></div>
+
+    <template x-if="recommendation">
+      <div class="doe__recommendation">
+        <span class="doe__recommendation-icon icon icon--sm" data-icon="status.insight" aria-hidden="true"></span>
+        <span class="doe__recommendation-text" x-text="recommendationText"></span>
+        <button class="doe__recommendation-btn" :data-rec-type="recommendation" type="button"
+                x-command="applyRecommendation" x-text="recommendationLabel"></button>
+      </div>
+    </template>
+
+    <div class="doe__design-options" role="radiogroup" :aria-label="t('stepDesignType')">
+      <template x-for="dt in designTypes" :key="dt.key">
+        <button class="doe__design-opt" role="radio" :aria-checked="isDesignType(dt)"
+                :class="designOptClass(dt)" :data-type="dt.key" type="button" data-help-key=""
+                :disabled="designOptDisabled(dt)" :title="designOptTip(dt)"
+                x-command="selectDesignType" :data-arg-type="dt.key" :data-arg-source-row-count="sourceRowCount">
+          <span class="doe__design-opt-label" x-text="designLabel(dt)"></span>
+          <!-- full/frac carry superscripts (no x-text); full is a product with more levels. -->
+          <template x-if="showPowerFormula(dt)">
+            <span class="doe__design-opt-desc">2<sup>k</sup></span>
+          </template>
+          <template x-if="showProductFormula(dt)">
+            <span class="doe__design-opt-desc" x-text="fullProductFormula"></span>
+          </template>
+          <template x-if="showFracFormula(dt)">
+            <span class="doe__design-opt-desc">2<sup>(k&minus;p)</sup></span>
+          </template>
+          <template x-if="showPlainFormula(dt)">
+            <span class="doe__design-opt-desc" x-text="dt.formula"></span>
+          </template>
+        </button>
+      </template>
+    </div>
+
+    <!-- Resolution table (frac) -->
+    <template x-if="isType('frac')">
+      <div class="doe__sub-panel">
+        <div class="dmike-split__section-title" data-help-key="modules.doe-planner.actions.selectResolution.help" x-text="t('resTableTitle')"></div>
+        <div class="doe__res-info" x-text="resInfoText"></div>
+        <div class="doe__res-table-wrap">
+          <table class="doe__res-table">
+            <thead>
+              <tr>
+                <th class="doe__res-corner" x-text="t('runs')"></th>
+                <th class="doe__res-factors-head" :colspan="kRange.length" x-text="t('factorsHeader')"></th>
+              </tr>
+              <tr>
+                <th class="doe__res-corner"></th>
+                <template x-for="k in kRange" :key="k">
+                  <th :class="resColClass(k)" x-text="k"></th>
+                </template>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="row in resTable" :key="row.runs">
+                <tr>
+                  <td class="doe__res-run-label" x-text="row.runs"></td>
+                  <template x-for="c in row.cells" :key="c.k">
+                    <td>
+                      <template x-if="c.selectable">
+                        <span class="doe__res-cell" :class="c.cls" data-help-key=""
+                              :data-k="c.k" :data-runs="c.runs" :data-res="c.res" :data-p="c.p"
+                              x-command="selectResolution" :data-arg-k="c.k" :data-arg-runs="c.runs"
+                              x-text="c.label"></span>
+                      </template>
+                      <template x-if="!c.selectable">
+                        <span class="doe__res-cell" :class="c.cls" x-text="c.label"></span>
+                      </template>
+                    </td>
+                  </template>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+        <template x-if="aliasDetail">
+          <div class="doe__res-alias-detail">
+            <span class="doe__res-alias-detail-title" x-text="t('aliasDetailTitle')"></span>
+            <template x-if="aliasDetail.generators.length">
+              <div class="doe__res-alias-section">
+                <span class="doe__res-alias-label" x-text="generatorsLabel"></span>
+                <template x-for="(g, gi) in aliasDetail.generators" :key="gi">
+                  <code class="doe__res-alias-code" x-text="g"></code>
+                </template>
+              </div>
+            </template>
+            <template x-if="aliasDetail.defining.length">
+              <div class="doe__res-alias-section">
+                <span class="doe__res-alias-label" x-text="definingLabel"></span>
+                <template x-for="(w, wi) in aliasDetail.defining" :key="wi">
+                  <code class="doe__res-alias-code" x-text="w"></code>
+                </template>
+              </div>
+            </template>
+            <template x-if="aliasDetail.aliases.length">
+              <table class="doe__res-alias-table">
+                <thead><tr><th data-help-key="modules.doe-planner.types.DoeColumns.term" x-text="t('term')"></th><th data-help-key="modules.doe-planner.types.DoeColumns.aliasedWith" x-text="t('aliasedWith')"></th></tr></thead>
+                <tbody>
+                  <template x-for="(a, ai) in aliasDetail.aliases" :key="ai">
+                    <tr>
+                      <td><code x-text="a.term"></code></td>
+                      <td x-text="a.aliasedWith"></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </template>
+          </div>
+        </template>
+        <div class="doe__res-legend">
+          <span class="doe__res-legend-title" x-text="t('resLegendTitle')"></span>
+          <dl class="doe__res-legend-list">
+            <div class="doe__res-legend-item"><dt><span class="doe__res-cell doe__res-full" x-text="t('resFull')"></span></dt><dd x-text="t('resLegendFull')"></dd></div>
+            <div class="doe__res-legend-item"><dt><span class="doe__res-cell doe__res-vii">VII</span></dt><dd x-text="t('resLegendVII')"></dd></div>
+            <div class="doe__res-legend-item"><dt><span class="doe__res-cell doe__res-vi">VI</span></dt><dd x-text="t('resLegendVI')"></dd></div>
+            <div class="doe__res-legend-item"><dt><span class="doe__res-cell doe__res-v">V</span></dt><dd x-text="t('resLegendV')"></dd></div>
+            <div class="doe__res-legend-item"><dt><span class="doe__res-cell doe__res-iv">IV</span></dt><dd x-text="t('resLegendIV')"></dd></div>
+            <div class="doe__res-legend-item"><dt><span class="doe__res-cell doe__res-iii">III</span></dt><dd x-text="t('resLegendIII')"></dd></div>
+          </dl>
+        </div>
+      </div>
+    </template>
+
+    <!-- Plackett-Burman -->
+    <template x-if="isType('pb')">
+      <div class="doe__sub-panel">
+        <div class="dmike-split__section-title" data-help-key="modules.doe-planner.actions.selectPB.help" x-text="t('pbTitle')"></div>
+        <div class="doe__pb-info" x-text="pbInfoText"></div>
+        <table class="doe__pb-table">
+          <thead><tr><th></th><th x-text="t('factors')"></th><th x-text="t('runs')"></th></tr></thead>
+          <tbody>
+            <template x-for="(d, di) in pbDesigns" :key="di">
+              <tr class="doe__pb-row" :class="pbRowClass(di)" :data-idx="di" data-help-key=""
+                  x-command="selectPB" :data-arg-index="di">
+                <td><span class="doe__pb-radio"></span></td>
+                <td x-text="d.label"></td>
+                <td x-text="d.runs"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </template>
+
+    <!-- Box-Behnken -->
+    <template x-if="isType('bb')">
+      <div class="doe__sub-panel">
+        <div class="dmike-split__section-title" x-text="t('bbTitle')"></div>
+        <div class="doe__bb-info-body">
+          <template x-if="bbAvailable">
+            <p class="doe__bb-detail" x-text="bbDetailText"></p>
+          </template>
+          <template x-if="!bbAvailable">
+            <p class="doe__bb-warning" x-text="bbWarningText"></p>
+          </template>
+        </div>
+      </div>
+    </template>
+
+    <!-- Taguchi -->
+    <template x-if="isType('taguchi')">
+      <div class="doe__sub-panel">
+        <div class="dmike-split__section-title" data-help-key="modules.doe-planner.actions.selectTaguchi.help" x-text="t('taguchiTitle')"></div>
+        <div class="doe__taguchi-info" x-text="taguchiInfoText"></div>
+        <template x-if="hasTaguchiCandidates">
+          <table class="doe__taguchi-table">
+            <thead><tr>
+              <th></th>
+              <th x-text="t('taguchiArray')"></th>
+              <th x-text="t('runs')"></th>
+              <th x-text="t('taguchiMaxFactors')"></th>
+            </tr></thead>
+            <tbody>
+              <template x-for="(oa, i) in taguchiList" :key="taguchiKey(oa, i)">
+                <tr class="doe__taguchi-row" :class="taguchiRowClass(oa)" :data-oa="oa.name" data-help-key=""
+                    x-command="selectTaguchi" :data-arg-name="oa.name">
+                  <td><span class="doe__taguchi-radio"></span></td>
+                  <td><strong x-text="oa.name"></strong></td>
+                  <td x-text="oa.runs"></td>
+                  <td x-text="oa.maxFactors"></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </template>
+        <template x-if="!hasTaguchiCandidates">
+          <p class="doe__taguchi-warning" x-text="taguchiWarningText"></p>
+        </template>
+      </div>
+    </template>
+
+    <!-- Optimal designs -->
+    <template x-if="isOptimal">
+      <div class="doe__sub-panel">
+        <div class="dmike-split__section-title" x-text="t('optimalTitle')"></div>
+        <div class="doe__optimal-info" x-text="optimalInfo"></div>
+        <div class="field-group">
+          <label class="doe__input-label" data-help-key="modules.doe-planner.fields.options.optimalRuns.help" x-text="optimalRunsLabel"></label>
+          <input class="field doe__optimal-runs-input" data-help-key="" x-field="model.options.optimalRuns" />
+          <span class="doe__optimal-hint" x-text="optimalRunsHint"></span>
+        </div>
+
+        <template x-if="hasFactors">
+          <div class="doe__term-list-wrap">
+            <div class="doe__term-list-label" data-help-key="modules.doe-planner.actions.setTerm.help" x-text="t('modelTerms')"></div>
+            <div class="doe__term-list-hint" x-text="t('modelTermsHintHier')"></div>
+            <div class="doe__term-list">
+              <template x-for="(g, gi) in termGroups" :key="gi">
+                <div class="doe__term-group" :class="termGroupClass(gi, g)" :data-group-idx="gi">
+                  <button type="button" class="doe__term-group-header" :data-group-idx="gi" @click="toggleTermGroup(gi)">
+                    <span class="doe__term-group-arrow icon icon--sm" :data-icon="termGroupIcon(gi, g)" aria-hidden="true"></span>
+                    <span class="doe__term-group-title" x-text="termGroupTitle(g)"></span>
+                    <span class="doe__term-group-count" x-text="termGroupCount(g)"></span>
+                  </button>
+                  <div class="doe__term-group-body">
+                    <template x-if="isTermGroupOpen(gi, g)">
+                      <div class="doe__term-group-items">
+                        <template x-for="id in g.ids" :key="id">
+                          <label class="doe__term-chip" :class="termChipClass(g, id)">
+                            <input type="checkbox" class="doe__term-check"
+                                   :data-term-id="id" :checked="termActive(id)"
+                                   :disabled="isMainGroup(g)" @change="termChanged(id, $event)" />
+                            <span x-text="termLabel(id)"></span>
+                          </label>
+                        </template>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
+
+        <div class="doe__forbidden-block">
+          <div class="doe__forbidden-title" data-help-key="modules.doe-planner.actions.addForbiddenVertex.help" x-text="t('forbiddenTitle')"></div>
+          <div class="doe__forbidden-hint" x-text="t('forbiddenHint')"></div>
+          <ul class="doe__forbidden-list">
+            <template x-if="forbiddenEmpty">
+              <li class="doe__forbidden-empty" x-text="t('forbiddenEmpty')"></li>
+            </template>
+            <template x-for="(rule, ri) in forbiddenList" :key="ri">
+              <li class="doe__forbidden-row" :data-rule-idx="ri">
+                <span class="doe__forbidden-rule" x-text="forbiddenRuleText(rule)"></span>
+                <button type="button" class="doe__forbidden-remove-btn" :data-rule-idx="ri" data-help-key=""
+                        :title="t('forbiddenRemoveTitle')" x-command="removeForbiddenVertex" :data-arg-index="ri">&#10005;</button>
+              </li>
+            </template>
+          </ul>
+          <div class="doe__forbidden-add" :data-factor-count="model.factors.length">
+            <template x-for="(f, fi) in model.factors" :key="f.id">
+              <label class="doe__forbidden-factor">
+                <span class="doe__forbidden-factor-name" x-text="factorDisplayName(f, fi)"></span>
+                <select class="doe__forbidden-input" :data-factor-idx="fi" @change="draftChanged(fi, $event)">
+                  <option value="" :selected="isDraftAny(fi)" x-text="t('forbiddenAny')"></option>
+                  <template x-for="(opt, li) in forbiddenOptions(fi)" :key="li">
+                    <option :value="opt.value" :selected="isDrafted(fi, opt)" x-text="opt.label"></option>
+                  </template>
+                </select>
+              </label>
+            </template>
+            <button type="button" class="btn btn--secondary doe__forbidden-add-btn"
+                    @click="addForbidden()" x-text="t('forbiddenAddBtn')"></button>
+          </div>
+        </div>
+
+        <template x-if="!optimalRunsValid">
+          <div class="doe__optimal-warning" x-text="optimalTooFewText"></div>
+        </template>
+
+        <div class="doe__source-section">
+          <div class="doe__source-label" data-help-key="modules.doe-planner.actions.setSourceWorksheet.help" x-text="t('sourceTitle')"></div>
+          <div class="doe__source-hint" x-text="t('sourceHint')"></div>
+          <select class="field doe__source-select" @change="sourceChanged($event)">
+            <option value="" :selected="noSource" x-text="t('sourceNone')"></option>
+            <template x-for="(s, i) in sourceOptions" :key="sourceOptionKey(s, i)">
+              <option :value="s.key" :selected="isSource(s)" x-text="s.label"></option>
+            </template>
+          </select>
+          <template x-if="sourceMappingStatus">
+            <div :class="sourceMappingClass" x-text="sourceMappingStatus.text"></div>
+          </template>
+        </div>
+      </div>
+    </template>
+
+    <!-- ── Parameters ──────────────────────────────────────────── -->
     <div class="dmike-split__section-title" data-help-key="modules.doe-planner.fields.options.help" x-text="t('stepParameters')"></div>
-  </div>
-  <div class="doe__output dmike-split__output">
-    <div class="doe__output-content">
-      <div class="dmike-split__output-section-header">
-        <span class="dmike-split__output-section"><span x-text="t('stepResults')"></span></span>
+    <div class="doe__param-group">
+      <div class="field-checks">
+        <div class="doe__randomize-row">
+          <label class="field-check">
+            <input type="checkbox" class="doe__randomize-check" x-model="model.options.randomize" />
+            <span data-help-key="modules.doe-planner.fields.options.randomize.help" x-text="t('optRandomize')"></span>
+          </label>
+          <button type="button" class="btn btn--sm btn--secondary doe__reshuffle-btn" :title="t('reshuffleTitle')"
+                  x-command="reshuffle" x-text="t('reshuffle')"></button>
+        </div>
+        <template x-if="showCenterPointsOption">
+          <label class="field-check">
+            <input type="checkbox" class="doe__center-check" x-model="model.options.centerPoints" />
+            <span data-help-key="modules.doe-planner.fields.options.centerPoints.help" x-text="t('optCenterPoints')"></span>
+          </label>
+        </template>
       </div>
-      <div class="dmike-split__output-section-header">
-        <span class="dmike-split__output-section"><span x-text="t('stepEvaluate')"></span></span>
-      </div>
-      <div class="dmike-split__output-section-header">
-        <span class="dmike-split__output-section"><span x-text="t('stepAnalysis')"></span></span>
+      <div class="doe__replicates-row">
+        <label class="doe__input-label" data-help-key="modules.doe-planner.fields.options.replicates.help" x-text="t('optReplicates')"></label>
+        <input class="field doe__replicates-input" data-help-key="" x-field="model.options.replicates" />
       </div>
     </div>
+
+    <template x-if="isType('bb')">
+      <div class="field-group">
+        <label class="doe__input-label" data-help-key="modules.doe-planner.fields.options.bbCenterPoints.help" x-text="t('bbCenterPoints')"></label>
+        <input class="field doe__bb-cp-input" data-help-key="" x-field="model.options.bbCenterPoints" />
+      </div>
+    </template>
+
+    <template x-if="isType('ccd')">
+      <div class="doe__ccd-params">
+        <div class="field-group">
+          <label class="doe__input-label" data-help-key="modules.doe-planner.fields.options.alphaType.help" x-text="t('alphaType')"></label>
+          <select class="field doe__alpha-type-select" data-help-key="" x-field="model.options.alphaType">
+            <option value="rotatable" x-text="t('alphaRotatable')"></option>
+            <option value="face-centered" x-text="t('alphaFaceCentered')"></option>
+            <option value="spherical" x-text="t('alphaSpherical')"></option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="doe__input-label" data-help-key="modules.doe-planner.fields.options.ccdCenterPoints.help" x-text="t('ccdCenterPoints')"></label>
+          <input class="field doe__ccd-cp-input" data-help-key="" x-field="model.options.ccdCenterPoints" />
+        </div>
+      </div>
+    </template>
+
+    <!-- Design summary -->
+    <div class="doe__summary-card">
+      <div class="doe__summary-item"><span x-text="factorsLabel"></span><strong x-text="model.factors.length"></strong></div>
+      <div class="doe__summary-item"><span data-help-key="modules.doe-planner.types.Summary.runs" x-text="runsLabel"></span><strong x-text="summaryRuns"></strong></div>
+      <div class="doe__summary-item"><span data-help-key="modules.doe-planner.types.Summary.resolution" x-text="resolutionLabel"></span><strong x-text="summaryRes"></strong></div>
+      <div class="doe__summary-item"><span x-text="responsesLabel"></span><strong x-text="model.responses.length"></strong></div>
+      <template x-if="hasCurrentDesign">
+        <div class="doe__summary-item"><span class="doe__generated-badge" data-help-key="modules.doe-planner.types.Summary.generatedRuns"><span class="icon icon--sm" data-icon="status.ok" aria-hidden="true"></span> <span x-text="generatedText"></span></span></div>
+      </template>
+      <template x-if="!hasCurrentDesign">
+        <div class="doe__summary-item doe__summary-item--pending" data-help-key="modules.doe-planner.fields.valid.help" x-text="configStateText"></div>
+      </template>
+    </div>
+  </div>
+
+  <!-- ════ Output ═══════════════════════════════════════════════ -->
+  <div class="doe__output dmike-split__output">
+
+    <template x-if="showPlaceholder">
+      <div class="doe__placeholder">
+        <p data-help-key="modules.doe-planner.fields.invalidReason.help" x-text="t('configureLeft')"></p>
+      </div>
+    </template>
+
+    <template x-if="model.design">
+      <div class="doe__output-content">
+        <div class="dmike-split__output-section-header">
+          <span class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('stepResults')"></span></span>
+        </div>
+
+        <!-- Evaluation -->
+        <div class="doe__eval-region">
+          <div class="dmike-split__output-section-header">
+            <span class="dmike-split__output-section"><span class="icon icon--sm" data-icon="nav.expand-down" aria-hidden="true"></span><span x-text="t('stepEvaluate')"></span></span>
+          </div>
+          <template x-if="evaluationPending">
+            <p class="doe__eval-note doe__eval-pending" x-text="t('evaluationPending')"></p>
+          </template>
+          <template x-if="evaluationFailed">
+            <p class="doe__eval-note doe__eval-failed" x-text="t('evaluationFailed')"></p>
+          </template>
+          <template x-if="shownAssessment">
+            <div class="doe__eval-compact">
+              <div class="doe__eval-detail">
+                <div class="doe__eval-section">
+                  <h4 class="doe__eval-heading" data-help-key="modules.doe-planner.types.Evaluation.efficiency" x-text="t('efficiencyTitle')"></h4>
+                  <div class="dmike-kpi-strip">
+                    <template x-for="(c, ci) in shownAssessment.cards" :key="ci">
+                      <div class="dmike-kpi" :class="c.cls">
+                        <div class="dmike-kpi-label">
+                          <span data-help-key="modules.doe-planner.types.Evaluation.efficiency" x-text="c.label"></span>
+                          <span x-widget="algo-lab-link" x-widget-algo-id="'d-efficiency'"></span>
+                        </div>
+                        <div class="dmike-kpi-value" x-text="c.value"></div>
+                        <div class="doe__eff-bar"><div class="doe__eff-bar-fill" :class="c.cls" :style="barStyle(c.barWidth)"></div></div>
+                      </div>
+                    </template>
+                    <div class="dmike-kpi">
+                      <div class="dmike-kpi-label" data-help-key="modules.doe-planner.types.Evaluation.efficiency" x-text="t('condNum')"></div>
+                      <div class="dmike-kpi-value" x-text="shownAssessment.condNum"></div>
+                    </div>
+                    <div class="dmike-kpi">
+                      <div class="dmike-kpi-label" data-help-key="modules.doe-planner.types.Evaluation.efficiency" x-text="t('maxLeverage')"></div>
+                      <div class="dmike-kpi-value" x-text="shownAssessment.maxLeverage"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <template x-if="hasVif">
+                  <div class="doe__eval-section">
+                    <h4 class="doe__eval-heading">
+                      <span data-help-key="modules.doe-planner.types.Evaluation.vif" x-text="t('vifTitle')"></span>
+                      <span x-widget="algo-lab-link" x-widget-algo-id="'vif'"></span>
+                    </h4>
+                    <div class="doe__vif-tables">
+                      <template x-if="shownAssessment.vifMain.length">
+                        <table class="doe__vif-table">
+                          <thead><tr><th x-text="t('mainEffects')"></th><th>VIF</th></tr></thead>
+                          <tbody>
+                            <template x-for="(v, vi) in shownAssessment.vifMain" :key="vi">
+                              <tr :class="v.rating"><td x-text="v.term"></td><td x-text="v.vif"></td></tr>
+                            </template>
+                          </tbody>
+                        </table>
+                      </template>
+                      <template x-if="shownAssessment.vifInter.length">
+                        <table class="doe__vif-table">
+                          <thead><tr><th x-text="t('interactions')"></th><th>VIF</th></tr></thead>
+                          <tbody>
+                            <template x-for="(v, vi) in shownAssessment.vifInter" :key="vi">
+                              <tr :class="v.rating"><td x-text="v.term"></td><td x-text="v.vif"></td></tr>
+                            </template>
+                          </tbody>
+                        </table>
+                      </template>
+                    </div>
+                  </div>
+                </template>
+
+                <template x-if="shownAssessment.hasAlias">
+                  <div class="doe__eval-section">
+                    <h4 class="doe__eval-heading">
+                      <span data-help-key="modules.doe-planner.types.Evaluation.alias" x-text="t('aliasTitle')"></span>
+                    </h4>
+                    <template x-if="shownAssessment.aliasGenerators.length">
+                      <div class="doe__alias-gens">
+                        <span class="doe__alias-gen-label" x-text="generatorsLabel"></span>
+                        <template x-for="(g, gi) in shownAssessment.aliasGenerators" :key="gi">
+                          <code class="doe__alias-gen" x-text="g"></code>
+                        </template>
+                      </div>
+                    </template>
+                    <template x-if="shownAssessment.aliasRows.length">
+                      <table class="doe__alias-table">
+                        <thead><tr><th data-help-key="modules.doe-planner.types.DoeColumns.term" x-text="t('term')"></th><th data-help-key="modules.doe-planner.types.DoeColumns.aliasedWith" x-text="t('aliasedWith')"></th></tr></thead>
+                        <tbody>
+                          <template x-for="(a, ai) in shownAssessment.aliasRows" :key="ai">
+                            <tr>
+                              <td><code x-text="a.term"></code></td>
+                              <td x-text="a.aliasedWith"></td>
+                            </tr>
+                          </template>
+                        </tbody>
+                      </table>
+                    </template>
+                    <template x-if="!shownAssessment.aliasRows.length">
+                      <p class="doe__eval-note" x-text="t('noAliases')"></p>
+                    </template>
+                  </div>
+                </template>
+
+                <template x-if="hasPower">
+                  <div class="doe__eval-section">
+                    <h4 class="doe__eval-heading">
+                      <span data-help-key="modules.doe-planner.types.Evaluation.power" x-text="t('powerTitle')"></span>
+                    </h4>
+                    <p class="doe__eval-note" x-text="shownAssessment.powerDesc"></p>
+                    <template x-if="shownAssessment.powerSaturated">
+                      <p class="doe__eval-note" x-text="t('powerSaturated')"></p>
+                    </template>
+                    <table class="doe__power-table">
+                      <thead><tr><th data-help-key="modules.doe-planner.types.DoeColumns.effectSize" x-text="t('effectSize')"></th><th data-help-key="modules.doe-planner.types.DoeColumns.power" x-text="t('power')"></th><th></th></tr></thead>
+                      <tbody>
+                        <template x-for="(row, pi) in shownAssessment.powerRows" :key="pi">
+                          <tr :class="row.rating">
+                            <td x-text="row.effectSize"></td>
+                            <td x-text="row.power"></td>
+                            <td><div class="doe__power-bar"><div class="doe__power-bar-fill" :style="barStyle(row.width)"></div></div></td>
+                          </tr>
+                        </template>
+                      </tbody>
+                    </table>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div class="dmike-split__output-section-header">
+          <span class="dmike-split__output-section"><span x-text="t('stepAnalysis')"></span></span>
+        </div>
+      </div>
+    </template>
   </div>
 </div>

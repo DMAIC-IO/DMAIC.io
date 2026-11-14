@@ -270,6 +270,21 @@
     },
     "experiment": {
       "help": "The experiment of the datasheet, as written with it (not the current plan); null without a datasheet or snapshot."
+    },
+    "resRows": {
+      "help": "The rows of the resolution table: per run count the cells per factor count with their resolution; the cells of the current factor count can be chosen. Display only."
+    },
+    "resAlias": {
+      "help": "Generators, defining relation and aliases of the chosen fractional design, with the factor names. Display only."
+    },
+    "taguchiCandidates": {
+      "help": "The Taguchi arrays that fit the factors and their levels. Display only."
+    },
+    "sourceMapping": {
+      "help": "What the source worksheet gives: runs taken over and responses found, or why it cannot be read. Display only."
+    },
+    "assessment": {
+      "help": "The evaluation of the current design for display: efficiencies, condition number, leverage, VIF, aliases and power. Display only."
     }
   },
   "actions": {
@@ -475,7 +490,7 @@
   },
   "state": {
     "termGroupExpanded": {
-      "help": "The ids of the expanded term groups of the optimal design; the group's terms are then visible. A pure view; it is not saved."
+      "help": "The indices of the term groups of the optimal design that were expanded or collapsed against the default; at first every group up to the two-factor interactions is open. A pure view; it is not saved."
     },
     "forbiddenDraft": {
       "help": "The draft of a new forbidden factor combination: per factor one level or empty for any. addForbiddenVertex takes it over. A pure view; it is not saved."
@@ -488,8 +503,8 @@
     "Evaluation": {
       "efficiency": "D-, A- and G-efficiency in percent, condition number and largest leverage.",
       "vif": "Variance inflation factor per model term; 1 means independent, above 10 strongly confounded.",
-      "alias": "Generators and, per term, the terms it is confounded with; null without confounding.",
-      "power": "Power per effect size; null without error degrees of freedom."
+      "alias": "Generators and, per term, the terms it is confounded with; absent without confounding.",
+      "power": "Power per effect size; empty without error degrees of freedom."
     },
     "Summary": {
       "runs": "Planned runs including replicates; the number is missing while the design type gives none.",

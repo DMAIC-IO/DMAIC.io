@@ -30,11 +30,14 @@ const clone = (v) => JSON.parse(JSON.stringify(v));
 
 function ensureTemplate() {
   if (!Alpine.version) Alpine.start();
-  if (document.querySelector(`template[data-tpl="${TPL_KEY}"]`)) return;
-  const tpl = document.createElement('template');
-  tpl.setAttribute('data-tpl', TPL_KEY);
+  // The view tests put the real template under the same key: always the slim one here.
+  let tpl = document.querySelector(`template[data-tpl="${TPL_KEY}"]`);
+  if (!tpl) {
+    tpl = document.createElement('template');
+    tpl.setAttribute('data-tpl', TPL_KEY);
+    document.body.append(tpl);
+  }
   tpl.innerHTML = '<div x-data="doePlanner"></div>';
-  document.body.append(tpl);
 }
 
 /** A valid plan of two factors and the given responses, without a design. @param {object} [over] */

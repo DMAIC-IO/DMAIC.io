@@ -385,6 +385,11 @@
   text-align: center;
 }
 
+.doe__res-factors-head {
+  text-align: center;
+  letter-spacing: 2px;
+}
+
 .doe__res-corner {
   text-align: right !important;
   padding-right: var(--spacing-sm) !important;
@@ -1071,6 +1076,12 @@
 /* ===== Parameters ===== */
 .doe__param-group {
   margin-bottom: var(--spacing-md);
+}
+
+.doe__randomize-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
 }
 
 .doe__replicates-row {
