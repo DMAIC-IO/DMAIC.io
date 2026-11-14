@@ -175,7 +175,8 @@ export function renderAgentTypes(modules, { modelNames = {} } = {}) {
     }
   }
   const add = `{ op: 'module.add', id?: string, module: ${ids.map(lit).join('|') || 'never'}, phase?: string }`;
-  lines.push(...typedef('ModuleAction', [...members, add].join(' | ')));
+  const remove = "{ op: 'module.remove', id?: string, instance: string }";
+  lines.push(...typedef('ModuleAction', [...members, add, remove].join(' | ')));
   lines.push(...typedef('ModuleStack', 'ModuleAction[]'));
   lines.push('export {};', '');
   return lines.join('\n');

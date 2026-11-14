@@ -41,7 +41,9 @@ export function installWorksheetRevisions(eventBus) {
  *   numeric: (ref: ColumnRef|null) => number[]|null,
  *   name: (ref: ColumnRef|null) => string|null,
  *   column: (ref: ColumnRef|null) => WorksheetColumnInfo|null,
- *   columns: (filter?: { types?: string[], minCount?: number }) => { key: string, name: string }[] }} WorksheetData
+ *   columns: (filter?: { types?: string[], minCount?: number }) => { key: string, name: string }[],
+ *   sheet: (ref: { instanceId: string, sheetId: string }|null) => { id: string, name: string, rowCount: number, columns: { id: string, name: string, type: string }[] }|null,
+ *   sheets: (instanceId: string|null) => { id: string, name: string, rowCount: number }[]|null }} WorksheetData
  */
 
 /**
@@ -72,6 +74,26 @@ export function createWorksheetData(stateManager) {
     column(ref) {
       const c = resolve(ref);
       return c ? { name: c.name || c.shortName || '?', type: c.type, role: c.role ?? null, roleConfirmed: c.roleManual === true } : null;
+    },
+    sheet(ref) {
+      void rev['*'];
+      if (!ref || typeof ref.instanceId !== 'string') return null;
+      void rev[ref.instanceId];
+      const sh = stateManager.getModuleState(ref.instanceId)?.sheets?.find((x) => x.id === ref.sheetId);
+      if (!sh) return null;
+      return {
+        id: sh.id, name: sh.name, rowCount: sh.state?.rowCount ?? 0,
+        columns: (sh.state?.columns ?? []).map((c) => ({ id: c.id, name: c.name || c.shortName || '?', type: c.type })),
+      };
+    },
+    sheets(instanceId) {
+      void rev['*'];
+      void rev['#list'];
+      if (typeof instanceId !== 'string') return null;
+      void rev[instanceId];
+      const ws = stateManager.getModuleState(instanceId);
+      if (!ws?.sheets) return null;
+      return ws.sheets.map((sh) => ({ id: sh.id, name: sh.name, rowCount: sh.state?.rowCount ?? 0 }));
     },
     name(ref) { const c = resolve(ref); return c ? (c.name || c.shortName || '?') : null; },
   });

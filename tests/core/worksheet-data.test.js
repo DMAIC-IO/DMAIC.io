@@ -201,4 +201,33 @@ suite('ctx.data.columns', () => {
     const data = createWorksheetData(fakeProject(states, { control: [{ instanceId: 'ws1', moduleId: 'worksheet' }] }));
     assertDeepEqual(data.columns({ maxCount: 3 }).map((c) => c.name), ['Kurz']);
   });
+
+  test('sheet und sheets: Zeilenzahl, Spalten, null, Reaktivität', async () => {
+    const bus = fakeBus();
+    installWorksheetRevisions(bus);
+    const states = { wsS: { sheets: [
+      { id: 's1', name: 'Eins', state: { rowCount: 3, columns: [{ id: 'c1', name: 'A', type: 'numeric', values: [1, 2, 3] }] } },
+      { id: 's2', name: 'Zwei', state: null },
+    ] } };
+    const data = createWorksheetData(fakeStore(states));
+    assertDeepEqual(data.sheet({ instanceId: 'wsS', sheetId: 's1' }), { id: 's1', name: 'Eins', rowCount: 3, columns: [{ id: 'c1', name: 'A', type: 'numeric' }] });
+    assertEqual(data.sheet({ instanceId: 'wsS', sheetId: 'nope' }), null);
+    assertEqual(data.sheet({ instanceId: 'weg', sheetId: 's1' }), null);
+    assertEqual(data.sheet(null), null);
+    assertDeepEqual(data.sheets('wsS'), [{ id: 's1', name: 'Eins', rowCount: 3 }, { id: 's2', name: 'Zwei', rowCount: 0 }]);
+    assertEqual(data.sheets('weg'), null);
+
+    let rows = -1; let count = -1;
+    const r1 = Alpine.effect(() => { rows = data.sheet({ instanceId: 'wsS', sheetId: 's1' }).rowCount; });
+    const r2 = Alpine.effect(() => { count = data.sheets('wsS').length; });
+    states.wsS.sheets[0].state.rowCount = 5;
+    bus.emit('worksheet:dataChanged', { instanceId: 'wsS' });
+    await flush();
+    assertEqual(rows, 5);
+    states.wsS.sheets.push({ id: 's3', name: 'Drei', state: null });
+    bus.emit('module:added', { moduleId: 'worksheet', instanceId: 'wsX' });
+    await flush();
+    assertEqual(count, 3);
+    Alpine.release(r1); Alpine.release(r2);
+  });
 });

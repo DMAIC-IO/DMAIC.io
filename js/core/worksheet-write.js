@@ -44,6 +44,7 @@ const REASON_MESSAGES = {
 /**
  * Fehler beim Bauen oder Schreiben eines Plans. `reason` ist einer von
  * `missing_target`, `missing_sheet`, `empty_plan`, `unknown_type`,
+ * `formula_length`, `replace_existing`,
  * `unknown_instance`, `unknown_sheet`, `unknown_column`, `write_failed`,
  * `flush_failed` (geschrieben, aber nicht gespeichert).
  */
@@ -86,14 +87,15 @@ function cloneFormat(format) {
  * Einen Eintrag für `worksheet.writeColumns` als reines JSON festhalten;
  * fehlende Angaben entfallen.
  * @param {string} to `'start'`, `'append'` oder eine Spalten-id
- * @param {{ name?: string, type?: string, values?: any[], format?: object, discrete?: boolean }} spec
- * @returns {{ to: string, name: string, type: string, values: any[], format?: object, discrete?: boolean }}
+ * @param {{ name?: string, type?: string, values?: any[], format?: object, discrete?: boolean, unit?: string }} spec
+ * @returns {{ to: string, name: string, type: string, values: any[], format?: object, discrete?: boolean, unit?: string }}
  */
-function makeColumn(to, { name, type, values, format, discrete }) {
-  /** @type {{ to: string, name: string, type: string, values: any[], format?: object, discrete?: boolean }} */
+function makeColumn(to, { name, type, values, format, discrete, unit }) {
+  /** @type {{ to: string, name: string, type: string, values: any[], format?: object, discrete?: boolean, unit?: string }} */
   const column = { to, name: name ?? '', type: type ?? 'numeric', values: [...(values ?? [])] };
   if (format !== undefined) column.format = cloneFormat(format);
   if (discrete !== undefined) column.discrete = !!discrete;
+  if (unit !== undefined) column.unit = String(unit);
   return column;
 }
 
@@ -103,13 +105,15 @@ function makeColumn(to, { name, type, values, format, discrete }) {
  */
 
 /**
- * @typedef {{ name?: string, type?: string, values: any[], format?: object, discrete?: boolean }} ColumnInput
+ * @typedef {{ name?: string, type?: string, values: any[], format?: object, discrete?: boolean, unit?: string,
+ *   role?: string, formulas?: (string|null)[], meta?: object }} ColumnInput
  */
 
 /**
  * @typedef {object} WorksheetWriteBuilder
  * @property {(opts?: { name?: string }) => WorksheetWriteBuilder} newWorksheet
  * @property {(instanceId: string) => WorksheetWriteBuilder} worksheet
+ * @property {(instanceId: string) => WorksheetWriteBuilder} replace
  * @property {(id: string) => WorksheetWriteBuilder} sheet
  * @property {(input: ColumnInput) => WorksheetWriteBuilder} column
  * @property {(colId: string, input: ColumnInput) => WorksheetWriteBuilder} overwrite
@@ -136,6 +140,8 @@ export function worksheetWrite() {
   let target = null;
   /** @type {string|null} */
   let sheetId = null;
+  /** @type {string|null} */
+  let replaceId = null;
   /** @type {Array<{ kind: 'column'|'overwrite', colId?: string, spec: ColumnInput }>} */
   const steps = [];
 
@@ -148,6 +154,10 @@ export function worksheetWrite() {
     },
     worksheet(instanceId) {
       target = { kind: 'existing', instanceId };
+      return api;
+    },
+    replace(instanceId) {
+      replaceId = instanceId;
       return api;
     },
     sheet(id) {
@@ -166,6 +176,7 @@ export function worksheetWrite() {
       if (!target) throw new WriteError('missing_target');
       if (!sheetId) throw new WriteError('missing_sheet');
       if (steps.length === 0) throw new WriteError('empty_plan');
+      if (replaceId !== null && target.kind !== 'new') throw new WriteError('replace_existing');
       const created = target.kind === 'new';
       const columns = steps.map((step) => {
         const { type } = step.spec;
@@ -173,6 +184,38 @@ export function worksheetWrite() {
         if (step.kind === 'overwrite') return makeColumn(String(step.colId), step.spec);
         return makeColumn(created ? 'start' : 'append', step.spec);
       });
+      for (const step of steps) {
+        const { formulas, values } = step.spec;
+        if (formulas !== undefined && formulas !== null && formulas.length !== (values ?? []).length) throw new WriteError('formula_length');
+      }
+
+      /**
+       * Rollen, Formeln und zuletzt Merkmale der Spalten mit solchen Angaben.
+       * @param {any} instance Instanz des Worksheets
+       * @param {string} sheet Blatt
+       * @returns {import('./agent/agent-types.generated.js').ModuleStack}
+       */
+      const extras = (instance, sheet) => {
+        /** @type {any[]} */
+        const out = [];
+        const call = (method, args) => out.push({ op: 'instance.call', module: 'worksheet', instance, method, args });
+        const colRef = (i) => ({ $from: 'write', path: `value.${i}` });
+        steps.forEach((step, i) => {
+          if (step.kind !== 'column') return;
+          if (step.spec.role !== undefined && step.spec.role !== null) call('setColumnRole', [sheet, colRef(i), step.spec.role]);
+        });
+        steps.forEach((step, i) => {
+          if (step.kind !== 'column') return;
+          (step.spec.formulas ?? []).forEach((f, row) => {
+            if (f !== null && f !== undefined) call('setFormula', [sheet, colRef(i), row, f]);
+          });
+        });
+        steps.forEach((step, i) => {
+          if (step.kind !== 'column') return;
+          if (step.spec.meta !== undefined && step.spec.meta !== null) call('setColumnMeta', [sheet, colRef(i), cloneFormat(step.spec.meta)]);
+        });
+        return out;
+      };
 
       if (target.kind === 'existing') {
         return {
@@ -181,17 +224,19 @@ export function worksheetWrite() {
           stack: [{
             op: 'instance.call', id: 'write', module: 'worksheet', instance: target.instanceId,
             method: 'writeColumns', args: [sheetId, columns],
-          }],
+          }, ...extras(target.instanceId, sheetId)],
         };
       }
 
       /** @type {import('./agent/agent-types.generated.js').ModuleStack} */
-      const stack = [{ op: 'module.add', id: 'ws', module: 'worksheet' }];
+      const stack = replaceId !== null ? [{ op: 'module.remove', instance: replaceId }] : [];
+      stack.push({ op: 'module.add', id: 'ws', module: 'worksheet' });
       const ws = { $from: 'ws', path: 'instanceId' };
       if (target.name.trim() !== '') {
         stack.push({ op: 'instance.call', module: 'worksheet', instance: ws, method: 'renameSheet', args: [NEW_SHEET_ID, target.name] });
       }
       stack.push({ op: 'instance.call', id: 'write', module: 'worksheet', instance: ws, method: 'writeColumns', args: [NEW_SHEET_ID, columns] });
+      stack.push(...extras(ws, NEW_SHEET_ID));
       return { created: true, sheetId: NEW_SHEET_ID, stack };
     },
   };

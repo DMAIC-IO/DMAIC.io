@@ -254,4 +254,44 @@ suite('core/worksheet-write — commitWorksheetWrite', () => {
       assertEqual(err.message, key);
     }
   });
+
+  test('role, formulas, meta: Reihenfolge im Stapel und Referenzen auf die Spalten-ids', () => {
+    const meta = { lock: 'hard', managedBy: 'doe' };
+    const plan = worksheetWrite().worksheet('ws1').sheet('sheet_1')
+      .column({ name: 'A', values: [1, 2] })
+      .column({ name: 'B', type: 'numeric', unit: 'mm', values: [1, 2], role: 'response', formulas: [null, '=A2*2'], meta })
+      .column({ name: 'C', values: [1, 2], formulas: ['=A1', '=A2'], role: 'factor' })
+      .build();
+    const ops = plan.stack.map((a) => a.method ?? a.op);
+    assertDeepEqual(ops, ['writeColumns', 'setColumnRole', 'setColumnRole', 'setFormula', 'setFormula', 'setFormula', 'setColumnMeta']);
+    assertEqual(plan.stack[0].args[1][1].unit, 'mm');
+    assertDeepEqual(plan.stack[1].args, ['sheet_1', { $from: 'write', path: 'value.1' }, 'response']);
+    assertDeepEqual(plan.stack[3].args, ['sheet_1', { $from: 'write', path: 'value.1' }, 1, '=A2*2']);
+    assertDeepEqual(plan.stack[5].args, ['sheet_1', { $from: 'write', path: 'value.2' }, 1, '=A2']);
+    assertDeepEqual(plan.stack[6].args, ['sheet_1', { $from: 'write', path: 'value.1' }, meta]);
+    assertEqual(plan.stack[1].instance, 'ws1');
+  });
+
+  test('role, formulas, meta bei neuem Worksheet nutzen die ws-Instanz', () => {
+    const plan = worksheetWrite().newWorksheet({ name: 'X' }).column({ name: 'A', values: [1], role: 'factor', meta: { lock: 'soft' } }).build();
+    const last = plan.stack.at(-1);
+    assertEqual(last.method, 'setColumnMeta');
+    assertDeepEqual(last.instance, { $from: 'ws', path: 'instanceId' });
+  });
+
+  test('formulas mit falscher Länge → formula_length', () => {
+    let err;
+    try { worksheetWrite().worksheet('ws1').sheet('s').column({ name: 'A', values: [1, 2], formulas: ['=1'] }).build(); } catch (e) { err = e; }
+    assert(err instanceof WriteError);
+    assertEqual(err.reason, 'formula_length');
+  });
+
+  test('replace: module.remove vorn; mit worksheet() → replace_existing', () => {
+    const plan = worksheetWrite().replace('ws1').newWorksheet({ name: 'X' }).column({ name: 'A', values: [1] }).build();
+    assertDeepEqual(plan.stack[0], { op: 'module.remove', instance: 'ws1' });
+    assertEqual(plan.stack[1].op, 'module.add');
+    let err;
+    try { worksheetWrite().replace('ws1').worksheet('ws2').sheet('s').column({ name: 'A', values: [1] }).build(); } catch (e) { err = e; }
+    assertEqual(err?.reason, 'replace_existing');
+  });
 });

@@ -73,6 +73,7 @@ test('viewmodel and asyncTask actions are excluded', () => {
   assert.doesNotMatch(out, /compute/);
   // Nicht verfügbare Module haben keine Aufrufe, lassen sich aber anlegen.
   assert.doesNotMatch(out, /ModuleCall_notReady/);
+  assert.match(typedefText(out, 'ModuleAction'), /op: 'module\.remove', id\?: string, instance: string/);
   assert.match(typedefText(out, 'ModuleAction'), /op: 'module\.add', id\?: string, module: 'not-ready'\|'sipoc'\|'worksheet', phase\?: string/);
 });
 
