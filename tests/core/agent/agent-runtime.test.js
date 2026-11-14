@@ -1141,6 +1141,28 @@ suite('agent runtime — Abbruch-Stapel umgehen die Kette', () => {
     assertDeepEqual(r.results[0].result.value, { cancelled: true });
   });
 
+  test('ein Abbruch-Stapel lässt die Verlaufsgruppe des laufenden Stapels offen', async () => {
+    const log = [];
+    const vm = makeVm(log, { hang: true });
+    // Der Abbruch meldet nur; der hängende Lauf endet erst, wenn der Test ihn freigibt.
+    let release = null;
+    vm._asyncTaskHost.start = async () => {
+      await new Promise((r) => { release = r; });
+      return { status: 'cancelled' };
+    };
+    vm._asyncTaskHost.cancel = () => true;
+    const { runtime, history } = makeRuntime({ registry, viewmodel: vm });
+    const started = runtime.interact(start);
+    await tick(20);
+    assertDeepEqual(history, ['begin:fw-1'], 'der laufende Stapel hat seine Gruppe geöffnet');
+    const cancelled = await settleWithin(runtime.interact(cancel));
+    assertEqual(cancelled.ok, true, JSON.stringify(cancelled));
+    assertDeepEqual(history, ['begin:fw-1'], 'der Abbruch öffnet und schließt keine Gruppe');
+    release();
+    await settleWithin(started);
+    assertDeepEqual(history, ['begin:fw-1', 'end:fw-1'], 'geschlossen genau einmal, am Ende des äußeren Stapels');
+  });
+
   test('ein Stapel mit Abbruch und anderer Aktion bleibt in der Kette', async () => {
     const log = [];
     const { runtime } = makeRuntime({ registry, viewmodel: makeVm(log, { hang: false }) });

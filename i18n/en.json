@@ -1508,6 +1508,7 @@
       "defaultSheetName": "Sheet",
       "appendTargetUnknown": "The target column no longer exists in the worksheet.",
       "writeFailed": "The worksheet could not write the columns.",
+      "writeFlushFailed": "The columns were written, but the project could not be saved.",
       "sheetCopy": "Copy",
       "addSheet": "Add new sheet",
       "renameSheet": "Rename",

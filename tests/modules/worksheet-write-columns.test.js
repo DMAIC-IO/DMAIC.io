@@ -279,6 +279,26 @@ suite('Worksheet — Agentenaktion writeColumns', () => {
     } finally { await w.unmount(); }
   });
 
+  test('settle legt eine offene Zelleingabe ab, bevor der Stapel schreibt', async () => {
+    const w = await mountWorksheet();
+    try {
+      w.vm._grid._startEdit(1, 0); // Spalte e1, Zeile 0
+      w.vm._grid.editorEl.value = '42';
+      // Weg der Agentenfläche: settle, Stand festhalten, Gruppe öffnen, schreiben.
+      w.vm.flushPendingWork();
+      assertEqual(w.vm._grid.editingCell, null, 'Editor geschlossen');
+      const stored = w.states['ws-c']?.sheets.find(s => s.id === w.sheetId).state;
+      assertEqual(stored?.columns[1].values[0], 42, 'die Eingabe steht im gespeicherten Stand');
+      w.instance.historyBegin();
+      w.vm.writeColumns(w.sheetId, [{ to: 'append', name: 'A', values: [1] }]);
+      w.instance.historyEnd();
+      assertEqual(w.vm._grid.history._stack.length, 2, 'Eingabe und Schreiben sind zwei Schritte');
+      w.vm._grid.undo();
+      assertEqual(w.vm._grid.columns.length, 5, 'Undo nimmt das Schreiben zurück');
+      assertEqual(w.vm._grid.getColumn('e1').values[0], 42, 'die Eingabe bleibt');
+    } finally { await w.unmount(); }
+  });
+
   test('returns column ids in order', async () => {
     const w = await mountWorksheet();
     try {

@@ -232,6 +232,9 @@ suite('core/worksheet-write — commitWorksheetWrite', () => {
       [{ ok: false, error: 'validation_failed', index: 0, cause: { error: 'project_completed' } }, 'write_failed'],
       [{ ok: false, results: [{ ok: false, error: 'call_failed', message: 'columns[0].values must be an array' }] }, 'write_failed'],
       [{ ok: false, error: 'surface_failed', message: 'boom' }, 'write_failed'],
+      [{ ok: false, error: 'flush_failed', message: 'disk', results: [
+        { ok: true, id: 'write', result: { instanceId: 'ws1', method: 'writeColumns', value: ['c1'] } },
+      ] }, 'flush_failed'],
     ];
     for (const [answer, reason] of cases) {
       const { value: err } = await quietWarn(() => caught(() => commitWorksheetWrite(fakeContext(answer), plan)));
@@ -244,6 +247,7 @@ suite('core/worksheet-write — commitWorksheetWrite', () => {
     const answers = [
       [{ ok: false, results: [{ ok: false, error: 'call_failed', message: 'Call failed: unknown_column: c9' }] }, 'modules.worksheet.appendTargetUnknown'],
       [{ ok: false, results: [{ ok: false, error: 'call_failed', message: 'Call failed: kaputt' }] }, 'modules.worksheet.writeFailed'],
+      [{ ok: false, error: 'flush_failed', message: 'disk', results: [] }, 'modules.worksheet.writeFlushFailed'],
     ];
     for (const [answer, key] of answers) {
       const { value: err } = await quietWarn(() => caught(() => commitWorksheetWrite(fakeContext(answer), plan)));

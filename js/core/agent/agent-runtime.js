@@ -580,8 +580,12 @@ export function createAgentRuntime(deps) {
         } else {
           if (isWritingAction(action)) {
             run.wrote = true;
-            if (run.journal) await journalBefore(run.journal, action.op, resolved.value);
-            openHistory(run, action.op, resolved.value);
+            // Ein Lauf ohne Journal ist ein Task-Abbruch neben der Kette: die
+            // Verlaufsgruppe der Instanz gehört dem Stapel, der gerade läuft.
+            if (run.journal) {
+              await journalBefore(run.journal, action.op, resolved.value);
+              openHistory(run, action.op, resolved.value);
+            }
           }
           // Solange die Op läuft, darf ein Modul, das an dieser Instanz
           // arbeitet, wiedereintreten (siehe `interactAsModule`).

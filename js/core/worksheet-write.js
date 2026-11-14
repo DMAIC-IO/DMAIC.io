@@ -38,12 +38,14 @@ const REASON_MESSAGES = {
   unknown_sheet: ['modules.worksheet.appendTargetUnknown', 'Target column not found in the worksheet'],
   unknown_column: ['modules.worksheet.appendTargetUnknown', 'Target column not found in the worksheet'],
   write_failed: ['modules.worksheet.writeFailed', 'The worksheet could not write the columns'],
+  flush_failed: ['modules.worksheet.writeFlushFailed', 'The columns were written, but the project could not be saved'],
 };
 
 /**
  * Fehler beim Bauen oder Schreiben eines Plans. `reason` ist einer von
  * `missing_target`, `missing_sheet`, `empty_plan`, `unknown_type`,
- * `unknown_instance`, `unknown_sheet`, `unknown_column`, `write_failed`.
+ * `unknown_instance`, `unknown_sheet`, `unknown_column`, `write_failed`,
+ * `flush_failed` (geschrieben, aber nicht gespeichert).
  */
 export class WriteError extends Error {
   /**
@@ -253,6 +255,8 @@ const WRITE_PREFIX = /\b(unknown_sheet|unknown_column): /;
  * @returns {string}
  */
 function reasonOf(res) {
+  // Die Spalten stehen im Worksheet; nur das Speichern des Projekts scheiterte.
+  if (res?.error === 'flush_failed') return 'flush_failed';
   if (res?.error === 'validation_failed') {
     return TARGET_ERRORS.has(res.cause?.error) ? 'unknown_instance' : 'write_failed';
   }
@@ -300,7 +304,7 @@ export function completeStack(ctx, plan) {
  * @param {WorksheetWritePlan} plan der Plan
  * @returns {Promise<{ instanceId: string, sheetId: string, columnIds: string[], created: boolean }>}
  * @throws {WriteError} (abgelehnt) mit `reason` `unknown_instance`,
- *   `unknown_sheet`, `unknown_column` oder `write_failed`
+ *   `unknown_sheet`, `unknown_column`, `write_failed` oder `flush_failed`
  */
 export async function commitWorksheetWrite(ctx, plan) {
   const res = await ctx.instances.interact(completeStack(ctx, plan));

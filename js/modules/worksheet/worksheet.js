@@ -1324,14 +1324,19 @@ const mod = createModule({
       },
 
       /**
-       * Beide Entpreller sofort ablegen: den 150-ms-`_persistAndNotify` einer
-       * Datenänderung und den 2-s-`_autoSave` eines Renders (darin z. B. die
-       * Auswahl). Die Agentenfläche ruft das nach jeder Aktion
-       * (`ui/agent-host.js`, settle), damit nichts nach dem Vermerk der
-       * Revision landet.
+       * Eine offene Zelleingabe übernehmen und beide Entpreller sofort
+       * ablegen: den 150-ms-`_persistAndNotify` einer Datenänderung und den
+       * 2-s-`_autoSave` eines Renders (darin z. B. die Auswahl). Die
+       * Agentenfläche ruft das nach jeder Aktion und vor dem ersten Schreiben
+       * eines Stapels (`ui/agent-host.js`, settle), damit nichts nach dem
+       * Vermerk der Revision landet. Die Eingabe wird dabei ihr eigener
+       * Rückgängig-Schritt und steht im Stand, auf den eine Rücknahme
+       * zurückgeht.
        * @noagent agent-host settle hook
        */
       flushPendingWork() {
+        // Löst `cell:changed` aus und setzt damit `_persistPending`.
+        this._grid?._commitEdit();
         if (this._persistPending) {
           this._autoSave?.cancel?.();
           this._autoSavePending = false;

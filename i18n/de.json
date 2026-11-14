@@ -1508,6 +1508,7 @@
       "defaultSheetName": "Tabelle",
       "appendTargetUnknown": "Die Zielspalte gibt es im Worksheet nicht (mehr).",
       "writeFailed": "Das Worksheet konnte die Spalten nicht schreiben.",
+      "writeFlushFailed": "Die Spalten wurden geschrieben, aber das Projekt konnte nicht gespeichert werden.",
       "sheetCopy": "Kopie",
       "addSheet": "Neues Blatt hinzufügen",
       "renameSheet": "Umbenennen",
