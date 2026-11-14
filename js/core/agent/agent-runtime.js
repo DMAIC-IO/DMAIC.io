@@ -468,6 +468,18 @@ export function createAgentRuntime(deps) {
    * @param {object} opts
    * @returns {Promise<object>}
    */
+  /**
+   * Die Phase, in der eine Instanz liegt.
+   * @param {string} instanceId
+   * @returns {string|null} null, wenn keine Phase sie führt
+   */
+  function phaseOfInstance(instanceId) {
+    for (const p of Object.keys(stateManager.get('phases') || {})) {
+      if ((stateManager.get(`phases.${p}`) ?? []).some((i) => i?.instanceId === instanceId)) return p;
+    }
+    return null;
+  }
+
   async function runStack(input, opts) {
     const { decided = null, caller = null, inline = false, run } = opts;
     const track = opts.revisions === true;
@@ -488,7 +500,9 @@ export function createAgentRuntime(deps) {
     // Schema-Module, die der Stapel nennt, vorher auflösen: der Prüfer
     // (Stufe 5) kennt ihre Aktionen sonst nicht.
     if (!decided) await entries.preload(referencedModules(input, buildInstanceList({ stateManager, i18n })));
-    const world = buildWorld({ stateManager, moduleRegistry, i18n, registry: entries.view(), completed: host.isCompleted() });
+    // Ein Modul-Stapel darf ein Arbeitsblatt in der Phase des Aufrufers anlegen (`callerPhaseAllows`).
+    const callerPhase = caller ? phaseOfInstance(caller.instanceId) : null;
+    const world = { ...buildWorld({ stateManager, moduleRegistry, i18n, registry: entries.view(), completed: host.isCompleted() }), callerPhase };
     const checked = validateBatch(input, world);
     if (!checked.ok) return { ...checked, contract: CONTRACT_VERSION };
     if (caller) {
@@ -594,7 +608,7 @@ export function createAgentRuntime(deps) {
           const inOp = { instanceId: typeof target === 'string' ? target : null, pending: [], failed: null };
           run.inOp = inOp;
           try {
-            outcome = await ops[action.op](resolved.value);
+            outcome = await ops[action.op](resolved.value, { callerPhase });
           } finally {
             // Schleife: ein innerer Stapel kann selbst weitere anstoßen.
             while (inOp.pending.length > 0) await Promise.allSettled(inOp.pending.splice(0));

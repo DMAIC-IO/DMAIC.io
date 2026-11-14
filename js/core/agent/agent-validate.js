@@ -32,6 +32,7 @@ import { OPS, ERRORS } from './agent-contract.js';
 import { pathExistsInShape } from './agent-shape.js';
 import { collectRefs, isRef } from './agent-refs.js';
 import { axiError } from './agent-errors.js';
+import { callerPhaseAllows } from '../router/instance-ops.js';
 
 /** Alle gültigen `op`-Namen, einmal berechnet. */
 const OP_NAMES = Object.freeze(Object.keys(OPS));
@@ -94,7 +95,8 @@ export const READ_OPS = new Set(['project.read', 'catalog.read', 'module.describ
 
 /**
  * @param {object|object[]} input  ein Aktionsobjekt oder ein Stapel
- * @param {object} world  { t, phases: string[], modules: Map, instances: Map, completed: boolean }
+ * @param {object} world  { t, phases: string[], modules: Map, instances: Map, completed: boolean,
+ *   callerPhase?: string|null } — `callerPhase`: Phase der aufrufenden Instanz eines Modul-Stapels
  * @returns {{ ok: true, actions: object[] }
  *          |{ ok: false, error: 'validation_failed', message: string,
  *             index: number|null, id: string|null, cause: object }}
@@ -233,7 +235,9 @@ export function validateBatch(input, world) {
       // meldet Stufe 6 zuerst `project_completed` (wie in agent-ops.js).
       if (typeof a.module === 'string' && !(world.completed && a.op === 'module.add')) {
         const allowed = world.modules.get(a.module).allowedPhases;
-        if (!allowed.includes(a.phase)) {
+        // Ein Modul-Stapel darf ein Arbeitsblatt in seiner eigenen Phase anlegen.
+        const granted = a.op === 'module.add' && callerPhaseAllows(a.module, a.phase, world.callerPhase);
+        if (!allowed.includes(a.phase) && !granted) {
           return fail(i, axiError(ERRORS.UNKNOWN_PHASE,
             world.t('agent.errors.unknownPhase', { phase: a.phase, module: a.module }), { available: allowed }));
         }

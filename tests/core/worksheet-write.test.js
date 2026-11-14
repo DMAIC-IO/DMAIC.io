@@ -6,6 +6,7 @@ import { suite, test, assertEqual, assertDeepEqual, assert } from '../test-utils
 import {
   worksheetWrite, commitWorksheetWrite, completeStack, WriteError,
 } from '../../js/core/worksheet-write.js';
+import { START_ROW_COUNT } from '../../js/core/datagrid/datagrid-utils.js';
 import { validateBatch } from '../../js/core/agent/agent-validate.js';
 import { buildWorld } from '../../js/core/agent/agent-catalog.js';
 import { AGENT_REGISTRY } from '../../js/core/agent/agent-registry.generated.js';
@@ -79,6 +80,19 @@ suite('core/worksheet-write — worksheetWrite', () => {
     assertDeepEqual(plan.stack[0], { op: 'module.add', id: 'ws', module: 'worksheet' });
     assertDeepEqual(plan.stack[1].args, ['sheet_1', 'A']);
     assertDeepEqual(JSON.parse(JSON.stringify(plan)), plan);
+  });
+
+  test('fitRows: ein neues Blatt behält nur die Zeilen der längsten Spalte', () => {
+    const plan = worksheetWrite().newWorksheet({ name: 'N', fitRows: true })
+      .column({ name: 'A', values: [1, 2, 3] }).column({ name: 'B', values: [1, 2, 3, 4] }).build();
+    const remove = plan.stack.filter((a) => a.method === 'removeRows');
+    assertEqual(remove.length, 1);
+    assertDeepEqual(remove[0].args, ['sheet_1', 4, START_ROW_COUNT - 4]);
+    assertEqual(plan.stack.indexOf(remove[0]), plan.stack.findIndex((a) => a.method === 'writeColumns') + 1);
+    const plain = worksheetWrite().newWorksheet({ name: 'N' }).column({ name: 'A', values: [1] }).build();
+    assertEqual(plain.stack.some((a) => a.method === 'removeRows'), false);
+    const long = worksheetWrite().newWorksheet({ fitRows: true }).column({ name: 'A', values: new Array(START_ROW_COUNT).fill(1) }).build();
+    assertEqual(long.stack.some((a) => a.method === 'removeRows'), false);
   });
 
   test('ohne Phase im Projekt landet ein neuer Worksheet in data, freier Name bleibt', () => {

@@ -289,6 +289,9 @@ diesem Zyklus nicht", `unknownPhase` bedeutet „die Phase existiert, aber
 nicht für dieses Modul". Dieselbe Prüfung läuft im Vollzug noch einmal, damit
 auch eine Phase, die erst über eine Referenz entsteht, nicht ungeprüft
 ankommt.
+Einzige Ausnahme: ein Modul-Stapel (`ctx.instances.interact`) darf ein
+Arbeitsblatt in der Phase der aufrufenden Instanz anlegen (siehe
+„Modulzugang").
 
 ### Die Singleton-Regel gilt auch für den Agenten
 
@@ -614,6 +617,11 @@ Fehlercodes und dieselbe Kette wie `interact()` des Agenten; Unterschiede:
 - Ein abgeschlossenes Projekt antwortet wie beim Agenten
   (`validation_failed` mit `cause.error` `project_completed`); es entsteht
   keine Rückgängig-Gruppe.
+- `module.add` eines Arbeitsblatts (`worksheet`) darf in der Phase der
+  aufrufenden Instanz liegen, auch wenn sie nicht die Datenphase ist: ein
+  Werkzeug legt sein Datenblatt neben sich an. Die Ausnahme gilt nur für
+  `worksheet`, nur für die eigene Phase des Aufrufers und nur auf diesem
+  Modulweg; ein Agent von außen bekommt dafür weiter `unknown_phase`.
 
 ### Lesen vor Schreiben
 

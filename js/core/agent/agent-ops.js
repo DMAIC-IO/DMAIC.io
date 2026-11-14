@@ -67,7 +67,7 @@ export function createOps(deps) {
       return describeModule({ moduleRegistry, i18n, registry: entries.view(), getHelp }, action.module, action.sections);
     },
 
-    'module.add': async (action) => {
+    'module.add': async (action, { callerPhase = null } = {}) => {
       // Stufe 5 des Prüfers fängt ein unbekanntes Modul schon vorher ab —
       // dieser Zweig bleibt als Verteidigung, weil die Laufzeit prinzipiell
       // auch ohne Prüfer aufrufbar ist.
@@ -95,7 +95,7 @@ export function createOps(deps) {
       // das abgeschlossene Projekt (Befund I2) an einem Ort: `canAddInstance`.
       const cycle = moduleRegistry.getActiveCycle();
       const verdict = canAddInstance(def, action.phase ?? defaultPhaseFor(def, cycle),
-        instanceWorld(stateManager, cycle, host.isCompleted()));
+        instanceWorld(stateManager, cycle, host.isCompleted()), { callerPhase });
       if (!verdict.ok) {
         if (verdict.reason === 'completed') {
           // Im abgeschlossenen Projekt verwirft `stateManager.set` jeden
@@ -118,7 +118,7 @@ export function createOps(deps) {
           t('agent.errors.moduleSingleton', { module: action.module, instance: existing?.id }));
       }
 
-      const added = await host.addInstance(action.module, action.phase);
+      const added = await host.addInstance(action.module, action.phase, { callerPhase });
       if (!added) {
         // Kein Rückfall auf eine erfundene Id: findet der Host die Instanz
         // nicht wieder, hat nichts stattgefunden.

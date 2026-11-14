@@ -11,7 +11,7 @@ import {
   uid, clamp, parseNumeric, formatGridNumber, formatGridLossless,
   COLUMN_TYPES, isNumericType, formatCellValue, renderColTypeBadge,
   parseCellInput, detectInputType, analyzeColumn,
-  DATE_FORMATS, TIME_FORMATS,
+  DATE_FORMATS, TIME_FORMATS, START_ROW_COUNT,
 } from './datagrid-utils.js';
 import {
   ROLE, ALL_ROLES, inferRole, defaultRoleForType, isRoleValidForType, validRolesForType,
@@ -1248,14 +1248,14 @@ export class DataGrid {
         shortName: `C${i + 1}`,
         type: 'numeric',
         unit: null,
-        values: new Array(30).fill(null),
-        formulas: new Array(30).fill(null),
+        values: new Array(START_ROW_COUNT).fill(null),
+        formulas: new Array(START_ROW_COUNT).fill(null),
         format: {},
         role: ROLE.CONTINUOUS,
         roleManual: false,
       });
     }
-    this.rowCount = 30;
+    this.rowCount = START_ROW_COUNT;
     this.render();
   }
 

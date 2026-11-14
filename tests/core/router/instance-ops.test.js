@@ -75,6 +75,16 @@ suite('router/instance-ops', () => {
     assertEqual(sm.get('phases.measure').length, 0);
   });
 
+  test('createInstance: ein Arbeitsblatt in der Phase des aufrufenden Moduls nur mit callerPhase', () => {
+    const def = { id: 'worksheet', phase: 'data' };
+    const sm = fakeState({ data: [], improve: [] });
+    let err = null;
+    try { createInstance(sm, { getActiveCycle: () => 'dmaic' }, { emit() {} }, 'worksheet', def, { phase: 'improve' }); } catch (e) { err = e; }
+    assertEqual(err?.reason, 'wrongPhase');
+    createInstance(sm, { getActiveCycle: () => 'dmaic' }, { emit() {} }, 'worksheet', def, { phase: 'improve', callerPhase: 'improve' });
+    assertEqual(sm.get('phases.improve').length, 1);
+  });
+
   test('instanceWorld bildet die Instanzen aller Phasen ab', () => {
     const sm = fakeState({ define: [{ instanceId: 'x', moduleId: 'a' }], measure: [{ instanceId: 'y', moduleId: 'b' }] });
     const w = instanceWorld(sm, 'dmaic', false);

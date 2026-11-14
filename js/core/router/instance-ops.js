@@ -70,11 +70,13 @@ export function instanceWorld(stateManager, activeCycle, completed) {
  * @param {string} [options.phase]  Zielphase, die die Ableitung überschreibt.
  *   Genutzt von der Agentenfläche: dort hat der Prüfer die Phase bereits
  *   gegen `allowedPhases` geprüft, bevor irgendein Seiteneffekt passiert.
+ * @param {string|null} [options.callerPhase]  Phase der aufrufenden Instanz
+ *   eines Modul-Stapels (`callerPhaseAllows`)
  * @returns {string}
  * @throws {Error} wenn `canAddInstance` ablehnt; der Fehler trägt `reason`
  *   (`'completed'|'wrongPhase'|'singleton'`) und ggf. `allowedPhases`.
  */
-export function createInstance(stateManager, moduleRegistry, eventBus, moduleId, def, { silent = false, phase } = {}) {
+export function createInstance(stateManager, moduleRegistry, eventBus, moduleId, def, { silent = false, phase, callerPhase = null } = {}) {
   // Keine eigene Ableitung mehr: die Vorgabephase ist die, die auch das
   // Anlegemenü anbietet. Der ausdrückliche `phase`-Überschreiber bleibt —
   // ihn braucht die Agentenfläche für die 26 mehrdeutigen Paare.
@@ -84,7 +86,7 @@ export function createInstance(stateManager, moduleRegistry, eventBus, moduleId,
   // Dieselbe Regel wie Kachel und Agentenfläche. Eine Absage wirft, statt
   // still nichts zu tun: ein Aufrufer, der eine Instanz-Id erwartet, bekäme
   // sonst eine Phantom-Id. `reason` (und `allowedPhases`) hängen am Fehler.
-  const verdict = canAddInstance(def, targetPhase, instanceWorld(stateManager, cycle, stateManager.isCompleted?.()));
+  const verdict = canAddInstance(def, targetPhase, instanceWorld(stateManager, cycle, stateManager.isCompleted?.()), { callerPhase });
   if (!verdict.ok) {
     throw Object.assign(new Error(`createInstance: ${moduleId} abgelehnt (${verdict.reason})`), verdict);
   }
@@ -119,6 +121,26 @@ export function allowedPhasesFor(def, activeCycle) {
 }
 
 /**
+ * Module, die ein Modul-Stapel (`ctx.instances.interact`) auch in der Phase
+ * der aufrufenden Instanz anlegen darf, obwohl sie sonst nur in ihrer
+ * eigenen Phase leben: ein Werkzeug legt sein Arbeitsblatt neben sich an.
+ * Ein Agent von außen bleibt bei `allowedPhasesFor`.
+ */
+export const CALLER_PHASE_MODULES = Object.freeze(['worksheet']);
+
+/**
+ * Darf ein Modul-Stapel dieses Modul in diese Phase legen, weil sie die
+ * Phase der aufrufenden Instanz ist?
+ * @param {string} moduleId
+ * @param {string} phase  die Zielphase
+ * @param {string|null|undefined} callerPhase  Phase der aufrufenden Instanz; ohne Modul-Aufrufer leer
+ * @returns {boolean}
+ */
+export function callerPhaseAllows(moduleId, phase, callerPhase) {
+  return typeof callerPhase === 'string' && phase === callerPhase && CALLER_PHASE_MODULES.includes(moduleId);
+}
+
+/**
  * Die Vorgabephase: erste Position aus `allowedPhasesFor`.
  *
  * In 112 der 138 Modul/Zyklus-Paare ist sie die einzige Möglichkeit und
@@ -148,10 +170,12 @@ export function defaultPhaseFor(def, activeCycle) {
  *           completed: boolean }} world
  *   das Lese-Abbild aus `buildWorld` oder `instanceWorld` — kein neuer Zustandsbegriff.
  *   `activeCycle` ist die Kennung des aktiven Zyklus und ist Pflicht.
+ * @param {{ callerPhase?: string|null }} [opts]  `callerPhase`: Phase der
+ *   aufrufenden Instanz eines Modul-Stapels (`callerPhaseAllows`)
  * @returns {{ ok: true } | { ok: false, reason: 'wrongPhase'|'singleton'|'completed', allowedPhases?: string[] }}
  * @throws {Error} wenn `world.activeCycle` fehlt oder keinen bekannten Zyklus nennt
  */
-export function canAddInstance(def, phase, world) {
+export function canAddInstance(def, phase, world, { callerPhase = null } = {}) {
   // Zuerst das abgeschlossene Projekt: dort ist der Modulsatz eingefroren,
   // und `wrongPhase` wäre die unwichtigere von zwei wahren Antworten.
   if (world?.completed === true) return { ok: false, reason: 'completed' };
@@ -167,7 +191,7 @@ export function canAddInstance(def, phase, world) {
     );
   }
   const allowed = allowedPhasesFor(def, activeCycle);
-  if (!allowed.includes(phase)) {
+  if (!allowed.includes(phase) && !callerPhaseAllows(def.id, phase, callerPhase)) {
     return { ok: false, reason: 'wrongPhase', allowedPhases: allowed };
   }
 

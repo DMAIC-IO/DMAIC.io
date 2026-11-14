@@ -124,4 +124,14 @@ suite('canAddInstance — eine Quelle für die Phasenregel', () => {
     assertEqual(verdict.ok, false);
     assertEqual(verdict.reason, 'completed');
   });
+
+  test('callerPhase: ein Arbeitsblatt darf in die Phase des aufrufenden Moduls, sonst nichts', () => {
+    const ws = { id: 'worksheet', phase: 'data' };
+    const world = emptyWorld('dmaic');
+    assertEqual(canAddInstance(ws, 'improve', world).ok, false);
+    assertEqual(canAddInstance(ws, 'improve', world, { callerPhase: 'improve' }).ok, true);
+    assertEqual(canAddInstance(ws, 'analyze', world, { callerPhase: 'improve' }).ok, false);
+    const ishikawa = { id: 'ishikawa', phase: 'analyze', cycles: { dmaic: { phase: 'analyze' } } };
+    assertEqual(canAddInstance(ishikawa, 'improve', world, { callerPhase: 'improve' }).ok, false);
+  });
 });

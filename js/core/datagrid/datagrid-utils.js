@@ -48,6 +48,9 @@ export function formatGridNumber(val, decimals = null, lang = 'en') {
 
 // ─── Column Type Definitions ───────────────────────────────
 
+/** Zeilen eines leeren, neu angelegten Blatts. */
+export const START_ROW_COUNT = 30;
+
 /**
  * Supported column types with display metadata.
  * Labels are used as fallback; the worksheet module uses i18n keys.

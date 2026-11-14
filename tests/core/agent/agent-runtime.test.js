@@ -1868,6 +1868,38 @@ suite('agent runtime — interactAsModule (Modulweg)', () => {
   });
 });
 
+suite('agent runtime — Arbeitsblatt in der Phase des aufrufenden Moduls', () => {
+  const FW = { instanceId: 'fw-1', moduleId: 'five-why' };
+  const RG = { instanceId: 'rg1', moduleId: 'worksheet', order: 0 };
+
+  test('ein Modul-Stapel legt ein Arbeitsblatt in der eigenen Phase an', async () => {
+    const { runtime, log, phases } = makeRuntime({ primed: false });
+    const out = await runtime.interactAsModule([{ op: 'module.add', id: 'ws', module: 'worksheet', phase: 'define' }], FW);
+    assertEqual(out.ok, true, JSON.stringify(out));
+    assertTrue(log.includes('add-start:worksheet:define'), log.join(','));
+    assertTrue(phases.define.some((i) => i.moduleId === 'worksheet'), 'das Arbeitsblatt liegt in define');
+  });
+
+  test('derselbe Stapel eines Agenten von außen bleibt bei unknown_phase', async () => {
+    const { runtime, log } = makeRuntime();
+    const out = await runtime.interact([{ op: 'module.add', id: 'ws', module: 'worksheet', phase: 'define' }]);
+    assertEqual(out.ok, false);
+    assertEqual(out.error, 'validation_failed');
+    assertEqual(out.cause.error, ERRORS.UNKNOWN_PHASE);
+    assertEqual(log.some((e) => e.startsWith('add-start')), false, 'nichts angelegt');
+  });
+
+  test('nur in die Phase des Aufrufers und nur für Arbeitsblätter', async () => {
+    const { runtime, log } = makeRuntime({ primed: false, instances: [RG] });
+    const other = await runtime.interactAsModule([{ op: 'module.add', module: 'worksheet', phase: 'measure' }], FW);
+    assertEqual(other.cause?.error, ERRORS.UNKNOWN_PHASE, JSON.stringify(other));
+    const sipoc = await runtime.interactAsModule([{ op: 'module.add', module: 'sipoc', phase: 'data' }],
+      { instanceId: 'rg1', moduleId: 'worksheet' });
+    assertEqual(sipoc.cause?.error, ERRORS.UNKNOWN_PHASE, JSON.stringify(sipoc));
+    assertEqual(log.some((e) => e.startsWith('add-start')), false, 'nichts angelegt');
+  });
+});
+
 suite('agent runtime — ganz oder gar nicht', () => {
   const WS1 = { instanceId: 'ws1', moduleId: 'worksheet', order: 0 };
   const WS2 = { instanceId: 'ws2', moduleId: 'worksheet', order: 1 };

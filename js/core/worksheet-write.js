@@ -25,7 +25,7 @@
  * Rein bzw. DOM-frei: kein DOM, kein `window`.
  */
 import { inferRole, isRoleValidForType } from './datagrid/datagrid-roles.js';
-import { COLUMN_TYPES } from './datagrid/datagrid-utils.js';
+import { COLUMN_TYPES, START_ROW_COUNT } from './datagrid/datagrid-utils.js';
 import { findOwnPhase } from './instance-handoff.js';
 import { uniqueSheetName } from './worksheet-sheets.js';
 
@@ -111,7 +111,7 @@ function makeColumn(to, { name, type, values, format, discrete, unit }) {
 
 /**
  * @typedef {object} WorksheetWriteBuilder
- * @property {(opts?: { name?: string }) => WorksheetWriteBuilder} newWorksheet
+ * @property {(opts?: { name?: string, fitRows?: boolean }) => WorksheetWriteBuilder} newWorksheet
  * @property {(instanceId: string) => WorksheetWriteBuilder} worksheet
  * @property {(instanceId: string) => WorksheetWriteBuilder} replace
  * @property {(id: string) => WorksheetWriteBuilder} sheet
@@ -126,7 +126,8 @@ function makeColumn(to, { name, type, values, format, discrete, unit }) {
  * - `.newWorksheet({ name })`: ein neuer Worksheet, Blatt `sheet_1` mit dem
  *   Wunschnamen (Phase und Eindeutigkeit ergänzt `commitWorksheetWrite`);
  *   die Spalten füllen erst die leeren Startspalten, weitere werden
- *   angehängt.
+ *   angehängt. Mit `fitRows` hat das Blatt danach genau so viele Zeilen wie
+ *   die längste Spalte (die leeren Startzeilen darüber hinaus entfallen).
  * - `.worksheet(instanceId).sheet(sheetId)`: ein bestehender Worksheet;
  *   `.column()` hängt immer an.
  * - `.overwrite(colId, …)`: eine bestehende Spalte überschreiben.
@@ -136,7 +137,7 @@ function makeColumn(to, { name, type, values, format, discrete, unit }) {
  * @returns {WorksheetWriteBuilder}
  */
 export function worksheetWrite() {
-  /** @type {{ kind: 'new', name: string } | { kind: 'existing', instanceId: string } | null} */
+  /** @type {{ kind: 'new', name: string, fitRows: boolean } | { kind: 'existing', instanceId: string } | null} */
   let target = null;
   /** @type {string|null} */
   let sheetId = null;
@@ -147,8 +148,8 @@ export function worksheetWrite() {
 
   /** @type {WorksheetWriteBuilder} */
   const api = {
-    newWorksheet({ name } = {}) {
-      target = { kind: 'new', name: name ?? '' };
+    newWorksheet({ name, fitRows = false } = {}) {
+      target = { kind: 'new', name: name ?? '', fitRows: fitRows === true };
       sheetId = NEW_SHEET_ID;
       return api;
     },
@@ -236,6 +237,10 @@ export function worksheetWrite() {
         stack.push({ op: 'instance.call', module: 'worksheet', instance: ws, method: 'renameSheet', args: [NEW_SHEET_ID, target.name] });
       }
       stack.push({ op: 'instance.call', id: 'write', module: 'worksheet', instance: ws, method: 'writeColumns', args: [NEW_SHEET_ID, columns] });
+      const rows = Math.max(0, ...steps.map((step) => (step.spec.values ?? []).length));
+      if (target.fitRows && rows < START_ROW_COUNT) {
+        stack.push({ op: 'instance.call', module: 'worksheet', instance: ws, method: 'removeRows', args: [NEW_SHEET_ID, rows, START_ROW_COUNT - rows] });
+      }
       stack.push(...extras(ws, NEW_SHEET_ID));
       return { created: true, sheetId: NEW_SHEET_ID, stack };
     },

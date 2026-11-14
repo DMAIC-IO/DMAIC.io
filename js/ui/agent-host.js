@@ -40,7 +40,7 @@ const SETTLE_TASKS_TIMEOUT_MS = 20000;
  *   isMounted: (instanceId: string) => boolean,
  *   isDisplayed: (instanceId: string) => boolean,
  *   notifyBackgroundChange: (instanceIds: string[]) => void,
- *   addInstance: (moduleId: string, phase?: string) => Promise<{ instanceId: string, module: string, phase: string }|null>,
+ *   addInstance: (moduleId: string, phase?: string, opts?: { callerPhase?: string|null }) => Promise<{ instanceId: string, module: string, phase: string }|null>,
  *   removeInstance: (instanceId: string) => Promise<boolean>,
  *   restoreInstance: (entry: { instanceId: string, module: string, phase: string, state: object|null,
  *     record?: object, index?: number }) => Promise<void>,
@@ -215,12 +215,12 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
       return instance?.getActionData?.() ?? null;
     },
 
-    async addInstance(moduleId, phase) {
+    async addInstance(moduleId, phase, { callerPhase = null } = {}) {
       // Der schreibgeschützte Zustand verwirft den Schreibzugriff still;
       // dann gibt es nichts zu melden außer: es ist nichts passiert.
       if (this.isCompleted()) return null;
       const def = moduleRegistry.get(moduleId);
-      const instanceId = createInstance(stateManager, moduleRegistry, eventBus, moduleId, def, { phase });
+      const instanceId = createInstance(stateManager, moduleRegistry, eventBus, moduleId, def, { phase, callerPhase });
       // KEIN Rückfall auf ein zusammengesetztes Ergebnis: findet `locate()`
       // die Instanz nicht, existiert sie nicht, und eine erfundene Id wäre
       // die schlechteste mögliche Antwort (Review-Befund I2).
