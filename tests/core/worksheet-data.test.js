@@ -206,11 +206,21 @@ suite('ctx.data.columns', () => {
     const bus = fakeBus();
     installWorksheetRevisions(bus);
     const states = { wsS: { sheets: [
-      { id: 's1', name: 'Eins', state: { rowCount: 3, columns: [{ id: 'c1', name: 'A', type: 'numeric', values: [1, 2, 3] }] } },
+      { id: 's1', name: 'Eins', state: { rowCount: 3, columns: [
+        { id: 'c1', name: 'A', type: 'numeric', values: [1, 2, 3] },
+        { id: 'c2', name: 'B', type: 'numeric', values: [], meta: { lock: 'hard', managedBy: 'doe-planner', reason: 'run-order' } },
+      ] } },
       { id: 's2', name: 'Zwei', state: null },
     ] } };
     const data = createWorksheetData(fakeStore(states));
-    assertDeepEqual(data.sheet({ instanceId: 'wsS', sheetId: 's1' }), { id: 's1', name: 'Eins', rowCount: 3, columns: [{ id: 'c1', name: 'A', type: 'numeric' }] });
+    const shown = data.sheet({ instanceId: 'wsS', sheetId: 's1' });
+    assertDeepEqual(shown, { id: 's1', name: 'Eins', rowCount: 3, columns: [
+      { id: 'c1', name: 'A', type: 'numeric', meta: null },
+      { id: 'c2', name: 'B', type: 'numeric', meta: { lock: 'hard', managedBy: 'doe-planner', reason: 'run-order' } },
+    ] });
+    // Eine Kopie: Schreiben am Ergebnis ändert das Blatt nicht.
+    shown.columns[1].meta.lock = 'soft';
+    assertEqual(states.wsS.sheets[0].state.columns[1].meta.lock, 'hard');
     assertEqual(data.sheet({ instanceId: 'wsS', sheetId: 'nope' }), null);
     assertEqual(data.sheet({ instanceId: 'weg', sheetId: 's1' }), null);
     assertEqual(data.sheet(null), null);

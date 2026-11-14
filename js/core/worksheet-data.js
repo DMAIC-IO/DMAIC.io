@@ -42,12 +42,12 @@ export function installWorksheetRevisions(eventBus) {
  *   name: (ref: ColumnRef|null) => string|null,
  *   column: (ref: ColumnRef|null) => WorksheetColumnInfo|null,
  *   columns: (filter?: { types?: string[], minCount?: number }) => { key: string, name: string }[],
- *   sheet: (ref: { instanceId: string, sheetId: string }|null) => { id: string, name: string, rowCount: number, columns: { id: string, name: string, type: string }[] }|null,
+ *   sheet: (ref: { instanceId: string, sheetId: string }|null) => { id: string, name: string, rowCount: number, columns: { id: string, name: string, type: string, meta: object|null }[] }|null,
  *   sheets: (instanceId: string|null) => { id: string, name: string, rowCount: number }[]|null }} WorksheetData
  */
 
 /**
- * Lesezugriff auf Arbeitsblattspalten; `column(ref)` liefert Name, Typ, Rolle und Rollenbestätigung (ohne Werte); `columns(filter)` listet die wählbaren Spalten als `{ key, name }` (reaktiv auf jede Änderung und auf neue Arbeitsblätter); `null`, wenn `ref` fehlt oder Blatt/Spalte nicht auflösbar sind.
+ * Lesezugriff auf Arbeitsblattspalten; `column(ref)` liefert Name, Typ, Rolle und Rollenbestätigung (ohne Werte); `columns(filter)` listet die wählbaren Spalten als `{ key, name }` (reaktiv auf jede Änderung und auf neue Arbeitsblätter); `sheet(ref)` nennt Zeilenzahl und Spalten eines Blatts mit ihren Merkmalen (`meta`, Kopie, sonst `null`); `null`, wenn `ref` fehlt oder Blatt/Spalte nicht auflösbar sind.
  * `numeric` liest wie das Arbeitsblatt (`parseNumeric`): Dezimalkomma zählt, Leerwerte, Text und Wahrheitswerte fallen heraus; `Infinity` bleibt ausgeschlossen.
  * @param {{ getModuleState: (id: string) => any, get: (path: string) => any }} stateManager
  * @returns {Readonly<WorksheetData>}
@@ -83,7 +83,10 @@ export function createWorksheetData(stateManager) {
       if (!sh) return null;
       return {
         id: sh.id, name: sh.name, rowCount: sh.state?.rowCount ?? 0,
-        columns: (sh.state?.columns ?? []).map((c) => ({ id: c.id, name: c.name || c.shortName || '?', type: c.type })),
+        columns: (sh.state?.columns ?? []).map((c) => ({
+          id: c.id, name: c.name || c.shortName || '?', type: c.type,
+          meta: c.meta ? JSON.parse(JSON.stringify(c.meta)) : null,
+        })),
       };
     },
     sheets(instanceId) {

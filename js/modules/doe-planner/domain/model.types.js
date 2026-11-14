@@ -123,6 +123,11 @@
  */
 
 /**
+ * @typedef {object} AppendRunsCommand
+ * @property {number[][]} rows
+ */
+
+/**
  * @typedef {{}} ReshuffleCommand
  */
 
@@ -189,6 +194,7 @@
  *   removeForbiddenVertex(cmd: RemoveForbiddenVertexCommand): void,
  *   setSourceWorksheet(cmd: SetSourceWorksheetCommand): void,
  *   regenerate(cmd: RegenerateCommand): void,
+ *   appendRuns(cmd: AppendRunsCommand): number,
  *   reshuffle(cmd: ReshuffleCommand): void,
  *   setPreviewCell(cmd: SetPreviewCellCommand): void,
  *   setPreviewCells(cmd: SetPreviewCellsCommand): void,
@@ -198,7 +204,7 @@
  *   viewPhase(cmd: ViewPhaseCommand): void,
  *   newPhase(cmd: NewPhaseCommand): number,
  *   completePhase(cmd: CompletePhaseCommand): void,
- *   execute(cmd: ({ type: 'addFactor' } & AddFactorCommand) | ({ type: 'removeFactor' } & RemoveFactorCommand) | ({ type: 'insertLevel' } & InsertLevelCommand) | ({ type: 'removeLevel' } & RemoveLevelCommand) | ({ type: 'addResponse' } & AddResponseCommand) | ({ type: 'removeResponse' } & RemoveResponseCommand) | ({ type: 'setAnalysisResponse' } & SetAnalysisResponseCommand) | ({ type: 'selectDesignType' } & SelectDesignTypeCommand) | ({ type: 'applyRecommendation' } & ApplyRecommendationCommand) | ({ type: 'selectResolution' } & SelectResolutionCommand) | ({ type: 'selectPB' } & SelectPBCommand) | ({ type: 'selectTaguchi' } & SelectTaguchiCommand) | ({ type: 'setTerm' } & SetTermCommand) | ({ type: 'setTermGroup' } & SetTermGroupCommand) | ({ type: 'addForbiddenVertex' } & AddForbiddenVertexCommand) | ({ type: 'removeForbiddenVertex' } & RemoveForbiddenVertexCommand) | ({ type: 'setSourceWorksheet' } & SetSourceWorksheetCommand) | ({ type: 'regenerate' } & RegenerateCommand) | ({ type: 'reshuffle' } & ReshuffleCommand) | ({ type: 'setPreviewCell' } & SetPreviewCellCommand) | ({ type: 'setPreviewCells' } & SetPreviewCellsCommand) | ({ type: 'forbidRun' } & ForbidRunCommand) | ({ type: 'discardPreviewEdits' } & DiscardPreviewEditsCommand) | ({ type: 'setProjectMode' } & SetProjectModeCommand) | ({ type: 'viewPhase' } & ViewPhaseCommand) | ({ type: 'newPhase' } & NewPhaseCommand) | ({ type: 'completePhase' } & CompletePhaseCommand)): unknown,
+ *   execute(cmd: ({ type: 'addFactor' } & AddFactorCommand) | ({ type: 'removeFactor' } & RemoveFactorCommand) | ({ type: 'insertLevel' } & InsertLevelCommand) | ({ type: 'removeLevel' } & RemoveLevelCommand) | ({ type: 'addResponse' } & AddResponseCommand) | ({ type: 'removeResponse' } & RemoveResponseCommand) | ({ type: 'setAnalysisResponse' } & SetAnalysisResponseCommand) | ({ type: 'selectDesignType' } & SelectDesignTypeCommand) | ({ type: 'applyRecommendation' } & ApplyRecommendationCommand) | ({ type: 'selectResolution' } & SelectResolutionCommand) | ({ type: 'selectPB' } & SelectPBCommand) | ({ type: 'selectTaguchi' } & SelectTaguchiCommand) | ({ type: 'setTerm' } & SetTermCommand) | ({ type: 'setTermGroup' } & SetTermGroupCommand) | ({ type: 'addForbiddenVertex' } & AddForbiddenVertexCommand) | ({ type: 'removeForbiddenVertex' } & RemoveForbiddenVertexCommand) | ({ type: 'setSourceWorksheet' } & SetSourceWorksheetCommand) | ({ type: 'regenerate' } & RegenerateCommand) | ({ type: 'appendRuns' } & AppendRunsCommand) | ({ type: 'reshuffle' } & ReshuffleCommand) | ({ type: 'setPreviewCell' } & SetPreviewCellCommand) | ({ type: 'setPreviewCells' } & SetPreviewCellsCommand) | ({ type: 'forbidRun' } & ForbidRunCommand) | ({ type: 'discardPreviewEdits' } & DiscardPreviewEditsCommand) | ({ type: 'setProjectMode' } & SetProjectModeCommand) | ({ type: 'viewPhase' } & ViewPhaseCommand) | ({ type: 'newPhase' } & NewPhaseCommand) | ({ type: 'completePhase' } & CompletePhaseCommand)): unknown,
  *   toJSON(): object,
  *   hasContent(): boolean,
  *   readonly context: import('../../../core/model.js').ModelContext,

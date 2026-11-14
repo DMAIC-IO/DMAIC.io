@@ -276,6 +276,9 @@
   "datasheetFailed": "Das Datenblatt konnte nicht angelegt werden.",
   "augmentFailed": "Der Plan konnte nicht erweitert werden.",
   "transferFailed": "Die Daten konnten nicht an die Regression übergeben werden.",
+  "needsDatasheet": "Zuerst das Datenblatt anlegen.",
+  "needsCurrentDatasheet": "Das Datenblatt passt nicht mehr zum Plan; zuerst neu anlegen.",
+  "needsOptimal": "Nur optimale Pläne (D, A, G) lassen sich erweitern.",
   "reshuffle": "Neu würfeln",
   "reshuffleTitle": "Neue Laufreihenfolge ziehen: dieselbe Konfiguration ergibt sonst immer denselben Plan."
 }

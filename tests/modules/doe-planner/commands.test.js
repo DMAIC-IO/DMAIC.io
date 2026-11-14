@@ -8,7 +8,8 @@ import { suite, test, assert, assertEqual, assertDeepEqual } from '../../test-ut
 import { State } from '../../../js/modules/doe-planner/domain/model.js';
 import { setFields, confirmOf } from '../../../js/core/model.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
-import { configSignature } from '../../../js/modules/doe-planner/domain/signatures.js';
+import { configSignature, designSignature } from '../../../js/modules/doe-planner/domain/signatures.js';
+import { snapshotOf } from '../../../js/modules/doe-planner/domain/experiment.js';
 import optimal from '../../../js/modules/doe-planner/domain/designs/optimal.js';
 import { loadCases } from './cases.js';
 
@@ -570,5 +571,60 @@ suite('doe-planner commands — EVOP', () => {
     s.completePhase({ decision: 'recenter', yValues: [[1, 2, 3, 10]] });
     assertEqual(s.projectPhases.length, 2);
     assert(JSON.stringify(s.factors[0].levels) !== JSON.stringify(['20', '40']), 'levels moved');
+  });
+});
+
+suite('doe-planner commands — appendRuns', () => {
+  /** An optimal plan with a design and a datasheet bound to it. @returns {any} */
+  function boundOptimal() {
+    const s = optimalPlan();
+    s.regenerate();
+    s.worksheetRef = {
+      instanceId: 'ws-1', sheetId: 'sheet_1', factorColumnIds: ['a', 'b', 'c'], responseColumnIds: ['y'],
+      meanColumnIds: [], lnVarColumnIds: [], runOrderColumnId: 'run', stdOrderColumnId: 'std',
+      designSignature: designSignature(s),
+      snapshot: snapshotOf(s, s.design),
+    };
+    return s;
+  }
+
+  test('appends coded rows with actual values, run and std order, keeps the plan current and bound', () => {
+    const s = boundOptimal();
+    const n = s.design.codedMatrix.length;
+    const groups = s.worksheetRef.snapshot.replicateGroups.length;
+    const total = s.appendRuns({ rows: [[1, 1, 1], [1, 1, 1]] });
+    assertEqual(total, n + 2);
+    assertEqual(s.design.codedMatrix.length, n + 2);
+    assertDeepEqual(s.design.actualMatrix.slice(-2), [['10', '10', '10'], ['10', '10', '10']]);
+    assertDeepEqual(s.design.runOrder.slice(-2), [n + 1, n + 2]);
+    assertDeepEqual(s.design.stdOrder.slice(-2), [n + 1, n + 2]);
+    assertDeepEqual(s.design.replicateIds.slice(-2), [1, 1]);
+    assertEqual(s.worksheetRef.designSignature, designSignature(s));
+    assertDeepEqual(s.worksheetRef.snapshot.replicateGroups, snapshotOf(s, s.design).replicateGroups);
+    assert(s.worksheetRef.snapshot.replicateGroups.length >= groups, 'replicate groups kept or grown');
+    assertEqual(read(s).pending, false);
+  });
+
+  test('rejects rows of the wrong width, an unbound or stale plan, and leaves everything unchanged', () => {
+    const s = boundOptimal();
+    const before = JSON.stringify(s.toJSON());
+    assertEqual(errorOf(() => s.appendRuns({ rows: [[1, 1]] })).param, 'rows');
+    assertEqual(errorOf(() => s.appendRuns({ rows: [] })).param, 'rows');
+    assertEqual(JSON.stringify(s.toJSON()), before);
+    const stale = boundOptimal();
+    stale.worksheetRef = { ...stale.worksheetRef, designSignature: 'other' };
+    assertEqual(errorOf(() => stale.appendRuns({ rows: [[1, 1, 1]] })).param, 'rows');
+    const unbound = optimalPlan();
+    unbound.regenerate();
+    assertEqual(errorOf(() => unbound.appendRuns({ rows: [[1, 1, 1]] })).param, 'rows');
+  });
+
+  test('in a project the active phase takes the appended runs', () => {
+    const s = boundOptimal();
+    s.setProjectMode({ on: true });
+    s.appendRuns({ rows: [[-1, -1, -1]] });
+    const ph = s.projectPhases[s.activePhaseIdx];
+    assertEqual(ph.design.codedMatrix.length, s.design.codedMatrix.length);
+    assertEqual(ph.worksheetRef.designSignature, s.worksheetRef.designSignature);
   });
 });

@@ -276,6 +276,9 @@
   "datasheetFailed": "The datasheet could not be created.",
   "augmentFailed": "The design could not be augmented.",
   "transferFailed": "The data could not be handed to the regression.",
+  "needsDatasheet": "Create the datasheet first.",
+  "needsCurrentDatasheet": "The datasheet no longer fits the plan; create it again first.",
+  "needsOptimal": "Only optimal designs (D, A, G) can be extended.",
   "reshuffle": "Reshuffle",
   "reshuffleTitle": "Draw a new run order: otherwise the same configuration always gives the same plan."
 }

@@ -110,3 +110,25 @@ export function designFor(m, source) {
     designType: d.designType,
   };
 }
+
+/**
+ * New optimal runs for the current design: the engine adds them to the
+ * design's coded rows with the plan's terms, forbidden combinations and
+ * seed (`seed || 1`, so the same plan gives the same runs).
+ * @param {any} m planner model with a design of an optimal type
+ * @param {number} count new runs, at least 1
+ * @returns {number[][]} coded rows of the new runs
+ * @throws {Error} when the engine cannot add the runs
+ */
+export function augmentRows(m, count) {
+  const factors = m.factors;
+  /** @type {any} the engine's JSDoc predates term lists */
+  const opts = {
+    terms: activeTerms(m),
+    levelCounts: factors.map((f) => f.levels.length),
+    categoricalFlags: factors.map((f) => f.kind === 'categorical'),
+    seed: m.seed || 1,
+    forbiddenVertices: m.options.forbiddenVertices,
+  };
+  return augmentOptimalDesign(m.design.codedMatrix, factors.length, count, m.designType, opts);
+}
