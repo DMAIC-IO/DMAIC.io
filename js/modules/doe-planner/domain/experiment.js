@@ -10,6 +10,8 @@
  */
 import { decimalOr } from '../../../core/parse-decimal.js';
 import { modelTerms } from './design.js';
+import { codedToActualRows } from './runtable.js';
+import { designSignature } from './signatures.js';
 
 /**
  * What a datasheet describes, kept at its binding.
@@ -158,4 +160,37 @@ export function experimentOf(worksheetRef) {
       lnVarColumnId: ref.lnVarColumnIds?.[i] ?? null,
     })),
   };
+}
+
+/**
+ * The design and binding after appending runs to the bound datasheet: the
+ * design grows by the coded rows (actual values as text, run and std order
+ * continue, replicate 1), the binding gets the new design signature and
+ * the snapshot the new replicate groups. Pure; neither input changes.
+ * @param {{ factors: Array<{ name: string, unit: string, kind: string, levels: string[] }>, design: any,
+ *   worksheetRef: any, doeName: string, designType: string, responses: any[], options: object }} model
+ * @param {number[][]} rows coded settings of the new runs, one value per factor
+ * @returns {{ design: any, worksheetRef: any }}
+ * @throws {Error} without a design and binding, or with rows of the wrong width
+ */
+export function appendedRuns(model, rows) {
+  const k = model.factors.length;
+  if (!model.design || !model.worksheetRef) throw new Error('appendedRuns: a design with a bound datasheet is needed');
+  if (rows.length === 0 || rows.some((r) => r.length !== k)) throw new Error(`appendedRuns: one or more rows of ${k} coded values`);
+  /** @type {any} */
+  const d = JSON.parse(JSON.stringify(model.design));
+  const n = d.codedMatrix.length;
+  const numbers = rows.map((_, i) => n + i + 1);
+  const design = {
+    ...d,
+    codedMatrix: [...d.codedMatrix, ...rows.map((r) => [...r])],
+    actualMatrix: [...d.actualMatrix, ...codedToActualRows(rows, model.factors).map((row) => row.map((v) => String(v)))],
+    runOrder: [...d.runOrder, ...numbers],
+    stdOrder: [...d.stdOrder, ...numbers],
+    replicateIds: [...d.replicateIds, ...rows.map(() => 1)],
+  };
+  const worksheetRef = JSON.parse(JSON.stringify(model.worksheetRef));
+  worksheetRef.designSignature = designSignature({ design, factors: model.factors });
+  if (worksheetRef.snapshot) worksheetRef.snapshot.replicateGroups = snapshotOf(model, design).replicateGroups;
+  return { design, worksheetRef };
 }

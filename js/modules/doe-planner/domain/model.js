@@ -19,8 +19,7 @@ import { enumerateTerms, activateTerm, deactivateTerm, termSortKey } from '../..
 import { from0 } from './migrations.js';
 import { activeTerms, isOptimal, modelTerms } from './design.js';
 import { configSignature, designSignature } from './signatures.js';
-import { experimentOf, snapshotOf } from './experiment.js';
-import { codedToActualRows } from './runtable.js';
+import { experimentOf } from './experiment.js';
 import { designFor } from './generate.js';
 import { evaluateDesign, computeEVOPEffects, recenteredFactors } from './analysis.js';
 import { DESIGNS } from './designs/index.js';
@@ -735,38 +734,6 @@ export class State extends defineModel({
         this.previewEdits = null;
         if (this.worksheetRef && !this.worksheetRef.designSignature) this.worksheetRef.designSignature = designSignature(this);
         this.syncActivePhase();
-      },
-    }),
-    appendRuns: command({
-      params: { rows: list(list(number({ min: -1, max: 1 }))) },
-      returns: number({ integer: true }),
-      run({ rows }) {
-        const k = this.factors.length;
-        const ref = this.worksheetRef;
-        const current = Boolean(this.design && ref && this.design.configSignature === configSignature(this)
-          && ref.designSignature === designSignature(this));
-        requireForm('rows', rows, current, 'coded rows of runs already appended to the bound, current datasheet');
-        requireForm('rows', rows, rows.length > 0 && rows.every((r) => r.length === k), `one or more rows of ${k} coded values`);
-        const d = plain(this.design);
-        const n = d.codedMatrix.length;
-        const added = codedToActualRows(rows, this.factors).map((row) => row.map((v) => String(v)));
-        const numbers = rows.map((_, i) => n + i + 1);
-        const next = {
-          ...d,
-          codedMatrix: [...d.codedMatrix, ...plain(rows)],
-          actualMatrix: [...d.actualMatrix, ...added],
-          runOrder: [...d.runOrder, ...numbers],
-          stdOrder: [...d.stdOrder, ...numbers],
-          replicateIds: [...d.replicateIds, ...rows.map(() => 1)],
-        };
-        this.evaluateFor(next);
-        this.design = next;
-        const binding = plain(ref);
-        binding.designSignature = designSignature(this);
-        if (binding.snapshot) binding.snapshot.replicateGroups = snapshotOf(this, next).replicateGroups;
-        this.worksheetRef = binding;
-        this.syncActivePhase();
-        return next.codedMatrix.length;
       },
     }),
     reshuffle: command({

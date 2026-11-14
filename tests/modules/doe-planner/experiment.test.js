@@ -3,8 +3,9 @@
  * datasheet and the experiment built from it, against the records the
  * planner wrote before (without createdAt and experimentId).
  */
-import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
-import { snapshotOf, experimentOf } from '../../../js/modules/doe-planner/domain/experiment.js';
+import { suite, test, assert, assertEqual, assertDeepEqual } from '../../test-utils.js';
+import { snapshotOf, experimentOf, appendedRuns } from '../../../js/modules/doe-planner/domain/experiment.js';
+import { designSignature } from '../../../js/modules/doe-planner/domain/signatures.js';
 import { loadCases, legacyExperiments } from './cases.js';
 
 suite('doe-planner domain — experimentOf', () => {
@@ -49,5 +50,53 @@ suite('doe-planner domain — experimentOf', () => {
     const [c] = await loadCases();
     const design = { ...c.design, codedMatrix: undefined, actualMatrix: [[1, 2], [1, 2]] };
     assertDeepEqual(snapshotOf(c.model, design).replicateGroups, []);
+  });
+});
+
+suite('doe-planner domain — appendedRuns', () => {
+  /** A bound 2² plan as stored (actual values as text). */
+  function bound() {
+    const m = {
+      doeName: 'Ofen', designType: 'full', responses: [{ name: 'Y', unit: '' }],
+      options: { optimalActiveTerms: null },
+      factors: [
+        { name: 'A', unit: '', kind: 'continuous', levels: ['0', '10'] },
+        { name: 'B', unit: '', kind: 'continuous', levels: ['0', '10'] },
+      ],
+      design: {
+        codedMatrix: [[-1, -1], [1, -1], [-1, 1], [1, 1]], actualMatrix: [['0', '0'], ['10', '0'], ['0', '10'], ['10', '10']],
+        stdOrder: [1, 2, 3, 4], runOrder: [1, 2, 3, 4], replicateIds: [1, 1, 1, 1], resolution: 'Full', p: 3,
+        designType: 'full', configSignature: 'cfg',
+      },
+    };
+    m.worksheetRef = {
+      instanceId: 'ws', sheetId: 's', factorColumnIds: ['a', 'b'], responseColumnIds: ['y'], meanColumnIds: [], lnVarColumnIds: [],
+      runOrderColumnId: 'run', stdOrderColumnId: 'std', designSignature: designSignature(m), snapshot: snapshotOf(m, m.design),
+    };
+    return m;
+  }
+
+  test('the design grows by the rows; signature and replicate groups follow; the input stays', () => {
+    const m = bound();
+    const before = JSON.stringify(m);
+    const { design, worksheetRef } = appendedRuns(m, [[1, 1], [1, 1]]);
+    assertEqual(JSON.stringify(m), before);
+    assertEqual(design.codedMatrix.length, 6);
+    assertDeepEqual(design.actualMatrix.slice(-2), [['10', '10'], ['10', '10']]);
+    assertDeepEqual(design.runOrder.slice(-2), [5, 6]);
+    assertDeepEqual(design.stdOrder.slice(-2), [5, 6]);
+    assertDeepEqual(design.replicateIds.slice(-2), [1, 1]);
+    assertEqual(design.configSignature, 'cfg');
+    assertEqual(worksheetRef.designSignature, designSignature({ design, factors: m.factors }));
+    assert(worksheetRef.designSignature !== m.worksheetRef.designSignature, 'signature changed');
+    assertDeepEqual(worksheetRef.snapshot.replicateGroups, [[3, 4, 5]]);
+  });
+
+  test('rows of the wrong width, no rows or no binding throw', () => {
+    const m = bound();
+    const throws = (fn) => { try { fn(); return false; } catch { return true; } };
+    assert(throws(() => appendedRuns(m, [[1]])), 'wrong width');
+    assert(throws(() => appendedRuns(m, [])), 'no rows');
+    assert(throws(() => appendedRuns({ ...m, worksheetRef: null }, [[1, 1]])), 'no binding');
   });
 });

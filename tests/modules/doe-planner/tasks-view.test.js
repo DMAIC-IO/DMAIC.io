@@ -182,8 +182,14 @@ async function mount(model = null) {
   };
   const layer = agentLayer(store);
   const notes = [];
+  /** Instances as `ctx.instances.list` gives them; `hidden` leaves the planner out. */
+  const listing = { hidden: false };
+  const list = ({ modules } = {}) => Object.entries(store.phases)
+    .flatMap(([phase, items]) => items.map((i) => ({ instanceId: i.instanceId, moduleId: i.moduleId, phase, title: '' })))
+    .filter((i) => !modules || modules.includes(i.moduleId))
+    .filter((i) => !(listing.hidden && i.instanceId === PLANNER));
   const context = {
-    instances: { interact: layer.interact, list: () => [], read: async () => ({}) },
+    instances: { interact: layer.interact, list, read: async () => ({}) },
     instanceId: PLANNER,
     stateManager: {
       get(path) {
@@ -212,7 +218,7 @@ async function mount(model = null) {
   await flush();
   const vm = () => Alpine.$data(container.querySelector('[x-data]'));
   return {
-    vm, notes, store, layer, events,
+    vm, notes, store, layer, events, listing,
     /** Runs of the command `regenerate` so far. */
     regenerates: () => events.filter(([n, p]) => n === 'command:executed' && p.command === 'regenerate').length,
     /** Starts a run and returns its outcome. */
@@ -381,6 +387,22 @@ suite('doe-planner tasks: augment', () => {
     assertDeepEqual(h.notes.at(-1), ['augmentFailed', 'error']);
   });
 
+  test('augment right after a rename: the rename is carried over first, the new runs stay bound', async () => {
+    const h = await bound(optimalPlan());
+    const vm = h.vm();
+    const n = vm.model.design.codedMatrix.length;
+    setFields(vm.model, { responses: [{ name: 'Ausbeute', unit: '%' }] });
+    const out = await h.run('augment', { runs: 2 });
+    assertEqual(out.status, 'done', JSON.stringify(out));
+    await h.settle();
+    assertEqual(vm.model.design.codedMatrix.length, n + 2);
+    assertEqual(vm.staleness, 'bound');
+    assertDeepEqual(vm.model.worksheetRef.snapshot.replicateGroups, snapshotOf(vm.model, vm.model.design).replicateGroups);
+    assertEqual(vm.experiment.responseColumns[0].name, 'Ausbeute');
+    const kinds = h.layer.stacks.slice(-2).map((st) => st.some((a) => a.method === 'addRows') ? 'augment' : st[0].method);
+    assertDeepEqual(kinds, ['renameColumn', 'augment']);
+  });
+
   test('blocked without an optimal design', async () => {
     const h = await bound(plan());
     const out = await h.run('augment', { runs: 2 });
@@ -419,6 +441,37 @@ suite('doe-planner tasks: syncResponses', () => {
     assertEqual(vm.experiment.responseColumns[1].columnId, ids[1]);
   });
 
+  test('a failing stack: syncFailed, sheet and snapshot unchanged', async () => {
+    const h = await bound(plan());
+    const vm = h.vm();
+    const snapshot = JSON.stringify(vm.model.worksheetRef.snapshot);
+    h.layer.fail((a) => a.method === 'renameColumn');
+    setFields(vm.model, { responses: [{ name: 'Ausbeute', unit: '%' }] });
+    await h.settle();
+    assertDeepEqual(h.notes.at(-1), ['syncFailed', 'error']);
+    assertEqual(JSON.stringify(vm.model.worksheetRef.snapshot), snapshot);
+    assertEqual(h.sheet().columns.find((c) => c.id === vm.model.worksheetRef.responseColumnIds[0]).name, 'Yield');
+  });
+
+  test('a change that cannot be carried over: syncSkipped once per diverging state, no stack', async () => {
+    const h = await bound(plan());
+    const vm = h.vm();
+    const stacks = h.layer.stacks.length;
+    const skips = () => h.notes.filter(([msg]) => msg === 'syncSkipped').length;
+    setFields(vm.model, { responses: [...vm.model.responses, { name: 'B', unit: '' }, { name: 'C', unit: '' }] });
+    await h.settle();
+    assertEqual(skips(), 1);
+    assertDeepEqual(h.notes.at(-1), ['syncSkipped', 'warning']);
+    // The run starts again on a change of the sheet; the same state is not reported again.
+    h.store.bus.emit('worksheet:dataChanged', { instanceId: vm.model.worksheetRef.instanceId });
+    await h.settle();
+    assertEqual(skips(), 1);
+    assertEqual(h.layer.stacks.length, stacks);
+    setFields(vm.model, { responses: [...vm.model.responses, { name: 'D', unit: '' }] });
+    await h.settle();
+    assertEqual(skips(), 2);
+  });
+
   test('renaming while the datasheet is stale: no stack, snapshot unchanged', async () => {
     const h = await bound(plan());
     const vm = h.vm();
@@ -454,6 +507,16 @@ suite('doe-planner tasks: transferToRegression', () => {
     const out = await h.run('transferToRegression', { response: 3 });
     assertEqual(out.status, 'rejected');
     assert(/response/.test(out.reason), out.reason);
+    assertEqual(h.layer.stacks.length, stacks);
+  });
+
+  test('a planner in no phase: transferFailed, nothing sent', async () => {
+    const h = await bound(plan());
+    const stacks = h.layer.stacks.length;
+    h.listing.hidden = true;
+    const out = await h.run('transferToRegression', { response: 0 });
+    assertEqual(out.status, 'failed');
+    assertDeepEqual(h.notes.at(-1), ['transferFailed', 'error']);
     assertEqual(h.layer.stacks.length, stacks);
   });
 

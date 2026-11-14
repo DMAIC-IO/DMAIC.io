@@ -276,8 +276,10 @@
   "datasheetFailed": "The datasheet could not be created.",
   "augmentFailed": "The design could not be augmented.",
   "transferFailed": "The data could not be handed to the regression.",
+  "syncFailed": "The responses could not be carried into the datasheet.",
+  "syncSkipped": "The datasheet was not adjusted: several responses changed at once. Create the datasheet anew so that it fits the responses.",
   "needsDatasheet": "Create the datasheet first.",
-  "needsCurrentDatasheet": "The datasheet no longer fits the plan; create it again first.",
+  "needsCurrentDatasheet": "The datasheet no longer fits the plan: new runs would belong to another plan than the existing ones. Create the datasheet anew first.",
   "needsOptimal": "Only optimal designs (D, A, G) can be extended.",
   "reshuffle": "Reshuffle",
   "reshuffleTitle": "Draw a new run order: otherwise the same configuration always gives the same plan."

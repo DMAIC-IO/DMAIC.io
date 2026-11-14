@@ -384,12 +384,6 @@
         "source": "The rows of the source worksheet { codedMatrix, actualRows, responseValues, rowCount, sheetRowCount } for an optimal design with a source worksheet, otherwise null or omitted."
       }
     },
-    "appendRuns": {
-      "help": "Records runs already appended to the linked, current datasheet: the design grows by these rows (run and standard order continue), datasheet signature and replicate groups follow. To extend the design use the action augment; it writes the datasheet and calls this command.",
-      "params": {
-        "rows": "The new runs as coded factor settings (−1 … +1), one value per factor in each row."
-      }
-    },
     "reshuffle": {
       "help": "Draw a new run order: a new seed gives a different order for the same configuration. Without this action the same configuration always gives the same plan."
     },

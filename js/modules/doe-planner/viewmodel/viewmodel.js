@@ -9,12 +9,14 @@
  *   gets the source rows read through `ctx.data`.
  * - `createDatasheet` writes the design as a new worksheet (a stale one is
  *   replaced in the same stack) and binds it with a snapshot.
- * - `augment` appends optimal runs to the bound datasheet; only after the
- *   stack went through does the design grow (`appendRuns`).
+ * - `augment` appends optimal runs to the bound datasheet; the grown
+ *   design is built and evaluated before the stack goes out and written
+ *   only after it went through.
  * - `transferToRegression` adds a regression in the planner's phase and
  *   hands it the experiment of the datasheet for one response.
  * - `syncResponses` (auto) carries a renamed, added or removed response
- *   into the bound, current datasheet and updates the snapshot.
+ *   into the bound, current datasheet and updates the snapshot; a change
+ *   it cannot carry over is reported once.
  * Every write goes out as one stack over `ctx.instances.interact`; when it
  * fails the planner stays as it was and shows its own text, the cause goes
  * to the console. Opening the datasheet or the regression afterwards is up
@@ -24,13 +26,12 @@ import { createModule } from '../../../core/template-module.js';
 import { asyncTask } from '../../../core/async-task.js';
 import { number, index, setFields } from '../../../core/model.js';
 import { worksheetWrite, commitWorksheetWrite } from '../../../core/worksheet-write.js';
-import { findOwnPhase } from '../../../core/instance-handoff.js';
 import descriptor from '../module.js';
 import { State } from '../domain/model.js';
 import { isOptimal } from '../domain/design.js';
 import { sourceData } from '../domain/source.js';
 import { designColumns } from '../domain/columns.js';
-import { snapshotOf } from '../domain/experiment.js';
+import { snapshotOf, appendedRuns } from '../domain/experiment.js';
 import { designSignature } from '../domain/signatures.js';
 import { applyEdits, codedToActualRows } from '../domain/runtable.js';
 import { augmentRows } from '../domain/generate.js';
@@ -109,7 +110,20 @@ function leadingIds(ids) {
  * `ctx.data` and the write of a new binding.
  * @type {import('./state.types.js').DoePlannerViewFn}
  */
-const tasksView = (ctx) => ({
+const tasksView = (ctx) => {
+  /** @type {string|null} the diverging state last reported as not carried over */
+  let skipped = null;
+  return {
+    /**
+     * Whether a response change that cannot be carried over is new; remembers it.
+     * @param {string} key the diverging state
+     * @returns {boolean} true the first time for this state
+     */
+    firstSkip(key) {
+      if (skipped === key) return false;
+      skipped = key;
+      return true;
+    },
     /**
      * The rows of the source worksheet of an optimal design, as `regenerate` takes them;
      * empty rows when the sheet is gone or has no usable row.
@@ -168,7 +182,8 @@ const tasksView = (ctx) => ({
       Object.assign(phases[m.activePhaseIdx], /** @type {any} */ (m).phaseState());
       setFields(this.model, { projectPhases: phases });
     },
-});
+  };
+};
 
 export default createModule({
   descriptor,
@@ -254,7 +269,11 @@ export default createModule({
         if (this.staleness !== 'bound') return this.t('needsCurrentDatasheet');
         return null;
       },
-      async run({ runs }) {
+      async run({ runs }, { signal }) {
+        // First let pending runs end: a response just renamed must not be written back over the new runs.
+        if (!(await this._asyncTaskHost.settle(SETTLE_MS))) throw new Error(this.t('augmentFailed'));
+        signal.throwIfAborted();
+        if (this.staleness !== 'bound') throw new Error(this.t('needsCurrentDatasheet'));
         const m = this.model;
         const ref = plain(m.worksheetRef);
         const sheet = this.sheetOf(ref);
@@ -264,9 +283,13 @@ export default createModule({
         if (!sheet || !tagged.every((id) => present.has(id))) {
           throw failure(this.t('augmentFailed'), 'augment', new Error('a tagged column of the datasheet is missing'));
         }
+        // The grown design is made and evaluated before anything is sent: after a written stack nothing may fail.
         let rows;
+        let grown;
         try {
           rows = augmentRows(m, runs);
+          grown = appendedRuns(m, rows);
+          /** @type {any} */ (m).evaluateFor(grown.design);
         } catch (err) {
           throw failure(this.t('augmentFailed'), 'augment', err);
         }
@@ -278,11 +301,18 @@ export default createModule({
           throw failure(this.t('augmentFailed'), 'augment', err);
         }
         if (res?.ok !== true) throw failure(this.t('augmentFailed'), 'augment', res);
-        try {
-          this.model.appendRuns({ rows });
-        } catch (err) {
-          throw failure(this.t('augmentFailed'), 'augment', err);
-        }
+        // Into the current binding: only what the new runs change.
+        const current = plain(this.model.worksheetRef) ?? grown.worksheetRef;
+        this.writeBinding({
+          design: grown.design,
+          worksheetRef: {
+            ...current,
+            designSignature: grown.worksheetRef.designSignature,
+            snapshot: current.snapshot
+              ? { ...current.snapshot, replicateGroups: grown.worksheetRef.snapshot?.replicateGroups ?? current.snapshot.replicateGroups }
+              : null,
+          },
+        });
         this._ui.notify(this.t('augmentSuccess', { n: runs }), 'success');
         return { added: runs };
       },
@@ -293,9 +323,11 @@ export default createModule({
       async run({ response }) {
         const services = this._ui.services;
         const plannerId = this._ui.instanceId;
+        const phase = services.instances.list({ modules: ['doe-planner'] }).find((i) => i.instanceId === plannerId)?.phase;
+        if (!phase) throw failure(this.t('transferFailed'), 'transferToRegression', new Error('the planner is in no phase'));
         /** @type {any} */
         const stack = [
-          { op: 'module.add', id: 'reg', module: 'regression', phase: findOwnPhase(services.stateManager, plannerId) },
+          { op: 'module.add', id: 'reg', module: 'regression', phase },
           {
             op: 'instance.call', module: 'regression', instance: { $from: 'reg', path: 'instanceId' },
             method: 'importExperiment', args: [`${plannerId}|raw|${response}`],
@@ -330,26 +362,42 @@ export default createModule({
         const plan = responseSyncPlan(ref, before, after, {
           columns: sheet.columns, names: { meanSuffix: names.meanSuffix, lnVarSuffix: names.lnVarSuffix },
         });
-        // Several changes at once or two equal responses: the sheet and its snapshot stay.
-        if (!plan) return null;
+        // Several changes at once or two equal responses: the sheet and its snapshot stay; said once.
+        if (!plan) {
+          if (this.firstSkip(JSON.stringify([ref.instanceId, ref.sheetId, before, after]))) {
+            this._ui.notify(this.t('syncSkipped'), 'warning');
+          }
+          return null;
+        }
         /** @type {Map<string, any>} */
         const written = new Map();
         if (plan.stack.length) {
-          const res = await this._ui.services.instances.interact(/** @type {any} */ (plan.stack));
+          let res;
+          try {
+            res = await this._ui.services.instances.interact(/** @type {any} */ (plan.stack));
+          } catch (err) {
+            this._ui.notify(this.t('syncFailed'), 'error');
+            throw failure(this.t('syncFailed'), 'syncResponses', err);
+          }
           if (res?.ok !== true) {
-            console.warn('[doe-planner] syncResponses failed', res);
-            return null;
+            this._ui.notify(this.t('syncFailed'), 'error');
+            throw failure(this.t('syncFailed'), 'syncResponses', res);
           }
           for (const r of res.results ?? []) if (r.id) written.set(r.id, r.result);
         }
+        // Into the current binding: only the response columns and the responses of the snapshot.
+        const current = plain(this.model.worksheetRef);
+        if (!current || current.instanceId !== ref.instanceId || current.sheetId !== ref.sheetId) return null;
         const idOf = (/** @type {any} */ x) => (typeof x === 'string' ? x : at(written.get(x.$from), x.path));
         this.writeBinding({
           worksheetRef: {
-            ...ref,
+            ...current,
             responseColumnIds: plan.responseColumnIds.map(idOf),
             meanColumnIds: leadingIds(plan.meanColumnIds),
             lnVarColumnIds: leadingIds(plan.lnVarColumnIds),
-            snapshot: { ...ref.snapshot, responses: after.map((r) => ({ name: r.name, unit: r.unit ?? null })) },
+            snapshot: current.snapshot
+              ? { ...current.snapshot, responses: after.map((r) => ({ name: r.name, unit: r.unit ?? null })) }
+              : null,
           },
         });
         return null;

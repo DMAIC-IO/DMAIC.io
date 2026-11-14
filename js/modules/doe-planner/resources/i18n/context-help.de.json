@@ -384,12 +384,6 @@
         "source": "Die Zeilen des Quell-Worksheets { codedMatrix, actualRows, responseValues, rowCount, sheetRowCount } beim optimalen Plan mit Quell-Worksheet, sonst null oder weggelassen."
       }
     },
-    "appendRuns": {
-      "help": "Hält Läufe fest, die schon an das verknüpfte, aktuelle Datenblatt angehängt sind: der Plan wächst um diese Zeilen (Lauf- und Standardreihenfolge laufen weiter), Datenblatt-Signatur und Wiederholungsgruppen folgen. Zum Erweitern die Aktion augment nehmen; sie schreibt das Datenblatt und ruft dieses Kommando.",
-      "params": {
-        "rows": "Die neuen Läufe als kodierte Faktoreinstellungen (−1 … +1), je Zeile ein Wert je Faktor."
-      }
-    },
     "reshuffle": {
       "help": "Die Laufreihenfolge neu würfeln: ein neuer Startwert (seed) ergibt eine andere Reihenfolge derselben Konfiguration. Ohne diese Aktion ergibt dieselbe Konfiguration immer denselben Plan."
     },
