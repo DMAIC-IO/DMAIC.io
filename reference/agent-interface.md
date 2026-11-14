@@ -733,6 +733,14 @@ das erste, und die Antwort führt `sheetId` statt `activeSheetId`. `rest-api` ne
 seinen Endpunkt: die Detailaktionen tragen `endpointId` als ersten Parameter,
 `lastResponse` und `scheduleRunning` stehen je Endpunkt in `endpoints[]`.
 
+Spaltenmerkmale im Arbeitsblatt (2026-11-14, `contract` bleibt `2`): neue Aktion
+`worksheet.setColumnMeta(sheetId, columnId, meta)` setzt das ganze `meta` einer
+Spalte (`lock` `'hard'`/`'soft'`, `reason`, `managedBy`, `managedRef`,
+`categoricalCoding`; `null` entfernt; andere Schlüssel werden abgelehnt) und ist
+auch auf gesperrten Spalten erlaubt. `read().columns[].meta` liefert es
+(`null` ohne), `writeColumns`-Einträge nehmen `unit`. Neue Aktion und neue
+Antwortfelder, gleiche Hülle, keine neuen Fehlercodes — kein Bruch.
+
 Deklaratives Model (2026-11-03, `contract` bleibt `2`): neue `op` `instance.set`;
 Kommandos von Schema-Modulen nehmen ein Objekt in `args[0]`. Beides ist nach
 der Regel oben kein Bruch — neue `op`, gleiche Hülle, keine neuen Fehlercodes.

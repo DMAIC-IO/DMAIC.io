@@ -21880,6 +21880,30 @@ export const AGENT_REGISTRY = {
         "returns": "string",
         "help": "Rename a column. Formulas that refer to the old name are rewritten; a name another column already has gets a suffix (\" (2)\"); \"\" clears the name so the short name (C1, …) is shown. Undo restores it."
       },
+      "setColumnMeta": {
+        "params": [
+          {
+            "name": "sheetId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the sheet (see read().sheets[].id)"
+          },
+          {
+            "name": "columnId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the column (see read().columns[].id)"
+          },
+          {
+            "name": "meta",
+            "type": "{ lock?: 'hard'|'soft', reason?: string, managedBy?: string, managedRef?: string, categoricalCoding?: object }|null",
+            "optional": false,
+            "help": "the new meta, replacing the old one; null removes it"
+          }
+        ],
+        "returns": "void",
+        "help": "Set the whole meta of a column: its lock, the reason shown in the tooltip, the managing module and the categorical coding. `meta = null` removes it. Allowed on locked columns too, so a lock can be lifted and set again around a write. Undo restores the previous meta."
+      },
       "removeColumn": {
         "params": [
           {
@@ -22260,8 +22284,8 @@ export const AGENT_REGISTRY = {
         "derived": true
       },
       "columns": {
-        "type": "Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null, roleConfirmed: boolean, format: { decimals?: number, dateFormat?: string, timeFormat?: string } }>",
-        "help": "the column headers of this sheet; `id` is the columnId of a column reference; `roleConfirmed` is true once the role was set or confirmed by hand or via setColumnRole; `format` holds the display format keys set for the column (absent key = the type's default)",
+        "type": "Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null, roleConfirmed: boolean, format: { decimals?: number, dateFormat?: string, timeFormat?: string }, meta: { lock?: 'hard'|'soft', reason?: string, managedBy?: string, managedRef?: string, categoricalCoding?: object }|null }>",
+        "help": "the column headers of this sheet; `id` is the columnId of a column reference; `roleConfirmed` is true once the role was set or confirmed by hand or via setColumnRole; `format` holds the display format keys set for the column (absent key = the type's default); `meta` is the column's lock and management data set via setColumnMeta, null if none",
         "bulk": false,
         "derived": true
       },

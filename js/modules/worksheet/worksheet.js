@@ -54,6 +54,41 @@ const FORMAT_KEYS_BY_TYPE = Object.freeze({
   date: ['dateFormat'], time: ['timeFormat'],
 });
 
+/**
+ * Schlüssel des Spaltenmerkmals `meta`, die `setColumnMeta` annimmt — mit der
+ * Art ihres Werts. Alles andere lehnt die Aktion ab.
+ */
+const COLUMN_META_KEYS = Object.freeze({
+  lock: 'lock', reason: 'string', managedBy: 'string', managedRef: 'string', categoricalCoding: 'object',
+});
+
+/**
+ * Prüft ein Spaltenmerkmal und liefert eine eigenständige Kopie.
+ * @param {object|null} meta das Merkmal oder null
+ * @returns {object|null} die geprüfte Kopie, `null` für „entfernen“
+ * @throws {Error} bei unbekanntem Schlüssel oder falscher Art des Werts
+ */
+function checkColumnMeta(meta) {
+  if (meta === null) return null;
+  if (typeof meta !== 'object' || Array.isArray(meta)) throw new Error('meta must be an object or null');
+  const out = {};
+  for (const [key, value] of Object.entries(meta)) {
+    const kind = COLUMN_META_KEYS[key];
+    if (!kind) {
+      throw new Error(`unknown meta key ${JSON.stringify(key)}; allowed: ${Object.keys(COLUMN_META_KEYS).join(', ')}`);
+    }
+    if (kind === 'lock' && value !== 'hard' && value !== 'soft') {
+      throw new Error(`meta.lock must be 'hard' or 'soft', got ${JSON.stringify(value)}`);
+    }
+    if (kind === 'string' && typeof value !== 'string') throw new Error(`meta.${key} must be a string`);
+    if (kind === 'object' && (value === null || typeof value !== 'object' || Array.isArray(value))) {
+      throw new Error(`meta.${key} must be an object`);
+    }
+    out[key] = kind === 'object' ? JSON.parse(JSON.stringify(value)) : value;
+  }
+  return out;
+}
+
 // ═══════════════════════════════════════════════════════════
 //  WRITE COLUMNS (pure helpers of writeColumns)
 // ═══════════════════════════════════════════════════════════
@@ -125,6 +160,7 @@ function checkWriteColumns(columns, existing) {
     if (entry.format !== undefined && (entry.format === null || typeof entry.format !== 'object')) {
       throw new Error(`columns[${i}].format must be an object`);
     }
+    if (entry.unit !== undefined && typeof entry.unit !== 'string') throw new Error(`columns[${i}].unit must be a string`);
     if (entry.type !== undefined && !Object.hasOwn(COLUMN_TYPES, entry.type)) {
       throw new Error(`unknown_type: ${entry.type}`);
     }
@@ -170,7 +206,7 @@ function writeSheetColumns(columns, rowCount, entries) {
         name: entry.name ?? '',
         shortName: '',
         type,
-        unit: null,
+        unit: entry.unit ?? null,
         values,
         formulas: [],
         format: entry.format !== undefined
@@ -189,6 +225,7 @@ function writeSheetColumns(columns, rowCount, entries) {
       if (next) { col.type = next.type; col.format = next.format; }
       col.values = values;
       col.formulas = [];
+      if (entry.unit !== undefined) col.unit = entry.unit;
       if (next) reinferRoleAfterRetype(col);
     }
     used.add(idx);
@@ -651,7 +688,7 @@ class FormulaEditor {
  * @typedef {object} AgentRead
  * @property {Array<{ id: string, name: string }>} sheets  all sheets of the workbook, in tab order
  * @property {string|null} sheetId  id of the sheet the following columns and rows belong to; the read option sheetId chooses it, otherwise the first sheet
- * @property {Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null, roleConfirmed: boolean, format: { decimals?: number, dateFormat?: string, timeFormat?: string } }>} columns  the column headers of this sheet; `id` is the columnId of a column reference; `roleConfirmed` is true once the role was set or confirmed by hand or via setColumnRole; `format` holds the display format keys set for the column (absent key = the type's default)
+ * @property {Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null, roleConfirmed: boolean, format: { decimals?: number, dateFormat?: string, timeFormat?: string }, meta: { lock?: 'hard'|'soft', reason?: string, managedBy?: string, managedRef?: string, categoricalCoding?: object }|null }>} columns  the column headers of this sheet; `id` is the columnId of a column reference; `roleConfirmed` is true once the role was set or confirmed by hand or via setColumnRole; `format` holds the display format keys set for the column (absent key = the type's default); `meta` is the column's lock and management data set via setColumnMeta, null if none
  * @property {any[][]} rows  [bulk] the data rows of this sheet, each row in column order
  * @property {Array<{ columnId: string, row: number, formula: string }>} formulas  [bulk] which cells of this sheet are COMPUTED, not typed; a plain value written over one of them deletes the formula
  */
@@ -664,6 +701,7 @@ class FormulaEditor {
  * @property {string} [type]  column type, e.g. 'numeric', 'text', 'date', 'currency'; default 'numeric'
  * @property {any[]} values  the cell values from the first row on; they replace the column's values and formulas
  * @property {{ decimals?: number, dateFormat?: string, timeFormat?: string }} [format]  display format; without it a new column gets the type's default format
+ * @property {string} [unit]  unit of measure shown with the column, e.g. 'mm'; an overwritten column keeps its unit without it
  * @property {boolean} [discrete]  whole numbers: a new numeric column without format shows 0 decimals
  */
 const mod = createModule({
@@ -893,6 +931,39 @@ const mod = createModule({
         this._grid.renameColumn(columnId, name);
         this._persistNow();
         return this._grid.getColumn(columnId).name;
+      },
+      /**
+       * Set the whole meta of a column: its lock, the reason shown in the
+       * tooltip, the managing module and the categorical coding. `meta = null`
+       * removes it. Allowed on locked columns too, so a lock can be lifted
+       * and set again around a write. Undo restores the previous meta.
+       *
+       * @agent
+       * @param {string} sheetId id of the sheet (see read().sheets[].id)
+       * @param {string} columnId id of the column (see read().columns[].id)
+       * @param {{ lock?: 'hard'|'soft', reason?: string, managedBy?: string, managedRef?: string, categoricalCoding?: object }|null} meta the new meta, replacing the old one; null removes it
+       * @returns {void}
+       * @throws {Error} if no column has this id, meta has a key other than
+       *   lock, reason, managedBy, managedRef, categoricalCoding, or a value
+       *   has the wrong kind (lock is 'hard' or 'soft')
+       */
+      setColumnMeta(sheetId, columnId, meta) {
+        const view = this._sheetView(sheetId);
+        requireKnownId('columnId', columnId, view.columns.map(c => c.id));
+        const next = checkColumnMeta(meta);
+        const grid = this._grid;
+        grid._commitEdit();
+        const clone = (m) => (m ? JSON.parse(JSON.stringify(m)) : null);
+        const active = sheetId === this.model.activeSheetId;
+        const target = () => (active
+          ? grid.getColumn(columnId)
+          : this.model.sheets.find(s => s.id === sheetId)?.state?.columns.find(c => c.id === columnId));
+        const prev = clone(target().meta);
+        const put = (m) => { const col = target(); if (col) col.meta = clone(m); };
+        put(next);
+        grid.history.push({ type: 'external', undo: () => put(prev), redo: () => put(next) });
+        grid.render();
+        this._persistNow();
       },
       /**
        * Remove a column with its values and formulas. Undo restores it.
@@ -1377,6 +1448,7 @@ const mod = createModule({
           format: Object.fromEntries(FORMAT_KEYS
             .filter(k => c.format?.[k] != null)
             .map(k => [k, c.format[k]])),
+          meta: c.meta ? JSON.parse(JSON.stringify(c.meta)) : null,
         }));
         const rows = [];
         for (let r = 0; r < (state.rowCount ?? 0); r++) {

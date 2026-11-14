@@ -329,3 +329,85 @@ suite('Worksheet — Agentenaktion writeColumns', () => {
     } finally { await w.unmount(); }
   });
 });
+
+suite('Worksheet — Agentenaktion setColumnMeta', () => {
+  const metaOf = (w, id, sheetId = w.sheetId) => w.vm.read({ sheetId }).columns.find(c => c.id === id).meta;
+
+  test('setzen erscheint in read().columns[].meta, null entfernt', async () => {
+    const w = await mountWorksheet();
+    try {
+      assertEqual(metaOf(w, 'e0'), null);
+      const meta = { lock: 'hard', reason: 'run-order', managedBy: 'doe-planner', managedRef: 'doe:x', categoricalCoding: { levels: ['a', 'b'] } };
+      w.vm.setColumnMeta(w.sheetId, 'e0', meta);
+      assertDeepEqual(metaOf(w, 'e0'), meta);
+      w.vm.setColumnMeta(w.sheetId, 'e0', null);
+      assertEqual(metaOf(w, 'e0'), null);
+    } finally { await w.unmount(); }
+  });
+
+  test('unbekannter Schlüssel und ungültige Werte werfen', async () => {
+    const w = await mountWorksheet();
+    try {
+      throwsWith(() => w.vm.setColumnMeta(w.sheetId, 'e0', { foo: 1 }), '');
+      let err = null;
+      try { w.vm.setColumnMeta(w.sheetId, 'e0', { foo: 1 }); } catch (e) { err = e; }
+      assert(String(err.message).includes('foo'), `Meldung nennt foo nicht: ${err.message}`);
+      throwsWith(() => w.vm.setColumnMeta(w.sheetId, 'e0', { lock: 'x' }), '');
+      throwsWith(() => w.vm.setColumnMeta(w.sheetId, 'e0', { reason: 3 }), '');
+      throwsWith(() => w.vm.setColumnMeta(w.sheetId, 'e0', { categoricalCoding: 'a' }), '');
+      throwsWith(() => w.vm.setColumnMeta(w.sheetId, 'nope', { lock: 'soft' }), '');
+      assertEqual(metaOf(w, 'e0'), null);
+    } finally { await w.unmount(); }
+  });
+
+  test('Sperre wirkt, setColumnMeta selbst bleibt erlaubt', async () => {
+    const w = await mountWorksheet();
+    try {
+      w.vm.setColumnMeta(w.sheetId, 'e0', { lock: 'hard' });
+      throwsWith(() => w.vm.renameColumn(w.sheetId, 'e0', 'X'), 'column "e0" is locked (hard)');
+      w.vm.setColumnMeta(w.sheetId, 'e0', { lock: 'soft' });
+      w.vm.setColumnMeta(w.sheetId, 'e0', { lock: 'hard', reason: 'r' });
+      w.vm.setColumnMeta(w.sheetId, 'e0', { lock: 'soft' });
+      w.vm.removeColumn(w.sheetId, 'e0');
+      assertEqual(w.vm._grid.columns.length, 4);
+    } finally { await w.unmount(); }
+  });
+
+  test('inaktives Blatt: Meta im Blattzustand', async () => {
+    const w = await mountWorksheet();
+    try {
+      addInactiveSheet(w);
+      w.vm.setColumnMeta('s-in', 'i0', { lock: 'soft', reason: 'r' });
+      const st = w.vm.model.sheets.find(s => s.id === 's-in').state;
+      assertDeepEqual(st.columns[0].meta, { lock: 'soft', reason: 'r' });
+    } finally { await w.unmount(); }
+  });
+
+  test('ein Undo-Schritt je Aufruf', async () => {
+    const w = await mountWorksheet();
+    try {
+      w.vm.setColumnMeta(w.sheetId, 'e0', { lock: 'soft' });
+      w.vm.setColumnMeta(w.sheetId, 'e0', { lock: 'hard' });
+      w.vm._grid.undo();
+      assertEqual(metaOf(w, 'e0').lock, 'soft');
+      w.vm._grid.undo();
+      assertEqual(metaOf(w, 'e0'), null);
+    } finally { await w.unmount(); }
+  });
+});
+
+suite('Worksheet — writeColumns unit', () => {
+  test('unit landet in read().columns[].unit, falscher Typ wirft', async () => {
+    const w = await mountWorksheet();
+    try {
+      const ids = w.vm.writeColumns(w.sheetId, [
+        { to: 'append', name: 'L', values: [1], unit: 'mm' },
+        { to: 'e1', values: [2], unit: 'kg' },
+      ]);
+      const cols = w.vm.read().columns;
+      assertEqual(cols.find(c => c.id === ids[0]).unit, 'mm');
+      assertEqual(cols.find(c => c.id === 'e1').unit, 'kg');
+      throwsWith(() => w.vm.writeColumns(w.sheetId, [{ to: 'append', values: [1], unit: 3 }]), 'columns[0].unit');
+    } finally { await w.unmount(); }
+  });
+});

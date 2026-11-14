@@ -1362,7 +1362,7 @@
           "help": "Write several columns in one step: append, fill empty start columns or overwrite existing columns.",
           "params": {
             "sheetId": "The id of the sheet, listed under sheets in the read state. An inactive sheet is written without bringing it into view.",
-            "columns": "The columns in write order, each { to, name?, type?, values, format?, discrete? }. to: 'append' adds a new column, 'start' fills the next empty, unnamed start column (C1–C5) or appends, otherwise the id of a column to overwrite (values and formulas replaced, name kept). type is a column type, default 'numeric'; discrete: true gives a new numeric column without format 0 decimals. If one entry is invalid, nothing is written; the whole call is one undo step."
+            "columns": "The columns in write order, each { to, name?, type?, values, unit?, format?, discrete? }. to: 'append' adds a new column, 'start' fills the next empty, unnamed start column (C1–C5) or appends, otherwise the id of a column to overwrite (values and formulas replaced, name kept). type is a column type, default 'numeric'; discrete: true gives a new numeric column without format 0 decimals. If one entry is invalid, nothing is written; the whole call is one undo step."
           }
         },
         "renameColumn": {
@@ -1371,6 +1371,14 @@
             "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view. Switching clears the undo history of the sheet, even if the call is rejected afterwards.",
             "columnId": "The id of the column, as read().columns[].id names it.",
             "name": "The new name; \"\" clears it, and the column shows its short name (C1, …)."
+          }
+        },
+        "setColumnMeta": {
+          "help": "Sets the whole meta of a column of the sheet: lock, the reason shown in the tooltip, the managing module and the categorical coding. null removes it. Allowed on locked columns too, so a lock can be lifted before a write and set again afterwards. Undo restores the previous meta.",
+          "params": {
+            "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view. The switch clears the sheet's undo history, even if the call is rejected afterwards.",
+            "columnId": "The id of the column, as read().columns[].id names it.",
+            "meta": "The new meta as an object, replacing the old one entirely; null removes it. Keys: lock ('hard' or 'soft'; absent = no lock), reason (text for the tooltip), managedBy (managing module), managedRef (reference at the manager), categoricalCoding (object). Other keys are rejected."
           }
         },
         "removeColumn": {
@@ -1475,7 +1483,7 @@
       "fields": {
         "sheets": { "help": "All sheets of the workbook in tab order, each with id and name." },
         "sheetId": { "help": "The id of the sheet the columns and rows of this answer belong to." },
-        "columns": { "help": "The column headers of the sheet. id is the columnId of a column reference, shortName the short form used in formulas (C1, C2 …), role the role of the column, roleConfirmed true when it was set or confirmed by hand (role dialog or setColumnRole), false for an automatically detected role. A type change the role no longer fits resets the confirmation. format lists the display format keys set (decimals, dateFormat, timeFormat); a missing key means the type's default." },
+        "columns": { "help": "The column headers of the sheet. id is the columnId of a column reference, shortName the short form used in formulas (C1, C2 …), role the role of the column, roleConfirmed true when it was set or confirmed by hand (role dialog or setColumnRole), false for an automatically detected role. A type change the role no longer fits resets the confirmation. format lists the display format keys set (decimals, dateFormat, timeFormat); a missing key means the type's default. meta is the column's meta (lock, reason, managedBy, managedRef, categoricalCoding) or null; setColumnMeta sets it." },
         "rows": { "help": "The data rows of the sheet, each row in column order. Bulk data: without options.fields = ['rows'] only the extent is returned." },
         "formulas": { "help": "Which cells of the sheet are computed, each with columnId, zero-based row and formula text. Bulk data: without options.fields = ['formulas'] only the extent is returned." }
       },

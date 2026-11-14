@@ -1362,7 +1362,7 @@
           "help": "Mehrere Spalten in einem Schritt schreiben: anhängen, leere Startspalten füllen oder vorhandene Spalten überschreiben.",
           "params": {
             "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Ein inaktives Blatt wird beschrieben, ohne es sichtbar zu machen.",
-            "columns": "Die Spalten in Schreibreihenfolge, je { to, name?, type?, values, format?, discrete? }. to: 'append' hängt eine neue Spalte an, 'start' füllt die nächste leere, unbenannte Startspalte (C1–C5) oder hängt an, sonst die id einer Spalte, die überschrieben wird (Werte und Formeln ersetzt, Name bleibt). type ist ein Spaltentyp, Vorgabe 'numeric'; discrete: true gibt einer neuen Zahlenspalte ohne format 0 Nachkommastellen. Ist ein Eintrag ungültig, wird nichts geschrieben; der ganze Aufruf ist ein Rückgängig-Schritt."
+            "columns": "Die Spalten in Schreibreihenfolge, je { to, name?, type?, values, unit?, format?, discrete? }. to: 'append' hängt eine neue Spalte an, 'start' füllt die nächste leere, unbenannte Startspalte (C1–C5) oder hängt an, sonst die id einer Spalte, die überschrieben wird (Werte und Formeln ersetzt, Name bleibt). type ist ein Spaltentyp, Vorgabe 'numeric'; discrete: true gibt einer neuen Zahlenspalte ohne format 0 Nachkommastellen. Ist ein Eintrag ungültig, wird nichts geschrieben; der ganze Aufruf ist ein Rückgängig-Schritt."
           }
         },
         "renameColumn": {
@@ -1371,6 +1371,14 @@
             "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
             "name": "Der neue Name; \"\" entfernt ihn, dann zeigt die Spalte ihren Kurznamen (C1, …)."
+          }
+        },
+        "setColumnMeta": {
+          "help": "Setzt das ganze Merkmal (meta) einer Spalte des Blatts: Sperre, Grund für die Kurzinfo, verwaltendes Modul und Kategorien-Kodierung. null entfernt es. Erlaubt auch auf gesperrten Spalten — so lässt sich eine Sperre vor einem Schreiben aufheben und danach wieder setzen. Rückgängig stellt das alte Merkmal wieder her.",
+          "params": {
+            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
+            "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
+            "meta": "Das neue Merkmal als Objekt, es ersetzt das alte ganz; null entfernt es. Schlüssel: lock ('hard' oder 'soft'; fehlt = keine Sperre), reason (Text für die Kurzinfo), managedBy (verwaltendes Modul), managedRef (Bezug beim Verwalter), categoricalCoding (Objekt). Andere Schlüssel werden abgelehnt."
           }
         },
         "removeColumn": {
@@ -1475,7 +1483,7 @@
       "fields": {
         "sheets": { "help": "Alle Blätter der Arbeitsmappe in Reiterfolge, je mit id und Name." },
         "sheetId": { "help": "Die id des Blatts, zu dem Spalten und Zeilen dieser Antwort gehören." },
-        "columns": { "help": "Die Spaltenköpfe des Blatts. id ist die columnId eines Spaltenbezugs, shortName die Kurzform in Formeln (C1, C2 …), role die Rolle der Spalte, roleConfirmed true, wenn sie von Hand gesetzt oder bestätigt ist (Rollen-Dialog oder setColumnRole), false bei einer automatisch erkannten Rolle. Ein Typwechsel, zu dem die Rolle nicht mehr passt, setzt die Bestätigung zurück. format nennt die gesetzten Schlüssel des Anzeigeformats (decimals, dateFormat, timeFormat); ein fehlender Schlüssel heißt Vorgabe des Typs." },
+        "columns": { "help": "Die Spaltenköpfe des Blatts. id ist die columnId eines Spaltenbezugs, shortName die Kurzform in Formeln (C1, C2 …), role die Rolle der Spalte, roleConfirmed true, wenn sie von Hand gesetzt oder bestätigt ist (Rollen-Dialog oder setColumnRole), false bei einer automatisch erkannten Rolle. Ein Typwechsel, zu dem die Rolle nicht mehr passt, setzt die Bestätigung zurück. format nennt die gesetzten Schlüssel des Anzeigeformats (decimals, dateFormat, timeFormat); ein fehlender Schlüssel heißt Vorgabe des Typs. meta ist das Merkmal der Spalte (lock, reason, managedBy, managedRef, categoricalCoding) oder null; setColumnMeta setzt es." },
         "rows": { "help": "Die Datenzeilen des Blatts, jede Zeile in Spaltenreihenfolge. Massendaten: ohne options.fields = ['rows'] kommt nur der Umfang." },
         "formulas": { "help": "Welche Zellen des Blatts gerechnet sind, je mit columnId, nullbasierter Zeile und Formeltext. Massendaten: ohne options.fields = ['formulas'] kommt nur der Umfang." }
       },
