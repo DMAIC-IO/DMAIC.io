@@ -8,7 +8,7 @@ import { suite, test, assert, assertEqual, assertDeepEqual } from '../../test-ut
 import { State } from '../../../js/modules/doe-planner/domain/model.js';
 import { setFields, confirmOf } from '../../../js/core/model.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
-import { configSignature } from '../../../js/modules/doe-planner/domain/signatures.js';
+import { configSignature, designSignature } from '../../../js/modules/doe-planner/domain/signatures.js';
 import optimal from '../../../js/modules/doe-planner/domain/designs/optimal.js';
 import { loadCases } from './cases.js';
 
@@ -423,6 +423,31 @@ suite('doe-planner commands — preview', () => {
     assertEqual(s.previewEdits.responses[0][2], 7.5);
     s.discardPreviewEdits();
     assertEqual(s.previewEdits, null);
+  });
+
+  test('bound to its datasheet: preview edits are refused and point to worksheet.setCells', () => {
+    const s = planned();
+    s.regenerate();
+    s.worksheetRef = {
+      instanceId: 'ws-1', sheetId: 'sheet_1', factorColumnIds: [], responseColumnIds: [], meanColumnIds: [],
+      lnVarColumnIds: [], runOrderColumnId: null, stdOrderColumnId: null, designSignature: designSignature(s), snapshot: null,
+    };
+    assert(s.previewLocked(), 'bound');
+    for (const call of [
+      () => s.setPreviewCell({ row: 0, column: 'r:0', value: 1 }),
+      () => s.setPreviewCells({ row: 0, column: 'r:0', values: [[1]] }),
+    ]) {
+      const err = errorOf(call);
+      assertEqual(err.param, 'worksheetRef');
+      assert(/worksheet\.setCells on instance ws-1/.test(err.message), err.message);
+    }
+    assertEqual(s.previewEdits, null);
+    // A changed plan makes the sheet stale: the preview takes edits again.
+    s.factors = [s.factors[0], { ...s.factors[1], levels: ['2', '8'] }];
+    s.regenerate();
+    assert(!s.previewLocked(), 'stale');
+    s.setPreviewCell({ row: 0, column: 'r:0', value: 1 });
+    assertEqual(s.previewEdits.responses[0][0], 1);
   });
 
   test('reverting every cell leaves no edits', () => {

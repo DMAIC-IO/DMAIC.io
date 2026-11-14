@@ -323,6 +323,21 @@ suite('doe-planner runs: bound datasheet', () => {
     assertDeepEqual(h.activated(), [DATASHEET]);
   });
 
+  test('the datasheet gone, the binding still current: the preview shows read only, no edit goes out', async () => {
+    const b = bound(plan());
+    const h = await mount(b.model, {});
+    await h.done();
+    const vm = h.vm();
+    assertEqual(vm.staleness, 'none');
+    assert(rowsOf(h.container) > 0, 'the preview shows without a sheet');
+    assertEqual(vm.previewGrid.readOnly, true);
+    td(h.container, 1, 6).dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+    await settle();
+    assertEqual(h.container.querySelector('.doe__preview-grid input.cell-editor'), null, 'no editor');
+    assertEqual(h.calls('setPreviewCell').length, 0);
+    assertEqual(vm.model.previewEdits, null);
+  });
+
   test('every value filled: hand over to a regression, then open it', async () => {
     const b = bound(plan({ responses: [{ name: 'Yield', unit: '%' }, { name: 'Kosten', unit: '' }], analysisResponseIdx: 1 }),
       [[1, 2, 3, 4], [5, 6, 7, 8]]);

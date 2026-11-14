@@ -204,6 +204,18 @@ function designRows(m, row) {
 }
 
 /**
+ * Refuses a preview edit while the design is bound to its datasheet as written: the run values live in
+ * the sheet then, and a preview edit would land beside it.
+ * @param {any} m a model with a design
+ * @returns {void}
+ */
+function refuseWhileBound(m) {
+  const ref = m.worksheetRef;
+  requireForm('worksheetRef', ref ? ref.instanceId : null, !m.previewLocked(),
+    `no current datasheet; the run values live in the bound datasheet: write them with worksheet.setCells on instance ${ref ? ref.instanceId : ''} (read().worksheetRef.instanceId)`);
+}
+
+/**
  * A new, open phase from the current plan.
  * @param {any} m @param {number} cycleNumber @param {string} doeName
  * @returns {object}
@@ -744,6 +756,7 @@ export class State extends defineModel({
       params: { row: number({ integer: true, min: 0 }), column: text(), value: number({ nullable: true }) },
       run({ row, column, value }) {
         requireIndex('row', row, designRows(this, row), { existing: true });
+        refuseWhileBound(this);
         const target = editTarget(this, column);
         const keys = previewColumns(this).filter((key) => editTarget(this, key));
         requireForm('column', column, Boolean(target), keys.join(', '));
@@ -755,6 +768,7 @@ export class State extends defineModel({
       run({ row, column, values }) {
         const n = designRows(this, row);
         requireIndex('row', row, n, { existing: true });
+        refuseWhileBound(this);
         const keys = previewColumns(this);
         const start = keys.indexOf(column);
         requireForm('column', column, start >= 0, keys.join(', '));
@@ -1006,6 +1020,19 @@ export class State extends defineModel({
     if (!m.projectMode) return;
     const ph = m.projectPhases[m.activePhaseIdx];
     if (ph) Object.assign(ph, this.phaseState());
+  }
+
+  /**
+   * The preview takes no edits: the current design is bound to a datasheet written for it (same design
+   * signature, no new design pending). The model does not see the worksheets; a sheet removed since counts
+   * as bound here until a new design or datasheet replaces the binding.
+   * @returns {boolean}
+   */
+  previewLocked() {
+    const m = /** @type {any} */ (this);
+    const ref = m.worksheetRef;
+    if (!ref || !ref.designSignature || !m.design) return false;
+    return m.design.configSignature === configSignature(m) && ref.designSignature === designSignature(m);
   }
 
   /**

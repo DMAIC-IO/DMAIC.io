@@ -20,7 +20,7 @@ import { actualRows, isOptimal } from '../domain/design.js';
  * @property {Array<{ key: string, name: string, type: string, lock: 'hard'|'soft'|null,
  *   format: { decimals: number|null }|null, reason: string|null, unit: string|null }>} columns
  * @property {Array<Array<string|null>>} rows cell texts, one row per run in design order
- * @property {boolean} readOnly while a new design is pending
+ * @property {boolean} readOnly while a new design is pending or the design is bound to its datasheet
  * @property {Array<{ id: string, labelKey: string }>} contextMenu
  */
 
@@ -110,7 +110,8 @@ export const runsView = (ctx) => ({
     /**
      * The preview as the datagrid widget takes it: locked order columns,
      * the factors (categorical ones locked), the responses with seeds and
-     * edits. Read only while a new design is pending.
+     * edits. Read only while a new design is pending or the design is
+     * bound to its datasheet (the sheet may be gone, the model cannot tell).
      * @returns {PreviewGrid|null}
      */
     previewGrid() {
@@ -130,7 +131,7 @@ export const runsView = (ctx) => ({
           unit: c.unit || null,
         })),
         rows: Array.from({ length: n }, (_, r) => cols.map((c) => cellText(c.values[r]))),
-        readOnly: Boolean(this.pending),
+        readOnly: Boolean(this.pending) || /** @type {any} */ (this.model).previewLocked(),
         contextMenu: isOptimal(m) ? [{ id: 'forbidRun', labelKey: 'forbiddenContextAction' }] : [],
       };
     },
