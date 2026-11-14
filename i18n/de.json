@@ -1358,6 +1358,13 @@
             "position": "Stelle der neuen Spalte, ab 0 gezählt: 0 setzt sie nach vorn, die Spaltenzahl oder keine Angabe hängt sie an."
           }
         },
+        "writeColumns": {
+          "help": "Mehrere Spalten in einem Schritt schreiben: anhängen, leere Startspalten füllen oder vorhandene Spalten überschreiben.",
+          "params": {
+            "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Ein inaktives Blatt wird beschrieben, ohne es sichtbar zu machen.",
+            "columns": "Die Spalten in Schreibreihenfolge, je { to, name?, type?, values, format?, discrete? }. to: 'append' hängt eine neue Spalte an, 'start' füllt die nächste leere, unbenannte Startspalte (C1–C5) oder hängt an, sonst die id einer Spalte, die überschrieben wird (Werte und Formeln ersetzt, Name bleibt). type ist ein Spaltentyp, Vorgabe 'numeric'; discrete: true gibt einer neuen Zahlenspalte ohne format 0 Nachkommastellen. Ist ein Eintrag ungültig, wird nichts geschrieben; der ganze Aufruf ist ein Rückgängig-Schritt."
+          }
+        },
         "renameColumn": {
           "help": "Benennt eine Spalte um; Formeln, die den alten Namen nennen, werden angepasst. Trägt schon eine andere Spalte den Namen, wird „ (2)“ angehängt — der Agent erhält den tatsächlichen Namen. Gesperrte Spalten lassen sich nicht umbenennen. Rückgängig stellt den alten Namen wieder her.",
           "params": {

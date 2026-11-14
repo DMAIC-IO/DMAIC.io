@@ -41,7 +41,8 @@ import { h } from '../../core/dom.js';
 import { icon } from '../../core/icon.js';
 import { uid } from '../../core/uid.js';
 import { debounce } from '../../core/debounce.js';
-import { applyWriteColumn, defaultColumnFormat, retypeForWrite } from '../../core/worksheet-write.js';
+import { defaultColumnFormat, retypeForWrite, reinferRoleAfterRetype } from '../../core/worksheet-write.js';
+import { recalcAllFormulas } from '../../core/datagrid/datagrid-formula.js';
 
 /**
  * Format-Schlüssel, die die Oberfläche setzt — genau die Auswahl des
@@ -53,6 +54,187 @@ const FORMAT_KEYS_BY_TYPE = Object.freeze({
   numeric: ['decimals'], currency: ['decimals'], percent: ['decimals'],
   date: ['dateFormat'], time: ['timeFormat'],
 });
+
+// ═══════════════════════════════════════════════════════════
+//  WRITE COLUMNS (pure helpers of writeColumns)
+// ═══════════════════════════════════════════════════════════
+
+/** Die Startspalten C1–C5, die `to: 'start'` füllen kann. */
+const START_COLUMNS = 5;
+
+/**
+ * Eine Spalte als eigenständige Kopie: Werte, Formeln, Format und `meta`
+ * werden kopiert. Kein `structuredClone` — das Blatt kann ein reaktiver
+ * Proxy (Alpine) sein.
+ * @param {object} col
+ * @returns {object}
+ */
+function copyColumn(col) {
+  const copy = {
+    ...col,
+    values: [...(col.values ?? [])],
+    formulas: col.formulas ? [...col.formulas] : null,
+    format: JSON.parse(JSON.stringify(col.format ?? {})),
+  };
+  if (col.meta) copy.meta = { ...col.meta };
+  return copy;
+}
+
+/**
+ * Ein gespeicherter Blattzustand als eigenständige Kopie.
+ * @param {object|null} state
+ * @returns {object|null}
+ */
+function copySheetState(state) {
+  if (!state) return null;
+  return {
+    ...state,
+    columns: (state.columns ?? []).map(copyColumn),
+    colWidths: { ...(state.colWidths ?? {}) },
+    selection: state.selection ? { ...state.selection } : null,
+  };
+}
+
+/**
+ * Ist die Spalte leer und unbenannt — ein Ziel für `to: 'start'`?
+ * @param {object} col
+ * @returns {boolean}
+ */
+function isBlankColumn(col) {
+  return !col.name
+    && (col.values ?? []).every(v => v === null || v === undefined || v === '')
+    && !(col.formulas ?? []).some(Boolean);
+}
+
+/**
+ * Prüft alle Einträge eines Schreibauftrags, bevor etwas geschrieben wird.
+ * @param {WriteColumn[]} columns die Einträge
+ * @param {object[]} existing die Spalten des Zielblatts
+ * @throws {Error} `unknown_type: <typ>`, `unknown_column: <id>` oder bei
+ *   falscher Form eines Eintrags
+ */
+function checkWriteColumns(columns, existing) {
+  if (!Array.isArray(columns)) throw new Error('columns must be an array');
+  const ids = new Set(existing.map(c => c.id));
+  columns.forEach((entry, i) => {
+    if (!entry || typeof entry !== 'object') throw new Error(`columns[${i}] must be an object`);
+    if (typeof entry.to !== 'string' || entry.to === '') {
+      throw new Error(`columns[${i}].to must be 'append', 'start' or a column id`);
+    }
+    if (!Array.isArray(entry.values)) throw new Error(`columns[${i}].values must be an array`);
+    if (entry.name !== undefined && typeof entry.name !== 'string') throw new Error(`columns[${i}].name must be a string`);
+    if (entry.format !== undefined && (entry.format === null || typeof entry.format !== 'object')) {
+      throw new Error(`columns[${i}].format must be an object`);
+    }
+    if (entry.type !== undefined && !Object.hasOwn(COLUMN_TYPES, entry.type)) {
+      throw new Error(`unknown_type: ${entry.type}`);
+    }
+    if (entry.to !== 'append' && entry.to !== 'start' && !ids.has(entry.to)) {
+      throw new Error(`unknown_column: ${entry.to}`);
+    }
+  });
+}
+
+/**
+ * Schreibt geprüfte Einträge in eine Kopie der Spalten eines Blatts.
+ *
+ * Neue Spalten bekommen Typ (Vorgabe `numeric`), Format (sonst
+ * `defaultColumnFormat`) und eine Rolle aus den Werten. Eine bestehende
+ * Spalte bekommt die Werte, verliert ihre Formeln und behält ihren Namen —
+ * außer eine Startspalte, die den Namen des Eintrags übernimmt; Typ und
+ * Format nach `retypeForWrite`, bei Typwechsel die Rolle neu. Am Ende haben
+ * alle Spalten die größte Zeilenzahl.
+ *
+ * @param {object[]} columns die Spalten des Blatts (werden nicht verändert)
+ * @param {number} rowCount die Zeilenzahl des Blatts
+ * @param {WriteColumn[]} entries die geprüften Einträge
+ * @returns {{ columns: object[], rowCount: number, ids: string[] }}
+ */
+function writeSheetColumns(columns, rowCount, entries) {
+  const cols = columns.map(copyColumn);
+  let rows = rowCount || 0;
+  const ids = [];
+  const used = new Set();
+  for (const entry of entries) {
+    const values = [...entry.values];
+    let idx = -1;
+    if (entry.to === 'start') {
+      idx = cols.slice(0, START_COLUMNS).findIndex((c, i) => !used.has(i) && isBlankColumn(c));
+    } else if (entry.to !== 'append') {
+      idx = cols.findIndex(c => c.id === entry.to);
+    }
+    let col;
+    if (idx < 0) {
+      const type = entry.type ?? 'numeric';
+      col = {
+        id: uid(),
+        name: entry.name ?? '',
+        shortName: '',
+        type,
+        unit: null,
+        values,
+        formulas: [],
+        format: entry.format !== undefined
+          ? JSON.parse(JSON.stringify(entry.format))
+          : defaultColumnFormat(type, entry.discrete),
+        meta: null,
+        roleManual: false,
+      };
+      col.role = inferRole(col);
+      cols.push(col);
+      idx = cols.length - 1;
+    } else {
+      col = cols[idx];
+      if (entry.to === 'start' && entry.name) col.name = entry.name;
+      const next = retypeForWrite(entry);
+      if (next) { col.type = next.type; col.format = next.format; }
+      col.values = values;
+      col.formulas = [];
+      if (next) reinferRoleAfterRetype(col);
+    }
+    used.add(idx);
+    rows = Math.max(rows, values.length);
+    ids.push(col.id);
+  }
+  cols.forEach((c, i) => {
+    c.shortName = `C${i + 1}`;
+    while (c.values.length < rows) c.values.push(null);
+    if (c.formulas) while (c.formulas.length < rows) c.formulas.push(null);
+  });
+  return { columns: cols, rowCount: rows, ids };
+}
+
+/**
+ * Formelspalten eines gespeicherten Blattzustands neu rechnen, wie das Grid
+ * es beim Rendern täte. Verändert `state`.
+ * @param {{ columns: object[], rowCount: number }} state
+ */
+function recalcSheetState(state) {
+  recalcAllFormulas({
+    columns: state.columns,
+    rowCount: state.rowCount,
+    getColumnByIndex: (i) => state.columns[i] ?? null,
+  });
+}
+
+/**
+ * Spalten und Zeilenzahl ins Grid übernehmen. Eine Spalte, die das Grid mit
+ * derselben id schon hat, bleibt dasselbe Objekt — Verlaufseinträge, die es
+ * halten, zeigen weiter auf die angezeigte Spalte.
+ * @param {DataGrid} grid
+ * @param {{ columns: object[], rowCount: number }} snap
+ */
+function adoptColumns(grid, snap) {
+  const live = new Map(grid.columns.map(c => [c.id, c]));
+  grid.columns = snap.columns.map((s) => {
+    const copy = copyColumn(s);
+    const target = live.get(s.id);
+    if (!target) return copy;
+    for (const key of Object.keys(target)) delete target[key];
+    return Object.assign(target, copy);
+  });
+  grid.rowCount = snap.rowCount;
+}
 
 // ═══════════════════════════════════════════════════════════
 //  FORMULA EDITOR (imperative — bound to the live DataGrid)
@@ -474,6 +656,17 @@ class FormulaEditor {
  * @property {any[][]} rows  [bulk] the data rows of this sheet, each row in column order
  * @property {Array<{ columnId: string, row: number, formula: string }>} formulas  [bulk] which cells of this sheet are COMPUTED, not typed; a plain value written over one of them deletes the formula
  */
+/**
+ * Eine Spalte eines Schreibauftrags (`writeColumns`).
+ *
+ * @typedef {object} WriteColumn
+ * @property {string} to  where the column goes: 'append' adds a new column at the end; 'start' fills the next empty, unnamed start column (C1–C5) or appends if there is none; any other value is the id of an existing column to overwrite (see read().columns[].id)
+ * @property {string} [name]  name of a new or filled start column; an overwritten column keeps its name
+ * @property {string} [type]  column type, e.g. 'numeric', 'text', 'date', 'currency'; default 'numeric'
+ * @property {any[]} values  the cell values from the first row on; they replace the column's values and formulas
+ * @property {{ decimals?: number, dateFormat?: string, timeFormat?: string }} [format]  display format; without it a new column gets the type's default format
+ * @property {boolean} [discrete]  whole numbers: a new numeric column without format shows 0 decimals
+ */
 const mod = createModule({
   config: {
     id: 'worksheet',
@@ -614,6 +807,64 @@ const mod = createModule({
         const col = this._grid.addColumn(position === undefined ? {} : { position });
         this._persistNow();
         return col.id;
+      },
+      /**
+       * Write several columns in one step: append new columns, fill empty
+       * start columns (C1–C5) or overwrite existing columns. All entries are
+       * checked first — if one fails, nothing is written. An inactive sheet is
+       * written without being shown. The whole write is one undo step.
+       *
+       * @agent
+       * @param {string} sheetId id of the sheet (see read().sheets[].id)
+       * @param {WriteColumn[]} columns the columns to write, in order
+       * @returns {string[]} ids of the written columns, in the order of columns
+       * @throws {Error} `unknown_sheet: <id>` if no sheet has this id,
+       *   `unknown_column: <id>` if `to` names no column of the sheet,
+       *   `unknown_type: <type>` for an unknown column type
+       */
+      writeColumns(sheetId, columns) {
+        const sheet = this.model.sheets.find(s => s.id === sheetId);
+        if (!sheet) throw new Error(`unknown_sheet: ${sheetId}`);
+        checkWriteColumns(columns, this._sheetView(sheetId).columns);
+        const grid = this._grid;
+        // Was gerade getippt wird, ist ein eigener Schritt vor dem Schreiben.
+        grid._commitEdit();
+        let ids;
+        grid.history.begin();
+        try {
+          if (sheetId === this.model.activeSheetId) {
+            const before = { columns: grid.columns.map(copyColumn), rowCount: grid.rowCount };
+            const res = writeSheetColumns(grid.columns, grid.rowCount, columns);
+            const after = { columns: res.columns, rowCount: res.rowCount };
+            adoptColumns(grid, after);
+            grid.history.push({
+              type: 'external',
+              undo: () => adoptColumns(grid, before),
+              redo: () => adoptColumns(grid, after),
+            });
+            ids = res.ids;
+          } else {
+            // Das Blatt bleibt inaktiv; sein Rückgängig-Schritt liegt im
+            // Verlauf des angezeigten Grids und setzt den Blattzustand zurück.
+            const old = copySheetState(sheet.state);
+            const base = old ?? { columns: [], rowCount: 0, colWidths: {}, sortCol: null, sortDir: null, selection: null };
+            const res = writeSheetColumns(base.columns, base.rowCount, columns);
+            const next = { ...base, columns: res.columns, rowCount: res.rowCount };
+            recalcSheetState(next);
+            const put = (state) => {
+              const target = this.model.sheets.find(s => s.id === sheetId);
+              if (target) target.state = copySheetState(state);
+            };
+            put(next);
+            grid.history.push({ type: 'external', undo: () => put(old), redo: () => put(next) });
+            ids = res.ids;
+          }
+        } finally {
+          grid.history.end();
+        }
+        grid.render();
+        this._persistNow();
+        return ids;
       },
       /**
        * Rename a column. Formulas that refer to the old name are rewritten;
@@ -1826,96 +2077,30 @@ const mod = createModule({
 
       // ── writeColumns handler ─────────────────────────────────
       /**
-       * Die Schritte eines Schreibplans prüfen und schreiben (aktives Blatt
-       * ins Grid, inaktives in den Model-Zustand).
-       * @noagent internal helper of the writeColumns handler
-       * @param {string} sheetId Zielblatt
-       * @param {object[]} ops Schritte des Plans
-       * @returns {string[]|{ ok: false, reason: string }} die Spalten-ids oder die Absage
-       */
-      _writeColumnsLive(sheetId, ops) {
-        const sheet = this.model.sheets.find(s => s.id === sheetId);
-        if (!sheet) return { ok: false, reason: 'unknown_sheet' };
-        const isActive = sheetId === this.model.activeSheetId;
-        const columns = isActive ? this._grid.columns : (sheet.state?.columns ?? []);
-        const missing = ops.some(op => op.to?.kind === 'column' && !columns.some(c => c.id === op.to.colId));
-        if (missing) return { ok: false, reason: 'unknown_column' };
-
-        const columnIds = [];
-        if (isActive) {
-          for (const op of ops) {
-            const { to, name, values } = op;
-            const type = op.type ?? 'numeric';
-            let col = null;
-            if (to.kind === 'slot') col = this._grid.columns[to.slot] ?? null;
-            else if (to.kind === 'column') col = this._grid.columns.find(c => c.id === to.colId);
-            const needed = values.length - this._grid.rowCount;
-            if (!col) {
-              // `addColumn` legt den Undo-Eintrag `column-add` an.
-              col = this._grid.addColumn({ name, type, format: op.format ?? defaultColumnFormat(type, op.discrete) });
-              if (needed > 0) this._grid.addRows(needed);
-              for (let i = 0; i < values.length; i++) col.values[i] = values[i];
-              // Rolle aus den Werten, wie der Store-Weg sie anlegt.
-              this._grid._reinferRoleAfterTypeChange(col);
-            } else {
-              if (to.kind === 'slot' && name) col.name = name;
-              const next = retypeForWrite(op);
-              if (next) { col.type = next.type; col.format = next.format; }
-              if (needed > 0) this._grid.addRows(needed);
-              for (let i = 0; i < this._grid.rowCount; i++) {
-                col.values[i] = i < values.length ? values[i] : null;
-              }
-              if (next) this._grid._reinferRoleAfterTypeChange(col);
-            }
-            columnIds.push(col.id);
-          }
-          this._grid.render();
-        } else {
-          this._syncActiveSheet();
-          let state = this.model.toJSON();
-          for (const op of ops) {
-            const res = applyWriteColumn(state, { ...op, sheetId });
-            if (!res.ok) return res;
-            state = res.state;
-            columnIds.push(res.colId);
-          }
-          sheet.state = state.sheets.find(s => s.id === sheetId).state;
-        }
-        return columnIds;
-      },
-
-      /**
        * Einen Schreibplan (`core/worksheet-write.js`) ganz oder gar nicht
-       * schreiben. Erst werden alle Schritte geprüft, dann geschrieben,
-       * dann einmal gespeichert und `worksheet:dataChanged` gemeldet.
-       * `reply` quittiert synchron mit `{ ok: true, columnIds }` oder
-       * `{ ok: false, reason }`.
-       * @noagent event handler; agents write through the worksheet's own actions
+       * über `writeColumns` schreiben. `reply` quittiert synchron mit
+       * `{ ok: true, columnIds }` oder `{ ok: false, reason }`.
+       * @noagent event handler; agents write through writeColumns
        * @param {{ instanceId: string, sheetId: string, ops: object[], reply?: Function }} payload
        */
       _handleWriteColumns({ instanceId, sheetId, ops, reply }) {
-        const context = module._context;
-        if (instanceId !== context.instanceId) return;
-
-        // Ein Wurf beim Schreiben darf nicht als „nicht eingehängt“ gelten:
-        // Der Sender schriebe sonst über den Store auf veraltetem Stand und
-        // meldete Erfolg.
+        if (instanceId !== module._context.instanceId) return;
+        const columns = ops.map(({ to, ...rest }) => ({
+          ...rest,
+          to: to?.kind === 'column' ? to.colId : (to?.kind === 'slot' ? 'start' : 'append'),
+        }));
         let columnIds;
         try {
-          columnIds = this._writeColumnsLive(sheetId, ops);
+          columnIds = this.writeColumns(sheetId, columns);
         } catch (err) {
-          console.error('[worksheet] writeColumns:', err);
-          reply?.({ ok: false, reason: 'write_failed' });
+          // Ein Wurf beim Schreiben darf nicht als „nicht eingehängt“ gelten:
+          // Der Sender schriebe sonst über den Store auf veraltetem Stand.
+          const reason = /^(unknown_sheet|unknown_column|unknown_type): /.exec(String(err?.message))?.[1];
+          if (!reason) console.error('[worksheet] writeColumns:', err);
+          reply?.({ ok: false, reason: reason ?? 'write_failed' });
           return;
         }
-        if (!Array.isArray(columnIds)) { reply?.(columnIds); return; }
         reply?.({ ok: true, columnIds });
-
-        try {
-          this._syncActiveSheet();
-          context.stateManager.setModuleState(instanceId, this.model.toJSON());
-        } catch { /* ignore */ }
-        context.eventBus.emit('worksheet:dataChanged', { instanceId });
       },
     };
   },

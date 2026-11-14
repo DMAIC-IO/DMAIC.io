@@ -90,7 +90,7 @@ suite('Worksheet — Verlaufshaken', () => {
 });
 
 suite('Worksheet — Empfänger worksheet:writeColumns', () => {
-  test('Datum, Währung und Anhang: Typen kommen an, genau ein column-add', async () => {
+  test('Datum, Währung und Anhang: Typen kommen an, genau ein Undo-Eintrag', async () => {
     const w = await mountWorksheet();
     try {
       let answer = null;
@@ -116,8 +116,7 @@ suite('Worksheet — Empfänger worksheet:writeColumns', () => {
       assertEqual(cols[5].name, 'Menge');
       assertDeepEqual(answer.columnIds, [cols[0].id, cols[1].id, cols[5].id]);
       assertEqual(w.vm._grid.rowCount, 4);
-      const adds = w.vm._grid.history._stack.filter(a => a.type === 'column-add');
-      assertEqual(adds.length, 1);
+      assertEqual(w.vm._grid.history._stack.length, 1, 'genau ein Undo-Eintrag');
       assertEqual(w.emitted.filter(([n]) => n === 'worksheet:dataChanged').length - changedBefore, 1, 'genau ein dataChanged');
     } finally { await w.unmount(); }
   });
@@ -195,7 +194,7 @@ suite('Worksheet — Empfänger worksheet:writeColumns', () => {
     const errors = console.error;
     console.error = () => {};
     try {
-      w.vm._grid.addColumn = () => { throw new Error('kaputt'); };
+      w.vm.writeColumns = () => { throw new Error('kaputt'); };
       const changedBefore = w.emitted.filter(([n]) => n === 'worksheet:dataChanged').length;
       const plan = worksheetWrite().worksheet('ws-w').sheet(w.sheetId).column({ name: 'A', values: [1, 2] }).build();
       let err = null;

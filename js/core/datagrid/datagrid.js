@@ -876,6 +876,12 @@ export class DataGrid {
       return;
     }
     switch (action.type) {
+      // An entry whose owner knows how to revert it (e.g. a write into
+      // another sheet of the worksheet): `{ type: 'external', undo, redo }`.
+      case 'external': {
+        action.undo();
+        break;
+      }
       case 'cell-edit': {
         const col = this.getColumn(action.columnId);
         if (col) {
@@ -1010,6 +1016,10 @@ export class DataGrid {
       return;
     }
     switch (action.type) {
+      case 'external': {
+        action.redo();
+        break;
+      }
       case 'cell-edit': {
         const col = this.getColumn(action.columnId);
         if (col) {

@@ -21838,6 +21838,24 @@ export const AGENT_REGISTRY = {
         "returns": "string",
         "help": "Add an empty column to the sheet — appended, or inserted at a position like \"insert column left/right\" in the header menu. The toolbar button calls `addColumn(sheetId)` without a position (Alpine CSP) and appends, as before."
       },
+      "writeColumns": {
+        "params": [
+          {
+            "name": "sheetId",
+            "type": "string",
+            "optional": false,
+            "help": "id of the sheet (see read().sheets[].id)"
+          },
+          {
+            "name": "columns",
+            "type": "WriteColumn[]",
+            "optional": false,
+            "help": "the columns to write, in order"
+          }
+        ],
+        "returns": "string[]",
+        "help": "Write several columns in one step: append new columns, fill empty start columns (C1–C5) or overwrite existing columns. All entries are checked first — if one fails, nothing is written. An inactive sheet is written without being shown. The whole write is one undo step."
+      },
       "renameColumn": {
         "params": [
           {
