@@ -159,7 +159,8 @@ export function frozen(key, _compute) {
 }
 
 /**
- * The earlier `fromJSON(json).toJSON()`, frozen.
+ * The earlier `fromJSON(json).toJSON()`, frozen (the lambda documents how;
+ * it is not run).
  * @param {string} key name of the state @param {object} json stored state (earlier form) @returns {any}
  */
 export const legacyJSON = (key, json) => frozen(`fromJSON ${key}`, ({ Legacy }) => Legacy.fromJSON(copy(json)).toJSON());
@@ -200,14 +201,14 @@ export function swapId(json, from, to) {
  * declarative one, both from `json`.
  * @param {string} key unique name of the case
  * @param {object} json stored state (earlier form)
- * @param {(l: any) => any} before the change on the earlier model (runs only in the generator)
+ * @param {(l: any) => any} _before the change on the earlier model, as it was frozen (documentation only, not run)
  * @param {(m: any) => any} after the command on the declarative model
  * @returns {{ want: object, got: object, m: any, lr: any, mr: any }} `want`/`got` answers in the earlier form
  */
-export function both(key, json, before, after) {
+export function both(key, json, _before, after) {
   const o = frozen(`both ${key}`, ({ Legacy }) => {
     const l = Legacy.fromJSON(copy(json));
-    const lr = before(l);
+    const lr = _before(l);
     return { state: l.toJSON(), result: lr ?? null };
   });
   const m = load(json);

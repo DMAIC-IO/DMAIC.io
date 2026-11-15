@@ -153,8 +153,8 @@ export class I18n {
   /**
    * Return a deep copy of a translation subtree in a given language,
    * independent of the active language. Keys missing in `lang` are filled
-   * from English. Used where strings leave the app (exported survey page).
-   * @param {string} key dot-separated path, e.g. 'modules.survey-builder.runner'
+   * from English. For strings that leave the app in a language other than the active one.
+   * @param {string} key dot-separated path, e.g. 'modules.kano'
    * @param {string} lang
    * @returns {Promise<object>}
    */
