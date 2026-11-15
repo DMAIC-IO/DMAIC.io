@@ -366,7 +366,7 @@ export async function runBuild(appDir = APP_DIR, { check = false, converted = CO
 
   // 1b. help registry (eager static imports of every module handbook under
   //     js/modules/<id>/)
-  const helpRegistry = renderHelpRegistryModule(collectHelpIds(appDir), appDir);
+  const helpRegistry = renderHelpRegistryModule(collectHelpIds(appDir));
   emit(join(appDir, 'js', 'core', 'help-registry.generated.js'), helpRegistry, check, changed);
 
   // 1b2. references registry (eager static imports of every module's references)

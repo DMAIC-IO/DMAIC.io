@@ -1,8 +1,8 @@
 /**
- * D.Mike — Survey conditions (survey-conditions.js)
+ * D.Mike — Survey conditions (domain/conditions.js)
  *
  * Visibility rules shared by the model and the stats. The exported runner
- * (survey-runner.js) carries its own copy because it cannot import; the
+ * (io/runner.js) carries its own copy because it cannot import; the
  * shared case table in tests/modules/fixtures/survey-condition-cases.js is
  * run against both so they cannot drift.
  *

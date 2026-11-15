@@ -23,13 +23,11 @@ suite('Hilfetexte: {{ref:…}} zeigt auf einen vorhandenen Eintrag', () => {
     const offenders = [];
     for (const entry of MODULE_MANIFEST) {
       let help;
-      for (const dir of [entry.id, `${entry.id}/legacy`]) {
-        try {
-          help = (await import(`../../js/modules/${dir}/${entry.id}-help.js`)).default;
-          break;
-        } catch { /* nächster Ort */ }
+      try {
+        help = (await import(`../../js/modules/${entry.id}/${entry.id}-help.js`)).default;
+      } catch {
+        continue;   // Modul ohne eigenen Hilfetext
       }
-      if (!help) continue;   // Modul ohne eigenen Hilfetext
       const known = new Set((REFS[entry.id] || []).map(r => r.id));
       for (const value of collectStrings(help)) {
         for (const m of value.matchAll(REF_TOKEN)) {

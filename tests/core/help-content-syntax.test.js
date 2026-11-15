@@ -32,12 +32,11 @@ function collectStrings(node, path = [], out = []) {
  */
 async function loadHelp(entry) {
   if (entry.form !== 'module') {
-    for (const dir of [entry.id, `${entry.id}/legacy`]) {
-      try {
-        return (await import(`../../js/modules/${dir}/${entry.id}-help.js`)).default;
-      } catch { /* nächster Ort */ }
+    try {
+      return (await import(`../../js/modules/${entry.id}/${entry.id}-help.js`)).default;
+    } catch {
+      return null;
     }
-    return null;
   }
   const sections = {};
   for (const lang of ['de', 'en']) {

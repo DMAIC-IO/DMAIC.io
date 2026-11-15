@@ -20,7 +20,7 @@ import { asyncTaskAnchors } from './async-task-gates.mjs';
 export function helpKeysInTemplates(appDir, moduleId) {
   const dir = join(appDir, 'js', 'modules', moduleId);
   const keys = [];
-  const dirs = [['', dir], ['resources/', join(dir, 'resources')], ['legacy/', join(dir, 'legacy')]];
+  const dirs = [['', dir], ['resources/', join(dir, 'resources')]];
   for (const [prefix, d] of dirs) {
     if (!existsSync(d)) continue;
     for (const file of readdirSync(d)) {
@@ -146,13 +146,6 @@ export const BOUND_HELP_KEY_FAMILIES = [
           `modules.random-generator.dist.${dist}.${p.id}.label`,
           `modules.random-generator.types.DistParams.${dist}.${p.id}`,
         ]));
-    },
-  },
-  {
-    moduleId: 'survey-builder',
-    keys: async () => {
-      const { FLAG_KEYS } = await import('../../js/modules/survey-builder/legacy/viewmodel/draft.js');
-      return FLAG_KEYS.map((k) => `modules.survey-builder.types.QuestionFields.${k}`);
     },
   },
 ];

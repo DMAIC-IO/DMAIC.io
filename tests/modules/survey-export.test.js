@@ -3,11 +3,10 @@
  */
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
 import {
-  buildSurveyHtml, surveyFileName, sanitizeFileNamePart, embedJson, runnerStrings,
+  buildSurveyHtml, surveyFileName, sanitizeFileNamePart, embedJson, runnerStringsOf,
 } from '../../js/modules/survey-builder/io/questionnaire.js';
 import { runSurvey } from '../../js/modules/survey-builder/io/runner.js';
 import { CONDITION_CASES } from './fixtures/survey-condition-cases.js';
-import { I18n } from '../../js/core/i18n.js';
 
 const STRINGS = { untitled: 'Fragebogen', noscript: 'JavaScript nötig', fileSurvey: 'Fragebogen' };
 const block = (html, id) => JSON.parse(
@@ -79,16 +78,13 @@ suite('survey-export — file names', () => {
   });
 });
 
-suite('survey-export — runnerStrings', () => {
-  test('merges runner and kano labels in the survey language', async () => {
-    const i18n = new I18n('en');
-    i18n._cache.set('de', { modules: {
-      'survey-builder': { runner: { save: 'Antworten speichern' } },
+suite('survey-export — runnerStringsOf', () => {
+  test('merges runner and kano labels in the survey language', () => {
+    const s = runnerStringsOf({
+      runner: { save: 'Antworten speichern', reset: 'Start over' },
       kano: { scale1: 'Das würde mich sehr freuen', importanceLow: '1 — völlig unwichtig',
         importanceHigh: '9 — außerordentlich wichtig', scaleEmpty: '—' },
-    } });
-    i18n._cache.set('en', { modules: { 'survey-builder': { runner: { save: 'Save answers', reset: 'Start over' } }, kano: {} } });
-    const s = await runnerStrings(i18n, 'de');
+    });
     assertEqual(s.save, 'Antworten speichern');
     assertEqual(s.reset, 'Start over');
     assertEqual(s.kanoScale[0], 'Das würde mich sehr freuen');

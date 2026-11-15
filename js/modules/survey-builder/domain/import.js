@@ -1,5 +1,5 @@
 /**
- * D.Mike — Survey import (survey-import.js)
+ * D.Mike — Survey import (domain/import.js)
  *
  * Validates one answer file against the current questionnaire definition
  * and sanitises its answers per question type. Unknown ids (from an older

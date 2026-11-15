@@ -1,5 +1,5 @@
 /**
- * D.Mike — Survey export (survey-export.js)
+ * D.Mike — Survey export (io/questionnaire.js)
  *
  * Builds the self-contained questionnaire page (one HTML file, no external
  * resources) and its file name. The definition and strings travel as JSON
@@ -103,17 +103,4 @@ export function runnerStringsOf({ runner, kano }) {
     kanoImportanceScale: importance,
     kanoEmpty: kano.scaleEmpty || '-',
   };
-}
-
-/**
- * Runner strings in the questionnaire's language (not the app's), plus the
- * Kano answer labels shared with the kano module.
- * @param {import('../../../core/i18n.js').I18n} i18n
- * @param {'de'|'en'} lang
- * @returns {Promise<object>}
- */
-export async function runnerStrings(i18n, lang) {
-  const runner = await i18n.section('modules.survey-builder.runner', lang);
-  const kano = await i18n.section('modules.kano', lang);
-  return runnerStringsOf({ runner, kano });
 }

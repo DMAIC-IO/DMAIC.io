@@ -1,12 +1,12 @@
 // @ts-nocheck — der Quelltext von runSurvey wird in die exportierte Seite serialisiert und bleibt unverändert.
 /**
- * D.Mike — Survey runner (survey-runner.js)
+ * D.Mike — Survey runner (io/runner.js)
  *
  * Drives the exported questionnaire page and the editor preview. The
  * exported page rebuilds runSurvey from Function.prototype.toString(), so
  * this file imports nothing and runSurvey must not reference any identifier
  * outside its own body. The condition logic is a copy of
- * survey-conditions.js; the case table in
+ * domain/conditions.js; the case table in
  * tests/modules/fixtures/survey-condition-cases.js runs against both.
  */
 
@@ -62,7 +62,7 @@ input[type=text],textarea,select{font:inherit;padding:.35rem .5rem;border:1px so
 /**
  * Render and run a questionnaire, or (logicOnly) return its pure logic.
  * @param {object} def survey definition (State.survey)
- * @param {object} strings runner strings, see runnerStrings() in survey-export.js
+ * @param {object} strings runner strings, see runnerStringsOf() in io/questionnaire.js
  * @param {object} [opts]
  * @param {boolean} [opts.logicOnly] return the logic without touching the DOM
  * @param {string|null} [opts.recipientId]

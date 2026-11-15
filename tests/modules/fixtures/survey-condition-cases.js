@@ -1,7 +1,7 @@
 /**
  * D.Mike — Shared condition cases (survey-condition-cases.js)
- * One case table for survey-conditions.js and the copy inside the exported
- * runner (survey-runner.js), so the two implementations cannot drift.
+ * One case table for domain/conditions.js and the copy inside the exported
+ * runner (io/runner.js), so the two implementations cannot drift.
  * Not a test file: run-node.mjs only collects *.test.js.
  */
 
@@ -60,7 +60,7 @@ const CYCLE_SURVEY = {
 };
 
 /**
- * Shared case table: run against survey-conditions.js and the runner copy.
+ * Shared case table: run against domain/conditions.js and the runner copy.
  * @type {Array<{name: string, survey: object, nodeId: string, answers: object, expected: boolean}>}
  */
 export const CONDITION_CASES = [

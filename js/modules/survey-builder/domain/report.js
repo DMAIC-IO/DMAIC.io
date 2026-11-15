@@ -1,5 +1,5 @@
 /**
- * D.Mike — Survey report (survey-report.js)
+ * D.Mike — Survey report (domain/report.js)
  *
  * Builds the self-contained HTML report ("Bericht exportieren"). Bars are
  * plain HTML/CSS widths, not chart-framework SVG: the chart framework

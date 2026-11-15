@@ -1,5 +1,5 @@
 /**
- * D.Mike — Survey statistics (survey-stats.js)
+ * D.Mike — Survey statistics (domain/stats.js)
  *
  * Pure functions over the survey definition and imported responses:
  * filter, per-question statistics, response rate, rating ranking, Kano

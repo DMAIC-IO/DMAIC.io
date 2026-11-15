@@ -1,5 +1,5 @@
 /**
- * D.Mike — Survey builder labels (survey-labels.js)
+ * D.Mike — Survey builder labels (domain/labels.js)
  *
  * Pure label and formatting helpers shared by the shell and the
  * sub-viewmodels of survey-builder. No state: everything a function needs
@@ -56,17 +56,6 @@ export function sectionPlaceholder(index, t) { return t('sectionUntitled', { n: 
  * @returns {string} its text or a placeholder
  */
 export function optionText(opt, t) { return opt.text || t('optionUntitled'); }
-
-/**
- * @param {{t: function(string): string}} i18n app i18n
- * @returns {Object<string, string>} Kano category labels of the kano module
- */
-export function catLabels(i18n) {
-  /** @type {Object<string, string>} */
-  const out = {};
-  for (const c of KANO_CATEGORIES) out[c] = i18n.t(`modules.kano.cat${c}`);
-  return out;
-}
 
 /**
  * @param {string|null} code Kano category code
