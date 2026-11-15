@@ -5,8 +5,7 @@
  *
  * The lines, rows and charts of the example are compared with what the
  * earlier results viewmodel showed, frozen in fixtures/legacy-oracles.json
- * (entries `resultsView.example.<variant>`, recorded by
- * fixtures/generate-legacy-oracles.mjs).
+ * (entries `resultsView.example.<variant>`).
  */
 import { suite, test, assert, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import { mount, stored, settle, until, pick, de, helpEntry } from './view-harness.js';
@@ -18,7 +17,7 @@ async function loadJson(path) {
   return (await fetch(new URL(path, import.meta.url), { cache: 'no-cache' })).json();
 }
 
-const EXAMPLE = await loadJson('../../../examples/projects/survey-builder-software.json');
+const EXAMPLE = await loadJson('../../../js/modules/survey-builder/resources/examples/projects/survey-builder-software.json');
 const ORACLES = await loadJson('./fixtures/legacy-oracles.json');
 
 /** The variants of the frozen reference: filter and grouping of `ui`. */

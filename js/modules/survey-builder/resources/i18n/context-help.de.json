@@ -123,6 +123,9 @@
     },
     "results": {
       "help": "Die Auswertung, wie der Reiter Auswertung sie zeigt: unter dem aktiven Filter (filter) und der aktiven Gruppierung (groupBy). n ist die Zahl der Antworten nach dem Filter; die Rücklaufquote gilt immer für alle Empfänger. Je Frage die Kennzahlen, dazu Rangfolge der Bewertungsfragen, Kano-Übersicht, Freitext-Zusammenfassung und — bei gesetzter Gruppierung — der Gruppenvergleich."
+    },
+    "chartCells": {
+      "help": "Die Diagramme der Auswertung als Konfigurationen, in der Reihenfolge des Reiters: das Better/Worse-Streudiagramm über alle Kano-Zeilen, die gruppierten Balken des Gruppenvergleichs, dann je Frage die Anteile einer Auswahl, die Mittelwerte einer Bewertung und das Better/Worse-Streudiagramm einer Kano-Frage. Sie folgen dem aktiven Filter und der Gruppierung."
     }
   },
   "actions": {
@@ -358,6 +361,36 @@
       "params": {
         "keys": "Antwortschlüssel <responseId>:<questionId>, bei einer Sonstige-Antwort mit dem Zusatz :other.",
         "command": "Das Kommando als ein Objekt mit keys."
+      }
+    },
+    "buildSurveyFile": {
+      "params": {
+        "command": "Ein leeres Objekt; der Ablauf nimmt keine Angaben."
+      }
+    },
+    "buildRecipientFile": {
+      "params": {
+        "command": "Das Kommando als ein Objekt mit recipientId."
+      }
+    },
+    "buildReport": {
+      "params": {
+        "command": "Ein leeres Objekt; der Ablauf nimmt keine Angaben."
+      }
+    },
+    "toWorksheet": {
+      "params": {
+        "command": "Ein leeres Objekt; der Ablauf nimmt keine Angaben."
+      }
+    },
+    "takeToVocTree": {
+      "params": {
+        "command": "Das Kommando als ein Objekt mit keys."
+      }
+    },
+    "handOverToKano": {
+      "params": {
+        "command": "Das Kommando als ein Objekt mit questionId."
       }
     }
   },

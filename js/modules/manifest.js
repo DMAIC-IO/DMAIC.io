@@ -179,17 +179,6 @@ export default [
     },
   },
   {
-    id: 'survey-builder',
-    phase: 'define',
-    group: 'customer',
-    allowedPhases: ['define'],
-    load: () => import('./survey-builder/legacy/survey-builder.js'),
-    cycles: {
-      dmaic: { phase: 'define', allowedPhases: ['define'] },
-      dmadv: { phase: 'define', allowedPhases: ['define'] },
-    },
-  },
-  {
     id: 'raci-matrix',
     phase: 'define',
     group: 'team',

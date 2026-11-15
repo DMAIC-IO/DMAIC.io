@@ -6,7 +6,7 @@
  *
  * The questionnaire file of the example is compared with the file the
  * earlier draft built, frozen in fixtures/legacy-oracles.json (entries
- * `surveyFile.example.<lang>`, recorded by fixtures/generate-legacy-oracles.mjs).
+ * `surveyFile.example.<lang>`).
  */
 import { suite, test, assert, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import { mount, stored, settle, until, pick, de, helpEntry } from './view-harness.js';
@@ -16,7 +16,7 @@ async function loadJson(path) {
   return (await fetch(new URL(path, import.meta.url), { cache: 'no-cache' })).json();
 }
 
-const EXAMPLE = await loadJson('../../../examples/projects/survey-builder-software.json');
+const EXAMPLE = await loadJson('../../../js/modules/survey-builder/resources/examples/projects/survey-builder-software.json');
 const ORACLES = await loadJson('./fixtures/legacy-oracles.json');
 const UI_EN = await loadJson('../../../js/modules/survey-builder/resources/i18n/ui.en.json');
 

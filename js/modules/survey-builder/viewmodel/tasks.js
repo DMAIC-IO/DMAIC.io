@@ -1,5 +1,7 @@
 /**
- * D.Mike — Survey builder: runs (viewmodel/tasks.js)
+ * D.Mike — Survey builder: helpers of the runs (viewmodel/tasks.js)
+ *
+ * The runs themselves are declared in viewmodel.js (`asyncTasks`).
  *
  * `buildSurveyFile` builds the general questionnaire file (no recipient) in
  * the language of the questionnaire. The file carries the version the export
@@ -23,28 +25,19 @@
  * `markVocTaken`) are steps of the stack. A failure ends the run with the
  * module's own text; the cause goes to the console.
  */
-import { asyncTask } from '../../../core/async-task.js';
 import { downloadBlob } from '../../../core/export-utils.js';
-import { idOf, list, text } from '../../../core/model.js';
-import { worksheetWrite, commitWorksheetWrite, completeStack, WriteError } from '../../../core/worksheet-write.js';
-import { requireKnownId } from '../../../core/agent/agent-argcheck.js';
 import { buildSurveyHtml, surveyFileName, runnerStringsOf } from '../io/questionnaire.js';
-import { documentOrder, findQuestion } from '../domain/conditions.js';
-import { legacyResponses } from '../domain/answers.js';
-import { worksheetColumnsFor } from '../domain/handover/worksheet.js';
-import { vocStack, openTexts } from '../domain/handover/voc.js';
-import { kanoOwnEntries, kanoBackups, kanoStack } from '../domain/handover/kano.js';
+import { documentOrder } from '../domain/conditions.js';
 import { loadTexts } from './texts.js';
-import { reportDocument, reportFileName } from './report.js';
 
 /** Keys of `ws.*`, the column names of the worksheet. */
-const WS_KEYS = ['responseId', 'submittedAt', 'recipient', 'other', 'functional', 'dysfunctional', 'importance', 'category', 'question'];
+export const WS_KEYS = ['responseId', 'submittedAt', 'recipient', 'other', 'functional', 'dysfunctional', 'importance', 'category', 'question'];
 
 /** What the hand-over reads from Kano. */
-const KANO_FIELDS = ['items', 'respondents', 'options', 'source'];
+export const KANO_FIELDS = ['items', 'respondents', 'options', 'source'];
 
 /** @param {any} v @returns {any} a plain deep copy */
-const plain = (v) => JSON.parse(JSON.stringify(v));
+export const plain = (v) => JSON.parse(JSON.stringify(v));
 
 /**
  * The questionnaire file in the language of the questionnaire, with the
@@ -55,7 +48,7 @@ const plain = (v) => JSON.parse(JSON.stringify(v));
  * @returns {Promise<{ fileName: string, content: string }>}
  * @throws {Error} with `failed` as message and the cause attached
  */
-async function buildFile(survey, recipient, failed) {
+export async function buildFile(survey, recipient, failed) {
   try {
     const strings = runnerStringsOf(await loadTexts(survey.lang));
     return {
@@ -101,7 +94,7 @@ export async function downloadBuiltFile(vm, ctx, name, args) {
  *   `warned`: the cause is in the console already
  * @returns {Error}
  */
-function failure(message, where, cause, { signal, notify, warned = false }) {
+export function failure(message, where, cause, { signal, notify, warned = false }) {
   if (!warned) console.warn(`[survey-builder] ${where} failed`, cause);
   if (signal.aborted) notify(message, 'error');
   return new Error(message, { cause });
@@ -113,7 +106,7 @@ function failure(message, where, cause, { signal, notify, warned = false }) {
  * @param {AbortSignal} signal
  * @returns {Promise<any>} the answer of a written stack
  */
-async function send(services, stack, where, failed, signal) {
+export async function send(services, stack, where, failed, signal) {
   let res;
   try {
     res = await services.instances.interact(stack);
@@ -128,10 +121,10 @@ async function send(services, stack, where, failed, signal) {
  * @param {any} res answer of a stack @param {string} id id of a step
  * @returns {any} the result of that step
  */
-const resultOf = (res, id) => (res.results ?? []).find((/** @type {any} */ r) => r.id === id)?.result;
+export const resultOf = (res, id) => (res.results ?? []).find((/** @type {any} */ r) => r.id === id)?.result;
 
 /** @param {any} survey @returns {string[]} ids of its Kano questions */
-const kanoQuestionIds = (survey) => (survey && Array.isArray(survey.sections)
+export const kanoQuestionIds = (survey) => (survey && Array.isArray(survey.sections)
   ? documentOrder(survey).filter((e) => e.question.type === 'kano').map((e) => e.question.id) : []);
 
 /**
@@ -139,194 +132,9 @@ const kanoQuestionIds = (survey) => (survey && Array.isArray(survey.sections)
  * @param {any} model
  * @returns {{ survey: any, responses: any[], recipients: any[], transfers: any }}
  */
-const snapshot = (model) => ({
+export const snapshot = (model) => ({
   survey: plain(model.survey), responses: plain(model.responses), recipients: plain(model.recipients), transfers: plain(model.transfers),
 });
 
 /** @param {any} data @param {(key: string) => string} t @returns {string} the title, or the placeholder */
-const titleOf = (data, t) => data.survey.title.trim() || t('report.untitled');
-
-export const asyncTasks = {
-  buildSurveyFile: asyncTask({
-    /**
-     * @returns {Promise<{ fileName: string, content: string }>}
-     */
-    async run() {
-      const model = /** @type {any} */ (this.model);
-      const survey = plain(model.survey);
-      survey.version = model.nextExportVersion;
-      const file = await buildFile(survey, null, this.t('surveyFileFailed'));
-      model.markExported();
-      return file;
-    },
-  }),
-  buildRecipientFile: asyncTask({
-    params: { recipientId: idOf('recipients') },
-    /**
-     * A recipient deleted while the texts load leaves everything as it was.
-     * @param {{ recipientId: string }} args
-     * @returns {Promise<{ fileName: string, content: string }>}
-     */
-    async run({ recipientId }) {
-      const model = /** @type {any} */ (this.model);
-      const survey = plain(model.survey);
-      const recipient = plain(model.recipients.find((/** @type {any} */ r) => r.id === recipientId));
-      survey.version = model.nextExportVersion;
-      const failed = this.t('recipientFileFailed');
-      const file = await buildFile(survey, recipient, failed);
-      if (!model.recipients.some((/** @type {any} */ r) => r.id === recipientId)) throw new Error(failed);
-      model.markExported();
-      model.markSent({ recipientId });
-      return file;
-    },
-  }),
-  buildReport: asyncTask({
-    /**
-     * The report under the active filter and grouping; nothing is downloaded.
-     * @returns {Promise<{ fileName: string, content: string }>}
-     */
-    async run() {
-      return { fileName: `${reportFileName(this)}.html`, content: reportDocument(this) };
-    },
-  }),
-  toWorksheet: asyncTask({
-    /**
-     * All responses into a new worksheet in this phase, one row per response.
-     * @param {object} _args @param {{ signal: AbortSignal }} ctl
-     * @returns {Promise<{ instanceId: string }>}
-     */
-    async run(_args, { signal }) {
-      const services = this._ui.services;
-      const data = snapshot(this.model);
-      const failed = this.t('handoverFailed');
-      const strings = /** @type {any} */ (Object.fromEntries(WS_KEYS.map((k) => [k, this.t(`ws.${k}`)])));
-      let plan;
-      try {
-        let write = worksheetWrite().newWorksheet({ name: titleOf(data, (k) => this.t(k)), fitRows: true });
-        for (const c of worksheetColumnsFor(data, strings)) write = write.column({ name: c.name, type: c.type, values: c.values, role: c.role });
-        plan = write.build();
-      } catch (err) {
-        throw failure(failed, 'toWorksheet', err, { signal, notify: services.notify });
-      }
-      // The name the sheet gets in the project, as the commit settles it.
-      const rename = /** @type {any} */ (completeStack(services, plan).find((/** @type {any} */ a) => a.method === 'renameSheet'));
-      const created = this.t('worksheetCreated', { name: rename?.args?.[1] ?? titleOf(data, (k) => this.t(k)) });
-      let res;
-      try {
-        res = await commitWorksheetWrite(services, plan);
-      } catch (err) {
-        // commitWorksheetWrite has put a failed stack into the console itself.
-        throw failure(failed, 'toWorksheet', err, { signal, notify: services.notify, warned: err instanceof WriteError });
-      }
-      services.notify(created, 'success');
-      return { instanceId: res.instanceId };
-    },
-  }),
-  takeToVocTree: asyncTask({
-    params: { keys: list(text()) },
-    /**
-     * Free texts and „Sonstiges“ texts as voices into the project's first VoC
-     * tree, or into a new one. An answer taken before is added again.
-     * @param {{ keys: string[] }} args @param {{ signal: AbortSignal }} ctl
-     * @returns {Promise<{ taken: number, instanceId: string|null }>}
-     * @throws {Error} if `keys` is empty or a key names no non-empty answer
-     */
-    async run({ keys }, { signal }) {
-      const services = this._ui.services;
-      const instanceId = this._ui.instanceId;
-      const data = snapshot(this.model);
-      const texts = openTexts(data);
-      if (keys.length === 0) throw new Error('invalid keys []; allowed: at least one answer key');
-      keys.forEach((k, i) => requireKnownId(`keys[${i}]`, k, [...texts.keys()]));
-      const treeId = services.instances.list({ modules: ['voc-ctx-tree'] })[0]?.instanceId ?? null;
-      const stack = vocStack({
-        treeId,
-        entries: keys.map((k) => /** @type {{ text: string, name: string }} */ (texts.get(k))),
-        sourceLabel: this.t('vocSource', { title: titleOf(data, (k) => this.t(k)) }),
-        anonymous: data.survey.anonymous,
-        surveyInstanceId: instanceId,
-        keys,
-      });
-      const taken = this.t('vocTaken', { count: keys.length });
-      const res = await send(services, stack, 'takeToVocTree', this.t('handoverFailed'), signal);
-      services.notify(taken, 'success');
-      return { taken: keys.length, instanceId: treeId ?? resultOf(res, 'tree')?.instanceId ?? null };
-    },
-  }),
-  handOverToKano: asyncTask({
-    params: { questionId: text() },
-    /**
-     * A Kano question with all responses, filter aside, to its chosen Kano
-     * instance or to a new one in this phase. Only what came from this
-     * question is replaced. Order: the other surveys, then Kano, then the
-     * write stack.
-     * @param {{ questionId: string }} args @param {{ signal: AbortSignal }} ctl
-     * @returns {Promise<{ instanceId: string|null }>}
-     * @throws {Error} if the question is no Kano question
-     */
-    async run({ questionId }, { signal }) {
-      const services = this._ui.services;
-      const instanceId = this._ui.instanceId;
-      const data = snapshot(this.model);
-      const ownKano = kanoQuestionIds(data.survey);
-      requireKnownId('questionId', questionId, ownKano);
-      const question = findQuestion(data.survey, questionId);
-      const responses = legacyResponses(data);
-      const labels = responses.map((_r, i) => this.t('respondentLabel', { n: i + 1 }));
-      const failed = this.t('handoverFailed');
-      const done = this.t('kanoHandedOver');
-      const notifyFail = { signal, notify: services.notify };
-
-      const surveys = services.instances.list({ modules: ['survey-builder'] });
-      const phase = surveys.find((/** @type {any} */ i) => i.instanceId === instanceId)?.phase;
-      if (!phase) throw failure(failed, 'handOverToKano', new Error('the survey is in no phase'), notifyFail);
-      const remembered = data.transfers.kano[questionId];
-      const kanoId = remembered && services.instances.list({ modules: ['kano'] }).some((/** @type {any} */ i) => i.instanceId === remembered.instanceId)
-        ? remembered.instanceId : null;
-
-      let kanoRead = null;
-      let backups = /** @type {any[]} */ ([]);
-      let own = { itemIds: /** @type {string[]} */ ([]), respondentIds: /** @type {string[]} */ ([]) };
-      if (kanoId) {
-        const known = [{ instanceId, transfers: data.transfers, kanoQuestionIds: ownKano }];
-        for (const other of surveys) {
-          if (other.instanceId === instanceId) continue;
-          try {
-            const r = /** @type {any} */ (await services.instances.read(other.instanceId, { fields: ['transfers', 'survey'] }));
-            known.push({ instanceId: other.instanceId, transfers: { kano: r?.transfers?.kano ?? {} }, kanoQuestionIds: kanoQuestionIds(r?.survey) });
-          } catch (err) {
-            // Gone since the list: it has no marks to keep. Anything else could lose its marks.
-            if (/** @type {any} */ (err)?.code !== 'unknown_instance') throw failure(failed, 'handOverToKano', err, notifyFail);
-          }
-        }
-        const read = await send(services, [{
-          op: 'instance.call', module: 'kano', instance: kanoId, method: 'read', args: [{ fields: KANO_FIELDS }],
-        }], 'handOverToKano', failed, signal);
-        const value = read.results?.[0]?.result?.value;
-        if (!value || !Array.isArray(value.items) || !Array.isArray(value.respondents)) {
-          throw failure(failed, 'handOverToKano', new Error('kano read gave no items or respondents'), notifyFail);
-        }
-        kanoRead = value;
-        // The read stack has switched the view: the host no longer reports this run, a throw here must.
-        try {
-          backups = kanoBackups(value, known, kanoId);
-          own = kanoOwnEntries(value, remembered, instanceId, questionId);
-        } catch (err) {
-          throw failure(failed, 'handOverToKano', err, notifyFail);
-        }
-      }
-      let stack;
-      try {
-        stack = kanoStack({
-          kanoId, phase, kanoRead, question, responses, recipients: data.recipients, anonymous: data.survey.anonymous,
-          respondentLabel: (n) => labels[n - 1] ?? '', surveyInstanceId: instanceId, backups, own,
-        });
-      } catch (err) {
-        throw failure(failed, 'handOverToKano', err, notifyFail);
-      }
-      const res = await send(services, stack, 'handOverToKano', failed, signal);
-      services.notify(done, 'success');
-      return { instanceId: kanoId ?? resultOf(res, 'kano')?.instanceId ?? null };
-    },
-  }),
-};
+export const titleOf = (data, t) => data.survey.title.trim() || t('report.untitled');

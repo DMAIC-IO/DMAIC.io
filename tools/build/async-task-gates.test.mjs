@@ -103,6 +103,13 @@ test('Prüfdatei: Task-Bindung ohne Widgets; ohne Bindung text null (stale Datei
   assert.match(a[0].text, /export const b0 = tasks\.compute; \/\/ resources\/view\.html:2 x-async-task/);
   assert.deepEqual(bindingChecks(root, 'b', new Map()).map((j) => j.text), [null]);
 });
+test('grün: Startknopf als eigener Behälter (closest schließt das Element ein)', () => {
+  const files = [{ path: 'resources/view.html', text: '<div x-async-task="preview"><button x-async-task="compute" x-async-task-start data-arg-n="2"></button></div>' }];
+  assert.deepEqual(checkAsyncTaskRefs(files, TASKS), []);
+  assert.deepEqual(asyncTaskAnchors(files[0].text), [
+    { name: 'preview', start: false, cancel: false }, { name: 'compute', start: true, cancel: false },
+  ]);
+});
 
 test('Behälter mit Void-Tag schluckt keine späteren Knöpfe', () => {
   const files = [{ path: 'resources/view.html', text: '<INPUT x-async-task="compute"><button x-async-task-start></button>' }];

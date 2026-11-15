@@ -1,25 +1,22 @@
 /**
  * D.Mike — Survey builder labels (survey-labels.test.js)
  */
-import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
-import { State } from '../../js/modules/survey-builder/legacy/survey-builder-model.js';
+import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
 import {
-  localeOf, typeLabel, questionLabel, sectionPlaceholder, optionText, KANO_CATEGORIES, catLabels, catLabel,
+  localeOf, typeLabel, questionLabel, sectionPlaceholder, optionText, catLabel,
   recipientName, formatDateTime, fmtPct, fmtNum,
 } from '../../js/modules/survey-builder/domain/labels.js';
 
 const t = (key, params) => (params ? `${key}|${JSON.stringify(params)}` : key);
-const i18n = (lang) => ({ getLanguage: () => lang, t: (key) => `T:${key}` });
+const i18n = (lang) => ({ getLanguage: () => lang });
 
 suite('survey-labels — questions and options', () => {
   test('questionLabel trims the text and numbers an empty question in document order', () => {
-    const s = new State();
-    const sec = s.addSection();
-    const q1 = s.question(s.addQuestion(sec, 'single'));
-    const q2 = s.question(s.addQuestion(sec, 'text'));
-    q1.text = '  Kundengruppe  ';
-    assertEqual(questionLabel(s.survey, q1, t), 'Kundengruppe');
-    assertEqual(questionLabel(s.survey, q2, t), 'questionNumber|{"n":2}');
+    const q1 = { id: 'q1', type: 'single', text: '  Kundengruppe  ', when: null, options: [] };
+    const q2 = { id: 'q2', type: 'text', text: '', when: null };
+    const survey = { sections: [{ id: 's1', when: null, questions: [q1, q2] }] };
+    assertEqual(questionLabel(survey, q1, t), 'Kundengruppe');
+    assertEqual(questionLabel(survey, q2, t), 'questionNumber|{"n":2}');
   });
 
   test('typeLabel translates and falls back to the text type', () => {
@@ -35,10 +32,9 @@ suite('survey-labels — questions and options', () => {
 });
 
 suite('survey-labels — kano and recipients', () => {
-  test('catLabels maps every category to the kano module text, catLabel shows a dash without code', () => {
-    assertDeepEqual(Object.keys(catLabels(i18n('de'))), KANO_CATEGORIES);
-    assertEqual(catLabel('M', (k) => `T:modules.kano.${k}`), 'T:modules.kano.catM');
-    assertEqual(catLabel(null, (k) => `T:modules.kano.${k}`), '—');
+  test('catLabel translates the category code and shows a dash without code', () => {
+    assertEqual(catLabel('M', (k) => `T:kano.${k}`), 'T:kano.catM');
+    assertEqual(catLabel(null, (k) => `T:kano.${k}`), '—');
   });
 
   test('recipientName trims and returns null for unknown, unnamed or missing ids', () => {

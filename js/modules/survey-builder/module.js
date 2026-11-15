@@ -10,5 +10,6 @@ export default {
     dmaic: { phase: 'define', allowedPhases: ['define'] },
     dmadv: { phase: 'define', allowedPhases: ['define'] },
   },
+  uses: ['kano', 'voc-ctx-tree', 'worksheet'],
   load: () => import('./viewmodel/viewmodel.js'),
 };

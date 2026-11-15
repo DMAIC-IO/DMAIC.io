@@ -5,8 +5,7 @@
  *
  * The file of a recipient of the example is compared with the file the
  * earlier recipients viewmodel built, frozen in fixtures/legacy-oracles.json
- * (entries `recipientFile.example.<lang>`, recorded by
- * fixtures/generate-legacy-oracles.mjs).
+ * (entries `recipientFile.example.<lang>`).
  */
 import { suite, test, assert, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import { mount, stored, settle, until, typeIn, de, helpEntry } from './view-harness.js';
@@ -16,7 +15,7 @@ async function loadJson(path) {
   return (await fetch(new URL(path, import.meta.url), { cache: 'no-cache' })).json();
 }
 
-const EXAMPLE = await loadJson('../../../examples/projects/survey-builder-software.json');
+const EXAMPLE = await loadJson('../../../js/modules/survey-builder/resources/examples/projects/survey-builder-software.json');
 const ORACLES = await loadJson('./fixtures/legacy-oracles.json');
 
 /** @returns {any} a fresh copy of the example project */

@@ -26,7 +26,9 @@ const isAsyncTaskCall = (n) => ts.isCallExpression(n) && ts.isIdentifier(n.expre
 
 /**
  * Behälter und Kinder einer Vorlage; jedes Kind gehört zum innersten
- * Behälter, der es umschließt (`box` = Index in `boxes`, `-1` = keiner).
+ * Behälter, der es umschließt oder auf dessen Element es selbst steht — wie
+ * `el.closest('[x-async-task]')` zur Laufzeit (`box` = Index in `boxes`,
+ * `-1` = keiner).
  * @param {string} html
  */
 function scan(html) {
@@ -43,7 +45,7 @@ function scan(html) {
   }
   for (const c of children) {
     let best = -1;
-    boxes.forEach((b, i) => { if (b.start <= c.at && c.at < b.end && (best < 0 || b.start > boxes[best].start)) best = i; });
+    boxes.forEach((b, i) => { if ((b.at === c.at || (b.start <= c.at && c.at < b.end)) && (best < 0 || b.start > boxes[best].start)) best = i; });
     c.box = best;
   }
   return { boxes, children };

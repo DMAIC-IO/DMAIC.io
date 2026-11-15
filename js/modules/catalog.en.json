@@ -84,5 +84,10 @@
     "name": "SIPOC",
     "description": "Supplier-Input-Process-Output-Customer diagram",
     "whenToUse": "When the boundaries of a process need clarifying — who supplies, what goes in, which steps run, what comes out and who receives it; not for the flow itself with its decisions and branches, which is what a flowchart is for."
+  },
+  "survey-builder": {
+    "name": "Survey builder",
+    "description": "Create VoC questionnaires, send them as HTML, import and evaluate the answers",
+    "whenToUse": "When customers or stakeholders are to be surveyed in writing: design the questionnaire, send it as an HTML file per recipient, read in the answer files and evaluate them — without a server, the data stays in the project."
   }
 }

@@ -7,11 +7,10 @@
  * Both stored states are in the earlier form (no `_schema`): the declarative
  * model loads them through its migration `'0→1.0'`.
  *
- * The earlier model is not imported here. What it did is frozen in
+ * The earlier model is gone. What it did is frozen in
  * `fixtures/legacy-oracles.json`; `frozen(key, compute)` reads an entry. The
- * `compute` function next to each use says how the entry was produced — it
- * runs only in `fixtures/generate-legacy-oracles.mjs`, which records every
- * entry (see there how to regenerate). Every comparison loads the earlier
+ * `compute` function next to each use documents how the entry was produced
+ * from the earlier code; it no longer runs. Every comparison loads the earlier
  * result through the same migration, so "same effect as before" reads
  * `toJSON()` against `toJSON()`.
  */
@@ -25,10 +24,10 @@ async function loadJson(path) {
 }
 
 /** The example project's module state (earlier form). */
-export const EXAMPLE = await loadJson('../../../examples/projects/survey-builder-software.json');
+export const EXAMPLE = await loadJson('../../../js/modules/survey-builder/resources/examples/projects/survey-builder-software.json');
 
-/** The frozen entries; empty while the generator records them. */
-const ORACLES = globalThis.__surveyOracle ? {} : await loadJson('./fixtures/legacy-oracles.json');
+/** The frozen entries. */
+const ORACLES = await loadJson('./fixtures/legacy-oracles.json');
 
 /** @template T @param {T} v @returns {T} */
 export const copy = (v) => JSON.parse(JSON.stringify(v));
@@ -149,25 +148,13 @@ export const CORNERS = Object.freeze({
 export const load = (json, opts) => SurveyModel.fromJSON(copy(json), opts);
 
 /**
- * A frozen entry of the earlier model's behaviour. While the generator
- * records (`globalThis.__surveyOracle`), `compute(deps)` runs with the
- * earlier code in `deps` and its result is recorded; otherwise the recorded
- * value is read.
+ * A frozen entry of the earlier model's behaviour.
  * @param {string} key unique name of the entry
- * @param {(deps: any) => any} compute how the entry is produced from the earlier code
+ * @param {(deps: any) => any} _compute how the entry was produced from the earlier code (documentation only)
  * @returns {any} a copy of the entry
  */
-export function frozen(key, compute) {
-  const rec = globalThis.__surveyOracle;
-  if (rec) {
-    const v = copy(compute(rec.deps) ?? null);
-    if (Object.hasOwn(rec.record, key) && JSON.stringify(rec.record[key]) !== JSON.stringify(v)) {
-      throw new Error(`frozen: key ${key} recorded twice with different values`);
-    }
-    rec.record[key] = v;
-    return copy(v);
-  }
-  if (!Object.hasOwn(ORACLES, key)) throw new Error(`frozen: no entry ${JSON.stringify(key)}; run fixtures/generate-legacy-oracles.mjs`);
+export function frozen(key, _compute) {
+  if (!Object.hasOwn(ORACLES, key)) throw new Error(`frozen: no entry ${JSON.stringify(key)} in fixtures/legacy-oracles.json`);
   return copy(ORACLES[key]);
 }
 

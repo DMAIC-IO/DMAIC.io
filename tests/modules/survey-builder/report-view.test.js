@@ -16,7 +16,7 @@ async function loadJson(path) {
   return (await fetch(new URL(path, import.meta.url), { cache: 'no-cache' })).json();
 }
 
-const EXAMPLE = await loadJson('../../../examples/projects/survey-builder-software.json');
+const EXAMPLE = await loadJson('../../../js/modules/survey-builder/resources/examples/projects/survey-builder-software.json');
 const ORACLES = await loadJson('./fixtures/legacy-oracles.json');
 
 /** @param {object} [ui] filter, grouping and the names switch @returns {any} a copy of the example project */

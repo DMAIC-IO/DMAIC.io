@@ -123,6 +123,9 @@
     },
     "results": {
       "help": "The evaluation as the results tab shows it: under the active filter (filter) and grouping (groupBy). n is the number of responses after the filter; the response rate always covers all recipients. Per question the figures, plus the ranking of rating questions, the Kano overview, the free-text summary and — with a grouping set — the group comparison."
+    },
+    "chartCells": {
+      "help": "The charts of the evaluation as configurations, in the order of the tab: the Better/Worse scatter over all Kano rows, the grouped bars of the group comparison, then per question the shares of a choice, the means of a rating and the Better/Worse scatter of a Kano question. They follow the active filter and grouping."
     }
   },
   "actions": {
@@ -358,6 +361,36 @@
       "params": {
         "keys": "Answer keys <responseId>:<questionId>, with the suffix :other for an Other answer.",
         "command": "The command as one object with keys."
+      }
+    },
+    "buildSurveyFile": {
+      "params": {
+        "command": "An empty object; the task takes no inputs."
+      }
+    },
+    "buildRecipientFile": {
+      "params": {
+        "command": "The command as one object with recipientId."
+      }
+    },
+    "buildReport": {
+      "params": {
+        "command": "An empty object; the task takes no inputs."
+      }
+    },
+    "toWorksheet": {
+      "params": {
+        "command": "An empty object; the task takes no inputs."
+      }
+    },
+    "takeToVocTree": {
+      "params": {
+        "command": "The command as one object with keys."
+      }
+    },
+    "handOverToKano": {
+      "params": {
+        "command": "The command as one object with questionId."
       }
     }
   },

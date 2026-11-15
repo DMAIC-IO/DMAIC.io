@@ -43,22 +43,21 @@ import h40 from '../modules/run-chart/run-chart-help.js';
 import h41 from '../modules/sample-size/sample-size-help.js';
 import h42 from '../modules/short-run-chart/short-run-chart-help.js';
 import h43 from '../modules/stakeholder-analysis/stakeholder-analysis-help.js';
-import h44 from '../modules/survey-builder/legacy/survey-builder-help.js';
-import h45 from '../modules/time-weighted-chart/time-weighted-chart-help.js';
-import h46 from '../modules/todo/todo-help.js';
-import h47 from '../modules/transformed-imr-chart/transformed-imr-chart-help.js';
-import h48 from '../modules/triz-9-windows/triz-9-windows-help.js';
-import h49 from '../modules/triz-contradiction-matrix/triz-contradiction-matrix-help.js';
-import h50 from '../modules/triz-evolution-trends/triz-evolution-trends-help.js';
-import h51 from '../modules/triz-function-analysis/triz-function-analysis-help.js';
-import h52 from '../modules/triz-ifr/triz-ifr-help.js';
-import h53 from '../modules/triz-physical-contradiction/triz-physical-contradiction-help.js';
-import h54 from '../modules/triz-resources/triz-resources-help.js';
-import h55 from '../modules/triz-sufield/triz-sufield-help.js';
-import h56 from '../modules/unit-converter/unit-converter-help.js';
-import h57 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
-import h58 from '../modules/worksheet/worksheet-help.js';
-import h59 from '../modules/xy-plot/xy-plot-help.js';
+import h44 from '../modules/time-weighted-chart/time-weighted-chart-help.js';
+import h45 from '../modules/todo/todo-help.js';
+import h46 from '../modules/transformed-imr-chart/transformed-imr-chart-help.js';
+import h47 from '../modules/triz-9-windows/triz-9-windows-help.js';
+import h48 from '../modules/triz-contradiction-matrix/triz-contradiction-matrix-help.js';
+import h49 from '../modules/triz-evolution-trends/triz-evolution-trends-help.js';
+import h50 from '../modules/triz-function-analysis/triz-function-analysis-help.js';
+import h51 from '../modules/triz-ifr/triz-ifr-help.js';
+import h52 from '../modules/triz-physical-contradiction/triz-physical-contradiction-help.js';
+import h53 from '../modules/triz-resources/triz-resources-help.js';
+import h54 from '../modules/triz-sufield/triz-sufield-help.js';
+import h55 from '../modules/unit-converter/unit-converter-help.js';
+import h56 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
+import h57 from '../modules/worksheet/worksheet-help.js';
+import h58 from '../modules/xy-plot/xy-plot-help.js';
 
 export const HELP = {
   "activity-flowchart": h0,
@@ -105,20 +104,19 @@ export const HELP = {
   "sample-size": h41,
   "short-run-chart": h42,
   "stakeholder-analysis": h43,
-  "survey-builder": h44,
-  "time-weighted-chart": h45,
-  "todo": h46,
-  "transformed-imr-chart": h47,
-  "triz-9-windows": h48,
-  "triz-contradiction-matrix": h49,
-  "triz-evolution-trends": h50,
-  "triz-function-analysis": h51,
-  "triz-ifr": h52,
-  "triz-physical-contradiction": h53,
-  "triz-resources": h54,
-  "triz-sufield": h55,
-  "unit-converter": h56,
-  "voc-ctx-tree": h57,
-  "worksheet": h58,
-  "xy-plot": h59,
+  "time-weighted-chart": h44,
+  "todo": h45,
+  "transformed-imr-chart": h46,
+  "triz-9-windows": h47,
+  "triz-contradiction-matrix": h48,
+  "triz-evolution-trends": h49,
+  "triz-function-analysis": h50,
+  "triz-ifr": h51,
+  "triz-physical-contradiction": h52,
+  "triz-resources": h53,
+  "triz-sufield": h54,
+  "unit-converter": h55,
+  "voc-ctx-tree": h56,
+  "worksheet": h57,
+  "xy-plot": h58,
 };
