@@ -31,7 +31,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const TESTS = ['answers', 'commands', 'invariants', 'migrations', 'model'];
+const TESTS = ['answers', 'commands', 'invariants', 'migrations', 'model', 'handover-stacks'];
 
 // cases.js loads JSON via fetch(file://…); node's fetch does not serve file URLs.
 const realFetch = globalThis.fetch;
@@ -46,8 +46,9 @@ const { State: Legacy } = await import('../../../../js/modules/survey-builder/le
 const { ResultsViewModel } = await import('../../../../js/modules/survey-builder/legacy/viewmodel/results.js');
 const { parseResponse } = await import('../../../../js/modules/survey-builder/domain/import.js');
 const { t, fakeContext, attach } = await import('../../survey-vm-fakes.js');
+const { kanoStateFromSurvey, vocsFromAnswers } = await import('../../../../js/modules/survey-builder/legacy/survey-link.js');
 
-globalThis.__surveyOracle = { record: {}, deps: { Legacy, ResultsViewModel, parseResponse, t, fakeContext, attach } };
+globalThis.__surveyOracle = { record: {}, deps: { Legacy, ResultsViewModel, parseResponse, t, fakeContext, attach, kanoStateFromSurvey, vocsFromAnswers } };
 
 for (const name of TESTS) await import(pathToFileURL(join(HERE, '..', `${name}.test.js`)).href);
 const { runAll } = await import('../../../test-utils.js');
