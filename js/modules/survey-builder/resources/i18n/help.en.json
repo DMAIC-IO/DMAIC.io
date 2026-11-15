@@ -1,0 +1,79 @@
+{
+  "$schema": "../../../../../schemas/module-help.schema.json",
+  "sections": {
+    "overview": {
+      "title": "Overview",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "The survey builder takes a {{term:customer-survey|customer survey}} from draft to evaluation without the data ever leaving the project: build the questionnaire, send it as a self-contained HTML file, import the returned answer files and evaluate them."
+        },
+        {
+          "type": "paragraph",
+          "content": "Recipients need nothing but a browser. The HTML file works offline and without installation; at the end it saves a small JSON file with the answers, which comes back by e-mail. There is no server and no online return channel."
+        },
+        {
+          "type": "definition",
+          "term": "Draft",
+          "content": "Create the header, sections and questions, set conditions and click through the questionnaire in the preview. \"Export questionnaire\" creates the general file without a recipient."
+        },
+        {
+          "type": "definition",
+          "term": "Recipients",
+          "content": "Create one HTML file per recipient. The list shows who received which version and who has already answered."
+        },
+        {
+          "type": "definition",
+          "term": "Results",
+          "content": "Import answer files, evaluate each question, filter, group by a single-choice question and export a report. Free texts go to the {{term:voc|VoC}} tree, Kano questions to the Kano module."
+        }
+      ]
+    },
+    "methodology": {
+      "title": "Method",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "First settle the question the survey has to answer, then pick the question types: single and multiple choice for classification, the rating matrix (1 to 5) for satisfaction, the Kano question for requirements following the {{term:kano-fragebogen|Kano questionnaire}}, free text for everything that cannot be foreseen."
+        },
+        {
+          "type": "paragraph",
+          "content": "A single-choice question about the customer group at the start pays off twice: through conditions it controls which sections someone sees, and later it is the basis of the group comparison. Conditions always refer to answers further up; hidden questions are never required."
+        },
+        {
+          "type": "paragraph",
+          "content": "After the first send, every structural change counts as a new version. Recipients holding an older version are marked in the list and can receive a new file; their answers are still imported, and answers that no longer match a question are dropped."
+        },
+        {
+          "type": "paragraph",
+          "content": "In the evaluation, filtering comes first, then grouping. Group values that deviate from the overall mean by at least 0.5 are highlighted; groups with fewer than five responses carry the note \"few responses\". The hand-over to the Kano module always takes all responses, regardless of the filter."
+        }
+      ]
+    },
+    "pitfalls": {
+      "title": "Pitfalls",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Over-reading small groups",
+          "content": "Three responses per group show a direction, not proof. The group comparison computes no significance; the \"few responses\" note is meant seriously."
+        },
+        {
+          "type": "definition",
+          "term": "Restructuring after sending",
+          "content": "Deleting options or changing a question type once answers have arrived loses the matching answers. Adding new questions and options is harmless."
+        },
+        {
+          "type": "definition",
+          "term": "Misreading anonymity",
+          "content": "\"Evaluate anonymously\" hides names in the evaluation and in the report. The recipient list itself stays, so the response rate remains visible."
+        },
+        {
+          "type": "definition",
+          "term": "Asking leading questions",
+          "content": "Wording such as \"How much do you value our fast support?\" dictates the answer. Ask neutrally and leave the judgement to the scale."
+        }
+      ]
+    }
+  }
+}

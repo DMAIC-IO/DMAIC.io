@@ -1,0 +1,432 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "survey": {
+      "help": "The questionnaire: header, version, sections with their questions, options, rows and conditions."
+    },
+    "recipients": {
+      "help": "The recipients with name, organisation, group, e-mail and note, plus when and with which version they got their file."
+    },
+    "responses": {
+      "help": "The imported responses: per answer file the version, the recipient if known and not anonymous, the time and the answers per question."
+    },
+    "answeredRecipientIds": {
+      "help": "Which recipients have answered; this gives the status not sent, sent or answered."
+    },
+    "transfers": {
+      "help": "What was handed over: the answers taken into the VoC tree and per Kano question the Kano instance it goes to."
+    },
+    "ui": {
+      "help": "The settings of the results: the filter (question and option, or empty), the grouping (single choice question or empty) and whether the report names the authors of free texts (reportWithNames; no effect for an anonymous questionnaire). Settable via instance.set."
+    },
+    "dirtyStructure": {
+      "help": "Whether the structure changed since the last export; once the questionnaire was sent, the next export then raises the version."
+    },
+    "exportedOnce": {
+      "help": "Whether the questionnaire was exported at least once."
+    },
+    "results": {
+      "help": "The evaluation as the results tab shows it: under the active filter (filter) and grouping (groupBy). n is the number of responses after the filter; the response rate always covers all recipients. Per question the figures, plus the ranking of rating questions, the Kano overview, the free-text summary and — with a grouping set — the group comparison."
+    }
+  },
+  "actions": {
+    "read": {
+      "help": "Read the questionnaire, recipients, imported responses, hand-overs and the state of the interface."
+    },
+    "setHeader": {
+      "help": "Set a text field in the header of the questionnaire: title, introduction or contact.",
+      "params": {
+        "field": "title (the title above the questionnaire), intro (the introduction under the title) or contact (whom respondents contact with questions).",
+        "value": "The new text.",
+        "command": "The command as one object with field and value."
+      }
+    },
+    "setSurveyLanguage": {
+      "help": "Set the language of the exported questionnaire and response file: German or English.",
+      "params": {
+        "lang": "de or en.",
+        "command": "The command as one object with lang."
+      }
+    },
+    "setAnonymous": {
+      "help": "Switch whether the questionnaire is anonymous: responses then carry no recipient, even if the file was built for a recipient.",
+      "params": {
+        "anonymous": "true or false.",
+        "command": "The command as one object with anonymous."
+      }
+    },
+    "addSection": {
+      "help": "Append an empty section to the end of the questionnaire. Questions always sit in a section.",
+      "params": {
+        "command": "An empty object; the command takes no arguments."
+      }
+    },
+    "setSectionField": {
+      "help": "Set the title or the hint of a section.",
+      "params": {
+        "sectionId": "The section.",
+        "field": "title (the heading of the section) or hint (an explanatory text under the heading).",
+        "value": "The new text; empty clears it.",
+        "command": "The command as one object with sectionId, field and value."
+      }
+    },
+    "moveSection": {
+      "help": "Move a section one place up or down. Conditions that would then point at a later question are removed; the return value counts them.",
+      "params": {
+        "sectionId": "The section.",
+        "direction": "up or down.",
+        "command": "The command as one object with sectionId and direction."
+      }
+    },
+    "removeSection": {
+      "help": "Delete a section with its questions, without asking. Conditions on these questions are removed; the return value counts them.",
+      "params": {
+        "sectionId": "The section.",
+        "command": "The command as one object with sectionId."
+      }
+    },
+    "addQuestion": {
+      "help": "Append a question of a type to a section and select it.",
+      "params": {
+        "sectionId": "The section.",
+        "type": "single (single choice), multi (multiple choice), rating (rating 1–5), kano (Kano pair), text (free text) or info (text only).",
+        "command": "The command as one object with sectionId and type."
+      }
+    },
+    "moveQuestion": {
+      "help": "Move a question one place up or down; at a section boundary it moves into the neighbouring section. Conditions that would then point at a later question are removed; the return value counts them.",
+      "params": {
+        "questionId": "The question.",
+        "direction": "up or down.",
+        "command": "The command as one object with questionId and direction."
+      }
+    },
+    "removeQuestion": {
+      "help": "Delete a question, without asking — also when imported responses answered it. Conditions on it are removed; the return value counts them.",
+      "params": {
+        "questionId": "The question.",
+        "command": "The command as one object with questionId."
+      }
+    },
+    "setQuestionField": {
+      "help": "Set the text or the hint of a question.",
+      "params": {
+        "questionId": "The question.",
+        "field": "text (the question as respondents read it) or hint (an explanatory text under the question).",
+        "value": "The new text.",
+        "command": "The command as one object with questionId, field and value."
+      }
+    },
+    "setQuestionFlag": {
+      "help": "Set a switch of a question. Which switches exist depends on the type; a switch the type does not have is rejected.",
+      "params": {
+        "questionId": "The question.",
+        "flag": "required (required question: the questionnaire cannot be completed without an answer), other (additionally offers a free answer Other), noAnswer (offers the answer “no answer” per row), importance (additionally asks the importance from 1 to 9 per row) or multiline (multi-line answer field instead of one line).",
+        "on": "true switches it on, false off.",
+        "command": "The command as one object with questionId, flag and on."
+      }
+    },
+    "changeQuestionType": {
+      "help": "Change the type of a question. Text, hint, required and conditions stay, options, rows and switches start empty; conditions on its previous options are removed.",
+      "params": {
+        "questionId": "The question.",
+        "type": "The new type, values as for addQuestion.",
+        "command": "The command as one object with questionId and type."
+      }
+    },
+    "addItem": {
+      "help": "Append an empty option (single and multiple choice) or row (rating, Kano) to a question.",
+      "params": {
+        "questionId": "The question.",
+        "command": "The command as one object with questionId."
+      }
+    },
+    "setItemField": {
+      "help": "Set the text of an option or row, for multiple choice also the display group of an option.",
+      "params": {
+        "questionId": "The question.",
+        "itemId": "The option or row.",
+        "field": "text (the text of the option or row) or group (the display group of an option in a multiple choice; options of the same group stand together).",
+        "value": "The new text; empty clears it.",
+        "command": "The command as one object with questionId, itemId, field and value."
+      }
+    },
+    "moveItem": {
+      "help": "Move an option or row one place up or down within its question.",
+      "params": {
+        "questionId": "The question.",
+        "itemId": "The option or row.",
+        "direction": "up or down.",
+        "command": "The command as one object with questionId, itemId and direction."
+      }
+    },
+    "removeItem": {
+      "help": "Delete an option or row, without asking. Conditions on a deleted option are removed; the return value counts them.",
+      "params": {
+        "questionId": "The question.",
+        "itemId": "The option or row.",
+        "command": "The command as one object with questionId and itemId."
+      }
+    },
+    "setConditions": {
+      "help": "Decides when a section or question appears: as soon as one of the named options was chosen in an earlier single or multiple choice question. Each condition suffices on its own; without a condition it always appears.",
+      "params": {
+        "nodeId": "The section or question.",
+        "conditions": "Per condition { questionId, optionIds }: an earlier single or multiple choice question and at least one of its options; [] removes all conditions.",
+        "command": "The command as one object with nodeId and conditions."
+      }
+    },
+    "markExported": {
+      "help": "Record the questionnaire as exported: if the structure changed after it left the house, the version goes up. Returns the valid version. The export tasks call this themselves.",
+      "params": {
+        "command": "An empty object; the command takes no arguments."
+      }
+    },
+    "addRecipient": {
+      "help": "Add an empty recipient. Each recipient gets their own questionnaire file, whose answers identify the recipient.",
+      "params": {
+        "command": "An empty object; the command takes no arguments."
+      }
+    },
+    "setRecipientField": {
+      "help": "Set a field of a recipient: name, organisation, group, e-mail or note.",
+      "params": {
+        "recipientId": "The recipient.",
+        "field": "name (name of the person or company), organisation (organisation or department), group (the group the response rate is split by), email (e-mail address to send the file with your own mail program) or note (a free note).",
+        "value": "The new text; empty clears it.",
+        "command": "The command as one object with recipientId, field and value."
+      }
+    },
+    "removeRecipient": {
+      "help": "Delete a recipient, without asking. Their responses are kept, without a recipient.",
+      "params": {
+        "recipientId": "The recipient.",
+        "command": "The command as one object with recipientId."
+      }
+    },
+    "markSent": {
+      "help": "Marks a recipient as sent without building a file — when the file arrived another way. This records the current questionnaire version: if the structure changes later and the next export raises the version, this recipient's file counts as outdated.",
+      "params": {
+        "recipientId": "The recipient.",
+        "command": "The command as one object with recipientId."
+      }
+    },
+    "importResponse": {
+      "help": "Read in an answer file the questionnaire saved on the recipient's side. Files of this questionnaire are taken in, also those of an older version; a file read before, one of another questionnaire or a broken one only shows in the log.",
+      "params": {
+        "json": "The content of the answer file as text.",
+        "fileName": "The name shown in the log.",
+        "command": "The command as one object with json and fileName."
+      }
+    },
+    "removeResponse": {
+      "help": "Delete an imported response, without asking; its VoC take-over marks go with it.",
+      "params": {
+        "responseId": "The response.",
+        "command": "The command as one object with responseId."
+      }
+    },
+    "setFilter": {
+      "help": "Narrow the evaluation to the responses that chose a given option in a single or multiple choice question. Without a filter all responses count.",
+      "params": {
+        "questionId": "The choice question; null together with optionId null lifts the filter.",
+        "optionId": "One of its options; null lifts the filter.",
+        "command": "The command as one object with questionId and optionId."
+      }
+    },
+    "setGroupBy": {
+      "help": "Compare the evaluation across the options of a single choice question, for example by customer group. Groups with few responses are marked.",
+      "params": {
+        "questionId": "The single choice question; null switches the comparison off.",
+        "command": "The command as one object with questionId."
+      }
+    },
+    "setKanoTarget": {
+      "help": "Choose which Kano instance of the project a Kano question is handed to, or a new one.",
+      "params": {
+        "questionId": "The Kano question.",
+        "instanceId": "A Kano instance of the project; null creates a new one at the next hand-over.",
+        "command": "The command as one object with questionId and instanceId."
+      }
+    },
+    "setKanoTransfer": {
+      "help": "Record which Kano features and respondents a Kano question created in the chosen Kano instance. The hand-over sets this itself; by hand only for repairs.",
+      "params": {
+        "questionId": "The Kano question.",
+        "transfer": "{ instanceId, itemIds, respondentIds }: the Kano instance, the features created and the respondents created.",
+        "command": "The command as one object with questionId and transfer."
+      }
+    },
+    "markVocTaken": {
+      "help": "Record answers as taken into the VoC tree without handing anything over. The takeover sets this itself.",
+      "params": {
+        "keys": "Answer keys <responseId>:<questionId>, with the suffix :other for an Other answer.",
+        "command": "The command as one object with keys."
+      }
+    }
+  },
+  "asyncTasks": {
+    "buildSurveyFile": {
+      "help": "Builds the general questionnaire (without recipient) as an HTML file and returns file name and content. Like the export it settles the version.",
+      "cancel": {
+        "help": "Cancels the build; the version stays unchanged."
+      }
+    },
+    "buildRecipientFile": {
+      "help": "Builds the personal questionnaire file of a recipient and returns file name and content. Like the export it settles the version and marks the recipient as sent.",
+      "cancel": {
+        "help": "Cancels the build; the recipient stays as it was."
+      },
+      "params": {
+        "recipientId": "The recipient.",
+        "command": "The command as one object with recipientId."
+      }
+    },
+    "buildReport": {
+      "help": "Builds the report of the results under the active filter and grouping as an HTML file and returns file name and content. The export in the html format produces the same file; the task downloads nothing.",
+      "cancel": {
+        "help": "Cancels the build."
+      }
+    },
+    "toWorksheet": {
+      "help": "Create all responses as a new worksheet in this phase, one row per response. Returns the instance of the worksheet.",
+      "cancel": {
+        "help": "Cancels the hand-over; nothing half-done remains."
+      }
+    },
+    "takeToVocTree": {
+      "help": "Take the ticked free texts and Other answers into the VoC tree of the project as customer voices; if there is none, one is created. Answers already taken can be taken again. Returns the number of answers taken and the instance of the tree.",
+      "cancel": {
+        "help": "Cancels the takeover; nothing is recorded."
+      },
+      "params": {
+        "keys": "Answer keys <responseId>:<questionId>, with the suffix :other for an Other answer; the ids are in read().responses.",
+        "command": "The command as one object with keys."
+      }
+    },
+    "handOverToKano": {
+      "help": "Hand over a Kano question with all its responses, without filter, to the chosen Kano instance or to a new one in this phase. A repeated hand-over replaces only what came from this question. If it fails midway, everything stays unchanged. Returns the Kano instance.",
+      "cancel": {
+        "help": "Cancels the hand-over; nothing half-done remains."
+      },
+      "params": {
+        "questionId": "The Kano question.",
+        "command": "The command as one object with questionId."
+      }
+    }
+  },
+  "state": {
+    "selectedSectionId": {
+      "help": "The selected section in the draft, empty without selection. A pure view; it is not saved."
+    },
+    "conditionDraft": {
+      "help": "The draft of a new condition for the selected section or question: source and options. setConditions takes it over. A pure view; it is not saved."
+    },
+    "expandedResponses": {
+      "help": "The ids of the responses whose details are expanded. A pure view; it is not saved."
+    },
+    "rankingOpen": {
+      "help": "Whether the ranking of the rating questions is expanded. A pure view; it is not saved."
+    },
+    "vocSelected": {
+      "help": "The answer keys of the free texts ticked for the VoC tree. takeToVocTree takes them over. A pure view; it is not saved."
+    },
+    "kanoRev": {
+      "help": "A counter that rises with every change to the Kano instances of the project so that the hand-over selection list is rebuilt. A pure view; it is not saved."
+    }
+  },
+  "types": {
+    "ResponseRate": {
+      "sent": "How many recipients received their file.",
+      "answered": "How many of them have answered.",
+      "rate": "Answered divided by sent; empty when nothing was sent.",
+      "withoutRecipient": "Responses imported without a known recipient.",
+      "groups": "The same per recipient group."
+    },
+    "OptionStat": {
+      "id": "The id of the option.",
+      "text": "The text of the option.",
+      "count": "How often the option was chosen.",
+      "share": "Its share of the answers to the question."
+    },
+    "RatingStatRow": {
+      "id": "The id of the row.",
+      "text": "The text of the row.",
+      "n": "How many answers carry a rating from 1 to 5.",
+      "mean": "The mean rating.",
+      "median": "The median rating.",
+      "dist": "How often each step from 1 to 5 was chosen.",
+      "na": "How often no answer was chosen.",
+      "topShare": "Share of ratings 4 and 5."
+    },
+    "KanoStatRow": {
+      "id": "The id of the row.",
+      "text": "The text of the row.",
+      "counts": "How many answers fall into each Kano category M, O, A, I, R and Q.",
+      "n": "How many answers could be classified.",
+      "unanswered": "How many answers could not be classified.",
+      "category": "The most frequent category.",
+      "tie": "Whether several categories are equally frequent.",
+      "cs": "Satisfaction coefficient from 0 to 1.",
+      "ds": "Dissatisfaction coefficient from -1 to 0.",
+      "importanceMean": "The mean importance from 1 to 9.",
+      "importanceN": "How many answers carry an importance."
+    },
+    "TextEntry": {
+      "responseId": "The response the text comes from.",
+      "recipientId": "The recipient, if known.",
+      "text": "The text itself."
+    },
+    "QuestionStat": {
+      "type": "The question type; it decides which of the following parts appear.",
+      "questionId": "The question.",
+      "n": "How many responses saw the question, that is under the filter and with its condition met.",
+      "answered": "How many of them answered (single and multiple choice).",
+      "options": "The options with count and share (single and multiple choice).",
+      "otherCount": "How many answers carry an Other text.",
+      "otherTexts": "The Other texts.",
+      "rows": "The rows with their figures (rating and Kano).",
+      "answers": "The free texts (free-text question)."
+    },
+    "RankingRow": {
+      "questionId": "The rating question.",
+      "questionText": "The text of the question.",
+      "rowId": "The row.",
+      "text": "The text of the row.",
+      "n": "How many ratings go in.",
+      "mean": "The mean rating.",
+      "topShare": "Share of ratings 4 and 5."
+    },
+    "KanoRow": {
+      "questionId": "The Kano question.",
+      "questionText": "The text of the question.",
+      "rowId": "The row.",
+      "text": "The text of the row.",
+      "category": "The most frequent Kano category.",
+      "cs": "Satisfaction coefficient from 0 to 1.",
+      "ds": "Dissatisfaction coefficient from -1 to 0.",
+      "importanceMean": "The mean importance from 1 to 9.",
+      "n": "How many answers could be classified."
+    },
+    "FreeTextSummary": {
+      "total": "How many free texts and Other texts there are.",
+      "taken": "How many of them are already in the VoC tree."
+    },
+    "GroupComparison": {
+      "questionId": "The single-choice question used for grouping.",
+      "groups": "The groups with their response count; few marks few responses.",
+      "questions": "Per compared question the shares, means or categories per group."
+    },
+    "SurveyResults": {
+      "filter": "The active filter of question and option, otherwise empty.",
+      "groupBy": "The active grouping question, otherwise empty.",
+      "n": "How many responses remain after the filter.",
+      "responseRate": "The response rate; the filter does not change it.",
+      "questions": "The figures per question in questionnaire order.",
+      "ratingRanking": "All rating rows, by mean descending.",
+      "kanoOverview": "All Kano rows.",
+      "freeText": "How many free texts there are and how many are taken over.",
+      "groupComparison": "The comparison per group; empty without a grouping."
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "kano.scale1": "modules.kano.scale1",
+  "kano.scale2": "modules.kano.scale2",
+  "kano.scale3": "modules.kano.scale3",
+  "kano.scale4": "modules.kano.scale4",
+  "kano.scale5": "modules.kano.scale5",
+  "kano.scaleEmpty": "modules.kano.scaleEmpty",
+  "kano.importanceLow": "modules.kano.importanceLow",
+  "kano.importanceHigh": "modules.kano.importanceHigh",
+  "kano.catM": "modules.kano.catM",
+  "kano.catO": "modules.kano.catO",
+  "kano.catA": "modules.kano.catA",
+  "kano.catI": "modules.kano.catI",
+  "kano.catR": "modules.kano.catR",
+  "kano.catQ": "modules.kano.catQ",
+  "kano.chartX": "modules.kano.chartX",
+  "kano.chartY": "modules.kano.chartY"
+}

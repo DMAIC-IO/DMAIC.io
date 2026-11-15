@@ -1,0 +1,432 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "survey": {
+      "help": "Der Fragebogen: Kopf, Version, Abschnitte mit ihren Fragen, Optionen, Zeilen und Bedingungen."
+    },
+    "recipients": {
+      "help": "Die Empfänger mit Name, Organisation, Gruppe, E-Mail und Notiz, dazu wann und mit welcher Version sie ihre Datei bekommen haben."
+    },
+    "responses": {
+      "help": "Die eingelesenen Antworten: je Antwortdatei die Version, der Empfänger, falls bekannt und nicht anonym, der Zeitpunkt und die Antworten je Frage."
+    },
+    "answeredRecipientIds": {
+      "help": "Welche Empfänger schon geantwortet haben; daraus folgt der Status nicht verschickt, verschickt oder beantwortet."
+    },
+    "transfers": {
+      "help": "Was schon übergeben wurde: die in den VoC-Baum übernommenen Antworten und je Kano-Frage die Kano-Instanz, an die sie geht."
+    },
+    "ui": {
+      "help": "Die Einstellungen der Auswertung: der Filter (Frage und Option oder leer), die Gruppierung (Einfachauswahl-Frage oder leer) und ob der Bericht bei Freitexten Namen nennt (reportWithNames; bei einem anonymen Fragebogen ohne Wirkung). Setzbar über instance.set."
+    },
+    "dirtyStructure": {
+      "help": "Ob sich der Aufbau seit dem letzten Export geändert hat; ist der Fragebogen schon verschickt, erhöht der nächste Export dann die Version."
+    },
+    "exportedOnce": {
+      "help": "Ob der Fragebogen schon einmal exportiert wurde."
+    },
+    "results": {
+      "help": "Die Auswertung, wie der Reiter Auswertung sie zeigt: unter dem aktiven Filter (filter) und der aktiven Gruppierung (groupBy). n ist die Zahl der Antworten nach dem Filter; die Rücklaufquote gilt immer für alle Empfänger. Je Frage die Kennzahlen, dazu Rangfolge der Bewertungsfragen, Kano-Übersicht, Freitext-Zusammenfassung und — bei gesetzter Gruppierung — der Gruppenvergleich."
+    }
+  },
+  "actions": {
+    "read": {
+      "help": "Fragebogen, Empfänger, eingelesene Antworten, Übergaben und den Stand der Oberfläche lesen."
+    },
+    "setHeader": {
+      "help": "Ein Textfeld im Kopf des Fragebogens setzen: Titel, Einleitung oder Kontakt.",
+      "params": {
+        "field": "title (der Titel über dem Fragebogen), intro (der Einleitungstext unter dem Titel) oder contact (an wen sich Befragte bei Fragen wenden).",
+        "value": "Der neue Text.",
+        "command": "Das Kommando als ein Objekt mit field und value."
+      }
+    },
+    "setSurveyLanguage": {
+      "help": "Die Sprache der exportierten Fragebogen- und Antwortdatei setzen: Deutsch oder Englisch.",
+      "params": {
+        "lang": "de oder en.",
+        "command": "Das Kommando als ein Objekt mit lang."
+      }
+    },
+    "setAnonymous": {
+      "help": "Umschalten, ob der Fragebogen anonym ist: Antworten tragen dann keinen Empfänger, auch wenn die Datei für einen Empfänger erzeugt wurde.",
+      "params": {
+        "anonymous": "true oder false.",
+        "command": "Das Kommando als ein Objekt mit anonymous."
+      }
+    },
+    "addSection": {
+      "help": "Einen leeren Abschnitt ans Ende des Fragebogens anhängen. Fragen stehen immer in einem Abschnitt.",
+      "params": {
+        "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben."
+      }
+    },
+    "setSectionField": {
+      "help": "Titel oder Hinweis eines Abschnitts setzen.",
+      "params": {
+        "sectionId": "Der Abschnitt.",
+        "field": "title (die Überschrift des Abschnitts) oder hint (ein Erklärtext unter der Überschrift).",
+        "value": "Der neue Text; leer löscht ihn.",
+        "command": "Das Kommando als ein Objekt mit sectionId, field und value."
+      }
+    },
+    "moveSection": {
+      "help": "Einen Abschnitt eine Stelle nach oben oder unten schieben. Bedingungen, die danach auf eine spätere Frage zeigten, entfallen; die Rückgabe zählt sie.",
+      "params": {
+        "sectionId": "Der Abschnitt.",
+        "direction": "up oder down.",
+        "command": "Das Kommando als ein Objekt mit sectionId und direction."
+      }
+    },
+    "removeSection": {
+      "help": "Einen Abschnitt samt seinen Fragen löschen. Die Oberfläche fragt vorher nach, wenn Antworten betroffen sind; ein Agent ruft die Aktion ohne Rückfrage auf. Bedingungen auf diese Fragen entfallen; die Rückgabe zählt sie.",
+      "params": {
+        "sectionId": "Der Abschnitt.",
+        "command": "Das Kommando als ein Objekt mit sectionId."
+      }
+    },
+    "addQuestion": {
+      "help": "Eine Frage eines Typs an einen Abschnitt anhängen und auswählen.",
+      "params": {
+        "sectionId": "Der Abschnitt.",
+        "type": "single (Einfachauswahl), multi (Mehrfachauswahl), rating (Bewertung 1–5), kano (Kano-Paar), text (Freitext) oder info (nur Text).",
+        "command": "Das Kommando als ein Objekt mit sectionId und type."
+      }
+    },
+    "moveQuestion": {
+      "help": "Eine Frage eine Stelle nach oben oder unten schieben; an einer Abschnittsgrenze wechselt sie in den Nachbarabschnitt. Bedingungen, die danach auf eine spätere Frage zeigten, entfallen; die Rückgabe zählt sie.",
+      "params": {
+        "questionId": "Die Frage.",
+        "direction": "up oder down.",
+        "command": "Das Kommando als ein Objekt mit questionId und direction."
+      }
+    },
+    "removeQuestion": {
+      "help": "Eine Frage löschen, ohne Rückfrage — auch wenn eingelesene Antworten sie beantwortet haben. Bedingungen auf sie entfallen; die Rückgabe zählt sie.",
+      "params": {
+        "questionId": "Die Frage.",
+        "command": "Das Kommando als ein Objekt mit questionId."
+      }
+    },
+    "setQuestionField": {
+      "help": "Text oder Hinweis einer Frage setzen.",
+      "params": {
+        "questionId": "Die Frage.",
+        "field": "text (die Frage, wie die Befragten sie lesen) oder hint (ein Erklärtext unter der Frage).",
+        "value": "Der neue Text.",
+        "command": "Das Kommando als ein Objekt mit questionId, field und value."
+      }
+    },
+    "setQuestionFlag": {
+      "help": "Einen Schalter einer Frage setzen. Welche Schalter es gibt, hängt vom Typ ab; ein Schalter, den der Typ nicht hat, wird abgelehnt.",
+      "params": {
+        "questionId": "Die Frage.",
+        "flag": "required (Pflichtfrage: ohne Antwort lässt sich der Fragebogen nicht abschließen), other (bietet zusätzlich eine freie Antwort Sonstige an), noAnswer (bietet je Zeile die Antwort „keine Angabe“ an), importance (fragt je Zeile zusätzlich die Wichtigkeit von 1 bis 9 ab) oder multiline (mehrzeiliges Antwortfeld statt einer Zeile).",
+        "on": "true schaltet ein, false aus.",
+        "command": "Das Kommando als ein Objekt mit questionId, flag und on."
+      }
+    },
+    "changeQuestionType": {
+      "help": "Den Typ einer Frage ändern. Text, Hinweis, Pflicht und Bedingungen bleiben, Optionen, Zeilen und Schalter beginnen leer; Bedingungen auf ihre bisherigen Optionen entfallen.",
+      "params": {
+        "questionId": "Die Frage.",
+        "type": "Der neue Typ, Werte wie bei addQuestion.",
+        "command": "Das Kommando als ein Objekt mit questionId und type."
+      }
+    },
+    "addItem": {
+      "help": "Eine leere Option (Einfach- und Mehrfachauswahl) oder Zeile (Bewertung, Kano) an eine Frage anhängen.",
+      "params": {
+        "questionId": "Die Frage.",
+        "command": "Das Kommando als ein Objekt mit questionId."
+      }
+    },
+    "setItemField": {
+      "help": "Den Text einer Option oder Zeile setzen, bei Mehrfachauswahl auch die Anzeigegruppe einer Option.",
+      "params": {
+        "questionId": "Die Frage.",
+        "itemId": "Die Option oder Zeile.",
+        "field": "text (der Text der Option oder Zeile) oder group (die Anzeigegruppe einer Option bei Mehrfachauswahl; Optionen derselben Gruppe stehen zusammen).",
+        "value": "Der neue Text; leer löscht ihn.",
+        "command": "Das Kommando als ein Objekt mit questionId, itemId, field und value."
+      }
+    },
+    "moveItem": {
+      "help": "Eine Option oder Zeile innerhalb ihrer Frage eine Stelle nach oben oder unten schieben.",
+      "params": {
+        "questionId": "Die Frage.",
+        "itemId": "Die Option oder Zeile.",
+        "direction": "up oder down.",
+        "command": "Das Kommando als ein Objekt mit questionId, itemId und direction."
+      }
+    },
+    "removeItem": {
+      "help": "Eine Option oder Zeile löschen. Die Oberfläche fragt vorher nach, wenn Antworten betroffen sind; ein Agent ruft die Aktion ohne Rückfrage auf. Bedingungen auf eine gelöschte Option entfallen; die Rückgabe zählt sie.",
+      "params": {
+        "questionId": "Die Frage.",
+        "itemId": "Die Option oder Zeile.",
+        "command": "Das Kommando als ein Objekt mit questionId und itemId."
+      }
+    },
+    "setConditions": {
+      "help": "Bestimmt, wann ein Abschnitt oder eine Frage erscheint: sobald bei einer früheren Einfach- oder Mehrfachauswahl eine der genannten Optionen gewählt wurde. Jede Bedingung genügt für sich; ohne Bedingung erscheint er immer.",
+      "params": {
+        "nodeId": "Der Abschnitt oder die Frage.",
+        "conditions": "Je Bedingung { questionId, optionIds }: eine frühere Einfach- oder Mehrfachauswahl und mindestens eine ihrer Optionen; [] entfernt alle Bedingungen.",
+        "command": "Das Kommando als ein Objekt mit nodeId und conditions."
+      }
+    },
+    "markExported": {
+      "help": "Den Fragebogen als exportiert vermerken: hat sich der Aufbau seit dem Verlassen des Hauses geändert, steigt die Version. Liefert die gültige Version. Die Exportaufgaben rufen das selbst auf.",
+      "params": {
+        "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben."
+      }
+    },
+    "addRecipient": {
+      "help": "Einen leeren Empfänger anlegen. Je Empfänger entsteht eine eigene Fragebogendatei, an deren Antwort sich der Empfänger erkennen lässt.",
+      "params": {
+        "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben."
+      }
+    },
+    "setRecipientField": {
+      "help": "Ein Feld eines Empfängers setzen: Name, Organisation, Gruppe, E-Mail oder Notiz.",
+      "params": {
+        "recipientId": "Der Empfänger.",
+        "field": "name (Name der Person oder des Unternehmens), organisation (Organisation oder Abteilung), group (die Gruppe, nach der die Rücklaufquote aufgeteilt wird), email (E-Mail-Adresse, um die Datei mit dem eigenen Mailprogramm zu verschicken) oder note (eine freie Notiz).",
+        "value": "Der neue Text; leer löscht ihn.",
+        "command": "Das Kommando als ein Objekt mit recipientId, field und value."
+      }
+    },
+    "removeRecipient": {
+      "help": "Einen Empfänger löschen. Die Oberfläche fragt vorher nach; ein Agent ruft die Aktion ohne Rückfrage auf. Seine Antworten bleiben, ohne Empfänger.",
+      "params": {
+        "recipientId": "Der Empfänger.",
+        "command": "Das Kommando als ein Objekt mit recipientId."
+      }
+    },
+    "markSent": {
+      "help": "Markiert einen Empfänger als verschickt, ohne eine Datei zu bauen — wenn die Datei auf anderem Weg ankam. Dabei wird die aktuelle Fragebogen-Version festgehalten: Ändert sich der Aufbau später und beim nächsten Export steigt die Version, gilt die Datei dieses Empfängers als veraltet.",
+      "params": {
+        "recipientId": "Der Empfänger.",
+        "command": "Das Kommando als ein Objekt mit recipientId."
+      }
+    },
+    "importResponse": {
+      "help": "Eine Antwortdatei einlesen, die der Fragebogen beim Empfänger gespeichert hat. Dateien dieses Fragebogens werden übernommen, auch die einer älteren Version; eine schon eingelesene, eine fremde oder eine kaputte Datei erscheint nur im Protokoll.",
+      "params": {
+        "json": "Der Inhalt der Antwortdatei als Text.",
+        "fileName": "Der Name, der im Protokoll steht.",
+        "command": "Das Kommando als ein Objekt mit json und fileName."
+      }
+    },
+    "removeResponse": {
+      "help": "Eine eingelesene Antwort löschen. Die Oberfläche fragt vorher nach; ein Agent ruft die Aktion ohne Rückfrage auf; ihre Markierungen der VoC-Übernahme entfallen mit.",
+      "params": {
+        "responseId": "Die Antwort.",
+        "command": "Das Kommando als ein Objekt mit responseId."
+      }
+    },
+    "setFilter": {
+      "help": "Die Auswertung auf die Antworten beschränken, die bei einer Einfach- oder Mehrfachauswahl eine bestimmte Option gewählt haben. Ohne Filter zählen alle Antworten.",
+      "params": {
+        "questionId": "Die Auswahlfrage; null zusammen mit optionId null hebt den Filter auf.",
+        "optionId": "Eine ihrer Optionen; null hebt den Filter auf.",
+        "command": "Das Kommando als ein Objekt mit questionId und optionId."
+      }
+    },
+    "setGroupBy": {
+      "help": "Die Auswertung nach den Optionen einer Einfachauswahl-Frage nebeneinanderstellen, etwa nach Kundengruppe. Gruppen mit wenigen Antworten werden markiert.",
+      "params": {
+        "questionId": "Die Einfachauswahl-Frage; null schaltet den Vergleich ab.",
+        "command": "Das Kommando als ein Objekt mit questionId."
+      }
+    },
+    "setKanoTarget": {
+      "help": "Wählen, an welche Kano-Instanz des Projekts eine Kano-Frage übergeben wird, oder eine neue.",
+      "params": {
+        "questionId": "Die Kano-Frage.",
+        "instanceId": "Eine Kano-Instanz des Projekts; null legt bei der nächsten Übergabe eine neue an.",
+        "command": "Das Kommando als ein Objekt mit questionId und instanceId."
+      }
+    },
+    "setKanoTransfer": {
+      "help": "Festhalten, welche Kano-Merkmale und Befragten eine Kano-Frage in der gewählten Kano-Instanz angelegt hat. Die Übergabe setzt das selbst; von Hand nur zum Reparieren.",
+      "params": {
+        "questionId": "Die Kano-Frage.",
+        "transfer": "{ instanceId, itemIds, respondentIds }: die Kano-Instanz, die angelegten Merkmale und die angelegten Befragten.",
+        "command": "Das Kommando als ein Objekt mit questionId und transfer."
+      }
+    },
+    "markVocTaken": {
+      "help": "Antworten als in den VoC-Baum übernommen vermerken, ohne etwas zu übergeben. Die Übernahme setzt das selbst.",
+      "params": {
+        "keys": "Antwortschlüssel <responseId>:<questionId>, bei einer Sonstige-Antwort mit dem Zusatz :other.",
+        "command": "Das Kommando als ein Objekt mit keys."
+      }
+    }
+  },
+  "asyncTasks": {
+    "buildSurveyFile": {
+      "help": "Baut den allgemeinen Fragebogen (ohne Empfänger) als HTML-Datei und liefert Dateiname und Inhalt. Wie der Export setzt sie die Version.",
+      "cancel": {
+        "help": "Bricht das Bauen ab; die Version bleibt unverändert."
+      }
+    },
+    "buildRecipientFile": {
+      "help": "Baut die persönliche Fragebogen-Datei eines Empfängers und liefert Dateiname und Inhalt. Wie der Export setzt sie die Version und markiert den Empfänger als verschickt.",
+      "cancel": {
+        "help": "Bricht das Bauen ab; der Empfänger bleibt, wie er war."
+      },
+      "params": {
+        "recipientId": "Der Empfänger.",
+        "command": "Das Kommando als ein Objekt mit recipientId."
+      }
+    },
+    "buildReport": {
+      "help": "Baut den Bericht der Auswertung unter dem aktiven Filter und der aktiven Gruppierung als HTML-Datei und liefert Dateiname und Inhalt. Dieselbe Datei erzeugt der Export im Format html; die Aufgabe lädt nichts herunter.",
+      "cancel": {
+        "help": "Bricht das Bauen ab."
+      }
+    },
+    "toWorksheet": {
+      "help": "Alle Antworten als neues Worksheet in dieser Phase anlegen, eine Zeile je Antwort. Liefert die Instanz des Worksheets.",
+      "cancel": {
+        "help": "Bricht die Übergabe ab; es entsteht nichts Halbes."
+      }
+    },
+    "takeToVocTree": {
+      "help": "Die angehakten Freitexte und Sonstige-Antworten als Kundenstimmen in den VoC-Baum des Projekts übernehmen; gibt es keinen, wird einer angelegt. Schon übernommene Antworten lassen sich erneut übernehmen. Liefert die Zahl der übernommenen Antworten und die Instanz des Baums.",
+      "cancel": {
+        "help": "Bricht die Übernahme ab; es wird nichts vermerkt."
+      },
+      "params": {
+        "keys": "Antwortschlüssel <responseId>:<questionId>, bei einer Sonstige-Antwort mit dem Zusatz :other; die ids stehen in read().responses.",
+        "command": "Das Kommando als ein Objekt mit keys."
+      }
+    },
+    "handOverToKano": {
+      "help": "Eine Kano-Frage mit allen Antworten, ohne Filter, an die gewählte Kano-Instanz übergeben oder an eine neue in dieser Phase. Eine wiederholte Übergabe ersetzt nur, was von dieser Frage kam. Scheitert sie mittendrin, bleibt alles unverändert. Liefert die Kano-Instanz.",
+      "cancel": {
+        "help": "Bricht die Übergabe ab; es entsteht nichts Halbes."
+      },
+      "params": {
+        "questionId": "Die Kano-Frage.",
+        "command": "Das Kommando als ein Objekt mit questionId."
+      }
+    }
+  },
+  "state": {
+    "selectedSectionId": {
+      "help": "Der ausgewählte Abschnitt im Entwurf, leer ohne Auswahl. Rein eine Ansicht; sie wird nicht gespeichert."
+    },
+    "conditionDraft": {
+      "help": "Der Entwurf einer neuen Bedingung für den gewählten Abschnitt oder die gewählte Frage: Quelle und Optionen. setConditions übernimmt sie. Rein eine Ansicht; sie wird nicht gespeichert."
+    },
+    "expandedResponses": {
+      "help": "Die ids der Antworten, deren Einzelheiten aufgeklappt sind. Rein eine Ansicht; sie wird nicht gespeichert."
+    },
+    "rankingOpen": {
+      "help": "Ob die Rangfolge der Bewertungsfragen ausgeklappt ist. Rein eine Ansicht; sie wird nicht gespeichert."
+    },
+    "vocSelected": {
+      "help": "Die Antwortschlüssel der für den VoC-Baum angehakten Freitexte. takeToVocTree übernimmt sie. Rein eine Ansicht; sie wird nicht gespeichert."
+    },
+    "kanoRev": {
+      "help": "Zähler, der bei jeder Änderung der Kano-Instanzen des Projekts steigt, damit die Auswahlliste der Übergabe neu entsteht. Rein eine Ansicht; sie wird nicht gespeichert."
+    }
+  },
+  "types": {
+    "ResponseRate": {
+      "sent": "Wie viele Empfänger ihre Datei bekommen haben.",
+      "answered": "Wie viele davon geantwortet haben.",
+      "rate": "Beantwortet geteilt durch verschickt; ohne Versand leer.",
+      "withoutRecipient": "Antworten, die ohne bekannten Empfänger eingelesen wurden.",
+      "groups": "Dasselbe je Empfängergruppe."
+    },
+    "OptionStat": {
+      "id": "Die Id der Option.",
+      "text": "Der Text der Option.",
+      "count": "Wie oft die Option gewählt wurde.",
+      "share": "Anteil an den Antworten auf die Frage."
+    },
+    "RatingStatRow": {
+      "id": "Die Id der Zeile.",
+      "text": "Der Text der Zeile.",
+      "n": "Wie viele Antworten eine Bewertung von 1 bis 5 tragen.",
+      "mean": "Der Mittelwert der Bewertung.",
+      "median": "Der Median der Bewertung.",
+      "dist": "Wie oft jede Stufe von 1 bis 5 gewählt wurde.",
+      "na": "Wie oft keine Angabe gewählt wurde.",
+      "topShare": "Anteil der Bewertungen 4 und 5."
+    },
+    "KanoStatRow": {
+      "id": "Die Id der Zeile.",
+      "text": "Der Text der Zeile.",
+      "counts": "Wie viele Antworten in jede Kano-Kategorie M, O, A, I, R und Q fallen.",
+      "n": "Wie viele Antworten sich einordnen ließen.",
+      "unanswered": "Wie viele Antworten sich nicht einordnen ließen.",
+      "category": "Die häufigste Kategorie.",
+      "tie": "Ob mehrere Kategorien gleich häufig sind.",
+      "cs": "Zufriedenheitskoeffizient von 0 bis 1.",
+      "ds": "Unzufriedenheitskoeffizient von -1 bis 0.",
+      "importanceMean": "Die mittlere Wichtigkeit von 1 bis 9.",
+      "importanceN": "Wie viele Antworten eine Wichtigkeit tragen."
+    },
+    "TextEntry": {
+      "responseId": "Die Antwort, aus der der Text stammt.",
+      "recipientId": "Der Empfänger, falls bekannt.",
+      "text": "Der Text selbst."
+    },
+    "QuestionStat": {
+      "type": "Der Fragetyp; er bestimmt, welche der folgenden Teile vorkommen.",
+      "questionId": "Die Frage.",
+      "n": "Wie viele Antworten die Frage sahen, also unter dem Filter und mit erfüllter Bedingung.",
+      "answered": "Wie viele davon geantwortet haben (Einfach- und Mehrfachauswahl).",
+      "options": "Die Optionen mit Häufigkeit und Anteil (Einfach- und Mehrfachauswahl).",
+      "otherCount": "Wie viele Antworten einen Sonstige-Text tragen.",
+      "otherTexts": "Die Sonstige-Texte.",
+      "rows": "Die Zeilen mit ihren Kennzahlen (Bewertung und Kano).",
+      "answers": "Die Freitexte (Freitextfrage)."
+    },
+    "RankingRow": {
+      "questionId": "Die Bewertungsfrage.",
+      "questionText": "Der Text der Frage.",
+      "rowId": "Die Zeile.",
+      "text": "Der Text der Zeile.",
+      "n": "Wie viele Bewertungen eingehen.",
+      "mean": "Der Mittelwert der Bewertung.",
+      "topShare": "Anteil der Bewertungen 4 und 5."
+    },
+    "KanoRow": {
+      "questionId": "Die Kano-Frage.",
+      "questionText": "Der Text der Frage.",
+      "rowId": "Die Zeile.",
+      "text": "Der Text der Zeile.",
+      "category": "Die häufigste Kano-Kategorie.",
+      "cs": "Zufriedenheitskoeffizient von 0 bis 1.",
+      "ds": "Unzufriedenheitskoeffizient von -1 bis 0.",
+      "importanceMean": "Die mittlere Wichtigkeit von 1 bis 9.",
+      "n": "Wie viele Antworten sich einordnen ließen."
+    },
+    "FreeTextSummary": {
+      "total": "Wie viele Freitexte und Sonstige-Texte es gibt.",
+      "taken": "Wie viele davon schon in den VoC-Baum übernommen wurden."
+    },
+    "GroupComparison": {
+      "questionId": "Die Einfachauswahl-Frage, nach der gruppiert wird.",
+      "groups": "Die Gruppen mit Antwortzahl; few markiert wenig Antworten.",
+      "questions": "Je verglichener Frage die Anteile, Mittelwerte oder Kategorien je Gruppe."
+    },
+    "SurveyResults": {
+      "filter": "Der aktive Filter aus Frage und Option, sonst leer.",
+      "groupBy": "Die aktive Gruppierungsfrage, sonst leer.",
+      "n": "Wie viele Antworten nach dem Filter bleiben.",
+      "responseRate": "Die Rücklaufquote; der Filter ändert sie nicht.",
+      "questions": "Die Kennzahlen je Frage in der Reihenfolge des Fragebogens.",
+      "ratingRanking": "Alle Bewertungszeilen, nach Mittelwert absteigend.",
+      "kanoOverview": "Alle Kano-Zeilen.",
+      "freeText": "Wie viele Freitexte es gibt und wie viele übernommen sind.",
+      "groupComparison": "Der Vergleich je Gruppe; leer ohne Gruppierung."
+    }
+  }
+}
