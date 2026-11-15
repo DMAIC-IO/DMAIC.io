@@ -9,6 +9,7 @@
 
 import { uid } from '../../../core/uid.js';
 import { QUESTION_TYPES, documentOrder, availableSources } from '../domain/conditions.js';
+import { isRecipientSent } from '../domain/recipients.js';
 
 const TABS = ['draft', 'recipients', 'results'];
 const RECIPIENT_FIELDS = ['name', 'organisation', 'group', 'email', 'note'];
@@ -47,17 +48,7 @@ export function plainCopy(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
-/**
- * Whether a recipient counts as "sent". Answering proves receipt, so an
- * answerer counts as sent even without `sentAt`. Shared with the summary's
- * response rate.
- * @param {{sentAt: string|null}} recipient
- * @param {boolean} answered whether the recipient has answered
- * @returns {boolean}
- */
-export function isRecipientSent(recipient, answered) {
-  return Boolean(recipient.sentAt) || Boolean(answered);
-}
+export { isRecipientSent };
 
 /**
  * Complete persisted state of one survey-builder instance.

@@ -9,7 +9,7 @@
  */
 
 import { documentOrder, findQuestion, isVisible, answerHasOption } from './conditions.js';
-import { isRecipientSent } from '../legacy/survey-builder-model.js';
+import { isRecipientSent } from './recipients.js';
 import { evaluate, classify } from '../../../engines/kano-engine.js';
 import { ROLE } from '../../../core/datagrid/datagrid-roles.js';
 
