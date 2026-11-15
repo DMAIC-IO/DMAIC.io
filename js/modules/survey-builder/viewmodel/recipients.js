@@ -9,7 +9,7 @@
  * „HTML erzeugen“ starts the run `buildRecipientFile` and downloads its
  * file; the run marks the recipient as sent with the version it settles on.
  */
-import { downloadBlob } from '../../../core/export-utils.js';
+import { downloadBuiltFile } from './tasks.js';
 import { formatDateTime, fmtPct, localeOf } from '../domain/labels.js';
 
 /**
@@ -59,9 +59,6 @@ export const recipientsView = (ctx) => ({
    */
   async exportForRecipient(id) {
     if (!this.model.recipients.some((x) => x.id === id)) return;
-    const out = await this._asyncTaskHost.start('buildRecipientFile', { recipientId: id });
-    if (out.status === 'rejected') ctx.notify(ctx.i18n.t('common.asyncTask.rejected', { reason: out.reason }), 'error');
-    if (out.status !== 'done') return;
-    downloadBlob(new Blob([out.value.content], { type: 'text/html;charset=utf-8' }), out.value.fileName);
+    await downloadBuiltFile(this, ctx, 'buildRecipientFile', { recipientId: id });
   },
 });

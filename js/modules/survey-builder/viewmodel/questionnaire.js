@@ -10,12 +10,12 @@
  * app's CSP blocks), in the language of the questionnaire, a short while
  * after the last edit; storage and download are switched off there.
  */
-import { downloadBlob } from '../../../core/export-utils.js';
 import { documentOrder } from '../domain/conditions.js';
 import { questionLabel, sectionPlaceholder } from '../domain/labels.js';
 import { runSurvey, RUNNER_CSS } from '../io/runner.js';
 import { runnerStringsOf } from '../io/questionnaire.js';
 import { loadTexts } from './texts.js';
+import { downloadBuiltFile } from './tasks.js';
 
 /** Pause of the live preview after an edit, in ms. */
 const PREVIEW_DELAY_MS = 300;
@@ -88,10 +88,7 @@ export const questionnaireView = (ctx) => {
      * @returns {Promise<void>}
      */
     async exportGeneral() {
-      const out = await this._asyncTaskHost.start('buildSurveyFile', {});
-      if (out.status === 'rejected') ctx.notify(ctx.i18n.t('common.asyncTask.rejected', { reason: out.reason }), 'error');
-      if (out.status !== 'done') return;
-      downloadBlob(new Blob([out.value.content], { type: 'text/html;charset=utf-8' }), out.value.fileName);
+      await downloadBuiltFile(this, ctx, 'buildSurveyFile', {});
     },
 
     // ── Preview ───────────────────────────────────────────────

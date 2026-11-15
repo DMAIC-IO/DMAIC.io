@@ -85,6 +85,7 @@ export const responsesView = (ctx) => {
         entry.unknownRecipient = res.unknownRecipient;
         entry.orphans = res.orphanIds.length;
       } else if ('error' in r) {
+        console.warn('[survey-builder] importResponse failed', r.error);
         ctx.notify(this.t('commandFailed'), 'error');
       }
       this.state.importLog = [...this.state.importLog, entry];

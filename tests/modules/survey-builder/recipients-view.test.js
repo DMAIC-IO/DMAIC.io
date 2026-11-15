@@ -120,6 +120,20 @@ suite('survey-builder recipients: list', () => {
   });
 });
 
+suite('survey-builder recipients: unnamed', () => {
+  test('deleting an answered recipient without a name asks with the unnamed text', async () => {
+    const base = withRecipients();
+    const h = await mount(withRecipients({
+      responses: [...base.responses, { id: 'r9', surveyVersion: 1, recipientId: 'rc2', viaRecipient: true, submittedAt: '2026-10-03T08:00:00.000Z', answers: {} }],
+      answeredRecipientIds: ['rc1', 'rc2'],
+    }), { confirm: false });
+    row(h, 'rc2').querySelector('[data-action="deleteRecipient"]').click();
+    await settle();
+    assertDeepEqual(h.confirms.map((c) => c.message), [de('confirmRecipientDeleteUnnamed')]);
+    assertEqual(h.vm().model.recipients.length, 2);
+  });
+});
+
 suite('survey-builder recipients: file', () => {
   for (const lang of ['de', 'en']) {
     test(`buildRecipientFile of the example in ${lang} is the earlier file; the recipient is sent with the current version`, async () => {
@@ -150,6 +164,22 @@ suite('survey-builder recipients: file', () => {
     assertTrue(out.value.content.includes('"recipientId":"rc2"'), 'recipient id in the file');
     await settle();
     assertEqual(row(h, 'rc2').querySelector('[data-ref="status"]').textContent, de('statusSent'));
+  });
+});
+
+suite('survey-builder recipients: file of a deleted recipient', () => {
+  test('a recipient deleted while the file is built: the run fails with its own text, version and export mark stay', async () => {
+    const json = example();
+    json.dirtyStructure = true;
+    const h = await mount(json);
+    const m = h.vm().model;
+    const before = { version: m.survey.version, exportedOnce: m.exportedOnce, dirty: m.dirtyStructure };
+    const run = h.vm()._asyncTaskHost.start('buildRecipientFile', { recipientId: 'rec-2' });
+    m.removeRecipient({ recipientId: 'rec-2' });
+    const out = await run;
+    assertEqual(out.status, 'failed');
+    assertEqual(out.error.message, de('recipientFileFailed'));
+    assertDeepEqual({ version: m.survey.version, exportedOnce: m.exportedOnce, dirty: m.dirtyStructure }, before);
   });
 });
 
@@ -189,6 +219,41 @@ suite('survey-builder recipients: reading answers', () => {
     assertEqual(h.vm().model.recipientStatus('rc2'), 'answered');
     const line = h.$$('[data-ref="importLog"] li')[0];
     assertEqual(line.querySelector('[data-ref="importNotes"]').textContent, de('importOrphans', { count: 1 }));
+  });
+
+  test('a file of an older version is read in and logged as older', async () => {
+    const h = await mount(withRecipients({ tab: 'results', survey: { ...withRecipients().survey, version: 2 } }));
+    await h.vm().importFiles([answerFile('alt.json', 'r5')]);
+    await settle();
+    assertDeepEqual(h.vm().model.responses.map((r) => r.id), ['r1', 'r5']);
+    const line = h.$$('[data-ref="importLog"] li')[0];
+    assertEqual(line.querySelector('[data-ref="importStatus"]').textContent, de('importOlder'));
+    assertTrue(line.classList.contains('survey-builder__import--ok'), 'older counts as taken in');
+  });
+
+  test('a failing import command: an invalid line, commandFailed, the cause logged but not shown', async () => {
+    const h = await mount(withRecipients({ tab: 'results' }));
+    const model = h.vm()._ui.model;
+    const real = model.importResponse;
+    const warned = [];
+    const warn = console.warn;
+    console.warn = (...a) => warned.push(a);
+    try {
+      model.importResponse = () => { throw new Error('parser exploded'); };
+      await h.vm().importFiles([answerFile('a.json', 'r2')]);
+      await settle();
+    } finally {
+      console.warn = warn;
+      model.importResponse = real;
+    }
+    const line = h.$$('[data-ref="importLog"] li')[0];
+    assertEqual(line.querySelector('[data-ref="importStatus"]').textContent, de('importInvalid'));
+    assertDeepEqual(h.notes, [[de('commandFailed'), 'error']]);
+    assertEqual(warned.length, 1);
+    assertEqual(warned[0][0], '[survey-builder] importResponse failed');
+    assertEqual(warned[0][1].message, 'parser exploded');
+    assertTrue(!h.container.textContent.includes('parser exploded'), 'no error message shown');
+    assertEqual(h.vm().model.responses.length, 1);
   });
 
   test('an unreadable file is logged as invalid with its own text', async () => {
