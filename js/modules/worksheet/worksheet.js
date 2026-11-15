@@ -2045,7 +2045,7 @@ const mod = createModule({
         }, 150);
 
         const dataMutationEvents = [
-          'cell:changed', 'data:pasted', 'data:imported',
+          'cell:changed', 'data:pasted', 'data:imported', 'data:cleared', 'data:filled',
           'column:added', 'column:removed', 'column:renamed',
           'column:type-changed', 'column:role-changed', 'column:moved',
           'rows:added', 'rows:removed', 'rows:moved',

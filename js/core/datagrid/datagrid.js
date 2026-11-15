@@ -2580,6 +2580,8 @@ export class DataGrid {
     }
     this.history.push({ type: 'clear', startCol: c1, startRow: r1, oldData, oldFormulas });
     this.render();
+    // Like a paste: the owner of the data has to store and report the change.
+    this.emit('data:cleared', { range: { startCol: c1, startRow: r1, endCol: c2, endRow: r2 } });
   }
 
   // ═══════════════════════════════════════════════════════════

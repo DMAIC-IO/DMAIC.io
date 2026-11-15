@@ -411,3 +411,37 @@ suite('Worksheet — writeColumns unit', () => {
     } finally { await w.unmount(); }
   });
 });
+
+suite('Worksheet — Leeren und Ausfüllen im Gitter werden gespeichert und gemeldet', () => {
+  const settle = () => new Promise((r) => setTimeout(r, 250));
+
+  test('eine geleerte Auswahl landet im Zustand und meldet worksheet:dataChanged', async () => {
+    const w = await mountWorksheet();
+    try {
+      w.vm._grid.setCellValue('e0', 0, 4);
+      w.vm._grid.setCellValue('e0', 1, 7);
+      await settle();
+      w.emitted.length = 0;
+      w.vm._grid.setSelection({ startCol: 0, startRow: 0, endCol: 0, endRow: 0, activeCol: 0, activeRow: 0 });
+      w.vm._grid._clearSelection();
+      await settle();
+      const stored = w.states['ws-c'].sheets.find(s => s.id === w.sheetId).state;
+      assertDeepEqual([...stored.columns[0].values].slice(0, 2), [null, 7]);
+      assertEqual(w.emitted.filter(([n]) => n === 'worksheet:dataChanged').length, 1);
+    } finally { await w.unmount(); }
+  });
+
+  test('ein Ausfüllen des Gitters (data:filled) wird gespeichert und gemeldet', async () => {
+    const w = await mountWorksheet();
+    try {
+      await settle();
+      w.emitted.length = 0;
+      w.vm._grid.columns[1].values[2] = 9;
+      w.vm._grid.emit('data:filled', { range: {} });
+      await settle();
+      const stored = w.states['ws-c'].sheets.find(s => s.id === w.sheetId).state;
+      assertEqual(stored.columns[1].values[2], 9);
+      assertEqual(w.emitted.filter(([n]) => n === 'worksheet:dataChanged').length, 1);
+    } finally { await w.unmount(); }
+  });
+});

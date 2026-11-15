@@ -29,3 +29,21 @@ suite('DataGrid — Tastatur bei verstecktem Container', () => {
     try { ctrlZ(); assertEqual(g.undone(), 1); } finally { g.dispose(); }
   });
 });
+
+suite('DataGrid — Entf leert die Auswahl und meldet es', () => {
+  test('Entf auf zwei Zellen: Werte leer, data:cleared mit dem Bereich', () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    document.activeElement?.blur?.();
+    const grid = new DataGrid(container);
+    try {
+      grid.setData([{ id: 'col_a', name: 'Yield', type: 'numeric', values: [1, 2, 3], format: {} }]);
+      grid.setSelection({ startCol: 0, startRow: 0, endCol: 0, endRow: 1, activeCol: 0, activeRow: 0 });
+      const seen = [];
+      grid.on('data:cleared', (p) => seen.push(p));
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true, cancelable: true }));
+      assertEqual(JSON.stringify([...grid.columns[0].values]), JSON.stringify([null, null, 3]));
+      assertEqual(JSON.stringify(seen), JSON.stringify([{ range: { startCol: 0, startRow: 0, endCol: 0, endRow: 1 } }]));
+    } finally { grid.destroy?.(); container.remove(); }
+  });
+});
