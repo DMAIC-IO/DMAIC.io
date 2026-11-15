@@ -2,24 +2,25 @@
  * Tests for js/modules/survey-builder/domain/migrations.js — step '0→1.0'
  * from the stored form of the earlier model: the example project, garbage,
  * the Kano targets and the corners of old projects. Reference is the earlier
- * `fromJSON` (legacy/survey-builder-model.js), compared after mapping its
- * result to the 1.0 form by hand.
+ * `fromJSON` (frozen in fixtures/legacy-oracles.json), compared after mapping
+ * its result to the 1.0 form by hand. The migration's own output for CORNERS
+ * is pinned as well: it reads the visibility rules from conditions.js, which
+ * must not change what old projects become.
  */
 import { suite, test, assert, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { from0 } from '../../../js/modules/survey-builder/domain/migrations.js';
 import { SurveyModel } from '../../../js/modules/survey-builder/domain/model.js';
 import { storedAnswers, toLegacy } from '../../../js/modules/survey-builder/domain/answers.js';
 import { findQuestion } from '../../../js/modules/survey-builder/domain/conditions.js';
-import { EXAMPLE, MIXED, CORNERS, copy, load, legacy } from './cases.js';
+import { EXAMPLE, MIXED, CORNERS, copy, load, legacyJSON, frozen } from './cases.js';
 
 /**
  * The earlier model's state in the 1.0 form, mapped by hand: answers in the
  * stored form, Kano targets with empty id lists, `ui.tab` and
  * `ui.selectedQuestionId` as view fields.
- * @param {any} l earlier model @returns {object}
+ * @param {any} j `toJSON()` of the earlier model (frozen, `legacyJSON`) @returns {object}
  */
-function mapped(l) {
-  const j = l.toJSON();
+function mapped(j) {
   const { tab, selectedQuestionId, ...ui } = j.ui;
   return {
     _schema: { version: '1.0' },
@@ -52,13 +53,13 @@ suite('survey-builder migration 0→1.0 — example and reference', () => {
   test('the example loads strictly and equals the earlier fromJSON in the 1.0 form', () => {
     const { m, reports } = strict(EXAMPLE);
     assertDeepEqual(reports, []);
-    assertDeepEqual(m.toJSON(), mapped(legacy(EXAMPLE)));
+    assertDeepEqual(m.toJSON(), mapped(legacyJSON('EXAMPLE', EXAMPLE)));
   });
 
   test('the mixed state loads strictly and equals the earlier fromJSON in the 1.0 form', () => {
     const { m, reports } = strict(MIXED);
     assertDeepEqual(reports, []);
-    assertDeepEqual(m.toJSON(), mapped(legacy(MIXED)));
+    assertDeepEqual(m.toJSON(), mapped(legacyJSON('MIXED', MIXED)));
   });
 
   test('the example keeps its ids, conditions, recipients and responses', () => {
@@ -105,7 +106,12 @@ suite('survey-builder migration 0→1.0 — corners of old projects', () => {
   test('loads strictly without an exception and equals the earlier fromJSON in the 1.0 form', () => {
     const { m, reports } = strict(CORNERS);
     assertDeepEqual(reports, []);
-    assertDeepEqual(m.toJSON(), mapped(legacy(CORNERS)));
+    assertDeepEqual(m.toJSON(), mapped(legacyJSON('CORNERS', CORNERS)));
+  });
+
+  test('the migration output is pinned (frozen when it was written)', () => {
+    assertDeepEqual(from0(copy(CORNERS)), frozen('from0 CORNERS', () => from0(copy(CORNERS))));
+    assertDeepEqual(from0(copy(MIXED)), frozen('from0 MIXED', () => from0(copy(MIXED))));
   });
 
   test('filter on a deleted question and grouping by a multiple choice question are cleared', () => {
@@ -166,7 +172,7 @@ suite('survey-builder migration 0→1.0 — tolerant like the earlier fromJSON',
       },
     };
     const m = load(json);
-    assertDeepEqual(m.toJSON(), mapped(legacy(json)));
+    assertDeepEqual(m.toJSON(), mapped(legacyJSON('unknown types', json)));
     assertDeepEqual(m.survey.sections.map((s) => s.id), ['s1', 's2']);
     assertDeepEqual(m.survey.sections[0].questions.map((q) => q.id), ['a', 'c']);
     assertDeepEqual(m.survey.sections[0].questions[1].when, [{ questionId: 'a', optionIds: ['o1'] }]);
@@ -179,7 +185,7 @@ suite('survey-builder migration 0→1.0 — tolerant like the earlier fromJSON',
       { id: 'k', type: 'kano', importance: 'ja' },
     ] }] } };
     const m = load(json);
-    assertDeepEqual(m.toJSON(), mapped(legacy(json)));
+    assertDeepEqual(m.toJSON(), mapped(legacyJSON('missing flags', json)));
     assertDeepEqual(m.survey.sections[0].questions[0],
       { id: 'r', type: 'rating', text: '', hint: '', required: false, when: null, rows: [{ id: 'r1', text: 'A' }], noAnswer: true });
     assertEqual(m.survey.sections[0].questions[1].importance, true);

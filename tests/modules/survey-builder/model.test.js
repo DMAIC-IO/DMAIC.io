@@ -1,23 +1,52 @@
 /**
  * Tests for js/modules/survey-builder/domain/model.js — schema, defaults,
  * `hasContent`, the getters the views read and `derived.results`, each
- * against the earlier model (legacy/survey-builder-model.js) and the earlier
- * results viewmodel (`agentSnapshot()`), run here on the same stored states.
+ * against the earlier model and the earlier results viewmodel
+ * (`agentSnapshot()`) on the same stored states, frozen in
+ * fixtures/legacy-oracles.json.
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
 import { SurveyModel } from '../../../js/modules/survey-builder/domain/model.js';
 import { resultsSnapshot } from '../../../js/modules/survey-builder/domain/results.js';
 import { QUESTION_TYPES } from '../../../js/modules/survey-builder/domain/conditions.js';
-import { ResultsViewModel } from '../../../js/modules/survey-builder/legacy/viewmodel/results.js';
-import { t, fakeContext, attach } from '../survey-vm-fakes.js';
-import { EXAMPLE, MIXED, CORNERS, copy, load, legacy } from './cases.js';
+import { EXAMPLE, MIXED, CORNERS, copy, load, frozen } from './cases.js';
 
-/** @param {object} json earlier form @returns {object} the earlier results tab as numbers */
-function legacySnapshot(json) {
-  const vm = new ResultsViewModel({ t, context: fakeContext(), container: () => null });
-  attach(vm, legacy(json));
-  return vm.agentSnapshot();
+/**
+ * `agentSnapshot()` of the earlier results viewmodel on a stored state, frozen.
+ * @param {string} key @param {object} json earlier form @returns {object} the earlier results tab as numbers
+ */
+function legacySnapshot(key, json) {
+  return frozen(`results ${key}`, ({ Legacy, ResultsViewModel, t, fakeContext, attach }) => {
+    const vm = new ResultsViewModel({ t, context: fakeContext(), container: () => null });
+    attach(vm, Legacy.fromJSON(copy(json)));
+    return vm.agentSnapshot();
+  });
+}
+
+/**
+ * What a model answers for every section, question, option, row and
+ * recipient id of a stored state (plus the unknown id `zz`).
+ * @param {any} m a model (earlier or declarative) @param {boolean} getter `nextExportVersion` is a getter (declarative)
+ * @returns {object}
+ */
+function lookups(m, getter) {
+  const ids = [...m.survey.sections.map((s) => s.id), ...m.survey.sections.flatMap((s) => s.questions.map((q) => q.id)), 'zz'];
+  const out = { ids: {}, recipients: {} };
+  for (const id of ids) {
+    const items = [...(m.question(id)?.options ?? []), ...(m.question(id)?.rows ?? [])];
+    out.ids[id] = {
+      section: m.section(id), question: m.question(id), sectionOf: m.sectionOf(id),
+      affected: m.countAffectedResponses(id),
+      items: Object.fromEntries(items.map((x) => [x.id, m.countAffectedResponses(id, x.id)])),
+    };
+  }
+  for (const r of [...m.recipients, { id: 'zz' }]) {
+    out.recipients[r.id] = { status: m.recipientStatus(r.id), outdated: m.isOutdated(r.id) };
+  }
+  out.counts = m.recipientCounts();
+  out.nextExportVersion = getter ? m.nextExportVersion : m.nextExportVersion();
+  return JSON.parse(JSON.stringify(out));
 }
 
 /** @param {any} spec @param {string} path dotted @returns {any} the nested spec */
@@ -51,7 +80,8 @@ suite('survey-builder model — schema and defaults', () => {
     assertEqual(m.tab, 'draft');
     assertEqual(m.selectedQuestionId, null);
     m.setHeader({ field: 'title', value: 'Nur ein Titel' });
-    assertEqual(m.hasContent(), legacy(m.toJSON()).hasContent());
+    // The earlier hasContent counted questions, recipients and responses only.
+    assertEqual(m.hasContent(), frozen('hasContent title only', ({ Legacy }) => Legacy.fromJSON(m.toJSON()).hasContent()));
   });
 
   test('hasContent like the earlier model: a section alone is none, a question, recipient or response is', () => {
@@ -70,24 +100,8 @@ suite('survey-builder model — schema and defaults', () => {
 suite('survey-builder model — getters like the earlier model', () => {
   for (const [name, json] of [['mixed', MIXED], ['example', EXAMPLE], ['corners', CORNERS]]) {
     test(`${name}: lookups, recipient status and counts, affected responses, export version`, () => {
-      const l = legacy(json);
-      const m = load(json);
-      const ids = [...l.survey.sections.map((s) => s.id), ...l.survey.sections.flatMap((s) => s.questions.map((q) => q.id)), 'zz'];
-      for (const id of ids) {
-        assertDeepEqual(m.section(id), l.section(id), `section ${id}`);
-        assertDeepEqual(m.question(id), l.question(id), `question ${id}`);
-        assertDeepEqual(m.sectionOf(id), l.sectionOf(id), `sectionOf ${id}`);
-        assertEqual(m.countAffectedResponses(id), l.countAffectedResponses(id), `affected ${id}`);
-        for (const item of [...(l.question(id)?.options ?? []), ...(l.question(id)?.rows ?? [])]) {
-          assertEqual(m.countAffectedResponses(id, item.id), l.countAffectedResponses(id, item.id), `affected ${id}/${item.id}`);
-        }
-      }
-      for (const r of [...l.recipients, { id: 'zz' }]) {
-        assertEqual(m.recipientStatus(r.id), l.recipientStatus(r.id), `status ${r.id}`);
-        assertEqual(m.isOutdated(r.id), l.isOutdated(r.id), `outdated ${r.id}`);
-      }
-      assertDeepEqual(m.recipientCounts(), l.recipientCounts());
-      assertEqual(m.nextExportVersion, l.nextExportVersion());
+      const want = frozen(`getters ${name}`, ({ Legacy }) => lookups(Legacy.fromJSON(copy(json)), false));
+      assertDeepEqual(lookups(load(json), true), want);
     });
   }
 });
@@ -97,7 +111,7 @@ suite('survey-builder model — derived.results', () => {
     test(`${name}: equals agentSnapshot() of the earlier results viewmodel`, () => {
       const m = load(json);
       const { results } = evaluateDerived(m, null);
-      assertDeepEqual(results, legacySnapshot(json));
+      assertDeepEqual(results, legacySnapshot(name, json));
       assertDeepEqual(resultsSnapshot(m), results);
     });
   }
@@ -108,7 +122,7 @@ suite('survey-builder model — derived.results', () => {
     m.setFilter({ questionId: 'q-group', optionId: 'o-industrie' });
     m.setGroupBy({ questionId: 'q-erp' });
     json.ui = { ...json.ui, filter: { questionId: 'q-group', optionId: 'o-industrie' }, groupBy: 'q-erp' };
-    assertDeepEqual(evaluateDerived(m, null).results, legacySnapshot(json));
+    assertDeepEqual(evaluateDerived(m, null).results, legacySnapshot('example filter and grouping', json));
   });
 
   test('a filter whose option is gone is not applied, as before', () => {
@@ -116,6 +130,6 @@ suite('survey-builder model — derived.results', () => {
     json.ui.filter = { questionId: 'q1', optionId: 'zz' };
     const r = evaluateDerived(load(json), null).results;
     assertEqual(r.filter, null);
-    assertDeepEqual(r, legacySnapshot(json));
+    assertDeepEqual(r, legacySnapshot('mixed stale filter', json));
   });
 });

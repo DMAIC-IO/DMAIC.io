@@ -108,12 +108,12 @@ function storedAnswer(q, a) {
 }
 
 /**
- * @param {object} survey @param {unknown} answers @returns {Record<string, Record<string, any>>}
+ * @param {object} survey @param {unknown} raw Antworten einer Antwort @returns {Record<string, Record<string, any>>}
  */
-function answers(survey, answers) {
+function answers(survey, raw) {
   /** @type {Record<string, Record<string, any>>} */
   const out = {};
-  for (const [questionId, a] of Object.entries(isObj(answers) ? answers : {})) {
+  for (const [questionId, a] of Object.entries(isObj(raw) ? raw : {})) {
     if (questionId === '__proto__') continue;
     const stored = storedAnswer(findQuestion(survey, questionId), a);
     if (stored !== undefined) out[questionId] = stored;

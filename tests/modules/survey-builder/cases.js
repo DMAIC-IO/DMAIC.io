@@ -1,15 +1,20 @@
 /**
  * Shared cases of the survey-builder domain tests: the example project, a
  * hand-made stored state with every question type (`MIXED`), a stored state
- * with the corners of old projects (`CORNERS`) and the bridge from the earlier
- * model (`legacy/survey-builder-model.js`) to the declarative one.
+ * with the corners of old projects (`CORNERS`) and the frozen reference of the
+ * earlier model and of its results viewmodel.
  *
  * Both stored states are in the earlier form (no `_schema`): the declarative
- * model loads them through its migration `'0→1.0'`. The earlier model runs
- * here as the reference — every comparison loads its result through the same
- * migration, so "same effect as before" reads `toJSON()` against `toJSON()`.
+ * model loads them through its migration `'0→1.0'`.
+ *
+ * The earlier model is not imported here. What it did is frozen in
+ * `fixtures/legacy-oracles.json`; `frozen(key, compute)` reads an entry. The
+ * `compute` function next to each use says how the entry was produced — it
+ * runs only in `fixtures/generate-legacy-oracles.mjs`, which records every
+ * entry (see there how to regenerate). Every comparison loads the earlier
+ * result through the same migration, so "same effect as before" reads
+ * `toJSON()` against `toJSON()`.
  */
-import { State as Legacy } from '../../../js/modules/survey-builder/legacy/survey-builder-model.js';
 import { SurveyModel } from '../../../js/modules/survey-builder/domain/model.js';
 import { toLegacy } from '../../../js/modules/survey-builder/domain/answers.js';
 
@@ -21,6 +26,9 @@ async function loadJson(path) {
 
 /** The example project's module state (earlier form). */
 export const EXAMPLE = await loadJson('../../../examples/projects/survey-builder-software.json');
+
+/** The frozen entries; empty while the generator records them. */
+const ORACLES = globalThis.__surveyOracle ? {} : await loadJson('./fixtures/legacy-oracles.json');
 
 /** @template T @param {T} v @returns {T} */
 export const copy = (v) => JSON.parse(JSON.stringify(v));
@@ -140,8 +148,34 @@ export const CORNERS = Object.freeze({
 /** @param {object} json stored state (earlier form or 1.0) @param {object} [opts] fromJSON options @returns {any} */
 export const load = (json, opts) => SurveyModel.fromJSON(copy(json), opts);
 
-/** @param {object} json stored state (earlier form) @returns {any} the earlier model */
-export const legacy = (json) => Legacy.fromJSON(copy(json));
+/**
+ * A frozen entry of the earlier model's behaviour. While the generator
+ * records (`globalThis.__surveyOracle`), `compute(deps)` runs with the
+ * earlier code in `deps` and its result is recorded; otherwise the recorded
+ * value is read.
+ * @param {string} key unique name of the entry
+ * @param {(deps: any) => any} compute how the entry is produced from the earlier code
+ * @returns {any} a copy of the entry
+ */
+export function frozen(key, compute) {
+  const rec = globalThis.__surveyOracle;
+  if (rec) {
+    const v = copy(compute(rec.deps) ?? null);
+    if (Object.hasOwn(rec.record, key) && JSON.stringify(rec.record[key]) !== JSON.stringify(v)) {
+      throw new Error(`frozen: key ${key} recorded twice with different values`);
+    }
+    rec.record[key] = v;
+    return copy(v);
+  }
+  if (!Object.hasOwn(ORACLES, key)) throw new Error(`frozen: no entry ${JSON.stringify(key)}; run fixtures/generate-legacy-oracles.mjs`);
+  return copy(ORACLES[key]);
+}
+
+/**
+ * The earlier `fromJSON(json).toJSON()`, frozen.
+ * @param {string} key name of the state @param {object} json stored state (earlier form) @returns {any}
+ */
+export const legacyJSON = (key, json) => frozen(`fromJSON ${key}`, ({ Legacy }) => Legacy.fromJSON(copy(json)).toJSON());
 
 /**
  * A 1.0 state with every answer in the earlier form. The stored form of an
@@ -159,11 +193,11 @@ export function canon(json) {
 }
 
 /**
- * The 1.0 form of what the earlier model holds: its `toJSON()` loaded through
+ * The 1.0 form of what the earlier model held: its `toJSON()` loaded through
  * the migration, answers in the earlier form (`canon`).
- * @param {any} l earlier model @returns {object}
+ * @param {object} legacyState `toJSON()` of the earlier model @returns {object}
  */
-export const expected = (l) => canon(load(l.toJSON()).toJSON());
+export const expected = (legacyState) => canon(load(legacyState).toJSON());
 
 /**
  * Replace one id by another everywhere in a stored state (new ids come from
@@ -175,17 +209,21 @@ export function swapId(json, from, to) {
 }
 
 /**
- * Run the same change on the earlier model and on the declarative one, both
- * loaded from `json`.
+ * The same change on the earlier model (frozen under `key`) and on the
+ * declarative one, both from `json`.
+ * @param {string} key unique name of the case
  * @param {object} json stored state (earlier form)
- * @param {(l: any) => any} before change on the earlier model
+ * @param {(l: any) => any} before the change on the earlier model (runs only in the generator)
  * @param {(m: any) => any} after the command on the declarative model
- * @returns {{ want: object, got: object, l: any, m: any, lr: any, mr: any }} `want`/`got` answers in the earlier form
+ * @returns {{ want: object, got: object, m: any, lr: any, mr: any }} `want`/`got` answers in the earlier form
  */
-export function both(json, before, after) {
-  const l = legacy(json);
+export function both(key, json, before, after) {
+  const o = frozen(`both ${key}`, ({ Legacy }) => {
+    const l = Legacy.fromJSON(copy(json));
+    const lr = before(l);
+    return { state: l.toJSON(), result: lr ?? null };
+  });
   const m = load(json);
-  const lr = before(l);
   const mr = after(m);
-  return { want: expected(l), got: canon(m.toJSON()), l, m, lr, mr };
+  return { want: expected(o.state), got: canon(m.toJSON()), m, lr: o.result, mr };
 }

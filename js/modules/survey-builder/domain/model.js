@@ -648,6 +648,8 @@ export class SurveyModel extends defineModel({
         if (ui.groupBy !== null && findQuestion(survey, ui.groupBy)?.type !== 'single') ui.groupBy = null;
       },
     },
+    // Nennt nur das Ansichtsfeld: so heilt eine verwaiste Auswahl auch beim
+    // strengen Laden still. Kommandos, die Fragen entfernen, räumen sie selbst.
     validSelection: {
       fields: ['selectedQuestionId'],
       test(m) {
