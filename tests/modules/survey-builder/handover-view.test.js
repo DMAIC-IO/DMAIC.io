@@ -49,9 +49,10 @@ const OTHER_SURVEY = Object.freeze({
 
 /**
  * The stand-in of the instances service.
- * @param {{ kano?: any[], trees?: any[], surveys?: any[], reads?: Record<string, any>, kanoRead?: any, failWrite?: boolean }} [opts]
+ * @param {{ kano?: any[], trees?: any[], surveys?: any[], reads?: Record<string, any>, readErrors?: Record<string, Error>,
+ *   kanoRead?: any, failWrite?: boolean }} [opts] `readErrors`: what `read` of an instance throws
  */
-function fakeInstances({ kano = [], trees = [], surveys = [{ instanceId: INSTANCE, phase: 'define' }], reads = {}, kanoRead = KANO_READ, failWrite = false } = {}) {
+function fakeInstances({ kano = [], trees = [], surveys = [{ instanceId: INSTANCE, phase: 'define' }], reads = {}, readErrors = {}, kanoRead = KANO_READ, failWrite = false } = {}) {
   /** @type {any[]} */
   const log = [];
   /** @type {Record<string, any[]>} */
@@ -77,6 +78,7 @@ function fakeInstances({ kano = [], trees = [], surveys = [{ instanceId: INSTANC
     read: async (id, opts) => {
       log.push(['read', id, copy(opts)]);
       await flush();
+      if (readErrors[id]) throw readErrors[id];
       if (!(id in reads)) throw Object.assign(new Error('unknown_instance'), { code: 'unknown_instance' });
       return copy(reads[id]);
     },
@@ -134,11 +136,20 @@ suite('survey-builder handover: worksheet', () => {
     assertEqual(fake.stacks().length, 1);
   });
 
-  test('a failed stack reports handoverFailed once', async () => {
+  test('a failed stack reports handoverFailed once and is warned once', async () => {
     const fake = fakeInstances({ failWrite: true });
     const h = await mount(mixed(), { instances: fake });
-    const out = await start(h, 'toWorksheet', {});
+    const warned = [];
+    const warn = console.warn;
+    console.warn = (...args) => { warned.push(args); };
+    let out;
+    try {
+      out = await start(h, 'toWorksheet', {});
+    } finally {
+      console.warn = warn;
+    }
     assertEqual(out.status, 'failed');
+    assertEqual(warned.length, 1, `one warning: ${JSON.stringify(warned.map((w) => String(w[0])))}`);
     assertEqual(h.notes.filter(([m, t]) => m === de('handoverFailed') && t === 'error').length, 1);
   });
 });
@@ -148,7 +159,8 @@ suite('survey-builder handover: VoC tree', () => {
     const fake = fakeInstances({ trees: [{ instanceId: 'tree-1', phase: 'define' }] });
     const h = await mount(mixed(), { instances: fake });
     const out = await start(h, 'takeToVocTree', { keys: ['resp-a:nope'] });
-    assert(out.status !== 'done', `not done (${out.status})`);
+    assertEqual(out.status, 'failed');
+    assertTrue(out.error.message.includes('keys[0]'), `names keys[0]: ${out.error.message}`);
     assertEqual(fake.log.length, 0, 'nothing sent');
   });
 
@@ -282,6 +294,50 @@ suite('survey-builder handover: Kano', () => {
     await until(() => h.notes.some(([m]) => m === de('handoverFailed')));
     await settle();
     assertEqual(h.notes.filter(([m, t]) => m === de('handoverFailed') && t === 'error').length, 1);
+  });
+
+  test('a stack builder that throws after the Kano read (view torn down): handoverFailed once, cause warned, nothing written', async () => {
+    const fake = fakeInstances({ kano: [{ instanceId: 'kano-1', phase: 'define' }], kanoRead: { ...KANO_READ, items: [null] } });
+    const h = await mount(mixed(), { instances: fake });
+    const warned = [];
+    const warn = console.warn;
+    console.warn = (...args) => { warned.push(args); };
+    try {
+      fake.hooks.onReadStack = () => h.destroy();
+      await start(h, 'handOverToKano', { questionId: 'q4' });
+      await until(() => h.notes.some(([m]) => m === de('handoverFailed')));
+      await settle();
+    } finally {
+      console.warn = warn;
+    }
+    assertEqual(h.notes.filter(([m, t]) => m === de('handoverFailed') && t === 'error').length, 1, 'reported once');
+    assertTrue(warned.some((w) => String(w[0]).includes('handOverToKano failed') && w[1] instanceof Error), 'the cause is warned');
+    assertEqual(fake.stacks().length, 1, 'only the read stack, no write stack');
+  });
+
+  test('another survey deleted since the list is skipped; the hand-over goes on', async () => {
+    const fake = fakeInstances({
+      kano: [{ instanceId: 'kano-1', phase: 'define' }],
+      surveys: [{ instanceId: INSTANCE, phase: 'define' }, { instanceId: 'sb-gone', phase: 'define' }],
+    });
+    const h = await mount(mixed(), { instances: fake });
+    const out = await start(h, 'handOverToKano', { questionId: 'q4' });
+    assertEqual(out.status, 'done');
+    assertEqual(fake.stacks().length, 2, 'read and write stack');
+  });
+
+  test('another survey that cannot be read for another reason ends the hand-over', async () => {
+    const fake = fakeInstances({
+      kano: [{ instanceId: 'kano-1', phase: 'define' }],
+      surveys: [{ instanceId: INSTANCE, phase: 'define' }, { instanceId: 'sb-2', phase: 'define' }],
+      readErrors: { 'sb-2': Object.assign(new Error('needs_mount'), { code: 'needs_mount' }) },
+    });
+    const h = await mount(mixed(), { instances: fake });
+    const out = await start(h, 'handOverToKano', { questionId: 'q4' });
+    assertEqual(out.status, 'failed');
+    assertEqual(out.error.message, de('handoverFailed'));
+    assertEqual(fake.stacks().length, 0, 'nothing sent');
+    assertEqual(h.notes.filter(([m]) => m === de('handoverFailed')).length, 1);
   });
 
   test('the button hands the question over and renews the target list', async () => {

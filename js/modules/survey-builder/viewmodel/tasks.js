@@ -26,7 +26,7 @@
 import { asyncTask } from '../../../core/async-task.js';
 import { downloadBlob } from '../../../core/export-utils.js';
 import { idOf, list, text } from '../../../core/model.js';
-import { worksheetWrite, commitWorksheetWrite, completeStack } from '../../../core/worksheet-write.js';
+import { worksheetWrite, commitWorksheetWrite, completeStack, WriteError } from '../../../core/worksheet-write.js';
 import { requireKnownId } from '../../../core/agent/agent-argcheck.js';
 import { buildSurveyHtml, surveyFileName, runnerStringsOf } from '../io/questionnaire.js';
 import { documentOrder, findQuestion } from '../domain/conditions.js';
@@ -67,6 +67,18 @@ async function buildFile(survey, recipient, failed) {
 }
 
 /**
+ * Starts a run from the interface; a run that cannot start is reported.
+ * @param {any} vm the component @param {any} ctx module context
+ * @param {string} name the run @param {object} args its arguments
+ * @returns {Promise<import('../../../core/async-task.js').TaskOutcome>}
+ */
+export async function startTask(vm, ctx, name, args) {
+  const out = await vm._asyncTaskHost.start(name, args);
+  if (out.status === 'rejected') ctx.notify(ctx.i18n.t('common.asyncTask.rejected', { reason: out.reason }), 'error');
+  return out;
+}
+
+/**
  * Starts a run that builds a file and downloads it; a run that cannot
  * start is reported.
  * @param {any} vm the component @param {any} ctx module context
@@ -74,8 +86,7 @@ async function buildFile(survey, recipient, failed) {
  * @returns {Promise<void>}
  */
 export async function downloadBuiltFile(vm, ctx, name, args) {
-  const out = await vm._asyncTaskHost.start(name, args);
-  if (out.status === 'rejected') ctx.notify(ctx.i18n.t('common.asyncTask.rejected', { reason: out.reason }), 'error');
+  const out = await startTask(vm, ctx, name, args);
   if (out.status !== 'done') return;
   downloadBlob(new Blob([out.value.content], { type: 'text/html;charset=utf-8' }), out.value.fileName);
 }
@@ -85,11 +96,12 @@ export async function downloadBuiltFile(vm, ctx, name, args) {
  * the console. A run whose view was torn down meanwhile is no longer
  * reported by its host, so it reports itself.
  * @param {string} message translated text @param {string} where name of the run
- * @param {unknown} cause @param {{ signal: AbortSignal, notify: Function }} run
+ * @param {unknown} cause @param {{ signal: AbortSignal, notify: Function, warned?: boolean }} run
+ *   `warned`: the cause is in the console already
  * @returns {Error}
  */
-function failure(message, where, cause, { signal, notify }) {
-  console.warn(`[survey-builder] ${where} failed`, cause);
+function failure(message, where, cause, { signal, notify, warned = false }) {
+  if (!warned) console.warn(`[survey-builder] ${where} failed`, cause);
   if (signal.aborted) notify(message, 'error');
   return new Error(message, { cause });
 }
@@ -193,7 +205,8 @@ export const asyncTasks = {
       try {
         res = await commitWorksheetWrite(services, plan);
       } catch (err) {
-        throw failure(failed, 'toWorksheet', err, { signal, notify: services.notify });
+        // commitWorksheetWrite has put a failed stack into the console itself.
+        throw failure(failed, 'toWorksheet', err, { signal, notify: services.notify, warned: err instanceof WriteError });
       }
       services.notify(created, 'success');
       return { instanceId: res.instanceId };
@@ -272,8 +285,8 @@ export const asyncTasks = {
             const r = /** @type {any} */ (await services.instances.read(other.instanceId, { fields: ['transfers', 'survey'] }));
             known.push({ instanceId: other.instanceId, transfers: { kano: r?.transfers?.kano ?? {} }, kanoQuestionIds: kanoQuestionIds(r?.survey) });
           } catch (err) {
-            // Gone since the list: it has no marks to keep.
-            console.warn('[survey-builder] handOverToKano: survey not read', other.instanceId, err);
+            // Gone since the list: it has no marks to keep. Anything else could lose its marks.
+            if (/** @type {any} */ (err)?.code !== 'unknown_instance') throw failure(failed, 'handOverToKano', err, notifyFail);
           }
         }
         const read = await send(services, [{
@@ -284,13 +297,23 @@ export const asyncTasks = {
           throw failure(failed, 'handOverToKano', new Error('kano read gave no items or respondents'), notifyFail);
         }
         kanoRead = value;
-        backups = kanoBackups(value, known, kanoId);
-        own = kanoOwnEntries(value, remembered, instanceId, questionId);
+        // The read stack has switched the view: the host no longer reports this run, a throw here must.
+        try {
+          backups = kanoBackups(value, known, kanoId);
+          own = kanoOwnEntries(value, remembered, instanceId, questionId);
+        } catch (err) {
+          throw failure(failed, 'handOverToKano', err, notifyFail);
+        }
       }
-      const stack = kanoStack({
-        kanoId, phase, kanoRead, question, responses, recipients: data.recipients, anonymous: data.survey.anonymous,
-        respondentLabel: (n) => labels[n - 1] ?? '', surveyInstanceId: instanceId, backups, own,
-      });
+      let stack;
+      try {
+        stack = kanoStack({
+          kanoId, phase, kanoRead, question, responses, recipients: data.recipients, anonymous: data.survey.anonymous,
+          respondentLabel: (n) => labels[n - 1] ?? '', surveyInstanceId: instanceId, backups, own,
+        });
+      } catch (err) {
+        throw failure(failed, 'handOverToKano', err, notifyFail);
+      }
       const res = await send(services, stack, 'handOverToKano', failed, signal);
       services.notify(done, 'success');
       return { instanceId: kanoId ?? resultOf(res, 'kano')?.instanceId ?? null };

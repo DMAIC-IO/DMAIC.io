@@ -14,6 +14,7 @@
  */
 import { runUiCommand } from '../../../core/command-directives.js';
 import { openTexts } from '../domain/handover/voc.js';
+import { startTask } from './tasks.js';
 
 /** @type {import('./state.types.js').SurveyBuilderViewFn} */
 export const handoverView = (ctx) => {
@@ -44,8 +45,7 @@ export const handoverView = (ctx) => {
      * @returns {Promise<any>} the value of a run that is done, else null
      */
     async startHandover(name, args) {
-      const out = await this._asyncTaskHost.start(name, args);
-      if (out.status === 'rejected') ctx.notify(ctx.i18n.t('common.asyncTask.rejected', { reason: out.reason }), 'error');
+      const out = await startTask(this, ctx, name, args);
       return out.status === 'done' ? out.value : null;
     },
 
