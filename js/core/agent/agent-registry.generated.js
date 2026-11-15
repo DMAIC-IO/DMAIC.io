@@ -18483,571 +18483,10 @@ export const AGENT_REGISTRY = {
   "survey-builder": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
-      "draft.setHeader": {
-        "params": [
-          {
-            "name": "key",
-            "type": "'title'|'intro'|'contact'|'lang'|'anonymous'",
-            "optional": false,
-            "help": "which header field"
-          },
-          {
-            "name": "value",
-            "type": "string|boolean",
-            "optional": false,
-            "help": "the new value; range per key see `SurveyHeader`"
-          }
-        ],
-        "returns": "void",
-        "help": "Set one header field of the questionnaire.",
-        "keysOf": "SurveyHeader",
-        "keys": {
-          "title": {
-            "type": "string",
-            "help": "title above the questionnaire"
-          },
-          "intro": {
-            "type": "string",
-            "help": "introduction below the title"
-          },
-          "contact": {
-            "type": "string",
-            "help": "whom respondents ask"
-          },
-          "lang": {
-            "type": "'de'|'en'",
-            "help": "language of the exported file"
-          },
-          "anonymous": {
-            "type": "boolean",
-            "help": "answers carry no recipient"
-          }
-        }
-      },
-      "draft.addSection": {
-        "params": [],
-        "returns": "string",
-        "help": "Append an empty section and select it."
-      },
-      "draft.setSectionField": {
-        "params": [
-          {
-            "name": "sectionId",
-            "type": "string",
-            "optional": false,
-            "help": "the section"
-          },
-          {
-            "name": "key",
-            "type": "'title'|'hint'",
-            "optional": false,
-            "help": "which text"
-          },
-          {
-            "name": "value",
-            "type": "string",
-            "optional": false,
-            "help": "the new text, \"\" clears it"
-          }
-        ],
-        "returns": "void",
-        "help": "Set the title or the hint of a section.",
-        "keysOf": "SectionFields",
-        "keys": {
-          "title": {
-            "type": "string",
-            "help": "heading of the section"
-          },
-          "hint": {
-            "type": "string",
-            "help": "explanation below the heading"
-          }
-        }
-      },
-      "draft.moveSection": {
-        "params": [
-          {
-            "name": "sectionId",
-            "type": "string",
-            "optional": false,
-            "help": "the section"
-          },
-          {
-            "name": "direction",
-            "type": "'up'|'down'",
-            "optional": false,
-            "help": "where to"
-          }
-        ],
-        "returns": "number",
-        "help": "Move a section one place up or down. Conditions that would then point at a later question are removed."
-      },
-      "draft.removeSection": {
-        "params": [
-          {
-            "name": "sectionId",
-            "type": "string",
-            "optional": false,
-            "help": "the section"
-          }
-        ],
-        "returns": "number",
-        "help": "Delete a section with its questions, without asking. Conditions on its questions are removed."
-      },
-      "draft.addQuestion": {
-        "params": [
-          {
-            "name": "sectionId",
-            "type": "string",
-            "optional": false,
-            "help": "the section"
-          },
-          {
-            "name": "type",
-            "type": "'single'|'multi'|'rating'|'kano'|'text'|'info'",
-            "optional": false,
-            "help": "the question type"
-          }
-        ],
-        "returns": "string",
-        "help": "Append a question of a type to a section and select it."
-      },
-      "draft.moveQuestion": {
-        "params": [
-          {
-            "name": "questionId",
-            "type": "string",
-            "optional": false,
-            "help": "the question"
-          },
-          {
-            "name": "direction",
-            "type": "'up'|'down'",
-            "optional": false,
-            "help": "where to"
-          }
-        ],
-        "returns": "number",
-        "help": "Move a question one place up or down; at a section boundary it moves into the neighbouring section. Conditions that would then point at a later question are removed."
-      },
-      "draft.removeQuestion": {
-        "params": [
-          {
-            "name": "questionId",
-            "type": "string",
-            "optional": false,
-            "help": "the question"
-          }
-        ],
-        "returns": "number",
-        "help": "Delete a question, without asking — also when imported responses answered it. Conditions that pointed at it are removed."
-      },
-      "draft.setQuestionField": {
-        "params": [
-          {
-            "name": "questionId",
-            "type": "string",
-            "optional": false,
-            "help": "the question"
-          },
-          {
-            "name": "key",
-            "type": "'text'|'hint'|'required'|'other'|'noAnswer'|'importance'|'multiline'",
-            "optional": false,
-            "help": "which field"
-          },
-          {
-            "name": "value",
-            "type": "string|boolean",
-            "optional": false,
-            "help": "text for text and hint, true or false for the flags"
-          }
-        ],
-        "returns": "void",
-        "help": "Set a text or a flag of a question. Which flags a question has depends on its type, see `QuestionFields`.",
-        "keysOf": "QuestionFields",
-        "keys": {
-          "text": {
-            "type": "string",
-            "help": "the question"
-          },
-          "hint": {
-            "type": "string",
-            "help": "explanation below the question"
-          },
-          "required": {
-            "type": "boolean",
-            "help": "must be answered (not for info)"
-          },
-          "other": {
-            "type": "boolean",
-            "help": "offers a free \"other\" answer (single, multi)"
-          },
-          "noAnswer": {
-            "type": "boolean",
-            "help": "offers \"no answer\" per row (rating)"
-          },
-          "importance": {
-            "type": "boolean",
-            "help": "asks for an importance 1–9 per row (kano)"
-          },
-          "multiline": {
-            "type": "boolean",
-            "help": "multi-line answer field (text)"
-          }
-        }
-      },
-      "draft.changeQuestionType": {
-        "params": [
-          {
-            "name": "questionId",
-            "type": "string",
-            "optional": false,
-            "help": "the question"
-          },
-          {
-            "name": "type",
-            "type": "'single'|'multi'|'rating'|'kano'|'text'|'info'",
-            "optional": false,
-            "help": "the new type"
-          }
-        ],
-        "returns": "number",
-        "help": "Change the type of a question, keeping text, hint, required and its conditions; options, rows and flags start empty. Conditions on its options are removed."
-      },
-      "draft.addItem": {
-        "params": [
-          {
-            "name": "questionId",
-            "type": "string",
-            "optional": false,
-            "help": "the question"
-          }
-        ],
-        "returns": "string",
-        "help": "Append an empty option (single, multi) or row (rating, kano) to a question."
-      },
-      "draft.setItemField": {
-        "params": [
-          {
-            "name": "questionId",
-            "type": "string",
-            "optional": false,
-            "help": "the question"
-          },
-          {
-            "name": "itemId",
-            "type": "string",
-            "optional": false,
-            "help": "the option or row"
-          },
-          {
-            "name": "key",
-            "type": "'text'|'group'",
-            "optional": false,
-            "help": "which field"
-          },
-          {
-            "name": "value",
-            "type": "string",
-            "optional": false,
-            "help": "the new text, \"\" clears it"
-          }
-        ],
-        "returns": "void",
-        "help": "Set the text of an option or row, or the display group of an option of a multiple choice question.",
-        "keysOf": "ItemFields",
-        "keys": {
-          "text": {
-            "type": "string",
-            "help": "the text of the option or row"
-          },
-          "group": {
-            "type": "string",
-            "help": "display group of an option (multi only)"
-          }
-        }
-      },
-      "draft.moveItem": {
-        "params": [
-          {
-            "name": "questionId",
-            "type": "string",
-            "optional": false,
-            "help": "the question"
-          },
-          {
-            "name": "itemId",
-            "type": "string",
-            "optional": false,
-            "help": "the option or row"
-          },
-          {
-            "name": "direction",
-            "type": "'up'|'down'",
-            "optional": false,
-            "help": "where to"
-          }
-        ],
-        "returns": "void",
-        "help": "Move an option or row one place up or down within its question."
-      },
-      "draft.removeItem": {
-        "params": [
-          {
-            "name": "questionId",
-            "type": "string",
-            "optional": false,
-            "help": "the question"
-          },
-          {
-            "name": "itemId",
-            "type": "string",
-            "optional": false,
-            "help": "the option or row"
-          }
-        ],
-        "returns": "number",
-        "help": "Delete an option or row, without asking — also when imported responses chose it. Conditions on a deleted option are removed."
-      },
-      "draft.setConditions": {
-        "params": [
-          {
-            "name": "nodeId",
-            "type": "string",
-            "optional": false,
-            "help": "the section or question"
-          },
-          {
-            "name": "conditions",
-            "type": "Array<{questionId: string, optionIds: string[]}>",
-            "optional": false,
-            "help": "per condition an earlier single or multiple choice question and at least one of its options"
-          }
-        ],
-        "returns": "number",
-        "help": "Replace the conditions of a section or question. It is shown when at least one condition holds; a condition holds when one of its options was chosen. An empty list removes all conditions."
-      },
-      "draft.buildSurveyFile": {
-        "params": [],
-        "returns": "Promise<{fileName: string, mimeType: string, content: string}>",
-        "help": "Builds the general questionnaire file (no recipient); like the export it settles the version."
-      },
-      "recipients.addRecipient": {
-        "params": [],
-        "returns": "string",
-        "help": "Append an empty recipient."
-      },
-      "recipients.setRecipientField": {
-        "params": [
-          {
-            "name": "recipientId",
-            "type": "string",
-            "optional": false,
-            "help": "the recipient"
-          },
-          {
-            "name": "key",
-            "type": "'name'|'organisation'|'group'|'email'|'note'",
-            "optional": false,
-            "help": "which field"
-          },
-          {
-            "name": "value",
-            "type": "string",
-            "optional": false,
-            "help": "the new text, \"\" clears it"
-          }
-        ],
-        "returns": "void",
-        "help": "Set one field of a recipient.",
-        "keysOf": "RecipientFields",
-        "keys": {
-          "name": {
-            "type": "string",
-            "help": "name of the person or company"
-          },
-          "organisation": {
-            "type": "string",
-            "help": "organisation or department"
-          },
-          "group": {
-            "type": "string",
-            "help": "group for the response rate per group"
-          },
-          "email": {
-            "type": "string",
-            "help": "e-mail address, for sending the file yourself"
-          },
-          "note": {
-            "type": "string",
-            "help": "free note"
-          }
-        }
-      },
-      "recipients.removeRecipient": {
-        "params": [
-          {
-            "name": "recipientId",
-            "type": "string",
-            "optional": false,
-            "help": "the recipient"
-          }
-        ],
-        "returns": "void",
-        "help": "Delete a recipient, without asking. Their responses stay, without recipient."
-      },
-      "recipients.buildRecipientFile": {
-        "params": [
-          {
-            "name": "recipientId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the recipient"
-          }
-        ],
-        "returns": "Promise<{fileName: string, mimeType: string, content: string}>",
-        "help": "Builds the recipient's own file. Exporting first settles the version (a pending structural change bumps it now), then the recipient is stamped with that version and marked as sent, so the outdated hint clears."
-      },
-      "recipients.markSent": {
-        "params": [
-          {
-            "name": "recipientId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the recipient"
-          }
-        ],
-        "returns": "void",
-        "help": "Marks a recipient as sent without building a file, for when the file arrived another way."
-      },
-      "responses.importResponse": {
-        "params": [
-          {
-            "name": "json",
-            "type": "string",
-            "optional": false,
-            "help": "the content of the answer file"
-          },
-          {
-            "name": "fileName",
-            "type": "string",
-            "optional": false,
-            "help": "the name shown in the import log"
-          }
-        ],
-        "returns": "'ok'|'older'|'duplicate'|'foreign'|'invalid'",
-        "help": "Read one answer file as the questionnaire saved it. Files of this questionnaire are taken in, also those of an older version; a file read before, one of another questionnaire, or a broken one is only logged."
-      },
-      "responses.removeResponse": {
-        "params": [
-          {
-            "name": "responseId",
-            "type": "string",
-            "optional": false,
-            "help": "the response"
-          }
-        ],
-        "returns": "void",
-        "help": "Delete an imported response, without asking."
-      },
-      "results.setFilter": {
-        "params": [
-          {
-            "name": "questionId",
-            "type": "string|null",
-            "optional": false,
-            "help": "the choice question, null for no filter"
-          },
-          {
-            "name": "optionId",
-            "type": "string|null",
-            "optional": false,
-            "help": "one of its options, null for no filter"
-          }
-        ],
-        "returns": "void",
-        "help": "Narrow the evaluation to the responses that chose one option of a single or multiple choice question; null for both shows all responses."
-      },
-      "results.setGroupBy": {
-        "params": [
-          {
-            "name": "questionId",
-            "type": "string|null",
-            "optional": false,
-            "help": "the single choice question, null for no grouping"
-          }
-        ],
-        "returns": "void",
-        "help": "Compare the evaluation across the options of a single choice question; null switches the comparison off."
-      },
-      "results.setReportWithNames": {
-        "params": [
-          {
-            "name": "on",
-            "type": "boolean",
-            "optional": false,
-            "help": "true names them"
-          }
-        ],
-        "returns": "void",
-        "help": "Whether the exported report names the respondents of free texts. Has no effect for an anonymous questionnaire."
-      },
-      "results.buildReport": {
-        "params": [],
-        "returns": "Promise<{fileName: string, mimeType: string, content: string}>",
-        "help": "Builds the report file under the active filter and grouping; no side effect."
-      },
-      "handover.takeToVocTree": {
-        "params": [
-          {
-            "name": "keys",
-            "type": "string[]",
-            "optional": false,
-            "help": "answer keys `<responseId>:<questionId>`, for an \"other\" text `<responseId>:<questionId>:other`"
-          }
-        ],
-        "returns": "number",
-        "help": "Add free-text and \"other\" answers as VoCs to the project's VoC tree; without a tree, one is created in the cycle's tree phase. An answer taken over before is added again."
-      },
-      "handover.setKanoTarget": {
-        "params": [
-          {
-            "name": "questionId",
-            "type": "string",
-            "optional": false,
-            "help": "the Kano question"
-          },
-          {
-            "name": "instanceId",
-            "type": "string|null",
-            "optional": false,
-            "help": "a kano instance of the project, null for a new one"
-          }
-        ],
-        "returns": "void",
-        "help": "Choose the kano instance a Kano question is handed to; null means a new instance at the next hand-over."
-      },
-      "handover.handOverToKano": {
-        "params": [
-          {
-            "name": "questionId",
-            "type": "string",
-            "optional": false,
-            "help": "the Kano question"
-          }
-        ],
-        "returns": "string|null",
-        "help": "Hand a Kano question with all responses (ignoring the filter) to its chosen kano instance, or to a new one in this module's phase. A repeat hand-over replaces only what came from this question."
-      },
-      "handover.toWorksheet": {
-        "params": [],
-        "returns": "string|null",
-        "help": "Put all responses into a new worksheet in this module's phase, one row per response."
-      },
       "read": {
         "params": [
           {
@@ -19058,61 +18497,955 @@ export const AGENT_REGISTRY = {
           }
         ],
         "returns": "AgentRead",
-        "help": "Den vollständigen Lesezustand liefern, dazu die Auswertung als Zahlen."
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
+      },
+      "setHeader": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setHeader",
+        "keysHelp": "actions.setHeader.params",
+        "keys": {
+          "field": {
+            "type": "'title'|'intro'|'contact'",
+            "help": ""
+          },
+          "value": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "setSurveyLanguage": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setSurveyLanguage",
+        "keysHelp": "actions.setSurveyLanguage.params",
+        "keys": {
+          "lang": {
+            "type": "'de'|'en'",
+            "help": ""
+          }
+        }
+      },
+      "setAnonymous": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setAnonymous",
+        "keysHelp": "actions.setAnonymous.params",
+        "keys": {
+          "anonymous": {
+            "type": "boolean",
+            "help": ""
+          }
+        }
+      },
+      "addSection": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "string",
+        "help": "",
+        "keysOf": "addSection",
+        "keysHelp": "actions.addSection.params",
+        "keys": {}
+      },
+      "setSectionField": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setSectionField",
+        "keysHelp": "actions.setSectionField.params",
+        "keys": {
+          "sectionId": {
+            "type": "string",
+            "help": ""
+          },
+          "field": {
+            "type": "'title'|'hint'",
+            "help": ""
+          },
+          "value": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "moveSection": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "{ removedConditions: number }",
+        "help": "",
+        "keysOf": "moveSection",
+        "keysHelp": "actions.moveSection.params",
+        "keys": {
+          "sectionId": {
+            "type": "string",
+            "help": ""
+          },
+          "direction": {
+            "type": "'up'|'down'",
+            "help": ""
+          }
+        }
+      },
+      "removeSection": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "{ removedConditions: number }",
+        "help": "",
+        "keysOf": "removeSection",
+        "keysHelp": "actions.removeSection.params",
+        "keys": {
+          "sectionId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "addQuestion": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "string",
+        "help": "",
+        "keysOf": "addQuestion",
+        "keysHelp": "actions.addQuestion.params",
+        "keys": {
+          "sectionId": {
+            "type": "string",
+            "help": ""
+          },
+          "type": {
+            "type": "'single'|'multi'|'rating'|'kano'|'text'|'info'",
+            "help": ""
+          }
+        }
+      },
+      "moveQuestion": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "{ removedConditions: number }",
+        "help": "",
+        "keysOf": "moveQuestion",
+        "keysHelp": "actions.moveQuestion.params",
+        "keys": {
+          "questionId": {
+            "type": "string",
+            "help": ""
+          },
+          "direction": {
+            "type": "'up'|'down'",
+            "help": ""
+          }
+        }
+      },
+      "removeQuestion": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "{ removedConditions: number }",
+        "help": "",
+        "keysOf": "removeQuestion",
+        "keysHelp": "actions.removeQuestion.params",
+        "keys": {
+          "questionId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "setQuestionField": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setQuestionField",
+        "keysHelp": "actions.setQuestionField.params",
+        "keys": {
+          "questionId": {
+            "type": "string",
+            "help": ""
+          },
+          "field": {
+            "type": "'text'|'hint'",
+            "help": ""
+          },
+          "value": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "setQuestionFlag": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setQuestionFlag",
+        "keysHelp": "actions.setQuestionFlag.params",
+        "keys": {
+          "questionId": {
+            "type": "string",
+            "help": ""
+          },
+          "flag": {
+            "type": "'required'|'other'|'noAnswer'|'importance'|'multiline'",
+            "help": ""
+          },
+          "on": {
+            "type": "boolean",
+            "help": ""
+          }
+        }
+      },
+      "changeQuestionType": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "{ removedConditions: number }",
+        "help": "",
+        "keysOf": "changeQuestionType",
+        "keysHelp": "actions.changeQuestionType.params",
+        "keys": {
+          "questionId": {
+            "type": "string",
+            "help": ""
+          },
+          "type": {
+            "type": "'single'|'multi'|'rating'|'kano'|'text'|'info'",
+            "help": ""
+          }
+        }
+      },
+      "addItem": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "string",
+        "help": "",
+        "keysOf": "addItem",
+        "keysHelp": "actions.addItem.params",
+        "keys": {
+          "questionId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "setItemField": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setItemField",
+        "keysHelp": "actions.setItemField.params",
+        "keys": {
+          "questionId": {
+            "type": "string",
+            "help": ""
+          },
+          "itemId": {
+            "type": "string",
+            "help": ""
+          },
+          "field": {
+            "type": "'text'|'group'",
+            "help": ""
+          },
+          "value": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "moveItem": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "moveItem",
+        "keysHelp": "actions.moveItem.params",
+        "keys": {
+          "questionId": {
+            "type": "string",
+            "help": ""
+          },
+          "itemId": {
+            "type": "string",
+            "help": ""
+          },
+          "direction": {
+            "type": "'up'|'down'",
+            "help": ""
+          }
+        }
+      },
+      "removeItem": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "{ removedConditions: number }",
+        "help": "",
+        "keysOf": "removeItem",
+        "keysHelp": "actions.removeItem.params",
+        "keys": {
+          "questionId": {
+            "type": "string",
+            "help": ""
+          },
+          "itemId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "setConditions": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "number",
+        "help": "",
+        "keysOf": "setConditions",
+        "keysHelp": "actions.setConditions.params",
+        "keys": {
+          "nodeId": {
+            "type": "string",
+            "help": ""
+          },
+          "conditions": {
+            "type": "{ questionId: string, optionIds: string[] }[]",
+            "help": ""
+          }
+        }
+      },
+      "markExported": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "number",
+        "help": "",
+        "keysOf": "markExported",
+        "keysHelp": "actions.markExported.params",
+        "keys": {}
+      },
+      "addRecipient": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "string",
+        "help": "",
+        "keysOf": "addRecipient",
+        "keysHelp": "actions.addRecipient.params",
+        "keys": {}
+      },
+      "setRecipientField": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setRecipientField",
+        "keysHelp": "actions.setRecipientField.params",
+        "keys": {
+          "recipientId": {
+            "type": "string",
+            "help": ""
+          },
+          "field": {
+            "type": "'name'|'organisation'|'group'|'email'|'note'",
+            "help": ""
+          },
+          "value": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "removeRecipient": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeRecipient",
+        "keysHelp": "actions.removeRecipient.params",
+        "keys": {
+          "recipientId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "markSent": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "markSent",
+        "keysHelp": "actions.markSent.params",
+        "keys": {
+          "recipientId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "importResponse": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "{ status: 'ok'|'older'|'duplicate'|'foreign'|'invalid', orphanIds: string[], unknownRecipient: boolean }",
+        "help": "",
+        "keysOf": "importResponse",
+        "keysHelp": "actions.importResponse.params",
+        "keys": {
+          "json": {
+            "type": "string",
+            "help": ""
+          },
+          "fileName": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "removeResponse": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeResponse",
+        "keysHelp": "actions.removeResponse.params",
+        "keys": {
+          "responseId": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "setFilter": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setFilter",
+        "keysHelp": "actions.setFilter.params",
+        "keys": {
+          "questionId": {
+            "type": "string|null",
+            "help": ""
+          },
+          "optionId": {
+            "type": "string|null",
+            "help": ""
+          }
+        }
+      },
+      "setGroupBy": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setGroupBy",
+        "keysHelp": "actions.setGroupBy.params",
+        "keys": {
+          "questionId": {
+            "type": "string|null",
+            "help": ""
+          }
+        }
+      },
+      "setKanoTarget": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setKanoTarget",
+        "keysHelp": "actions.setKanoTarget.params",
+        "keys": {
+          "questionId": {
+            "type": "string",
+            "help": ""
+          },
+          "instanceId": {
+            "type": "string|null",
+            "help": ""
+          }
+        }
+      },
+      "setKanoTransfer": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setKanoTransfer",
+        "keysHelp": "actions.setKanoTransfer.params",
+        "keys": {
+          "questionId": {
+            "type": "string",
+            "help": ""
+          },
+          "instanceId": {
+            "type": "string",
+            "help": ""
+          },
+          "itemIds": {
+            "type": "string[]",
+            "help": ""
+          },
+          "respondentIds": {
+            "type": "string[]",
+            "help": ""
+          }
+        }
+      },
+      "markVocTaken": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "markVocTaken",
+        "keysHelp": "actions.markVocTaken.params",
+        "keys": {
+          "keys": {
+            "type": "string[]",
+            "help": ""
+          }
+        }
+      },
+      "buildSurveyFile": {
+        "target": "asyncTask",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "any",
+        "help": "",
+        "keysOf": "buildSurveyFile",
+        "keysHelp": "asyncTasks.buildSurveyFile.params",
+        "keys": {},
+        "task": "buildSurveyFile",
+        "op": "start",
+        "helpKey": "asyncTasks.buildSurveyFile.help"
+      },
+      "buildSurveyFile.cancel": {
+        "target": "asyncTask",
+        "task": "buildSurveyFile",
+        "op": "cancel",
+        "params": [],
+        "returns": "{ cancelled: boolean }",
+        "help": "",
+        "helpKey": "asyncTasks.buildSurveyFile.cancel.help"
+      },
+      "buildRecipientFile": {
+        "target": "asyncTask",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "any",
+        "help": "",
+        "keysOf": "buildRecipientFile",
+        "keysHelp": "asyncTasks.buildRecipientFile.params",
+        "keys": {
+          "recipientId": {
+            "type": "unknown",
+            "help": ""
+          }
+        },
+        "task": "buildRecipientFile",
+        "op": "start",
+        "helpKey": "asyncTasks.buildRecipientFile.help"
+      },
+      "buildRecipientFile.cancel": {
+        "target": "asyncTask",
+        "task": "buildRecipientFile",
+        "op": "cancel",
+        "params": [],
+        "returns": "{ cancelled: boolean }",
+        "help": "",
+        "helpKey": "asyncTasks.buildRecipientFile.cancel.help"
+      },
+      "buildReport": {
+        "target": "asyncTask",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "any",
+        "help": "",
+        "keysOf": "buildReport",
+        "keysHelp": "asyncTasks.buildReport.params",
+        "keys": {},
+        "task": "buildReport",
+        "op": "start",
+        "helpKey": "asyncTasks.buildReport.help"
+      },
+      "buildReport.cancel": {
+        "target": "asyncTask",
+        "task": "buildReport",
+        "op": "cancel",
+        "params": [],
+        "returns": "{ cancelled: boolean }",
+        "help": "",
+        "helpKey": "asyncTasks.buildReport.cancel.help"
+      },
+      "toWorksheet": {
+        "target": "asyncTask",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "any",
+        "help": "",
+        "keysOf": "toWorksheet",
+        "keysHelp": "asyncTasks.toWorksheet.params",
+        "keys": {},
+        "task": "toWorksheet",
+        "op": "start",
+        "helpKey": "asyncTasks.toWorksheet.help"
+      },
+      "toWorksheet.cancel": {
+        "target": "asyncTask",
+        "task": "toWorksheet",
+        "op": "cancel",
+        "params": [],
+        "returns": "{ cancelled: boolean }",
+        "help": "",
+        "helpKey": "asyncTasks.toWorksheet.cancel.help"
+      },
+      "takeToVocTree": {
+        "target": "asyncTask",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "any",
+        "help": "",
+        "keysOf": "takeToVocTree",
+        "keysHelp": "asyncTasks.takeToVocTree.params",
+        "keys": {
+          "keys": {
+            "type": "unknown",
+            "help": ""
+          }
+        },
+        "task": "takeToVocTree",
+        "op": "start",
+        "helpKey": "asyncTasks.takeToVocTree.help"
+      },
+      "takeToVocTree.cancel": {
+        "target": "asyncTask",
+        "task": "takeToVocTree",
+        "op": "cancel",
+        "params": [],
+        "returns": "{ cancelled: boolean }",
+        "help": "",
+        "helpKey": "asyncTasks.takeToVocTree.cancel.help"
+      },
+      "handOverToKano": {
+        "target": "asyncTask",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "any",
+        "help": "",
+        "keysOf": "handOverToKano",
+        "keysHelp": "asyncTasks.handOverToKano.params",
+        "keys": {
+          "questionId": {
+            "type": "unknown",
+            "help": ""
+          }
+        },
+        "task": "handOverToKano",
+        "op": "start",
+        "helpKey": "asyncTasks.handOverToKano.help"
+      },
+      "handOverToKano.cancel": {
+        "target": "asyncTask",
+        "task": "handOverToKano",
+        "op": "cancel",
+        "params": [],
+        "returns": "{ cancelled: boolean }",
+        "help": "",
+        "helpKey": "asyncTasks.handOverToKano.cancel.help"
       }
     },
     "fields": {
       "survey": {
-        "type": "any",
-        "help": "der Fragebogen",
-        "bulk": false,
-        "derived": true
+        "type": "{ id: string, version: number, lang: 'de'|'en', title: string, intro: string, contact: string, anonymous: boolean, sections: Array<{ id: string, title: string, hint: string, when: { questionId: string, optionIds: string[] }[]|null, questions: Array<{ id: string, type: 'single'|'multi'|'rating'|'kano'|'text'|'info', text: string, hint: string, required: boolean, when: { questionId: string, optionIds: string[] }[]|null, options?: { id: string, text: string, group?: string }[], rows?: { id: string, text: string }[], other?: boolean, noAnswer?: boolean, importance?: boolean, multiline?: boolean }> }> }",
+        "help": "",
+        "bulk": false
       },
       "recipients": {
-        "type": "Array<{id, name, organisation, group, email, note, sentAt: string|null, sentVersion: number|null}>",
-        "help": "die Empfänger",
-        "bulk": false,
-        "derived": true
+        "type": "Array<{ id: string, name: string, organisation: string, group: string, email: string, note: string, sentAt: string|null, sentVersion: number|null }>",
+        "help": "",
+        "bulk": false
       },
       "responses": {
-        "type": "Array<{id, surveyVersion, recipientId: string|null, viaRecipient: boolean, submittedAt, answers: object}>",
-        "help": "die eingelesenen Antworten",
-        "bulk": false,
-        "derived": true
+        "type": "Array<{ id: string, surveyVersion: number, recipientId: string|null, viaRecipient: boolean, submittedAt: string, answers: Record<string, { option?: string, ids?: string[], other?: string|null, ratings?: Record<string, 1|2|3|4|5|'na'>, kano?: Record<string, { f: number|null, d: number|null, w: number|null }>, text?: string }> }>",
+        "help": "",
+        "bulk": false
       },
       "answeredRecipientIds": {
         "type": "string[]",
-        "help": "Empfänger, die geantwortet haben",
-        "bulk": false,
-        "derived": true
+        "help": "",
+        "bulk": false
       },
       "transfers": {
-        "type": "any",
-        "help": "was schon übergeben wurde",
-        "bulk": false,
-        "derived": true
+        "type": "{ kano: Record<string, { instanceId: string|null, byInstance: Record<string, { itemIds: string[], respondentIds: string[] }> }>, vocTree: { responseKeys: string[] } }",
+        "help": "",
+        "bulk": false
       },
       "ui": {
-        "type": "any",
-        "help": "Stand der Oberfläche",
-        "bulk": false,
-        "derived": true
+        "type": "{ filter: { questionId: string, optionId: string }|null, groupBy: string|null, reportWithNames: boolean }",
+        "help": "",
+        "bulk": false
       },
       "dirtyStructure": {
-        "type": "any",
-        "help": "Aufbau seit dem letzten Export geändert",
-        "bulk": false,
-        "derived": true
+        "type": "boolean",
+        "help": "",
+        "bulk": false
       },
       "exportedOnce": {
-        "type": "any",
-        "help": "schon einmal exportiert",
-        "bulk": false,
-        "derived": true
+        "type": "boolean",
+        "help": "",
+        "bulk": false
       },
       "results": {
-        "type": "SurveyResults",
-        "help": "die Auswertung unter dem aktiven Filter und der aktiven Gruppierung",
+        "type": "object|null",
+        "help": "",
         "bulk": false,
         "derived": true,
         "keysOf": "SurveyResults",
@@ -19367,11 +19700,73 @@ export const AGENT_REGISTRY = {
             }
           }
         }
+      },
+      "asyncTasks": {
+        "type": "object",
+        "help": "",
+        "bulk": false,
+        "derived": true
       }
     },
+    "asyncTasks": [
+      {
+        "name": "buildSurveyFile",
+        "auto": false,
+        "params": []
+      },
+      {
+        "name": "buildRecipientFile",
+        "auto": false,
+        "params": [
+          "recipientId"
+        ]
+      },
+      {
+        "name": "buildReport",
+        "auto": false,
+        "params": []
+      },
+      {
+        "name": "toWorksheet",
+        "auto": false,
+        "params": []
+      },
+      {
+        "name": "takeToVocTree",
+        "auto": false,
+        "params": [
+          "keys"
+        ]
+      },
+      {
+        "name": "handOverToKano",
+        "auto": false,
+        "params": [
+          "questionId"
+        ]
+      }
+    ],
     "viewFields": [
-      "ui.tab",
-      "ui.selectedQuestionId"
+      "tab",
+      "selectedQuestionId"
+    ],
+    "settable": [
+      "survey",
+      "recipients",
+      "responses",
+      "answeredRecipientIds",
+      "transfers",
+      "ui",
+      "dirtyStructure",
+      "exportedOnce"
+    ],
+    "invariants": [
+      "uniqueIds",
+      "questionShape",
+      "validConditions",
+      "validUi",
+      "validSelection",
+      "answeredRecipients"
     ]
   },
   "time-weighted-chart": {

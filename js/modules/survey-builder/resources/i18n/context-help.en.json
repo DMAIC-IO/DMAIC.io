@@ -101,7 +101,7 @@
       "help": "Which recipients have answered; this gives the status not sent, sent or answered."
     },
     "transfers": {
-      "help": "What was handed over: the answers taken into the VoC tree and per Kano question the Kano instance it goes to."
+      "help": "What was handed over: the answers taken into the VoC tree and per Kano question the Kano instance it goes to (instanceId), plus per Kano instance the features and respondents created there (byInstance)."
     },
     "ui": {
       "help": "The settings of the results: the filter (question and option, or empty), the grouping (single choice question or empty) and whether the report names the authors of free texts (reportWithNames; no effect for an anonymous questionnaire). Settable via instance.set.",
@@ -341,7 +341,7 @@
       }
     },
     "setKanoTarget": {
-      "help": "Choose which Kano instance of the project a Kano question is handed to, or a new one.",
+      "help": "Choose which Kano instance of the project a Kano question is handed to, or a new one. The features and respondents remembered in other instances stay; switching back, the next hand-over again replaces only its own entries there.",
       "params": {
         "questionId": "The Kano question.",
         "instanceId": "A Kano instance of the project; null creates a new one at the next hand-over.",
@@ -349,11 +349,13 @@
       }
     },
     "setKanoTransfer": {
-      "help": "Record which Kano features and respondents a Kano question created in the chosen Kano instance. The hand-over sets this itself; by hand only for repairs.",
+      "help": "Record which Kano features and respondents a Kano question created in a Kano instance. The target of the question stays as it is. The hand-over sets this itself; by hand only for repairs.",
       "params": {
         "questionId": "The Kano question.",
-        "transfer": "{ instanceId, itemIds, respondentIds }: the Kano instance, the features created and the respondents created.",
-        "command": "The command as one object with questionId and transfer."
+        "instanceId": "The Kano instance the entries are in.",
+        "itemIds": "The ids of the features the question created there.",
+        "respondentIds": "The ids of the respondents the question created there.",
+        "command": "The command as one object with questionId, instanceId, itemIds and respondentIds."
       }
     },
     "markVocTaken": {

@@ -183,8 +183,9 @@ export default createModule({
         const phase = surveys.find((/** @type {any} */ i) => i.instanceId === instanceId)?.phase;
         if (!phase) throw failure(failed, 'handOverToKano', new Error('the survey is in no phase'), notifyFail);
         const remembered = data.transfers.kano[questionId];
-        const kanoId = remembered && services.instances.list({ modules: ['kano'] }).some((/** @type {any} */ i) => i.instanceId === remembered.instanceId)
-          ? remembered.instanceId : null;
+        const target = remembered?.instanceId ?? null;
+        const kanoId = target && services.instances.list({ modules: ['kano'] }).some((/** @type {any} */ i) => i.instanceId === target)
+          ? target : null;
 
         let kanoRead = null;
         let backups = /** @type {any[]} */ ([]);
@@ -212,7 +213,7 @@ export default createModule({
           // The read stack has switched the view: the host no longer reports this run, a throw here must.
           try {
             backups = kanoBackups(value, known, kanoId);
-            own = kanoOwnEntries(value, remembered, instanceId, questionId);
+            own = kanoOwnEntries(value, remembered?.byInstance[kanoId], instanceId, questionId);
           } catch (err) {
             throw failure(failed, 'handOverToKano', err, notifyFail);
           }

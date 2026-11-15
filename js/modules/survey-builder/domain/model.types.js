@@ -7,7 +7,7 @@
  * @property {Array<{ id: string, name: string, organisation: string, group: string, email: string, note: string, sentAt: string|null, sentVersion: number|null }>} recipients
  * @property {Array<{ id: string, surveyVersion: number, recipientId: string|null, viaRecipient: boolean, submittedAt: string, answers: Record<string, { option?: string, ids?: string[], other?: string|null, ratings?: Record<string, 1|2|3|4|5|'na'>, kano?: Record<string, { f: number|null, d: number|null, w: number|null }>, text?: string }> }>} responses
  * @property {string[]} answeredRecipientIds
- * @property {{ kano: Record<string, { instanceId: string, itemIds: string[], respondentIds: string[] }>, vocTree: { responseKeys: string[] } }} transfers
+ * @property {{ kano: Record<string, { instanceId: string|null, byInstance: Record<string, { itemIds: string[], respondentIds: string[] }> }>, vocTree: { responseKeys: string[] } }} transfers
  * @property {{ filter: { questionId: string, optionId: string }|null, groupBy: string|null, reportWithNames: boolean }} ui
  * @property {boolean} dirtyStructure
  * @property {boolean} exportedOnce
@@ -182,7 +182,9 @@
 /**
  * @typedef {object} SetKanoTransferCommand
  * @property {string} questionId
- * @property {{ instanceId: string, itemIds: string[], respondentIds: string[] }} transfer
+ * @property {string} instanceId
+ * @property {string[]} itemIds
+ * @property {string[]} respondentIds
  */
 
 /**

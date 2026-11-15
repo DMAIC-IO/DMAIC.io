@@ -1,10 +1,11 @@
 /**
  * D.Mike — Survey builder: Stapel der Übergabe einer Kano-Frage an Kano.
  *
- * Rein. Der Survey merkt sich selbst, welche Merkmale und Befragten er in
- * einer Kano-Instanz angelegt hat (`transfers.kano[questionId]`). Eine
- * Übergabe ersetzt nur diese eigenen Einträge; fremde bleiben samt ihren
- * Antworten. Einträge aus der früheren Übergabe tragen statt eines Merkers
+ * Rein. Der Survey merkt sich selbst, welche Merkmale und Befragten er je
+ * Kano-Instanz angelegt hat (`transfers.kano[questionId].byInstance`); das
+ * Ziel der Frage (`instanceId`) ist davon getrennt, ein Umlenken lässt die
+ * Referenzen stehen. Eine Übergabe ersetzt nur die eigenen Einträge der
+ * Zielinstanz; fremde bleiben samt ihren Antworten. Einträge aus der früheren Übergabe tragen statt eines Merkers
  * eine `origin`-Marke in Kano. Weil `setItems` die Marken der Merkmale
  * verwirft, sichert der Stapel sie zuerst als Merker aller Herkünfte
  * (`kanoBackups`); erst danach folgen die Schreibschritte an Kano.
@@ -20,8 +21,12 @@ import { uid } from '../../../../core/uid.js';
  * @typedef {{ id: string, name?: string, origin?: Origin }} KanoRespondent
  * @typedef {{ items: ReadonlyArray<KanoItem>, respondents: ReadonlyArray<KanoRespondent> }} KanoRead
  *   was `read({ fields: ['items', 'respondents', …] })` von Kano liefert (Auszug)
- * @typedef {{ instanceId: string, itemIds: ReadonlyArray<string>, respondentIds: ReadonlyArray<string> }} Transfer
- * @typedef {{ instance: string, questionId: string, transfer: { instanceId: string, itemIds: string[], respondentIds: string[] } }} Backup
+ * @typedef {{ itemIds: ReadonlyArray<string>, respondentIds: ReadonlyArray<string> }} Refs
+ *   die eigenen Referenzen einer Kano-Frage in einer Kano-Instanz
+ * @typedef {{ instanceId: string|null, byInstance: Record<string, Refs> }} Transfer
+ *   der Merker einer Kano-Frage: ihr Ziel und ihre Referenzen je Kano-Instanz
+ * @typedef {{ instance: string, questionId: string, instanceId: string, itemIds: string[], respondentIds: string[] }} Backup
+ *   `instance` die Survey-Instanz, der Rest die Parameter ihres `setKanoTransfer`
  */
 
 /**
@@ -34,23 +39,28 @@ const fromOrigin = (x, surveyInstanceId, questionId) =>
   x?.origin?.surveyInstanceId === surveyInstanceId && x.origin.questionId === questionId;
 
 /**
+ * @param {Refs|undefined} refs
+ * @returns {boolean} ob Referenzen gemerkt sind
+ */
+const hasRefs = (refs) => (refs?.itemIds?.length ?? 0) + (refs?.respondentIds?.length ?? 0) > 0;
+
+/**
  * Die eigenen Einträge einer Kano-Frage in der Instanz: die gemerkten ids,
- * die dort noch vorkommen. Ist nichts gemerkt (früherer Bestand), die
- * Einträge mit der `origin`-Marke dieser Herkunft.
+ * die dort noch vorkommen. Ist für diese Instanz nichts gemerkt (früherer
+ * Bestand), die Einträge mit der `origin`-Marke dieser Herkunft.
  * @param {KanoRead} kanoRead
- * @param {Transfer|undefined} transfer der Merker der Frage
+ * @param {Refs|undefined} refs die Referenzen der Frage für diese Instanz (`byInstance[kanoId]`)
  * @param {string} surveyInstanceId
  * @param {string} questionId
  * @returns {{ itemIds: string[], respondentIds: string[] }}
  */
-export function kanoOwnEntries(kanoRead, transfer, surveyInstanceId, questionId) {
-  const remembered = (transfer?.itemIds.length ?? 0) + (transfer?.respondentIds.length ?? 0) > 0;
-  if (remembered && transfer) {
+export function kanoOwnEntries(kanoRead, refs, surveyInstanceId, questionId) {
+  if (refs && hasRefs(refs)) {
     const items = new Set(kanoRead.items.map((i) => i.id));
     const respondents = new Set(kanoRead.respondents.map((r) => r.id));
     return {
-      itemIds: transfer.itemIds.filter((id) => items.has(id)),
-      respondentIds: transfer.respondentIds.filter((id) => respondents.has(id)),
+      itemIds: refs.itemIds.filter((id) => items.has(id)),
+      respondentIds: refs.respondentIds.filter((id) => respondents.has(id)),
     };
   }
   return {
@@ -60,15 +70,16 @@ export function kanoOwnEntries(kanoRead, transfer, surveyInstanceId, questionId)
 }
 
 /**
- * Die Merker, die der Stapel vor dem Schreiben sichert: je Herkunft
+ * Die Referenzen, die der Stapel vor dem Schreiben sichert: je Herkunft
  * `(surveyInstanceId, questionId)` der `origin`-Marken in der Instanz, deren
  * Survey-Instanz noch existiert, deren Frage dort noch eine Kano-Frage ist
- * und deren Merker für diese Frage auf diese Kano-Instanz zeigt, aber noch
- * nichts gemerkt hat. Merker gelöschter oder umgetypter Fragen bleiben im
- * Model stehen; ein `setKanoTransfer` darauf lehnte das Model ab und kippte
- * den ganzen Stapel.
+ * und die für diese Kano-Instanz noch nichts gemerkt hat. Wohin die Frage
+ * gerade zielt, spielt keine Rolle: die Sicherung schreibt nur die
+ * Referenzen dieser Instanz und lenkt nichts um. Merker gelöschter oder
+ * umgetypter Fragen bleiben im Model stehen; ein `setKanoTransfer` darauf
+ * lehnte das Model ab und kippte den ganzen Stapel.
  * @param {KanoRead} kanoRead
- * @param {ReadonlyArray<{ instanceId: string, transfers: { kano: Record<string, Transfer> },
+ * @param {ReadonlyArray<{ instanceId: string, transfers: { kano: Record<string, Transfer|undefined> },
  *   kanoQuestionIds: ReadonlyArray<string> }>} surveys
  *   die Survey-Instanzen des Projekts mit ihren Merkern (`transfers`) und den
  *   ids ihrer aktuellen Kano-Fragen (`kanoQuestionIds`)
@@ -84,9 +95,9 @@ export function kanoBackups(kanoRead, surveys, kanoId) {
       if (!o || typeof o.surveyInstanceId !== 'string' || typeof o.questionId !== 'string') continue;
       const key = JSON.stringify([o.surveyInstanceId, o.questionId]);
       if (!byOrigin.has(key)) {
-        byOrigin.set(key, { instance: o.surveyInstanceId, questionId: o.questionId, transfer: { instanceId: kanoId, itemIds: [], respondentIds: [] } });
+        byOrigin.set(key, { instance: o.surveyInstanceId, questionId: o.questionId, instanceId: kanoId, itemIds: [], respondentIds: [] });
       }
-      byOrigin.get(key)?.transfer[list].push(x.id);
+      byOrigin.get(key)?.[list].push(x.id);
     }
   };
   collect(kanoRead.items, 'itemIds');
@@ -95,8 +106,7 @@ export function kanoBackups(kanoRead, surveys, kanoId) {
   return [...byOrigin.values()].filter((b) => {
     const survey = byId.get(b.instance);
     if (!survey?.kanoQuestionIds.includes(b.questionId)) return false;
-    const t = survey.transfers.kano[b.questionId];
-    return Boolean(t) && t.instanceId === kanoId && t.itemIds.length === 0 && t.respondentIds.length === 0;
+    return !hasRefs(survey.transfers.kano[b.questionId]?.byInstance?.[kanoId]);
   });
 }
 
@@ -114,7 +124,9 @@ function onScale(v, max) {
  * Instanz `module.add` mit `setSourceTree(null)` und der Wichtigkeit der
  * Frage (eine vorhandene schaltet die Frage nur ein), die eigenen Befragten
  * und Merkmale entfernen, die Merkmalliste aus fremden und neuen Merkmalen,
- * je Antwortendem eine Befragte samt Antworten, zuletzt der eigene Merker.
+ * je Antwortendem eine Befragte samt Antworten, zuletzt die eigenen
+ * Referenzen für die Zielinstanz und das Ziel selbst (bei neuer Instanz über
+ * die Referenz auf `module.add`).
  * @param {{ kanoId: string|null, phase: string, kanoRead: KanoRead|null,
  *   question: { id: string, rows: ReadonlyArray<{ id: string, text: string }>, importance?: boolean },
  *   responses: ReadonlyArray<{ recipientId: string|null, answers: Record<string, any> }>,
@@ -128,9 +140,8 @@ function onScale(v, max) {
 export function kanoStack(input) {
   const { kanoId, phase, kanoRead, question, responses, recipients, anonymous, respondentLabel, surveyInstanceId, backups, own } = input;
   /** @type {Array<AddOp|CallOp>} */
-  const stack = backups.map((b) => ({
-    op: 'instance.call', module: 'survey-builder', instance: b.instance, method: 'setKanoTransfer',
-    args: [{ questionId: b.questionId, transfer: b.transfer }],
+  const stack = backups.map(({ instance, ...args }) => ({
+    op: 'instance.call', module: 'survey-builder', instance, method: 'setKanoTransfer', args: [args],
   }));
   /** @type {Ref} */
   const instance = kanoId ?? { $from: 'kano', path: 'instanceId' };
@@ -177,7 +188,10 @@ export function kanoStack(input) {
 
   stack.push({
     op: 'instance.call', module: 'survey-builder', instance: surveyInstanceId, method: 'setKanoTransfer',
-    args: [{ questionId: question.id, transfer: { instanceId: instance, itemIds: fresh.map((i) => i.id), respondentIds } }],
+    args: [{ questionId: question.id, instanceId: instance, itemIds: fresh.map((i) => i.id), respondentIds }],
+  }, {
+    op: 'instance.call', module: 'survey-builder', instance: surveyInstanceId, method: 'setKanoTarget',
+    args: [{ questionId: question.id, instanceId: instance }],
   });
   return stack;
 }

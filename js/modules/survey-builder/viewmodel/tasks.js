@@ -22,7 +22,7 @@
  * needs is read into locals before its first `await` — the model as plain
  * copies, the services, the own instance id, the texts — and nothing but the
  * stack writes afterwards: the marks the survey keeps (`setKanoTransfer`,
- * `markVocTaken`) are steps of the stack. A failure ends the run with the
+ * `setKanoTarget`, `markVocTaken`) are steps of the stack. A failure ends the run with the
  * module's own text; the cause goes to the console.
  */
 import { downloadBlob } from '../../../core/export-utils.js';

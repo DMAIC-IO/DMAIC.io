@@ -221,7 +221,10 @@ export class SurveyModel extends defineModel({
     })),
     answeredRecipientIds: list(text()),
     transfers: object({
-      kano: map(text(), object({ instanceId: text(), itemIds: list(text()), respondentIds: list(text()) })),
+      kano: map(text(), object({
+        instanceId: text({ nullable: true }),
+        byInstance: map(text(), object({ itemIds: list(text()), respondentIds: list(text()) })),
+      })),
       vocTree: object({ responseKeys: list(text()) }),
     }),
     ui: object({
@@ -565,17 +568,17 @@ export class SurveyModel extends defineModel({
       params: { questionId: text(), instanceId: text({ nullable: true }) },
       run({ questionId, instanceId }) {
         this._requireKanoQuestion(questionId);
-        const kano = { ...this.transfers.kano };
-        if (instanceId === null) delete kano[questionId];
-        else if (kano[questionId]?.instanceId !== instanceId) kano[questionId] = { instanceId, itemIds: [], respondentIds: [] };
-        this.transfers = { ...this.transfers, kano };
+        const byInstance = this.transfers.kano[questionId]?.byInstance ?? {};
+        this.transfers = { ...this.transfers, kano: { ...this.transfers.kano, [questionId]: { instanceId, byInstance } } };
       },
     }),
     setKanoTransfer: command({
-      params: { questionId: text(), transfer: object({ instanceId: text(), itemIds: list(text()), respondentIds: list(text()) }) },
-      run({ questionId, transfer }) {
+      params: { questionId: text(), instanceId: text(), itemIds: list(text()), respondentIds: list(text()) },
+      run({ questionId, instanceId, itemIds, respondentIds }) {
         this._requireKanoQuestion(questionId);
-        this.transfers = { ...this.transfers, kano: { ...this.transfers.kano, [questionId]: transfer } };
+        const current = this.transfers.kano[questionId] ?? { instanceId: null, byInstance: {} };
+        const byInstance = { ...current.byInstance, [instanceId]: { itemIds, respondentIds } };
+        this.transfers = { ...this.transfers, kano: { ...this.transfers.kano, [questionId]: { ...current, byInstance } } };
       },
     }),
     markVocTaken: command({

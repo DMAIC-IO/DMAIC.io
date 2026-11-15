@@ -14,8 +14,8 @@
  * - jede Antwort als Objekt mit festen Schlüsseln (`{ option }`, `{ other }`,
  *   `{ ids, other }`, `{ ratings }`, `{ kano }`, `{ text }`);
  * - `transfers.kano[q]` von der Instanz-id (Text) auf
- *   `{ instanceId, itemIds: [], respondentIds: [] }` — die Listen füllt die
- *   erste Übergabe an die Instanz;
+ *   `{ instanceId, byInstance: {} }` — die Referenzen je Kano-Instanz füllt
+ *   die erste Übergabe an die jeweilige Instanz;
  * - `ui.tab` und `ui.selectedQuestionId` werden die Ansichtsfelder `tab` und
  *   `selectedQuestionId`.
  */
@@ -174,7 +174,7 @@ export function from0(d) {
     answeredRecipientIds,
     transfers: {
       kano: Object.fromEntries(Object.entries(kano).filter(([q, v]) => q !== '__proto__' && typeof v === 'string')
-        .map(([q, instanceId]) => [q, { instanceId, itemIds: [], respondentIds: [] }])),
+        .map(([q, instanceId]) => [q, { instanceId, byInstance: {} }])),
       vocTree: { responseKeys: arr(vocTree.responseKeys).filter((k) => typeof k === 'string') },
     },
     ui: {

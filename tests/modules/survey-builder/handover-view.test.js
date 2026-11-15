@@ -9,7 +9,9 @@
  */
 import { suite, test, assert, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import { mount, settle, until, pick, de, INSTANCE } from './view-harness.js';
-import { MIXED, copy } from './cases.js';
+import { MIXED, copy, load } from './cases.js';
+import { createInstances } from '../../../js/core/instances.js';
+import mod from '../../../js/modules/survey-builder/viewmodel/viewmodel.js';
 import { worksheetColumnsFor } from '../../../js/modules/survey-builder/domain/handover/worksheet.js';
 
 const flush = () => new Promise((r) => setTimeout(r, 0));
@@ -38,7 +40,7 @@ const KANO_READ = Object.freeze({
 
 /** The other survey as `read(id, { fields: ['transfers', 'survey'] })` gives it: its Kano question qx points at kano-1. */
 const OTHER_SURVEY = Object.freeze({
-  transfers: { kano: { qx: { instanceId: 'kano-1', itemIds: [], respondentIds: [] } }, vocTree: { responseKeys: [] } },
+  transfers: { kano: { qx: { instanceId: 'kano-1', byInstance: {} } }, vocTree: { responseKeys: [] } },
   survey: {
     id: 'sv-2', version: 1, lang: 'de', title: 'Andere', intro: '', contact: '', anonymous: false,
     sections: [{ id: 's1', title: '', hint: '', when: null, questions: [
@@ -228,19 +230,37 @@ suite('survey-builder handover: Kano', () => {
     const write = fake.log[2][1];
     assertDeepEqual(write.slice(0, 2), [
       { op: 'instance.call', module: 'survey-builder', instance: INSTANCE, method: 'setKanoTransfer',
-        args: [{ questionId: 'q4', transfer: { instanceId: 'kano-1', itemIds: ['it-own'], respondentIds: ['rs-own'] } }] },
+        args: [{ questionId: 'q4', instanceId: 'kano-1', itemIds: ['it-own'], respondentIds: ['rs-own'] }] },
       { op: 'instance.call', module: 'survey-builder', instance: 'sb-2', method: 'setKanoTransfer',
-        args: [{ questionId: 'qx', transfer: { instanceId: 'kano-1', itemIds: ['it-other'], respondentIds: ['rs-other'] } }] },
+        args: [{ questionId: 'qx', instanceId: 'kano-1', itemIds: ['it-other'], respondentIds: ['rs-other'] }] },
     ], 'the marks are backed up first');
     assertTrue(write.some((/** @type {any} */ a) => a.method === 'removeItem' && a.args[0] === 'it-own'), 'own item replaced');
     assertTrue(write.some((/** @type {any} */ a) => a.method === 'removeRespondent' && a.args[0] === 'rs-own'), 'own respondent replaced');
     assertTrue(!write.some((/** @type {any} */ a) => a.method === 'removeItem' && a.args[0] !== 'it-own'), 'foreign items stay');
-    const last = write[write.length - 1];
-    assertEqual(last.method, 'setKanoTransfer');
-    assertEqual(last.instance, INSTANCE);
-    assertEqual(last.args[0].transfer.instanceId, 'kano-1');
+    const [transfer, target] = write.slice(-2);
+    assertEqual(transfer.method, 'setKanoTransfer');
+    assertEqual(transfer.instance, INSTANCE);
+    assertEqual(transfer.args[0].instanceId, 'kano-1');
+    assertDeepEqual(target, { op: 'instance.call', module: 'survey-builder', instance: INSTANCE, method: 'setKanoTarget',
+      args: [{ questionId: 'q4', instanceId: 'kano-1' }] });
     assertDeepEqual(json(h).transfers, before, 'the own model is written only by the stack');
     assertTrue(h.notes.some(([m, t]) => m === de('kanoHandedOver') && t === 'success'));
+  });
+
+  test('the references for the target are the own entries; those for another instance and the origin marks are not', async () => {
+    const state = load(mixed()).toJSON();
+    state.transfers.kano.q4 = { instanceId: 'kano-1', byInstance: {
+      'kano-1': { itemIds: ['it-hand'], respondentIds: [] },
+      'kano-2': { itemIds: ['it-own'], respondentIds: ['rs-own'] },
+    } };
+    const fake = fakeInstances({ kano: [{ instanceId: 'kano-1', phase: 'define' }, { instanceId: 'kano-2', phase: 'define' }] });
+    const h = await mount(state, { instances: fake });
+    const out = await start(h, 'handOverToKano', { questionId: 'q4' });
+    assertEqual(out.status, 'done');
+    const write = fake.stacks()[1];
+    assertDeepEqual(write.filter((/** @type {any} */ a) => a.method === 'removeItem').map((/** @type {any} */ a) => a.args[0]), ['it-hand']);
+    assertTrue(!write.some((/** @type {any} */ a) => a.method === 'removeRespondent'), 'no respondent of its own here');
+    assertEqual(write[0].module, 'kano', 'nothing to back up for q4: it has references');
   });
 
   test('a remembered instance that was deleted: a new one is added, setSourceTree(null) first', async () => {
@@ -255,8 +275,10 @@ suite('survey-builder handover: Kano', () => {
     const stack = stacks[0];
     assertDeepEqual(stack[0], { op: 'module.add', id: 'kano', module: 'kano', phase: 'define' });
     assertDeepEqual(stack[1], { op: 'instance.call', module: 'kano', instance: { $from: 'kano', path: 'instanceId' }, method: 'setSourceTree', args: [null] });
-    const last = stack[stack.length - 1];
-    assertDeepEqual(last.args[0].transfer.instanceId, { $from: 'kano', path: 'instanceId' }, 'the mark points at the new instance');
+    const [transfer, target] = stack.slice(-2);
+    assertDeepEqual(transfer.args[0].instanceId, { $from: 'kano', path: 'instanceId' }, 'the references are for the new instance');
+    assertEqual(target.method, 'setKanoTarget');
+    assertDeepEqual(target.args[0], { questionId: 'q4', instanceId: { $from: 'kano', path: 'instanceId' } }, 'the target points at the new instance');
   });
 
   test('a stack that fails: handoverFailed, own model unchanged', async () => {
@@ -279,9 +301,10 @@ suite('survey-builder handover: Kano', () => {
     await until(() => fake.stacks().length === 2);
     const write = fake.stacks()[1];
     assert(write, 'write stack sent');
-    const last = write[write.length - 1];
-    assertEqual(last.method, 'setKanoTransfer');
-    assertEqual(last.instance, INSTANCE);
+    const [transfer, target] = write.slice(-2);
+    assertEqual(transfer.method, 'setKanoTransfer');
+    assertEqual(transfer.instance, INSTANCE);
+    assertEqual(target.method, 'setKanoTarget');
     await until(() => h.notes.some(([m]) => m === de('kanoHandedOver')));
     assertTrue(h.notes.some(([m, t]) => m === de('kanoHandedOver') && t === 'success'), 'still reported');
   });
@@ -396,5 +419,30 @@ suite('survey-builder handover: Kano target list', () => {
     h.destroy();
     assertEqual(h.listeners('module:added'), 0);
     assertEqual(h.listeners('module:removed'), 0);
+  });
+});
+
+suite('survey-builder handover: reading another survey', () => {
+  test('read of a survey that is not mounted and stored in the earlier form gives the new form', async () => {
+    const saved = copy(MIXED);
+    assertEqual(saved.transfers.kano.q4, 'kano-1', 'the earlier text form');
+    const cache = new Map([['sb-2', saved]]);
+    const stateManager = {
+      get: (/** @type {string} */ path) => (path === 'phases' ? { define: [{ instanceId: 'sb-2', moduleId: 'survey-builder', order: 0 }] } : undefined),
+      getProjectCycle: () => 'dmaic',
+      getModuleState: (/** @type {string} */ id) => cache.get(id) ?? null,
+      setModuleState: (/** @type {string} */ id, /** @type {any} */ state) => { cache.set(id, copy(state)); },
+      isCompleted: () => false,
+    };
+    const svc = createInstances({
+      stateManager,
+      moduleRegistry: { loadModule: async () => mod },
+      workspace: { getLiveViewmodel: () => null, isPending: () => false, whenInstanceReady: async () => null },
+      eventBus: { emit: () => {}, on: () => {}, off: () => {} },
+      createData: () => ({}),
+    });
+    const r = /** @type {any} */ (await svc.read('sb-2', { fields: ['transfers', 'survey'] }));
+    assertDeepEqual(r.transfers.kano, { q4: { instanceId: 'kano-1', byInstance: {} } });
+    assertEqual(r.survey.sections[1].questions[1].type, 'kano');
   });
 });

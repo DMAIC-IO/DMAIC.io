@@ -438,15 +438,33 @@ suite('survey-builder commands — evaluation', () => {
 });
 
 suite('survey-builder commands — hand-over marks', () => {
-  test('setKanoTarget with another instance empties the id lists; the same keeps them; null drops the target', () => {
+  test('setKanoTarget sets only the target; the references per Kano instance stay; null keeps them', () => {
     const m = load(MIXED);
-    m.setKanoTransfer({ questionId: 'q4', transfer: { instanceId: 'kano-1', itemIds: ['i1'], respondentIds: ['p1'] } });
-    m.setKanoTarget({ questionId: 'q4', instanceId: 'kano-1' });
-    assertDeepEqual(m.transfers.kano.q4, { instanceId: 'kano-1', itemIds: ['i1'], respondentIds: ['p1'] });
+    assertDeepEqual(m.transfers.kano.q4, { instanceId: 'kano-1', byInstance: {} }, 'migrated from the text form');
+    m.setKanoTransfer({ questionId: 'q4', instanceId: 'kano-1', itemIds: ['i1'], respondentIds: ['p1'] });
     m.setKanoTarget({ questionId: 'q4', instanceId: 'kano-2' });
-    assertDeepEqual(m.transfers.kano.q4, { instanceId: 'kano-2', itemIds: [], respondentIds: [] });
+    assertDeepEqual(m.transfers.kano.q4, { instanceId: 'kano-2', byInstance: { 'kano-1': { itemIds: ['i1'], respondentIds: ['p1'] } } });
     m.setKanoTarget({ questionId: 'q4', instanceId: null });
-    assertEqual('q4' in m.transfers.kano, false);
+    assertDeepEqual(m.transfers.kano.q4, { instanceId: null, byInstance: { 'kano-1': { itemIds: ['i1'], respondentIds: ['p1'] } } });
+    m.setKanoTarget({ questionId: 'q4', instanceId: 'kano-1' });
+    assertDeepEqual(m.transfers.kano.q4.byInstance['kano-1'], { itemIds: ['i1'], respondentIds: ['p1'] }, 'back to kano-1: its references are still there');
+  });
+
+  test('setKanoTransfer writes only the references of its instance; the target stays', () => {
+    const m = load(MIXED);
+    m.setKanoTransfer({ questionId: 'q4', instanceId: 'kano-2', itemIds: ['i2'], respondentIds: [] });
+    assertDeepEqual(m.transfers.kano.q4, { instanceId: 'kano-1', byInstance: { 'kano-2': { itemIds: ['i2'], respondentIds: [] } } });
+    m.setKanoTransfer({ questionId: 'q4', instanceId: 'kano-1', itemIds: ['i1'], respondentIds: ['p1'] });
+    m.setKanoTransfer({ questionId: 'q4', instanceId: 'kano-2', itemIds: [], respondentIds: ['p2'] });
+    assertDeepEqual(m.transfers.kano.q4, { instanceId: 'kano-1', byInstance: {
+      'kano-2': { itemIds: [], respondentIds: ['p2'] }, 'kano-1': { itemIds: ['i1'], respondentIds: ['p1'] },
+    } });
+  });
+
+  test('setKanoTransfer on a Kano question without a target leaves the target empty', () => {
+    const m = load({ ...copy(MIXED), transfers: { kano: {}, vocTree: { responseKeys: [] } } });
+    m.setKanoTransfer({ questionId: 'q4', instanceId: 'kano-3', itemIds: ['i3'], respondentIds: [] });
+    assertDeepEqual(m.transfers.kano.q4, { instanceId: null, byInstance: { 'kano-3': { itemIds: ['i3'], respondentIds: [] } } });
   });
 
   test('setKanoTarget accepts an instance id it cannot check, only Kano questions', () => {
@@ -485,7 +503,7 @@ suite('survey-builder commands — unknown ids', () => {
     ['setFilter', { questionId: 'zz', optionId: 'o1' }, 'questionId'],
     ['setGroupBy', { questionId: 'zz' }, 'questionId'],
     ['setKanoTarget', { questionId: 'zz', instanceId: null }, 'questionId'],
-    ['setKanoTransfer', { questionId: 'zz', transfer: { instanceId: 'k', itemIds: [], respondentIds: [] } }, 'questionId'],
+    ['setKanoTransfer', { questionId: 'zz', instanceId: 'k', itemIds: [], respondentIds: [] }, 'questionId'],
   ];
   for (const [name, args, param] of CALLS) {
     test(`${name} names the unknown ${param} and the available ones`, () => {

@@ -101,7 +101,7 @@
       "help": "Welche Empfänger schon geantwortet haben; daraus folgt der Status nicht verschickt, verschickt oder beantwortet."
     },
     "transfers": {
-      "help": "Was schon übergeben wurde: die in den VoC-Baum übernommenen Antworten und je Kano-Frage die Kano-Instanz, an die sie geht."
+      "help": "Was schon übergeben wurde: die in den VoC-Baum übernommenen Antworten und je Kano-Frage die Kano-Instanz, an die sie geht (instanceId), dazu je Kano-Instanz die dort angelegten Merkmale und Befragten (byInstance)."
     },
     "ui": {
       "help": "Die Einstellungen der Auswertung: der Filter (Frage und Option oder leer), die Gruppierung (Einfachauswahl-Frage oder leer) und ob der Bericht bei Freitexten Namen nennt (reportWithNames; bei einem anonymen Fragebogen ohne Wirkung). Setzbar über instance.set.",
@@ -341,7 +341,7 @@
       }
     },
     "setKanoTarget": {
-      "help": "Wählen, an welche Kano-Instanz des Projekts eine Kano-Frage übergeben wird, oder eine neue.",
+      "help": "Wählen, an welche Kano-Instanz des Projekts eine Kano-Frage übergeben wird, oder eine neue. Die gemerkten Merkmale und Befragten in anderen Instanzen bleiben stehen; lenkt man zurück, ersetzt die nächste Übergabe dort wieder nur die eigenen Einträge.",
       "params": {
         "questionId": "Die Kano-Frage.",
         "instanceId": "Eine Kano-Instanz des Projekts; null legt bei der nächsten Übergabe eine neue an.",
@@ -349,11 +349,13 @@
       }
     },
     "setKanoTransfer": {
-      "help": "Festhalten, welche Kano-Merkmale und Befragten eine Kano-Frage in der gewählten Kano-Instanz angelegt hat. Die Übergabe setzt das selbst; von Hand nur zum Reparieren.",
+      "help": "Festhalten, welche Kano-Merkmale und Befragten eine Kano-Frage in einer Kano-Instanz angelegt hat. Das Ziel der Frage bleibt dabei unverändert. Die Übergabe setzt das selbst; von Hand nur zum Reparieren.",
       "params": {
         "questionId": "Die Kano-Frage.",
-        "transfer": "{ instanceId, itemIds, respondentIds }: die Kano-Instanz, die angelegten Merkmale und die angelegten Befragten.",
-        "command": "Das Kommando als ein Objekt mit questionId und transfer."
+        "instanceId": "Die Kano-Instanz, in der die Einträge liegen.",
+        "itemIds": "Die ids der Merkmale, die die Frage dort angelegt hat.",
+        "respondentIds": "Die ids der Befragten, die die Frage dort angelegt hat.",
+        "command": "Das Kommando als ein Objekt mit questionId, instanceId, itemIds und respondentIds."
       }
     },
     "markVocTaken": {

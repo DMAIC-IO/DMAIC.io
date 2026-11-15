@@ -16,7 +16,7 @@ import { EXAMPLE, MIXED, CORNERS, copy, load, legacyJSON, frozen } from './cases
 
 /**
  * The earlier model's state in the 1.0 form, mapped by hand: answers in the
- * stored form, Kano targets with empty id lists, `ui.tab` and
+ * stored form, Kano targets without references yet, `ui.tab` and
  * `ui.selectedQuestionId` as view fields.
  * @param {any} j `toJSON()` of the earlier model (frozen, `legacyJSON`) @returns {object}
  */
@@ -30,7 +30,7 @@ function mapped(j) {
     answeredRecipientIds: j.answeredRecipientIds,
     transfers: {
       kano: Object.fromEntries(Object.entries(j.transfers.kano)
-        .map(([q, instanceId]) => [q, { instanceId, itemIds: [], respondentIds: [] }])),
+        .map(([q, instanceId]) => [q, { instanceId, byInstance: {} }])),
       vocTree: j.transfers.vocTree,
     },
     ui,
@@ -85,14 +85,14 @@ suite('survey-builder migration 0→1.0 — example and reference', () => {
 });
 
 suite('survey-builder migration 0→1.0 — transfers', () => {
-  test("transfers.kano[q] = 'k1' becomes { instanceId: 'k1', itemIds: [], respondentIds: [] }", () => {
+  test("transfers.kano[q] = 'k1' becomes { instanceId: 'k1', byInstance: {} }", () => {
     const m = load({ ...copy(MIXED), transfers: { kano: { q4: 'k1' }, vocTree: { responseKeys: [] } } });
-    assertDeepEqual(m.transfers.kano, { q4: { instanceId: 'k1', itemIds: [], respondentIds: [] } });
+    assertDeepEqual(m.transfers.kano, { q4: { instanceId: 'k1', byInstance: {} } });
   });
 
   test('Kano targets and VoC keys that are no text are dropped as before', () => {
     const out = from0(copy(CORNERS));
-    assertDeepEqual(out.transfers.kano, { 'q-geloescht': { instanceId: 'kano-9', itemIds: [], respondentIds: [] } });
+    assertDeepEqual(out.transfers.kano, { 'q-geloescht': { instanceId: 'kano-9', byInstance: {} } });
     assertDeepEqual(out.transfers.vocTree, { responseKeys: ['resp-1:q3'] });
   });
 
