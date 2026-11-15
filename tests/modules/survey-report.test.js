@@ -4,7 +4,7 @@
  */
 
 import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
-import { buildReportHtml } from '../../js/modules/survey-builder/survey-report.js';
+import { buildReportHtml } from '../../js/modules/survey-builder/domain/report.js';
 import { SURVEY, RESPONSES } from './fixtures/survey-fixture.js';
 
 const STRINGS = {

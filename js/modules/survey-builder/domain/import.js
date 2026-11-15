@@ -6,7 +6,7 @@
  * version) are dropped and reported as orphans.
  */
 
-import { documentOrder } from './survey-conditions.js';
+import { documentOrder } from './conditions.js';
 
 /** Format marker written by the exported runner into every answer file. */
 export const RESPONSE_FORMAT = 'dmike-survey-response';

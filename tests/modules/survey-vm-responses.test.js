@@ -2,8 +2,8 @@
  * D.Mike — ResponsesViewModel (viewmodel/responses.js)
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../test-utils.js';
-import { State } from '../../js/modules/survey-builder/survey-builder-model.js';
-import { ResponsesViewModel } from '../../js/modules/survey-builder/viewmodel/responses.js';
+import { State } from '../../js/modules/survey-builder/legacy/survey-builder-model.js';
+import { ResponsesViewModel } from '../../js/modules/survey-builder/legacy/viewmodel/responses.js';
 import { t, fakeContext, attach } from './survey-vm-fakes.js';
 
 function setup() {

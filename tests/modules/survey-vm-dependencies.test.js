@@ -4,7 +4,7 @@
  */
 import { suite, test, assertDeepEqual } from '../test-utils.js';
 
-const DIR = 'js/modules/survey-builder/viewmodel/';
+const DIR = 'js/modules/survey-builder/legacy/viewmodel/';
 /** Every sub-viewmodel file; grows with each one that lands. */
 const FILES = ['recipients.js', 'responses.js', 'handover.js', 'draft.js', 'results.js'];
 

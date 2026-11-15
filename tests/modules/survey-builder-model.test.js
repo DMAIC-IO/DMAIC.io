@@ -2,7 +2,7 @@
  * D.Mike — Survey builder model tests (survey-builder-model.test.js)
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
-import { State } from '../../js/modules/survey-builder/survey-builder-model.js';
+import { State } from '../../js/modules/survey-builder/legacy/survey-builder-model.js';
 
 /** Section with a single (2 options) and a text question conditional on option 1. */
 function built() {

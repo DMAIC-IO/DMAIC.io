@@ -8,13 +8,13 @@
  * sibling or the shell.
  */
 
-import { QUESTION_TYPES, availableSources, documentOrder } from '../survey-conditions.js';
-import { runSurvey, RUNNER_CSS } from '../survey-runner.js';
-import { buildSurveyHtml, surveyFileName, runnerStrings } from '../survey-export.js';
-import { questionLabel, sectionPlaceholder } from '../survey-labels.js';
-import { downloadBlob } from '../../../core/export-utils.js';
-import { uid } from '../../../core/uid.js';
-import { requireEnum, requireKnownId, requireText } from '../../../core/agent/agent-argcheck.js';
+import { QUESTION_TYPES, availableSources, documentOrder } from '../../domain/conditions.js';
+import { runSurvey, RUNNER_CSS } from '../../domain/runner.js';
+import { buildSurveyHtml, surveyFileName, runnerStrings } from '../../domain/questionnaire.js';
+import { questionLabel, sectionPlaceholder } from '../../domain/labels.js';
+import { downloadBlob } from '../../../../core/export-utils.js';
+import { uid } from '../../../../core/uid.js';
+import { requireEnum, requireKnownId, requireText } from '../../../../core/agent/agent-argcheck.js';
 
 /** Debounce of the live preview after an edit, in ms. */
 const PREVIEW_DELAY_MS = 300;

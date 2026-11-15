@@ -7,17 +7,17 @@
  * survey-*.js modules — never a sibling or the shell.
  */
 
-import { documentOrder, findQuestion, isVisible } from '../survey-conditions.js';
-import { worksheetColumns, otherKey } from '../survey-stats.js';
+import { documentOrder, findQuestion, isVisible } from '../../domain/conditions.js';
+import { worksheetColumns, otherKey } from '../../domain/stats.js';
 import {
   buildWorksheetState, listInstances, treePhaseForCycle, kanoStateFromSurvey, vocsFromAnswers, appendVocs,
 } from '../survey-link.js';
 import { plainCopy } from '../survey-builder-model.js';
-import { recipientName } from '../survey-labels.js';
-import { provisionInstance } from '../../../core/examples-registry.js';
-import { uniqueSheetName } from '../../../ui/column-picker.js';
-import { DEFAULT_CYCLE } from '../../../core/cycles/cycles.js';
-import { requireKnownId } from '../../../core/agent/agent-argcheck.js';
+import { recipientName } from '../../domain/labels.js';
+import { provisionInstance } from '../../../../core/examples-registry.js';
+import { uniqueSheetName } from '../../../../ui/column-picker.js';
+import { DEFAULT_CYCLE } from '../../../../core/cycles/cycles.js';
+import { requireKnownId } from '../../../../core/agent/agent-argcheck.js';
 
 /** Keys of `modules.survey-builder.ws.*`, the worksheet column labels. */
 const WS_KEYS = ['responseId', 'submittedAt', 'recipient', 'other', 'functional', 'dysfunctional', 'importance', 'category', 'question'];

@@ -7,7 +7,7 @@
  * an argument.
  */
 
-import { documentOrder } from './survey-conditions.js';
+import { documentOrder } from './conditions.js';
 
 const TYPE_LABELS = {
   single: 'typeSingle', multi: 'typeMulti', rating: 'typeRating',
@@ -69,10 +69,10 @@ export function catLabels(i18n) {
 
 /**
  * @param {string|null} code Kano category code
- * @param {{t: function(string): string}} i18n
+ * @param {function(string): string} t translates `cat<code>` (e.g. `catM`) to the category label
  * @returns {string} its label, '—' without code
  */
-export function catLabel(code, i18n) { return code ? catLabels(i18n)[code] : '—'; }
+export function catLabel(code, t) { return code ? t(`cat${code}`) : '—'; }
 
 /**
  * @param {Array<{id: string, name: string}>} recipients

@@ -2,8 +2,8 @@
  * D.Mike — DraftViewModel (viewmodel/draft.js)
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertThrows } from '../test-utils.js';
-import { State } from '../../js/modules/survey-builder/survey-builder-model.js';
-import { DraftViewModel } from '../../js/modules/survey-builder/viewmodel/draft.js';
+import { State } from '../../js/modules/survey-builder/legacy/survey-builder-model.js';
+import { DraftViewModel } from '../../js/modules/survey-builder/legacy/viewmodel/draft.js';
 import { t, fakeContext, attach } from './survey-vm-fakes.js';
 
 function setup() {

@@ -8,7 +8,7 @@ import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertClose } fr
 import {
   mean, median, filterResponses, questionStats, responseRate, ratingRanking,
   kanoOverview, freeTextSummary, groupComparison, worksheetColumns, formatAnswer,
-} from '../../js/modules/survey-builder/survey-stats.js';
+} from '../../js/modules/survey-builder/domain/stats.js';
 import { SURVEY, RESPONSES, q, resp } from './fixtures/survey-fixture.js';
 
 const question = (id) => SURVEY.sections[0].questions.find((x) => x.id === id);

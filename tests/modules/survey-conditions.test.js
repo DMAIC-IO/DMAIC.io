@@ -4,7 +4,7 @@
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import {
   isVisible, availableSources, answerHasOption, documentOrder,
-} from '../../js/modules/survey-builder/survey-conditions.js';
+} from '../../js/modules/survey-builder/domain/conditions.js';
 import { CONDITION_CASES } from './fixtures/survey-condition-cases.js';
 
 suite('survey-conditions — answerHasOption', () => {

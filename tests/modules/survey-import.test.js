@@ -2,7 +2,7 @@
  * D.Mike — Survey import tests (survey-import.test.js)
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
-import { parseResponse } from '../../js/modules/survey-builder/survey-import.js';
+import { parseResponse } from '../../js/modules/survey-builder/domain/import.js';
 
 const q = (id, type, extra) => ({ id, type, text: '', hint: '', required: false, when: null, ...extra });
 const SURVEY = {

@@ -2,11 +2,11 @@
  * D.Mike — Survey builder labels (survey-labels.test.js)
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
-import { State } from '../../js/modules/survey-builder/survey-builder-model.js';
+import { State } from '../../js/modules/survey-builder/legacy/survey-builder-model.js';
 import {
   localeOf, typeLabel, questionLabel, sectionPlaceholder, optionText, KANO_CATEGORIES, catLabels, catLabel,
   recipientName, formatDateTime, fmtPct, fmtNum,
-} from '../../js/modules/survey-builder/survey-labels.js';
+} from '../../js/modules/survey-builder/domain/labels.js';
 
 const t = (key, params) => (params ? `${key}|${JSON.stringify(params)}` : key);
 const i18n = (lang) => ({ getLanguage: () => lang, t: (key) => `T:${key}` });
@@ -37,8 +37,8 @@ suite('survey-labels — questions and options', () => {
 suite('survey-labels — kano and recipients', () => {
   test('catLabels maps every category to the kano module text, catLabel shows a dash without code', () => {
     assertDeepEqual(Object.keys(catLabels(i18n('de'))), KANO_CATEGORIES);
-    assertEqual(catLabel('M', i18n('de')), 'T:modules.kano.catM');
-    assertEqual(catLabel(null, i18n('de')), '—');
+    assertEqual(catLabel('M', (k) => `T:modules.kano.${k}`), 'T:modules.kano.catM');
+    assertEqual(catLabel(null, (k) => `T:modules.kano.${k}`), '—');
   });
 
   test('recipientName trims and returns null for unknown, unnamed or missing ids', () => {

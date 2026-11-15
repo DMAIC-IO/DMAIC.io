@@ -2,8 +2,8 @@
  * D.Mike — ResultsViewModel (viewmodel/results.js)
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../test-utils.js';
-import { State } from '../../js/modules/survey-builder/survey-builder-model.js';
-import { ResultsViewModel } from '../../js/modules/survey-builder/viewmodel/results.js';
+import { State } from '../../js/modules/survey-builder/legacy/survey-builder-model.js';
+import { ResultsViewModel } from '../../js/modules/survey-builder/legacy/viewmodel/results.js';
 import { t, fakeContext, attach } from './survey-vm-fakes.js';
 
 /** Single question "Kundengruppe" (Handel, Industrie) and two responses. */

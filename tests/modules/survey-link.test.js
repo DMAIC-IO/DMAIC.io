@@ -4,7 +4,7 @@
  */
 
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
-import { buildWorksheetState, listInstances, treePhaseForCycle, kanoStateFromSurvey, vocsFromAnswers, appendVocs } from '../../js/modules/survey-builder/survey-link.js';
+import { buildWorksheetState, listInstances, treePhaseForCycle, kanoStateFromSurvey, vocsFromAnswers, appendVocs } from '../../js/modules/survey-builder/legacy/survey-link.js';
 
 suite('survey-link — buildWorksheetState', () => {
   const columns = [

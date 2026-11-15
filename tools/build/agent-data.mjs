@@ -132,8 +132,8 @@ export async function collectAgentData(appDir, { baseline = loadWriteBaseline(),
       writtenFields[id] = [];
       continue;
     }
-    const viewmodelFile = join(dir, `${id}.js`);
-    if (!existsSync(viewmodelFile)) continue;
+    const viewmodelFile = [join(dir, `${id}.js`), join(dir, 'legacy', `${id}.js`)].find((f) => existsSync(f));
+    if (!viewmodelFile) continue;
     // Die Model-DATEI wird hier nicht mehr gesucht: welche Klasse den Zustand
     // hält, sagt `Model:` im `createModule({…})`-Literal — und nur die zählt.
     const { writtenFields: written, frozen: frozenCodes, ...entry } = buildEntry(resolver, appDir, viewmodelFile, baseline);

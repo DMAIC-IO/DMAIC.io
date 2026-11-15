@@ -7,13 +7,13 @@
  * response leaves the VoC selection alone; the hand-over cleans it itself.
  */
 
-import { documentOrder, isVisible } from '../survey-conditions.js';
-import { parseResponse } from '../survey-import.js';
-import { formatAnswer } from '../survey-stats.js';
+import { documentOrder, isVisible } from '../../domain/conditions.js';
+import { parseResponse } from '../../domain/import.js';
+import { formatAnswer } from '../../domain/stats.js';
 import { plainCopy } from '../survey-builder-model.js';
-import { catLabels, formatDateTime, localeOf, questionLabel, recipientName } from '../survey-labels.js';
-import { uid } from '../../../core/uid.js';
-import { requireKnownId, requireText } from '../../../core/agent/agent-argcheck.js';
+import { catLabels, formatDateTime, localeOf, questionLabel, recipientName } from '../../domain/labels.js';
+import { uid } from '../../../../core/uid.js';
+import { requireKnownId, requireText } from '../../../../core/agent/agent-argcheck.js';
 
 const IMPORT_LABELS = {
   ok: 'importOk', older: 'importOlder', duplicate: 'importDuplicate', foreign: 'importForeign', invalid: 'importInvalid',

@@ -6,10 +6,10 @@
 
 import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertClose } from '../test-utils.js';
 import { HELP } from '../../js/core/help-registry.generated.js';
-import { State } from '../../js/modules/survey-builder/survey-builder-model.js';
+import { State } from '../../js/modules/survey-builder/legacy/survey-builder-model.js';
 import {
   responseRate, ratingRanking, kanoOverview, freeTextSummary, groupComparison,
-} from '../../js/modules/survey-builder/survey-stats.js';
+} from '../../js/modules/survey-builder/domain/stats.js';
 
 const EXAMPLE_ID = 'survey-builder-software';
 

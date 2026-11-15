@@ -6,9 +6,9 @@
  * snapshot builder; the module writes the result via stateManager.
  */
 
-import { uid } from '../../core/uid.js';
+import { uid } from '../../../core/uid.js';
 
-export { treePhaseForCycle } from '../voc-ctx-tree/voc-ctx-tree-phase.js';
+export { treePhaseForCycle } from '../../voc-ctx-tree/voc-ctx-tree-phase.js';
 
 /**
  * Workbook state for a new worksheet instance (DataGrid format).

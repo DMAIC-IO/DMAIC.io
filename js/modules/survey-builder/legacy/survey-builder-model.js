@@ -7,8 +7,8 @@
  * version (§3.4). Condition clean-up after deletes/moves runs here (§3.2).
  */
 
-import { uid } from '../../core/uid.js';
-import { QUESTION_TYPES, documentOrder, availableSources } from './survey-conditions.js';
+import { uid } from '../../../core/uid.js';
+import { QUESTION_TYPES, documentOrder, availableSources } from '../domain/conditions.js';
 
 const TABS = ['draft', 'recipients', 'results'];
 const RECIPIENT_FIELDS = ['name', 'organisation', 'group', 'email', 'note'];

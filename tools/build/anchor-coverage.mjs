@@ -101,8 +101,10 @@ export function countAnchorCoverage(appDir, modules, exemptions = ANCHOR_EXEMPTI
     const dir = join(appDir, 'js', 'modules', id);
     if (!existsSync(dir)) continue;
     const resDir = join(dir, 'resources');
+    const legacyDir = join(dir, 'legacy');
     const files = [
       ...readdirSync(dir).filter(f => f.endsWith('.html')).sort(),
+      ...(existsSync(legacyDir) ? readdirSync(legacyDir).filter(f => f.endsWith('.html')).sort().map(f => `legacy/${f}`) : []),
       ...(existsSync(resDir) ? readdirSync(resDir).filter(f => f.endsWith('.html')).sort().map(f => `resources/${f}`) : []),
     ];
     for (const file of files) {

@@ -82,7 +82,8 @@ export async function loadModules(repoRoot, catalog) {
  * @returns {Promise<{ help: object|null, references: object[] }>}
  */
 async function loadLegacy(dir, id) {
-  const helpPath = path.join(dir, `${id}-help.js`);
+  const flatPath = path.join(dir, `${id}-help.js`);
+  const helpPath = !existsSync(flatPath) && existsSync(path.join(dir, 'legacy', `${id}-help.js`)) ? path.join(dir, 'legacy', `${id}-help.js`) : flatPath;
   let help = null;
   try {
     const mod = await import(pathToFileURL(helpPath).href);

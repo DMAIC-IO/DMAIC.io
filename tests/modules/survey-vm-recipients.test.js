@@ -2,8 +2,8 @@
  * D.Mike — RecipientsViewModel (viewmodel/recipients.js)
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertThrows } from '../test-utils.js';
-import { State } from '../../js/modules/survey-builder/survey-builder-model.js';
-import { RecipientsViewModel } from '../../js/modules/survey-builder/viewmodel/recipients.js';
+import { State } from '../../js/modules/survey-builder/legacy/survey-builder-model.js';
+import { RecipientsViewModel } from '../../js/modules/survey-builder/legacy/viewmodel/recipients.js';
 import { t, fakeContext, attach } from './survey-vm-fakes.js';
 
 function setup() {

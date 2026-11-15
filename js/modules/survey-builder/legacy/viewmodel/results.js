@@ -8,16 +8,16 @@
  * a sibling or the shell.
  */
 
-import { documentOrder, findQuestion } from '../survey-conditions.js';
-import { sanitizeFileNamePart } from '../survey-export.js';
+import { documentOrder, findQuestion } from '../../domain/conditions.js';
+import { sanitizeFileNamePart } from '../../domain/questionnaire.js';
 import {
   filterResponses, questionStats, responseRate, ratingRanking, kanoOverview, freeTextSummary, groupComparison,
-} from '../survey-stats.js';
-import { reportStrings, buildReportHtml } from '../survey-report.js';
+} from '../../domain/stats.js';
+import { reportStrings, buildReportHtml } from '../../domain/report.js';
 import { plainCopy } from '../survey-builder-model.js';
-import { catLabel, fmtNum, fmtPct, localeOf, optionText, questionLabel } from '../survey-labels.js';
-import { downloadBlob } from '../../../core/export-utils.js';
-import { requireEnum, requireKnownId } from '../../../core/agent/agent-argcheck.js';
+import { catLabel, fmtNum, fmtPct, localeOf, optionText, questionLabel } from '../../domain/labels.js';
+import { downloadBlob } from '../../../../core/export-utils.js';
+import { requireEnum, requireKnownId } from '../../../../core/agent/agent-argcheck.js';
 
 /** "Top-Prioritäten" shows this many rows until expanded (survey-builder design §7.1). */
 const RANKING_TOP = 10;
@@ -423,7 +423,7 @@ export class ResultsViewModel {
    */
   kanoOverviewRows() {
     return this._kanoOverview().map((k) => ({
-      key: `${k.questionId}:${k.rowId}`, text: k.text, category: catLabel(k.category, this._context.i18n),
+      key: `${k.questionId}:${k.rowId}`, text: k.text, category: catLabel(k.category, (key) => this._context.i18n.t('modules.kano.' + key)),
       cs: fmtNum(k.cs, 2, localeOf(this._context.i18n)), ds: fmtNum(k.ds, 2, localeOf(this._context.i18n)),
     }));
   }
@@ -549,7 +549,7 @@ export class ResultsViewModel {
         rows = part.rows.map((row) => ({
           key: row.id, label: row.text, differs: row.differs,
           note: row.differs ? this._t('report.differs') : '',
-          cells: row.categories.map((c, i) => ({ key: groupId(i), text: catLabel(c, this._context.i18n), deviates: false })),
+          cells: row.categories.map((c, i) => ({ key: groupId(i), text: catLabel(c, (key) => this._context.i18n.t('modules.kano.' + key)), deviates: false })),
         }));
       } else {
         rows = part.options.map((o) => ({

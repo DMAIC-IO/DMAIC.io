@@ -2,8 +2,8 @@
  * D.Mike — HandoverViewModel (viewmodel/handover.js)
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../test-utils.js';
-import { State } from '../../js/modules/survey-builder/survey-builder-model.js';
-import { HandoverViewModel } from '../../js/modules/survey-builder/viewmodel/handover.js';
+import { State } from '../../js/modules/survey-builder/legacy/survey-builder-model.js';
+import { HandoverViewModel } from '../../js/modules/survey-builder/legacy/viewmodel/handover.js';
 import { t, fakeContext, attach } from './survey-vm-fakes.js';
 
 function setup(ctxOverrides = {}) {

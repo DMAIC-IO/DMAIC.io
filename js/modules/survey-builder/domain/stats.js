@@ -8,10 +8,10 @@
  * visible; a hidden answer never counts.
  */
 
-import { documentOrder, findQuestion, isVisible, answerHasOption } from './survey-conditions.js';
-import { isRecipientSent } from './survey-builder-model.js';
-import { evaluate, classify } from '../../engines/kano-engine.js';
-import { ROLE } from '../../core/datagrid/datagrid-roles.js';
+import { documentOrder, findQuestion, isVisible, answerHasOption } from './conditions.js';
+import { isRecipientSent } from '../legacy/survey-builder-model.js';
+import { evaluate, classify } from '../../../engines/kano-engine.js';
+import { ROLE } from '../../../core/datagrid/datagrid-roles.js';
 
 /** Groups below this many responses carry the "few responses" hint. */
 export const FEW_RESPONSES = 5;

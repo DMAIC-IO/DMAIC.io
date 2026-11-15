@@ -7,12 +7,12 @@
  * the same in light and dark mode (plan deviation 1). Strings only; no DOM.
  */
 
-import { escAttr } from '../../core/html-utils.js';
-import { documentOrder, findQuestion } from './survey-conditions.js';
+import { escAttr } from '../../../core/html-utils.js';
+import { documentOrder, findQuestion } from './conditions.js';
 import {
   filterResponses, questionStats, responseRate, ratingRanking,
   kanoOverview, freeTextSummary, groupComparison,
-} from './survey-stats.js';
+} from './stats.js';
 
 export const REPORT_CSS = `
 body { font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; color: #1f2328; background: #fff; margin: 0; }
@@ -50,7 +50,7 @@ const fill = (template, params) => String(template ?? '').replace(/\{(\w+)\}/g, 
 
 /**
  * Report strings in the app language.
- * @param {import('../../core/i18n.js').I18n} i18n
+ * @param {import('../../../core/i18n.js').I18n} i18n
  * @returns {Promise<object>}
  */
 export async function reportStrings(i18n) {

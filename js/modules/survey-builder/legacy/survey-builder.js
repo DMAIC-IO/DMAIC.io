@@ -25,17 +25,17 @@
  *   Empfängerdatei, Bericht).
  */
 
-import { createModule } from '../../core/template-module.js';
+import { createModule } from '../../../core/template-module.js';
 import { State } from './survey-builder-model.js';
-import * as labels from './survey-labels.js';
+import * as labels from '../domain/labels.js';
 import { DraftViewModel } from './viewmodel/draft.js';
 import { RecipientsViewModel } from './viewmodel/recipients.js';
 import { ResponsesViewModel } from './viewmodel/responses.js';
 import { ResultsViewModel } from './viewmodel/results.js';
 import { HandoverViewModel } from './viewmodel/handover.js';
-import { uid } from '../../core/uid.js';
-import { readAgentState } from '../../core/agent/agent-read-mixin.js';
-import { requireEnum } from '../../core/agent/agent-argcheck.js';
+import { uid } from '../../../core/uid.js';
+import { readAgentState } from '../../../core/agent/agent-read-mixin.js';
+import { requireEnum } from '../../../core/agent/agent-argcheck.js';
 
 /** Tabs of the module (State.ui.tab). */
 const TABS = ['draft', 'recipients', 'results'];
@@ -192,6 +192,7 @@ const TABS = ['draft', 'recipients', 'results'];
 export default createModule({
   config: {
     id: 'survey-builder',
+    templateUrl: new URL('js/modules/survey-builder/legacy/survey-builder.html', document.baseURI).href,
     engine: 'alpine',
     phase: 'define',
     icon: 'module.survey-builder',
@@ -317,7 +318,7 @@ export default createModule({
       hasCondition(node) { return Array.isArray(node.when) && node.when.length > 0; },
 
       /** @noagent view transform @param {string|null} code @returns {string} Kano category label */
-      catLabel(code) { return labels.catLabel(code, module._context.i18n); },
+      catLabel(code) { return labels.catLabel(code, (k) => module._context.i18n.t('modules.kano.' + k)); },
 
       /** @noagent view transform @param {number|null} share 0..1 @returns {string} "42 %", '—' without a base */
       fmtPct(share) { return labels.fmtPct(share); },

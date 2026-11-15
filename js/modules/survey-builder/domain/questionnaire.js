@@ -6,8 +6,8 @@
  * script blocks; the runner travels as its own source text.
  */
 
-import { escAttr } from '../../core/html-utils.js';
-import { runSurvey, RUNNER_CSS } from './survey-runner.js';
+import { escAttr } from '../../../core/html-utils.js';
+import { runSurvey, RUNNER_CSS } from './runner.js';
 
 /**
  * JSON that is safe inside a <script> element: no `<` can close the tag or
@@ -90,7 +90,7 @@ export function buildSurveyHtml(survey, strings, options = {}) {
 /**
  * Runner strings in the questionnaire's language (not the app's), plus the
  * Kano answer labels shared with the kano module.
- * @param {import('../../core/i18n.js').I18n} i18n
+ * @param {import('../../../core/i18n.js').I18n} i18n
  * @param {'de'|'en'} lang
  * @returns {Promise<object>}
  */
