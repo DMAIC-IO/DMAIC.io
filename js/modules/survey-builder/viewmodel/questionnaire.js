@@ -13,8 +13,8 @@
 import { downloadBlob } from '../../../core/export-utils.js';
 import { documentOrder } from '../domain/conditions.js';
 import { questionLabel, sectionPlaceholder } from '../domain/labels.js';
-import { runSurvey, RUNNER_CSS } from '../domain/runner.js';
-import { runnerStringsOf } from '../domain/questionnaire.js';
+import { runSurvey, RUNNER_CSS } from '../io/runner.js';
+import { runnerStringsOf } from '../io/questionnaire.js';
 import { loadTexts } from './texts.js';
 
 /** Pause of the live preview after an edit, in ms. */

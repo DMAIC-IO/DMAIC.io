@@ -6,7 +6,7 @@
  * survey-*.js modules — never a sibling or the shell.
  */
 
-import { buildSurveyHtml, surveyFileName, runnerStrings } from '../../domain/questionnaire.js';
+import { buildSurveyHtml, surveyFileName, runnerStrings } from '../../io/questionnaire.js';
 import { formatDateTime, fmtPct, localeOf, recipientName } from '../../domain/labels.js';
 import { downloadBlob } from '../../../../core/export-utils.js';
 import { requireEnum, requireKnownId, requireText } from '../../../../core/agent/agent-argcheck.js';

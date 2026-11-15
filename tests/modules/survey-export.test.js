@@ -4,8 +4,8 @@
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
 import {
   buildSurveyHtml, surveyFileName, sanitizeFileNamePart, embedJson, runnerStrings,
-} from '../../js/modules/survey-builder/domain/questionnaire.js';
-import { runSurvey } from '../../js/modules/survey-builder/domain/runner.js';
+} from '../../js/modules/survey-builder/io/questionnaire.js';
+import { runSurvey } from '../../js/modules/survey-builder/io/runner.js';
 import { CONDITION_CASES } from './fixtures/survey-condition-cases.js';
 import { I18n } from '../../js/core/i18n.js';
 

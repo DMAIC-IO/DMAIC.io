@@ -3,7 +3,7 @@
  * Browser only (listed in SKIP of tests/run-node.mjs).
  */
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
-import { runSurvey } from '../../js/modules/survey-builder/domain/runner.js';
+import { runSurvey } from '../../js/modules/survey-builder/io/runner.js';
 import { CONDITION_CASES } from './fixtures/survey-condition-cases.js';
 
 const SURVEY = CONDITION_CASES[0].survey;

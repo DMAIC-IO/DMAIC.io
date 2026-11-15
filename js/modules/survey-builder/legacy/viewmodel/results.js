@@ -9,7 +9,7 @@
  */
 
 import { documentOrder, findQuestion } from '../../domain/conditions.js';
-import { sanitizeFileNamePart } from '../../domain/questionnaire.js';
+import { sanitizeFileNamePart } from '../../io/questionnaire.js';
 import {
   filterResponses, questionStats, responseRate, ratingRanking, kanoOverview, freeTextSummary, groupComparison,
 } from '../../domain/stats.js';

@@ -4,7 +4,7 @@
  * page does, so a reference to an outer identifier fails here.
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
-import { runSurvey, RUNNER_CSS } from '../../js/modules/survey-builder/domain/runner.js';
+import { runSurvey, RUNNER_CSS } from '../../js/modules/survey-builder/io/runner.js';
 import { documentOrder } from '../../js/modules/survey-builder/domain/conditions.js';
 import { CONDITION_CASES } from './fixtures/survey-condition-cases.js';
 

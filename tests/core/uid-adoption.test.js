@@ -4,7 +4,7 @@
  * delegate to `uid()` from js/core/uid.js — prefixes such as `worksheet_`,
  * `col_` or `lane-` stay, only the random part comes from uid().
  *
- * Deliberate exception: js/modules/survey-builder/domain/runner.js keeps its own
+ * Deliberate exception: js/modules/survey-builder/io/runner.js keeps its own
  * fallback because the exported questionnaire page imports nothing.
  */
 import { suite, test, assertEqual } from '../test-utils.js';

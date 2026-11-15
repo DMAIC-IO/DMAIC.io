@@ -8,7 +8,7 @@
  * error text are read before the texts load.
  */
 import { asyncTask } from '../../../core/async-task.js';
-import { buildSurveyHtml, surveyFileName, runnerStringsOf } from '../domain/questionnaire.js';
+import { buildSurveyHtml, surveyFileName, runnerStringsOf } from '../io/questionnaire.js';
 import { loadTexts } from './texts.js';
 
 /** @param {any} v @returns {any} a plain deep copy */

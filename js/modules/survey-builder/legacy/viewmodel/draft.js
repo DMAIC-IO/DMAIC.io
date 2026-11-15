@@ -9,8 +9,8 @@
  */
 
 import { QUESTION_TYPES, availableSources, documentOrder } from '../../domain/conditions.js';
-import { runSurvey, RUNNER_CSS } from '../../domain/runner.js';
-import { buildSurveyHtml, surveyFileName, runnerStrings } from '../../domain/questionnaire.js';
+import { runSurvey, RUNNER_CSS } from '../../io/runner.js';
+import { buildSurveyHtml, surveyFileName, runnerStrings } from '../../io/questionnaire.js';
 import { questionLabel, sectionPlaceholder } from '../../domain/labels.js';
 import { downloadBlob } from '../../../../core/export-utils.js';
 import { uid } from '../../../../core/uid.js';
