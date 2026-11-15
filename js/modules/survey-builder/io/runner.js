@@ -1,3 +1,4 @@
+// @ts-nocheck — der Quelltext von runSurvey wird in die exportierte Seite serialisiert und bleibt unverändert.
 /**
  * D.Mike — Survey runner (survey-runner.js)
  *
