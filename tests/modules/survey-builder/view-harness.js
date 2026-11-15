@@ -14,6 +14,7 @@ import { registerFieldDirective } from '../../../js/core/field-directive.js';
 import { registerCommandDirectives } from '../../../js/core/command-directives.js';
 import { registerFileDropDirective } from '../../../js/core/file-drop-directive.js';
 import { registerWidgetDirective } from '../../../js/core/widget-directive.js';
+import { registerAsyncTaskDirectives } from '../../../js/core/async-task-directives.js';
 import { WIDGETS } from '../../../js/widgets/registry.js';
 import { WIDGET_I18N } from '../../widget-i18n.js';
 
@@ -76,6 +77,7 @@ async function prepare() {
     registerWidgetDirective(Alpine, { i18n: WIDGET_I18N, widgets: WIDGETS });
     registerCommandDirectives(Alpine);
     registerFileDropDirective(Alpine);
+    registerAsyncTaskDirectives(Alpine, { i18n: { t: (k, p) => (p ? `${k}${JSON.stringify(p)}` : k) } });
     if (!Alpine.version) Alpine.start();
     UI = await (await fetch(resourceUrl('i18n/ui.de.json'), { cache: 'no-cache' })).json();
     HELP = await (await fetch(resourceUrl('i18n/context-help.de.json'), { cache: 'no-cache' })).json();
@@ -106,11 +108,13 @@ export function stored(over = {}) {
 /**
  * Mounts the module.
  * @param {object|null} [model] stored state
- * @param {{ confirm?: boolean, chartManager?: (bus: any, i18n: any) => any, i18n?: (base: any) => any }} [opts]
+ * @param {{ confirm?: boolean, chartManager?: (bus: any, i18n: any) => any, i18n?: (base: any) => any,
+ *   instances?: any }} [opts]
  *   answer of the confirmation dialog; a real chart manager in place of the recording stand-in;
- *   a wrapper around the i18n of the context (to watch which keys are asked for)
+ *   a wrapper around the i18n of the context (to watch which keys are asked for);
+ *   the instances service of the context (`list`, `read`, `interact`)
  */
-export async function mount(model = null, { confirm = true, chartManager = null, i18n = (base) => base } = {}) {
+export async function mount(model = null, { confirm = true, chartManager = null, i18n = (base) => base, instances = null } = {}) {
   await prepare();
   while (mounted.length) {
     const old = mounted.pop();
@@ -128,10 +132,14 @@ export async function mount(model = null, { confirm = true, chartManager = null,
   const notes = [];
   const confirms = [];
   const context = {
-    instances: { list: () => [], read: async () => ({}), interact: async () => ({ ok: false, results: [] }) },
+    instances: instances ?? { list: () => [], read: async () => ({}), interact: async () => ({ ok: false, results: [] }) },
     instanceId: INSTANCE,
     stateManager: {
-      get: (path) => (path === 'phases' ? { define: [{ instanceId: INSTANCE, moduleId: ID, order: 0 }] } : undefined),
+      get: (path) => {
+        const phases = { define: [{ instanceId: INSTANCE, moduleId: ID, order: 0 }] };
+        if (path === 'phases') return phases;
+        return path.startsWith('phases.') ? phases[path.slice(7)] : undefined;
+      },
       set: () => {},
       getModuleState: (id) => states[id] ?? null,
       setModuleState: (id, s) => { states[id] = s; },
@@ -156,7 +164,16 @@ export async function mount(model = null, { confirm = true, chartManager = null,
   await settle();
   const vm = () => Alpine.$data(container.querySelector('[x-data]'));
   return {
-    container, vm, notes, confirms, events, states,
+    container, vm, notes, confirms, events, states, bus,
+    /** How many handlers listen to an event. @param {string} name */
+    listeners: (name) => handlers.filter(([n]) => n === name).length,
+    /** Tears the module down, as a view switch does. */
+    destroy: () => {
+      const i = mounted.indexOf(container);
+      if (i >= 0) mounted.splice(i, 1);
+      Alpine.destroyTree(container);
+      container.remove();
+    },
     $: (s) => container.querySelector(s),
     $$: (s) => [...container.querySelectorAll(s)],
     /** Calls of a command so far, with their arguments. @param {string} name */

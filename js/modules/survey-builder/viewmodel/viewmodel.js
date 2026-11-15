@@ -6,7 +6,7 @@
  * files are read in and evaluated. Data and commands live in the model
  * (domain/model.js), the agent surface comes from its schema. The interface
  * is put together from view parts, one per area of the draft; the runs are
- * in tasks.js.
+ * in tasks.js, the hand-overs to other modules among them.
  */
 import { createModule } from '../../../core/template-module.js';
 import { setFields, cloneJSON } from '../../../core/model.js';
@@ -23,6 +23,7 @@ import { recipientsView } from './recipients.js';
 import { responsesView } from './responses.js';
 import { resultsView } from './results.js';
 import { chartsView } from './charts.js';
+import { handoverView } from './handover.js';
 
 export default createModule({
   descriptor,
@@ -52,5 +53,5 @@ export default createModule({
     return copy;
   },
 
-  view: [outlineView, propertiesView, conditionsView, questionnaireView, recipientsView, responsesView, resultsView, chartsView],
+  view: [outlineView, propertiesView, conditionsView, questionnaireView, recipientsView, responsesView, resultsView, chartsView, handoverView],
 });

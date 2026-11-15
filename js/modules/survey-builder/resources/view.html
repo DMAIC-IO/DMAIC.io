@@ -370,6 +370,13 @@
             </template>
           </select>
           <span class="survey-builder__counts" data-ref="nLine" x-text="nLine"></span>
+          <button class="btn btn--sm" type="button" data-ref="takeToVoc" data-help-key="modules.survey-builder.asyncTasks.takeToVocTree.help"
+                  :disabled="!hasVocSelection || isHandoverRunning('takeToVocTree')" @click="takeSelected()">
+            <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span><span x-text="t('takeToVoc')"></span>
+          </button>
+          <button class="btn btn--sm" type="button" data-ref="toWorksheet" x-async-task="toWorksheet" x-async-task-start>
+            <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span><span x-text="t('toWorksheet')"></span>
+          </button>
         </div>
 
         <section class="survey-builder__summary" data-ref="summary">
@@ -528,6 +535,9 @@
                     <ul class="survey-builder__texts" data-ref="otherAnswers">
                       <template x-for="a in otherAnswers(b)" :key="a.key">
                         <li class="survey-builder__answer" :data-answer-key="a.key">
+                          <input type="checkbox" data-ref="vocCheck" :checked="isVocSelected(a.key)" @change="toggleVoc(a.key)">
+                          <span class="icon icon--sm survey-builder__taken" data-icon="status.ok" data-ref="vocTaken"
+                                x-show="isVocTaken(a.key)" :title="t('vocTakenMark')"></span>
                           <span data-ref="answerText" x-text="a.text"></span>
                           <span class="survey-builder__hint" data-ref="answerName" x-show="hasName(a)" x-text="a.name"></span>
                         </li>
@@ -597,6 +607,19 @@
                       </template>
                     </tbody>
                   </table>
+                  <div class="survey-builder__toolbar">
+                    <label class="survey-builder__counts" data-help-key="modules.survey-builder.actions.setKanoTarget.help" x-text="t('kanoTarget')"></label>
+                    <select class="field" data-ref="kanoTarget" data-help-key="" @change="kanoTargetChanged(b.key, $event)">
+                      <option value="" :selected="isKanoTarget(b.key, '')" x-text="t('kanoNew')"></option>
+                      <template x-for="o in kanoTargetOptions" :key="o.value">
+                        <option :value="o.value" :selected="isKanoTarget(b.key, o.value)" x-text="o.label"></option>
+                      </template>
+                    </select>
+                    <button class="btn btn--sm" type="button" data-action="handOverKano" data-help-key="modules.survey-builder.asyncTasks.handOverToKano.help"
+                            :disabled="isHandoverRunning('handOverToKano')" @click="handOver(b.key)">
+                      <span class="icon icon--sm" data-icon="action.send-to" aria-hidden="true"></span><span x-text="t('handOverKano')"></span>
+                    </button>
+                  </div>
                   <template x-for="cell in questionCharts(b)" :key="cell.key">
                     <div class="survey-builder__chart-cell">
                       <template x-if="cellIs(cell, 'scatter')"><div class="survey-builder__chart" :data-chart="cell.key" x-widget="scatter-chart" x-widget-config="cell.config"></div></template>
@@ -611,6 +634,9 @@
                   <ul class="survey-builder__texts" data-ref="answers">
                     <template x-for="a in textAnswers(b)" :key="a.key">
                       <li class="survey-builder__answer" :data-answer-key="a.key">
+                        <input type="checkbox" data-ref="vocCheck" :checked="isVocSelected(a.key)" @change="toggleVoc(a.key)">
+                        <span class="icon icon--sm survey-builder__taken" data-icon="status.ok" data-ref="vocTaken"
+                              x-show="isVocTaken(a.key)" :title="t('vocTakenMark')"></span>
                         <span data-ref="answerText" x-text="a.text"></span>
                         <span class="survey-builder__hint" data-ref="answerName" x-show="hasName(a)" x-text="a.name"></span>
                       </li>

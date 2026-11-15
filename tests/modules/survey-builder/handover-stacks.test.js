@@ -13,7 +13,7 @@
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertThrows } from '../../test-utils.js';
 import { worksheetColumnsFor } from '../../../js/modules/survey-builder/domain/handover/worksheet.js';
-import { vocStack } from '../../../js/modules/survey-builder/domain/handover/voc.js';
+import { vocStack, openTexts } from '../../../js/modules/survey-builder/domain/handover/voc.js';
 import { kanoOwnEntries, kanoBackups, kanoStack } from '../../../js/modules/survey-builder/domain/handover/kano.js';
 import { worksheetColumns } from '../../../js/modules/survey-builder/domain/stats.js';
 import { treePhaseForCycle } from '../../../js/modules/voc-ctx-tree/voc-ctx-tree-phase.js';
@@ -480,6 +480,15 @@ suite('survey-builder handover — vocStack', () => {
     const [tree] = Object.values(world.trees);
     assertDeepEqual(tree.vocs.map((v) => v.text), ['Schneller bitte', 'Mehr Farbe']);
     assertDeepEqual(world.surveys[S1].vocTree.responseKeys, ['old', ...KEYS]);
+  });
+
+  test('openTexts: every visible free text and „Sonstiges“ text of all responses, filter aside', () => {
+    const texts = openTexts(load(MIXED).toJSON());
+    assertDeepEqual([...texts.entries()], [
+      ['resp-a:q5', { text: 'Schneller bitte', name: 'Anna' }],
+      ['resp-b:q1:other', { text: 'Behörde', name: '' }],
+      ['resp-c:q2:other', { text: 'Brief', name: '' }],
+    ], 'the „Sonstiges“ text of a hidden question (resp-a, q2) is left out');
   });
 });
 
