@@ -192,7 +192,8 @@ export function mount(root, { props, services, effect, command }) {
     scheduled = true;
     queueMicrotask(reconcile);
   };
-  for (const ev of ['render', 'cell:changed', 'data:pasted', 'data:filled', 'undo', 'redo']) grid.on(ev, schedule);
+  // Leeren und Ausfüllen zeichnen ohnehin neu ('render'); ihre eigenen Ereignisse binden den Abgleich nicht daran.
+  for (const ev of ['render', 'cell:changed', 'data:pasted', 'data:cleared', 'data:filled', 'undo', 'redo']) grid.on(ev, schedule);
   // Strukturelle Aktionen: Zeilen nur am Ende anhängen (Einfügen über den Rand) lässt die Zellen an ihrem Platz.
   const shifted = () => { structural = true; schedule(); };
   for (const ev of ['rows:removed', 'rows:moved', 'column:removed', 'column:moved']) grid.on(ev, shifted);
