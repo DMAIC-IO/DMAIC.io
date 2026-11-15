@@ -627,7 +627,7 @@ export class ResultsViewModel {
       answeredRecipientIds: plainCopy(this.model.answeredRecipientIds),
     };
     const filter = this._activeFilter();
-    const strings = await reportStrings(this._context.i18n);
+    const strings = reportStrings((key) => (key.startsWith('kano.') ? this._context.i18n.t(`modules.${key}`) : this._t(key)));
     const html = buildReportHtml(data, strings, {
       locale: localeOf(this._context.i18n),
       withNames: !data.survey.anonymous && this.model.ui.reportWithNames,

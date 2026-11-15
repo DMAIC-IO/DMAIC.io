@@ -48,16 +48,23 @@ article { break-inside: avoid; }
  */
 const fill = (template, params) => String(template ?? '').replace(/\{(\w+)\}/g, (_, k) => (k in params ? String(params[k]) : `{${k}}`));
 
+/** Keys of `report.*` the report words itself with. */
+const REPORT_KEYS = [
+  'untitled', 'period', 'generated', 'rateTitle', 'rateLine', 'withoutRecipient', 'groupNone', 'colGroup', 'colSent',
+  'colAnswered', 'colRate', 'summaryTitle', 'topTitle', 'colItem', 'colN', 'colMean', 'colMedian', 'colTop', 'colNa',
+  'kanoTitle', 'colCategory', 'colBetter', 'colWorse', 'colImportance', 'freeText', 'groupsTitle', 'fewResponses',
+  'differs', 'questionsTitle', 'nResponses', 'other', 'filter', 'noResponses', 'meanShort',
+];
+
 /**
- * Report strings in the app language.
- * @param {import('../../../core/i18n.js').I18n} i18n
- * @returns {Promise<object>}
+ * Report strings in the app language, from the module's own texts: `report.*`
+ * and the Kano category names `kano.cat*`.
+ * @param {(key: string) => string} t the module's `t`
+ * @returns {object}
  */
-export async function reportStrings(i18n) {
-  const lang = i18n.getLanguage();
-  const report = await i18n.section('modules.survey-builder.report', lang);
-  const kano = await i18n.section('modules.kano', lang);
-  const cat = Object.fromEntries(['M', 'O', 'A', 'I', 'R', 'Q'].map((c) => [c, kano[`cat${c}`] || c]));
+export function reportStrings(t) {
+  const report = Object.fromEntries(REPORT_KEYS.map((k) => [k, t(`report.${k}`)]));
+  const cat = Object.fromEntries(['M', 'O', 'A', 'I', 'R', 'Q'].map((c) => [c, t(`kano.cat${c}`) || c]));
   return { ...report, cat };
 }
 

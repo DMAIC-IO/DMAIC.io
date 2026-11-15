@@ -35,6 +35,7 @@ import { worksheetColumnsFor } from '../domain/handover/worksheet.js';
 import { vocStack, openTexts } from '../domain/handover/voc.js';
 import { kanoOwnEntries, kanoBackups, kanoStack } from '../domain/handover/kano.js';
 import { loadTexts } from './texts.js';
+import { reportDocument, reportFileName } from './report.js';
 
 /** Keys of `ws.*`, the column names of the worksheet. */
 const WS_KEYS = ['responseId', 'submittedAt', 'recipient', 'other', 'functional', 'dysfunctional', 'importance', 'category', 'question'];
@@ -177,6 +178,15 @@ export const asyncTasks = {
       model.markExported();
       model.markSent({ recipientId });
       return file;
+    },
+  }),
+  buildReport: asyncTask({
+    /**
+     * The report under the active filter and grouping; nothing is downloaded.
+     * @returns {Promise<{ fileName: string, content: string }>}
+     */
+    async run() {
+      return { fileName: `${reportFileName(this)}.html`, content: reportDocument(this) };
     },
   }),
   toWorksheet: asyncTask({

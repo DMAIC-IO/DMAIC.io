@@ -15,6 +15,7 @@ import descriptor from '../module.js';
 import { SurveyModel } from '../domain/model.js';
 import { UiState } from './state.js';
 import { asyncTasks } from './tasks.js';
+import { reportDocument, reportFileName } from './report.js';
 import { outlineView } from './outline.js';
 import { propertiesView } from './properties.js';
 import { conditionsView } from './conditions.js';
@@ -30,6 +31,11 @@ export default createModule({
   Model: SurveyModel,
   State: UiState,
   asyncTasks,
+
+  exports: {
+    fileName() { return reportFileName(this); },
+    document() { return reportDocument(this); },
+  },
 
   /**
    * An empty survey with an id of its own (answer files name it).

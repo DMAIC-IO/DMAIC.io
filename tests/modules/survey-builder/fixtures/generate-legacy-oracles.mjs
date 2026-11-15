@@ -150,6 +150,23 @@ for (const [variant, ui] of Object.entries(RESULT_VARIANTS)) {
     blocks: vm.blocks().map((b) => ({ key: b.key, title: b.title, n: vm.blockN(b), type: b.stats.type })),
   };
 }
+// The report of the example as the earlier results viewmodel built it
+// (German app texts), with the day of creation replaced by `{generated}`:
+// per variant of filter and grouping, and with names.
+for (const [variant, ui] of [...Object.entries(RESULT_VARIANTS), ['withNames', { reportWithNames: true }]]) {
+  const json = JSON.parse(JSON.stringify(example));
+  json.ui = { ...json.ui, ...ui };
+  const vm = new ResultsViewModel({
+    t: (key, params) => deText(`modules.survey-builder.${key}`, params),
+    context: fakeContext({ i18n: deI18n }),
+    container: () => null,
+  });
+  vm.model = Legacy.fromJSON(json);
+  const file = await vm.buildReport();
+  record[`report.example.${variant}`] = {
+    content: file.content.replace(/(<p class="meta">Erstellt am )[^<]*(<\/p>)/, '$1{generated}$2'),
+  };
+}
 // Ids the earlier model made with uid() become new-1, new-2, … per entry, so a
 // regenerated file only differs where the behaviour did.
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g;
