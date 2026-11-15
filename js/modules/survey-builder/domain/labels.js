@@ -62,6 +62,7 @@ export function optionText(opt, t) { return opt.text || t('optionUntitled'); }
  * @returns {Object<string, string>} Kano category labels of the kano module
  */
 export function catLabels(i18n) {
+  /** @type {Object<string, string>} */
   const out = {};
   for (const c of KANO_CATEGORIES) out[c] = i18n.t(`modules.kano.cat${c}`);
   return out;

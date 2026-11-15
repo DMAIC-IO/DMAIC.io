@@ -165,7 +165,7 @@ export function responseRate({ recipients, responses, answeredRecipientIds }) {
   }
   const list = [...groups.values()]
     .map((g) => ({ ...g, rate: g.sent ? g.answered / g.sent : null }))
-    .sort((a, b) => (a.group === '') - (b.group === '') || a.group.localeCompare(b.group));
+    .sort((a, b) => /** @type {any} */ (a.group === '') - /** @type {any} */ (b.group === '') || a.group.localeCompare(b.group));
   return {
     sent, answered, rate: sent ? answered / sent : null,
     withoutRecipient: responses.filter((r) => !r.viaRecipient).length,

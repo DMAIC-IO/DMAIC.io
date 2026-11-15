@@ -35,38 +35,6 @@ import { from0 } from './migrations.js';
 /** Schalter einer Frage; welche eine Frage hat, hängt vom Typ ab (`emptyQuestion`). */
 export const QUESTION_FLAGS = Object.freeze(['required', 'other', 'noAnswer', 'importance', 'multiline']);
 
-const opt = Object.freeze({ optional: true });
-
-const CONDITIONS = list(object({ questionId: text(), optionIds: list(text()) }), { nullable: true });
-
-const QUESTION = object({
-  id: text(),
-  type: oneOf(['single', 'multi', 'rating', 'kano', 'text', 'info']),
-  text: text(),
-  hint: text(),
-  required: boolean(),
-  when: CONDITIONS,
-  options: list(object({ id: text(), text: text(), group: text(opt) }), opt),
-  rows: list(object({ id: text(), text: text() }), opt),
-  other: boolean(opt),
-  noAnswer: boolean(opt),
-  importance: boolean(opt),
-  multiline: boolean(opt),
-});
-
-const SCALE_5 = number({ integer: true, min: 1, max: 5, nullable: true });
-
-const ANSWER = object({
-  option: text(opt),
-  ids: list(text(), opt),
-  other: text({ optional: true, nullable: true }),
-  ratings: map(text(), oneOf([1, 2, 3, 4, 5, 'na']), opt),
-  kano: map(text(), object({ f: SCALE_5, d: SCALE_5, w: number({ integer: true, min: 1, max: 9, nullable: true }) }), opt),
-  text: text(opt),
-});
-
-const KANO_TRANSFER = object({ instanceId: text(), itemIds: list(text()), respondentIds: list(text()) });
-
 /**
  * Neue Frage eines Typs mit ihren typeigenen Feldern.
  * @param {string} type ein Fragetyp (`QUESTION_TYPES` in conditions.js)
@@ -189,8 +157,6 @@ function answers(a, itemId) {
 /** @param {'up'|'down'} direction @returns {-1|1} */
 const step = (direction) => (direction === 'up' ? -1 : 1);
 
-const DIRECTION = oneOf(['up', 'down']);
-
 export class SurveyModel extends defineModel({
   version: '1.0',
   migrations: { '0→1.0': from0 },
@@ -203,7 +169,26 @@ export class SurveyModel extends defineModel({
       intro: text(),
       contact: text(),
       anonymous: boolean(),
-      sections: list(object({ id: text(), title: text(), hint: text(), when: CONDITIONS, questions: list(QUESTION) })),
+      sections: list(object({
+        id: text(),
+        title: text(),
+        hint: text(),
+        when: list(object({ questionId: text(), optionIds: list(text()) }), { nullable: true }),
+        questions: list(object({
+          id: text(),
+          type: oneOf(['single', 'multi', 'rating', 'kano', 'text', 'info']),
+          text: text(),
+          hint: text(),
+          required: boolean(),
+          when: list(object({ questionId: text(), optionIds: list(text()) }), { nullable: true }),
+          options: list(object({ id: text(), text: text(), group: text({ optional: true }) }), { optional: true }),
+          rows: list(object({ id: text(), text: text() }), { optional: true }),
+          other: boolean({ optional: true }),
+          noAnswer: boolean({ optional: true }),
+          importance: boolean({ optional: true }),
+          multiline: boolean({ optional: true }),
+        })),
+      })),
     }),
     recipients: list(object({
       id: text(),
@@ -221,11 +206,22 @@ export class SurveyModel extends defineModel({
       recipientId: text({ nullable: true }),
       viaRecipient: boolean(),
       submittedAt: text(),
-      answers: map(text(), ANSWER),
+      answers: map(text(), object({
+        option: text({ optional: true }),
+        ids: list(text(), { optional: true }),
+        other: text({ optional: true, nullable: true }),
+        ratings: map(text(), oneOf([1, 2, 3, 4, 5, 'na']), { optional: true }),
+        kano: map(text(), object({
+          f: number({ integer: true, min: 1, max: 5, nullable: true }),
+          d: number({ integer: true, min: 1, max: 5, nullable: true }),
+          w: number({ integer: true, min: 1, max: 9, nullable: true }),
+        }), { optional: true }),
+        text: text({ optional: true }),
+      })),
     })),
     answeredRecipientIds: list(text()),
     transfers: object({
-      kano: map(text(), KANO_TRANSFER),
+      kano: map(text(), object({ instanceId: text(), itemIds: list(text()), respondentIds: list(text()) })),
       vocTree: object({ responseKeys: list(text()) }),
     }),
     ui: object({
@@ -270,7 +266,7 @@ export class SurveyModel extends defineModel({
       run({ sectionId, field, value }) { this.section(sectionId)[field] = value; },
     }),
     moveSection: command({
-      params: { sectionId: idOf('survey.sections'), direction: DIRECTION },
+      params: { sectionId: idOf('survey.sections'), direction: oneOf(['up', 'down']) },
       returns: object({ removedConditions: number({ integer: true }) }),
       run({ sectionId, direction }) {
         const list = this.survey.sections;
@@ -311,7 +307,7 @@ export class SurveyModel extends defineModel({
       },
     }),
     moveQuestion: command({
-      params: { questionId: text(), direction: DIRECTION },
+      params: { questionId: text(), direction: oneOf(['up', 'down']) },
       returns: object({ removedConditions: number({ integer: true }) }),
       run({ questionId, direction }) {
         this._requireQuestion(questionId);
@@ -407,7 +403,7 @@ export class SurveyModel extends defineModel({
       },
     }),
     moveItem: command({
-      params: { questionId: text(), itemId: text(), direction: DIRECTION },
+      params: { questionId: text(), itemId: text(), direction: oneOf(['up', 'down']) },
       run({ questionId, itemId, direction }) {
         const { q, kind } = this._requireItem(questionId, itemId);
         const list = q[kind];
@@ -569,7 +565,7 @@ export class SurveyModel extends defineModel({
       },
     }),
     setKanoTransfer: command({
-      params: { questionId: text(), transfer: KANO_TRANSFER },
+      params: { questionId: text(), transfer: object({ instanceId: text(), itemIds: list(text()), respondentIds: list(text()) }) },
       run({ questionId, transfer }) {
         this._requireKanoQuestion(questionId);
         this.transfers = { ...this.transfers, kano: { ...this.transfers.kano, [questionId]: transfer } };
