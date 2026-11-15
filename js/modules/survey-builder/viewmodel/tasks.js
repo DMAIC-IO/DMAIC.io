@@ -29,7 +29,6 @@ export const asyncTasks = {
         const strings = runnerStringsOf(await loadTexts(survey.lang));
         file = { fileName: surveyFileName(survey, strings, null), content: buildSurveyHtml(survey, strings, { recipientId: null }) };
       } catch (err) {
-        console.warn('[survey-builder] buildSurveyFile failed', err);
         throw new Error(failed, { cause: err });
       }
       model.markExported();

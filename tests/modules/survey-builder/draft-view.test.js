@@ -78,6 +78,26 @@ suite('survey-builder draft: outline', () => {
     assertTrue(Boolean(h.$('[data-ref="sectionProps"]')), 'section properties shown');
   });
 
+  test('a removed selected section leaves no selection: the question selected before stays hidden', async () => {
+    const h = await mount(linked());
+    h.$('[data-ref="addSection"]').click();
+    await settle();
+    selectQuestion(h, 'q2');
+    await settle();
+    assertEqual(h.vm().model.selectedQuestionId, 'q2');
+    const added = h.vm().model.survey.sections[1].id;
+    h.$(`.survey-builder__section[data-section-id="${added}"] [data-action="editSection"]`).click();
+    await settle();
+    h.$(`.survey-builder__section[data-section-id="${added}"] [data-action="deleteSection"]`).click();
+    await settle();
+    assertEqual(h.vm().model.survey.sections.length, 1);
+    assertEqual(h.vm().selectedQuestion, null);
+    assertEqual(h.$('[data-ref="questionProps"]'), null);
+    assertEqual(h.$('[data-ref="sectionProps"]'), null);
+    assertEqual(h.$('.survey-builder__question--selected'), null);
+    assertTrue(h.vm().hasNoSelection, 'nothing selected');
+  });
+
   test('deleting a question another one refers to tells „1 condition removed“ — also when an agent deletes', async () => {
     const h = await mount(linked());
     h.$('.survey-builder__question[data-question-id="q1"] [data-action="deleteQuestion"]').click();

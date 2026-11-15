@@ -7,8 +7,9 @@
  * type picker of its section, which then shows its prompt again. A question
  * is selected in the view field `selectedQuestionId` through the choice
  * group of the outline (`x-set`), a section in the UI state; the edit button
- * of a section clears the question in the same group. A selected section
- * comes first.
+ * of a section clears the question in the same group. While a section is
+ * selected — also one that was removed since — no question is; only a click
+ * on a question ends the section selection.
  *
  * After every command of this instance — from the interface or from an
  * agent — the part tells how many conditions a structural change removed,
@@ -88,10 +89,10 @@ export const outlineView = (ctx) => {
       return id === null ? null : (this.model.survey.sections.find((s) => s.id === id) ?? null);
     },
 
-    /** The selected question, if it still exists and no section is selected. @returns {Question|null} */
+    /** The selected question, if it still exists; none while a section is selected (even a removed one). @returns {Question|null} */
     get selectedQuestion() {
       const id = this.model.selectedQuestionId;
-      return id === null || this.selectedSection ? null : findQuestion(this.model.survey, id);
+      return id === null || this.state.selectedSectionId !== null ? null : findQuestion(this.model.survey, id);
     },
 
     /** @returns {boolean} neither a section nor a question is selected */

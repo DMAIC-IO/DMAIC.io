@@ -140,7 +140,7 @@
 
                     <template x-if="hasOptions(q)">
                       <div class="survey-builder__items" data-ref="items">
-                        <div class="survey-builder__label"><span data-help-key="modules.survey-builder.fields.survey.sections.questions.options.text.help" x-text="t('itemsOptions')"></span></div>
+                        <div class="survey-builder__label"><span data-help-key="modules.survey-builder.fields.survey.sections.questions.options.help" x-text="t('itemsOptions')"></span></div>
                         <template x-for="item in q.options" :key="item.id">
                           <div class="survey-builder__item" :data-item-id="item.id">
                             <input class="field survey-builder__item-text" type="text" data-field="text" x-model="item.text">
@@ -163,7 +163,7 @@
                     </template>
                     <template x-if="hasRows(q)">
                       <div class="survey-builder__items" data-ref="items">
-                        <div class="survey-builder__label"><span data-help-key="modules.survey-builder.fields.survey.sections.questions.rows.text.help" x-text="t('itemsRows')"></span></div>
+                        <div class="survey-builder__label"><span data-help-key="modules.survey-builder.fields.survey.sections.questions.rows.help" x-text="t('itemsRows')"></span></div>
                         <template x-for="item in q.rows" :key="item.id">
                           <div class="survey-builder__item" :data-item-id="item.id">
                             <input class="field survey-builder__item-text" type="text" data-field="text" x-model="item.text">
