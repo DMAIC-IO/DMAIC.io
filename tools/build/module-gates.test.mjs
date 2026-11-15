@@ -1325,6 +1325,23 @@ export const State = defineModel({
   ]);
 });
 
+test('Schema-Literal: version als Feld in der Form von object() ist erlaubt, in Optionen nicht', () => {
+  const src = `import { defineModel, object, list, text, number } from '${MODEL_URL}';
+export const State = defineModel({
+  version: '1.0',
+  fields: {
+    survey: object({ id: text(), version: number({ integer: true }), items: list(object({ version: text() })) }),
+    other: object({ a: text() }, { version: '2.0' }),
+    t: text({ version: '2.0' }),
+  },
+});
+`;
+  assert.deepEqual(checkSchemaLiteral(src), [
+    "schema: domain/model.js: version nur am obersten defineModel-Literal erlaubt (version: '2.0')",
+    "schema: domain/model.js: version nur am obersten defineModel-Literal erlaubt (version: '2.0')",
+  ]);
+});
+
 test('Schema-Literal: default als Funktion nur in Feldspezifikationen, nicht in Kommandoparametern', () => {
   const src = `import { defineModel, command, number } from '${MODEL_URL}';
 export const State = defineModel({

@@ -544,10 +544,12 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
     }
     if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && ctors.has(n.expression.text) && ctors.get(n.expression.text) !== define) {
       const isCommand = ctors.get(n.expression.text) === 'command';
-      for (const a of n.arguments) {
+      // Die Form von object(shape, opts) ist eine Feldliste wie `fields`: `version` ist dort ein Feldname.
+      const isShape = (a, i) => i === 0 && ctors.get(n.expression.text) === 'object' && ts.isObjectLiteralExpression(a);
+      n.arguments.forEach((a, i) => {
         if (isCommand && ts.isObjectLiteralExpression(a)) check(a, commandName(n));
-        else check(a, null, !isCommand);
-      }
+        else check(a, null, !isCommand && !isShape(a, i));
+      });
       return;
     }
     // `<WidgetSchema>.edits()` — Bearbeitungsfeld eines Diagramm-Widgets, ohne Argumente.
