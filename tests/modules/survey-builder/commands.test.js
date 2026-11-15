@@ -252,9 +252,10 @@ suite('survey-builder commands — conditions', () => {
       { questionId: 'q5', optionIds: ['x'] },
       { questionId: 'q1', optionIds: [] },
     ];
-    // The earlier model dropped the condition on q5 (no choice question) as
-    // well; the agent call rejected it (next test), so it is left out here.
-    const known = when.filter((c) => c.questionId !== 'q5');
+    // The earlier model dropped the condition on q5 (no choice question), the
+    // unknown option zz and the empty one; the agent call rejected them (next
+    // tests), so the new command gets only what the earlier model kept.
+    const known = [{ questionId: 'q1', optionIds: ['o1'] }, { questionId: 'q2', optionIds: ['m1'] }];
     const r = both('setConditions q3', MIXED, (l) => l.setConditions('q3', copy(when)), (m) => m.setConditions({ nodeId: 'q3', conditions: copy(known) }));
     assertDeepEqual(r.got, r.want);
     assertEqual(r.mr, 2);
@@ -272,6 +273,29 @@ suite('survey-builder commands — conditions', () => {
       assertEqual(err.param, 'conditions');
       assertEqual(err.message.startsWith(`unknown ${param} `), true, err.message);
       assertEqual(JSON.stringify(m.toJSON()), before);
+    }
+  });
+
+  test('setConditions rejects empty and unknown options, naming the condition and the option', () => {
+    for (const [conditions, path] of [
+      [[{ questionId: 'q1', optionIds: [] }], 'invalid conditions[0].optionIds'],
+      [[{ questionId: 'q1', optionIds: ['o1'] }, { questionId: 'q2', optionIds: ['m1', 'zz'] }], 'unknown conditions[1].optionIds[1]'],
+    ]) {
+      const m = load(MIXED);
+      const before = JSON.stringify(m.toJSON());
+      const err = thrown(() => m.setConditions({ nodeId: 'q3', conditions }));
+      assertEqual(err.param, 'conditions');
+      assertEqual(err.message.startsWith(`${path} `), true, err.message);
+      assertEqual(JSON.stringify(m.toJSON()), before);
+    }
+  });
+
+  test('setConditions rejects conditions that are no list', () => {
+    for (const conditions of ['q1', { questionId: 'q1', optionIds: ['o1'] }, null]) {
+      const m = load(MIXED);
+      const err = thrown(() => m.setConditions({ nodeId: 'q3', conditions }));
+      assertEqual(err?.param, 'conditions', JSON.stringify(conditions));
+      assertEqual(/conditions/.test(err.message), true, err.message);
     }
   });
 
