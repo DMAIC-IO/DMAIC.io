@@ -11,10 +11,12 @@
  * and records the result under its key. The tests themselves run along and
  * must pass; then the file is written.
  *
- * The browser test draft-view.test.js cannot run here. Its entries
- * (`surveyFile.example.<lang>`: the general questionnaire file of the example
- * project in a questionnaire language, as the earlier draft viewmodel built
- * it) are recorded by this script directly, after the test files.
+ * The browser tests draft-view.test.js and recipients-view.test.js cannot
+ * run here. Their entries (`surveyFile.example.<lang>`: the general
+ * questionnaire file of the example project in a questionnaire language, as
+ * the earlier draft viewmodel built it; `recipientFile.example.<lang>`: the
+ * file of one recipient, as the earlier recipients viewmodel built it) are
+ * recorded by this script directly, after the test files.
  *
  * Regenerate (cwd app/dev, while legacy/ still exists):
  *
@@ -86,6 +88,22 @@ for (const lang of ['de', 'en']) {
   vm.model = Legacy.fromJSON(json);
   const file = await vm.buildSurveyFile();
   record[`surveyFile.example.${lang}`] = { fileName: file.fileName, content: file.content, version: vm.model.survey.version };
+}
+// The file of one recipient (rec-2) of the example, built by the earlier
+// recipients viewmodel: in German after a structural change (the version
+// rises), in English without one.
+const { RecipientsViewModel } = await import('../../../../js/modules/survey-builder/legacy/viewmodel/recipients.js');
+for (const [lang, dirty] of [['de', true], ['en', false]]) {
+  const json = JSON.parse(JSON.stringify(example));
+  json.survey.lang = lang;
+  json.dirtyStructure = dirty;
+  const vm = new RecipientsViewModel({ t, context: fakeContext({ i18n }), container: () => null });
+  vm.model = Legacy.fromJSON(json);
+  const file = await vm.buildRecipientFile('rec-2');
+  const r = vm.model.recipients.find((x) => x.id === 'rec-2');
+  record[`recipientFile.example.${lang}`] = {
+    fileName: file.fileName, content: file.content, version: vm.model.survey.version, sentVersion: r.sentVersion,
+  };
 }
 // Ids the earlier model made with uid() become new-1, new-2, … per entry, so a
 // regenerated file only differs where the behaviour did.

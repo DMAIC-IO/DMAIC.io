@@ -183,6 +183,7 @@ const SKIP = new Set([
   'modules/doe-planner/evop-view.test.js',
   'modules/opportunity-flowchart/viewmodel.test.js',
   'modules/survey-builder/draft-view.test.js',
+  'modules/survey-builder/recipients-view.test.js',
   'modules/resampling-view.test.js',
   'modules/ishikawa/gestures.test.js',
   'modules/project-charter/gestures.test.js',

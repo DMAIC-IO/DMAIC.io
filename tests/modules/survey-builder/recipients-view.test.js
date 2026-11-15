@@ -1,0 +1,284 @@
+/**
+ * Survey builder: the recipients tab and the upper part of the results tab
+ * (reading answer files, the list of responses) in the browser — the real
+ * module with the real template.
+ *
+ * The file of a recipient of the example is compared with the file the
+ * earlier recipients viewmodel built, frozen in fixtures/legacy-oracles.json
+ * (entries `recipientFile.example.<lang>`, recorded by
+ * fixtures/generate-legacy-oracles.mjs).
+ */
+import { suite, test, assert, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
+import { mount, stored, settle, until, typeIn, de, helpEntry } from './view-harness.js';
+
+/** @param {string} path relative to this file @returns {Promise<any>} */
+async function loadJson(path) {
+  return (await fetch(new URL(path, import.meta.url), { cache: 'no-cache' })).json();
+}
+
+const EXAMPLE = await loadJson('../../../examples/projects/survey-builder-software.json');
+const ORACLES = await loadJson('./fixtures/legacy-oracles.json');
+
+/** @returns {any} a fresh copy of the example project */
+const example = () => JSON.parse(JSON.stringify(EXAMPLE));
+
+/** One text question, two recipients; Anna has answered. */
+const withRecipients = (over = {}) => stored({
+  survey: {
+    version: 1,
+    sections: [{
+      id: 's1', title: 'Allgemein', hint: '', when: null, questions: [
+        { id: 'q1', type: 'text', text: 'Wünsche', hint: '', required: false, when: null, multiline: false },
+      ],
+    }],
+  },
+  recipients: [
+    { id: 'rc1', name: 'Anna', organisation: 'A GmbH', group: 'Handel', email: '', note: '', sentAt: '2026-10-01T09:00:00.000Z', sentVersion: 1 },
+    { id: 'rc2', name: '', organisation: '', group: '', email: '', note: '', sentAt: null, sentVersion: null },
+  ],
+  responses: [
+    { id: 'r1', surveyVersion: 1, recipientId: 'rc1', viaRecipient: true, submittedAt: '2026-10-02T08:00:00.000Z', answers: { q1: { text: 'Mehr Tempo' } } },
+  ],
+  answeredRecipientIds: ['rc1'],
+  tab: 'recipients',
+  ...over,
+});
+
+/** An answer file of the survey `sv-1` as the questionnaire saves it. */
+function answerFile(name, responseId, extra = {}) {
+  const body = JSON.stringify({
+    format: 'dmike-survey-response', formatVersion: 1, surveyId: 'sv-1', surveyVersion: 1,
+    recipientId: null, responseId, submittedAt: '2026-10-10T09:30:00.000Z', answers: { q1: 'Schneller' }, ...extra,
+  });
+  return new File([body], name, { type: 'application/json' });
+}
+
+/** @param {Element|null} el @returns {boolean} neither it nor an ancestor is hidden by `x-show` */
+function shown(el) {
+  for (let n = el; n; n = n.parentElement) if (/** @type {HTMLElement} */ (n).style?.display === 'none') return false;
+  return Boolean(el);
+}
+
+/** @param {any} h @param {string} id @returns {HTMLElement} */
+const row = (h, id) => h.$(`[data-recipient-id="${id}"]`);
+
+suite('survey-builder recipients: list', () => {
+  test('adding a recipient shows a row; its fields bind to the model', async () => {
+    const h = await mount(stored({ tab: 'recipients' }));
+    assertTrue(shown(h.$('[data-ref="recipientsEmpty"]')), 'empty hint shown');
+    h.$('[data-ref="addRecipient"]').click();
+    await settle();
+    assertEqual(h.calls('addRecipient').length, 1);
+    const r = h.vm().model.recipients[0];
+    assertTrue(Boolean(r), 'recipient added');
+    for (const field of ['name', 'organisation', 'group', 'email', 'note']) {
+      typeIn(row(h, r.id).querySelector(`[data-field="${field}"]`), `${field}-x`);
+    }
+    await settle();
+    assertDeepEqual(
+      ['name', 'organisation', 'group', 'email', 'note'].map((f) => h.vm().model.recipients[0][f]),
+      ['name-x', 'organisation-x', 'group-x', 'email-x', 'note-x'],
+    );
+    assertEqual(row(h, r.id).querySelector('[data-ref="status"]').textContent, de('statusNotSent'));
+    assertEqual(row(h, r.id).querySelector('[data-ref="sent"]').textContent, '–');
+  });
+
+  test('status, sent line and counts as before; the outdated hint after a new version', async () => {
+    const h = await mount(withRecipients({ survey: { ...withRecipients().survey, version: 2 } }));
+    assertEqual(row(h, 'rc1').querySelector('[data-ref="status"]').textContent, de('statusAnswered'));
+    assertEqual(row(h, 'rc2').querySelector('[data-ref="status"]').textContent, de('statusNotSent'));
+    const date = new Date('2026-10-01T09:00:00.000Z').toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
+    assertEqual(row(h, 'rc1').querySelector('[data-ref="sent"]').textContent, de('sentLabel', { date, version: 1 }));
+    const outdated = row(h, 'rc1').querySelector('[data-ref="outdated"]');
+    assertEqual(outdated.textContent, de('outdatedHint', { version: 1 }));
+    assertTrue(shown(outdated), 'outdated hint shown');
+    assertEqual(h.$('[data-ref="recipientCounts"]').textContent, de('report.rateLine', { sent: 1, answered: 1, rate: '100 %' }));
+  });
+
+  test('the anonymous hint shows only for an anonymous survey', async () => {
+    const h = await mount(withRecipients());
+    assertEqual(shown(h.$('[data-ref="anonymousInfo"]')), false);
+    const a = await mount(withRecipients({ survey: { ...withRecipients().survey, anonymous: true } }));
+    assertTrue(shown(a.$('[data-ref="anonymousInfo"]')), 'anonymous hint shown');
+  });
+
+  test('deleting an answered recipient asks with its name; declined it stays, confirmed its answer stays without recipient', async () => {
+    const no = await mount(withRecipients(), { confirm: false });
+    row(no, 'rc1').querySelector('[data-action="deleteRecipient"]').click();
+    await settle();
+    assertDeepEqual(no.confirms.map((c) => c.message), [de('confirmRecipientDelete', { name: 'Anna' })]);
+    assertEqual(no.vm().model.recipients.length, 2);
+    const yes = await mount(withRecipients());
+    row(yes, 'rc1').querySelector('[data-action="deleteRecipient"]').click();
+    await settle();
+    assertDeepEqual(yes.vm().model.recipients.map((r) => r.id), ['rc2']);
+    assertEqual(yes.vm().model.responses[0].recipientId, null);
+    row(yes, 'rc2').querySelector('[data-action="deleteRecipient"]').click();
+    await settle();
+    assertEqual(yes.confirms.length, 1, 'a recipient without answer goes without asking');
+    assertEqual(yes.vm().model.recipients.length, 0);
+  });
+});
+
+suite('survey-builder recipients: file', () => {
+  for (const lang of ['de', 'en']) {
+    test(`buildRecipientFile of the example in ${lang} is the earlier file; the recipient is sent with the current version`, async () => {
+      const json = example();
+      json.survey.lang = lang;
+      json.dirtyStructure = lang === 'de';
+      const h = await mount(json);
+      const out = await h.vm()._asyncTaskHost.start('buildRecipientFile', { recipientId: 'rec-2' });
+      assertEqual(out.status, 'done');
+      const want = ORACLES[`recipientFile.example.${lang}`];
+      assertEqual(out.value.fileName, want.fileName);
+      assert(out.value.content === want.content, 'content differs from the earlier file');
+      const m = h.vm().model;
+      assertEqual(m.survey.version, want.version);
+      const r = m.recipients.find((x) => x.id === 'rec-2');
+      assertEqual(r.sentVersion, want.sentVersion);
+      assertEqual(m.isOutdated('rec-2'), false);
+      assertTrue(Date.now() - Date.parse(r.sentAt) < 60000, 'sent just now');
+      assertEqual(m.exportedOnce, true);
+      assertEqual(m.dirtyStructure, false);
+    });
+  }
+
+  test('the file of a recipient who was never sent marks them sent', async () => {
+    const h = await mount(withRecipients());
+    const out = await h.vm()._asyncTaskHost.start('buildRecipientFile', { recipientId: 'rc2' });
+    assertEqual(out.status, 'done');
+    assertTrue(out.value.content.includes('"recipientId":"rc2"'), 'recipient id in the file');
+    await settle();
+    assertEqual(row(h, 'rc2').querySelector('[data-ref="status"]').textContent, de('statusSent'));
+  });
+});
+
+suite('survey-builder recipients: reading answers', () => {
+  test('three files (ok, foreign, the same again) and a broken one: one response, a log line each, texts as before', async () => {
+    const h = await mount(withRecipients({ tab: 'results' }));
+    await h.vm().importFiles([
+      answerFile('a.json', 'r2', { recipientId: 'gone' }),
+      answerFile('f.json', 'r3', { surveyId: 'other' }),
+      answerFile('kopie.json', 'r2'),
+      new File(['{"format":'], 'x.json'),
+    ]);
+    await settle();
+    const m = h.vm().model;
+    assertDeepEqual(m.responses.map((r) => r.id), ['r1', 'r2']);
+    assertDeepEqual(h.calls('importResponse').map((a) => a.fileName), ['a.json', 'f.json', 'kopie.json', 'x.json']);
+    const lines = h.$$('[data-ref="importLog"] li');
+    assertDeepEqual(lines.map((li) => li.querySelector('[data-ref="fileName"]').textContent), ['a.json', 'f.json', 'kopie.json', 'x.json']);
+    assertDeepEqual(lines.map((li) => li.querySelector('[data-ref="importStatus"]').textContent),
+      [de('importOk'), de('importForeign'), de('importDuplicate'), de('importInvalid')]);
+    assertEqual(lines[0].querySelector('[data-ref="importNotes"]').textContent, de('importUnknownRecipient'));
+    assertTrue(lines[0].classList.contains('survey-builder__import--ok'), 'ok line');
+    assertTrue(lines[1].classList.contains('survey-builder__import--rejected'), 'foreign line');
+    assertTrue(lines[3].classList.contains('survey-builder__import--rejected'), 'invalid line');
+    assertDeepEqual(h.notes, []);
+  });
+
+  test('a file for a known recipient makes them answered; dropped files arrive through x-file-drop', async () => {
+    const h = await mount(withRecipients({ tab: 'results' }));
+    const zone = h.$('[data-ref="dropzone"]');
+    assertEqual(zone.getAttribute('x-file-drop'), 'importFiles');
+    const dt = new DataTransfer();
+    dt.items.add(answerFile('b.json', 'r4', { recipientId: 'rc2', answers: { q1: 'Gut', q9: 'weg' } }));
+    zone.dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true }));
+    await until(() => h.vm().model.responses.length === 2);
+    await settle();
+    assertEqual(h.vm().model.recipientStatus('rc2'), 'answered');
+    const line = h.$$('[data-ref="importLog"] li')[0];
+    assertEqual(line.querySelector('[data-ref="importNotes"]').textContent, de('importOrphans', { count: 1 }));
+  });
+
+  test('an unreadable file is logged as invalid with its own text', async () => {
+    const h = await mount(withRecipients({ tab: 'results' }));
+    const broken = { name: 'kaputt.json', text: async () => { throw new Error('disk on fire'); } };
+    await h.vm().importFiles([broken]);
+    await settle();
+    const line = h.$$('[data-ref="importLog"] li')[0];
+    assertEqual(line.querySelector('[data-ref="importStatus"]').textContent, de('importInvalid'));
+    assertTrue(!h.container.textContent.includes('disk on fire'), 'no error message shown');
+  });
+});
+
+suite('survey-builder recipients: responses', () => {
+  test('a response folds open in state.expandedResponses and shows its answers; one at a time', async () => {
+    const h = await mount(withRecipients({ tab: 'results' }));
+    await h.vm().importFiles([answerFile('a.json', 'r2')]);
+    await settle();
+    const body = (id) => h.$(`[data-response-id="${id}"]`);
+    assertEqual(body('r1').querySelector('[data-ref="who"]').textContent, 'Anna');
+    assertEqual(body('r2').querySelector('[data-ref="who"]').textContent, de('respWithoutRecipient'));
+    const date = new Date('2026-10-02T08:00:00.000Z').toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
+    assertEqual(body('r1').querySelector('[data-ref="date"]').textContent, date);
+    assertEqual(shown(body('r1').querySelector('[data-ref="details"]')), false);
+    body('r1').querySelector('[data-action="toggleResponse"]').click();
+    await settle();
+    assertDeepEqual(h.vm().state.expandedResponses, ['r1']);
+    assertTrue(shown(body('r1').querySelector('[data-ref="details"]')), 'details shown');
+    assertDeepEqual([...body('r1').querySelectorAll('dd')].map((d) => d.textContent), ['Mehr Tempo']);
+    body('r2').querySelector('[data-action="toggleResponse"]').click();
+    await settle();
+    assertDeepEqual(h.vm().state.expandedResponses, ['r2']);
+    body('r2').querySelector('[data-action="toggleResponse"]').click();
+    await settle();
+    assertDeepEqual(h.vm().state.expandedResponses, []);
+    assertEqual('expandedResponses' in h.vm().model.toJSON(), false);
+  });
+
+  test('anonymous: every response is „anonym“', async () => {
+    const h = await mount(withRecipients({ tab: 'results', survey: { ...withRecipients().survey, anonymous: true } }));
+    assertEqual(h.$('[data-response-id="r1"] [data-ref="who"]').textContent, de('respAnonymous'));
+  });
+
+  test('deleting a response asks; confirmed, the recipient falls back from answered and the row closes', async () => {
+    const no = await mount(withRecipients({ tab: 'results' }), { confirm: false });
+    no.$('[data-response-id="r1"] [data-action="deleteResponse"]').click();
+    await settle();
+    assertDeepEqual(no.confirms.map((c) => c.message), [de('confirmResponseDelete')]);
+    assertEqual(no.vm().model.responses.length, 1);
+    const h = await mount(withRecipients({ tab: 'results' }));
+    h.$('[data-response-id="r1"] [data-action="toggleResponse"]').click();
+    await settle();
+    h.$('[data-response-id="r1"] [data-action="deleteResponse"]').click();
+    await settle();
+    assertEqual(h.vm().model.responses.length, 0);
+    assertEqual(h.vm().model.recipientStatus('rc1'), 'sent');
+    assertDeepEqual(h.vm().state.expandedResponses, []);
+    assertTrue(shown(h.$('[data-ref="responsesEmpty"]')), 'empty hint shown');
+  });
+});
+
+suite('survey-builder recipients: help badges', () => {
+  test('every caption of both tabs has a help key that exists; row buttons carry none', async () => {
+    const h = await mount(withRecipients());
+    await h.vm().importFiles([answerFile('a.json', 'r2')]);
+    await settle();
+    for (const ref of ['recipientsTab', 'resultsTab']) {
+      const tab = h.$(`[data-ref="${ref}"]`);
+      const captions = [...tab.querySelectorAll('label, th, .dmike-kpi-label')].filter((el) => el.textContent.trim());
+      assertTrue(captions.length >= 2, `${ref} captions: ${captions.length}`);
+      for (const el of captions) {
+        const key = el.getAttribute('data-help-key') || el.querySelector('[data-help-key]:not([data-help-key=""])')?.getAttribute('data-help-key');
+        assertTrue(Boolean(key), `no help key: ${el.outerHTML.slice(0, 120)}`);
+      }
+      for (const el of [...tab.querySelectorAll('[data-help-key]')].filter((e) => e.getAttribute('data-help-key'))) {
+        const key = el.getAttribute('data-help-key');
+        assertTrue(key.startsWith('modules.survey-builder.'), key);
+        const entry = helpEntry(key.slice('modules.survey-builder.'.length).replace(/\.help$/, ''));
+        assertTrue(Boolean(entry && (typeof entry === 'string' || entry.help)), `help text missing: ${key}`);
+        assertEqual(el.parentElement.closest('[data-help-key]:not([data-help-key=""])'), null, `badge inside a badge: ${key}`);
+      }
+      for (const el of tab.querySelectorAll('[x-command]')) {
+        const key = el.getAttribute('data-help-key');
+        const cmd = el.getAttribute('x-command');
+        assertTrue(key === '' || key === `modules.survey-builder.actions.${cmd}.help`, `${cmd}: ${key}`);
+      }
+    }
+    for (const sel of ['[data-action="exportRecipient"]', '[data-action="deleteRecipient"]', '[data-action="toggleResponse"]', '[data-action="deleteResponse"]']) {
+      assertTrue(h.$$(sel).length > 0 && h.$$(sel).every((el) => el.getAttribute('data-help-key') === ''), sel);
+    }
+    assertEqual(h.$('[data-ref="addRecipient"]').getAttribute('data-help-key'), 'modules.survey-builder.actions.addRecipient.help');
+  });
+});

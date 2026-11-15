@@ -68,10 +68,34 @@
       }
     },
     "recipients": {
-      "help": "The recipients with name, organisation, group, e-mail and note, plus when and with which version they got their file."
+      "help": "The recipients with name, organisation, group, e-mail and note, plus when and with which version they got their file.",
+      "name": {
+        "help": "Name of the person or company."
+      },
+      "organisation": {
+        "help": "Organisation or department."
+      },
+      "group": {
+        "help": "The group the response rate is split by."
+      },
+      "email": {
+        "help": "E-mail address, to send the file with your own mail program."
+      },
+      "note": {
+        "help": "A free note."
+      },
+      "sentAt": {
+        "help": "When the file for the recipient was made and with which version of the questionnaire."
+      }
     },
     "responses": {
-      "help": "The imported responses: per answer file the version, the recipient if known and not anonymous, the time and the answers per question."
+      "help": "The imported responses: per answer file the version, the recipient if known and not anonymous, the time and the answers per question.",
+      "submittedAt": {
+        "help": "When the response was sent."
+      },
+      "recipientId": {
+        "help": "Who answered: the recipient, anonymous or without recipient."
+      }
     },
     "answeredRecipientIds": {
       "help": "Which recipients have answered; this gives the status not sent, sent or answered."
@@ -384,6 +408,9 @@
     },
     "conditionDraft": {
       "help": "The draft of a new condition for the selected section or question: source and options. setConditions takes it over. A pure view; it is not saved."
+    },
+    "importLog": {
+      "help": "The log of the answer files read in this session: per file the name, whether it was taken in or rejected, and the notes on it. A pure view; it is not saved."
     },
     "expandedResponses": {
       "help": "The ids of the responses whose details are expanded. A pure view; it is not saved."

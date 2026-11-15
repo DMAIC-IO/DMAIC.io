@@ -68,10 +68,34 @@
       }
     },
     "recipients": {
-      "help": "Die Empfänger mit Name, Organisation, Gruppe, E-Mail und Notiz, dazu wann und mit welcher Version sie ihre Datei bekommen haben."
+      "help": "Die Empfänger mit Name, Organisation, Gruppe, E-Mail und Notiz, dazu wann und mit welcher Version sie ihre Datei bekommen haben.",
+      "name": {
+        "help": "Name der Person oder des Unternehmens."
+      },
+      "organisation": {
+        "help": "Organisation oder Abteilung."
+      },
+      "group": {
+        "help": "Die Gruppe, nach der die Rücklaufquote aufgeteilt wird."
+      },
+      "email": {
+        "help": "E-Mail-Adresse, um die Datei mit dem eigenen Mailprogramm zu verschicken."
+      },
+      "note": {
+        "help": "Eine freie Notiz."
+      },
+      "sentAt": {
+        "help": "Wann die Datei für den Empfänger erzeugt wurde und mit welcher Version des Fragebogens."
+      }
     },
     "responses": {
-      "help": "Die eingelesenen Antworten: je Antwortdatei die Version, der Empfänger, falls bekannt und nicht anonym, der Zeitpunkt und die Antworten je Frage."
+      "help": "Die eingelesenen Antworten: je Antwortdatei die Version, der Empfänger, falls bekannt und nicht anonym, der Zeitpunkt und die Antworten je Frage.",
+      "submittedAt": {
+        "help": "Wann die Antwort abgeschickt wurde."
+      },
+      "recipientId": {
+        "help": "Wer geantwortet hat: der Empfänger, anonym oder ohne Empfänger."
+      }
     },
     "answeredRecipientIds": {
       "help": "Welche Empfänger schon geantwortet haben; daraus folgt der Status nicht verschickt, verschickt oder beantwortet."
@@ -384,6 +408,9 @@
     },
     "conditionDraft": {
       "help": "Der Entwurf einer neuen Bedingung für den gewählten Abschnitt oder die gewählte Frage: Quelle und Optionen. setConditions übernimmt sie. Rein eine Ansicht; sie wird nicht gespeichert."
+    },
+    "importLog": {
+      "help": "Das Protokoll der in dieser Sitzung eingelesenen Antwortdateien: je Datei der Name, ob sie übernommen oder abgelehnt wurde und die Hinweise dazu. Rein eine Ansicht; es wird nicht gespeichert."
     },
     "expandedResponses": {
       "help": "Die ids der Antworten, deren Einzelheiten aufgeklappt sind. Rein eine Ansicht; sie wird nicht gespeichert."

@@ -244,8 +244,120 @@
       </div>
     </section>
 
-    <section class="survey-builder__tab survey-builder__page" data-ref="recipientsTab" x-show="isTab('recipients')"></section>
+    <section class="survey-builder__tab survey-builder__page" data-ref="recipientsTab" x-show="isTab('recipients')">
+      <div class="dmike-split__section-title"><span data-help-key="modules.survey-builder.fields.recipients.help" x-text="t('recipientsTitle')"></span></div>
+      <div class="survey-builder__toolbar">
+        <button class="btn btn--sm" type="button" data-ref="addRecipient" data-help-key="modules.survey-builder.actions.addRecipient.help" x-command="addRecipient">
+          <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span><span x-text="t('addRecipient')"></span>
+        </button>
+        <span class="survey-builder__counts" data-ref="recipientCounts" x-text="countsLine"></span>
+      </div>
+      <div class="dmike-infobox dmike-infobox--info" data-ref="anonymousInfo"
+           x-show="model.survey.anonymous" x-text="t('anonymousInfo')"></div>
+      <p class="survey-builder__hint" data-ref="recipientsEmpty" x-show="!hasRecipients" x-text="t('recipientsEmpty')"></p>
+      <div class="dmike-table-wrap" x-show="hasRecipients">
+        <table class="dmike-table survey-builder__recipients" data-ref="recipients">
+          <thead>
+            <tr>
+              <th><span data-help-key="modules.survey-builder.fields.recipients.name.help" x-text="t('colName')"></span></th>
+              <th><span data-help-key="modules.survey-builder.fields.recipients.organisation.help" x-text="t('colOrganisation')"></span></th>
+              <th><span data-help-key="modules.survey-builder.fields.recipients.group.help" x-text="t('colGroup')"></span></th>
+              <th><span data-help-key="modules.survey-builder.fields.recipients.email.help" x-text="t('colEmail')"></span></th>
+              <th><span data-help-key="modules.survey-builder.fields.recipients.note.help" x-text="t('colNote')"></span></th>
+              <th><span data-help-key="modules.survey-builder.fields.answeredRecipientIds.help" x-text="t('colStatus')"></span></th>
+              <th><span data-help-key="modules.survey-builder.fields.recipients.sentAt.help" x-text="t('colSent')"></span></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="r in model.recipients" :key="r.id">
+              <tr :data-recipient-id="r.id">
+                <td><input class="field" type="text" data-field="name" x-model="r.name"></td>
+                <td><input class="field" type="text" data-field="organisation" x-model="r.organisation"></td>
+                <td><input class="field" type="text" data-field="group" x-model="r.group"></td>
+                <td><input class="field" type="email" data-field="email" x-model="r.email"></td>
+                <td><input class="field" type="text" data-field="note" x-model="r.note"></td>
+                <td>
+                  <span data-ref="status" x-text="recipientStatusLabel(r.id)"></span>
+                  <span class="survey-builder__outdated" data-ref="outdated"
+                        x-show="isOutdated(r.id)" x-text="outdatedHint(r)"></span>
+                </td>
+                <td class="survey-builder__nowrap" data-ref="sent" x-text="sentLabel(r)"></td>
+                <td class="survey-builder__nowrap">
+                  <button class="btn btn--sm" type="button" data-action="exportRecipient" data-help-key="" @click="exportForRecipient(r.id)">
+                    <span class="icon icon--sm" data-icon="action.download" aria-hidden="true"></span><span x-text="t('exportRecipient')"></span>
+                  </button>
+                  <button class="btn btn--icon-sm btn--danger" type="button" data-action="deleteRecipient" :title="t('delete')" data-help-key=""
+                          x-command="removeRecipient" :data-arg-recipient-id="r.id"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-    <section class="survey-builder__tab survey-builder__page" data-ref="resultsTab" x-show="isTab('results')"></section>
+    <section class="survey-builder__tab survey-builder__page" data-ref="resultsTab" x-show="isTab('results')">
+      <div class="dmike-split__section-title"><span data-help-key="modules.survey-builder.actions.importResponse.help" x-text="t('importAnswers')"></span></div>
+      <div class="survey-builder__dropzone" data-ref="dropzone"
+           x-file-drop="importFiles" data-file-drop-multiple data-file-drop-accept=".json,application/json">
+        <button class="btn btn--sm" type="button" data-ref="importButton" data-help-key="" data-file-drop-open>
+          <span class="icon icon--sm" data-icon="action.upload" aria-hidden="true"></span><span x-text="t('importAnswers')"></span>
+        </button>
+        <span class="survey-builder__hint" x-text="t('importHint')"></span>
+      </div>
+      <div x-show="hasImportLog">
+        <div class="survey-builder__subtitle" x-text="t('importLogTitle')"></div>
+        <ul class="survey-builder__import-log" data-ref="importLog">
+          <template x-for="entry in state.importLog" :key="entry.key">
+            <li :class="importStatusClass(entry)">
+              <span class="survey-builder__file" data-ref="fileName" x-text="entry.name"></span>
+              <span data-ref="importStatus" x-text="importStatusLabel(entry)"></span>
+              <span class="survey-builder__hint" data-ref="importNotes" x-text="noteLine(entry)"></span>
+            </li>
+          </template>
+        </ul>
+      </div>
+
+      <div class="dmike-split__section-title"><span data-help-key="modules.survey-builder.fields.responses.help" x-text="t('responsesTitle')"></span></div>
+      <p class="survey-builder__hint" data-ref="responsesEmpty" x-show="!hasResponses" x-text="t('responsesEmpty')"></p>
+      <div class="dmike-table-wrap" x-show="hasResponses">
+        <table class="dmike-table survey-builder__responses" data-ref="responses">
+          <thead>
+            <tr>
+              <th><span data-help-key="modules.survey-builder.fields.responses.submittedAt.help" x-text="t('colDate')"></span></th>
+              <th><span data-help-key="modules.survey-builder.fields.responses.recipientId.help" x-text="t('colRespondent')"></span></th>
+              <th></th>
+            </tr>
+          </thead>
+          <template x-for="row in responseRows" :key="row.id">
+            <tbody :data-response-id="row.id">
+              <tr>
+                <td class="survey-builder__nowrap" data-ref="date" x-text="row.date"></td>
+                <td data-ref="who" x-text="row.who"></td>
+                <td class="survey-builder__nowrap">
+                  <button class="btn btn--icon-sm" type="button" data-action="toggleResponse" :title="t('showDetails')" data-help-key=""
+                          @click="toggleResponse(row.id)"><span class="icon icon--sm" data-icon="action.show" aria-hidden="true"></span></button>
+                  <button class="btn btn--icon-sm btn--danger" type="button" data-action="deleteResponse" :title="t('delete')" data-help-key=""
+                          x-command="removeResponse" :data-arg-response-id="row.id"><span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span></button>
+                </td>
+              </tr>
+              <tr data-ref="details" x-show="isResponseOpen(row.id)">
+                <td colspan="3">
+                  <dl class="survey-builder__details">
+                    <template x-for="d in responseDetails(row.id)" :key="d.key">
+                      <div class="survey-builder__detail">
+                        <dt x-text="d.question"></dt>
+                        <dd x-text="d.answer"></dd>
+                      </div>
+                    </template>
+                  </dl>
+                </td>
+              </tr>
+            </tbody>
+          </template>
+        </table>
+      </div>
+    </section>
   </div>
 </div>

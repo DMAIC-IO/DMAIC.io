@@ -142,6 +142,7 @@
   "takeToVoc": "In VoC-Baum übernehmen",
   "previewFailed": "Die Vorschau konnte nicht erstellt werden.",
   "surveyFileFailed": "Der Fragebogen konnte nicht erzeugt werden.",
+  "recipientFileFailed": "Die Datei für den Empfänger konnte nicht erzeugt werden.",
   "commandFailed": "Die Änderung konnte nicht ausgeführt werden.",
   "reportExportFailed": "Der Bericht konnte nicht exportiert werden.",
   "vocTakenMark": "bereits in den VoC-Baum übernommen",

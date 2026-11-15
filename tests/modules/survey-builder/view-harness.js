@@ -12,6 +12,7 @@ import { SurveyModel } from '../../../js/modules/survey-builder/domain/model.js'
 import { registerTablistDirective } from '../../../js/core/tablist.js';
 import { registerFieldDirective } from '../../../js/core/field-directive.js';
 import { registerCommandDirectives } from '../../../js/core/command-directives.js';
+import { registerFileDropDirective } from '../../../js/core/file-drop-directive.js';
 import { registerWidgetDirective } from '../../../js/core/widget-directive.js';
 import { WIDGETS } from '../../../js/widgets/registry.js';
 import { WIDGET_I18N } from '../../widget-i18n.js';
@@ -74,6 +75,7 @@ async function prepare() {
     registerFieldDirective(Alpine, { i18n: WIDGET_I18N, widgets: WIDGETS });
     registerWidgetDirective(Alpine, { i18n: WIDGET_I18N, widgets: WIDGETS });
     registerCommandDirectives(Alpine);
+    registerFileDropDirective(Alpine);
     if (!Alpine.version) Alpine.start();
     UI = await (await fetch(resourceUrl('i18n/ui.de.json'), { cache: 'no-cache' })).json();
     HELP = await (await fetch(resourceUrl('i18n/context-help.de.json'), { cache: 'no-cache' })).json();
