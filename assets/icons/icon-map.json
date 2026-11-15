@@ -55,6 +55,7 @@
   "nav.arrow-right": "lucide:arrow-right",
   "nav.arrow-up": "lucide:arrow-up",
   "format.csv": "lucide:file-spreadsheet",
+  "format.html": "lucide:file-code-2",
   "format.json": "lucide:file-json",
   "format.png": "lucide:file-image",
   "format.svg": "lucide:file-code",

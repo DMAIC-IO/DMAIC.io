@@ -68,10 +68,12 @@ suite('exporter: toJsonText, sheetName, svgSize, withStyle', () => {
 suite('exporter: formatsOf', () => {
   const f = () => [];
   test('feste Reihenfolge, nur vorhandene Mapper', () => {
-    assertDeepEqual([...EXPORT_FORMATS], ['xlsx', 'csv', 'json', 'png', 'svg']);
+    assertDeepEqual([...EXPORT_FORMATS], ['xlsx', 'csv', 'json', 'png', 'svg', 'html']);
     assertDeepEqual(formatsOf({ table: f, tree: f, image: f }), ['xlsx', 'csv', 'json', 'png', 'svg']);
     assertDeepEqual(formatsOf({ tables: f }), ['xlsx']);
     assertDeepEqual(formatsOf({ tree: f }), ['json']);
     assertDeepEqual(formatsOf({ image: f, fileName: 'x' }), ['png', 'svg']);
+    assertDeepEqual(formatsOf({ document: f }), ['html']);
+    assertDeepEqual(formatsOf({ table: f, document: f }), ['xlsx', 'csv', 'html']);
   });
 });

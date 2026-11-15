@@ -2,7 +2,7 @@
  * D.Mike — Exporte aus Mappern nach Datenform (exporter.js)
  *
  * Ein Modul nennt keine Formate, sondern Mapper: `table()` (Zeilen),
- * `tables()` (Blätter), `tree()` (JSON-Wert), `image()` (SVG-Text). Hier
+ * `tables()` (Blätter), `tree()` (JSON-Wert), `image()` (SVG-Text), `document()` (HTML-Text). Hier
  * entstehen daraus die Dateien — Trenner, BOM und Meldungen sind damit
  * überall gleich.
  *
@@ -14,7 +14,7 @@ import { formatNumber } from './number-format.js';
 import { downloadFile, downloadBlob, ensureXLSX, svgStringToPngBlob } from './export-utils.js';
 
 /** Alle Formate in Menüreihenfolge. */
-export const EXPORT_FORMATS = Object.freeze(['xlsx', 'csv', 'json', 'png', 'svg']);
+export const EXPORT_FORMATS = Object.freeze(['xlsx', 'csv', 'json', 'png', 'svg', 'html']);
 
 /** Welche Mapper ein Format speisen (der erste vorhandene gewinnt). */
 const SOURCES = Object.freeze({
@@ -23,6 +23,7 @@ const SOURCES = Object.freeze({
   json: ['tree'],
   png: ['image'],
   svg: ['image'],
+  html: ['document'],
 });
 
 /**
@@ -100,7 +101,7 @@ export function withStyle(svg, css) {
 }
 
 /** Name des Formats in den Meldungen. */
-const LABELS = Object.freeze({ csv: 'CSV', json: 'JSON', xlsx: 'Excel', png: 'PNG', svg: 'SVG' });
+const LABELS = Object.freeze({ csv: 'CSV', json: 'JSON', xlsx: 'Excel', png: 'PNG', svg: 'SVG', html: 'HTML' });
 
 /** App-Schriften, die ein SVG in `<img>` sonst nicht sieht. */
 const FONTS = Object.freeze([
@@ -149,7 +150,7 @@ const DEFAULT_IO = { downloadFile, downloadBlob, ensureXLSX, svgStringToPngBlob,
  * @param {{ exports: Record<string, any>, component: object, moduleId: string,
  *   i18n: { t: (key: string, params?: object) => string, getLanguage: () => string },
  *   notify: (message: string, type?: string, titleKey?: string) => void }} ui
- * @param {string} fmt `xlsx`, `csv`, `json`, `png` oder `svg`
+ * @param {string} fmt `xlsx`, `csv`, `json`, `png`, `svg` oder `html`
  * @param {ExportIo} [io] Ein-/Ausgabe (Tests)
  * @returns {Promise<void>}
  */
@@ -181,6 +182,10 @@ export async function runExport(ui, fmt, io = DEFAULT_IO) {
       const svg = await call('image');
       if (svg == null) return; // nichts zu zeichnen: keine Datei, keine Meldung
       io.downloadBlob(new Blob([svg], { type: 'image/svg+xml' }), name);
+    } else if (fmt === 'html') {
+      const text = await call('document');
+      if (typeof text !== 'string') throw new Error('document() did not return text');
+      io.downloadBlob(new Blob([text], { type: 'text/html;charset=utf-8' }), name);
     } else if (fmt === 'png') {
       const svg = await call('image');
       if (svg == null) return;

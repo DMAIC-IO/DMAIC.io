@@ -1187,6 +1187,7 @@
     "json": "JSON (.json)",
     "png": "Image (.png)",
     "svg": "Vector (.svg)",
+    "html": "HTML document (.html)",
     "failed": "{format} export failed"
   },
   "ui": {

@@ -72,7 +72,8 @@ import { formatNumber } from './number-format.js';
  *   table?: () => ExportRows|Promise<ExportRows>,
  *   tables?: () => Record<string, ExportRows>|Promise<Record<string, ExportRows>>,
  *   tree?: () => unknown,
- *   image?: () => string|null|undefined|Promise<string|null|undefined> } & ThisType<Record<string, any> & ExportThis<M, S>>} ExportsDef
+ *   image?: () => string|null|undefined|Promise<string|null|undefined>,
+ *   document?: () => string|Promise<string> } & ThisType<Record<string, any> & ExportThis<M, S>>} ExportsDef
  */
 
 /**
@@ -99,8 +100,8 @@ function copyMembers(target, source) {
 }
 
 /** Erlaubte Schlüssel in `exports`; die Mapper darunter. */
-const EXPORT_KEYS = ['fileName', 'table', 'tables', 'tree', 'image'];
-const EXPORT_MAPPERS = ['table', 'tables', 'tree', 'image'];
+const EXPORT_KEYS = ['fileName', 'table', 'tables', 'tree', 'image', 'document'];
+const EXPORT_MAPPERS = ['table', 'tables', 'tree', 'image', 'document'];
 
 /**
  * CSS-Variablen an `el`, getrimmt; fehlt eine, `''`.

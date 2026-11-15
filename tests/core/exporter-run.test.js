@@ -107,6 +107,24 @@ suite('runExport', () => {
     assertEqual(await files['demo.svg'].blob.text(), SVG);
   });
 
+  test('html: document() (Promise) als text/html, Meldung HTML', async () => {
+    const { ui, io, files, log } = setup({ fileName: 'bericht', async document() { return '<!doctype html><p>x</p>'; } });
+    await runExport(ui, 'html', io);
+    assertDeepEqual(Object.keys(files), ['bericht.html']);
+    assertEqual(files['bericht.html'].type, 'text/html;charset=utf-8');
+    assertEqual(await files['bericht.html'].blob.text(), '<!doctype html><p>x</p>');
+    assertDeepEqual(log.at(-1), ['notify', 'HTML', 'success', 'status.ok']);
+  });
+
+  test('html: kein Text oder Ausnahme -> export.failed, kein Download', async () => {
+    for (const doc of [() => undefined, () => 42, () => { throw new Error('boom'); }]) {
+      const { ui, io, files, log } = setup({ document: doc });
+      await runExport(ui, 'html', io);
+      assertEqual(Object.keys(files).length, 0);
+      assertDeepEqual(log.at(-1), ['notify', 'export.failed|{"format":"HTML"}', 'error']);
+    }
+  });
+
   test('image() ohne Bild (null): keine Datei, keine Meldung', async () => {
     for (const fmt of ['svg', 'png']) {
       const { ui, io, log, files } = setup({ image() { return null; } });

@@ -63,12 +63,13 @@ suite('createModule mit exports: Prüfungen', () => {
     assertThrows(() => make(null), /^createModule\(exports-test\): exports must be an object$/);
   });
   test('unbekannter Schlüssel', () => {
-    assertThrows(() => make({ table: f, csv: f }), /^createModule\(exports-test\): exports\.csv is unknown \(allowed: fileName, table, tables, tree, image\)$/);
+    assertThrows(() => make({ table: f, csv: f }), /^createModule\(exports-test\): exports\.csv is unknown \(allowed: fileName, table, tables, tree, image, document\)$/);
   });
   test('mindestens ein Mapper', () => {
-    assertThrows(() => make({ fileName: 'x' }), /^createModule\(exports-test\): exports needs at least one of table, tables, tree, image$/);
+    assertThrows(() => make({ fileName: 'x' }), /^createModule\(exports-test\): exports needs at least one of table, tables, tree, image, document$/);
   });
   test('Mapper sind Funktionen', () => {
+    assertThrows(() => make({ document: 'x' }), /^createModule\(exports-test\): exports\.document must be a function$/);
     assertThrows(() => make({ table: [] }), /^createModule\(exports-test\): exports\.table must be a function$/);
   });
   test('fileName ist Text oder Funktion', () => {
@@ -90,6 +91,10 @@ suite('createModule mit exports: Menü', () => {
       { icon: 'format.png', title: 'export.png', export: 'png' },
       { icon: 'format.svg', title: 'export.svg', export: 'svg' },
     ]);
+  });
+  test('document ergibt den Eintrag html, exports mit nur document ist gültig', () => {
+    const mod = make({ document: f });
+    assertDeepEqual(mod.getActions().at(-1).children, [{ icon: 'format.html', title: 'export.html', export: 'html' }]);
   });
   test('ohne exports: Aktionen unverändert', () => {
     const mod = createModule({ config: { id: 'x-plain', engine: 'alpine', actions: [] }, Model: Doc, view: () => ({}) });
