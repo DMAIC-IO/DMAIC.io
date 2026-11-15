@@ -133,6 +133,7 @@ function run(world, stack) {
         if (!t) throw new Error(`no survey ${op.instance}`);
         if (op.method === 'setKanoTransfer') {
           const [{ questionId, transfer }] = op.args;
+          if (!t.kanoQuestionIds.includes(questionId)) throw new Error(`no Kano question ${questionId}`);
           assertTrue(transfer.respondentIds.every((x) => typeof x === 'string'), 'respondent ids resolved');
           t.kano[questionId] = transfer;
         } else if (op.method === 'markVocTaken') {
@@ -214,7 +215,9 @@ function legacyChain(key, start, inputs) {
 /**
  * A kano state with ids replaced by their position, without `origin` on
  * items (setItems drops it) and on respondents of a handed-over origin,
- * without empty answer maps and without `activeRespondentId`.
+ * without empty answer maps and without `activeRespondentId`. An answer of
+ * a respondent or on an item that is gone fails the comparison: a missing
+ * remove step must not hide behind the canonical form.
  * @param {any} s @param {string[]} handed `<surveyInstanceId>:<questionId>`
  */
 function canonKano(s, handed) {
@@ -222,8 +225,10 @@ function canonKano(s, handed) {
   const resps = new Map(s.respondents.map((r, i) => [r.id, `p${i}`]));
   const answers = {};
   for (const [rid, byItem] of Object.entries(s.answers)) {
-    if (!resps.has(rid)) continue;
-    const kept = Object.entries(byItem).filter(([iid]) => items.has(iid));
+    if (!resps.has(rid)) throw new Error(`answers of a respondent that is gone: ${rid}`);
+    const kept = Object.entries(byItem);
+    const dangling = kept.filter(([iid]) => !items.has(iid)).map(([iid]) => iid);
+    if (dangling.length) throw new Error(`answers of ${rid} on items that are gone: ${dangling.join(', ')}`);
     if (kept.length) answers[resps.get(rid)] = Object.fromEntries(kept.map(([iid, a]) => [items.get(iid), a]));
   }
   return {
@@ -248,7 +253,8 @@ function handOver(world, { survey, q, anonymous = false }) {
   const transfer = world.surveys[survey].kano[q.id];
   const kanoId = transfer && world.kano[transfer.instanceId] ? transfer.instanceId : null;
   const kanoRead = kanoId ? copy(world.kano[kanoId]) : null;
-  const surveys = Object.entries(world.surveys).map(([instanceId, t]) => ({ instanceId, transfers: { kano: t.kano } }));
+  const surveys = Object.entries(world.surveys)
+    .map(([instanceId, t]) => ({ instanceId, transfers: { kano: t.kano }, kanoQuestionIds: t.kanoQuestionIds }));
   const backups = kanoId ? kanoBackups(kanoRead, surveys, kanoId) : [];
   const own = kanoId ? kanoOwnEntries(kanoRead, transfer, survey, q.id) : { itemIds: [], respondentIds: [] };
   const stack = kanoStack({
@@ -260,8 +266,12 @@ function handOver(world, { survey, q, anonymous = false }) {
 }
 
 /** @param {Record<string, any>} kano @param {Record<string, any>} [surveys] */
-const worldOf = (kano, surveys = { [S1]: { kano: {}, vocTree: { responseKeys: [] } } }) => ({ kano, surveys, trees: {} });
-const linked = (pairs) => ({ kano: Object.fromEntries(pairs.map((q) => [q, { instanceId: 'kano-1', itemIds: [], respondentIds: [] }])), vocTree: { responseKeys: [] } });
+const worldOf = (kano, surveys = { [S1]: { kano: {}, vocTree: { responseKeys: [] }, kanoQuestionIds: ['qA', 'qB'] } }) => ({ kano, surveys, trees: {} });
+/** Markers on kano-1 with empty lists for `pairs`; `kanoQuestionIds` the survey's Kano questions. */
+const linked = (pairs, kanoQuestionIds = ['qA', 'qB']) => ({
+  kano: Object.fromEntries(pairs.map((q) => [q, { instanceId: 'kano-1', itemIds: [], respondentIds: [] }])),
+  vocTree: { responseKeys: [] }, kanoQuestionIds,
+});
 
 suite('survey-builder handover — kanoStack gives the state of the earlier hand-over', () => {
   test('new instance', () => {
@@ -387,7 +397,7 @@ suite('survey-builder handover — kanoOwnEntries and kanoBackups', () => {
 
   test('skips survey instances that are gone and origins with filled lists', () => {
     const read = copy(OLD_KANO);
-    const surveys = [{ instanceId: S1, transfers: { kano: {
+    const surveys = [{ instanceId: S1, kanoQuestionIds: ['qA', 'qB'], transfers: { kano: {
       qA: { instanceId: 'kano-1', itemIds: [], respondentIds: [] },
       qB: { instanceId: 'kano-1', itemIds: ['x'], respondentIds: [] },
     } } }];
@@ -398,8 +408,32 @@ suite('survey-builder handover — kanoOwnEntries and kanoBackups', () => {
 
   test('skips an origin whose survey is linked to another instance or not at all', () => {
     const read = copy(OLD_KANO);
-    const surveys = [{ instanceId: S1, transfers: { kano: { qA: { instanceId: 'kano-2', itemIds: [], respondentIds: [] } } } }];
+    const surveys = [{ instanceId: S1, kanoQuestionIds: ['qA'], transfers: { kano: { qA: { instanceId: 'kano-2', itemIds: [], respondentIds: [] } } } }];
     assertDeepEqual(kanoBackups(read, surveys, 'kano-1'), []);
+  });
+
+  test('skips an origin whose question changed its type (marker kept, no Kano question any more)', () => {
+    const read = copy(OLD_KANO);
+    const surveys = [{ instanceId: S2, kanoQuestionIds: [], transfers: { kano: { qB: { instanceId: 'kano-1', itemIds: [], respondentIds: [] } } } }];
+    assertDeepEqual(kanoBackups(read, surveys, 'kano-1'), []);
+  });
+
+  test('an origin of a deleted question with its marker left behind: no backup, the own hand-over still works', () => {
+    const w = worldOf({ 'kano-1': copy(OLD_KANO) }, { [S1]: linked(['qA', 'qB'], ['qA']) });
+    const { world, stack } = handOver(w, { survey: S1, q: QA });
+    assertTrue(!stack.some((op) => op.method === 'setKanoTransfer' && op.args[0].questionId === 'qB'), 'no backup of qB');
+    assertEqual(world.surveys[S1].kano.qA.itemIds.length, 2);
+    assertDeepEqual(world.kano['kano-1'].items.filter((i) => i.label === 'Chat').length, 1);
+  });
+
+  test('a recipient whose name is only blanks gives "Befragte n"', () => {
+    const stack = kanoStack({
+      kanoId: null, phase: 'measure', kanoRead: null, question: QA,
+      responses: [{ recipientId: 'rec-w', answers: { qA: { k1: { f: 1, d: 1, w: null } } } }],
+      recipients: [{ id: 'rec-w', name: '   ' }], anonymous: false, respondentLabel: label, surveyInstanceId: S1,
+      backups: [], own: { itemIds: [], respondentIds: [] },
+    });
+    assertDeepEqual(stack.filter((op) => op.method === 'addRespondent').map((op) => op.args), [['Befragte 1']]);
   });
 
   test('a stack whose remove step names a vanished id fails as a whole', () => {

@@ -62,11 +62,16 @@ export function kanoOwnEntries(kanoRead, transfer, surveyInstanceId, questionId)
 /**
  * Die Merker, die der Stapel vor dem Schreiben sichert: je Herkunft
  * `(surveyInstanceId, questionId)` der `origin`-Marken in der Instanz, deren
- * Survey-Instanz noch existiert und für diese Frage auf diese Kano-Instanz
- * zeigt, aber noch nichts gemerkt hat.
+ * Survey-Instanz noch existiert, deren Frage dort noch eine Kano-Frage ist
+ * und deren Merker für diese Frage auf diese Kano-Instanz zeigt, aber noch
+ * nichts gemerkt hat. Merker gelöschter oder umgetypter Fragen bleiben im
+ * Model stehen; ein `setKanoTransfer` darauf lehnte das Model ab und kippte
+ * den ganzen Stapel.
  * @param {KanoRead} kanoRead
- * @param {ReadonlyArray<{ instanceId: string, transfers: { kano: Record<string, Transfer> } }>} surveys
- *   die Survey-Instanzen des Projekts mit ihren Merkern
+ * @param {ReadonlyArray<{ instanceId: string, transfers: { kano: Record<string, Transfer> },
+ *   kanoQuestionIds: ReadonlyArray<string> }>} surveys
+ *   die Survey-Instanzen des Projekts mit ihren Merkern (`transfers`) und den
+ *   ids ihrer aktuellen Kano-Fragen (`kanoQuestionIds`)
  * @param {string} kanoId die Kano-Instanz
  * @returns {Backup[]}
  */
@@ -86,9 +91,11 @@ export function kanoBackups(kanoRead, surveys, kanoId) {
   };
   collect(kanoRead.items, 'itemIds');
   collect(kanoRead.respondents, 'respondentIds');
-  const linked = new Map(surveys.map((s) => [s.instanceId, s.transfers.kano]));
+  const byId = new Map(surveys.map((s) => [s.instanceId, s]));
   return [...byOrigin.values()].filter((b) => {
-    const t = linked.get(b.instance)?.[b.questionId];
+    const survey = byId.get(b.instance);
+    if (!survey?.kanoQuestionIds.includes(b.questionId)) return false;
+    const t = survey.transfers.kano[b.questionId];
     return Boolean(t) && t.instanceId === kanoId && t.itemIds.length === 0 && t.respondentIds.length === 0;
   });
 }
