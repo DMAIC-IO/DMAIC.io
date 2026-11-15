@@ -396,13 +396,13 @@
   },
   "asyncTasks": {
     "buildSurveyFile": {
-      "help": "Builds the general questionnaire (without recipient) as an HTML file and returns file name and content. Like the export it settles the version.",
+      "help": "Builds the general questionnaire (without recipient) as an HTML file and returns file name, type and content. Like the export it settles the version.",
       "cancel": {
         "help": "Cancels the build; the version stays unchanged."
       }
     },
     "buildRecipientFile": {
-      "help": "Builds the personal questionnaire file of a recipient and returns file name and content. Like the export it settles the version and marks the recipient as sent.",
+      "help": "Builds the personal questionnaire file of a recipient and returns file name, type and content. Like the export it settles the version and marks the recipient as sent.",
       "cancel": {
         "help": "Cancels the build; the recipient stays as it was."
       },
@@ -412,7 +412,7 @@
       }
     },
     "buildReport": {
-      "help": "Builds the report of the results under the active filter and grouping as an HTML file and returns file name and content. The export in the html format produces the same file; the task downloads nothing.",
+      "help": "Builds the report of the results under the active filter and grouping as an HTML file and returns file name, type and content. The export in the html format produces the same file; the task downloads nothing.",
       "cancel": {
         "help": "Cancels the build."
       }

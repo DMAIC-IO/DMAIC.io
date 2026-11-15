@@ -10,6 +10,7 @@
  */
 import { suite, test, assert, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import { mount, stored, settle, until, pick, de, helpEntry } from './view-harness.js';
+import { loadTexts } from '../../../js/modules/survey-builder/viewmodel/texts.js';
 
 /** @param {string} path relative to this file @returns {Promise<any>} */
 async function loadJson(path) {
@@ -263,6 +264,7 @@ suite('survey-builder draft: questionnaire', () => {
       assertEqual(out.status, 'done');
       const want = ORACLES[`surveyFile.example.${lang}`];
       assertEqual(out.value.fileName, want.fileName);
+      assertEqual(out.value.mimeType, 'text/html;charset=utf-8');
       assert(out.value.content === want.content, 'content differs from the earlier file');
       assertEqual(h.vm().model.survey.version, want.version);
       assertEqual(h.vm().model.exportedOnce, true);
@@ -273,6 +275,21 @@ suite('survey-builder draft: questionnaire', () => {
       }
     });
   }
+
+  test('buildSurveyFile cancelled while the texts load: version and export mark stay', async () => {
+    const json = JSON.parse(JSON.stringify(EXAMPLE));
+    json.dirtyStructure = true;
+    json.exportedOnce = true;
+    const h = await mount(json);
+    const m = h.vm().model;
+    const before = { version: m.survey.version, exportedOnce: m.exportedOnce, dirty: m.dirtyStructure };
+    const run = h.vm()._asyncTaskHost.start('buildSurveyFile', {});
+    h.vm()._asyncTaskHost.cancel('buildSurveyFile');
+    assertEqual((await run).status, 'cancelled');
+    await loadTexts(json.survey.lang);
+    await settle();
+    assertDeepEqual({ version: m.survey.version, exportedOnce: m.exportedOnce, dirty: m.dirtyStructure }, before);
+  });
 
   test('the version line and the preview: the runner draws into the preview box', async () => {
     const h = await mount(JSON.parse(JSON.stringify(EXAMPLE)));

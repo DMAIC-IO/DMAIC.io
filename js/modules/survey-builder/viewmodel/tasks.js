@@ -39,13 +39,16 @@ export const KANO_FIELDS = ['items', 'respondents', 'options', 'source'];
 /** @param {any} v @returns {any} a plain deep copy */
 export const plain = (v) => JSON.parse(JSON.stringify(v));
 
+/** The type of the questionnaire, recipient and report files. */
+export const HTML_TYPE = 'text/html;charset=utf-8';
+
 /**
  * The questionnaire file in the language of the questionnaire, with the
  * version the export settles on.
  * @param {any} survey plain copy, `version` already settled
  * @param {any} recipient plain copy of the recipient, or null for the general file
  * @param {string} failed the error text if the build fails
- * @returns {Promise<{ fileName: string, content: string }>}
+ * @returns {Promise<{ fileName: string, mimeType: string, content: string }>}
  * @throws {Error} with `failed` as message and the cause attached
  */
 export async function buildFile(survey, recipient, failed) {
@@ -53,6 +56,7 @@ export async function buildFile(survey, recipient, failed) {
     const strings = runnerStringsOf(await loadTexts(survey.lang));
     return {
       fileName: surveyFileName(survey, strings, recipient),
+      mimeType: HTML_TYPE,
       content: buildSurveyHtml(survey, strings, { recipientId: recipient ? recipient.id : null }),
     };
   } catch (err) {
@@ -82,7 +86,7 @@ export async function startTask(vm, ctx, name, args) {
 export async function downloadBuiltFile(vm, ctx, name, args) {
   const out = await startTask(vm, ctx, name, args);
   if (out.status !== 'done') return;
-  downloadBlob(new Blob([out.value.content], { type: 'text/html;charset=utf-8' }), out.value.fileName);
+  downloadBlob(new Blob([out.value.content], { type: out.value.mimeType }), out.value.fileName);
 }
 
 /**

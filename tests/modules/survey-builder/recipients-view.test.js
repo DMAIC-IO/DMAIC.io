@@ -9,6 +9,7 @@
  */
 import { suite, test, assert, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import { mount, stored, settle, until, typeIn, de, helpEntry } from './view-harness.js';
+import { loadTexts } from '../../../js/modules/survey-builder/viewmodel/texts.js';
 
 /** @param {string} path relative to this file @returns {Promise<any>} */
 async function loadJson(path) {
@@ -144,6 +145,7 @@ suite('survey-builder recipients: file', () => {
       assertEqual(out.status, 'done');
       const want = ORACLES[`recipientFile.example.${lang}`];
       assertEqual(out.value.fileName, want.fileName);
+      assertEqual(out.value.mimeType, 'text/html;charset=utf-8');
       assert(out.value.content === want.content, 'content differs from the earlier file');
       const m = h.vm().model;
       assertEqual(m.survey.version, want.version);
@@ -179,6 +181,23 @@ suite('survey-builder recipients: file of a deleted recipient', () => {
     assertEqual(out.status, 'failed');
     assertEqual(out.error.message, de('recipientFileFailed'));
     assertDeepEqual({ version: m.survey.version, exportedOnce: m.exportedOnce, dirty: m.dirtyStructure }, before);
+  });
+});
+
+suite('survey-builder recipients: file cancelled', () => {
+  test('cancelled while the texts load: version, export mark and the recipient stay as they were', async () => {
+    const json = example();
+    json.dirtyStructure = true;
+    const h = await mount(json);
+    const m = h.vm().model;
+    const sent = () => { const r = m.recipients.find((x) => x.id === 'rec-2'); return { sentAt: r.sentAt, sentVersion: r.sentVersion }; };
+    const before = { version: m.survey.version, exportedOnce: m.exportedOnce, dirty: m.dirtyStructure, ...sent() };
+    const run = h.vm()._asyncTaskHost.start('buildRecipientFile', { recipientId: 'rec-2' });
+    h.vm()._asyncTaskHost.cancel('buildRecipientFile');
+    assertEqual((await run).status, 'cancelled');
+    await loadTexts(json.survey.lang);
+    await settle();
+    assertDeepEqual({ version: m.survey.version, exportedOnce: m.exportedOnce, dirty: m.dirtyStructure, ...sent() }, before);
   });
 });
 

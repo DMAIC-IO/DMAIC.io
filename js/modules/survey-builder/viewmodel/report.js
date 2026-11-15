@@ -11,17 +11,20 @@
 import { buildReportHtml, reportStrings } from '../domain/report.js';
 import { legacyResponses } from '../domain/answers.js';
 import { localeOf } from '../domain/labels.js';
+import { sanitizeFileNamePart } from '../io/questionnaire.js';
 
 /** @param {any} v @returns {any} a plain deep copy */
 const plain = (v) => JSON.parse(JSON.stringify(v));
 
 /**
- * The name of the report file, without extension: the title of the survey.
+ * The name of the report file, without extension: `Bericht_<title>`, both
+ * parts made safe for a file name as for the questionnaire files.
  * @param {any} vm the component
- * @returns {string} the title, or the placeholder
+ * @returns {string} the name; without a title the placeholder stands in
  */
 export function reportFileName(vm) {
-  return String(vm.model.survey.title).trim() || vm.t('report.untitled');
+  const title = String(vm.model.survey.title).trim() || vm.t('report.untitled');
+  return `${sanitizeFileNamePart(vm.t('fileReport'))}_${sanitizeFileNamePart(title)}`;
 }
 
 /**

@@ -26,7 +26,7 @@ import { worksheetColumnsFor } from '../domain/handover/worksheet.js';
 import { vocStack, openTexts } from '../domain/handover/voc.js';
 import { kanoOwnEntries, kanoBackups, kanoStack } from '../domain/handover/kano.js';
 import {
-  WS_KEYS, KANO_FIELDS, plain, buildFile, failure, send, resultOf, kanoQuestionIds, snapshot, titleOf,
+  WS_KEYS, KANO_FIELDS, HTML_TYPE, plain, buildFile, failure, send, resultOf, kanoQuestionIds, snapshot, titleOf,
 } from './tasks.js';
 import { reportDocument, reportFileName } from './report.js';
 import { outlineView } from './outline.js';
@@ -46,13 +46,16 @@ export default createModule({
   asyncTasks: {
     buildSurveyFile: asyncTask({
       /**
-       * @returns {Promise<{ fileName: string, content: string }>}
+       * A cancelled run leaves version and export mark as they were.
+       * @param {object} _args @param {{ signal: AbortSignal }} ctl
+       * @returns {Promise<{ fileName: string, mimeType: string, content: string }>}
        */
-      async run() {
+      async run(_args, { signal }) {
         const model = /** @type {any} */ (this.model);
         const survey = plain(model.survey);
         survey.version = model.nextExportVersion;
         const file = await buildFile(survey, null, this.t('surveyFileFailed'));
+        signal.throwIfAborted();
         model.markExported();
         return file;
       },
@@ -60,17 +63,19 @@ export default createModule({
     buildRecipientFile: asyncTask({
       params: { recipientId: idOf('recipients') },
       /**
-       * A recipient deleted while the texts load leaves everything as it was.
-       * @param {{ recipientId: string }} args
-       * @returns {Promise<{ fileName: string, content: string }>}
+       * A recipient deleted while the texts load, or a cancelled run, leaves
+       * everything as it was.
+       * @param {{ recipientId: string }} args @param {{ signal: AbortSignal }} ctl
+       * @returns {Promise<{ fileName: string, mimeType: string, content: string }>}
        */
-      async run({ recipientId }) {
+      async run({ recipientId }, { signal }) {
         const model = /** @type {any} */ (this.model);
         const survey = plain(model.survey);
         const recipient = plain(model.recipients.find((/** @type {any} */ r) => r.id === recipientId));
         survey.version = model.nextExportVersion;
         const failed = this.t('recipientFileFailed');
         const file = await buildFile(survey, recipient, failed);
+        signal.throwIfAborted();
         if (!model.recipients.some((/** @type {any} */ r) => r.id === recipientId)) throw new Error(failed);
         model.markExported();
         model.markSent({ recipientId });
@@ -80,10 +85,10 @@ export default createModule({
     buildReport: asyncTask({
       /**
        * The report under the active filter and grouping; nothing is downloaded.
-       * @returns {Promise<{ fileName: string, content: string }>}
+       * @returns {Promise<{ fileName: string, mimeType: string, content: string }>}
        */
       async run() {
-        return { fileName: `${reportFileName(this)}.html`, content: reportDocument(this) };
+        return { fileName: `${reportFileName(this)}.html`, mimeType: HTML_TYPE, content: reportDocument(this) };
       },
     }),
     toWorksheet: asyncTask({

@@ -396,13 +396,13 @@
   },
   "asyncTasks": {
     "buildSurveyFile": {
-      "help": "Baut den allgemeinen Fragebogen (ohne Empfänger) als HTML-Datei und liefert Dateiname und Inhalt. Wie der Export setzt sie die Version.",
+      "help": "Baut den allgemeinen Fragebogen (ohne Empfänger) als HTML-Datei und liefert Dateiname, Typ und Inhalt. Wie der Export setzt sie die Version.",
       "cancel": {
         "help": "Bricht das Bauen ab; die Version bleibt unverändert."
       }
     },
     "buildRecipientFile": {
-      "help": "Baut die persönliche Fragebogen-Datei eines Empfängers und liefert Dateiname und Inhalt. Wie der Export setzt sie die Version und markiert den Empfänger als verschickt.",
+      "help": "Baut die persönliche Fragebogen-Datei eines Empfängers und liefert Dateiname, Typ und Inhalt. Wie der Export setzt sie die Version und markiert den Empfänger als verschickt.",
       "cancel": {
         "help": "Bricht das Bauen ab; der Empfänger bleibt, wie er war."
       },
@@ -412,7 +412,7 @@
       }
     },
     "buildReport": {
-      "help": "Baut den Bericht der Auswertung unter dem aktiven Filter und der aktiven Gruppierung als HTML-Datei und liefert Dateiname und Inhalt. Dieselbe Datei erzeugt der Export im Format html; die Aufgabe lädt nichts herunter.",
+      "help": "Baut den Bericht der Auswertung unter dem aktiven Filter und der aktiven Gruppierung als HTML-Datei und liefert Dateiname, Typ und Inhalt. Dieselbe Datei erzeugt der Export im Format html; die Aufgabe lädt nichts herunter.",
       "cancel": {
         "help": "Bricht das Bauen ab."
       }

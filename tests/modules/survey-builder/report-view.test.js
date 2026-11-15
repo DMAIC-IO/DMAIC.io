@@ -66,11 +66,11 @@ suite('survey-builder report: export menu', () => {
     assertTrue(formatsOf(h.vm()._ui.exports).includes('html'), 'html offered');
   });
 
-  test('the html export downloads <title>.html as text/html', async () => {
+  test('the html export downloads Bericht_<title>.html as text/html, the title made safe as before', async () => {
     const h = await mount(example());
     const files = await exportFiles(h, 'html');
     assertEqual(files.length, 1);
-    assertEqual(files[0].name, `${EXAMPLE.survey.title}.html`);
+    assertEqual(files[0].name, 'Bericht_Kundenbefragung_Software-Support.html');
     assertEqual(files[0].type, 'text/html;charset=utf-8');
     assertTrue(files[0].text.startsWith('<!doctype html>') || files[0].text.startsWith('<!DOCTYPE html>'), 'a document');
   });
@@ -79,7 +79,7 @@ suite('survey-builder report: export menu', () => {
     const h = await mount(example());
     h.vm().model.survey = { ...JSON.parse(JSON.stringify(h.vm().model.survey)), title: '  ' };
     const files = await exportFiles(h, 'html');
-    assertEqual(files[0].name, 'Fragebogen.html');
+    assertEqual(files[0].name, 'Bericht_Fragebogen.html');
   });
 });
 
@@ -152,13 +152,14 @@ suite('survey-builder report: language and texts', () => {
 });
 
 suite('survey-builder report: task buildReport', () => {
-  test('gives the same text and the file name, and downloads nothing', async () => {
+  test('gives the same text, the file name and the type, and downloads nothing', async () => {
     const h = await mount(example(VARIANTS.filtered));
     const [file] = await exportFiles(h, 'html');
     const out = await h.vm()._asyncTaskHost.start('buildReport', {});
     assertEqual(out.status, 'done');
-    assertDeepEqual(Object.keys(out.value).sort(), ['content', 'fileName']);
+    assertDeepEqual(Object.keys(out.value).sort(), ['content', 'fileName', 'mimeType']);
     assertEqual(out.value.fileName, file.name);
+    assertEqual(out.value.mimeType, 'text/html;charset=utf-8');
     assertSameText(normalized(out.value.content), normalized(file.text));
     assertSameText(normalized(out.value.content), ORACLES['report.example.filtered'].content);
   });
