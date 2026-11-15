@@ -255,6 +255,35 @@ suite('survey-builder recipients: reading answers', () => {
     assertEqual(h.vm().model.responses.length, 1);
   });
 
+  test('an import through the agent surface gets one log line, one through the interface too', async () => {
+    const h = await mount(withRecipients({ tab: 'results' }));
+    const agentFile = answerFile('agent.json', 'r2', { recipientId: 'gone' });
+    // The command of the mounted model, as the agent surface runs it.
+    const res = h.vm()._ui.model.importResponse({ json: await agentFile.text(), fileName: 'agent.json' });
+    assertEqual(res.status, 'ok');
+    await settle();
+    let lines = h.$$('[data-ref="importLog"] li');
+    assertDeepEqual(lines.map((li) => li.querySelector('[data-ref="fileName"]').textContent), ['agent.json']);
+    assertEqual(lines[0].querySelector('[data-ref="importStatus"]').textContent, de('importOk'));
+    assertEqual(lines[0].querySelector('[data-ref="importNotes"]').textContent, de('importUnknownRecipient'));
+
+    await h.vm().importFiles([answerFile('ui.json', 'r3')]);
+    await settle();
+    lines = h.$$('[data-ref="importLog"] li');
+    assertDeepEqual(lines.map((li) => li.querySelector('[data-ref="fileName"]').textContent), ['agent.json', 'ui.json']);
+    assertDeepEqual(h.vm().model.responses.map((r) => r.id), ['r1', 'r2', 'r3']);
+  });
+
+  test('an import of another instance writes no line here', async () => {
+    const h = await mount(withRecipients({ tab: 'results' }));
+    h.bus.emit('command:executed', {
+      instanceId: 'other', command: 'importResponse', args: { fileName: 'fremd.json' },
+      result: { status: 'ok', orphanIds: [], unknownRecipient: false },
+    });
+    await settle();
+    assertEqual(h.$$('[data-ref="importLog"] li').length, 0);
+  });
+
   test('an unreadable file is logged as invalid with its own text', async () => {
     const h = await mount(withRecipients({ tab: 'results' }));
     const broken = { name: 'kaputt.json', text: async () => { throw new Error('disk on fire'); } };

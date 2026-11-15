@@ -3,11 +3,13 @@
  *
  * The upper part of the results tab: reading answer files and the list of
  * responses. Files come through `x-file-drop` (picker or drop, several at
- * once); each runs the model command `importResponse`, and every file gets
- * a line in the import log of this session (UI state) — read in, older
- * version, read before, foreign or no answer file, with the notes on an
- * unknown recipient and on answers to questions that are gone. A file that
- * cannot be read counts as no answer file.
+ * once); each runs the model command `importResponse`. Every import of
+ * this instance — from the interface or from an agent — gets a line in the
+ * import log of this session (UI state): read in, older version, read
+ * before, foreign or no answer file, with the notes on an unknown recipient
+ * and on answers to questions that are gone. The line is written when the
+ * command has run; a file whose command did not run counts as no answer
+ * file and is logged by the interface itself.
  *
  * One response at a time folds open (`state.expandedResponses`); deleting
  * one asks first (the command's `confirm`). After every `removeResponse` of
@@ -46,11 +48,21 @@ export const responsesView = (ctx) => {
     },
 
     /**
-     * After `removeResponse` of this instance: close the row of the deleted response.
-     * @param {{ instanceId?: string, command?: string, args?: any }} e
+     * After `importResponse` of this instance: its line in the import log.
+     * After `removeResponse`: close the row of the deleted response.
+     * @param {{ instanceId?: string, command?: string, args?: any, result?: any }} e
      */
     afterResponsesCommand(e) {
-      if (e?.instanceId !== ctx.instanceId || e.command !== 'removeResponse') return;
+      if (e?.instanceId !== ctx.instanceId) return;
+      if (e.command === 'importResponse') {
+        const res = e.result ?? {};
+        this.logImport({
+          key: uid(), name: String(e.args?.fileName ?? ''), status: res.status ?? 'invalid',
+          unknownRecipient: Boolean(res.unknownRecipient), orphans: (res.orphanIds ?? []).length,
+        });
+        return;
+      }
+      if (e.command !== 'removeResponse') return;
       const id = e.args?.responseId;
       if (this.state.expandedResponses.includes(id)) this.state.expandedResponses = this.state.expandedResponses.filter((x) => x !== id);
     },
@@ -71,23 +83,24 @@ export const responsesView = (ctx) => {
     },
 
     /**
-     * One file: the command, then its line in the import log.
+     * One file: the command. Its line in the import log comes from
+     * `afterResponsesCommand`; a file whose command did not run is logged
+     * here as no answer file.
      * @param {string} json @param {string} fileName
      * @returns {Promise<void>}
      */
     async importOne(json, fileName) {
       const r = await runUiCommand(this._ui, 'importResponse', { json, fileName });
-      /** @type {LogEntry} */
-      const entry = { key: uid(), name: fileName, status: 'invalid', unknownRecipient: false, orphans: 0 };
-      if (r.ok) {
-        const res = /** @type {{ status: LogEntry['status'], orphanIds: string[], unknownRecipient: boolean }} */ (r.result);
-        entry.status = res.status;
-        entry.unknownRecipient = res.unknownRecipient;
-        entry.orphans = res.orphanIds.length;
-      } else if ('error' in r) {
+      if (r.ok) return;
+      if ('error' in r) {
         console.warn('[survey-builder] importResponse failed', r.error);
         ctx.notify(this.t('commandFailed'), 'error');
       }
+      this.logImport({ key: uid(), name: fileName, status: 'invalid', unknownRecipient: false, orphans: 0 });
+    },
+
+    /** @param {LogEntry} entry a line of the import log, appended */
+    logImport(entry) {
       this.state.importLog = [...this.state.importLog, entry];
     },
 

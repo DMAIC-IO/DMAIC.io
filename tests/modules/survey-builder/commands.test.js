@@ -252,10 +252,27 @@ suite('survey-builder commands — conditions', () => {
       { questionId: 'q5', optionIds: ['x'] },
       { questionId: 'q1', optionIds: [] },
     ];
-    const r = both('setConditions q3', MIXED, (l) => l.setConditions('q3', copy(when)), (m) => m.setConditions({ nodeId: 'q3', conditions: copy(when) }));
+    // The earlier model dropped the condition on q5 (no choice question) as
+    // well; the agent call rejected it (next test), so it is left out here.
+    const known = when.filter((c) => c.questionId !== 'q5');
+    const r = both('setConditions q3', MIXED, (l) => l.setConditions('q3', copy(when)), (m) => m.setConditions({ nodeId: 'q3', conditions: copy(known) }));
     assertDeepEqual(r.got, r.want);
     assertEqual(r.mr, 2);
     assertEqual(r.m.dirtyStructure, true);
+  });
+
+  test('setConditions rejects a source that is no earlier choice question, naming the condition', () => {
+    for (const [conditions, param] of [
+      [[{ questionId: 'q1', optionIds: ['o1'] }, { questionId: 'q5', optionIds: ['x'] }], 'conditions[1].questionId'],
+      [[{ questionId: 'zz', optionIds: ['o1'] }], 'conditions[0].questionId'],
+    ]) {
+      const m = load(MIXED);
+      const before = JSON.stringify(m.toJSON());
+      const err = thrown(() => m.setConditions({ nodeId: 'q3', conditions }));
+      assertEqual(err.param, 'conditions');
+      assertEqual(err.message.startsWith(`unknown ${param} `), true, err.message);
+      assertEqual(JSON.stringify(m.toJSON()), before);
+    }
   });
 
   test('setConditions with an empty list clears them; works on sections', () => {

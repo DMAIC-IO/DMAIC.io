@@ -438,6 +438,8 @@ export class SurveyModel extends defineModel({
       run({ nodeId, conditions }) {
         const ids = [...this.survey.sections.map((s) => s.id), ...questionsOf(this.survey).map((q) => q.id)];
         requireKnownId('nodeId', nodeId, ids);
+        const sources = availableSources(this.survey, nodeId).map((q) => q.id);
+        conditions.forEach((c, i) => requireKnownId(`conditions[${i}].questionId`, c.questionId, sources));
         const node = this.section(nodeId) ?? this.question(nodeId);
         node.when = validWhen(this.survey, nodeId, conditions);
         this.dirtyStructure = true;

@@ -107,6 +107,9 @@ export const MIXED = Object.freeze({
  * option id on a text question), a rating answer with an unknown row key, an
  * answer of a deleted question, a selection of a deleted question and an
  * answered recipient that is gone.
+ *
+ * The end-to-end case of an old project loads the same state as a project
+ * file (survey-builder-legacy-project.json); keep both in step.
  */
 export const CORNERS = Object.freeze({
   survey: {
