@@ -438,21 +438,21 @@
     "ResponseRate": {
       "sent": "Wie viele Empfänger ihre Datei bekommen haben.",
       "answered": "Wie viele davon geantwortet haben.",
-      "rate": "Beantwortet geteilt durch verschickt; ohne Versand leer.",
+      "rate": "Rücklaufquote: beantwortet geteilt durch verschickt.",
       "withoutRecipient": "Antworten, die ohne bekannten Empfänger eingelesen wurden.",
       "groups": "Dasselbe je Empfängergruppe."
     },
     "OptionStat": {
       "id": "Die Id der Option.",
-      "text": "Der Text der Option.",
-      "count": "Wie oft die Option gewählt wurde.",
-      "share": "Anteil an den Antworten auf die Frage."
+      "text": "Die Antwortoption.",
+      "count": "Wie oft sie gewählt wurde.",
+      "share": "Ihr Anteil an den Antworten auf die Frage."
     },
     "RatingStatRow": {
       "id": "Die Id der Zeile.",
-      "text": "Der Text der Zeile.",
-      "n": "Wie viele Antworten eine Bewertung von 1 bis 5 tragen.",
-      "mean": "Der Mittelwert der Bewertung.",
+      "text": "Die bewertete Zeile.",
+      "n": "Wie viele Antworten in die Zeile eingehen.",
+      "mean": "Der Mittelwert der Bewertung von 1 bis 5.",
       "median": "Der Median der Bewertung.",
       "dist": "Wie oft jede Stufe von 1 bis 5 gewählt wurde.",
       "na": "Wie oft keine Angabe gewählt wurde.",
@@ -460,14 +460,14 @@
     },
     "KanoStatRow": {
       "id": "Die Id der Zeile.",
-      "text": "Der Text der Zeile.",
+      "text": "Die bewertete Zeile.",
       "counts": "Wie viele Antworten in jede Kano-Kategorie M, O, A, I, R und Q fallen.",
-      "n": "Wie viele Antworten sich einordnen ließen.",
+      "n": "Wie viele Antworten in die Zeile eingehen.",
       "unanswered": "Wie viele Antworten sich nicht einordnen ließen.",
-      "category": "Die häufigste Kategorie.",
+      "category": "Die Kano-Kategorie der Zeile, aus den Antwortpaaren ermittelt.",
       "tie": "Ob mehrere Kategorien gleich häufig sind.",
-      "cs": "Zufriedenheitskoeffizient von 0 bis 1.",
-      "ds": "Unzufriedenheitskoeffizient von -1 bis 0.",
+      "cs": "Zufriedenheitskoeffizient: wie stark das Merkmal begeistert, wenn es vorhanden ist, von 0 bis 1.",
+      "ds": "Unzufriedenheitskoeffizient: wie stark sein Fehlen stört; je größer der Betrag, desto stärker.",
       "importanceMean": "Die mittlere Wichtigkeit von 1 bis 9.",
       "importanceN": "Wie viele Antworten eine Wichtigkeit tragen."
     },
@@ -491,19 +491,19 @@
       "questionId": "Die Bewertungsfrage.",
       "questionText": "Der Text der Frage.",
       "rowId": "Die Zeile.",
-      "text": "Der Text der Zeile.",
-      "n": "Wie viele Bewertungen eingehen.",
-      "mean": "Der Mittelwert der Bewertung.",
-      "topShare": "Anteil der Bewertungen 4 und 5."
+      "text": "Die bewertete Zeile.",
+      "n": "Wie viele Antworten in die Zeile eingehen.",
+      "mean": "Der Mittelwert der Bewertung von 1 bis 5.",
+      "topShare": "Anteil der Antworten mit 4 oder 5."
     },
     "KanoRow": {
       "questionId": "Die Kano-Frage.",
       "questionText": "Der Text der Frage.",
       "rowId": "Die Zeile.",
-      "text": "Der Text der Zeile.",
-      "category": "Die häufigste Kano-Kategorie.",
-      "cs": "Zufriedenheitskoeffizient von 0 bis 1.",
-      "ds": "Unzufriedenheitskoeffizient von -1 bis 0.",
+      "text": "Die bewertete Zeile.",
+      "category": "Die Kano-Kategorie der Zeile, aus den Antwortpaaren ermittelt.",
+      "cs": "Zufriedenheitskoeffizient: wie stark das Merkmal begeistert, wenn es vorhanden ist, von 0 bis 1.",
+      "ds": "Unzufriedenheitskoeffizient: wie stark sein Fehlen stört; je größer der Betrag, desto stärker.",
       "importanceMean": "Die mittlere Wichtigkeit von 1 bis 9.",
       "n": "Wie viele Antworten sich einordnen ließen."
     },

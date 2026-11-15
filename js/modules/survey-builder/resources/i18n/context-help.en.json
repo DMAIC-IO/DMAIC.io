@@ -436,38 +436,38 @@
   },
   "types": {
     "ResponseRate": {
-      "sent": "How many recipients received their file.",
-      "answered": "How many of them have answered.",
-      "rate": "Answered divided by sent; empty when nothing was sent.",
+      "sent": "How many recipients got their file.",
+      "answered": "How many of them answered.",
+      "rate": "Response rate: answered divided by sent.",
       "withoutRecipient": "Responses imported without a known recipient.",
       "groups": "The same per recipient group."
     },
     "OptionStat": {
       "id": "The id of the option.",
-      "text": "The text of the option.",
-      "count": "How often the option was chosen.",
-      "share": "Its share of the answers to the question."
+      "text": "The answer option.",
+      "count": "How often it was chosen.",
+      "share": "Its share of the responses to the question."
     },
     "RatingStatRow": {
       "id": "The id of the row.",
-      "text": "The text of the row.",
-      "n": "How many answers carry a rating from 1 to 5.",
-      "mean": "The mean rating.",
+      "text": "The rated row.",
+      "n": "How many responses count for the row.",
+      "mean": "The mean rating from 1 to 5.",
       "median": "The median rating.",
-      "dist": "How often each step from 1 to 5 was chosen.",
+      "dist": "How often each level from 1 to 5 was chosen.",
       "na": "How often no answer was chosen.",
       "topShare": "Share of ratings 4 and 5."
     },
     "KanoStatRow": {
       "id": "The id of the row.",
-      "text": "The text of the row.",
+      "text": "The rated row.",
       "counts": "How many answers fall into each Kano category M, O, A, I, R and Q.",
-      "n": "How many answers could be classified.",
+      "n": "How many responses count for the row.",
       "unanswered": "How many answers could not be classified.",
-      "category": "The most frequent category.",
+      "category": "The Kano category of the row, determined from the answer pairs.",
       "tie": "Whether several categories are equally frequent.",
-      "cs": "Satisfaction coefficient from 0 to 1.",
-      "ds": "Dissatisfaction coefficient from -1 to 0.",
+      "cs": "Satisfaction coefficient: how much the feature delights when present, from 0 to 1.",
+      "ds": "Dissatisfaction coefficient: how much its absence annoys; the larger the magnitude, the stronger.",
       "importanceMean": "The mean importance from 1 to 9.",
       "importanceN": "How many answers carry an importance."
     },
@@ -491,19 +491,19 @@
       "questionId": "The rating question.",
       "questionText": "The text of the question.",
       "rowId": "The row.",
-      "text": "The text of the row.",
-      "n": "How many ratings go in.",
-      "mean": "The mean rating.",
-      "topShare": "Share of ratings 4 and 5."
+      "text": "The rated row.",
+      "n": "How many responses count for the row.",
+      "mean": "The mean rating from 1 to 5.",
+      "topShare": "Share of responses with 4 or 5."
     },
     "KanoRow": {
       "questionId": "The Kano question.",
       "questionText": "The text of the question.",
       "rowId": "The row.",
-      "text": "The text of the row.",
-      "category": "The most frequent Kano category.",
-      "cs": "Satisfaction coefficient from 0 to 1.",
-      "ds": "Dissatisfaction coefficient from -1 to 0.",
+      "text": "The rated row.",
+      "category": "The Kano category of the row, determined from the answer pairs.",
+      "cs": "Satisfaction coefficient: how much the feature delights when present, from 0 to 1.",
+      "ds": "Dissatisfaction coefficient: how much its absence annoys; the larger the magnitude, the stronger.",
       "importanceMean": "The mean importance from 1 to 9.",
       "n": "How many answers could be classified."
     },
