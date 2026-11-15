@@ -7,9 +7,9 @@
  * `{generated}`).
  */
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../test-utils.js';
-import { mount } from './view-harness.js';
-import { runExport } from '../../../js/core/exporter.js';
-import { formatsOf } from '../../../js/core/exporter.js';
+import { mount, de } from './view-harness.js';
+import { runExport, formatsOf } from '../../../js/core/exporter.js';
+import { REPORT_KEYS } from '../../../js/modules/survey-builder/domain/report.js';
 
 /** @param {string} path relative to this file @returns {Promise<any>} */
 async function loadJson(path) {
@@ -114,8 +114,40 @@ suite('survey-builder report: content', () => {
   test('Kano categories take their names from the module\'s own kano.cat* texts', async () => {
     const h = await mount(example());
     const [file] = await exportFiles(h, 'html');
-    assertTrue(file.text.includes('Basismerkmal') || file.text.includes('Leistungsmerkmal') || file.text.includes('Begeisterungsmerkmal'), 'a category name from kano.cat*');
+    // The example's Kano items fall into M, O and A.
+    for (const c of ['M', 'O', 'A']) assertTrue(file.text.includes(`<td>${de(`kano.cat${c}`)}</td>`), `the text of kano.cat${c}`);
     assertTrue(!/>[MOAIRQ]<\/td>/.test(file.text), 'no bare category code');
+  });
+});
+
+const EN = await loadJson('../../../js/modules/survey-builder/resources/i18n/ui.en.json');
+
+suite('survey-builder report: language and texts', () => {
+  test('the report follows the interface language, not the language of the questionnaire', async () => {
+    const at = (path) => path.split('.').reduce((o, k) => o?.[k], EN);
+    const say = (key, params) => String(at(key) ?? key).replace(/\{(\w+)\}/g, (_, k) => params?.[k] ?? `{${k}}`);
+    const english = (base) => ({
+      ...base,
+      getLanguage: () => 'en',
+      t: (key, params) => (key.startsWith('modules.survey-builder.') ? say(key.slice(23), params) : base.t(key, params)),
+      tf: () => say,
+    });
+    const json = example();
+    json.survey.lang = 'de';
+    const h = await mount(json, { i18n: english });
+    const [file] = await exportFiles(h, 'html');
+    assertTrue(file.text.includes('<html lang="en">'), 'report language en');
+    assertTrue(file.text.includes(`<h2>${EN.report.rateTitle}</h2>`), 'English heading');
+    assertTrue(file.text.includes(`<td>${EN.kano.catM}</td>`), 'English Kano category');
+    assertTrue(!file.text.includes(de('report.rateTitle')), 'no German heading');
+  });
+
+  test('every text the report builder reads is in REPORT_KEYS', async () => {
+    const src = await (await fetch(new URL('../../../js/modules/survey-builder/domain/report.js', import.meta.url), { cache: 'no-cache' })).text();
+    const body = src.slice(src.indexOf('export function buildReportHtml'));
+    const used = [...new Set([...body.matchAll(/strings\.(\w+)/g)].map((m) => m[1]))].filter((k) => k !== 'cat');
+    assertTrue(used.length > 20, 'the scan finds the keys');
+    assertDeepEqual(used.filter((k) => !REPORT_KEYS.includes(k)), []);
   });
 });
 

@@ -49,7 +49,7 @@ article { break-inside: avoid; }
 const fill = (template, params) => String(template ?? '').replace(/\{(\w+)\}/g, (_, k) => (k in params ? String(params[k]) : `{${k}}`));
 
 /** Keys of `report.*` the report words itself with. */
-const REPORT_KEYS = [
+export const REPORT_KEYS = [
   'untitled', 'period', 'generated', 'rateTitle', 'rateLine', 'withoutRecipient', 'groupNone', 'colGroup', 'colSent',
   'colAnswered', 'colRate', 'summaryTitle', 'topTitle', 'colItem', 'colN', 'colMean', 'colMedian', 'colTop', 'colNa',
   'kanoTitle', 'colCategory', 'colBetter', 'colWorse', 'colImportance', 'freeText', 'groupsTitle', 'fewResponses',
