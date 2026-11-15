@@ -28,7 +28,7 @@ const GOOD_PATHS = [
   'domain/model.js', 'domain/model.types.js', 'domain/routing.js', 'domain/commands/move-item.js',
   'interaction/reorder.js', 'io/export.js', 'module.js',
   'resources/data/references.json', 'resources/examples/examples.json', 'resources/examples/pizza.csv',
-  'resources/i18n/context-help.de.json', 'resources/i18n/context-help.en.json',
+  'resources/i18n/context-help.de.json', 'resources/i18n/context-help.en.json', 'resources/i18n/copies.json',
   'resources/i18n/help.de.json', 'resources/i18n/ui.en.json',
   'resources/rows.part.html', 'resources/style.css', 'resources/tile.goals.html', 'resources/tile.html',
   'resources/view.html', 'tile/tile.js', 'viewmodel/chart-config.js', 'viewmodel/viewmodel.js',
@@ -62,7 +62,7 @@ test('Struktur: vollständige neue Form ist grün', () => {
 test('Struktur: Pflichtdateien, Wurzel, Ordner, Namen', () => {
   assert.deepEqual(checkStructure('neu', [
     'module.js', 'neu.js', 'helpers/x.js', 'viewmodel/index.js', 'domain/neu-analysis.js',
-    'resources/view.html', 'resources/extra.txt', 'resources/i18n/de.json', 'resources/data/x.csv',
+    'resources/view.html', 'resources/extra.txt', 'resources/i18n/de.json', 'resources/i18n/copies.de.json', 'resources/data/x.csv',
     'resources/assets/a.png', 'tile/tile.html', 'io/readme.md',
   ]), [
     'structure: domain/model.js: fehlt',
@@ -72,7 +72,8 @@ test('Struktur: Pflichtdateien, Wurzel, Ordner, Namen', () => {
     'structure: viewmodel/index.js: Dateiname nach Rolle, ohne Modulnamen und ohne index',
     'structure: domain/neu-analysis.js: Dateiname nach Rolle, ohne Modulnamen und ohne index',
     'structure: resources/extra.txt: unter resources/ nur view.html, *.part.html, style.css, tile[.<name>].html',
-    'structure: resources/i18n/de.json: unter resources/i18n/ nur ui|help|context-help.<de|en>.json',
+    'structure: resources/i18n/de.json: unter resources/i18n/ nur ui|help|context-help.<de|en>.json und copies.json',
+    'structure: resources/i18n/copies.de.json: unter resources/i18n/ nur ui|help|context-help.<de|en>.json und copies.json',
     'structure: resources/data/x.csv: unter resources/data/ nur .json',
     'structure: resources/assets/a.png: Ordner resources/assets/ ist nicht erlaubt (erlaubt: i18n, examples, data)',
     'structure: tile/tile.html: unter tile/ nur <name>.js',

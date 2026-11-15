@@ -49,7 +49,7 @@ export { parseJs };
 const DIRS = ['domain', 'viewmodel', 'interaction', 'io', 'tile', 'resources'];
 const REQUIRED_FILES = ['module.js', 'domain/model.js', 'viewmodel/viewmodel.js', 'resources/view.html'];
 const RESOURCE_TOP = /^(view\.html|[a-z0-9-]+\.part\.html|style\.css|tile(\.[a-z0-9-]+)?\.html)$/;
-const I18N_FILE = /^(ui|help|context-help)\.(de|en)\.json$/;
+const I18N_FILE = /^((ui|help|context-help)\.(de|en)|copies)\.json$/;
 
 /**
  * Gate Struktur.
@@ -79,7 +79,7 @@ export function checkStructure(id, paths) {
       if (parts.length === 2) {
         if (!RESOURCE_TOP.test(name)) bad('unter resources/ nur view.html, *.part.html, style.css, tile[.<name>].html');
       } else if (parts[1] === 'i18n') {
-        if (parts.length !== 3 || !I18N_FILE.test(name)) bad('unter resources/i18n/ nur ui|help|context-help.<de|en>.json');
+        if (parts.length !== 3 || !I18N_FILE.test(name)) bad('unter resources/i18n/ nur ui|help|context-help.<de|en>.json und copies.json');
       } else if (parts[1] === 'data') {
         if (!name.endsWith('.json')) bad('unter resources/data/ nur .json');
       } else if (parts[1] !== 'examples') {
