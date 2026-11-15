@@ -43,7 +43,7 @@ import h40 from '../modules/run-chart/run-chart-help.js';
 import h41 from '../modules/sample-size/sample-size-help.js';
 import h42 from '../modules/short-run-chart/short-run-chart-help.js';
 import h43 from '../modules/stakeholder-analysis/stakeholder-analysis-help.js';
-import h44 from '../modules/survey-builder/survey-builder-help.js';
+import h44 from '../modules/survey-builder/legacy/survey-builder-help.js';
 import h45 from '../modules/time-weighted-chart/time-weighted-chart-help.js';
 import h46 from '../modules/todo/todo-help.js';
 import h47 from '../modules/transformed-imr-chart/transformed-imr-chart-help.js';
