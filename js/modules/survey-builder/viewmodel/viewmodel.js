@@ -21,6 +21,8 @@ import { conditionsView } from './conditions.js';
 import { questionnaireView } from './questionnaire.js';
 import { recipientsView } from './recipients.js';
 import { responsesView } from './responses.js';
+import { resultsView } from './results.js';
+import { chartsView } from './charts.js';
 
 export default createModule({
   descriptor,
@@ -50,5 +52,5 @@ export default createModule({
     return copy;
   },
 
-  view: [outlineView, propertiesView, conditionsView, questionnaireView, recipientsView, responsesView],
+  view: [outlineView, propertiesView, conditionsView, questionnaireView, recipientsView, responsesView, resultsView, chartsView],
 });

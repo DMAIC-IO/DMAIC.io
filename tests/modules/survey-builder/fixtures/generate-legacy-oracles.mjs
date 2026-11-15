@@ -105,6 +105,50 @@ for (const [lang, dirty] of [['de', true], ['en', false]]) {
     fileName: file.fileName, content: file.content, version: vm.model.survey.version, sentVersion: r.sentVersion,
   };
 }
+// The evaluation of the example as the earlier results viewmodel showed it
+// with the German app texts: the charts (`chartJobs`) and the lines and rows
+// of the tab, without a filter or grouping, grouped, and filtered and grouped.
+/** @param {string} key @param {object} [params] @returns {string} German app text with `{name}` filled in */
+const deText = (key, params) => {
+  const v = at(appTexts.de, key);
+  if (typeof v !== 'string') return key;
+  return v.replace(/\{(\w+)\}/g, (_, k) => (params && k in params ? String(params[k]) : `{${k}}`));
+};
+const deI18n = { getLanguage: () => 'de', t: deText };
+const RESULT_VARIANTS = {
+  all: {},
+  grouped: { groupBy: 'q-group' },
+  filtered: { filter: { questionId: 'q-erp', optionId: 'o-dynamics' }, groupBy: 'q-group' },
+};
+for (const [variant, ui] of Object.entries(RESULT_VARIANTS)) {
+  const json = JSON.parse(JSON.stringify(example));
+  json.ui = { ...json.ui, ...ui };
+  const vm = new ResultsViewModel({
+    t: (key, params) => deText(`modules.survey-builder.${key}`, params),
+    context: fakeContext({ i18n: deI18n }),
+    container: () => null,
+  });
+  vm.model = Legacy.fromJSON(json);
+  record[`resultsView.example.${variant}`] = {
+    chartJobs: vm.chartJobs(),
+    filterOptions: vm.filterOptions(),
+    filterValue: vm.filterValue(),
+    nLine: vm.nLine(),
+    rateLine: vm.rateLine(),
+    hasWithoutRecipient: vm.hasWithoutRecipient(),
+    withoutRecipientLine: vm.withoutRecipientLine(),
+    hasRateGroups: vm.hasRateGroups(),
+    rateGroups: vm.rateGroups(),
+    rankingRows: vm.rankingRows(),
+    kanoOverviewRows: vm.kanoOverviewRows(),
+    freeTextLine: vm.freeTextLine(),
+    groupByOptions: vm.groupByOptions(),
+    groupsTitle: vm.groupsTitle(),
+    groupHeads: vm.groupHeads(),
+    comparisonParts: vm.comparisonParts(),
+    blocks: vm.blocks().map((b) => ({ key: b.key, title: b.title, n: vm.blockN(b), type: b.stats.type })),
+  };
+}
 // Ids the earlier model made with uid() become new-1, new-2, … per entry, so a
 // regenerated file only differs where the behaviour did.
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g;

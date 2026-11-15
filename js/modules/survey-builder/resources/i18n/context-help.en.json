@@ -104,7 +104,16 @@
       "help": "What was handed over: the answers taken into the VoC tree and per Kano question the Kano instance it goes to."
     },
     "ui": {
-      "help": "The settings of the results: the filter (question and option, or empty), the grouping (single choice question or empty) and whether the report names the authors of free texts (reportWithNames; no effect for an anonymous questionnaire). Settable via instance.set."
+      "help": "The settings of the results: the filter (question and option, or empty), the grouping (single choice question or empty) and whether the report names the authors of free texts (reportWithNames; no effect for an anonymous questionnaire). Settable via instance.set.",
+      "filter": {
+        "help": "The filter of the results: a choice question and one of its options; empty counts all responses. Set via setFilter."
+      },
+      "groupBy": {
+        "help": "The single choice question whose options the results are compared across; empty for no comparison. Set via setGroupBy."
+      },
+      "reportWithNames": {
+        "help": "Whether the exported report names who wrote the free texts. No effect for an anonymous questionnaire."
+      }
     },
     "dirtyStructure": {
       "help": "Whether the structure changed since the last export; once the questionnaire was sent, the next export then raises the version."

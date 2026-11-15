@@ -104,7 +104,16 @@
       "help": "Was schon übergeben wurde: die in den VoC-Baum übernommenen Antworten und je Kano-Frage die Kano-Instanz, an die sie geht."
     },
     "ui": {
-      "help": "Die Einstellungen der Auswertung: der Filter (Frage und Option oder leer), die Gruppierung (Einfachauswahl-Frage oder leer) und ob der Bericht bei Freitexten Namen nennt (reportWithNames; bei einem anonymen Fragebogen ohne Wirkung). Setzbar über instance.set."
+      "help": "Die Einstellungen der Auswertung: der Filter (Frage und Option oder leer), die Gruppierung (Einfachauswahl-Frage oder leer) und ob der Bericht bei Freitexten Namen nennt (reportWithNames; bei einem anonymen Fragebogen ohne Wirkung). Setzbar über instance.set.",
+      "filter": {
+        "help": "Der Filter der Auswertung: eine Auswahlfrage und eine ihrer Optionen; leer zählen alle Antworten. Setzen über setFilter."
+      },
+      "groupBy": {
+        "help": "Die Einfachauswahl-Frage, nach deren Optionen die Auswertung nebeneinandergestellt wird; leer ohne Vergleich. Setzen über setGroupBy."
+      },
+      "reportWithNames": {
+        "help": "Ob der exportierte Bericht bei Freitexten nennt, wer sie geschrieben hat. Bei einem anonymen Fragebogen ohne Wirkung."
+      }
     },
     "dirtyStructure": {
       "help": "Ob sich der Aufbau seit dem letzten Export geändert hat; ist der Fragebogen schon verschickt, erhöht der nächste Export dann die Version."

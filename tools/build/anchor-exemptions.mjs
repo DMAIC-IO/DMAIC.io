@@ -138,7 +138,7 @@ export const ANCHOR_EXEMPTIONS = {
   ],
   'survey-builder': [
     { match: ':value="opt.id"', reason: 'Option einer Bedingungszeile; ihr Text ist die Option selbst, die Bedingungen sind am Titel der Bedingungen verankert', count: 2 },
-    { match: '<th x-text="g.label">', reason: 'Spaltenkopf je Vergleichsgruppe, Text aus den Daten; die Gruppierung ist an ihrer Auswahl verankert', count: 1 },
+    { match: '<th x-text="g.label">', reason: 'Spaltenkopf je Vergleichsgruppe, Text aus den Daten; die Gruppierung ist an ihrer Auswahl verankert', count: 2 },
   ],
   'triz-9-windows': [
     { match: 'triz-9w__upload-btn', reason: 'Bild-Upload je Fenster (9×); Dateiwahl ohne Agentenweg', count: 1 },

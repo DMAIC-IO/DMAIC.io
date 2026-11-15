@@ -106,9 +106,11 @@ export function stored(over = {}) {
 /**
  * Mounts the module.
  * @param {object|null} [model] stored state
- * @param {{ confirm?: boolean }} [opts] answer of the confirmation dialog
+ * @param {{ confirm?: boolean, chartManager?: (bus: any, i18n: any) => any, i18n?: (base: any) => any }} [opts]
+ *   answer of the confirmation dialog; a real chart manager in place of the recording stand-in;
+ *   a wrapper around the i18n of the context (to watch which keys are asked for)
  */
-export async function mount(model = null, { confirm = true } = {}) {
+export async function mount(model = null, { confirm = true, chartManager = null, i18n = (base) => base } = {}) {
   await prepare();
   while (mounted.length) {
     const old = mounted.pop();
@@ -136,14 +138,17 @@ export async function mount(model = null, { confirm = true } = {}) {
       getProjectCycle: () => 'dmaic',
       isCompleted: () => false,
     },
-    i18n: { t: (k, p) => (k.startsWith(`modules.${ID}.`) ? tr(k.slice(ID.length + 9), p) : k), tf: () => tr, getLanguage: () => 'de' },
+    i18n: i18n({ t: (k, p) => (k.startsWith(`modules.${ID}.`) ? tr(k.slice(ID.length + 9), p) : k), tf: () => tr, getLanguage: () => 'de' }),
     eventBus: bus,
     notify: (msg, type) => notes.push([msg, type]),
     dialog: { confirm: async (opts) => { confirms.push(opts); return confirm; } },
-    chartManager: { create: async () => ({}), update: () => {}, destroy: () => {}, renderSVG: () => '' },
+    chartManager: null,
     theme: 'light',
     language: 'de',
   };
+  context.chartManager = chartManager
+    ? chartManager(bus, context.i18n)
+    : { create: async () => ({}), update: () => {}, destroy: () => {}, renderSVG: () => '' };
   const container = document.createElement('div');
   document.body.append(container);
   mounted.push(container);

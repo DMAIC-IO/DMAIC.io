@@ -326,7 +326,14 @@
 
 .survey-builder__chart {
   height: 16rem;
+  min-height: 16rem;
   margin-top: var(--spacing-sm);
+}
+
+/* The widget root makes no box (display: contents); the chart inherits the
+   host's minimum height across it (widgets inside x-for). */
+.survey-builder__chart > .widget-root {
+  min-height: inherit;
 }
 
 .survey-builder__answer {
