@@ -2,7 +2,70 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "survey": {
-      "help": "The questionnaire: header, version, sections with their questions, options, rows and conditions."
+      "help": "The questionnaire: header, version, sections with their questions, options, rows and conditions.",
+      "title": {
+        "help": "The title above the questionnaire."
+      },
+      "intro": {
+        "help": "The introduction below the title."
+      },
+      "contact": {
+        "help": "Whom respondents ask with questions."
+      },
+      "lang": {
+        "help": "The language of the exported file: German or English."
+      },
+      "anonymous": {
+        "help": "Anonymous: answers carry no recipient, even when the file was made for a recipient."
+      },
+      "sections": {
+        "help": "The sections of the questionnaire in their order, each with heading, explanation, conditions and questions.",
+        "title": {
+          "help": "The heading of the section."
+        },
+        "hint": {
+          "help": "An explanation below the heading."
+        },
+        "questions": {
+          "help": "The questions of the section in their order.",
+          "text": {
+            "help": "The question as respondents read it."
+          },
+          "hint": {
+            "help": "An explanation below the question."
+          },
+          "required": {
+            "help": "Required: without an answer the questionnaire cannot be completed."
+          },
+          "other": {
+            "help": "Also offers a free-text \"Other\" answer."
+          },
+          "noAnswer": {
+            "help": "Offers a \"No answer\" choice per row."
+          },
+          "importance": {
+            "help": "Also asks for the importance from 1 to 9 per row."
+          },
+          "multiline": {
+            "help": "Multi-line answer field instead of a single line."
+          },
+          "options": {
+            "help": "The options of a single or multiple choice question.",
+            "text": {
+              "help": "The text of the option."
+            },
+            "group": {
+              "help": "The display group of an option in multiple choice; options of the same group stand together."
+            }
+          },
+          "rows": {
+            "help": "The rows of a rating or Kano question.",
+            "text": {
+              "help": "The text of the row."
+            }
+          }
+        }
+      }
     },
     "recipients": {
       "help": "The recipients with name, organisation, group, e-mail and note, plus when and with which version they got their file."

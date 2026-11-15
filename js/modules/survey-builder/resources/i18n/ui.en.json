@@ -141,6 +141,8 @@
   "chartMean": "Mean",
   "takeToVoc": "Add to VoC tree",
   "previewFailed": "The preview could not be built.",
+  "surveyFileFailed": "The questionnaire could not be created.",
+  "commandFailed": "The change could not be made.",
   "reportExportFailed": "The report could not be exported.",
   "vocTakenMark": "already added to the VoC tree",
   "vocTaken": "Added to the VoC tree: {count}",

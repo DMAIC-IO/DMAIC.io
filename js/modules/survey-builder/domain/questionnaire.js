@@ -88,15 +88,12 @@ export function buildSurveyHtml(survey, strings, options = {}) {
 }
 
 /**
- * Runner strings in the questionnaire's language (not the app's), plus the
- * Kano answer labels shared with the kano module.
- * @param {import('../../../core/i18n.js').I18n} i18n
- * @param {'de'|'en'} lang
- * @returns {Promise<object>}
+ * Runner strings from the texts of one language: the runner section plus the
+ * Kano answer labels.
+ * @param {{ runner: object, kano: Record<string, string> }} texts
+ * @returns {object}
  */
-export async function runnerStrings(i18n, lang) {
-  const runner = await i18n.section('modules.survey-builder.runner', lang);
-  const kano = await i18n.section('modules.kano', lang);
+export function runnerStringsOf({ runner, kano }) {
   const importance = Array.from({ length: 9 }, (_, i) => String(i + 1));
   importance[0] = kano.importanceLow || importance[0];
   importance[8] = kano.importanceHigh || importance[8];
@@ -106,4 +103,17 @@ export async function runnerStrings(i18n, lang) {
     kanoImportanceScale: importance,
     kanoEmpty: kano.scaleEmpty || '-',
   };
+}
+
+/**
+ * Runner strings in the questionnaire's language (not the app's), plus the
+ * Kano answer labels shared with the kano module.
+ * @param {import('../../../core/i18n.js').I18n} i18n
+ * @param {'de'|'en'} lang
+ * @returns {Promise<object>}
+ */
+export async function runnerStrings(i18n, lang) {
+  const runner = await i18n.section('modules.survey-builder.runner', lang);
+  const kano = await i18n.section('modules.kano', lang);
+  return runnerStringsOf({ runner, kano });
 }

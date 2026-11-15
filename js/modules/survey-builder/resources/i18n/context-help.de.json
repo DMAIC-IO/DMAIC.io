@@ -2,7 +2,70 @@
   "$schema": "../../../../../schemas/module-context-help.schema.json",
   "fields": {
     "survey": {
-      "help": "Der Fragebogen: Kopf, Version, Abschnitte mit ihren Fragen, Optionen, Zeilen und Bedingungen."
+      "help": "Der Fragebogen: Kopf, Version, Abschnitte mit ihren Fragen, Optionen, Zeilen und Bedingungen.",
+      "title": {
+        "help": "Der Titel über dem Fragebogen."
+      },
+      "intro": {
+        "help": "Der Einleitungstext unter dem Titel."
+      },
+      "contact": {
+        "help": "An wen sich Befragte bei Fragen wenden."
+      },
+      "lang": {
+        "help": "Die Sprache der exportierten Datei: Deutsch oder Englisch."
+      },
+      "anonymous": {
+        "help": "Anonym: Antworten tragen keinen Empfänger, auch wenn die Datei für einen Empfänger erzeugt wurde."
+      },
+      "sections": {
+        "help": "Die Abschnitte des Fragebogens in ihrer Reihenfolge, je mit Überschrift, Erklärtext, Bedingungen und Fragen.",
+        "title": {
+          "help": "Die Überschrift des Abschnitts."
+        },
+        "hint": {
+          "help": "Ein Erklärtext unter der Überschrift."
+        },
+        "questions": {
+          "help": "Die Fragen des Abschnitts in ihrer Reihenfolge.",
+          "text": {
+            "help": "Die Frage, wie die Befragten sie lesen."
+          },
+          "hint": {
+            "help": "Ein Erklärtext unter der Frage."
+          },
+          "required": {
+            "help": "Pflichtfrage: ohne Antwort lässt sich der Fragebogen nicht abschließen."
+          },
+          "other": {
+            "help": "Bietet zusätzlich eine freie Antwort Sonstige an."
+          },
+          "noAnswer": {
+            "help": "Bietet je Zeile die Antwort „keine Angabe“ an."
+          },
+          "importance": {
+            "help": "Fragt je Zeile zusätzlich die Wichtigkeit von 1 bis 9 ab."
+          },
+          "multiline": {
+            "help": "Mehrzeiliges Antwortfeld statt einer Zeile."
+          },
+          "options": {
+            "help": "Die Optionen einer Einfach- oder Mehrfachauswahl.",
+            "text": {
+              "help": "Der Text der Option."
+            },
+            "group": {
+              "help": "Die Anzeigegruppe einer Option bei Mehrfachauswahl; Optionen derselben Gruppe stehen zusammen."
+            }
+          },
+          "rows": {
+            "help": "Die Zeilen einer Bewertungs- oder Kano-Frage.",
+            "text": {
+              "help": "Der Text der Zeile."
+            }
+          }
+        }
+      }
     },
     "recipients": {
       "help": "Die Empfänger mit Name, Organisation, Gruppe, E-Mail und Notiz, dazu wann und mit welcher Version sie ihre Datei bekommen haben."

@@ -11,6 +11,11 @@
  * and records the result under its key. The tests themselves run along and
  * must pass; then the file is written.
  *
+ * The browser test draft-view.test.js cannot run here. Its entries
+ * (`surveyFile.example.<lang>`: the general questionnaire file of the example
+ * project in a questionnaire language, as the earlier draft viewmodel built
+ * it) are recorded by this script directly, after the test files.
+ *
  * Regenerate (cwd app/dev, while legacy/ still exists):
  *
  *   node tests/modules/survey-builder/fixtures/generate-legacy-oracles.mjs
@@ -51,6 +56,37 @@ if (failed.length) {
   process.exit(1);
 }
 const record = globalThis.__surveyOracle.record;
+
+// The general questionnaire file of the example in each questionnaire
+// language, built by the earlier draft viewmodel with the app texts.
+const { DraftViewModel } = await import('../../../../js/modules/survey-builder/legacy/viewmodel/draft.js');
+const appTexts = {};
+for (const lang of ['de', 'en']) appTexts[lang] = JSON.parse(await readFile(join(HERE, '..', '..', '..', '..', 'i18n', `${lang}.json`), 'utf8'));
+/** @param {any} tree @param {string} path @returns {any} */
+const at = (tree, path) => path.split('.').reduce((o, k) => (o && typeof o === 'object' ? o[k] : undefined), tree);
+/** @param {any} base @param {any} over @returns {any} */
+const merge = (base, over) => {
+  if (!over || typeof over !== 'object' || Array.isArray(over)) return over === undefined ? base : over;
+  const out = { ...(base && typeof base === 'object' ? base : {}) };
+  for (const [k, v] of Object.entries(over)) out[k] = merge(out[k], v);
+  return out;
+};
+const i18n = {
+  getLanguage: () => 'de',
+  t: (key) => key,
+  async section(key, lang) {
+    return JSON.parse(JSON.stringify(merge(merge({}, at(appTexts.en, key)), lang === 'en' ? undefined : at(appTexts[lang], key))));
+  },
+};
+const example = JSON.parse(await readFile(join(HERE, '..', '..', '..', '..', 'examples', 'projects', 'survey-builder-software.json'), 'utf8'));
+for (const lang of ['de', 'en']) {
+  const json = JSON.parse(JSON.stringify(example));
+  json.survey.lang = lang;
+  const vm = new DraftViewModel({ t, context: fakeContext({ i18n }), container: () => null });
+  vm.model = Legacy.fromJSON(json);
+  const file = await vm.buildSurveyFile();
+  record[`surveyFile.example.${lang}`] = { fileName: file.fileName, content: file.content, version: vm.model.survey.version };
+}
 // Ids the earlier model made with uid() become new-1, new-2, … per entry, so a
 // regenerated file only differs where the behaviour did.
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g;

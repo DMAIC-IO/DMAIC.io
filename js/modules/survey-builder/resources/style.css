@@ -96,6 +96,27 @@
   background: var(--color-accent-light);
 }
 
+/* The selectable part of a question row: looks like the row itself. */
+.survey-builder__question-select {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--spacing-xs);
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* Wrappers of the property loops: their content belongs to the column. */
+.survey-builder__props-host {
+  display: contents;
+}
+
 .survey-builder__question-text {
   flex: 1;
   min-width: 0;
