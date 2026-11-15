@@ -46,4 +46,20 @@ suite('DataGrid — Entf leert die Auswahl und meldet es', () => {
       assertEqual(JSON.stringify(seen), JSON.stringify([{ range: { startCol: 0, startRow: 0, endCol: 0, endRow: 1 } }]));
     } finally { grid.destroy?.(); container.remove(); }
   });
+
+  test('Entf auf einer gesperrten Spalte: nichts geleert, kein data:cleared', () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    document.activeElement?.blur?.();
+    const grid = new DataGrid(container);
+    try {
+      grid.setData([{ id: 'col_a', name: 'Run', type: 'numeric', values: [1, 2], format: {}, meta: { lock: 'hard' } }]);
+      grid.setSelection({ startCol: 0, startRow: 0, endCol: 0, endRow: 1, activeCol: 0, activeRow: 0 });
+      const seen = [];
+      grid.on('data:cleared', (p) => seen.push(p));
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true, cancelable: true }));
+      assertEqual(JSON.stringify([...grid.columns[0].values]), JSON.stringify([1, 2]));
+      assertEqual(seen.length, 0);
+    } finally { grid.destroy?.(); container.remove(); }
+  });
 });

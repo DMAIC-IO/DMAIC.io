@@ -2551,6 +2551,7 @@ export class DataGrid {
     const r1 = Math.min(s.startRow, s.endRow), r2 = Math.max(s.startRow, s.endRow);
 
     let blockedAny = false;
+    let clearedAny = false;
     const oldData = [];
     const oldFormulas = [];
     for (let c = c1; c <= c2; c++) {
@@ -2565,6 +2566,7 @@ export class DataGrid {
           oldFmls.push(col.formulas?.[r] || null);
         }
       } else {
+        clearedAny = true;
         for (let r = r1; r <= r2; r++) {
           oldVals.push(col.values[r]);
           oldFmls.push(col.formulas?.[r] || null);
@@ -2580,8 +2582,8 @@ export class DataGrid {
     }
     this.history.push({ type: 'clear', startCol: c1, startRow: r1, oldData, oldFormulas });
     this.render();
-    // Like a paste: the owner of the data has to store and report the change.
-    this.emit('data:cleared', { range: { startCol: c1, startRow: r1, endCol: c2, endRow: r2 } });
+    // Like a paste: the owner of the data has to store and report the change — only if a cell was emptied.
+    if (clearedAny) this.emit('data:cleared', { range: { startCol: c1, startRow: r1, endCol: c2, endRow: r2 } });
   }
 
   // ═══════════════════════════════════════════════════════════

@@ -431,16 +431,22 @@ suite('Worksheet — Leeren und Ausfüllen im Gitter werden gespeichert und geme
     } finally { await w.unmount(); }
   });
 
-  test('ein Ausfüllen des Gitters (data:filled) wird gespeichert und gemeldet', async () => {
+  test('Ausfüllen mit dem Ziehpunkt wird gespeichert und gemeldet', async () => {
     const w = await mountWorksheet();
     try {
+      w.vm._grid.setCellValue('e1', 0, 9);
       await settle();
       w.emitted.length = 0;
-      w.vm._grid.columns[1].values[2] = 9;
-      w.vm._grid.emit('data:filled', { range: {} });
+      const root = w.vm._grid.container;
+      const td = (r, c) => root.querySelector(`td[data-col-idx="${c}"][data-row-idx="${r}"]`);
+      td(0, 1).dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+      document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+      root.querySelector('.datagrid__fill-handle').dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+      td(2, 1).dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+      document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
       await settle();
       const stored = w.states['ws-c'].sheets.find(s => s.id === w.sheetId).state;
-      assertEqual(stored.columns[1].values[2], 9);
+      assertDeepEqual([...stored.columns[1].values].slice(0, 3), [9, 9, 9]);
       assertEqual(w.emitted.filter(([n]) => n === 'worksheet:dataChanged').length, 1);
     } finally { await w.unmount(); }
   });
