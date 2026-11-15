@@ -694,8 +694,8 @@ Agenten eine Aktion `build…`, die die Datei als Inhalt zurückgibt:
 dieselbe Aktion; die Nebenwirkungen (zum Beispiel Exportmerker oder
 „verschickt am“) sind identisch. Ob und wohin der Agent den Inhalt weitergibt,
 entscheidet der Nutzer. Erstes Modul mit dieser Form ist der
-Fragebogen-Baukasten (`draft.buildSurveyFile`, `recipients.buildRecipientFile`,
-`results.buildReport`).
+Fragebogen-Baukasten (`buildSurveyFile`, `buildRecipientFile`, `buildReport`;
+seit der Umstellung flache Aktionsnamen ohne Teil-Präfix).
 
 ## Grenzen
 
