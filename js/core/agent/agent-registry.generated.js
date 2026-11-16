@@ -22710,7 +22710,7 @@ export const AGENT_REGISTRY = {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ sheetId?: string, fields?: string[], rows?: { from: number, to: number } }`"
+            "help": "`{ sheetId?: string, fields?: string[], rows?: { from: number, to: number }, columns?: string[] }` — `columns` wählt Spalten-ids (in dieser Reihenfolge) und liefert je Spalte `values`; `rows` und `formulas` beziehen sich dann nur auf sie"
           }
         ],
         "returns": "AgentRead",
@@ -22934,9 +22934,15 @@ export const AGENT_REGISTRY = {
         "bulk": false,
         "derived": true
       },
+      "rowCount": {
+        "type": "number",
+        "help": "number of data rows of this sheet",
+        "bulk": false,
+        "derived": true
+      },
       "columns": {
-        "type": "Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null, roleConfirmed: boolean, format: { decimals?: number, dateFormat?: string, timeFormat?: string }, meta: { lock?: 'hard'|'soft', reason?: string, managedBy?: string, managedRef?: string, categoricalCoding?: object }|null }>",
-        "help": "the column headers of this sheet; `id` is the columnId of a column reference; `roleConfirmed` is true once the role was set or confirmed by hand or via setColumnRole; `format` holds the display format keys set for the column (absent key = the type's default); `meta` is the column's lock and management data set via setColumnMeta, null if none",
+        "type": "Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null, roleConfirmed: boolean, format: { decimals?: number, dateFormat?: string, timeFormat?: string }, meta: { lock?: 'hard'|'soft', reason?: string, managedBy?: string, managedRef?: string, categoricalCoding?: object }|null, values?: any[] }>",
+        "help": "the column headers of this sheet; `id` is the columnId of a column reference; `roleConfirmed` is true once the role was set or confirmed by hand or via setColumnRole; `format` holds the display format keys set for the column (absent key = the type's default); `meta` is the column's lock and management data set via setColumnMeta, null if none; `values` only with the read option columns: the cell values of the column from row 0 on, one per row",
         "bulk": false,
         "derived": true
       },
