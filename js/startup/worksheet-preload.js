@@ -11,7 +11,8 @@
  * - bei `project:switched`, `project:imported` und `project:rehydrated`,
  *   wenn das Projekt ein Arbeitsblatt hat,
  * - bei `module:added` mit `moduleId === 'worksheet'`.
- * Danach `bumpWorksheetRevisions()`, damit jeder Leser neu rechnet. War das
+ * Danach `bumpWorksheetRevisions()` und je Instanz `worksheet:dataChanged`
+ * (Nutzlast `{ instanceId }`), damit jeder Leser neu rechnet. War das
  * Modul schon geladen, geschieht nichts.
  *
  * Das Laden beim Start blockiert den Start nicht (`run` wartet nicht): die
@@ -40,9 +41,24 @@ function hasWorksheet(stateManager) {
 }
 
 /**
+ * Alle Arbeitsblatt-Instanzen des Projekts.
+ * @param {{ get: (path: string) => any }} stateManager
+ * @returns {string[]}
+ */
+function worksheetInstanceIds(stateManager) {
+  const ids = [];
+  for (const phase of Object.keys(stateManager.get('phases') || {})) {
+    for (const it of stateManager.get(`phases.${phase}`) ?? []) {
+      if (it?.moduleId === WORKSHEET && it.instanceId) ids.push(it.instanceId);
+    }
+  }
+  return ids;
+}
+
+/**
  * Das Vorladen an den Bus hängen und für das aktuelle Projekt anstoßen.
  * @param {{ moduleRegistry: { getLoaded: (id: string) => object|null, loadModule: (id: string) => Promise<object> },
- *   eventBus: { on: (event: string, fn: Function) => void },
+ *   eventBus: { on: (event: string, fn: Function) => void, emit: (event: string, payload?: any) => void },
  *   stateManager: { get: (path: string) => any } }} ctx
  * @param {{ bump?: () => void }} [deps] `bump` nur für Tests austauschbar
  * @returns {Promise<void>} erfüllt, wenn das Laden für das aktuelle Projekt fertig ist
@@ -56,7 +72,14 @@ export function installWorksheetPreload(ctx, { bump = bumpWorksheetRevisions } =
   const ensureLoaded = () => {
     if (moduleRegistry.getLoaded(WORKSHEET)) return Promise.resolve();
     pending ??= moduleRegistry.loadModule(WORKSHEET)
-      .then(() => { bump(); })
+      .then(() => {
+        bump();
+        // Ältere Leser (Korrelation, Regression, ...) rechnen nur auf dieses
+        // Ereignis neu. Die Daten sind unverändert; die Hörer sind idempotent.
+        for (const instanceId of worksheetInstanceIds(stateManager)) {
+          eventBus.emit('worksheet:dataChanged', { instanceId });
+        }
+      })
       .catch((err) => { console.error('[worksheet-preload] loading worksheet failed', err); })
       .finally(() => { pending = null; });
     return pending;

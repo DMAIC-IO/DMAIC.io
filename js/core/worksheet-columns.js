@@ -30,6 +30,20 @@
 /** Leser je `stateManager` (P4): `readSync` des Instanzen-Dienstes, in Tests ein Doppel. */
 const readers = new WeakMap();
 
+/** @type {((key: string) => void)|null} liest den reaktiven Zähler `key` (`'#list'` oder eine Instanz-Id) */
+let touch = null;
+
+/**
+ * Den Abhängigkeits-Haken setzen: jedes Lesen ruft ihn mit der Instanz-Id, das
+ * Auflisten der Spalten mit `'#list'`. `worksheet-data.js` hängt ihn an die
+ * reaktiven Zähler, damit auch Altleser (Korrelation, Regression, …) in
+ * Alpine-Ansichten neu rechnen, wenn das Arbeitsblatt nachgeladen wird oder
+ * sich ändert.
+ * @param {((key: string) => void)|null} fn
+ * @returns {void}
+ */
+export function setWorksheetTouch(fn) { touch = fn; }
+
 /**
  * Das rohe Objekt hinter einem reaktiven Proxy. Ein Viewmodel reicht den
  * `stateManager` oft über Alpine weiter (`this._ui.services`); Alpines
@@ -69,6 +83,7 @@ export function registerWorksheetReader(stateManager, readSync) {
 export function readWorksheet(stateManager, instanceId, options) {
   const read = readers.get(rawOf(stateManager));
   if (!read) throw new Error('worksheet reader not registered');
+  touch?.(instanceId);
   try {
     return read(instanceId, options) ?? null;
   } catch {
@@ -162,6 +177,7 @@ export function discoverColumns(stateManager, filter) {
   const minCount = filter?.minCount || 0;
   const maxCount = filter?.maxCount ?? Infinity;
   const columns = [];
+  touch?.('#list');
 
   for (const phase of Object.keys(stateManager.get('phases') || {})) {
     const instances = stateManager.get(`phases.${phase}`) ?? [];

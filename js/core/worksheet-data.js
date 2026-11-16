@@ -10,12 +10,15 @@
  * sind.
  */
 import Alpine from '@alpinejs/csp';
-import { resolveColumnRef, discoverColumns, columnOption, readWorksheet } from './worksheet-columns.js';
+import { resolveColumnRef, discoverColumns, columnOption, readWorksheet, setWorksheetTouch } from './worksheet-columns.js';
 import { parseNumeric } from './datagrid/datagrid-utils.js';
 
 /** Zähler je Arbeitsblatt-Instanz; `'*'` zählt Ereignisse, die alle betreffen, `'#list'` jede Änderung (Spaltenlisten). */
 const rev = Alpine.reactive({ '*': 0, '#list': 0 });
 const installed = new WeakSet();
+
+// Jedes Lesen über die Fassade hängt vom Zähler ab, auch für Altleser ohne `ctx.data`.
+setWorksheetTouch((key) => { void rev['*']; void rev[key]; });
 
 /** @param {string} key */
 function bump(key) { rev[key] = (rev[key] ?? 0) + 1; if (key !== '#list') rev['#list'] += 1; }

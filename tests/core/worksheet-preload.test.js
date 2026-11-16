@@ -11,7 +11,8 @@ function makeBus() {
   const handlers = new Map();
   return {
     on(ev, fn) { if (!handlers.has(ev)) handlers.set(ev, []); handlers.get(ev).push(fn); },
-    emit(ev, p) { for (const fn of handlers.get(ev) ?? []) fn(p); },
+    emitted: [],
+    emit(ev, p) { this.emitted.push([ev, p]); for (const fn of handlers.get(ev) ?? []) fn(p); },
   };
 }
 
@@ -53,6 +54,21 @@ function makeCtx({ worksheet = false, loaded = false } = {}) {
     bump: () => bumps.push(1),
   };
 }
+
+suite('startup/worksheet-preload — dataChanged', () => {
+  test('nach dem Laden: je Instanz ein worksheet:dataChanged mit instanceId', async () => {
+    const h = makeCtx({ worksheet: true });
+    await installWorksheetPreload(h.ctx, { bump: h.bump });
+    const ev = h.ctx.eventBus.emitted.filter(([e]) => e === 'worksheet:dataChanged');
+    assertEqual(JSON.stringify(ev), JSON.stringify([['worksheet:dataChanged', { instanceId: 'ws1' }]]));
+  });
+
+  test('schon geladen: kein Ereignis', async () => {
+    const h = makeCtx({ worksheet: true, loaded: true });
+    await installWorksheetPreload(h.ctx, { bump: h.bump });
+    assertEqual(h.ctx.eventBus.emitted.length, 0);
+  });
+});
 
 const settle = () => new Promise((r) => setTimeout(r, 0));
 
