@@ -28,7 +28,6 @@
 
 import { createModule } from '../../core/template-module.js';
 import Alpine from '@alpinejs/csp';
-import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireKnownId, requireText, requireIndex, requireEnum, requireNumber } from '../../core/agent/agent-argcheck.js';
 import { COLUMN_TYPES, DATE_FORMATS, TIME_FORMATS } from '../../core/datagrid/datagrid-utils.js';
 import { State } from './worksheet-model.js';
@@ -41,14 +40,10 @@ import { icon } from '../../core/icon.js';
 import { uid } from '../../core/uid.js';
 import { debounce } from '../../core/debounce.js';
 import { defaultColumnFormat, retypeForWrite, reinferRoleAfterRetype } from '../../core/worksheet-write.js';
+import { readAgentState } from '../../core/agent/agent-read-mixin.js';
+import { FORMAT_KEYS, readWorksheetState, worksheetSnapshot } from './worksheet-read.js';
 import { recalcAllFormulas } from '../../core/datagrid/datagrid-formula.js';
 
-/**
- * Format-Schlüssel, die die Oberfläche setzt — genau die Auswahl des
- * Format-Pickers (`datagrid.js` `_renderAttrPickerFormatColumn`), je
- * Spaltentyp. `currencySymbol` bietet die Oberfläche nicht an.
- */
-const FORMAT_KEYS = ['decimals', 'dateFormat', 'timeFormat'];
 const FORMAT_KEYS_BY_TYPE = Object.freeze({
   numeric: ['decimals'], currency: ['decimals'], percent: ['decimals'],
   date: ['dateFormat'], time: ['timeFormat'],
@@ -688,7 +683,8 @@ class FormulaEditor {
  * @typedef {object} AgentRead
  * @property {Array<{ id: string, name: string }>} sheets  all sheets of the workbook, in tab order
  * @property {string|null} sheetId  id of the sheet the following columns and rows belong to; the read option sheetId chooses it, otherwise the first sheet
- * @property {Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null, roleConfirmed: boolean, format: { decimals?: number, dateFormat?: string, timeFormat?: string }, meta: { lock?: 'hard'|'soft', reason?: string, managedBy?: string, managedRef?: string, categoricalCoding?: object }|null }>} columns  the column headers of this sheet; `id` is the columnId of a column reference; `roleConfirmed` is true once the role was set or confirmed by hand or via setColumnRole; `format` holds the display format keys set for the column (absent key = the type's default); `meta` is the column's lock and management data set via setColumnMeta, null if none
+ * @property {number} rowCount  number of data rows of this sheet
+ * @property {Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null, roleConfirmed: boolean, format: { decimals?: number, dateFormat?: string, timeFormat?: string }, meta: { lock?: 'hard'|'soft', reason?: string, managedBy?: string, managedRef?: string, categoricalCoding?: object }|null, values?: any[] }>} columns  the column headers of this sheet; `id` is the columnId of a column reference; `roleConfirmed` is true once the role was set or confirmed by hand or via setColumnRole; `format` holds the display format keys set for the column (absent key = the type's default); `meta` is the column's lock and management data set via setColumnMeta, null if none; `values` only with the read option columns: the cell values of the column from row 0 on, one per row
  * @property {any[][]} rows  [bulk] the data rows of this sheet, each row in column order
  * @property {Array<{ columnId: string, row: number, formula: string }>} formulas  [bulk] which cells of this sheet are COMPUTED, not typed; a plain value written over one of them deletes the formula
  */
@@ -1383,7 +1379,7 @@ const mod = createModule({
        * @agent
        * Lesen schaltet nicht um. Ohne `sheetId` gilt das erste Blatt.
        *
-       * @param {object} [options] `{ sheetId?: string, fields?: string[], rows?: { from: number, to: number } }`
+       * @param {object} [options] `{ sheetId?: string, fields?: string[], rows?: { from: number, to: number }, columns?: string[] }` — `columns` wählt Spalten-ids (in dieser Reihenfolge) und liefert je Spalte `values`; `rows` und `formulas` beziehen sich dann nur auf sie
        * @returns {AgentRead} the read state of the sheet
        */
       read(options) {
@@ -1391,7 +1387,10 @@ const mod = createModule({
         // vorher ablegen: sonst landete sie nach dem Vermerk der Revision, die
         // dieses Lesen setzt, und der nächste Schreibzugriff wäre veraltet.
         this.flushPendingWork();
-        return readAgentState('worksheet', this._agentSnapshot(options?.sheetId), options);
+        // Erst das lebende Grid in das aktive Blatt spiegeln: die Zellen, die der
+        // Nutzer gerade getippt hat, sind sonst noch nicht im Model.
+        this._syncActiveSheet();
+        return readAgentState('worksheet', worksheetSnapshot({ sheets: this.model.sheets ?? [] }, options), options);
       },
 
       /**
@@ -1417,66 +1416,6 @@ const mod = createModule({
           this._autoSavePending = false;
           this._persistStructural();
         }
-      },
-
-      /** Die Momentaufnahme, die `read()` projiziert. Kein Agentenaufruf. */
-      _agentSnapshot(sheetId) {
-        // Erst das lebende Grid in das aktive Blatt spiegeln: die Zellen, die
-        // der Nutzer gerade getippt hat, sind sonst noch nicht im Model, und
-        // der Agent läse einen veralteten Stand. Genau derselbe Aufruf, den
-        // jede strukturelle Operation des Moduls voranstellt.
-        this._syncActiveSheet();
-        const sheets = this.model.sheets ?? [];
-        if (sheetId !== undefined) requireKnownId('sheetId', sheetId, sheets.map(s => s.id));
-        const shown = sheetId === undefined ? sheets[0] : sheets.find(s => s.id === sheetId);
-        const live = shown?.id === this.model.activeSheetId ? this._grid?.getState() : shown?.state;
-        const state = live ?? { columns: [], rowCount: 0 };
-        const columns = (state.columns ?? []).map(c => ({
-          id: c.id,
-          name: c.name ?? '',
-          shortName: c.shortName ?? '',
-          type: c.type ?? 'numeric',
-          unit: c.unit ?? null,
-          // Wie `DataGrid.setState`: eine Spalte ohne Rolle (frisch angehängt auf
-          // einem inaktiven Blatt) bekommt die abgeleitete.
-          role: c.role ?? inferRole(c),
-          // Dieselbe Quelle wie chart-suggestion `selection.columns[].roleConfirmed`:
-          // das Handflag der Live-Spalte (Rollen-Dialog oder setColumnRole).
-          roleConfirmed: c.roleManual === true,
-          // Nur die Schlüssel, die die Oberfläche setzt; `getState()` spreizt
-          // flach — ohne Kopie hielte der Agent das lebende Format-Objekt.
-          format: Object.fromEntries(FORMAT_KEYS
-            .filter(k => c.format?.[k] != null)
-            .map(k => [k, c.format[k]])),
-          meta: c.meta ? JSON.parse(JSON.stringify(c.meta)) : null,
-        }));
-        const rows = [];
-        for (let r = 0; r < (state.rowCount ?? 0); r++) {
-          rows.push((state.columns ?? []).map(c => c.values?.[r] ?? null));
-        }
-        // Welche Zellen GERECHNET sind. Ohne dieses Feld konnte ein Agent
-        // eine Formel zerstören, die er nicht sehen kann — `setCells`
-        // löscht sie, wie der Zell-Editor.
-        const formulas = [];
-        for (const c of state.columns ?? []) {
-          (c.formulas ?? []).forEach((formula, row) => {
-            if (formula) formulas.push({ columnId: c.id, row, formula });
-          });
-        }
-        return {
-          sheets: sheets.map(s => ({ id: s.id, name: s.name })),
-          sheetId: shown?.id ?? null,
-          columns,
-          rows,
-          formulas,
-          // Schwesterfelder der Umfangs-Deskriptoren. Sie stehen NICHT im
-          // Feldschema und erscheinen deshalb nicht in `read()` —
-          // `projectReadState` gibt nur erklärte Schlüssel aus. Nötig, weil
-          // das globale `columns` ab dem zweiten tabellarischen Massenfeld
-          // keinem Feld mehr eindeutig zugeordnet ist.
-          rowsColumns: columns,
-          formulasColumns: [{ name: 'columnId' }, { name: 'row' }, { name: 'formula' }],
-        };
       },
 
       /**
@@ -2317,5 +2256,7 @@ function showFormulaExpandHint(grid, fe, colIdx, rowIdx) {
   };
   setTimeout(() => grid.container.addEventListener('click', cleanup, true), 50);
 }
+
+mod.readStored = readWorksheetState;
 
 export default mod;
