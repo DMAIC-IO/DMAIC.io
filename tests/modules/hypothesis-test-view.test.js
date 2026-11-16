@@ -23,6 +23,10 @@ import { readWorksheetState } from '../../js/modules/worksheet/worksheet-read.js
  * Leser wie `useStoredWorksheetReader`, aber `wsBad` liefert ein Lesen, das
  * beim Zugriff wirft: Leserfehler fängt die Fassade ab (`null`), so wirft
  * die Ableitung trotzdem.
+ * Kopplung: der Getter wirft nur deshalb bis zur Ableitung durch, weil
+ * `resolveColumnRef` das Ergebnis (`out?.columns?.[0]`) außerhalb des
+ * `try` in `readWorksheet` liest. Zieht die Projektion in das `try`, fängt
+ * die Fassade auch diesen Fehler ab, und der Test braucht einen neuen Weg.
  * @param {object} sm
  * @returns {object}
  */

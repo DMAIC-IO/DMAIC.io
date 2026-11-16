@@ -9,7 +9,8 @@
  *      Reads only through the worksheet reader registered per stateManager
  *      (`registerWorksheetReader`, in the app `instances.readSync`), never
  *      through `getModuleState`.
- *   2. getColumnRawValues — the column's raw cell-value array (or []).
+ *   2. getColumnRawValues — the column's raw cell-value array (rowCount
+ *      entries, missing cells null; [] only if the reference is unresolved).
  *   3. coerceNumeric — the plain, type-agnostic cell→number coercion shared by
  *      consumers that just want "a number or nothing" (empty/null/unparseable
  *      → null; numeric strings are parsed). NOTE: this is the *plain* coercion.
@@ -104,7 +105,8 @@ export function resolveColumnRef(stateManager, ref) {
  * Read the raw cell values of a column reference.
  * @param {object} stateManager
  * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
- * @returns {any[]} the column's `values` array, or [] if unresolved/empty
+ * @returns {any[]} the column's `values` array (`rowCount` entries, missing
+ *   cells `null`); empty only if the reference is unresolved
  */
 export function getColumnRawValues(stateManager, ref) {
   const col = resolveColumnRef(stateManager, ref);

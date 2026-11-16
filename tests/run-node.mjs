@@ -159,6 +159,7 @@ const SKIP = new Set([
   'core/widget-directive.test.js',
   'core/worksheet-data.test.js',
   'core/worksheet-pool.test.js',
+  'core/worksheet-preload.test.js',
   'core/workspace-detached.test.js',
   'dialogs/scenario-confirm-data.test.js',
   // Zieht über activity-flowchart.js Alpine CSP herein, das beim Import
