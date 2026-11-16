@@ -189,6 +189,16 @@ export class ModuleRegistry {
   }
 
   /**
+   * Das bereits geladene `createModule`-Objekt, synchron. `null`, solange das
+   * Modul nicht geladen ist, und für unbekannte Ids.
+   * @param {string} moduleId
+   * @returns {object|null}
+   */
+  getLoaded(moduleId) {
+    return this._registry.get(moduleId)?._loaded ?? null;
+  }
+
+  /**
    * Lazy-load a module, call init(), and return the instance.
    * @param {string} moduleId
    * @param {HTMLElement} container

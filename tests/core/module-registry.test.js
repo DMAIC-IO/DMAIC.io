@@ -165,6 +165,16 @@ suite('ModuleRegistry', () => {
     assertEqual(loads, 1);
   });
 
+  test('getLoaded: null vor dem Laden und für Unbekannte, danach das Modul', async () => {
+    const reg = new ModuleRegistry();
+    const exported = { id: 'gl' };
+    reg.register({ id: 'gl', phase: 'define', load: async () => ({ default: exported }) });
+    assertEqual(reg.getLoaded('gl'), null);
+    assertEqual(reg.getLoaded('nope'), null);
+    await reg.loadModule('gl');
+    assertEqual(reg.getLoaded('gl'), exported);
+  });
+
   test('loadModule mit unbekannter Id wirft', async () => {
     const reg = new ModuleRegistry();
     let msg = '';

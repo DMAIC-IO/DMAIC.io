@@ -32,12 +32,13 @@ import { stripPaths } from './view-fields.js';
  * @typedef {{
  *   list: (opts?: { modules?: string[] }) => InstanceInfo[],
  *   read: (instanceId: string, options?: object) => Promise<object>,
+ *   readSync: (instanceId: string, options?: object) => object,
  *   write: (instanceId: string, fn: (model: any) => any) => Promise<{ mounted: boolean, result: any }>,
  * }} InstancesService
  */
 /**
  * Was Module davon bekommen: Lesen und Stapel an andere Instanzen.
- * @typedef {Pick<InstancesService, 'list' | 'read'> & {
+ * @typedef {Pick<InstancesService, 'list' | 'read' | 'readSync'> & {
  *   interact: (stack: import('./agent/agent-types.generated.js').ModuleStack) => Promise<object>,
  * }} ModuleInstances
  */
@@ -77,7 +78,7 @@ function viewFieldsOf(moduleId, m) {
  * Den Dienst einmal je App anlegen.
  * @param {{
  *   stateManager: any,
- *   moduleRegistry: { loadModule: (id: string) => Promise<any> },
+ *   moduleRegistry: { loadModule: (id: string) => Promise<any>, getLoaded: (id: string) => any },
  *   workspace: { getLiveViewmodel: (id: string) => any, isPending: (id: string) => boolean,
  *     whenInstanceReady: (id: string) => Promise<any> },
  *   eventBus: any,
@@ -162,10 +163,51 @@ export function createInstances({ stateManager, moduleRegistry, workspace, event
     const moduleId = record.moduleId;
     const m = await moduleRegistry.loadModule(moduleId);
     await settle(instanceId);
-    const viewFields = viewFieldsOf(moduleId, m);
     const vm = workspace.getLiveViewmodel(instanceId);
-    if (vm) return stripPaths(await vm.read(options), viewFields);
+    // Eingehängt: `vm.read` zuerst, Agenten bekommen den Flush offener Eingaben.
+    if (vm) return stripPaths(await vm.read(options), viewFieldsOf(moduleId, m));
+    return readNow(record, m, options, { live: false });
+  }
+
+  /**
+   * Wie `read`, aber synchron und nur für ein bereits geladenes Modul. Wartet
+   * nie auf einen Mount: im Einhängen liest es den gespeicherten Stand. Ein
+   * Modul mit Haken `readStored` liest immer den gespeicherten Stand (kein
+   * `vm.read`, kein Flush). Schreibt nie zurück, außer bei der einmaligen
+   * Migration einer Zielform-Instanz (nicht im abgeschlossenen Projekt).
+   * @param {string} instanceId
+   * @param {object} [options]
+   * @returns {object}
+   * @throws {Error} `unknown_instance`, `not_loaded`, `needs_mount`, `async_read`
+   */
+  function readSync(instanceId, options) {
+    const { record } = locate(instanceId);
+    const m = moduleRegistry.getLoaded(record.moduleId);
+    if (!m) throw codeError('not_loaded');
+    return readNow(record, m, options, { live: !workspace.isPending(instanceId), sync: true });
+  }
+
+  /**
+   * Der gemeinsame, synchrone Rumpf von `read` und `readSync`.
+   * Reihenfolge: `readStored`, lebendes Viewmodel (nur `live`), Zielform,
+   * Mixin, sonst `needs_mount`.
+   * @param {{ instanceId: string, moduleId: string }} record
+   * @param {any} m geladenes Modulobjekt
+   * @param {object|undefined} options
+   * @param {{ live: boolean, sync?: boolean }} mode
+   * @returns {object}
+   */
+  function readNow(record, m, options, { live, sync = false }) {
+    const { instanceId, moduleId } = record;
+    const viewFields = viewFieldsOf(moduleId, m);
     const saved = stateManager.getModuleState(instanceId);
+    if (typeof m?.readStored === 'function') return stripPaths(m.readStored(saved, options), viewFields);
+    const vm = live ? workspace.getLiveViewmodel(instanceId) : null;
+    if (vm) {
+      const out = vm.read(options);
+      if (sync && typeof out?.then === 'function') throw codeError('async_read');
+      return stripPaths(out, viewFields);
+    }
     if (isTargetForm(m)) {
       const model = m.loadDetached(saved, { instanceId, eventBus, stateManager });
       const json = model.toJSON();
@@ -205,5 +247,5 @@ export function createInstances({ stateManager, moduleRegistry, workspace, event
     return { mounted: false, result };
   }
 
-  return { list, read, write };
+  return { list, read, readSync, write };
 }

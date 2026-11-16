@@ -102,11 +102,12 @@ function setup({ states = {}, completed = false, modules = {}, live, workspace }
   const bus = makeBus();
   const sm = makeState({ phases: PHASES(), states, completed, bus });
   const mods = { sipoc: targetModule(), 'five-why': { id: 'five-why' }, kano: { id: 'kano' }, ...modules };
-  const moduleRegistry = { loadModule: async (id) => mods[id] };
+  const loaded = new Set(Object.keys(mods));
+  const moduleRegistry = { loadModule: async (id) => mods[id], getLoaded: (id) => (loaded.has(id) ? mods[id] : null) };
   const ws = workspace ?? makeWorkspace(live);
   const data = { worksheet: true };
   const svc = createInstances({ stateManager: sm, moduleRegistry, workspace: ws, eventBus: bus, createData: () => data });
-  return { svc, sm, bus, ws, mods, data };
+  return { svc, sm, bus, ws, mods, data, loaded };
 }
 
 const noRemote = (bus) => assertEqual(bus.emitted.filter(([n]) => n === 'state:remote-changed').length, 0,
@@ -204,6 +205,83 @@ suite('instances.read', () => {
   test('unbekannte Instanz: unknown_instance', async () => {
     const { svc } = setup();
     await assertRejects(() => svc.read('nope'), /unknown_instance/);
+  });
+
+  test('readStored-Modul nicht eingehängt: readStored(saved, options) statt needs_mount', async () => {
+    const readStored = (saved, o) => ({ saved, o });
+    const { svc } = setup({ states: { k1: { a: 1 } }, modules: { kano: { id: 'kano', readStored } } });
+    assertDeepEqual(await svc.read('k1', { fields: [] }), { saved: { a: 1 }, o: { fields: [] } });
+  });
+});
+
+/** Wirft `fn` synchron, liefert den Fehler (oder null). */
+function caught(fn) {
+  try { fn(); } catch (e) { return e; }
+  return null;
+}
+
+suite('instances.readSync', () => {
+  test('nicht geladen → not_loaded', () => {
+    const { svc, loaded } = setup({ states: { d1: { n: 5 } } });
+    loaded.clear();
+    const err = caught(() => svc.readSync('d1'));
+    assertEqual(err?.code, 'not_loaded');
+  });
+
+  test('unbekannte Instanz → unknown_instance', () => {
+    const { svc } = setup();
+    assertEqual(caught(() => svc.readSync('nope'))?.code, 'unknown_instance');
+  });
+
+  test('Zielform nicht eingehängt: synchron, Migration wird zurückgeschrieben', () => {
+    const { svc, sm } = setup({ states: { d1: { _schema: { version: '1.0' }, n: 5, zoom: 2 }, m1: { old: 7 } } });
+    const out = svc.readSync('d1', { fields: [] });
+    assertEqual(out.n, 5);
+    assertEqual(out.double, 10);
+    assertEqual('zoom' in out, false);
+    assertEqual(sm.writes.length, 0);
+    assertEqual(svc.readSync('m1').n, 7);
+    assertEqual(sm.writes.length, 1, 'Migration einmal zurückgeschrieben');
+  });
+
+  test('abgeschlossenes Projekt: schreibt nie', () => {
+    const { svc, sm } = setup({ states: { d1: { old: 7 } }, completed: true });
+    assertEqual(svc.readSync('d1').n, 7);
+    assertEqual(sm.writes.length, 0);
+  });
+
+  test('Zielform eingehängt: vm.read ohne Ansichtsfelder', () => {
+    const vm = { model: Doc.fromJSON({ n: 4 }), read: (opts) => ({ n: 4, zoom: 3, double: 8, opts }) };
+    const { svc } = setup({ live: new Map([['d1', vm]]) });
+    assertDeepEqual(svc.readSync('d1', { fields: ['x'] }), { n: 4, double: 8, opts: { fields: ['x'] } });
+  });
+
+  test('im Einhängen: liest den gespeicherten Stand', () => {
+    const live = new Map([['d1', { model: Doc.fromJSON({ n: 0 }), read: () => { throw new Error('vm.read unerwartet'); } }]]);
+    const ws = { ...makeWorkspace(live), isPending: () => true };
+    const { svc } = setup({ states: { d1: { _schema: { version: '1.0' }, n: 5 } }, workspace: ws });
+    assertEqual(svc.readSync('d1').n, 5);
+  });
+
+  test('readStored-Modul eingehängt: vm.read und flushPendingWork bleiben ungerufen', () => {
+    const vm = {
+      read: () => { throw new Error('vm.read unerwartet'); },
+      flushPendingWork: () => { throw new Error('flush unerwartet'); },
+    };
+    const readStored = (saved, o) => ({ saved, o });
+    const { svc } = setup({ states: { k1: { a: 1 } }, modules: { kano: { id: 'kano', readStored } }, live: new Map([['k1', vm]]) });
+    assertDeepEqual(svc.readSync('k1', { fields: [] }), { saved: { a: 1 }, o: { fields: [] } });
+  });
+
+  test('Altform ohne readStored und ohne Mixin → needs_mount', () => {
+    const { svc } = setup({ states: { k1: {} } });
+    assertEqual(caught(() => svc.readSync('k1'))?.code, 'needs_mount');
+  });
+
+  test('vm.read liefert ein Promise → async_read', () => {
+    const vm = { model: Doc.fromJSON({ n: 4 }), read: async () => ({ n: 4 }) };
+    const { svc } = setup({ live: new Map([['d1', vm]]) });
+    assertEqual(caught(() => svc.readSync('d1'))?.code, 'async_read');
   });
 });
 

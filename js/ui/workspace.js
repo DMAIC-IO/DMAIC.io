@@ -944,7 +944,7 @@ export class Workspace {
     };
     return {
       instanceId,
-      instances: svc ? Object.freeze({ list: svc.list, read: svc.read, interact }) : undefined,
+      instances: svc ? Object.freeze({ list: svc.list, read: svc.read, readSync: svc.readSync, interact }) : undefined,
       eventBus: this._eventBus,
       stateManager: this._stateManager,
       i18n: this._i18n,
