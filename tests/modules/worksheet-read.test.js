@@ -1,4 +1,5 @@
 import { suite, test, assert, assertEqual, assertDeepEqual } from '../test-utils.js';
+import { inferRole } from '../../js/core/datagrid/datagrid-roles.js';
 import { readWorksheetState } from '../../js/modules/worksheet/worksheet-read.js';
 
 const saved = () => ({
@@ -35,7 +36,7 @@ suite('readWorksheetState', () => {
     const [a, b] = r.columns;
     assertDeepEqual(a.format, { decimals: 2 });
     assertEqual(a.roleConfirmed, false);
-    assert(typeof a.role === 'string' || a.role === null, 'abgeleitete Rolle');
+    assertEqual(a.role, inferRole(saved().sheets[0].state.columns[0]));
     assertEqual(b.role, 'factor');
     assertEqual(b.roleConfirmed, true);
     assertEqual(a.unit, null);
@@ -84,14 +85,17 @@ suite('readWorksheetState', () => {
     assertEqual(r.rowCount, 0);
   });
 
-  test('ohne fields rows baut keine Zeilen (100 000 x 3 unter 50 ms)', () => {
-    const n = 100000;
-    const col = (id) => ({ id, name: id, type: 'numeric', values: Array.from({ length: n }, (_, i) => i) });
-    const big = { sheets: [{ id: 's', name: 'S', state: { rowCount: n, columns: [col('a'), col('b'), col('c')] } }] };
-    const t0 = performance.now();
+  test('ohne fields rows baut keine Zeilen (kein Zugriff auf values[r])', () => {
+    const n = 1000;
+    let reads = 0;
+    const counted = new Proxy(Array.from({ length: n }, (_, i) => i), {
+      get(t, k, r) { if (typeof k === 'string' && /^\d+$/.test(k)) reads++; return Reflect.get(t, k, r); },
+    });
+    const big = { sheets: [{ id: 's', name: 'S', state: { rowCount: n, columns: [{ id: 'a', name: 'a', type: 'numeric', role: 'continuous', values: counted }] } }] };
     const r = readWorksheetState(big);
-    const dt = performance.now() - t0;
     assertEqual(r.rowCount, n);
-    assert(dt < 50, `Dauer ${dt} ms`);
+    assertEqual(reads, 0);
+    readWorksheetState(big, { fields: ['rows'] });
+    assertEqual(reads, n);
   });
 });

@@ -1390,6 +1390,7 @@ const mod = createModule({
         // Erst das lebende Grid in das aktive Blatt spiegeln: die Zellen, die der
         // Nutzer gerade getippt hat, sind sonst noch nicht im Model.
         this._syncActiveSheet();
+        // Nicht `readWorksheetState`: der Generator löst read() nur über ein direktes readAgentState auf (sonst `unresolved_read_return`).
         return readAgentState('worksheet', worksheetSnapshot({ sheets: this.model.sheets ?? [] }, options), options);
       },
 
