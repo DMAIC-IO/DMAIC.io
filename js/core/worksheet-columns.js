@@ -5,7 +5,10 @@
  * into data" core that several analysis modules need:
  *
  *   1. resolveColumnRef — resolve a `{instanceId, sheetId, columnId}` ref against
- *      a stateManager to the live column object (or null if any hop is missing).
+ *      a stateManager to the column object (or null if any hop is missing).
+ *      Reads only through the worksheet reader registered per stateManager
+ *      (`registerWorksheetReader`, in the app `instances.readSync`), never
+ *      through `getModuleState`.
  *   2. getColumnRawValues — the column's raw cell-value array (or []).
  *   3. coerceNumeric — the plain, type-agnostic cell→number coercion shared by
  *      consumers that just want "a number or nothing" (empty/null/unparseable
@@ -23,20 +26,78 @@
  * worksheet-resolution walk exists in exactly one place.
  */
 
+/** Leser je `stateManager` (P4): `readSync` des Instanzen-Dienstes, in Tests ein Doppel. */
+const readers = new WeakMap();
+
 /**
- * Resolve a column reference to the live worksheet column object.
- * Returns null when the worksheet instance, sheet, or column is missing.
+ * Das rohe Objekt hinter einem reaktiven Proxy. Ein Viewmodel reicht den
+ * `stateManager` oft über Alpine weiter (`this._ui.services`); Alpines
+ * Reaktivität verpackt ihn dabei in einen Proxy, der über `__v_raw` auf das
+ * rohe Objekt zeigt (wie `toRaw` von `@vue/reactivity`). Ohne das fände die
+ * `WeakMap` den Leser nicht.
+ * @param {object} obj
+ * @returns {object}
+ */
+function rawOf(obj) {
+  let o = obj;
+  while (o && typeof o === 'object' && o.__v_raw) o = o.__v_raw;
+  return o;
+}
+
+/**
+ * Den Arbeitsblatt-Leser für einen `stateManager` hinterlegen. Die App ruft das
+ * direkt nach `createInstances` mit `instances.readSync`.
+ * @param {object} stateManager
+ * @param {(id: string, options?: object) => object} readSync
+ * @returns {void}
+ */
+export function registerWorksheetReader(stateManager, readSync) {
+  readers.set(rawOf(stateManager), readSync);
+}
+
+/**
+ * Ein Arbeitsblatt über den registrierten Leser lesen (Form von `read`, P3).
+ * Jeder Fehler des Lesers (`not_loaded`, unbekannte Instanz, Blatt oder
+ * Spalte) ergibt `null`.
+ * @param {object} stateManager
+ * @param {string} instanceId
+ * @param {object} [options]  Leseoptionen (`sheetId`, `columns`, `fields`, …)
+ * @returns {object|null}
+ * @throws {Error} `worksheet reader not registered` — Programmierfehler, soll laut sein
+ */
+export function readWorksheet(stateManager, instanceId, options) {
+  const read = readers.get(rawOf(stateManager));
+  if (!read) throw new Error('worksheet reader not registered');
+  try {
+    return read(instanceId, options) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Resolve a column reference to its worksheet column object, read through
+ * the registered reader (`readSync`, with `columns: [columnId]`).
+ * Returns null when the reference has no `sheetId` or the worksheet instance,
+ * sheet, or column is missing (or the worksheet module is not loaded yet).
  * @param {object} stateManager
  * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
- * @returns {object|null} the column object (`{ id, name, shortName, type, values, … }`) or null
+ * @returns {{ id: string, name: string, shortName: string, type: string, unit: string|null,
+ *   role: string|null, roleManual: boolean, format: object, meta: object|null, values: any[] }|null}
  */
 export function resolveColumnRef(stateManager, ref) {
   if (!ref || !stateManager) return null;
-  const ws = stateManager.getModuleState(ref.instanceId);
-  if (!ws?.sheets) return null;
-  const sheet = ws.sheets.find(s => s.id === ref.sheetId);
-  if (!sheet?.state?.columns) return null;
-  return sheet.state.columns.find(c => c.id === ref.columnId) || null;
+  if (typeof ref.instanceId !== 'string' || typeof ref.sheetId !== 'string' || typeof ref.columnId !== 'string') {
+    return null;
+  }
+  const out = readWorksheet(stateManager, ref.instanceId, { sheetId: ref.sheetId, columns: [ref.columnId] });
+  const c = out?.columns?.[0];
+  if (!c || c.id !== ref.columnId) return null;
+  return {
+    id: c.id, name: c.name, shortName: c.shortName, type: c.type, unit: c.unit,
+    role: c.role ?? null, roleManual: c.roleConfirmed === true,
+    format: c.format, meta: c.meta, values: c.values ?? [],
+  };
 }
 
 /**
@@ -86,7 +147,8 @@ export function columnOption(col) {
 
 /**
  * Alle Arbeitsblattspalten des Projekts, die zum Filter passen.
- * @param {{ get: (path: string) => any, getModuleState: (id: string) => any }} stateManager
+ * Liest über den registrierten Leser (`readWorksheet`), nicht über `getModuleState`.
+ * @param {{ get: (path: string) => any }} stateManager
  * @param {{ types?: string[]|Set<string>, minCount?: number, maxCount?: number }} [filter]
  * @returns {{ instanceId: string, sheetId: string, sheetName: string, columnId: string,
  *   columnName: string, shortName: string, type: string, valueCount: number }[]}
@@ -103,11 +165,13 @@ export function discoverColumns(stateManager, filter) {
     const instances = stateManager.get(`phases.${phase}`) ?? [];
     for (const inst of instances) {
       if (inst.moduleId !== 'worksheet') continue;
-      const ws = stateManager.getModuleState(inst.instanceId);
-      if (!ws?.sheets) continue;
-      for (const sheet of ws.sheets) {
-        if (!sheet.state?.columns) continue;
-        for (const col of sheet.state.columns) {
+      const head = readWorksheet(stateManager, inst.instanceId);
+      for (const sheet of head?.sheets ?? []) {
+        const sheetHead = readWorksheet(stateManager, inst.instanceId, { sheetId: sheet.id });
+        const ids = (sheetHead?.columns ?? []).map(c => c.id);
+        if (ids.length === 0) continue;
+        const full = readWorksheet(stateManager, inst.instanceId, { sheetId: sheet.id, columns: ids });
+        for (const col of full?.columns ?? []) {
           if (typeSet && !typeSet.has(col.type)) continue;
           const nonNull = (col.values || []).filter(v => v != null).length;
           if (nonNull < minCount || nonNull > maxCount) continue;

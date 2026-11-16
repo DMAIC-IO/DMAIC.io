@@ -17,6 +17,7 @@ import { installWorksheetRevisions } from '../../../js/core/worksheet-data.js';
 import { buildInitialWorksheetState } from '../../../js/core/worksheet-sheets.js';
 import { WIDGETS } from '../../../js/widgets/registry.js';
 import { WIDGET_I18N } from '../../widget-i18n.js';
+import { withStoredWorksheetReader } from '../../helpers/worksheet-reader.js';
 
 const ID = 'doe-planner';
 const TPL_KEY = `js/modules/${ID}/resources/view.html`;
@@ -134,7 +135,7 @@ export async function mount(model = null, worksheets = {}) {
   const context = {
     instances: { list, read: async () => ({}), interact: async () => ({ ok: false, results: [] }) },
     instanceId: PLANNER,
-    stateManager: {
+    stateManager: withStoredWorksheetReader({
       get(path) {
         if (path === 'phases') return store.phases;
         if (path.startsWith('phases.')) return store.phases[path.slice(7)];
@@ -146,7 +147,7 @@ export async function mount(model = null, worksheets = {}) {
       removeModuleState: (id) => { delete store.states[id]; },
       getProjectCycle: () => 'dmaic',
       isCompleted: () => false,
-    },
+    }),
     i18n: { t: (k, p) => (p ? `${k}${JSON.stringify(p)}` : k), tf: () => tr, getLanguage: () => 'de' },
     eventBus: bus,
     notify: (msg, type) => notes.push([msg, type]),

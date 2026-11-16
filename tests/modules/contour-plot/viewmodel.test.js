@@ -13,6 +13,7 @@ import { registerWidgetDirective } from '../../../js/core/widget-directive.js';
 import { WIDGETS } from '../../../js/widgets/registry.js';
 import { setFields } from '../../../js/core/model.js';
 import { WIDGET_I18N } from '../../widget-i18n.js';
+import { withStoredWorksheetReader } from '../../helpers/worksheet-reader.js';
 
 const ID = 'contour-plot';
 const TPL_KEY = `js/modules/${ID}/resources/view.html`;
@@ -77,12 +78,12 @@ async function mount(model, sheets = {}) {
   };
   const context = {
     instanceId: 'cp-1',
-    stateManager: {
+    stateManager: withStoredWorksheetReader({
       getModuleState: (id) => states[id] ?? null,
       setModuleState: () => {},
       getProjectCycle: () => 'dmaic',
       get: () => undefined,
-    },
+    }),
     i18n,
     eventBus: bus,
     chartManager: new ChartManager(bus, i18n),
@@ -110,7 +111,7 @@ async function mount(model, sheets = {}) {
 }
 
 const sheet = (cols) => ({
-  sheets: [{ id: 's1', state: { columns: Object.entries(cols).map(([id, values]) => ({ id, name: id, shortName: id, values })) } }],
+  sheets: [{ id: 's1', state: { rowCount: Math.max(0, ...Object.values(cols).map((v) => v.length)), columns: Object.entries(cols).map(([id, values]) => ({ id, name: id, shortName: id, values })) } }],
 });
 const ref = (col) => ({ instanceId: 'ws1', sheetId: 's1', columnId: col });
 

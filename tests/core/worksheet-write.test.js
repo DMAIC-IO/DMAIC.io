@@ -3,6 +3,7 @@
  * `ctx.instances.interact` schreiben, Schreibregel je Schritt.
  */
 import { suite, test, assertEqual, assertDeepEqual, assert } from '../test-utils.js';
+import { useStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 import {
   worksheetWrite, commitWorksheetWrite, completeStack, WriteError,
 } from '../../js/core/worksheet-write.js';
@@ -37,7 +38,7 @@ async function caught(fn) {
 /** Store-Attrappe: ein Worksheet `ws1` (Blätter „A“, „B“) und der Aufrufer `tool` in `data`. */
 function fakeStore() {
   const phases = { data: [{ instanceId: 'ws1', moduleId: 'worksheet', order: 0 }, { instanceId: 'tool', moduleId: 'random-generator', order: 1 }] };
-  return {
+  const sm = {
     get(path) {
       if (path === 'phases') return phases;
       if (path.startsWith('phases.')) return phases[path.slice(7)];
@@ -45,6 +46,8 @@ function fakeStore() {
     },
     getModuleState(id) { return id === 'ws1' ? wsState() : null; },
   };
+  useStoredWorksheetReader(sm);
+  return sm;
 }
 
 const WS_REF = { $from: 'ws', path: 'instanceId' };

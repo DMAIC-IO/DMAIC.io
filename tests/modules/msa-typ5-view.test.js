@@ -9,6 +9,7 @@ import Alpine from '../../vendor/alpinejs/csp.js';
 import mod from '../../js/modules/msa-typ5/viewmodel/viewmodel.js';
 import { installWorksheetRevisions } from '../../js/core/worksheet-data.js';
 import { fromExample } from '../../js/modules/msa-typ5/io/example.js';
+import { withStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 
 const ID = 'msa-typ5';
 const TPL_KEY = `js/modules/${ID}/resources/view.html`;
@@ -50,12 +51,12 @@ async function mount(name, editSheet) {
   installWorksheetRevisions(bus);
   const context = {
     instanceId: 'msa5-1',
-    stateManager: {
+    stateManager: withStoredWorksheetReader({
       getModuleState: (id) => states[id] ?? null,
       setModuleState: () => {},
       getProjectCycle: () => 'dmaic',
       get: (k) => ({ phases: { measure: [] }, 'phases.measure': [{ instanceId: 'ws1', moduleId: 'worksheet' }] })[k],
-    },
+    }),
     i18n: { t: (k) => k, tf: () => (k) => k, getLanguage: () => 'de' },
     eventBus: bus,
     chartManager: { create: async () => ({}), update: () => {}, destroy: () => {} },

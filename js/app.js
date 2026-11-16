@@ -32,6 +32,7 @@ import { registerAsyncTaskDirectives } from './core/async-task-directives.js';
 import { registerWidgetDirective } from './core/widget-directive.js';
 import { WIDGETS } from './widgets/registry.js';
 import { installWorksheetRevisions, createWorksheetData } from './core/worksheet-data.js';
+import { registerWorksheetReader } from './core/worksheet-columns.js';
 import { createInstances } from './core/instances.js';
 
 async function init() {
@@ -89,6 +90,8 @@ async function init() {
     stateManager, moduleRegistry, workspace, eventBus,
     createData: () => createWorksheetData(stateManager),
   });
+  // Die Arbeitsblatt-Fassade (ctx.data, worksheet-columns) liest über readSync.
+  registerWorksheetReader(stateManager, instances.readSync);
   workspace.setInstances(instances);
   workspace.render();
 

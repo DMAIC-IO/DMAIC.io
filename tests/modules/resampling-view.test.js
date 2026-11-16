@@ -9,6 +9,7 @@ import Alpine from '../../vendor/alpinejs/csp.js';
 import mod from '../../js/modules/resampling/viewmodel/viewmodel.js';
 import { installWorksheetRevisions } from '../../js/core/worksheet-data.js';
 import { registerAsyncTaskDirectives } from '../../js/core/async-task-directives.js';
+import { withStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 
 const ID = 'resampling';
 const TPL_KEY = `js/modules/${ID}/resources/view.html`;
@@ -20,7 +21,7 @@ const B = [12.9, 13.2, 12.7, 13.0, 12.8, 13.4];
 const sheetWith = (...cols) => ({
   sheets: [{
     id: 's1',
-    state: { columns: cols.map((values, i) => ({ id: `c${i}`, name: `Spalte ${i}`, shortName: `S${i}`, values })) },
+    state: { rowCount: Math.max(0, ...cols.map((v) => v.length)), columns: cols.map((values, i) => ({ id: `c${i}`, name: `Spalte ${i}`, shortName: `S${i}`, values })) },
   }],
 });
 const ref = (i) => ({ instanceId: 'ws1', sheetId: 's1', columnId: `c${i}` });
@@ -86,12 +87,12 @@ async function mount(model, sheets = {}) {
   installWorksheetRevisions(bus);
   const context = {
     instanceId: 'rs-1',
-    stateManager: {
+    stateManager: withStoredWorksheetReader({
       getModuleState: (id) => states[id] ?? null,
       setModuleState: () => {},
       getProjectCycle: () => 'dmaic',
       get: () => undefined,
-    },
+    }),
     i18n: I18N,
     eventBus: bus,
     chartManager: { create: async (el, type, config) => ({ el, type, config: { ...config } }), update: () => {}, destroy: () => {} },

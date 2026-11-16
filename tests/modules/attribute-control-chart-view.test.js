@@ -14,6 +14,7 @@ import { WIDGETS } from '../../js/widgets/registry.js';
 import { checkValue } from '../../js/core/model.js';
 import controlChart from '../../js/widgets/control-chart/schema.js';
 import { WIDGET_I18N } from '../widget-i18n.js';
+import { withStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 
 const ID = 'attribute-control-chart';
 const TPL_KEY = `js/modules/${ID}/resources/view.html`;
@@ -26,7 +27,7 @@ const sheetWith = (...cols) => ({
   sheets: [{
     id: 's1',
     name: 'Blatt',
-    state: { columns: cols.map((values, i) => ({ id: `c${i}`, name: `Spalte ${i}`, type: 'numeric', values })) },
+    state: { rowCount: Math.max(0, ...cols.map((v) => v.length)), columns: cols.map((values, i) => ({ id: `c${i}`, name: `Spalte ${i}`, type: 'numeric', values })) },
   }],
 });
 
@@ -76,7 +77,7 @@ async function mount(model, sheets = {}) {
   };
   const context = {
     instanceId: 'acc-1',
-    stateManager: {
+    stateManager: withStoredWorksheetReader({
       getModuleState: (id) => states[id] ?? null,
       setModuleState: () => {},
       getProjectCycle: () => 'dmaic',
@@ -85,7 +86,7 @@ async function mount(model, sheets = {}) {
         const m = /^phases\.(.+)$/.exec(path);
         return m ? PHASES[m[1]] ?? [] : undefined;
       },
-    },
+    }),
     i18n: {
       t: (k) => k,
       tf: () => (k) => k,

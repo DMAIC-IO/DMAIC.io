@@ -12,6 +12,7 @@
 import {
   suite, test, assertEqual, assertAlmostEqual, assertArrayAlmostEqual,
 } from '../test-utils.js';
+import { useStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 import {
   State, parseConfPercent, formatConfPercent,
 } from '../../js/modules/correlation/correlation-model.js';
@@ -20,11 +21,12 @@ import {
 
 function makeStateManager(columns) {
   // columns: [{ id, name, shortName, type, values }]
+  const rowCount = Math.max(0, ...columns.map((c) => c.values?.length ?? 0));
   const wsState = {
-    sheets: [{ id: 'sheet-1', name: 'Tabelle', state: { columns } }],
+    sheets: [{ id: 'sheet-1', name: 'Tabelle', state: { rowCount, columns } }],
   };
   const phases = { measure: [{ moduleId: 'worksheet', instanceId: 'ws-1' }] };
-  return {
+  const sm = {
     get(path) {
       if (path === 'phases') return phases;
       if (path.startsWith('phases.')) return phases[path.slice('phases.'.length)] ?? [];
@@ -35,6 +37,8 @@ function makeStateManager(columns) {
       return id === 'ws-1' ? wsState : null;
     },
   };
+  useStoredWorksheetReader(sm);
+  return sm;
 }
 
 const REF = (columnId) => ({ instanceId: 'ws-1', sheetId: 'sheet-1', columnId });

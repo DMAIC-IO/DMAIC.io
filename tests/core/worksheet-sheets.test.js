@@ -3,14 +3,22 @@
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { uniqueSheetName, buildInitialWorksheetState } from '../../js/core/worksheet-sheets.js';
+import { registerWorksheetReader } from '../../js/core/worksheet-columns.js';
+import { readWorksheetState } from '../../js/modules/worksheet/worksheet-read.js';
 
 function fakeStateManager(sheetNames) {
   const phases = { data: [{ instanceId: 'w1', moduleId: 'worksheet' }, { instanceId: 's1', moduleId: 'sipoc' }] };
   const modules = { w1: { sheets: sheetNames.map((name, i) => ({ id: `sheet_${i + 1}`, name })) } };
-  return {
+  // Die Fassade liest über den Leser; getModuleState ist tabu.
+  const sm = {
     get: (p) => (p === 'phases' ? phases : phases[p.split('.')[1]]),
-    getModuleState: (id) => modules[id] ?? null,
+    getModuleState: () => { throw new Error('getModuleState must not be called'); },
   };
+  registerWorksheetReader(sm, (id, o) => {
+    if (!modules[id]) { const e = new Error('unknown_instance'); e.code = 'unknown_instance'; throw e; }
+    return readWorksheetState(modules[id], o);
+  });
+  return sm;
 }
 
 suite('core/worksheet-sheets', () => {

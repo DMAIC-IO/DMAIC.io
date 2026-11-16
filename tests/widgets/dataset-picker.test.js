@@ -8,10 +8,11 @@ import { registerFieldDirective } from '../../js/core/field-directive.js';
 import { WIDGETS } from '../../js/widgets/registry.js';
 import { defineModel, datasets, columnRef } from '../../js/core/model.js';
 import { mount as mountColumnPicker } from '../../js/widgets/column-picker/mount.js';
+import { withStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 
 const flush = () => new Promise((r) => setTimeout(r, 0));
 
-const worksheet = { sheets: [{ id: 's1', name: 'Eins', state: { columns: [
+const worksheet = { sheets: [{ id: 's1', name: 'Eins', state: { rowCount: 3, columns: [
   { id: 'a', shortName: 'C1', type: 'numeric', values: [1, 2, 3] },
   { id: 'b', shortName: 'C2', type: 'numeric', values: [4, 5, 6] },
   { id: 'g', shortName: 'C3', type: 'text', values: ['x', 'y', 'x'] },
@@ -19,14 +20,14 @@ const worksheet = { sheets: [{ id: 's1', name: 'Eins', state: { columns: [
 const phases = { data: [{ moduleId: 'worksheet', instanceId: 'ws-1' }] };
 const ref = (c) => ({ instanceId: 'ws-1', sheetId: 's1', columnId: c });
 
-const stateManager = {
+const stateManager = withStoredWorksheetReader({
   get(path) {
     if (path === 'phases') return phases;
     if (path.startsWith('phases.')) return phases[path.slice(7)] ?? [];
     return undefined;
   },
   getModuleState: (id) => (id === 'ws-1' ? worksheet : null),
-};
+});
 
 const Slots = { valueRef: columnRef({ types: ['numeric'], required: true }), groupRef: columnRef({ group: true }) };
 const Multi = defineModel({ fields: { datasets: datasets(Slots, { multi: true, colors: ['#ff0000', '#00ff00'] }) } });

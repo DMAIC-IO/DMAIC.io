@@ -15,6 +15,7 @@ import { snapshotOf } from '../../../js/modules/doe-planner/domain/experiment.js
 import { generateDesign } from '../../../js/engines/doe-planner-engine.js';
 import { uid } from '../../../js/core/uid.js';
 import { buildInitialWorksheetState } from '../../../js/core/worksheet-sheets.js';
+import { withStoredWorksheetReader } from '../../helpers/worksheet-reader.js';
 
 const ID = 'doe-planner';
 const TPL_KEY = `js/modules/${ID}/resources/view.html`;
@@ -200,7 +201,7 @@ async function mount(model = null) {
   const context = {
     instances: { interact: layer.interact, list, read: async () => ({}) },
     instanceId: PLANNER,
-    stateManager: {
+    stateManager: withStoredWorksheetReader({
       get(path) {
         if (path === 'phases') return store.phases;
         if (path.startsWith('phases.')) return store.phases[path.slice(7)];
@@ -212,7 +213,7 @@ async function mount(model = null) {
       removeModuleState: (id) => { delete store.states[id]; },
       getProjectCycle: () => 'dmaic',
       isCompleted: () => false,
-    },
+    }),
     i18n: { t: (k) => k, tf: () => tf, getLanguage: () => 'de' },
     eventBus: bus,
     notify: (msg, type) => notes.push([msg, type]),

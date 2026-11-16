@@ -19,6 +19,7 @@ import capabilityTile from '../../js/modules/process-capability/process-capabili
 import attrSpcTile from '../../js/modules/attribute-control-chart/tile/tile.js';
 import { disposeTile } from '../../js/pages/dashboard/tile-render.js';
 import { createWorksheetData } from '../../js/core/worksheet-data.js';
+import { withStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { registerWidgetDirective } from '../../js/core/widget-directive.js';
 import { registerFitDirective } from '../../js/core/fit-directive.js';
@@ -576,8 +577,8 @@ suite('dashboard tiles: raci', () => {
 });
 
 function fakeStateManager(values) {
-  const ws = { sheets: [{ id: 's', name: 'S', state: { columns: [{ id: 'c', name: 'Measure', values }] } }] };
-  return { get: () => null, getModuleState: (id) => (id === 'ws' ? ws : null) };
+  const ws = { sheets: [{ id: 's', name: 'S', state: { rowCount: values.length, columns: [{ id: 'c', name: 'Measure', values }] } }] };
+  return withStoredWorksheetReader({ get: () => null, getModuleState: (id) => (id === 'ws' ? ws : null) });
 }
 const SPC_STATE = { chartTypeId: 'i-mr', subgroupSize: 1, baselineCount: null,
   columnRef: { instanceId: 'ws', sheetId: 's', columnId: 'c' }, usl: null, lsl: null };
@@ -1270,16 +1271,17 @@ const ATTR_N = { instanceId: 'w', sheetId: 's', columnId: 'n' };
 
 /** stateManager stand-in: one worksheet `w` in phase control, serving the given columns. */
 function columnStateManager(cols) {
-  return {
+  const rowCount = Math.max(0, ...Object.values(cols).map((v) => v.length));
+  return withStoredWorksheetReader({
     getModuleState: (id) => (id === 'w' ? {
-      sheets: [{ id: 's', name: 'S', state: { columns: Object.entries(cols).map(([cid, values]) => ({ id: cid, name: cid, type: 'numeric', values })) } }],
+      sheets: [{ id: 's', name: 'S', state: { rowCount, columns: Object.entries(cols).map(([cid, values]) => ({ id: cid, name: cid, type: 'numeric', values })) } }],
     } : null),
     get: (p) => {
       if (p === 'phases') return { control: [{ instanceId: 'w', moduleId: 'worksheet' }] };
       if (p === 'phases.control') return [{ instanceId: 'w', moduleId: 'worksheet' }];
       return null;
     },
-  };
+  });
 }
 
 /** Render args of the attribute tile: the worksheet reaches the view block only through `data`. */

@@ -3,21 +3,22 @@
  */
 import { suite, test, assertEqual, afterEach } from '../test-utils.js';
 import { DatasetPicker } from '../../js/ui/dataset-picker.js';
+import { withStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 
 function makeContext() {
-  const ws = { sheets: [{ id: 's1', name: 'Eins', state: { columns: [
+  const ws = { sheets: [{ id: 's1', name: 'Eins', state: { rowCount: 3, columns: [
     { id: 'a', shortName: 'C1', type: 'numeric', values: [1, 2, 3] },
   ] } }] };
   const phases = { data: [{ moduleId: 'worksheet', instanceId: 'ws-1' }] };
   return {
-    stateManager: {
+    stateManager: withStoredWorksheetReader({
       get(path) {
         if (path === 'phases') return phases;
         if (path.startsWith('phases.')) return phases[path.slice(7)] ?? [];
         return undefined;
       },
       getModuleState: (id) => (id === 'ws-1' ? ws : null),
-    },
+    }),
     eventBus: { on() {}, off() {} },
     i18n: { t: (k) => k },
   };

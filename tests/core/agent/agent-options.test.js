@@ -2,16 +2,17 @@
  * Tests for core/agent/agent-options.js — pickableColumnList mit `filter`, targetColumnList.
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
+import { useStoredWorksheetReader } from '../../helpers/worksheet-reader.js';
 import { pickableColumnList, targetColumnList } from '../../../js/core/agent/agent-options.js';
 
 /** StateManager-Attrappe in der Form, die discoverColumns liest. */
 function smWithTwoColumns() {
-  const ws = { sheets: [{ id: 's1', name: 'Blatt', state: { columns: [
+  const ws = { sheets: [{ id: 's1', name: 'Blatt', state: { rowCount: 3, columns: [
     { id: 'a', shortName: 'C1', type: 'numeric', values: [1, 2, 3] },
     { id: 'b', shortName: 'C2', type: 'numeric', values: [4, 5, 6] },
   ] } }] };
   const phases = { data: [{ moduleId: 'worksheet', instanceId: 'ws-1' }] };
-  return {
+  const sm = {
     get(path) {
       if (path === 'phases') return phases;
       if (path.startsWith('phases.')) return phases[path.slice(7)] ?? [];
@@ -19,6 +20,8 @@ function smWithTwoColumns() {
     },
     getModuleState: (id) => (id === 'ws-1' ? ws : null),
   };
+  useStoredWorksheetReader(sm);
+  return sm;
 }
 
 suite('agent-options pickableColumnList', () => {

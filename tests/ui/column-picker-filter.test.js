@@ -3,29 +3,30 @@
  */
 import { suite, test, assertEqual, afterEach } from '../test-utils.js';
 import { ColumnPicker } from '../../js/ui/column-picker.js';
+import { withStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 
 function makeContext() {
   const ws = {
     sheets: [
-      { id: 's1', name: 'Eins', state: { columns: [
+      { id: 's1', name: 'Eins', state: { rowCount: 2, columns: [
         { id: 'a', shortName: 'C1', type: 'numeric', values: [1, 2] },
         { id: 'b', shortName: 'C2', type: 'text', values: ['x', 'y'] },
       ] } },
-      { id: 's2', name: 'Zwei', state: { columns: [
+      { id: 's2', name: 'Zwei', state: { rowCount: 1, columns: [
         { id: 'c', shortName: 'C1', type: 'numeric', values: [3] },
       ] } },
     ],
   };
   const phases = { data: [{ moduleId: 'worksheet', instanceId: 'ws-1' }] };
   return {
-    stateManager: {
+    stateManager: withStoredWorksheetReader({
       get(path) {
         if (path === 'phases') return phases;
         if (path.startsWith('phases.')) return phases[path.slice(7)] ?? [];
         return undefined;
       },
       getModuleState: (id) => (id === 'ws-1' ? ws : null),
-    },
+    }),
     eventBus: { on() {}, off() {} },
     i18n: { t: (k) => k },
   };

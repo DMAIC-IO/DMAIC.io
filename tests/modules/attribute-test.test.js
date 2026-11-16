@@ -165,10 +165,12 @@ suite('attribute-test input — stale event value', () => {
 });
 
 import { State, TEST_KINDS } from '../../js/modules/attribute-test/attribute-test-model.js';
+import { useStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 import { buildReport, fmtP, fmtRate } from '../../js/modules/attribute-test/attribute-test-report.js';
 
 suite('attribute-test column ref resolution', () => {
-  const sm = { getModuleState: (id) => id === 'w' ? { sheets: [{ id: 's', state: { columns: [{ id: 'c1', values: ['a', 'b'] }] } }] } : null };
+  const sm = { getModuleState: (id) => id === 'w' ? { sheets: [{ id: 's', state: { rowCount: 2, columns: [{ id: 'c1', values: ['a', 'b'] }] } }] } : null };
+  useStoredWorksheetReader(sm);
   test('resolved ref returns the values', () => {
     assertDeepEqual(columnValuesOrNull(sm, { instanceId: 'w', sheetId: 's', columnId: 'c1' }), ['a', 'b']);
   });

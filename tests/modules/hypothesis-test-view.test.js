@@ -16,6 +16,25 @@ import probabilityPlotChart from '../../js/widgets/probability-plot-chart/schema
 import histogramChart from '../../js/widgets/histogram-chart/schema.js';
 import { residualCharts } from '../../js/modules/hypothesis-test/viewmodel/present.js';
 import { WIDGET_I18N } from '../widget-i18n.js';
+import { registerWorksheetReader } from '../../js/core/worksheet-columns.js';
+import { readWorksheetState } from '../../js/modules/worksheet/worksheet-read.js';
+
+/**
+ * Leser wie `useStoredWorksheetReader`, aber `wsBad` liefert ein Lesen, das
+ * beim Zugriff wirft: Leserfehler fängt die Fassade ab (`null`), so wirft
+ * die Ableitung trotzdem.
+ * @param {object} sm
+ * @returns {object}
+ */
+function withBrokenSheetReader(sm) {
+  registerWorksheetReader(sm, (id, o) => {
+    if (id === 'wsBad') return { get columns() { throw new Error('Blatt kaputt'); } };
+    const saved = sm.getModuleState(id);
+    if (saved == null) throw Object.assign(new Error('unknown_instance'), { code: 'unknown_instance' });
+    return readWorksheetState(saved, o);
+  });
+  return sm;
+}
 
 const ID = 'hypothesis-test';
 const TPL_KEY = `js/modules/${ID}/resources/view.html`;
@@ -27,7 +46,7 @@ const C = [11.0, 11.6, 10.7, 11.2, 11.1, 11.5];
 const sheetWith = (...cols) => ({
   sheets: [{
     id: 's1',
-    state: { columns: cols.map((values, i) => ({ id: `c${i}`, name: `Spalte ${i}`, shortName: `S${i}`, values })) },
+    state: { rowCount: Math.max(0, ...cols.map((v) => v.length)), columns: cols.map((values, i) => ({ id: `c${i}`, name: `Spalte ${i}`, shortName: `S${i}`, values })) },
   }],
 });
 const ref = (i, instanceId = 'ws1') => ({ instanceId, sheetId: 's1', columnId: `c${i}` });
@@ -79,15 +98,12 @@ async function mount(model, sheets = {}, settings = {}) {
   };
   const context = {
     instanceId: 'ht-1',
-    stateManager: {
-      getModuleState: (id) => {
-        if (id === 'wsBad') throw new Error('Blatt kaputt');
-        return states[id] ?? null;
-      },
+    stateManager: withBrokenSheetReader({
+      getModuleState: (id) => states[id] ?? null,
       setModuleState: () => {},
       getProjectCycle: () => 'dmaic',
       get: (k) => settings[k],
-    },
+    }),
     i18n: {
       t: (k) => k,
       tf: () => (k, p) => (p && p.message ? `${k}|${p.message}` : k),

@@ -12,6 +12,7 @@ import { registerWidgetDirective } from '../../js/core/widget-directive.js';
 import { WIDGETS } from '../../js/widgets/registry.js';
 import { CHART_COLORS_RGBA } from '../../js/core/chart/chart-colors.js';
 import { WIDGET_I18N } from '../widget-i18n.js';
+import { withStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 
 const ID = 'histogram';
 const TPL_KEY = `js/modules/${ID}/resources/view.html`;
@@ -28,7 +29,7 @@ const fill = (s, p) => (p ? s.replace(/\{(\w+)\}/g, (_, k) => String(p[k])) : s)
 const sheetWith = (...cols) => ({
   sheets: [{
     id: 's1',
-    state: { columns: cols.map((values, i) => ({ id: `c${i}`, name: `Spalte ${i}`, shortName: `S${i}`, values })) },
+    state: { rowCount: Math.max(0, ...cols.map((v) => v.length)), columns: cols.map((values, i) => ({ id: `c${i}`, name: `Spalte ${i}`, shortName: `S${i}`, values })) },
   }],
 });
 const ref = (i, instanceId = 'ws1') => ({ instanceId, sheetId: 's1', columnId: `c${i}` });
@@ -80,12 +81,12 @@ async function mount(model, sheets = {}) {
   };
   const context = {
     instanceId: 'hist-1',
-    stateManager: {
+    stateManager: withStoredWorksheetReader({
       getModuleState: (id) => states[id] ?? null,
       setModuleState: () => {},
       getProjectCycle: () => 'dmaic',
       get: () => undefined,
-    },
+    }),
     i18n: {
       t: (k) => k,
       tf: () => (k, p) => (Object.hasOwn(TEXTS, k) ? fill(TEXTS[k], p) : k),

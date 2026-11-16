@@ -3,18 +3,19 @@
  * die Zeilenprüfung für setDatasets.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../../test-utils.js';
+import { useStoredWorksheetReader } from '../../helpers/worksheet-reader.js';
 import { datasetSlotColumns, requireDatasetRows } from '../../../js/core/agent/agent-datasets.js';
 import { slotFilter } from '../../../js/ui/dataset-picker.js';
 
 /** StateManager-Attrappe: zwei Zahlenspalten, eine Textspalte. */
 function smWithColumns() {
-  const ws = { sheets: [{ id: 's1', name: 'Blatt', state: { columns: [
+  const ws = { sheets: [{ id: 's1', name: 'Blatt', state: { rowCount: 3, columns: [
     { id: 'a', shortName: 'C1', type: 'numeric', values: [1, 2, 3] },
     { id: 'b', shortName: 'C2', type: 'numeric', values: [4] },
     { id: 'c', shortName: 'C3', type: 'text', values: ['x', 'y', 'z'] },
   ] } }] };
   const phases = { data: [{ moduleId: 'worksheet', instanceId: 'ws-1' }] };
-  return {
+  const sm = {
     get(path) {
       if (path === 'phases') return phases;
       if (path.startsWith('phases.')) return phases[path.slice(7)] ?? [];
@@ -22,6 +23,8 @@ function smWithColumns() {
     },
     getModuleState: (id) => (id === 'ws-1' ? ws : null),
   };
+  useStoredWorksheetReader(sm);
+  return sm;
 }
 
 const SLOTS = [

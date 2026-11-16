@@ -8,16 +8,20 @@
  * structuredClone-safety of the persisted shape.
  */
 import { suite, test, assertEqual, assertAlmostEqual } from '../test-utils.js';
+import { useStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 import { State, predictFor } from '../../js/modules/glm-regression/glm-regression-model.js';
 import { fitGLM, predictGLM } from '../../js/engines/glm-engine.js';
 
 // ── Minimal fake stateManager exposing one worksheet ────────────────
 function makeSM(columns) {
   // columns: [{ id, name, type, values }]
-  const ws = { sheets: [{ id: 'sheet-1', name: 'S1', state: { columns } }] };
-  return {
+  const rowCount = Math.max(0, ...columns.map((c) => c.values?.length ?? 0));
+  const ws = { sheets: [{ id: 'sheet-1', name: 'S1', state: { rowCount, columns } }] };
+  const sm = {
     getModuleState: (id) => (id === 'inst-1' ? ws : null),
   };
+  useStoredWorksheetReader(sm);
+  return sm;
 }
 const ref = (columnId) => ({ instanceId: 'inst-1', sheetId: 'sheet-1', columnId });
 

@@ -4,11 +4,13 @@
  * DOM-free helpers for creating worksheets from outside the worksheet module:
  * a collision-free sheet name and the initial worksheet state.
  */
+import { readWorksheet } from './worksheet-columns.js';
 
 /**
  * Generate a unique sheet name by appending a number if necessary.
  * Collects all existing sheet names across all worksheets and ensures
- * the returned name does not collide.
+ * the returned name does not collide. Reads the sheet names through the
+ * registered worksheet reader (`readWorksheet`, `fields: ['sheets']`).
  * @param {Object} stateManager
  * @param {string} baseName — Desired name (e.g. "Tabelle" or "Sheet")
  * @returns {string} — e.g. "Tabelle", "Tabelle 1", "Tabelle 2", …
@@ -19,9 +21,8 @@ export function uniqueSheetName(stateManager, baseName) {
     const instances = stateManager.get(`phases.${phase}`) ?? [];
     for (const inst of instances) {
       if (inst.moduleId !== 'worksheet') continue;
-      const ws = stateManager.getModuleState(inst.instanceId);
-      if (!ws?.sheets) continue;
-      for (const sheet of ws.sheets) {
+      const ws = readWorksheet(stateManager, inst.instanceId, { fields: ['sheets'] });
+      for (const sheet of ws?.sheets ?? []) {
         existing.add(sheet.name);
       }
     }
