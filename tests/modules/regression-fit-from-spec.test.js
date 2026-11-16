@@ -18,6 +18,7 @@
 
 import { suite, test, assertAlmostEqual, assertEqual } from '../test-utils.js';
 import { State } from '../../js/modules/regression/regression-model.js';
+import { useStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 import { runMultiRegression } from '../../js/engines/regression-engine.js';
 
 // ─── Stub harness ──────────────────────────────────────────────────
@@ -27,12 +28,13 @@ function makeStub({ columns, polyDegree = 2, excludedTerms = [], confLevel = 0.9
   const wsInstanceId = 'ws-1';
   const sheetId = 'sheet-1';
   const moduleStates = new Map();
-  moduleStates.set(wsInstanceId, { sheets: [{ id: sheetId, state: { columns } }] });
+  moduleStates.set(wsInstanceId, { sheets: [{ id: sheetId, state: { rowCount: Math.max(0, ...columns.map(c => c.values?.length ?? 0)), columns } }] });
   const sm = {
     get() { return null; },
     getModuleState: (id) => moduleStates.get(id) ?? null,
     setModuleState() {},
   };
+  useStoredWorksheetReader(sm);
   const state = new State();
   state.polyDegree = polyDegree;
   state.confLevel = confLevel;

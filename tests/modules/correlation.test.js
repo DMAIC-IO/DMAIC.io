@@ -10,8 +10,10 @@
  */
 
 import {
-  suite, test, assertEqual, assertAlmostEqual, assertArrayAlmostEqual,
+  suite, test, assertEqual, assertDeepEqual, assertAlmostEqual, assertArrayAlmostEqual,
 } from '../test-utils.js';
+import { registerWorksheetReader } from '../../js/core/worksheet-columns.js';
+import { readWorksheetState } from '../../js/modules/worksheet/worksheet-read.js';
 import { useStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 import {
   State, parseConfPercent, formatConfPercent,
@@ -273,6 +275,18 @@ suite('Correlation Model — discovery & compute', () => {
     ]);
     const cols = new State().discoverColumns(sm);
     assertEqual(cols.length, 0);
+  });
+
+  test('discoverColumns liest über den Leser, nicht über getModuleState', () => {
+    const ref = numericSM();
+    const expected = new State().discoverColumns(ref);
+    const stored = ref.getModuleState('ws-1');
+    const sm = {
+      get: ref.get,
+      getModuleState() { throw new Error('getModuleState darf nicht gelesen werden'); },
+    };
+    registerWorksheetReader(sm, (id, o) => readWorksheetState(stored, o));
+    assertDeepEqual(new State().discoverColumns(sm), expected);
   });
 
   test('hasWorksheet reflects worksheet presence', () => {

@@ -16,7 +16,7 @@ import {
   fisherCI, spearmanCI, kendallCI, pFromT, kendallPValue,
 } from '../../engines/correlation-engine.js';
 import { getColumnName } from '../../ui/column-picker.js';
-import { resolveColumnRef } from '../../core/worksheet-columns.js';
+import { resolveColumnRef, getColumnRawValues, discoverColumns as coreDiscoverColumns } from '../../core/worksheet-columns.js';
 import { parseDecimalInput } from '../../core/parse-decimal.js';
 
 /** Die Korrelationsmethoden der Matrix; einzige Quelle für Prüfer und Auswahl. */
@@ -179,32 +179,20 @@ export class State {
   discoverColumns(sm) {
     if (!sm) return [];
     const columns = [];
-    for (const phase of Object.keys(sm.get('phases') || {})) {
-      const instances = sm.get(`phases.${phase}`) ?? [];
-      for (const inst of instances) {
-        if (inst.moduleId !== 'worksheet') continue;
-        const ws = sm.getModuleState(inst.instanceId);
-        if (!ws?.sheets) continue;
-        for (const sheet of ws.sheets) {
-          if (!sheet.state?.columns) continue;
-          for (const col of sheet.state.columns) {
-            if (!CORR_TYPES.has(col.type)) continue;
-            const numericCount = (col.values || [])
-              .filter(v => this.toNumeric(v, col.type) !== null).length;
-            if (numericCount < 5) continue;
-            columns.push({
-              instanceId: inst.instanceId,
-              sheetId: sheet.id,
-              sheetName: sheet.name,
-              columnId: col.id,
-              columnName: col.name || '',
-              shortName: col.shortName || '?',
-              valueCount: numericCount,
-              colType: col.type,
-            });
-          }
-        }
-      }
+    for (const col of coreDiscoverColumns(sm, { types: [...CORR_TYPES] })) {
+      const numericCount = getColumnRawValues(sm, col)
+        .filter(v => this.toNumeric(v, col.type) !== null).length;
+      if (numericCount < 5) continue;
+      columns.push({
+        instanceId: col.instanceId,
+        sheetId: col.sheetId,
+        sheetName: col.sheetName,
+        columnId: col.columnId,
+        columnName: col.columnName,
+        shortName: col.shortName,
+        valueCount: numericCount,
+        colType: col.type,
+      });
     }
     return columns;
   }

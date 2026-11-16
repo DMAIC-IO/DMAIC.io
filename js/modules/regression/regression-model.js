@@ -22,6 +22,7 @@ import {
   compileModelSpec, estimableTerms, predictMulti, predictValue,
 } from '../../engines/regression-engine.js';
 import { defaultActiveTerms, quadTermId, parseTermId, compareTermIds } from '../../engines/doe-terms.js';
+import { resolveColumnRef } from '../../core/worksheet-columns.js';
 import { tInv } from '../../engines/math-utils.js';
 import { refToKey, keyToRef } from '../../ui/column-picker.js';
 
@@ -256,11 +257,7 @@ export class State {
 
   resolveColumn(sm, ref) {
     if (!ref) return null;
-    const ws = sm.getModuleState(ref.instanceId);
-    if (!ws?.sheets) return null;
-    const sheet = ws.sheets.find(s => s.id === ref.sheetId);
-    if (!sheet?.state?.columns) return null;
-    return sheet.state.columns.find(c => c.id === ref.columnId) || null;
+    return resolveColumnRef(sm, ref);
   }
 
   getRawNumericValues(sm, ref) {

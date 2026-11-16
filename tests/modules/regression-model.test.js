@@ -14,18 +14,23 @@ import {
   runMultiRegression, confidenceBand, predictionBand, predictMulti,
 } from '../../js/engines/regression-engine.js';
 
+import { useStoredWorksheetReader } from '../helpers/worksheet-reader.js';
+import { registerWorksheetReader } from '../../js/core/worksheet-columns.js';
+import { readWorksheetState } from '../../js/modules/worksheet/worksheet-read.js';
+
 // ── Stub stateManager with a synthetic worksheet ───────────────────
 
 function makeSM({ columns }) {
   const wsInstanceId = 'ws-1';
   const sheetId = 'sheet-1';
   const moduleStates = new Map();
-  moduleStates.set(wsInstanceId, { sheets: [{ id: sheetId, state: { columns } }] });
+  moduleStates.set(wsInstanceId, { sheets: [{ id: sheetId, state: { rowCount: Math.max(0, ...columns.map(c => c.values?.length ?? 0)), columns } }] });
   const sm = {
     get() { return null; },
     getModuleState: (id) => moduleStates.get(id) ?? null,
     setModuleState() {},
   };
+  useStoredWorksheetReader(sm);
   return { sm, wsInstanceId, sheetId };
 }
 function colRef(instanceId, sheetId, columnId) { return { instanceId, sheetId, columnId }; }
@@ -172,6 +177,16 @@ suite('Regression Model — value reads', () => {
     const s = new State();
     const vals = s.getRawNumericValues(sm, colRef(wsInstanceId, sheetId, 'c'));
     assertEqual(JSON.stringify(vals), JSON.stringify([-1, 1, -1]));
+  });
+
+  test('getRawNumericValues liest über den Leser, nicht über getModuleState', () => {
+    const { sm: ref, wsInstanceId, sheetId } = makeSM({
+      columns: [{ id: 'c', name: 'X', type: 'numeric', values: [1, 2, 3] }],
+    });
+    const stored = ref.getModuleState(wsInstanceId);
+    const sm = { get() { return null; }, getModuleState() { throw new Error('nicht lesen'); } };
+    registerWorksheetReader(sm, (id, o) => readWorksheetState(stored, o));
+    assertEqual(JSON.stringify(new State().getRawNumericValues(sm, colRef(wsInstanceId, sheetId, 'c'))), '[1,2,3]');
   });
 
   test('getColumnDescriptor classifies categorical vs continuous', () => {
