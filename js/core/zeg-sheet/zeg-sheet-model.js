@@ -207,6 +207,122 @@ export function buildSheetState(prevState, rows, phaseIds, labels) {
   };
 }
 
+/** Id of the `writeColumns` action in a planned stack; later actions refer to it. */
+const WRITE_ID = 'write';
+
+/**
+ * Column meta without unset keys: `read()` reports missing keys as null.
+ * @param {object|null|undefined} meta
+ * @returns {object}
+ */
+function cleanMeta(meta) {
+  return Object.fromEntries(Object.entries(meta || {}).filter(([, v]) => v !== null && v !== undefined));
+}
+
+/** Cell array padded to `n` entries, missing cells as null. */
+function cells(arr, n) {
+  return Array.from({ length: n }, (_, i) => arr?.[i] ?? null);
+}
+
+/** True if two values serialize the same (cells, formulas, meta). */
+function same(a, b) {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
+/**
+ * True if the sheet already shows the target: same column ids in the same
+ * order, same values, formulas, meta and row count.
+ * @param {{columns: object[], rowCount: number}} prev
+ * @param {{columns: object[], rowCount: number}} next
+ * @returns {boolean}
+ */
+function sheetMatches(prev, next) {
+  const a = prev.columns || [];
+  const b = next.columns || [];
+  if (prev.rowCount !== next.rowCount || a.length !== b.length) return false;
+  const n = next.rowCount;
+  return b.every((col, i) => col.id === a[i].id
+    && same(cells(col.values, n), cells(a[i].values, n))
+    && same(cells(col.formulas, n), cells(a[i].formulas, n))
+    && same(cleanMeta(col.meta), cleanMeta(a[i].meta)));
+}
+
+/**
+ * Plan the agent stack that turns the ZEG sheet `prev` into `next` (from
+ * `buildSheetState`): `instance.call`s on the worksheet, in this order —
+ * one `writeColumns` (id `'write'`) for all target columns (existing ones
+ * by id, new ones appended with name, type and format); `setColumnMeta`
+ * per new column (its id as a reference into the write result) and per
+ * existing column whose meta changed; `removeColumn` per dropped column;
+ * `moveColumn` per column off its target index; `removeRows` for surplus
+ * rows; `setFormula` per formula cell (`writeColumns` clears formulas).
+ * Empty if the sheet already matches. Pure.
+ *
+ * Columns are sheet-state shaped: `{ id, name, type, format, meta, values,
+ * formulas? }` with per-column `values`/`formulas` arrays.
+ * @param {string} instanceId the worksheet instance
+ * @param {string} sheetId the ZEG sheet
+ * @param {{columns: object[], rowCount: number}} prev the sheet as read
+ * @param {{columns: object[], rowCount: number}} next the target state
+ * @returns {object[]} the stack, `[]` if nothing differs
+ */
+export function planZegStack(instanceId, sheetId, prev, next) {
+  if (sheetMatches(prev, next)) return [];
+  const call = (method, args, id) => ({
+    op: 'instance.call', ...(id ? { id } : {}), instance: instanceId, module: 'worksheet', method, args,
+  });
+  const prevCols = prev.columns || [];
+  const prevById = new Map(prevCols.map(c => [c.id, c]));
+  const n = next.rowCount;
+
+  // 1. Schreiben: neue Spalten hängen hinten an, ihre Id kommt als Referenz.
+  const ref = new Map();
+  const entries = next.columns.map((col, i) => {
+    const values = cells(col.values, n);
+    if (prevById.has(col.id)) return { to: col.id, values };
+    ref.set(col.id, { $from: WRITE_ID, path: `value.${i}` });
+    return { to: 'append', name: col.name, type: col.type, format: col.format ?? {}, values };
+  });
+  const target = (col) => ref.get(col.id) ?? col.id;
+  const stack = [call('writeColumns', [sheetId, entries], WRITE_ID)];
+
+  // 2. Merkmale: neue Spalten immer, bestehende bei Abweichung.
+  for (const col of next.columns) {
+    const meta = cleanMeta(col.meta);
+    const old = prevById.get(col.id);
+    if (old ? same(meta, cleanMeta(old.meta)) : Object.keys(meta).length === 0) continue;
+    stack.push(call('setColumnMeta', [sheetId, target(col), Object.keys(meta).length ? meta : null]));
+  }
+
+  // 3. Weggefallene Spalten.
+  const nextIds = new Set(next.columns.map(c => c.id));
+  for (const col of prevCols) {
+    if (!nextIds.has(col.id)) stack.push(call('removeColumn', [sheetId, col.id]));
+  }
+
+  // 4. Reihenfolge: nach dem Schreiben stehen neue Spalten hinten.
+  const order = [...prevCols.filter(c => nextIds.has(c.id)).map(c => c.id),
+    ...next.columns.filter(c => ref.has(c.id)).map(c => c.id)];
+  next.columns.forEach((col, i) => {
+    if (order[i] === col.id) return;
+    order.splice(order.indexOf(col.id), 1);
+    order.splice(i, 0, col.id);
+    stack.push(call('moveColumn', [sheetId, target(col), i]));
+  });
+
+  // 5. Überzählige Zeilen.
+  const prevRows = prev.rowCount ?? 0;
+  if (n < prevRows) stack.push(call('removeRows', [sheetId, n, prevRows - n]));
+
+  // 6. Formeln, die `writeColumns` gelöscht hat.
+  for (const col of next.columns) {
+    cells(col.formulas, n).forEach((f, row) => {
+      if (typeof f === 'string' && f !== '') stack.push(call('setFormula', [sheetId, target(col), row, f]));
+    });
+  }
+  return stack;
+}
+
 /**
  * For each new row, the old row index whose user cells it takes (null: none).
  * Old rows are matched by date; unmatched old rows that hold user data, and

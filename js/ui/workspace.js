@@ -125,7 +125,7 @@ export class Workspace {
     this._router = null;
     /** @type {import('../core/instances.js').InstancesService|null} (set via setInstances) */
     this._instanceService = null;
-    /** @type {((stack: object[], caller: { instanceId: string, moduleId: string }) => Promise<object>)|null} (set via setModuleInteract) */
+    /** @type {((stack: object[], caller: { instanceId: string|null, moduleId: string }) => Promise<object>)|null} (set via setModuleInteract) */
     this._moduleInteract = null;
   }
 
@@ -145,9 +145,35 @@ export class Workspace {
   /**
    * Den Stapelweg der Agentenfläche für Module verdrahten
    * (`ctx.instances.interact`). Vor dem Setzen meldet `interact` `surface_failed`.
-   * @param {(stack: object[], caller: { instanceId: string, moduleId: string }) => Promise<object>} fn
+   * @param {(stack: object[], caller: { instanceId: string|null, moduleId: string }) => Promise<object>} fn
    */
   setModuleInteract(fn) { this._moduleInteract = fn; }
+
+  /**
+   * Einen Stapel für einen Kerndienst (etwa die ZEG-Synchronisation) über die
+   * Agentenfläche schicken. Ohne Aufrufer-Instanz: `module.add` eines
+   * Arbeitsblatts geht damit nur in die Datenphase.
+   * @param {object[]} stack die Aktionen
+   * @param {string} source Name des Kerndiensts, als `moduleId` des Aufrufers
+   * @returns {Promise<object>} die Antwort der Fläche; `surface_failed`,
+   *   solange sie nicht verdrahtet ist
+   */
+  interactAsKernel(stack, source) {
+    return this._interactAs(stack, { instanceId: null, moduleId: source });
+  }
+
+  /**
+   * Gemeinsamer Stapelweg für Module und Kerndienste.
+   * @param {object[]} stack
+   * @param {{ instanceId: string|null, moduleId: string }} caller
+   * @returns {Promise<object>}
+   */
+  async _interactAs(stack, caller) {
+    if (!this._moduleInteract) {
+      return { ok: false, error: 'surface_failed', message: 'Agent surface not ready' };
+    }
+    return this._moduleInteract(stack, caller);
+  }
 
   /**
    * Render the workspace shell.
@@ -936,12 +962,7 @@ export class Workspace {
     const svc = this._instanceService;
     // Lesen direkt; Schreiben nur als Stapel über die Agentenfläche, mit
     // gebundenem Aufrufer. Das Verdrahten kann später erfolgen als der Mount.
-    const interact = async (stack) => {
-      if (!this._moduleInteract) {
-        return { ok: false, error: 'surface_failed', message: 'Agent surface not ready' };
-      }
-      return this._moduleInteract(stack, { instanceId, moduleId });
-    };
+    const interact = (stack) => this._interactAs(stack, { instanceId, moduleId });
     return {
       instanceId,
       instances: svc ? Object.freeze({ list: svc.list, read: svc.read, readSync: svc.readSync, interact }) : undefined,

@@ -1813,6 +1813,34 @@ suite('agent runtime — interactAsModule (Modulweg)', () => {
     assertDeepEqual(protocol, ['outer-op-start', 'outer-op-end', 'flush', 'inner-done']);
   });
 
+  test('a kernel call (no caller instance) during an op without target instance is queued', async () => {
+    const protocol = [];
+    let pending = null;
+    let made;
+    made = makeRuntime({
+      primed: true, instances: [WS1],
+      stateManager: { flushNow: async () => { protocol.push('flush'); } },
+      getHelp: async () => {
+        protocol.push('outer-op-start');
+        // `module.describe` hat kein Ziel: die laufende Op trägt instanceId null.
+        pending = made.runtime.interactAsModule([
+          { op: 'instance.call', module: 'worksheet', instance: 'ws1', method: 'read' },
+        ], { instanceId: null, moduleId: 'zeg-sheet' }).then((r) => { protocol.push('inner-done'); return r; });
+        await tick(10);
+        protocol.push('outer-op-end');
+        return null;
+      },
+      viewmodel: () => ({ read: () => ({}) }),
+    });
+    const out = await made.runtime.interact([{ op: 'module.describe', module: 'worksheet' }])
+      .then((r) => { protocol.push('outer-done'); return r; });
+    assertEqual(out.ok, true, JSON.stringify(out));
+    const inner = await pending;
+    assertEqual(inner.ok, true, JSON.stringify(inner));
+    // Eingereiht: der Kernstapel läuft erst nach dem äußeren Lauf, nicht in ihm.
+    assertDeepEqual(protocol, ['outer-op-start', 'outer-op-end', 'outer-done', 'inner-done']);
+  });
+
   test('module may not call viewmodel command of converted target', async () => {
     const registry = {
       worksheet: { ...REGISTRY.worksheet,

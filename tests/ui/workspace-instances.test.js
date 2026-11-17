@@ -117,3 +117,25 @@ suite('workspace live viewmodels', () => {
     }
   });
 });
+
+suite('workspace interactAsKernel', () => {
+  test('schickt den Stapel ohne Aufrufer-Instanz, mit der Quelle als moduleId', async () => {
+    const ws = makeWorkspace();
+    const calls = [];
+    ws.setModuleInteract(async (stack, caller) => { calls.push([stack, caller]); return { ok: true, results: [] }; });
+    const stack = [{ op: 'project.read' }];
+    const out = await ws.interactAsKernel(stack, 'zeg-sheet');
+    assertEqual(out.ok, true);
+    assertEqual(calls.length, 1);
+    assertEqual(calls[0][0], stack);
+    assertEqual(JSON.stringify(calls[0][1]), JSON.stringify({ instanceId: null, moduleId: 'zeg-sheet' }));
+  });
+
+  test('vor dem Verdrahten antwortet es surface_failed', async () => {
+    const ws = makeWorkspace();
+    ws._moduleInteract = null;
+    const out = await ws.interactAsKernel([{ op: 'project.read' }], 'zeg-sheet');
+    assertEqual(out.ok, false);
+    assertEqual(out.error, 'surface_failed');
+  });
+});

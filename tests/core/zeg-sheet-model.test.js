@@ -3,7 +3,7 @@
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import {
-  historyToRows, rowsToHistory, readRows, buildSheetState, isZegColumn, DATE_REF,
+  historyToRows, rowsToHistory, readRows, buildSheetState, isZegColumn, DATE_REF, planZegStack,
 } from '../../js/core/zeg-sheet/zeg-sheet-model.js';
 
 const DMAIC = ['define', 'measure', 'analyze', 'improve', 'control'];
@@ -220,5 +220,98 @@ suite('core/zeg-sheet-model malformed history entries', () => {
     assertDeepEqual(rows, [{ date: '2026-07-10', values: { define: 20 } }]);
     const back = rowsToHistory(rows, ['define'], history);
     assertDeepEqual(back.define, [{ ts: 123, value: 50 }, { t: at(2026, 7, 10), v: 20 }]);
+  });
+});
+
+suite('core/zeg-sheet-model planZegStack', () => {
+  const SHEET = 's1';
+  const D1 = { date: '2026-07-10', values: { define: 20, measure: 10 } };
+  const D2 = { date: '2026-07-12', values: { define: 40, measure: null } };
+  const D3 = { date: '2026-07-14', values: { define: 60, measure: 30 } };
+  /** Die Aktionen eines Stapels als `[method, args]`. */
+  const calls = (stack) => stack.map(a => [a.method, a.args]);
+  const ofMethod = (stack, m) => stack.filter(a => a.method === m);
+
+  test('Gleichstand gibt einen leeren Stapel', () => {
+    const prev = buildSheetState(null, [D1, D2], ['define', 'measure'], LABELS);
+    const next = buildSheetState(prev, [D1, D2], ['define', 'measure'], LABELS);
+    assertDeepEqual(planZegStack('ws1', SHEET, prev, next), []);
+  });
+
+  test('Gleichstand trotz Merkmal-Nullwerten aus read() und fehlender formulas', () => {
+    const prev = buildSheetState(null, [D1], ['define'], LABELS);
+    const next = buildSheetState(prev, [D1], ['define'], LABELS);
+    const asRead = { ...prev, columns: prev.columns.map(c => ({ ...c, meta: { ...c.meta, lock: null, reason: null }, formulas: undefined })) };
+    assertDeepEqual(planZegStack('ws1', SHEET, asRead, next), []);
+  });
+
+  test('neuer Tag: ein writeColumns mit den verlängerten Werten, kein removeRows', () => {
+    const prev = buildSheetState(null, [D1, D2], ['define', 'measure'], LABELS);
+    const next = buildSheetState(prev, [D1, D2, D3], ['define', 'measure'], LABELS);
+    const stack = planZegStack('ws1', SHEET, prev, next);
+    assertEqual(stack.length, 1);
+    const [w] = stack;
+    assertEqual(w.op, 'instance.call');
+    assertEqual(w.id, 'write');
+    assertEqual(w.instance, 'ws1');
+    assertEqual(w.module, 'worksheet');
+    assertEqual(w.method, 'writeColumns');
+    assertEqual(w.args[0], SHEET);
+    assertDeepEqual(w.args[1], [
+      { to: prev.columns[0].id, values: ['2026-07-10', '2026-07-12', '2026-07-14'] },
+      { to: prev.columns[1].id, values: [20, 40, 60] },
+      { to: prev.columns[2].id, values: [10, null, 30] },
+    ]);
+    assertEqual(ofMethod(stack, 'removeRows').length, 0);
+  });
+
+  test('neue Phase: to append samt setColumnMeta mit Referenz auf das Schreiben', () => {
+    const prev = buildSheetState(null, [D1], ['define', 'measure'], LABELS);
+    const next = buildSheetState(prev, [D1], ['define', 'measure', 'analyze'], LABELS);
+    const stack = planZegStack('ws1', SHEET, prev, next);
+    assertDeepEqual(stack[0].args[1][3], { to: 'append', name: 'Analyze', type: 'percent', format: { decimals: 0 }, values: [null] });
+    assertDeepEqual(calls(stack.slice(1)), [
+      ['setColumnMeta', [SHEET, { $from: 'write', path: 'value.3' }, { managedBy: 'zeg', managedRef: 'analyze' }]],
+    ]);
+  });
+
+  test('neue Phase vor einer Nutzerspalte: moveColumn mit Referenz an ihren Platz', () => {
+    const prev = buildSheetState(null, [D1], ['define'], LABELS);
+    prev.columns.push({ id: 'note', name: 'Notiz', type: 'text', values: ['x'], formulas: [null], format: {}, meta: null });
+    const next = buildSheetState(prev, [D1], ['define', 'measure'], LABELS);
+    const stack = planZegStack('ws1', SHEET, prev, next);
+    assertDeepEqual(stack[0].args[1].map(e => e.to), [prev.columns[0].id, prev.columns[1].id, 'append', 'note']);
+    assertDeepEqual(calls(ofMethod(stack, 'moveColumn')), [
+      ['moveColumn', [SHEET, { $from: 'write', path: 'value.2' }, 2]],
+    ]);
+  });
+
+  test('weggefallene Phase: removeColumn', () => {
+    const prev = buildSheetState(null, [D1], ['define', 'measure', 'analyze'], LABELS);
+    const next = buildSheetState(prev, [D1], ['define', 'measure'], LABELS);
+    const stack = planZegStack('ws1', SHEET, prev, next);
+    assertDeepEqual(calls(ofMethod(stack, 'removeColumn')), [['removeColumn', [SHEET, prev.columns[3].id]]]);
+    assertEqual(ofMethod(stack, 'moveColumn').length, 0);
+    assertEqual(stack[0].args[1].length, 3);
+  });
+
+  test('weniger Zeilen: removeRows ab next.rowCount', () => {
+    const prev = buildSheetState(null, [D1, D2, D3], ['define'], LABELS);
+    const next = buildSheetState(prev, [D2], ['define'], LABELS);
+    assertEqual(next.rowCount, 1);
+    const stack = planZegStack('ws1', SHEET, prev, next);
+    assertDeepEqual(calls(ofMethod(stack, 'removeRows')), [['removeRows', [SHEET, 1, 2]]]);
+  });
+
+  test('Nutzerspalte mit Formel in verschobener Zeile: setFormula an der neuen Zeile', () => {
+    const prev = buildSheetState(null, [D1, D2], ['define'], LABELS);
+    prev.columns.push({ id: 'u1', name: 'Doppelt', type: 'numeric', values: [null, 80], formulas: [null, '=C2[2]*2'], format: {}, meta: null });
+    const D0 = { date: '2026-07-01', values: { define: 5 } };
+    const next = buildSheetState(prev, [D0, D1, D2], ['define'], LABELS);
+    const stack = planZegStack('ws1', SHEET, prev, next);
+    // Reihenfolge: Schreiben zuerst, Formeln zuletzt.
+    assertEqual(stack[0].method, 'writeColumns');
+    assertEqual(stack[stack.length - 1].method, 'setFormula');
+    assertDeepEqual(calls(ofMethod(stack, 'setFormula')), [['setFormula', [SHEET, 'u1', 2, '=C2[2]*2']]]);
   });
 });

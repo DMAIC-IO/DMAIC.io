@@ -73,7 +73,7 @@ function opShapes() {
  *   ein frischer (Naht für Unit-Tests)
  * @returns {{
  *   interact: (input?: object|object[]) => Promise<object>,
- *   interactAsModule: (input: object|object[], caller: { instanceId: string, moduleId: string }) => Promise<object>,
+ *   interactAsModule: (input: object|object[], caller: { instanceId: string|null, moduleId: string }) => Promise<object>,
  * }}
  */
 export function createAgentRuntime(deps) {
@@ -818,14 +818,17 @@ export function createAgentRuntime(deps) {
      * eigener Prüfung, Speichern am Ende des äußeren); jeder andere
      * Aufruf reiht sich hinten ein.
      * @param {object|object[]} input
-     * @param {{ instanceId: string, moduleId: string }} caller
+     * @param {{ instanceId: string|null, moduleId: string }} caller  `instanceId`
+     *   null für einen Kerndienst (`Workspace#interactAsKernel`)
      * @returns {Promise<object>}
      */
     interactAsModule(input, caller) {
       const opts = { consent: false, revisions: false, caller };
       // Der Wiedereintritt hängt allein an der Ziel-Instanz der laufenden Op:
       // solange sie läuft, läuft jeder Aufruf aus dieser Instanz im Lauf mit.
-      if (current?.inOp && current.inOp.instanceId === caller?.instanceId) {
+      // Ein Kerndienst (`instanceId: null`) tritt nie wieder ein: eine Op ohne
+      // Ziel-Instanz (`module.add`, …) trägt ebenfalls null.
+      if (current?.inOp && caller?.instanceId != null && current.inOp.instanceId === caller.instanceId) {
         const inOp = current.inOp;
         const nested = runInteract(input, { ...opts, run: current, inline: true })
           .catch(surfaceFailure)
