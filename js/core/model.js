@@ -271,6 +271,26 @@ export function cloneJSON(v) {
   return v;
 }
 
+/**
+ * Wertkopie für Rückschreibpfade (Verlauf, Invarianten-Rückfall): wie `cloneJSON`,
+ * aber eine `TableData` wird zu einer neuen `TableData` statt zur schlichten Form.
+ * @param {any} v @returns {any}
+ */
+export function copyValue(v) {
+  if (v instanceof TableData) {
+    const t = new TableData(v.rowCount, v.columns.map((c) => c.slice()));
+    t.rev = v.rev;
+    return t;
+  }
+  if (Array.isArray(v)) return v.map(copyValue);
+  if (v !== null && typeof v === 'object') {
+    const out = {};
+    for (const k of Object.keys(v)) out[k] = copyValue(v[k]);
+    return out;
+  }
+  return v;
+}
+
 // ─── Kontext des Models ─────────────────────────────────────
 
 /** @typedef {{ cycle: string, confidenceLevel: number, power: number }} ModelContext */
@@ -354,7 +374,10 @@ export function activeContext(stateManager) {
  */
 export function defaultOf(s, context = DEFAULT_CONTEXT, name = 'default', root = undefined) {
   if (Object.hasOwn(s, 'default')) {
-    if (typeof s.default !== 'function') return cloneJSON(s.default);
+    if (typeof s.default !== 'function') {
+      const v = copyValue(s.default);
+      return s.kind === 'table' ? checkTable(name, v) : v;
+    }
     return checkValue(s, name, s.default(context), { context, root });
   }
   if (s.nullable) return null;
@@ -784,7 +807,7 @@ function withInvariants(root, fn) {
   const names = invariants ? Object.keys(invariants) : [];
   if (names.length === 0) return fn();
   const watched = [...new Set(names.flatMap((n) => invariants[n].fields))];
-  const before = Object.fromEntries(watched.map((f) => [f, cloneJSON(root._v[f])]));
+  const before = Object.fromEntries(watched.map((f) => [f, copyValue(root._v[f])]));
   root._run = (root._run ?? 0) + 1;
   let result;
   try {
@@ -817,7 +840,7 @@ export function checkInvariantsAfter(model, rootField, fn) {
   const invariants = schemaOf(model)?.invariants;
   const names = invariants ? Object.keys(invariants).filter((n) => invariants[n].fields.includes(rootField)) : [];
   if (names.length === 0 || (model._run ?? 0) > 0) return fn();
-  const before = cloneJSON(model._v[rootField]);
+  const before = copyValue(model._v[rootField]);
   let result;
   try {
     result = fn();
@@ -977,7 +1000,7 @@ function writeAtomically(model, out) {
  */
 export function replaceFields(model, source) {
   const { fields, view } = schemaOf(model);
-  for (const k of [...Object.keys(fields), ...Object.keys(view)]) model._v[k] = cloneJSON(source._v[k]);
+  for (const k of [...Object.keys(fields), ...Object.keys(view)]) model._v[k] = copyValue(source._v[k]);
 }
 
 // ─── defineModel ────────────────────────────────────────────

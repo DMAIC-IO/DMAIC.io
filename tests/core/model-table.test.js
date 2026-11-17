@@ -2,7 +2,7 @@
  * Tests for core/model.js — Feldart table().
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../test-utils.js';
-import { defineModel, list, object, text, table, describeType, setFields, markTableChanged } from '../../js/core/model.js';
+import { defineModel, list, object, text, number, command, table, describeType, setFields, markTableChanged, replaceFields, checkInvariantsAfter } from '../../js/core/model.js';
 import { TableData } from '../../js/core/table-data.js';
 
 const M = defineModel({ fields: { sheets: list(object({ id: text(), data: table() })) } });
@@ -82,5 +82,42 @@ suite('table()', () => {
     const s = table();
     assertEqual(s.bulk, true);
     assertEqual(s.bulkKind, 'table');
+  });
+});
+
+suite('table() Rückschreibpfade', () => {
+  test('replaceFields behält TableData, auch verschachtelt', () => {
+    const src = M.fromJSON(withTable({ rowCount: 1, columns: [[1]] }));
+    const dst = new M();
+    replaceFields(dst, src);
+    const t = dst.sheets[0].data;
+    assertTrue(t instanceof TableData);
+    assertTrue(t !== src.sheets[0].data);
+    assertDeepEqual(t.columns, [[1]]);
+    const D = defineModel({ fields: { t: table() } });
+    const a = new D(); const b = new D();
+    setFields(a, { t: TableData.fromJSON({ rowCount: 1, columns: [[2]] }) });
+    replaceFields(b, a);
+    assertTrue(b.t instanceof TableData);
+  });
+
+  test('Invarianten-Rückfall lässt TableData stehen', () => {
+    const D = defineModel({
+      fields: { t: table(), n: number() },
+      invariants: { small: { fields: ['t', 'n'], test() { return this.n < 5; } } },
+      commands: { bad: command({ params: {}, run() { this.n = 9; this.t = TableData.empty(1); } }) },
+    });
+    const d = new D();
+    assertThrows(() => d.bad({}), /small|n/);
+    assertTrue(d.t instanceof TableData);
+    assertThrows(() => checkInvariantsAfter(d, 't', () => { d.n = 9; d.t = TableData.empty(1); }), /small|n/);
+    assertTrue(d.t instanceof TableData);
+  });
+
+  test('table({ default }) liefert eine TableData', () => {
+    const D = defineModel({ fields: { t: table({ default: { rowCount: 1, columns: [[3]] } }) } });
+    const d = new D();
+    assertTrue(d.t instanceof TableData);
+    assertDeepEqual(d.t.columns, [[3]]);
   });
 });
