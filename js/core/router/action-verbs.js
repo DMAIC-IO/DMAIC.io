@@ -64,8 +64,6 @@ function isScenario(entry) {
  * @param {function} ctx.loadScenario        bound scenario loader
  * @param {function} ctx.rehydrateProject    bound rehydrate routine, takes options
  * @param {function} [ctx.notify]
- * @param {(stack: object[], source: string) => Promise<object>} [ctx.interactAsKernel]
- *   kernel access to the agent surface (`workspace.interactAsKernel`), for the ZEG sheet
  * @returns {Map<string, {modal: object|null, run: function, list: function}>}
  */
 export function createActionVerbs(ctx) {
@@ -265,10 +263,7 @@ export function createActionVerbs(ctx) {
      * @returns {Promise<{route: object}>}
      */
     async run() {
-      const { instanceId } = await ensureZegSheet({
-        stateManager, eventBus: ctx.eventBus, i18n,
-        interact: (stack) => ctx.interactAsKernel(stack, 'zeg-sheet'),
-      });
+      const { instanceId } = ensureZegSheet({ stateManager, eventBus: ctx.eventBus, i18n });
       return {
         route: { kind: 'module', projectId: stateManager.getActiveProjectId(), instanceId, sub: [] },
       };
