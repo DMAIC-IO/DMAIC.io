@@ -59,8 +59,43 @@ export function headerColumns(columns) {
  * @returns {{ destroy: () => void }}
  */
 export function mount(root, w) {
-  if (Array.isArray(Alpine.raw(w.props.config)?.rows)) return mountLegacy(root, w);
+  const config = Alpine.raw(w.props.config);
+  if (Array.isArray(config?.rows) && Array.isArray(config?.columns)) return mountLegacy(root, { ...w, props: legacyProps(w.props) });
+  if (Array.isArray(config?.rows)) throw new Error('datagrid: config.rows needs config.columns (legacy form)');
   return mountTable(root, w);
+}
+
+/**
+ * Eingaben für den Altweg: `legacy-mount.js` bleibt unverändert und liest
+ * `config.contextMenu` ohne Absicherung; im Schema ist es inzwischen optional.
+ * Die Getter lesen die reaktiven Props weiter (Effekte des Altwegs verfolgen sie).
+ * @param {any} props @returns {any}
+ */
+function legacyProps(props) {
+  return {
+    get config() {
+      const c = props.config;
+      return c && !Array.isArray(c.contextMenu) ? { ...c, contextMenu: [] } : c;
+    },
+    get onCell() { return props.onCell; },
+    get onPaste() { return props.onPaste; },
+  };
+}
+
+/**
+ * Ansichtsereignisse brauchen ein Ziel: sonst gingen Doppelklick auf eine
+ * Formelzelle bzw. ein Zusatzeintrag im Menü still verloren.
+ * @param {any} config @returns {void}
+ * @throws {Error} bei Ereignis ohne Kommando
+ */
+function checkViewEvents(config) {
+  const commands = config.commands ?? EMPTY;
+  if (config.features?.formulaEditor === true && !commands.openFormulaEditor) {
+    throw new Error('datagrid: config.features.formulaEditor needs config.commands.openFormulaEditor');
+  }
+  if ((config.contextMenu ?? []).length > 0 && !commands.contextMenu) {
+    throw new Error('datagrid: config.contextMenu entries need config.commands.contextMenu');
+  }
 }
 
 /**
@@ -75,6 +110,7 @@ function mountTable(root, { props, services, effect, command }) {
     throw new Error('datagrid: x-widget-table must name a TableData (or config.rows for the legacy form)');
   }
   if (!Array.isArray(Alpine.raw(props.columns))) throw new Error('datagrid: x-widget-columns is required with x-widget-table');
+  if (typeof props.rev !== 'number') throw new Error('datagrid: x-widget-rev="model.$tableRev" is required with x-widget-table (otherwise the grid never redraws)');
   const t = (key) => i18n.t(key);
   const lang = () => i18n.getLanguage?.() ?? 'en';
   const notify = (message, type) => services.notify?.(message, type);
@@ -139,6 +175,7 @@ function mountTable(root, { props, services, effect, command }) {
     for (const role of Object.keys(config.commands ?? EMPTY)) {
       if (!ROLES.has(role)) throw new Error(`datagrid: unknown role ${JSON.stringify(role)} in config.commands; allowed: ${[...ROLES].join(', ')}`);
     }
+    checkViewEvents(config);
     cfg = config;
     const created = ensureInput();
     const lng = lang();

@@ -137,6 +137,12 @@ async function host(opts = {}) {
       get legacy() {
         return { columns: [{ key: 'a', name: 'A', type: 'numeric', lock: null, format: null }], rows: this.legacyRows, readOnly: false, contextMenu: [] };
       },
+      get legacyNoMenu() {
+        return { columns: [{ key: 'a', name: 'A', type: 'numeric', lock: null, format: null }], rows: this.legacyRows, readOnly: false };
+      },
+      get legacyNoColumns() {
+        return { rows: this.legacyRows, readOnly: false, contextMenu: [] };
+      },
     };
     Object.defineProperty(comp, '_ui', {
       enumerable: false,
@@ -298,5 +304,46 @@ suite('datagrid widget über table()', () => {
     assertEqual(root.querySelectorAll('.datagrid__table').length, 1);
     assertEqual(root.querySelectorAll('.datagrid__table--virtual').length, 0, 'kein neues Raster');
     assertEqual(td(root, 0, 1).textContent, '2');
+  });
+
+  test('Altweg ohne contextMenu: hängt ein, Rechtsklick auf den Zeilenkopf ohne Fehler', async () => {
+    const errors = [];
+    const onErr = (e) => errors.push(String(e.message ?? e));
+    window.addEventListener('error', onErr);
+    try {
+      const { root } = await host({ attrs: 'x-widget-config="legacyNoMenu"' });
+      assertEqual(root.querySelectorAll('.widget-root--error').length, 0, 'kein Fehlerzustand');
+      const rh = root.querySelector('tbody td.datagrid__row-header, tbody th.datagrid__row-header') ?? td(root, 0, 0);
+      rh.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, ...center(rh) }));
+      await settle();
+      assertDeepEqual(errors, []);
+    } finally {
+      window.removeEventListener('error', onErr);
+      document.querySelectorAll('.context-menu').forEach((m) => m.remove());
+    }
+  });
+
+  test('Altweg ohne columns: klare Meldung statt Absturz im Altweg', async () => {
+    const { el, warnings } = await host({ warnings: true, attrs: 'x-widget-config="legacyNoColumns"' });
+    assertTrue(warnings.some((w) => w.includes('config.rows needs config.columns')), `Warnung: ${warnings.join(' | ')}`);
+    assertTrue(el.querySelector('.widget-root--error') !== null, 'Fehlerzustand');
+  });
+
+  test('ohne x-widget-rev: klare Meldung beim Einhängen', async () => {
+    const { el, warnings } = await host({ warnings: true, attrs: 'x-widget-table="model.data" x-widget-columns="cols" x-widget-formulas="formulas" x-widget-config="grid"' });
+    assertTrue(warnings.some((w) => w.includes('x-widget-rev')), `Warnung: ${warnings.join(' | ')}`);
+    assertTrue(el.querySelector('.widget-root--error') !== null, 'Fehlerzustand');
+  });
+
+  test('formulaEditor ohne commands.openFormulaEditor: klare Meldung beim Einhängen', async () => {
+    const { el, warnings } = await host({ warnings: true, config: { features: { formulaEditor: true } } });
+    assertTrue(warnings.some((w) => w.includes('openFormulaEditor')), `Warnung: ${warnings.join(' | ')}`);
+    assertTrue(el.querySelector('.widget-root--error') !== null, 'Fehlerzustand');
+  });
+
+  test('contextMenu-Einträge ohne commands.contextMenu: klare Meldung beim Einhängen', async () => {
+    const { el, warnings } = await host({ warnings: true, config: { contextMenu: [{ id: 'forbid', labelKey: 'forbid' }] } });
+    assertTrue(warnings.some((w) => w.includes('commands.contextMenu')), `Warnung: ${warnings.join(' | ')}`);
+    assertTrue(el.querySelector('.widget-root--error') !== null, 'Fehlerzustand');
   });
 });
