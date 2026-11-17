@@ -578,7 +578,8 @@ suite('dashboard tiles: raci', () => {
 
 function fakeStateManager(values) {
   const ws = { sheets: [{ id: 's', name: 'S', state: { rowCount: values.length, columns: [{ id: 'c', name: 'Measure', values }] } }] };
-  return withStoredWorksheetReader({ get: () => null, getModuleState: (id) => (id === 'ws' ? ws : null) });
+  // Die Phasenliste, die der Leser für „bekannte Instanz“ braucht (wie readSync).
+  return withStoredWorksheetReader({ get: (p) => (p === 'phases' ? { data: [{ instanceId: 'ws', moduleId: 'worksheet' }] } : null), getModuleState: (id) => (id === 'ws' ? ws : null) });
 }
 const SPC_STATE = { chartTypeId: 'i-mr', subgroupSize: 1, baselineCount: null,
   columnRef: { instanceId: 'ws', sheetId: 's', columnId: 'c' }, usl: null, lsl: null };
@@ -750,7 +751,8 @@ function zegStateManager(history, { completed = false, withSheet = false } = {})
   const sheet = { id: 'sheet_1', state: { columns: [{ id: 'c1', meta: { managedBy: 'zeg', managedRef: 'date' } }] } };
   // findZegSheet reads through the worksheet facade.
   return withStoredWorksheetReader({
-    get: (k) => (k.startsWith('phaseAchievementHistory.') ? (history[k.split('.')[1]] || []) : null),
+    get: (k) => (k === 'phases' ? { data: withSheet ? [{ instanceId: 'w1', moduleId: 'worksheet' }] : [] }
+      : k.startsWith('phaseAchievementHistory.') ? (history[k.split('.')[1]] || []) : null),
     getProjectCycle: () => 'dmaic',
     isCompleted: () => completed,
     listInstances: () => (withSheet ? [{ instanceId: 'w1' }] : []),

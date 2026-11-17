@@ -378,3 +378,29 @@ suite('worksheet-columns — discoverColumns liest sparsam (Leistung)', () => {
     ]);
   });
 });
+
+suite('Test-Helfer useStoredWorksheetReader — wie readSync', () => {
+  test('Instanz in einer Phase ohne gespeicherten Stand: liest wie readStored(null), ohne Blätter', () => {
+    const phases = { data: [{ moduleId: 'worksheet', instanceId: 'ws-empty' }] };
+    const sm = {
+      get: (p) => (p === 'phases' ? phases : (p.startsWith('phases.') ? phases[p.slice(7)] ?? [] : undefined)),
+      getModuleState: () => null,
+    };
+    useStoredWorksheetReader(sm);
+    const out = readWorksheet(sm, 'ws-empty');
+    assertDeepEqual(out.sheets, []);
+    assertEqual(out.rowCount, 0);
+    assertEqual(worksheetReadable(sm, 'ws-empty'), true);
+    assertDeepEqual(discoverColumns(sm), []);
+  });
+
+  test('Id in keiner Phase: unknown_instance (Fassade null), auch wenn ein Stand da ist', () => {
+    const sm = {
+      get: (p) => (p === 'phases' ? {} : undefined),
+      getModuleState: () => STORED['ws-1'],
+    };
+    useStoredWorksheetReader(sm);
+    assertEqual(readWorksheet(sm, 'ws-1'), null);
+    assertEqual(resolveColumnRef(sm, REF('c-x')), null);
+  });
+});

@@ -29,8 +29,10 @@ function makeStub({ columns, polyDegree = 2, excludedTerms = [], confLevel = 0.9
   const sheetId = 'sheet-1';
   const moduleStates = new Map();
   moduleStates.set(wsInstanceId, { sheets: [{ id: sheetId, state: { rowCount: Math.max(0, ...columns.map(c => c.values?.length ?? 0)), columns } }] });
+  // Wie im Projekt: das Arbeitsblatt steht in einer Phase (sonst liest readSync unknown_instance).
+  const phases = { data: [{ instanceId: wsInstanceId, moduleId: 'worksheet' }] };
   const sm = {
-    get() { return null; },
+    get(path) { return path === 'phases' ? phases : (path.startsWith('phases.') ? phases[path.slice(7)] : null); },
     getModuleState: (id) => moduleStates.get(id) ?? null,
     setModuleState() {},
   };

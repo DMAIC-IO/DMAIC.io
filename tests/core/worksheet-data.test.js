@@ -20,7 +20,13 @@ function fakeBus() {
 }
 
 function fakeStore(states) {
-  const sm = { getModuleState: (id) => states[id] ?? null };
+  const sm = {
+    // Die Phasenliste, die der Leser für „bekannte Instanz“ braucht (wie readSync).
+    get: (path) => (path === 'phases'
+      ? { data: Object.keys(states).map((instanceId) => ({ instanceId, moduleId: 'worksheet' })) }
+      : undefined),
+    getModuleState: (id) => states[id] ?? null,
+  };
   useStoredWorksheetReader(sm);
   return sm;
 }

@@ -17,7 +17,10 @@ function makeSM(columns) {
   // columns: [{ id, name, type, values }]
   const rowCount = Math.max(0, ...columns.map((c) => c.values?.length ?? 0));
   const ws = { sheets: [{ id: 'sheet-1', name: 'S1', state: { rowCount, columns } }] };
+  // Wie im Projekt: das Arbeitsblatt steht in einer Phase (sonst liest readSync unknown_instance).
+  const phases = { data: [{ instanceId: 'inst-1', moduleId: 'worksheet' }] };
   const sm = {
+    get: (path) => (path === 'phases' ? phases : (path.startsWith('phases.') ? phases[path.slice(7)] : undefined)),
     getModuleState: (id) => (id === 'inst-1' ? ws : null),
   };
   useStoredWorksheetReader(sm);

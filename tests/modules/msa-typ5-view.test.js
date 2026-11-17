@@ -55,7 +55,7 @@ async function mount(name, editSheet) {
       getModuleState: (id) => states[id] ?? null,
       setModuleState: () => {},
       getProjectCycle: () => 'dmaic',
-      get: (k) => ({ phases: { measure: [] }, 'phases.measure': [{ instanceId: 'ws1', moduleId: 'worksheet' }] })[k],
+      get: (k) => ({ phases: { measure: [{ instanceId: 'ws1', moduleId: 'worksheet' }] }, 'phases.measure': [{ instanceId: 'ws1', moduleId: 'worksheet' }] })[k],
     }),
     i18n: { t: (k) => k, tf: () => (k) => k, getLanguage: () => 'de' },
     eventBus: bus,

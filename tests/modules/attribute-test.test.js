@@ -169,7 +169,7 @@ import { useStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 import { buildReport, fmtP, fmtRate } from '../../js/modules/attribute-test/attribute-test-report.js';
 
 suite('attribute-test column ref resolution', () => {
-  const sm = { getModuleState: (id) => id === 'w' ? { sheets: [{ id: 's', state: { rowCount: 2, columns: [{ id: 'c1', values: ['a', 'b'] }] } }] } : null };
+  const sm = { get: (p) => (p === 'phases' ? { data: [{ instanceId: 'w', moduleId: 'worksheet' }] } : undefined), getModuleState: (id) => id === 'w' ? { sheets: [{ id: 's', state: { rowCount: 2, columns: [{ id: 'c1', values: ['a', 'b'] }] } }] } : null };
   useStoredWorksheetReader(sm);
   test('resolved ref returns the values', () => {
     assertDeepEqual(columnValuesOrNull(sm, { instanceId: 'w', sheetId: 's', columnId: 'c1' }), ['a', 'b']);

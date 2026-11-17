@@ -8,20 +8,33 @@ import { registerWorksheetReader } from '../../js/core/worksheet-columns.js';
 import { readWorksheetState } from '../../js/modules/worksheet/worksheet-read.js';
 
 /**
- * Den Leser für `sm` registrieren: `(id, o) => readWorksheetState(sm.getModuleState(id), o)`;
- * eine Instanz ohne gespeicherten Stand gilt als unbekannt.
- * @param {{ getModuleState: (id: string) => any }} sm
+ * Steht die Instanz in einer Phase des Projekts? Wie `locate` in
+ * `core/instances.js`.
+ * @param {{ get: (path: string) => any }} sm
+ * @param {string} id
+ * @returns {boolean}
+ */
+function inProject(sm, id) {
+  const phases = sm.get('phases') || {};
+  return Object.keys(phases).some((p) => Array.isArray(phases[p]) && phases[p].some((r) => r?.instanceId === id));
+}
+
+/**
+ * Den Leser für `sm` registrieren: `(id, o) => readWorksheetState(sm.getModuleState(id), o)`.
+ * Wie `readSync`: unbekannt (`unknown_instance`) ist nur eine Id, die in
+ * keiner Phase steht; eine Instanz ohne gespeicherten Stand liest wie
+ * `readStored(null)`, also ohne Blätter.
+ * @param {{ get: (path: string) => any, getModuleState: (id: string) => any }} sm
  * @returns {void}
  */
 export function useStoredWorksheetReader(sm) {
   registerWorksheetReader(sm, (id, options) => {
-    const saved = sm.getModuleState(id);
-    if (saved == null) {
+    if (!inProject(sm, id)) {
       const err = new Error(`unknown_instance: ${id}`);
       err.code = 'unknown_instance';
       throw err;
     }
-    return readWorksheetState(saved, options);
+    return readWorksheetState(sm.getModuleState(id) ?? null, options);
   });
 }
 

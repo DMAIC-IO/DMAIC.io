@@ -82,7 +82,10 @@ async function mount(model, sheets = {}) {
       getModuleState: (id) => states[id] ?? null,
       setModuleState: () => {},
       getProjectCycle: () => 'dmaic',
-      get: () => undefined,
+      // Nur die Phasenliste, die der Leser für „bekannte Instanz“ braucht (wie readSync).
+      get: (path) => (path === 'phases'
+        ? { data: Object.keys(states).filter((id) => states[id]?.sheets).map((instanceId) => ({ instanceId, moduleId: 'worksheet' })) }
+        : undefined),
     }),
     i18n,
     eventBus: bus,
