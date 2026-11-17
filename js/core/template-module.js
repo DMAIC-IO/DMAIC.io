@@ -1316,7 +1316,8 @@ export function createModule(base) {
         ? registry.loadWorksheetExample : null;
       /** @type {Promise<void>|null} */
       let loading = null;
-      // `_loadingExample` marks the synchronous window in which a hook-driven
+      // `_loadingExample` marks the window (up to `setState`, across the
+      // loader's await on the readable worksheet) in which a hook-driven
       // side effect (e.g. examples-registry.js `provisionInstance`) may emit a
       // global event (`module:added`) BEFORE `setState()` below has replaced
       // this instance's own (about-to-be-destroyed) Alpine component. Modules
@@ -1334,8 +1335,9 @@ export function createModule(base) {
           exampleData = beforeLoadExample.call(this, payload.data);
         }
         if (loadWorksheetExample) {
-          // Ohne Rückfrage läuft der Lader bis zum Ende synchron — Arbeits-
-          // blatt, setState und Meldung fallen in dieses Fenster.
+          // Der Lader wartet vor setState, bis das neue Arbeitsblatt lesbar
+          // ist (`instances.read`): das Fenster bleibt offen, bis `loading`
+          // erfüllt ist (siehe unten), nicht nur bis zum ersten await.
           // `prevId` stammt aus dem vor dem Hook geladenen Stand: der Hook ersetzt ihn nicht.
           loading = loadWorksheetExample(this, { ...payload, data: exampleData },
             { Model, confirmed: true, prevId: model?.exampleWorksheetId ?? null });
@@ -1343,9 +1345,11 @@ export function createModule(base) {
           this.setState(exampleData);
         }
       } finally {
-        this._loadingExample = false;
+        if (!loading) this._loadingExample = false;
       }
-      if (loading) return loading;
+      if (loading) {
+        return Promise.resolve(loading).finally(() => { this._loadingExample = false; });
+      }
       const lang = this._context.i18n.getLanguage();
       const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
       this._context.notify?.(

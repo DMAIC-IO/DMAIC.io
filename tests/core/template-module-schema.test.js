@@ -203,6 +203,15 @@ const sourcedPayload = () => ({ meta: { id: 'ex' }, data: {
   sourceWorksheetData: { sheets: [{ id: 's1', name: 'S', state: { columns: [] } }] },
 } });
 
+/** Wartet (höchstens 2 s), bis `cond` gilt — Rückfrage und dynamischer Import liegen davor. */
+async function until(cond) {
+  const end = Date.now() + 2000;
+  while (!cond()) {
+    if (Date.now() > end) throw new Error('Bedingung nicht erreicht');
+    await new Promise((r) => setTimeout(r, 5));
+  }
+}
+
 suite('createModule: Standard-loadExample mit sourceWorksheetData', () => {
   test('provisioniert, hängt Spaltenbezüge um, Hook im Ladefenster, eine Rückfrage', async () => {
     const { mod, log, store, states } = sourcedModule({ answer: true });
@@ -218,6 +227,39 @@ suite('createModule: Standard-loadExample mit sourceWorksheetData', () => {
     assertEqual(states.me.src.instanceId, st.exampleWorksheetId);
     assertTrue(log.events.includes('module:added'));
     assertDeepEqual(log.notes, ['success']);
+  });
+
+  // Seit der Lader auf das lesbare Arbeitsblatt wartet (instances.read), reicht
+  // das Ladefenster bis setState über einen await hinweg: `_loadingExample`
+  // muss bis dahin stehen bleiben (kano.refreshTrees liest es).
+  test('Ladefenster bleibt offen, bis das Arbeitsblatt lesbar ist und setState lief', async () => {
+    const { mod } = sourcedModule({ answer: true });
+    let release;
+    mod._context.instances = { read: () => new Promise((r) => { release = r; }) };
+    const done = mod.loadExample(sourcedPayload());
+    await until(() => release !== undefined);
+    assertEqual(mod._loadingExample, true, 'während des Wartens');
+    assertEqual(mod.getState().title, 'alt', 'setState noch nicht gelaufen');
+    release({});
+    await done;
+    assertEqual(mod._loadingExample, false, 'danach');
+    assertEqual(mod.getState().title, 'Beispiel');
+  });
+
+  test('zweites Laden während des Wartens: das verwaiste Arbeitsblatt des ersten verschwindet', async () => {
+    const { mod, store } = sourcedModule({ answer: true });
+    let open;
+    let reads = 0;
+    const gate = new Promise((r) => { open = r; });
+    mod._context.instances = { read: () => { reads++; return gate; } };
+    const first = mod.loadExample(sourcedPayload());
+    await until(() => reads === 1);
+    const second = mod.loadExample(sourcedPayload());
+    await until(() => reads === 2);
+    open({});
+    await Promise.all([first, second]);
+    assertEqual(store.phases.data.length, 1, `Arbeitsblätter: ${store.phases.data.length}`);
+    assertEqual(mod.getState().exampleWorksheetId, store.phases.data[0].instanceId);
   });
 
   test('abgelehnte Rückfrage: kein Hook, kein Arbeitsblatt, Stand unverändert', async () => {

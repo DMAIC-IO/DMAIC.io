@@ -599,7 +599,7 @@ export async function loadExampleViaWorksheet(module, payload, options) {
     if (ref) {
       data.exampleWorksheetId = ref.instanceId;
       data = rewritePlaceholder(State, rewriteRefs, data, '__source__', ref.instanceId);
-      await whenWorksheetReadable(ctx, ref.instanceId);
+      if (!(await stillCurrentAfterRead(module, ctx, ref.instanceId))) return;
     }
   }
 
@@ -654,6 +654,25 @@ export function rewriteRefArray(field) {
     }
     return data;
   };
+}
+
+/**
+ * Wartet auf das lesbare Arbeitsblatt (`whenWorksheetReadable`) und prüft
+ * danach, ob dieser Ladevorgang noch der jüngste des Moduls ist. Ein zweites
+ * Laden (Doppelklick) während des Wartens hat den Stand übernommen: das hier
+ * angelegte Arbeitsblatt wäre verwaist und wird entfernt.
+ * @param {any} mod Modul (Wrapper, stabil über setState)
+ * @param {any} ctx Kontext
+ * @param {string} instanceId angelegtes Arbeitsblatt
+ * @returns {Promise<boolean>} ob setState folgen darf
+ */
+async function stillCurrentAfterRead(mod, ctx, instanceId) {
+  const ticket = (mod._exampleLoadTicket ?? 0) + 1;
+  mod._exampleLoadTicket = ticket;
+  await whenWorksheetReadable(ctx, instanceId);
+  if (mod._exampleLoadTicket === ticket) return true;
+  removeProvisionedWorksheet(ctx, instanceId);
+  return false;
 }
 
 /**
@@ -731,7 +750,7 @@ export async function loadWorksheetExample(mod, payload, { Model, rewriteRefs, c
     if (ref) {
       data.exampleWorksheetId = ref.instanceId;
       data = rewritePlaceholder(Model, rewriteRefs, data, '__source__', ref.instanceId);
-      await whenWorksheetReadable(ctx, ref.instanceId);
+      if (!(await stillCurrentAfterRead(mod, ctx, ref.instanceId))) return;
     }
   }
 
