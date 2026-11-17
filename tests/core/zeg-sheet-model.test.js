@@ -314,4 +314,22 @@ suite('core/zeg-sheet-model planZegStack', () => {
     assertEqual(stack[stack.length - 1].method, 'setFormula');
     assertDeepEqual(calls(ofMethod(stack, 'setFormula')), [['setFormula', [SHEET, 'u1', 2, '=C2[2]*2']]]);
   });
+
+  test('Gleichstand unabhängig von der Schlüsselreihenfolge in meta und Werten', () => {
+    const prev = buildSheetState(null, [D1], ['define'], LABELS);
+    prev.columns.push({ id: 'u1', name: 'Notiz', type: 'text', values: [{ a: 1, b: 2 }], formulas: [null], format: {}, meta: { lock: 'soft', reason: 'x' } });
+    const next = buildSheetState(prev, [D1], ['define'], LABELS);
+    const flip = (o) => (o && typeof o === 'object' ? Object.fromEntries(Object.entries(o).reverse()) : o);
+    const asRead = { ...prev, columns: prev.columns.map(c => ({ ...c, meta: flip(c.meta), values: c.values.map(flip) })) };
+    assertDeepEqual(planZegStack('ws1', SHEET, asRead, next), []);
+  });
+
+  test('neue Spalte: format ist eine Kopie, kein Verweis', () => {
+    const prev = buildSheetState(null, [D1], ['define'], LABELS);
+    const next = buildSheetState(prev, [D1], ['define', 'measure'], LABELS);
+    const col = next.columns.find(c => c.meta.managedRef === 'measure');
+    const entry = planZegStack('ws1', SHEET, prev, next)[0].args[1].find(e => e.to === 'append');
+    assertDeepEqual(entry.format, col.format);
+    assertTrue(entry.format !== col.format);
+  });
 });

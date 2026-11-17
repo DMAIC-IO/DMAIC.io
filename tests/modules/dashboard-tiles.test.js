@@ -747,14 +747,15 @@ suite('dashboard tiles: spc', () => {
 });
 
 function zegStateManager(history, { completed = false, withSheet = false } = {}) {
-  const sheet = { id: 'sheet_1', state: { columns: [{ meta: { managedBy: 'zeg', managedRef: 'date' } }] } };
-  return {
+  const sheet = { id: 'sheet_1', state: { columns: [{ id: 'c1', meta: { managedBy: 'zeg', managedRef: 'date' } }] } };
+  // findZegSheet reads through the worksheet facade.
+  return withStoredWorksheetReader({
     get: (k) => (k.startsWith('phaseAchievementHistory.') ? (history[k.split('.')[1]] || []) : null),
     getProjectCycle: () => 'dmaic',
     isCompleted: () => completed,
     listInstances: () => (withSheet ? [{ instanceId: 'w1' }] : []),
     getModuleState: (id) => (withSheet && id === 'w1' ? { sheets: [sheet] } : null),
-  };
+  });
 }
 
 function fakeChartManager() {

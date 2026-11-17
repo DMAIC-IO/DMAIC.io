@@ -3,6 +3,8 @@
  */
 import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
 import { createActionVerbs } from '../../js/core/router/action-verbs.js';
+import { buildSheetState } from '../../js/core/zeg-sheet/zeg-sheet-model.js';
+import { useStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 
 // Mirrors a real catalog entry: scenarios are identified by `type: 'scenario'`
 // (examples/index.json), the same predicate ExamplesRegistry.getScenarios() uses.
@@ -227,22 +229,39 @@ suite('action verbs', () => {
 });
 
 suite('core/router/action-verbs zeg-sheet', () => {
-  test('zeg-sheet verb ensures the sheet and routes to its module', async () => {
+  /** A stateManager double over `state`/`modules`; worksheet writes are refused. */
+  function zegCtx() {
     const { ctx } = makeCtx();
-    const handlers = {};
     const state = { phases: { data: [] }, phaseAchievementHistory: {} };
     const modules = new Map();
     Object.assign(ctx.stateManager, {
       get: (p) => structuredClone(p.split('.').reduce((o, k) => o?.[k], state)),
       set: (p, v) => { const ks = p.split('.'); const l = ks.pop(); let o = state; for (const k of ks) o = (o[k] ??= {}); o[l] = structuredClone(v); },
       getModuleState: (id) => structuredClone(modules.get(id) ?? null),
-      setModuleState: (id, s) => modules.set(id, structuredClone(s)),
+      setModuleState: () => { throw new Error('the verb must not write module state directly'); },
       listInstances: (m) => state.phases.data.filter(i => i.moduleId === m).map(i => ({ instanceId: i.instanceId, moduleId: m, title: '' })),
       getProjectCycle: () => 'dmaic',
       getActiveProjectId: () => 'p-new',
       isCompleted: () => false,
     });
-    ctx.eventBus = { emit: () => {}, on: (n, h) => { handlers[n] = h; }, off: () => {} };
+    useStoredWorksheetReader(ctx.stateManager);
+    ctx.eventBus = { emit: () => {}, on: () => {}, off: () => {} };
+    const sent = [];
+    return { ctx, state, modules, sent };
+  }
+
+  test('zeg-sheet verb creates the sheet through the kernel surface and routes to it', async () => {
+    const { ctx, state, sent } = zegCtx();
+    ctx.interactAsKernel = async (stack, source) => {
+      sent.push({ stack, source });
+      if (stack[0].op !== 'module.add') return { ok: true, results: [] };
+      state.phases.data.push({ instanceId: 'ws-1', moduleId: 'worksheet', order: 0, state: {} });
+      return { ok: true, results: [
+        { ok: true, id: 'ws', result: { instanceId: 'ws-1', module: 'worksheet', phase: 'data' } },
+        { ok: true, id: null, result: { value: null } },
+        { ok: true, id: 'start', result: { value: { columns: [], rowCount: 0 } } },
+      ] };
+    };
     const verbs = createActionVerbs(ctx);
     const verb = verbs.get('zeg-sheet');
     assertEqual(verb.modal, null);
@@ -250,8 +269,21 @@ suite('core/router/action-verbs zeg-sheet', () => {
     const { route } = await verb.run([]);
     assertEqual(route.kind, 'module');
     assertEqual(route.projectId, 'p-new');
-    assertEqual(route.instanceId, state.phases.data[0].instanceId);
-    const again = await verb.run([]);
-    assertEqual(again.route.instanceId, route.instanceId);
+    assertEqual(route.instanceId, 'ws-1');
+    assertEqual(sent.length, 2);
+    assertTrue(sent.every(s => s.source === 'zeg-sheet'));
+    assertEqual(sent[0].stack[0].op, 'module.add');
+    assertEqual(sent[0].stack[0].phase, 'data');
+  });
+
+  test('zeg-sheet verb reuses an existing, consistent ZEG sheet without a stack', async () => {
+    const { ctx, state, modules, sent } = zegCtx();
+    const sheet = buildSheetState(null, [], ['define', 'measure', 'analyze', 'improve', 'control'], { date: 'Datum', phases: {} });
+    state.phases.data.push({ instanceId: 'ws-z', moduleId: 'worksheet', order: 0, state: {} });
+    modules.set('ws-z', { sheets: [{ id: 'sheet_1', name: 'Zielerreichungsgrad', state: sheet }], activeSheetId: 'sheet_1', sheetCounter: 1 });
+    ctx.interactAsKernel = async (stack, source) => { sent.push({ stack, source }); return { ok: true, results: [] }; };
+    const { route } = await createActionVerbs(ctx).get('zeg-sheet').run([]);
+    assertEqual(route.instanceId, 'ws-z');
+    assertEqual(sent.length, 0);
   });
 });

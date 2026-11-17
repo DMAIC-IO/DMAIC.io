@@ -224,9 +224,24 @@ function cells(arr, n) {
   return Array.from({ length: n }, (_, i) => arr?.[i] ?? null);
 }
 
-/** True if two values serialize the same (cells, formulas, meta). */
+/**
+ * JSON text of a value with object keys sorted at every depth, so two
+ * objects that differ only in key order serialize the same.
+ * @param {unknown} v
+ * @returns {string}
+ */
+function stableJson(v) {
+  return JSON.stringify(v, (_, x) => (x && typeof x === 'object' && !Array.isArray(x)
+    ? Object.fromEntries(Object.keys(x).sort().map(k => [k, x[k]]))
+    : x));
+}
+
+/**
+ * True if two values serialize the same (cells, formulas, meta), regardless
+ * of key order: `read()` may hand out `meta` with its keys in another order.
+ */
 function same(a, b) {
-  return JSON.stringify(a) === JSON.stringify(b);
+  return stableJson(a) === stableJson(b);
 }
 
 /**
@@ -281,7 +296,7 @@ export function planZegStack(instanceId, sheetId, prev, next) {
     const values = cells(col.values, n);
     if (prevById.has(col.id)) return { to: col.id, values };
     ref.set(col.id, { $from: WRITE_ID, path: `value.${i}` });
-    return { to: 'append', name: col.name, type: col.type, format: col.format ?? {}, values };
+    return { to: 'append', name: col.name, type: col.type, format: { ...(col.format ?? {}) }, values };
   });
   const target = (col) => ref.get(col.id) ?? col.id;
   const stack = [call('writeColumns', [sheetId, entries], WRITE_ID)];

@@ -9,7 +9,10 @@ import { installZegSheetSync } from '../core/zeg-sheet/zeg-sheet.js';
 export default createStartup({
   id: 'zeg-sheet-sync',
 
-  run({ stateManager, eventBus, i18n }) {
-    installZegSheetSync({ stateManager, eventBus, i18n });
+  run({ stateManager, eventBus, i18n, workspace }) {
+    installZegSheetSync({
+      stateManager, eventBus, i18n,
+      interact: (stack) => workspace.interactAsKernel(stack, 'zeg-sheet'),
+    });
   },
 });

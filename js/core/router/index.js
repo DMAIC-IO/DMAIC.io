@@ -58,6 +58,7 @@ export function createAppActionVerbs(kernel, ui, routerBox) {
     stateManager: kernel.stateManager,
     eventBus: kernel.eventBus,
     notify: ui.notify,
+    interactAsKernel: (stack, source) => ui.workspace.interactAsKernel(stack, source),
     loadScenario: (args) => loadScenario({
       examplesRegistry: kernel.examplesRegistry,
       moduleRegistry: kernel.moduleRegistry,
