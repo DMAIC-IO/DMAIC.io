@@ -241,14 +241,22 @@ export const structureCommands = {
       requireUnlocked(head);
       const unique = uniqueColumnName(sheet.columns, name, columnId);
       if (unique === head.name) return unique;
+      // Nur Spalten mit einem Treffer kopieren; Formelschlüssel ohne Spalte bleiben unberührt.
+      const indexOf = new Map(sheet.columns.map((/** @type {any} */ h, /** @type {number} */ i) => [h.id, i]));
       /** @type {Record<string, Record<string, string>>} */
       const next = {};
-      for (const [id, byRow] of Object.entries(sheet.formulas)) next[id] = { ...byRow };
+      if (head.name) {
+        const quoted = `'${head.name}'`;
+        for (const [id, byRow] of Object.entries(sheet.formulas)) {
+          if (!indexOf.has(id)) continue;
+          if (Object.values(byRow).some((f) => typeof f === 'string' && f.includes(quoted))) next[id] = { ...byRow };
+        }
+      }
       const rewritten = head.name ? renameInFormulas(next, head.name, unique, head.shortName) : [];
       /** @type {Map<number, any>} */ const byIndex = new Map([[ci, { index: ci, head: { ...copyHead(head), name: unique } }]]);
-      const indexOf = new Map(sheet.columns.map((/** @type {any} */ h, /** @type {number} */ i) => [h.id, i]));
       for (const { columnId: id, row } of rewritten) {
-        const i = /** @type {number} */ (indexOf.get(id));
+        const i = indexOf.get(id);
+        if (i === undefined) continue;
         if (!byIndex.has(i)) byIndex.set(i, { index: i });
         const e = byIndex.get(i);
         (e.formulas ??= {})[row] = next[id][row];

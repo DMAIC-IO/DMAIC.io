@@ -163,6 +163,13 @@ suite('worksheet: removeColumn', () => {
     assertDeepEqual(values(w, 0), ['x', 'y', 'z']);
   });
 
+  test('Formeln, die die entfernte Spalte nennen, bleiben stehen und rechnen leer', () => {
+    const w = filled();
+    w.m.removeColumn({ sheetId: 's1', columnId: 'a' });
+    assertDeepEqual(sheet(w).formulas.c, { 0: "='A'[1]*10", 2: "='A'[3]+1" });
+    assertDeepEqual(values(w, 1), [null, null, null]);
+  });
+
   test('weiche Sperre erlaubt das Entfernen (wie das Kopfmenü)', () => {
     const w = setup({ heads: [col('a', { shortName: 'C1', meta: { lock: 'soft' } }), col('b', { shortName: 'C2' })] });
     roundTrip(w, { type: 'removeColumn', sheetId: 's1', columnId: 'a' });
@@ -184,6 +191,17 @@ suite('worksheet: renameColumn', () => {
     assertEqual(sheet(w).columns[0].name, 'Länge');
     assertDeepEqual(sheet(w).formulas.c, { 0: "='Länge'[1]*10", 2: "='Länge'[3]+1" });
     assertDeepEqual(values(w, 2), [10, null, 4]);
+  });
+
+  test('Formelschlüssel ohne Spalte: wird übersprungen, Umkehrung', () => {
+    const w = setup({
+      cells: [[1, 2, 3], [null, null, null], [null, null, null]],
+      formulas: { c: { 0: "='A'[1]" }, geist: { 1: "='A'[2]" } },
+    });
+    roundTrip(w, { type: 'renameColumn', sheetId: 's1', columnId: 'a', name: 'Neu' });
+    assertDeepEqual(sheet(w).formulas.c, { 0: "='Neu'[1]" });
+    assertDeepEqual(sheet(w).formulas.geist, { 1: "='A'[2]" });
+    assertDeepEqual(sheet(w).columns.map((h) => h.id), ['a', 'b', 'c']);
   });
 
   test('Namensgleichheit bekommt einen Zusatz', () => {
