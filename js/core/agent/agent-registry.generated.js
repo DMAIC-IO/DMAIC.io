@@ -23261,6 +23261,10 @@ export const AGENT_REGISTRY = {
           "format": {
             "type": "unknown",
             "help": ""
+          },
+          "sheetId": {
+            "type": "unknown",
+            "help": ""
           }
         }
       },
