@@ -1,214 +1,166 @@
 /**
- * Tabelle über core/datagrid/datagrid.js: zeichnet `config` neu, sobald sie sich
- * ändert (eine DataGrid-Instanz je Widget), und gibt Zelländerung, Einfügen und
- * Zeilenmenü als Kommandos des Moduls hinaus. Eigener Datenstand: nur die
- * zuletzt gezeichnete `config`. Jede Änderung im Grid (Tippen, Einfügen,
- * Löschen, Ausschneiden, Ausfüllen, Rückgängig) wird mit der Eingabe abgeglichen
- * (Spalten nach Schlüssel) und als Kommando hinausgegeben; Sortieren und das
- * Einfügen, Löschen oder Verschieben von Zeilen und Spalten sendet nichts, die
- * Tabelle zeigt danach wieder die Eingabe. Nach jedem Kommando zeigt die Tabelle wieder
- * deren Werte; bei gleicher Form (Spalten und Zeilenzahl) bleibt die Auswahl.
+ * Widget datagrid — Weiche zwischen dem Raster über `table()` (P7) und dem
+ * Altweg (`config.rows`, legacy-mount.js, bis F1.14f).
+ *
+ * Über `table()`: GridView (Zeichnen, virtualisiert) und GridInput (Bedienung)
+ * über der `TableData` des Models. Das Widget ändert nie selbst Daten: jede
+ * Bedienung meldet eine Rolle, das Widget ruft `command(config.commands[role],
+ * { ...config.commandArgs, ...args })`. Fehlt die Rolle in `commands`, ist ihr
+ * Merkmal aus. Die Ansichtsereignisse `contextMenu { id, columnId, row }` und
+ * `openFormulaEditor { columnId, row }` sind keine Datenrollen; sie gehen an
+ * `config.commands.contextMenu` bzw. `.openFormulaEditor`, falls hinterlegt.
+ *
+ * Neu gezeichnet wird, wenn sich `table.rev` (über die Eingabe `rev` =
+ * `model.$tableRev`), die Tabelle selbst, Spaltenköpfe, Formeln oder `config`
+ * geändert haben. Ein abgelehntes Kommando (`ok: false`) meldet seinen Fehler
+ * über `notify`; die Zelle zeigt weiter den Wert des unveränderten Models.
+ * Sperrmeldungen der Bedienung (`cell:edit-blocked`, `column:edit-blocked`)
+ * gehen ebenfalls über `notify`. Strg+Z/Y behandelt das Widget nicht (R8).
  */
-import { DataGrid, isNumericType } from '../../core/datagrid/datagrid.js';
-import { parseNumber } from '../../core/number-format.js';
+import Alpine from '@alpinejs/csp';
+import { TableData } from '../../core/table-data.js';
+import { createGridView } from '../../core/datagrid/view/grid-view.js';
+import { createGridInput } from '../../core/datagrid/view/grid-input.js';
+import { mount as mountLegacy } from './legacy-mount.js';
 
-/** Klasse, an der DataGrid den Nur-Lese-Zustand erkennt (wie im abgeschlossenen Projekt). */
+/** Klasse, an der Raster und Stile den Nur-Lese-Zustand erkennen (wie im Altweg). */
 const READONLY = 'dmike--readonly';
 
-/**
- * Zellwert ins Grid: Zahlspalten bekommen Zahlen, sonst Text; leer → null.
- * @param {string} type @param {string|null} raw @returns {number|string|null}
- */
-function toGrid(type, raw) {
-  if (raw == null || raw === '') return null;
-  if (!isNumericType(type)) return raw;
-  const n = parseNumber(raw);
-  return Number.isFinite(n) ? n : raw;
-}
+/** Rollen aus P7 und die beiden Ansichtsereignisse. */
+const ROLES = new Set([
+  'setCells', 'setFormula', 'pasteBlock', 'fillRange', 'clearRange', 'addColumn', 'removeColumn',
+  'moveColumn', 'renameColumn', 'addRows', 'removeRows', 'moveRow', 'sortRows', 'setColumnType',
+  'setColumnFormat', 'setColumnRole', 'undo', 'redo', 'gridView', 'contextMenu', 'openFormulaEditor',
+]);
+
+const EMPTY = Object.freeze({});
 
 /**
- * Zellwert ans Modul: Zahlspalten als Zahl (nicht lesbare Eingabe bleibt Text, das
- * Kommando lehnt sie ab), sonst Text; leer → null.
- * @param {string} type @param {any} v @returns {number|string|null}
- */
-function toCommand(type, v) {
-  if (v == null || v === '') return null;
-  if (!isNumericType(type)) return String(v);
-  const n = parseNumber(v);
-  return Number.isFinite(n) ? n : String(v);
-}
-
-/**
- * Auswahl auf die Tabelle gekappt: keine Zeile und keine Spalte jenseits des Endes.
- * @param {any} sel @param {number} rows @param {number} cols
- * @returns {any|null} null, wenn die Tabelle leer ist
- */
-function clampRange(sel, rows, cols) {
-  if (rows < 1 || cols < 1) return null;
-  const r = (v) => Math.max(0, Math.min(rows - 1, v));
-  const c = (v) => Math.max(0, Math.min(cols - 1, v));
-  return {
-    ...sel,
-    startRow: r(sel.startRow), endRow: r(sel.endRow), activeRow: r(sel.activeRow ?? sel.startRow),
-    startCol: c(sel.startCol), endCol: c(sel.endCol), activeCol: c(sel.activeCol ?? sel.startCol),
-  };
-}
-
-/**
- * Spalten im Format von DataGrid.setData.
- * @param {any} config @param {string|null} moduleId
+ * Spaltenköpfe für die Ansicht: Sperre aus `meta` nach oben (`lock`, `reason`,
+ * `managedBy`), wie GridView und GridInput sie lesen.
+ * @param {any[]} columns Spaltenköpfe in Model-Form
  * @returns {object[]}
  */
-function gridColumns(config, moduleId) {
-  return config.columns.map((c, ci) => ({
-    id: c.key,
-    name: c.name,
-    type: c.type,
-    unit: c.unit || null,
-    values: config.rows.map((row) => toGrid(c.type, row[ci] ?? null)),
-    format: c.format ? { ...c.format } : {},
-    meta: c.lock ? { lock: c.lock, managedBy: moduleId, reason: c.reason ?? null } : null,
-  }));
+export function headerColumns(columns) {
+  return columns.map((c) => {
+    const { meta, ...head } = c;
+    if (!meta) return head;
+    const out = { ...head };
+    if (meta.lock) out.lock = meta.lock;
+    if (meta.reason) out.reason = meta.reason;
+    if (meta.managedBy) out.managedBy = meta.managedBy;
+    return out;
+  });
 }
 
 /**
  * @param {HTMLElement} root
- * @param {{ props: any, services: any, effect: Function, command: (name: string, args: object) => Promise<{ ok: boolean }> }} w
- * @returns {{ destroy: () => void, grid: DataGrid }}
+ * @param {{ props: any, services: any, effect: Function, command: (name: string, args: object) => Promise<any> }} w
+ * @returns {{ destroy: () => void }}
  */
-export function mount(root, { props, services, effect, command }) {
+export function mount(root, w) {
+  if (Array.isArray(Alpine.raw(w.props.config)?.rows)) return mountLegacy(root, w);
+  return mountTable(root, w);
+}
+
+/**
+ * Raster über `table()`.
+ * @param {HTMLElement} root
+ * @param {{ props: any, services: any, effect: Function, command: (name: string, args: object) => Promise<any> }} w
+ * @returns {{ destroy: () => void }}
+ */
+function mountTable(root, { props, services, effect, command }) {
   const { i18n, moduleId = null } = services;
+  if (!(Alpine.raw(props.table) instanceof TableData)) {
+    throw new Error('datagrid: x-widget-table must name a TableData (or config.rows for the legacy form)');
+  }
+  if (!Array.isArray(Alpine.raw(props.columns))) throw new Error('datagrid: x-widget-columns is required with x-widget-table');
+  const t = (key) => i18n.t(key);
+  const lang = () => i18n.getLanguage?.() ?? 'en';
+  const notify = (message, type) => services.notify?.(message, type);
+
   const slot = document.createElement('div');
   slot.className = 'widget-datagrid';
   root.append(slot);
-  /** @type {any} zuletzt gezeichnete Eingabe */
-  let config = null;
-  /** Form der zuletzt gezeichneten Eingabe: Spaltenschlüssel und Zeilenzahl. */
-  let shape = '';
-  const grid = new DataGrid(slot, {
-    t: (key) => i18n.t(key),
-    lang: () => i18n.getLanguage(),
-    toast: services.notify ?? (() => {}),
-    dialog: services.dialog ?? null,
-    extraRowMenuItems: (cell) => {
-      if (!config || config.readOnly || !config.contextMenu.length) return undefined;
-      return config.contextMenu.map(({ id, labelKey }) => ({
-        label: i18n.t(`modules.${moduleId}.${labelKey}`),
-        action: () => { send(id, { row: cell.rowIdx }); },
-      }));
-    },
-  });
-  /** Zeichnet das Widget gerade selbst (setData), statt dass der Nutzer ändert? */
-  let drawing = false;
-  /** Ein Kommando ist unterwegs; danach zeichnet das Widget ohnehin neu. */
-  let busy = false;
-  /** Seit dem letzten Zeichnen hat eine Aktion Zeilen oder Spalten verschoben. */
-  let structural = false;
-  /** Ein Abgleich ist für die nächste Mikroaufgabe eingeplant. */
-  let scheduled = false;
-  const render = () => {
-    if (!config) return;
-    slot.classList.toggle(READONLY, config.readOnly);
-    const next = JSON.stringify([config.columns.map((c) => c.key), config.rows.length]);
-    // setData verwirft die Auswahl; dieselbe Tabelle mit neuen Werten behält sie, gekappt auf die Tabelle.
-    const keep = next === shape && grid.selection ? clampRange(grid.selection, config.rows.length, config.columns.length) : null;
-    drawing = true;
-    structural = false;
-    try {
-      grid.setData(gridColumns(config, moduleId));
-    } finally {
-      drawing = false;
-    }
-    shape = next;
-    if (keep) grid.setSelection(keep);
-  };
-  /**
-   * Kommando senden, danach immer die Werte der Eingabe zeigen: abgelehnt, ohne
-   * Änderung oder gekappt steht sonst die getippte Eingabe im Grid.
-   */
-  const send = async (name, args) => {
-    busy = true;
-    try {
-      return await command(name, args);
-    } finally {
-      busy = false;
-      render();
-    }
+  const view = createGridView(slot, { t, lang: lang() });
+  // Test-Haken (P8): die POMs holen eine Zeile in den Sichtbereich, bevor sie eine Zelle ansprechen.
+  const hostEl = /** @type {any} */ (root.parentElement ?? root);
+  hostEl._datagrid = { scrollToRow: (r) => view.scrollToRow(r) };
+
+  const onBlocked = (e) => { if (e.detail?.message) notify(e.detail.message, 'warning'); };
+  view.el.addEventListener('cell:edit-blocked', onBlocked);
+  view.el.addEventListener('column:edit-blocked', onBlocked);
+
+  /** @type {any} zuletzt gelesene config (roh) */
+  let cfg = null;
+  /** @type {ReturnType<typeof createGridInput>|null} */
+  let input = null;
+  let inputSig = '';
+  const drawn = { table: null, rev: -1, columns: null, formulas: null, config: null, lang: '' };
+  let alive = true;
+
+  /** Bedienung meldet eine Rolle: Kommando des Moduls, Fehler über notify. */
+  const emit = async (role, args) => {
+    const name = cfg?.commands?.[role];
+    if (!name) return;
+    const r = await command(name, { ...(cfg.commandArgs ?? EMPTY), ...args });
+    if (alive && r && r.ok === false && !r.cancelled) notify(r.error?.message ?? String(r.error), 'error');
   };
 
   /**
-   * Gleicht die Zellen des Grids mit der gezeichneten Eingabe ab und schickt jede
-   * Abweichung als Kommando: eine Zelle über `onCell`, mehrere als Block über
-   * `onPaste` (Rechteck um alle Abweichungen; gesperrte Spalten darin `null`).
-   * So erreicht jeder Bearbeitungsweg von DataGrid das Modul: Tippen, Einfügen,
-   * Löschen, Ausschneiden, Ausfüllen, Rückgängig. Ohne passendes Kommando oder
-   * im Nur-Lese-Zustand zeigt die Tabelle wieder die Eingabe.
+   * Bedienung anlegen oder neu anlegen: `readOnly`, Merkmale, Rollen und
+   * Zusatzeinträge gelten ab ihrer Erzeugung.
+   * @returns {boolean} neu angelegt
    */
-  const reconcile = () => {
-    scheduled = false;
-    if (!config || drawing || busy) return;
-    const cols = config.columns;
-    // Sortieren, Zeilen einfügen/löschen/verschieben, Spalten löschen/verschieben verschieben
-    // die Zellen gegen die Eingabe: nichts senden, die Eingabe neu zeichnen (macht es rückgängig).
-    const byKey = cols.map((c) => grid.columns.find((g) => g.id === c.key) ?? null);
-    if (structural || grid.sortCol !== null || byKey.some((g) => g === null)) {
-      structural = false;
-      render();
-      return;
-    }
-    const rows = Math.max(config.rows.length, grid.rowCount);
-    const now = (c, r) => toCommand(cols[c].type, byKey[c].values[r] ?? null);
-    const was = (c, r) => (r < config.rows.length ? toCommand(cols[c].type, toGrid(cols[c].type, config.rows[r][c] ?? null)) : null);
-    let r1 = Infinity; let r2 = -1; let c1 = Infinity; let c2 = -1;
-    for (let c = 0; c < cols.length; c++) {
-      if (cols[c].lock) continue;
-      for (let r = 0; r < rows; r++) {
-        if (now(c, r) === was(c, r)) continue;
-        r1 = Math.min(r1, r); r2 = Math.max(r2, r); c1 = Math.min(c1, c); c2 = Math.max(c2, c);
-      }
-    }
-    // Keine Abweichung: eine eingefügte leere Spalte oder Zeile verschwindet wieder.
-    if (r2 < 0) {
-      if (grid.columns.length !== cols.length || grid.rowCount !== config.rows.length) render();
-      return;
-    }
-    if (config.readOnly) { render(); return; }
-    if (r1 === r2 && c1 === c2) {
-      if (!props.onCell) { render(); return; }
-      send(props.onCell, { row: r1, column: cols[c1].key, value: now(c1, r1) });
-      return;
-    }
-    if (!props.onPaste) { render(); return; }
-    const values = [];
-    for (let r = r1; r <= r2; r++) {
-      const line = [];
-      for (let c = c1; c <= c2; c++) line.push(cols[c].lock ? null : now(c, r));
-      values.push(line);
-    }
-    send(props.onPaste, { row: r1, column: cols[c1].key, values });
+  const ensureInput = () => {
+    const roles = Object.keys(cfg.commands ?? EMPTY);
+    const contextMenu = (cfg.contextMenu ?? []).map(({ id, labelKey }) => ({
+      id, labelKey: moduleId ? `modules.${moduleId}.${labelKey}` : labelKey,
+    }));
+    const sig = JSON.stringify([cfg.readOnly, cfg.features ?? null, roles, contextMenu]);
+    if (input && sig === inputSig) return false;
+    input?.destroy();
+    input = createGridInput(view, {
+      emit: (role, args) => { emit(role, args); },
+      features: cfg.features ?? {}, readOnly: cfg.readOnly, contextMenu, t, dialog: services.dialog ?? null, roles,
+    });
+    inputSig = sig;
+    slot.classList.toggle(READONLY, cfg.readOnly);
+    return true;
   };
-  const schedule = () => {
-    if (drawing || scheduled) return;
-    scheduled = true;
-    queueMicrotask(reconcile);
-  };
-  // Leeren und Ausfüllen zeichnen ohnehin neu ('render'); ihre eigenen Ereignisse binden den Abgleich nicht daran.
-  for (const ev of ['render', 'cell:changed', 'data:pasted', 'data:cleared', 'data:filled', 'undo', 'redo']) grid.on(ev, schedule);
-  // Strukturelle Aktionen: Zeilen nur am Ende anhängen (Einfügen über den Rand) lässt die Zellen an ihrem Platz.
-  const shifted = () => { structural = true; schedule(); };
-  for (const ev of ['rows:removed', 'rows:moved', 'column:removed', 'column:moved']) grid.on(ev, shifted);
-  grid.on('rows:added', ({ startIndex }) => { if (startIndex < (config?.rows.length ?? 0)) shifted(); });
 
   effect(() => {
-    config = props.config;
-    render();
+    void props.rev; // P2: Neuzeichnen nach markTableChanged
+    const table = Alpine.raw(props.table);
+    const columns = Alpine.raw(props.columns);
+    const formulas = Alpine.raw(props.formulas) ?? EMPTY;
+    const config = Alpine.raw(props.config);
+    if (!(table instanceof TableData)) throw new Error('datagrid: x-widget-table must name a TableData');
+    for (const role of Object.keys(config.commands ?? EMPTY)) {
+      if (!ROLES.has(role)) throw new Error(`datagrid: unknown role ${JSON.stringify(role)} in config.commands; allowed: ${[...ROLES].join(', ')}`);
+    }
+    cfg = config;
+    const created = ensureInput();
+    const lng = lang();
+    if (!created && table === drawn.table && table.rev === drawn.rev && columns === drawn.columns
+      && formulas === drawn.formulas && config === drawn.config && lng === drawn.lang) return;
+    input.setView({
+      table, columns: headerColumns(columns ?? []), formulas,
+      colWidths: config.view?.colWidths ?? {}, selection: config.view?.selection ?? null, lang: lng,
+    });
+    Object.assign(drawn, { table, rev: table.rev, columns, formulas, config, lang: lng });
   });
 
   return {
-    grid,
     destroy: () => {
-      grid.destroy();
+      input?.destroy();
+      alive = false;
+      input = null;
+      view.el.removeEventListener('cell:edit-blocked', onBlocked);
+      view.el.removeEventListener('column:edit-blocked', onBlocked);
+      view.destroy();
       slot.remove();
+      if (hostEl._datagrid) delete hostEl._datagrid;
     },
   };
 }
