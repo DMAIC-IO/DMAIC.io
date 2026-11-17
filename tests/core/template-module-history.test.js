@@ -52,6 +52,18 @@ const Vals = defineModel({
   },
 });
 
+// Umkehrungen, die werfen: `bad` -> explode; `trap` -> trap2, dessen Umkehrung explode ist.
+const Faulty = defineModel({
+  fields: { vals: list(number(), { default: () => [0, 0, 0] }) },
+  commands: {
+    set: Vals.schema.commands.set,
+    explode: command({ params: {}, run() { throw new Error('boom'); } }),
+    bad: command({ params: {}, run() { recordInverse(this, { type: 'explode' }); this.vals = [...this.vals.slice(0, 2), 9]; } }),
+    trap2: command({ params: {}, run() { recordInverse(this, { type: 'explode' }); } }),
+    trap: command({ params: {}, run() { recordInverse(this, { type: 'trap2' }); this.vals = [7, ...this.vals.slice(1)]; } }),
+  },
+});
+
 async function mount(history, { Model = Doc, html = '<input class="f" x-model="model.name"><span x-text="model.n"></span>', initial } = {}) {
   if (!Alpine.version) Alpine.start();
   const id = `hist-test-${++seq}`;
@@ -294,6 +306,42 @@ suite('createModule history — Modus inverse', () => {
     mod.historyStep('undo');
     await flush();
     assertDeepEqual(stored[context.instanceId].vals, [0, 0, 0]);
+  });
+
+  test('Fehler mitten im Schritt: Model und beide Stapel wie vor dem Versuch', async () => {
+    const { mod, data } = await mount({ mode: 'inverse' }, { ...opts, Model: Faulty });
+    const m = data().model;
+    mod.historyBegin();
+    m.bad({});              // Umkehrung 'explode' wirft (läuft als zweite)
+    m.set({ i: 0, v: 5 });  // Umkehrung läuft zuerst und gelingt
+    mod.historyEnd();
+    await flush();
+    const before = [...m.vals];
+    assertDeepEqual(before, [5, 0, 9]);
+    let err = null;
+    try { mod.historyStep('undo'); } catch (e) { err = e; }
+    await flush();
+    assertTrue(err !== null && /boom/.test(err.message), 'der Fehler wird weitergereicht');
+    assertDeepEqual([...m.vals], before, 'Model wie vor dem Versuch');
+    assertEqual(mod._history._undo.length, 1, 'Schritt liegt wieder auf dem Rückgängig-Stapel');
+    assertEqual(mod._history._redo.length, 0);
+    assertTrue(mod.historyCan('undo'));
+    assertEqual(mod.historyCan('redo'), false);
+  });
+
+  test('Fehler beim Rückrollen: Verlauf wird zurückgesetzt', async () => {
+    const { mod, data } = await mount({ mode: 'inverse' }, { ...opts, Model: Faulty });
+    const m = data().model;
+    mod.historyBegin();
+    m.bad({});
+    m.trap({});
+    mod.historyEnd();
+    await flush();
+    let err = null;
+    try { mod.historyStep('undo'); } catch (e) { err = e; }
+    assertTrue(err !== null && /boom/.test(err.message));
+    assertEqual(mod.historyCan('undo'), false);
+    assertEqual(mod.historyCan('redo'), false);
   });
 
   test('history mit unbekanntem mode wird abgelehnt', () => {

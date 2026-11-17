@@ -219,11 +219,14 @@ export function recordInverse(model, cmd) {
  * `fn` mit offenem Umkehrsammler ausführen: alle Kommandos darin gelten als
  * geschachtelt (der Beobachter bekommt kein viertes Argument), ihre
  * Umkehrungen kommen in die gelieferte Liste (Ausführungsreihenfolge).
- * @param {any} model @param {() => void} fn @returns {object[]}
+ * Wirft `fn`, steht in `into` (falls gegeben) das bis dahin Gesammelte: damit
+ * lässt sich ein halb ausgeführter Schritt zurückrollen.
+ * @param {any} model @param {() => void} fn @param {object[]} [into] Sammelliste (Vorgabe: neue)
+ * @returns {object[]}
  */
-export function collectInverses(model, fn) {
+export function collectInverses(model, fn, into = []) {
   const prev = model._inv;
-  const inv = [];
+  const inv = into;
   model._inv = inv;
   try {
     fn();
@@ -931,6 +934,10 @@ export function runCommand(name, def, self, root, cmd) {
       }
       return r;
     });
+  } catch (err) {
+    // Ein gescheitertes Kommando hat sich selbst zurückgenommen: seine Umkehrungen gelten nicht.
+    if (inv) inv.length = inv0;
+    throw err;
   } finally {
     if (top) root._inv = null;
   }

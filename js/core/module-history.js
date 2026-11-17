@@ -72,6 +72,19 @@ export class ModuleHistory {
   }
 
   /**
+   * Legt den eben von `undo()`/`redo()` bewegten Umkehrschritt auf seinen alten
+   * Stapel zurück (ein Schritt, dessen Ausführung scheiterte). Ohne bewegten
+   * Umkehrschritt: nichts.
+   */
+  cancelMove() {
+    const m = this._moved;
+    if (!m) return;
+    this._moved = null;
+    if (m.side === 'redo') this._undo.push(/** @type {InverseStep} */ (this._redo.pop()));
+    else this._redo.push(/** @type {InverseStep} */ (this._undo.pop()));
+  }
+
+  /**
    * Meldet einen neuen Stand. Gleicher Text wie der aktuelle: nichts. In einem
    * offenen Schritt ersetzt er dessen Ende.
    * @param {string} json

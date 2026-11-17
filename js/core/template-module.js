@@ -1042,7 +1042,20 @@ export function createModule(base) {
         // Umkehr-Kommandos im lebenden Model ausführen (reaktiv; der Speicher-Watch
         // persistiert). Ihre Umkehrungen ergeben die Gegenrichtung des Schritts.
         const live = Alpine.$data(root).model;
-        const collected = collectInverses(live, () => { for (const cmd of json.cmds) live.execute(cmd); });
+        const collected = [];
+        try {
+          collectInverses(live, () => { for (const cmd of json.cmds) live.execute(cmd); }, collected);
+        } catch (err) {
+          // Halb ausgeführt: bisherige Umkehrungen rückwärts ausführen, Schritt auf seinen Stapel zurück.
+          try {
+            collectInverses(live, () => { for (const cmd of [...collected].reverse()) live.execute(cmd); });
+            h.cancelMove();
+          } catch {
+            h.reset(null);
+          }
+          this._syncHistoryFlags();
+          throw err;
+        }
         h.replaceInverse(collected.reverse());
         return true;
       }
@@ -1103,7 +1116,8 @@ export function createModule(base) {
      */
     _recordInverse(command, args, inverses) {
       if (!this._history || this._applyingRemote || inverses.length === 0) return;
-      this._history.recordInverse([...inverses].reverse(), [{ type: command, ...args }]);
+      // Wiederholen steht erst nach Rückgängig fest: `replaceInverse` setzt es dann.
+      this._history.recordInverse([...inverses].reverse(), []);
       this._syncHistoryFlags();
     },
 
@@ -1144,6 +1158,7 @@ export function createModule(base) {
       if (this._applyingRemote) return;
       this._context.stateManager.setModuleState(this._context.instanceId, model.toJSON());
     },
+
   };
 
   if (typeof Model.prototype.hasContent === 'function') {
