@@ -151,6 +151,36 @@ suite('DataGrid locks — paste & clear', () => {
     dispose();
   });
 
+  // F1.14 Task 10 Schritt 1: heutiges Verhalten von `importFromClipboard`
+  // (Blattende, gesperrte Spalte mitten im Block) — Vorlage für `pasteBlock`.
+  test('paste past the sheet end adds rows and columns', () => {
+    const { grid, dispose } = newGrid();
+    grid.setSelection({ startCol: 1, startRow: 2, endCol: 1, endRow: 2, activeCol: 1, activeRow: 2 });
+    grid.importFromClipboard('5\t6\n7\t8');
+    assertEqual(grid.columns.length, 3);
+    assertEqual(grid.rowCount, 4);
+    assertEqual(grid.getColumn('col_b').values.join(','), '1,1,5,7');
+    assertEqual(grid.columns[2].values.join(','), ',,6,8');
+    assertEqual(grid.getColumn('col_a').values.join(','), '10,20,30,');
+    dispose();
+  });
+
+  test('paste with a locked column inside the block writes nothing, but rows and columns have grown', () => {
+    const { grid, dispose } = newGrid();
+    grid.setColumnLock('col_b', { lock: 'hard' });
+    grid.setSelection({ startCol: 0, startRow: 2, endCol: 0, endRow: 2, activeCol: 0, activeRow: 2 });
+    let blocked = null;
+    grid.on('cell:edit-blocked', (p) => { blocked = p; });
+    grid.importFromClipboard('5\t6\t7\n8\t9\t10');
+    assertEqual(blocked?.action, 'paste');
+    assertEqual(blocked?.columnId, 'col_b');
+    assertEqual(grid.getColumn('col_a').values.join(','), '10,20,30,');
+    assertEqual(grid.columns.length, 3, 'Spalte schon angehängt');
+    assertEqual(grid.rowCount, 4, 'Zeile schon angehängt');
+    assertEqual(grid.history.peek()?.type === 'paste', false, 'kein Paste-Eintrag');
+    dispose();
+  });
+
   test('clear-selection skips locked cells, emits block event', () => {
     const { grid, dispose } = newGrid();
     grid.setColumnLock('col_a', { lock: 'soft' });

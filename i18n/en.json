@@ -1482,6 +1482,37 @@
         "removeSheet": {
           "help": "Removes a sheet with its contents. If it was active, the neighbouring sheet becomes active. The last sheet cannot be removed — that is an error. Undo does not restore it.",
           "params": { "id": "The id of the sheet to remove." }
+        },
+        "pasteBlock": {
+          "help": "Pastes a block as from the clipboard at a cell, like Ctrl+V in the grid. If the first row is text and the second holds a number, the first row is a header and names unnamed columns. Each column hit gets its type from its values. Missing rows and columns are added. Formulas in the cells hit are removed. If a locked column lies in the block, nothing is written. Returns the number of pasted columns and rows without the header.",
+          "params": {
+            "sheetId": "The id of the sheet, as read().sheets[].id names it.",
+            "columnId": "The id of the column at the top left of the block, as read().columns[].id names it.",
+            "startRow": "Zero-based row of the top left cell; the row count appends below the last row.",
+            "rows": "The block as rows of cell texts, each row in column order, e.g. [[\"Length\", \"Site\"], [\"1.5\", \"A\"]]. Empty texts become empty cells.",
+            "command": "The command as one object with sheetId, columnId, startRow and rows."
+          }
+        },
+        "fillRange": {
+          "help": "Continues a range like the grid's fill handle: a series (numbers, dates, text ending in a number) is continued, anything else repeated; ctrl reverses that. Formulas move along with shifted references. Filling down extends the sheet if needed. Locked columns stay unchanged. Returns the number of cells written.",
+          "params": {
+            "sheetId": "The id of the sheet, as read().sheets[].id names it.",
+            "source": "The source range { c0, r0, c1, r1 }: first and last column, first and last row, all zero-based.",
+            "target": "The whole target range { c0, r0, c1, r1 } including the source. It extends the source in exactly one direction (up, down, left or right); any other range is an error.",
+            "ctrl": "true reverses the kind like Ctrl while dragging: a series is copied, a single number counted on. Default false.",
+            "command": "The command as one object with sheetId, source, target and ctrl."
+          }
+        },
+        "clearRange": {
+          "help": "Clears values and formulas of a range, like Delete in the grid. Locked columns stay unchanged. Returns the number of cells cleared.",
+          "params": {
+            "sheetId": "The id of the sheet, as read().sheets[].id names it.",
+            "c0": "Zero-based first column of the range.",
+            "r0": "Zero-based first row of the range.",
+            "c1": "Zero-based last column of the range, at least c0.",
+            "r1": "Zero-based last row of the range, at least r0.",
+            "command": "The command as one object with sheetId, c0, r0, c1 and r1."
+          }
         }
       },
       "fields": {

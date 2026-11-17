@@ -11,17 +11,19 @@
  * - `gridView`: Ansicht je Blatt-Id (Spaltenbreiten, Auswahl), kein Inhalt.
  *
  * Inhaltsfelder tragen `agentWrite: false`: geschrieben wird über Kommandos
- * (`commands-*.js`, ab Task 10), die ihre Umkehrung sammeln
+ * (`commands-*.js`), die ihre Umkehrung sammeln
  * (`history: { mode: 'inverse' }` in `createModule`). Ohne DOM, ohne i18n.
  */
 import {
-  defineModel, list, object, map, text, number, boolean, oneOf, table,
+  defineModel, list, object, map, text, number, table,
 } from '../../../core/model.js';
 import { TableData } from '../../../core/table-data.js';
 import { uid } from '../../../core/uid.js';
-import { COLUMN_TYPES, DATE_FORMATS, TIME_FORMATS, START_ROW_COUNT } from '../../../core/datagrid/datagrid-utils.js';
-import { ALL_ROLES, ROLE, inferRole } from '../../../core/datagrid/datagrid-roles.js';
+import { START_ROW_COUNT } from '../../../core/datagrid/datagrid-utils.js';
+import { ROLE, inferRole } from '../../../core/datagrid/datagrid-roles.js';
 import { from0 } from './migrations.js';
+import { COLUMN_SHAPE, fitsType } from './columns.js';
+import { cellCommands } from './commands-cells.js';
 
 /** Startspalten eines neuen Blatts (C1–C5). */
 export const START_COLUMN_COUNT = 5;
@@ -31,30 +33,8 @@ const FALLBACK_SHEET_NAME = 'Sheet';
 
 const index = () => number({ integer: true, min: 0 });
 
-/** Ein Spaltenkopf; `meta` mit den Schlüsseln von `COLUMN_META_KEYS` (domain/columns.js). */
-const columnSpec = object({
-  id: text(),
-  name: text(),
-  shortName: text(),
-  type: oneOf(Object.keys(COLUMN_TYPES)),
-  unit: text({ nullable: true }),
-  role: oneOf(ALL_ROLES, { nullable: true }),
-  roleManual: boolean(),
-  format: object({
-    decimals: number({ integer: true, min: 0, optional: true }),
-    dateFormat: oneOf(Object.keys(DATE_FORMATS), { optional: true }),
-    timeFormat: oneOf(Object.keys(TIME_FORMATS), { optional: true }),
-    // Ruling R10: Altdaten und Beispiele tragen es, der Renderer liest es.
-    currencySymbol: text({ optional: true }),
-  }),
-  meta: object({
-    lock: oneOf(['hard', 'soft'], { optional: true }),
-    reason: text({ optional: true }),
-    managedBy: text({ optional: true }),
-    managedRef: text({ optional: true }),
-    categoricalCoding: map(text(), number(), { optional: true }),
-  }, { nullable: true }),
-});
+/** Ein Spaltenkopf (Form in `columns.js`). */
+const columnSpec = object(COLUMN_SHAPE);
 
 const sheetSpec = object({
   id: text(),
@@ -87,24 +67,6 @@ export function newSheetState(name, id) {
   }
   const data = new TableData(START_ROW_COUNT, columns.map(() => new Array(START_ROW_COUNT).fill(null)));
   return { id, name, columns, formulas: {}, data };
-}
-
-/**
- * Passt der Zellwert zum Spaltentyp? `null` passt immer. Nicht strenger als
- * das Raster: Datum/Zeit dürfen Zahlen halten (Typwechsel lässt sie stehen),
- * `binary` Wahrheitswerte, `text` alles. Dieselbe Regel steht fest in
- * `migrations.js` (die Migration macht Alt-Text zur Textspalte; repariert auf
- * `null` wird nur ein kaputter Stand 1.0).
- * @param {string} type @param {any} v @returns {boolean}
- */
-function fitsType(type, v) {
-  if (v === null) return true;
-  switch (type) {
-    case 'numeric': case 'currency': case 'percent': return typeof v === 'number';
-    case 'binary': return typeof v === 'number' || typeof v === 'boolean';
-    case 'date': case 'time': return typeof v === 'string' || typeof v === 'number';
-    default: return true;
-  }
 }
 
 /**
@@ -181,8 +143,8 @@ export class WorksheetModel extends defineModel({
     activeSheetId: text({ default: 'sheet_1' }),
     gridView: map(text(), object({ colWidths: map(text(), number({ exclusiveMin: 0 })), selection: selectionSpec })),
   },
-  // Kommandos kommen aus `commands-*.js` (Tasks 10–12): `commands: { ...sheetCommands, ...cellCommands }`.
-  commands: {},
+  // Kommandos aus `commands-*.js`: Zellen und Formeln (Task 10), Struktur und Blätter folgen (Tasks 11–12).
+  commands: { ...cellCommands },
   invariants: {
     uniqueSheetIds: {
       fields: ['sheets'],

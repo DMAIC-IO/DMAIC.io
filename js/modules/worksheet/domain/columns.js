@@ -5,8 +5,57 @@
  * Prüfung eines `meta`, wie `setColumnMeta` sie verlangt. Eine Quelle für
  * Model, Migration, Lesen und Viewmodel.
  *
+ * Dazu die Form eines Spaltenkopfs (`COLUMN_SHAPE`, Model und Kommandos) und
+ * die Typregel einer Zelle (`fitsType`).
+ *
  * Rein: kein DOM, kein i18n.
  */
+import { object, map, text, number, boolean, oneOf } from '../../../core/model.js';
+import { COLUMN_TYPES, DATE_FORMATS, TIME_FORMATS } from '../../../core/datagrid/datagrid-utils.js';
+import { ALL_ROLES } from '../../../core/datagrid/datagrid-roles.js';
+
+/** Felder eines Spaltenkopfs; `meta` mit den Schlüsseln von `COLUMN_META_KEYS`. */
+export const COLUMN_SHAPE = Object.freeze({
+  id: text(),
+  name: text(),
+  shortName: text(),
+  type: oneOf(Object.keys(COLUMN_TYPES)),
+  unit: text({ nullable: true }),
+  role: oneOf(ALL_ROLES, { nullable: true }),
+  roleManual: boolean(),
+  format: object({
+    decimals: number({ integer: true, min: 0, optional: true }),
+    dateFormat: oneOf(Object.keys(DATE_FORMATS), { optional: true }),
+    timeFormat: oneOf(Object.keys(TIME_FORMATS), { optional: true }),
+    // Ruling R10: Altdaten und Beispiele tragen es, der Renderer liest es.
+    currencySymbol: text({ optional: true }),
+  }),
+  meta: object({
+    lock: oneOf(['hard', 'soft'], { optional: true }),
+    reason: text({ optional: true }),
+    managedBy: text({ optional: true }),
+    managedRef: text({ optional: true }),
+    categoricalCoding: map(text(), number(), { optional: true }),
+  }, { nullable: true }),
+});
+
+/**
+ * Passt der Zellwert zum Spaltentyp? `null` passt immer. Nicht strenger als
+ * das Raster: Datum/Zeit dürfen Zahlen halten (Typwechsel lässt sie stehen),
+ * `binary` Wahrheitswerte, `text` alles. Dieselbe Regel steht fest in
+ * `migrations.js` (die Migration macht Alt-Text zur Textspalte; repariert auf
+ * `null` wird nur ein kaputter Stand 1.0).
+ * @param {string} type @param {any} v @returns {boolean}
+ */
+export function fitsType(type, v) {
+  if (v === null) return true;
+  switch (type) {
+    case 'numeric': case 'currency': case 'percent': return typeof v === 'number';
+    case 'binary': return typeof v === 'number' || typeof v === 'boolean';
+    case 'date': case 'time': return typeof v === 'string' || typeof v === 'number';
+    default: return true;
+  }
+}
 
 /**
  * Format-Schlüssel, die die Oberfläche setzt — genau die Auswahl des

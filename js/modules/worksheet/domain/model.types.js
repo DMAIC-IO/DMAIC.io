@@ -18,8 +18,77 @@
  */
 
 /**
+ * @typedef {object} SetCellsCommand
+ * @property {string} sheetId
+ * @property {string} columnId
+ * @property {number} startRow
+ * @property {Array<number|string|boolean|null>} values
+ */
+
+/**
+ * @typedef {object} SetFormulaCommand
+ * @property {string} sheetId
+ * @property {string} columnId
+ * @property {number} row
+ * @property {string} formula
+ */
+
+/**
+ * @typedef {object} WriteColumnsCommand
+ * @property {string} sheetId
+ * @property {Array<{ to: string, values: Array<number|string|boolean|null>, name?: string, type?: string, format?: object, unit?: string, discrete?: boolean }>} columns
+ */
+
+/**
+ * @typedef {object} ImportCsvCommand
+ * @property {string} sheetId
+ * @property {string} csvText
+ */
+
+/**
+ * @typedef {object} PasteBlockCommand
+ * @property {string} sheetId
+ * @property {string} columnId
+ * @property {number} startRow
+ * @property {string[][]} rows
+ */
+
+/**
+ * @typedef {object} FillRangeCommand
+ * @property {string} sheetId
+ * @property {{ c0: number, r0: number, c1: number, r1: number }} source
+ * @property {{ c0: number, r0: number, c1: number, r1: number }} target
+ * @property {boolean} [ctrl]
+ */
+
+/**
+ * @typedef {object} ClearRangeCommand
+ * @property {string} sheetId
+ * @property {number} c0
+ * @property {number} r0
+ * @property {number} c1
+ * @property {number} r1
+ */
+
+/**
+ * @typedef {object} RestoreCellsCommand
+ * @property {string} sheetId
+ * @property {number} rowCount
+ * @property {number} columnCount
+ * @property {Array<{ index: number, head?: { id: string, name: string, shortName: string, type: 'numeric'|'text'|'date'|'time'|'currency'|'percent'|'binary', unit: string|null, role: 'continuous'|'categorical'|'ordinal'|'date'|'identifier'|'freeText'|null, roleManual: boolean, format: { decimals?: number, dateFormat?: 'dd.MM.yyyy'|'yyyy-MM-dd'|'dd/MM/yyyy'|'MM/dd/yyyy'|'d. MMMM yyyy', timeFormat?: 'HH:mm'|'HH:mm:ss', currencySymbol?: string }, meta: { lock?: 'hard'|'soft', reason?: string, managedBy?: string, managedRef?: string, categoricalCoding?: Record<string, number> }|null }, start?: number, values?: Array<number|string|boolean|null>, formulas?: Record<string, string|null> }>} cols
+ */
+
+/**
  * @typedef {WorksheetModelFields & WorksheetModelView & {
- *   execute(cmd: never): unknown,
+ *   setCells(cmd: SetCellsCommand): number,
+ *   setFormula(cmd: SetFormulaCommand): { value: number|string|boolean|null, error: string|null },
+ *   writeColumns(cmd: WriteColumnsCommand): string[],
+ *   importCsv(cmd: ImportCsvCommand): { columns: number, rows: number },
+ *   pasteBlock(cmd: PasteBlockCommand): { columns: number, rows: number },
+ *   fillRange(cmd: FillRangeCommand): number,
+ *   clearRange(cmd: ClearRangeCommand): number,
+ *   restoreCells(cmd: RestoreCellsCommand): void,
+ *   execute(cmd: ({ type: 'setCells' } & SetCellsCommand) | ({ type: 'setFormula' } & SetFormulaCommand) | ({ type: 'writeColumns' } & WriteColumnsCommand) | ({ type: 'importCsv' } & ImportCsvCommand) | ({ type: 'pasteBlock' } & PasteBlockCommand) | ({ type: 'fillRange' } & FillRangeCommand) | ({ type: 'clearRange' } & ClearRangeCommand) | ({ type: 'restoreCells' } & RestoreCellsCommand)): unknown,
  *   toJSON(): object,
  *   hasContent(): boolean,
  *   readonly context: import('../../../core/model.js').ModelContext,
