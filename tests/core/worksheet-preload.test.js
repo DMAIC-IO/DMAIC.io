@@ -56,11 +56,11 @@ function makeCtx({ worksheet = false, loaded = false } = {}) {
 }
 
 suite('startup/worksheet-preload — dataChanged', () => {
-  test('nach dem Laden: je Instanz ein worksheet:dataChanged mit instanceId', async () => {
+  test('nach dem Laden: je Instanz ein worksheet:dataChanged mit instanceId und reason preload', async () => {
     const h = makeCtx({ worksheet: true });
     await installWorksheetPreload(h.ctx, { bump: h.bump });
     const ev = h.ctx.eventBus.emitted.filter(([e]) => e === 'worksheet:dataChanged');
-    assertEqual(JSON.stringify(ev), JSON.stringify([['worksheet:dataChanged', { instanceId: 'ws1' }]]));
+    assertEqual(JSON.stringify(ev), JSON.stringify([['worksheet:dataChanged', { instanceId: 'ws1', reason: 'preload' }]]));
   });
 
   test('schon geladen: kein Ereignis', async () => {

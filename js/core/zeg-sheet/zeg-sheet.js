@@ -193,7 +193,14 @@ export function ensureZegSheet(ctx) {
  */
 export function installZegSheetSync(ctx) {
   const { eventBus } = ctx;
-  const onSheet = ({ instanceId } = {}) => { syncSheetToHistory(ctx, instanceId); };
+  // `reason: 'preload'`: der Arbeitsblatt-Code ist nur eben geladen, die
+  // Daten sind unverändert. Weichen Blatt und Verlauf eines Projekts
+  // voneinander ab, überschriebe das erste Öffnen sonst den Verlauf und
+  // machte das Projekt schmutzig.
+  const onSheet = ({ instanceId, reason } = {}) => {
+    if (reason === 'preload') return;
+    syncSheetToHistory(ctx, instanceId);
+  };
   const onAchievement = ({ source } = {}) => { if (source !== SOURCE) writeHistoryToSheet(ctx); };
   const onCycle = () => { writeHistoryToSheet(ctx); };
   eventBus.on('worksheet:dataChanged', onSheet);

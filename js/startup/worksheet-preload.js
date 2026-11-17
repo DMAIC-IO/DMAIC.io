@@ -12,7 +12,8 @@
  *   wenn das Projekt ein Arbeitsblatt hat,
  * - bei `module:added` mit `moduleId === 'worksheet'`.
  * Danach `bumpWorksheetRevisions()` und je Instanz `worksheet:dataChanged`
- * (Nutzlast `{ instanceId }`), damit jeder Leser neu rechnet. War das
+ * (Nutzlast `{ instanceId, reason: 'preload' }`), damit jeder Leser neu
+ * rechnet. War das
  * Modul schon geladen, geschieht nichts.
  *
  * `app.js` startet das direkt nach `registerWorksheetReader`, vor dem ersten
@@ -31,6 +32,12 @@ import { bumpWorksheetRevisions } from '../core/worksheet-data.js';
 
 const WORKSHEET = 'worksheet';
 const PROJECT_EVENTS = ['project:switched', 'project:imported', 'project:rehydrated'];
+/**
+ * `reason` des `worksheet:dataChanged` nach dem Vorladen: die Daten sind
+ * unverändert, nur jetzt lesbar. Hörer, die auf ein dataChanged hin
+ * SCHREIBEN (der ZEG-Abgleich), überspringen es.
+ */
+export const PRELOAD_REASON = 'preload';
 
 /**
  * Hat das aktuelle Projekt eine Arbeitsblatt-Instanz?
@@ -82,7 +89,7 @@ export function installWorksheetPreload(ctx, { bump = bumpWorksheetRevisions } =
         // Ältere Leser (Korrelation, Regression, ...) rechnen nur auf dieses
         // Ereignis neu. Die Daten sind unverändert; die Hörer sind idempotent.
         for (const instanceId of worksheetInstanceIds(stateManager)) {
-          eventBus.emit('worksheet:dataChanged', { instanceId });
+          eventBus.emit('worksheet:dataChanged', { instanceId, reason: PRELOAD_REASON });
         }
       })
       .catch((err) => { console.error('[worksheet-preload] loading worksheet failed', err); })

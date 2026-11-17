@@ -153,6 +153,24 @@ suite('core/zeg-sheet sync', () => {
     assertEqual(state.phaseAchievement.define, 25);
   });
 
+  test('installed sync: dataChanged with reason preload (worksheet code just loaded) does not touch the history', () => {
+    const { state, modules, ctx, events } = makeCtx({ history: { define: [{ t: Date.now(), v: 10 }] } });
+    const ref = ensureZegSheet(ctx);
+    installZegSheetSync(ctx);
+    // Sheet and history drifted apart (e.g. an older import); opening the project must not overwrite the history.
+    const ws = modules.get(ref.instanceId);
+    colOf(ws.sheets[0].state, 'define').values[0] = 25;
+    modules.set(ref.instanceId, ws);
+    const before = JSON.stringify(state.phaseAchievementHistory);
+    const count = events.length;
+    ctx.eventBus.emit('worksheet:dataChanged', { instanceId: ref.instanceId, reason: 'preload' });
+    assertEqual(JSON.stringify(state.phaseAchievementHistory), before);
+    assertEqual(events.length, count + 1, 'only the emitted dataChanged itself');
+    // An actual edit (no reason) still writes back.
+    ctx.eventBus.emit('worksheet:dataChanged', { instanceId: ref.instanceId });
+    assertEqual(state.phaseAchievement.define, 25);
+  });
+
   test('installed sync: cycle switch rebuilds the phase columns', () => {
     const fx = makeCtx();
     const ref = ensureZegSheet(fx.ctx);
