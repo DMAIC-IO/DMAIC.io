@@ -39,10 +39,12 @@ let touch = null;
  * reaktiven Zähler, damit auch Altleser (Korrelation, Regression, …) in
  * Alpine-Ansichten neu rechnen, wenn das Arbeitsblatt nachgeladen wird oder
  * sich ändert.
+ * Nur `core/worksheet-data.js` setzt den Haken, beim Import. Ohne diesen Import
+ * (etwa in Node-Tests) bleibt er `null`, und die Fassade ist nicht reaktiv.
  * @param {((key: string) => void)|null} fn
- * @returns {void}
+ * @returns {((key: string) => void)|null} der bisherige Haken (zum Wiederherstellen in Tests)
  */
-export function setWorksheetTouch(fn) { touch = fn; }
+export function setWorksheetTouch(fn) { const prev = touch; touch = fn; return prev; }
 
 /**
  * Das rohe Objekt hinter einem reaktiven Proxy. Ein Viewmodel reicht den

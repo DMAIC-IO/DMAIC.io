@@ -7,7 +7,9 @@
  * `computed` oder Getter, der so liest, rechnet neu, sobald sich das Blatt
  * ändert. Den Zähler erhöht genau ein Abonnent je Bus
  * (`installWorksheetRevisions`); die Arbeitsblatt-Ereignisse bleiben, wie sie
- * sind.
+ * sind. Über den Haken `setWorksheetTouch` (beim Import dieser Datei) hängt
+ * jedes Lesen der Fassade an diesen Zählern, auch `resolveColumnRef` und
+ * `discoverColumns` der Altleser.
  */
 import Alpine from '@alpinejs/csp';
 import { resolveColumnRef, discoverColumns, columnOption, readWorksheet, setWorksheetTouch } from './worksheet-columns.js';

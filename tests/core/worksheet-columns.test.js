@@ -15,7 +15,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../test-utils.js';
 import {
   resolveColumnRef, getColumnRawValues, coerceNumeric, discoverColumns,
-  registerWorksheetReader, readWorksheet,
+  registerWorksheetReader, readWorksheet, setWorksheetTouch,
 } from '../../js/core/worksheet-columns.js';
 import { useStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 import { readWorksheetState } from '../../js/modules/worksheet/worksheet-read.js';
@@ -291,5 +291,23 @@ suite('worksheet-columns: coerceNumeric', () => {
 
   test('the string "Infinity" → null (Number() yields a non-finite)', () => {
     assertEqual(coerceNumeric('Infinity'), null);
+  });
+});
+
+suite('worksheet-columns — Abhängigkeits-Haken', () => {
+  test('readWorksheet ruft touch(instanceId), discoverColumns touch(\'#list\')', () => {
+    const sm = makeStateManager([{ id: 'c', name: 'X', shortName: 'X', type: 'numeric', values: [1, 2, 3] }]);
+    const calls = [];
+    const prev = setWorksheetTouch((k) => calls.push(k));
+    try {
+      readWorksheet(sm, 'ws-1');
+      assertDeepEqual(calls, ['ws-1']);
+      calls.length = 0;
+      discoverColumns(sm);
+      assertEqual(calls[0], '#list');
+      assertEqual(calls.includes('ws-1'), true);
+    } finally {
+      setWorksheetTouch(prev);
+    }
   });
 });
