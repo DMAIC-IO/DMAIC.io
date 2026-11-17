@@ -42,6 +42,7 @@ import {
 import { CYCLES, DEFAULT_CYCLE, getPhaseIds } from './cycles/cycles.js';
 import { isIsoDate } from './local-date.js';
 import { plainLength } from './rich-text.js';
+import { TableData, isCell } from './table-data.js';
 
 // ─── Feld-Konstruktoren ─────────────────────────────────────
 
@@ -177,6 +178,26 @@ export const image = (opts) => spec('image', {}, { omitOnRead: true, agentWrite:
  */
 export const richText = (opts) => spec('richText', {}, opts);
 
+/**
+ * Zellspeicher für große Arbeitsblätter (`TableData`). Vorgabe: leere Tabelle.
+ * Geprüft wird vollständig: `rowCount` ganzzahlig ≥ 0, jede Spalte ein Array der
+ * Länge `rowCount`, jede Zelle Zahl, Text, Wahrheitswert oder `null`. Trägt
+ * `bulk: true, bulkKind: 'table'`.
+ * @param {object} [opts] @returns {Readonly<object>}
+ */
+export const table = (opts) => spec('table', {}, { bulk: true, bulkKind: 'table', ...opts });
+
+/**
+ * Zähler `model.$tableRev` und `table.rev` erhöhen: Widgets zeichnen neu, wenn
+ * sich `rev` seit dem letzten Zeichnen geändert hat. Genau einmal am Ende eines
+ * Kommandos, das Zellen ändert.
+ * @param {any} model @param {TableData} tbl @returns {void}
+ */
+export function markTableChanged(model, tbl) {
+  tbl.rev += 1;
+  model.$tableRev += 1;
+}
+
 const IMAGE_DATA_URL = /^data:image\/[\w.+-]+;base64,/;
 
 const COLUMN_REF_KEYS = Object.freeze(['instanceId', 'sheetId', 'columnId']);
@@ -240,6 +261,7 @@ export function isPlainObject(v) {
  * @param {any} v @returns {any}
  */
 export function cloneJSON(v) {
+  if (v instanceof TableData) return v.toJSON();
   if (Array.isArray(v)) return v.map(cloneJSON);
   if (v !== null && typeof v === 'object') {
     const out = {};
@@ -341,6 +363,7 @@ export function defaultOf(s, context = DEFAULT_CONTEXT, name = 'default', root =
     case 'time': return '00:00';
     case 'phase': return getPhaseIds(context.cycle)[0];
     case 'columnRef': return null;
+    case 'table': return TableData.empty();
     case 'datasets': return [Object.fromEntries(Object.keys(s.slots).map((k) => [k, null]))];
     case 'number': case 'index': return 0;
     case 'boolean': return false;
@@ -480,6 +503,7 @@ export function checkValue(s, name, value, ctx = {}) {
       }
       return v;
     }
+    case 'table': return checkTable(name, value);
     case 'columnRef': {
       requireForm(name, value, isColumnRef(value), 'a column reference { instanceId, sheetId?, columnId }');
       return {
@@ -574,8 +598,50 @@ function repairValue(s, name, value, ctx, dropped) {
       for (const k of keys) if (Object.hasOwn(value, k)) out[k] = repairValue(s.shape[k], `${name}.${k}`, value[k], ctx, dropped);
       return out;
     }
+    case 'table': return isPlainObject(value) ? checkTable(name, repairTable(value)) : checkValue(s, name, value, ctx);
     default: return checkValue(s, name, value, ctx);
   }
+}
+
+/**
+ * Die schlichte Form `{ rowCount, columns }` heilen: ungültige Zellen werden
+ * `null`, kurze Spalten aufgefüllt, lange gekürzt. Ungültige Form bleibt, die
+ * Prüfung wirft danach.
+ * @param {any} v @returns {any}
+ */
+function repairTable(v) {
+  if (!Number.isInteger(v.rowCount) || v.rowCount < 0 || !Array.isArray(v.columns) || !v.columns.every(Array.isArray)) return v;
+  const n = v.rowCount;
+  const columns = v.columns.map((col) => {
+    const out = new Array(n);
+    for (let r = 0; r < n; r++) out[r] = r < col.length && isCell(col[r]) ? col[r] : null;
+    return out;
+  });
+  return { rowCount: n, columns };
+}
+
+/**
+ * `table`-Wert prüfen (O(n)): eine `TableData` bleibt dieselbe Instanz, die
+ * schlichte Form wird zur `TableData`.
+ * @param {string} name @param {any} value @returns {TableData}
+ * @throws {Error} bei ungültiger Form oder Zelle (`<name>.columns[c][r]: invalid cell`)
+ */
+function checkTable(name, value) {
+  const isTable = value instanceof TableData;
+  requireForm(name, value, isTable || (isPlainObject(value) && Array.isArray(value.columns)),
+    'a table { rowCount, columns }');
+  const { rowCount, columns } = value;
+  requireForm(name, value, Number.isInteger(rowCount) && rowCount >= 0, 'a table with an integer rowCount >= 0');
+  columns.forEach((col, c) => {
+    requireForm(`${name}.columns[${c}]`, col, Array.isArray(col) && col.length === rowCount,
+      `an array of ${rowCount} cells`);
+    for (let r = 0; r < rowCount; r++) {
+      if (!isCell(col[r])) {
+        throw Object.assign(new Error(`${name}.columns[${c}][${r}]: invalid cell`), { param: String(name).split(/[.[\s]/, 1)[0] });
+      }
+    }
+  });
+  return isTable ? value : new TableData(rowCount, columns);
 }
 
 /**
@@ -613,6 +679,7 @@ export function describeType(s) {
     case 'map': t = `Record<string, ${describeType(s.value)}>`; break;
     case 'object': t = `{ ${Object.entries(s.shape)
       .map(([k, v]) => `${k}${v.optional ? '?' : ''}: ${describeType(v)}`).join(', ')} }`; break;
+    case 'table': t = 'table'; break;
     case 'columnRef': t = '{ instanceId: string, sheetId?: string, columnId: string }'; break;
     case 'datasets': t = `Array<{ ${Object.entries(s.slots)
       .map(([k, v]) => `${k}: ${describeType(v)}`).join(', ')} }>`; break;
@@ -915,7 +982,7 @@ export function replaceFields(model, source) {
 
 // ─── defineModel ────────────────────────────────────────────
 
-const RESERVED = new Set(['constructor', 'toJSON', 'fromJSON', 'hasContent', 'execute', '_v', '_obs', '_schema', 'context', '_ctx', '_run']);
+const RESERVED = new Set(['constructor', 'toJSON', 'fromJSON', 'hasContent', 'execute', '$tableRev', '_v', '_obs', '_schema', 'context', '_ctx', '_run']);
 
 /**
  * Das Schema eines Models oder einer Model-Klasse.
@@ -982,7 +1049,7 @@ export function defineState(fields) {
 
 // ─── Formulare und Attribute ────────────────────────────────
 
-const FROM_ATTR_FORBIDDEN = new Set(['object', 'list', 'record', 'map', 'columnRef', 'datasets']);
+const FROM_ATTR_FORBIDDEN = new Set(['object', 'list', 'record', 'map', 'columnRef', 'datasets', 'table']);
 
 /**
  * Den Text eines `data-arg-*`-Attributs in den Wert seiner Feldart wandeln.
@@ -1314,6 +1381,7 @@ export function defineModel(schema) {
     constructor(context) {
       this._v = {};
       Object.defineProperty(this, '_run', { value: 0, writable: true, configurable: true, enumerable: false });
+      Object.defineProperty(this, '$tableRev', { value: 0, writable: true, configurable: true, enumerable: false });
       if (context !== undefined) setModelContext(this, context);
       const ctx = contextOf(this);
       // Pfadabhängige Vorgaben (index/idOf) erst, wenn die pfadfreien da sind.

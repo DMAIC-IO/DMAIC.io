@@ -148,6 +148,7 @@ const SKIP = new Set([
   'core/template-module-schema.test.js',
   'core/template-module-async-task.test.js',
   'core/template-module-derived.test.js',
+  'core/template-module-table.test.js',
   'core/template-module-view.test.js',
   'core/template-module-history.test.js',
   'core/template-tile-chart.test.js',
