@@ -44,7 +44,7 @@
  *   // Limit to one sheet: filter: (c) => c.sheetId === ref.sheetId
  */
 
-import { resolveColumnRef, getColumnRawValues, refToKey, discoverColumns } from '../core/worksheet-columns.js';
+import { resolveColumnRef, getColumnRawValues, refToKey, discoverColumns, worksheetsReadable } from '../core/worksheet-columns.js';
 
 export { refToKey, discoverColumns } from '../core/worksheet-columns.js';
 
@@ -271,9 +271,16 @@ export class ColumnPicker {
       : [...this._selectedKeys].sort().join('|');
   }
 
-  /** Re-scan columns and re-render, preserving valid selections. */
+  /**
+   * Re-scan columns and re-render, preserving valid selections.
+   * Solange ein Arbeitsblatt nicht lesbar ist (`not_loaded`, siehe
+   * `worksheetsReadable`), nur zeichnen: eine fehlende Spalte heißt dann
+   * „noch nicht geladen", nicht „gelöscht". Verwerfen und `onChange` kommen
+   * mit dem `worksheet:dataChanged` nach dem Vorladen.
+   */
   refresh() {
     if (isPickerFocused(this._container)) return;
+    if (!worksheetsReadable(this._ctx.stateManager)) { this._render(); return; }
 
     const cols = this._discover();
     const validKeys = new Set(cols.map(c => refToKey(c)));

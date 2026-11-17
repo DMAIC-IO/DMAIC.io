@@ -20,6 +20,7 @@ import { buildFrame } from './frame/index.js';
 import { setProjectSwitcherRouter, setProjectSwitcherUi } from './frame/header/project-switcher.js';
 import { initPages }  from './pages/index.js';
 import { startupTasks } from './startup/index.js';
+import worksheetPreload from './startup/worksheet-preload.js';
 import { initRouteDirectives, initRouter, createAppActionVerbs } from './core/router/index.js';
 import { setCreatePageRouter } from './core/create-page.js';
 import { registerTablistDirective } from './core/tablist.js';
@@ -92,6 +93,10 @@ async function init() {
   });
   // Die Arbeitsblatt-Fassade (ctx.data, worksheet-columns) liest über readSync.
   registerWorksheetReader(stateManager, instances.readSync);
+  // So früh wie möglich, noch vor dem ersten Mount: bis der Arbeitsblatt-Code
+  // geladen ist, liefert die Fassade `null` (`not_loaded`). Nicht abwarten —
+  // der Start (und der E2E-Griff) darf nicht auf diesen Chunk warten.
+  void worksheetPreload.init({ moduleRegistry, eventBus, stateManager });
   workspace.setInstances(instances);
   workspace.render();
 

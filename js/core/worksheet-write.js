@@ -28,6 +28,7 @@ import { inferRole, isRoleValidForType } from './datagrid/datagrid-roles.js';
 import { COLUMN_TYPES, START_ROW_COUNT } from './datagrid/datagrid-utils.js';
 import { findOwnPhase } from './instance-handoff.js';
 import { uniqueSheetName } from './worksheet-sheets.js';
+import { worksheetReadable } from './worksheet-columns.js';
 
 /** Blatt eines neu angelegten Worksheets. */
 const NEW_SHEET_ID = 'sheet_1';
@@ -340,6 +341,24 @@ export function completeStack(ctx, plan) {
 }
 
 /**
+ * Vor dem Anlegen eines Worksheets: ist ein vorhandenes Arbeitsblatt nicht
+ * lesbar (`not_loaded`, der Code ist noch nicht geladen), es einmal über
+ * `instances.read` lesen. Das lädt den Code; danach sieht `uniqueSheetName`
+ * alle Blattnamen und vergibt keinen doppelten. Eine nicht gemountete
+ * Instanz liest dabei den gespeicherten Stand (kein Mount, kein Flush).
+ * @param {{ instances: { interact: Function, list?: Function, read?: Function }, stateManager: object }} ctx
+ * @returns {Promise<void>}
+ */
+async function loadUnreadableWorksheets(ctx) {
+  const { instances, stateManager } = ctx;
+  if (typeof instances?.read !== 'function' || typeof instances.list !== 'function') return;
+  for (const { instanceId } of instances.list({ modules: ['worksheet'] })) {
+    if (worksheetReadable(stateManager, instanceId)) continue;
+    try { await instances.read(instanceId, { columns: [] }); } catch { /* der Name bleibt dann ein Versuch */ }
+  }
+}
+
+/**
  * Einen Plan aus `worksheetWrite().build()` ganz oder gar nicht schreiben:
  * der Stapel läuft über `ctx.instances.interact`. Scheitert er, hat die
  * Agentenschicht alles zurückgenommen, auch einen eben angelegten
@@ -347,9 +366,11 @@ export function completeStack(ctx, plan) {
  * der Antwort der Agentenschicht; deren Ursache steht in der Konsole.
  *
  * Vorher ergänzt `completeStack` Phase und eindeutigen Blattnamen eines
- * neuen Worksheets.
+ * neuen Worksheets; ist dafür ein Arbeitsblatt noch nicht lesbar, wird sein
+ * Code vorher geladen (`loadUnreadableWorksheets`).
  *
- * @param {{ instances: { interact: (stack: import('./agent/agent-types.generated.js').ModuleStack) => Promise<any> },
+ * @param {{ instances: { interact: (stack: import('./agent/agent-types.generated.js').ModuleStack) => Promise<any>,
+ *     list?: Function, read?: Function },
  *   stateManager: object, instanceId: string, i18n?: object }} ctx der Kontext (bzw. `services`) der aufrufenden Instanz
  * @param {WorksheetWritePlan} plan der Plan
  * @returns {Promise<{ instanceId: string, sheetId: string, columnIds: string[], created: boolean }>}
@@ -357,6 +378,7 @@ export function completeStack(ctx, plan) {
  *   `unknown_sheet`, `unknown_column`, `write_failed` oder `flush_failed`
  */
 export async function commitWorksheetWrite(ctx, plan) {
+  if (plan.created) await loadUnreadableWorksheets(ctx);
   const res = await ctx.instances.interact(completeStack(ctx, plan));
   if (res?.ok !== true) {
     console.warn('[worksheet-write] stack failed', res);

@@ -134,3 +134,34 @@ suite('startup/worksheet-preload', () => {
     assertEqual(t.bumps.length, 1);
   });
 });
+
+suite('startup/worksheet-preload — gescheitertes Laden', () => {
+  test('loadModule scheitert: kein bump, kein dataChanged; der nächste Auslöser lädt erneut', async () => {
+    const t = makeCtx({ worksheet: true });
+    let fail = true;
+    const realLoad = t.registry.loadModule.bind(t.registry);
+    t.registry.loadModule = async (id) => {
+      if (fail) { t.registry.loads.push(id); throw new Error('chunk failed'); }
+      return realLoad(id);
+    };
+    const realError = console.error;
+    const errors = [];
+    console.error = (...a) => errors.push(a);
+    try {
+      await installWorksheetPreload(t.ctx, { bump: t.bump });
+    } finally {
+      console.error = realError;
+    }
+    assertEqual(t.registry.loads.length, 1);
+    assertEqual(t.bumps.length, 0);
+    assertEqual(t.ctx.eventBus.emitted.filter(([e]) => e === 'worksheet:dataChanged').length, 0);
+    assertEqual(errors.length, 1);
+    fail = false;
+    t.ctx.eventBus.emit('project:rehydrated', {});
+    await settle();
+    await settle();
+    assertEqual(t.registry.loads.length, 2);
+    assertEqual(t.bumps.length, 1);
+    assertEqual(t.ctx.eventBus.emitted.filter(([e]) => e === 'worksheet:dataChanged').length, 1);
+  });
+});

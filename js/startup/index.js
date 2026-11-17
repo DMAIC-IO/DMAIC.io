@@ -1,14 +1,14 @@
 /**
  * D.Mike — Startup concern registry.
  * One-shot boot side effects, run in order by app.js after the frame and
- * pages are initialized. Worksheet preload runs first: its listeners must
- * hear the project events of a deeplinked scenario. It starts loading the
- * worksheet code without blocking the later concerns.
- * The rest keeps the order of the original app.js bootstrap:
+ * pages are initialized. The worksheet preload is not in this list: app.js
+ * starts it right after registering the worksheet reader, before the first
+ * mount, so the window in which the worksheet facade reads `not_loaded` is
+ * as short as possible (it never blocks the boot).
+ * The order keeps the one of the original app.js bootstrap:
  * deeplink → cross-version prompt → migration notice → viewport guard →
  * auto-save → ZEG sheet sync → e2e handle → agent surface.
  */
-import worksheetPreload from './worksheet-preload.js';
 import exampleDeeplink from './example-deeplink.js';
 import crossVersionPrompt from './cross-version-prompt.js';
 import migrationNotice from './migration-notice.js';
@@ -19,7 +19,6 @@ import e2eHandle from './e2e-handle.js';
 import agentSurface from './agent-surface.js';
 
 export const startupTasks = [
-  worksheetPreload,
   exampleDeeplink,
   crossVersionPrompt,
   migrationNotice,

@@ -4,6 +4,8 @@
  */
 import { suite, test, assertEqual, assertDeepEqual, assert } from '../test-utils.js';
 import { useStoredWorksheetReader } from '../helpers/worksheet-reader.js';
+import { registerWorksheetReader } from '../../js/core/worksheet-columns.js';
+import { readWorksheetState } from '../../js/modules/worksheet/worksheet-read.js';
 import {
   worksheetWrite, commitWorksheetWrite, completeStack, WriteError,
 } from '../../js/core/worksheet-write.js';
@@ -207,6 +209,42 @@ async function quietWarn(fn) {
 }
 
 suite('core/worksheet-write — commitWorksheetWrite', () => {
+  test('neuer Worksheet, Arbeitsblatt-Code nicht geladen: erst laden (instances.read), dann den Blattnamen eindeutig machen', async () => {
+    const ctx = fakeContext({ ok: true, results: [
+      { ok: true, id: 'ws', result: { instanceId: 'w9' } },
+      { ok: true, id: null, result: { value: null } },
+      { ok: true, id: 'write', result: { instanceId: 'w9', value: ['c1'] } },
+    ] });
+    const sm = ctx.stateManager;
+    let loaded = false;
+    // Wie readSync: bis zum Laden not_loaded.
+    registerWorksheetReader(sm, (id, o) => {
+      if (!loaded) throw Object.assign(new Error('not_loaded'), { code: 'not_loaded' });
+      return readWorksheetState(sm.getModuleState(id), o);
+    });
+    const reads = [];
+    ctx.instances.read = async (id) => { reads.push(id); loaded = true; return {}; };
+    ctx.instances.list = () => [{ instanceId: 'ws1', moduleId: 'worksheet', phase: 'data', title: '' }];
+    const plan = worksheetWrite().newWorksheet({ name: 'A' }).column({ name: 'P', values: [1] }).build();
+    await commitWorksheetWrite(ctx, plan);
+    assertDeepEqual(reads, ['ws1']);
+    assertDeepEqual(ctx.stacks[0][1].args, ['sheet_1', 'A 1']);
+  });
+
+  test('neuer Worksheet, Arbeitsblatt lesbar: kein Vorab-Lesen', async () => {
+    const ctx = fakeContext({ ok: true, results: [
+      { ok: true, id: 'ws', result: { instanceId: 'w9' } },
+      { ok: true, id: null, result: { value: null } },
+      { ok: true, id: 'write', result: { instanceId: 'w9', value: ['c1'] } },
+    ] });
+    const reads = [];
+    ctx.instances.read = async (id) => { reads.push(id); return {}; };
+    ctx.instances.list = () => [{ instanceId: 'ws1', moduleId: 'worksheet', phase: 'data', title: '' }];
+    const plan = worksheetWrite().newWorksheet({ name: 'A' }).column({ name: 'P', values: [1] }).build();
+    await commitWorksheetWrite(ctx, plan);
+    assertDeepEqual(reads, []);
+  });
+
   test('commit returns ids from write result', async () => {
     const ctx = fakeContext({ ok: true, contract: 1, results: [
       { ok: true, id: 'ws', result: { instanceId: 'w9', module: 'worksheet', phase: 'data' } },

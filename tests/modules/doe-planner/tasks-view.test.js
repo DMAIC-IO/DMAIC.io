@@ -16,6 +16,7 @@ import { generateDesign } from '../../../js/engines/doe-planner-engine.js';
 import { uid } from '../../../js/core/uid.js';
 import { buildInitialWorksheetState } from '../../../js/core/worksheet-sheets.js';
 import { withStoredWorksheetReader } from '../../helpers/worksheet-reader.js';
+import { registerWorksheetReader } from '../../../js/core/worksheet-columns.js';
 
 const ID = 'doe-planner';
 const TPL_KEY = `js/modules/${ID}/resources/view.html`;
@@ -228,7 +229,7 @@ async function mount(model = null) {
   await flush();
   const vm = () => Alpine.$data(container.querySelector('[x-data]'));
   return {
-    vm, notes, store, layer, events, listing,
+    vm, notes, store, layer, events, listing, context,
     /** Runs of the command `regenerate` so far. */
     regenerates: () => events.filter(([n, p]) => n === 'command:executed' && p.command === 'regenerate').length,
     /** Starts a run and returns its outcome. */
@@ -346,6 +347,19 @@ suite('doe-planner tasks: createDatasheet', () => {
     assertDeepEqual(h.layer.stacks.at(-1)[0], { op: 'module.remove', instance: old });
     assertEqual(h.store.states[old], undefined);
     assertEqual(vm.staleness, 'bound');
+  });
+
+  test('worksheet code not loaded (readSync not_loaded): the old datasheet is still replaced, not kept beside a new one', async () => {
+    const h = await bound(plan());
+    const old = h.vm().model.worksheetRef.instanceId;
+    // Like readSync before the worksheet code is loaded: every read throws not_loaded.
+    registerWorksheetReader(h.context.stateManager, () => {
+      throw Object.assign(new Error('not_loaded'), { code: 'not_loaded' });
+    });
+    const out = await h.run('createDatasheet');
+    assertEqual(out.status, 'done', JSON.stringify(out));
+    assertDeepEqual(h.layer.stacks.at(-1)[0], { op: 'module.remove', instance: old });
+    assertEqual(h.store.states[old], undefined);
   });
 });
 

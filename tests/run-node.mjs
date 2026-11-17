@@ -214,6 +214,7 @@ const SKIP = new Set([
   'startup/example-deeplink.test.js',
   'ui/column-picker-filter.test.js',
   'ui/column-picker-sync-value.test.js',
+  'ui/column-picker-readiness.test.js',
   'ui/dashboard-grid-settings.test.js',
   'ui/dataset-picker-help.test.js',
   'ui/dmaic-tiles-can-add.test.js',

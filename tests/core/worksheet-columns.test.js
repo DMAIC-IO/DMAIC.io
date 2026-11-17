@@ -16,6 +16,7 @@ import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../test
 import {
   resolveColumnRef, getColumnRawValues, coerceNumeric, discoverColumns,
   registerWorksheetReader, readWorksheet, setWorksheetTouch,
+  worksheetReadable, worksheetsReadable,
 } from '../../js/core/worksheet-columns.js';
 import { useStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 import { readWorksheetState } from '../../js/modules/worksheet/worksheet-read.js';
@@ -306,6 +307,52 @@ suite('worksheet-columns — Abhängigkeits-Haken', () => {
       discoverColumns(sm);
       assertEqual(calls[0], '#list');
       assertEqual(calls.includes('ws-1'), true);
+    } finally {
+      setWorksheetTouch(prev);
+    }
+  });
+});
+
+suite('worksheet-columns — Lesbarkeit (not_loaded ist nicht „gelöscht“)', () => {
+  test('worksheetReadable: false genau bei not_loaded', () => {
+    const sm = strictStateManager({ data: [{ moduleId: 'worksheet', instanceId: 'ws-1' }] });
+    registerWorksheetReader(sm, recordingReader(STORED, 'not_loaded').read);
+    assertEqual(worksheetReadable(sm, 'ws-1'), false);
+    assertEqual(worksheetsReadable(sm), false);
+  });
+
+  test('worksheetReadable: geladen true; unbekannte Instanz true (ihr null ist verlässlich)', () => {
+    const sm = strictStateManager({ data: [{ moduleId: 'worksheet', instanceId: 'ws-1' }] });
+    const reader = recordingReader(STORED);
+    registerWorksheetReader(sm, reader.read);
+    assertEqual(worksheetReadable(sm, 'ws-1'), true);
+    assertEqual(worksheetReadable(sm, 'nope'), true);
+    assertEqual(worksheetsReadable(sm), true);
+    // Der Probelauf liest keine Spalte.
+    assertDeepEqual(reader.calls[0], ['ws-1', { columns: [] }]);
+  });
+
+  test('worksheetsReadable ohne Arbeitsblatt: true, ohne Lesen', () => {
+    const sm = strictStateManager({ data: [{ moduleId: 'sipoc', instanceId: 'si' }] });
+    const reader = recordingReader(STORED, 'not_loaded');
+    registerWorksheetReader(sm, reader.read);
+    assertEqual(worksheetsReadable(sm), true);
+    assertEqual(reader.calls.length, 0);
+  });
+
+  test('ohne registrierten Leser wirft worksheetReadable', () => {
+    const sm = strictStateManager({});
+    assertThrows(() => worksheetReadable(sm, 'ws-1'), /worksheet reader not registered/);
+  });
+
+  test('worksheetsReadable touch(\'#list\'), worksheetReadable touch(instanceId)', () => {
+    const sm = strictStateManager({ data: [{ moduleId: 'worksheet', instanceId: 'ws-1' }] });
+    registerWorksheetReader(sm, recordingReader(STORED).read);
+    const calls = [];
+    const prev = setWorksheetTouch((k) => calls.push(k));
+    try {
+      worksheetsReadable(sm);
+      assertDeepEqual(calls, ['#list', 'ws-1']);
     } finally {
       setWorksheetTouch(prev);
     }

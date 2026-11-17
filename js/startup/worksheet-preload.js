@@ -15,11 +15,16 @@
  * (Nutzlast `{ instanceId }`), damit jeder Leser neu rechnet. War das
  * Modul schon geladen, geschieht nichts.
  *
- * Das Laden beim Start blockiert den Start nicht (`run` wartet nicht): die
- * späteren Startaufgaben, etwa der E2E-Griff, kämen sonst erst nach dem
- * Laden des Arbeitsblatt-Codes. Bis dahin liefert die Fassade `null`, der
- * `bump` danach lässt jeden Leser neu rechnen. `uniqueSheetName` sieht die
- * Blattnamen ab dem Ende des Ladens.
+ * `app.js` startet das direkt nach `registerWorksheetReader`, vor dem ersten
+ * Mount (nicht über `startupTasks`): so ist das Fenster, in dem die Fassade
+ * `not_loaded` liest, so kurz wie möglich. Das Laden blockiert den Start
+ * nicht (`run` wartet nicht): die Startaufgaben, etwa der E2E-Griff, kämen
+ * sonst erst nach dem Laden des Arbeitsblatt-Codes. Bis dahin liefert die
+ * Fassade `null`, und `worksheetsReadable` ist `false` — wer aus einem leeren
+ * Ergebnis schreibt (`ColumnPicker.refresh`), wartet darauf. Der `bump`
+ * danach lässt jeden Leser neu rechnen. Scheitert das Laden, versucht es der
+ * nächste Auslöser erneut. `uniqueSheetName` sieht die Blattnamen ab dem
+ * Ende des Ladens.
  */
 import { createStartup } from '../core/create-startup.js';
 import { bumpWorksheetRevisions } from '../core/worksheet-data.js';

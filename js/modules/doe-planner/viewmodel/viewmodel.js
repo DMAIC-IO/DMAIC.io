@@ -153,10 +153,15 @@ const tasksView = (ctx) => {
      */
     sheetOf(ref) { return ref ? ctx.data.sheet({ instanceId: ref.instanceId, sheetId: ref.sheetId }) : null; },
     /**
-     * The worksheet instance still exists.
+     * The worksheet instance still exists. Asks the project, not the
+     * worksheet reader: before the worksheet code is loaded every read is
+     * null (`not_loaded`), and "not loaded" must not leave the old datasheet
+     * beside a new one.
      * @param {string} instanceId @returns {boolean}
      */
-    hasWorksheet(instanceId) { return ctx.data.sheets(instanceId) !== null; },
+    hasWorksheet(instanceId) {
+      return (ctx.instances?.list({ modules: ['worksheet'] }) ?? []).some((i) => i.instanceId === instanceId);
+    },
     /** Column names of a new datasheet, in the app language. */
     get columnNames() {
       return {

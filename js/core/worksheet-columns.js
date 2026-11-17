@@ -93,6 +93,53 @@ export function readWorksheet(stateManager, instanceId, options) {
   }
 }
 
+/** Der billigste Lesevorgang: keine Spalten, keine Zeilen, nur Blattliste und `rowCount`. */
+const PROBE = Object.freeze({ columns: Object.freeze([]) });
+
+/**
+ * Ist das Ergebnis der Fassade für diese Instanz verlässlich? `false` genau
+ * dann, wenn der Leser `not_loaded` meldet: der Code des Arbeitsblatts ist
+ * (noch) nicht geladen, etwa im Vorladefenster nach dem Neuladen oder nach
+ * einem gescheiterten Laden. Dann heißt `null`/`[]` der Fassade „weiß ich
+ * nicht", nicht „gibt es nicht". Wer aus einem leeren Ergebnis etwas
+ * schreibt (eine Auswahl verwerfen, ein neues Blatt anlegen), fragt vorher
+ * hier. Eine unbekannte Instanz ist lesbar: ihr `null` ist verlässlich.
+ * @param {object} stateManager
+ * @param {string} instanceId
+ * @returns {boolean}
+ * @throws {Error} `worksheet reader not registered`
+ */
+export function worksheetReadable(stateManager, instanceId) {
+  const read = readers.get(rawOf(stateManager));
+  if (!read) throw new Error('worksheet reader not registered');
+  touch?.(instanceId);
+  try {
+    read(instanceId, PROBE);
+    return true;
+  } catch (err) {
+    return err?.code !== 'not_loaded';
+  }
+}
+
+/**
+ * Sind alle Arbeitsblätter des Projekts lesbar (`worksheetReadable`)? Ohne
+ * Arbeitsblatt `true`. Für Leser über alle Blätter (`discoverColumns`,
+ * `ColumnPicker`). Reaktiv wie `discoverColumns` (`'#list'`): nach dem
+ * Vorladen rechnet ein `computed` neu.
+ * @param {{ get: (path: string) => any }} stateManager
+ * @returns {boolean}
+ * @throws {Error} `worksheet reader not registered`
+ */
+export function worksheetsReadable(stateManager) {
+  touch?.('#list');
+  for (const phase of Object.keys(stateManager.get('phases') || {})) {
+    for (const inst of stateManager.get(`phases.${phase}`) ?? []) {
+      if (inst?.moduleId === 'worksheet' && !worksheetReadable(stateManager, inst.instanceId)) return false;
+    }
+  }
+  return true;
+}
+
 /**
  * Resolve a column reference to its worksheet column object, read through
  * the registered reader (`readSync`, with `columns: [columnId]`).
