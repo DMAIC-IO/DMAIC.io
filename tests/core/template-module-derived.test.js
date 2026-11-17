@@ -182,6 +182,38 @@ suite('createModule mit derived', () => {
       /command rows collides with derived/);
   });
 
+  test('read-Haken: eingehängtes read() und readDetached lesen über read(model, options)', async () => {
+    const calls = [];
+    const read = (model, options) => { calls.push(options); return { own: model.n, options: options ?? null }; };
+    const { mod, container, vm } = await mount({ n: 3 }, { read });
+    assertDeepEqual(vm().read({ columns: ['a'] }), { own: 3, options: { columns: ['a'] } });
+    const model = mod.loadDetached({ n: 5 }, { instanceId: 'dt-4', eventBus: null, stateManager: fakeStateManager(null) });
+    assertDeepEqual(mod.readDetached(model, {}, { fields: ['x'] }), { own: 5, options: { fields: ['x'] } });
+    assertEqual(calls.length, 2);
+    await mod.destroy(); container.remove();
+  });
+
+  test('readStored-Haken landet am Modul, ohne Haken fehlt er', () => {
+    ensureTemplate();
+    const readStored = (saved) => ({ saved });
+    assertEqual(makeModule({ readStored }).readStored, readStored);
+    assertEqual(makeModule().readStored, undefined);
+  });
+
+  test('readFields: describe nennt die Felder der eigenen Lesefläche, nur mit read', () => {
+    ensureTemplate();
+    const readFields = { own: { type: 'number', help: '', bulk: false, derived: true } };
+    const mod = makeModule({ read: (m) => ({ own: m.n }), readFields });
+    assertDeepEqual(mod.agentEntry.fields, readFields);
+    assertEqual(mod.agentEntry.settable.includes('n'), true, 'setzbar bleibt aus dem Schema');
+    assertThrows(() => makeModule({ readFields }), /readFields needs read/);
+  });
+
+  test('read und readStored müssen Funktionen sein', () => {
+    assertThrows(() => makeModule({ read: 1 }), /read must be a function/);
+    assertThrows(() => makeModule({ readStored: 'x' }), /readStored must be a function/);
+  });
+
   test('agentEntry kennt derived', () => {
     ensureTemplate();
     const { fields } = makeModule().agentEntry;

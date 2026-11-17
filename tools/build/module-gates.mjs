@@ -229,14 +229,25 @@ const WORKSHEET_USES = [
 ];
 
 /**
+ * Das Arbeitsblatt: Besitzer der Arbeitsblätter. Die Gates `uses` und
+ * Lesezugriff gelten ihm nicht — es liest beim Einhängen seinen eigenen
+ * gespeicherten Stand (Altstand sofort ablegen), fragt den Projektabschluss
+ * (Raster nur lesend) und übergibt Spalten an `chart-suggestion`; `ctx.data`
+ * liest über das Arbeitsblatt selbst.
+ */
+const WORKSHEET_OWNER = 'worksheet';
+
+/**
  * Gate `uses` vollständig: wer das Datenformat des Worksheets nutzt,
  * erklärt `uses: ['worksheet']`. Ein Befund je Datei (erster Treffer).
  * @param {{ path: string, text: string }[]} files .js-Dateien des Moduls
  * @param {string[]} uses aus module.js
+ * @param {string} [id] Modul-id
  * @returns {string[]}
  */
-export function checkUses(files, uses) {
-  if (uses.includes('worksheet')) return [];
+export function checkUses(files, uses, id = '') {
+  // Das Arbeitsblatt selbst ist der Besitzer des Formats, kein Nutzer.
+  if (id === WORKSHEET_OWNER || uses.includes('worksheet')) return [];
   const out = [];
   for (const { path, text } of files) {
     const hit = WORKSHEET_USES.find(({ re }) => re.test(text));
@@ -354,13 +365,20 @@ export function checkLayers(files) {
 const MODEL_SPEC = /(^|\/)core\/model\.js$/;
 const WIDGET_SCHEMA_SPEC = /\/widgets\/[a-z0-9-]+\/schema\.js$/;
 const CHART_COLORS_SPEC = /\/core\/chart\/chart-colors\.js$/;
+/** Kommandogruppe eines großen Models: `commands: { ...cellCommands }` aus `./commands-<teil>.js`. */
+const COMMAND_PART_SPEC = /^\.\/commands-[a-z0-9-]+\.js$/;
+/** Geschwisterdatei in domain/: ihre Formen (`<NAME>_SHAPE`, Objekt aus Konstruktoren) gelten als Konstanten. */
+const SIBLING_SPEC = /^\.\/(?!migrations\.js$)[a-z0-9-]+\.js$/;
+const SHAPE_NAME = /^[A-Z][A-Z0-9_]*_SHAPE$/;
 /** Präfix aller Schema-Befunde. */
 const SCHEMA_PREFIX = 'schema: domain/model.js:';
 
 /**
  * Gate Schema, Teil Literal: `defineModel({ … })` ist ein reines Literal
  * (feste Schlüssel, Konstruktoren aus core/model.js, Literale, Konstanten
- * dieser Datei; Funktionen nur als `run`, `current`, `confirm` und — bei `defineModel` — als `default` (Vorgabe aus dem Kontext)). `version` ist ein String-Literal
+ * dieser Datei und Formen `<NAME>_SHAPE` aus Geschwisterdateien `./<name>.js`;
+ * in `commands` dazu Spreads von Kommandogruppen aus `./commands-<teil>.js`;
+ * Funktionen nur als `run`, `current`, `confirm` und — bei `defineModel` — als `default` (Vorgabe aus dem Kontext)). `version` ist ein String-Literal
  * `MAJOR.MINOR`; `migrations` nur `'a→b': <Import aus ./migrations.js>`.
  * @param {string} text Inhalt von domain/model.js
  * @param {{ define?: string, file?: string }} [opts] Aufruf und Datei (Vorgabe defineModel, domain/model.js); version/migrations nur bei defineModel
@@ -372,6 +390,7 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
   const ctors = new Map(); // lokaler Name → importierter Name
   const runImports = new Set();
   const migrationImports = new Set();
+  const commandParts = new Set();
   const consts = new Set();
   const widgetSchemas = new Set(); // Default-Importe von widgets/<name>/schema.js
   for (const st of sf.statements) {
@@ -386,6 +405,9 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
         else if (CHART_COLORS_SPEC.test(spec)) consts.add(el.name.text);
         else if (/^\.\/commands\//.test(spec)) runImports.add(el.name.text);
         else if (spec === './migrations.js') migrationImports.add(el.name.text);
+        // Große Models (Arbeitsblatt): Kommandogruppen aus ./commands-<teil>.js, Formen aus Geschwisterdateien.
+        else if (COMMAND_PART_SPEC.test(spec)) commandParts.add(el.name.text);
+        else if (SIBLING_SPEC.test(spec) && SHAPE_NAME.test(imported)) consts.add(el.name.text);
       }
     }
     const decl = ts.isVariableStatement(st) ? st.declarationList : null;
@@ -406,6 +428,9 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
   const out = [];
   const src = (n) => n.getText(sf);
   const top = calls[0].arguments[0];
+  const commandsProp = define === 'defineModel' ? top.properties.find((p) => keyOf(p) === 'commands') : undefined;
+  const commandsLiteral = commandsProp && ts.isPropertyAssignment(commandsProp) && ts.isObjectLiteralExpression(commandsProp.initializer)
+    ? commandsProp.initializer : null;
   for (const p of top.properties) {
     const key = keyOf(p);
     if (define !== 'defineModel' || (key !== 'version' && key !== 'migrations')) continue;
@@ -459,7 +484,9 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
         }
         if (k === 'fields' && ts.isPropertyAssignment(q) && ts.isArrayLiteralExpression(q.initializer)
           && q.initializer.elements.every((e) => ts.isStringLiteral(e))) continue;
-        out.push(`${P} invariants.${name}: nur fields (String-Literale), test und repair erlaubt (${src(q)})`);
+        // Nur beim Laden geprüft (O(n)-Invarianten, Ruling R9).
+        if (k === 'onLoad' && ts.isPropertyAssignment(q) && q.initializer.kind === ts.SyntaxKind.TrueKeyword) continue;
+        out.push(`${P} invariants.${name}: nur fields (String-Literale), test, repair und onLoad: true erlaubt (${src(q)})`);
       }
     }
   };
@@ -509,6 +536,7 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
     }
     if (ts.isObjectLiteralExpression(n)) {
       for (const p of n.properties) {
+        if (ts.isSpreadAssignment(p) && n === commandsLiteral && ts.isIdentifier(p.expression) && commandParts.has(p.expression.text)) continue;
         if (ts.isSpreadAssignment(p)) { out.push(`${P} Spread nicht erlaubt (${src(p)})`); continue; }
         if (p.name && ts.isComputedPropertyName(p.name)) { out.push(`${P} berechneter Schlüssel nicht erlaubt (${src(p.name)})`); continue; }
         const key = p.name && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? p.name.text : null;
@@ -838,7 +866,8 @@ function asyncTaskRuns(text) {
 }
 
 /**
- * Gate Verlauf: `history` in `createModule({ … })` ist `true` oder `{ depth: <ganze Zahl ≥ 1> }`.
+ * Gate Verlauf: `history` in `createModule({ … })` ist `true` oder ein Objekt mit
+ * `depth` (ganze Zahl ≥ 1) und/oder `mode: 'inverse'` (Verlauf mit Umkehrung, P4).
  * @param {string} text Text des Viewmodels
  * @param {string} [file]
  * @returns {string[]}
@@ -848,9 +877,12 @@ export function checkHistoryOption(text, file = 'viewmodel/viewmodel.js') {
   const prop = arg?.properties.find((p) => ts.isPropertyAssignment(p) && keyOf(p) === 'history');
   if (!prop || !ts.isPropertyAssignment(prop)) return [];
   const value = literalValue(prop.initializer);
+  const keys = value && typeof value === 'object' && !Array.isArray(value) ? Object.keys(value) : null;
   const ok = value === true
-    || (value && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).join() === 'depth' && Number.isInteger(value.depth) && value.depth >= 1);
-  return ok ? [] : [`history: ${file}: history ist true oder { depth: ganze Zahl ≥ 1 }`];
+    || (keys !== null && keys.length > 0 && keys.every((k) => k === 'depth' || k === 'mode')
+      && (!keys.includes('depth') || (Number.isInteger(value.depth) && value.depth >= 1))
+      && (!keys.includes('mode') || value.mode === 'inverse'));
+  return ok ? [] : [`history: ${file}: history ist true oder { depth?: ganze Zahl ≥ 1, mode?: 'inverse' }`];
 }
 
 const VIEW_FORBIDDEN = ['stateManager', 'getModuleState'];
@@ -1605,11 +1637,11 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
     const text = readFileSync(join(base, 'module.js'), 'utf8');
     out.push(...checkDescriptor(id, text, { moduleIds, exampleIds, paths, exampleOwners }));
     const uses = parseDescriptor(text).fields.get('uses');
-    out.push(...checkUses(js.filter((f) => f.path !== 'module.js'), Array.isArray(uses) ? uses : []));
+    out.push(...checkUses(js.filter((f) => f.path !== 'module.js'), Array.isArray(uses) ? uses : [], id));
   }
   out.push(...checkLayers(js));
   out.push(...checkWritePath(js));
-  out.push(...checkViewReads(js, base));
+  if (id !== WORKSHEET_OWNER) out.push(...checkViewReads(js, base));
   out.push(...checkCommandsRef(js, base));
   out.push(...checkAsyncTaskDecls(js));
   const cssPath = 'resources/style.css';

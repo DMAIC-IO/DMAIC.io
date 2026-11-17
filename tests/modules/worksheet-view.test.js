@@ -10,7 +10,8 @@ import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-u
 import Alpine from '../../vendor/alpinejs/csp.js';
 import mod from '../../js/modules/worksheet/viewmodel/viewmodel.js';
 import { WorksheetModel } from '../../js/modules/worksheet/domain/model.js';
-import { readWorksheetModel } from '../../js/modules/worksheet/worksheet-read.js';
+import { readWorksheetModel, readWorksheetStored } from '../../js/modules/worksheet/domain/read.js';
+import { createInstances } from '../../js/core/instances.js';
 import { sheetCsv } from '../../js/modules/worksheet/io/export.js';
 import { registerFieldDirective } from '../../js/core/field-directive.js';
 import { registerCommandDirectives } from '../../js/core/command-directives.js';
@@ -193,8 +194,8 @@ suite('worksheet: Viewmodel der Zielform im Browser', () => {
 
   test('Spalte gelöscht: columnRef eines anderen Moduls liefert über die Fassade null', async () => {
     const h = await mount(twoSheets());
-    // Wie readSync an einer eingehängten Instanz: Lesen aus dem lebenden Model.
-    registerWorksheetReader(h.stateManager, (id, options) => readWorksheetModel(h.vm().model, options));
+    // Wie readSync an einer eingehängten Instanz: der echte Lese-Haken `vm.read`.
+    registerWorksheetReader(h.stateManager, (id, options) => h.vm().read(options));
     const sheet = h.vm().model.sheets[0];
     const ref = { instanceId: WS, sheetId: sheet.id, columnId: sheet.columns[0].id };
     const data = createWorksheetData(h.stateManager);
@@ -205,6 +206,50 @@ suite('worksheet: Viewmodel der Zielform im Browser', () => {
     await flush();
     assertEqual(resolveColumnRef(h.stateManager, ref), null);
     assertEqual(data.values(ref), null);
+  });
+
+  test('Lese-Haken: vm.read und readDetached liefern die Lesefläche des Arbeitsblatts, readStored den gespeicherten Stand', async () => {
+    const stored = twoSheets();
+    const h = await mount(stored);
+    const sheet = h.vm().model.sheets[0];
+    const opts = { sheetId: sheet.id, columns: [sheet.columns[0].id] };
+    const live = h.vm().read(opts);
+    assertDeepEqual(live, readWorksheetModel(h.vm().model, opts));
+    assertEqual(live.columns[0].values.slice(0, 3).join(), '1,2,3');
+    const model = mod.loadDetached(stored, { instanceId: 'ws-2', eventBus: null, stateManager: h.stateManager });
+    assertDeepEqual(mod.readDetached(model, {}, opts), live);
+    assertEqual(mod.readStored, readWorksheetStored);
+    assertDeepEqual(mod.readStored(stored, opts), live);
+  });
+
+  test('instances.readSync ohne Mount: ein Altstand wird migriert gelesen, ein aktueller über readStored', async () => {
+    const h = await mount(twoSheets());
+    const legacy = {
+      sheets: [{ id: 's-alt', name: 'Alt', state: { rowCount: 2, columns: [{ id: 'c-a', name: 'A', type: 'numeric', values: [4, 5] }] } }],
+      activeSheetId: 's-alt', sheetCounter: 1,
+    };
+    const states = { 'ws-alt': legacy, 'ws-neu': twoSheets() };
+    const phases = { data: [{ instanceId: 'ws-alt', moduleId: ID, order: 0 }, { instanceId: 'ws-neu', moduleId: ID, order: 1 }] };
+    const sm = {
+      get: (path) => (path === 'phases' ? phases : path.startsWith('phases.') ? phases[path.slice(7)] : undefined),
+      getModuleState: (id) => states[id] ?? null,
+      setModuleState: (id, st) => { states[id] = st; },
+      isCompleted: () => false,
+      getProjectCycle: () => 'dmaic',
+    };
+    const svc = createInstances({
+      stateManager: sm,
+      moduleRegistry: { loadModule: async () => mod, getLoaded: () => mod },
+      workspace: { getLiveViewmodel: () => null, isPending: () => false },
+      eventBus: { emit() {}, on() {}, off() {} },
+      createData: () => ({}),
+    });
+    const alt = svc.readSync('ws-alt', { sheetId: 's-alt', columns: ['c-a'] });
+    assertEqual(alt.columns[0].values.join(), '4,5');
+    assertEqual(states['ws-alt']._schema?.version, '1.0', 'einmal migriert zurückgeschrieben');
+    const neu = svc.readSync('ws-neu', { fields: ['sheets'] });
+    assertDeepEqual(neu.sheets.map((s) => s.name), ['Sheet 1', 'Zweites']);
+    void h;
   });
 
   test('gridView: die Auswahl des Rasters steht je Blatt im Model und in der Statuszeile', async () => {

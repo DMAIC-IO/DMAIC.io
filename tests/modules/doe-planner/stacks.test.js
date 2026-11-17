@@ -36,8 +36,8 @@ const COLUMNS = Object.freeze([
   { id: 'own', name: 'Notiz', meta: null },
 ]);
 
-/** @param {string} method @param {any[]} args */
-const call = (method, args) => ({ op: 'instance.call', module: 'worksheet', instance: 'ws1', method, args });
+/** @param {string} method @param {object} cmd the command object */
+const call = (method, cmd) => ({ op: 'instance.call', module: 'worksheet', instance: 'ws1', method, args: [cmd] });
 
 /** @param {any} meta @returns {any} meta without its lock */
 const unlocked = (meta) => { const { lock, ...rest } = meta; return rest; };
@@ -49,23 +49,23 @@ suite('doe-planner domain — augmentStack', () => {
     const stack = augmentStack(REF, COLUMNS, rows, 4);
     const locked = COLUMNS.filter((c) => c.meta && c.meta.lock);
     assertDeepEqual(stack, [
-      ...locked.map((c) => call('setColumnMeta', ['sheet_1', c.id, unlocked(c.meta)])),
-      call('addRows', ['sheet_1', 2]),
-      call('setCells', ['sheet_1', 'run', 4, [5, 6]]),
-      call('setCells', ['sheet_1', 'std', 4, [5, 6]]),
-      call('setCells', ['sheet_1', 'blk', 4, [1, 1]]),
-      call('setCells', ['sheet_1', 'rep', 4, [1, 1]]),
-      call('setCells', ['sheet_1', 'fa', 4, [150, 200]]),
-      call('setCells', ['sheet_1', 'fm', 4, ['Stahl', 'Kupfer']]),
-      call('setFormula', ['sheet_1', 'm1', 4, "=AVERAGEIF('StdOrder'; 'StdOrder'[5]; 'Yield')"]),
-      call('setFormula', ['sheet_1', 'm1', 5, "=AVERAGEIF('StdOrder'; 'StdOrder'[6]; 'Yield')"]),
-      call('setFormula', ['sheet_1', 'v1', 4, "=LN(VARIF('StdOrder'; 'StdOrder'[5]; 'Yield'))"]),
-      call('setFormula', ['sheet_1', 'v1', 5, "=LN(VARIF('StdOrder'; 'StdOrder'[6]; 'Yield'))"]),
-      call('setFormula', ['sheet_1', 'm2', 4, "=AVERAGEIF('StdOrder'; 'StdOrder'[5]; 'Cost')"]),
-      call('setFormula', ['sheet_1', 'm2', 5, "=AVERAGEIF('StdOrder'; 'StdOrder'[6]; 'Cost')"]),
-      call('setFormula', ['sheet_1', 'v2', 4, "=LN(VARIF('StdOrder'; 'StdOrder'[5]; 'Cost'))"]),
-      call('setFormula', ['sheet_1', 'v2', 5, "=LN(VARIF('StdOrder'; 'StdOrder'[6]; 'Cost'))"]),
-      ...locked.map((c) => call('setColumnMeta', ['sheet_1', c.id, c.meta])),
+      ...locked.map((c) => call('setColumnMeta', { sheetId: 'sheet_1', columnId: c.id, meta: unlocked(c.meta) })),
+      call('addRows', { sheetId: 'sheet_1', count: 2 }),
+      call('setCells', { sheetId: 'sheet_1', columnId: 'run', startRow: 4, values: [5, 6] }),
+      call('setCells', { sheetId: 'sheet_1', columnId: 'std', startRow: 4, values: [5, 6] }),
+      call('setCells', { sheetId: 'sheet_1', columnId: 'blk', startRow: 4, values: [1, 1] }),
+      call('setCells', { sheetId: 'sheet_1', columnId: 'rep', startRow: 4, values: [1, 1] }),
+      call('setCells', { sheetId: 'sheet_1', columnId: 'fa', startRow: 4, values: [150, 200] }),
+      call('setCells', { sheetId: 'sheet_1', columnId: 'fm', startRow: 4, values: ['Stahl', 'Kupfer'] }),
+      call('setFormula', { sheetId: 'sheet_1', columnId: 'm1', row: 4, formula: "=AVERAGEIF('StdOrder'; 'StdOrder'[5]; 'Yield')" }),
+      call('setFormula', { sheetId: 'sheet_1', columnId: 'm1', row: 5, formula: "=AVERAGEIF('StdOrder'; 'StdOrder'[6]; 'Yield')" }),
+      call('setFormula', { sheetId: 'sheet_1', columnId: 'v1', row: 4, formula: "=LN(VARIF('StdOrder'; 'StdOrder'[5]; 'Yield'))" }),
+      call('setFormula', { sheetId: 'sheet_1', columnId: 'v1', row: 5, formula: "=LN(VARIF('StdOrder'; 'StdOrder'[6]; 'Yield'))" }),
+      call('setFormula', { sheetId: 'sheet_1', columnId: 'm2', row: 4, formula: "=AVERAGEIF('StdOrder'; 'StdOrder'[5]; 'Cost')" }),
+      call('setFormula', { sheetId: 'sheet_1', columnId: 'm2', row: 5, formula: "=AVERAGEIF('StdOrder'; 'StdOrder'[6]; 'Cost')" }),
+      call('setFormula', { sheetId: 'sheet_1', columnId: 'v2', row: 4, formula: "=LN(VARIF('StdOrder'; 'StdOrder'[5]; 'Cost'))" }),
+      call('setFormula', { sheetId: 'sheet_1', columnId: 'v2', row: 5, formula: "=LN(VARIF('StdOrder'; 'StdOrder'[6]; 'Cost'))" }),
+      ...locked.map((c) => call('setColumnMeta', { sheetId: 'sheet_1', columnId: c.id, meta: c.meta })),
     ]);
   });
 
@@ -74,11 +74,11 @@ suite('doe-planner domain — augmentStack', () => {
     const locked = COLUMNS.filter((c) => c.meta && c.meta.lock).length;
     stack.slice(0, locked).forEach((a) => {
       assertEqual(a.method, 'setColumnMeta');
-      assertTrue(!('lock' in a.args[2]));
+      assertTrue(!('lock' in a.args[0].meta));
     });
     stack.slice(-locked).forEach((a) => {
       assertEqual(a.method, 'setColumnMeta');
-      assertDeepEqual(a.args[2], COLUMNS.find((c) => c.id === a.args[1]).meta);
+      assertDeepEqual(a.args[0].meta, COLUMNS.find((c) => c.id === a.args[0].columnId).meta);
     });
   });
 
@@ -112,26 +112,26 @@ suite('doe-planner domain — responseSyncStack', () => {
   test('Umbenennen → renameColumn der Spalte und ihrer Hilfsspalten', () => {
     const stack = responseSyncStack(REF, before, [{ name: 'Ausbeute', unit: '%' }, before[1]], SHEET);
     assertDeepEqual(stack, [
-      call('renameColumn', ['sheet_1', 'y1', 'Ausbeute']),
-      call('setColumnMeta', ['sheet_1', 'm1', unlocked(relock('m1'))]),
-      call('renameColumn', ['sheet_1', 'm1', 'Ausbeute Mean']),
-      call('setColumnMeta', ['sheet_1', 'm1', relock('m1')]),
-      call('setColumnMeta', ['sheet_1', 'v1', unlocked(relock('v1'))]),
-      call('renameColumn', ['sheet_1', 'v1', 'Ausbeute lnVar']),
-      call('setColumnMeta', ['sheet_1', 'v1', relock('v1')]),
+      call('renameColumn', { sheetId: 'sheet_1', columnId: 'y1', name: 'Ausbeute' }),
+      call('setColumnMeta', { sheetId: 'sheet_1', columnId: 'm1', meta: unlocked(relock('m1')) }),
+      call('renameColumn', { sheetId: 'sheet_1', columnId: 'm1', name: 'Ausbeute Mean' }),
+      call('setColumnMeta', { sheetId: 'sheet_1', columnId: 'm1', meta: relock('m1') }),
+      call('setColumnMeta', { sheetId: 'sheet_1', columnId: 'v1', meta: unlocked(relock('v1')) }),
+      call('renameColumn', { sheetId: 'sheet_1', columnId: 'v1', name: 'Ausbeute lnVar' }),
+      call('setColumnMeta', { sheetId: 'sheet_1', columnId: 'v1', meta: relock('v1') }),
     ]);
   });
 
   test('Umbenennen ohne Hilfsspalten → genau ein renameColumn', () => {
     const ref = { ...REF, meanColumnIds: [], lnVarColumnIds: [] };
     const stack = responseSyncStack(ref, before, [{ name: 'Ausbeute', unit: '%' }, before[1]], SHEET);
-    assertDeepEqual(stack, [call('renameColumn', ['sheet_1', 'y1', 'Ausbeute'])]);
+    assertDeepEqual(stack, [call('renameColumn', { sheetId: 'sheet_1', columnId: 'y1', name: 'Ausbeute' })]);
   });
 
   test('ein geleerter Name nimmt den Vorgabenamen', () => {
     const ref = { ...REF, meanColumnIds: [], lnVarColumnIds: [] };
     const stack = responseSyncStack(ref, before, [before[0], { name: '', unit: '€' }], SHEET);
-    assertDeepEqual(stack, [call('renameColumn', ['sheet_1', 'y2', 'Y2'])]);
+    assertDeepEqual(stack, [call('renameColumn', { sheetId: 'sheet_1', columnId: 'y2', name: 'Y2' })]);
   });
 
   test('Umsortieren oder mehrere Änderungen zugleich → null', () => {
@@ -148,17 +148,17 @@ suite('doe-planner domain — responseSyncStack', () => {
     const [write, role] = stack;
     assertEqual(write.method, 'writeColumns');
     assertEqual(write.id, 'response:2');
-    assertDeepEqual(write.args, ['sheet_1', [{ to: 'append', name: 'Zeit', type: 'numeric', values: [], format: { decimals: 4 }, unit: 's' }]]);
-    assertTrue(!('meta' in write.args[1][0]));
-    assertDeepEqual(role, call('setColumnRole', ['sheet_1', { $from: 'response:2', path: 'value.0' }, 'continuous']));
+    assertDeepEqual(write.args, [{ sheetId: 'sheet_1', columns: [{ to: 'append', name: 'Zeit', type: 'numeric', values: [], format: { decimals: 4 }, unit: 's' }] }]);
+    assertTrue(!('meta' in write.args[0].columns[0]));
+    assertDeepEqual(role, call('setColumnRole', { sheetId: 'sheet_1', columnId: { $from: 'response:2', path: 'value.0' }, role: 'continuous' }));
   });
 
   test('entfernte Zielgröße → removeColumn samt ihren Hilfsspalten', () => {
     const stack = responseSyncStack(REF, before, [before[1]], SHEET);
     assertDeepEqual(stack, [
-      call('removeColumn', ['sheet_1', 'y1']),
-      call('removeColumn', ['sheet_1', 'm1']),
-      call('removeColumn', ['sheet_1', 'v1']),
+      call('removeColumn', { sheetId: 'sheet_1', columnId: 'y1' }),
+      call('removeColumn', { sheetId: 'sheet_1', columnId: 'm1' }),
+      call('removeColumn', { sheetId: 'sheet_1', columnId: 'v1' }),
     ]);
   });
 
@@ -173,9 +173,9 @@ suite('doe-planner domain — responseSyncStack', () => {
   test('zweite Zielgröße entfernt → Spalte der Position 1', () => {
     const ab = [{ name: 'A', unit: '' }, { name: 'B', unit: '' }];
     assertDeepEqual(responseSyncStack(REF, ab, [{ name: 'A', unit: '' }], SHEET), [
-      call('removeColumn', ['sheet_1', 'y2']),
-      call('removeColumn', ['sheet_1', 'm2']),
-      call('removeColumn', ['sheet_1', 'v2']),
+      call('removeColumn', { sheetId: 'sheet_1', columnId: 'y2' }),
+      call('removeColumn', { sheetId: 'sheet_1', columnId: 'm2' }),
+      call('removeColumn', { sheetId: 'sheet_1', columnId: 'v2' }),
     ]);
   });
 
@@ -195,7 +195,7 @@ suite('doe-planner domain — responseSyncStack', () => {
 
 suite('doe-planner domain — Merkmale ohne Nullwerte', () => {
   /** @param {any[]} stack */
-  const metas = (stack) => stack.filter((a) => a.method === 'setColumnMeta').map((a) => a.args[2]);
+  const metas = (stack) => stack.filter((a) => a.method === 'setColumnMeta').map((a) => a.args[0].meta);
   const noNull = (meta) => Object.values(meta).every((v) => v !== null && v !== undefined);
 
   test('kein gesendetes meta enthält null, auch nicht aus alten Blättern mit managedRef: null', () => {

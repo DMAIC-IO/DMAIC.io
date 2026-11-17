@@ -62,11 +62,11 @@ async function mount(model = null) {
         states[instanceId] = buildInitialWorksheetState('Sheet');
         result = { instanceId, module: 'worksheet', phase: 'data' };
       } else if (action.method === 'renameSheet') {
-        const [sheetId, name] = action.args;
+        const [{ id: sheetId, name }] = action.args;
         states[target] = { ...states[target], sheets: states[target].sheets.map((sh) => (sh.id === sheetId ? { ...sh, name } : sh)) };
         result = { instanceId: target, method: 'renameSheet', value: null };
       } else {
-        const [sheetId, columns] = action.args;
+        const [{ sheetId, columns }] = action.args;
         const ids = [];
         for (const { to, name, type, values } of columns) {
           const sheets = states[target].sheets.map((sh) => {

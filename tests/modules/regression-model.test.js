@@ -16,7 +16,7 @@ import {
 
 import { useStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 import { registerWorksheetReader } from '../../js/core/worksheet-columns.js';
-import { readWorksheetState } from '../../js/modules/worksheet/worksheet-read.js';
+import { readWorksheetState } from '../helpers/legacy-worksheet-read.js';
 
 // ── Stub stateManager with a synthetic worksheet ───────────────────
 

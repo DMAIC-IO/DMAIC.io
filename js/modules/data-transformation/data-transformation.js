@@ -555,7 +555,7 @@ const mod = createModule({
         const ctx = module._context;
         let write = worksheetWrite();
         if (target == null) {
-          write = write.newWorksheet({ name: ctx.i18n.t('modules.worksheet.defaultSheetName') })
+          write = write.newWorksheet({ name: ctx.i18n.t('worksheet.defaultSheetName') })
             .column({ name, values });
         } else {
           const clean = keyToRef(refToKey(target));

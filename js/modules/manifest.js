@@ -23,12 +23,6 @@
 export default [
   // ─── Daten-Bereich (cycle-independent) ────────────────────────
   {
-    id: 'worksheet',
-    phase: 'data',
-    group: 'collect',
-    load: () => import('./worksheet/worksheet.js'),
-  },
-  {
     id: 'xy-plot',
     phase: 'data',
     group: 'visualize',

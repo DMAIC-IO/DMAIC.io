@@ -35,11 +35,11 @@ const NEW_SHEET_ID = 'sheet_1';
 
 /** Meldungstexte je Grund; Planfehler tragen den Grund als Text. */
 const REASON_MESSAGES = {
-  unknown_instance: ['modules.worksheet.appendTargetUnknown', 'Target column not found in the worksheet'],
-  unknown_sheet: ['modules.worksheet.appendTargetUnknown', 'Target column not found in the worksheet'],
-  unknown_column: ['modules.worksheet.appendTargetUnknown', 'Target column not found in the worksheet'],
-  write_failed: ['modules.worksheet.writeFailed', 'The worksheet could not write the columns'],
-  flush_failed: ['modules.worksheet.writeFlushFailed', 'The columns were written, but the project could not be saved'],
+  unknown_instance: ['worksheet.appendTargetUnknown', 'Target column not found in the worksheet'],
+  unknown_sheet: ['worksheet.appendTargetUnknown', 'Target column not found in the worksheet'],
+  unknown_column: ['worksheet.appendTargetUnknown', 'Target column not found in the worksheet'],
+  write_failed: ['worksheet.writeFailed', 'The worksheet could not write the columns'],
+  flush_failed: ['worksheet.writeFlushFailed', 'The columns were written, but the project could not be saved'],
 };
 
 /**
@@ -200,21 +200,22 @@ export function worksheetWrite() {
       const extras = (instance, sheet) => {
         /** @type {any[]} */
         const out = [];
-        const call = (method, args) => out.push({ op: 'instance.call', module: 'worksheet', instance, method, args });
+        // Kommandos des Arbeitsblatts nehmen genau ein Objekt (`args: [{ … }]`).
+        const call = (method, cmd) => out.push({ op: 'instance.call', module: 'worksheet', instance, method, args: [cmd] });
         const colRef = (i) => ({ $from: 'write', path: `value.${i}` });
         steps.forEach((step, i) => {
           if (step.kind !== 'column') return;
-          if (step.spec.role !== undefined && step.spec.role !== null) call('setColumnRole', [sheet, colRef(i), step.spec.role]);
+          if (step.spec.role !== undefined && step.spec.role !== null) call('setColumnRole', { sheetId: sheet, columnId: colRef(i), role: step.spec.role });
         });
         steps.forEach((step, i) => {
           if (step.kind !== 'column') return;
           (step.spec.formulas ?? []).forEach((f, row) => {
-            if (f !== null && f !== undefined) call('setFormula', [sheet, colRef(i), row, f]);
+            if (f !== null && f !== undefined) call('setFormula', { sheetId: sheet, columnId: colRef(i), row, formula: f });
           });
         });
         steps.forEach((step, i) => {
           if (step.kind !== 'column') return;
-          if (step.spec.meta !== undefined && step.spec.meta !== null) call('setColumnMeta', [sheet, colRef(i), cloneFormat(step.spec.meta)]);
+          if (step.spec.meta !== undefined && step.spec.meta !== null) call('setColumnMeta', { sheetId: sheet, columnId: colRef(i), meta: cloneFormat(step.spec.meta) });
         });
         return out;
       };
@@ -225,7 +226,7 @@ export function worksheetWrite() {
           sheetId,
           stack: [{
             op: 'instance.call', id: 'write', module: 'worksheet', instance: target.instanceId,
-            method: 'writeColumns', args: [sheetId, columns],
+            method: 'writeColumns', args: [{ sheetId, columns }],
           }, ...extras(target.instanceId, sheetId)],
         };
       }
@@ -235,12 +236,12 @@ export function worksheetWrite() {
       stack.push({ op: 'module.add', id: 'ws', module: 'worksheet' });
       const ws = { $from: 'ws', path: 'instanceId' };
       if (target.name.trim() !== '') {
-        stack.push({ op: 'instance.call', module: 'worksheet', instance: ws, method: 'renameSheet', args: [NEW_SHEET_ID, target.name] });
+        stack.push({ op: 'instance.call', module: 'worksheet', instance: ws, method: 'renameSheet', args: [{ id: NEW_SHEET_ID, name: target.name }] });
       }
-      stack.push({ op: 'instance.call', id: 'write', module: 'worksheet', instance: ws, method: 'writeColumns', args: [NEW_SHEET_ID, columns] });
+      stack.push({ op: 'instance.call', id: 'write', module: 'worksheet', instance: ws, method: 'writeColumns', args: [{ sheetId: NEW_SHEET_ID, columns }] });
       const rows = Math.max(0, ...steps.map((step) => (step.spec.values ?? []).length));
       if (target.fitRows && rows < START_ROW_COUNT) {
-        stack.push({ op: 'instance.call', module: 'worksheet', instance: ws, method: 'removeRows', args: [NEW_SHEET_ID, rows, START_ROW_COUNT - rows] });
+        stack.push({ op: 'instance.call', module: 'worksheet', instance: ws, method: 'removeRows', args: [{ sheetId: NEW_SHEET_ID, startRow: rows, count: START_ROW_COUNT - rows }] });
       }
       stack.push(...extras(ws, NEW_SHEET_ID));
       return { created: true, sheetId: NEW_SHEET_ID, stack };
@@ -333,8 +334,8 @@ export function completeStack(ctx, plan) {
       return { ...action, phase: findOwnPhase(sm, ctx.instanceId) };
     }
     if (action.op === 'instance.call' && action.method === 'renameSheet') {
-      const [sheetId, name] = action.args ?? [];
-      return { ...action, args: [sheetId, uniqueSheetName(sm, name)] };
+      const [cmd] = action.args ?? [];
+      return { ...action, args: [{ ...cmd, name: uniqueSheetName(sm, cmd?.name) }] };
     }
     return action;
   });

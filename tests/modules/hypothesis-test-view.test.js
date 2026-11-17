@@ -17,7 +17,7 @@ import histogramChart from '../../js/widgets/histogram-chart/schema.js';
 import { residualCharts } from '../../js/modules/hypothesis-test/viewmodel/present.js';
 import { WIDGET_I18N } from '../widget-i18n.js';
 import { registerWorksheetReader } from '../../js/core/worksheet-columns.js';
-import { readWorksheetState } from '../../js/modules/worksheet/worksheet-read.js';
+import { readWorksheetState } from '../helpers/legacy-worksheet-read.js';
 
 /**
  * Leser wie `useStoredWorksheetReader`, aber `wsBad` liefert ein Lesen, das

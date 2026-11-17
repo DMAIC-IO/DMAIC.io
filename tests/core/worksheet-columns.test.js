@@ -19,7 +19,7 @@ import {
   worksheetReadable, worksheetsReadable,
 } from '../../js/core/worksheet-columns.js';
 import { useStoredWorksheetReader } from '../helpers/worksheet-reader.js';
-import { readWorksheetState } from '../../js/modules/worksheet/worksheet-read.js';
+import { readWorksheetState } from '../helpers/legacy-worksheet-read.js';
 
 // ── Mock stateManager backed by a single worksheet ──────────────────────────
 

@@ -13,7 +13,7 @@ import {
   suite, test, assertEqual, assertDeepEqual, assertAlmostEqual, assertArrayAlmostEqual,
 } from '../test-utils.js';
 import { registerWorksheetReader } from '../../js/core/worksheet-columns.js';
-import { readWorksheetState } from '../../js/modules/worksheet/worksheet-read.js';
+import { readWorksheetState } from '../helpers/legacy-worksheet-read.js';
 import { useStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 import {
   State, parseConfPercent, formatConfPercent,

@@ -256,8 +256,8 @@ suite('core/zeg-sheet-model planZegStack', () => {
     assertEqual(w.instance, 'ws1');
     assertEqual(w.module, 'worksheet');
     assertEqual(w.method, 'writeColumns');
-    assertEqual(w.args[0], SHEET);
-    assertDeepEqual(w.args[1], [
+    assertEqual(w.args[0].sheetId, SHEET);
+    assertDeepEqual(w.args[0].columns, [
       { to: prev.columns[0].id, values: ['2026-07-10', '2026-07-12', '2026-07-14'] },
       { to: prev.columns[1].id, values: [20, 40, 60] },
       { to: prev.columns[2].id, values: [10, null, 30] },
@@ -269,9 +269,9 @@ suite('core/zeg-sheet-model planZegStack', () => {
     const prev = buildSheetState(null, [D1], ['define', 'measure'], LABELS);
     const next = buildSheetState(prev, [D1], ['define', 'measure', 'analyze'], LABELS);
     const stack = planZegStack('ws1', SHEET, prev, next);
-    assertDeepEqual(stack[0].args[1][3], { to: 'append', name: 'Analyze', type: 'percent', format: { decimals: 0 }, values: [null] });
+    assertDeepEqual(stack[0].args[0].columns[3], { to: 'append', name: 'Analyze', type: 'percent', format: { decimals: 0 }, values: [null] });
     assertDeepEqual(calls(stack.slice(1)), [
-      ['setColumnMeta', [SHEET, { $from: 'write', path: 'value.3' }, { managedBy: 'zeg', managedRef: 'analyze' }]],
+      ['setColumnMeta', [{ sheetId: SHEET, columnId: { $from: 'write', path: 'value.3' }, meta: { managedBy: 'zeg', managedRef: 'analyze' } }]],
     ]);
   });
 
@@ -280,9 +280,9 @@ suite('core/zeg-sheet-model planZegStack', () => {
     prev.columns.push({ id: 'note', name: 'Notiz', type: 'text', values: ['x'], formulas: [null], format: {}, meta: null });
     const next = buildSheetState(prev, [D1], ['define', 'measure'], LABELS);
     const stack = planZegStack('ws1', SHEET, prev, next);
-    assertDeepEqual(stack[0].args[1].map(e => e.to), [prev.columns[0].id, prev.columns[1].id, 'append', 'note']);
+    assertDeepEqual(stack[0].args[0].columns.map(e => e.to), [prev.columns[0].id, prev.columns[1].id, 'append', 'note']);
     assertDeepEqual(calls(ofMethod(stack, 'moveColumn')), [
-      ['moveColumn', [SHEET, { $from: 'write', path: 'value.2' }, 2]],
+      ['moveColumn', [{ sheetId: SHEET, columnId: { $from: 'write', path: 'value.2' }, toIndex: 2 }]],
     ]);
   });
 
@@ -290,9 +290,9 @@ suite('core/zeg-sheet-model planZegStack', () => {
     const prev = buildSheetState(null, [D1], ['define', 'measure', 'analyze'], LABELS);
     const next = buildSheetState(prev, [D1], ['define', 'measure'], LABELS);
     const stack = planZegStack('ws1', SHEET, prev, next);
-    assertDeepEqual(calls(ofMethod(stack, 'removeColumn')), [['removeColumn', [SHEET, prev.columns[3].id]]]);
+    assertDeepEqual(calls(ofMethod(stack, 'removeColumn')), [['removeColumn', [{ sheetId: SHEET, columnId: prev.columns[3].id }]]]);
     assertEqual(ofMethod(stack, 'moveColumn').length, 0);
-    assertEqual(stack[0].args[1].length, 3);
+    assertEqual(stack[0].args[0].columns.length, 3);
   });
 
   test('weniger Zeilen: removeRows ab next.rowCount', () => {
@@ -300,7 +300,7 @@ suite('core/zeg-sheet-model planZegStack', () => {
     const next = buildSheetState(prev, [D2], ['define'], LABELS);
     assertEqual(next.rowCount, 1);
     const stack = planZegStack('ws1', SHEET, prev, next);
-    assertDeepEqual(calls(ofMethod(stack, 'removeRows')), [['removeRows', [SHEET, 1, 2]]]);
+    assertDeepEqual(calls(ofMethod(stack, 'removeRows')), [['removeRows', [{ sheetId: SHEET, startRow: 1, count: 2 }]]]);
   });
 
   test('Nutzerspalte mit Formel in verschobener Zeile: setFormula an der neuen Zeile', () => {
@@ -312,7 +312,7 @@ suite('core/zeg-sheet-model planZegStack', () => {
     // Reihenfolge: Schreiben zuerst, Formeln zuletzt.
     assertEqual(stack[0].method, 'writeColumns');
     assertEqual(stack[stack.length - 1].method, 'setFormula');
-    assertDeepEqual(calls(ofMethod(stack, 'setFormula')), [['setFormula', [SHEET, 'u1', 2, '=C2[2]*2']]]);
+    assertDeepEqual(calls(ofMethod(stack, 'setFormula')), [['setFormula', [{ sheetId: SHEET, columnId: 'u1', row: 2, formula: '=C2[2]*2' }]]]);
   });
 
   test('Gleichstand unabhängig von der Schlüsselreihenfolge in meta und Werten', () => {
@@ -328,7 +328,7 @@ suite('core/zeg-sheet-model planZegStack', () => {
     const prev = buildSheetState(null, [D1], ['define'], LABELS);
     const next = buildSheetState(prev, [D1], ['define', 'measure'], LABELS);
     const col = next.columns.find(c => c.meta.managedRef === 'measure');
-    const entry = planZegStack('ws1', SHEET, prev, next)[0].args[1].find(e => e.to === 'append');
+    const entry = planZegStack('ws1', SHEET, prev, next)[0].args[0].columns.find(e => e.to === 'append');
     assertDeepEqual(entry.format, col.format);
     assertTrue(entry.format !== col.format);
   });

@@ -112,7 +112,7 @@ export default createModule({
         }
         // The name the sheet gets in the project, as the commit settles it.
         const rename = /** @type {any} */ (completeStack(services, plan).find((/** @type {any} */ a) => a.method === 'renameSheet'));
-        const created = this.t('worksheetCreated', { name: rename?.args?.[1] ?? titleOf(data, (k) => this.t(k)) });
+        const created = this.t('worksheetCreated', { name: rename?.args?.[0]?.name ?? titleOf(data, (k) => this.t(k)) });
         let res;
         try {
           res = await commitWorksheetWrite(services, plan);

@@ -192,6 +192,7 @@ function sheetOf(sh) {
   const data = old.map(c => cellsOf(c.values, rowCount));
   const byRows = old.map((c) => {
     if (!Array.isArray(c.formulas)) return undefined;
+    /** @type {Record<string, string>} */
     const byRow = {};
     for (let r = 0; r < Math.min(rowCount, c.formulas.length); r++) {
       const f = c.formulas[r];

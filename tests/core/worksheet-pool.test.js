@@ -3,7 +3,7 @@
  */
 import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
 import { provisionWorksheet } from '../../js/core/examples-registry.js';
-import worksheetMod from '../../js/modules/worksheet/worksheet.js';
+import worksheetMod from '../../js/modules/worksheet/viewmodel/viewmodel.js';
 
 function makeContext(extra = {}) {
   const phases = { data: [] };
@@ -74,13 +74,12 @@ suite('provisionWorksheet with pool', () => {
  * otherwise a later analysis item sharing that key misses the pool and
  * provisions a duplicate, out-of-sync copy of the same data.
  *
- * `worksheetMod.loadExample` is a plain `this`-based function assigned onto
- * the module descriptor (not a class), so it can be exercised directly by
- * spreading it onto a minimal fake instance — no DOM/Alpine mount needed.
- * `_persist` is stubbed the same way createModule's real wrapper injects it;
- * `_container`/`_tmpl` are intentionally absent, exercising the same
- * DOM-less fallback path `getState`/`setState` already have for detached
- * (headless) scenario loading.
+ * `worksheetMod.loadExample` is createModule's loader; the worksheet hooks in
+ * through `beforeLoadExample` (`registerInPool` in viewmodel/viewmodel.js).
+ * It is exercised by spreading the module onto a minimal fake instance — no
+ * DOM/Alpine mount needed. `_persist` is stubbed; `_container` is absent,
+ * exercising the DOM-less path of `setState` for detached (headless)
+ * scenario loading.
  */
 suite('worksheet loadExample — pool self-registration', () => {
   const PAYLOAD = {

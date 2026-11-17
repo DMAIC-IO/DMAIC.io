@@ -106,6 +106,22 @@ function checkCommandLiteral(P, shown, path, commands) {
   return commands?.has(lit[1]) ? [] : [`${P} ${shown}: ${lit[1]} ist kein Kommando des Moduls`];
 }
 
+/**
+ * Trägt das Schema irgendwo ein Feld `table()` (auch in `list`/`object`/`map`)?
+ * @param {{ fields?: object, view?: object }|null} schema @returns {boolean}
+ */
+function schemaHasTableField(schema) {
+  const has = (spec) => {
+    if (!spec || typeof spec !== 'object') return false;
+    if (spec.kind === 'table') return true;
+    if (spec.kind === 'list') return has(spec.item);
+    if (spec.kind === 'map') return has(spec.value);
+    if (spec.kind === 'object') return Object.values(spec.shape ?? {}).some(has);
+    return false;
+  };
+  return Object.values(schema?.fields ?? {}).some(has);
+}
+
 /** @returns {string[]} */
 function checkPath(P, shown, path, spec, { schema, stateSchema, viewNames, aliases }) {
   const lit = WIDGET_LITERAL.exec(path);
@@ -116,6 +132,10 @@ function checkPath(P, shown, path, spec, { schema, stateSchema, viewNames, alias
   }
   const parts = path.split('.');
   const [head, field] = parts;
+  // `model.$tableRev`: Zähler des Model-Speichers (P2, markTableChanged), kein Schemafeld; nur als Zahl lesbar.
+  if (path === 'model.$tableRev' && schemaHasTableField(schema)) {
+    return spec.kind === 'number' ? [] : [`${P} ${shown}: model.$tableRev ist eine Zahl`];
+  }
   if (head === 'model' || head === 'state') {
     const all = head === 'model' ? { ...(schema?.fields ?? {}), ...(schema?.view ?? {}) } : (stateSchema?.fields ?? {});
     /** Schritte nach der Wurzel; Klammern (`[i]`, `[0]`) nur über den Pfad-Parser. */

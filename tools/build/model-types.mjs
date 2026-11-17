@@ -55,7 +55,7 @@ export function collectModelFiles(appDir) {
  * Den einen Export mit Schema laden. Der Zeitstempel im Query hält den
  * Import im Watch-Modus frisch (nur für diese Datei, nicht für ihre Importe).
  * @param {string} file
- * @returns {Promise<{ name: string, schema: object }>}
+ * @returns {Promise<{ name: string, schema: object, readFields: object|null }>}
  */
 export async function loadModelSchema(file) {
   const mod = await import(`${pathToFileURL(file).href}?v=${statSync(file).mtimeMs}`);
@@ -63,7 +63,8 @@ export async function loadModelSchema(file) {
   if (hits.length !== 1) {
     throw new Error(`${file}: erwartet genau einen Export mit Schema (defineModel), gefunden ${hits.length}`);
   }
-  return { name: hits[0][0], schema: hits[0][1].schema };
+  // `READ_FIELDS`: die Felder einer eigenen Lesefläche (createModule `read`/`readFields`).
+  return { name: hits[0][0], schema: hits[0][1].schema, readFields: mod.READ_FIELDS ?? null };
 }
 
 const pascal = (s) => s.charAt(0).toUpperCase() + s.slice(1);

@@ -17,17 +17,17 @@ import { aggregateFormula } from './columns.js';
  * @typedef {{ id: string, name: string, meta: { lock?: 'hard'|'soft', reason?: string }|null }} SheetColumn
  *   a column as the worksheet reads it (`read().columns[]`)
  * @typedef {{ op: 'instance.call', id?: string, module: 'worksheet', instance: string, method: string,
- *   args: any[] }} WorksheetCall
+ *   args: [object] }} WorksheetCall  worksheet commands take exactly one object
  */
 
 /**
  * @param {string} instance worksheet instance
- * @returns {(method: string, args: any[], id?: string) => WorksheetCall}
+ * @returns {(method: string, cmd: object, id?: string) => WorksheetCall}
  */
 function caller(instance) {
-  return (method, args, id) => (id === undefined
-    ? { op: 'instance.call', module: 'worksheet', instance, method, args }
-    : { op: 'instance.call', id, module: 'worksheet', instance, method, args });
+  return (method, cmd, id) => (id === undefined
+    ? { op: 'instance.call', module: 'worksheet', instance, method, args: [cmd] }
+    : { op: 'instance.call', id, module: 'worksheet', instance, method, args: [cmd] });
 }
 
 /**
@@ -76,9 +76,9 @@ export function augmentStack(ref, columns, newRows, rowCount) {
   /** @type {WorksheetCall[]} */
   const stack = locked.map((c) => {
     const { lock, ...rest } = cleanMeta(/** @type {object} */ (c.meta));
-    return call('setColumnMeta', [sheet, c.id, rest]);
+    return call('setColumnMeta', { sheetId: sheet, columnId: c.id, meta: rest });
   });
-  stack.push(call('addRows', [sheet, n]));
+  stack.push(call('addRows', { sheetId: sheet, count: n }));
 
   /** @type {WorksheetCall[]} */
   const formulas = [];
@@ -93,13 +93,13 @@ export function augmentStack(ref, columns, newRows, rowCount) {
       const h = /** @type {{ kind: 'mean'|'lnVar', response: string }} */ (helpers.get(col.id));
       const respName = nameOf.get(h.response) ?? '';
       for (let i = 0; i < n; i++) {
-        formulas.push(call('setFormula', [sheet, col.id, rowCount + i, aggregateFormula(h.kind, stdName, respName, rowCount + i + 1)]));
+        formulas.push(call('setFormula', { sheetId: sheet, columnId: col.id, row: rowCount + i, formula: aggregateFormula(h.kind, stdName, respName, rowCount + i + 1) }));
       }
     }
-    if (values) stack.push(call('setCells', [sheet, col.id, rowCount, [...values]]));
+    if (values) stack.push(call('setCells', { sheetId: sheet, columnId: col.id, startRow: rowCount, values: [...values] }));
   }
   stack.push(...formulas);
-  stack.push(...locked.map((c) => call('setColumnMeta', [sheet, c.id, cleanMeta(/** @type {object} */ (c.meta))])));
+  stack.push(...locked.map((c) => call('setColumnMeta', { sheetId: sheet, columnId: c.id, meta: cleanMeta(/** @type {object} */ (c.meta)) })));
   return stack;
 }
 
@@ -192,11 +192,11 @@ export function responseSyncPlan(ref, before, after, { columns, names }) {
     const meta = metaOf.get(id);
     if (meta && meta.lock) {
       const { lock, ...rest } = cleanMeta(meta);
-      stack.push(call('setColumnMeta', [sheet, id, rest]));
-      stack.push(call('renameColumn', [sheet, id, name]));
-      stack.push(call('setColumnMeta', [sheet, id, cleanMeta(meta)]));
+      stack.push(call('setColumnMeta', { sheetId: sheet, columnId: id, meta: rest }));
+      stack.push(call('renameColumn', { sheetId: sheet, columnId: id, name }));
+      stack.push(call('setColumnMeta', { sheetId: sheet, columnId: id, meta: cleanMeta(meta) }));
     } else {
-      stack.push(call('renameColumn', [sheet, id, name]));
+      stack.push(call('renameColumn', { sheetId: sheet, columnId: id, name }));
     }
   };
   const positions = before.map((_, i) => i);
@@ -222,9 +222,9 @@ export function responseSyncPlan(ref, before, after, { columns, names }) {
     /** @type {{ to: 'append', name: string, type: 'numeric', values: any[], format: object, unit?: string }} */
     const entry = { to: 'append', name: columnName(r, j), type: 'numeric', values: [], format: { decimals: 4 } };
     if (r.unit) entry.unit = r.unit;
-    stack.push(call('writeColumns', [sheet, [entry]], id));
+    stack.push(call('writeColumns', { sheetId: sheet, columns: [entry] }, id));
     const written = { $from: id, path: 'value.0' };
-    stack.push(call('setColumnRole', [sheet, written, 'continuous']));
+    stack.push(call('setColumnRole', { sheetId: sheet, columnId: written, role: 'continuous' }));
     const out = plan(positions);
     out.responseColumnIds.push(written);
     out.meanColumnIds.push(null);
@@ -238,7 +238,7 @@ export function responseSyncPlan(ref, before, after, { columns, names }) {
     if (fits.length !== 1) return null;
     const i = fits[0];
     for (const id of [ref.responseColumnIds[i], mean(i), lnVar(i)]) {
-      if (id) stack.push(call('removeColumn', [sheet, id]));
+      if (id) stack.push(call('removeColumn', { sheetId: sheet, columnId: id }));
     }
     return plan(positions.filter((k) => k !== i));
   }

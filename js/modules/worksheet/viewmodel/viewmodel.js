@@ -26,6 +26,11 @@
  *
  * Verlauf und Export stehen in der eigenen Werkzeugleiste (`ownToolbar`),
  * nicht noch einmal in der Leiste des Arbeitsbereichs.
+ *
+ * Gelesen wird über die eigene Lesefläche (`domain/read.js`): eingehängt und
+ * ohne Mount `readWorksheetModel`, ein gespeicherter Stand der aktuellen
+ * Version `readWorksheetStored` — Spalten nur auf Nachfrage, nie die ganze
+ * Tabelle.
  */
 import { createModule } from '../../../core/template-module.js';
 import { command, text, number, oneOf, list, object, boolean } from '../../../core/model.js';
@@ -35,6 +40,7 @@ import descriptor from '../module.js';
 import { WorksheetModel } from '../domain/model.js';
 import { GRID_VIEW_SHAPE } from '../domain/sheet.js';
 import { showSheet, putGridView } from '../domain/view.js';
+import { readWorksheetModel, readWorksheetStored, READ_FIELDS } from '../domain/read.js';
 import { sheetRows, sheetRecords, sheetCsv, XLSX_SHEET_NAME, EXPORT_FILE_NAME } from '../io/export.js';
 import { UiState } from './state.js';
 import { sheetsView, activeSheetOf } from './sheets.js';
@@ -44,6 +50,27 @@ import { worksheetChanged } from './changed.js';
 
 const optional = { optional: true };
 
+/**
+ * Ein Beispiel im Szenario: diese Instanz unter ihrem Schlüssel im Pool
+ * eintragen (`worksheetPool`/`worksheetKey` des Szenario-Laders). Ein späteres
+ * Analysebeispiel mit derselben Datei nimmt dann dieses Arbeitsblatt, statt
+ * eine zweite Kopie anzulegen (`provisionWorksheet`). Ohne Pool und Schlüssel
+ * (Klick auf „Beispiel laden“) geschieht nichts.
+ * @this {any} die Modulinstanz
+ * @param {any} data Beispieldaten
+ * @returns {any} die Daten unverändert
+ */
+function registerInPool(data) {
+  const ctx = this._context;
+  const pool = ctx?.worksheetPool;
+  const key = ctx?.worksheetKey;
+  if (pool && key && ctx.instanceId && !pool.has(key)) {
+    const sheetId = data?.activeSheetId || data?.sheets?.[0]?.id;
+    if (sheetId) pool.set(key, { instanceId: ctx.instanceId, sheetId });
+  }
+  return data;
+}
+
 export default createModule({
   descriptor,
   Model: WorksheetModel,
@@ -51,6 +78,10 @@ export default createModule({
   history: { mode: 'inverse' },
   ownToolbar: true,
   onCommand: worksheetChanged,
+  read: readWorksheetModel,
+  readStored: readWorksheetStored,
+  readFields: READ_FIELDS,
+  beforeLoadExample: registerInPool,
   commands: {
     undo: command({
       params: {},

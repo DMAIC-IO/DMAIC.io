@@ -65,7 +65,7 @@ function fakeInstances({ kano = [], trees = [], surveys = [{ instanceId: INSTANC
   const resultOf = (a, i) => {
     if (a.op === 'module.add') return { instanceId: `${a.module}-new`, module: a.module, phase: a.phase };
     const instanceId = typeof a.instance === 'string' ? a.instance : `${a.module}-new`;
-    const value = a.id === 'write' ? a.args[1].map((/** @type {any} */ _c, /** @type {number} */ j) => `col-${j}`) : `v${i}`;
+    const value = a.id === 'write' ? a.args[0].columns.map((/** @type {any} */ _c, /** @type {number} */ j) => `col-${j}`) : `v${i}`;
     return { instanceId, method: a.method, value };
   };
   return {
@@ -117,13 +117,13 @@ suite('survey-builder handover: worksheet', () => {
     const stack = stacks[0];
     assertDeepEqual(stack[0], { op: 'module.add', id: 'ws', module: 'worksheet', phase: 'define' });
     const rename = stack.find((/** @type {any} */ a) => a.method === 'renameSheet');
-    assertDeepEqual(rename.args, ['sheet_1', 'Befragung']);
+    assertDeepEqual(rename.args, [{ id: 'sheet_1', name: 'Befragung' }]);
     const write = stack.find((/** @type {any} */ a) => a.method === 'writeColumns');
     const strings = Object.fromEntries(['responseId', 'submittedAt', 'recipient', 'other', 'functional', 'dysfunctional', 'importance', 'category', 'question']
       .map((k) => [k, de(`ws.${k}`)]));
     const columns = worksheetColumnsFor(json(h), strings);
-    assertDeepEqual(write.args[1].map((/** @type {any} */ c) => [c.name, c.type, c.values]), columns.map((c) => [c.name, c.type, c.values]));
-    const roles = stack.filter((/** @type {any} */ a) => a.method === 'setColumnRole').map((/** @type {any} */ a) => a.args[2]);
+    assertDeepEqual(write.args[0].columns.map((/** @type {any} */ c) => [c.name, c.type, c.values]), columns.map((c) => [c.name, c.type, c.values]));
+    const roles = stack.filter((/** @type {any} */ a) => a.method === 'setColumnRole').map((/** @type {any} */ a) => a.args[0].role);
     assertDeepEqual(roles, columns.map((c) => c.role), 'the confirmed role of every column');
     assertTrue(h.notes.some(([m, t]) => m === de('worksheetCreated', { name: 'Befragung' }) && t === 'success'), 'reported with the sheet name');
   });

@@ -89,5 +89,10 @@
     "name": "Fragebogen-Generator",
     "description": "VoC-Fragebogen erstellen, als HTML verschicken, Antworten einlesen und auswerten",
     "whenToUse": "Wenn Kunden oder Stakeholder schriftlich befragt werden sollen: Fragebogen entwerfen, je Empfänger als HTML-Datei verschicken, die Antwortdateien einlesen und auswerten — ohne Server, die Daten bleiben im Projekt."
+  },
+  "worksheet": {
+    "name": "Datensammlung",
+    "description": "Tabellenblatt zur Dateneingabe und -verwaltung",
+    "whenToUse": "Das gemeinsame Datensubstrat: hierhin kommen Messwerte, bevor ein auswertendes Werkzeug sie über einen Spaltenbezug liest. Fast jede Analyse beginnt mit einer Datensammlung."
   }
 }

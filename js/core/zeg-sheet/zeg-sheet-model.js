@@ -283,8 +283,9 @@ function sheetMatches(prev, next) {
  */
 export function planZegStack(instanceId, sheetId, prev, next) {
   if (sheetMatches(prev, next)) return [];
-  const call = (method, args, id) => ({
-    op: 'instance.call', ...(id ? { id } : {}), instance: instanceId, module: 'worksheet', method, args,
+  // Kommandos des Arbeitsblatts nehmen genau ein Objekt (`args: [{ … }]`).
+  const call = (method, cmd, id) => ({
+    op: 'instance.call', ...(id ? { id } : {}), instance: instanceId, module: 'worksheet', method, args: [cmd],
   });
   const prevCols = prev.columns || [];
   const prevById = new Map(prevCols.map(c => [c.id, c]));
@@ -299,20 +300,20 @@ export function planZegStack(instanceId, sheetId, prev, next) {
     return { to: 'append', name: col.name, type: col.type, format: { ...(col.format ?? {}) }, values };
   });
   const target = (col) => ref.get(col.id) ?? col.id;
-  const stack = [call('writeColumns', [sheetId, entries], WRITE_ID)];
+  const stack = [call('writeColumns', { sheetId, columns: entries }, WRITE_ID)];
 
   // 2. Merkmale: neue Spalten immer, bestehende bei Abweichung.
   for (const col of next.columns) {
     const meta = cleanMeta(col.meta);
     const old = prevById.get(col.id);
     if (old ? same(meta, cleanMeta(old.meta)) : Object.keys(meta).length === 0) continue;
-    stack.push(call('setColumnMeta', [sheetId, target(col), Object.keys(meta).length ? meta : null]));
+    stack.push(call('setColumnMeta', { sheetId, columnId: target(col), meta: Object.keys(meta).length ? meta : null }));
   }
 
   // 3. Weggefallene Spalten.
   const nextIds = new Set(next.columns.map(c => c.id));
   for (const col of prevCols) {
-    if (!nextIds.has(col.id)) stack.push(call('removeColumn', [sheetId, col.id]));
+    if (!nextIds.has(col.id)) stack.push(call('removeColumn', { sheetId, columnId: col.id }));
   }
 
   // 4. Reihenfolge: nach dem Schreiben stehen neue Spalten hinten.
@@ -322,17 +323,17 @@ export function planZegStack(instanceId, sheetId, prev, next) {
     if (order[i] === col.id) return;
     order.splice(order.indexOf(col.id), 1);
     order.splice(i, 0, col.id);
-    stack.push(call('moveColumn', [sheetId, target(col), i]));
+    stack.push(call('moveColumn', { sheetId, columnId: target(col), toIndex: i }));
   });
 
   // 5. Überzählige Zeilen.
   const prevRows = prev.rowCount ?? 0;
-  if (n < prevRows) stack.push(call('removeRows', [sheetId, n, prevRows - n]));
+  if (n < prevRows) stack.push(call('removeRows', { sheetId, startRow: n, count: prevRows - n }));
 
   // 6. Formeln, die `writeColumns` gelöscht hat.
   for (const col of next.columns) {
     cells(col.formulas, n).forEach((f, row) => {
-      if (typeof f === 'string' && f !== '') stack.push(call('setFormula', [sheetId, target(col), row, f]));
+      if (typeof f === 'string' && f !== '') stack.push(call('setFormula', { sheetId, columnId: target(col), row, formula: f }));
     });
   }
   return stack;

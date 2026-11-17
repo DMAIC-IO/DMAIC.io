@@ -173,6 +173,8 @@ test('uses: Worksheet-Nutzung verlangt uses worksheet', () => {
     "uses: viewmodel/events.js: nutzt das Worksheet (Ereignis worksheet:…) → uses: ['worksheet'] in module.js",
   ]);
   assert.deepEqual(checkUses(fx(files), ['worksheet']), []);
+  // Das Arbeitsblatt selbst ist Besitzer des Formats.
+  assert.deepEqual(checkUses(fx(files), [], 'worksheet'), []);
 });
 
 test('Layer: domain ohne Alpine, DOM, UI, Kontext und höhere Schichten', () => {
@@ -1145,7 +1147,7 @@ export const State = defineModel({
 test('Schema-Literal: invariants mit test als Methode, repair als Funktion', () => {
   assert.deepEqual(checkSchemaLiteral(INVARIANT_MODEL), [
     'schema: domain/model.js: test von invariants.arrow ist eine Pfeilfunktion — this muss das Model sein',
-    "schema: domain/model.js: invariants.extra: nur fields (String-Literale), test und repair erlaubt (note: 'x')",
+    "schema: domain/model.js: invariants.extra: nur fields (String-Literale), test, repair und onLoad: true erlaubt (note: 'x')",
     'schema: domain/model.js: repair von invariants.healedValue: Funktion oder Methode erwartet',
   ]);
 });
@@ -1644,6 +1646,35 @@ test('Verlauf: history ist true oder { depth: ganze Zahl ≥ 1 }', () => {
   assert.equal(checkHistoryOption(vm('{ depth: 0 }')).length, 1);
   assert.equal(checkHistoryOption(vm("'yes'")).length, 1);
   assert.match(checkHistoryOption(vm("'yes'"))[0], /^history: viewmodel\/viewmodel\.js: /);
+  // Verlauf mit Umkehrung (P4).
+  assert.deepEqual(checkHistoryOption(vm("{ mode: 'inverse' }")), []);
+  assert.deepEqual(checkHistoryOption(vm("{ mode: 'inverse', depth: 20 }")), []);
+  assert.equal(checkHistoryOption(vm("{ mode: 'snapshot' }")).length, 1);
+  assert.equal(checkHistoryOption(vm('{}')).length, 1);
+  assert.equal(checkHistoryOption(vm("{ mode: 'inverse', size: 2 }")).length, 1);
+});
+
+test('Schema-Literal: großes Model — Kommandogruppen aus ./commands-*.js, Formen *_SHAPE aus Geschwistern, onLoad', () => {
+  const src = `${MODEL_IMPORT}import { cellCommands } from './commands-cells.js';
+import { otherCommands } from './other.js';
+import { ROW_SHAPE, LIMIT } from './sheet.js';
+export class M extends defineModel({
+  fields: { a: number({ max: 3 }) },
+  view: { v: text() },
+  commands: { ...cellCommands, ...otherCommands, go: command({ params: { n: number() }, run({ n }) { this.a = n; } }) },
+  invariants: {
+    big: { fields: ['a'], onLoad: true, test(m) { return true; } },
+    bad: { fields: ['a'], onLoad: false, test(m) { return true; } },
+  },
+}) {}
+`;
+  const shaped = src.replace("fields: { a: number({ max: 3 }) }", "fields: { a: number({ max: 3 }), r: object(ROW_SHAPE), l: number({ max: LIMIT }) }")
+    .replace('import { defineModel, command, text, number }', 'import { defineModel, command, text, number, object }');
+  assert.deepEqual(checkSchemaLiteral(shaped), [
+    `${P} Bezeichner LIMIT ist keine Konstante dieser Datei`,
+    `${P} Spread nicht erlaubt (...otherCommands)`,
+    `${P} invariants.bad: nur fields (String-Literale), test, repair und onLoad: true erlaubt (onLoad: false)`,
+  ]);
 });
 
 test('Template ↔ Schema: x-field auf table() ist ein Befund', () => {

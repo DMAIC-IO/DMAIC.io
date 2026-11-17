@@ -26,7 +26,7 @@ const FILES = [
   'js/modules/random-generator/random-generator.js',
   'js/modules/rest-api/rest-api-model.js',
   'js/modules/todo/todo-model.js',
-  'js/modules/worksheet/worksheet-model.js',
+  'js/modules/worksheet/domain/sheet.js',
 ];
 
 /** Id built from a base-36 timestamp or base-36 Math.random digits. */

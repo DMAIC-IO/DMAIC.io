@@ -87,8 +87,8 @@ export function sheetCsv(sheet, lang) {
       const v = col[r];
       if (v == null) return '';
       if (typeof v === 'number') {
-        const num = formatGridLossless(v, decimals[c], numLang);
-        return decimal === CSV_DELIMITER ? `"${num}"` : num;
+        // Das Dezimalzeichen (`,` oder `.`) ist nie der Trenner `;`: kein Quoting.
+        return formatGridLossless(v, decimals[c], numLang);
       }
       return csvField(String(v));
     });

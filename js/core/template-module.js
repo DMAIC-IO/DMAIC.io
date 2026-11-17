@@ -235,13 +235,15 @@ function derivedCells(vm, defs, data) {
  * @param {string} moduleId @param {object} entry @param {Record<string, object>} vmCommands
  * @param {string[]} [readNames] die `derived` des Models — `read()` liefert jedes; die `computed` des view-Blocks bleiben Ansichtshilfen
  * @param {string[]} [bulk] davon die Massenfelder
+ * @param {((model: any, options?: object) => object)} [ownRead] eigene Lesefläche (`base.read`)
  * @returns {object}
  */
-function schemaMembers(moduleId, entry, vmCommands, readNames = [], bulk = []) {
+function schemaMembers(moduleId, entry, vmCommands, readNames = [], bulk = [], ownRead = undefined) {
   const members = {
     moduleId,
-    /** @noagent Lesefläche aus dem Schema (agent-schema.js) */
+    /** @noagent Lesefläche aus dem Schema (agent-schema.js) oder aus `base.read` */
     read(options) {
+      if (ownRead) return ownRead(this.model, options);
       const values = Object.fromEntries(readNames.map((name) => [name, this[name]]));
       return assembleRead(entry, this.model, options, values, bulk,
         this._asyncTaskHost ? this._asyncTaskHost.readStatus() : undefined);
@@ -398,6 +400,12 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
 // ctx.history im view-Block (nur mit history): step(dir)/can(dir) des Verlaufs.
 // base.ownToolbar (boolean) — Verlauf und Export stehen in der eigenen
 // Werkzeugleiste; die Leiste des Arbeitsbereichs zeigt sie nicht.
+// base.read(model, options) — eigene Lesefläche statt der aus dem Schema:
+// eingehängt `read(options)`, ohne Mount `readDetached`. Für Models, deren
+// Felder Tabellen tragen und nur in Teilen gelesen werden (Arbeitsblatt).
+// base.readStored(saved, options) — Lesen eines gespeicherten Stands der
+// aktuellen Version ohne Model (core/instances.js); landet als `readStored` am Modul.
+// base.readFields — die Felder der eigenen Lesefläche für `describe` (nur mit `read`).
 /**
  * Ein Modul aus Model, Viewmodel und Template bauen.
  * @template {((ctx: any) => any) | ((ctx: any) => any)[]} P
@@ -406,7 +414,7 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
  * @returns {Record<string, any> & { readonly __view?: ViewMembersOf<P>, readonly __asyncTasks?: T }}
  */
 export function createModule(base) {
-  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, fromExample, createDefault, gestures = [], forms = {}, exports: exportsDef, asyncTasks: taskDefs = {}, history, onCommand, ownToolbar = false } = base;
+  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, fromExample, createDefault, gestures = [], forms = {}, exports: exportsDef, asyncTasks: taskDefs = {}, history, onCommand, ownToolbar = false, read: ownRead, readStored, readFields } = base;
   if (descriptor) {
     for (const key of NOT_IN_CONFIG) {
       if (Object.hasOwn(config, key)) {
@@ -431,6 +439,10 @@ export function createModule(base) {
   if (exportsDef !== undefined) checkExports(id, exportsDef, Boolean(view));
   if (onCommand !== undefined && typeof onCommand !== 'function') throw new Error(`createModule(${id}): onCommand must be a function`);
   if (typeof ownToolbar !== 'boolean') throw new Error(`createModule(${id}): ownToolbar must be a boolean`);
+  if (ownRead !== undefined && typeof ownRead !== 'function') throw new Error(`createModule(${id}): read must be a function`);
+  if (readStored !== undefined && typeof readStored !== 'function') throw new Error(`createModule(${id}): readStored must be a function`);
+  if (ownRead && !schemaOf(Model)) throw new Error(`createModule(${id}): read needs a defineModel Model`);
+  if (readFields !== undefined && !ownRead) throw new Error(`createModule(${id}): readFields needs read`);
   if (history !== undefined && history !== true && !(history && typeof history === 'object'
     && Number.isInteger(history.depth ?? 50) && (history.depth ?? 50) >= 1
     && (history.mode === undefined || history.mode === 'inverse'))) {
@@ -514,6 +526,8 @@ export function createModule(base) {
     });
   }
   const agentEntry = schema ? schemaAgentEntry(Model, vmCommands, { asyncTasks: taskDefs }) : undefined;
+  // Eigene Lesefläche: `describe` nennt ihre Felder statt der des Schemas.
+  if (agentEntry && readFields) agentEntry.fields = structuredClone(readFields);
   // Zellen im Viewmodel: erst die Ableitungen des Models, dann die computed des view-Blocks.
   const cellNames = [...derivedList, ...computedNames];
   const i18nKey = `modules.${  id}`;
@@ -592,6 +606,7 @@ export function createModule(base) {
      */
     readDetached(model, data, options) {
       if (!agentEntry) throw new Error(`createModule(${id}): readDetached needs a defineModel Model`);
+      if (ownRead) return ownRead(model, options);
       return assembleRead(agentEntry, model, options, evaluateDerived(model, data), derivedBulk,
         taskNames.length > 0 ? idleTaskStatus(taskDefs) : undefined);
     },
@@ -599,6 +614,7 @@ export function createModule(base) {
     // hasModuleHelp/hasModuleReferences: einmal beim Erzeugen ausgewertet. Das
     // genügt — der Katalog (#module-resources, HELP/REFS) ist statisch und vor
     // dem ersten createModule gesetzt.
+    ...(readStored ? { readStored } : {}),
     help: hasModuleHelp(id) ? function help() { return getModuleHelp(id, this._context?.i18n?.getLanguage()); } : undefined,
     references: hasModuleReferences(id) ? () => getModuleReferences(id) : undefined,
 
@@ -761,7 +777,7 @@ export function createModule(base) {
               value: (path) => fieldErrors.message(path),
             });
           }
-          if (schema) copyMembers(comp, schemaMembers(id, agentEntry, vmCommands, derivedList, derivedBulk));
+          if (schema) copyMembers(comp, schemaMembers(id, agentEntry, vmCommands, derivedList, derivedBulk, ownRead));
           if (schema || exportsDef) {
             // Griff der Kommando-Primitive (core/command-directives.js) und, für
             // exports/component, von runExport (core/exporter.js). Nicht

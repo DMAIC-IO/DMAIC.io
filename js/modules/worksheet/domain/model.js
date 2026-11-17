@@ -27,12 +27,12 @@ import { structureCommands } from './commands-structure.js';
 import { sheetCommands } from './commands-sheets.js';
 
 export { START_COLUMN_COUNT, newSheetState } from './sheet.js';
-
-const sheetSpec = object(SHEET_SHAPE);
+// Die Felder der eigenen Lesefläche (createModule `readFields`); der Build liest sie hier.
+export { READ_FIELDS } from './read.js';
 
 /**
  * Jede Zelle eines Blatts, die nicht zum Typ passt und keine Formelzelle ist.
- * @param {any} sheet @param {(c: number, r: number) => boolean} visit `false` bricht ab
+ * @param {any} sheet @param {(c: number, r: number) => (boolean|void)} visit `false` bricht ab
  * @returns {void}
  */
 function eachMisfit(sheet, visit) {
@@ -94,7 +94,7 @@ export class WorksheetModel extends defineModel({
   version: '1.0',
   migrations: { '0→1.0': from0 },
   fields: {
-    sheets: list(sheetSpec, {
+    sheets: list(object(SHEET_SHAPE), {
       agentWrite: false,
       default: () => [newSheetState(`${FALLBACK_SHEET_NAME} 1`, 'sheet_1')],
     }),

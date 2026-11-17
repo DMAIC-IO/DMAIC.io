@@ -5,7 +5,7 @@
  * gespeicherten Stands (`readWorksheetState`). Nur für Tests.
  */
 import { registerWorksheetReader } from '../../js/core/worksheet-columns.js';
-import { readWorksheetState } from '../../js/modules/worksheet/worksheet-read.js';
+import { readWorksheetState } from './legacy-worksheet-read.js';
 
 /**
  * Steht die Instanz in einer Phase des Projekts? Wie `locate` in

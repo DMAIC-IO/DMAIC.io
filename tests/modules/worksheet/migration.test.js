@@ -8,7 +8,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import { WorksheetModel } from '../../../js/modules/worksheet/domain/model.js';
 import { from0 } from '../../../js/modules/worksheet/domain/migrations.js';
-import { worksheetSnapshot } from '../../../js/modules/worksheet/worksheet-read.js';
+import { worksheetSnapshot } from '../../helpers/legacy-worksheet-read.js';
 import { recalcFormulas } from '../../../js/core/datagrid/table/formulas.js';
 import { TableData } from '../../../js/core/table-data.js';
 import { START_ROW_COUNT } from '../../../js/core/datagrid/datagrid-utils.js';

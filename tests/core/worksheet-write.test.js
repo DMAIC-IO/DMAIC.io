@@ -5,7 +5,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assert } from '../test-utils.js';
 import { useStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 import { registerWorksheetReader } from '../../js/core/worksheet-columns.js';
-import { readWorksheetState } from '../../js/modules/worksheet/worksheet-read.js';
+import { readWorksheetState } from '../helpers/legacy-worksheet-read.js';
 import {
   worksheetWrite, commitWorksheetWrite, completeStack, WriteError,
 } from '../../js/core/worksheet-write.js';
@@ -76,14 +76,14 @@ suite('core/worksheet-write — worksheetWrite', () => {
     assertDeepEqual(plan, planBefore, 'Plan des Aufrufers verändert');
     assertDeepEqual(ctx.stacks[0], [
       { op: 'module.add', id: 'ws', module: 'worksheet', phase: 'data' },
-      { op: 'instance.call', module: 'worksheet', instance: WS_REF, method: 'renameSheet', args: ['sheet_1', 'A 1'] },
-      { op: 'instance.call', id: 'write', module: 'worksheet', instance: WS_REF, method: 'writeColumns', args: ['sheet_1', [
+      { op: 'instance.call', module: 'worksheet', instance: WS_REF, method: 'renameSheet', args: [{ id: 'sheet_1', name: 'A 1' }] },
+      { op: 'instance.call', id: 'write', module: 'worksheet', instance: WS_REF, method: 'writeColumns', args: [{ sheetId: 'sheet_1', columns: [
         { to: 'start', name: 'P', type: 'currency', values: [1, 2], format: { decimals: 2 } },
         { to: 'start', name: 'Q', type: 'numeric', values: [3], discrete: true },
-      ]] },
+      ] }] },
     ]);
     assertDeepEqual(plan.stack[0], { op: 'module.add', id: 'ws', module: 'worksheet' });
-    assertDeepEqual(plan.stack[1].args, ['sheet_1', 'A']);
+    assertDeepEqual(plan.stack[1].args, [{ id: 'sheet_1', name: 'A' }]);
     assertDeepEqual(JSON.parse(JSON.stringify(plan)), plan);
   });
 
@@ -92,7 +92,7 @@ suite('core/worksheet-write — worksheetWrite', () => {
       .column({ name: 'A', values: [1, 2, 3] }).column({ name: 'B', values: [1, 2, 3, 4] }).build();
     const remove = plan.stack.filter((a) => a.method === 'removeRows');
     assertEqual(remove.length, 1);
-    assertDeepEqual(remove[0].args, ['sheet_1', 4, START_ROW_COUNT - 4]);
+    assertDeepEqual(remove[0].args, [{ sheetId: 'sheet_1', startRow: 4, count: START_ROW_COUNT - 4 }]);
     assertEqual(plan.stack.indexOf(remove[0]), plan.stack.findIndex((a) => a.method === 'writeColumns') + 1);
     const plain = worksheetWrite().newWorksheet({ name: 'N' }).column({ name: 'A', values: [1] }).build();
     assertEqual(plain.stack.some((a) => a.method === 'removeRows'), false);
@@ -104,7 +104,7 @@ suite('core/worksheet-write — worksheetWrite', () => {
     const plan = worksheetWrite().newWorksheet({ name: 'Frei' }).column({ name: 'A', values: [1] }).build();
     const stack = completeStack({ stateManager: fakeStore(), instanceId: 'unbekannt' }, plan);
     assertEqual(stack[0].phase, 'data');
-    assertDeepEqual(stack[1].args, ['sheet_1', 'Frei']);
+    assertDeepEqual(stack[1].args, [{ id: 'sheet_1', name: 'Frei' }]);
   });
 
   test('existing worksheet builds single writeColumns call', () => {
@@ -114,9 +114,9 @@ suite('core/worksheet-write — worksheetWrite', () => {
     assertEqual(plan.created, false);
     assertEqual(plan.sheetId, 'sheet_2');
     assertDeepEqual(plan.stack, [
-      { op: 'instance.call', id: 'write', module: 'worksheet', instance: 'ws1', method: 'writeColumns', args: ['sheet_2', [
+      { op: 'instance.call', id: 'write', module: 'worksheet', instance: 'ws1', method: 'writeColumns', args: [{ sheetId: 'sheet_2', columns: [
         { to: 'append', name: 'A', type: 'numeric', values: [1] },
-      ]] },
+      ] }] },
     ]);
   });
 
@@ -125,8 +125,8 @@ suite('core/worksheet-write — worksheetWrite', () => {
       .overwrite('c9', { type: 'text', values: ['x'] })
       .column({ name: 'A', values: [1] })
       .build();
-    assertDeepEqual(plan.stack[0].args[1].map(c => c.to), ['c9', 'append']);
-    assertEqual(plan.stack[0].args[1][0].type, 'text');
+    assertDeepEqual(plan.stack[0].args[0].columns.map(c => c.to), ['c9', 'append']);
+    assertEqual(plan.stack[0].args[0].columns[0].type, 'text');
   });
 
   test('neues Arbeitsblatt ohne Namen: kein renameSheet', () => {
@@ -138,7 +138,7 @@ suite('core/worksheet-write — worksheetWrite', () => {
     const format = new Proxy({ decimals: 2 }, {});
     const values = new Proxy([1, 2], {});
     const plan = worksheetWrite().newWorksheet({ name: 'N' }).column({ name: 'A', type: 'currency', values, format }).build();
-    const [column] = plan.stack[2].args[1];
+    const [column] = plan.stack[2].args[0].columns;
     assertDeepEqual(column.format, { decimals: 2 });
     assertDeepEqual(column.values, [1, 2]);
     assertDeepEqual(JSON.parse(JSON.stringify(plan)), plan);
@@ -228,7 +228,7 @@ suite('core/worksheet-write — commitWorksheetWrite', () => {
     const plan = worksheetWrite().newWorksheet({ name: 'A' }).column({ name: 'P', values: [1] }).build();
     await commitWorksheetWrite(ctx, plan);
     assertDeepEqual(reads, ['ws1']);
-    assertDeepEqual(ctx.stacks[0][1].args, ['sheet_1', 'A 1']);
+    assertDeepEqual(ctx.stacks[0][1].args, [{ id: 'sheet_1', name: 'A 1' }]);
   });
 
   test('neuer Worksheet, Arbeitsblatt lesbar: kein Vorab-Lesen', async () => {
@@ -300,9 +300,9 @@ suite('core/worksheet-write — commitWorksheetWrite', () => {
   test('commit message comes from i18n, not from the agent message', async () => {
     const plan = worksheetWrite().worksheet('ws1').sheet('sheet_1').column({ name: 'A', values: [1] }).build();
     const answers = [
-      [{ ok: false, results: [{ ok: false, error: 'call_failed', message: 'Call failed: unknown_column: c9' }] }, 'modules.worksheet.appendTargetUnknown'],
-      [{ ok: false, results: [{ ok: false, error: 'call_failed', message: 'Call failed: kaputt' }] }, 'modules.worksheet.writeFailed'],
-      [{ ok: false, error: 'flush_failed', message: 'disk', results: [] }, 'modules.worksheet.writeFlushFailed'],
+      [{ ok: false, results: [{ ok: false, error: 'call_failed', message: 'Call failed: unknown_column: c9' }] }, 'worksheet.appendTargetUnknown'],
+      [{ ok: false, results: [{ ok: false, error: 'call_failed', message: 'Call failed: kaputt' }] }, 'worksheet.writeFailed'],
+      [{ ok: false, error: 'flush_failed', message: 'disk', results: [] }, 'worksheet.writeFlushFailed'],
     ];
     for (const [answer, key] of answers) {
       const { value: err } = await quietWarn(() => caught(() => commitWorksheetWrite(fakeContext(answer), plan)));
@@ -319,11 +319,11 @@ suite('core/worksheet-write — commitWorksheetWrite', () => {
       .build();
     const ops = plan.stack.map((a) => a.method ?? a.op);
     assertDeepEqual(ops, ['writeColumns', 'setColumnRole', 'setColumnRole', 'setFormula', 'setFormula', 'setFormula', 'setColumnMeta']);
-    assertEqual(plan.stack[0].args[1][1].unit, 'mm');
-    assertDeepEqual(plan.stack[1].args, ['sheet_1', { $from: 'write', path: 'value.1' }, 'response']);
-    assertDeepEqual(plan.stack[3].args, ['sheet_1', { $from: 'write', path: 'value.1' }, 1, '=A2*2']);
-    assertDeepEqual(plan.stack[5].args, ['sheet_1', { $from: 'write', path: 'value.2' }, 1, '=A2']);
-    assertDeepEqual(plan.stack[6].args, ['sheet_1', { $from: 'write', path: 'value.1' }, meta]);
+    assertEqual(plan.stack[0].args[0].columns[1].unit, 'mm');
+    assertDeepEqual(plan.stack[1].args, [{ sheetId: 'sheet_1', columnId: { $from: 'write', path: 'value.1' }, role: 'response' }]);
+    assertDeepEqual(plan.stack[3].args, [{ sheetId: 'sheet_1', columnId: { $from: 'write', path: 'value.1' }, row: 1, formula: '=A2*2' }]);
+    assertDeepEqual(plan.stack[5].args, [{ sheetId: 'sheet_1', columnId: { $from: 'write', path: 'value.2' }, row: 1, formula: '=A2' }]);
+    assertDeepEqual(plan.stack[6].args, [{ sheetId: 'sheet_1', columnId: { $from: 'write', path: 'value.1' }, meta }]);
     assertEqual(plan.stack[1].instance, 'ws1');
   });
 

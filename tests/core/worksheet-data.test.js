@@ -5,7 +5,7 @@ import Alpine from '../../vendor/alpinejs/csp.js';
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { installWorksheetRevisions, createWorksheetData, bumpWorksheetRevisions } from '../../js/core/worksheet-data.js';
 import { registerWorksheetReader } from '../../js/core/worksheet-columns.js';
-import { readWorksheetState } from '../../js/modules/worksheet/worksheet-read.js';
+import { readWorksheetState } from '../helpers/legacy-worksheet-read.js';
 import { useStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 
 const flush = () => new Promise((r) => setTimeout(r, 0));

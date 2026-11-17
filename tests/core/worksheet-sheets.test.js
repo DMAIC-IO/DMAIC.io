@@ -4,7 +4,7 @@
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { uniqueSheetName, buildInitialWorksheetState } from '../../js/core/worksheet-sheets.js';
 import { registerWorksheetReader } from '../../js/core/worksheet-columns.js';
-import { readWorksheetState } from '../../js/modules/worksheet/worksheet-read.js';
+import { readWorksheetState } from '../helpers/legacy-worksheet-read.js';
 
 function fakeStateManager(sheetNames) {
   const phases = { data: [{ instanceId: 'w1', moduleId: 'worksheet' }, { instanceId: 's1', moduleId: 'sipoc' }] };

@@ -132,3 +132,14 @@ test('Prop table() an ein Feld table(): kein Befund, an ein anderes Feld: Befund
   assert.deepEqual(checkWidgetBindings(tpl('<div x-widget="grid" x-widget-data="model.n"></div>'), c),
     ['template: resources/view.html: x-widget-data="model.n": Feldart number passt nicht zu table']);
 });
+
+test('model.$tableRev: Zahl-Eingabe bei einem Schema mit table(), sonst Befund', () => {
+  const w = new Map([['grid', defineWidget({ name: 'grid', props: { rev: number({ optional: true }), label: text({ optional: true }) } })]]);
+  const withTable = { widgets: w, schema: { fields: { sheets: list(object({ data: table() })) }, view: {} }, stateSchema: { fields: {} }, viewNames: new Set() };
+  assert.deepEqual(checkWidgetBindings(tpl('<div x-widget="grid" x-widget-rev="model.$tableRev"></div>'), withTable), []);
+  assert.deepEqual(checkWidgetBindings(tpl('<div x-widget="grid" x-widget-label="model.$tableRev"></div>'), withTable),
+    ['template: resources/view.html: x-widget-label="model.$tableRev": model.$tableRev ist eine Zahl']);
+  const noTable = { ...withTable, schema: { fields: { n: number() }, view: {} } };
+  assert.deepEqual(checkWidgetBindings(tpl('<div x-widget="grid" x-widget-rev="model.$tableRev"></div>'), noTable),
+    ['template: resources/view.html: x-widget-rev="model.$tableRev": $tableRev ist weder Feld noch Ansichtsfeld']);
+});

@@ -56,8 +56,7 @@ import h53 from '../modules/triz-resources/triz-resources-help.js';
 import h54 from '../modules/triz-sufield/triz-sufield-help.js';
 import h55 from '../modules/unit-converter/unit-converter-help.js';
 import h56 from '../modules/voc-ctx-tree/voc-ctx-tree-help.js';
-import h57 from '../modules/worksheet/worksheet-help.js';
-import h58 from '../modules/xy-plot/xy-plot-help.js';
+import h57 from '../modules/xy-plot/xy-plot-help.js';
 
 export const HELP = {
   "activity-flowchart": h0,
@@ -117,6 +116,5 @@ export const HELP = {
   "triz-sufield": h54,
   "unit-converter": h55,
   "voc-ctx-tree": h56,
-  "worksheet": h57,
-  "xy-plot": h58,
+  "xy-plot": h57,
 };

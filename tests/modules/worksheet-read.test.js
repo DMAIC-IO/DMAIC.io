@@ -1,16 +1,14 @@
 /**
  * Lesefläche des Arbeitsblatts (F1.14a P3). Dieselben Fälle laufen gegen
- * die Altform (`readWorksheetState`, Übergang bis Task 13) und gegen die
+ * die Altform (`readWorksheetState`, Test-Helfer) und gegen die
  * Zielform, Stand der Version 1.0: über das Model (`readWorksheetModel`) und
  * ohne Model aus dem gespeicherten Stand (`readWorksheetStored`). Die
  * Erwartungen sind dieselben.
  */
 import { suite, test, assert, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { inferRole } from '../../js/core/datagrid/datagrid-roles.js';
-import {
-  readWorksheetState, worksheetSnapshot, readWorksheetModel, readWorksheetStored,
-} from '../../js/modules/worksheet/worksheet-read.js';
-import { worksheetSheetsSnapshot } from '../../js/modules/worksheet/domain/read.js';
+import { readWorksheetState, worksheetSnapshot } from '../helpers/legacy-worksheet-read.js';
+import { worksheetSheetsSnapshot, readWorksheetModel, readWorksheetStored } from '../../js/modules/worksheet/domain/read.js';
 import { WorksheetModel } from '../../js/modules/worksheet/domain/model.js';
 import { createInstances } from '../../js/core/instances.js';
 

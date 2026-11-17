@@ -22458,513 +22458,937 @@ export const AGENT_REGISTRY = {
   "worksheet": {
     "tagged": true,
     "available": true,
+    "schema": true,
     "violations": [],
     "reported": [],
     "actions": {
-      "undo": {
-        "params": [],
-        "returns": "boolean",
-        "help": "Undo the last grid edit. `DataGrid.undo()` kehrt bei leerer Historie STILL zurück. Die Oberfläche kann diesen Zustand nicht erreichen — ihr Knopf trägt `:disabled=\"!canUndo\"` —, ein Agent schon, und er bekam Erfolg für nichts gemeldet. Geprüft wird genau die Marke des Knopfs; eine leere Historie ist eine fachliche Absage, kein ungültiges Argument, und wird deshalb zurückgegeben statt geworfen."
-      },
-      "redo": {
-        "params": [],
-        "returns": "boolean",
-        "help": "Redo the last undone grid edit. Dieselbe Absage wie bei `undo()`: ohne zurückgenommenen Schritt gibt es nichts wiederherzustellen, und der Knopf der Oberfläche ist `disabled`."
-      },
-      "addColumn": {
-        "params": [
-          {
-            "name": "sheetId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the sheet (see read().sheets[].id)"
-          },
-          {
-            "name": "position",
-            "type": "number",
-            "optional": true,
-            "help": "zero-based index the new column takes; 0 puts it first, read().columns.length (or omitted) appends"
-          }
-        ],
-        "returns": "string",
-        "help": "Add an empty column to the sheet — appended, or inserted at a position like \"insert column left/right\" in the header menu. The toolbar button calls `addColumn(sheetId)` without a position (Alpine CSP) and appends, as before."
-      },
-      "writeColumns": {
-        "params": [
-          {
-            "name": "sheetId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the sheet (see read().sheets[].id)"
-          },
-          {
-            "name": "columns",
-            "type": "WriteColumn[]",
-            "optional": false,
-            "help": "the columns to write, in order"
-          }
-        ],
-        "returns": "string[]",
-        "help": "Write several columns in one step: append new columns, fill empty start columns (C1–C5) or overwrite existing columns. All entries are checked first — if one fails, nothing is written. An inactive sheet is written without being shown. The whole write is one undo step."
-      },
-      "renameColumn": {
-        "params": [
-          {
-            "name": "sheetId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the sheet (see read().sheets[].id)"
-          },
-          {
-            "name": "columnId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the column (see read().columns[].id)"
-          },
-          {
-            "name": "name",
-            "type": "string",
-            "optional": false,
-            "help": "the new name"
-          }
-        ],
-        "returns": "string",
-        "help": "Rename a column. Formulas that refer to the old name are rewritten; a name another column already has gets a suffix (\" (2)\"); \"\" clears the name so the short name (C1, …) is shown. Undo restores it."
-      },
-      "setColumnMeta": {
-        "params": [
-          {
-            "name": "sheetId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the sheet (see read().sheets[].id)"
-          },
-          {
-            "name": "columnId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the column (see read().columns[].id)"
-          },
-          {
-            "name": "meta",
-            "type": "{ lock?: 'hard'|'soft', reason?: string, managedBy?: string, managedRef?: string, categoricalCoding?: object }|null",
-            "optional": false,
-            "help": "the new meta, replacing the old one; null removes it"
-          }
-        ],
-        "returns": "void",
-        "help": "Set the whole meta of a column: its lock, the reason shown in the tooltip, the managing module and the categorical coding. `meta = null` removes it. Allowed on locked columns too, so a lock can be lifted and set again around a write. Undo restores the previous meta."
-      },
-      "removeColumn": {
-        "params": [
-          {
-            "name": "sheetId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the sheet (see read().sheets[].id)"
-          },
-          {
-            "name": "columnId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the column (see read().columns[].id)"
-          }
-        ],
-        "returns": "void",
-        "help": "Remove a column with its values and formulas. Undo restores it."
-      },
-      "addRows": {
-        "params": [
-          {
-            "name": "sheetId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the sheet (see read().sheets[].id)"
-          },
-          {
-            "name": "count",
-            "type": "number",
-            "optional": true,
-            "help": "how many rows, a whole number of at least 1; omitted → 10, like the toolbar button"
-          },
-          {
-            "name": "position",
-            "type": "number",
-            "optional": true,
-            "help": "zero-based row index the first new row takes; 0 puts them first, the row count (or omitted) appends"
-          }
-        ],
-        "returns": "void",
-        "help": "Insert empty rows into the sheet — appended, or at a position like \"insert row above/below\" in the row menu. The toolbar button calls `addRows(sheetId)` without count (Alpine CSP allows no argument expressions in `@click`) and lands on the 10 it always added."
-      },
-      "removeRows": {
-        "params": [
-          {
-            "name": "sheetId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the sheet (see read().sheets[].id)"
-          },
-          {
-            "name": "startRow",
-            "type": "number",
-            "optional": false,
-            "help": "zero-based index of the first row to remove"
-          },
-          {
-            "name": "count",
-            "type": "number",
-            "optional": false,
-            "help": "how many rows, from 1 up to the rows left from startRow to the end"
-          }
-        ],
-        "returns": "number",
-        "help": "Remove a contiguous block of rows from the sheet, values and formulas included — like \"delete row\" / \"delete selected rows\" in the row menu. Undo restores them."
-      },
-      "sortRows": {
-        "params": [
-          {
-            "name": "sheetId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the sheet (see read().sheets[].id)"
-          },
-          {
-            "name": "columnId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the column to sort by (see read().columns[].id)"
-          },
-          {
-            "name": "direction",
-            "type": "'asc'|'desc'",
-            "optional": false,
-            "help": "ascending or descending"
-          }
-        ],
-        "returns": "boolean",
-        "help": "Sort all rows of the sheet by one column — \"Sort ascending / descending\" in the column header menu. The direction is absolute (a second identical call changes nothing); empty cells go last. Undo restores the previous order."
-      },
-      "addSheet": {
-        "params": [],
-        "returns": "string",
-        "help": "Add a new sheet and make it active."
-      },
-      "renameSheet": {
-        "params": [
-          {
-            "name": "id",
-            "type": "string",
-            "optional": false,
-            "help": "id of the sheet to rename"
-          },
-          {
-            "name": "name",
-            "type": "string",
-            "optional": false,
-            "help": "the new name; must not be empty or whitespace only"
-          }
-        ],
-        "returns": "void",
-        "help": "Rename a sheet. The ONE sink for a sheet name — the inline rename in the tab bar lands here too, so the agent cannot reach a state the UI cannot (and vice versa)."
-      },
-      "duplicateSheet": {
-        "params": [
-          {
-            "name": "id",
-            "type": "string",
-            "optional": false,
-            "help": "id of the sheet to copy"
-          }
-        ],
-        "returns": "string",
-        "help": "Duplicate a sheet (cells, formulas, column settings) and make the copy active. The copy is appended at the end and named \"<name> (Copy)\"."
-      },
-      "insertSheetBefore": {
-        "params": [
-          {
-            "name": "id",
-            "type": "string",
-            "optional": false,
-            "help": "id of the sheet the new one is placed before"
-          }
-        ],
-        "returns": "string",
-        "help": "Insert an empty sheet directly before another sheet and make it active."
-      },
-      "removeSheet": {
-        "params": [
-          {
-            "name": "id",
-            "type": "string",
-            "optional": false,
-            "help": "id of the sheet to remove"
-          }
-        ],
-        "returns": "void",
-        "help": "Remove a sheet. If it was active, the neighbouring sheet becomes active. A workbook keeps at least one sheet."
-      },
       "read": {
         "params": [
           {
             "name": "options",
             "type": "object",
             "optional": true,
-            "help": "`{ sheetId?: string, fields?: string[], rows?: { from: number, to: number }, columns?: string[] }` — `columns` wählt Spalten-ids (in dieser Reihenfolge) und liefert je Spalte `values`; `rows` und `formulas` beziehen sich dann nur auf sie"
+            "help": "`{ fields?: string[], rows?: { from: number, to: number } }`"
           }
         ],
         "returns": "AgentRead",
-        "help": "Den Lesezustand der Datensammlung liefern. Ohne Parameter kommen die Zeilen UND die Formeln je als Umfangs-Deskriptor (`{ $bulk: true, rowCount, columns }`); mit `{ fields: ['rows'] }` bzw. `{ fields: ['formulas'] }` vollständig und mit `{ fields: ['rows'], rows: { from: 0, to: 50 } }` als Ausschnitt."
-      },
-      "importCsv": {
-        "params": [
-          {
-            "name": "sheetId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the sheet (see read().sheets[].id)"
-          },
-          {
-            "name": "csvText",
-            "type": "string",
-            "optional": false,
-            "help": "the full CSV/TSV text, header row included if present"
-          }
-        ],
-        "returns": "{ columns: number, rows: number }",
-        "help": "Replace the sheet's content with the given CSV data. Same parse, undo and toast path as the file import."
+        "help": "Den vollständigen Lesezustand dieser Instanz liefern."
       },
       "setCells": {
+        "target": "model",
         "params": [
           {
-            "name": "sheetId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id of the sheet (see read().sheets[].id)"
-          },
-          {
-            "name": "columnId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the target column (see read().columns[].id)"
-          },
-          {
-            "name": "startRow",
-            "type": "number",
-            "optional": false,
-            "help": "zero-based row index of the first value"
-          },
-          {
-            "name": "values",
-            "type": "any[]",
-            "optional": false,
-            "help": "the values to write, one per row; formulas are written as plain text, not evaluated"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "number",
-        "help": "Write a block of values into one column, starting at a row index. Goes through the same `setCellValue` path as the cell editor and the paste handler — type detection, locks and undo included. Values only, no formulas: this path goes straight to `setCellValue`, so `\"=C1*2\"` lands here as plain text. Formulas are written with `setFormula`. A plain value written into a formula cell OVERWRITES the formula — `read().formulas` says which cells are computed; undo restores value and formula."
+        "help": "",
+        "keysOf": "setCells",
+        "keysHelp": "actions.setCells.params",
+        "keys": {
+          "sheetId": {
+            "type": "string",
+            "help": ""
+          },
+          "columnId": {
+            "type": "string",
+            "help": ""
+          },
+          "startRow": {
+            "type": "number",
+            "help": ""
+          },
+          "values": {
+            "type": "Array<number|string|boolean|null>",
+            "help": ""
+          }
+        }
       },
       "setFormula": {
+        "target": "model",
         "params": [
           {
-            "name": "sheetId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id of the sheet (see read().sheets[].id)"
-          },
-          {
-            "name": "columnId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the target column (see read().columns[].id)"
-          },
-          {
-            "name": "row",
-            "type": "number",
-            "optional": false,
-            "help": "zero-based row index; the row count appends a row"
-          },
-          {
-            "name": "formula",
-            "type": "string",
-            "optional": false,
-            "help": "formula text starting with \"=\", e.g. \"=C1[2]*2\" (column 1, row 2, both 1-based)"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "{ value: any, error: string|null }",
-        "help": "Write a formula into one cell of the sheet, like the formula editor: stored as text, evaluated at once, recorded for undo with the formula that was there before. A row equal to the row count extends the sheet by one row, like typing below the last row. An evaluation error (`#DIV/0`, `#REF!`, …) is not a rejected call: the formula is stored, the cell value is `null`, and the error code comes back — the UI shows the same cell with the same error."
+        "returns": "{ value: number|string|boolean|null, error: string|null }",
+        "help": "",
+        "keysOf": "setFormula",
+        "keysHelp": "actions.setFormula.params",
+        "keys": {
+          "sheetId": {
+            "type": "string",
+            "help": ""
+          },
+          "columnId": {
+            "type": "string",
+            "help": ""
+          },
+          "row": {
+            "type": "number",
+            "help": ""
+          },
+          "formula": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
-      "setColumnRole": {
+      "writeColumns": {
+        "target": "model",
         "params": [
           {
-            "name": "sheetId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id of the sheet (see read().sheets[].id)"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "string[]",
+        "help": "",
+        "keysOf": "writeColumns",
+        "keysHelp": "actions.writeColumns.params",
+        "keys": {
+          "sheetId": {
+            "type": "string",
+            "help": ""
           },
+          "columns": {
+            "type": "Array<{ to: string, values: Array<number|string|boolean|null>, name?: string, type?: string, format?: object, unit?: string, discrete?: boolean }>",
+            "help": ""
+          }
+        }
+      },
+      "importCsv": {
+        "target": "model",
+        "params": [
           {
-            "name": "columnId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id of the column (see read().columns[].id)"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "{ columns: number, rows: number }",
+        "help": "",
+        "keysOf": "importCsv",
+        "keysHelp": "actions.importCsv.params",
+        "keys": {
+          "sheetId": {
+            "type": "string",
+            "help": ""
           },
-          {
-            "name": "role",
+          "csvText": {
             "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "pasteBlock": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "one of continuous, categorical, ordinal, date, identifier, freeText — and valid for the column type"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "{ columns: number, rows: number }",
+        "help": "",
+        "keysOf": "pasteBlock",
+        "keysHelp": "actions.pasteBlock.params",
+        "keys": {
+          "sheetId": {
+            "type": "string",
+            "help": ""
+          },
+          "columnId": {
+            "type": "string",
+            "help": ""
+          },
+          "startRow": {
+            "type": "number",
+            "help": ""
+          },
+          "rows": {
+            "type": "string[][]",
+            "help": ""
+          }
+        }
+      },
+      "fillRange": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "number",
+        "help": "",
+        "keysOf": "fillRange",
+        "keysHelp": "actions.fillRange.params",
+        "keys": {
+          "sheetId": {
+            "type": "string",
+            "help": ""
+          },
+          "source": {
+            "type": "{ c0: number, r0: number, c1: number, r1: number }",
+            "help": ""
+          },
+          "target": {
+            "type": "{ c0: number, r0: number, c1: number, r1: number }",
+            "help": ""
+          },
+          "ctrl": {
+            "type": "boolean",
+            "help": "",
+            "optional": true
+          }
+        }
+      },
+      "clearRange": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "number",
+        "help": "",
+        "keysOf": "clearRange",
+        "keysHelp": "actions.clearRange.params",
+        "keys": {
+          "sheetId": {
+            "type": "string",
+            "help": ""
+          },
+          "c0": {
+            "type": "number",
+            "help": ""
+          },
+          "r0": {
+            "type": "number",
+            "help": ""
+          },
+          "c1": {
+            "type": "number",
+            "help": ""
+          },
+          "r1": {
+            "type": "number",
+            "help": ""
+          }
+        }
+      },
+      "addColumn": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "string",
+        "help": "",
+        "keysOf": "addColumn",
+        "keysHelp": "actions.addColumn.params",
+        "keys": {
+          "sheetId": {
+            "type": "string",
+            "help": ""
+          },
+          "position": {
+            "type": "number",
+            "help": "",
+            "optional": true
+          }
+        }
+      },
+      "removeColumn": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Set the analytical role of a column on the sheet, or confirm the detected one by passing the same role — like the role dialog before a chart suggestion. Afterwards read().columns[].roleConfirmed is true, and chart suggestion reads the role as confirmed. Allowed roles depend on the column type: numeric/currency/percent → continuous, categorical, ordinal, identifier; text → categorical, ordinal, identifier, freeText; binary → categorical; date/time → date. Role changes are not recorded in the undo history (as in the dialog)."
+        "help": "",
+        "keysOf": "removeColumn",
+        "keysHelp": "actions.removeColumn.params",
+        "keys": {
+          "sheetId": {
+            "type": "string",
+            "help": ""
+          },
+          "columnId": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
-      "moveRow": {
+      "renameColumn": {
+        "target": "model",
         "params": [
           {
-            "name": "sheetId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id of the sheet (see read().sheets[].id)"
-          },
-          {
-            "name": "fromRow",
-            "type": "number",
-            "optional": false,
-            "help": "zero-based index of the row to move"
-          },
-          {
-            "name": "toRow",
-            "type": "number",
-            "optional": false,
-            "help": "zero-based index the row has afterwards"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
-        "returns": "boolean",
-        "help": "Move a row of the sheet, like dragging its row header. Undo moves it back."
+        "returns": "string",
+        "help": "",
+        "keysOf": "renameColumn",
+        "keysHelp": "actions.renameColumn.params",
+        "keys": {
+          "sheetId": {
+            "type": "string",
+            "help": ""
+          },
+          "columnId": {
+            "type": "string",
+            "help": ""
+          },
+          "name": {
+            "type": "string",
+            "help": ""
+          }
+        }
       },
       "moveColumn": {
+        "target": "model",
         "params": [
           {
-            "name": "sheetId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id of the sheet (see read().sheets[].id)"
-          },
-          {
-            "name": "columnId",
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "boolean",
+        "help": "",
+        "keysOf": "moveColumn",
+        "keysHelp": "actions.moveColumn.params",
+        "keys": {
+          "sheetId": {
             "type": "string",
-            "optional": false,
-            "help": "id of the column (see read().columns[].id)"
+            "help": ""
           },
-          {
-            "name": "toIndex",
+          "columnId": {
+            "type": "string",
+            "help": ""
+          },
+          "toIndex": {
             "type": "number",
-            "optional": false,
-            "help": "zero-based position the column has afterwards"
+            "help": ""
           }
-        ],
-        "returns": "boolean",
-        "help": "Move a column of the sheet, like dragging its header. Short names (C1, C2 …) follow the new order. Undo moves it back."
+        }
       },
-      "setColumnType": {
+      "setColumnMeta": {
+        "target": "model",
         "params": [
           {
-            "name": "sheetId",
-            "type": "string",
+            "name": "command",
+            "type": "object",
             "optional": false,
-            "help": "id of the sheet (see read().sheets[].id)"
-          },
-          {
-            "name": "columnId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the column (see read().columns[].id)"
-          },
-          {
-            "name": "type",
-            "type": "string",
-            "optional": false,
-            "help": "one of numeric, text, date, time, currency, percent, binary"
-          }
-        ],
-        "returns": "boolean",
-        "help": "Change the type of a column on the sheet, like the type picker in the column header; the values are converted. A role the new type does not allow is re-detected and loses its confirmation (read().columns[].roleConfirmed becomes false). Currency and percent bring 2 and 1 decimals. Not recorded in the undo history (as in the picker)."
-      },
-      "setColumnFormat": {
-        "params": [
-          {
-            "name": "sheetId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the sheet (see read().sheets[].id)"
-          },
-          {
-            "name": "columnId",
-            "type": "string",
-            "optional": false,
-            "help": "id of the column (see read().columns[].id)"
-          },
-          {
-            "name": "key",
-            "type": "'decimals'|'dateFormat'|'timeFormat'",
-            "optional": false,
-            "help": "the format key; must fit the column type"
-          },
-          {
-            "name": "value",
-            "type": "number|string|null",
-            "optional": false,
-            "help": "decimals: whole number 0..6; dateFormat: dd.MM.yyyy, yyyy-MM-dd, dd/MM/yyyy, MM/dd/yyyy or d. MMMM yyyy; timeFormat: HH:mm or HH:mm:ss; null = default"
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
           }
         ],
         "returns": "void",
-        "help": "Set one display format key of a column on the sheet, like the format column of the type picker. numeric, currency, percent → decimals (0..6); date → dateFormat; time → timeFormat; text and binary have no format. null restores the type's default. Values are unchanged — only the display. Not recorded in the undo history."
+        "help": "",
+        "keysOf": "setColumnMeta",
+        "keysHelp": "actions.setColumnMeta.params",
+        "keys": {
+          "sheetId": {
+            "type": "string",
+            "help": ""
+          },
+          "columnId": {
+            "type": "string",
+            "help": ""
+          },
+          "meta": {
+            "type": "{ lock?: 'hard'|'soft', reason?: string, managedBy?: string, managedRef?: string, categoricalCoding?: Record<string, number> }|null",
+            "help": ""
+          }
+        }
+      },
+      "setColumnRole": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setColumnRole",
+        "keysHelp": "actions.setColumnRole.params",
+        "keys": {
+          "sheetId": {
+            "type": "string",
+            "help": ""
+          },
+          "columnId": {
+            "type": "string",
+            "help": ""
+          },
+          "role": {
+            "type": "'continuous'|'categorical'|'ordinal'|'date'|'identifier'|'freeText'",
+            "help": ""
+          }
+        }
+      },
+      "setColumnType": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "boolean",
+        "help": "",
+        "keysOf": "setColumnType",
+        "keysHelp": "actions.setColumnType.params",
+        "keys": {
+          "sheetId": {
+            "type": "string",
+            "help": ""
+          },
+          "columnId": {
+            "type": "string",
+            "help": ""
+          },
+          "columnType": {
+            "type": "'numeric'|'text'|'date'|'time'|'currency'|'percent'|'binary'",
+            "help": ""
+          }
+        }
+      },
+      "setColumnFormat": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "setColumnFormat",
+        "keysHelp": "actions.setColumnFormat.params",
+        "keys": {
+          "sheetId": {
+            "type": "string",
+            "help": ""
+          },
+          "columnId": {
+            "type": "string",
+            "help": ""
+          },
+          "key": {
+            "type": "'decimals'|'dateFormat'|'timeFormat'",
+            "help": ""
+          },
+          "value": {
+            "type": "number|string|null",
+            "help": ""
+          }
+        }
+      },
+      "addRows": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "addRows",
+        "keysHelp": "actions.addRows.params",
+        "keys": {
+          "sheetId": {
+            "type": "string",
+            "help": ""
+          },
+          "count": {
+            "type": "number",
+            "help": "",
+            "optional": true
+          },
+          "position": {
+            "type": "number",
+            "help": "",
+            "optional": true
+          }
+        }
+      },
+      "removeRows": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "number",
+        "help": "",
+        "keysOf": "removeRows",
+        "keysHelp": "actions.removeRows.params",
+        "keys": {
+          "sheetId": {
+            "type": "string",
+            "help": ""
+          },
+          "startRow": {
+            "type": "number",
+            "help": ""
+          },
+          "count": {
+            "type": "number",
+            "help": ""
+          }
+        }
+      },
+      "moveRow": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "boolean",
+        "help": "",
+        "keysOf": "moveRow",
+        "keysHelp": "actions.moveRow.params",
+        "keys": {
+          "sheetId": {
+            "type": "string",
+            "help": ""
+          },
+          "fromRow": {
+            "type": "number",
+            "help": ""
+          },
+          "toRow": {
+            "type": "number",
+            "help": ""
+          }
+        }
+      },
+      "sortRows": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "boolean",
+        "help": "",
+        "keysOf": "sortRows",
+        "keysHelp": "actions.sortRows.params",
+        "keys": {
+          "sheetId": {
+            "type": "string",
+            "help": ""
+          },
+          "columnId": {
+            "type": "string",
+            "help": ""
+          },
+          "direction": {
+            "type": "'asc'|'desc'",
+            "help": ""
+          }
+        }
+      },
+      "addSheet": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "string",
+        "help": "",
+        "keysOf": "addSheet",
+        "keysHelp": "actions.addSheet.params",
+        "keys": {
+          "name": {
+            "type": "string",
+            "help": "",
+            "optional": true
+          }
+        }
+      },
+      "renameSheet": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "renameSheet",
+        "keysHelp": "actions.renameSheet.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
+          },
+          "name": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "duplicateSheet": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "string",
+        "help": "",
+        "keysOf": "duplicateSheet",
+        "keysHelp": "actions.duplicateSheet.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
+          },
+          "name": {
+            "type": "string",
+            "help": "",
+            "optional": true
+          }
+        }
+      },
+      "insertSheetBefore": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "string",
+        "help": "",
+        "keysOf": "insertSheetBefore",
+        "keysHelp": "actions.insertSheetBefore.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
+          },
+          "name": {
+            "type": "string",
+            "help": "",
+            "optional": true
+          }
+        }
+      },
+      "removeSheet": {
+        "target": "model",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "removeSheet",
+        "keysHelp": "actions.removeSheet.params",
+        "keys": {
+          "id": {
+            "type": "string",
+            "help": ""
+          }
+        }
+      },
+      "undo": {
+        "target": "viewmodel",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "undo",
+        "keysHelp": "actions.undo.params",
+        "keys": {}
+      },
+      "redo": {
+        "target": "viewmodel",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "redo",
+        "keysHelp": "actions.redo.params",
+        "keys": {}
+      },
+      "switchSheet": {
+        "target": "viewmodel",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "switchSheet",
+        "keysHelp": "actions.switchSheet.params",
+        "keys": {
+          "id": {
+            "type": "unknown",
+            "help": ""
+          }
+        }
+      },
+      "gridView": {
+        "target": "viewmodel",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "gridView",
+        "keysHelp": "actions.gridView.params",
+        "keys": {
+          "sheetId": {
+            "type": "unknown",
+            "help": ""
+          },
+          "colWidths": {
+            "type": "unknown",
+            "help": ""
+          },
+          "selection": {
+            "type": "unknown",
+            "help": ""
+          }
+        }
+      },
+      "exportAs": {
+        "target": "viewmodel",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "exportAs",
+        "keysHelp": "actions.exportAs.params",
+        "keys": {
+          "format": {
+            "type": "unknown",
+            "help": ""
+          }
+        }
+      },
+      "openFormulaEditor": {
+        "target": "viewmodel",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "openFormulaEditor",
+        "keysHelp": "actions.openFormulaEditor.params",
+        "keys": {
+          "sheetId": {
+            "type": "unknown",
+            "help": ""
+          },
+          "columnId": {
+            "type": "unknown",
+            "help": ""
+          },
+          "row": {
+            "type": "unknown",
+            "help": ""
+          }
+        }
+      },
+      "suggestChart": {
+        "target": "viewmodel",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "suggestChart",
+        "keysHelp": "actions.suggestChart.params",
+        "keys": {}
+      },
+      "confirmRoles": {
+        "target": "viewmodel",
+        "params": [
+          {
+            "name": "command",
+            "type": "object",
+            "optional": false,
+            "help": "Das Kommando als ein Objekt; seine Schlüssel stehen unter keys."
+          }
+        ],
+        "returns": "void",
+        "help": "",
+        "keysOf": "confirmRoles",
+        "keysHelp": "actions.confirmRoles.params",
+        "keys": {
+          "sheetId": {
+            "type": "unknown",
+            "help": ""
+          },
+          "roles": {
+            "type": "unknown",
+            "help": ""
+          }
+        }
       }
     },
     "fields": {
       "sheets": {
         "type": "Array<{ id: string, name: string }>",
-        "help": "all sheets of the workbook, in tab order",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "sheetId": {
         "type": "string|null",
-        "help": "id of the sheet the following columns and rows belong to; the read option sheetId chooses it, otherwise the first sheet",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "rowCount": {
         "type": "number",
-        "help": "number of data rows of this sheet",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "columns": {
         "type": "Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null, roleConfirmed: boolean, format: { decimals?: number, dateFormat?: string, timeFormat?: string }, meta: { lock?: 'hard'|'soft', reason?: string, managedBy?: string, managedRef?: string, categoricalCoding?: object }|null, values?: any[] }>",
-        "help": "the column headers of this sheet; `id` is the columnId of a column reference; `roleConfirmed` is true once the role was set or confirmed by hand or via setColumnRole; `format` holds the display format keys set for the column (absent key = the type's default); `meta` is the column's lock and management data set via setColumnMeta, null if none; `values` only with the read option columns: the cell values of the column from row 0 on, one per row",
+        "help": "",
         "bulk": false,
         "derived": true
       },
       "rows": {
         "type": "any[][]",
-        "help": "the data rows of this sheet, each row in column order",
+        "help": "",
         "bulk": true,
         "bulkKind": "table",
         "derived": true
       },
       "formulas": {
         "type": "Array<{ columnId: string, row: number, formula: string }>",
-        "help": "which cells of this sheet are COMPUTED, not typed; a plain value written over one of them deletes the formula",
+        "help": "",
         "bulk": true,
         "bulkKind": "table",
         "derived": true
       }
     },
+    "asyncTasks": [],
     "viewFields": [
       "activeSheetId",
-      "sheets[].state.selection",
-      "sheets[].state.colWidths"
+      "gridView"
+    ],
+    "settable": [],
+    "invariants": [
+      "uniqueSheetIds",
+      "hasSheet",
+      "uniqueColumnIds",
+      "tableShape",
+      "cellsFitType",
+      "rolesSet",
+      "activeSheet"
     ]
   },
   "xy-plot": {

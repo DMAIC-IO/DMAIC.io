@@ -1,9 +1,13 @@
 /**
- * D.Mike — Arbeitsblatt: Abzug zum Lesen (domain/read.js)
+ * D.Mike — Arbeitsblatt: Lesefläche (domain/read.js)
  *
- * Der Abzug, den die Lesefläche (`worksheet-read.js`) projiziert, aus den
- * Blättern der Zielform. Dieselbe Funktion liest die Blätter des Models und
- * die eines gespeicherten Stands der Version 1.0: beide haben
+ * Die Lesefläche des Arbeitsblatts (`AgentRead`, Felder `READ_FIELDS`) als
+ * reine Projektion über die Blätter der Zielform:
+ * - `readWorksheetModel(model, options)` über das Model (eingehängt
+ *   `vm.read`, ohne Mount `readDetached`; Haken `read` in `createModule`),
+ * - `readWorksheetStored(saved, options)` über einen gespeicherten Stand der
+ *   Version 1.0, ohne ein Model zu bauen (Haken `readStored`, `core/instances.js`).
+ * Beide teilen den Abzug `worksheetSheetsSnapshot`: Model und Stand haben
  * `{ id, name, columns, formulas, data: { rowCount, columns } }`, das Model
  * mit `TableData`, der Stand in schlichter Form.
  *
@@ -14,6 +18,7 @@
  * Rein: kein DOM, kein i18n.
  */
 import { requireKnownId } from '../../../core/agent/agent-argcheck.js';
+import { projectReadState } from '../../../core/agent/agent-read.js';
 import { inferRole } from '../../../core/datagrid/datagrid-roles.js';
 import { FORMAT_KEYS } from './columns.js';
 
@@ -152,4 +157,65 @@ export function worksheetSheetsSnapshot(sheets, options) {
     rowsColumns: heads,
     formulasColumns: [{ name: 'columnId' }, { name: 'row' }, { name: 'formula' }],
   };
+}
+
+/**
+ * Die Felder der Lesefläche (`describe` und Projektion). Die Hilfetexte stehen
+ * in `resources/i18n/context-help.<lang>.json` unter `fields.<name>.help`.
+ * `rows` und `formulas` sind Massenfelder: ohne `fields` nur ihr Umfang.
+ * @type {Readonly<Record<string, { type: string, help: string, bulk: boolean, bulkKind?: 'table'|'tree', derived: boolean }>>}
+ */
+export const READ_FIELDS = Object.freeze({
+  sheets: { type: 'Array<{ id: string, name: string }>', help: '', bulk: false, derived: true },
+  sheetId: { type: 'string|null', help: '', bulk: false, derived: true },
+  rowCount: { type: 'number', help: '', bulk: false, derived: true },
+  columns: {
+    type: "Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null, roleConfirmed: boolean, format: { decimals?: number, dateFormat?: string, timeFormat?: string }, meta: { lock?: 'hard'|'soft', reason?: string, managedBy?: string, managedRef?: string, categoricalCoding?: object }|null, values?: any[] }>",
+    help: '', bulk: false, derived: true,
+  },
+  rows: { type: 'any[][]', help: '', bulk: true, bulkKind: 'table', derived: true },
+  formulas: { type: 'Array<{ columnId: string, row: number, formula: string }>', help: '', bulk: true, bulkKind: 'table', derived: true },
+});
+
+/**
+ * Einen Abzug durch `READ_FIELDS` projizieren. Mit `columns` bekommt die
+ * Projektion nur die Köpfe: die `values` des Abzugs sind schon eigene Kopien,
+ * sie klonte sonst ein zweites Mal samt aller Zellwerte. Die Werte kommen
+ * danach an dieselbe Stelle (`values` zuletzt).
+ * @param {any} snap Abzug (`worksheetSheetsSnapshot`)
+ * @param {object} [options]
+ * @returns {object} `AgentRead`
+ * @throws {Error} bei einem kaputten Bereich (`rows: { from: 5, to: 2 }`)
+ */
+export function projectWorksheetRead(snap, options) {
+  const values = options?.columns === undefined ? null : snap.columns.map((/** @type {any} */ c) => c.values);
+  const src = values ? { ...snap, columns: snap.columns.map(({ values: _values, ...head }) => head) } : snap;
+  const out = projectReadState(src, READ_FIELDS, options ?? {});
+  if (out && typeof out.$invalidCall === 'string') throw new Error(out.$invalidCall);
+  if (values) out.columns?.forEach((/** @type {any} */ c, /** @type {number} */ i) => { c.values = values[i]; });
+  return out;
+}
+
+/**
+ * Die Lesefläche über das Model (`vm.read`, `readDetached`).
+ * @param {{ sheets: any[] }} model `WorksheetModel`
+ * @param {{ sheetId?: string, fields?: string[], rows?: { from: number, to: number }, columns?: string[] }} [options]
+ * @returns {object} `AgentRead`
+ * @throws {Error} siehe `worksheetSheetsSnapshot`
+ */
+export function readWorksheetModel(model, options) {
+  return projectWorksheetRead(worksheetSheetsSnapshot(model.sheets, options), options);
+}
+
+/**
+ * Die Lesefläche aus einem gespeicherten Stand der Version 1.0, ohne Model:
+ * der Stand ist vom Model geschrieben und gilt als geprüft. Einen Stand
+ * älterer Version migriert `core/instances.js` vorher über `loadDetached`
+ * und schreibt ihn einmal zurück.
+ * @param {{ sheets: any[] }|null} saved gespeicherter Stand der Version 1.0
+ * @param {object} [options] siehe `readWorksheetModel`
+ * @returns {object} `AgentRead`
+ */
+export function readWorksheetStored(saved, options) {
+  return projectWorksheetRead(worksheetSheetsSnapshot(saved?.sheets ?? [], options), options);
 }

@@ -89,5 +89,10 @@
     "name": "Survey builder",
     "description": "Create VoC questionnaires, send them as HTML, import and evaluate the answers",
     "whenToUse": "When customers or stakeholders are to be surveyed in writing: design the questionnaire, send it as an HTML file per recipient, read in the answer files and evaluate them — without a server, the data stays in the project."
+  },
+  "worksheet": {
+    "name": "Data Collection",
+    "description": "Spreadsheet for data entry and management",
+    "whenToUse": "The shared data substrate: measurements land here before an analysing tool reads them through a column reference. Almost every analysis starts with a data collection."
   }
 }

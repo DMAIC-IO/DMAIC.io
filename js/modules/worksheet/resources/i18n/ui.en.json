@@ -30,9 +30,7 @@
   "statusDims": "{cols} columns × {rows} rows",
   "statusSelection": "{rows}×{cols} selected",
   "defaultSheetName": "Sheet",
-  "appendTargetUnknown": "The target column no longer exists in the worksheet.",
   "writeFailed": "The worksheet could not write the columns.",
-  "writeFlushFailed": "The columns were written, but the project could not be saved.",
   "sheetCopy": "Copy",
   "addSheet": "Add new sheet",
   "renameSheet": "Rename",
@@ -116,5 +114,14 @@
   "fnDeg": "Radians → Degrees",
   "importUnsupported": "File format not supported: .{ext}",
   "importFailed": "The file could not be read.",
-  "importDone": "{name}: {cols} columns × {rows} rows"
+  "importDone": "{name}: {cols} columns × {rows} rows",
+  "invariants": {
+    "uniqueSheetIds": "Every sheet has its own non-empty id.",
+    "hasSheet": "The workbook has at least one sheet; the last sheet cannot be removed.",
+    "uniqueColumnIds": "Every column of a sheet has its own non-empty id.",
+    "tableShape": "Every column header has exactly one column in the table.",
+    "cellsFitType": "Every cell fits the type of its column (formula cells excepted); checked when loading.",
+    "rolesSet": "Every column has a role; a missing one is derived from type and values.",
+    "activeSheet": "The sheet shown is an existing sheet."
+  }
 }

@@ -35,7 +35,7 @@ export function openGridInWorksheet(grid, context, options = {}) {
     }
     if (!phase) phase = 'data';
   }
-  const sheetName = options.sheetName || `${i18n?.t?.('modules.worksheet.defaultSheetName') || 'Sheet'  } 1`;
+  const sheetName = options.sheetName || `${i18n?.t?.('worksheet.defaultSheetName') || 'Sheet'  } 1`;
 
   // Snapshot the grid state (strip runtime-only fields)
   const raw = grid.getState();

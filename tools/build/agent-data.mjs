@@ -184,7 +184,7 @@ function markUnknownKeys(actions, defs) {
 async function convertedEntry(appDir, id) {
   const dir = join(appDir, MODULES_DIR, id);
   const modelFile = join(dir, 'domain', 'model.js');
-  const { schema } = await loadModelSchema(modelFile);
+  const { schema, readFields } = await loadModelSchema(modelFile);
   const vmFile = join(dir, 'viewmodel', 'viewmodel.js');
   const vm = readFileSync(vmFile, 'utf8');
   const commands = readViewmodelCommands(vm, vmFile);
@@ -193,6 +193,8 @@ async function convertedEntry(appDir, id) {
   const Model = Object.assign(function Model() {}, { schema });
   const entry = schemaAgentEntry(Model, stubParams(commands), { asyncTasks: stubParams(tasks) });
   markUnknownKeys(entry.actions, { ...commands, ...tasks });
+  // Eigene Lesefläche (createModule `readFields`, Export `READ_FIELDS` in domain/model.js).
+  if (readFields) entry.fields = structuredClone(readFields);
   const modelText = readFileSync(modelFile, 'utf8');
   attachComputedKeys(entry, modelText, modelFile, readDerivedReturns(modelText));
   return entry;

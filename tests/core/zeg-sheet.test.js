@@ -42,7 +42,7 @@ function makeCtx({ cycle = 'dmaic', history = {}, completed = false } = {}) {
     on: (name, h) => { (handlers[name] ??= []).push(h); },
     off: (name, h) => { handlers[name] = (handlers[name] || []).filter(x => x !== h); },
   };
-  const i18n = { t: (k) => ({ 'dashboard.zegSheet.name': 'Zielerreichungsgrad', 'dashboard.zegSheet.date': 'Datum', 'modules.worksheet.defaultSheetName': 'Tabelle' }[k] ?? k.split('.').pop()) };
+  const i18n = { t: (k) => ({ 'dashboard.zegSheet.name': 'Zielerreichungsgrad', 'dashboard.zegSheet.date': 'Datum', 'worksheet.defaultSheetName': 'Tabelle' }[k] ?? k.split('.').pop()) };
   useStoredWorksheetReader(stateManager);
   const fx = { state, modules, events, completed, saves: 0, ctx: { stateManager, eventBus, i18n } };
   return fx;

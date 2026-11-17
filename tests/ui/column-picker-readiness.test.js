@@ -7,7 +7,7 @@
 import { suite, test, assertEqual, assertDeepEqual, afterEach } from '../test-utils.js';
 import { ColumnPicker } from '../../js/ui/column-picker.js';
 import { registerWorksheetReader } from '../../js/core/worksheet-columns.js';
-import { readWorksheetState } from '../../js/modules/worksheet/worksheet-read.js';
+import { readWorksheetState } from '../helpers/legacy-worksheet-read.js';
 
 const REF_A = { instanceId: 'ws-1', sheetId: 's1', columnId: 'a' };
 const REF_GONE = { instanceId: 'ws-1', sheetId: 's1', columnId: 'gone' };

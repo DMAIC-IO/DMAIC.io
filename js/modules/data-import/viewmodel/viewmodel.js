@@ -116,7 +116,7 @@ export default createModule({
         }
         const services = this._ui.services;
         let write = worksheetWrite()
-          .newWorksheet({ name: sheet.name || services.i18n.t('modules.worksheet.defaultSheetName') });
+          .newWorksheet({ name: sheet.name || services.i18n.t('worksheet.defaultSheetName') });
         sheet.columns.forEach((c, i) => {
           write = write.column({ name: c.name || c.shortName || `C${i + 1}`, type: c.type, values: c.values, format: c.format });
         });

@@ -18,6 +18,9 @@
     },
     "formulas": {
       "help": "Which cells of the sheet are computed, each with columnId, zero-based row and formula text. Bulk data: without options.fields = ['formulas'] only the extent is returned."
+    },
+    "sheetCounter": {
+      "help": "Counter of the sheet ids handed out; it only rises (undo does not lower it either), so no id is handed out twice. Not part of the read surface."
     }
   },
   "state": {
@@ -340,7 +343,10 @@
       }
     },
     "suggestChart": {
-      "help": "Suggests charts for the selected columns (without a selection for the only column holding values). Roles not yet confirmed are asked for first."
+      "help": "Suggests charts for the selected columns (without a selection for the only column holding values). Roles not yet confirmed are asked for first.",
+      "params": {
+        "command": "An empty object; the command takes no arguments."
+      }
     },
     "confirmRoles": {
       "help": "Sets the roles from the confirmation before a chart suggestion, all together as one step in the history. A role the type does not allow stays unchanged.",
@@ -363,10 +369,16 @@
       }
     },
     "undo": {
-      "help": "Undoes the last change to the workbook, also on another sheet (Ctrl+Z). Returns false when there is nothing to undo or the project is completed; undoing is not a new step itself."
+      "help": "Undoes the last change to the workbook, also on another sheet (Ctrl+Z). Returns false when there is nothing to undo or the project is completed; undoing is not a new step itself.",
+      "params": {
+        "command": "An empty object; the command takes no arguments."
+      }
     },
     "redo": {
-      "help": "Restores the change undone last (Ctrl+Y). Returns false when there is nothing to redo or the project is completed."
+      "help": "Restores the change undone last (Ctrl+Y). Returns false when there is nothing to redo or the project is completed.",
+      "params": {
+        "command": "An empty object; the command takes no arguments."
+      }
     }
   }
 }

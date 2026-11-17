@@ -208,7 +208,6 @@ const SKIP = new Set([
   'core/rich-text.test.js',
   'core/rich-text-directive.test.js',
   'modules/survey-runner-dom.test.js',
-  'modules/worksheet-write-columns.test.js',
   'core/zeg-sheet-stack.test.js',
   'pages/cycle.test.js',
   'pages/settings.test.js',

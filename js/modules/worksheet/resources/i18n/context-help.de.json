@@ -18,6 +18,9 @@
     },
     "formulas": {
       "help": "Welche Zellen des Blatts gerechnet sind, je mit columnId, nullbasierter Zeile und Formeltext. Massendaten: ohne options.fields = ['formulas'] kommt nur der Umfang."
+    },
+    "sheetCounter": {
+      "help": "Zähler der vergebenen Blatt-ids; er steigt nur (auch Rückgängig senkt ihn nicht), damit keine id doppelt vergeben wird. Nicht Teil der Lesefläche."
     }
   },
   "state": {
@@ -340,7 +343,10 @@
       }
     },
     "suggestChart": {
-      "help": "Schlägt Diagramme für die gewählten Spalten vor (ohne Auswahl für die einzige Spalte mit Werten). Noch nicht bestätigte Rollen werden vorher abgefragt."
+      "help": "Schlägt Diagramme für die gewählten Spalten vor (ohne Auswahl für die einzige Spalte mit Werten). Noch nicht bestätigte Rollen werden vorher abgefragt.",
+      "params": {
+        "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben."
+      }
     },
     "confirmRoles": {
       "help": "Setzt die Rollen aus der Bestätigung vor dem Diagrammvorschlag, alle zusammen als ein Schritt im Verlauf. Eine Rolle, die der Typ nicht erlaubt, bleibt unverändert.",
@@ -363,10 +369,16 @@
       }
     },
     "undo": {
-      "help": "Nimmt die letzte Änderung der Arbeitsmappe zurück, auch auf einem anderen Blatt (Strg+Z). Liefert false, wenn nichts zurückzunehmen ist oder das Projekt abgeschlossen ist; das Zurücknehmen selbst ist kein neuer Schritt."
+      "help": "Nimmt die letzte Änderung der Arbeitsmappe zurück, auch auf einem anderen Blatt (Strg+Z). Liefert false, wenn nichts zurückzunehmen ist oder das Projekt abgeschlossen ist; das Zurücknehmen selbst ist kein neuer Schritt.",
+      "params": {
+        "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben."
+      }
     },
     "redo": {
-      "help": "Stellt die zuletzt zurückgenommene Änderung wieder her (Strg+Y). Liefert false, wenn nichts wiederherzustellen ist oder das Projekt abgeschlossen ist."
+      "help": "Stellt die zuletzt zurückgenommene Änderung wieder her (Strg+Y). Liefert false, wenn nichts wiederherzustellen ist oder das Projekt abgeschlossen ist.",
+      "params": {
+        "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben."
+      }
     }
   }
 }

@@ -689,7 +689,7 @@ export default createModule({
         let write = worksheetWrite();
         let clean = null;
         if (target == null) {
-          write = write.newWorksheet({ name: ctx.i18n.t('modules.worksheet.defaultSheetName') })
+          write = write.newWorksheet({ name: ctx.i18n.t('worksheet.defaultSheetName') })
             .column({ name, values, type, discrete });
         } else {
           clean = keyToRef(refToKey(target));

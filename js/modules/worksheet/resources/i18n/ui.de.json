@@ -30,9 +30,7 @@
   "statusDims": "{cols} Spalten × {rows} Zeilen",
   "statusSelection": "{rows}×{cols} ausgewählt",
   "defaultSheetName": "Tabelle",
-  "appendTargetUnknown": "Die Zielspalte gibt es im Worksheet nicht (mehr).",
   "writeFailed": "Das Worksheet konnte die Spalten nicht schreiben.",
-  "writeFlushFailed": "Die Spalten wurden geschrieben, aber das Projekt konnte nicht gespeichert werden.",
   "sheetCopy": "Kopie",
   "addSheet": "Neues Blatt hinzufügen",
   "renameSheet": "Umbenennen",
@@ -116,5 +114,14 @@
   "fnDeg": "Bogenmaß → Grad",
   "importUnsupported": "Dateiformat nicht unterstützt: .{ext}",
   "importFailed": "Die Datei konnte nicht gelesen werden.",
-  "importDone": "{name}: {cols} Spalten × {rows} Zeilen"
+  "importDone": "{name}: {cols} Spalten × {rows} Zeilen",
+  "invariants": {
+    "uniqueSheetIds": "Jedes Blatt hat eine eigene, nicht leere id.",
+    "hasSheet": "Die Arbeitsmappe hat mindestens ein Blatt; das letzte Blatt lässt sich nicht entfernen.",
+    "uniqueColumnIds": "Jede Spalte eines Blatts hat eine eigene, nicht leere id.",
+    "tableShape": "Zu jedem Spaltenkopf gehört genau eine Spalte der Tabelle.",
+    "cellsFitType": "Jede Zelle passt zum Typ ihrer Spalte (Formelzellen ausgenommen); geprüft beim Laden.",
+    "rolesSet": "Jede Spalte hat eine Rolle; fehlt sie, wird sie aus Typ und Werten abgeleitet.",
+    "activeSheet": "Das angezeigte Blatt ist ein vorhandenes Blatt."
+  }
 }

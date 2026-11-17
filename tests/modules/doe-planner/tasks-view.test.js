@@ -117,9 +117,12 @@ function agentLayer(store) {
         result = { instanceId: action.instance };
       } else {
         const target = resolve(action.instance);
-        const [sheetId, ...rest] = action.args.map(resolve);
+        // Worksheet-Kommandos nehmen ein Objekt; Referenzen darin auflösen.
+        const [arg] = action.args.map((a) => (a && typeof a === 'object' && !('$from' in a)
+          ? Object.fromEntries(Object.entries(a).map(([k, v]) => [k, resolve(v)])) : resolve(a)));
         let value = null;
         if (action.method !== 'importExperiment') {
+          const sheetId = action.method === 'renameSheet' ? arg.id : arg.sheetId;
           touched.add(target);
           const sh = states[target].sheets.find((s) => s.id === sheetId);
           if (!sh) throw new Error(`unknown_sheet: ${sheetId}`);
@@ -127,9 +130,9 @@ function agentLayer(store) {
           const st = sh.state;
           const pad = (c) => { while (c.values.length < st.rowCount) c.values.push(null); };
           switch (action.method) {
-            case 'renameSheet': sh.name = rest[0]; break;
+            case 'renameSheet': sh.name = arg.name; break;
             case 'writeColumns': {
-              const cols = rest[0];
+              const cols = arg.columns;
               if (cols.some((c) => c.to === 'start')) st.columns = [];
               value = cols.map(({ to, ...c }) => {
                 const next = { id: uid(), format: {}, meta: null, formulas: [], ...c, values: [...c.values] };
@@ -140,19 +143,19 @@ function agentLayer(store) {
               st.columns.forEach(pad);
               break;
             }
-            case 'setColumnRole': column(st, rest[0]).role = rest[1]; break;
-            case 'setFormula': { const c = column(st, rest[0]); c.formulas[rest[1]] = rest[2]; break; }
-            case 'setColumnMeta': column(st, rest[0]).meta = rest[1]; break;
-            case 'addRows': st.rowCount += rest[0]; st.columns.forEach(pad); break;
+            case 'setColumnRole': column(st, arg.columnId).role = arg.role; break;
+            case 'setFormula': { const c = column(st, arg.columnId); c.formulas[arg.row] = arg.formula; break; }
+            case 'setColumnMeta': column(st, arg.columnId).meta = arg.meta; break;
+            case 'addRows': st.rowCount += arg.count; st.columns.forEach(pad); break;
             case 'removeRows': {
-              const n = Math.max(0, Math.min(rest[1], st.rowCount - rest[0]));
-              st.columns.forEach((c) => c.values.splice(rest[0], n));
+              const n = Math.max(0, Math.min(arg.count, st.rowCount - arg.startRow));
+              st.columns.forEach((c) => c.values.splice(arg.startRow, n));
               st.rowCount -= n;
               break;
             }
-            case 'setCells': { const c = column(st, rest[0]); rest[2].forEach((v, i) => { c.values[rest[1] + i] = v; }); break; }
-            case 'renameColumn': column(st, rest[0]).name = rest[1]; break;
-            case 'removeColumn': column(st, rest[0]); st.columns = st.columns.filter((c) => c.id !== rest[0]); break;
+            case 'setCells': { const c = column(st, arg.columnId); arg.values.forEach((v, i) => { c.values[arg.startRow + i] = v; }); break; }
+            case 'renameColumn': column(st, arg.columnId).name = arg.name; break;
+            case 'removeColumn': column(st, arg.columnId); st.columns = st.columns.filter((c) => c.id !== arg.columnId); break;
             default: throw new Error(`unexpected method ${action.method}`);
           }
         }
@@ -314,7 +317,7 @@ suite('doe-planner tasks: createDatasheet', () => {
     assert(firstOf('setColumnRole') > 3 && lastOf('setColumnRole') < firstOf('setFormula'), 'roles before formulas');
     assert(lastOf('setFormula') < firstOf('setColumnMeta'), 'formulas before metas');
     assertEqual(lastOf('setColumnMeta'), kinds.length - 1);
-    const metas = stack.filter((a) => a.method === 'setColumnMeta').map((a) => a.args[2]);
+    const metas = stack.filter((a) => a.method === 'setColumnMeta').map((a) => a.args[0].meta);
     assert(metas.length > 0 && metas.every((m) => m.managedRef === `doe:${PLANNER}`), 'managedRef doe:<id>');
     const vm = h.vm();
     assertEqual(vm.model.worksheetRef.instanceId, out.value.instanceId);
@@ -445,7 +448,7 @@ suite('doe-planner tasks: syncResponses', () => {
     assertEqual(h.layer.stacks.length, stacks + 1);
     const stack = h.layer.stacks.at(-1);
     assertDeepEqual(stack.map((a) => a.method), ['renameColumn']);
-    assertEqual(stack[0].args[2], 'Ausbeute');
+    assertEqual(stack[0].args[0].name, 'Ausbeute');
     assertEqual(vm.staleness, 'bound');
     assertEqual(vm.experiment.responseColumns[0].name, 'Ausbeute');
     const col = h.sheet().columns.find((c) => c.id === vm.model.worksheetRef.responseColumnIds[0]);
