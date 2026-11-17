@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { collectModelFiles, loadModelSchema, renderModelTypes, collectStateFiles, loadStateSchema, renderStateTypes, collectFormFiles, loadFormSchemas, renderFormTypes, collectSettingsFiles, loadSettingsSchema, renderSettingsTypes, renderWidgetProps, renderBindingCheck } from './model-types.mjs';
-import { defineWidget, list, text, number } from '../../js/core/model.js';
+import { defineWidget, list, text, number, table } from '../../js/core/model.js';
 import { typecheck } from './typecheck.mjs';
 
 const MODEL_URL = pathToFileURL(join(import.meta.dirname, '..', '..', 'js', 'core', 'model.js')).href;
@@ -286,4 +286,18 @@ test('richText() wird zu string', async () => {
   const root = appWith({ 'js/modules/neu/domain/model.js': src });
   const out = renderModelTypes(await loadModelSchema(collectModelFiles(root)[0].file));
   assert.match(out, / \* @property \{string\} title\n/);
+});
+
+test('table() wird TableData, mit typedef-Import', async () => {
+  const src = MODEL_SRC.replace('import { defineModel,', 'import { table, defineModel,').replace('columns: record', 'data: table(), columns: record');
+  const root = appWith({ 'js/modules/neu/domain/model.js': src });
+  const out = renderModelTypes(await loadModelSchema(collectModelFiles(root)[0].file));
+  assert.match(out, / \* @property \{TableData\} data\n/);
+  assert.match(out, /@typedef \{import\('\.\.\/\.\.\/\.\.\/core\/table-data\.js'\)\.TableData\} TableData/);
+});
+
+test('Widget-Props mit table() nennen TableData', () => {
+  const out = renderWidgetProps(new Map([['grid', defineWidget({ name: 'grid', props: { data: table() } })]]));
+  assert.match(out, /data: TableData/);
+  assert.match(out, /import\('\.\.\/core\/table-data\.js'\)\.TableData/);
 });

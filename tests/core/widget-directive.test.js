@@ -4,7 +4,8 @@
  */
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
-import { defineModel, defineWidget, command, list, map, number, object, text, oneOf } from '../../js/core/model.js';
+import { defineModel, defineWidget, command, list, map, number, object, text, oneOf, table } from '../../js/core/model.js';
+import { TableData } from '../../js/core/table-data.js';
 import { registerWidgetDirective, widgetForKind } from '../../js/core/widget-directive.js';
 
 const i18n = { t: (k, p) => (p ? `${k}:${p.message ?? JSON.stringify(p)}` : k), getLanguage: () => 'de' };
@@ -673,6 +674,22 @@ suite('x-widget', () => {
       await withWarnings(async () => { r = await cmd('bump', { by: 1 }); });
       assertEqual(r.ok, false);
       root.remove();
+    });
+  });
+
+  test('Prop table(): nur TableData, Identität, kein Kopieren', async () => {
+    const seen = [];
+    await withWidgets({
+      grid: { schema: defineWidget({ name: 'grid', props: { data: table() } }), mount(root, { props, effect }) { effect(() => { seen.push(Alpine.raw(props.data)); }); return { destroy() {} }; } },
+    }, async () => {
+      const t = TableData.fromJSON({ rowCount: 2, columns: [[1, 2]] });
+      const ok = await host('<div x-widget="grid" x-widget-data="tbl"></div>', { tbl: t });
+      assertTrue(seen.length > 0 && seen[0] === t);
+      ok.root.remove();
+      let bad;
+      await withWarnings(async () => { bad = await host('<div x-widget="grid" x-widget-data="tbl"></div>', { tbl: { rowCount: 0, columns: [] } }); });
+      assertTrue(bad.root.querySelector('.widget-root--error').textContent.includes('expected a TableData'));
+      bad.root.remove();
     });
   });
 });

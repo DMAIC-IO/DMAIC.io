@@ -27,7 +27,16 @@
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { describeType } from '../../js/core/model.js';
+import { describeType as describeSpec } from '../../js/core/model.js';
+
+/**
+ * Typtext einer Feldbeschreibung; `table()` heißt hier `TableData` (der Typ steht als typedef in der Datei).
+ * @param {object} s @returns {string}
+ */
+const describeType = (s) => describeSpec(s).replace(/(?<!['\w])table(?!['\w])/g, 'TableData');
+/** Typedef-Zeilen für `TableData`, wenn der Text es nennt. @param {string} text @param {string} path Importpfad @returns {string[]} */
+const tableDataTypedef = (text, path) => (/\bTableData\b/.test(text)
+  ? ['/**', ` * @typedef {import('${path}').TableData} TableData`, ' */', ''] : []);
 
 /**
  * Alle Module mit `domain/model.js`, nach Id sortiert.
@@ -109,6 +118,9 @@ export function renderModelTypes({ name, schema }) {
     if (def.current) lines.push('/**', ` * @typedef {(this: ${name}Model, fixed: Partial<${C}>) => Partial<${C}>} ${pascal(cmd)}Current`, ' */', '');
     if (def.confirm) lines.push('/**', ` * @typedef {(this: ${name}Model, args: ${C}) => ({ key: string, params?: Record<string, unknown> }|null)} ${pascal(cmd)}Confirm`, ' */', '');
   }
+  const td = tableDataTypedef(lines.join('\n'), '../../../core/table-data.js');
+  // Typedef nach den drei Kopfzeilen (Kommentare, Leerzeile), vor den Feldtypen.
+  lines.splice(3, 0, ...td);
   lines.push('export {};', '');
   return lines.join('\n');
 }
@@ -287,7 +299,8 @@ export function renderWidgetProps(widgets) {
     if (w.value) props.push(`value: ${describeType(w.value)}`);
     return ` *   '${name}': { ${props.join(', ')} },`;
   });
-  return `// erzeugt von tools/build/build.mjs — nicht von Hand ändern\n/**\n * @typedef {{\n${entries.join('\n')}\n * }} WidgetProps\n */\nexport {};\n`;
+  const td = tableDataTypedef(entries.join('\n'), '../core/table-data.js').join('\n');
+  return `// erzeugt von tools/build/build.mjs — nicht von Hand ändern\n${td ? `${td}\n` : ''}/**\n * @typedef {{\n${entries.join('\n')}\n * }} WidgetProps\n */\nexport {};\n`;
 }
 
 /**

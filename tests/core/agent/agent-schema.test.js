@@ -3,7 +3,7 @@
  * Schema-Moduls in der Form von AGENT_REGISTRY.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../../test-utils.js';
-import { defineModel, command, text, number, oneOf, index, list, record, map, object, image, richText, boolean, date, time, phase, columnRef, datasets } from '../../../js/core/model.js';
+import { defineModel, command, text, number, oneOf, index, list, record, map, object, image, richText, boolean, date, time, phase, columnRef, datasets, table } from '../../../js/core/model.js';
 import { asyncTask } from '../../../js/core/async-task.js';
 import { schemaAgentEntry, readSchemaModel, omitPathsOf, writableByAgent } from '../../../js/core/agent/agent-schema.js';
 import { describeModule } from '../../../js/core/agent/agent-catalog.js';
@@ -388,5 +388,14 @@ suite('agent-schema: richText', () => {
     assertTrue(f.problem.rules[1].includes('**fett**') && f.problem.rules[1].includes('*kursiv*'));
     assertEqual(f.problem.rules[2], 'maxLength:10000');
     assertEqual(f.note.rules.length, 2);
+  });
+});
+
+suite('schemaAgentEntry: table()', () => {
+  test('Feld table(): type table, bulk, bulkKind table, nicht schreibbar', () => {
+    const T = defineModel({ fields: { data: table() } });
+    const entry = schemaAgentEntry(T, {});
+    assertDeepEqual(entry.fields.data, { type: 'table', help: '', bulk: true, bulkKind: 'table' });
+    assertEqual(writableByAgent(table()), false);
   });
 });

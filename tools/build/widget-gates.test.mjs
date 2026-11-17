@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { checkWidgetBindings, checkAlgoLinkLiterals, loadWidgetSchemas } from './widget-gates.mjs';
-import { defineWidget, list, map, number, object, text, oneOf, columnRef, boolean } from '../../js/core/model.js';
+import { defineWidget, list, map, number, object, text, oneOf, columnRef, boolean, table } from '../../js/core/model.js';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -123,4 +123,12 @@ test('on*-Eingaben: Literal mit einem Kommando des Moduls', () => {
   assert.deepEqual(run("'nope'"), ['template: resources/view.html: x-widget-on-cell="\'nope\'": nope ist kein Kommando des Moduls']);
   assert.deepEqual(run('helper'), ['template: resources/view.html: x-widget-on-cell="helper": Kommandoname nur als Literal']);
   assert.deepEqual(run("'setX'", { ...gctx, commands: undefined }), ['template: resources/view.html: x-widget-on-cell="\'setX\'": setX ist kein Kommando des Moduls']);
+});
+
+test('Prop table() an ein Feld table(): kein Befund, an ein anderes Feld: Befund', () => {
+  const w = new Map([['grid', defineWidget({ name: 'grid', props: { data: table() } })]]);
+  const c = { widgets: w, schema: { fields: { t: table(), n: number() }, view: {} }, stateSchema: { fields: {} }, viewNames: new Set() };
+  assert.deepEqual(checkWidgetBindings(tpl('<div x-widget="grid" x-widget-data="model.t"></div>'), c), []);
+  assert.deepEqual(checkWidgetBindings(tpl('<div x-widget="grid" x-widget-data="model.n"></div>'), c),
+    ['template: resources/view.html: x-widget-data="model.n": Feldart number passt nicht zu table']);
 });

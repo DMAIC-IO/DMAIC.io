@@ -4214,6 +4214,14 @@ test('missing_bulk_columns: ein einziges Tabellenfeld braucht kein Schwesterfeld
   assert.deepEqual(modules.foo.reported, []);
 });
 
+test('missing_bulk_columns: table()-Felder (TableData) brauchen kein Schwesterfeld', async () => {
+  const vm = TWO_TABLES_VM(`return readAgentState('foo', { a: [], b: [] }, options);`)
+    .replace('{Array<{x: number}>} a', '{TableData} a').replace('{Array<{y: number}>} b', '{TableData} b');
+  const root = fixture({ foo: { 'foo.js': vm, 'foo-model.js': TWO_TABLES_MODEL } });
+  const { modules } = await collectAgentData(root);
+  assert.deepEqual(modules.foo.reported, []);
+});
+
 test('unresolved_read_return: nicht auflösbarer read()-Rückgabewert ist eine gemeldete Blindstelle', async () => {
   const root = fixture({ foo: { 'foo.js': DECLARED_VM(`return readAgentState('foo', build(), options);`), 'foo-model.js': DECL_MODEL } });
   const { modules } = await collectAgentData(root);

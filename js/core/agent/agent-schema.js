@@ -73,6 +73,7 @@ export function writableByAgent(spec) {
   if (!spec || typeof spec !== 'object') return true;
   if (spec.agentWrite === false) return false;
   switch (spec.kind) {
+    case 'table': return false;
     case 'list': return writableByAgent(spec.item);
     case 'map': case 'record': return writableByAgent(spec.value);
     case 'object': return Object.values(spec.shape).every(writableByAgent);

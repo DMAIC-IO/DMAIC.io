@@ -11,7 +11,7 @@ import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, chec
 import { viewMemberNamesOf } from './view-names.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { APP_DIR } from './build.mjs';
-import { defineModel, command, text, number, oneOf, index, idOf, list, record, map, object, boolean, date, columnRef, defineWidget, datasets, richText } from '../../js/core/model.js';
+import { defineModel, command, text, number, oneOf, index, idOf, list, record, map, object, boolean, date, columnRef, defineWidget, datasets, richText, table } from '../../js/core/model.js';
 
 /** Temp-App aus `{ pfad: inhalt }`. */
 function appWith(files) {
@@ -1644,4 +1644,11 @@ test('Verlauf: history ist true oder { depth: ganze Zahl ≥ 1 }', () => {
   assert.equal(checkHistoryOption(vm('{ depth: 0 }')).length, 1);
   assert.equal(checkHistoryOption(vm("'yes'")).length, 1);
   assert.match(checkHistoryOption(vm("'yes'"))[0], /^history: viewmodel\/viewmodel\.js: /);
+});
+
+test('Template ↔ Schema: x-field auf table() ist ein Befund', () => {
+  const schema = defineModel({ fields: { t: table() } }).schema;
+  const files = [{ path: 'resources/view.html', text: '<div x-field="model.t"></div>' }];
+  assert.deepEqual(checkTemplateBindings(files, schema), ['template: resources/view.html: x-field="model.t": t (table) hat keine Regeln — x-model verwenden']);
+  assert.deepEqual(checkSchemaPaths(schema), []);
 });

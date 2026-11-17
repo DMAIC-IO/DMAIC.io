@@ -332,7 +332,8 @@ function buildEntry(resolver, appDir, viewmodelFile, baseline) {
       for (const k of Object.keys(declared)) {
         if (!returned.includes(k)) readReturn.push(`declared_not_returned:${k}`);
       }
-      const tables = Object.keys(declared).filter(k => model.fields[k]?.bulk && (model.fields[k].bulkKind ?? 'table') === 'table');
+      // `table()`-Felder (Typ `TableData`) tragen Spalten selbst; `<k>Columns` gilt nur für Zeilentabellen.
+      const tables = Object.keys(declared).filter(k => model.fields[k]?.bulk && !/^(TableData|table)$/.test(String(model.fields[k].type).trim()) && (model.fields[k].bulkKind ?? 'table') === 'table');
       if (tables.length >= 2) {
         // Ab dem zweiten Tabellenfeld gehört `columns` keinem Feld mehr; ohne
         // Schwesterfeld nennt `columnNames` still eine leere Spaltenliste.

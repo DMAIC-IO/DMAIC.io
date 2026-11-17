@@ -17,6 +17,7 @@
  * zeigen das Widget im Fehlerzustand und gehen per console.warn hinaus.
  */
 import { checkValue } from './model.js';
+import { TableData } from './table-data.js';
 import { openChannel } from './value-channel.js';
 import { cloneTemplate } from './dom.js';
 import { clearRejection, markRejection } from './param-input.js';
@@ -176,7 +177,13 @@ export function mountWidget(Alpine, el, name, entry, { valuePath, channel, i18n,
     guarded(`prop:${p}`, () => {
       try {
         const raw = readPath(host, path);
-        props[p] = raw === undefined && spec.optional === true
+        if (spec.kind === 'table') {
+          // Nur Art und Identität (P7): kein checkValue, kein Kopieren — sonst O(n) je Effekt.
+          const t = Alpine.raw(raw);
+          if (t === undefined && spec.optional === true) props[p] = undefined;
+          else if (t instanceof TableData) props[p] = t;
+          else throw new Error(`${name}.${p}: expected a TableData`);
+        } else props[p] = raw === undefined && spec.optional === true
           ? undefined
           : checkValue(spec, `${name}.${p}`, cloneInput(Alpine, raw ?? null, `${name}.${p}`));
         delete errors[p];
