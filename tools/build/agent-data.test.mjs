@@ -1488,7 +1488,7 @@ test('collectAgentData: worksheet declares its read surface, rows are bulk', asy
   const appDir = join(import.meta.dirname, '..', '..');
   const { modules } = await collectAgentData(appDir);
   assert.deepEqual(Object.keys(modules.worksheet.fields),
-    ['sheets', 'sheetId', 'columns', 'rows', 'formulas']);
+    ['sheets', 'sheetId', 'rowCount', 'columns', 'rows', 'formulas']);
   assert.equal(modules.worksheet.fields.rows.bulk, true);
   assert.equal(modules.worksheet.fields.rows.derived, true);
   // Zweites tabellarisches Massenfeld: ab hier nimmt `columnNames` NICHT

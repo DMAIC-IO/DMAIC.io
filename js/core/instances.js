@@ -156,7 +156,8 @@ export function createInstances({ stateManager, moduleRegistry, workspace, event
    * @param {string} instanceId
    * @param {object} [options] `{ fields?, rows? }`
    * @returns {Promise<object>}
-   * @throws {Error} `unknown_instance`; `needs_mount` für ein Altmodul mit eigenem `read()`
+   * @throws {Error} `unknown_instance`; `needs_mount` für ein Altmodul mit eigenem `read()`,
+   *   außer es hat den Haken `readStored` (dann liest es den gespeicherten Stand)
    */
   async function read(instanceId, options) {
     const { record } = locate(instanceId);

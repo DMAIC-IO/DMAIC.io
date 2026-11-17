@@ -491,6 +491,17 @@ ungültiger Aufruf (`call_failed`). `columns` nennt die Spalten **dieses**
 Feldes; führt ein Modul mehrere tabellarische Massenfelder, kann `columns`
 leer sein — eine falsche Spaltenliste wäre schlechter als keine.
 
+**Arbeitsblatt: `columns` und `rowCount`.** `read` des Arbeitsblatts kennt
+zusätzlich `options.columns: [id, …]`: dann enthält `columns` nur diese Spalten
+in dieser Reihenfolge, jede mit `values` (Zellwerte ab Zeile 0, genau
+`rowCount` Einträge, fehlende als `null`), und die Massenfelder `rows` und
+`formulas` beziehen sich nur auf sie. Jedes Blatt trägt `rowCount` (fehlt der
+Wert im gespeicherten Stand, gilt die Länge der längsten Spalte). `columns`,
+das kein Array aus Texten ist, wirft `columns must be an array of column ids`;
+eine unbekannte Id wirft `unknown_column: <id>`. Ohne eingehängtes
+Arbeitsblatt liest `read` den gespeicherten Stand (`readStored`) statt
+`needs_mount` zu melden.
+
 **Ausgelassene Teilwerte.** Große Teilwerte, die ein Agent nicht braucht
 (Bild-Daten-URLs, Vollkopien in Snapshots), stehen in `read()` als
 `{ $omitted: true, bytes }` (Länge der JSON-Serialisierung) — auch bei

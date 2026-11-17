@@ -112,6 +112,9 @@ export function writeHistoryToSheet({ stateManager, eventBus, i18n }, ref = find
   const phaseIds = phaseIdsOf(stateManager);
   const rows = historyToRows(stateManager.get('phaseAchievementHistory') || {}, phaseIds);
   const next = buildSheetState(sheet.state, rows, phaseIds, labelsOf(i18n, phaseIds));
+  // No-op skip: an empty `planZegStack` also leaves out the resets `buildSheetState`
+  // would apply (sortCol/sortDir, selection, shortName, the `type` of managed
+  // columns). Accepted (plan F1.14a, Task 6).
   if (sheet.state && planZegStack(ref.instanceId, ref.sheetId, sheet.state, next).length === 0) return true;
   sheet.state = next;
   stateManager.setModuleState(ref.instanceId, ws);
