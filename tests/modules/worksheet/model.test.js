@@ -200,4 +200,11 @@ suite('worksheet: Invarianten', () => {
     assertDeepEqual(m.sheets[0].data.columns[0], [1, 2]);
     assertDeepEqual(m.sheets[1].data.columns[0], [null, 5]);
   });
+
+  test('cellsFitType gilt nur beim Laden (onLoad, R9), currencySymbol ist ein Format-Schlüssel (R10)', () => {
+    assertEqual(WorksheetModel.schema.invariants.cellsFitType.onLoad, true);
+    const json = saved1();
+    json.sheets[0].columns[0] = col('a', { type: 'currency', format: { decimals: 2, currencySymbol: '$' } });
+    assertDeepEqual(WorksheetModel.fromJSON(json).sheets[0].columns[0].format, { decimals: 2, currencySymbol: '$' });
+  });
 });

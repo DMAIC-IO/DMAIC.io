@@ -12,6 +12,7 @@ import { worksheetSnapshot } from '../../../js/modules/worksheet/worksheet-read.
 import { recalcFormulas } from '../../../js/core/datagrid/table/formulas.js';
 import { TableData } from '../../../js/core/table-data.js';
 import { START_ROW_COUNT } from '../../../js/core/datagrid/datagrid-utils.js';
+import { inferRole } from '../../../js/core/datagrid/datagrid-roles.js';
 
 /** @param {string} name @returns {Promise<any>} */
 async function fixture(name) {
@@ -125,6 +126,10 @@ suite('worksheet: Migration 0→1.0', () => {
     for (const [name, saved] of Object.entries(FIX)) {
       const m = WorksheetModel.fromJSON(clone(saved));
       for (const sheet of m.sheets) {
+        // Formelzellen leeren: so beweist der Vergleich die Neuberechnung, nicht die übernommenen Werte.
+        sheet.columns.forEach((c, i) => {
+          for (const r of Object.keys(sheet.formulas[c.id] ?? {})) sheet.data.columns[i][Number(r)] = null;
+        });
         recalcFormulas(sheet.columns, sheet.data, sheet.formulas);
         const ids = sheet.columns.map(c => c.id);
         const snap = saved.sheets.find(s => s.id === sheet.id)?.state
@@ -154,13 +159,13 @@ suite('worksheet: Migration 0→1.0', () => {
     assertEqual(m.sheets[0].columns[0].unit, null);
   });
 
-  test('unbekannte Format- und meta-Schlüssel fallen weg (currencySymbol, null-Werte)', () => {
+  test('currencySymbol bleibt (R10), null-Werte in meta fallen weg', () => {
     const out = from0({ sheets: [{ id: 's', name: 'S', state: { rowCount: 1, columns: [
       { id: 'a', name: 'A', shortName: 'C1', type: 'currency', values: [1], format: { decimals: 2, currencySymbol: '$' },
         meta: { lock: 'soft', reason: null, categoricalCoding: { lo: -1, hi: 1 } } },
     ] } }] });
     const col = out.sheets[0].columns[0];
-    assertDeepEqual(col.format, { decimals: 2 });
+    assertDeepEqual(col.format, { decimals: 2, currencySymbol: '$' });
     assertDeepEqual(col.meta, { lock: 'soft', categoricalCoding: { lo: -1, hi: 1 } });
   });
 
@@ -173,5 +178,62 @@ suite('worksheet: Migration 0→1.0', () => {
     assertDeepEqual(out.gridView.b, { colWidths: { y: 80 }, selection: null });
     const m = WorksheetModel.fromJSON({ ...out, _schema: { version: '1.0' } });
     assertDeepEqual(m.sheets.map(s => s.id), ['a', 'b']);
+  });
+
+  test('alle Fixturen laden streng, kein Zellwert geht verloren', () => {
+    for (const [name, saved] of Object.entries(FIX)) {
+      const m = WorksheetModel.fromJSON(clone(saved));
+      for (const sheet of m.sheets) {
+        const old = saved.sheets.find(s => s.id === sheet.id)?.state;
+        if (!old) continue;
+        old.columns.forEach((c, i) => {
+          const expected = c.values.slice(0, old.rowCount).map(v => (v === '' && c.type !== 'text' ? null : v));
+          assertDeepEqual(sheet.data.columns[i], expected, `${name} ${c.id}`);
+        });
+      }
+    }
+  });
+
+  test('Alt-Text in einer Zahlenspalte: Spalte wird text, Werte bleiben, Rolle neu', () => {
+    const saved = { sheets: [{ id: 's', name: 'S', state: { rowCount: 2, columns: [
+      { id: 'a', name: 'A', shortName: 'C1', type: 'numeric', role: 'continuous', roleManual: false, values: ['2,5', 3], format: { decimals: 2 } },
+      { id: 'b', name: 'B', shortName: 'C2', type: 'numeric', role: 'continuous', values: [1, 2] },
+    ] } }], activeSheetId: 's', sheetCounter: 1 };
+    const m = WorksheetModel.fromJSON(saved);
+    const [a, b] = m.sheets[0].columns;
+    assertEqual(a.type, 'text');
+    assertDeepEqual(m.sheets[0].data.columns[0], ['2,5', 3]);
+    assertEqual(a.role, inferRole({ type: 'text', values: ['2,5', 3] }));
+    assertEqual(b.type, 'numeric');
+  });
+
+  test('Alt-Text: eine von Hand gesetzte Rolle, die zu text passt, bleibt', () => {
+    const saved = { sheets: [{ id: 's', name: 'S', state: { rowCount: 2, columns: [
+      { id: 'a', name: 'A', shortName: 'C1', type: 'numeric', role: 'categorical', roleManual: true, values: ['x', 3] },
+      { id: 'b', name: 'B', shortName: 'C2', type: 'numeric', role: 'continuous', roleManual: true, values: ['y', 4] },
+    ] } }] };
+    const [a, b] = WorksheetModel.fromJSON(saved).sheets[0].columns;
+    assertEqual(a.role, 'categorical');
+    assertEqual(a.roleManual, true);
+    assertEqual(b.roleManual, false, 'continuous passt nicht zu text');
+  });
+
+  test("'' wird in Nicht-Textspalten null, in Textspalten bleibt es", () => {
+    const saved = { sheets: [{ id: 's', name: 'S', state: { rowCount: 2, columns: [
+      { id: 'a', name: 'A', shortName: 'C1', type: 'numeric', values: ['', 3] },
+      { id: 'd', name: 'D', shortName: 'C2', type: 'date', values: ['', '2025-01-01'] },
+      { id: 't', name: 'T', shortName: 'C3', type: 'text', values: ['', 'x'] },
+    ] } }] };
+    const m = WorksheetModel.fromJSON(saved);
+    assertDeepEqual(m.sheets[0].columns.map(c => c.type), ['numeric', 'date', 'text']);
+    assertDeepEqual(m.sheets[0].data.columns, [[null, 3], [null, '2025-01-01'], ['', 'x']]);
+  });
+
+  test('Formelzellen zählen nicht als Alt-Text', () => {
+    const saved = { sheets: [{ id: 's', name: 'S', state: { rowCount: 1, columns: [
+      { id: 'a', name: 'A', shortName: 'C1', type: 'numeric', values: ['ja'], formulas: ['=IF(1>0;"ja";"nein")'] },
+    ] } }] };
+    const m = WorksheetModel.fromJSON(saved);
+    assertEqual(m.sheets[0].columns[0].type, 'numeric');
   });
 });

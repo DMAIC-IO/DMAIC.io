@@ -7,7 +7,7 @@
 
 /**
  * @typedef {object} WorksheetModelFields
- * @property {Array<{ id: string, name: string, columns: Array<{ id: string, name: string, shortName: string, type: 'numeric'|'text'|'date'|'time'|'currency'|'percent'|'binary', unit: string|null, role: 'continuous'|'categorical'|'ordinal'|'date'|'identifier'|'freeText'|null, roleManual: boolean, format: { decimals?: number, dateFormat?: 'dd.MM.yyyy'|'yyyy-MM-dd'|'dd/MM/yyyy'|'MM/dd/yyyy'|'d. MMMM yyyy', timeFormat?: 'HH:mm'|'HH:mm:ss' }, meta: { lock?: 'hard'|'soft', reason?: string, managedBy?: string, managedRef?: string, categoricalCoding?: Record<string, number> }|null }>, formulas: Record<string, Record<string, string>>, data: TableData }>} sheets
+ * @property {Array<{ id: string, name: string, columns: Array<{ id: string, name: string, shortName: string, type: 'numeric'|'text'|'date'|'time'|'currency'|'percent'|'binary', unit: string|null, role: 'continuous'|'categorical'|'ordinal'|'date'|'identifier'|'freeText'|null, roleManual: boolean, format: { decimals?: number, dateFormat?: 'dd.MM.yyyy'|'yyyy-MM-dd'|'dd/MM/yyyy'|'MM/dd/yyyy'|'d. MMMM yyyy', timeFormat?: 'HH:mm'|'HH:mm:ss', currencySymbol?: string }, meta: { lock?: 'hard'|'soft', reason?: string, managedBy?: string, managedRef?: string, categoricalCoding?: Record<string, number> }|null }>, formulas: Record<string, Record<string, string>>, data: TableData }>} sheets
  * @property {number} sheetCounter
  */
 

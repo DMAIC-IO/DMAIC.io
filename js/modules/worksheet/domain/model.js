@@ -44,6 +44,8 @@ const columnSpec = object({
     decimals: number({ integer: true, min: 0, optional: true }),
     dateFormat: oneOf(Object.keys(DATE_FORMATS), { optional: true }),
     timeFormat: oneOf(Object.keys(TIME_FORMATS), { optional: true }),
+    // Ruling R10: Altdaten und Beispiele tragen es, der Renderer liest es.
+    currencySymbol: text({ optional: true }),
   }),
   meta: object({
     lock: oneOf(['hard', 'soft'], { optional: true }),
@@ -90,7 +92,9 @@ export function newSheetState(name, id) {
 /**
  * Passt der Zellwert zum Spaltentyp? `null` passt immer. Nicht strenger als
  * das Raster: Datum/Zeit dürfen Zahlen halten (Typwechsel lässt sie stehen),
- * `binary` Wahrheitswerte, `text` alles.
+ * `binary` Wahrheitswerte, `text` alles. Dieselbe Regel steht fest in
+ * `migrations.js` (die Migration macht Alt-Text zur Textspalte; repariert auf
+ * `null` wird nur ein kaputter Stand 1.0).
  * @param {string} type @param {any} v @returns {boolean}
  */
 function fitsType(type, v) {
@@ -206,8 +210,10 @@ export class WorksheetModel extends defineModel({
         }
       },
     },
+    // O(Zellen): nur beim Laden (R9); Kommandos prüfen die Typen selbst.
     cellsFitType: {
       fields: ['sheets'],
+      onLoad: true,
       test(m) {
         let ok = true;
         for (const s of m.sheets) eachMisfit(s, () => (ok = false));

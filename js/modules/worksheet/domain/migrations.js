@@ -11,14 +11,16 @@
  *
  * Ids von Blättern und Spalten bleiben erhalten (Spaltenverweise anderer
  * Module zeigen darauf); eine fehlende id wird ersetzt. Nicht strenger als
- * die Altform: was die Zielform nicht fassen kann (unbekannte Format- und
- * meta-Schlüssel, ungültige Ansichtswerte), fällt einzeln weg, nie ein Blatt.
+ * die Altform: Alt-Text in einer Nicht-Textspalte macht sie zur Textspalte
+ * (kein Zellwert geht verloren); was die Zielform nicht fassen kann
+ * (unbekannte Format- und meta-Schlüssel, ungültige Ansichtswerte), fällt
+ * einzeln weg, nie ein Blatt.
  *
  * Importiert nichts aus `model.js` (fester Formatstand). Rein bis auf `uid`.
  */
 import { uid } from '../../../core/uid.js';
 import { COLUMN_TYPES, DATE_FORMATS, TIME_FORMATS, START_ROW_COUNT } from '../../../core/datagrid/datagrid-utils.js';
-import { ALL_ROLES, inferRole } from '../../../core/datagrid/datagrid-roles.js';
+import { ALL_ROLES, inferRole, isRoleValidForType } from '../../../core/datagrid/datagrid-roles.js';
 
 /** Startspalten eines frischen Blatts (wie `DataGrid#_initEmptyGrid`). */
 const START_COLUMNS = 5;
@@ -64,8 +66,8 @@ function cellsOf(src, n) {
 }
 
 /**
- * Nur die Format-Schlüssel der Zielform mit gültigem Wert (`currencySymbol`
- * und Unbekanntes fallen weg).
+ * Nur die Format-Schlüssel der Zielform mit gültigem Wert (`FORMAT_KEYS` und
+ * `currencySymbol`, Ruling R10); Unbekanntes fällt weg.
  * @param {unknown} f @returns {Record<string, any>}
  */
 function formatOf(f) {
@@ -74,6 +76,7 @@ function formatOf(f) {
   if (isIndex(f.decimals)) out.decimals = f.decimals;
   if (typeof f.dateFormat === 'string' && Object.hasOwn(DATE_FORMATS, f.dateFormat)) out.dateFormat = f.dateFormat;
   if (typeof f.timeFormat === 'string' && Object.hasOwn(TIME_FORMATS, f.timeFormat)) out.timeFormat = f.timeFormat;
+  if (typeof f.currencySymbol === 'string') out.currencySymbol = f.currencySymbol;
   return out;
 }
 
@@ -95,12 +98,52 @@ function metaOf(meta) {
 }
 
 /**
+ * Passt der Zellwert zum Spaltentyp? Dieselbe Regel wie die Invariante
+ * `cellsFitType` (domain/model.js), hier fest.
+ * @param {string} type @param {any} v @returns {boolean}
+ */
+function fitsType(type, v) {
+  if (v === null) return true;
+  switch (type) {
+    case 'numeric': case 'currency': case 'percent': return typeof v === 'number';
+    case 'binary': return typeof v === 'number' || typeof v === 'boolean';
+    case 'date': case 'time': return typeof v === 'string' || typeof v === 'number';
+    default: return true;
+  }
+}
+
+/**
+ * Die Zellen einer Nicht-Textspalte an ihren Typ anpassen, ohne Daten zu
+ * verlieren: `''` wird `null` (wie `DataGrid#setCellValue`); passt danach eine
+ * Zelle ohne Formel noch nicht (Alt-Text wie `'2,5'`, den `writeColumns`
+ * ungeprüft schrieb), wird die Spalte `text`. Verändert `values`.
+ * @param {string} type @param {any[]} values @param {Record<string, string>|undefined} byRow Formeln der Spalte
+ * @returns {string} der Typ danach
+ */
+function settleType(type, values, byRow) {
+  if (type === 'text') return type;
+  for (let r = 0; r < values.length; r++) if (values[r] === '') values[r] = null;
+  for (let r = 0; r < values.length; r++) {
+    if (!fitsType(type, values[r]) && !(byRow && Object.hasOwn(byRow, String(r)))) return 'text';
+  }
+  return type;
+}
+
+/**
  * Eine Altspalte als Spaltenkopf der Zielform.
  * @param {any} c Altspalte @param {number} i Position @param {any[]} values ihre Zellen
+ * @param {Record<string, string>|undefined} byRow ihre Formeln (dünn)
  * @returns {object}
  */
-function columnOf(c, i, values) {
-  const type = typeof c.type === 'string' && Object.hasOwn(COLUMN_TYPES, c.type) ? c.type : 'numeric';
+function columnOf(c, i, values, byRow) {
+  const stored = typeof c.type === 'string' && Object.hasOwn(COLUMN_TYPES, c.type) ? c.type : 'numeric';
+  const type = settleType(stored, values, byRow);
+  let role = ALL_ROLES.includes(c.role) ? c.role : null;
+  let roleManual = c.roleManual === true;
+  if (type !== stored) {
+    // Dieselbe Regel wie `reinferRoleAfterRetype` (core/worksheet-write.js).
+    if (!(roleManual && isRoleValidForType(role, type))) { roleManual = false; role = null; }
+  }
   return {
     id: typeof c.id === 'string' && c.id !== '' ? c.id : uid(),
     name: typeof c.name === 'string' ? c.name : '',
@@ -108,8 +151,8 @@ function columnOf(c, i, values) {
     type,
     unit: typeof c.unit === 'string' ? c.unit : null,
     // Wie `DataGrid#setState`: eine Spalte ohne (gültige) Rolle bekommt die abgeleitete.
-    role: ALL_ROLES.includes(c.role) ? c.role : inferRole({ type, values }),
-    roleManual: c.roleManual === true,
+    role: role ?? inferRole({ type, values }),
+    roleManual,
     format: formatOf(c.format),
     meta: metaOf(c.meta),
   };
@@ -147,19 +190,20 @@ function sheetOf(sh) {
     ? Math.max(0, Math.floor(state.rowCount))
     : Math.max(0, ...old.map(c => (Array.isArray(c.values) ? c.values.length : 0)));
   const data = old.map(c => cellsOf(c.values, rowCount));
-  const columns = old.map((c, i) => columnOf(c, i, data[i]));
-
-  /** @type {Record<string, Record<string, string>>} */
-  const formulas = {};
-  old.forEach((c, i) => {
-    if (!Array.isArray(c.formulas)) return;
+  const byRows = old.map((c) => {
+    if (!Array.isArray(c.formulas)) return undefined;
     const byRow = {};
     for (let r = 0; r < Math.min(rowCount, c.formulas.length); r++) {
       const f = c.formulas[r];
       if (typeof f === 'string' && f !== '') byRow[String(r)] = f;
     }
-    if (Object.keys(byRow).length > 0) formulas[columns[i].id] = byRow;
+    return Object.keys(byRow).length > 0 ? byRow : undefined;
   });
+  const columns = old.map((c, i) => columnOf(c, i, data[i], byRows[i]));
+
+  /** @type {Record<string, Record<string, string>>} */
+  const formulas = {};
+  columns.forEach((c, i) => { if (byRows[i]) formulas[c.id] = byRows[i]; });
 
   const colWidths = isObject(state.colWidths)
     ? Object.fromEntries(Object.entries(state.colWidths)
