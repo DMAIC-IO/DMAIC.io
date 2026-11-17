@@ -1329,7 +1329,14 @@ export function createModule(base) {
       // flushes its reactivity queue (a later microtask, after this function
       // returns). Unused by modules without `beforeLoadExample` side effects —
       // no behaviour change for them.
+      // Gezählt, nicht geschaltet: lädt ein zweites Beispiel, während das erste
+      // noch wartet, schließt erst das Ende des letzten das Fenster.
+      this._loadingExampleCount = (this._loadingExampleCount ?? 0) + 1;
       this._loadingExample = true;
+      const endWindow = () => {
+        this._loadingExampleCount -= 1;
+        if (this._loadingExampleCount === 0) this._loadingExample = false;
+      };
       try {
         if (typeof beforeLoadExample === 'function') {
           exampleData = beforeLoadExample.call(this, payload.data);
@@ -1345,10 +1352,10 @@ export function createModule(base) {
           this.setState(exampleData);
         }
       } finally {
-        if (!loading) this._loadingExample = false;
+        if (!loading) endWindow();
       }
       if (loading) {
-        return Promise.resolve(loading).finally(() => { this._loadingExample = false; });
+        return Promise.resolve(loading).finally(endWindow);
       }
       const lang = this._context.i18n.getLanguage();
       const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';

@@ -544,8 +544,6 @@ suite('worksheet: Viewmodel der Zielform im Browser', () => {
     assertTrue(warned.some((w) => w.includes('setColumnRole')), `Warnung: ${warned.join(' | ')}`);
   });
 
-  // Der Eckknopf meldet `exportAs` über das Widget, das `commandArgs`
-  // (sheetId) mitgibt: das Kommando muss sie annehmen.
   // Nur-Lesen folgt dem Projektstatus ohne Neuladen (Ereignis project:status-changed).
   test('Projektabschluss und Wiederöffnen schalten das Raster um', async () => {
     const h = await mount(twoSheets());
@@ -561,6 +559,8 @@ suite('worksheet: Viewmodel der Zielform im Browser', () => {
     assertEqual(slot().classList.contains('dmike--readonly'), false, 'wieder offen');
   });
 
+  // Der Eckknopf meldet `exportAs` über das Widget, das `commandArgs`
+  // (sheetId) mitgibt: das Kommando muss sie annehmen.
   test('Eckknopf: CSV über das Menü des Rasters lädt data.csv, ohne Fehlermeldung', async () => {
     const h = await mount(twoSheets());
     const names = [];

@@ -262,6 +262,24 @@ suite('createModule: Standard-loadExample mit sourceWorksheetData', () => {
     assertEqual(mod.getState().exampleWorksheetId, store.phases.data[0].instanceId);
   });
 
+  // Das Ende des überholten ersten Ladens darf das Fenster des zweiten nicht
+  // schließen: der zweite wartet noch, kano.refreshTrees liest das Flag.
+  test('zweites Laden: das Ende des ersten schließt das Ladefenster des zweiten nicht', async () => {
+    const { mod } = sourcedModule({ answer: true });
+    const releases = [];
+    mod._context.instances = { read: () => new Promise((r) => { releases.push(r); }) };
+    const first = mod.loadExample(sourcedPayload());
+    await until(() => releases.length === 1);
+    const second = mod.loadExample(sourcedPayload());
+    await until(() => releases.length === 2);
+    releases[0]({});
+    await first;
+    assertEqual(mod._loadingExample, true, 'zweites Laden wartet noch');
+    releases[1]({});
+    await second;
+    assertEqual(mod._loadingExample, false, 'nach dem zweiten');
+  });
+
   test('abgelehnte Rückfrage: kein Hook, kein Arbeitsblatt, Stand unverändert', async () => {
     const { mod, log, store } = sourcedModule({ answer: false });
     await mod.loadExample(sourcedPayload());
