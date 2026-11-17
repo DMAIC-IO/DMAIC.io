@@ -222,6 +222,21 @@ suite('worksheet: Viewmodel der Zielform im Browser', () => {
     assertDeepEqual(mod.readStored(stored, opts), live);
   });
 
+  test('Lese-Haken im Effekt: vm.read legt keine Abhängigkeiten an (Köpfe, Formeln, Zellen)', async () => {
+    const h = await mount(twoSheets());
+    const vm = h.vm();
+    const sheet = vm.model.sheets[0];
+    let runs = 0;
+    const runner = Alpine.effect(() => { runs += 1; vm.read({ fields: ['sheets', 'columns', 'rows', 'formulas'] }); });
+    assertEqual(runs, 1);
+    // Direkt am reaktiven Model, ohne Kommando: kein Lesen im Effekt darf davon abhängen.
+    sheet.columns[0].name = 'Neu';
+    sheet.formulas[sheet.columns[1].id] = { 0: '=1' };
+    await flush();
+    Alpine.release(runner);
+    assertEqual(runs, 1);
+  });
+
   test('instances.readSync ohne Mount: ein Altstand wird migriert gelesen, ein aktueller über readStored', async () => {
     const h = await mount(twoSheets());
     const legacy = {

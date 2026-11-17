@@ -4,8 +4,9 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue, assertThrows } from '../../test-utils.js';
 import { WorksheetModel, newSheetState } from '../../../js/modules/worksheet/domain/model.js';
 import { TableData } from '../../../js/core/table-data.js';
-import { START_ROW_COUNT } from '../../../js/core/datagrid/datagrid-utils.js';
-import { inferRole } from '../../../js/core/datagrid/datagrid-roles.js';
+import { START_ROW_COUNT, COLUMN_TYPES, DATE_FORMATS, TIME_FORMATS } from '../../../js/core/datagrid/datagrid-utils.js';
+import { inferRole, ALL_ROLES } from '../../../js/core/datagrid/datagrid-roles.js';
+import { COLUMN_SHAPE, FORMAT_KEYS } from '../../../js/modules/worksheet/domain/columns.js';
 
 const V = { version: '1.0' };
 
@@ -206,5 +207,23 @@ suite('worksheet: Invarianten', () => {
     const json = saved1();
     json.sheets[0].columns[0] = col('a', { type: 'currency', format: { decimals: 2, currencySymbol: '$' } });
     assertDeepEqual(WorksheetModel.fromJSON(json).sheets[0].columns[0].format, { decimals: 2, currencySymbol: '$' });
+  });
+});
+
+suite('worksheet: Listen im Schema-Literal gleich der Engine', () => {
+  // Das Schema-Literal-Gate verlangt Literale; hier die Gleichheit mit den Quellen.
+  const commands = WorksheetModel.schema.commands;
+  test('Spaltentypen: COLUMN_SHAPE.type und setColumnType = Object.keys(COLUMN_TYPES)', () => {
+    assertDeepEqual(COLUMN_SHAPE.type.values, Object.keys(COLUMN_TYPES));
+    assertDeepEqual(commands.setColumnType.params.columnType.values, Object.keys(COLUMN_TYPES));
+  });
+  test('Rollen: COLUMN_SHAPE.role und setColumnRole = ALL_ROLES', () => {
+    assertDeepEqual(COLUMN_SHAPE.role.values, ALL_ROLES);
+    assertDeepEqual(commands.setColumnRole.params.role.values, ALL_ROLES);
+  });
+  test('Formate: Datum, Zeit und Format-Schlüssel', () => {
+    assertDeepEqual(COLUMN_SHAPE.format.shape.dateFormat.values, Object.keys(DATE_FORMATS));
+    assertDeepEqual(COLUMN_SHAPE.format.shape.timeFormat.values, Object.keys(TIME_FORMATS));
+    assertDeepEqual(commands.setColumnFormat.params.key.values, [...FORMAT_KEYS]);
   });
 });

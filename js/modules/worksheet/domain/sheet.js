@@ -32,19 +32,18 @@ export const SHEET_SHAPE = Object.freeze({
   data: table(),
 });
 
-const index = () => number({ integer: true, min: 0 });
-
-/** Auswahl des Rasters; `extraCols`: Strg+Klick-Spalten (Ruling R7). */
-const selectionSpec = object({
-  startCol: index(), startRow: index(), endCol: index(), endRow: index(),
-  activeCol: index(), activeRow: index(),
-  extraCols: list(index(), { optional: true }),
-}, { nullable: true });
-
-/** Ansicht eines Blatts in `gridView[<Blatt-id>]`: Spaltenbreiten, Auswahl. */
+/**
+ * Ansicht eines Blatts in `gridView[<Blatt-id>]`: Spaltenbreiten, Auswahl des
+ * Rasters (`extraCols`: Strg+Klick-Spalten, Ruling R7).
+ */
 export const GRID_VIEW_SHAPE = Object.freeze({
   colWidths: map(text(), number({ exclusiveMin: 0 })),
-  selection: selectionSpec,
+  selection: object({
+    startCol: number({ integer: true, min: 0 }), startRow: number({ integer: true, min: 0 }),
+    endCol: number({ integer: true, min: 0 }), endRow: number({ integer: true, min: 0 }),
+    activeCol: number({ integer: true, min: 0 }), activeRow: number({ integer: true, min: 0 }),
+    extraCols: list(number({ integer: true, min: 0 }), { optional: true }),
+  }, { nullable: true }),
 });
 
 /**

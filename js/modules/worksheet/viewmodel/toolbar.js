@@ -9,10 +9,9 @@
  * eigenen Phase, wie die Altform). Die Auswahl des Rasters steht als
  * Ansichtszustand in `model.gridView[<Blatt-id>]`.
  */
-import { findOwnPhase } from '../../../core/instance-handoff.js';
-import { uid } from '../../../core/uid.js';
 import { validRolesForType } from '../../../core/datagrid/datagrid-roles.js';
 import { importKind, readImportText } from '../io/import.js';
+import { openChartSuggestion as handOver } from '../io/chart-suggestion.js';
 import { activeSheetOf } from './sheets.js';
 
 /** Rollen des Rasters → Kommandos (Model; `gridView`, `openFormulaEditor`: Viewmodel). */
@@ -273,20 +272,7 @@ export function toolbarView(ctx) {
           values: (sheet.data.columns[i] ?? []).slice(),
         };
       });
-      const { stateManager, eventBus } = this._ui.services;
-      const phase = findOwnPhase(stateManager, ctx.instanceId);
-      const items = stateManager.get(`phases.${phase}`) || [];
-      const existing = items.find((/** @type {{ moduleId: string }} */ i) => i.moduleId === 'chart-suggestion');
-      let instanceId = existing?.instanceId;
-      if (!instanceId) {
-        instanceId = uid();
-        stateManager.set(`phases.${phase}`, [...items, { instanceId, moduleId: 'chart-suggestion', order: items.length, state: {} }]);
-      }
-      const selection = { sourceInstanceId: ctx.instanceId, sourceSheetId: sheetId, ts: Date.now(), columns };
-      stateManager.setModuleState(instanceId, { selection, selectedChartType: null });
-      eventBus.emit('chart-suggestion:load', { instanceId, selection });
-      if (existing) eventBus.emit('module:activated', { instanceId });
-      else eventBus.emit('module:added', { moduleId: 'chart-suggestion', phase, instanceId });
+      handOver(this._ui.services, { sourceInstanceId: ctx.instanceId, sourceSheetId: sheetId, ts: Date.now(), columns });
     },
   };
 }

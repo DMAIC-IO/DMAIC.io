@@ -24,6 +24,7 @@ export { viewNamesDetailOf, viewNamesOf, computedNamesOf };
 import { BOOKS } from '../../js/core/references-books.js';
 import { readExampleOwners } from './example-catalog.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
+import { VIEW_READ_EXEMPTIONS } from './view-read-exemptions.mjs';
 import { readViewmodelAsyncTasks, checkAsyncTaskRefs, checkAsyncTaskDecls, asyncTaskHelpKeys } from './async-task-gates.mjs';
 
 /**
@@ -229,11 +230,9 @@ const WORKSHEET_USES = [
 ];
 
 /**
- * Das Arbeitsblatt: Besitzer der Arbeitsblätter. Die Gates `uses` und
- * Lesezugriff gelten ihm nicht — es liest beim Einhängen seinen eigenen
- * gespeicherten Stand (Altstand sofort ablegen), fragt den Projektabschluss
- * (Raster nur lesend) und übergibt Spalten an `chart-suggestion`; `ctx.data`
- * liest über das Arbeitsblatt selbst.
+ * Das Arbeitsblatt: Besitzer der Arbeitsblätter. Das Gate `uses` gilt ihm
+ * nicht — es ist Besitzer des Formats, kein Nutzer. Für den Lesezugriff gilt
+ * nur die enge Ausnahme in `view-read-exemptions.mjs`.
  */
 const WORKSHEET_OWNER = 'worksheet';
 
@@ -365,32 +364,29 @@ export function checkLayers(files) {
 const MODEL_SPEC = /(^|\/)core\/model\.js$/;
 const WIDGET_SCHEMA_SPEC = /\/widgets\/[a-z0-9-]+\/schema\.js$/;
 const CHART_COLORS_SPEC = /\/core\/chart\/chart-colors\.js$/;
-/** Kommandogruppe eines großen Models: `commands: { ...cellCommands }` aus `./commands-<teil>.js`. */
+/** Kommandogruppe eines großen Models: `commands: { ...cellCommands }` aus `./commands-<teil>.js`, dort geprüft wie `commands`. */
 const COMMAND_PART_SPEC = /^\.\/commands-[a-z0-9-]+\.js$/;
-/** Geschwisterdatei in domain/: ihre Formen (`<NAME>_SHAPE`, Objekt aus Konstruktoren) gelten als Konstanten. */
+/** Geschwisterdatei in domain/: ihre Formen (`<NAME>_SHAPE`) gelten als Konstanten, ihr Initialisierer wird dort als Literal geprüft. */
 const SIBLING_SPEC = /^\.\/(?!migrations\.js$)[a-z0-9-]+\.js$/;
 const SHAPE_NAME = /^[A-Z][A-Z0-9_]*_SHAPE$/;
 /** Präfix aller Schema-Befunde. */
 const SCHEMA_PREFIX = 'schema: domain/model.js:';
 
 /**
- * Gate Schema, Teil Literal: `defineModel({ … })` ist ein reines Literal
- * (feste Schlüssel, Konstruktoren aus core/model.js, Literale, Konstanten
- * dieser Datei und Formen `<NAME>_SHAPE` aus Geschwisterdateien `./<name>.js`;
- * in `commands` dazu Spreads von Kommandogruppen aus `./commands-<teil>.js`;
- * Funktionen nur als `run`, `current`, `confirm` und — bei `defineModel` — als `default` (Vorgabe aus dem Kontext)). `version` ist ein String-Literal
- * `MAJOR.MINOR`; `migrations` nur `'a→b': <Import aus ./migrations.js>`.
- * @param {string} text Inhalt von domain/model.js
- * @param {{ define?: string, file?: string }} [opts] Aufruf und Datei (Vorgabe defineModel, domain/model.js); version/migrations nur bei defineModel
- * @returns {string[]}
+ * Was ein Schema-Literal einer Datei nutzen darf: Konstruktoren aus
+ * core/model.js, Importe aus ./commands/ und ./migrations.js,
+ * Kommandogruppen aus ./commands-<teil>.js, Formen `<NAME>_SHAPE` aus
+ * Geschwistern, Konstanten mit Literal-Initialisierer, Widget-Schemata.
+ * @param {import('typescript').SourceFile} sf
  */
-export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domain/model.js' } = {}) {
-  const P = `schema: ${file}:`;
-  const sf = parseJs('model.js', text);
+function literalScope(sf) {
   const ctors = new Map(); // lokaler Name → importierter Name
   const runImports = new Set();
   const migrationImports = new Set();
-  const commandParts = new Set();
+  /** @type {Map<string, { spec: string, name: string }>} */
+  const commandParts = new Map();
+  /** @type {Map<string, { spec: string, name: string }>} */
+  const shapes = new Map();
   const consts = new Set();
   const widgetSchemas = new Set(); // Default-Importe von widgets/<name>/schema.js
   for (const st of sf.statements) {
@@ -406,8 +402,11 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
         else if (/^\.\/commands\//.test(spec)) runImports.add(el.name.text);
         else if (spec === './migrations.js') migrationImports.add(el.name.text);
         // Große Models (Arbeitsblatt): Kommandogruppen aus ./commands-<teil>.js, Formen aus Geschwisterdateien.
-        else if (COMMAND_PART_SPEC.test(spec)) commandParts.add(el.name.text);
-        else if (SIBLING_SPEC.test(spec) && SHAPE_NAME.test(imported)) consts.add(el.name.text);
+        else if (COMMAND_PART_SPEC.test(spec)) commandParts.set(el.name.text, { spec, name: imported });
+        else if (SIBLING_SPEC.test(spec) && SHAPE_NAME.test(imported)) {
+          consts.add(el.name.text);
+          shapes.set(el.name.text, { spec, name: imported });
+        }
       }
     }
     const decl = ts.isVariableStatement(st) ? st.declarationList : null;
@@ -416,6 +415,45 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
           && !ts.isArrowFunction(d.initializer) && !ts.isFunctionExpression(d.initializer) && !ts.isClassExpression(d.initializer)) consts.add(d.name.text);
     }
   }
+  return { ctors, runImports, migrationImports, commandParts, shapes, consts, widgetSchemas };
+}
+
+/**
+ * Der Initialisierer von `export const <name> = …` auf oberster Ebene.
+ * @param {import('typescript').SourceFile} sf @param {string} name
+ * @returns {import('typescript').Expression|null}
+ */
+function exportedConst(sf, name) {
+  for (const st of sf.statements) {
+    if (!ts.isVariableStatement(st) || !st.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword)) continue;
+    for (const d of st.declarationList.declarations) if (ts.isIdentifier(d.name) && d.name.text === name) return d.initializer ?? null;
+  }
+  return null;
+}
+
+/**
+ * Gate Schema, Teil Literal: `defineModel({ … })` ist ein reines Literal
+ * (feste Schlüssel, Konstruktoren aus core/model.js, Literale, Konstanten
+ * dieser Datei und Formen `<NAME>_SHAPE` aus Geschwisterdateien `./<name>.js`;
+ * in `commands` dazu Spreads von Kommandogruppen aus `./commands-<teil>.js`.
+ * Beides wird in der Geschwisterdatei geprüft (über `readSibling`): die
+ * Kommandogruppe als exportiertes Objekt-Literal `{ name: command({ … }) }`,
+ * die Form als exportiertes Objekt-Literal (auch in `Object.freeze`), Formen
+ * dort wieder rekursiv;
+ * Funktionen nur als `run`, `current`, `confirm` und — bei `defineModel` — als `default` (Vorgabe aus dem Kontext)). `version` ist ein String-Literal
+ * `MAJOR.MINOR`; `migrations` nur `'a→b': <Import aus ./migrations.js>`.
+ * @param {string} text Inhalt von domain/model.js
+ * @param {{ define?: string, file?: string, readSibling?: (path: string) => (string|null) }} [opts] Aufruf und Datei
+ *   (Vorgabe defineModel, domain/model.js; version/migrations nur bei defineModel); `readSibling` liest eine
+ *   Geschwisterdatei in domain/ (`./x.js`) oder liefert `null`
+ * @returns {string[]}
+ */
+export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domain/model.js', readSibling = () => null } = {}) {
+  const P = `schema: ${file}:`;
+  const sf = parseJs('model.js', text);
+  const scope = literalScope(sf);
+  const { ctors, migrationImports } = scope;
+
   const calls = [];
   const find = (n) => {
     if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && ctors.get(n.expression.text) === define) calls.push(n);
@@ -518,78 +556,117 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
       out.push(`${P} derivedBulk muss ein Array aus Textliteralen sein (${v ? src(v) : src(p)})`);
     }
   };
-  const check = (n, cmdName = null, spec = false) => {
-    if (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n) || ts.isNumericLiteral(n)) return;
-    if ([ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword, ts.SyntaxKind.NullKeyword].includes(n.kind)) return;
-    if (ts.isPrefixUnaryExpression(n) && n.operator === ts.SyntaxKind.MinusToken && ts.isNumericLiteral(n.operand)) return;
-    if (ts.isIdentifier(n)) {
-      if (migrationImports.has(n.text)) { out.push(`${P} Bezeichner ${n.text} aus ./migrations.js nur als Wert unter migrations erlaubt`); return; }
-      if (!consts.has(n.text)) out.push(`${P} Bezeichner ${n.text} ist keine Konstante dieser Datei`);
-      return;
-    }
-    if (ts.isArrayLiteralExpression(n)) {
-      for (const el of n.elements) {
-        if (ts.isSpreadElement(el)) out.push(`${P} Spread nicht erlaubt (${src(el)})`);
-        else check(el);
+  /**
+   * Prüfer eines Literals in einer Datei (`domain/model.js` oder einer Geschwisterdatei).
+   * `used` sammelt die Formen und Kommandogruppen, die das Literal einbindet.
+   */
+  const makeCheck = ({ sf: csf, P, scope: { ctors, runImports, migrationImports, commandParts, shapes, consts, widgetSchemas }, top, commandsLiteral, used }) => {
+    const src = (n) => n.getText(csf);
+    const check = (n, cmdName = null, spec = false) => {
+      if (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n) || ts.isNumericLiteral(n)) return;
+      if ([ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword, ts.SyntaxKind.NullKeyword].includes(n.kind)) return;
+      if (ts.isPrefixUnaryExpression(n) && n.operator === ts.SyntaxKind.MinusToken && ts.isNumericLiteral(n.operand)) return;
+      if (ts.isIdentifier(n)) {
+        if (migrationImports.has(n.text)) { out.push(`${P} Bezeichner ${n.text} aus ./migrations.js nur als Wert unter migrations erlaubt`); return; }
+        if (!consts.has(n.text)) out.push(`${P} Bezeichner ${n.text} ist keine Konstante dieser Datei`);
+        else if (shapes.has(n.text)) used.add(shapes.get(n.text));
+        return;
       }
-      return;
-    }
-    if (ts.isObjectLiteralExpression(n)) {
-      for (const p of n.properties) {
-        if (ts.isSpreadAssignment(p) && n === commandsLiteral && ts.isIdentifier(p.expression) && commandParts.has(p.expression.text)) continue;
-        if (ts.isSpreadAssignment(p)) { out.push(`${P} Spread nicht erlaubt (${src(p)})`); continue; }
-        if (p.name && ts.isComputedPropertyName(p.name)) { out.push(`${P} berechneter Schlüssel nicht erlaubt (${src(p.name)})`); continue; }
-        const key = p.name && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? p.name.text : null;
-        if (define === 'defineModel' && n === top && (key === 'version' || key === 'migrations')) continue;
-        if (define === 'defineModel' && n === top && key === 'invariants') { checkInvariants(p); continue; }
-        if (define === 'defineModel' && n === top && key === 'derived') { checkDerived(p); continue; }
-        if (define === 'defineModel' && n === top && key === 'derivedBulk') { checkDerivedBulk(p); continue; }
-        if (spec && (key === 'version' || key === 'migrations')) { out.push(`${P} ${key} nur am obersten ${define}-Literal erlaubt (${src(p)})`); continue; }
-        if (cmdName !== null && HOOKS.includes(key)) {
-          if (key === 'run' && isAsyncRun(p)) { out.push(`${P} command ${cmdName}: async run — use asyncTask`); continue; }
-          if (ts.isMethodDeclaration(p)) continue;
-          const v = ts.isPropertyAssignment(p) ? p.initializer : null;
-          if (v && ts.isArrowFunction(v)) out.push(`${P} ${key} von ${cmdName} ist eine Pfeilfunktion — this muss das reaktive Model sein`);
-          else if (v && (ts.isFunctionExpression(v) || (ts.isIdentifier(v) && runImports.has(v.text)))) continue;
-          else out.push(`${P} ${key} von ${cmdName}: Funktion, Methode oder Import aus ./commands/ erwartet`);
-          continue;
+      if (ts.isArrayLiteralExpression(n)) {
+        for (const el of n.elements) {
+          if (ts.isSpreadElement(el)) out.push(`${P} Spread nicht erlaubt (${src(el)})`);
+          else check(el);
         }
-        // Vorgabe aus dem Kontext des Models: (c) => … — reine Funktion, ihr Rumpf bleibt ungeprüft.
-        if (spec && define === 'defineModel' && key === 'default') {
-          if (ts.isMethodDeclaration(p)) continue;
-          const v = ts.isPropertyAssignment(p) ? p.initializer : null;
-          if (v && (ts.isArrowFunction(v) || ts.isFunctionExpression(v))) continue;
-        }
-        if (ts.isShorthandPropertyAssignment(p)) { out.push(`${P} Kurzschreibweise nicht erlaubt (${src(p)})`); continue; }
-        if (!ts.isPropertyAssignment(p)) { out.push(`${P} Funktion nicht erlaubt (${src(p)}) — Callbacks nur als run`); continue; }
-        check(p.initializer);
+        return;
       }
-      return;
-    }
-    if (ts.isArrowFunction(n) || ts.isFunctionExpression(n)) {
-      out.push(`${P} Funktion nicht erlaubt (${src(n)}) — Callbacks nur als run`);
-      return;
-    }
-    if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && ctors.has(n.expression.text) && ctors.get(n.expression.text) !== define) {
-      const isCommand = ctors.get(n.expression.text) === 'command';
-      // Die Form von object(shape, opts) ist eine Feldliste wie `fields`: `version` ist dort ein Feldname.
-      const isShape = (a, i) => i === 0 && ctors.get(n.expression.text) === 'object' && ts.isObjectLiteralExpression(a);
-      n.arguments.forEach((a, i) => {
-        if (isCommand && ts.isObjectLiteralExpression(a)) check(a, commandName(n));
-        else check(a, null, !isCommand && !isShape(a, i));
-      });
-      return;
-    }
-    // `<WidgetSchema>.edits()` — Bearbeitungsfeld eines Diagramm-Widgets, ohne Argumente.
-    if (ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression) && ts.isIdentifier(n.expression.expression)
-        && widgetSchemas.has(n.expression.expression.text) && n.expression.name.text === 'edits' && n.arguments.length === 0) return;
-    if (ts.isCallExpression(n)) {
-      out.push(`${P} Aufruf ${src(n)} ist kein Konstruktor aus core/model.js`);
-      return;
-    }
-    out.push(`${P} nicht erlaubt: ${src(n)}`);
+      if (ts.isObjectLiteralExpression(n)) {
+        for (const p of n.properties) {
+          if (ts.isSpreadAssignment(p) && n === commandsLiteral && ts.isIdentifier(p.expression) && commandParts.has(p.expression.text)) {
+            used.add(commandParts.get(p.expression.text));
+            continue;
+          }
+          if (ts.isSpreadAssignment(p)) { out.push(`${P} Spread nicht erlaubt (${src(p)})`); continue; }
+          if (p.name && ts.isComputedPropertyName(p.name)) { out.push(`${P} berechneter Schlüssel nicht erlaubt (${src(p.name)})`); continue; }
+          const key = p.name && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? p.name.text : null;
+          if (define === 'defineModel' && n === top && (key === 'version' || key === 'migrations')) continue;
+          if (define === 'defineModel' && n === top && key === 'invariants') { checkInvariants(p); continue; }
+          if (define === 'defineModel' && n === top && key === 'derived') { checkDerived(p); continue; }
+          if (define === 'defineModel' && n === top && key === 'derivedBulk') { checkDerivedBulk(p); continue; }
+          if (spec && (key === 'version' || key === 'migrations')) { out.push(`${P} ${key} nur am obersten ${define}-Literal erlaubt (${src(p)})`); continue; }
+          if (cmdName !== null && HOOKS.includes(key)) {
+            if (key === 'run' && isAsyncRun(p)) { out.push(`${P} command ${cmdName}: async run — use asyncTask`); continue; }
+            if (ts.isMethodDeclaration(p)) continue;
+            const v = ts.isPropertyAssignment(p) ? p.initializer : null;
+            if (v && ts.isArrowFunction(v)) out.push(`${P} ${key} von ${cmdName} ist eine Pfeilfunktion — this muss das reaktive Model sein`);
+            else if (v && (ts.isFunctionExpression(v) || (ts.isIdentifier(v) && runImports.has(v.text)))) continue;
+            else out.push(`${P} ${key} von ${cmdName}: Funktion, Methode oder Import aus ./commands/ erwartet`);
+            continue;
+          }
+          // Vorgabe aus dem Kontext des Models: (c) => … — reine Funktion, ihr Rumpf bleibt ungeprüft.
+          if (spec && define === 'defineModel' && key === 'default') {
+            if (ts.isMethodDeclaration(p)) continue;
+            const v = ts.isPropertyAssignment(p) ? p.initializer : null;
+            if (v && (ts.isArrowFunction(v) || ts.isFunctionExpression(v))) continue;
+          }
+          if (ts.isShorthandPropertyAssignment(p)) { out.push(`${P} Kurzschreibweise nicht erlaubt (${src(p)})`); continue; }
+          if (!ts.isPropertyAssignment(p)) { out.push(`${P} Funktion nicht erlaubt (${src(p)}) — Callbacks nur als run`); continue; }
+          check(p.initializer);
+        }
+        return;
+      }
+      if (ts.isArrowFunction(n) || ts.isFunctionExpression(n)) {
+        out.push(`${P} Funktion nicht erlaubt (${src(n)}) — Callbacks nur als run`);
+        return;
+      }
+      if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && ctors.has(n.expression.text) && ctors.get(n.expression.text) !== define) {
+        const isCommand = ctors.get(n.expression.text) === 'command';
+        // Die Form von object(shape, opts) ist eine Feldliste wie `fields`: `version` ist dort ein Feldname.
+        const isShape = (a, i) => i === 0 && ctors.get(n.expression.text) === 'object' && ts.isObjectLiteralExpression(a);
+        n.arguments.forEach((a, i) => {
+          if (isCommand && ts.isObjectLiteralExpression(a)) check(a, commandName(n));
+          else check(a, null, !isCommand && !isShape(a, i));
+        });
+        return;
+      }
+      // `<WidgetSchema>.edits()` — Bearbeitungsfeld eines Diagramm-Widgets, ohne Argumente.
+      if (ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression) && ts.isIdentifier(n.expression.expression)
+          && widgetSchemas.has(n.expression.expression.text) && n.expression.name.text === 'edits' && n.arguments.length === 0) return;
+      if (ts.isCallExpression(n)) {
+        out.push(`${P} Aufruf ${src(n)} ist kein Konstruktor aus core/model.js`);
+        return;
+      }
+      out.push(`${P} nicht erlaubt: ${src(n)}`);
+    };
+    return check;
   };
+  /** @type {Set<{ spec: string, name: string }>} */
+  const used = new Set();
+  const check = makeCheck({ sf, P, scope, top, commandsLiteral, used });
   check(top);
+  // Kommandogruppen und Formen aus Geschwisterdateien: dort als Literal prüfen, Formen rekursiv.
+  const done = new Set();
+  const follow = (refs, from) => {
+    for (const ref of refs) {
+      const key = `${ref.spec}#${ref.name}`;
+      if (done.has(key)) continue;
+      done.add(key);
+      const text = readSibling(ref.spec);
+      if (text == null) { out.push(`${from} ${ref.name} aus ${ref.spec} nicht lesbar`); continue; }
+      const sibling = `schema: domain/${ref.spec.slice(2)}:`;
+      const ssf = parseJs(ref.spec.slice(2), text);
+      const isShape = SHAPE_NAME.test(ref.name);
+      let init = exportedConst(ssf, ref.name);
+      if (isShape && init && ts.isCallExpression(init) && init.arguments.length === 1 && init.expression.getText(ssf) === 'Object.freeze') init = init.arguments[0];
+      if (!init || !ts.isObjectLiteralExpression(init)) {
+        out.push(`${sibling} ${ref.name} muss ein exportiertes Objekt-Literal sein${isShape ? ' (auch in Object.freeze)' : ''}`);
+        continue;
+      }
+      const inner = new Set();
+      makeCheck({ sf: ssf, P: sibling, scope: literalScope(ssf), top: null, commandsLiteral: null, used: inner })(init);
+      follow(inner, sibling);
+    }
+  };
+  follow(used, P);
   return out;
 }
 
@@ -892,18 +969,43 @@ const VIEW_FORBIDDEN = ['stateManager', 'getModuleState'];
  * und kein `getModuleState` — Arbeitsblätter nur über `ctx.data`, sonst
  * fehlt die Abhängigkeit und das Ergebnis veraltet. Ein view-Block aus
  * Teilen wird Teil für Teil geprüft, auch Teile aus anderen Dateien des Moduls.
+ * Ausnahmen (`view-read-exemptions.mjs`) gelten je Datei, oberstem Glied des
+ * Teils und Name; eine Ausnahme, die nichts trifft, ist ein Befund.
  * @param {{ path: string, text: string }[]} files
  * @param {string} [base] Modulordner, um Teile aus Importen zu lesen
+ * @param {import('./view-read-exemptions.mjs').ViewReadExemption[]} [exemptions]
  * @returns {string[]}
  */
-export function checkViewReads(files, base) {
+export function checkViewReads(files, base, exemptions = []) {
   const out = [];
+  const used = new Set();
+  /** Datei des Knotens relativ zum Modulordner (ohne Ordner: der Dateiname). */
+  const fileOf = (n) => {
+    const name = n.getSourceFile().fileName;
+    return base && name.startsWith(`${base}/`) ? name.slice(base.length + 1) : name;
+  };
+  /** Das äußerste benannte Glied unterhalb von `root` (Methode, Getter, Eigenschaft). */
+  const memberOf = (n, root) => {
+    let member = null;
+    for (let p = n.parent; p && p !== root; p = p.parent) {
+      if ((ts.isMethodDeclaration(p) || ts.isGetAccessorDeclaration(p) || ts.isSetAccessorDeclaration(p)
+        || ts.isPropertyAssignment(p)) && p.name) member = keyOf(p) ?? member;
+    }
+    return member;
+  };
+  const exempt = (n, root) => {
+    const file = fileOf(n);
+    const member = memberOf(n, root);
+    const hit = exemptions.find((e) => e.file === file && e.member === member && e.names.includes(n.text));
+    if (hit) used.add(hit);
+    return Boolean(hit);
+  };
   for (const { path, text } of files) {
     if (!path.startsWith('viewmodel/') && !path.startsWith('tile/')) continue;
     const scan = (root, where) => {
       const seen = new Set();
       const visit = (n) => {
-        if (ts.isIdentifier(n) && VIEW_FORBIDDEN.includes(n.text)) seen.add(n.text);
+        if (ts.isIdentifier(n) && VIEW_FORBIDDEN.includes(n.text) && !exempt(n, root)) seen.add(n.text);
         ts.forEachChild(n, visit);
       };
       visit(root);
@@ -928,6 +1030,9 @@ export function checkViewReads(files, base) {
       if (called && !factoryArgument(sf)) out.push(`view: ${path}: ${called}-Argument ist kein Objektliteral — view-Block nicht prüfbar`);
     }
     for (const [name, run] of asyncTaskRuns(text)) scan(run, `in asyncTasks.${name}.run`);
+  }
+  for (const e of exemptions) {
+    if (!used.has(e)) out.push(`view: Ausnahme ${e.file} › ${e.member} (${e.names.join(', ')}) trifft nichts — aus view-read-exemptions.mjs entfernen`);
   }
   return out;
 }
@@ -1641,7 +1746,7 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
   }
   out.push(...checkLayers(js));
   out.push(...checkWritePath(js));
-  if (id !== WORKSHEET_OWNER) out.push(...checkViewReads(js, base));
+  out.push(...checkViewReads(js, base, VIEW_READ_EXEMPTIONS[id] ?? []));
   out.push(...checkCommandsRef(js, base));
   out.push(...checkAsyncTaskDecls(js));
   const cssPath = 'resources/style.css';
@@ -1655,7 +1760,11 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
 
   if (paths.includes('domain/model.js')) {
     const file = join(base, 'domain', 'model.js');
-    out.push(...checkSchemaLiteral(readFileSync(file, 'utf8')));
+    const readSibling = (spec) => {
+      const sibling = join(base, 'domain', spec);
+      return existsSync(sibling) ? readFileSync(sibling, 'utf8') : null;
+    };
+    out.push(...checkSchemaLiteral(readFileSync(file, 'utf8'), { readSibling }));
     let schema = null;
     try {
       ({ schema } = await loadModelSchema(file));

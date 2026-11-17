@@ -232,10 +232,10 @@ export const sheetCommands = {
    */
   restoreSheet: command({
     params: {
-      index: number({ integer: true, min: 0, ...hidden }),
+      index: number({ integer: true, min: 0, agentWrite: false }),
       sheet: object(SHEET_SHAPE, hidden),
       activeSheetId: text(hidden),
-      view: object(GRID_VIEW_SHAPE, { optional: true, ...hidden }),
+      view: object(GRID_VIEW_SHAPE, { optional: true, agentWrite: false }),
     },
     run({ index, sheet, activeSheetId, view }) {
       const ids = this.sheets.map((/** @type {{ id: string }} */ s) => s.id);

@@ -9,6 +9,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkViewReads, checkCommandsRef, checkPickerCss, checkChartBindings, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, checkFileDropRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts, viewNamesOf, viewNamesDetailOf, computedNamesOf, checkWidgetTemplates, modelMembersOf, checkFieldErrorPaths, checkHistoryOption } from './module-gates.mjs';
 import { viewMemberNamesOf } from './view-names.mjs';
+import { VIEW_READ_EXEMPTIONS } from './view-read-exemptions.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
 import { APP_DIR } from './build.mjs';
 import { defineModel, command, text, number, oneOf, index, idOf, list, record, map, object, boolean, date, columnRef, defineWidget, datasets, richText, table } from '../../js/core/model.js';
@@ -1213,6 +1214,35 @@ test('checkViewReads: view-Teile aus importierten Dateien des Moduls', () => {
   assert.deepEqual(checkViewReads([vm], base), ['view: viewmodel/viewmodel.js: stateManager im view-Block — Arbeitsblätter über ctx.data lesen']);
 });
 
+test('checkViewReads: enge Ausnahme je Datei, Glied und Name; übrige Prüfungen laufen', () => {
+  const base = appWith({
+    'viewmodel/sheets.js': 'export function sheetsView(ctx) { return { init() { ctx.context.stateManager.getModuleState("a"); }, get other() { return ctx.context.stateManager.get("b"); } }; }\n',
+  });
+  const vm = { path: 'viewmodel/viewmodel.js', text: "import { sheetsView } from './sheets.js';\nimport { goneView } from './gone.js';\nexport default createModule({ view: [sheetsView, goneView] });\n" };
+  const exemptions = [
+    { file: 'viewmodel/sheets.js', member: 'init', names: ['stateManager', 'getModuleState'], reason: 'liest beim Einhängen den eigenen Stand' },
+  ];
+  // init ist ausgenommen, other nicht; der nicht auflösbare Teil bleibt ein Befund.
+  assert.deepEqual(checkViewReads([vm], base, exemptions), [
+    'view: viewmodel/viewmodel.js: view[1] nicht auflösbar — view-Block nicht prüfbar',
+    'view: viewmodel/viewmodel.js: stateManager im view-Block — Arbeitsblätter über ctx.data lesen',
+  ]);
+  // Eine Ausnahme, die nichts trifft, ist ein Befund.
+  const stale = [...exemptions, { file: 'viewmodel/toolbar.js', member: 'gridConfig', names: ['stateManager'], reason: 'x' }];
+  assert.ok(checkViewReads([vm], base, stale).includes('view: Ausnahme viewmodel/toolbar.js › gridConfig (stateManager) trifft nichts — aus view-read-exemptions.mjs entfernen'));
+  // Ohne Ausnahme sind beide Namen Befunde.
+  assert.equal(checkViewReads([vm], base).length, 3);
+});
+
+test('Lesezugriff-Ausnahmen: nur worksheet, je Eintrag Grund, Datei und Glied', () => {
+  assert.deepEqual(Object.keys(VIEW_READ_EXEMPTIONS), ['worksheet']);
+  for (const e of VIEW_READ_EXEMPTIONS.worksheet) {
+    assert.ok(e.reason.length > 20 && e.file && e.member && e.names.length > 0, JSON.stringify(e));
+  }
+  assert.deepEqual(VIEW_READ_EXEMPTIONS.worksheet.map((e) => `${e.file} › ${e.member}`),
+    ['viewmodel/sheets.js › init', 'viewmodel/toolbar.js › gridConfig']);
+});
+
 test('checkViewReads: nicht auflösbarer view-Teil wird gemeldet', () => {
   const base = appWith({ 'viewmodel/causes.js': 'export function causesView(ctx) { return { y: 1 }; }\n' });
   const vm = { path: 'viewmodel/viewmodel.js', text: "import { causesView } from './causes.js';\nimport { goneView } from './gone.js';\nexport default createModule({ view: [causesView, goneView] });\n" };
@@ -1670,11 +1700,69 @@ export class M extends defineModel({
 `;
   const shaped = src.replace("fields: { a: number({ max: 3 }) }", "fields: { a: number({ max: 3 }), r: object(ROW_SHAPE), l: number({ max: LIMIT }) }")
     .replace('import { defineModel, command, text, number }', 'import { defineModel, command, text, number, object }');
-  assert.deepEqual(checkSchemaLiteral(shaped), [
+  const readSibling = siblings({
+    './commands-cells.js': `${MODEL_IMPORT}export const cellCommands = { put: command({ params: { n: number() }, run({ n }) { this.a = n; } }) };\n`,
+    './sheet.js': `${MODEL_IMPORT}export const ROW_SHAPE = Object.freeze({ x: number(), t: text() });\nexport const LIMIT = 3;\n`,
+  });
+  assert.deepEqual(checkSchemaLiteral(shaped, { readSibling }), [
     `${P} Bezeichner LIMIT ist keine Konstante dieser Datei`,
     `${P} Spread nicht erlaubt (...otherCommands)`,
     `${P} invariants.bad: nur fields (String-Literale), test, repair und onLoad: true erlaubt (onLoad: false)`,
   ]);
+});
+
+/** Leser der Geschwisterdateien in domain/ für checkSchemaLiteral. */
+const siblings = (files) => (spec) => files[spec] ?? null;
+
+const PART_MODEL = `${MODEL_IMPORT}import { cellCommands } from './commands-cells.js';
+import { ROW_SHAPE } from './sheet.js';
+export class M extends defineModel({
+  fields: { a: number(), r: object(ROW_SHAPE) },
+  commands: { ...cellCommands },
+}) {}
+`.replace('import { defineModel, command, text, number }', 'import { defineModel, command, text, number, object }');
+const PART_SHEET = `${MODEL_IMPORT}export const ROW_SHAPE = Object.freeze({ x: number() });\n`;
+
+test('Schema-Literal: Kommandogruppe aus ./commands-*.js wird geprüft wie commands', () => {
+  const part = (body) => siblings({ './commands-cells.js': `${MODEL_IMPORT}${body}`, './sheet.js': PART_SHEET });
+  assert.deepEqual(checkSchemaLiteral(PART_MODEL, {
+    readSibling: part('export const cellCommands = { go: command({ params: { n: number() }, run({ n }) { this.a = n; } }) };\n'),
+  }), []);
+  assert.deepEqual(checkSchemaLiteral(PART_MODEL, {
+    readSibling: part('export const cellCommands = { go: command({ params: { n: number() }, async run({ n }) { this.a = n; } }) };\n'),
+  }), ['schema: domain/commands-cells.js: command go: async run — use asyncTask']);
+  // Helfer-Pfeilfunktion statt Konstruktor: kein Literal.
+  assert.deepEqual(checkSchemaLiteral(PART_MODEL, {
+    readSibling: part('const idx = () => number({ min: 0 });\nexport const cellCommands = { go: command({ params: { n: idx() }, run({ n }) { this.a = n; } }) };\n'),
+  }), ['schema: domain/commands-cells.js: Aufruf idx() ist kein Konstruktor aus core/model.js']);
+  assert.deepEqual(checkSchemaLiteral(PART_MODEL, {
+    readSibling: part('const all = { go: command({ run() {} }) };\nexport const cellCommands = { ...all };\n'),
+  }), ['schema: domain/commands-cells.js: Spread nicht erlaubt (...all)']);
+  assert.deepEqual(checkSchemaLiteral(PART_MODEL, { readSibling: part('export const cellCommands = make();\n') }),
+    ['schema: domain/commands-cells.js: cellCommands muss ein exportiertes Objekt-Literal sein']);
+  assert.deepEqual(checkSchemaLiteral(PART_MODEL, { readSibling: siblings({ './sheet.js': PART_SHEET }) }),
+    ['schema: domain/model.js: cellCommands aus ./commands-cells.js nicht lesbar']);
+});
+
+test('Schema-Literal: Formen *_SHAPE aus Geschwistern werden geprüft, auch verschachtelt', () => {
+  const part = siblings({ './commands-cells.js': `${MODEL_IMPORT}export const cellCommands = {};\n` });
+  const withSheet = (sheet, more = {}) => (spec) => ({ './sheet.js': sheet, ...more })[spec] ?? part(spec);
+  assert.deepEqual(checkSchemaLiteral(PART_MODEL, { readSibling: withSheet(PART_SHEET) }), []);
+  const KEYS = "import { defineModel, command, text, number, oneOf, object } from '@/core/model.js';\nimport { TYPES } from '@/core/types.js';\n";
+  assert.deepEqual(checkSchemaLiteral(PART_MODEL, {
+    readSibling: withSheet(`${KEYS}const pos = () => number();\nexport const ROW_SHAPE = Object.freeze({ t: oneOf(Object.keys(TYPES)), p: pos(), r: oneOf(TYPES) });\n`),
+  }), [
+    'schema: domain/sheet.js: Aufruf Object.keys(TYPES) ist kein Konstruktor aus core/model.js',
+    'schema: domain/sheet.js: Aufruf pos() ist kein Konstruktor aus core/model.js',
+    'schema: domain/sheet.js: Bezeichner TYPES ist keine Konstante dieser Datei',
+  ]);
+  // Verschachtelt: sheet.js nutzt COL_SHAPE aus columns.js.
+  assert.deepEqual(checkSchemaLiteral(PART_MODEL, {
+    readSibling: withSheet(`${KEYS}import { COL_SHAPE } from './columns.js';\nexport const ROW_SHAPE = Object.freeze({ c: object(COL_SHAPE) });\n`,
+      { './columns.js': `${KEYS}export const COL_SHAPE = Object.freeze({ n: number({ max: Math.max(1, 2) }) });\n` }),
+  }), ['schema: domain/columns.js: Aufruf Math.max(1, 2) ist kein Konstruktor aus core/model.js']);
+  assert.deepEqual(checkSchemaLiteral(PART_MODEL, { readSibling: withSheet(`${KEYS}export const ROW_SHAPE = make();\n`) }),
+    ['schema: domain/sheet.js: ROW_SHAPE muss ein exportiertes Objekt-Literal sein (auch in Object.freeze)']);
 });
 
 test('Template ↔ Schema: x-field auf table() ist ein Befund', () => {

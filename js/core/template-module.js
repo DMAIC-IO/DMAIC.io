@@ -243,7 +243,8 @@ function schemaMembers(moduleId, entry, vmCommands, readNames = [], bulk = [], o
     moduleId,
     /** @noagent Lesefläche aus dem Schema (agent-schema.js) oder aus `base.read` */
     read(options) {
-      if (ownRead) return ownRead(this.model, options);
+      // Rohes Model: Lesen in einem Effekt legt keine Abhängigkeit je Kopf, Formel oder Zelle an.
+      if (ownRead) return ownRead(Alpine.raw(this.model), options);
       const values = Object.fromEntries(readNames.map((name) => [name, this[name]]));
       return assembleRead(entry, this.model, options, values, bulk,
         this._asyncTaskHost ? this._asyncTaskHost.readStatus() : undefined);

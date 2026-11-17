@@ -55,9 +55,6 @@ export const MAX_FILL_GROWTH = 10000;
 /** Die Startspalten C1–C5, die `to: 'start'` füllen kann (wie `worksheet.js`). */
 const START_COLUMNS = 5;
 
-const rowIndex = () => number({ integer: true, min: 0 });
-const rectSpec = () => object({ c0: rowIndex(), r0: rowIndex(), c1: rowIndex(), r1: rowIndex() });
-
 // ─── Lesen und Prüfen ────────────────────────────────────────────
 
 /**
@@ -432,7 +429,7 @@ export const cellCommands = {
    * @agent
    */
   setCells: command({
-    params: { sheetId: text(), columnId: text(), startRow: rowIndex(), values: list(cell()) },
+    params: { sheetId: text(), columnId: text(), startRow: number({ integer: true, min: 0 }), values: list(cell()) },
     returns: number({ integer: true }),
     run({ sheetId, columnId, startRow, values }) {
       const sheet = sheetOf(this, sheetId);
@@ -687,7 +684,18 @@ export const cellCommands = {
    * @agent
    */
   fillRange: command({
-    params: { sheetId: text(), source: rectSpec(), target: rectSpec(), ctrl: boolean({ optional: true }) },
+    params: {
+      sheetId: text(),
+      source: object({
+        c0: number({ integer: true, min: 0 }), r0: number({ integer: true, min: 0 }),
+        c1: number({ integer: true, min: 0 }), r1: number({ integer: true, min: 0 }),
+      }),
+      target: object({
+        c0: number({ integer: true, min: 0 }), r0: number({ integer: true, min: 0 }),
+        c1: number({ integer: true, min: 0 }), r1: number({ integer: true, min: 0 }),
+      }),
+      ctrl: boolean({ optional: true }),
+    },
     returns: number({ integer: true }),
     run({ sheetId, source: s, target: t, ctrl = false }) {
       const sheet = sheetOf(this, sheetId);
@@ -762,7 +770,11 @@ export const cellCommands = {
    * @agent
    */
   clearRange: command({
-    params: { sheetId: text(), c0: rowIndex(), r0: rowIndex(), c1: rowIndex(), r1: rowIndex() },
+    params: {
+      sheetId: text(),
+      c0: number({ integer: true, min: 0 }), r0: number({ integer: true, min: 0 }),
+      c1: number({ integer: true, min: 0 }), r1: number({ integer: true, min: 0 }),
+    },
     returns: number({ integer: true }),
     run({ sheetId, c0, r0, c1, r1 }) {
       const sheet = sheetOf(this, sheetId);
@@ -795,7 +807,7 @@ export const cellCommands = {
       rowCount: number({ integer: true, min: 0, agentWrite: false }),
       columnCount: number({ integer: true, min: 0, agentWrite: false }),
       cols: list(object({
-        index: rowIndex(),
+        index: number({ integer: true, min: 0 }),
         head: object(COLUMN_SHAPE, { optional: true }),
         start: number({ integer: true, min: 0, optional: true }),
         values: list(cell(), { optional: true }),

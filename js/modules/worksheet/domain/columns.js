@@ -11,22 +11,25 @@
  * Rein: kein DOM, kein i18n.
  */
 import { object, map, text, number, boolean, oneOf } from '../../../core/model.js';
-import { COLUMN_TYPES, DATE_FORMATS, TIME_FORMATS } from '../../../core/datagrid/datagrid-utils.js';
-import { ALL_ROLES } from '../../../core/datagrid/datagrid-roles.js';
 
-/** Felder eines Spaltenkopfs; `meta` mit den Schlüsseln von `COLUMN_META_KEYS`. */
+/**
+ * Felder eines Spaltenkopfs; `meta` mit den Schlüsseln von `COLUMN_META_KEYS`.
+ * Typen, Rollen und Formate stehen als Literal (Schema-Literal-Gate); die
+ * Gleichheit mit `COLUMN_TYPES`, `ALL_ROLES`, `DATE_FORMATS` und
+ * `TIME_FORMATS` sichert `tests/modules/worksheet/model.test.js`.
+ */
 export const COLUMN_SHAPE = Object.freeze({
   id: text(),
   name: text(),
   shortName: text(),
-  type: oneOf(Object.keys(COLUMN_TYPES)),
+  type: oneOf(['numeric', 'text', 'date', 'time', 'currency', 'percent', 'binary']),
   unit: text({ nullable: true }),
-  role: oneOf(ALL_ROLES, { nullable: true }),
+  role: oneOf(['continuous', 'categorical', 'ordinal', 'date', 'identifier', 'freeText'], { nullable: true }),
   roleManual: boolean(),
   format: object({
     decimals: number({ integer: true, min: 0, optional: true }),
-    dateFormat: oneOf(Object.keys(DATE_FORMATS), { optional: true }),
-    timeFormat: oneOf(Object.keys(TIME_FORMATS), { optional: true }),
+    dateFormat: oneOf(['dd.MM.yyyy', 'yyyy-MM-dd', 'dd/MM/yyyy', 'MM/dd/yyyy', 'd. MMMM yyyy'], { optional: true }),
+    timeFormat: oneOf(['HH:mm', 'HH:mm:ss'], { optional: true }),
     // Ruling R10: Altdaten und Beispiele tragen es, der Renderer liest es.
     currencySymbol: text({ optional: true }),
   }),

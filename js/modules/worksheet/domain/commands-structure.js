@@ -25,8 +25,8 @@ import {
   recordInverse, markTableChanged,
 } from '../../../core/model.js';
 import { requireIndex, requireNumber, requireEnum, requireForm } from '../../../core/validate.js';
-import { COLUMN_TYPES, DATE_FORMATS, TIME_FORMATS } from '../../../core/datagrid/datagrid-utils.js';
-import { ALL_ROLES, defaultRoleForType, isRoleValidForType, validRolesForType } from '../../../core/datagrid/datagrid-roles.js';
+import { DATE_FORMATS, TIME_FORMATS } from '../../../core/datagrid/datagrid-utils.js';
+import { defaultRoleForType, isRoleValidForType, validRolesForType } from '../../../core/datagrid/datagrid-roles.js';
 import {
   insertRows, deleteRows, moveRowData, insertColumn, deleteColumn, moveColumnData,
   sortPermutation, applyPermutation, invertPermutation, convertColumn,
@@ -35,7 +35,7 @@ import { recalcFormulas, remapFormulaRows, renameInFormulas } from '../../../cor
 import { reinferRoleAfterRetype } from '../../../core/worksheet-write.js';
 import { isCell } from '../../../core/table-data.js';
 import { uid } from '../../../core/uid.js';
-import { COLUMN_SHAPE, fitsType, checkColumnMeta, FORMAT_KEYS, FORMAT_KEYS_BY_TYPE } from './columns.js';
+import { COLUMN_SHAPE, fitsType, checkColumnMeta, FORMAT_KEYS_BY_TYPE } from './columns.js';
 import { sheetOf, columnIndex, requireUnlocked, copyHead, changedRun, commit } from './commands-cells.js';
 
 /** Zeilen, die `addRows` ohne `count` anfügt (wie der Knopf der Leiste). */
@@ -321,7 +321,7 @@ export const structureCommands = {
    * @agent
    */
   setColumnRole: command({
-    params: { sheetId: text(), columnId: text(), role: oneOf(ALL_ROLES) },
+    params: { sheetId: text(), columnId: text(), role: oneOf(['continuous', 'categorical', 'ordinal', 'date', 'identifier', 'freeText']) },
     run({ sheetId, columnId, role }) {
       const sheet = sheetOf(this, sheetId);
       const ci = columnIndex(sheet, columnId);
@@ -346,7 +346,7 @@ export const structureCommands = {
    * @agent
    */
   setColumnType: command({
-    params: { sheetId: text(), columnId: text(), columnType: oneOf(Object.keys(COLUMN_TYPES)) },
+    params: { sheetId: text(), columnId: text(), columnType: oneOf(['numeric', 'text', 'date', 'time', 'currency', 'percent', 'binary']) },
     returns: boolean(),
     run({ sheetId, columnId, columnType }) {
       const sheet = sheetOf(this, sheetId);
@@ -377,7 +377,7 @@ export const structureCommands = {
    */
   setColumnFormat: command({
     params: {
-      sheetId: text(), columnId: text(), key: oneOf(FORMAT_KEYS),
+      sheetId: text(), columnId: text(), key: oneOf(['decimals', 'dateFormat', 'timeFormat']),
       value: unchecked({ type: 'number|string|null' }),
     },
     run({ sheetId, columnId, key, value }) {
@@ -525,7 +525,7 @@ export const structureCommands = {
   restoreColumn: command({
     params: {
       sheetId: text(),
-      index: number({ integer: true, min: 0, ...hidden }),
+      index: number({ integer: true, min: 0, agentWrite: false }),
       head: object(COLUMN_SHAPE, hidden),
       values: list(cell(), hidden),
       formulas: map(text(), text(), hidden),
@@ -554,8 +554,8 @@ export const structureCommands = {
   restoreRows: command({
     params: {
       sheetId: text(),
-      startRow: number({ integer: true, min: 0, ...hidden }),
-      count: number({ integer: true, min: 1, ...hidden }),
+      startRow: number({ integer: true, min: 0, agentWrite: false }),
+      count: number({ integer: true, min: 1, agentWrite: false }),
       cols: list(list(cell()), hidden),
       formulas: map(text(), map(text(), text()), hidden),
     },

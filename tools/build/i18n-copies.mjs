@@ -7,6 +7,8 @@
  *
  *   { "<eigener Schlüssel relativ zu ui.<lang>.json>": "modules.<src>.<rest>" }
  *
+ * oder, für einen globalen Text, `"<eigener Schlüssel>": "<Pfad in i18n/<lang>.json>"`.
+ *
  * Quelle ist `js/modules/<src>/resources/i18n/ui.<lang>.json` (Schlüssel
  * `<rest>`), wenn das Quellmodul in der neuen Form vorliegt, sonst
  * `i18n/<lang>.json` unter `modules.<src>.<rest>`. Weicht eine Kopie ab oder
@@ -68,6 +70,9 @@ export function checkI18nCopies(root) {
           const targetTree = readJson(join(root, target));
           if (targetTree) { sourceFile = target; sourceLookup = lookup(targetTree, rest); }
           else sourceLookup = lookup(readJson(join(root, sourceFile)), source);
+        } else {
+          // Globaler Text (ohne `modules.`): Schlüsselpfad in i18n/<lang>.json.
+          sourceLookup = lookup(readJson(join(root, sourceFile)), source);
         }
         const ownLookup = lookup(readJson(join(root, ownFile)), own);
         const base = { module: id, own, source, lang, ownFile, sourceFile };

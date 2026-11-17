@@ -8,6 +8,7 @@ import { DataGrid } from '../../../js/core/datagrid/datagrid.js';
 import { TableData } from '../../../js/core/table-data.js';
 import { sheetCsv } from '../../../js/modules/worksheet/io/export.js';
 import { IMPORT_ACCEPT, importKind } from '../../../js/modules/worksheet/io/import.js';
+import { openChartSuggestion } from '../../../js/modules/worksheet/io/chart-suggestion.js';
 
 /** Ein Blatt der Zielform aus Köpfen und Spaltenwerten. */
 function sheetOf(heads, columns) {
@@ -65,5 +66,46 @@ suite('worksheet io: Datei-Eingabe wie die Altform', () => {
     assertDeepEqual(importKind('a.CSV'), { kind: 'csv', ext: 'csv' });
     assertDeepEqual(importKind('a.tsv'), { kind: 'csv', ext: 'tsv' });
     assertDeepEqual(importKind('a.xlsx'), { kind: 'unsupported', ext: 'xlsx' });
+  });
+});
+
+suite('worksheet: Übergabe an chart-suggestion (io/chart-suggestion.js)', () => {
+  /** Dienste einer Arbeitsblatt-Instanz `ws` in der Phase `measure`. */
+  function services(items) {
+    const phases = { define: [{ instanceId: 'other', moduleId: 'chart-suggestion', order: 0 }], measure: items };
+    const states = {};
+    const events = [];
+    return {
+      phases, states, events,
+      services: {
+        instanceId: 'ws',
+        stateManager: {
+          get: (path) => (path === 'phases' ? phases : phases[path.slice('phases.'.length)]),
+          set: (path, v) => { phases[path.slice('phases.'.length)] = v; },
+          setModuleState: (id, st) => { states[id] = st; },
+        },
+        eventBus: { emit: (n, p) => events.push([n, p]) },
+      },
+    };
+  }
+  const selection = { sourceInstanceId: 'ws', sourceSheetId: 's1', ts: 1, columns: [] };
+
+  test('neue Instanz über openInstance: in der eigenen Phase, Zustand gesetzt, module:added, dann chart-suggestion:load', () => {
+    const h = services([{ instanceId: 'ws', moduleId: 'worksheet', order: 0 }]);
+    const id = openChartSuggestion(h.services, selection);
+    assertEqual(h.phases.measure.length, 2);
+    assertDeepEqual(h.phases.measure[1], { instanceId: id, moduleId: 'chart-suggestion', order: 1, state: {} });
+    assertDeepEqual(h.states[id], { selection, selectedChartType: null });
+    assertDeepEqual(h.events.map(([n]) => n), ['module:added', 'chart-suggestion:load']);
+    assertDeepEqual(h.events[0][1], { moduleId: 'chart-suggestion', phase: 'measure', instanceId: id });
+    assertDeepEqual(h.events[1][1], { instanceId: id, selection });
+  });
+
+  test('bestehende Instanz der eigenen Phase: Zustand gesetzt, chart-suggestion:load, module:activated', () => {
+    const h = services([{ instanceId: 'ws', moduleId: 'worksheet', order: 0 }, { instanceId: 'cs', moduleId: 'chart-suggestion', order: 1 }]);
+    assertEqual(openChartSuggestion(h.services, selection), 'cs');
+    assertEqual(h.phases.measure.length, 2);
+    assertDeepEqual(h.states.cs, { selection, selectedChartType: null });
+    assertDeepEqual(h.events, [['chart-suggestion:load', { instanceId: 'cs', selection }], ['module:activated', { instanceId: 'cs' }]]);
   });
 });

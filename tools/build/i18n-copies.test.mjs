@@ -1,6 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { checkI18nCopies, formatI18nCopyFinding } from './i18n-copies.mjs';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
@@ -47,6 +50,25 @@ test('message names keys, language, both values and both files', () => {
     'js/modules/survey/resources/i18n/ui.de.json', 'i18n/de.json']) {
     assert.ok(msg.includes(part), `message lacks ${part}: ${msg}`);
   }
+});
+
+test('a global source (no modules. prefix) is compared in i18n/<lang>.json', () => {
+  const root = mkdtempSync(join(tmpdir(), 'i18n-copies-'));
+  const own = join(root, 'js/modules/sheet/resources/i18n');
+  mkdirSync(own, { recursive: true });
+  mkdirSync(join(root, 'i18n'));
+  writeFileSync(join(own, 'copies.json'), JSON.stringify({ defaultName: 'sheet.defaultName' }));
+  writeFileSync(join(own, 'ui.de.json'), JSON.stringify({ defaultName: 'Tabelle' }));
+  writeFileSync(join(own, 'ui.en.json'), JSON.stringify({ defaultName: 'Sheet' }));
+  writeFileSync(join(root, 'i18n/de.json'), JSON.stringify({ sheet: { defaultName: 'Tabelle' } }));
+  writeFileSync(join(root, 'i18n/en.json'), JSON.stringify({ sheet: { defaultName: 'Table' } }));
+  const r = checkI18nCopies(root);
+  assert.deepEqual(r.map((f) => [f.lang, f.reason, f.sourceFile, f.sourceValue]), [['en', 'differs', 'i18n/en.json', 'Table']]);
+});
+
+test('worksheet: defaultSheetName and writeFailed are copies of the global worksheet.* texts', () => {
+  const copies = JSON.parse(readFileSync(join(ROOT, 'js/modules/worksheet/resources/i18n/copies.json'), 'utf8'));
+  assert.deepEqual(copies, { defaultSheetName: 'worksheet.defaultSheetName', writeFailed: 'worksheet.writeFailed' });
 });
 
 test('the real tree has no diverging copies', () => {
