@@ -30,8 +30,9 @@ function setup(n = N) {
   const view = createGridView(host, { t: (k) => k.split('.').pop(), lang: 'en' });
   const table = mk(n);
   const cols = mkCols();
-  view.draw(table, cols, {}, {});
-  return { host, view, table, cols, done: () => { view.destroy(); host.remove(); } };
+  const f = {};
+  view.draw(table, cols, f, {});
+  return { host, view, table, cols, f, done: () => { view.destroy(); host.remove(); } };
 }
 
 suite('GridView — virtualisiertes Zeichnen', () => {
@@ -66,10 +67,12 @@ suite('GridView — virtualisiertes Zeichnen', () => {
       let writes = 0;
       const desc = Object.getOwnPropertyDescriptor(Node.prototype, 'textContent');
       Object.defineProperty(td, 'textContent', { configurable: true, get() { return desc.get.call(this); }, set(v) { writes++; desc.set.call(this, v); } });
-      s.view.draw(s.table, s.cols, {}, {});
+      s.view.draw(s.table, s.cols, s.f, {});
+      assertEqual(writes, 0);
+      s.view.draw(s.table, s.cols);
       assertEqual(writes, 0);
       s.table.columns[0][3] = 99; s.table.rev++;
-      s.view.draw(s.table, s.cols, {}, {});
+      s.view.draw(s.table, s.cols, s.f, {});
       assertEqual(writes, 1);
       assertEqual(td.textContent, '99.0');
     } finally { s.done(); }
@@ -101,6 +104,28 @@ suite('GridView — virtualisiertes Zeichnen', () => {
       assertTrue(td.classList.contains('cell-formula'));
       assertEqual(td.title, '=1+1');
       assertEqual(s.view.rowAtY(0), 0);
+    } finally { s.done(); }
+  });
+
+  test('bei ungerader Zeilenzahl wird die letzte Zeile gezeichnet', async () => {
+    await cssReady;
+    const s = setup(100001);
+    try {
+      s.view.scrollToRow(100000);
+      const td = s.view.cellAt(0, 100000);
+      assertTrue(td !== null, 'letzte Zelle vorhanden');
+      assertEqual(td.textContent, '100000.0');
+    } finally { s.done(); }
+  });
+
+  test('geändertes Format zeichnet bei gleicher rev neu', async () => {
+    await cssReady;
+    const s = setup(50);
+    try {
+      assertEqual(s.view.cellAt(0, 3).textContent, '3.0');
+      const cols = [{ ...s.cols[0], format: { decimals: 2 } }, s.cols[1]];
+      s.view.draw(s.table, cols, s.f, {});
+      assertEqual(s.view.cellAt(0, 3).textContent, '3.00');
     } finally { s.done(); }
   });
 });

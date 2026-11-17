@@ -18,6 +18,7 @@ const BUFFER = 10;
 const FALLBACK_ROW_H = 30;
 const FALLBACK_VIEWPORT = 600;
 const FALLBACK_COL_W = 130;
+const EMPTY_FORMULAS = Object.freeze({});
 
 /**
  * @typedef {{ id: string, name?: string, shortName?: string, type: string, unit?: string,
@@ -90,7 +91,7 @@ export function createGridView(host, { t = (k) => k.split('.').pop(), lang = 'en
   };
 
   const headerSig = () => JSON.stringify([
-    cols.map((c) => [c.id, c.name, c.shortName, c.type, c.unit, c.role, c.roleManual, c.lock, c.reason, c.managedBy]),
+    cols.map((c) => [c.id, c.name, c.shortName, c.type, c.unit, c.role, c.roleManual, c.lock, c.reason, c.managedBy, c.format]),
     viewState.colWidths || null, viewState.sortCol ?? null, viewState.sortDir ?? null, curLang,
   ]);
   const colWidth = (col) => (viewState.colWidths && viewState.colWidths[col.id]) || defColW();
@@ -174,7 +175,6 @@ export function createGridView(host, { t = (k) => k.split('.').pop(), lang = 'en
     if (p.rowIdx !== r) {
       p.rowIdx = r;
       p.cells[0].dataset.rowIdx = String(r);
-      tr.toggleAttribute('data-odd', (r & 1) === 1);
     }
     setText(p.cells[0], String(r + 1));
     for (let c = 0; c < cols.length; c++) {
@@ -199,7 +199,8 @@ export function createGridView(host, { t = (k) => k.split('.').pop(), lang = 'en
     const rh = rowH();
     const n = table_.rowCount;
     const vh = scroll.clientHeight || FALLBACK_VIEWPORT;
-    const size = Math.min(n, Math.ceil(vh / rh) + 2 * BUFFER);
+    // +1: Reserve, weil der gerade Start das Fenster um eine Zeile nach oben schieben kann
+    const size = Math.min(n, Math.ceil(vh / rh) + 2 * BUFFER + 1);
     if (pool.length !== size || (pool[0] && pool[0].cells.length !== cols.length + 1)) {
       buildPool(size);
       dirty = true;
@@ -227,6 +228,8 @@ export function createGridView(host, { t = (k) => k.split('.').pop(), lang = 'en
 
   const onScroll = () => update();
   scroll.addEventListener('scroll', onScroll, { passive: true });
+  const resizeObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(onScroll) : null;
+  resizeObserver?.observe(scroll);
 
   return {
     /**
@@ -240,7 +243,7 @@ export function createGridView(host, { t = (k) => k.split('.').pop(), lang = 'en
       cols = columns || [];
       viewState = view || {};
       if (viewState.lang) curLang = viewState.lang;
-      formulas = f || {};
+      formulas = f || EMPTY_FORMULAS;
       ncols = normCols();
       const sig = headerSig();
       if (sig !== lastSig) { lastSig = sig; renderHeader(); dirty = true; }
@@ -268,6 +271,7 @@ export function createGridView(host, { t = (k) => k.split('.').pop(), lang = 'en
     },
     destroy() {
       scroll.removeEventListener('scroll', onScroll);
+      resizeObserver?.disconnect();
       scroll.remove();
       pool = [];
     },
