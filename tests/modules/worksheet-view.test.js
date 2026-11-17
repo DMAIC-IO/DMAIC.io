@@ -292,12 +292,27 @@ suite('worksheet: Viewmodel der Zielform im Browser', () => {
   test('Statuszeile zeigt die Auswahl des Rasters sofort, vor gridView', async () => {
     const h = await mount(twoSheets());
     const sheetId = h.vm().model.activeSheetId;
-    const cell = h.$('td[data-col-idx="1"][data-row-idx="2"]');
-    cell.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, button: 0 }));
-    cell.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, button: 0 }));
-    await settle();
+    // Die 300-ms-Entprellung (GRID_VIEW_DELAY in grid-input.js) wird hier
+    // festgehalten statt gegen die Uhr gerannt: unter V8-Coverage dauert
+    // settle() länger als 300 ms, und der Timer meldete gridView vorab.
+    const realSetTimeout = window.setTimeout;
+    const held = [];
+    window.setTimeout = (fn, ms, ...args) => (ms === 300 ? (held.push(() => fn(...args)), -1) : realSetTimeout(fn, ms, ...args));
+    try {
+      const cell = h.$('td[data-col-idx="1"][data-row-idx="2"]');
+      cell.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, button: 0 }));
+      cell.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, button: 0 }));
+      await settle();
+    } finally {
+      window.setTimeout = realSetTimeout;
+    }
     assertEqual(h.vm().model.gridView[sheetId]?.selection ?? null, null, 'gridView noch nicht gemeldet');
     const col = h.vm().model.sheets[0].columns[1].shortName;
+    assertEqual(h.vm().statusSelection, `${col}[3]`);
+    assertTrue(held.length > 0, 'die Entprellung von gridView war angestoßen');
+    held.at(-1)(); // nur der letzte Timer: die früheren hätte clearTimeout verworfen
+    await settle();
+    assertTrue(!!h.vm().model.gridView[sheetId]?.selection, 'nach der Entprellung ist gridView gemeldet');
     assertEqual(h.vm().statusSelection, `${col}[3]`);
   });
 
