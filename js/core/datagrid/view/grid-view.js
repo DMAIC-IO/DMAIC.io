@@ -207,7 +207,8 @@ export function createGridView(host, { t = (k) => k.split('.').pop(), lang = 'en
     }
     let f = Math.max(0, Math.floor(scroll.scrollTop / rh) - BUFFER);
     f -= f % 2; // gerader Start hält die Streifen stabil
-    f = Math.min(f, Math.max(0, n - size));
+    // Obergrenze n-(size-1): nach dem Abrunden auf gerade gilt n-f <= size, das Ende wird bei jeder Parität erreicht
+    f = Math.min(f, Math.max(0, n - (size - 1)));
     f -= f % 2;
     if (!dirty && f === first && size === count) return;
     const rows = Math.min(size, n - f);

@@ -107,16 +107,22 @@ suite('GridView — virtualisiertes Zeichnen', () => {
     } finally { s.done(); }
   });
 
-  test('bei ungerader Zeilenzahl wird die letzte Zeile gezeichnet', async () => {
-    await cssReady;
-    const s = setup(100001);
-    try {
-      s.view.scrollToRow(100000);
-      const td = s.view.cellAt(0, 100000);
-      assertTrue(td !== null, 'letzte Zelle vorhanden');
-      assertEqual(td.textContent, '100000.0');
-    } finally { s.done(); }
-  });
+  for (const n of [1000, 1001, 1002, 1003]) {
+    test(`letzte Zeile wird bei n=${n} (Parität ${n % 2}) gezeichnet`, async () => {
+      await cssReady;
+      const s = setup(n);
+      try {
+        s.view.scrollToRow(n - 1);
+        const td = s.view.cellAt(0, n - 1);
+        assertTrue(td !== null, 'letzte Zelle vorhanden');
+        assertEqual(td.textContent, `${n - 1}.0`);
+        const rows = s.host.querySelectorAll('tbody tr[data-pool]:not([hidden])').length;
+        assertTrue(rows <= 400 / 20 + 2 * 10 + 2, `Zeilen im DOM: ${rows}`);
+        const first = s.host.querySelector('tbody tr[data-pool]:not([hidden]) td').dataset.rowIdx;
+        assertEqual(Number(first) % 2, 0);
+      } finally { s.done(); }
+    });
+  }
 
   test('geändertes Format zeichnet bei gleicher rev neu', async () => {
     await cssReady;
