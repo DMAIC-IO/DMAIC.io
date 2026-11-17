@@ -13,6 +13,8 @@ import { h } from '../../dom.js';
 import { icon } from '../../icon.js';
 import { COLUMN_TYPES, isNumericType, formatCellValue, renderColTypeBadge } from '../datagrid-utils.js';
 import { defaultRoleForType } from '../datagrid-roles.js';
+import { evaluateFormula } from '../datagrid-formula.js';
+import { formulaGrid } from '../table/formulas.js';
 
 const BUFFER = 10;
 const FALLBACK_ROW_H = 30;
@@ -172,6 +174,8 @@ export function createGridView(host, { t = (k) => k.split('.').pop(), lang = 'en
 
   const normCols = () => cols.map((c) => (c.format ? c : { ...c, format: {} }));
   let ncols = [];
+  /** Rechengitter für Formelfehler, je Zeichnen höchstens einmal gebaut. */
+  let fgrid = null;
 
   function fillRow(p, r) {
     const tr = p.tr;
@@ -191,10 +195,15 @@ export function createGridView(host, { t = (k) => k.split('.').pop(), lang = 'en
       if (isNumericType(col.type)) cls += ' cell-numeric';
       let title = '';
       if (col.lock) { cls += ` cell-locked cell-locked--${col.lock}`; title = lockTooltip(col); }
-      if (formula) { cls += ' cell-formula'; title = formula; }
+      let text = val == null ? '' : formatCellValue(col, val, curLang);
+      if (formula) {
+        // Ein Rechenfehler steht im Model als null: die Zelle zeigt den Fehlercode (wie das Altraster).
+        const error = val == null ? evaluateFormula(formula, fgrid ??= formulaGrid(cols, table_)).error : null;
+        if (error) { cls += ' cell-formula-error'; title = `${formula} \u2192 ${error}`; text = error; } else { cls += ' cell-formula'; title = formula; }
+      }
       setClass(td, cls);
       setTitle(td, title);
-      setText(td, val == null ? '' : formatCellValue(col, val, curLang));
+      setText(td, text);
     }
   }
 
@@ -216,6 +225,7 @@ export function createGridView(host, { t = (k) => k.split('.').pop(), lang = 'en
     f -= f % 2;
     if (!dirty && f === first && size === count) return;
     const rows = Math.min(size, n - f);
+    fgrid = null;
     const prevFirst = first;
     first = f; count = size;
     if (prevFirst !== f) for (const p of pool) p.rowIdx = -1;

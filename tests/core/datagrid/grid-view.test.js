@@ -107,6 +107,23 @@ suite('GridView — virtualisiertes Zeichnen', () => {
     } finally { s.done(); }
   });
 
+  // Ein Rechenfehler steht im Model als `null` (recalcFormulas). Die Zelle zeigt
+  // trotzdem den Fehlercode, wie das Altraster — sonst sähe der Nutzer eine
+  // leere Zelle und wüsste nicht, dass seine Formel scheitert.
+  test('Formelzelle mit Rechenfehler zeigt den Fehlercode', async () => {
+    await cssReady;
+    const s = setup(50);
+    try {
+      s.table.columns[0][3] = null;
+      s.table.rev += 1;
+      s.view.draw(s.table, s.cols, { a: { 3: '=10/0' } }, {});
+      const td = s.view.cellAt(0, 3);
+      assertEqual(td.textContent, '#DIV/0');
+      assertTrue(td.classList.contains('cell-formula-error'), `Klasse: ${td.className}`);
+      assertEqual(td.title, '=10/0 → #DIV/0');
+    } finally { s.done(); }
+  });
+
   for (const n of [1000, 1001, 1002, 1003]) {
     test(`letzte Zeile wird bei n=${n} (Parität ${n % 2}) gezeichnet`, async () => {
       await cssReady;
