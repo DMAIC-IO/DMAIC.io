@@ -33,7 +33,7 @@ import { describeType as describeSpec } from '../../js/core/model.js';
  * Typtext einer Feldbeschreibung; `table()` heißt hier `TableData` (der Typ steht als typedef in der Datei).
  * @param {object} s @returns {string}
  */
-const describeType = (s) => describeSpec(s).replace(/(?<!['\w])table(?!['\w])/g, 'TableData');
+const describeType = (s) => describeSpec(s, 'TableData');
 /** Typedef-Zeilen für `TableData`, wenn der Text es nennt. @param {string} text @param {string} path Importpfad @returns {string[]} */
 const tableDataTypedef = (text, path) => (/\bTableData\b/.test(text)
   ? ['/**', ` * @typedef {import('${path}').TableData} TableData`, ' */', ''] : []);
@@ -119,8 +119,8 @@ export function renderModelTypes({ name, schema }) {
     if (def.confirm) lines.push('/**', ` * @typedef {(this: ${name}Model, args: ${C}) => ({ key: string, params?: Record<string, unknown> }|null)} ${pascal(cmd)}Confirm`, ' */', '');
   }
   const td = tableDataTypedef(lines.join('\n'), '../../../core/table-data.js');
-  // Typedef nach den drei Kopfzeilen (Kommentare, Leerzeile), vor den Feldtypen.
-  lines.splice(3, 0, ...td);
+  // Typedef vor den ersten Feldtypen: hinter der Kopfleerzeile.
+  lines.splice(lines.indexOf('') + 1, 0, ...td);
   lines.push('export {};', '');
   return lines.join('\n');
 }

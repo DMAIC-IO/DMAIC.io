@@ -301,3 +301,10 @@ test('Widget-Props mit table() nennen TableData', () => {
   assert.match(out, /data: TableData/);
   assert.match(out, /import\('\.\.\/core\/table-data\.js'\)\.TableData/);
 });
+
+test('Objektschlüssel table bleibt, nur die Feldart table() wird TableData', async () => {
+  const src = MODEL_SRC.replace('import { defineModel,', 'import { object, table, defineModel,').replace('columns: record', 'meta: object({ table: text(), data: table() }), columns: record');
+  const root = appWith({ 'js/modules/neu/domain/model.js': src });
+  const out = renderModelTypes(await loadModelSchema(collectModelFiles(root)[0].file));
+  assert.match(out, / \* @property \{\{ table: string, data: TableData \}\} meta\n/);
+});

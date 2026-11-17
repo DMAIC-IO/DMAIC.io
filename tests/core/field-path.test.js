@@ -4,7 +4,7 @@
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../test-utils.js';
 import { parseFieldPath, keyFieldsOf, resolveTarget } from '../../js/core/field-path.js';
-import { defineModel, command, idOf, list, map, number, object, text } from '../../js/core/model.js';
+import { defineModel, command, idOf, list, map, number, object, text, table } from '../../js/core/model.js';
 
 suite('parseFieldPath', () => {
   test('Wurzel, Namen, Klammern, Feld', () => {
@@ -203,5 +203,14 @@ suite('resolveTarget: Invarianten', () => {
     el.data.k = 'neu';
     assertThrows(() => target(el, 'model.flat[k]').set(50), /flatCap|flat/);
     assertDeepEqual({ ...model.flat }, { a: 3 });
+  });
+});
+
+suite('resolveTarget: table()', () => {
+  const Tbl = defineModel({ fields: { t: table() } });
+  test('ein Schritt unterhalb eines table()-Feldes wird abgelehnt', () => {
+    const el = { data: { model: new Tbl(), i: 0 } };
+    assertThrows(() => resolveTarget(Alpine, el, 'model.t[i].x'), /does not match the schema/);
+    assertThrows(() => resolveTarget(Alpine, el, 'model.t.x.y'), /does not match the schema/);
   });
 });

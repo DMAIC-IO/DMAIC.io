@@ -688,24 +688,25 @@ const literal = (v) => (typeof v === 'string' ? `'${v}'` : String(v));
 /**
  * Der Typ einer Spec als Text in JSDoc-/TypeScript-Schreibweise — für
  * `describe` und für die erzeugten Typen.
- * @param {object} s @returns {string}
+ * @param {object} s @param {string} [tableName] Typname für `table()` (Vorgabe `table`)
+ * @returns {string}
  */
-export function describeType(s) {
+export function describeType(s, tableName = 'table') {
   let t;
   switch (s.kind) {
     case 'text': case 'idOf': case 'date': case 'time': case 'phase': case 'image': case 'richText': t = 'string'; break;
     case 'number': case 'index': t = 'number'; break;
     case 'boolean': t = 'boolean'; break;
     case 'oneOf': t = s.values.map(literal).join('|'); break;
-    case 'list': { const item = describeType(s.item); t = item.includes('|') ? `Array<${item}>` : `${item}[]`; break; }
-    case 'record': t = `Record<${s.keys.map(literal).join('|')}, ${describeType(s.value)}>`; break;
-    case 'map': t = `Record<string, ${describeType(s.value)}>`; break;
+    case 'list': { const item = describeType(s.item, tableName); t = item.includes('|') ? `Array<${item}>` : `${item}[]`; break; }
+    case 'record': t = `Record<${s.keys.map(literal).join('|')}, ${describeType(s.value, tableName)}>`; break;
+    case 'map': t = `Record<string, ${describeType(s.value, tableName)}>`; break;
     case 'object': t = `{ ${Object.entries(s.shape)
-      .map(([k, v]) => `${k}${v.optional ? '?' : ''}: ${describeType(v)}`).join(', ')} }`; break;
-    case 'table': t = 'table'; break;
+      .map(([k, v]) => `${k}${v.optional ? '?' : ''}: ${describeType(v, tableName)}`).join(', ')} }`; break;
+    case 'table': t = tableName; break;
     case 'columnRef': t = '{ instanceId: string, sheetId?: string, columnId: string }'; break;
     case 'datasets': t = `Array<{ ${Object.entries(s.slots)
-      .map(([k, v]) => `${k}: ${describeType(v)}`).join(', ')} }>`; break;
+      .map(([k, v]) => `${k}: ${describeType(v, tableName)}`).join(', ')} }>`; break;
     default: throw new Error(`defineModel: unknown kind ${JSON.stringify(s.kind)}`);
   }
   return s.nullable ? `${t}|null` : t;
