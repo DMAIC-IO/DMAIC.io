@@ -21,7 +21,7 @@ let seq = 0;
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const flush = async () => { await wait(0); await wait(0); };
 
-async function mount() {
+async function mount({ project } = {}) {
   if (!Alpine.version) Alpine.start();
   const id = `tbl-persist-${++seq}`;
   const key = `js/modules/${id}/${id}.html`;
@@ -37,6 +37,7 @@ async function mount() {
       getModuleState: () => ({ data: { rowCount: 3, columns: [[1, 2, 3]] }, n: 0 }),
       setModuleState: (_id, s) => { calls.push(s); },
       getProjectCycle: () => 'dmaic',
+      getActiveProjectId: () => project?.id,
       get: () => undefined,
     },
     i18n: { t: (k) => k, tf: () => (k) => k, getLanguage: () => 'de' },
@@ -57,7 +58,7 @@ async function mount() {
   await wait(200); // Entprellung aus dem Anlauf abwarten
   calls.length = 0;
   const data = () => Alpine.$data(container.querySelector('[x-data]'));
-  return { mod, container, data, calls };
+  return { mod, container, data, calls, context };
 }
 
 suite('createModule table() — entprelltes Speichern', () => {
@@ -126,6 +127,46 @@ suite('createModule table() — entprelltes Speichern', () => {
     assertTrue(!(saved.data instanceof TableData));
     data().model.setCell({ r: 0, v: 11 });
     assertEqual(saved.data.columns[0][0], 9, 'der gespeicherte Stand ändert sich nicht');
+  });
+
+  test('Projektwechsel innerhalb der Entprellung: der Timer schreibt nicht ins neue Projekt', async () => {
+    const project = { id: 'p1' };
+    const { data, calls } = await mount({ project });
+    data().model.setCell({ r: 0, v: 9 });
+    await flush();
+    project.id = 'p2';
+    await wait(250);
+    assertEqual(calls.length, 0);
+  });
+
+  test('Projektwechsel innerhalb der Entprellung: destroy schreibt nicht ins neue Projekt', async () => {
+    const project = { id: 'p1' };
+    const { mod, data, calls } = await mount({ project });
+    data().model.setCell({ r: 0, v: 9 });
+    await flush();
+    project.id = 'p2';
+    await mod.destroy();
+    assertEqual(calls.length, 0);
+  });
+
+  test('cancelPersist verwirft die ausstehende Speicherung', async () => {
+    const { mod, data, calls } = await mount();
+    data().model.setCell({ r: 0, v: 9 });
+    await flush();
+    mod.cancelPersist();
+    await wait(250);
+    assertEqual(calls.length, 0);
+  });
+
+  test('history: true mit table() im Schema wird abgelehnt, mode inverse nicht', () => {
+    const mk = (history) => createModule({
+      config: { id: 'tbl-hist', engine: 'alpine', phase: 'define', templateUrl: 'x.html' },
+      Model: Doc, view() { return {}; }, history,
+    });
+    let err = null;
+    try { mk(true); } catch (e) { err = e; }
+    assertTrue(err !== null && /table\(\) schema needs history mode inverse/.test(err.message));
+    mk({ mode: 'inverse' });
   });
 
   test('flushPersist ohne Ausstehendes schreibt nichts', async () => {

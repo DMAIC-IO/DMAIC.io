@@ -131,6 +131,40 @@ suite('StateManager', () => {
     }
   });
 
+  test('switchProject: ausstehende Modulspeicherungen werden geschrieben, solange das alte Projekt aktiv ist', async () => {
+    const sm = new StateManager(new EventBus());
+    await sm.load();
+    const before = sm.getProjects();
+    const beforeActive = localStorage.getItem(`${LS_PREFIX}activeProject`);
+    try {
+      const oldId = sm.getActiveProjectId();
+      const id = sm.createProject('__pending_hook_test__', 'dmaic');
+      sm._adapter.setActiveProjectId(oldId);
+      const seen = [];
+      const off = sm.registerPendingWork(() => seen.push(sm.getActiveProjectId()));
+      await sm.switchProject(id);
+      off();
+      assertDeepEqual(seen, [oldId], 'Haken lief genau einmal, vor dem Wechsel');
+      await sm.deleteProject(id);
+    } finally {
+      localStorage.setItem(`${LS_PREFIX}projects`, JSON.stringify(before));
+      if (beforeActive === null) localStorage.removeItem(`${LS_PREFIX}activeProject`);
+      else localStorage.setItem(`${LS_PREFIX}activeProject`, beforeActive);
+    }
+  });
+
+  test('beforeunload: die Haken laufen vor dem Unload-Flush des Speichers', () => {
+    if (typeof window === 'undefined') return;
+    const sm = new StateManager(new EventBus());
+    const order = [];
+    sm._adapter.flushSync = () => order.push('flushSync');
+    const off = sm.registerPendingWork(() => order.push('hook'));
+    window.dispatchEvent(new Event('beforeunload'));
+    off();
+    assertTrue(order.length >= 2);
+    assertDeepEqual(order.slice(0, 2), ['hook', 'flushSync']);
+  });
+
   // ─── phaseAchievementHistory persistence (v0.3) ────────────────
 
   test('default state: phaseAchievementHistory is empty object', () => {

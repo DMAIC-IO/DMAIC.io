@@ -204,6 +204,7 @@ const Cells = defineModel({
       params: { v: text() },
       run({ v }) { this.set({ i: 0, v }); this.set({ i: 1, v }); },
     }),
+    recordThenThrow: command({ run() { recordInverse(this, { type: 'set', i: 0, v: 'a' }); throw new Error('boom'); } }),
     sneak: command({ run() { this.vals = ['x', 'x']; } }),
     sneakTable: command({ run() { markTableChanged(this, this.grid); } }),
     look: command({ params: { mode: oneOf(['month', 'week']) }, run({ mode }) { this.mode = mode; } }),
@@ -240,6 +241,13 @@ suite('Kommandos — Umkehrung (recordInverse)', () => {
     const got = collectInverses(m, () => { m.set({ i: 0, v: 'x' }); m.set({ i: 1, v: 'y' }); });
     assertDeepEqual(got, [{ type: 'set', i: 0, v: 'a' }, { type: 'set', i: 1, v: 'b' }]);
     assertDeepEqual(seen, [null, null], 'Kommandos im offenen Sammler gelten als geschachtelt');
+  });
+
+  test('ein Kommando, das recordInverse ruft und dann wirft, hinterlässt keine Umkehrung im Sammler', () => {
+    const m = cells();
+    const got = [];
+    assertThrows(() => collectInverses(m, () => { m.set({ i: 0, v: 'x' }); m.recordThenThrow({}); }, got), /boom/);
+    assertDeepEqual(got, [{ type: 'set', i: 0, v: 'a' }], 'nur die Umkehrung des gelungenen Kommandos');
   });
 
   test('Modus inverse: Inhalt ohne Umkehrung wirft', () => {

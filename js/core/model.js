@@ -983,7 +983,7 @@ export function runCommand(name, def, self, root, cmd) {
       return r;
     });
   } catch (err) {
-    // Ein gescheitertes Kommando hat sich selbst zurückgenommen: seine Umkehrungen gelten nicht.
+    // Kommandos sind alles oder nichts: ein gescheitertes hat nichts geändert, seine Umkehrungen gelten nicht.
     if (inv) inv.length = inv0;
     throw err;
   } finally {

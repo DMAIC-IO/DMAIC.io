@@ -270,9 +270,9 @@ function executeCommand(vm, vmCommands, name, args) {
 
 /** Glieder, die createModule selbst setzt — kein view-Glied, computed, Feld, Kommando oder Task darf so heißen. */
 const RESERVED_MEMBERS = Object.freeze(['model', 'state', 't', 'fieldError', 'moduleId', 'read', 'cssVars', 'chartSVG', 'changeRoute', '_ui', '_asyncTasks', '_asyncTaskHost', 'asyncTasks']);
-/** Lebenszyklus des view-Blocks — als Name eines computed, Felds, Kommandos oder Tasks gesperrt. */
 /** Entprellung des Speicherns bei Models mit `table()` (ms). */
 const PERSIST_DEBOUNCE_MS = 150;
+/** Lebenszyklus des view-Blocks — als Name eines computed, Felds, Kommandos oder Tasks gesperrt. */
 const LIFECYCLE = Object.freeze(['init', 'destroy']);
 
 /**
@@ -431,6 +431,7 @@ export function createModule(base) {
   const tableModel = schemaHasTable(schema);
   const inverseHistory = Boolean(history && history !== true && history.mode === 'inverse');
   if (inverseHistory && !schemaOf(Model)) throw new Error(`createModule(${id}): history mode inverse needs a defineModel Model`);
+  if (history && !inverseHistory && schemaHasTable(schema)) throw new Error(`createModule(${id}): a table() schema needs history mode inverse (snapshot history would serialize the tables on every change)`);
   if (history && config.manualPersist === true) throw new Error(`createModule(${id}): history cannot be combined with manualPersist (the history records through the automatic persist)`);
   const historyActions = history ? [
     { icon: 'action.undo', title: 'history.undo', history: 'undo' },
@@ -1176,11 +1177,21 @@ export function createModule(base) {
     /** Speichern in 150 ms (Models mit table()); weitere Änderungen davor verlängern nicht. */
     _schedulePersist() {
       if (this._applyingRemote || this._persistTimer) return;
+      this._persistProject = this._context?.stateManager?.getActiveProjectId?.();
       this._persistTimer = setTimeout(() => { this._persistTimer = null; this._persistLive(); }, PERSIST_DEBOUNCE_MS);
+    },
+
+    /** Verwirft eine ausstehende Speicherung (wer ohnehin gleich selbst schreibt). */
+    cancelPersist() {
+      if (!this._persistTimer) return;
+      clearTimeout(this._persistTimer);
+      this._persistTimer = null;
     },
 
     /** Das lebende Model jetzt speichern (ohne Model: nichts). */
     _persistLive() {
+      // Das Projekt wechselte seit dem Einplanen: der Stand gehört nicht in das neue.
+      if (this._persistProject !== this._context?.stateManager?.getActiveProjectId?.()) return;
       const model = this.getActionData?.()?.model;
       if (model) this._persist(model);
     },
@@ -1191,8 +1202,7 @@ export function createModule(base) {
      */
     flushPersist() {
       if (!this._persistTimer) return;
-      clearTimeout(this._persistTimer);
-      this._persistTimer = null;
+      this.cancelPersist();
       this._persistLive();
     },
   };

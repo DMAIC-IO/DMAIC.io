@@ -121,6 +121,9 @@ export class StateManager {
     this._unsub = null;           // adapter.subscribe() teardown handle
     this._applyingRemote = false; // true while applying a remote change (suppresses write-back)
 
+    /** @type {Set<() => void>} Haken, die ausstehende Arbeit der Module in den Speicher schreiben */
+    this._pendingWorkHooks = new Set();
+
     this._installUnloadFlush();
   }
 
@@ -826,6 +829,9 @@ export class StateManager {
    * @returns {Promise<void>}
    */
   async switchProject(projectId) {
+    // Ausstehende, entprellte Modulspeicherungen gehören noch zum alten Projekt:
+    // jetzt schreiben, solange `_projectId` das alte ist.
+    this.flushPendingWork();
     // Persist current project's top-level state and flush pending IDB writes.
     this.save();
     await this.flushNow();
@@ -1019,6 +1025,24 @@ export class StateManager {
   }
 
   /**
+   * Meldet einen Haken an, der ausstehende Modulspeicherungen sofort schreibt.
+   * Er läuft vor dem Projektwechsel und vor jedem Unload-Flush des Speichers.
+   * @param {() => void} fn
+   * @returns {() => void} Abmeldung
+   */
+  registerPendingWork(fn) {
+    this._pendingWorkHooks.add(fn);
+    return () => { this._pendingWorkHooks.delete(fn); };
+  }
+
+  /** Führt die angemeldeten Haken aus (Fehler eines Hakens stoppen die übrigen nicht). */
+  flushPendingWork() {
+    for (const fn of [...this._pendingWorkHooks]) {
+      try { fn(); } catch { /* ein Modul darf den Wechsel nicht blockieren */ }
+    }
+  }
+
+  /**
    * Best-effort flush on page unload. Storage transactions kicked off in
    * beforeunload/visibilitychange are usually allowed to complete even
    * after the handler returns.
@@ -1033,7 +1057,11 @@ export class StateManager {
     // lost (Bug 012). flushSync() issues the transaction in this stack frame
     // using the already-open connection; we fall back to the async flush when
     // the adapter has no sync path or the connection was not yet open.
+    // Erst die entprellten Modulspeicherungen schreiben (sonst käme ihr Stand
+    // erst mit dem nächsten Flush in den Speicher, den der Unload nicht mehr
+    // abwartet), dann die Transaktion absetzen.
     const flush = () => {
+      this.flushPendingWork();
       if (typeof this._adapter.flushSync === 'function') this._adapter.flushSync();
       else this._adapter.flush();
     };

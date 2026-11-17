@@ -210,10 +210,10 @@ export class Workspace {
     this._boundHistoryKey = (e) => this._onHistoryKey(e);
     document.addEventListener('keydown', this._boundHistoryKey);
 
-    // Entprellte Speicherung (Models mit table()) vor dem Schließen der Seite schreiben.
-    if (this._boundUnload) window.removeEventListener('beforeunload', this._boundUnload);
-    this._boundUnload = () => this._instances.forEach((instance) => { try { instance.flushPersist?.(); } catch { /* ignore */ } });
-    window.addEventListener('beforeunload', this._boundUnload);
+    // Entprellte Speicherung (Models mit table()) vor Projektwechsel und Unload schreiben:
+    // der StateManager ruft den Haken vor seinem eigenen Unload-Flush.
+    this._offPendingWork?.();
+    this._offPendingWork = this._stateManager.registerPendingWork?.(() => this._persistAllModuleStates());
 
     this._subscribeEvents();
     this._showPhase('define');
@@ -691,7 +691,7 @@ export class Workspace {
     this._instances.forEach((instance, id) => {
       if (!live.has(id)) return;
       try {
-        instance.flushPersist?.();
+        instance.cancelPersist?.(); // der Schreibvorgang unten ersetzt die entprellte Speicherung
         const state = instance.getState?.();
         if (!state) return;
         this._stateManager.setModuleState(id, state);

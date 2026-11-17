@@ -84,3 +84,44 @@ suite('Workspace.instantiateDetached extraContext', () => {
     assertEqual(await inst.context.dialog.confirm({ message: 'x' }), true);
   });
 });
+
+suite('Workspace — ausstehende Modulspeicherung', () => {
+  function makeWs() {
+    const hooks = [];
+    const writes = [];
+    const container = document.createElement('div');
+    const stateManager = {
+      get: (path) => (path === 'phases' ? { define: [{ instanceId: 'a' }] } : []),
+      getModuleState: () => ({}),
+      setModuleState: (id, s) => writes.push([id, s]),
+      isCompleted: () => false,
+      registerPendingWork: (fn) => { hooks.push(fn); return () => { hooks.splice(hooks.indexOf(fn), 1); }; },
+    };
+    const ws = new Workspace(container, {
+      moduleRegistry: { instantiate: async () => ({}), get: () => ({ id: 'x' }) },
+      eventBus: { on: () => {}, emit: () => {} }, stateManager,
+      i18n: { t: (k) => k, getLanguage: () => 'de' },
+      modal: () => {}, notify: () => {}, helpPanel: null, chartManager: null, examples: null, glossary: null,
+    });
+    ws.render();
+    return { ws, hooks, writes };
+  }
+
+  test('render meldet genau einen Haken an, ein zweites render ersetzt ihn', () => {
+    const { ws, hooks } = makeWs();
+    assertEqual(hooks.length, 1);
+    ws.render();
+    assertEqual(hooks.length, 1);
+  });
+
+  test('der Haken verwirft die entprellte Speicherung und schreibt den lebenden Stand', () => {
+    const { ws, hooks, writes } = makeWs();
+    let cancelled = 0;
+    ws._instances.set('a', { cancelPersist: () => { cancelled += 1; }, getState: () => ({ n: 3 }) });
+    hooks[0]();
+    assertEqual(cancelled, 1);
+    assertEqual(writes.length, 1);
+    assertEqual(writes[0][0], 'a');
+    assertEqual(writes[0][1].n, 3);
+  });
+});

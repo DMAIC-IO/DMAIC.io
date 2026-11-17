@@ -240,15 +240,15 @@ suite('agent host — Persistenz abwarten (Lesen vor Schreiben)', () => {
     assertDeepEqual(calls.filter(c => c[0] === 'persist').at(-1), ['persist', 'fw-1', { design: 'erzeugt' }]);
   });
 
-  test('settle(id) schreibt eine entprellte Speicherung des Moduls (flushPersist) vor dem Abgleich', async () => {
+  test('settle(id) verwirft die entprellte Speicherung des Moduls (cancelPersist), statt doppelt zu schreiben', async () => {
     const order = [];
     const { host, mounted } = makeHost();
     mounted.set('fw-1', {
-      flushPersist: () => order.push('flush'),
+      cancelPersist: () => order.push('cancel'),
       getState: () => { order.push('getState'); return { a: 1 }; },
     });
     await host.settle('fw-1');
-    assertDeepEqual(order, ['flush', 'getState']);
+    assertDeepEqual(order, ['cancel', 'getState']);
   });
 
   test('settle(id) wartet auf laufende auto-Abläufe (20000 ms), dann wird abgelegt', async () => {
