@@ -273,6 +273,53 @@ suite('instances.readSync', () => {
     assertDeepEqual(svc.readSync('k1', { fields: [] }), { saved: { a: 1 }, o: { fields: [] } });
   });
 
+  test('Zielform mit readStored eingehängt: readSync ruft vm.read, nicht readStored', () => {
+    const vm = { model: Doc.fromJSON({ n: 4 }), read: (o) => ({ n: 4, zoom: 3, live: true, o }) };
+    const readStored = () => { throw new Error('readStored unerwartet'); };
+    const mod = { ...targetModule(), readStored };
+    const { svc } = setup({ states: { d1: { _schema: { version: '1.0' }, n: 1 } }, modules: { sipoc: mod }, live: new Map([['d1', vm]]) });
+    assertDeepEqual(svc.readSync('d1', { fields: [] }), { n: 4, live: true, o: { fields: [] } });
+  });
+
+  test('Zielform mit readStored eingehängt: read (async) ruft vm.read', async () => {
+    const vm = { model: Doc.fromJSON({ n: 4 }), read: async () => ({ n: 4, live: true }) };
+    const readStored = () => { throw new Error('readStored unerwartet'); };
+    const mod = { ...targetModule(), readStored };
+    const { svc } = setup({ states: { d1: { _schema: { version: '1.0' }, n: 1 } }, modules: { sipoc: mod }, live: new Map([['d1', vm]]) });
+    assertDeepEqual(await svc.read('d1'), { n: 4, live: true });
+  });
+
+  test('Zielform mit readStored ohne Mount, aktuelle Version: readStored ohne loadDetached', () => {
+    let loads = 0;
+    const mod = { ...targetModule({ onLoad: () => { loads++; } }), readStored: (saved, o) => ({ stored: saved.n, zoom: 9, o }) };
+    const { svc, sm } = setup({ states: { d1: { _schema: { version: '1.0' }, n: 5 } }, modules: { sipoc: mod } });
+    assertDeepEqual(svc.readSync('d1', { fields: [] }), { stored: 5, o: { fields: [] } });
+    assertEqual(loads, 0);
+    assertEqual(sm.writes.length, 0);
+  });
+
+  test('Zielform mit readStored ohne Mount, Version 0: einmal migriert, zurückgeschrieben, dann readStored', () => {
+    let loads = 0;
+    let stored = 0;
+    const mod = { ...targetModule({ onLoad: () => { loads++; } }), readStored: (saved) => { stored++; return { stored: saved.n }; } };
+    const { svc, sm } = setup({ states: { d1: { old: 7 } }, modules: { sipoc: mod } });
+    assertEqual(svc.readSync('d1').n, 7);
+    assertEqual(loads, 1);
+    assertEqual(stored, 0);
+    assertEqual(sm.writes.length, 1);
+    assertDeepEqual(svc.readSync('d1'), { stored: 7 });
+    assertEqual(loads, 1, 'kein zweites Laden');
+    assertEqual(sm.writes.length, 1);
+  });
+
+  test('Zielform mit readStored im Einhängen: gespeicherter Stand über readStored', () => {
+    const live = new Map([['d1', { model: Doc.fromJSON({ n: 0 }), read: () => { throw new Error('vm.read unerwartet'); } }]]);
+    const ws = { ...makeWorkspace(live), isPending: () => true };
+    const mod = { ...targetModule(), readStored: (saved) => ({ stored: saved.n }) };
+    const { svc } = setup({ states: { d1: { _schema: { version: '1.0' }, n: 5 } }, modules: { sipoc: mod }, workspace: ws });
+    assertDeepEqual(svc.readSync('d1'), { stored: 5 });
+  });
+
   test('Altform ohne readStored und ohne Mixin → needs_mount', () => {
     const { svc } = setup({ states: { k1: {} } });
     assertEqual(caught(() => svc.readSync('k1'))?.code, 'needs_mount');

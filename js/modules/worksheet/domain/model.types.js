@@ -186,6 +186,55 @@
  */
 
 /**
+ * @typedef {object} AddSheetCommand
+ * @property {string} [name]
+ */
+
+/**
+ * @typedef {object} RenameSheetCommand
+ * @property {string} id
+ * @property {string} name
+ */
+
+/**
+ * @typedef {object} DuplicateSheetCommand
+ * @property {string} id
+ * @property {string} [name]
+ */
+
+/**
+ * @typedef {object} InsertSheetBeforeCommand
+ * @property {string} id
+ * @property {string} [name]
+ */
+
+/**
+ * @typedef {object} RemoveSheetCommand
+ * @property {string} id
+ */
+
+/**
+ * @typedef {object} RestoreSheetCommand
+ * @property {number} index
+ * @property {{ id: string, name: string, columns: Array<{ id: string, name: string, shortName: string, type: 'numeric'|'text'|'date'|'time'|'currency'|'percent'|'binary', unit: string|null, role: 'continuous'|'categorical'|'ordinal'|'date'|'identifier'|'freeText'|null, roleManual: boolean, format: { decimals?: number, dateFormat?: 'dd.MM.yyyy'|'yyyy-MM-dd'|'dd/MM/yyyy'|'MM/dd/yyyy'|'d. MMMM yyyy', timeFormat?: 'HH:mm'|'HH:mm:ss', currencySymbol?: string }, meta: { lock?: 'hard'|'soft', reason?: string, managedBy?: string, managedRef?: string, categoricalCoding?: Record<string, number> }|null }>, formulas: Record<string, Record<string, string>>, data: TableData }} sheet
+ * @property {number} sheetCounter
+ * @property {string} activeSheetId
+ */
+
+/**
+ * @typedef {object} DropSheetCommand
+ * @property {string} id
+ * @property {number} sheetCounter
+ * @property {string} activeSheetId
+ */
+
+/**
+ * @typedef {object} RestoreSheetNameCommand
+ * @property {string} id
+ * @property {string} name
+ */
+
+/**
  * @typedef {WorksheetModelFields & WorksheetModelView & {
  *   setCells(cmd: SetCellsCommand): number,
  *   setFormula(cmd: SetFormulaCommand): { value: number|string|boolean|null, error: string|null },
@@ -210,7 +259,15 @@
  *   applyRowPermutation(cmd: ApplyRowPermutationCommand): void,
  *   restoreColumn(cmd: RestoreColumnCommand): void,
  *   restoreRows(cmd: RestoreRowsCommand): void,
- *   execute(cmd: ({ type: 'setCells' } & SetCellsCommand) | ({ type: 'setFormula' } & SetFormulaCommand) | ({ type: 'writeColumns' } & WriteColumnsCommand) | ({ type: 'importCsv' } & ImportCsvCommand) | ({ type: 'pasteBlock' } & PasteBlockCommand) | ({ type: 'fillRange' } & FillRangeCommand) | ({ type: 'clearRange' } & ClearRangeCommand) | ({ type: 'restoreCells' } & RestoreCellsCommand) | ({ type: 'addColumn' } & AddColumnCommand) | ({ type: 'removeColumn' } & RemoveColumnCommand) | ({ type: 'renameColumn' } & RenameColumnCommand) | ({ type: 'moveColumn' } & MoveColumnCommand) | ({ type: 'setColumnMeta' } & SetColumnMetaCommand) | ({ type: 'setColumnRole' } & SetColumnRoleCommand) | ({ type: 'setColumnType' } & SetColumnTypeCommand) | ({ type: 'setColumnFormat' } & SetColumnFormatCommand) | ({ type: 'addRows' } & AddRowsCommand) | ({ type: 'removeRows' } & RemoveRowsCommand) | ({ type: 'moveRow' } & MoveRowCommand) | ({ type: 'sortRows' } & SortRowsCommand) | ({ type: 'applyRowPermutation' } & ApplyRowPermutationCommand) | ({ type: 'restoreColumn' } & RestoreColumnCommand) | ({ type: 'restoreRows' } & RestoreRowsCommand)): unknown,
+ *   addSheet(cmd: AddSheetCommand): string,
+ *   renameSheet(cmd: RenameSheetCommand): void,
+ *   duplicateSheet(cmd: DuplicateSheetCommand): string,
+ *   insertSheetBefore(cmd: InsertSheetBeforeCommand): string,
+ *   removeSheet(cmd: RemoveSheetCommand): void,
+ *   restoreSheet(cmd: RestoreSheetCommand): void,
+ *   dropSheet(cmd: DropSheetCommand): void,
+ *   restoreSheetName(cmd: RestoreSheetNameCommand): void,
+ *   execute(cmd: ({ type: 'setCells' } & SetCellsCommand) | ({ type: 'setFormula' } & SetFormulaCommand) | ({ type: 'writeColumns' } & WriteColumnsCommand) | ({ type: 'importCsv' } & ImportCsvCommand) | ({ type: 'pasteBlock' } & PasteBlockCommand) | ({ type: 'fillRange' } & FillRangeCommand) | ({ type: 'clearRange' } & ClearRangeCommand) | ({ type: 'restoreCells' } & RestoreCellsCommand) | ({ type: 'addColumn' } & AddColumnCommand) | ({ type: 'removeColumn' } & RemoveColumnCommand) | ({ type: 'renameColumn' } & RenameColumnCommand) | ({ type: 'moveColumn' } & MoveColumnCommand) | ({ type: 'setColumnMeta' } & SetColumnMetaCommand) | ({ type: 'setColumnRole' } & SetColumnRoleCommand) | ({ type: 'setColumnType' } & SetColumnTypeCommand) | ({ type: 'setColumnFormat' } & SetColumnFormatCommand) | ({ type: 'addRows' } & AddRowsCommand) | ({ type: 'removeRows' } & RemoveRowsCommand) | ({ type: 'moveRow' } & MoveRowCommand) | ({ type: 'sortRows' } & SortRowsCommand) | ({ type: 'applyRowPermutation' } & ApplyRowPermutationCommand) | ({ type: 'restoreColumn' } & RestoreColumnCommand) | ({ type: 'restoreRows' } & RestoreRowsCommand) | ({ type: 'addSheet' } & AddSheetCommand) | ({ type: 'renameSheet' } & RenameSheetCommand) | ({ type: 'duplicateSheet' } & DuplicateSheetCommand) | ({ type: 'insertSheetBefore' } & InsertSheetBeforeCommand) | ({ type: 'removeSheet' } & RemoveSheetCommand) | ({ type: 'restoreSheet' } & RestoreSheetCommand) | ({ type: 'dropSheet' } & DropSheetCommand) | ({ type: 'restoreSheetName' } & RestoreSheetNameCommand)): unknown,
  *   toJSON(): object,
  *   hasContent(): boolean,
  *   readonly context: import('../../../core/model.js').ModelContext,

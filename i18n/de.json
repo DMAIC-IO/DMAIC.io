@@ -1425,7 +1425,13 @@
         },
         "undo": { "help": "Nimmt die letzte Änderung am Blatt zurück. Wirkt auf das sichtbare Blatt; nach einem Blattwechsel durch den Nutzer passiert nichts." },
         "redo": { "help": "Stellt eine zurückgenommene Änderung wieder her. Wirkt auf das sichtbare Blatt; nach einem Blattwechsel durch den Nutzer passiert nichts." },
-        "addSheet": { "help": "Legt ein neues Blatt an und macht es aktiv. Der Agent erhält dessen id." },
+        "addSheet": {
+          "help": "Legt ein neues Blatt an und macht es aktiv. Der Agent erhält dessen id.",
+          "params": {
+            "name": "Name des neuen Blatts; ohne Angabe „Sheet <n>“ (die Oberfläche übergibt den übersetzten Namen).",
+            "command": "Das Kommando als ein Objekt, wahlweise mit name."
+          }
+        },
         "switchSheet": {
           "help": "Wechselt zu diesem Blatt und zeigt dessen Tabelle. Doppelklick benennt es um.",
           "params": { "id": "Die id des Blatts, wie read().sheets[].id sie nennt." }
@@ -1434,7 +1440,8 @@
           "help": "Benennt ein Blatt um.",
           "params": {
             "id": "Die id des Blatts.",
-            "name": "Der neue Name; leer oder nur aus Leerzeichen ist ein ungültiges Argument und damit ein Fehler."
+            "name": "Der neue Name; leer oder nur aus Leerzeichen ist ein ungültiges Argument und damit ein Fehler.",
+            "command": "Das Kommando als ein Objekt mit id und name."
           }
         },
         "setColumnRole": {
@@ -1486,15 +1493,26 @@
         },
         "duplicateSheet": {
           "help": "Kopiert ein Blatt mit Zellen, Formeln und Spalteneinstellungen. Die Kopie kommt ans Ende, heißt „<Name> (Kopie)“ und wird aktiv; der Agent erhält ihre id.",
-          "params": { "id": "Die id des zu kopierenden Blatts, wie read().sheets[].id sie nennt." }
+          "params": {
+            "id": "Die id des zu kopierenden Blatts, wie read().sheets[].id sie nennt.",
+            "name": "Name der Kopie; ohne Angabe „<Name> (Copy)“ (die Oberfläche übergibt den übersetzten Namen).",
+            "command": "Das Kommando als ein Objekt mit id, wahlweise name."
+          }
         },
         "insertSheetBefore": {
           "help": "Legt ein leeres Blatt direkt vor einem anderen an und macht es aktiv; der Agent erhält dessen id.",
-          "params": { "id": "Die id des Blatts, vor das das neue Blatt kommt." }
+          "params": {
+            "id": "Die id des Blatts, vor das das neue Blatt kommt.",
+            "name": "Name des neuen Blatts; ohne Angabe „Sheet <n>“ (die Oberfläche übergibt den übersetzten Namen).",
+            "command": "Das Kommando als ein Objekt mit id, wahlweise name."
+          }
         },
         "removeSheet": {
           "help": "Entfernt ein Blatt samt Inhalt. War es aktiv, wird das benachbarte Blatt aktiv. Das letzte Blatt lässt sich nicht entfernen — das ist ein Fehler. Über Rückgängig nicht umkehrbar.",
-          "params": { "id": "Die id des zu entfernenden Blatts." }
+          "params": {
+            "id": "Die id des zu entfernenden Blatts.",
+            "command": "Das Kommando als ein Objekt mit id."
+          }
         },
         "pasteBlock": {
           "help": "Fügt einen Block wie aus der Zwischenablage ab einer Zelle ein, wie Strg+V im Raster. Ist die erste Zeile Text und die zweite enthält eine Zahl, gilt die erste als Kopfzeile und benennt unbenannte Spalten. Jede getroffene Spalte bekommt ihren Typ aus ihren Werten. Fehlende Zeilen und Spalten kommen dazu. Formeln in den getroffenen Zellen fallen weg. Liegt eine gesperrte Spalte im Block, wird nichts geschrieben. Liefert die Zahl eingefügter Spalten und Zeilen ohne Kopfzeile.",

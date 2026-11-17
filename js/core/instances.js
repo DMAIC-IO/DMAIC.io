@@ -64,6 +64,16 @@ function isTargetForm(m) {
 }
 
 /**
+ * Trägt der gespeicherte Stand die Version des Models? Dann ist er vom Model
+ * geschrieben und kann ohne Laden gelesen werden (`readStored`).
+ * @param {any} saved @param {any} Model
+ * @returns {boolean}
+ */
+function isCurrentVersion(saved, Model) {
+  return saved?._schema?.version === Model.schema.version;
+}
+
+/**
  * Die Ansichtsfelder eines Moduls: Zielform aus dem Schema, Altform aus der
  * generierten Registry.
  * @param {string} moduleId @param {any} m
@@ -157,7 +167,8 @@ export function createInstances({ stateManager, moduleRegistry, workspace, event
    * @param {object} [options] `{ fields?, rows? }`
    * @returns {Promise<object>}
    * @throws {Error} `unknown_instance`; `needs_mount` für ein Altmodul mit eigenem `read()`,
-   *   außer es hat den Haken `readStored` (dann liest es den gespeicherten Stand)
+   *   außer es hat den Haken `readStored` (dann liest es den gespeicherten Stand;
+   *   ein Zielform-Modul nur ohne Mount, siehe `readNow`)
    */
   async function read(instanceId, options) {
     const { record } = locate(instanceId);
@@ -173,9 +184,10 @@ export function createInstances({ stateManager, moduleRegistry, workspace, event
   /**
    * Wie `read`, aber synchron und nur für ein bereits geladenes Modul. Wartet
    * nie auf einen Mount: im Einhängen liest es den gespeicherten Stand. Ein
-   * Modul mit Haken `readStored` liest immer den gespeicherten Stand (kein
-   * `vm.read`, kein Flush). Schreibt nie zurück, außer bei der einmaligen
-   * Migration einer Zielform-Instanz (nicht im abgeschlossenen Projekt).
+   * Altmodul mit Haken `readStored` liest immer den gespeicherten Stand (kein
+   * `vm.read`, kein Flush); ein Zielform-Modul eingehängt `vm.read`. Schreibt
+   * nie zurück, außer bei der einmaligen Migration einer Zielform-Instanz
+   * (nicht im abgeschlossenen Projekt).
    * @param {string} instanceId
    * @param {object} [options]
    * @returns {object}
@@ -190,8 +202,13 @@ export function createInstances({ stateManager, moduleRegistry, workspace, event
 
   /**
    * Der gemeinsame, synchrone Rumpf von `read` und `readSync`.
-   * Reihenfolge: `readStored`, lebendes Viewmodel (nur `live`), Zielform,
-   * Mixin, sonst `needs_mount`.
+   * Reihenfolge:
+   * 1. Altform mit `readStored`: der gespeicherte Stand.
+   * 2. Lebendes Viewmodel (nur `live`): `vm.read`.
+   * 3. Zielform ohne Mount: mit `readStored` und einem Stand der aktuellen
+   *    Version ohne Model (`readStored`); sonst `loadDetached`, die
+   *    normalisierte Form einmal zurückschreiben, `readDetached`.
+   * 4. Mixin, sonst `needs_mount`.
    * @param {{ instanceId: string, moduleId: string }} record
    * @param {any} m geladenes Modulobjekt
    * @param {object|undefined} options
@@ -202,14 +219,21 @@ export function createInstances({ stateManager, moduleRegistry, workspace, event
     const { instanceId, moduleId } = record;
     const viewFields = viewFieldsOf(moduleId, m);
     const saved = stateManager.getModuleState(instanceId);
-    if (typeof m?.readStored === 'function') return stripPaths(m.readStored(saved, options), viewFields);
+    const target = isTargetForm(m);
+    const stored = typeof m?.readStored === 'function';
+    // Altform: `readStored` gilt immer (F1.14a P1). Zielform: nur ohne Mount,
+    // eingehängt ist der gespeicherte Stand bis zur Entprellung alt (P5).
+    if (stored && !target) return stripPaths(m.readStored(saved, options), viewFields);
     const vm = live ? workspace.getLiveViewmodel(instanceId) : null;
     if (vm) {
       const out = vm.read(options);
       if (sync && typeof out?.then === 'function') throw codeError('async_read');
       return stripPaths(out, viewFields);
     }
-    if (isTargetForm(m)) {
+    if (target) {
+      // Stand der aktuellen Version: ohne Model aus dem gespeicherten Stand.
+      if (stored && isCurrentVersion(saved, m.Model)) return stripPaths(m.readStored(saved, options), viewFields);
+      // Sonst einmal migrieren (oder die Vorgabe anlegen) und zurückschreiben.
       const model = m.loadDetached(saved, { instanceId, eventBus, stateManager });
       const json = model.toJSON();
       if (!stateManager.isCompleted() && JSON.stringify(json) !== JSON.stringify(saved)) {

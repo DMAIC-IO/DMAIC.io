@@ -1425,7 +1425,13 @@
         },
         "undo": { "help": "Reverts the last change to the sheet. Acts on the visible sheet; after the user switched sheets nothing happens." },
         "redo": { "help": "Restores a reverted change. Acts on the visible sheet; after the user switched sheets nothing happens." },
-        "addSheet": { "help": "Creates a new sheet and makes it active. The agent receives its id." },
+        "addSheet": {
+          "help": "Creates a new sheet and makes it active. The agent receives its id.",
+          "params": {
+            "name": "Name of the new sheet; without it \"Sheet <n>\" (the interface passes the translated name).",
+            "command": "The command as one object, optionally with name."
+          }
+        },
         "switchSheet": {
           "help": "Switches to this sheet and shows its table. Double-click renames it.",
           "params": { "id": "The id of the sheet, as read().sheets[].id names it." }
@@ -1434,7 +1440,8 @@
           "help": "Renames a sheet.",
           "params": {
             "id": "The id of the sheet.",
-            "name": "The new name; empty or whitespace only is an invalid argument and therefore an error."
+            "name": "The new name; empty or whitespace only is an invalid argument and therefore an error.",
+            "command": "The command as one object with id and name."
           }
         },
         "setColumnRole": {
@@ -1486,15 +1493,26 @@
         },
         "duplicateSheet": {
           "help": "Copies a sheet with its cells, formulas and column settings. The copy is appended at the end, named \"<name> (Copy)\" and becomes active; the agent receives its id.",
-          "params": { "id": "The id of the sheet to copy, as read().sheets[].id names it." }
+          "params": {
+            "id": "The id of the sheet to copy, as read().sheets[].id names it.",
+            "name": "Name of the copy; without it \"<name> (Copy)\" (the interface passes the translated name).",
+            "command": "The command as one object with id, optionally name."
+          }
         },
         "insertSheetBefore": {
           "help": "Creates an empty sheet directly before another one and makes it active; the agent receives its id.",
-          "params": { "id": "The id of the sheet the new sheet is placed before." }
+          "params": {
+            "id": "The id of the sheet the new sheet is placed before.",
+            "name": "Name of the new sheet; without it \"Sheet <n>\" (the interface passes the translated name).",
+            "command": "The command as one object with id, optionally name."
+          }
         },
         "removeSheet": {
           "help": "Removes a sheet with its contents. If it was active, the neighbouring sheet becomes active. The last sheet cannot be removed — that is an error. Undo does not restore it.",
-          "params": { "id": "The id of the sheet to remove." }
+          "params": {
+            "id": "The id of the sheet to remove.",
+            "command": "The command as one object with id."
+          }
         },
         "pasteBlock": {
           "help": "Pastes a block as from the clipboard at a cell, like Ctrl+V in the grid. If the first row is text and the second holds a number, the first row is a header and names unnamed columns. Each column hit gets its type from its values. Missing rows and columns are added. Formulas in the cells hit are removed. If a locked column lies in the block, nothing is written. Returns the number of pasted columns and rows without the header.",

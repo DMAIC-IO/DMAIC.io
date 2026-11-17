@@ -15,35 +15,22 @@
  * (`history: { mode: 'inverse' }` in `createModule`). Ohne DOM, ohne i18n.
  */
 import {
-  defineModel, list, object, map, text, number, table,
+  defineModel, list, object, map, text, number,
 } from '../../../core/model.js';
-import { TableData } from '../../../core/table-data.js';
 import { uid } from '../../../core/uid.js';
-import { START_ROW_COUNT } from '../../../core/datagrid/datagrid-utils.js';
-import { ROLE, inferRole } from '../../../core/datagrid/datagrid-roles.js';
+import { inferRole } from '../../../core/datagrid/datagrid-roles.js';
 import { from0 } from './migrations.js';
-import { COLUMN_SHAPE, fitsType } from './columns.js';
+import { fitsType } from './columns.js';
+import { SHEET_SHAPE, FALLBACK_SHEET_NAME, newSheetState } from './sheet.js';
 import { cellCommands } from './commands-cells.js';
 import { structureCommands } from './commands-structure.js';
+import { sheetCommands } from './commands-sheets.js';
 
-/** Startspalten eines neuen Blatts (C1–C5). */
-export const START_COLUMN_COUNT = 5;
-
-/** Name des ersten Blatts ohne Übersetzung (das Viewmodel benennt mit `defaultSheetName`). */
-const FALLBACK_SHEET_NAME = 'Sheet';
+export { START_COLUMN_COUNT, newSheetState } from './sheet.js';
 
 const index = () => number({ integer: true, min: 0 });
 
-/** Ein Spaltenkopf (Form in `columns.js`). */
-const columnSpec = object(COLUMN_SHAPE);
-
-const sheetSpec = object({
-  id: text(),
-  name: text(),
-  columns: list(columnSpec),
-  formulas: map(text(), map(text(), text())),
-  data: table(),
-});
+const sheetSpec = object(SHEET_SHAPE);
 
 /** Auswahl des Rasters; `extraCols`: Strg+Klick-Spalten (Ruling R7). */
 const selectionSpec = object({
@@ -51,24 +38,6 @@ const selectionSpec = object({
   activeCol: index(), activeRow: index(),
   extraCols: list(index(), { optional: true }),
 }, { nullable: true });
-
-/**
- * Ein neues Blatt: fünf leere Zahlenspalten C1–C5 mit `START_ROW_COUNT` Zeilen.
- * @param {string} name Name des Blatts (der Aufrufer übersetzt und nummeriert)
- * @param {string} id id des Blatts
- * @returns {{ id: string, name: string, columns: object[], formulas: Record<string, Record<string, string>>, data: TableData }}
- */
-export function newSheetState(name, id) {
-  const columns = [];
-  for (let i = 0; i < START_COLUMN_COUNT; i++) {
-    columns.push({
-      id: uid(), name: '', shortName: `C${i + 1}`, type: 'numeric', unit: null,
-      role: ROLE.CONTINUOUS, roleManual: false, format: {}, meta: null,
-    });
-  }
-  const data = new TableData(START_ROW_COUNT, columns.map(() => new Array(START_ROW_COUNT).fill(null)));
-  return { id, name, columns, formulas: {}, data };
-}
 
 /**
  * Jede Zelle eines Blatts, die nicht zum Typ passt und keine Formelzelle ist.
@@ -144,8 +113,8 @@ export class WorksheetModel extends defineModel({
     activeSheetId: text({ default: 'sheet_1' }),
     gridView: map(text(), object({ colWidths: map(text(), number({ exclusiveMin: 0 })), selection: selectionSpec })),
   },
-  // Kommandos aus `commands-*.js`: Zellen und Formeln, Struktur; Blätter folgen (Task 12).
-  commands: { ...cellCommands, ...structureCommands },
+  // Kommandos aus `commands-*.js`: Zellen und Formeln, Struktur, Blätter.
+  commands: { ...cellCommands, ...structureCommands, ...sheetCommands },
   invariants: {
     uniqueSheetIds: {
       fields: ['sheets'],
