@@ -4,7 +4,7 @@ import { getModuleHelp, hasModuleHelp } from './help-registry.js';
 import { getModuleReferences, hasModuleReferences } from './references-registry.js';
 import { initialModel, loadModel } from './initial-model.js';
 import { ModuleHistory } from './module-history.js';
-import { schemaOf, checkParams, setModelName, setCommandObserver, replaceFields, runCommand, cloneJSON, setModelContext, activeContext } from './model.js';
+import { schemaOf, checkParams, setModelName, setCommandObserver, replaceFields, runCommand, cloneJSON, setModelContext, activeContext, setHistoryMode, collectInverses } from './model.js';
 import { schemaAgentEntry, readSchemaModel } from './agent/agent-schema.js';
 import { attachGesture } from './interaction/attach.js';
 import { isGesture } from './interaction/define.js';
@@ -420,9 +420,14 @@ export function createModule(base) {
   if (fromExample !== undefined && typeof fromExample !== 'function') throw new Error(`createModule(${id}): fromExample must be a function`);
   if (fromExample && beforeLoadExample) throw new Error(`createModule(${id}): fromExample and beforeLoadExample are exclusive`);
   if (exportsDef !== undefined) checkExports(id, exportsDef, Boolean(view));
-  if (history !== undefined && history !== true && !(history && typeof history === 'object' && Number.isInteger(history.depth ?? 50) && (history.depth ?? 50) >= 1)) {
-    throw new Error(`createModule(${id}): history must be true or { depth: integer >= 1 }`);
+  if (history !== undefined && history !== true && !(history && typeof history === 'object'
+    && Number.isInteger(history.depth ?? 50) && (history.depth ?? 50) >= 1
+    && (history.mode === undefined || history.mode === 'inverse'))) {
+    throw new Error(`createModule(${id}): history must be true or { mode?: 'inverse', depth?: integer >= 1 }`);
   }
+  // Verlauf mit Umkehrung (P4): Schritte sind Umkehr-Kommandos statt Abzüge des Models.
+  const inverseHistory = Boolean(history && history !== true && history.mode === 'inverse');
+  if (inverseHistory && !schemaOf(Model)) throw new Error(`createModule(${id}): history mode inverse needs a defineModel Model`);
   if (history && config.manualPersist === true) throw new Error(`createModule(${id}): history cannot be combined with manualPersist (the history records through the automatic persist)`);
   const historyActions = history ? [
     { icon: 'action.undo', title: 'history.undo', history: 'undo' },
@@ -691,9 +696,13 @@ export function createModule(base) {
           }
 
           if (schema) {
-            // Das Model kennt den Bus nicht; der Beobachter übersetzt.
-            setCommandObserver(freshState, (command, args, result) => context.eventBus?.emit?.(
-              'command:executed', { instanceId: context.instanceId, command, args, result }));
+            // Das Model kennt den Bus nicht; der Beobachter übersetzt. Im Modus
+            // inverse zeichnet er zudem den Verlaufsschritt aus den Umkehrungen auf.
+            setCommandObserver(freshState, (command, args, result, inverses) => {
+              context.eventBus?.emit?.('command:executed', { instanceId: context.instanceId, command, args, result });
+              if (inverseHistory && inverses) module._recordInverse(command, args, inverses);
+            });
+            if (inverseHistory) setHistoryMode(freshState, 'inverse');
           }
 
           const comp = {
@@ -1021,13 +1030,22 @@ export function createModule(base) {
      */
     historyStep(dir) {
       const h = this._history;
-      if (!h || !this._container?.querySelector('[x-data]')) return false;
+      const root = this._container?.querySelector('[x-data]');
+      if (!h || !root) return false;
       if (this._context?.stateManager?.isCompleted?.() === true) return false;
       // undo/redo schließen einen offenen Schritt, auch den von historyBegin.
       this._historyGroup = false;
       const json = dir === 'undo' ? h.undo() : h.redo();
       this._syncHistoryFlags();
       if (json === null) return false;
+      if (typeof json === 'object') {
+        // Umkehr-Kommandos im lebenden Model ausführen (reaktiv; der Speicher-Watch
+        // persistiert). Ihre Umkehrungen ergeben die Gegenrichtung des Schritts.
+        const live = Alpine.$data(root).model;
+        const collected = collectInverses(live, () => { for (const cmd of json.cmds) live.execute(cmd); });
+        h.replaceInverse(collected.reverse());
+        return true;
+      }
       const live = this._restoreState(JSON.parse(json), '_restoringHistory');
       if (!live) return false;
       this._persist(live);
@@ -1072,13 +1090,31 @@ export function createModule(base) {
     },
 
     _recordHistory(model) {
+      if (inverseHistory) return;
       if (!this._history || this._restoringHistory || this._applyingRemote) return;
       this._history.record(JSON.stringify(model.toJSON()));
       this._syncHistoryFlags();
     },
 
+    /**
+     * Ein Top-Level-Kommando im Modus inverse als Schritt melden: Rückgängig führt
+     * die Umkehrungen in umgekehrter Reihenfolge aus, Wiederholen das Kommando selbst.
+     * @param {string} command @param {object} args @param {object[]} inverses
+     */
+    _recordInverse(command, args, inverses) {
+      if (!this._history || this._applyingRemote || inverses.length === 0) return;
+      this._history.recordInverse([...inverses].reverse(), [{ type: command, ...args }]);
+      this._syncHistoryFlags();
+    },
+
     _resetHistory(model) {
       if (!this._history || typeof model?.toJSON !== 'function') return;
+      if (inverseHistory) {
+        this._history.reset(null);
+        this._historyGroup = false;
+        this._syncHistoryFlags();
+        return;
+      }
       this._history.reset(JSON.stringify(model.toJSON()));
       this._historyGroup = false;
       this._syncHistoryFlags();

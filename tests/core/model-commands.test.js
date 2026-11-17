@@ -5,6 +5,7 @@ import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } f
 import {
   defineModel, command, text, oneOf, index, boolean, record, list,
   runCommand, setCommandObserver, setFields, replaceFields,
+  recordInverse, setHistoryMode, collectInverses, table, markTableChanged,
 } from '../../js/core/model.js';
 
 const COL_KEYS = ['suppliers', 'inputs', 'process'];
@@ -180,5 +181,96 @@ suite('setFields / replaceFields', () => {
     assertEqual(live.mode, 'week');
     live.moveItem({ sourceCol: 'suppliers', sourceIdx: 0, targetCol: 'inputs', dropIdx: 0 });
     assertEqual(calls, 1);
+  });
+});
+
+const Cells = defineModel({
+  fields: { vals: list(text()), grid: table() },
+  view: { mode: oneOf(['month', 'week']) },
+  commands: {
+    set: command({
+      params: { i: index('vals', { existing: true }), v: text() },
+      returns: text(),
+      run({ i, v }) {
+        const old = this.vals[i];
+        recordInverse(this, { type: 'set', i, v: old });
+        const next = [...this.vals];
+        next[i] = v;
+        this.vals = next;
+        return old;
+      },
+    }),
+    setTwo: command({
+      params: { v: text() },
+      run({ v }) { this.set({ i: 0, v }); this.set({ i: 1, v }); },
+    }),
+    sneak: command({ run() { this.vals = ['x', 'x']; } }),
+    sneakTable: command({ run() { markTableChanged(this, this.grid); } }),
+    look: command({ params: { mode: oneOf(['month', 'week']) }, run({ mode }) { this.mode = mode; } }),
+  },
+});
+
+const cells = () => Cells.fromJSON({ vals: ['a', 'b'] });
+
+suite('Kommandos — Umkehrung (recordInverse)', () => {
+  test('Rückgabewert bleibt, der Beobachter bekommt die Umkehrungen', () => {
+    const m = cells();
+    const seen = [];
+    setCommandObserver(m, (cmd, args, result, inverses) => seen.push({ cmd, result, inverses }));
+    assertEqual(m.set({ i: 1, v: 'z' }), 'b');
+    assertDeepEqual(seen, [{ cmd: 'set', result: 'b', inverses: [{ type: 'set', i: 1, v: 'b' }] }]);
+  });
+
+  test('geschachtelte Kommandos sammeln in einen Sammler', () => {
+    const m = cells();
+    const top = [];
+    setCommandObserver(m, (cmd, args, result, inverses) => { if (inverses) top.push({ cmd, inverses }); });
+    m.setTwo({ v: 'q' });
+    assertDeepEqual(top, [{ cmd: 'setTwo', inverses: [{ type: 'set', i: 0, v: 'a' }, { type: 'set', i: 1, v: 'b' }] }]);
+  });
+
+  test('recordInverse außerhalb eines Kommandos wirft', () => {
+    assertThrows(() => recordInverse(cells(), { type: 'set', i: 0, v: 'a' }), /recordInverse outside a command/);
+  });
+
+  test('collectInverses öffnet den Sammler für mehrere Kommandos', () => {
+    const m = cells();
+    const seen = [];
+    setCommandObserver(m, (cmd, args, result, inverses) => seen.push(inverses));
+    const got = collectInverses(m, () => { m.set({ i: 0, v: 'x' }); m.set({ i: 1, v: 'y' }); });
+    assertDeepEqual(got, [{ type: 'set', i: 0, v: 'a' }, { type: 'set', i: 1, v: 'b' }]);
+    assertDeepEqual(seen, [null, null], 'Kommandos im offenen Sammler gelten als geschachtelt');
+  });
+
+  test('Modus inverse: Inhalt ohne Umkehrung wirft', () => {
+    const m = cells();
+    setHistoryMode(m, 'inverse');
+    assertThrows(() => m.sneak({}), /^command sneak changed content without recordInverse$/);
+    assertThrows(() => m.sneakTable({}), /^command sneakTable changed content without recordInverse$/);
+  });
+
+  test('Modus inverse: nur Ansichtsfelder wirft nicht', () => {
+    const m = cells();
+    setHistoryMode(m, 'inverse');
+    m.look({ mode: 'week' });
+    assertEqual(m.mode, 'week');
+    m.set({ i: 0, v: 'n' });
+    assertEqual(m.vals[0], 'n');
+  });
+
+  test('Modus inverse: direkter Schreibzugriff auf ein Inhaltsfeld außerhalb eines Kommandos wirft', () => {
+    const m = cells();
+    setHistoryMode(m, 'inverse');
+    assertThrows(() => { m.vals = ['q', 'q']; }, /vals.*command/);
+    m.mode = 'week';
+    assertEqual(m.mode, 'week');
+  });
+
+  test('ohne Modus: Inhalt ohne Umkehrung bleibt erlaubt, Zähler und Sammler sind nicht aufzählbar', () => {
+    const m = cells();
+    m.sneak({});
+    assertDeepEqual(m.vals, ['x', 'x']);
+    assertDeepEqual(Object.keys(m), ['_v']);
+    assertTrue(!('$contentWrites' in m.toJSON()));
   });
 });

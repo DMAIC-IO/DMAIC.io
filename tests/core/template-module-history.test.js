@@ -1,10 +1,10 @@
 /**
  * createModule({ history }) — Verlauf je Modulinstanz im Kern.
  */
-import { suite, test, assertEqual, assertTrue } from '../test-utils.js';
+import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-utils.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { createModule } from '../../js/core/template-module.js';
-import { defineModel, command, text, number } from '../../js/core/model.js';
+import { defineModel, command, text, number, list, index, recordInverse } from '../../js/core/model.js';
 
 const Doc = defineModel({
   fields: { name: text({ default: '' }), n: number({ default: 0 }) },
@@ -37,18 +37,33 @@ function fakeContext(instanceId) {
 const flush = async () => { await new Promise((r) => setTimeout(r, 0)); await new Promise((r) => setTimeout(r, 0)); };
 const mounted = [];
 
-async function mount(history) {
+const Vals = defineModel({
+  fields: { vals: list(number(), { default: () => [0, 0, 0] }) },
+  commands: {
+    set: command({
+      params: { i: index('vals', { existing: true }), v: number() },
+      run({ i, v }) {
+        recordInverse(this, { type: 'set', i, v: this.vals[i] });
+        const next = [...this.vals];
+        next[i] = v;
+        this.vals = next;
+      },
+    }),
+  },
+});
+
+async function mount(history, { Model = Doc, html = '<input class="f" x-model="model.name"><span x-text="model.n"></span>', initial } = {}) {
   if (!Alpine.version) Alpine.start();
   const id = `hist-test-${++seq}`;
   const key = `js/modules/${id}/${id}.html`;
   const tpl = document.createElement('template');
   tpl.setAttribute('data-tpl', key);
   const comp = `histTest${seq}`;
-  tpl.innerHTML = `<div x-data="${comp}"><input class="f" x-model="model.name"><span x-text="model.n"></span></div>`;
+  tpl.innerHTML = `<div x-data="${comp}">${html}</div>`;
   document.body.append(tpl);
   const mod = createModule({
     config: { id, engine: 'alpine', phase: 'define', templateUrl: new URL(key, document.baseURI).href },
-    Model: Doc,
+    Model,
     view() { return {}; },
     ...(history === undefined ? {} : { history }),
   });
@@ -56,6 +71,7 @@ async function mount(history) {
   document.body.append(container);
   mounted.push(container, tpl);
   const context = fakeContext(`h${seq}`);
+  if (initial) stored[context.instanceId] = initial;
   await mod.init(container, context);
   await flush();
   const data = () => Alpine.$data(container.querySelector('[x-data]'));
@@ -219,5 +235,73 @@ suite('createModule history', () => {
       });
     } catch (e) { err = e; }
     assertTrue(err !== null && /manualPersist/.test(err.message));
+  });
+});
+
+suite('createModule history — Modus inverse', () => {
+  const opts = { Model: Vals, html: '<span x-text="model.vals.join()"></span>', initial: { vals: [0, 0, 0] } };
+
+  test('drei Kommandos: dreimal zurück zum Ausgang, dreimal vor zum Endstand, ohne toJSON', async () => {
+    const { mod, data } = await mount({ mode: 'inverse' }, opts);
+    const m = data().model;
+    m.set({ i: 0, v: 1 });
+    m.set({ i: 1, v: 2 });
+    m.set({ i: 0, v: 3 });
+    await flush();
+    assertDeepEqual([...m.vals], [3, 2, 0]);
+    const raw = Alpine.raw(m);
+    let calls = 0;
+    const orig = raw.toJSON;
+    raw.toJSON = function () { calls += 1; return orig.call(this); };
+    try {
+      for (let k = 0; k < 3; k++) assertTrue(mod.historyStep('undo'), `undo ${k}`);
+      assertEqual(calls, 0, 'Rückgängig ruft toJSON nicht');
+      assertDeepEqual([...m.vals], [0, 0, 0]);
+      assertEqual(mod.historyCan('undo'), false);
+      for (let k = 0; k < 3; k++) assertTrue(mod.historyStep('redo'), `redo ${k}`);
+      assertEqual(calls, 0, 'Wiederholen ruft toJSON nicht');
+      assertDeepEqual([...m.vals], [3, 2, 0]);
+      assertEqual(mod.historyCan('redo'), false);
+    } finally {
+      delete raw.toJSON;
+    }
+    await flush();
+    assertTrue(mod.historyStep('undo'));
+    await flush();
+    assertDeepEqual([...m.vals], [1, 2, 0], 'erneut zurück nach Wiederholen');
+    assertTrue(mod.historyCan('redo'));
+  });
+
+  test('historyBegin, zehn Kommandos, historyEnd: ein Schritt', async () => {
+    const { mod, data } = await mount({ mode: 'inverse', depth: 5 }, opts);
+    const m = data().model;
+    mod.historyBegin();
+    for (let k = 1; k <= 10; k++) m.set({ i: k % 3, v: k });
+    mod.historyEnd();
+    await flush();
+    assertTrue(mod.historyStep('undo'));
+    assertDeepEqual([...m.vals], [0, 0, 0]);
+    assertEqual(mod.historyCan('undo'), false);
+    assertTrue(mod.historyStep('redo'));
+    assertDeepEqual([...m.vals], [9, 10, 8]);
+  });
+
+  test('Rückgängig persistiert über den Speicher-Watch', async () => {
+    const { mod, context, data } = await mount({ mode: 'inverse' }, opts);
+    data().model.set({ i: 2, v: 7 });
+    await flush();
+    assertDeepEqual(stored[context.instanceId].vals, [0, 0, 7]);
+    mod.historyStep('undo');
+    await flush();
+    assertDeepEqual(stored[context.instanceId].vals, [0, 0, 0]);
+  });
+
+  test('history mit unbekanntem mode wird abgelehnt', () => {
+    let err = null;
+    try {
+      createModule({ config: { id: 'hist-mode', engine: 'alpine', phase: 'define', templateUrl: 'x.html' },
+        Model: Vals, view() { return {}; }, history: { mode: 'snapshot' } });
+    } catch (e) { err = e; }
+    assertTrue(err !== null && /history must be/.test(err.message));
   });
 });

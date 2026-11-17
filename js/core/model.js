@@ -196,6 +196,51 @@ export const table = (opts) => spec('table', {}, { bulk: true, bulkKind: 'table'
 export function markTableChanged(model, tbl) {
   tbl.rev += 1;
   model.$tableRev += 1;
+  model.$contentWrites += 1;
+}
+
+/**
+ * Eine Umkehrung für den Verlauf sammeln: `{ type, …params }` kommt in den
+ * Sammler des laufenden Top-Level-Kommandos (geschachtelte Kommandos sammeln in
+ * denselben). Der Beobachter bekommt die Liste als viertes Argument; Rückgängig
+ * führt sie in umgekehrter Reihenfolge über `model.execute` aus.
+ * @param {any} model das Model (Wurzel) @param {{ type: string, [k: string]: any }} cmd
+ * @returns {void}
+ * @throws {Error} außerhalb eines Kommandos oder ohne `type`
+ */
+export function recordInverse(model, cmd) {
+  const inv = model?._inv;
+  if (!Array.isArray(inv)) throw new Error('recordInverse outside a command');
+  requireForm('inverse command', cmd, isPlainObject(cmd) && typeof cmd.type === 'string', 'an object with type and the command parameters');
+  inv.push(cmd);
+}
+
+/**
+ * `fn` mit offenem Umkehrsammler ausführen: alle Kommandos darin gelten als
+ * geschachtelt (der Beobachter bekommt kein viertes Argument), ihre
+ * Umkehrungen kommen in die gelieferte Liste (Ausführungsreihenfolge).
+ * @param {any} model @param {() => void} fn @returns {object[]}
+ */
+export function collectInverses(model, fn) {
+  const prev = model._inv;
+  const inv = [];
+  model._inv = inv;
+  try {
+    fn();
+  } finally {
+    model._inv = prev;
+  }
+  return inv;
+}
+
+/**
+ * Verlaufsmodus eines Models setzen. `'inverse'`: jedes Kommando, das Inhalt
+ * schreibt, muss eine Umkehrung sammeln, und Inhaltsfelder sind außerhalb eines
+ * Kommandos nicht beschreibbar. `null`: keine Pflicht (Vorgabe).
+ * @param {any} model @param {'inverse'|null} mode @returns {void}
+ */
+export function setHistoryMode(model, mode) {
+  model._histMode = mode;
 }
 
 const IMAGE_DATA_URL = /^data:image\/[\w.+-]+;base64,/;
@@ -869,16 +914,31 @@ export function checkInvariantsAfter(model, rootField, fn) {
  */
 export function runCommand(name, def, self, root, cmd) {
   const args = checkParams(name, def.params, cmd, root);
-  const result = withInvariants(root, () => {
-    const r = def.run.call(self, args);
-    if (r && typeof r.then === 'function') {
-      if (typeof r.catch === 'function') r.catch(() => {});
-      throw new Error(`command ${name}: run must be synchronous — use asyncTask`);
-    }
-    return r;
-  });
+  // Umkehrsammler: das Top-Level-Kommando öffnet ihn, geschachtelte hängen an.
+  const outer = root ? root._inv : null;
+  const top = root != null && !Array.isArray(outer);
+  const inv = top ? [] : outer;
+  const writes0 = root?.$contentWrites ?? 0;
+  const inv0 = inv ? inv.length : 0;
+  if (top) root._inv = inv;
+  let result;
+  try {
+    result = withInvariants(root, () => {
+      const r = def.run.call(self, args);
+      if (r && typeof r.then === 'function') {
+        if (typeof r.catch === 'function') r.catch(() => {});
+        throw new Error(`command ${name}: run must be synchronous — use asyncTask`);
+      }
+      return r;
+    });
+  } finally {
+    if (top) root._inv = null;
+  }
+  if (root?._histMode === 'inverse' && root.$contentWrites > writes0 && inv.length === inv0) {
+    throw new Error(`command ${name} changed content without recordInverse`);
+  }
   const observer = root?._obs;
-  if (typeof observer === 'function') observer(name, cloneJSON(args), result);
+  if (typeof observer === 'function') observer(name, cloneJSON(args), result, top ? inv : null);
   return result;
 }
 
@@ -927,7 +987,9 @@ export function confirmOf(model, name, args) {
  * Den Beobachter eines Models setzen (`createModule` macht daraus
  * `command:executed` auf dem Event-Bus — das Model kennt den Bus nicht).
  * Nicht aufzählbar: weder in `Object.keys`, noch in `Object.assign`, noch in `toJSON`.
- * @param {object} model @param {(command: string, args: object, result: any) => void} fn
+ * `inverses`: die gesammelten Umkehrungen des Top-Level-Kommandos (Ausführungsreihenfolge),
+ * `null` bei geschachtelten Kommandos und in einem offenen Sammler (`collectInverses`).
+ * @param {object} model @param {(command: string, args: object, result: any, inverses: object[]|null) => void} fn
  * @returns {void}
  */
 export function setCommandObserver(model, fn) {
@@ -1006,7 +1068,7 @@ export function replaceFields(model, source) {
 
 // ─── defineModel ────────────────────────────────────────────
 
-const RESERVED = new Set(['constructor', 'toJSON', 'fromJSON', 'hasContent', 'execute', '$tableRev', '_v', '_obs', '_schema', 'context', '_ctx', '_run']);
+const RESERVED = new Set(['constructor', 'toJSON', 'fromJSON', 'hasContent', 'execute', '$tableRev', '_v', '_obs', '_schema', 'context', '_ctx', '_run', '$contentWrites', '_inv', '_histMode']);
 
 /**
  * Das Schema eines Models oder einer Model-Klasse.
@@ -1406,6 +1468,10 @@ export function defineModel(schema) {
       this._v = {};
       Object.defineProperty(this, '_run', { value: 0, writable: true, configurable: true, enumerable: false });
       Object.defineProperty(this, '$tableRev', { value: 0, writable: true, configurable: true, enumerable: false });
+      // Schreibzugriffe auf Inhaltsfelder (Setter, markTableChanged): Pflicht zur Umkehrung im Modus inverse.
+      Object.defineProperty(this, '$contentWrites', { value: 0, writable: true, configurable: true, enumerable: false });
+      Object.defineProperty(this, '_inv', { value: null, writable: true, configurable: true, enumerable: false });
+      Object.defineProperty(this, '_histMode', { value: null, writable: true, configurable: true, enumerable: false });
       if (context !== undefined) setModelContext(this, context);
       const ctx = contextOf(this);
       // Pfadabhängige Vorgaben (index/idOf) erst, wenn die pfadfreien da sind.
@@ -1497,12 +1563,17 @@ export function defineModel(schema) {
 
   Model.schema = Object.freeze({ fields, view, commands, version, migrations, invariants, derived, derivedBulk });
   for (const [k, s] of Object.entries(all)) {
+    const content = Object.hasOwn(fields, k);
     Object.defineProperty(Model.prototype, k, {
       get() { return this._v[k]; },
       set(v) {
+        if (content && this._histMode === 'inverse' && !Array.isArray(this._inv)) {
+          throw new Error(`field ${k} is content: write it through a command (history mode inverse)`);
+        }
         const next = checkValue(s, k, v, { root: this, context: contextOf(this) });
         const before = this._v[k];
         this._v[k] = next;
+        if (content) this.$contentWrites += 1;
         if ((this._run ?? 0) > 0 || !invariantsOf[k]) return;
         const broken = brokenInvariant(this, invariants, invariantsOf[k]);
         if (broken !== null) {
