@@ -8,19 +8,22 @@
 import { parseNumeric, parseCellInput, isNumericType } from '../datagrid-utils.js';
 
 /**
- * Schreibt einen Block ab (c0, r0). Der Block muss in der Tabelle liegen.
+ * Schreibt einen Block ab (c0, r0). Der Block muss in der Tabelle liegen; sonst
+ * wirft die Funktion, bevor sie etwas ändert.
  * @param {import('../../table-data.js').TableData} table
  * @param {number} c0 @param {number} r0
  * @param {any[][]} block spaltenweise
  * @returns {{ before: any[][] }} vorherige Werte, gleiche Form
  */
 export function setRange(table, c0, r0, block) {
+  for (let ci = 0; ci < block.length; ci++) {
+    if (!table.columns[c0 + ci] || r0 < 0 || r0 + block[ci].length > table.rowCount) {
+      throw new RangeError(`setRange: block outside table (col ${c0 + ci}, row ${r0})`);
+    }
+  }
   const before = [];
   for (let ci = 0; ci < block.length; ci++) {
     const col = table.columns[c0 + ci];
-    if (!col || r0 < 0 || r0 + block[ci].length > table.rowCount) {
-      throw new RangeError(`setRange: block outside table (col ${c0 + ci}, row ${r0})`);
-    }
     const old = new Array(block[ci].length);
     for (let ri = 0; ri < block[ci].length; ri++) { old[ri] = col[r0 + ri]; col[r0 + ri] = block[ci][ri]; }
     before.push(old);
@@ -66,10 +69,11 @@ export function moveRowData(table, from, to) {
 }
 
 /**
- * Fügt eine Spalte bei `at` ein (Vorgabe: lauter `null`).
+ * Fügt eine Spalte bei `at` ein (Vorgabe: lauter `null`; mehr Werte als Zeilen werfen, zu wenige werden mit `null` aufgefüllt).
  * @param {import('../../table-data.js').TableData} table @param {number} at @param {any[]} [values]
  */
 export function insertColumn(table, at, values) {
+  if (values && values.length > table.rowCount) throw new RangeError('insertColumn: more values than rows');
   const col = values ? values.slice() : new Array(table.rowCount).fill(null);
   while (col.length < table.rowCount) col.push(null);
   table.columns.splice(at, 0, col);

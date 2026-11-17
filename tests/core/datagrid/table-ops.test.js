@@ -25,6 +25,24 @@ suite('Tabellenoperationen', () => {
     assertEqual(threw, true);
   });
 
+  test('setRange mit zu breitem Block lässt die Tabelle unverändert', () => {
+    const t = mk(); const s = snap(t);
+    let threw = false;
+    try { setRange(t, 1, 0, [['x'], [1]]); } catch { threw = true; }
+    assertEqual(threw, true);
+    assertEqual(snap(t), s);
+  });
+
+  test('insertColumn mit zu vielen Werten wirft, zu wenige werden aufgefüllt', () => {
+    const t = mk();
+    let threw = false;
+    try { insertColumn(t, 0, [1, 2, 3, 4, 5]); } catch { threw = true; }
+    assertEqual(threw, true);
+    assertEqual(t.columns.length, 2);
+    insertColumn(t, 0, [1]);
+    assertDeepEqual(t.columns[0], [1, null, null, null]);
+  });
+
   test('insertRows und deleteRows hin und zurück', () => {
     const t = mk(); const s = snap(t);
     insertRows(t, 2, 2);

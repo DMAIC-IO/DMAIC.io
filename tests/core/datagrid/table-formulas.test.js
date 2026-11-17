@@ -34,6 +34,16 @@ suite('Tabellenformeln', () => {
     });
   });
 
+  test('Formel auf Formelzelle: Spalte dann Zeile, ein Durchlauf', () => {
+    // b-Zeile 0 hängt an c-Zeile 0 (Spalte c kommt nach b: alter Wert, null);
+    // c-Zeile 1 hängt an c-Zeile 0 (gleiche Spalte, Zeile davor: frisch).
+    const t = mk();
+    recalcFormulas(heads, t, { b: { 0: '=C3[1]+1' }, c: { 0: '=C1[1]*5', 1: '=C3[1]+1' } });
+    assertEqual(t.columns[2][0], 5);
+    assertEqual(t.columns[2][1], 6);
+    assertEqual(t.columns[1][0], null); // Spalte c war beim Rechnen von b noch leer
+  });
+
   test('formulaGrid teilt die Spaltenarrays ohne Kopie', () => {
     const t = mk();
     const g = formulaGrid(heads, t, {});

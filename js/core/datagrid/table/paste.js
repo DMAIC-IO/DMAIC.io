@@ -28,21 +28,33 @@ export function splitHeader(rows) {
 }
 
 /**
- * Erzeugt Füllwerte für lotrechte Quellen. Je Spalte ein Vektor aus
- * `{ value, formula }`. Vorwärts füllt unterhalb der Quelle, rückwärts oberhalb
- * (erste Zielzeile = unmittelbar vor der Quelle). Formeln der Quelle wandern
- * mit verschobenen Bezügen; dann ist `value` `null`.
+ * Erzeugt Füllwerte (wie `DataGrid._applyFill`). Je Quelle ein Vektor aus
+ * `{ value, formula }`: lotrecht die Zellen einer Spalte, waagerecht die einer
+ * Zeile (dann ist `columnType` der Typ der ersten Quellspalte). Vorwärts füllt
+ * hinter der Quelle, rückwärts davor (erster Eintrag = unmittelbar vor der
+ * Quelle). Formeln der Quelle wandern mit verschobenen Bezügen (lotrecht die
+ * Zeile, waagerecht die Spalte); dann ist `value` `null`.
+ *
+ * Sperre (`meta.lock`) und das Wachsen des Blatts um Zeilen bleiben beim
+ * Aufrufer; über `before`/`after` meldet er, wie viele Positionen vor bzw. nach
+ * der Quelle existieren. Mehr Einträge werden abgeschnitten (wie der Abbruch
+ * `targetRow < 0` bzw. `targetCol >= numCols` im Raster).
+ *
  * @param {{ value: any, formula?: string|null }[][]} sourceCells
  * @param {string} columnType
- * @param {number} count Anzahl Zielzeilen
+ * @param {number} count gewünschte Zielzellen je Vektor
  * @param {1|-1} dir
  * @param {boolean} [ctrl]
- * @returns {{ value: any, formula: string|null }[][]} je Quellvektor `count` Einträge in Füllreihenfolge
+ * @param {{ axis?: 'v'|'h', before?: number, after?: number, maxCols?: number }} [opts]
+ *   `axis` (Vorgabe `'v'`), vorhandene Positionen davor/dahinter (Vorgabe unbegrenzt), `maxCols` für Spaltenbezüge
+ * @returns {{ value: any, formula: string|null }[][]} je Quellvektor die Einträge in Füllreihenfolge
  */
-export function fillBlock(sourceCells, columnType, count, dir, ctrl = false) {
+export function fillBlock(sourceCells, columnType, count, dir, ctrl = false, opts = {}) {
+  const { axis = 'v', before = Infinity, after = Infinity, maxCols = Number.MAX_SAFE_INTEGER } = opts;
+  const limit = Math.max(0, Math.min(count, dir === -1 ? before : after));
   return sourceCells.map((src) => {
     const len = src.length;
-    const filled = generateFill(withCtrlModifier(detectPattern(src, columnType), ctrl), count, dir);
+    const filled = generateFill(withCtrlModifier(detectPattern(src, columnType), ctrl), count, dir).slice(0, limit);
     return filled.map((f, i) => {
       let srcIdx;
       let target;
@@ -54,7 +66,10 @@ export function fillBlock(sourceCells, columnType, count, dir, ctrl = false) {
         target = len + i;
       }
       const formula = src[srcIdx]?.formula;
-      if (formula) return { value: null, formula: shiftFormulaRefs(formula, target - srcIdx, 0, Number.MAX_SAFE_INTEGER) };
+      if (formula) {
+        const d = target - srcIdx;
+        return { value: null, formula: axis === 'h' ? shiftFormulaRefs(formula, 0, d, maxCols) : shiftFormulaRefs(formula, d, 0, maxCols) };
+      }
       return { value: f.value, formula: null };
     });
   });
