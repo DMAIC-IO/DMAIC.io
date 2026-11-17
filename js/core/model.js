@@ -179,6 +179,21 @@ export const image = (opts) => spec('image', {}, { omitOnRead: true, agentWrite:
 export const richText = (opts) => spec('richText', {}, opts);
 
 /**
+ * Ein Zellwert: endliche Zahl, Text, Wahrheitswert oder `null` (`isCell`,
+ * core/table-data.js). Vorgabe `null`.
+ * @param {object} [opts] @returns {Readonly<object>}
+ */
+export const cell = (opts) => spec('cell', {}, opts);
+
+/**
+ * Ein Parameter, den das Kommando selbst prüft (eigene, festgeschriebene
+ * Meldungen). Der Wert kommt unverändert an. `type`: Typtext für `describe`
+ * und die erzeugten Typen (Vorgabe `any`). Vorgabe `null`.
+ * @param {{ type?: string } & object} [opts] @returns {Readonly<object>}
+ */
+export const unchecked = (opts) => spec('unchecked', {}, opts);
+
+/**
  * Zellspeicher für große Arbeitsblätter (`TableData`). Vorgabe: leere Tabelle.
  * Geprüft wird vollständig: `rowCount` ganzzahlig ≥ 0, jede Spalte ein Array der
  * Länge `rowCount`, jede Zelle Zahl, Text, Wahrheitswert oder `null`. Trägt
@@ -481,7 +496,7 @@ export function defaultOf(s, context = DEFAULT_CONTEXT, name = 'default', root =
     case 'text': case 'idOf': case 'date': case 'image': case 'richText': return '';
     case 'time': return '00:00';
     case 'phase': return getPhaseIds(context.cycle)[0];
-    case 'columnRef': return null;
+    case 'columnRef': case 'cell': case 'unchecked': return null;
     case 'table': return TableData.empty();
     case 'datasets': return [Object.fromEntries(Object.keys(s.slots).map((k) => [k, null]))];
     case 'number': case 'index': return 0;
@@ -623,6 +638,8 @@ export function checkValue(s, name, value, ctx = {}) {
       return v;
     }
     case 'table': return checkTable(name, value);
+    case 'cell': return requireForm(name, value, isCell(value), 'a number, text, true/false or null');
+    case 'unchecked': return value;
     case 'columnRef': {
       requireForm(name, value, isColumnRef(value), 'a column reference { instanceId, sheetId?, columnId }');
       return {
@@ -800,6 +817,8 @@ export function describeType(s, tableName = 'table') {
     case 'object': t = `{ ${Object.entries(s.shape)
       .map(([k, v]) => `${k}${v.optional ? '?' : ''}: ${describeType(v, tableName)}`).join(', ')} }`; break;
     case 'table': t = tableName; break;
+    case 'cell': t = 'number|string|boolean|null'; break;
+    case 'unchecked': t = s.type ?? 'any'; break;
     case 'columnRef': t = '{ instanceId: string, sheetId?: string, columnId: string }'; break;
     case 'datasets': t = `Array<{ ${Object.entries(s.slots)
       .map(([k, v]) => `${k}: ${describeType(v, tableName)}`).join(', ')} }>`; break;

@@ -2,7 +2,7 @@
  * Tests for core/model.js — Feldart table().
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../test-utils.js';
-import { defineModel, list, object, text, number, command, table, describeType, setFields, markTableChanged, replaceFields, checkInvariantsAfter } from '../../js/core/model.js';
+import { defineModel, list, object, text, number, command, table, describeType, setFields, markTableChanged, replaceFields, checkInvariantsAfter, cell, unchecked } from '../../js/core/model.js';
 import { TableData } from '../../js/core/table-data.js';
 
 const M = defineModel({ fields: { sheets: list(object({ id: text(), data: table() })) } });
@@ -119,5 +119,52 @@ suite('table() Rückschreibpfade', () => {
     const d = new D();
     assertTrue(d.t instanceof TableData);
     assertDeepEqual(d.t.columns, [[3]]);
+  });
+});
+
+suite('cell() und unchecked()', () => {
+  const D = defineModel({
+    fields: {},
+    commands: {
+      put: command({
+        params: { values: list(cell()), raw: unchecked({ type: 'Array<{ to: string }>', optional: true }) },
+        returns: list(cell()),
+        run({ values }) { return values; },
+      }),
+    },
+  });
+
+  test('cell() nimmt endliche Zahl, Text, Wahrheitswert und null', () => {
+    const d = new D();
+    assertDeepEqual(d.put({ values: [1, 'x', true, null, -0.5] }), [1, 'x', true, null, -0.5]);
+  });
+
+  test('cell() lehnt Objekt, NaN, Unendlich und undefined ab', () => {
+    const d = new D();
+    assertThrows(() => d.put({ values: [{}] }), /values\[0\].*allowed: a number, text, true\/false or null/);
+    assertThrows(() => d.put({ values: [NaN] }), /values\[0\]/);
+    assertThrows(() => d.put({ values: [Infinity] }), /values\[0\]/);
+    assertThrows(() => d.put({ values: [undefined] }), /values\[0\]/);
+  });
+
+  test('unchecked() reicht den Wert ungeprüft durch', () => {
+    const d = new D();
+    const raw = [{ to: 'x', anything: { deep: 1 } }];
+    d.put({ values: [], raw });
+    assertEqual(d.put({ values: [], raw: 7 }).length, 0);
+  });
+
+  test('describeType: cell und unchecked mit Typtext', () => {
+    assertEqual(describeType(cell()), 'number|string|boolean|null');
+    assertEqual(describeType(list(cell())), 'Array<number|string|boolean|null>');
+    assertEqual(describeType(unchecked({ type: 'Array<{ to: string }>' })), 'Array<{ to: string }>');
+    assertEqual(describeType(unchecked()), 'any');
+  });
+
+  test('Vorgabe beider ist null', () => {
+    const F = defineModel({ fields: { c: cell(), u: unchecked() } });
+    const f = new F();
+    assertEqual(f.c, null);
+    assertEqual(f.u, null);
   });
 });
