@@ -5,6 +5,11 @@ import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../test-u
 import {
   historyToRows, rowsToHistory, readRows, buildSheetState, isZegColumn, DATE_REF, planZegStack,
 } from '../../js/core/zeg-sheet/zeg-sheet-model.js';
+import { WorksheetModel } from '../../js/modules/worksheet/domain/model.js';
+import { readWorksheetStored } from '../../js/modules/worksheet/domain/read.js';
+import { fakeKernelSurface } from '../helpers/kernel-surface.js';
+
+const ofMethodOf = (stack, m) => stack.filter(a => a.method === m);
 
 const DMAIC = ['define', 'measure', 'analyze', 'improve', 'control'];
 const DMADV = ['define', 'measure', 'analyze', 'design', 'verify'];
@@ -280,7 +285,8 @@ suite('core/zeg-sheet-model planZegStack', () => {
     prev.columns.push({ id: 'note', name: 'Notiz', type: 'text', values: ['x'], formulas: [null], format: {}, meta: null });
     const next = buildSheetState(prev, [D1], ['define', 'measure'], LABELS);
     const stack = planZegStack('ws1', SHEET, prev, next);
-    assertDeepEqual(stack[0].args[0].columns.map(e => e.to), [prev.columns[0].id, prev.columns[1].id, 'append', 'note']);
+    // Nutzerspalten werden nicht geschrieben (R18), sie wandern mit ihren Zeilen.
+    assertDeepEqual(stack[0].args[0].columns.map(e => e.to), [prev.columns[0].id, prev.columns[1].id, 'append']);
     assertDeepEqual(calls(ofMethod(stack, 'moveColumn')), [
       ['moveColumn', [{ sheetId: SHEET, columnId: { $from: 'write', path: 'value.2' }, toIndex: 2 }]],
     ]);
@@ -300,19 +306,24 @@ suite('core/zeg-sheet-model planZegStack', () => {
     const next = buildSheetState(prev, [D2], ['define'], LABELS);
     assertEqual(next.rowCount, 1);
     const stack = planZegStack('ws1', SHEET, prev, next);
-    assertDeepEqual(calls(ofMethod(stack, 'removeRows')), [['removeRows', [{ sheetId: SHEET, startRow: 1, count: 2 }]]]);
+    // Weggefallene Zeilen einzeln von unten nach oben; die Zeile von D2 bleibt und rückt nach oben.
+    assertDeepEqual(calls(ofMethod(stack, 'removeRows')), [
+      ['removeRows', [{ sheetId: SHEET, startRow: 2, count: 1 }]],
+      ['removeRows', [{ sheetId: SHEET, startRow: 0, count: 1 }]],
+    ]);
   });
 
-  test('Nutzerspalte mit Formel in verschobener Zeile: setFormula an der neuen Zeile', () => {
+  test('Zeile davor: addRows an der Position, Nutzerspalten werden nicht geschrieben, keine Formeln neu gesetzt', () => {
     const prev = buildSheetState(null, [D1, D2], ['define'], LABELS);
     prev.columns.push({ id: 'u1', name: 'Doppelt', type: 'numeric', values: [null, 80], formulas: [null, '=C2[2]*2'], format: {}, meta: null });
     const D0 = { date: '2026-07-01', values: { define: 5 } };
     const next = buildSheetState(prev, [D0, D1, D2], ['define'], LABELS);
     const stack = planZegStack('ws1', SHEET, prev, next);
-    // Reihenfolge: Schreiben zuerst, Formeln zuletzt.
-    assertEqual(stack[0].method, 'writeColumns');
-    assertEqual(stack[stack.length - 1].method, 'setFormula');
-    assertDeepEqual(calls(ofMethod(stack, 'setFormula')), [['setFormula', [{ sheetId: SHEET, columnId: 'u1', row: 2, formula: '=C2[2]*2' }]]]);
+    // Struktur zuerst, dann die verwalteten Spalten.
+    assertDeepEqual(calls(stack.slice(0, 1)), [['addRows', [{ sheetId: SHEET, position: 0, count: 1 }]]]);
+    assertEqual(stack[1].method, 'writeColumns');
+    assertTrue(!stack[1].args[0].columns.some(e => e.to === 'u1'));
+    assertEqual(ofMethod(stack, 'setFormula').length, 0);
   });
 
   test('Gleichstand unabhängig von der Schlüsselreihenfolge in meta und Werten', () => {
@@ -324,42 +335,12 @@ suite('core/zeg-sheet-model planZegStack', () => {
     assertDeepEqual(planZegStack('ws1', SHEET, asRead, next), []);
   });
 
-  test('P11: hart gesperrte Nutzerspalte mit Formel bekommt kein setFormula und wird nicht überschrieben', () => {
-    const prev = buildSheetState(null, [D1, D2], ['define'], LABELS);
-    prev.columns.push({ id: 'u1', name: 'Doppelt', type: 'numeric', values: [null, 80], formulas: [null, '=C2[2]*2'], format: {}, meta: { lock: 'hard', reason: 'Nutzer' } });
-    const D0 = { date: '2026-07-01', values: { define: 5 } };
-    const next = buildSheetState(prev, [D0, D1, D2], ['define'], LABELS);
-    const stack = planZegStack('ws1', SHEET, prev, next);
-    assertTrue(stack.length > 0, 'die ZEG-Spalten ändern sich');
-    assertEqual(ofMethod(stack, 'setFormula').length, 0);
-    assertTrue(!stack[0].args[0].columns.some(e => e.to === 'u1'), 'writeColumns lässt die gesperrte Spalte aus (es löschte sonst ihre Formeln)');
-  });
-
-  test('P11: weich gesperrte Nutzerspalte ebenso (setFormula lehnt jede Sperre ab)', () => {
-    const prev = buildSheetState(null, [D1], ['define'], LABELS);
-    prev.columns.push({ id: 'u1', name: 'Doppelt', type: 'numeric', values: [40], formulas: ['=C2*2'], format: {}, meta: { lock: 'soft' } });
-    const next = buildSheetState(prev, [D1, D2], ['define'], LABELS);
-    const stack = planZegStack('ws1', SHEET, prev, next);
-    assertEqual(ofMethod(stack, 'setFormula').length, 0);
-    assertTrue(!stack[0].args[0].columns.some(e => e.to === 'u1'));
-  });
-
-  test('P11: weicht nur eine gesperrte Nutzerspalte ab, gibt es keinen Stapel', () => {
-    const prev = buildSheetState(null, [D1, D2], ['define'], LABELS);
-    prev.columns.push({ id: 'u1', name: 'Doppelt', type: 'numeric', values: [null, 80], formulas: [null, '=C2[2]*2'], format: {}, meta: { lock: 'hard' } });
-    const next = buildSheetState(prev, [D1, D2], ['define'], LABELS);
-    const u1 = next.columns.find(c => c.id === 'u1');
-    u1.values = [80, null];
-    u1.formulas = ['=C2[2]*2', null];
-    assertDeepEqual(planZegStack('ws1', SHEET, prev, next), []);
-  });
-
-  test('P11: Referenz einer neuen Spalte zählt nur die geschriebenen Einträge', () => {
+  test('Referenz einer neuen Spalte zählt nur die geschriebenen (verwalteten) Einträge', () => {
     const prev = buildSheetState(null, [D1], ['define'], LABELS);
     prev.columns.push({ id: 'u1', name: 'Fix', type: 'numeric', values: [1], formulas: [null], format: {}, meta: { lock: 'hard' } });
     const next = buildSheetState(prev, [D1], ['define', 'measure'], LABELS);
     const stack = planZegStack('ws1', SHEET, prev, next);
-    const entries = stack[0].args[0].columns;
+    const entries = ofMethod(stack, 'writeColumns')[0].args[0].columns;
     const appendAt = entries.findIndex(e => e.to === 'append');
     const meta = ofMethod(stack, 'setColumnMeta')[0].args[0];
     assertDeepEqual(meta.columnId, { $from: 'write', path: `value.${appendAt}` });
@@ -372,5 +353,106 @@ suite('core/zeg-sheet-model planZegStack', () => {
     const entry = planZegStack('ws1', SHEET, prev, next)[0].args[0].columns.find(e => e.to === 'append');
     assertDeepEqual(entry.format, col.format);
     assertTrue(entry.format !== col.format);
+  });
+});
+
+/**
+ * P11/R18: gesperrte Nutzerspalten bleiben bei ihrem Datum. Der Stapel läuft
+ * gegen das echte Model des Arbeitsblatts (`fakeKernelSurface`, nur
+ * `@agent`-Kommandos); geprüft werden die Zellen je Datum danach.
+ */
+suite('core/zeg-sheet-model planZegStack: Zeilen wandern ganz (gesperrte Nutzerspalten)', () => {
+  const SHEET = 'sheet_1';
+
+  /** Den Plan prev → next auf ein Arbeitsblatt mit Blatt `prev` anwenden; liefert das Blatt danach. */
+  async function apply(prev, next) {
+    const modules = new Map([['ws1', WorksheetModel.fromJSON({ sheets: [{ id: SHEET, name: 'ZEG', state: prev }], activeSheetId: SHEET, sheetCounter: 1 }).toJSON()]]);
+    const state = { phases: { data: [{ instanceId: 'ws1', moduleId: 'worksheet', order: 0 }] } };
+    const surface = fakeKernelSurface({ state, modules, isCompleted: () => false });
+    const stack = planZegStack('ws1', SHEET, prev, next);
+    const out = await surface.interactAsKernel(stack, 'zeg-sheet');
+    assertEqual(out.ok, true, JSON.stringify(out));
+    const saved = modules.get('ws1');
+    const head = readWorksheetStored(saved, { sheetId: SHEET });
+    return { stack, sheet: readWorksheetStored(saved, { sheetId: SHEET, columns: head.columns.map(c => c.id), fields: ['formulas'] }) };
+  }
+  const byRef = (sheet, ref) => sheet.columns.find(c => c.meta?.managedRef === ref);
+  const byId = (sheet, id) => sheet.columns.find(c => c.id === id);
+  const formulaAt = (sheet, id) => Object.fromEntries((sheet.formulas ?? []).filter(f => f.columnId === id).map(f => [f.row, f.formula]));
+  const NOTE = (values, formulas, lock = 'hard') => ({ id: 'u1', name: 'Notiz', type: 'numeric', values, formulas, format: {}, meta: { lock } });
+
+  test('Zeile davor eingefügt: Werte und Formel der hart gesperrten Spalte bleiben bei ihrem Datum', async () => {
+    const D1 = { date: '2026-07-10', values: { define: 20 } };
+    const D2 = { date: '2026-07-12', values: { define: 40 } };
+    const D0 = { date: '2026-07-01', values: { define: 5 } };
+    const prev = buildSheetState(null, [D1, D2], ['define'], LABELS);
+    prev.columns.push(NOTE([7, 80], [null, '=40*2']));
+    const next = buildSheetState(prev, [D0, D1, D2], ['define'], LABELS);
+    const { stack, sheet } = await apply(prev, next);
+    assertEqual(ofMethodOf(stack, 'setFormula').length, 0);
+    assertDeepEqual(byRef(sheet, DATE_REF).values, ['2026-07-01', '2026-07-10', '2026-07-12']);
+    assertDeepEqual(byRef(sheet, 'define').values, [5, 20, 40]);
+    assertDeepEqual(byId(sheet, 'u1').values, [null, 7, 80]);
+    assertDeepEqual(formulaAt(sheet, 'u1'), { 2: '=40*2' });
+  });
+
+  test('Zeile weggefallen (Zykluswechsel): die Zelle des späteren Datums bleibt, nichts wird abgeschnitten', async () => {
+    // DMAIC, 07-02 hat nur einen improve-Wert; Notiz hart gesperrt.
+    const rows = [
+      { date: '2026-07-01', values: { define: 10 } },
+      { date: '2026-07-02', values: { improve: 50 } },
+      { date: '2026-07-03', values: { define: 30 } },
+    ];
+    const prev = buildSheetState(null, rows, DMAIC, LABELS);
+    prev.columns.push({ ...NOTE(['a', null, 'c'], [null, null, null]), type: 'text' });
+    // Wechsel nach DMADV: improve fällt weg, damit auch der Tag 07-02.
+    const next = buildSheetState(prev, [rows[0], rows[2]], DMADV, LABELS);
+    const { sheet } = await apply(prev, next);
+    assertDeepEqual(byRef(sheet, DATE_REF).values, ['2026-07-01', '2026-07-03']);
+    assertDeepEqual(byId(sheet, 'u1').values, ['a', 'c']);
+    assertEqual(byRef(sheet, 'improve'), undefined);
+  });
+
+  test('Umordnung samt Formel einer ungesperrten Nutzerspalte: die Formel wandert mit ihrer Zeile', async () => {
+    const D1 = { date: '2026-07-10', values: { define: 20 } };
+    const D2 = { date: '2026-07-12', values: { define: 40 } };
+    const prev = buildSheetState(null, [D1, D2], ['define'], LABELS);
+    prev.columns.push({ ...NOTE([null, 80], [null, '=40*2']), meta: null });
+    const D0 = { date: '2026-07-01', values: { define: 5 } };
+    const next = buildSheetState(prev, [D0, D1, D2], ['define'], LABELS);
+    const { sheet } = await apply(prev, next);
+    assertDeepEqual(byId(sheet, 'u1').values, [null, null, 80]);
+    assertDeepEqual(formulaAt(sheet, 'u1'), { 2: '=40*2' });
+  });
+
+  test('Tage vertauscht (Datum von Hand geändert): moveRow bringt die Zeilen samt gesperrter Zelle in Datumsfolge', async () => {
+    const prev = buildSheetState(null, [
+      { date: '2026-07-01', values: { define: 10 } },
+      { date: '2026-07-03', values: { define: 30 } },
+    ], ['define'], LABELS);
+    prev.columns.push(NOTE([1, 3], [null, null], 'soft'));
+    // Der Nutzer hat das erste Datum auf 07-05 gesetzt; der Verlauf ist schon gelesen.
+    byRef(prev, DATE_REF).values[0] = '2026-07-05';
+    const next = buildSheetState(prev, [
+      { date: '2026-07-03', values: { define: 30 } },
+      { date: '2026-07-05', values: { define: 10 } },
+    ], ['define'], LABELS);
+    const { stack, sheet } = await apply(prev, next);
+    assertTrue(ofMethodOf(stack, 'moveRow').length > 0);
+    assertDeepEqual(byRef(sheet, DATE_REF).values, ['2026-07-03', '2026-07-05']);
+    assertDeepEqual(byId(sheet, 'u1').values, [3, 1]);
+  });
+
+  test('Rückfall: verlöre eine gesperrte Zelle ihr Datum, plant er nichts', () => {
+    const prev = buildSheetState(null, [{ date: '2026-07-01', values: { define: 10 } }], ['define'], LABELS);
+    prev.columns.push(NOTE([9], [null]));
+    const next = buildSheetState(prev, [{ date: '2026-07-01', values: { define: 10 } }], ['define'], LABELS);
+    next.rowOrigin = [null];                       // ein Herkunftsplan, der Zeile 0 fallen ließe
+    next.columns.find(c => c.meta?.managedRef === 'define').values = [11];
+    const warn = console.warn;
+    console.warn = () => {};
+    try {
+      assertDeepEqual(planZegStack('ws1', SHEET, prev, next), []);
+    } finally { console.warn = warn; }
   });
 });

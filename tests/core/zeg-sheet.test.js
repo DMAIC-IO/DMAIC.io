@@ -321,6 +321,25 @@ suite('core/zeg-sheet sync', () => {
     assertTrue((zegSheet(fx, ref).formulas ?? []).some(f => f.columnId === id && f.formula === '=C2[1]*2'));
   });
 
+  test('cycle switch drops a day: a hard-locked user cell stays on its date (R18)', async () => {
+    const fx = makeCtx({ history: {
+      define: [{ t: new Date(2026, 6, 1, 12).getTime(), v: 10 }, { t: new Date(2026, 6, 3, 12).getTime(), v: 30 }],
+      improve: [{ t: new Date(2026, 6, 2, 12).getTime(), v: 50 }],
+    } });
+    const ref = await ensureZegSheet(fx.ctx);
+    const model = WorksheetModel.fromJSON(fx.modules.get(ref.instanceId));
+    const [id] = model.writeColumns({ sheetId: ref.sheetId, columns: [{ to: 'append', name: 'Notiz', type: 'text', values: ['a', null, 'c'] }] });
+    model.setColumnMeta({ sheetId: ref.sheetId, columnId: id, meta: { lock: 'hard' } });
+    fx.modules.set(ref.instanceId, structuredClone(model.toJSON()));
+    installZegSheetSync(fx.ctx);
+    fx.ctx.stateManager.getProjectCycle = () => 'dmadv';
+    fx.ctx.eventBus.emit('cycle:changed', { cycle: 'dmadv' });
+    await settleSync();
+    const sheet = zegSheet(fx, ref);
+    assertDeepEqual(colOf(sheet, DATE_REF).values, ['2026-07-01', '2026-07-03']);
+    assertDeepEqual(sheet.columns.find(c => c.id === id).values, ['a', 'c']);
+  });
+
   test('writeHistoryToSheet without a sheet does nothing', async () => {
     const { ctx, stacks } = makeCtx();
     assertEqual(await writeHistoryToSheet(ctx), false);

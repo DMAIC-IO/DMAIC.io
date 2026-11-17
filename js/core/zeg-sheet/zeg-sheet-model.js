@@ -201,6 +201,8 @@ export function buildSheetState(prevState, rows, phaseIds, labels) {
     ...(prevState || {}),
     columns,
     rowCount,
+    // Alte Zeile je neuer Zeile (null = neu): `planZegStack` verschiebt danach ganze Zeilen (R18).
+    rowOrigin: Array.from({ length: rowCount }, (_, i) => order[i] ?? null),
     sortCol: null,
     sortDir: null,
     selection: null,
@@ -274,40 +276,35 @@ function sheetMatches(prev, next) {
 /**
  * Plan the agent stack that turns the ZEG sheet `prev` into `next` (from
  * `buildSheetState`): `instance.call`s on the worksheet, in this order —
- * one `writeColumns` (id `'write'`) for all target columns (existing ones
- * by id, new ones appended with name, type and format); `setColumnMeta`
- * per new column (its id as a reference into the write result) and per
- * existing column whose meta changed; `removeColumn` per dropped column;
- * `moveColumn` per column off its target index; `removeRows` for surplus
- * rows; `setFormula` per formula cell (`writeColumns` clears formulas).
- * Empty if the sheet already matches. Pure.
  *
- * Locked user columns (`meta.lock`, hard or soft) are never written: no
- * `writeColumns` entry (it would clear their formulas) and no `setFormula`
- * (the worksheet refuses it on any lock, and the whole stack would roll
- * back). They count with their current cells, so a difference in them alone
- * plans nothing (P11).
+ * 1. rows as a whole (R18), from `next.rowOrigin` (old row per new row,
+ *    null = new): `removeRows` for dropped old rows (bottom up), `moveRow`
+ *    until the kept rows stand in their new order, `addRows` with
+ *    `position` for new rows between them (new rows at the end come from
+ *    `writeColumns`). Whole rows carry every user cell, locked or not, and
+ *    its formulas — user columns are never written;
+ * 2. one `writeColumns` (id `'write'`) for the managed columns (existing
+ *    ones by id, new ones appended with name, type and format);
+ * 3. `setColumnMeta` per new column (its id as a reference into the write
+ *    result) and per existing column whose meta changed;
+ * 4. `removeColumn` per dropped column, `moveColumn` per column off its
+ *    target index.
+ *
+ * Without `next.rowOrigin` rows keep their place. Would a cell of a locked
+ * user column lose its date anyway (its row dropped, or its date no longer
+ * the same), nothing is planned and a warning is logged: the sheet stays
+ * stale rather than losing data (P11). Empty if the sheet already matches.
+ * Pure apart from that warning.
  *
  * Columns are sheet-state shaped: `{ id, name, type, format, meta, values,
  * formulas? }` with per-column `values`/`formulas` arrays.
  * @param {string} instanceId the worksheet instance
  * @param {string} sheetId the ZEG sheet
  * @param {{columns: object[], rowCount: number}} prev the sheet as read
- * @param {{columns: object[], rowCount: number}} next the target state
+ * @param {{columns: object[], rowCount: number, rowOrigin?: Array<number|null>}} next the target state
  * @returns {object[]} the stack, `[]` if nothing differs
  */
 export function planZegStack(instanceId, sheetId, prev, next) {
-  // P11: gesperrte Nutzerspalten bleiben, wie sie sind.
-  const lockedPrev = new Map((prev.columns || []).filter(isLockedUserColumn).map(c => [c.id, c]));
-  if (lockedPrev.size) {
-    next = {
-      ...next,
-      columns: next.columns.map(c => {
-        const cur = lockedPrev.get(c.id);
-        return cur ? { ...c, values: cur.values, formulas: cur.formulas, meta: cur.meta } : c;
-      }),
-    };
-  }
   if (sheetMatches(prev, next)) return [];
   // Kommandos des Arbeitsblatts nehmen genau ein Objekt (`args: [{ … }]`).
   const call = (method, cmd, id) => ({
@@ -316,21 +313,60 @@ export function planZegStack(instanceId, sheetId, prev, next) {
   const prevCols = prev.columns || [];
   const prevById = new Map(prevCols.map(c => [c.id, c]));
   const n = next.rowCount;
+  const prevRows = prev.rowCount ?? 0;
+  const origin = Array.isArray(next.rowOrigin)
+    ? next.rowOrigin
+    : Array.from({ length: n }, (_, i) => (i < prevRows ? i : null));
 
-  // 1. Schreiben: neue Spalten hängen hinten an, ihre Id kommt als Referenz.
+  // Rückfall: eine gesperrte Zelle, die ihr Datum verlöre, wird nicht angefasst.
+  if (locksLoseTheirDate(prevCols, next, origin, prevRows)) {
+    console.warn('[zeg-sheet] a locked user cell would lose its date; the sheet is left as it is');
+    return [];
+  }
+
+  const stack = [];
+  // 1. Zeilen als Ganzes: entfernen (von unten), umordnen, dazwischen einfügen.
+  const kept = new Set(origin.filter(r => r !== null));
+  const dropped = [];
+  for (let r = 0; r < prevRows; r++) if (!kept.has(r)) dropped.push(r);
+  for (let k = dropped.length - 1; k >= 0; k--) {
+    const last = k;
+    while (k > 0 && dropped[k - 1] === dropped[k] - 1) k--;
+    stack.push(call('removeRows', { sheetId, startRow: dropped[k], count: last - k + 1 }));
+  }
+  const cur = [...kept].sort((a, b) => a - b);
+  const order = origin.filter(r => r !== null);
+  order.forEach((r, i) => {
+    if (cur[i] === r) return;
+    const from = cur.indexOf(r);
+    cur.splice(from, 1);
+    cur.splice(i, 0, r);
+    stack.push(call('moveRow', { sheetId, fromRow: from, toRow: i }));
+  });
+  let len = cur.length;
+  for (let i = 0; i < n && i < len;) {
+    if (origin[i] !== null) { i++; continue; }
+    let j = i;
+    while (j < n && origin[j] === null) j++;
+    stack.push(call('addRows', { sheetId, position: i, count: j - i }));
+    len += j - i;
+    i = j;
+  }
+
+  // 2. Schreiben der verwalteten Spalten: neue hängen hinten an, ihre Id kommt als Referenz.
   const ref = new Map();
   const entries = [];
   for (const col of next.columns) {
-    if (lockedPrev.has(col.id)) continue;
+    if (prevById.has(col.id) && !isZegColumn(prevById.get(col.id))) continue;
     const values = cells(col.values, n);
     if (prevById.has(col.id)) { entries.push({ to: col.id, values }); continue; }
     ref.set(col.id, { $from: WRITE_ID, path: `value.${entries.length}` });
     entries.push({ to: 'append', name: col.name, type: col.type, format: { ...(col.format ?? {}) }, values });
   }
   const target = (col) => ref.get(col.id) ?? col.id;
-  const stack = [call('writeColumns', { sheetId, columns: entries }, WRITE_ID)];
+  stack.push(call('writeColumns', { sheetId, columns: entries }, WRITE_ID));
 
-  // 2. Merkmale: neue Spalten immer, bestehende bei Abweichung.
+  // 3. Merkmale: neue Spalten immer, bestehende bei Abweichung.
   for (const col of next.columns) {
     const meta = cleanMeta(col.meta);
     const old = prevById.get(col.id);
@@ -338,34 +374,45 @@ export function planZegStack(instanceId, sheetId, prev, next) {
     stack.push(call('setColumnMeta', { sheetId, columnId: target(col), meta: Object.keys(meta).length ? meta : null }));
   }
 
-  // 3. Weggefallene Spalten.
+  // 4. Weggefallene Spalten, dann die Reihenfolge (neue Spalten stehen nach dem Schreiben hinten).
   const nextIds = new Set(next.columns.map(c => c.id));
   for (const col of prevCols) {
     if (!nextIds.has(col.id)) stack.push(call('removeColumn', { sheetId, columnId: col.id }));
   }
-
-  // 4. Reihenfolge: nach dem Schreiben stehen neue Spalten hinten.
-  const order = [...prevCols.filter(c => nextIds.has(c.id)).map(c => c.id),
+  const colOrder = [...prevCols.filter(c => nextIds.has(c.id)).map(c => c.id),
     ...next.columns.filter(c => ref.has(c.id)).map(c => c.id)];
   next.columns.forEach((col, i) => {
-    if (order[i] === col.id) return;
-    order.splice(order.indexOf(col.id), 1);
-    order.splice(i, 0, col.id);
+    if (colOrder[i] === col.id) return;
+    colOrder.splice(colOrder.indexOf(col.id), 1);
+    colOrder.splice(i, 0, col.id);
     stack.push(call('moveColumn', { sheetId, columnId: target(col), toIndex: i }));
   });
-
-  // 5. Überzählige Zeilen.
-  const prevRows = prev.rowCount ?? 0;
-  if (n < prevRows) stack.push(call('removeRows', { sheetId, startRow: n, count: prevRows - n }));
-
-  // 6. Formeln, die `writeColumns` gelöscht hat (gesperrte Spalten hat es nicht angefasst).
-  for (const col of next.columns) {
-    if (lockedPrev.has(col.id)) continue;
-    cells(col.formulas, n).forEach((f, row) => {
-      if (typeof f === 'string' && f !== '') stack.push(call('setFormula', { sheetId, columnId: target(col), row, formula: f }));
-    });
-  }
   return stack;
+}
+
+/** True for a cell that holds something (value or formula). */
+function filled(v) {
+  return v !== null && v !== undefined && v !== '';
+}
+
+/**
+ * Would a filled cell of a locked user column lose its date: its old row
+ * dropped, or the row's date (a valid ISO day before) no longer the same?
+ * @param {object[]} prevCols
+ * @param {{columns: object[], rowCount: number}} next
+ * @param {Array<number|null>} origin old row per new row
+ * @param {number} prevRows
+ * @returns {boolean}
+ */
+function locksLoseTheirDate(prevCols, next, origin, prevRows) {
+  const locked = prevCols.filter(isLockedUserColumn);
+  if (!locked.length) return false;
+  const holds = (r) => locked.some(c => filled(c.values?.[r]) || filled(c.formulas?.[r]));
+  const oldDates = prevCols.find(c => isZegColumn(c) && c.meta.managedRef === DATE_REF)?.values ?? [];
+  const newDates = next.columns.find(c => isZegColumn(c) && c.meta.managedRef === DATE_REF)?.values ?? [];
+  const kept = new Set(origin.filter(r => r !== null));
+  for (let r = 0; r < prevRows; r++) if (!kept.has(r) && holds(r)) return true;
+  return origin.some((r, i) => r !== null && holds(r) && isIsoDate(oldDates[r]) && newDates[i] !== oldDates[r]);
 }
 
 /**

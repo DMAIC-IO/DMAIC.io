@@ -6,9 +6,12 @@
  * `instance.call` lädt den gespeicherten Stand in das echte Model des
  * Arbeitsblatts (`WorksheetModel`, Zielform), ruft das Kommando und legt den
  * Stand zurück. `{ $from, path }`-Verweise werden in jeder Tiefe aufgelöst.
+ * Wie die echte Fläche nimmt sie nur Aktionen des Katalogs (`@agent`); ein
+ * `@noagent`-Kommando wie `applyRowPermutation` scheitert.
  * Nur für Tests.
  */
 import { WorksheetModel } from '../../js/modules/worksheet/domain/model.js';
+import { AGENT_REGISTRY } from '../../js/core/agent/agent-registry.generated.js';
 
 /** Wert an einem Punktpfad (`value.3`) eines Ergebnisses. */
 function at(obj, path) {
@@ -50,6 +53,9 @@ export function fakeKernelSurface({ state, modules, isCompleted }) {
             state.phases[action.phase] = [...items, { instanceId, moduleId: action.module, order: items.length, state: {} }];
             result = { instanceId, module: action.module, phase: action.phase };
           } else if (action.op === 'instance.call') {
+            if (!Object.hasOwn(AGENT_REGISTRY.worksheet.actions, action.method)) {
+              throw new Error(`unknown_method: ${action.method} is not an agent action`);
+            }
             const id = resolve(action.instance, byId);
             const model = WorksheetModel.fromJSON(modules.get(id) ?? undefined);
             const value = model[action.method](resolve(action.args[0], byId));

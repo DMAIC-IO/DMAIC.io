@@ -138,4 +138,26 @@ suite('core/zeg-sheet planZegStack gegen ein echtes Arbeitsblatt', () => {
         buildSheetState(w.current(), [D2], ['define', 'measure'], LABELS)), []);
     } finally { await w.unmount(); }
   });
+
+  test('Zykluswechsel lässt einen Tag fallen: ganze Zeilen über die echte Fläche, gesperrte Zelle bleibt bei ihrem Datum (R18)', async () => {
+    const DMAIC = ['define', 'measure', 'analyze', 'improve', 'control'];
+    const L = { date: 'Datum', phases: { ...LABELS.phases, improve: 'Improve', design: 'Design', verify: 'Verify' } };
+    const rows = [
+      { date: '2026-07-01', values: { define: 10 } },
+      { date: '2026-07-02', values: { improve: 50 } },
+      { date: '2026-07-03', values: { define: 30 } },
+    ];
+    const prev = buildSheetState(null, rows, DMAIC, L);
+    prev.columns.push({ id: 'u1', name: 'Notiz', shortName: 'C7', type: 'text', values: ['a', null, 'c'], formulas: [null, null, null], format: {}, meta: { lock: 'hard' }, role: 'freeText', roleManual: false });
+    const w = await setup(prev);
+    try {
+      const next = buildSheetState(w.current(), [rows[0], rows[2]], ['define', 'measure', 'analyze', 'design', 'verify'], L);
+      const stack = planZegStack(WS_ID, w.sheetId, w.current(), next);
+      const out = await w.interact(stack);
+      assertEqual(out.ok, true, JSON.stringify(out));
+      const cur = w.current();
+      assertDeepEqual(cur.columns.find(c => c.meta?.managedRef === 'date').values, ['2026-07-01', '2026-07-03']);
+      assertDeepEqual(cur.columns.find(c => c.id === 'u1').values, ['a', 'c']);
+    } finally { await w.unmount(); }
+  });
 });
