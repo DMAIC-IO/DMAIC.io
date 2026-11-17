@@ -1,0 +1,211 @@
+<section class="worksheet worksheet-module" x-data="worksheet"
+         x-file-drop="importFile" data-file-drop-accept=".csv,.tsv,.xlsx,.xls">
+
+  <!-- ═══ Werkzeugleiste ═══ -->
+  <div class="worksheet-toolbar">
+    <button type="button" class="toolbar__btn" data-action="undo"
+            data-help-key="modules.worksheet.actions.undo.help"
+            :title="t('undo')" :disabled="!canUndo" @click="undo()">
+      <span class="icon icon--sm" data-icon="action.undo" aria-hidden="true"></span>
+    </button>
+    <button type="button" class="toolbar__btn" data-action="redo"
+            data-help-key="modules.worksheet.actions.redo.help"
+            :title="t('redo')" :disabled="!canRedo" @click="redo()">
+      <span class="icon icon--sm" data-icon="action.redo" aria-hidden="true"></span>
+    </button>
+    <div class="toolbar__sep"></div>
+    <button type="button" class="toolbar__btn" data-action="add-col"
+            x-command="addColumn" :data-arg-sheet-id="model.activeSheetId" :title="t('addColumn')">
+      <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
+      <span x-text="t('column')"></span>
+    </button>
+    <button type="button" class="toolbar__btn" data-action="add-rows"
+            x-command="addRows" :data-arg-sheet-id="model.activeSheetId" :title="t('addRows')">
+      <span class="icon icon--sm" data-icon="action.add" aria-hidden="true"></span>
+      <span x-text="t('rows')"></span>
+    </button>
+    <div class="toolbar__sep"></div>
+    <button type="button" class="toolbar__btn toolbar__btn--accent" data-action="import" data-file-drop-open
+            data-help-key="modules.worksheet.actions.importFile.help" :title="t('importFile')">
+      <span class="icon icon--sm" data-icon="action.upload" aria-hidden="true"></span>
+      <span x-text="t('import')"></span>
+    </button>
+    <div class="toolbar__dropdown" data-action="export-dropdown">
+      <button type="button" class="toolbar__btn" data-help-key="modules.worksheet.actions.exportAs.help"
+              :title="t('export')" :aria-expanded="exportExpanded" @click="toggleExport($event)">
+        <span class="icon icon--sm" data-icon="action.download" aria-hidden="true"></span>
+        <span x-text="t('export')"></span>
+        <span class="icon icon--sm toolbar__chevron" data-icon="nav.expand-down" aria-hidden="true"></span>
+      </button>
+      <div class="toolbar__dropdown-menu" :class="exportMenuClass">
+        <button type="button" class="toolbar__dropdown-item" data-action="export-xlsx" data-help-key=""
+                x-command="exportAs" data-arg-format="xlsx" x-text="t('exportXlsx')"></button>
+        <button type="button" class="toolbar__dropdown-item" data-action="export-csv" data-help-key=""
+                x-command="exportAs" data-arg-format="csv" x-text="t('exportCsv')"></button>
+        <button type="button" class="toolbar__dropdown-item" data-action="export-json" data-help-key=""
+                x-command="exportAs" data-arg-format="json" x-text="t('exportJson')"></button>
+      </div>
+    </div>
+    <div class="toolbar__sep"></div>
+    <button type="button" class="toolbar__btn" data-action="delete"
+            data-help-key="modules.worksheet.actions.deleteSelection.help"
+            :title="t('deleteSelection')" @click="deleteSelection()">
+      <span class="icon icon--sm" data-icon="action.delete" aria-hidden="true"></span>
+    </button>
+    <div class="toolbar__sep"></div>
+    <button type="button" class="toolbar__btn toolbar__btn--accent" data-action="formula-editor"
+            x-command="openFormulaEditor" :title="formulaBtnTitle">
+      <span class="icon icon--sm" data-icon="module.model-data-generator" aria-hidden="true"></span>
+      <span x-text="t('formula')"></span>
+    </button>
+    <div class="toolbar__sep"></div>
+    <button type="button" class="toolbar__btn" data-action="suggest-chart"
+            x-command="suggestChart" :title="suggestTitle" :disabled="!canSuggest">
+      <span class="icon icon--sm" data-icon="module.chart-suggestion" aria-hidden="true"></span>
+      <span x-text="t('suggestChart')"></span>
+    </button>
+    <div class="toolbar__spacer"></div>
+  </div>
+
+  <!-- ═══ Raster des aktiven Blatts (Widget datagrid über table()) ═══ -->
+  <div class="worksheet__grid dmike-embedded-grid dmike-embedded-grid--fill" data-ref="grid-wrap">
+    <template x-for="sheet in model.sheets" :key="sheet.id">
+      <template x-if="sheet.id === model.activeSheetId">
+        <div class="worksheet__grid-host" x-widget="datagrid"
+             x-widget-table="sheet.data" x-widget-columns="sheet.columns"
+             x-widget-formulas="sheet.formulas" x-widget-rev="model.$tableRev"
+             x-widget-config="gridConfig"></div>
+      </template>
+    </template>
+    <div class="datagrid__dropzone worksheet__dropzone" data-ref="dropzone">
+      <div class="datagrid__dropzone-text" x-text="t('dropzoneText')"></div>
+    </div>
+  </div>
+
+  <!-- ═══ Reiter und Statuszeile ═══ -->
+  <div class="sheet-tabs" data-ref="sheet-tabs"
+       @contextmenu="onTabContextMenu($event)" @dblclick="onTabDblClick($event)">
+    <template x-for="sheet in model.sheets" :key="sheet.id">
+      <button type="button" class="sheet-tab" :class="tabClass(sheet)" :data-sheet-id="sheet.id"
+              x-command="switchSheet" :data-arg-id="sheet.id">
+        <template x-if="isRenaming(sheet)">
+          <input class="sheet-tab__editor" x-model="state.renameDraft"
+                 @blur="commitRename()" @keydown="onRenameKeydown($event)">
+        </template>
+        <template x-if="!isRenaming(sheet)">
+          <span class="sheet-tab__name" x-text="sheet.name"></span>
+        </template>
+      </button>
+    </template>
+    <button type="button" class="sheet-tab-add" x-command="addSheet" :data-arg-name="nextSheetName"
+            :title="t('addSheet')">+</button>
+    <span class="sheet-tabs__spacer"></span>
+    <span class="sheet-tabs__status" data-ref="status-selection" x-text="statusSelection"></span>
+    <span class="sheet-tabs__status" data-ref="status-dims" x-text="statusDims"></span>
+  </div>
+
+  <!-- ═══ Kontextmenü eines Reiters ═══ -->
+  <template x-if="tabMenuOpen">
+    <div class="context-menu worksheet__tab-menu" role="menu" :style="tabMenuStyle">
+      <div class="context-menu__item" role="menuitem" data-menu-id="rename" @click="tabMenuRename()">
+        <span x-text="t('renameSheet')"></span>
+      </div>
+      <div class="context-menu__item" role="menuitem" data-menu-id="duplicate" @click="tabMenuDuplicate()">
+        <span x-text="t('duplicateSheet')"></span>
+      </div>
+      <div class="context-menu__sep"></div>
+      <div class="context-menu__item" role="menuitem" data-menu-id="insert-before" @click="tabMenuInsertBefore()">
+        <span x-text="t('insertSheetBefore')"></span>
+      </div>
+      <div class="context-menu__sep"></div>
+      <div class="context-menu__item context-menu__item--danger" role="menuitem" data-menu-id="delete" @click="tabMenuDelete()">
+        <span x-text="t('deleteSheet')"></span>
+      </div>
+    </div>
+  </template>
+
+  <!-- Formel-Editor und Rollenbestätigung: versteckt, dem Dialogdienst geliehen. -->
+  <div class="worksheet__modal-forms" hidden>
+    <div class="formula-editor" x-ref="formulaForm" @click="closeChipMenu()">
+      <div class="formula-editor__fn-bar">
+        <div class="formula-editor__fn-label" x-text="t('feFunctions')"></div>
+        <template x-for="chip in formulaChips" :key="chip.id">
+          <span class="worksheet__chip-slot">
+            <template x-if="!hasMenu(chip)">
+              <span class="fn-chip" :class="chipClass(chip)" :title="chipTitle(chip)"
+                    x-text="chip.label" @click="insertChip(chip, $event)"></span>
+            </template>
+            <template x-if="hasMenu(chip)">
+              <span class="fn-chip-group" :class="chipGroupClass(chip)">
+                <span class="fn-chip fn-chip--has-menu" :class="chipClass(chip)" @click="toggleChipMenu(chip, $event)">
+                  <span x-text="chip.label"></span>
+                  <span class="icon icon--sm fn-chip__arrow" data-icon="nav.expand-down" aria-hidden="true"></span>
+                </span>
+                <span class="fn-chip-group__menu" :style="formulaMenuStyle">
+                  <template x-for="entry in chip.items" :key="entry.name">
+                    <span class="fn-chip-group__item" x-text="menuItemLabel(entry)" @click="insertChip(entry, $event)"></span>
+                  </template>
+                </span>
+              </span>
+            </template>
+          </span>
+        </template>
+      </div>
+      <div class="formula-editor__cols-bar">
+        <div class="formula-editor__cols-label" x-text="t('feColumnRefs')"></div>
+        <template x-for="col in formulaColumns" :key="col.id">
+          <span class="col-ref-pill" :title="columnPillTitle(col)" @click="insertColumnRef(col)">
+            <span x-text="pillName(col)"></span>
+            <template x-if="col.name">
+              <span class="col-ref-pill__short" x-text="col.shortName"></span>
+            </template>
+          </span>
+        </template>
+      </div>
+      <div class="formula-editor__body">
+        <div class="formula-editor__textarea-wrap" data-help-key="modules.worksheet.state.formulaText.help">
+          <textarea :class="formulaTextClass" x-ref="formulaText" x-model="state.formulaText"
+                    :placeholder="t('fePlaceholder')" spellcheck="false" autocomplete="off"
+                    @keydown="onFormulaKeydown($event)"></textarea>
+        </div>
+        <div class="formula-editor__preview">
+          <span class="formula-editor__preview-label" x-text="t('fePreview')"></span>
+          <span :class="formulaPreviewClass" x-text="formulaPreview.text"></span>
+        </div>
+        <div class="formula-editor__ref-guide">
+          <div class="formula-editor__ref-guide-title" x-text="t('feRefGuideTitle')"></div>
+          <table class="formula-editor__ref-table">
+            <tr><td class="fe-ref-syntax"><code>C2</code> <code x-text="refExampleCode"></code></td><td x-text="t('feRefCol')"></td></tr>
+            <tr><td class="fe-ref-syntax"><code>C2[5]</code> <code x-text="refExampleCellCode"></code></td><td x-text="t('feRefCell')"></td></tr>
+            <tr><td class="fe-ref-syntax"><code>C1:C3</code> <code>'A':'C'</code></td><td x-text="t('feRefRange')"></td></tr>
+            <tr><td class="fe-ref-syntax"><code>C1[2]:C3[5]</code> <code>'A'[2]:'C'[5]</code></td><td x-text="t('feRefCellRange')"></td></tr>
+          </table>
+          <table class="formula-editor__ref-table formula-editor__ref-table--sep">
+            <tr><td class="fe-ref-syntax"><code>SUM(C1; C3)</code> <code x-text="refIfExample"></code></td><td x-text="t('feRefSep')"></td></tr>
+          </table>
+        </div>
+        <div class="formula-editor__help">
+          <kbd>Ctrl+Enter</kbd> <span x-text="t('feApply')"></span> &nbsp;·&nbsp; <kbd>Esc</kbd> <span x-text="cancelText"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="worksheet-role-confirm" x-ref="roleConfirmForm">
+      <div class="dmike-popout-message" data-help-key="modules.worksheet.actions.confirmRoles.help"
+           x-text="t('confirmRolesIntro')"></div>
+      <div class="worksheet-role-confirm__list">
+        <template x-for="row in state.roleDraft" :key="row.columnId">
+          <div class="worksheet-role-confirm__row">
+            <div class="worksheet-role-confirm__name" x-text="row.name"></div>
+            <div class="worksheet-role-confirm__type" x-text="row.type"></div>
+            <select class="worksheet-role-confirm__select" @change="onRoleDraftChange($event, row)">
+              <template x-for="opt in row.options" :key="opt.value">
+                <option :value="opt.value" x-text="opt.label" :selected="opt.value === row.role"></option>
+              </template>
+            </select>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+</section>

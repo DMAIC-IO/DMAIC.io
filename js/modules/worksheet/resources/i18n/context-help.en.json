@@ -1,0 +1,372 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "sheets": {
+      "help": "All sheets of the workbook in tab order, each with id and name."
+    },
+    "sheetId": {
+      "help": "The id of the sheet the columns and rows of this answer belong to."
+    },
+    "rowCount": {
+      "help": "The number of data rows of the sheet."
+    },
+    "columns": {
+      "help": "The column headers of the sheet. id is the columnId of a column reference, shortName the short form used in formulas (C1, C2 …), role the role of the column, roleConfirmed true when it was set or confirmed by hand (role dialog or setColumnRole), false for an automatically detected role. A type change the role no longer fits resets the confirmation. format lists the display format keys set (decimals, dateFormat, timeFormat); a missing key means the type's default. meta is the column's meta (lock, reason, managedBy, managedRef, categoricalCoding) or null; setColumnMeta sets it. With the read option columns each column also carries values: its cell values from row 0 on, one per row."
+    },
+    "rows": {
+      "help": "The data rows of the sheet, each row in column order. Bulk data: without options.fields = ['rows'] only the extent is returned."
+    },
+    "formulas": {
+      "help": "Which cells of the sheet are computed, each with columnId, zero-based row and formula text. Bulk data: without options.fields = ['formulas'] only the extent is returned."
+    }
+  },
+  "state": {
+    "renameDraft": {
+      "help": "The new name of the sheet. Enter or leaving the field applies it, Esc discards it; an empty field keeps the old name."
+    },
+    "formulaText": {
+      "help": "The formula, starting with \"=\", or a plain value. The preview computes as you type."
+    }
+  },
+  "actions": {
+    "setCells": {
+      "help": "Writes a block of values into one column, downwards from a row. Type detection, locks and undo as with cell entry. Values only: a formula such as =C1*2 is written as text, not evaluated — formulas are written with setFormula. A plain value written into a formula cell OVERWRITES the formula — read().formulas says which cells are computed; undo restores value and formula.",
+      "params": {
+        "sheetId": "The id of the sheet, listed under sheets in the read state. An inactive sheet is written without bringing it into view.",
+        "columnId": "The id of the target column, as read().columns[].id names it.",
+        "startRow": "Zero-based index of the first row.",
+        "values": "The values, one per row; formula text is not evaluated.",
+        "command": "The command as one object with sheetId, columnId, startRow and values."
+      }
+    },
+    "setFormula": {
+      "help": "Writes a formula into one cell of the sheet, like the formula editor: stored as text, evaluated at once, with undo. Returns the computed value and an error code such as #DIV/0 (otherwise null); on an evaluation error the formula stays and the cell is empty. Locked columns refuse.",
+      "params": {
+        "sheetId": "The id of the sheet, listed under sheets in the read state. An inactive sheet is written without bringing it into view.",
+        "columnId": "The id of the target column, as read().columns[].id names it.",
+        "row": "Zero-based row index; the row count appends a row.",
+        "formula": "Formula text starting with =, e.g. =C1[2]*2 (column 1, row 2, both counted from 1). Values without = are written with setCells.",
+        "command": "The command as one object with sheetId, columnId, row and formula."
+      }
+    },
+    "writeColumns": {
+      "help": "Write several columns in one step: append, fill empty start columns or overwrite existing columns.",
+      "params": {
+        "sheetId": "The id of the sheet, listed under sheets in the read state. An inactive sheet is written without bringing it into view.",
+        "columns": "The columns in write order, each { to, name?, type?, values, unit?, format?, discrete? }. to: 'append' adds a new column, 'start' fills the next empty, unnamed start column (C1–C5) or appends, otherwise the id of a column to overwrite (values and formulas replaced, name kept). type is a column type, default 'numeric'; discrete: true gives a new numeric column without format 0 decimals. If one entry is invalid, nothing is written; the whole call is one undo step.",
+        "command": "The command as one object with sheetId and columns."
+      }
+    },
+    "importCsv": {
+      "help": "Replaces the sheet's content with CSV data. Delimiter and header row are detected; the step can be reverted with undo.",
+      "params": {
+        "sheetId": "The id of the sheet, listed under sheets in the read state. An inactive sheet is written without bringing it into view.",
+        "csvText": "The full CSV or TSV text, header row included if present.",
+        "command": "The command as one object with sheetId and csvText."
+      }
+    },
+    "pasteBlock": {
+      "help": "Pastes a block as from the clipboard at a cell, like Ctrl+V in the grid. If the first row is text and the second holds a number, the first row is a header and names unnamed columns. Each column hit gets its type from its values. Missing rows and columns are added. Formulas in the cells hit are removed. If a locked column lies in the block, nothing is written. Returns the number of pasted columns and rows without the header.",
+      "params": {
+        "sheetId": "The id of the sheet, as read().sheets[].id names it.",
+        "columnId": "The id of the column at the top left of the block, as read().columns[].id names it.",
+        "startRow": "Zero-based row of the top left cell; the row count appends below the last row.",
+        "rows": "The block as rows of cell texts, each row in column order, e.g. [[\"Length\", \"Site\"], [\"1.5\", \"A\"]]. Empty texts become empty cells.",
+        "command": "The command as one object with sheetId, columnId, startRow and rows."
+      }
+    },
+    "fillRange": {
+      "help": "Continues a range like the grid's fill handle: a series (numbers, dates, text ending in a number) is continued, anything else repeated; ctrl reverses that. Formulas move along with shifted references. Filling down extends the sheet if needed. Locked columns stay unchanged. Returns the number of cells written.",
+      "params": {
+        "sheetId": "The id of the sheet, as read().sheets[].id names it.",
+        "source": "The source range { c0, r0, c1, r1 }: first and last column, first and last row, all zero-based.",
+        "target": "The whole target range { c0, r0, c1, r1 } including the source. It extends the source in exactly one direction (up, down, left or right), downwards at most 10000 rows past the last row; any other range is an error.",
+        "ctrl": "true reverses the kind like Ctrl while dragging: a series is copied, a single number counted on. Default false.",
+        "command": "The command as one object with sheetId, source, target and ctrl."
+      }
+    },
+    "clearRange": {
+      "help": "Clears values and formulas of a range, like Delete in the grid. Locked columns stay unchanged. Returns the number of cells that held a value or a formula.",
+      "params": {
+        "sheetId": "The id of the sheet, as read().sheets[].id names it.",
+        "c0": "Zero-based first column of the range.",
+        "r0": "Zero-based first row of the range.",
+        "c1": "Zero-based last column of the range, at least c0.",
+        "r1": "Zero-based last row of the range, at least r0.",
+        "command": "The command as one object with sheetId, c0, r0, c1 and r1."
+      }
+    },
+    "restoreCells": {
+      "help": "Undo only: resets cells, row and column count of a sheet to a saved state. Agents do not call it.",
+      "params": {
+        "sheetId": "The id of the sheet, as read().sheets[].id names it.",
+        "rowCount": "Saved state for the inverse.",
+        "columnCount": "Saved state for the inverse.",
+        "cols": "Saved state for the inverse.",
+        "command": "The command as one object with sheetId, rowCount, columnCount and cols."
+      }
+    },
+    "addColumn": {
+      "help": "Adds an empty column to the sheet — at the end without a position. The agent receives the new column's id.",
+      "params": {
+        "sheetId": "The id of the sheet, listed under sheets in the read state. An inactive sheet is written without bringing it into view.",
+        "position": "Zero-based place of the new column: 0 puts it first, the column count or no value appends it.",
+        "command": "The command as one object with sheetId, optionally position."
+      }
+    },
+    "removeColumn": {
+      "help": "Removes a column with its values and formulas. Hard-locked columns (managed by the DoE planner, for example) cannot be removed. Undo brings the column back.",
+      "params": {
+        "sheetId": "The id of the sheet, listed under sheets in the read state. An inactive sheet is written without bringing it into view.",
+        "columnId": "The id of the column to remove.",
+        "command": "The command as one object with sheetId and columnId."
+      }
+    },
+    "renameColumn": {
+      "help": "Renames a column; formulas that mention the old name are updated. If another column already has the name, \" (2)\" is appended — the agent receives the actual name. Locked columns cannot be renamed. Undo restores the old name.",
+      "params": {
+        "sheetId": "The id of the sheet, listed under sheets in the read state. An inactive sheet is written without bringing it into view.",
+        "columnId": "The id of the column, as read().columns[].id names it.",
+        "name": "The new name; \"\" clears it, and the column shows its short name (C1, …).",
+        "command": "The command as one object with sheetId, columnId and name."
+      }
+    },
+    "moveColumn": {
+      "help": "Moves a column of the sheet, like dragging its header; the short names (C1, C2 …) follow the new order. Formulas that refer to short names are not rewritten when columns move. Returns false if the column already is there. Undo moves it back.",
+      "params": {
+        "sheetId": "The id of the sheet, listed under sheets in the read state. An inactive sheet is written without bringing it into view.",
+        "columnId": "The id of the column, as read().columns[].id names it.",
+        "toIndex": "The position the column has afterwards, counted from 0.",
+        "command": "The command as one object with sheetId, columnId and toIndex."
+      }
+    },
+    "setColumnMeta": {
+      "help": "Sets the whole meta of a column of the sheet: lock, the reason shown in the tooltip, the managing module and the categorical coding. null removes it. Allowed on locked columns too, so a lock can be lifted before a write and set again afterwards. Undo restores the previous meta.",
+      "params": {
+        "sheetId": "The id of the sheet, listed under sheets in the read state. An inactive sheet is written without bringing it into view.",
+        "columnId": "The id of the column, as read().columns[].id names it.",
+        "meta": "The new meta as an object, replacing the old one entirely; null removes it. Keys: lock ('hard' or 'soft'; absent = no lock), reason (text for the tooltip), managedBy (managing module), managedRef (reference at the manager), categoricalCoding (object). Other keys are rejected.",
+        "command": "The command as one object with sheetId, columnId and meta."
+      }
+    },
+    "setColumnRole": {
+      "help": "Sets the role of a column on the sheet, or confirms the detected one, like the role dialog before a chart suggestion; afterwards read().columns[].roleConfirmed is true. Which roles are allowed depends on the column type: numeric, currency, percent → continuous, categorical, ordinal, identifier; text → categorical, ordinal, identifier, freeText; binary → categorical; date, time → date. Locked columns cannot be changed. Undo restores the previous role and its confirmation.",
+      "params": {
+        "sheetId": "The id of the sheet, listed under sheets in the read state. An inactive sheet is written without bringing it into view.",
+        "columnId": "The id of the column, as read().columns[].id names it.",
+        "role": "The role: continuous, categorical, ordinal, date, identifier or freeText. The same role as read().columns[].role confirms the detected one.",
+        "command": "The command as one object with sheetId, columnId and role."
+      }
+    },
+    "setColumnType": {
+      "help": "Changes the type of a column on the sheet, like the type picker in the column header; the values are converted. If the role does not fit the new type, it is detected anew and no longer confirmed. Currency brings two decimals, percent one. Returns false if the column already has the type. Locked columns cannot be changed. Undo restores type, values and role.",
+      "params": {
+        "sheetId": "The id of the sheet, listed under sheets in the read state. An inactive sheet is written without bringing it into view.",
+        "columnId": "The id of the column, as read().columns[].id names it.",
+        "columnType": "The new type: numeric, text, date, time, currency, percent or binary (0/1). It is called columnType because type carries the command name.",
+        "command": "The command as one object with sheetId, columnId and columnType."
+      }
+    },
+    "setColumnFormat": {
+      "help": "Sets one display format key of a column on the sheet, like the format choice in the column header. The values stay, only the display changes. numeric, currency, percent → decimals; date → dateFormat; time → timeFormat; text and binary have no format. Locked columns cannot be changed. Undo restores the previous format.",
+      "params": {
+        "sheetId": "The id of the sheet, listed under sheets in the read state. An inactive sheet is written without bringing it into view.",
+        "columnId": "The id of the column, as read().columns[].id names it.",
+        "key": "The format key: decimals, dateFormat or timeFormat — fitting the column type.",
+        "value": "decimals: whole number from 0 to 6; dateFormat: dd.MM.yyyy, yyyy-MM-dd, dd/MM/yyyy, MM/dd/yyyy or d. MMMM yyyy; timeFormat: HH:mm or HH:mm:ss. null restores the type's default.",
+        "command": "The command as one object with sheetId, columnId, key and value."
+      }
+    },
+    "addRows": {
+      "help": "Adds empty rows to the sheet — at the end without a position, ten without a count.",
+      "params": {
+        "sheetId": "The id of the sheet, listed under sheets in the read state. An inactive sheet is written without bringing it into view.",
+        "count": "Number of rows, a whole number of at least 1; ten without a value, like the toolbar button.",
+        "position": "Zero-based row where the first new row goes: 0 puts them on top, the row count or no value appends them.",
+        "command": "The command as one object with sheetId, optionally count and position."
+      }
+    },
+    "removeRows": {
+      "help": "Removes a contiguous block of rows with their values and formulas and returns how many rows were removed. Undo brings the rows back.",
+      "params": {
+        "sheetId": "The id of the sheet, listed under sheets in the read state. An inactive sheet is written without bringing it into view.",
+        "startRow": "Zero-based index of the first row to remove; it must exist.",
+        "count": "Number of rows, a whole number of at least 1 and at most up to the last row.",
+        "command": "The command as one object with sheetId, startRow and count."
+      }
+    },
+    "moveRow": {
+      "help": "Moves a row of the sheet, like dragging its row header. Returns false if start and target are the same. Undo moves it back.",
+      "params": {
+        "sheetId": "The id of the sheet, listed under sheets in the read state. An inactive sheet is written without bringing it into view.",
+        "fromRow": "The row that moves, counted from 0.",
+        "toRow": "The position the row has afterwards, counted from 0.",
+        "command": "The command as one object with sheetId, fromRow and toRow."
+      }
+    },
+    "sortRows": {
+      "help": "Sorts all rows of the sheet by one column, like “Sort ascending/descending” in the column header menu. The direction is absolute — a second identical call changes nothing and returns false. Empty cells go last. Undo restores the previous order.",
+      "params": {
+        "sheetId": "The id of the sheet, listed under sheets in the read state. An inactive sheet is written without bringing it into view.",
+        "columnId": "The id of the column to sort by, as read().columns[].id names it.",
+        "direction": "\"asc\" sorts ascending, \"desc\" descending.",
+        "command": "The command as one object with sheetId, columnId and direction."
+      }
+    },
+    "applyRowPermutation": {
+      "help": "Undo only: puts the rows of a sheet back into a saved order. Agents do not call it.",
+      "params": {
+        "sheetId": "The id of the sheet, as read().sheets[].id names it.",
+        "perm": "Saved state for the inverse.",
+        "command": "The command as one object with sheetId and perm."
+      }
+    },
+    "restoreColumn": {
+      "help": "Undo only: puts a removed column back with its values and formulas. Agents do not call it.",
+      "params": {
+        "sheetId": "The id of the sheet, as read().sheets[].id names it.",
+        "index": "Saved state for the inverse.",
+        "head": "Saved state for the inverse.",
+        "values": "Saved state for the inverse.",
+        "formulas": "Saved state for the inverse.",
+        "command": "The command as one object with sheetId, index, head, values and formulas."
+      }
+    },
+    "restoreRows": {
+      "help": "Undo only: puts removed rows back with their values and formulas. Agents do not call it.",
+      "params": {
+        "sheetId": "The id of the sheet, as read().sheets[].id names it.",
+        "startRow": "Saved state for the inverse.",
+        "count": "Saved state for the inverse.",
+        "cols": "Saved state for the inverse.",
+        "formulas": "Saved state for the inverse.",
+        "command": "The command as one object with sheetId, startRow, count, cols and formulas."
+      }
+    },
+    "addSheet": {
+      "help": "Creates a new sheet and makes it active. The agent receives its id.",
+      "params": {
+        "name": "Name of the new sheet; without it \"Sheet <n>\" (the interface passes the translated name).",
+        "command": "The command as one object, optionally with name."
+      }
+    },
+    "renameSheet": {
+      "help": "Renames a sheet.",
+      "params": {
+        "id": "The id of the sheet.",
+        "name": "The new name; empty or whitespace only is an invalid argument and therefore an error.",
+        "command": "The command as one object with id and name."
+      }
+    },
+    "duplicateSheet": {
+      "help": "Copies a sheet with its cells, formulas and column settings. The copy is appended at the end, named \"<name> (Copy)\" and becomes active; the agent receives its id.",
+      "params": {
+        "id": "The id of the sheet to copy, as read().sheets[].id names it.",
+        "name": "Name of the copy; without it \"<name> (Copy)\" (the interface passes the translated name).",
+        "command": "The command as one object with id, optionally name."
+      }
+    },
+    "insertSheetBefore": {
+      "help": "Creates an empty sheet directly before another one and makes it active; the agent receives its id.",
+      "params": {
+        "id": "The id of the sheet the new sheet is placed before.",
+        "name": "Name of the new sheet; without it \"Sheet <n>\" (the interface passes the translated name).",
+        "command": "The command as one object with id, optionally name."
+      }
+    },
+    "removeSheet": {
+      "help": "Removes a sheet with its contents. If it was active, the neighbouring sheet becomes active. The last sheet cannot be removed — that is an error. Undo brings the sheet back with its contents.",
+      "params": {
+        "id": "The id of the sheet to remove.",
+        "command": "The command as one object with id."
+      }
+    },
+    "restoreSheet": {
+      "help": "Undo only: puts a removed sheet back with its view. Agents do not call it.",
+      "params": {
+        "index": "Saved state for the inverse.",
+        "sheet": "Saved state for the inverse.",
+        "activeSheetId": "Saved state for the inverse.",
+        "view": "Saved state for the inverse.",
+        "command": "The command as one object with index, sheet, activeSheetId and view."
+      }
+    },
+    "dropSheet": {
+      "help": "Undo only: takes a created sheet out again. Agents do not call it.",
+      "params": {
+        "id": "Saved state for the inverse.",
+        "activeSheetId": "Saved state for the inverse.",
+        "command": "The command as one object with id and activeSheetId."
+      }
+    },
+    "restoreSheetName": {
+      "help": "Undo only: sets the name of a sheet back verbatim. Agents do not call it.",
+      "params": {
+        "id": "Saved state for the inverse.",
+        "name": "Saved state for the inverse.",
+        "command": "The command as one object with id and name."
+      }
+    },
+    "switchSheet": {
+      "help": "Switches to this sheet and shows its table. Double-clicking the tab renames it, right-clicking opens the sheet menu.",
+      "params": {
+        "id": "The id of the sheet, as read().sheets[].id names it. An unknown id is an error.",
+        "command": "The command as one object with id."
+      }
+    },
+    "gridView": {
+      "help": "Stores the view of a sheet as the grid reports it: column widths and selection. Changes no content.",
+      "params": {
+        "sheetId": "The id of the sheet.",
+        "colWidths": "Column widths in pixels per column id.",
+        "selection": "The selection (start, end, active cell, columns picked with Ctrl+click) or null.",
+        "command": "The command as one object with sheetId, colWidths and selection."
+      }
+    },
+    "exportAs": {
+      "help": "Downloads the active sheet as a file: Excel (.xlsx), CSV (.csv) or JSON (.json).",
+      "params": {
+        "format": "The file format: xlsx, csv or json.",
+        "command": "The command as one object with format."
+      }
+    },
+    "openFormulaEditor": {
+      "help": "Opens the formula editor for the active cell (F4): functions, column references, preview. Ctrl+Enter applies, Esc cancels. Double-clicking a formula cell opens it as well.",
+      "params": {
+        "sheetId": "Optional: the sheet of the cell; the active one if omitted.",
+        "columnId": "Optional: the column of the cell; the active cell of the selection if omitted.",
+        "row": "Optional: the row of the cell, counted from 0.",
+        "command": "The command as one object with sheetId, columnId and row."
+      }
+    },
+    "suggestChart": {
+      "help": "Suggests charts for the selected columns (without a selection for the only column holding values). Roles not yet confirmed are asked for first."
+    },
+    "confirmRoles": {
+      "help": "Sets the roles from the confirmation before a chart suggestion, all together as one step in the history. A role the type does not allow stays unchanged.",
+      "params": {
+        "sheetId": "The id of the sheet.",
+        "roles": "Per column the columnId and the confirmed role.",
+        "command": "The command as one object with sheetId and roles."
+      }
+    },
+    "deleteSelection": {
+      "help": "Clears the cells of the grid selection (like Delete). Locked columns refuse."
+    },
+    "importFile": {
+      "help": "Replaces the content of the active sheet with a CSV or TSV file, picked or dropped onto the worksheet. Delimiter and header row are detected; undo restores the previous content."
+    },
+    "read": {
+      "help": "Returns the sheet list, the sheet id and the column headers; the rows come only on request via options.fields = ['rows'].",
+      "params": {
+        "options": "Optional: sheetId chooses the sheet (the first if omitted; reading does not switch), fields: ['rows'] returns the rows, rows: { from, to } trims them."
+      }
+    },
+    "undo": {
+      "help": "Undoes the last change to the workbook, also on another sheet (Ctrl+Z)."
+    },
+    "redo": {
+      "help": "Redoes the last undone change (Ctrl+Y)."
+    }
+  }
+}

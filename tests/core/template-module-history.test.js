@@ -64,7 +64,7 @@ const Faulty = defineModel({
   },
 });
 
-async function mount(history, { Model = Doc, html = '<input class="f" x-model="model.name"><span x-text="model.n"></span>', initial } = {}) {
+async function mount(history, { Model = Doc, html = '<input class="f" x-model="model.name"><span x-text="model.n"></span>', initial, base = {} } = {}) {
   if (!Alpine.version) Alpine.start();
   const id = `hist-test-${++seq}`;
   const key = `js/modules/${id}/${id}.html`;
@@ -78,6 +78,7 @@ async function mount(history, { Model = Doc, html = '<input class="f" x-model="m
     Model,
     view() { return {}; },
     ...(history === undefined ? {} : { history }),
+    ...base,
   });
   const container = document.createElement('div');
   document.body.append(container);
@@ -351,5 +352,73 @@ suite('createModule history — Modus inverse', () => {
         Model: Vals, view() { return {}; }, history: { mode: 'snapshot' } });
     } catch (e) { err = e; }
     assertTrue(err !== null && /history must be/.test(err.message));
+  });
+});
+
+suite('createModule onCommand und ctx.history', () => {
+  const opts = { Model: Vals, html: '<span x-text="model.vals.join()"></span>', initial: { vals: [0, 0, 0] } };
+
+  test('onCommand: je Kommando mit { instanceId, eventBus }, auch je Umkehr-Kommando beim Rückgängig', async () => {
+    const calls = [];
+    const { mod, context, data } = await mount({ mode: 'inverse' }, {
+      ...opts, base: { onCommand: (name, ctx) => calls.push([name, ctx]) },
+    });
+    data().model.set({ i: 0, v: 4 });
+    assertEqual(calls.length, 1);
+    assertEqual(calls[0][0], 'set');
+    assertEqual(calls[0][1].instanceId, context.instanceId);
+    assertTrue(calls[0][1].eventBus === context.eventBus, 'der Bus des Kontexts');
+    mod.historyStep('undo');
+    assertEqual(calls.length, 2, 'Rückgängig meldet sein Umkehr-Kommando');
+    assertEqual(calls[1][0], 'set');
+  });
+
+  test('onCommand: Laden eines Fremdstands meldet mit name null', async () => {
+    const calls = [];
+    const { mod } = await mount({ mode: 'inverse' }, { ...opts, base: { onCommand: (name) => calls.push(name) } });
+    mod.applyRemoteState({ vals: [1, 1, 1] });
+    assertDeepEqual(calls, [null]);
+    mod.setState({ vals: [2, 2, 2] });
+    assertDeepEqual(calls, [null, null]);
+  });
+
+  test('onCommand: auch am Model ohne Mount (loadDetached)', () => {
+    const calls = [];
+    const mod = createModule({
+      config: { id: 'oncmd-detached', engine: 'alpine', phase: 'define', templateUrl: 'x.html' },
+      Model: Vals, view() { return {}; }, onCommand: (name, ctx) => calls.push([name, ctx.instanceId]),
+    });
+    const bus = { emit: () => {} };
+    const m = mod.loadDetached({ vals: [0, 0, 0] }, { instanceId: 'd1', eventBus: bus });
+    m.set({ i: 1, v: 3 });
+    assertDeepEqual(calls, [['set', 'd1']]);
+  });
+
+  test('onCommand muss eine Funktion sein', () => {
+    let err = null;
+    try {
+      createModule({ config: { id: 'oncmd-bad', engine: 'alpine', phase: 'define', templateUrl: 'x.html' },
+        Model: Vals, view() { return {}; }, onCommand: 'x' });
+    } catch (e) { err = e; }
+    assertTrue(err !== null && /onCommand must be a function/.test(err.message));
+  });
+
+  test('ctx.history: can und step erreichen den Verlauf der Instanz', async () => {
+    let hist = null;
+    const { data } = await mount({ mode: 'inverse' }, { ...opts, base: { view(ctx) { return { init() { hist = ctx.history; } }; } } });
+    assertTrue(hist !== null, 'ctx.history mit history');
+    assertEqual(hist.can('undo'), false);
+    data().model.set({ i: 2, v: 9 });
+    await flush();
+    assertTrue(hist.can('undo'));
+    assertTrue(hist.step('undo'));
+    assertDeepEqual([...data().model.vals], [0, 0, 0]);
+    assertTrue(hist.can('redo'));
+  });
+
+  test('ctx.history ist null ohne history', async () => {
+    let hist;
+    await mount(undefined, { ...opts, base: { view(ctx) { return { init() { hist = ctx.history; } }; } } });
+    assertEqual(hist, null);
   });
 });

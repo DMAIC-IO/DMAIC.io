@@ -154,6 +154,7 @@ const SKIP = new Set([
   'core/template-module-table-persist.test.js',
   'core/template-module-view.test.js',
   'core/template-module-history.test.js',
+  'modules/worksheet-view.test.js',
   'core/template-tile-chart.test.js',
   'core/template-module-exports.test.js',
   'core/template-module-gestures.test.js',

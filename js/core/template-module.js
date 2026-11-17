@@ -28,7 +28,8 @@ import { formatNumber } from './number-format.js';
  *   cssVars: (map: Record<string, string>) => Record<string, string>,
  *   data: import('./worksheet-data.js').WorksheetData,
  *   instances?: import('./instances.js').ModuleInstances,
- *   openDialog: (ref: string, opts?: import('./command-directives.js').DialogOptions) => Promise<void> }} ViewContext
+ *   openDialog: (ref: string, opts?: import('./command-directives.js').DialogOptions) => Promise<void>,
+ *   history: { step: (dir: 'undo'|'redo') => boolean, can: (dir: 'undo'|'redo') => boolean }|null }} ViewContext
  */
 /**
  * `this` in den Gliedern eines `view`-Blocks. Die eigenen Glieder des Blocks
@@ -391,6 +392,10 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
 // nur mit view; daraus entstehen Export-Menü und Dateien (core/exporter.js).
 // base.forms — Namensraum von viewmodel/forms.js (defineForm), für
 // x-command-form mit data-command-form-schema; Vorgabe {}.
+// base.onCommand(name, { instanceId, eventBus }) — nach jedem Kommando des
+// Models (auch geschachtelt, auch Umkehr-Kommandos beim Rückgängig), im Mount
+// wie am Model aus loadDetached; nach setState/applyRemoteState mit name null.
+// ctx.history im view-Block (nur mit history): step(dir)/can(dir) des Verlaufs.
 /**
  * Ein Modul aus Model, Viewmodel und Template bauen.
  * @template {((ctx: any) => any) | ((ctx: any) => any)[]} P
@@ -399,7 +404,7 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
  * @returns {Record<string, any> & { readonly __view?: ViewMembersOf<P>, readonly __asyncTasks?: T }}
  */
 export function createModule(base) {
-  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, fromExample, createDefault, gestures = [], forms = {}, exports: exportsDef, asyncTasks: taskDefs = {}, history } = base;
+  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, fromExample, createDefault, gestures = [], forms = {}, exports: exportsDef, asyncTasks: taskDefs = {}, history, onCommand } = base;
   if (descriptor) {
     for (const key of NOT_IN_CONFIG) {
       if (Object.hasOwn(config, key)) {
@@ -422,6 +427,7 @@ export function createModule(base) {
   if (fromExample !== undefined && typeof fromExample !== 'function') throw new Error(`createModule(${id}): fromExample must be a function`);
   if (fromExample && beforeLoadExample) throw new Error(`createModule(${id}): fromExample and beforeLoadExample are exclusive`);
   if (exportsDef !== undefined) checkExports(id, exportsDef, Boolean(view));
+  if (onCommand !== undefined && typeof onCommand !== 'function') throw new Error(`createModule(${id}): onCommand must be a function`);
   if (history !== undefined && history !== true && !(history && typeof history === 'object'
     && Number.isInteger(history.depth ?? 50) && (history.depth ?? 50) >= 1
     && (history.mode === undefined || history.mode === 'inverse'))) {
@@ -560,8 +566,10 @@ export function createModule(base) {
       const model = initialModel(Model, json, createDefault, { instanceId, eventBus, stateManager });
       if (schema) {
         setModelContext(model, activeContext(stateManager));
-        setCommandObserver(model, (command, args, result) => eventBus?.emit?.(
-          'command:executed', { instanceId, command, args, result }));
+        setCommandObserver(model, (command, args, result) => {
+          eventBus?.emit?.('command:executed', { instanceId, command, args, result });
+          onCommand?.(command, { instanceId, eventBus });
+        });
       }
       return model;
     },
@@ -645,6 +653,10 @@ export function createModule(base) {
           instances: context.instances,
           cssVars: (map) => readCssVars(container.querySelector('[x-data]'), map),
           openDialog: (ref, opts) => openDialogSafely(Alpine, container.querySelector('[x-data]'), ref, opts),
+          history: history ? {
+            step: (dir) => module.historyStep(dir),
+            can: (dir) => module.historyCan(dir),
+          } : null,
         };
         // Teile nacheinander bauen und zusammenführen. `computed` ist kein
         // Glied, sondern die Liste der Ableitungen — vor dem Kopieren
@@ -705,6 +717,7 @@ export function createModule(base) {
             setCommandObserver(freshState, (command, args, result, inverses) => {
               context.eventBus?.emit?.('command:executed', { instanceId: context.instanceId, command, args, result });
               if (inverseHistory && inverses) module._recordInverse(command, args, inverses);
+              onCommand?.(command, { instanceId: context.instanceId, eventBus: context.eventBus });
             });
             if (inverseHistory) setHistoryMode(freshState, 'inverse');
           }
@@ -970,6 +983,7 @@ export function createModule(base) {
         const model = loadModel(Model, state, schema ? activeContext(this._context?.stateManager) : undefined);
         this._persist(model);
         this._resetHistory(model);
+        this._notifyLoaded();
         // Guard: a detached/aborted instance (init threw or never ran to
         // completion) has no mounted container. Still persist the state —
         // it will be read fresh the next time the instance is mounted —
@@ -1011,6 +1025,12 @@ export function createModule(base) {
       if (!alpine) return;
       const live = this._restoreState(state, '_applyingRemote');
       if (live) this._resetHistory(live);
+      if (live) this._notifyLoaded();
+    },
+
+    /** Ein Fremdstand ist geladen: `onCommand(null, …)`. */
+    _notifyLoaded() {
+      onCommand?.(null, { instanceId: this._context?.instanceId, eventBus: this._context?.eventBus });
     },
 
     /**

@@ -1,0 +1,372 @@
+{
+  "$schema": "../../../../../schemas/module-context-help.schema.json",
+  "fields": {
+    "sheets": {
+      "help": "Alle Blätter der Arbeitsmappe in Reiterfolge, je mit id und Name."
+    },
+    "sheetId": {
+      "help": "Die id des Blatts, zu dem Spalten und Zeilen dieser Antwort gehören."
+    },
+    "rowCount": {
+      "help": "Die Anzahl der Datenzeilen des Blatts."
+    },
+    "columns": {
+      "help": "Die Spaltenköpfe des Blatts. id ist die columnId eines Spaltenbezugs, shortName die Kurzform in Formeln (C1, C2 …), role die Rolle der Spalte, roleConfirmed true, wenn sie von Hand gesetzt oder bestätigt ist (Rollen-Dialog oder setColumnRole), false bei einer automatisch erkannten Rolle. Ein Typwechsel, zu dem die Rolle nicht mehr passt, setzt die Bestätigung zurück. format nennt die gesetzten Schlüssel des Anzeigeformats (decimals, dateFormat, timeFormat); ein fehlender Schlüssel heißt Vorgabe des Typs. meta ist das Merkmal der Spalte (lock, reason, managedBy, managedRef, categoricalCoding) oder null; setColumnMeta setzt es. Mit der Leseoption columns kommt je Spalte values: die Zellwerte ab Zeile 0, einer je Zeile."
+    },
+    "rows": {
+      "help": "Die Datenzeilen des Blatts, jede Zeile in Spaltenreihenfolge. Massendaten: ohne options.fields = ['rows'] kommt nur der Umfang."
+    },
+    "formulas": {
+      "help": "Welche Zellen des Blatts gerechnet sind, je mit columnId, nullbasierter Zeile und Formeltext. Massendaten: ohne options.fields = ['formulas'] kommt nur der Umfang."
+    }
+  },
+  "state": {
+    "renameDraft": {
+      "help": "Der neue Name des Blatts. Enter oder Verlassen des Felds übernimmt, Esc verwirft; ein leeres Feld behält den alten Namen."
+    },
+    "formulaText": {
+      "help": "Die Formel, beginnend mit „=“, oder ein einfacher Wert. Die Vorschau rechnet beim Tippen."
+    }
+  },
+  "actions": {
+    "setCells": {
+      "help": "Schreibt einen Block von Werten in eine Spalte, von einer Zeile an abwärts. Typerkennung, Sperren und Rückgängig wie bei der Zelleingabe. Nur Werte: eine Formel wie =C1*2 wird als Text geschrieben, nicht berechnet — Formeln schreibt setFormula. Ein einfacher Wert in eine Formelzelle ÜBERSCHREIBT die Formel — read().formulas sagt, welche Zellen gerechnet sind; Rückgängig stellt Wert und Formel wieder her.",
+      "params": {
+        "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Ein inaktives Blatt wird beschrieben, ohne es sichtbar zu machen.",
+        "columnId": "Die id der Zielspalte, wie read().columns[].id sie nennt.",
+        "startRow": "Nullbasierter Index der ersten Zeile.",
+        "values": "Die Werte, einer je Zeile; Formeltext wird nicht ausgewertet.",
+        "command": "Das Kommando als ein Objekt mit sheetId, columnId, startRow und values."
+      }
+    },
+    "setFormula": {
+      "help": "Schreibt eine Formel in eine Zelle des Blatts, wie der Formeleditor: als Text abgelegt, sofort berechnet, mit Rückgängig. Liefert den berechneten Wert und einen Fehlercode wie #DIV/0 (sonst null); bei einem Rechenfehler bleibt die Formel stehen und die Zelle leer. Gesperrte Spalten lehnen ab.",
+      "params": {
+        "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Ein inaktives Blatt wird beschrieben, ohne es sichtbar zu machen.",
+        "columnId": "Die id der Zielspalte, wie read().columns[].id sie nennt.",
+        "row": "Nullbasierter Zeilenindex; die Zeilenzahl hängt eine Zeile an.",
+        "formula": "Formeltext mit führendem =, etwa =C1[2]*2 (Spalte 1, Zeile 2, beide ab 1 gezählt). Werte ohne = schreibt setCells.",
+        "command": "Das Kommando als ein Objekt mit sheetId, columnId, row und formula."
+      }
+    },
+    "writeColumns": {
+      "help": "Mehrere Spalten in einem Schritt schreiben: anhängen, leere Startspalten füllen oder vorhandene Spalten überschreiben.",
+      "params": {
+        "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Ein inaktives Blatt wird beschrieben, ohne es sichtbar zu machen.",
+        "columns": "Die Spalten in Schreibreihenfolge, je { to, name?, type?, values, unit?, format?, discrete? }. to: 'append' hängt eine neue Spalte an, 'start' füllt die nächste leere, unbenannte Startspalte (C1–C5) oder hängt an, sonst die id einer Spalte, die überschrieben wird (Werte und Formeln ersetzt, Name bleibt). type ist ein Spaltentyp, Vorgabe 'numeric'; discrete: true gibt einer neuen Zahlenspalte ohne format 0 Nachkommastellen. Ist ein Eintrag ungültig, wird nichts geschrieben; der ganze Aufruf ist ein Rückgängig-Schritt.",
+        "command": "Das Kommando als ein Objekt mit sheetId und columns."
+      }
+    },
+    "importCsv": {
+      "help": "Ersetzt den Inhalt des Blatts durch CSV-Daten. Trennzeichen und Kopfzeile werden erkannt; der Schritt ist über Rückgängig umkehrbar.",
+      "params": {
+        "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Ein inaktives Blatt wird beschrieben, ohne es sichtbar zu machen.",
+        "csvText": "Der vollständige CSV- oder TSV-Text, Kopfzeile eingeschlossen, falls vorhanden.",
+        "command": "Das Kommando als ein Objekt mit sheetId und csvText."
+      }
+    },
+    "pasteBlock": {
+      "help": "Fügt einen Block wie aus der Zwischenablage ab einer Zelle ein, wie Strg+V im Raster. Ist die erste Zeile Text und die zweite enthält eine Zahl, gilt die erste als Kopfzeile und benennt unbenannte Spalten. Jede getroffene Spalte bekommt ihren Typ aus ihren Werten. Fehlende Zeilen und Spalten kommen dazu. Formeln in den getroffenen Zellen fallen weg. Liegt eine gesperrte Spalte im Block, wird nichts geschrieben. Liefert die Zahl eingefügter Spalten und Zeilen ohne Kopfzeile.",
+      "params": {
+        "sheetId": "Die id des Blatts, wie read().sheets[].id sie nennt.",
+        "columnId": "Die id der Spalte links oben im Block, wie read().columns[].id sie nennt.",
+        "startRow": "Nullbasierte Zeile der linken oberen Zelle; die Zeilenzahl fügt unter der letzten Zeile an.",
+        "rows": "Der Block als Zeilen von Zellentexten, je Zeile in Spaltenreihenfolge, etwa [[\"Länge\", \"Ort\"], [\"1,5\", \"A\"]]. Leere Texte werden leere Zellen.",
+        "command": "Das Kommando als ein Objekt mit sheetId, columnId, startRow und rows."
+      }
+    },
+    "fillRange": {
+      "help": "Setzt einen Bereich fort wie der Ausfüllgriff des Rasters: eine Reihe (Zahlen, Datumswerte, Text mit Zahl am Ende) wird fortgesetzt, alles andere wiederholt; ctrl kehrt das um. Formeln wandern mit verschobenen Bezügen mit. Lotrecht nach unten wächst das Blatt bei Bedarf. Gesperrte Spalten bleiben unverändert. Liefert die Zahl geschriebener Zellen.",
+      "params": {
+        "sheetId": "Die id des Blatts, wie read().sheets[].id sie nennt.",
+        "source": "Der Quellbereich { c0, r0, c1, r1 }: erste und letzte Spalte, erste und letzte Zeile, alle nullbasiert.",
+        "target": "Der ganze Zielbereich { c0, r0, c1, r1 } einschließlich der Quelle. Er verlängert die Quelle in genau eine Richtung (nach oben, unten, links oder rechts), nach unten höchstens 10000 Zeilen über die letzte Zeile hinaus; ein anderer Bereich ist ein Fehler.",
+        "ctrl": "true kehrt die Art um wie Strg beim Ziehen: eine Reihe wird kopiert, eine einzelne Zahl hochgezählt. Ohne Angabe false.",
+        "command": "Das Kommando als ein Objekt mit sheetId, source, target und ctrl."
+      }
+    },
+    "clearRange": {
+      "help": "Leert Werte und Formeln eines Bereichs, wie Entf im Raster. Gesperrte Spalten bleiben unverändert. Liefert die Zahl der Zellen, die einen Wert oder eine Formel hatten.",
+      "params": {
+        "sheetId": "Die id des Blatts, wie read().sheets[].id sie nennt.",
+        "c0": "Nullbasierte erste Spalte des Bereichs.",
+        "r0": "Nullbasierte erste Zeile des Bereichs.",
+        "c1": "Nullbasierte letzte Spalte des Bereichs, mindestens c0.",
+        "r1": "Nullbasierte letzte Zeile des Bereichs, mindestens r0.",
+        "command": "Das Kommando als ein Objekt mit sheetId, c0, r0, c1 und r1."
+      }
+    },
+    "restoreCells": {
+      "help": "Nur für Rückgängig: setzt Zellen, Zeilen- und Spaltenzahl eines Blatts auf einen gesicherten Stand zurück. Agenten rufen es nicht.",
+      "params": {
+        "sheetId": "Die id des Blatts, wie read().sheets[].id sie nennt.",
+        "rowCount": "Gesicherter Stand für die Umkehrung.",
+        "columnCount": "Gesicherter Stand für die Umkehrung.",
+        "cols": "Gesicherter Stand für die Umkehrung.",
+        "command": "Das Kommando als ein Objekt mit sheetId, rowCount, columnCount und cols."
+      }
+    },
+    "addColumn": {
+      "help": "Fügt dem Blatt eine leere Spalte hinzu — ohne Position am Ende. Der Agent erhält die id der neuen Spalte.",
+      "params": {
+        "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Ein inaktives Blatt wird beschrieben, ohne es sichtbar zu machen.",
+        "position": "Stelle der neuen Spalte, ab 0 gezählt: 0 setzt sie nach vorn, die Spaltenzahl oder keine Angabe hängt sie an.",
+        "command": "Das Kommando als ein Objekt mit sheetId, wahlweise position."
+      }
+    },
+    "removeColumn": {
+      "help": "Entfernt eine Spalte samt Werten und Formeln. Hart gesperrte Spalten (etwa vom Versuchsplaner verwaltet) lassen sich nicht entfernen. Rückgängig holt die Spalte zurück.",
+      "params": {
+        "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Ein inaktives Blatt wird beschrieben, ohne es sichtbar zu machen.",
+        "columnId": "Die id der zu entfernenden Spalte.",
+        "command": "Das Kommando als ein Objekt mit sheetId und columnId."
+      }
+    },
+    "renameColumn": {
+      "help": "Benennt eine Spalte um; Formeln, die den alten Namen nennen, werden angepasst. Trägt schon eine andere Spalte den Namen, wird „ (2)“ angehängt — der Agent erhält den tatsächlichen Namen. Gesperrte Spalten lassen sich nicht umbenennen. Rückgängig stellt den alten Namen wieder her.",
+      "params": {
+        "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Ein inaktives Blatt wird beschrieben, ohne es sichtbar zu machen.",
+        "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
+        "name": "Der neue Name; \"\" entfernt ihn, dann zeigt die Spalte ihren Kurznamen (C1, …).",
+        "command": "Das Kommando als ein Objekt mit sheetId, columnId und name."
+      }
+    },
+    "moveColumn": {
+      "help": "Verschiebt eine Spalte des Blatts, wie das Ziehen am Spaltenkopf; die Kurznamen (C1, C2 …) folgen der neuen Reihenfolge. Formeln, die sich auf Kurznamen beziehen, werden dabei nicht umgeschrieben. Liefert false, wenn die Spalte schon dort steht. Rückgängig schiebt sie zurück.",
+      "params": {
+        "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Ein inaktives Blatt wird beschrieben, ohne es sichtbar zu machen.",
+        "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
+        "toIndex": "Die Stelle, die die Spalte danach hat, ab 0 gezählt.",
+        "command": "Das Kommando als ein Objekt mit sheetId, columnId und toIndex."
+      }
+    },
+    "setColumnMeta": {
+      "help": "Setzt das ganze Merkmal (meta) einer Spalte des Blatts: Sperre, Grund für die Kurzinfo, verwaltendes Modul und Kategorien-Kodierung. null entfernt es. Erlaubt auch auf gesperrten Spalten — so lässt sich eine Sperre vor einem Schreiben aufheben und danach wieder setzen. Rückgängig stellt das alte Merkmal wieder her.",
+      "params": {
+        "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Ein inaktives Blatt wird beschrieben, ohne es sichtbar zu machen.",
+        "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
+        "meta": "Das neue Merkmal als Objekt, es ersetzt das alte ganz; null entfernt es. Schlüssel: lock ('hard' oder 'soft'; fehlt = keine Sperre), reason (Text für die Kurzinfo), managedBy (verwaltendes Modul), managedRef (Bezug beim Verwalter), categoricalCoding (Objekt). Andere Schlüssel werden abgelehnt.",
+        "command": "Das Kommando als ein Objekt mit sheetId, columnId und meta."
+      }
+    },
+    "setColumnRole": {
+      "help": "Setzt die Rolle einer Spalte des Blatts oder bestätigt die erkannte, wie der Rollen-Dialog vor einem Diagrammvorschlag; danach ist read().columns[].roleConfirmed true. Welche Rollen erlaubt sind, hängt vom Spaltentyp ab: numeric, currency, percent → continuous, categorical, ordinal, identifier; text → categorical, ordinal, identifier, freeText; binary → categorical; date, time → date. Gesperrte Spalten lassen sich nicht ändern. Rückgängig stellt die alte Rolle und ihre Bestätigung wieder her.",
+      "params": {
+        "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Ein inaktives Blatt wird beschrieben, ohne es sichtbar zu machen.",
+        "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
+        "role": "Die Rolle: continuous (stetig), categorical (kategorial), ordinal, date (Datum), identifier (Kennung) oder freeText (Freitext). Dieselbe Rolle wie in read().columns[].role bestätigt die erkannte.",
+        "command": "Das Kommando als ein Objekt mit sheetId, columnId und role."
+      }
+    },
+    "setColumnType": {
+      "help": "Ändert den Typ einer Spalte des Blatts, wie die Typauswahl im Spaltenkopf; die Werte werden umgewandelt. Passt die Rolle nicht zum neuen Typ, wird sie neu erkannt und ist nicht mehr bestätigt. Währung bringt zwei, Prozent eine Nachkommastelle mit. Liefert false, wenn die Spalte den Typ schon hat. Gesperrte Spalten lassen sich nicht ändern. Rückgängig stellt Typ, Werte und Rolle wieder her.",
+      "params": {
+        "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Ein inaktives Blatt wird beschrieben, ohne es sichtbar zu machen.",
+        "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
+        "columnType": "Der neue Typ: numeric (Zahl), text, date (Datum), time (Uhrzeit), currency (Währung), percent (Prozent) oder binary (0/1). Er heißt columnType, weil type im Kommando dessen Namen trägt.",
+        "command": "Das Kommando als ein Objekt mit sheetId, columnId und columnType."
+      }
+    },
+    "setColumnFormat": {
+      "help": "Setzt einen Schlüssel des Anzeigeformats einer Spalte des Blatts, wie die Formatauswahl im Spaltenkopf. Die Werte bleiben, nur die Anzeige ändert sich. numeric, currency, percent → decimals; date → dateFormat; time → timeFormat; text und binary haben kein Format. Gesperrte Spalten lassen sich nicht ändern. Rückgängig stellt das alte Format wieder her.",
+      "params": {
+        "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Ein inaktives Blatt wird beschrieben, ohne es sichtbar zu machen.",
+        "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
+        "key": "Der Format-Schlüssel: decimals, dateFormat oder timeFormat — passend zum Spaltentyp.",
+        "value": "decimals: ganze Zahl von 0 bis 6; dateFormat: dd.MM.yyyy, yyyy-MM-dd, dd/MM/yyyy, MM/dd/yyyy oder d. MMMM yyyy; timeFormat: HH:mm oder HH:mm:ss. null stellt die Vorgabe des Typs her.",
+        "command": "Das Kommando als ein Objekt mit sheetId, columnId, key und value."
+      }
+    },
+    "addRows": {
+      "help": "Fügt dem Blatt leere Zeilen hinzu — ohne Position am Ende, ohne Anzahl zehn.",
+      "params": {
+        "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Ein inaktives Blatt wird beschrieben, ohne es sichtbar zu machen.",
+        "count": "Zahl der Zeilen, ganzzahlig ab 1; ohne Angabe zehn, wie der Knopf in der Werkzeugleiste.",
+        "position": "Zeile, ab 0 gezählt, an der die erste neue Zeile steht: 0 setzt sie nach oben, die Zeilenzahl oder keine Angabe hängt sie an.",
+        "command": "Das Kommando als ein Objekt mit sheetId, wahlweise count und position."
+      }
+    },
+    "removeRows": {
+      "help": "Entfernt einen zusammenhängenden Zeilenbereich samt Werten und Formeln und liefert die Zahl entfernter Zeilen. Rückgängig holt die Zeilen zurück.",
+      "params": {
+        "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Ein inaktives Blatt wird beschrieben, ohne es sichtbar zu machen.",
+        "startRow": "Erste zu entfernende Zeile, ab 0 gezählt; sie muss existieren.",
+        "count": "Zahl der Zeilen, ganzzahlig ab 1 und höchstens bis zur letzten Zeile.",
+        "command": "Das Kommando als ein Objekt mit sheetId, startRow und count."
+      }
+    },
+    "moveRow": {
+      "help": "Verschiebt eine Zeile des Blatts, wie das Ziehen am Zeilenkopf. Liefert false, wenn Start und Ziel gleich sind. Rückgängig schiebt sie zurück.",
+      "params": {
+        "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Ein inaktives Blatt wird beschrieben, ohne es sichtbar zu machen.",
+        "fromRow": "Die Zeile, die wandert, ab 0 gezählt.",
+        "toRow": "Die Stelle, die die Zeile danach hat, ab 0 gezählt.",
+        "command": "Das Kommando als ein Objekt mit sheetId, fromRow und toRow."
+      }
+    },
+    "sortRows": {
+      "help": "Sortiert alle Zeilen des Blatts nach einer Spalte, wie „Aufsteigend/Absteigend sortieren“ im Spaltenkopf-Menü. Die Richtung gilt absolut — ein zweiter gleicher Aufruf ändert nichts und liefert false. Leere Zellen kommen ans Ende. Rückgängig stellt die alte Reihenfolge wieder her.",
+      "params": {
+        "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Ein inaktives Blatt wird beschrieben, ohne es sichtbar zu machen.",
+        "columnId": "Die id der Spalte, nach der sortiert wird, wie read().columns[].id sie nennt.",
+        "direction": "\"asc\" sortiert aufsteigend, \"desc\" absteigend.",
+        "command": "Das Kommando als ein Objekt mit sheetId, columnId und direction."
+      }
+    },
+    "applyRowPermutation": {
+      "help": "Nur für Rückgängig: ordnet die Zeilen eines Blatts nach einer gesicherten Reihenfolge zurück. Agenten rufen es nicht.",
+      "params": {
+        "sheetId": "Die id des Blatts, wie read().sheets[].id sie nennt.",
+        "perm": "Gesicherter Stand für die Umkehrung.",
+        "command": "Das Kommando als ein Objekt mit sheetId und perm."
+      }
+    },
+    "restoreColumn": {
+      "help": "Nur für Rückgängig: setzt eine entfernte Spalte samt Werten und Formeln wieder ein. Agenten rufen es nicht.",
+      "params": {
+        "sheetId": "Die id des Blatts, wie read().sheets[].id sie nennt.",
+        "index": "Gesicherter Stand für die Umkehrung.",
+        "head": "Gesicherter Stand für die Umkehrung.",
+        "values": "Gesicherter Stand für die Umkehrung.",
+        "formulas": "Gesicherter Stand für die Umkehrung.",
+        "command": "Das Kommando als ein Objekt mit sheetId, index, head, values und formulas."
+      }
+    },
+    "restoreRows": {
+      "help": "Nur für Rückgängig: setzt entfernte Zeilen samt Werten und Formeln wieder ein. Agenten rufen es nicht.",
+      "params": {
+        "sheetId": "Die id des Blatts, wie read().sheets[].id sie nennt.",
+        "startRow": "Gesicherter Stand für die Umkehrung.",
+        "count": "Gesicherter Stand für die Umkehrung.",
+        "cols": "Gesicherter Stand für die Umkehrung.",
+        "formulas": "Gesicherter Stand für die Umkehrung.",
+        "command": "Das Kommando als ein Objekt mit sheetId, startRow, count, cols und formulas."
+      }
+    },
+    "addSheet": {
+      "help": "Legt ein neues Blatt an und macht es aktiv. Der Agent erhält dessen id.",
+      "params": {
+        "name": "Name des neuen Blatts; ohne Angabe „Sheet <n>“ (die Oberfläche übergibt den übersetzten Namen).",
+        "command": "Das Kommando als ein Objekt, wahlweise mit name."
+      }
+    },
+    "renameSheet": {
+      "help": "Benennt ein Blatt um.",
+      "params": {
+        "id": "Die id des Blatts.",
+        "name": "Der neue Name; leer oder nur aus Leerzeichen ist ein ungültiges Argument und damit ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit id und name."
+      }
+    },
+    "duplicateSheet": {
+      "help": "Kopiert ein Blatt mit Zellen, Formeln und Spalteneinstellungen. Die Kopie kommt ans Ende, heißt „<Name> (Kopie)“ und wird aktiv; der Agent erhält ihre id.",
+      "params": {
+        "id": "Die id des zu kopierenden Blatts, wie read().sheets[].id sie nennt.",
+        "name": "Name der Kopie; ohne Angabe „<Name> (Copy)“ (die Oberfläche übergibt den übersetzten Namen).",
+        "command": "Das Kommando als ein Objekt mit id, wahlweise name."
+      }
+    },
+    "insertSheetBefore": {
+      "help": "Legt ein leeres Blatt direkt vor einem anderen an und macht es aktiv; der Agent erhält dessen id.",
+      "params": {
+        "id": "Die id des Blatts, vor das das neue Blatt kommt.",
+        "name": "Name des neuen Blatts; ohne Angabe „Sheet <n>“ (die Oberfläche übergibt den übersetzten Namen).",
+        "command": "Das Kommando als ein Objekt mit id, wahlweise name."
+      }
+    },
+    "removeSheet": {
+      "help": "Entfernt ein Blatt samt Inhalt. War es aktiv, wird das benachbarte Blatt aktiv. Das letzte Blatt lässt sich nicht entfernen — das ist ein Fehler. Rückgängig holt das Blatt samt Inhalt zurück.",
+      "params": {
+        "id": "Die id des zu entfernenden Blatts.",
+        "command": "Das Kommando als ein Objekt mit id."
+      }
+    },
+    "restoreSheet": {
+      "help": "Nur für Rückgängig: setzt ein entferntes Blatt samt Ansicht wieder ein. Agenten rufen es nicht.",
+      "params": {
+        "index": "Gesicherter Stand für die Umkehrung.",
+        "sheet": "Gesicherter Stand für die Umkehrung.",
+        "activeSheetId": "Gesicherter Stand für die Umkehrung.",
+        "view": "Gesicherter Stand für die Umkehrung.",
+        "command": "Das Kommando als ein Objekt mit index, sheet, activeSheetId und view."
+      }
+    },
+    "dropSheet": {
+      "help": "Nur für Rückgängig: nimmt ein angelegtes Blatt wieder heraus. Agenten rufen es nicht.",
+      "params": {
+        "id": "Gesicherter Stand für die Umkehrung.",
+        "activeSheetId": "Gesicherter Stand für die Umkehrung.",
+        "command": "Das Kommando als ein Objekt mit id und activeSheetId."
+      }
+    },
+    "restoreSheetName": {
+      "help": "Nur für Rückgängig: setzt den Namen eines Blatts wörtlich zurück. Agenten rufen es nicht.",
+      "params": {
+        "id": "Gesicherter Stand für die Umkehrung.",
+        "name": "Gesicherter Stand für die Umkehrung.",
+        "command": "Das Kommando als ein Objekt mit id und name."
+      }
+    },
+    "switchSheet": {
+      "help": "Wechselt zu diesem Blatt und zeigt dessen Tabelle. Doppelklick auf den Reiter benennt es um, Rechtsklick öffnet das Menü des Blatts.",
+      "params": {
+        "id": "Die id des Blatts, wie read().sheets[].id sie nennt. Eine unbekannte id ist ein Fehler.",
+        "command": "Das Kommando als ein Objekt mit id."
+      }
+    },
+    "gridView": {
+      "help": "Legt die Ansicht eines Blatts ab, wie das Raster sie meldet: Spaltenbreiten und Auswahl. Ändert keinen Inhalt.",
+      "params": {
+        "sheetId": "Die id des Blatts.",
+        "colWidths": "Spaltenbreiten in Pixeln je Spalten-id.",
+        "selection": "Die Auswahl (Anfang, Ende, aktive Zelle, per Strg+Klick gewählte Spalten) oder null.",
+        "command": "Das Kommando als ein Objekt mit sheetId, colWidths und selection."
+      }
+    },
+    "exportAs": {
+      "help": "Lädt das aktive Blatt als Datei herunter: Excel (.xlsx), CSV (.csv) oder JSON (.json).",
+      "params": {
+        "format": "Das Dateiformat: xlsx, csv oder json.",
+        "command": "Das Kommando als ein Objekt mit format."
+      }
+    },
+    "openFormulaEditor": {
+      "help": "Öffnet den Formel-Editor für die aktive Zelle (F4): Funktionen, Spaltenbezüge, Vorschau. Strg+Enter übernimmt, Esc bricht ab. Doppelklick auf eine Formelzelle öffnet ihn ebenfalls.",
+      "params": {
+        "sheetId": "Optional: das Blatt der Zelle; ohne Angabe das aktive.",
+        "columnId": "Optional: die Spalte der Zelle; ohne Angabe die aktive Zelle der Auswahl.",
+        "row": "Optional: die Zeile der Zelle, von 0 an gezählt.",
+        "command": "Das Kommando als ein Objekt mit sheetId, columnId und row."
+      }
+    },
+    "suggestChart": {
+      "help": "Schlägt Diagramme für die gewählten Spalten vor (ohne Auswahl für die einzige Spalte mit Werten). Noch nicht bestätigte Rollen werden vorher abgefragt."
+    },
+    "confirmRoles": {
+      "help": "Setzt die Rollen aus der Bestätigung vor dem Diagrammvorschlag, alle zusammen als ein Schritt im Verlauf. Eine Rolle, die der Typ nicht erlaubt, bleibt unverändert.",
+      "params": {
+        "sheetId": "Die id des Blatts.",
+        "roles": "Je Spalte columnId und die bestätigte Rolle.",
+        "command": "Das Kommando als ein Objekt mit sheetId und roles."
+      }
+    },
+    "deleteSelection": {
+      "help": "Leert die Zellen der Auswahl im Raster (wie Entf). Gesperrte Spalten lehnen ab."
+    },
+    "importFile": {
+      "help": "Ersetzt den Inhalt des aktiven Blatts durch eine CSV- oder TSV-Datei, gewählt oder auf das Arbeitsblatt gezogen. Trennzeichen und Kopfzeile werden erkannt; Rückgängig stellt den alten Inhalt wieder her."
+    },
+    "read": {
+      "help": "Liefert Blattverzeichnis, die Blatt-id und Spaltenköpfe; die Zeilen kommen nur auf Nachfrage über options.fields = ['rows'].",
+      "params": {
+        "options": "Optional: sheetId wählt das Blatt (ohne Angabe das erste; Lesen schaltet nicht um), fields: ['rows'] liefert die Zeilen, rows: { from, to } schneidet sie zu."
+      }
+    },
+    "undo": {
+      "help": "Nimmt die letzte Änderung der Arbeitsmappe zurück, auch auf einem anderen Blatt (Strg+Z)."
+    },
+    "redo": {
+      "help": "Stellt die zuletzt zurückgenommene Änderung wieder her (Strg+Y)."
+    }
+  }
+}
