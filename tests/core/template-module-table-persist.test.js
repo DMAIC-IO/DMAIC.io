@@ -6,6 +6,7 @@ import Alpine from '../../vendor/alpinejs/csp.js';
 import { createModule } from '../../js/core/template-module.js';
 import { defineModel, table, number, command, markTableChanged, schemaHasTable, list, object, text } from '../../js/core/model.js';
 import { TableData } from '../../js/core/table-data.js';
+import { Workspace } from '../../js/ui/workspace.js';
 
 const Doc = defineModel({
   fields: { data: table(), n: number({ default: 0 }) },
@@ -193,6 +194,37 @@ suite('createModule table() — entprelltes Speichern', () => {
     await mod.destroy();
     assertEqual(calls.length, 1);
     assertEqual(calls[0].n, 3);
+  });
+
+  test('Projektwechsel: eine beim Abbau gemeldete Ansicht landet nicht im neuen Projekt', async () => {
+    const project = { id: 'p1' };
+    const { mod, container, data, calls } = await mount({ project });
+    const widget = document.createElement('div');
+    widget.setAttribute('x-widget', 'datagrid');
+    widget._datagrid = { flushView: () => { data().model.n = 5; return true; } };
+    container.append(widget);
+    project.id = 'p2';
+    await mod.destroy();
+    assertEqual(calls.length, 0, 'nichts unter dem neuen Projekt');
+  });
+
+  test('vor dem Wechsel (_persistAllModuleStates): die ausstehende Ansicht kommt in den Stand des alten Projekts', async () => {
+    const { mod, container, data, context } = await mount({ project: { id: 'p1' } });
+    const widget = document.createElement('div');
+    widget.setAttribute('x-widget', 'datagrid');
+    let pending = true;
+    widget._datagrid = { flushView: () => { if (!pending) return false; pending = false; data().model.n = 9; return true; } };
+    container.append(widget);
+    const saved = [];
+    const ws = Object.create(Workspace.prototype);
+    ws._stateManager = {
+      get: (path) => (path === 'phases' ? { define: [{ instanceId: context.instanceId }] } : undefined),
+      setModuleState: (id, s) => saved.push([id, s]),
+    };
+    ws._instances = new Map([[context.instanceId, mod]]);
+    ws._persistAllModuleStates();
+    assertEqual(saved.length, 1);
+    assertEqual(saved[0][1].n, 9, 'die gemeldete Ansicht ist im Stand');
   });
 
   test('flushPersist ohne Ausstehendes schreibt nichts', async () => {

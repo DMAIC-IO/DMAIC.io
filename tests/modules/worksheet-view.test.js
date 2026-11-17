@@ -277,6 +277,27 @@ suite('worksheet: Viewmodel der Zielform im Browser', () => {
     assertEqual(h.vm().canRedo, false, 'redo legt selbst keinen Schritt an');
   });
 
+  test('undo/redo ohne Schritt senden kein worksheet:dataChanged, mit Schritt genau eines', async () => {
+    const h = await mount(twoSheets());
+    await frame();
+    await flush();
+    const before = h.changed();
+    assertEqual(h.vm().undo({}), false);
+    assertEqual(h.vm().redo({}), false);
+    await frame();
+    await flush();
+    assertEqual(h.changed(), before, 'leerer Verlauf: kein Ereignis');
+    const sheet = h.vm().model.sheets[0];
+    h.vm().model.setCells({ sheetId: sheet.id, columnId: sheet.columns[1].id, startRow: 0, values: [3] });
+    await frame();
+    await flush();
+    const afterSet = h.changed();
+    assertEqual(h.vm().undo({}), true);
+    await frame();
+    await flush();
+    assertEqual(h.changed(), afterSet + 1, 'Rückgängig meldet über die Umkehr-Kommandos');
+  });
+
   test('undo im abgeschlossenen Projekt: false, nichts geändert', async () => {
     const h = await mount(twoSheets());
     const sheet = h.vm().model.sheets[0];

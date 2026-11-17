@@ -691,6 +691,8 @@ export class Workspace {
     this._instances.forEach((instance, id) => {
       if (!live.has(id)) return;
       try {
+        // Entprellte Ansichten der Widgets (Raster) erst ins Model, solange das Projekt noch aktiv ist.
+        instance.flushViews?.();
         instance.cancelPersist?.(); // der Schreibvorgang unten ersetzt die entprellte Speicherung
         const state = instance.getState?.();
         if (!state) return;

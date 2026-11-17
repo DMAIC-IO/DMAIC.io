@@ -7,8 +7,12 @@
  * Frame. Ansichtskommandos senden nicht.
  */
 
-/** Kommandos, die nur die Ansicht betreffen: kein `worksheet:dataChanged`. */
-const VIEW_ONLY = new Set(['switchSheet', 'gridView', 'exportAs', 'openFormulaEditor', 'suggestChart']);
+/**
+ * Kommandos ohne eigenes `worksheet:dataChanged`: die Ansichtskommandos und
+ * `undo`/`redo`. Ein Verlaufsschritt führt Umkehr-Kommandos aus, die selbst
+ * melden; ein leerer Schritt (`false`) ändert nichts und meldet darum nichts.
+ */
+const VIEW_ONLY = new Set(['switchSheet', 'gridView', 'exportAs', 'openFormulaEditor', 'suggestChart', 'undo', 'redo']);
 
 /** Instanzen mit Änderung im laufenden Frame → ihr Bus. */
 const pending = new Map();

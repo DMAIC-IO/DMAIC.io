@@ -619,6 +619,8 @@ export function createModule(base) {
     async init(container, context) {
       this._container = container;
       this._context = context;
+      // Das Projekt, dem die Instanz gehört: nach einem Wechsel schreibt ihr Abbau nicht ins neue.
+      this._ownProject = context?.stateManager?.getActiveProjectId?.();
       if (history && alpine) {
         this._history = new ModuleHistory({ depth: history === true ? undefined : history.depth });
         this._historyFlags = Alpine.reactive({ canUndo: false, canRedo: false });
@@ -1225,20 +1227,32 @@ export function createModule(base) {
     },
 
     /**
-     * Schreibt eine ausstehende, entprellte Speicherung sofort. Vorher meldet
-     * jedes Widget im Container eine ausstehende Ansicht (`el._datagrid.flushView`).
-     * Ohne Ausstehendes: nichts.
-     * @returns {void}
+     * Lässt jedes Widget im Container eine entprellte Ansicht (Raster:
+     * Auswahl, Spaltenbreiten) jetzt ins Model melden (`el._datagrid.flushView`).
+     * Der Arbeitsbereich ruft es vor `getState` (`_persistAllModuleStates`:
+     * Projektwechsel, Unload), `flushPersist` vor dem Speichern.
+     * @returns {boolean} ob ein Widget etwas meldete
      */
-    flushPersist() {
-      // Erst die Widgets: eine entprellte Ansicht (Raster: Auswahl, Spaltenbreiten)
-      // schreibt jetzt ins Model; der Speicher-Watch liefe erst danach.
+    flushViews() {
       let flushed = false;
       this._container?.querySelectorAll('[x-widget]').forEach((el) => {
         if (/** @type {any} */ (el)._datagrid?.flushView?.() === true) flushed = true;
       });
+      return flushed;
+    },
+
+    /**
+     * Schreibt eine ausstehende, entprellte Speicherung sofort. Vorher meldet
+     * jedes Widget im Container eine ausstehende Ansicht (`flushViews`).
+     * Ohne Ausstehendes: nichts. Ist inzwischen ein anderes Projekt aktiv,
+     * schreibt es nicht (der Stand gehört dem alten).
+     * @returns {void}
+     */
+    flushPersist() {
+      const flushed = this.flushViews();
       if (!this._persistTimer && !flushed) return;
       if (!this._persistTimer) {
+        if (this._ownProject !== this._context?.stateManager?.getActiveProjectId?.()) return;
         const model = this.getActionData?.()?.model;
         if (model) this._persist(model);
         return;
