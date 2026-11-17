@@ -98,6 +98,28 @@ suite('Beispiel-Lader: rewriteRefs aus dem Schema', () => {
     await assertRejects(() => loadWorksheetExample(f.mod, payload(), { Model: Old }), /rewriteRefs is required/);
   });
 
+  // Das Vorladen des Arbeitsblatt-Codes läuft erst nach `module:added` und
+  // asynchron. Rechnete das Modul in setState sofort (msa-typ1, attribute-test,
+  // …), las ctx.data `not_loaded` und das Ergebnis blieb leer, bis zur nächsten
+  // Eingabe. Beide Lader warten deshalb, bis das neue Arbeitsblatt lesbar ist.
+  for (const [name, load] of [
+    ['loadExampleViaWorksheet', (m, p) => loadExampleViaWorksheet(m, p, { State: Schema })],
+    ['loadWorksheetExample', (m, p) => loadWorksheetExample(m, p, { Model: Schema })],
+  ]) {
+    test(`${name}: setState erst, wenn das neue Arbeitsblatt lesbar ist`, async () => {
+      const f = fakeModule();
+      const order = [];
+      f.mod._context.instances = {
+        async read(id, options) { await Promise.resolve(); order.push(['read', id, options]); return {}; },
+      };
+      const setState = f.mod.setState;
+      f.mod.setState = (s) => { order.push(['setState']); setState(s); };
+      await load(f.mod, payload());
+      assertEqual(order.map(o => o[0]).join(','), 'read,setState');
+      assertEqual(order[0][1], f.state.exampleWorksheetId, 'das angelegte Arbeitsblatt');
+    });
+  }
+
   test('kaputter Stand eines Schema-Models: Laden mit Reparatur statt Wurf', async () => {
     const f = fakeModule();
     f.mod.setState({ colRef1: { instanceId: 42 } });

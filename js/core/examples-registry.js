@@ -599,6 +599,7 @@ export async function loadExampleViaWorksheet(module, payload, options) {
     if (ref) {
       data.exampleWorksheetId = ref.instanceId;
       data = rewritePlaceholder(State, rewriteRefs, data, '__source__', ref.instanceId);
+      await whenWorksheetReadable(ctx, ref.instanceId);
     }
   }
 
@@ -656,6 +657,26 @@ export function rewriteRefArray(field) {
 }
 
 /**
+ * Wartet, bis das eben angelegte Arbeitsblatt über `ctx.data`/`readSync`
+ * lesbar ist. Das Vorladen des Arbeitsblatt-Codes (`worksheet-preload.js`)
+ * läuft erst nach `module:added` und asynchron; ein Modul, das in
+ * `setState` sofort rechnet, läse sonst `not_loaded` — eine leere Spalte —
+ * und bliebe bis zur nächsten Eingabe ohne Ergebnis. `instances.read` lädt
+ * den Code und liest nur die Spaltenköpfe (`columns: []`). Ein Fehler beim
+ * Lesen bleibt dem Leser überlassen: er meldet ihn selbst.
+ * @param {any} ctx Modulkontext (`instances` fehlt in manchen Tests)
+ * @param {string} instanceId das angelegte Arbeitsblatt
+ * @returns {Promise<void>}
+ */
+async function whenWorksheetReadable(ctx, instanceId) {
+  try {
+    await ctx?.instances?.read?.(instanceId, { columns: [] });
+  } catch (err) {
+    console.warn('[ExamplesRegistry] worksheet not readable after provisioning:', err?.message ?? err);
+  }
+}
+
+/**
  * Shared worksheet-backed example loader for chart modules.
  *
  * Captures the verbatim per-module `loadExample` flow used by the chart
@@ -710,6 +731,7 @@ export async function loadWorksheetExample(mod, payload, { Model, rewriteRefs, c
     if (ref) {
       data.exampleWorksheetId = ref.instanceId;
       data = rewritePlaceholder(Model, rewriteRefs, data, '__source__', ref.instanceId);
+      await whenWorksheetReadable(ctx, ref.instanceId);
     }
   }
 
