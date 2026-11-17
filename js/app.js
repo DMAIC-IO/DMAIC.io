@@ -122,7 +122,7 @@ async function init() {
   // initRouter() below; rehydrateProject() only reads it when a verb actually
   // runs, always after boot. See core/router/index.js.
   const routerBox = { current: null };
-  const actionVerbs = createAppActionVerbs(kernel, { dmaicTiles, workspace, notify }, routerBox);
+  const actionVerbs = createAppActionVerbs(kernel, { dmaicTiles, workspace, instances, notify }, routerBox);
 
   buildFrame(kernel, { dialog, dmaicTiles, helpPanel, workspace, notify, progress });
   const pages = await initPages(kernel, { dialog, actionVerbs, notify });

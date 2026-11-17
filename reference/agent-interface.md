@@ -639,8 +639,10 @@ Fehlercodes und dieselbe Kette wie `interact()` des Agenten; Unterschiede:
 `quelle` als `moduleId` des Aufrufers und ohne Aufrufer-Instanz (`module.add`
 eines Arbeitsblatts geht damit nur in die Datenphase). Der Stapel reiht sich in
 dieselbe serialisierte Kette ein: er wartet hinter einem laufenden Agenten-
-oder Modulstapel, und diese warten hinter ihm. Solange die Fläche nicht
-verdrahtet ist, antwortet der Aufruf `{ ok: false, error: 'surface_failed' }`.
+oder Modulstapel, und diese warten hinter ihm. Er zeigt keinen Toast für im
+Hintergrund geänderte Instanzen: ein Kerndienst schreibt im Auftrag des
+Nutzers, kein Agent. Solange die Fläche nicht verdrahtet ist, antwortet der
+Aufruf `{ ok: false, error: 'surface_failed' }`.
 
 #### Synchrones Lesen: `ctx.instances.readSync`
 

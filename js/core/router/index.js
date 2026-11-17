@@ -47,7 +47,7 @@ export function initRouteDirectives(Alpine) {
  * when this function returns.
  *
  * @param {object} kernel
- * @param {{ dmaicTiles: object, workspace: object, notify?: function }} ui
+ * @param {{ dmaicTiles: object, workspace: object, instances: object, notify?: function }} ui
  * @param {{ current: object|null }} routerBox
  * @returns {Map<string, object>} verb registry
  */
@@ -58,6 +58,8 @@ export function createAppActionVerbs(kernel, ui, routerBox) {
     stateManager: kernel.stateManager,
     eventBus: kernel.eventBus,
     notify: ui.notify,
+    workspace: ui.workspace,
+    instances: ui.instances,
     loadScenario: (args) => loadScenario({
       examplesRegistry: kernel.examplesRegistry,
       moduleRegistry: kernel.moduleRegistry,

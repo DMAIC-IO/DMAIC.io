@@ -324,6 +324,47 @@ suite('core/zeg-sheet-model planZegStack', () => {
     assertDeepEqual(planZegStack('ws1', SHEET, asRead, next), []);
   });
 
+  test('P11: hart gesperrte Nutzerspalte mit Formel bekommt kein setFormula und wird nicht überschrieben', () => {
+    const prev = buildSheetState(null, [D1, D2], ['define'], LABELS);
+    prev.columns.push({ id: 'u1', name: 'Doppelt', type: 'numeric', values: [null, 80], formulas: [null, '=C2[2]*2'], format: {}, meta: { lock: 'hard', reason: 'Nutzer' } });
+    const D0 = { date: '2026-07-01', values: { define: 5 } };
+    const next = buildSheetState(prev, [D0, D1, D2], ['define'], LABELS);
+    const stack = planZegStack('ws1', SHEET, prev, next);
+    assertTrue(stack.length > 0, 'die ZEG-Spalten ändern sich');
+    assertEqual(ofMethod(stack, 'setFormula').length, 0);
+    assertTrue(!stack[0].args[0].columns.some(e => e.to === 'u1'), 'writeColumns lässt die gesperrte Spalte aus (es löschte sonst ihre Formeln)');
+  });
+
+  test('P11: weich gesperrte Nutzerspalte ebenso (setFormula lehnt jede Sperre ab)', () => {
+    const prev = buildSheetState(null, [D1], ['define'], LABELS);
+    prev.columns.push({ id: 'u1', name: 'Doppelt', type: 'numeric', values: [40], formulas: ['=C2*2'], format: {}, meta: { lock: 'soft' } });
+    const next = buildSheetState(prev, [D1, D2], ['define'], LABELS);
+    const stack = planZegStack('ws1', SHEET, prev, next);
+    assertEqual(ofMethod(stack, 'setFormula').length, 0);
+    assertTrue(!stack[0].args[0].columns.some(e => e.to === 'u1'));
+  });
+
+  test('P11: weicht nur eine gesperrte Nutzerspalte ab, gibt es keinen Stapel', () => {
+    const prev = buildSheetState(null, [D1, D2], ['define'], LABELS);
+    prev.columns.push({ id: 'u1', name: 'Doppelt', type: 'numeric', values: [null, 80], formulas: [null, '=C2[2]*2'], format: {}, meta: { lock: 'hard' } });
+    const next = buildSheetState(prev, [D1, D2], ['define'], LABELS);
+    const u1 = next.columns.find(c => c.id === 'u1');
+    u1.values = [80, null];
+    u1.formulas = ['=C2[2]*2', null];
+    assertDeepEqual(planZegStack('ws1', SHEET, prev, next), []);
+  });
+
+  test('P11: Referenz einer neuen Spalte zählt nur die geschriebenen Einträge', () => {
+    const prev = buildSheetState(null, [D1], ['define'], LABELS);
+    prev.columns.push({ id: 'u1', name: 'Fix', type: 'numeric', values: [1], formulas: [null], format: {}, meta: { lock: 'hard' } });
+    const next = buildSheetState(prev, [D1], ['define', 'measure'], LABELS);
+    const stack = planZegStack('ws1', SHEET, prev, next);
+    const entries = stack[0].args[0].columns;
+    const appendAt = entries.findIndex(e => e.to === 'append');
+    const meta = ofMethod(stack, 'setColumnMeta')[0].args[0];
+    assertDeepEqual(meta.columnId, { $from: 'write', path: `value.${appendAt}` });
+  });
+
   test('neue Spalte: format ist eine Kopie, kein Verweis', () => {
     const prev = buildSheetState(null, [D1], ['define'], LABELS);
     const next = buildSheetState(prev, [D1], ['define', 'measure'], LABELS);

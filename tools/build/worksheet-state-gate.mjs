@@ -19,10 +19,6 @@ export const WORKSHEET_STATE_ALLOW = [
     path: 'js/core/examples-registry.js',
     reason: 'legt Beispiel-Arbeitsblätter im gespeicherten Format an; ab Stufe 2 läuft das über die Migration \'0→1.0\'',
   },
-  {
-    path: 'js/core/zeg-sheet/zeg-sheet-store.js',
-    reason: 'direktes Schreiben, bis das Arbeitsblatt seine Zielform hat (F1.14d): ein Schreiben über interact hängt das Legacy-Arbeitsblatt ein und wechselt die Ansicht',
-  },
 ];
 
 /**

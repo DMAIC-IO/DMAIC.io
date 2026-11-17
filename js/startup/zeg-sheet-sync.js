@@ -9,7 +9,8 @@ import { installZegSheetSync } from '../core/zeg-sheet/zeg-sheet.js';
 export default createStartup({
   id: 'zeg-sheet-sync',
 
-  run({ stateManager, eventBus, i18n }) {
-    installZegSheetSync({ stateManager, eventBus, i18n });
+  run({ stateManager, eventBus, i18n, workspace, instances }) {
+    // Geschrieben wird über die Agentenfläche als Kerndienst (`workspace.interactAsKernel`).
+    installZegSheetSync({ stateManager, eventBus, i18n, workspace, instances });
   },
 });

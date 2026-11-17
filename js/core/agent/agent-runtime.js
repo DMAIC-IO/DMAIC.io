@@ -648,6 +648,11 @@ export function createAgentRuntime(deps) {
         : { ok: false, contract: CONTRACT_VERSION, results, rolledBack: true };
     }
 
+    // Ein Kerndienst (`interactAsKernel`, Aufrufer ohne Instanz) schreibt im
+    // Auftrag des Nutzers, etwa die ZEG-Synchronisation nach einer
+    // Stift-Eingabe: kein Agent hat etwas geändert, also kein Toast.
+    const toast = (ids) => { if (!(caller && caller.instanceId === null)) notifyBackground(ids); };
+
     // Ganz oder gar nicht: nach einem Laufzeitfehler alles zurück, was der
     // Stapel geschrieben hat — auch das innerer Stapel. Danach gibt es keine
     // wirksame Änderung mehr, also keinen Toast; gespeichert wird trotzdem,
@@ -688,7 +693,7 @@ export function createAgentRuntime(deps) {
         await stateManager.flushNow();
       } catch (err) {
         const detail = err?.message ?? String(err);
-        if (allOk) notifyBackground(changed);
+        if (allOk) toast(changed);
         return {
           ok: false,
           contract: CONTRACT_VERSION,
@@ -700,7 +705,7 @@ export function createAgentRuntime(deps) {
       }
     }
     if (allOk) {
-      notifyBackground(changed);
+      toast(changed);
       return { ok: true, contract: CONTRACT_VERSION, results };
     }
     return { ok: false, contract: CONTRACT_VERSION, results, rolledBack };

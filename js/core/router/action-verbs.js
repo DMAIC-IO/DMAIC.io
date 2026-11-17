@@ -64,6 +64,8 @@ function isScenario(entry) {
  * @param {function} ctx.loadScenario        bound scenario loader
  * @param {function} ctx.rehydrateProject    bound rehydrate routine, takes options
  * @param {function} [ctx.notify]
+ * @param {{ interactAsKernel: Function }} [ctx.workspace]  schreibt das ZEG-Blatt (Verb `zeg-sheet`)
+ * @param {{ list: Function, read: Function }} [ctx.instances]  lädt den Arbeitsblatt-Code vor der Suche
  * @returns {Map<string, {modal: object|null, run: function, list: function}>}
  */
 export function createActionVerbs(ctx) {
@@ -263,7 +265,9 @@ export function createActionVerbs(ctx) {
      * @returns {Promise<{route: object}>}
      */
     async run() {
-      const { instanceId } = ensureZegSheet({ stateManager, eventBus: ctx.eventBus, i18n });
+      const { instanceId } = await ensureZegSheet({
+        stateManager, eventBus: ctx.eventBus, i18n, workspace: ctx.workspace, instances: ctx.instances,
+      });
       return {
         route: { kind: 'module', projectId: stateManager.getActiveProjectId(), instanceId, sub: [] },
       };

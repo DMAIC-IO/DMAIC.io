@@ -207,6 +207,15 @@ export function buildSheetState(prevState, rows, phaseIds, labels) {
   };
 }
 
+/**
+ * True for a user column (not managed by the ZEG sync) with any lock.
+ * @param {object} col
+ * @returns {boolean}
+ */
+function isLockedUserColumn(col) {
+  return !isZegColumn(col) && !!col?.meta?.lock;
+}
+
 /** Id of the `writeColumns` action in a planned stack; later actions refer to it. */
 const WRITE_ID = 'write';
 
@@ -273,6 +282,12 @@ function sheetMatches(prev, next) {
  * rows; `setFormula` per formula cell (`writeColumns` clears formulas).
  * Empty if the sheet already matches. Pure.
  *
+ * Locked user columns (`meta.lock`, hard or soft) are never written: no
+ * `writeColumns` entry (it would clear their formulas) and no `setFormula`
+ * (the worksheet refuses it on any lock, and the whole stack would roll
+ * back). They count with their current cells, so a difference in them alone
+ * plans nothing (P11).
+ *
  * Columns are sheet-state shaped: `{ id, name, type, format, meta, values,
  * formulas? }` with per-column `values`/`formulas` arrays.
  * @param {string} instanceId the worksheet instance
@@ -282,6 +297,17 @@ function sheetMatches(prev, next) {
  * @returns {object[]} the stack, `[]` if nothing differs
  */
 export function planZegStack(instanceId, sheetId, prev, next) {
+  // P11: gesperrte Nutzerspalten bleiben, wie sie sind.
+  const lockedPrev = new Map((prev.columns || []).filter(isLockedUserColumn).map(c => [c.id, c]));
+  if (lockedPrev.size) {
+    next = {
+      ...next,
+      columns: next.columns.map(c => {
+        const cur = lockedPrev.get(c.id);
+        return cur ? { ...c, values: cur.values, formulas: cur.formulas, meta: cur.meta } : c;
+      }),
+    };
+  }
   if (sheetMatches(prev, next)) return [];
   // Kommandos des Arbeitsblatts nehmen genau ein Objekt (`args: [{ … }]`).
   const call = (method, cmd, id) => ({
@@ -293,12 +319,14 @@ export function planZegStack(instanceId, sheetId, prev, next) {
 
   // 1. Schreiben: neue Spalten hängen hinten an, ihre Id kommt als Referenz.
   const ref = new Map();
-  const entries = next.columns.map((col, i) => {
+  const entries = [];
+  for (const col of next.columns) {
+    if (lockedPrev.has(col.id)) continue;
     const values = cells(col.values, n);
-    if (prevById.has(col.id)) return { to: col.id, values };
-    ref.set(col.id, { $from: WRITE_ID, path: `value.${i}` });
-    return { to: 'append', name: col.name, type: col.type, format: { ...(col.format ?? {}) }, values };
-  });
+    if (prevById.has(col.id)) { entries.push({ to: col.id, values }); continue; }
+    ref.set(col.id, { $from: WRITE_ID, path: `value.${entries.length}` });
+    entries.push({ to: 'append', name: col.name, type: col.type, format: { ...(col.format ?? {}) }, values });
+  }
   const target = (col) => ref.get(col.id) ?? col.id;
   const stack = [call('writeColumns', { sheetId, columns: entries }, WRITE_ID)];
 
@@ -330,8 +358,9 @@ export function planZegStack(instanceId, sheetId, prev, next) {
   const prevRows = prev.rowCount ?? 0;
   if (n < prevRows) stack.push(call('removeRows', { sheetId, startRow: n, count: prevRows - n }));
 
-  // 6. Formeln, die `writeColumns` gelöscht hat.
+  // 6. Formeln, die `writeColumns` gelöscht hat (gesperrte Spalten hat es nicht angefasst).
   for (const col of next.columns) {
+    if (lockedPrev.has(col.id)) continue;
     cells(col.formulas, n).forEach((f, row) => {
       if (typeof f === 'string' && f !== '') stack.push(call('setFormula', { sheetId, columnId: target(col), row, formula: f }));
     });

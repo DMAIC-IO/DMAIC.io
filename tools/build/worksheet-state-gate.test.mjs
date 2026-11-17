@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { APP_DIR } from './build.mjs';
 import { findWorksheetStateAccess, WORKSHEET_STATE_ALLOW } from './worksheet-state-gate.mjs';
@@ -44,10 +44,13 @@ test('Gate: der echte Baum js/ hat keinen Rohzugriff auf Arbeitsblatt-Stände', 
   assert.deepEqual(hits, [], 'Arbeitsblätter lesen über ctx.instances.readSync / readWorksheet (Spec F1.14 §4.1)');
 });
 
-test('Gate: die ZEG-Ausnahme deckt nur den Schreibpfad (zeg-sheet-store.js), nicht zeg-sheet.js', () => {
+test('Gate: keine ZEG-Ausnahme mehr (F1.14d), zeg-sheet schreibt und liest nicht roh', () => {
   const zeg = WORKSHEET_STATE_ALLOW.filter(a => a.path.includes('zeg-sheet'));
-  assert.deepEqual(zeg.map(a => a.path), ['js/core/zeg-sheet/zeg-sheet-store.js']);
-  const text = readFileSync(join(APP_DIR, 'js/core/zeg-sheet/zeg-sheet.js'), 'utf8');
-  assert.deepEqual(findWorksheetStateAccess([{ path: 'js/core/zeg-sheet/zeg-sheet.js', text }], WORKSHEET_STATE_ALLOW), []);
-  assert.equal(text.includes('getModuleState('), false, 'zeg-sheet.js liest nur über die Fassade');
+  assert.deepEqual(zeg.map(a => a.path), []);
+  assert.equal(existsSync(join(APP_DIR, 'js/core/zeg-sheet/zeg-sheet-store.js')), false, 'der direkte Schreibpfad ist gelöscht');
+  for (const file of ['zeg-sheet.js', 'zeg-sheet-model.js']) {
+    const text = readFileSync(join(APP_DIR, 'js/core/zeg-sheet', file), 'utf8');
+    assert.equal(text.includes('getModuleState('), false, `${file} liest nur über die Fassade`);
+    assert.equal(text.includes('setModuleState('), false, `${file} schreibt nur über interact`);
+  }
 });

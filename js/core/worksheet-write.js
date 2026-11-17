@@ -347,10 +347,12 @@ export function completeStack(ctx, plan) {
  * `instances.read` lesen. Das lädt den Code; danach sieht `uniqueSheetName`
  * alle Blattnamen und vergibt keinen doppelten. Eine nicht gemountete
  * Instanz liest dabei den gespeicherten Stand (kein Mount, kein Flush).
- * @param {{ instances: { interact: Function, list?: Function, read?: Function }, stateManager: object }} ctx
+ * Auch für Kerndienste (`zeg-sheet`), die ein Arbeitsblatt suchen, bevor sie
+ * eines anlegen.
+ * @param {{ instances?: { list?: Function, read?: Function }, stateManager: object }} ctx
  * @returns {Promise<void>}
  */
-async function loadUnreadableWorksheets(ctx) {
+export async function loadUnreadableWorksheets(ctx) {
   const { instances, stateManager } = ctx;
   if (typeof instances?.read !== 'function' || typeof instances.list !== 'function') return;
   for (const { instanceId } of instances.list({ modules: ['worksheet'] })) {

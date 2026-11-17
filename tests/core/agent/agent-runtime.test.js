@@ -1894,6 +1894,13 @@ suite('agent runtime — interactAsModule (Modulweg)', () => {
     await runtime.interactAsModule([write('ws1')], CALLER);
     assertDeepEqual(notified, [['ws1']]);
   });
+
+  test('ein Kerndienst (instanceId null, interactAsKernel) bekommt keinen Toast: kein Agent hat geschrieben', async () => {
+    const { runtime, notified } = setup();
+    const out = await runtime.interactAsModule([write('ws1')], { instanceId: null, moduleId: 'zeg-sheet' });
+    assertEqual(out.ok, true, JSON.stringify(out));
+    assertDeepEqual(notified, []);
+  });
 });
 
 suite('agent runtime — Arbeitsblatt in der Phase des aufrufenden Moduls', () => {
