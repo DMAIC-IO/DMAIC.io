@@ -65,7 +65,11 @@ export function worksheetSnapshot(saved, options) {
   const shown = sheetId === undefined ? sheets[0] : sheets.find(s => s.id === sheetId);
   const state = shown?.state ?? { columns: [], rowCount: 0 };
   const all = state.columns ?? [];
-  const rowCount = state.rowCount ?? 0;
+  // Ältere oder von Hand gebaute Stände ohne `rowCount` behalten ihre Daten:
+  // dann zählt die längste Spalte.
+  const rowCount = typeof state.rowCount === 'number'
+    ? state.rowCount
+    : Math.max(0, ...all.map(c => (Array.isArray(c.values) ? c.values.length : 0)));
 
   let selected = all;
   const wanted = options?.columns;

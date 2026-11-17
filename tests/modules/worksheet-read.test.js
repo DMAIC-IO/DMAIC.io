@@ -98,4 +98,22 @@ suite('readWorksheetState', () => {
     readWorksheetState(big, { fields: ['rows'] });
     assertEqual(reads, n);
   });
+
+  test('ohne rowCount im Stand: Zeilenzahl aus der längsten Spalte', () => {
+    const old = { sheets: [{ id: 's', name: 'S', state: { columns: [
+      { id: 'a', name: 'A', type: 'numeric', values: [1, 2] },
+      { id: 'b', name: 'B', type: 'numeric', values: [3, 4, 5] },
+      { id: 'c', name: 'C', type: 'numeric' },
+    ] } }] };
+    const out = readWorksheetState(old, { columns: ['a', 'b', 'c'] });
+    assertEqual(out.rowCount, 3);
+    assertDeepEqual(out.columns.map(c => c.values), [[1, 2, null], [3, 4, 5], [null, null, null]]);
+    const noCols = readWorksheetState({ sheets: [{ id: 's', name: 'S', state: { columns: [] } }] });
+    assertEqual(noCols.rowCount, 0);
+  });
+
+  test('ein gesetztes rowCount gilt, auch wenn Spalten länger sind', () => {
+    const st = { sheets: [{ id: 's', name: 'S', state: { rowCount: 1, columns: [{ id: 'a', name: 'A', type: 'numeric', values: [1, 2] }] } }] };
+    assertEqual(readWorksheetState(st).rowCount, 1);
+  });
 });
