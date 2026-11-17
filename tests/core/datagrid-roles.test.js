@@ -137,3 +137,39 @@ suite('datagrid-roles — isRoleValidForType', () => {
     assertEqual(ALL_ROLES.length, 6);
   });
 });
+
+suite('datagrid-roles — inferRole hört früh auf (Leistung, F1.14a)', () => {
+  /** Ein Array, das seine gelesenen Indizes zählt. */
+  function counted(arr) {
+    const box = { reads: 0 };
+    box.values = new Proxy(arr, {
+      get(t, k, r) { if (typeof k === 'string' && /^\d+$/.test(k)) box.reads++; return Reflect.get(t, k, r); },
+    });
+    return box;
+  }
+
+  test('numerisch, viele verschiedene Werte: continuous nach wenigen Zellen', () => {
+    const box = counted(Array.from({ length: 10000 }, (_, i) => i));
+    assertEqual(inferRole({ type: 'numeric', values: box.values }), ROLE.CONTINUOUS);
+    assertEqual(box.reads <= 20, true, `las ${box.reads} Zellen`);
+  });
+
+  test('Text, viele verschiedene Werte: freeText nach wenigen Zellen', () => {
+    const box = counted(Array.from({ length: 10000 }, (_, i) => `t${i}`));
+    assertEqual(inferRole({ type: 'text', values: box.values }), ROLE.FREE_TEXT);
+    assertEqual(box.reads <= 60, true, `las ${box.reads} Zellen`);
+  });
+
+  test('gleiche Ergebnisse an den Grenzen (10 / 11 numerisch, 50 / 51 Text, Verhältnis, Lücken)', () => {
+    const nums = (k, n = 100) => Array.from({ length: n }, (_, i) => i % k);
+    assertEqual(inferRole({ type: 'numeric', values: nums(10) }), ROLE.CATEGORICAL);
+    assertEqual(inferRole({ type: 'numeric', values: nums(11) }), ROLE.CONTINUOUS);
+    const texts = (k, n) => Array.from({ length: n }, (_, i) => `v${i % k}`);
+    assertEqual(inferRole({ type: 'text', values: texts(50, 200) }), ROLE.CATEGORICAL);
+    assertEqual(inferRole({ type: 'text', values: texts(51, 200) }), ROLE.FREE_TEXT);
+    assertEqual(inferRole({ type: 'text', values: texts(10, 20) }), ROLE.FREE_TEXT); // Verhältnis 0.5
+    // eslint-disable-next-line no-sparse-arrays
+    assertEqual(inferRole({ type: 'numeric', values: [, null, '', 1, , 1] }), ROLE.CATEGORICAL);
+    assertEqual(inferRole({ type: 'numeric', values: [null, '', undefined] }), defaultRoleForType('numeric'));
+  });
+});

@@ -46,6 +46,22 @@ function headerOf(c) {
 }
 
 /**
+ * Die Zellwerte einer gespeicherten Spalte als eigene Kopie: genau `n`
+ * Einträge, fehlende (auch Lücken) als `null`. `slice` statt `Array.from`
+ * mit Rückruf: bei 100 000 Zeilen der größte Posten eines Lesens mit `columns`.
+ * @param {any[]|undefined} src
+ * @param {number} n
+ * @returns {any[]}
+ */
+function valuesOf(src, n) {
+  if (!Array.isArray(src)) return new Array(n).fill(null);
+  const out = src.length >= n ? src.slice(0, n) : src.slice();
+  out.length = n;
+  for (let r = 0; r < n; r++) if (out[r] === undefined) out[r] = null;
+  return out;
+}
+
+/**
  * Die Momentaufnahme des Arbeitsblatts, die `readAgentState` projiziert.
  * Genau ein `return` mit Literal: so liest der Generator die gelieferten
  * Schlüssel (`tools/build/agent-read-return.mjs`).
@@ -93,7 +109,7 @@ export function worksheetSnapshot(saved, options) {
     ? heads
     : heads.map((head, i) => ({
       ...head,
-      values: Array.from({ length: rowCount }, (_, r) => selected[i].values?.[r] ?? null),
+      values: valuesOf(selected[i].values, rowCount),
     }));
 
   // Zeilen nur auf Nachfrage: der Umfangs-Deskriptor braucht nur die Länge.
@@ -106,12 +122,25 @@ export function worksheetSnapshot(saved, options) {
   }
 
   // Welche Zellen GERECHNET sind: ohne dieses Feld könnte ein Agent eine
-  // Formel zerstören, die er nicht sieht.
-  const formulas = [];
-  for (const c of selected) {
-    (c.formulas ?? []).forEach((formula, row) => {
-      if (formula) formulas.push({ columnId: c.id, row, formula });
-    });
+  // Formel zerstören, die er nicht sieht. Die Liste nur auf Nachfrage (wie
+  // `rows`): der Umfangs-Deskriptor braucht nur die Anzahl, und die
+  // Formel-Arrays sind dicht (eine Zelle je Zeile, meist `null`).
+  let formulas;
+  if (options?.fields?.includes('formulas')) {
+    formulas = [];
+    for (const c of selected) {
+      (c.formulas ?? []).forEach((formula, row) => {
+        if (formula) formulas.push({ columnId: c.id, row, formula });
+      });
+    }
+  } else {
+    let count = 0;
+    for (const c of selected) {
+      const f = c.formulas;
+      if (!Array.isArray(f)) continue;
+      for (let r = 0; r < f.length; r++) if (f[r]) count++;
+    }
+    formulas = new Array(count);
   }
 
   return {
@@ -135,5 +164,15 @@ export function worksheetSnapshot(saved, options) {
  * @returns {object} `AgentRead`
  */
 export function readWorksheetState(saved, options) {
-  return readAgentState('worksheet', worksheetSnapshot(saved, options), options);
+  const snap = worksheetSnapshot(saved, options);
+  if (options?.columns === undefined) return readAgentState('worksheet', snap, options);
+  // Die `values` des Abzugs sind schon eigene Kopien (`Array.from`). Die
+  // Projektion klonte `columns` (kein Massenfeld) sonst ein zweites Mal samt
+  // aller Zellwerte; sie bekommt darum nur die Köpfe, die Werte kommen danach
+  // an dieselbe Stelle (Schlüsselreihenfolge wie im Abzug: `values` zuletzt).
+  const values = snap.columns.map((c) => c.values);
+  const heads = snap.columns.map(({ values: _values, ...head }) => head);
+  const out = readAgentState('worksheet', { ...snap, columns: heads }, options);
+  out.columns?.forEach((c, i) => { c.values = values[i]; });
+  return out;
 }

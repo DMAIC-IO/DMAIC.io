@@ -121,23 +121,36 @@ export function inferRole(col) {
   if (type === 'binary') return ROLE.CATEGORICAL;
   if (type === 'date' || type === 'time') return ROLE.DATE;
 
-  const values = (col.values || []).filter(v => v != null && v !== '');
-  if (values.length === 0) return defaultRoleForType(type);
+  const numeric = type === 'numeric' || type === 'currency' || type === 'percent';
+  // Mehr verschiedene Werte als die Grenze entscheiden schon (continuous bzw.
+  // freeText): dann nicht weiterlesen. Bei 100 000 Zeilen ist das der
+  // Unterschied zwischen ein paar Zellen und der ganzen Spalte — `read` des
+  // Arbeitsblatts ruft das für jede Spalte ohne gespeicherte Rolle.
+  const limit = numeric ? ROLE_HEURISTIC.numericCategoricalMaxUnique
+    : type === 'text' ? ROLE_HEURISTIC.textCategoricalMaxUnique
+      : 0;
+  const unique = new Set();
+  let count = 0;
+  for (const v of col.values || []) {
+    if (v == null || v === '') continue;
+    count++;
+    unique.add(v);
+    if (unique.size > limit) break;
+  }
+  if (count === 0) return defaultRoleForType(type);
 
-  const uniqueCount = new Set(values).size;
+  const uniqueCount = unique.size;
 
-  if (type === 'numeric' || type === 'currency' || type === 'percent') {
+  if (numeric) {
     return uniqueCount <= ROLE_HEURISTIC.numericCategoricalMaxUnique
       ? ROLE.CATEGORICAL
       : ROLE.CONTINUOUS;
   }
 
   if (type === 'text') {
-    const ratio = uniqueCount / values.length;
-    const isCategorical =
-      uniqueCount <= ROLE_HEURISTIC.textCategoricalMaxUnique &&
-      ratio < ROLE_HEURISTIC.textCategoricalMaxRatio;
-    return isCategorical ? ROLE.CATEGORICAL : ROLE.FREE_TEXT;
+    if (uniqueCount > ROLE_HEURISTIC.textCategoricalMaxUnique) return ROLE.FREE_TEXT;
+    const ratio = uniqueCount / count;
+    return ratio < ROLE_HEURISTIC.textCategoricalMaxRatio ? ROLE.CATEGORICAL : ROLE.FREE_TEXT;
   }
 
   return defaultRoleForType(type);

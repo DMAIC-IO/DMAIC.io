@@ -1,6 +1,6 @@
 import { suite, test, assert, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { inferRole } from '../../js/core/datagrid/datagrid-roles.js';
-import { readWorksheetState } from '../../js/modules/worksheet/worksheet-read.js';
+import { readWorksheetState, worksheetSnapshot } from '../../js/modules/worksheet/worksheet-read.js';
 
 const saved = () => ({
   sheets: [
@@ -115,5 +115,50 @@ suite('readWorksheetState', () => {
   test('ein gesetztes rowCount gilt, auch wenn Spalten länger sind', () => {
     const st = { sheets: [{ id: 's', name: 'S', state: { rowCount: 1, columns: [{ id: 'a', name: 'A', type: 'numeric', values: [1, 2] }] } }] };
     assertEqual(readWorksheetState(st).rowCount, 1);
+  });
+});
+
+/** Elemente aller Arrays, die `structuredClone` während `fn` kopiert (tief gezählt). */
+function clonedElements(fn) {
+  const real = globalThis.structuredClone;
+  let count = 0;
+  const walk = (v, seen) => {
+    if (v === null || typeof v !== 'object' || seen.has(v)) return;
+    seen.add(v);
+    if (Array.isArray(v)) count += v.length;
+    for (const x of Object.values(v)) walk(x, seen);
+  };
+  globalThis.structuredClone = (v, o) => { walk(v, new Set()); return real(v, o); };
+  try { return { out: fn(), count }; } finally { globalThis.structuredClone = real; }
+}
+
+suite('readWorksheetState — Kosten (F1.14a, Leistung)', () => {
+  const n = 1000;
+  const big = () => ({ sheets: [{ id: 's', name: 'S', state: { rowCount: n, columns: [
+    { id: 'a', name: 'a', type: 'numeric', role: 'continuous', values: Array.from({ length: n }, (_, i) => i), formulas: new Array(n).fill(null) },
+    { id: 'b', name: 'b', type: 'numeric', role: 'continuous', values: Array.from({ length: n }, (_, i) => -i), formulas: [null, '=a1'] },
+  ] } }] });
+
+  test('columns: die Zellwerte werden genau einmal kopiert (keine zweite Kopie in der Projektion)', () => {
+    const saved = big();
+    const res = clonedElements(() => readWorksheetState(saved, { columns: ['a', 'b'] }));
+    // Die Projektion klont nur Köpfe, nicht die values (je n Einträge).
+    assert(res.count < n, `structuredClone kopierte ${res.count} Array-Elemente`);
+    assertEqual(res.out.columns[0].values.length, n);
+    assertEqual(res.out.columns[1].values[5], -5);
+    // Eigene Kopie: der Leser hält keine lebende Spalte.
+    assert(res.out.columns[0].values !== saved.sheets[0].state.columns[0].values, 'values ist eine Kopie');
+    res.out.columns[0].values[0] = 99;
+    assertEqual(saved.sheets[0].state.columns[0].values[0], 0);
+  });
+
+  test('ohne fields formulas: keine Formel-Einträge gebaut, der Umfang stimmt', () => {
+    const snap = worksheetSnapshot(big());
+    assertEqual(snap.formulas.length, 1);
+    assertEqual(Object.keys(snap.formulas).length, 0, 'keine Einträge materialisiert');
+    const r = readWorksheetState(big());
+    assertEqual(r.formulas.rowCount, 1);
+    const withF = readWorksheetState(big(), { fields: ['formulas'] });
+    assertDeepEqual(withF.formulas, [{ columnId: 'b', row: 1, formula: '=a1' }]);
   });
 });

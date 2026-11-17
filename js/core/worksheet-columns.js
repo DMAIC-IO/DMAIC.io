@@ -234,13 +234,17 @@ export function discoverColumns(stateManager, filter) {
       if (inst.moduleId !== 'worksheet') continue;
       const head = readWorksheet(stateManager, inst.instanceId);
       for (const sheet of head?.sheets ?? []) {
-        const sheetHead = readWorksheet(stateManager, inst.instanceId, { sheetId: sheet.id });
+        // Das erste Lesen zeigt schon das erste Blatt: dessen Kopf nicht noch einmal lesen.
+        const sheetHead = sheet.id === head.sheetId
+          ? head
+          : readWorksheet(stateManager, inst.instanceId, { sheetId: sheet.id });
         const ids = (sheetHead?.columns ?? []).map(c => c.id);
         if (ids.length === 0) continue;
         const full = readWorksheet(stateManager, inst.instanceId, { sheetId: sheet.id, columns: ids });
         for (const col of full?.columns ?? []) {
           if (typeSet && !typeSet.has(col.type)) continue;
-          const nonNull = (col.values || []).filter(v => v != null).length;
+          let nonNull = 0;
+          for (const v of col.values || []) if (v != null) nonNull++;
           if (nonNull < minCount || nonNull > maxCount) continue;
           columns.push({
             instanceId: inst.instanceId,

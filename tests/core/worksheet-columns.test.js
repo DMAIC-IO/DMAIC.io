@@ -358,3 +358,23 @@ suite('worksheet-columns — Lesbarkeit (not_loaded ist nicht „gelöscht“)',
     }
   });
 });
+
+suite('worksheet-columns — discoverColumns liest sparsam (Leistung)', () => {
+  test('erstes Blatt: Kopf aus dem ersten Lesen, je Blatt danach ein Kopf- und ein Werte-Lesen', () => {
+    const states = { 'ws-1': { sheets: [
+      ...STORED['ws-1'].sheets,
+      { id: 's-2', name: 'Zwei', state: { rowCount: 1, columns: [{ id: 'k', name: '', shortName: 'K', type: 'numeric', values: [5] }] } },
+    ] } };
+    const sm = strictStateManager({ data: [{ moduleId: 'worksheet', instanceId: 'ws-1' }] });
+    const reader = recordingReader(states);
+    registerWorksheetReader(sm, reader.read);
+    const cols = discoverColumns(sm);
+    assertDeepEqual(cols.map(c => c.columnId), ['c-x', 'c-cat', 'k']);
+    assertDeepEqual(reader.calls, [
+      ['ws-1', undefined],
+      ['ws-1', { sheetId: 'sheet-1', columns: ['c-x', 'c-cat'] }],
+      ['ws-1', { sheetId: 's-2' }],
+      ['ws-1', { sheetId: 's-2', columns: ['k'] }],
+    ]);
+  });
+});
