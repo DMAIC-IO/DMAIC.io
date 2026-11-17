@@ -105,6 +105,7 @@ const SKIP = new Set([
   'core/context-help.test.js',
   'core/create-dialog.test.js',
   'core/create-page.test.js',
+  'core/datagrid/grid-input.test.js',
   'core/datagrid/grid-view.test.js',
   'core/datagrid-formula-capability.test.js',
   'core/datagrid-header-xss.test.js',

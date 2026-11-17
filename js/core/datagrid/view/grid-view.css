@@ -11,3 +11,29 @@
 .datagrid__table--virtual tbody tr[data-pool] {
   height: var(--datagrid-row-height);
 }
+
+/* Bedienung (grid-input.js): Auswahlrahmen, Ausfüllgriff und Zelleneditor
+   liegen als Ebenen im Scrollbereich und werden über Datenkoordinaten
+   gesetzt — sie gelten auch für Zeilen, die gerade nicht gezeichnet sind.
+   Unter dem klebenden Kopf (z-index 10) bleiben sie verdeckt. */
+.datagrid__scroll:focus {
+  outline: none;
+}
+
+.datagrid__selection-frame {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px solid var(--color-accent);
+  pointer-events: none;
+  z-index: 4;
+}
+
+.datagrid__selection-frame .datagrid__fill-handle {
+  pointer-events: auto;
+}
+
+.datagrid__editor {
+  position: absolute;
+  box-sizing: border-box;
+  z-index: 6;
+}

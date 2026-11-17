@@ -30,7 +30,8 @@ const EMPTY_FORMULAS = Object.freeze({});
  * @param {HTMLElement} host Container
  * @param {{ t?: (key: string) => string, lang?: string }} [opts]
  * @returns {{ draw: Function, scrollToRow: (r: number) => void, cellAt: (c: number, r: number) => (HTMLElement|null),
- *   rowAtY: (y: number) => number, destroy: () => void }}
+ *   rowAtY: (y: number) => number, rowHeight: () => number, onUpdate: (fn: (() => void)|null) => void,
+ *   el: HTMLElement, destroy: () => void }}
  */
 export function createGridView(host, { t = (k) => k.split('.').pop(), lang = 'en' } = {}) {
   const scroll = h('div', { class: 'datagrid__scroll' });
@@ -61,9 +62,12 @@ export function createGridView(host, { t = (k) => k.split('.').pop(), lang = 'en
   let first = -1;
   let count = -1;
   let dirty = true;
+  /** @type {null|(() => void)} */
+  let onUpdateHook = null;
 
   const rowH = () => {
-    const v = parseFloat(getComputedStyle(scroll).getPropertyValue('--datagrid-row-height'));
+    // CSS-Länge in Pixeln (`30px`), kein Zahlformat der Oberfläche
+    const v = Number(getComputedStyle(scroll).getPropertyValue('--datagrid-row-height').trim().replace(/px$/, ''));
     return v > 0 ? v : FALLBACK_ROW_H;
   };
   const defColW = () => {
@@ -225,6 +229,7 @@ export function createGridView(host, { t = (k) => k.split('.').pop(), lang = 'en
     topSpacer.firstChild.style.height = `${f * rh}px`;
     bottomSpacer.firstChild.style.height = `${Math.max(0, n - f - rows) * rh}px`;
     dirty = false;
+    onUpdateHook?.();
   }
 
   const onScroll = () => update();
@@ -233,6 +238,16 @@ export function createGridView(host, { t = (k) => k.split('.').pop(), lang = 'en
   resizeObserver?.observe(scroll);
 
   return {
+    /** Scrollbereich; Bedienung (grid-input.js) hört hier und legt Rahmen und Editor hinein. */
+    el: scroll,
+    /** @returns {number} Zeilenhöhe in Pixeln (`--datagrid-row-height`) */
+    rowHeight: rowH,
+    /**
+     * Rückruf nach jedem Zeichnen, das Zellen neu belegt hat (Scrollen, `draw`).
+     * Die Bedienung markiert dort die Auswahl an den Poolzellen.
+     * @param {(() => void)|null} fn
+     */
+    onUpdate(fn) { onUpdateHook = fn; },
     /**
      * Zeichnet Kopf und sichtbare Zeilen; unveränderte Eingaben (gleiche `rev`) setzen keinen Text neu.
      * @param {import('../../table-data.js').TableData} tbl
@@ -271,6 +286,7 @@ export function createGridView(host, { t = (k) => k.split('.').pop(), lang = 'en
       return Math.max(0, Math.min(n - 1, Math.floor(y / rowH())));
     },
     destroy() {
+      onUpdateHook = null;
       scroll.removeEventListener('scroll', onScroll);
       resizeObserver?.disconnect();
       scroll.remove();
