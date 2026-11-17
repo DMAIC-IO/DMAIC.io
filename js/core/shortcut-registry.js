@@ -21,21 +21,6 @@ const DEFINITIONS = [
     defaultCombo: 'Ctrl+S',
   },
   {
-    id: 'datagrid.undo',
-    category: 'datagrid',
-    scope: 'datagrid',
-    descriptionKey: 'settings.shortcutsLabel.undo',
-    defaultCombo: 'Ctrl+Z',
-  },
-  {
-    id: 'datagrid.redo',
-    category: 'datagrid',
-    scope: 'datagrid',
-    descriptionKey: 'settings.shortcutsLabel.redo',
-    defaultCombo: 'Ctrl+Y',
-    aliasCombos: ['Ctrl+Shift+Z'],
-  },
-  {
     id: 'module.undo',
     category: 'module',
     scope: 'module',
@@ -65,6 +50,42 @@ const DEFINITIONS = [
     defaultCombo: 'F2',
   },
   {
+    id: 'datagrid.copy',
+    category: 'datagrid',
+    scope: 'datagrid',
+    descriptionKey: 'settings.shortcutsLabel.copy',
+    defaultCombo: 'Ctrl+C',
+  },
+  {
+    id: 'datagrid.cut',
+    category: 'datagrid',
+    scope: 'datagrid',
+    descriptionKey: 'settings.shortcutsLabel.cut',
+    defaultCombo: 'Ctrl+X',
+  },
+  {
+    id: 'datagrid.paste',
+    category: 'datagrid',
+    scope: 'datagrid',
+    descriptionKey: 'settings.shortcutsLabel.paste',
+    defaultCombo: 'Ctrl+V',
+  },
+  {
+    id: 'datagrid.clear',
+    category: 'datagrid',
+    scope: 'datagrid',
+    descriptionKey: 'settings.shortcutsLabel.clear',
+    defaultCombo: 'Delete',
+    aliasCombos: ['Backspace'],
+  },
+  {
+    id: 'datagrid.cancelEdit',
+    category: 'datagrid',
+    scope: 'datagrid',
+    descriptionKey: 'settings.shortcutsLabel.cancelEdit',
+    defaultCombo: 'Escape',
+  },
+  {
     id: 'worksheet.openFormulaEditor',
     category: 'worksheet',
     scope: 'worksheet',
@@ -86,6 +107,26 @@ const DEFINITIONS = [
     defaultCombo: 'Ctrl+Enter',
   },
 ];
+
+/** Entfallene Ids und ihr Nachfolger: die Belegung des Nutzers wandert mit. */
+const RENAMED_IDS = { 'datagrid.undo': 'module.undo', 'datagrid.redo': 'module.redo' };
+
+/**
+ * Überträgt Benutzerbelegungen entfallener Kürzel-Ids auf ihre Nachfolger
+ * (`datagrid.undo|redo` → `module.undo|redo`) und löscht die alten Einträge.
+ * Eine vorhandene Belegung des Nachfolgers bleibt unberührt.
+ * @param {{ get(path: string): *, set(path: string, value: *): void }} stateManager
+ */
+export function migrateShortcutSettings(stateManager) {
+  for (const [oldId, newId] of Object.entries(RENAMED_IDS)) {
+    const old = stateManager.get(`settings.shortcuts.${oldId}`);
+    if (!old) continue;
+    if (!stateManager.get(`settings.shortcuts.${newId}`)) {
+      stateManager.set(`settings.shortcuts.${newId}`, old);
+    }
+    stateManager.set(`settings.shortcuts.${oldId}`, null);
+  }
+}
 
 const DEFINITION_BY_ID = Object.fromEntries(DEFINITIONS.map(d => [d.id, d]));
 
@@ -164,6 +205,7 @@ class ShortcutRegistry {
     this._stateManager = stateManager;
     this._eventBus = eventBus;
     this._initialized = true;
+    migrateShortcutSettings(stateManager);
   }
 
   /** Internal: read the configured combo for an id (override or default). */

@@ -2340,10 +2340,10 @@ export class DataGrid {
       return;
     }
 
-    if (shortcutRegistry.matches(e, 'datagrid.undo')) {
+    if (shortcutRegistry.matches(e, 'module.undo')) {
       e.preventDefault(); if (!this._isReadOnly()) this.undo(); return;
     }
-    if (shortcutRegistry.matches(e, 'datagrid.redo')) {
+    if (shortcutRegistry.matches(e, 'module.redo')) {
       e.preventDefault(); if (!this._isReadOnly()) this.redo(); return;
     }
     if (shortcutRegistry.matches(e, 'datagrid.selectAll')) {
@@ -2403,7 +2403,7 @@ export class DataGrid {
       return;
     }
 
-    if (e.key === 'Delete' || e.key === 'Backspace') {
+    if (shortcutRegistry.matches(e, 'datagrid.clear')) {
       e.preventDefault();
       if (!this._isReadOnly()) this._clearSelection();
       return;
@@ -2534,7 +2534,7 @@ export class DataGrid {
         endCol: nc, endRow: this.selection.activeRow,
         activeCol: nc, activeRow: this.selection.activeRow,
       });
-    } else if (e.key === 'Escape') {
+    } else if (shortcutRegistry.matches(e, 'datagrid.cancelEdit')) {
       e.preventDefault();
       this._cancelEdit();
     }
