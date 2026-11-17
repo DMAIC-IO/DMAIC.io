@@ -2,7 +2,9 @@
  * D.Mike — Übergabe an eine Instanz eines anderen Moduls (instance-handoff.js)
  *
  * Ein Werkzeug legt in der eigenen Phase eine Instanz eines anderen Moduls
- * an, schreibt deren Anfangszustand und meldet `module:added`.
+ * an, schreibt deren Anfangszustand und meldet `module:added`
+ * (`openInstance`) — oder übergibt einer dort schon vorhandenen Instanz den
+ * Zustand und aktiviert sie (`openOrActivateInstance`).
  *
  * Rein: kein DOM, kein `window`.
  */
@@ -40,4 +42,34 @@ export function openInstance(services, { moduleId, state }) {
   sm.setModuleState(instanceId, state);
   services.eventBus.emit('module:added', { moduleId, phase, instanceId });
   return { instanceId, moduleId };
+}
+
+/**
+ * Einer Instanz von `moduleId` in der Phase der aufrufenden Instanz einen
+ * Zustand übergeben: gibt es dort schon eine, bekommt sie den Zustand
+ * (`setModuleState`), das Ladeereignis und wird aktiviert
+ * (`module:activated`); sonst legt `openInstance` eine neue an, danach folgt
+ * das Ladeereignis. Das Ladeereignis trägt `{ instanceId, ...detail }`.
+ * @param {{ stateManager: object, eventBus: object, instanceId: string }} services
+ *   `module._context` der aufrufenden Instanz
+ * @param {{ moduleId: string, state: object, loadEvent?: { name: string, detail?: object } }} target
+ * @returns {string} die Instanz, die den Zustand bekommen hat
+ */
+export function openOrActivateInstance(services, { moduleId, state, loadEvent }) {
+  const { stateManager, eventBus } = services;
+  const load = (instanceId) => {
+    if (loadEvent) eventBus.emit(loadEvent.name, { instanceId, ...(loadEvent.detail ?? {}) });
+  };
+  const phase = findOwnPhase(stateManager, services.instanceId);
+  const items = stateManager.get(`phases.${phase}`) || [];
+  const existing = items.find((/** @type {{ moduleId: string }} */ i) => i.moduleId === moduleId)?.instanceId;
+  if (existing) {
+    stateManager.setModuleState(existing, state);
+    load(existing);
+    eventBus.emit('module:activated', { instanceId: existing });
+    return existing;
+  }
+  const { instanceId } = openInstance(services, { moduleId, state });
+  load(instanceId);
+  return instanceId;
 }

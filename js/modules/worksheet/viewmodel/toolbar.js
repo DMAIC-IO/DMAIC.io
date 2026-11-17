@@ -11,7 +11,7 @@
  */
 import { validRolesForType } from '../../../core/datagrid/datagrid-roles.js';
 import { importKind, readImportText } from '../io/import.js';
-import { openChartSuggestion as handOver } from '../io/chart-suggestion.js';
+import { openOrActivateInstance } from '../../../core/instance-handoff.js';
 import { activeSheetOf } from './sheets.js';
 
 /** Rollen des Rasters → Kommandos (Model; `gridView`, `openFormulaEditor`: Viewmodel). */
@@ -272,7 +272,12 @@ export function toolbarView(ctx) {
           values: (sheet.data.columns[i] ?? []).slice(),
         };
       });
-      handOver(this._ui.services, { sourceInstanceId: ctx.instanceId, sourceSheetId: sheetId, ts: Date.now(), columns });
+      const selection = { sourceInstanceId: ctx.instanceId, sourceSheetId: sheetId, ts: Date.now(), columns };
+      openOrActivateInstance(this._ui.services, {
+        moduleId: 'chart-suggestion',
+        state: { selection, selectedChartType: null },
+        loadEvent: { name: 'chart-suggestion:load', detail: { selection } },
+      });
     },
   };
 }
