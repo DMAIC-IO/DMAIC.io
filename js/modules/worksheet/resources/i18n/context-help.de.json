@@ -79,7 +79,7 @@
       }
     },
     "fillRange": {
-      "help": "Setzt einen Bereich fort wie der Ausfüllgriff des Rasters: eine Reihe (Zahlen, Datumswerte, Text mit Zahl am Ende) wird fortgesetzt, alles andere wiederholt; ctrl kehrt das um. Formeln wandern mit verschobenen Bezügen mit. Lotrecht nach unten wächst das Blatt bei Bedarf. Gesperrte Spalten bleiben unverändert. Liefert die Zahl geschriebener Zellen.",
+      "help": "Setzt einen Bereich fort wie der Ausfüllgriff des Rasters: eine Reihe (Zahlen, Datumswerte, Text mit Zahl am Ende) wird fortgesetzt, alles andere wiederholt; ctrl kehrt das um. Formeln wandern mit verschobenen Bezügen mit. Lotrecht nach unten wächst das Blatt bei Bedarf. Gesperrte Spalten bleiben unverändert. Ein fortgesetzter Wert, der nicht zum Spaltentyp passt oder keine endliche Zahl ergibt, bleibt leer (null). Liefert die Zahl geschriebener Zellen.",
       "params": {
         "sheetId": "Die id des Blatts, wie read().sheets[].id sie nennt.",
         "source": "Der Quellbereich { c0, r0, c1, r1 }: erste und letzte Spalte, erste und letzte Zeile, alle nullbasiert.",

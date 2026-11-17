@@ -1240,7 +1240,7 @@ test('Lesezugriff-Ausnahmen: nur worksheet, je Eintrag Grund, Datei und Glied', 
     assert.ok(e.reason.length > 20 && e.file && e.member && e.names.length > 0, JSON.stringify(e));
   }
   assert.deepEqual(VIEW_READ_EXEMPTIONS.worksheet.map((e) => `${e.file} › ${e.member}`),
-    ['viewmodel/sheets.js › init', 'viewmodel/toolbar.js › gridConfig']);
+    ['viewmodel/sheets.js › init', 'viewmodel/toolbar.js › init']);
 });
 
 test('checkViewReads: nicht auflösbarer view-Teil wird gemeldet', () => {

@@ -79,7 +79,7 @@
       }
     },
     "fillRange": {
-      "help": "Continues a range like the grid's fill handle: a series (numbers, dates, text ending in a number) is continued, anything else repeated; ctrl reverses that. Formulas move along with shifted references. Filling down extends the sheet if needed. Locked columns stay unchanged. Returns the number of cells written.",
+      "help": "Continues a range like the grid's fill handle: a series (numbers, dates, text ending in a number) is continued, anything else repeated; ctrl reverses that. Formulas move along with shifted references. Filling down extends the sheet if needed. Locked columns stay unchanged. A continued value that does not fit the column type or is not a finite number stays empty (null). Returns the number of cells written.",
       "params": {
         "sheetId": "The id of the sheet, as read().sheets[].id names it.",
         "source": "The source range { c0, r0, c1, r1 }: first and last column, first and last row, all zero-based.",

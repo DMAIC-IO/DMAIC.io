@@ -1059,6 +1059,10 @@ export function checkInvariantsAfter(model, rootField, fn) {
  * @param {object} root das Model: Wurzel der Pfade, Träger des Beobachters
  * @param {any} [cmd] die Parameter als ein Objekt
  * @returns {any} das Ergebnis von `run`
+ * @throws {Error} `command <name> changed content without recordInverse` im
+ *   Verlauf mit Umkehrung. Die Prüfung läuft nach `run`: die Schreibzugriffe
+ *   sind dann schon geschehen und bleiben im Model. Das ist ein Programmierfehler
+ *   des Kommandos, keine Ablehnung einer Eingabe.
  */
 export function runCommand(name, def, self, root, cmd) {
   const args = checkParams(name, def.params, cmd, root);

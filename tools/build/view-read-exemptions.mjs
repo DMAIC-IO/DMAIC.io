@@ -21,9 +21,9 @@ export const VIEW_READ_EXEMPTIONS = {
     },
     {
       file: 'viewmodel/toolbar.js',
-      member: 'gridConfig',
+      member: 'init',
       names: ['stateManager'],
-      reason: 'Projektabschluss (isCompleted) schaltet das Raster nur lesend, wie die Altform (_isReadOnly); kein Arbeitsblattinhalt, den ctx.data liefern könnte',
+      reason: 'Projektabschluss (isCompleted) schaltet das Raster nur lesend, wie die Altform (_isReadOnly): beim Einhängen und bei project:status-changed in den UI-State (projectCompleted); kein Arbeitsblattinhalt, den ctx.data liefern könnte',
     },
   ],
 };

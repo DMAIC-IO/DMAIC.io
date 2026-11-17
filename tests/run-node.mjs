@@ -172,6 +172,11 @@ const SKIP = new Set([
   // (tests/runner.html) — dort ist die Suite seit jeher registriert.
   'modules/activity-flowchart.test.js',
   'modules/attribute-control-chart-view.test.js',
+  // Ziehen über js/widgets/registry.js das Widget datagrid (F1.14) und damit
+  // Alpine CSP herein, das beim Import MutationObserver anfasst. Laufen im
+  // Browser-Runner (tests/runner.html).
+  'modules/chart-suggestion-charts.test.js',
+  'modules/chart-suggestion-panels.test.js',
   'modules/contour-plot/viewmodel.test.js',
   'modules/dashboard-tiles.test.js',
   'modules/dmaic-calendar-example.test.js',
