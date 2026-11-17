@@ -124,6 +124,36 @@ suite('GridView — virtualisiertes Zeichnen', () => {
     } finally { s.done(); }
   });
 
+  // Gegenstück: das Raster rechnet eine Formel mit `null` nach, um den
+  // Fehlercode zu zeigen (das Model hält Fehler nicht). Ein leeres Ergebnis
+  // ohne Fehler (Bezug auf eine leere Zelle) bleibt leer, ohne Fehlerklasse.
+  test('Formelzelle mit leerem Ergebnis ohne Fehler bleibt leer', async () => {
+    await cssReady;
+    const s = setup(50);
+    try {
+      s.table.columns[0][4] = null;
+      s.table.columns[0][3] = null;
+      s.table.rev += 1;
+      s.view.draw(s.table, s.cols, { a: { 3: '=C1[5]' } }, {});
+      const td = s.view.cellAt(0, 3);
+      assertEqual(td.textContent, '');
+      assertTrue(!td.classList.contains('cell-formula-error'), `Klasse: ${td.className}`);
+      assertEqual(td.title, '=C1[5]');
+    } finally { s.done(); }
+  });
+
+  // Sichtbild wie das Altraster: ein Abstandhalter der Höhe 0 nimmt keinen
+  // Pixel ein (eine leere Zelle mit height:0 bleibt sonst 1 px hoch).
+  test('oben ungescrollt beginnt die erste Zeile direkt unter dem Kopf', async () => {
+    await cssReady;
+    const s = setup(50);
+    try {
+      const head = s.host.querySelector('thead').getBoundingClientRect();
+      const first = s.view.cellAt(0, 0).getBoundingClientRect();
+      assertEqual(Math.round(first.top - head.bottom), 0);
+    } finally { s.done(); }
+  });
+
   for (const n of [1000, 1001, 1002, 1003]) {
     test(`letzte Zeile wird bei n=${n} (Parität ${n % 2}) gezeichnet`, async () => {
       await cssReady;

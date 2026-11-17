@@ -99,6 +99,7 @@ export function createGridView(host, { t = (k) => k.split('.').pop(), lang = 'en
   const headerSig = () => JSON.stringify([
     cols.map((c) => [c.id, c.name, c.shortName, c.type, c.unit, c.role, c.roleManual, c.lock, c.reason, c.managedBy, c.format]),
     viewState.colWidths || null, viewState.sortCol ?? null, viewState.sortDir ?? null, curLang,
+    viewState.cornerExport === true,
   ]);
   const colWidth = (col) => (viewState.colWidths && viewState.colWidths[col.id]) || defColW();
 
@@ -108,8 +109,13 @@ export function createGridView(host, { t = (k) => k.split('.').pop(), lang = 'en
       ...cols.map((col) => h('col', { style: `width:${colWidth(col)}px` })));
     table.querySelector('colgroup')?.remove();
     table.prepend(colgroup);
-    const tr = h('tr', { class: 'datagrid__column-header' },
-      h('th', { class: 'datagrid__row-header datagrid__corner' }));
+    // Ecke: Exportknopf wie im Altraster (`_renderHeader`), nur mit `cornerExport`.
+    const corner = h('th', { class: 'datagrid__row-header datagrid__corner' });
+    if (viewState.cornerExport === true) {
+      corner.append(h('div', { class: 'datagrid__corner-btns' },
+        h('button', { class: 'datagrid__export-btn', type: 'button', title: t('app.export') }, icon('action.download'))));
+    }
+    const tr = h('tr', { class: 'datagrid__column-header' }, corner);
     cols.forEach((col, i) => {
       const roleKey = col.role || defaultRoleForType(col.type);
       let badgeTitle = `${typeLabel(col.type)} · ${roleLabel(roleKey)}`;
@@ -236,8 +242,15 @@ export function createGridView(host, { t = (k) => k.split('.').pop(), lang = 'en
     const span = cols.length + 1;
     topSpacer.firstChild.colSpan = span;
     bottomSpacer.firstChild.colSpan = span;
-    topSpacer.firstChild.style.height = `${f * rh}px`;
-    bottomSpacer.firstChild.style.height = `${Math.max(0, n - f - rows) * rh}px`;
+    const topH = f * rh;
+    const bottomH = Math.max(0, n - f - rows) * rh;
+    topSpacer.firstChild.style.height = `${topH}px`;
+    bottomSpacer.firstChild.style.height = `${bottomH}px`;
+    // Eine leere Zelle mit height:0 bliebe 1 px hoch und schöbe alle Zeilen
+    // gegenüber dem Altraster nach unten. Verborgen zählt die Zeile für
+    // nth-child (Streifen) weiter mit.
+    topSpacer.hidden = topH === 0;
+    bottomSpacer.hidden = bottomH === 0;
     dirty = false;
     onUpdateHook?.();
   }
@@ -263,7 +276,8 @@ export function createGridView(host, { t = (k) => k.split('.').pop(), lang = 'en
      * @param {import('../../table-data.js').TableData} tbl
      * @param {GridColumn[]} columns Spaltenköpfe
      * @param {Record<string, Record<string, string>>} f Formeln je Spalten-Id und Zeile
-     * @param {{ colWidths?: Record<string, number>, sortCol?: number, sortDir?: string, lang?: string }} [view]
+     * @param {{ colWidths?: Record<string, number>, sortCol?: number, sortDir?: string, lang?: string,
+     *   cornerExport?: boolean }} [view] `cornerExport`: Exportknopf in der Ecke
      */
     draw(tbl, columns, f, view = {}) {
       cols = columns || [];

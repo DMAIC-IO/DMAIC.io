@@ -31,6 +31,16 @@ export const UiState = defineState({
   formulaMenu: text({ nullable: true }),
   formulaMenuTop: point(),
   formulaMenuLeft: point(),
+  /**
+   * Auswahl, die das Raster gerade zeigt (Ereignis `datagrid-selection`), und
+   * ihr Blatt: die Statuszeile folgt ihr sofort; das Model (`gridView`)
+   * bekommt sie entprellt.
+   */
+  liveSelectionSheetId: text({ nullable: true }),
+  liveSelection: object({
+    startCol: number(), startRow: number(), endCol: number(), endRow: number(),
+    activeCol: number(), activeRow: number(),
+  }, { nullable: true }),
   /** Zeilen der Rollenbestätigung vor dem Diagrammvorschlag. */
   roleDraft: list(object({
     columnId: text(), name: text(), type: text(), role: text(),

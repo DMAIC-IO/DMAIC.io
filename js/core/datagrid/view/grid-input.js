@@ -132,6 +132,8 @@ export function createGridInput(view, {
     const f = FEATURE_OF_ROLE[role];
     return !f || featureOn(f);
   }
+  // Export ändert keine Daten: auch im Nur-Lese-Zustand, aber nur mit hinterlegter Rolle.
+  const canExport = Boolean(roleSet?.has('exportAs'));
   function send(role, args) {
     if (can(role)) emit(role, args);
   }
@@ -175,6 +177,7 @@ export function createGridInput(view, {
     const sortIdx = sortState ? columns.findIndex((c) => c.id === sortState.columnId) : -1;
     view.draw(table, columns, formulas, {
       colWidths, lang, sortCol: sortIdx >= 0 ? sortIdx : undefined, sortDir: sortIdx >= 0 ? sortState.dir : undefined,
+      cornerExport: canExport,
     });
   }
 
@@ -186,7 +189,17 @@ export function createGridInput(view, {
     sel = next;
     if (sel && reveal) revealCell(sel.endCol, sel.endRow);
     paint();
+    announceSelection();
     scheduleGridView();
+  }
+  /**
+   * Meldet die aktuelle Auswahl sofort als DOM-Ereignis `datagrid-selection`
+   * (sprudelt): die Statuszeile folgt dem Klick, ohne auf die entprellte
+   * Rolle `gridView` zu warten. Keine Datenänderung, kein Kommando.
+   */
+  function announceSelection() {
+    const selection = sel ? { ...sel, extraCols: [...(sel.extraCols ?? [])] } : null;
+    el.dispatchEvent(new CustomEvent('datagrid-selection', { bubbles: true, detail: { selection } }));
   }
 
   // ─── Geometrie (Inhaltskoordinaten des Scrollbereichs) ────────────
@@ -808,7 +821,23 @@ export function createGridInput(view, {
     startEdit(c, r);
   }
 
+  /** Exportmenü am Eckknopf (`_showExportMenu` des Altrasters). @param {HTMLElement} btn */
+  function openExportMenu(btn) {
+    const r = btn.getBoundingClientRect();
+    menus.open(r.left, r.bottom + 2, [
+      { id: 'export-xlsx', label: 'Excel (.xlsx)', action: () => emit('exportAs', { format: 'xlsx' }) },
+      { id: 'export-csv', label: 'CSV (.csv)', action: () => emit('exportAs', { format: 'csv' }) },
+      { id: 'export-json', label: 'JSON (.json)', action: () => emit('exportAs', { format: 'json' }) },
+    ]);
+  }
+
   function onClick(e) {
+    const exportBtn = /** @type {HTMLElement} */ (e.target).closest('thead .datagrid__export-btn');
+    if (exportBtn && canExport) {
+      e.stopPropagation();
+      openExportMenu(/** @type {HTMLElement} */ (exportBtn));
+      return;
+    }
     const badge = /** @type {HTMLElement} */ (e.target).closest('thead .col-type-badge');
     if (!badge || readOnly) return;
     e.stopPropagation();
@@ -936,9 +965,11 @@ export function createGridInput(view, {
       if (inW !== lastInWidths && inW !== lastSentWidths) colWidths = { ...(state.colWidths || {}) };
       lastInWidths = inW;
       const inS = JSON.stringify(state.selection ?? null);
-      if (inS !== lastInSel && inS !== lastSentSel) sel = state.selection ?? null;
+      const taken = inS !== lastInSel && inS !== lastSentSel;
+      if (taken) sel = state.selection ?? null;
       lastInSel = inS;
       sel = S.clampSelection(sel, nCols(), nRows());
+      if (taken) announceSelection();
       if (editor && (columns[editor.c]?.id !== editor.columnId || editor.r >= nRows())) closeEditor(false);
       redraw();
       paint();

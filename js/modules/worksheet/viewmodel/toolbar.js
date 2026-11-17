@@ -14,13 +14,14 @@ import { importKind, readImportText } from '../io/import.js';
 import { openOrActivateInstance } from '../../../core/instance-handoff.js';
 import { activeSheetOf } from './sheets.js';
 
-/** Rollen des Rasters → Kommandos (Model; `gridView`, `openFormulaEditor`: Viewmodel). */
+/** Rollen des Rasters → Kommandos (Model; `gridView`, `openFormulaEditor`, `exportAs`: Viewmodel). */
 const GRID_COMMANDS = Object.freeze({
   setCells: 'setCells', setFormula: 'setFormula', pasteBlock: 'pasteBlock', fillRange: 'fillRange',
   clearRange: 'clearRange', addColumn: 'addColumn', removeColumn: 'removeColumn', moveColumn: 'moveColumn',
   renameColumn: 'renameColumn', addRows: 'addRows', removeRows: 'removeRows', moveRow: 'moveRow',
   sortRows: 'sortRows', setColumnType: 'setColumnType', setColumnFormat: 'setColumnFormat',
   setColumnRole: 'setColumnRole', gridView: 'gridView', openFormulaEditor: 'openFormulaEditor',
+  exportAs: 'exportAs',
 });
 
 /** Alle Merkmale des Rasters an, Formelzellen öffnen den Formel-Editor des Moduls. */
@@ -201,9 +202,24 @@ export function toolbarView(ctx) {
       return this.t('statusDims', { cols: sheet.columns.length, rows: sheet.data.rowCount });
     },
 
+    /**
+     * @noagent Ereignis `datagrid-selection` des Rasters: die gezeigte Auswahl
+     * für die Statuszeile (R19 c), ohne auf `gridView` zu warten.
+     * @param {CustomEvent} event
+     */
+    onGridSelection(event) {
+      const s = event?.detail?.selection ?? null;
+      this.state.liveSelectionSheetId = activeSheetOf(this).id;
+      this.state.liveSelection = s ? {
+        startCol: s.startCol, startRow: s.startRow, endCol: s.endCol, endRow: s.endRow,
+        activeCol: s.activeCol, activeRow: s.activeRow,
+      } : null;
+    },
+
     /** Auswahl: „3×2 ausgewählt“ oder die aktive Zelle „C1[4]“. */
     get statusSelection() {
-      const sel = this.activeView?.selection;
+      const live = this.state.liveSelectionSheetId === activeSheetOf(this).id;
+      const sel = live ? this.state.liveSelection : this.activeView?.selection;
       if (!sel) return '';
       const rows = Math.abs(sel.endRow - sel.startRow) + 1;
       const cols = Math.abs(sel.endCol - sel.startCol) + 1;
@@ -260,20 +276,28 @@ export function toolbarView(ctx) {
         };
       });
       await this.$nextTick();
-      const ok = await ctx.dialog.form({
-        title: this.t('confirmRolesTitle'),
-        content: this.$refs.roleConfirmForm,
-        confirmLabel: this.t('confirmRolesConfirm'),
-        cancelLabel: ctx.i18n.t('common.cancel'),
-        onMount: (/** @type {HTMLElement} */ body, /** @type {any} */ dialogApi) => {
-          roleApi = dialogApi ?? null;
-          this.$nextTick(() => /** @type {HTMLElement|null} */ (body.closest('.dialog__window')?.querySelector('.dialog__confirm'))?.focus());
-        },
-        onConfirm: () => {
-          this.confirmRoles({ sheetId: sheet.id, roles: this.state.roleDraft.map((r) => ({ columnId: r.columnId, role: r.role })) });
-        },
-      });
-      roleApi = null;
+      // Die Bestätigung ist Inhalt des Moduls (`$refs`, ausgeliehen an
+      // dialog.form), kein eigener createDialog: `roleApi` ist die API, die
+      // dialog.form selbst über onMount reicht — `destroy` bricht damit ab.
+      // Zurückgesetzt wird in `finally`, wie `_api` in createDialog.
+      let ok;
+      try {
+        ok = await ctx.dialog.form({
+          title: this.t('confirmRolesTitle'),
+          content: this.$refs.roleConfirmForm,
+          confirmLabel: this.t('confirmRolesConfirm'),
+          cancelLabel: ctx.i18n.t('common.cancel'),
+          onMount: (/** @type {HTMLElement} */ body, /** @type {any} */ dialogApi) => {
+            roleApi = dialogApi ?? null;
+            this.$nextTick(() => /** @type {HTMLElement|null} */ (body.closest('.dialog__window')?.querySelector('.dialog__confirm'))?.focus());
+          },
+          onConfirm: () => {
+            this.confirmRoles({ sheetId: sheet.id, roles: this.state.roleDraft.map((r) => ({ columnId: r.columnId, role: r.role })) });
+          },
+        });
+      } finally {
+        roleApi = null;
+      }
       this.state.roleDraft = [];
       if (ok === true) next();
     },

@@ -72,10 +72,11 @@
   <div class="worksheet__grid dmike-embedded-grid dmike-embedded-grid--fill" data-ref="grid-wrap">
     <template x-for="sheet in model.sheets" :key="sheet.id">
       <template x-if="sheet.id === model.activeSheetId">
-        <div class="worksheet__grid-host" x-widget="datagrid"
+        <div class="worksheet__grid-host dmike-embedded-grid dmike-embedded-grid--fill" x-widget="datagrid"
              x-widget-table="sheet.data" x-widget-columns="sheet.columns"
              x-widget-formulas="sheet.formulas" x-widget-rev="model.$tableRev"
-             x-widget-config="gridConfig"></div>
+             x-widget-config="gridConfig"
+             @datagrid-selection="onGridSelection($event)"></div>
       </template>
     </template>
     <div class="datagrid__dropzone worksheet__dropzone" data-ref="dropzone">

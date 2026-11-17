@@ -369,6 +369,41 @@ suite('GridInput — Bedienung meldet Kommandos', () => {
     } finally { s.done(); }
   });
 
+  // Eckknopf links oben wie im Altraster (`_showExportMenu`): nur mit der Rolle
+  // exportAs, auch im Nur-Lese-Zustand (Export ändert nichts).
+  test('Eckknopf Export: Menü mit drei Formaten meldet exportAs', async () => {
+    const s = await setup({ roles: ['setCells', 'exportAs'], readOnly: true });
+    try {
+      const btn = s.host.querySelector('thead th.datagrid__corner .datagrid__export-btn');
+      assertTrue(btn !== null, 'Exportknopf in der Ecke');
+      btn.click();
+      const items = [...document.querySelectorAll('.context-menu [role="menuitem"]')].map((m) => m.textContent);
+      assertDeepEqual(items, ['Excel (.xlsx)', 'CSV (.csv)', 'JSON (.json)']);
+      document.querySelector('.context-menu [data-menu-id="export-csv"]').click();
+      assertDeepEqual(s.calls.filter((c) => c[0] !== 'gridView'), [['exportAs', { format: 'csv' }]]);
+    } finally { s.done(); }
+  });
+
+  test('jede Auswahländerung meldet sofort datagrid-selection (vor gridView)', async () => {
+    const s = await setup();
+    try {
+      const seen = [];
+      s.host.addEventListener('datagrid-selection', (e) => seen.push(e.detail.selection));
+      clickCell(s, 1, 3);
+      assertEqual(seen.length >= 1, true, 'Ereignis kam');
+      const last = seen[seen.length - 1];
+      assertEqual(`${last.activeCol}/${last.activeRow}`, '1/3');
+      assertEqual(s.roles().includes('gridView'), false, 'gridView noch entprellt');
+    } finally { s.done(); }
+  });
+
+  test('ohne Rolle exportAs keine Knöpfe in der Ecke', async () => {
+    const s = await setup({ roles: ['setCells'] });
+    try {
+      assertEqual(s.host.querySelector('thead th.datagrid__corner .datagrid__export-btn'), null);
+    } finally { s.done(); }
+  });
+
   test('Zeilen oberhalb eingefügt: offener Editor schließt ohne Meldung', async () => {
     const s = await setup({ n: 50 });
     try {

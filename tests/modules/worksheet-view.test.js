@@ -142,6 +142,16 @@ suite('worksheet: Viewmodel der Zielform im Browser', () => {
     assertTrue(h.vm().statusDims.includes('5'), `Statuszeile nennt die Spalten: ${h.vm().statusDims}`);
   });
 
+  // Sichtbild der Altform: Rahmen mit Rundung um das Raster (`dmike-embedded-grid`),
+  // Sperrfarben über `.datagrid` und der Exportknopf in der Ecke (Rolle exportAs).
+  test('Raster wie die Altform: Rahmen, .datagrid und Exportknopf in der Ecke', async () => {
+    const h = await mount(twoSheets());
+    const hostEl = h.$$('.worksheet__grid-host')[0];
+    assertTrue(hostEl.classList.contains('dmike-embedded-grid'), `Wirt: ${hostEl.className}`);
+    assertTrue(h.$$('.widget-datagrid')[0].classList.contains('datagrid'), 'Raster trägt .datagrid');
+    assertEqual(h.$$('thead th.datagrid__corner .datagrid__export-btn').length, 1, 'Exportknopf');
+  });
+
   test('Blatt wechseln: switchSheet setzt das aktive Blatt, der Reiter folgt', async () => {
     const h = await mount(twoSheets());
     const second = h.vm().model.sheets[1].id;
@@ -275,6 +285,20 @@ suite('worksheet: Viewmodel der Zielform im Browser', () => {
     await settle();
     assertEqual(h.vm().model.gridView[sheetId].selection.endRow, 2);
     assertEqual(h.vm().statusSelection, tr('statusSelection', { rows: 3, cols: 2 }));
+  });
+
+  // R19(c): die Statuszeile folgt dem Klick sofort, nicht erst nach der
+  // entprellten Meldung gridView (300 ms).
+  test('Statuszeile zeigt die Auswahl des Rasters sofort, vor gridView', async () => {
+    const h = await mount(twoSheets());
+    const sheetId = h.vm().model.activeSheetId;
+    const cell = h.$('td[data-col-idx="1"][data-row-idx="2"]');
+    cell.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, button: 0 }));
+    cell.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, button: 0 }));
+    await settle();
+    assertEqual(h.vm().model.gridView[sheetId]?.selection ?? null, null, 'gridView noch nicht gemeldet');
+    const col = h.vm().model.sheets[0].columns[1].shortName;
+    assertEqual(h.vm().statusSelection, `${col}[3]`);
   });
 
   test('Template: Spalte, Zeilen und Blatt über die Knöpfe, Reiter per Klick', async () => {

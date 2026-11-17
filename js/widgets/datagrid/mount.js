@@ -6,7 +6,7 @@
  * über der `TableData` des Models. Das Widget ändert nie selbst Daten: jede
  * Bedienung meldet eine Rolle, das Widget ruft `command(config.commands[role],
  * { ...config.commandArgs, ...args })`. Fehlt die Rolle in `commands`, ist ihr
- * Merkmal aus. Die Ansichtsereignisse `contextMenu { id, columnId, row }` und
+ * Merkmal aus; `exportAs { format }` zeigt den Exportknopf in der Ecke. Die Ansichtsereignisse `contextMenu { id, columnId, row }` und
  * `openFormulaEditor { columnId, row }` sind keine Datenrollen; sie gehen an
  * `config.commands.contextMenu` bzw. `.openFormulaEditor`, falls hinterlegt.
  *
@@ -30,7 +30,7 @@ const READONLY = 'dmike--readonly';
 const ROLES = new Set([
   'setCells', 'setFormula', 'pasteBlock', 'fillRange', 'clearRange', 'addColumn', 'removeColumn',
   'moveColumn', 'renameColumn', 'addRows', 'removeRows', 'moveRow', 'sortRows', 'setColumnType',
-  'setColumnFormat', 'setColumnRole', 'undo', 'redo', 'gridView', 'contextMenu', 'openFormulaEditor',
+  'setColumnFormat', 'setColumnRole', 'undo', 'redo', 'gridView', 'contextMenu', 'openFormulaEditor', 'exportAs',
 ]);
 
 const EMPTY = Object.freeze({});
@@ -116,7 +116,8 @@ function mountTable(root, { props, services, effect, command }) {
   const notify = (message, type) => services.notify?.(message, type);
 
   const slot = document.createElement('div');
-  slot.className = 'widget-datagrid';
+  // `.datagrid` wie im Altraster: Flex-Layout und die Sperrfarben (`--datagrid-locked-*`).
+  slot.className = 'widget-datagrid datagrid';
   root.append(slot);
   const view = createGridView(slot, { t, lang: lang() });
   // Griff am Wirtselement: `scrollToRow` (Test-Haken P8: die POMs holen eine Zeile
