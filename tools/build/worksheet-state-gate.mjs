@@ -1,5 +1,5 @@
 /**
- * Gate gegen Rohzugriff auf gespeicherte Arbeitsblatt-Stände (Spec F1.14a §4.1):
+ * Gate gegen Rohzugriff auf gespeicherte Arbeitsblatt-Stände (Spec F1.14 §4.1):
  * Außerhalb des Arbeitsblatts liest niemand `getModuleState(…).sheets`.
  * Gelesen wird über `ctx.instances.readSync` beziehungsweise `readWorksheet`.
  */
@@ -20,7 +20,7 @@ export const WORKSHEET_STATE_ALLOW = [
     reason: 'legt Beispiel-Arbeitsblätter im gespeicherten Format an; ab Stufe 2 läuft das über die Migration \'0→1.0\'',
   },
   {
-    path: 'js/core/zeg-sheet/zeg-sheet.js',
+    path: 'js/core/zeg-sheet/zeg-sheet-store.js',
     reason: 'direktes Schreiben, bis das Arbeitsblatt seine Zielform hat (F1.14d): ein Schreiben über interact hängt das Legacy-Arbeitsblatt ein und wechselt die Ansicht',
   },
 ];

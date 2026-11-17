@@ -41,5 +41,13 @@ function walk(dir, out = []) {
 test('Gate: der echte Baum js/ hat keinen Rohzugriff auf Arbeitsblatt-Stände', () => {
   const files = walk(join(APP_DIR, 'js')).map(p => ({ path: relative(APP_DIR, p), text: readFileSync(p, 'utf8') }));
   const hits = findWorksheetStateAccess(files, WORKSHEET_STATE_ALLOW);
-  assert.deepEqual(hits, [], 'Arbeitsblätter lesen über ctx.instances.readSync / readWorksheet (Spec F1.14a §4.1)');
+  assert.deepEqual(hits, [], 'Arbeitsblätter lesen über ctx.instances.readSync / readWorksheet (Spec F1.14 §4.1)');
+});
+
+test('Gate: die ZEG-Ausnahme deckt nur den Schreibpfad (zeg-sheet-store.js), nicht zeg-sheet.js', () => {
+  const zeg = WORKSHEET_STATE_ALLOW.filter(a => a.path.includes('zeg-sheet'));
+  assert.deepEqual(zeg.map(a => a.path), ['js/core/zeg-sheet/zeg-sheet-store.js']);
+  const text = readFileSync(join(APP_DIR, 'js/core/zeg-sheet/zeg-sheet.js'), 'utf8');
+  assert.deepEqual(findWorksheetStateAccess([{ path: 'js/core/zeg-sheet/zeg-sheet.js', text }], WORKSHEET_STATE_ALLOW), []);
+  assert.equal(text.includes('getModuleState('), false, 'zeg-sheet.js liest nur über die Fassade');
 });

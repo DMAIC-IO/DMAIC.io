@@ -4,15 +4,17 @@
  * Keeps an editable worksheet in the `data` phase in two-way sync with
  * `phaseAchievementHistory`. The history stays the source of truth; the
  * sheet is found by its column metas (`managedBy: 'zeg'`), never by name.
+ * This file reads only through the worksheet facade (`readWorksheet`); the
+ * direct write of the sheet (`writeHistoryToSheet`, `ensureZegSheet`) is in
+ * `zeg-sheet-store.js` until F1.14d and re-exported here.
  */
 
-import { getPhaseIds } from '../cycles/cycles.js';
-import { uid } from '../uid.js';
 import { readWorksheet } from '../worksheet-columns.js';
-import { uniqueSheetName, buildInitialWorksheetState } from '../worksheet-sheets.js';
-import {
-  isZegColumn, historyToRows, rowsToHistory, readRows, buildSheetState, planZegStack,
-} from './zeg-sheet-model.js';
+import { isZegColumn, rowsToHistory, readRows } from './zeg-sheet-model.js';
+import { phaseIdsOf, writeHistoryToSheet, ensureZegSheet } from './zeg-sheet-store.js';
+
+// The direct write (stored state) lives in zeg-sheet-store.js until F1.14d.
+export { writeHistoryToSheet, ensureZegSheet };
 
 const SOURCE = 'zeg-sheet';
 
@@ -59,70 +61,6 @@ function readSheet(stateManager, { instanceId, sheetId }) {
   return { rowCount: n, columns: read.columns.map(c => ({ ...c, formulas: formulas.get(c.id) })) };
 }
 
-/** Methodology phases of the active cycle. */
-function phaseIdsOf(stateManager) {
-  return getPhaseIds(stateManager.getProjectCycle());
-}
-
-/** Column labels for the current language. */
-function labelsOf(i18n, phaseIds) {
-  return {
-    date: i18n.t('dashboard.zegSheet.date'),
-    phases: Object.fromEntries(phaseIds.map(p => [p, i18n.t(`phases.${p}`)])),
-  };
-}
-
-/**
- * Locate the ZEG sheet in the stored worksheet state — for the direct write
- * only (see `writeHistoryToSheet`). Unlike the facade it also finds a sheet
- * whose worksheet code is not loaded yet, so no second ZEG sheet is created.
- * @param {object} stateManager
- * @returns {{instanceId: string, sheetId: string}|null}
- */
-function findStoredZegSheet(stateManager) {
-  for (const { instanceId } of stateManager.listInstances('worksheet')) {
-    const ws = stateManager.getModuleState(instanceId);
-    const sheet = ws?.sheets?.find(s => s.state?.columns?.some(isZegColumn));
-    if (sheet) return { instanceId, sheetId: sheet.id };
-  }
-  return null;
-}
-
-/**
- * Rebuild the managed columns of the ZEG sheet from the history and hand the
- * new state to a mounted worksheet (`state:remote-changed`). A sheet that
- * already shows the history (`planZegStack` plans nothing) is not written:
- * no save, no events.
- *
- * Direct write on purpose (plan F1.14a, Ruling Task 5b): the worksheet is a
- * legacy module, every write through `interact` needs its viewmodel and so
- * mounts it — a pencil edit would jump into the data phase. F1.14d (the
- * worksheet's target form, model commands without mount) switches this to
- * `interact` with the stack from `planZegStack`.
- * @param {{stateManager: object, eventBus: object, i18n: object}} ctx
- * @param {{instanceId: string, sheetId: string}|null} [ref]
- * @returns {boolean} false when there is no ZEG sheet
- */
-export function writeHistoryToSheet({ stateManager, eventBus, i18n }, ref = findStoredZegSheet(stateManager)) {
-  if (!ref) return false;
-  // getModuleState hands out the live cache; edit a copy so a refused save leaves it intact.
-  const ws = structuredClone(stateManager.getModuleState(ref.instanceId));
-  const sheet = ws?.sheets?.find(s => s.id === ref.sheetId);
-  if (!sheet) return false;
-  const phaseIds = phaseIdsOf(stateManager);
-  const rows = historyToRows(stateManager.get('phaseAchievementHistory') || {}, phaseIds);
-  const next = buildSheetState(sheet.state, rows, phaseIds, labelsOf(i18n, phaseIds));
-  // No-op skip: an empty `planZegStack` also leaves out the resets `buildSheetState`
-  // would apply (sortCol/sortDir, selection, shortName, the `type` of managed
-  // columns). Accepted (plan F1.14a, Task 6).
-  if (sheet.state && planZegStack(ref.instanceId, ref.sheetId, sheet.state, next).length === 0) return true;
-  sheet.state = next;
-  stateManager.setModuleState(ref.instanceId, ws);
-  eventBus.emit('state:remote-changed', { instanceIds: [ref.instanceId], metaChanged: false });
-  eventBus.emit('worksheet:dataChanged', { instanceId: ref.instanceId });
-  return true;
-}
-
 /**
  * Write the ZEG sheet of `instanceId` back into the history. Idempotent: a
  * sheet built from the history reads back to the same history. Reads through
@@ -151,38 +89,6 @@ export function syncSheetToHistory({ stateManager, eventBus }, instanceId) {
     eventBus.emit('phase:achievement-changed', { phase, value, source: SOURCE });
   }
   return changed;
-}
-
-/**
- * Find the ZEG sheet or create it as a worksheet in the `data` phase, then
- * (re)write it from the history (adds missing phase columns). Writes
- * directly, see `writeHistoryToSheet`.
- * @param {{stateManager: object, eventBus: object, i18n: object}} ctx
- * @returns {{instanceId: string, sheetId: string}}
- * @throws {Error} in a read-only project without ZEG sheet
- */
-export function ensureZegSheet(ctx) {
-  const { stateManager, eventBus, i18n } = ctx;
-  let ref = findStoredZegSheet(stateManager);
-  if (!ref) {
-    const instanceId = uid();
-    const name = uniqueSheetName(stateManager, i18n.t('dashboard.zegSheet.name'));
-    const ws = buildInitialWorksheetState(name);
-    const phaseIds = phaseIdsOf(stateManager);
-    ws.sheets[0].state = buildSheetState(null, historyToRows(stateManager.get('phaseAchievementHistory') || {}, phaseIds), phaseIds, labelsOf(i18n, phaseIds));
-    stateManager.setModuleState(instanceId, ws);
-    const items = stateManager.get('phases.data') ?? [];
-    stateManager.set('phases.data', [
-      ...items,
-      { instanceId, moduleId: 'worksheet', order: items.length, state: {}, customName: name },
-    ]);
-    ref = findStoredZegSheet(stateManager);
-    if (!ref) throw new Error('zeg-sheet: project is read-only');
-    eventBus.emit('module:added', { moduleId: 'worksheet', phase: 'data', instanceId });
-    return ref;
-  }
-  writeHistoryToSheet(ctx, ref);
-  return ref;
 }
 
 /**
