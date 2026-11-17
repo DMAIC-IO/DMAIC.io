@@ -14,6 +14,7 @@ import {
   formatGridNumber, analyzeColumn,
 } from '../datagrid-utils.js';
 import { validRolesForType } from '../datagrid-roles.js';
+import { shortcutRegistry } from '../../shortcut-registry.js';
 
 /**
  * @typedef {{ id: string, label: string, danger?: boolean, action: () => void }} MenuItem
@@ -62,7 +63,11 @@ export function createGridMenus({ t, getLang, dialog }) {
     if (picker && !picker.el.contains(ev.target)) closePicker();
   };
   const onDocKey = (ev) => {
-    if (ev.key === 'Escape' && (menu || picker)) { close(); closePicker(); }
+    if (!(menu || picker) || !shortcutRegistry.matches(ev, 'datagrid.cancelEdit')) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    close();
+    closePicker();
   };
   document.addEventListener('mousedown', onDocDown, true);
   document.addEventListener('keydown', onDocKey, true);
@@ -345,20 +350,24 @@ export function createGridMenus({ t, getLang, dialog }) {
   /**
    * Spaltenscan (`_showColumnScan`); frischt bei jedem `refresh` auf, bis der Dialog schließt.
    * @param {{ getCol: () => any, getValues: () => any[], getRowCount: () => number, colIdx: () => number,
-   *   jump: (c: number, r: number) => void }} src
+   *   version: () => any[], jump: (c: number, r: number) => void }} src
+   *   `version`: Stand der Spalte (Tabelle, `rev`, Kopf); nur bei Änderung wird neu gerechnet
    */
   function showScan(src) {
     if (!dialog) return;
     scan?.handle.close();
     const body = h('div', { class: 'column-scan__body' });
     const handle = dialog.show({ title: tt('scanTitle'), content: body, onClose: () => { scan = null; } });
-    scan = { handle, body, src };
+    scan = { handle, body, src, version: null };
     renderScan();
   }
 
   function renderScan() {
     if (!scan) return;
     const { body, handle, src } = scan;
+    const version = src.version();
+    if (scan.version && version.length === scan.version.length && version.every((v, i) => v === scan.version[i])) return;
+    scan.version = version;
     const col = src.getCol();
     if (!col) { handle.close(); return; }
     const colIdx = src.colIdx();

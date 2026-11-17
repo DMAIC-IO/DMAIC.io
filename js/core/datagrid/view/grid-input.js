@@ -37,6 +37,13 @@ const FEATURE_OF_ROLE = Object.freeze({
   setColumnRole: 'roles',
 });
 
+/**
+ * Ansichtsereignisse an das Modul, keine P7-Rollen: `roles` (die hinterlegten
+ * Kommandos) schaltet sie nicht ab. Sie hängen nur an `readOnly` und an
+ * `contextMenu` bzw. `features.formulaEditor`.
+ */
+const VIEW_EVENTS = new Set(['contextMenu', 'openFormulaEditor']);
+
 const GRID_VIEW_DELAY = 300;
 const MIN_COL_WIDTH = 50;
 const DRAG_THRESHOLD = 4;
@@ -121,7 +128,7 @@ export function createGridInput(view, {
   /** @param {string} role @returns {boolean} Rolle ist hinterlegt, ihr Merkmal an und das Raster beschreibbar */
   function can(role) {
     if (readOnly) return false;
-    if (roleSet && !roleSet.has(role)) return false;
+    if (roleSet && !roleSet.has(role) && !VIEW_EVENTS.has(role)) return false;
     const f = FEATURE_OF_ROLE[role];
     return !f || featureOn(f);
   }
@@ -828,6 +835,7 @@ export function createGridInput(view, {
         getValues: () => table.columns[idx()],
         getRowCount: () => table.rowCount,
         colIdx: idx,
+        version: () => [table, table.rev, JSON.stringify(columns[idx()] ?? null)],
         jump: (cc, r) => setSel(S.single(cc, r)),
       }) : null;
     return { stats, scan };
@@ -873,7 +881,7 @@ export function createGridInput(view, {
     menus.open(e.clientX, e.clientY, menus.cellItems({
       canEdit: Boolean(col && !col.lock && (can('setCells') || can('setFormula'))),
       can,
-      extra: can('contextMenu') ? contextMenu.map((x) => ({ id: x.id, label: t(x.labelKey) })) : [],
+      extra: can('contextMenu') && contextMenu.length ? contextMenu.map((x) => ({ id: x.id, label: t(x.labelKey) })) : [],
       on: {
         edit: () => startEdit(c, r),
         clear,
@@ -916,6 +924,10 @@ export function createGridInput(view, {
      * @param {GridViewState} state
      */
     setView(state) {
+      // Eingefügte, gelöschte oder neu geladene Zeilen können die Zeile des
+      // offenen Editors verschieben: dann verwerfen statt in die falsche Zeile zu schreiben.
+      const rowsShifted = state.table !== table || (state.table?.rowCount ?? 0) !== nRows();
+      if (editor && rowsShifted) closeEditor(false);
       table = state.table;
       columns = state.columns || [];
       formulas = state.formulas || {};

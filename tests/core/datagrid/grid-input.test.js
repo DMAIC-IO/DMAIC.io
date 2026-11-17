@@ -38,14 +38,15 @@ async function setup(opts = {}) {
   const emit = (role, args) => { calls.push([role, args]); };
   const input = createGridInput(view, {
     emit, features: opts.features || {}, readOnly: Boolean(opts.readOnly),
-    contextMenu: opts.contextMenu || [], t: (k) => k.split('.').pop(), dialog: null,
+    contextMenu: opts.contextMenu || [], t: (k) => k.split('.').pop(), dialog: opts.dialog || null,
+    roles: opts.roles || null,
   });
   const table = mkTable(opts.n);
   input.setView({ table, columns: mkCols(), formulas: opts.formulas || {}, colWidths: {}, selection: null, lang: 'en' });
   const el = view.el;
   const roles = () => calls.map((c) => c[0]);
   return {
-    host, view, input, el, calls, roles, table,
+    host, view, input, el, calls, roles, table, cols: mkCols(),
     done: () => { input.destroy(); view.destroy(); host.remove(); document.querySelectorAll('.context-menu, .attr-picker').forEach((m) => m.remove()); },
   };
 }
@@ -299,4 +300,69 @@ suite('GridInput — Bedienung meldet Kommandos', () => {
       assertDeepEqual(s.calls.filter((c) => c[0] !== 'gridView'), [['setColumnType', { columnId: 'b', columnType: 'numeric' }]]);
     } finally { s.done(); }
   });
+
+  test('fehlende Rolle (roles) schaltet ab, Ansichtsereignisse bleiben', async () => {
+    const s = await setup({ roles: ['setCells'], contextMenu: [{ id: 'forbid', labelKey: 'x.forbid' }] });
+    try {
+      clickCell(s, 0, 2);
+      key(document.activeElement, 'Delete');
+      assertEqual(s.calls.filter((c) => c[0] === 'clearRange').length, 0, 'kein clearRange');
+      cell(s, 1, 4).dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, ...center(cell(s, 1, 4)) }));
+      const ids = [...document.querySelectorAll('.context-menu [data-menu-id]')].map((m) => m.dataset.menuId);
+      assertTrue(!ids.includes('insertRowAbove') && !ids.includes('clearSelection'), `Einträge: ${ids}`);
+      document.querySelector('.context-menu [data-menu-id="forbid"]').click();
+      assertDeepEqual(s.calls.filter((c) => c[0] === 'contextMenu'), [['contextMenu', { id: 'forbid', columnId: 'b', row: 4 }]]);
+    } finally { s.done(); }
+  });
+
+  test('roles ohne openFormulaEditor: Doppelklick auf Formelzelle meldet das Ansichtsereignis', async () => {
+    const s = await setup({ roles: ['setCells'], features: { formulaEditor: true }, formulas: { b: { 3: '=A1' } } });
+    try {
+      mouse(cell(s, 1, 3), 'dblclick');
+      assertDeepEqual(s.calls.filter((c) => c[0] !== 'gridView'), [['openFormulaEditor', { columnId: 'b', row: 3 }]]);
+    } finally { s.done(); }
+  });
+
+  test('Esc (datagrid.cancelEdit) schließt das Menü und verhindert die Vorgabe', async () => {
+    const s = await setup();
+    try {
+      cell(s, 0, 1).dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, ...center(cell(s, 0, 1)) }));
+      assertTrue(document.querySelector('.context-menu') !== null, 'Menü offen');
+      const ev = key(document.activeElement, 'Escape');
+      assertEqual(document.querySelector('.context-menu'), null, 'Menü zu');
+      assertTrue(ev.defaultPrevented, 'preventDefault');
+    } finally { s.done(); }
+  });
+
+  test('offener Scan rechnet nur neu, wenn sich die Spalte ändert', async () => {
+    let shows = 0;
+    const handle = { close() {}, setTitle() {} };
+    const dialog = { show: (o) => { shows++; handle.body = o.content; return handle; } };
+    const s = await setup({ dialog, n: 50 });
+    try {
+      s.el.querySelector('thead th[data-col-idx="1"]').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 10, clientY: 10 }));
+      document.querySelector('.context-menu [data-menu-id="columnScan"]').click();
+      assertEqual(shows, 1);
+      const before = handle.body.firstChild;
+      s.input.setView({ table: s.table, columns: s.cols, formulas: {}, colWidths: {}, selection: null, lang: 'en' });
+      assertTrue(handle.body.firstChild === before, 'kein Neuzeichnen ohne Änderung');
+      s.table.columns[1][0] = 'neu'; s.table.rev++;
+      s.input.setView({ table: s.table, columns: s.cols, formulas: {}, colWidths: {}, selection: null, lang: 'en' });
+      assertTrue(handle.body.firstChild !== before, 'Neuzeichnen nach Änderung');
+    } finally { s.done(); }
+  });
+
+  test('Zeilen oberhalb eingefügt: offener Editor schließt ohne Meldung', async () => {
+    const s = await setup({ n: 50 });
+    try {
+      clickCell(s, 0, 5);
+      key(document.activeElement, '9');
+      assertTrue(s.el.querySelector('.cell-editor') !== null, 'Editor offen');
+      const t2 = mkTable(51);
+      s.input.setView({ table: t2, columns: s.cols, formulas: {}, colWidths: {}, selection: null, lang: 'en' });
+      assertEqual(s.el.querySelector('.cell-editor'), null, 'Editor zu');
+      assertEqual(s.calls.filter((c) => c[0] === 'setCells').length, 0, 'keine Meldung');
+    } finally { s.done(); }
+  });
 });
+
