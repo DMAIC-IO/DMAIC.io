@@ -258,6 +258,36 @@ suite('Kommandos — Umkehrung (recordInverse)', () => {
     assertThrows(() => m.sneakTable({}), /^command sneakTable changed content without recordInverse$/);
   });
 
+  test('Modus inverse: ein Kommando mit historyStep schreibt Inhalt über einen eigenen Sammler, ohne Ablehnung', () => {
+    const m = cells();
+    setHistoryMode(m, 'inverse');
+    const seen = [];
+    setCommandObserver(m, (cmd, args, result, inverses) => seen.push({ cmd, inverses }));
+    // Wie Rückgängig: die Umkehr-Kommandos laufen mit eigenem Sammler, der äußere bleibt leer.
+    const step = command({
+      params: {},
+      historyStep: true,
+      run() { collectInverses(m, () => { m.set({ i: 0, v: 'u' }); }); return true; },
+    });
+    assertEqual(runCommand('undo', step, m, m, {}), true);
+    assertEqual(m.vals[0], 'u');
+    assertDeepEqual(seen.map((s) => s.cmd), ['set', 'undo']);
+    assertDeepEqual(seen[1].inverses, [], 'der Beobachter bekommt eine leere Liste: kein neuer Schritt');
+  });
+
+  test('command(): historyStep nur als Wahrheitswert, ohne Flag nicht gesetzt', () => {
+    assertEqual(command({ historyStep: true, run() {} }).historyStep, true);
+    assertEqual(command({ run() {} }).historyStep, undefined);
+    assertThrows(() => command({ historyStep: 'ja', run() {} }), /historyStep must be a boolean/);
+  });
+
+  test('Modus inverse: ohne historyStep bleibt die Ablehnung, auch bei leerem eigenem Sammler', () => {
+    const m = cells();
+    setHistoryMode(m, 'inverse');
+    const step = command({ params: {}, run() { collectInverses(m, () => { m.set({ i: 0, v: 'u' }); }); } });
+    assertThrows(() => runCommand('undo', step, m, m, {}), /^command undo changed content without recordInverse$/);
+  });
+
   test('Modus inverse: nur Ansichtsfelder wirft nicht', () => {
     const m = cells();
     setHistoryMode(m, 'inverse');

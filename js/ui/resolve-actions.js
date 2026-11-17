@@ -42,6 +42,8 @@ export function resolveActions(actions, tf, helpFor) {
       args: a.args ?? {},
       export: a.export ?? null,
       history: a.history === 'undo' || a.history === 'redo' ? a.history : null,
+      // Verborgen (createModule `ownToolbar`): das Modul zeigt die Aktion selbst.
+      hidden: a.hidden === true,
       // Bind the module tf so a reactive label can pick its own i18n key.
       dynamicText: a.dynamicText ? (data) => a.dynamicText(data, tf) : null,
       children,

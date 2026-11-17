@@ -106,6 +106,18 @@ suite('Workspace — Verlaufsknöpfe', () => {
     assertEqual(historyButtons(ws).length, 0);
   });
 
+  test('verborgene Aktionen (ownToolbar): keine Verlaufs- und Exportknöpfe im Tab-Bereich, Strg+Z greift weiter', () => {
+    const inst = makeInstance();
+    inst.getActions = () => HISTORY_ACTIONS.map((a) => ({ ...a, hidden: true }));
+    const ws = makeWorkspace(inst);
+    ws._renderActions();
+    assertEqual(ws._actionsEl.querySelectorAll('button').length, 0, 'kein Knopf');
+    const ev = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, ctrlKey: true, key: 'z' });
+    Object.defineProperty(ev, 'target', { value: document.body });
+    ws._onHistoryKey(ev);
+    assertEqual(inst.steps.join(','), 'undo');
+  });
+
   test('abgeschlossenes Projekt: keine Knöpfe', () => {
     const ws = makeWorkspace(makeInstance(), { completed: true });
     ws._renderActions();

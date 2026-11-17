@@ -169,6 +169,32 @@ suite('createModule table() — entprelltes Speichern', () => {
     mk({ mode: 'inverse' });
   });
 
+  test('flushPersist fragt zuerst die Widgets: eine gemeldete Ansicht wird sofort mitgeschrieben', async () => {
+    const { mod, container, data, calls } = await mount();
+    // Wie das Raster: eine ausstehende Ansicht, die flushView als Kommando meldet.
+    const widget = document.createElement('div');
+    widget.setAttribute('x-widget', 'datagrid');
+    let pending = true;
+    widget._datagrid = { flushView: () => { if (!pending) return false; pending = false; data().model.n = 7; return true; } };
+    container.append(widget);
+    mod.flushPersist();
+    assertEqual(calls.length, 1, 'ohne Entprellung geschrieben');
+    assertEqual(calls[0].n, 7);
+    mod.flushPersist();
+    assertEqual(calls.length, 1, 'nichts mehr ausstehend');
+  });
+
+  test('destroy: die ausstehende Ansicht des Widgets landet vor dem Abbau im Stand', async () => {
+    const { mod, container, data, calls } = await mount();
+    const widget = document.createElement('div');
+    widget.setAttribute('x-widget', 'datagrid');
+    widget._datagrid = { flushView: () => { data().model.n = 3; return true; } };
+    container.append(widget);
+    await mod.destroy();
+    assertEqual(calls.length, 1);
+    assertEqual(calls[0].n, 3);
+  });
+
   test('flushPersist ohne Ausstehendes schreibt nichts', async () => {
     const { mod, calls } = await mount();
     mod.flushPersist();

@@ -396,6 +396,8 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
 // Models (auch geschachtelt, auch Umkehr-Kommandos beim Rückgängig), im Mount
 // wie am Model aus loadDetached; nach setState/applyRemoteState mit name null.
 // ctx.history im view-Block (nur mit history): step(dir)/can(dir) des Verlaufs.
+// base.ownToolbar (boolean) — Verlauf und Export stehen in der eigenen
+// Werkzeugleiste; die Leiste des Arbeitsbereichs zeigt sie nicht.
 /**
  * Ein Modul aus Model, Viewmodel und Template bauen.
  * @template {((ctx: any) => any) | ((ctx: any) => any)[]} P
@@ -404,7 +406,7 @@ const FROM_DESCRIPTOR = ['id', 'version', 'icon', 'phase', 'allowedPhases'];
  * @returns {Record<string, any> & { readonly __view?: ViewMembersOf<P>, readonly __asyncTasks?: T }}
  */
 export function createModule(base) {
-  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, fromExample, createDefault, gestures = [], forms = {}, exports: exportsDef, asyncTasks: taskDefs = {}, history, onCommand } = base;
+  const { config = {}, descriptor, Model, State: UiState, data, view, afterMount, beforeLoadExample, fromExample, createDefault, gestures = [], forms = {}, exports: exportsDef, asyncTasks: taskDefs = {}, history, onCommand, ownToolbar = false } = base;
   if (descriptor) {
     for (const key of NOT_IN_CONFIG) {
       if (Object.hasOwn(config, key)) {
@@ -428,6 +430,7 @@ export function createModule(base) {
   if (fromExample && beforeLoadExample) throw new Error(`createModule(${id}): fromExample and beforeLoadExample are exclusive`);
   if (exportsDef !== undefined) checkExports(id, exportsDef, Boolean(view));
   if (onCommand !== undefined && typeof onCommand !== 'function') throw new Error(`createModule(${id}): onCommand must be a function`);
+  if (typeof ownToolbar !== 'boolean') throw new Error(`createModule(${id}): ownToolbar must be a boolean`);
   if (history !== undefined && history !== true && !(history && typeof history === 'object'
     && Number.isInteger(history.depth ?? 50) && (history.depth ?? 50) >= 1
     && (history.mode === undefined || history.mode === 'inverse'))) {
@@ -439,9 +442,13 @@ export function createModule(base) {
   if (inverseHistory && !schemaOf(Model)) throw new Error(`createModule(${id}): history mode inverse needs a defineModel Model`);
   if (history && !inverseHistory && schemaHasTable(schema)) throw new Error(`createModule(${id}): a table() schema needs history mode inverse (snapshot history would serialize the tables on every change)`);
   if (history && config.manualPersist === true) throw new Error(`createModule(${id}): history cannot be combined with manualPersist (the history records through the automatic persist)`);
+  // ownToolbar: Verlauf und Export stehen in der Werkzeugleiste des Moduls. Die
+  // Aktionen bleiben (Strg+Z des Arbeitsbereichs sucht `history`), die Leiste
+  // des Arbeitsbereichs zeigt sie nicht (`hidden`).
+  const hidden = ownToolbar ? { hidden: true } : {};
   const historyActions = history ? [
-    { icon: 'action.undo', title: 'history.undo', history: 'undo' },
-    { icon: 'action.redo', title: 'history.redo', history: 'redo' },
+    { icon: 'action.undo', title: 'history.undo', history: 'undo', ...hidden },
+    { icon: 'action.redo', title: 'history.redo', history: 'redo', ...hidden },
   ] : [];
   const actions = (exportsDef === undefined && !history) ? (config.actions ?? []) : [
     ...(config.actions ?? []),
@@ -449,6 +456,7 @@ export function createModule(base) {
     ...(exportsDef === undefined ? [] : [{
       icon: 'action.download',
       title: 'export.label',
+      ...hidden,
       children: formatsOf(exportsDef).map((fmt) => ({ icon: `format.${fmt}`, title: `export.${fmt}`, export: fmt })),
     }]),
   ];
@@ -1217,11 +1225,24 @@ export function createModule(base) {
     },
 
     /**
-     * Schreibt eine ausstehende, entprellte Speicherung sofort. Ohne ausstehende: nichts.
+     * Schreibt eine ausstehende, entprellte Speicherung sofort. Vorher meldet
+     * jedes Widget im Container eine ausstehende Ansicht (`el._datagrid.flushView`).
+     * Ohne Ausstehendes: nichts.
      * @returns {void}
      */
     flushPersist() {
-      if (!this._persistTimer) return;
+      // Erst die Widgets: eine entprellte Ansicht (Raster: Auswahl, Spaltenbreiten)
+      // schreibt jetzt ins Model; der Speicher-Watch liefe erst danach.
+      let flushed = false;
+      this._container?.querySelectorAll('[x-widget]').forEach((el) => {
+        if (/** @type {any} */ (el)._datagrid?.flushView?.() === true) flushed = true;
+      });
+      if (!this._persistTimer && !flushed) return;
+      if (!this._persistTimer) {
+        const model = this.getActionData?.()?.model;
+        if (model) this._persist(model);
+        return;
+      }
       this.cancelPersist();
       this._persistLive();
     },

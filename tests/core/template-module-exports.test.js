@@ -96,6 +96,22 @@ suite('createModule mit exports: Menü', () => {
     const mod = make({ document: f });
     assertDeepEqual(mod.getActions().at(-1).children, [{ icon: 'format.html', title: 'export.html', export: 'html' }]);
   });
+  test('ownToolbar: Verlauf und Export bleiben Aktionen, aber verborgen; eigene Aktionen sichtbar', () => {
+    const mod = createModule({
+      config: { id: 'x-own', engine: 'alpine', actions: [{ icon: 'action.add', title: 'x', onClick: () => {} }] },
+      Model: Doc, view: () => ({}), exports: { table: f }, history: true, ownToolbar: true,
+    });
+    const actions = mod.getActions();
+    assertDeepEqual(actions.map((a) => [a.title, a.hidden === true]), [
+      ['x', false], ['history.undo', true], ['history.redo', true], ['export.label', true],
+    ]);
+    assertTrue(actions.some((a) => a.history), 'Strg+Z des Arbeitsbereichs findet den Verlauf weiter');
+  });
+  test('ownToolbar muss ein Wahrheitswert sein; ohne Angabe ist nichts verborgen', () => {
+    assertThrows(() => createModule({ config: { id: 'x-own2', engine: 'alpine' }, Model: Doc, view: () => ({}), exports: { table: f }, ownToolbar: 'ja' }),
+      /^createModule\(x-own2\): ownToolbar must be a boolean$/);
+    assertTrue(make({ table: f }).getActions().every((a) => a.hidden !== true));
+  });
   test('ohne exports: Aktionen unverändert', () => {
     const mod = createModule({ config: { id: 'x-plain', engine: 'alpine', actions: [] }, Model: Doc, view: () => ({}) });
     assertDeepEqual(mod.getActions(), []);

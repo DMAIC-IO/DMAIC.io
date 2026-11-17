@@ -332,7 +332,7 @@ export class Workspace {
         return this._i18n.exists?.(key) ? this._i18n.t(key) : null;
       };
       const frozen = this._stateManager?.isCompleted?.() === true;
-      const vms = resolveActions(actions, tf, helpFor).filter((vm) => !(vm.history && frozen));
+      const vms = resolveActions(actions, tf, helpFor).filter((vm) => !vm.hidden && !(vm.history && frozen));
       vms.forEach((vm) => {
         const el = vm.isDropdown
           ? this._buildActionDropdown(vm, inst)

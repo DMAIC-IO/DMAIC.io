@@ -291,22 +291,30 @@ const TIME = /^([01]\d|2[0-3]):([0-5]\d)$/;
  * `null` oder `{ key, params? }` für eine Rückfrage; `key` ist relativ zu
  * `modules.<id>.`. Beide: `this` = Model, rein, nicht beobachtet, nur von
  * der Oberfläche ausgewertet.
+ *
+ * `historyStep: true` kennzeichnet ein Kommando, das einen Schritt des
+ * Verlaufs ausführt (Rückgängig/Wiederholen): seine Umkehr-Kommandos sammeln
+ * in einen eigenen Sammler, darum entfällt im Modus inverse die Prüfung
+ * „Inhalt ohne Umkehrung“; der Beobachter bekommt eine leere Liste.
  * @param {{ params?: Record<string, object>, returns?: object|null, run: (this: any, args: any) => any,
- *   current?: (this: any, fixed: any) => object, confirm?: (this: any, args: any) => ({ key: string, params?: object }|null) }} def
+ *   current?: (this: any, fixed: any) => object, confirm?: (this: any, args: any) => ({ key: string, params?: object }|null),
+ *   historyStep?: boolean }} def
  * @returns {Readonly<{ params: Record<string, object>, returns: object|null, run: (this: any, args: any) => any,
- *   current?: Function, confirm?: Function }>}
+ *   current?: Function, confirm?: Function, historyStep?: true }>}
  */
 export function command(def) {
   if (typeof def?.run !== 'function') throw new Error('command: run must be a function');
   for (const hook of ['current', 'confirm']) {
     if (def[hook] !== undefined && typeof def[hook] !== 'function') throw new Error(`command: ${hook} must be a function`);
   }
+  if (def.historyStep !== undefined && typeof def.historyStep !== 'boolean') throw new Error('command: historyStep must be a boolean');
   return Object.freeze({
     params: Object.freeze({ ...(def.params ?? {}) }),
     returns: def.returns ?? null,
     run: def.run,
     ...(def.current ? { current: def.current } : {}),
     ...(def.confirm ? { confirm: def.confirm } : {}),
+    ...(def.historyStep === true ? { historyStep: true } : {}),
   });
 }
 
@@ -1046,7 +1054,7 @@ export function checkInvariantsAfter(model, rootField, fn) {
 /**
  * Ein Kommando prüfen, ausführen, melden. Der einzige Weg zu `run`.
  * @param {string} name Kommandoname
- * @param {{ params: object, run: Function }} def aus `command()`
+ * @param {{ params: object, run: Function, historyStep?: true }} def aus `command()`
  * @param {object} self `this` für `run` (Model oder Viewmodel)
  * @param {object} root das Model: Wurzel der Pfade, Träger des Beobachters
  * @param {any} [cmd] die Parameter als ein Objekt
@@ -1078,7 +1086,8 @@ export function runCommand(name, def, self, root, cmd) {
   } finally {
     if (top) root._inv = null;
   }
-  if (root?._histMode === 'inverse' && root.$contentWrites > writes0 && inv.length === inv0) {
+  // Ein Verlaufsschritt (`historyStep`) sammelt seine Umkehrungen selbst (collectInverses).
+  if (root?._histMode === 'inverse' && def.historyStep !== true && root.$contentWrites > writes0 && inv.length === inv0) {
     throw new Error(`command ${name} changed content without recordInverse`);
   }
   const observer = root?._obs;

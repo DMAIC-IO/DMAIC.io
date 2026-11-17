@@ -944,6 +944,25 @@ export function createGridInput(view, {
       paint();
       menus.refresh();
     },
+    /**
+     * Meldet eine ausstehende Ansicht (Auswahl, Spaltenbreiten) sofort statt
+     * nach der Entprellung — vor dem Speichern beim Verlassen.
+     * @returns {boolean} ob eine Ansicht ausstand
+     */
+    flushView() {
+      if (!gvTimer) return false;
+      flushGridView();
+      return true;
+    },
+    /**
+     * Bricht eine offene Zellbearbeitung ab, ohne zu schreiben, und liefert
+     * ihren Text (F4 übergibt ihn dem Formel-Editor).
+     * @returns {string|null} der Text, ohne offenen Editor `null`
+     */
+    takeEditorText() {
+      if (!editor) return null;
+      return closeEditor(false).input.value;
+    },
     destroy() {
       if (gvTimer) flushGridView();
       endDrag();

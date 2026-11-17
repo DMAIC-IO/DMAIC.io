@@ -119,9 +119,16 @@ function mountTable(root, { props, services, effect, command }) {
   slot.className = 'widget-datagrid';
   root.append(slot);
   const view = createGridView(slot, { t, lang: lang() });
-  // Test-Haken (P8): die POMs holen eine Zeile in den Sichtbereich, bevor sie eine Zelle ansprechen.
+  // Griff am Wirtselement: `scrollToRow` (Test-Haken P8: die POMs holen eine Zeile
+  // in den Sichtbereich), `flushView` (ausstehende Ansicht sofort melden — vor dem
+  // Speichern beim Verlassen, `flushPersist`) und `takeEditorText` (offene
+  // Zellbearbeitung abbrechen, Text liefern — F4 des Arbeitsblatts).
   const hostEl = /** @type {any} */ (root.parentElement ?? root);
-  hostEl._datagrid = { scrollToRow: (r) => view.scrollToRow(r) };
+  hostEl._datagrid = {
+    scrollToRow: (r) => view.scrollToRow(r),
+    flushView: () => input?.flushView() ?? false,
+    takeEditorText: () => input?.takeEditorText() ?? null,
+  };
 
   const onBlocked = (e) => { if (e.detail?.message) notify(e.detail.message, 'warning'); };
   view.el.addEventListener('cell:edit-blocked', onBlocked);

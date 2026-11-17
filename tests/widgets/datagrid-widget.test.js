@@ -299,6 +299,34 @@ suite('datagrid widget über table()', () => {
     assertEqual(typeof el._datagrid?.scrollToRow, 'function');
   });
 
+  test('flushView meldet eine ausstehende Ansicht sofort, danach nichts mehr', async () => {
+    const { root, el } = await host({ config: { commands: { setCells: 'setCells', gridView: 'keepView' } } });
+    clickCell(root, 1, 2);
+    assertEqual(el._datagrid.flushView(), true, 'eine Ansicht stand aus');
+    await settle();
+    assertEqual(calls.length, 1, 'sofort gemeldet');
+    assertEqual(calls[0][0], 'keepView');
+    assertEqual(el._datagrid.flushView(), false, 'nichts mehr ausstehend');
+    await wait(350);
+    await settle();
+    assertEqual(calls.length, 1, 'der Zeitgeber meldet nicht noch einmal');
+  });
+
+  test('takeEditorText: bricht die Zellbearbeitung ab und liefert den Text', async () => {
+    const { root, el } = await host();
+    assertEqual(el._datagrid.takeEditorText(), null, 'ohne Editor: null');
+    clickCell(root, 0, 1);
+    key(document.activeElement, '=');
+    const ed = root.querySelector('.cell-editor');
+    assertTrue(ed !== null, 'Editor offen');
+    ed.value = '=SUM(C1)';
+    assertEqual(el._datagrid.takeEditorText(), '=SUM(C1)');
+    await settle();
+    assertEqual(root.querySelector('.cell-editor'), null, 'Editor zu');
+    assertEqual(calls.length, 0, 'nichts geschrieben');
+    assertEqual(td(root, 0, 1).textContent, '2', 'alter Wert');
+  });
+
   test('mit config.rows läuft der Altweg', async () => {
     const { root } = await host({ attrs: 'x-widget-config="legacy"' });
     assertEqual(root.querySelectorAll('.datagrid__table').length, 1);
