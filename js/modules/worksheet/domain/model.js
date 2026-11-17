@@ -24,6 +24,7 @@ import { ROLE, inferRole } from '../../../core/datagrid/datagrid-roles.js';
 import { from0 } from './migrations.js';
 import { COLUMN_SHAPE, fitsType } from './columns.js';
 import { cellCommands } from './commands-cells.js';
+import { structureCommands } from './commands-structure.js';
 
 /** Startspalten eines neuen Blatts (C1–C5). */
 export const START_COLUMN_COUNT = 5;
@@ -143,8 +144,8 @@ export class WorksheetModel extends defineModel({
     activeSheetId: text({ default: 'sheet_1' }),
     gridView: map(text(), object({ colWidths: map(text(), number({ exclusiveMin: 0 })), selection: selectionSpec })),
   },
-  // Kommandos aus `commands-*.js`: Zellen und Formeln (Task 10), Struktur und Blätter folgen (Tasks 11–12).
-  commands: { ...cellCommands },
+  // Kommandos aus `commands-*.js`: Zellen und Formeln, Struktur; Blätter folgen (Task 12).
+  commands: { ...cellCommands, ...structureCommands },
   invariants: {
     uniqueSheetIds: {
       fields: ['sheets'],

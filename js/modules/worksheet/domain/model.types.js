@@ -79,6 +79,113 @@
  */
 
 /**
+ * @typedef {object} AddColumnCommand
+ * @property {string} sheetId
+ * @property {number} [position]
+ */
+
+/**
+ * @typedef {object} RemoveColumnCommand
+ * @property {string} sheetId
+ * @property {string} columnId
+ */
+
+/**
+ * @typedef {object} RenameColumnCommand
+ * @property {string} sheetId
+ * @property {string} columnId
+ * @property {string} name
+ */
+
+/**
+ * @typedef {object} MoveColumnCommand
+ * @property {string} sheetId
+ * @property {string} columnId
+ * @property {number} toIndex
+ */
+
+/**
+ * @typedef {object} SetColumnMetaCommand
+ * @property {string} sheetId
+ * @property {string} columnId
+ * @property {{ lock?: 'hard'|'soft', reason?: string, managedBy?: string, managedRef?: string, categoricalCoding?: Record<string, number> }|null} meta
+ */
+
+/**
+ * @typedef {object} SetColumnRoleCommand
+ * @property {string} sheetId
+ * @property {string} columnId
+ * @property {'continuous'|'categorical'|'ordinal'|'date'|'identifier'|'freeText'} role
+ */
+
+/**
+ * @typedef {object} SetColumnTypeCommand
+ * @property {string} sheetId
+ * @property {string} columnId
+ * @property {'numeric'|'text'|'date'|'time'|'currency'|'percent'|'binary'} columnType
+ */
+
+/**
+ * @typedef {object} SetColumnFormatCommand
+ * @property {string} sheetId
+ * @property {string} columnId
+ * @property {'decimals'|'dateFormat'|'timeFormat'} key
+ * @property {number|string|null} value
+ */
+
+/**
+ * @typedef {object} AddRowsCommand
+ * @property {string} sheetId
+ * @property {number} [count]
+ * @property {number} [position]
+ */
+
+/**
+ * @typedef {object} RemoveRowsCommand
+ * @property {string} sheetId
+ * @property {number} startRow
+ * @property {number} count
+ */
+
+/**
+ * @typedef {object} MoveRowCommand
+ * @property {string} sheetId
+ * @property {number} fromRow
+ * @property {number} toRow
+ */
+
+/**
+ * @typedef {object} SortRowsCommand
+ * @property {string} sheetId
+ * @property {string} columnId
+ * @property {'asc'|'desc'} direction
+ */
+
+/**
+ * @typedef {object} ApplyRowPermutationCommand
+ * @property {string} sheetId
+ * @property {number[]} perm
+ */
+
+/**
+ * @typedef {object} RestoreColumnCommand
+ * @property {string} sheetId
+ * @property {number} index
+ * @property {{ id: string, name: string, shortName: string, type: 'numeric'|'text'|'date'|'time'|'currency'|'percent'|'binary', unit: string|null, role: 'continuous'|'categorical'|'ordinal'|'date'|'identifier'|'freeText'|null, roleManual: boolean, format: { decimals?: number, dateFormat?: 'dd.MM.yyyy'|'yyyy-MM-dd'|'dd/MM/yyyy'|'MM/dd/yyyy'|'d. MMMM yyyy', timeFormat?: 'HH:mm'|'HH:mm:ss', currencySymbol?: string }, meta: { lock?: 'hard'|'soft', reason?: string, managedBy?: string, managedRef?: string, categoricalCoding?: Record<string, number> }|null }} head
+ * @property {Array<number|string|boolean|null>} values
+ * @property {Record<string, string>} formulas
+ */
+
+/**
+ * @typedef {object} RestoreRowsCommand
+ * @property {string} sheetId
+ * @property {number} startRow
+ * @property {number} count
+ * @property {Array<Array<number|string|boolean|null>>} cols
+ * @property {Record<string, Record<string, string>>} formulas
+ */
+
+/**
  * @typedef {WorksheetModelFields & WorksheetModelView & {
  *   setCells(cmd: SetCellsCommand): number,
  *   setFormula(cmd: SetFormulaCommand): { value: number|string|boolean|null, error: string|null },
@@ -88,7 +195,22 @@
  *   fillRange(cmd: FillRangeCommand): number,
  *   clearRange(cmd: ClearRangeCommand): number,
  *   restoreCells(cmd: RestoreCellsCommand): void,
- *   execute(cmd: ({ type: 'setCells' } & SetCellsCommand) | ({ type: 'setFormula' } & SetFormulaCommand) | ({ type: 'writeColumns' } & WriteColumnsCommand) | ({ type: 'importCsv' } & ImportCsvCommand) | ({ type: 'pasteBlock' } & PasteBlockCommand) | ({ type: 'fillRange' } & FillRangeCommand) | ({ type: 'clearRange' } & ClearRangeCommand) | ({ type: 'restoreCells' } & RestoreCellsCommand)): unknown,
+ *   addColumn(cmd: AddColumnCommand): string,
+ *   removeColumn(cmd: RemoveColumnCommand): void,
+ *   renameColumn(cmd: RenameColumnCommand): string,
+ *   moveColumn(cmd: MoveColumnCommand): boolean,
+ *   setColumnMeta(cmd: SetColumnMetaCommand): void,
+ *   setColumnRole(cmd: SetColumnRoleCommand): void,
+ *   setColumnType(cmd: SetColumnTypeCommand): boolean,
+ *   setColumnFormat(cmd: SetColumnFormatCommand): void,
+ *   addRows(cmd: AddRowsCommand): void,
+ *   removeRows(cmd: RemoveRowsCommand): number,
+ *   moveRow(cmd: MoveRowCommand): boolean,
+ *   sortRows(cmd: SortRowsCommand): boolean,
+ *   applyRowPermutation(cmd: ApplyRowPermutationCommand): void,
+ *   restoreColumn(cmd: RestoreColumnCommand): void,
+ *   restoreRows(cmd: RestoreRowsCommand): void,
+ *   execute(cmd: ({ type: 'setCells' } & SetCellsCommand) | ({ type: 'setFormula' } & SetFormulaCommand) | ({ type: 'writeColumns' } & WriteColumnsCommand) | ({ type: 'importCsv' } & ImportCsvCommand) | ({ type: 'pasteBlock' } & PasteBlockCommand) | ({ type: 'fillRange' } & FillRangeCommand) | ({ type: 'clearRange' } & ClearRangeCommand) | ({ type: 'restoreCells' } & RestoreCellsCommand) | ({ type: 'addColumn' } & AddColumnCommand) | ({ type: 'removeColumn' } & RemoveColumnCommand) | ({ type: 'renameColumn' } & RenameColumnCommand) | ({ type: 'moveColumn' } & MoveColumnCommand) | ({ type: 'setColumnMeta' } & SetColumnMetaCommand) | ({ type: 'setColumnRole' } & SetColumnRoleCommand) | ({ type: 'setColumnType' } & SetColumnTypeCommand) | ({ type: 'setColumnFormat' } & SetColumnFormatCommand) | ({ type: 'addRows' } & AddRowsCommand) | ({ type: 'removeRows' } & RemoveRowsCommand) | ({ type: 'moveRow' } & MoveRowCommand) | ({ type: 'sortRows' } & SortRowsCommand) | ({ type: 'applyRowPermutation' } & ApplyRowPermutationCommand) | ({ type: 'restoreColumn' } & RestoreColumnCommand) | ({ type: 'restoreRows' } & RestoreRowsCommand)): unknown,
  *   toJSON(): object,
  *   hasContent(): boolean,
  *   readonly context: import('../../../core/model.js').ModelContext,

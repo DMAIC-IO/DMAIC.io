@@ -1359,7 +1359,8 @@
           "help": "Fügt dem Blatt eine leere Spalte hinzu — ohne Position am Ende. Der Agent erhält die id der neuen Spalte.",
           "params": {
             "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
-            "position": "Stelle der neuen Spalte, ab 0 gezählt: 0 setzt sie nach vorn, die Spaltenzahl oder keine Angabe hängt sie an."
+            "position": "Stelle der neuen Spalte, ab 0 gezählt: 0 setzt sie nach vorn, die Spaltenzahl oder keine Angabe hängt sie an.",
+            "command": "Das Kommando als ein Objekt mit sheetId, wahlweise position."
           }
         },
         "writeColumns": {
@@ -1374,7 +1375,8 @@
           "params": {
             "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
-            "name": "Der neue Name; \"\" entfernt ihn, dann zeigt die Spalte ihren Kurznamen (C1, …)."
+            "name": "Der neue Name; \"\" entfernt ihn, dann zeigt die Spalte ihren Kurznamen (C1, …).",
+            "command": "Das Kommando als ein Objekt mit sheetId, columnId und name."
           }
         },
         "setColumnMeta": {
@@ -1382,14 +1384,16 @@
           "params": {
             "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
-            "meta": "Das neue Merkmal als Objekt, es ersetzt das alte ganz; null entfernt es. Schlüssel: lock ('hard' oder 'soft'; fehlt = keine Sperre), reason (Text für die Kurzinfo), managedBy (verwaltendes Modul), managedRef (Bezug beim Verwalter), categoricalCoding (Objekt). Andere Schlüssel werden abgelehnt."
+            "meta": "Das neue Merkmal als Objekt, es ersetzt das alte ganz; null entfernt es. Schlüssel: lock ('hard' oder 'soft'; fehlt = keine Sperre), reason (Text für die Kurzinfo), managedBy (verwaltendes Modul), managedRef (Bezug beim Verwalter), categoricalCoding (Objekt). Andere Schlüssel werden abgelehnt.",
+            "command": "Das Kommando als ein Objekt mit sheetId, columnId und meta."
           }
         },
         "removeColumn": {
           "help": "Entfernt eine Spalte samt Werten und Formeln. Hart gesperrte Spalten (etwa vom Versuchsplaner verwaltet) lassen sich nicht entfernen. Rückgängig holt die Spalte zurück.",
           "params": {
             "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
-            "columnId": "Die id der zu entfernenden Spalte."
+            "columnId": "Die id der zu entfernenden Spalte.",
+            "command": "Das Kommando als ein Objekt mit sheetId und columnId."
           }
         },
         "addRows": {
@@ -1397,7 +1401,8 @@
           "params": {
             "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "count": "Zahl der Zeilen, ganzzahlig ab 1; ohne Angabe zehn, wie der Knopf in der Werkzeugleiste.",
-            "position": "Zeile, ab 0 gezählt, an der die erste neue Zeile steht: 0 setzt sie nach oben, die Zeilenzahl oder keine Angabe hängt sie an."
+            "position": "Zeile, ab 0 gezählt, an der die erste neue Zeile steht: 0 setzt sie nach oben, die Zeilenzahl oder keine Angabe hängt sie an.",
+            "command": "Das Kommando als ein Objekt mit sheetId, wahlweise count und position."
           }
         },
         "removeRows": {
@@ -1405,7 +1410,8 @@
           "params": {
             "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "startRow": "Erste zu entfernende Zeile, ab 0 gezählt; sie muss existieren.",
-            "count": "Zahl der Zeilen, ganzzahlig ab 1 und höchstens bis zur letzten Zeile."
+            "count": "Zahl der Zeilen, ganzzahlig ab 1 und höchstens bis zur letzten Zeile.",
+            "command": "Das Kommando als ein Objekt mit sheetId, startRow und count."
           }
         },
         "sortRows": {
@@ -1413,7 +1419,8 @@
           "params": {
             "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "columnId": "Die id der Spalte, nach der sortiert wird, wie read().columns[].id sie nennt.",
-            "direction": "\"asc\" sortiert aufsteigend, \"desc\" absteigend."
+            "direction": "\"asc\" sortiert aufsteigend, \"desc\" absteigend.",
+            "command": "Das Kommando als ein Objekt mit sheetId, columnId und direction."
           }
         },
         "undo": { "help": "Nimmt die letzte Änderung am Blatt zurück. Wirkt auf das sichtbare Blatt; nach einem Blattwechsel durch den Nutzer passiert nichts." },
@@ -1435,7 +1442,8 @@
           "params": {
             "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
-            "role": "Die Rolle: continuous (stetig), categorical (kategorial), ordinal, date (Datum), identifier (Kennung) oder freeText (Freitext). Dieselbe Rolle wie in read().columns[].role bestätigt die erkannte."
+            "role": "Die Rolle: continuous (stetig), categorical (kategorial), ordinal, date (Datum), identifier (Kennung) oder freeText (Freitext). Dieselbe Rolle wie in read().columns[].role bestätigt die erkannte.",
+            "command": "Das Kommando als ein Objekt mit sheetId, columnId und role."
           }
         },
         "moveRow": {
@@ -1443,7 +1451,8 @@
           "params": {
             "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "fromRow": "Die Zeile, die wandert, ab 0 gezählt.",
-            "toRow": "Die Stelle, die die Zeile danach hat, ab 0 gezählt."
+            "toRow": "Die Stelle, die die Zeile danach hat, ab 0 gezählt.",
+            "command": "Das Kommando als ein Objekt mit sheetId, fromRow und toRow."
           }
         },
         "moveColumn": {
@@ -1451,7 +1460,8 @@
           "params": {
             "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
-            "toIndex": "Die Stelle, die die Spalte danach hat, ab 0 gezählt."
+            "toIndex": "Die Stelle, die die Spalte danach hat, ab 0 gezählt.",
+            "command": "Das Kommando als ein Objekt mit sheetId, columnId und toIndex."
           }
         },
         "setColumnType": {
@@ -1459,7 +1469,9 @@
           "params": {
             "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
-            "type": "Der Typ: numeric (Zahl), text, date (Datum), time (Uhrzeit), currency (Währung), percent (Prozent) oder binary (0/1)."
+            "type": "Der Typ: numeric (Zahl), text, date (Datum), time (Uhrzeit), currency (Währung), percent (Prozent) oder binary (0/1).",
+            "columnType": "Der neue Typ: numeric (Zahl), text, date (Datum), time (Uhrzeit), currency (Währung), percent (Prozent) oder binary (0/1). Er heißt columnType, weil type im Kommando dessen Namen trägt.",
+            "command": "Das Kommando als ein Objekt mit sheetId, columnId und columnType."
           }
         },
         "setColumnFormat": {
@@ -1468,7 +1480,8 @@
             "sheetId": "Die id des Blatts; die Liste steht im Lesezustand unter sheets. Der Aufruf macht dieses Blatt sichtbar. Der Wechsel leert die Rückgängig-Historie des Blatts, auch wenn der Aufruf danach abgelehnt wird.",
             "columnId": "Die id der Spalte, wie read().columns[].id sie nennt.",
             "key": "Der Format-Schlüssel: decimals, dateFormat oder timeFormat — passend zum Spaltentyp.",
-            "value": "decimals: ganze Zahl von 0 bis 6; dateFormat: dd.MM.yyyy, yyyy-MM-dd, dd/MM/yyyy, MM/dd/yyyy oder d. MMMM yyyy; timeFormat: HH:mm oder HH:mm:ss. null stellt die Vorgabe des Typs her."
+            "value": "decimals: ganze Zahl von 0 bis 6; dateFormat: dd.MM.yyyy, yyyy-MM-dd, dd/MM/yyyy, MM/dd/yyyy oder d. MMMM yyyy; timeFormat: HH:mm oder HH:mm:ss. null stellt die Vorgabe des Typs her.",
+            "command": "Das Kommando als ein Objekt mit sheetId, columnId, key und value."
           }
         },
         "duplicateSheet": {

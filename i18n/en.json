@@ -1359,7 +1359,8 @@
           "help": "Adds an empty column to the sheet — at the end without a position. The agent receives the new column's id.",
           "params": {
             "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view. Switching clears the undo history of the sheet, even if the call is rejected afterwards.",
-            "position": "Zero-based place of the new column: 0 puts it first, the column count or no value appends it."
+            "position": "Zero-based place of the new column: 0 puts it first, the column count or no value appends it.",
+            "command": "The command as one object with sheetId, optionally position."
           }
         },
         "writeColumns": {
@@ -1374,7 +1375,8 @@
           "params": {
             "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view. Switching clears the undo history of the sheet, even if the call is rejected afterwards.",
             "columnId": "The id of the column, as read().columns[].id names it.",
-            "name": "The new name; \"\" clears it, and the column shows its short name (C1, …)."
+            "name": "The new name; \"\" clears it, and the column shows its short name (C1, …).",
+            "command": "The command as one object with sheetId, columnId and name."
           }
         },
         "setColumnMeta": {
@@ -1382,14 +1384,16 @@
           "params": {
             "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view. The switch clears the sheet's undo history, even if the call is rejected afterwards.",
             "columnId": "The id of the column, as read().columns[].id names it.",
-            "meta": "The new meta as an object, replacing the old one entirely; null removes it. Keys: lock ('hard' or 'soft'; absent = no lock), reason (text for the tooltip), managedBy (managing module), managedRef (reference at the manager), categoricalCoding (object). Other keys are rejected."
+            "meta": "The new meta as an object, replacing the old one entirely; null removes it. Keys: lock ('hard' or 'soft'; absent = no lock), reason (text for the tooltip), managedBy (managing module), managedRef (reference at the manager), categoricalCoding (object). Other keys are rejected.",
+            "command": "The command as one object with sheetId, columnId and meta."
           }
         },
         "removeColumn": {
           "help": "Removes a column with its values and formulas. Hard-locked columns (managed by the DoE planner, for example) cannot be removed. Undo brings the column back.",
           "params": {
             "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view. Switching clears the undo history of the sheet, even if the call is rejected afterwards.",
-            "columnId": "The id of the column to remove."
+            "columnId": "The id of the column to remove.",
+            "command": "The command as one object with sheetId and columnId."
           }
         },
         "addRows": {
@@ -1397,7 +1401,8 @@
           "params": {
             "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view. Switching clears the undo history of the sheet, even if the call is rejected afterwards.",
             "count": "Number of rows, a whole number of at least 1; ten without a value, like the toolbar button.",
-            "position": "Zero-based row where the first new row goes: 0 puts them on top, the row count or no value appends them."
+            "position": "Zero-based row where the first new row goes: 0 puts them on top, the row count or no value appends them.",
+            "command": "The command as one object with sheetId, optionally count and position."
           }
         },
         "removeRows": {
@@ -1405,7 +1410,8 @@
           "params": {
             "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view. Switching clears the undo history of the sheet, even if the call is rejected afterwards.",
             "startRow": "Zero-based index of the first row to remove; it must exist.",
-            "count": "Number of rows, a whole number of at least 1 and at most up to the last row."
+            "count": "Number of rows, a whole number of at least 1 and at most up to the last row.",
+            "command": "The command as one object with sheetId, startRow and count."
           }
         },
         "sortRows": {
@@ -1413,7 +1419,8 @@
           "params": {
             "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view. Switching clears the undo history of the sheet, even if the call is rejected afterwards.",
             "columnId": "The id of the column to sort by, as read().columns[].id names it.",
-            "direction": "\"asc\" sorts ascending, \"desc\" descending."
+            "direction": "\"asc\" sorts ascending, \"desc\" descending.",
+            "command": "The command as one object with sheetId, columnId and direction."
           }
         },
         "undo": { "help": "Reverts the last change to the sheet. Acts on the visible sheet; after the user switched sheets nothing happens." },
@@ -1435,7 +1442,8 @@
           "params": {
             "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view. Switching clears the undo history of the sheet, even if the call is rejected afterwards.",
             "columnId": "The id of the column, as read().columns[].id names it.",
-            "role": "The role: continuous, categorical, ordinal, date, identifier or freeText. The same role as read().columns[].role confirms the detected one."
+            "role": "The role: continuous, categorical, ordinal, date, identifier or freeText. The same role as read().columns[].role confirms the detected one.",
+            "command": "The command as one object with sheetId, columnId and role."
           }
         },
         "moveRow": {
@@ -1443,7 +1451,8 @@
           "params": {
             "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view. Switching clears the undo history of the sheet, even if the call is rejected afterwards.",
             "fromRow": "The row that moves, counted from 0.",
-            "toRow": "The position the row has afterwards, counted from 0."
+            "toRow": "The position the row has afterwards, counted from 0.",
+            "command": "The command as one object with sheetId, fromRow and toRow."
           }
         },
         "moveColumn": {
@@ -1451,7 +1460,8 @@
           "params": {
             "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view. Switching clears the undo history of the sheet, even if the call is rejected afterwards.",
             "columnId": "The id of the column, as read().columns[].id names it.",
-            "toIndex": "The position the column has afterwards, counted from 0."
+            "toIndex": "The position the column has afterwards, counted from 0.",
+            "command": "The command as one object with sheetId, columnId and toIndex."
           }
         },
         "setColumnType": {
@@ -1459,7 +1469,9 @@
           "params": {
             "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view. Switching clears the undo history of the sheet, even if the call is rejected afterwards.",
             "columnId": "The id of the column, as read().columns[].id names it.",
-            "type": "The type: numeric, text, date, time, currency, percent or binary (0/1)."
+            "type": "The type: numeric, text, date, time, currency, percent or binary (0/1).",
+            "columnType": "The new type: numeric, text, date, time, currency, percent or binary (0/1). It is called columnType because type carries the command name.",
+            "command": "The command as one object with sheetId, columnId and columnType."
           }
         },
         "setColumnFormat": {
@@ -1468,7 +1480,8 @@
             "sheetId": "The id of the sheet, listed under sheets in the read state. The call brings this sheet into view. Switching clears the undo history of the sheet, even if the call is rejected afterwards.",
             "columnId": "The id of the column, as read().columns[].id names it.",
             "key": "The format key: decimals, dateFormat or timeFormat — fitting the column type.",
-            "value": "decimals: whole number from 0 to 6; dateFormat: dd.MM.yyyy, yyyy-MM-dd, dd/MM/yyyy, MM/dd/yyyy or d. MMMM yyyy; timeFormat: HH:mm or HH:mm:ss. null restores the type's default."
+            "value": "decimals: whole number from 0 to 6; dateFormat: dd.MM.yyyy, yyyy-MM-dd, dd/MM/yyyy, MM/dd/yyyy or d. MMMM yyyy; timeFormat: HH:mm or HH:mm:ss. null restores the type's default.",
+            "command": "The command as one object with sheetId, columnId, key and value."
           }
         },
         "duplicateSheet": {

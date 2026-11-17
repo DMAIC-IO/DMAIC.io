@@ -13,6 +13,10 @@
  * Umkehrung `restoreCells` (nur Umkehrung, nicht für Agenten) in den Verlauf.
  * Danach `recalcFormulas` und genau einmal `markTableChanged`.
  *
+ * Exportiert sind die Hilfen, die auch `commands-structure.js` braucht
+ * (`sheetOf`, `columnIndex`, `requireUnlocked`, `copyHead`, `changedRun`,
+ * `commit`, `HEAD_SPEC`).
+ *
  * Rein: kein DOM, kein i18n.
  */
 import {
@@ -61,7 +65,7 @@ const rectSpec = () => object({ c0: rowIndex(), r0: rowIndex(), c1: rowIndex(), 
  * @param {any} model @param {string} sheetId @returns {any}
  * @throws {Error} `unknown_sheet: <id>`
  */
-function sheetOf(model, sheetId) {
+export function sheetOf(model, sheetId) {
   const sheet = model.sheets.find((/** @type {{ id: string }} */ s) => s.id === sheetId);
   if (!sheet) throw new Error(`unknown_sheet: ${sheetId}`);
   return sheet;
@@ -71,7 +75,7 @@ function sheetOf(model, sheetId) {
  * Index einer Spalte; Meldung wie heute `requireKnownId('columnId', …)`.
  * @param {any} sheet @param {string} columnId @returns {number}
  */
-function columnIndex(sheet, columnId) {
+export function columnIndex(sheet, columnId) {
   const ids = sheet.columns.map((/** @type {{ id: string }} */ c) => c.id);
   requireKnownId('columnId', columnId, ids);
   return ids.indexOf(columnId);
@@ -81,7 +85,7 @@ function columnIndex(sheet, columnId) {
  * @param {any} head
  * @throws {Error} `column "<id>" is locked (<lock>)`
  */
-function requireUnlocked(head) {
+export function requireUnlocked(head) {
   const lock = head.meta?.lock;
   if (lock) throw new Error(`column "${head.id}" is locked (${lock})`);
 }
@@ -90,12 +94,12 @@ function requireUnlocked(head) {
  * Ein Spaltenkopf als eigenständige Kopie.
  * @param {any} head @returns {any}
  */
-function copyHead(head) {
+export function copyHead(head) {
   return { ...head, format: { ...head.format }, meta: head.meta ? JSON.parse(JSON.stringify(head.meta)) : null };
 }
 
 /** Prüfer eines ganzen Spaltenkopfs (Model-Form). */
-const HEAD_SPEC = object(COLUMN_SHAPE);
+export const HEAD_SPEC = object(COLUMN_SHAPE);
 
 /**
  * Der kleinste zusammenhängende Bereich, in dem `next` von `cur` abweicht
@@ -103,7 +107,7 @@ const HEAD_SPEC = object(COLUMN_SHAPE);
  * @param {any[]} cur @param {any[]} next
  * @returns {{ start: number, values: any[] }|null}
  */
-function changedRun(cur, next) {
+export function changedRun(cur, next) {
   let a = -1;
   let b = -1;
   for (let r = 0; r < next.length; r++) {
@@ -243,7 +247,7 @@ function applyChange(sheet, { rowCount, columnCount, cols }) {
  * @param {(c: number, r: number, error: string) => void} [onError] Rechenfehler je Formelzelle
  * @returns {void}
  */
-function commit(model, sheet, change, onError) {
+export function commit(model, sheet, change, onError) {
   const noop = change.cols.length === 0 && change.rowCount === sheet.data.rowCount
     && change.columnCount === sheet.columns.length;
   if (noop) return;
