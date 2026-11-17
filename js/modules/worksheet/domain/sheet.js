@@ -7,7 +7,7 @@
  *
  * Rein: kein DOM, kein i18n.
  */
-import { list, object, map, text, table } from '../../../core/model.js';
+import { list, object, map, text, number, table } from '../../../core/model.js';
 import { TableData } from '../../../core/table-data.js';
 import { uid } from '../../../core/uid.js';
 import { START_ROW_COUNT } from '../../../core/datagrid/datagrid-utils.js';
@@ -30,6 +30,21 @@ export const SHEET_SHAPE = Object.freeze({
   columns: list(object(COLUMN_SHAPE)),
   formulas: map(text(), map(text(), text())),
   data: table(),
+});
+
+const index = () => number({ integer: true, min: 0 });
+
+/** Auswahl des Rasters; `extraCols`: Strg+Klick-Spalten (Ruling R7). */
+const selectionSpec = object({
+  startCol: index(), startRow: index(), endCol: index(), endRow: index(),
+  activeCol: index(), activeRow: index(),
+  extraCols: list(index(), { optional: true }),
+}, { nullable: true });
+
+/** Ansicht eines Blatts in `gridView[<Blatt-id>]`: Spaltenbreiten, Auswahl. */
+export const GRID_VIEW_SHAPE = Object.freeze({
+  colWidths: map(text(), number({ exclusiveMin: 0 })),
+  selection: selectionSpec,
 });
 
 /**

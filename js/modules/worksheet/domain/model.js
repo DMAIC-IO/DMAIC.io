@@ -21,23 +21,14 @@ import { uid } from '../../../core/uid.js';
 import { inferRole } from '../../../core/datagrid/datagrid-roles.js';
 import { from0 } from './migrations.js';
 import { fitsType } from './columns.js';
-import { SHEET_SHAPE, FALLBACK_SHEET_NAME, newSheetState } from './sheet.js';
+import { SHEET_SHAPE, GRID_VIEW_SHAPE, FALLBACK_SHEET_NAME, newSheetState } from './sheet.js';
 import { cellCommands } from './commands-cells.js';
 import { structureCommands } from './commands-structure.js';
 import { sheetCommands } from './commands-sheets.js';
 
 export { START_COLUMN_COUNT, newSheetState } from './sheet.js';
 
-const index = () => number({ integer: true, min: 0 });
-
 const sheetSpec = object(SHEET_SHAPE);
-
-/** Auswahl des Rasters; `extraCols`: Strg+Klick-Spalten (Ruling R7). */
-const selectionSpec = object({
-  startCol: index(), startRow: index(), endCol: index(), endRow: index(),
-  activeCol: index(), activeRow: index(),
-  extraCols: list(index(), { optional: true }),
-}, { nullable: true });
 
 /**
  * Jede Zelle eines Blatts, die nicht zum Typ passt und keine Formelzelle ist.
@@ -111,7 +102,7 @@ export class WorksheetModel extends defineModel({
   },
   view: {
     activeSheetId: text({ default: 'sheet_1' }),
-    gridView: map(text(), object({ colWidths: map(text(), number({ exclusiveMin: 0 })), selection: selectionSpec })),
+    gridView: map(text(), object(GRID_VIEW_SHAPE)),
   },
   // Kommandos aus `commands-*.js`: Zellen und Formeln, Struktur, Blätter.
   commands: { ...cellCommands, ...structureCommands, ...sheetCommands },

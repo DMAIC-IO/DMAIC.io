@@ -10,14 +10,19 @@
  *
  * Umkehrungen, nur für den Verlauf (`@noagent`, Parameter mit
  * `agentWrite: false`):
- * - `restoreSheet({ index, sheet, sheetCounter, activeSheetId })` setzt ein
- *   Blatt wieder ein. Es trägt das Blatt als JSON, eine Kopie je Löschen.
- * - `dropSheet({ id, sheetCounter, activeSheetId })` nimmt ein angelegtes
- *   Blatt wieder heraus (Umkehrung von Anlegen, Kopieren, Einfügen und
- *   `restoreSheet`).
+ * - `restoreSheet({ index, sheet, activeSheetId, view? })` setzt ein Blatt
+ *   wieder ein, samt seiner Ansicht (`gridView`). Es trägt das Blatt als
+ *   JSON, eine Kopie je Löschen.
+ * - `dropSheet({ id, activeSheetId })` nimmt ein angelegtes Blatt wieder
+ *   heraus (Umkehrung von Anlegen, Kopieren, Einfügen und `restoreSheet`).
  * - `restoreSheetName({ id, name })` setzt einen Namen wörtlich, auch leer.
- * Beide Blatt-Umkehrungen tragen `sheetCounter` und `activeSheetId` des
- * Stands davor, damit Rückgängig ihn genau herstellt.
+ * Beide Blatt-Umkehrungen tragen `activeSheetId` des Stands davor. Entfernen
+ * nimmt auch `gridView[id]` mit.
+ *
+ * `sheetCounter` steigt nur, kein Kommando und keine Umkehrung senkt ihn
+ * (Ruling R12): eine Blatt-id wird nie zweimal vergeben, alte Bezüge
+ * (`{ instanceId, sheetId }`, ids eines Agenten, `gridView`) treffen nie ein
+ * neues Blatt.
  *
  * Die Vorgabenamen („Sheet 3“, „<Name> (Copy)“) sind unübersetzt; das
  * Viewmodel übergibt den übersetzten Namen über `name`.
@@ -28,7 +33,7 @@ import { command, text, number, object, recordInverse, markTableChanged } from '
 import { requireIndex, requireForm } from '../../../core/validate.js';
 import { TableData } from '../../../core/table-data.js';
 import { sheetOf } from './commands-cells.js';
-import { SHEET_SHAPE, FALLBACK_SHEET_NAME, FALLBACK_COPY_WORD, newSheetState } from './sheet.js';
+import { SHEET_SHAPE, GRID_VIEW_SHAPE, FALLBACK_SHEET_NAME, FALLBACK_COPY_WORD, newSheetState } from './sheet.js';
 
 const hidden = { agentWrite: false };
 
@@ -65,34 +70,55 @@ function nextSheetId(model) {
 }
 
 /**
- * Ein neues Blatt an `at` einsetzen, aktiv machen, Zähler setzen; Umkehrung
- * `dropSheet` mit dem Stand davor.
+ * Ein Name, den der Aufrufer angibt: getrimmt; leer oder nur Leerzeichen ist
+ * ein Fehler (wie `renameSheet`). Ohne Angabe die Vorgabe.
+ * @param {string|undefined} name @param {string} id id des Blatts (für die Meldung)
+ * @param {string} fallback
+ * @returns {string}
+ */
+function sheetName(name, id, fallback) {
+  if (name === undefined) return fallback;
+  const trimmed = name.trim();
+  if (trimmed === '') {
+    throw new Error(`empty sheet name for id "${id}"; a sheet name must contain a non-space character`);
+  }
+  return trimmed;
+}
+
+/**
+ * Ein neues Blatt an `at` einsetzen, aktiv machen; der Zähler steigt
+ * höchstens (R12). Umkehrung `dropSheet` mit dem aktiven Blatt davor.
  * @param {any} model @param {number} at @param {any} sheet @param {number} counter
  * @returns {string} id des Blatts
  */
 function insertSheet(model, at, sheet, counter) {
-  recordInverse(model, { type: 'dropSheet', id: sheet.id, sheetCounter: model.sheetCounter, activeSheetId: model.activeSheetId });
+  recordInverse(model, { type: 'dropSheet', id: sheet.id, activeSheetId: model.activeSheetId });
   model.sheets.splice(at, 0, sheet);
-  model.sheetCounter = counter;
+  model.sheetCounter = Math.max(model.sheetCounter, counter);
   model.activeSheetId = sheet.id;
   markTableChanged(model, sheet.data);
   return sheet.id;
 }
 
 /**
- * Ein Blatt herausnehmen; Umkehrung `restoreSheet` mit dem Blatt als JSON
- * und dem Stand davor.
+ * Ein Blatt samt `gridView[id]` herausnehmen; Umkehrung `restoreSheet` mit
+ * dem Blatt als JSON, seiner Ansicht und dem aktiven Blatt davor. Der Zähler
+ * bleibt.
  * @param {any} model @param {any} sheet @param {string} activeSheetId aktives Blatt danach
- * @param {number} sheetCounter Zähler danach
  */
-function takeSheet(model, sheet, activeSheetId, sheetCounter) {
+function takeSheet(model, sheet, activeSheetId) {
   const index = model.sheets.indexOf(sheet);
+  const views = model.gridView;
+  const hasView = Object.hasOwn(views, sheet.id);
   recordInverse(model, {
-    type: 'restoreSheet', index, sheet: sheetJSON(sheet),
-    sheetCounter: model.sheetCounter, activeSheetId: model.activeSheetId,
+    type: 'restoreSheet', index, sheet: sheetJSON(sheet), activeSheetId: model.activeSheetId,
+    ...(hasView ? { view: JSON.parse(JSON.stringify(views[sheet.id])) } : {}),
   });
   model.sheets.splice(index, 1);
-  model.sheetCounter = sheetCounter;
+  if (hasView) {
+    const { [sheet.id]: _gone, ...rest } = views;
+    model.gridView = rest;
+  }
   model.activeSheetId = activeSheetId;
   markTableChanged(model, sheet.data);
 }
@@ -118,7 +144,7 @@ export const sheetCommands = {
     returns: text(),
     run({ name } = {}) {
       const { id, n } = nextSheetId(this);
-      return insertSheet(this, this.sheets.length, newSheetState(name || `${FALLBACK_SHEET_NAME} ${n}`, id), n);
+      return insertSheet(this, this.sheets.length, newSheetState(sheetName(name, id, `${FALLBACK_SHEET_NAME} ${n}`), id), n);
     },
   }),
 
@@ -157,7 +183,7 @@ export const sheetCommands = {
       const copy = {
         ...json,
         id: copyId,
-        name: name || `${src.name} (${FALLBACK_COPY_WORD})`,
+        name: sheetName(name, copyId, `${src.name} (${FALLBACK_COPY_WORD})`),
         data: TableData.fromJSON(json.data),
       };
       return insertSheet(this, this.sheets.length, copy, n);
@@ -176,7 +202,7 @@ export const sheetCommands = {
       const anchor = sheetOf(this, id);
       const at = this.sheets.indexOf(anchor);
       const { id: newId, n } = nextSheetId(this);
-      return insertSheet(this, at, newSheetState(name || `${FALLBACK_SHEET_NAME} ${n}`, newId), n);
+      return insertSheet(this, at, newSheetState(sheetName(name, newId, `${FALLBACK_SHEET_NAME} ${n}`), newId), n);
     },
   }),
 
@@ -195,49 +221,50 @@ export const sheetCommands = {
       const at = this.sheets.indexOf(sheet);
       const rest = this.sheets.filter((/** @type {any} */ s) => s !== sheet);
       const active = this.activeSheetId === id ? rest[Math.min(at, rest.length - 1)].id : this.activeSheetId;
-      takeSheet(this, sheet, active, this.sheetCounter);
+      takeSheet(this, sheet, active);
     },
   }),
 
   /**
    * @noagent Nur Umkehrung: setzt ein entferntes Blatt (JSON) an `index`
-   * wieder ein, mit Zähler und aktivem Blatt des Stands davor.
+   * wieder ein, mit seiner Ansicht und dem aktiven Blatt des Stands davor.
+   * Der Zähler sinkt nicht.
    */
   restoreSheet: command({
     params: {
       index: number({ integer: true, min: 0, ...hidden }),
       sheet: object(SHEET_SHAPE, hidden),
-      sheetCounter: number({ integer: true, min: 0, ...hidden }),
       activeSheetId: text(hidden),
+      view: object(GRID_VIEW_SHAPE, { optional: true, ...hidden }),
     },
-    run({ index, sheet, sheetCounter, activeSheetId }) {
+    run({ index, sheet, activeSheetId, view }) {
       const ids = this.sheets.map((/** @type {{ id: string }} */ s) => s.id);
       requireIndex('index', index, ids.length);
       requireForm('sheet.id', sheet.id, !ids.includes(sheet.id), 'an id no sheet has');
       requireActive(activeSheetId, [...ids, sheet.id]);
       requireForm('sheet.data', `[${sheet.data.columns.length} columns]`,
         sheet.data.columns.length === sheet.columns.length, `${sheet.columns.length} columns`);
-      insertSheet(this, index, sheet, sheetCounter);
+      insertSheet(this, index, sheet, this.sheetCounter);
+      if (view !== undefined) this.gridView = { ...this.gridView, [sheet.id]: view };
       this.activeSheetId = activeSheetId;
     },
   }),
 
   /**
-   * @noagent Nur Umkehrung: nimmt ein angelegtes Blatt wieder heraus, mit
-   * Zähler und aktivem Blatt des Stands davor.
+   * @noagent Nur Umkehrung: nimmt ein angelegtes Blatt samt Ansicht wieder
+   * heraus, mit dem aktiven Blatt des Stands davor. Der Zähler sinkt nicht.
    */
   dropSheet: command({
     params: {
       id: text(hidden),
-      sheetCounter: number({ integer: true, min: 0, ...hidden }),
       activeSheetId: text(hidden),
     },
-    run({ id, sheetCounter, activeSheetId }) {
+    run({ id, activeSheetId }) {
       const sheet = sheetOf(this, id);
       const rest = this.sheets.filter((/** @type {any} */ s) => s !== sheet).map((/** @type {any} */ s) => s.id);
       requireForm('id', id, rest.length > 0, 'a sheet that is not the last one');
       requireActive(activeSheetId, rest);
-      takeSheet(this, sheet, activeSheetId, sheetCounter);
+      takeSheet(this, sheet, activeSheetId);
     },
   }),
 

@@ -1,7 +1,8 @@
 /**
  * Arbeitsblatt (Zielform): Kommandos für Blätter mit Umkehrung
  * (`domain/commands-sheets.js`). Jedes Kommando → seine Umkehrung ergibt den
- * Ausgangsstand (`toJSON` gleich, auch `sheetCounter` und `activeSheetId`),
+ * Ausgangsstand (`toJSON` gleich, auch `activeSheetId`; `sheetCounter` steigt
+ * nur, Ruling R12: eine Blatt-id wird nie zweimal vergeben),
  * die Wiederholung den Stand danach. Die Ablehnungen sind die der heutigen
  * Agentenaktionen (`worksheet.js`, E2E `worksheet.spec.js`), wörtlich; eine
  * unbekannte Blatt-id meldet `unknown_sheet: <id>` (Global Constraints).
@@ -45,7 +46,8 @@ function setup({ activeSheetId = 's1', single = false } = {}) {
   setHistoryMode(m, 'inverse');
   const seen = { inverses: null };
   setCommandObserver(m, (_name, _args, _result, inv) => { if (inv) seen.inverses = inv; });
-  return { m, seen, json: () => canon(m.toJSON()) };
+  // Ohne `sheetCounter`: der Zähler sinkt nie (R12), Tests prüfen ihn einzeln.
+  return { m, seen, json: () => canon({ ...m.toJSON(), sheetCounter: undefined }) };
 }
 
 /** JSON mit sortierten Objektschlüsseln. */
@@ -118,10 +120,34 @@ suite('worksheet: addSheet', () => {
     assertEqual(m.sheetCounter, 4);
   });
 
-  test('Rückgängig nach addSheet: Zähler und aktives Blatt wie vorher', () => {
+  test('Rückgängig nach addSheet: aktives Blatt wie vorher, der Zähler sinkt nicht', () => {
     const w = setup({ activeSheetId: 's2' });
-    roundTrip(w, { type: 'addSheet' });
-    assertEqual(w.m.activeSheetId, 'sheet_3');
+    w.seen.inverses = null;
+    w.m.addSheet();
+    const undo = w.seen.inverses;
+    collectInverses(w.m, () => { for (const c of [...undo].reverse()) w.m.execute(c); });
+    assertDeepEqual(sheetIds(w), ['s1', 's2']);
+    assertEqual(w.m.activeSheetId, 's2');
+    assertEqual(w.m.sheetCounter, 3);
+  });
+
+  test('add → Rückgängig → add vergibt sheet_4, keine id zweimal', () => {
+    const w = setup();
+    w.seen.inverses = null;
+    assertEqual(w.m.addSheet(), 'sheet_3');
+    const undo = w.seen.inverses;
+    collectInverses(w.m, () => { for (const c of [...undo].reverse()) w.m.execute(c); });
+    assertEqual(w.m.addSheet(), 'sheet_4');
+  });
+
+  test('Name aus Leerzeichen wird abgelehnt, ein Name getrimmt', () => {
+    const w = setup();
+    rejects(w, () => w.m.addSheet({ name: '   ' }),
+      'empty sheet name for id "sheet_3"; a sheet name must contain a non-space character');
+    rejects(w, () => w.m.insertSheetBefore({ id: 's1', name: ' ' }), 'empty sheet name for id "sheet_3"');
+    rejects(w, () => w.m.duplicateSheet({ id: 's1', name: '\t' }), 'empty sheet name for id "sheet_3"');
+    const id = w.m.addSheet({ name: '  Neu  ' });
+    assertEqual(byId(w, id).name, 'Neu');
   });
 });
 
@@ -264,6 +290,39 @@ suite('worksheet: removeSheet', () => {
     assert(restore.sheet.data.columns[0] !== live.columns[0], 'Kopie der Spalte');
   });
 
+  test('entfernt gridView des Blatts; Umkehrung stellt es her', () => {
+    const w = setup();
+    const view = { colWidths: { i0: 120 }, selection: null };
+    w.m.gridView = { s2: view, s1: { colWidths: {}, selection: null } };
+    const { undo } = roundTrip(w, { type: 'removeSheet', id: 's2' });
+    assertEqual('s2' in w.m.gridView, false);
+    assertDeepEqual(undo[0].view, view);
+    const v = setup();
+    v.m.removeSheet({ id: 's2' });
+    assertEqual('view' in v.seen.inverses[0], false, 'ohne Ansicht keine');
+  });
+
+  test('Rückgängig nach addSheet entfernt die Ansicht des Blatts', () => {
+    const w = setup();
+    w.seen.inverses = null;
+    const id = w.m.addSheet();
+    const undo = w.seen.inverses;
+    w.m.gridView = { [id]: { colWidths: {}, selection: null } };
+    collectInverses(w.m, () => { for (const c of [...undo].reverse()) w.m.execute(c); });
+    assertEqual(id in w.m.gridView, false);
+  });
+
+  test('Rückgängig senkt den Zähler nicht (restoreSheet)', () => {
+    const w = setup();
+    w.m.addSheet();
+    w.seen.inverses = null;
+    w.m.removeSheet({ id: 'sheet_3' });
+    const undo = w.seen.inverses;
+    collectInverses(w.m, () => { for (const c of [...undo].reverse()) w.m.execute(c); });
+    assertEqual(w.m.sheetCounter, 3);
+    assertEqual(w.m.addSheet(), 'sheet_4');
+  });
+
   test('das letzte Blatt: wörtliche Ablehnung', () => {
     const w = setup({ single: true });
     rejects(w, () => w.m.removeSheet({ id: 's1' }),
@@ -287,9 +346,9 @@ suite('worksheet: restoreSheet (nur Umkehrung)', () => {
   test('lehnt eine vergebene id und eine falsche Stelle ab', () => {
     const w = setup();
     const sheet = w.m.toJSON().sheets[1];
-    rejects(w, () => w.m.restoreSheet({ index: 0, sheet, sheetCounter: 2, activeSheetId: 's1' }), 'sheet.id');
+    rejects(w, () => w.m.restoreSheet({ index: 0, sheet, activeSheetId: 's1' }), 'sheet.id');
     const other = { ...sheet, id: 'neu' };
-    rejects(w, () => w.m.restoreSheet({ index: 5, sheet: other, sheetCounter: 2, activeSheetId: 's1' }), 'index');
+    rejects(w, () => w.m.restoreSheet({ index: 5, sheet: other, activeSheetId: 's1' }), 'index');
   });
 
   test('Agentenfläche: Blattkommandos ja, Umkehr-Kommandos nein', () => {
