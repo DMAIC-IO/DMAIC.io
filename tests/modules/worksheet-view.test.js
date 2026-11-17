@@ -361,6 +361,27 @@ suite('worksheet: Viewmodel der Zielform im Browser', () => {
     assertEqual(h.vm().canRedo, false, 'redo legt selbst keinen Schritt an');
   });
 
+  // Ersatz für „joins an open history group“ der Altform: eine offene
+  // Verlaufsgruppe (agent-host historyBegin/End um einen Stapel) nimmt eine
+  // Zelleingabe und Spaltenschreiben als EINEN Schritt auf.
+  test('offene Verlaufsgruppe: Zellwert und neue Spalten sind ein Undo-Schritt', async () => {
+    const h = await mount(twoSheets());
+    const sheet = h.vm().model.sheets[0];
+    const cols = sheet.columns.length;
+    h.inst.historyBegin();
+    h.vm().model.setCells({ sheetId: sheet.id, columnId: sheet.columns[1].id, startRow: 0, values: [5] });
+    h.vm().model.writeColumns({ sheetId: sheet.id, columns: [{ to: 'append', name: 'A', values: [1] }] });
+    h.vm().model.writeColumns({ sheetId: sheet.id, columns: [{ to: 'append', name: 'B', values: [2] }] });
+    h.inst.historyEnd();
+    await settle();
+    assertEqual(h.vm().model.sheets[0].columns.length, cols + 2);
+    assertEqual(h.vm().undo({}), true);
+    await settle();
+    assertEqual(h.vm().model.sheets[0].columns.length, cols, 'Spalten zurück');
+    assertEqual(h.vm().model.sheets[0].data.columns[1][0], null, 'Zellwert zurück');
+    assertEqual(h.vm().canUndo, false, 'genau ein Schritt');
+  });
+
   test('undo/redo ohne Schritt senden kein worksheet:dataChanged, mit Schritt genau eines', async () => {
     const h = await mount(twoSheets());
     await frame();
