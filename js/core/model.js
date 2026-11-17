@@ -895,14 +895,27 @@ function brokenInvariant(model, invariants, names) {
 }
 
 /**
+ * Die Namen der Invarianten, die beim Schreiben gelten (ohne `onLoad`).
+ * @param {Record<string, { onLoad?: boolean }>|undefined} invariants @returns {string[]}
+ */
+function liveInvariants(invariants) {
+  return invariants ? Object.keys(invariants).filter((n) => !invariants[n].onLoad) : [];
+}
+
+/**
  * `fn` mit ausgesetzten Invarianten ausführen und danach die betroffenen
  * prüfen; bei Verletzung die genannten Felder auf den Stand davor setzen.
- * @param {object} root das Model @param {() => any} fn @returns {any}
+ * Im Modus `inverse` (mit offenem Sammler `inv`) ohne Abzug: siehe
+ * `withInverseInvariants`. Invarianten mit `onLoad` gelten nur beim Laden.
+ * @param {object} root das Model @param {() => any} fn
+ * @param {object[]|null} [inv] Umkehrsammler des laufenden Kommandos @param {number} [inv0] seine Länge vor `fn`
+ * @returns {any}
  */
-function withInvariants(root, fn) {
+function withInvariants(root, fn, inv = null, inv0 = 0) {
   const invariants = schemaOf(root)?.invariants;
-  const names = invariants ? Object.keys(invariants) : [];
+  const names = liveInvariants(invariants);
   if (names.length === 0) return fn();
+  if (root._histMode === 'inverse' && Array.isArray(inv)) return withInverseInvariants(root, fn, invariants, names, inv, inv0);
   const watched = [...new Set(names.flatMap((n) => invariants[n].fields))];
   const before = Object.fromEntries(watched.map((f) => [f, copyValue(root._v[f])]));
   root._run = (root._run ?? 0) + 1;
@@ -926,6 +939,47 @@ function withInvariants(root, fn) {
 }
 
 /**
+ * Modus `inverse`: kein Abzug der Inhaltsfelder (eine `TableData` würde je
+ * Kommando kopiert). Nach `fn` werden alle Invarianten ohne `onLoad` geprüft;
+ * bei Verletzung laufen die in diesem Aufruf gesammelten Umkehrungen rückwärts
+ * (ohne Meldung, ohne Sammeln), die Ansichtsfelder (klein) bekommen ihren
+ * Stand von vorher, dann wird geworfen.
+ * @param {any} root @param {() => any} fn @param {Record<string, any>} invariants
+ * @param {string[]} names @param {object[]} inv @param {number} inv0
+ * @returns {any}
+ */
+function withInverseInvariants(root, fn, invariants, names, inv, inv0) {
+  const { view } = schemaOf(root);
+  const viewBefore = Object.fromEntries(Object.keys(view ?? {}).map((f) => [f, copyValue(root._v[f])]));
+  root._run = (root._run ?? 0) + 1;
+  let result;
+  try {
+    result = fn();
+  } finally {
+    root._run -= 1;
+  }
+  if (root._run > 0) return result;
+  const broken = brokenInvariant(root, invariants, names);
+  if (broken === null) return result;
+  const field = invariants[broken].fields[0];
+  const err = invariantError(field, root._v[field], broken);
+  const undo = inv.slice(inv0).reverse();
+  // Die Rückrollung ist kein Kommando des Nutzers: der Beobachter sieht sie nicht.
+  const observed = Object.hasOwn(root, '_obs');
+  const obs = root._obs;
+  if (observed) root._obs = null;
+  root._run += 1;
+  try {
+    collectInverses(root, () => { for (const cmd of undo) root.execute(cmd); });
+  } finally {
+    root._run -= 1;
+    if (observed) root._obs = obs;
+  }
+  for (const [f, v] of Object.entries(viewBefore)) root._v[f] = v;
+  throw err;
+}
+
+/**
  * `fn` ausführen, das in das Inhalts- oder Ansichtsfeld `rootField` schreibt (etwa ein
  * Eintragsfeld per `x-field`), und danach die Invarianten prüfen, die dieses Feld nennen.
  * Bei Verletzung wird der Wert des Feldes von vorher wiederhergestellt und `invariantError`
@@ -935,7 +989,7 @@ function withInvariants(root, fn) {
  */
 export function checkInvariantsAfter(model, rootField, fn) {
   const invariants = schemaOf(model)?.invariants;
-  const names = invariants ? Object.keys(invariants).filter((n) => invariants[n].fields.includes(rootField)) : [];
+  const names = liveInvariants(invariants).filter((n) => invariants[n].fields.includes(rootField));
   if (names.length === 0 || (model._run ?? 0) > 0) return fn();
   const before = copyValue(model._v[rootField]);
   let result;
@@ -981,7 +1035,7 @@ export function runCommand(name, def, self, root, cmd) {
         throw new Error(`command ${name}: run must be synchronous — use asyncTask`);
       }
       return r;
-    });
+    }, inv, inv0);
   } catch (err) {
     // Kommandos sind alles oder nichts: ein gescheitertes hat nichts geändert, seine Umkehrungen gelten nicht.
     if (inv) inv.length = inv0;
@@ -1101,7 +1155,7 @@ function writeAtomically(model, out) {
   }
   if (outer) return;
   const invariants = schemaOf(model)?.invariants ?? {};
-  const affected = Object.keys(invariants).filter((n) => invariants[n].fields.some((f) => written.includes(f)));
+  const affected = liveInvariants(invariants).filter((n) => invariants[n].fields.some((f) => written.includes(f)));
   const broken = brokenInvariant(model, invariants, affected);
   if (broken === null) return;
   const field = invariants[broken].fields.find((f) => written.includes(f));
@@ -1460,7 +1514,7 @@ export function readModel(Model, json, context) {
  * @param {{ fields?: Record<string, object>, view?: Record<string, object>,
  *           commands?: Record<string, object>, version?: string,
  *           migrations?: Record<string, Function>,
- *           invariants?: Record<string, { fields: string[], test: (m: any) => boolean, repair?: (m: any) => void }>,
+ *           invariants?: Record<string, { fields: string[], test: (m: any) => boolean, repair?: (m: any) => void, onLoad?: boolean }>,
  *           derived?: Record<string, (data: any, d: Record<string, any>) => any>, derivedBulk?: string[] }} schema
  *   `derived.<name>(data, d)`: fachliche Ableitung; `this` ist das Model, `data` die Arbeitsblattsicht, `d` liest andere
  *   Ableitungen. `derivedBulk`: Namen, die als Ganzes (nicht einzeln) abgefragt werden.
@@ -1471,6 +1525,8 @@ export function readModel(Model, json, context) {
  *   nennt, wird auch beim strengen Laden damit geheilt. Wirft der Test nach `repair`, gilt die Invariante als
  *   nicht geheilt. Invarianten, die Felder teilen: die spätere muss Vorgabewerte vertragen, denn ihr Rückfall
  *   setzt gemeinsame Felder zurück, ohne die frühere erneut zu prüfen.
+ *   `invariants.<name>.onLoad`: nur beim Laden prüfen (`fromJSON`), nicht beim Schreiben — für O(n)-Prüfungen über
+ *   große Tabellen; die Kommandos sichern die Regel dann selbst.
  * @returns {any} die Klasse (`new`, `fromJSON`, `schema`)
  */
 export function defineModel(schema) {
@@ -1511,11 +1567,14 @@ export function defineModel(schema) {
     if (names.length === 0) throw new Error(`defineModel: invariant ${name} needs fields`);
     for (const f of names) requireKnownId(`invariant ${name} field`, f, Object.keys(all));
     if (inv.repair !== undefined && typeof inv.repair !== 'function') throw new Error(`defineModel: invariant ${name} repair must be a function`);
-    return [name, Object.freeze({ fields: Object.freeze([...names]), test: inv.test, repair: inv.repair })];
+    if (inv.onLoad !== undefined && typeof inv.onLoad !== 'boolean') throw new Error(`defineModel: invariant ${name} onLoad must be a boolean`);
+    return [name, Object.freeze({ fields: Object.freeze([...names]), test: inv.test, repair: inv.repair, onLoad: inv.onLoad === true })];
   })));
   /** Feld → Namen der Invarianten, die es nennen. */
   const invariantsOf = {};
-  for (const [name, inv] of Object.entries(invariants)) for (const f of inv.fields) (invariantsOf[f] ??= []).push(name);
+  for (const [name, inv] of Object.entries(invariants)) {
+    if (!inv.onLoad) for (const f of inv.fields) (invariantsOf[f] ??= []).push(name);
+  }
 
   class Model {
     /** @param {ModelContext} [context] Kontext, aus dem die Vorgaben kommen (sonst der Vorgabe-Kontext) */

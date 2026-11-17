@@ -2,8 +2,9 @@
  * Tests for core/model.js — Kommandos, execute, Beobachter, setFields, replaceFields.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../test-utils.js';
+import { TableData } from '../../js/core/table-data.js';
 import {
-  defineModel, command, text, oneOf, index, boolean, record, list,
+  defineModel, command, text, number, oneOf, index, boolean, record, list,
   runCommand, setCommandObserver, setFields, replaceFields,
   recordInverse, setHistoryMode, collectInverses, table, markTableChanged,
 } from '../../js/core/model.js';
@@ -280,5 +281,92 @@ suite('Kommandos — Umkehrung (recordInverse)', () => {
     assertDeepEqual(m.vals, ['x', 'x']);
     assertDeepEqual(Object.keys(m), ['_v']);
     assertTrue(!('$contentWrites' in m.toJSON()));
+  });
+});
+
+let onLoadRuns = 0;
+const Guarded = defineModel({
+  fields: { grid: table() },
+  view: { mode: oneOf(['a', 'b']) },
+  commands: {
+    put: command({
+      params: { r: number({ integer: true, min: 0 }), v: number() },
+      run({ r, v }) {
+        const col = this.grid.columns[0];
+        recordInverse(this, { type: 'put', r, v: col[r] });
+        col[r] = v;
+        this.mode = 'b';
+        markTableChanged(this, this.grid);
+      },
+    }),
+  },
+  invariants: {
+    nonNegative: { fields: ['grid'], test(m) { return m.grid.columns.every(c => c.every(v => v === null || v >= 0)); } },
+    loadOnly: { fields: ['grid'], onLoad: true, test(m) { onLoadRuns++; return m.grid.columns.every(c => c.every(v => v !== 99)); } },
+  },
+});
+const guarded = () => {
+  const m = Guarded.fromJSON({ grid: { rowCount: 2, columns: [[1, 2]] } });
+  setHistoryMode(m, 'inverse');
+  return m;
+};
+
+suite('Invarianten im Modus inverse (R9)', () => {
+  test('ein Kommando kopiert und serialisiert die Tabelle nicht', () => {
+    const m = guarded();
+    let copies = 0;
+    let jsons = 0;
+    Object.defineProperty(m.grid.columns, 'map', { value(...a) { copies++; return Array.prototype.map.apply(this, a); }, configurable: true });
+    const toJSON = TableData.prototype.toJSON;
+    TableData.prototype.toJSON = function spy() { jsons++; return toJSON.call(this); };
+    try {
+      m.put({ r: 0, v: 5 });
+    } finally {
+      TableData.prototype.toJSON = toJSON;
+    }
+    assertEqual(m.grid.columns[0][0], 5);
+    assertEqual(copies, 0, 'copyValue');
+    assertEqual(jsons, 0, 'toJSON');
+  });
+
+  test('Verstoß: Umkehrungen laufen rückwärts, Ansicht steht wie vorher, dann Wurf', () => {
+    const m = guarded();
+    const seen = [];
+    setCommandObserver(m, (cmd, args, result, inverses) => seen.push({ cmd, inverses }));
+    assertThrows(() => m.put({ r: 1, v: -1 }), /grid/);
+    assertDeepEqual(m.grid.columns[0], [1, 2]);
+    assertEqual(m.mode, 'a');
+    assertDeepEqual(seen, [], 'weder das Kommando noch die Rückrollung wird gemeldet');
+    const got = collectInverses(m, () => m.put({ r: 0, v: 7 }));
+    assertDeepEqual(got, [{ type: 'put', r: 0, v: 1 }], 'der Sammler enthält nichts aus der Rückrollung');
+  });
+
+  test('geschachtelt im offenen Sammler: Verstoß rollt nur diesen Aufruf zurück', () => {
+    const m = guarded();
+    const got = [];
+    assertThrows(() => collectInverses(m, () => { m.put({ r: 0, v: 3 }); m.put({ r: 1, v: -5 }); }, got), /grid/);
+    assertDeepEqual(m.grid.columns[0], [3, 2]);
+    assertDeepEqual(got, [{ type: 'put', r: 0, v: 1 }]);
+  });
+
+  test('onLoad-Invariante läuft beim Laden, nicht je Kommando oder Setzen', () => {
+    onLoadRuns = 0;
+    assertThrows(() => Guarded.fromJSON({ grid: { rowCount: 1, columns: [[99]] } }), /grid/);
+    assertTrue(onLoadRuns > 0);
+    const m = guarded();
+    onLoadRuns = 0;
+    m.put({ r: 0, v: 99 });
+    assertEqual(onLoadRuns, 0);
+    const plain = Guarded.fromJSON({ grid: { rowCount: 1, columns: [[1]] } });
+    onLoadRuns = 0;
+    plain.put({ r: 0, v: 99 });
+    plain.grid = { rowCount: 1, columns: [[99]] };
+    assertEqual(onLoadRuns, 0, 'auch im Abzugsmodus und beim Setzen nicht');
+  });
+
+  test('Abzugsmodus bleibt: Verstoß stellt den Stand wieder her', () => {
+    const m = Guarded.fromJSON({ grid: { rowCount: 2, columns: [[1, 2]] } });
+    assertThrows(() => m.put({ r: 1, v: -1 }), /grid/);
+    assertDeepEqual(m.grid.columns[0], [1, 2]);
   });
 });
