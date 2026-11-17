@@ -634,6 +634,48 @@ Fehlercodes und dieselbe Kette wie `interact()` des Agenten; Unterschiede:
   `worksheet`, nur für die eigene Phase des Aufrufers und nur auf diesem
   Modulweg; ein Agent von außen bekommt dafür weiter `unknown_phase`.
 
+**Kerndienste** (etwa die ZEG-Synchronisation) schicken ihre Stapel über
+`workspace.interactAsKernel(stapel, quelle)`: derselbe Weg wie ein Modul, mit
+`quelle` als `moduleId` des Aufrufers und ohne Aufrufer-Instanz (`module.add`
+eines Arbeitsblatts geht damit nur in die Datenphase). Der Stapel reiht sich in
+dieselbe serialisierte Kette ein: er wartet hinter einem laufenden Agenten-
+oder Modulstapel, und diese warten hinter ihm. Solange die Fläche nicht
+verdrahtet ist, antwortet der Aufruf `{ ok: false, error: 'surface_failed' }`.
+
+#### Synchrones Lesen: `ctx.instances.readSync`
+
+`ctx.instances.readSync(instanceId, options)` liefert dieselbe Form wie
+`read`, aber synchron — für `derived`, Getter und `computed`, die nicht warten
+können. Signal zum Neulesen ist der Broadcast `worksheet:dataChanged`.
+`readSync` lädt nichts nach, wartet auf keinen Mount und schreibt nie zurück
+(außer bei der einmaligen Migration einer Zielform-Instanz, nie im
+abgeschlossenen Projekt). Ein Altmodul mit Haken `readStored` (das
+Arbeitsblatt) liest immer den gespeicherten Stand, auch eingehängt — kein
+Flush einer offenen Zelleingabe. Fehlercodes (`err.code`):
+
+| Code | Bedeutung |
+|---|---|
+| `unknown_instance` | die Id steht in keiner Phase des Projekts |
+| `not_loaded` | der Code des Moduls ist (noch) nicht geladen — „weiß ich nicht", nicht „gibt es nicht" |
+| `needs_mount` | ein Altmodul ohne `readStored`, das nur eingehängt lesen kann |
+| `async_read` | das eingehängte Viewmodel liest nur asynchron |
+
+Die Arbeitsblatt-Fassade (`ctx.data`, `resolveColumnRef`, `discoverColumns`,
+`readWorksheet` in `core/worksheet-columns.js`) liest über `readSync` und
+macht aus **jedem** Fehler `null` bzw. `[]`. Das Vorladen
+(`js/startup/worksheet-preload.js`, gestartet in `app.js` vor dem ersten
+Mount) lädt den Arbeitsblatt-Code und meldet danach je Instanz
+`worksheet:dataChanged` mit `reason: 'preload'` (Daten unverändert, nur jetzt
+lesbar). **Bereitschaft:** `worksheetReadable(stateManager, instanceId)` ist
+`false` genau dann, wenn `readSync` `not_loaded` meldet;
+`worksheetsReadable(stateManager)` prüft alle Arbeitsblätter des Projekts
+(ohne Arbeitsblatt `true`). Wer aus einem leeren Ergebnis der Fassade
+**schreibt** — eine gespeicherte Spaltenauswahl verwerfen, ein Datenblatt neu
+anlegen statt ersetzen —, fragt vorher dort: `ColumnPicker.refresh` zeichnet
+im Vorladefenster nur und verwirft nichts; `commitWorksheetWrite` lädt vor dem
+Anlegen eines Worksheets nicht lesbare Arbeitsblätter über `instances.read`,
+damit `uniqueSheetName` alle Blattnamen sieht.
+
 ### Lesen vor Schreiben
 
 Die Fläche führt, nur im Speicher, je Instanz und für die Projektstruktur

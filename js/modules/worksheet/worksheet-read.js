@@ -50,10 +50,12 @@ function headerOf(c) {
  * Einträge, fehlende (auch Lücken) als `null`. `slice` statt `Array.from`
  * mit Rückruf: bei 100 000 Zeilen der größte Posten eines Lesens mit `columns`.
  * @param {any[]|undefined} src
- * @param {number} n
+ * @param {number} rowCount
  * @returns {any[]}
  */
-function valuesOf(src, n) {
+function valuesOf(src, rowCount) {
+  // Wie `Array.from({ length })`: keine Zahl, negativ oder NaN ergibt 0.
+  const n = rowCount > 0 ? Math.floor(rowCount) : 0;
   if (!Array.isArray(src)) return new Array(n).fill(null);
   const out = src.length >= n ? src.slice(0, n) : src.slice();
   out.length = n;
