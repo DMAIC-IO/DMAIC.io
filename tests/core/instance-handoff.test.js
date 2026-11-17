@@ -3,7 +3,7 @@
  * der Phase der aufrufenden Instanz anlegen.
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
-import { openInstance, findOwnPhase, openOrActivateInstance } from '../../js/core/instance-handoff.js';
+import { openInstance, findOwnPhase, openOrActivateInstance, revealInstance } from '../../js/core/instance-handoff.js';
 
 /** StateManager- und EventBus-Attrappe, die Schreibzugriffe mitschreibt. */
 function fakes(initial) {
@@ -93,5 +93,21 @@ suite('instance-handoff: openOrActivateInstance (Übergabe an chart-suggestion)'
     const h = services([{ instanceId: 'ws', moduleId: 'worksheet', order: 0 }, { instanceId: 'cs', moduleId: 'chart-suggestion', order: 1 }]);
     openOrActivateInstance(h.services, { moduleId: 'chart-suggestion', state: { a: 1 } });
     assertDeepEqual(h.events, [['module:activated', { instanceId: 'cs' }]]);
+  });
+});
+
+suite('instance-handoff: revealInstance (Senden durch den Nutzer holt das Ziel nach vorn)', () => {
+  test('bekannte Instanz: module:activated, Ergebnis true', () => {
+    const { sm, bus, log } = fakes({ phases: { measure: [{ instanceId: 'me', moduleId: 'random-generator' }, { instanceId: 'ws', moduleId: 'worksheet' }] } });
+    assertEqual(revealInstance({ stateManager: sm, eventBus: bus }, 'ws'), true);
+    assertDeepEqual(log.emits, [['module:activated', { instanceId: 'ws' }]]);
+  });
+
+  test('unbekannte oder fehlende Instanz: kein Ereignis, Ergebnis false', () => {
+    const { sm, bus, log } = fakes({ phases: { measure: [{ instanceId: 'me', moduleId: 'random-generator' }] } });
+    assertEqual(revealInstance({ stateManager: sm, eventBus: bus }, 'gone'), false);
+    assertEqual(revealInstance({ stateManager: sm, eventBus: bus }, null), false);
+    assertEqual(revealInstance({ stateManager: sm, eventBus: bus }, undefined), false);
+    assertDeepEqual(log.emits, []);
   });
 });

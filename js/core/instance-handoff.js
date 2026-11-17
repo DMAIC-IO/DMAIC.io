@@ -4,7 +4,9 @@
  * Ein Werkzeug legt in der eigenen Phase eine Instanz eines anderen Moduls
  * an, schreibt deren Anfangszustand und meldet `module:added`
  * (`openInstance`) — oder übergibt einer dort schon vorhandenen Instanz den
- * Zustand und aktiviert sie (`openOrActivateInstance`).
+ * Zustand und aktiviert sie (`openOrActivateInstance`). `revealInstance`
+ * holt eine bestehende Instanz nach vorn, etwa das Arbeitsblatt, an das der
+ * Nutzer eben gesendet hat.
  *
  * Rein: kein DOM, kein `window`.
  */
@@ -72,4 +74,23 @@ export function openOrActivateInstance(services, { moduleId, state, loadEvent })
   const { instanceId } = openInstance(services, { moduleId, state });
   load(instanceId);
   return instanceId;
+}
+
+/**
+ * Eine bestehende Instanz nach vorn holen (`module:activated`): die
+ * Workspace wechselt in ihre Phase und auf ihren Reiter. Nur für Wege, die
+ * der Nutzer auslöst (ein Senden-Knopf); ein Stapel der Agentenfläche
+ * wechselt die Ansicht nicht.
+ * @param {{ stateManager: object, eventBus: object }} services `module._context` der aufrufenden Instanz
+ * @param {string|null|undefined} instanceId die Instanz, die nach vorn kommt
+ * @returns {boolean} ob die Instanz in einer Phase steht und gemeldet wurde
+ */
+export function revealInstance(services, instanceId) {
+  if (!instanceId) return false;
+  const sm = /** @type {any} */ (services.stateManager);
+  const known = Object.keys(sm.get('phases') || {})
+    .some((p) => (sm.get(`phases.${p}`) ?? []).some((/** @type {{ instanceId: string }} */ i) => i.instanceId === instanceId));
+  if (!known) return false;
+  /** @type {any} */ (services.eventBus).emit('module:activated', { instanceId });
+  return true;
 }

@@ -23,6 +23,7 @@
  */
 
 import { worksheetWrite, commitWorksheetWrite } from '../../core/worksheet-write.js';
+import { revealInstance } from '../../core/instance-handoff.js';
 import { toNum } from '../../core/chart/chart-data-prep.js';
 import { createModule } from '../../core/template-module.js';
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
@@ -578,7 +579,10 @@ const mod = createModule({
           return;
         }
         try {
-          await this.toWorksheet(v === ColumnPicker.NEW_WORKSHEET ? null : v);
+          const sent = await this.toWorksheet(v === ColumnPicker.NEW_WORKSHEET ? null : v);
+          // Der Nutzer will das Ergebnis sehen: das Arbeitsblatt nach vorn (R22).
+          // Der Agentenweg toWorksheet() wechselt die Ansicht nicht.
+          revealInstance(module._context, sent?.instanceId);
         } catch (err) {
           module._context.notify?.(err?.message ?? String(err), 'error');
         }
