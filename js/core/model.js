@@ -320,6 +320,54 @@ export function cloneJSON(v) {
 }
 
 /**
+ * Wie `cloneJSON`, aber eine `TableData` wird zu `{ rowCount, rev }` statt zur
+ * vollen Kopie: billig genug als Beobachtungswert (`createModule` speichert damit entprellt).
+ * @param {any} v @returns {any}
+ */
+export function cloneJSONWithoutTables(v) {
+  if (v instanceof TableData) return { rowCount: v.rowCount, rev: v.rev };
+  if (Array.isArray(v)) return v.map(cloneJSONWithoutTables);
+  if (v !== null && typeof v === 'object') {
+    const out = {};
+    for (const k of Object.keys(v)) out[k] = cloneJSONWithoutTables(v[k]);
+    return out;
+  }
+  return v;
+}
+
+/**
+ * Wie `model.toJSON()` ohne `_schema`, aber ohne Tabelleninhalt (siehe `cloneJSONWithoutTables`).
+ * Liest die Felder über das übergebene Model, damit Alpines Reaktivität sie verfolgt.
+ * @param {any} model @returns {Record<string, any>}
+ */
+export function jsonWithoutTables(model) {
+  const { fields, view } = schemaOf(model);
+  const out = {};
+  for (const k of [...Object.keys(fields), ...Object.keys(view ?? {})]) out[k] = cloneJSONWithoutTables(model[k]);
+  return out;
+}
+
+/**
+ * Enthält das Schema (rekursiv über `list`, `record`, `map`, `object`) ein `table()`-Feld?
+ * @param {{ fields?: Record<string, object>, view?: Record<string, object> }|null|undefined} schema
+ * @returns {boolean}
+ */
+export function schemaHasTable(schema) {
+  const walk = (s) => {
+    if (!s || typeof s !== 'object') return false;
+    switch (s.kind) {
+      case 'table': return true;
+      case 'list': return walk(s.item);
+      case 'record': return walk(s.value);
+      case 'map': return walk(s.key) || walk(s.value);
+      case 'object': return Object.values(s.shape ?? {}).some(walk);
+      default: return false;
+    }
+  };
+  return [...Object.values(schema?.fields ?? {}), ...Object.values(schema?.view ?? {})].some(walk);
+}
+
+/**
  * Wertkopie für Rückschreibpfade (Verlauf, Invarianten-Rückfall): wie `cloneJSON`,
  * aber eine `TableData` wird zu einer neuen `TableData` statt zur schlichten Form.
  * @param {any} v @returns {any}

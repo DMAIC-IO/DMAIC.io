@@ -210,6 +210,11 @@ export class Workspace {
     this._boundHistoryKey = (e) => this._onHistoryKey(e);
     document.addEventListener('keydown', this._boundHistoryKey);
 
+    // Entprellte Speicherung (Models mit table()) vor dem Schließen der Seite schreiben.
+    if (this._boundUnload) window.removeEventListener('beforeunload', this._boundUnload);
+    this._boundUnload = () => this._instances.forEach((instance) => { try { instance.flushPersist?.(); } catch { /* ignore */ } });
+    window.addEventListener('beforeunload', this._boundUnload);
+
     this._subscribeEvents();
     this._showPhase('define');
   }
@@ -686,6 +691,7 @@ export class Workspace {
     this._instances.forEach((instance, id) => {
       if (!live.has(id)) return;
       try {
+        instance.flushPersist?.();
         const state = instance.getState?.();
         if (!state) return;
         this._stateManager.setModuleState(id, state);

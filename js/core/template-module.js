@@ -4,7 +4,7 @@ import { getModuleHelp, hasModuleHelp } from './help-registry.js';
 import { getModuleReferences, hasModuleReferences } from './references-registry.js';
 import { initialModel, loadModel } from './initial-model.js';
 import { ModuleHistory } from './module-history.js';
-import { schemaOf, checkParams, setModelName, setCommandObserver, replaceFields, runCommand, cloneJSON, setModelContext, activeContext, setHistoryMode, collectInverses } from './model.js';
+import { schemaOf, checkParams, setModelName, setCommandObserver, replaceFields, runCommand, cloneJSON, setModelContext, activeContext, setHistoryMode, collectInverses, jsonWithoutTables, schemaHasTable } from './model.js';
 import { schemaAgentEntry, readSchemaModel } from './agent/agent-schema.js';
 import { attachGesture } from './interaction/attach.js';
 import { isGesture } from './interaction/define.js';
@@ -271,6 +271,8 @@ function executeCommand(vm, vmCommands, name, args) {
 /** Glieder, die createModule selbst setzt — kein view-Glied, computed, Feld, Kommando oder Task darf so heißen. */
 const RESERVED_MEMBERS = Object.freeze(['model', 'state', 't', 'fieldError', 'moduleId', 'read', 'cssVars', 'chartSVG', 'changeRoute', '_ui', '_asyncTasks', '_asyncTaskHost', 'asyncTasks']);
 /** Lebenszyklus des view-Blocks — als Name eines computed, Felds, Kommandos oder Tasks gesperrt. */
+/** Entprellung des Speicherns bei Models mit `table()` (ms). */
+const PERSIST_DEBOUNCE_MS = 150;
 const LIFECYCLE = Object.freeze(['init', 'destroy']);
 
 /**
@@ -426,6 +428,7 @@ export function createModule(base) {
     throw new Error(`createModule(${id}): history must be true or { mode?: 'inverse', depth?: integer >= 1 }`);
   }
   // Verlauf mit Umkehrung (P4): Schritte sind Umkehr-Kommandos statt Abzüge des Models.
+  const tableModel = schemaHasTable(schema);
   const inverseHistory = Boolean(history && history !== true && history.mode === 'inverse');
   if (inverseHistory && !schemaOf(Model)) throw new Error(`createModule(${id}): history mode inverse needs a defineModel Model`);
   if (history && config.manualPersist === true) throw new Error(`createModule(${id}): history cannot be combined with manualPersist (the history records through the automatic persist)`);
@@ -821,7 +824,17 @@ export function createModule(base) {
               // workbook deep-clone is expensive and already flushed by its own
               // debounced persister). Default/omitted ⇒ auto-watch registered
               // (current behaviour, unchanged for all other modules).
-              if (config.manualPersist !== true) {
+              if (config.manualPersist !== true && tableModel) {
+                // Models mit table(): toJSON() kopiert die Tabellen, das wäre je Änderung O(n).
+                // Beobachtet wird [$tableRev, Felder ohne Tabelleninhalt], gespeichert entprellt.
+                this.$watch(
+                  () => [this.model.$tableRev, jsonWithoutTables(this.model)],
+                  () => {
+                    module._schedulePersist();
+                    module._recordHistory(this.model);
+                  }
+                );
+              } else if (config.manualPersist !== true) {
                 this.$watch(
                   () => this.model.toJSON(),
                   () => {
@@ -880,6 +893,7 @@ export function createModule(base) {
     },
 
     async destroy() {
+      this.flushPersist();
       this._historyDetach?.();
       this._historyDetach = null;
       this._history = null;
@@ -1159,6 +1173,28 @@ export function createModule(base) {
       this._context.stateManager.setModuleState(this._context.instanceId, model.toJSON());
     },
 
+    /** Speichern in 150 ms (Models mit table()); weitere Änderungen davor verlängern nicht. */
+    _schedulePersist() {
+      if (this._applyingRemote || this._persistTimer) return;
+      this._persistTimer = setTimeout(() => { this._persistTimer = null; this._persistLive(); }, PERSIST_DEBOUNCE_MS);
+    },
+
+    /** Das lebende Model jetzt speichern (ohne Model: nichts). */
+    _persistLive() {
+      const model = this.getActionData?.()?.model;
+      if (model) this._persist(model);
+    },
+
+    /**
+     * Schreibt eine ausstehende, entprellte Speicherung sofort. Ohne ausstehende: nichts.
+     * @returns {void}
+     */
+    flushPersist() {
+      if (!this._persistTimer) return;
+      clearTimeout(this._persistTimer);
+      this._persistTimer = null;
+      this._persistLive();
+    },
   };
 
   if (typeof Model.prototype.hasContent === 'function') {

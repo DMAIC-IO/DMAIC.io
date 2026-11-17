@@ -337,6 +337,8 @@ export function createAgentHost({ stateManager, moduleRegistry, eventBus, router
       if (typeof viewmodel?._asyncTaskHost?.settle === 'function') {
         await viewmodel._asyncTaskHost.settle(SETTLE_TASKS_TIMEOUT_MS);
       }
+      // Entprellte Speicherung (Models mit table()) zuerst schreiben.
+      instance?.flushPersist?.();
       persistLive(instanceId, instance);
     },
   };
