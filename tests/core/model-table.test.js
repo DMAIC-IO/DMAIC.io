@@ -2,7 +2,7 @@
  * Tests for core/model.js — Feldart table().
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../test-utils.js';
-import { defineModel, list, object, text, number, command, table, describeType, setFields, markTableChanged, replaceFields, checkInvariantsAfter, cell, unchecked } from '../../js/core/model.js';
+import { defineModel, list, object, text, number, command, table, describeType, setFields, markTableChanged, replaceFields, checkInvariantsAfter, cell, unchecked, fromAttr } from '../../js/core/model.js';
 import { TableData } from '../../js/core/table-data.js';
 
 const M = defineModel({ fields: { sheets: list(object({ id: text(), data: table() })) } });
@@ -161,10 +161,15 @@ suite('cell() und unchecked()', () => {
     assertEqual(describeType(unchecked()), 'any');
   });
 
-  test('Vorgabe beider ist null', () => {
-    const F = defineModel({ fields: { c: cell(), u: unchecked() } });
-    const f = new F();
-    assertEqual(f.c, null);
-    assertEqual(f.u, null);
+  test('Vorgabe von cell() ist null', () => {
+    const F = defineModel({ fields: { c: cell() } });
+    assertEqual(new F().c, null);
+  });
+
+  test('unchecked() nur als Parameter: in fields/view (auch verschachtelt) wirft defineModel, fromAttr lehnt ab', () => {
+    assertThrows(() => defineModel({ fields: { u: unchecked() } }), /unchecked.*only.*command param/);
+    assertThrows(() => defineModel({ fields: { l: list(object({ u: unchecked() })) } }), /unchecked.*only.*command param/);
+    assertThrows(() => defineModel({ fields: {}, view: { u: unchecked() } }), /unchecked.*only.*command param/);
+    assertThrows(() => fromAttr(unchecked(), 'x'), /fromAttr: unchecked/);
   });
 });

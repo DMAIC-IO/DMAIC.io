@@ -187,7 +187,8 @@ export const cell = (opts) => spec('cell', {}, opts);
 
 /**
  * Ein Parameter, den das Kommando selbst prüft (eigene, festgeschriebene
- * Meldungen). Der Wert kommt unverändert an. `type`: Typtext für `describe`
+ * Meldungen). Der Wert kommt unverändert an. Nur für Kommandoparameter:
+ * in `fields`/`view` wirft `defineModel`, `fromAttr` lehnt ab. `type`: Typtext für `describe`
  * und die erzeugten Typen (Vorgabe `any`). Vorgabe `null`.
  * @param {{ type?: string } & object} [opts] @returns {Readonly<object>}
  */
@@ -360,6 +361,21 @@ export function jsonWithoutTables(model) {
   const out = {};
   for (const k of [...Object.keys(fields), ...Object.keys(view ?? {})]) out[k] = cloneJSONWithoutTables(model[k]);
   return out;
+}
+
+/**
+ * Enthält die Spec (rekursiv über `list`, `record`, `map`, `object`) die Feldart `kind`?
+ * @param {any} s @param {string} kind @returns {boolean}
+ */
+function containsKind(s, kind) {
+  if (!s || typeof s !== 'object') return false;
+  if (s.kind === kind) return true;
+  switch (s.kind) {
+    case 'list': return containsKind(s.item, kind);
+    case 'record': case 'map': return containsKind(s.value, kind);
+    case 'object': return Object.values(s.shape ?? {}).some((x) => containsKind(x, kind));
+    default: return false;
+  }
 }
 
 /**
@@ -1263,7 +1279,7 @@ export function defineState(fields) {
 
 // ─── Formulare und Attribute ────────────────────────────────
 
-const FROM_ATTR_FORBIDDEN = new Set(['object', 'list', 'record', 'map', 'columnRef', 'datasets', 'table']);
+const FROM_ATTR_FORBIDDEN = new Set(['object', 'list', 'record', 'map', 'columnRef', 'datasets', 'table', 'unchecked']);
 
 /**
  * Den Text eines `data-arg-*`-Attributs in den Wert seiner Feldart wandeln.
@@ -1566,6 +1582,9 @@ export function defineModel(schema) {
   }
   for (const name of Object.keys(commands)) {
     if (Object.hasOwn(fields, name) || Object.hasOwn(view, name)) throw new Error(`defineModel: ${name} is both a field and a command`);
+  }
+  for (const [name, s] of [...Object.entries(fields), ...Object.entries(view)]) {
+    if (containsKind(s, 'unchecked')) throw new Error(`defineModel: ${name} uses unchecked(); allowed only as a command param`);
   }
   const derived = Object.freeze({ ...(schema.derived ?? {}) });
   const derivedBulk = Object.freeze([...(schema.derivedBulk ?? [])]);

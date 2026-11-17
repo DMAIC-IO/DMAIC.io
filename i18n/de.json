@@ -1498,13 +1498,13 @@
           "params": {
             "sheetId": "Die id des Blatts, wie read().sheets[].id sie nennt.",
             "source": "Der Quellbereich { c0, r0, c1, r1 }: erste und letzte Spalte, erste und letzte Zeile, alle nullbasiert.",
-            "target": "Der ganze Zielbereich { c0, r0, c1, r1 } einschließlich der Quelle. Er verlängert die Quelle in genau eine Richtung (nach oben, unten, links oder rechts); ein anderer Bereich ist ein Fehler.",
+            "target": "Der ganze Zielbereich { c0, r0, c1, r1 } einschließlich der Quelle. Er verlängert die Quelle in genau eine Richtung (nach oben, unten, links oder rechts), nach unten höchstens 10000 Zeilen über die letzte Zeile hinaus; ein anderer Bereich ist ein Fehler.",
             "ctrl": "true kehrt die Art um wie Strg beim Ziehen: eine Reihe wird kopiert, eine einzelne Zahl hochgezählt. Ohne Angabe false.",
             "command": "Das Kommando als ein Objekt mit sheetId, source, target und ctrl."
           }
         },
         "clearRange": {
-          "help": "Leert Werte und Formeln eines Bereichs, wie Entf im Raster. Gesperrte Spalten bleiben unverändert. Liefert die Zahl geleerter Zellen.",
+          "help": "Leert Werte und Formeln eines Bereichs, wie Entf im Raster. Gesperrte Spalten bleiben unverändert. Liefert die Zahl der Zellen, die einen Wert oder eine Formel hatten.",
           "params": {
             "sheetId": "Die id des Blatts, wie read().sheets[].id sie nennt.",
             "c0": "Nullbasierte erste Spalte des Bereichs.",

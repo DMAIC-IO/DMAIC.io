@@ -1498,13 +1498,13 @@
           "params": {
             "sheetId": "The id of the sheet, as read().sheets[].id names it.",
             "source": "The source range { c0, r0, c1, r1 }: first and last column, first and last row, all zero-based.",
-            "target": "The whole target range { c0, r0, c1, r1 } including the source. It extends the source in exactly one direction (up, down, left or right); any other range is an error.",
+            "target": "The whole target range { c0, r0, c1, r1 } including the source. It extends the source in exactly one direction (up, down, left or right), downwards at most 10000 rows past the last row; any other range is an error.",
             "ctrl": "true reverses the kind like Ctrl while dragging: a series is copied, a single number counted on. Default false.",
             "command": "The command as one object with sheetId, source, target and ctrl."
           }
         },
         "clearRange": {
-          "help": "Clears values and formulas of a range, like Delete in the grid. Locked columns stay unchanged. Returns the number of cells cleared.",
+          "help": "Clears values and formulas of a range, like Delete in the grid. Locked columns stay unchanged. Returns the number of cells that held a value or a formula.",
           "params": {
             "sheetId": "The id of the sheet, as read().sheets[].id names it.",
             "c0": "Zero-based first column of the range.",

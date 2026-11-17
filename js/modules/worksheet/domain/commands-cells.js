@@ -22,8 +22,8 @@ import {
 import { requireKnownId, requireIndex, requireForm } from '../../../core/validate.js';
 import { isCell } from '../../../core/table-data.js';
 import { COLUMN_TYPES, detectInputType, parseCellInput, isNumericType, parseNumeric } from '../../../core/datagrid/datagrid-utils.js';
-import { isFormula, evaluateFormula } from '../../../core/datagrid/datagrid-formula.js';
-import { formulaGrid, recalcFormulas } from '../../../core/datagrid/table/formulas.js';
+import { isFormula } from '../../../core/datagrid/datagrid-formula.js';
+import { recalcFormulas } from '../../../core/datagrid/table/formulas.js';
 import { splitHeader, fillBlock } from '../../../core/datagrid/table/paste.js';
 import { detectColumnType } from '../../../core/parser/column-types.js';
 import { parseCsvText } from '../../../core/parser/csv.js';
@@ -39,6 +39,14 @@ import { COLUMN_SHAPE, fitsType } from './columns.js';
  *   Zeilen- und Spaltenzahl danach (überzählige fallen weg, fehlende kommen leer
  *   dazu; neue Spalten brauchen einen Kopf in `cols`), dann die Spalten der Reihe nach
  */
+
+/**
+ * Wie weit `fillRange` das Blatt nach unten wachsen lässt. Das Raster füllt nur
+ * bis zur letzten sichtbaren Zeile (es wächst praktisch nicht); ein Agent darf
+ * eine Reihe fortsetzen, aber nicht mit einem Aufruf Millionen Zeilen anlegen.
+ * 10 000 ist die Größe der Leistungsziele für Einfügen (§10).
+ */
+export const MAX_FILL_GROWTH = 10000;
 
 /** Die Startspalten C1–C5, die `to: 'start'` füllen kann (wie `worksheet.js`). */
 const START_COLUMNS = 5;
@@ -231,15 +239,17 @@ function applyChange(sheet, { rowCount, columnCount, cols }) {
 /**
  * Schreibt eine Änderung samt Umkehrung, rechnet die Formeln und meldet die
  * Tabelle genau einmal als geändert. Ohne Wirkung: nichts.
- * @param {any} model @param {any} sheet @param {Change} change @returns {void}
+ * @param {any} model @param {any} sheet @param {Change} change
+ * @param {(c: number, r: number, error: string) => void} [onError] Rechenfehler je Formelzelle
+ * @returns {void}
  */
-function commit(model, sheet, change) {
+function commit(model, sheet, change, onError) {
   const noop = change.cols.length === 0 && change.rowCount === sheet.data.rowCount
     && change.columnCount === sheet.columns.length;
   if (noop) return;
   const inverse = applyChange(sheet, change);
   recordInverse(model, { type: 'restoreCells', sheetId: sheet.id, ...inverse });
-  recalcFormulas(sheet.columns, sheet.data, sheet.formulas);
+  recalcFormulas(sheet.columns, sheet.data, sheet.formulas, onError);
   markTableChanged(model, sheet.data);
 }
 
@@ -277,6 +287,7 @@ function toText(st, row, value) {
  * @param {Work} st @param {number} row @param {{ type: string, value: any }} detected @param {any} raw
  */
 function switchType(st, row, detected, raw) {
+  if (!isCell(detected.value)) { toText(st, row, String(raw)); return; }
   const misfit = st.values.some((v, r) => r !== row && !fitsType(detected.type, v));
   if (misfit) { toText(st, row, String(raw)); return; }
   st.type = detected.type;
@@ -297,9 +308,14 @@ function enterValue(st, row, value) {
   const dt = detected ? detected.type : null;
   if (isNumericType(st.type)) {
     if (detected && dt !== st.type && dt !== 'numeric') { switchType(st, row, detected, value); return; }
-    if (detected) { put(st, row, detected.value); return; }
+    // Unendlich (`1e400`) ist kein Zellwert: die Eingabe bleibt als Text erhalten.
+    if (detected) {
+      if (isCell(detected.value)) put(st, row, detected.value);
+      else toText(st, row, String(value));
+      return;
+    }
     const parsed = parseCellInput(st, value);
-    if (typeof parsed === 'number') put(st, row, parsed);
+    if (typeof parsed === 'number' && Number.isFinite(parsed)) put(st, row, parsed);
     else toText(st, row, String(value));
     return;
   }
@@ -315,13 +331,17 @@ function enterValue(st, row, value) {
 
 /**
  * Ein Wert für eine Zielspalte (Ausfüllen): passt er nicht zum Typ, wird er
- * umgerechnet wie bei der Eingabe, sonst `null`.
+ * umgerechnet wie bei der Eingabe, sonst `null` (auch Unendlich: das Ausfüllen
+ * ändert den Spaltentyp nicht, anders als die Eingabe, die dann Text wird).
  * @param {string} type @param {any} v @returns {any}
  */
 function coerce(type, v) {
   if (!isCell(v)) return null;
   if (fitsType(type, v)) return v;
-  if (isNumericType(type) && type !== 'binary') return parseNumeric(String(v));
+  if (isNumericType(type) && type !== 'binary') {
+    const n = parseNumeric(String(v));
+    return n !== null && Number.isFinite(n) ? n : null;
+  }
   if (type === 'binary') return parseCellInput({ type }, v);
   return null;
 }
@@ -355,7 +375,9 @@ function checkWriteColumns(columns, existing) {
       throw new Error(`unknown_column: ${entry.to}`);
     }
     entry.values.forEach((/** @type {any} */ v, /** @type {number} */ j) => {
-      if (!isCell(v)) throw new Error(`columns[${i}].values[${j}] must be a number, text, true/false or null`);
+      if (!isCell(v) && v !== undefined && typeof v !== 'number') {
+        throw new Error(`columns[${i}].values[${j}] must be a number, text, true/false or null`);
+      }
     });
     if (entry.format !== undefined) checkValue(COLUMN_SHAPE.format, `columns[${i}].format`, entry.format);
   });
@@ -455,12 +477,12 @@ export const cellCommands = {
         throw new Error(`invalid formula ${JSON.stringify(formula)}; allowed: a text starting with "="`);
       }
       const f = formula.trim();
+      let error = null;
       commit(this, sheet, {
         rowCount: Math.max(sheet.data.rowCount, row + 1),
         columnCount: sheet.columns.length,
         cols: [{ index: ci, start: row, values: [null], formulas: { [row]: f } }],
-      });
-      const { error } = evaluateFormula(f, formulaGrid(sheet.columns, sheet.data, sheet.formulas));
+      }, (c, r, e) => { if (c === ci && r === row) error = e; });
       return { value: sheet.data.columns[ci][row] ?? null, error: error ?? null };
     },
   }),
@@ -487,7 +509,8 @@ export const cellCommands = {
       /** @type {string[]} */ const ids = [];
       const used = new Set();
       for (const entry of columns) {
-        const values = [...entry.values];
+        // Ruling R11: NaN, ±Infinity und undefined (etwa `Math.log(0)` aus einer Umrechnung) werden leer.
+        const values = entry.values.map((/** @type {any} */ v) => (isCell(v) ? v : null));
         let idx = -1;
         if (entry.to === 'start') {
           const n = Math.min(START_COLUMNS, heads.length);
@@ -667,11 +690,13 @@ export const cellCommands = {
       const heads = sheet.columns;
       const numCols = heads.length;
       requireRect('source.', s, numCols, sheet.data.rowCount);
-      const inside = t.c0 <= s.c0 && t.c1 >= s.c1 && t.r0 <= s.r0 && t.r1 >= s.r1 && t.c1 < numCols && t.c0 <= t.c1 && t.r0 <= t.r1;
+      const inside = t.c0 <= s.c0 && t.c1 >= s.c1 && t.r0 <= s.r0 && t.r1 >= s.r1 && t.c1 < numCols
+        && t.r1 < sheet.data.rowCount + MAX_FILL_GROWTH;
       const growsRows = t.r0 !== s.r0 || t.r1 !== s.r1;
       const growsCols = t.c0 !== s.c0 || t.c1 !== s.c1;
-      requireForm('target', t, inside && !(growsRows && growsCols),
-        'a rectangle inside the sheet columns that contains source and extends it in one direction');
+      const oneSide = !(t.r0 < s.r0 && t.r1 > s.r1) && !(t.c0 < s.c0 && t.c1 > s.c1);
+      requireForm('target', t, inside && oneSide && !(growsRows && growsCols),
+        `a rectangle inside the sheet columns that contains source and extends it in one direction, at most ${MAX_FILL_GROWTH} rows past the last row`);
       if (!growsRows && !growsCols) return 0;
       /** @param {number} c @param {number} r */
       const srcCell = (c, r) => ({ value: sheet.data.columns[c][r], formula: sheet.formulas[heads[c].id]?.[r] ?? null });
@@ -743,11 +768,11 @@ export const cellCommands = {
       for (let c = c0; c <= c1; c++) {
         const head = sheet.columns[c];
         if (head.meta?.lock) continue;
-        cleared += r1 - r0 + 1;
         const cur = sheet.data.columns[c];
         const next = cur.slice(r0, r1 + 1).fill(null);
         const run = changedRun(cur.slice(r0, r1 + 1), next);
         const fs = clearFormulasIn(sheet.formulas[head.id], r0, r1);
+        for (let r = r0; r <= r1; r++) if (cur[r] !== null || fs?.[r] === null) cleared++;
         if (run || fs) cols.push({ index: c, ...(run ? { start: r0 + run.start, values: run.values } : {}), ...(fs ? { formulas: fs } : {}) });
       }
       commit(this, sheet, { rowCount: sheet.data.rowCount, columnCount: sheet.columns.length, cols });

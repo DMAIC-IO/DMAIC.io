@@ -136,6 +136,20 @@ suite('worksheet: setCells', () => {
     assertDeepEqual(values(w, 0), ['2026-01-01', '5']);
   });
 
+  test('1e400 (unendlich) in eine Zahlenspalte: Text statt Infinity, Umkehrung geht', () => {
+    const w = setup({ cells: [[1, null, null], [null, null, null], [null, null, null]] });
+    roundTrip(w, { type: 'setCells', sheetId: 's1', columnId: 'a', startRow: 1, values: ['1e400'] });
+    assertEqual(sheet(w).columns[0].type, 'text');
+    assertDeepEqual(values(w, 0), ['1', '1e400', null]);
+  });
+
+  test('1e400 € in eine Zahlenspalte: Text statt unendlicher Währung', () => {
+    const w = setup();
+    roundTrip(w, { type: 'setCells', sheetId: 's1', columnId: 'a', startRow: 0, values: ['1e400 €'] });
+    assertEqual(sheet(w).columns[0].type, 'text');
+    assertEqual(values(w, 0)[0], '1e400 €');
+  });
+
   test('über das Blattende: das Blatt wächst, Umkehrung kürzt wieder', () => {
     const w = setup();
     roundTrip(w, { type: 'setCells', sheetId: 's1', columnId: 'c', startRow: 2, values: [7, 8, 9] });
@@ -386,9 +400,16 @@ suite('worksheet: writeColumns', () => {
     ] }), 'unknown_column: nein');
   });
 
+  test('R11: NaN, ±Infinity und undefined werden null', () => {
+    const w = fiveEmpty();
+    const [id] = roundTrip(w, { type: 'writeColumns', sheetId: 's1', columns: [{ to: 'append', name: 'Log', values: [-Infinity, NaN, undefined, 1] }] });
+    assertDeepEqual(values(w, sheet(w).columns.findIndex((c) => c.id === id)), [null, null, null, 1]);
+  });
+
   test('ungültiger Zellwert wird abgelehnt', () => {
     const w = fiveEmpty();
     rejects(w, () => w.m.writeColumns({ sheetId: 's1', columns: [{ to: 'append', values: [1, {}] }] }), 'columns[0].values[1]');
+    rejects(w, () => w.m.writeColumns({ sheetId: 's1', columns: [{ to: 'append', values: [() => 1] }] }), 'columns[0].values[0]');
   });
 });
 
@@ -499,6 +520,29 @@ suite('worksheet: fillRange (Verhalten aus _applyFill)', () => {
     assertEqual(w.json(), before);
   });
 
+  test('waagerecht aus Text 1e400 in eine Zahlenspalte: null statt Infinity, Umkehrung geht', () => {
+    const w = setup({
+      heads: [col('a', { shortName: 'C1', type: 'text', role: 'freeText' }), col('b', { shortName: 'C2' })],
+      cells: [['1e400', null, null], [5, null, null]],
+    });
+    roundTrip(w, { type: 'fillRange', sheetId: 's1', source: { c0: 0, r0: 0, c1: 0, r1: 0 }, target: { c0: 0, r0: 0, c1: 1, r1: 0 }, ctrl: false });
+    assertEqual(values(w, 1)[0], null);
+  });
+
+  test('Ziel nach beiden Seiten einer Achse → abgelehnt', () => {
+    const w = setup({ cells: [[1, 2, 3], [null, null, null], [null, null, null]] });
+    rejects(w, () => w.m.fillRange({ sheetId: 's1', source: { c0: 0, r0: 1, c1: 0, r1: 2 }, target: { c0: 0, r0: 0, c1: 0, r1: 4 }, ctrl: false }), 'invalid target');
+    rejects(w, () => w.m.fillRange({ sheetId: 's1', source: { c0: 1, r0: 0, c1: 1, r1: 0 }, target: { c0: 0, r0: 0, c1: 2, r1: 0 }, ctrl: false }), 'invalid target');
+  });
+
+  test('Ziel weiter als 10 000 Zeilen hinter dem Blattende → abgelehnt, bis dahin erlaubt', () => {
+    const w = setup({ cells: [[1, 2, 3], [null, null, null], [null, null, null]] });
+    rejects(w, () => w.m.fillRange({ sheetId: 's1', source: { c0: 0, r0: 0, c1: 0, r1: 2 }, target: { c0: 0, r0: 0, c1: 0, r1: 1e9 }, ctrl: false }), 'invalid target');
+    rejects(w, () => w.m.fillRange({ sheetId: 's1', source: { c0: 0, r0: 0, c1: 0, r1: 2 }, target: { c0: 0, r0: 0, c1: 0, r1: 3 + 10000 }, ctrl: false }), 'invalid target');
+    w.m.fillRange({ sheetId: 's1', source: { c0: 0, r0: 0, c1: 0, r1: 2 }, target: { c0: 0, r0: 0, c1: 0, r1: 2 + 10000 }, ctrl: false });
+    assertEqual(sheet(w).data.rowCount, 10003);
+  });
+
   test('Ziel umfasst die Quelle nicht → abgelehnt', () => {
     const w = setup();
     rejects(w, () => w.m.fillRange({ sheetId: 's1', source: { c0: 0, r0: 0, c1: 0, r1: 1 }, target: { c0: 1, r0: 0, c1: 1, r1: 2 }, ctrl: false }), 'invalid target');
@@ -518,6 +562,14 @@ suite('worksheet: clearRange (Verhalten aus _clearSelection)', () => {
     assertDeepEqual(values(w, 1), [null, null, 6]);
     assertDeepEqual(values(w, 2), [null, null, 9]);
     assertDeepEqual(sheet(w).formulas, {});
+  });
+
+  test('zählt nur Zellen, die wirklich geleert werden (Wert oder Formel)', () => {
+    const w = setup({ cells: [[1, null, null], [null, null, null], [null, null, null]], formulas: { b: { 2: '=1' } } });
+    assertEqual(w.m.clearRange({ sheetId: 's1', c0: 0, r0: 0, c1: 2, r1: 2 }), 2);
+    const before = w.json();
+    assertEqual(w.m.clearRange({ sheetId: 's1', c0: 0, r0: 0, c1: 2, r1: 2 }), 0);
+    assertEqual(w.json(), before);
   });
 
   test('außerhalb des Blatts → abgelehnt', () => {

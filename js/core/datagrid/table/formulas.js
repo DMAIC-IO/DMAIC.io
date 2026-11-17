@@ -32,9 +32,10 @@ export function formulaGrid(columns, table, _formulas) {
  * @param {ColumnHead[]} columns
  * @param {import('../../table-data.js').TableData} table
  * @param {Formulas} formulas
+ * @param {(c: number, r: number, error: string) => void} [onError] meldet den Fehlercode je Zelle
  * @returns {number} Anzahl berechneter Zellen
  */
-export function recalcFormulas(columns, table, formulas) {
+export function recalcFormulas(columns, table, formulas, onError) {
   let n = 0;
   if (!formulas) return n;
   const grid = formulaGrid(columns, table, formulas);
@@ -47,6 +48,7 @@ export function recalcFormulas(columns, table, formulas) {
       if (!f || r < 0 || r >= table.rowCount) continue;
       const { result, error } = evaluateFormula(f, grid);
       table.columns[c][r] = error ? null : result;
+      if (error && onError) onError(c, r, error);
       n++;
     }
   }
