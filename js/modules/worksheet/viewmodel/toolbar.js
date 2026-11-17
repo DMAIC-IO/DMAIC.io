@@ -87,6 +87,15 @@ export function toolbarView(ctx) {
     /** Gespeicherte Ansicht des aktiven Blatts (Spaltenbreiten, Auswahl) oder `null`. */
     get activeView() { return this.model.gridView[activeSheetOf(this).id] ?? null; },
 
+    /**
+     * @noagent Das Raster meldet seine Auswahl entprellt (300 ms): eine Aktion,
+     * die sie liest (Löschen, Formel-Editor, Diagrammvorschlag), lässt sie
+     * vorher sofort melden — sonst träfe sie die zuletzt gemeldete, alte Auswahl.
+     */
+    flushGridView() {
+      /** @type {any} */ (this.$root?.querySelector('.worksheet__grid-host'))?._datagrid?.flushView?.();
+    },
+
     /** Konfiguration des Rasters für das aktive Blatt. */
     get gridConfig() {
       const sheet = activeSheetOf(this);
@@ -117,6 +126,7 @@ export function toolbarView(ctx) {
     // ─── Auswahl, Export, Datei ──────────────────────────────
     /** Die Auswahl des Rasters leeren (Kommando `clearRange`); ohne Auswahl nichts. */
     deleteSelection() {
+      this.flushGridView();
       const sel = this.activeView?.selection;
       if (!sel) return;
       const sheetId = activeSheetOf(this).id;
@@ -204,6 +214,7 @@ export function toolbarView(ctx) {
      * @throws {Error} ohne passende Spalten (übersetzte Meldung)
      */
     startChartSuggestion() {
+      this.flushGridView();
       if (!this.canSuggest) throw new Error(this.t('suggestChartNoSelection'));
       const sheet = activeSheetOf(this);
       const idx = suggestColumns(sheet, this.activeView?.selection);

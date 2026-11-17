@@ -98,8 +98,7 @@ export function dialogsView(ctx) {
         if (!this.$root.closest('.app-workspace')) return;
         if (!shortcutRegistry.matches(e, 'worksheet.openFormulaEditor') || this.state.formulaTarget) return;
         const grid = /** @type {any} */ (this.$root.querySelector('.worksheet__grid-host'))?._datagrid;
-        // Die Auswahl meldet das Raster entprellt: vor dem Lesen jetzt melden lassen.
-        grid?.flushView?.();
+        this.flushGridView();
         const sel = this.activeView?.selection;
         if (!sel) return;
         e.preventDefault();
@@ -253,6 +252,7 @@ export function dialogsView(ctx) {
         ci = sheet.columns.findIndex((/** @type {{ id: string }} */ c) => c.id === columnId);
         r = row;
       } else {
+        this.flushGridView();
         const sel = this.model.gridView[sheet.id]?.selection;
         if (sel) { ci = sel.activeCol; r = sel.activeRow; }
       }

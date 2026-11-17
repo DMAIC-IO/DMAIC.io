@@ -539,6 +539,44 @@ suite('worksheet: Viewmodel der Zielform im Browser', () => {
     assertEqual(h.vm().model.sheets[0].data.columns[0].slice(0, 3).join(), '1,2,3', 'ein Rückgängig stellt das Blatt wieder her');
   });
 
+  // Das Raster meldet die Auswahl entprellt (300 ms). Ein Knopf der Werkzeugleiste
+  // direkt nach dem Klick in eine Zelle las sonst die ALTE Auswahl: „Löschen“
+  // leerte die vorher gewählte Zelle, der Formel-Editor öffnete dort.
+  test('Werkzeugleiste direkt nach einem Zellklick: Löschen trifft die neue Auswahl', async () => {
+    const h = await mount(twoSheets());
+    const click = (c, r) => {
+      const cell = h.$(`td[data-col-idx="${c}"][data-row-idx="${r}"]`);
+      cell.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, button: 0 }));
+      cell.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, button: 0 }));
+    };
+    click(0, 0);
+    await new Promise((r) => setTimeout(r, 400)); // die erste Auswahl ist gemeldet
+    click(0, 2);
+    h.$('[data-action="delete"]').click();
+    await settle();
+    assertDeepEqual(h.vm().model.sheets[0].data.columns[0].slice(0, 3), [1, 2, null], 'neue Zelle geleert, alte unberührt');
+  });
+
+  test('Werkzeugleiste direkt nach einem Zellklick: der Formel-Editor öffnet an der neuen Zelle', async () => {
+    let seen = null;
+    const h = await mount(twoSheets(), {
+      form: async () => { seen = { ...h.vm().state.formulaTarget }; return false; },
+    });
+    const click = (c, r) => {
+      const cell = h.$(`td[data-col-idx="${c}"][data-row-idx="${r}"]`);
+      cell.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, button: 0 }));
+      cell.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, button: 0 }));
+    };
+    click(0, 0);
+    await new Promise((r) => setTimeout(r, 400));
+    click(1, 2);
+    h.$('[data-action="formula-editor"]').click();
+    await settle();
+    assertTrue(seen !== null, 'Formel-Editor geöffnet');
+    assertEqual(seen.columnId, h.vm().model.sheets[0].columns[1].id);
+    assertEqual(seen.row, 2);
+  });
+
   test('destroy: eine noch nicht gemeldete Auswahl des Rasters landet im gespeicherten Stand', async () => {
     const h = await mount(twoSheets());
     const cell = h.$('td[data-col-idx="2"][data-row-idx="3"]');
