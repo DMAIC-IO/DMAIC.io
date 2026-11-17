@@ -955,6 +955,16 @@ export function createGridInput(view, {
       return true;
     },
     /**
+     * Übernimmt eine offene Zellbearbeitung wie Enter (ohne die Auswahl zu
+     * bewegen) — vor einem Agentenstapel (`settle` → `flushPendingWork`).
+     * @returns {boolean} ob ein Editor offen war
+     */
+    commitEditor() {
+      if (!editor) return false;
+      commitEdit(false);
+      return true;
+    },
+    /**
      * Bricht eine offene Zellbearbeitung ab, ohne zu schreiben, und liefert
      * ihren Text (F4 übergibt ihn dem Formel-Editor).
      * @returns {string|null} der Text, ohne offenen Editor `null`

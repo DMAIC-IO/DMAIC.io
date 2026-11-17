@@ -577,6 +577,47 @@ suite('worksheet: Viewmodel der Zielform im Browser', () => {
     assertEqual(seen.row, 2);
   });
 
+  // Altfall „settle legt eine offene Zelleingabe ab“: agent-host `settle` ruft
+  // `flushPendingWork` vor dem ersten Schreibzugriff eines Agentenstapels.
+  test('flushPendingWork legt eine offene Zelleingabe ab (settle vor einem Agentenstapel)', async () => {
+    const h = await mount(twoSheets());
+    const cell = h.$('td[data-col-idx="1"][data-row-idx="2"]');
+    cell.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, button: 0 }));
+    cell.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, button: 0 }));
+    document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: '7', bubbles: true, cancelable: true }));
+    const ed = h.$('.cell-editor');
+    assertTrue(ed !== null, 'Zelleneditor offen');
+    ed.value = '77';
+    h.vm().flushPendingWork();
+    await settle();
+    assertEqual(h.vm().model.sheets[0].data.columns[1][2], 77, 'Eingabe im Model');
+    assertEqual(h.$('.cell-editor'), null, 'Editor zu');
+  });
+
+  test('Rollenbestätigung offen, Modul abgebaut: der Dialog wird abgebrochen', async () => {
+    let opened = 0;
+    let cancelled = 0;
+    const h = await mount(twoSheets(), {
+      form: (o) => new Promise((resolve) => {
+        opened += 1;
+        o.onMount?.(document.createElement('div'), {
+          cancel: () => { cancelled += 1; resolve(false); },
+          confirm: () => resolve(true),
+        });
+      }),
+    });
+    const sheetId = h.vm().model.activeSheetId;
+    h.vm().gridView({ sheetId, colWidths: {}, selection: { startCol: 0, startRow: 0, endCol: 0, endRow: 2, activeCol: 0, activeRow: 0 } });
+    await settle();
+    h.vm().suggestChart({});
+    await settle();
+    assertEqual(opened, 1, 'Rollenbestätigung offen');
+    await h.inst.destroy();
+    mounted.length = 0;
+    h.container.remove();
+    assertEqual(cancelled, 1, 'beim Abbau abgebrochen');
+  });
+
   test('destroy: eine noch nicht gemeldete Auswahl des Rasters landet im gespeicherten Stand', async () => {
     const h = await mount(twoSheets());
     const cell = h.$('td[data-col-idx="2"][data-row-idx="3"]');

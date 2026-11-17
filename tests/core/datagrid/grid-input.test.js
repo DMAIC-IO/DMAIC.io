@@ -352,6 +352,23 @@ suite('GridInput — Bedienung meldet Kommandos', () => {
     } finally { s.done(); }
   });
 
+  // Vor einem Agentenstapel legt das Modul eine offene Eingabe ab (settle →
+  // flushPendingWork): sie wird ihr eigener Schritt, statt dass der Stapel sie
+  // verwirft (Zeilen verschoben) oder sie danach seinen Wert überschreibt.
+  test('commitEditor übernimmt eine offene Eingabe wie Enter, ohne Editor nichts', async () => {
+    const s = await setup();
+    try {
+      assertEqual(s.input.commitEditor(), false, 'ohne Editor nichts');
+      clickCell(s, 0, 4);
+      key(document.activeElement, '7');
+      const ed = s.el.querySelector('.cell-editor');
+      ed.value = '77';
+      assertEqual(s.input.commitEditor(), true);
+      assertDeepEqual(s.calls.filter((c) => c[0] !== 'gridView'), [['setCells', { columnId: 'a', startRow: 4, values: ['77'] }]]);
+      assertEqual(s.el.querySelector('.cell-editor'), null, 'Editor zu');
+    } finally { s.done(); }
+  });
+
   test('Zeilen oberhalb eingefügt: offener Editor schließt ohne Meldung', async () => {
     const s = await setup({ n: 50 });
     try {

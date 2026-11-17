@@ -121,12 +121,14 @@ function mountTable(root, { props, services, effect, command }) {
   const view = createGridView(slot, { t, lang: lang() });
   // Griff am Wirtselement: `scrollToRow` (Test-Haken P8: die POMs holen eine Zeile
   // in den Sichtbereich), `flushView` (ausstehende Ansicht sofort melden — vor dem
-  // Speichern beim Verlassen, `flushPersist`) und `takeEditorText` (offene
+  // Speichern beim Verlassen, `flushPersist`), `commitEdit` (offene Zellbearbeitung
+  // übernehmen — vor einem Agentenstapel) und `takeEditorText` (offene
   // Zellbearbeitung abbrechen, Text liefern — F4 des Arbeitsblatts).
   const hostEl = /** @type {any} */ (root.parentElement ?? root);
   hostEl._datagrid = {
     scrollToRow: (r) => view.scrollToRow(r),
     flushView: () => input?.flushView() ?? false,
+    commitEdit: () => input?.commitEditor() ?? false,
     takeEditorText: () => input?.takeEditorText() ?? null,
   };
 

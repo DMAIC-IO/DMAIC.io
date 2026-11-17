@@ -74,6 +74,8 @@ export function suggestColumns(sheet, selection) {
 export function toolbarView(ctx) {
   /** @type {(() => void)|null} */
   let onDocClick = null;
+  /** Die offene Rollenbestätigung (Dialogdienst), zum Abbrechen beim Abbau. @type {{ cancel: () => void }|null} */
+  let roleApi = null;
   return {
     init() {
       onDocClick = () => { if (this.state.exportOpen) this.state.exportOpen = false; };
@@ -82,6 +84,8 @@ export function toolbarView(ctx) {
     destroy() {
       if (onDocClick) document.removeEventListener('click', onDocClick);
       onDocClick = null;
+      roleApi?.cancel();
+      roleApi = null;
     },
 
     /** Gespeicherte Ansicht des aktiven Blatts (Spaltenbreiten, Auswahl) oder `null`. */
@@ -94,6 +98,18 @@ export function toolbarView(ctx) {
      */
     flushGridView() {
       /** @type {any} */ (this.$root?.querySelector('.worksheet__grid-host'))?._datagrid?.flushView?.();
+    },
+
+    /**
+     * @noagent Vor einem Agentenstapel (agent-host `settle`): eine offene
+     * Zellbearbeitung als eigenen Schritt übernehmen, wie Enter, und die
+     * Ansicht melden — sonst verwürfe der Stapel die Eingabe (Zeilen
+     * verschoben) oder sie überschriebe danach seinen Wert.
+     */
+    flushPendingWork() {
+      const grid = /** @type {any} */ (this.$root?.querySelector('.worksheet__grid-host'))?._datagrid;
+      grid?.commitEdit?.();
+      grid?.flushView?.();
     },
 
     /** Konfiguration des Rasters für das aktive Blatt. */
@@ -249,13 +265,15 @@ export function toolbarView(ctx) {
         content: this.$refs.roleConfirmForm,
         confirmLabel: this.t('confirmRolesConfirm'),
         cancelLabel: ctx.i18n.t('common.cancel'),
-        onMount: (/** @type {HTMLElement} */ body) => {
+        onMount: (/** @type {HTMLElement} */ body, /** @type {any} */ dialogApi) => {
+          roleApi = dialogApi ?? null;
           this.$nextTick(() => /** @type {HTMLElement|null} */ (body.closest('.dialog__window')?.querySelector('.dialog__confirm'))?.focus());
         },
         onConfirm: () => {
           this.confirmRoles({ sheetId: sheet.id, roles: this.state.roleDraft.map((r) => ({ columnId: r.columnId, role: r.role })) });
         },
       });
+      roleApi = null;
       this.state.roleDraft = [];
       if (ok === true) next();
     },
