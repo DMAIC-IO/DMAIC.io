@@ -330,7 +330,8 @@
       "help": "Downloads the active sheet as a file: Excel (.xlsx), CSV (.csv) or JSON (.json).",
       "params": {
         "format": "The file format: xlsx, csv or json.",
-        "command": "The command as one object with format."
+        "sheetId": "Optional: the sheet; it must be the active one, the active sheet is always exported (the export button in the grid passes it).",
+        "command": "The command as one object with format and optional sheetId."
       }
     },
     "openFormulaEditor": {

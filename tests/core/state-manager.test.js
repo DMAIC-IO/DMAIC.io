@@ -443,6 +443,21 @@ function baseDoc() {
   };
 }
 
+suite('StateManager: Projektstatus', () => {
+  // Module, die ihren Nur-Lese-Zustand reaktiv führen (Arbeitsblatt-Raster),
+  // brauchen ein Ereignis: isCompleted() allein meldet keine Änderung.
+  test('setProjectStatus meldet project:status-changed', async () => {
+    const bus = new EventBus();
+    const adapter = makeFakeAdapter(baseDoc());
+    const sm = new StateManager(bus, adapter);
+    await sm.load();
+    const seen = [];
+    bus.on('project:status-changed', (e) => seen.push(e));
+    sm.setProjectStatus('wb', 'completed');
+    assertDeepEqual(seen, [{ projectId: 'wb', status: 'completed' }]);
+  });
+});
+
 suite('StateManager remote sync', () => {
   test('remote change updates cache and emits state:remote-changed', async () => {
     const bus = new EventBus();

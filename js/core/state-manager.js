@@ -715,7 +715,11 @@ export class StateManager {
    * @param {string} status - 'active' | 'completed'
    */
   setProjectStatus(projectId, status) {
-    return this._adapter.setProjectStatus(projectId, status);
+    const out = this._adapter.setProjectStatus(projectId, status);
+    // Wer seinen Nur-Lese-Zustand führt (Arbeitsblatt-Raster), braucht ein
+    // Ereignis: `isCompleted()` allein meldet keine Änderung.
+    this._eventBus.emit('project:status-changed', { projectId, status });
+    return out;
   }
 
   /**

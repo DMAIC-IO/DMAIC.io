@@ -77,14 +77,22 @@ export function toolbarView(ctx) {
   let onDocClick = null;
   /** Die offene Rollenbestätigung (Dialogdienst), zum Abbrechen beim Abbau. @type {{ cancel: () => void }|null} */
   let roleApi = null;
+  /** @type {(() => void)|null} */
+  let onStatus = null;
   return {
     init() {
       onDocClick = () => { if (this.state.exportOpen) this.state.exportOpen = false; };
       document.addEventListener('click', onDocClick);
+      const sm = ctx.context.stateManager;
+      this.state.projectCompleted = sm.isCompleted?.() === true;
+      onStatus = () => { this.state.projectCompleted = sm.isCompleted?.() === true; };
+      ctx.context.eventBus?.on?.('project:status-changed', onStatus);
     },
     destroy() {
       if (onDocClick) document.removeEventListener('click', onDocClick);
       onDocClick = null;
+      if (onStatus) ctx.context.eventBus?.off?.('project:status-changed', onStatus);
+      onStatus = null;
       roleApi?.cancel();
       roleApi = null;
     },
@@ -118,8 +126,9 @@ export function toolbarView(ctx) {
       const sheet = activeSheetOf(this);
       const view = this.model.gridView[sheet.id];
       return {
-        // Abgeschlossenes Projekt: nur lesen (die Altform fragte das Raster, `_isReadOnly`).
-        readOnly: ctx.context.stateManager.isCompleted?.() === true,
+        // Abgeschlossenes Projekt: nur lesen (die Altform fragte das Raster, `_isReadOnly`);
+        // reaktiv über `project:status-changed`, ohne Neuladen.
+        readOnly: this.state.projectCompleted,
         features: GRID_FEATURES,
         commands: GRID_COMMANDS,
         commandArgs: { sheetId: sheet.id },

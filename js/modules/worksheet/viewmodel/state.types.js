@@ -14,6 +14,7 @@
  * @property {number} formulaMenuLeft
  * @property {string|null} liveSelectionSheetId
  * @property {{ startCol: number, startRow: number, endCol: number, endRow: number, activeCol: number, activeRow: number }|null} liveSelection
+ * @property {boolean} projectCompleted
  * @property {{ columnId: string, name: string, type: string, role: string, options: { value: string, label: string }[] }[]} roleDraft
  */
 

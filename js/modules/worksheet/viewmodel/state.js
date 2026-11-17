@@ -41,6 +41,8 @@ export const UiState = defineState({
     startCol: number(), startRow: number(), endCol: number(), endRow: number(),
     activeCol: number(), activeRow: number(),
   }, { nullable: true }),
+  /** Projekt abgeschlossen (Nur-Lesen), geführt über `project:status-changed`. */
+  projectCompleted: boolean(),
   /** Zeilen der Rollenbestätigung vor dem Diagrammvorschlag. */
   roleDraft: list(object({
     columnId: text(), name: text(), type: text(), role: text(),

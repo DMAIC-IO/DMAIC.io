@@ -330,7 +330,8 @@
       "help": "Lädt das aktive Blatt als Datei herunter: Excel (.xlsx), CSV (.csv) oder JSON (.json).",
       "params": {
         "format": "Das Dateiformat: xlsx, csv oder json.",
-        "command": "Das Kommando als ein Objekt mit format."
+        "sheetId": "Optional: das Blatt; es muss das aktive sein, exportiert wird immer das aktive Blatt (der Exportknopf im Raster gibt es an).",
+        "command": "Das Kommando als ein Objekt mit format und optional sheetId."
       }
     },
     "openFormulaEditor": {

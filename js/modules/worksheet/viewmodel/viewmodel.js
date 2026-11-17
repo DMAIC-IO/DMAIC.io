@@ -104,8 +104,13 @@ export default createModule({
       run({ sheetId, colWidths, selection }) { putGridView(this.model, sheetId, { colWidths, selection }); },
     }),
     exportAs: command({
-      params: { format: oneOf(['xlsx', 'csv', 'json']) },
-      run({ format }) {
+      // `sheetId` optional: der Eckknopf des Rasters meldet über das Widget, das
+      // `commandArgs` (sheetId) mitgibt. Exportiert wird immer das aktive Blatt.
+      params: { format: oneOf(['xlsx', 'csv', 'json']), sheetId: text(optional) },
+      run({ format, sheetId }) {
+        if (sheetId !== undefined && sheetId !== activeSheetOf(this).id) {
+          throw new Error(`exportAs exports the active sheet; sheetId ${JSON.stringify(sheetId)} is not the active sheet`);
+        }
         this.state.exportOpen = false;
         if (format === 'csv') {
           // Zeichengleich zur Altform (DataGrid.downloadCSV): BOM, `data.csv`, keine Meldung.

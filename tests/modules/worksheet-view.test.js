@@ -124,7 +124,7 @@ async function mount(stored, opts = {}) {
   await settle();
   const vm = () => Alpine.$data(container.querySelector('[x-data]'));
   return {
-    inst, container, vm, notes, events, stateManager, saves, project,
+    inst, container, vm, notes, events, stateManager, saves, project, bus,
     $: (s) => container.querySelector(s),
     $$: (s) => [...container.querySelectorAll(s)],
     /** `worksheet:dataChanged` dieser Instanz bisher. */
@@ -521,6 +521,49 @@ suite('worksheet: Viewmodel der Zielform im Browser', () => {
     } finally { console.warn = ow; }
     assertEqual(h.vm().model.sheets[0].columns[0].role, role0);
     assertTrue(warned.some((w) => w.includes('setColumnRole')), `Warnung: ${warned.join(' | ')}`);
+  });
+
+  // Der Eckknopf meldet `exportAs` über das Widget, das `commandArgs`
+  // (sheetId) mitgibt: das Kommando muss sie annehmen.
+  // Nur-Lesen folgt dem Projektstatus ohne Neuladen (Ereignis project:status-changed).
+  test('Projektabschluss und Wiederöffnen schalten das Raster um', async () => {
+    const h = await mount(twoSheets());
+    const slot = () => h.$('.widget-datagrid');
+    assertEqual(slot().classList.contains('dmike--readonly'), false, 'anfangs beschreibbar');
+    h.project.completed = true;
+    h.bus.emit('project:status-changed', { projectId: 'p1', status: 'completed' });
+    await settle();
+    assertEqual(slot().classList.contains('dmike--readonly'), true, 'abgeschlossen: nur lesen');
+    h.project.completed = false;
+    h.bus.emit('project:status-changed', { projectId: 'p1', status: 'active' });
+    await settle();
+    assertEqual(slot().classList.contains('dmike--readonly'), false, 'wieder offen');
+  });
+
+  test('Eckknopf: CSV über das Menü des Rasters lädt data.csv, ohne Fehlermeldung', async () => {
+    const h = await mount(twoSheets());
+    const names = [];
+    const { createObjectURL } = URL;
+    const { click } = HTMLAnchorElement.prototype;
+    URL.createObjectURL = () => 'blob:test';
+    HTMLAnchorElement.prototype.click = function stubClick() { names.push(this.download); };
+    try {
+      /** @type {HTMLElement} */ (h.$('thead .datagrid__export-btn')).click();
+      /** @type {HTMLElement} */ (document.querySelector('.context-menu [data-menu-id="export-csv"]')).click();
+      await settle();
+    } finally {
+      URL.createObjectURL = createObjectURL;
+      HTMLAnchorElement.prototype.click = click;
+    }
+    assertDeepEqual(names, ['data.csv']);
+    assertEqual(h.notes.length, 0, `Meldungen: ${JSON.stringify(h.notes)}`);
+  });
+
+  test('exportAs mit fremdem Blatt: abgelehnt, nur das aktive Blatt wird exportiert', async () => {
+    const h = await mount(twoSheets());
+    let err = null;
+    try { h.vm().exportAs({ format: 'csv', sheetId: h.vm().model.sheets[1].id }); } catch (e) { err = e; }
+    assertTrue(err !== null && /active sheet/.test(err.message), `Meldung: ${err?.message}`);
   });
 
   test('exportAs csv: Datei data.csv mit BOM und dem Text der Altform, keine Meldung', async () => {
