@@ -1,0 +1,161 @@
+{
+  "sheets": [
+    {
+      "id": "sheet_1",
+      "name": "Zielerreichungsgrad",
+      "state": {
+        "colWidths": {},
+        "columns": [
+          {
+            "id": "32f06832-d723-4344-b9a8-f5feb67c74b5",
+            "name": "Datum",
+            "type": "date",
+            "unit": "",
+            "values": [
+              "2025-01-01",
+              "2025-01-02",
+              "2025-01-03"
+            ],
+            "formulas": [
+              null,
+              null,
+              null
+            ],
+            "format": {},
+            "meta": {
+              "managedBy": "zeg",
+              "managedRef": "date"
+            },
+            "shortName": "C1"
+          },
+          {
+            "id": "d7009713-cb6a-4bdd-b7a4-82027226d987",
+            "name": "Define",
+            "type": "percent",
+            "unit": "",
+            "values": [
+              20,
+              40,
+              60
+            ],
+            "formulas": [
+              null,
+              null,
+              null
+            ],
+            "format": {
+              "decimals": 0
+            },
+            "meta": {
+              "managedBy": "zeg",
+              "managedRef": "define"
+            },
+            "shortName": "C2"
+          },
+          {
+            "id": "75208330-bca5-4f6a-8a72-6c8e0635d4db",
+            "name": "Measure",
+            "type": "percent",
+            "unit": "",
+            "values": [
+              10,
+              30,
+              null
+            ],
+            "formulas": [
+              null,
+              null,
+              null
+            ],
+            "format": {
+              "decimals": 0
+            },
+            "meta": {
+              "managedBy": "zeg",
+              "managedRef": "measure"
+            },
+            "shortName": "C3"
+          },
+          {
+            "id": "73d3bbf9-a767-42b6-9ec7-8fdfdc07eb45",
+            "name": "Analyze",
+            "type": "percent",
+            "unit": "",
+            "values": [
+              null,
+              null,
+              null
+            ],
+            "formulas": [
+              null,
+              null,
+              null
+            ],
+            "format": {
+              "decimals": 0
+            },
+            "meta": {
+              "managedBy": "zeg",
+              "managedRef": "analyze"
+            },
+            "shortName": "C4"
+          },
+          {
+            "id": "88f7e592-18cd-4b8e-9837-c5f5f7ddc4e4",
+            "name": "Improve",
+            "type": "percent",
+            "unit": "",
+            "values": [
+              null,
+              null,
+              null
+            ],
+            "formulas": [
+              null,
+              null,
+              null
+            ],
+            "format": {
+              "decimals": 0
+            },
+            "meta": {
+              "managedBy": "zeg",
+              "managedRef": "improve"
+            },
+            "shortName": "C5"
+          },
+          {
+            "id": "9e652269-2446-4c66-965c-0a1b780957e6",
+            "name": "Control",
+            "type": "percent",
+            "unit": "",
+            "values": [
+              null,
+              null,
+              null
+            ],
+            "formulas": [
+              null,
+              null,
+              null
+            ],
+            "format": {
+              "decimals": 0
+            },
+            "meta": {
+              "managedBy": "zeg",
+              "managedRef": "control"
+            },
+            "shortName": "C6"
+          }
+        ],
+        "rowCount": 3,
+        "sortCol": null,
+        "sortDir": null,
+        "selection": null
+      }
+    }
+  ],
+  "activeSheetId": "sheet_1",
+  "sheetCounter": 1
+}

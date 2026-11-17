@@ -12,13 +12,7 @@
 import { readAgentState } from '../../core/agent/agent-read-mixin.js';
 import { requireKnownId } from '../../core/agent/agent-argcheck.js';
 import { inferRole } from '../../core/datagrid/datagrid-roles.js';
-
-/**
- * Format-Schlüssel, die die Oberfläche setzt — genau die Auswahl des
- * Format-Pickers (`datagrid.js` `_renderAttrPickerFormatColumn`), je
- * Spaltentyp. `currencySymbol` bietet die Oberfläche nicht an.
- */
-export const FORMAT_KEYS = ['decimals', 'dateFormat', 'timeFormat'];
+import { FORMAT_KEYS } from './domain/columns.js';
 
 /**
  * Der Spaltenkopf einer gespeicherten Spalte (ohne Zellwerte).
