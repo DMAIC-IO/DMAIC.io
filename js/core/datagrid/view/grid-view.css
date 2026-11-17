@@ -1,0 +1,13 @@
+/* Virtualisiertes Zeichnen (grid-view.js): Abstandhalter-Zeilen und Pool.
+   Die Klassen .datagrid__… bleiben, damit das Sichtbild gleich bleibt.
+   Die Streifen des Altgitters (tr:nth-child(even)) gelten unverändert: der
+   Pool beginnt immer bei einem geraden Datenindex hinter zwei Vorlaufzeilen. */
+.datagrid__table--virtual tbody tr.datagrid__spacer td {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.datagrid__table--virtual tbody tr[data-pool] {
+  height: var(--datagrid-row-height);
+}

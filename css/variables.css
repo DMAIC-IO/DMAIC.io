@@ -243,6 +243,7 @@
 
   /* DataGrid tokens */
   --datagrid-cell-height: 30px;
+  --datagrid-row-height: var(--datagrid-cell-height);
   --datagrid-header-height: 30px;
   --datagrid-row-header-width: 54px;
   --datagrid-default-col-width: 130px;
