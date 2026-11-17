@@ -1,5 +1,5 @@
 <section class="worksheet worksheet-module" x-data="worksheet"
-         x-file-drop="importFile" data-file-drop-accept=".csv,.tsv,.xlsx,.xls">
+         x-file-drop="importFile" data-file-drop-accept=".csv,.tsv">
 
   <!-- ═══ Werkzeugleiste ═══ -->
   <div class="worksheet-toolbar">
@@ -38,6 +38,7 @@
         <span class="icon icon--sm toolbar__chevron" data-icon="nav.expand-down" aria-hidden="true"></span>
       </button>
       <div class="toolbar__dropdown-menu" :class="exportMenuClass">
+        <!-- data-help-key="" an den Einträgen ist gewollt: die Hilfe hängt am Exportknopf darüber (exportAs), der automatische Schlüssel ergäbe je Format ein zweites Fragezeichen. -->
         <button type="button" class="toolbar__dropdown-item" data-action="export-xlsx" data-help-key=""
                 x-command="exportAs" data-arg-format="xlsx" x-text="t('exportXlsx')"></button>
         <button type="button" class="toolbar__dropdown-item" data-action="export-csv" data-help-key=""

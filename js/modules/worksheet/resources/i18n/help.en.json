@@ -53,7 +53,7 @@
         {
           "type": "list",
           "items": [
-            "CSV or XLSX files can be loaded via drag & drop or the import bar.",
+            "CSV or TSV files can be loaded via drag & drop or the import button.",
             "Column types are detected automatically on import; correct them manually if needed.",
             "Export to CSV or XLSX via the export bar — the entire active sheet is written out."
           ]

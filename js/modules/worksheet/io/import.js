@@ -4,12 +4,12 @@
  * Welche Dateien das Arbeitsblatt annimmt und ihr Text. Wie in der Altform
  * (`DataGrid._handleFileImport`) liest es CSV und TSV; der Text geht als
  * Kommando `importCsv` ans Model (Parser aus `core/parser/`). Andere Endungen
- * (auch Excel, das die Altform anbot, aber nicht las) melden
- * `unsupported`.
+ * melden `unsupported`. Excel bot die Altform in der Dateiauswahl an, las es
+ * aber nicht — die Zielform bietet es darum nicht mehr an.
  */
 
-/** `accept` der Dateiauswahl, wie im Altmodul. */
-export const IMPORT_ACCEPT = '.csv,.tsv,.xlsx,.xls';
+/** `accept` der Dateiauswahl und des Ablegens (muss zu `data-file-drop-accept` in view.html passen). */
+export const IMPORT_ACCEPT = '.csv,.tsv';
 
 /**
  * Die Art einer Datei nach ihrer Endung.

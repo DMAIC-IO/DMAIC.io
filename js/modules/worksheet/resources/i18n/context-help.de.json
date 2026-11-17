@@ -363,10 +363,10 @@
       }
     },
     "undo": {
-      "help": "Nimmt die letzte Änderung der Arbeitsmappe zurück, auch auf einem anderen Blatt (Strg+Z)."
+      "help": "Nimmt die letzte Änderung der Arbeitsmappe zurück, auch auf einem anderen Blatt (Strg+Z). Liefert false, wenn nichts zurückzunehmen ist oder das Projekt abgeschlossen ist; das Zurücknehmen selbst ist kein neuer Schritt."
     },
     "redo": {
-      "help": "Stellt die zuletzt zurückgenommene Änderung wieder her (Strg+Y)."
+      "help": "Stellt die zuletzt zurückgenommene Änderung wieder her (Strg+Y). Liefert false, wenn nichts wiederherzustellen ist oder das Projekt abgeschlossen ist."
     }
   }
 }

@@ -9,6 +9,8 @@
  * Kommandos des Models, die übersetzten Vorgabenamen gibt dieser Teil mit.
  */
 import { FALLBACK_SHEET_NAME } from '../domain/sheet.js';
+import { WorksheetModel } from '../domain/model.js';
+import { worksheetChanged } from './changed.js';
 
 /** @param {any} vm @returns {any} das aktive Blatt (sonst das erste) */
 export function activeSheetOf(vm) {
@@ -26,12 +28,24 @@ export function sheetsView(ctx) {
   let onDocDown = null;
   return {
     init() {
-      // Ein frisches Arbeitsblatt (noch nie gespeichert) heißt in der App-Sprache.
-      const fresh = ctx.context.stateManager.getModuleState(ctx.instanceId) == null;
-      const [only] = this.model.sheets;
-      if (fresh && this.model.sheets.length === 1 && only.name === `${FALLBACK_SHEET_NAME} 1`) {
-        const name = `${this.t('defaultSheetName')} 1`;
-        if (name !== only.name) this.model.renameSheet({ id: only.id, name });
+      const { stateManager } = ctx.context;
+      const stored = stateManager.getModuleState(ctx.instanceId);
+      const fresh = stored == null;
+      const migrated = !fresh && stored._schema?.version !== WorksheetModel.schema.version;
+      // Abgeschlossenes Projekt: nichts schreiben, auch nicht den Vorgabenamen.
+      if (stateManager.isCompleted?.() !== true) {
+        // Ein frisches Arbeitsblatt (noch nie gespeichert) heißt in der App-Sprache.
+        const [only] = this.model.sheets;
+        if (fresh && this.model.sheets.length === 1 && only.name === `${FALLBACK_SHEET_NAME} 1`) {
+          const name = `${this.t('defaultSheetName')} 1`;
+          if (name !== only.name) this.model.renameSheet({ id: only.id, name });
+        }
+        // Neuer oder migrierter Stand: sofort ablegen und melden, damit Spaltenwähler
+        // und Leser anderer Module die Zielform sehen (wie die Altform beim Einhängen).
+        if (fresh || migrated) {
+          stateManager.setModuleState(ctx.instanceId, this.model.toJSON());
+          worksheetChanged(null, { instanceId: ctx.instanceId, eventBus: ctx.eventBus });
+        }
       }
       onDocDown = (e) => {
         if (!this.state.tabMenu) return;

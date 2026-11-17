@@ -2,7 +2,8 @@
  * D.Mike — Arbeitsblatt: Werkzeugleiste, Raster und Statuszeile (viewmodel/toolbar.js)
  *
  * Teil des view-Blocks: Konfiguration des Widgets `datagrid` für das aktive
- * Blatt, Rückgängig/Wiederholen über den Verlauf des Kerns (`ctx.history`),
+ * Blatt (nur lesend im abgeschlossenen Projekt), Rückgängig/Wiederholen über
+ * den Verlauf des Kerns (`ctx.history`, Kommandos `undo`/`redo`),
  * Auswahl leeren, Exportmenü, Datei-Eingabe (Auswahl und Ablegen), die
  * Statuszeile und der Diagrammvorschlag (öffnet `chart-suggestion` in der
  * eigenen Phase, wie die Altform). Die Auswahl des Rasters steht als
@@ -92,7 +93,8 @@ export function toolbarView(ctx) {
       const sheet = activeSheetOf(this);
       const view = this.model.gridView[sheet.id];
       return {
-        readOnly: false,
+        // Abgeschlossenes Projekt: nur lesen (die Altform fragte das Raster, `_isReadOnly`).
+        readOnly: ctx.context.stateManager.isCompleted?.() === true,
         features: GRID_FEATURES,
         commands: GRID_COMMANDS,
         commandArgs: { sheetId: sheet.id },
@@ -101,14 +103,17 @@ export function toolbarView(ctx) {
     },
 
     // ─── Verlauf (Kern) ──────────────────────────────────────
-    /** Kann zurückgenommen werden? */
+    /** @noagent Kann zurückgenommen werden? Sperrt den Knopf. */
     get canUndo() { return ctx.history?.can('undo') ?? false; },
-    /** Kann wiederholt werden? */
+    /** @noagent Kann wiederholt werden? Sperrt den Knopf. */
     get canRedo() { return ctx.history?.can('redo') ?? false; },
-    /** Einen Schritt zurück (Verlauf des Kerns). @returns {boolean} */
-    undo() { return ctx.history?.step('undo') ?? false; },
-    /** Einen Schritt vor (Verlauf des Kerns). @returns {boolean} */
-    redo() { return ctx.history?.step('redo') ?? false; },
+    /**
+     * @noagent Rumpf der Viewmodel-Kommandos `undo`/`redo` (die Agenten rufen
+     * diese): ein Schritt im Verlauf des Kerns.
+     * @param {'undo'|'redo'} dir
+     * @returns {boolean} `false` bei leerem Verlauf oder abgeschlossenem Projekt
+     */
+    stepHistory(dir) { return ctx.history?.step(dir) ?? false; },
 
     // ─── Auswahl, Export, Datei ──────────────────────────────
     /** Die Auswahl des Rasters leeren (Kommando `clearRange`); ohne Auswahl nichts. */

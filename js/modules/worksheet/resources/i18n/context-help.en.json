@@ -363,10 +363,10 @@
       }
     },
     "undo": {
-      "help": "Undoes the last change to the workbook, also on another sheet (Ctrl+Z)."
+      "help": "Undoes the last change to the workbook, also on another sheet (Ctrl+Z). Returns false when there is nothing to undo or the project is completed; undoing is not a new step itself."
     },
     "redo": {
-      "help": "Redoes the last undone change (Ctrl+Y)."
+      "help": "Restores the change undone last (Ctrl+Y). Returns false when there is nothing to redo or the project is completed."
     }
   }
 }

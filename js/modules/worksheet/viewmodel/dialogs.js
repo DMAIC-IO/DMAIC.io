@@ -6,7 +6,9 @@
  * Editor-Inhalt steht versteckt im Template und wird dem Dialogdienst
  * geliehen (`dialog.form`). Übernommen wird über das Model: ein Text mit „=“
  * über `setFormula`, sonst über `setCells` (Typerkennung wie die
- * Zelleingabe). Die Rollenbestätigung vor dem Diagrammvorschlag steht in
+ * Zelleingabe). F4 bei offener Zellbearbeitung bricht sie ab und übernimmt
+ * ihren Text (`_datagrid.takeEditorText` des Rasters). Die Rollenbestätigung
+ * vor dem Diagrammvorschlag steht in
  * `toolbar.js`; Typ, Rolle und Format einer Spalte wählt das Raster selbst
  * (Typ-Kürzel im Spaltenkopf).
  */
@@ -91,13 +93,18 @@ export function dialogsView(ctx) {
   return {
     init() {
       // F4 öffnet den Formel-Editor an der aktiven Zelle (nur im sichtbaren Arbeitsbereich).
+      // Eine offene Zellbearbeitung wird abgebrochen, ihr Text geht in den Editor (wie die Altform).
       onKey = (e) => {
         if (!this.$root.closest('.app-workspace')) return;
         if (!shortcutRegistry.matches(e, 'worksheet.openFormulaEditor') || this.state.formulaTarget) return;
+        const grid = /** @type {any} */ (this.$root.querySelector('.worksheet__grid-host'))?._datagrid;
+        // Die Auswahl meldet das Raster entprellt: vor dem Lesen jetzt melden lassen.
+        grid?.flushView?.();
         const sel = this.activeView?.selection;
         if (!sel) return;
         e.preventDefault();
-        this.showFormulaEditor({});
+        const text = grid?.takeEditorText?.() ?? null;
+        this.showFormulaEditor({}, text);
       };
       document.addEventListener('keydown', onKey, true);
     },
@@ -231,9 +238,10 @@ export function dialogsView(ctx) {
      * Argumenten (Raster: Doppelklick auf eine Formelzelle) oder die aktive
      * Zelle der Auswahl.
      * @param {{ sheetId?: string, columnId?: string, row?: number }} args
+     * @param {string|null} [initialText] Starttext statt der Formel der Zelle (F4 bei offener Zellbearbeitung)
      * @throws {Error} ohne Zelle (übersetzte Meldung)
      */
-    showFormulaEditor({ sheetId, columnId, row }) {
+    showFormulaEditor({ sheetId, columnId, row }, initialText = null) {
       if (this.state.formulaTarget) return;
       const sheet = sheetId
         ? this.model.sheets.find((/** @type {{ id: string }} */ s) => s.id === sheetId)
@@ -253,7 +261,7 @@ export function dialogsView(ctx) {
       const cellRef = `${col.shortName}[${r + 1}]`;
       const cellLabel = col.name && col.name !== col.shortName
         ? `${this.t('feCell')} ${cellRef} · ${col.name}` : `${this.t('feCell')} ${cellRef}`;
-      this.state.formulaText = sheet.formulas[col.id]?.[String(r)] ?? '=';
+      this.state.formulaText = initialText ?? sheet.formulas[col.id]?.[String(r)] ?? '=';
       this.state.formulaTarget = { sheetId: sheet.id, columnId: col.id, row: r };
       void this.runFormulaDialog(`${this.t('formulaEditor')} — ${cellLabel}`);
     },
@@ -292,13 +300,17 @@ export function dialogsView(ctx) {
 
     /**
      * Den Entwurf in die Zielzelle schreiben: mit „=“ als Formel, sonst als
-     * Wert. Abgelehnt bleibt der Dialog offen, mit Meldung.
+     * Wert. Eine gesperrte Spalte schreibt nichts und schließt still (wie die
+     * Altform); sonst abgelehnt bleibt der Dialog offen, mit übersetzter Meldung.
      * @returns {boolean} `false` hält den Dialog offen
      */
     applyFormula() {
       const target = this.state.formulaTarget;
       if (!target) return true;
       const text = this.state.formulaText.trim();
+      const sheet = this.model.sheets.find((/** @type {{ id: string }} */ s) => s.id === target.sheetId);
+      const col = sheet?.columns.find((/** @type {{ id: string }} */ c) => c.id === target.columnId);
+      if (!col || col.meta?.lock) return true;
       try {
         if (isFormula(text)) {
           this.model.setFormula({ sheetId: target.sheetId, columnId: target.columnId, row: target.row, formula: text });
@@ -306,7 +318,8 @@ export function dialogsView(ctx) {
           this.model.setCells({ sheetId: target.sheetId, columnId: target.columnId, startRow: target.row, values: [text === '' ? null : text] });
         }
       } catch (err) {
-        ctx.notify(err instanceof Error ? err.message : String(err), 'error');
+        console.warn('[worksheet] applyFormula', err);
+        ctx.notify(this.t('formulaFailed'), 'error');
         return false;
       }
       ctx.notify(this.t('formulaApplied'), 'success');

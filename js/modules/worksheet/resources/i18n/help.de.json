@@ -53,7 +53,7 @@
         {
           "type": "list",
           "items": [
-            "CSV- oder XLSX-Dateien lassen sich per Drag & Drop oder über die Importleiste laden.",
+            "CSV- oder TSV-Dateien lassen sich per Drag & Drop oder über den Importknopf laden.",
             "Beim Import wird der Spaltentyp automatisch erkannt; bei Bedarf manuell korrigieren.",
             "Export als CSV oder XLSX über die Exportleiste — der gesamte aktive Sheet wird ausgegeben."
           ]
