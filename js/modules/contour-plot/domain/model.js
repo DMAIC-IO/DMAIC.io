@@ -9,6 +9,7 @@
 import { defineModel, list, number, text, oneOf, columnRef, datasets } from '../../../core/model.js';
 import contourChart from '../../../widgets/contour-chart/schema.js';
 import { validateFormula } from './formula.js';
+import { readColumn } from '../../../core/source-columns.js';
 import { sampleSurface } from './surface.js';
 import { from0 } from './migrations.js';
 
@@ -97,12 +98,12 @@ export class State extends defineModel({
      * Editor-Einstellungen); null bei einem Fehler der eigenen Formel oder
      * wenn die Fläche keine endlichen Grenzen hat.
      *
-     * @param {any} _data Arbeitsblattsicht
+     * @param {import('../../../core/source-reader.js').Source} _src Leser des Arbeitsblatts
      * @param {{ formulaError: FormulaError|null }} d
      * @this {import('./model.types.js').StateModel}
      * @returns {Surface|null}
      */
-    surface(_data, d) {
+    surface(_src, d) {
       if (d.formulaError) return null;
       const { zMin, zMax, optimum } = sampleSurface(this);
       if (!Number.isFinite(zMin) || !Number.isFinite(zMax)) return null;
@@ -112,16 +113,16 @@ export class State extends defineModel({
      * Die Messpunkte aus den drei Spalten: nur Zeilen mit drei endlichen
      * Zahlen. Leer, solange eine Spalte fehlt.
      *
-     * @param {any} data Arbeitsblattsicht
+     * @param {import('../../../core/source-reader.js').Source} src Leser des Arbeitsblatts
      * @this {import('./model.types.js').StateModel}
      * @returns {DataPoint[]}
      */
-    dataPoints(data) {
+    dataPoints(src) {
       const row = this.datasets[0];
       if (!row?.x || !row?.y || !row?.z) return [];
-      const xs = data.values(row.x) ?? [];
-      const ys = data.values(row.y) ?? [];
-      const zs = data.values(row.z) ?? [];
+      const xs = readColumn(src, row.x)?.values ?? [];
+      const ys = readColumn(src, row.y)?.values ?? [];
+      const zs = readColumn(src, row.z)?.values ?? [];
       const n = Math.min(xs.length, ys.length, zs.length);
       const out = [];
       for (let i = 0; i < n; i++) {

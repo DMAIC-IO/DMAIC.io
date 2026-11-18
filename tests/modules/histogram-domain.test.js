@@ -2,6 +2,7 @@ import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../test
 import { State } from '../../js/modules/histogram/domain/model.js';
 import { buildGroups } from '../../js/modules/histogram/domain/analyze.js';
 import { evaluateDerived } from '../../js/core/derived.js';
+import { storedSource } from '../helpers/stored-source.js';
 import { CHART_COLORS_RGBA } from '../../js/core/chart/chart-colors.js';
 
 const ref = (c) => ({ instanceId: 'w', sheetId: 's', columnId: c });
@@ -59,7 +60,22 @@ suite('histogram: buildGroups', () => {
 
 suite('histogram: Model — derived stats', () => {
   const cols = { v: [1, 2, 3, 4, 5, 6], g: ['a', 'b', 'a', 'b', 'a', 'b'], w: [10, 11, 12, 13] };
-  const data = { values: (r) => cols[r.columnId] ?? null, name: (r) => r.columnId.toUpperCase() };
+  const wsOf = (columns) => storedSource({ w: { sheets: [{ id: 's', name: 'S', state: {
+    rowCount: Math.max(0, ...Object.values(columns).map((v) => v.length)),
+    columns: Object.entries(columns).map(([id, values]) => ({ id, name: id.toUpperCase(), values })),
+  } }] } });
+  const data = wsOf(cols);
+  /** Leser, der außer read/list jedes Glied mit Wurf meldet. */
+  const spy = (src) => new Proxy({}, { get(_t, k) {
+    if (k === 'read') return (...a) => src.read(...a);
+    if (k === 'list') return () => src.list();
+    throw new Error(`derived greift auf src.${String(k)} zu`);
+  } });
+
+  test('stats liest nur über src.read', () => {
+    const m = State.fromJSON({ datasets: [{ valueRef: ref('v'), groupRef: ref('g') }] });
+    assertEqual(evaluateDerived(m, spy(data)).stats.length, 2);
+  });
 
   test('zwei Gruppen: n, Mittel, Standardabweichung, Quartile und Konfidenzintervall je Stufe', () => {
     const m = State.fromJSON({ datasets: [{ valueRef: ref('v'), groupRef: ref('g') }] });
@@ -99,6 +115,6 @@ suite('histogram: Model — derived stats', () => {
   test('ohne Datensatz oder mit zu wenig Werten: leer; kein Zugriff auf i18n nötig', () => {
     assertDeepEqual(evaluateDerived(new State(), data).stats, []);
     const m = State.fromJSON({ datasets: [{ valueRef: ref('e'), groupRef: null }] });
-    assertDeepEqual(evaluateDerived(m, { values: () => [7], name: () => 'E' }).stats, []);
+    assertDeepEqual(evaluateDerived(m, wsOf({ v: [7] })).stats, []);
   });
 });

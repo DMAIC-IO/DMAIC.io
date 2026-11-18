@@ -1,7 +1,7 @@
 /**
  * D.Mike — Histogramm: Viewmodel.
  *
- * `computed series` baut aus Datensätzen und Arbeitsblatt (`ctx.data`) die
+ * `computed series` baut aus Datensätzen und Arbeitsblatt (`ctx.source`) die
  * Reihen; die Kennzahlen kommen aus der Ableitung `stats` des Models. Der
  * Getter `histogram` ist die Konfiguration des Diagramm-Widgets.
  */
@@ -10,7 +10,7 @@ import { applyEdits } from '../../../widgets/chart-edits.js';
 import histogramChart from '../../../widgets/histogram-chart/schema.js';
 import descriptor from '../module.js';
 import { State, BIN_MODES } from '../domain/model.js';
-import { buildSeries } from '../domain/analyze.js';
+import { buildSeries, sourceColumns } from '../domain/analyze.js';
 import { fromExample } from '../io/example.js';
 
 /** @param {any} s @returns {boolean} */
@@ -32,7 +32,7 @@ export default createModule({
       computed: {
         /** Reihen mit Darstellung, oder `{ error, params }`. */
         series() {
-          return buildSeries(this.model, { values: (r) => ctx.data.values(r), name: (r) => ctx.data.name(r) });
+          return buildSeries(this.model, sourceColumns(ctx.source));
         },
         /** Reihen nach den Editor-Einstellungen; leer, solange es keine gibt. */
         shown() {

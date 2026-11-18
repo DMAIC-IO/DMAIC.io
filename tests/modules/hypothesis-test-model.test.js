@@ -1,6 +1,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertThrows } from '../test-utils.js';
 import { State, resolveTarget } from '../../js/modules/hypothesis-test/domain/model.js';
 import { analyze } from '../../js/modules/hypothesis-test/domain/analyze.js';
+import { storedSource } from '../helpers/stored-source.js';
 import { evaluateDerived } from '../../js/core/derived.js';
 
 const ref = (c) => ({ instanceId: 'ws1', sheetId: 's1', columnId: c });
@@ -187,11 +188,14 @@ suite('hypothesis-test Model — derived result', () => {
   const A = [10.1, 10.4, 9.8, 10.2, 10.0, 10.3];
   const B = [12.9, 13.2, 12.7, 13.0, 12.8, 13.4];
   const cols = { c0: A, c1: B };
-  const data = {
-    name: (r) => (cols[r.columnId] ? `Spalte ${r.columnId}` : null),
-    values: (r) => (cols[r.columnId] ? [...cols[r.columnId]] : null),
-    numeric: (r) => (cols[r.columnId] ? [...cols[r.columnId]] : null),
-  };
+  const data = storedSource({ ws1: { sheets: [{ id: 's1', name: 'S', state: {
+    rowCount: 6, columns: Object.entries(cols).map(([id, values]) => ({ id, name: `Spalte ${id}`, values })),
+  } }] } });
+  const spy = new Proxy({}, { get(_t, k) {
+    if (k === 'read') return (...a) => data.read(...a);
+    if (k === 'list') return () => data.list();
+    throw new Error(`derived greift auf src.${String(k)} zu`);
+  } });
 
   test('ohne Spalten: insufficient, dieselbe Analyse wie der Rechenkern', () => {
     const m = State.fromJSON({ category: 'mean', testType: 'two' });
@@ -215,9 +219,14 @@ suite('hypothesis-test Model — derived result', () => {
     }));
   });
 
+  test('result liest nur über src.read', () => {
+    const m = State.fromJSON({ category: 'mean', testType: 'two', colRef1: ref('c0'), colRef2: ref('c1') });
+    assertEqual(evaluateDerived(m, spy).result.status, 'ok');
+  });
+
   test('nur result steht in den Ableitungen; ein Fehler wird zu { error }', () => {
     const m = State.fromJSON({ category: 'mean', testType: 'one', colRef1: ref('c0') });
-    const out = evaluateDerived(m, { ...data, numeric: () => { throw new Error('kaputt'); } });
+    const out = evaluateDerived(m, { read: () => ({ columns: [{ id: 'c0', name: 'x', get values() { throw new Error('kaputt'); } }] }), list: () => [] });
     assertDeepEqual(Object.keys(out), ['result']);
     assertDeepEqual(out.result, { error: 'kaputt' });
   });

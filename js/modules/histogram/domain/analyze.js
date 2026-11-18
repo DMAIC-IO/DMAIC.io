@@ -2,6 +2,20 @@
  * D.Mike — Histogramm: Reihen aus Datensätzen. Rein.
  */
 import { CHART_COLORS_RGBA, BORDER_COLORS } from '../../../core/chart/chart-colors.js';
+import { readColumn, columnLabel } from '../../../core/source-columns.js';
+
+/**
+ * Spaltenleser für `buildGroups`/`buildSeries` über den Leser `src`: Werte und
+ * Anzeigename einer Spalte; `null`, wenn sie nicht lesbar ist.
+ * @param {import('../../../core/source-reader.js').Source} src
+ * @returns {{ values: (ref: object) => any[]|null, name: (ref: object) => string|null }}
+ */
+export function sourceColumns(src) {
+  return {
+    values: (ref) => readColumn(src, /** @type {any} */ (ref))?.values ?? null,
+    name: (ref) => { const c = readColumn(src, /** @type {any} */ (ref)); return c ? columnLabel(c) : null; },
+  };
+}
 
 /** @param {unknown} v @returns {v is number} */
 const isNum = (v) => typeof v === 'number' && Number.isFinite(v);

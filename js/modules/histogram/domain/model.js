@@ -11,7 +11,7 @@ import { CHART_COLORS_RGBA } from '../../../core/chart/chart-colors.js';
 import { computeSeriesStats } from '../../../core/stats-panel.js';
 import histogramChart from '../../../widgets/histogram-chart/schema.js';
 import { applyEdits } from '../../../core/chart-edits.js';
-import { buildSeries } from './analyze.js';
+import { buildSeries, sourceColumns } from './analyze.js';
 import { from0 } from './migrations.js';
 
 /** @type {readonly ('auto'|'manual')[]} */
@@ -46,12 +46,12 @@ export const State = defineModel({
      * auf den Reihen nach den Editor-Einstellungen: im Editor ausgeblendete
      * Reihen fehlen. Leer, solange es keine Reihen gibt.
      *
-     * @param {any} data Arbeitsblattsicht
+     * @param {import('../../../core/source-reader.js').Source} src Leser des Arbeitsblatts
      * @this {import('./model.types.js').StateModel}
      * @returns {{ name: string, color: string, stats: Record<string, number>|null, ci: Record<string, number[]> }[]}
      */
-    stats(data) {
-      const built = buildSeries(this, data);
+    stats(src) {
+      const built = buildSeries(this, sourceColumns(src));
       if (!('series' in built)) return [];
       const shown = applyEdits({ series: built.series }, this.histogramChart ?? {}, histogramChart.editable, new Set()).series;
       return computeSeriesStats(
