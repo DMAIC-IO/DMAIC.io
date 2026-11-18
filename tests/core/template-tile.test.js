@@ -207,6 +207,36 @@ suite('createTile: derived', () => {
     assertTrue(/not_loaded/.test(vm.total.error));
   });
 
+  test('ein Memo je viewModel(): gemeinsame Abhängigkeit läuft einmal, ungelesene gar nicht', () => {
+    let base = 0;
+    let unread = 0;
+    const Shared = defineModel({
+      fields: { items: list(text()) },
+      derived: {
+        analysis() { base += 1; return { n: 3 }; },
+        result(_src, d) { return d.analysis.n + 1; },
+        points(_src, d) { return d.analysis.n * 2; },
+        idle() { unread += 1; return 0; },
+      },
+    });
+    const tile = createTile({ descriptor, Model: Shared });
+    const vm = tile.viewModel({ state: {}, settings: {}, i18n, stateManager: sm });
+    assertEqual(vm.result, 4);
+    assertEqual(vm.points, 6);
+    assertEqual(vm.analysis.n, 3);
+    assertEqual(base, 1, 'analysis einmal je viewModel()');
+    assertEqual(unread, 0, 'ein ungelesener Getter kostet nichts');
+    tile.viewModel({ state: {}, settings: {}, i18n, stateManager: sm }).points;
+    assertEqual(base, 2, 'neues Rendern rechnet neu');
+  });
+
+  test('ein derived mit dem Namen eines Kern-Schlüssels des Scopes wirft', () => {
+    for (const name of ['model', 'settings', 't', 'moduleId', '_ui', '_templateTile']) {
+      const Bad = defineModel({ fields: { items: list(text()) }, derived: { [name]() { return 1; } } });
+      assertThrows(() => createTile({ descriptor, Model: Bad }), new RegExp(`^createTile\\(demo-tile\\): ${name} collides with derived$`));
+    }
+  });
+
   test('ein view-Glied mit dem Namen eines derived wirft', () => {
     const tile = createTile({ descriptor, Model: Sheet, view() { return { get total() { return 0; } }; } });
     assertThrows(() => tile.viewModel({ state: {}, settings: {}, i18n, stateManager: sm }), /^createTile\(demo-tile\): total collides with derived$/);

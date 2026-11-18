@@ -19,7 +19,7 @@
  * Dashboard den Modul-Chunk mit.
  */
 import { readModel, readSettings, isSettings, defaultOf, activeContext, schemaOf } from './model.js';
-import { evaluateDerived } from './derived.js';
+import { derivedReader } from './derived.js';
 import { deferredSource, NO_SOURCE } from './source-reader.js';
 import { withFacade } from './source-columns.js';
 
@@ -43,6 +43,9 @@ import { withFacade } from './source-columns.js';
 
 /** Name der Marke am Scope einer Kachel in dieser Form. */
 export const TEMPLATE_TILE = '_templateTile';
+
+/** Schlüssel, die der Kern selbst auf den Scope legt; kein `derived` darf so heißen. */
+const SCOPE_KEYS = ['model', 'settings', 't', 'moduleId', TEMPLATE_TILE, '_ui'];
 
 /** Hooks des alten Vertrags, die unverändert durchgehen. */
 const PASS_THROUGH = ['enumerate', 'refreshOn', 'mount', 'dispose'];
@@ -110,6 +113,9 @@ export function createTile(base) {
   if (view !== undefined && typeof view !== 'function') throw new Error(`createTile(${id}): view must be a function`);
   const prefix = `modules.${id}`;
   const derived = Object.keys(schemaOf(Model)?.derived ?? {});
+  for (const name of derived) {
+    if (SCOPE_KEYS.includes(name)) throw new Error(`createTile(${id}): ${name} collides with derived`);
+  }
 
   /** @type {Record<string, any>} */
   const tile = {
@@ -137,17 +143,16 @@ export function createTile(base) {
         }),
       }) });
       const source = sourceOf(args);
-      // Ein Getter je derived, je Rendern höchstens einmal ausgewertet (der Scope ist ein Schnappschuss).
+      // Ein Getter je derived; ein Memo je Rendern für alle Namen (der Scope ist ein Schnappschuss):
+      // jeder Eintrag läuft höchstens einmal, auch wenn mehrere andere ihn lesen, und nur, wenn gelesen.
       // Übergang bis Task 9: derived lesen zusätzlich über die Fassade.
-      const reader = withFacade(source);
-      /** @type {Map<string, any>} */
-      const memo = new Map();
+      let read = null;
       for (const name of derived) {
         Object.defineProperty(scope, name, {
           enumerable: true,
           get() {
-            if (!memo.has(name)) memo.set(name, evaluateDerived(model, reader, [name])[name]);
-            return memo.get(name);
+            read ??= derivedReader(model, withFacade(source));
+            try { return read(name); } catch (err) { return { error: /** @type {Error} */ (err).message }; }
           },
         });
       }
