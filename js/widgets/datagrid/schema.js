@@ -1,7 +1,5 @@
 /**
- * Tabelle aus dem Model eines Moduls. Zwei Formen:
- *
- * **Über `table()`** (P7, F1.14): `table` ist die `TableData` des Models
+ * Tabelle aus dem Model eines Moduls über `table()` (P7, F1.14): `table` ist die `TableData` des Models
  * (nur Art und Identität geprüft, kein Kopieren), `columns` die Spaltenköpfe in
  * Model-Form (Sperre in `meta.lock/reason/managedBy`), `formulas` die Formeln
  * je Spalten-Id und Zeile, `rev` der Zähler `model.$tableRev`. `config` trägt
@@ -10,12 +8,6 @@
  * Args-Objekt gemischt, z. B. `{ sheetId }`), `contextMenu` (Zusatzeinträge,
  * `labelKey` unter `modules.<moduleId>.`) und `view` (gespeicherter
  * Ansichtszustand: Spaltenbreiten und Auswahl).
- *
- * **Altweg** (bis F1.14f): `config.columns` und `config.rows` (Zellwerte als
- * Text, Zahlen wandelt das Widget nach `type`); `onCell` bekommt
- * `{ row, column, value }`, `onPaste` `{ row, column, values }`, ein Eintrag aus
- * `contextMenu` sein Kommando `id` mit `{ row }`. `reason` ist der Sperrgrund wie
- * im Arbeitsblatt (`ui.datagrid.lockReason.<reason>`), `unit` steht im Kopf.
  */
 import { defineWidget, list, object, text, oneOf, number, boolean, map, table } from '../../core/model.js';
 
@@ -66,19 +58,6 @@ export default defineWidget({
           activeCol: number(), activeRow: number(), extraCols: list(number(), opt),
         }, { nullable: true, optional: true }),
       }, opt),
-      // Altweg
-      columns: list(object({
-        key: text(),
-        name: text(),
-        type: text(),
-        lock: oneOf(['hard', 'soft'], { nullable: true }),
-        format: object({ decimals: number({ integer: true, nullable: true }) }, { nullable: true }),
-        reason: text({ nullable: true, optional: true }),
-        unit: text({ nullable: true, optional: true }),
-      }), opt),
-      rows: list(list(text({ nullable: true })), opt),
     }),
-    onCell: text(opt),
-    onPaste: text(opt),
   },
 });

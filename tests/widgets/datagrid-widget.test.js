@@ -123,7 +123,6 @@ async function host(opts = {}) {
       cols: COLS,
       formulas: {},
       ro: false,
-      legacyRows: [['1'], ['2']],
       get grid() {
         return {
           readOnly: this.ro,
@@ -135,13 +134,6 @@ async function host(opts = {}) {
         };
       },
       get legacy() {
-        return { columns: [{ key: 'a', name: 'A', type: 'numeric', lock: null, format: null }], rows: this.legacyRows, readOnly: false, contextMenu: [] };
-      },
-      get legacyNoMenu() {
-        return { columns: [{ key: 'a', name: 'A', type: 'numeric', lock: null, format: null }], rows: this.legacyRows, readOnly: false };
-      },
-      get legacyNoColumns() {
-        return { rows: this.legacyRows, readOnly: false, contextMenu: [] };
       },
     };
     Object.defineProperty(comp, '_ui', {
@@ -327,33 +319,16 @@ suite('datagrid widget über table()', () => {
     assertEqual(td(root, 0, 1).textContent, '2', 'alter Wert');
   });
 
-  test('mit config.rows läuft der Altweg', async () => {
-    const { root } = await host({ attrs: 'x-widget-config="legacy"' });
-    assertEqual(root.querySelectorAll('.datagrid__table').length, 1);
-    assertEqual(root.querySelectorAll('.datagrid__table--virtual').length, 0, 'kein neues Raster');
-    assertEqual(td(root, 0, 1).textContent, '2');
+  test('Altform config.rows wirft: Schema lehnt die Eingabe ab, kein Raster', async () => {
+    const { el, warnings } = await host({ warnings: true, attrs: 'x-widget-config="legacy"' });
+    assertTrue(warnings.some((w) => w.includes('invalid datagrid.config')), `Warnung: ${warnings.join(' | ')}`);
+    assertTrue(el.querySelector('.widget-root--error') !== null, 'Fehlerzustand');
+    assertEqual(el.querySelectorAll('.datagrid__table').length, 0, 'kein Raster');
   });
 
-  test('Altweg ohne contextMenu: hängt ein, Rechtsklick auf den Zeilenkopf ohne Fehler', async () => {
-    const errors = [];
-    const onErr = (e) => errors.push(String(e.message ?? e));
-    window.addEventListener('error', onErr);
-    try {
-      const { root } = await host({ attrs: 'x-widget-config="legacyNoMenu"' });
-      assertEqual(root.querySelectorAll('.widget-root--error').length, 0, 'kein Fehlerzustand');
-      const rh = root.querySelector('tbody td.datagrid__row-header, tbody th.datagrid__row-header') ?? td(root, 0, 0);
-      rh.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, ...center(rh) }));
-      await settle();
-      assertDeepEqual(errors, []);
-    } finally {
-      window.removeEventListener('error', onErr);
-      document.querySelectorAll('.context-menu').forEach((m) => m.remove());
-    }
-  });
-
-  test('Altweg ohne columns: klare Meldung statt Absturz im Altweg', async () => {
-    const { el, warnings } = await host({ warnings: true, attrs: 'x-widget-config="legacyNoColumns"' });
-    assertTrue(warnings.some((w) => w.includes('config.rows needs config.columns')), `Warnung: ${warnings.join(' | ')}`);
+  test('ohne x-widget-table: datagrid: x-widget-table is required', async () => {
+    const { el, warnings } = await host({ warnings: true, attrs: 'x-widget-config="grid"' });
+    assertTrue(warnings.some((w) => w.includes('x-widget-table is required')), `Warnung: ${warnings.join(' | ')}`);
     assertTrue(el.querySelector('.widget-root--error') !== null, 'Fehlerzustand');
   });
 

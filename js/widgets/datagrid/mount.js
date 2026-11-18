@@ -1,8 +1,6 @@
 /**
- * Widget datagrid — Weiche zwischen dem Raster über `table()` (P7) und dem
- * Altweg (`config.rows`, legacy-mount.js, bis F1.14f).
- *
- * Über `table()`: GridView (Zeichnen, virtualisiert) und GridInput (Bedienung)
+ * Widget datagrid — Raster über `table()` (P7); fehlt `x-widget-table`, wirft das
+ * Widget `datagrid: x-widget-table is required`. GridView (Zeichnen, virtualisiert) und GridInput (Bedienung)
  * über der `TableData` des Models. Das Widget ändert nie selbst Daten: jede
  * Bedienung meldet eine Rolle, das Widget ruft `command(config.commands[role],
  * { ...config.commandArgs, ...args })`. Fehlt die Rolle in `commands`, ist ihr
@@ -21,7 +19,6 @@ import Alpine from '@alpinejs/csp';
 import { TableData } from '../../core/table-data.js';
 import { createGridView } from '../../core/datagrid/view/grid-view.js';
 import { createGridInput } from '../../core/datagrid/view/grid-input.js';
-import { mount as mountLegacy } from './legacy-mount.js';
 
 /** Klasse, an der Raster und Stile den Nur-Lese-Zustand erkennen (wie im Altweg). */
 const READONLY = 'dmike--readonly';
@@ -54,35 +51,6 @@ export function headerColumns(columns) {
 }
 
 /**
- * @param {HTMLElement} root
- * @param {{ props: any, services: any, effect: Function, command: (name: string, args: object) => Promise<any> }} w
- * @returns {{ destroy: () => void }}
- */
-export function mount(root, w) {
-  const config = Alpine.raw(w.props.config);
-  if (Array.isArray(config?.rows) && Array.isArray(config?.columns)) return mountLegacy(root, { ...w, props: legacyProps(w.props) });
-  if (Array.isArray(config?.rows)) throw new Error('datagrid: config.rows needs config.columns (legacy form)');
-  return mountTable(root, w);
-}
-
-/**
- * Eingaben für den Altweg: `legacy-mount.js` bleibt unverändert und liest
- * `config.contextMenu` ohne Absicherung; im Schema ist es inzwischen optional.
- * Die Getter lesen die reaktiven Props weiter (Effekte des Altwegs verfolgen sie).
- * @param {any} props @returns {any}
- */
-function legacyProps(props) {
-  return {
-    get config() {
-      const c = props.config;
-      return c && !Array.isArray(c.contextMenu) ? { ...c, contextMenu: [] } : c;
-    },
-    get onCell() { return props.onCell; },
-    get onPaste() { return props.onPaste; },
-  };
-}
-
-/**
  * Ansichtsereignisse brauchen ein Ziel: sonst gingen Doppelklick auf eine
  * Formelzelle bzw. ein Zusatzeintrag im Menü still verloren.
  * @param {any} config @returns {void}
@@ -104,11 +72,10 @@ function checkViewEvents(config) {
  * @param {{ props: any, services: any, effect: Function, command: (name: string, args: object) => Promise<any> }} w
  * @returns {{ destroy: () => void }}
  */
-function mountTable(root, { props, services, effect, command }) {
+export function mount(root, { props, services, effect, command }) {
   const { i18n, moduleId = null } = services;
-  if (!(Alpine.raw(props.table) instanceof TableData)) {
-    throw new Error('datagrid: x-widget-table must name a TableData (or config.rows for the legacy form)');
-  }
+  if (props.table == null) throw new Error('datagrid: x-widget-table is required');
+  if (!(Alpine.raw(props.table) instanceof TableData)) throw new Error('datagrid: x-widget-table must name a TableData');
   if (!Array.isArray(Alpine.raw(props.columns))) throw new Error('datagrid: x-widget-columns is required with x-widget-table');
   if (typeof props.rev !== 'number') throw new Error('datagrid: x-widget-rev="model.$tableRev" is required with x-widget-table (otherwise the grid never redraws)');
   const t = (key) => i18n.t(key);
