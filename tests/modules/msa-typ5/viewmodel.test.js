@@ -3,12 +3,12 @@
  *
  * `levels` und `analysis` laufen über den echten Kern (`computed.js`) mit der
  * Reaktivität aus `@vue/reactivity`; das Arbeitsblatt ist eine reaktive
- * Attrappe für `ctx.data`, gefüllt aus den Beispielblättern.
+ * Attrappe für `ctx.source`, gefüllt aus den Beispielblättern.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import { reactive, effect, stop } from '@vue/reactivity';
 import { defineComputedSlots, bindComputed } from '../../../js/core/computed.js';
-import { refToKey } from '../../../js/core/worksheet-columns.js';
+import { sheetSource } from '../../helpers/sheet-source.js';
 import { State } from '../../../js/modules/msa-typ5/domain/model.js';
 import { fromExample } from '../../../js/modules/msa-typ5/io/example.js';
 import {
@@ -38,13 +38,7 @@ async function host(name, { engine, model } = {}) {
   const ws = sheetFile.sheets[0];
   const sheet = reactive(Object.fromEntries(ws.state.columns.map((c) => [c.id, c.values])));
   const names = Object.fromEntries(ws.state.columns.map((c) => [c.id, c.name]));
-  const data = {
-    values: (r) => (r && sheet[r.columnId] ? [...sheet[r.columnId]] : null),
-    name: (r) => (r && sheet[r.columnId] ? names[r.columnId] : null),
-    columns: () => Object.keys(sheet).map((id) => ({
-      key: refToKey({ instanceId: '__source__', sheetId: ws.id, columnId: id }), name: names[id],
-    })),
-  };
+  const data = sheetSource(sheet, { instanceId: '__source__', sheetId: ws.id, names });
   const comp = { model: model ?? State.fromJSON(fromExample(project)) };
   defineComputedSlots(comp, ['levels', 'analysis']);
   const vm = reactive(comp);

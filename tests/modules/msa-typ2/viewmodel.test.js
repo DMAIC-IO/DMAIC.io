@@ -9,6 +9,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import { reactive, effect, stop } from '@vue/reactivity';
 import { defineComputedSlots, bindComputed } from '../../../js/core/computed.js';
+import { sheetSource } from '../../helpers/sheet-source.js';
 import { State } from '../../../js/modules/msa-typ2/domain/model.js';
 import {
   readAnalysis, analysisMessage, resultOf, byOperatorChart, interactionChart, runStrips,
@@ -45,7 +46,7 @@ function study(parts) {
  */
 function host({ parts = 4, engine } = {}) {
   const sheet = reactive(study(parts));
-  const data = { values: (r) => (sheet[r.columnId] ? [...sheet[r.columnId]] : null) };
+  const data = sheetSource(sheet);
   const comp = { model: new State() };
   defineComputedSlots(comp, ['analysis']);
   const vm = reactive(comp);

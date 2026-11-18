@@ -3,6 +3,7 @@ import { State, K_OPTIONS, VERDICT_BASES } from '../../../js/modules/msa-typ2/do
 import { analyze, validate } from '../../../js/engines/msa-typ2-engine.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
 import { setFields } from '../../../js/core/model.js';
+import { sheetSource, spySource } from '../../helpers/sheet-source.js';
 
 const CTX = { cycle: 'dmaic', confidenceLevel: 95, power: 90 };
 const ref = (col) => ({ instanceId: 'ws1', sheetId: 's1', columnId: col });
@@ -139,7 +140,19 @@ suite('MSA Typ 2 Model — derived analysis', () => {
     }
   }
   const cols = { part: parts, op: ops, meas };
-  const data = { values: (r) => (cols[r.columnId] ? [...cols[r.columnId]] : null) };
+  const data = sheetSource(cols);
+
+  test('analysis liest nur über src.read', () => {
+    const m = new State(CTX);
+    m.part = ref('part'); m.operator = ref('op'); m.measurement = ref('meas');
+    assertEqual(evaluateDerived(m, spySource(data)).analysis.mode, 'typ2');
+  });
+
+  test('gelöschte Messwertspalte: null wie ohne Spalte', () => {
+    const m = new State(CTX);
+    m.part = ref('part'); m.measurement = ref('gone');
+    assertEqual(evaluateDerived(m, data).analysis, null);
+  });
 
   test('ohne Messwertspalte: null', () => {
     const m = new State(CTX); m.part = ref('part');

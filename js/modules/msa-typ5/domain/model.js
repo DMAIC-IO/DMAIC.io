@@ -290,18 +290,18 @@ export class State extends defineModel({
   derived: {
     /**
      * Stufen der Bewertungen; leer, solange keine Bewertungsspalte gewählt ist.
-     * @param {any} data Arbeitsblattsicht
+     * @param {import('../../../core/source-reader.js').Source} src Leser der Agentenfläche
      * @this {import('./model.types.js').StateModel}
      * @returns {Levels}
      */
-    levels(data) { return readLevels(this, data); },
+    levels(src) { return readLevels(this, src); },
     /**
      * Die Analyse; null, solange Pflichtspalten fehlen oder keine Zeile entsteht.
-     * @param {any} data Arbeitsblattsicht
+     * @param {import('../../../core/source-reader.js').Source} src Leser der Agentenfläche
      * @this {import('./model.types.js').StateModel}
      * @returns {Result|null}
      */
-    analysis(data) { return readAnalysis(this, data); },
+    analysis(src) { return readAnalysis(this, src); },
   },
   invariants: {
     uniqueRatings: {

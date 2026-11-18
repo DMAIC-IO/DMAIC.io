@@ -37,7 +37,7 @@ export default createModule({
     const lang = () => ctx.context.language;
     return {
       /** Die Zeilen der Analyse (für den Messverlauf), ohne Rechnung. */
-      get ratingRows() { return ratingRowsOf(this.model, ctx.data); },
+      get ratingRows() { return ratingRowsOf(this.model, ctx.source); },
       /** Das Ergebnis der Engine, oder null bei fehlenden, abgelehnten oder gescheiterten Eingaben. */
       get result() { return resultOf(this.analysis); },
       /** Es gibt ein Urteil (sonst steht `analysisMessage` an seiner Stelle). */

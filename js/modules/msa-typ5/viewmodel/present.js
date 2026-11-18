@@ -3,7 +3,7 @@
  *
  * Die Meldungs- und Tabellentexte, die Konfiguration der Diagramm-Widgets und das
  * Kommando zum Tausch der positiven Stufe. Alles rein: Eingaben sind Model,
- * `ctx.data`, das Ergebnis der Engine, der Übersetzer `t` und die App-Sprache.
+ * `ctx.source`, das Ergebnis der Engine, der Übersetzer `t` und die App-Sprache.
  */
 import { setFields } from '../../../core/model.js';
 import { requireForm } from '../../../core/validate.js';

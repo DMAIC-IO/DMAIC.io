@@ -9,6 +9,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import { State } from '../../../js/modules/msa-typ5/domain/model.js';
 import { fromExample } from '../../../js/modules/msa-typ5/io/example.js';
+import { sheetSource } from '../../helpers/sheet-source.js';
 import { readAnalysis } from '../../../js/modules/msa-typ5/viewmodel/present.js';
 
 const BASE = '../../../js/modules/msa-typ5/resources/examples/';
@@ -38,11 +39,7 @@ async function load(id) {
   const ws = (await fetchJson(`${BASE}${project.sourceWorksheetFile}`)).sheets[0];
   const sheet = Object.fromEntries(ws.state.columns.map((c) => [c.id, c.values]));
   const names = Object.fromEntries(ws.state.columns.map((c) => [c.id, c.name]));
-  const data = {
-    values: (r) => (r && sheet[r.columnId] ? [...sheet[r.columnId]] : null),
-    name: (r) => (r && sheet[r.columnId] ? names[r.columnId] : null),
-    columns: () => [],
-  };
+  const data = sheetSource(sheet, { instanceId: '__source__', sheetId: ws.id, names });
   const model = State.fromJSON(fromExample(project));
   return { model, run: readAnalysis(model, data) };
 }

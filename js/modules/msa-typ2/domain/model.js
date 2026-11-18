@@ -163,11 +163,11 @@ export class State extends defineModel({
     /**
      * Gage R&R aus den drei Spalten und den Parametern; null, solange
      * Teile- oder Messwertspalte fehlen oder keine brauchbare Zeile da ist.
-     * @param {any} data Arbeitsblattsicht
+     * @param {import('../../../core/source-reader.js').Source} src Leser der Agentenfläche
      * @this {import('./model.types.js').StateModel}
      * @returns {Result|null}
      */
-    analysis(data) { return readAnalysis(this, data); },
+    analysis(src) { return readAnalysis(this, src); },
   },
   invariants: {
     limitsOrder: {

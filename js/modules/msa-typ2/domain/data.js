@@ -3,6 +3,7 @@
  */
 import { toNum } from '../../../core/chart/chart-data-prep.js';
 import { validate, analyze } from '../../../engines/msa-typ2-engine.js';
+import { readColumn } from '../../../core/source-columns.js';
 
 /**
  * Die drei Spaltenwerte zeilenweise zu Rechendaten zusammenführen. Zeilen mit
@@ -59,19 +60,21 @@ export function computeAnalysis(data, opts, engine = { validate, analyze }) {
 
 /**
  * Die Analyse aus Model und Arbeitsblatt. Die Spalten kommen über
- * `data.values` (Zeilenzuordnung); ohne Prüferspalte rechnet die Engine Typ 3.
+ * `readColumn` (Zeilenzuordnung); ohne Prüferspalte rechnet die Engine Typ 3.
  * @param {import('../domain/model.types.js').StateModel} m
- * @param {{ values: (ref: object) => any[]|null }} data `ctx.data`
+ * @param {import('../../../core/source-reader.js').Source} src Leser der Agentenfläche
  * @param {{ validate: Function, analyze: Function }} [engine] austauschbar für Tests
  * @returns {any} null, `{ invalid }`, `{ error }` oder das Ergebnis der Engine
  */
-export function readAnalysis(m, data, engine) {
+export function readAnalysis(m, src, engine) {
+  /** @param {object} ref @returns {any[]|null} */
+  const values = (ref) => readColumn(src, ref)?.values ?? null;
   if (!m.part || !m.measurement) return null;
   const cols = {
-    parts: data.values(m.part),
+    parts: values(m.part),
     // Eine gewählte, aber verschwundene Prüferspalte bleibt Typ 2 (ohne Zeilen).
-    operators: m.operator ? (data.values(m.operator) ?? []) : null,
-    measurements: data.values(m.measurement),
+    operators: m.operator ? (values(m.operator) ?? []) : null,
+    measurements: values(m.measurement),
   };
   const opts = {
     alpha: m.alpha, studyVarMultiplier: m.k, lsl: m.lsl, usl: m.usl,

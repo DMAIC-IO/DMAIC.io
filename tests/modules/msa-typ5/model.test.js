@@ -4,6 +4,7 @@ import {
 } from '../../../js/modules/msa-typ5/domain/model.js';
 import { analyze } from '../../../js/engines/msa-typ5-engine.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
+import { sheetSource, spySource } from '../../helpers/sheet-source.js';
 
 const CTX = { cycle: 'dmaic', confidenceLevel: 95, power: 90 };
 const ref = (col) => ({ instanceId: 'ws1', sheetId: 's1', columnId: col });
@@ -135,16 +136,32 @@ suite('MSA Typ 5 Model — derived levels und analysis', () => {
     }
   }
   const cols = { part, appraiser, rating };
-  const data = {
-    values: (r) => (r && cols[r.columnId] ? [...cols[r.columnId]] : null),
-    name: (r) => (r && cols[r.columnId] ? r.columnId : null),
-    columns: () => Object.keys(cols).map((id) => ({ key: id, name: id })),
-  };
+  const data = sheetSource(cols);
   const model = () => {
     const m = new State(CTX);
     m.part = ref('part'); m.appraiser = ref('appraiser'); m.rating = ref('rating');
     return m;
   };
+
+  test('levels und analysis lesen nur über src.read/src.list', () => {
+    const d = evaluateDerived(model(), spySource(data));
+    assertEqual(d.levels.all.length, 2);
+    assertEqual(d.analysis.meta.parts, 6);
+  });
+
+  test('breit: gelöschte Bewertungsspalte zählt nicht mit, Reihenfolge folgt dem Blatt', () => {
+    const wide = { part: ['T1', 'T2', 'T3'], b2: ['ok', 'nok', 'ok'], a1: ['ok', 'ok', 'ok'], a2: ['ok', 'nok', 'ok'], b1: ['ok', 'nok', 'ok'] };
+    const src = spySource(sheetSource(wide));
+    const build = (order) => {
+      const m = new State(CTX);
+      m.layout = 'wide'; m.trials = 2; m.part = ref('part');
+      m.ratings = order.map(ref);
+      return evaluateDerived(m, src).analysis;
+    };
+    const live = build(['b1', 'a2', 'gone', 'a1', 'b2']);
+    assertEqual(live.meta.appraisers, 2);
+    assertEqual(JSON.stringify(live), JSON.stringify(build(['b2', 'a1', 'a2', 'b1'])));
+  });
 
   test('ohne Bewertungsspalte: keine Stufen, keine Analyse', () => {
     const d = evaluateDerived(new State(CTX), data);
