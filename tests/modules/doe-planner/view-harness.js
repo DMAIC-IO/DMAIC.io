@@ -197,6 +197,8 @@ export async function mount(model = null, worksheets = {}) {
   const vm = () => Alpine.$data(container.querySelector('[x-data]'));
   return {
     container, vm, notes, store, events, bus, context,
+    /** The module instance (history: `historyStep`). */
+    module: mod,
     $: (s) => container.querySelector(s),
     $$: (s) => [...container.querySelectorAll(s)],
     /** Calls of a command so far, with their arguments. @param {string} name */

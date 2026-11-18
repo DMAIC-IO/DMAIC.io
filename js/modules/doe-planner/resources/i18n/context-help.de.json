@@ -301,8 +301,8 @@
         "help": "Maximaler Leverage: Größter Einfluss eines einzelnen Versuchspunkts auf die Schätzung. Ideal: p/n."
       }
     },
-    "previewGrid": {
-      "help": "Die Vorschau der Läufe als Tabelle: feste Spalten für Lauf, Standardreihenfolge, Block und Wiederholung, dann je Faktor und je Zielgröße eine Spalte, mit den Änderungen von Hand. Nur Lesen, solange ein neuer Plan entsteht. Reine Darstellung."
+    "previewTable": {
+      "help": "Die Vorschau der Läufe als Tabelle: feste Spalten für Lauf, Standardreihenfolge, Block und Wiederholung, dann je Faktor und je Zielgröße eine Spalte, mit den Änderungen von Hand. Die Werte sind Zahlen bzw. Stufen, nicht ihr Text. Nur Lesen, solange ein neuer Plan entsteht. Reine Darstellung."
     },
     "dispersionView": {
       "help": "Modelliert Mittelwert und ln(s²) als zwei getrennte Antworten — identifiziert Faktoreinstellungen, die die Prozessstreuung unabhängig vom Mittelwert reduzieren (Dual-Response-Ansatz nach Vining & Myers). Erfordert mindestens 2 Replikate pro Versuchspunkt."
@@ -482,6 +482,52 @@
       "help": "Alle Änderungen an der Vorschau verwerfen; die Werte der Läufe stehen wieder so da, wie der Plan sie erzeugt hat.",
       "params": {
         "command": "Ein leeres Objekt; das Kommando nimmt keine Angaben."
+      }
+    },
+    "previewSetCells": {
+      "help": "Werte in die Vorschau tippen, wie das Raster sie meldet: Text ab einer Zelle abwärts, in Zahlen gewandelt (Dezimalkomma zählt). Ein Wert geht als setPreviewCell hinaus, mehrere als setPreviewCells. Für Agenten sind setPreviewCell und setPreviewCells der direkte Weg.",
+      "params": {
+        "columnId": "Die Spalte der Vorschau: f:<Faktor-id> oder r:<Zielgröße ab 0>.",
+        "startRow": "Die Zeile der ersten Zelle, ab 0.",
+        "values": "Die Texte je Zeile abwärts; null oder leer leert eine Zelle.",
+        "command": "Das Kommando als ein Objekt mit columnId, startRow und values."
+      }
+    },
+    "previewPasteBlock": {
+      "help": "Einen Block aus der Zwischenablage in die Vorschau einfügen, ab einer Zelle; was über die letzte Zeile oder Spalte hinausragt, entfällt, gesperrte Spalten bleiben. Geht als setPreviewCells hinaus.",
+      "params": {
+        "columnId": "Die Spalte der linken oberen Zelle: f:<Faktor-id> oder r:<Zielgröße ab 0>.",
+        "startRow": "Die Zeile der linken oberen Zelle, ab 0.",
+        "rows": "Die Zeilen des Blocks als Texte; leer leert eine Zelle.",
+        "command": "Das Kommando als ein Objekt mit columnId, startRow und rows."
+      }
+    },
+    "previewClearRange": {
+      "help": "Einen Bereich der Vorschau leeren (Entf, Ausschneiden): die Änderungen darin entfallen, gesperrte Spalten bleiben. Geht als setPreviewCells mit null hinaus.",
+      "params": {
+        "c0": "Die erste Spalte, ab 0 (0 = Laufnummer).",
+        "r0": "Die erste Zeile, ab 0.",
+        "c1": "Die letzte Spalte, ab 0.",
+        "r1": "Die letzte Zeile, ab 0.",
+        "command": "Das Kommando als ein Objekt mit c0, r0, c1 und r1."
+      }
+    },
+    "previewFillRange": {
+      "help": "Einen Bereich der Vorschau mit dem Ausfüllgriff fortsetzen: Reihen oder Kopien wie im Arbeitsblatt, nur innerhalb der Vorschau; gesperrte Spalten bleiben. Geht als setPreviewCells hinaus.",
+      "params": {
+        "source": "Der Quellbereich { c0, r0, c1, r1 }, Spalten und Zeilen ab 0.",
+        "target": "Der Zielbereich { c0, r0, c1, r1 }: enthält die Quelle und verlängert sie in eine Richtung.",
+        "ctrl": "Optional: true füllt mit der anderen Art (Reihe statt Kopie und umgekehrt), wie Strg beim Ziehen.",
+        "command": "Das Kommando als ein Objekt mit source, target und optional ctrl."
+      }
+    },
+    "previewContextMenu": {
+      "help": "Einen Eintrag des Zeilenmenüs der Vorschau ausführen. forbidRun verbietet die Faktorkombination dieser Zeile (nur beim optimalen Plan), wie forbidRun.",
+      "params": {
+        "id": "Der Eintrag: forbidRun.",
+        "columnId": "Die Spalte, in der das Menü geöffnet wurde; ohne Wirkung.",
+        "row": "Die Zeile, ab 0.",
+        "command": "Das Kommando als ein Objekt mit id, columnId und row."
       }
     },
     "setProjectMode": {

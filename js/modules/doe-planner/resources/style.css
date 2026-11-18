@@ -1213,6 +1213,9 @@
 
 /* ===== Temporary Preview Grid ===== */
 .doe__preview-wrap {
+  /* Flex item of the output column: overflow hidden would let it shrink to
+     nothing (min-height auto is 0 then); the grid inside scrolls itself. */
+  flex-shrink: 0;
   margin-bottom: var(--spacing-md);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--border-radius);
@@ -1244,8 +1247,11 @@
 }
 
 .doe__preview-grid {
+  /* The grid scrolls inside (sticky header, drawn rows follow the scroll). */
+  display: flex;
+  flex-direction: column;
   max-height: 360px;
-  overflow: auto;
+  overflow: hidden;
 }
 
 /* ===== Placeholder ===== */

@@ -1,33 +1,63 @@
 /**
  * DoE Planner: view part "runs" (viewmodel/runs.js) in the browser — the
- * preview through the datagrid widget (cells, paste, the row menu of an
- * optimal design, new rows without a second mount), the bound datasheet
- * with its fill state read through `ctx.data`, the stale banner and the
- * buttons that start the runs and open the sheet afterwards.
+ * preview through the datagrid widget in its table() form (typing, paste,
+ * clear, cut, fill and the row menu go out as roles; the viewmodel turns
+ * them into setPreviewCell, setPreviewCells and forbidRun), undo through
+ * the module history, the bound datasheet with its fill state read through
+ * `ctx.source`, the stale banner and the buttons that start the runs and
+ * open the sheet afterwards.
  */
 import { suite, test, assert, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { setFields } from '../../../js/core/model.js';
+import { TableData } from '../../../js/core/table-data.js';
 import { State } from '../../../js/modules/doe-planner/domain/model.js';
 import {
   mount, ready, bound, plan, threeFactors, designed, settle, typeIn, outputBadges, de, DATASHEET,
 } from './view-harness.js';
 
+const grid = (root) => root.querySelector('.doe__preview-grid');
 const td = (root, r, c) => root.querySelector(`.doe__preview-grid td[data-row-idx="${r}"][data-col-idx="${c}"]`);
-const rowsOf = (root) => root.querySelectorAll('.doe__preview-grid tbody tr').length;
+/** Drawn data rows of the virtualized grid (no spacer, no hidden pool row). */
+const rowsOf = (root) => root.querySelectorAll('.doe__preview-grid tbody tr[data-pool]:not([hidden])').length;
+const center = (node) => {
+  const r = node.getBoundingClientRect();
+  return { clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 };
+};
+const mouse = (target, type, opts = {}) => target.dispatchEvent(new MouseEvent(type, {
+  bubbles: true, cancelable: true, button: 0, ...center(target), ...opts,
+}));
+const key = (target, k, opts = {}) => target.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true, ...opts }));
 
-/** Edit a cell by double click and leave it. */
-async function edit(root, r, c, raw) {
-  td(root, r, c).dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+/** Selects a cell (shift: extends the selection). */
+function sel(root, r, c, shift = false) {
+  mouse(td(root, r, c), 'mousedown', { shiftKey: shift });
+  mouse(td(root, r, c), 'mouseup', { shiftKey: shift });
+}
+
+/** Selects a cell, types a value and takes it with Enter. */
+async function typeAt(root, r, c, text) {
+  // A click on the one active cell clears the selection; after Enter the next cell is already active.
+  if (!td(root, r, c).classList.contains('cell-active')) sel(root, r, c);
+  key(document.activeElement, text[0]);
   const input = root.querySelector('.doe__preview-grid input.cell-editor');
-  assert(input !== null, 'editor open');
-  input.value = raw;
-  input.blur();
+  assert(input !== null, 'editor opened by typing');
+  input.value = text;
+  key(input, 'Enter');
   await settle();
 }
 
-/** Opens the row menu of a cell and returns its entries; the menu is closed again. */
-function menuOf(root, r, c) {
-  td(root, r, c).dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 5, clientY: 5 }));
+/** Pastes tab separated text at a cell. */
+async function pasteAt(root, r, c, text) {
+  sel(root, r, c);
+  const dt = new DataTransfer();
+  dt.setData('text/plain', text);
+  document.activeElement.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+  await settle();
+}
+
+/** Opens the menu of a cell or a header and returns its entries; `close` removes it. */
+function menuOf(el) {
+  el.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, ...center(el) }));
   const items = [...document.querySelectorAll('.context-menu .context-menu__item')];
   return { items, close: () => document.querySelectorAll('.context-menu').forEach((m) => m.remove()) };
 }
@@ -39,33 +69,51 @@ const optimalPlan = (over = {}) => plan({
   ...over,
 });
 
+/** A categorical factor (locked in the preview) before a continuous one. */
+const mixedFactors = () => [
+  { id: 1, name: 'Mat', unit: '', kind: 'categorical', levels: ['Alu', 'Stahl'] },
+  { id: 2, name: 'Druck', unit: 'bar', kind: 'continuous', levels: ['1', '5'] },
+];
+
 suite('doe-planner runs: preview', () => {
-  test('the preview shows the design; a cell change becomes a preview edit', async () => {
+  test('the preview is a TableData with column heads in model form and the values of the run table', async () => {
     const h = await ready(plan());
     const vm = h.vm();
+    const p = vm.previewTable;
+    assert(p.table instanceof TableData, 'a TableData');
+    assertEqual(p.table.rowCount, 4);
+    assertEqual(typeof p.rev, 'number');
+    assertDeepEqual(p.columns.map((c) => c.id), ['run', 'std', 'block', 'rep', 'f:1', 'f:2', 'r:0']);
+    assertDeepEqual(p.columns[0].meta, { lock: 'hard', reason: 'run-order', managedBy: 'doe-planner' });
+    assertDeepEqual(p.columns[4].format, { decimals: 2 });
+    assertEqual(p.columns[4].unit, 'C');
+    assertEqual(p.columns[6].meta, null);
+    // Values, not their text.
+    assertEqual(typeof p.table.get(0, 0), 'number');
+    assertEqual(typeof p.table.get(4, 0), 'number');
+    assertEqual(p.table.get(6, 0), null);
     assertEqual(rowsOf(h.container), 4);
-    assertDeepEqual(vm.previewGrid.columns.map((c) => c.key), ['run', 'std', 'block', 'rep', 'f:1', 'f:2', 'r:0']);
-    assertEqual(vm.previewGrid.columns[0].lock, 'hard');
-    assertEqual(vm.previewGrid.columns[6].lock, null);
-    // Response column: a result typed before the datasheet exists.
-    await edit(h.container, 1, 6, '12,5');
-    assertDeepEqual(h.calls('setPreviewCell').at(-1), { row: 1, column: 'r:0', value: 12.5 });
-    assertEqual(vm.model.previewEdits.responses[0][1], 12.5);
-    assertEqual(td(h.container, 1, 6).textContent, '12,5000');
+  });
+
+  test('typing 12,5 into the first response cell goes out as setPreviewCell', async () => {
+    const h = await ready(plan());
+    const vm = h.vm();
+    await typeAt(h.container, 0, 6, '12,5');
+    assertDeepEqual(h.calls('setPreviewCell').at(-1), { row: 0, column: 'r:0', value: 12.5 });
+    assertEqual(vm.model.previewEdits.responses[0][0], 12.5);
+    assertEqual(td(h.container, 0, 6).textContent, '12,5000');
     assertEqual(h.$$('.doe__preview-stale-note').length, 0, 'a response value changes no setting');
     // Factor column: a setting moved by hand; the note says the evaluation is for the plan as made.
-    await edit(h.container, 0, 4, '25');
+    await typeAt(h.container, 0, 4, '25');
     assertEqual(vm.model.previewEdits.factors[0][0], 25);
     assertEqual(h.$('.doe__preview-stale-note').textContent, de('previewStaleNote'));
   });
 
-  test('the selected cell stays selected after a change', async () => {
+  test('previewTable.rev rises when the preview edits change', async () => {
     const h = await ready(plan());
-    td(h.container, 2, 6).dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
-    await edit(h.container, 2, 6, '7');
-    assertEqual(h.vm().model.previewEdits.responses[0][2], 7);
-    assert(td(h.container, 2, 6).classList.contains('cell-active'), 'the cell is still the active one');
+    const before = h.vm().previewTable.rev;
+    await typeAt(h.container, 1, 6, '7');
+    assert(h.vm().previewTable.rev > before, `rev ${h.vm().previewTable.rev} > ${before}`);
   });
 
   test('a new design shows its rows without a second mount', async () => {
@@ -78,87 +126,45 @@ suite('doe-planner runs: preview', () => {
     assert(h.$('.doe__preview-grid .datagrid__table') === table, 'the same table');
   });
 
-  test('paste: a block goes out as one command; over a categorical column nothing changes', async () => {
-    const factors = [
-      { id: 1, name: 'Mat', unit: '', kind: 'categorical', levels: ['Alu', 'Stahl'] },
-      { id: 2, name: 'Druck', unit: 'bar', kind: 'continuous', levels: ['1', '5'] },
-    ];
-    const h = await ready(plan({ factors }));
-    const paste = async (r, c, text) => {
-      td(h.container, r, c).dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-      document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
-      document.activeElement?.blur?.();
-      const dt = new DataTransfer();
-      dt.setData('text/plain', text);
-      document.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
-      await settle();
-    };
-    await paste(0, 5, '3\t9\n4\t');
-    assertDeepEqual(h.calls('setPreviewCells').at(-1), { row: 0, column: 'f:2', values: [[3, 9], [4, null]] });
+  test('paste: a 2×2 block from f:<id> row 1 goes out as setPreviewCells with numbers', async () => {
+    const h = await ready(plan());
+    await pasteAt(h.container, 1, 5, '3\t9\n4\t');
+    assertDeepEqual(h.calls('setPreviewCells').at(-1), { row: 1, column: 'f:2', values: [[3, 9], [4, null]] });
     const edits = h.vm().model.previewEdits;
-    assertDeepEqual([edits.factors[1][0], edits.factors[1][1], edits.responses[0][0]], [3, 4, 9]);
-    // The levels of a categorical factor come from the design, as before: the grid refuses the paste.
-    await paste(2, 4, 'Holz\t7');
-    assertEqual(h.calls('setPreviewCells').length, 1);
-    assertEqual(h.vm().model.previewEdits.factors[1][2], null);
+    assertDeepEqual([edits.factors[1][1], edits.factors[1][2], edits.responses[0][1]], [3, 4, 9]);
+  });
+
+  test('paste: a block past the last row is cut to the rows of the preview', async () => {
+    const h = await ready(plan());
+    await pasteAt(h.container, 3, 6, '1\n2\n3');
+    assertDeepEqual(h.calls('setPreviewCells').at(-1), { row: 3, column: 'r:0', values: [[1]] });
+    assertEqual(h.vm().model.previewEdits.responses[0][3], 1);
+    assertEqual(h.vm().previewTable.table.rowCount, 4, 'no new row');
+  });
+
+  test('paste over a locked column changes nothing and says why', async () => {
+    const h = await ready(plan({ factors: mixedFactors() }));
+    await pasteAt(h.container, 2, 4, 'Holz\t7');
+    assertEqual(h.calls('setPreviewCells').length, 0);
+    assertEqual(h.vm().model.previewEdits, null);
     assertEqual(td(h.container, 2, 4).textContent, h.vm().model.design.actualMatrix[2][0]);
+    assertEqual(h.notes.at(-1)?.[1], 'warning', 'the lock is reported');
   });
 
-  test('the row menu "forbid" only for an optimal design', async () => {
-    const full = await ready(plan());
-    const none = menuOf(full.container, 0, 4);
-    assertEqual(none.items.filter((x) => x.textContent === 'modules.doe-planner.forbiddenContextAction').length, 0);
-    none.close();
-    assertDeepEqual(full.vm().previewGrid.contextMenu, []);
-
-    const h = await ready(optimalPlan());
-    assertDeepEqual(h.vm().previewGrid.contextMenu, [{ id: 'forbidRun', labelKey: 'forbiddenContextAction' }]);
-    const coded = [...h.vm().model.design.codedMatrix[1]];
-    const menu = menuOf(h.container, 1, 4);
-    const item = menu.items.find((x) => x.textContent === 'modules.doe-planner.forbiddenContextAction');
-    assert(item !== undefined, 'menu entry with the module text');
-    item.click();
+  test('clear over a locked and a free column sets only the free one to null', async () => {
+    const h = await ready(plan({ factors: mixedFactors() }));
+    await typeAt(h.container, 0, 6, '1');
+    await typeAt(h.container, 1, 6, '2');
+    await typeAt(h.container, 2, 6, '3');
+    const level = td(h.container, 0, 4).textContent;
+    // Columns 4 (categorical, locked) to 6 (response), rows 0 and 1.
+    await h.vm().previewClearRange({ c0: 4, r0: 0, c1: 6, r1: 1 });
     await settle();
-    menu.close();
-    assertDeepEqual(h.calls('forbidRun').at(-1), { row: 1 });
-    assertDeepEqual(h.vm().model.options.forbiddenVertices.map((p) => [...p]), [coded]);
-  });
-
-  test('without a datasheet: create button and hint; help badges as before', async () => {
-    const h = await ready(plan());
-    assertEqual(h.$('.doe__datasheet-create-btn').textContent, de('worksheetCreate'));
-    assertEqual(h.$('.doe__datasheet-create-hint').textContent, de('worksheetCreateHint'));
-    assertEqual(h.$$('.doe__stale-banner').length, 0);
-    assertEqual(h.$$('.doe__bound-region').length, 0);
-    // Evaluation 6 + 1 + 3, create button 1, preview label and hint 2.
-    assertEqual(outputBadges(h.container), 10 + 1 + 2);
-  });
-});
-
-suite('doe-planner runs: every edit path reaches the model', () => {
-  const sel = (root, r, c, shift = false) => {
-    td(root, r, c).dispatchEvent(new MouseEvent('mousedown', { bubbles: true, shiftKey: shift }));
-    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
-  };
-  const key = (k, opts = {}) => document.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true, ...opts }));
-  /** Selects a cell, types a value and takes it with Enter. */
-  async function typeAt(root, r, c, text) {
-    // A click on the one active cell clears the selection (DataGrid); after Enter the next cell is already active.
-    if (!td(root, r, c).classList.contains('cell-active')) sel(root, r, c);
-    document.activeElement?.blur?.();
-    key(text[0]);
-    const input = root.querySelector('.doe__preview-grid input.cell-editor');
-    assert(input !== null, 'editor opened by typing');
-    input.value = text;
-    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
-    await settle();
-  }
-
-  test('type to edit, then Enter', async () => {
-    const h = await ready(plan());
-    await typeAt(h.container, 0, 6, '7,5');
-    assertEqual(h.vm().model.previewEdits.responses[0][0], 7.5);
-    assertEqual(td(h.container, 0, 6).textContent, '7,5000');
+    assertDeepEqual(h.calls('setPreviewCells').at(-1), { row: 0, column: 'f:1', values: [[null, null, null], [null, null, null]] });
+    const r = h.vm().model.previewEdits.responses[0];
+    assertDeepEqual([r[0], r[1], r[2]], [null, null, 3]);
+    assertEqual(td(h.container, 0, 4).textContent, level, 'the locked column stays');
+    assertEqual(td(h.container, 0, 6).textContent, '');
   });
 
   test('Delete on a selection clears the edits in the model', async () => {
@@ -167,7 +173,7 @@ suite('doe-planner runs: every edit path reaches the model', () => {
     await typeAt(h.container, 1, 6, '2');
     await typeAt(h.container, 2, 6, '3');
     sel(h.container, 0, 6); sel(h.container, 1, 6, true);
-    key('Delete');
+    key(document.activeElement, 'Delete');
     await settle();
     const r = h.vm().model.previewEdits.responses[0];
     assertDeepEqual([r[0], r[1], r[2]], [null, null, 3]);
@@ -179,7 +185,7 @@ suite('doe-planner runs: every edit path reaches the model', () => {
     const h = await ready(plan());
     await typeAt(h.container, 1, 6, '4');
     sel(h.container, 1, 6);
-    document.dispatchEvent(new ClipboardEvent('cut', { clipboardData: new DataTransfer(), bubbles: true, cancelable: true }));
+    document.activeElement.dispatchEvent(new ClipboardEvent('cut', { clipboardData: new DataTransfer(), bubbles: true, cancelable: true }));
     await settle();
     assertEqual(h.vm().model.previewEdits, null);
     assertEqual(td(h.container, 1, 6).textContent, '');
@@ -189,78 +195,101 @@ suite('doe-planner runs: every edit path reaches the model', () => {
     const h = await ready(plan());
     await typeAt(h.container, 0, 6, '9');
     sel(h.container, 0, 6);
-    h.$('.doe__preview-grid .datagrid__fill-handle').dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
-    td(h.container, 2, 6).dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
-    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+    mouse(h.$('.doe__preview-grid .datagrid__fill-handle'), 'mousedown');
+    mouse(td(h.container, 2, 6), 'mousemove');
+    mouse(td(h.container, 2, 6), 'mouseup');
     await settle();
+    assertDeepEqual(h.calls('setPreviewCells').at(-1), { row: 1, column: 'r:0', values: [[9], [9]] });
     const r = h.vm().model.previewEdits.responses[0];
-    assert(h.calls('setPreviewCells').length + h.calls('setPreviewCell').length >= 2, 'the fill went out as a command');
-    for (const i of [1, 2]) {
-      assert(r[i] !== null, `row ${i} filled in the model`);
-      assertEqual(h.vm().previewGrid.rows[i][6], String(r[i]), `row ${i}: grid input from the model`);
-    }
+    assertDeepEqual([r[0], r[1], r[2], r[3]], [9, 9, 9, null]);
+    assertEqual(td(h.container, 2, 6).textContent, '9,0000');
   });
 
-  test('undo in the grid leaves grid and model in step', async () => {
+  test('fill sideways from a response into nothing; into a factor writes the factor', async () => {
+    const h = await ready(plan());
+    await h.vm().previewFillRange({ source: { c0: 4, r0: 0, c1: 4, r1: 1 }, target: { c0: 4, r0: 0, c1: 5, r1: 1 }, ctrl: false });
+    await settle();
+    const last = h.calls('setPreviewCells').at(-1);
+    assertEqual(last.row, 0);
+    assertEqual(last.column, 'f:2');
+    assertEqual(last.values.length, 2);
+    assert(last.values.every((line) => line.length === 1 && typeof line[0] === 'number'), JSON.stringify(last.values));
+  });
+
+  test('the row menu "forbid" on row 3 calls forbidRun; only an optimal design has it', async () => {
+    const full = await ready(plan());
+    assertDeepEqual(full.vm().previewConfig.contextMenu, []);
+    const none = menuOf(td(full.container, 0, 4));
+    assertEqual(none.items.filter((x) => x.dataset.menuId === 'forbidRun').length, 0);
+    none.close();
+
+    const h = await ready(optimalPlan());
+    assertDeepEqual(h.vm().previewConfig.contextMenu, [{ id: 'forbidRun', labelKey: 'forbiddenContextAction' }]);
+    const coded = [...h.vm().model.design.codedMatrix[3]];
+    const menu = menuOf(td(h.container, 3, 4));
+    const item = menu.items.find((x) => x.dataset.menuId === 'forbidRun');
+    assert(item !== undefined, 'menu entry');
+    assertEqual(item.textContent.trim(), 'modules.doe-planner.forbiddenContextAction');
+    item.click();
+    await settle();
+    menu.close();
+    assertDeepEqual(h.calls('forbidRun').at(-1), { row: 3 });
+    assertDeepEqual(h.vm().model.options.forbiddenVertices.map((p) => [...p]), [coded]);
+  });
+
+  test('sort, insert column and delete row are not offered', async () => {
+    const h = await ready(plan());
+    const head = menuOf(h.$('.doe__preview-grid th[data-col-idx="6"]'));
+    const headIds = head.items.map((x) => x.dataset.menuId);
+    head.close();
+    for (const id of ['sortAsc', 'sortDesc', 'insertColLeft', 'insertColRight', 'deleteColumn']) {
+      assert(!headIds.includes(id), `no ${id} in the column menu: ${headIds.join(', ')}`);
+    }
+    const row = menuOf(h.$('.doe__preview-grid td.datagrid__row-header[data-row-idx="0"]'));
+    const rowIds = row.items.map((x) => x.dataset.menuId);
+    row.close();
+    for (const id of ['insertRowAbove', 'insertRowBelow', 'deleteRow']) {
+      assert(!rowIds.includes(id), `no ${id} in the row menu: ${rowIds.join(', ')}`);
+    }
+    const cell = menuOf(td(h.container, 0, 6));
+    const cellIds = cell.items.map((x) => x.dataset.menuId);
+    cell.close();
+    assert(!cellIds.includes('deleteSelectedRows'), `no row delete in the cell menu: ${cellIds.join(', ')}`);
+  });
+
+  test('read only while a new design is pending', async () => {
+    const h = await ready(plan());
+    const vm = h.vm();
+    assertEqual(vm.previewConfig.readOnly, false);
+    setFields(vm.model, { options: { ...vm.model.options, replicates: 2 } });
+    assertEqual(vm.pending, true);
+    assertEqual(vm.previewConfig.readOnly, true);
+    await h.done();
+    assertEqual(vm.previewConfig.readOnly, false);
+  });
+
+  test('undo through the module history takes a preview edit back', async () => {
     const h = await ready(plan());
     await typeAt(h.container, 0, 6, '5');
-    sel(h.container, 0, 6);
-    key('z', { ctrlKey: true });
+    assertEqual(h.vm().model.previewEdits.responses[0][0], 5);
+    assertEqual(h.module.historyStep('undo'), true);
     await settle();
-    const edit = h.vm().model.previewEdits?.responses[0][0] ?? null;
-    assertEqual(td(h.container, 0, 6).textContent, edit === null ? '' : '5,0000');
-    assertEqual(h.vm().previewGrid.rows[0][6], edit === null ? null : '5');
+    assertEqual(h.vm().model.previewEdits, null);
+    assertEqual(td(h.container, 0, 6).textContent, '');
+    assertEqual(h.module.historyStep('redo'), true);
+    await settle();
+    assertEqual(h.vm().model.previewEdits.responses[0][0], 5);
+    assertEqual(td(h.container, 0, 6).textContent, '5,0000');
   });
-});
 
-suite('doe-planner runs: structural grid actions send no edits', () => {
-  /** Opens a context menu on `el` and clicks the entry with this text. */
-  async function menu(el, label) {
-    el.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 5, clientY: 5 }));
-    const item = [...document.querySelectorAll('.context-menu .context-menu__item')].find((x) => x.textContent === label);
-    assert(item !== undefined, `menu entry ${label}`);
-    item.click();
-    document.querySelectorAll('.context-menu').forEach((m) => m.remove());
-    await settle();
-  }
-
-  /** Mounts with one preview edit; returns the harness and a check that nothing changed. */
-  async function edited() {
+  test('without a datasheet: create button and hint; help badges as before', async () => {
     const h = await ready(plan());
-    await edit(h.container, 0, 6, '5');
-    await edit(h.container, 1, 6, '9');
-    const before = JSON.stringify(h.vm().model.previewEdits);
-    const sent = h.calls('setPreviewCell').length + h.calls('setPreviewCells').length;
-    const unchanged = () => {
-      assertEqual(JSON.stringify(h.vm().model.previewEdits), before, 'previewEdits unchanged');
-      assertEqual(h.calls('setPreviewCell').length + h.calls('setPreviewCells').length, sent, 'no edit sent');
-      // Back in the order of the input: run column as drawn, the edit in its row, no extra row or column.
-      const runs = [0, 1, 2, 3].map((r) => td(h.container, r, 0).textContent);
-      assertDeepEqual(runs, h.vm().previewGrid.rows.map((row) => row[0]));
-      assertEqual(rowsOf(h.container), 4);
-      assertEqual(h.$$('.doe__preview-grid thead th[data-col-idx]').length, 7);
-      assertEqual(td(h.container, 0, 6).textContent, '5,0000');
-      assertEqual(td(h.container, 1, 6).textContent, '9,0000');
-    };
-    return { h, unchanged };
-  }
-
-  test('sort by a response column', async () => {
-    const { h, unchanged } = await edited();
-    await menu(h.$('.doe__preview-grid th[data-col-idx="6"]'), 'ui.datagrid.sortDesc');
-    unchanged();
-  });
-
-  test('insert a column', async () => {
-    const { h, unchanged } = await edited();
-    await menu(h.$('.doe__preview-grid th[data-col-idx="5"]'), 'ui.datagrid.insertColLeft');
-    unchanged();
-  });
-
-  test('delete a row', async () => {
-    const { h, unchanged } = await edited();
-    await menu(h.$('.doe__preview-grid td.datagrid__row-header[data-row-idx="0"]'), 'ui.datagrid.deleteRow');
-    unchanged();
+    assertEqual(h.$('.doe__datasheet-create-btn').textContent, de('worksheetCreate'));
+    assertEqual(h.$('.doe__datasheet-create-hint').textContent, de('worksheetCreateHint'));
+    assertEqual(h.$$('.doe__stale-banner').length, 0);
+    assertEqual(h.$$('.doe__bound-region').length, 0);
+    // Evaluation 6 + 1 + 3, create button 1, preview label and hint 2.
+    assertEqual(outputBadges(h.container), 10 + 1 + 2);
   });
 });
 
@@ -330,8 +359,9 @@ suite('doe-planner runs: bound datasheet', () => {
     const vm = h.vm();
     assertEqual(vm.staleness, 'none');
     assert(rowsOf(h.container) > 0, 'the preview shows without a sheet');
-    assertEqual(vm.previewGrid.readOnly, true);
-    td(h.container, 1, 6).dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+    assertEqual(vm.previewConfig.readOnly, true);
+    assert(grid(h.container).querySelector('.widget-datagrid').classList.contains('dmike--readonly'), 'the grid is read only');
+    mouse(td(h.container, 1, 6), 'dblclick');
     await settle();
     assertEqual(h.container.querySelector('.doe__preview-grid input.cell-editor'), null, 'no editor');
     assertEqual(h.calls('setPreviewCell').length, 0);

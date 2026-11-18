@@ -301,8 +301,8 @@
         "help": "Maximum leverage: Largest influence of any single design point on the estimate. Ideal: p/n."
       }
     },
-    "previewGrid": {
-      "help": "The preview of the runs as a table: fixed columns for run, standard order, block and replicate, then one column per factor and per response, with the changes made by hand. Read only while a new design is being made. Display only."
+    "previewTable": {
+      "help": "The preview of the runs as a table: fixed columns for run, standard order, block and replicate, then one column per factor and per response, with the changes made by hand. The values are numbers or levels, not their text. Read only while a new design is being made. Display only."
     },
     "dispersionView": {
       "help": "Models the mean and ln(s²) as two separate responses — identifies factor settings that reduce process variability independently of the mean (dual-response approach after Vining & Myers). Requires at least 2 replicates per design point."
@@ -482,6 +482,52 @@
       "help": "Discard all edits to the preview; the run values are back as the design produced them.",
       "params": {
         "command": "An empty object; the command takes no inputs."
+      }
+    },
+    "previewSetCells": {
+      "help": "Type values into the preview as the grid reports them: text from a cell downwards, turned into numbers (a decimal comma counts). One value goes out as setPreviewCell, several as setPreviewCells. For agents setPreviewCell and setPreviewCells are the direct way.",
+      "params": {
+        "columnId": "The preview column: f:<factor id> or r:<response from 0>.",
+        "startRow": "The row of the first cell, from 0.",
+        "values": "The texts per row downwards; null or empty clears a cell.",
+        "command": "The command as one object with columnId, startRow and values."
+      }
+    },
+    "previewPasteBlock": {
+      "help": "Paste a block from the clipboard into the preview, from a cell; what reaches past the last row or column is dropped, locked columns stay. Goes out as setPreviewCells.",
+      "params": {
+        "columnId": "The column of the top left cell: f:<factor id> or r:<response from 0>.",
+        "startRow": "The row of the top left cell, from 0.",
+        "rows": "The rows of the block as texts; empty clears a cell.",
+        "command": "The command as one object with columnId, startRow and rows."
+      }
+    },
+    "previewClearRange": {
+      "help": "Clear a range of the preview (Delete, cut): its edits are dropped, locked columns stay. Goes out as setPreviewCells with null.",
+      "params": {
+        "c0": "The first column, from 0 (0 = run order).",
+        "r0": "The first row, from 0.",
+        "c1": "The last column, from 0.",
+        "r1": "The last row, from 0.",
+        "command": "The command as one object with c0, r0, c1 and r1."
+      }
+    },
+    "previewFillRange": {
+      "help": "Continue a range of the preview with the fill handle: series or copies as in the worksheet, only inside the preview; locked columns stay. Goes out as setPreviewCells.",
+      "params": {
+        "source": "The source range { c0, r0, c1, r1 }, columns and rows from 0.",
+        "target": "The target range { c0, r0, c1, r1 }: contains the source and extends it in one direction.",
+        "ctrl": "Optional: true fills with the other kind (series instead of copy and back), like Ctrl while dragging.",
+        "command": "The command as one object with source, target and optionally ctrl."
+      }
+    },
+    "previewContextMenu": {
+      "help": "Run an entry of the row menu of the preview. forbidRun forbids the factor combination of this row (optimal design only), like forbidRun.",
+      "params": {
+        "id": "The entry: forbidRun.",
+        "columnId": "The column the menu was opened in; has no effect.",
+        "row": "The row, from 0.",
+        "command": "The command as one object with id, columnId and row."
       }
     },
     "setProjectMode": {

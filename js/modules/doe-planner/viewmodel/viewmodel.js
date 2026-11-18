@@ -44,7 +44,7 @@ import { optimalView } from './optimal.js';
 import { evaluationView } from './evaluation.js';
 import { analysisView } from './analysis.js';
 import { evopView } from './evop.js';
-import { runsView } from './runs.js';
+import { runsView, previewCommands } from './runs.js';
 
 /** Pause before a run reacts to a change (debounce of typing). */
 const RERUN_DELAY = 600;
@@ -195,6 +195,8 @@ export default createModule({
   descriptor,
   Model: State,
   State: UiState,
+  history: true,
+  commands: previewCommands,
   asyncTasks: {
     generate: asyncTask({
       auto: true,

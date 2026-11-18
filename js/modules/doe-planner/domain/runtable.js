@@ -21,6 +21,22 @@ export const LOCKED_COLUMNS = Object.freeze(['run', 'std', 'block', 'rep']);
  */
 export const previewColumns = (m) => [...LOCKED_COLUMNS, ...m.factors.map((f) => `f:${f.id}`), ...m.responses.map((_, i) => `r:${i}`)];
 
+/**
+ * A cell as the preview commands take it, from the text the grid reports
+ * (typed or pasted): a numeric column gives a number (decimal comma counts;
+ * an unreadable input stays text, the command refuses it), any other column
+ * its text; empty gives null. A number stays a number.
+ * @param {string} type column type of the preview (`numeric` or `text`)
+ * @param {string|number|null|undefined} text
+ * @returns {number|string|null}
+ */
+export function previewValue(type, text) {
+  if (text == null || text === '') return null;
+  if (type !== 'numeric') return String(text);
+  const n = parseDecimalInput(text);
+  return n !== null && Number.isFinite(n) ? n : String(text);
+}
+
 /** Index of the first factor column (after run, std, block, replicate). */
 export const FACTOR_OFFSET = 4;
 

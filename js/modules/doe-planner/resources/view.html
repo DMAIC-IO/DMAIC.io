@@ -608,8 +608,9 @@
             <template x-if="previewSettingsChanged">
               <div class="doe__preview-stale-note" x-text="t('previewStaleNote')"></div>
             </template>
-            <div class="doe__preview-grid" x-widget="datagrid" x-widget-config="previewConfig"
-                 x-widget-on-cell="'setPreviewCell'" x-widget-on-paste="'setPreviewCells'"></div>
+            <div class="doe__preview-grid" x-widget="datagrid"
+                 x-widget-table="previewTable.table" x-widget-columns="previewTable.columns"
+                 x-widget-rev="previewTable.rev" x-widget-config="previewConfig"></div>
           </div>
         </template>
 

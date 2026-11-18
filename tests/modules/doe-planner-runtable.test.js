@@ -4,7 +4,7 @@
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import {
   FACTOR_OFFSET, codedToActualRows, buildRunTable, captureEdits, applyEdits,
-  columnNames, resolveColumn, runRows, withEdit, editsDirty,
+  columnNames, resolveColumn, runRows, withEdit, editsDirty, previewValue,
 } from '../../js/modules/doe-planner/domain/runtable.js';
 import { stateWith } from './doe-planner-designs/state.js';
 
@@ -158,5 +158,24 @@ suite('DoE run table: Stufen mit Dezimalkomma und Stufe 0 (Bug 4)', () => {
   test('mehrstufig: Mittelstufe „5,5“ ergibt 5.5, Stufe 0 bleibt 0', () => {
     const fx = [{ kind: 'continuous', levels: ['0', '5,5', '10'] }];
     assertDeepEqual(codedToActualRows([[-1], [0], [1]], fx), [[0], [5.5], [10]]);
+  });
+});
+
+suite('doe-planner runtable: previewValue (Text des Rasters → Wert des Kommandos)', () => {
+  test('Zahlspalte: Dezimalkomma zählt, Zahl bleibt Zahl, leer → null', () => {
+    assertEqual(previewValue('numeric', '12,5'), 12.5);
+    assertEqual(previewValue('numeric', '3'), 3);
+    assertEqual(previewValue('numeric', 7.25), 7.25);
+    assertEqual(previewValue('numeric', ''), null);
+    assertEqual(previewValue('numeric', null), null);
+  });
+
+  test('Zahlspalte: nicht lesbare Eingabe bleibt Text (das Kommando lehnt ab)', () => {
+    assertEqual(previewValue('numeric', 'abc'), 'abc');
+  });
+
+  test('Textspalte: Text bleibt Text', () => {
+    assertEqual(previewValue('text', 'Alu'), 'Alu');
+    assertEqual(previewValue('text', ''), null);
   });
 });
