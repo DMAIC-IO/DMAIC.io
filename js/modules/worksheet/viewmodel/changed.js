@@ -4,8 +4,12 @@
  * Nach jeder Änderung des Models (auch Rückgängig, auch ein geladener
  * Fremdstand) und einmal beim Einhängen eines neuen oder migrierten Stands
  * sendet das Modul `worksheet:dataChanged { instanceId }`, zusammengefasst je
- * Frame. Ansichtskommandos senden nicht.
+ * Frame. Ansichtskommandos senden nicht. Den Revisionszähler der Leser
+ * (`core/source.js`) erhöht es sofort, nicht erst mit dem Ereignis: ein
+ * `read()` gleich nach dem Kommando (auch im selben Agentenstapel) liest so
+ * schon den neuen Stand.
  */
+import { bumpWorksheetRevision } from '../../../core/source.js';
 
 /**
  * Kommandos ohne eigenes `worksheet:dataChanged`: die Ansichtskommandos und
@@ -28,14 +32,15 @@ function flushChanged() {
 
 /**
  * Nach einem Kommando des Models (auch Rückgängig, auch ein geladener
- * Fremdstand mit `name` null): `worksheet:dataChanged` im nächsten Frame,
- * ohne DOM im nächsten Mikrotask. Mehrere Kommandos eines Frames ergeben ein
+ * Fremdstand mit `name` null): sofort den Revisionszähler der Instanz,
+ * `worksheet:dataChanged` im nächsten Frame, ohne DOM im nächsten Mikrotask. Mehrere Kommandos eines Frames ergeben ein
  * Ereignis je Instanz.
  * @param {string|null} name Kommando @param {{ instanceId: string, eventBus: any }} ctx
  * @returns {void}
  */
 export function worksheetChanged(name, { instanceId, eventBus }) {
   if (name !== null && VIEW_ONLY.has(name)) return;
+  bumpWorksheetRevision(instanceId);
   pending.set(instanceId, eventBus);
   if (scheduled) return;
   scheduled = true;

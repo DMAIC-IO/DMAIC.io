@@ -7,8 +7,10 @@
  * an reaktive Zähler: `read(instanceId)` an `touch(instanceId)`, `list()` an
  * `touch('#list')`. Ein `computed` oder Getter, der so liest, rechnet neu,
  * sobald sich das Blatt ändert, nachgeladen wird oder ein Blatt dazukommt.
- * Den Zähler erhöht genau ein Abonnent je Bus (`installWorksheetRevisions`);
- * die Arbeitsblatt-Ereignisse bleiben, wie sie sind.
+ * Den Zähler erhöhen die Ereignisse (ein Abonnent je Bus,
+ * `installWorksheetRevisions`) und, sofort beim Kommando, das Arbeitsblatt
+ * selbst (`bumpWorksheetRevision`): das Ereignis kommt erst im nächsten Frame,
+ * ein `read()` direkt nach dem Kommando läse sonst den alten Stand.
  *
  * Die Registrierung und `createSource` leben Alpine-frei in `source-reader.js`
  * und werden hier re-exportiert; dieser Import setzt den Zähler-Haken.
@@ -43,6 +45,18 @@ function bump(key) { rev[key] = (rev[key] ?? 0) + 1; if (key !== '#list') rev['#
  * @returns {void}
  */
 export function bumpWorksheetRevisions() { bump('*'); }
+
+/**
+ * Den Zähler einer Arbeitsblatt-Instanz sofort erhöhen (und `'#list'`): Leser
+ * dieser Instanz sind ab jetzt veraltet und lesen beim nächsten Zugriff neu.
+ * Das Arbeitsblatt ruft das synchron nach jedem Kommando; sein Ereignis
+ * `worksheet:dataChanged` bleibt je Frame zusammengefasst und erhöht den
+ * Zähler noch einmal (harmlos, und nötig für die übrigen Sender wie das
+ * Vorladen).
+ * @param {string} instanceId
+ * @returns {void}
+ */
+export function bumpWorksheetRevision(instanceId) { if (instanceId) bump(instanceId); }
 
 /**
  * Den Zähler an den Bus hängen; je Bus nur einmal wirksam.
