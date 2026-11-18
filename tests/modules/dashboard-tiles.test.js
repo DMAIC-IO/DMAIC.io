@@ -17,6 +17,7 @@ import { HOST_TILES } from '../../js/pages/dashboard/tiles/index.js';
 import { I18n } from '../../js/core/i18n.js';
 import capabilityTile from '../../js/modules/process-capability/process-capability.tile.js';
 import attrSpcTile from '../../js/modules/attribute-control-chart/tile/tile.js';
+import { customRefreshEvents, refreshTargets } from '../../js/pages/dashboard/enumerate-tiles.js';
 import { disposeTile } from '../../js/pages/dashboard/tile-render.js';
 import { createSource, registerReader, bumpWorksheetRevisions } from '../../js/core/source.js';
 import { withStoredWorksheetReader } from '../helpers/worksheet-reader.js';
@@ -1333,7 +1334,10 @@ suite('dashboard tiles: attribute-control-chart', () => {
   });
 
   test('refreshes on resize', async () => {
-    assertDeepEqual(attrSpcTile.refreshOn, ['state:saved', 'resize']);
+    assertDeepEqual(attrSpcTile.refreshOn, ['state:saved', 'resize', 'worksheet:dataChanged']);
+    // The dashboard host subscribes to custom events and re-renders the placed tile (preload and later edits).
+    assertDeepEqual(customRefreshEvents([{ tile: attrSpcTile }]), ['worksheet:dataChanged']);
+    assertDeepEqual(refreshTargets([{ id: 'acc:i1', tile: attrSpcTile }, { id: 'spc:i1', tile: spcTile }], ['acc:i1', 'spc:i1'], 'worksheet:dataChanged'), ['acc:i1']);
   });
 
   test('empty without defects column, no-data with too few points or no size column', async () => {

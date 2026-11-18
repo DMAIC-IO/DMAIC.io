@@ -25,7 +25,7 @@ export default createTile({
   Settings,
   size: { defaultW: 3, defaultH: 10, minW: 2, minH: 6 },
   titlePrefix: 'SPC',
-  refreshOn: ['state:saved', 'resize'],
+  refreshOn: ['state:saved', 'resize', 'worksheet:dataChanged'],
 
   /** @type {import('./settings.types.js').AttributeControlChartTileViewFn} */
   view(ctx) {
