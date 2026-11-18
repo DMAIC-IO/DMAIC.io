@@ -35,15 +35,16 @@ export function createWorksheetData(stateManager) {
   let source = null;
   const src = () => (source ??= createSource(stateManager));
   return Object.freeze({
-    values(ref) { const c = readColumn(src(), ref); return c ? [...c.values] : null; },
-    numeric(ref) { const c = readColumn(src(), ref); return c ? numericValues(c.values) : null; },
+    values(ref) { if (!ref) return null; const c = readColumn(src(), ref); return c ? [...c.values] : null; },
+    numeric(ref) { if (!ref) return null; const c = readColumn(src(), ref); return c ? numericValues(c.values) : null; },
     columns(filter) { return columnOptions(src(), filter); },
     column(ref) {
+      if (!ref) return null;
       const c = readColumn(src(), ref);
       return c ? { name: columnLabel(c), type: c.type, role: c.role, roleConfirmed: c.roleConfirmed } : null;
     },
     sheet(ref) { return readSheet(src(), ref); },
     sheets(instanceId) { return readSheets(src(), instanceId); },
-    name(ref) { const c = readColumn(src(), ref); return c ? columnLabel(c) : null; },
+    name(ref) { if (!ref) return null; const c = readColumn(src(), ref); return c ? columnLabel(c) : null; },
   });
 }

@@ -64,6 +64,12 @@ suite('source-columns: readSheet, readSheets', () => {
     assertEqual(out.columns[0].meta, null);
   });
 
+  test('readSheet: meta bleibt erhalten', () => {
+    const meta = { lock: true, managedBy: 'doe-planner' };
+    const src = storedSource({ ws1: { sheets: [{ id: 's1', name: 'E', state: { rowCount: 1, columns: [{ id: 'c1', name: 'A', type: 'numeric', values: [1], meta }] } }] } });
+    assertDeepEqual(readSheet(src, { instanceId: 'ws1', sheetId: 's1' }).columns[0].meta, meta);
+  });
+
   test('readSheet → null: ohne sheetId, unbekanntes Blatt, unbekannte Instanz', () => {
     const src = storedSource(states);
     assertEqual(readSheet(src, { instanceId: 'ws1' }), null);

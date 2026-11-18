@@ -67,10 +67,16 @@ export function registerReader(stateManager, readSync) {
  * @throws {Error} `worksheet reader not registered` — Programmierfehler, soll laut sein
  */
 export function createSource(stateManager) {
-  const readSync = readers.get(rawOf(stateManager));
-  if (!readSync) throw new Error('worksheet reader not registered');
+  const lookup = () => {
+    const readSync = readers.get(rawOf(stateManager));
+    if (!readSync) throw new Error('worksheet reader not registered');
+    return readSync;
+  };
+  lookup();
   return Object.freeze({
+    // Der Leser wird je Aufruf nachgeschlagen: eine Neuregistrierung gilt auch für eine zwischengespeicherte Source.
     read(instanceId, options) {
+      const readSync = lookup();
       touchHook?.(instanceId);
       return readSync(instanceId, options);
     },

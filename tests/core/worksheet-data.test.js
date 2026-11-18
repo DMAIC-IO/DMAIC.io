@@ -305,3 +305,22 @@ suite('ctx.data über den Leser (readSync)', () => {
     Alpine.release(runner);
   });
 });
+
+suite('ctx.data: Leser', () => {
+  test('null-Bezug ergibt null, auch ohne registrierten Leser', () => {
+    const data = createWorksheetData({ get: () => ({}) });
+    assertEqual(data.values(null), null);
+    assertEqual(data.numeric(null), null);
+    assertEqual(data.name(null), null);
+    assertEqual(data.column(null), null);
+  });
+
+  test('Neuregistrierung gilt für die zwischengespeicherte Source', () => {
+    const sm = fakeStore({ ws1: sheet([1, 2]) });
+    const data = createWorksheetData(sm);
+    const ref = { instanceId: 'ws1', sheetId: 's1', columnId: 'c1' };
+    assertDeepEqual(data.values(ref), [1, 2]);
+    registerWorksheetReader(sm, (id, o) => readWorksheetState(sheet([7]), o));
+    assertDeepEqual(data.values(ref), [7]);
+  });
+});
