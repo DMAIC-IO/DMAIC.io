@@ -187,7 +187,8 @@ async function convertedEntry(appDir, id) {
   const { schema, readFields } = await loadModelSchema(modelFile);
   const vmFile = join(dir, 'viewmodel', 'viewmodel.js');
   const vm = readFileSync(vmFile, 'utf8');
-  const commands = readViewmodelCommands(vm, vmFile);
+  // Nur-Oberflächen-Kommandos (`agentWrite: false` an einem Parameter) fehlen wie zur Laufzeit.
+  const commands = Object.fromEntries(Object.entries(readViewmodelCommands(vm, vmFile)).filter(([, c]) => !c.agentHidden));
   const tasks = readViewmodelAsyncTasks(vm);
   // `schemaAgentEntry` liest das Schema über `schemaOf` an einer Klasse.
   const Model = Object.assign(function Model() {}, { schema });

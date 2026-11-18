@@ -175,4 +175,24 @@ suite('ModuleHistory — Umkehr-Kommandos', () => {
     assertEqual(h.undo(), 'a');
     assertEqual(h.redo(), 'b');
   });
+
+  test('amend: der neue Stand gehört zum letzten Schritt (kein eigener Schritt, Wiederholen bleibt)', () => {
+    const h = fresh();
+    h.record('b');
+    h.amend('c');
+    assertEqual(h.canUndo, true);
+    assertEqual(h.undo(), 'a', 'ein Schritt zurück führt vor b');
+    assertEqual(h.canUndo, false);
+    assertEqual(h.redo(), 'c', 'Wiederholen bringt den ergänzten Stand');
+  });
+
+  test('amend ohne Schritt ersetzt die Grundlage; gleicher Stand ändert nichts', () => {
+    const h = fresh();
+    h.amend('b');
+    assertEqual(h.canUndo, false);
+    h.record('c');
+    assertEqual(h.undo(), 'b');
+    h.amend('b');
+    assertEqual(h.canRedo, true, 'gleicher Stand lässt Wiederholen stehen');
+  });
 });

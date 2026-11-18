@@ -209,7 +209,7 @@ export default createModule({
         await pause(RERUN_DELAY, signal);
         signal.throwIfAborted();
         try {
-          this.model.regenerate({ source });
+          this.applyGenerated(source);
         } catch (err) {
           this._ui.notify(this.t('generateFailed'), 'error');
           throw failure(this.t('generateFailed'), 'generate', err);

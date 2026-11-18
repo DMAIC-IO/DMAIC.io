@@ -1581,7 +1581,10 @@ export function checkCommandsRef(files, base) {
  * Wie `readViewmodelCommands`, dazu die `commands`-Bezeichner, die sich nicht
  * zu einem Objektliteral auflösen lassen.
  * @param {string} text @param {string} [file]
- * @returns {{ commands: Record<string, { params: Record<string, true>, asyncRun?: true }>, unresolved: string[] }}
+ * `agentHidden`: ein Parameter trägt das Literal `agentWrite: false` — das
+ * Kommando ist nur für die Oberfläche (wie `writableByAgent` zur Laufzeit) und
+ * fehlt in der Agentenfläche.
+ * @returns {{ commands: Record<string, { params: Record<string, true>, asyncRun?: true, agentHidden?: true }>, unresolved: string[] }}
  */
 function readViewmodelCommandsDetail(text, file) {
   const unresolved = [];
@@ -1589,6 +1592,9 @@ function readViewmodelCommandsDetail(text, file) {
   const key = (p) => (p.name && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? p.name.text : null);
   const prop = (obj, name) => obj.properties.find((p) => ts.isPropertyAssignment(p) && key(p) === name)?.initializer;
   const out = {};
+  /** Ein Objektliteral `agentWrite: false` irgendwo im Knoten. */
+  const agentWriteFalse = (n) => (ts.isPropertyAssignment(n) && key(n) === 'agentWrite' && n.initializer.kind === ts.SyntaxKind.FalseKeyword)
+    || Boolean(ts.forEachChild(n, (c) => agentWriteFalse(c) || undefined));
   const readBlock = (block) => {
     for (const p of block.properties) {
       const name = ts.isPropertyAssignment(p) ? key(p) : null;
@@ -1601,6 +1607,7 @@ function readViewmodelCommandsDetail(text, file) {
       if (run && isAsyncRun(run)) out[name].asyncRun = true;
       if (params && ts.isObjectLiteralExpression(params)) {
         for (const q of params.properties) { const k = ts.isPropertyAssignment(q) || ts.isShorthandPropertyAssignment(q) ? key(q) : null; if (k) out[name].params[k] = true; }
+        if (params.properties.some((q) => ts.isPropertyAssignment(q) && agentWriteFalse(q.initializer))) out[name].agentHidden = true;
       }
     }
   };

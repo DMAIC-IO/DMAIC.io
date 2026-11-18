@@ -101,6 +101,17 @@ export class ModuleHistory {
     this._current = json;
   }
 
+  /**
+   * Meldet einen Stand, der zum letzten Schritt gehört (eine Folgeänderung,
+   * etwa ein automatisch erzeugter Plan): kein eigener Schritt, der Stapel
+   * Wiederholen bleibt. Ohne Schritt ersetzt er die Grundlage.
+   * @param {string} json
+   */
+  amend(json) {
+    this._moved = null;
+    this._current = json;
+  }
+
   /** Öffnet einen Schritt; ein bereits offener bleibt offen. */
   begin() {
     if (this._open) return;

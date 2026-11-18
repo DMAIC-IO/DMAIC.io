@@ -49,7 +49,7 @@ const PREVIEW_COMMANDS = Object.freeze({
 const PREVIEW_FEATURES = Object.freeze({ clipboard: true, fill: true });
 
 const row0 = () => number({ integer: true, min: 0 });
-const rect = () => object({ c0: row0(), r0: row0(), c1: row0(), r1: row0() });
+const rect = (opts) => object({ c0: row0(), r0: row0(), c1: row0(), r1: row0() }, opts);
 
 /**
  * The model as the run table reads it: the stored design with its settings as numbers.
@@ -62,6 +62,49 @@ const tableView = (m) => ({
   previewEdits: m.previewEdits,
   design: { ...m.design, actualMatrix: actualRows(m.design, m.factors) },
 });
+
+/**
+ * The run table of the model as table and column heads of the preview; empty without a design.
+ * @param {any} m planner model
+ * @param {(key: string) => string} t module translation
+ * @returns {{ table: TableData, columns: PreviewColumn[] }}
+ */
+function previewOf(m, t) {
+  if (!m.design || !m.design.actualMatrix.length) return { table: TableData.empty(), columns: [] };
+  const cols = /** @type {any[]} */ (buildRunTable(tableView(m), t));
+  const keys = previewColumns(m);
+  return {
+    table: new TableData(m.design.actualMatrix.length, cols.map((c) => c.values)),
+    columns: cols.map((c, i) => ({
+      id: keys[i],
+      name: c.name,
+      // Short name and role as the grid has always shown them: C1, C2, … and the role from the values.
+      shortName: `C${i + 1}`,
+      type: c.type,
+      unit: c.unit || null,
+      role: inferRole(c),
+      format: c.format ? { decimals: c.format.decimals ?? null } : null,
+      meta: c.meta ? { lock: c.meta.lock, reason: c.meta.reason, managedBy: 'doe-planner' } : null,
+    })),
+  };
+}
+
+/**
+ * The preview with its build counter; a build that throws gives the empty
+ * preview (the cause goes to the console), so the widget and the commands
+ * never see an `{ error }`.
+ * @param {() => { table: TableData, columns: PreviewColumn[] }} build
+ * @param {number} rev
+ * @returns {PreviewTable}
+ */
+export function previewOrEmpty(build, rev) {
+  try {
+    return { ...build(), rev };
+  } catch (err) {
+    console.warn('[doe-planner] preview', err);
+    return { table: TableData.empty(), columns: [], rev };
+  }
+}
 
 /** @type {import('./state.types.js').DoePlannerViewFn} */
 export const runsView = (ctx) => {
@@ -149,26 +192,22 @@ export const runsView = (ctx) => {
        */
       previewTable() {
         rev += 1;
-        const m = this.model;
-        if (!m.design || !m.design.actualMatrix.length) return { table: TableData.empty(), columns: [], rev };
-        const cols = /** @type {any[]} */ (buildRunTable(tableView(m), (/** @type {string} */ key) => this.t(key)));
-        const keys = previewColumns(m);
-        return {
-          table: new TableData(m.design.actualMatrix.length, cols.map((c) => c.values)),
-          columns: cols.map((c, i) => ({
-            id: keys[i],
-            name: c.name,
-            // Short name and role as the grid has always shown them: C1, C2, … and the role from the values.
-            shortName: `C${i + 1}`,
-            type: c.type,
-            unit: c.unit || null,
-            role: inferRole(c),
-            format: c.format ? { decimals: c.format.decimals ?? null } : null,
-            meta: c.meta ? { lock: c.meta.lock, reason: c.meta.reason, managedBy: 'doe-planner' } : null,
-          })),
-          rev,
-        };
+        return previewOrEmpty(() => previewOf(this.model, (/** @type {string} */ key) => this.t(key)), rev);
       },
+    },
+
+    /**
+     * @noagent Makes the design current for the automatic run `generate`.
+     * With the module history the new design belongs to the step of the
+     * change that called for it: one undo takes back both, and nothing is
+     * made anew afterwards.
+     * @param {object|null} source rows of the source worksheet, or null
+     * @returns {void}
+     */
+    applyGenerated(source) {
+      const run = () => { this.model.regenerate({ source }); };
+      if (ctx.history) ctx.history.amend(run);
+      else run();
     },
 
     // ── Buttons ───────────────────────────────────────────────
@@ -300,7 +339,8 @@ export function fillCells(p, s, t, ctrl) {
 }
 
 /**
- * Viewmodel commands of the preview: the roles of the datagrid widget
+ * Viewmodel commands of the preview, for the grid only (a parameter with
+ * `agentWrite: false` keeps each off the agent surface): the roles of the datagrid widget
  * (`previewConfig.commands`), turned into the model commands. Their
  * arguments are the arguments of the roles; a text cell becomes a number as
  * the column type says (`previewValue`).
@@ -309,10 +349,10 @@ export const previewCommands = {
   /**
    * Typed values from a cell down (role `setCells`): one value goes out as
    * `setPreviewCell`, several as `setPreviewCells`.
-   * @agent
+   * @noagent grid only (role of the datagrid widget)
    */
   previewSetCells: command({
-    params: { columnId: text(), startRow: row0(), values: list(text({ nullable: true })) },
+    params: { columnId: text({ agentWrite: false }), startRow: row0(), values: list(text({ nullable: true })) },
     run({ columnId, startRow, values }) {
       const p = this.previewTable;
       const col = p.columns[columnAt(p, columnId)];
@@ -324,10 +364,10 @@ export const previewCommands = {
   /**
    * A pasted block from a cell (role `pasteBlock`) as `setPreviewCells`,
    * cut to the rows and columns of the preview; locked columns stay.
-   * @agent
+   * @noagent grid only (role of the datagrid widget)
    */
   previewPasteBlock: command({
-    params: { columnId: text(), startRow: row0(), rows: list(list(text({ nullable: true }))) },
+    params: { columnId: text({ agentWrite: false }), startRow: row0(), rows: list(list(text({ nullable: true }))) },
     run({ columnId, startRow, rows }) {
       const p = this.previewTable;
       const start = columnAt(p, columnId);
@@ -341,10 +381,10 @@ export const previewCommands = {
   /**
    * Clears a range (role `clearRange`, Delete and cut) as `setPreviewCells`
    * with null; locked columns stay.
-   * @agent
+   * @noagent grid only (role of the datagrid widget)
    */
   previewClearRange: command({
-    params: { c0: row0(), r0: row0(), c1: row0(), r1: row0() },
+    params: { c0: number({ integer: true, min: 0, agentWrite: false }), r0: row0(), c1: row0(), r1: row0() },
     run({ c0, r0, c1, r1 }) {
       const p = this.previewTable;
       const last = Math.min(r1, p.table.rowCount - 1);
@@ -358,10 +398,10 @@ export const previewCommands = {
    * Continues a range with the fill handle (role `fillRange`): series or
    * copies as the grid fills them, inside the preview, as `setPreviewCells`;
    * locked columns stay.
-   * @agent
+   * @noagent grid only (role of the datagrid widget)
    */
   previewFillRange: command({
-    params: { source: rect(), target: rect(), ctrl: boolean({ optional: true }) },
+    params: { source: rect({ agentWrite: false }), target: rect(), ctrl: boolean({ optional: true }) },
     run({ source, target, ctrl = false }) {
       const p = this.previewTable;
       const block = fillCells(p, source, target, ctrl);
@@ -372,10 +412,10 @@ export const previewCommands = {
   /**
    * An entry of the row menu (role `contextMenu`): `forbidRun` forbids the
    * run of this row (optimal design only).
-   * @agent
+   * @noagent grid only (role of the datagrid widget)
    */
   previewContextMenu: command({
-    params: { id: text(), columnId: text(), row: row0() },
+    params: { id: text({ agentWrite: false }), columnId: text(), row: row0() },
     run({ id, row }) {
       if (id !== 'forbidRun') throw new Error(`invalid id ${JSON.stringify(id)}; allowed: forbidRun`);
       return this.model.forbidRun({ row });

@@ -416,6 +416,28 @@ suite('createModule onCommand und ctx.history', () => {
     assertTrue(hist.can('redo'));
   });
 
+  test('ctx.history.amend: die Änderung im Rückruf läuft in den vorigen Schritt', async () => {
+    let hist = null;
+    const { mod, data } = await mount(true, { base: { view(ctx) { return { init() { hist = ctx.history; } }; } } });
+    data().model.name = 'neu';
+    await flush();
+    hist.amend(() => { data().model.n = 5; });
+    await flush();
+    assertTrue(mod.historyStep('undo'));
+    await flush();
+    assertEqual(data().model.name, 'start');
+    assertEqual(data().model.n, 0, 'ein Rückgängig nimmt beides zurück');
+    assertEqual(mod.historyCan('undo'), false);
+    assertTrue(mod.historyStep('redo'));
+    await flush();
+    assertEqual(data().model.n, 5);
+    // Danach zeichnet eine Änderung wieder einen eigenen Schritt auf.
+    data().model.n = 6;
+    await flush();
+    assertTrue(mod.historyStep('undo'));
+    assertEqual(data().model.n, 5);
+  });
+
   test('ctx.history ist null ohne history', async () => {
     let hist;
     await mount(undefined, { ...opts, base: { view(ctx) { return { init() { hist = ctx.history; } }; } } });

@@ -741,6 +741,17 @@ test('readViewmodelCommands: commands als Bezeichner, über den relativen Import
   assert.deepEqual(readViewmodelCommands(short), {});
 });
 
+test('readViewmodelCommands: ein Parameter mit agentWrite: false macht das Kommando agentHidden', () => {
+  const vm = "export default createModule({ commands: {\n"
+    + "  grid: command({ params: { a: text({ agentWrite: false }), b: object({ c: number() }, { optional: true, agentWrite: false }) }, run() {} }),\n"
+    + "  open: command({ params: { a: text({ agentWrite: true }) }, run() {} }),\n"
+    + "} });\n";
+  assert.deepEqual(readViewmodelCommands(vm), {
+    grid: { params: { a: true, b: true }, agentHidden: true },
+    open: { params: { a: true } },
+  });
+});
+
 test('Hilfe: Viewmodel-Kommandos brauchen Hilfetexte', () => {
   const schema = { fields: {}, commands: {} };
   const vm = readViewmodelCommands(VM_WITH_COMMANDS);

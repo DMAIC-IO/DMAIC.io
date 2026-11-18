@@ -11,6 +11,7 @@ import { suite, test, assert, assertEqual, assertDeepEqual } from '../../test-ut
 import { setFields } from '../../../js/core/model.js';
 import { TableData } from '../../../js/core/table-data.js';
 import { State } from '../../../js/modules/doe-planner/domain/model.js';
+import { previewOrEmpty } from '../../../js/modules/doe-planner/viewmodel/runs.js';
 import {
   mount, ready, bound, plan, threeFactors, designed, settle, typeIn, outputBadges, de, DATASHEET,
 } from './view-harness.js';
@@ -107,6 +108,21 @@ suite('doe-planner runs: preview', () => {
     await typeAt(h.container, 0, 4, '25');
     assertEqual(vm.model.previewEdits.factors[0][0], 25);
     assertEqual(h.$('.doe__preview-stale-note').textContent, de('previewStaleNote'));
+  });
+
+  test('a preview build that throws gives the empty preview, never { error }', () => {
+    const warn = console.warn;
+    console.warn = () => {};
+    try {
+      const p = previewOrEmpty(() => { throw new Error('boom'); }, 7);
+      assert(p.table instanceof TableData, 'a TableData');
+      assertEqual(p.table.rowCount, 0);
+      assertDeepEqual(p.columns, []);
+      assertEqual(p.rev, 7);
+      assertEqual('error' in p, false);
+    } finally {
+      console.warn = warn;
+    }
   });
 
   test('previewTable.rev rises when the preview edits change', async () => {
@@ -280,6 +296,29 @@ suite('doe-planner runs: preview', () => {
     await settle();
     assertEqual(h.vm().model.previewEdits.responses[0][0], 5);
     assertEqual(td(h.container, 0, 6).textContent, '5,0000');
+  });
+
+  test('undo after a settings change and its automatic design: one step back to both, no new design', async () => {
+    const h = await ready(plan());
+    const vm = h.vm();
+    const reps = vm.model.options.replicates;
+    const design = JSON.stringify(vm.model.design);
+    setFields(vm.model, { options: { ...vm.model.options, replicates: reps + 1 } });
+    await h.done();
+    assert(JSON.stringify(vm.model.design) !== design, 'a new design was made');
+    assertEqual(h.module.historyStep('undo'), true);
+    // Past the pause before generate (600 ms): nothing is made anew.
+    await new Promise((r) => setTimeout(r, 800));
+    await h.done();
+    assertEqual(vm.model.options.replicates, reps);
+    assertEqual(JSON.stringify(vm.model.design), design, 'the design as before');
+    assertEqual(vm.pending, false);
+    assertEqual(h.module.historyCan('undo'), false);
+    assertEqual(h.module.historyCan('redo'), true, 'redo stays');
+    assertEqual(h.module.historyStep('redo'), true);
+    await h.done();
+    assertEqual(vm.model.options.replicates, reps + 1);
+    assertEqual(vm.pending, false);
   });
 
   test('without a datasheet: create button and hint; help badges as before', async () => {

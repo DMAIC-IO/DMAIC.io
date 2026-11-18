@@ -31,7 +31,8 @@ import { formatNumber } from './number-format.js';
  *   source: import('./source-reader.js').Source,
  *   instances?: import('./instances.js').ModuleInstances,
  *   openDialog: (ref: string, opts?: import('./command-directives.js').DialogOptions) => Promise<void>,
- *   history: { step: (dir: 'undo'|'redo') => boolean, can: (dir: 'undo'|'redo') => boolean }|null }} ViewContext
+ *   history: { step: (dir: 'undo'|'redo') => boolean, can: (dir: 'undo'|'redo') => boolean,
+ *     amend: (fn: () => void) => void }|null }} ViewContext
  */
 /**
  * `this` in den Gliedern eines `view`-Blocks. Die eigenen Glieder des Blocks
@@ -627,6 +628,8 @@ export function createModule(base) {
     _gestureDetach: [],
     _applyingRemote: false,
     _restoringHistory: false,
+    /** Änderungen laufen in den vorigen Schritt (`historyAmend`). */
+    _amendingHistory: false,
     /** @type {ModuleHistory|null} */
     _history: null,
     /** @type {{ canUndo: boolean, canRedo: boolean }|null} */
@@ -686,6 +689,7 @@ export function createModule(base) {
           history: history ? {
             step: (dir) => module.historyStep(dir),
             can: (dir) => module.historyCan(dir),
+            amend: (fn) => module.historyAmend(fn),
           } : null,
         };
         // Teile nacheinander bauen und zusammenführen. `computed` ist kein
@@ -1167,10 +1171,24 @@ export function createModule(base) {
       this._historyFlags.canRedo = h.canRedo;
     },
 
+    /**
+     * Führt `fn` aus; was es am Model ändert, gehört zum vorigen Schritt (eine
+     * Folgeänderung wie ein automatisch erzeugter Plan), statt ein eigener zu
+     * werden. Nur im Abzugsmodus; sonst läuft `fn` einfach.
+     * @param {() => void} fn
+     */
+    historyAmend(fn) {
+      if (!this._history || inverseHistory) { fn(); return; }
+      this._amendingHistory = true;
+      try { fn(); } finally { Alpine.nextTick(() => { this._amendingHistory = false; }); }
+    },
+
     _recordHistory(model) {
       if (inverseHistory) return;
       if (!this._history || this._restoringHistory || this._applyingRemote) return;
-      this._history.record(JSON.stringify(model.toJSON()));
+      const json = JSON.stringify(model.toJSON());
+      if (this._amendingHistory) this._history.amend(json);
+      else this._history.record(json);
       this._syncHistoryFlags();
     },
 
