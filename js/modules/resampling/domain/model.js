@@ -11,6 +11,7 @@ import { from0 } from './migrations.js';
 import { MODES, CONTRASTS, DIRECTIONS, CI_METHODS, SEED_MAX, STATISTIC_IDS, STATS_BY_MODE } from './constants.js';
 import { readInputs, validateInputs } from './analyze.js';
 import { bootDecision } from './format.js';
+import { readColumn } from '../../../core/source-columns.js';
 
 export { MODES, CONTRASTS, DIRECTIONS, CI_METHODS, SEED_MAX, STATISTIC_IDS, STATS_BY_MODE };
 
@@ -82,11 +83,11 @@ export const State = defineModel({
     /**
      * Erster Grund, warum nicht gerechnet werden kann (Textschlüssel), sonst null.
      *
-     * @param {any} data Arbeitsblattsicht
+     * @param {import('../../../core/source-reader.js').Source} src Leser des Arbeitsblatts
      * @this {import('./model.types.js').StateModel}
      * @returns {string|null}
      */
-    validation(data) { return validateInputs(this, readInputs(this, (ref) => data.values(ref))); },
+    validation(src) { return validateInputs(this, readInputs(this, (ref) => readColumn(src, ref)?.values ?? null)); },
     /**
      * Urteil des Einstichproben-Bootstraps gegen den Sollwert, sonst null.
      *

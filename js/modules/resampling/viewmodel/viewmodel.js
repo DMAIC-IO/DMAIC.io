@@ -1,7 +1,7 @@
 /**
  * D.Mike — Resampling: Viewmodel.
  *
- * `computed` liest Stichproben (`ctx.data`) und Fingerabdruck für den Lauf;
+ * `computed` liest Stichproben (`ctx.source`) und Fingerabdruck für den Lauf;
  * `asyncTasks.compute` rechnet Bootstrap und Permutationstest mit
  * Fortschritt und Abbruch und schreibt das Ergebnis ins Model.
  */
@@ -9,6 +9,7 @@ import { createModule } from '../../../core/template-module.js';
 import { setFields } from '../../../core/model.js';
 import { asyncTask } from '../../../core/async-task.js';
 import { createInlineRunner } from '../../../engines/resampling-runner.js';
+import { readColumn, columnLabel } from '../../../core/source-columns.js';
 import descriptor from '../module.js';
 import { State, MODES, CONTRASTS, DIRECTIONS, CI_METHODS, STATS_BY_MODE } from '../domain/model.js';
 import { readInputs, errorKeyForCode, buildJobs, computeInputsHash, summarize } from '../domain/analyze.js';
@@ -18,6 +19,9 @@ import { resultView, bootChartConfig, permChartConfig } from './present.js';
 
 /** @param {any} m @returns {any[]} Spaltenbezüge je Aufbau */
 const refsOf = (m) => (m.mode === 'k' ? m.colRefsK : m.mode === 'one' ? [m.colRef1] : [m.colRef1, m.colRef2]);
+
+/** @param {any} src @param {any} ref @returns {string} Spaltenname, leer wenn nicht lesbar */
+const labelOf = (src, ref) => { const c = readColumn(src, ref); return c ? columnLabel(c) : ''; };
 
 const MODE_LABEL_KEYS = { one: 'modeOne', two: 'modeTwo', paired: 'modePaired', k: 'modeK' };
 const CONTRAST_LABEL_KEYS = { difference: 'contrastDifference', ratio: 'contrastRatio' };
@@ -64,11 +68,11 @@ const mod = createModule({
     return {
       computed: {
         /** Stichproben aus dem Arbeitsblatt (roh gelesen: gepaart bleiben die Zeilen zusammen). */
-        inputs() { return readInputs(this.model, (ref) => ctx.data.values(ref)); },
+        inputs() { return readInputs(this.model, (ref) => readColumn(ctx.source, ref)?.values ?? null); },
         /** Fingerabdruck der Eingaben, gegen den ein gespeichertes Ergebnis veraltet. */
         inputsHash() { return computeInputsHash(this.model, this.inputs); },
         /** Spaltennamen je Stichprobe. */
-        labels() { return refsOf(this.model).map((r) => (r ? ctx.data.name(r) ?? '' : '')); },
+        labels() { return refsOf(this.model).map((r) => (r ? labelOf(ctx.source, r) : '')); },
       },
       get stale() { return !!this.model.result && this.model.result.inputsHash !== this.inputsHash; },
       get resultView() { return resultView(this.model.result, { ciMethod: this.model.ciMethod, target: this.model.target, lang: ctx.context.language }); },

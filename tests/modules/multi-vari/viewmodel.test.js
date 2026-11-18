@@ -3,17 +3,30 @@
  *
  * Der Lauf `analysis` läuft hier über den echten Task-Host
  * (`createAsyncTasks`) mit der Reaktivität aus `@vue/reactivity`; das
- * Arbeitsblatt ist eine reaktive Attrappe für `ctx.data`. Geprüft werden
+ * Arbeitsblatt ist ein reaktiver Leser (`ctx.source`) über gespeicherte Stände. Geprüft werden
  * Entprellung, Abhängigkeiten (Anzeigeschalter rechnen nicht neu), die
  * Streifen-Konfiguration und der Fehlertext.
  */
 import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../test-utils.js';
 import { reactive, effect, stop } from '@vue/reactivity';
 import { asyncTask, createAsyncTasks, defineAsyncTaskSlots } from '../../../js/core/async-task.js';
+import { storedSource } from '../../helpers/stored-source.js';
 import { State } from '../../../js/modules/multi-vari/domain/model.js';
 import {
-  analysisRun, buildStrips, errorTextOf, fmt, pct, vcView, readInputs, warningText, RERUN_DELAY,
+  analysisRun, readSourceColumn, buildStrips, errorTextOf, fmt, pct, vcView, readInputs, warningText, RERUN_DELAY,
 } from '../../../js/modules/multi-vari/viewmodel/present.js';
+
+/** Leser über ein reaktives Blatt `cols` (Spalten-Id → Werte); read hängt an jeder Spalte. */
+function reactiveSource(cols, onRead = () => {}) {
+  return {
+    read(instanceId, options) {
+      onRead();
+      const columns = Object.keys(cols).map((id) => ({ id, name: id, values: [...cols[id]] }));
+      return storedSource({ ws1: { sheets: [{ id: 's1', name: 'S', state: { rowCount: Math.max(0, ...columns.map((c) => c.values.length)), columns } }] } }).read(instanceId, options);
+    },
+    list() { return []; },
+  };
+}
 
 const ref = (col) => ({ instanceId: 'ws1', sheetId: 's1', columnId: col });
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -32,12 +45,10 @@ function host() {
   const calls = [];
   const spy = (input) => { calls.push(input); return { result: { n: input.measurement.values.length }, error: null }; };
   let columnReads = 0;
+  const source = reactiveSource(sheet, () => { columnReads += 1; });
   const comp = {
     model: new State(),
-    column(r) {
-      columnReads += 1;
-      return { values: sheet[r.columnId] ? [...sheet[r.columnId]] : null, name: r.columnId };
-    },
+    column(r) { return readSourceColumn(source, r); },
   };
   defineAsyncTaskSlots(comp, ['analysis']);
   const vm = reactive(comp);
@@ -119,6 +130,29 @@ function resultWith(count, extra = {}) {
 const display = (over = {}) => ({
   showPoints: true, connectMeans: true, showGroupMean: true, showRefLine: true,
   yLabel: 'Messwert', refLabel: 'Gesamtmittel', ...over,
+});
+
+suite('Multi-Vari Viewmodel — Leser', () => {
+  test('readSourceColumn liest nur über read und liefert Werte und Namen', () => {
+    const base = reactiveSource({ m1: [1, 2, 3, 4] });
+    const spy = new Proxy({}, { get(_t, k) {
+      if (k === 'read') return (...a) => base.read(...a);
+      throw new Error(`greift auf src.${String(k)} zu`);
+    } });
+    assertDeepEqual(readSourceColumn(spy, ref('m1')), { values: [1, 2, 3, 4], name: 'm1' });
+    assertDeepEqual(readSourceColumn(spy, ref('nope')), { values: null, name: null });
+  });
+
+  test('eine worksheet:dataChanged-Änderung der Messwertspalte startet den Lauf neu', async () => {
+    const h = host();
+    await h.tasks.settle(1000);
+    const before = h.calls.length;
+    h.sheet.m1 = [4, 3, 2, 1];
+    await h.tasks.settle(1000);
+    assertEqual(h.calls.length - before, 1);
+    assertDeepEqual(h.calls.at(-1).measurement.values, [4, 3, 2, 1]);
+    h.tasks.release();
+  });
 });
 
 suite('Multi-Vari Viewmodel — Streifen', () => {

@@ -11,6 +11,19 @@ import {
   totalSdValue, totalPercentValue, isUnbalanced, hasClampedTerm,
 } from '../domain/analysis.js';
 import { formatNumber } from '../../../core/number-format.js';
+import { readColumn, columnLabel } from '../../../core/source-columns.js';
+
+/**
+ * Eine Spalte für den Lauf über den Leser `src`: Werte in Zeilenreihenfolge
+ * und Anzeigename; beides `null`, wenn die Spalte nicht lesbar ist.
+ * @param {import('../../../core/source-reader.js').Source} src Leser des Arbeitsblatts
+ * @param {object} ref Spaltenbezug
+ * @returns {{ values: any[]|null, name: string|null }}
+ */
+export function readSourceColumn(src, ref) {
+  const c = readColumn(src, /** @type {any} */ (ref));
+  return c ? { values: [...c.values], name: columnLabel(c) } : { values: null, name: null };
+}
 
 /** Wartezeit vor dem Rechnen: eine schnelle Folge von Änderungen rechnet einmal. */
 export const RERUN_DELAY = 120;
@@ -90,7 +103,7 @@ export function pause(ms, signal) {
 
 /**
  * Der Lauf des auto-Tasks `analysis`. `this` ist das Viewmodel; es liest
- * Spalten über `this.column(ref)` (dahinter `ctx.data`). Alles, was vor dem
+ * Spalten über `this.column(ref)` (dahinter `ctx.source`). Alles, was vor dem
  * ersten `await` gelesen wird, startet den Lauf bei einer Änderung neu.
  * @param {typeof analyze} [compute] die Rechnung
  * @returns {(this: any, args: object, ctl: { signal: AbortSignal }) => Promise<Analysis>}

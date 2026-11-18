@@ -5,6 +5,7 @@ import { readInputs, buildJobs, computeInputsHash, summarize } from '../../js/mo
 import { fmt, fmtP, fmtInterval, statisticKey, bootDecision } from '../../js/modules/resampling/domain/format.js';
 import { statementParts, renderStatement } from '../../js/modules/resampling/domain/statement.js';
 import { evaluateDerived } from '../../js/core/derived.js';
+import { storedSource } from '../helpers/stored-source.js';
 import { runJobSync } from '../../js/engines/resampling-engine.js';
 
 const ref = (c) => ({ instanceId: 'w', sheetId: 's', columnId: c });
@@ -122,7 +123,16 @@ suite('resampling: Formatierung und Aussagesatz', () => {
 });
 
 suite('resampling: Model — derived', () => {
-  const data = { values, name: (r) => r.columnId.toUpperCase() };
+  const data = storedSource({ w: { sheets: [{ id: 's', name: 'S', state: {
+    rowCount: 12,
+    columns: Object.entries(sheet).map(([id, vals]) => ({ id, name: id.toUpperCase(), values: vals })),
+  } }] } });
+  /** Leser, der außer read/list jedes Glied mit Wurf meldet. */
+  const spy = (src) => new Proxy({}, { get(_t, k) {
+    if (k === 'read') return (...a) => src.read(...a);
+    if (k === 'list') return () => src.list();
+    throw new Error(`derived greift auf src.${String(k)} zu`);
+  } });
   const boot = { estimate: 22.5, se: 0.5, bias: 0, ci: { percentile: [21, 24], bca: [21, 24], bcaFallback: false }, bins: [] };
   const stored = { inputsHash: 'h', mode: 'one', statisticId: 'median', contrast: 'difference', direction: 'two-sided', confidence: 0.95, B: 10000, seed: 42, labels: ['X'], n: [15], boot, perm: null, k: null };
 
@@ -133,6 +143,10 @@ suite('resampling: Model — derived', () => {
     assertEqual(evaluateDerived(State.fromJSON({ mode: 'one', statisticId: 'ppk', colRef1: ref('a') }), data).validation, 'errLimitsMissing');
     assertEqual(evaluateDerived(State.fromJSON({ mode: 'k', colRefsK: [ref('a'), ref('b')] }), data).validation, 'errMinGroups');
     assertEqual(evaluateDerived(State.fromJSON({ mode: 'one', colRef1: ref('a'), B: 500 }), data).validation, 'errB');
+  });
+
+  test('validation liest nur über src.read', () => {
+    assertEqual(evaluateDerived(State.fromJSON({ mode: 'one', colRef1: ref('a') }), spy(data)).validation, null);
   });
 
   test('decision: Urteil des Bootstraps gegen den Sollwert aus dem gespeicherten Ergebnis', () => {

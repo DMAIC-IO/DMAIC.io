@@ -1,7 +1,7 @@
 /**
  * D.Mike — Multi-Vari: Viewmodel.
  *
- * Der auto-Task `analysis` rechnet aus Model und Arbeitsblatt (`ctx.data`),
+ * Der auto-Task `analysis` rechnet aus Model und Arbeitsblatt (`ctx.source`),
  * entprellt und abbrechbar; die Anzeigeschalter rechnen nicht neu. Getter
  * machen daraus Kennzahlen, Warnungen, Tabelle und die Konfiguration je
  * Diagrammstreifen (`strips`). Exporte: die Tabelle der Varianzkomponenten.
@@ -17,6 +17,7 @@ import { UiState } from './state.js';
 import {
   analysisRun, buildStrips, errorTextOf, fmt, pct, intOrDash, termLabel,
   warningCodes, warningText, vcView,
+  readSourceColumn,
 } from './present.js';
 
 /** Spaltenköpfe der Varianztabelle (Textschlüssel). */
@@ -41,7 +42,7 @@ export default createModule({
        * @param {object} ref Spaltenbezug
        * @returns {{ values: any[]|null, name: string|null }}
        */
-      column(ref) { return { values: ctx.data.values(ref), name: ctx.data.name(ref) }; },
+      column(ref) { return readSourceColumn(ctx.source, ref); },
 
       /** Das Ergebnis des letzten Laufs, oder null. */
       get result() { return this.analysis?.result ?? null; },
@@ -50,7 +51,7 @@ export default createModule({
 
       /** Name der Messwertspalte. */
       get measurementName() {
-        return this.model.measurement ? (ctx.data.name(this.model.measurement) ?? '?') : '?';
+        return this.model.measurement ? (readSourceColumn(ctx.source, this.model.measurement).name ?? '?') : '?';
       },
       /** Titel über den Streifen. */
       get chartTitle() { return this.t('chartTitle', { col: this.measurementName }); },
