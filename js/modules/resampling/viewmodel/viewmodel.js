@@ -9,7 +9,7 @@ import { createModule } from '../../../core/template-module.js';
 import { setFields } from '../../../core/model.js';
 import { asyncTask } from '../../../core/async-task.js';
 import { createInlineRunner } from '../../../engines/resampling-runner.js';
-import { readColumn, columnLabel } from '../../../core/source-columns.js';
+import { columnName, columnValues } from '../../../core/source-columns.js';
 import descriptor from '../module.js';
 import { State, MODES, CONTRASTS, DIRECTIONS, CI_METHODS, STATS_BY_MODE } from '../domain/model.js';
 import { readInputs, errorKeyForCode, buildJobs, computeInputsHash, summarize } from '../domain/analyze.js';
@@ -21,7 +21,7 @@ import { resultView, bootChartConfig, permChartConfig } from './present.js';
 const refsOf = (m) => (m.mode === 'k' ? m.colRefsK : m.mode === 'one' ? [m.colRef1] : [m.colRef1, m.colRef2]);
 
 /** @param {any} src @param {any} ref @returns {string} Spaltenname, leer wenn nicht lesbar */
-const labelOf = (src, ref) => { const c = readColumn(src, ref); return c ? columnLabel(c) : ''; };
+const labelOf = (src, ref) => columnName(src, ref) ?? '';
 
 const MODE_LABEL_KEYS = { one: 'modeOne', two: 'modeTwo', paired: 'modePaired', k: 'modeK' };
 const CONTRAST_LABEL_KEYS = { difference: 'contrastDifference', ratio: 'contrastRatio' };
@@ -68,7 +68,7 @@ const mod = createModule({
     return {
       computed: {
         /** Stichproben aus dem Arbeitsblatt (roh gelesen: gepaart bleiben die Zeilen zusammen). */
-        inputs() { return readInputs(this.model, (ref) => readColumn(ctx.source, ref)?.values ?? null); },
+        inputs() { return readInputs(this.model, (ref) => columnValues(ctx.source, ref)); },
         /** Fingerabdruck der Eingaben, gegen den ein gespeichertes Ergebnis veraltet. */
         inputsHash() { return computeInputsHash(this.model, this.inputs); },
         /** Spaltennamen je Stichprobe. */

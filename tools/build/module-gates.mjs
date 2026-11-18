@@ -528,11 +528,11 @@ export function checkSchemaLiteral(text, { define = 'defineModel', file = 'domai
       }
     }
   };
-  /** `derived: { <name>(data, d) { … } }` am obersten Literal: Methoden oder `function`-Ausdrücke, `this` ist das Model. */
+  /** `derived: { <name>(src, d) { … } }` am obersten Literal: Methoden oder `function`-Ausdrücke, `this` ist das Model. */
   const checkDerived = (p) => {
     const v = ts.isPropertyAssignment(p) ? p.initializer : null;
     if (!v || !ts.isObjectLiteralExpression(v)) {
-      out.push(`${P} derived muss ein Objekt-Literal { name(data, d) { … } } sein (${src(p)})`);
+      out.push(`${P} derived muss ein Objekt-Literal { name(src, d) { … } } sein (${src(p)})`);
       return;
     }
     for (const e of v.properties) {
@@ -962,11 +962,46 @@ export function checkHistoryOption(text, file = 'viewmodel/viewmodel.js') {
   return ok ? [] : [`history: ${file}: history ist true oder { depth?: ganze Zahl ≥ 1, mode?: 'inverse' }`];
 }
 
+/**
+ * Gate module_reads_ctx_data: der Dienst `ctx.data` ist abgelöst. Kein `ctx.data`,
+ * kein `context.data` und kein Parameter `data` in den Funktionen unter
+ * `derived: { … }` — fremde Instanzen liest `derived(src, d)` über `src.read`
+ * und `core/source-columns.js`, das Viewmodel über `ctx.source`.
+ * @param {{ path: string, text: string }[]} files
+ * @returns {string[]}
+ */
+export function checkCtxDataReads(files) {
+  const out = [];
+  for (const { path, text } of files) {
+    const sf = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true);
+    const seen = new Set();
+    const visit = (n) => {
+      if (ts.isPropertyAccessExpression(n) && n.name.text === 'data' && ts.isIdentifier(n.expression)
+        && (n.expression.text === 'ctx' || n.expression.text === 'context')) {
+        const msg = `module_reads_ctx_data: ${path}: ${n.expression.text}.data — über ctx.source / src.read lesen`;
+        if (!seen.has(msg)) { seen.add(msg); out.push(msg); }
+      }
+      if (ts.isPropertyAssignment(n) && keyOf(n) === 'derived' && ts.isObjectLiteralExpression(n.initializer)) {
+        for (const e of n.initializer.properties) {
+          const fn = ts.isMethodDeclaration(e) ? e : (ts.isPropertyAssignment(e) ? e.initializer : null);
+          if (!fn || !(ts.isMethodDeclaration(fn) || ts.isFunctionExpression(fn) || ts.isArrowFunction(fn))) continue;
+          if (fn.parameters.some((q) => ts.isIdentifier(q.name) && q.name.text === 'data')) {
+            out.push(`module_reads_ctx_data: ${path}: derived.${keyOf(e) ?? '?'} hat einen Parameter data — derived(src, d) liest über src.read`);
+          }
+        }
+      }
+      ts.forEachChild(n, visit);
+    };
+    visit(sf);
+  }
+  return out;
+}
+
 const VIEW_FORBIDDEN = ['stateManager', 'getModuleState'];
 
 /**
  * Gate Lesezugriff: im view-Block des Viewmodels und der Kachel (auch in `computed`) kein `stateManager`
- * und kein `getModuleState` — Arbeitsblätter nur über `ctx.data`, sonst
+ * und kein `getModuleState` — Arbeitsblätter nur über `ctx.source`, sonst
  * fehlt die Abhängigkeit und das Ergebnis veraltet. Ein view-Block aus
  * Teilen wird Teil für Teil geprüft, auch Teile aus anderen Dateien des Moduls.
  * Ausnahmen (`view-read-exemptions.mjs`) gelten je Datei, oberstem Glied des
@@ -1010,7 +1045,7 @@ export function checkViewReads(files, base, exemptions = []) {
       };
       visit(root);
       for (const name of VIEW_FORBIDDEN) {
-        if (seen.has(name)) out.push(`view: ${path}: ${name} ${where} — Arbeitsblätter über ctx.data lesen`);
+        if (seen.has(name)) out.push(`view: ${path}: ${name} ${where} — Arbeitsblätter über ctx.source lesen`);
       }
     };
     const view = findViewBlock(text);
@@ -1747,6 +1782,7 @@ export async function checkConvertedModule(appDir, id, ctx = {}) {
   out.push(...checkLayers(js));
   out.push(...checkWritePath(js));
   out.push(...checkViewReads(js, base, VIEW_READ_EXEMPTIONS[id] ?? []));
+  out.push(...checkCtxDataReads(js));
   out.push(...checkCommandsRef(js, base));
   out.push(...checkAsyncTaskDecls(js));
   const cssPath = 'resources/style.css';

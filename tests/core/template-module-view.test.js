@@ -90,7 +90,7 @@ suite('createModule mit view(ctx) und State', () => {
 
   test('ctx: Kontextdienste und Kennungen, kein module', async () => {
     const { context, notified } = await mount();
-    assertDeepEqual(Object.keys(seenCtx).sort(), ['context', 'cssVars', 'data', 'dialog', 'eventBus', 'history', 'i18n', 'instanceId', 'instances', 'moduleId', 'notify', 'openDialog', 'source']);
+    assertDeepEqual(Object.keys(seenCtx).sort(), ['context', 'cssVars', 'dialog', 'eventBus', 'history', 'i18n', 'instanceId', 'instances', 'moduleId', 'notify', 'openDialog', 'source']);
     assertEqual(seenCtx.context, context);
     assertEqual(seenCtx.instances, context.instances);
     assertEqual(seenCtx.dialog, context.dialog);
@@ -271,8 +271,8 @@ suite('createModule: computed im view-Block', () => {
   });
 
   test('view liest ctx beim Anlegen nicht', () => {
-    assertThrows(() => makeModule({ view(ctx) { void ctx.data; return {}; } }),
-      /createModule\(view-test\): view\(ctx\) reads ctx\.data while the module is created — read ctx only inside members$/);
+    assertThrows(() => makeModule({ view(ctx) { void ctx.source; return {}; } }),
+      /createModule\(view-test\): view\(ctx\) reads ctx\.source while the module is created — read ctx only inside members$/);
   });
 
   test('destroy gibt die Effects frei', async () => {

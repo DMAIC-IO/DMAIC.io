@@ -14,9 +14,7 @@ import { openDialogSafely } from './command-directives.js';
 import { defineComputedSlots, bindComputed } from './computed.js';
 import { derivedAccessor, evaluateDerived } from './derived.js';
 import { checkAsyncTasks, defineAsyncTaskSlots, createAsyncTasks } from './async-task.js';
-import { createWorksheetData } from './worksheet-data.js';
 import { deferredSource } from './source.js';
-import { withFacade } from './source-columns.js';
 import { withoutStoredEdits } from './chart/instance-chart-manager.js';
 import { createFieldErrors } from './field-errors.js';
 import { formatNumber } from './number-format.js';
@@ -25,12 +23,11 @@ import { formatNumber } from './number-format.js';
  * Was `view(ctx)` bekommt: die Kontextdienste und die Kennungen der Instanz.
  * `cssVars(map)` liest CSS-Variablen am Wurzelelement der Instanz.
  * `source` ist der Leser fremder Instanzen (`core/source.js`), derselbe, den
- * die `derived` des Models bekommen; `data` (Fassade) bleibt bis Task 9 daneben.
+ * die `derived` des Models bekommen.
  * @typedef {{ context: object,
  *   notify: (message: string, type?: string, titleKey?: string) => void,
  *   dialog: any, i18n: any, eventBus: any, instanceId: string, moduleId: string,
  *   cssVars: (map: Record<string, string>) => Record<string, string>,
- *   data: import('./worksheet-data.js').WorksheetData,
  *   source: import('./source-reader.js').Source,
  *   instances?: import('./instances.js').ModuleInstances,
  *   openDialog: (ref: string, opts?: import('./command-directives.js').DialogOptions) => Promise<void>,
@@ -613,8 +610,7 @@ export function createModule(base) {
     readDetached(model, src, options) {
       if (!agentEntry) throw new Error(`createModule(${id}): readDetached needs a defineModel Model`);
       if (ownRead) return ownRead(model, options);
-      // Übergang bis Task 9: derived lesen zusätzlich über die Fassade.
-      return assembleRead(agentEntry, model, options, evaluateDerived(model, withFacade(src)), derivedBulk,
+      return assembleRead(agentEntry, model, options, evaluateDerived(model, src), derivedBulk,
         taskNames.length > 0 ? idleTaskStatus(taskDefs) : undefined);
     },
     // Methode, nicht Pfeil: die neue Form braucht die aktive Sprache der Instanz.
@@ -667,8 +663,7 @@ export function createModule(base) {
       const dataCtxTarget = {};
       let dataResult;
       let computedDefs = null;
-      const worksheetData = view || derivedList.length > 0 ? createWorksheetData(context.stateManager) : null;
-      // Der Leser fremder Instanzen: `ctx.source` und (mit der Fassade, Übergang bis Task 9) die `derived`.
+      // Der Leser fremder Instanzen: `ctx.source` und die `derived`.
       const source = view || derivedList.length > 0 ? deferredSource(context.stateManager) : null;
       /** @type {Function[]} */
       const partInits = [];
@@ -684,7 +679,6 @@ export function createModule(base) {
           eventBus: context.eventBus,
           instanceId: context.instanceId,
           moduleId: id,
-          data: worksheetData,
           source,
           instances: context.instances,
           cssVars: (map) => readCssVars(container.querySelector('[x-data]'), map),
@@ -849,7 +843,7 @@ export function createModule(base) {
               }
               if (cellNames.length > 0) {
                 releaseComputed = bindComputed(Alpine, this, {
-                  ...derivedCells(this, derivedDefs, withFacade(/** @type {any} */ (source))), ...(computedDefs ?? {}),
+                  ...derivedCells(this, derivedDefs, /** @type {any} */ (source)), ...(computedDefs ?? {}),
                 });
               }
               // Der Task-Host steht vor view().init() — init darf Tasks starten und lesen.

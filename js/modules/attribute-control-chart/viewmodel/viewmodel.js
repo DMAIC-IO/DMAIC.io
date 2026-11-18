@@ -7,7 +7,7 @@
  */
 import { createModule } from '../../../core/template-module.js';
 import { getAttributeChartType, ATTRIBUTE_CHART_TYPES, ATTRIBUTE_NELSON_RULES } from '../../../engines/attribute-control-chart-engine.js';
-import { columnOptions, columnLabel, readColumn } from '../../../core/source-columns.js';
+import { columnOptions, columnName } from '../../../core/source-columns.js';
 import descriptor from '../module.js';
 import { State } from '../domain/model.js';
 import { UiState } from './state.js';
@@ -17,10 +17,7 @@ import { kpisOf, badgeOf, violationRowsOf, controlChartOf } from './present.js';
 const filterOf = (spec) => ({ types: [...spec.types], minCount: spec.minCount });
 
 /** Name der gelesenen Spalte, `null` ohne Bezug oder Spalte. */
-const nameOf = (src, ref) => {
-  const col = readColumn(src, ref);
-  return col ? columnLabel(col) : null;
-};
+const nameOf = (src, ref) => columnName(src, ref);
 
 export default createModule({
   descriptor,

@@ -175,7 +175,7 @@ suite('createModule mit derived', () => {
     await mod.destroy(); container.remove();
   });
 
-  test('ctx.source liegt neben ctx.data im view-Block', async () => {
+  test('ctx.source liegt im view-Block, ctx.data gibt es nicht', async () => {
     let seen = null;
     ensureTemplate();
     const mod = makeModule({ view(ctx) { seen = ctx; return {}; } });
@@ -188,7 +188,7 @@ suite('createModule mit derived', () => {
     assertEqual(typeof seen.source.read, 'function');
     assertEqual(typeof seen.source.list, 'function');
     assertEqual(seen.source.read('w').rowCount, 2);
-    assertTrue(seen.data !== undefined, 'ctx.data bleibt bis Task 9');
+    assertTrue(!('data' in seen), 'ctx.data gibt es nicht mehr');
     await mod.destroy(); container.remove();
   });
 

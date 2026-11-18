@@ -11,6 +11,7 @@ import { suite, test, assertEqual, assertDeepEqual, assertTrue } from '../../tes
 import { reactive, effect, stop } from '@vue/reactivity';
 import { asyncTask, createAsyncTasks, defineAsyncTaskSlots } from '../../../js/core/async-task.js';
 import { storedSource } from '../../helpers/stored-source.js';
+import { spySource } from '../../helpers/sheet-source.js';
 import { State } from '../../../js/modules/multi-vari/domain/model.js';
 import {
   analysisRun, readSourceColumn, buildStrips, errorTextOf, fmt, pct, vcView, readInputs, warningText, RERUN_DELAY,
@@ -135,10 +136,7 @@ const display = (over = {}) => ({
 suite('Multi-Vari Viewmodel — Leser', () => {
   test('readSourceColumn liest nur über read und liefert Werte und Namen', () => {
     const base = reactiveSource({ m1: [1, 2, 3, 4] });
-    const spy = new Proxy({}, { get(_t, k) {
-      if (k === 'read') return (...a) => base.read(...a);
-      throw new Error(`greift auf src.${String(k)} zu`);
-    } });
+    const spy = spySource(base);
     assertDeepEqual(readSourceColumn(spy, ref('m1')), { values: [1, 2, 3, 4], name: 'm1' });
     assertDeepEqual(readSourceColumn(spy, ref('nope')), { values: null, name: null });
   });

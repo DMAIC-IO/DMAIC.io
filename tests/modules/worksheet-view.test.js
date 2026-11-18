@@ -17,11 +17,12 @@ import { registerFieldDirective } from '../../js/core/field-directive.js';
 import { registerCommandDirectives } from '../../js/core/command-directives.js';
 import { registerWidgetDirective } from '../../js/core/widget-directive.js';
 import { registerFileDropDirective } from '../../js/core/file-drop-directive.js';
-import { installWorksheetRevisions, createWorksheetData } from '../../js/core/worksheet-data.js';
+import { installWorksheetRevisions } from '../../js/core/worksheet-data.js';
 import { registerWorksheetReader, resolveColumnRef } from '../../js/core/worksheet-columns.js';
 import { WIDGETS } from '../../js/widgets/registry.js';
 import { WIDGET_I18N } from '../widget-i18n.js';
-import { NO_SOURCE } from '../../js/core/source-reader.js';
+import { NO_SOURCE, deferredSource } from '../../js/core/source-reader.js';
+import { readColumn } from '../../js/core/source-columns.js';
 
 const ID = 'worksheet';
 const WS = 'ws-1';
@@ -203,20 +204,20 @@ suite('worksheet: Viewmodel der Zielform im Browser', () => {
     assertEqual(h.changed(), before + 1, 'Blattwechsel ändert keine Daten');
   });
 
-  test('Spalte gelöscht: columnRef eines anderen Moduls liefert über die Fassade null', async () => {
+  test('Spalte gelöscht: columnRef eines anderen Moduls liefert über den Leser null', async () => {
     const h = await mount(twoSheets());
     // Wie readSync an einer eingehängten Instanz: der echte Lese-Haken `vm.read`.
     registerWorksheetReader(h.stateManager, (id, options) => h.vm().read(options));
     const sheet = h.vm().model.sheets[0];
     const ref = { instanceId: WS, sheetId: sheet.id, columnId: sheet.columns[0].id };
-    const data = createWorksheetData(h.stateManager);
+    const src = deferredSource(h.stateManager);
     assertEqual(resolveColumnRef(h.stateManager, ref)?.values.slice(0, 3).join(), '1,2,3');
-    assertEqual(data.values(ref).slice(0, 3).join(), '1,2,3');
+    assertEqual(readColumn(src, ref).values.slice(0, 3).join(), '1,2,3');
     h.vm().model.removeColumn({ sheetId: sheet.id, columnId: ref.columnId });
     await frame();
     await flush();
     assertEqual(resolveColumnRef(h.stateManager, ref), null);
-    assertEqual(data.values(ref), null);
+    assertEqual(readColumn(src, ref), null);
   });
 
   test('Lese-Haken: vm.read und readDetached liefern die Lesefläche des Arbeitsblatts, readStored den gespeicherten Stand', async () => {

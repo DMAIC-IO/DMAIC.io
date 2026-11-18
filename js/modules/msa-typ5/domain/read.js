@@ -4,7 +4,7 @@
  */
 import { analyze } from '../../../engines/msa-typ5-engine.js';
 import { effectiveLevels, engineLevels, mostFrequentLevel, ratingValues } from './levels.js';
-import { readColumn, columnLabel, columnOptions } from '../../../core/source-columns.js';
+import { columnName, columnValues, columnOptions } from '../../../core/source-columns.js';
 import { longRows, wideRows, orderRatings } from './rows.js';
 
 /**
@@ -18,7 +18,7 @@ import { longRows, wideRows, orderRatings } from './rows.js';
  * @returns {any[]|null}
  */
 function valuesOf(src, ref) {
-  return ref ? (readColumn(src, ref)?.values ?? null) : null;
+  return columnValues(src, ref);
 }
 
 /**
@@ -27,8 +27,7 @@ function valuesOf(src, ref) {
  * @returns {string|null}
  */
 function nameOf(src, ref) {
-  const col = ref ? readColumn(src, ref) : null;
-  return col ? columnLabel(col) : null;
+  return columnName(src, ref);
 }
 
 /**

@@ -79,6 +79,27 @@ export function readColumn(src, ref) {
 export function columnLabel(col) { return col.name || col.shortName || '?'; }
 
 /**
+ * Anzeigename der Spalte (`columnLabel`); `null` ohne Bezug oder bei unlesbarer Spalte.
+ * @param {Source} src
+ * @param {ColumnRef|null} ref
+ * @returns {string|null}
+ */
+export function columnName(src, ref) {
+  const c = readColumn(src, ref);
+  return c ? columnLabel(c) : null;
+}
+
+/**
+ * Die Rohwerte der Spalte in Zeilenreihenfolge; `null` ohne Bezug oder bei unlesbarer Spalte.
+ * @param {Source} src
+ * @param {ColumnRef|null} ref
+ * @returns {any[]|null}
+ */
+export function columnValues(src, ref) {
+  return readColumn(src, ref)?.values ?? null;
+}
+
+/**
  * Die Zahlen einer Werteliste wie im Arbeitsblatt (`parseNumeric`): Dezimalkomma
  * zählt; Wahrheitswerte, Leerwerte, Text und `Infinity` fallen heraus.
  * @param {any[]} values
@@ -171,43 +192,4 @@ export function listColumns(src, filter) {
  */
 export function columnOptions(src, filter) {
   return listColumns(src, filter ?? {}).map(columnOption);
-}
-
-/**
- * Die Methoden der Fassade `ctx.data` (`core/worksheet-data.js`) über einem
- * Leser. Übergang bis Task 9 (F1.14e): danach lesen alle Module über die
- * Funktionen oben.
- * @param {Source} src
- * @returns {import('./worksheet-data.js').WorksheetData}
- */
-export function facadeOf(src) {
-  return {
-    values(ref) { if (!ref) return null; const c = readColumn(src, ref); return c ? [...c.values] : null; },
-    numeric(ref) { if (!ref) return null; const c = readColumn(src, ref); return c ? numericValues(c.values) : null; },
-    columns(filter) { return columnOptions(src, filter); },
-    column(ref) {
-      if (!ref) return null;
-      const c = readColumn(src, ref);
-      return c ? { name: columnLabel(c), type: c.type, role: c.role, roleConfirmed: c.roleConfirmed } : null;
-    },
-    sheet(ref) { return readSheet(src, ref); },
-    sheets(instanceId) { return readSheets(src, instanceId); },
-    name(ref) { if (!ref) return null; const c = readColumn(src, ref); return c ? columnLabel(c) : null; },
-  };
-}
-
-/**
- * Übergang (Festlegung 3, bis Task 9): der Leser, den `derived` bekommt —
- * `src` mit `read`/`list` plus den Methoden der Fassade (`values`, `numeric`,
- * `name`, `column`, `columns`, `sheet`, `sheets`). So lesen noch nicht
- * umgestellte `derived` (`data.values(ref)`) weiter, umgestellte über `src.read`.
- * @param {Source} src
- * @returns {Readonly<Source & import('./worksheet-data.js').WorksheetData>}
- */
-export function withFacade(src) {
-  return Object.freeze({
-    read: (instanceId, options) => src.read(instanceId, options),
-    list: () => src.list(),
-    ...facadeOf(src),
-  });
 }

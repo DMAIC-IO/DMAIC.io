@@ -676,7 +676,7 @@ async function stillCurrentAfterRead(mod, ctx, instanceId) {
 }
 
 /**
- * Wartet, bis das eben angelegte Arbeitsblatt über `ctx.data`/`readSync`
+ * Wartet, bis das eben angelegte Arbeitsblatt über `ctx.source`/`readSync`
  * lesbar ist. Das Vorladen des Arbeitsblatt-Codes (`worksheet-preload.js`)
  * läuft erst nach `module:added` und asynchron; ein Modul, das in
  * `setState` sofort rechnet, läse sonst `not_loaded` — eine leere Spalte —

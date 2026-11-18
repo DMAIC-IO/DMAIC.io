@@ -3,6 +3,7 @@ import { State } from '../../js/modules/histogram/domain/model.js';
 import { buildGroups } from '../../js/modules/histogram/domain/analyze.js';
 import { evaluateDerived } from '../../js/core/derived.js';
 import { storedSource } from '../helpers/stored-source.js';
+import { spySource } from '../helpers/sheet-source.js';
 import { CHART_COLORS_RGBA } from '../../js/core/chart/chart-colors.js';
 
 const ref = (c) => ({ instanceId: 'w', sheetId: 's', columnId: c });
@@ -65,12 +66,7 @@ suite('histogram: Model — derived stats', () => {
     columns: Object.entries(columns).map(([id, values]) => ({ id, name: id.toUpperCase(), values })),
   } }] } });
   const data = wsOf(cols);
-  /** Leser, der außer read/list jedes Glied mit Wurf meldet. */
-  const spy = (src) => new Proxy({}, { get(_t, k) {
-    if (k === 'read') return (...a) => src.read(...a);
-    if (k === 'list') return () => src.list();
-    throw new Error(`derived greift auf src.${String(k)} zu`);
-  } });
+  const spy = spySource;
 
   test('stats liest nur über src.read', () => {
     const m = State.fromJSON({ datasets: [{ valueRef: ref('v'), groupRef: ref('g') }] });

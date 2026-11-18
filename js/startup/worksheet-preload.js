@@ -1,7 +1,7 @@
 /**
  * D.Mike — Arbeitsblatt vorladen (worksheet-preload.js)
  *
- * Die Arbeitsblatt-Fassade (`ctx.data`, `worksheet-columns`) liest über
+ * Der Leser `Source` (`ctx.source`, `derived`, `worksheet-columns`) liest über
  * `readSync`. Das liefert `not_loaded`, solange der Code des Moduls
  * `worksheet` nicht geladen ist, also auch dann, wenn ein Projekt
  * Arbeitsblätter hat, aber keines eingehängt wurde (Histogramm direkt nach

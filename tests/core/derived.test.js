@@ -27,8 +27,8 @@ suite('derived', () => {
     assertDeepEqual(derivedNames(M), ['b', 'a']);
   });
 
-  test('this ist das Model, data die Arbeitsblattsicht', () => {
-    const M = defineModel({ fields: { n: number({ default: 4 }) }, derived: { total(data) { return this.n + data.numeric('c').length; } } });
+  test('this ist das Model, src der Leser', () => {
+    const M = defineModel({ fields: { n: number({ default: 4 }) }, derived: { total(src) { return this.n + src.numeric('c').length; } } });
     assertDeepEqual(evaluateDerived(new M(), stub), { total: 7 });
   });
 
@@ -36,8 +36,8 @@ suite('derived', () => {
     let calls = 0;
     const M = defineModel({ derived: {
       a() { calls += 1; return 10; },
-      b(data, d) { return d.a + 1; },
-      c(data, d) { return d.a + d.b; },
+      b(src, d) { return d.a + 1; },
+      c(src, d) { return d.a + d.b; },
     } });
     assertDeepEqual(evaluateDerived(new M(), stub), { a: 10, b: 11, c: 21 });
     assertEqual(calls, 1);
@@ -49,12 +49,12 @@ suite('derived', () => {
   });
 
   test('Fehler pflanzt sich in einen lesenden Eintrag fort', () => {
-    const M = defineModel({ derived: { bad() { throw new Error('x'); }, next(data, d) { return d.bad; } } });
+    const M = defineModel({ derived: { bad() { throw new Error('x'); }, next(src, d) { return d.bad; } } });
     assertDeepEqual(evaluateDerived(new M(), stub), { bad: { error: 'x' }, next: { error: 'x' } });
   });
 
   test('Zyklus a → b → a: beide { error } mit cycle', () => {
-    const M = defineModel({ derived: { a(data, d) { return d.b; }, b(data, d) { return d.a; } } });
+    const M = defineModel({ derived: { a(src, d) { return d.b; }, b(src, d) { return d.a; } } });
     const r = evaluateDerived(new M(), stub);
     assertTrue(r.a.error.includes('cycle'), r.a.error);
     assertTrue(r.b.error.includes('cycle'), r.b.error);
@@ -69,7 +69,7 @@ suite('derived', () => {
   });
 
   test('names mit Verkettung auf einen nicht genannten Eintrag wertet ihn mit', () => {
-    const M = defineModel({ derived: { a() { return 1; }, b(data, d) { return d.a + 1; } } });
+    const M = defineModel({ derived: { a() { return 1; }, b(src, d) { return d.a + 1; } } });
     assertDeepEqual(evaluateDerived(new M(), stub, ['b']), { b: 2 });
   });
 

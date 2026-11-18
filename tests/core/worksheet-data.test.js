@@ -1,12 +1,29 @@
 /**
- * Reaktiver Lesezugriff auf Arbeitsblätter (core/worksheet-data.js) — im Browser (Alpine).
+ * Reaktiver Lesezugriff auf Arbeitsblätter (Zähler in core/source.js, re-exportiert von core/worksheet-data.js) — im Browser (Alpine).
  */
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
-import { installWorksheetRevisions, createWorksheetData, bumpWorksheetRevisions } from '../../js/core/worksheet-data.js';
+import { installWorksheetRevisions, bumpWorksheetRevisions } from '../../js/core/worksheet-data.js';
+import { deferredSource } from '../../js/core/source-reader.js';
+import { readColumn, numericValues, columnLabel, readSheet, readSheets, columnOptions } from '../../js/core/source-columns.js';
 import { registerWorksheetReader } from '../../js/core/worksheet-columns.js';
 import { readWorksheetState } from '../helpers/legacy-worksheet-read.js';
 import { useStoredWorksheetReader } from '../helpers/worksheet-reader.js';
+
+/** Spaltenlesen über den Leser `Source` — prüft hier die Zähler (reaktives Lesen), nicht die Hilfsfunktionen. */
+function createWorksheetData(sm) {
+  const src = deferredSource(sm);
+  const col = (ref) => (ref ? readColumn(src, ref) : null);
+  return {
+    values: (ref) => { const c = col(ref); return c ? [...c.values] : null; },
+    numeric: (ref) => { const c = col(ref); return c ? numericValues(c.values) : null; },
+    name: (ref) => { const c = col(ref); return c ? columnLabel(c) : null; },
+    column: (ref) => { const c = col(ref); return c ? { name: columnLabel(c), type: c.type, role: c.role, roleConfirmed: c.roleConfirmed } : null; },
+    columns: (filter) => columnOptions(src, filter),
+    sheet: (ref) => readSheet(src, ref),
+    sheets: (id) => readSheets(src, id),
+  };
+}
 
 const flush = () => new Promise((r) => setTimeout(r, 0));
 
@@ -33,7 +50,7 @@ function fakeStore(states) {
 
 const sheet = (values) => ({ sheets: [{ id: 's1', state: { rowCount: values.length, columns: [{ id: 'c1', name: 'Gewicht', shortName: 'G', values }] } }] });
 
-suite('ctx.data', () => {
+suite('Leser Source', () => {
   test('values, numeric, name; fehlend → null', () => {
     const data = createWorksheetData(fakeStore({ ws1: sheet([1, '2,5', '', null, 'x', 3, '4']) }));
     const ref = { instanceId: 'ws1', sheetId: 's1', columnId: 'c1' };
@@ -136,7 +153,7 @@ function fakeProject(states, phases) {
   return sm;
 }
 
-suite('ctx.data.columns', () => {
+suite('Leser Source.columns', () => {
   test('wählbare Spalten nach Typ und Anzahl, Form { key, name }', () => {
     const states = {
       ws1: { sheets: [{ id: 's1', name: 'Blatt', state: { rowCount: 3, columns: [
@@ -257,7 +274,7 @@ suite('ctx.data.columns', () => {
   });
 });
 
-suite('ctx.data über den Leser (readSync)', () => {
+suite('Leser Source über den Leser (readSync)', () => {
   test('liest nur über den Leser, nie über getModuleState', () => {
     const stored = { wsL: { sheets: [{ id: 's1', name: 'Eins', state: { rowCount: 2, columns: [
       { id: 'c1', name: 'A', type: 'numeric', values: [1, '2,5'] }] } }] } };
@@ -306,7 +323,7 @@ suite('ctx.data über den Leser (readSync)', () => {
   });
 });
 
-suite('ctx.data: Leser', () => {
+suite('Leser Source: Leser', () => {
   test('null-Bezug ergibt null, auch ohne registrierten Leser', () => {
     const data = createWorksheetData({ get: () => ({}) });
     assertEqual(data.values(null), null);

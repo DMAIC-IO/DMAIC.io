@@ -90,7 +90,7 @@ async function init() {
     stateManager, moduleRegistry, workspace, eventBus,
     createSource: () => createSource(stateManager),
   });
-  // Der Leser `Source` (derived, ctx.source, Kacheln, Fassade ctx.data) liest über readSync.
+  // Der Leser `Source` (derived, ctx.source, Kacheln, Altleser über worksheet-columns) liest über readSync.
   registerReader(stateManager, instances.readSync);
   // So früh wie möglich, noch vor dem ersten Mount: bis der Arbeitsblatt-Code
   // geladen ist, liefert die Fassade `null` (`not_loaded`). Nicht abwarten —

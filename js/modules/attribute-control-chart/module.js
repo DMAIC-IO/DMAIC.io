@@ -12,5 +12,6 @@ export default {
     eightd: { phase: 'implementation', allowedPhases: ['implementation', 'prevent'] },
   },
   load: () => import('./viewmodel/viewmodel.js'),
+  uses: ['worksheet'],
   tile: () => import('./tile/tile.js'),
 };

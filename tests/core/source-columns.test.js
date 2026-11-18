@@ -3,7 +3,7 @@
  */
 import { suite, test, assert, assertEqual, assertDeepEqual } from '../test-utils.js';
 import {
-  readColumn, columnLabel, numericValues, readSheet, readSheets, columnOptions, listColumns,
+  readColumn, columnLabel, columnName, columnValues, numericValues, readSheet, readSheets, columnOptions, listColumns,
 } from '../../js/core/source-columns.js';
 import { storedSource } from '../helpers/stored-source.js';
 
@@ -34,6 +34,23 @@ suite('source-columns: readColumn', () => {
     assertEqual(columnLabel({ name: 'A', shortName: 'B' }), 'A');
     assertEqual(columnLabel({ name: '', shortName: 'B' }), 'B');
     assertEqual(columnLabel({}), '?');
+  });
+});
+
+suite('source-columns: columnName, columnValues', () => {
+  test('columnName: Anzeigename; null ohne Bezug oder bei unlesbarer Spalte', () => {
+    const src = storedSource({ ws1: sheet([1]) });
+    assertEqual(columnName(src, REF), 'Gewicht');
+    assertEqual(columnName(src, null), null);
+    assertEqual(columnName(src, { ...REF, columnId: 'nope' }), null);
+    assertEqual(columnName(src, { ...REF, instanceId: 'nope' }), null);
+  });
+
+  test('columnValues: die Werte; null ohne Bezug oder bei unlesbarer Spalte', () => {
+    const src = storedSource({ ws1: sheet([1, '2,5', null]) });
+    assertDeepEqual(columnValues(src, REF), [1, '2,5', null]);
+    assertEqual(columnValues(src, null), null);
+    assertEqual(columnValues(src, { ...REF, columnId: 'nope' }), null);
   });
 });
 

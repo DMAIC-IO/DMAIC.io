@@ -4,6 +4,7 @@ import { setFields } from '../../../js/core/model.js';
 import { from0 } from '../../../js/modules/contour-plot/domain/migrations.js';
 import { scanSurface, evalModel, sampleSurface } from '../../../js/modules/contour-plot/domain/surface.js';
 import { storedSource } from '../../helpers/stored-source.js';
+import { spySource } from '../../helpers/sheet-source.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
 import contourChart from '../../../js/widgets/contour-chart/schema.js';
 import { COLOR_SCHEMES } from '../../../js/core/chart/color-schemes.js';
@@ -264,11 +265,7 @@ suite('contour-plot Model — Ableitungen', () => {
     const base = storedSource({ ws1: { sheets: [{ id: 's1', name: 'S', state: {
       rowCount: 2, columns: Object.entries(cols).map(([id, values]) => ({ id, name: id, values })),
     } }] } });
-    const spy = new Proxy({}, { get(_t, k) {
-      if (k === 'read') return (...a) => base.read(...a);
-      if (k === 'list') return () => base.list();
-      throw new Error(`derived greift auf src.${String(k)} zu`);
-    } });
+    const spy = spySource(base);
     const m = new State();
     m.datasets = [{ x: ref('a'), y: ref('b'), z: ref('c') }];
     assertDeepEqual(evaluateDerived(m, spy, ['dataPoints']).dataPoints, [{ x: 1, y: 10, z: 100 }, { x: 2, y: 20, z: 200 }]);

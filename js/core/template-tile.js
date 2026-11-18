@@ -21,7 +21,6 @@
 import { readModel, readSettings, isSettings, defaultOf, activeContext, schemaOf } from './model.js';
 import { derivedReader } from './derived.js';
 import { deferredSource, NO_SOURCE } from './source-reader.js';
-import { withFacade } from './source-columns.js';
 
 /**
  * Was `view(ctx)` einer Kachel bekommt. `source` liest fremde Instanzen
@@ -145,13 +144,12 @@ export function createTile(base) {
       const source = sourceOf(args);
       // Ein Getter je derived; ein Memo je Rendern für alle Namen (der Scope ist ein Schnappschuss):
       // jeder Eintrag läuft höchstens einmal, auch wenn mehrere andere ihn lesen, und nur, wenn gelesen.
-      // Übergang bis Task 9: derived lesen zusätzlich über die Fassade.
       let read = null;
       for (const name of derived) {
         Object.defineProperty(scope, name, {
           enumerable: true,
           get() {
-            read ??= derivedReader(model, withFacade(source));
+            read ??= derivedReader(model, source);
             try { return read(name); } catch (err) { return { error: /** @type {Error} */ (err).message }; }
           },
         });

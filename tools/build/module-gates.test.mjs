@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkViewReads, checkCommandsRef, checkPickerCss, checkChartBindings, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, checkFileDropRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts, viewNamesOf, viewNamesDetailOf, computedNamesOf, checkWidgetTemplates, modelMembersOf, checkFieldErrorPaths, checkHistoryOption } from './module-gates.mjs';
+import { listModuleFiles, checkStructure, checkDescriptor, parseDescriptor, checkUses, checkLayers, checkSchemaLiteral, checkTileSettings, checkSchemaPaths, checkTemplateBindings, checkWritePath, checkViewReads, checkCtxDataReads, checkCommandsRef, checkPickerCss, checkChartBindings, checkContextHelp, readStateBindings, readViewmodelCommands, checkConvertedModule, readExampleIds, checkReferenceFile, checkHelpFiles, readCommandForms, checkCommandRefs, checkFileDropRefs, formHelpKeys, readConfirmKeys, checkConfirmKeys, checkListBindings, checkDefaultArgRefs, checkChoiceGroups, checkInvariantTexts, viewNamesOf, viewNamesDetailOf, computedNamesOf, checkWidgetTemplates, modelMembersOf, checkFieldErrorPaths, checkHistoryOption } from './module-gates.mjs';
 import { viewMemberNamesOf } from './view-names.mjs';
 import { VIEW_READ_EXEMPTIONS } from './view-read-exemptions.mjs';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
@@ -1181,14 +1181,34 @@ test('view-Block: kein stateManager/getModuleState, außerhalb erlaubt', () => {
   view(ctx) {
     return {
       computed: { result() { return ctx.context.stateManager.getModuleState('x'); } },
-      get n() { return ctx.data.numeric(this.model.colRef1); },
+      get n() { return ctx.source.numeric(this.model.colRef1); },
     };
   },
 });`;
   assert.deepEqual(checkViewReads([{ path: 'viewmodel/viewmodel.js', text }]), [
-    'view: viewmodel/viewmodel.js: stateManager im view-Block — Arbeitsblätter über ctx.data lesen',
-    'view: viewmodel/viewmodel.js: getModuleState im view-Block — Arbeitsblätter über ctx.data lesen',
+    'view: viewmodel/viewmodel.js: stateManager im view-Block — Arbeitsblätter über ctx.source lesen',
+    'view: viewmodel/viewmodel.js: getModuleState im view-Block — Arbeitsblätter über ctx.source lesen',
   ]);
+});
+
+test('Gate module_reads_ctx_data: kein ctx.data, context.data oder derived-Parameter data', () => {
+  const bad = `export default createModule({
+  view(ctx) { return { get n() { return ctx.data.values(this.model.a); } }; },
+});`;
+  assert.deepEqual(checkCtxDataReads([{ path: 'viewmodel/viewmodel.js', text: bad }]), [
+    'module_reads_ctx_data: viewmodel/viewmodel.js: ctx.data — über ctx.source / src.read lesen',
+  ]);
+  const bad2 = `function f(context) { return context.data; }`;
+  assert.deepEqual(checkCtxDataReads([{ path: 'io/x.js', text: bad2 }]), [
+    'module_reads_ctx_data: io/x.js: context.data — über ctx.source / src.read lesen',
+  ]);
+  const model = `export const M = defineModel({ derived: { n(data, d) { return data.numeric(this.a); }, m(src, d) { return d; } } });`;
+  assert.deepEqual(checkCtxDataReads([{ path: 'domain/model.js', text: model }]), [
+    'module_reads_ctx_data: domain/model.js: derived.n hat einen Parameter data — derived(src, d) liest über src.read',
+  ]);
+  const good = `export const M = defineModel({ derived: { n(src, d) { return src.read('x'); } } });
+function g(model) { return model.data; }`;
+  assert.deepEqual(checkCtxDataReads([{ path: 'domain/model.js', text: good }]), []);
 });
 
 test('Picker-CSS: keine Regeln auf col-picker-Klassen', () => {
@@ -1211,7 +1231,7 @@ test('checkViewReads: view-Teile aus importierten Dateien des Moduls', () => {
     'viewmodel/causes.js': 'export function causesView(ctx) { return { get x() { return ctx.stateManager.get("a"); } }; }\n',
   });
   const vm = { path: 'viewmodel/viewmodel.js', text: "import { causesView } from './causes.js';\nexport default createModule({ view: [causesView, (ctx) => ({ y: 1 })] });\n" };
-  assert.deepEqual(checkViewReads([vm], base), ['view: viewmodel/viewmodel.js: stateManager im view-Block — Arbeitsblätter über ctx.data lesen']);
+  assert.deepEqual(checkViewReads([vm], base), ['view: viewmodel/viewmodel.js: stateManager im view-Block — Arbeitsblätter über ctx.source lesen']);
 });
 
 test('checkViewReads: enge Ausnahme je Datei, Glied und Name; übrige Prüfungen laufen', () => {
@@ -1225,7 +1245,7 @@ test('checkViewReads: enge Ausnahme je Datei, Glied und Name; übrige Prüfungen
   // init ist ausgenommen, other nicht; der nicht auflösbare Teil bleibt ein Befund.
   assert.deepEqual(checkViewReads([vm], base, exemptions), [
     'view: viewmodel/viewmodel.js: view[1] nicht auflösbar — view-Block nicht prüfbar',
-    'view: viewmodel/viewmodel.js: stateManager im view-Block — Arbeitsblätter über ctx.data lesen',
+    'view: viewmodel/viewmodel.js: stateManager im view-Block — Arbeitsblätter über ctx.source lesen',
   ]);
   // Eine Ausnahme, die nichts trifft, ist ein Befund.
   const stale = [...exemptions, { file: 'viewmodel/toolbar.js', member: 'gridConfig', names: ['stateManager'], reason: 'x' }];
@@ -1262,7 +1282,7 @@ test('checkCommandsRef: nicht auflösbarer commands-Bezeichner wird gemeldet', (
 
 test('checkViewReads: auch tile/*.js', () => {
   const tile = { path: 'tile/tile.js', text: 'export default createTile({ view(ctx) { return { get x() { return ctx.stateManager.get("a"); } }; } });' };
-  assert.deepEqual(checkViewReads([tile]), ['view: tile/tile.js: stateManager im view-Block — Arbeitsblätter über ctx.data lesen']);
+  assert.deepEqual(checkViewReads([tile]), ['view: tile/tile.js: stateManager im view-Block — Arbeitsblätter über ctx.source lesen']);
 });
 
 test('checkSchemaLiteral: default als Funktion des Kontexts', () => {
@@ -1395,7 +1415,7 @@ export default createModule({ view() { return { computed: { fromModule() { retur
 export default createModule({ view() { return { get x() { return ctx.stateManager; } }; } });
 `;
   assert.deepEqual(checkViewReads([{ path: 'viewmodel/viewmodel.js', text: early }]), [
-    'view: viewmodel/viewmodel.js: stateManager im view-Block — Arbeitsblätter über ctx.data lesen',
+    'view: viewmodel/viewmodel.js: stateManager im view-Block — Arbeitsblätter über ctx.source lesen',
   ]);
 });
 
@@ -1406,7 +1426,7 @@ test('checkViewReads: auch asyncTasks.*.run, wie im view-Block', () => {
 });
 `;
   assert.deepEqual(checkViewReads([{ path: 'viewmodel/viewmodel.js', text }]), [
-    'view: viewmodel/viewmodel.js: stateManager in asyncTasks.compute.run — Arbeitsblätter über ctx.data lesen',
+    'view: viewmodel/viewmodel.js: stateManager in asyncTasks.compute.run — Arbeitsblätter über ctx.source lesen',
   ]);
 });
 
@@ -1508,8 +1528,8 @@ test('checkConvertedModule: Lesezugriffe im view-Block und in asyncTasks über d
   const root = convertedFixture({ 'js/modules/neu/viewmodel/viewmodel.js': vm });
   const findings = (await checkConvertedModule(root, 'neu')).filter((f) => f.startsWith('view:'));
   assert.deepEqual(findings, [
-    'view: viewmodel/viewmodel.js: getModuleState im view-Block — Arbeitsblätter über ctx.data lesen',
-    'view: viewmodel/viewmodel.js: stateManager in asyncTasks.compute.run — Arbeitsblätter über ctx.data lesen',
+    'view: viewmodel/viewmodel.js: getModuleState im view-Block — Arbeitsblätter über ctx.source lesen',
+    'view: viewmodel/viewmodel.js: stateManager in asyncTasks.compute.run — Arbeitsblätter über ctx.source lesen',
   ]);
 });
 
