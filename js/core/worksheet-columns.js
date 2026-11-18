@@ -27,50 +27,31 @@
  * worksheet-resolution walk exists in exactly one place.
  */
 
-/** Leser je `stateManager` (P4): `readSync` des Instanzen-Dienstes, in Tests ein Doppel. */
-const readers = new WeakMap();
+import { registerReader, createSource, setTouchHook } from './source-reader.js';
+import { readColumn, refToKey, columnOption, listColumns } from './source-columns.js';
 
-/** @type {((key: string) => void)|null} liest den reaktiven Zähler `key` (`'#list'` oder eine Instanz-Id) */
-let touch = null;
+export { refToKey, columnOption };
 
 /**
  * Den Abhängigkeits-Haken setzen: jedes Lesen ruft ihn mit der Instanz-Id, das
- * Auflisten der Spalten mit `'#list'`. `worksheet-data.js` hängt ihn an die
- * reaktiven Zähler, damit auch Altleser (Korrelation, Regression, …) in
+ * Auflisten der Spalten mit `'#list'`. `core/source.js` hängt ihn beim Import
+ * an die reaktiven Zähler, damit auch Altleser (Korrelation, Regression, …) in
  * Alpine-Ansichten neu rechnen, wenn das Arbeitsblatt nachgeladen wird oder
- * sich ändert.
- * Nur `core/worksheet-data.js` setzt den Haken, beim Import. Ohne diesen Import
- * (etwa in Node-Tests) bleibt er `null`, und die Fassade ist nicht reaktiv.
+ * sich ändert. Ohne diesen Import (etwa in Node-Tests) bleibt er `null`, und
+ * die Fassade ist nicht reaktiv.
  * @param {((key: string) => void)|null} fn
  * @returns {((key: string) => void)|null} der bisherige Haken (zum Wiederherstellen in Tests)
  */
-export function setWorksheetTouch(fn) { const prev = touch; touch = fn; return prev; }
+export const setWorksheetTouch = setTouchHook;
 
 /**
- * Das rohe Objekt hinter einem reaktiven Proxy. Ein Viewmodel reicht den
- * `stateManager` oft über Alpine weiter (`this._ui.services`); Alpines
- * Reaktivität verpackt ihn dabei in einen Proxy, der über `__v_raw` auf das
- * rohe Objekt zeigt (wie `toRaw` von `@vue/reactivity`). Ohne das fände die
- * `WeakMap` den Leser nicht.
- * @param {object} obj
- * @returns {object}
- */
-function rawOf(obj) {
-  let o = obj;
-  while (o && typeof o === 'object' && o.__v_raw) o = o.__v_raw;
-  return o;
-}
-
-/**
- * Den Arbeitsblatt-Leser für einen `stateManager` hinterlegen. Die App ruft das
- * direkt nach `createInstances` mit `instances.readSync`.
+ * Den Arbeitsblatt-Leser für einen `stateManager` hinterlegen (Name der
+ * Fassade; dasselbe wie `registerReader` aus `core/source.js`).
  * @param {object} stateManager
  * @param {(id: string, options?: object) => object} readSync
  * @returns {void}
  */
-export function registerWorksheetReader(stateManager, readSync) {
-  readers.set(rawOf(stateManager), readSync);
-}
+export const registerWorksheetReader = registerReader;
 
 /**
  * Ein Arbeitsblatt über den registrierten Leser lesen (Form von `read`, P3).
@@ -83,11 +64,9 @@ export function registerWorksheetReader(stateManager, readSync) {
  * @throws {Error} `worksheet reader not registered` — Programmierfehler, soll laut sein
  */
 export function readWorksheet(stateManager, instanceId, options) {
-  const read = readers.get(rawOf(stateManager));
-  if (!read) throw new Error('worksheet reader not registered');
-  touch?.(instanceId);
+  const src = createSource(stateManager);
   try {
-    return read(instanceId, options) ?? null;
+    return src.read(instanceId, options) ?? null;
   } catch {
     return null;
   }
@@ -110,11 +89,9 @@ const PROBE = Object.freeze({ columns: Object.freeze([]) });
  * @throws {Error} `worksheet reader not registered`
  */
 export function worksheetReadable(stateManager, instanceId) {
-  const read = readers.get(rawOf(stateManager));
-  if (!read) throw new Error('worksheet reader not registered');
-  touch?.(instanceId);
+  const src = createSource(stateManager);
   try {
-    read(instanceId, PROBE);
+    src.read(instanceId, PROBE);
     return true;
   } catch (err) {
     return err?.code !== 'not_loaded';
@@ -131,11 +108,9 @@ export function worksheetReadable(stateManager, instanceId) {
  * @throws {Error} `worksheet reader not registered`
  */
 export function worksheetsReadable(stateManager) {
-  touch?.('#list');
-  for (const phase of Object.keys(stateManager.get('phases') || {})) {
-    for (const inst of stateManager.get(`phases.${phase}`) ?? []) {
-      if (inst?.moduleId === 'worksheet' && !worksheetReadable(stateManager, inst.instanceId)) return false;
-    }
+  const src = createSource(stateManager);
+  for (const inst of src.list()) {
+    if (inst.moduleId === 'worksheet' && !worksheetReadable(stateManager, inst.instanceId)) return false;
   }
   return true;
 }
@@ -155,14 +130,10 @@ export function resolveColumnRef(stateManager, ref) {
   if (typeof ref.instanceId !== 'string' || typeof ref.sheetId !== 'string' || typeof ref.columnId !== 'string') {
     return null;
   }
-  const out = readWorksheet(stateManager, ref.instanceId, { sheetId: ref.sheetId, columns: [ref.columnId] });
-  const c = out?.columns?.[0];
-  if (!c || c.id !== ref.columnId) return null;
-  return {
-    id: c.id, name: c.name, shortName: c.shortName, type: c.type, unit: c.unit,
-    role: c.role ?? null, roleManual: c.roleConfirmed === true,
-    format: c.format, meta: c.meta, values: c.values ?? [],
-  };
+  const c = readColumn(createSource(stateManager), ref);
+  if (!c) return null;
+  const { roleConfirmed, ...rest } = c;
+  return { ...rest, roleManual: roleConfirmed };
 }
 
 /**
@@ -193,25 +164,6 @@ export function coerceNumeric(val) {
 }
 
 /**
- * Serialize a column reference to a pipe-delimited key.
- * @param {{ instanceId: string, sheetId: string, columnId: string }|null} ref
- * @returns {string}
- */
-export function refToKey(ref) {
-  return ref ? `${ref.instanceId}|${ref.sheetId}|${ref.columnId}` : '';
-}
-
-/**
- * Eine gefundene Spalte als wählbarer Eintrag: Schlüssel (`refToKey`) und Anzeigename.
- * @param {{ instanceId: string, sheetId: string, columnId: string, columnName?: string, shortName?: string }} col
- * @returns {{ key: string, name: string }}
- */
-export function columnOption(col) {
-  const key = refToKey(col);
-  return { key, name: col.columnName || col.shortName || key };
-}
-
-/**
  * Alle Arbeitsblattspalten des Projekts, die zum Filter passen.
  * Liest über den registrierten Leser (`readWorksheet`), nicht über `getModuleState`.
  * @param {{ get: (path: string) => any }} stateManager
@@ -220,45 +172,5 @@ export function columnOption(col) {
  *   columnName: string, shortName: string, type: string, valueCount: number }[]}
  */
 export function discoverColumns(stateManager, filter) {
-  const typeSet = filter?.types
-    ? (filter.types instanceof Set ? filter.types : new Set(filter.types))
-    : null;
-  const minCount = filter?.minCount || 0;
-  const maxCount = filter?.maxCount ?? Infinity;
-  const columns = [];
-  touch?.('#list');
-
-  for (const phase of Object.keys(stateManager.get('phases') || {})) {
-    const instances = stateManager.get(`phases.${phase}`) ?? [];
-    for (const inst of instances) {
-      if (inst.moduleId !== 'worksheet') continue;
-      const head = readWorksheet(stateManager, inst.instanceId);
-      for (const sheet of head?.sheets ?? []) {
-        // Das erste Lesen zeigt schon das erste Blatt: dessen Kopf nicht noch einmal lesen.
-        const sheetHead = sheet.id === head.sheetId
-          ? head
-          : readWorksheet(stateManager, inst.instanceId, { sheetId: sheet.id });
-        const ids = (sheetHead?.columns ?? []).map(c => c.id);
-        if (ids.length === 0) continue;
-        const full = readWorksheet(stateManager, inst.instanceId, { sheetId: sheet.id, columns: ids });
-        for (const col of full?.columns ?? []) {
-          if (typeSet && !typeSet.has(col.type)) continue;
-          let nonNull = 0;
-          for (const v of col.values || []) if (v != null) nonNull++;
-          if (nonNull < minCount || nonNull > maxCount) continue;
-          columns.push({
-            instanceId: inst.instanceId,
-            sheetId: sheet.id,
-            sheetName: sheet.name,
-            columnId: col.id,
-            columnName: col.name || '',
-            shortName: col.shortName || '?',
-            type: col.type,
-            valueCount: nonNull,
-          });
-        }
-      }
-    }
-  }
-  return columns;
+  return listColumns(createSource(stateManager), filter);
 }

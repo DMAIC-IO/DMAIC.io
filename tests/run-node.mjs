@@ -163,6 +163,7 @@ const SKIP = new Set([
   'core/value-channel.test.js',
   'core/widget-directive.test.js',
   'core/worksheet-data.test.js',
+  'core/source.test.js',
   'core/worksheet-pool.test.js',
   'core/worksheet-preload.test.js',
   'core/workspace-detached.test.js',
