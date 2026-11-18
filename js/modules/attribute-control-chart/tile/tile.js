@@ -29,18 +29,21 @@ export default createTile({
 
   /** @type {import('./settings.types.js').AttributeControlChartTileViewFn} */
   view(ctx) {
-    // `this.analysis` ist der Getter des Kerns für das derived `analysis` (je Rendern einmal gerechnet).
+    // `this.analysis` ist der Getter des Kerns für das derived `analysis` (je Rendern einmal gerechnet);
+    // ein Wurf der Ableitung kommt als `{ error }` an und zählt wie „keine Analyse“.
+    /** @param {any} scope @returns {any} die Analyse oder null */
+    const analysisOf = (scope) => { const a = scope.analysis; return a && !a.error ? a : null; };
     return {
       /** Leertext, sonst null. */
       get empty() {
         if (!this.model.defectsRef) return ctx.i18n.t('dashboard.attrSpcEmpty');
-        return this.analysis ? null : ctx.i18n.t('dashboard.attrSpcNoData');
+        return analysisOf(this) ? null : ctx.i18n.t('dashboard.attrSpcNoData');
       },
       /** Die verletzenden Punkte (Indizes, ohne Doppelte). */
-      get signals() { return signalIndices(this.analysis?.violations ?? []); },
-      get stable() { return (this.analysis?.violations.length ?? 0) === 0; },
-      get variable() { return Boolean(this.analysis?.result.variableLimits); },
-      get type() { return this.analysis?.ct.id ?? ''; },
+      get signals() { return signalIndices(analysisOf(this)?.violations ?? []); },
+      get stable() { return (analysisOf(this)?.violations.length ?? 0) === 0; },
+      get variable() { return Boolean(analysisOf(this)?.result.variableLimits); },
+      get type() { return analysisOf(this)?.ct.id ?? ''; },
       get badgeModifier() { return `dashboard-attr-spc__badge--${this.stable ? 'ok' : 'bad'}`; },
       // `badge` urteilt über rohe Regelverletzungen, `metric` zählt Signalpunkte — ein Punkt kann mehrere Regeln verletzen.
       get badge() { return ctx.i18n.t(this.stable ? 'dashboard.attrSpcStable' : 'dashboard.attrSpcUnstable'); },
@@ -49,17 +52,17 @@ export default createTile({
           modifier: `dashboard-spc__metric--${this.stable ? 'ok' : 'bad'}`,
           value: String(this.signals.length),
           label: ctx.i18n.t('dashboard.spcViolations'),
-          sub: ctx.i18n.t('dashboard.spcOf', { total: this.analysis?.valid ?? 0 }),
+          sub: ctx.i18n.t('dashboard.spcOf', { total: analysisOf(this)?.valid ?? 0 }),
         };
       },
-      get clText() { return fmt(meanOf(this.analysis?.result.cl), ctx.i18n.getLanguage()); },
+      get clText() { return fmt(meanOf(analysisOf(this)?.result.cl), ctx.i18n.getLanguage()); },
       get uclLabel() { return this.variable ? 'UCL̄' : 'UCL'; },
-      get uclText() { return fmt(meanOf(this.analysis?.result.ucl), ctx.i18n.getLanguage()); },
+      get uclText() { return fmt(meanOf(analysisOf(this)?.result.ucl), ctx.i18n.getLanguage()); },
       get lclLabel() { return this.variable ? 'LCL̄' : 'LCL'; },
-      get lclText() { return fmt(meanOf(this.analysis?.result.lcl), ctx.i18n.getLanguage()); },
+      get lclText() { return fmt(meanOf(analysisOf(this)?.result.lcl), ctx.i18n.getLanguage()); },
       /** Die Regelkarte der letzten `lastN` Punkte; null ohne Daten oder ausgeblendet. */
       get chart() {
-        const a = this.analysis;
+        const a = analysisOf(this);
         if (!a || !this.settings.showChart) return null;
         const r = a.result;
         const win = windowed(r, new Set(this.signals), baselineEndOf(this.model.baselineCount, r.values.length), this.settings.lastN);

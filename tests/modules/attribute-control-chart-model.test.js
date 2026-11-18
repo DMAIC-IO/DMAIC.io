@@ -2,6 +2,7 @@ import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } f
 import { loadModel } from '../../js/core/initial-model.js';
 import { evaluateDerived } from '../../js/core/derived.js';
 import { State } from '../../js/modules/attribute-control-chart/domain/model.js';
+import { sheetSource, spySource } from '../helpers/sheet-source.js';
 import { ATTRIBUTE_CHART_TYPES, ATTRIBUTE_NELSON_RULES, ATTR_DEFAULT_ENABLED_RULES } from '../../js/engines/attribute-control-chart-engine.js';
 
 const ref = (c) => ({ instanceId: 'ws1', sheetId: 's1', columnId: c });
@@ -107,7 +108,7 @@ suite('attribute-control-chart Model', () => {
 
 suite('attribute-control-chart Model — derived', () => {
   const cols = { c0: [4, 6, 5, 9, 3, 7, 5, 20] };
-  const data = { values: (r) => cols[r.columnId] ?? null, name: (r) => r.columnId };
+  const data = sheetSource(cols);
 
   test('c-Karte: Grenzen, Ergebnis und Punkte mit festen Erwartungen', () => {
     const m = State.fromJSON({ chartTypeId: 'c', defectsRef: ref('c0') });
@@ -121,6 +122,16 @@ suite('attribute-control-chart Model — derived', () => {
     assertEqual(d.points.length, 8);
     assertDeepEqual(d.points[7], { value: 20, n: null, ucl: d.result.ucl, lcl: 0, signal: true });
     assertEqual(d.points[0].signal, false);
+  });
+
+  test('analysis liest nur über src.read', () => {
+    const m = State.fromJSON({ chartTypeId: 'c', defectsRef: ref('c0') });
+    assertEqual(evaluateDerived(m, spySource(data)).analysis.valid, 8);
+  });
+
+  test('gelöschte Spalte: analysis null statt Wurf', () => {
+    const m = State.fromJSON({ chartTypeId: 'c', defectsRef: ref('gone') });
+    assertEqual(evaluateDerived(m, data).analysis, null);
   });
 
   test('ohne Spalte: analysis und result null, points leer', () => {

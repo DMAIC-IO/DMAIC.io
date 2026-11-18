@@ -152,6 +152,19 @@ suite('attribute-control-chart: Viewmodel im Browser', () => {
     assertDeepEqual(Object.keys(vm().pickableColumns), ['defectsRef', 'sizeRef']);
   });
 
+  test('pickableColumns: ein später angelegtes Arbeitsblatt erscheint ohne Neuladen', async () => {
+    const { vm, states, bus } = await mount(cState, { ws1: sheetWith([3, 4, 2, 5]) });
+    const keys = () => vm().pickableColumns.defectsRef.map((o) => o.key);
+    assertDeepEqual(keys(), ['ws1|s1|c0']);
+    states.ws2 = sheetWith([1, 2, 3]);
+    PHASES.control.push({ instanceId: 'ws2', moduleId: 'worksheet' });
+    try {
+      bus.emit('module:added', { moduleId: 'worksheet', instanceId: 'ws2' });
+      await flush();
+      assertTrue(keys().includes('ws2|s1|c0'), 'neue Spalte wählbar');
+    } finally { PHASES.control.pop(); }
+  });
+
   test('chartTypes: Optionen kommen aus der Engine', async () => {
     const { vm } = await mount(cState, { ws1: sheetWith([3, 4, 2, 5]) });
     assertDeepEqual(vm().chartTypes.map((o) => o.value), ATTRIBUTE_CHART_TYPES.map((c) => c.id));

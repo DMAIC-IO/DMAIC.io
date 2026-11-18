@@ -18,8 +18,10 @@ import { I18n } from '../../js/core/i18n.js';
 import capabilityTile from '../../js/modules/process-capability/process-capability.tile.js';
 import attrSpcTile from '../../js/modules/attribute-control-chart/tile/tile.js';
 import { disposeTile } from '../../js/pages/dashboard/tile-render.js';
-import { createSource } from '../../js/core/source.js';
+import { createSource, registerReader, bumpWorksheetRevisions } from '../../js/core/source.js';
 import { withStoredWorksheetReader } from '../helpers/worksheet-reader.js';
+import { spySource } from '../helpers/sheet-source.js';
+import { readWorksheetState } from '../helpers/legacy-worksheet-read.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { registerWidgetDirective } from '../../js/core/widget-directive.js';
 import { registerFitDirective } from '../../js/core/fit-directive.js';
@@ -1468,6 +1470,43 @@ suite('dashboard tiles: attribute-control-chart', () => {
     assertEqual(vm.chart.yLabel, 'modules.attribute-control-chart.yLabel_c');
     assertTrue(Array.isArray(vm.chart.cl));
     checkValue(controlChartWidget.props.config, 'chart', vm.chart);
+  });
+
+  test('viewModel: derived threw ({ error }) counts as no analysis', () => {
+    const boom = { columns: [{ id: 'd', get values() { throw new TypeError('boom'); } }] };
+    const src = Object.freeze({ read: () => boom, list: () => [] });
+    const vm = vmOf(attrSpcTile, C_STATE, {}, { source: src });
+    assertEqual(typeof vm.analysis.error, 'string');
+    assertEqual(vm.empty, 'dashboard.attrSpcNoData');
+    assertDeepEqual(vm.signals, []);
+    assertEqual(vm.stable, true);
+    assertEqual(vm.variable, false);
+    assertEqual(vm.type, '');
+    assertEqual(vm.chart, null);
+    assertEqual(vm.metric.sub, 'dashboard.spcOf');
+    assertEqual(vm.clText, '—');
+  });
+
+  test('viewModel reads only through src.read (no facade members)', () => {
+    const sm = columnStateManager(C_STABLE);
+    const vm = vmOf(attrSpcTile, C_STATE, {}, { source: spySource(createSource(sm)) });
+    assertEqual(vm.empty, null);
+    assertEqual(vm.type, 'c');
+  });
+
+  test('after bumpWorksheetRevisions and a rebuild the tile shows the analysis (was not_loaded)', () => {
+    const sm = { get: (p) => (p === 'phases' ? { control: [{ instanceId: 'w', moduleId: 'worksheet' }] } : null) };
+    let loaded = false;
+    const sheet = { instanceId: 'w', sheets: [{ id: 's', name: 'S', rowCount: 10, columns: [{ id: 'd', name: 'd', type: 'numeric', values: C_STABLE.d }] }] };
+    registerReader(sm, (id, o) => {
+      if (!loaded) { const e = new Error('not_loaded: worksheet'); e.code = 'not_loaded'; throw e; }
+      return readWorksheetState({ sheets: [{ id: 's', name: 'S', state: { rowCount: 10, columns: sheet.sheets[0].columns } }] }, o);
+    });
+    const build = () => vmOf(attrSpcTile, C_STATE, {}, { stateManager: sm });
+    assertEqual(build().empty, 'dashboard.attrSpcNoData');
+    loaded = true;
+    bumpWorksheetRevisions();
+    assertEqual(build().empty, null);
   });
 
   test('viewModel: empty, no-data and showChart off', () => {

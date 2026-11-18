@@ -10,6 +10,7 @@
 import { defineModel, command, number, boolean, oneOf, list, columnRef, text } from '../../../core/model.js';
 import { getAttributeChartType } from '../../../engines/attribute-control-chart-engine.js';
 import { analyzeState, resultOf, pointsOf } from './analyze.js';
+import { readColumn } from '../../../core/source-columns.js';
 import controlChart from '../../../widgets/control-chart/schema.js';
 
 export const State = defineModel({
@@ -30,28 +31,28 @@ export const State = defineModel({
     /**
      * Grenzen und Verletzungen; null ohne die nötigen Spalten oder mit weniger als 2 Punkten.
      *
-     * @param {any} data Arbeitsblattsicht
+     * @param {import('../../../core/source-reader.js').Source} src Leser der Arbeitsblätter
      * @this {import('./model.types.js').StateModel}
      * @returns {ReturnType<typeof analyzeState>}
      */
-    analysis(data) { return analyzeState(this, (ref) => data.values(ref) ?? []); },
+    analysis(src) { return analyzeState(this, (ref) => readColumn(src, ref)?.values ?? []); },
     /**
      * Das Ergebnis als Zahlen.
      *
-     * @param {any} _data Arbeitsblattsicht
+     * @param {import('../../../core/source-reader.js').Source} _src Leser der Arbeitsblätter
      * @param {{ analysis: any }} d
      * @this {import('./model.types.js').StateModel}
      * @returns {ReturnType<typeof resultOf>}
      */
-    result(_data, d) { return resultOf(d.analysis, this.chartTypeId); },
+    result(_src, d) { return resultOf(d.analysis, this.chartTypeId); },
     /**
      * Je Punkt eine Zeile.
      *
-     * @param {any} _data Arbeitsblattsicht
+     * @param {import('../../../core/source-reader.js').Source} _src Leser der Arbeitsblätter
      * @param {{ analysis: any }} d
      * @returns {ReturnType<typeof pointsOf>}
      */
-    points(_data, d) { return pointsOf(d.analysis); },
+    points(_src, d) { return pointsOf(d.analysis); },
     /**
      * Die Spaltenfelder des Kartentyps.
      *

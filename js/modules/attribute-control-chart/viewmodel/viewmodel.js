@@ -7,6 +7,7 @@
  */
 import { createModule } from '../../../core/template-module.js';
 import { getAttributeChartType, ATTRIBUTE_CHART_TYPES, ATTRIBUTE_NELSON_RULES } from '../../../engines/attribute-control-chart-engine.js';
+import { columnOptions, columnLabel, readColumn } from '../../../core/source-columns.js';
 import descriptor from '../module.js';
 import { State } from '../domain/model.js';
 import { UiState } from './state.js';
@@ -14,6 +15,12 @@ import { kpisOf, badgeOf, violationRowsOf, controlChartOf } from './present.js';
 
 /** Filter eines Spaltenfeldes aus dem Schema (eine Quelle für Picker und Lesefläche). */
 const filterOf = (spec) => ({ types: [...spec.types], minCount: spec.minCount });
+
+/** Name der gelesenen Spalte, `null` ohne Bezug oder Spalte. */
+const nameOf = (src, ref) => {
+  const col = readColumn(src, ref);
+  return col ? columnLabel(col) : null;
+};
 
 export default createModule({
   descriptor,
@@ -28,7 +35,7 @@ export default createModule({
         /** Je Spaltenfeld die wählbaren Spalten `{ key, name }`. */
         pickableColumns() {
           const f = State.schema.fields;
-          return { defectsRef: ctx.data.columns(filterOf(f.defectsRef)), sizeRef: ctx.data.columns(filterOf(f.sizeRef)) };
+          return { defectsRef: columnOptions(ctx.source, filterOf(f.defectsRef)), sizeRef: columnOptions(ctx.source, filterOf(f.sizeRef)) };
         },
       },
       /** @noagent Optionen der Kartentyp-Auswahl, eine Quelle mit der Engine. */
@@ -43,7 +50,7 @@ export default createModule({
       get validText() { return this.t('statOf', { total: this.kpis?.valid ?? 0 }); },
       get violationKpiClass() { return this.kpis?.violationCount === 0 ? 'dmike-kpi--good' : 'dmike-kpi--bad'; },
       get badge() { return badgeOf(this.analysis, this.t); },
-      get chartTitle() { return this.t(`subchart_${this.model.chartTypeId}`, { col: ctx.data.name(this.model.defectsRef) ?? '' }); },
+      get chartTitle() { return this.t(`subchart_${this.model.chartTypeId}`, { col: nameOf(ctx.source, this.model.defectsRef) ?? '' }); },
       /** Alter Schlüssel, unter dem die Regelkarte früher gespeichert wurde. */
       legacyEditKeys: { control: 'control-chart' },
       get controlChart() { return controlChartOf(this.analysis, this.model, this.t); },
