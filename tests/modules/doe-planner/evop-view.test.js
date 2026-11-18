@@ -7,7 +7,8 @@
  */
 import { suite, test, assert, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { State } from '../../../js/modules/doe-planner/domain/model.js';
-import { mount, bound, designed, plan, threeFactors, settle, typeIn, inputBadges, de } from './view-harness.js';
+import { evopView } from '../../../js/modules/doe-planner/viewmodel/evop.js';
+import { mount, bound, designed, plan, threeFactors, settle, typeIn, inputBadges, de, partContext, partOf } from './view-harness.js';
 
 /** A stored state in project mode, phase 1 open. @param {object} stored */
 function project(stored) {
@@ -164,5 +165,16 @@ suite('doe-planner evop: phases', () => {
     assertEqual(h.$('.doe__evop-recommendation').textContent, de(`evopRec_${summary.overallRecommendation}`));
     // Toggle, name, phase history, effect table title and its four column headers.
     assertEqual(inputBadges(h.container).evop, 3 + 1 + 4);
+  });
+});
+
+suite('doe-planner evop: reads the worksheets through ctx.source', () => {
+  test('decide takes the values of every response without ctx.data', async () => {
+    const b = bound(plan({ responses: [{ name: 'Yield', unit: '%' }, { name: 'Kosten', unit: '' }] }), [[1, 2, 3, 4], [5, '6,5', 7, 8]]);
+    const model = State.fromJSON(project(b.model));
+    const ui = { model, dialog: { confirm: async () => true }, i18n: { t: (k) => k }, moduleId: 'doe-planner' };
+    const vm = partOf(evopView(partContext(b.worksheets)), { model, _ui: ui });
+    await vm.decide('stop');
+    assertDeepEqual(JSON.parse(JSON.stringify(model.projectPhases[0].yValues)), [[1, 2, 3, 4], [5, 6.5, 7, 8]]);
   });
 });

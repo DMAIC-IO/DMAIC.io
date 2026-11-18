@@ -5,7 +5,9 @@
  * badges of these sections.
  */
 import { suite, test, assert, assertEqual, assertDeepEqual } from '../../test-utils.js';
-import { mount, ready, plan, threeFactors, worksheet, typeIn, pick, settle, inputBadges, de } from './view-harness.js';
+import { State } from '../../../js/modules/doe-planner/domain/model.js';
+import { designView } from '../../../js/modules/doe-planner/viewmodel/design.js';
+import { mount, ready, plan, threeFactors, worksheet, typeIn, pick, settle, inputBadges, de, partContext, partOf } from './view-harness.js';
 
 const typeBtn = (h, key) => h.$(`.doe__design-opt[data-type="${key}"]`);
 
@@ -149,5 +151,17 @@ suite('doe-planner design: general options', () => {
     await h.done();
     assert(h.vm().model.seed !== before, 'new seed');
     assertEqual(h.vm().pending, false, 'the design was made for the new seed');
+  });
+});
+
+suite('doe-planner design: reads the worksheets through ctx.source', () => {
+  test('sourceRowCount without ctx.data: null without a source, the rows of the sheet with one', () => {
+    const ws = worksheet('Quelle', { A: [0, 5, 10, 5] });
+    const ctx = partContext({ 'ws-src': ws });
+    assertEqual(partOf(designView(ctx), { model: State.fromJSON(plan()) }).sourceRowCount, null);
+    const model = State.fromJSON(plan({ designType: 'dopt', sourceWorksheet: { instanceId: 'ws-src', sheetId: ws.sheets[0].id } }));
+    assertEqual(partOf(designView(ctx), { model }).sourceRowCount, 4);
+    const gone = State.fromJSON(plan({ designType: 'dopt', sourceWorksheet: { instanceId: 'ws-src', sheetId: 'nope' } }));
+    assertEqual(partOf(designView(ctx), { model: gone }).sourceRowCount, 0);
   });
 });

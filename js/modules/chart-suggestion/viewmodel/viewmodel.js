@@ -2,7 +2,7 @@
  * D.Mike — Diagramm-Vorschlag: Viewmodel.
  *
  * Die gewählten Spalten sind Bezüge im Model; Namen, Rollen und Werte kommen
- * live über `ctx.data`. Auswahl, Rangliste, gezeigte Wahl und Zielmodul
+ * live über den Leser `ctx.source`. Auswahl, Rangliste, gezeigte Wahl und Zielmodul
  * sind Ableitungen des Models, die Vorschau ist `computed`; die Vorschau zeichnen Diagramm-Widgets.
  *
  * Eingang: `chart-suggestion:load` { instanceId, selection } von der
@@ -17,6 +17,7 @@ import descriptor from '../module.js';
 import { State } from '../domain/model.js';
 import { refsFromSelection } from '../domain/migrations.js';
 import { liveColumns, checkRefs, shownType } from '../domain/columns.js';
+import { columnOptions } from '../../../core/source-columns.js';
 import { prefillFor } from '../domain/prefill.js';
 import { buildPreview } from '../domain/panels.js';
 import { fromExample } from '../io/example.js';
@@ -111,7 +112,7 @@ export default createModule({
          * @returns {{ key: string, name: string }[]}
          */
         pickableColumns() {
-          return ctx.data.columns();
+          return columnOptions(ctx.source);
         },
         /**
          * Die Vorschau des gezeigten Diagramms.
@@ -126,7 +127,7 @@ export default createModule({
 
       // ─── Arbeitsblatt (live, nicht in read()) ─────────────
       /** Die gewählten Spalten mit Werten. */
-      get liveColumns() { return liveColumns(this.model.columns, ctx.data); },
+      get liveColumns() { return liveColumns(this.model.columns, ctx.source); },
       /**
        * Spalten, Rangliste und gezeigte Wahl für diese Bezüge, frisch gerechnet —
        * für Kommandos, die nicht auf die nächste Runde der `computed` warten.
@@ -134,12 +135,12 @@ export default createModule({
        * @returns {{ cols: import('../domain/columns.js').LiveColumn[], ranking: Array<{ type: string, i18nKey: string, notesKey: string|null }>, shown: string|null }}
        */
       snapshot(refs) {
-        const cols = liveColumns(refs, ctx.data);
+        const cols = liveColumns(refs, ctx.source);
         const ranking = getSuggestionsFor(cols);
         return { cols, ranking, shown: shownType(ranking, this.model.pick) };
       },
       /** Schlüssel der wählbaren Spalten. @returns {string[]} */
-      pickableKeys() { return ctx.data.columns().map((c) => c.key); },
+      pickableKeys() { return columnOptions(ctx.source).map((c) => c.key); },
       /** Texte der Vorschau; `previewUnavailable` behält `{type}` (die Domäne setzt ihn ein). */
       get labels() {
         return {

@@ -6,7 +6,7 @@
  * through `setTerm`, the term groups fold in the UI state; a new forbidden
  * combination is drafted in the UI state, one coded level per factor, and
  * the button sends it with `addForbiddenVertex`. The source picker lists the
- * sheets of the project's worksheets (`ctx.instances` + `ctx.data`), new
+ * sheets of the project's worksheets (`ctx.instances` + `ctx.source`), new
  * ones appear without a reload. Commands that raise the runs get the row
  * count of the source sheet.
  */
@@ -16,6 +16,7 @@ import { parseNumber, formatNumber } from '../../../core/number-format.js';
 import { markRejection, clearRejection } from '../../../core/param-input.js';
 import optimalType from '../domain/designs/optimal.js';
 import { sourceData } from '../domain/source.js';
+import { readSheet, readSheets } from '../../../core/source-columns.js';
 import { letter, activeTerms } from '../domain/design.js';
 
 /** The optimal design type with its own helpers. */
@@ -41,7 +42,7 @@ export const optimalView = (ctx) => ({
   /** Rows of the source sheet, 0 without one. @returns {number} */
   get sourceRows() {
     const ref = this.model.sourceWorksheet;
-    return ref ? ctx.data.sheet(ref)?.rowCount ?? 0 : 0;
+    return ref ? readSheet(ctx.source, ref)?.rowCount ?? 0 : 0;
   },
 
   /** @returns {number} new runs the active terms need on top of the source */
@@ -254,11 +255,11 @@ export const optimalView = (ctx) => ({
    */
   get sourceOptions() {
     // Depends on the worksheet list even while there is no worksheet yet.
-    ctx.data.sheets(null);
+    ctx.source.list();
     const own = this.model.worksheetRef;
     const out = [];
     for (const inst of ctx.instances?.list({ modules: ['worksheet'] }) ?? []) {
-      for (const sh of ctx.data.sheets(inst.instanceId) ?? []) {
+      for (const sh of readSheets(ctx.source, inst.instanceId) ?? []) {
         if (own && own.instanceId === inst.instanceId && own.sheetId === sh.id) continue;
         out.push({ key: `${inst.instanceId}::${sh.id}`, label: `${sh.name || sh.id} (${sh.rowCount})` });
       }
@@ -282,7 +283,7 @@ export const optimalView = (ctx) => ({
     if (!v) { this.model.setSourceWorksheet({ ref: null }); return; }
     const cut = v.indexOf('::');
     const ref = { instanceId: v.slice(0, cut), sheetId: v.slice(cut + 2) };
-    this.model.setSourceWorksheet({ ref, sourceRowCount: ctx.data.sheet(ref)?.rowCount ?? 0 });
+    this.model.setSourceWorksheet({ ref, sourceRowCount: readSheet(ctx.source, ref)?.rowCount ?? 0 });
   },
 
   /** What the source gives; null without a source or when it could not be read. @returns {{ ok: boolean, text: string }|null} */
@@ -302,7 +303,7 @@ export const optimalView = (ctx) => ({
     sourceMapping() {
       const ref = this.model.sourceWorksheet;
       if (!ref) return null;
-      const r = sourceData(ctx.data, ref, this.model.factors, this.model.responses);
+      const r = sourceData(ctx.source, ref, this.model.factors, this.model.responses);
       if (r.ok) {
         let text = this.t('sourceMappingOk', { rows: r.rowCount, responses: r.mappedResponseCount });
         if (r.skippedRows) text += ` ${this.t('sourceSkipped', { n: r.skippedRows })}`;

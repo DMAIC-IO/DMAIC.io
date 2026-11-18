@@ -6,7 +6,7 @@
  *   pause it calls `regenerate` — only while the design does not belong to
  *   the configuration (`pending`), so mounting a stored plan or switching
  *   the language changes nothing. An optimal design on a source worksheet
- *   gets the source rows read through `ctx.data`.
+ *   gets the source rows read through `ctx.source`.
  * - `createDatasheet` writes the design as a new worksheet (a stale one is
  *   replaced in the same stack) and binds it with a snapshot.
  * - `augment` appends optimal runs to the bound datasheet; the grown
@@ -30,6 +30,7 @@ import descriptor from '../module.js';
 import { State } from '../domain/model.js';
 import { isOptimal } from '../domain/design.js';
 import { sourceData } from '../domain/source.js';
+import { readSheet } from '../../../core/source-columns.js';
 import { designColumns } from '../domain/columns.js';
 import { snapshotOf, appendedRuns } from '../domain/experiment.js';
 import { designSignature } from '../domain/signatures.js';
@@ -107,7 +108,7 @@ function leadingIds(ids) {
 
 /**
  * The part of the viewmodel the runs use: worksheet reads through
- * `ctx.data` and the write of a new binding.
+ * `ctx.source` and the write of a new binding.
  * @type {import('./state.types.js').DoePlannerViewFn}
  */
 const tasksView = (ctx) => {
@@ -133,8 +134,8 @@ const tasksView = (ctx) => {
     sourceInput() {
       const m = this.model;
       const ref = m.sourceWorksheet;
-      const sd = sourceData(ctx.data, ref, m.factors, m.responses);
-      const sheetRowCount = ctx.data.sheet(ref)?.rowCount ?? 0;
+      const sd = sourceData(ctx.source, ref, m.factors, m.responses);
+      const sheetRowCount = readSheet(ctx.source, ref)?.rowCount ?? 0;
       if (!sd.ok) {
         return { codedMatrix: [], actualRows: [], responseValues: m.responses.map(() => []), rowCount: 0, sheetRowCount };
       }
@@ -151,7 +152,7 @@ const tasksView = (ctx) => {
      * @param {{ instanceId: string, sheetId: string }|null} ref
      * @returns {any}
      */
-    sheetOf(ref) { return ref ? ctx.data.sheet({ instanceId: ref.instanceId, sheetId: ref.sheetId }) : null; },
+    sheetOf(ref) { return ref ? readSheet(ctx.source, { instanceId: ref.instanceId, sheetId: ref.sheetId }) : null; },
     /**
      * The worksheet instance still exists. Asks the project, not the
      * worksheet reader: before the worksheet code is loaded every read is

@@ -6,14 +6,16 @@ import {
   toNum, parseDateValue, mean, countCategories, crossTabCategorical, collectTimeOrderedSeries,
   collectDateLineGroups, boxplotGroups, groupedAxisLabels, liveColumns, checkRefs, shownType,
 } from '../../js/modules/chart-suggestion/domain/columns.js';
+import { storedSource } from '../helpers/stored-source.js';
 
 const ref = (id) => ({ instanceId: 'ws', sheetId: 's', columnId: id });
 const key = (id, sheet = 's') => `ws|${sheet}|${id}`;
+/** Ein Leser über ein Arbeitsblatt `ws` mit dem Blatt `s`; `roleConfirmed` ist `roleManual` im Stand. */
 function fakeData(cols) {
-  return {
-    column: (r) => { const c = cols[r.columnId]; return c ? { name: c.name, type: c.type, role: c.role, roleConfirmed: c.roleConfirmed } : null; },
-    values: (r) => cols[r.columnId]?.values ?? null,
-  };
+  const columns = Object.entries(cols).map(([id, c]) => ({
+    id, name: c.name, type: c.type, role: c.role, roleManual: c.roleConfirmed, values: c.values,
+  }));
+  return storedSource({ ws: { sheets: [{ id: 's', name: 'S', state: { columns } }] } });
 }
 
 suite('chart-suggestion domain — Zahlen und Daten', () => {
@@ -81,6 +83,14 @@ suite('chart-suggestion domain — liveColumns, checkRefs, shownType', () => {
     const data = fakeData({ a: { name: 'A', type: 'numeric', role: 'continuous', roleConfirmed: true, values: [1] } });
     assertDeepEqual(liveColumns([ref('a'), ref('gone')], data),
       [{ id: 'a', name: 'A', type: 'numeric', role: 'continuous', roleConfirmed: true, values: [1] }]);
+  });
+  test('liveColumns: Name wie die Fassade (name, sonst Kurzname, sonst ?), Bezug ohne Blatt fällt weg', () => {
+    const data = storedSource({ ws: { sheets: [{ id: 's', name: 'S', state: { columns: [
+      { id: 'a', name: '', shortName: 'K', type: 'numeric', values: [1] },
+      { id: 'b', name: '', type: 'text', values: ['x'] },
+    ] } }] } });
+    const cols = liveColumns([ref('a'), ref('b'), { instanceId: 'ws', columnId: 'a' }], data);
+    assertDeepEqual(cols.map((c) => [c.name, c.roleConfirmed]), [['K', false], ['?', false]]);
   });
   test('checkRefs: leer, unbekannt, doppelt, zwei Blätter, gültig', () => {
     const keys = [key('a'), key('b')];

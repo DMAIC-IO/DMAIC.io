@@ -1,30 +1,21 @@
 /**
  * Tests for js/modules/doe-planner/domain/source.js — factor and response
- * values of a source worksheet, read through a fake `data`.
+ * values of a source worksheet, read through the reader `src`.
  */
 import { suite, test, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { sourceData } from '../../../js/modules/doe-planner/domain/source.js';
+import { storedSource } from '../../helpers/stored-source.js';
+import { spySource } from '../../helpers/sheet-source.js';
 
 /**
- * A fake of ctx.data over sheets of one worksheet instance.
+ * A reader (`Source`) over sheets of one worksheet instance.
  * @param {Record<string, { rowCount: number, columns: Array<{ id: string, name: string, type?: string, values: any[] }> }>} sheets
  */
 function fakeData(sheets, instanceId = 'ws-src') {
-  return {
-    sheet(ref) {
-      if (!ref || ref.instanceId !== instanceId || !sheets[ref.sheetId]) return null;
-      const sh = sheets[ref.sheetId];
-      return { id: ref.sheetId, name: ref.sheetId, rowCount: sh.rowCount, columns: sh.columns.map((c) => ({ id: c.id, name: c.name, type: c.type ?? 'numeric' })) };
-    },
-    sheets(id) {
-      return id === instanceId ? Object.entries(sheets).map(([sid, sh]) => ({ id: sid, name: sid, rowCount: sh.rowCount })) : null;
-    },
-    values(ref) {
-      const sh = ref && ref.instanceId === instanceId ? sheets[ref.sheetId] : null;
-      const col = sh ? sh.columns.find((c) => c.id === ref.columnId) : null;
-      return col ? [...col.values] : null;
-    },
-  };
+  return storedSource({ [instanceId]: { sheets: Object.entries(sheets).map(([sid, sh]) => ({
+    id: sid, name: sid,
+    state: { rowCount: sh.rowCount, columns: sh.columns.map((c) => ({ id: c.id, name: c.name, type: c.type ?? 'numeric', values: c.values })) },
+  })) } });
 }
 
 const REF = { instanceId: 'ws-src', sheetId: 'sh1' };
@@ -93,5 +84,16 @@ suite('doe-planner domain — sourceData', () => {
     );
     const flat = [{ name: 'X1', kind: 'continuous', levels: ['1', '1'] }];
     assertEqual(sourceData(fakeData({ sh1: { rowCount: 1, columns: [{ id: 'c', name: 'X1', values: [1] }] } }), REF, flat, responses).ok, false);
+  });
+
+  test('liest nur über src.read und src.list', () => {
+    const data = fakeData({ sh1: { rowCount: 2, columns: [
+      { id: 'c1', name: 'X1', values: [1, 2] },
+      { id: 'c2', name: 'Yield', values: ['3,5', 4] },
+    ] } });
+    const fx = [{ name: 'X1', kind: 'continuous', levels: ['1', '2'] }];
+    const out = sourceData(spySource(data), REF, fx, responses);
+    assertDeepEqual(out.codedMatrix, [[-1], [1]]);
+    assertDeepEqual(out.responseValues, [[3.5, 4]]);
   });
 });

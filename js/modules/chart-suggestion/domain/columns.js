@@ -6,6 +6,7 @@
  */
 import { CHART_COLORS } from '../../../core/chart/chart-colors.js';
 import { refToKey } from '../../../core/worksheet-columns.js';
+import { readColumn, columnLabel } from '../../../core/source-columns.js';
 import { parseNumber } from '../../../core/number-format.js';
 import { requireKnownId } from '../../../core/agent/agent-argcheck.js';
 
@@ -208,23 +209,24 @@ export function toNum(v) {
 
 
 /**
- * Die gewählten Spalten live aus dem Arbeitsblatt. Nicht auflösbare Bezüge fallen weg.
+ * Die gewählten Spalten live aus dem Arbeitsblatt, gelesen über den Leser
+ * `src` (`core/source.js`). Nicht auflösbare Bezüge fallen weg.
  * @param {Array<{ instanceId: string, sheetId?: string, columnId: string }>} refs
- * @param {{ column: (ref: object) => ({ name: string, type: string, role: string, roleConfirmed: boolean }|null), values: (ref: object) => (any[]|null) }} data
+ * @param {import('../../../core/source-reader.js').Source} src
  * @returns {LiveColumn[]}
  */
-export function liveColumns(refs, data) {
+export function liveColumns(refs, src) {
   const out = [];
   for (const ref of refs) {
-    const info = data.column(ref);
-    if (!info) continue;
+    const col = readColumn(src, ref);
+    if (!col) continue;
     out.push({
       id: ref.columnId,
-      name: info.name,
-      role: info.role,
-      type: info.type,
-      values: data.values(ref) ?? [],
-      roleConfirmed: info.roleConfirmed === true,
+      name: columnLabel(col),
+      role: col.role,
+      type: col.type,
+      values: col.values,
+      roleConfirmed: col.roleConfirmed === true,
     });
   }
   return out;

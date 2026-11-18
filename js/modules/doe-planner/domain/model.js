@@ -862,29 +862,29 @@ export class State extends defineModel({
   derived: {
     /**
      * The configuration yields a design.
-     * @param {any} data worksheet data access
+     * @param {import('../../../core/source-reader.js').Source} src reader of the worksheets
      * @this {import('./model.types.js').StateModel}
      * @returns {boolean}
      */
-    valid(data) { return configCheck(this, data).ok; },
+    valid(src) { return configCheck(this, src).ok; },
     /**
      * Why the configuration yields no design: 'tooFewFactors', 'duplicateFactorNames', 'incompleteFactor',
      * 'noResponse', 'unnamedResponse', 'noDesignType', 'twoLevelOnly', 'noResolution', 'noPBDesign',
      * 'bbUnavailable', 'noTaguchiArray', 'tooFewOptimalRuns' or 'source-not-found'; null while valid.
-     * @param {any} data worksheet data access
+     * @param {import('../../../core/source-reader.js').Source} src reader of the worksheets
      * @this {import('./model.types.js').StateModel}
      * @returns {string|null}
      */
-    invalidReason(data) { return configCheck(this, data).reason; },
+    invalidReason(src) { return configCheck(this, src).reason; },
     /**
      * The design does not belong to the configuration: it was made for another one, or there is none
      * although the configuration is valid. `regenerate` makes it current.
-     * @param {any} data worksheet data access
+     * @param {import('../../../core/source-reader.js').Source} src reader of the worksheets
      * @param {any} d other derivations
      * @this {import('./model.types.js').StateModel}
      * @returns {boolean}
      */
-    pending(data, d) {
+    pending(src, d) {
       return this.design ? this.design.configSignature !== configSignature(this) : d.valid;
     },
     /**
@@ -895,55 +895,55 @@ export class State extends defineModel({
     recommendation() { return recommendation(this); },
     /**
      * Planned and generated runs, resolution.
-     * @param {any} data worksheet data access
+     * @param {import('../../../core/source-reader.js').Source} src reader of the worksheets
      * @param {any} d other derivations
      * @this {import('./model.types.js').StateModel}
      * @returns {Summary}
      */
-    summary(data, d) { return summaryOf(this, d.pending); },
+    summary(src, d) { return summaryOf(this, d.pending); },
     /**
      * Evaluation of the current design; null without one or while a new one is pending.
-     * @param {any} data worksheet data access
+     * @param {import('../../../core/source-reader.js').Source} src reader of the worksheets
      * @param {any} d other derivations
      * @this {import('./model.types.js').StateModel}
      * @returns {Evaluation|null}
      */
-    evaluation(data, d) { return evaluationOf(this, d.pending); },
+    evaluation(src, d) { return evaluationOf(this, d.pending); },
     /**
      * State of the bound datasheet: 'none' without a binding or when the sheet is gone, 'bound' while it
      * matches the design and factors, 'stale' after a change of plan or factors (also while pending).
-     * @param {any} data worksheet data access
+     * @param {import('../../../core/source-reader.js').Source} src reader of the worksheets
      * @param {any} d other derivations
      * @this {import('./model.types.js').StateModel}
      * @returns {'none'|'bound'|'stale'}
      */
-    staleness(data, d) { return stalenessOf(this, data, d.pending); },
+    staleness(src, d) { return stalenessOf(this, src, d.pending); },
     /**
      * Filled response cells of the bound datasheet; a response whose column is gone is listed in
      * `missing`. null without a bound sheet.
-     * @param {any} data worksheet data access
+     * @param {import('../../../core/source-reader.js').Source} src reader of the worksheets
      * @this {import('./model.types.js').StateModel}
      * @returns {import('./read.js').Progress|null}
      */
-    progress(data) { return progressOf(this, data); },
+    progress(src) { return progressOf(this, src); },
     /**
      * Dispersion analysis of the response `analysisResponseIdx` once every response cell is filled;
      * null otherwise.
-     * @param {any} data worksheet data access
+     * @param {import('../../../core/source-reader.js').Source} src reader of the worksheets
      * @param {any} d other derivations
      * @this {import('./model.types.js').StateModel}
      * @returns {Dispersion|null}
      */
-    dispersion(data, d) { return dispersionOf(this, data, d.staleness, d.progress); },
+    dispersion(src, d) { return dispersionOf(this, src, d.staleness, d.progress); },
     /**
      * The experiment of the bound datasheet, as written with it (not the current plan); null without a
      * bound sheet or without a snapshot.
-     * @param {any} data worksheet data access
+     * @param {import('../../../core/source-reader.js').Source} src reader of the worksheets
      * @param {any} d other derivations
      * @this {import('./model.types.js').StateModel}
      * @returns {import('./experiment.js').Experiment|null}
      */
-    experiment(data, d) { return d.staleness === 'none' ? null : experimentOf(this.worksheetRef); },
+    experiment(src, d) { return d.staleness === 'none' ? null : experimentOf(this.worksheetRef); },
     /**
      * The EVOP project; null outside project mode.
      * @this {import('./model.types.js').StateModel}
@@ -953,12 +953,12 @@ export class State extends defineModel({
     /**
      * The run table in run order: the preview with its edits, the values of the datasheet while bound.
      * [] without a current design.
-     * @param {any} data worksheet data access
+     * @param {import('../../../core/source-reader.js').Source} src reader of the worksheets
      * @param {any} d other derivations
      * @this {import('./model.types.js').StateModel}
      * @returns {Run[]}
      */
-    runs(data, d) { return runsOf(this, data, d.pending, d.staleness); },
+    runs(src, d) { return runsOf(this, src, d.pending, d.staleness); },
   },
   derivedBulk: ['runs'],
 }) {

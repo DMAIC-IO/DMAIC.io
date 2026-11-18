@@ -7,6 +7,7 @@ import { suite, test, assert, assertEqual, assertDeepEqual } from '../../test-ut
 import { from0 } from '../../../js/modules/doe-planner/domain/migrations.js';
 import { State } from '../../../js/modules/doe-planner/domain/model.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
+import { storedSource } from '../../helpers/stored-source.js';
 import { configSignature, designSignature } from '../../../js/modules/doe-planner/domain/signatures.js';
 import { snapshotOf } from '../../../js/modules/doe-planner/domain/experiment.js';
 import { generateDesign } from '../../../js/engines/doe-planner-engine.js';
@@ -57,21 +58,16 @@ function load(s) {
 /** The derived values of a model, without worksheet. @param {any} m @param {any} [data] */
 const derived = (m, data = emptyData()) => evaluateDerived(m, data);
 
-/** A worksheet view without sheets. */
+/** A reader (`Source`) without worksheets. */
 function emptyData() {
-  return { sheet: () => null, sheets: () => null, values: () => null };
+  return storedSource({});
 }
 
-/** A worksheet view with one sheet. @param {string} instanceId @param {string} sheetId @param {Record<string, any[]>} columns */
+/** A reader (`Source`) over one sheet. @param {string} instanceId @param {string} sheetId @param {Record<string, any[]>} columns */
 function sheetData(instanceId, sheetId, columns, rowCount = 4) {
-  return {
-    sheet: (ref) => (ref && ref.instanceId === instanceId && ref.sheetId === sheetId
-      ? { id: sheetId, name: sheetId, rowCount, columns: Object.keys(columns).map((id) => ({ id, name: id, type: 'numeric' })) }
-      : null),
-    sheets: (id) => (id === instanceId ? [{ id: sheetId, name: sheetId, rowCount }] : null),
-    values: (ref) => (ref && ref.instanceId === instanceId && ref.sheetId === sheetId && columns[ref.columnId]
-      ? [...columns[ref.columnId]] : null),
-  };
+  return storedSource({ [instanceId]: { sheets: [{ id: sheetId, name: sheetId, state: {
+    rowCount, columns: Object.entries(columns).map(([id, values]) => ({ id, name: id, type: 'numeric', values })),
+  } }] } });
 }
 
 /** A version-3 plan with a 2² design generated as the earlier planner did. */

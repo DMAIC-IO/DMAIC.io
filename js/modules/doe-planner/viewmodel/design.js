@@ -16,6 +16,7 @@ import fracType from '../domain/designs/frac.js';
 import bbType from '../domain/designs/bb.js';
 import taguchiType from '../domain/designs/taguchi.js';
 import { isOptimal } from '../domain/design.js';
+import { readSheet } from '../../../core/source-columns.js';
 
 /** The design-type modules with their own helpers (the registry type knows only the common ones). */
 const frac = /** @type {any} */ (fracType);
@@ -63,7 +64,7 @@ export const designView = (ctx) => ({
    */
   get sourceRowCount() {
     const ref = this.model.sourceWorksheet;
-    return ref ? ctx.data.sheet(ref)?.rowCount ?? 0 : null;
+    return ref ? readSheet(ctx.source, ref)?.rowCount ?? 0 : null;
   },
 
   // ── Type picker ───────────────────────────────────────────

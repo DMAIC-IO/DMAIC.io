@@ -55,12 +55,12 @@ export const State = defineModel({
     /**
      * Die gewählten Spalten mit Rolle und Quelle; null ohne auflösbare Spalte.
      *
-     * @param {any} data Arbeitsblattsicht
+     * @param {import('../../../core/source-reader.js').Source} src Leser der Arbeitsblätter
      * @this {import('./model.types.js').StateModel}
      * @returns {Selection|null}
      */
-    selection(data) {
-      const cols = liveColumns(this.columns, data);
+    selection(src) {
+      const cols = liveColumns(this.columns, src);
       if (cols.length === 0) return null;
       const first = this.columns[0];
       return {
@@ -73,12 +73,12 @@ export const State = defineModel({
      * Die passenden Diagramme in Rangfolge; Titel und Hinweis als Übersetzungsschlüssel
      * (`charts.<titleKey>`, `notes.<noteKey>`), `vars` für deren Platzhalter.
      *
-     * @param {any} data Arbeitsblattsicht
+     * @param {import('../../../core/source-reader.js').Source} src Leser der Arbeitsblätter
      * @this {import('./model.types.js').StateModel}
      * @returns {SuggestionEntry[]}
      */
-    suggestions(data) {
-      return getSuggestionsFor(liveColumns(this.columns, data)).map((s) => ({
+    suggestions(src) {
+      return getSuggestionsFor(liveColumns(this.columns, src)).map((s) => ({
         chartType: s.type,
         score: s.score,
         titleKey: `charts.${s.i18nKey}`,
@@ -89,24 +89,24 @@ export const State = defineModel({
     /**
      * Die gezeigte Wahl: die des Nutzers, wenn vorgeschlagen, sonst der Spitzenreiter.
      *
-     * @param {any} data Arbeitsblattsicht
+     * @param {import('../../../core/source-reader.js').Source} src Leser der Arbeitsblätter
      * @param {any} d Ableitungen
      * @this {import('./model.types.js').StateModel}
      * @returns {string|null}
      */
-    selectedChartType(data, d) {
+    selectedChartType(src, d) {
       return shownType(d.suggestions.map((/** @type {{ chartType: string }} */ s) => ({ type: s.chartType })), this.pick);
     },
     /**
      * Das Modul, das openInModule anlegt, oder null.
      *
-     * @param {any} data Arbeitsblattsicht
+     * @param {import('../../../core/source-reader.js').Source} src Leser der Arbeitsblätter
      * @param {any} d Ableitungen
      * @this {import('./model.types.js').StateModel}
      * @returns {string|null}
      */
-    openTarget(data, d) {
-      return prefillFor(this.columns, d.selectedChartType, liveColumns(this.columns, data))?.target ?? null;
+    openTarget(src, d) {
+      return prefillFor(this.columns, d.selectedChartType, liveColumns(this.columns, src))?.target ?? null;
     },
   },
   invariants: {

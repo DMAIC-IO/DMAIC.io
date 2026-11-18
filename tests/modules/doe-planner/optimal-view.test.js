@@ -7,7 +7,8 @@
 import { suite, test, assert, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { State } from '../../../js/modules/doe-planner/domain/model.js';
 import { UiState } from '../../../js/modules/doe-planner/viewmodel/state.js';
-import { mount, plan, threeFactors, worksheet, typeIn, pick, settle, inputBadges, de } from './view-harness.js';
+import { optimalView } from '../../../js/modules/doe-planner/viewmodel/optimal.js';
+import { mount, plan, threeFactors, worksheet, typeIn, pick, settle, inputBadges, de, partContext, partOf } from './view-harness.js';
 
 const optimalPlan = (over = {}) => plan({
   designType: 'dopt',
@@ -150,5 +151,22 @@ suite('doe-planner optimal: runs and terms', () => {
     h.$('.doe__term-check[data-term-id="Q1"]').click();
     await settle();
     assertDeepEqual(h.calls('setTerm').at(-1), { id: 'Q1', on: true, sourceRowCount: 2 });
+  });
+});
+
+suite('doe-planner optimal: reads the worksheets through ctx.source', () => {
+  test('source rows, options, picking and mapping without ctx.data', () => {
+    const ws = worksheet('Quelle', { A: [0, 5, 10], B: [0, 10, 5], C: [10, 0, 5], Yield: [1, 2, 3] });
+    const sheetId = ws.sheets[0].id;
+    const ctx = partContext({ 'ws-src': ws });
+    const model = State.fromJSON(optimalPlan());
+    const t = (k, p) => (p ? `${k}${JSON.stringify(p)}` : k);
+    const vm = partOf(optimalView(ctx), { model, t });
+    assertEqual(vm.sourceRows, 0);
+    assertDeepEqual(vm.sourceOptions, [{ key: `ws-src::${sheetId}`, label: 'Quelle (3)' }]);
+    vm.sourceChanged({ target: { value: `ws-src::${sheetId}` } });
+    assertEqual(model.sourceWorksheet.instanceId, 'ws-src');
+    assertEqual(vm.sourceRows, 3);
+    assertDeepEqual(optimalView(ctx).computed.sourceMapping.call(vm), { ok: true, text: t('sourceMappingOk', { rows: 3, responses: 1 }) });
   });
 });

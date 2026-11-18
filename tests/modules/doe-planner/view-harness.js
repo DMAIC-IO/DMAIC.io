@@ -2,8 +2,9 @@
  * DoE Planner: mounting the real module with the real template
  * (resources/view.html) and the German texts (resources/i18n/ui.de.json)
  * for the browser tests of the view parts. The store holds the planner and
- * worksheet states; `ctx.data` reads them, `ctx.instances.list` lists the
- * worksheets of the phases. Help badges are counted per input section.
+ * worksheet states; the reader `ctx.source` reads them, `ctx.instances.list`
+ * lists the worksheets of the phases. `partContext` gives a view part alone
+ * a context whose `ctx.data` throws. Help badges are counted per input section.
  */
 import Alpine from '../../../vendor/alpinejs/csp.js';
 import mod from '../../../js/modules/doe-planner/viewmodel/viewmodel.js';
@@ -18,6 +19,7 @@ import { buildInitialWorksheetState } from '../../../js/core/worksheet-sheets.js
 import { WIDGETS } from '../../../js/widgets/registry.js';
 import { WIDGET_I18N } from '../../widget-i18n.js';
 import { withStoredWorksheetReader } from '../../helpers/worksheet-reader.js';
+import { storedSource } from '../../helpers/stored-source.js';
 
 const ID = 'doe-planner';
 const TPL_KEY = `js/modules/${ID}/resources/view.html`;
@@ -77,6 +79,38 @@ export function worksheet(name, columns) {
     columns: entries.map(([colName, values], i) => ({ id: `${name}-c${i}`, name: colName, type: 'numeric', format: {}, meta: null, formulas: [], values: [...values] })),
   };
   return st;
+}
+
+/**
+ * The context of a view part alone (`optimalView(ctx)` …): the reader
+ * `source` over the worksheet states, `instances.list` over them; reading
+ * `ctx.data` throws, so a part that still reads through it fails.
+ * @param {Record<string, any>} [worksheets] worksheet instance id → state
+ * @returns {any}
+ */
+export function partContext(worksheets = {}) {
+  return {
+    source: storedSource(worksheets),
+    get data() { throw new Error('ctx.data read'); },
+    instances: {
+      list: ({ modules } = {}) => Object.keys(worksheets)
+        .map((instanceId) => ({ instanceId, moduleId: 'worksheet', phase: 'measure', title: '' }))
+        .filter((i) => !modules || modules.includes(i.moduleId)),
+    },
+    notify: () => {},
+  };
+}
+
+/**
+ * A view part as a component with `extra` (model, texts …) as its own members.
+ * @param {object} part what the view part returns
+ * @param {object} extra
+ * @returns {any}
+ */
+export function partOf(part, extra) {
+  const { computed, ...rest } = Object.getOwnPropertyDescriptors(part);
+  void computed;
+  return Object.defineProperties({ ...extra }, rest);
 }
 
 /** A valid plan of two continuous factors and one response, without a design. @param {object} [over] */

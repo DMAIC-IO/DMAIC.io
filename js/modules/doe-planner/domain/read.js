@@ -1,9 +1,9 @@
 /**
  * D.Mike — DoE Planner: derivations from model and worksheet (domain/read.js)
  *
- * Pure. Inputs are the planner model and the module's worksheet data
- * access (`ctx.data`); the model's `derived` entries call these. The
- * worksheet is only read through `data.sheet` and `data.values`.
+ * Pure. Inputs are the planner model and the reader of the worksheets
+ * (`src`, `core/source.js`); the model's `derived` entries call these. The
+ * worksheet is only read through `readSheet` and `readColumn`.
  */
 import { checkConfig, designOf, plannedRuns } from './designs/registry.js';
 import { evaluateDesign, computeDispersionAnalysis, computeEVOPEffects } from './analysis.js';
@@ -11,13 +11,16 @@ import { designSignature } from './signatures.js';
 import { actualRows, activeTerms, modelTerms, isOptimal, letter } from './design.js';
 import { runRows } from './runtable.js';
 import { numberOf } from './source.js';
+import { readSheet, readColumn } from '../../../core/source-columns.js';
 
 /**
- * The part of `ctx.data` the planner reads.
- * @typedef {object} PlannerData
- * @property {(ref: { instanceId: string, sheetId: string }|null) => ({ id: string, name: string, rowCount: number,
- *   columns: Array<{ id: string, name: string, type: string }> }|null)} sheet
- * @property {(ref: { instanceId: string, sheetId: string, columnId: string }|null) => (any[]|null)} values
+ * The reader of the worksheets (`core/source.js`).
+ * @typedef {import('../../../core/source-reader.js').Source} PlannerData
+ */
+
+/**
+ * A sheet with its row count and column heads.
+ * @typedef {ReturnType<typeof readSheet>} PlannerSheet
  */
 
 /**
@@ -31,25 +34,25 @@ import { numberOf } from './source.js';
  */
 
 /**
- * @param {PlannerData|null|undefined} data
+ * @param {PlannerData|null|undefined} src reader of the worksheets
  * @param {{ instanceId: string, sheetId: string }|null} ref
- * @returns {ReturnType<PlannerData['sheet']>}
+ * @returns {PlannerSheet}
  */
-function sheetOf(data, ref) {
-  if (!data || !ref || typeof ref.instanceId !== 'string') return null;
-  return data.sheet({ instanceId: ref.instanceId, sheetId: ref.sheetId });
+function sheetOf(src, ref) {
+  if (!src || !ref || typeof ref.instanceId !== 'string') return null;
+  return readSheet(src, { instanceId: ref.instanceId, sheetId: ref.sheetId });
 }
 
 /**
  * Validity of the configuration, with the row count of the source sheet.
  * @param {any} m planner model
- * @param {PlannerData|null|undefined} data
+ * @param {PlannerData|null|undefined} src reader of the worksheets
  * @returns {{ ok: boolean, reason: string|null }}
  */
-export function configCheck(m, data) {
-  const source = sheetOf(data, m.sourceWorksheet);
+export function configCheck(m, src) {
+  const source = sheetOf(src, m.sourceWorksheet);
   // An optimal design on a source sheet that is gone has nothing to build on.
-  if (data && isOptimal(m) && m.sourceWorksheet && !source) return { ok: false, reason: 'source-not-found' };
+  if (src && isOptimal(m) && m.sourceWorksheet && !source) return { ok: false, reason: 'source-not-found' };
   return configCheckWith(m, source ? source.rowCount : 0);
 }
 
@@ -125,14 +128,14 @@ export function evaluationOf(m, pending) {
 /**
  * State of the bound datasheet.
  * @param {any} m planner model
- * @param {PlannerData|null|undefined} data
+ * @param {PlannerData|null|undefined} src reader of the worksheets
  * @param {boolean} pending
  * @returns {'none'|'bound'|'stale'} none without a binding or when the sheet is gone; stale when plan or
  *   factors changed since the sheet was written, also while a new design is pending
  */
-export function stalenessOf(m, data, pending) {
+export function stalenessOf(m, src, pending) {
   const ref = m.worksheetRef;
-  if (!ref || !sheetOf(data, ref)) return 'none';
+  if (!ref || !sheetOf(src, ref)) return 'none';
   if (pending) return 'stale';
   const current = designSignature(m);
   return current !== null && ref.designSignature === current ? 'bound' : 'stale';
@@ -141,28 +144,28 @@ export function stalenessOf(m, data, pending) {
 /**
  * Values of the bound sheet's response columns, one entry per row.
  * @param {any} m planner model
- * @param {PlannerData|null|undefined} data
+ * @param {PlannerData|null|undefined} src reader of the worksheets
  * @returns {Array<Array<number|null>|null>|null} null without a sheet; a missing column is null
  */
-export function responseValues(m, data) {
+export function responseValues(m, src) {
   const ref = m.worksheetRef;
-  const sheet = sheetOf(data, ref);
+  const sheet = sheetOf(src, ref);
   if (!sheet) return null;
   return ref.responseColumnIds.map((columnId) => {
-    const vals = data.values({ instanceId: ref.instanceId, sheetId: ref.sheetId, columnId });
-    return vals === null ? null : vals.map(numberOf);
+    const col = readColumn(src, { instanceId: ref.instanceId, sheetId: ref.sheetId, columnId });
+    return col === null ? null : col.values.map(numberOf);
   });
 }
 
 /**
  * @param {any} m planner model
- * @param {PlannerData|null|undefined} data
+ * @param {PlannerData|null|undefined} src reader of the worksheets
  * @returns {Progress|null} null without a bound sheet
  */
-export function progressOf(m, data) {
-  const values = responseValues(m, data);
+export function progressOf(m, src) {
+  const values = responseValues(m, src);
   if (values === null) return null;
-  const rows = /** @type {NonNullable<ReturnType<PlannerData['sheet']>>} */ (sheetOf(data, m.worksheetRef)).rowCount;
+  const rows = /** @type {NonNullable<PlannerSheet>} */ (sheetOf(src, m.worksheetRef)).rowCount;
   const missing = [];
   let filled = 0;
   values.forEach((col, i) => {
@@ -182,16 +185,16 @@ export function progressOf(m, data) {
 /**
  * Dispersion analysis of the replicated runs of the chosen response.
  * @param {any} m planner model
- * @param {PlannerData|null|undefined} data
+ * @param {PlannerData|null|undefined} src reader of the worksheets
  * @param {'none'|'bound'|'stale'} staleness
  * @param {Progress|null} progress
  * @returns {object|null} the analysis with `responseName`, `{ noReplicates: true }`, or null
  */
-export function dispersionOf(m, data, staleness, progress) {
+export function dispersionOf(m, src, staleness, progress) {
   if (staleness !== 'bound' || !progress || !progress.complete || !m.design) return null;
   const type = designOf(m);
   if (type && !type.dispersion) return null;
-  const values = /** @type {Array<Array<number|null>>} */ (responseValues(m, data));
+  const values = /** @type {Array<Array<number|null>>} */ (responseValues(m, src));
   if (!values.length) return null;
   const idx = Math.min(m.analysisResponseIdx, values.length - 1);
   const y = values[idx].map((v) => (v === null ? NaN : v));
@@ -259,12 +262,12 @@ export function evopOf(m) {
 /**
  * The run table in run order, keyed by column name.
  * @param {any} m planner model
- * @param {PlannerData|null|undefined} data
+ * @param {PlannerData|null|undefined} src reader of the worksheets
  * @param {boolean} pending
  * @param {'none'|'bound'|'stale'} staleness
  * @returns {object[]} [] without a current design
  */
-export function runsOf(m, data, pending, staleness) {
+export function runsOf(m, src, pending, staleness) {
   const design = m.design;
   if (pending || !design || !design.actualMatrix.length) return [];
   const view = {
@@ -273,6 +276,6 @@ export function runsOf(m, data, pending, staleness) {
     previewEdits: m.previewEdits,
     design: { ...design, actualMatrix: actualRows(design, m.factors) },
   };
-  const values = staleness === 'bound' ? responseValues(m, data) : null;
+  const values = staleness === 'bound' ? responseValues(m, src) : null;
   return runRows(view, values ? values.map((col) => col ?? []) : null);
 }

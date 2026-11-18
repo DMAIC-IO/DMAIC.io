@@ -5,7 +5,7 @@
  * the preview shows the design in the datagrid widget: a changed cell or a
  * pasted block goes out as `setPreviewCell` / `setPreviewCells`, the row
  * menu of an optimal design as `forbidRun`. Once a datasheet is bound its
- * fill state comes from the sheet through `ctx.data`; a response column
+ * fill state comes from the sheet through `ctx.source`; a response column
  * that is gone from the sheet shows a note instead of numbers. The buttons
  * start the runs (create, hand over, extend) and open the sheet or the new
  * regression afterwards.

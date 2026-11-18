@@ -5,7 +5,7 @@
  * (view a phase, start a new one), the decision that closes the active
  * phase and the cumulative EVOP effects. The decision is asked through the
  * confirm of the command; the values of every response go with it, read
- * from the bound datasheet through `ctx.data`. Numbers are shown in the
+ * from the bound datasheet through `ctx.source`. Numbers are shown in the
  * app language.
  */
 import { formatNumber } from '../../../core/number-format.js';
@@ -86,7 +86,7 @@ export const evopView = (ctx) => ({
    * @returns {Promise<void>}
    */
   async decide(decision) {
-    const values = responseValues(this.model, ctx.data);
+    const values = responseValues(this.model, ctx.source);
     const yValues = values === null ? null : values.map((col) => col ?? []);
     const res = await runUiCommand(this._ui, 'completePhase', { decision, yValues });
     if (res.ok === false && 'error' in res) {

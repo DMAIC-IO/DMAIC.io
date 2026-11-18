@@ -2,19 +2,11 @@
  * D.Mike — DoE Planner: source worksheet of an optimal design (domain/source.js)
  *
  * Pure. Reads factor and response values of a picked worksheet sheet
- * through the module's worksheet data access (`ctx.data`) and turns them
- * into the coded rows the optimal-design engine augments.
+ * through the reader of the worksheets (`src`, `core/source.js`) and turns
+ * them into the coded rows the optimal-design engine augments.
  */
 import { parseDecimalInput } from '../../../core/parse-decimal.js';
-
-/**
- * The part of `ctx.data` this reader needs.
- * @typedef {object} SourceDataAccess
- * @property {(ref: { instanceId: string, sheetId: string }) => ({ rowCount: number,
- *   columns: Array<{ id: string, name: string }> }|null)} sheet
- * @property {(instanceId: string) => (Array<{ id: string }>|null)} [sheets]
- * @property {(ref: { instanceId: string, sheetId: string, columnId: string }) => (any[]|null)} values
- */
+import { readColumn, readSheet, readSheets } from '../../../core/source-columns.js';
 
 /**
  * @typedef {object} SourceData
@@ -56,7 +48,7 @@ export function numberOf(v) {
  * clamped to [−1, +1]; categorical cells are matched to the levels. Rows
  * with a missing or invalid factor cell are skipped.
  *
- * @param {SourceDataAccess} data worksheet data access
+ * @param {import('../../../core/source-reader.js').Source} src reader of the worksheets
  * @param {{ instanceId: string, sheetId: string }|null} ref source sheet
  * @param {Array<{ name: string, kind?: string, levels: string[] }>} factors
  * @param {Array<{ name: string }>} responses
@@ -64,12 +56,10 @@ export function numberOf(v) {
  *   `source-sheet-not-found`, `source-empty`, `source-missing-factor-columns`,
  *   `source-no-valid-rows`
  */
-export function sourceData(data, ref, factors, responses) {
+export function sourceData(src, ref, factors, responses) {
   if (!ref?.instanceId || !ref?.sheetId) return { ok: false, errors: ['source-missing-ref'] };
-  if (typeof data.sheets === 'function' && data.sheets(ref.instanceId) === null) {
-    return { ok: false, errors: ['source-not-found'] };
-  }
-  const sheet = data.sheet({ instanceId: ref.instanceId, sheetId: ref.sheetId });
+  if (readSheets(src, ref.instanceId) === null) return { ok: false, errors: ['source-not-found'] };
+  const sheet = readSheet(src, { instanceId: ref.instanceId, sheetId: ref.sheetId });
   if (!sheet) return { ok: false, errors: ['source-sheet-not-found'] };
 
   const rowCount = sheet.rowCount ?? 0;
@@ -78,7 +68,7 @@ export function sourceData(data, ref, factors, responses) {
   /** @param {string} name @returns {any[]|null} the values of the column with this name */
   const valuesOf = (name) => {
     const col = sheet.columns.find((c) => norm(c.name) === norm(name));
-    return col ? (data.values({ instanceId: ref.instanceId, sheetId: ref.sheetId, columnId: col.id }) ?? []) : null;
+    return col ? (readColumn(src, { instanceId: ref.instanceId, sheetId: ref.sheetId, columnId: col.id })?.values ?? []) : null;
   };
 
   const factorValues = factors.map((f) => valuesOf(f.name));

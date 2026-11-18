@@ -3,7 +3,7 @@
  *
  * The dispersion analysis of a replicated design: once every response cell
  * of the bound datasheet holds a number (derivations `progress` and
- * `dispersion`, read through `ctx.data`), the points with mean and
+ * `dispersion`, read through `ctx.source`), the points with mean and
  * variance, the models of the mean and of ln(s²) and the factors that
  * affect the spread. Numbers are shown in the app language.
  */

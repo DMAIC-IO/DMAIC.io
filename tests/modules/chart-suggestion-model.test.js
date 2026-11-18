@@ -5,6 +5,8 @@ import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
 import { State } from '../../js/modules/chart-suggestion/domain/model.js';
 import { evaluateDerived } from '../../js/core/derived.js';
 import { RULES } from '../../js/core/chart-suggestions/chart-suggestions.js';
+import { storedSource } from '../helpers/stored-source.js';
+import { spySource } from '../helpers/sheet-source.js';
 import uiDe from '../../js/modules/chart-suggestion/resources/i18n/ui.de.json' with { type: 'json' };
 import uiEn from '../../js/modules/chart-suggestion/resources/i18n/ui.en.json' with { type: 'json' };
 
@@ -13,11 +15,12 @@ const translate = (ui, key, vars = {}) => String(key.split('.').reduce((o, k) =>
 const hasKey = (ui, key) => typeof key.split('.').reduce((o, k) => o?.[k], ui) === 'string';
 
 const ref = (id) => ({ instanceId: 'ws', sheetId: 's', columnId: id });
+/** Ein Leser über ein Arbeitsblatt `ws` mit dem Blatt `s`; `roleConfirmed` ist `roleManual` im Stand. */
 function fakeData(cols) {
-  return {
-    column: (r) => { const c = cols[r.columnId]; return c ? { name: c.name, type: c.type, role: c.role, roleConfirmed: c.roleConfirmed } : null; },
-    values: (r) => cols[r.columnId]?.values ?? null,
-  };
+  const columns = Object.entries(cols).map(([id, c]) => ({
+    id, name: c.name, type: c.type, role: c.role, roleManual: c.roleConfirmed, values: c.values,
+  }));
+  return storedSource({ ws: { sheets: [{ id: 's', name: 'S', state: { columns } }] } });
 }
 const num = (name, values) => ({ name, type: 'numeric', role: 'continuous', roleConfirmed: true, values });
 const twoNumeric = fakeData({ a: num('Länge', [1, 2, 3, 4, 5]), b: num('Breite', [2, 4, 5, 8, 9]) });
@@ -93,9 +96,23 @@ suite('chart-suggestion Model — derived', () => {
     }
   });
 
+  test('liest nur über src.read', () => {
+    const m = State.fromJSON({ columns: [ref('a'), ref('b')] });
+    const out = evaluateDerived(m, spySource(twoNumeric));
+    assertEqual(out.selection.columns.length, 2);
+    assertEqual(out.selectedChartType, 'scatter');
+    assertEqual(out.openTarget, 'xy-plot');
+  });
+
+  test('gelöschte Spalte: fällt weg wie ein nicht auflösbarer Bezug', () => {
+    const m = State.fromJSON({ columns: [ref('gone')] });
+    assertDeepEqual(evaluateDerived(m, twoNumeric), { selection: null, suggestions: [], selectedChartType: null, openTarget: null });
+  });
+
   test('ein Fehler beim Lesen wird zu { error }', () => {
     const m = State.fromJSON({ columns: [ref('a')] });
-    const out = evaluateDerived(m, { ...twoNumeric, column: () => { throw new Error('kaputt'); } });
+    const broken = { read: () => ({ get columns() { throw new Error('kaputt'); } }), list: () => [] };
+    const out = evaluateDerived(m, broken);
     assertDeepEqual(out.suggestions, { error: 'kaputt' });
   });
 });

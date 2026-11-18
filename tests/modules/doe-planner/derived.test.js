@@ -2,7 +2,7 @@
  * Tests for the derivations of js/modules/doe-planner/domain/model.js —
  * validity, pending design, evaluation, datasheet state and progress, the
  * experiment from the snapshot, the run table and EVOP — over a fake of
- * the worksheet data access.
+ * reader of the worksheets (`src`).
  */
 import { suite, test, assert, assertEqual, assertDeepEqual } from '../../test-utils.js';
 import { State } from '../../../js/modules/doe-planner/domain/model.js';
@@ -12,30 +12,21 @@ import { configSignature, designSignature } from '../../../js/modules/doe-planne
 import { snapshotOf } from '../../../js/modules/doe-planner/domain/experiment.js';
 import { withEdit } from '../../../js/modules/doe-planner/domain/runtable.js';
 import { actualRows } from '../../../js/modules/doe-planner/domain/design.js';
+import { storedSource } from '../../helpers/stored-source.js';
+import { spySource } from '../../helpers/sheet-source.js';
 
 const V1 = { version: '1.0' };
 
 /**
- * A fake of ctx.data over sheets of one worksheet instance.
+ * A reader (`Source`) over sheets of one worksheet instance.
  * @param {Record<string, { rowCount: number, columns: Record<string, any[]> }>} sheets
  * @param {string} [instanceId]
  */
 function fakeData(sheets = {}, instanceId = 'ws-1') {
-  return {
-    sheet(ref) {
-      const sh = ref && ref.instanceId === instanceId ? sheets[ref.sheetId] : null;
-      if (!sh) return null;
-      return { id: ref.sheetId, name: ref.sheetId, rowCount: sh.rowCount,
-        columns: Object.keys(sh.columns).map((id) => ({ id, name: id, type: 'numeric' })) };
-    },
-    sheets(id) {
-      return id === instanceId ? Object.entries(sheets).map(([sid, sh]) => ({ id: sid, name: sid, rowCount: sh.rowCount })) : null;
-    },
-    values(ref) {
-      const sh = ref && ref.instanceId === instanceId ? sheets[ref.sheetId] : null;
-      return sh && sh.columns[ref.columnId] ? [...sh.columns[ref.columnId]] : null;
-    },
-  };
+  return storedSource({ [instanceId]: { sheets: Object.entries(sheets).map(([sid, sh]) => ({
+    id: sid, name: sid,
+    state: { rowCount: sh.rowCount, columns: Object.entries(sh.columns).map(([id, values]) => ({ id, name: id, type: 'numeric', values })) },
+  })) } });
 }
 
 /** A valid 2² plan without a design. @param {object} [over] */
@@ -200,6 +191,26 @@ suite('doe-planner derived — Datenblatt', () => {
     assertDeepEqual(d.progress, { filled: 3, total: 4, pct: 75, complete: false, missing: [] });
     assertEqual(d.runs[0].responses.Yield, 10);
     assertEqual(d.runs[1].responses.Yield, null);
+  });
+
+  test('liest nur über src.read', () => {
+    const s = withDesign(planned());
+    const d = read(s, spySource(link(s, [10, null, 11, 20])));
+    assertEqual(d.staleness, 'bound');
+    assertDeepEqual(d.progress, { filled: 3, total: 4, pct: 75, complete: false, missing: [] });
+    assertEqual(d.runs[0].responses.Yield, 10);
+    const src = planned({ designType: 'dopt', sourceWorksheet: { instanceId: 'ws-1', sheetId: 'src' } });
+    src.options = { ...src.options, optimalRuns: 1 };
+    assertEqual(read(src, spySource(fakeData({ src: { rowCount: 20, columns: {} } }))).valid, true);
+  });
+
+  test('Arbeitsblatt noch nicht geladen: wie ohne Blatt', () => {
+    const s = withDesign(planned());
+    link(s, [1, 2, 3, 4]);
+    const notLoaded = { read() { const e = new Error('not_loaded'); e.code = 'not_loaded'; throw e; }, list: () => [] };
+    const d = read(s, notLoaded);
+    assertEqual(d.staleness, 'none');
+    assertEqual(d.progress, null);
   });
 
   test('Dezimalkomma zählt, Leerzelle nicht, die Zeile bleibt an ihrem Platz', () => {
