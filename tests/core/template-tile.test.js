@@ -4,6 +4,7 @@
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../test-utils.js';
 import { createTile, tileSettingsOf, TEMPLATE_TILE } from '../../js/core/template-tile.js';
 import { defineModel, defineSettings, number, oneOf, boolean, text, list } from '../../js/core/model.js';
+import { registerReader } from '../../js/core/source-reader.js';
 
 const Doc = defineModel({ fields: { items: list(text()) } });
 const Settings = defineSettings({
@@ -83,7 +84,7 @@ suite('createTile: Scope', () => {
     assertEqual(vm[TEMPLATE_TILE], true);
     assertEqual(TEMPLATE_TILE, '_templateTile');
     assertTrue(!Object.keys(vm).includes(TEMPLATE_TILE));
-    assertDeepEqual(Object.keys(seenCtx).sort(), ['data', 'i18n', 'instanceId', 'moduleId', 'theme']);
+    assertDeepEqual(Object.keys(seenCtx).sort(), ['i18n', 'instanceId', 'moduleId', 'source', 'theme']);
     assertTrue(seenCtx.i18n === i18n);
     assertEqual(seenCtx.theme, 'dark');
     assertEqual(seenCtx.instanceId, 'i1');
@@ -133,28 +134,81 @@ suite('createTile: Daten und Diagramm-Manager', () => {
   let seen = null;
   const tile = createTile({ descriptor, Model: Doc, view(ctx) { seen = ctx; return {}; } });
 
-  test('ctx.data aus args.data, moduleId lesend, _ui.services.chartManager nicht aufzählbar', () => {
-    const data = { values: () => [1], numeric: () => [1], name: () => 'A', columns: () => [] };
+  test('ctx.source aus args.source, moduleId lesend, _ui.services.chartManager nicht aufzählbar', () => {
+    const source = Object.freeze({ read: () => ({ rowCount: 1 }), list: () => [] });
     const cm = { create() {}, destroy() {} };
-    const vm = tile.viewModel({ state: {}, settings: {}, i18n, data, chartManager: cm });
-    assertTrue(seen.data === data);
+    const vm = tile.viewModel({ state: {}, settings: {}, i18n, source, chartManager: cm });
+    assertTrue(seen.source === source);
+    assertTrue(!('data' in seen), 'ctx.data gibt es in der Kachel nicht mehr');
     assertEqual(vm.moduleId, 'demo-tile');
     assertThrows(() => { 'use strict'; vm.moduleId = 'x'; }, /read only|Cannot assign/);
     assertTrue(vm._ui.services.chartManager === cm);
     assertTrue(!Object.keys(vm).includes('_ui'));
   });
 
-  test('ohne args.data: jeder Bezug null, keine Spalten', () => {
+  test('ohne stateManager: read wirft not_loaded, list ist leer', () => {
     tile.viewModel({ state: {}, settings: {}, i18n });
-    const ref = { instanceId: 'w', sheetId: 's', columnId: 'c' };
-    assertEqual(seen.data.values(ref), null);
-    assertEqual(seen.data.numeric(ref), null);
-    assertEqual(seen.data.name(ref), null);
-    assertDeepEqual(seen.data.columns({}), []);
+    let err = null;
+    try { seen.source.read('w', {}); } catch (e) { err = e; }
+    assertEqual(err?.code, 'not_loaded');
+    assertDeepEqual(seen.source.list(), []);
+  });
+
+  test('mit stateManager: der Leser kommt aus createSource', () => {
+    const sm = { get: (p) => (p === 'phases' ? { measure: [{ instanceId: 'w', moduleId: 'worksheet' }] } : undefined), getProjectCycle: () => 'dmaic' };
+    registerReader(sm, (id) => ({ instanceId: id, rowCount: 4 }));
+    tile.viewModel({ state: {}, settings: {}, i18n, stateManager: sm });
+    assertEqual(seen.source.read('w', {}).rowCount, 4);
+    assertDeepEqual(seen.source.list(), [{ instanceId: 'w', moduleId: 'worksheet' }]);
   });
 
   test('ohne chartManager: _ui.services.chartManager null', () => {
     const vm = tile.viewModel({ state: {}, settings: {}, i18n });
     assertEqual(vm._ui.services.chartManager, null);
+  });
+});
+
+suite('createTile: derived', () => {
+  let calls = 0;
+  const Sheet = defineModel({
+    fields: { items: list(text()) },
+    derived: {
+      total(src) { calls += 1; return src.read('ws1', {}).rowCount; },
+      twice(_src, d) { return d.total * 2; },
+      broken() { throw new Error('kaputt'); },
+    },
+  });
+  const sm = { get: () => undefined, getProjectCycle: () => 'dmaic' };
+  registerReader(sm, (id) => ({ instanceId: id, rowCount: 12 }));
+
+  test('ein Getter je derived, einmal je viewModel()-Aufruf ausgewertet', () => {
+    const tile = createTile({ descriptor, Model: Sheet, view() { return { get label() { return `n=${this.total}`; } }; } });
+    calls = 0;
+    const vm = tile.viewModel({ state: {}, settings: {}, i18n, stateManager: sm });
+    assertEqual(vm.total, 12);
+    assertEqual(vm.total, 12);
+    assertEqual(vm.label, 'n=12');
+    assertEqual(calls, 1);
+    assertEqual(vm.twice, 24, 'd liest andere derived');
+    calls = 0;
+    tile.viewModel({ state: {}, settings: {}, i18n, stateManager: sm }).total;
+    assertEqual(calls, 1, 'neues Rendern rechnet neu');
+  });
+
+  test('ein werfendes derived ergibt { error }', () => {
+    const tile = createTile({ descriptor, Model: Sheet });
+    const vm = tile.viewModel({ state: {}, settings: {}, i18n, stateManager: sm });
+    assertDeepEqual(vm.broken, { error: 'kaputt' });
+  });
+
+  test('ohne Leser: derived liest not_loaded als { error }', () => {
+    const tile = createTile({ descriptor, Model: Sheet });
+    const vm = tile.viewModel({ state: {}, settings: {}, i18n });
+    assertTrue(/not_loaded/.test(vm.total.error));
+  });
+
+  test('ein view-Glied mit dem Namen eines derived wirft', () => {
+    const tile = createTile({ descriptor, Model: Sheet, view() { return { get total() { return 0; } }; } });
+    assertThrows(() => tile.viewModel({ state: {}, settings: {}, i18n, stateManager: sm }), /^createTile\(demo-tile\): total collides with derived$/);
   });
 });

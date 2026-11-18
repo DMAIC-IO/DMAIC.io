@@ -18,7 +18,7 @@ import { I18n } from '../../js/core/i18n.js';
 import capabilityTile from '../../js/modules/process-capability/process-capability.tile.js';
 import attrSpcTile from '../../js/modules/attribute-control-chart/tile/tile.js';
 import { disposeTile } from '../../js/pages/dashboard/tile-render.js';
-import { createWorksheetData } from '../../js/core/worksheet-data.js';
+import { createSource } from '../../js/core/source.js';
 import { withStoredWorksheetReader } from '../helpers/worksheet-reader.js';
 import Alpine from '../../vendor/alpinejs/csp.js';
 import { registerWidgetDirective } from '../../js/core/widget-directive.js';
@@ -1287,17 +1287,16 @@ function columnStateManager(cols) {
   });
 }
 
-/** Render args of the attribute tile: the worksheet reaches the view block only through `data`. */
+/** Render args of the attribute tile: the worksheet reaches the derived `analysis` through the reader (`source`). */
 function attrArgs(state, cols, settings, cm) {
   const sm = columnStateManager(cols);
   return { tileId: 't', instanceId: 'i', state, settings, i18n, theme: 'light',
-    chartManager: cm, stateManager: sm, data: createWorksheetData(sm) };
+    chartManager: cm, stateManager: sm, source: createSource(sm) };
 }
 
-/** Tile view model with the worksheet behind `data`. */
+/** Tile view model with the worksheet behind the reader of its `stateManager`. */
 function attrVm(state, cols, overrides = {}) {
-  const sm = columnStateManager(cols);
-  return vmOf(attrSpcTile, state, overrides, { stateManager: sm, data: createWorksheetData(sm) });
+  return vmOf(attrSpcTile, state, overrides, { stateManager: columnStateManager(cols) });
 }
 
 const flush = () => new Promise((r) => setTimeout(r, 0));

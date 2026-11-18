@@ -11,6 +11,7 @@ import { readWorksheetState, worksheetSnapshot } from '../helpers/legacy-workshe
 import { worksheetSheetsSnapshot, readWorksheetModel, readWorksheetStored } from '../../js/modules/worksheet/domain/read.js';
 import { WorksheetModel } from '../../js/modules/worksheet/domain/model.js';
 import { createInstances } from '../../js/core/instances.js';
+import { NO_SOURCE } from '../../js/core/source-reader.js';
 
 /** Ein Spaltenkopf der Zielform. */
 const head = (id, over = {}) => ({
@@ -315,7 +316,7 @@ function instancesWith(state) {
     moduleRegistry: { loadModule: async () => mod, getLoaded: () => mod },
     workspace: { getLiveViewmodel: () => null, isPending: () => false, whenInstanceReady: async () => true },
     eventBus: { emit() {}, on() {}, off() {} },
-    createData: () => ({}),
+    createSource: () => NO_SOURCE,
   });
   return { svc, sm, mod };
 }

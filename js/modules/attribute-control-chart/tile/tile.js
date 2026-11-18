@@ -4,13 +4,13 @@
  * „Ist der Prozess stabil?“ — Stabilitätsmarke, verletzende Punkte, CL und
  * Grenzen und eine kompakte Regelkarte (Widget `control-chart`). Form: createTile
  * (core/template-tile.js); Einstellungen in settings.js, Markup in
- * resources/tile.html. Das Arbeitsblatt kommt über `ctx.data`.
+ * resources/tile.html. Die Analyse ist das derived `analysis` des Models.
  */
 import { createTile } from '../../../core/template-tile.js';
 import { windowed } from '../../../ui/tile-chart-window.js';
 import descriptor from '../module.js';
 import { State } from '../domain/model.js';
-import { analyzeState, signalIndices, baselineEndOf } from '../domain/analyze.js';
+import { signalIndices, baselineEndOf } from '../domain/analyze.js';
 import { meanOf } from '../viewmodel/present.js';
 import { asList } from '../domain/limits.js';
 import { Settings } from './settings.js';
@@ -29,13 +29,8 @@ export default createTile({
 
   /** @type {import('./settings.types.js').AttributeControlChartTileViewFn} */
   view(ctx) {
-    /** Je Rendern einmal gerechnet (der Scope ist ein Schnappschuss). */
-    let memo = null;
+    // `this.analysis` ist der Getter des Kerns für das derived `analysis` (je Rendern einmal gerechnet).
     return {
-      get analysis() {
-        if (memo === null) memo = { value: analyzeState(this.model, (ref) => ctx.data.values(ref) ?? []) };
-        return memo.value;
-      },
       /** Leertext, sonst null. */
       get empty() {
         if (!this.model.defectsRef) return ctx.i18n.t('dashboard.attrSpcEmpty');

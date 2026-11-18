@@ -13,6 +13,7 @@ import { MIXED, copy, load } from './cases.js';
 import { createInstances } from '../../../js/core/instances.js';
 import mod from '../../../js/modules/survey-builder/viewmodel/viewmodel.js';
 import { worksheetColumnsFor } from '../../../js/modules/survey-builder/domain/handover/worksheet.js';
+import { NO_SOURCE } from '../../../js/core/source-reader.js';
 
 const flush = () => new Promise((r) => setTimeout(r, 0));
 
@@ -439,7 +440,7 @@ suite('survey-builder handover: reading another survey', () => {
       moduleRegistry: { loadModule: async () => mod },
       workspace: { getLiveViewmodel: () => null, isPending: () => false, whenInstanceReady: async () => null },
       eventBus: { emit: () => {}, on: () => {}, off: () => {} },
-      createData: () => ({}),
+      createSource: () => NO_SOURCE,
     });
     const r = /** @type {any} */ (await svc.read('sb-2', { fields: ['transfers', 'survey'] }));
     assertDeepEqual(r.transfers.kano, { q4: { instanceId: 'kano-1', byInstance: {} } });

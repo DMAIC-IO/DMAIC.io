@@ -92,11 +92,11 @@ function viewFieldsOf(moduleId, m) {
  *   workspace: { getLiveViewmodel: (id: string) => any, isPending: (id: string) => boolean,
  *     whenInstanceReady: (id: string) => Promise<any> },
  *   eventBus: any,
- *   createData: () => any,
- * }} deps `createData` liefert die Arbeitsblattsicht für `derived`
+ *   createSource: () => import('./source-reader.js').Source,
+ * }} deps `createSource` liefert den Leser fremder Instanzen für `derived` (wie eingehängt)
  * @returns {InstancesService}
  */
-export function createInstances({ stateManager, moduleRegistry, workspace, eventBus, createData }) {
+export function createInstances({ stateManager, moduleRegistry, workspace, eventBus, createSource }) {
   /**
    * Instanzen in Projektreihenfolge: Phasen in der Reihenfolge des Projekts,
    * darin nach `order`.
@@ -239,7 +239,7 @@ export function createInstances({ stateManager, moduleRegistry, workspace, event
       if (!stateManager.isCompleted() && JSON.stringify(json) !== JSON.stringify(saved)) {
         stateManager.setModuleState(instanceId, json);
       }
-      return stripPaths(m.readDetached(model, createData(), options), viewFields);
+      return stripPaths(m.readDetached(model, createSource(), options), viewFields);
     }
     if (MIXIN_READ_MODULES.includes(moduleId)) {
       return stripPaths(readAgentState(moduleId, saved ?? {}, options), viewFields);

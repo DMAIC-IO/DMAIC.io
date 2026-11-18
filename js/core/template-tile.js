@@ -8,21 +8,27 @@
  * durchgereicht). `viewModel(args)` baut je Rendern einen Scope: einen
  * eingefrorenen Schnappschuss des Models (`readModel`), die geprüften
  * Einstellungen (`readSettings`), `t` mit dem Präfix `modules.<id>` und die
- * Glieder aus `view(ctx)`. `ctx.data` liest das Arbeitsblatt, `x-widget`
- * zeichnet über den Kachel-`chartManager` (`_ui.services`); beides je Rendern einmal.
+ * Glieder aus `view(ctx)`. Je `derived` des Models ein Getter auf dem Scope
+ * (je Rendern höchstens einmal ausgewertet, ein Fehler als `{ error }`).
+ * `ctx.source` liest fremde Instanzen (`core/source.js`), `x-widget`
+ * zeichnet über den Kachel-`chartManager` (`_ui.services`).
  * Die Marke `_templateTile` sagt dem Host
  * (pages/dashboard/tile-render.js), dass der Scope selbst gebunden wird.
  *
  * Importiert weder Alpine noch template-module.js — sonst zöge das
  * Dashboard den Modul-Chunk mit.
  */
-import { readModel, readSettings, isSettings, defaultOf, activeContext } from './model.js';
+import { readModel, readSettings, isSettings, defaultOf, activeContext, schemaOf } from './model.js';
+import { evaluateDerived } from './derived.js';
+import { deferredSource, NO_SOURCE } from './source-reader.js';
+import { withFacade } from './source-columns.js';
 
 /**
- * Was `view(ctx)` einer Kachel bekommt. `data` liest das Arbeitsblatt
- * (Schnappschuss je Rendern; der Host baut bei `refreshOn` neu auf).
+ * Was `view(ctx)` einer Kachel bekommt. `source` liest fremde Instanzen
+ * (derselbe Leser wie in den Gettern der `derived`; der Host baut bei
+ * `refreshOn` neu auf).
  * @typedef {{ i18n: any, theme: string|undefined, instanceId: string|null, moduleId: string,
- *   data: import('./worksheet-data.js').WorksheetData }} TileContext
+ *   source: import('./source-reader.js').Source }} TileContext
  */
 /**
  * `this` in den Gliedern eines Kachel-`view`-Blocks.
@@ -41,14 +47,17 @@ export const TEMPLATE_TILE = '_templateTile';
 /** Hooks des alten Vertrags, die unverändert durchgehen. */
 const PASS_THROUGH = ['enumerate', 'refreshOn', 'mount', 'dispose'];
 
-/** Lesezugriff ohne Arbeitsblätter: jeder Bezug `null`, keine Spalten. */
-/** @type {import('./worksheet-data.js').WorksheetData} */
-const NO_DATA = Object.freeze({
-  values: () => null,
-  numeric: () => null,
-  name: () => null,
-  columns: () => [],
-});
+/**
+ * Der Leser einer Kachel: `args.source` (Dashboard), sonst über den
+ * `stateManager` (`createSource`, erst beim ersten Lesen), ohne beides ein
+ * Leser ohne Arbeitsblätter (`read` wirft `not_loaded`, `list` ist leer).
+ * @param {{ source?: import('./source-reader.js').Source, stateManager?: any }} args
+ * @returns {import('./source-reader.js').Source}
+ */
+function sourceOf(args) {
+  if (args.source) return args.source;
+  return args.stateManager ? deferredSource(args.stateManager) : NO_SOURCE;
+}
 
 /**
  * Ein Feld aus `defineSettings` als Feld des Einstellungsdialogs.
@@ -100,13 +109,14 @@ export function createTile(base) {
   if (Settings !== undefined && !isSettings(Settings)) throw new Error(`createTile(${id}): Settings must come from defineSettings`);
   if (view !== undefined && typeof view !== 'function') throw new Error(`createTile(${id}): view must be a function`);
   const prefix = `modules.${id}`;
+  const derived = Object.keys(schemaOf(Model)?.derived ?? {});
 
   /** @type {Record<string, any>} */
   const tile = {
     template: `js/modules/${id}/resources/${template ?? 'tile.html'}`,
     /**
      * Scope der Kachel für dieses Rendern.
-     * @param {{ state: unknown, settings: unknown, i18n: any, theme?: string, instanceId?: string|null, data?: object, chartManager?: object, stateManager?: { getProjectCycle?: () => string } }} args
+     * @param {{ state: unknown, settings: unknown, i18n: any, theme?: string, instanceId?: string|null, source?: import('./source-reader.js').Source, chartManager?: object, stateManager?: { getProjectCycle?: () => string } }} args
      * @returns {object}
      */
     viewModel(args) {
@@ -126,8 +136,25 @@ export function createTile(base) {
           instanceId: args.instanceId ?? null, moduleId: id,
         }),
       }) });
-      const data = args.data ?? NO_DATA;
-      const members = view ? view({ i18n, theme: args.theme, instanceId: args.instanceId ?? null, moduleId: id, data }) : {};
+      const source = sourceOf(args);
+      // Ein Getter je derived, je Rendern höchstens einmal ausgewertet (der Scope ist ein Schnappschuss).
+      // Übergang bis Task 9: derived lesen zusätzlich über die Fassade.
+      const reader = withFacade(source);
+      /** @type {Map<string, any>} */
+      const memo = new Map();
+      for (const name of derived) {
+        Object.defineProperty(scope, name, {
+          enumerable: true,
+          get() {
+            if (!memo.has(name)) memo.set(name, evaluateDerived(model, reader, [name])[name]);
+            return memo.get(name);
+          },
+        });
+      }
+      const members = view ? view({ i18n, theme: args.theme, instanceId: args.instanceId ?? null, moduleId: id, source }) : {};
+      for (const name of Object.getOwnPropertyNames(members)) {
+        if (derived.includes(name)) throw new Error(`createTile(${id}): ${name} collides with derived`);
+      }
       return Object.defineProperties(scope, Object.getOwnPropertyDescriptors(members));
     },
   };

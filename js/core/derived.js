@@ -30,12 +30,12 @@ export function derivedAccessor(names, get) {
  * Wertet Ableitungen eines Models ohne Mount aus. Jeder Eintrag läuft höchstens einmal je Aufruf,
  * ein Fehler (auch ein Zyklus) wird zu `{ error }` und pflanzt sich in lesende Einträge fort.
  * @param {any} model Instanz aus `defineModel`
- * @param {any} data Arbeitsblattsicht
+ * @param {import('./source-reader.js').Source} src Leser fremder Instanzen; geht unverändert als erstes Argument an jeden Eintrag
  * @param {string[]} [names] nur diese Einträge (Verkettungen werden bei Bedarf mit ausgewertet)
  * @returns {Record<string, any>}
  * @throws {Error} `unknown derived: <name>`, wenn `names` einen Namen ohne Eintrag nennt
  */
-export function evaluateDerived(model, data, names = derivedNames(model.constructor)) {
+export function evaluateDerived(model, src, names = derivedNames(model.constructor)) {
   const defs = schemaOf(model)?.derived ?? {};
   /** @type {Map<string, { value?: any, error?: string }>} */
   const memo = new Map();
@@ -52,7 +52,7 @@ export function evaluateDerived(model, data, names = derivedNames(model.construc
     if (at !== -1) throw new Error(`derived cycle: ${[...stack.slice(at), name].join(' → ')}`);
     stack.push(name);
     try {
-      const value = defs[name].call(model, data, d);
+      const value = defs[name].call(model, src, d);
       memo.set(name, { value });
       return value;
     } catch (err) {

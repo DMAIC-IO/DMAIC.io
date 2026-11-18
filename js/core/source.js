@@ -16,7 +16,7 @@
 import Alpine from '@alpinejs/csp';
 import { setTouchHook } from './source-reader.js';
 
-export { registerReader, createSource } from './source-reader.js';
+export { registerReader, createSource, deferredSource, NO_SOURCE } from './source-reader.js';
 
 /** Zähler je Arbeitsblatt-Instanz; `'*'` zählt Ereignisse, die alle betreffen, `'#list'` jede Änderung (Spaltenlisten). */
 const rev = Alpine.reactive({ '*': 0, '#list': 0 });

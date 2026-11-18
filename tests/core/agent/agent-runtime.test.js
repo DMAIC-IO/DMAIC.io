@@ -13,6 +13,7 @@ import { createInstances } from '../../../js/core/instances.js';
 import { defineModel, text, number } from '../../../js/core/model.js';
 import { initialModel } from '../../../js/core/initial-model.js';
 import { StateManager } from '../../../js/core/state-manager.js';
+import { NO_SOURCE } from '../../../js/core/source-reader.js';
 
 const DEFS = [
   { id: 'worksheet', phase: 'data' },
@@ -1545,7 +1546,7 @@ suite('agent runtime — Lesen ohne gespeicherten Zustand', () => {
       loadModule: async () => mod,
     };
     const instances = createInstances({
-      stateManager: sm, moduleRegistry, eventBus: { emit() {} }, createData: () => ({}),
+      stateManager: sm, moduleRegistry, eventBus: { emit() {} }, createSource: () => NO_SOURCE,
       workspace: { getLiveViewmodel: () => null, isPending: () => false, whenInstanceReady: async () => null },
     });
     const runtime = createAgentRuntime({

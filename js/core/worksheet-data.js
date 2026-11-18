@@ -7,8 +7,8 @@
  * `computed` oder Getter, der so liest, rechnet neu, sobald sich das Blatt
  * ändert. Die Zähler leben in `core/source.js` und werden hier re-exportiert.
  */
-import { createSource, installWorksheetRevisions, bumpWorksheetRevisions } from './source.js';
-import { readColumn, columnLabel, numericValues, readSheet, readSheets, columnOptions } from './source-columns.js';
+import { deferredSource, installWorksheetRevisions, bumpWorksheetRevisions } from './source.js';
+import { facadeOf } from './source-columns.js';
 
 export { installWorksheetRevisions, bumpWorksheetRevisions };
 
@@ -32,19 +32,5 @@ export { installWorksheetRevisions, bumpWorksheetRevisions };
  */
 export function createWorksheetData(stateManager) {
   // Lazy: der Leser muss erst beim ersten Lesen registriert sein.
-  let source = null;
-  const src = () => (source ??= createSource(stateManager));
-  return Object.freeze({
-    values(ref) { if (!ref) return null; const c = readColumn(src(), ref); return c ? [...c.values] : null; },
-    numeric(ref) { if (!ref) return null; const c = readColumn(src(), ref); return c ? numericValues(c.values) : null; },
-    columns(filter) { return columnOptions(src(), filter); },
-    column(ref) {
-      if (!ref) return null;
-      const c = readColumn(src(), ref);
-      return c ? { name: columnLabel(c), type: c.type, role: c.role, roleConfirmed: c.roleConfirmed } : null;
-    },
-    sheet(ref) { return readSheet(src(), ref); },
-    sheets(instanceId) { return readSheets(src(), instanceId); },
-    name(ref) { if (!ref) return null; const c = readColumn(src(), ref); return c ? columnLabel(c) : null; },
-  });
+  return Object.freeze(facadeOf(deferredSource(stateManager)));
 }

@@ -14,7 +14,7 @@ import { enumerateTiles, loadTileModules, refreshEventsOf, copyId, copyDescripto
 import { renderTileSafely, disposeTile } from './tile-render.js';
 import { schemaOf, resolveSettings, toStored, withTileSettings, settingsToStoreOnLayoutSave, layoutToStoreOnSave, titlesToStoreOnLayoutSave, chartEditsToStoreOnLayoutSave, withCopiedChartEdits, SOURCE_KEY, sourceField, coerceValue } from './tile-settings.js';
 import { buildSettingsForm } from './tile-settings-form.js';
-import { createWorksheetData } from '../../core/worksheet-data.js';
+import { deferredSource } from '../../core/source.js';
 
 const page = createPage({
   id: 'dashboard',
@@ -36,7 +36,8 @@ const page = createPage({
   mount(containerEl, ctx) {
     const { eventBus, stateManager, i18n, chartManager, themeManager, moduleRegistry, dialog } = ctx;
     const gridAnchor = containerEl.querySelector('[data-ref="grid"]');
-    const data = createWorksheetData(stateManager);
+    // Der Leser fremder Instanzen für die Kacheln (ctx.source, derived).
+    const source = deferredSource(stateManager);
 
     const handle = { grid: null, addMenuEl: null, _onDocClick: null, _unsubs: [], render: null, _renderGen: 0, _toolbarWired: false, _allTilesLoaded: false, _refreshUnsubs: [], _lastLayout: [], tileModules: [] };
 
@@ -70,7 +71,7 @@ const page = createPage({
       await renderTileSafely(descriptor.tile, body, {
         tileId: descriptor.id, instanceId: descriptor.instanceId, state,
         settings: settingsFor(descriptor.id, descriptor.tile),
-        i18n, theme: theme(), chartManager: chartManager?.forTile?.(descriptor.id) ?? chartManager, stateManager, data,
+        i18n, theme: theme(), chartManager: chartManager?.forTile?.(descriptor.id) ?? chartManager, stateManager, source,
       }, i18n);
     };
 

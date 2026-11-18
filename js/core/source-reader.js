@@ -92,3 +92,34 @@ export function createSource(stateManager) {
     },
   });
 }
+
+/**
+ * Ein Leser ohne Arbeitsblätter: `read` wirft `not_loaded`, `list` ist leer.
+ * Für Kacheln ohne `stateManager` (Tests).
+ * @type {Source}
+ */
+export const NO_SOURCE = Object.freeze({
+  read(instanceId) {
+    const err = new Error(`not_loaded: ${instanceId}`);
+    /** @type {any} */ (err).code = 'not_loaded';
+    throw err;
+  },
+  list() { return []; },
+});
+
+/**
+ * Wie `createSource`, aber erst beim ersten Lesen gebaut: der Leser muss beim
+ * Erzeugen noch nicht registriert sein (Template-Modul, Kachel). Ohne
+ * registrierten Leser wirft erst `read`/`list`.
+ * @param {{ get: (path: string) => any }} stateManager
+ * @returns {Source}
+ */
+export function deferredSource(stateManager) {
+  /** @type {Source|null} */
+  let src = null;
+  const get = () => (src ??= createSource(stateManager));
+  return Object.freeze({
+    read: (instanceId, options) => get().read(instanceId, options),
+    list: () => get().list(),
+  });
+}

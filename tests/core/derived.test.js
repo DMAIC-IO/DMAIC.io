@@ -13,6 +13,15 @@ suite('derived', () => {
     assertThrows(() => evaluateDerived(new M(), stub, ['nope']), /unknown derived: nope/);
   });
 
+  test('src wird unverändert als erstes Argument durchgereicht', () => {
+    const src = Object.freeze({ read: () => ({}), list: () => [] });
+    const seen = [];
+    const M = defineModel({ derived: { a(s) { seen.push(s); return 1; }, b(s, d) { seen.push(s); return d.a; } } });
+    evaluateDerived(new M(), src);
+    assertEqual(seen.length, 2);
+    assertTrue(seen.every((s) => s === src));
+  });
+
   test('derivedNames: Namen in Deklarationsreihenfolge', () => {
     const M = defineModel({ derived: { b() { return 1; }, a() { return 2; } } });
     assertDeepEqual(derivedNames(M), ['b', 'a']);

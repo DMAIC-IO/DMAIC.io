@@ -56,7 +56,7 @@ function callDispose(tile, body, tileId) {
  * Render a module tile into its body and contain its errors.
  * @param {{template: string, viewModel: function, mount?: function, dispose?: function}} tile
  * @param {HTMLElement} body  tile body element
- * @param {object} args  tileId, instanceId, state, settings, i18n, theme, chartManager, stateManager, data
+ * @param {object} args  tileId, instanceId, state, settings, i18n, theme, chartManager, stateManager, source
  * @param {{t: function}} i18n
  * @returns {Promise<boolean>} true when the tile was mounted; false on error or when the render was dropped
  */

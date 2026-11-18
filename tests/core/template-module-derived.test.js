@@ -7,6 +7,7 @@ import { createModule } from '../../js/core/template-module.js';
 import { asyncTask } from '../../js/core/async-task.js';
 import { defineModel, number, command } from '../../js/core/model.js';
 import { stripPaths } from '../../js/core/view-fields.js';
+import { registerReader, bumpWorksheetRevisions } from '../../js/core/source.js';
 
 const ID = 'derived-test';
 const TPL_KEY = `js/modules/${ID}/${ID}.html`;
@@ -144,6 +145,50 @@ suite('createModule mit derived', () => {
     assertDeepEqual(vm().b, { error: message });
     const model = mod.loadDetached({ n: 1 }, { instanceId: 'dt-3', eventBus: null, stateManager: fakeStateManager(null) });
     assertDeepEqual(mod.readDetached(model, {}), vm().read());
+    await mod.destroy(); container.remove();
+  });
+
+  test('derived liest über src.read und rechnet nach bumpWorksheetRevisions neu (Vorladen)', async () => {
+    const Reads = defineModel({
+      fields: { n: number({ default: 1 }) },
+      derived: { rows(src) { return src.read('ws1', {}).rowCount; } },
+    });
+    let loaded = false;
+    const readSync = (id) => {
+      if (!loaded) { const err = new Error('not_loaded: worksheet'); err.code = 'not_loaded'; throw err; }
+      return { instanceId: id, rowCount: 7 };
+    };
+    ensureTemplate();
+    const mod = makeModule({ Model: Reads, view() { return {}; } });
+    const container = document.createElement('div');
+    document.body.append(container);
+    const ctx = fakeContext({ n: 1 });
+    registerReader(ctx.stateManager, readSync);
+    await mod.init(container, ctx);
+    await flush();
+    const vm = () => Alpine.$data(container.querySelector('[x-data]'));
+    assertDeepEqual(vm().rows, { error: 'not_loaded: worksheet' });
+    loaded = true;
+    bumpWorksheetRevisions();
+    await flush();
+    assertEqual(vm().rows, 7);
+    await mod.destroy(); container.remove();
+  });
+
+  test('ctx.source liegt neben ctx.data im view-Block', async () => {
+    let seen = null;
+    ensureTemplate();
+    const mod = makeModule({ view(ctx) { seen = ctx; return {}; } });
+    const container = document.createElement('div');
+    document.body.append(container);
+    const ctx = fakeContext({ n: 1 });
+    registerReader(ctx.stateManager, (id) => ({ instanceId: id, rowCount: 2 }));
+    await mod.init(container, ctx);
+    await flush();
+    assertEqual(typeof seen.source.read, 'function');
+    assertEqual(typeof seen.source.list, 'function');
+    assertEqual(seen.source.read('w').rowCount, 2);
+    assertTrue(seen.data !== undefined, 'ctx.data bleibt bis Task 9');
     await mod.destroy(); container.remove();
   });
 

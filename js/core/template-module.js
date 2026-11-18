@@ -15,6 +15,8 @@ import { defineComputedSlots, bindComputed } from './computed.js';
 import { derivedAccessor, evaluateDerived } from './derived.js';
 import { checkAsyncTasks, defineAsyncTaskSlots, createAsyncTasks } from './async-task.js';
 import { createWorksheetData } from './worksheet-data.js';
+import { deferredSource } from './source.js';
+import { withFacade } from './source-columns.js';
 import { withoutStoredEdits } from './chart/instance-chart-manager.js';
 import { createFieldErrors } from './field-errors.js';
 import { formatNumber } from './number-format.js';
@@ -22,11 +24,14 @@ import { formatNumber } from './number-format.js';
 /**
  * Was `view(ctx)` bekommt: die Kontextdienste und die Kennungen der Instanz.
  * `cssVars(map)` liest CSS-Variablen am Wurzelelement der Instanz.
+ * `source` ist der Leser fremder Instanzen (`core/source.js`), derselbe, den
+ * die `derived` des Models bekommen; `data` (Fassade) bleibt bis Task 9 daneben.
  * @typedef {{ context: object,
  *   notify: (message: string, type?: string, titleKey?: string) => void,
  *   dialog: any, i18n: any, eventBus: any, instanceId: string, moduleId: string,
  *   cssVars: (map: Record<string, string>) => Record<string, string>,
  *   data: import('./worksheet-data.js').WorksheetData,
+ *   source: import('./source-reader.js').Source,
  *   instances?: import('./instances.js').ModuleInstances,
  *   openDialog: (ref: string, opts?: import('./command-directives.js').DialogOptions) => Promise<void>,
  *   history: { step: (dir: 'undo'|'redo') => boolean, can: (dir: 'undo'|'redo') => boolean }|null }} ViewContext
@@ -199,10 +204,10 @@ function keepsAlive(container) {
  * und der Fehler eines gelesenen Eintrags werfen wie ohne Mount (`evaluateDerived`).
  * @param {any} vm reaktive Komponente
  * @param {Record<string, Function>} defs `Model.schema.derived`
- * @param {any} data Arbeitsblattsicht
+ * @param {import('./source-reader.js').Source} src Leser fremder Instanzen
  * @returns {Record<string, () => any>}
  */
-function derivedCells(vm, defs, data) {
+function derivedCells(vm, defs, src) {
   const names = Object.keys(defs);
   /** @type {string[]} */
   const evaluating = [];
@@ -217,7 +222,7 @@ function derivedCells(vm, defs, data) {
   return Object.fromEntries(names.map((name) => [name, () => {
     evaluating.push(name);
     try {
-      const value = defs[name].call(vm.model, data, d);
+      const value = defs[name].call(vm.model, src, d);
       failed.delete(name);
       return value;
     } catch (err) {
@@ -600,15 +605,16 @@ export function createModule(base) {
      * Der Lesezustand eines Models ohne Mount, gleich dem gemounteten `read()`:
      * Felder ohne Ansichtsfelder, die Ableitungen des Models, `asyncTasks` im Ruhezustand.
      * @param {object} model aus `loadDetached`
-     * @param {any} data Arbeitsblattsicht
+     * @param {import('./source-reader.js').Source} src Leser fremder Instanzen (wie eingehängt)
      * @param {object} [options] `{ fields?, rows? }`
      * @returns {object}
      * @throws {Error} ohne Schema-Model oder wenn `options.rows` kaputt ist
      */
-    readDetached(model, data, options) {
+    readDetached(model, src, options) {
       if (!agentEntry) throw new Error(`createModule(${id}): readDetached needs a defineModel Model`);
       if (ownRead) return ownRead(model, options);
-      return assembleRead(agentEntry, model, options, evaluateDerived(model, data), derivedBulk,
+      // Übergang bis Task 9: derived lesen zusätzlich über die Fassade.
+      return assembleRead(agentEntry, model, options, evaluateDerived(model, withFacade(src)), derivedBulk,
         taskNames.length > 0 ? idleTaskStatus(taskDefs) : undefined);
     },
     // Methode, nicht Pfeil: die neue Form braucht die aktive Sprache der Instanz.
@@ -662,6 +668,8 @@ export function createModule(base) {
       let dataResult;
       let computedDefs = null;
       const worksheetData = view || derivedList.length > 0 ? createWorksheetData(context.stateManager) : null;
+      // Der Leser fremder Instanzen: `ctx.source` und (mit der Fassade, Übergang bis Task 9) die `derived`.
+      const source = view || derivedList.length > 0 ? deferredSource(context.stateManager) : null;
       /** @type {Function[]} */
       const partInits = [];
       /** @type {Function[]} */
@@ -677,6 +685,7 @@ export function createModule(base) {
           instanceId: context.instanceId,
           moduleId: id,
           data: worksheetData,
+          source,
           instances: context.instances,
           cssVars: (map) => readCssVars(container.querySelector('[x-data]'), map),
           openDialog: (ref, opts) => openDialogSafely(Alpine, container.querySelector('[x-data]'), ref, opts),
@@ -840,7 +849,7 @@ export function createModule(base) {
               }
               if (cellNames.length > 0) {
                 releaseComputed = bindComputed(Alpine, this, {
-                  ...derivedCells(this, derivedDefs, worksheetData), ...(computedDefs ?? {}),
+                  ...derivedCells(this, derivedDefs, withFacade(/** @type {any} */ (source))), ...(computedDefs ?? {}),
                 });
               }
               // Der Task-Host steht vor view().init() — init darf Tasks starten und lesen.

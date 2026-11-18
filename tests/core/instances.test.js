@@ -105,9 +105,9 @@ function setup({ states = {}, completed = false, modules = {}, live, workspace }
   const loaded = new Set(Object.keys(mods));
   const moduleRegistry = { loadModule: async (id) => mods[id], getLoaded: (id) => (loaded.has(id) ? mods[id] : null) };
   const ws = workspace ?? makeWorkspace(live);
-  const data = { worksheet: true };
-  const svc = createInstances({ stateManager: sm, moduleRegistry, workspace: ws, eventBus: bus, createData: () => data });
-  return { svc, sm, bus, ws, mods, data, loaded };
+  const source = Object.freeze({ read: () => ({}), list: () => [] });
+  const svc = createInstances({ stateManager: sm, moduleRegistry, workspace: ws, eventBus: bus, createSource: () => source });
+  return { svc, sm, bus, ws, mods, source, loaded };
 }
 
 const noRemote = (bus) => assertEqual(bus.emitted.filter(([n]) => n === 'state:remote-changed').length, 0,
@@ -135,13 +135,13 @@ suite('instances.read', () => {
 
   test('nicht gemountete Zielform: kein Mount, Felder, derived und asyncTasks im Ruhezustand', async () => {
     const saved = { _schema: { version: '1.0' }, n: 5, zoom: 2 };
-    const { svc, mods, data, sm } = setup({ states: { d1: saved } });
+    const { svc, mods, source, sm } = setup({ states: { d1: saved } });
     const out = await svc.read('d1', { fields: [] });
     assertEqual(out.n, 5);
     assertEqual(out.double, 10);
     assertEqual('zoom' in out, false, 'Ansichtsfeld gestrichen');
     assertDeepEqual(out.asyncTasks, { calc: { running: false, progress: null, error: null } });
-    assertEqual(mods.sipoc.reads[0].data, data, 'Arbeitsblattsicht aus createData');
+    assertEqual(mods.sipoc.reads[0].data, source, 'Leser aus createSource');
     assertDeepEqual(mods.sipoc.reads[0].options, { fields: [] });
     assertEqual(sm.writes.length, 0, 'normalisierter Stand gleich: nichts zurückgeschrieben');
   });
@@ -231,6 +231,12 @@ suite('instances.readSync', () => {
   test('unbekannte Instanz → unknown_instance', () => {
     const { svc } = setup();
     assertEqual(caught(() => svc.readSync('nope'))?.code, 'unknown_instance');
+  });
+
+  test('Zielform nicht eingehängt: readDetached bekommt den Leser aus createSource', () => {
+    const { svc, mods, source } = setup({ states: { d1: { _schema: { version: '1.0' }, n: 5 } } });
+    svc.readSync('d1', { fields: [] });
+    assertTrue(mods.sipoc.reads.at(-1).data === source, 'derselbe Leser wie aus createSource');
   });
 
   test('Zielform nicht eingehängt: synchron, Migration wird zurückgeschrieben', () => {
@@ -421,7 +427,7 @@ suite('instances.write', () => {
     }));
     const svc = createInstances({
       stateManager: sm, moduleRegistry: { loadModule: async () => targetModule() },
-      workspace: ws, eventBus: bus, createData: () => ({}),
+      workspace: ws, eventBus: bus, createSource: () => ({ read: () => ({}), list: () => [] }),
     });
     const pending = svc.write('d1', (m) => m.setN({ n: 8 }));
     await new Promise((r) => setTimeout(r, 0));
@@ -447,7 +453,7 @@ suite('instances.write', () => {
     ws._instances = new Map([['d1', { getActionData: () => ({}), getState: () => null }]]);
     const svc = createInstances({
       stateManager: sm, moduleRegistry: { loadModule: async () => targetModule() },
-      workspace: ws, eventBus: bus, createData: () => ({}),
+      workspace: ws, eventBus: bus, createSource: () => ({ read: () => ({}), list: () => [] }),
     });
     const res = await svc.write('d1', (m) => m.setN({ n: 9 }));
     assertEqual(res.mounted, false);

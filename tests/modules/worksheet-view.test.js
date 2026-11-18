@@ -21,6 +21,7 @@ import { installWorksheetRevisions, createWorksheetData } from '../../js/core/wo
 import { registerWorksheetReader, resolveColumnRef } from '../../js/core/worksheet-columns.js';
 import { WIDGETS } from '../../js/widgets/registry.js';
 import { WIDGET_I18N } from '../widget-i18n.js';
+import { NO_SOURCE } from '../../js/core/source-reader.js';
 
 const ID = 'worksheet';
 const WS = 'ws-1';
@@ -267,7 +268,7 @@ suite('worksheet: Viewmodel der Zielform im Browser', () => {
       moduleRegistry: { loadModule: async () => mod, getLoaded: () => mod },
       workspace: { getLiveViewmodel: () => null, isPending: () => false },
       eventBus: { emit() {}, on() {}, off() {} },
-      createData: () => ({}),
+      createSource: () => NO_SOURCE,
     });
     const alt = svc.readSync('ws-alt', { sheetId: 's-alt', columns: ['c-a'] });
     assertEqual(alt.columns[0].values.join(), '4,5');

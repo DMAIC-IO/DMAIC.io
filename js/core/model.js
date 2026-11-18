@@ -1563,8 +1563,9 @@ export function readModel(Model, json, context) {
  *           commands?: Record<string, object>, version?: string,
  *           migrations?: Record<string, Function>,
  *           invariants?: Record<string, { fields: string[], test: (m: any) => boolean, repair?: (m: any) => void, onLoad?: boolean }>,
- *           derived?: Record<string, (data: any, d: Record<string, any>) => any>, derivedBulk?: string[] }} schema
- *   `derived.<name>(data, d)`: fachliche Ableitung; `this` ist das Model, `data` die Arbeitsblattsicht, `d` liest andere
+ *           derived?: Record<string, (src: import('./source-reader.js').Source, d: Record<string, any>) => any>, derivedBulk?: string[] }} schema
+ *   `derived.<name>(src, d)`: fachliche Ableitung; `this` ist das Model, `src` der Leser fremder Instanzen
+ *   (`src.read(instanceId, options)`, `src.list()`, `core/source.js`), `d` liest andere
  *   Ableitungen. `derivedBulk`: Namen, die als Ganzes (nicht einzeln) abgefragt werden.
  *   `invariants.<name>.repair`: heilt beim Laden mit `repair: true` einen verletzten Zustand; läuft in
  *   Deklarationsreihenfolge, sieht den Ladezustand (inklusive der Heilung früherer Invarianten) und schreibt

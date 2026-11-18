@@ -32,8 +32,7 @@ import { registerCommandDirectives } from './core/command-directives.js';
 import { registerAsyncTaskDirectives } from './core/async-task-directives.js';
 import { registerWidgetDirective } from './core/widget-directive.js';
 import { WIDGETS } from './widgets/registry.js';
-import { installWorksheetRevisions, createWorksheetData } from './core/worksheet-data.js';
-import { registerWorksheetReader } from './core/worksheet-columns.js';
+import { installWorksheetRevisions, registerReader, createSource } from './core/source.js';
 import { createInstances } from './core/instances.js';
 
 async function init() {
@@ -89,10 +88,10 @@ async function init() {
   // Vor render(): schon die ersten Mounts bekommen ctx.instances.
   const instances = createInstances({
     stateManager, moduleRegistry, workspace, eventBus,
-    createData: () => createWorksheetData(stateManager),
+    createSource: () => createSource(stateManager),
   });
-  // Die Arbeitsblatt-Fassade (ctx.data, worksheet-columns) liest über readSync.
-  registerWorksheetReader(stateManager, instances.readSync);
+  // Der Leser `Source` (derived, ctx.source, Kacheln, Fassade ctx.data) liest über readSync.
+  registerReader(stateManager, instances.readSync);
   // So früh wie möglich, noch vor dem ersten Mount: bis der Arbeitsblatt-Code
   // geladen ist, liefert die Fassade `null` (`not_loaded`). Nicht abwarten —
   // der Start (und der E2E-Griff) darf nicht auf diesen Chunk warten.
