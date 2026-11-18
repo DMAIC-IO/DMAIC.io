@@ -8,7 +8,9 @@ import { readWorksheetState } from '../helpers/legacy-worksheet-read.js';
 import { defineComputedSlots, bindComputed } from '../../js/core/computed.js';
 import { worksheetChanged } from '../../js/modules/worksheet/viewmodel/changed.js';
 
-const flush = () => new Promise((r) => setTimeout(r, 0));
+// Mikrotask-Drain statt Timer: kein rAF/Timer eines anderen Tests mischt sich ein.
+const flush = async () => { await Promise.resolve(); await Promise.resolve(); };
+const frame = () => new Promise((r) => requestAnimationFrame(r));
 
 function fakeBus() {
   const handlers = {};
@@ -39,7 +41,7 @@ suite('Source', () => {
     Alpine.release(runner);
   });
 
-  test('worksheetChanged: eine Ableitung über src.read ist sofort veraltet und liest neu, vor dem Frame des Ereignisses', () => {
+  test('worksheetChanged: eine Ableitung über src.read ist sofort veraltet und liest neu, vor dem Frame des Ereignisses', async () => {
     const bus = fakeBus();
     installWorksheetRevisions(bus);
     const emitted = [];
@@ -59,6 +61,8 @@ suite('Source', () => {
     assertEqual(vm._computedCells.confirmed.dirty, true);
     assertEqual(vm.confirmed, true);
     assertEqual(emitted.length, 0, 'das Ereignis kommt erst im nächsten Frame');
+    await frame();
+    assertEqual(emitted.length, 1, 'genau ein Ereignis nach dem Frame');
     release();
   });
 

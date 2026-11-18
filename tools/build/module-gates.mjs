@@ -981,6 +981,12 @@ export function checkCtxDataReads(files) {
         const msg = `module_reads_ctx_data: ${path}: ${n.expression.text}.data — über ctx.source / src.read lesen`;
         if (!seen.has(msg)) { seen.add(msg); out.push(msg); }
       }
+      if (ts.isVariableDeclaration(n) && ts.isObjectBindingPattern(n.name) && n.initializer
+        && ts.isIdentifier(n.initializer) && (n.initializer.text === 'ctx' || n.initializer.text === 'context')
+        && n.name.elements.some((el) => (el.propertyName ?? el.name).getText() === 'data')) {
+        const msg = `module_reads_ctx_data: ${path}: ${n.initializer.text}.data — über ctx.source / src.read lesen`;
+        if (!seen.has(msg)) { seen.add(msg); out.push(msg); }
+      }
       if (ts.isPropertyAssignment(n) && keyOf(n) === 'derived' && ts.isObjectLiteralExpression(n.initializer)) {
         for (const e of n.initializer.properties) {
           const fn = ts.isMethodDeclaration(e) ? e : (ts.isPropertyAssignment(e) ? e.initializer : null);

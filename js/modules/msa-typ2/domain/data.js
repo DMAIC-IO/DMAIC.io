@@ -3,7 +3,7 @@
  */
 import { toNum } from '../../../core/chart/chart-data-prep.js';
 import { validate, analyze } from '../../../engines/msa-typ2-engine.js';
-import { readColumn } from '../../../core/source-columns.js';
+import { columnValues } from '../../../core/source-columns.js';
 
 /**
  * Die drei Spaltenwerte zeilenweise zu Rechendaten zusammenführen. Zeilen mit
@@ -68,7 +68,7 @@ export function computeAnalysis(data, opts, engine = { validate, analyze }) {
  */
 export function readAnalysis(m, src, engine) {
   /** @param {object} ref @returns {any[]|null} */
-  const values = (ref) => readColumn(src, ref)?.values ?? null;
+  const values = (ref) => columnValues(src, ref);
   if (!m.part || !m.measurement) return null;
   const cols = {
     parts: values(m.part),

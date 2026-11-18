@@ -11,7 +11,7 @@ import { from0 } from './migrations.js';
 import { MODES, CONTRASTS, DIRECTIONS, CI_METHODS, SEED_MAX, STATISTIC_IDS, STATS_BY_MODE } from './constants.js';
 import { readInputs, validateInputs } from './analyze.js';
 import { bootDecision } from './format.js';
-import { readColumn } from '../../../core/source-columns.js';
+import { columnValues } from '../../../core/source-columns.js';
 
 export { MODES, CONTRASTS, DIRECTIONS, CI_METHODS, SEED_MAX, STATISTIC_IDS, STATS_BY_MODE };
 
@@ -87,7 +87,7 @@ export const State = defineModel({
      * @this {import('./model.types.js').StateModel}
      * @returns {string|null}
      */
-    validation(src) { return validateInputs(this, readInputs(this, (ref) => readColumn(src, ref)?.values ?? null)); },
+    validation(src) { return validateInputs(this, readInputs(this, (ref) => columnValues(src, ref))); },
     /**
      * Urteil des Einstichproben-Bootstraps gegen den Sollwert, sonst null.
      *

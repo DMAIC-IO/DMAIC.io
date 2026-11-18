@@ -3,9 +3,10 @@
  */
 import { suite, test, assertEqual, assertDeepEqual, assertThrows, assertTrue } from '../test-utils.js';
 import { defineModel, number } from '../../js/core/model.js';
+import { storedSource } from '../helpers/stored-source.js';
 import { derivedNames, derivedAccessor, evaluateDerived } from '../../js/core/derived.js';
 
-const stub = { numeric: () => [1, 2, 3] };
+const stub = Object.freeze({ read: () => ({}), list: () => [] });
 
 suite('derived', () => {
   test('unbekannter Name in names wirft', () => {
@@ -28,8 +29,9 @@ suite('derived', () => {
   });
 
   test('this ist das Model, src der Leser', () => {
-    const M = defineModel({ fields: { n: number({ default: 4 }) }, derived: { total(src) { return this.n + src.numeric('c').length; } } });
-    assertDeepEqual(evaluateDerived(new M(), stub), { total: 7 });
+    const M = defineModel({ fields: { n: number({ default: 4 }) }, derived: { total(src) { return this.n + src.read('w', { sheetId: 's' }).rowCount; } } });
+    const src = storedSource({ w: { sheets: [{ id: 's', name: 'S', state: { rowCount: 3, columns: [] } }] } });
+    assertDeepEqual(evaluateDerived(new M(), src), { total: 7 });
   });
 
   test('Verkettung: d.a liefert a, a läuft einmal', () => {

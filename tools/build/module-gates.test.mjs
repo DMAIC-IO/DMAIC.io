@@ -1202,6 +1202,12 @@ test('Gate module_reads_ctx_data: kein ctx.data, context.data oder derived-Param
   assert.deepEqual(checkCtxDataReads([{ path: 'io/x.js', text: bad2 }]), [
     'module_reads_ctx_data: io/x.js: context.data — über ctx.source / src.read lesen',
   ]);
+  const bad3 = `function f(ctx) { const { data, source } = ctx; return data; }`;
+  assert.deepEqual(checkCtxDataReads([{ path: 'viewmodel/viewmodel.js', text: bad3 }]), [
+    'module_reads_ctx_data: viewmodel/viewmodel.js: ctx.data — über ctx.source / src.read lesen',
+  ]);
+  const ok3 = `function f(ctx) { const { source } = ctx; const { data } = other; return source; }`;
+  assert.deepEqual(checkCtxDataReads([{ path: 'viewmodel/viewmodel.js', text: ok3 }]), []);
   const model = `export const M = defineModel({ derived: { n(data, d) { return data.numeric(this.a); }, m(src, d) { return d; } } });`;
   assert.deepEqual(checkCtxDataReads([{ path: 'domain/model.js', text: model }]), [
     'module_reads_ctx_data: domain/model.js: derived.n hat einen Parameter data — derived(src, d) liest über src.read',
@@ -1530,6 +1536,17 @@ test('checkConvertedModule: Lesezugriffe im view-Block und in asyncTasks über d
   assert.deepEqual(findings, [
     'view: viewmodel/viewmodel.js: getModuleState im view-Block — Arbeitsblätter über ctx.source lesen',
     'view: viewmodel/viewmodel.js: stateManager in asyncTasks.compute.run — Arbeitsblätter über ctx.source lesen',
+  ]);
+});
+
+test('checkConvertedModule: module_reads_ctx_data über die Verdrahtung', async () => {
+  const vm = `export default createModule({
+  view(ctx) { const { data } = ctx; return { get x() { return ctx.data.values(null) ?? data; } }; },
+});\n`;
+  const root = convertedFixture({ 'js/modules/neu/viewmodel/viewmodel.js': vm });
+  const findings = (await checkConvertedModule(root, 'neu')).filter((f) => f.startsWith('module_reads_ctx_data'));
+  assert.deepEqual(findings, [
+    'module_reads_ctx_data: viewmodel/viewmodel.js: ctx.data — über ctx.source / src.read lesen',
   ]);
 });
 
