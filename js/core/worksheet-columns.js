@@ -165,7 +165,7 @@ export function coerceNumeric(val) {
 
 /**
  * Alle Arbeitsblattspalten des Projekts, die zum Filter passen.
- * Liest über den registrierten Leser (`readWorksheet`), nicht über `getModuleState`.
+ * Liest über den registrierten Leser (`readWorksheet`), nur Köpfe (`valueCount`), keine Werte.
  * @param {{ get: (path: string) => any }} stateManager
  * @param {{ types?: string[]|Set<string>, minCount?: number, maxCount?: number }} [filter]
  * @returns {{ instanceId: string, sheetId: string, sheetName: string, columnId: string,

@@ -79,6 +79,19 @@ for (const R of READERS) {
       assert(r.columns.every(c => !('values' in c)), 'keine values');
     });
 
+    test('Kopf hat valueCount (nur null zählt nicht), auch ohne columns-Option', () => {
+      const r = R.read(R.make());
+      assertDeepEqual(r.columns.map(c => c.valueCount), [2, 3, 1]);
+      assert(r.columns.every(c => !('values' in c)), 'keine values');
+      const w = R.read(R.make(), { columns: ['a'] });
+      assertEqual(w.columns[0].valueCount, 2);
+    });
+
+    test('valueCount: [1, null, \'\', \'x\'] ergibt 3', () => {
+      const big = bigOf(R, 4, [1, null, '', 'x']);
+      assertEqual(R.read(big).columns[0].valueCount, 3);
+    });
+
     test('Parität: Rolle, roleConfirmed, nur FORMAT_KEYS', () => {
       const r = R.read(R.make());
       const [a, b] = r.columns;
@@ -132,7 +145,7 @@ for (const R of READERS) {
       assertEqual(r.sheetId, 'sheet_2');
     });
 
-    test('ohne fields rows baut keine Zeilen (kein Zugriff auf values[r])', () => {
+    test('ohne fields rows baut keine Zeilen (nur der Zähler valueCount liest je Zelle einmal)', () => {
       const n = 1000;
       let reads = 0;
       const counted = new Proxy(Array.from({ length: n }, (_, i) => i), {
@@ -142,9 +155,10 @@ for (const R of READERS) {
       reads = 0;
       const r = R.read(big);
       assertEqual(r.rowCount, n);
-      assertEqual(reads, 0);
+      assertEqual(reads, n); // nur die Zählung von valueCount
+      reads = 0;
       R.read(big, { fields: ['rows'] });
-      assertEqual(reads, n);
+      assertEqual(reads, 2 * n); // Zählung + Zeilen
     });
   });
 }

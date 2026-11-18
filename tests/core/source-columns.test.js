@@ -1,7 +1,7 @@
 /**
  * Reine Spaltenfunktionen über den Leser (core/source-columns.js) — DOM-frei.
  */
-import { suite, test, assertEqual, assertDeepEqual } from '../test-utils.js';
+import { suite, test, assert, assertEqual, assertDeepEqual } from '../test-utils.js';
 import {
   readColumn, columnLabel, numericValues, readSheet, readSheets, columnOptions, listColumns,
 } from '../../js/core/source-columns.js';
@@ -107,5 +107,15 @@ suite('source-columns: columnOptions, listColumns', () => {
       instanceId: 'ws1', sheetId: 's1', sheetName: 'Blatt', columnId: 'c1',
       columnName: 'Fehler', shortName: '?', type: 'numeric', valueCount: 3,
     });
+  });
+
+  test('listColumns liest nie mit columns-Inhalt, Filter wie zuvor', () => {
+    const inner = storedSource(states);
+    const calls = [];
+    const spy = { list: () => inner.list(), read(id, o) { calls.push(o); return inner.read(id, o); } };
+    const found = listColumns(spy, { types: ['numeric'], minCount: 2, maxCount: 3 });
+    assertDeepEqual(found.map((c) => [c.columnId, c.valueCount]), [['c1', 3]]);
+    assert(calls.every((o) => !o || !o.columns || o.columns.length === 0), 'kein Lesen mit columns');
+    assertEqual(listColumns(spy, { maxCount: 1 }).map((c) => c.columnId).join(), 'c3');
   });
 });

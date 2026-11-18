@@ -360,7 +360,7 @@ suite('worksheet-columns — Lesbarkeit (not_loaded ist nicht „gelöscht“)',
 });
 
 suite('worksheet-columns — discoverColumns liest sparsam (Leistung)', () => {
-  test('erstes Blatt: Kopf aus dem ersten Lesen, je Blatt danach ein Kopf- und ein Werte-Lesen', () => {
+  test('erstes Blatt: Kopf aus dem ersten Lesen, je weiteres Blatt ein Kopf-Lesen, nie Werte', () => {
     const states = { 'ws-1': { sheets: [
       ...STORED['ws-1'].sheets,
       { id: 's-2', name: 'Zwei', state: { rowCount: 1, columns: [{ id: 'k', name: '', shortName: 'K', type: 'numeric', values: [5] }] } },
@@ -372,9 +372,7 @@ suite('worksheet-columns — discoverColumns liest sparsam (Leistung)', () => {
     assertDeepEqual(cols.map(c => c.columnId), ['c-x', 'c-cat', 'k']);
     assertDeepEqual(reader.calls, [
       ['ws-1', undefined],
-      ['ws-1', { sheetId: 'sheet-1', columns: ['c-x', 'c-cat'] }],
       ['ws-1', { sheetId: 's-2' }],
-      ['ws-1', { sheetId: 's-2', columns: ['k'] }],
     ]);
   });
 });

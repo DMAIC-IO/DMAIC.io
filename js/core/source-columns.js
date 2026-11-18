@@ -127,7 +127,8 @@ export function readSheets(src, instanceId) {
 }
 
 /**
- * Alle Arbeitsblattspalten des Projekts, die zum Filter passen.
+ * Alle Arbeitsblattspalten des Projekts, die zum Filter passen. Liest nur
+ * Köpfe (`valueCount` im Kopf), keine Werte.
  * @param {Source} src
  * @param {{ types?: string[]|Set<string>, minCount?: number, maxCount?: number }} [filter]
  * @returns {{ instanceId: string, sheetId: string, sheetName: string, columnId: string,
@@ -147,13 +148,9 @@ export function listColumns(src, filter) {
     for (const sheet of head?.sheets ?? []) {
       // Das erste Lesen zeigt schon das erste Blatt: dessen Kopf nicht noch einmal lesen.
       const sheetHead = sheet.id === head.sheetId ? head : tryRead(src, inst.instanceId, { sheetId: sheet.id });
-      const ids = (sheetHead?.columns ?? []).map((c) => c.id);
-      if (ids.length === 0) continue;
-      const full = tryRead(src, inst.instanceId, { sheetId: sheet.id, columns: ids });
-      for (const col of full?.columns ?? []) {
+      for (const col of sheetHead?.columns ?? []) {
         if (typeSet && !typeSet.has(col.type)) continue;
-        let nonNull = 0;
-        for (const v of col.values || []) if (v != null) nonNull++;
+        const nonNull = col.valueCount ?? 0;
         if (nonNull < minCount || nonNull > maxCount) continue;
         columns.push({
           instanceId: inst.instanceId, sheetId: sheet.id, sheetName: sheet.name,

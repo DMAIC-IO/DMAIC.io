@@ -25,10 +25,14 @@ import { FORMAT_KEYS } from './columns.js';
 /**
  * Der Spaltenkopf einer Spalte (ohne Zellwerte), wie in `AgentRead.columns`.
  * Gilt für Altform und Zielform: die Felder heißen gleich.
+ * `valueCount` zählt die Zellen ungleich `null` bis `rowCount` (fehlend =
+ * `null`), O(Zeilen) ohne Kopie.
  * @param {any} c Spaltenkopf
+ * @param {any[]} [cells] Zellwerte der Spalte
+ * @param {number} [rowCount]
  * @returns {object}
  */
-export function headerOf(c) {
+export function headerOf(c, cells, rowCount) {
   return {
     id: c.id,
     name: c.name ?? '',
@@ -45,7 +49,22 @@ export function headerOf(c) {
       .filter(k => c.format?.[k] != null)
       .map(k => [k, c.format[k]])),
     meta: c.meta ? JSON.parse(JSON.stringify(c.meta)) : null,
+    valueCount: countFilled(cells, rowCount),
   };
+}
+
+/**
+ * Zahl der Zellen ungleich `null` in den ersten `rowCount` Einträgen.
+ * @param {any[]|undefined} cells
+ * @param {number|undefined} rowCount
+ * @returns {number}
+ */
+function countFilled(cells, rowCount) {
+  if (!Array.isArray(cells)) return 0;
+  const n = rowCount > 0 ? Math.min(Math.floor(rowCount), cells.length) : 0;
+  let count = 0;
+  for (let r = 0; r < n; r++) if (cells[r] != null) count++;
+  return count;
 }
 
 /**
@@ -112,7 +131,7 @@ export function worksheetSheetsSnapshot(sheets, options) {
   const wanted = options?.columns;
   const picked = selectColumns(all, wanted);
 
-  const heads = picked.map(i => headerOf(all[i]));
+  const heads = picked.map(i => headerOf(all[i], cells[i], rowCount));
   const columns = wanted === undefined
     ? heads
     : heads.map((head, k) => ({ ...head, values: valuesOf(cells[picked[k]], rowCount) }));
@@ -170,7 +189,7 @@ export const READ_FIELDS = Object.freeze({
   sheetId: { type: 'string|null', help: '', bulk: false, derived: true },
   rowCount: { type: 'number', help: '', bulk: false, derived: true },
   columns: {
-    type: "Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null, roleConfirmed: boolean, format: { decimals?: number, dateFormat?: string, timeFormat?: string }, meta: { lock?: 'hard'|'soft', reason?: string, managedBy?: string, managedRef?: string, categoricalCoding?: object }|null, values?: any[] }>",
+    type: "Array<{ id: string, name: string, shortName: string, type: string, unit: string|null, role: string|null, roleConfirmed: boolean, format: { decimals?: number, dateFormat?: string, timeFormat?: string }, meta: { lock?: 'hard'|'soft', reason?: string, managedBy?: string, managedRef?: string, categoricalCoding?: object }|null, valueCount: number, values?: any[] }>",
     help: '', bulk: false, derived: true,
   },
   rows: { type: 'any[][]', help: '', bulk: true, bulkKind: 'table', derived: true },

@@ -40,7 +40,7 @@ export function worksheetSnapshot(saved, options) {
   const wanted = options?.columns;
   const selected = selectColumns(all, wanted).map(i => all[i]);
 
-  const heads = selected.map(headerOf);
+  const heads = selected.map(c => headerOf(c, c.values, rowCount));
   const columns = wanted === undefined
     ? heads
     : heads.map((head, i) => ({
