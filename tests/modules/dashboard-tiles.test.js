@@ -1494,19 +1494,29 @@ suite('dashboard tiles: attribute-control-chart', () => {
     assertEqual(vm.type, 'c');
   });
 
-  test('after bumpWorksheetRevisions and a rebuild the tile shows the analysis (was not_loaded)', () => {
+  test('mounted like the dashboard: not_loaded shows no-data; after load, the re-render (state:saved) shows the analysis', async () => {
     const sm = { get: (p) => (p === 'phases' ? { control: [{ instanceId: 'w', moduleId: 'worksheet' }] } : null) };
     let loaded = false;
-    const sheet = { instanceId: 'w', sheets: [{ id: 's', name: 'S', rowCount: 10, columns: [{ id: 'd', name: 'd', type: 'numeric', values: C_STABLE.d }] }] };
+    const stored = { sheets: [{ id: 's', name: 'S', state: { rowCount: 10, columns: [{ id: 'd', name: 'd', type: 'numeric', values: C_STABLE.d }] } }] };
     registerReader(sm, (id, o) => {
       if (!loaded) { const e = new Error('not_loaded: worksheet'); e.code = 'not_loaded'; throw e; }
-      return readWorksheetState({ sheets: [{ id: 's', name: 'S', state: { rowCount: 10, columns: sheet.sheets[0].columns } }] }, o);
+      return readWorksheetState(stored, o);
     });
-    const build = () => vmOf(attrSpcTile, C_STATE, {}, { stateManager: sm });
-    assertEqual(build().empty, 'dashboard.attrSpcNoData');
+    const settings = resolveSettings(validateSchema(attrSpcTile.settings), { showChart: false });
+    const args = { tileId: 't', instanceId: 'i', state: C_STATE, settings, i18n, theme: 'light',
+      chartManager: recordingChartManager(), stateManager: sm };
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    await mountTile(attrSpcTile, args, host);
+    await flush();
+    assertEqual(host.querySelector('.dashboard-area__empty').textContent, 'dashboard.attrSpcNoData');
     loaded = true;
     bumpWorksheetRevisions();
-    assertEqual(build().empty, null);
+    await mountTile(attrSpcTile, args, host); // the dashboard's renderTile after state:saved
+    await flush();
+    assertEqual(host.querySelector('.dashboard-area__empty'), null);
+    assertEqual(host.querySelector('.dashboard-attr-spc__type').textContent, 'c');
+    host.remove();
   });
 
   test('viewModel: empty, no-data and showChart off', () => {
