@@ -199,7 +199,10 @@ export async function runUiCommand(ui, name, args, opts = {}) {
     const vmDef = vmCommandDef(ui, name);
     if (vmDef) return await runVmCommand(ui, name, vmDef, args, opts);
     const ask = confirmOf(ui.model, name, args);
-    if (!(await askFirst(ui, ask, opts))) return { ok: false, cancelled: true };
+    // Nur bei einer Rückfrage warten: sonst läuft das Kommando im Aufruf
+    // selbst (das Raster meldet `gridView` so, und eine Aktion direkt danach
+    // liest die Auswahl synchron).
+    if ((ask || opts.confirmDelete) && !(await askFirst(ui, ask, opts))) return { ok: false, cancelled: true };
     return { ok: true, result: await ui.model[name](args) };
   } catch (error) {
     return { ok: false, error };
@@ -217,7 +220,7 @@ export async function runUiCommand(ui, name, args, opts = {}) {
  */
 async function runVmCommand(ui, name, def, args, opts) {
   const ask = def.confirm ? def.confirm.call(ui.component, checkParams(name, def.params, args, ui.model)) ?? null : null;
-  if (!(await askFirst(ui, ask, opts))) return { ok: false, cancelled: true };
+  if ((ask || opts.confirmDelete) && !(await askFirst(ui, ask, opts))) return { ok: false, cancelled: true };
   return { ok: true, result: await ui.component[name](args) };
 }
 

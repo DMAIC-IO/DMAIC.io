@@ -177,6 +177,23 @@ suite('runUiCommand', () => {
     assertEqual(failed.error.param, 'idx');
   });
 
+  // Ohne Rückfrage läuft das Kommando im Aufruf selbst, nicht erst nach einem
+  // Mikrotask: das Raster meldet `gridView` über runUiCommand, und eine Aktion
+  // direkt danach (Löschen im Arbeitsblatt) liest die Auswahl synchron.
+  test('ohne Rückfrage läuft das Kommando synchron im Aufruf', async () => {
+    const ui = { model: Board.fromJSON({ columns: { a: ['eins', 'zwei'], b: [] } }), notify() {}, dialog: fakeDialog([], () => true), i18n: I18N, moduleId: 'ct', forms: {} };
+    const pending = runUiCommand(ui, 'removeItem', { col: 'a', idx: 0 });
+    assertDeepEqual([...ui.model.columns.a], ['zwei'], 'vor dem ersten await ausgeführt');
+    assertDeepEqual(await pending, { ok: true, result: undefined });
+
+    const seen = [];
+    const component = { note(args) { seen.push(args.v); } };
+    const vmUi = { ...ui, component, vmCommands: { note: { params: { v: { type: 'number' } } } } };
+    const vmPending = runUiCommand(vmUi, 'note', { v: 1 });
+    assertDeepEqual(seen, [1], 'Viewmodel-Kommando ebenso');
+    assertEqual((await vmPending).ok, true);
+  });
+
   test('run wirft synchron → { ok: false, error }', async () => {
     const M = defineModel({ name: 'B', version: '1.0', fields: {}, commands: { boom: command({ params: {}, run() { throw new Error('kaputt'); } }) } });
     const ui = { model: new M(), notify() {}, dialog: fakeDialog([], () => true), i18n: I18N, moduleId: 'ct', forms: {} };
