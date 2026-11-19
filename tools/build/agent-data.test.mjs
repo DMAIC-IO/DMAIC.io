@@ -1482,7 +1482,7 @@ test('collectAgentData: die Vorschau-Adapter des doe-planner stehen nicht auf de
   // Rollen des datagrid-Widgets, nur für das Raster (`agentWrite: false` an
   // einem Parameter); ein Agent schreibt über setPreviewCell/setPreviewCells.
   const appDir = join(import.meta.dirname, '..', '..');
-  const adapters = ['previewSetCells', 'previewPasteBlock', 'previewClearRange', 'previewFillRange', 'previewContextMenu'];
+  const adapters = ['previewSetCells', 'previewPasteBlock', 'previewClearRange', 'previewFillRange', 'previewContextMenu', 'previewExport'];
   const vmFile = join(appDir, 'js', 'modules', 'doe-planner', 'viewmodel', 'viewmodel.js');
   const read = readViewmodelCommands(readFileSync(vmFile, 'utf8'), vmFile);
   for (const name of adapters) assert.equal(read[name]?.agentHidden, true, `${name} ist nicht als agentHidden gelesen`);

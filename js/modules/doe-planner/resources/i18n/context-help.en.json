@@ -530,6 +530,12 @@
         "command": "The command as one object with id, columnId and row."
       }
     },
+    "previewExport": {
+      "help": "Download the preview with its head row as a file, like the export button in the top-left corner of the grid: data.xlsx (sheet Data), data.csv or data.json. Changes nothing in the plan.",
+      "params": {
+        "format": "The format: xlsx, csv or json."
+      }
+    },
     "setProjectMode": {
       "help": "Switch the EVOP project mode on or off. The first switch-on starts phase 1 with the current plan.",
       "params": {

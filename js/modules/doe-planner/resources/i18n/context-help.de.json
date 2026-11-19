@@ -530,6 +530,12 @@
         "command": "Das Kommando als ein Objekt mit id, columnId und row."
       }
     },
+    "previewExport": {
+      "help": "Die Vorschau mit Kopfzeile als Datei herunterladen, wie der Exportknopf in der linken oberen Ecke des Rasters: data.xlsx (Blatt Data), data.csv oder data.json. Ändert nichts am Plan.",
+      "params": {
+        "format": "Das Format: xlsx, csv oder json."
+      }
+    },
     "setProjectMode": {
       "help": "Den EVOP-Projektmodus an- oder ausschalten. Beim ersten Einschalten beginnt Phase 1 mit dem aktuellen Plan.",
       "params": {

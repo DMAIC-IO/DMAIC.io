@@ -12,11 +12,18 @@
  * Once a datasheet is bound its fill state comes from the sheet through
  * `ctx.source`; a response column that is gone from the sheet shows a note
  * instead of numbers. The buttons start the runs (create, hand over,
- * extend) and open the sheet or the new regression afterwards.
+ * extend) and open the sheet or the new regression afterwards. The export
+ * button in the corner of the grid (role `exportAs`) downloads the preview
+ * with its head as `data.xlsx`, `data.csv` or `data.json`, like the legacy grid.
  */
 import { formatNumber } from '../../../core/number-format.js';
 import { TableData } from '../../../core/table-data.js';
-import { command, text, number, list, object, boolean } from '../../../core/model.js';
+import { command, text, number, list, object, boolean, oneOf } from '../../../core/model.js';
+import { runExport } from '../../../core/exporter.js';
+import { downloadFile } from '../../../core/export-utils.js';
+import {
+  gridRows, gridRecords, gridCsv, XLSX_SHEET_NAME, EXPORT_FILE_NAME,
+} from '../../../core/datagrid/table/export.js';
 import { fillBlock } from '../../../core/datagrid/table/paste.js';
 import { inferRole } from '../../../core/datagrid/datagrid-roles.js';
 import { buildRunTable, editsDirty, previewColumns, previewValue } from '../domain/runtable.js';
@@ -43,6 +50,7 @@ const PREVIEW_COMMANDS = Object.freeze({
   clearRange: 'previewClearRange',
   fillRange: 'previewFillRange',
   contextMenu: 'previewContextMenu',
+  exportAs: 'previewExport',
 });
 
 /** Copy and paste, fill handle; no formulas, roles, structure or sorting. */
@@ -419,6 +427,32 @@ export const previewCommands = {
     run({ id, row }) {
       if (id !== 'forbidRun') throw new Error(`invalid id ${JSON.stringify(id)}; allowed: forbidRun`);
       return this.model.forbidRun({ row });
+    },
+  }),
+  /**
+   * The export button in the corner of the grid (role `exportAs`): the
+   * preview with its head as a file, like the legacy grid (`data.csv` with
+   * BOM and no message; `data.xlsx`, sheet `Data`, and `data.json` through
+   * the core exporter, with a message). Changes nothing.
+   * @noagent grid only (role of the datagrid widget)
+   */
+  previewExport: command({
+    params: { format: oneOf(['xlsx', 'csv', 'json'], { agentWrite: false }) },
+    run({ format }) {
+      const { table, columns } = this.previewTable;
+      const ui = this._ui;
+      if (format === 'csv') {
+        downloadFile(gridCsv(columns, table, ui.i18n.getLanguage()), `${EXPORT_FILE_NAME}.csv`, 'text/csv;charset=utf-8');
+        return;
+      }
+      void runExport({
+        ...ui,
+        exports: {
+          fileName: EXPORT_FILE_NAME,
+          tables: () => ({ [XLSX_SHEET_NAME]: gridRows(columns, table) }),
+          tree: () => gridRecords(columns, table),
+        },
+      }, format);
     },
   }),
 };
