@@ -12,11 +12,12 @@ import { applyEdits, diffEdits, ownedKeys, pickShown } from './chart-edits.js';
 /**
  * @param {any} widget Beschreibung aus chartWidget
  * @param {(config: any) => any} [toChart] geprüfte Konfiguration → Form des Typs
- * @returns {(root: HTMLElement, w: { props: any, value: any, services: any, effect: Function }) => { destroy: () => void }}
+ * @returns {(root: HTMLElement, w: { props: any, value: any, services: any, effect: Function, command?: (name: string, args: object) => Promise<any> }) => { destroy: () => void }}
  */
 export function chartMount(widget, toChart = (c) => c) {
   const { editable } = widget;
-  return function mount(root, { props, value, services, effect }) {
+  const roles = widget.roles ?? [];
+  return function mount(root, { props, value, services, effect, command }) {
     const cm = services.chartManager;
     /** @type {{ chart: any, token: object|null, pending: any }} */
     let slot = { chart: null, token: null, pending: null };
@@ -39,9 +40,63 @@ export function chartMount(widget, toChart = (c) => c) {
 
     adoptLegacy(props, value, services, editable);
 
+    /** Konfiguration ohne die Rollenzuordnung (sie gehört nicht zum Diagrammtyp). @returns {any} */
+    const plainConfig = () => {
+      const c = props.config;
+      if (!c || !roles.length) return c;
+      const { commands, commandArgs, ...rest } = c;
+      return rest;
+    };
+
+    /** Belegte Rollen der Konfiguration; unbekannte Rollen werfen. @param {any} c @returns {string[]} */
+    const boundRoles = (c) => {
+      const given = Object.keys(c?.commands ?? {});
+      const bad = given.find((r) => !roles.includes(r));
+      if (bad !== undefined) throw new Error(`invalid role "${bad}" in config.commands of ${widget.name}; allowed: ${roles.join(', ')}`);
+      return given.filter((r) => c.commands[r]);
+    };
+
+    /** Rückfrage nach einem abgelehnten Kommando: Diagramm zeigt wieder, was das Modell hält. */
+    const redraw = () => {
+      const cfg = plainConfig();
+      if (!cfg || !cm) return;
+      const config = build(cfg, value ? (value.get() ?? {}) : {});
+      if (slot.chart) { cm.update(slot.chart, config); slot.chart.refreshEditor?.(); shown = pickShown(slot.chart.config, editable); } else if (slot.token) slot.pending = config;
+    };
+
+    /**
+     * Bedienung des Diagramms meldet eine Rolle: Kommando des Moduls, Fehler übersetzt über notify.
+     * @param {string} role @param {object} args @returns {Promise<void>}
+     */
+    const onCommand = async (role, args) => {
+      const c = props.config;
+      const name = c?.commands?.[role];
+      if (!name) return;
+      const r = await command(name, { ...(c.commandArgs ?? {}), ...args });
+      if (!alive || !r || r.ok !== false) return;
+      if (!r.cancelled) {
+        console.warn(`${widget.name}: command ${name} failed`, r.error);
+        services.notify?.(services.i18n.t('common.widget.commandRejected'), 'error');
+      }
+      redraw();
+    };
+
+    /**
+     * Konfiguration in der Form des Typs, mit den Rückmeldungen des Widgets.
+     * @param {any} cfg ohne Rollenzuordnung @param {Record<string, any>} edits
+     * @returns {any}
+     */
+    const build = (cfg, edits) => {
+      const config = toChart(applyEdits(cfg, edits, editable, ownedKeys(cfg)));
+      if (value) config.onEditorChange = onEditorChange;
+      const bound = roles.length ? boundRoles(props.config) : [];
+      if (bound.length) { config.commandRoles = bound; config.onCommand = onCommand; }
+      return config;
+    };
+
     /** @param {any} chart */
     const onEditorChange = (chart) => {
-      const cfg = props.config;
+      const cfg = plainConfig();
       if (!cfg || !shown || !value) return;
       const after = pickShown(chart.config, editable);
       const { next, cleared } = diffEdits(value.get(), shown, after, editable, ownedKeys(cfg));
@@ -56,9 +111,7 @@ export function chartMount(widget, toChart = (c) => c) {
      * @param {any} chart @param {any} cfg @param {Record<string, any>} after
      */
     const restore = (chart, cfg, after) => {
-      const owned = ownedKeys(cfg);
-      const patch = toChart(applyEdits(cfg, value.get() ?? {}, editable, owned));
-      patch.onEditorChange = onEditorChange;
+      const patch = build(cfg, value.get() ?? {});
       const stale = editable.base.filter((/** @type {string} */ k) => after[k] !== undefined && patch[k] === undefined);
       resetToDefaults(chart, patch, stale, cfg);
       cm.update(chart, patch);
@@ -67,17 +120,16 @@ export function chartMount(widget, toChart = (c) => c) {
     };
 
     effect(() => {
-      const cfg = props.config;
+      const cfg = plainConfig();
       const edits = value ? (value.get() ?? {}) : {};
       const editsJson = JSON.stringify(edits);
-      const cfgJson = JSON.stringify(cfg ?? null);
+      const cfgJson = JSON.stringify(props.config ?? null);
       if (!cfg || !cm) { release(); lastCfg = null; return; }
       // Die eigene Schreibung zeigt das Diagramm schon — nicht neu zeichnen (Editor bleibt offen).
       if (slot.chart && editsJson === written && cfgJson === lastCfg) { written = null; return; }
       written = null;
       lastCfg = cfgJson;
-      const config = toChart(applyEdits(cfg, edits, editable, ownedKeys(cfg)));
-      if (value) config.onEditorChange = onEditorChange;
+      const config = build(cfg, edits);
       const owned = ownedKeys(cfg);
       const vanished = editable.base.filter((/** @type {string} */ k) => appliedEdits[k] !== undefined && edits[k] === undefined && !owned.has(k) && !(k in config));
       appliedEdits = edits;

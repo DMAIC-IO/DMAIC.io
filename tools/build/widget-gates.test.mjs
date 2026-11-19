@@ -143,3 +143,9 @@ test('model.$tableRev: Zahl-Eingabe bei einem Schema mit table(), sonst Befund',
   assert.deepEqual(checkWidgetBindings(tpl('<div x-widget="grid" x-widget-rev="model.$tableRev"></div>'), noTable),
     ['template: resources/view.html: x-widget-rev="model.$tableRev": $tableRev ist weder Feld noch Ansichtsfeld']);
 });
+
+test('x-widget-commands an einem Diagramm-Widget ist eine unbekannte Eingabe (Rollen stehen in der Konfiguration)', () => {
+  const chart = new Map([['chart-w', defineWidget({ name: 'chart-w', props: { config: object({ commands: map(text(), text(), { optional: true }) }, { nullable: true }) } })]]);
+  assert.deepEqual(checkWidgetBindings(tpl('<div x-widget="chart-w" x-widget-config="stats" x-widget-commands="\'a\'"></div>'), { ...ctx, widgets: chart }),
+    ['template: resources/view.html: x-widget-commands="\'a\'": chart-w hat keine Eingabe commands']);
+});

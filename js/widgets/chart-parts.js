@@ -7,7 +7,7 @@
  * Editor-Einstellungen (alles optional, Reihen mit Namen als Schlüssel).
  * Rein: importiert nur core/model.js.
  */
-import { defineWidget, text, number, boolean, oneOf, list, object } from '../core/model.js';
+import { defineWidget, text, number, boolean, oneOf, list, object, map } from '../core/model.js';
 
 const opt = { optional: true };
 const ed = { optional: true, editable: true };
@@ -44,12 +44,18 @@ const pick = (shape, keys) => Object.fromEntries(keys.map((k) => [k, shape[k]]))
  * Ein Diagramm-Widget für einen Typ des Chart-Frameworks.
  * Mit `editable` ist die Liste der bearbeitbaren Schlüssel fest vorgegeben (Reihenfolge
  * wie übergeben) statt aus den `editable`-Markierungen der Schlüssel abgeleitet.
- * @param {{ name: string, type: string, keys?: Record<string, any>, series?: Record<string, any>|null, editable?: string[] }} def
+ * Mit `roles` meldet das Widget Bedienung als Rolle; die Konfiguration ordnet jeder Rolle
+ * ein Kommando des Moduls zu (`commands`), `commandArgs` fließt in jeden Aufruf.
+ * @param {{ name: string, type: string, keys?: Record<string, any>, series?: Record<string, any>|null, editable?: string[], roles?: string[] }} def
  * @returns {Readonly<any>}
  */
-export function chartWidget({ name, type, keys = {}, series = null, editable = undefined }) {
+export function chartWidget({ name, type, keys = {}, series = null, editable = undefined, roles = [] }) {
   const baseShape = { ...BASE, ...keys };
-  const shape = { ...baseShape, ...(series ? { series: list(object(series), opt) } : {}) };
+  const shape = {
+    ...baseShape,
+    ...(series ? { series: list(object(series), opt) } : {}),
+    ...(roles.length ? { commands: map(text(), text(), opt), commandArgs: map(text(), text(), opt) } : {}),
+  };
   if (editable) {
     const unknown = editable.filter((k) => !(k in baseShape));
     if (unknown.length) throw new Error(`chartWidget ${name}: unknown editable key ${unknown.map((k) => `"${k}"`).join(', ')}`);
@@ -64,6 +70,6 @@ export function chartWidget({ name, type, keys = {}, series = null, editable = u
     name,
     props: { config: object(shape, { nullable: true }), legacyEditKey: text(opt) },
     value: edits,
-    api: { chartType: type, edits: () => edits, editable: Object.freeze({ base: Object.freeze(baseKeys), series: Object.freeze(seriesKeys) }) },
+    api: { chartType: type, roles: Object.freeze([...roles]), edits: () => edits, editable: Object.freeze({ base: Object.freeze(baseKeys), series: Object.freeze(seriesKeys) }) },
   });
 }

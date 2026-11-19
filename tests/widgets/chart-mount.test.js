@@ -11,6 +11,8 @@ import HistogramChart from '../../js/core/chart/types/histogram.js';
 import { toChart as scatterToChart } from '../../js/widgets/scatter-chart/mount.js';
 import trendChart from '../../js/widgets/trend-chart/schema.js';
 import histogramChart from '../../js/widgets/histogram-chart/schema.js';
+import { chartWidget } from '../../js/widgets/chart-parts.js';
+import { chartMount } from '../../js/widgets/chart-mount.js';
 
 const i18n = { t: (k) => k, getLanguage: () => 'de' };
 let directiveRegistered = false;
@@ -500,5 +502,71 @@ suite('Diagramm-Widgets: Streudiagramm toChart', () => {
     assertEqual(root.querySelectorAll('svg .hl').length, 0);
     root.remove();
     cm.destroyAll();
+  });
+});
+
+suite('Diagramm-Widgets: roles', () => {
+  const W = chartWidget({ name: 'test-roles', type: 'scatter', roles: ['moveLabel', 'select'] });
+  const mountRoles = async (config, { command, cm = fakeManager(), notify = () => {} } = {}) => {
+    const root = document.createElement('div');
+    const warned = [];
+    const ow = console.warn; console.warn = (...a) => warned.push(a.join(' '));
+    const services = { chartManager: cm, i18n, notify, instanceId: 'i1' };
+    try {
+      chartMount(W)(root, { props: { config }, value: null, services, effect: (fn) => fn(), command });
+      await flush();
+    } finally { console.warn = ow; }
+    return { cm, warned, chart: cm.log.created[0] };
+  };
+
+  test('api.roles und Schlüssel der Konfiguration', () => {
+    assertDeepEqual([...W.roles], ['moveLabel', 'select']);
+    assertTrue('commands' in W.props.config.shape && 'commandArgs' in W.props.config.shape);
+    const plain = chartWidget({ name: 'test-plain', type: 'scatter' });
+    assertDeepEqual([...plain.roles], []);
+    assertTrue(!('commands' in plain.props.config.shape));
+  });
+  test('meldet über command', async () => {
+    const calls = [];
+    const command = async (name, args) => { calls.push([name, args]); return { ok: true }; };
+    const { chart } = await mountRoles({ commands: { moveLabel: 'moveFn' }, commandArgs: { inst: 'a' } }, { command });
+    await chart.config.onCommand('moveLabel', { id: 'f1', x: 3, y: 4 });
+    assertDeepEqual(calls, [['moveFn', { inst: 'a', id: 'f1', x: 3, y: 4 }]]);
+    assertTrue(!('commands' in chart.config) && !('commandArgs' in chart.config));
+  });
+  test('unbekannte Rolle wirft', async () => {
+    let err = null;
+    try { await mountRoles({ commands: { drag: 'x' } }, { command: async () => ({ ok: true }) }); } catch (e) { err = e; }
+    assertTrue(err && /invalid role "drag"/.test(err.message));
+    assertTrue(/allowed: moveLabel, select/.test(err.message));
+  });
+  test('fehlende Rolle: nur belegte Rollen, ohne commands weder onCommand noch commandRoles', async () => {
+    const command = async () => ({ ok: true });
+    const a = await mountRoles({ commands: { select: 'sel' } }, { command });
+    assertDeepEqual(a.chart.config.commandRoles, ['select']);
+    const b = await mountRoles({ title: 'x' }, { command });
+    assertTrue(!('onCommand' in b.chart.config) && !('commandRoles' in b.chart.config));
+  });
+  test('ok: false meldet übersetzt, Ursache geht an console.warn, Diagramm wird neu gezeichnet', async () => {
+    const seen = [];
+    const command = async () => ({ ok: false, error: new Error('x') });
+    const { cm, chart } = await mountRoles({ commands: { select: 'sel' } }, { command, notify: (m, t) => seen.push([m, t]) });
+    const before = cm.log.updated.length;
+    const warned = [];
+    const ow = console.warn; console.warn = (...a) => warned.push(a.join(' '));
+    try { await chart.config.onCommand('select', { id: 'a' }); } finally { console.warn = ow; }
+    assertDeepEqual(seen, [['common.widget.commandRejected', 'error']]);
+    assertEqual(cm.log.updated.length, before + 1);
+    assertTrue(typeof chart.config.onCommand === 'function');
+    assertTrue(warned.some((w) => /sel/.test(w)));
+  });
+  test('abgebrochenes Kommando: keine Meldung, aber Neuzeichnen', async () => {
+    const seen = [];
+    const command = async () => ({ ok: false, cancelled: true });
+    const { cm, chart } = await mountRoles({ commands: { select: 'sel' } }, { command, notify: (m, t) => seen.push([m, t]) });
+    const before = cm.log.updated.length;
+    await chart.config.onCommand('select', {});
+    assertEqual(seen.length, 0);
+    assertEqual(cm.log.updated.length, before + 1);
   });
 });

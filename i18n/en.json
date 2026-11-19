@@ -961,7 +961,8 @@
       "rejected": "Cannot start: {reason}"
     },
     "widget": {
-      "bindError": "Control is bound incorrectly: {message}"
+      "bindError": "Control is bound incorrectly: {message}",
+      "commandRejected": "The change was not applied."
     }
   },
   "bugReport": {
