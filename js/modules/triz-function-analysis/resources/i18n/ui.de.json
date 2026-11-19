@@ -16,5 +16,8 @@
     "uniqueFunctionIds": "Jede Funktion braucht eine eigene, nicht leere id; Lagen der Beschriftungen gehören zu vorhandenen Funktionen.",
     "functionEnds": "Träger und Objekt einer Funktion sind vorhandene Komponenten oder leer, und nie dieselbe Komponente.",
     "levelByType": "Eine nützliche Funktion hat eine Stufe (adequate, insufficient, excessive), eine schädliche keine (null)."
+  },
+  "announce": {
+    "move": "„{name}“ verschoben nach ({x}, {y})"
   }
 }

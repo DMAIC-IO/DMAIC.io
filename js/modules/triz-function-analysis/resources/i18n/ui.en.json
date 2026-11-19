@@ -16,5 +16,8 @@
     "uniqueFunctionIds": "Every function needs its own non-empty id; label positions belong to existing functions.",
     "functionEnds": "Carrier and object of a function are existing components or empty, and never the same component.",
     "levelByType": "A useful function has a level (adequate, insufficient, excessive), a harmful one has none (null)."
+  },
+  "announce": {
+    "move": "\"{name}\" moved to ({x}, {y})"
   }
 }
