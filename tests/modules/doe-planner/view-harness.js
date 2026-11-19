@@ -317,7 +317,9 @@ export function inputBadges(container) {
       continue;
     }
     if (el.parentElement === input && el.classList.contains('dmike-split__section-title')) {
-      section = el.getAttribute('data-help-key').replace('modules.doe-planner.', '').replace(/\.help$/, '');
+      // The key sits on an inner span right after the title text, not on the title.
+      const keyed = el.querySelector('[data-help-key]') ?? el;
+      section = keyed.getAttribute('data-help-key').replace('modules.doe-planner.', '').replace(/\.help$/, '');
       out[section] = 0;
     }
     const key = el.getAttribute('data-help-key');
