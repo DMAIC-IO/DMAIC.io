@@ -575,23 +575,26 @@ th.col-locked--hard {
   background: var(--datagrid-locked-hard-bg-alt) !important;
 }
 
-/* Cell tint — applied at lower priority than selection so cell-selected wins. */
+/* Cell tint — applied at lower priority than selection so cell-selected wins.
+   The tints are translucent: they lie over the cell's own opaque background
+   (second layer), never over whatever the grid's host paints behind it —
+   otherwise a grey host (doe-planner preview, worksheet) darkens them. */
 td.cell-locked--soft {
-  background: var(--datagrid-locked-soft-bg);
+  background: linear-gradient(var(--datagrid-locked-soft-bg), var(--datagrid-locked-soft-bg)), var(--datagrid-cell-bg);
   cursor: not-allowed;
 }
 
 .datagrid__table tbody tr:nth-child(even) td.cell-locked--soft {
-  background: var(--datagrid-locked-soft-bg-alt);
+  background: linear-gradient(var(--datagrid-locked-soft-bg-alt), var(--datagrid-locked-soft-bg-alt)), var(--datagrid-cell-bg);
 }
 
 td.cell-locked--hard {
-  background: var(--datagrid-locked-hard-bg);
+  background: linear-gradient(var(--datagrid-locked-hard-bg), var(--datagrid-locked-hard-bg)), var(--datagrid-cell-bg);
   cursor: not-allowed;
 }
 
 .datagrid__table tbody tr:nth-child(even) td.cell-locked--hard {
-  background: var(--datagrid-locked-hard-bg-alt);
+  background: linear-gradient(var(--datagrid-locked-hard-bg-alt), var(--datagrid-locked-hard-bg-alt)), var(--datagrid-cell-bg);
 }
 
 /* Lock icon */
