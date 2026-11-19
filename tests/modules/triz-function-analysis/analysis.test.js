@@ -6,11 +6,12 @@
  * disadvantages).
  */
 
-import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertClose } from '../test-utils.js';
+import { suite, test, assertEqual, assertTrue, assertDeepEqual, assertClose } from '../../test-utils.js';
+import { State } from '../../../js/modules/triz-function-analysis/triz-function-analysis-model.js';
 import {
-  State, KINDS, pairKey, orderedComponents, isComplete, rankOf, openPairs, disadvantages, functionPairs,
+  KINDS, pairKey, orderedComponents, isComplete, rankOf, openPairs, disadvantages, functionPairs,
   TABS, componentValue, valueCostRows, functionRanks,
-} from '../../js/modules/triz-function-analysis/triz-function-analysis-model.js';
+} from '../../../js/modules/triz-function-analysis/domain/analysis.js';
 
 /** Toothbrush: target teeth, system bristles + handle, supersystem gums + paste. */
 function fixture() {

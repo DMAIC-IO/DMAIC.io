@@ -2,11 +2,11 @@
  * D.Mike — TRIZ function analysis: layout and diagram builder
  */
 
-import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../test-utils.js';
-import { State } from '../../js/modules/triz-function-analysis/triz-function-analysis-model.js';
+import { suite, test, assertEqual, assertTrue, assertDeepEqual } from '../../test-utils.js';
+import { State } from '../../../js/modules/triz-function-analysis/triz-function-analysis-model.js';
 import {
   NODE_W, NODE_H, autoLayout, resolvePositions, buildFunctionDiagram,
-} from '../../js/modules/triz-function-analysis/triz-function-analysis-diagram.js';
+} from '../../../js/modules/triz-function-analysis/domain/diagram.js';
 
 const comp = (id, kind) => ({ id, name: id.toUpperCase(), kind, note: '' });
 
