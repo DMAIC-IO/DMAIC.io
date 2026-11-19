@@ -8,6 +8,7 @@
 
 import ChartBase from '../chart-base.js';
 import { svgEl, svgText, resolveColor } from '../chart-core.js';
+import { THRESHOLD } from '../../interaction/machine.js';
 
 /** Font family embedded in the SVG for export fidelity (as in other types). */
 const FONT_MAIN = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
@@ -288,9 +289,104 @@ export default class NodeDiagram extends ChartBase {
     }, config), context);
   }
 
-  /** No zoom, pan, crosshair or tooltip. @private */
+  /** No zoom, pan, crosshair or tooltip; label dragging only for bound command roles. @private */
   _setupInteractions() {
     this._editorOpen = false;
+    this._onPointerDown = (ev) => this._startLabelGesture(ev);
+    this.container.addEventListener('pointerdown', this._onPointerDown);
+  }
+
+  /** @private @param {string} role @returns {boolean} */
+  _hasRole(role) {
+    return typeof this.config.onCommand === 'function' && (this.config.commandRoles || []).includes(role);
+  }
+
+  /**
+   * Pointer down on a verb label: below the threshold it is a click (`select`),
+   * beyond it the label follows the pointer (`moveLabel`). Listeners for the
+   * rest of the gesture sit on `window`, so a redraw cannot lose them.
+   * @private
+   * @param {PointerEvent} ev
+   */
+  _startLabelGesture(ev) {
+    if (ev.button !== 0 || this._gesture) return;
+    const canMove = this._hasRole('moveLabel'), canSelect = this._hasRole('select');
+    if (!canMove && !canSelect) return;
+    const id = ev.target.closest?.('[data-part^="link-label"]')?.getAttribute('data-id');
+    const entry = id != null && resolveLinks(this.config).ends.find((e) => e.link.id === id);
+    if (!entry) return;
+    ev.preventDefault();
+    const { link, p } = entry;
+    const start = hasVia(link) ? { x: link.via.x, y: link.via.y } : { x: (p.x1 + p.x2) / 2, y: (p.y1 + p.y2) / 2 };
+    const g = { id, start, sx: ev.clientX, sy: ev.clientY, moved: false, x: start.x, y: start.y };
+    const onMove = (e) => {
+      const dx = e.clientX - g.sx, dy = e.clientY - g.sy;
+      if (!g.moved && Math.hypot(dx, dy) < THRESHOLD) return;
+      g.moved = true;
+      if (!canMove) return;
+      g.x = Math.max(0, start.x + dx);
+      g.y = Math.max(0, start.y + dy);
+      this._preview = { id, via: { x: g.x, y: g.y } };
+      this.render();
+    };
+    const onUp = () => {
+      if (!g.moved || !canMove) {
+        this._endGesture();
+        if (!g.moved && canSelect) this.config.onCommand('select', { id });
+        return;
+      }
+      // The preview stays until the command is settled, so the label does not jump back meanwhile.
+      g.stop();
+      this._gesture = null;
+      const settle = () => {
+        if (this._preview?.id !== id) return;
+        this._preview = null;
+        if (this._svg) this.render();
+      };
+      Promise.resolve(this.config.onCommand('moveLabel', { id, x: Math.round(g.x), y: Math.round(g.y) })).then(settle, settle);
+    };
+    const onCancel = () => this._endGesture(true);
+    const onKey = (e) => { if (e.key === 'Escape') onCancel(); };
+    g.stop = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onCancel);
+      window.removeEventListener('keydown', onKey);
+    };
+    this._gesture = g;
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onCancel);
+    window.addEventListener('keydown', onKey);
+  }
+
+  /** Remove the gesture listeners; with `redraw` the unchanged model is drawn again. @private */
+  _endGesture(redraw = false) {
+    const g = this._gesture;
+    if (!g) return;
+    g.stop();
+    this._gesture = null;
+    const hadPreview = !!this._preview;
+    this._preview = null;
+    if (redraw && hadPreview) this.render();
+  }
+
+  /** The configuration to draw: the model, with the dragged label's link bent through the preview point. @private */
+  _drawConfig() {
+    const pv = this._preview;
+    if (!pv) return this.config;
+    const links = (this.config.links || []).map((l) => {
+      if (l.id !== pv.id) return l;
+      const { x1, y1, x2, y2, ...rest } = l;
+      return { ...rest, via: pv.via };
+    });
+    return { ...this.config, links };
+  }
+
+  destroy() {
+    this._endGesture();
+    this.container?.removeEventListener('pointerdown', this._onPointerDown);
+    super.destroy();
   }
 
   /** The diagram has its own size, independent of the host. @private */
@@ -308,7 +404,7 @@ export default class NodeDiagram extends ChartBase {
   render() {
     const svg = this._svg;
     if (!svg) return; // destroyed (late rAF from the constructor)
-    const cfg = this.config;
+    const cfg = this._drawConfig();
     const box = contentBox(cfg);
 
     svg.setAttribute('viewBox', `0 0 ${box.w} ${box.h}`);
@@ -374,13 +470,14 @@ export default class NodeDiagram extends ChartBase {
     const [mx, my] = hasVia(link) ? [r2(link.via.x), r2(link.via.y)] : [r2((p.x1 + p.x2) / 2), r2((p.y1 + p.y2) / 2)];
     const w = text.length * LABEL.charW + LABEL.padX * 2;
     const id = link.id != null ? { 'data-id': link.id } : {};
+    const grab = this._hasRole('moveLabel') ? { cursor: 'grab' } : {};
     svgEl('rect', {
-      'data-part': 'link-label-bg', ...id,
+      'data-part': 'link-label-bg', ...id, ...grab,
       x: r2(mx - w / 2), y: my - LABEL.h / 2, width: r2(w), height: LABEL.h, rx: LABEL.radius,
       fill: col.labelBg,
     }, parent);
     svgText(text, {
-      'data-part': 'link-label', ...id,
+      'data-part': 'link-label', ...id, ...grab,
       x: mx, y: my + 4, 'text-anchor': 'middle', 'font-size': this.config.tickSize, fill: col.muted,
     }, parent);
   }

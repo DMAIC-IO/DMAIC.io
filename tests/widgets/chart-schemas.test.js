@@ -27,6 +27,7 @@ import multiVariChart from '../../js/widgets/multi-vari-chart/schema.js';
 import gageRunChart from '../../js/widgets/gage-run-chart/schema.js';
 import trendChart from '../../js/widgets/trend-chart/schema.js';
 import nodeLinks from '../../js/widgets/node-links/schema.js';
+import nodeDiagram from '../../js/widgets/node-diagram/schema.js';
 import ganttChart from '../../js/widgets/gantt-chart/schema.js';
 import cumulativeCostChart from '../../js/widgets/cumulative-cost-chart/schema.js';
 import pieChart from '../../js/widgets/pie-chart/schema.js';
@@ -320,5 +321,19 @@ suite('Diagramm-Widgets: Schemas', () => {
     assertThrows(() => checkValue(nodeLinks.props.config, 'c', { ...cfg, nodes: [] }), /nodes/);
     assertThrows(() => checkValue(nodeLinks.props.config, 'c', { origin: 'middle' }), /origin/);
     assertThrows(() => checkValue(nodeLinks.props.config, 'c', { links: [{ from: 'a', to: 'b', shape: 'zigzag' }] }), /shape/);
+  });
+  test('node-diagram: Name, Typ, Rollen, Schlüssel, unbekannte Form abgelehnt', () => {
+    assertDeepEqual([nodeDiagram.name, nodeDiagram.chartType], ['node-diagram', 'node-diagram']);
+    const cfg = {
+      nodes: [{ id: 'a', x: 1, y: 2, w: 3, h: 4, shape: 'ellipse', fill: 'red', stroke: 'blue', strokeWidth: 2, dash: '4 2', padY: 3, align: 'center', highlight: true, lines: [{ text: 'A', weight: 600, color: 'red', size: 12, muted: true }] }],
+      links: [{ id: 'l', from: 'a', to: 'b', shape: 'straight', x1: 1, y1: 2, x2: 3, y2: 4, offset: 5, via: { x: 1, y: 2 }, label: 'hält', arrow: 'end', style: 'wave', width: 2, dash: '6 4', color: 'red', highlight: true }],
+      highlightClass: 'hl', padding: 0, origin: 'zero',
+    };
+    assertDeepEqual(checkValue(nodeDiagram.props.config, 'c', cfg), cfg);
+    assertThrows(() => checkValue(nodeDiagram.props.config, 'c', { links: [{ from: 'a', to: 'b', style: 'zig' }] }), /style/);
+    assertThrows(() => checkValue(nodeDiagram.props.config, 'c', { links: [{ from: 'a', to: 'b', arrow: 'start' }] }), /arrow/);
+    assertThrows(() => checkValue(nodeDiagram.props.config, 'c', { badge: 1 }), /badge/);
+    assertDeepEqual(nodeDiagram.roles, ['moveLabel', 'select']);
+    assertEqual(checkValue(nodeDiagram.props.config, 'c', { commands: { moveLabel: 'moveLabel' }, commandArgs: { x: 'y' } }).commands.moveLabel, 'moveLabel');
   });
 });

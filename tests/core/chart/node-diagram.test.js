@@ -500,3 +500,110 @@ suite('node-diagram — bent links (via)', () => {
     assertEqual(box.h, 300);
   });
 });
+
+suite('node-diagram — label drag', () => {
+  const N1 = { id: 'n1', x: 20, y: 20, w: 60, h: 40 };
+  const N2 = { id: 'n2', x: 220, y: 20, w: 60, h: 40 };
+  const link = () => ({ id: 'f1', from: 'n1', to: 'n2', shape: 'straight', label: 'hält', x1: 80, y1: 40, x2: 220, y2: 40 });
+  const pe = (type, x, y, extra = {}) => new PointerEvent(type, { bubbles: true, pointerId: 1, isPrimary: true, button: 0, clientX: x, clientY: y, ...extra });
+
+  /** Mount with a recording onCommand; roles default to both. */
+  function setup(roles = ['moveLabel', 'select'], withCommand = true) {
+    const calls = [];
+    const config = { nodes: [N1, N2], links: [link()], padding: 0, origin: 'zero' };
+    if (withCommand) {
+      config.onCommand = async (role, args) => { calls.push([role, args]); };
+      config.commandRoles = roles;
+    }
+    const m = mount(config);
+    const label = m.svg.querySelector('[data-part="link-label"][data-id="f1"]');
+    const linkD = () => m.svg.querySelector('path[data-part="link"][data-id="f1"]').getAttribute('d');
+    return { ...m, calls, config, label, linkD };
+  }
+
+  test('ziehen meldet geklemmt', () => {
+    const t = setup();
+    t.label.dispatchEvent(pe('pointerdown', 100, 100));
+    window.dispatchEvent(pe('pointermove', -400, -400));
+    window.dispatchEvent(pe('pointerup', -400, -400));
+    assertDeepEqual(t.calls, [['moveLabel', { id: 'f1', x: 0, y: 0 }]]);
+    t.done();
+  });
+
+  test('vorschau knickt, das Modell bleibt', () => {
+    const t = setup();
+    assertEqual((t.linkD().match(/L/g) || []).length, 1);
+    t.label.dispatchEvent(pe('pointerdown', 100, 100));
+    window.dispatchEvent(pe('pointermove', 100, 140));
+    assertEqual((t.linkD().match(/L/g) || []).length, 2, 'drei Punkte');
+    assertEqual(t.config.links[0].via, undefined);
+    assertEqual(t.config.links[0].x1, 80);
+    window.dispatchEvent(pe('pointerup', 100, 140));
+    t.done();
+  });
+
+  test('unter Schwelle ist Klick', () => {
+    const t = setup();
+    t.label.dispatchEvent(pe('pointerdown', 100, 100));
+    window.dispatchEvent(pe('pointermove', 103, 100));
+    window.dispatchEvent(pe('pointerup', 103, 100));
+    assertDeepEqual(t.calls, [['select', { id: 'f1' }]]);
+    t.done();
+  });
+
+  test('escape bricht ab, ebenso pointercancel', () => {
+    const t = setup();
+    const straight = t.linkD();
+    t.label.dispatchEvent(pe('pointerdown', 100, 100));
+    window.dispatchEvent(pe('pointermove', 100, 150));
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    assertEqual(t.linkD(), straight);
+    window.dispatchEvent(pe('pointerup', 100, 150));
+    assertDeepEqual(t.calls, []);
+    const label = t.svg.querySelector('[data-part="link-label"]');
+    label.dispatchEvent(pe('pointerdown', 100, 100));
+    window.dispatchEvent(pe('pointermove', 100, 150));
+    window.dispatchEvent(pe('pointercancel', 100, 150));
+    assertEqual(t.linkD(), straight);
+    window.dispatchEvent(pe('pointerup', 100, 150));
+    assertDeepEqual(t.calls, []);
+    t.done();
+  });
+
+  test('überlebt render', () => {
+    const t = setup();
+    t.label.dispatchEvent(pe('pointerdown', 100, 100));
+    window.dispatchEvent(pe('pointermove', 100, 150));
+    t.chart.render();
+    window.dispatchEvent(pe('pointerup', 100, 150));
+    assertEqual(t.calls.length, 1);
+    assertEqual(t.calls[0][0], 'moveLabel');
+    t.done();
+  });
+
+  test('ohne onCommand nichts ziehbar', () => {
+    const t = setup([], false);
+    const straight = t.linkD();
+    t.label.dispatchEvent(pe('pointerdown', 100, 100));
+    window.dispatchEvent(pe('pointermove', 100, 150));
+    assertEqual(t.linkD(), straight);
+    window.dispatchEvent(pe('pointerup', 100, 150));
+    assertDeepEqual(t.calls, []);
+    assertEqual(t.label.getAttribute('cursor'), null);
+    t.done();
+  });
+
+  test('nur select belegt: ziehen wirkungslos, Klick meldet select', () => {
+    const t = setup(['select']);
+    const straight = t.linkD();
+    t.label.dispatchEvent(pe('pointerdown', 100, 100));
+    window.dispatchEvent(pe('pointermove', 100, 150));
+    assertEqual(t.linkD(), straight);
+    window.dispatchEvent(pe('pointerup', 100, 150));
+    assertDeepEqual(t.calls, []);
+    t.label.dispatchEvent(pe('pointerdown', 100, 100));
+    window.dispatchEvent(pe('pointerup', 100, 100));
+    assertDeepEqual(t.calls, [['select', { id: 'f1' }]]);
+    t.done();
+  });
+});

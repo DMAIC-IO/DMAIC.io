@@ -45,6 +45,8 @@ import pieChart from './pie-chart/schema.js';
 import { mount as mountPieChart } from './pie-chart/mount.js';
 import contourChart from './contour-chart/schema.js';
 import { mount as mountContourChart } from './contour-chart/mount.js';
+import nodeDiagram from './node-diagram/schema.js';
+import { mount as mountNodeDiagram } from './node-diagram/mount.js';
 import nodeLinks from './node-links/schema.js';
 import { mount as mountNodeLinks } from './node-links/mount.js';
 import datagrid from './datagrid/schema.js';
@@ -81,5 +83,6 @@ export const WIDGETS = Object.freeze({
   'gantt-chart': { schema: ganttChart, mount: mountGanttChart },
   'cumulative-cost-chart': { schema: cumulativeCostChart, mount: mountCumulativeCostChart },
   'pie-chart': { schema: pieChart, mount: mountPieChart },
+  'node-diagram': { schema: nodeDiagram, mount: mountNodeDiagram },
   'node-links': { schema: nodeLinks, mount: mountNodeLinks },
 });
