@@ -1049,9 +1049,9 @@ const mod = createModule({
        * oder als Aktualisierung des zuletzt gespeicherten). Gibt die id zurück,
        * oder null, wenn kein speicherbares Modell vorliegt (`read().canSaveModel`).
        * @agent
-       * @returns {string|null} die id des gespeicherten Modells, oder null
+       * @returns {Promise<string|null>} die id des gespeicherten Modells, oder null
        */
-      saveAsModel() {
+      async saveAsModel() {
         const r = this.model.result;
         // Nach einem Fehlschlag hält das Model noch den alten Fit; gespeichert
         // wird nur, was auch angezeigt wird (dieselbe Bedingung wie canSaveModel).
@@ -1088,6 +1088,8 @@ const mod = createModule({
           responseColumn: m.activeImportSource?.sourceColumn ?? m.yKey,
         });
 
+        // Die Versuche der Planer vorher laden: nach dem Laden des Projekts ist der Cache noch leer.
+        await this._experimentLoader().load();
         const lofPValue = m.computeLoFPValue(this._experiments, r, y, originalToFiltered);
         const specSnapshot = r.spec ? JSON.parse(JSON.stringify(r.spec)) : null;
 
@@ -1542,7 +1544,10 @@ const mod = createModule({
         loader.watch(eb, ['module:added', 'module:removed', 'state:remote-changed', 'worksheet:dataChanged']);
         this._unsubs.push(() => loader.dispose());
         const onAct = ({ instanceId }) => {
-          if (instanceId === ctx.instanceId && this._picker) this._picker.refresh();
+          if (instanceId !== ctx.instanceId) return;
+          if (this._picker) this._picker.refresh();
+          // Ein Planer kann den Versuch nach dem letzten Ereignis geschrieben haben.
+          loader.load().catch((err) => console.warn('[regression] reading the experiments failed', err));
         };
         eb.on('module:activated', onAct);
         this._unsubs.push(() => eb.off('module:activated', onAct));

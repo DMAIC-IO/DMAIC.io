@@ -348,16 +348,22 @@ export default createModule({
         const plannerId = this._ui.instanceId;
         const phase = services.instances.list({ modules: ['doe-planner'] }).find((i) => i.instanceId === plannerId)?.phase;
         if (!phase) throw failure(this.t('transferFailed'), 'transferToRegression', new Error('the planner is in no phase'));
-        // The datasheet may predate a response added later (stale sheet, no sync).
-        if (response >= (this.experiment?.responseColumns.length ?? 0)) {
-          throw failure(this.t('transferResponseMissing'), 'transferToRegression', new Error(`response ${response} is not in the datasheet`));
+        // The datasheet may predate later changes to the responses (stale
+        // sheet, no sync): the response is matched by name, not by position.
+        const cols = this.experiment?.responseColumns ?? [];
+        const wanted = plain(this.model.responses)?.[response];
+        const wantedName = wanted ? (wanted.name || `Y${response + 1}`) : null;
+        const hits = wantedName == null ? [] : cols.reduce((acc, c, i) => (c.name === wantedName ? [...acc, i] : acc), []);
+        if (hits.length !== 1) {
+          throw failure(this.t('transferResponseMissing'), 'transferToRegression', new Error(`response ${response} is not (uniquely) in the datasheet`));
         }
+        const sheetIdx = hits[0];
         /** @type {any} */
         const stack = [
           { op: 'module.add', id: 'reg', module: 'regression', phase },
           {
             op: 'instance.call', module: 'regression', instance: { $from: 'reg', path: 'instanceId' },
-            method: 'importExperiment', args: [`${plannerId}|raw|${response}`],
+            method: 'importExperiment', args: [`${plannerId}|raw|${sheetIdx}`],
           },
         ];
         let res;

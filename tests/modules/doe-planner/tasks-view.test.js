@@ -552,6 +552,33 @@ suite('doe-planner tasks: transferToRegression', () => {
     assertEqual(h.layer.stacks.length, stacks);
   });
 
+  test('a response removed after a stale datasheet: matched by name, not by position', async () => {
+    const h = await bound(plan({ responses: [{ name: 'Yield', unit: '%' }, { name: 'Kosten', unit: '' }] }));
+    const vm = h.vm();
+    setFields(vm.model, { factors: [vm.model.factors[0], { ...vm.model.factors[1], levels: ['2', '8'] }] });
+    await h.settle();
+    assertEqual(vm.staleness, 'stale');
+    setFields(vm.model, { responses: [{ name: 'Kosten', unit: '' }] });
+    await h.settle();
+    const out = await h.run('transferToRegression', { response: 0 });
+    assertEqual(out.status, 'done', JSON.stringify(out));
+    assertDeepEqual(h.layer.stacks.at(-1)[1].args, [`${PLANNER}|raw|1`]);
+  });
+
+  test('a response renamed after a stale datasheet: transferResponseMissing, nothing sent', async () => {
+    const h = await bound(plan({ responses: [{ name: 'Yield', unit: '%' }] }));
+    const vm = h.vm();
+    setFields(vm.model, { factors: [vm.model.factors[0], { ...vm.model.factors[1], levels: ['2', '8'] }] });
+    await h.settle();
+    setFields(vm.model, { responses: [{ name: 'Ausbeute', unit: '%' }] });
+    await h.settle();
+    const stacks = h.layer.stacks.length;
+    const out = await h.run('transferToRegression', { response: 0 });
+    assertEqual(out.status, 'failed', JSON.stringify(out));
+    assertDeepEqual(h.notes.at(-1), ['transferResponseMissing', 'error']);
+    assertEqual(h.layer.stacks.length, stacks);
+  });
+
   test('a planner in no phase: transferFailed, nothing sent', async () => {
     const h = await bound(plan());
     const stacks = h.layer.stacks.length;
