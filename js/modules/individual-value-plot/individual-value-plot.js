@@ -35,7 +35,7 @@ import {
 } from '../../ui/dataset-picker.js';
 import { computeSeriesStats, renderStatsTable } from '../../core/stats-panel.js';
 import { CHART_COLORS } from '../../core/chart/chart-colors.js';
-import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
+import { loadWorksheetExample } from '../../core/examples-registry.js';
 import { parseDecimalInput } from '../../core/parse-decimal.js';
 
 /** Default confidence level when not resolved from settings. */
@@ -514,49 +514,25 @@ const mod = createModule({
 /**
  * Custom loadExample: individual-value-plot catalog examples ship a full
  * worksheet (`sourceWorksheetData`) and use the literal placeholder `__source__`
- * as the column-ref instanceId. On load we provision a fresh worksheet, rewrite
- * the placeholder across seriesRefs and every grouping leg, then apply state.
+ * as the column-ref instanceId. The shared loader provisions a fresh worksheet,
+ * rewrites the placeholder across seriesRefs and every grouping leg, waits
+ * until the worksheet is readable and only then applies state.
  *
  * @param {{ meta: object, data: object }} payload
+ * @returns {Promise<void>}
  */
-mod.loadExample = async function loadExample(payload) {
-  if (!payload || !payload.data) return;
-  const ctx = this._context;
-  const t = (key) => ctx.i18n.t(key);
-
-  const current = this.getState();
-  const currentModel = current ? State.fromJSON(current) : null;
-  if (currentModel?.hasContent() && ctx?.dialog) {
-    const ok = await ctx.dialog.confirm({ message: t('moduleHelp.confirmOverwrite'), danger: true });
-    if (!ok) return;
-  }
-
-  const data = { ...payload.data };
-
-  if (data.sourceWorksheetData) {
-    const wsState = data.sourceWorksheetData;
-    delete data.sourceWorksheetData;
-
-    const prevId = currentModel?.exampleWorksheetId;
-    if (prevId) removeProvisionedWorksheet(ctx, prevId);
-
-    const ref = provisionWorksheet(ctx, wsState);
-    if (ref) {
-      data.exampleWorksheetId = ref.instanceId;
-      const rewrite = (r) => (r && r.instanceId === '__source__') ? { ...r, instanceId: ref.instanceId } : r;
+mod.loadExample = function loadExample(payload) {
+  return loadWorksheetExample(this, payload, {
+    Model: State,
+    rewriteRefs: (data, oldId, newId) => {
+      const rewrite = (r) => (r && r.instanceId === oldId ? { ...r, instanceId: newId } : r);
       if (Array.isArray(data.seriesRefs)) data.seriesRefs = data.seriesRefs.map(rewrite);
       if (Array.isArray(data.groupRefs)) {
-        data.groupRefs = data.groupRefs.map((g) => Array.isArray(g) ? g.map(rewrite) : rewrite(g));
+        data.groupRefs = data.groupRefs.map((g) => (Array.isArray(g) ? g.map(rewrite) : rewrite(g)));
       }
-    }
-  }
-
-  this.setState(data);
-  ctx.stateManager.setModuleState(ctx.instanceId, this.getState());
-
-  const lang = ctx.i18n.getLanguage();
-  const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
-  ctx.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
+      return data;
+    },
+  });
 };
 
 export default mod;

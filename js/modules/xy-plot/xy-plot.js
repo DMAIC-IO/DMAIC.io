@@ -41,7 +41,7 @@ import {
 } from '../../ui/dataset-picker.js';
 import { computeSeriesStats, renderStatsTable } from '../../core/stats-panel.js';
 import { CHART_COLORS } from '../../core/chart/chart-colors.js';
-import { provisionWorksheet, removeProvisionedWorksheet } from '../../core/examples-registry.js';
+import { loadWorksheetExample } from '../../core/examples-registry.js';
 
 /** Die Slots des Pickers, ohne Beschriftung — eine Quelle für Picker und Lesefläche. */
 const DATASET_SLOTS = [
@@ -672,39 +672,18 @@ const mod = createModule({
  * Custom loadExample: xy-plot examples ship a full worksheet
  * (`sourceWorksheetData`, resolved from `sourceWorksheetFile` by the
  * examples-registry) and use the literal placeholder `__source__` as
- * dataset/columnRef instanceIds. On load we provision a fresh worksheet,
- * rewrite the placeholders, then apply state (which re-runs the plot on the
- * new data).
+ * dataset/columnRef instanceIds. The shared loader provisions a fresh
+ * worksheet, rewrites the placeholders, waits until the worksheet is readable
+ * and only then applies state (which re-runs the plot on the new data).
  *
  * @param {{ meta: object, data: object }} payload
+ * @returns {Promise<void>}
  */
-mod.loadExample = async function loadExample(payload) {
-  if (!payload || !payload.data) return;
-  const ctx = this._context;
-  const t = (key) => ctx.i18n.t(key);
-
-  const current = this.getState();
-  const currentModel = current ? State.fromJSON(current) : null;
-  if (currentModel && currentModel.hasContent() && ctx.dialog) {
-    const ok = await ctx.dialog.confirm({ message: t('moduleHelp.confirmOverwrite'), danger: true });
-    if (!ok) return;
-  }
-
-  const data = { ...payload.data };
-
-  if (data.sourceWorksheetData) {
-    const wsState = data.sourceWorksheetData;
-    delete data.sourceWorksheetData;
-
-    const prevId = currentModel && currentModel.exampleWorksheetId;
-    if (prevId) removeProvisionedWorksheet(ctx, prevId);
-
-    const ref = provisionWorksheet(ctx, wsState);
-    if (ref) {
-      data.exampleWorksheetId = ref.instanceId;
-      const rewrite = (r) =>
-        r && r.instanceId === '__source__' ? { ...r, instanceId: ref.instanceId } : r;
-
+mod.loadExample = function loadExample(payload) {
+  return loadWorksheetExample(this, payload, {
+    Model: State,
+    rewriteRefs: (data, oldId, newId) => {
+      const rewrite = (r) => (r && r.instanceId === oldId ? { ...r, instanceId: newId } : r);
       if (Array.isArray(data.datasets)) {
         data.datasets = data.datasets.map(d => ({
           ...d,
@@ -714,15 +693,9 @@ mod.loadExample = async function loadExample(payload) {
           sizeRef: rewrite(d.sizeRef),
         }));
       }
-    }
-  }
-
-  this.setState(data);
-  ctx.stateManager.setModuleState(ctx.instanceId, this.getState());
-
-  const lang = ctx.i18n.getLanguage();
-  const title = payload.meta?.title?.[lang] || payload.meta?.title?.en || payload.meta?.id || '';
-  ctx.notify?.(t('moduleHelp.exampleLoaded').replace('{title}', title), 'success');
+      return data;
+    },
+  });
 };
 
 // Nicht an `mod` gebunden: die Registry legt je Instanz eine Kopie an (`{ ...moduleExport }`),
