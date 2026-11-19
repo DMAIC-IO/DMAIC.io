@@ -17,6 +17,8 @@
  * - `syncResponses` (auto) carries a renamed, added or removed response
  *   into the bound, current datasheet and updates the snapshot; a change
  *   it cannot carry over is reported once.
+ *   Like the design of `generate`, the updated binding belongs to the
+ *   history step of the change that called for it.
  * Every write goes out as one stack over `ctx.instances.interact`; when it
  * fails the planner stays as it was and shows its own text, the cause goes
  * to the console. Opening the datasheet or the regression afterwards is up
@@ -187,6 +189,19 @@ const tasksView = (ctx) => {
       const phases = plain(m.projectPhases);
       Object.assign(phases[m.activePhaseIdx], /** @type {any} */ (m).phaseState());
       setFields(this.model, { projectPhases: phases });
+    },
+    /**
+     * @noagent Writes the binding as a follow-up of the change that called
+     * for it (the automatic run `syncResponses`): with the module history it
+     * belongs to that change's step, so one undo takes back both and the run
+     * does not start anew.
+     * @param {object} values fields to write
+     * @returns {void}
+     */
+    amendBinding(values) {
+      const run = () => { this.writeBinding(values); };
+      if (ctx.history) ctx.history.amend(run);
+      else run();
     },
   };
 };
@@ -401,7 +416,7 @@ export default createModule({
         const current = plain(this.model.worksheetRef);
         if (!current || current.instanceId !== ref.instanceId || current.sheetId !== ref.sheetId) return null;
         const idOf = (/** @type {any} */ x) => (typeof x === 'string' ? x : at(written.get(x.$from), x.path));
-        this.writeBinding({
+        this.amendBinding({
           worksheetRef: {
             ...current,
             responseColumnIds: plan.responseColumnIds.map(idOf),

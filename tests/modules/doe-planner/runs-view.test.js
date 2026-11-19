@@ -422,6 +422,42 @@ suite('doe-planner runs: bound datasheet', () => {
     assertEqual(outputBadges(h.container), 3 + 10);
   });
 
+  test('a renamed response with its carry-over into the sheet: one undo step back to the old name, redo stays', async () => {
+    const b = bound(plan());
+    const h = await mount(b.model, b.worksheets);
+    await h.done();
+    const vm = h.vm();
+    const stacks = [];
+    // The worksheet takes the rename as the real one does.
+    h.context.instances.interact = async (stack) => {
+      stacks.push(stack);
+      for (const a of stack) {
+        if (a.method === 'renameColumn') h.sheet(DATASHEET).columns.find((c) => c.id === a.args[0].columnId).name = a.args[0].name;
+      }
+      return { ok: true, results: stack.map(() => ({})) };
+    };
+    setFields(vm.model, { responses: [{ name: 'Ausbeute', unit: '%' }] });
+    await h.done();
+    assertEqual(stacks.length, 1, 'the rename went out');
+    assertEqual(vm.model.worksheetRef.snapshot.responses[0].name, 'Ausbeute');
+    assertEqual(h.module.historyStep('undo'), true);
+    // Past the pause before syncResponses (600 ms): nothing is written anew.
+    await new Promise((r) => setTimeout(r, 800));
+    await h.done();
+    assertEqual(vm.model.responses[0].name, 'Yield', 'the old name is back');
+    assertEqual(vm.model.worksheetRef.snapshot.responses[0].name, 'Yield', 'the snapshot with it');
+    assertEqual(stacks.length, 1, 'no new carry-over');
+    assertEqual(h.module.historyCan('undo'), false);
+    assertEqual(h.module.historyCan('redo'), true, 'redo stays');
+    assertEqual(h.module.historyStep('redo'), true);
+    await new Promise((r) => setTimeout(r, 800));
+    await h.done();
+    assertEqual(vm.model.responses[0].name, 'Ausbeute');
+    assertEqual(vm.model.worksheetRef.snapshot.responses[0].name, 'Ausbeute');
+    assertEqual(stacks.length, 1, 'redo writes nothing either');
+    assertEqual(h.module.historyCan('redo'), false);
+  });
+
   test('extend an optimal design: runs from the UI state', async () => {
     const b = bound(optimalPlan());
     const h = await mount(b.model, b.worksheets);

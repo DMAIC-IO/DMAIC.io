@@ -11,6 +11,7 @@ import { helpKeysInTemplates, helpKeysInScripts, helpKeysInSharedSources,
   BOUND_HELP_KEY_FAMILIES } from './help-anchors.mjs';
 import ts from 'typescript';
 import { CONVERTED_MODULES } from './converted-modules.mjs';
+import { readViewmodelCommands } from './module-gates.mjs';
 
 /**
  * Die Hilfetabellen, in denen ein Anker nachschlägt: Vorlagen unter
@@ -1475,6 +1476,20 @@ test('collectAgentData: hypothesis-test ist umgestellt und trägt den Eintrag au
   assert.equal(e.fields.alpha.type, 'number');
   assert.equal(e.fields.result.derived, true);
   assert.ok('read' in e.actions);
+});
+
+test('collectAgentData: die Vorschau-Adapter des doe-planner stehen nicht auf der Agentenfläche', async () => {
+  // Rollen des datagrid-Widgets, nur für das Raster (`agentWrite: false` an
+  // einem Parameter); ein Agent schreibt über setPreviewCell/setPreviewCells.
+  const appDir = join(import.meta.dirname, '..', '..');
+  const adapters = ['previewSetCells', 'previewPasteBlock', 'previewClearRange', 'previewFillRange', 'previewContextMenu'];
+  const vmFile = join(appDir, 'js', 'modules', 'doe-planner', 'viewmodel', 'viewmodel.js');
+  const read = readViewmodelCommands(readFileSync(vmFile, 'utf8'), vmFile);
+  for (const name of adapters) assert.equal(read[name]?.agentHidden, true, `${name} ist nicht als agentHidden gelesen`);
+  const { modules } = await collectAgentData(appDir);
+  const actions = modules['doe-planner'].actions;
+  for (const name of adapters) assert.ok(!(name in actions), `${name} steht auf der Agentenfläche`);
+  assert.ok('setPreviewCell' in actions && 'setPreviewCells' in actions, 'die Modell-Kommandos der Vorschau bleiben');
 });
 
 test('collectAgentData: morphological-box nennt seine Invarianten in Deklarationsreihenfolge', async () => {
