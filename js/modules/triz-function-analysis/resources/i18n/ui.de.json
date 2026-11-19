@@ -1,0 +1,20 @@
+{
+  "$schema": "../../../../../schemas/module-ui.schema.json",
+  "name": "Funktionsanalyse (TRIZ)",
+  "description": "Komponenten, Interaktionen und Funktionsmodell – Ausgangspunkt für die übrigen TRIZ-Werkzeuge",
+  "whenToUse": "Wenn ein technisches System Komponente für Komponente zerlegt werden soll, um schädliche, unzureichende und übermäßige Funktionen zu finden und Trimmkandidaten über Wert und Kosten zu erkennen — nicht für einen bereits benannten Widerspruch, dafür sind Widerspruchsmatrix und physikalischer Widerspruch da.",
+  "confirm": {
+    "delete": "„{name}“ löschen?",
+    "deleteUsed": "„{name}“ löschen? {count} Funktion(en) hängen daran und werden mitgelöscht.",
+    "deleteUnnamed": "„(ohne Namen)“ löschen?",
+    "deleteUsedUnnamed": "„(ohne Namen)“ löschen? {count} Funktion(en) hängen daran und werden mitgelöscht."
+  },
+  "invariants": {
+    "uniqueComponentIds": "Jede Komponente braucht eine eigene, nicht leere id; Lagen im Funktionsmodell gehören zu vorhandenen Komponenten.",
+    "singleTarget": "Es gibt höchstens ein Zielobjekt.",
+    "validPairs": "Ein Paar verbindet zwei verschiedene vorhandene Komponenten, sortiert (a < b) und nur einmal; ein angekreuztes Paar ist nicht zugleich ausgeschlossen.",
+    "uniqueFunctionIds": "Jede Funktion braucht eine eigene, nicht leere id; Lagen der Beschriftungen gehören zu vorhandenen Funktionen.",
+    "functionEnds": "Träger und Objekt einer Funktion sind vorhandene Komponenten oder leer, und nie dieselbe Komponente.",
+    "levelByType": "Eine nützliche Funktion hat eine Stufe (adequate, insufficient, excessive), eine schädliche keine (null)."
+  }
+}
