@@ -69,7 +69,7 @@
       }
     },
     "pasteBlock": {
-      "help": "Fügt einen Block wie aus der Zwischenablage ab einer Zelle ein, wie Strg+V im Raster. Ist die erste Zeile Text und die zweite enthält eine Zahl, gilt die erste als Kopfzeile und benennt unbenannte Spalten. Jede getroffene Spalte bekommt ihren Typ aus ihren Werten. Fehlende Zeilen und Spalten kommen dazu. Formeln in den getroffenen Zellen fallen weg. Liegt eine gesperrte Spalte im Block, wird nichts geschrieben. Liefert die Zahl eingefügter Spalten und Zeilen ohne Kopfzeile.",
+      "help": "Fügt einen Block wie aus der Zwischenablage ab einer Zelle ein, wie Strg+V im Raster. Ist die erste Zeile Text und die zweite enthält eine Zahl, gilt die erste als Kopfzeile und benennt unbenannte Spalten. Jede getroffene Spalte bekommt ihren Typ aus ihren Werten. Fehlende Zeilen und Spalten kommen dazu. Formeln in den getroffenen Zellen fallen weg. Gesperrte Spalten im Block bleiben unverändert wie beim Ausfüllen, die übrigen werden geschrieben; trifft der Block nur gesperrte Spalten, wird das Kommando abgelehnt. Liefert die Zahl geschriebener Spalten und der Zeilen ohne Kopfzeile.",
       "params": {
         "sheetId": "Die id des Blatts, wie read().sheets[].id sie nennt.",
         "columnId": "Die id der Spalte links oben im Block, wie read().columns[].id sie nennt.",

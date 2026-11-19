@@ -158,9 +158,18 @@ suite('doe-planner runs: preview', () => {
     assertEqual(h.vm().previewTable.table.rowCount, 4, 'no new row');
   });
 
-  test('paste over a locked column changes nothing and says why', async () => {
+  test('paste over a locked and a free column writes the free one and says why', async () => {
     const h = await ready(plan({ factors: mixedFactors() }));
     await pasteAt(h.container, 2, 4, 'Holz\t7');
+    assertDeepEqual(h.calls('setPreviewCells'), [{ row: 2, column: 'f:1', values: [[null, 7]] }]);
+    assertEqual(td(h.container, 2, 4).textContent, h.vm().model.design.actualMatrix[2][0], 'the locked column stays');
+    assertEqual(td(h.container, 2, 5).textContent, '7,00');
+    assertEqual(h.notes.at(-1)?.[1], 'warning', 'the lock is reported');
+  });
+
+  test('paste over a locked column only changes nothing and says why', async () => {
+    const h = await ready(plan({ factors: mixedFactors() }));
+    await pasteAt(h.container, 2, 4, 'Holz');
     assertEqual(h.calls('setPreviewCells').length, 0);
     assertEqual(h.vm().model.previewEdits, null);
     assertEqual(td(h.container, 2, 4).textContent, h.vm().model.design.actualMatrix[2][0]);

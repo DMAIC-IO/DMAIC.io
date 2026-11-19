@@ -607,8 +607,10 @@ export const cellCommands = {
   /**
    * Einen Block aus der Zwischenablage ab einer Zelle einfügen, wie das
    * Raster: Kopfzeile benennt unbenannte Spalten, Typerkennung je Spalte,
-   * fehlende Zeilen und Spalten kommen dazu. Eine gesperrte Spalte im Block
-   * lehnt alles ab.
+   * fehlende Zeilen und Spalten kommen dazu. Gesperrte Spalten bleiben
+   * unverändert wie bei `fillRange`; die übrigen werden geschrieben. Trifft
+   * der Block nur gesperrte Spalten, wirft es. Liefert die Zahl geschriebener
+   * Spalten und der Zeilen ohne Kopfzeile.
    * @agent
    */
   pasteBlock: command({
@@ -622,7 +624,10 @@ export const cellCommands = {
       const { header, rows: valueRows } = splitHeader(rows);
       const width = Math.max(...rows.map((r) => r.length));
       const heads = sheet.columns;
-      for (let k = 0; k < width && ci + k < heads.length; k++) requireUnlocked(heads[k + ci]);
+      const isLocked = (/** @type {number} */ i) => i < heads.length && Boolean(heads[i].meta?.lock);
+      let free = 0;
+      for (let k = 0; k < width; k++) if (!isLocked(ci + k)) free++;
+      if (free === 0) requireUnlocked(heads[ci]);
       const rowCount = Math.max(sheet.data.rowCount, startRow + valueRows.length);
       const columnCount = Math.max(heads.length, ci + width);
       const names = heads.map((/** @type {{ name: string }} */ h) => h.name);
@@ -637,6 +642,7 @@ export const cellCommands = {
       /** @type {ColumnChange[]} */ const cols = [];
       for (let k = 0; k < width; k++) {
         const i = ci + k;
+        if (isLocked(i)) continue;
         const existed = i < heads.length;
         const head = existed ? copyHead(heads[i]) : {
           id: uid(), name: '', shortName: `C${i + 1}`, type: 'numeric', unit: null,
@@ -672,7 +678,7 @@ export const cellCommands = {
         cols.push(e);
       }
       commit(this, sheet, { rowCount, columnCount, cols });
-      return { columns: width, rows: valueRows.length };
+      return { columns: free, rows: valueRows.length };
     },
   }),
 

@@ -69,7 +69,7 @@
       }
     },
     "pasteBlock": {
-      "help": "Pastes a block as from the clipboard at a cell, like Ctrl+V in the grid. If the first row is text and the second holds a number, the first row is a header and names unnamed columns. Each column hit gets its type from its values. Missing rows and columns are added. Formulas in the cells hit are removed. If a locked column lies in the block, nothing is written. Returns the number of pasted columns and rows without the header.",
+      "help": "Pastes a block as from the clipboard at a cell, like Ctrl+V in the grid. If the first row is text and the second holds a number, the first row is a header and names unnamed columns. Each column hit gets its type from its values. Missing rows and columns are added. Formulas in the cells hit are removed. Locked columns in the block stay unchanged as with fill, the others are written; if the block hits only locked columns, the command is rejected. Returns the number of written columns and of rows without the header.",
       "params": {
         "sheetId": "The id of the sheet, as read().sheets[].id names it.",
         "columnId": "The id of the column at the top left of the block, as read().columns[].id names it.",

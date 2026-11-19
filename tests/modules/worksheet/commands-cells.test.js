@@ -450,9 +450,33 @@ suite('worksheet: pasteBlock (Verhalten aus importFromClipboard)', () => {
     assertDeepEqual(values(w, 0), [10, 20, 30, null]);
   });
 
-  test('gesperrte Spalte im Block: nichts geschrieben — anders als heute wächst auch nichts', () => {
+  test('gesperrte Spalte im Block: übersprungen wie bei fillRange, freie Zellen geschrieben, Umkehrung', () => {
+    const w = setup({ heads: [col('a', { shortName: 'C1' }), col('b', { shortName: 'C2', meta: { lock: 'hard' } }), col('c', { shortName: 'C3' })], cells: [[10, 20, 30], [1, 1, 2], [null, null, null]] });
+    const r = roundTrip(w, { type: 'pasteBlock', sheetId: 's1', columnId: 'a', startRow: 1, rows: [['5', '6', '7'], ['8', '9', '10']] });
+    assertDeepEqual(r, { columns: 2, rows: 2 }, 'zählt nur geschriebene Spalten');
+    const inv = w.seen.inverses[0];
+    assertDeepEqual(inv.cols.map((e) => e.index).sort(), [0, 2], 'Umkehrung nur für geschriebene Spalten');
+    assertDeepEqual(values(w, 0), [10, 5, 8]);
+    assertDeepEqual(values(w, 1), [1, 1, 2], 'gesperrte Spalte unverändert');
+    assertDeepEqual(values(w, 2), [null, 7, 10]);
+  });
+
+  test('gesperrte Spalte im Block: Undo stellt alles her', () => {
     const w = setup({ heads: [col('a', { shortName: 'C1' }), col('b', { shortName: 'C2', meta: { lock: 'hard' } })], cells: [[10, 20, 30], [1, 1, 2]] });
-    rejects(w, () => w.m.pasteBlock({ sheetId: 's1', columnId: 'a', startRow: 2, rows: [['5', '6', '7'], ['8', '9', '10']] }), 'column "b" is locked (hard)');
+    const before = canon(sheet(w));
+    w.m.pasteBlock({ sheetId: 's1', columnId: 'a', startRow: 2, rows: [['5', '6', '7'], ['8', '9', '10']] });
+    assertEqual(sheet(w).columns.length, 3, 'Spalte angehängt');
+    assertEqual(sheet(w).data.rowCount, 4, 'Zeile angehängt');
+    assertDeepEqual(values(w, 0), [10, 20, 5, 8]);
+    assertDeepEqual(values(w, 1), [1, 1, 2, null], 'gesperrte Spalte nur verlängert');
+    assertDeepEqual(values(w, 2), [null, null, 7, 10]);
+    for (const inv of w.seen.inverses) w.m.execute(inv);
+    assertDeepEqual(canon(sheet(w)), before);
+  });
+
+  test('nur gesperrte Zielspalten: Fehler, nichts geschrieben', () => {
+    const w = setup({ heads: [col('a', { shortName: 'C1' }), col('b', { shortName: 'C2', meta: { lock: 'hard' } })], cells: [[10, 20, 30], [1, 1, 2]] });
+    rejects(w, () => w.m.pasteBlock({ sheetId: 's1', columnId: 'b', startRow: 0, rows: [['5'], ['8']] }), 'column "b" is locked (hard)');
   });
 
   test('Kopfzeile benennt unbenannte Spalten (eindeutig), Typerkennung je Spalte', () => {

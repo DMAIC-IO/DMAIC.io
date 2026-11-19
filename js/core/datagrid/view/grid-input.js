@@ -429,18 +429,21 @@ export function createGridInput(view, {
     return lines.join('\n');
   }
 
-  /** Meldet einen Block ab der linken oberen Auswahlzelle; eine gesperrte Zielspalte verhindert alles. */
+  /**
+   * Meldet einen Block ab der linken oberen Auswahlzelle. Gesperrte
+   * Zielspalten bleiben wie beim Ausfüllen stehen (Meldung `cell:edit-blocked`),
+   * die übrigen werden geschrieben; sind alle Zielspalten gesperrt, nichts.
+   */
   function pasteText(text) {
     if (!can('pasteBlock') || !nCols()) return;
     const rows = parseClipboard(text || '');
     if (!rows.length) return;
     const { c0, r0 } = sel ? S.rangeOf(sel) : { c0: 0, r0: 0 };
     const width = Math.max(...rows.map((r) => r.length));
-    const locked = columns.slice(c0, c0 + width).find((col) => col.lock);
-    if (locked) {
-      blocked('cell:edit-blocked', locked, { action: 'paste' });
-      return;
-    }
+    const locked = columns.slice(c0, c0 + width).filter((col) => col.lock);
+    if (locked.length) blocked('cell:edit-blocked', locked[0], { action: 'paste' });
+    // Spalten jenseits des Blattendes kommen ungesperrt dazu.
+    if (locked.length === width) return;
     send('pasteBlock', { columnId: columns[c0].id, startRow: r0, rows });
   }
 

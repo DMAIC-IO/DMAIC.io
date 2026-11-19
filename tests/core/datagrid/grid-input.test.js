@@ -111,6 +111,37 @@ suite('GridInput — Bedienung meldet Kommandos', () => {
     } finally { s.done(); }
   });
 
+  test('Einfügen über eine gesperrte Spalte meldet die Sperre und sendet trotzdem pasteBlock', async () => {
+    const s = await setup();
+    try {
+      const seen = [];
+      s.el.addEventListener('cell:edit-blocked', (e) => seen.push(e.detail));
+      clickCell(s, 1, 3);
+      const dt = new DataTransfer();
+      dt.setData('text/plain', 'x\t9\ny\t8\n');
+      document.activeElement.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+      assertEqual(seen.length, 1);
+      assertEqual(seen[0].columnId, 'c');
+      assertEqual(seen[0].action, 'paste');
+      assertDeepEqual(s.calls.filter((c) => c[0] !== 'gridView'), [['pasteBlock', { columnId: 'b', startRow: 3, rows: [['x', '9'], ['y', '8']] }]]);
+    } finally { s.done(); }
+  });
+
+  test('Einfügen nur in gesperrte Spalten meldet die Sperre und sendet nichts', async () => {
+    const s = await setup();
+    try {
+      const seen = [];
+      s.el.addEventListener('cell:edit-blocked', (e) => seen.push(e.detail));
+      clickCell(s, 2, 3);
+      const dt = new DataTransfer();
+      dt.setData('text/plain', '9\n8\n');
+      document.activeElement.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+      assertEqual(seen.length, 1);
+      assertEqual(seen[0].action, 'paste');
+      assertEqual(s.calls.filter((c) => c[0] !== 'gridView').length, 0);
+    } finally { s.done(); }
+  });
+
   test('Strg+C schreibt die Auswahl als TSV', async () => {
     const s = await setup();
     try {
