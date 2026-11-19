@@ -50,6 +50,13 @@ test('Eintrag eines umgestellten Moduls ohne reason ist ein Fehler', () => {
   assert.deepEqual(checkNumberFormat(hits, bl, ['sipoc']).errors, []);
 });
 
+test('formatCurrency( ohne Intl ist kein Befund; Intl-Währungsformat bleibt Befund', () => {
+  const ok = fixture({ 'js/modules/m/a.js': "import { formatCurrency } from '../../core/number-format.js';\nformatCurrency(1, 'EUR', 'de');\n" });
+  assert.equal(countNumberFormatHits(ok).size, 0);
+  const bad = fixture({ 'js/modules/m/b.js': "new Intl.NumberFormat('de', { style: 'currency', currency: 'EUR' });\n" });
+  assert.equal(checkNumberFormat(countNumberFormatHits(bad), {}, []).errors.length, 1);
+});
+
 test('echter Baum entspricht der Baseline', () => {
   const baseline = JSON.parse(readFileSync(new URL('./number-format-baseline.json', import.meta.url), 'utf8'));
   const { errors } = checkNumberFormat(countNumberFormatHits(APP_DIR), baseline, CONVERTED_MODULES);

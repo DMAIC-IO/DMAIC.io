@@ -8,6 +8,8 @@ import {
   formatPercent,
   decimalSeparator,
   roundTo,
+  formatCurrency,
+  registerCurrency,
 } from '../../js/core/number-format.js';
 
 suite('parseNumber — Lesetabelle', () => {
@@ -139,5 +141,36 @@ suite('formatNumber — fehlende Sprache', () => {
     assertEqual(formatNumber(1234.5, undefined, { decimals: 2 }), '1,234.50');
     assertEqual(formatNumber(1234.5, null, { profile: 'input' }), '1234.5');
     assertEqual(decimalSeparator(undefined), '.');
+  });
+});
+
+
+suite('formatCurrency', () => {
+  const ref = (lang, cur, v) => new Intl.NumberFormat(lang === 'de' ? 'de-DE' : 'en-US', { style: 'currency', currency: cur }).format(v);
+  test('EUR und USD in de und en', () => {
+    assertEqual(formatCurrency(24.5, 'EUR', 'de'), ref('de', 'EUR', 24.5));
+    assertEqual(formatCurrency(24.5, 'EUR', 'en'), '€24.50');
+    assertEqual(formatCurrency(24.5, 'USD', 'de'), ref('de', 'USD', 24.5));
+    assertEqual(formatCurrency(24.5, 'USD', 'en'), '$24.50');
+    assertTrue(formatCurrency(24.5, 'EUR', 'de').startsWith('24,50'));
+    assertTrue(formatCurrency(24.5, 'EUR', 'de').endsWith('€'));
+  });
+  test('negativ und null', () => {
+    assertEqual(formatCurrency(-3, 'EUR', 'en'), ref('en', 'EUR', -3));
+    assertEqual(formatCurrency(0, 'EUR', 'de'), ref('de', 'EUR', 0));
+  });
+  test('null, NaN, Infinity wie formatNumber', () => {
+    for (const v of [null, undefined, NaN, Infinity, -Infinity]) {
+      assertEqual(formatCurrency(v, 'EUR', 'de'), formatNumber(v, 'de'));
+    }
+  });
+  test('unbekannte Währung wirft mit Liste', () => {
+    let msg = '';
+    try { formatCurrency(1, 'XYZ', 'de'); } catch (e) { msg = e.message; }
+    assertTrue(/invalid currency "XYZ"; allowed: EUR, USD/.test(msg), msg);
+  });
+  test('registerCurrency erweitert das Register', () => {
+    registerCurrency('CHF', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    assertEqual(formatCurrency(1, 'CHF', 'en'), ref('en', 'CHF', 1));
   });
 });

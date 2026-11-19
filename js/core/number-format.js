@@ -9,6 +9,8 @@
  * `output` (grouped, for display).
  */
 
+import { requireEnum } from './validate.js';
+
 /** German thousands grouping with a decimal comma, e.g. "1.234,5". */
 const DE_GROUPED = /^[+-]?\d{1,3}(\.\d{3})+,\d*$/;
 /** English thousands grouping with a decimal point, e.g. "1,234.5". */
@@ -146,6 +148,49 @@ export function formatPercent(share, lang, decimals) {
     _pctFormatters.set(key, fmt);
   }
   return fmt.format(share);
+}
+
+/** @type {Map<string, {minimumFractionDigits: number, maximumFractionDigits: number}>} */
+const _currencies = new Map([
+  ['EUR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }],
+  ['USD', { minimumFractionDigits: 2, maximumFractionDigits: 2 }],
+]);
+/** @type {Map<string, Intl.NumberFormat>} */
+const _currencyFormatters = new Map();
+
+/**
+ * Register a currency for {@link formatCurrency}.
+ *
+ * @param {string} code ISO 4217 code, e.g. `'CHF'`
+ * @param {{ minimumFractionDigits: number, maximumFractionDigits: number }} opts
+ * @returns {void}
+ */
+export function registerCurrency(code, opts) {
+  _currencies.set(code, { minimumFractionDigits: opts.minimumFractionDigits, maximumFractionDigits: opts.maximumFractionDigits });
+  for (const k of [..._currencyFormatters.keys()]) if (k.endsWith(`|${code}`)) _currencyFormatters.delete(k);
+}
+
+/**
+ * Format an amount of money for a language (`'de'` → `de-DE`, otherwise `en-US`).
+ * Empty and non-finite values give the same output as {@link formatNumber}.
+ *
+ * @param {number|null|undefined} value
+ * @param {string} currency registered code (default `EUR`, `USD`)
+ * @param {string} lang
+ * @returns {string}
+ * @throws {Error} for an unregistered currency
+ */
+export function formatCurrency(value, currency, lang) {
+  requireEnum('currency', currency, [..._currencies.keys()]);
+  if (value === null || value === undefined || !Number.isFinite(value)) return formatNumber(value, lang);
+  const locale = langOf(lang) === 'de' ? 'de-DE' : 'en-US';
+  const key = `${locale}|${currency}`;
+  let fmt = _currencyFormatters.get(key);
+  if (!fmt) {
+    fmt = new Intl.NumberFormat(locale, { style: 'currency', currency, ..._currencies.get(currency) });
+    _currencyFormatters.set(key, fmt);
+  }
+  return fmt.format(value);
 }
 
 /**
