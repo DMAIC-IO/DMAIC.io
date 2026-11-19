@@ -224,7 +224,7 @@ export function dialogsView(ctx) {
     get formulaPreviewClass() { return `formula-editor__preview-value ${this.formulaPreview.cls}`; },
 
     /** Klasse des Textfelds (Fehler markiert). */
-    get formulaTextClass() { return this.formulaPreview.cls === 'error' ? 'formula-editor__textarea has-error' : 'formula-editor__textarea'; },
+    get formulaTextClass() { return this.formulaPreview.cls === 'error' ? 'has-error' : ''; },
 
     /** Tasten im Textfeld: Strg+Enter übernimmt; Esc gehört dem Dialog. @param {KeyboardEvent} e */
     onFormulaKeydown(e) {

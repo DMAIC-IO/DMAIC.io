@@ -166,7 +166,7 @@
       </div>
       <div class="formula-editor__body">
         <div class="formula-editor__textarea-wrap" data-help-key="modules.worksheet.state.formulaText.help">
-          <textarea :class="formulaTextClass" x-ref="formulaText" x-model="state.formulaText"
+          <textarea class="formula-editor__textarea" :class="formulaTextClass" x-ref="formulaText" x-model="state.formulaText"
                     :placeholder="t('fePlaceholder')" spellcheck="false" autocomplete="off"
                     @keydown="onFormulaKeydown($event)"></textarea>
         </div>
