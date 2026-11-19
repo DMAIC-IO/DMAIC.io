@@ -1,13 +1,13 @@
 {
   "_schema": { "name": "triz-function-analysis", "version": "1.0" },
   "components": [
-    { "id": "c-belag", "name": "Belag", "kind": "target", "note": "Bakterieller Zahnbelag" },
+    { "id": "c-belag", "name": "Belag", "kind": "target", "note": "Bakterieller Zahnbelag", "cost": null },
     { "id": "c-borsten", "name": "Borsten", "kind": "system", "note": "", "cost": 0.06 },
     { "id": "c-kopf", "name": "Bürstenkopf", "kind": "system", "note": "", "cost": 0.04 },
     { "id": "c-griff", "name": "Griff", "kind": "system", "note": "", "cost": 0.15 },
-    { "id": "c-hand", "name": "Hand", "kind": "supersystem", "note": "" },
-    { "id": "c-zahnfleisch", "name": "Zahnfleisch", "kind": "supersystem", "note": "" },
-    { "id": "c-paste", "name": "Zahnpasta", "kind": "supersystem", "note": "" }
+    { "id": "c-hand", "name": "Hand", "kind": "supersystem", "note": "", "cost": null },
+    { "id": "c-zahnfleisch", "name": "Zahnfleisch", "kind": "supersystem", "note": "", "cost": null },
+    { "id": "c-paste", "name": "Zahnpasta", "kind": "supersystem", "note": "", "cost": null }
   ],
   "interactions": [
     { "a": "c-belag", "b": "c-borsten" },
@@ -25,14 +25,14 @@
     { "a": "c-belag", "b": "c-hand" },
     { "a": "c-borsten", "b": "c-griff" },
     { "a": "c-borsten", "b": "c-hand" },
-    { "a": "c-kopf", "b": "c-hand" },
+    { "a": "c-hand", "b": "c-kopf" },
     { "a": "c-kopf", "b": "c-zahnfleisch" },
     { "a": "c-kopf", "b": "c-paste" },
     { "a": "c-griff", "b": "c-zahnfleisch" },
     { "a": "c-griff", "b": "c-paste" },
     { "a": "c-hand", "b": "c-zahnfleisch" },
     { "a": "c-hand", "b": "c-paste" },
-    { "a": "c-zahnfleisch", "b": "c-paste" }
+    { "a": "c-paste", "b": "c-zahnfleisch" }
   ],
   "functions": [
     { "id": "f-entfernen", "carrier": "c-borsten", "verb": "entfernen", "object": "c-belag", "parameter": "auf der Zahnoberfläche", "type": "useful", "level": "insufficient", "note": "Zwischenräume werden kaum erreicht" },

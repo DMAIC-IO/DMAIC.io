@@ -10,6 +10,7 @@ import { confirmOf, setFields } from '../../../js/core/model.js';
 import { evaluateDerived } from '../../../js/core/derived.js';
 
 const FIXTURES = new URL('../../fixtures/triz-function-analysis/', import.meta.url);
+const EXAMPLE = new URL('../../../examples/projects/triz-function-analysis-toothbrush.json', import.meta.url);
 /** Leser ohne fremde Instanzen (die Ableitungen lesen nur das Model). */
 const NO_SOURCE = { read: () => null, list: () => [] };
 const SCHEMA = { _schema: { name: 'triz-function-analysis', version: '1.0' } };
@@ -348,6 +349,22 @@ suite('triz-function-analysis Model — Ableitungen', () => {
     assertDeepEqual({ ...read, ...evaluateDerived(m, NO_SOURCE) }, expected);
     assertDeepEqual(Object.keys(evaluateDerived(m, NO_SOURCE)),
       ['openPairs', 'ranks', 'disadvantages', 'valueCost']);
+  });
+  test('das ausgelieferte Zahnbürsten-Beispiel lädt ohne Reparatur, derived gleich der Altform', async () => {
+    const raw = await (await fetch(EXAMPLE, { cache: 'no-cache' })).json();
+    const expected = await (await fetch(new URL('toothbrush-read.json', FIXTURES), { cache: 'no-cache' })).json();
+    const strict = thrown(() => State.fromJSON(raw));
+    assertEqual(strict, null, `strenges Laden: ${strict?.message}`);
+    const fields = [];
+    const m = State.fromJSON(raw, { repair: true, onRepair: (f) => fields.push(f) });
+    assertDeepEqual(fields, []);
+    assertEqual(m.components.length, raw.components.length);
+    assertEqual(m.functions.length, raw.functions.length);
+    assertEqual(m.components.length, 7);
+    const { openPairs, ranks, disadvantages, valueCost, ...stored } = expected;
+    const { _schema, activeTab, ...read } = m.toJSON();
+    assertDeepEqual(read, stored);
+    assertDeepEqual(evaluateDerived(m, NO_SOURCE), { openPairs, ranks, disadvantages, valueCost });
   });
   test('openPairs und ranks an einem kleinen Stand', () => {
     const m = fixture();
